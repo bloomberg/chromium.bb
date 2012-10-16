@@ -388,6 +388,8 @@
         '../webkit/blob/blob_storage_controller_unittest.cc',
         '../webkit/blob/blob_url_request_job_unittest.cc',
         '../webkit/blob/local_file_stream_reader_unittest.cc',
+        '../webkit/blob/mock_blob_url_request_context.cc',
+        '../webkit/blob/mock_blob_url_request_context.h',
         '../webkit/blob/shareable_file_reference_unittest.cc',
         '../webkit/database/database_connections_unittest.cc',
         '../webkit/database/database_quota_client_unittest.cc',

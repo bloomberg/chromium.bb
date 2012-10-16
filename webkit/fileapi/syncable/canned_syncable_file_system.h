@@ -21,6 +21,10 @@ class SingleThreadTaskRunner;
 class Thread;
 }
 
+namespace net {
+class URLRequestContext;
+}
+
 namespace quota {
 class QuotaManager;
 }
@@ -37,6 +41,7 @@ class LocalFileSyncContext;
 class CannedSyncableFileSystem {
  public:
   typedef base::Callback<void(base::PlatformFileError)> StatusCallback;
+  typedef base::Callback<void(int64)> WriteCallback;
 
   CannedSyncableFileSystem(const GURL& origin,
                            const std::string& service,
@@ -83,6 +88,10 @@ class CannedSyncableFileSystem {
   base::PlatformFileError TruncateFile(const FileSystemURL& url, int64 size);
   base::PlatformFileError Remove(const FileSystemURL& url, bool recursive);
 
+  // Returns the # of bytes written (>=0) or an error code (<0).
+  int64 Write(net::URLRequestContext* url_request_context,
+              const FileSystemURL& url, const GURL& blob_url);
+
   // Pruges the file system local storage.
   base::PlatformFileError DeleteFileSystem();
 
@@ -107,6 +116,10 @@ class CannedSyncableFileSystem {
   void DoRemove(const FileSystemURL& url,
                 bool recursive,
                 const StatusCallback& callback);
+  void DoWrite(net::URLRequestContext* url_request_context,
+               const FileSystemURL& url,
+               const GURL& blob_url,
+               const WriteCallback& callback);
 
   // Callbacks.
   void DidOpenFileSystem(base::PlatformFileError result,

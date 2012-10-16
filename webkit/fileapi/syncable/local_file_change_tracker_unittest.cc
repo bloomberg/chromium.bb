@@ -10,6 +10,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/blob/mock_blob_url_request_context.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/syncable/canned_syncable_file_system.h"
@@ -18,12 +19,16 @@
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 #include "webkit/quota/quota_manager.h"
 
+using webkit_blob::MockBlobURLRequestContext;
+using webkit_blob::ScopedTextBlob;
+
 namespace fileapi {
 
 class LocalFileChangeTrackerTest : public testing::Test {
  public:
   LocalFileChangeTrackerTest()
-    : file_system_(GURL("http://example.com"), "test",
+    : message_loop_(MessageLoop::TYPE_IO),
+      file_system_(GURL("http://example.com"), "test",
                    base::MessageLoopProxy::current()) {}
 
   virtual void SetUp() OVERRIDE {
@@ -157,16 +162,23 @@ TEST_F(LocalFileChangeTrackerTest, RestoreCreateAndModifyChanges) {
   const char kPath0[] = "file a";
   const char kPath1[] = "dir a";
   const char kPath2[] = "dir a/dir";
-  const char kPath3[] = "dir a/file";
+  const char kPath3[] = "dir a/file a";
+  const char kPath4[] = "dir a/file b";
 
-  const char kPath4[] = "file b";      // To be copied from kPath0
-  const char kPath5[] = "dir b";       // To be copied from kPath1
-  const char kPath6[] = "dir b/dir";   // To be copied from kPath2
-  const char kPath7[] = "dir b/file";  // To be copied from kPath3
+  const char kPath0Copy[] = "file b";      // To be copied from kPath0
+  const char kPath1Copy[] = "dir b";       // To be copied from kPath1
+  const char kPath2Copy[] = "dir b/dir";   // To be copied from kPath2
+  const char kPath3Copy[] = "dir b/file a";  // To be copied from kPath3
+  const char kPath4Copy[] = "dir b/file b";  // To be copied from kPath4
 
   change_tracker()->GetChangedURLs(&urls);
   urlset.insert(urls.begin(), urls.end());
   ASSERT_EQ(0U, urlset.size());
+
+  const GURL blob_url("blob:test");
+  const std::string kData("Lorem ipsum.");
+  MockBlobURLRequestContext url_request_context;
+  ScopedTextBlob blob(url_request_context, blob_url, kData);
 
   // Creates files and nested directories.
   EXPECT_EQ(base::PLATFORM_FILE_OK,
@@ -179,16 +191,21 @@ TEST_F(LocalFileChangeTrackerTest, RestoreCreateAndModifyChanges) {
             file_system_.CreateFile(URL(kPath3)));       // Creates a file.
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             file_system_.TruncateFile(URL(kPath3), 1));  // Modifies the file.
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            file_system_.CreateFile(URL(kPath4)));    // Creates another file.
+  EXPECT_EQ(static_cast<int64>(kData.size()),
+            file_system_.Write(&url_request_context,
+                               URL(kPath4), blob_url));  // Modifies the file.
 
   // Copies the file and the parent directory.
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            file_system_.Copy(URL(kPath0), URL(kPath4)));  // Copy the file.
+            file_system_.Copy(URL(kPath0), URL(kPath0Copy)));  // Copy the file.
   EXPECT_EQ(base::PLATFORM_FILE_OK,
-            file_system_.Copy(URL(kPath1), URL(kPath5)));  // Copy the dir.
+            file_system_.Copy(URL(kPath1), URL(kPath1Copy)));  // Copy the dir.
 
   change_tracker()->GetChangedURLs(&urls);
   urlset.insert(urls.begin(), urls.end());
-  EXPECT_EQ(8U, urlset.size());
+  EXPECT_EQ(10U, urlset.size());
 
   DropChangesInTracker();
 
@@ -206,7 +223,7 @@ TEST_F(LocalFileChangeTrackerTest, RestoreCreateAndModifyChanges) {
   urlset.clear();
   change_tracker()->GetChangedURLs(&urls);
   urlset.insert(urls.begin(), urls.end());
-  EXPECT_EQ(8U, urlset.size());
+  EXPECT_EQ(10U, urlset.size());
 
   VerifyAndClearChange(URL(kPath0),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
@@ -223,13 +240,20 @@ TEST_F(LocalFileChangeTrackerTest, RestoreCreateAndModifyChanges) {
   VerifyAndClearChange(URL(kPath4),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                                   FileChange::FILE_TYPE_FILE));
-  VerifyAndClearChange(URL(kPath5),
+
+  VerifyAndClearChange(URL(kPath0Copy),
+                       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                                  FileChange::FILE_TYPE_FILE));
+  VerifyAndClearChange(URL(kPath1Copy),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                                   FileChange::FILE_TYPE_DIRECTORY));
-  VerifyAndClearChange(URL(kPath6),
+  VerifyAndClearChange(URL(kPath2Copy),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                                   FileChange::FILE_TYPE_DIRECTORY));
-  VerifyAndClearChange(URL(kPath7),
+  VerifyAndClearChange(URL(kPath3Copy),
+                       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                                  FileChange::FILE_TYPE_FILE));
+  VerifyAndClearChange(URL(kPath4Copy),
                        FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                                   FileChange::FILE_TYPE_FILE));
 }

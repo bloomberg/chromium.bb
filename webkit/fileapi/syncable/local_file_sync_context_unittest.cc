@@ -42,7 +42,8 @@ class LocalFileSyncContextTest : public testing::Test {
 
     io_thread_.reset(new base::Thread("Thread_IO"));
     file_thread_.reset(new base::Thread("Thread_File"));
-    io_thread_->Start();
+    io_thread_->StartWithOptions(
+        base::Thread::Options(MessageLoop::TYPE_IO, 0));
     file_thread_->Start();
 
     ui_task_runner_ = MessageLoop::current()->message_loop_proxy();

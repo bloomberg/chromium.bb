@@ -28,28 +28,28 @@ namespace fileapi {
 
 namespace {
 
-typedef CannedSyncableFileSystem::StatusCallback StatusCallback;
-
 void Empty() {}
 
 void Quit() { MessageLoop::current()->Quit(); }
 
+template <typename R>
 void AssignAndQuit(base::TaskRunner* original_task_runner,
-                   PlatformFileError* result_out,
-                   PlatformFileError result) {
+                   R* result_out, R result) {
   DCHECK(result_out);
   *result_out = result;
   original_task_runner->PostTask(FROM_HERE, base::Bind(&Quit));
 }
 
-PlatformFileError RunOnThread(
+
+template <typename R>
+R RunOnThread(
     base::SingleThreadTaskRunner* task_runner,
     const tracked_objects::Location& location,
-    const base::Callback<void(const StatusCallback& callback)>& task) {
-  PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
+    const base::Callback<void(const base::Callback<void(R)>& callback)>& task) {
+  R result;
   task_runner->PostTask(
       location,
-      base::Bind(task, base::Bind(&AssignAndQuit,
+      base::Bind(task, base::Bind(&AssignAndQuit<R>,
                                   base::MessageLoopProxy::current(),
                                   &result)));
   MessageLoop::current()->Run();
@@ -68,6 +68,26 @@ void VerifySameTaskRunner(
   runner1->PostTask(FROM_HERE,
                     base::Bind(&EnsureRunningOn, make_scoped_refptr(runner2)));
 }
+
+class WriteHelper {
+ public:
+  WriteHelper() : bytes_written_(0) {}
+  ~WriteHelper() {}
+
+  void DidWrite(const base::Callback<void(int64)>& completion_callback,
+                PlatformFileError error, int64 bytes, bool complete) {
+    if (error == base::PLATFORM_FILE_OK) {
+      bytes_written_ += bytes;
+      if (!complete)
+        return;
+    }
+    completion_callback.Run(error == base::PLATFORM_FILE_OK
+                            ? bytes_written_ : static_cast<int64>(error));
+  }
+
+ private:
+  int64 bytes_written_;
+};
 
 }  // namespace
 
@@ -154,60 +174,77 @@ SyncStatusCode CannedSyncableFileSystem::MaybeInitializeFileSystemContext(
 
 PlatformFileError CannedSyncableFileSystem::CreateDirectory(
     const FileSystemURL& url) {
-  return RunOnThread(io_task_runner_,
-                     FROM_HERE,
-                     base::Bind(&CannedSyncableFileSystem::DoCreateDirectory,
-                                base::Unretained(this), url));
+  return RunOnThread<PlatformFileError>(
+      io_task_runner_,
+      FROM_HERE,
+      base::Bind(&CannedSyncableFileSystem::DoCreateDirectory,
+                 base::Unretained(this), url));
 }
 
 PlatformFileError CannedSyncableFileSystem::CreateFile(
     const FileSystemURL& url) {
-  return RunOnThread(io_task_runner_,
-                     FROM_HERE,
-                     base::Bind(&CannedSyncableFileSystem::DoCreateFile,
-                                base::Unretained(this), url));
+  return RunOnThread<PlatformFileError>(
+      io_task_runner_,
+      FROM_HERE,
+      base::Bind(&CannedSyncableFileSystem::DoCreateFile,
+                 base::Unretained(this), url));
 }
 
 PlatformFileError CannedSyncableFileSystem::Copy(
     const FileSystemURL& src_url, const FileSystemURL& dest_url) {
-  return RunOnThread(io_task_runner_,
-                     FROM_HERE,
-                     base::Bind(&CannedSyncableFileSystem::DoCopy,
-                                base::Unretained(this), src_url, dest_url));
+  return RunOnThread<PlatformFileError>(
+      io_task_runner_,
+      FROM_HERE,
+      base::Bind(&CannedSyncableFileSystem::DoCopy,
+                 base::Unretained(this), src_url, dest_url));
 }
 
 PlatformFileError CannedSyncableFileSystem::Move(
     const FileSystemURL& src_url, const FileSystemURL& dest_url) {
-  return RunOnThread(io_task_runner_,
-                     FROM_HERE,
-                     base::Bind(&CannedSyncableFileSystem::DoMove,
-                                base::Unretained(this), src_url, dest_url));
+  return RunOnThread<PlatformFileError>(
+      io_task_runner_,
+      FROM_HERE,
+      base::Bind(&CannedSyncableFileSystem::DoMove,
+                 base::Unretained(this), src_url, dest_url));
 }
 
 PlatformFileError CannedSyncableFileSystem::TruncateFile(
     const FileSystemURL& url, int64 size) {
-  return RunOnThread(io_task_runner_,
-                     FROM_HERE,
-                     base::Bind(&CannedSyncableFileSystem::DoTruncateFile,
-                                base::Unretained(this), url, size));
+  return RunOnThread<PlatformFileError>(
+      io_task_runner_,
+      FROM_HERE,
+      base::Bind(&CannedSyncableFileSystem::DoTruncateFile,
+                 base::Unretained(this), url, size));
 }
 
 PlatformFileError CannedSyncableFileSystem::Remove(
     const FileSystemURL& url, bool recursive) {
-  return RunOnThread(io_task_runner_,
-                     FROM_HERE,
-                     base::Bind(&CannedSyncableFileSystem::DoRemove,
-                                base::Unretained(this), url, recursive));
+  return RunOnThread<PlatformFileError>(
+      io_task_runner_,
+      FROM_HERE,
+      base::Bind(&CannedSyncableFileSystem::DoRemove,
+                 base::Unretained(this), url, recursive));
+}
+
+int64 CannedSyncableFileSystem::Write(
+    net::URLRequestContext* url_request_context,
+    const FileSystemURL& url, const GURL& blob_url) {
+  return RunOnThread<int64>(
+      io_task_runner_,
+      FROM_HERE,
+      base::Bind(&CannedSyncableFileSystem::DoWrite,
+                 base::Unretained(this), url_request_context, url, blob_url));
 }
 
 PlatformFileError CannedSyncableFileSystem::DeleteFileSystem() {
   EXPECT_TRUE(is_filesystem_set_up_);
-  return RunOnThread(io_task_runner_,
-                     FROM_HERE,
-                     base::Bind(&FileSystemContext::DeleteFileSystem,
-                                file_system_context_,
-                                test_helper_.origin(),
-                                test_helper_.type()));
+  return RunOnThread<PlatformFileError>(
+      io_task_runner_,
+      FROM_HERE,
+      base::Bind(&FileSystemContext::DeleteFileSystem,
+                 file_system_context_,
+                 test_helper_.origin(),
+                 test_helper_.type()));
 }
 
 FileSystemOperation* CannedSyncableFileSystem::NewOperation() {
@@ -257,6 +294,17 @@ void CannedSyncableFileSystem::DoRemove(
     const StatusCallback& callback) {
   EXPECT_TRUE(is_filesystem_opened_);
   NewOperation()->Remove(url, recursive, callback);
+}
+
+void CannedSyncableFileSystem::DoWrite(
+    net::URLRequestContext* url_request_context,
+    const FileSystemURL& url, const GURL& blob_url,
+    const WriteCallback& callback) {
+  EXPECT_TRUE(is_filesystem_opened_);
+  WriteHelper* helper = new WriteHelper;
+  NewOperation()->Write(url_request_context, url, blob_url, 0,
+                        base::Bind(&WriteHelper::DidWrite,
+                                   base::Owned(helper), callback));
 }
 
 void CannedSyncableFileSystem::DidOpenFileSystem(
