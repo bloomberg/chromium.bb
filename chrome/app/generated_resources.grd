@@ -14078,7 +14078,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       Complete action using:
     </message>
     <message name="IDS_FIND_MORE_INTENT_HANDLER_MESSAGE" desc="Text to show to inform the user that more intent services can be found in the web store.">
-      Find more apps by visiting the Chrome Web Store.
+      Find more apps in the Chrome Web Store
     </message>
     <message name="IDS_FIND_MORE_INTENT_HANDLER_TOOLTIP" desc="Tooltip text for the web store plus button on the intent picker dialog.">
       Find apps in the Chrome Web Store
@@ -14087,7 +14087,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       No apps are registered for this action.
     </message>
     <message name="IDS_INTENT_PICKER_CHOOSE_SERVICE" desc="Prompt to the user to select one of the given services to complete a Web Intents action.">
-      Which app do you want to use?
+      Choose an app&#8230;
     </message>
     <message name="IDS_INTENT_PICKER_CHOOSE_SERVICES_NONE_INSTALLED_TITLE" desc="Heading in the Web Intents picker box for a section containing suggested applications from the Chrome Web Store. Displayed only if there are no installed services.">
       You have no apps installed.
@@ -14122,19 +14122,19 @@ Some features may be unavailable.  Please check that the profile exists and you 
 
     <!-- Web Intents common actions -->
     <message name="IDS_WEB_INTENTS_ACTION_SHARE" desc="Question asking the user to pick a service for the 'share' action.">
-      Which app should be used for sharing?
+      Share with&#8230;
     </message>
     <message name="IDS_WEB_INTENTS_ACTION_EDIT" desc="Question asking the user to pick a service for the 'edit' action.">
-      Which app should be used for editing?
+      Edit with&#8230;
     </message>
     <message name="IDS_WEB_INTENTS_ACTION_VIEW" desc="Question asking the user to pick a service for the 'viewing' action.">
-      Which app should be used for viewing?
+      View with&#8230;
     </message>
     <message name="IDS_WEB_INTENTS_ACTION_SUBSCRIBE" desc="Question asking the user to pick a service for the 'subscribe' action.">
-      Which app should be used for subscribing?
+      Subscribe with&#8230;
     </message>
     <message name="IDS_WEB_INTENTS_ACTION_SAVE" desc="Question asking the user to pick a service for the 'save' action.">
-      Which app should be used for saving?
+      Save with&#8230;
     </message>
 
     <!-- Web Intents native services (titles) -->
