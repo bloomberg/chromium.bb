@@ -855,18 +855,6 @@ wl_display_dispatch_pending(struct wl_display *display)
 	return dispatch_queue(display, &display->queue, 0);
 }
 
-/** Send all buffered request on the display to the server
- *
- * \param display The display context object
- * \return The number of bytes send on success or -1 on failure
- *
- * Send all buffered data on the client side to the server. Clients
- * should call this function before blocking. On success, the number
- * of bytes sent to the server is returned. On failure, this
- * function returns -1 and errno is set appropriately.
- *
- * \memberof wl_display
- */
 WL_EXPORT int
 wl_display_get_error(struct wl_display *display)
 {
@@ -881,6 +869,18 @@ wl_display_get_error(struct wl_display *display)
 	return ret;
 }
 
+/** Send all buffered request on the display to the server
+ *
+ * \param display The display context object
+ * \return The number of bytes send on success or -1 on failure
+ *
+ * Send all buffered data on the client side to the server. Clients
+ * should call this function before blocking. On success, the number
+ * of bytes sent to the server is returned. On failure, this
+ * function returns -1 and errno is set appropriately.
+ *
+ * \memberof wl_display
+ */
 WL_EXPORT int
 wl_display_flush(struct wl_display *display)
 {
