@@ -407,14 +407,16 @@ def GypNinjaBuild_X86(pepperdir, platform, toolchains):
       buildbot_common.CopyDir(os.path.join(src_dir, '*.a'), dst_dir)
       if tc == 'newlib':
         buildbot_common.CopyDir(os.path.join(src_dir, '*.o'), dst_dir)
-        # TODO(binji) crt1.o for newlib/32 is installed to a subdirectory for
-        # some reason. Can this be fixed in the gyp script?
-        if bits == '32':
-          buildbot_common.CopyFile(os.path.join(src_dir, '32', 'crt1.o'),
-                                   dst_dir)
 
       if tc == 'glibc':
         buildbot_common.CopyDir(os.path.join(src_dir, '*.so'), dst_dir)
+
+      # TODO(binji): temporary hack; copy crt1.o from sdk toolchain directory.
+      lib_dir = os.path.join(ninja_out_dir, 'gen', 'sdk', 'toolchain',
+                             '%s_x86_%s' % (platform, tc), 'x86_64-nacl', 'lib')
+      if bits == '32':
+        lib_dir += '32'
+      buildbot_common.CopyFile(os.path.join(lib_dir, 'crt1.o'), dst_dir)
 
 
 def GypNinjaBuild_X86_Nacl(platform, rel_out_dir):
