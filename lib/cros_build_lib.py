@@ -2049,3 +2049,41 @@ def SetupBasicLogging():
   date_format = constants.LOGGER_DATE_FMT
   logging.basicConfig(level=logging.DEBUG, format=logging_format,
                       datefmt=date_format)
+
+
+class ApiMismatchError(Exception):
+  """Raised by GetTargetChromiteApiVersion."""
+  pass
+
+
+def GetTargetChromiteApiVersion(buildroot, validate_version=True):
+  """Get the re-exec API version of the target chromite.
+
+  Arguments:
+    buildroot: The directory containing the chromite to check.
+    validate_version:  If set to true, checks the target chromite for
+      compatibility, and raises an ApiMismatchError when there is an
+      incompatibility.
+
+  Raises:
+    May raise an ApiMismatchError if validate_version is set.
+
+  Returns the version number in (major, minor) tuple.
+  """
+  api = RunCommandCaptureOutput(
+      [constants.PATH_TO_CBUILDBOT, '--reexec-api-version'],
+      cwd=buildroot, error_code_ok=True)
+  # If the command failed, then we're targeting a cbuildbot that lacks the
+  # option; assume 0:0 (ie, initial state).
+  major = minor = 0
+  if api.returncode == 0:
+    major, minor = map(int, api.output.strip().split('.', 1))
+
+  if validate_version and major != constants.REEXEC_API_MAJOR:
+    raise ApiMismatchError(
+        'The targeted version of chromite in buildroot %s requires '
+        'api version %i, but we are api version %i.  We cannot proceed.'
+        % (buildroot, major, constants.REEXEC_API_MAJOR))
+
+  return major, minor
+

@@ -14,6 +14,18 @@ CHROMITE_BIN_DIR = os.path.join(SOURCE_ROOT, CHROMITE_BIN_SUBDIR)
 PATH_TO_CBUILDBOT = os.path.join(CHROMITE_BIN_SUBDIR, 'cbuildbot')
 DEFAULT_CHROOT_DIR = 'chroot'
 
+# Re-execution API constants.
+# Used by --resume and --bootstrap to decipher which options they
+# can pass to the target cbuildbot (since it may not have that
+# option).
+# Format is Major:Minor.  Minor is used for tracking new options added
+# that aren't critical to the older version if it's not ran.
+# Major is used for tracking heavy API breakage- for example, no longer
+# supporting the --resume option.
+REEXEC_API_MAJOR = 0
+REEXEC_API_MINOR = 2
+REEXEC_API_VERSION = '%i.%i' % (REEXEC_API_MAJOR, REEXEC_API_MINOR)
+
 GERRIT_PORT = '29418'
 GERRIT_INT_PORT = '29419'
 

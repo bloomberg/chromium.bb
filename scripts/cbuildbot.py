@@ -52,17 +52,6 @@ _DISTRIBUTED_TYPES = [constants.COMMIT_QUEUE_TYPE, constants.PFQ_TYPE,
                       constants.PALADIN_TYPE]
 _BUILDBOT_REQUIRED_BINARIES = ('pbzip2',)
 
-# Used by --resume and --bootstrap to decipher which options they
-# can pass to the target cbuildbot (since it may not have that
-# option).
-# Format is Major:Minor.  Minor is used for tracking new options added
-# that aren't critical to the older version if it's not ran.
-# Major is used for tracking heavy API breakage- for example, no longer
-# supporting the --resume option.
-_REEXEC_API_MAJOR = 0
-_REEXEC_API_MINOR = 2
-_REEXEC_API_VERSION = '%i.%i' % (_REEXEC_API_MAJOR, _REEXEC_API_MINOR)
-
 
 def _PrintValidConfigs(display_all=False):
   """Print a list of valid buildbot configs.
@@ -228,22 +217,8 @@ class Builder(object):
     if not self.options.resume:
       results_lib.WriteCheckpoint(self.options.buildroot)
 
-    # Get the re-exec API version of the target chromite; if it's incompatible
-    # with us, bail now.
-    api = cros_build_lib.RunCommandCaptureOutput(
-        [constants.PATH_TO_CBUILDBOT] + ['--reexec-api-version'],
-        cwd=self.options.buildroot, error_code_ok=True)
-    # If the command failed, then we're targeting a cbuildbot that lacks the
-    # option; assume 0:0 (ie, initial state).
-    major, minor = 0, 0
-    if api.returncode == 0:
-      major, minor = map(int, api.output.strip().split('.', 1))
-
-    if major != _REEXEC_API_MAJOR:
-      cros_build_lib.Die(
-          'The targeted version of chromite in buildroot %s requires '
-          'api version %i, but we are api version %i.  We cannot proceed.'
-          % (self.options.buildroot, major, _REEXEC_API_MAJOR))
+    _, minor = cros_build_lib.GetTargetChromiteApiVersion(
+        self.options.buildroot)
 
     # Re-write paths to use absolute paths.
     # Suppress any timeout options given from the commandline in the
@@ -1097,7 +1072,7 @@ def _ParseCommandLine(parser, argv):
   (options, args) = parser.parse_args(argv)
 
   if options.output_api_version:
-    print _REEXEC_API_VERSION
+    print constants.REEXEC_API_VERSION
     sys.exit(0)
 
   if options.list:
