@@ -1,0 +1,18 @@
+{
+  "manifest_version": 2,
+  "name": "Cycler",
+  "version": "0.1",
+  "description": "Cycler UI",
+  "app": {
+    "launch": {
+      "local_path": "cycler.html"
+    }
+  },
+  "icons": {
+    "128": "cycler_icon_128.png",
+    "16": "cycler_icon_16.png"
+  },
+  "permissions": [
+    "experimental"
+  ]
+}

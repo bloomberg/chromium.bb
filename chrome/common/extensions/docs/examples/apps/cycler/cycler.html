@@ -1,0 +1,107 @@
+<!doctype html>
+
+<!-- Copyright (c) 2012 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file. -->
+
+<html>
+
+<head>
+  <title>Page Cycler</title>
+  <link rel='stylesheet' type='text/css' href='cycler.css'/>
+</head>
+
+<body>
+
+<div id='page'>
+  <div class='row'>
+    <div id='tab-navigator column'>
+      <div class='row'>
+        <img id='header-icon' src='cycler_icon_128.png' height='30'
+          height='30'/>
+        <h1 id='header'>Cycler</h1>
+      </div>
+      <div id='capture-tab-label' class='tab-label selected'>
+        <a>Capture</a>
+      </div>
+      <div id='playback-tab-label' class='tab-label'>
+        <a>Playback</a>
+      </div>
+    </div>
+
+    <div id='tab-wrapper'>
+      <div id='capture-tab'>
+        <div class='column'>
+          <h1>Capture</h1>
+          <div class='divider'></div>
+          <h2>Name:</h2>
+          <input class='indent name-combo' id='capture-name' type='text'/>
+          <h2>URLs:</h2>
+          <div class='indent'>
+            Enter the URLs to capture, one URL per line.<br/>
+            <textarea id='capture-urls' class='url-list'></textarea>
+          </div>
+          <button id='do-capture' class='gapped'>Capture!</button>
+        </div>
+      </div>
+
+      <div id='playback-tab' hidden>
+        <div class='column'>
+          <h1>Playback</h1>
+          <div class='divider'> </div>
+            <div id="no-captures" hidden>
+              <h2>No captures available.  Create new ones via Capture tab.</h2>
+            </div>
+            <div id='have-captures'>
+              <div class='column'>
+              <h2>Capture:</h2>
+              <select id='playback-name' class='indent name-combo'>
+                <option value='' disabled selected>Choose a capture</option>
+              </select>
+              <div id='playback-details' class='gapped'>
+                <div class='column gapped'>
+                  <h2>URLs:</h2>
+                  <textarea id='playback-urls' class='indent url-list'>
+                  </textarea>
+                </div>
+                <h2>Playback&nbsp;Options:</h2>
+                <div class='row gapped'>
+                  <div class='indent sub-label'>Repetitions:</div>
+                  <input id='playback-repeats' type='number' min='1' max='100'
+                      value='1'/>
+                </div>
+                <div class='row gapped'>
+                  <div class='indent sub-label'>Install&nbsp;Extension:</div>
+                  <input id='playback-extension' type='text' />
+                  <button id='playback-browse'>Browse..</button>
+                </div>
+                <div class='row gapped'>
+                  <button id='do-playback'>Playback</button>
+                  <button id='do-delete'>Delete</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id='popup' hidden>
+    <div id='popup-box' style='column'>
+      <div id='popup-content'>
+        When in the course of human events it<br/>
+        becomes necessary for one people<br/>
+        to dissolve...
+      </div>
+      <button id='do-popup-dismiss' class='gapped'>Dismiss</button>
+    </div>
+  </div>
+</div>
+
+<script type='text/javascript' src='cycler_data.js'></script>
+<script type='text/javascript' src='capture_tab.js'></script>
+<script type='text/javascript' src='playback_tab.js'></script>
+<script type='text/javascript' src='cycler_ui.js'></script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+/* Mimic sans-serif, dark bluish-gray font from Chrome|Settings page.
+ * This is approximate, as Chrome|Settings can adjust CSS per-platform and
+ * for instance uses Ubuntu font on Unix. It's at least quite close. */
+body {
+   font-family: Arial, sans-serif;
+   font-size: 12px;
+   color: #303942;
+}
+
+/* Mimic button from Settings page */
+button {
+  -webkit-padding-end: 10px;
+  -webkit-padding-start: 10px;
+  background-color: buttonface;
+  background-image: -webkit-linear-gradient(#EDEDED, #EDEDED 38%, #DEDEDE);
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 2px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08),
+      inset 0 1px 2px rgba(255, 255, 255, 0.75);
+  color: #444;
+  font: inherit;
+  margin: 0 1px 0 0;
+  min-height: 2em;
+  min-width: 4em;
+  text-shadow: #F0F0F0 0px 1px 0px;
+}
+
+button:active {
+  background-image: -webkit-linear-gradient(#e7e7e7, #e7e7e7 38%, #d7d7d7);
+  box-shadow: none;
+  text-shadow: none;
+}
+
+input, select {
+  width: 15em;
+}
+
+/* Top left header and tab headings, respectively */
+#header, h1 {
+  font-size: 18px;
+  font-weight: normal;
+  margin-top: 10px;
+}
+
+/*  h2 for major subheadings has pure black */
+h2 {
+  color: black;
+  font-size: 14px;
+  font-weight: normal;
+  margin-top: 20px;
+}
+
+.divider {
+  background-color: #EEE;
+  height: 1px;
+  min-width: 600px;
+}
+
+.tab-label {
+  color: #999;
+  cursor: pointer;
+  font-size: 13px;
+  margin-top: 15px;
+}
+
+.selected {
+  color: #464E5A;
+}
+
+.indent {
+  margin-left: 18px;
+}
+
+.sub-label {
+  min-width: 10em;
+}
+
+.column {
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+}
+
+.row {
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+}
+
+.gapped {
+  margin-top: 1em;
+}
+
+.url-list {
+  height: 8em;
+  width: 20em;
+}
+
+/* Cycler header is a little lighter blue-gray */
+#header {
+  color: #5C6166;
+  margin-bottom: 1.5em;
+  margin-left: 1em;
+}
+
+#header-icon {
+  float:left;
+  position:relative;
+}
+
+#tab-navigator {
+  float:left;
+  position:relative;
+  width:100px;
+}
+
+#tab-wrapper {
+  margin-left: 100px;
+}
+
+#playback-repeats {
+  width: 3em;
+}
+
+#popup {
+  background-color: rgba(255, 255, 255, .6);
+  height:100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width:100%;
+  z-index: 1;
+}
+
+#popup-box {
+  background-color: #fff;
+  border: 1px solid;
+  left: 30em;
+  padding: 1em;
+  position: absolute;
+  top: 12em;
+  z-index: 2;
+}
+
+#no-captures {
+  padding-top: 20px;
+}

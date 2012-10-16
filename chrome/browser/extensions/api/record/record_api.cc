@@ -116,8 +116,8 @@ void RunPageCyclerFunction::RunTestBrowser() {
   // Set up Capture- or Replay-specific commandline switches.
   AddSwitches(&line);
 
-  FilePath error_file_path = url_path.DirName()
-      .Append(url_path.BaseName().value() +
+  FilePath error_file_path = url_path.DirName().
+      Append(url_path.BaseName().value() +
       FilePath::StringType(kURLErrorsSuffix));
 
   LOG(ERROR) << "Test browser commandline: " << line.GetCommandLineString() <<
@@ -167,7 +167,9 @@ bool CaptureURLsFunction::ParseJSParameters() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   url_contents_ = JoinString(params->urls, '\n');
-  user_data_dir_ = FilePath::FromUTF8Unsafe(params->cache_directory_path);
+  // TODO(cstaley): Can't just use captureName -- gotta stick it in a temp dir.
+  // TODO(cstaley): Ensure that capture name is suitable as directory name.
+  user_data_dir_ = FilePath::FromUTF8Unsafe(params->capture_name);
 
   return true;
 }
@@ -184,16 +186,15 @@ void CaptureURLsFunction::Finish() {
   SendResponse(true);
 }
 
-
 // ReplayURLsFunction ------------------------------------------------
 
 ReplayURLsFunction::ReplayURLsFunction()
     : RunPageCyclerFunction(new ProductionProcessStrategy()),
-    run_time_ms_(0) {
+    run_time_ms_(0.0) {
 }
 
 ReplayURLsFunction::ReplayURLsFunction(ProcessStrategy* strategy)
-    : RunPageCyclerFunction(strategy), run_time_ms_(0) {
+    : RunPageCyclerFunction(strategy), run_time_ms_(0.0) {
 }
 
 ReplayURLsFunction::~ReplayURLsFunction() {}
@@ -205,8 +206,13 @@ bool ReplayURLsFunction::ParseJSParameters() {
       record::ReplayURLs::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  url_contents_ = JoinString(params->urls, '\n');
-  user_data_dir_ = FilePath::FromUTF8Unsafe(params->capture_directory_path);
+
+  // TODO(cstaley): Must build full temp dir from capture_name
+  user_data_dir_ = FilePath::FromUTF8Unsafe(params->capture_name);
+
+  // TODO(cstaley): Get this from user data dir ultimately
+  url_contents_ = "http://www.google.com\nhttp://www.amazon.com";
+
   repeat_count_ = params->repeat_count;
 
   if (params->details.get()) {
@@ -237,7 +243,7 @@ void ReplayURLsFunction::AddSwitches(CommandLine* line) {
 void ReplayURLsFunction::ReadReplyFiles() {
   file_util::ReadFileToString(stats_file_path_, &stats_);
 
-  run_time_ms_ = (base::Time::NowFromSystemTime() - timer_).InMilliseconds();
+  run_time_ms_ = (base::Time::NowFromSystemTime() - timer_).InMillisecondsF();
 }
 
 void ReplayURLsFunction::Finish() {

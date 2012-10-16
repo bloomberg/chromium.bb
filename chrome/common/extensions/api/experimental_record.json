@@ -7,17 +7,32 @@
         "type": "object",
         "description": "",
         "properties": {
-          "extensionPath": {"type": "string", "optional": true, "description": "A path to an extension to run in the session. Should be an unpacked extension."}
+          "extensionPath": {
+            "type": "string",
+            "optional": true,
+            "description": 
+                "Absolute path to an unpacked extension to run in the subbrowser session."
+          }
         }
       },
       {
         "id": "ReplayURLsResult",
         "type": "object",
-        "description": "",
+        "description": "Return value for Replay callback",
         "properties": {
-          "runTime": {"type": "integer", "description": "Time in milliseconds to complete all runs."},
-          "stats": {"type": "string", "description": "Full multiline dump of output stats."},
-          "errors": {"type": "array", "items": {"type": "string"}, "description": "List of errors during replay."}
+          "runTime": {
+            "type": "number",
+            "description": "Time in milliseconds to complete all runs."
+           },
+           "stats": {
+             "type": "string",
+             "description": "Full multiline dump of output stats, showing one statistic per line, comprising an abbreviated statistic name and its value (e.g. vmsize_f_b= 696164352 bytes for final vm size).  This is ugly, and will be changed shortly."
+          },
+          "errors": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "List of errors during replay.  Presently, this should only be abnormal browser termination for unexpected reasons."
+          }
         }
       }
     ],
@@ -28,13 +43,15 @@
         "type": "function",
         "parameters": [
           {
-            "type": "array",
-            "items": {"type": "string"},
-            "name": "urls"
+            "type": "string",
+            "description": "Unique name of the capture.",
+            "name": "captureName"
           },
           {
-            "type": "string",
-            "name": "cacheDirectoryPath"
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "URL list to visit during capture.",
+            "name": "urls"
           },
           {
             "name": "callback",
@@ -45,7 +62,8 @@
               {
                 "type": "array",
                 "items": {"type": "string"},
-                "name": "errors"
+                "name": "errors",
+                "description": "List of any URLs that failed to load, one error per textline, along with failure reason (e.g. unknown domain).  Also may include general abnormal-exit message if the subbrowser run failed for other reasons."
               }
             ]
           }
@@ -57,13 +75,9 @@
         "type": "function",
         "parameters": [
           {
-            "type": "array",
-            "items": {"type": "string"},
-            "name": "urls"
-          },
-          {
             "type": "string",
-            "name": "captureDirectoryPath"
+            "name": "captureName",
+            "description": "Unique name of capture.  Use to determine cache."
           },
           {
             "type": "integer", 
@@ -79,8 +93,14 @@
           {
             "name": "callback",
             "type": "function",
+            "optional": true,
             "description": "Called when playback has completed.",
-            "parameters": [{"$ref": "ReplayURLsResult", "name": "result"}]
+            "parameters": [
+              {
+                "$ref": "ReplayURLsResult",
+                "name": "result"
+              }
+            ]
           }
         ]
       }

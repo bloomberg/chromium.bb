@@ -156,7 +156,7 @@ class ReplayURLsFunction : public RunPageCyclerFunction {
   base::Time timer_;
 
   // These two data are additional information returned to caller.
-  int run_time_ms_;
+  double run_time_ms_;
   std::string stats_;
 };
 
