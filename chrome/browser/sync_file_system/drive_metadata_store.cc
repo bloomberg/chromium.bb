@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync_file_system/remote_metadata_store.h"
+#include "chrome/browser/sync_file_system/drive_metadata_store.h"
 
 #include "base/callback.h"
 #include "base/file_path.h"
@@ -16,18 +16,18 @@
 
 namespace sync_file_system {
 
-class RemoteMetadataDatabase : public base::NonThreadSafe {
+class DriveMetadataDB : public base::NonThreadSafe {
  public:
-  explicit RemoteMetadataDatabase(const FilePath& base_dir);
-  ~RemoteMetadataDatabase();
+  explicit DriveMetadataDB(const FilePath& base_dir);
+  ~DriveMetadataDB();
 
  private:
   scoped_ptr<leveldb::DB> db;
 
-  DISALLOW_COPY_AND_ASSIGN(RemoteMetadataDatabase);
+  DISALLOW_COPY_AND_ASSIGN(DriveMetadataDB);
 };
 
-RemoteMetadataStore::RemoteMetadataStore(
+DriveMetadataStore::DriveMetadataStore(
     const FilePath& db_dir,
     base::SequencedTaskRunner* file_task_runner)
   : file_task_runner_(file_task_runner),
@@ -36,60 +36,60 @@ RemoteMetadataStore::RemoteMetadataStore(
   DCHECK(file_task_runner);
 }
 
-RemoteMetadataStore::~RemoteMetadataStore() {
+DriveMetadataStore::~DriveMetadataStore() {
   DCHECK(CalledOnValidThread());
 
   if (db_.get())
     file_task_runner_->DeleteSoon(FROM_HERE, db_.release());
 }
 
-void RemoteMetadataStore::InitializeFromDiskCache(
+void DriveMetadataStore::InitializeFromDiskCache(
     const InitializationCallback& callback) {
   NOTIMPLEMENTED();
   callback.Run(false, false);
 }
 
-void RemoteMetadataStore::InitializeWithDocumentFeed(
+void DriveMetadataStore::InitializeWithDocumentFeed(
     scoped_ptr<gdata::DocumentFeed> feed,
     const InitializationCallback& callback) {
   NOTIMPLEMENTED();
   callback.Run(false, false);
 }
 
-void RemoteMetadataStore::SetLargestChangeStamp(int64 largest_changestamp) {
+void DriveMetadataStore::SetLargestChangeStamp(int64 largest_changestamp) {
   NOTIMPLEMENTED();
   // TODO(tzik): Post task to FILE thread to update database entry.
   largest_changestamp_ = largest_changestamp;
 }
 
-int64 RemoteMetadataStore::GetLargestChangeStamp() const {
+int64 DriveMetadataStore::GetLargestChangeStamp() const {
   return largest_changestamp_;
 }
 
-void RemoteMetadataStore::ApplyChangeFeed(
+void DriveMetadataStore::ApplyChangeFeed(
     scoped_ptr<gdata::DocumentFeed> feed) {
   NOTIMPLEMENTED();
 }
 
-std::string RemoteMetadataStore::GetResourceId(
+std::string DriveMetadataStore::GetResourceId(
     const fileapi::FileSystemURL& url) const {
   NOTIMPLEMENTED();
   return std::string();
 }
 
-std::string RemoteMetadataStore::GetETag(
+std::string DriveMetadataStore::GetETag(
     const fileapi::FileSystemURL& url) const {
   NOTIMPLEMENTED();
   return std::string();
 }
 
-GURL RemoteMetadataStore::GetDownloadURL(
+GURL DriveMetadataStore::GetDownloadURL(
     const fileapi::FileSystemURL& url) const {
   NOTIMPLEMENTED();
   return GURL();
 }
 
-GURL RemoteMetadataStore::GetUploadURL(
+GURL DriveMetadataStore::GetUploadURL(
     const fileapi::FileSystemURL& url) const {
   NOTIMPLEMENTED();
   return GURL();
@@ -97,11 +97,11 @@ GURL RemoteMetadataStore::GetUploadURL(
 
 ////////////////////////////////////////////////////////////////////////////////
 
-RemoteMetadataDatabase::RemoteMetadataDatabase(const FilePath& base_dir) {
+DriveMetadataDB::DriveMetadataDB(const FilePath& base_dir) {
   NOTIMPLEMENTED();
 }
 
-RemoteMetadataDatabase::~RemoteMetadataDatabase() {
+DriveMetadataDB::~DriveMetadataDB() {
   DCHECK(CalledOnValidThread());
 }
 

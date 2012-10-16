@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_REMOTE_METADATA_STORE_H_
-#define CHROME_BROWSER_SYNC_FILE_SYSTEM_REMOTE_METADATA_STORE_H_
+#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_METADATA_STORE_H_
+#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_METADATA_STORE_H_
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
@@ -27,19 +27,19 @@ class GURL;
 
 namespace sync_file_system {
 
-class RemoteMetadataDatabase;
+class DriveMetadataDB;
 
 // This class holds snapshot of server side metadata..
-class RemoteMetadataStore
+class DriveMetadataStore
     : public base::NonThreadSafe,
-      public base::SupportsWeakPtr<RemoteMetadataStore> {
+      public base::SupportsWeakPtr<DriveMetadataStore> {
  public:
   typedef base::Callback<void(bool success, bool has_cache)>
       InitializationCallback;
 
-  RemoteMetadataStore(const FilePath& base_dir,
+  DriveMetadataStore(const FilePath& base_dir,
                       base::SequencedTaskRunner* file_task_runner);
-  ~RemoteMetadataStore();
+  ~DriveMetadataStore();
 
   void InitializeFromDiskCache(const InitializationCallback& callback);
   void InitializeWithDocumentFeed(scoped_ptr<gdata::DocumentFeed> feed,
@@ -56,15 +56,15 @@ class RemoteMetadataStore
   GURL GetUploadURL(const fileapi::FileSystemURL& url) const;
 
  private:
-  scoped_ptr<RemoteMetadataDatabase> db_;
+  scoped_ptr<DriveMetadataDB> db_;
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   bool db_disabled_;
   int64 largest_changestamp_;
 
-  DISALLOW_COPY_AND_ASSIGN(RemoteMetadataStore);
+  DISALLOW_COPY_AND_ASSIGN(DriveMetadataStore);
 };
 
 }  // namespace sync_file_system
 
-#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_REMOTE_METADATA_STORE_H_
+#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_METADATA_STORE_H_
