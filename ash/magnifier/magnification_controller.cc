@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura/root_window.h"
@@ -94,6 +95,19 @@ class MagnificationControllerImpl : virtual public MagnificationController,
 
   // Returns if the magnification scale is 1.0 or not (larger then 1.0).
   bool IsMagnified() const;
+
+  // Returns the default scale which depends on the login status.
+  float GetDefaultZoomScale() const {
+    user::LoginStatus login = Shell::GetInstance()->tray_delegate() ?
+        Shell::GetInstance()->tray_delegate()->GetUserLoginStatus() :
+        user::LOGGED_IN_NONE;
+
+    // On login screen, don't magnify the screen by default.
+    if (login == user::LOGGED_IN_NONE)
+      return kNonMagnifiedScale;
+
+    return kInitialMagnifiedScale;
+  }
 
   // Returns the rect of the magnification window.
   gfx::Rect GetWindowRectDIP(float scale) const;
@@ -424,6 +438,8 @@ void MagnificationControllerImpl::SetEnabled(bool enabled) {
   if (enabled) {
     float scale =
         ash::Shell::GetInstance()->delegate()->GetSavedScreenMagnifierScale();
+    if (scale <= 0.0f)
+      scale = GetDefaultZoomScale();
     ValidateScale(&scale);
     RedrawKeepingMousePosition(scale, true);
     is_enabled_ = enabled;
