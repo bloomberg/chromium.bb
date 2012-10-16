@@ -178,8 +178,10 @@ void BaseLoginDisplayHost::BeforeSessionStart() {
 
 void BaseLoginDisplayHost::OnSessionStart() {
   DVLOG(1) << "Session starting";
-  ash::Shell::GetInstance()->
-      desktop_background_controller()->MoveDesktopToUnlockedContainer();
+  if (chromeos::UserManager::Get()->IsCurrentUserNew()) {
+    ash::Shell::GetInstance()->
+        desktop_background_controller()->MoveDesktopToUnlockedContainer();
+  }
   if (wizard_controller_.get())
     wizard_controller_->OnSessionStart();
   // Display host is deleted once animation is completed
@@ -205,9 +207,6 @@ void BaseLoginDisplayHost::StartWizard(
   // is done before new controller creation.
   wizard_controller_.reset();
   wizard_controller_.reset(CreateWizardController());
-
-  ash::Shell::GetInstance()->
-      desktop_background_controller()->MoveDesktopToLockedContainer();
 
   oobe_progress_bar_visible_ = !WizardController::IsDeviceRegistered();
   SetOobeProgressBarVisible(oobe_progress_bar_visible_);
@@ -299,6 +298,12 @@ void BaseLoginDisplayHost::Observe(
     registrar_.Remove(this,
                       chrome::NOTIFICATION_BROWSER_OPENED,
                       content::NotificationService::AllSources());
+  } else if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED &&
+             chromeos::UserManager::Get()->IsCurrentUserNew()) {
+    // For new user, move desktop to locker container so that windows created
+    // during the user image picker step are below it.
+    ash::Shell::GetInstance()->
+        desktop_background_controller()->MoveDesktopToLockedContainer();
   }
 }
 
