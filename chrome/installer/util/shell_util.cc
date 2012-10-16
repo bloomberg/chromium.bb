@@ -240,11 +240,10 @@ class RegistryEntry {
 
       // <root hkey>\Software\Classes\<app_id>\.exe\shell @=open
       entries->push_back(new RegistryEntry(model_id_shell,
-                                          ShellUtil::kRegVerbOpen));
+                                           ShellUtil::kRegVerbOpen));
 
       const wchar_t* const verbs[] = { ShellUtil::kRegVerbOpen,
-                                       ShellUtil::kRegVerbOpenNewWindow,
-                                       ShellUtil::kRegVerbRun };
+                                       ShellUtil::kRegVerbOpenNewWindow };
       for (size_t i = 0; i < arraysize(verbs); ++i) {
         string16 sub_path(model_id_shell);
         sub_path.push_back(FilePath::kSeparators[0]);
@@ -1016,6 +1015,30 @@ base::win::ShortcutProperties GetShortcutPropertiesFromChromeShortcutProperties(
   return shortcut_properties;
 }
 
+// Cleans up an old verb (run) we used to register in
+// <root>\Software\Classes\Chrome<.suffix>\.exe\shell\run on Windows 8.
+// TODO (gab): This was fixed before the general availability of Windows 8 and
+// thus can safely be removed in February 2013.
+void RemoveRunVerbOnWindows8(
+    BrowserDistribution* dist,
+    const string16& chrome_exe) {
+  if (IsChromeMetroSupported()) {
+    bool is_per_user_install =InstallUtil::IsPerUserInstall(chrome_exe.c_str());
+    HKEY root_key = DetermineShellIntegrationRoot(is_per_user_install);
+    // There's no need to rollback, so forgo the usual work item lists and just
+    // remove the key from the registry.
+    string16 run_verb_key(ShellUtil::kRegClasses);
+    run_verb_key.push_back(FilePath::kSeparators[0]);
+    run_verb_key.append(ShellUtil::GetBrowserModelId(
+        dist, is_per_user_install));
+    run_verb_key.append(ShellUtil::kRegExePath);
+    run_verb_key.append(ShellUtil::kRegShellPath);
+    run_verb_key.push_back(FilePath::kSeparators[0]);
+    run_verb_key.append(ShellUtil::kRegVerbRun);
+    InstallUtil::DeleteRegistryKey(root_key, run_verb_key);
+  }
+}
+
 // Gets the short (8.3) form of |path|, putting the result in |short_path| and
 // returning true on success.  |short_path| is not modified on failure.
 bool ShortNameFromPath(const FilePath& path, string16* short_path) {
@@ -1693,6 +1716,9 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
 
   // TODO(grt): remove this on or after 2012-08-01; see impl for details.
   RemoveBadWindows8RegistrationIfNeeded(dist, chrome_exe);
+
+  // TODO(gab): remove this on or after 2013-02-01; see impl for details.
+  RemoveRunVerbOnWindows8(dist, chrome_exe);
 
   // Check if Chromium is already registered with this suffix.
   if (IsChromeRegistered(dist, chrome_exe, suffix))
