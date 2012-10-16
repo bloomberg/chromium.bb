@@ -66,11 +66,12 @@
           'HAVE_STDINT_H',
           'HAVE_INTTYPES_H',
           'HAVE_NETINET_IN_H',
+          'INLINE=inline',
          ],
       }],
       ['OS=="win"', {
         'defines': [
-          'inline=__inline',
+          'INLINE=__inline',
           'HAVE_BYTESWAP_METHODS_H',
          ],
       }],
@@ -135,11 +136,12 @@
             'HAVE_STDINT_H',
             'HAVE_INTTYPES_H',
             'HAVE_NETINET_IN_H',
+            'INLINE=inline',
           ],
         }],
         ['OS=="win"', {
           'defines': [
-            'inline=__inline',
+            'INLINE=__inline',
             'HAVE_BYTESWAP_METHODS_H',
           ],
         }],

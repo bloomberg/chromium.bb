@@ -68,7 +68,7 @@
 /* rand() implementation. */
 #define RAND_MAX	32767
 
-static inline int rand(void)
+static INLINE int rand(void)
 {
 	uint32_t temp;
 	get_random_bytes(&temp, sizeof(temp));

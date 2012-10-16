@@ -297,7 +297,7 @@ aes_icm_set_iv(aes_icm_ctx_t *c, void *iv) {
  * this is an internal, hopefully inlined function
  */
   
-static inline void
+static INLINE void
 aes_icm_advance_ismacryp(aes_icm_ctx_t *c, uint8_t forIsmacryp) {
   /* fill buffer with new keystream */
   v128_copy(&c->keystream_buffer, &c->counter);
@@ -322,7 +322,7 @@ aes_icm_advance_ismacryp(aes_icm_ctx_t *c, uint8_t forIsmacryp) {
   }
 }
 
-static inline void aes_icm_advance(aes_icm_ctx_t *c) {
+static INLINE void aes_icm_advance(aes_icm_ctx_t *c) {
   aes_icm_advance_ismacryp(c, 0);
 }
 

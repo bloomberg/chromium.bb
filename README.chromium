@@ -16,3 +16,6 @@ Description:
 
 Local Modifications:
 
+Replace 'inline' with 'INLINE' and #define to either 'inline' or '__inline'.
+This is required because VS2012 does not allow redefinition of keywords via
+macros, but also does not support 'inline' in C files.
