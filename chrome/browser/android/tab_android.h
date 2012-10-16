@@ -70,6 +70,8 @@ class TabAndroid {
  protected:
   virtual ~TabAndroid();
 
+  static void InitTabHelpers(content::WebContents* web_contents);
+
   int tab_id_;
 };
 
