@@ -1284,32 +1284,34 @@
       ],
       'actions': [
         {
-          'action_name': 'generate_resources',
+          'action_name': 'string_resources',
           'variables': {
-            'grit_cmd': ['python', '<(DEPTH)/tools/grit/grit.py'],
+            'grit_grd_file': '<(strings_grd_file)',
+            'base_grit_grd_file': '<(base_strings_grd_file)',
           },
-          'inputs': [
-            '<(strings_grd_file)',
-            '<(resource_ids_file)',
-          ],
-          'outputs': [
-            '<!@pymod_do_main(grit_info <@(grit_defines) '
-            '--outputs \'<(grit_out_dir)\' <(base_strings_grd_file))',
-          ],
-          'action': ['<@(grit_cmd)',
-                     '-i', '<(strings_grd_file)', 'build',
-                     '-fresource_ids',
-                     '-o', '<(grit_out_dir)',
-                     '<@(grit_defines)' ],
-          'msvs_cygwin_shell': 0,
-          'message': 'Generating resources from <(strings_grd_file)',
+          'includes': [ 'grit_action.gypi' ],
+        },
+        {
+          'action_name': 'common_resources',
+          'variables': {
+            'grit_grd_file': 'resources/common_resources.grd',
+            'base_grit_grd_file': 'resources/common_resources.grd',
+          },
+          'includes': [ 'grit_action.gypi' ],
         },
       ],
       'copies': [
-        {  # Copy results to the product directory.
+        # Copy results to the product directory.
+        {
           'destination': '<(PRODUCT_DIR)/remoting_locales',
           'files': [
             '<(grit_out_dir)/remoting/resources/en-US.pak',
+          ]
+        },
+        {
+          'destination': '<(PRODUCT_DIR)',
+          'files': [
+            '<(grit_out_dir)/remoting/resources/chrome_remote_desktop.pak',
           ]
         },
       ],
