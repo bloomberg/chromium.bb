@@ -431,6 +431,12 @@ void SwizzleInit() {
 }
 
 - (void)sendEvent:(NSEvent*)event {
+  // TODO(shess): Squirrel away some info to direct debugging.
+  // Current hypothesis is that it's a keyboard accelerator.
+  // http://crbug.com/154483
+  static NSString* const kSendEventKey = @"sendevent";
+  base::mac::ScopedCrashKey key(kSendEventKey, [event description]);
+
   base::mac::ScopedSendingEvent sendingEventScoper;
   for (id<CrApplicationEventHookProtocol> handler in eventHooks_.get()) {
     [handler hookForEvent:event];
