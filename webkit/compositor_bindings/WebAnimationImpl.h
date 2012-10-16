@@ -6,9 +6,7 @@
 #define WebAnimationImpl_h
 
 #include "base/memory/scoped_ptr.h"
-#include <public/WebAnimation.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
+#include "third_party/WebKit/Source/Platform/chromium/public/WebAnimation.h"
 
 namespace cc {
 class CCActiveAnimation;

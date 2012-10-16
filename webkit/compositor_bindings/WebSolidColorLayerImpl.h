@@ -5,8 +5,8 @@
 #ifndef WebSolidColorLayerImpl_h
 #define WebSolidColorLayerImpl_h
 
-#include <public/WebSolidColorLayer.h>
-#include <wtf/OwnPtr.h>
+#include "base/memory/scoped_ptr.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebSolidColorLayer.h"
 
 namespace WebKit {
 class WebLayerImpl;
@@ -21,7 +21,7 @@ public:
     virtual void setBackgroundColor(WebColor) OVERRIDE;
 
 private:
-    OwnPtr<WebLayerImpl> m_layer;
+    scoped_ptr<WebLayerImpl> m_layer;
 };
 
 } // namespace WebKit

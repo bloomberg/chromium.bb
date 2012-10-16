@@ -5,8 +5,8 @@
 #ifndef WebImageLayerImpl_h
 #define WebImageLayerImpl_h
 
-#include <public/WebImageLayer.h>
-#include <wtf/OwnPtr.h>
+#include "base/memory/scoped_ptr.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebImageLayer.h"
 
 namespace WebKit {
 class WebLayerImpl;
@@ -21,7 +21,7 @@ public:
     virtual void setBitmap(SkBitmap) OVERRIDE;
 
 private:
-    OwnPtr<WebLayerImpl> m_layer;
+    scoped_ptr<WebLayerImpl> m_layer;
 };
 
 }

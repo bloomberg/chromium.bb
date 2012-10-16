@@ -6,10 +6,10 @@
 
 #include "WebFloatAnimationCurveImpl.h"
 
-#include "CCAnimationCurve.h"
-#include "CCKeyframedAnimationCurve.h"
-#include "CCTimingFunction.h"
 #include "WebAnimationCurveCommon.h"
+#include "cc/animation_curve.h"
+#include "cc/keyframed_animation_curve.h"
+#include "cc/timing_function.h"
 
 namespace WebKit {
 

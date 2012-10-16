@@ -5,13 +5,13 @@
 #include "config.h"
 #include "WebExternalTextureLayerImpl.h"
 
-#include "CCTextureUpdateQueue.h"
-#include "TextureLayerChromium.h"
 #include "WebLayerImpl.h"
+#include "cc/texture_layer.h"
+#include "cc/texture_update_queue.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebExternalTextureLayerClient.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatRect.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "webcore_convert.h"
-#include <public/WebExternalTextureLayerClient.h>
-#include <public/WebFloatRect.h>
-#include <public/WebSize.h>
 
 using namespace cc;
 
@@ -31,7 +31,7 @@ WebExternalTextureLayerImpl::WebExternalTextureLayerImpl(WebExternalTextureLayer
     else
         layer = TextureLayerChromium::create(0);
     layer->setIsDrawable(true);
-    m_layer = adoptPtr(new WebLayerImpl(layer));
+    m_layer.reset(new WebLayerImpl(layer));
 }
 
 WebExternalTextureLayerImpl::~WebExternalTextureLayerImpl()

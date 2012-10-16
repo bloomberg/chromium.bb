@@ -5,8 +5,8 @@
 #include "config.h"
 #include "WebScrollbarLayerImpl.h"
 
-#include "ScrollbarLayerChromium.h"
 #include "WebLayerImpl.h"
+#include "cc/scrollbar_layer.h"
 
 using cc::ScrollbarLayerChromium;
 
@@ -19,7 +19,7 @@ WebScrollbarLayer* WebScrollbarLayer::create(WebScrollbar* scrollbar, WebScrollb
 
 
 WebScrollbarLayerImpl::WebScrollbarLayerImpl(WebScrollbar* scrollbar, WebScrollbarThemePainter painter, WebScrollbarThemeGeometry* geometry)
-    : m_layer(adoptPtr(new WebLayerImpl(ScrollbarLayerChromium::create(adoptPtr(scrollbar), painter, adoptPtr(geometry), 0))))
+    : m_layer(new WebLayerImpl(ScrollbarLayerChromium::create(adoptPtr(scrollbar), painter, adoptPtr(geometry), 0)))
 {
 }
 

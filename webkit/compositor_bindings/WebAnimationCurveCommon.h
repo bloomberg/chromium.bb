@@ -6,8 +6,7 @@
 #define WebAnimationCurveCommon_h
 
 #include "base/memory/scoped_ptr.h"
-#include <public/WebAnimationCurve.h>
-#include <wtf/Forward.h>
+#include "third_party/WebKit/Source/Platform/chromium/public/WebAnimationCurve.h"
 
 namespace cc {
 class CCTimingFunction;

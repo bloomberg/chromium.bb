@@ -6,18 +6,16 @@
 
 #include "WebCompositorImpl.h"
 
-#include "CCLayerTreeHost.h"
-#include "CCProxy.h"
-#include "CCSettings.h"
-#include "CCThreadImpl.h"
-#include <public/Platform.h>
-#include <wtf/ThreadingPrimitives.h>
-
 #ifdef LOG
 #undef LOG
 #endif
 #include "base/message_loop_proxy.h"
+#include "cc/layer_tree_host.h"
+#include "cc/proxy.h"
+#include "cc/settings.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
 #include "webkit/glue/webthread_impl.h"
+#include "CCThreadImpl.h"
 
 using namespace cc;
 
@@ -72,10 +70,10 @@ void WebCompositorImpl::initialize(WebThread* implThread)
     ASSERT(!s_initialized);
     s_initialized = true;
 
-    s_mainThread = CCThreadImpl::createForCurrentThread().leakPtr();
+    s_mainThread = CCThreadImpl::createForCurrentThread().release();
     CCProxy::setMainThread(s_mainThread);
     if (implThread) {
-        s_implThread = CCThreadImpl::createForDifferentThread(implThread).leakPtr();
+        s_implThread = CCThreadImpl::createForDifferentThread(implThread).release();
         CCProxy::setImplThread(s_implThread);
     } else
         CCProxy::setImplThread(0);

@@ -5,8 +5,8 @@
 #ifndef WebScrollbarLayerImpl_h
 #define WebScrollbarLayerImpl_h
 
-#include <public/WebScrollbarLayer.h>
-#include <wtf/OwnPtr.h>
+#include "base/memory/scoped_ptr.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebScrollbarLayer.h"
 
 namespace WebKit {
 class WebLayerImpl;
@@ -21,7 +21,7 @@ public:
     virtual void setScrollLayer(WebLayer*) OVERRIDE;
 
 private:
-    OwnPtr<WebLayerImpl> m_layer;
+    scoped_ptr<WebLayerImpl> m_layer;
 };
 
 }

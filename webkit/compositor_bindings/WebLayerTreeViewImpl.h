@@ -6,8 +6,8 @@
 #define WebLayerTreeViewImpl_h
 
 #include "base/memory/scoped_ptr.h"
-#include "CCLayerTreeHostClient.h"
-#include <public/WebLayerTreeView.h>
+#include "cc/layer_tree_host_client.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
 
 namespace cc {
 class CCLayerTreeHost;

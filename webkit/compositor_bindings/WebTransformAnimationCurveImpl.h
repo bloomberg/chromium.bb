@@ -6,7 +6,7 @@
 #define WebTransformAnimationCurveImpl_h
 
 #include "base/memory/scoped_ptr.h"
-#include <public/WebTransformAnimationCurve.h>
+#include "third_party/WebKit/Source/Platform/chromium/public/WebTransformAnimationCurve.h"
 
 namespace cc {
 class CCAnimationCurve;

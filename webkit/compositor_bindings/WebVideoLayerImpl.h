@@ -5,8 +5,8 @@
 #ifndef WebVideoLayerImpl_h
 #define WebVideoLayerImpl_h
 
-#include <public/WebVideoLayer.h>
-#include <wtf/OwnPtr.h>
+#include "base/memory/scoped_ptr.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebVideoLayer.h"
 
 namespace WebKit {
 class WebLayerImpl;
@@ -21,7 +21,7 @@ public:
     virtual bool active() const OVERRIDE;
 
 private:
-    OwnPtr<WebLayerImpl> m_layer;
+    scoped_ptr<WebLayerImpl> m_layer;
 };
 
 }

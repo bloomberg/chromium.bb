@@ -6,16 +6,14 @@
 #define WebToCCInputHandlerAdapter_h
 
 #include "base/memory/scoped_ptr.h"
-#include "CCInputHandler.h"
-#include <public/WebInputHandler.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
+#include "cc/input_handler.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebInputHandler.h"
 
 namespace WebKit {
 
 class WebToCCInputHandlerAdapter : public cc::CCInputHandler {
 public:
-    static scoped_ptr<WebToCCInputHandlerAdapter> create(PassOwnPtr<WebInputHandler>);
+    static scoped_ptr<WebToCCInputHandlerAdapter> create(scoped_ptr<WebInputHandler>);
     virtual ~WebToCCInputHandlerAdapter();
 
     // cc::CCInputHandler implementation.
@@ -23,11 +21,11 @@ public:
     virtual void animate(double monotonicTime) OVERRIDE;
 
 private:
-    explicit WebToCCInputHandlerAdapter(PassOwnPtr<WebInputHandler>);
+    explicit WebToCCInputHandlerAdapter(scoped_ptr<WebInputHandler>);
 
     class ClientAdapter;
-    OwnPtr<ClientAdapter> m_clientAdapter;
-    OwnPtr<WebInputHandler> m_handler;
+    scoped_ptr<ClientAdapter> m_clientAdapter;
+    scoped_ptr<WebInputHandler> m_handler;
 };
 
 }

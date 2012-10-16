@@ -5,10 +5,10 @@
 #ifndef WebContentLayerImpl_h
 #define WebContentLayerImpl_h
 
-#include "ContentLayerChromiumClient.h"
 #include "WebLayerImpl.h"
-#include <public/WebContentLayer.h>
-#include <wtf/OwnPtr.h>
+#include "base/memory/scoped_ptr.h"
+#include "cc/content_layer_client.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebContentLayer.h"
 
 namespace cc {
 class IntRect;
@@ -37,7 +37,7 @@ protected:
     // ContentLayerChromiumClient implementation.
     virtual void paintContents(SkCanvas*, const cc::IntRect& clip, cc::FloatRect& opaque) OVERRIDE;
 
-    OwnPtr<WebLayerImpl> m_layer;
+    scoped_ptr<WebLayerImpl> m_layer;
     WebContentLayerClient* m_client;
     bool m_drawsContent;
 };

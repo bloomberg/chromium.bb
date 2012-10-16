@@ -4,15 +4,12 @@
 
 #include "config.h"
 
-#include <public/WebTransformAnimationCurve.h>
-
-#include "CCTimingFunction.h"
-
-#include <gtest/gtest.h>
-#include <public/WebTransformOperations.h>
-#include <public/WebTransformationMatrix.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
+#include "WebTransformAnimationCurveImpl.h"
+#include "base/memory/scoped_ptr.h"
+#include "cc/timing_function.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebTransformOperations.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebTransformationMatrix.h"
 
 using namespace WebKit;
 
@@ -21,7 +18,7 @@ namespace {
 // Tests that a transform animation with one keyframe works as expected.
 TEST(WebTransformAnimationCurveTest, OneTransformKeyframe)
 {
-    OwnPtr<WebTransformAnimationCurve> curve = adoptPtr(WebTransformAnimationCurve::create());
+    scoped_ptr<WebTransformAnimationCurve> curve(new WebTransformAnimationCurveImpl);
     WebKit::WebTransformOperations operations;
     operations.appendTranslate(2, 0, 0);
     curve->add(WebTransformKeyframe(0, operations), WebAnimationCurve::TimingFunctionTypeLinear);
@@ -36,7 +33,7 @@ TEST(WebTransformAnimationCurveTest, OneTransformKeyframe)
 // Tests that a transform animation with two keyframes works as expected.
 TEST(WebTransformAnimationCurveTest, TwoTransformKeyframe)
 {
-    OwnPtr<WebTransformAnimationCurve> curve = adoptPtr(WebTransformAnimationCurve::create());
+    scoped_ptr<WebTransformAnimationCurve> curve(new WebTransformAnimationCurveImpl);
     WebKit::WebTransformOperations operations1;
     operations1.appendTranslate(2, 0, 0);
     WebKit::WebTransformOperations operations2;
@@ -53,7 +50,7 @@ TEST(WebTransformAnimationCurveTest, TwoTransformKeyframe)
 // Tests that a transform animation with three keyframes works as expected.
 TEST(WebTransformAnimationCurveTest, ThreeTransformKeyframe)
 {
-    OwnPtr<WebTransformAnimationCurve> curve = adoptPtr(WebTransformAnimationCurve::create());
+    scoped_ptr<WebTransformAnimationCurve> curve(new WebTransformAnimationCurveImpl);
     WebKit::WebTransformOperations operations1;
     operations1.appendTranslate(2, 0, 0);
     WebKit::WebTransformOperations operations2;
@@ -76,7 +73,7 @@ TEST(WebTransformAnimationCurveTest, ThreeTransformKeyframe)
 TEST(WebTransformAnimationCurveTest, RepeatedTransformKeyTimes)
 {
     // A step function.
-    OwnPtr<WebTransformAnimationCurve> curve = adoptPtr(WebTransformAnimationCurve::create());
+    scoped_ptr<WebTransformAnimationCurve> curve(new WebTransformAnimationCurveImpl);
     WebKit::WebTransformOperations operations1;
     operations1.appendTranslate(4, 0, 0);
     WebKit::WebTransformOperations operations2;
@@ -106,7 +103,7 @@ TEST(WebTransformAnimationCurveTest, RepeatedTransformKeyTimes)
 // Tests that the keyframes may be added out of order.
 TEST(WebTransformAnimationCurveTest, UnsortedKeyframes)
 {
-    OwnPtr<WebTransformAnimationCurve> curve = adoptPtr(WebTransformAnimationCurve::create());
+    scoped_ptr<WebTransformAnimationCurve> curve(new WebTransformAnimationCurveImpl);
     WebKit::WebTransformOperations operations1;
     operations1.appendTranslate(2, 0, 0);
     WebKit::WebTransformOperations operations2;
@@ -129,7 +126,7 @@ TEST(WebTransformAnimationCurveTest, UnsortedKeyframes)
 // Tests that a cubic bezier timing function works as expected.
 TEST(WebTransformAnimationCurveTest, CubicBezierTimingFunction)
 {
-    OwnPtr<WebTransformAnimationCurve> curve = adoptPtr(WebTransformAnimationCurve::create());
+    scoped_ptr<WebTransformAnimationCurve> curve(new WebTransformAnimationCurveImpl);
     WebKit::WebTransformOperations operations1;
     operations1.appendTranslate(0, 0, 0);
     WebKit::WebTransformOperations operations2;
@@ -148,7 +145,7 @@ TEST(WebTransformAnimationCurveTest, CubicBezierTimingFunction)
 // Tests that an ease timing function works as expected.
 TEST(WebTransformAnimationCurveTest, EaseTimingFunction)
 {
-    OwnPtr<WebTransformAnimationCurve> curve = adoptPtr(WebTransformAnimationCurve::create());
+    scoped_ptr<WebTransformAnimationCurve> curve(new WebTransformAnimationCurveImpl);
     WebKit::WebTransformOperations operations1;
     operations1.appendTranslate(0, 0, 0);
     WebKit::WebTransformOperations operations2;
@@ -166,7 +163,7 @@ TEST(WebTransformAnimationCurveTest, EaseTimingFunction)
 // Tests using a linear timing function.
 TEST(WebTransformAnimationCurveTest, LinearTimingFunction)
 {
-    OwnPtr<WebTransformAnimationCurve> curve = adoptPtr(WebTransformAnimationCurve::create());
+    scoped_ptr<WebTransformAnimationCurve> curve(new WebTransformAnimationCurveImpl);
     WebKit::WebTransformOperations operations1;
     operations1.appendTranslate(0, 0, 0);
     WebKit::WebTransformOperations operations2;
@@ -183,7 +180,7 @@ TEST(WebTransformAnimationCurveTest, LinearTimingFunction)
 // Tests that an ease in timing function works as expected.
 TEST(WebTransformAnimationCurveTest, EaseInTimingFunction)
 {
-    OwnPtr<WebTransformAnimationCurve> curve = adoptPtr(WebTransformAnimationCurve::create());
+    scoped_ptr<WebTransformAnimationCurve> curve(new WebTransformAnimationCurveImpl);
     WebKit::WebTransformOperations operations1;
     operations1.appendTranslate(0, 0, 0);
     WebKit::WebTransformOperations operations2;
@@ -201,7 +198,7 @@ TEST(WebTransformAnimationCurveTest, EaseInTimingFunction)
 // Tests that an ease in timing function works as expected.
 TEST(WebTransformAnimationCurveTest, EaseOutTimingFunction)
 {
-    OwnPtr<WebTransformAnimationCurve> curve = adoptPtr(WebTransformAnimationCurve::create());
+    scoped_ptr<WebTransformAnimationCurve> curve(new WebTransformAnimationCurveImpl);
     WebKit::WebTransformOperations operations1;
     operations1.appendTranslate(0, 0, 0);
     WebKit::WebTransformOperations operations2;
@@ -219,7 +216,7 @@ TEST(WebTransformAnimationCurveTest, EaseOutTimingFunction)
 // Tests that an ease in timing function works as expected.
 TEST(WebTransformAnimationCurveTest, EaseInOutTimingFunction)
 {
-    OwnPtr<WebTransformAnimationCurve> curve = adoptPtr(WebTransformAnimationCurve::create());
+    scoped_ptr<WebTransformAnimationCurve> curve(new WebTransformAnimationCurveImpl);
     WebKit::WebTransformOperations operations1;
     operations1.appendTranslate(0, 0, 0);
     WebKit::WebTransformOperations operations2;
@@ -237,7 +234,7 @@ TEST(WebTransformAnimationCurveTest, EaseInOutTimingFunction)
 // Tests that an ease in timing function works as expected.
 TEST(WebTransformAnimationCurveTest, CustomBezierTimingFunction)
 {
-    OwnPtr<WebTransformAnimationCurve> curve = adoptPtr(WebTransformAnimationCurve::create());
+    scoped_ptr<WebTransformAnimationCurve> curve(new WebTransformAnimationCurveImpl);
     double x1 = 0.3;
     double y1 = 0.2;
     double x2 = 0.8;
@@ -259,7 +256,7 @@ TEST(WebTransformAnimationCurveTest, CustomBezierTimingFunction)
 // Tests that the default timing function is indeed ease.
 TEST(WebTransformAnimationCurveTest, DefaultTimingFunction)
 {
-    OwnPtr<WebTransformAnimationCurve> curve = adoptPtr(WebTransformAnimationCurve::create());
+    scoped_ptr<WebTransformAnimationCurve> curve(new WebTransformAnimationCurveImpl);
     WebKit::WebTransformOperations operations1;
     operations1.appendTranslate(0, 0, 0);
     WebKit::WebTransformOperations operations2;

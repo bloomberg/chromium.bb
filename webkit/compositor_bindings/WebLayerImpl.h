@@ -6,7 +6,7 @@
 #define WebLayerImpl_h
 
 #include "base/memory/ref_counted.h"
-#include <public/WebLayer.h>
+#include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
 
 namespace cc {
 class LayerChromium;

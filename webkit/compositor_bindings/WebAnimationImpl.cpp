@@ -6,13 +6,12 @@
 
 #include "WebAnimationImpl.h"
 
-#include "CCActiveAnimation.h"
-#include "CCAnimationCurve.h"
 #include "WebFloatAnimationCurveImpl.h"
 #include "WebTransformAnimationCurveImpl.h"
-#include <public/WebAnimation.h>
-#include <public/WebAnimationCurve.h>
-#include <wtf/OwnPtr.h>
+#include "cc/active_animation.h"
+#include "cc/animation_curve.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebAnimation.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebAnimationCurve.h"
 
 using cc::CCActiveAnimation;
 

@@ -4,19 +4,19 @@
 
 #include "config.h"
 
-#include <public/WebLayerTreeView.h>
-
+#include "WebLayerImpl.h"
+#include "WebLayerTreeViewImpl.h"
+#include "WebLayerTreeViewTestCommon.h"
+#include "base/memory/ref_counted.h"
 #include "cc/test/compositor_fake_web_graphics_context_3d.h"
 #include "cc/test/fake_web_compositor_output_surface.h"
-#include "WebLayerTreeViewTestCommon.h"
-#include <gmock/gmock.h>
-#include <public/Platform.h>
-#include <public/WebCompositorSupport.h>
-#include <public/WebLayer.h>
-#include <public/WebLayerTreeViewClient.h>
-#include <public/WebThread.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
+#include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorSupport.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeViewClient.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebThread.h"
 
 using namespace WebKit;
 using testing::Mock;
@@ -42,8 +42,10 @@ public:
     virtual void SetUp()
     {
         initializeCompositor();
-        m_rootLayer = adoptPtr(WebLayer::create());
-        ASSERT_TRUE(m_view = adoptPtr(WebLayerTreeView::create(client(), *m_rootLayer, WebLayerTreeView::Settings())));
+        m_rootLayer.reset(new WebLayerImpl);
+        m_view.reset(new WebLayerTreeViewImpl(client()));
+        ASSERT_TRUE(m_view->initialize(WebLayerTreeView::Settings()));
+        m_view->setRootLayer(*m_rootLayer);
         m_view->setSurfaceReady();
     }
 
@@ -51,14 +53,14 @@ public:
     {
         Mock::VerifyAndClearExpectations(client());
 
-        m_rootLayer.clear();
-        m_view.clear();
+        m_rootLayer.reset();
+        m_view.reset();
         WebKit::Platform::current()->compositorSupport()->shutdown();
     }
 
 protected:
-    OwnPtr<WebLayer> m_rootLayer;
-    OwnPtr<WebLayerTreeView> m_view;
+    scoped_ptr<WebLayer> m_rootLayer;
+    scoped_ptr<WebLayerTreeViewImpl> m_view;
 };
 
 class WebLayerTreeViewSingleThreadTest : public WebLayerTreeViewTestBase {
@@ -81,7 +83,7 @@ protected:
     MockWebLayerTreeViewClient m_client;
 };
 
-class CancelableTaskWrapper : public RefCounted<CancelableTaskWrapper> {
+class CancelableTaskWrapper : public base::RefCounted<CancelableTaskWrapper> {
     class Task : public WebThread::Task {
     public:
         Task(CancelableTaskWrapper* cancelableTask)
@@ -95,14 +97,13 @@ class CancelableTaskWrapper : public RefCounted<CancelableTaskWrapper> {
             m_cancelableTask->runIfNotCanceled();
         }
 
-        RefPtr<CancelableTaskWrapper> m_cancelableTask;
+        scoped_refptr<CancelableTaskWrapper> m_cancelableTask;
     };
 
 public:
     CancelableTaskWrapper(PassOwnPtr<WebThread::Task> task)
         : m_task(task)
     {
-        turnOffVerifier();
     }
 
     void cancel()
@@ -125,6 +126,9 @@ public:
     }
 
 private:
+    friend class base::RefCounted<CancelableTaskWrapper>;
+    ~CancelableTaskWrapper() { }
+
     OwnPtr<WebThread::Task> m_task;
 };
 
@@ -140,7 +144,7 @@ protected:
     void composite()
     {
         m_view->setNeedsRedraw();
-        RefPtr<CancelableTaskWrapper> timeoutTask = adoptRef(new CancelableTaskWrapper(adoptPtr(new TimeoutTask())));
+        scoped_refptr<CancelableTaskWrapper> timeoutTask(new CancelableTaskWrapper(adoptPtr(new TimeoutTask())));
         WebKit::Platform::current()->currentThread()->postDelayedTask(timeoutTask->createTask(), 5000);
         WebKit::Platform::current()->currentThread()->enterRunLoop();
         timeoutTask->cancel();
@@ -149,7 +153,7 @@ protected:
 
     virtual void initializeCompositor() OVERRIDE
     {
-        m_webThread = adoptPtr(WebKit::Platform::current()->createThread("WebLayerTreeViewTest"));
+        m_webThread.reset(WebKit::Platform::current()->createThread("WebLayerTreeViewTest"));
         WebKit::Platform::current()->compositorSupport()->initialize(m_webThread.get());
     }
 
@@ -159,7 +163,7 @@ protected:
     }
 
     MockWebLayerTreeViewClientForThreadedTests m_client;
-    OwnPtr<WebThread> m_webThread;
+    scoped_ptr<WebThread> m_webThread;
 };
 
 TEST_F(WebLayerTreeViewSingleThreadTest, InstrumentationCallbacks)

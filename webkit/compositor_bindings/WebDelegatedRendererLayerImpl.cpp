@@ -5,15 +5,14 @@
 #include "config.h"
 #include "WebDelegatedRendererLayerImpl.h"
 
-#include "DelegatedRendererLayerChromium.h"
-#include <wtf/PassOwnPtr.h>
+#include "cc/delegated_renderer_layer.h"
 
 using namespace cc;
 
 namespace WebKit {
 
 WebDelegatedRendererLayerImpl::WebDelegatedRendererLayerImpl()
-    : m_layer(adoptPtr(new WebLayerImpl(DelegatedRendererLayerChromium::create())))
+    : m_layer(new WebLayerImpl(DelegatedRendererLayerChromium::create()))
 {
 }
 

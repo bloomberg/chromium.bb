@@ -5,8 +5,8 @@
 #ifndef WebIOSurfaceLayerImpl_h
 #define WebIOSurfaceLayerImpl_h
 
-#include <public/WebIOSurfaceLayer.h>
-#include <wtf/OwnPtr.h>
+#include "third_party/WebKit/Source/Platform/chromium/public/WebIOSurfaceLayer.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace WebKit {
 
@@ -20,7 +20,7 @@ public:
     virtual void setIOSurfaceProperties(unsigned ioSurfaceId, WebSize) OVERRIDE;
 
 private:
-    OwnPtr<WebLayerImpl> m_layer;
+    scoped_ptr<WebLayerImpl> m_layer;
 };
 
 }

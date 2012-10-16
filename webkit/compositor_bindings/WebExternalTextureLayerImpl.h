@@ -5,9 +5,9 @@
 #ifndef WebExternalTextureLayerImpl_h
 #define WebExternalTextureLayerImpl_h
 
-#include "TextureLayerChromiumClient.h"
-#include <public/WebExternalTextureLayer.h>
-#include <wtf/OwnPtr.h>
+#include "base/memory/scoped_ptr.h"
+#include "cc/texture_layer_client.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebExternalTextureLayer.h"
 
 namespace WebKit {
 
@@ -35,7 +35,7 @@ public:
 
 private:
     WebExternalTextureLayerClient* m_client;
-    OwnPtr<WebLayerImpl> m_layer;
+    scoped_ptr<WebLayerImpl> m_layer;
 };
 
 }

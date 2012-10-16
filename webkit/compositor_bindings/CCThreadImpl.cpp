@@ -5,9 +5,9 @@
 #include "config.h"
 #include "CCThreadImpl.h"
 
-#include "CCCompletionEvent.h"
-#include <public/Platform.h>
-#include <public/WebThread.h>
+#include "cc/completion_event.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebThread.h"
 
 using cc::CCThread;
 using cc::CCCompletionEvent;
@@ -42,7 +42,7 @@ private:
 // General adapter from a CCThread::Task to a WebThread::Task.
 class CCThreadTaskAdapter : public WebThread::Task {
 public:
-    CCThreadTaskAdapter(PassOwnPtr<CCThread::Task> task) : m_task(task) { }
+    explicit CCThreadTaskAdapter(PassOwnPtr<CCThread::Task> task) : m_task(task) { }
 
     virtual ~CCThreadTaskAdapter() { }
 
@@ -55,14 +55,14 @@ private:
     OwnPtr<CCThread::Task> m_task;
 };
 
-PassOwnPtr<CCThread> CCThreadImpl::createForCurrentThread()
+scoped_ptr<CCThread> CCThreadImpl::createForCurrentThread()
 {
-    return adoptPtr(new CCThreadImpl(Platform::current()->currentThread(), true));
+    return scoped_ptr<CCThread>(new CCThreadImpl(Platform::current()->currentThread(), true)).Pass();
 }
 
-PassOwnPtr<CCThread> CCThreadImpl::createForDifferentThread(WebThread* thread)
+scoped_ptr<CCThread> CCThreadImpl::createForDifferentThread(WebThread* thread)
 {
-    return adoptPtr(new CCThreadImpl(thread, false));
+    return scoped_ptr<CCThread>(new CCThreadImpl(thread, false)).Pass();
 }
 
 CCThreadImpl::~CCThreadImpl()

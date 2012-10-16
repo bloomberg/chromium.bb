@@ -6,10 +6,10 @@
 
 #include "WebToCCInputHandlerAdapter.h"
 
-#include "IntPoint.h"
-#include "IntSize.h"
+#include "cc/stubs/int_point.h"
+#include "cc/stubs/int_size.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebInputHandlerClient.h"
 #include "webcore_convert.h"
-#include <public/WebInputHandlerClient.h>
 
 #define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, cc_name) \
     COMPILE_ASSERT(int(WebKit::webkit_name) == int(cc::cc_name), mismatching_enums)
@@ -22,13 +22,13 @@ COMPILE_ASSERT_MATCHING_ENUM(WebInputHandlerClient::ScrollInputTypeWheel, CCInpu
 
 namespace WebKit {
 
-scoped_ptr<WebToCCInputHandlerAdapter> WebToCCInputHandlerAdapter::create(PassOwnPtr<WebInputHandler> handler)
+scoped_ptr<WebToCCInputHandlerAdapter> WebToCCInputHandlerAdapter::create(scoped_ptr<WebInputHandler> handler)
 {
-    return scoped_ptr<WebToCCInputHandlerAdapter>(new WebToCCInputHandlerAdapter(handler));
+    return scoped_ptr<WebToCCInputHandlerAdapter>(new WebToCCInputHandlerAdapter(handler.Pass()));
 }
 
-WebToCCInputHandlerAdapter::WebToCCInputHandlerAdapter(PassOwnPtr<WebInputHandler> handler)
-    : m_handler(handler)
+WebToCCInputHandlerAdapter::WebToCCInputHandlerAdapter(scoped_ptr<WebInputHandler> handler)
+    : m_handler(handler.Pass())
 {
 }
 
@@ -98,7 +98,7 @@ private:
 
 void WebToCCInputHandlerAdapter::bindToClient(cc::CCInputHandlerClient* client)
 {
-    m_clientAdapter = adoptPtr(new ClientAdapter(client));
+    m_clientAdapter.reset(new ClientAdapter(client));
     m_handler->bindToClient(m_clientAdapter.get());
 }
 

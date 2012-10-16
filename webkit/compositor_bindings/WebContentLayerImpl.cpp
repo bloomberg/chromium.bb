@@ -5,16 +5,16 @@
 #include "config.h"
 #include "WebContentLayerImpl.h"
 
-#include "ContentLayerChromium.h"
-#include "FloatRect.h"
-#include "IntRect.h"
 #include "SkMatrix44.h"
+#include "cc/content_layer.h"
+#include "cc/stubs/float_rect.h"
+#include "cc/stubs/int_rect.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebContentLayerClient.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatRect.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebRect.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "webcore_convert.h"
-#include <public/WebContentLayerClient.h>
-#include <public/WebFloatPoint.h>
-#include <public/WebFloatRect.h>
-#include <public/WebRect.h>
-#include <public/WebSize.h>
 
 using namespace cc;
 
@@ -26,7 +26,7 @@ WebContentLayer* WebContentLayer::create(WebContentLayerClient* client)
 }
 
 WebContentLayerImpl::WebContentLayerImpl(WebContentLayerClient* client)
-    : m_layer(adoptPtr(new WebLayerImpl(ContentLayerChromium::create(this))))
+    : m_layer(new WebLayerImpl(ContentLayerChromium::create(this)))
     , m_client(client)
 {
     m_layer->layer()->setIsDrawable(true);

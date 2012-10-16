@@ -5,9 +5,8 @@
 #include "config.h"
 #include "WebSolidColorLayerImpl.h"
 
-#include "SolidColorLayerChromium.h"
 #include "WebLayerImpl.h"
-#include <wtf/PassOwnPtr.h>
+#include "cc/solid_color_layer.h"
 
 using cc::SolidColorLayerChromium;
 
@@ -19,7 +18,7 @@ WebSolidColorLayer* WebSolidColorLayer::create()
 }
 
 WebSolidColorLayerImpl::WebSolidColorLayerImpl()
-    : m_layer(adoptPtr(new WebLayerImpl(SolidColorLayerChromium::create())))
+    : m_layer(new WebLayerImpl(SolidColorLayerChromium::create()))
 {
     m_layer->layer()->setIsDrawable(true);
 }

@@ -6,7 +6,7 @@
 #define WebFloatAnimationCurveImpl_h
 
 #include "base/memory/scoped_ptr.h"
-#include <public/WebFloatAnimationCurve.h>
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatAnimationCurve.h"
 
 namespace cc {
 class CCAnimationCurve;

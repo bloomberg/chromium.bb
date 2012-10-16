@@ -4,13 +4,10 @@
 
 #include "config.h"
 
-#include <public/WebFloatAnimationCurve.h>
-
-#include "CCTimingFunction.h"
-
-#include <gtest/gtest.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
+#include "WebFloatAnimationCurveImpl.h"
+#include "base/memory/scoped_ptr.h"
+#include "cc/timing_function.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using namespace WebKit;
 
@@ -19,7 +16,7 @@ namespace {
 // Tests that a float animation with one keyframe works as expected.
 TEST(WebFloatAnimationCurveTest, OneFloatKeyframe)
 {
-    OwnPtr<WebFloatAnimationCurve> curve = adoptPtr(WebFloatAnimationCurve::create());
+    scoped_ptr<WebFloatAnimationCurve> curve(new WebFloatAnimationCurveImpl);
     curve->add(WebFloatKeyframe(0, 2), WebAnimationCurve::TimingFunctionTypeLinear);
     EXPECT_FLOAT_EQ(2, curve->getValue(-1));
     EXPECT_FLOAT_EQ(2, curve->getValue(0));
@@ -31,7 +28,7 @@ TEST(WebFloatAnimationCurveTest, OneFloatKeyframe)
 // Tests that a float animation with two keyframes works as expected.
 TEST(WebFloatAnimationCurveTest, TwoFloatKeyframe)
 {
-    OwnPtr<WebFloatAnimationCurve> curve = adoptPtr(WebFloatAnimationCurve::create());
+    scoped_ptr<WebFloatAnimationCurve> curve(new WebFloatAnimationCurveImpl);
     curve->add(WebFloatKeyframe(0, 2), WebAnimationCurve::TimingFunctionTypeLinear);
     curve->add(WebFloatKeyframe(1, 4), WebAnimationCurve::TimingFunctionTypeLinear);
     EXPECT_FLOAT_EQ(2, curve->getValue(-1));
@@ -44,7 +41,7 @@ TEST(WebFloatAnimationCurveTest, TwoFloatKeyframe)
 // Tests that a float animation with three keyframes works as expected.
 TEST(WebFloatAnimationCurveTest, ThreeFloatKeyframe)
 {
-    OwnPtr<WebFloatAnimationCurve> curve = adoptPtr(WebFloatAnimationCurve::create());
+    scoped_ptr<WebFloatAnimationCurve> curve(new WebFloatAnimationCurveImpl);
     curve->add(WebFloatKeyframe(0, 2), WebAnimationCurve::TimingFunctionTypeLinear);
     curve->add(WebFloatKeyframe(1, 4), WebAnimationCurve::TimingFunctionTypeLinear);
     curve->add(WebFloatKeyframe(2, 8), WebAnimationCurve::TimingFunctionTypeLinear);
@@ -60,7 +57,7 @@ TEST(WebFloatAnimationCurveTest, ThreeFloatKeyframe)
 // Tests that a float animation with multiple keys at a given time works sanely.
 TEST(WebFloatAnimationCurveTest, RepeatedFloatKeyTimes)
 {
-    OwnPtr<WebFloatAnimationCurve> curve = adoptPtr(WebFloatAnimationCurve::create());
+    scoped_ptr<WebFloatAnimationCurve> curve(new WebFloatAnimationCurveImpl);
     curve->add(WebFloatKeyframe(0, 4), WebAnimationCurve::TimingFunctionTypeLinear);
     curve->add(WebFloatKeyframe(1, 4), WebAnimationCurve::TimingFunctionTypeLinear);
     curve->add(WebFloatKeyframe(1, 6), WebAnimationCurve::TimingFunctionTypeLinear);
@@ -82,7 +79,7 @@ TEST(WebFloatAnimationCurveTest, RepeatedFloatKeyTimes)
 // Tests that the keyframes may be added out of order.
 TEST(WebFloatAnimationCurveTest, UnsortedKeyframes)
 {
-    OwnPtr<WebFloatAnimationCurve> curve = adoptPtr(WebFloatAnimationCurve::create());
+    scoped_ptr<WebFloatAnimationCurve> curve(new WebFloatAnimationCurveImpl);
     curve->add(WebFloatKeyframe(2, 8), WebAnimationCurve::TimingFunctionTypeLinear);
     curve->add(WebFloatKeyframe(0, 2), WebAnimationCurve::TimingFunctionTypeLinear);
     curve->add(WebFloatKeyframe(1, 4), WebAnimationCurve::TimingFunctionTypeLinear);
@@ -99,7 +96,7 @@ TEST(WebFloatAnimationCurveTest, UnsortedKeyframes)
 // Tests that a cubic bezier timing function works as expected.
 TEST(WebFloatAnimationCurveTest, CubicBezierTimingFunction)
 {
-    OwnPtr<WebFloatAnimationCurve> curve = adoptPtr(WebFloatAnimationCurve::create());
+    scoped_ptr<WebFloatAnimationCurve> curve(new WebFloatAnimationCurveImpl);
     curve->add(WebFloatKeyframe(0, 0), 0.25, 0, 0.75, 1);
     curve->add(WebFloatKeyframe(1, 1), WebAnimationCurve::TimingFunctionTypeLinear);
 
@@ -115,7 +112,7 @@ TEST(WebFloatAnimationCurveTest, CubicBezierTimingFunction)
 // Tests that an ease timing function works as expected.
 TEST(WebFloatAnimationCurveTest, EaseTimingFunction)
 {
-    OwnPtr<WebFloatAnimationCurve> curve = adoptPtr(WebFloatAnimationCurve::create());
+    scoped_ptr<WebFloatAnimationCurve> curve(new WebFloatAnimationCurveImpl);
     curve->add(WebFloatKeyframe(0, 0), WebAnimationCurve::TimingFunctionTypeEase);
     curve->add(WebFloatKeyframe(1, 1), WebAnimationCurve::TimingFunctionTypeLinear);
 
@@ -129,7 +126,7 @@ TEST(WebFloatAnimationCurveTest, EaseTimingFunction)
 // Tests using a linear timing function.
 TEST(WebFloatAnimationCurveTest, LinearTimingFunction)
 {
-    OwnPtr<WebFloatAnimationCurve> curve = adoptPtr(WebFloatAnimationCurve::create());
+    scoped_ptr<WebFloatAnimationCurve> curve(new WebFloatAnimationCurveImpl);
     curve->add(WebFloatKeyframe(0, 0), WebAnimationCurve::TimingFunctionTypeLinear);
     curve->add(WebFloatKeyframe(1, 1), WebAnimationCurve::TimingFunctionTypeLinear);
 
@@ -142,7 +139,7 @@ TEST(WebFloatAnimationCurveTest, LinearTimingFunction)
 // Tests that an ease in timing function works as expected.
 TEST(WebFloatAnimationCurveTest, EaseInTimingFunction)
 {
-    OwnPtr<WebFloatAnimationCurve> curve = adoptPtr(WebFloatAnimationCurve::create());
+    scoped_ptr<WebFloatAnimationCurve> curve(new WebFloatAnimationCurveImpl);
     curve->add(WebFloatKeyframe(0, 0), WebAnimationCurve::TimingFunctionTypeEaseIn);
     curve->add(WebFloatKeyframe(1, 1), WebAnimationCurve::TimingFunctionTypeLinear);
 
@@ -156,7 +153,7 @@ TEST(WebFloatAnimationCurveTest, EaseInTimingFunction)
 // Tests that an ease in timing function works as expected.
 TEST(WebFloatAnimationCurveTest, EaseOutTimingFunction)
 {
-    OwnPtr<WebFloatAnimationCurve> curve = adoptPtr(WebFloatAnimationCurve::create());
+    scoped_ptr<WebFloatAnimationCurve> curve(new WebFloatAnimationCurveImpl);
     curve->add(WebFloatKeyframe(0, 0), WebAnimationCurve::TimingFunctionTypeEaseOut);
     curve->add(WebFloatKeyframe(1, 1), WebAnimationCurve::TimingFunctionTypeLinear);
 
@@ -170,7 +167,7 @@ TEST(WebFloatAnimationCurveTest, EaseOutTimingFunction)
 // Tests that an ease in timing function works as expected.
 TEST(WebFloatAnimationCurveTest, EaseInOutTimingFunction)
 {
-    OwnPtr<WebFloatAnimationCurve> curve = adoptPtr(WebFloatAnimationCurve::create());
+    scoped_ptr<WebFloatAnimationCurve> curve(new WebFloatAnimationCurveImpl);
     curve->add(WebFloatKeyframe(0, 0), WebAnimationCurve::TimingFunctionTypeEaseInOut);
     curve->add(WebFloatKeyframe(1, 1), WebAnimationCurve::TimingFunctionTypeLinear);
 
@@ -184,7 +181,7 @@ TEST(WebFloatAnimationCurveTest, EaseInOutTimingFunction)
 // Tests that an ease in timing function works as expected.
 TEST(WebFloatAnimationCurveTest, CustomBezierTimingFunction)
 {
-    OwnPtr<WebFloatAnimationCurve> curve = adoptPtr(WebFloatAnimationCurve::create());
+    scoped_ptr<WebFloatAnimationCurve> curve(new WebFloatAnimationCurveImpl);
     double x1 = 0.3;
     double y1 = 0.2;
     double x2 = 0.8;
@@ -202,7 +199,7 @@ TEST(WebFloatAnimationCurveTest, CustomBezierTimingFunction)
 // Tests that the default timing function is indeed ease.
 TEST(WebFloatAnimationCurveTest, DefaultTimingFunction)
 {
-    OwnPtr<WebFloatAnimationCurve> curve = adoptPtr(WebFloatAnimationCurve::create());
+    scoped_ptr<WebFloatAnimationCurve> curve(new WebFloatAnimationCurveImpl);
     curve->add(WebFloatKeyframe(0, 0));
     curve->add(WebFloatKeyframe(1, 1), WebAnimationCurve::TimingFunctionTypeLinear);
 

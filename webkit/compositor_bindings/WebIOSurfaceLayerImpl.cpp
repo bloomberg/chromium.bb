@@ -5,10 +5,9 @@
 #include "config.h"
 #include "WebIOSurfaceLayerImpl.h"
 
-#include "IOSurfaceLayerChromium.h"
 #include "WebLayerImpl.h"
+#include "cc/io_surface_layer.h"
 #include "webcore_convert.h"
-#include <wtf/PassOwnPtr.h>
 
 using cc::IOSurfaceLayerChromium;
 
@@ -20,7 +19,7 @@ WebIOSurfaceLayer* WebIOSurfaceLayer::create()
 }
 
 WebIOSurfaceLayerImpl::WebIOSurfaceLayerImpl()
-    : m_layer(adoptPtr(new WebLayerImpl(IOSurfaceLayerChromium::create())))
+    : m_layer(new WebLayerImpl(IOSurfaceLayerChromium::create()))
 {
     m_layer->layer()->setIsDrawable(true);
 }

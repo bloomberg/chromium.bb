@@ -6,8 +6,8 @@
 #define WebDelegatedRendererLayerImpl_h
 
 #include "WebLayerImpl.h"
-#include <public/WebDelegatedRendererLayer.h>
-#include <wtf/OwnPtr.h>
+#include "base/memory/scoped_ptr.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebDelegatedRendererLayer.h"
 
 namespace WebKit {
 
@@ -22,7 +22,7 @@ protected:
     virtual ~WebDelegatedRendererLayerImpl();
 
 private:
-    OwnPtr<WebLayerImpl> m_layer;
+    scoped_ptr<WebLayerImpl> m_layer;
 };
 
 } // namespace WebKit

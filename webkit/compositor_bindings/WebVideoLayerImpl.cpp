@@ -5,9 +5,8 @@
 #include "config.h"
 #include "WebVideoLayerImpl.h"
 
-#include "VideoLayerChromium.h"
 #include "WebLayerImpl.h"
-#include <wtf/PassOwnPtr.h>
+#include "cc/video_layer.h"
 
 namespace WebKit {
 
@@ -17,7 +16,7 @@ WebVideoLayer* WebVideoLayer::create(WebVideoFrameProvider* provider)
 }
 
 WebVideoLayerImpl::WebVideoLayerImpl(WebVideoFrameProvider* provider)
-    : m_layer(adoptPtr(new WebLayerImpl(cc::VideoLayerChromium::create(provider))))
+    : m_layer(new WebLayerImpl(cc::VideoLayerChromium::create(provider)))
 {
 }
 

@@ -5,19 +5,19 @@
 #include "config.h"
 #include "WebLayerImpl.h"
 
-#include "CCActiveAnimation.h"
-#include "LayerChromium.h"
 #include "SkMatrix44.h"
 #include "WebAnimationImpl.h"
 #ifdef LOG
 #undef LOG
 #endif
 #include "base/string_util.h"
+#include "cc/active_animation.h"
+#include "cc/layer.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatPoint.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebFloatRect.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebTransformationMatrix.h"
 #include "webcore_convert.h"
-#include <public/WebFloatPoint.h>
-#include <public/WebFloatRect.h>
-#include <public/WebSize.h>
-#include <public/WebTransformationMatrix.h>
 
 using cc::CCActiveAnimation;
 using cc::LayerChromium;

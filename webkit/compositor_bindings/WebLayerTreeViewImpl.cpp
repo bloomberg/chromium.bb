@@ -5,20 +5,20 @@
 #include "config.h"
 #include "WebLayerTreeViewImpl.h"
 
-#include "CCFontAtlas.h"
-#include "CCInputHandler.h"
-#include "CCLayerTreeHost.h"
-#include "LayerChromium.h"
 #include "WebLayerImpl.h"
 #include "WebToCCInputHandlerAdapter.h"
+#include "cc/font_atlas.h"
+#include "cc/input_handler.h"
+#include "cc/layer.h"
+#include "cc/layer_tree_host.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebInputHandler.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeViewClient.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebRenderingStats.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "webcore_convert.h"
-#include <public/WebGraphicsContext3D.h>
-#include <public/WebInputHandler.h>
-#include <public/WebLayer.h>
-#include <public/WebLayerTreeView.h>
-#include <public/WebLayerTreeViewClient.h>
-#include <public/WebRenderingStats.h>
-#include <public/WebSize.h>
 
 using namespace cc;
 
@@ -233,9 +233,9 @@ void WebLayerTreeViewImpl::didRecreateOutputSurface(bool success)
 scoped_ptr<CCInputHandler> WebLayerTreeViewImpl::createInputHandler()
 {
     scoped_ptr<CCInputHandler> ret;
-    OwnPtr<WebInputHandler> handler = adoptPtr(m_client->createInputHandler());
+    scoped_ptr<WebInputHandler> handler(m_client->createInputHandler());
     if (handler)
-        ret = WebToCCInputHandlerAdapter::create(handler.release());
+        ret = WebToCCInputHandlerAdapter::create(handler.Pass());
     return ret.Pass();
 }
 

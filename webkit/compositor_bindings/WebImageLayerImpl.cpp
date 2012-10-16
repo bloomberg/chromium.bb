@@ -5,7 +5,7 @@
 #include "config.h"
 #include "WebImageLayerImpl.h"
 
-#include "ImageLayerChromium.h"
+#include "cc/image_layer.h"
 #include "WebLayerImpl.h"
 
 using cc::ImageLayerChromium;
@@ -18,7 +18,7 @@ WebImageLayer* WebImageLayer::create()
 }
 
 WebImageLayerImpl::WebImageLayerImpl()
-    : m_layer(adoptPtr(new WebLayerImpl(ImageLayerChromium::create())))
+    : m_layer(new WebLayerImpl(ImageLayerChromium::create()))
 {
 }
 

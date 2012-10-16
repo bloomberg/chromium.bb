@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "CCThread.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/threading/platform_thread.h"
+#include "cc/thread.h"
 #include <wtf/OwnPtr.h>
-#include <wtf/Threading.h>
+#include <wtf/PassOwnPtr.h>
 
 #ifndef CCThreadImpl_h
 #define CCThreadImpl_h
@@ -18,10 +19,10 @@ class WebThread;
 class CCThreadImpl : public cc::CCThread {
 public:
     // Creates a CCThreadImpl wrapping the current thread.
-    static PassOwnPtr<cc::CCThread> createForCurrentThread();
+    static scoped_ptr<cc::CCThread> createForCurrentThread();
 
     // Creates a CCThread wrapping a non-current WebThread.
-    static PassOwnPtr<cc::CCThread> createForDifferentThread(WebThread*);
+    static scoped_ptr<cc::CCThread> createForDifferentThread(WebThread*);
 
     virtual ~CCThreadImpl();
     virtual void postTask(PassOwnPtr<cc::CCThread::Task>);

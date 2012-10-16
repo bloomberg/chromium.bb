@@ -4,30 +4,19 @@
 
 #include "config.h"
 
-#include <public/WebAnimation.h>
-
-#include <gtest/gtest.h>
-#include <public/WebFloatAnimationCurve.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
+#include "WebAnimationImpl.h"
+#include "WebFloatAnimationCurveImpl.h"
+#include "base/memory/scoped_ptr.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using namespace WebKit;
 
 namespace {
 
-// Linux/Win bots failed on this test.
-// https://bugs.webkit.org/show_bug.cgi?id=90651
-#if OS(WINDOWS)
-#define MAYBE_DefaultSettings DISABLED_DefaultSettings
-#elif OS(LINUX)
-#define MAYBE_DefaultSettings DISABLED_DefaultSettings
-#else
-#define MAYBE_DefaultSettings DefaultSettings
-#endif
-TEST(WebAnimationTest, MAYBE_DefaultSettings)
+TEST(WebAnimationTest, DefaultSettings)
 {
-    OwnPtr<WebAnimationCurve> curve = adoptPtr(WebFloatAnimationCurve::create());
-    OwnPtr<WebAnimation> animation = adoptPtr(WebAnimation::create(*curve, WebAnimation::TargetPropertyOpacity));
+    scoped_ptr<WebAnimationCurve> curve(new WebFloatAnimationCurveImpl());
+    scoped_ptr<WebAnimation> animation(new WebAnimationImpl(*curve, WebAnimation::TargetPropertyOpacity, 1));
 
     // Ensure that the defaults are correct.
     EXPECT_EQ(1, animation->iterations());
@@ -36,19 +25,10 @@ TEST(WebAnimationTest, MAYBE_DefaultSettings)
     EXPECT_FALSE(animation->alternatesDirection());
 }
 
-// Linux/Win bots failed on this test.
-// https://bugs.webkit.org/show_bug.cgi?id=90651
-#if OS(WINDOWS)
-#define MAYBE_ModifiedSettings DISABLED_ModifiedSettings
-#elif OS(LINUX)
-#define MAYBE_ModifiedSettings DISABLED_ModifiedSettings
-#else
-#define MAYBE_ModifiedSettings ModifiedSettings
-#endif
-TEST(WebAnimationTest, MAYBE_ModifiedSettings)
+TEST(WebAnimationTest, ModifiedSettings)
 {
-    OwnPtr<WebFloatAnimationCurve> curve = adoptPtr(WebFloatAnimationCurve::create());
-    OwnPtr<WebAnimation> animation = adoptPtr(WebAnimation::create(*curve, WebAnimation::TargetPropertyOpacity));
+    scoped_ptr<WebFloatAnimationCurve> curve(new WebFloatAnimationCurveImpl());
+    scoped_ptr<WebAnimation> animation(new WebAnimationImpl(*curve, WebAnimation::TargetPropertyOpacity, 1));
     animation->setIterations(2);
     animation->setStartTime(2);
     animation->setTimeOffset(2);

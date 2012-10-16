@@ -5,11 +5,7 @@
 #ifndef WebCompositorImpl_h
 #define WebCompositorImpl_h
 
-#include <public/WebCompositor.h>
-
-#include <wtf/HashSet.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/OwnPtr.h>
+#include "third_party/WebKit/Source/Platform/chromium/public/WebCompositor.h"
 
 namespace cc {
 class CCThread;
@@ -20,7 +16,6 @@ namespace WebKit {
 class WebThread;
 
 class WebCompositorImpl : public WebCompositor {
-    WTF_MAKE_NONCOPYABLE(WebCompositorImpl);
 public:
     static bool initialized();
 

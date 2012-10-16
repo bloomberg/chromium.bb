@@ -6,7 +6,7 @@
 
 #include "WebAnimationCurveCommon.h"
 
-#include "CCTimingFunction.h"
+#include "cc/timing_function.h"
 
 namespace WebKit {
 

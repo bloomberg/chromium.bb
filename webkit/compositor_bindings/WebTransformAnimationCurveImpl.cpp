@@ -6,11 +6,9 @@
 
 #include "WebTransformAnimationCurveImpl.h"
 
-#include "CCKeyframedAnimationCurve.h"
-#include "CCTimingFunction.h"
 #include "WebAnimationCurveCommon.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
+#include "cc/keyframed_animation_curve.h"
+#include "cc/timing_function.h"
 
 namespace WebKit {
 
