@@ -12,6 +12,10 @@ extern "C" {
 
 #if defined(__native_client__)
 
+char* getcwd(char* buf, size_t size) __attribute__ ((weak));
+int unlink(const char* pathname) __attribute__ ((weak));
+int mkdir(const char* pathname, mode_t mode) __attribute__ ((weak));
+
 char* getcwd(char* buf, size_t size) {
   if (size < 2) {
     errno = ERANGE;

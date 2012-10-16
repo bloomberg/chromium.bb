@@ -14,6 +14,10 @@ void ki_init(void* kp) {
   s_kp->Init();
 }
 
+int ki_is_initialized() {
+  return s_kp != NULL;
+}
+
 int ki_chdir(const char* path) {
   return s_kp->chdir(path);
 }
@@ -50,9 +54,11 @@ int ki_mount(const char *source, const char *target, const char *filesystemtype,
              unsigned long mountflags, const void *data) {
   return s_kp->mount(source, target, filesystemtype, mountflags, data);
 }
+
 int ki_umount(const char *path) {
   return s_kp->umount(path);
 }
+
 int ki_open(const char *path, int oflag) {
   return s_kp->open(path, oflag);
 }
@@ -83,6 +89,10 @@ int ki_isatty(int fd) {
 
 int ki_close(int fd) {
   return s_kp->close(fd);
+}
+
+off_t ki_lseek(int fd, off_t offset, int whence) {
+  return s_kp->lseek(fd, offset, whence);
 }
 
 int ki_remove(const char* path) {

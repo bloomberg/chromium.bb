@@ -78,7 +78,7 @@ class KernelProxy : protected KernelObject {
   // unlink() is a simple wrapper around the mount's Unlink function.
   virtual int unlink(const char* path);
   // access() uses the Mount's Stat().
-  int access(const char*path, int amode);
+  virtual int access(const char* path, int amode);
 
 protected:
   MountFactoryMap_t factories_;

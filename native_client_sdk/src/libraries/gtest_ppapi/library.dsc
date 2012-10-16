@@ -20,6 +20,7 @@
       'FILES': [
         "gtest_event_listener.h",
         "gtest_instance.h",
+        "gtest_module.h",
         "gtest_nacl_environment.h",
         "gtest_runner.h",
         "thread_condition.h",

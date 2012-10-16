@@ -347,7 +347,7 @@ int KernelProxy::unlink(const char* path) {
   errno = EINVAL;
   return -1;
 }
-int KernelProxy::access(const char*path, int amode) {
+int KernelProxy::access(const char* path, int amode) {
   errno = EINVAL;
   return -1;
 }
