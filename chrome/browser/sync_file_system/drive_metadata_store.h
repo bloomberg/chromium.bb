@@ -5,62 +5,73 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_METADATA_STORE_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_METADATA_STORE_H_
 
+#include <map>
+
 #include "base/callback_forward.h"
+#include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
+#include "webkit/fileapi/file_system_url.h"
+#include "webkit/fileapi/syncable/sync_status_code.h"
 
 namespace base {
 class SequencedTaskRunner;
 }
 
-namespace fileapi {
-class FileSystemURL;
-}
-
-namespace gdata {
-class DocumentFeed;
-}
-
-class FilePath;
 class GURL;
 
 namespace sync_file_system {
 
+class DriveMetadata;
 class DriveMetadataDB;
 
-// This class holds snapshot of server side metadata..
+// This class holds a snapshot of the server side metadata.
 class DriveMetadataStore
     : public base::NonThreadSafe,
       public base::SupportsWeakPtr<DriveMetadataStore> {
  public:
-  typedef base::Callback<void(bool success, bool has_cache)>
+  typedef std::map<fileapi::FileSystemURL,
+                   DriveMetadata,
+                   fileapi::FileSystemURL::Comparator> MetadataMap;
+  typedef base::Callback<void(fileapi::SyncStatusCode status, bool created)>
       InitializationCallback;
 
   DriveMetadataStore(const FilePath& base_dir,
-                      base::SequencedTaskRunner* file_task_runner);
+                     base::SequencedTaskRunner* file_task_runner);
   ~DriveMetadataStore();
 
-  void InitializeFromDiskCache(const InitializationCallback& callback);
-  void InitializeWithDocumentFeed(scoped_ptr<gdata::DocumentFeed> feed,
-                                  const InitializationCallback& callback);
+  // Initializes the internal database and loads its content to memory.
+  // This function works asynchronously.
+  void Initialize(const InitializationCallback& callback);
 
   void SetLargestChangeStamp(int64 largest_changestamp);
   int64 GetLargestChangeStamp() const;
 
-  void ApplyChangeFeed(scoped_ptr<gdata::DocumentFeed> feed);
+  // Updates database entry.
+  fileapi::SyncStatusCode UpdateEntry(const fileapi::FileSystemURL& url,
+                                      const DriveMetadata& metadata);
 
-  std::string GetResourceId(const fileapi::FileSystemURL& url) const;
-  std::string GetETag(const fileapi::FileSystemURL& url) const;
-  GURL GetDownloadURL(const fileapi::FileSystemURL& url) const;
-  GURL GetUploadURL(const fileapi::FileSystemURL& url) const;
+  // Deletes database entry for |url|.
+  fileapi::SyncStatusCode DeleteEntry(const fileapi::FileSystemURL& url);
+
+  // Lookups and reads the database entry for |url|.
+  fileapi::SyncStatusCode ReadEntry(const fileapi::FileSystemURL& url,
+                                    DriveMetadata* metadata) const;
 
  private:
-  scoped_ptr<DriveMetadataDB> db_;
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
+  void UpdateDBStatus(fileapi::SyncStatusCode status);
+  void DidInitialize(const InitializationCallback& callback,
+                     const int64* largest_changestamp,
+                     MetadataMap* metadata_map,
+                     fileapi::SyncStatusCode error);
 
-  bool db_disabled_;
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
+  scoped_ptr<DriveMetadataDB> db_;
+  fileapi::SyncStatusCode db_status_;
+
   int64 largest_changestamp_;
+  MetadataMap metadata_map_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveMetadataStore);
 };

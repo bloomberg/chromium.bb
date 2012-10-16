@@ -1,0 +1,16 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Protocol buffer definitions for Syncable FileSystem.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package sync_file_system;
+
+message DriveMetadata {
+  required string resource_id = 1;
+  required string md5_checksum = 2;
+}
