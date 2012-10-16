@@ -148,6 +148,7 @@
             ['include', '^public/test/content_test_suite_base\\.cc$'],
             ['include', '^public/test/mock_notification_observer\\.cc$'],
             ['include', '^public/test/mock_resource_context\\.cc$'],
+            ['include', '^public/test/test_browser_thread\\.cc$'],
             ['include', '^public/test/test_content_client_initializer\\.cc$'],
             ['include', '^public/test/test_notification_tracker\\.cc$'],
             ['include', '^public/test/test_utils\\.cc$'],
