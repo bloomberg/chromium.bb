@@ -83,6 +83,7 @@ upstream-remote-setup() {
   if ! $(git remote | grep ${UPSTREAM_REMOTE}); then
     git remote add ${UPSTREAM_REMOTE} ${UPSTREAM_URL}
     git branch ${UPSTREAM_BRANCH} ${UPSTREAM_REMOTE}/master
+    git fetch ${UPSTREAM_REMOTE}
   fi
   popd
 }
@@ -91,6 +92,7 @@ upstream-remote-setup() {
 # Must have already fetched the upstream remote
 get-head-revision() {
   spushd ${TC_SRC_LLVM}
+  pull-upstream
   git rev-parse ${UPSTREAM_REMOTE_BRANCH}
   spopd
 }
@@ -249,7 +251,8 @@ get-clang-rev() {
   local timestamp=$(git rev-list --timestamp --max-count=1 ${rev} \
     | cut --fields=1 --delimiter=' ')
   cd "${TC_SRC_CLANG}"
-  git rev-list --before=${timestamp} --max-count=1 master
+  git fetch -q origin
+  git rev-list --before=${timestamp} --max-count=1 origin/master
   spopd
 }
 
