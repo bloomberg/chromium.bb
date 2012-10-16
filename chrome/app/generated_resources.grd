@@ -10926,13 +10926,6 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_PROFILES_DELETE_SINGLE_BUTTON_LABEL" desc="The label that appears on the profile delete button in the options dialog to allow a user with only one profile to delete it.">
         Delete this user
       </message>
-      <message name="IDS_PROFILES_SYNCED_TO_USER_WITH_TIME" desc="The message that appears in the options dialog indicating that account is synced to a user with the given email address. The last sync also appears in the message.">
-        Using Chrome profile <ph name="USER_EMAIL_ADDRESS">
-          $1<ex>foo@gmail.com</ex>
-        </ph>. Last synced: <ph name="LAST_SYNC_TIME">
-          $2<ex>12 seconds ago</ex>
-        </ph>
-      </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_PROFILES_DISCONNECT_BUTTON_LABEL" desc="The text to display on the button to indicate profile disconnect (i.e., stop syncing) functionality.">
           Disconnect this account...
@@ -12571,12 +12564,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_OPTIONS_GROUP_NAME" desc="The name of the sync group in the options dialog.">
         Sign in
       </message>
-      <message name="IDS_SYNC_OPTIONS_SELECT_DATATYPES" desc="The select option that allows the user to select which datatypes to sync.">
-        Choose what to sync
-      </message>
-      <message name="IDS_SYNC_OPTIONS_SELECT_EVERYTHING" desc="The select option that selects all features to be synced.">
-        Everything
-      </message>
       <if expr="pp_ifdef('android')">
         <message name="IDS_SYNC_OVERVIEW" desc="Mobile: The message that appears in the options dialog when sync has not been set up by the user.">
           Sign in to <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> with your Google Account to save your personalized browser features to the web and access them from <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> on any mobile device. You'll also be automatically signed in to your favorite Google services.
@@ -12610,9 +12597,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_ACCOUNT_SYNCING_TO_USER_WITH_MANAGE_LINK" desc="The message that appears in the options dialog indicating that account is syncing to a user with the given email address, together with a link to manage their data (where supported, or not possible through the application)">
         Signed in as <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>. Manage your synced data on <ph name="BEGIN_LINK">&lt;a href="$2" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$2" target=&quot;_blank&quot;&gt;</ex></ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
       </message>
-      <message name="IDS_SYNC_ACCOUNT_DETAILS_NOT_ENTERED" desc="The sync setup is underway and the user has not yet entered credentials.">
-        Account sign-in details are not yet entered.
-      </message>
       <message name="IDS_SYNC_AUTHENTICATING_LABEL" desc="Label to display while the user is being authenticated to use sync.">
         Authenticating...
       </message>
@@ -12621,9 +12605,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_SYNC_GAIA_CAPTCHA_INSTRUCTIONS" desc="Explanatory message shown when the user must type letters shown in a captcha image to reauthenticate.">
         Enter the letters above
-      </message>
-      <message name="IDS_SYNC_GAIA_CAPTCHA_CASE_INSENSITIVE_TIP" desc="Message shown below a GAIA captcha explaining that the letters typed are not case sensitive">
-        Letters are not case sensitive
       </message>
       <message name="IDS_SYNC_ERROR_SIGNING_IN" desc="An error was encountered while signing the user in.">
         Error signing in.
@@ -12641,9 +12622,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_CONFIGURE_ENCRYPTION" desc="Link to configure sync encryption for passwords">
         Please update your sync passphrase.
       </message>
-      <message name="IDS_SYNC_NEW_PASSWORD_SYNC" desc="Promotional message for password sync setup.">
-        New! Configure password sync.
-      </message>
       <message name="IDS_SYNC_PASSWORD_SYNC_ATTENTION" desc="Message indicating password sync needs attention.">
         Please update your sync passphrase.
       </message>
@@ -12660,12 +12638,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Sync Error: Please contact administrator to enable sync.
       </message>
 
-      <message name="IDS_SYNC_PLEASE_SIGN_IN" desc="An title for a sign in dialog.">
-        Please sign in
-      </message>
-      <message name="IDS_SYNC_LOGIN_FOR_ENCRYPTION" desc="Explanation of login for the purpose of encryption.">
-        <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> can now sync your passwords. To protect your data, you need to confirm your account information.
-      </message>
       <message name="IDS_SYNC_PASSPHRASE_ENCRYPTION_MESSAGE" desc="Message explaining that passwords are encrypted.">
         For added security, <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> will encrypt your data.
       </message>
@@ -12674,9 +12646,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_SYNC_PASSPHRASE_OPT_EXPLICIT" desc="Radio button label for using explicit passphrase.">
         Choose my own passphrase
-      </message>
-      <message name="IDS_SYNC_PASSPHRASE_OPT_CANCEL" desc="Radio button label for not syncing encrypted types.">
-        Do not sync my passwords
       </message>
       <message name="IDS_SYNC_PASSPHRASE_MSG_GOOGLE" desc="Message when Google password is selected.">
         You have chosen to encrypt data using your Google password; you can always change your mind later by changing your sync settings.
@@ -12689,9 +12658,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_SYNC_PASSPHRASE_MSG_EXPLICIT_POSTFIX" desc="Postfix of the message show when explicit passphrase is selected.">
         reset sync
-      </message>
-      <message name="IDS_SYNC_PASSPHRASE_MSG_CANCEL" desc="Message when not syncing passwords is selected.">
-        You have chosen not to sync passwords; you can always change your mind later by changing your sync settings.
       </message>
       <message name="IDS_SYNC_LOGIN_INFO_OUT_OF_DATE" desc="The login information for the user is out of date - for example, the user changed their password and therefore signing in again is required.">
         Account sign-in details are out of date.
@@ -12709,12 +12675,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
           Sign out then sign in again
         </message>
       </if>
-      <message name="IDS_SYNC_PRIVACY_DASHBOARD_LINK_LABEL" desc="The label on a link that brings users to the Google Privacy Dashboard to control sync">
-        Manage your synced data on the Google Dashboard
-      </message>
-      <message name="IDS_SYNC_CUSTOMIZE_BUTTON_LABEL" desc="The text to display on the button to customize which data types the user is syncing.">
-        Advanced...
-      </message>
       <message name="IDS_OPTIONS_CUSTOMIZE_SYNC_BUTTON_LABEL" desc="The text to display on the button to customize which data types the user is syncing.">
         Advanced sync settings...
       </message>
@@ -12748,18 +12708,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Advanced settings
       </message>
 
-      <!-- Sync / Extension interaction messages -->
-      <message name="IDS_SYNC_EXTENSIONS_MALFUNCTION_DISABLE_SYNC_OPTION" desc="The label of a button allowing the user to choose to disable sync when an extension is believed to be causing sync problems preventing sync operation.">
-        Disable Sync
-      </message>
-      <message name="IDS_SYNC_EXTENSIONS_MALFUNCTION_EXTENSION_DISABLED" desc="A message shown on a dialog when an extension or app has been disabled due to problems arising from interactions with sync.">
-        <ph name="NAME_OF_EXTENSION">$1<ex>foo extension</ex></ph> has been disabled. If you stop syncing your bookmarks, you can re-enable it on the extensions page, accessible through the Tools menu.
-      </message>
-
       <!-- Sync New Tab Page strings -->
-      <message name="IDS_SYNC_NTP_SYNC_SECTION_TITLE" desc="The title of the sync status section in the New Tab Page.">
-        Sync
-      </message>
       <message name="IDS_SYNC_NTP_SYNC_SECTION_ERROR_TITLE" desc="The title to display in the New Tab Page sync status section in case of an error.">
         Sync failed
       </message>
@@ -12788,33 +12737,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_PROMO_NTP_BUBBLE_MESSAGE" desc="The body of the sync promo NTP bubble.">
         You're now signed in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>. Your bookmarks, history, and other settings are being synced with your Google Account.
       </message>
-      <message name="IDS_SYNC_PROMO_NTP_BUBBLE_MESSAGE_ALT1" desc="And alternate string for the body of the sync promo NTP bubble.">
-        You're now signed in to <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>. Your bookmarks, history, and other settings are being synced with your Google Account using default settings.
-      </message>
-      <message name="IDS_SYNC_PROMO_NTP_BUBBLE_LEARN_MORE" desc="The learn more link in the sync promo NTP bubble. Clicking the link will take users to a page explaining what sync is.">
-        Learn more
-      </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_PROMO_NTP_BUBBLE_OK" desc="The ok button in the sync promo NTP bubble. Clicking on the button will dismiss the bubble.">
           OK
         </message>
         <message name="IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED" desc="The advanced link in the sync promo NTP bubble. Clicking the link will take the user to advanced settings.">
           Advanced...
-        </message>
-        <message name="IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED_ALT1" desc="An alternative text for the advanced link in the sync promo NTP bubble.">
-          Configure...
-        </message>
-        <message name="IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED_ALT2" desc="An alternative text for the advanced link in the sync promo NTP bubble.">
-          Edit...
-        </message>
-        <message name="IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED_ALT3" desc="An alternative text for the advanced link in the sync promo NTP bubble.">
-          Advanced settings...
-        </message>
-        <message name="IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED_ALT4" desc="An alternative text for the advanced link in the sync promo NTP bubble.">
-          Configure settings...
-        </message>
-        <message name="IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED_ALT5" desc="An alternative text for the advanced link in the sync promo NTP bubble.">
-          Advanced setup...
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
@@ -12823,21 +12751,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </message>
         <message name="IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED" desc="In title case. The advanced link in the sync promo NTP bubble. Clicking the link will take the user to advanced settings.">
           Advanced...
-        </message>
-        <message name="IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED_ALT1" desc="In title case. An alternative text for the advanced link in the sync promo NTP bubble.">
-          Configure...
-        </message>
-        <message name="IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED_ALT2" desc="In title case. An alternative text for the advanced link in the sync promo NTP bubble.">
-          Edit...
-        </message>
-        <message name="IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED_ALT3" desc="In title case. An alternative text for the advanced link in the sync promo NTP bubble.">
-          Advanced Settings...
-        </message>
-        <message name="IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED_ALT4" desc="In title case. An alternative text for the advanced link in the sync promo NTP bubble.">
-          Configure Settings...
-        </message>
-        <message name="IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED_ALT5" desc="In title case. An alternative text for the advanced link in the sync promo NTP bubble.">
-          Advanced Setup...
         </message>
       </if>
 
@@ -12908,9 +12821,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_DATATYPE_TABS" desc="Open Tabs, one of the data types that we allow syncing.">
         Open Tabs
       </message>
-      <message name="IDS_SYNC_DATATYPE_APP_NOTIFICATIONS" desc="App notifications, one of the data types that we allow syncing.">
-        App Notifications
-      </message>
 
       <!-- Encryption tab of the configure sync dialog -->
       <message name="IDS_SYNC_ENCRYPTION_DATA_TYPES_TITLE" desc="Title of the section containing the data types to encrypt.">
@@ -12935,20 +12845,8 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_ENCRYPTION_INSTRUCTIONS" desc="Instructions for the encryption settings tab.">
         <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> requires you to encrypt your data using either your Google password or your own passphrase.
       </message>
-      <message name="IDS_SYNC_ENCRYPT_ALL_LABEL" desc="Label for the checkbox that enables encryption of everything.">
-        Encrypt all my data
-      </message>
-      <message name="IDS_SYNC_PASSPHRASE_CHECKBOX_LABEL" desc="Label for the checkbox that enables a passphrase for sync.">
-        Use a sync passphrase to encrypt my data
-      </message>
       <message name="IDS_SYNC_PASSPHRASE_WARNING" desc="Warning message about using a passphrase for sync.">
         You are currently using a passphrase.  If you have forgotten your passphrase, you can reset sync to clear your data from Google's servers using the Google Dashboard.
-      </message>
-      <message name="IDS_SYNC_STATUS_NOT_CONNECTED" desc="Status shown in the new tab page when the user is not signed into sync">
-        not signed in
-      </message>
-      <message name="IDS_SYNC_STATUS_CONNECTED" desc="Status shown in the new tab page when the user is signed into sync">
-        Signed in to <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> as <ph name="USER_NAME">$2<ex>pat@example.com</ex></ph>
       </message>
 
       <!-- Passphrase dialog strings -->
@@ -12980,19 +12878,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         If you've forgotten your passphrase, stop and reset Sync via <ph name="BEGIN_LINK">&lt;a href="$1" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$1" target=&quot;_blank&quot;&gt;</ex></ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
       </message>
 
-      <message name="IDS_SYNC_PASSPHRASE_CANCEL_WARNING_HEADER" desc="Header for the passphrase cancel warning.  Should be phrased as a yes-or-no question.">
-        Skip syncing encrypted data?
-      </message>
-      <if expr="pp_ifdef('android')">
-        <message name="IDS_SYNC_PASSPHRASE_CANCEL_WARNING" desc="Mobile: Warning message when the passphrase entry is cancelled.">
-          Without a passphrase, your passwords and other encrypted data will not be synced on this mobile device.
-        </message>
-      </if>
-      <if expr="not pp_ifdef('android')">
-        <message name="IDS_SYNC_PASSPHRASE_CANCEL_WARNING" desc="Warning message when the passphrase entry is cancelled.">
-          Without a passphrase, your passwords and other encrypted data will not be synced on this computer.
-        </message>
-      </if>
       <message name="IDS_SYNC_PASSPHRASE_CANCEL_YES" desc="String for 'yes' button on passphrase cancel warning dialog.">
         Skip
       </message>
@@ -13052,17 +12937,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_LOGIN_COULD_NOT_CONNECT" desc="The connect error message">
         Could not connect to the server
       </message>
-      <message name="IDS_SYNC_LOGIN_SETTING_UP_SYNC" desc="For the connect error message">
-        Setting up sync
-      </message>
       <message name="IDS_SYNC_LOGIN_SETTING_UP" desc="A progress message">
         Setting up...
       </message>
       <message name="IDS_SYNC_SUCCESS" desc="Operation successful">
         Success!
-      </message>
-      <message name="IDS_SYNC_LOGIN_ACCOUNT_MISMATCH" desc="A warning message shown at sync login when the user is signed in to the web store already.">
-        Your web store account is <ph name="EMAIL_ADDRESS">$1<ex>user@gmail.com</ex></ph> - signing in to sync with a different account will result in incompatibilities.
       </message>
       <message name="IDS_SYNC_ENTER_ACCESS_CODE_LABEL" desc="A message asking the user to enter an application-specific password (aka access code).">
         Enter your application-specific password:
