@@ -1599,6 +1599,9 @@ const char kEnablePrintPreview[]            = "enable-print-preview";
 namespace chrome {
 
 bool IsFramelessConstrainedDialogEnabled() {
+#if defined(OS_MACOSX)
+  return true;
+#endif
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableFramelessConstrainedDialogs);
 }

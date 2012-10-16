@@ -171,9 +171,11 @@ TabModalConfirmDialogMac2::~TabModalConfirmDialogMac2() {
 }
 
 void TabModalConfirmDialogMac2::AcceptTabModalDialog() {
+  delegate_->Accept();
 }
 
 void TabModalConfirmDialogMac2::CancelTabModalDialog() {
+  delegate_->Cancel();
 }
 
 void TabModalConfirmDialogMac2::OnConstrainedWindowClosed(
