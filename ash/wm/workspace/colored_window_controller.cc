@@ -65,7 +65,9 @@ ColoredWindowController::ColoredWindowController(aura::Window* parent,
   widget->GetNativeView()->SetProperty(aura::client::kAnimationsDisabledKey,
                                        true);
   widget->GetNativeView()->SetName(window_name);
-  widget->SetBounds(parent->bounds());
+  // Sometimes |parent| has kUsesScreenCoordinatesKey which causes a crash
+  // if parent belongs to the secondary display.
+  widget->GetNativeWindow()->SetBounds(parent->bounds());
 }
 
 ColoredWindowController::~ColoredWindowController() {
