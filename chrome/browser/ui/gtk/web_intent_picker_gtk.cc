@@ -263,6 +263,11 @@ void WebIntentPickerGtk::OnExtensionInstallFailure(const std::string& id) {
   SetWidgetsEnabled(true);
 }
 
+void WebIntentPickerGtk::OnInlineDispositionAutoResize(const gfx::Size& size) {
+  gtk_widget_set_size_request(tab_contents_container_->widget(),
+                              size.width(), size.height());
+}
+
 void WebIntentPickerGtk::OnModelChanged(WebIntentPickerModel* model) {
   if (waiting_dialog_.get() && !model->IsWaitingForSuggestions()) {
     waiting_dialog_.reset();
@@ -306,17 +311,20 @@ void WebIntentPickerGtk::OnInlineDisposition(const string16& title,
 
   // Replace the picker contents with the inline disposition.
   ClearContents();
+  gtk_widget_set_size_request(contents_, -1, -1);
+  window_->BackgroundColorChanged();
 
-  GtkWidget* vbox = gtk_vbox_new(FALSE, ui::kContentAreaSpacing);
+  GtkWidget* vbox = gtk_vbox_new(FALSE, 0);
   GtkThemeService* theme_service = GetThemeService(tab_contents_);
 
   GtkWidget* service_hbox = gtk_hbox_new(FALSE, ui::kControlSpacing);
   // TODO(gbillock): Eventually get the service icon button here.
 
   // Intent action label.
-  GtkWidget* action_label = theme_service->BuildLabel(
-      UTF16ToUTF8(title), ui::kGdkBlack);
+  GtkWidget* action_label = gtk_label_new(UTF16ToUTF8(title).c_str());
   gtk_util::ForceFontSizePixels(action_label, kMainContentPixelSize);
+  // Hardcode color; don't allow theming.
+  gtk_util::SetLabelColor(action_label, &ui::kGdkBlack);
 
   GtkWidget* label_alignment = gtk_alignment_new(0, 0.5f, 0, 0);
   gtk_container_add(GTK_CONTAINER(label_alignment), action_label);
@@ -346,10 +354,7 @@ void WebIntentPickerGtk::OnInlineDisposition(const string16& title,
   AddCloseButton(service_hbox);
 
   // The header box
-  gtk_box_pack_start(GTK_BOX(vbox), service_hbox, TRUE, TRUE, 0);
-
-  // The separator between the icon/title/close and the inline renderer.
-  gtk_box_pack_start(GTK_BOX(vbox), gtk_hseparator_new(), FALSE, TRUE, 0);
+  gtk_container_add(GTK_CONTAINER(vbox), service_hbox);
 
   // hbox for the web contents, so we can have spacing on the borders.
   GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
@@ -358,18 +363,13 @@ void WebIntentPickerGtk::OnInlineDisposition(const string16& title,
       ui::kContentAreaBorder, ui::kContentAreaBorder);
   gtk_container_add(GTK_CONTAINER(alignment),
                     tab_contents_container_->widget());
-  gtk_box_pack_end(GTK_BOX(vbox), alignment, TRUE, TRUE, 0);
+  gtk_container_add(GTK_CONTAINER(vbox), alignment);
   gtk_container_add(GTK_CONTAINER(contents_), vbox);
 
   gfx::Size size = GetMinInlineDispositionSize();
   gtk_widget_set_size_request(tab_contents_container_->widget(),
                               size.width(), size.height());
   gtk_widget_show_all(contents_);
-}
-
-void WebIntentPickerGtk::OnInlineDispositionAutoResize(const gfx::Size& size) {
-  gtk_widget_set_size_request(tab_contents_container_->widget(),
-                              size.width(), size.height());
 }
 
 void WebIntentPickerGtk::OnPendingAsyncCompleted() {
@@ -426,6 +426,15 @@ void WebIntentPickerGtk::DeleteDelegate() {
   // The delegate is deleted when the contents widget is destroyed. See
   // OnDestroy.
   delegate_->OnClosing();
+}
+
+bool WebIntentPickerGtk::GetBackgroundColor(GdkColor* color) {
+  if (tab_contents_container_.get()) {
+    *color = ui::kGdkWhite;
+    return true;
+  }
+
+  return false;
 }
 
 bool WebIntentPickerGtk::ShouldHaveBorderPadding() const {
@@ -634,6 +643,7 @@ void WebIntentPickerGtk::ResetContents() {
   inline_disposition_delegate_.reset(NULL);
   tab_contents_container_.reset(NULL);
   inline_disposition_tab_contents_.reset(NULL);
+  window_->BackgroundColorChanged();
 
   // Re-initialize picker widgets and data.
   InitMainContents();

@@ -57,13 +57,6 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
         ui::kContentAreaBorder, ui::kContentAreaBorder);
   }
 
-  GdkColor background;
-  if (delegate->GetBackgroundColor(&background)) {
-    gtk_widget_modify_base(ebox, GTK_STATE_NORMAL, &background);
-    gtk_widget_modify_fg(ebox, GTK_STATE_NORMAL, &background);
-    gtk_widget_modify_bg(ebox, GTK_STATE_NORMAL, &background);
-  }
-
   if (gtk_widget_get_parent(dialog))
     gtk_widget_reparent(dialog, alignment);
   else
@@ -72,6 +65,8 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
   gtk_container_add(GTK_CONTAINER(frame), alignment);
   gtk_container_add(GTK_CONTAINER(ebox), frame);
   border_.Own(ebox);
+
+  BackgroundColorChanged();
 
   gtk_widget_add_events(widget(), GDK_KEY_PRESS_MASK);
   g_signal_connect(widget(), "key-press-event", G_CALLBACK(OnKeyPressThunk),
@@ -124,6 +119,15 @@ void ConstrainedWindowGtk::FocusConstrainedWindow() {
     gtk_widget_grab_focus(focus_widget);
   } else {
     ContainingView()->focus_store()->SetWidget(focus_widget);
+  }
+}
+
+void ConstrainedWindowGtk::BackgroundColorChanged() {
+  GdkColor background;
+  if (delegate_->GetBackgroundColor(&background)) {
+    gtk_widget_modify_base(border_.get(), GTK_STATE_NORMAL, &background);
+    gtk_widget_modify_fg(border_.get(), GTK_STATE_NORMAL, &background);
+    gtk_widget_modify_bg(border_.get(), GTK_STATE_NORMAL, &background);
   }
 }
 

@@ -58,6 +58,9 @@ class ConstrainedWindowGtk : public ConstrainedWindow {
   virtual void CloseConstrainedWindow() OVERRIDE;
   virtual void FocusConstrainedWindow() OVERRIDE;
 
+  // Called when the result of GetBackgroundColor may have changed.
+  void BackgroundColorChanged();
+
   // Returns the WebContents that constrains this Constrained Window.
   content::WebContents* owner() const { return web_contents_; }
 
