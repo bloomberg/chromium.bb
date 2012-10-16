@@ -15,6 +15,9 @@
 #include "media/crypto/aes_decryptor.h"
 #include "webkit/media/crypto/ppapi/content_decryption_module.h"
 
+// Enable this to use the fake decoder for testing.
+// #define CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER
+
 namespace media {
 class DecoderBuffer;
 }
@@ -98,6 +101,11 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
     std::string default_url_;
   };
 
+#if defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
+  void GenerateFakeVideoFrame(base::TimeDelta timestamp,
+                              cdm::VideoFrame* video_frame);
+#endif  // CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER
+
   Client client_;
   media::AesDecryptor decryptor_;
 
@@ -106,6 +114,10 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
   base::Lock client_lock_;
 
   cdm::Allocator* const allocator_;
+
+#if defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
+  cdm::Size video_size_;
+#endif  // CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER
 };
 
 }  // namespace webkit_media

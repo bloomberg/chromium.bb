@@ -235,8 +235,13 @@ cdm::Status ClearKeyCdm::Decrypt(
 
 cdm::Status ClearKeyCdm::InitializeVideoDecoder(
     const cdm::VideoDecoderConfig& video_decoder_config) {
+#if !defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
   NOTIMPLEMENTED();
   return cdm::kSessionError;
+#else
+  video_size_ = video_decoder_config.coded_size;
+  return cdm::kSuccess;
+#endif  // CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER
 }
 
 void ClearKeyCdm::ResetDecoder(cdm::StreamType) {
@@ -250,8 +255,75 @@ void ClearKeyCdm::DeinitializeDecoder(cdm::StreamType) {
 cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
     const cdm::InputBuffer& encrypted_buffer,
     cdm::VideoFrame* video_frame) {
+  if (!encrypted_buffer.data) {
+    video_frame->set_format(cdm::kEmptyVideoFrame);
+    return cdm::kSuccess;
+  }
+
+  scoped_refptr<media::DecoderBuffer> decoder_buffer =
+      CopyDecoderBufferFrom(encrypted_buffer);
+
+  // Callback is called synchronously, so we can use variables on the stack.
+  media::Decryptor::Status status;
+  scoped_refptr<media::DecoderBuffer> buffer;
+  decryptor_.Decrypt(decoder_buffer,
+                     base::Bind(&CopyDecryptResults, &status, &buffer));
+
+  if (status == media::Decryptor::kError)
+    return cdm::kDecryptError;
+
+  if (status == media::Decryptor::kNoKey)
+    return cdm::kNoKey;
+
+#if !defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
   NOTIMPLEMENTED();
-  return cdm::kDecryptError;
+  return cdm::kDecodeError;
+#else
+  GenerateFakeVideoFrame(decoder_buffer->GetTimestamp(), video_frame);
+  return cdm::kSuccess;
+#endif  // CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER
 }
+
+#if defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
+void ClearKeyCdm::GenerateFakeVideoFrame(base::TimeDelta timestamp,
+                                         cdm::VideoFrame* video_frame) {
+  // Choose non-zero alignment and padding on purpose for testing.
+  const int kAlignment = 8;
+  const int kPadding = 16;
+  const int kPlanePadding = 128;
+
+  int width = video_size_.width;
+  int height = video_size_.height;
+  DCHECK(width % 2 == 0);
+  DCHECK(height % 2 == 0);
+
+  int y_stride = (width + kAlignment - 1) / kAlignment * kAlignment + kPadding;
+  int uv_stride =
+      (width / 2 + kAlignment - 1) / kAlignment * kAlignment + kPadding;
+  int y_rows = height;
+  int uv_rows = height / 2;
+  int y_offset = 0;
+  int v_offset = y_stride * y_rows + kPlanePadding;
+  int u_offset = v_offset + uv_stride * uv_rows + kPlanePadding;
+  int frame_size = u_offset + uv_stride * uv_rows + kPlanePadding;
+
+  video_frame->set_format(cdm::kYv12);
+  video_frame->set_size(video_size_);
+  video_frame->set_frame_buffer(allocator_->Allocate(frame_size));
+  video_frame->set_plane_offset(cdm::VideoFrame::kYPlane, y_offset);
+  video_frame->set_plane_offset(cdm::VideoFrame::kVPlane, v_offset);
+  video_frame->set_plane_offset(cdm::VideoFrame::kUPlane, u_offset);
+  video_frame->set_stride(cdm::VideoFrame::kYPlane, y_stride);
+  video_frame->set_stride(cdm::VideoFrame::kVPlane, uv_stride);
+  video_frame->set_stride(cdm::VideoFrame::kUPlane, uv_stride);
+  video_frame->set_timestamp(timestamp.InMicroseconds());
+
+  static unsigned char color = 0;
+  color += 10;
+
+  memset(reinterpret_cast<void*>(video_frame->frame_buffer()->data()),
+         color, frame_size);
+}
+#endif  // CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER
 
 }  // namespace webkit_media
