@@ -29,9 +29,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 
-#include <GLES2/gl2.h>
 #include <wayland-client.h>
-#include <wayland-egl.h>
 #include "../shared/os-compatibility.h"
 
 struct touch {
