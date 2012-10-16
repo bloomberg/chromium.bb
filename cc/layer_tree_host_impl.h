@@ -307,7 +307,7 @@ private:
 
     scoped_ptr<CCGraphicsContext> m_context;
     OwnPtr<CCResourceProvider> m_resourceProvider;
-    OwnPtr<CCRenderer> m_renderer;
+    scoped_ptr<CCRenderer> m_renderer;
     scoped_ptr<CCLayerImpl> m_rootLayerImpl;
     CCLayerImpl* m_rootScrollLayerImpl;
     CCLayerImpl* m_currentlyScrollingLayerImpl;

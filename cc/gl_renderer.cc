@@ -60,13 +60,13 @@ bool needsIOSurfaceReadbackWorkaround()
 
 } // anonymous namespace
 
-PassOwnPtr<CCRendererGL> CCRendererGL::create(CCRendererClient* client, CCResourceProvider* resourceProvider)
+scoped_ptr<CCRendererGL> CCRendererGL::create(CCRendererClient* client, CCResourceProvider* resourceProvider)
 {
-    OwnPtr<CCRendererGL> renderer(adoptPtr(new CCRendererGL(client, resourceProvider)));
+    scoped_ptr<CCRendererGL> renderer(make_scoped_ptr(new CCRendererGL(client, resourceProvider)));
     if (!renderer->initialize())
-        return nullptr;
+        return scoped_ptr<CCRendererGL>();
 
-    return renderer.release();
+    return renderer.Pass();
 }
 
 CCRendererGL::CCRendererGL(CCRendererClient* client,
@@ -345,7 +345,7 @@ static inline SkBitmap applyFilters(CCRendererGL* renderer, const WebKit::WebFil
     return source;
 }
 
-PassOwnPtr<CCScopedTexture> CCRendererGL::drawBackgroundFilters(DrawingFrame& frame, const CCRenderPassDrawQuad* quad, const WebKit::WebFilterOperations& filters, const WebTransformationMatrix& contentsDeviceTransform)
+scoped_ptr<CCScopedTexture> CCRendererGL::drawBackgroundFilters(DrawingFrame& frame, const CCRenderPassDrawQuad* quad, const WebKit::WebFilterOperations& filters, const WebTransformationMatrix& contentsDeviceTransform)
 {
     // This method draws a background filter, which applies a filter to any pixels behind the quad and seen through its background.
     // The algorithm works as follows:
@@ -364,12 +364,12 @@ PassOwnPtr<CCScopedTexture> CCRendererGL::drawBackgroundFilters(DrawingFrame& fr
     // FIXME: When this algorithm changes, update CCLayerTreeHost::prioritizeTextures() accordingly.
 
     if (filters.isEmpty())
-        return nullptr;
+        return scoped_ptr<CCScopedTexture>();
 
     // FIXME: We only allow background filters on an opaque render surface because other surfaces may contain
     // translucent pixels, and the contents behind those translucent pixels wouldn't have the filter applied.
     if (frame.currentRenderPass->hasTransparentBackground())
-        return nullptr;
+        return scoped_ptr<CCScopedTexture>();
     ASSERT(!frame.currentTexture);
 
     // FIXME: Do a single readback for both the surface and replica and cache the filtered results (once filter textures are not reused).
@@ -382,20 +382,20 @@ PassOwnPtr<CCScopedTexture> CCRendererGL::drawBackgroundFilters(DrawingFrame& fr
 
     deviceRect.intersect(frame.currentRenderPass->outputRect());
 
-    OwnPtr<CCScopedTexture> deviceBackgroundTexture = CCScopedTexture::create(m_resourceProvider);
+    scoped_ptr<CCScopedTexture> deviceBackgroundTexture = CCScopedTexture::create(m_resourceProvider);
     if (!getFramebufferTexture(deviceBackgroundTexture.get(), deviceRect))
-        return nullptr;
+        return scoped_ptr<CCScopedTexture>();
 
     SkBitmap filteredDeviceBackground = applyFilters(this, filters, deviceBackgroundTexture.get());
     if (!filteredDeviceBackground.getTexture())
-        return nullptr;
+        return scoped_ptr<CCScopedTexture>();
 
     GrTexture* texture = reinterpret_cast<GrTexture*>(filteredDeviceBackground.getTexture());
     int filteredDeviceBackgroundTextureId = texture->getTextureHandle();
 
-    OwnPtr<CCScopedTexture> backgroundTexture = CCScopedTexture::create(m_resourceProvider);
+    scoped_ptr<CCScopedTexture> backgroundTexture = CCScopedTexture::create(m_resourceProvider);
     if (!backgroundTexture->allocate(CCRenderer::ImplPool, quad->quadRect().size(), GraphicsContext3D::RGBA, CCResourceProvider::TextureUsageFramebuffer))
-        return nullptr;
+        return scoped_ptr<CCScopedTexture>();
 
     const CCRenderPass* targetRenderPass = frame.currentRenderPass;
     bool usingBackgroundTexture = useScopedTexture(frame, backgroundTexture.get(), quad->quadRect());
@@ -412,8 +412,8 @@ PassOwnPtr<CCScopedTexture> CCRendererGL::drawBackgroundFilters(DrawingFrame& fr
     useRenderPass(frame, targetRenderPass);
 
     if (!usingBackgroundTexture)
-        return nullptr;
-    return backgroundTexture.release();
+        return scoped_ptr<CCScopedTexture>();
+    return backgroundTexture.Pass();
 }
 
 void CCRendererGL::drawRenderPassQuad(DrawingFrame& frame, const CCRenderPassDrawQuad* quad)
@@ -435,18 +435,18 @@ void CCRendererGL::drawRenderPassQuad(DrawingFrame& frame, const CCRenderPassDra
     if (!contentsDeviceTransform.isInvertible())
         return;
 
-    OwnPtr<CCScopedTexture> backgroundTexture = drawBackgroundFilters(frame, quad, renderPass->backgroundFilters(), contentsDeviceTransform);
+    scoped_ptr<CCScopedTexture> backgroundTexture = drawBackgroundFilters(frame, quad, renderPass->backgroundFilters(), contentsDeviceTransform);
 
     // FIXME: Cache this value so that we don't have to do it for both the surface and its replica.
     // Apply filters to the contents texture.
     SkBitmap filterBitmap = applyFilters(this, renderPass->filters(), contentsTexture);
-    OwnPtr<CCResourceProvider::ScopedReadLockGL> contentsResourceLock;
+    scoped_ptr<CCResourceProvider::ScopedReadLockGL> contentsResourceLock;
     unsigned contentsTextureId = 0;
     if (filterBitmap.getTexture()) {
         GrTexture* texture = reinterpret_cast<GrTexture*>(filterBitmap.getTexture());
         contentsTextureId = texture->getTextureHandle();
     } else {
-        contentsResourceLock = adoptPtr(new CCResourceProvider::ScopedReadLockGL(m_resourceProvider, contentsTexture->id()));
+        contentsResourceLock = make_scoped_ptr(new CCResourceProvider::ScopedReadLockGL(m_resourceProvider, contentsTexture->id()));
         contentsTextureId = contentsResourceLock->textureId();
     }
 
@@ -470,10 +470,10 @@ void CCRendererGL::drawRenderPassQuad(DrawingFrame& frame, const CCRenderPassDra
         deviceLayerEdges.inflateAntiAliasingDistance();
     }
 
-    OwnPtr<CCResourceProvider::ScopedReadLockGL> maskResourceLock;
+    scoped_ptr<CCResourceProvider::ScopedReadLockGL> maskResourceLock;
     unsigned maskTextureId = 0;
     if (quad->maskResourceId()) {
-        maskResourceLock = adoptPtr(new CCResourceProvider::ScopedReadLockGL(m_resourceProvider, quad->maskResourceId()));
+        maskResourceLock.reset(new CCResourceProvider::ScopedReadLockGL(m_resourceProvider, quad->maskResourceId()));
         maskTextureId = maskResourceLock->textureId();
     }
 
@@ -935,7 +935,7 @@ void CCRendererGL::drawIOSurfaceQuad(const DrawingFrame& frame, const CCIOSurfac
 
 void CCRendererGL::finishDrawingFrame(DrawingFrame& frame)
 {
-    m_currentFramebufferLock.clear();
+    m_currentFramebufferLock.reset();
     m_swapBufferRect.unite(enclosingIntRect(frame.rootDamageRect));
 
     GLC(m_context, m_context->disable(GraphicsContext3D::SCISSOR_TEST));
@@ -1214,7 +1214,7 @@ bool CCRendererGL::useScopedTexture(DrawingFrame& frame, const CCScopedTexture* 
 
 void CCRendererGL::bindFramebufferToOutputSurface(DrawingFrame& frame)
 {
-    m_currentFramebufferLock.clear();
+    m_currentFramebufferLock.reset();
     GLC(m_context, m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, 0));
 }
 
@@ -1223,7 +1223,7 @@ bool CCRendererGL::bindFramebufferToTexture(DrawingFrame& frame, const CCScopedT
     ASSERT(texture->id());
 
     GLC(m_context, m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, m_offscreenFramebufferId));
-    m_currentFramebufferLock = adoptPtr(new CCResourceProvider::ScopedWriteLockGL(m_resourceProvider, texture->id()));
+    m_currentFramebufferLock = make_scoped_ptr(new CCResourceProvider::ScopedWriteLockGL(m_resourceProvider, texture->id()));
     unsigned textureId = m_currentFramebufferLock->textureId();
     GLC(m_context, m_context->framebufferTexture2D(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::COLOR_ATTACHMENT0, GraphicsContext3D::TEXTURE_2D, textureId, 0));
 
@@ -1271,10 +1271,10 @@ bool CCRendererGL::initializeSharedObjects()
 
     // We will always need these programs to render, so create the programs eagerly so that the shader compilation can
     // start while we do other work. Other programs are created lazily on first access.
-    m_sharedGeometry = adoptPtr(new GeometryBinding(m_context, quadVertexRect()));
-    m_renderPassProgram = adoptPtr(new RenderPassProgram(m_context));
-    m_tileProgram = adoptPtr(new TileProgram(m_context));
-    m_tileProgramOpaque = adoptPtr(new TileProgramOpaque(m_context));
+    m_sharedGeometry = make_scoped_ptr(new GeometryBinding(m_context, quadVertexRect()));
+    m_renderPassProgram = make_scoped_ptr(new RenderPassProgram(m_context));
+    m_tileProgram = make_scoped_ptr(new TileProgram(m_context));
+    m_tileProgramOpaque = make_scoped_ptr(new TileProgramOpaque(m_context));
 
     GLC(m_context, m_context->flush());
 
@@ -1284,7 +1284,7 @@ bool CCRendererGL::initializeSharedObjects()
 const CCRendererGL::TileCheckerboardProgram* CCRendererGL::tileCheckerboardProgram()
 {
     if (!m_tileCheckerboardProgram)
-        m_tileCheckerboardProgram = adoptPtr(new TileCheckerboardProgram(m_context));
+        m_tileCheckerboardProgram = make_scoped_ptr(new TileCheckerboardProgram(m_context));
     if (!m_tileCheckerboardProgram->initialized()) {
         TRACE_EVENT0("cc", "CCRendererGL::checkerboardProgram::initalize");
         m_tileCheckerboardProgram->initialize(m_context, m_isUsingBindUniform);
@@ -1295,7 +1295,7 @@ const CCRendererGL::TileCheckerboardProgram* CCRendererGL::tileCheckerboardProgr
 const CCRendererGL::SolidColorProgram* CCRendererGL::solidColorProgram()
 {
     if (!m_solidColorProgram)
-        m_solidColorProgram = adoptPtr(new SolidColorProgram(m_context));
+        m_solidColorProgram = make_scoped_ptr(new SolidColorProgram(m_context));
     if (!m_solidColorProgram->initialized()) {
         TRACE_EVENT0("cc", "CCRendererGL::solidColorProgram::initialize");
         m_solidColorProgram->initialize(m_context, m_isUsingBindUniform);
@@ -1316,7 +1316,7 @@ const CCRendererGL::RenderPassProgram* CCRendererGL::renderPassProgram()
 const CCRendererGL::RenderPassProgramAA* CCRendererGL::renderPassProgramAA()
 {
     if (!m_renderPassProgramAA)
-        m_renderPassProgramAA = adoptPtr(new RenderPassProgramAA(m_context));
+        m_renderPassProgramAA = make_scoped_ptr(new RenderPassProgramAA(m_context));
     if (!m_renderPassProgramAA->initialized()) {
         TRACE_EVENT0("cc", "CCRendererGL::renderPassProgramAA::initialize");
         m_renderPassProgramAA->initialize(m_context, m_isUsingBindUniform);
@@ -1327,7 +1327,7 @@ const CCRendererGL::RenderPassProgramAA* CCRendererGL::renderPassProgramAA()
 const CCRendererGL::RenderPassMaskProgram* CCRendererGL::renderPassMaskProgram()
 {
     if (!m_renderPassMaskProgram)
-        m_renderPassMaskProgram = adoptPtr(new RenderPassMaskProgram(m_context));
+        m_renderPassMaskProgram = make_scoped_ptr(new RenderPassMaskProgram(m_context));
     if (!m_renderPassMaskProgram->initialized()) {
         TRACE_EVENT0("cc", "CCRendererGL::renderPassMaskProgram::initialize");
         m_renderPassMaskProgram->initialize(m_context, m_isUsingBindUniform);
@@ -1338,7 +1338,7 @@ const CCRendererGL::RenderPassMaskProgram* CCRendererGL::renderPassMaskProgram()
 const CCRendererGL::RenderPassMaskProgramAA* CCRendererGL::renderPassMaskProgramAA()
 {
     if (!m_renderPassMaskProgramAA)
-        m_renderPassMaskProgramAA = adoptPtr(new RenderPassMaskProgramAA(m_context));
+        m_renderPassMaskProgramAA = make_scoped_ptr(new RenderPassMaskProgramAA(m_context));
     if (!m_renderPassMaskProgramAA->initialized()) {
         TRACE_EVENT0("cc", "CCRendererGL::renderPassMaskProgramAA::initialize");
         m_renderPassMaskProgramAA->initialize(m_context, m_isUsingBindUniform);
@@ -1369,7 +1369,7 @@ const CCRendererGL::TileProgramOpaque* CCRendererGL::tileProgramOpaque()
 const CCRendererGL::TileProgramAA* CCRendererGL::tileProgramAA()
 {
     if (!m_tileProgramAA)
-        m_tileProgramAA = adoptPtr(new TileProgramAA(m_context));
+        m_tileProgramAA = make_scoped_ptr(new TileProgramAA(m_context));
     if (!m_tileProgramAA->initialized()) {
         TRACE_EVENT0("cc", "CCRendererGL::tileProgramAA::initialize");
         m_tileProgramAA->initialize(m_context, m_isUsingBindUniform);
@@ -1380,7 +1380,7 @@ const CCRendererGL::TileProgramAA* CCRendererGL::tileProgramAA()
 const CCRendererGL::TileProgramSwizzle* CCRendererGL::tileProgramSwizzle()
 {
     if (!m_tileProgramSwizzle)
-        m_tileProgramSwizzle = adoptPtr(new TileProgramSwizzle(m_context));
+        m_tileProgramSwizzle = make_scoped_ptr(new TileProgramSwizzle(m_context));
     if (!m_tileProgramSwizzle->initialized()) {
         TRACE_EVENT0("cc", "CCRendererGL::tileProgramSwizzle::initialize");
         m_tileProgramSwizzle->initialize(m_context, m_isUsingBindUniform);
@@ -1391,7 +1391,7 @@ const CCRendererGL::TileProgramSwizzle* CCRendererGL::tileProgramSwizzle()
 const CCRendererGL::TileProgramSwizzleOpaque* CCRendererGL::tileProgramSwizzleOpaque()
 {
     if (!m_tileProgramSwizzleOpaque)
-        m_tileProgramSwizzleOpaque = adoptPtr(new TileProgramSwizzleOpaque(m_context));
+        m_tileProgramSwizzleOpaque = make_scoped_ptr(new TileProgramSwizzleOpaque(m_context));
     if (!m_tileProgramSwizzleOpaque->initialized()) {
         TRACE_EVENT0("cc", "CCRendererGL::tileProgramSwizzleOpaque::initialize");
         m_tileProgramSwizzleOpaque->initialize(m_context, m_isUsingBindUniform);
@@ -1402,7 +1402,7 @@ const CCRendererGL::TileProgramSwizzleOpaque* CCRendererGL::tileProgramSwizzleOp
 const CCRendererGL::TileProgramSwizzleAA* CCRendererGL::tileProgramSwizzleAA()
 {
     if (!m_tileProgramSwizzleAA)
-        m_tileProgramSwizzleAA = adoptPtr(new TileProgramSwizzleAA(m_context));
+        m_tileProgramSwizzleAA = make_scoped_ptr(new TileProgramSwizzleAA(m_context));
     if (!m_tileProgramSwizzleAA->initialized()) {
         TRACE_EVENT0("cc", "CCRendererGL::tileProgramSwizzleAA::initialize");
         m_tileProgramSwizzleAA->initialize(m_context, m_isUsingBindUniform);
@@ -1413,7 +1413,7 @@ const CCRendererGL::TileProgramSwizzleAA* CCRendererGL::tileProgramSwizzleAA()
 const CCRendererGL::TextureProgram* CCRendererGL::textureProgram()
 {
     if (!m_textureProgram)
-        m_textureProgram = adoptPtr(new TextureProgram(m_context));
+        m_textureProgram = make_scoped_ptr(new TextureProgram(m_context));
     if (!m_textureProgram->initialized()) {
         TRACE_EVENT0("cc", "CCRendererGL::textureProgram::initialize");
         m_textureProgram->initialize(m_context, m_isUsingBindUniform);
@@ -1424,7 +1424,7 @@ const CCRendererGL::TextureProgram* CCRendererGL::textureProgram()
 const CCRendererGL::TextureProgramFlip* CCRendererGL::textureProgramFlip()
 {
     if (!m_textureProgramFlip)
-        m_textureProgramFlip = adoptPtr(new TextureProgramFlip(m_context));
+        m_textureProgramFlip = make_scoped_ptr(new TextureProgramFlip(m_context));
     if (!m_textureProgramFlip->initialized()) {
         TRACE_EVENT0("cc", "CCRendererGL::textureProgramFlip::initialize");
         m_textureProgramFlip->initialize(m_context, m_isUsingBindUniform);
@@ -1435,7 +1435,7 @@ const CCRendererGL::TextureProgramFlip* CCRendererGL::textureProgramFlip()
 const CCRendererGL::TextureIOSurfaceProgram* CCRendererGL::textureIOSurfaceProgram()
 {
     if (!m_textureIOSurfaceProgram)
-        m_textureIOSurfaceProgram = adoptPtr(new TextureIOSurfaceProgram(m_context));
+        m_textureIOSurfaceProgram = make_scoped_ptr(new TextureIOSurfaceProgram(m_context));
     if (!m_textureIOSurfaceProgram->initialized()) {
         TRACE_EVENT0("cc", "CCRendererGL::textureIOSurfaceProgram::initialize");
         m_textureIOSurfaceProgram->initialize(m_context, m_isUsingBindUniform);
@@ -1446,7 +1446,7 @@ const CCRendererGL::TextureIOSurfaceProgram* CCRendererGL::textureIOSurfaceProgr
 const CCRendererGL::VideoYUVProgram* CCRendererGL::videoYUVProgram()
 {
     if (!m_videoYUVProgram)
-        m_videoYUVProgram = adoptPtr(new VideoYUVProgram(m_context));
+        m_videoYUVProgram = make_scoped_ptr(new VideoYUVProgram(m_context));
     if (!m_videoYUVProgram->initialized()) {
         TRACE_EVENT0("cc", "CCRendererGL::videoYUVProgram::initialize");
         m_videoYUVProgram->initialize(m_context, m_isUsingBindUniform);
@@ -1457,7 +1457,7 @@ const CCRendererGL::VideoYUVProgram* CCRendererGL::videoYUVProgram()
 const CCRendererGL::VideoStreamTextureProgram* CCRendererGL::videoStreamTextureProgram()
 {
     if (!m_videoStreamTextureProgram)
-        m_videoStreamTextureProgram = adoptPtr(new VideoStreamTextureProgram(m_context));
+        m_videoStreamTextureProgram = make_scoped_ptr(new VideoStreamTextureProgram(m_context));
     if (!m_videoStreamTextureProgram->initialized()) {
         TRACE_EVENT0("cc", "CCRendererGL::streamTextureProgram::initialize");
         m_videoStreamTextureProgram->initialize(m_context, m_isUsingBindUniform);
@@ -1469,7 +1469,7 @@ void CCRendererGL::cleanupSharedObjects()
 {
     makeContextCurrent();
 
-    m_sharedGeometry.clear();
+    m_sharedGeometry.reset();
 
     if (m_tileProgram)
         m_tileProgram->cleanup(m_context);

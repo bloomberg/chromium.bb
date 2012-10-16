@@ -56,7 +56,7 @@ protected:
 
     scoped_ptr<FakeWebCompositorOutputSurface> m_outputSurface;
     OwnPtr<CCResourceProvider> m_resourceProvider;
-    OwnPtr<CCRendererSoftware> m_renderer;
+    scoped_ptr<CCRendererSoftware> m_renderer;
     IntSize m_viewportSize;
     CCLayerTreeSettings m_settings;
 };

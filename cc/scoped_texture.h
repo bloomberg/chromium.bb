@@ -6,6 +6,7 @@
 #define CCScopedTexture_h
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "CCTexture.h"
 
 #if !ASSERT_DISABLED
@@ -16,7 +17,7 @@ namespace cc {
 
 class CCScopedTexture : protected CCTexture {
 public:
-    static PassOwnPtr<CCScopedTexture> create(CCResourceProvider* resourceProvider) { return adoptPtr(new CCScopedTexture(resourceProvider)); }
+    static scoped_ptr<CCScopedTexture> create(CCResourceProvider* resourceProvider) { return make_scoped_ptr(new CCScopedTexture(resourceProvider)); }
     virtual ~CCScopedTexture();
 
     using CCTexture::id;

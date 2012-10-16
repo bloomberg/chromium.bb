@@ -21,7 +21,7 @@ class CCRenderPassDrawQuad;
 
 class CCRendererSoftware : public CCDirectRenderer {
 public:
-    static PassOwnPtr<CCRendererSoftware> create(CCRendererClient*, CCResourceProvider*, WebKit::WebCompositorSoftwareOutputDevice*);
+    static scoped_ptr<CCRendererSoftware> create(CCRendererClient*, CCResourceProvider*, WebKit::WebCompositorSoftwareOutputDevice*);
     virtual ~CCRendererSoftware();
 
     virtual const RendererCapabilities& capabilities() const OVERRIDE;
@@ -64,10 +64,10 @@ private:
     bool m_visible;
 
     WebKit::WebCompositorSoftwareOutputDevice* m_outputDevice;
-    OwnPtr<SkCanvas> m_skRootCanvas;
+    scoped_ptr<SkCanvas> m_skRootCanvas;
     SkCanvas* m_skCurrentCanvas;
     SkPaint m_skCurrentPaint;
-    OwnPtr<CCResourceProvider::ScopedWriteLockSoftware> m_currentFramebufferLock;
+    scoped_ptr<CCResourceProvider::ScopedWriteLockSoftware> m_currentFramebufferLock;
 
     DISALLOW_COPY_AND_ASSIGN(CCRendererSoftware);
 };

@@ -48,8 +48,8 @@ private:
     void drawDebugRects(SkCanvas*, CCDebugRectHistory*);
 
     scoped_ptr<CCFontAtlas> m_fontAtlas;
-    OwnPtr<CCScopedTexture> m_hudTexture;
-    OwnPtr<SkCanvas> m_hudCanvas;
+    scoped_ptr<CCScopedTexture> m_hudTexture;
+    scoped_ptr<SkCanvas> m_hudCanvas;
 };
 
 }  // namespace cc

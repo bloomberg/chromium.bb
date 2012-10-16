@@ -64,9 +64,9 @@ bool isScaleAndTranslate(const SkMatrix& matrix)
 
 } // anonymous namespace
 
-PassOwnPtr<CCRendererSoftware> CCRendererSoftware::create(CCRendererClient* client, CCResourceProvider* resourceProvider, WebCompositorSoftwareOutputDevice* outputDevice)
+scoped_ptr<CCRendererSoftware> CCRendererSoftware::create(CCRendererClient* client, CCResourceProvider* resourceProvider, WebCompositorSoftwareOutputDevice* outputDevice)
 {
-    return adoptPtr(new CCRendererSoftware(client, resourceProvider, outputDevice));
+    return make_scoped_ptr(new CCRendererSoftware(client, resourceProvider, outputDevice));
 }
 
 CCRendererSoftware::CCRendererSoftware(CCRendererClient* client, CCResourceProvider* resourceProvider, WebCompositorSoftwareOutputDevice* outputDevice)
@@ -101,14 +101,14 @@ void CCRendererSoftware::viewportChanged()
 
 void CCRendererSoftware::beginDrawingFrame(DrawingFrame& frame)
 {
-    m_skRootCanvas = adoptPtr(new SkCanvas(m_outputDevice->lock(true)->getSkBitmap()));
+    m_skRootCanvas = make_scoped_ptr(new SkCanvas(m_outputDevice->lock(true)->getSkBitmap()));
 }
 
 void CCRendererSoftware::finishDrawingFrame(DrawingFrame& frame)
 {
-    m_currentFramebufferLock.clear();
+    m_currentFramebufferLock.reset();
     m_skCurrentCanvas = 0;
-    m_skRootCanvas.clear();
+    m_skRootCanvas.reset();
     m_outputDevice->unlock();
 }
 
@@ -123,13 +123,13 @@ void CCRendererSoftware::finish()
 
 void CCRendererSoftware::bindFramebufferToOutputSurface(DrawingFrame& frame)
 {
-    m_currentFramebufferLock.clear();
+    m_currentFramebufferLock.reset();
     m_skCurrentCanvas = m_skRootCanvas.get();
 }
 
 bool CCRendererSoftware::bindFramebufferToTexture(DrawingFrame& frame, const CCScopedTexture* texture, const IntRect& framebufferRect)
 {
-    m_currentFramebufferLock = adoptPtr(new CCResourceProvider::ScopedWriteLockSoftware(m_resourceProvider, texture->id()));
+    m_currentFramebufferLock = make_scoped_ptr(new CCResourceProvider::ScopedWriteLockSoftware(m_resourceProvider, texture->id()));
     m_skCurrentCanvas = m_currentFramebufferLock->skCanvas();
     initializeMatrices(frame, framebufferRect, false);
     setDrawViewportSize(framebufferRect.size());

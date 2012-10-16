@@ -19,7 +19,6 @@
 #include "CCTileDrawQuad.h"
 #include "CCYUVVideoDrawQuad.h"
 #include "Extensions3DChromium.h"
-#include <wtf/PassOwnPtr.h>
 
 namespace WebKit {
 class WebGraphicsContext3D;
@@ -37,7 +36,7 @@ class CCRendererGL : public CCDirectRenderer,
                      public WebKit::WebGraphicsContext3D::WebGraphicsMemoryAllocationChangedCallbackCHROMIUM ,
                      public WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback {
 public:
-    static PassOwnPtr<CCRendererGL> create(CCRendererClient*, CCResourceProvider*);
+    static scoped_ptr<CCRendererGL> create(CCRendererClient*, CCResourceProvider*);
 
     virtual ~CCRendererGL();
 
@@ -91,7 +90,7 @@ private:
 
     void drawCheckerboardQuad(const DrawingFrame&, const CCCheckerboardDrawQuad*);
     void drawDebugBorderQuad(const DrawingFrame&, const CCDebugBorderDrawQuad*);
-    PassOwnPtr<CCScopedTexture> drawBackgroundFilters(DrawingFrame&, const CCRenderPassDrawQuad*, const WebKit::WebFilterOperations&, const WebKit::WebTransformationMatrix& deviceTransform);
+    scoped_ptr<CCScopedTexture> drawBackgroundFilters(DrawingFrame&, const CCRenderPassDrawQuad*, const WebKit::WebFilterOperations&, const WebKit::WebTransformationMatrix& deviceTransform);
     void drawRenderPassQuad(DrawingFrame&, const CCRenderPassDrawQuad*);
     void drawSolidColorQuad(const DrawingFrame&, const CCSolidColorDrawQuad*);
     void drawStreamVideoQuad(const DrawingFrame&, const CCStreamVideoDrawQuad*);
@@ -129,7 +128,7 @@ private:
 
     unsigned m_offscreenFramebufferId;
 
-    OwnPtr<GeometryBinding> m_sharedGeometry;
+    scoped_ptr<GeometryBinding> m_sharedGeometry;
     FloatQuad m_sharedGeometryQuad;
 
     // This block of bindings defines all of the programs used by the compositor itself.
@@ -183,27 +182,27 @@ private:
 
     const SolidColorProgram* solidColorProgram();
 
-    OwnPtr<TileProgram> m_tileProgram;
-    OwnPtr<TileProgramOpaque> m_tileProgramOpaque;
-    OwnPtr<TileProgramAA> m_tileProgramAA;
-    OwnPtr<TileProgramSwizzle> m_tileProgramSwizzle;
-    OwnPtr<TileProgramSwizzleOpaque> m_tileProgramSwizzleOpaque;
-    OwnPtr<TileProgramSwizzleAA> m_tileProgramSwizzleAA;
-    OwnPtr<TileCheckerboardProgram> m_tileCheckerboardProgram;
+    scoped_ptr<TileProgram> m_tileProgram;
+    scoped_ptr<TileProgramOpaque> m_tileProgramOpaque;
+    scoped_ptr<TileProgramAA> m_tileProgramAA;
+    scoped_ptr<TileProgramSwizzle> m_tileProgramSwizzle;
+    scoped_ptr<TileProgramSwizzleOpaque> m_tileProgramSwizzleOpaque;
+    scoped_ptr<TileProgramSwizzleAA> m_tileProgramSwizzleAA;
+    scoped_ptr<TileCheckerboardProgram> m_tileCheckerboardProgram;
 
-    OwnPtr<RenderPassProgram> m_renderPassProgram;
-    OwnPtr<RenderPassProgramAA> m_renderPassProgramAA;
-    OwnPtr<RenderPassMaskProgram> m_renderPassMaskProgram;
-    OwnPtr<RenderPassMaskProgramAA> m_renderPassMaskProgramAA;
+    scoped_ptr<RenderPassProgram> m_renderPassProgram;
+    scoped_ptr<RenderPassProgramAA> m_renderPassProgramAA;
+    scoped_ptr<RenderPassMaskProgram> m_renderPassMaskProgram;
+    scoped_ptr<RenderPassMaskProgramAA> m_renderPassMaskProgramAA;
 
-    OwnPtr<TextureProgram> m_textureProgram;
-    OwnPtr<TextureProgramFlip> m_textureProgramFlip;
-    OwnPtr<TextureIOSurfaceProgram> m_textureIOSurfaceProgram;
+    scoped_ptr<TextureProgram> m_textureProgram;
+    scoped_ptr<TextureProgramFlip> m_textureProgramFlip;
+    scoped_ptr<TextureIOSurfaceProgram> m_textureIOSurfaceProgram;
 
-    OwnPtr<VideoYUVProgram> m_videoYUVProgram;
-    OwnPtr<VideoStreamTextureProgram> m_videoStreamTextureProgram;
+    scoped_ptr<VideoYUVProgram> m_videoYUVProgram;
+    scoped_ptr<VideoStreamTextureProgram> m_videoStreamTextureProgram;
 
-    OwnPtr<SolidColorProgram> m_solidColorProgram;
+    scoped_ptr<SolidColorProgram> m_solidColorProgram;
 
     WebKit::WebGraphicsContext3D* m_context;
 
@@ -213,7 +212,7 @@ private:
     bool m_isUsingBindUniform;
     bool m_visible;
 
-    OwnPtr<CCResourceProvider::ScopedWriteLockGL> m_currentFramebufferLock;
+    scoped_ptr<CCResourceProvider::ScopedWriteLockGL> m_currentFramebufferLock;
 
     DISALLOW_COPY_AND_ASSIGN(CCRendererGL);
 };

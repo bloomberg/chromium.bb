@@ -836,7 +836,7 @@ bool CCLayerTreeHostImpl::initializeRenderer(scoped_ptr<CCGraphicsContext> conte
         sendDidLoseContextRecursive(m_rootLayerImpl.get());
     }
     // Note: order is important here.
-    m_renderer.clear();
+    m_renderer.reset();
     m_resourceProvider.clear();
     m_context.reset();
 

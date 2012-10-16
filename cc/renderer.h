@@ -10,7 +10,6 @@
 #include "CCRenderPass.h"
 #include "FloatQuad.h"
 #include "IntRect.h"
-#include <wtf/PassRefPtr.h>
 
 namespace cc {
 

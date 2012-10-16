@@ -96,7 +96,7 @@ void CCHeadsUpDisplayLayerImpl::updateHudTexture(CCResourceProvider* resourcePro
         canvasSize.set(0, 0);
 
     if (canvasSize.fWidth != bounds().width() || canvasSize.fHeight != bounds().height() || !m_hudCanvas)
-        m_hudCanvas = adoptPtr(skia::CreateBitmapCanvas(bounds().width(), bounds().height(), false /* opaque */));
+        m_hudCanvas = make_scoped_ptr(skia::CreateBitmapCanvas(bounds().width(), bounds().height(), false /* opaque */));
 
     m_hudCanvas->clear(SkColorSetARGB(0, 0, 0, 0));
     drawHudContents(m_hudCanvas.get());
@@ -124,7 +124,7 @@ void CCHeadsUpDisplayLayerImpl::didDraw(CCResourceProvider* resourceProvider)
 
 void CCHeadsUpDisplayLayerImpl::didLoseContext()
 {
-    m_hudTexture.clear();
+    m_hudTexture.reset();
 }
 
 bool CCHeadsUpDisplayLayerImpl::layerIsAlwaysDamaged() const
