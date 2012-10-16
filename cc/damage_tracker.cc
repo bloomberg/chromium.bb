@@ -149,10 +149,14 @@ void CCDamageTracker::updateDamageTrackingState(const std::vector<CCLayerImpl*>&
 
 FloatRect CCDamageTracker::removeRectFromCurrentFrame(int layerID, bool& layerIsNew)
 {
-    layerIsNew = !m_currentRectHistory->contains(layerID);
+    RectMap::iterator iter = m_currentRectHistory->find(layerID);
+    layerIsNew = iter == m_currentRectHistory->end();
+    if (layerIsNew)
+        return FloatRect();
 
-    // take() will remove the entry from the map, or if not found, return a default (empty) rect.
-    return m_currentRectHistory->take(layerID);
+    FloatRect ret = iter->second;
+    m_currentRectHistory->erase(iter);
+    return ret;
 }
 
 void CCDamageTracker::saveRectForNextFrame(int layerID, const FloatRect& targetSpaceRect)
@@ -160,7 +164,7 @@ void CCDamageTracker::saveRectForNextFrame(int layerID, const FloatRect& targetS
     // This layer should not yet exist in next frame's history.
     ASSERT(layerID > 0);
     ASSERT(m_nextRectHistory->find(layerID) == m_nextRectHistory->end());
-    m_nextRectHistory->set(layerID, targetSpaceRect);
+    (*m_nextRectHistory)[layerID] = targetSpaceRect;
 }
 
 FloatRect CCDamageTracker::trackDamageFromActiveLayers(const std::vector<CCLayerImpl*>& layerList, int targetSurfaceLayerID)
@@ -205,11 +209,7 @@ FloatRect CCDamageTracker::trackDamageFromLeftoverRects()
     FloatRect damageRect = FloatRect();
 
     for (RectMap::iterator it = m_currentRectHistory->begin(); it != m_currentRectHistory->end(); ++it)
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-        damageRect.unite(it->value);
-#else
         damageRect.unite(it->second);
-#endif
 
     m_currentRectHistory->clear();
 

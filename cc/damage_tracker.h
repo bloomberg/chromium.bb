@@ -5,11 +5,10 @@
 #ifndef CCDamageTracker_h
 #define CCDamageTracker_h
 
+#include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "FloatRect.h"
 #include <vector>
-#include <wtf/HashMap.h>
-#include <wtf/Vector.h>
 
 namespace WebKit {
 class WebFilterOperations;
@@ -50,7 +49,7 @@ private:
     // To correctly track exposed regions, two hashtables of rects are maintained.
     // The "current" map is used to compute exposed regions of the current frame, while
     // the "next" map is used to collect layer rects that are used in the next frame.
-    typedef HashMap<int, FloatRect> RectMap;
+    typedef base::hash_map<int, FloatRect> RectMap;
     scoped_ptr<RectMap> m_currentRectHistory;
     scoped_ptr<RectMap> m_nextRectHistory;
 
