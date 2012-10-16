@@ -250,6 +250,8 @@
         'browser/chromeos/drive/drive_uploader.h',
         'browser/chromeos/drive/drive_webapps_registry.cc',
         'browser/chromeos/drive/drive_webapps_registry.h',
+        'browser/chromeos/drive/file_system/copy_operation.cc',
+        'browser/chromeos/drive/file_system/copy_operation.h',
         'browser/chromeos/drive/file_system/drive_operations.cc',
         'browser/chromeos/drive/file_system/drive_operations.h',
         'browser/chromeos/drive/file_system/move_operation.cc',

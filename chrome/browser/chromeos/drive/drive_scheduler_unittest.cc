@@ -63,7 +63,7 @@ class DriveSchedulerTest : public testing::Test {
     mock_network_change_notifier_.reset(new MockNetworkChangeNotifier);
 
     mock_remove_operation_ = new StrictMock<MockRemoveOperation>();
-    drive_operations_.InitForTesting(NULL, mock_remove_operation_);
+    drive_operations_.InitForTesting(NULL, NULL, mock_remove_operation_);
     scheduler_.reset(new DriveScheduler(profile_.get(),
                                         &drive_operations_));
 

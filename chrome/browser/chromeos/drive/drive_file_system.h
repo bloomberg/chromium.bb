@@ -44,6 +44,7 @@ class GDataWapiFeedLoader;
 struct LoadFeedParams;
 
 namespace file_system {
+class CopyOperation;
 class MoveOperation;
 class RemoveOperation;
 }
@@ -237,9 +238,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // execution of GetFileByPath() method.
   struct GetFileFromCacheParams;
 
-  // Struct used for StartFileUploadOnUIThread().
-  struct StartFileUploadParams;
-
   // Struct used for AddUploadedFile.
   struct AddUploadedFileParams;
 
@@ -266,39 +264,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
       DriveFileError error,
       const FilePath& drive_file_path,
       scoped_ptr<DriveEntryProto> entry_proto);
-
-  // Part of TransferFileFromLocalToRemote(). Called after
-  // GetEntryInfoByPath() is complete.
-  void TransferFileFromLocalToRemoteAfterGetEntryInfo(
-      const FilePath& local_src_file_path,
-      const FilePath& remote_dest_file_path,
-      const FileOperationCallback& callback,
-      DriveFileError error,
-      scoped_ptr<DriveEntryProto> entry_proto);
-
-  // Initiates transfer of |local_file_path| with |resource_id| to
-  // |remote_dest_file_path|. |local_file_path| must be a file from the local
-  // file system, |remote_dest_file_path| is the virtual destination path within
-  // Drive file system. If |resource_id| is a non-empty string, the transfer is
-  // handled by CopyDocumentToDirectory. Otherwise, the transfer is handled by
-  // TransferRegularFile.
-  //
-  // Must be called from *UI* thread. |callback| is run on the calling thread.
-  // |callback| must not be null.
-  void TransferFileForResourceId(const FilePath& local_file_path,
-                                 const FilePath& remote_dest_file_path,
-                                 const FileOperationCallback& callback,
-                                 std::string* resource_id);
-
-  // Initiates transfer of |local_file_path| to |remote_dest_file_path|.
-  // |local_file_path| must be a regular file (i.e. not a hosted document) from
-  // the local file system, |remote_dest_file_path| is the virtual destination
-  // path within Drive file system.
-  //
-  // Must be called from *UI* thread. |callback| is run on the calling thread.
-  void TransferRegularFile(const FilePath& local_file_path,
-                           const FilePath& remote_dest_file_path,
-                           const FileOperationCallback& callback);
 
   // Invoked during the process of CreateFile.
   // First, FindEntryByPathAsyncOnUIThread is called and the result is returned
@@ -367,32 +332,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
                                    const FileOperationCallback& callback,
                                    DriveFileError result);
 
-  // Invoked upon completion of GetFileByPath initiated by Copy. If
-  // GetFileByPath reports no error, calls TransferRegularFile to transfer
-  // |local_file_path| to |remote_dest_file_path|.
-  //
-  // Can be called from UI thread. |callback| is run on the calling thread.
-  void OnGetFileCompleteForCopy(const FilePath& remote_dest_file_path,
-                                const FileOperationCallback& callback,
-                                DriveFileError error,
-                                const FilePath& local_file_path,
-                                const std::string& unused_mime_type,
-                                DriveFileType file_type);
-
-  // Invoked upon completion of GetFileByPath initiated by
-  // TransferFileFromRemoteToLocal. If GetFileByPath reports no error, calls
-  // CopyLocalFileOnBlockingPool to copy |local_file_path| to
-  // |local_dest_file_path|.
-  //
-  // Can be called from UI thread. |callback| is run on the calling thread.
-  // |callback| must not be null.
-  void OnGetFileCompleteForTransferFile(const FilePath& local_dest_file_path,
-                                        const FileOperationCallback& callback,
-                                        DriveFileError error,
-                                        const FilePath& local_file_path,
-                                        const std::string& unused_mime_type,
-                                        DriveFileType file_type);
-
   // Invoked upon completion of GetFileByPath initiated by OpenFile. If
   // GetFileByPath is successful, calls MarkDirtyInCache to mark the cache
   // file as dirty for the file identified by |file_info.resource_id| and
@@ -407,33 +346,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const std::string& mime_type,
       DriveFileType file_type);
 
-  // Copies a document with |resource_id| to the directory at |dir_path|
-  // and names the copied document as |new_name|.
-  //
-  // Can be called from UI thread. |callback| is run on the calling thread.
-  // |callback| must not be null.
-  void CopyDocumentToDirectory(const FilePath& dir_path,
-                               const std::string& resource_id,
-                               const FilePath::StringType& new_name,
-                               const FileOperationCallback& callback);
-
-  // Moves a file or directory at |file_path| in the root directory to
-  // another directory at |dir_path|. This function does nothing if
-  // |dir_path| points to the root directory.
-  //
-  // Can be called from UI thread. |callback| is run on the calling thread.
-  // |callback| must not be null.
-  void MoveEntryFromRootDirectory(const FilePath& directory_path,
-                                  const FileOperationCallback& callback,
-                                  DriveFileError error,
-                                  const FilePath& file_path);
-
-  // Part of MoveEntryFromRootDirectory(). Called after
-  // GetEntryInfoPairByPaths() is complete. |callback| must not be null.
-  void MoveEntryFromRootDirectoryAfterGetEntryInfoPair(
-    const FileOperationCallback& callback,
-    scoped_ptr<EntryInfoPairResult> result);
-
   // Invoked upon completion of MarkDirtyInCache initiated by OpenFile. Invokes
   // |callback| with |cache_file_path|, which is the path of the cache file
   // ready for modification.
@@ -442,13 +354,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void OnMarkDirtyInCacheCompleteForOpenFile(const OpenFileCallback& callback,
                                              DriveFileError error,
                                              const FilePath& cache_file_path);
-
-  // Callback for handling document copy attempt.
-  // |callback| must not be null.
-  void OnCopyDocumentCompleted(const FilePath& dir_path,
-                               const FileOperationCallback& callback,
-                               gdata::GDataErrorCode status,
-                               scoped_ptr<base::Value> data);
 
   // Callback for handling account metadata fetch.
   void OnGetAvailableSpace(const GetAvailableSpaceCallback& callback,
@@ -499,23 +404,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
                                const std::string& resource_id,
                                const std::string& md5);
 
-  // Moves entry specified by |file_path| to the directory specified by
-  // |dir_path| and calls |callback| asynchronously.
-  // |callback| must not be null.
-  void MoveEntryToDirectory(const FilePath& file_path,
-                            const FilePath& directory_path,
-                            const FileMoveCallback& callback,
-                            gdata::GDataErrorCode status,
-                            const GURL& document_url);
-
-  // Callback when an entry is moved to another directory on the client side.
-  // Notifies the directory change and runs |callback|.
-  // |callback| must not be null.
-  void NotifyAndRunFileOperationCallback(
-      const FileOperationCallback& callback,
-      DriveFileError error,
-      const FilePath& moved_file_path);
-
   // FileMoveCallback for directory changes. Notifies of directory changes,
   // and runs |callback| with |error|. |callback| may be null.
   void OnDirectoryChangeFileMoveCallback(
@@ -562,29 +450,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // |callback| must not be null.
   void NotifyInitialLoadFinishedAndRun(const FileOperationCallback& callback,
                                        DriveFileError error);
-
-  // Helper function that completes bookkeeping tasks related to
-  // completed file transfer.
-  void OnTransferCompleted(const FileOperationCallback& callback,
-                           DriveFileError error,
-                           const FilePath& drive_path,
-                           const FilePath& file_path,
-                           scoped_ptr<gdata::DocumentEntry> document_entry);
-
-  // Kicks off file upload once it receives |file_size| and |content_type|.
-  void StartFileUploadOnUIThread(const StartFileUploadParams& params,
-                                 DriveFileError* error,
-                                 int64* file_size,
-                                 std::string* content_type);
-
-  // Part of StartFileUploadOnUIThread(). Called after GetEntryInfoByPath()
-  // is complete.
-  void StartFileUploadOnUIThreadAfterGetEntryInfo(
-      const StartFileUploadParams& params,
-      int64 file_size,
-      std::string content_type,
-      DriveFileError error,
-      scoped_ptr<DriveEntryProto> entry_proto);
 
   // Cache intermediate callbacks, that run on calling thread, for above cache
   // tasks that were run on blocking pool.
@@ -795,13 +660,6 @@ class DriveFileSystem : public DriveFileSystemInterface,
       DriveFileError error,
       const FilePath& file_path,
       scoped_ptr<DriveEntryProto> entry_proto);
-
-  // Part of CopyOnUIThread(). Called after GetEntryInfoPairByPaths() is
-  // complete. |callback| must not be null.
-  void CopyOnUIThreadAfterGetEntryInfoPair(
-    const FilePath& dest_file_path,
-    const FileOperationCallback& callback,
-    scoped_ptr<EntryInfoPairResult> result);
 
   // Part of RequestDirectoryRefreshOnUIThread(). Called after
   // GetEntryInfoByPath() is complete.
