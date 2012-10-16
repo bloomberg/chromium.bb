@@ -9,7 +9,6 @@
 {
   'variables': {
     'mac_translated_xibs': [
-      'app/nibs/ActionBoxMenuItem.xib',
       'app/nibs/AvatarMenuItem.xib',
       'app/nibs/BookmarkAllTabs.xib',
       'app/nibs/BookmarkBar.xib',
@@ -53,6 +52,7 @@
     ],  # mac_translated_xibs
     'mac_untranslated_xibs': [
       'app/nibs/AboutIPC.xib',
+      'app/nibs/ActionBoxMenuItem.xib',
       'app/nibs/BookmarkBarFolderWindow.xib',
       'app/nibs/ExtensionInstalledBubbleBundle.xib',
       'app/nibs/FindBar.xib',
