@@ -46,10 +46,10 @@ size_t CCTextureUpdateController::maxFullUpdatesPerTick(TextureUploader* uploade
     return texturesPerTick ? texturesPerTick : 1;
 }
 
-CCTextureUpdateController::CCTextureUpdateController(CCTextureUpdateControllerClient* client, CCThread* thread, PassOwnPtr<CCTextureUpdateQueue> queue, CCResourceProvider* resourceProvider, TextureUploader* uploader)
+CCTextureUpdateController::CCTextureUpdateController(CCTextureUpdateControllerClient* client, CCThread* thread, scoped_ptr<CCTextureUpdateQueue> queue, CCResourceProvider* resourceProvider, TextureUploader* uploader)
     : m_client(client)
     , m_timer(new CCTimer(thread, this))
-    , m_queue(queue)
+    , m_queue(queue.Pass())
     , m_resourceProvider(resourceProvider)
     , m_uploader(uploader)
     , m_textureUpdatesPerTick(maxFullUpdatesPerTick(uploader))

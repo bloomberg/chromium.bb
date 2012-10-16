@@ -12,7 +12,6 @@
 #include "CCScheduler.h"
 #include "CCTextureUpdateController.h"
 #include <base/time.h>
-#include <wtf/OwnPtr.h>
 
 namespace cc {
 
@@ -91,7 +90,7 @@ private:
         CCPrioritizedTextureManager::BackingVector evictedContentsTexturesBackings;
         size_t memoryAllocationLimitBytes;
     };
-    OwnPtr<BeginFrameAndCommitState> m_pendingBeginFrameRequest;
+    scoped_ptr<BeginFrameAndCommitState> m_pendingBeginFrameRequest;
 
     // Called on main thread
     void beginFrame();
@@ -109,7 +108,7 @@ private:
         IntRect rect;
     };
     void forceBeginFrameOnImplThread(CCCompletionEvent*);
-    void beginFrameCompleteOnImplThread(CCCompletionEvent*, PassOwnPtr<CCTextureUpdateQueue>);
+    void beginFrameCompleteOnImplThread(CCCompletionEvent*, CCTextureUpdateQueue*);
     void beginFrameAbortedOnImplThread();
     void requestReadbackOnImplThread(ReadbackRequest*);
     void requestStartPageScaleAnimationOnImplThread(IntSize targetPosition, bool useAnchor, float scale, double durationSec);
@@ -133,7 +132,7 @@ private:
     bool m_commitRequested; // Set only when setNeedsCommit is called.
     bool m_commitRequestSentToImplThread; // Set by setNeedsCommit and setNeedsAnimate.
     bool m_forcedCommitRequested;
-    OwnPtr<CCThreadProxyContextRecreationTimer> m_contextRecreationTimer;
+    scoped_ptr<CCThreadProxyContextRecreationTimer> m_contextRecreationTimer;
     CCLayerTreeHost* m_layerTreeHost;
     bool m_rendererInitialized;
     RendererCapabilities m_RendererCapabilitiesMainThreadCopy;
@@ -145,7 +144,7 @@ private:
 
     scoped_ptr<CCInputHandler> m_inputHandlerOnImplThread;
 
-    OwnPtr<CCScheduler> m_schedulerOnImplThread;
+    scoped_ptr<CCScheduler> m_schedulerOnImplThread;
 
     RefPtr<CCScopedThreadProxy> m_mainThreadProxy;
 
@@ -165,7 +164,7 @@ private:
     // Set when the main thread is waiting on layers to be drawn.
     CCCompletionEvent* m_textureAcquisitionCompletionEventOnImplThread;
 
-    OwnPtr<CCTextureUpdateController> m_currentTextureUpdateControllerOnImplThread;
+    scoped_ptr<CCTextureUpdateController> m_currentTextureUpdateControllerOnImplThread;
 
     // Set when the next draw should post didCommitAndDrawFrame to the main thread.
     bool m_nextFrameIsNewlyCommittedFrameOnImplThread;

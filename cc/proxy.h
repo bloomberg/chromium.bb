@@ -7,8 +7,6 @@
 
 #include "base/basictypes.h"
 #include <public/WebCompositorOutputSurface.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/PassRefPtr.h>
 
 namespace cc {
 

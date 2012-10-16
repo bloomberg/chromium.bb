@@ -10,7 +10,6 @@
 #include "base/time.h"
 #include "CCTextureUpdateQueue.h"
 #include "CCTimer.h"
-#include <wtf/OwnPtr.h>
 
 namespace cc {
 
@@ -26,9 +25,9 @@ protected:
 
 class CCTextureUpdateController : public CCTimerClient {
 public:
-    static PassOwnPtr<CCTextureUpdateController> create(CCTextureUpdateControllerClient* client, CCThread* thread, PassOwnPtr<CCTextureUpdateQueue> queue, CCResourceProvider* resourceProvider, TextureUploader* uploader)
+    static scoped_ptr<CCTextureUpdateController> create(CCTextureUpdateControllerClient* client, CCThread* thread, scoped_ptr<CCTextureUpdateQueue> queue, CCResourceProvider* resourceProvider, TextureUploader* uploader)
     {
-        return adoptPtr(new CCTextureUpdateController(client, thread, queue, resourceProvider, uploader));
+        return make_scoped_ptr(new CCTextureUpdateController(client, thread, queue.Pass(), resourceProvider, uploader));
     }
     static size_t maxPartialTextureUpdates();
 
@@ -49,7 +48,7 @@ public:
     virtual size_t updateMoreTexturesSize() const;
 
 protected:
-    CCTextureUpdateController(CCTextureUpdateControllerClient*, CCThread*, PassOwnPtr<CCTextureUpdateQueue>, CCResourceProvider*, TextureUploader*);
+    CCTextureUpdateController(CCTextureUpdateControllerClient*, CCThread*, scoped_ptr<CCTextureUpdateQueue>, CCResourceProvider*, TextureUploader*);
 
     static size_t maxFullUpdatesPerTick(TextureUploader*);
 
@@ -61,7 +60,7 @@ protected:
 
     CCTextureUpdateControllerClient* m_client;
     scoped_ptr<CCTimer> m_timer;
-    OwnPtr<CCTextureUpdateQueue> m_queue;
+    scoped_ptr<CCTextureUpdateQueue> m_queue;
     bool m_contentsTexturesPurged;
     CCResourceProvider* m_resourceProvider;
     TextureUploader* m_uploader;

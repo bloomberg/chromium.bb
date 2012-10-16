@@ -52,7 +52,7 @@ public:
     TiledLayerChromiumTest()
         : m_compositorInitializer(0)
         , m_context(WebKit::createFakeCCGraphicsContext())
-        , m_queue(adoptPtr(new CCTextureUpdateQueue))
+        , m_queue(make_scoped_ptr(new CCTextureUpdateQueue))
         , m_textureManager(CCPrioritizedTextureManager::create(60*1024*1024, 1024, CCRenderer::ContentPool))
         , m_occlusion(0)
     {
@@ -102,15 +102,15 @@ public:
     {
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
         ASSERT(m_queue);
-        OwnPtr<CCTextureUpdateController> updateController =
+        scoped_ptr<CCTextureUpdateController> updateController =
             CCTextureUpdateController::create(
                 NULL,
                 CCProxy::implThread(),
-                m_queue.release(),
+                m_queue.Pass(),
                 m_resourceProvider.get(),
                 &m_uploader);
         updateController->finalize();
-        m_queue = adoptPtr(new CCTextureUpdateQueue);
+        m_queue = make_scoped_ptr(new CCTextureUpdateQueue);
     }
     void layerPushPropertiesTo(FakeTiledLayerChromium* layer, FakeCCTiledLayerImpl* layerImpl)
     {
@@ -162,7 +162,7 @@ public:
     WebKitTests::WebCompositorInitializer m_compositorInitializer;
     scoped_ptr<CCGraphicsContext> m_context;
     OwnPtr<CCResourceProvider> m_resourceProvider;
-    OwnPtr<CCTextureUpdateQueue> m_queue;
+    scoped_ptr<CCTextureUpdateQueue> m_queue;
     CCRenderingStats m_stats;
     FakeTextureUploader m_uploader;
     CCPriorityCalculator m_priorityCalculator;

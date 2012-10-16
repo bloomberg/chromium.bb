@@ -66,7 +66,7 @@ private:
 class CCTextureUpdateControllerTest : public Test {
 public:
     CCTextureUpdateControllerTest()
-        : m_queue(adoptPtr(new CCTextureUpdateQueue))
+        : m_queue(make_scoped_ptr(new CCTextureUpdateQueue))
         , m_uploader(this)
         , m_compositorInitializer(m_thread.get())
         , m_fullUploadCountExpected(0)
@@ -155,11 +155,11 @@ protected:
 
     void updateTextures()
     {
-        OwnPtr<CCTextureUpdateController> updateController =
+        scoped_ptr<CCTextureUpdateController> updateController =
             CCTextureUpdateController::create(
                 NULL,
                 CCProxy::implThread(),
-                m_queue.release(),
+                m_queue.Pass(),
                 m_resourceProvider.get(),
                 &m_uploader);
         updateController->finalize();
@@ -169,7 +169,7 @@ protected:
     // Classes required to interact and test the CCTextureUpdateController
     scoped_ptr<CCGraphicsContext> m_context;
     OwnPtr<CCResourceProvider> m_resourceProvider;
-    OwnPtr<CCTextureUpdateQueue> m_queue;
+    scoped_ptr<CCTextureUpdateQueue> m_queue;
     scoped_ptr<CCPrioritizedTexture> m_textures[4];
     TextureUploaderForUploadTest m_uploader;
     OwnPtr<WebThread> m_thread;
@@ -312,9 +312,9 @@ protected:
 
 class FakeCCTextureUpdateController : public cc::CCTextureUpdateController {
 public:
-    static PassOwnPtr<FakeCCTextureUpdateController> create(cc::CCTextureUpdateControllerClient* client, cc::CCThread* thread, PassOwnPtr<CCTextureUpdateQueue> queue, CCResourceProvider* resourceProvider, TextureUploader* uploader)
+    static scoped_ptr<FakeCCTextureUpdateController> create(cc::CCTextureUpdateControllerClient* client, cc::CCThread* thread, scoped_ptr<CCTextureUpdateQueue> queue, CCResourceProvider* resourceProvider, TextureUploader* uploader)
     {
-        return adoptPtr(new FakeCCTextureUpdateController(client, thread, queue, resourceProvider, uploader));
+        return make_scoped_ptr(new FakeCCTextureUpdateController(client, thread, queue.Pass(), resourceProvider, uploader));
     }
 
     void setNow(base::TimeTicks time) { m_now = time; }
@@ -325,8 +325,8 @@ public:
     virtual size_t updateMoreTexturesSize() const OVERRIDE { return m_updateMoreTexturesSize; }
 
 protected:
-    FakeCCTextureUpdateController(cc::CCTextureUpdateControllerClient* client, cc::CCThread* thread, PassOwnPtr<CCTextureUpdateQueue> queue, CCResourceProvider* resourceProvider, TextureUploader* uploader)
-        : cc::CCTextureUpdateController(client, thread, queue, resourceProvider, uploader)
+    FakeCCTextureUpdateController(cc::CCTextureUpdateControllerClient* client, cc::CCThread* thread, scoped_ptr<CCTextureUpdateQueue> queue, CCResourceProvider* resourceProvider, TextureUploader* uploader)
+        : cc::CCTextureUpdateController(client, thread, queue.Pass(), resourceProvider, uploader)
         , m_updateMoreTexturesSize(0) { }
 
     base::TimeTicks m_now;
@@ -351,7 +351,7 @@ TEST_F(CCTextureUpdateControllerTest, UpdateMoreTextures)
     appendPartialUploadsToUpdateQueue(0);
 
     DebugScopedSetImplThread implThread;
-    OwnPtr<FakeCCTextureUpdateController> controller(FakeCCTextureUpdateController::create(&client, &thread, m_queue.release(), m_resourceProvider.get(), &m_uploader));
+    scoped_ptr<FakeCCTextureUpdateController> controller(FakeCCTextureUpdateController::create(&client, &thread, m_queue.Pass(), m_resourceProvider.get(), &m_uploader));
 
     controller->setNow(
         controller->now() + base::TimeDelta::FromMilliseconds(1));
@@ -396,7 +396,7 @@ TEST_F(CCTextureUpdateControllerTest, NoMoreUpdates)
     appendPartialUploadsToUpdateQueue(0);
 
     DebugScopedSetImplThread implThread;
-    OwnPtr<FakeCCTextureUpdateController> controller(FakeCCTextureUpdateController::create(&client, &thread, m_queue.release(), m_resourceProvider.get(), &m_uploader));
+    scoped_ptr<FakeCCTextureUpdateController> controller(FakeCCTextureUpdateController::create(&client, &thread, m_queue.Pass(), m_resourceProvider.get(), &m_uploader));
 
     controller->setNow(
         controller->now() + base::TimeDelta::FromMilliseconds(1));
@@ -435,7 +435,7 @@ TEST_F(CCTextureUpdateControllerTest, UpdatesCompleteInFiniteTime)
     appendPartialUploadsToUpdateQueue(0);
 
     DebugScopedSetImplThread implThread;
-    OwnPtr<FakeCCTextureUpdateController> controller(FakeCCTextureUpdateController::create(&client, &thread, m_queue.release(), m_resourceProvider.get(), &m_uploader));
+    scoped_ptr<FakeCCTextureUpdateController> controller(FakeCCTextureUpdateController::create(&client, &thread, m_queue.Pass(), m_resourceProvider.get(), &m_uploader));
 
     controller->setNow(
         controller->now() + base::TimeDelta::FromMilliseconds(1));

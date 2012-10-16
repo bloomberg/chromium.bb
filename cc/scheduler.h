@@ -10,7 +10,6 @@
 #include "base/time.h"
 #include "CCFrameRateController.h"
 #include "CCSchedulerStateMachine.h"
-#include <wtf/PassOwnPtr.h>
 
 namespace cc {
 
@@ -47,9 +46,9 @@ protected:
 
 class CCScheduler : CCFrameRateControllerClient {
 public:
-    static PassOwnPtr<CCScheduler> create(CCSchedulerClient* client, scoped_ptr<CCFrameRateController> frameRateController)
+    static scoped_ptr<CCScheduler> create(CCSchedulerClient* client, scoped_ptr<CCFrameRateController> frameRateController)
     {
-        return adoptPtr(new CCScheduler(client, frameRateController.Pass()));
+        return make_scoped_ptr(new CCScheduler(client, frameRateController.Pass()));
     }
 
     virtual ~CCScheduler();
