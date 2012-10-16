@@ -34,13 +34,17 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/devtools_resources_map.h"
 #include "net/base/escape.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/server/http_server_request_info.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
 #include "ui/base/layout.h"
+#include "webkit/user_agent/user_agent.h"
+#include "webkit/user_agent/user_agent_util.h"
 
 namespace content {
 
@@ -239,6 +243,18 @@ static std::string GetMimeType(const std::string& filename) {
 void DevToolsHttpHandlerImpl::OnHttpRequest(
     int connection_id,
     const net::HttpServerRequestInfo& info) {
+  if (info.path.find("/json/version") == 0) {
+    // New page request.
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&DevToolsHttpHandlerImpl::OnVersionRequestUI,
+                   this,
+                   connection_id,
+                   info));
+    return;
+  }
+
   if (info.path.find("/json/new") == 0) {
     // New page request.
     BrowserThread::PostTask(
@@ -415,6 +431,19 @@ std::string DevToolsHttpHandlerImpl::GetFrontendURLInternal(
       overridden_frontend_url_.find("?") == std::string::npos ? "?" : "&",
       host.c_str(),
       rvh_id.c_str());
+}
+
+void DevToolsHttpHandlerImpl::OnVersionRequestUI(
+    int connection_id,
+    const net::HttpServerRequestInfo& info) {
+  DictionaryValue version;
+  version.SetString("Protocol-Version",
+                    WebKit::WebDevToolsAgent::inspectorProtocolVersion());
+  version.SetString("WebKit-Version",
+                    webkit_glue::GetWebKitVersion());
+  version.SetString("User-Agent",
+                    webkit_glue::GetUserAgent(GURL(chrome::kAboutBlankURL)));
+  SendJson(connection_id, info, version);
 }
 
 void DevToolsHttpHandlerImpl::OnJsonRequestUI(

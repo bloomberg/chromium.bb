@@ -68,6 +68,8 @@ class DevToolsHttpHandlerImpl
                                   const std::string& data) OVERRIDE;
   virtual void OnClose(int connection_id) OVERRIDE;
 
+  void OnVersionRequestUI(int connection_id,
+                          const net::HttpServerRequestInfo& info);
   void OnJsonRequestUI(int connection_id,
                        const net::HttpServerRequestInfo& info);
   void OnNewTargetRequestUI(int connection_id,
