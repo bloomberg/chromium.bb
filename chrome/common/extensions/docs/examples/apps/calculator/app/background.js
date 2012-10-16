@@ -11,8 +11,9 @@
  */
 chrome.app.runtime.onLaunched.addListener(function() {
   chrome.app.window.create('calculator.html', {
-    width: 243, minWidth: 243, maxWidth: 243,
-    height: 380, minHeight: 380, maxHeight: 380,
+    defaultWidth: 243, minWidth: 243, maxWidth: 243,
+    defaultHeight: 380, minHeight: 380, maxHeight: 380,
+    id: 'calculator'
   }, function (appWindow) {
     var window = appWindow.contentWindow;
     window.onload = function (window) {
