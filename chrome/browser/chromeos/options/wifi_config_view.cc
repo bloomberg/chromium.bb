@@ -25,6 +25,7 @@
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
@@ -377,6 +378,7 @@ WifiConfigView::WifiConfigView(NetworkConfigView* parent, bool show_8021x)
 }
 
 WifiConfigView::~WifiConfigView() {
+  views::FocusManager::set_shortcut_handling_suspended(false);
   if (cert_library_)
     cert_library_->RemoveObserver(this);
 }
@@ -880,6 +882,7 @@ void WifiConfigView::Init(WifiNetwork* wifi, bool show_8021x) {
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
+  views::FocusManager::set_shortcut_handling_suspended(true);
 
   const int column_view_set_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(column_view_set_id);

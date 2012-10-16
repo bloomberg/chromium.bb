@@ -214,11 +214,6 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate{
   // Returns true if a modal dialog window is currently open.
   bool IsModalWindowOpen() const;
 
-  // For testing only: set simulation that a modal window is open
-  void SimulateModalWindowOpenForTesting(bool modal_window_open) {
-    simulate_modal_window_open_for_testing_ = modal_window_open;
-  }
-
   // Creates a default views::NonClientFrameView for use by windows in the
   // Ash environment.
   views::NonClientFrameView* CreateDefaultNonClientFrameView(
@@ -498,9 +493,6 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate{
 
   // Used by ash/shell.
   content::BrowserContext* browser_context_;
-
-  // For testing only: simulate that a modal window is open
-  bool simulate_modal_window_open_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
 };

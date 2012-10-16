@@ -186,8 +186,7 @@ Shell::Shell(ShellDelegate* delegate)
       output_configurator_animation_(
           new internal::OutputConfiguratorAnimation()),
 #endif  // defined(OS_CHROMEOS)
-      browser_context_(NULL),
-      simulate_modal_window_open_for_testing_(false) {
+      browser_context_(NULL) {
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_ALTERNATE, screen_.get());
   ui_controls::InstallUIControlsAura(internal::CreateUIControls());
@@ -539,8 +538,6 @@ bool Shell::IsScreenLocked() const {
 }
 
 bool Shell::IsModalWindowOpen() const {
-  if (simulate_modal_window_open_for_testing_)
-    return true;
   // TODO(oshima): Walk though all root windows.
   const aura::Window* modal_container = GetContainer(
       GetPrimaryRootWindow(),

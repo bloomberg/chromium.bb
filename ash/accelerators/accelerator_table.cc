@@ -253,41 +253,4 @@ const AcceleratorAction kActionsAllowedAtLockScreen[] = {
 const size_t kActionsAllowedAtLockScreenLength =
     arraysize(kActionsAllowedAtLockScreen);
 
-const AcceleratorAction kActionsAllowedAtModalWindow[] = {
-  BRIGHTNESS_DOWN,
-  BRIGHTNESS_UP,
-  DISABLE_CAPS_LOCK,
-  EXIT,
-  KEYBOARD_BRIGHTNESS_DOWN,
-  KEYBOARD_BRIGHTNESS_UP,
-  MAGNIFY_SCREEN_ZOOM_IN,
-  MAGNIFY_SCREEN_ZOOM_OUT,
-  MEDIA_NEXT_TRACK,
-  MEDIA_PLAY_PAUSE,
-  MEDIA_PREV_TRACK,
-  NEXT_IME,
-  OPEN_FEEDBACK_PAGE,
-  POWER_PRESSED,
-  POWER_RELEASED,
-  PREVIOUS_IME,
-  SHOW_KEYBOARD_OVERLAY,
-  SWAP_PRIMARY_DISPLAY,
-  SWITCH_IME,
-  TAKE_SCREENSHOT,
-  TAKE_PARTIAL_SCREENSHOT,
-  TOGGLE_CAPS_LOCK,
-  TOGGLE_SPOKEN_FEEDBACK,
-  TOGGLE_WIFI,
-  VOLUME_DOWN,
-  VOLUME_MUTE,
-  VOLUME_UP,
-#if defined(OS_CHROMEOS)
-  CYCLE_DISPLAY_MODE,
-  LOCK_SCREEN,
-#endif
-};
-
-const size_t kActionsAllowedAtModalWindowLength =
-    arraysize(kActionsAllowedAtModalWindow);
-
 }  // namespace ash
