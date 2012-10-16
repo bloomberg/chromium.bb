@@ -109,6 +109,7 @@ class NetworkStateInformer
   base::CancelableClosure check_state_;
   std::string last_online_network_id_;
   std::string last_connected_network_id_;
+  std::string last_network_id_;
 };
 
 }  // namespace chromeos

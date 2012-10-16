@@ -65,24 +65,26 @@ void NetworkStateInformer::OnNetworkManagerChanged(NetworkLibrary* cros) {
   std::string new_network_id;
   const Network* active_network = cros->active_network();
   if (active_network) {
-    if (active_network->online()) {
+    new_network_id = active_network->unique_id();
+    if (active_network->online())
       new_state = ONLINE;
-      new_network_id = active_network->unique_id();
-    } else if (active_network->connecting()) {
+    else if (active_network->connecting())
       new_state = CONNECTING;
-      new_network_id = active_network->unique_id();
-    } else if (active_network->restricted_pool()) {
+    else if (active_network->restricted_pool())
       new_state = CAPTIVE_PORTAL;
-    }
   }
 
   if ((state_ != ONLINE && (new_state == ONLINE || new_state == CONNECTING)) ||
       (state_ == ONLINE && (new_state == ONLINE || new_state == CONNECTING) &&
-       new_network_id != last_online_network_id_)) {
+       new_network_id != last_online_network_id_) ||
+      (new_state == CAPTIVE_PORTAL && new_network_id == last_network_id_)) {
+    last_network_id_ = new_network_id;
     if (new_state == ONLINE)
       last_online_network_id_ = new_network_id;
-    // Transitions {OFFLINE, PORTAL} -> ONLINE and connections to different
-    // network are processed without delay.
+    // Transitions {OFFLINE, PORTAL} -> ONLINE and connections to
+    // different network are processed without delay.
+    // Transitions {OFFLINE, ONLINE} -> PORTAL in the same network are
+    // also processed without delay.
     UpdateStateAndNotify();
   } else {
     check_state_.Cancel();
