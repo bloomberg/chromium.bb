@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/power/power_button_controller_delegate_chromeos.h"
+#include "chrome/browser/chromeos/power/session_state_controller_delegate_chromeos.h"
 
 #include "base/logging.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
@@ -13,7 +13,7 @@
 
 namespace chromeos {
 
-void PowerButtonControllerDelegateChromeos::RequestLockScreen() {
+void SessionStateControllerDelegateChromeos::RequestLockScreen() {
   // If KioskMode is enabled, if the user attempts to lock the screen via
   // the power button, we instead want to log the user out. This seemed to
   // be the most acceptable replacement for the lock action of the power
@@ -26,7 +26,7 @@ void PowerButtonControllerDelegateChromeos::RequestLockScreen() {
   DBusThreadManager::Get()->GetSessionManagerClient()->RequestLockScreen();
 }
 
-void PowerButtonControllerDelegateChromeos::RequestShutdown() {
+void SessionStateControllerDelegateChromeos::RequestShutdown() {
   DBusThreadManager::Get()->GetPowerManagerClient()->RequestShutdown();
 }
 
