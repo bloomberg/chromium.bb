@@ -225,6 +225,9 @@ void DriveSystemService::OnCacheInitialized(bool success) {
           DriveCache::CACHE_TYPE_TMP_DOWNLOADS));
 
   AddDriveMountPoint();
+
+  // Start prefetching of Drive metadata.
+  file_system_->StartInitialFeedFetch();
 }
 
 //===================== DriveSystemServiceFactory =============================
