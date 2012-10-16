@@ -488,8 +488,19 @@ scoped_refptr<ui::Texture> DesktopNativeWidgetAura::CopyTexture() {
 // DesktopNativeWidgetAura, ui::EventHandler implementation:
 
 ui::EventResult DesktopNativeWidgetAura::OnKeyEvent(ui::KeyEvent* event) {
-  return native_widget_delegate_->OnKeyEvent(*event) ? ui::ER_HANDLED :
-      ui::ER_UNHANDLED;
+  if (event->is_char()) {
+    // If a ui::InputMethod object is attached to the root window, character
+    // events are handled inside the object and are not passed to this function.
+    // If such object is not attached, character events might be sent (e.g. on
+    // Windows). In this case, we just skip these.
+    return ui::ER_UNHANDLED;
+  }
+  // Renderer may send a key event back to us if the key event wasn't handled,
+  // and the window may be invisible by that time.
+  if (!window_->IsVisible())
+    return ui::ER_UNHANDLED;
+  GetWidget()->GetInputMethod()->DispatchKeyEvent(*event);
+  return ui::ER_HANDLED;
 }
 
 ui::EventResult DesktopNativeWidgetAura::OnMouseEvent(ui::MouseEvent* event) {
