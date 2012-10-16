@@ -562,7 +562,7 @@
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
       'features': {
-        'dynamic_refresh': False,
+        'dynamic_refresh': True,
         'can_be_recommended': True,
       },
       'example_value': True,
@@ -2063,7 +2063,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:9-', 'chrome_os:0.11-'],
-      'features': {'dynamic_refresh': False},
+      'features': {'dynamic_refresh': True},
       'example_value': False,
       'id': 55,
       'caption': '''Disable support for 3D graphics APIs''',
