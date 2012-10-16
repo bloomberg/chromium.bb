@@ -632,6 +632,21 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
     EXPECT_FALSE(GetController()->Process(
         ReleaseAccelerator(ui::VKEY_A, ui::EF_SHIFT_DOWN)));
     EXPECT_TRUE(delegate->IsCapsLockEnabled());
+
+    // Do not consume shift keyup when caps lock is off.
+    delegate->SetCapsLockEnabled(false);
+    EXPECT_FALSE(GetController()->Process(
+        ui::Accelerator(ui::VKEY_LSHIFT, ui::EF_NONE)));
+    EXPECT_FALSE(GetController()->Process(
+        ReleaseAccelerator(ui::VKEY_LSHIFT, ui::EF_NONE)));
+    EXPECT_FALSE(GetController()->Process(
+        ui::Accelerator(ui::VKEY_RSHIFT, ui::EF_NONE)));
+    EXPECT_FALSE(GetController()->Process(
+        ReleaseAccelerator(ui::VKEY_RSHIFT, ui::EF_NONE)));
+    EXPECT_FALSE(GetController()->Process(
+        ui::Accelerator(ui::VKEY_SHIFT, ui::EF_NONE)));
+    EXPECT_FALSE(GetController()->Process(
+        ReleaseAccelerator(ui::VKEY_SHIFT, ui::EF_NONE)));
   }
   // ToggleCapsLock
   {

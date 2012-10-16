@@ -556,9 +556,11 @@ bool AcceleratorController::PerformAction(int action,
         // We totally ignore this accelerator.
         return false;
       }
-      if (shell->caps_lock_delegate()->IsCapsLockEnabled())
+      if (shell->caps_lock_delegate()->IsCapsLockEnabled()) {
         shell->caps_lock_delegate()->SetCapsLockEnabled(false);
-      return true;
+        return true;
+      }
+      return false;
     case TOGGLE_CAPS_LOCK:
       shell->caps_lock_delegate()->ToggleCapsLock();
       return true;
