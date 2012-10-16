@@ -26,9 +26,9 @@ void FrameBufferSkPictureCanvasLayerTextureUpdater::Texture::update(CCTextureUpd
     textureUpdater()->updateTexture(queue, texture(), sourceRect, destOffset, partialUpdate);
 }
 
-PassRefPtr<FrameBufferSkPictureCanvasLayerTextureUpdater> FrameBufferSkPictureCanvasLayerTextureUpdater::create(scoped_ptr<LayerPainterChromium> painter)
+scoped_refptr<FrameBufferSkPictureCanvasLayerTextureUpdater> FrameBufferSkPictureCanvasLayerTextureUpdater::create(scoped_ptr<LayerPainterChromium> painter)
 {
-    return adoptRef(new FrameBufferSkPictureCanvasLayerTextureUpdater(painter.Pass()));
+    return make_scoped_refptr(new FrameBufferSkPictureCanvasLayerTextureUpdater(painter.Pass()));
 }
 
 FrameBufferSkPictureCanvasLayerTextureUpdater::FrameBufferSkPictureCanvasLayerTextureUpdater(scoped_ptr<LayerPainterChromium> painter)
@@ -40,9 +40,9 @@ FrameBufferSkPictureCanvasLayerTextureUpdater::~FrameBufferSkPictureCanvasLayerT
 {
 }
 
-PassOwnPtr<LayerTextureUpdater::Texture> FrameBufferSkPictureCanvasLayerTextureUpdater::createTexture(CCPrioritizedTextureManager* manager)
+scoped_ptr<LayerTextureUpdater::Texture> FrameBufferSkPictureCanvasLayerTextureUpdater::createTexture(CCPrioritizedTextureManager* manager)
 {
-    return adoptPtr(new Texture(this, CCPrioritizedTexture::create(manager)));
+    return scoped_ptr<LayerTextureUpdater::Texture>(new Texture(this, CCPrioritizedTexture::create(manager)));
 }
 
 LayerTextureUpdater::SampledTexelFormat FrameBufferSkPictureCanvasLayerTextureUpdater::sampledTexelFormat(GC3Denum textureFormat)

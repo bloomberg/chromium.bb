@@ -59,9 +59,9 @@ void FakeLayerTextureUpdater::setRectToInvalidate(const IntRect& rect, FakeTiled
     m_layer = layer;
 }
 
-PassOwnPtr<LayerTextureUpdater::Texture> FakeLayerTextureUpdater::createTexture(CCPrioritizedTextureManager* manager)
+scoped_ptr<LayerTextureUpdater::Texture> FakeLayerTextureUpdater::createTexture(CCPrioritizedTextureManager* manager)
 {
-    return adoptPtr(new Texture(this, CCPrioritizedTexture::create(manager)));
+    return scoped_ptr<LayerTextureUpdater::Texture>(new Texture(this, CCPrioritizedTexture::create(manager)));
 }
 
 LayerTextureUpdater::SampledTexelFormat FakeLayerTextureUpdater::sampledTexelFormat(GC3Denum)
@@ -80,7 +80,7 @@ FakeCCTiledLayerImpl::~FakeCCTiledLayerImpl()
 
 FakeTiledLayerChromium::FakeTiledLayerChromium(CCPrioritizedTextureManager* textureManager)
     : TiledLayerChromium()
-    , m_fakeTextureUpdater(adoptRef(new FakeLayerTextureUpdater))
+    , m_fakeTextureUpdater(make_scoped_refptr(new FakeLayerTextureUpdater))
     , m_textureManager(textureManager)
 {
     setTileSize(tileSize());

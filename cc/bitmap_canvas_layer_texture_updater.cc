@@ -29,9 +29,9 @@ void BitmapCanvasLayerTextureUpdater::Texture::update(CCTextureUpdateQueue& queu
     textureUpdater()->updateTexture(queue, texture(), sourceRect, destOffset, partialUpdate);
 }
 
-PassRefPtr<BitmapCanvasLayerTextureUpdater> BitmapCanvasLayerTextureUpdater::create(scoped_ptr<LayerPainterChromium> painter)
+scoped_refptr<BitmapCanvasLayerTextureUpdater> BitmapCanvasLayerTextureUpdater::create(scoped_ptr<LayerPainterChromium> painter)
 {
-    return adoptRef(new BitmapCanvasLayerTextureUpdater(painter.Pass()));
+    return make_scoped_refptr(new BitmapCanvasLayerTextureUpdater(painter.Pass()));
 }
 
 BitmapCanvasLayerTextureUpdater::BitmapCanvasLayerTextureUpdater(scoped_ptr<LayerPainterChromium> painter)
@@ -44,9 +44,9 @@ BitmapCanvasLayerTextureUpdater::~BitmapCanvasLayerTextureUpdater()
 {
 }
 
-PassOwnPtr<LayerTextureUpdater::Texture> BitmapCanvasLayerTextureUpdater::createTexture(CCPrioritizedTextureManager* manager)
+scoped_ptr<LayerTextureUpdater::Texture> BitmapCanvasLayerTextureUpdater::createTexture(CCPrioritizedTextureManager* manager)
 {
-    return adoptPtr(new Texture(this, CCPrioritizedTexture::create(manager)));
+    return scoped_ptr<LayerTextureUpdater::Texture>(new Texture(this, CCPrioritizedTexture::create(manager)));
 }
 
 LayerTextureUpdater::SampledTexelFormat BitmapCanvasLayerTextureUpdater::sampledTexelFormat(GC3Denum textureFormat)
@@ -60,7 +60,7 @@ void BitmapCanvasLayerTextureUpdater::prepareToUpdate(const IntRect& contentRect
 {
     if (m_canvasSize != contentRect.size()) {
         m_canvasSize = contentRect.size();
-        m_canvas = adoptPtr(skia::CreateBitmapCanvas(m_canvasSize.width(), m_canvasSize.height(), m_opaque));
+        m_canvas = make_scoped_ptr(skia::CreateBitmapCanvas(m_canvasSize.width(), m_canvasSize.height(), m_opaque));
     }
 
     paintContents(m_canvas.get(), contentRect, contentsWidthScale, contentsHeightScale, resultingOpaqueRect, stats);
@@ -78,7 +78,7 @@ void BitmapCanvasLayerTextureUpdater::updateTexture(CCTextureUpdateQueue& queue,
 void BitmapCanvasLayerTextureUpdater::setOpaque(bool opaque)
 {
     if (opaque != m_opaque) {
-        m_canvas.clear();
+        m_canvas.reset();
         m_canvasSize = IntSize();
     }
     m_opaque = opaque;

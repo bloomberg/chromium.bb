@@ -41,9 +41,9 @@ void BitmapSkPictureCanvasLayerTextureUpdater::Texture::update(CCTextureUpdateQu
         queue.appendFullUpload(upload);
 }
 
-PassRefPtr<BitmapSkPictureCanvasLayerTextureUpdater> BitmapSkPictureCanvasLayerTextureUpdater::create(scoped_ptr<LayerPainterChromium> painter)
+scoped_refptr<BitmapSkPictureCanvasLayerTextureUpdater> BitmapSkPictureCanvasLayerTextureUpdater::create(scoped_ptr<LayerPainterChromium> painter)
 {
-    return adoptRef(new BitmapSkPictureCanvasLayerTextureUpdater(painter.Pass()));
+    return make_scoped_refptr(new BitmapSkPictureCanvasLayerTextureUpdater(painter.Pass()));
 }
 
 BitmapSkPictureCanvasLayerTextureUpdater::BitmapSkPictureCanvasLayerTextureUpdater(scoped_ptr<LayerPainterChromium> painter)
@@ -55,9 +55,9 @@ BitmapSkPictureCanvasLayerTextureUpdater::~BitmapSkPictureCanvasLayerTextureUpda
 {
 }
 
-PassOwnPtr<LayerTextureUpdater::Texture> BitmapSkPictureCanvasLayerTextureUpdater::createTexture(CCPrioritizedTextureManager* manager)
+scoped_ptr<LayerTextureUpdater::Texture> BitmapSkPictureCanvasLayerTextureUpdater::createTexture(CCPrioritizedTextureManager* manager)
 {
-    return adoptPtr(new Texture(this, CCPrioritizedTexture::create(manager)));
+    return scoped_ptr<LayerTextureUpdater::Texture>(new Texture(this, CCPrioritizedTexture::create(manager)));
 }
 
 LayerTextureUpdater::SampledTexelFormat BitmapSkPictureCanvasLayerTextureUpdater::sampledTexelFormat(GC3Denum textureFormat)

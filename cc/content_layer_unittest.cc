@@ -44,7 +44,7 @@ TEST(ContentLayerChromiumTest, ContentLayerPainterWithDeviceScale)
     IntRect opaqueRectInContentSpace = opaqueRectInLayerSpace;
     opaqueRectInContentSpace.scale(contentsScale);
     MockContentLayerChromiumClient client(opaqueRectInLayerSpace);
-    RefPtr<BitmapCanvasLayerTextureUpdater> updater = BitmapCanvasLayerTextureUpdater::create(ContentLayerPainter::create(&client).PassAs<LayerPainterChromium>());
+    scoped_refptr<BitmapCanvasLayerTextureUpdater> updater = BitmapCanvasLayerTextureUpdater::create(ContentLayerPainter::create(&client).PassAs<LayerPainterChromium>());
 
     IntRect resultingOpaqueRect;
     CCRenderingStats stats;

@@ -13,7 +13,7 @@ namespace cc {
 class CachingBitmapCanvasLayerTextureUpdater
     : public BitmapCanvasLayerTextureUpdater {
  public:
-  static PassRefPtr<CachingBitmapCanvasLayerTextureUpdater> Create(
+  static scoped_refptr<CachingBitmapCanvasLayerTextureUpdater> Create(
       scoped_ptr<LayerPainterChromium>);
 
   virtual void prepareToUpdate(const IntRect& content_rect,
@@ -28,6 +28,7 @@ class CachingBitmapCanvasLayerTextureUpdater
  private:
   explicit CachingBitmapCanvasLayerTextureUpdater(
       scoped_ptr<LayerPainterChromium> painter);
+  virtual ~CachingBitmapCanvasLayerTextureUpdater();
 
   bool pixels_did_change_;
   SkBitmap cached_bitmap_;

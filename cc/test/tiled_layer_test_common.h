@@ -36,9 +36,8 @@ public:
     };
 
     FakeLayerTextureUpdater();
-    virtual ~FakeLayerTextureUpdater();
 
-    virtual PassOwnPtr<cc::LayerTextureUpdater::Texture> createTexture(cc::CCPrioritizedTextureManager*) OVERRIDE;
+    virtual scoped_ptr<cc::LayerTextureUpdater::Texture> createTexture(cc::CCPrioritizedTextureManager*) OVERRIDE;
     virtual SampledTexelFormat sampledTexelFormat(GC3Denum) OVERRIDE;
 
     virtual void prepareToUpdate(const cc::IntRect& contentRect, const cc::IntSize&, float, float, cc::IntRect& resultingOpaqueRect, cc::CCRenderingStats&) OVERRIDE;
@@ -58,6 +57,9 @@ public:
     void update() { m_updateCount++; }
 
     void setOpaquePaintRect(const cc::IntRect& opaquePaintRect) { m_opaquePaintRect = opaquePaintRect; }
+
+protected:
+    virtual ~FakeLayerTextureUpdater();
 
 private:
     int m_prepareCount;
@@ -104,7 +106,7 @@ protected:
     virtual ~FakeTiledLayerChromium();
 
 private:
-    RefPtr<FakeLayerTextureUpdater> m_fakeTextureUpdater;
+    scoped_refptr<FakeLayerTextureUpdater> m_fakeTextureUpdater;
     cc::CCPrioritizedTextureManager* m_textureManager;
     cc::FloatRect m_lastNeedsDisplayRect;
 };

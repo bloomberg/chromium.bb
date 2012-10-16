@@ -6,9 +6,9 @@
 #ifndef LayerTextureUpdater_h
 #define LayerTextureUpdater_h
 
+#include "base/memory/ref_counted.h"
 #include "CCPrioritizedTexture.h"
 #include "GraphicsTypes3D.h"
-#include <wtf/RefCounted.h>
 
 namespace cc {
 
@@ -18,7 +18,7 @@ class TextureManager;
 struct CCRenderingStats;
 class CCTextureUpdateQueue;
 
-class LayerTextureUpdater : public RefCounted<LayerTextureUpdater> {
+class LayerTextureUpdater : public base::RefCounted<LayerTextureUpdater> {
 public:
     // Allows texture uploaders to store per-tile resources.
     class Texture {
@@ -37,19 +37,14 @@ public:
         scoped_ptr<CCPrioritizedTexture> m_texture;
     };
 
-    LayerTextureUpdater()
-    {
-        turnOffVerifier(); // In the component build we don't have WTF threading initialized in this DLL so the thread verifier explodes.
-    }
-
-    virtual ~LayerTextureUpdater() { }
+    LayerTextureUpdater() { }
 
     enum SampledTexelFormat {
         SampledTexelFormatRGBA,
         SampledTexelFormatBGRA,
         SampledTexelFormatInvalid,
     };
-    virtual PassOwnPtr<Texture> createTexture(CCPrioritizedTextureManager*) = 0;
+    virtual scoped_ptr<Texture> createTexture(CCPrioritizedTextureManager*) = 0;
     // Returns the format of the texel uploaded by this interface.
     // This format should not be confused by texture internal format.
     // This format specifies the component order in the sampled texel.
@@ -61,6 +56,12 @@ public:
 
     // Set true by the layer when it is known that the entire output is going to be opaque.
     virtual void setOpaque(bool) { }
+
+protected:
+    virtual ~LayerTextureUpdater() { }
+
+private:
+    friend class base::RefCounted<LayerTextureUpdater>;
 };
 
 } // namespace cc

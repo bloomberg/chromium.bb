@@ -56,7 +56,7 @@ private:
     virtual void createTextureUpdaterIfNeeded() OVERRIDE;
 
     ContentLayerChromiumClient* m_client;
-    RefPtr<LayerTextureUpdater> m_textureUpdater;
+    scoped_refptr<LayerTextureUpdater> m_textureUpdater;
 };
 
 }

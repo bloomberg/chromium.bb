@@ -22,12 +22,11 @@ class LayerPainterChromium;
 // implementations.
 class SkPictureCanvasLayerTextureUpdater : public CanvasLayerTextureUpdater {
 public:
-    virtual ~SkPictureCanvasLayerTextureUpdater();
-
     virtual void setOpaque(bool) OVERRIDE;
 
 protected:
     explicit SkPictureCanvasLayerTextureUpdater(scoped_ptr<LayerPainterChromium>);
+    virtual ~SkPictureCanvasLayerTextureUpdater();
 
     virtual void prepareToUpdate(const IntRect& contentRect, const IntSize& tileSize, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, CCRenderingStats&) OVERRIDE;
     void drawPicture(SkCanvas*);

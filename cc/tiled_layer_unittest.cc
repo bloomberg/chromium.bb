@@ -1492,7 +1492,7 @@ protected:
 
 private:
     TrackingLayerPainter* m_trackingLayerPainter;
-    RefPtr<BitmapCanvasLayerTextureUpdater> m_layerTextureUpdater;
+    scoped_refptr<BitmapCanvasLayerTextureUpdater> m_layerTextureUpdater;
 };
 
 TEST_F(TiledLayerChromiumTest, nonIntegerContentsScaleIsNotDistortedDuringPaint)

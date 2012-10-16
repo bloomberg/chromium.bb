@@ -36,7 +36,7 @@ private:
 
     SkBitmap m_bitmap;
 
-    RefPtr<ImageLayerTextureUpdater> m_textureUpdater;
+    scoped_refptr<ImageLayerTextureUpdater> m_textureUpdater;
 };
 
 }  // namespace cc

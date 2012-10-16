@@ -28,14 +28,14 @@ public:
         FrameBufferSkPictureCanvasLayerTextureUpdater* m_textureUpdater;
     };
 
-    static PassRefPtr<FrameBufferSkPictureCanvasLayerTextureUpdater> create(scoped_ptr<LayerPainterChromium>);
-    virtual ~FrameBufferSkPictureCanvasLayerTextureUpdater();
+    static scoped_refptr<FrameBufferSkPictureCanvasLayerTextureUpdater> create(scoped_ptr<LayerPainterChromium>);
 
-    virtual PassOwnPtr<LayerTextureUpdater::Texture> createTexture(CCPrioritizedTextureManager*) OVERRIDE;
+    virtual scoped_ptr<LayerTextureUpdater::Texture> createTexture(CCPrioritizedTextureManager*) OVERRIDE;
     virtual SampledTexelFormat sampledTexelFormat(GC3Denum textureFormat) OVERRIDE;
 
 private:
     explicit FrameBufferSkPictureCanvasLayerTextureUpdater(scoped_ptr<LayerPainterChromium>);
+    virtual ~FrameBufferSkPictureCanvasLayerTextureUpdater();
 };
 } // namespace cc
 #endif // FrameBufferSkPictureCanvasLayerTextureUpdater_h

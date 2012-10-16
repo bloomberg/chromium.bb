@@ -35,17 +35,15 @@ public:
         ImageLayerTextureUpdater* m_textureUpdater;
     };
 
-    static PassRefPtr<ImageLayerTextureUpdater> create()
+    static scoped_refptr<ImageLayerTextureUpdater> create()
     {
-        return adoptRef(new ImageLayerTextureUpdater());
+        return make_scoped_refptr(new ImageLayerTextureUpdater());
     }
 
-    virtual ~ImageLayerTextureUpdater() { }
-
-    virtual PassOwnPtr<LayerTextureUpdater::Texture> createTexture(
+    virtual scoped_ptr<LayerTextureUpdater::Texture> createTexture(
         CCPrioritizedTextureManager* manager) OVERRIDE
     {
-        return adoptPtr(new Texture(this, CCPrioritizedTexture::create(manager)));
+        return scoped_ptr<LayerTextureUpdater::Texture>(new Texture(this, CCPrioritizedTexture::create(manager)));
     }
 
     virtual SampledTexelFormat sampledTexelFormat(GC3Denum textureFormat) OVERRIDE
@@ -78,6 +76,7 @@ public:
 
 private:
     ImageLayerTextureUpdater() { }
+    virtual ~ImageLayerTextureUpdater() { }
 
     SkBitmap m_bitmap;
 };

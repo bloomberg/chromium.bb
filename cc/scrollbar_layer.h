@@ -52,14 +52,14 @@ private:
 
     GC3Denum m_textureFormat;
 
-    RefPtr<CachingBitmapCanvasLayerTextureUpdater> m_backTrackUpdater;
-    RefPtr<CachingBitmapCanvasLayerTextureUpdater> m_foreTrackUpdater;
-    RefPtr<CachingBitmapCanvasLayerTextureUpdater> m_thumbUpdater;
+    scoped_refptr<CachingBitmapCanvasLayerTextureUpdater> m_backTrackUpdater;
+    scoped_refptr<CachingBitmapCanvasLayerTextureUpdater> m_foreTrackUpdater;
+    scoped_refptr<CachingBitmapCanvasLayerTextureUpdater> m_thumbUpdater;
 
     // All the parts of the scrollbar except the thumb
-    OwnPtr<LayerTextureUpdater::Texture> m_backTrack;
-    OwnPtr<LayerTextureUpdater::Texture> m_foreTrack;
-    OwnPtr<LayerTextureUpdater::Texture> m_thumb;
+    scoped_ptr<LayerTextureUpdater::Texture> m_backTrack;
+    scoped_ptr<LayerTextureUpdater::Texture> m_foreTrack;
+    scoped_ptr<LayerTextureUpdater::Texture> m_thumb;
 };
 
 }

@@ -18,11 +18,9 @@ class LayerPainterChromium;
 // SkPictureCanvasLayerTextureUpdater that reduces code duplication between
 // their respective paintContents implementations.
 class CanvasLayerTextureUpdater : public LayerTextureUpdater {
-public:
-    virtual ~CanvasLayerTextureUpdater();
-
 protected:
     explicit CanvasLayerTextureUpdater(scoped_ptr<LayerPainterChromium>);
+    virtual ~CanvasLayerTextureUpdater();
 
     void paintContents(SkCanvas*, const IntRect& contentRect, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, CCRenderingStats&);
     const IntRect& contentRect() const { return m_contentRect; }

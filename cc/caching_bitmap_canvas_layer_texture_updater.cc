@@ -11,16 +11,22 @@
 
 namespace cc {
 
-PassRefPtr<CachingBitmapCanvasLayerTextureUpdater>
+scoped_refptr<CachingBitmapCanvasLayerTextureUpdater>
 CachingBitmapCanvasLayerTextureUpdater::Create(
     scoped_ptr<LayerPainterChromium> painter) {
-  return adoptRef(new CachingBitmapCanvasLayerTextureUpdater(painter.Pass()));
+  return make_scoped_refptr(new CachingBitmapCanvasLayerTextureUpdater(
+      painter.Pass()));
 }
 
 CachingBitmapCanvasLayerTextureUpdater::CachingBitmapCanvasLayerTextureUpdater(
     scoped_ptr<LayerPainterChromium> painter)
     : BitmapCanvasLayerTextureUpdater(painter.Pass()),
       pixels_did_change_(false) {
+}
+
+CachingBitmapCanvasLayerTextureUpdater::
+  ~CachingBitmapCanvasLayerTextureUpdater()
+{
 }
 
 void CachingBitmapCanvasLayerTextureUpdater::prepareToUpdate(

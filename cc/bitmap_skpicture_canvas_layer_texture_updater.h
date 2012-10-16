@@ -28,15 +28,15 @@ public:
         BitmapSkPictureCanvasLayerTextureUpdater* m_textureUpdater;
     };
 
-    static PassRefPtr<BitmapSkPictureCanvasLayerTextureUpdater> create(scoped_ptr<LayerPainterChromium>);
-    virtual ~BitmapSkPictureCanvasLayerTextureUpdater();
+    static scoped_refptr<BitmapSkPictureCanvasLayerTextureUpdater> create(scoped_ptr<LayerPainterChromium>);
 
-    virtual PassOwnPtr<LayerTextureUpdater::Texture> createTexture(CCPrioritizedTextureManager*) OVERRIDE;
+    virtual scoped_ptr<LayerTextureUpdater::Texture> createTexture(CCPrioritizedTextureManager*) OVERRIDE;
     virtual SampledTexelFormat sampledTexelFormat(GC3Denum textureFormat) OVERRIDE;
     void paintContentsRect(SkCanvas*, const IntRect& sourceRect, CCRenderingStats&);
 
 private:
     explicit BitmapSkPictureCanvasLayerTextureUpdater(scoped_ptr<LayerPainterChromium>);
+    virtual ~BitmapSkPictureCanvasLayerTextureUpdater();
 };
 
 }  // namespace cc

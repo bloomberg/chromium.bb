@@ -21,9 +21,9 @@ namespace cc {
 
 class UpdatableTile : public CCLayerTilingData::Tile {
 public:
-    static scoped_ptr<UpdatableTile> create(PassOwnPtr<LayerTextureUpdater::Texture> texture)
+    static scoped_ptr<UpdatableTile> create(scoped_ptr<LayerTextureUpdater::Texture> texture)
     {
-        return make_scoped_ptr(new UpdatableTile(texture));
+        return make_scoped_ptr(new UpdatableTile(texture.Pass()));
     }
 
     LayerTextureUpdater::Texture* texture() { return m_texture.get(); }
@@ -59,17 +59,18 @@ public:
     bool validForFrame;
     bool occluded;
     bool isInUseOnImpl;
+
 private:
-    explicit UpdatableTile(PassOwnPtr<LayerTextureUpdater::Texture> texture)
+    explicit UpdatableTile(scoped_ptr<LayerTextureUpdater::Texture> texture)
         : partialUpdate(false)
         , validForFrame(false)
         , occluded(false)
         , isInUseOnImpl(false)
-        , m_texture(texture)
+        , m_texture(texture.Pass())
     {
     }
 
-    OwnPtr<LayerTextureUpdater::Texture> m_texture;
+    scoped_ptr<LayerTextureUpdater::Texture> m_texture;
 
     DISALLOW_COPY_AND_ASSIGN(UpdatableTile);
 };
@@ -458,7 +459,7 @@ void TiledLayerChromium::updateTileTextures(const IntRect& paintRect, int left, 
     // effect of disabling compositing, which causes our reference to the texture updater to be deleted.
     // However, we can't free the memory backing the SkCanvas until the paint finishes,
     // so we grab a local reference here to hold the updater alive until the paint completes.
-    RefPtr<LayerTextureUpdater> protector(textureUpdater());
+    scoped_refptr<LayerTextureUpdater> protector(textureUpdater());
     IntRect paintedOpaqueRect;
     textureUpdater()->prepareToUpdate(paintRect, m_tiler->tileSize(), 1 / widthScale, 1 / heightScale, paintedOpaqueRect, stats);
 

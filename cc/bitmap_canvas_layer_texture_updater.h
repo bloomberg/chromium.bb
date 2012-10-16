@@ -32,10 +32,9 @@ public:
         BitmapCanvasLayerTextureUpdater* m_textureUpdater;
     };
 
-    static PassRefPtr<BitmapCanvasLayerTextureUpdater> create(scoped_ptr<LayerPainterChromium>);
-    virtual ~BitmapCanvasLayerTextureUpdater();
+    static scoped_refptr<BitmapCanvasLayerTextureUpdater> create(scoped_ptr<LayerPainterChromium>);
 
-    virtual PassOwnPtr<LayerTextureUpdater::Texture> createTexture(CCPrioritizedTextureManager*) OVERRIDE;
+    virtual scoped_ptr<LayerTextureUpdater::Texture> createTexture(CCPrioritizedTextureManager*) OVERRIDE;
     virtual SampledTexelFormat sampledTexelFormat(GC3Denum textureFormat) OVERRIDE;
     virtual void prepareToUpdate(const IntRect& contentRect, const IntSize& tileSize, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, CCRenderingStats&) OVERRIDE;
     void updateTexture(CCTextureUpdateQueue&, CCPrioritizedTexture*, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate);
@@ -44,8 +43,9 @@ public:
 
 protected:
     explicit BitmapCanvasLayerTextureUpdater(scoped_ptr<LayerPainterChromium>);
+    virtual ~BitmapCanvasLayerTextureUpdater();
 
-    OwnPtr<SkCanvas> m_canvas;
+    scoped_ptr<SkCanvas> m_canvas;
     IntSize m_canvasSize;
     bool m_opaque;
 };

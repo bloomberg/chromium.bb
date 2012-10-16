@@ -177,10 +177,10 @@ private:
 void ScrollbarLayerChromium::setLayerTreeHost(CCLayerTreeHost* host)
 {
     if (!host || host != layerTreeHost()) {
-        m_backTrackUpdater.clear();
-        m_backTrack.clear();
-        m_thumbUpdater.clear();
-        m_thumb.clear();
+        m_backTrackUpdater = NULL;
+        m_backTrack.reset();
+        m_thumbUpdater = NULL;
+        m_thumb.reset();
     }
 
     LayerChromium::setLayerTreeHost(host);
