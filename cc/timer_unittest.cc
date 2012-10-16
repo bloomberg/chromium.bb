@@ -6,7 +6,7 @@
 
 #include "CCTimer.h"
 
-#include "CCSchedulerTestCommon.h"
+#include "cc/test/scheduler_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using namespace cc;

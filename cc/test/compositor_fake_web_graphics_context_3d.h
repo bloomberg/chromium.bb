@@ -5,7 +5,7 @@
 #ifndef CompositorFakeWebGraphicsContext3D_h
 #define CompositorFakeWebGraphicsContext3D_h
 
-#include "FakeWebGraphicsContext3D.h"
+#include "cc/test/fake_web_graphics_context_3d.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebKit {

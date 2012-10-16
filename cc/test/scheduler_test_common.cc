@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCSchedulerTestCommon.h"
+#include "cc/test/scheduler_test_common.h"
 
 namespace WebKitTests {
 

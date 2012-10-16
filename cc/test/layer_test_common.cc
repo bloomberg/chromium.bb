@@ -4,7 +4,8 @@
 
 #include "config.h"
 
-#include "CCLayerTestCommon.h"
+#include "cc/test/layer_test_common.h"
+
 #include "CCDrawQuad.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

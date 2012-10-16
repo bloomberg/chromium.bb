@@ -6,7 +6,7 @@
 #define FakeWebCompositorOutputSurface_h
 
 #include "base/memory/scoped_ptr.h"
-#include "FakeWebCompositorSoftwareOutputDevice.h"
+#include "cc/test/fake_web_compositor_software_output_device.h"
 #include <public/WebCompositorOutputSurface.h>
 #include <public/WebGraphicsContext3D.h>
 #include <wtf/OwnPtr.h>

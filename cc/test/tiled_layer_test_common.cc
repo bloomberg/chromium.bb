@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCTiledLayerTestCommon.h"
+#include "cc/test/tiled_layer_test_common.h"
 
 using namespace cc;
 

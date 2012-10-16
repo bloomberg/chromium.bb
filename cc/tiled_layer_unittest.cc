@@ -7,17 +7,17 @@
 #include "TiledLayerChromium.h"
 
 #include "BitmapCanvasLayerTextureUpdater.h"
-#include "CCAnimationTestCommon.h"
-#include "CCGeometryTestUtils.h"
 #include "CCOverdrawMetrics.h"
 #include "CCRenderingStats.h"
 #include "CCSingleThreadProxy.h" // For DebugScopedSetImplThread
 #include "CCTextureUpdateController.h"
-#include "CCTiledLayerTestCommon.h"
-#include "FakeCCGraphicsContext.h"
-#include "FakeCCLayerTreeHostClient.h"
 #include "LayerPainterChromium.h"
-#include "WebCompositorInitializer.h"
+#include "cc/test/animation_test_common.h"
+#include "cc/test/fake_graphics_context.h"
+#include "cc/test/fake_layer_tree_host_client.h"
+#include "cc/test/geometry_test_utils.h"
+#include "cc/test/tiled_layer_test_common.h"
+#include "cc/test/web_compositor_initializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>
 

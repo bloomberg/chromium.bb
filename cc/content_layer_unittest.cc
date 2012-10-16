@@ -7,9 +7,9 @@
 #include "ContentLayerChromium.h"
 
 #include "BitmapCanvasLayerTextureUpdater.h"
-#include "CCGeometryTestUtils.h"
 #include "CCRenderingStats.h"
 #include "ContentLayerChromiumClient.h"
+#include "cc/test/geometry_test_utils.h"
 #include "skia/ext/platform_canvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebFloatRect.h>

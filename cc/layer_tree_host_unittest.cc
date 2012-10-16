@@ -6,11 +6,8 @@
 
 #include "CCLayerTreeHost.h"
 
-#include "base/synchronization/lock.h"
-#include "CCGeometryTestUtils.h"
 #include "CCGraphicsContext.h"
 #include "CCLayerTreeHostImpl.h"
-#include "CCOcclusionTrackerTestCommon.h"
 #include "CCSettings.h"
 #include "CCSingleThreadProxy.h"
 #include "CCTextureUpdateQueue.h"
@@ -19,7 +16,10 @@
 #include "ContentLayerChromium.h"
 #include "ContentLayerChromiumClient.h"
 #include "Extensions3DChromium.h"
-#include "FakeWebCompositorOutputSurface.h"
+#include "base/synchronization/lock.h"
+#include "cc/test/fake_web_compositor_output_surface.h"
+#include "cc/test/geometry_test_utils.h"
+#include "cc/test/occlusion_tracker_test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include <public/Platform.h>
 #include <public/WebLayerScrollClient.h>

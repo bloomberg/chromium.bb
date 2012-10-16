@@ -11,8 +11,8 @@
 #include "CCRenderPassSink.h"
 #include "CCSharedQuadState.h"
 #include "CCSingleThreadProxy.h"
-#include "MockCCQuadCuller.h"
 #include "cc/scoped_ptr_vector.h"
+#include "cc/test/mock_quad_culler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>

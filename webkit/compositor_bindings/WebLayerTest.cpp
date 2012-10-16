@@ -5,8 +5,8 @@
 #include "config.h"
 #include <public/WebLayer.h>
 
-#include "CompositorFakeWebGraphicsContext3D.h"
-#include "WebCompositorInitializer.h"
+#include "cc/test/compositor_fake_web_graphics_context_3d.h"
+#include "cc/test/web_compositor_initializer.h"
 #include "WebLayerImpl.h"
 #include "WebLayerTreeViewTestCommon.h"
 #include <public/WebContentLayer.h>

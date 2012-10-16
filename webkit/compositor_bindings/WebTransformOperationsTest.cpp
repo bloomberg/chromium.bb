@@ -6,7 +6,7 @@
 
 #include <public/WebTransformOperations.h>
 
-#include "CCGeometryTestUtils.h"
+#include "cc/test/geometry_test_utils.h"
 #include <gtest/gtest.h>
 #include <public/WebTransformationMatrix.h>
 #include <wtf/OwnPtr.h>

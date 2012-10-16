@@ -6,11 +6,11 @@
 
 #include "config.h"
 
-#include "base/memory/scoped_ptr.h"
 #include "CCInputHandler.h"
 #include "CCLayerTreeHost.h"
-#include "CompositorFakeWebGraphicsContext3D.h"
-#include "FakeWebCompositorOutputSurface.h"
+#include "base/memory/scoped_ptr.h"
+#include "cc/test/compositor_fake_web_graphics_context_3d.h"
+#include "cc/test/fake_web_compositor_output_surface.h"
 
 namespace cc {
 

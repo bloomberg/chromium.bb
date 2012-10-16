@@ -8,7 +8,6 @@
 
 #include "CCCheckerboardDrawQuad.h"
 #include "CCDebugBorderDrawQuad.h"
-#include "CCGeometryTestUtils.h"
 #include "CCIOSurfaceDrawQuad.h"
 #include "CCRenderPassDrawQuad.h"
 #include "CCSolidColorDrawQuad.h"
@@ -16,6 +15,7 @@
 #include "CCTextureDrawQuad.h"
 #include "CCTileDrawQuad.h"
 #include "CCYUVVideoDrawQuad.h"
+#include "cc/test/geometry_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>
 

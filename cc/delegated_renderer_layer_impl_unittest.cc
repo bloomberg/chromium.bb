@@ -7,18 +7,18 @@
 #include "CCDelegatedRendererLayerImpl.h"
 
 #include "CCAppendQuadsData.h"
-#include "CCGeometryTestUtils.h"
 #include "CCLayerTreeHostImpl.h"
 #include "CCQuadSink.h"
 #include "CCRenderPassDrawQuad.h"
-#include "CCRenderPassTestCommon.h"
 #include "CCSingleThreadProxy.h"
 #include "CCSolidColorDrawQuad.h"
 #include "CCSolidColorLayerImpl.h"
-#include "FakeWebCompositorOutputSurface.h"
-#include "FakeWebGraphicsContext3D.h"
-#include "MockCCQuadCuller.h"
 #include "cc/scoped_ptr_vector.h"
+#include "cc/test/fake_web_compositor_output_surface.h"
+#include "cc/test/fake_web_graphics_context_3d.h"
+#include "cc/test/geometry_test_utils.h"
+#include "cc/test/mock_quad_culler.h"
+#include "cc/test/render_pass_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>
 

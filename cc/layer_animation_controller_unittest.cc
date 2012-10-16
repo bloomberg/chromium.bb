@@ -8,7 +8,7 @@
 
 #include "CCActiveAnimation.h"
 #include "CCAnimationCurve.h"
-#include "CCAnimationTestCommon.h"
+#include "cc/test/animation_test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>

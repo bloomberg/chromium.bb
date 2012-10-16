@@ -7,10 +7,10 @@
 #include "CCSolidColorLayerImpl.h"
 
 #include "CCAppendQuadsData.h"
-#include "CCLayerTestCommon.h"
 #include "CCSingleThreadProxy.h"
 #include "CCSolidColorDrawQuad.h"
-#include "MockCCQuadCuller.h"
+#include "cc/test/layer_test_common.h"
+#include "cc/test/mock_quad_culler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

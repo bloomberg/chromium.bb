@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCGeometryTestUtils.h"
+#include "cc/test/geometry_test_utils.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>

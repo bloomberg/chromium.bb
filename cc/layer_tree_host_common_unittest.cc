@@ -6,8 +6,6 @@
 
 #include "CCLayerTreeHostCommon.h"
 
-#include "CCAnimationTestCommon.h"
-#include "CCGeometryTestUtils.h"
 #include "CCLayerAnimationController.h"
 #include "CCLayerImpl.h"
 #include "CCLayerSorter.h"
@@ -18,7 +16,8 @@
 #include "ContentLayerChromium.h"
 #include "ContentLayerChromiumClient.h"
 #include "LayerChromium.h"
-
+#include "cc/test/animation_test_common.h"
+#include "cc/test/geometry_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>

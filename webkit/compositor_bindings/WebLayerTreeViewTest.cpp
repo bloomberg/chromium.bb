@@ -6,8 +6,8 @@
 
 #include <public/WebLayerTreeView.h>
 
-#include "CompositorFakeWebGraphicsContext3D.h"
-#include "FakeWebCompositorOutputSurface.h"
+#include "cc/test/compositor_fake_web_graphics_context_3d.h"
+#include "cc/test/fake_web_compositor_output_surface.h"
 #include "WebLayerTreeViewTestCommon.h"
 #include <gmock/gmock.h>
 #include <public/Platform.h>

@@ -8,9 +8,8 @@
 
 #include "CCPrioritizedTexture.h"
 #include "Extensions3DChromium.h"
-#include "FakeWebGraphicsContext3D.h"
 #include "GraphicsContext3D.h"
-
+#include "cc/test/fake_web_graphics_context_3d.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <wtf/RefPtr.h>

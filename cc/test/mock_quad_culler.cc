@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "MockCCQuadCuller.h"
+#include "cc/test/mock_quad_culler.h"
 
 namespace cc {
 

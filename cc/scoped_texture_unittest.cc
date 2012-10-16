@@ -8,9 +8,9 @@
 
 #include "CCRenderer.h"
 #include "CCSingleThreadProxy.h" // For DebugScopedSetImplThread
-#include "CCTiledLayerTestCommon.h"
-#include "FakeCCGraphicsContext.h"
 #include "GraphicsContext3D.h"
+#include "cc/test/fake_graphics_context.h"
+#include "cc/test/tiled_layer_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using namespace cc;

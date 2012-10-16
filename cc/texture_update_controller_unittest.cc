@@ -6,12 +6,12 @@
 
 #include "CCTextureUpdateController.h"
 
-#include "CCSchedulerTestCommon.h"
 #include "CCSingleThreadProxy.h" // For DebugScopedSetImplThread
-#include "CCTiledLayerTestCommon.h"
-#include "FakeWebCompositorOutputSurface.h"
-#include "FakeWebGraphicsContext3D.h"
-#include "WebCompositorInitializer.h"
+#include "cc/test/fake_web_compositor_output_surface.h"
+#include "cc/test/fake_web_graphics_context_3d.h"
+#include "cc/test/scheduler_test_common.h"
+#include "cc/test/tiled_layer_test_common.h"
+#include "cc/test/web_compositor_initializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebThread.h>
 #include <wtf/RefPtr.h>

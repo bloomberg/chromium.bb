@@ -6,7 +6,7 @@
 
 #include "CCScheduler.h"
 
-#include "CCSchedulerTestCommon.h"
+#include "cc/test/scheduler_test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <wtf/OwnPtr.h>

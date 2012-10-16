@@ -9,9 +9,9 @@
 #include "CCPrioritizedTextureManager.h"
 #include "CCSingleThreadProxy.h" // For DebugScopedSetImplThread
 #include "CCTexture.h"
-#include "CCTiledLayerTestCommon.h"
-#include "FakeCCGraphicsContext.h"
-#include "WebCompositorInitializer.h"
+#include "cc/test/fake_graphics_context.h"
+#include "cc/test/tiled_layer_test_common.h"
+#include "cc/test/web_compositor_initializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using namespace cc;

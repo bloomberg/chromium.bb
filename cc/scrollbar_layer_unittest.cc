@@ -9,8 +9,8 @@
 #include "CCScrollbarAnimationController.h"
 #include "CCScrollbarLayerImpl.h"
 #include "CCSingleThreadProxy.h"
-#include "FakeWebScrollbarThemeGeometry.h"
 #include "TreeSynchronizer.h"
+#include "cc/test/fake_web_scrollbar_theme_geometry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebScrollbar.h>
 #include <public/WebScrollbarThemeGeometry.h>

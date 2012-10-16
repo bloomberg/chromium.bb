@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCAnimationTestCommon.h"
+#include "cc/test/animation_test_common.h"
 
 #include "CCKeyframedAnimationCurve.h"
 #include "CCLayerAnimationController.h"

@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "FakeCCLayerTreeHostClient.h"
+#include "cc/test/fake_layer_tree_host_client.h"
 
 namespace cc {
 

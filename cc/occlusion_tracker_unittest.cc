@@ -6,17 +6,17 @@
 
 #include "CCOcclusionTracker.h"
 
-#include "CCAnimationTestCommon.h"
-#include "CCGeometryTestUtils.h"
 #include "CCLayerAnimationController.h"
 #include "CCLayerImpl.h"
 #include "CCLayerTreeHostCommon.h"
 #include "CCMathUtil.h"
-#include "CCOcclusionTrackerTestCommon.h"
 #include "CCOverdrawMetrics.h"
 #include "CCSingleThreadProxy.h"
 #include "LayerChromium.h"
 #include "Region.h"
+#include "cc/test/animation_test_common.h"
+#include "cc/test/geometry_test_utils.h"
+#include "cc/test/occlusion_tracker_test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebFilterOperation.h>

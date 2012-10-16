@@ -6,13 +6,13 @@
 
 #include "TreeSynchronizer.h"
 
-#include "CCAnimationTestCommon.h"
 #include "CCLayerAnimationController.h"
 #include "CCLayerImpl.h"
 #include "CCProxy.h"
 #include "CCSingleThreadProxy.h"
 #include "LayerChromium.h"
 #include "Region.h"
+#include "cc/test/animation_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using namespace cc;

@@ -6,19 +6,19 @@
 
 #include "CCRendererSoftware.h"
 
-#include "CCAnimationTestCommon.h"
-#include "CCGeometryTestUtils.h"
 #include "CCQuadSink.h"
 #include "CCRenderPass.h"
 #include "CCRenderPassDrawQuad.h"
-#include "CCRenderPassTestCommon.h"
 #include "CCSettings.h"
 #include "CCSingleThreadProxy.h" // For DebugScopedSetImplThread
 #include "CCSolidColorDrawQuad.h"
-#include "CCTestCommon.h"
 #include "CCTileDrawQuad.h"
-#include "FakeWebCompositorSoftwareOutputDevice.h"
-#include "FakeWebCompositorOutputSurface.h"
+#include "cc/test/animation_test_common.h"
+#include "cc/test/fake_web_compositor_output_surface.h"
+#include "cc/test/fake_web_compositor_software_output_device.h"
+#include "cc/test/geometry_test_utils.h"
+#include "cc/test/render_pass_test_common.h"
+#include "cc/test/test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

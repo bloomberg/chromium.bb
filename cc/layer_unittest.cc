@@ -6,14 +6,14 @@
 
 #include "LayerChromium.h"
 
-#include "CCGeometryTestUtils.h"
 #include "CCKeyframedAnimationCurve.h"
 #include "CCLayerImpl.h"
 #include "CCLayerTreeHost.h"
 #include "CCSingleThreadProxy.h"
-#include "FakeCCLayerTreeHostClient.h"
 #include "LayerPainterChromium.h"
-#include "WebCompositorInitializer.h"
+#include "cc/test/fake_layer_tree_host_client.h"
+#include "cc/test/geometry_test_utils.h"
+#include "cc/test/web_compositor_initializer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>

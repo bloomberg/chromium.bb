@@ -7,8 +7,8 @@
 #include "TextureLayerChromium.h"
 
 #include "CCLayerTreeHost.h"
-#include "FakeCCLayerTreeHostClient.h"
-#include "WebCompositorInitializer.h"
+#include "cc/test/fake_layer_tree_host_client.h"
+#include "cc/test/web_compositor_initializer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

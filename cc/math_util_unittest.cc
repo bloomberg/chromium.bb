@@ -6,8 +6,8 @@
 
 #include "CCMathUtil.h"
 
-#include "CCGeometryTestUtils.h"
 #include "FloatRect.h"
+#include "cc/test/geometry_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>
