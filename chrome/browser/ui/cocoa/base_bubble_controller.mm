@@ -253,11 +253,19 @@
     case info_bubble::kAlignEdgeToAnchorEdge:
       // If the arrow is to the right then move the origin so that the right
       // edge aligns with the anchor. If the arrow is to the left then there's
-      // nothing to do becaues the left edge is already aligned with the left
+      // nothing to do because the left edge is already aligned with the left
       // edge of the anchor.
       if ([bubble_ arrowLocation] == info_bubble::kTopRight) {
         origin.x -= NSWidth([window frame]);
       }
+      break;
+
+    case info_bubble::kAlignRightEdgeToAnchorEdge:
+      origin.x -= NSWidth([window frame]);
+      break;
+
+    case info_bubble::kAlignLeftEdgeToAnchorEdge:
+      // Nothing to do.
       break;
 
     default:

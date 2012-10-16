@@ -7,6 +7,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/memory/scoped_nsobject.h"
+
 namespace info_bubble {
 
 // These values are in view coordinates.
@@ -33,6 +35,10 @@ enum BubbleAlignment {
   kAlignArrowToAnchor,
   // The edge nearest to the arrow is lined up with the anchor point.
   kAlignEdgeToAnchorEdge,
+  // Align the right edge to the anchor point.
+  kAlignRightEdgeToAnchorEdge,
+  // Align the left edge to the anchor point.
+  kAlignLeftEdgeToAnchorEdge,
 };
 
 }  // namespace info_bubble
@@ -44,6 +50,7 @@ enum BubbleAlignment {
   info_bubble::BubbleArrowLocation arrowLocation_;
   info_bubble::BubbleAlignment alignment_;
   info_bubble::CornerFlags cornerFlags_;
+  scoped_nsobject<NSColor> backgroundColor_;
 }
 
 @property(assign, nonatomic) info_bubble::BubbleArrowLocation arrowLocation;
@@ -52,6 +59,10 @@ enum BubbleAlignment {
 
 // Returns the point location in view coordinates of the tip of the arrow.
 - (NSPoint)arrowTip;
+
+// Gets and sets the bubble's background color.
+- (NSColor*)backgroundColor;
+- (void)setBackgroundColor:(NSColor*)backgroundColor;
 
 @end
 

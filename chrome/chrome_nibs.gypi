@@ -9,6 +9,7 @@
 {
   'variables': {
     'mac_translated_xibs': [
+      'app/nibs/ActionBoxMenuItem.xib',
       'app/nibs/AvatarMenuItem.xib',
       'app/nibs/BookmarkAllTabs.xib',
       'app/nibs/BookmarkBar.xib',

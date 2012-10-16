@@ -19,6 +19,7 @@
     arrowLocation_ = info_bubble::kTopLeft;
     alignment_ = info_bubble::kAlignArrowToAnchor;
     cornerFlags_ = info_bubble::kRoundedAllCorners;
+    backgroundColor_.reset([[NSColor whiteColor] retain]);
   }
   return self;
 }
@@ -71,7 +72,7 @@
   [bezier lineToPoint:NSMakePoint(arrowStart.x + info_bubble::kBubbleArrowWidth,
                                   arrowStart.y)];
   [bezier closePath];
-  [[NSColor whiteColor] set];
+  [backgroundColor_ set];
   [bezier fill];
 }
 
@@ -84,6 +85,14 @@
                                                    NSMinX(bounds) + tipXOffset;
   NSPoint arrowTip = NSMakePoint(xOffset, NSMaxY(bounds));
   return arrowTip;
+}
+
+- (NSColor*)backgroundColor {
+  return backgroundColor_;
+}
+
+- (void)setBackgroundColor:(NSColor*)backgroundColor {
+  backgroundColor_.reset([backgroundColor retain]);
 }
 
 @end

@@ -5,20 +5,20 @@
 #import "chrome/browser/ui/cocoa/location_bar/plus_decoration.h"
 
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_commands.h"
-#import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
+#include "chrome/browser/ui/browser_window.h"
+#import "chrome/browser/ui/cocoa/location_bar/action_box_menu_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#import "chrome/browser/ui/cocoa/menu_controller.h"
+#import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 namespace {
-// The offset to apply to the menu so that it clears the bottom border of the
-// omnibox.
-const CGFloat kAnchorPointYOffset = 4.0;
-const CGFloat kAnchorPointFrameHeight = 23.0;
+// The offset to apply to the menu so that it appears just attached to the
+// right-hand side of the omnibox while slightly overlapping vertically.
+const CGFloat kAnchorPointXOffset = 1.0;
+const CGFloat kAnchorPointYOffset = 2.0;
 }  // namespace
 
 PlusDecoration::PlusDecoration(LocationBarViewMac* owner,
@@ -36,7 +36,9 @@ PlusDecoration::~PlusDecoration() {
 NSPoint PlusDecoration::GetActionBoxAnchorPoint() {
   AutocompleteTextField* field = owner_->GetAutocompleteTextField();
   NSRect bounds = [field bounds];
-  return NSMakePoint(NSMaxX(bounds), NSMaxY(bounds));
+  NSPoint anchor = NSMakePoint(NSMaxX(bounds) - kAnchorPointXOffset,
+                               NSMaxY(bounds) - kAnchorPointYOffset);
+  return [field convertPoint:anchor toView:nil];
 }
 
 void PlusDecoration::ResetIcon() {
@@ -65,26 +67,15 @@ NSString* PlusDecoration::GetToolTip() {
 
 void PlusDecoration::ShowMenu(scoped_ptr<ActionBoxMenuModel> menu_model) {
   // Controller for the menu attached to the plus decoration.
-  scoped_nsobject<MenuController> menu_controller(
-      [[MenuController alloc] initWithModel:menu_model.get()
-                     useWithPopUpButtonCell:YES]);
+  // |menu_controller| will automatically release itself on close.
+  NSWindow* parent = browser_->window()->GetNativeWindow();
+  ActionBoxMenuBubbleController* menu_controller =
+      [[ActionBoxMenuBubbleController alloc]
+          initWithModel:menu_model.PassAs<ui::MenuModel>()
+           parentWindow:parent
+             anchoredAt:[parent convertBaseToScreen:GetActionBoxAnchorPoint()]];
 
-  NSMenu* menu = [menu_controller menu];
-
-  // Align the menu popup to that its top-right corner matches the bottom-right
-  // corner of the omnibox.
-  AutocompleteTextField* field = owner_->GetAutocompleteTextField();
-  NSPoint point = GetActionBoxAnchorPoint();
-  NSRect popUpFrame = NSMakeRect(point.x - menu.size.width,
-      kAnchorPointYOffset, menu.size.width, kAnchorPointFrameHeight);
-  scoped_nsobject<NSPopUpButtonCell> pop_up_cell(
-      [[NSPopUpButtonCell alloc] initTextCell:@"" pullsDown:YES]);
-  DCHECK(pop_up_cell.get());
-
-  [pop_up_cell setMenu:menu];
-  [pop_up_cell selectItem:nil];
-  [pop_up_cell attachPopUpWithFrame:popUpFrame inView:field];
-  [pop_up_cell performClickWithFrame:popUpFrame inView:field];
+  [menu_controller showWindow:nil];
 }
 
 void PlusDecoration::SetIcons(int normal_id, int hover_id, int pressed_id) {
