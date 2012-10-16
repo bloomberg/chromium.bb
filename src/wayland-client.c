@@ -860,6 +860,13 @@ wl_display_dispatch_pending(struct wl_display *display)
 	return dispatch_queue(display, &display->queue, 0);
 }
 
+/** Retrieve the last error sent by the server
+ *
+ * \param display The display context object
+ * \return The last error sent asynchronously by \c display
+ *
+ * \memberof wl_display
+ */
 WL_EXPORT int
 wl_display_get_error(struct wl_display *display)
 {
