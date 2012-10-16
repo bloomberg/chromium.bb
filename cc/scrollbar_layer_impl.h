@@ -21,7 +21,7 @@ public:
     virtual ~CCScrollbarLayerImpl();
 
     CCScrollbarGeometryFixedThumb* scrollbarGeometry() const { return m_geometry.get(); }
-    void setScrollbarGeometry(PassOwnPtr<CCScrollbarGeometryFixedThumb>);
+    void setScrollbarGeometry(scoped_ptr<CCScrollbarGeometryFixedThumb>);
     void setScrollbarData(WebKit::WebScrollbar*);
 
     void setBackTrackResourceId(CCResourceProvider::ResourceId id) { m_backTrackResourceId = id; }
@@ -83,7 +83,7 @@ private:
     CCResourceProvider::ResourceId m_foreTrackResourceId;
     CCResourceProvider::ResourceId m_thumbResourceId;
 
-    OwnPtr<CCScrollbarGeometryFixedThumb> m_geometry;
+    scoped_ptr<CCScrollbarGeometryFixedThumb> m_geometry;
 
     // Data to implement CCScrollbar
     WebKit::WebScrollbar::ScrollbarOverlayStyle m_scrollbarOverlayStyle;

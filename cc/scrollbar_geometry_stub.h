@@ -5,9 +5,8 @@
 #ifndef CCScrollbarGeometryStub_h
 #define CCScrollbarGeometryStub_h
 
+#include "base/memory/scoped_ptr.h"
 #include <public/WebScrollbarThemeGeometry.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
 
 namespace cc {
 
@@ -41,10 +40,10 @@ public:
     virtual void splitTrack(WebKit::WebScrollbar*, const WebKit::WebRect& track, WebKit::WebRect& startTrack, WebKit::WebRect& thumb, WebKit::WebRect& endTrack) OVERRIDE;
 
 protected:
-    explicit CCScrollbarGeometryStub(PassOwnPtr<WebKit::WebScrollbarThemeGeometry>);
+    explicit CCScrollbarGeometryStub(scoped_ptr<WebKit::WebScrollbarThemeGeometry>);
 
 private:
-    OwnPtr<WebKit::WebScrollbarThemeGeometry> m_geometry;
+    scoped_ptr<WebKit::WebScrollbarThemeGeometry> m_geometry;
 };
 
 }

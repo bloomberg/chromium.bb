@@ -43,9 +43,9 @@ CCScrollbarLayerImpl::~CCScrollbarLayerImpl()
 {
 }
 
-void CCScrollbarLayerImpl::setScrollbarGeometry(PassOwnPtr<CCScrollbarGeometryFixedThumb> geometry)
+void CCScrollbarLayerImpl::setScrollbarGeometry(scoped_ptr<CCScrollbarGeometryFixedThumb> geometry)
 {
-    m_geometry = geometry;
+    m_geometry = geometry.Pass();
 }
 
 void CCScrollbarLayerImpl::setScrollbarData(WebScrollbar* scrollbar)

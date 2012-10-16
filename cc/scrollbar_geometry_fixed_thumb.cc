@@ -16,9 +16,9 @@ using WebKit::WebScrollbarThemeGeometry;
 
 namespace cc {
 
-PassOwnPtr<CCScrollbarGeometryFixedThumb> CCScrollbarGeometryFixedThumb::create(PassOwnPtr<WebScrollbarThemeGeometry> geometry)
+scoped_ptr<CCScrollbarGeometryFixedThumb> CCScrollbarGeometryFixedThumb::create(scoped_ptr<WebScrollbarThemeGeometry> geometry)
 {
-    return adoptPtr(new CCScrollbarGeometryFixedThumb(geometry));
+    return make_scoped_ptr(new CCScrollbarGeometryFixedThumb(geometry.Pass()));
 }
 
 CCScrollbarGeometryFixedThumb::~CCScrollbarGeometryFixedThumb()
@@ -37,7 +37,7 @@ void CCScrollbarGeometryFixedThumb::update(WebScrollbar* scrollbar)
 
 WebScrollbarThemeGeometry* CCScrollbarGeometryFixedThumb::clone() const
 {
-    CCScrollbarGeometryFixedThumb* geometry = new CCScrollbarGeometryFixedThumb(adoptPtr(CCScrollbarGeometryStub::clone()));
+    CCScrollbarGeometryFixedThumb* geometry = new CCScrollbarGeometryFixedThumb(make_scoped_ptr(CCScrollbarGeometryStub::clone()));
     geometry->m_thumbSize = m_thumbSize;
     return geometry;
 }
@@ -86,8 +86,8 @@ void CCScrollbarGeometryFixedThumb::splitTrack(WebScrollbar* scrollbar, const We
     }
 }
 
-CCScrollbarGeometryFixedThumb::CCScrollbarGeometryFixedThumb(PassOwnPtr<WebScrollbarThemeGeometry> geometry)
-    : CCScrollbarGeometryStub(geometry)
+CCScrollbarGeometryFixedThumb::CCScrollbarGeometryFixedThumb(scoped_ptr<WebScrollbarThemeGeometry> geometry)
+    : CCScrollbarGeometryStub(geometry.Pass())
 {
 }
 

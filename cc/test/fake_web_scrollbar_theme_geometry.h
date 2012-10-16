@@ -6,13 +6,12 @@
 #define FakeWebScrollbarThemeGeometry_h
 
 #include <public/WebScrollbarThemeGeometry.h>
-#include <wtf/PassOwnPtr.h>
 
 namespace WebKit {
 
 class FakeWebScrollbarThemeGeometry : public WebKit::WebScrollbarThemeGeometry {
 public:
-    static PassOwnPtr<WebKit::WebScrollbarThemeGeometry> create() { return adoptPtr(new WebKit::FakeWebScrollbarThemeGeometry()); }
+    static scoped_ptr<WebKit::WebScrollbarThemeGeometry> create() { return scoped_ptr<WebKit::WebScrollbarThemeGeometry>(new WebKit::FakeWebScrollbarThemeGeometry()); }
 
     virtual WebKit::WebScrollbarThemeGeometry* clone() const OVERRIDE
     {

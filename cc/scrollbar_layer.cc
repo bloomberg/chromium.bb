@@ -23,15 +23,15 @@ scoped_ptr<CCLayerImpl> ScrollbarLayerChromium::createCCLayerImpl()
     return CCScrollbarLayerImpl::create(id()).PassAs<CCLayerImpl>();
 }
 
-scoped_refptr<ScrollbarLayerChromium> ScrollbarLayerChromium::create(PassOwnPtr<WebKit::WebScrollbar> scrollbar, WebKit::WebScrollbarThemePainter painter, PassOwnPtr<WebKit::WebScrollbarThemeGeometry> geometry, int scrollLayerId)
+scoped_refptr<ScrollbarLayerChromium> ScrollbarLayerChromium::create(scoped_ptr<WebKit::WebScrollbar> scrollbar, WebKit::WebScrollbarThemePainter painter, scoped_ptr<WebKit::WebScrollbarThemeGeometry> geometry, int scrollLayerId)
 {
-    return make_scoped_refptr(new ScrollbarLayerChromium(scrollbar, painter, geometry, scrollLayerId));
+    return make_scoped_refptr(new ScrollbarLayerChromium(scrollbar.Pass(), painter, geometry.Pass(), scrollLayerId));
 }
 
-ScrollbarLayerChromium::ScrollbarLayerChromium(PassOwnPtr<WebKit::WebScrollbar> scrollbar, WebKit::WebScrollbarThemePainter painter, PassOwnPtr<WebKit::WebScrollbarThemeGeometry> geometry, int scrollLayerId)
-    : m_scrollbar(scrollbar)
+ScrollbarLayerChromium::ScrollbarLayerChromium(scoped_ptr<WebKit::WebScrollbar> scrollbar, WebKit::WebScrollbarThemePainter painter, scoped_ptr<WebKit::WebScrollbarThemeGeometry> geometry, int scrollLayerId)
+    : m_scrollbar(scrollbar.Pass())
     , m_painter(painter)
-    , m_geometry(geometry)
+    , m_geometry(geometry.Pass())
     , m_scrollLayerId(scrollLayerId)
     , m_textureFormat(GraphicsContext3D::INVALID_ENUM)
 {
@@ -48,7 +48,7 @@ void ScrollbarLayerChromium::pushPropertiesTo(CCLayerImpl* layer)
     CCScrollbarLayerImpl* scrollbarLayer = static_cast<CCScrollbarLayerImpl*>(layer);
 
     if (!scrollbarLayer->scrollbarGeometry())
-        scrollbarLayer->setScrollbarGeometry(CCScrollbarGeometryFixedThumb::create(adoptPtr(m_geometry->clone())));
+        scrollbarLayer->setScrollbarGeometry(CCScrollbarGeometryFixedThumb::create(make_scoped_ptr(m_geometry->clone())));
 
     scrollbarLayer->setScrollbarData(m_scrollbar.get());
 

@@ -16,7 +16,7 @@ namespace cc {
 // requiring the thumb resource to be repainted.
 class CCScrollbarGeometryFixedThumb : public CCScrollbarGeometryStub {
 public:
-    static PassOwnPtr<CCScrollbarGeometryFixedThumb> create(PassOwnPtr<WebKit::WebScrollbarThemeGeometry>);
+    static scoped_ptr<CCScrollbarGeometryFixedThumb> create(scoped_ptr<WebKit::WebScrollbarThemeGeometry>);
     virtual ~CCScrollbarGeometryFixedThumb();
 
     // Update thumb length from scrollbar
@@ -29,7 +29,7 @@ public:
     virtual void splitTrack(WebKit::WebScrollbar*, const WebKit::WebRect& track, WebKit::WebRect& startTrack, WebKit::WebRect& thumb, WebKit::WebRect& endTrack) OVERRIDE;
 
 private:
-    explicit CCScrollbarGeometryFixedThumb(PassOwnPtr<WebKit::WebScrollbarThemeGeometry>);
+    explicit CCScrollbarGeometryFixedThumb(scoped_ptr<WebKit::WebScrollbarThemeGeometry>);
 
     IntSize m_thumbSize;
 };

@@ -19,7 +19,7 @@ WebScrollbarLayer* WebScrollbarLayer::create(WebScrollbar* scrollbar, WebScrollb
 
 
 WebScrollbarLayerImpl::WebScrollbarLayerImpl(WebScrollbar* scrollbar, WebScrollbarThemePainter painter, WebScrollbarThemeGeometry* geometry)
-    : m_layer(new WebLayerImpl(ScrollbarLayerChromium::create(adoptPtr(scrollbar), painter, adoptPtr(geometry), 0)))
+    : m_layer(new WebLayerImpl(ScrollbarLayerChromium::create(make_scoped_ptr(scrollbar), painter, make_scoped_ptr(geometry), 0)))
 {
 }
 

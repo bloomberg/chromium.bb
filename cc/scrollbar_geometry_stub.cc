@@ -12,8 +12,8 @@ using WebKit::WebScrollbarThemeGeometry;
 
 namespace cc {
 
-CCScrollbarGeometryStub::CCScrollbarGeometryStub(PassOwnPtr<WebScrollbarThemeGeometry> geometry)
-    : m_geometry(geometry)
+CCScrollbarGeometryStub::CCScrollbarGeometryStub(scoped_ptr<WebScrollbarThemeGeometry> geometry)
+    : m_geometry(geometry.Pass())
 {
 }
 

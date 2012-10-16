@@ -22,7 +22,7 @@ class ScrollbarLayerChromium : public LayerChromium {
 public:
     virtual scoped_ptr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
 
-    static scoped_refptr<ScrollbarLayerChromium> create(PassOwnPtr<WebKit::WebScrollbar>, WebKit::WebScrollbarThemePainter, PassOwnPtr<WebKit::WebScrollbarThemeGeometry>, int scrollLayerId);
+    static scoped_refptr<ScrollbarLayerChromium> create(scoped_ptr<WebKit::WebScrollbar>, WebKit::WebScrollbarThemePainter, scoped_ptr<WebKit::WebScrollbarThemeGeometry>, int scrollLayerId);
 
     // LayerChromium interface
     virtual bool needsContentsScale() const OVERRIDE;
@@ -38,16 +38,16 @@ public:
     virtual ScrollbarLayerChromium* toScrollbarLayerChromium() OVERRIDE;
 
 protected:
-    ScrollbarLayerChromium(PassOwnPtr<WebKit::WebScrollbar>, WebKit::WebScrollbarThemePainter, PassOwnPtr<WebKit::WebScrollbarThemeGeometry>, int scrollLayerId);
+    ScrollbarLayerChromium(scoped_ptr<WebKit::WebScrollbar>, WebKit::WebScrollbarThemePainter, scoped_ptr<WebKit::WebScrollbarThemeGeometry>, int scrollLayerId);
     virtual ~ScrollbarLayerChromium();
 
 private:
     void updatePart(CachingBitmapCanvasLayerTextureUpdater*, LayerTextureUpdater::Texture*, const IntRect&, CCTextureUpdateQueue&, CCRenderingStats&);
     void createTextureUpdaterIfNeeded();
 
-    OwnPtr<WebKit::WebScrollbar> m_scrollbar;
+    scoped_ptr<WebKit::WebScrollbar> m_scrollbar;
     WebKit::WebScrollbarThemePainter m_painter;
-    OwnPtr<WebKit::WebScrollbarThemeGeometry> m_geometry;
+    scoped_ptr<WebKit::WebScrollbarThemeGeometry> m_geometry;
     int m_scrollLayerId;
 
     GC3Denum m_textureFormat;
