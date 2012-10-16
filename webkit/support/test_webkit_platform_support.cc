@@ -267,7 +267,8 @@ WebKit::WebData TestWebKitPlatformSupport::loadResource(const char* name) {
 WebKit::WebString TestWebKitPlatformSupport::queryLocalizedString(
     WebKit::WebLocalizedString::Name name) {
   // Returns messages same as WebKit's in DRT.
-  // We use different strings for form validation messages.
+  // We use different strings for form validation messages and page popup UI
+  // strings.
   switch (name) {
     case WebKit::WebLocalizedString::ValidationValueMissing:
     case WebKit::WebLocalizedString::ValidationValueMissingForCheckbox:
@@ -291,6 +292,18 @@ WebKit::WebString TestWebKitPlatformSupport::queryLocalizedString(
       return ASCIIToUTF16("range overflow");
     case WebKit::WebLocalizedString::ValidationStepMismatch:
       return ASCIIToUTF16("step mismatch");
+    case WebKit::WebLocalizedString::OtherDateLabel:
+      return ASCIIToUTF16("<<OtherDateLabel>>");
+    case WebKit::WebLocalizedString::OtherMonthLabel:
+      return ASCIIToUTF16("<<OtherMonthLabel>>");
+    case WebKit::WebLocalizedString::OtherTimeLabel:
+      return ASCIIToUTF16("<<OtherTimeLabel>>");
+    case WebKit::WebLocalizedString::OtherWeekLabel:
+      return ASCIIToUTF16("<<OtherWeekLabel>>");
+    case WebKit::WebLocalizedString::CalendarClear:
+      return ASCIIToUTF16("<<CalendarClear>>");
+    case WebKit::WebLocalizedString::CalendarToday:
+      return ASCIIToUTF16("<<CalendarToday>>");
     default:
       return WebKitPlatformSupportImpl::queryLocalizedString(name);
   }
