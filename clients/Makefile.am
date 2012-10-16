@@ -5,7 +5,8 @@ bin_PROGRAMS =					\
 noinst_PROGRAMS =				\
 	$(clients_programs)			\
 	$(poppler_programs)			\
-	$(simple_clients_programs)
+	$(simple_clients_programs)		\
+	$(simple_egl_clients_programs)
 
 libexec_PROGRAMS =				\
 	$(desktop_shell)			\
@@ -21,13 +22,8 @@ AM_CPPFLAGS =					\
 
 if BUILD_SIMPLE_CLIENTS
 simple_clients_programs =			\
-	simple-egl				\
 	simple-shm				\
 	simple-touch
-
-simple_egl_SOURCES = simple-egl.c
-simple_egl_CPPFLAGS = $(SIMPLE_CLIENT_CFLAGS)
-simple_egl_LDADD = $(SIMPLE_CLIENT_LIBS) -lm
 
 simple_shm_SOURCES = simple-shm.c 		\
 	../shared/os-compatibility.c		\
@@ -40,6 +36,15 @@ simple_touch_SOURCES = simple-touch.c		\
 	../shared/os-compatibility.h
 simple_touch_CPPFLAGS = $(SIMPLE_CLIENT_CFLAGS)
 simple_touch_LDADD = $(SIMPLE_CLIENT_LIBS)
+endif
+
+if BUILD_SIMPLE_EGL_CLIENTS
+simple_egl_clients_programs =			\
+	simple-egl
+
+simple_egl_SOURCES = simple-egl.c
+simple_egl_CPPFLAGS = $(SIMPLE_EGL_CLIENT_CFLAGS)
+simple_egl_LDADD = $(SIMPLE_EGL_CLIENT_LIBS) -lm
 endif
 
 if BUILD_CLIENTS

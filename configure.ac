@@ -151,11 +151,22 @@ AC_SUBST(SHARED_CFLAGS)
 COMPOSITOR_LIBS="$COMPOSITOR_LIBS $IMAGE_LIBS"
 COMPOSITOR_CFLAGS="$COMPOSITOR_CFLAGS $IMAGE_CFLAGS"
 
-AC_ARG_ENABLE(simple-clients, [  --enable-simple-clients],, enable_simple_clients=yes)
-AM_CONDITIONAL(BUILD_SIMPLE_CLIENTS, test x$enable_simple_clients = xyes)
+AC_ARG_ENABLE(simple-clients,
+              AS_HELP_STRING([--disable-simple-clients],
+                             [do not build the simple wl_shm clients]),,
+              enable_simple_clients=yes)
+AM_CONDITIONAL(BUILD_SIMPLE_CLIENTS, test "x$enable_simple_clients" = "xyes")
 if test x$enable_simple_clients = xyes; then
-  AC_DEFINE([BUILD_SIMPLE_CLIENTS], [1], [Build the Wayland simple clients])
-  PKG_CHECK_MODULES(SIMPLE_CLIENT,
+  PKG_CHECK_MODULES(SIMPLE_CLIENT, [wayland-client])
+fi
+
+AC_ARG_ENABLE(simple-egl-clients,
+              AS_HELP_STRING([--disable-simple-egl-clients],
+                             [do not build the simple EGL clients]),,
+              enable_simple_egl_clients=yes)
+AM_CONDITIONAL(BUILD_SIMPLE_EGL_CLIENTS, test "x$enable_simple_egl_clients" = "xyes")
+if test x$enable_simple_egl_clients = xyes; then
+  PKG_CHECK_MODULES(SIMPLE_EGL_CLIENT,
                     [egl >= 7.10 glesv2 wayland-client wayland-egl])
 fi
 
