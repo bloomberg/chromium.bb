@@ -452,8 +452,8 @@ TEST_P(CCResourceProviderTest, TransferResources)
     EXPECT_EQ(2u, m_resourceProvider->numResources());
     EXPECT_EQ(2u, m_resourceProvider->mailboxCount());
     CCResourceProvider::ResourceIdMap resourceMap = m_resourceProvider->getChildToParentMap(childId);
-    CCResourceProvider::ResourceId mappedId1 = resourceMap.get(id1);
-    CCResourceProvider::ResourceId mappedId2 = resourceMap.get(id2);
+    CCResourceProvider::ResourceId mappedId1 = resourceMap[id1];
+    CCResourceProvider::ResourceId mappedId2 = resourceMap[id2];
     EXPECT_NE(0u, mappedId1);
     EXPECT_NE(0u, mappedId2);
     EXPECT_FALSE(m_resourceProvider->inUseByConsumer(id1));
@@ -567,7 +567,7 @@ TEST_P(CCResourceProviderTest, DeleteTransferredResources)
     {
         // Transfer resources back from the parent to the child.
         CCResourceProvider::ResourceIdMap resourceMap = m_resourceProvider->getChildToParentMap(childId);
-        CCResourceProvider::ResourceId mappedId = resourceMap.get(id);
+        CCResourceProvider::ResourceId mappedId = resourceMap[id];
         EXPECT_NE(0u, mappedId);
         CCResourceProvider::ResourceIdArray resourceIdsToTransfer;
         resourceIdsToTransfer.append(mappedId);

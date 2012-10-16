@@ -6,6 +6,7 @@
 #define CCResourceProvider_h
 
 #include "base/basictypes.h"
+#include "base/hash_tables.h"
 #include "CCGraphicsContext.h"
 #include "GraphicsContext3D.h"
 #include "IntSize.h"
@@ -13,7 +14,6 @@
 #include "SkCanvas.h"
 #include "TextureCopier.h"
 #include <wtf/Deque.h>
-#include <wtf/HashMap.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>
@@ -37,7 +37,7 @@ class CCResourceProvider {
 public:
     typedef unsigned ResourceId;
     typedef Vector<ResourceId> ResourceIdArray;
-    typedef HashMap<ResourceId, ResourceId> ResourceIdMap;
+    typedef base::hash_map<ResourceId, ResourceId> ResourceIdMap;
     enum TextureUsageHint { TextureUsageAny, TextureUsageFramebuffer };
     enum ResourceType {
         GLTexture = 1,
@@ -228,7 +228,7 @@ private:
         GC3Denum format;
         ResourceType type;
     };
-    typedef HashMap<ResourceId, Resource> ResourceMap;
+    typedef base::hash_map<ResourceId, Resource> ResourceMap;
     struct Child {
         Child();
         ~Child();
@@ -237,7 +237,7 @@ private:
         ResourceIdMap childToParentMap;
         ResourceIdMap parentToChildMap;
     };
-    typedef HashMap<int, Child> ChildMap;
+    typedef base::hash_map<int, Child> ChildMap;
 
     explicit CCResourceProvider(CCGraphicsContext*);
     bool initialize();

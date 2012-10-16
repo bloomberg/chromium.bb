@@ -11,6 +11,7 @@
 #include "IntSize.h"
 #include <public/WebTransformationMatrix.h>
 #include <public/WebVideoFrameProvider.h>
+#include <wtf/ThreadingPrimitives.h>
 
 namespace WebKit {
 class WebVideoFrame;

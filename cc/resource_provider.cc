@@ -140,11 +140,7 @@ bool CCResourceProvider::inUseByConsumer(ResourceId id)
     ASSERT(CCProxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-    Resource* resource = &it->value;
-#else
     Resource* resource = &it->second;
-#endif
     return !!resource->lockForReadCount || resource->exported;
 }
 
@@ -184,7 +180,7 @@ CCResourceProvider::ResourceId CCResourceProvider::createGLTexture(int pool, con
         GLC(context3d, context3d->texImage2D(GraphicsContext3D::TEXTURE_2D, 0, format, size.width(), size.height(), 0, format, GraphicsContext3D::UNSIGNED_BYTE, 0));
     ResourceId id = m_nextId++;
     Resource resource(textureId, pool, size, format);
-    m_resources.add(id, resource);
+    m_resources[id] = resource;
     return id;
 }
 
@@ -196,7 +192,7 @@ CCResourceProvider::ResourceId CCResourceProvider::createBitmap(int pool, const 
 
     ResourceId id = m_nextId++;
     Resource resource(pixels, pool, size, GraphicsContext3D::RGBA);
-    m_resources.add(id, resource);
+    m_resources[id] = resource;
     return id;
 }
 
@@ -207,7 +203,7 @@ CCResourceProvider::ResourceId CCResourceProvider::createResourceFromExternalTex
     ResourceId id = m_nextId++;
     Resource resource(textureId, 0, IntSize(), 0);
     resource.external = true;
-    m_resources.add(id, resource);
+    m_resources[id] = resource;
     return id;
 }
 
@@ -216,11 +212,7 @@ void CCResourceProvider::deleteResource(ResourceId id)
     ASSERT(CCProxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-    Resource* resource = &it->value;
-#else
     Resource* resource = &it->second;
-#endif
     ASSERT(!resource->lockedForWrite);
     ASSERT(!resource->lockForReadCount);
     ASSERT(!resource->markedForDeletion);
@@ -234,11 +226,7 @@ void CCResourceProvider::deleteResource(ResourceId id)
 
 void CCResourceProvider::deleteResourceInternal(ResourceMap::iterator it)
 {
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-    Resource* resource = &it->value;
-#else
     Resource* resource = &it->second;
-#endif
     if (resource->glId && !resource->external) {
         WebGraphicsContext3D* context3d = m_context->context3D();
         ASSERT(context3d);
@@ -247,7 +235,7 @@ void CCResourceProvider::deleteResourceInternal(ResourceMap::iterator it)
     if (resource->pixels)
         delete resource->pixels;
 
-    m_resources.remove(it);
+    m_resources.erase(it);
 }
 
 void CCResourceProvider::deleteOwnedResources(int pool)
@@ -255,13 +243,8 @@ void CCResourceProvider::deleteOwnedResources(int pool)
     ASSERT(CCProxy::isImplThread());
     ResourceIdArray toDelete;
     for (ResourceMap::iterator it = m_resources.begin(); it != m_resources.end(); ++it) {
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-        if (it->value.pool == pool && !it->value.external && !it->value.markedForDeletion)
-            toDelete.append(it->key);
-#else
-        if (it->second.pool == pool && !it->second.external && !it->value.markedForDeletion)
+        if (it->second.pool == pool && !it->second.external && !it->second.markedForDeletion)
             toDelete.append(it->first);
-#endif
     }
     for (ResourceIdArray::iterator it = toDelete.begin(); it != toDelete.end(); ++it)
         deleteResource(*it);
@@ -271,11 +254,7 @@ CCResourceProvider::ResourceType CCResourceProvider::resourceType(ResourceId id)
 {
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-    Resource* resource = &it->value;
-#else
     Resource* resource = &it->second;
-#endif
     return resource->type;
 }
 
@@ -284,11 +263,7 @@ void CCResourceProvider::upload(ResourceId id, const uint8_t* image, const IntRe
     ASSERT(CCProxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-    Resource* resource = &it->value;
-#else
     Resource* resource = &it->second;
-#endif
     ASSERT(!resource->lockedForWrite);
     ASSERT(!resource->lockForReadCount);
     ASSERT(!resource->external);
@@ -342,11 +317,7 @@ const CCResourceProvider::Resource* CCResourceProvider::lockForRead(ResourceId i
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
 
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-    Resource* resource = &it->value;
-#else
     Resource* resource = &it->second;
-#endif
     ASSERT(!resource->lockedForWrite);
     ASSERT(!resource->exported);
     resource->lockForReadCount++;
@@ -358,11 +329,7 @@ void CCResourceProvider::unlockForRead(ResourceId id)
     ASSERT(CCProxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-    Resource* resource = &it->value;
-#else
     Resource* resource = &it->second;
-#endif
     ASSERT(resource->lockForReadCount > 0);
     ASSERT(!resource->exported);
     resource->lockForReadCount--;
@@ -373,11 +340,7 @@ const CCResourceProvider::Resource* CCResourceProvider::lockForWrite(ResourceId 
     ASSERT(CCProxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-    Resource* resource = &it->value;
-#else
     Resource* resource = &it->second;
-#endif
     ASSERT(!resource->lockedForWrite);
     ASSERT(!resource->lockForReadCount);
     ASSERT(!resource->exported);
@@ -391,11 +354,7 @@ void CCResourceProvider::unlockForWrite(ResourceId id)
     ASSERT(CCProxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-    Resource* resource = &it->value;
-#else
     Resource* resource = &it->second;
-#endif
     ASSERT(resource->lockedForWrite);
     ASSERT(!resource->exported);
     ASSERT(!resource->external);
@@ -517,7 +476,7 @@ int CCResourceProvider::createChild(int pool)
     Child childInfo;
     childInfo.pool = pool;
     int child = m_nextChild++;
-    m_children.add(child, childInfo);
+    m_children[child] = childInfo;
     return child;
 }
 
@@ -526,12 +485,8 @@ void CCResourceProvider::destroyChild(int child)
     ASSERT(CCProxy::isImplThread());
     ChildMap::iterator it = m_children.find(child);
     ASSERT(it != m_children.end());
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-    deleteOwnedResources(it->value.pool);
-#else
     deleteOwnedResources(it->second.pool);
-#endif
-    m_children.remove(it);
+    m_children.erase(it);
     trimMailboxDeque();
 }
 
@@ -540,11 +495,7 @@ const CCResourceProvider::ResourceIdMap& CCResourceProvider::getChildToParentMap
     ASSERT(CCProxy::isImplThread());
     ChildMap::const_iterator it = m_children.find(child);
     ASSERT(it != m_children.end());
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-    return it->value.childToParentMap;
-#else
     return it->second.childToParentMap;
-#endif
 }
 
 CCResourceProvider::TransferableResourceList CCResourceProvider::prepareSendToParent(const ResourceIdArray& resources)
@@ -560,11 +511,7 @@ CCResourceProvider::TransferableResourceList CCResourceProvider::prepareSendToPa
     for (ResourceIdArray::const_iterator it = resources.begin(); it != resources.end(); ++it) {
         TransferableResource resource;
         if (transferResource(context3d, *it, &resource)) {
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-            m_resources.find(*it)->value.exported = true;
-#else
             m_resources.find(*it)->second.exported = true;
-#endif
             list.resources.append(resource);
         }
     }
@@ -583,18 +530,15 @@ CCResourceProvider::TransferableResourceList CCResourceProvider::prepareSendToCh
         // FIXME: Implement this path for software compositing.
         return list;
     }
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-    Child& childInfo = m_children.find(child)->value;
-#else
     Child& childInfo = m_children.find(child)->second;
-#endif
     for (ResourceIdArray::const_iterator it = resources.begin(); it != resources.end(); ++it) {
         TransferableResource resource;
         if (!transferResource(context3d, *it, &resource))
             ASSERT_NOT_REACHED();
-        resource.id = childInfo.parentToChildMap.get(*it);
-        childInfo.parentToChildMap.remove(*it);
-        childInfo.childToParentMap.remove(resource.id);
+        ASSERT(childInfo.parentToChildMap.find(*it) != childInfo.parentToChildMap.end());
+        resource.id = childInfo.parentToChildMap[*it];
+        childInfo.parentToChildMap.erase(*it);
+        childInfo.childToParentMap.erase(resource.id);
         list.resources.append(resource);
         deleteResource(*it);
     }
@@ -620,11 +564,7 @@ void CCResourceProvider::receiveFromChild(int child, const TransferableResourceL
         // (and is simpler) to wait.
         GLC(context3d, context3d->waitSyncPoint(resources.syncPoint));
     }
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-    Child& childInfo = m_children.find(child)->value;
-#else
     Child& childInfo = m_children.find(child)->second;
-#endif
     for (Vector<TransferableResource>::const_iterator it = resources.resources.begin(); it != resources.resources.end(); ++it) {
         unsigned textureId;
         GLC(context3d, textureId = context3d->createTexture());
@@ -632,10 +572,10 @@ void CCResourceProvider::receiveFromChild(int child, const TransferableResourceL
         GLC(context3d, context3d->consumeTextureCHROMIUM(GraphicsContext3D::TEXTURE_2D, it->mailbox.name));
         ResourceId id = m_nextId++;
         Resource resource(textureId, childInfo.pool, it->size, it->format);
-        m_resources.add(id, resource);
+        m_resources[id] = resource;
         m_mailboxes.append(it->mailbox);
-        childInfo.parentToChildMap.add(id, it->id);
-        childInfo.childToParentMap.add(it->id, id);
+        childInfo.parentToChildMap[id] = it->id;
+        childInfo.childToParentMap[it->id] = id;
     }
 }
 
@@ -652,11 +592,7 @@ void CCResourceProvider::receiveFromParent(const TransferableResourceList& resou
     for (Vector<TransferableResource>::const_iterator it = resources.resources.begin(); it != resources.resources.end(); ++it) {
         ResourceMap::iterator mapIterator = m_resources.find(it->id);
         ASSERT(mapIterator != m_resources.end());
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-        Resource* resource = &mapIterator->value;
-#else
         Resource* resource = &mapIterator->second;
-#endif
         ASSERT(resource->exported);
         resource->exported = false;
         GLC(context3d, context3d->bindTexture(GraphicsContext3D::TEXTURE_2D, resource->glId));
@@ -672,11 +608,7 @@ bool CCResourceProvider::transferResource(WebGraphicsContext3D* context, Resourc
     ASSERT(CCProxy::isImplThread());
     ResourceMap::const_iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-    const Resource* source = &it->value;
-#else
     const Resource* source = &it->second;
-#endif
     ASSERT(!source->lockedForWrite);
     ASSERT(!source->lockForReadCount);
     ASSERT(!source->external);
@@ -704,27 +636,15 @@ void CCResourceProvider::trimMailboxDeque()
     size_t maxMailboxCount = 0;
     if (m_context->capabilities().hasParentCompositor) {
         for (ResourceMap::iterator it = m_resources.begin(); it != m_resources.end(); ++it) {
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-            if (!it->value.exported && !it->value.external)
-#else
             if (!it->second.exported && !it->second.external)
-#endif
                 ++maxMailboxCount;
         }
     } else {
         base::hash_set<int> childPoolSet;
         for (ChildMap::iterator it = m_children.begin(); it != m_children.end(); ++it)
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-            childPoolSet.insert(it->value.pool);
-#else
             childPoolSet.insert(it->second.pool);
-#endif
         for (ResourceMap::iterator it = m_resources.begin(); it != m_resources.end(); ++it) {
-#if WTF_NEW_HASHMAP_ITERATORS_INTERFACE
-            if (ContainsKey(childPoolSet, it->value.pool))
-#else
             if (ContainsKey(childPoolSet, it->second.pool))
-#endif
                 ++maxMailboxCount;
         }
     }
