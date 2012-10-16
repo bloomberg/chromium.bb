@@ -88,8 +88,17 @@ MediaGalleriesPrivateEventRouter::MediaGalleriesPrivateEventRouter(
     Profile* profile)
     : profile_(profile) {
   base::SystemMonitor* system_monitor = base::SystemMonitor::Get();
-  if (system_monitor)
+  if (system_monitor) {
     system_monitor->AddDevicesChangedObserver(this);
+
+    // Add the devices that were already present before
+    // MediaGalleriesPrivateEventRouter creation.
+    std::vector<base::SystemMonitor::RemovableStorageInfo> storage_info =
+        system_monitor->GetAttachedRemovableStorage();
+    TransientDeviceIds* device_ids = TransientDeviceIds::GetInstance();
+    for (size_t i = 0; i < storage_info.size(); ++i)
+      device_ids->DeviceAttached(storage_info[i].device_id);
+  }
 }
 
 MediaGalleriesPrivateEventRouter::~MediaGalleriesPrivateEventRouter() {
