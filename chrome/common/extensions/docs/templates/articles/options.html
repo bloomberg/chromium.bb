@@ -47,14 +47,13 @@ function restore_options() {
     }
   }
 }
-document.addEventListener('DOMContentReady', restore_options);
+document.addEventListener('DOMContentLoaded', restore_options);
 document.querySelector('#save').addEventListener('click', save_options);
 </pre>
 
 <pre>
 &lt;html>
 &lt;head>&lt;title>My Test Extension Options&lt;/title>&lt;/head>
-&lt;script src="options.js">&lt;/script>
 
 &lt;body>
 
@@ -70,6 +69,9 @@ Favorite Color:
 &lt;div id="status">&lt;/div>
 &lt;button id="save">Save&lt;/button>
 &lt;/body>
+
+&lt;script src="options.js">&lt;/script>
+
 &lt;/html>
 </pre>
 
