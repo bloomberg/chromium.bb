@@ -325,6 +325,12 @@ cr.define('ntp', function() {
   var syncEnabled = undefined;
 
   /**
+   * The current most visited data being displayed.
+   * @type {Array.<Object>}
+   */
+  var mostVisitedData_ = [];
+
+  /**
    * The current bookmark data being displayed. Keep a reference to this data
    * in case the sync enabled state changes.  In this case, the bookmark data
    * will need to be refiltered.
@@ -655,10 +661,11 @@ cr.define('ntp', function() {
     var title = createDiv('title');
     title.textContent = item.title;
     var spacerImg = createElement('img', 'title-spacer');
+    spacerImg.alt = '';
     title.insertBefore(spacerImg, title.firstChild);
     thumbnailCell.appendChild(title);
 
-    wrapClickHandler(thumbnailContainer, item, opt_clickCallback);
+    wrapClickHandler(thumbnailCell, item, opt_clickCallback);
 
     thumbnailCell.setAttribute(CONTEXT_MENU_URL_KEY, item.url);
     thumbnailCell.contextMenuItem = item;
@@ -910,6 +917,9 @@ cr.define('ntp', function() {
       data.splice(8, data.length - 8);
     }
 
+    if (equals(data, mostVisitedData_))
+      return;
+
     var clickFunction = function(item) {
       chrome.send('metricsHandler:recordAction', ['MobileNTPMostVisited']);
       window.location = item.url;
@@ -917,6 +927,8 @@ cr.define('ntp', function() {
     populateData(findList('most_visited'), SectionType.MOST_VISITED, data,
         makeMostVisitedItem, clickFunction);
     computeDynamicLayout();
+
+    mostVisitedData_ = data;
   }
 
   /**
@@ -2488,6 +2500,31 @@ cr.define('ntp', function() {
 /////////////////////////////////////////////////////////////////////////////
 //Utility Functions.
 /////////////////////////////////////////////////////////////////////////////
+
+/**
+ * A best effort approach for checking simple data object equality.
+ * @param {?} val1 The first value to check equality for.
+ * @param {?} val2 The second value to check equality for.
+ * @return {boolean} Whether the two objects are equal(ish).
+ */
+function equals(val1, val2) {
+  if (typeof val1 != 'object' || typeof val2 != 'object')
+    return val1 === val2;
+
+  // Object and array equality checks.
+  var keyCountVal1 = 0;
+  for (var key in val1) {
+    if (!(key in val2) || !equals(val1[key], val2[key]))
+      return false;
+    keyCountVal1++;
+  }
+  var keyCountVal2 = 0;
+  for (var key in val2)
+    keyCountVal2++;
+  if (keyCountVal1 != keyCountVal2)
+    return false;
+  return true;
+}
 
 /**
  * Alias for document.getElementById.
