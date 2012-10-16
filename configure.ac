@@ -175,7 +175,7 @@ if test x$enable_clients = xyes; then
 		    [have_cairo_egl=yes], [have_cairo_egl=no])
   AS_IF([test "x$have_cairo_egl" = "xyes"],
         [AC_DEFINE([HAVE_CAIRO_EGL], [1], [Have cairo-egl])],
-        [AC_MSG_WARN([Cairo-EGL not found - clients will use cairo image])])
+        [AC_MSG_WARN([clients will use cairo image, cairo-egl not used because $CAIRO_EGL_PKG_ERRORS])])
 fi
 
 AC_ARG_ENABLE(weston-launch, [  --enable-weston-launch],, enable_weston_launch=yes)
