@@ -316,11 +316,12 @@ int
 main(int argc, char **argv)
 {
 	struct touch *touch;
+	int ret = 0;
 
 	touch = touch_create(600, 500);
 
-	while (true)
-		wl_display_dispatch(touch->display);
+	while (ret != -1)
+		ret = wl_display_dispatch(touch->display);
 
 	return 0;
 }

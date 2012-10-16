@@ -591,7 +591,7 @@ main(int argc, char **argv)
 	struct sigaction sigint;
 	struct display display = { 0 };
 	struct window  window  = { 0 };
-	int i;
+	int i, ret = 0;
 
 	window.display = &display;
 	display.window = &window;
@@ -627,8 +627,8 @@ main(int argc, char **argv)
 	sigint.sa_flags = SA_RESETHAND;
 	sigaction(SIGINT, &sigint, NULL);
 
-	while (running)
-		wl_display_dispatch(display.display);
+	while (running && ret != -1)
+		ret = wl_display_dispatch(display.display);
 
 	fprintf(stderr, "simple-egl exiting\n");
 

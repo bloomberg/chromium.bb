@@ -3837,8 +3837,13 @@ handle_display_data(struct task *task, uint32_t events)
 		return;
 	}
 
-	if (events & EPOLLIN)
-		wl_display_dispatch(display->display);
+	if (events & EPOLLIN) {
+		ret = wl_display_dispatch(display->display);
+		if (ret == -1) {
+			display_exit(display);
+			return;
+		}
+	}
 
 	if (events & EPOLLOUT) {
 		ret = wl_display_flush(display->display);

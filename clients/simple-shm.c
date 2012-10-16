@@ -328,6 +328,7 @@ main(int argc, char **argv)
 	struct sigaction sigint;
 	struct display *display;
 	struct window *window;
+	int ret;
 
 	display = create_display();
 	window = create_window(display, 250, 250);
@@ -344,8 +345,8 @@ main(int argc, char **argv)
 
 	redraw(window, NULL, 0);
 
-	while (running)
-		wl_display_dispatch(display->display);
+	while (running && ret != -1)
+		ret = wl_display_dispatch(display->display);
 
 	fprintf(stderr, "simple-shm exiting\n");
 	destroy_window(window);
