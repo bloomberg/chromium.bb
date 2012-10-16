@@ -37,7 +37,7 @@ class NaClSDKTest(pyauto.PyUITest):
   _settings = {
       'post_sdk_download_url': 'http://code.google.com/chrome/nativeclient/'
           'docs/download.html',
-      'post_sdk_zip': 'http://commondatastorage.googleapis.com/'
+      'post_sdk_zip': 'http://storage.googleapis.com/'
           'nativeclient-mirror/nacl/nacl_sdk/nacl_sdk.zip',
       'min_required_chrome_build': 14,
   }
