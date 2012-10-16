@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCScrollbarAnimationController.h"
+#include "cc/scrollbar_animation_controller.h"
 
 #include "CCScrollbarLayerImpl.h"
 #include <wtf/CurrentTime.h>

@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "CCRendererGL.h"
+#include "cc/gl_renderer.h"
 
 #include "CCDrawQuad.h"
 #include "CCPrioritizedTextureManager.h"
-#include "CCResourceProvider.h"
+#include "cc/resource_provider.h"
 #include "CCSettings.h"
 #include "CCSingleThreadProxy.h"
 #include "GraphicsContext3D.h"

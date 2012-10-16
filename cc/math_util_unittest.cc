@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCMathUtil.h"
+#include "cc/math_util.h"
 
 #include "FloatRect.h"
 #include "cc/test/geometry_test_utils.h"

@@ -6,7 +6,7 @@
 
 #include "CCLayerSorter.h"
 
-#include "CCMathUtil.h"
+#include "cc/math_util.h"
 #include "CCRenderSurface.h"
 #include <limits.h>
 #include <public/WebTransformationMatrix.h>

@@ -7,7 +7,7 @@
 #include "CCRenderPass.h"
 
 #include "CCLayerImpl.h"
-#include "CCMathUtil.h"
+#include "cc/math_util.h"
 #include "CCOcclusionTracker.h"
 #include "CCQuadCuller.h"
 #include "CCSharedQuadState.h"

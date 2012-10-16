@@ -9,8 +9,8 @@
 #include "CCDrawQuad.h"
 #include "CCGraphicsContext.h"
 #include "CCLayerTreeHost.h"
-#include "CCTextureUpdateController.h"
-#include "CCTimer.h"
+#include "cc/texture_update_controller.h"
+#include "cc/timer.h"
 #include "TraceEvent.h"
 #include <wtf/CurrentTime.h>
 

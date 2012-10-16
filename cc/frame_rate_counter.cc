@@ -8,7 +8,7 @@
 
 #include <cmath>
 
-#include "CCProxy.h"
+#include "cc/proxy.h"
 #include <public/Platform.h>
 
 namespace cc {

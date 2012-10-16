@@ -5,11 +5,11 @@
 #ifndef CCScheduler_h
 #define CCScheduler_h
 
+#include "CCFrameRateController.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include "CCFrameRateController.h"
-#include "CCSchedulerStateMachine.h"
+#include "cc/scheduler_state_machine.h"
 
 namespace cc {
 

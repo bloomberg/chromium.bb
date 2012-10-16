@@ -7,7 +7,7 @@
 #include "CCFrameRateController.h"
 
 #include "CCDelayBasedTimeSource.h"
-#include "CCTimeSource.h"
+#include "cc/time_source.h"
 #include "TraceEvent.h"
 #include <wtf/CurrentTime.h>
 

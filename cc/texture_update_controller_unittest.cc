@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCTextureUpdateController.h"
+#include "cc/texture_update_controller.h"
 
 #include "CCSingleThreadProxy.h" // For DebugScopedSetImplThread
 #include "cc/test/fake_web_compositor_output_surface.h"

@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCTileDrawQuad.h"
+#include "cc/tile_draw_quad.h"
 
 namespace cc {
 

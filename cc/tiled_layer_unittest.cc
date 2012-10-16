@@ -7,17 +7,17 @@
 #include "cc/tiled_layer.h"
 
 #include "CCOverdrawMetrics.h"
-#include "CCRenderingStats.h"
 #include "CCSingleThreadProxy.h" // For DebugScopedSetImplThread
-#include "CCTextureUpdateController.h"
 #include "cc/bitmap_canvas_layer_texture_updater.h"
 #include "cc/layer_painter.h"
+#include "cc/rendering_stats.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_graphics_context.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/tiled_layer_test_common.h"
 #include "cc/test/web_compositor_initializer.h"
+#include "cc/texture_update_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>
 

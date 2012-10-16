@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "CCPriorityCalculator.h"
-#include "CCResourceProvider.h"
+#include "cc/resource_provider.h"
 #include "CCTexture.h"
 #include "GraphicsContext3D.h"
 #include "IntRect.h"

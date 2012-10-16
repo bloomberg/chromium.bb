@@ -9,10 +9,10 @@
 #include "base/stringprintf.h"
 #include "CCDebugBorderDrawQuad.h"
 #include "CCLayerSorter.h"
-#include "CCMathUtil.h"
-#include "CCProxy.h"
+#include "cc/math_util.h"
+#include "cc/proxy.h"
 #include "CCQuadSink.h"
-#include "CCScrollbarAnimationController.h"
+#include "cc/scrollbar_animation_controller.h"
 #include "CCSettings.h"
 #include "TraceEvent.h"
 

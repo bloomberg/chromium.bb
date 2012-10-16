@@ -5,9 +5,9 @@
 #ifndef CCSingleThreadProxy_h
 #define CCSingleThreadProxy_h
 
-#include "CCAnimationEvents.h"
+#include "cc/animation_events.h"
 #include "CCLayerTreeHostImpl.h"
-#include "CCProxy.h"
+#include "cc/proxy.h"
 #include <base/time.h>
 #include <limits>
 

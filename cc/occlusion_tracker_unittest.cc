@@ -9,7 +9,7 @@
 #include "CCLayerAnimationController.h"
 #include "CCLayerImpl.h"
 #include "CCLayerTreeHostCommon.h"
-#include "CCMathUtil.h"
+#include "cc/math_util.h"
 #include "CCOverdrawMetrics.h"
 #include "CCSingleThreadProxy.h"
 #include "Region.h"

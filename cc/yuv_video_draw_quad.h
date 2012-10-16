@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "CCDrawQuad.h"
-#include "CCVideoLayerImpl.h"
+#include "cc/video_layer_impl.h"
 
 namespace cc {
 

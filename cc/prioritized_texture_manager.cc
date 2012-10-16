@@ -9,7 +9,7 @@
 #include "base/stl_util.h"
 #include "CCPrioritizedTexture.h"
 #include "CCPriorityCalculator.h"
-#include "CCProxy.h"
+#include "cc/proxy.h"
 #include "TraceEvent.h"
 #include <algorithm>
 

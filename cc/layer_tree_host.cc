@@ -18,11 +18,11 @@
 #include "CCOverdrawMetrics.h"
 #include "CCSettings.h"
 #include "CCSingleThreadProxy.h"
-#include "CCThreadProxy.h"
 #include "Region.h"
 #include "TraceEvent.h"
 #include "cc/heads_up_display_layer.h"
 #include "cc/layer.h"
+#include "cc/thread_proxy.h"
 #include "cc/tree_synchronizer.h"
 
 using namespace std;

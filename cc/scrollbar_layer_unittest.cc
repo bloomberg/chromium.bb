@@ -6,7 +6,7 @@
 
 #include "cc/scrollbar_layer.h"
 
-#include "CCScrollbarAnimationController.h"
+#include "cc/scrollbar_animation_controller.h"
 #include "CCScrollbarLayerImpl.h"
 #include "CCSingleThreadProxy.h"
 #include "cc/test/fake_web_scrollbar_theme_geometry.h"

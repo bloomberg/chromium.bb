@@ -16,8 +16,8 @@
 #include "CCSolidColorDrawQuad.h"
 #include "CCStreamVideoDrawQuad.h"
 #include "CCTextureDrawQuad.h"
-#include "CCTileDrawQuad.h"
-#include "CCYUVVideoDrawQuad.h"
+#include "cc/tile_draw_quad.h"
+#include "cc/yuv_video_draw_quad.h"
 #include "Extensions3DChromium.h"
 
 namespace WebKit {

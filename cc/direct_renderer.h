@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "CCRenderer.h"
-#include "CCResourceProvider.h"
-#include "CCScopedTexture.h"
+#include "cc/resource_provider.h"
+#include "cc/scoped_texture.h"
 
 namespace cc {
 

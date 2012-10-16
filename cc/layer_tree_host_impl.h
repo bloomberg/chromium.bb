@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include "CCAnimationEvents.h"
+#include "cc/animation_events.h"
 #include "CCInputHandler.h"
 #include "CCLayerSorter.h"
 #include "CCRenderer.h"

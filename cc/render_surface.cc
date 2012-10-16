@@ -6,7 +6,7 @@
 
 #include "cc/render_surface.h"
 
-#include "CCMathUtil.h"
+#include "cc/math_util.h"
 #include "cc/layer.h"
 #include <public/WebTransformationMatrix.h>
 

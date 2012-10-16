@@ -6,10 +6,10 @@
 
 #include "cc/program_binding.h"
 
-#include "CCRendererGL.h" // For the GLC() macro.
 #include "GraphicsContext3D.h"
 #include "TraceEvent.h"
 #include "cc/geometry_binding.h"
+#include "cc/gl_renderer.h" // For the GLC() macro.
 #include <public/WebGraphicsContext3D.h>
 
 using WebKit::WebGraphicsContext3D;

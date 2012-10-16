@@ -6,7 +6,7 @@
 
 #include "CCDelayBasedTimeSource.h"
 
-#include "CCThread.h"
+#include "cc/thread.h"
 #include "cc/test/scheduler_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <wtf/RefPtr.h>

@@ -8,6 +8,7 @@
 #include "cc/completion_event.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebThread.h"
+#include <wtf/OwnPtr.h>
 
 using cc::CCThread;
 using cc::CCCompletionEvent;

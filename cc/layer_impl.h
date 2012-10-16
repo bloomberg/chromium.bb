@@ -11,7 +11,7 @@
 #include "CCLayerAnimationController.h"
 #include "CCRenderPass.h"
 #include "CCRenderSurface.h"
-#include "CCResourceProvider.h"
+#include "cc/resource_provider.h"
 #include "CCSharedQuadState.h"
 #include "FloatRect.h"
 #include "IntRect.h"

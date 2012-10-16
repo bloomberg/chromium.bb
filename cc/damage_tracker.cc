@@ -8,7 +8,7 @@
 
 #include "CCLayerImpl.h"
 #include "CCLayerTreeHostCommon.h"
-#include "CCMathUtil.h"
+#include "cc/math_util.h"
 #include "CCRenderSurface.h"
 #include <public/WebFilterOperations.h>
 

@@ -5,8 +5,8 @@
 #ifndef CCDelayBasedTimeSource_h
 #define CCDelayBasedTimeSource_h
 
-#include "CCTimeSource.h"
-#include "CCTimer.h"
+#include "cc/time_source.h"
+#include "cc/timer.h"
 #include <wtf/PassRefPtr.h>
 
 namespace cc {

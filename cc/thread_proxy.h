@@ -5,12 +5,12 @@
 #ifndef CCThreadProxy_h
 #define CCThreadProxy_h
 
-#include "CCAnimationEvents.h"
-#include "CCCompletionEvent.h"
+#include "cc/animation_events.h"
+#include "cc/completion_event.h"
 #include "CCLayerTreeHostImpl.h"
-#include "CCProxy.h"
-#include "CCScheduler.h"
-#include "CCTextureUpdateController.h"
+#include "cc/proxy.h"
+#include "cc/scheduler.h"
+#include "cc/texture_update_controller.h"
 #include <base/time.h>
 
 namespace cc {

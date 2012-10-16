@@ -6,8 +6,8 @@
 
 #include "cc/rate_limiter.h"
 
-#include "CCProxy.h"
-#include "CCThread.h"
+#include "cc/proxy.h"
+#include "cc/thread.h"
 #include "TraceEvent.h"
 #include <public/WebGraphicsContext3D.h>
 #include <wtf/RefPtr.h>

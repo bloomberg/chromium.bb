@@ -7,8 +7,8 @@
 #include "cc/texture_layer.h"
 
 #include "CCLayerTreeHost.h"
-#include "CCTextureLayerImpl.h"
 #include "cc/texture_layer_client.h"
+#include "cc/texture_layer_impl.h"
 
 namespace cc {
 
