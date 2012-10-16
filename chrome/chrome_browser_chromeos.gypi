@@ -256,6 +256,7 @@
         'browser/chromeos/drive/file_system/move_operation.h',
         'browser/chromeos/drive/file_system/remove_operation.cc',
         'browser/chromeos/drive/file_system/remove_operation.h',
+        'browser/chromeos/drive/file_system/operation_observer.h',
         'browser/chromeos/drive/file_write_helper.cc',
         'browser/chromeos/drive/file_write_helper.h',
         'browser/chromeos/drive/gdata_wapi_feed_loader.cc',

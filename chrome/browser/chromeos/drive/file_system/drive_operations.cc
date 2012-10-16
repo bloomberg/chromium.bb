@@ -16,8 +16,20 @@ DriveOperations::DriveOperations() {
 DriveOperations::~DriveOperations() {
 }
 
-void DriveOperations::Init(MoveOperation* move_operation,
-                           RemoveOperation* remove_operation) {
+void DriveOperations::Init(DriveServiceInterface* drive_service,
+                           DriveCache* cache,
+                           DriveResourceMetadata* metadata,
+                           OperationObserver* observer) {
+  move_operation_.reset(
+      new file_system::MoveOperation(drive_service, metadata, observer));
+  remove_operation_.reset(new file_system::RemoveOperation(drive_service,
+                                                           cache,
+                                                           metadata,
+                                                           observer));
+}
+
+void DriveOperations::InitForTesting(MoveOperation* move_operation,
+                                     RemoveOperation* remove_operation) {
   move_operation_.reset(move_operation);
   remove_operation_.reset(remove_operation);
 

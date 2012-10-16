@@ -6,9 +6,9 @@
 
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
-#include "chrome/browser/chromeos/drive/drive_file_system.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_files.h"
+#include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -18,11 +18,11 @@ namespace drive {
 namespace file_system {
 
 MoveOperation::MoveOperation(DriveServiceInterface* drive_service,
-                             DriveFileSystem* file_system,
-                             DriveCache* cache)
+                             DriveResourceMetadata* metadata,
+                             OperationObserver* observer)
   : drive_service_(drive_service),
-    file_system_(file_system),
-    cache_(cache),
+    metadata_(metadata),
+    observer_(observer),
     weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
@@ -35,7 +35,7 @@ void MoveOperation::Move(const FilePath& src_file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  file_system_->ResourceMetadata()->GetEntryInfoPairByPaths(
+  metadata_->GetEntryInfoPairByPaths(
       src_file_path,
       dest_file_path.DirName(),
       base::Bind(&MoveOperation::MoveAfterGetEntryInfoPair,
@@ -126,7 +126,7 @@ void MoveOperation::Rename(const FilePath& file_path,
   }
 
   // Get the edit URL of an entry at |file_path|.
-  file_system_->ResourceMetadata()->GetEntryInfoByPath(
+  metadata_->GetEntryInfoByPath(
       file_path,
       base::Bind(
           &MoveOperation::RenameAfterGetEntryInfo,
@@ -189,7 +189,7 @@ void MoveOperation::RenameEntryLocally(
     return;
   }
 
-  file_system_->ResourceMetadata()->RenameEntry(
+  metadata_->RenameEntry(
       file_path,
       new_name,
       base::Bind(&MoveOperation::NotifyAndRunFileMoveCallback,
@@ -211,7 +211,7 @@ void MoveOperation::RemoveEntryFromNonRootDirectory(
     return;
   }
 
-  file_system_->ResourceMetadata()->GetEntryInfoPairByPaths(
+  metadata_->GetEntryInfoPairByPaths(
       file_path,
       dir_path,
       base::Bind(
@@ -252,7 +252,7 @@ void MoveOperation::RemoveEntryFromNonRootDirectoryAfterEntryInfoPair(
       base::Bind(&MoveOperation::MoveEntryToDirectory,
                  weak_ptr_factory_.GetWeakPtr(),
                  file_path,
-                 file_system_->ResourceMetadata()->root()->GetFilePath(),
+                 metadata_->root()->GetFilePath(),
                  base::Bind(&MoveOperation::NotifyAndRunFileMoveCallback,
                             weak_ptr_factory_.GetWeakPtr(),
                             callback)));
@@ -276,7 +276,7 @@ void MoveOperation::MoveEntryFromRootDirectory(
     return;
   }
 
-  file_system_->ResourceMetadata()->GetEntryInfoPairByPaths(
+  metadata_->GetEntryInfoPairByPaths(
       file_path,
       directory_path,
       base::Bind(
@@ -341,8 +341,7 @@ void MoveOperation::MoveEntryToDirectory(
     return;
   }
 
-  file_system_->ResourceMetadata()->MoveEntryToDirectory(
-      file_path, directory_path, callback);
+  metadata_->MoveEntryToDirectory(file_path, directory_path, callback);
 }
 
 // TODO(zork): Share with CopyOperation.
@@ -355,7 +354,7 @@ void MoveOperation::NotifyAndRunFileOperationCallback(
   DCHECK(!callback.is_null());
 
   if (error == DRIVE_FILE_OK)
-    file_system_->OnDirectoryChanged(moved_file_path.DirName());
+    observer_->OnDirectoryChangedByOperation(moved_file_path.DirName());
 
   callback.Run(error);
 }
@@ -368,7 +367,7 @@ void MoveOperation::NotifyAndRunFileMoveCallback(
   DCHECK(!callback.is_null());
 
   if (error == DRIVE_FILE_OK)
-    file_system_->OnDirectoryChanged(moved_file_path.DirName());
+    observer_->OnDirectoryChangedByOperation(moved_file_path.DirName());
 
   callback.Run(error, moved_file_path);
 }

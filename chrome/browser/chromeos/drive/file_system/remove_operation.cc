@@ -6,8 +6,8 @@
 
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
-#include "chrome/browser/chromeos/drive/drive_file_system.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
+#include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -17,11 +17,13 @@ namespace drive {
 namespace file_system {
 
 RemoveOperation::RemoveOperation(DriveServiceInterface* drive_service,
-                                 DriveFileSystem* file_system,
-                                 DriveCache* cache)
+                                 DriveCache* cache,
+                                 DriveResourceMetadata* metadata,
+                                 OperationObserver* observer)
   : drive_service_(drive_service),
-    file_system_(file_system),
     cache_(cache),
+    metadata_(metadata),
+    observer_(observer),
     weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
@@ -36,7 +38,7 @@ void RemoveOperation::Remove(
   DCHECK(!callback.is_null());
 
   // Get the edit URL of an entry at |file_path|.
-  file_system_->ResourceMetadata()->GetEntryInfoByPath(
+  metadata_->GetEntryInfoByPath(
       file_path,
       base::Bind(
           &RemoveOperation::RemoveAfterGetEntryInfo,
@@ -85,7 +87,7 @@ void RemoveOperation::RemoveResourceLocally(
     return;
   }
 
-  file_system_->ResourceMetadata()->RemoveEntryFromParent(
+  metadata_->RemoveEntryFromParent(
       resource_id,
       base::Bind(&RemoveOperation::NotifyDirectoryChanged,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -99,7 +101,7 @@ void RemoveOperation::NotifyDirectoryChanged(
     DriveFileError error,
     const FilePath& directory_path) {
   if (error == DRIVE_FILE_OK)
-    file_system_->OnDirectoryChanged(directory_path);
+    observer_->OnDirectoryChangedByOperation(directory_path);
 
   if (!callback.is_null())
     callback.Run(error);

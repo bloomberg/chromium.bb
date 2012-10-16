@@ -23,14 +23,17 @@ class DriveServiceInterface;
 
 namespace file_system {
 
+class OperationObserver;
+
 // This class encapsulates the drive Remove function.  It is resposible for
 // sending the request to the drive API, then updating the local state and
 // metadata to reflect the new state.
 class RemoveOperation {
  public:
   RemoveOperation(DriveServiceInterface* drive_service,
-                      DriveFileSystem* file_system,
-                      DriveCache* cache);
+                  DriveCache* cache,
+                  DriveResourceMetadata* metadata,
+                  OperationObserver* observer);
   virtual ~RemoveOperation();
 
   // Perform the remove operation on the file at drive path |file_path|.
@@ -64,8 +67,9 @@ class RemoveOperation {
       const FilePath& directory_path);
 
   DriveServiceInterface* drive_service_;
-  DriveFileSystem* file_system_;
   DriveCache* cache_;
+  DriveResourceMetadata* metadata_;
+  OperationObserver* observer_;
 
   // WeakPtrFactory bound to the UI thread.
   // Note: This should remain the last member so it'll be destroyed and

@@ -11,9 +11,14 @@
 class FilePath;
 
 namespace drive {
+
+class DriveCache;
+class DriveServiceInterface;
+
 namespace file_system {
 
 class MoveOperation;
+class OperationObserver;
 class RemoveOperation;
 
 // Passes notifications from Drive operations back to the file system.
@@ -22,8 +27,15 @@ class DriveOperations {
   DriveOperations();
   ~DriveOperations();
 
-  // Initializes the operation pointers.
-  void Init(MoveOperation* move_operation, RemoveOperation* remove_operation);
+  // Allocates the operation objects and initializes the operation pointers.
+  void Init(DriveServiceInterface* drive_service,
+            DriveCache* cache,
+            DriveResourceMetadata* metadata,
+            OperationObserver* observer);
+
+  // Initializes the operation pointers.  For testing only.
+  void InitForTesting(MoveOperation* move_operation,
+                      RemoveOperation* remove_operation);
 
   // Wrapper function for move_operation_
   void Move(const FilePath& src_file_path,

@@ -474,9 +474,10 @@ void DriveFileSystem::Initialize() {
   feed_loader_->AddObserver(this);
 
   // Allocate the drive operation handlers.
-  drive_operations_.Init(
-      new file_system::MoveOperation(drive_service_, this, cache_),
-      new file_system::RemoveOperation(drive_service_, this, cache_));
+  drive_operations_.Init(drive_service_,
+                         cache_,
+                         resource_metadata_.get(),
+                         this);
 
   PrefService* pref_service = profile_->GetPrefs();
   hide_hosted_docs_ = pref_service->GetBoolean(prefs::kDisableGDataHostedFiles);
@@ -2149,6 +2150,11 @@ void DriveFileSystem::SearchAsyncOnUIThread(
       search_query,
       next_feed,
       base::Bind(&DriveFileSystem::OnSearch, ui_weak_ptr_, callback));
+}
+
+void DriveFileSystem::OnDirectoryChangedByOperation(
+    const FilePath& directory_path) {
+  OnDirectoryChanged(directory_path);
 }
 
 void DriveFileSystem::OnDirectoryChanged(const FilePath& directory_path) {

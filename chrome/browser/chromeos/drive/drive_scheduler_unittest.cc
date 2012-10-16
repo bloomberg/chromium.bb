@@ -34,7 +34,9 @@ class MockNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
 class MockRemoveOperation : public file_system::RemoveOperation {
  public:
-  MockRemoveOperation() : file_system::RemoveOperation(NULL, NULL, NULL) {}
+  MockRemoveOperation()
+      : file_system::RemoveOperation(NULL, NULL, NULL, NULL) {
+  }
 
   MOCK_METHOD3(Remove, void(const FilePath& file_path,
                             bool is_recursive,
@@ -61,7 +63,7 @@ class DriveSchedulerTest : public testing::Test {
     mock_network_change_notifier_.reset(new MockNetworkChangeNotifier);
 
     mock_remove_operation_ = new StrictMock<MockRemoveOperation>();
-    drive_operations_.Init(NULL, mock_remove_operation_);
+    drive_operations_.InitForTesting(NULL, mock_remove_operation_);
     scheduler_.reset(new DriveScheduler(profile_.get(),
                                         &drive_operations_));
 

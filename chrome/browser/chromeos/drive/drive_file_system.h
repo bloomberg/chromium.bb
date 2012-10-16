@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system/drive_operations.h"
+#include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/gdata_wapi_feed_loader_observer.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "content/public/browser/notification_observer.h"
@@ -50,6 +51,7 @@ class RemoveOperation;
 // The production implementation of DriveFileSystemInterface.
 class DriveFileSystem : public DriveFileSystemInterface,
                         public GDataWapiFeedLoaderObserver,
+                        public file_system::OperationObserver,
                         public content::NotificationObserver {
  public:
   DriveFileSystem(Profile* profile,
@@ -141,6 +143,10 @@ class DriveFileSystem : public DriveFileSystemInterface,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // file_system::OperationObserver overrides.
+  virtual void OnDirectoryChangedByOperation(
+      const FilePath& directory_path) OVERRIDE;
 
   // GDataWapiFeedLoader::Observer overrides.
   // Used to propagate events from GDataWapiFeedLoader.

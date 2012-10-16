@@ -18,10 +18,12 @@ namespace drive {
 
 class DriveCache;
 class DriveEntryProto;
-class DriveFileSystem;
+class DriveResourceMetadata;
 class DriveServiceInterface;
 
 namespace file_system {
+
+class OperationObserver;
 
 // This class encapsulates the drive Move function.  It is resposible for
 // sending the request to the drive API, then updating the local state and
@@ -29,8 +31,8 @@ namespace file_system {
 class MoveOperation {
  public:
   MoveOperation(DriveServiceInterface* drive_service,
-                DriveFileSystem* file_system,
-                DriveCache* cache);
+                DriveResourceMetadata* metadata,
+                OperationObserver* observer);
   virtual ~MoveOperation();
 
   // Performs the move operation on the file at drive path |src_file_path|
@@ -141,8 +143,8 @@ class MoveOperation {
       const FilePath& moved_file_path);
 
   DriveServiceInterface* drive_service_;
-  DriveFileSystem* file_system_;
-  DriveCache* cache_;
+  DriveResourceMetadata* metadata_;
+  OperationObserver* observer_;
 
   // WeakPtrFactory bound to the UI thread.
   // Note: This should remain the last member so it'll be destroyed and
