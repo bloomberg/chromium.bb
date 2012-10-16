@@ -3794,6 +3794,9 @@ void RenderViewImpl::didCreateScriptContext(WebFrame* frame,
                                             int world_id) {
   content::GetContentClient()->renderer()->DidCreateScriptContext(
       frame, context, extension_group, world_id);
+
+  intents_host_->DidCreateScriptContext(
+      frame, context, extension_group, world_id);
 }
 
 void RenderViewImpl::willReleaseScriptContext(WebFrame* frame,

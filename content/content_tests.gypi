@@ -699,6 +699,7 @@
             'renderer/render_view_browsertest_mac.mm',
             'renderer/render_widget_browsertest.cc',
             'renderer/renderer_accessibility_browsertest.cc',
+            'renderer/web_intents_host_browsertest.cc',
             'test/content_browser_test.h',
             'test/content_browser_test.cc',
             'test/content_browser_test_utils.cc',

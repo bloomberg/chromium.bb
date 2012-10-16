@@ -42,6 +42,14 @@ WebIntentData::WebIntentData(const WebKit::WebIntent& intent)
 }
 
 WebIntentData::WebIntentData(const string16& action_in,
+                             const string16& type_in)
+    : action(action_in),
+      type(type_in),
+      blob_length(0),
+      data_type(MIME_TYPE) {
+}
+
+WebIntentData::WebIntentData(const string16& action_in,
                              const string16& type_in,
                              const string16& unserialized_data_in)
     : action(action_in),
@@ -72,6 +80,27 @@ WebIntentData::WebIntentData(const string16& action_in,
       root_name(root_name_in),
       filesystem_id(filesystem_id_in),
       data_type(FILESYSTEM) {
+}
+
+WebIntentData::WebIntentData(const WebIntentData& intent_data)
+    : action(intent_data.action),
+      type(intent_data.type),
+      data(intent_data.data),
+      extra_data(intent_data.extra_data),
+      service(intent_data.service),
+      suggestions(intent_data.suggestions),
+      unserialized_data(intent_data.unserialized_data),
+      message_port_ids(intent_data.message_port_ids),
+      blob_file(intent_data.blob_file),
+      blob_length(intent_data.blob_length),
+      root_name(intent_data.root_name),
+      filesystem_id(intent_data.filesystem_id),
+      data_type(intent_data.data_type) {
+  for (size_t i = 0; i < intent_data.mime_data.GetSize(); ++i) {
+    const DictionaryValue* dict = NULL;
+    if (!intent_data.mime_data.GetDictionary(i, &dict)) continue;
+    mime_data.Append(dict->DeepCopy());
+  }
 }
 
 }  // namespace webkit_glue

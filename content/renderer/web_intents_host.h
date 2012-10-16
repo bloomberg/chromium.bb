@@ -10,7 +10,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBlob.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIntent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "v8/include/v8.h"
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_reply_data.h"
 
@@ -43,25 +45,27 @@ class WebIntentsHost : public content::RenderViewObserver {
   // Called into when the delivered intent object gets a postFailure call.
   void OnFailure(const WebKit::WebString& data);
 
+  // Forwarded from RenderViewImpl. Notification that a new script context was
+  // created within webkit.
+  virtual void DidCreateScriptContext(WebKit::WebFrame* frame,
+                                      v8::Handle<v8::Context> ctx,
+                                      int extension_group,
+                                      int world_id);
+
  private:
-  // A counter used to assign unique IDs to web intents invocations in this
-  // renderer.
-  int id_counter_;
-
-  // Map tracking registered Web Intent requests by assigned ID numbers to
-  // correctly route any return data.
-  std::map<int, WebKit::WebIntentRequest> intent_requests_;
-
   // RenderView::Observer implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void DidClearWindowObject(WebKit::WebFrame* frame) OVERRIDE;
+
+  // Converts incoming intent data to a WebIntent object.
+  WebKit::WebIntent CreateWebIntent(
+      WebKit::WebFrame* frame, const webkit_glue::WebIntentData& intent_data);
 
   // TODO(gbillock): Do we need various ***ClientRedirect methods to implement
   // intent cancelling policy? Figure this out.
 
   // On the service page, handler method for the IntentsMsg_SetWebIntent
   // message.
-  void OnSetIntent(const webkit_glue::WebIntentData& intent);
+  CONTENT_EXPORT void OnSetIntent(const webkit_glue::WebIntentData& intent);
 
   // On the client page, handler method for the IntentsMsg_WebIntentReply
   // message. Forwards the reply |data| to the registered WebIntentRequest
@@ -69,6 +73,16 @@ class WebIntentsHost : public content::RenderViewObserver {
   void OnWebIntentReply(webkit_glue::WebIntentReplyType reply_type,
                         const WebKit::WebString& data,
                         int intent_id);
+
+  friend class WebIntentsHostTest;
+
+  // A counter used to assign unique IDs to web intents invocations in this
+  // renderer.
+  int id_counter_;
+
+  // Map tracking registered Web Intent requests by assigned ID numbers to
+  // correctly route any return data.
+  std::map<int, WebKit::WebIntentRequest> intent_requests_;
 
   // Delivered intent data from the caller.
   scoped_ptr<webkit_glue::WebIntentData> intent_;

@@ -10,6 +10,7 @@
 
 #include "base/file_path.h"
 #include "base/string16.h"
+#include "base/values.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/webkit_glue_export.h"
 
@@ -29,6 +30,7 @@ struct WEBKIT_GLUE_EXPORT WebIntentData {
   // WebSerializedScriptValue.
   string16 data;
   // Any extra key-value pair metadata. (Not serialized.)
+  // Deprecated. Will be phased out in M25.
   std::map<string16, string16> extra_data;
 
   // Set to the service page if this intent data is from an explicit intent
@@ -38,17 +40,24 @@ struct WEBKIT_GLUE_EXPORT WebIntentData {
   // Any suggested service url the client attached to the intent.
   std::vector<GURL> suggestions;
 
-  // String payload data.
+  // String payload data. TODO(gbillock): should this be deprecated?
   string16 unserialized_data;
 
   // The global message port IDs of any transferred MessagePorts.
   std::vector<int> message_port_ids;
 
   // The file of a payload blob. Together with |blob_length|, suitable
-  // arguments to WebBlob::createFromFile.
+  // arguments to WebBlob::createFromFile. Note: when mime_data has
+  // length==1, this blob will be set as the 'blob' member of the first
+  // object in the delivered data payload.
   FilePath blob_file;
   // Length of the blob.
   int64 blob_length;
+
+  // List of values to be passed as MIME data. These will be encoded as a
+  // serialized sequence of objects when delivered. Must contain
+  // DictionaryValues.
+  ListValue mime_data;
 
   // Store the file system parameters to create a new file system.
   std::string root_name;
@@ -60,6 +69,7 @@ struct WEBKIT_GLUE_EXPORT WebIntentData {
     UNSERIALIZED = 1,  // The payload is unserialized in |unserialized_data|.
     BLOB = 2,          // The payload is a blob.
     FILESYSTEM = 3,    // The payload is WebFileSystem.
+    MIME_TYPE = 4,     // The payload is a MIME type.
   };
   // Which data payload to use when delivering the intent.
   DataType data_type;
@@ -69,6 +79,8 @@ struct WEBKIT_GLUE_EXPORT WebIntentData {
   // NOTE! Constructors do not initialize message_port_ids. Caller must do this.
 
   WebIntentData(const WebKit::WebIntent& intent);
+  WebIntentData(const string16& action_in,
+                const string16& type_in);
   WebIntentData(const string16& action_in,
                 const string16& type_in,
                 const string16& unserialized_data_in);
@@ -80,7 +92,14 @@ struct WEBKIT_GLUE_EXPORT WebIntentData {
                 const string16& type_in,
                 const std::string& root_name_in,
                 const std::string& filesystem_id_in);
+
+  // Special copy constructor needed for ListValue support.
+  WebIntentData(const WebIntentData& intent_data);
+
   ~WebIntentData();
+
+ private:
+  void operator=(const WebIntentData&);
 };
 
 }  // namespace webkit_glue

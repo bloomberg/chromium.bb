@@ -802,6 +802,7 @@ class RenderViewImpl : public RenderWidget,
   friend class ExternalPopupMenuTest;
   friend class PepperDeviceTest;
   friend class RendererAccessibilityTest;
+  friend class WebIntentsHostTest;
   friend class content::RenderViewTest;
 
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuRemoveTest, RemoveOnChange);

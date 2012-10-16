@@ -82,8 +82,11 @@ void IntentInjector::RenderViewCreated(RenderViewHost* render_view_host) {
     return;
   }
 
-  if (source_intent_->data_type == webkit_glue::WebIntentData::BLOB) {
-    // Grant read permission on the blob file to the delivered context.
+  // If we're passing a browser-originated blob, either directly or as part of a
+  // payload, grant read permission on the blob file to the delivered context.
+  if (source_intent_->data_type == webkit_glue::WebIntentData::BLOB ||
+      (source_intent_->data_type == webkit_glue::WebIntentData::MIME_TYPE &&
+       !source_intent_->blob_file.empty())) {
     const int child_id = render_view_host->GetProcess()->GetID();
     ChildProcessSecurityPolicy* policy =
          ChildProcessSecurityPolicy::GetInstance();
