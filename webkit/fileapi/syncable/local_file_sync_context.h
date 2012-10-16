@@ -83,9 +83,6 @@ class FILEAPI_EXPORT LocalFileSyncContext
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
-  // This must be accessed only on UI thread.
-  bool shutdown_;
-
   // Pointers to file system contexts that have been initialized for
   // synchronization (i.e. that own this instance).
   // This must be accessed only on UI thread.

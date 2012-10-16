@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync_file_system/sync_file_system_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -19,6 +20,7 @@
 
 using content::BrowserContext;
 using content::BrowserThread;
+using sync_file_system::SyncFileSystemServiceFactory;
 
 namespace extensions {
 
@@ -47,20 +49,40 @@ bool SyncFileSystemRequestFileSystemFunction::RunImpl() {
   // TODO(kinuko): Set up sync service, see if the user is signed in
   // and can access the service (i.e. Drive).
 
-  scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetStoragePartition(
-          profile(),
-          render_view_host()->GetSiteInstance())->GetFileSystemContext();
+  // Initializes sync context for this extension and continue to open
+  // a new file system.
+  SyncFileSystemServiceFactory::GetForProfile(profile())->
+      InitializeForApp(
+          GetFileSystemContext(),
+          service_name,
+          source_url(),
+          base::Bind(&self::DidInitializeFileSystemContext, this,
+                     service_name));
+  return true;
+}
 
-  file_system_context->OpenSyncableFileSystem(
+fileapi::FileSystemContext*
+SyncFileSystemRequestFileSystemFunction::GetFileSystemContext() {
+  return BrowserContext::GetStoragePartition(
+      profile(),
+      render_view_host()->GetSiteInstance())->GetFileSystemContext();
+}
+
+void SyncFileSystemRequestFileSystemFunction::DidInitializeFileSystemContext(
+    const std::string& service_name,
+    fileapi::SyncStatusCode status) {
+  if (status != fileapi::SYNC_STATUS_OK) {
+    // TODO(kinuko): Fix this. (http://crbug.com/153757)
+    error_ = base::StringPrintf(kFileError, static_cast<int>(status));
+    SendResponse(false);
+    return;
+  }
+  GetFileSystemContext()->OpenSyncableFileSystem(
           service_name,
           source_url(),
           fileapi::kFileSystemTypeSyncable,
           true, /* create */
-          base::Bind(
-              &SyncFileSystemRequestFileSystemFunction::DidOpenFileSystem,
-              this));
-  return true;
+          base::Bind(&self::DidOpenFileSystem, this));
 }
 
 void SyncFileSystemRequestFileSystemFunction::DidOpenFileSystem(

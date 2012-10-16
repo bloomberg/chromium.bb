@@ -20,8 +20,7 @@ LocalFileSyncContext::LocalFileSyncContext(
     base::SingleThreadTaskRunner* ui_task_runner,
     base::SingleThreadTaskRunner* io_task_runner)
     : ui_task_runner_(ui_task_runner),
-      io_task_runner_(io_task_runner),
-      shutdown_(false) {
+      io_task_runner_(io_task_runner) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 }
 
@@ -54,17 +53,13 @@ void LocalFileSyncContext::MaybeInitializeFileSystemContext(
 
 void LocalFileSyncContext::ShutdownOnUIThread() {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-  shutdown_ = true;
   io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&LocalFileSyncContext::ShutdownOnIOThread,
                  this));
 }
 
-LocalFileSyncContext::~LocalFileSyncContext() {
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-  DCHECK(shutdown_);
-}
+LocalFileSyncContext::~LocalFileSyncContext() {}
 
 void LocalFileSyncContext::ShutdownOnIOThread() {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
