@@ -31,9 +31,10 @@ int32_t PrintingResource::GetDefaultPrintSettings(
     return PP_ERROR_BADARGUMENT;
 
   if (!sent_create_to_browser())
-    SendCreateToBrowser(PpapiHostMsg_Printing_Create());
+    SendCreate(BROWSER, PpapiHostMsg_Printing_Create());
 
-  CallBrowser<PpapiPluginMsg_Printing_GetDefaultPrintSettingsReply>(
+  Call<PpapiPluginMsg_Printing_GetDefaultPrintSettingsReply>(
+      BROWSER,
       PpapiHostMsg_Printing_GetDefaultPrintSettings(),
       base::Bind(&PrintingResource::OnPluginMsgGetDefaultPrintSettingsReply,
           this, print_settings, callback));

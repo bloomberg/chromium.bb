@@ -16,6 +16,7 @@
 #include "ppapi/proxy/plugin_resource_callback.h"
 #include "ppapi/proxy/ppapi_message_utils.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
+#include "ppapi/proxy/resource_message_params.h"
 #include "ppapi/shared_impl/resource.h"
 
 namespace ppapi {
@@ -51,20 +52,19 @@ class PPAPI_PROXY_EXPORT PluginResource : public Resource {
   }
 
   // Sends a create message to the browser or renderer for the current resource.
-  void SendCreateToBrowser(const IPC::Message& msg);
-  void SendCreateToRenderer(const IPC::Message& msg);
+  void SendCreate(Destination dest, const IPC::Message& msg);
 
   // Sends the given IPC message as a resource request to the host
   // corresponding to this resource object and does not expect a reply.
-  void PostToBrowser(const IPC::Message& msg);
-  void PostToRenderer(const IPC::Message& msg);
+  void Post(Destination dest, const IPC::Message& msg);
 
-  // Like PostToBrowser/Renderer but expects a response. |callback| is
-  // a |base::Callback| that will be run when a reply message with a sequence
-  // number matching that of the call is received. |ReplyMsgClass| is the type
-  // of the reply message that is expected. An example of usage:
+  // Like Post() but expects a response. |callback| is a |base::Callback| that
+  // will be run when a reply message with a sequence number matching that of
+  // the call is received. |ReplyMsgClass| is the type of the reply message that
+  // is expected. An example of usage:
   //
-  // CallBrowser<PpapiPluginMsg_MyResourceType_MyReplyMessage>(
+  // Call<PpapiPluginMsg_MyResourceType_MyReplyMessage>(
+  //     BROWSER,
   //     PpapiHostMsg_MyResourceType_MyRequestMessage(),
   //     base::Bind(&MyPluginResource::ReplyHandler, this));
   //
@@ -77,9 +77,9 @@ class PPAPI_PROXY_EXPORT PluginResource : public Resource {
   //
   // Note that all integers (including 0 and -1) are valid request IDs.
   template<typename ReplyMsgClass, typename CallbackType>
-  int32_t CallBrowser(const IPC::Message& msg, const CallbackType& callback);
-  template<typename ReplyMsgClass, typename CallbackType>
-  int32_t CallRenderer(const IPC::Message& msg, const CallbackType& callback);
+  int32_t Call(Destination dest,
+               const IPC::Message& msg,
+               const CallbackType& callback);
 
   // Calls the browser/renderer with sync messages. Returns the pepper error
   // code from the call.
@@ -109,17 +109,11 @@ class PPAPI_PROXY_EXPORT PluginResource : public Resource {
       Destination dest, const IPC::Message& msg, A* a, B* b, C* c, D* d, E* e);
 
  private:
-  // Helper function to send a |PpapiHostMsg_ResourceCall| to the given sender
-  // with |nested_msg| and |call_params|.
-  bool SendResourceCall(IPC::Sender* sender,
+  // Helper function to send a |PpapiHostMsg_ResourceCall| to the given
+  // destination with |nested_msg| and |call_params|.
+  bool SendResourceCall(Destination dest,
                         const ResourceMessageCallParams& call_params,
                         const IPC::Message& nested_msg);
-
-  // Helper function to make a Resource Call to a host with a callback.
-  template<typename ReplyMsgClass, typename CallbackType>
-  int32_t CallHost(IPC::Sender* sender,
-                   const IPC::Message& msg,
-                   const CallbackType& callback);
 
   int32_t GenericSyncCall(Destination dest,
                           const IPC::Message& msg,
@@ -140,32 +134,17 @@ class PPAPI_PROXY_EXPORT PluginResource : public Resource {
 };
 
 template<typename ReplyMsgClass, typename CallbackType>
-int32_t PluginResource::CallBrowser(const IPC::Message& msg,
-                                    const CallbackType& callback) {
-  return CallHost<ReplyMsgClass, CallbackType>(
-      connection_.browser_sender, msg, callback);
-}
-
-template<typename ReplyMsgClass, typename CallbackType>
-int32_t PluginResource::CallRenderer(const IPC::Message& msg,
-                                    const CallbackType& callback) {
-  return CallHost<ReplyMsgClass, CallbackType>(
-      connection_.renderer_sender, msg, callback);
-}
-
-template<typename ReplyMsgClass, typename CallbackType>
-int32_t PluginResource::CallHost(IPC::Sender* sender,
-                                 const IPC::Message& msg,
-                                 const CallbackType& callback) {
-  ResourceMessageCallParams params(pp_resource(),
-                                   next_sequence_number_++);
+int32_t PluginResource::Call(Destination dest,
+                             const IPC::Message& msg,
+                             const CallbackType& callback) {
+  ResourceMessageCallParams params(pp_resource(), next_sequence_number_++);
   // Stash the |callback| in |callbacks_| identified by the sequence number of
   // the call.
   scoped_refptr<PluginResourceCallbackBase> plugin_callback(
       new PluginResourceCallback<ReplyMsgClass, CallbackType>(callback));
   callbacks_.insert(std::make_pair(params.sequence(), plugin_callback));
   params.set_has_callback();
-  SendResourceCall(sender, params, msg);
+  SendResourceCall(dest, params, msg);
   return params.sequence();
 }
 

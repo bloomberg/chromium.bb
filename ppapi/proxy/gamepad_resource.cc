@@ -48,8 +48,9 @@ GamepadResource::GamepadResource(Connection connection, PP_Instance instance)
       buffer_(NULL) {
   memset(&last_read_, 0, sizeof(last_read_));
 
-  SendCreateToBrowser(PpapiHostMsg_Gamepad_Create());
-  CallBrowser<PpapiPluginMsg_Gamepad_SendMemory>(
+  SendCreate(BROWSER, PpapiHostMsg_Gamepad_Create());
+  Call<PpapiPluginMsg_Gamepad_SendMemory>(
+      BROWSER,
       PpapiHostMsg_Gamepad_RequestMemory(),
       base::Bind(&GamepadResource::OnPluginMsgSendMemory, this));
 }

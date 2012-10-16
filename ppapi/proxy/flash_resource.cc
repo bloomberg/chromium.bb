@@ -16,7 +16,7 @@ namespace proxy {
 
 FlashResource::FlashResource(Connection connection, PP_Instance instance)
     : PluginResource(connection, instance) {
-  SendCreateToRenderer(PpapiHostMsg_Flash_Create());
+  SendCreate(RENDERER, PpapiHostMsg_Flash_Create());
 }
 
 FlashResource::~FlashResource() {

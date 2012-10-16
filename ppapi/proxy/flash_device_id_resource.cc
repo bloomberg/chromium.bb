@@ -17,7 +17,7 @@ FlashDeviceIDResource::FlashDeviceIDResource(Connection connection,
                                              PP_Instance instance)
     : PluginResource(connection, instance),
       dest_(NULL) {
-  SendCreateToBrowser(PpapiHostMsg_FlashDeviceID_Create());
+  SendCreate(BROWSER, PpapiHostMsg_FlashDeviceID_Create());
 }
 
 FlashDeviceIDResource::~FlashDeviceIDResource() {
@@ -39,7 +39,8 @@ int32_t FlashDeviceIDResource::GetDeviceID(
   dest_ = id;
   callback_ = callback;
 
-  CallBrowser<PpapiPluginMsg_FlashDeviceID_GetDeviceIDReply>(
+  Call<PpapiPluginMsg_FlashDeviceID_GetDeviceIDReply>(
+      BROWSER,
       PpapiHostMsg_FlashDeviceID_GetDeviceID(),
       base::Bind(&FlashDeviceIDResource::OnPluginMsgGetDeviceIDReply, this));
   return PP_OK_COMPLETIONPENDING;

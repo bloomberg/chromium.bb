@@ -38,8 +38,8 @@ PP_Bool FlashFontFileResource::GetFontTable(uint32_t table,
     return PP_FALSE;
 
   if (!sent_create_to_renderer()) {
-    SendCreateToRenderer(
-        PpapiHostMsg_FlashFontFile_Create(description_, charset_));
+    SendCreate(
+        RENDERER, PpapiHostMsg_FlashFontFile_Create(description_, charset_));
   }
 
   std::string* contents = GetFontTable(table);

@@ -116,9 +116,9 @@ int32_t WebSocketResource::Connect(
   // Create remote host in the renderer, then request to check the URL and
   // establish the connection.
   state_ = PP_WEBSOCKETREADYSTATE_CONNECTING;
-  SendCreateToRenderer(PpapiHostMsg_WebSocket_Create());
+  SendCreate(RENDERER, PpapiHostMsg_WebSocket_Create());
   PpapiHostMsg_WebSocket_Connect msg(url_->value(), protocol_strings);
-  CallRenderer<PpapiPluginMsg_WebSocket_ConnectReply>(msg,
+  Call<PpapiPluginMsg_WebSocket_ConnectReply>(RENDERER, msg,
       base::Bind(&WebSocketResource::OnPluginMsgConnectReply, this));
 
   return PP_OK_COMPLETIONPENDING;
@@ -178,7 +178,7 @@ int32_t WebSocketResource::Close(uint16_t code,
     // Need to do a "Post" to avoid reentering the plugin.
     connect_callback_->PostAbort();
     connect_callback_ = NULL;
-    PostToRenderer(PpapiHostMsg_WebSocket_Fail(
+    Post(RENDERER, PpapiHostMsg_WebSocket_Fail(
         "WebSocket was closed before the connection was established."));
     return PP_OK_COMPLETIONPENDING;
   }
@@ -195,7 +195,7 @@ int32_t WebSocketResource::Close(uint16_t code,
   state_ = PP_WEBSOCKETREADYSTATE_CLOSING;
   PpapiHostMsg_WebSocket_Close msg(static_cast<int32_t>(event_code),
                                    reason_string);
-  CallRenderer<PpapiPluginMsg_WebSocket_CloseReply>(msg,
+  Call<PpapiPluginMsg_WebSocket_CloseReply>(RENDERER, msg,
       base::Bind(&WebSocketResource::OnPluginMsgCloseReply, this));
   return PP_OK_COMPLETIONPENDING;
 }
@@ -269,7 +269,7 @@ int32_t WebSocketResource::SendMessage(const PP_Var& message) {
     scoped_refptr<StringVar> message_string = StringVar::FromPPVar(message);
     if (!message_string)
       return PP_ERROR_BADARGUMENT;
-    PostToRenderer(PpapiHostMsg_WebSocket_SendText(message_string->value()));
+    Post(RENDERER, PpapiHostMsg_WebSocket_SendText(message_string->value()));
   } else if (message.type == PP_VARTYPE_ARRAY_BUFFER) {
     // Convert message to std::vector<uint8_t>, then send it.
     scoped_refptr<ArrayBufferVar> message_arraybuffer =
@@ -280,7 +280,7 @@ int32_t WebSocketResource::SendMessage(const PP_Var& message) {
     uint32 message_length = message_arraybuffer->ByteLength();
     std::vector<uint8_t> message_vector(message_data,
                                         message_data + message_length);
-    PostToRenderer(PpapiHostMsg_WebSocket_SendBinary(message_vector));
+    Post(RENDERER, PpapiHostMsg_WebSocket_SendBinary(message_vector));
   } else {
     // TODO(toyoshim): Support Blob.
     return PP_ERROR_NOTSUPPORTED;
