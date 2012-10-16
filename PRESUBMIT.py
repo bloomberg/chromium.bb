@@ -9,9 +9,20 @@ details on the presubmit API built into gcl.
 """
 
 def CommonChecks(input_api, output_api):
-  output = []
+  import sys
+  def join(*args):
+    return input_api.os_path.join(input_api.PresubmitLocalPath(), *args)
 
-  output.extend(input_api.canned_checks.RunPylint(input_api, output_api))
+  output = []
+  sys_path_backup = sys.path
+  try:
+    sys.path = [
+      join('tests', 'gtest_fake'),
+    ] + sys.path
+    output.extend(input_api.canned_checks.RunPylint(input_api, output_api))
+  finally:
+    sys.path = sys_path_backup
+
   output.extend(
       input_api.canned_checks.RunUnitTestsInDirectory(
           input_api, output_api,

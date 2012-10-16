@@ -12,6 +12,7 @@ with ./trace_inputs.py read -l /path/to/executable.logs
 import logging
 import multiprocessing
 import os
+import re
 import sys
 import time
 
@@ -39,10 +40,9 @@ class Tracer(object):
     out = []
     for retry in range(5):
       start = time.time()
-      returncode, output = self.tracer.trace(
-          cmd, self.cwd_dir, tracename, True)
+      returncode, output = self.tracer.trace(cmd, self.cwd_dir, tracename, True)
       duration = time.time() - start
-      # TODO(maruel): Define a way to detect if an strace log is valid.
+      # TODO(maruel): Define a way to detect if a strace log is valid.
       valid = True
       out.append(
           {
@@ -65,39 +65,80 @@ class Tracer(object):
 
 
 def trace_test_cases(cmd, cwd_dir, test_cases, jobs, logname):
-  """Traces test cases one by one."""
-  assert os.path.isabs(cwd_dir) and os.path.isdir(cwd_dir)
+  """Traces each test cases individually but all in parallel."""
+  assert os.path.isabs(cwd_dir) and os.path.isdir(cwd_dir), cwd_dir
 
   if not test_cases:
-    return 0
+    return []
 
   # Resolve any symlink.
   cwd_dir = os.path.realpath(cwd_dir)
   assert os.path.isdir(cwd_dir)
 
+  api = trace_inputs.get_api()
+  api.clean_trace(logname)
+
   progress = run_test_cases.Progress(len(test_cases))
   with run_test_cases.ThreadPool(jobs or multiprocessing.cpu_count()) as pool:
-    api = trace_inputs.get_api()
-    api.clean_trace(logname)
     with api.get_tracer(logname) as tracer:
       function = Tracer(tracer, cmd, cwd_dir, progress).map
       for test_case in test_cases:
         pool.add_task(function, test_case)
 
-      pool.join(progress, 0.1)
+      results = pool.join(progress, 0.1)
   print('')
-  return 0
+  return results
+
+
+def write_details(logname, outfile, root_dir, blacklist, results):
+  """Writes an .test_cases file with all the information about each test
+  case.
+  """
+  api = trace_inputs.get_api()
+  logs = dict((i.pop('trace'), i) for i in api.parse_log(logname, blacklist))
+  results_processed = {}
+  exception = None
+  for items in results:
+    item = items[-1]
+    assert item['valid']
+    # Load the results;
+    test_case = item['test_case']
+    if not test_case in logs:
+      assert False
+    log_dict = logs[test_case]
+    if log_dict.get('exception'):
+      exception = exception or log_dict['exception']
+      continue
+    trace_result = log_dict['results']
+    if root_dir:
+      trace_result = trace_result.strip_root(root_dir)
+    results_processed[test_case] = {
+      'trace': trace_result.flatten(),
+      'duration': item['duration'],
+      'output': item['output'],
+      'returncode': item['returncode'],
+    }
+
+  # Make it dense if there is more than 20 results.
+  trace_inputs.write_json(
+      outfile,
+      results_processed,
+      len(results_processed) > 20)
+  if exception:
+    raise exception[0], exception[1], exception[2]
 
 
 def main():
   """CLI frontend to validate arguments."""
   parser = run_test_cases.OptionParserTestCases(
-      usage='%prog <options> [gtest]',
-      description=sys.modules['__main__'].__doc__)
+      usage='%prog <options> [gtest]')
   parser.format_description = lambda *_: parser.description
   parser.add_option(
       '-o', '--out',
       help='output file, defaults to <executable>.test_cases')
+  parser.add_option(
+      '-r', '--root-dir',
+      help='Root directory under which file access should be noted')
   options, args = parser.parse_args()
 
   if not args:
@@ -107,20 +148,34 @@ def main():
         '.')
 
   cmd = run_test_cases.fix_python_path(args)
+  cmd[0] = os.path.abspath(cmd[0])
+  if not os.path.isfile(cmd[0]):
+    parser.error('Tracing failed for: %s\nIt doesn\'t exit' % ' '.join(cmd))
 
   if not options.out:
     options.out = '%s.test_cases' % cmd[-1]
+  options.out = os.path.abspath(options.out)
+  if options.root_dir:
+    options.root_dir = os.path.abspath(options.root_dir)
+  logname = options.out + '.log'
 
-  test_cases = parser.process_gtest_options(cmd, options)
+  def blacklist(f):
+    return any(re.match(b, f) for b in options.blacklist)
+
+  test_cases = parser.process_gtest_options(cmd, os.getcwd(), options)
 
   # Then run them.
-  return trace_test_cases(
+  print('Tracing...')
+  results = trace_test_cases(
       cmd,
       os.getcwd(),
       test_cases,
       options.jobs,
       # TODO(maruel): options.timeout,
-      options.out)
+      logname)
+  print('Reading trace logs...')
+  write_details(logname, options.out, options.root_dir, blacklist, results)
+  return 0
 
 
 if __name__ == '__main__':

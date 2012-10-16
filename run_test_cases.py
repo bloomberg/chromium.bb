@@ -5,8 +5,8 @@
 
 """Runs each test cases as a single shard, single process execution.
 
-Similar to sharding_supervisor.py but finer grained. Runs multiple instances in
-parallel.
+Similar to sharding_supervisor.py but finer grained. It runs each test case
+individually instead of running per shard. Runs multiple instances in parallel.
 """
 
 import fnmatch
@@ -379,7 +379,7 @@ def setup_gtest_env():
   return env
 
 
-def gtest_list_tests(cmd):
+def gtest_list_tests(cmd, cwd):
   """List all the test cases for a google test.
 
   See more info at http://code.google.com/p/googletest/.
@@ -389,9 +389,9 @@ def gtest_list_tests(cmd):
   env = setup_gtest_env()
   try:
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                         env=env)
+                         env=env, cwd=cwd)
   except OSError, e:
-    raise Failure('Failed to run %s\n%s' % (' '.join(cmd), str(e)))
+    raise Failure('Failed to run %s\ncwd=%s\n%s' % (' '.join(cmd), cwd, str(e)))
   out, err = p.communicate()
   if p.returncode:
     raise Failure(
@@ -468,9 +468,9 @@ def parse_gtest_cases(out):
   return sorted(tests)
 
 
-def list_test_cases(cmd, index, shards, disabled, fails, flaky):
+def list_test_cases(cmd, cwd, index, shards, disabled, fails, flaky):
   """Returns the list of test cases according to the specified criterias."""
-  tests = parse_gtest_cases(gtest_list_tests(cmd))
+  tests = parse_gtest_cases(gtest_list_tests(cmd, cwd))
   if shards:
     tests = filter_shards(tests, index, shards)
   return filter_bad_tests(tests, disabled, fails, flaky)
@@ -619,20 +619,21 @@ class Runner(object):
     return out
 
 
-def get_test_cases(cmd, whitelist, blacklist, index, shards):
+def get_test_cases(cmd, cwd, whitelist, blacklist, index, shards):
   """Returns the filtered list of test cases.
 
   This is done synchronously.
   """
   try:
-    tests = list_test_cases(cmd, index, shards, False, False, False)
+    tests = list_test_cases(cmd, cwd, index, shards, False, False, False)
   except Failure, e:
-    print e.args[0]
+    print('Failed to list test cases')
+    print(e.args[0])
     return None
 
   if shards:
     # This is necessary for Swarm log parsing.
-    print 'Note: This is test shard %d of %d.' % (index+1, shards)
+    print('Note: This is test shard %d of %d.' % (index+1, shards))
 
   # Filters the test cases with the two lists.
   if blacklist:
@@ -696,30 +697,31 @@ def run_test_cases(cmd, test_cases, jobs, timeout, run_all, result_file):
     else:
       assert False, items
 
-  print 'Summary:'
+  print('Summary:')
   for test_case in sorted(flaky):
     items = results[test_case]
-    print '%s is flaky (tried %d times)' % (test_case, len(items))
+    print('%s is flaky (tried %d times)' % (test_case, len(items)))
 
   for test_case in sorted(fail):
-    print '%s failed' % (test_case)
+    print('%s failed' % (test_case))
 
   if decider.should_stop():
-    print '** STOPPED EARLY due to high failure rate **'
-  print 'Success: %4d %5.2f%%' % (len(success), len(success) * 100. / total)
-  print 'Flaky:   %4d %5.2f%%' % (len(flaky), len(flaky) * 100. / total)
-  print 'Fail:    %4d %5.2f%%' % (len(fail), len(fail) * 100. / total)
-  print '%.1fs Done running %d tests with %d executions. %.1f test/s' % (
+    print('** STOPPED EARLY due to high failure rate **')
+  print('Success: %4d %5.2f%%' % (len(success), len(success) * 100. / total))
+  print('Flaky:   %4d %5.2f%%' % (len(flaky), len(flaky) * 100. / total))
+  print('Fail:    %4d %5.2f%%' % (len(fail), len(fail) * 100. / total))
+  print('%.1fs Done running %d tests with %d executions. %.1f test/s' % (
       duration,
       len(results),
       nb_runs,
-      nb_runs / duration)
+      nb_runs / duration))
   return int(bool(fail))
 
 
 class OptionParserWithLogging(optparse.OptionParser):
   """Adds --verbose option."""
   def __init__(self, verbose=0, **kwargs):
+    kwargs.setdefault('description', sys.modules['__main__'].__doc__)
     optparse.OptionParser.__init__(self, **kwargs)
     self.add_option(
         '-v', '--verbose',
@@ -812,7 +814,7 @@ class OptionParserWithTestShardingAndFiltering(OptionParserWithTestSharding):
     return options, args
 
   @staticmethod
-  def process_gtest_options(cmd, options):
+  def process_gtest_options(cmd, cwd, options):
     """Grabs the test cases."""
     if options.test_case_file:
       with open(options.test_case_file, 'r') as f:
@@ -820,6 +822,7 @@ class OptionParserWithTestShardingAndFiltering(OptionParserWithTestSharding):
     else:
       return get_test_cases(
           cmd,
+          cwd,
           options.whitelist,
           options.blacklist,
           options.index,
@@ -878,7 +881,7 @@ def main(argv):
     # Special case, return the output of the target unmodified.
     return subprocess.call(cmd + ['--gtest_list_tests'])
 
-  test_cases = parser.process_gtest_options(cmd, options)
+  test_cases = parser.process_gtest_options(cmd, os.getcwd(), options)
   if not test_cases:
     # If test_cases is None then there was a problem generating the tests to
     # run, so this should be considered a failure.

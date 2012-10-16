@@ -716,7 +716,10 @@ def generate_simplified(
     if not f.startswith('<'):
       # relative_cwd is usually the directory containing the gyp file. It may be
       # empty if the whole directory containing the gyp file is needed.
-      f = posix_relpath(f, relative_cwd) or './'
+      # Use absolute paths in case cwd_dir is outside of root_dir.
+      f = posix_relpath(
+          os.path.join(root_dir, f),
+          os.path.join(root_dir, relative_cwd)) or './'
 
     for variable, root_path in variables.iteritems():
       if f.startswith(root_path):

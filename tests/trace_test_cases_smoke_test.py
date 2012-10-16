@@ -15,8 +15,10 @@ import unittest
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(BASE_DIR)
 sys.path.insert(0, ROOT_DIR)
+sys.path.insert(0, os.path.join(BASE_DIR, 'gtest_fake'))
 
 import trace_inputs
+import gtest_fake_base
 
 FILE_PATH = os.path.realpath(unicode(os.path.abspath(__file__)))
 TARGET_UTIL_PATH = os.path.join(BASE_DIR, 'gtest_fake', 'gtest_fake_base.py')
@@ -52,6 +54,15 @@ class TraceTestCases(unittest.TestCase):
     if self.temp_file:
       os.remove(self.temp_file)
 
+  def assertGreater(self, a, b, msg=None):
+    """Just like self.assertTrue(a > b), but with a nicer default message.
+
+    Added to support python 2.6.
+    """
+    if not a > b:
+      standardMsg = '%r not greater than %r' % (a, b)
+      self.fail(msg or standardMsg)
+
   def test_simple(self):
     file_handle, self.temp_file = tempfile.mkstemp(
         prefix='trace_test_cases_test')
@@ -72,15 +83,17 @@ class TraceTestCases(unittest.TestCase):
     proc = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate() or ('', '')  # pylint is confused.
-    self.assertEquals(0, proc.returncode, (out, err))
+    self.assertEqual(0, proc.returncode, (out, err))
     lines = out.splitlines()
     expected_out_re = [
+      r'Tracing\.\.\.',
       r'\[1/4\]   \d\.\d\ds .+',
       r'\[2/4\]   \d\.\d\ds .+',
       r'\[3/4\]   \d\.\d\ds .+',
       r'\[4/4\]   \d\.\d\ds .+',
+      r'Reading trace logs\.\.\.',
     ]
-    self.assertEquals(len(expected_out_re), len(lines), lines)
+    self.assertEqual(len(expected_out_re), len(lines), lines)
     for index in range(len(expected_out_re)):
       self.assertTrue(
           re.match('^%s$' % expected_out_re[index], lines[index]),
@@ -88,7 +101,7 @@ class TraceTestCases(unittest.TestCase):
             index, expected_out_re[index], lines[index], out))
     # Junk is printed on win32.
     if sys.platform != 'win32' and not VERBOSE:
-      self.assertEquals('', err)
+      self.assertEqual('', err)
 
     with open(self.temp_file, 'r') as f:
       content = f.read()
@@ -98,26 +111,42 @@ class TraceTestCases(unittest.TestCase):
         print repr(content)
         raise
 
-    test_cases = (
-      'Baz.Fail',
-      'Foo.Bar1',
-      'Foo.Bar2',
-      'Foo.Bar3',
-    )
-    self.assertEquals(dict, result.__class__)
-    if sys.platform != 'win32':
-      self.assertEquals(['traces'], sorted(result))
-    else:
-      self.assertEquals(['format', 'traces'], sorted(result))
-    for index, trace in enumerate(
-        sorted(result['traces'], key=lambda x: x['trace'])):
-      self.assertEquals(test_cases[index], trace['trace'])
-      self.assertEquals(
-          [u'cmd', u'cwd', u'output', u'pid', u'trace'], sorted(trace))
-      self.assertEquals(
-          [sys.executable, TARGET_PATH, '--gtest_filter=%s' % trace['trace']],
-          trace['cmd'])
-      self.assertEquals(int, trace['pid'].__class__)
+    test_cases = {
+      'Baz.Fail': 1,
+      'Foo.Bar1': 0,
+      'Foo.Bar2': 0,
+      'Foo.Bar3': 0,
+    }
+    self.assertEqual(dict, result.__class__)
+    self.assertEqual(sorted(test_cases), sorted(result))
+    for index, test_case in enumerate(sorted(result)):
+      actual = result[test_case]
+      self.assertEqual(
+          [u'duration', u'output', u'returncode', u'trace'], sorted(actual))
+      self.assertGreater(actual['duration'], 0.0000001)
+      self.assertEqual(test_cases[test_case], actual['returncode'])
+      expected_output = (
+          'Note: Google Test filter = %s\n' % test_case +
+          '\n' +
+          gtest_fake_base.get_test_output(test_case) +
+          '\n' +
+          gtest_fake_base.get_footer(1, 1) +
+          '\n')
+      self.assertEqual(expected_output, actual['output'])
+
+      expected_trace = {
+        'root': {
+          'children': [],
+          'command': [
+            sys.executable, TARGET_PATH, '--gtest_filter=' + test_case,
+          ],
+          'executable': sys.executable,
+          'initial_cwd': ROOT_DIR,
+        },
+      }
+      self.assertGreater(actual['trace']['root'].pop('pid'), 1)
+      self.assertGreater(len(actual['trace']['root'].pop('files')), 10)
+      self.assertEqual(expected_trace, actual['trace'])
 
 
 if __name__ == '__main__':

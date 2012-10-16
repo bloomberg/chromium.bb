@@ -38,7 +38,7 @@ def RunTest(test_file, extra_flags):
   return (out, err, proc.returncode)
 
 
-class TraceTestCases(unittest.TestCase):
+class RunTestCases(unittest.TestCase):
   def setUp(self):
     # Make sure there's no environment variable that could do side effects.
     os.environ.pop('GTEST_SHARD_INDEX', '')
@@ -143,6 +143,7 @@ class TraceTestCases(unittest.TestCase):
         'gtest_fake_error.py', ['--no-dump'])
 
     expected_out_re = [
+        'Failed to list test cases',
         'Failed to run %s %s --gtest_list_tests' % (
           re.escape(sys.executable),
           re.escape(

@@ -8,6 +8,7 @@
 See more info at http://code.google.com/p/googletest/.
 """
 
+import os
 import sys
 
 import run_test_cases
@@ -37,6 +38,7 @@ def main():
   try:
     tests = run_test_cases.list_test_cases(
         cmd,
+        os.getcwd(),
         options.index,
         options.shards,
         options.disabled,

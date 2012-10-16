@@ -1003,6 +1003,8 @@ class ApiBase(object):
 
     It does not track directories.
 
+    |logname| must be an absolute path.
+
     Most of the time, files that do not exist are temporary test files that
     should be put in /tmp instead. See http://crbug.com/116251.
 
@@ -1485,6 +1487,7 @@ class Strace(ApiBase):
   @classmethod
   def parse_log(cls, logname, blacklist):
     logging.info('parse_log(%s, %s)' % (logname, blacklist))
+    assert os.path.isabs(logname)
     data = read_json(logname)
     out = []
     for item in data['traces']:
@@ -2280,6 +2283,7 @@ class Dtrace(ApiBase):
   @classmethod
   def parse_log(cls, logname, blacklist):
     logging.info('parse_log(%s, ...)' % logname)
+    assert os.path.isabs(logname)
 
     def blacklist_more(filepath):
       # All the HFS metadata is in the form /.vol/...
@@ -2911,6 +2915,7 @@ class LogmanTrace(ApiBase):
   @classmethod
   def parse_log(cls, logname, blacklist):
     logging.info('parse_log(%s, %s)' % (logname, blacklist))
+    assert os.path.isabs(logname)
 
     def blacklist_more(filepath):
       # All the NTFS metadata is in the form x:\$EXTEND or stuff like that.
