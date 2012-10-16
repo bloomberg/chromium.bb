@@ -68,7 +68,7 @@ class LongPressAffordanceHandler : public ui::AnimationDelegate,
   gfx::Point tap_down_location_;
   int tap_down_touch_id_;
   base::OneShotTimer<LongPressAffordanceHandler> timer_;
-  int tap_down_display_id_;
+  int64 tap_down_display_id_;
   LongPressAnimationType current_animation_type_;
 
   DISALLOW_COPY_AND_ASSIGN(LongPressAffordanceHandler);
