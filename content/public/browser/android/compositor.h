@@ -10,6 +10,12 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
+#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
+
+namespace gfx {
+class JavaBitmap;
+}
+
 namespace WebKit {
 class WebLayer;
 }
@@ -50,6 +56,19 @@ class Compositor {
 
   // Composite immediately. Used in single-threaded mode.
   virtual void Composite() = 0;
+
+  // Generates an OpenGL texture and returns a texture handle.  May return 0
+  // if the current context is lost.
+  virtual WebKit::WebGLId GenerateTexture(gfx::JavaBitmap& bitmap) = 0;
+
+  // Generates an OpenGL compressed texture and returns a texture handle.  May
+  // return 0 if the current context is lost.
+  virtual WebKit::WebGLId GenerateCompressedTexture(gfx::Size& size,
+                                                    int data_size,
+                                                    void* data) = 0;
+
+  // Deletes an OpenGL texture.
+  virtual void DeleteTexture(WebKit::WebGLId texture_id) = 0;
 
  protected:
   Compositor() {}

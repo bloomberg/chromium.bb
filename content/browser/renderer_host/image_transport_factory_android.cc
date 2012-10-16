@@ -73,4 +73,9 @@ uint32_t ImageTransportFactoryAndroid::InsertSyncPoint() {
   return context_->insertSyncPoint();
 }
 
+WebGraphicsContext3DCommandBufferImpl*
+ImageTransportFactoryAndroid::GetContext3D() {
+  return context_.get();
+}
+
 }  // namespace content

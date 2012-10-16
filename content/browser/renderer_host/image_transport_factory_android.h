@@ -24,6 +24,7 @@ class ImageTransportFactoryAndroid {
 
   uint32_t InsertSyncPoint();
 
+  WebGraphicsContext3DCommandBufferImpl* GetContext3D();
  private:
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context_;
 };

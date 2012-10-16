@@ -13,6 +13,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeViewClient.h"
 
+
 struct ANativeWindow;
 
 namespace content {
@@ -36,6 +37,10 @@ class CompositorImpl : public Compositor,
   virtual bool CompositeAndReadback(
       void *pixels, const gfx::Rect& rect) OVERRIDE;
   virtual void Composite() OVERRIDE;
+  virtual WebKit::WebGLId GenerateTexture(gfx::JavaBitmap& bitmap) OVERRIDE;
+  virtual WebKit::WebGLId GenerateCompressedTexture(
+      gfx::Size& size, int data_size, void* data) OVERRIDE;
+  virtual void DeleteTexture(WebKit::WebGLId texture_id) OVERRIDE;
 
   // WebLayerTreeViewClient implementation.
   virtual void updateAnimations(double frameBeginTime) OVERRIDE;
@@ -50,6 +55,10 @@ class CompositorImpl : public Compositor,
   virtual void scheduleComposite() OVERRIDE;
 
  private:
+  WebKit::WebGLId BuildBasicTexture();
+  WebKit::WGC3Denum GetGLFormatForBitmap(gfx::JavaBitmap& bitmap);
+  WebKit::WGC3Denum GetGLTypeForBitmap(gfx::JavaBitmap& bitmap);
+
   scoped_ptr<WebKit::WebLayer> root_layer_;
   scoped_ptr<WebKit::WebLayerTreeView> host_;
 
