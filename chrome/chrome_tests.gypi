@@ -2786,6 +2786,7 @@
         'browser/chrome_main_browsertest.cc',
         'browser/chrome_plugin_browsertest.cc',
         'browser/chrome_switches_browsertest.cc',
+        'browser/chromeos/accessibility/magnification_manager_browsertest.cc',
         'browser/chromeos/bluetooth/test/mock_bluetooth_adapter.cc',
         'browser/chromeos/bluetooth/test/mock_bluetooth_adapter.h',
         'browser/chromeos/bluetooth/test/mock_bluetooth_device.cc',

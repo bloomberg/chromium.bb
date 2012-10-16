@@ -1294,16 +1294,18 @@ void BrowserOptionsHandler::SetupAccessibilityFeatures() {
   web_ui()->CallJavascriptFunction(
       "BrowserOptions.setHighContrastCheckboxState",
       high_contrast_enabled);
-  base::FundamentalValue screen_magnifier_enabled(
-      pref_service->GetBoolean(prefs::kScreenMagnifierEnabled));
-  web_ui()->CallJavascriptFunction(
-      "BrowserOptions.setScreenMagnifierCheckboxState",
-      screen_magnifier_enabled);
   base::FundamentalValue virtual_keyboard_enabled(
       pref_service->GetBoolean(prefs::kVirtualKeyboardEnabled));
   web_ui()->CallJavascriptFunction(
       "BrowserOptions.setVirtualKeyboardCheckboxState",
       virtual_keyboard_enabled);
+
+  PrefService* user_pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
+  base::FundamentalValue screen_magnifier_enabled(
+      user_pref_service->GetBoolean(prefs::kScreenMagnifierEnabled));
+  web_ui()->CallJavascriptFunction(
+      "BrowserOptions.setScreenMagnifierCheckboxState",
+      screen_magnifier_enabled);
 }
 #endif
 

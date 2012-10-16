@@ -410,11 +410,6 @@ void WizardController::RegisterPrefs(PrefService* local_state) {
                                      false,
                                      PrefService::UNSYNCABLE_PREF);
   }
-  if (local_state->FindPreference(prefs::kScreenMagnifierEnabled) == NULL) {
-    local_state->RegisterBooleanPref(prefs::kScreenMagnifierEnabled,
-                                     false,
-                                     PrefService::UNSYNCABLE_PREF);
-  }
   if (local_state->FindPreference(prefs::kVirtualKeyboardEnabled) == NULL) {
     local_state->RegisterBooleanPref(prefs::kVirtualKeyboardEnabled,
                                      false,
