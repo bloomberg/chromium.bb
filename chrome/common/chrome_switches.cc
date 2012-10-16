@@ -1601,9 +1601,12 @@ namespace chrome {
 bool IsFramelessConstrainedDialogEnabled() {
 #if defined(OS_MACOSX)
   return true;
-#endif
+#elif defined(OS_WIN)
+  return true;
+#else
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableFramelessConstrainedDialogs);
+#endif
 }
 
 }  // namespace chrome
