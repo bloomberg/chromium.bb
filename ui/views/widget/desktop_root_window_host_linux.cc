@@ -809,8 +809,6 @@ void DesktopRootWindowHostLinux::DispatchKeyEventPostIME(
     const ui::KeyEvent& key) {
   FocusManager* focus_manager =
       native_widget_delegate_->AsWidget()->GetFocusManager();
-  if (focus_manager)
-    focus_manager->MaybeResetMenuKeyState(key);
   if (native_widget_delegate_->OnKeyEvent(key) || !focus_manager)
     return;
   focus_manager->OnKeyEvent(key);

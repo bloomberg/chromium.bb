@@ -635,8 +635,6 @@ void NativeWidgetAura::SetVisibilityChangedAnimationsEnabled(bool value) {
 
 void NativeWidgetAura::DispatchKeyEventPostIME(const ui::KeyEvent& key) {
   FocusManager* focus_manager = GetWidget()->GetFocusManager();
-  if (focus_manager)
-    focus_manager->MaybeResetMenuKeyState(key);
   if (delegate_->OnKeyEvent(key) || !focus_manager)
     return;
   focus_manager->OnKeyEvent(key);

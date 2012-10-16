@@ -30,9 +30,6 @@ FocusManager::FocusManager(Widget* widget, FocusManagerDelegate* delegate)
       focused_view_(NULL),
       accelerator_manager_(new ui::AcceleratorManager),
       focus_change_reason_(kReasonDirectFocusChange),
-#if defined(USE_X11)
-      should_handle_menu_key_release_(false),
-#endif
       is_changing_focus_(false) {
   DCHECK(widget_);
   stored_focused_view_storage_id_ =
@@ -45,39 +42,8 @@ FocusManager::~FocusManager() {
 bool FocusManager::OnKeyEvent(const ui::KeyEvent& event) {
   const int key_code = event.key_code();
 
-#if defined(USE_X11)
-  // TODO(ben): beng believes that this should be done in
-  // RootWindowHosLinux for aura/linux.
-
-  // Always reset |should_handle_menu_key_release_| unless we are handling a
-  // VKEY_MENU key release event. It ensures that VKEY_MENU accelerator can only
-  // be activated when handling a VKEY_MENU key release event which is preceded
-  // by an un-handled VKEY_MENU key press event.
-  if (key_code != ui::VKEY_MENU || event.type() != ui::ET_KEY_RELEASED)
-    should_handle_menu_key_release_ = false;
-
-  if (event.type() == ui::ET_KEY_PRESSED) {
-    // VKEY_MENU is triggered by key release event.
-    // FocusManager::OnKeyEvent() returns false when the key has been consumed.
-    if ((key_code == ui::VKEY_MENU) &&
-        (event.flags() & ~ui::EF_ALT_DOWN) == 0) {
-      should_handle_menu_key_release_ = true;
-      return false;
-    }
-    // Pass through to the rest of OnKeyEvent.
-  } else if (key_code == ui::VKEY_MENU && should_handle_menu_key_release_ &&
-             (event.flags() & ~ui::EF_ALT_DOWN) == 0) {
-    // Trigger VKEY_MENU when only this key is pressed and released, and both
-    // press and release events are not handled by others.
-    ui::Accelerator accelerator(ui::VKEY_MENU, ui::EF_NONE);
-    return ProcessAccelerator(accelerator);
-  } else if (event.type() != ui::ET_KEY_RELEASED) {
-    return false;
-  }
-#else
   if (event.type() != ui::ET_KEY_PRESSED && event.type() != ui::ET_KEY_RELEASED)
     return false;
-#endif
 
   if (shortcut_handling_suspended())
     return true;
@@ -308,10 +274,6 @@ void FocusManager::ClearFocus() {
 }
 
 void FocusManager::StoreFocusedView() {
-#if defined(USE_X11)
-  // Forget menu key state when the window lost focus.
-  should_handle_menu_key_release_ = false;
-#endif
   ViewStorage* view_storage = ViewStorage::GetInstance();
   if (!view_storage) {
     // This should never happen but bug 981648 seems to indicate it could.
@@ -345,9 +307,6 @@ void FocusManager::StoreFocusedView() {
 }
 
 void FocusManager::RestoreFocusedView() {
-#if defined(USE_X11)
-  DCHECK(!should_handle_menu_key_release_);
-#endif
   ViewStorage* view_storage = ViewStorage::GetInstance();
   if (!view_storage) {
     // This should never happen but bug 981648 seems to indicate it could.
@@ -442,17 +401,6 @@ bool FocusManager::ProcessAccelerator(const ui::Accelerator& accelerator) {
   if (delegate_.get())
     return delegate_->ProcessAccelerator(accelerator);
   return false;
-}
-
-void FocusManager::MaybeResetMenuKeyState(const ui::KeyEvent& key) {
-#if defined(USE_X11)
-  // Always reset |should_handle_menu_key_release_| unless we are handling a
-  // VKEY_MENU key release event. It ensures that VKEY_MENU accelerator can only
-  // be activated when handling a VKEY_MENU key release event which is preceded
-  // by an unhandled VKEY_MENU key press event. See also HandleKeyboardEvent().
-  if (key.key_code() != ui::VKEY_MENU || key.type() != ui::ET_KEY_RELEASED)
-    should_handle_menu_key_release_ = false;
-#endif
 }
 
 ui::AcceleratorTarget* FocusManager::GetCurrentTargetForAccelerator(

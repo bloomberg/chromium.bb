@@ -300,11 +300,6 @@ class VIEWS_EXPORT FocusManager {
   // The list of registered FocusChange listeners.
   ObserverList<FocusChangeListener, true> focus_change_listeners_;
 
-#if defined(USE_X11)
-  // Indicates if we should handle the upcoming Alt key release event.
-  bool should_handle_menu_key_release_;
-#endif
-
   // See description above getter.
   bool is_changing_focus_;
 
