@@ -30,6 +30,11 @@ IN_PROC_BROWSER_TEST_F(BrowserTagTest, Shim) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/browser_tag")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(BrowserTagTest, ShimSrcAttribute) {
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/browser_tag_src_attribute"))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(BrowserTagTest, Isolation) {
   ASSERT_TRUE(StartTestServer());
   const std::wstring kExpire =

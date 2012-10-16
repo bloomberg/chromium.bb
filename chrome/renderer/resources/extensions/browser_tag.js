@@ -72,10 +72,17 @@ function BrowserTag(node) {
       this.node_,
       {attributes: true, attributeFilter: BROWSER_TAG_ATTRIBUTES});
 
+  var objectNode = this.objectNode_;
   // Expose getters and setters for the attributes.
   BROWSER_TAG_ATTRIBUTES.forEach(function(attributeName) {
     Object.defineProperty(this.node_, attributeName, {
       get: function() {
+        if (attributeName == 'src') {
+          // Always read src attribute from the plugin <object> since: a) It can
+          // have different value when empty src is set. b) BrowserPlugin
+          // updates its src attribute on guest-initiated navigations.
+          return objectNode.src;
+        }
         var value = node.getAttribute(attributeName);
         var numericValue = parseInt(value, 10);
         return isNaN(numericValue) ? value : numericValue;

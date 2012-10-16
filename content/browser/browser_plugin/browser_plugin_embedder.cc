@@ -123,12 +123,13 @@ void BrowserPluginEmbedder::NavigateGuest(
   WebContentsImpl* guest_web_contents =
       static_cast<WebContentsImpl*>(guest->GetWebContents());
 
-  // We ignore loading empty urls in web_contents.
+  // We do not load empty urls in web_contents.
   // If a guest sets empty src attribute after it has navigated to some
-  // non-empty page, the action is considered no-op.
-  // TODO(lazyboy): The js shim for browser-plugin might need to reflect empty
-  // src ignoring in the shadow DOM element: http://crbug.com/149001.
+  // non-empty page, the action is considered no-op. This empty src navigation
+  // should never be sent to BrowserPluginEmbedder (browser process).
+  DCHECK(!src.empty());
   if (!src.empty()) {
+    // TODO(creis): Check the validity of the URL: http://crbug.com/139397.
     guest_web_contents->GetController().LoadURL(url,
                                                 Referrer(),
                                                 PAGE_TRANSITION_AUTO_SUBFRAME,

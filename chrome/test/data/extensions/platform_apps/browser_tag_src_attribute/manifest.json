@@ -1,0 +1,12 @@
+{
+  "name": "Platform App Test: <browser> src",
+  "version": "1",
+  "permissions": [
+    "browserTag"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}

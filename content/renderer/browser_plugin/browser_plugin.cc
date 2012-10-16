@@ -102,13 +102,13 @@ std::string BrowserPlugin::GetSrcAttribute() const {
 }
 
 void BrowserPlugin::SetSrcAttribute(const std::string& src) {
-  if (src == src_ && !guest_crashed_)
+  if (src.empty() || (src == src_ && !guest_crashed_))
     return;
 
-  // If we haven't created the guest yet, do so now, if |src| is not empty and
-  // we will navigate it right after creation. If |src| is empty, we can delay
-  // the creation until we acutally need it.
-  if (!navigate_src_sent_ && !src.empty()) {
+  // If we haven't created the guest yet, do so now. We will navigate it right
+  // after creation. If |src| is empty, we can delay the creation until we
+  // acutally need it.
+  if (!navigate_src_sent_) {
     BrowserPluginManager::Get()->Send(
         new BrowserPluginHostMsg_CreateGuest(
             render_view_->GetRoutingID(),
@@ -117,27 +117,20 @@ void BrowserPlugin::SetSrcAttribute(const std::string& src) {
             persist_storage_));
   }
 
-  if (navigate_src_sent_ || !src.empty()) {
-    scoped_ptr<BrowserPluginHostMsg_ResizeGuest_Params> params(
-        GetPendingResizeParams());
-    DCHECK(!params->resize_pending);
+  scoped_ptr<BrowserPluginHostMsg_ResizeGuest_Params> params(
+      GetPendingResizeParams());
+  DCHECK(!params->resize_pending);
 
-    BrowserPluginManager::Get()->Send(
-        new BrowserPluginHostMsg_NavigateGuest(
-            render_view_->GetRoutingID(),
-            instance_id_,
-            src,
-            *params));
-    // Record that we sent a NavigateGuest message to embedder. Once we send
-    // such a message, subsequent SetSrcAttribute() calls must always send
-    // NavigateGuest messages to the embedder (even if |src| is empty), so
-    // resize works correctly for all cases (e.g. The embedder can reset the
-    // guest's |src| to empty value, resize and then set the |src| to a
-    // non-empty value).
-    // Additionally, once this instance has navigated, the storage partition
-    // cannot be changed, so this value is used for enforcing this.
-    navigate_src_sent_ = true;
-  }
+  BrowserPluginManager::Get()->Send(
+      new BrowserPluginHostMsg_NavigateGuest(
+          render_view_->GetRoutingID(),
+          instance_id_,
+          src,
+          *params));
+  // Record that we sent a NavigateGuest message to embedder.
+  // Once this instance has navigated, the storage partition cannot be changed,
+  // so this value is used for enforcing this.
+  navigate_src_sent_ = true;
   src_ = src;
 }
 
@@ -207,8 +200,7 @@ void BrowserPlugin::ParseAttributes(const WebKit::WebPluginParams& params) {
 
   // Set the 'src' attribute last, as it will set the has_navigated_ flag to
   // true, which prevents changing the 'partition' attribute.
-  if (!src.empty())
-    SetSrcAttribute(src);
+  SetSrcAttribute(src);
 }
 
 float BrowserPlugin::GetDeviceScaleFactor() const {
