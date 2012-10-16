@@ -338,9 +338,6 @@ void VideoCaptureController::OnIncomingCapturedFrame(const uint8* data,
                  this, buffer_id, timestamp));
 }
 
-// TODO(perkj): Need to decide if the error should be sent to
-// |video_capture_manager_| or if it enough to tell the
-// VideoCaptureMessageFilter in the render process that the device failed.
 void VideoCaptureController::OnError() {
   BrowserThread::PostTask(BrowserThread::IO,
       FROM_HERE,

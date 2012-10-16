@@ -32,8 +32,6 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
       const StreamDeviceInfoArray& audio_devices,
       const StreamDeviceInfoArray& video_devices) OVERRIDE;
   virtual void StreamGenerationFailed(const std::string& label) OVERRIDE;
-  virtual void AudioDeviceFailed(const std::string& label, int index) OVERRIDE;
-  virtual void VideoDeviceFailed(const std::string& label, int index) OVERRIDE;
   virtual void DevicesEnumerated(const std::string& label,
                                  const StreamDeviceInfoArray& devices) OVERRIDE;
   virtual void DeviceOpened(const std::string& label,

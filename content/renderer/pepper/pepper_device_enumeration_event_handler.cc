@@ -55,16 +55,6 @@ void PepperDeviceEnumerationEventHandler::OnStreamGenerationFailed(
     int request_id) {
 }
 
-void PepperDeviceEnumerationEventHandler::OnVideoDeviceFailed(
-    const std::string& label,
-    int index) {
-}
-
-void PepperDeviceEnumerationEventHandler::OnAudioDeviceFailed(
-    const std::string& label,
-    int index) {
-}
-
 void PepperDeviceEnumerationEventHandler::OnDevicesEnumerated(
     int request_id,
     const media_stream::StreamDeviceInfoArray& device_array) {

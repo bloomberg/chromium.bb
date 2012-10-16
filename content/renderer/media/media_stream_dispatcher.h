@@ -128,8 +128,6 @@ class CONTENT_EXPORT MediaStreamDispatcher
       const media_stream::StreamDeviceInfoArray& audio_array,
       const media_stream::StreamDeviceInfoArray& video_array);
   void OnStreamGenerationFailed(int request_id);
-  void OnVideoDeviceFailed(const std::string& label, int index);
-  void OnAudioDeviceFailed(const std::string& label, int index);
   void OnDevicesEnumerated(
       int request_id,
       const std::string& label,

@@ -111,10 +111,6 @@ class SpeechRecognitionManagerImpl::PermissionRequest
   }
 
   // The callbacks below are ignored.
-  virtual void AudioDeviceFailed(const std::string& label,
-                                 int index) OVERRIDE {}
-  virtual void VideoDeviceFailed(const std::string& label,
-                                 int index) OVERRIDE {}
   virtual void DevicesEnumerated(
       const std::string& label,
       const media_stream::StreamDeviceInfoArray& devices) OVERRIDE {}

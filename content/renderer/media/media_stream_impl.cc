@@ -329,24 +329,6 @@ void MediaStreamImpl::OnStreamGenerationFailed(int request_id) {
   user_media_request.requestFailed();
 }
 
-void MediaStreamImpl::OnVideoDeviceFailed(const std::string& label,
-                                          int index) {
-  DCHECK(CalledOnValidThread());
-  DVLOG(1) << "MediaStreamImpl::OnVideoDeviceFailed("
-           << label << ", " << index << ")";
-  // TODO(grunell): Implement. Currently not supported in WebKit.
-  NOTIMPLEMENTED();
-}
-
-void MediaStreamImpl::OnAudioDeviceFailed(const std::string& label,
-                                          int index) {
-  DCHECK(CalledOnValidThread());
-  DVLOG(1) << "MediaStreamImpl::OnAudioDeviceFailed("
-           << label << ", " << index << ")";
-  // TODO(grunell): Implement. Currently not supported in WebKit.
-  NOTIMPLEMENTED();
-}
-
 void MediaStreamImpl::OnDevicesEnumerated(
     int request_id,
     const media_stream::StreamDeviceInfoArray& device_array) {

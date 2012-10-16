@@ -24,12 +24,6 @@ class CONTENT_EXPORT MediaStreamRequester {
                                const StreamDeviceInfoArray& video_devices) = 0;
   // Called if GenerateStream failed.
   virtual void StreamGenerationFailed(const std::string& label) = 0;
-  // AudioDeviceFailed is called if an already opened audio device encounters
-  // an error.
-  virtual void AudioDeviceFailed(const std::string& label, int index) = 0;
-  // VideoDeviceFailed is called if an already opened video device encounters
-  // an error.
-  virtual void VideoDeviceFailed(const std::string& label, int index) = 0;
 
   // Called as a reply of a successful call to EnumerateDevices.
   virtual void DevicesEnumerated(const std::string& label,

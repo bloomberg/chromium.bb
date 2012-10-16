@@ -62,34 +62,6 @@ void MediaStreamDispatcherHost::StreamGenerationFailed(
                                                  request.page_request_id));
 }
 
-void MediaStreamDispatcherHost::AudioDeviceFailed(const std::string& label,
-                                                  int index) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DVLOG(1) << "MediaStreamDispatcherHost::AudioDeviceFailed("
-           << ", {label = " << label <<  "})";
-
-  StreamMap::iterator it = streams_.find(label);
-  DCHECK(it != streams_.end());
-  StreamRequest request = it->second;
-  Send(new MediaStreamHostMsg_AudioDeviceFailed(request.render_view_id,
-                                                label,
-                                                index));
-}
-
-void MediaStreamDispatcherHost::VideoDeviceFailed(const std::string& label,
-                                                  int index) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DVLOG(1) << "MediaStreamDispatcherHost::VideoDeviceFailed("
-           << ", {label = " << label <<  "})";
-
-  StreamMap::iterator it = streams_.find(label);
-  DCHECK(it != streams_.end());
-  StreamRequest request = it->second;
-  Send(new MediaStreamHostMsg_VideoDeviceFailed(request.render_view_id,
-                                                label,
-                                                index));
-}
-
 void MediaStreamDispatcherHost::DevicesEnumerated(
     const std::string& label,
     const StreamDeviceInfoArray& devices) {

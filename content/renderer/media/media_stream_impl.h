@@ -83,12 +83,6 @@ class CONTENT_EXPORT MediaStreamImpl
       const media_stream::StreamDeviceInfoArray& audio_array,
       const media_stream::StreamDeviceInfoArray& video_array) OVERRIDE;
   virtual void OnStreamGenerationFailed(int request_id) OVERRIDE;
-  virtual void OnVideoDeviceFailed(
-      const std::string& label,
-      int index) OVERRIDE;
-  virtual void OnAudioDeviceFailed(
-      const std::string& label,
-      int index) OVERRIDE;
   virtual void OnDevicesEnumerated(
       int request_id,
       const media_stream::StreamDeviceInfoArray& device_array) OVERRIDE;

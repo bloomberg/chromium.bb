@@ -37,9 +37,7 @@ class MockMediaStreamDispatcherEventHandler
       public base::SupportsWeakPtr<MockMediaStreamDispatcherEventHandler> {
  public:
   MockMediaStreamDispatcherEventHandler()
-      : request_id_(-1),
-        audio_failed(false),
-        video_failed(false) {}
+      : request_id_(-1) {}
 
   virtual void OnStreamGenerated(
       int request_id,
@@ -52,16 +50,6 @@ class MockMediaStreamDispatcherEventHandler
 
   virtual void OnStreamGenerationFailed(int request_id) OVERRIDE {
     request_id_ = request_id;
-  }
-
-  virtual void OnAudioDeviceFailed(const std::string& label,
-                                   int index) OVERRIDE {
-    audio_failed = true;
-  }
-
-  virtual void OnVideoDeviceFailed(const std::string& label,
-                                   int index) OVERRIDE {
-    video_failed = true;
   }
 
   virtual void OnDevicesEnumerated(
@@ -88,8 +76,6 @@ class MockMediaStreamDispatcherEventHandler
 
   int request_id_;
   std::string label_;
-  bool audio_failed;
-  bool video_failed;
 
   DISALLOW_COPY_AND_ASSIGN(MockMediaStreamDispatcherEventHandler);
 };
@@ -376,19 +362,6 @@ TEST(MediaStreamDispatcherTest, TestFailure) {
   EXPECT_EQ(handler->request_id_, kRequestId1);
   EXPECT_EQ(handler->label_, stream_label1);
   EXPECT_EQ(dispatcher->video_session_id(stream_label1, 0), kVideoSessionId);
-
-  // Test failure of the video device.
-  dispatcher->OnMessageReceived(
-      MediaStreamHostMsg_VideoDeviceFailed(kRouteId, stream_label1, 0));
-  EXPECT_EQ(handler->video_failed, true);
-  EXPECT_EQ(handler->audio_failed, false);
-  // Make sure the audio device still exist but not the video device.
-  EXPECT_EQ(dispatcher->audio_session_id(stream_label1, 0), kAudioSessionId);
-
-  // Test failure of the audio device.
-  dispatcher->OnMessageReceived(
-      MediaStreamHostMsg_AudioDeviceFailed(kRouteId, stream_label1, 0));
-  EXPECT_EQ(handler->audio_failed, true);
 
   // Stop stream1.
   dispatcher->StopStream(stream_label1);

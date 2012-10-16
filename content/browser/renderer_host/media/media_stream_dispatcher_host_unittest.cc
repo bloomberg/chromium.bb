@@ -51,8 +51,6 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
                void(int routing_id, int request_id, int audio_array_size,
                     int video_array_size));
   MOCK_METHOD2(OnStreamGenerationFailed, void(int routing_id, int request_id));
-  MOCK_METHOD2(OnAudioDeviceFailed, void(int routing_id, int index));
-  MOCK_METHOD2(OnVideoDeviceFailed, void(int routing_id, int index));
   MOCK_METHOD0(GetMediaObserver, content::MediaObserver*());
 
   // Accessor to private functions.
@@ -91,10 +89,6 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
       IPC_MESSAGE_HANDLER(MediaStreamMsg_StreamGenerated, OnStreamGenerated)
       IPC_MESSAGE_HANDLER(MediaStreamMsg_StreamGenerationFailed,
                           OnStreamGenerationFailed)
-      IPC_MESSAGE_HANDLER(MediaStreamHostMsg_VideoDeviceFailed,
-                          OnVideoDeviceFailed)
-      IPC_MESSAGE_HANDLER(MediaStreamHostMsg_AudioDeviceFailed,
-                          OnAudioDeviceFailed)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     EXPECT_TRUE(handled);
@@ -128,22 +122,6 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
     OnStreamGenerationFailed(msg.routing_id(), request_id);
     message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
     label_= "";
-  }
-
-  void OnAudioDeviceFailed(const IPC::Message& msg,
-                           std::string label,
-                           int index) {
-    OnAudioDeviceFailed(msg.routing_id(), index);
-    audio_devices_.erase(audio_devices_.begin() + index);
-    message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
-  }
-
-  void OnVideoDeviceFailed(const IPC::Message& msg,
-                           std::string label,
-                           int index) {
-    OnVideoDeviceFailed(msg.routing_id(), index);
-    video_devices_.erase(video_devices_.begin() + index);
-    message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
   }
 
   MessageLoop* message_loop_;

@@ -207,10 +207,6 @@ bool MediaStreamDispatcher::OnMessageReceived(const IPC::Message& message) {
                         OnStreamGenerated)
     IPC_MESSAGE_HANDLER(MediaStreamMsg_StreamGenerationFailed,
                         OnStreamGenerationFailed)
-    IPC_MESSAGE_HANDLER(MediaStreamHostMsg_VideoDeviceFailed,
-                        OnVideoDeviceFailed)
-    IPC_MESSAGE_HANDLER(MediaStreamHostMsg_AudioDeviceFailed,
-                        OnAudioDeviceFailed)
     IPC_MESSAGE_HANDLER(MediaStreamMsg_DevicesEnumerated,
                         OnDevicesEnumerated)
     IPC_MESSAGE_HANDLER(MediaStreamMsg_DevicesEnumerationFailed,
@@ -267,38 +263,6 @@ void MediaStreamDispatcher::OnStreamGenerationFailed(int request_id) {
       break;
     }
   }
-}
-
-void MediaStreamDispatcher::OnVideoDeviceFailed(const std::string& label,
-                                                int index) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-  LabelStreamMap::iterator it = label_stream_map_.find(label);
-  if (it == label_stream_map_.end())
-    return;
-
-  // index is the index in the video_array that has failed.
-  DCHECK_GT(it->second.video_array.size(), static_cast<size_t>(index));
-  media_stream::StreamDeviceInfoArray::iterator device_it =
-      it->second.video_array.begin();
-  it->second.video_array.erase(device_it + index);
-  if (it->second.handler)
-    it->second.handler->OnVideoDeviceFailed(label, index);
-}
-
-void MediaStreamDispatcher::OnAudioDeviceFailed(const std::string& label,
-                                                int index) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-  LabelStreamMap::iterator it = label_stream_map_.find(label);
-  if (it == label_stream_map_.end())
-    return;
-
-  // index is the index in the audio_array that has failed.
-  DCHECK_GT(it->second.audio_array.size(), static_cast<size_t>(index));
-  media_stream::StreamDeviceInfoArray::iterator device_it =
-      it->second.audio_array.begin();
-  it->second.audio_array.erase(device_it + index);
-  if (it->second.handler)
-    it->second.handler->OnAudioDeviceFailed(label, index);
 }
 
 void MediaStreamDispatcher::OnDevicesEnumerated(
