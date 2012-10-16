@@ -1408,16 +1408,11 @@ bool SandboxSeccompBpf::IsSeccompBpfDesired() {
 bool SandboxSeccompBpf::ShouldEnableSeccompBpf(
     const std::string& process_type) {
 #if defined(SECCOMP_BPF_SANDBOX)
-#if defined(__arm__)
-  // We disable the sandbox on ARM for now until crbug.com/148856 is fixed.
-  return false;
-#else
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (process_type == switches::kGpuProcess)
     return !command_line.HasSwitch(switches::kDisableGpuSandbox);
 
   return true;
-#endif  // __arm__
 #endif  // SECCOMP_BPF_SANDBOX
   return false;
 }
