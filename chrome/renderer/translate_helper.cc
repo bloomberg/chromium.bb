@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
@@ -60,9 +61,25 @@ TranslateHelper::~TranslateHelper() {
 
 void TranslateHelper::PageCaptured(const string16& contents) {
   WebDocument document = render_view()->GetWebView()->mainFrame()->document();
-  // If the page explicitly specifies a language, use it, otherwise we'll
-  // determine it based on the text content using the CLD.
-  std::string language = GetPageLanguageFromMetaTag(&document);
+
+  // Get the document language as set by WebKit from the http-equiv
+  // meta tag for "content-language".  This may or may not also
+  // have a value derived from the actual Content-Language HTTP
+  // header.  The two actually have different meanings (despite the
+  // original intent of http-equiv to be an equivalent) with the former
+  // being the language of the document and the latter being the
+  // language of the intended audience (a distinction really only
+  // relevant for things like langauge textbooks).  This distinction
+  // shouldn't affect translation.
+  std::string language = document.contentLanguage().utf8();
+  size_t coma_index = language.find(',');
+  if (coma_index != std::string::npos) {
+    // There are more than 1 language specified, just keep the first one.
+    language = language.substr(0, coma_index);
+  }
+  TrimWhitespaceASCII(language, TRIM_ALL, &language);
+  language = StringToLowerASCII(language);
+
   if (language.empty()) {
     base::TimeTicks begin_time = base::TimeTicks::Now();
     language = DetermineTextLanguage(contents);
@@ -102,40 +119,6 @@ bool TranslateHelper::IsPageTranslatable(WebDocument* document) {
       return false;
   }
   return true;
-}
-
-// static
-std::string TranslateHelper::GetPageLanguageFromMetaTag(WebDocument* document) {
-  // The META language tag looks like:
-  // <meta http-equiv="content-language" content="en">
-  // It can contain more than one language:
-  // <meta http-equiv="content-language" content="en, fr">
-  std::vector<WebElement> meta_elements;
-  webkit_glue::GetMetaElementsWithAttribute(document,
-                                            ASCIIToUTF16("http-equiv"),
-                                            ASCIIToUTF16("content-language"),
-                                            &meta_elements);
-  if (meta_elements.empty())
-    return std::string();
-
-  // We don't expect more than one such tag. If there are several, just use the
-  // first one.
-  WebString attribute = meta_elements[0].getAttribute("content");
-  if (attribute.isEmpty())
-    return std::string();
-
-  // The value is supposed to be ASCII.
-  if (!IsStringASCII(attribute))
-    return std::string();
-
-  std::string language = StringToLowerASCII(UTF16ToASCII(attribute));
-  size_t coma_index = language.find(',');
-  if (coma_index != std::string::npos) {
-    // There are more than 1 language specified, just keep the first one.
-    language = language.substr(0, coma_index);
-  }
-  TrimWhitespaceASCII(language, TRIM_ALL, &language);
-  return language;
 }
 
 // static

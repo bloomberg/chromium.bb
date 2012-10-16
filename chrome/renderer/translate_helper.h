@@ -70,13 +70,6 @@ class TranslateHelper : public content::RenderViewObserver {
   // should not be translated.
   static bool IsPageTranslatable(WebKit::WebDocument* document);
 
-  // Returns the language specified in the language meta tag of |document|, or
-  // an empty string if no such tag was found.
-  // The tag may specify several languages, the first one is returned.
-  // Example of such meta-tag:
-  // <meta http-equiv="content-language" content="en, fr">
-  static std::string GetPageLanguageFromMetaTag(WebKit::WebDocument* document);
-
   // Returns the ISO 639_1 language code of the specified |text|, or 'unknown'
   // if it failed.
   static std::string DetermineTextLanguage(const string16& text);
