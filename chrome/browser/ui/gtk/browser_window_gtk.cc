@@ -229,7 +229,6 @@ GQuark GetBrowserWindowQuarkKey() {
 
 BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
     :  window_(NULL),
-       window_has_shown_(false),
        window_container_(NULL),
        window_vbox_(NULL),
        render_area_vbox_(NULL),
@@ -604,8 +603,6 @@ void BrowserWindowGtk::Show() {
   gtk_widget_set_size_request(contents_container_->widget(), -1, -1);
 
   browser()->OnWindowDidShow();
-  window_has_shown_ = true;
-  UpdateDevTools();
 }
 
 void BrowserWindowGtk::ShowInactive() {
@@ -677,7 +674,6 @@ void BrowserWindowGtk::Close() {
   // To help catch bugs in any event handlers that might get fired during the
   // destruction, set window_ to NULL before any handlers will run.
   window_ = NULL;
-  window_has_shown_ = false;
   titlebar_->set_window(NULL);
 
   // We don't want GlobalMenuBar handling any notifications or commands after
@@ -1353,8 +1349,6 @@ void BrowserWindowGtk::MaybeShowBookmarkBar(bool animate) {
 }
 
 void BrowserWindowGtk::UpdateDevToolsForContents(WebContents* contents) {
-  if (!window_has_shown_)
-    return;
   TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::UpdateDevToolsForContents");
   TabContents* old_devtools = devtools_container_->tab();
   TabContents* devtools_contents = contents ?
