@@ -21,14 +21,12 @@ class WriteTransaction;
 
 class Cryptographer;
 
-// A syncer command for processing updates.
+// A syncer command for verifying and processing updates.
 //
-// Preconditions - updates in the SyncerSesssion have been downloaded
-//                 and verified.
+// Preconditions - Updates in the SyncerSesssion have been downloaded.
 //
 // Postconditions - All of the verified SyncEntity data will be copied to
 //                  the server fields of the corresponding syncable entries.
-// TODO(tim): This should not be ModelChanging (bug 36592).
 class ProcessUpdatesCommand : public ModelChangingSyncerCommand {
  public:
   ProcessUpdatesCommand();
@@ -42,6 +40,11 @@ class ProcessUpdatesCommand : public ModelChangingSyncerCommand {
       sessions::SyncSession* session) OVERRIDE;
 
  private:
+  VerifyResult VerifyUpdate(
+      syncable::WriteTransaction* trans,
+      const sync_pb::SyncEntity& entry,
+      ModelTypeSet requested_types,
+      const ModelSafeRoutingInfo& routes);
   ServerUpdateProcessingResult ProcessUpdate(
       const sync_pb::SyncEntity& proto_update,
       const Cryptographer* cryptographer,

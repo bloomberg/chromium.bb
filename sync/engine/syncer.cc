@@ -23,7 +23,6 @@
 #include "sync/engine/store_timestamps_command.h"
 #include "sync/engine/syncer_types.h"
 #include "sync/engine/throttled_data_type_tracker.h"
-#include "sync/engine/verify_updates_command.h"
 #include "sync/syncable/mutable_entry.h"
 #include "sync/syncable/syncable-inl.h"
 
@@ -58,7 +57,6 @@ const char* SyncerStepToString(const SyncerStep step)
   switch (step) {
     ENUM_CASE(SYNCER_BEGIN);
     ENUM_CASE(DOWNLOAD_UPDATES);
-    ENUM_CASE(VERIFY_UPDATES);
     ENUM_CASE(PROCESS_UPDATES);
     ENUM_CASE(STORE_TIMESTAMPS);
     ENUM_CASE(APPLY_UPDATES);
@@ -121,12 +119,6 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         DownloadUpdatesCommand download_updates(kCreateMobileBookmarksFolder);
         session->mutable_status_controller()->set_last_download_updates_result(
             download_updates.Execute(session));
-        next_step = VERIFY_UPDATES;
-        break;
-      }
-      case VERIFY_UPDATES: {
-        VerifyUpdatesCommand verify_updates;
-        verify_updates.Execute(session);
         next_step = PROCESS_UPDATES;
         break;
       }

@@ -177,9 +177,6 @@ class SyncSession {
   // Returns the set of enabled groups that have conflicts.
   std::set<ModelSafeGroup> GetEnabledGroupsWithConflicts() const;
 
-  // Returns the set of enabled groups that have verified updates.
-  std::set<ModelSafeGroup> GetEnabledGroupsWithVerifiedUpdates() const;
-
   // Mark the session has having finished all the sync steps it needed.
   void SetFinished();
 

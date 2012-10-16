@@ -219,24 +219,6 @@ std::set<ModelSafeGroup> SyncSession::GetEnabledGroupsWithConflicts() const {
   return enabled_groups_with_conflicts;
 }
 
-std::set<ModelSafeGroup>
-    SyncSession::GetEnabledGroupsWithVerifiedUpdates() const {
-  const std::set<ModelSafeGroup>& enabled_groups = GetEnabledGroups();
-  std::set<ModelSafeGroup> enabled_groups_with_verified_updates;
-  for (std::set<ModelSafeGroup>::const_iterator it =
-           enabled_groups.begin(); it != enabled_groups.end(); ++it) {
-    const UpdateProgress* update_progress =
-        status_controller_->GetUnrestrictedUpdateProgress(*it);
-    if (update_progress &&
-        (update_progress->VerifiedUpdatesBegin() !=
-         update_progress->VerifiedUpdatesEnd())) {
-      enabled_groups_with_verified_updates.insert(*it);
-    }
-  }
-
-  return enabled_groups_with_verified_updates;
-}
-
 namespace {
 
 // Returns false iff one of the command results had an error.
