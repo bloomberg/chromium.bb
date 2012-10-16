@@ -111,10 +111,6 @@ struct display {
 	struct wl_cursor_theme *cursor_theme;
 	struct wl_cursor **cursors;
 
-	PFNGLEGLIMAGETARGETTEXTURE2DOESPROC image_target_texture_2d;
-	PFNEGLCREATEIMAGEKHRPROC create_image;
-	PFNEGLDESTROYIMAGEKHRPROC destroy_image;
-
 	display_output_handler_t output_configure_handler;
 	display_global_handler_t global_handler;
 
@@ -3901,11 +3897,6 @@ display_create(int argc, char *argv[])
 	if (init_egl(d) < 0)
 		return NULL;
 #endif
-
-	d->image_target_texture_2d =
-		(void *) eglGetProcAddress("glEGLImageTargetTexture2DOES");
-	d->create_image = (void *) eglGetProcAddress("eglCreateImageKHR");
-	d->destroy_image = (void *) eglGetProcAddress("eglDestroyImageKHR");
 
 	create_cursors(d);
 

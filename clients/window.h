@@ -115,12 +115,6 @@ display_acquire_window_surface(struct display *display,
 void
 display_release_window_surface(struct display *display,
 			       struct window *window);
-
-#ifdef HAVE_CAIRO_EGL
-EGLImageKHR
-display_get_image_for_egl_image_surface(struct display *display,
-					cairo_surface_t *surface);
-#endif
 #endif
 
 #define SURFACE_OPAQUE 0x01
