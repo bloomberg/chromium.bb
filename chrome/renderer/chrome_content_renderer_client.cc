@@ -579,19 +579,6 @@ GURL ChromeContentRendererClient::GetNaClContentHandlerURL(
   return GURL();
 }
 
-// TODO(dschuff): remove this when ARM ABI is stable
-#if defined(__arm__) && defined(OS_CHROMEOS)
-static bool IsWhiteListedARM(const GURL& url) {
-  return
-    // QuickOffice
-    url.host() == "gbkeegbaiigmenfmjfclcdgdpimamgkj" ||
-    // ssh dev
-    url.host() == "okddffdblfhhnmhodogpojmfkjmhinfp" ||
-    // ssh stable
-    url.host() == "pnhechapfaindjhompbnflcldabbghjo";
-}
-#endif
-
 //  static
 bool ChromeContentRendererClient::IsNaClAllowed(
     const GURL& manifest_url,
@@ -612,15 +599,15 @@ bool ChromeContentRendererClient::IsNaClAllowed(
   // under development, invocations from whitelisted URLs, and all invocations
   // if --enable-nacl is set.
   bool is_nacl_allowed =
-#if defined(__arm__) && defined(OS_CHROMEOS)
+#if defined(__arm__)
     // The ARM ABI is not quite stable, so only allow NaCl for
     // unrestricted extensions (i.e. built-in and under development),
-    // and for certain whitelisted webstore apps.
+    // and for the QuickOffice webstore app.
     // See http://crbug.com/145694
     // TODO(dschuff): remove this when the ABI is stable
     (is_extension_from_webstore &&
      manifest_url.SchemeIs("chrome-extension") &&
-     IsWhiteListedARM(manifest_url) ||
+     manifest_url.host() == "gbkeegbaiigmenfmjfclcdgdpimamgkj") ||
 #else
     is_extension_from_webstore ||
     is_whitelisted_url ||
