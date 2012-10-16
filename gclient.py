@@ -1541,11 +1541,11 @@ def Parser():
   if platform.machine().startswith('arm'):
     jobs = 1
   else:
-    jobs = 8
+    jobs = max(8, gclient_utils.NumLocalCpus())
   gclientfile_default = os.environ.get('GCLIENT_FILE', '.gclient')
   parser.add_option('-j', '--jobs', default=jobs, type='int',
                     help='Specify how many SCM commands can run in parallel; '
-                          'default=%default')
+                          'defaults to number of cpu cores (%default)')
   parser.add_option('-v', '--verbose', action='count', default=0,
                     help='Produces additional output for diagnostics. Can be '
                           'used up to three times for more logging info.')

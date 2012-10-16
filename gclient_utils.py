@@ -769,3 +769,17 @@ def ParseCodereviewSettingsContent(content):
   fix_url('CODE_REVIEW_SERVER')
   fix_url('VIEW_VC')
   return keyvals
+
+
+def NumLocalCpus():
+  """Returns the number of processors.
+
+  Python on OSX 10.6 raises a NotImplementedError exception.
+  """
+  try:
+    import multiprocessing
+    return multiprocessing.cpu_count()
+  except:  # pylint: disable=W0702
+    # Mac OS 10.6 only
+    # pylint: disable=E1101
+    return int(os.sysconf('SC_NPROCESSORS_ONLN'))

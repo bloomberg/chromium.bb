@@ -33,7 +33,7 @@ class GclientUtilsUnittest(GclientUtilBase):
         'FileWrite', 'FindFileUpwards', 'FindGclientRoot',
         'GetGClientRootAndEntries', 'GetEditor', 'IsDateRevision',
         'MakeDateRevision', 'MakeFileAutoFlush', 'MakeFileAnnotated',
-        'PathDifference', 'ParseCodereviewSettingsContent',
+        'PathDifference', 'ParseCodereviewSettingsContent', 'NumLocalCpus',
         'PrintableObject', 'RemoveDirectory', 'RunEditor',
         'SplitUrlRevision', 'SyntaxErrorToError',
         'UpgradeToHttps', 'Wrapper', 'WorkItem',
