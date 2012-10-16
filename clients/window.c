@@ -41,6 +41,7 @@
 
 #include <pixman.h>
 
+#ifdef HAVE_CAIRO_EGL
 #include <wayland-egl.h>
 
 #ifdef USE_CAIRO_GLESV2
@@ -52,9 +53,13 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
-#ifdef HAVE_CAIRO_EGL
 #include <cairo-gl.h>
-#endif
+#else /* HAVE_CAIRO_EGL */
+typedef void *EGLDisplay;
+typedef void *EGLConfig;
+typedef void *EGLContext;
+#define EGL_NO_DISPLAY ((EGLDisplay)0)
+#endif /* no HAVE_CAIRO_EGL */
 
 #include <xkbcommon/xkbcommon.h>
 #include <wayland-cursor.h>
@@ -3795,13 +3800,11 @@ init_egl(struct display *d)
 		return -1;
 	}
 
-#ifdef HAVE_CAIRO_EGL
 	d->argb_device = cairo_egl_device_create(d->dpy, d->argb_ctx);
 	if (cairo_device_status(d->argb_device) != CAIRO_STATUS_SUCCESS) {
 		fprintf(stderr, "failed to get cairo egl argb device\n");
 		return -1;
 	}
-#endif
 
 	return 0;
 }
@@ -3809,9 +3812,7 @@ init_egl(struct display *d)
 static void
 fini_egl(struct display *display)
 {
-#ifdef HAVE_CAIRO_EGL
 	cairo_device_destroy(display->argb_device);
-#endif
 
 	eglMakeCurrent(display->dpy, EGL_NO_SURFACE, EGL_NO_SURFACE,
 		       EGL_NO_CONTEXT);
