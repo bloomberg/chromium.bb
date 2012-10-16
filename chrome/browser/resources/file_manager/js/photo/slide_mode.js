@@ -789,13 +789,13 @@ SlideMode.prototype.onKeyDown = function(event) {
       break;
 
     case 'U+0045':  // 'e' toggles the editor
-      this.toggleEditor_();
+      this.toggleEditor_(event);
       break;
 
     case 'U+001B':  // Escape
       if (!this.isEditing())
         return false;  // Not handled.
-      this.toggleEditor_();
+      this.toggleEditor_(event);
       break;
 
     case 'Home':
