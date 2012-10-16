@@ -11,7 +11,6 @@
 
 namespace chromeos {
 class BrightnessObserver;
-class MagnificationManager;
 class OutputObserver;
 class PowerButtonObserver;
 class PowerStateOverride;
@@ -69,7 +68,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   scoped_ptr<chromeos::ScreenDimmingObserver> screen_dimming_observer_;
   scoped_refptr<chromeos::RemovableDeviceNotificationsCros>
       removable_device_notifications_;
-  scoped_ptr<chromeos::MagnificationManager> magnification_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };
