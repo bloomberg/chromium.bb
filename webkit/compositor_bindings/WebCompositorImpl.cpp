@@ -13,13 +13,11 @@
 #include <public/Platform.h>
 #include <wtf/ThreadingPrimitives.h>
 
-#if defined(USE_LIBCC_FOR_COMPOSITOR)
 #ifdef LOG
 #undef LOG
 #endif
 #include "base/message_loop_proxy.h"
 #include "webkit/glue/webthread_impl.h"
-#endif
 
 using namespace cc;
 

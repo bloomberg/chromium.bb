@@ -5,7 +5,6 @@
 {
   'variables': {
     'chromium_code': 0,
-    'use_libcc_for_compositor%': 0,
     'cc_tests_source_files': [
       'hash_pair_unittest.cc',
       'active_animation_unittest.cc',
@@ -91,38 +90,56 @@
       'type': '<(gtest_target_type)',
       'dependencies': [
         '../base/base.gyp:test_support_base',
-        '../testing/gtest.gyp:gtest',
+        '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
+        '../testing/gtest.gyp:gtest',
+        '../third_party/WebKit/Source/WTF/WTF.gyp/WTF.gyp:wtf',
+        'cc.gyp:cc',
+        'cc_test_support',
       ],
       'sources': [
         'test/run_all_unittests.cc',
+        '<@(cc_tests_source_files)',
+      ],
+      'include_dirs': [
+        'stubs',
+        'test',
+        '.',
+        '../third_party/WebKit/Source/Platform/chromium',
       ],
       'conditions': [
-        ['use_libcc_for_compositor==1', {
-          'dependencies': [
-            '../third_party/WebKit/Source/WTF/WTF.gyp/WTF.gyp:wtf',
-            '../skia/skia.gyp:skia',
-            'cc.gyp:cc',
-            'cc_test_support',
-          ],
-          'defines': [
-            'USE_LIBCC_FOR_COMPOSITOR',
-          ],
-          'include_dirs': [
-            'stubs',
-            'test',
-            '.',
-            '../third_party/WebKit/Source/Platform/chromium',
-          ],
-          'sources': [
-            '<@(cc_tests_source_files)',
-          ],
-        }],
         ['OS == "android" and gtest_target_type == "shared_library"', {
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',
           ],
         }],
+      ],
+    },
+    {
+      'target_name': 'cc_test_support',
+      'type': 'static_library',
+      'include_dirs': [
+        'stubs',
+        'test',
+        '.',
+        '..',
+        '../third_party/WebKit/Source/Platform/chromium',
+      ],
+      'dependencies': [
+        '../ui/gl/gl.gyp:gl',
+        '../testing/gtest.gyp:gtest',
+        '../testing/gmock.gyp:gmock',
+        '../skia/skia.gyp:skia',
+        '../third_party/WebKit/Source/WTF/WTF.gyp/WTF.gyp:wtf',
+        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit_wtf_support',
+        '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+        '../webkit/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
+        '../webkit/support/webkit_support.gyp:glue',
+      ],
+      'sources': [
+        '<@(cc_tests_support_files)',
+        'test/test_webkit_platform.cc',
+        'test/test_webkit_platform.h',
       ],
     },
   ],
@@ -142,37 +159,6 @@
             'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)cc_unittests<(SHARED_LIB_SUFFIX)',
           },
           'includes': [ '../build/apk_test.gypi' ],
-        },
-      ],
-    }],
-    ['use_libcc_for_compositor==1', {
-      'targets': [
-        {
-          'target_name': 'cc_test_support',
-          'type': 'static_library',
-          'include_dirs': [
-            'stubs',
-            'test',
-            '.',
-            '..',
-            '../third_party/WebKit/Source/Platform/chromium',
-          ],
-          'dependencies': [
-            '../ui/gl/gl.gyp:gl',
-            '../testing/gtest.gyp:gtest',
-            '../testing/gmock.gyp:gmock',
-            '../skia/skia.gyp:skia',
-            '../third_party/WebKit/Source/WTF/WTF.gyp/WTF.gyp:wtf',
-            '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit_wtf_support',
-            '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
-            '../webkit/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
-            '../webkit/support/webkit_support.gyp:glue',
-          ],
-          'sources': [
-            '<@(cc_tests_support_files)',
-            'test/test_webkit_platform.cc',
-            'test/test_webkit_platform.h',
-          ],
         },
       ],
     }],

@@ -11,8 +11,6 @@
         'webkit_src_dir': '../../third_party/WebKit',
       }],
     ],
-
-    'use_libcc_for_compositor%': 0,
   },
   'target_defaults': {
      # Disable narrowing-conversion-in-initialization-list warnings in that we
@@ -472,11 +470,6 @@
         ['inside_chromium_build==0', {
           'dependencies': [
             '<(DEPTH)/webkit/support/setup_third_party.gyp:third_party_headers',
-          ],
-        }],
-        ['use_libcc_for_compositor==1', {
-          'defines': [
-            'USE_LIBCC_FOR_COMPOSITOR',
           ],
         }],
       ],

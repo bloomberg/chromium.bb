@@ -5,7 +5,6 @@
 {
   'variables': {
     'chromium_code': 0,
-    'use_libcc_for_compositor%': 0,
     'webkit_compositor_bindings_sources': [
       'CCThreadImpl.cpp',
       'CCThreadImpl.h',
@@ -49,6 +48,8 @@
       'type': 'static_library',
       'dependencies': [
         '../../skia/skia.gyp:skia',
+        '<(webkit_src_dir)/Source/WTF/WTF.gyp/WTF.gyp:wtf',
+        'webkit_compositor_bindings',
       ],
       'sources': [
         'web_compositor_support_impl.cc',
@@ -59,57 +60,35 @@
       ],
       'include_dirs': [
         '../..',
+        '../../cc',
         '<(SHARED_INTERMEDIATE_DIR)/webkit',
         '<(webkit_src_dir)/Source/Platform/chromium',
-      ],
-      'conditions': [
-        ['use_libcc_for_compositor==1', {
-          'include_dirs': [
-            '../../cc',
-            '<@(cc_stubs_dirs)',
-          ],
-          'dependencies': [
-            'webkit_compositor_bindings',
-            '<(webkit_src_dir)/Source/WTF/WTF.gyp/WTF.gyp:wtf',
-          ],
-          'defines': [
-            'USE_LIBCC_FOR_COMPOSITOR',
-          ],
-        }],
+        '<@(cc_stubs_dirs)',
       ],
     },
-  ],
-  'conditions': [
-    ['use_libcc_for_compositor==1', {
-      'targets': [
-        {
-          'target_name': 'webkit_compositor_bindings',
-          'type': 'static_library',
-          'includes': [
-            '../../cc/cc.gypi',
-          ],
-          'dependencies': [
-            '../../base/base.gyp:base',
-            '../../cc/cc.gyp:cc',
-            '../../skia/skia.gyp:skia',
-            # We have to depend on WTF directly to pick up the correct defines for WTF headers - for instance USE_SYSTEM_MALLOC.
-            '<(webkit_src_dir)/Source/WTF/WTF.gyp/WTF.gyp:wtf',
-          ],
-          'include_dirs': [
-            '../../cc',
-            '<@(cc_stubs_dirs)',
-            '<(webkit_src_dir)/Source/Platform/chromium',
-          ],
-          'sources': [
-            '<@(webkit_compositor_bindings_sources)',
-            'webcore_convert.cc',
-            'webcore_convert.h',
-          ],
-          'defines': [
-            'USE_LIBCC_FOR_COMPOSITOR',
-          ],
-        },
+    {
+      'target_name': 'webkit_compositor_bindings',
+      'type': 'static_library',
+      'includes': [
+        '../../cc/cc.gypi',
       ],
-    }],
+      'dependencies': [
+        '../../base/base.gyp:base',
+        '../../cc/cc.gyp:cc',
+        '../../skia/skia.gyp:skia',
+        # We have to depend on WTF directly to pick up the correct defines for WTF headers - for instance USE_SYSTEM_MALLOC.
+        '<(webkit_src_dir)/Source/WTF/WTF.gyp/WTF.gyp:wtf',
+      ],
+      'include_dirs': [
+        '../../cc',
+        '<@(cc_stubs_dirs)',
+        '<(webkit_src_dir)/Source/Platform/chromium',
+      ],
+      'sources': [
+        '<@(webkit_compositor_bindings_sources)',
+        'webcore_convert.cc',
+        'webcore_convert.h',
+      ],
+    },
   ],
 }
