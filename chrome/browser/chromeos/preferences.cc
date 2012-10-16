@@ -97,16 +97,12 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
                                false,
                                PrefService::UNSYNCABLE_PREF);
   }
-  if (prefs->FindPreference(prefs::kScreenMagnifierEnabled) == NULL) {
-    prefs->RegisterBooleanPref(prefs::kScreenMagnifierEnabled,
-                               false,
-                               PrefService::UNSYNCABLE_PREF);
-  }
-  if (prefs->FindPreference(prefs::kScreenMagnifierScale) == NULL) {
-    prefs->RegisterDoublePref(prefs::kScreenMagnifierScale,
-                              std::numeric_limits<double>::min(),
-                              PrefService::UNSYNCABLE_PREF);
-  }
+  prefs->RegisterBooleanPref(prefs::kScreenMagnifierEnabled,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDoublePref(prefs::kScreenMagnifierScale,
+                            std::numeric_limits<double>::min(),
+                            PrefService::UNSYNCABLE_PREF);
   if (prefs->FindPreference(prefs::kVirtualKeyboardEnabled) == NULL) {
     prefs->RegisterBooleanPref(prefs::kVirtualKeyboardEnabled,
                                false,
@@ -287,6 +283,8 @@ void Preferences::InitUserPrefs(PrefService* prefs) {
       prefs, this);
   natural_scroll_.Init(prefs::kNaturalScroll, prefs, this);
   accessibility_enabled_.Init(prefs::kSpokenFeedbackEnabled, prefs, this);
+  screen_magnifier_enabled_.Init(prefs::kScreenMagnifierEnabled, prefs, this);
+  screen_magnifier_scale_.Init(prefs::kScreenMagnifierScale, prefs, this);
   mouse_sensitivity_.Init(prefs::kMouseSensitivity, prefs, this);
   touchpad_sensitivity_.Init(prefs::kTouchpadSensitivity, prefs, this);
   use_24hour_clock_.Init(prefs::kUse24HourClock, prefs, this);
