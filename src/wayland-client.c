@@ -139,6 +139,10 @@ wl_event_queue_release(struct wl_event_queue *queue)
  * Destroy the given event queue. Any pending event on that queue is
  * discarded.
  *
+ * The \ref wl_display object used to create the queue should not be
+ * destroyed until all event queues created with it are destroyed with
+ * this function.
+ *
  * \memberof wl_event_queue
  */
 WL_EXPORT void
