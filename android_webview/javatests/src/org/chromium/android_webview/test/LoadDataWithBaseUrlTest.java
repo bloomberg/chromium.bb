@@ -289,6 +289,7 @@ public class LoadDataWithBaseUrlTest extends AndroidWebViewTestBase {
         Bitmap bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565);
         FileOutputStream fos = new FileOutputStream(tempImage);
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+        fos.close();
         String imagePath = tempImage.getAbsolutePath();
 
         ContentSettings contentSettings = getContentSettingsOnUiThread(mAwContents);
@@ -338,7 +339,7 @@ public class LoadDataWithBaseUrlTest extends AndroidWebViewTestBase {
             assertTrue(canAccessFileFromData(NON_DATA_BASE_URL,
                   "file://" + imagePath + "?" + token));
         } finally {
-          tempImage.delete();
+          if (!tempImage.delete()) throw new AssertionError();
           AndroidProtocolHandler.setResourceContextForTesting(null);
         }
     }
