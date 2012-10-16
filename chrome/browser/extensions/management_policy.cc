@@ -5,6 +5,19 @@
 #include "chrome/browser/extensions/management_policy.h"
 
 namespace extensions {
+
+namespace {
+
+void GetExtensionNameAndId(const Extension* extension,
+                           std::string* name,
+                           std::string* id) {
+  // The extension may be NULL in testing.
+  *id = extension ? extension->id() : "[test]";
+  *name = extension ? extension->name() : "test";
+}
+
+}  // namespace
+
 ManagementPolicy::ManagementPolicy() {
 }
 
@@ -37,13 +50,13 @@ void ManagementPolicy::UnregisterProvider(Provider* provider) {
 bool ManagementPolicy::UserMayLoad(const Extension* extension,
                                    string16* error) const {
   for (ProviderList::const_iterator it = providers_.begin();
-      it != providers_.end(); ++it) {
+       it != providers_.end(); ++it) {
     if (!(*it)->UserMayLoad(extension, error)) {
-      // The extension may be NULL in testing.
-      std::string id = extension ? extension->id() : "[test]";
-      std::string name = extension ? extension->name() : "test";
+      std::string id;
+      std::string name;
+      GetExtensionNameAndId(extension, &name, &id);
       DLOG(WARNING) << "Installation of extension " << name
-                    << "( " << id << ")"
+                    << " (" << id << ")"
                     << " prohibited by " << (*it)->GetDebugPolicyProviderName();
       return false;
     }
@@ -54,13 +67,13 @@ bool ManagementPolicy::UserMayLoad(const Extension* extension,
 bool ManagementPolicy::UserMayModifySettings(const Extension* extension,
                                              string16* error) const {
   for (ProviderList::const_iterator it = providers_.begin();
-      it != providers_.end(); ++it) {
+       it != providers_.end(); ++it) {
     if (!(*it)->UserMayModifySettings(extension, error)) {
-      // The extension may be NULL in testing.
-      std::string id = extension ? extension->id() : "[test]";
-      std::string name = extension ? extension->name() : "test";
+      std::string id;
+      std::string name;
+      GetExtensionNameAndId(extension, &name, &id);
       DLOG(WARNING) << "Modification of extension " << name
-                    << "( " << id << ")"
+                    << " (" << id << ")"
                     << " prohibited by " << (*it)->GetDebugPolicyProviderName();
       return false;
     }
@@ -71,13 +84,13 @@ bool ManagementPolicy::UserMayModifySettings(const Extension* extension,
 bool ManagementPolicy::MustRemainEnabled(const Extension* extension,
                                          string16* error) const {
   for (ProviderList::const_iterator it = providers_.begin();
-      it != providers_.end(); ++it) {
+       it != providers_.end(); ++it) {
     if ((*it)->MustRemainEnabled(extension, error)) {
-      // The extension may be NULL in testing.
-      std::string id = extension ? extension->id() : "[test]";
-      std::string name = extension ? extension->name() : "test";
+      std::string id;
+      std::string name;
+      GetExtensionNameAndId(extension, &name, &id);
       DLOG(WARNING) << "Extension " << name
-                    << "( " << id << ")"
+                    << " (" << id << ")"
                     << " required to remain enabled by "
                     << (*it)->GetDebugPolicyProviderName();
       return true;
@@ -93,4 +106,5 @@ void ManagementPolicy::UnregisterAllProviders() {
 int ManagementPolicy::GetNumProviders() const {
   return providers_.size();
 }
-}  // namespace
+
+}  // namespace extensions
