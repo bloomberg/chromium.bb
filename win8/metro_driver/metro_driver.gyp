@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 {
   'conditions': [
-    ['OS=="win" and (MSVS_VERSION=="2010" or MSVS_VERSION=="2010e")', {
+    ['OS=="win"', {
       'variables': {
         'chromium_code': 1,
       },
