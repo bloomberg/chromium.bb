@@ -96,6 +96,7 @@ if env.Bit('linux'):
     'test_jmp_imm': 1,
     'test_read_only_regs': 1,
     'test_invalid_dest': 1,
+    'test_unpredicted': 1,
   }
 
   for test, exit_status in validator_tests.iteritems():

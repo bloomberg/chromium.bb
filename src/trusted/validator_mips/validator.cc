@@ -215,6 +215,23 @@ static PatternMatch CheckLoadStore(const SfiValidator &sfi,
 }
 
 
+/*
+ * Checks if there is jump/branch in the delay slot.
+ */
+static PatternMatch CheckBranchInDelaySlot(const SfiValidator &sfi,
+                                   const DecodedInstruction &first,
+                                   const DecodedInstruction &second,
+                                   ProblemSink *out) {
+  UNREFERENCED_PARAMETER(sfi);
+  if (first.HasDelaySlot() && second.HasDelaySlot()) {
+    out->ReportProblem(second.addr(), second.safety(),
+                       kProblemBranchInDelaySlot);
+    return PATTERN_UNSAFE;
+  }
+  return NO_MATCH;
+}
+
+
 /*********************************************************
  * Pseudo-instruction patterns.
  *********************************************************/
@@ -418,7 +435,8 @@ bool SfiValidator::ApplyPatterns(const DecodedInstruction &first,
     &CheckJmpReg,
     &CheckDataRegisterUpdate,
     &CheckDataRegisterDslot,
-    &CheckLoadStore
+    &CheckLoadStore,
+    &CheckBranchInDelaySlot
   };
 
   bool complete_success = true;

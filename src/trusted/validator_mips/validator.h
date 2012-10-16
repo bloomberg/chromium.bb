@@ -391,7 +391,8 @@ const char * const kProblemUnalignedJumpToTrampoline =
     "kProblemUnalignedJumpToTrampoline";
 // A jump register instruction is not guarded.
 const char * const kProblemUnsafeJumpRegister = "kProblemUnsafeJumpRegister";
-
+// Two consecutive branches/jumps. Branch/jump in the delay slot.
+const char * const kProblemBranchInDelaySlot = "kProblemBranchInDelaySlot";
 }  // namespace
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_MIPS_VALIDATOR_H

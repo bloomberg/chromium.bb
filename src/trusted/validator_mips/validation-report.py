@@ -73,6 +73,11 @@ def _problem_info(code):
         'kProblemDataRegInDelaySlot':['This instruction changes value of a '
             'stack pointer but is located in the delay slot of jump/branch',
             1, 0],
+        'kProblemBranchInDelaySlot':['This instruction is a jump/branch '
+            'instruction and it is located in a delay slot of the previous '
+            'jump/branch instruction',
+            1, 0],
+
     }[code]
 
 
