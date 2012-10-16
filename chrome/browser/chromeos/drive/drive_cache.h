@@ -122,7 +122,7 @@ class DriveCache {
   FilePath GetCacheFilePath(const std::string& resource_id,
                             const std::string& md5,
                             CacheSubDirectoryType sub_dir_type,
-                            CachedFileOrigin file_orign) const;
+                            CachedFileOrigin file_origin) const;
 
   // Returns true if the given path is under drive cache directory, i.e.
   // <user_profile_dir>/GCache/v1

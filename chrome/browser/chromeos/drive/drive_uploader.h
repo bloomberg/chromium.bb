@@ -39,7 +39,7 @@ typedef base::Callback<void(DriveFileError error,
     const FilePath& file_path,
     scoped_ptr<gdata::DocumentEntry> document_entry)> UploadCompletionCallback;
 
-// Callback to be invoked once the upoader is ready to upload.
+// Callback to be invoked once the uploader is ready to upload.
 typedef base::Callback<void(int32 upload_id)> UploaderReadyCallback;
 
 class DriveUploaderInterface {
@@ -225,8 +225,8 @@ class DriveUploader : public DriveUploaderInterface {
 
   // net::FileStream::Read completion callback.
   void ReadCompletionCallback(int upload_id,
-      int bytes_to_read,
-      int bytes_read);
+                              int bytes_to_read,
+                              int bytes_read);
 
   // Calls DriveService's ResumeUpload with the current upload info.
   void ResumeUpload(int upload_id);

@@ -161,7 +161,7 @@ class DriveEntry {
   DISALLOW_COPY_AND_ASSIGN(DriveEntry);
 };
 
-// Represents "file" in in a drive virtual file system. On gdata feed side,
+// Represents "file" in a drive virtual file system. On gdata feed side,
 // this could be either a regular file or a server side document.
 class DriveFile : public DriveEntry {
  public:

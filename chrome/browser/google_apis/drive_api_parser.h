@@ -48,7 +48,7 @@ class AboutResource {
 
   // Returns the largest change ID number.
   int64 largest_change_id() const { return largest_change_id_; }
-  // Returns total number of quta bytes.
+  // Returns total number of quota bytes.
   int64 quota_bytes_total() const { return quota_bytes_total_; }
   // Returns the number of quota bytes used.
   int64 quota_bytes_used() const { return quota_bytes_used_; }

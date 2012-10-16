@@ -77,9 +77,8 @@ struct LoadFeedParams {
 
 // Defines set of parameters sent to callback OnProtoLoaded().
 struct LoadRootFeedParams {
-  LoadRootFeedParams(
-        bool should_load_from_server,
-        const FileOperationCallback& callback);
+  LoadRootFeedParams(bool should_load_from_server,
+                     const FileOperationCallback& callback);
   ~LoadRootFeedParams();
 
   bool should_load_from_server;

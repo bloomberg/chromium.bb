@@ -40,15 +40,11 @@ class DriveFileSystemInterface;
 // If the user logs out before fetching of the pinned files is complete, this
 // client resumes fetching operations next time the user logs in, based on
 // the states left in the cache.
-//
-// TODO(satorux): This client should also upload pinned but dirty (locally
-// edited) files to Drive. Will work on this once downloading is done.
-// crosbug.com/27836.
 class DriveSyncClient
     : public DriveFileSystemObserver,
       public DriveCacheObserver,
       public content::NotificationObserver,
-      public net::NetworkChangeNotifier::ConnectionTypeObserver{
+      public net::NetworkChangeNotifier::ConnectionTypeObserver {
  public:
   // Types of sync tasks.
   enum SyncType {
@@ -143,9 +139,9 @@ class DriveSyncClient
 
   // Called when a file entry is obtained.
   void OnGetEntryInfoByResourceId(const std::string& resource_id,
-                                 DriveFileError error,
-                                 const FilePath& file_path,
-                                 scoped_ptr<DriveEntryProto> entry_proto);
+                                  DriveFileError error,
+                                  const FilePath& file_path,
+                                  scoped_ptr<DriveEntryProto> entry_proto);
 
   // Called when a cache entry is obtained.
   void OnGetCacheEntry(const std::string& resource_id,

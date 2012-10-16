@@ -21,7 +21,7 @@ class DriveOperations;
 }
 
 // The DriveScheduler is responsible for queuing and scheduling drive
-// operations.  It is responisble for handling retry logic, rate limiting, as
+// operations.  It is responsible for handling retry logic, rate limiting, as
 // concurrency as appropriate.
 //
 // TODO(zork): Provide an interface for querying the number of jobs, and state
@@ -111,7 +111,7 @@ class DriveScheduler
   // Starts the job loop, if it is not already running.
   void StartJobLoop();
 
-  // Detemines the next job that should run, and starts it.
+  // Determines the next job that should run, and starts it.
   void DoJobLoop();
 
   // Checks if operations should be suspended, such as if the network is
@@ -139,7 +139,7 @@ class DriveScheduler
   // For testing only.  Disables throttling so that testing is faster.
   void SetDisableThrottling(bool disable) { disable_throttling_ = disable; }
 
-  // True when there is a job running.  Inidicates that new jobs should wait to
+  // True when there is a job running.  Indicates that new jobs should wait to
   // be executed.
   bool job_loop_is_running_;
 
