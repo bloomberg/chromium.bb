@@ -185,7 +185,7 @@ runTests([
              'resourceType': ["main_frame"],
              'contentType': ["text/plain"],
              'excludeContentType': ["image/png"],
-             'responseHeaders': [{ nameContains: ["content", "type"] } ],
+             'responseHeaders': [{ nameContains: ["content", "type"] }],
              'excludeResponseHeaders': [{ valueContains: "nonsense" }] })],
          'actions': [new CancelRequest()]}
       ],
@@ -617,6 +617,37 @@ runTests([
           req.send(null);
         });
       }
+    );
+  },
+
+  function testRequestHeaders() {
+    ignoreUnexpected = true;
+    expect(
+      [
+        { label: "onErrorOccurred",
+          event: "onErrorOccurred",
+          details: {
+            url: getURLHttpSimple(),
+            fromCache: false,
+            error: "net::ERR_BLOCKED_BY_CLIENT"
+          }
+        },
+      ],
+      [ ["onErrorOccurred"] ]);
+    onRequest.addRules(
+      [ {'conditions': [
+           new RequestMatcher({
+             'url': {
+                 'pathSuffix': ".html",
+                 'ports': [testServerPort, [1000, 2000]],
+                 'schemes': ["http"]
+             },
+             'requestHeaders': [{ nameContains: "" }],
+             'excludeRequestHeaders': [{ valueContains: ["", "value123"] }]
+              })],
+         'actions': [new CancelRequest()]}
+      ],
+      function() {navigateAndWait(getURLHttpSimple());}
     );
   },
   ]);

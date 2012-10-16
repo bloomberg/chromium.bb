@@ -10,7 +10,7 @@
       {
         "id": "HeaderFilter",
         "type": "object",
-        "description": "Filters request headers for various criteria.",
+        "description": "Filters request headers for various criteria. Multiple criteria are evaluated as a conjunction.",
         "properties": {
           "namePrefix": {
             "description" : "Matches if the header name starts with the specified string.",
@@ -88,6 +88,18 @@
             "description": "Matches if the MIME media type of a response (from the HTTP Content-Type header) is <em>not</em> contained in the list.",
             "items": { "type": "string" }
           },
+          "requestHeaders": {
+            "type": "array",
+            "optional": true,
+            "description": "Matches if some of the request headers is matched by one of the HeaderFilters.",
+            "items": { "$ref": "HeaderFilter" }
+          },
+          "excludeRequestHeaders": {
+            "type": "array",
+            "optional": true,
+            "description": "Matches if none of the request headers is matched by any of the HeaderFilters.",
+            "items": { "$ref": "HeaderFilter" }
+          },
           "responseHeaders": {
             "type": "array",
             "optional": true,
@@ -97,7 +109,7 @@
           "excludeResponseHeaders": {
             "type": "array",
             "optional": true,
-            "description": "Matches if none of the response headers is matched by one of the HeaderFilters.",
+            "description": "Matches if none of the response headers is matched by any of the HeaderFilters.",
             "items": { "$ref": "HeaderFilter" }
           },
           "thirdPartyForCookies": {

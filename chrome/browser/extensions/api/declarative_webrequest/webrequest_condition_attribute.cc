@@ -54,6 +54,8 @@ bool WebRequestConditionAttribute::IsKnownType(
   return
       WebRequestConditionAttributeResourceType::IsMatchingType(instance_type) ||
       WebRequestConditionAttributeContentType::IsMatchingType(instance_type) ||
+      WebRequestConditionAttributeRequestHeaders::IsMatchingType(
+          instance_type) ||
       WebRequestConditionAttributeResponseHeaders::IsMatchingType(
           instance_type) ||
       WebRequestConditionAttributeThirdParty::IsMatchingType(instance_type);
@@ -70,6 +72,10 @@ WebRequestConditionAttribute::Create(
     return WebRequestConditionAttributeResourceType::Create(name, value, error);
   } else if (WebRequestConditionAttributeContentType::IsMatchingType(name)) {
     return WebRequestConditionAttributeContentType::Create(name, value, error);
+  } else if (WebRequestConditionAttributeRequestHeaders::IsMatchingType(
+      name)) {
+    return WebRequestConditionAttributeRequestHeaders::Create(
+        name, value, error);
   } else if (WebRequestConditionAttributeResponseHeaders::IsMatchingType(
       name)) {
     return WebRequestConditionAttributeResponseHeaders::Create(
@@ -490,14 +496,103 @@ bool HeaderMatcher::HeaderMatchTest::Matches(const std::string& name,
 }
 
 //
+// WebRequestConditionAttributeRequestHeaders
+//
+
+WebRequestConditionAttributeRequestHeaders::
+WebRequestConditionAttributeRequestHeaders(
+    scoped_ptr<const HeaderMatcher> header_matcher,
+    bool positive)
+    : header_matcher_(header_matcher.Pass()),
+      positive_(positive) {}
+
+WebRequestConditionAttributeRequestHeaders::
+~WebRequestConditionAttributeRequestHeaders() {}
+
+// static
+bool WebRequestConditionAttributeRequestHeaders::IsMatchingType(
+    const std::string& instance_type) {
+  return instance_type == keys::kRequestHeadersKey ||
+      instance_type == keys::kExcludeRequestHeadersKey;
+}
+
+namespace {
+
+scoped_ptr<const HeaderMatcher> PrepareHeaderMatcher(
+    const std::string& name,
+    const base::Value* value,
+    std::string* error) {
+  const ListValue* value_as_list = NULL;
+  if (!value->GetAsList(&value_as_list)) {
+    *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidValue, name);
+    return scoped_ptr<const HeaderMatcher>(NULL);
+  }
+
+  scoped_ptr<const HeaderMatcher> header_matcher(
+      HeaderMatcher::Create(value_as_list));
+  if (header_matcher.get() == NULL)
+    *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidValue, name);
+  return header_matcher.Pass();
+}
+
+}  // namespace
+
+// static
+scoped_ptr<WebRequestConditionAttribute>
+WebRequestConditionAttributeRequestHeaders::Create(
+    const std::string& name,
+    const base::Value* value,
+    std::string* error) {
+  DCHECK(IsMatchingType(name));
+
+  scoped_ptr<const HeaderMatcher> header_matcher(
+      PrepareHeaderMatcher(name, value, error));
+  if (header_matcher.get() == NULL)
+    return scoped_ptr<WebRequestConditionAttribute>(NULL);
+
+  return scoped_ptr<WebRequestConditionAttribute>(
+      new WebRequestConditionAttributeRequestHeaders(
+          header_matcher.Pass(), name == keys::kRequestHeadersKey));
+}
+
+int WebRequestConditionAttributeRequestHeaders::GetStages() const {
+  // Currently we only allow matching against headers in the before-send-headers
+  // stage. The headers are accessible in other stages as well, but before
+  // allowing to match against them in further stages, we should consider
+  // caching the match result.
+  return ON_BEFORE_SEND_HEADERS;
+}
+
+bool WebRequestConditionAttributeRequestHeaders::IsFulfilled(
+    const WebRequestRule::RequestData& request_data) const {
+  if (!(request_data.stage & GetStages()))
+    return false;
+
+  const net::HttpRequestHeaders& headers =
+      request_data.request->extra_request_headers();
+
+  bool passed = false;  // Did some header pass TestNameValue?
+  net::HttpRequestHeaders::Iterator it(headers);
+  while (!passed && it.GetNext())
+    passed |= header_matcher_->TestNameValue(it.name(), it.value());
+
+  return (positive_ ? passed : !passed);
+}
+
+WebRequestConditionAttribute::Type
+WebRequestConditionAttributeRequestHeaders::GetType() const {
+  return CONDITION_REQUEST_HEADERS;
+}
+
+//
 // WebRequestConditionAttributeResponseHeaders
 //
 
 WebRequestConditionAttributeResponseHeaders::
 WebRequestConditionAttributeResponseHeaders(
-    scoped_ptr<const HeaderMatcher>* header_matcher,
+    scoped_ptr<const HeaderMatcher> header_matcher,
     bool positive)
-    : header_matcher_(header_matcher->Pass()),
+    : header_matcher_(header_matcher.Pass()),
       positive_(positive) {}
 
 WebRequestConditionAttributeResponseHeaders::
@@ -518,23 +613,14 @@ WebRequestConditionAttributeResponseHeaders::Create(
     std::string* error) {
   DCHECK(IsMatchingType(name));
 
-  const ListValue* value_as_list = NULL;
-  if (!value->GetAsList(&value_as_list)) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidValue, name);
-    return scoped_ptr<WebRequestConditionAttribute>(NULL);
-  }
-
   scoped_ptr<const HeaderMatcher> header_matcher(
-      HeaderMatcher::Create(value_as_list));
-  if (header_matcher.get() == NULL) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidValue, name);
+      PrepareHeaderMatcher(name, value, error));
+  if (header_matcher.get() == NULL)
     return scoped_ptr<WebRequestConditionAttribute>(NULL);
-  }
 
-  const bool positive = name == keys::kResponseHeadersKey;
   return scoped_ptr<WebRequestConditionAttribute>(
       new WebRequestConditionAttributeResponseHeaders(
-          &header_matcher, positive));
+          header_matcher.Pass(), name == keys::kResponseHeadersKey));
 }
 
 int WebRequestConditionAttributeResponseHeaders::GetStages() const {

@@ -37,7 +37,8 @@ class WebRequestConditionAttribute {
     CONDITION_RESOURCE_TYPE,
     CONDITION_CONTENT_TYPE,
     CONDITION_RESPONSE_HEADERS,
-    CONDITION_THIRD_PARTY
+    CONDITION_THIRD_PARTY,
+    CONDITION_REQUEST_HEADERS
   };
 
   WebRequestConditionAttribute();
@@ -139,6 +140,40 @@ class WebRequestConditionAttributeContentType
   DISALLOW_COPY_AND_ASSIGN(WebRequestConditionAttributeContentType);
 };
 
+// Condition attribute for matching against request headers. Uses HeaderMatcher
+// to handle the actual tests, in connection with a boolean positiveness
+// flag. If that flag is set to true, then IsFulfilled() returns true iff
+// |header_matcher_| matches at least one header. Otherwise IsFulfilled()
+// returns true iff the |header_matcher_| matches no header.
+class WebRequestConditionAttributeRequestHeaders
+    : public WebRequestConditionAttribute {
+ public:
+  virtual ~WebRequestConditionAttributeRequestHeaders();
+
+  static bool IsMatchingType(const std::string& instance_type);
+
+  // Factory method, see WebRequestConditionAttribute::Create.
+  static scoped_ptr<WebRequestConditionAttribute> Create(
+      const std::string& name,
+      const base::Value* value,
+      std::string* error);
+
+  // Implementation of WebRequestConditionAttribute:
+  virtual int GetStages() const OVERRIDE;
+  virtual bool IsFulfilled(
+      const WebRequestRule::RequestData& request_data) const OVERRIDE;
+  virtual Type GetType() const OVERRIDE;
+
+ private:
+  WebRequestConditionAttributeRequestHeaders(
+      scoped_ptr<const HeaderMatcher> header_matcher, bool positive);
+
+  const scoped_ptr<const HeaderMatcher> header_matcher_;
+  const bool positive_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebRequestConditionAttributeRequestHeaders);
+};
+
 // Condition attribute for matching against response headers. Uses HeaderMatcher
 // to handle the actual tests, in connection with a boolean positiveness
 // flag. If that flag is set to true, then IsFulfilled() returns true iff
@@ -165,7 +200,7 @@ class WebRequestConditionAttributeResponseHeaders
 
  private:
   WebRequestConditionAttributeResponseHeaders(
-      scoped_ptr<const HeaderMatcher>* header_matcher, bool positive);
+      scoped_ptr<const HeaderMatcher> header_matcher, bool positive);
 
   const scoped_ptr<const HeaderMatcher> header_matcher_;
   const bool positive_;
