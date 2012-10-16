@@ -14,10 +14,10 @@ chrome.app.runtime.onLaunched.addListener(function() {
     defaultWidth: 243, minWidth: 243, maxWidth: 243,
     defaultHeight: 380, minHeight: 380, maxHeight: 380,
     id: 'calculator'
-  }, function (appWindow) {
+  }, function(appWindow) {
     var window = appWindow.contentWindow;
-    window.onload = function (window) {
+    window.onload = function() {
       new View(window, new Model(8));
-    }.bind(this, window);
+    };
   });
 });

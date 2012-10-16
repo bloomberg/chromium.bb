@@ -15,7 +15,7 @@ function Model(precision) {
  *
  * @private
  */
-Model.prototype.handle = function (event) {
+Model.prototype.handle = function(event) {
   switch (event) {
     case '+':
     case '-':
@@ -69,7 +69,7 @@ Model.prototype.handle = function (event) {
  *
  * @private
  */
-Model.prototype.reset_ = function (state) {
+Model.prototype.reset_ = function(state) {
   this.accumulator = this.operand = this.operator = null;
   this.defaults = {operator: null, operand: null};
   return this.set_(state);
@@ -80,8 +80,8 @@ Model.prototype.reset_ = function (state) {
  *
  * @private
  */
-Model.prototype.set_ = function (state) {
-  var ifDefined = function (x, y) { return (x !== undefined) ? x : y; };
+Model.prototype.set_ = function(state) {
+  var ifDefined = function(x, y) { return (x !== undefined) ? x : y; };
   var precision = (state && state.precision) || this.precision || 9;
   this.precision = Math.min(Math.max(precision, 1), 9);
   this.accumulator = ifDefined(state && state.accumulator, this.accumulator);
@@ -98,7 +98,7 @@ Model.prototype.set_ = function (state) {
  *
  * @private
  */
-Model.prototype.calculate_ = function (operator, operand) {
+Model.prototype.calculate_ = function(operator, operand) {
   var x = Number(this.accumulator) || 0;
   var y = operand ? Number(operand) : x;
   this.set_({accumulator: String(x), operator: operator, operand: String(y)});
@@ -115,7 +115,7 @@ Model.prototype.calculate_ = function (operator, operand) {
  *
  * @private
  */
-Model.prototype.round_ = function (x) {
+Model.prototype.round_ = function(x) {
   var rounded = String(Number(x.toFixed(this.precision - 1)));
   var overflow = (rounded.replace(/[^0-9]/g, '').length > this.precision);
   return (overflow || Math.abs(x) == Infinity) ? 'E' : rounded;

@@ -11,8 +11,8 @@ function View(window, model) {
   var display = window.document.querySelector('#calculator .display');
   var buttons = window.document.querySelectorAll('#calculator .button');
 
-  Array.prototype.forEach.call(buttons, function (button) {
-    button.onclick = function (click) {
+  Array.prototype.forEach.call(buttons, function(button) {
+    button.onclick = function(click) {
       var button = click.target.getAttribute('class').split(' ')[1];
       var event = events.byButton[button];
       if (event) {
@@ -22,7 +22,7 @@ function View(window, model) {
     };
   });
 
-  window.onkeydown = function (keydown) {
+  window.onkeydown = function(keydown) {
     var key = keydown.shiftKey ? ('^' + keydown.which) : keydown.which;
     var event = events.byKey[key];
     if (event) {
@@ -34,7 +34,7 @@ function View(window, model) {
 }
 
 /** @private */
-View.prototype.defineEvents_ = function () {
+View.prototype.defineEvents_ = function() {
   var events = {byName: {}, byButton: {}, byKey: {}};
   this.defineEvent_(events, '0', 'zero', '48');
   this.defineEvent_(events, '1', 'one', '49');
@@ -60,14 +60,14 @@ View.prototype.defineEvents_ = function () {
 }
 
 /** @private */
-View.prototype.defineEvent_ = function (events, name, button, key, operator) {
+View.prototype.defineEvent_ = function(events, name, button, key, operator) {
   var event = {name: name, button: button, key: key, operator: !!operator};
   events.byButton[button] = event;
   events.byKey[key] = event;
 };
 
 /** @private */
-View.prototype.updateDisplay_ = function (display, values, event) {
+View.prototype.updateDisplay_ = function(display, values, event) {
   var operation = {operator: values.operator, operand: values.operand};
   var result = values.accumulator;
   if (event.name === 'AC') {
@@ -85,7 +85,7 @@ View.prototype.updateDisplay_ = function (display, values, event) {
 }
 
 /** @private */
-View.prototype.addEquation_ = function (display, values) {
+View.prototype.addEquation_ = function(display, values) {
   // The order of the equation children below makes them stack correctly.
   var equation = this.createDiv_(display, 'equation');
   equation.appendChild(this.createDiv_(display, 'operand'));
@@ -96,7 +96,7 @@ View.prototype.addEquation_ = function (display, values) {
 }
 
 /** @private */
-View.prototype.updateEquation_ = function (equation, values) {
+View.prototype.updateEquation_ = function(equation, values) {
   // Equations which are "finalized" (which have an accumulator value) shouldn't
   // and won't be updated, and this method returns whether an update occurred.
   var accumulator = equation && equation.querySelector('.accumulator');
@@ -113,14 +113,14 @@ View.prototype.updateEquation_ = function (equation, values) {
 }
 
 /** @private */
-View.prototype.updateValue_ = function (element, value, zero) {
+View.prototype.updateValue_ = function(element, value, zero) {
   if (value !== undefined) {
     element.textContent = zero ? (value || '0') : (value || '');
   }
 }
 
 /** @private */
-View.prototype.createDiv_ = function (display, classes) {
+View.prototype.createDiv_ = function(display, classes) {
   var div = display.ownerDocument.createElement('div');
   div.setAttribute('class', classes);
   return div;

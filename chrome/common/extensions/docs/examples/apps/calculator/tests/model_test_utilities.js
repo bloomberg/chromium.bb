@@ -5,7 +5,7 @@
  *
  * The utility functions defined in this file allow tests like the following:
  *
- *   test('Two Plus Two', function () {
+ *   test('Two Plus Two', function() {
  *     var model = new Model();
  *     deepEqual(model.handle('2'), [null, null, '2'], '2');
  *     deepEqual(model.handle('+'), ['2', '+', null], '+');
@@ -54,7 +54,7 @@ var describeTested = function(strings, object, suffix) {
  * Tests how a calculator model handles a single event, logging the state of the
  * model before and after the test.
  */
-var testEvent = function (model, event, expected) {
+var testEvent = function(model, event, expected) {
   var before = describeTested([], model).join('');
   var results = model.handle(event);
   var accumulator = results.accumulator;
@@ -112,7 +112,7 @@ var testEvent = function (model, event, expected) {
  *
  *   [x, y, ['1.2345']]
  */
-var testNumber = function (model, number, expected) {
+var testNumber = function(model, number, expected) {
   var multiple = (expected[2] && expected[2].length > 1);
   var prefix = multiple ? expected[2][0] : '';
   var suffix = expected[2] ? expected[2][multiple ? 1 : 0] : number;
@@ -190,7 +190,7 @@ var testNumber = function (model, number, expected) {
  *
  * would yield the following tests:
  *
- *   test('My Test', function () {
+ *   test('My Test', function() {
  *     var model = new Model();
  *     deepEqual(model.handle('1'), ['0',  null, '1'],  '1');
  *     deepEqual(model.handle('2'), ['0',  null, '12'], '2');
@@ -204,7 +204,7 @@ var testNumber = function (model, number, expected) {
  *     deepEqual(model.handle('0'), ['25', null, '0'],  '0');
  *   });
  */
-var testModel = function (name, sequence) {
+var testModel = function(name, sequence) {
   // Define constants and variables for matching.
   var NUMBER = /(-?[\d.][\d.=]*)|(E)/g;                        // '2'
   var OPERATION = /([+*/-])/g;                                 // '+'
@@ -239,7 +239,7 @@ var testModel = function (name, sequence) {
   }
   // Convert the sequence to an array and run the test.
   sequence = JSON.parse('[' + sequence + ']');     // ['2','-','2','=',['4']]
-  test(name, function () {
+  test(name, function() {
     var model = new Model();
     var expected = [null, null, null];
     for (var i = 0; i < sequence.length; ++i) {
