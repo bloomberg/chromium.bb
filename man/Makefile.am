@@ -9,3 +9,6 @@ SUFFIXES = .1 .man
 .man.1:
 	$(AM_V_GEN)$(SED) $(MAN_SUBSTS) < $< > $@
 
+EXTRA_DIST = weston.man
+
+CLEANFILES = $(man_MANS)

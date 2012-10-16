@@ -13,7 +13,6 @@ weston_LDADD = $(COMPOSITOR_LIBS) $(DLOPEN_LIBS) -lm ../shared/libshared.la
 weston_SOURCES =				\
 	git-version.h				\
 	log.c					\
-	log.h					\
 	compositor.c				\
 	compositor.h				\
 	filter.c				\
