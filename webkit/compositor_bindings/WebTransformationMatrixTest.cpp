@@ -4,11 +4,12 @@
 
 #include "config.h"
 
-#include <public/WebTransformationMatrix.h>
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 #include "cc/test/geometry_test_utils.h"
-#include <gtest/gtest.h>
-#include <wtf/MathExtras.h>
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebTransformationMatrix.h"
 
 #define EXPECT_ROW1_EQ(a, b, c, d, matrix)      \
     EXPECT_FLOAT_EQ((a), (matrix).m11());       \
@@ -1154,7 +1155,7 @@ TEST(WebTransformationMatrixTest, verifyBlendForRotationAboutX)
     to.blend(from, 0);
     EXPECT_TRANSFORMATION_MATRIX_EQ(from, to);
 
-    double expectedRotationAngle = 22.5 * piDouble / 180.0;
+    double expectedRotationAngle = 22.5 * M_PI / 180.0;
     to.makeIdentity();
     to.rotate3d(1, 0, 0, 90);
     to.blend(from, 0.25);
@@ -1163,7 +1164,7 @@ TEST(WebTransformationMatrixTest, verifyBlendForRotationAboutX)
     EXPECT_ROW3_NEAR(0, sin(expectedRotationAngle),  cos(expectedRotationAngle), 0, to, ERROR_THRESHOLD);
     EXPECT_ROW4_EQ(0, 0, 0, 1, to);
 
-    expectedRotationAngle = 45 * piDouble / 180.0;
+    expectedRotationAngle = 45 * M_PI / 180.0;
     to.makeIdentity();
     to.rotate3d(1, 0, 0, 90);
     to.blend(from, 0.5);
@@ -1193,7 +1194,7 @@ TEST(WebTransformationMatrixTest, verifyBlendForRotationAboutY)
     to.blend(from, 0);
     EXPECT_TRANSFORMATION_MATRIX_EQ(from, to);
 
-    double expectedRotationAngle = 22.5 * piDouble / 180.0;
+    double expectedRotationAngle = 22.5 * M_PI / 180.0;
     to.makeIdentity();
     to.rotate3d(0, 1, 0, 90);
     to.blend(from, 0.25);
@@ -1202,7 +1203,7 @@ TEST(WebTransformationMatrixTest, verifyBlendForRotationAboutY)
     EXPECT_ROW3_NEAR(-sin(expectedRotationAngle), 0, cos(expectedRotationAngle), 0, to, ERROR_THRESHOLD);
     EXPECT_ROW4_EQ(0, 0, 0, 1, to);
 
-    expectedRotationAngle = 45 * piDouble / 180.0;
+    expectedRotationAngle = 45 * M_PI / 180.0;
     to.makeIdentity();
     to.rotate3d(0, 1, 0, 90);
     to.blend(from, 0.5);
@@ -1232,7 +1233,7 @@ TEST(WebTransformationMatrixTest, verifyBlendForRotationAboutZ)
     to.blend(from, 0);
     EXPECT_TRANSFORMATION_MATRIX_EQ(from, to);
 
-    double expectedRotationAngle = 22.5 * piDouble / 180.0;
+    double expectedRotationAngle = 22.5 * M_PI / 180.0;
     to.makeIdentity();
     to.rotate3d(0, 0, 1, 90);
     to.blend(from, 0.25);
@@ -1241,7 +1242,7 @@ TEST(WebTransformationMatrixTest, verifyBlendForRotationAboutZ)
     EXPECT_ROW3_NEAR(0, 0, 1, 0, to, ERROR_THRESHOLD);
     EXPECT_ROW4_EQ(0, 0, 0, 1, to);
 
-    expectedRotationAngle = 45 * piDouble / 180.0;
+    expectedRotationAngle = 45 * M_PI / 180.0;
     to.makeIdentity();
     to.rotate3d(0, 0, 1, 90);
     to.blend(from, 0.5);
