@@ -45,6 +45,7 @@
 #include "chrome/browser/chromeos/net/network_change_notifier_chromeos.h"
 #include "chrome/browser/chromeos/power/brightness_observer.h"
 #include "chrome/browser/chromeos/power/output_observer.h"
+#include "chrome/browser/chromeos/power/power_button_controller_delegate_chromeos.h"
 #include "chrome/browser/chromeos/power/power_button_observer.h"
 #include "chrome/browser/chromeos/power/resume_observer.h"
 #include "chrome/browser/chromeos/power/screen_dimming_observer.h"
