@@ -33,6 +33,7 @@ class ContentViewCore {
   virtual void LoadUrl(NavigationController::LoadURLParams& params) = 0;
   virtual void OnWebPreferencesUpdated() = 0;
   virtual jint GetCurrentRenderProcessId(JNIEnv* env, jobject obj) = 0;
+  virtual void ShowPastePopup(int x, int y) = 0;
 
  protected:
   virtual ~ContentViewCore() {};

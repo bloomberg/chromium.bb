@@ -1739,6 +1739,13 @@ public class ContentViewCore implements MotionEventDelegate {
         getContentViewClient().onEvaluateJavaScriptResult(id, jsonResult);
     }
 
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void showPastePopup(int x, int y) {
+        getInsertionHandleController()
+                .showHandleWithPastePopupAt(x - mNativeScrollX, y - mNativeScrollY);
+    }
+
     /**
      * @return Whether a reload happens when this ContentView is activated.
      */

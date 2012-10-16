@@ -49,6 +49,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   virtual void LoadUrl(NavigationController::LoadURLParams& params) OVERRIDE;
   virtual void OnWebPreferencesUpdated() OVERRIDE;
   virtual jint GetCurrentRenderProcessId(JNIEnv* env, jobject obj) OVERRIDE;
+  virtual void ShowPastePopup(int x, int y) OVERRIDE;
 
   // --------------------------------------------------------------------------
   // Methods called from Java via JNI

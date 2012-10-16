@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 #include "chrome/browser/android/tab_android.h"
+#include "content/public/browser/android/content_view_core.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/common/context_menu_params.h"
 
@@ -28,10 +30,16 @@ ChromeWebContentsViewDelegateAndroid::GetDragDestDelegate() {
 void ChromeWebContentsViewDelegateAndroid::ShowContextMenu(
     const content::ContextMenuParams& params,
     content::ContextMenuSourceType type) {
-  // http://crbug.com/136075
-  NOTIMPLEMENTED();
-  // Still lacking some code here that depends on
-  // content/public/browser/android/content_view_core.h
+  // Display paste pop-up only when selection is empty and editable.
+  if (params.is_editable && params.selection_text.empty()) {
+    content::ContentViewCore* content_view_core =
+        web_contents_->GetContentNativeView();
+    if (content_view_core) {
+      content_view_core->ShowPastePopup(params.selection_start.x(),
+                                        params.selection_start.y());
+      return;
+    }
+  }
 
   TabAndroid* tab = TabAndroid::FromWebContents(web_contents_);
   // We may not have a Tab if we're running in Android WebView mode.

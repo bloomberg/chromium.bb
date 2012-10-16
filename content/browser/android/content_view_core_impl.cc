@@ -379,6 +379,15 @@ void ContentViewCoreImpl::OnSelectionBoundsChanged(
                                                 end_dir);
 }
 
+void ContentViewCoreImpl::ShowPastePopup(int x, int y) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  Java_ContentViewCore_showPastePopup(env, obj.obj(), static_cast<jint>(x),
+                                      static_cast<jint>(y));
+}
+
 void ContentViewCoreImpl::StartContentIntent(const GURL& content_url) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
