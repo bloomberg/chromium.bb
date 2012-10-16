@@ -1,7 +1,7 @@
 AC_PREREQ([2.64])
 
 m4_define([wayland_major_version], [0])
-m4_define([wayland_minor_version], [95])
+m4_define([wayland_minor_version], [99])
 m4_define([wayland_micro_version], [0])
 m4_define([wayland_version],
           [wayland_major_version.wayland_minor_version.wayland_micro_version])
