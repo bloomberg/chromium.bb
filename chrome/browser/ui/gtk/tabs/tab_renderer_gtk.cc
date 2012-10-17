@@ -87,10 +87,8 @@ const double kMiniTitleChangeThrobOpacity = 0.75;
 // Duration for when the title of an inactive mini-tab changes.
 const int kMiniTitleChangeThrobDuration = 1000;
 
-// The vertical and horizontal offset used to position the close button
-// in the tab. TODO(jhawkins): Ask pkasting what the Fuzz is about.
-const int kCloseButtonVertFuzz = 0;
-const int kCloseButtonHorzFuzz = 5;
+// The horizontal offset used to position the close button in the tab.
+const int kCloseButtonHorzFuzz = 4;
 
 // Gets the bounds of |widget| relative to |parent|.
 gfx::Rect GetWidgetBoundsRelativeToParent(GtkWidget* parent,
@@ -744,17 +742,19 @@ void TabRendererGtk::Layout() {
   // Size the Close button.
   showing_close_button_ = ShouldShowCloseBox();
   if (showing_close_button_) {
-    int close_button_top =
-        kTopPadding + kCloseButtonVertFuzz +
+    int close_button_top = kTopPadding +
         (content_height - close_button_height_) / 2;
-    close_button_bounds_.SetRect(local_bounds.width() + kCloseButtonHorzFuzz,
-                                 close_button_top, close_button_width_,
+    int close_button_left =
+        local_bounds.right() - close_button_width_ + kCloseButtonHorzFuzz;
+    close_button_bounds_.SetRect(close_button_left,
+                                 close_button_top,
+                                 close_button_width_,
                                  close_button_height_);
 
     // If the close button color has changed, generate a new one.
     if (theme_service_) {
       SkColor tab_text_color =
-        theme_service_->GetColor(ThemeService::COLOR_TAB_TEXT);
+          theme_service_->GetColor(ThemeService::COLOR_TAB_TEXT);
       if (!close_button_color_ || tab_text_color != close_button_color_) {
         close_button_color_ = tab_text_color;
         ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -1014,6 +1014,7 @@ bool TabRendererGtk::ShouldShowCloseBox() const {
 CustomDrawButton* TabRendererGtk::MakeCloseButton() {
   CustomDrawButton* button = new CustomDrawButton(IDR_TAB_CLOSE,
       IDR_TAB_CLOSE_P, IDR_TAB_CLOSE_H, IDR_TAB_CLOSE);
+  button->ForceChromeTheme();
 
   g_signal_connect(button->widget(), "clicked",
                    G_CALLBACK(OnCloseButtonClickedThunk), this);
