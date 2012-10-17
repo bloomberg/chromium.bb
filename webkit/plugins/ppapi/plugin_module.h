@@ -110,11 +110,9 @@ class WEBKIT_PLUGINS_EXPORT PluginModule :
   // be created.
   scoped_refptr<PluginModule> CreateModuleForNaClInstance();
 
-  // Initializes the NaCl module for the given out of process proxy. This takes
-  // ownership of the given pointer, even in the failure case.
-  void InitAsProxiedNaCl(
-      scoped_ptr<PluginDelegate::OutOfProcessProxy> out_of_process_proxy,
-      PP_Instance instance);
+  // Initializes the NaCl module for the out of process proxy. InitAsProxied
+  // must be called before calling InitAsProxiedNaCl.
+  void InitAsProxiedNaCl(PluginInstance* instance);
 
   static const PPB_Core* GetCore();
 

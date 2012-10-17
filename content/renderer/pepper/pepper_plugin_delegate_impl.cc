@@ -383,35 +383,31 @@ PepperPluginDelegateImpl::CreatePepperPluginModule(
     return scoped_refptr<webkit::ppapi::PluginModule>();
   }
 
-  scoped_refptr<PepperHungPluginFilter> hung_filter(
-      new PepperHungPluginFilter(path, render_view_->routing_id(),
-                                 plugin_child_id));
-
-  // Create a new HostDispatcher for the proxying, and hook it to a new
-  // PluginModule. Note that AddLiveModule must be called before any early
-  // returns since the module's destructor will remove itself.
+  // AddLiveModule must be called before any early returns since the
+  // module's destructor will remove itself.
   module = new webkit::ppapi::PluginModule(
       info->name, path,
       PepperPluginRegistry::GetInstance(),
       permissions);
   PepperPluginRegistry::GetInstance()->AddLiveModule(path, module);
-  scoped_ptr<HostDispatcherWrapper> dispatcher(
-      new HostDispatcherWrapper(module, plugin_child_id, permissions));
-  if (!dispatcher->Init(
-          channel_handle,
-          webkit::ppapi::PluginModule::GetLocalGetInterfaceFunc(),
-          GetPreferences(),
-          permissions,
-          hung_filter.get()))
+
+  if (!CreateOutOfProcessModule(
+           module, path, permissions, channel_handle, plugin_child_id)) {
     return scoped_refptr<webkit::ppapi::PluginModule>();
-
-  RendererPpapiHostImpl* host_impl =
-      content::RendererPpapiHostImpl::CreateOnModuleForOutOfProcess(
-          module, dispatcher->dispatcher(), permissions);
-  render_view_->PpapiPluginCreated(host_impl);
-
-  module->InitAsProxied(dispatcher.release());
+  }
   return module;
+}
+
+RendererPpapiHost* PepperPluginDelegateImpl::CreateExternalPluginModule(
+    scoped_refptr<webkit::ppapi::PluginModule> module,
+    const FilePath& path,
+    ppapi::PpapiPermissions permissions,
+    const IPC::ChannelHandle& channel_handle,
+    int plugin_child_id) {
+  // We don't call PepperPluginRegistry::AddLiveModule, as this module is
+  // managed externally.
+  return CreateOutOfProcessModule(
+    module, path, permissions, channel_handle, plugin_child_id);
 }
 
 scoped_refptr<webkit::ppapi::PluginModule>
@@ -478,6 +474,35 @@ scoped_refptr<PepperBrokerImpl> PepperPluginDelegateImpl::CreateBroker(
   }
 
   return broker;
+}
+
+RendererPpapiHost* PepperPluginDelegateImpl::CreateOutOfProcessModule(
+    webkit::ppapi::PluginModule* module,
+    const FilePath& path,
+    ppapi::PpapiPermissions permissions,
+    const IPC::ChannelHandle& channel_handle,
+    int plugin_child_id) {
+  scoped_refptr<PepperHungPluginFilter> hung_filter(
+      new PepperHungPluginFilter(path,
+                                 render_view_->routing_id(),
+                                 plugin_child_id));
+  scoped_ptr<HostDispatcherWrapper> dispatcher(
+      new HostDispatcherWrapper(module, plugin_child_id, permissions));
+  if (!dispatcher->Init(
+          channel_handle,
+          webkit::ppapi::PluginModule::GetLocalGetInterfaceFunc(),
+          GetPreferences(),
+          permissions,
+          hung_filter.get()))
+    return NULL;
+
+  RendererPpapiHostImpl* host_impl =
+      content::RendererPpapiHostImpl::CreateOnModuleForOutOfProcess(
+          module, dispatcher->dispatcher(), permissions);
+  render_view_->PpapiPluginCreated(host_impl);
+
+  module->InitAsProxied(dispatcher.release());
+  return host_impl;
 }
 
 void PepperPluginDelegateImpl::OnMenuAction(int request_id, unsigned action) {

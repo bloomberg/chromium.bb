@@ -4,6 +4,7 @@
 
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 
+#include "base/file_path.h"
 #include "base/logging.h"
 #include "content/renderer/pepper/pepper_in_process_resource_creation.h"
 #include "content/renderer/pepper/pepper_in_process_router.h"
@@ -11,16 +12,44 @@
 #include "content/renderer/render_view_impl.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "webkit/plugins/ppapi/host_globals.h"
+#include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 using webkit::ppapi::HostGlobals;
 using webkit::ppapi::PluginInstance;
+using webkit::ppapi::PluginModule;
 
 namespace content {
 
+// static
+CONTENT_EXPORT RendererPpapiHost*
+RendererPpapiHost::CreateExternalPluginModule(
+    scoped_refptr<PluginModule> plugin_module,
+    PluginInstance* plugin_instance,
+    const FilePath& file_path,
+    ppapi::PpapiPermissions permissions,
+    const IPC::ChannelHandle& channel_handle,
+    int plugin_child_id) {
+  RendererPpapiHost* renderer_ppapi_host = NULL;
+  // Since we're the embedder, we can make assumptions about the delegate on
+  // the instance.
+  PepperPluginDelegateImpl* pepper_plugin_delegate =
+      static_cast<PepperPluginDelegateImpl*>(plugin_instance->delegate());
+  if (pepper_plugin_delegate) {
+    renderer_ppapi_host = pepper_plugin_delegate->CreateExternalPluginModule(
+        plugin_module,
+        file_path,
+        permissions,
+        channel_handle,
+        plugin_child_id);
+  }
+  return renderer_ppapi_host;
+}
+
+
 // Out-of-process constructor.
 RendererPpapiHostImpl::RendererPpapiHostImpl(
-    webkit::ppapi::PluginModule* module,
+    PluginModule* module,
     ppapi::proxy::HostDispatcher* dispatcher,
     const ppapi::PpapiPermissions& permissions)
     : module_(module) {
@@ -34,7 +63,7 @@ RendererPpapiHostImpl::RendererPpapiHostImpl(
 
 // In-process constructor.
 RendererPpapiHostImpl::RendererPpapiHostImpl(
-    webkit::ppapi::PluginModule* module,
+    PluginModule* module,
     const ppapi::PpapiPermissions& permissions)
     : module_(module) {
   // Hook the host up to the in-process router.
@@ -50,7 +79,7 @@ RendererPpapiHostImpl::~RendererPpapiHostImpl() {
 
 // static
 RendererPpapiHostImpl* RendererPpapiHostImpl::CreateOnModuleForOutOfProcess(
-    webkit::ppapi::PluginModule* module,
+    PluginModule* module,
     ppapi::proxy::HostDispatcher* dispatcher,
     const ppapi::PpapiPermissions& permissions) {
   DCHECK(!module->GetEmbedderState());
@@ -59,14 +88,14 @@ RendererPpapiHostImpl* RendererPpapiHostImpl::CreateOnModuleForOutOfProcess(
 
   // Takes ownership of pointer.
   module->SetEmbedderState(
-      scoped_ptr<webkit::ppapi::PluginModule::EmbedderState>(result));
+      scoped_ptr<PluginModule::EmbedderState>(result));
 
   return result;
 }
 
 // static
 RendererPpapiHostImpl* RendererPpapiHostImpl::CreateOnModuleForInProcess(
-    webkit::ppapi::PluginModule* module,
+    PluginModule* module,
     const ppapi::PpapiPermissions& permissions) {
   DCHECK(!module->GetEmbedderState());
   RendererPpapiHostImpl* result = new RendererPpapiHostImpl(
@@ -74,7 +103,7 @@ RendererPpapiHostImpl* RendererPpapiHostImpl::CreateOnModuleForInProcess(
 
   // Takes ownership of pointer.
   module->SetEmbedderState(
-      scoped_ptr<webkit::ppapi::PluginModule::EmbedderState>(result));
+      scoped_ptr<PluginModule::EmbedderState>(result));
 
   return result;
 }
@@ -94,7 +123,7 @@ RendererPpapiHostImpl* RendererPpapiHostImpl::GetForPPInstance(
 
 scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>
 RendererPpapiHostImpl::CreateInProcessResourceCreationAPI(
-    webkit::ppapi::PluginInstance* instance) {
+    PluginInstance* instance) {
   return scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>(
       new PepperInProcessResourceCreation(this, instance));
 }

@@ -45,6 +45,7 @@ struct ChannelHandle;
 namespace ppapi {
 class PepperFilePath;
 class PPB_X509Certificate_Fields;
+class PpapiPermissions;
 }
 
 namespace ui {
@@ -97,6 +98,15 @@ class PepperPluginDelegateImpl
   CreatePepperPluginModule(
       const webkit::WebPluginInfo& webplugin_info,
       bool* pepper_plugin_was_registered);
+
+  // Sets up the renderer host and out-of-process proxy for an external plugin
+  // module. Returns the renderer host, or NULL if it couldn't be created.
+  RendererPpapiHost* CreateExternalPluginModule(
+      scoped_refptr<webkit::ppapi::PluginModule> module,
+      const FilePath& path,
+      ppapi::PpapiPermissions permissions,
+      const IPC::ChannelHandle& channel_handle,
+      int plugin_child_id);
 
   // Creates a browser plugin instance given the process handle, and channel
   // handle to access the guest renderer.
@@ -463,6 +473,15 @@ class PepperPluginDelegateImpl
   // Asynchronously attempts to create a PPAPI broker for the given plugin.
   scoped_refptr<PepperBrokerImpl> CreateBroker(
       webkit::ppapi::PluginModule* plugin_module);
+
+  // Create a new HostDispatcher for proxying, hook it to the PluginModule,
+  // and perform other common initialization.
+  RendererPpapiHost* CreateOutOfProcessModule(
+      webkit::ppapi::PluginModule* module,
+      const FilePath& path,
+      ppapi::PpapiPermissions permissions,
+      const IPC::ChannelHandle& channel_handle,
+      int plugin_child_id);
 
   // ContextMenuClient implementation.
   virtual void OnMenuAction(int request_id, unsigned action) OVERRIDE;
