@@ -68,6 +68,9 @@
           '../../../../ppapi/native_client/tests/ppapi_test_lib/test_interface.cc',
         ]
       },
+      'dependencies': [
+        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+      ],
     },
     {
       'target_name': 'ppapi_ppb_core',
@@ -90,6 +93,11 @@
         ],
       },
       'dependencies': [
+        '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform_lib',
+        '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio_lib',
+        '<(DEPTH)/ppapi/native_client/native_client.gyp:ppapi_lib',
+        '<(DEPTH)/ppapi/ppapi_untrusted.gyp:ppapi_cpp_lib',
         'ppapi_test_lib',
       ],
     },
