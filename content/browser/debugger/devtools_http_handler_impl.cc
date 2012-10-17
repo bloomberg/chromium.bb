@@ -28,6 +28,8 @@
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -93,12 +95,17 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
       int connection_id)
       : message_loop_(message_loop),
         server_(server),
-        connection_id_(connection_id) {
+        connection_id_(connection_id),
+        is_closed_(false) {
   }
+
   ~DevToolsClientHostImpl() {}
 
   // DevToolsClientHost interface
   virtual void InspectedContentsClosing() {
+    if (is_closed_)
+      return;
+    is_closed_ = true;
     message_loop_->PostTask(
         FROM_HERE,
         base::Bind(&net::HttpServer::Close, server_, connection_id_));
@@ -121,6 +128,7 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
   MessageLoop* message_loop_;
   net::HttpServer* server_;
   int connection_id_;
+  bool is_closed_;
 };
 
 }  // namespace
@@ -217,6 +225,23 @@ static std::string GetMimeType(const std::string& filename) {
   }
   NOTREACHED();
   return "text/plain";
+}
+
+void DevToolsHttpHandlerImpl::Observe(int type,
+                                      const NotificationSource& source,
+                                      const NotificationDetails& details) {
+  RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
+  DevToolsManager* manager = DevToolsManager::GetInstance();
+  for (ConnectionToClientHostMap::iterator it =
+       connection_to_client_host_ui_.begin();
+       it != connection_to_client_host_ui_.end(); ++it) {
+    DevToolsAgentHost* agent = manager->GetDevToolsAgentHostFor(it->second);
+    if (!agent)
+      continue;
+    RenderViewHost* rvh = DevToolsAgentHostRegistry::GetRenderViewHost(agent);
+    if (rvh && rvh->GetProcess() == process)
+      it->second->InspectedContentsClosing();
+  }
 }
 
 void DevToolsHttpHandlerImpl::OnHttpRequest(
@@ -560,6 +585,10 @@ DevToolsHttpHandlerImpl::DevToolsHttpHandlerImpl(
   default_binding_.reset(new DevToolsDefaultBindingHandler);
   binding_ = default_binding_.get();
 
+  registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+                 content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_CLOSED,
+                 content::NotificationService::AllBrowserContextsAndSources());
   AddRef();
 }
 

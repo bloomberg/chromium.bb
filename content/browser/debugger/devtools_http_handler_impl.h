@@ -15,6 +15,8 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/devtools_http_handler_delegate.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "net/server/http_server.h"
 
 namespace base {
@@ -35,6 +37,7 @@ class RenderViewHost;
 
 class DevToolsHttpHandlerImpl
     : public DevToolsHttpHandler,
+      public NotificationObserver,
       public base::RefCountedThreadSafe<DevToolsHttpHandlerImpl>,
       public net::HttpServer::Delegate {
  private:
@@ -57,6 +60,11 @@ class DevToolsHttpHandlerImpl
   virtual void SetRenderViewHostBinding(
       RenderViewHostBinding* binding) OVERRIDE;
   virtual GURL GetFrontendURL(RenderViewHost* render_view_host) OVERRIDE;
+
+  // NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
 
   // net::HttpServer::Delegate implementation.
   virtual void OnHttpRequest(int connection_id,
@@ -121,6 +129,7 @@ class DevToolsHttpHandlerImpl
   scoped_ptr<DevToolsHttpHandlerDelegate> delegate_;
   RenderViewHostBinding* binding_;
   scoped_ptr<RenderViewHostBinding> default_binding_;
+  NotificationRegistrar registrar_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsHttpHandlerImpl);
 };
 
