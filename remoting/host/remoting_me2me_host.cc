@@ -135,7 +135,7 @@ class HostProcess
     curtain_ = CurtainMode::Create(
         base::Bind(&HostProcess::OnDisconnectRequested,
                    base::Unretained(this)),
-        base::Bind(&HostProcess::OnDisconnectRequested,
+        base::Bind(&HostProcess::RejectAuthenticatingClient,
                    base::Unretained(this)));
 }
 
@@ -596,6 +596,12 @@ class HostProcess
 
   void OnAuthFailed() {
     Shutdown(kInvalidOauthCredentialsExitCode);
+  }
+
+  void RejectAuthenticatingClient() {
+    DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
+    DCHECK(host_);
+    host_->RejectAuthenticatingClient();
   }
 
   // Invoked when the user uses the Disconnect windows to terminate
