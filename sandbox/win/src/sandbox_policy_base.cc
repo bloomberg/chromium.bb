@@ -482,8 +482,10 @@ bool PolicyBase::AddTarget(TargetProcess* target) {
   if (NULL != policy_)
     policy_maker_->Done();
 
-  if (!ApplyProcessMitigationsToSuspendedTarget(target, mitigations_))
+  if (!ApplyProcessMitigationsToSuspendedProcess(target->Process(),
+                                                 mitigations_)) {
     return false;
+  }
 
   if (!SetupAllInterceptions(target))
     return false;

@@ -6,9 +6,7 @@
 
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/nt_internals.h"
-#include "sandbox/win/src/sandbox_types.h"
 #include "sandbox/win/src/sandbox_utils.h"
-#include "sandbox/win/src/target_process.h"
 #include "sandbox/win/src/win_utils.h"
 
 namespace {
@@ -23,11 +21,6 @@ typedef BOOL (WINAPI *SetProcessMitigationPolicyFunction)(
 
 typedef BOOL (WINAPI *SetDefaultDllDirectoriesFunction)(
     DWORD DirectoryFlags);
-
-void CALLBACK ApplyMitigationsCallback(ULONG_PTR flags) {
-  if (!sandbox::ApplyProcessMitigationsToCurrentProcess(flags))
-    ::TerminateProcess(::GetCurrentProcess(), sandbox::SBOX_FATAL_MITIGATION);
-}
 
 }  // namespace
 
@@ -252,24 +245,42 @@ void ConvertProcessMitigationsToPolicy(MitigationFlags flags,
 }
 
 MitigationFlags FilterPostStartupProcessMitigations(MitigationFlags flags) {
-  base::win::Version version = base::win::GetVersion();
-
-  if (version < base::win::VERSION_VISTA) {
+  // Anything prior to XP SP2.
+  if (!IsXPSP2OrLater())
     return 0;
 
+  base::win::Version version = base::win::GetVersion();
+
+  // Windows XP SP2+.
+  if (version < base::win::VERSION_VISTA) {
+    return flags & (MITIGATION_DEP |
+                    MITIGATION_DEP_NO_ATL_THUNK);
+
+  // Windows Vista
+  if (version < base::win::VERSION_WIN7) {
+    return flags & (MITIGATION_DEP |
+                    MITIGATION_DEP_NO_ATL_THUNK |
+                    MITIGATION_BOTTOM_UP_ASLR |
+                    MITIGATION_DLL_SEARCH_ORDER |
+                    MITIGATION_HEAP_TERMINATE);
+  }
+
+  // Windows 7 and Vista.
   } else if (version < base::win::VERSION_WIN8) {
-    return flags & (MITIGATION_DLL_SEARCH_ORDER |
+    return flags & (MITIGATION_BOTTOM_UP_ASLR |
+                    MITIGATION_DLL_SEARCH_ORDER |
                     MITIGATION_HEAP_TERMINATE);
   }
 
   // Windows 8 and above.
-  return flags & (MITIGATION_DLL_SEARCH_ORDER);
+  return flags & (MITIGATION_BOTTOM_UP_ASLR |
+                  MITIGATION_DLL_SEARCH_ORDER);
 }
 
-bool ApplyProcessMitigationsToSuspendedTarget(TargetProcess* target,
-                                              MitigationFlags flags) {
+bool ApplyProcessMitigationsToSuspendedProcess(HANDLE process,
+                                               MitigationFlags flags) {
+// This is a hack to fake a weak bottom-up ASLR on 32-bit Windows.
 #if !defined(_WIN64)
-  // This is a hack to fake a weak bottom-up ASLR on 32-bit Windows.
   if (flags & MITIGATION_BOTTOM_UP_ASLR) {
     unsigned int limit;
     rand_s(&limit);
@@ -277,7 +288,6 @@ bool ApplyProcessMitigationsToSuspendedTarget(TargetProcess* target,
     const size_t kMask64k = 0xFFFF;
     // Random range (512k-16.5mb) in 64k steps.
     const char* end = ptr + ((((limit % 16384) + 512) * 1024) & ~kMask64k);
-    HANDLE process = target->Process();
     while (ptr < end) {
       MEMORY_BASIC_INFORMATION memory_info;
       if (!::VirtualQueryEx(process, ptr, &memory_info, sizeof(memory_info)))
@@ -287,16 +297,6 @@ bool ApplyProcessMitigationsToSuspendedTarget(TargetProcess* target,
       if (ptr && memory_info.State == MEM_FREE)
         ::VirtualAllocEx(process, ptr, size, MEM_RESERVE, PAGE_NOACCESS);
       ptr += size;
-    }
-  }
-
-  // Since the process is suspended, we can schedule an APC to set the DEP
-  // policy immediately after then loader finishes.
-  ULONG_PTR dep_flags = flags & (MITIGATION_DEP | MITIGATION_DEP_NO_ATL_THUNK);
-  if (dep_flags && base::win::GetVersion() < base::win::VERSION_WIN7) {
-    if (!::QueueUserAPC(ApplyMitigationsCallback, target->MainThread(),
-                        static_cast<ULONG_PTR>(dep_flags))) {
-      return false;
     }
   }
 #endif
