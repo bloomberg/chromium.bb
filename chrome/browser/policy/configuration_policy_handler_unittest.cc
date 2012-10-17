@@ -44,13 +44,14 @@ TEST(ExtensionListPolicyHandlerTest, CheckPolicySettings) {
   policy_map.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, list.DeepCopy());
   errors.Clear();
-  EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
   EXPECT_FALSE(errors.GetErrors(key::kExtensionInstallBlacklist).empty());
 }
 
 TEST(ExtensionListPolicyHandlerTest, ApplyPolicySettings) {
-  base::ListValue list;
+  base::ListValue policy;
+  base::ListValue expected;
   PolicyMap policy_map;
   PrefValueMap prefs;
   base::Value* value = NULL;
@@ -58,12 +59,21 @@ TEST(ExtensionListPolicyHandlerTest, ApplyPolicySettings) {
                                      prefs::kExtensionInstallDenyList,
                                      false);
 
-  list.Append(Value::CreateStringValue("abcdefghijklmnopabcdefghijklmnop"));
+  policy.Append(Value::CreateStringValue("abcdefghijklmnopabcdefghijklmnop"));
+  expected.Append(Value::CreateStringValue("abcdefghijklmnopabcdefghijklmnop"));
+
   policy_map.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, list.DeepCopy());
+                 POLICY_SCOPE_USER, policy.DeepCopy());
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(prefs::kExtensionInstallDenyList, &value));
-  EXPECT_TRUE(base::Value::Equals(&list, value));
+  EXPECT_TRUE(base::Value::Equals(&expected, value));
+
+  policy.Append(Value::CreateStringValue("invalid"));
+  policy_map.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, policy.DeepCopy());
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  EXPECT_TRUE(prefs.GetValue(prefs::kExtensionInstallDenyList, &value));
+  EXPECT_TRUE(base::Value::Equals(&expected, value));
 }
 
 TEST(ExtensionURLPatternListPolicyHandlerTest, CheckPolicySettings) {

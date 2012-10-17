@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/common/content_settings.h"
@@ -119,7 +120,7 @@ class ExtensionListPolicyHandler : public TypeCheckingPolicyHandler {
   // Runs sanity checks on the policy value and returns it in |extension_ids|.
   bool CheckAndGetList(const PolicyMap& policies,
                        PolicyErrorMap* errors,
-                       const base::ListValue** extension_ids);
+                       scoped_ptr<base::ListValue>* extension_ids);
 
  private:
   const char* pref_path_;

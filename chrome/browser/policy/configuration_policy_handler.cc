@@ -227,9 +227,10 @@ bool ExtensionListPolicyHandler::CheckPolicySettings(
 void ExtensionListPolicyHandler::ApplyPolicySettings(
     const PolicyMap& policies,
     PrefValueMap* prefs) {
-  const Value* value = policies.GetValue(policy_name());
-  if (value)
-    prefs->SetValue(pref_path(), value->DeepCopy());
+  scoped_ptr<base::ListValue> list;
+  PolicyErrorMap errors;
+  if (CheckAndGetList(policies, &errors, &list) && list)
+    prefs->SetValue(pref_path(), list.release());
 }
 
 const char* ExtensionListPolicyHandler::pref_path() const {
@@ -239,9 +240,9 @@ const char* ExtensionListPolicyHandler::pref_path() const {
 bool ExtensionListPolicyHandler::CheckAndGetList(
     const PolicyMap& policies,
     PolicyErrorMap* errors,
-    const base::ListValue** extension_ids) {
+    scoped_ptr<base::ListValue>* extension_ids) {
   if (extension_ids)
-    *extension_ids = NULL;
+    extension_ids->reset();
 
   const base::Value* value = NULL;
   if (!CheckAndGetValue(policies, errors, &value))
@@ -256,7 +257,8 @@ bool ExtensionListPolicyHandler::CheckAndGetList(
     return false;
   }
 
-  // Check that the list contains valid extension ID strings only.
+  // Filter the list, rejecting any invalid extension IDs.
+  scoped_ptr<base::ListValue> filtered_list(new base::ListValue());
   for (base::ListValue::const_iterator entry(list_value->begin());
        entry != list_value->end(); ++entry) {
     std::string id;
@@ -265,19 +267,20 @@ bool ExtensionListPolicyHandler::CheckAndGetList(
                        entry - list_value->begin(),
                        IDS_POLICY_TYPE_ERROR,
                        ValueTypeToString(base::Value::TYPE_STRING));
-      return false;
+      continue;
     }
     if (!(allow_wildcards_ && id == "*") &&
         !extensions::Extension::IdIsValid(id)) {
       errors->AddError(policy_name(),
                        entry - list_value->begin(),
                        IDS_POLICY_VALUE_FORMAT_ERROR);
-      return false;
+      continue;
     }
+    filtered_list->Append(base::Value::CreateStringValue(id));
   }
 
   if (extension_ids)
-    *extension_ids = list_value;
+    *extension_ids = filtered_list.Pass();
 
   return true;
 }
