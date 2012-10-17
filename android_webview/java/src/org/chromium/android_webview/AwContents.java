@@ -81,6 +81,9 @@ public class AwContents {
                     final String url = (String)msg.obj;
                     AwContents.this.mContentsClient.onLoadResource(url);
                     break;
+                default:
+                    throw new IllegalStateException(
+                            "IoThreadClientHandler: unhandled message " + msg.what);
             }
         }
     }

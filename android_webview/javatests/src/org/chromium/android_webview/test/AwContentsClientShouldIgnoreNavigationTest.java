@@ -45,7 +45,7 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
     private static class TestAwContentsClient
             extends org.chromium.android_webview.test.TestAwContentsClient {
 
-        public class ShouldIgnoreNavigationHelper extends CallbackHelper {
+        public static class ShouldIgnoreNavigationHelper extends CallbackHelper {
             private String mShouldIgnoreNavigationUrl;
             private String mPreviousShouldIgnoreNavigationUrl;
             private boolean mShouldIgnoreNavigationReturnValue = false;

@@ -168,7 +168,6 @@ public class AwContentsClientShouldInterceptRequestTest extends AndroidWebViewTe
         final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
 
         int callCount = onLoadResourceHelper.getCallCount();
-        int onPageFinishedCallCount = contentsClient.getOnPageFinishedHelper().getCallCount();
 
         loadUrlAsync(awContents, aboutPageUrl);
 
@@ -269,7 +268,7 @@ public class AwContentsClientShouldInterceptRequestTest extends AndroidWebViewTe
             contentsClient.getShouldInterceptRequestHelper();
 
         final String imagePath = "/" + CommonResources.FAVICON_FILENAME;
-        final String imageUrl = mWebServer.setResponseBase64(imagePath,
+        mWebServer.setResponseBase64(imagePath,
                 CommonResources.FAVICON_DATA_BASE64, CommonResources.getImagePngHeaders(true));
         final String pageWithImage =
             addPageToTestServer(mWebServer, "/page_with_image.html",
