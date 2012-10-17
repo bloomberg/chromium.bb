@@ -32,19 +32,9 @@ class UI_EXPORT GestureRecognizer {
                                                 ui::EventResult result,
                                                 GestureConsumer* consumer) = 0;
 
-  // Touch-events can be queued to be played back at a later time. The queues
-  // are identified by the target window.
-  virtual void QueueTouchEventForGesture(GestureConsumer* consumer,
-                                         const TouchEvent& event) = 0;
-
-  // Process the touch-event in the queue for the window. Returns a list of
-  // zero or more GestureEvents identified after processing the queueud
-  // TouchEvent. Caller is responsible for freeing up Gestures.
-  virtual Gestures* AdvanceTouchQueue(GestureConsumer* consumer,
-                                      bool processed) = 0;
-
-  // Flushes the touch event queue (or removes the queue) for the window.
-  virtual void FlushTouchQueue(GestureConsumer* consumer) = 0;
+  // This is called when the consumer is destroyed. So this should cleanup any
+  // internal state maintained for |consumer|.
+  virtual void CleanupStateForConsumer(GestureConsumer* consumer) = 0;
 
   // Return the window which should handle this TouchEvent, in the case where
   // the touch is already associated with a target.

@@ -410,6 +410,16 @@ class UI_EXPORT TouchEvent : public LocatedEvent {
              int touch_id,
              base::TimeDelta time_stamp);
 
+  TouchEvent(EventType type,
+             const gfx::Point& location,
+             int flags,
+             int touch_id,
+             base::TimeDelta timestamp,
+             float radius_x,
+             float radius_y,
+             float angle,
+             float force);
+
   virtual ~TouchEvent();
 
   int touch_id() const { return touch_id_; }
@@ -462,22 +472,6 @@ class UI_EXPORT TouchEvent : public LocatedEvent {
   float force_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchEvent);
-};
-
-class UI_EXPORT TestTouchEvent : public TouchEvent {
- public:
-  // Create a new touch event.
-  TestTouchEvent(EventType type,
-                 int x,
-                 int y,
-                 int flags,
-                 int touch_id,
-                 float radius_x,
-                 float radius_y,
-                 float angle,
-                 float force);
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestTouchEvent);
 };
 
 class UI_EXPORT KeyEvent : public Event {

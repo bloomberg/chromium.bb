@@ -26,12 +26,39 @@ void TouchEventQueue::QueueEvent(const WebKit::WebTouchEvent& event) {
     return;
   }
 
-  // TODO(sad): Coalesce with |touch_queue_.back()| if appropriate.
-  // http://crbug.com/110231
+  // If the last queued touch-event was a touch-move, and the current event is
+  // also a touch-move, then the events can be coalesced into a single event.
+  if (!empty()) {
+    WebKit::WebTouchEvent& last_event = touch_queue_.back();
+    if (event.type == WebKit::WebInputEvent::TouchMove &&
+        last_event.type == WebKit::WebInputEvent::TouchMove &&
+        event.modifiers == last_event.modifiers &&
+        event.touchesLength == last_event.touchesLength) {
+      // The WebTouchPoints include absolute position information. So it is
+      // sufficient to simply replace the previous event with the new event.
+      touch_queue_.pop_back();
+    }
+  }
   touch_queue_.push_back(event);
 }
 
 void TouchEventQueue::ProcessTouchAck(bool processed) {
+  PopTouchEventToView(processed);
+  // If there's a queued touch-event, then forward it to the renderer now.
+  if (!touch_queue_.empty())
+    render_widget_host_->ForwardTouchEventImmediately(touch_queue_.front());
+}
+
+void TouchEventQueue::FlushQueue() {
+  while (!touch_queue_.empty())
+    PopTouchEventToView(false);
+}
+
+void TouchEventQueue::Reset() {
+  touch_queue_.clear();
+}
+
+void TouchEventQueue::PopTouchEventToView(bool processed) {
   CHECK(!touch_queue_.empty());
   WebKit::WebTouchEvent acked_event = touch_queue_.front();
   touch_queue_.pop_front();
@@ -41,10 +68,6 @@ void TouchEventQueue::ProcessTouchAck(bool processed) {
   RenderWidgetHostViewPort* view = RenderWidgetHostViewPort::FromRWHV(
       render_widget_host_->GetView());
   view->ProcessAckedTouchEvent(acked_event, processed);
-
-  // If there's a queued touch-event, then forward it to the renderer now.
-  if (!touch_queue_.empty())
-    render_widget_host_->ForwardTouchEventImmediately(touch_queue_.front());
 }
 
 }  // namespace content

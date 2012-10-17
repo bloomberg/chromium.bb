@@ -20,6 +20,8 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
+#include <queue>
+
 namespace aura {
 namespace test {
 
@@ -288,21 +290,33 @@ class QueueTouchEventDelegate : public GestureEventConsumeDelegate {
   virtual ~QueueTouchEventDelegate() {}
 
   virtual ui::EventResult OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
-    return queue_events_ ? ui::ER_ASYNC : ui::ER_UNHANDLED;
+    if (queue_events_) {
+      queue_.push(new ui::TouchEvent(*event, window_, window_));
+      return ui::ER_CONSUMED;
+    }
+    return ui::ER_UNHANDLED;
   }
 
   void ReceivedAck() {
-    root_window_->AdvanceQueuedTouchEvent(window_, false);
+    ReceivedAckImpl(false);
   }
 
   void ReceivedAckPreventDefaulted() {
-    root_window_->AdvanceQueuedTouchEvent(window_, true);
+    ReceivedAckImpl(true);
   }
 
   void set_window(Window* w) { window_ = w; }
   void set_queue_events(bool queue) { queue_events_ = queue; }
 
  private:
+  void ReceivedAckImpl(bool prevent_defaulted) {
+    scoped_ptr<ui::TouchEvent> event(queue_.front());
+    root_window_->ProcessedTouchEvent(event.get(), window_,
+        prevent_defaulted ? ui::ER_HANDLED : ui::ER_UNHANDLED);
+    queue_.pop();
+  }
+
+  std::queue<ui::TouchEvent*> queue_;
   Window* window_;
   RootWindow* root_window_;
   bool queue_events_;
@@ -2071,54 +2085,6 @@ TEST_F(GestureRecognizerTest, PressDoesNotCrash) {
   EXPECT_FALSE(delegate->tap_down());
   EXPECT_FALSE(delegate->tap_cancel());
   EXPECT_FALSE(delegate->scroll_begin());
-}
-
-// Tests that if a consumer has touch-events queued, then no touch-event gets
-// processed synchronously until all the queued evets are processed.
-TEST_F(GestureRecognizerTest, SyncTouchEventWithQueuedTouchEvents) {
-  scoped_ptr<QueueTouchEventDelegate> queued_delegate(
-      new QueueTouchEventDelegate(root_window()));
-  const int kWindowWidth = 123;
-  const int kWindowHeight = 45;
-  const int kTouchId1 = 6;
-  gfx::Rect bounds(10, 20, kWindowWidth, kWindowHeight);
-  scoped_ptr<aura::Window> queue(CreateTestWindowWithDelegate(
-      queued_delegate.get(), -1234, bounds, NULL));
-
-  queued_delegate->set_window(queue.get());
-
-  // Send a touch-event to the window so that the event gets queued. No gesture
-  // event should be created.
-  ui::TouchEvent press1(ui::ET_TOUCH_PRESSED, gfx::Point(20, 30), kTouchId1,
-      GetTime());
-  ui::TouchEvent move1(ui::ET_TOUCH_MOVED, gfx::Point(80, 25), kTouchId1,
-      press1.time_stamp() + base::TimeDelta::FromMilliseconds(100));
-  ui::TouchEvent release1(ui::ET_TOUCH_RELEASED, gfx::Point(80, 25), kTouchId1,
-      move1.time_stamp() + base::TimeDelta::FromMilliseconds(100));
-  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press1);
-  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move1);
-  EXPECT_FALSE(queued_delegate->begin());
-  EXPECT_FALSE(queued_delegate->tap_down());
-  EXPECT_FALSE(queued_delegate->scroll_begin());
-
-  // Stop queueing events.
-  queued_delegate->set_queue_events(false);
-  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release1);
-
-  // Process the two queued events.
-  queued_delegate->ReceivedAck();
-  RunAllPendingInMessageLoop();
-  EXPECT_TRUE(queued_delegate->begin());
-  EXPECT_TRUE(queued_delegate->tap_down());
-  queued_delegate->Reset();
-
-  queued_delegate->ReceivedAck();
-  RunAllPendingInMessageLoop();
-  EXPECT_TRUE(queued_delegate->tap_cancel());
-  EXPECT_TRUE(queued_delegate->scroll_begin());
-  EXPECT_TRUE(queued_delegate->scroll_update());
-  EXPECT_TRUE(queued_delegate->scroll_end());
-  EXPECT_TRUE(queued_delegate->end());
 }
 
 TEST_F(GestureRecognizerTest, TwoFingerTap) {

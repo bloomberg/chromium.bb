@@ -32,6 +32,7 @@
 #include "content/browser/renderer_host/backing_store_win.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/plugin_messages.h"
@@ -410,24 +411,6 @@ class WebTouchState {
   // Returns if any touches are modified in the event.
   bool is_changed() { return touch_event_.changedTouchesLength != 0; }
 
-  void QueueEvents(ui::GestureConsumer* consumer, ui::GestureRecognizer* gr) {
-    if (touch_event_.touchesLength > 0)
-      touch_count_.push(touch_event_.touchesLength);
-    base::TimeDelta timestamp = base::TimeDelta::FromMilliseconds(
-        touch_event_.timeStampSeconds * 1000);
-    for (size_t i = 0; i < touch_event_.touchesLength; ++i) {
-      gr->QueueTouchEventForGesture(consumer,
-          TouchEventFromWebTouchPoint(touch_event_.touches[i], timestamp));
-    }
-  }
-
-  int GetNextTouchCount() {
-    DCHECK(!touch_count_.empty());
-    int result = touch_count_.top();
-    touch_count_.pop();
-    return result;
-  }
-
  private:
   typedef std::map<unsigned int, int> MapType;
 
@@ -444,12 +427,6 @@ class WebTouchState {
 
   // Remove any mappings that are no longer in use.
   void RemoveExpiredMappings();
-
-  // The gesture recognizer processes touch events one at a time, but WebKit
-  // (ForwardTouchEvent) takes a set of touch events. |touchCount_| tracks how
-  // many individual touch events were sent to ForwardTouchEvent, so we can
-  // send the correct number of AdvanceTouchQueue's
-  std::stack<int> touch_count_;
 
   WebKit::WebTouchEvent touch_event_;
   const RenderWidgetHostViewWin* const window_;
@@ -954,13 +931,18 @@ void RenderWidgetHostViewWin::SetBackground(const SkBitmap& background) {
 void RenderWidgetHostViewWin::ProcessAckedTouchEvent(
     const WebKit::WebTouchEvent& touch,
     bool processed) {
-  DCHECK(render_widget_host_->has_touch_handler() &&
-      touch_events_enabled_);
+  DCHECK(touch_events_enabled_);
 
-  int touch_count = touch_state_->GetNextTouchCount();
-  for (int i = 0; i < touch_count; ++i) {
+  ScopedVector<ui::TouchEvent> events;
+  if (!MakeUITouchEventsFromWebTouchEvents(touch, &events))
+    return;
+
+  ui::EventResult result = processed ? ui::ER_HANDLED : ui::ER_UNHANDLED;
+  for (ScopedVector<ui::TouchEvent>::iterator iter = events.begin(),
+      end = events.end(); iter != end; ++iter)  {
     scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
-    gestures.reset(gesture_recognizer_->AdvanceTouchQueue(this, processed));
+    gestures.reset(gesture_recognizer_->ProcessTouchEventForGesture(
+        *(*iter), result, this));
     ProcessGestures(gestures.get());
   }
 }
@@ -1002,8 +984,10 @@ bool RenderWidgetHostViewWin::DispatchLongPressGestureEvent(
 
 bool RenderWidgetHostViewWin::DispatchCancelTouchEvent(
     ui::TouchEvent* event) {
-  if (!render_widget_host_ || !touch_events_enabled_)
+  if (!render_widget_host_ || !touch_events_enabled_ ||
+      !render_widget_host_->ShouldForwardTouchEvent()) {
     return false;
+  }
   DCHECK(event->type() == WebKit::WebInputEvent::TouchCancel);
   WebKit::WebTouchEvent cancel_event;
   cancel_event.type = WebKit::WebInputEvent::TouchCancel;
@@ -2224,17 +2208,15 @@ LRESULT RenderWidgetHostViewWin::OnTouchEvent(UINT message, WPARAM wparam,
         TOUCH_COORD_TO_PIXEL(points[0].y));
   }
 
-  bool has_touch_handler = render_widget_host_->has_touch_handler() &&
+  bool should_forward = render_widget_host_->ShouldForwardTouchEvent() &&
       touch_events_enabled_;
 
   // Send a copy of the touch events on to the gesture recognizer.
   for (size_t start = 0; start < total;) {
     start += touch_state_->UpdateTouchPoints(points + start, total - start);
-    if (has_touch_handler) {
-      if (touch_state_->is_changed()) {
+    if (should_forward) {
+      if (touch_state_->is_changed())
         render_widget_host_->ForwardTouchEvent(touch_state_->touch_event());
-        touch_state_->QueueEvents(this, gesture_recognizer_.get());
-      }
     } else {
       const WebKit::WebTouchEvent& touch_event = touch_state_->touch_event();
       base::TimeDelta timestamp = base::TimeDelta::FromMilliseconds(

@@ -393,9 +393,12 @@ void RootWindow::ConvertPointFromNativeScreen(gfx::Point* point) const {
       point->Scale(1 / ui::GetDeviceScaleFactor(layer())));
 }
 
-void RootWindow::AdvanceQueuedTouchEvent(Window* window, bool processed) {
+void RootWindow::ProcessedTouchEvent(ui::TouchEvent* event,
+                                     Window* window,
+                                     ui::EventResult result) {
   scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
-  gestures.reset(gesture_recognizer_->AdvanceTouchQueue(window, processed));
+  gestures.reset(gesture_recognizer_->ProcessTouchEventForGesture(
+      *event, result, window));
   ProcessGestures(gestures.get());
 }
 
@@ -756,7 +759,7 @@ void RootWindow::OnWindowHidden(Window* invisible, bool destroyed) {
 }
 
 void RootWindow::CleanupGestureRecognizerState(Window* window) {
-  gesture_recognizer_->FlushTouchQueue(window);
+  gesture_recognizer_->CleanupStateForConsumer(window);
   Windows windows = window->children();
   for (Windows::const_iterator iter = windows.begin();
       iter != windows.end();
@@ -911,11 +914,6 @@ bool RootWindow::OnHostTouchEvent(ui::TouchEvent* event) {
         *event, static_cast<Window*>(this), target);
     result = ProcessTouchEvent(target, &translated_event);
     handled = result != ui::ER_UNHANDLED;
-
-    if (result & ui::ER_ASYNC) {
-      gesture_recognizer_->QueueTouchEventForGesture(target, *event);
-      return true;
-    }
   }
 
   // Get the list of GestureEvents from GestureRecognizer.

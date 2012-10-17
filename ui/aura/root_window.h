@@ -203,13 +203,14 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // Gesture Recognition -------------------------------------------------------
 
-  // When a touch event is dispatched to a Window, it can notify the RootWindow
-  // to queue the touch event for asynchronous gesture recognition. These are
-  // the entry points for the asynchronous processing of the queued touch
-  // events.
-  // Process the next touch event for gesture recognition. |processed| indicates
-  // whether the queued event was processed by the window or not.
-  void AdvanceQueuedTouchEvent(Window* window, bool processed);
+  // When a touch event is dispatched to a Window, it may want to process the
+  // touch event asynchronously. In such cases, the window should consume the
+  // event during the event dispatch. Once the event is properly processed, the
+  // window should let the RootWindow know about the result of the event
+  // processing, so that gesture events can be properly created and dispatched.
+  void ProcessedTouchEvent(ui::TouchEvent* event,
+                           Window* window,
+                           ui::EventResult result);
 
   ui::GestureRecognizer* gesture_recognizer() const {
     return gesture_recognizer_.get();

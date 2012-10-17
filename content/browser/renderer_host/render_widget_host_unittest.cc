@@ -11,6 +11,7 @@
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/gesture_event_filter.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
+#include "content/browser/renderer_host/touch_event_queue.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/notification_details.h"
@@ -127,7 +128,8 @@ bool RenderWidgetHostProcess::WaitForBackingStoreMsg(
 
 // TestView --------------------------------------------------------------------
 
-// This test view allows us to specify the size.
+// This test view allows us to specify the size, and keep track of acked
+// touch-events.
 class TestView : public content::TestRenderWidgetHostView {
  public:
   explicit TestView(RenderWidgetHostImpl* rwh)
@@ -139,12 +141,23 @@ class TestView : public content::TestRenderWidgetHostView {
     bounds_ = bounds;
   }
 
+  const WebKit::WebTouchEvent& acked_event() const { return acked_event_; }
+  void ClearAckedEvent() {
+    acked_event_.type = WebKit::WebInputEvent::Undefined;
+  }
+
   // RenderWidgetHostView override.
-  virtual gfx::Rect GetViewBounds() const {
+  virtual gfx::Rect GetViewBounds() const OVERRIDE {
     return bounds_;
   }
 
+  virtual void ProcessAckedTouchEvent(const WebKit::WebTouchEvent& touch,
+                                      bool processed) OVERRIDE {
+    acked_event_ = touch;
+  }
+
  protected:
+  WebKit::WebTouchEvent acked_event_;
   gfx::Rect bounds_;
   DISALLOW_COPY_AND_ASSIGN(TestView);
 };
@@ -227,6 +240,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   using RenderWidgetHostImpl::is_hidden_;
   using RenderWidgetHostImpl::resize_ack_pending_;
   using RenderWidgetHostImpl::gesture_event_filter_;
+  using RenderWidgetHostImpl::touch_event_queue_;
 
   bool unresponsive_timer_fired() const {
     return unresponsive_timer_fired_;
@@ -266,6 +280,10 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
 
   void set_debounce_interval_time_ms(int delay_ms) {
     gesture_event_filter_->debounce_interval_time_ms_ = delay_ms;
+  }
+
+  size_t TouchEventQueueSize() {
+    return touch_event_queue_->touch_queue_.size();
   }
 
  protected:
@@ -398,6 +416,57 @@ class RenderWidgetHostTest : public testing::Test {
     host_->ForwardGestureEvent(gesture_event);
   }
 
+  // Sends a touch event (irrespective of whether the page has a touch-event
+  // handler or not).
+  void SendTouchEvent() {
+    host_->ForwardTouchEvent(touch_event_);
+
+    // Mark all the points as stationary. And remove the points that have been
+    // released.
+    int point = 0;
+    for (unsigned int i = 0; i < touch_event_.touchesLength; ++i) {
+      if (touch_event_.touches[i].state == WebKit::WebTouchPoint::StateReleased)
+        continue;
+
+      touch_event_.touches[point] = touch_event_.touches[i];
+      touch_event_.touches[point].state =
+          WebKit::WebTouchPoint::StateStationary;
+      ++point;
+    }
+    touch_event_.touchesLength = point;
+    touch_event_.type = WebInputEvent::Undefined;
+  }
+
+  int PressTouchPoint(int x, int y) {
+    if (touch_event_.touchesLength == touch_event_.touchesLengthCap)
+      return -1;
+    WebKit::WebTouchPoint& point =
+        touch_event_.touches[touch_event_.touchesLength];
+    point.id = touch_event_.touchesLength;
+    point.position.x = point.screenPosition.x = x;
+    point.position.y = point.screenPosition.y = y;
+    point.state = WebKit::WebTouchPoint::StatePressed;
+    point.radiusX = point.radiusY = 1.f;
+    ++touch_event_.touchesLength;
+    touch_event_.type = WebInputEvent::TouchStart;
+    return point.id;
+  }
+
+  void MoveTouchPoint(int index, int x, int y) {
+    CHECK(index >= 0 && index < touch_event_.touchesLengthCap);
+    WebKit::WebTouchPoint& point = touch_event_.touches[index];
+    point.position.x = point.screenPosition.x = x;
+    point.position.y = point.screenPosition.y = y;
+    touch_event_.touches[index].state = WebKit::WebTouchPoint::StateMoved;
+    touch_event_.type = WebInputEvent::TouchMove;
+  }
+
+  void ReleaseTouchPoint(int index) {
+    CHECK(index >= 0 && index < touch_event_.touchesLengthCap);
+    touch_event_.touches[index].state = WebKit::WebTouchPoint::StateReleased;
+    touch_event_.type = WebInputEvent::TouchEnd;
+  }
+
   MessageLoopForUI message_loop_;
 
   scoped_ptr<content::TestBrowserContext> browser_context_;
@@ -405,6 +474,9 @@ class RenderWidgetHostTest : public testing::Test {
   scoped_ptr<MockRenderWidgetHostDelegate> delegate_;
   scoped_ptr<MockRenderWidgetHost> host_;
   scoped_ptr<TestView> view_;
+
+ private:
+  WebKit::WebTouchEvent touch_event_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostTest);
 };
@@ -1236,6 +1308,113 @@ TEST_F(RenderWidgetHostTest, DebounceDropsDeferredEvents) {
     WebGestureEvent merged_event = host_->GestureEventQueueEventAt(i);
     EXPECT_EQ(expected[i], merged_event.type);
   }
+}
+
+// Tests that touch-events are queued properly.
+TEST_F(RenderWidgetHostTest, TouchEventQueue) {
+  process_->sink().ClearMessages();
+
+  PressTouchPoint(1, 1);
+  SendTouchEvent();
+  EXPECT_EQ(1U, process_->sink().message_count());
+  process_->sink().ClearMessages();
+
+  // The second touch should not be sent since one is already in queue.
+  MoveTouchPoint(0, 5, 5);
+  SendTouchEvent();
+  EXPECT_EQ(0U, process_->sink().message_count());
+
+  EXPECT_EQ(2U, host_->TouchEventQueueSize());
+
+  // Receive an ACK for the first touch-event.
+  SendInputEventACK(WebInputEvent::TouchStart, true);
+  EXPECT_EQ(1U, host_->TouchEventQueueSize());
+  EXPECT_EQ(WebKit::WebInputEvent::TouchStart, view_->acked_event().type);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  process_->sink().ClearMessages();
+
+  SendInputEventACK(WebInputEvent::TouchMove, true);
+  EXPECT_EQ(0U, host_->TouchEventQueueSize());
+  EXPECT_EQ(WebKit::WebInputEvent::TouchMove, view_->acked_event().type);
+  EXPECT_EQ(0U, process_->sink().message_count());
+}
+
+// Tests that the touch-queue is emptied if a page stops listening for touch
+// events.
+TEST_F(RenderWidgetHostTest, TouchEventQueueFlush) {
+  process_->sink().ClearMessages();
+
+  host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
+  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->TouchEventQueueSize());
+
+  EXPECT_EQ(0U, host_->TouchEventQueueSize());
+  EXPECT_TRUE(host_->ShouldForwardTouchEvent());
+
+  // Send a touch-press event.
+  PressTouchPoint(1, 1);
+  SendTouchEvent();
+  EXPECT_EQ(1U, process_->sink().message_count());
+  process_->sink().ClearMessages();
+
+  ReleaseTouchPoint(0);
+  SendTouchEvent();
+
+  for (int i = 5; i < 15; ++i) {
+    PressTouchPoint(1, 1);
+    SendTouchEvent();
+    MoveTouchPoint(0, i, i);
+    SendTouchEvent();
+    ReleaseTouchPoint(0);
+    SendTouchEvent();
+  }
+  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(32U, host_->TouchEventQueueSize());
+
+  // Receive an ACK for the first touch-event. One of the queued touch-event
+  // should be forwarded.
+  SendInputEventACK(WebInputEvent::TouchStart, true);
+  EXPECT_EQ(31U, host_->TouchEventQueueSize());
+  EXPECT_EQ(WebKit::WebInputEvent::TouchStart, view_->acked_event().type);
+  EXPECT_EQ(1U, process_->sink().message_count());
+  process_->sink().ClearMessages();
+
+  // The page stops listening for touch-events. The touch-event queue should now
+  // be emptied, but none of the queued touch-events should be sent to the
+  // renderer.
+  host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, false));
+  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->TouchEventQueueSize());
+  EXPECT_FALSE(host_->ShouldForwardTouchEvent());
+}
+
+// Tests that touch-events are coalesced properly in the queue.
+TEST_F(RenderWidgetHostTest, TouchEventQueueCoalesce) {
+  process_->sink().ClearMessages();
+
+  host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
+  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->TouchEventQueueSize());
+
+  EXPECT_EQ(0U, host_->TouchEventQueueSize());
+  EXPECT_TRUE(host_->ShouldForwardTouchEvent());
+
+  // Send a touch-press event.
+  PressTouchPoint(1, 1);
+  SendTouchEvent();
+  EXPECT_EQ(1U, process_->sink().message_count());
+  process_->sink().ClearMessages();
+
+  // Send a few touch-move events, followed by a touch-release event. All the
+  // touch-move events should be coalesced into a single event.
+  for (int i = 5; i < 15; ++i) {
+    MoveTouchPoint(0, i, i);
+    SendTouchEvent();
+  }
+  ReleaseTouchPoint(0);
+  SendTouchEvent();
+  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(3U, host_->TouchEventQueueSize());
 }
 
 // Test that the hang monitor timer expires properly if a new timer is started

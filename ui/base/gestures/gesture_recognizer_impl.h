@@ -6,7 +6,6 @@
 #define UI_BASE_GESTURES_GESTURE_RECOGNIZER_IMPL_H_
 
 #include <map>
-#include <queue>
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
@@ -49,31 +48,19 @@ class UI_EXPORT GestureRecognizerImpl : public GestureRecognizer {
   // Sets up the target consumer for gestures based on the touch-event.
   void SetupTargets(const TouchEvent& event, GestureConsumer* consumer);
 
-  // Processes the next queued touch-event (and discards the touch-event). The
-  // called must take ownership of the returned gestures and free them when they
-  // are not needed anymore.
-  Gestures* AdvanceTouchQueueByOne(GestureConsumer* consumer,
-                                   ui::EventResult result);
-
   // Overridden from GestureRecognizer
   virtual Gestures* ProcessTouchEventForGesture(
       const TouchEvent& event,
       ui::EventResult result,
       GestureConsumer* target) OVERRIDE;
-  virtual void QueueTouchEventForGesture(GestureConsumer* consumer,
-                                         const TouchEvent& event) OVERRIDE;
-  virtual Gestures* AdvanceTouchQueue(GestureConsumer* consumer,
-                                      bool processed) OVERRIDE;
-  virtual void FlushTouchQueue(GestureConsumer* consumer) OVERRIDE;
+  virtual void CleanupStateForConsumer(GestureConsumer* consumer) OVERRIDE;
 
-  typedef std::queue<TouchEvent*> TouchEventQueue;
-  std::map<GestureConsumer*, TouchEventQueue*> event_queue_;
   std::map<GestureConsumer*, GestureSequence*> consumer_sequence_;
 
   // Both |touch_id_target_| and |touch_id_target_for_gestures_| map a touch-id
   // to its target window.  touch-ids are removed from |touch_id_target_| on
   // ET_TOUCH_RELEASE and ET_TOUCH_CANCEL. |touch_id_target_for_gestures_| are
-  // removed in FlushTouchQueue().
+  // removed in ConsumerDestroyed().
   TouchIdToConsumerMap touch_id_target_;
   TouchIdToConsumerMap touch_id_target_for_gestures_;
 

@@ -104,8 +104,6 @@ enum EventResult {
                           // still be propagated to other handlers.
   ER_CONSUMED  = 1 << 1,  // The event has been handled, and it should not be
                           // propagated to other handlers.
-  ER_ASYNC     = 1 << 2,  // The event will be processed asynchronously. The
-                          // event can still be propagated to other handlers.
 };
 
 // Phase of the event dispatch.

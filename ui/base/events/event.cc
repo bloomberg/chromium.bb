@@ -307,6 +307,23 @@ TouchEvent::TouchEvent(EventType type,
   set_time_stamp(time_stamp);
 }
 
+TouchEvent::TouchEvent(EventType type,
+                       const gfx::Point& location,
+                       int flags,
+                       int touch_id,
+                       base::TimeDelta timestamp,
+                       float radius_x,
+                       float radius_y,
+                       float angle,
+                       float force)
+    : LocatedEvent(type, location, location, flags),
+      touch_id_(touch_id),
+      radius_x_(radius_x),
+      radius_y_(radius_y),
+      rotation_angle_(angle),
+      force_(force) {
+}
+
 TouchEvent::~TouchEvent() {
 }
 
@@ -323,25 +340,6 @@ void TouchEvent::UpdateForRootTransform(const gfx::Transform& root_transform) {
     radius_x_ /= scale.x();
   if (scale.y())
     radius_y_ /= scale.y();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// TestTouchEvent
-
-TestTouchEvent::TestTouchEvent(EventType type,
-                               int x,
-                               int y,
-                               int flags,
-                               int touch_id,
-                               float radius_x,
-                               float radius_y,
-                               float angle,
-                               float force)
-    : TouchEvent(type, gfx::Point(x, y), touch_id, base::TimeDelta()) {
-  set_flags(flags);
-  set_radius(radius_x, radius_y);
-  set_rotation_angle(angle);
-  set_force(force);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

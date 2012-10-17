@@ -721,6 +721,8 @@
     'browser/renderer_host/touch_event_queue.h',
     'browser/renderer_host/transfer_navigation_resource_throttle.cc',
     'browser/renderer_host/transfer_navigation_resource_throttle.h',
+    'browser/renderer_host/ui_events_helper.cc',
+    'browser/renderer_host/ui_events_helper.h',
     'browser/renderer_host/web_input_event_aura.cc',
     'browser/renderer_host/web_input_event_aura.h',
     'browser/renderer_host/web_input_event_aurawin.cc',

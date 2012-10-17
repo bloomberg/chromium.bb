@@ -320,6 +320,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Activate deferred plugin handles.
   void ActivateDeferredPluginHandles();
 
+  bool ShouldForwardTouchEvent() const;
+
   bool has_touch_handler() const { return has_touch_handler_; }
 
   // Notification that the user has made some kind of input that could

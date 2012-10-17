@@ -15,6 +15,7 @@
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/browser/renderer_host/web_input_event_aura.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -1009,11 +1010,16 @@ gfx::Rect RenderWidgetHostViewAura::GetBoundsInRootWindow() {
 void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
     const WebKit::WebTouchEvent& touch_event,
     bool processed) {
-  // The ACKs for the touch-events arrive in the same sequence as they were
-  // dispatched.
-  aura::RootWindow* root_window = window_->GetRootWindow();
-  if (root_window)
-    root_window->AdvanceQueuedTouchEvent(window_, processed);
+  ScopedVector<ui::TouchEvent> events;
+  if (!MakeUITouchEventsFromWebTouchEvents(touch_event, &events))
+    return;
+
+  aura::RootWindow* root = window_->GetRootWindow();
+  ui::EventResult result = processed ? ui::ER_HANDLED : ui::ER_UNHANDLED;
+  for (ScopedVector<ui::TouchEvent>::iterator iter = events.begin(),
+      end = events.end(); iter != end; ++iter) {
+    root->ProcessedTouchEvent((*iter), window_, result);
+  }
 }
 
 void RenderWidgetHostViewAura::SetHasHorizontalScrollbar(
@@ -1549,11 +1555,11 @@ ui::EventResult RenderWidgetHostViewAura::OnTouchEvent(ui::TouchEvent* event) {
       &touch_event_);
 
   // Forward the touch event only if a touch point was updated, and there's a
-  // touch-event handler in the page.
-  if (point && host_->has_touch_handler()) {
+  // touch-event handler in the page, and no other touch-event is in the queue.
+  if (point && host_->ShouldForwardTouchEvent()) {
     host_->ForwardTouchEvent(touch_event_);
     UpdateWebTouchEventAfterDispatch(&touch_event_, point);
-    return ui::ER_ASYNC;
+    return ui::ER_CONSUMED;
   }
 
   return ui::ER_UNHANDLED;

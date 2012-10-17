@@ -16,11 +16,9 @@ EventResult EventResultFromTouchStatus(TouchStatus status) {
     case TOUCH_STATUS_START:
     case TOUCH_STATUS_CONTINUE:
     case TOUCH_STATUS_END:
-      return ER_CONSUMED;
-
     case TOUCH_STATUS_QUEUED:
     case TOUCH_STATUS_QUEUED_END:
-      return ER_ASYNC;
+      return ER_CONSUMED;
   }
 
   NOTREACHED();

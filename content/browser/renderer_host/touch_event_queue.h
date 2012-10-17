@@ -10,6 +10,8 @@
 #include "base/basictypes.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
+class MockRenderWidgetHost;
+
 namespace content {
 
 class RenderWidgetHostImpl;
@@ -31,7 +33,26 @@ class TouchEventQueue {
   // additional queued touch-events to the renderer.
   void ProcessTouchAck(bool processed);
 
+  // Empties the queue of touch events. This may result in any number of gesture
+  // events being sent to the renderer.
+  void FlushQueue();
+
+  // Resets all internal state. This does not trigger any touch or gesture
+  // events to be sent.
+  void Reset();
+
+  // Returns whether the event-queue is empty.
+  bool empty() const WARN_UNUSED_RESULT {
+    return touch_queue_.empty();
+  }
+
  private:
+  friend class ::MockRenderWidgetHost;
+
+  // Pops the touch-event from the top of the queue and sends it to the
+  // RenderWidgetHostView. This reduces the size of the queue by one.
+  void PopTouchEventToView(bool processed);
+
   // The RenderWidgetHost that owns this event-queue.
   RenderWidgetHostImpl* render_widget_host_;
 

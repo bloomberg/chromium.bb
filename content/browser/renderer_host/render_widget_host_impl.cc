@@ -1137,6 +1137,8 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   select_range_pending_ = false;
   next_selection_range_.reset();
 
+  touch_event_queue_->Reset();
+
   // Must reset these to ensure that gesture events work with a new renderer.
   gesture_event_filter_->Reset();
 
@@ -1756,7 +1758,11 @@ void RenderWidgetHostImpl::OnMsgBlur() {
 }
 
 void RenderWidgetHostImpl::OnMsgHasTouchEventHandlers(bool has_handlers) {
+  if (has_touch_handler_ == has_handlers)
+    return;
   has_touch_handler_ = has_handlers;
+  if (!has_touch_handler_)
+    touch_event_queue_->FlushQueue();
 }
 
 void RenderWidgetHostImpl::OnMsgSetCursor(const WebCursor& cursor) {
@@ -1948,6 +1954,14 @@ void RenderWidgetHostImpl::ActivateDeferredPluginHandles() {
 
 const gfx::Point& RenderWidgetHostImpl::GetLastScrollOffset() const {
   return last_scroll_offset_;
+}
+
+bool RenderWidgetHostImpl::ShouldForwardTouchEvent() const {
+  // Always send a touch event if the renderer has a touch-event handler. It is
+  // possible that a renderer stops listening to touch-events while there are
+  // still events in the touch-queue. In such cases, the new events should still
+  // get into the queue.
+  return has_touch_handler_ || !touch_event_queue_->empty();
 }
 
 void RenderWidgetHostImpl::StartUserGesture() {

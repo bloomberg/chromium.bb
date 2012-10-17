@@ -527,11 +527,12 @@ TEST_F(ViewTest, TouchEvent) {
   v1->Reset();
   v2->Reset();
 
-  ui::TestTouchEvent unhandled(ui::ET_TOUCH_MOVED,
-                               400, 400,
-                               0, /* no flags */
-                               0, /* first finger touch */
-                               1.0, 0.0, 1.0, 0.0);
+  ui::TouchEvent unhandled(ui::ET_TOUCH_MOVED,
+                           gfx::Point(400, 400),
+                           0, /* no flags */
+                           0, /* first finger touch */
+                           base::TimeDelta(),
+                           1.0, 0.0, 1.0, 0.0);
   root->OnTouchEvent(unhandled);
 
   EXPECT_EQ(v1->last_touch_event_type_, 0);
@@ -541,11 +542,12 @@ TEST_F(ViewTest, TouchEvent) {
   v1->Reset();
   v2->Reset();
 
-  ui::TestTouchEvent pressed(ui::ET_TOUCH_PRESSED,
-                             110, 120,
-                             0, /* no flags */
-                             0, /* first finger touch */
-                             1.0, 0.0, 1.0, 0.0);
+  ui::TouchEvent pressed(ui::ET_TOUCH_PRESSED,
+                         gfx::Point(110, 120),
+                         0, /* no flags */
+                         0, /* first finger touch */
+                         base::TimeDelta(),
+                         1.0, 0.0, 1.0, 0.0);
   v2->last_touch_event_was_handled_ = true;
   root->OnTouchEvent(pressed);
 
@@ -558,11 +560,12 @@ TEST_F(ViewTest, TouchEvent) {
   // Drag event out of bounds. Should still go to v2
   v1->Reset();
   v2->Reset();
-  ui::TestTouchEvent dragged(ui::ET_TOUCH_MOVED,
-                             50, 40,
-                             0, /* no flags */
-                             0, /* first finger touch */
-                             1.0, 0.0, 1.0, 0.0);
+  ui::TouchEvent dragged(ui::ET_TOUCH_MOVED,
+                         gfx::Point(50, 40),
+                         0, /* no flags */
+                         0, /* first finger touch */
+                         base::TimeDelta(),
+                         1.0, 0.0, 1.0, 0.0);
 
   root->OnTouchEvent(dragged);
   EXPECT_EQ(v2->last_touch_event_type_, ui::ET_TOUCH_MOVED);
@@ -574,10 +577,11 @@ TEST_F(ViewTest, TouchEvent) {
   // Released event out of bounds. Should still go to v2
   v1->Reset();
   v2->Reset();
-  ui::TestTouchEvent released(ui::ET_TOUCH_RELEASED, 0, 0,
-                              0, /* no flags */
-                              0, /* first finger */
-                              1.0, 0.0, 1.0, 0.0);
+  ui::TouchEvent released(ui::ET_TOUCH_RELEASED, gfx::Point(),
+                          0, /* no flags */
+                          0, /* first finger */
+                          base::TimeDelta(),
+                          1.0, 0.0, 1.0, 0.0);
   v2->last_touch_event_was_handled_ = true;
   root->OnTouchEvent(released);
   EXPECT_EQ(v2->last_touch_event_type_, ui::ET_TOUCH_RELEASED);
