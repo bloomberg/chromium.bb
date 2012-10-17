@@ -38,6 +38,9 @@ class PpapiUnittest : public testing::Test,
   // Deletes the instance and module to simulate module shutdown.
   void ShutdownModule();
 
+  // Sets the view size of the plugin instance.
+  void SetViewSize(int width, int height, float scale) const;
+
  protected:
   virtual MockPluginDelegate* NewPluginDelegate();
 

@@ -493,6 +493,8 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   bool ResetAsProxied(scoped_refptr<PluginModule> module);
 
  private:
+  friend class PpapiUnittest;
+
   // Implements PPB_Gamepad_API. This is just to avoid having an excessive
   // number of interfaces implemented by PluginInstance.
   class GamepadImpl : public ::ppapi::thunk::PPB_Gamepad_API {

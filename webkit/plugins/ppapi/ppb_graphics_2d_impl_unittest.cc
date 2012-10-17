@@ -6,9 +6,17 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/safe_integer_conversions.h"
+#include "webkit/plugins/ppapi/ppapi_unittest.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 
-TEST(PpapiGraphics2DImplTest, ConvertToLogicalPixels) {
+namespace webkit {
+namespace ppapi {
+
+typedef PpapiUnittest PpapiGraphics2DImplTest;
+
+TEST_F(PpapiGraphics2DImplTest, ConvertToLogicalPixels) {
   static const struct {
     int x1;
     int y1;
@@ -78,3 +86,39 @@ TEST(PpapiGraphics2DImplTest, ConvertToLogicalPixels) {
     EXPECT_TRUE(r1.Contains(orig));
   }
 }
+
+// Test that GetBitmapForOptimizedPluginPaint doesn't return a bitmap rect
+// that's bigger than the actual backing store bitmap.
+TEST_F(PpapiGraphics2DImplTest, GetBitmap2xScale) {
+  PP_Size size;
+  size.width = 3;
+  size.height = 3;
+  PP_Resource resource =
+      PPB_Graphics2D_Impl::Create(instance()->pp_instance(), size, PP_TRUE);
+  EXPECT_TRUE(resource);
+  EXPECT_TRUE(instance()->BindGraphics(instance()->pp_instance(), resource));
+  instance()->set_always_on_top(true);
+  float scale = 2.0;
+  SetViewSize(size.width, size.height, 1.0 / scale);
+
+  gfx::Rect bounds(0, 0, 1, 1);
+  gfx::Rect location;
+  gfx::Rect clip;
+  float bitmap_scale = 0;
+  TransportDIB* dib = NULL;
+  EXPECT_TRUE(instance()->GetBitmapForOptimizedPluginPaint(
+      bounds, &dib, &location, &clip, &bitmap_scale));
+
+  EXPECT_EQ(0, location.x());
+  EXPECT_EQ(0, location.y());
+  EXPECT_EQ(gfx::ToFlooredInt(size.width / scale), location.width());
+  EXPECT_EQ(gfx::ToFlooredInt(size.height / scale), location.height());
+  EXPECT_EQ(0, clip.x());
+  EXPECT_EQ(0, clip.y());
+  EXPECT_EQ(size.width, clip.width());
+  EXPECT_EQ(size.height, clip.height());
+  EXPECT_EQ(scale, bitmap_scale);
+}
+
+}  // namespace ppapi
+}  // namespace webkit

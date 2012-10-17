@@ -33,9 +33,9 @@ class PPB_Graphics2D_Impl : public ::ppapi::Resource,
  public:
   virtual ~PPB_Graphics2D_Impl();
 
-  static PP_Resource Create(PP_Instance instance,
-                            const PP_Size& size,
-                            PP_Bool is_always_opaque);
+  WEBKIT_PLUGINS_EXPORT static PP_Resource Create(PP_Instance instance,
+                                                  const PP_Size& size,
+                                                  PP_Bool is_always_opaque);
 
   bool is_always_opaque() const { return is_always_opaque_; }
 

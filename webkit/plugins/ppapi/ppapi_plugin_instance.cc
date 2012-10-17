@@ -1047,7 +1047,7 @@ bool PluginInstance::GetBitmapForOptimizedPluginPaint(
       0, 0, image_data->width(), image_data->height());
   float scale = GetBoundGraphics2D()->GetScale();
   gfx::Rect plugin_backing_store_rect =
-    gfx::ToEnclosingRect(pixel_plugin_backing_store_rect.Scale(scale));
+    gfx::ToEnclosedRect(pixel_plugin_backing_store_rect.Scale(scale));
 
   gfx::Rect clip_page = PP_ToGfxRect(view_data_.clip_rect);
   gfx::Rect plugin_paint_rect = plugin_backing_store_rect.Intersect(clip_page);

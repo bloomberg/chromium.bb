@@ -384,6 +384,8 @@
         '../../mocks/mock_weburlloader.cc',
         '../../mocks/mock_weburlloader.h',
         '../../plugins/ppapi/host_var_tracker_unittest.cc',
+        '../../plugins/ppapi/mock_platform_image_2d.cc',
+        '../../plugins/ppapi/mock_platform_image_2d.h',
         '../../plugins/ppapi/mock_plugin_delegate.cc',
         '../../plugins/ppapi/mock_plugin_delegate.h',
         '../../plugins/ppapi/mock_resource.h',
