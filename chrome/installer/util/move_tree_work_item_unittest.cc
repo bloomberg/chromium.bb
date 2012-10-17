@@ -386,7 +386,8 @@ TEST_F(MoveTreeWorkItemTest, MoveFileInUse) {
 
 // Move one directory from source to destination when destination already
 // exists.
-TEST_F(MoveTreeWorkItemTest, MoveDirectoryDestExistsCheckForDuplicatesFull) {
+TEST_F(MoveTreeWorkItemTest,
+       FLAKY_MoveDirectoryDestExistsCheckForDuplicatesFull) {
   // Create two level deep source dir
   FilePath from_dir1(temp_from_dir_.path());
   from_dir1 = from_dir1.AppendASCII("From_Dir1");
