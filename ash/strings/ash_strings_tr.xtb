@@ -15,16 +15,16 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="2297568595583585744">Durum tepsisi</translation>
 <translation id="2946640296642327832">Bluetooth'u etkinleştir</translation>
+<translation id="6459472438155181876">Ekran şuraya genişletiliyor: <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Cep telefonu</translation>
 <translation id="6596816719288285829">IP Adresi</translation>
 <translation id="5233638681132016545">Yeni sekme</translation>
 <translation id="3846575436967432996">Hiçbir ağ bilgisi yok</translation>
 <translation id="3026237328237090306">Mobil verileri ayarla</translation>
 <translation id="785750925697875037">Mobil hesabı görüntüle</translation>
-<translation id="8121288016949447968">ÜstKrktr+Arama</translation>
 <translation id="7864539943188674973">Bluetooth'u devre dışı bırak</translation>
 <translation id="3126069444801937830">Güncellemek için yeniden başlat</translation>
-<translation id="1525975890706558596">CAPS LOCK açık. İptal etmek için ÜstKrktr + Arama tuşuna basın.</translation>
+<translation id="3294437725009624529">Konuk</translation>
 <translation id="8190698733819146287">Dilleri ve girişi özelleştir...</translation>
 <translation id="5182671122927417841">Uzantıyı devre dışı bırak</translation>
 <translation id="598295083618286569">Bluetooth bağlandı</translation>
@@ -34,7 +34,6 @@
 <translation id="811680302244032017">Cihaz ekle...</translation>
 <translation id="2509468283778169019">CAPS LOCK açık</translation>
 <translation id="7823564328645135659">Ayarlarınız senkronize edildikten sonra &quot;<ph name="FROM_LOCALE"/>&quot; olan dil &quot;<ph name="TO_LOCALE"/>&quot; olarak değiştirildi.</translation>
-<translation id="1128184993858208824"><ph name="HOUR"/>sa <ph name="MINUTE"/>dak</translation>
 <translation id="6426039856985689743">Mobil verileri devre dışı bırak</translation>
 <translation id="3087734570205094154">Alt</translation>
 <translation id="3232695630852378748">Bluetooth ayarları...</translation>
@@ -45,43 +44,63 @@
 <translation id="2570059561924004903">Sesli geri bildirimi dışı bırak</translation>
 <translation id="1895658205118569222">Kapat</translation>
 <translation id="4430019312045809116">Ses</translation>
+<translation id="551263474266254304">Kablosuz açılıyor...</translation>
 <translation id="1383876407941801731">Arama</translation>
+<translation id="2204305834655267233">Ağ Bilgisi</translation>
 <translation id="5980301590375426705">Misafir oturumundan çık</translation>
 <translation id="8308637677604853869">Önceki menü</translation>
 <translation id="1346748346194534595">Sağa</translation>
 <translation id="8528322925433439945">Mobile...</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
+<translation id="2372145515558759244">Uygulamalar senkronize ediliyor...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="1467432559032391204">Sola</translation>
 <translation id="5543001071567407895">SMS</translation>
-<translation id="6223565363550976998">Pil: %<ph name="PERCENTAGE"/></translation>
 <translation id="8814190375133053267">Kablosuz</translation>
 <translation id="1398853756734560583">Büyüt</translation>
+<translation id="1882897271359938046">Şuraya yansıtılıyor: <ph name="DISPLAY_NAME"/></translation>
 <translation id="3784455785234192852">Kilitle</translation>
 <translation id="2805756323405976993">Uygulamalar</translation>
 <translation id="2482878487686419369">Bildirimler</translation>
+<translation id="1850504506766569011">Kablosuz kapalı.</translation>
 <translation id="2872961005593481000">Kapat</translation>
 <translation id="7052914147756339792">Duvar kağıdını ayarla...</translation>
+<translation id="80942317552162138">%<ph name="PERCENTAGE"/> dolu</translation>
+<translation id="5746825509052394497">Giriş yönteminiz <ph name="INPUT_METHOD_ID"/> olarak değiştirildi.
+        Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="1602076796624386989">Mobil verileri etkinleştir</translation>
 <translation id="3157931365184549694">Geri yükle</translation>
-<translation id="8573351908869164327"><ph name="HOUR"/> sa <ph name="MINUTE"/> dk kaldı</translation>
+<translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="7029814467594812963">Oturumdan çık</translation>
+<translation id="8454013096329229812">Kablosuz açık.</translation>
+<translation id="4872237917498892622">Alt+Arama veya Üst Karakter</translation>
 <translation id="2983818520079887040">Ayarlar...</translation>
 <translation id="2712866615167520691">Erişilebilirlik özellikleri etkinleştirildi.
 İptal etmek için Ctrl+Alt+Z tuşlarına basın.</translation>
+<translation id="2792498699870441125">Alt+Arama</translation>
 <translation id="8660803626959853127"><ph name="COUNT"/> dosya senkronize ediliyor</translation>
+<translation id="1837166567415282700">Giriş yönteminiz <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>3. taraf<ph name="END_LINK"/>) olarak değiştirildi.
+        Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="639644700271529076">CAPS LOCK kapalı</translation>
+<translation id="4101192585425716296">Mesaj Merkezi</translation>
 <translation id="4864165860509564259">Başlatıcı konumu</translation>
+<translation id="7593891976182323525">Arama veya Üst Karakter</translation>
 <translation id="7649070708921625228">Yardım</translation>
+<translation id="3050422059534974565">CAPS LOCK açık.
+İptal için Arama veya Üst Karakter tuşlarına basın.</translation>
 <translation id="397105322502079400">Hesaplanııyor...</translation>
 <translation id="6362354186508391853">Ctrl +</translation>
-<translation id="7871882211137875558">Başka ağa katıl...</translation>
+<translation id="477782898153505579">Bildiriminiz yok. Rahat olun!</translation>
+<translation id="7457942297256758195">Tümünü Temizle</translation>
 <translation id="3573179567135747900">Tekrar &quot;<ph name="FROM_LOCALE"/>&quot; ayarına dön (yeniden başlatmak gerekir)</translation>
 <translation id="8103386449138765447">SMS mesajları: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="5045002648206642691">Google Drive ayarları...</translation>
-<translation id="48607902311828362">Uçak modu</translation>
+<translation id="7209101170223508707">CAPS LOCK açık.
+İptal için Alt+Arama veya Üst Karakter tuşlarına basın.</translation>
+<translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> kaldı</translation>
 <translation id="5941711191222866238">Simge durumuna küçült</translation>
-<translation id="9169585155162064169">CAPS LOCK açık. İptal etmek için Arama tuşuna basın.</translation>
+<translation id="6911468394164995108">Başka ağa katıl...</translation>
+<translation id="6843725295806269523">sesi kapat</translation>
 <translation id="412065659894267608">Tam dolana kadar <ph name="HOUR"/> sa <ph name="MINUTE"/> dk var</translation>
 <translation id="4469842253116033348"><ph name="SITE"/> bildirimlerini devre dışı bırak</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/> numaradan SMS alındı</translation>

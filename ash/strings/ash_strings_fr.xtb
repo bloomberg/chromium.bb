@@ -15,17 +15,16 @@
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="2297568595583585744">Barre d'état</translation>
 <translation id="2946640296642327832">Activer le Bluetooth</translation>
+<translation id="6459472438155181876">Extension de l'écran pour <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Cellulaire</translation>
 <translation id="6596816719288285829">Adresse IP</translation>
 <translation id="5233638681132016545">Nouvel onglet</translation>
 <translation id="3846575436967432996">Aucune information disponible concernant le réseau</translation>
 <translation id="3026237328237090306">Configurer les données mobiles</translation>
 <translation id="785750925697875037">Afficher le compte mobile</translation>
-<translation id="8121288016949447968">Maj + Recherche</translation>
 <translation id="7864539943188674973">Désactiver le Bluetooth</translation>
 <translation id="3126069444801937830">Redémarrez pour mettre à jour</translation>
-<translation id="1525975890706558596">La touche de verrouillage des majuscules est activée.
-Appuyez sur Maj et sur la touche de recherche pour annuler.</translation>
+<translation id="3294437725009624529">Invité</translation>
 <translation id="8190698733819146287">Personnaliser les langues et la saisie...</translation>
 <translation id="5182671122927417841">Désactiver l'extension</translation>
 <translation id="598295083618286569">Bluetooth connecté</translation>
@@ -35,7 +34,6 @@ Appuyez sur Maj et sur la touche de recherche pour annuler.</translation>
 <translation id="811680302244032017">Ajouter un appareil…</translation>
 <translation id="2509468283778169019">Touche VERR MAJ activée</translation>
 <translation id="7823564328645135659">La langue utilisée est passée de &quot;<ph name="FROM_LOCALE"/>&quot; à &quot;<ph name="TO_LOCALE"/>&quot; après la synchronisation de vos paramètres.</translation>
-<translation id="1128184993858208824"><ph name="HOUR"/> h <ph name="MINUTE"/> min</translation>
 <translation id="6426039856985689743">Désactiver les données mobiles</translation>
 <translation id="3087734570205094154">Bas</translation>
 <translation id="3232695630852378748">Paramètres Bluetooth…</translation>
@@ -46,45 +44,64 @@ Appuyez sur Maj et sur la touche de recherche pour annuler.</translation>
 <translation id="2570059561924004903">Désactiver les commentaires audio</translation>
 <translation id="1895658205118569222">Arrêt.</translation>
 <translation id="4430019312045809116">Volume</translation>
+<translation id="551263474266254304">Activation Wi-Fi…</translation>
 <translation id="1383876407941801731">Recherche</translation>
+<translation id="2204305834655267233">Informations réseau</translation>
 <translation id="5980301590375426705">Fermer la session Invité</translation>
 <translation id="8308637677604853869">Menu précédent</translation>
 <translation id="1346748346194534595">Vers la droite</translation>
 <translation id="8528322925433439945">Mobile…</translation>
 <translation id="8428213095426709021">Paramètres</translation>
+<translation id="2372145515558759244">Synchronisation des applications…</translation>
 <translation id="4479639480957787382">Ethernet </translation>
 <translation id="1467432559032391204">Vers la gauche</translation>
 <translation id="5543001071567407895">SMS</translation>
-<translation id="6223565363550976998">Niveau de la batterie : <ph name="PERCENTAGE"/> %</translation>
 <translation id="8814190375133053267">Wi-Fi </translation>
 <translation id="1398853756734560583">Agrandir</translation>
+<translation id="1882897271359938046">Mise en miroir pour <ph name="DISPLAY_NAME"/></translation>
 <translation id="3784455785234192852">Verrouiller</translation>
 <translation id="2805756323405976993">Applications</translation>
 <translation id="2482878487686419369">Notifications</translation>
+<translation id="1850504506766569011">Le Wi-Fi est désactivé.</translation>
 <translation id="2872961005593481000">Éteindre</translation>
 <translation id="7052914147756339792">Définir un fond d'écran…</translation>
+<translation id="80942317552162138">Chargée à <ph name="PERCENTAGE"/> %</translation>
+<translation id="5746825509052394497">Votre mode de saisie a été remplacé par <ph name="INPUT_METHOD_ID"/>.
+        Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="1602076796624386989">Activer les données mobiles</translation>
 <translation id="3157931365184549694">Rétablir</translation>
-<translation id="8573351908869164327">Durée d'utilisation restante : <ph name="HOUR"/> h <ph name="MINUTE"/> min</translation>
+<translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/> <ph name="DATE"/></translation>
 <translation id="7029814467594812963">Quitter la session</translation>
+<translation id="8454013096329229812">Le Wi-Fi est activé.</translation>
+<translation id="4872237917498892622">Alt + Recherche ou Maj</translation>
 <translation id="2983818520079887040">Paramètres...</translation>
 <translation id="2712866615167520691">Les fonctionnalités d'accessibilité sont activées. 
 
 Appuyez sur Ctrl+Alt+Z pour annuler.</translation>
+<translation id="2792498699870441125">Alt + Recherche</translation>
 <translation id="8660803626959853127">Synchronisation de <ph name="COUNT"/> fichier(s) en cours…</translation>
+<translation id="1837166567415282700">Votre mode de saisie a été remplacé par <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>tiers<ph name="END_LINK"/>).
+        Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="639644700271529076">La touche de verrouillage des majuscules est désactivée.</translation>
+<translation id="4101192585425716296">Centre de messagerie</translation>
 <translation id="4864165860509564259">Position du lanceur</translation>
+<translation id="7593891976182323525">Recherche ou Maj</translation>
 <translation id="7649070708921625228">Aide</translation>
+<translation id="3050422059534974565">Le VERROUILLAGE DES MAJUSCULES est activé.
+Appuyez sur Search ou Maj pour le désactiver.</translation>
 <translation id="397105322502079400">Calcul en cours…</translation>
 <translation id="6362354186508391853">Ctrl +</translation>
-<translation id="7871882211137875558">Rejoindre un autre réseau…</translation>
+<translation id="477782898153505579">Vous n'avez reçu aucune notification.</translation>
+<translation id="7457942297256758195">Tout effacer</translation>
 <translation id="3573179567135747900">Revenir à &quot;<ph name="FROM_LOCALE"/>&quot; (redémarrage requis)</translation>
 <translation id="8103386449138765447">Messages SMS : <ph name="MESSAGE_COUNT"/></translation>
 <translation id="5045002648206642691">Paramètres Google Drive…</translation>
-<translation id="48607902311828362">Mode Avion</translation>
+<translation id="7209101170223508707">Le VERROUILLAGE DES MAJUSCULES est activé.
+Appuyez sur Alt + Recherche ou Maj pour le désactiver.</translation>
+<translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> d'autonomie</translation>
 <translation id="5941711191222866238">Réduire</translation>
-<translation id="9169585155162064169">La touche de verrouillage des majuscules est activée.
-Appuyez sur la touche de recherche pour annuler.</translation>
+<translation id="6911468394164995108">Autre réseau…</translation>
+<translation id="6843725295806269523">muet</translation>
 <translation id="412065659894267608">Encore <ph name="HOUR"/> h <ph name="MINUTE"/> min de chargement</translation>
 <translation id="4469842253116033348">Désactiver les notifications de <ph name="SITE"/></translation>
 <translation id="6359806961507272919">SMS de <ph name="PHONE_NUMBER"/></translation>

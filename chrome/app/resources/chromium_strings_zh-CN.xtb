@@ -15,14 +15,13 @@
 <translation id="7128196614940529818">此计算机已安装了 Chromium 内嵌框架以供所有用户使用。如果您要安装用户级 Chromium 内嵌框架，就必须先卸载由管理员安装的系统级版本。</translation>
 <translation id="731644333568559921">更新 Chromium 操作系统(&amp;C)</translation>
 <translation id="7421823331379285070">您需要在 Windows XP 或更高版本的操作系统中运行 Chromium，否则可能无法正常使用某些功能。</translation>
-<translation id="1185134272377778587">关于 Chromium</translation>
 <translation id="4330297532943865716">在系统中安装 Chromium 或 Chromium 内嵌框架时发现已存在冲突的版本，请先卸载然后重试。</translation>
 <translation id="6953661834318318668">Chromium 工具栏</translation>
 <translation id="7097100943370017396">您的操作系统已过期，因此 Chromium 将不再更新。</translation>
-<translation id="4103959775970322855">Chromium 已更新到 <ph name="VERSION"/></translation>
 <translation id="4285930937574705105">未知错误导致安装失败。如果 Chromium 正在运行，请将其关闭，然后重试。</translation>
 <translation id="2589479092236095792">Chromium 自动填充设置</translation>
 <translation id="3555616473548901994">卸载已完成。</translation>
+<translation id="3674409928058572366">Chromium App Host</translation>
 <translation id="2886012850691518054">可选：将使用情况统计信息和崩溃报告自动发送给 Google，帮助我们完善 Chromium。</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
 <translation id="1989424089625731201">您尝试访问的是 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但服务器出示的证书包含错误。Chromium 无法使用有错误的证书，也无法验证所尝试连接的网站的身份。</translation>
@@ -39,14 +38,32 @@
 <translation id="4179848566211676653">退出 Chromium</translation>
 <translation id="3849925841547750267">抱歉，无法在 Mozilla Firefox 浏览器运行时获取其设置。要将其设置导入 Chromium，请保存您手头的工作并关闭所有 Firefox 窗口，然后点击“继续”。</translation>
 <translation id="7771626876550251690">在此例中，证书中所列的地址与浏览器尝试访问的网站网址不一致。一种可能的原因是某个攻击者拦截了您的通信内容，并向其他网站出示某个证书，这就会导致出现不一致的情况。另一种可能的原因是服务器已设置为对多个网站（包括您尝试访问的网站）返回同一证书，即使该证书并非对所有网站都有效。Chromium 可以确定您已转到 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;，但无法确认这与您要访问的 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; 是不是同一网站。如果您继续操作，Chromium 就不会再检查其他任何名称不一致的情况了。</translation>
+<translation id="2401271577450445716">依次转到
+          <ph name="BEGIN_BOLD"/>
+          Chromium 菜单 &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="ADVANCED_TITLE"/>
+          &gt;
+          <ph name="PROXIES_TITLE"/>
+          &gt;
+          LAN 设置
+          <ph name="END_BOLD"/>
+          然后取消选中“为 LAN 使用代理服务器”复选框。</translation>
 <translation id="4330585738697551178">已知此模块与 Chromium 存在冲突。</translation>
 <translation id="3190315855212034486">哎呀！Chromium 崩溃了。要立即重新启动吗？</translation>
 <translation id="6714487516757221107">未发现所安装的 Chromium 或 Chromium 内嵌框架有任何更新。</translation>
 <translation id="3197823471738295152">您的设备已更新到最新版本。</translation>
 <translation id="8551886023433311834">即将更新到最新版本！请重新启动您的设备，以完成更新。</translation>
+<translation id="8353224596138547809">您希望 Chromium 保存您在此网站上使用的密码吗？</translation>
+<translation id="3026202950002788510">转到
+          <ph name="BEGIN_BOLD"/>
+          应用 &gt; 系统偏好设置 &gt; 网络 &gt; 高级 &gt; 代理
+          <ph name="END_BOLD"/>
+          然后取消选中所有已选定的代理。</translation>
 <translation id="4124681358536363708">Chromium 的安装目录似乎正在使用中。请重新启动计算机并重试。</translation>
 <translation id="8770560772173120024">Chromium 正在导入收藏夹/书签。</translation>
-<translation id="6290315939897260265">未在 Chromium 中使用。该占位符用于在同步中保留资源映射。</translation>
+<translation id="225614027745146050">欢迎</translation>
 <translation id="9191268552238695869">管理员已在此系统上安装了 Chromium 以供所有用户使用。系统级 Chromium 将替换您安装的用户级版本。</translation>
 <translation id="3509308970982693815">请关闭所有 Chromium 窗口并重试。</translation>
 <translation id="4077262827416206768">请关闭所有 Chromium 窗口，然后重新启动 Chromium，以便让此更改生效。</translation>
@@ -55,6 +72,7 @@
 <translation id="118298050220780080">您尝试访问的是 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但服务器出示的证书是由您计算机操作系统不信任的实体发布的。这可能意味着该服务器自行生成了安全凭据，Chromium 无法依据这些凭据确定身份信息，也可能是某个攻击者尝试拦截您的通信内容。</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3296368748942286671">关闭 Chromium 后继续运行后台应用</translation>
+<translation id="473775607612524610">更新</translation>
 <translation id="6055895534982063517">Chromium 现已推出速度更快的新版本。</translation>
 <translation id="2407806170074302369">关于 Chromium 内嵌框架...</translation>
 <translation id="5405650547142096840">从 Chromium 中删除</translation>
@@ -76,17 +94,28 @@
 <translation id="1774152462503052664">让 Chromium 在后台运行</translation>
 <translation id="9022552996538154597">登录 Chromium</translation>
 <translation id="4365115785552740256">Chromium 的诞生离不开 <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> 开放源代码项目以及其他<ph name="BEGIN_LINK_OSS"/>开放源代码软件<ph name="END_LINK_OSS"/>。</translation>
-<translation id="7549178288319965365">关于 Chromium 操作系统</translation>
 <translation id="6248213926982192922">将 Chromium 设置为默认浏览器</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="3069161343438701711">Chromium 工作应用</translation>
 <translation id="5820394555380036790">Chromium 操作系统</translation>
 <translation id="6757767188268205357">谢绝打扰</translation>
+<translation id="7294284502435423183">要停用网络预测，请按照以下步骤操作：
+        依次转到
+        <ph name="BEGIN_BOLD"/>
+        Chromium 菜单 &gt;
+        <ph name="SETTINGS_TITLE"/>
+        &gt;
+        <ph name="ADVANCED_TITLE"/>
+        <ph name="END_BOLD"/>
+        然后取消选中“<ph name="NO_PREFETCH_DESCRIPTION"/>”。
+        如果该问题仍未解决，建议您重新选中此选项
+        以提高性能。</translation>
 <translation id="275588974610408078">Chromium 未提供崩溃报告。</translation>
 <translation id="5909170354645388250">未在 Chromium 中使用。该占位符用于在同步中保留资源映射。要求使用一个参数：$1。</translation>
 <translation id="3582788516608077514">正在更新 Chromium...</translation>
 <translation id="7223968959479464213">任务管理器 - Chromium</translation>
 <translation id="3838208658251026018">Chromium 正在从<ph name="BROWSER_COMPONENT"/>中导入以下内容：</translation>
+<translation id="6638567566961868659">在 Chromium 菜单或书签栏中查找您的书签。</translation>
 <translation id="2673087257647337101">即将更新到最新版本！重新启动 Chromium 以完成更新。</translation>
 <translation id="5398878173008909840">Chromium 现已推出新版本。</translation>
 <translation id="2648074677641340862">安装过程中出现操作系统错误。请重新下载 Chromium。</translation>
@@ -107,15 +136,44 @@
 <translation id="1929939181775079593">Chromium 未响应。要立即重新启动吗？</translation>
 <translation id="6089587093203430357">即搜即得</translation>
 <translation id="2966088006374919794">Chromium 必须启动外部应用才能处理 <ph name="SCHEME"/> 链接。请求的链接是 <ph name="PROTOLINK"/>。</translation>
-<translation id="5699533844376998780">扩展程序“<ph name="EXTENSION_NAME"/>”已添加完毕。</translation>
 <translation id="8046283042877435986">此网站建议使用 Chromium 内嵌框架（已安装）。</translation>
 <translation id="6287463253129672858">无法安装与当前运行的版本相同的 Chromium 内嵌框架。请关闭 Chromium 内嵌框架并重试。</translation>
 <translation id="2558235863893655150">要让 Chromium 保存您的密码吗？</translation>
+<translation id="3398522627033804247">依次转到
+          <ph name="BEGIN_BOLD"/>
+          Chromium 菜单 &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="INTERNET_TITLE"/>
+          &gt;
+          “<ph name="OPTIONS_BUTTON"/>”
+          <ph name="END_BOLD"/>
+          （适用于当前网络）。如果系统显示了
+          <ph name="BEGIN_BOLD"/>
+          “<ph name="PROXY_BUTTON"/>”
+          <ph name="END_BOLD"/>按钮（位于
+          <ph name="BEGIN_BOLD"/>
+          <ph name="NETWORK_TAB"/>
+          <ph name="END_BOLD"/>
+          标签中），请点击该按钮并确保已将您的配置
+          设置为“直接”。</translation>
+<translation id="1231416733874080281">显示 Chromium 菜单</translation>
 <translation id="1688750314291223739">您可以设置同步以将个性化浏览器功能保存到网上，以便在任意计算机上的 Chromium 中使用这些功能。</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">互联网浏览器</translation>
+<translation id="6424492062988593837">Chromium 刚刚经过了改进！新版本已推出。</translation>
 <translation id="2910007522516064972">关于 Chromium(&amp;C)</translation>
 <translation id="8453117565092476964">安装程序归档损坏或无效。请重新下载 Chromium。</translation>
+<translation id="2162026298602630383">依次转到
+          <ph name="BEGIN_BOLD"/>
+          Chromium 菜单 &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="ADVANCED_TITLE"/>
+          &gt;
+          <ph name="PROXIES_TITLE"/>
+          <ph name="END_BOLD"/>
+          然后确保已将您的配置设置为“无代理”或“直接”。</translation>
 <translation id="3249425904492147663">您尝试访问的是 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但服务器出示的证书已过期。由于该证书已过期，因此没有任何信息可表明它是否已被盗用。这意味着 Chromium 无法保证与您通信的是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; 还是攻击者。您计算机时钟的当前设置为 <ph name="CURRENT_TIME"/>。该设置是否正确？如果不正确，您应更正错误并刷新此页面。</translation>
 <translation id="7196020411877309443">为何会出现这个窗口？</translation>
 <translation id="7483335560992089831">无法安装与当前运行的版本相同的 Chromium。请关闭 Chromium 并重试。</translation>
@@ -123,15 +181,17 @@
 <translation id="4458285410772214805">请先退出，然后重新登录，以便此更改生效。</translation>
 <translation id="2119636228670142020">关于 Chromium 操作系统(&amp;C)</translation>
 <translation id="1708666629004767631">Chromium 现已推出更安全的新版本。</translation>
-<translation id="5859758987635973787">Chromium 已是最新版本 (<ph name="VERSION"/>)</translation>
 <translation id="8616882682724010661">了解登录 Chromium 的<ph name="BEGIN_LINK"/>更多优势<ph name="END_LINK"/>。</translation>
 <translation id="378917192836375108">您可以在 Chromium 中点击网上的电话号码，然后通过 Skype 拨打！</translation>
 <translation id="8724049448828509830">正在进行一项下载。您希望退出 Chromium 并取消该下载吗？</translation>
+<translation id="3360567213983886831">Chromium 二进制文件</translation>
 <translation id="7503101070699687603">Chromium 插件主程序</translation>
 <translation id="2739631515503418643">正在进行多项下载。您希望退出 Chromium 并取消这些下载吗？</translation>
 <translation id="9013262824292842194">Chromium 要求操作系统为 Windows Vista，或者 Windows XP SP2 或更高版本。</translation>
 <translation id="1967743265616885482">已发现一个同名的模块与 Chromium 存在冲突。</translation>
 <translation id="4224199872375172890">Chromium 已是最新版本。</translation>
+<translation id="374481098568514319">该计算机已经安装了更高版本的 Chromium 组件。请使用更高版本的安装程序。</translation>
+<translation id="6240281849816458190">您尝试访问 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但服务器出示的证书尚未生效。没有任何信息可表明该证书是否可信。Chromium 无法准确保证与您通信的是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; 而不是攻击者。您计算机时钟的当前时间为 <ph name="CURRENT_TIME"/>。该时间是否准确？如果不准确，您可以更正系统上的时钟并刷新此网页。</translation>
 <translation id="5498103559159810756">Chromium 会使用您的默认搜索引擎（目前设置为<ph name="PAGE_TITLE"/>）。要保留默认搜索引擎吗？</translation>
 <translation id="5862307444128926510">欢迎使用 Chromium</translation>
 <translation id="1622565934590470080">此计算机已安装了更高版本的 Chromium 和 Chromium 内嵌框架。如果软件无法正常运行，请卸载 Chromium 和 Chromium 内嵌框架并重试。</translation>
@@ -141,10 +201,8 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="7123348595797445166">试用（已安装）</translation>
 <translation id="6403826409255603130">Chromium 是一款可高速运行网页和应用的网络浏览器。它快捷、稳定且易于使用。Chromium 内置的防护恶意软件和网上诱骗的功能可让您更安全地浏览网页。</translation>
 <translation id="2927042866129133279">参数无效。在准备模式下，Chromium 内嵌框架必须与 Chromium 同时安装。</translation>
-<translation id="546394857889685352">您的设备已更新到 <ph name="VERSION"/></translation>
 <translation id="2572494885440352020">Chromium 帮助程序</translation>
 <translation id="442817494342774222">Chromium 已配置为在计算机启动时自动启动。</translation>
 <translation id="8974095189086268230">Chromium 操作系统的问世还有其他<ph name="BEGIN_LINK_CROS_OSS"/>开放源代码软件<ph name="END_LINK_CROS_OSS"/>的一份功能。</translation>
-<translation id="6154296300983386343">重新启动 Chromium 以完成更新</translation>
 <translation id="1221340462641866827">Chromium 操作系统不支持启动外部应用处理 <ph name="SCHEME"/> 链接。请求的链接是 <ph name="PROTOLINK"/>。</translation>
 </translationbundle>

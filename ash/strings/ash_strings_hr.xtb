@@ -15,16 +15,16 @@
 <translation id="6979158407327259162">Google disk</translation>
 <translation id="2297568595583585744">Ladica statusa</translation>
 <translation id="2946640296642327832">Omogući Bluetooth</translation>
+<translation id="6459472438155181876">Proširivanje zaslona na zaslon <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobitel</translation>
 <translation id="6596816719288285829">IP adresa</translation>
 <translation id="5233638681132016545">Nova kartica</translation>
 <translation id="3846575436967432996">Informacije o mreži nisu dostupne</translation>
 <translation id="3026237328237090306">Postavi mobilne podatke</translation>
 <translation id="785750925697875037">Prikaz mobilnog računa</translation>
-<translation id="8121288016949447968">Shift + Pretraživanje</translation>
 <translation id="7864539943188674973">Onemogući Bluetooth</translation>
 <translation id="3126069444801937830">Ponovo pokrenite za ažuriranje</translation>
-<translation id="1525975890706558596">Uključena je opcija CAPS LOCK. Pritisnite tipku Shift i tipku za pretraživanje da biste ju isključili.</translation>
+<translation id="3294437725009624529">Gost</translation>
 <translation id="8190698733819146287">Prilagodi jezike i unos...</translation>
 <translation id="5182671122927417841">Onemogući proširenje</translation>
 <translation id="598295083618286569">Bluetooth povezan</translation>
@@ -34,7 +34,6 @@
 <translation id="811680302244032017">Dodajte uređaj...</translation>
 <translation id="2509468283778169019">Opcija CAPS LOCK uključena</translation>
 <translation id="7823564328645135659">Jezik je promijenjen iz: &quot;<ph name="FROM_LOCALE"/>&quot; u: &quot;<ph name="TO_LOCALE"/>&quot; nakon sinkronizacije vaših postavki.</translation>
-<translation id="1128184993858208824"><ph name="HOUR"/> h <ph name="MINUTE"/> min</translation>
 <translation id="6426039856985689743">Onemogući mobilne podatke</translation>
 <translation id="3087734570205094154">Donji</translation>
 <translation id="3232695630852378748">Postavke Bluetootha...</translation>
@@ -45,42 +44,62 @@
 <translation id="2570059561924004903">Onemogući govorne povratne informacije</translation>
 <translation id="1895658205118569222">Isključivanje</translation>
 <translation id="4430019312045809116">Glasnoća</translation>
+<translation id="551263474266254304">Uključivanje Wi-Fi veze...</translation>
 <translation id="1383876407941801731">Pretraživanje</translation>
+<translation id="2204305834655267233">Podaci o mreži</translation>
 <translation id="5980301590375426705">Izlazak iz sesije gosta</translation>
 <translation id="8308637677604853869">Prethodni izbornik</translation>
 <translation id="1346748346194534595">Udesno</translation>
 <translation id="8528322925433439945">Mobilne mreže...</translation>
 <translation id="8428213095426709021">Postavke</translation>
+<translation id="2372145515558759244">Sinkroniziranje aplikacija...</translation>
 <translation id="4479639480957787382">Eternet</translation>
 <translation id="1467432559032391204">Ulijevo</translation>
 <translation id="5543001071567407895">SMS</translation>
-<translation id="6223565363550976998">Baterija: <ph name="PERCENTAGE"/> %</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1398853756734560583">Maksimiziraj</translation>
+<translation id="1882897271359938046">Zrcaljenje na zaslon <ph name="DISPLAY_NAME"/></translation>
 <translation id="3784455785234192852">Zaključaj</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2482878487686419369">Obavijesti</translation>
+<translation id="1850504506766569011">Wi-Fi je isključen.</translation>
 <translation id="2872961005593481000">Isključi</translation>
 <translation id="7052914147756339792">Postavljanje pozadinske slike...</translation>
+<translation id="80942317552162138">Napunjenost: <ph name="PERCENTAGE"/>%</translation>
+<translation id="5746825509052394497">Vaš je način unosa promijenjen u <ph name="INPUT_METHOD_ID"/>.
+        Pritisnite Shift + Alt za prijelaz.</translation>
 <translation id="1602076796624386989">Omogući mobilne podatke</translation>
 <translation id="3157931365184549694">Vrati</translation>
-<translation id="8573351908869164327">Preostalo je <ph name="HOUR"/> h <ph name="MINUTE"/> min</translation>
+<translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="7029814467594812963">Izlazak iz sesije</translation>
+<translation id="8454013096329229812">Wi-Fi je uključen.</translation>
+<translation id="4872237917498892622">Alt + Pretraživanje ili Shift</translation>
 <translation id="2983818520079887040">Postavke...</translation>
 <translation id="2712866615167520691">Značajke pristupačnosti omogućene su. Pritisnite Ctrl+Alt+Z za odustajanje.</translation>
+<translation id="2792498699870441125">Alt + Pretraživanje</translation>
 <translation id="8660803626959853127">Sinkroniziranje datoteka (<ph name="COUNT"/>)</translation>
+<translation id="1837166567415282700">Vaš je način unosa promijenjen u <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>treća strana<ph name="END_LINK"/>).
+        Pritisnite Shift + Alt za prijelaz.</translation>
 <translation id="639644700271529076">Tipka CAPS LOCK isključena</translation>
+<translation id="4101192585425716296">Centar za poruke</translation>
 <translation id="4864165860509564259">Položaj pokretača</translation>
+<translation id="7593891976182323525">Pretraživanje ili Shift</translation>
 <translation id="7649070708921625228">Pomoć</translation>
+<translation id="3050422059534974565">Uključena je opcija CAPS LOCK.
+Pritisnite tipke Pretraživanje ili Shift da biste ju isključili.</translation>
 <translation id="397105322502079400">Izračunavanje...</translation>
 <translation id="6362354186508391853">Ctrl +</translation>
-<translation id="7871882211137875558">Pridruži se drugoj mreži...</translation>
+<translation id="477782898153505579">Nemate nijednu obavijest. Opustite se!</translation>
+<translation id="7457942297256758195">Očisti sve</translation>
 <translation id="3573179567135747900">Vratite na &quot;<ph name="FROM_LOCALE"/>&quot; (zahtijeva ponovno pokretanje)</translation>
 <translation id="8103386449138765447">SMS poruke: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="5045002648206642691">Postavke Google diska...</translation>
-<translation id="48607902311828362">Način rada u zrakoplovu</translation>
+<translation id="7209101170223508707">Uključena je opcija CAPS LOCK.
+Pritisnite tipke Alt + Pretraživanje ili Shift da biste ju isključili.</translation>
+<translation id="5102001756192215136">Preostalo <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="5941711191222866238">Minimiziraj</translation>
-<translation id="9169585155162064169">Uključena je opcija CAPS LOCK. Pritisnite tipku za pretraživanje da biste ju isključili.</translation>
+<translation id="6911468394164995108">Pridruži se drugoj...</translation>
+<translation id="6843725295806269523">isključi ton</translation>
 <translation id="412065659894267608"><ph name="HOUR"/> h <ph name="MINUTE"/> min do završetka punjenja</translation>
 <translation id="4469842253116033348">Onemogući obavijesti s web-lokacije <ph name="SITE"/></translation>
 <translation id="6359806961507272919">SMS šalje <ph name="PHONE_NUMBER"/></translation>

@@ -144,6 +144,7 @@
 <translation id="5564962323737505851">Kino-configure ang tagapamahala ng password. Kung pinagana ang tagapamahala ng password, maaari mong piliing paganahin o hindi paganahin kung maaaring ipakita ng user ang mga naka-imbak na password sa malinaw na teksto.</translation>
 <translation id="4668325077104657568">Default na setting ng mga larawan</translation>
 <translation id="7161193985878519056">Hindi pinagana ang mode na incognito.</translation>
+<translation id="2524379983318108884">Payagan ang pagkuha ng audio</translation>
 <translation id="4492287494009043413">Huwag paganahin ang pagkuha ng mga screenshot</translation>
 <translation id="6368403635025849609">Payagan ang JavaScript sa mga site na ito</translation>
 <translation id="6074963268421707432">Huwag payagan ang anumang site na magpakita ng mga notification sa desktop</translation>
@@ -247,20 +248,13 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kilala ang ilang web app sa pagkonsumo ng maraming koneksyong may mga nagha-hang na GET, kaya ang pagpapaliit dito sa mas mababa sa 32 ay maaaring magdulot ng mga pag-hang ng networking ng browser kung masyadong maraming nakabukas na ganoong web app. Bawasan nang mas mababa sa 32 sa iyong sariling pagpapasya.
 
       Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang default na halaga na 32.</translation>
+<translation id="5395271912574071439">Pinapagana ang paghadlang sa mga remote access host habang kasalukuyang gumagana ang koneksyon.
+
+          Kung pinagana ang setting na ito, hindi papaganahin ang pisikal na input at output na device ng mga host habang kasalukuyang gumagana ang remote na koneksyon.
+
+          Kung hindi pinagana ang setting na ito o hindi itinakda, maaaring makipag-ugnay ang parehong lokal at remote na mga user sa mga host kapag ibinabahagi ito.</translation>
 <translation id="2312509925391670075">Tanungin sa tuwing may site na nais mag-access sa aking camera at/o mikropono</translation>
 <translation id="1426410128494586442">Oo</translation>
-<translation id="1692788808502061374">Binibigyang-daan kang tumukoy ng listahan ng mga extension na ii-install sa background, nang walang pakikipag-ugnayan sa user.
-
-       Ang bawat item ng listahan ay isang string na naglalaman ng extension ID at URL ng update na pinaghihiwa-hiwalay ng tuldok-kuwit (<ph name="SEMICOLON"/>). Ang extension ID ay ang string na may 32 titk na matatagpuan hal. sa <ph name="CHROME_EXTENSIONS_LINK"/> kapag nasa mode ng developer. Dapat na tumuro ang URL ng update sa isang Update Manifest XML document tulad ng inilalarawan sa <ph name="LINK_TO_EXTENSION_DOC1"/>.
-
-          Para sa bawat item, babawiin ng <ph name="PRODUCT_NAME"/> ang extension na tinukoy ng extension ID mula sa serbisyo ng pag-update sa tinukoy na URL ng update at ii-install ito sa background.
-
-          Halimbawa, ini-install ng <ph name="EXTENSION_POLICY_EXAMPLE"/> ang extension na <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> mula sa karaniwang URL ng update ng Chrome Web Store. Para sa higit pang impormasyon tungkol sa mga extension ng pag-host, tingnan ang: <ph name="LINK_TO_EXTENSION_DOC2"/>.
-
-          Hindi magagawa ng mga user na mag-install ng extension na tinukoy ng patakarang ito. Kapag nag-alis ka ng extension mula sa listahang ito, awtomatiko itong ia-uninstall ng <ph name="PRODUCT_NAME"/>.
-
-          Kung hindi itinakda ang patakarang ito, makakapag-uninstall ang user ng anumang extension sa <ph name="PRODUCT_NAME"/>.
-</translation>
 <translation id="4962195944157514011">Tinutukoy ang URL ng search engine na ginamit kapag nagsasagawa ng isang default na paghahanap. Dapat na maglaman ng string na '<ph name="SEARCH_TERM_MARKER"/>' ang URL, na papalitan sa panahon ng query ng mga terminong hinahanap ng user.
 
           Dapat na itakda ang pagpipiliang ito kapag pinagana ang patakarang 'DefaultSearchProviderEnabled' at kikilalanin lamang kung ito ang sitwasyon.</translation>
@@ -330,6 +324,13 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
          Kung hindi mo pinagana ang setting na ito, ang nabuong Kerberos SPN ay hindi magsasama ng port sa anumang kaso.</translation>
 <translation id="3236046242843493070">Mga pattern ng URL na bibigyang-daan ang mga manggagaling na pag-install ng extension, app, at script ng user</translation>
+<translation id="3442095178490656861">Tinutukoy ang gagamiting timezone para sa device. Maaaring i-override ng mga user ang tinukoy na timezone para sa kasalukuyang session. Gayunpaman, itinatakda ito pabalik sa tinukoy na timezone sa pag-logout. Kung nagbigay ng di-wastong halaga, maa-activate pa rin ang patakaran gamit sa halip ang &quot;GMT&quot;.
+
+      Kung hindi ginamit ang patakarang ito, mananatili ang paggamit sa kasalukuyang aktibong timezone, gayunpaman, mababago ng mga user ang timezone at hindi mapapalitan ang pagbabago. Samakatuwid, makakaapekto ang pagbabago ng isang user sa screen sa pag-login at sa lahat ng iba pang user.
+
+      Magsisimula ang mga bagong device na nakatakda ang timezone sa &quot;US/Pacific&quot;.
+
+      Sumusunod ang format ng halaga sa pangalan ng mga timezone sa &quot;IANA Time Zone Database&quot; (tingnan ang &quot;http://en.wikipedia.org/wiki/List_of_tz_database_time&quot;). Sa partikular, maaaring tawagin ang karamihan sa mga timezone ayon sa &quot;continent/large_city&quot; o &quot;ocean/large_city&quot;.</translation>
 <translation id="8992176907758534924">Huwag payagan ang anumang site na magpakita ng mga larawan</translation>
 <translation id="262740370354162807">Paganahin ang pagsusumite ng mga dokumento sa <ph name="CLOUD_PRINT_NAME"/></translation>
 <translation id="8704831857353097849">Listahan ng mga hindi pinaganang plugin</translation>
@@ -405,7 +406,8 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung hindi naitakda ang patakarang ito, maaaring baguhin ng user ang listahan ng mga na-pin na app sa launcher.</translation>
 <translation id="7625444193696794922">Tinutukoy ang channel ng paglabas kung saan dapat naka-lock ang device.</translation>
-<translation id="3088288048720661397">Hindi pinapagana ang pag-sync ng Google Docs kapag gumagamit ng cellular na koneksyon kapag nakatakda sa True.
+<translation id="2552966063069741410">Timezone</translation>
+<translation id="3088288048720661397">Hindi pinapagana ang pag-sync ng Google Docs kapag gumagamit ng cellular na koneksyon kapag nakatakda sa True. Sa ganitong pagkakataon, masi-sync lamang ang data sa Google Docs kapag nakakonekta sa pamamagitan ng Wifi o Ethernet.
 
           Kung hindi nakatakda o kung false, makakapaglipat ng mga file sa Google Docs ang mga user sa pamamagitan ng mga cellular na koneksyon.</translation>
 <translation id="2240879329269430151">Binibigyang-daan kang magtakda kung pinapayagan o hindi ang mga website na magpakita ng mga pop-up. Maaaring payagan para sa lahat ng website o tanggihan para sa lahat ng website ang pagpapakita ng mga popup.
@@ -496,6 +498,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung pinagana mo ang setting na ito o hindi nagtakda ng halaga, mananatiling nasa ilalim ng kontrol ng user ang AutoFill. Bibigyang-daan sila nitong mag-configure ng mga profile ng AutoFill at i-on o i-off ang AutoFill ayon sa sarili nilang paghuhusga.</translation>
 <translation id="6157537876488211233">Listahang pinaghihiwalay ng kuwit ng mga panuntunan sa pag-bypass ng proxy</translation>
 <translation id="3965339130942650562">Mag-timeout hanggang maisagawa ang pag-log-out ng idle na user</translation>
+<translation id="5293547923319914979">Paganahin ang paghadlang sa mga remote access host.</translation>
 <translation id="7091198954851103976">Palaging patakbuhin ang mga plugin na nangangailangan ng pahintulot</translation>
 <translation id="2021307518684405078">Huwag payagan ang anumang site na i-access ang aking camera at mikropono</translation>
 <translation id="8870318296973696995">Home page</translation>
@@ -556,6 +559,13 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung hinayaang hindi nakatakda ang patakarang ito, pinapagana ang default na provider ng paghahanap, at magagawa ng user na itakda ang listahan ng provider ng paghahanap.</translation>
 <translation id="8731693562790917685">Pinapayagan ka ng Mga Setting ng Nilalaman na tukuyin kung paano pinamamahalaan ang mga nilalaman ng tukoy na uri (halimbawa Cookies, Mga Larawan o JavaScript).</translation>
 <translation id="2411919772666155530">I-block ang mga notification sa mga site na ito</translation>
+<translation id="5281259077246025371">Payagan ang pagkuha ng audio.
+
+      Kung itinakda sa false ang patakarang ito, magiging hindi available ang pagkuha ng audio sa device habang naka-log in ang user.
+
+      Naaapektuhan ng patakarang ito ang lahat ng uri ng input ng audio at hindi lang ang built-in na mikropono.
+
+      Kung itinakda sa true ang setting na ito o hindi naka-configure, magagamit ng mga user ang lahat ng sinusuportahang input ng audio sa kanilang device.</translation>
 <translation id="6923366716660828830">Tinutukoy ang pangalan ng default na provider ng paghahanap. Kung hinayaang walang laman o hindi nakatakda, gagamitin ang pangalan ng host na tinukoy ng URL ng paghahanap.
 
           Isinasaalang-alang lamang sa ang patakarang ito kung pinagana ang patakaran ng 'DefaultSearchProviderEnabled.'</translation>
@@ -603,6 +613,13 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung pinagana mo ang setting na ito, hindi ito mababago o mapapalitan ng mga user sa <ph name="PRODUCT_NAME"/>.
 
           Ang hindi pagpapagana sa setting na ito ay katumbas sa pagpapanatili ditong hindi na-configure. Maaari pa rin itong mabago ng user sa <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="8161570238552664224">Payagan ang pag-play ng audio.
+
+      Kapag itinakda sa false ang patakarang ito, hindi magiging available ang output ng audio sa device habang naka-log in ang user.
+
+      Naaapektuhan ng patakarang ito ang lahat ng uri ng output ng audio at hindi lang ang mga built-in na speaker. Hinahadlangan din ng patakarang ito ang mga tampok sa pagiging naa-access ng audio. Huwag paganahin ang patakarang ito kung kinakailangan ng screen reader para sa user.
+
+      Kung itinakda sa true ang setting na ito o hindi naka-configure, magagamit ng mga user ang lahat ng sinusuportahang output ng audio sa kanilang device.</translation>
 <translation id="5761030451068906335">Kino-configure ang mga proxy setting para sa <ph name="PRODUCT_NAME"/>. Hindi pa handang gamitin ang patakarang ito, mangyaring huwag itong gamitin.</translation>
 <translation id="8344454543174932833">Mag-import ng mga bookmark mula sa default na browser sa unang pagtakbo</translation>
 <translation id="1019101089073227242">Itakda ang direktoryo ng data ng user</translation>
@@ -761,6 +778,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung pinagana mo o hindi mo pinagana ang setting na ito, hindi maaaring baguhin o i-override ng mga user ang setting na ito sa <ph name="PRODUCT_NAME"/>.
 
       Bibigyang-daan ng pag-iwan sa patakarang ito na hindi nakatakda ang user na pumili kung ipapakita o hindi ang button na home.</translation>
+<translation id="2518231489509538392">Payagan ang pag-play ng audio</translation>
 <translation id="7547044444554936129">Pinapagana ang tampok ng Instant ng <ph name="PRODUCT_NAME"/> at pinipigilan ang mga user sa pagbabago ng setting na ito.
 
       Kung pinagana mo ang setting na ito, pinapagana ang <ph name="PRODUCT_NAME"/> Instant.
@@ -844,6 +862,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung hinayaan mong hindi nakatakda ang patakarang ito tatanggapin para sa pinagsamang pagpapatotoo ang anumang server.</translation>
 <translation id="2299220924812062390">Tukuyin ang isang listahan ng mga pinapaganang plugin</translation>
 <translation id="924557436754151212">Mag-import ng mga naka-save na password mula sa default na browser sa unang pagtakbo</translation>
+<translation id="1465619815762735808">I-click upang i-play</translation>
 <translation id="7227967227357489766">Tinutukoy ang listahan ng mga user na pinapayagang mag-login sa device. Ang mga entry ay nasa anyo ng <ph name="USER_WHITELIST_ENTRY_FORMAT"/>, gaya ng <ph name="USER_WHITELIST_ENTRY_EXAMPLE"/>. Upang payagan ang mga arbitrary user sa isang domain, na gumamit ng mga entry na may anyong <ph name="USER_WHITELIST_ENTRY_WILDCARD"/>.
 
       Kung hindi naka-configure ang patakarang ito, hindi magkakaroon ng paghihigpit sa kung ano ang pinapayagang i-sign in ng user. Tandaang kailangan pa rin ng paglikha ng mga bagong user na ma-configure nang maayos ang patakaran sa <ph name="DEVICEALLOWNEWUSERS_POLICY_NAME"/>.</translation>
@@ -911,6 +930,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8631434304112909927">hanggang bersyon <ph name="UNTIL_VERSION"/></translation>
 <translation id="7469554574977894907">Paganahin ang mga suhestiyon sa paghahanap</translation>
 <translation id="4906194810004762807">I-refresh ang pag-rate para sa Patakaran sa Device</translation>
+<translation id="1398889361882383850">Pinapayagan kang itakda kung papayagan ang mga website na awtomatikong magpatakbo ng mga plugin. Maaaring payagan ang awtomatikong pagpapatakbo ng mga plugin para sa lahat ng website o tatanggihan para sa lahat ng website.
+
+          Pinapayagan ng I-click upang i-play ang mga plugin na tumakbo, ngunit dapat i-click ng user ang mga ito upang simulan ang pagpapatupad ng mga ito.
+
+          Kung naiwang hindi nakatakda ang patakarang ito, gagamitin ang 'AllowPlugins' at mababago ito ng user.</translation>
 <translation id="7974114691960514888">Hindi na sinusuportahan ang patakarang ito.
           Pinapagana ang paggamit ng STUN at mga relay server kapag kumokonekta sa isang malayuang client.
 
@@ -924,9 +948,9 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7736666549200541892">Paganahin ang extension ng mga certificate ng patungo sa domain na TLS</translation>
 <translation id="1796466452925192872">Binibigyang-daan kang tukuyin kung aling mga URL ang pinapayagang mag-install ng mga extension, apps at tema.
 
-          Simula sa Chrome 21, mas mahirap mag-install ng mga extension, apps, at script ng user mula sa labas ng Chrome Web Store. Dati, makakapag-click ang mga user sa isang link patungo sa isang *.crx file, at mag-aalok ang Chrome na i-install ang file pagkatapos ng ilang babala. Pagkatapos ng Chrome 21, ang mga ganoong file ay dapat i-download at i-drag patungo sa pahina ng mga setting ng Chrome. Binibigyang-daan ng setting na ito ang mga partikular na URL na gamitin ang luma at mas madaling proseso ng pag-install.
+          Simula sa Chrome 21, mas mahirap mag-install ng mga extension, apps, at script ng user mula sa labas ng Chrome Web Store. Dati, makakapag-click ang mga user sa isang link patungo sa isang *.crx file, at mag-aalok ang Chrome na i-install ang file pagkatapos ng ilang babala. Pagkatapos ng Chrome 21, ang mga ganoong file ay dapat i-download at i-drag patungo sa pahina ng mga setting ng Chrome. Binibigyang-daan ng setting na ito ang mga partikular na URL na gamitin ang luma at mas madaling proseso ng pag-install. 
 
-          Ang bawat item sa listahang ito ay isang pattern ng tugma na may estilo ng extension (tingnan ang http://code.google.com/chrome/extensions/match_patterns.html). Madaling makakapag-install ng mga item ang mga user mula sa anumang URL na tumutugma sa isang item sa listahang ito.
+          Ang bawat item sa listahang ito ay isang pattern ng tugma na may estilo ng extension (tingnan ang http://code.google.com/chrome/extensions/match_patterns.html). Madaling makakapag-install ng mga item ang mga user mula sa anumang URL na tumutugma sa isang item sa listahang ito. Dapat pahintulutan ng mga pattern na ito ang kapwa lokasyon ng *.crx file at pahina kung saan nagsimula ang pag-download (hal., ang referrer). 
 
           Mas bibigyang priyoridad ang ExtensionInstallBlacklist kaysa sa patakarang ito. Iyon ay, hindi ma-i-install ang isang extension na nasa blacklist, kahit na mula ito sa isang site sa listahang ito.</translation>
 <translation id="7848840259379156480">Pinapayagan kang i-configure ang default na taga-render ng HTML kapag na-install ang <ph name="PRODUCT_FRAME_NAME"/>. Ang default na setting ay upang payagan ang browser ng host na gawin ang pag-render, ngunit maaari mong i-override ito at i-render ng <ph name="PRODUCT_FRAME_NAME"/> ang mga pahina ng HTML bilang default.</translation>
@@ -944,9 +968,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung pinagana mo ang setting na ito, ginagamit ng <ph name="PRODUCT_NAME"/> ang tinukoy na lokal. Kung hindi sinusuportahan ang naka-configure na lokal, gagamitin na lang ang 'en-US.'
 
       Kung hindi pinagana o hindi nakatakda ang setting na ito, ginagamit ng <ph name="PRODUCT_NAME"/> ang piniling lokal na tinukoy ng user (kung na-configure), ang lokal ng system o ang fallback na lokal na 'en-US'.</translation>
-<translation id="7271483295221961083">Binibigyang-daan kang magtakda kung pinapayagan o hindi ang mga website na awtomatikong magpatakbo ng mga plugin. Maaaring payagan para sa lahat ng website o tanggihan para sa lahat ng website ang awtomatikong pagpapatakbo ng mga plugin.
-
-          Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang 'AllowPlugins' at magagawa ng user na baguhin ito.</translation>
 <translation id="718956142899066210">Mga uri ng koneksyon na pinapayagan para sa mga update</translation>
 <translation id="6985168562472482191">Ang pangalan ng web store ng enterprise, na lilitaw sa ilalim ng icon ng app sa pahina ng bagong tab. Walang epekto ang setting na ito ung hindi nakatakda ang EnterpriseWebStoreURL.
 
@@ -1020,6 +1041,17 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6658245400435704251">Tinutukoy ang bilang ng mga segundo kung kailan maaaring random na antalahin ng device ang pag-download ng isang update mula sa panahon kung kailan unang na-push out ang update sa server. Maaaring hintayin ng device ang isang bahagi ng panahong ito sa pamamagitan ng oras sa orasan at ng mga natitirang bahagi sa pamamagitan ng dami ng mga pagtingin ng update. Sa anumang sitwasyon, ang scatter ay nililimitahan sa itaas sa iisang parehong tagal ng panahon upang hindi maantala nang matagal ang isang device sa paghihintay na mag-download ng isang update.</translation>
 <translation id="1948757837129151165">Mga Patakaran para sa Pagpapatotoo ng HTTP</translation>
 <translation id="5946082169633555022">Beta channel</translation>
+<translation id="145467868108778033">Pinapayagan kang tumukoy ng listahan ng mga extension na ii-install nang tahimik, nang walang pakikipag-ugnayan ng user.
+
+          Ang bawat item ng listahan ay isang string na naglalaman ng extension ID at isang URL ng update na hindi nilimitahan ng isang semicolon (<ph name="SEMICOLON"/>). Ang extension ID ay ang 32-titik na string na matatagpuan hal. sa <ph name="CHROME_EXTENSIONS_LINK"/> kapag nasa mode ng developer. Dapat tumuro ang URL ng update sa isang Manifest ng Update na XML na document gaya ng inilalarawan sa <ph name="LINK_TO_EXTENSION_DOC1"/>. Tandaang ginagamit lang ang URL ng update na itinakda sa patakarang ito para sa paunang pag-install; gagamitin ng kasunod na mga update ng extension ang URL ng update na nakasaad sa manifest ng extension.
+
+          Para sa bawat item, babawiin ng <ph name="PRODUCT_NAME"/> ang tinukoy na extension ng extension ID mula sa serbisyo ng update sa tinukoy na URL ng update at tahimik na ii-install ito.
+
+          Halimbawa, ii-install ng <ph name="EXTENSION_POLICY_EXAMPLE"/> ang <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME"/> na extension mula sa karaniwang URL ng update ng Chrome Web Store. Para sa higit pang impormasyon tungkol sa pagho-host ng mga extension, tingnan ang: <ph name="LINK_TO_EXTENSION_DOC2"/>.
+
+          Hindi magagawang i-uninstall ng mga user ang mga extension na tinukoy ng patakarang ito. Kung inalis mo ang isang extension mula sa listahang ito, awtomatiko itong i-a-uninstall ng <ph name="PRODUCT_NAME"/>.
+
+          Kung naiwang hindi nakatakda ang patakarang ito, maaaring mag-uninstall ang user ng anumang extension sa <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="8303314579975657113">Tinutukoy kung aling library ng GSSAPI ang gagamitin para sa Pagpapatotoo ng HTTP. Makakapagtakda ka ng isang pangalan ng library, o isang buong daanan.
 
           Kung walang ibinigay na setting, babalik ang <ph name="PRODUCT_NAME"/> sa paggamit ng default na pangalan ng library.</translation>

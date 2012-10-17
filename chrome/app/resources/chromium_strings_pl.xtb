@@ -15,14 +15,13 @@
 <translation id="7128196614940529818">Wtyczka Chromium Frame jest już zainstalowana i dostępna dla wszystkich użytkowników tego komputera. Jeśli chcesz zainstalować Chromium Frame na poziomie użytkownika, musisz najpierw odinstalować wersję z poziomu systemu zainstalowaną przez administratora.</translation>
 <translation id="731644333568559921">Aktualizuj system operacyjny &amp;Chromium</translation>
 <translation id="7421823331379285070">Chromium wymaga systemu Windows XP lub nowszego. Niektóre funkcje mogą nie działać.</translation>
-<translation id="1185134272377778587">Chromium – informacje</translation>
 <translation id="4330297532943865716">W systemie znaleziono instalacje Chromium lub Chromium Frame, które powodują konflikt. Odinstaluj je i spróbuj ponownie.</translation>
 <translation id="6953661834318318668">Pasek narzędzi Chromium</translation>
 <translation id="7097100943370017396">Chromium nie jest już aktualizowany, bo Twój system operacyjny jest przestarzały.</translation>
-<translation id="4103959775970322855">Chromium został zaktualizowany do wersji <ph name="VERSION"/></translation>
 <translation id="4285930937574705105">Instalacja nie powiodła się z powodu nieokreślonego błędu. Jeśli Chromium jest aktualnie uruchomiony, zamknij go i spróbuj ponownie.</translation>
 <translation id="2589479092236095792">Ustawienia autouzupełniania Chromium</translation>
 <translation id="3555616473548901994">Zakończono odinstalowywanie.</translation>
+<translation id="3674409928058572366">Host aplikacji Chromium</translation>
 <translation id="2886012850691518054">Opcjonalnie: pomóż nam udoskonalać Chromium, wysyłając do Google statystyki użytkowania i raporty o awariach.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> – Chromium</translation>
 <translation id="1989424089625731201">Próbujesz wejść na &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale serwer przedstawił certyfikat, który zawiera błędy. Chromium nie może użyć certyfikatu z błędami i nie może sprawdzić tożsamości witryny, z którą próbujesz się połączyć.</translation>
@@ -39,14 +38,32 @@
 <translation id="4179848566211676653">Wyjdź z Chromium</translation>
 <translation id="3849925841547750267">Niestety, ustawienia Firefoksa są niedostępne, gdy aplikacja jest uruchomiona. Aby importować te ustawienia do Chromium, zapisz bieżącą pracę i zamknij wszystkie okna Firefoksa. Następnie kliknij Kontynuuj.</translation>
 <translation id="7771626876550251690">W tym przypadku adres wymieniony w certyfikacie jest niezgodny z adresem strony, którą próbowała otworzyć przeglądarka. Jednym z możliwych powodów jest przechwycenie Twojej komunikacji przez intruza, który przedstawia certyfikat innej witryny, co powoduje niezgodność. Inną przyczyną jest skonfigurowanie serwera do zwracania tego samego certyfikatu dla różnych witryn, w tym tej, którą próbujesz odwiedzić, choć nie jest on ważny dla wszystkich tych witryn. Chromium może z pewnością stwierdzić, że przeglądasz &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, ale nie może sprawdzić, czy jest to ta sama witryna co &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, którą próbowałeś odwiedzić. Jeśli przejdziesz dalej, Chromium nie będzie już sprawdzać dalszych niezgodności nazw.</translation>
+<translation id="2401271577450445716">Wybierz
+          <ph name="BEGIN_BOLD"/>
+          menu Chromium &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="ADVANCED_TITLE"/>
+          &gt;
+          <ph name="PROXIES_TITLE"/>
+          &gt;
+          Ustawienia sieci LAN
+          <ph name="END_BOLD"/>
+          i usuń zaznaczenie pola wyboru „Użyj serwera proxy dla sieci LAN”.</translation>
 <translation id="4330585738697551178">Znane są przypadki konfliktu tego modułu z Chromium.</translation>
 <translation id="3190315855212034486">O kurczę! Chromium uległ awarii. Uruchomić go teraz ponownie?</translation>
 <translation id="6714487516757221107">Nie znaleziono instalacji Chromium ani Chromium Frame do zaktualizowania.</translation>
 <translation id="3197823471738295152">Urządzenie używa aktualnej wersji oprogramowania.</translation>
 <translation id="8551886023433311834">Aktualizacja jest już prawie ukończona. Wystarczy tylko uruchomić ponownie urządzenie.</translation>
+<translation id="8353224596138547809">Czy Chromium ma zapisać hasło do tej strony?</translation>
+<translation id="3026202950002788510">Przejdź do opcji
+          <ph name="BEGIN_BOLD"/>
+          Aplikacje &gt; Ustawienia systemowe &gt; Sieć &gt; Zaawansowane &gt; Serwery proxy
+          <ph name="END_BOLD"/>
+          i usuń zaznaczenie wszelkich wybranych serwerów proxy.</translation>
 <translation id="4124681358536363708">Katalog instalacyjny Chromium jest prawdopodobnie używany. Uruchom ponownie komputer i ponów próbę.</translation>
 <translation id="8770560772173120024">Chromium importuje Ulubione/Zakładki.</translation>
-<translation id="6290315939897260265">Nie używany w Chromium. Symbol zastępczy umożliwiający synchronizację map zasobów.</translation>
+<translation id="225614027745146050">Witamy</translation>
 <translation id="9191268552238695869">Administrator zainstalował Chromium w tym systemie i jest on dostępny dla wszystkich użytkowników. Chromium zainstalowany na poziomie systemu zastąpi Twoją instalację.</translation>
 <translation id="3509308970982693815">Zamknij wszystkie okna Chromium i spróbuj ponownie.</translation>
 <translation id="4077262827416206768">Zamknij wszystkie okna Chromium i uruchom go ponownie, by zmiany zostały wprowadzone.</translation>
@@ -55,6 +72,7 @@
 <translation id="118298050220780080">Próbujesz wejść na &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale serwer przedstawił certyfikat wydany przez podmiot, który nie jest zaufany w systemie operacyjnym. To może oznaczać, że serwer wygenerował własne dane uwierzytelniające, którym Chromium nie może ufać w kwestii identyfikacji tożsamości. Możliwe też, że intruz próbuje przechwycić Twoją komunikację.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3296368748942286671">Kontynuuj działanie aplikacji w tle po zamknięciu Chromium</translation>
+<translation id="473775607612524610">Aktualizuj</translation>
 <translation id="6055895534982063517">Dostępna jest nowa, szybsza niż kiedykolwiek wersja Chromium.</translation>
 <translation id="2407806170074302369">Chromium Frame – informacje...</translation>
 <translation id="5405650547142096840">Usuń z Chromium</translation>
@@ -74,17 +92,28 @@
 <translation id="1774152462503052664">Zezwól Chromium na działanie w tle</translation>
 <translation id="9022552996538154597">Zaloguj się do Chromium</translation>
 <translation id="4365115785552740256">Stworzenie Chromium było możliwe dzięki projektowi open source <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> i innym <ph name="BEGIN_LINK_OSS"/>programom o otwartym kodzie źródłowym<ph name="END_LINK_OSS"/>.</translation>
-<translation id="7549178288319965365">System operacyjny Chromium – informacje</translation>
 <translation id="6248213926982192922">Ustaw Chromium jako domyślną przeglądarkę</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="3069161343438701711">Moduł roboczy Chromium</translation>
 <translation id="5820394555380036790">System operacyjny Chromium</translation>
 <translation id="6757767188268205357">Nie proponuj więcej</translation>
+<translation id="7294284502435423183">Spróbuj wyłączyć przewidywanie działań sieciowych, wykonując poniższe kroki:
+        Wybierz
+        <ph name="BEGIN_BOLD"/>
+        menu Chromium &gt;
+        <ph name="SETTINGS_TITLE"/>
+        &gt;
+        <ph name="ADVANCED_TITLE"/>
+        <ph name="END_BOLD"/>
+        i usuń zaznaczenie „<ph name="NO_PREFETCH_DESCRIPTION"/>”.
+        Jeśli problem nie zostanie rozwiązany, zalecamy
+        ponowne zaznaczenie tej opcji, by zwiększyć wydajność.</translation>
 <translation id="275588974610408078">Zgłaszanie awarii nie jest dostępne w Chromium.</translation>
 <translation id="5909170354645388250">Nie używany w Chromium. Symbol zastępczy umożliwiający synchronizację map zasobów. Oczekuje jednego argumentu: $1.</translation>
 <translation id="3582788516608077514">Aktualizowanie Chromium...</translation>
 <translation id="7223968959479464213">Menedżer zadań – Chromium</translation>
 <translation id="3838208658251026018">Chromium importuje następujące elementy z komponentu <ph name="BROWSER_COMPONENT"/>:</translation>
+<translation id="6638567566961868659">Zakładki są dostępne w menu Chromium i na pasku zakładek.</translation>
 <translation id="2673087257647337101">Prawie aktualny. Uruchom ponownie Chromium, by zakończyć aktualizację.</translation>
 <translation id="5398878173008909840">Pojawiła się nowa wersja Chromium.</translation>
 <translation id="2648074677641340862">Podczas instalacji wystąpił błąd systemu operacyjnego. Pobierz Chromium ponownie.</translation>
@@ -105,15 +134,42 @@ Niektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub uż
 <translation id="1929939181775079593">Chromium nie odpowiada. Uruchomić go teraz ponownie?</translation>
 <translation id="6089587093203430357">Wyszukiwanie dynamiczne</translation>
 <translation id="2966088006374919794">Chromium musi uruchomić zewnętrzną aplikację do obsługi linków <ph name="SCHEME"/>. Żądany link to <ph name="PROTOLINK"/>.</translation>
-<translation id="5699533844376998780">Rozszerzenie „<ph name="EXTENSION_NAME"/>” zostało dodane.</translation>
 <translation id="8046283042877435986">W tej witrynie zalecana jest wtyczka Chromium Frame (już zainstalowana).</translation>
 <translation id="6287463253129672858">Nie można zainstalować tej samej wersji Chromium Frame, która jest obecnie uruchomiona. Zamknij Chromium Frame i spróbuj ponownie.</translation>
 <translation id="2558235863893655150">Czy chcesz, by Chromium zapisał hasło?</translation>
+<translation id="3398522627033804247">Wybierz
+          <ph name="BEGIN_BOLD"/>
+          menu Chromium &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="INTERNET_TITLE"/>
+          &gt;
+          „<ph name="OPTIONS_BUTTON"/>”
+          <ph name="END_BOLD"/>
+          (dla bieżącej sieci). Jeśli przycisk
+          <ph name="BEGIN_BOLD"/>
+          „<ph name="PROXY_BUTTON"/>”
+          <ph name="END_BOLD"/> (na karcie
+          <ph name="BEGIN_BOLD"/>
+          <ph name="NETWORK_TAB"/>
+          <ph name="END_BOLD"/>) jest dostępny, kliknij go i upewnij się, że w konfiguracji wybrano połączenie bezpośrednie.</translation>
+<translation id="1231416733874080281">Pokaż menu Chromium</translation>
 <translation id="1688750314291223739">Skonfiguruj synchronizację, by zapisać w internecie własne funkcje przeglądarki i mieć do nich dostęp w Chromium na każdym komputerze.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Przeglądarka internetowa</translation>
+<translation id="6424492062988593837">Chromium jest teraz jeszcze lepsze! Dostępna jest nowa wersja.</translation>
 <translation id="2910007522516064972">&amp;Chromium – informacje</translation>
 <translation id="8453117565092476964">Archiwum instalatora jest uszkodzone lub nieprawidłowe. Pobierz Chromium ponownie.</translation>
+<translation id="2162026298602630383">Wybierz
+          <ph name="BEGIN_BOLD"/>
+          menu Chromium &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="ADVANCED_TITLE"/>
+          &gt;
+          <ph name="PROXIES_TITLE"/>
+          <ph name="END_BOLD"/>
+          i upewnij się, że w konfiguracji wybrano połączenie bez serwera proxy lub bezpośrednie.</translation>
 <translation id="3249425904492147663">Próbujesz wejść na &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale serwer przedstawił nieważny certyfikat. Nie ma informacji na temat przejęcia tego certyfikatu po utracie ważności. To oznacza, że Chromium nie może zagwarantować, że komunikujesz się z &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a nie z intruzem. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_TIME"/>. Czy wygląda to właściwie? Jeśli nie, popraw błąd i odśwież stronę.</translation>
 <translation id="7196020411877309443">Dlaczego wyświetla mi się to okienko?</translation>
 <translation id="7483335560992089831">Nie można zainstalować tej samej wersji Chromium co obecnie uruchomiona. Zamknij Chromium i spróbuj ponownie.</translation>
@@ -121,15 +177,17 @@ Niektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub uż
 <translation id="4458285410772214805">Wyloguj się i zaloguj ponownie, by zmiana zaczęła obowiązywać.</translation>
 <translation id="2119636228670142020">System operacyjny &amp;Chromium – informacje</translation>
 <translation id="1708666629004767631">Dostępna jest nowa, bezpieczniejsza wersja Chromium.</translation>
-<translation id="5859758987635973787">Chromium jest aktualny (<ph name="VERSION"/>)</translation>
 <translation id="8616882682724010661">Poznaj <ph name="BEGIN_LINK"/>inne zalety<ph name="END_LINK"/> logowania się w Chromium.</translation>
 <translation id="378917192836375108">W Chromium możesz kliknąć numer telefonu zamieszczony w sieci i zadzwonić pod niego przez Skype.</translation>
 <translation id="8724049448828509830">Trwa pobieranie pliku. Czy chcesz wyjść z Chromium i anulować pobieranie?</translation>
+<translation id="3360567213983886831">Pliki binarne Chromium</translation>
 <translation id="7503101070699687603">Serwer wtyczek Chromium</translation>
 <translation id="2739631515503418643">Trwa pobieranie plików. Czy chcesz wyjść z Chromium i anulować pobieranie?</translation>
 <translation id="9013262824292842194">Chromium wymaga systemu Windows Vista bądź Windows XP z dodatkiem SP2 lub nowszym.</translation>
 <translation id="1967743265616885482">Znane są przypadki konfliktu modułu o takiej nazwie z Chromium.</translation>
 <translation id="4224199872375172890">Chromium jest aktualny.</translation>
+<translation id="374481098568514319">Na tym komputerze są już składniki Chromium w nowszej wersji. Użyj nowszego instalatora.</translation>
+<translation id="6240281849816458190">Próbujesz wejść na &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale serwer przedstawił certyfikat, który nie jest jeszcze ważny. Nie ma informacji, czy można ufać temu certyfikatowi. Chromium nie może zagwarantować, że komunikujesz się z &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a nie z intruzem. Zegar komputera jest obecnie ustawiony na <ph name="CURRENT_TIME"/>. Czy wygląda to właściwie? Jeśli nie, ustaw aktualną godzinę w systemie i odśwież stronę.</translation>
 <translation id="5498103559159810756">Chromium korzysta z domyślnej wyszukiwarki, którą jest obecnie <ph name="PAGE_TITLE"/>. Czy chcesz zachować tę domyślną wyszukiwarkę?</translation>
 <translation id="5862307444128926510">Chromium – witamy!</translation>
 <translation id="1622565934590470080">Na tym komputerze są już zainstalowane nowsze wersje Chromium i Chromium Frame. Jeśli oprogramowanie nie działa, odinstaluj Chromium i Chromium Frame, a następnie spróbuj ponownie.</translation>
@@ -139,10 +197,8 @@ Chromium nie może odzyskać ustawień.</translation>
 <translation id="7123348595797445166">Wypróbuj (już zainstalowano)</translation>
 <translation id="6403826409255603130">Chromium to przeglądarka obsługująca strony i aplikacje z szybkością błyskawicy. Jest szybka, stabilna i łatwa w użyciu. Bezpiecznie przeglądaj internet dzięki wbudowanej w Chromium ochronie przed złośliwym oprogramowaniem i phishingiem.</translation>
 <translation id="2927042866129133279">Nieprawidłowe argumenty. Chromium Frame nie można zainstalować w trybie gotowości bez instalowania Chromium.</translation>
-<translation id="546394857889685352">Urządzenie zostało zaktualizowane do wersji <ph name="VERSION"/></translation>
 <translation id="2572494885440352020">Pomoc Chromium</translation>
 <translation id="442817494342774222">Chromium uruchamia się automatycznie po włączeniu komputera.</translation>
 <translation id="8974095189086268230">Stworzenie systemu operacyjnego Chromium było możliwe dzięki dodatkowym <ph name="BEGIN_LINK_CROS_OSS"/>programom o otwartym kodzie źródłowym<ph name="END_LINK_CROS_OSS"/>.</translation>
-<translation id="6154296300983386343">Uruchom ponownie Chromium, by zakończyć aktualizację</translation>
 <translation id="1221340462641866827">System operacyjny Chromium nie umożliwia uruchamiania zewnętrznej aplikacji w celu obsługi linków typu <ph name="SCHEME"/>. Żądany link to <ph name="PROTOLINK"/>.</translation>
 </translationbundle>

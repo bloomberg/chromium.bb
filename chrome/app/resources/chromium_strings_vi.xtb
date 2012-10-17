@@ -15,14 +15,13 @@
 <translation id="7128196614940529818">Chromium Frame đã được cài đặt và khả dụng cho tất cả người dùng máy tính này. Nếu bạn muốn cài đặt Chromium Frame ở cấp người dùng, trước hết bạn phải gỡ cài đặt phiên bản cấp hệ thống đã được quản trị viên cài đặt.</translation>
 <translation id="731644333568559921">Cập nhật &amp;Chromium OS</translation>
 <translation id="7421823331379285070">Chromium yêu cầu Windows XP trở lên. Một số tính năng có thể không hoạt động.</translation>
-<translation id="1185134272377778587">Giới thiệu về Chromium</translation>
 <translation id="4330297532943865716">Đã phát hiện thấy cài đặt Chromium hoặc Chromium Frame xung đột trên hệ thống. Hãy gỡ cài đặt và thử lại.</translation>
 <translation id="6953661834318318668">Thanh công cụ của Chromium</translation>
 <translation id="7097100943370017396">Chromium hiện không còn cập nhật nhật do hệ điều hành của bạn đã lỗi thời.</translation>
-<translation id="4103959775970322855">Chromium đã được cập nhật lên <ph name="VERSION"/></translation>
 <translation id="4285930937574705105">Không thể cài đặt do lỗi chưa xác định. Nếu Chromium hiện đang chạy, hãy đóng Chromium và thử lại.</translation>
 <translation id="2589479092236095792">Cài đặt tự động điền trong Chromium</translation>
 <translation id="3555616473548901994">Quá trình gỡ cài đặt đã hoàn tất.</translation>
+<translation id="3674409928058572366">Chromium App Host</translation>
 <translation id="2886012850691518054">Tùy chọn: giúp cải thiện Chromium bằng cách tự động gửi thống kê sử dụng và báo cáo sự cố cho Google.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
 <translation id="1989424089625731201">Bạn đã cố truy cập vào &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; nhưng chứng chỉ mà máy chủ đưa ra chứa lỗi. Chromium không thể sử dụng chứng chỉ chứa lỗi và không thể xác thực thông tin nhận dạng của trang web mà bạn đã cố kết nối.</translation>
@@ -39,14 +38,32 @@
 <translation id="4179848566211676653">Thoát khỏi Chromium</translation>
 <translation id="3849925841547750267">Rất tiếc, các cài đặt Mozilla Firefox của bạn không khả dụng khi trình duyệt đó đang chạy. Để nhập các cài đặt đó vào Chromium, hãy lưu công việc của bạn và đóng tất cả các cửa sổ Firefox. Sau đó nhấp vào Tiếp tục.</translation>
 <translation id="7771626876550251690">Trong trường hợp này, địa chỉ được liệt kê trong chứng chỉ không khớp với địa chỉ của trang web mà trình duyệt của bạn đã cố gắng truy cập. Một lý do có thể giải thích cho trường hợp này là các kết nối của bạn đang bị chặn bởi một kẻ tấn công hiện đưa ra chứng chỉ của một trang web khác, điều này gây ra sự không khớp nhau. Một lý do khác có thể là máy chủ được thiết lập để trả về cùng một chứng chỉ cho nhiều trang web, bao gồm cả trang web bạn đang cố gắng truy cập, ngay cả khi chứng chỉ đó không hợp lệ cho tất cả các trang web này. Chromium có thể chắc chắn rằng bạn đã truy cập vào &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; nhưng không thể xác minh rằng trang web đó cũng chính là trang web &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; mà bạn muốn truy cập. Nếu bạn tiếp tục, Chromium sẽ không kiểm tra bất kỳ trường hợp tên không trùng khớp nào khác.</translation>
+<translation id="2401271577450445716">Đi tới
+          <ph name="BEGIN_BOLD"/>
+          trình đơn Chromium &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="ADVANCED_TITLE"/>
+          &gt;
+          <ph name="PROXIES_TITLE"/>
+          &gt;
+          Cài đặt mạng LAN
+          <ph name="END_BOLD"/>
+          và bỏ chọn hộp kiểm &quot;Sử dụng máy chủ proxy cho mạng LAN của bạn&quot;.</translation>
 <translation id="4330585738697551178">Mô-đun này được xác định xung đột với Chromium.</translation>
 <translation id="3190315855212034486">Rất tiếc! Chromium đã gặp sự cố. Khởi chạy lại ngay bây giờ?</translation>
 <translation id="6714487516757221107">Không tìm thấy cài đặt Chromium hoặc Chromium Frame nào để cập nhật.</translation>
 <translation id="3197823471738295152">Thiết bị của bạn đã được cập nhật.</translation>
 <translation id="8551886023433311834">Gần như cập nhật! Khởi động lại thiết bị của bạn để hoàn tất cập nhật.</translation>
+<translation id="8353224596138547809">Bạn có muốn Chromium lưu mật khẩu của bạn cho trang web này không?</translation>
+<translation id="3026202950002788510">Đi tới
+          <ph name="BEGIN_BOLD"/>
+          Ứng dụng &gt; Tùy chọn hệ thống &gt; Mạng &gt; Nâng cao &gt; Proxy
+          <ph name="END_BOLD"/>
+          và bỏ chọn bất kỳ proxy nào đã được chọn.</translation>
 <translation id="4124681358536363708">Thư mục cài đặt Chromium có vẻ đang được sử dụng. Hãy khởi động lại máy tính của bạn và thử lại.</translation>
 <translation id="8770560772173120024">Chromium hiện đang nhập các mục ưa thích/dấu trang.</translation>
-<translation id="6290315939897260265">Không được sử dụng trong Chromium. Phần giữ chỗ để duy trì các bản đồ tài nguyên ở trạng thái đồng bộ hóa.</translation>
+<translation id="225614027745146050">Chào mừng</translation>
 <translation id="9191268552238695869">Một quản trị viên đã cài đặt Chromium trên hệ thống này và Chromium hiện khả dụng cho tất cả người dùng. Chromium cấp hệ thống sẽ thay thế cài đặt cấp người dùng của bạn ngay bây giờ.</translation>
 <translation id="3509308970982693815">Hãy đóng tất cả cửa sổ Chromium và thử lại.</translation>
 <translation id="4077262827416206768">Hãy đóng tất cả cửa sổ Chromium và khởi chạy lại Chromium để thay đổi này có hiệu lực.</translation>
@@ -55,6 +72,7 @@
 <translation id="118298050220780080">Bạn đã cố gắng truy cập vào &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; nhưng máy chủ lại đưa ra một chứng chỉ được cấp bởi một tổ chức không được hệ điều hành máy tính của bạn tin cậy. Điều này có thể có nghĩa là máy chủ đã tạo thông tin xác thực bảo mật riêng mà Chromium không thể dựa vào để biết thông tin nhận dạng hoặc một kẻ tấn công có thể đang cố chặn các kết nối của bạn.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3296368748942286671">Tiếp tục chạy các ứng dụng dưới nền khi Chromium bị đóng</translation>
+<translation id="473775607612524610">Cập nhật</translation>
 <translation id="6055895534982063517">Hiện đã có phiên bản Chromium mới và phiên bản này nhanh hơn bao giờ hết.</translation>
 <translation id="2407806170074302369">Giới thiệu về Chromium Frame...</translation>
 <translation id="5405650547142096840">Xóa khỏi Chromium</translation>
@@ -76,17 +94,28 @@
 <translation id="1774152462503052664">Cho phép Chromium chạy dưới nền</translation>
 <translation id="9022552996538154597">Đăng nhập vào Chromium</translation>
 <translation id="4365115785552740256">Chromium trở nên khả thi là nhờ dự án nguồn mở <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> và các <ph name="BEGIN_LINK_OSS"/>phần mềm nguồn mở<ph name="END_LINK_OSS"/> khác.</translation>
-<translation id="7549178288319965365">Giới thiệu về Chromium OS</translation>
 <translation id="6248213926982192922">Đặt Chromium làm trình duyệt mặc định</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="3069161343438701711">Chromium Worker</translation>
 <translation id="5820394555380036790">Hệ điều hành Chromium</translation>
 <translation id="6757767188268205357">Đừng hỏi lại</translation>
+<translation id="7294284502435423183">Thử tắt đề xuất của mạng bằng cách làm theo các bước sau:
+        Đi tới
+        <ph name="BEGIN_BOLD"/>
+        trình đơn Chromium &gt;
+        <ph name="SETTINGS_TITLE"/>
+        &gt;
+        <ph name="ADVANCED_TITLE"/>
+        <ph name="END_BOLD"/>
+        và bỏ chọn &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>.&quot;
+        Nếu thao tác này không giải quyết được sự cố, chúng tôi khuyên bạn nên chọn lại tùy chọn
+        này để cải thiện hiệu năng.</translation>
 <translation id="275588974610408078">Báo cáo sự cố hiện không khả dụng trong Chromium.</translation>
 <translation id="5909170354645388250">Không được sử dụng trong Chromium. Phần giữ chỗ để duy trì các bản đồ tài nguyên ở trạng thái đồng bộ hóa. Phần này mong đợi một đối số: $1.</translation>
 <translation id="3582788516608077514">Đang cập nhật Chromium...</translation>
 <translation id="7223968959479464213">Trình quản lý tác vụ - Chromium</translation>
 <translation id="3838208658251026018">Chromium hiện đang nhập các mục sau từ <ph name="BROWSER_COMPONENT"/>:</translation>
+<translation id="6638567566961868659">Tìm dấu trang của bạn trong trình đơn Chromium hoặc trên thanh dấu trang.</translation>
 <translation id="2673087257647337101">Gần được cập nhật! Hãy khởi chạy lại Chromium để hoàn tất cập nhật.</translation>
 <translation id="5398878173008909840">Hiện đã có phiên bản Chromium mới.</translation>
 <translation id="2648074677641340862">Đã xảy ra lỗi hệ điều hành khi cài đặt. Hãy tải xuống Chromium lại lần nữa.</translation>
@@ -107,15 +136,42 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="1929939181775079593">Chromium không phản hồi. Khởi chạy lại ngay bây giờ?</translation>
 <translation id="6089587093203430357">Instant</translation>
 <translation id="2966088006374919794">Chromium cần khởi chạy ứng dụng bên ngoài để xử lý các liên kết <ph name="SCHEME"/>. Liên kết được yêu cầu là <ph name="PROTOLINK"/>.</translation>
-<translation id="5699533844376998780">Đã thêm tiện ích mở rộng &quot;<ph name="EXTENSION_NAME"/>&quot;.</translation>
 <translation id="8046283042877435986">Trang web này khuyên dùng Chromium Frame (đã được cài đặt).</translation>
 <translation id="6287463253129672858">Không thể cài đặt phiên bản Chromium Frame giống với phiên bản hiện đang chạy. Hãy đóng Chromium Frame và thử lại.</translation>
 <translation id="2558235863893655150">Bạn có muốn Chromium lưu mật khẩu của bạn không?</translation>
+<translation id="3398522627033804247">Đi tới
+          <ph name="BEGIN_BOLD"/>
+          trình đơn Chromium &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="INTERNET_TITLE"/>
+          &gt;
+          &quot;<ph name="OPTIONS_BUTTON"/>&quot;
+          <ph name="END_BOLD"/>
+          (cho Mạng hiện tại). Nếu có nút
+          <ph name="BEGIN_BOLD"/>
+          &quot;<ph name="PROXY_BUTTON"/>&quot;
+          <ph name="END_BOLD"/> (trong tab
+          <ph name="BEGIN_BOLD"/>
+          <ph name="NETWORK_TAB"/>
+          <ph name="END_BOLD"/>), nhấp vào nút đó và đảm bảo cấu hình của bạn được đặt thành &quot;Trực tiếp&quot;.</translation>
+<translation id="1231416733874080281">Hiển thị trình đơn Chromium</translation>
 <translation id="1688750314291223739">Thiết lập đồng bộ hóa để lưu các tính năng trình duyệt được cá nhân hóa của bạn vào web và truy cập chúng từ Chromium trên bất kỳ máy tính nào.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Trình duyệt Internet</translation>
+<translation id="6424492062988593837">Chromium được cải tiến hơn! Đã có phiên bản mới.</translation>
 <translation id="2910007522516064972">Giới thiệu về &amp;Chromium</translation>
 <translation id="8453117565092476964">Tệp lưu trữ trình cài đặt bị hỏng hoặc không hợp lệ. Hãy tải xuống Chromium lại lần nữa.</translation>
+<translation id="2162026298602630383">Đi tới
+          <ph name="BEGIN_BOLD"/>
+          trình đơn Chromium &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="ADVANCED_TITLE"/>
+          &gt;
+          <ph name="PROXIES_TITLE"/>
+          <ph name="END_BOLD"/>
+          và đảm bảo cấu hình của bạn được đặt thành &quot;không có proxy&quot; hoặc &quot;trực tiếp&quot;.</translation>
 <translation id="3249425904492147663">Bạn đã cố gắng truy cập vào &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; nhưng máy chủ lại đưa ra một chứng chỉ hết hạn. Không có thông tin nào có sẵn cho biết liệu chứng chỉ đó đã bị xâm phạm hay chưa kể từ khi hết hạn. Điều này có nghĩa là Chromium không thể đảm bảo rằng bạn đang kết nối với &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; chứ không phải với kẻ tấn công. Đồng hồ trên máy tính của bạn hiện được đặt thành <ph name="CURRENT_TIME"/>. Như vậy có ổn không? Nếu không, bạn phải sửa lỗi và làm mới trang này.</translation>
 <translation id="7196020411877309443">Tại sao tôi nhìn thấy thông báo này?</translation>
 <translation id="7483335560992089831">Không thể cài đặt phiên bản Chromium giống với phiên bản hiện đang chạy. Hãy đóng Chromium và thử lại.</translation>
@@ -123,15 +179,17 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="4458285410772214805">Vui lòng đăng xuất và đăng nhập lại để thay đổi này có hiệu lực.</translation>
 <translation id="2119636228670142020">Giới thiệu về &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Hiện đã có phiên bản Chromium mới an toàn hơn.</translation>
-<translation id="5859758987635973787">Chromium đã được cập nhật (<ph name="VERSION"/>)</translation>
 <translation id="8616882682724010661">Xem <ph name="BEGIN_LINK"/>những lợi ích khác<ph name="END_LINK"/> của việc đăng nhập vào Chromium.</translation>
 <translation id="378917192836375108">Chromium cho phép bạn nhấp vào số điện thoại trên web và gọi tới số đó bằng Skype!</translation>
 <translation id="8724049448828509830">Quá trình tải xuống hiện đang diễn ra. Bạn có muốn thoát Chromium và hủy tải xuống không?</translation>
+<translation id="3360567213983886831">Chromium Binaries</translation>
 <translation id="7503101070699687603">Máy chủ lưu trữ trình cắm Chromium</translation>
 <translation id="2739631515503418643">Quá trình tải xuống hiện đang diễn ra. Bạn có muốn thoát Chromium và hủy tải xuống không?</translation>
 <translation id="9013262824292842194">Chromium yêu cầu Windows Vista hoặc Windows XP có SP2 trở lên.</translation>
 <translation id="1967743265616885482">Một mô-đun có cùng tên đã được xác định là xung đột với Chromium.</translation>
 <translation id="4224199872375172890">Chromium đã được cập nhật.</translation>
+<translation id="374481098568514319">Máy tính này đã có phiên bản mới hơn của các cấu phần Chromium. Vui lòng sử dụng một trình cài đặt mới hơn.</translation>
+<translation id="6240281849816458190">Bạn đã cố gắng truy cập vào &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; nhưng máy chủ lại đưa ra một chứng chỉ chưa hợp lệ. Không có thông tin nào có sẵn cho biết liệu chứng chỉ đó có đáng tin cậy hay không. Chromium không thể đảm bảo một cách chắc chắn rằng bạn đang kết nối với &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; chứ không phải với kẻ tấn công. Đồng hồ trên máy tính của bạn hiện được đặt thành <ph name="CURRENT_TIME"/>. Thời gian như vậy có đúng không? Nếu không, bạn phải chỉnh lại đồng hồ của hệ thống, sau đó làm mới trang này.</translation>
 <translation id="5498103559159810756">Chromium sử dụng công cụ tìm kiếm mặc định của bạn, hiện được đặt là <ph name="PAGE_TITLE"/>. Bạn có muốn duy trì công cụ tìm kiếm mặc định của bạn không?</translation>
 <translation id="5862307444128926510">Chào mừng bạn đến với Chromium</translation>
 <translation id="1622565934590470080">Máy tính này đã có phiên bản Chromium và Chromium Frame mới hơn. Nếu phần mềm không hoạt động, hãy gỡ cài đặt cả Chromium lẫn Chromium Frame và thử lại.</translation>
@@ -141,10 +199,8 @@ Chromium không thể khôi phục cài đặt của bạn.</translation>
 <translation id="7123348595797445166">Hãy dùng thử (đã được cài đặt)</translation>
 <translation id="6403826409255603130">Chromium là trình duyệt web chạy các trang web và ứng dụng với tốc độ cực nhanh. Đây là một trình duyệt web nhanh, ổn định và dễ sử dụng. Duyệt web trở nên an toàn hơn với tính năng bảo vệ chống lại phần mềm độc hại và lừa đảo được tích hợp sẵn vào Chromium.</translation>
 <translation id="2927042866129133279">Đối số không hợp lệ. Không thể cài đặt Chromium Frame ở chế độ sẵn sàng mà không cài đặt Chromium.</translation>
-<translation id="546394857889685352">Thiết bị của bạn đã được cập nhật lên <ph name="VERSION"/></translation>
 <translation id="2572494885440352020">Trình trợ giúp của Chromium</translation>
 <translation id="442817494342774222">Chromium được định cấu hình để tự động khởi chạy khi bạn khởi động máy tính của bạn.</translation>
 <translation id="8974095189086268230">Chromium OS trở nên khả thi là nhờ các <ph name="BEGIN_LINK_CROS_OSS"/>phần mềm nguồn mở<ph name="END_LINK_CROS_OSS"/> bổ sung.</translation>
-<translation id="6154296300983386343">Khởi chạy lại Chromium để hoàn tất cập nhật</translation>
 <translation id="1221340462641866827">Chromium OS không hỗ trợ khởi chạy ứng dụng bên ngoài để xử lý các liên kết <ph name="SCHEME"/>. Liên kết được yêu cầu là <ph name="PROTOLINK"/>.</translation>
 </translationbundle>

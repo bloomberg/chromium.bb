@@ -15,14 +15,13 @@
 <translation id="7128196614940529818">Chromium ఫ్రేమ్ ఇప్పటికే ఇన్‌స్టాల్ చేయబడింది మరియు ఈ కంప్యూటర్‌లోని వినియోగదారులందరికీ అందుబాటులో ఉంటుంది. మీరు వినియోగదారు స్థాయిలో Chromium ఫ్రేమ్‌ని ఇన్‌స్టాల్ చేయాలనుకుంటే, మీరు మొదట నిర్వాహకుడి ద్వారా ఇన్‌స్టాల్ చేయబడిన సిస్టమ్-స్థాయి సంస్కరణని తప్పనిసరిగా అన్ఇన్‌స్టాల్ చేయాలి.</translation>
 <translation id="731644333568559921">&amp;Chromium OSని నవీకరించండి</translation>
 <translation id="7421823331379285070">Chromiumకి Windows XP లేదా తర్వాతది అవసరం. కొన్ని లక్షణాలు పనిచేయకపోవచ్చు.</translation>
-<translation id="1185134272377778587">Chromium గురించి</translation>
 <translation id="4330297532943865716">సిస్టమ్‌లో Chromium లేదా Chromium ఫ్రేమ్ యొక్క వైరుధ్య ఇన్‌స్టాలేషన్ కనుగొనబడింది. దయచేసి దీన్ని అన్ఇన్‌స్టాల్ చేసి, మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="6953661834318318668">Chromium Toolbar</translation>
 <translation id="7097100943370017396">మీ ఆపరేటింగ్ సిస్టమ్ ఉపయోగించడానికి తగనందున Chromium నవీకరించబడదు.</translation>
-<translation id="4103959775970322855">Chromium <ph name="VERSION"/>కి నవీకరించబడింది</translation>
 <translation id="4285930937574705105">పేర్కొనబడని లోపం కారణంగా ఇన్‌స్టాలేషన్ విఫలమైంది. ప్రస్తుతం Chromium అమలు చేయబడుతుంటే, దయచేసి దీన్ని మూసివేసి, మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="2589479092236095792">Chromium స్వీయపూర్తి సెట్టింగ్‌లు</translation>
 <translation id="3555616473548901994">వ్యవస్థాపన యొక్క తొలగింపు పూర్తయింది.</translation>
+<translation id="3674409928058572366">Chromium అనువర్తనం హోస్ట్</translation>
 <translation id="2886012850691518054">ఐచ్ఛికం: Googleకు ఉపయోగకర గణాంకాలను మరియు క్రాష్ నివేదికలను స్వయంచాలకంగా పంపడం ద్వారా Chromiumను మరింత మెరుగుపరచడానికి సహాయం చేస్తుంది.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
 <translation id="1989424089625731201">మీరు &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;ను చేరుకోవడానికి ప్రయత్నించారు, కానీ సర్వర్ అందించిన ప్రమాణపత్రంలో లోపాలు ఉన్నాయి. Chromium లోపాలతో ఉన్న ప్రమాణపత్రాన్ని ఉపయోగించదు మరియు మీరు కనెక్ట్ చేయడానికి ప్రయత్నించిన సైట్ యొక్క గుర్తింపుని ప్రామాణీకరించదు.</translation>
@@ -39,14 +38,30 @@
 <translation id="4179848566211676653">Chromiumని నిష్క్రమించు</translation>
 <translation id="3849925841547750267">దురదృష్టవశాత్తూ, ఆ బ్రౌజర్ అమలులో ఉన్నప్పుడు మీ Mozilla Firefox సెట్టింగ్‌లు అందుబాటులో లేవు. Chromiumకు ఆ సెట్టింగ్‌లను దిగుమతి చేయడానికి, మీ పనిని సేవ్ చేసుకొని అన్ని Firefox విండోలను మూసివేయండి. తర్వాత కొనసాగుపై క్లిక్ చేయండి.</translation>
 <translation id="7771626876550251690">ఈ సందర్భంలో, ప్రమాణపత్రంలో జాబితా చేసిన చిరునామా మీ బ్రౌజర్ వెళ్లడానికి ప్రయత్నించిన వెబ్‌సైట్ యొక్క చిరునామాకు సరిపోలలేదు. సరిపోలకుండా చేసేటటువంటి వేరొక వెబ్‌సైట్ కోసం ప్రమాణపత్రాన్ని అందించే దాడి చేసే వ్యక్తి ద్వారా మీ కమ్యూనికేషన్‌లు ఆటంకపరచబడ్డం ఒక సాధ్యమయ్యే కారణం. మీరు సందర్శించడానికి ప్రయత్నిస్తున్న ప్రమాణపత్రంతో సహా బహుళ వెబ్‌సైట్‌ల కోసం ఆ ప్రమాణపత్రం ఆ అన్ని వెబ్‌సైట్‌ల కోసం చెల్లుబాటు కాకపోయినా అదే ప్రమాణపత్రాన్ని అందించేలా సర్వర్ సెట్ చేయబడి ఉండటం మరొక్క సాధ్యమయ్యే కారణం. మీరు &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;కు చేరుకున్నారని, కానీ అది మీరు చేరాలని అనుకున్న &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; వలె అదే సైట్ అని ధృవీకరించలేదని Chromium ఖచ్చితంగా చెప్పవచ్చు. మీరు కొనసాగితే, Chromium మరిన్ని పేరు తప్పు సరిపోలికల కోసం తనిఖీ చేయదు.</translation>
+<translation id="2401271577450445716"><ph name="BEGIN_BOLD"/>
+          Chromium మెను &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="ADVANCED_TITLE"/>
+          &gt;
+          <ph name="PROXIES_TITLE"/>
+          &gt;
+          LAN సెట్టింగ్‌లు
+          <ph name="END_BOLD"/>కు వెళ్లి,
+          &quot;మీ LAN కోసం ప్రాక్సీ సర్వర్‌ను ఉపయోగించండి&quot; తనిఖీ పెట్టె ఎంపికను తీసివేయండి.</translation>
 <translation id="4330585738697551178">ఈ మాడ్యూల్ Chromiumతో వైరుధ్యంగా ఉంటుంది.</translation>
 <translation id="3190315855212034486">అయ్యో! Chromium క్రాష్ అయ్యింది. ఇప్పుడే మళ్లీ ప్రారంభించాలా?</translation>
 <translation id="6714487516757221107">నవీకరించడానికి Chromium లేదా Chromium ఫ్రేమ్ యొక్క ఇన్‌స్టాలేషన్ కనుగొనబడలేదు.</translation>
 <translation id="3197823471738295152">మీ పరికరం తాజాగా ఉంది.</translation>
 <translation id="8551886023433311834">దాదాపు తాజాగా ఉంది! నవీకరించడాన్ని పూర్తి చేయడానికి మీ పరికరాన్ని పునఃప్రారంభించండి.</translation>
+<translation id="8353224596138547809">మీరు Chromium ఈ సైట్ కోసం మీ పాస్‌వర్డ్‌ను సేవ్ చేయాలనుకుంటున్నారా?</translation>
+<translation id="3026202950002788510"><ph name="BEGIN_BOLD"/>
+          అనువర్తనాలు &gt; సిస్టమ్ ప్రాధాన్యతలు &gt; నెట్‌వర్క్ &gt; అధునాత &gt; ప్రాక్సీలు
+          <ph name="END_BOLD"/>కు వెళ్లండి
+          మరియు ఎంచుకోబడిన ఏదైనా ప్రాక్సీల ఎంపికను తీసివెయ్యండి.</translation>
 <translation id="4124681358536363708">Chromium ఇన్‌స్టాలేషన్ డైరెక్టరీ ఉపయోగించబడుతోంది. దయచేసి మీ కంప్యూటర్‌ని మళ్లీ బూట్ చేసి, మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="8770560772173120024">ఇప్పుడు ఇష్టాలు/బుక్‌మార్క్‌లను Chromium దిగుమతి చేస్తోంది.</translation>
-<translation id="6290315939897260265">Chromiumలో ఉపయోగించబడదు. వనరు మ్యాప్‌లను సమకాలీకరణలో ఉంచడానికి ప్లేస్‌హోల్డర్.</translation>
+<translation id="225614027745146050">స్వాగతం</translation>
 <translation id="9191268552238695869">నిర్వాహకుడు ఈ సిస్టమ్‌లో Chromiumని ఇన్‌స్టాల్ చేసారు మరియు ఇది వినియోగదారులందరికీ అందుబాటులో ఉంటుంది. ఇప్పుడు సిస్టమ్-స్థాయి Chromium మీ వినియోగదారు-స్థాయి ఇన్‌స్టాలేషన్‌ని భర్తీ చేస్తుంది.</translation>
 <translation id="3509308970982693815">దయచేసి అన్ని Chromium విండోలను మూసివేసి, మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="4077262827416206768">దయచేసి అన్ని Chromium విండోలను మూసివేసి, ఈ మార్పు ప్రభావాన్ని కావడం కోసం Chromiumని మళ్లీ ప్రారంభించండి.</translation>
@@ -55,6 +70,7 @@
 <translation id="118298050220780080">మీరు &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;ను చేరుకోవడానికి ప్రయత్నించారు, కానీ సర్వర్ మీ కంప్యూటర్ యొక్క ఆపరేటింగ్ సిస్టమ్ విశ్వసించని ఎంటిటీ ద్వారా జారీ చేయబడిన ప్రమాణపత్రాన్ని అందించింది. గుర్తింపు సమాచారం కోసం Chromium ఆధారపడనటువంటి భద్రతా ఆధారాలను సర్వర్ దీని స్వంతంగా రూపొందించిందని లేదా దాడి చేసే వ్యక్తి మీ కమ్యూనికేషన్‌లను ఆటంకపరచడానికి ప్రయత్నిస్తుండవచ్చని దీని అర్థం కావచ్చు.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3296368748942286671">Chromium మూసివేయబడినప్పుడు నేపథ్య అనువర్తనాలను అమలు చేయడాన్ని కొనసాగించు</translation>
+<translation id="473775607612524610">నవీకరణ</translation>
 <translation id="6055895534982063517">క్రొత్త Chromium సంస్కరణ అందుబాటులో ఉంది, ఇది ఎప్పటి కంటే వేగంగా ఉంది.</translation>
 <translation id="2407806170074302369">Chromium ఫ్రేమ్ గురించి...</translation>
 <translation id="5405650547142096840">Chromium నుండి తీసివేయండి</translation>
@@ -74,17 +90,26 @@
 <translation id="1774152462503052664">నేపథ్యంలో Chromiumని అమలు చేయడానికి అనుమతించు</translation>
 <translation id="9022552996538154597">Chromiumకి సైన్ ఇన్ చేయండి</translation>
 <translation id="4365115785552740256">Chromium సృష్టి <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> ఓపెన్ సోర్స్ ప్రాజెక్ట్ మరియు ఇతర <ph name="BEGIN_LINK_OSS"/>ఓపెన్ సోర్స్ సాఫ్ట్‌వేర్<ph name="END_LINK_OSS"/> ద్వారా సాధ్యమయ్యింది.</translation>
-<translation id="7549178288319965365">Chromium OS గురించి</translation>
 <translation id="6248213926982192922">Chromiumని డిఫాల్ట్ బ్రౌజర్‌గా చేయి</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="3069161343438701711">Chromium వర్కర్</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="6757767188268205357">నన్ను విసిగించకు</translation>
+<translation id="7294284502435423183">ఈ దశలను అనుసరించడం ద్వారా నెట్‌వర్క్ సూచనను నిలిపివేయడానికి ప్రయత్నించండి:
+        <ph name="BEGIN_BOLD"/>
+        Chromium మెను &gt;
+        <ph name="SETTINGS_TITLE"/>
+        &gt;
+        <ph name="ADVANCED_TITLE"/>
+        <ph name="END_BOLD"/>కు వెళ్లి,
+        &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>&quot; ఎంపికను తీసివేయండి.
+        ఇది సమస్యను పరిష్కరించకపోతే, మెరుగైన పనితీరు కోసం మళ్లీ ఈ ఎంపికను ఎంచుకోవాలని మేము సిఫార్సు చేస్తున్నాము.</translation>
 <translation id="275588974610408078">Chromiumలో క్రాష్ నివేదిక అందుబాటులో లేదు.</translation>
 <translation id="5909170354645388250">Chromiumలో ఉపయోగించబడదు. వనరు మ్యాప్‌లను సమకాలీకరణలో ఉంచడానికి ప్లేస్‌హోల్డర్. ఇది ఒక ఆర్గ్యుమెంట్‌ను ఆశిస్తుంది: $1.</translation>
 <translation id="3582788516608077514">Chromiumని నవీకరిస్తోంది...</translation>
 <translation id="7223968959479464213">విధి నిర్వాహకుడు - Chromium</translation>
 <translation id="3838208658251026018">ఇప్పుడు Chromium <ph name="BROWSER_COMPONENT"/> నుండి క్రింది అంశాలను దిగుమతి చేస్తోంది:</translation>
+<translation id="6638567566961868659">మీ బుక్‌మార్క్‌లను Chromium మెనులో లేదా బుక్‌మార్క్‌ల బార్‌లో కనుగొనండి.</translation>
 <translation id="2673087257647337101">చాలా వరకు తాజాగా ఉంది! నవీకరించడాన్ని పూర్తి చేయడానికి Chromiumని మళ్లీ ప్రారంభించండి.</translation>
 <translation id="5398878173008909840">క్రొత్త Chromium సంస్కరణ అందుబాటులో ఉంది.</translation>
 <translation id="2648074677641340862">ఇన్‌స్టాలేషన్ సమయంలో ఆపరేటింగ్ సిస్టమ్ లోపం సంభవించింది. దయచేసి Chromiumని మళ్లీ డౌన్‌లోడ్ చేయండి.</translation>
@@ -105,15 +130,41 @@
 <translation id="1929939181775079593">Chromium ప్రతిస్పందించడం లేదు. ఇప్పుడు మళ్లీ ప్రారంభించాలా?</translation>
 <translation id="6089587093203430357">తక్షణం</translation>
 <translation id="2966088006374919794"><ph name="SCHEME"/> లింక్‌లను నిర్వహించడానికి Chromium బాహ్య అనువర్తనాన్ని ప్రారంభించాలి. అభ్యర్థించిన లింక్ <ph name="PROTOLINK"/>.</translation>
-<translation id="5699533844376998780">పొడిగింపు &quot;<ph name="EXTENSION_NAME"/>&quot; జోడించబడింది.</translation>
 <translation id="8046283042877435986">ఈ సైట్ Chromium ఫ్రేమ్‌ని సిఫార్సు చేస్తుంది (ఇప్పటికే ఇన్‌స్టాల్ చేయబడింది).</translation>
 <translation id="6287463253129672858">ప్రస్తుతం అమలు చేయబడుతున్న అదే Chromium ఫ్రేమ్ సంస్కరణని ఇన్‌స్టాల్ చేయలేరు. దయచేసి Chromium ఫ్రేమ్‌ని మూసివేసి, మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="2558235863893655150">మీరు మీ పాస్‌వర్డ్‌ని Chromium సేవ్ చేయాలనుకుంటున్నారా?</translation>
+<translation id="3398522627033804247"><ph name="BEGIN_BOLD"/>
+          Chromium మెను &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="INTERNET_TITLE"/>
+          &gt;
+          &quot;<ph name="OPTIONS_BUTTON"/>&quot;
+          <ph name="END_BOLD"/>కు వెళ్లండి
+          (ప్రస్తుత నెట్‌వర్క్‌ కోసం). 
+          <ph name="BEGIN_BOLD"/>
+          &quot;<ph name="PROXY_BUTTON"/>&quot;
+          <ph name="END_BOLD"/>బటన్ (
+          <ph name="BEGIN_BOLD"/>
+          <ph name="NETWORK_TAB"/>
+          <ph name="END_BOLD"/>
+          ట్యాబ్‌లో) ఉనికిలో ఉంటే, దానిపై క్లిక్ చేసి, మీ కాన్ఫిగరేషన్ &quot;ప్రత్యక్షం&quot;కు సెట్ చేయబడిందని నిర్ధారించుకోండి.</translation>
+<translation id="1231416733874080281">Chromium మెనును చూపు</translation>
 <translation id="1688750314291223739">వెబ్‌కు మీ వ్యక్తిగతీకరించిన బ్రౌజర్ లక్షణాలను సేవ్ చేయడానికి సమకాలీకణని సెటప్ చేయండి మరియు వాటిని ఏదైనా కంప్యూటర్‌లోని Chromium నుండి ప్రాప్యత చేయండి.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">ఇంటర్నెట్ బ్రౌజర్</translation>
+<translation id="6424492062988593837">Chrome ఇప్పుడే మెరుగుపరచబడింది! క్రొత్త సంస్కరణ అందుబాటులో ఉంది.</translation>
 <translation id="2910007522516064972">&amp;Chromium గురించి</translation>
 <translation id="8453117565092476964">ఇన్‌స్టాలర్ ఆర్కైవ్ పాడైంది లేదా చెల్లదు. దయచేసి Chromiumని మళ్లీ డౌన్‌లోడ్ చేయండి.</translation>
+<translation id="2162026298602630383"><ph name="BEGIN_BOLD"/>
+          Chromium మెను &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="ADVANCED_TITLE"/>
+          &gt;
+          <ph name="PROXIES_TITLE"/>
+          <ph name="END_BOLD"/>కు వెళ్లి,
+          మీ కాన్ఫిగరేషన్ &quot;ప్రాక్సీ లేదు&quot; లేదా &quot;ప్రత్యక్షం&quot;కు సెట్ చేయబడిందని నిర్ధారించుకోండి.</translation>
 <translation id="3249425904492147663">మీరు &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;ను చేరుకోవడానికి ప్రయత్నించారు, కానీ సర్వర్ గడువు ముగిసిన ప్రమాణపత్రాన్ని అందించింది. దాని గడువు ముగిసినందున ఆ ప్రమాణపత్రం రాజీపడిందో లేదో సూచించడానికి సమాచారం అందుబాటులో లేదు. Chromium మీరు &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;తో కమ్యూనికేట్ చేస్తున్నారని మరియు దాడి చేసేవారితో కాదని Chromium పూచీ ఇవ్వలేదని దీని అర్థం. మీ కంప్యూటర్ గడియారం ప్రస్తుతం <ph name="CURRENT_TIME"/>కు సెట్ చేయబడింది. అది సరిగానే కనిపిస్తోందా? అలా కాకపోతే, మీరు లోపాన్ని సరి చేయాలి మరియు ఈ పేజీని రిఫ్రెష్ చేయాలి.</translation>
 <translation id="7196020411877309443">నేను దీనిని ఎందుకు చూస్తున్నాను?</translation>
 <translation id="7483335560992089831">ప్రస్తుతం అమలు చేయబడుతున్న అదే Chromium సంస్కరణని ఇన్‌స్టాల్ చేయలేరు. దయచేసి Chromiumని మూసివేసి, మళ్లీ ప్రయత్నించండి.</translation>
@@ -121,15 +172,17 @@
 <translation id="4458285410772214805">దయచేసి ఈ మార్పు ప్రభావవంతం కావడానికి సైన్ అవుట్ చేసి, మళ్లీ సైన్ ఇన్ చేయండి.</translation>
 <translation id="2119636228670142020">&amp;Chromium OS గురించి</translation>
 <translation id="1708666629004767631">Chromium యొక్క క్రొత్త సురక్షితమైన సంస్కరణ అందుబాటులో ఉంది.</translation>
-<translation id="5859758987635973787">Chromium తాజాగా ఉంది (<ph name="VERSION"/>)</translation>
 <translation id="8616882682724010661">Chromiumకు సైన్ ఇన్ చేయడం వల్ల కలిగే <ph name="BEGIN_LINK"/>మరిన్ని ప్రయోజనాలని<ph name="END_LINK"/> చూడండి.</translation>
 <translation id="378917192836375108">Chromium వెబ్‌లో ఫోన్ నంబర్ క్లిక్ చేయడానికి మరియు Skypeతో కాల్ చేయడానికి మిమ్మల్ని అనుమతిస్తుంది!</translation>
 <translation id="8724049448828509830">ప్రస్తుతం డౌన్‌లోడ్ ప్రోగ్రెస్‌లో ఉంది. మీరు Chromium నుండి నిష్క్రమించాలని మరియు డౌన్‌లోడ్‌ను రద్దు చేయాలని కోరుకుంటున్నారా?</translation>
+<translation id="3360567213983886831">Chromium బైనరీస్</translation>
 <translation id="7503101070699687603">Chromium ప్లగిన్ హోస్ట్</translation>
 <translation id="2739631515503418643">ప్రస్తుతం డౌన్‌లోడ్‌లు ప్రోగ్రెస్‌లో ఉన్నాయి. మీరు Chromium నుండి నిష్క్రమించాలని మరియు డౌన్‌లోడ్‌లను రద్దు చేయాలని కోరుకుంటున్నారా?</translation>
 <translation id="9013262824292842194">Chromiumకి SP2 లేదా తదుపరి దానితో Windows Vista లేదా Windows XP అవసరం.</translation>
 <translation id="1967743265616885482">Chromiumతో వైరుధ్యం అయ్యే అదే పేరుతో మాడ్యూల్ ఉంది.</translation>
 <translation id="4224199872375172890">Chromium తాజాగా ఉంది.</translation>
+<translation id="374481098568514319">ఈ కంప్యూటర్ ఇప్పటికే Chromium భాగాల యొక్క ఇటీవల తాజా సంస్కరణను కలిగి ఉంది. దయచేసి ఇటీవల తాజా ఇన్‌స్టాలర్‌ను ఉపయోగించండి.</translation>
+<translation id="6240281849816458190">మీరు &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;ను చేరుకోవడానికి ప్రయత్నించారు, కానీ సర్వర్ ఇప్పటికీ చెల్లని ప్రమాణపత్రాన్ని అందించింది. ఆ ప్రమాణపత్రం విశ్వసనీయమైనదో కాదో సూచించడానికి సమాచారం అందుబాటులో లేదు. మీరు &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;తో కమ్యూనికేట్ చేస్తున్నారని మరియు దాడి చేసేవారితో కాదని Chromium విశ్వసనీయంగా హామీ ఇవ్వలేదు. మీ కంప్యూటర్ గడియారం ప్రస్తుతం <ph name="CURRENT_TIME"/>కు సెట్ చేయబడింది. అది సరిగానే కనిపిస్తోందా? అలా కాకపోతే, మీరు సిస్టమ్ గడియారాన్ని సరి చేసి ఆపై ఈ పేజీని రిఫ్రెష్ చేయాలి.</translation>
 <translation id="5498103559159810756">Chromium ప్రస్తుతం <ph name="PAGE_TITLE"/>కు సెట్ చేసిన మీ డిఫాల్ట్ శోధన ఇంజిన్‌ను ఉపయోగిస్తుంది. మీరు మీ డిఫాల్ట్ శోధన ఇంజిన్‌ను ఉంచాలనుకుంటున్నారా?</translation>
 <translation id="5862307444128926510">Chromiumకు స్వాగతం</translation>
 <translation id="1622565934590470080">ఈ కంప్యూటర్ ఇప్పటికే మరింత తాజా Chromium మరియు Chromium ఫ్రేమ్ సంస్కరణని కలిగి ఉంది. సాఫ్ట్‌వేర్ పని చేయకుంటే, దయచేసి Chromium మరియు Chromium ఫ్రేమ్ రెండింటినీ అన్ఇన్‌స్టాల్ చేసి, మళ్లీ ప్రయత్నించండి.</translation>
@@ -137,10 +190,8 @@
 <translation id="7123348595797445166">దీనిని ప్రయత్నించండి(ఇప్పటికే వ్యవస్థాపించబడింది)</translation>
 <translation id="6403826409255603130">Chromium అనేది మెరుపు వేగంతో వెబ్‌పేజీలను మరియు అనువర్తనాలను అమలు చేసే వెబ్ బ్రౌజర్. ఇది వేగవంతమైనది, స్థిరమైనది మరియు ఉపయోగించడానికి సులభమైనది. Chromiumలో రూపొందించిన మాల్వేర్ మరియు ఫిషింగ్ రక్షణతో మరింత సురక్షితంగా వెబ్‌లో బ్రౌజ్ చేయండి.</translation>
 <translation id="2927042866129133279">ఆర్గ్యుమెంట్‌లు చెల్లవు. Chromiumని ఇన్‌స్టాల్ చేయకుండా కూడా Chromium ఫ్రేమ్‌ని సిద్ధంగా ఉన్న మోడ్‌లో ఇన్‌స్టాల్ చేయలేరు.</translation>
-<translation id="546394857889685352">మీ పరికరం <ph name="VERSION"/>కు నవీకరించబడింది</translation>
 <translation id="2572494885440352020">Chromium సహాయకం</translation>
 <translation id="442817494342774222">మీరు మీ కంప్యూటర్‌ను ప్రారంభించినప్పుడు స్వయంచాలకంగా ప్రారంభించడానికి Chromium కాన్ఫిగర్ చేయబడింది.</translation>
 <translation id="8974095189086268230">Chromium OS సృష్టి అదనపు <ph name="BEGIN_LINK_CROS_OSS"/>ఓపెన్ సోర్స్ సాఫ్ట్‌వేర్<ph name="END_LINK_CROS_OSS"/> ద్వారా సాధ్యమయ్యింది.</translation>
-<translation id="6154296300983386343">నవీకరించడాన్ని పూర్తి చేయడానికి Chromiumని మళ్లీ ప్రారంభించండి</translation>
 <translation id="1221340462641866827"><ph name="SCHEME"/> లింక్‌లను నిర్వహించడానికి బాహ్య అనువర్తనాన్ని ప్రారంభించడానికి Chromium OS మద్దతు ఇవ్వదు. అభ్యర్థించిన లింక్ <ph name="PROTOLINK"/>.</translation>
 </translationbundle>

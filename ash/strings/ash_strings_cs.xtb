@@ -15,17 +15,16 @@
 <translation id="6979158407327259162">Disk Google</translation>
 <translation id="2297568595583585744">Stavový panel</translation>
 <translation id="2946640296642327832">Zapnout Bluetooth</translation>
+<translation id="6459472438155181876">Rozšíření obrazovky na displej <ph name="DISPLAY_NAME"/></translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="6596816719288285829">Adresa IP</translation>
 <translation id="5233638681132016545">Nová karta</translation>
 <translation id="3846575436967432996">Informace o síti nejsou k dispozici</translation>
 <translation id="3026237328237090306">Nastavení mobilního datového připojení</translation>
 <translation id="785750925697875037">Zobrazit mobilní účet</translation>
-<translation id="8121288016949447968">Shift+Vyhledávání</translation>
 <translation id="7864539943188674973">Vypnout Bluetooth</translation>
 <translation id="3126069444801937830">Restartovat a aktualizovat</translation>
-<translation id="1525975890706558596">CAPS LOCK je zapnutý. Pro zrušení
-stiskněte Shift a vyhledávací tlačítko.</translation>
+<translation id="3294437725009624529">Host</translation>
 <translation id="8190698733819146287">Personalizovat jazyky a zadávání...</translation>
 <translation id="5182671122927417841">Deaktivovat rozšíření</translation>
 <translation id="598295083618286569">Rozhraní Bluetooth je připojeno</translation>
@@ -35,7 +34,6 @@ stiskněte Shift a vyhledávací tlačítko.</translation>
 <translation id="811680302244032017">Přidat zařízení...</translation>
 <translation id="2509468283778169019">CAPS LOCK je zapnutý</translation>
 <translation id="7823564328645135659">Jazyk prohlížeče Chrome se po synchronizaci nastavení změnil z jazyka <ph name="FROM_LOCALE"/> na jazyk <ph name="TO_LOCALE"/>.</translation>
-<translation id="1128184993858208824"><ph name="HOUR"/> h <ph name="MINUTE"/> m</translation>
 <translation id="6426039856985689743">Zakázat  mobilní datové připojení</translation>
 <translation id="3087734570205094154">Až dolů</translation>
 <translation id="3232695630852378748">Nastavení Bluetooth...</translation>
@@ -46,44 +44,62 @@ stiskněte Shift a vyhledávací tlačítko.</translation>
 <translation id="2570059561924004903">Deaktivovat hlasovou odezvu</translation>
 <translation id="1895658205118569222">Vypnout počítač</translation>
 <translation id="4430019312045809116">Hlasitost</translation>
+<translation id="551263474266254304">Zapnout Wi-Fi...</translation>
 <translation id="1383876407941801731">Vyhledávání</translation>
+<translation id="2204305834655267233">Informace o síti</translation>
 <translation id="5980301590375426705">Odhlásit hosta</translation>
 <translation id="8308637677604853869">Předchozí nabídka</translation>
 <translation id="1346748346194534595">Doprava</translation>
 <translation id="8528322925433439945">Mobilní sítě...</translation>
 <translation id="8428213095426709021">Nastavení</translation>
+<translation id="2372145515558759244">Synchronizace aplikací...</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="1467432559032391204">Doleva</translation>
 <translation id="5543001071567407895">SMS</translation>
-<translation id="6223565363550976998">Baterie: <ph name="PERCENTAGE"/> %</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="1398853756734560583">Maximalizovat</translation>
+<translation id="1882897271359938046">Zrcadlení na displej <ph name="DISPLAY_NAME"/></translation>
 <translation id="3784455785234192852">Uzamknout</translation>
 <translation id="2805756323405976993">Aplikace</translation>
 <translation id="2482878487686419369">Oznámení</translation>
+<translation id="1850504506766569011">Připojení Wi-Fi je vypnuto.</translation>
 <translation id="2872961005593481000">Vypnout</translation>
 <translation id="7052914147756339792">Nastavení tapety...</translation>
+<translation id="80942317552162138">Baterie: <ph name="PERCENTAGE"/> %</translation>
+<translation id="5746825509052394497">Metoda zadávání se změnila na <ph name="INPUT_METHOD_ID"/>.
+        Přepnete ji stisknutím klávesové zkratky Shift + Alt.</translation>
 <translation id="1602076796624386989">Povolit mobilní datové připojení</translation>
 <translation id="3157931365184549694">Obnovit</translation>
-<translation id="8573351908869164327">Zbývá <ph name="HOUR"/> h <ph name="MINUTE"/> min</translation>
+<translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
 <translation id="7029814467594812963">Ukončit relaci</translation>
+<translation id="8454013096329229812">Připojení Wi-Fi je zapnuto.</translation>
+<translation id="4872237917498892622">Alt + Vyhledávání nebo Shift</translation>
 <translation id="2983818520079887040">Nastavení...</translation>
 <translation id="2712866615167520691">Funkce usnadnění přístupu jsou zapnuty.
 Zrušíte je stisknutím kombinace kláves Ctrl+Alt+Z.</translation>
+<translation id="2792498699870441125">Alt + Vyhledávání</translation>
 <translation id="8660803626959853127">Synchronizace souborů (<ph name="COUNT"/>)</translation>
+<translation id="1837166567415282700">Metoda zadávání se změnila <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>třetí strana<ph name="END_LINK"/>).
+        Přepnete ji stisknutím klávesové zkratky Shift + Alt.</translation>
 <translation id="639644700271529076">CAPS LOCK je vypnutý</translation>
+<translation id="4101192585425716296">Centrum zpráv</translation>
 <translation id="4864165860509564259">Pozice spouštěče</translation>
+<translation id="7593891976182323525">Vyhledávání nebo Shift</translation>
 <translation id="7649070708921625228">Nápověda</translation>
+<translation id="3050422059534974565">CAPS LOCK je zapnutý. Vypnete jej stisknutím klávesy Vyhledávání nebo Shift.</translation>
 <translation id="397105322502079400">Probíhá výpočet…</translation>
 <translation id="6362354186508391853">Ctrl +</translation>
-<translation id="7871882211137875558">Připojit k jiné…</translation>
+<translation id="477782898153505579">Můžete být klidní, nemáte žádná oznámení.</translation>
+<translation id="7457942297256758195">Vymazat vše</translation>
 <translation id="3573179567135747900">Změnit zpět na jazyk <ph name="FROM_LOCALE"/> (vyžaduje restart)</translation>
 <translation id="8103386449138765447">Zprávy SMS: <ph name="MESSAGE_COUNT"/></translation>
 <translation id="5045002648206642691">Nastavení Disku Google...</translation>
-<translation id="48607902311828362">Režim V letadle</translation>
+<translation id="7209101170223508707">CAPS LOCK je zapnutý. 
+Vypnete jej stisknutím kombinace kláves Alt + Vyhledávání nebo Shift.</translation>
+<translation id="5102001756192215136">Zbývá: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="5941711191222866238">Minimalizovat</translation>
-<translation id="9169585155162064169">CAPS LOCK je zapnutý. 
-Vypnete jej stisknutím vyhledávacího tlačítka.</translation>
+<translation id="6911468394164995108">Připojit k jiné...</translation>
+<translation id="6843725295806269523">ztlumit</translation>
 <translation id="412065659894267608"><ph name="HOUR"/> h <ph name="MINUTE"/> min do nabití</translation>
 <translation id="4469842253116033348">Deaktivovat oznámení z webu <ph name="SITE"/></translation>
 <translation id="6359806961507272919">SMS z čísla <ph name="PHONE_NUMBER"/></translation>

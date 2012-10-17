@@ -17,14 +17,13 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="7128196614940529818">Chromium Frame je že nameščen in na voljo vsem uporabnikom tega računalnika. Če želite namestiti vtičnik Chromium Frame na ravni uporabnika, morate najprej odstraniti različico na ravni sistema, ki jo je namestil skrbnik.</translation>
 <translation id="731644333568559921">Posodobi sistem &amp;Chromium OS</translation>
 <translation id="7421823331379285070">Chromium zahteva Windows XP ali novejši. Nekatere funkcije morda ne bodo delovale.</translation>
-<translation id="1185134272377778587">O Chromiumu</translation>
 <translation id="4330297532943865716">V sistemu je bila odkrita namestitev Chromiuma ali vtičnika Chromium Frame, ki je v sporu. Odstranite ga in poskusite znova.</translation>
 <translation id="6953661834318318668">Orodna vrstica Chromium</translation>
 <translation id="7097100943370017396">Za Chromium ni več posodobitev, ker je operacijski sistem zastarel.</translation>
-<translation id="4103959775970322855">Chromium je posodobljen na različico <ph name="VERSION"/></translation>
 <translation id="4285930937574705105">Namestitev ni bila izvedena zaradi nedoločene napake. Če se Chromium trenutno izvaja, ga zaprite in poskusite znova.</translation>
 <translation id="2589479092236095792">Nastavitve samodejnega izpolnjevanja v Chromiumu</translation>
 <translation id="3555616473548901994">Odstranitev je končana.</translation>
+<translation id="3674409928058572366">Chromium App Host</translation>
 <translation id="2886012850691518054">Izbirno: Pomagajte izboljšati Chromium, tako da Googlu samodejno pošiljate statistične podatke o uporabi in poročila o zrušitvah.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> – Chromium</translation>
 <translation id="1989424089625731201">Poskušali ste odpreti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, vendar ima potrdilo, ki ga je uporabil strežnik, napake. Chromium ne more uporabiti potrdila z napakami in ne more preveriti identitete spletnega mesta, s katerim ste poskušali vzpostaviti povezavo.</translation>
@@ -41,14 +40,32 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="4179848566211676653">Zapri Chromium</translation>
 <translation id="3849925841547750267">Žal nastavitve brskalnika Mozilla Firefox niso na voljo, medtem ko ga uporabljate. Če želite te nastavitve uvoziti v Chromium, shranite delo in zaprite vsa okna Firefoxa. Nato kliknite »Naprej«.</translation>
 <translation id="7771626876550251690">V tem primeru se naslov, ki je naveden v potrdilu, ne ujema z naslovom spletnega mesta, ki ga je poskusil odpreti vaš brskalnik. Morda vašo komunikacijo prestreza napadalec, ki navede potrdilo za drugo spletno mesto, kar povzroči neujemanje. Morda je strežnik nastavljen tako, da vrne isto potrdilo za več spletnih mest, vključno z mestom, ki ga poskušate obiskati, čeprav potrdilo ni veljavno za vsa ta mesta. Chromium ve, da ste dosegli &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, vendar ne more preveriti, ali je to mesto enako kot &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ki ste ga nameravali odpreti. Če nadaljujete, Chromium ne bo preveril morebitnih nadaljnjih neujemanj imena.</translation>
+<translation id="2401271577450445716">Odprite
+          <ph name="BEGIN_BOLD"/>
+          meni Chromiuma &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="ADVANCED_TITLE"/>
+          &gt;
+          <ph name="PROXIES_TITLE"/>
+          &gt;
+          Nastavitve lokalnega omrežja
+          <ph name="END_BOLD"/>
+          in počistite potrditveno polje »Uporabi strežnik proxy za lokalno omrežje«.</translation>
 <translation id="4330585738697551178">Za ta modul je znano, da je v sporu s Chromiumom.</translation>
 <translation id="3190315855212034486">Opa! Chromium se je zrušil. Ga želite znova zagnati?</translation>
 <translation id="6714487516757221107">Najti ni bilo mogoče nobenega Chromiuma ali vtičnika Chromium Frame, ki bi ga bilo mogoče posodobiti.</translation>
 <translation id="3197823471738295152">Naprava ima najnovejšo različico.</translation>
 <translation id="8551886023433311834">Posodobitev je skoraj končana. Znova zaženite napravo.</translation>
+<translation id="8353224596138547809">Želite, da Chromium shrani geslo za to spletno mesto?</translation>
+<translation id="3026202950002788510">Pojdite v
+          <ph name="BEGIN_BOLD"/>
+          Programi &gt; Sistemske nastavitve &gt; Omrežje &gt; Dodatno &gt; Proxyji
+          <ph name="END_BOLD"/>
+          in počistite označene proxyje.</translation>
 <translation id="4124681358536363708">Videti je, da se namestitveni imenik za Chromium že uporablja. Znova zaženite računalnik in poskusite znova.</translation>
 <translation id="8770560772173120024">Chromium zdaj uvaža priljubljene/zaznamke.</translation>
-<translation id="6290315939897260265">Ne uporablja se v Chromiumu. Ograda za usklajenost zemljevidov sredstev.</translation>
+<translation id="225614027745146050">Pozdravljeni</translation>
 <translation id="9191268552238695869">Skrbnik je v tem sistemu namestil Chromium, ki je na voljo vsem uporabnikom. Chromium na ravni sistema bo nadomestil vašo različico na ravni uporabnika.</translation>
 <translation id="3509308970982693815">Zaprite vsa okna Chromiuma in poskusite znova.</translation>
 <translation id="4077262827416206768">Zaprite vsa okna Chromiuma in ga zaženite znova, da bo ta sprememba začela veljati.</translation>
@@ -57,6 +74,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="118298050220780080">Poskusili ste odpreti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, vendar ima strežnik potrdilo, ki ga je izdala oseba, ki ji operacijski sistem računalnika ne zaupa. To morda pomeni, da je strežnik ustvaril svoje varnostne poverilnice, s katerimi Chromium ne more preveriti identitete, ali pa vašo komunikacijo poskuša prestreči napadalec.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3296368748942286671">Nadaljuj izvajanje aplikacij v ozadju, ko je Chromium zaprt</translation>
+<translation id="473775607612524610">Posodobi</translation>
 <translation id="6055895534982063517">Na voljo je nova različica Chromiuma, ki je najhitrejša doslej.</translation>
 <translation id="2407806170074302369">O vtičniku Chromium Frame ...</translation>
 <translation id="5405650547142096840">Odstrani iz Chromiuma</translation>
@@ -78,17 +96,28 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1774152462503052664">Naj se Chromium izvaja v ozadju</translation>
 <translation id="9022552996538154597">Prijava v Chromium</translation>
 <translation id="4365115785552740256">Chromium omogočata odprtokodni projekt <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> in druga <ph name="BEGIN_LINK_OSS"/>odprtokodna programska oprema<ph name="END_LINK_OSS"/>.</translation>
-<translation id="7549178288319965365">O sistemu Chromium OS</translation>
 <translation id="6248213926982192922">Nastavi Chromium kot privzeti brskalnik</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="3069161343438701711">Chromium Worker</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="6757767188268205357">Ne nadleguj me</translation>
+<translation id="7294284502435423183">Poskusite onemogočiti omrežno predvidevanje:
+        Odprite
+        <ph name="BEGIN_BOLD"/>
+        meni Chromiuma &gt;
+        <ph name="SETTINGS_TITLE"/>
+        &gt;
+        <ph name="ADVANCED_TITLE"/>
+        <ph name="END_BOLD"/>
+        in počistite polje »<ph name="NO_PREFETCH_DESCRIPTION"/>«.
+        Če s tem težave ne odpravite, priporočamo, da to možnost
+        zaradi izboljšanega delovanja znova izberete.</translation>
 <translation id="275588974610408078">Poročanje o zrušitvah ni na voljo v Chromiumu.</translation>
 <translation id="5909170354645388250">Ne uporablja se v Chromiumu. Ograda za usklajenost zemljevidov sredstev. Pričakovan je en argument: $1.</translation>
 <translation id="3582788516608077514">Posodabljanje Chromiuma ...</translation>
 <translation id="7223968959479464213">Upravitelj opravil – Chromium</translation>
 <translation id="3838208658251026018">Chromium zdaj uvaža te elemente iz komponente <ph name="BROWSER_COMPONENT"/>:</translation>
+<translation id="6638567566961868659">Poiščite svoje zaznamke v meniju Chromiuma ali v vrstici z zaznamki.</translation>
 <translation id="2673087257647337101">Samo še malo. Znova zaženite Chromium, da dokončate posodobitev.</translation>
 <translation id="5398878173008909840">Na voljo je nova različica Chromiuma.</translation>
 <translation id="2648074677641340862">Napaka v operacijskem sistemu med namestitvijo. Znova prenesite Chromium.</translation>
@@ -109,15 +138,44 @@ Nekatere funkcije morda ne bodo na voljo. Določite drug imenik profila ali upor
 <translation id="1929939181775079593">Chromium se ne odziva. Ga želite znova zagnati?</translation>
 <translation id="6089587093203430357">Dinamično iskanje</translation>
 <translation id="2966088006374919794">Chromium mora zagnati zunanji program za obdelavo povezav <ph name="SCHEME"/>. Zahtevana povezava je <ph name="PROTOLINK"/>.</translation>
-<translation id="5699533844376998780">Razširitev »<ph name="EXTENSION_NAME"/>« je dodana.</translation>
 <translation id="8046283042877435986">To spletno mesto priporoča vtičnik Chromium Frame (že nameščen).</translation>
 <translation id="6287463253129672858">Ni mogoče namestiti iste različice vtičnika Chromium Frame, ki se trenutno izvaja. Zaprite Chromium Frame in poskusite znova.</translation>
 <translation id="2558235863893655150">Ali želite, da Chromium shrani vaše geslo?</translation>
+<translation id="3398522627033804247">Odprite
+          <ph name="BEGIN_BOLD"/>
+          meni Chromiuma &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="INTERNET_TITLE"/>
+          &gt;
+          »<ph name="OPTIONS_BUTTON"/>«
+          <ph name="END_BOLD"/>
+          (za trenutno omrežje). Če je prikazan gumb
+          <ph name="BEGIN_BOLD"/>
+          »<ph name="PROXY_BUTTON"/>«
+          <ph name="END_BOLD"/> (na zavihku
+          <ph name="BEGIN_BOLD"/>
+          <ph name="NETWORK_TAB"/>
+          <ph name="END_BOLD"/>
+          ), ga kliknite in poskrbite, da je konfiguracija nastavljena
+          na »Neposredno«.</translation>
+<translation id="1231416733874080281">Prikaz menija Chroma</translation>
 <translation id="1688750314291223739">Nastavite sinhronizacijo, da prilagojene funkcije brskalnika shranite v spletu in do njih v Chromiumu dostopate v katerem koli računalniku.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Internetni brskalnik</translation>
+<translation id="6424492062988593837">Chromium je izboljšan! Na voljo je nova različica.</translation>
 <translation id="2910007522516064972">O &amp;Chromiumu</translation>
 <translation id="8453117565092476964">Arhiv namestitvenega programa je poškodovan ali neveljaven. Znova prenesite Chromium.</translation>
+<translation id="2162026298602630383">Odprite
+          <ph name="BEGIN_BOLD"/>
+          meni Chromiuma &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="ADVANCED_TITLE"/>
+          &gt;
+          <ph name="PROXIES_TITLE"/>
+          <ph name="END_BOLD"/>
+          in poskrbite, da je konfiguracija nastavljena na »brez proxyja« ali »neposredno«.</translation>
 <translation id="3249425904492147663">Poskusili ste odpreti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, vendar ima strežnik potrdilo, ki je poteklo. Ni podatkov, na podlagi katerih bi bilo mogoče ugotoviti, ali je bilo potrdilo po poteku ogroženo. To pomeni, da Chromium ne more zagotoviti, da komunicirate z domeno &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; in ne z napadalcem. Ura v računalniku je trenutno nastavljena na <ph name="CURRENT_TIME"/>. Je to pravilno? Če ni, odpravite napako in osvežite stran.</translation>
 <translation id="7196020411877309443">Zakaj je to prikazano?</translation>
 <translation id="7483335560992089831">Ni mogoče namestiti iste različice Chromiuma, ki se trenutno izvaja. Zaprite Chromium in poskusite znova.</translation>
@@ -125,15 +183,17 @@ Nekatere funkcije morda ne bodo na voljo. Določite drug imenik profila ali upor
 <translation id="4458285410772214805">Odjavite se in znova prijavite, da bodo te spremembe začele veljati.</translation>
 <translation id="2119636228670142020">O sistemu &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Na voljo je nova, varnejša različica Chromiuma.</translation>
-<translation id="5859758987635973787">Chromium je posodobljen (<ph name="VERSION"/>)</translation>
 <translation id="8616882682724010661">Oglejte si <ph name="BEGIN_LINK"/>več prednosti<ph name="END_LINK"/> prijave v Chromium.</translation>
 <translation id="378917192836375108">Chromium omogoča, da v spletu kliknete telefonsko številko in jo pokličete prek Skypa.</translation>
 <translation id="8724049448828509830">Trenutno poteka prenos. Ali želite zapreti Chromium in preklicati prenos?</translation>
+<translation id="3360567213983886831">Chromium Binaries</translation>
 <translation id="7503101070699687603">Gostitelj za vtičnike za Chromium</translation>
 <translation id="2739631515503418643">Trenutno potekajo prenosi. Ali želite zapreti Chromium in preklicati prenose?</translation>
 <translation id="9013262824292842194">Za Chromium potrebujete operacijski sistem Windows Vista ali Windows XP s servisnim paketom SP2 ali novejšim.</translation>
 <translation id="1967743265616885482">Modul z istim imenom je že bil v sporu s Chromiumom.</translation>
 <translation id="4224199872375172890">Chromium je posodobljen.</translation>
+<translation id="374481098568514319">Ta računalnik že ima novejšo različico Chromiumovih komponent. Uporabite novejši namestitveni program.</translation>
+<translation id="6240281849816458190">Poskusili ste odpreti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, vendar ima strežnik potrdilo, ki še ni veljavno. Ni podatkov, na podlagi katerih bi bilo mogoče ugotoviti, ali je potrdilu mogoče zaupati. Google Chrome ne more zagotoviti, da komunicirate z domeno &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; in ne napadalcem. Ura v računalniku je trenutno nastavljena na <ph name="CURRENT_TIME"/>. Je to pravilno? Če ni, pravilno nastavite sistemsko uro in osvežite stran.</translation>
 <translation id="5498103559159810756">Chromium uporablja privzeti iskalnik, ki je trenutno <ph name="PAGE_TITLE"/>. Ali želite obdržati privzet iskalnik?</translation>
 <translation id="5862307444128926510">Pozdravljeni v Chromiumu</translation>
 <translation id="1622565934590470080">Ta računalnik že ima novejši različici Chromiuma in vtičnika Chromium Frame. Če programska oprema ne deluje, odstranite Chromium in vtičnik Chromium Frame ter poskusite znova.</translation>
@@ -143,10 +203,8 @@ Chromium ne more obnoviti vaših nastavitev.</translation>
 <translation id="7123348595797445166">Preskusite (že nameščeno)</translation>
 <translation id="6403826409255603130">Chromium je spletni brskalnik, ki bliskovito odpira spletne strani in izvaja aplikacije. Je hiter, stabilen in preprost za uporabo. Z vgrajeno zaščito pred zlonamerno programsko opremo in lažnim predstavljanjem je brskanje po spletu varno.</translation>
 <translation id="2927042866129133279">Neveljavni argumenti. Vtičnika Chromium Frame ni mogoče namestiti v načinu pripravljenosti brez namestitve Chromiuma.</translation>
-<translation id="546394857889685352">Naprava je posodobljena na različico <ph name="VERSION"/></translation>
 <translation id="2572494885440352020">Pomoč za Chromium</translation>
 <translation id="442817494342774222">Chromium se samodejno zažene ob zagonu računalnika.</translation>
 <translation id="8974095189086268230">Sistem Chrome OS omogoča dodatna <ph name="BEGIN_LINK_CROS_OSS"/>odprtokodna programska oprema<ph name="END_LINK_CROS_OSS"/>.</translation>
-<translation id="6154296300983386343">Znova zaženite Chromium, da dokončate posodobitev</translation>
 <translation id="1221340462641866827">Chromium OS ne podpira zagona zunanjega programa za obdelavo povezav <ph name="SCHEME"/>. Zahtevana povezava je <ph name="PROTOLINK"/>.</translation>
 </translationbundle>

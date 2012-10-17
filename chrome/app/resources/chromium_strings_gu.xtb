@@ -18,14 +18,13 @@
 </translation>
 <translation id="731644333568559921">&amp;Chromium OS ને અપડેટ કરો</translation>
 <translation id="7421823331379285070">Chromium ને Windows XP અથવા તે પછીનાની આવશ્યકતા છે. કેટલીક સુવિધાઓ કામ કરશે નહીં.</translation>
-<translation id="1185134272377778587">Chromium વિશે</translation>
 <translation id="4330297532943865716">સિસ્ટમ પર Chromium અથવા Chromium Frame નું વિરોધાભાસ ઇન્સ્ટોલેશન મળ્યું હતું. કૃપા કરીને તેને અનઇન્સ્ટોલ કરો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="6953661834318318668">Chromium ટૂલબાર</translation>
 <translation id="7097100943370017396">Chromium હવે અપડેટ કરી રહ્યું નથી કારણ કે તમારું ઓપરેટિંગ સિસ્ટમ જૂનું છે.</translation>
-<translation id="4103959775970322855">Chromium, <ph name="VERSION"/> પર અપડેટ કરવામાં આવ્યું છે</translation>
 <translation id="4285930937574705105">અમઉલ્લેખિત ભૂલને કારણે ઇન્સ્ટોલેશન નિષ્ફળ થયું. જો Chromium હાલમાં ચાલી રહ્યું હોય, તો તેને બંધ કરો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="2589479092236095792">Chromium Autofill સેટિંગ્સ</translation>
 <translation id="3555616473548901994">અનઇન્સ્ટોલેશન પૂર્ણ.</translation>
+<translation id="3674409928058572366">Chromium App હોસ્ટ</translation>
 <translation id="2886012850691518054">વૈકલ્પિક: ઉપયોગનાં આંકડાઓ અને ક્રેશ રીપોર્ટ્સ આપમેળે Google ને મોકલીને Chromium ને વધુ સારું બનાવવમાં સહાય કરો.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
 <translation id="1989424089625731201">તમે &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; પર પહોંચવાનો પ્રયાસ કર્યો છે, પરંતુ સર્વરે પ્રસ્તુત કરેલા પ્રમાણપત્રમાં ભૂલો છે. Chromium ભૂલોવાળા પ્રમાણપત્રનો ઉપયોગ કરી શકતું નથી અને તમે જે સાઇટથી કનેક્ટ કરવાનો પ્રયાસ કર્યો છે તે સાઇટની ઓળખને સત્યાપિત કરી શકતું નથી.</translation>
@@ -42,14 +41,30 @@
 <translation id="4179848566211676653">Chromium થી બહાર નીકળો</translation>
 <translation id="3849925841547750267">દુર્ભાગ્યપણે, તમારી Mozilla Firefox સેટિંગ્સ ઉપલબ્ધ નથી જ્યારે કે બ્રાઉઝર ચાલી રહ્યું છે. તે સેટિંગ્સને Chromium પર આયાત કરવા માટે, તમારું કાર્ય સાચવો અને બધી Firefox વિંડોને બંધ કરો. પછી ચાલુ રાખો ક્લિક કરો.</translation>
 <translation id="7771626876550251690">આ કિસ્સામાં, પ્રમાણપત્રમાં સૂચિબદ્ધ છે તે વેબસાઇટનું સરનામું તમારું બ્રાઉઝર જવાનો પ્રયાસ કરે છે તેનાથી મેળ ખાતું નથી. આના માટેનું એક સંભવિત કારણ એ છે કે તમારી વાતચીતોને ભિન્ન વેબસાઇટનું પ્રમાણ પ્રસ્તુત કરતા હુમલાખોર દ્વારા રોકવામાં આવી રહી છે, જે અમેળનું કારણ છે. બીજુ સંભવિત કારણ આ છે કે સર્વર તમે મુલાકાત લેવાનો પ્રયાસ કરી રહ્યાં છો તે સહિત, બહુવિધ વેબસાઇટ્સ માટે સમાન પ્રમાણપત્ર પાછું કરવા માટે સેટ કરેલું છે, પછી ભલે તે પ્રમાણપત્ર તે બધી વેબસાઇટ્સ માટે માન્ય નથી. Chromium તમે &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; પર પહોંચ્યાં તે ખાતરીથી કહી શકે છે, પરંતુ તે ચકાસી શકતું નથી કે એ તે &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; જેવી જ સાઇટ છે કે જેના પર પહોંચવાનો તમારો હેતુ છે. જો તમે આગળ વધો છો, તો Chromium આગળ કોઈપણ નામ અમેળ માટે તપાસ કરશે નહીં.</translation>
+<translation id="2401271577450445716"><ph name="BEGIN_BOLD"/>
+          Chromium મેનૂ &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="ADVANCED_TITLE"/>
+          &gt;
+          <ph name="PROXIES_TITLE"/>
+          &gt;
+          LAN સેટિંગ્સ
+          <ph name="END_BOLD"/>
+          પર જાઓ અને &quot;તમારા LAN માટે પ્રોક્સી સર્વરનો ઉપયોગ કરો&quot; ચેકબૉક્સથી પસંદ હટાવો.</translation>
 <translation id="4330585738697551178">આ મોડ્યુલ Chromium સાથે વિરોધાભાસ માટે જાણીતું છે.</translation>
 <translation id="3190315855212034486">ઓહ! Chromium ક્રેશ થઈ ગયું. હમણાં ફરીથી લોંચ કરીએ?</translation>
 <translation id="6714487516757221107">અપડેટ કરવા માટે Chromium અથવા Chromium Frame નું ઇન્સ્ટોલેશન મળ્યું નથી.</translation>
 <translation id="3197823471738295152">તમારું ઉપકરણ અપ ટૂ ડેટ છે.</translation>
 <translation id="8551886023433311834">લગભગ અપ-ટૂ-ડેટ! અપડેટ કરવાનું સમાપ્ત કરવા માટે તમારા ઉપકરણને પુનઃપ્રારંભ કરો.</translation>
+<translation id="8353224596138547809">શું તમે ઇચ્છો છો કે Chromium આ સાઇટ માટે તમારો પાસવર્ડ સાચવે?</translation>
+<translation id="3026202950002788510">          <ph name="BEGIN_BOLD"/>
+          Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
+          <ph name="END_BOLD"/>
+          પર જાઓ અને પસંદ કરેલી કોઈપણ પ્રોક્સીસની પસંદગી હટાવો.</translation>
 <translation id="4124681358536363708">Chromium ઇન્સ્ટોલેશન નિર્દેશિકા ઉપયોગમાં હોય તેવું લાગે છે. કૃપા કરીને તમારા કમ્પ્યુટરને રીબુટ કરો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="8770560772173120024">Chromium હમણાં મનપસંદ/બુકમાર્ક આયાત કરી રહ્યું છે.</translation>
-<translation id="6290315939897260265">Chromium માં ઉપયોગમાં નથી. સંસાધન નકશાને સમન્વયનમાં રાખવા માટે પ્લેસહોલ્ડર.</translation>
+<translation id="225614027745146050">સ્વાગત છે</translation>
 <translation id="9191268552238695869">વ્યવસ્થાપકે આ સિસ્ટમ પર Chromium ઇન્સ્ટોલ કરેલું છે અને તે બધા વપરાશકર્તાઓ માટે ઉપલબ્ધ છે. સિસ્ટમ-સ્તર Chromium હવે તમારા વપરાશકર્તા-સ્તરના ઇન્સ્ટોલેશનને બદલી દેશે.</translation>
 <translation id="3509308970982693815">કૃપા કરીને બધી Chromium વિંડોઝ બંધ કરો અને ફરીથી પ્રયાસ કરો.</translation>
 <translation id="4077262827416206768">કૃપા કરીને બધી Chromium વિંડોઝને બંધ કરો અને આ ફેરફારને પ્રભાવમાં લાવવા માટે Chromium ને ફરી શરૂ કરો.</translation>
@@ -58,6 +73,7 @@
 <translation id="118298050220780080">તમે &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; સુધી પહોંચવાનો પ્રયાસ કર્યો છે, પરંતુ સર્વરે પ્રસ્તુત કરેલું પ્રમાણપત્ર કોઈ એવા વ્યક્તિ દ્વારા રજૂ કરવામાં આવેલું છે કે જે તમારા કમ્પ્યુટરની ઓપરેટિંગ સિસ્ટમ દ્વારા વિશ્વસનીય નથી. આનો અર્થ આ છે કે સર્વર પાસે ખાતરીપૂર્વક તેનાં સુરક્ષા પ્રમાણપત્રો છે, ઓળખ માહિતી માટે જેના પર Chromium ભરોસો કરી શકતું નથી અથવા કોઈ હુમલાખોર તમારી વાતચીતોને રોકવાનો પ્રયાસ કરી રહ્યો છે.</translation>
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="3296368748942286671">જ્યારે Chromium બંધ થાય ત્યારે પૃષ્ઠભૂમિ એપ્લિકેશન્સ ચલાવવાનું ચાલુ રાખો</translation>
+<translation id="473775607612524610">અપડેટ કરો</translation>
 <translation id="6055895534982063517">Chromium નું એક નવું સંસ્કરણ ઉપલબ્ધ છે અને તે પહેલાં કરતાંએ વધુ ઝડપી છે.</translation>
 <translation id="2407806170074302369">Chromium Frame વિશે...</translation>
 <translation id="5405650547142096840">Chromium માંથી દૂર કરો</translation>
@@ -79,17 +95,26 @@
 <translation id="1774152462503052664">Chromium ને પૃષ્ઠભૂમિમાં ચાલવા દો</translation>
 <translation id="9022552996538154597">Chromium માં સાઇન ઇન કરો</translation>
 <translation id="4365115785552740256">Chromium એ <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> ઓપન સ્રોત પ્રોજેક્ટ અને અન્ય <ph name="BEGIN_LINK_OSS"/>ઓપન સ્રોત સૉફ્ટવેર<ph name="END_LINK_OSS"/> દ્વારા શક્ય બનાવ્યું છે.</translation>
-<translation id="7549178288319965365">Chromium OS વિશે</translation>
 <translation id="6248213926982192922">Chromium ને ડિફોલ્ટ બ્રાઉઝર બનાવો</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="3069161343438701711">Chromium Worker</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="6757767188268205357">મને બગ રીતે કરશો નહીં</translation>
+<translation id="7294284502435423183">આ પગલાં અનુસરીને નેટવર્ક અનુમાનને અક્ષમ કરવાનો પ્રયાસ કરો:
+        <ph name="BEGIN_BOLD"/>
+        Chromium મેનૂ &gt;
+        <ph name="SETTINGS_TITLE"/>
+        &gt;
+        <ph name="ADVANCED_TITLE"/>
+        <ph name="END_BOLD"/>
+        પર જાઓ અને &quot;<ph name="NO_PREFETCH_DESCRIPTION"/>&quot; પસંદ હટાવો.
+        જો આ સમસ્યાને હલ નથી કરતું, તો સુધારેલા પ્રદર્શન માટે અમે આ વિકલ્પને ફરી પસંદ કરવાની ભલામણ કરીએ છીએ.</translation>
 <translation id="275588974610408078">Chromium માં ક્રેશ રિપોર્ટિંગ ઉપલબ્ધ નથી.</translation>
 <translation id="5909170354645388250">Chromium માં ઉપયોગમાં નથી. સંસાધન નકશાને સમન્વયનમાં રાખવા માટે પ્લેસહોલ્ડર. તે એક તર્કની અપેક્ષા કરે છે: $1.</translation>
 <translation id="3582788516608077514">Chromium ને અપડેટ કરી રહ્યું છે...</translation>
 <translation id="7223968959479464213">કાર્ય વ્યવસ્થાપક - Chromium</translation>
 <translation id="3838208658251026018">Chromium હવે <ph name="BROWSER_COMPONENT"/> માંથી નીચેની આઇટમ્સ આયાત કરી રહ્યું છે:</translation>
+<translation id="6638567566961868659">Chromium મેનૂમાં અથવા બુકમાર્ક્સ બાર પર તમારા બુકમાર્ક્સ શોધો.</translation>
 <translation id="2673087257647337101">લગભગ અપ ટૂ ડેટ! અપડેટ સમાપ્ત કરવા માટે Chromium ને ફરીથી શરૂ કરો.</translation>
 <translation id="5398878173008909840">Chromium નું નવું સંસ્કરણ ઉપલબ્ધ છે.</translation>
 <translation id="2648074677641340862">ઇન્સ્ટોલેશન દરમ્યાન ઓપરેટિંગ સિસ્ટમ ભૂલ આવી. કૃપા કરીને ફરીથી Chromium ડાઉનલોડ કરો.</translation>
@@ -110,15 +135,40 @@
 <translation id="1929939181775079593">Chromium પ્રતિસાદ આપતું નથી. હવે ફરીથી લોંચ કરીએ?</translation>
 <translation id="6089587093203430357">ઝટપટ</translation>
 <translation id="2966088006374919794">Chromium <ph name="SCHEME"/> લિંક્સને હેન્ડલ કરવા માટે કોઈ બાહ્ય એપ્લિકેશન શરૂ કરવાની જરૂર છે. વિનંતી કરેલી લિંક <ph name="PROTOLINK"/> છે.</translation>
-<translation id="5699533844376998780">એક્સ્ટેંશન &quot;<ph name="EXTENSION_NAME"/>&quot; ઉમેરવામાં આવ્યું.</translation>
 <translation id="8046283042877435986">આ સાઇટ Chromium Frame (પહેલાથી જ ઇન્સ્ટોલ કરેલું છે)ની ભલામણ કરે છે .</translation>
 <translation id="6287463253129672858">હાલમાં ચાલી રહ્યું છે તેના જેવું સમાન Chromium Frame સંસ્કરણ ઇન્સ્ટોલ કરી શકાતું નથી. કૃપા કરીને Chromium Frame ને બંધ કરો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="2558235863893655150">શું તમે ઈચ્છો છો કે Chromium તમારો પાસવર્ડ સાચવે?</translation>
+<translation id="3398522627033804247"><ph name="BEGIN_BOLD"/>
+         Chromium મેનૂ &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="INTERNET_TITLE"/>
+          &gt;
+          &quot;<ph name="OPTIONS_BUTTON"/>&quot;
+          <ph name="END_BOLD"/>
+          (વર્તમાન નેટવર્ક માટે) પર જાઓ. જો
+          <ph name="BEGIN_BOLD"/>
+          &quot;<ph name="PROXY_BUTTON"/>&quot;
+          <ph name="END_BOLD"/>બટન (<ph name="BEGIN_BOLD"/>
+          <ph name="NETWORK_TAB"/>
+          <ph name="END_BOLD"/>
+          ટેબમાં) હાજર છે, તો તેના પર ક્લિક કરો અને ખાતરી કરો કે તમારી ગોઠવણી &quot;પ્રત્યક્ષ&quot; પર સેટ કરેલી છે.</translation>
+<translation id="1231416733874080281">Chromium મેનૂ બતાવો</translation>
 <translation id="1688750314291223739">તમારી વેબ પરની વ્યક્તિગત કરેલી બ્રાઉઝર સુવિધાઓને સાચવવા અને તેમને કોઈપણ કમ્પ્યુટર પર Chromium માંથી ઍક્સેસ કરવા માટે સમન્વયન સેટ કરો.</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">ઇંટરનેટ બ્રાઉઝર</translation>
+<translation id="6424492062988593837">Chrome હમણાં જ વધુ સારું થયું છે! નવું સંસ્કરણ ઉપલબ્ધ છે.</translation>
 <translation id="2910007522516064972">&amp;Chromium વિશે</translation>
 <translation id="8453117565092476964">ઇન્સ્ટોલર આર્કાઇવ દૂષિત અથવા અમાન્ય છે. કૃપા કરીને Chromium ફરીથી ડાઉનલોડ કરો.</translation>
+<translation id="2162026298602630383"><ph name="BEGIN_BOLD"/>
+          Chromium મેનૂ &gt;
+          <ph name="SETTINGS_TITLE"/>
+          &gt;
+          <ph name="ADVANCED_TITLE"/>
+          &gt;
+          <ph name="PROXIES_TITLE"/>
+          <ph name="END_BOLD"/>
+          પર જાઓ અને ખાતરી કરો કે તમારી ગોઠવણી &quot;પ્રોક્સી નહીં&quot; અથવા &quot;પ્રત્યક્ષ&quot; પર સેટ કરેલી છે.</translation>
 <translation id="3249425904492147663">તમે &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; સુધી પહોંચવાનો પ્રયાસ કર્યો, પરંતુ સર્વરે સમાપ્ત થયેલું પ્રમાણપત્ર પ્રસ્તુત કર્યું. પ્રમાણપત્રને તેના સમાપ્ત થવા પછી તેની સાથે ચેડા કરવામાં આવ્યાં છે કે કેમ તે દર્શાવતી કોઈ માહિતી ઉપલબ્ધ નથી. આનો અર્થ એ છે કે Chromium કોઈ ગેરેંટી આપતું નથી કે તમે &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; સાથે વાતચીત કરી રહ્યાં છો અને તે કોઈ હુમલાખોર નથી. તમારા કમ્પ્યુટરનું ધડિયાળ <ph name="CURRENT_TIME"/> પર સેટ છે. બરાબર નથી લાગતું? જો નહીં, તો તમારે કોઈપણ ભૂલ સુધારી અને આ પૃષ્ઠને તાજું કરવું જોઈએ.</translation>
 <translation id="7196020411877309443">હું આ કેમ જોઇ રહ્યો(હી) છું?</translation>
 <translation id="7483335560992089831">હાલમાં ચાલી રહ્યું છે તેના જેવું સમાન Chromium સંસ્કરણ ઇન્સ્ટોલ કરી શકાતું નથી. કૃપા કરીને Chromium ને બંધ કરો અને ફરી પ્રયાસ કરો.</translation>
@@ -126,15 +176,17 @@
 <translation id="4458285410772214805">કૃપા કરીને આ પરિવર્તનને પ્રભાવમાં લાવવા માટે સાઇન આઉટ કરો અને ફરીથી સાઇન ઇન કરો.</translation>
 <translation id="2119636228670142020">&amp;Chromium OS વિશે</translation>
 <translation id="1708666629004767631">Chromium નું નવું, સલામત સંસ્કરણ ઉપલબ્ધ છે.</translation>
-<translation id="5859758987635973787">Chromium અપ ટૂ ડેટ છે (<ph name="VERSION"/>)</translation>
 <translation id="8616882682724010661">Chromium માં સાઇન ઇન કરવાનાં <ph name="BEGIN_LINK"/>વધુ ફાયદા<ph name="END_LINK"/> જુઓ.</translation>
 <translation id="378917192836375108">Chromium થી તમે વેબ પર એક ફોન નંબર પર ક્લિક કરી શકો છો અને તેને Skype થી કૉલ કરી શકો છો!</translation>
 <translation id="8724049448828509830">હાલમાં એક ડાઉનલોડ પ્રક્રિયામાં છે. શું તમે Chromium થી બહાર નીકળવા અને ડાઉનલોડને રદ કરવા માગો છો?</translation>
+<translation id="3360567213983886831">Chromium બાઇનરીઝ</translation>
 <translation id="7503101070699687603">Chrome Plug-In Host</translation>
 <translation id="2739631515503418643">હાલમાં ડાઉનલોડ્સ પ્રક્રિયામાં છે. શું તમે Chromium થી બહાર નીકળવા અને ડાઉનલોડ્સને રદ કરવા માગો છો?</translation>
 <translation id="9013262824292842194">Chromium ને Windows Vista અથવા SP1 વાળા Windows XP અથવા તે પછીનાની આવશ્યકતા છે.</translation>
 <translation id="1967743265616885482">આ જ નામનું એક મોડ્યુલ Chromium સાથે વિરોધાભાસમાં જાણમાં આવ્યું છે.</translation>
 <translation id="4224199872375172890">Chromium અપ ટૂ ડેટ છે.</translation>
+<translation id="374481098568514319">આ કમ્પ્યુટરમાં પહેલેથી જ Chromium ઘટકોનું વધુ તાજેતરનું સંસ્કરણ છે. કૃપા કરીને વધુ તાજેતરનાં ઇન્સ્ટોલરનો ઉપયોગ કરો.</translation>
+<translation id="6240281849816458190">તમે &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; સુધી પહોંચવાનો પ્રયાસ કર્યો છે, પરંતુ સર્વરે જે પ્રમાણપત્ર પ્રસ્તુત કર્યું છે તે હજુ સુધી માન્ય નથી. તે પ્રમાણપત્ર પર વિશ્વાસ કરી શકાય કે નહીં તે દર્શાવતી કોઈ માહિતી ઉપલબ્ધ નથી. Chromium કોઈ વિશ્વસનીય ગેરેંટી આપતું નથી કે તમે &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; સાથે વાતચીત કરી રહ્યાં છો અને તે કોઈ હુમલાખોર નથી. તમારા કમ્પ્યુટરની ઘડિયાળ હાલમાં <ph name="CURRENT_TIME"/> પર સેટ છે. તે બરાબર નથી લાગતું? જો નહીં, તો તમારે તમારા સિસ્ટમની ઘડિયાળ ઠીક કરી અને પછી આ પૃષ્ઠ તાજું કરવું જોઈએ.</translation>
 <translation id="5498103559159810756">Chromium તમારા ડિફોલ્ટ શોધ એંજિનનો ઉપયોગ કરે છે, જે હાલમાં <ph name="PAGE_TITLE"/> પર સેટ છે. શું તમે તમારા ડિફોલ્ટ શોધ એંજિનને રાખવા માંગો છો?</translation>
 <translation id="5862307444128926510">Chromium માં સ્વાગત છે</translation>
 <translation id="1622565934590470080">આ કમ્પ્યુટર પર પહેલાથી જ Chromium  અને Chromium Frame નું સૌથી તાજેતરનું સંસ્કરણ છે. જો સૉફ્ટવેર કાર્ય કરી રહ્યું નથી, તો કૃપા કરીને Chromium   અને Chromium Frame બન્નેને અનઇન્સ્ટોલ કરો અને ફરીથી પ્રયાસ કરો.</translation>
@@ -144,10 +196,8 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <translation id="7123348595797445166">તેનો પ્રયાસ કરી જુઓ (અગાઉથી ઇન્સ્ટોલ કરેલું છે)</translation>
 <translation id="6403826409255603130">Chromium એ એક એવું વેબ બ્રાઉઝર છે જે પ્રકાશની ગતિએ વેબપૃષ્ઠો અને એપ્લિકેશંસને ચલાવે છે. તે ઝડપી, સ્થિર અને ઉપયોગમાં સરળ છે. Google Chromium માં નિર્મિત મૉલવેર અને ફિશીંગ સુરક્ષા સાથે વેબને વધુ સુરક્ષિત રૂપે બ્રાઉઝ કરો.</translation>
 <translation id="2927042866129133279">અમાન્ય દલીલો. Chromium ઇન્સ્ટોલ કર્યા વિના પણ Chromium Frame રેડી મોડમાં ઇન્સ્ટોલ થઈ શકતું નથી.</translation>
-<translation id="546394857889685352">તમારા ઉપકરણને <ph name="VERSION"/> માં અપડેટ કરવામાં આવ્યું</translation>
 <translation id="2572494885440352020">Chromium હેલ્પર</translation>
 <translation id="442817494342774222">Chromium ને જ્યારે તમે તમારું કમ્પ્યુટર ચાલુ કરો ત્યારે આપમેળે શરૂ થવા માટે ગોઠવેલું છે.</translation>
 <translation id="8974095189086268230">Chromium OS એ વધારાનાં <ph name="BEGIN_LINK_CROS_OSS"/>ઓપન સ્રોત સૉફ્ટવેર<ph name="END_LINK_CROS_OSS"/> દ્વારા શક્ય બનાવ્યું છે.</translation>
-<translation id="6154296300983386343">અપડેટ કરવાનું સમાપ્ત કરવા માટે Chromium ને ફરી શરૂ કરો</translation>
 <translation id="1221340462641866827">Chromium OS <ph name="SCHEME"/> લિંક્સને હેન્ડલ કરવા માટે કોઈ બાહ્ય એપ્લિકેશન શરૂ કરવાને સપોર્ટ કરતું નથી. વિનંતી કરેલી લિંક <ph name="PROTOLINK"/> છે.</translation>
 </translationbundle>
