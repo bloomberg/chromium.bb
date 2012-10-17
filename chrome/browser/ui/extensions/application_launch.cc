@@ -31,6 +31,10 @@
 #include "content/public/common/renderer_preferences.h"
 #include "ui/gfx/rect.h"
 
+#if defined(OS_WIN)
+#include "base/win/metro.h"
+#endif
+
 using content::WebContents;
 using extensions::Extension;
 using extensions::ExtensionPrefs;
@@ -108,7 +112,18 @@ WebContents* OpenApplicationWindow(
   }
 #endif
 
-  Browser* browser = new Browser(params);
+  Browser* browser = NULL;
+#if defined(OS_WIN)
+  // In Chrome on Windows 8 in metro mode we don't allow multiple chrome
+  // windows to be created, as we don't have a good way to switch between
+  // them. We attempt to reuse an existing Browser window.
+  if (base::win::IsMetroProcess()) {
+    browser = browser::FindBrowserWithProfile(
+        profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
+  }
+#endif
+  if (!browser)
+    browser = new Browser(params);
 
   if (app_browser)
     *app_browser = browser;
