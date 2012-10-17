@@ -5,7 +5,9 @@
 import copy
 import hashlib
 import json
+import string
 import sys
+import urllib2
 
 MANIFEST_VERSION = 2
 
@@ -57,8 +59,8 @@ def DictToJSON(pydict):
 
 
 def DownloadAndComputeHash(from_stream, to_stream=None, progress_func=None):
-  ''' Download the archive data from from-stream and generate sha1 and
-      size info.
+  '''Download the archive data from from-stream and generate sha1 and
+  size info.
 
   Args:
     from_stream:   An input stream that supports read.
@@ -146,6 +148,20 @@ class Archive(dict):
       if key not in VALID_ARCHIVE_KEYS:
         raise Error('Archive "%s" has invalid attribute "%s"' % (host_os, key))
 
+  def UpdateVitals(self, revision):
+    """Update the size and checksum information for this archive
+    based on the content currently at the URL.
+
+    This allows the template mandifest to be maintained without
+    the need to size and checksums to be present.
+    """
+    template = string.Template(self['url'])
+    self['url'] = template.substitute({'revision': revision})
+    from_stream = urllib2.urlopen(self['url'])
+    sha1_hash, size = DownloadAndComputeHash(from_stream)
+    self['size'] = size
+    self['checksum'] = { 'sha1': sha1_hash }
+
   def __getattr__(self, name):
     """Retrieve values from this dict using attributes.
 
@@ -215,6 +231,9 @@ class Bundle(dict):
       else:
         self[k] = v
 
+  def __str__(self):
+    return self.GetDataAsString()
+
   def GetDataAsString(self):
     """Returns the JSON bundle object, pretty-printed"""
     return DictToJSON(self)
@@ -245,21 +264,21 @@ class Bundle(dict):
       else:
         self[key] = value
 
-  def Validate(self):
+  def Validate(self, add_missing_info=False):
     """Validate the content of the bundle. Raise an Error if an invalid or
        missing field is found. """
     # Check required fields.
-    if not self.get(NAME_KEY, None):
+    if not self.get(NAME_KEY):
       raise Error('Bundle has no name')
-    if self.get(REVISION_KEY, None) == None:
+    if self.get(REVISION_KEY) == None:
       raise Error('Bundle "%s" is missing a revision number' % self[NAME_KEY])
-    if self.get(VERSION_KEY, None) == None:
+    if self.get(VERSION_KEY) == None:
       raise Error('Bundle "%s" is missing a version number' % self[NAME_KEY])
-    if not self.get('description', None):
+    if not self.get('description'):
       raise Error('Bundle "%s" is missing a description' % self[NAME_KEY])
-    if not self.get('stability', None):
+    if not self.get('stability'):
       raise Error('Bundle "%s" is missing stability info' % self[NAME_KEY])
-    if self.get('recommended', None) == None:
+    if self.get('recommended') == None:
       raise Error('Bundle "%s" is missing the recommended field' %
                   self[NAME_KEY])
     # Check specific values
@@ -277,6 +296,8 @@ class Bundle(dict):
                     (self[NAME_KEY], key))
     # Validate the archives
     for archive in self[ARCHIVES_KEY]:
+      if add_missing_info and 'size' not in archive:
+        archive.UpdateVitals(self[REVISION_KEY])
       archive.Validate()
 
   def GetArchive(self, host_os_name):
@@ -387,7 +408,7 @@ class SDKManifest(object):
         "bundles": [],
         }
 
-  def Validate(self):
+  def Validate(self, add_missing_info=False):
     """Validate the Manifest file and raises an exception for problems"""
     # Validate the manifest top level
     if self._manifest_data["manifest_version"] > MANIFEST_VERSION:
@@ -399,7 +420,7 @@ class SDKManifest(object):
         raise Error('Manifest has invalid attribute "%s"' % key)
     # Validate each bundle
     for bundle in self._manifest_data[BUNDLES_KEY]:
-      bundle.Validate()
+      bundle.Validate(add_missing_info)
 
   def GetBundle(self, name):
     """Get a bundle from the array of bundles.
@@ -457,7 +478,7 @@ class SDKManifest(object):
            (local_bundle[VERSION_KEY], local_bundle[REVISION_KEY]) <
            (bundle[VERSION_KEY], bundle[REVISION_KEY]))
 
-  def MergeBundle(self, bundle, allow_existing = True):
+  def MergeBundle(self, bundle, allow_existing=True):
     """Merge a Bundle into this manifest.
 
     The new bundle is added if not present, or merged into the existing bundle.
@@ -483,7 +504,7 @@ class SDKManifest(object):
       manifest: The manifest to merge.
     '''
     for bundle in manifest.GetBundles():
-      self.MergeBundle(bundle, allow_existing = False)
+      self.MergeBundle(bundle, allow_existing=False)
 
   def FilterBundles(self, predicate):
     """Filter the list of bundles by |predicate|.
@@ -497,7 +518,7 @@ class SDKManifest(object):
     """
     self._manifest_data[BUNDLES_KEY] = filter(predicate, self.GetBundles())
 
-  def LoadDataFromString(self, json_string):
+  def LoadDataFromString(self, json_string, add_missing_info=False):
     """Load a JSON manifest string. Raises an exception if json_string
        is not well-formed JSON.
 
@@ -517,7 +538,10 @@ class SDKManifest(object):
         self._manifest_data[key] = bundles
       else:
         self._manifest_data[key] = value
-    self.Validate()
+    self.Validate(add_missing_info)
+
+  def __str__(self):
+    return self.GetDataAsString()
 
   def GetDataAsString(self):
     """Returns the current JSON manifest object, pretty-printed"""

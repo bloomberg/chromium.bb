@@ -167,9 +167,10 @@ class Delegate(object):
 
 
 class RealDelegate(Delegate):
-  def __init__(self, dryrun=False, gsutil=None):
+  def __init__(self, dryrun=False, gsutil=None, verbose=False):
     super(RealDelegate, self).__init__()
     self.dryrun = dryrun
+    self.verbose = verbose
     if gsutil:
       self.gsutil = gsutil
     else:
@@ -181,7 +182,7 @@ class RealDelegate(Delegate):
       sdk_json_string = sdk_stream.read()
 
     manifest = manifest_util.SDKManifest()
-    manifest.LoadDataFromString(sdk_json_string)
+    manifest.LoadDataFromString(sdk_json_string, add_missing_info=True)
     return manifest
 
   def GetHistory(self):
@@ -212,6 +213,7 @@ class RealDelegate(Delegate):
   def GsUtil_cp(self, src, dest, stdin=None):
     """See Delegate.GsUtil_cp"""
     if self.dryrun:
+      self.Trace("Skipping upload: %s -> %s" % (src, dest))
       return
 
     # -p ensures we keep permissions when copying "in-the-cloud".
@@ -219,6 +221,10 @@ class RealDelegate(Delegate):
 
   def Print(self, *args):
     sys.stdout.write(' '.join(map(str, args)) + '\n')
+
+  def Trace(self, *args):
+    if self.verbose:
+      self.Print(*args)
 
   def _RunGsUtil(self, stdin, *args):
     """Run gsutil as a subprocess.
@@ -230,16 +236,20 @@ class RealDelegate(Delegate):
     Returns:
       The stdout from the process."""
     cmd = [self.gsutil] + list(args)
+    self.Trace("Running: %s" % str(cmd))
     if stdin:
       stdin_pipe = subprocess.PIPE
     else:
       stdin_pipe = None
 
-    process = subprocess.Popen(cmd, stdin=stdin_pipe, stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE)
-    stdout, stderr = process.communicate(stdin)
+    try:
+      process = subprocess.Popen(cmd, stdin=stdin_pipe, stdout=subprocess.PIPE,
+          stderr=subprocess.PIPE)
+      stdout, stderr = process.communicate(stdin)
+    except OSError as e:
+      raise manifest_util.Error("Unable to run '%s': %s" % (cmd[0], str(e)))
 
-    if process.returncode != 0:
+    if process.returncode:
       sys.stderr.write(stderr)
       raise subprocess.CalledProcessError(process.returncode, ' '.join(cmd))
     return stdout
@@ -518,6 +528,19 @@ class Updater(object):
     Args:
       manifest: The new manifest to upload.
     """
+    if self.delegate.dryrun:
+      name = MANIFEST_BASENAME + ".new"
+      self.delegate.Print("Writing new manifest: %s" % name)
+      with open(name, 'w') as f:
+        f.write(manifest.GetDataAsString())
+      stdout = self.delegate.GsUtil_cat(GS_SDK_MANIFEST)
+
+      online = MANIFEST_BASENAME + ".online"
+      self.delegate.Print("Writing online manifest: %s" % online)
+      with open(online, 'w') as f:
+        f.write(stdout)
+      os.system('diff -u %s %s' % (online, name))
+
     timestamp_manifest_path = GS_MANIFEST_BACKUP_DIR + \
         GetTimestampManifestName()
     self.delegate.GsUtil_cp('-', timestamp_manifest_path,
@@ -597,14 +620,15 @@ class CapturedFile(object):
 
 def main(args):
   parser = optparse.OptionParser()
-  parser.add_option('--gsutil', help='path to gsutil', dest='gsutil',
-      default=None)
-  parser.add_option('--mailfrom', help='email address of sender',
-      dest='mailfrom', default=None)
-  parser.add_option('--mailto', help='send error mails to...', dest='mailto',
-      default=[], action='append')
-  parser.add_option('--dryrun', help='don\'t upload the manifest.',
-      dest='dryrun', action='store_true', default=False)
+  parser.add_option('--gsutil', help='path to gsutil.')
+  parser.add_option('-d', '--debug', help='run in debug mode.',
+      action='store_true')
+  parser.add_option('--mailfrom', help='email address of sender.')
+  parser.add_option('--mailto', help='send error mails to...', action='append')
+  parser.add_option('-n', '--dryrun', help="don't upload the manifest.",
+      action='store_true')
+  parser.add_option('-v', '--verbose', help='print more diagnotic messages.',
+      action='store_true')
   options, args = parser.parse_args(args[1:])
 
   if (options.mailfrom is None) != (not options.mailto):
@@ -618,18 +642,25 @@ def main(args):
     sys.stderr = CapturedFile(sys.stderr)
 
   try:
-    delegate = RealDelegate(dryrun=options.dryrun, gsutil=options.gsutil)
-    Run(delegate, ('mac', 'win', 'linux'))
-  except Exception:
-    if options.mailfrom and options.mailto:
-      traceback.print_exc()
-      scriptname = os.path.basename(sys.argv[0])
-      subject = '[%s] Failed to update manifest' % (scriptname,)
-      text = '%s failed.\n\nSTDERR:\n%s\n' % (scriptname, sys.stderr.getvalue())
-      SendMail(options.mailfrom, options.mailto, subject, text)
-      sys.exit(1)
-    else:
+    try:
+      delegate = RealDelegate(options.dryrun, options.gsutil, options.verbose)
+      Run(delegate, ('mac', 'win', 'linux'))
+    except Exception:
+      if options.mailfrom and options.mailto:
+        traceback.print_exc()
+        scriptname = os.path.basename(sys.argv[0])
+        subject = '[%s] Failed to update manifest' % (scriptname,)
+        text = '%s failed.\n\nSTDERR:\n%s\n' % (scriptname,
+                                                sys.stderr.getvalue())
+        SendMail(options.mailfrom, options.mailto, subject, text)
+        sys.exit(1)
+      else:
+        raise
+  except manifest_util.Error as e:
+    if options.debug:
       raise
+    print e
+    sys.exit(1)
 
 
 if __name__ == '__main__':

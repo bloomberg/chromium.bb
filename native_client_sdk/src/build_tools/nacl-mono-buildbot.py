@@ -13,7 +13,7 @@ import build_utils
 
 GS_MANIFEST_PATH = 'gs://nativeclient-mirror/nacl/nacl_sdk/'
 SDK_MANIFEST = 'naclsdk_manifest2.json'
-MONO_MANIFEST = 'naclmono_manifest.json' 
+MONO_MANIFEST = 'naclmono_manifest.json'
 
 def build_and_upload_mono(sdk_revision, pepper_revision, sdk_url,
                           upload_path, args):
@@ -69,7 +69,7 @@ def get_sdk_build_info():
   manifest_file = open(MONO_MANIFEST, 'r')
   mono_manifest = json.loads(manifest_file.read())
   manifest_file.close()
-  
+
   ret = []
   mono_manifest_dirty = False
   # Check to see if we need to rebuild mono based on sdk revision
@@ -145,14 +145,14 @@ def update_mono_sdk_json(infos):
           value[loc] = bundle
         else:
           value.append(bundle)
-    
+
   # Write out the file locally, then upload to its known location.
   manifest_file = open(MONO_MANIFEST, 'w')
   manifest_file.write(json.dumps(mono_manifest, sort_keys=False, indent=2))
   manifest_file.close()
   buildbot_common.Run([buildbot_common.GetGsutil(), 'cp', '-a', 'public-read',
       MONO_MANIFEST, GS_MANIFEST_PATH + MONO_MANIFEST])
-  
+
 
 def main(args):
   args = args[1:]
@@ -176,7 +176,7 @@ def main(args):
       build_and_upload_mono(None, info['pepper_revision'], info['sdk_url'],
           upload_path, args)
     update_mono_sdk_json(infos)
-    
+
 
 
 if __name__ == '__main__':

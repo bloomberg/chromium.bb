@@ -61,12 +61,8 @@
       "repath": "vs_addin",
       "archives": [
         {
-          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/sdk/1449/vs_addin.tgz",
-          "checksum": {
-            "sha1": "91acaf2535ad8b464a799af5251197bab02869ee"
-          },
-          "host_os": "win",
-          "size": 86759
+          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/sdk/${revision}/vs_addin.tgz",
+          "host_os": "win"
         }
       ],
       "revision": 1449

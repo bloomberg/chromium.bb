@@ -5,10 +5,12 @@
 
 import copy
 import datetime
+import hashlib
 import os
 import posixpath
 import subprocess
 import sys
+import tempfile
 import unittest
 import urlparse
 
@@ -158,6 +160,7 @@ class TestDelegate(update_nacl_manifest.Delegate):
     self.history = history
     self.files = files
     self.version_mapping = version_mapping
+    self.dryrun = 0
 
   def GetRepoManifest(self):
     return self.manifest
@@ -513,11 +516,35 @@ mac,canary,21.0.1156.0,2012-05-30 12:14:21.305090"""
     self.assertEqual(len(self.uploaded_manifest.GetBundles()), 1)
 
 
-def main():
-  suite = unittest.defaultTestLoader.loadTestsFromModule(sys.modules[__name__])
-  result = unittest.TextTestRunner(verbosity=2).run(suite)
+class TestUpdateVitals(unittest.TestCase):
+  def setUp(self):
+    f = tempfile.NamedTemporaryFile('w', prefix="test_update_nacl_manifest")
+    self.test_file = f.name
+    f.close()
+    test_data = "Some test data\n"
+    self.sha1 = hashlib.sha1(test_data).hexdigest()
+    with open(self.test_file, 'w') as f:
+      f.write(test_data)
 
-  return int(not result.wasSuccessful())
+  def tearDown(self):
+    os.remove(self.test_file)
+
+  def testUpdateVitals(self):
+    archive = manifest_util.Archive(manifest_util.GetHostOS())
+    archive.url = 'file://%s' % os.path.abspath(self.test_file)
+    bundle = MakeBundle(18)
+    bundle.AddArchive(archive)
+    manifest = MakeManifest(bundle)
+    archive = manifest.GetBundles()[0]['archives'][0]
+
+    self.assertTrue('size' not in archive)
+    self.assertTrue('checksum' not in archive)
+
+    manifest.Validate()
+
+    self.assertEqual(archive['size'], 15)
+    self.assertEqual(archive['checksum']['sha1'], self.sha1)
+
 
 if __name__ == '__main__':
-  sys.exit(main())
+  unittest.main()
