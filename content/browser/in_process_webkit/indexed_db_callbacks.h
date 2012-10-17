@@ -178,6 +178,8 @@ class IndexedDBCallbacks<WebKit::WebSerializedScriptValue>
   virtual void onSuccess(const WebKit::WebSerializedScriptValue& value,
                          const WebKit::WebIDBKey& key,
                          const WebKit::WebIDBKeyPath& keyPath);
+  virtual void onSuccess(long long value);
+  virtual void onSuccess();
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);

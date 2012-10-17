@@ -101,6 +101,10 @@ void IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnSuccessSerializedScriptValue)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessSerializedScriptValueWithKey,
                         OnSuccessSerializedScriptValueWithKey)
+    IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessInteger,
+                        OnSuccessInteger)
+    IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksSuccessUndefined,
+                        OnSuccessUndefined)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksError, OnError)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksBlocked, OnBlocked)
     IPC_MESSAGE_HANDLER(IndexedDBMsg_CallbacksIntBlocked, OnIntBlocked)
@@ -583,6 +587,26 @@ void IndexedDBDispatcher::OnSuccessSerializedScriptValueWithKey(
   if (!callbacks)
     return;
   callbacks->onSuccess(value, primary_key, key_path);
+  pending_callbacks_.Remove(response_id);
+}
+
+void IndexedDBDispatcher::OnSuccessInteger(
+    int32 thread_id, int32 response_id, int64 value) {
+  DCHECK_EQ(thread_id, CurrentWorkerId());
+  WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
+  if (!callbacks)
+    return;
+  callbacks->onSuccess(value);
+  pending_callbacks_.Remove(response_id);
+}
+
+void IndexedDBDispatcher::OnSuccessUndefined(
+    int32 thread_id, int32 response_id) {
+  DCHECK_EQ(thread_id, CurrentWorkerId());
+  WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
+  if (!callbacks)
+    return;
+  callbacks->onSuccess();
   pending_callbacks_.Remove(response_id);
 }
 

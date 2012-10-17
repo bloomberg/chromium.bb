@@ -216,7 +216,6 @@ class CONTENT_EXPORT IndexedDBDispatcher
   FRIEND_TEST_ALL_PREFIXES(IndexedDBDispatcherTest, ValueSizeTest);
 
   // IDBCallback message handlers.
-  void OnSuccessNull(int32 response_id);
   void OnSuccessIDBDatabase(int32 thread_id,
                             int32 response_id,
                             int32 object_id);
@@ -245,6 +244,13 @@ class CONTENT_EXPORT IndexedDBDispatcher
       const content::SerializedScriptValue& value,
       const content::IndexedDBKey& primary_key,
       const content::IndexedDBKeyPath& key_path);
+  void OnSuccessInteger(
+      int32 thread_id,
+      int32 response_id,
+      int64 value);
+  void OnSuccessUndefined(
+      int32 thread_id,
+      int32 response_id);
   void OnError(int32 thread_id,
                int32 response_id,
                int code,
