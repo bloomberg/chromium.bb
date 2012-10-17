@@ -45,6 +45,7 @@ void SetContentCommandLineFlags(int max_render_process_count) {
   }
 
   parsed_command_line->AppendSwitch(switches::kForceCompositingMode);
+  parsed_command_line->AppendSwitch(switches::kAllowWebUICompositing);
   parsed_command_line->AppendSwitch(switches::kEnableThreadedCompositing);
   parsed_command_line->AppendSwitch(
       switches::kEnableCompositingForFixedPosition);
