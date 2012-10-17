@@ -106,7 +106,6 @@
         'apk_name': 'AndroidWebView',
         'manifest_package_name': 'org.chromium.android_webview',
         'java_in_dir': '../android_webview/java',
-        'resource_dir': '../res',
         'native_libs_paths': ['<(SHARED_LIB_DIR)/libwebview.so'],
         'input_pak_files': [
           '<(SHARED_INTERMEDIATE_DIR)/repack/chrome.pak',
