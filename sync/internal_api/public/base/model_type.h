@@ -81,7 +81,9 @@ enum ModelType {
   EXTENSION_SETTINGS,
   // App notifications.
   APP_NOTIFICATIONS,
-  LAST_USER_MODEL_TYPE = APP_NOTIFICATIONS,
+  // History delete directives.
+  HISTORY_DELETE_DIRECTIVES,
+  LAST_USER_MODEL_TYPE = HISTORY_DELETE_DIRECTIVES,
 
   // An object representing a set of Nigori keys.
   NIGORI,
@@ -134,6 +136,9 @@ bool ShouldMaintainPosition(ModelType model_type);
 // These are the user-selectable data types.  Note that some of these share a
 // preference flag, so not all of them are individually user-selectable.
 ModelTypeSet UserTypes();
+
+// This is the subset of UserTypes() that can be encrypted.
+ModelTypeSet EncryptableUserTypes();
 
 // Returns a list of all control types.
 //

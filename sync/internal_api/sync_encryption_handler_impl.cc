@@ -97,7 +97,7 @@ EnumPassphraseTypeToProto(PassphraseType type) {
       return sync_pb::NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE;
     default:
       NOTREACHED();
-      return sync_pb::NigoriSpecifics::IMPLICIT_PASSPHRASE;;
+      return sync_pb::NigoriSpecifics::IMPLICIT_PASSPHRASE;
   };
 }
 
@@ -894,10 +894,10 @@ bool SyncEncryptionHandlerImpl::UpdateEncryptedTypesFromNigori(
   ModelTypeSet* encrypted_types = &UnlockVaultMutable(trans)->encrypted_types;
   if (nigori.encrypt_everything()) {
     EnableEncryptEverythingImpl(trans);
-    DCHECK(encrypted_types->Equals(UserTypes()));
+    DCHECK(encrypted_types->Equals(EncryptableUserTypes()));
     return true;
   } else if (encrypt_everything_) {
-    DCHECK(encrypted_types->Equals(UserTypes()));
+    DCHECK(encrypted_types->Equals(EncryptableUserTypes()));
     return false;
   }
 
@@ -912,12 +912,12 @@ bool SyncEncryptionHandlerImpl::UpdateEncryptedTypesFromNigori(
       !Difference(nigori_encrypted_types, SensitiveTypes()).Empty()) {
     if (!encrypt_everything_) {
       encrypt_everything_ = true;
-      *encrypted_types = UserTypes();
+      *encrypted_types = EncryptableUserTypes();
       FOR_EACH_OBSERVER(
           Observer, observers_,
           OnEncryptedTypesChanged(*encrypted_types, encrypt_everything_));
     }
-    DCHECK(encrypted_types->Equals(UserTypes()));
+    DCHECK(encrypted_types->Equals(EncryptableUserTypes()));
     return false;
   }
 
@@ -1094,7 +1094,7 @@ void SyncEncryptionHandlerImpl::MergeEncryptedTypes(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Only UserTypes may be encrypted.
-  DCHECK(UserTypes().HasAll(new_encrypted_types));
+  DCHECK(EncryptableUserTypes().HasAll(new_encrypted_types));
 
   ModelTypeSet* encrypted_types = &UnlockVaultMutable(trans)->encrypted_types;
   if (!encrypted_types->HasAll(new_encrypted_types)) {
@@ -1289,11 +1289,11 @@ void SyncEncryptionHandlerImpl::EnableEncryptEverythingImpl(
     syncable::BaseTransaction* const trans) {
   ModelTypeSet* encrypted_types = &UnlockVaultMutable(trans)->encrypted_types;
   if (encrypt_everything_) {
-    DCHECK(encrypted_types->Equals(UserTypes()));
+    DCHECK(encrypted_types->Equals(EncryptableUserTypes()));
     return;
   }
   encrypt_everything_ = true;
-  *encrypted_types = UserTypes();
+  *encrypted_types = EncryptableUserTypes();
   FOR_EACH_OBSERVER(
       Observer, observers_,
       OnEncryptedTypesChanged(*encrypted_types, encrypt_everything_));

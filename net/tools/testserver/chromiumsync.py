@@ -27,6 +27,7 @@ import bookmark_specifics_pb2
 import get_updates_caller_info_pb2
 import extension_setting_specifics_pb2
 import extension_specifics_pb2
+import history_delete_directive_specifics_pb2
 import nigori_specifics_pb2
 import password_specifics_pb2
 import preference_specifics_pb2
@@ -50,6 +51,7 @@ ALL_TYPES = (
     AUTOFILL_PROFILE,
     BOOKMARK,
     EXTENSIONS,
+    HISTORY_DELETE_DIRECTIVE,
     NIGORI,
     PASSWORD,
     PREFERENCE,
@@ -57,7 +59,7 @@ ALL_TYPES = (
     SESSION,
     THEME,
     TYPED_URL,
-    EXTENSION_SETTINGS) = range(16)
+    EXTENSION_SETTINGS) = range(17)
 
 # An eumeration on the frequency at which the server should send errors
 # to the client. This would be specified by the url that triggers the error.
@@ -82,6 +84,7 @@ SYNC_TYPE_TO_DESCRIPTOR = {
     BOOKMARK: SYNC_TYPE_FIELDS['bookmark'],
     EXTENSION_SETTINGS: SYNC_TYPE_FIELDS['extension_setting'],
     EXTENSIONS: SYNC_TYPE_FIELDS['extension'],
+    HISTORY_DELETE_DIRECTIVE: SYNC_TYPE_FIELDS['history_delete_directive'],
     NIGORI: SYNC_TYPE_FIELDS['nigori'],
     PASSWORD: SYNC_TYPE_FIELDS['password'],
     PREFERENCE: SYNC_TYPE_FIELDS['preference'],
@@ -437,6 +440,10 @@ class SyncDataModel(object):
                     parent_tag='google_chrome', sync_type=EXTENSION_SETTINGS),
       PermanentItem('google_chrome_extensions', name='Extensions',
                     parent_tag='google_chrome', sync_type=EXTENSIONS),
+      PermanentItem('google_chrome_history_delete_directives',
+                    name='History Delete Directives',
+                    parent_tag='google_chrome',
+                    sync_type=HISTORY_DELETE_DIRECTIVE),
       PermanentItem('google_chrome_passwords', name='Passwords',
                     parent_tag='google_chrome', sync_type=PASSWORD),
       PermanentItem('google_chrome_search_engines', name='Search Engines',

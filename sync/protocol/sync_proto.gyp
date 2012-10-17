@@ -23,6 +23,7 @@
         'extension_setting_specifics.proto',
         'extension_specifics.proto',
         'get_updates_caller_info.proto',
+        'history_delete_directive_specifics.proto',
         'nigori_specifics.proto',
         'password_specifics.proto',
         'preference_specifics.proto',

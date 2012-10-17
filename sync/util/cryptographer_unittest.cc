@@ -21,15 +21,15 @@ using ::testing::_;
 
 }  // namespace
 
-class SyncCryptographerTest : public ::testing::Test {
+class CryptographerTest : public ::testing::Test {
  protected:
-  SyncCryptographerTest() : cryptographer_(&encryptor_) {}
+  CryptographerTest() : cryptographer_(&encryptor_) {}
 
   FakeEncryptor encryptor_;
   Cryptographer cryptographer_;
 };
 
-TEST_F(SyncCryptographerTest, EmptyCantDecrypt) {
+TEST_F(CryptographerTest, EmptyCantDecrypt) {
   EXPECT_FALSE(cryptographer_.is_ready());
 
   sync_pb::EncryptedData encrypted;
@@ -39,7 +39,7 @@ TEST_F(SyncCryptographerTest, EmptyCantDecrypt) {
   EXPECT_FALSE(cryptographer_.CanDecrypt(encrypted));
 }
 
-TEST_F(SyncCryptographerTest, EmptyCantEncrypt) {
+TEST_F(CryptographerTest, EmptyCantEncrypt) {
   EXPECT_FALSE(cryptographer_.is_ready());
 
   sync_pb::EncryptedData encrypted;
@@ -47,7 +47,7 @@ TEST_F(SyncCryptographerTest, EmptyCantEncrypt) {
   EXPECT_FALSE(cryptographer_.Encrypt(original, &encrypted));
 }
 
-TEST_F(SyncCryptographerTest, MissingCantDecrypt) {
+TEST_F(CryptographerTest, MissingCantDecrypt) {
   KeyParams params = {"localhost", "dummy", "dummy"};
   cryptographer_.AddKey(params);
   EXPECT_TRUE(cryptographer_.is_ready());
@@ -59,7 +59,7 @@ TEST_F(SyncCryptographerTest, MissingCantDecrypt) {
   EXPECT_FALSE(cryptographer_.CanDecrypt(encrypted));
 }
 
-TEST_F(SyncCryptographerTest, CanEncryptAndDecrypt) {
+TEST_F(CryptographerTest, CanEncryptAndDecrypt) {
   KeyParams params = {"localhost", "dummy", "dummy"};
   EXPECT_TRUE(cryptographer_.AddKey(params));
   EXPECT_TRUE(cryptographer_.is_ready());
@@ -78,7 +78,7 @@ TEST_F(SyncCryptographerTest, CanEncryptAndDecrypt) {
   EXPECT_EQ(original.SerializeAsString(), decrypted.SerializeAsString());
 }
 
-TEST_F(SyncCryptographerTest, EncryptOnlyIfDifferent) {
+TEST_F(CryptographerTest, EncryptOnlyIfDifferent) {
   KeyParams params = {"localhost", "dummy", "dummy"};
   EXPECT_TRUE(cryptographer_.AddKey(params));
   EXPECT_TRUE(cryptographer_.is_ready());
@@ -109,7 +109,7 @@ TEST_F(SyncCryptographerTest, EncryptOnlyIfDifferent) {
   EXPECT_EQ(original.SerializeAsString(), decrypted.SerializeAsString());
 }
 
-TEST_F(SyncCryptographerTest, AddKeySetsDefault) {
+TEST_F(CryptographerTest, AddKeySetsDefault) {
   KeyParams params1 = {"localhost", "dummy", "dummy1"};
   EXPECT_TRUE(cryptographer_.AddKey(params1));
   EXPECT_TRUE(cryptographer_.is_ready());
@@ -144,7 +144,7 @@ TEST_F(SyncCryptographerTest, AddKeySetsDefault) {
 #else
 #define MAYBE_EncryptExportDecrypt EncryptExportDecrypt
 #endif
-TEST_F(SyncCryptographerTest, MAYBE_EncryptExportDecrypt) {
+TEST_F(CryptographerTest, MAYBE_EncryptExportDecrypt) {
   sync_pb::EncryptedData nigori;
   sync_pb::EncryptedData encrypted;
 
@@ -183,7 +183,7 @@ TEST_F(SyncCryptographerTest, MAYBE_EncryptExportDecrypt) {
   }
 }
 
-TEST_F(SyncCryptographerTest, Bootstrap) {
+TEST_F(CryptographerTest, Bootstrap) {
   KeyParams params = {"localhost", "dummy", "dummy"};
   cryptographer_.AddKey(params);
 

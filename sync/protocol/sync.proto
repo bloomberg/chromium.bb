@@ -26,6 +26,7 @@ import "encryption.proto";
 import "extension_setting_specifics.proto";
 import "extension_specifics.proto";
 import "get_updates_caller_info.proto";
+import "history_delete_directive_specifics.proto";
 import "nigori_specifics.proto";
 import "password_specifics.proto";
 import "preference_specifics.proto";
@@ -98,6 +99,7 @@ message EntitySpecifics {
   optional SearchEngineSpecifics search_engine = 88610;
   optional ExtensionSettingSpecifics extension_setting = 96159;
   optional AppSettingSpecifics app_setting = 103656;
+  optional HistoryDeleteDirectiveSpecifics history_delete_directive = 150251;
   optional DeviceInfoSpecifics device_info = 154522;
 }
 

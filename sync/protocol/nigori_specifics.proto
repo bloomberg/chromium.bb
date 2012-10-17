@@ -51,6 +51,8 @@ message NigoriSpecifics {
 
   // Booleans corresponding to whether a datatype should be encrypted.
   // Passwords are always encrypted, so we don't need a field here.
+  // History delete directives need to be consumable by the server, and
+  // thus can't be encrypted.
   optional bool encrypt_bookmarks = 13;
   optional bool encrypt_preferences = 14;
   optional bool encrypt_autofill_profile = 15;

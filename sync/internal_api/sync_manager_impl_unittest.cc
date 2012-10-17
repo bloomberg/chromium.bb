@@ -1419,7 +1419,7 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithNoData) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
   EXPECT_CALL(encryption_observer_,
               OnEncryptedTypesChanged(
-                  HasModelTypes(UserTypes()), true));
+                  HasModelTypes(EncryptableUserTypes()), true));
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   sync_manager_.GetEncryptionHandler()->EnableEncryptEverything();
   EXPECT_TRUE(EncryptEverythingEnabledForTest());
@@ -1473,14 +1473,14 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
 
   EXPECT_CALL(encryption_observer_,
               OnEncryptedTypesChanged(
-                  HasModelTypes(UserTypes()), true));
+                  HasModelTypes(EncryptableUserTypes()), true));
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   sync_manager_.GetEncryptionHandler()->EnableEncryptEverything();
   EXPECT_TRUE(EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     EXPECT_TRUE(GetEncryptedTypesWithTrans(&trans).Equals(
-        UserTypes()));
+        EncryptableUserTypes()));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
         trans.GetWrappedTrans(),
         BOOKMARKS,
@@ -1509,7 +1509,8 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
   EXPECT_TRUE(EncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
-    EXPECT_TRUE(GetEncryptedTypesWithTrans(&trans).Equals(UserTypes()));
+    EXPECT_TRUE(GetEncryptedTypesWithTrans(&trans).Equals(
+        EncryptableUserTypes()));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
         trans.GetWrappedTrans(),
         BOOKMARKS,
@@ -2006,14 +2007,15 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
 
   EXPECT_CALL(encryption_observer_,
               OnEncryptedTypesChanged(
-                  HasModelTypes(UserTypes()), true));
+                  HasModelTypes(EncryptableUserTypes()), true));
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   sync_manager_.GetEncryptionHandler()->EnableEncryptEverything();
   EXPECT_TRUE(EncryptEverythingEnabledForTest());
 
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
-    EXPECT_TRUE(GetEncryptedTypesWithTrans(&trans).Equals(UserTypes()));
+    EXPECT_TRUE(GetEncryptedTypesWithTrans(&trans).Equals(
+        EncryptableUserTypes()));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
         trans.GetWrappedTrans(),
         BOOKMARKS,
@@ -2093,7 +2095,7 @@ TEST_F(SyncManagerTest, UpdateEntryWithEncryption) {
   // Encrypt the datatatype, should set is_unsynced.
   EXPECT_CALL(encryption_observer_,
               OnEncryptedTypesChanged(
-                  HasModelTypes(UserTypes()), true));
+                  HasModelTypes(EncryptableUserTypes()), true));
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, FULL_ENCRYPTION));
 
@@ -2418,7 +2420,7 @@ TEST_F(SyncManagerTest, SetBookmarkTitleWithEncryption) {
   // Encrypt the datatatype, should set is_unsynced.
   EXPECT_CALL(encryption_observer_,
               OnEncryptedTypesChanged(
-                  HasModelTypes(UserTypes()), true));
+                  HasModelTypes(EncryptableUserTypes()), true));
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, FULL_ENCRYPTION));
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));
@@ -2515,7 +2517,7 @@ TEST_F(SyncManagerTest, SetNonBookmarkTitleWithEncryption) {
   // Encrypt the datatatype, should set is_unsynced.
   EXPECT_CALL(encryption_observer_,
               OnEncryptedTypesChanged(
-                  HasModelTypes(UserTypes()), true));
+                  HasModelTypes(EncryptableUserTypes()), true));
   EXPECT_CALL(encryption_observer_, OnEncryptionComplete());
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, FULL_ENCRYPTION));
   EXPECT_CALL(encryption_observer_, OnCryptographerStateChanged(_));

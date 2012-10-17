@@ -19,6 +19,7 @@
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/extension_setting_specifics.pb.h"
 #include "sync/protocol/extension_specifics.pb.h"
+#include "sync/protocol/history_delete_directive_specifics.pb.h"
 #include "sync/protocol/nigori_specifics.pb.h"
 #include "sync/protocol/password_specifics.pb.h"
 #include "sync/protocol/preference_specifics.pb.h"
@@ -206,6 +207,21 @@ DictionaryValue* DeviceInfoSpecificsToValue(
   return value;
 }
 
+base::DictionaryValue* GlobalIdDirectiveToValue(
+    const sync_pb::GlobalIdDirective& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_INT64_REP(global_id);
+  return value;
+}
+
+base::DictionaryValue* TimeRangeDirectiveToValue(
+    const sync_pb::TimeRangeDirective& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_INT64(start_time_usec);
+  SET_INT64(end_time_usec);
+  return value;
+}
+
 DictionaryValue* AppNotificationToValue(
     const sync_pb::AppNotification& proto) {
   DictionaryValue* value = new DictionaryValue();
@@ -298,6 +314,14 @@ DictionaryValue* ExtensionSpecificsToValue(
   SET_BOOL(enabled);
   SET_BOOL(incognito_enabled);
   SET_STR(name);
+  return value;
+}
+
+base::DictionaryValue* HistoryDeleteDirectiveSpecificsToValue(
+    const sync_pb::HistoryDeleteDirectiveSpecifics& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET(global_id_directive, GlobalIdDirectiveToValue);
+  SET(time_range_directive, TimeRangeDirectiveToValue);
   return value;
 }
 
@@ -408,6 +432,7 @@ DictionaryValue* EntitySpecificsToValue(
   SET_FIELD(device_info, DeviceInfoSpecificsToValue);
   SET_FIELD(extension, ExtensionSpecificsToValue);
   SET_FIELD(extension_setting, ExtensionSettingSpecificsToValue);
+  SET_FIELD(history_delete_directive, HistoryDeleteDirectiveSpecificsToValue);
   SET_FIELD(nigori, NigoriSpecificsToValue);
   SET_FIELD(password, PasswordSpecificsToValue);
   SET_FIELD(preference, PreferenceSpecificsToValue);

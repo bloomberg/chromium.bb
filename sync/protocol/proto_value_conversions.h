@@ -25,8 +25,11 @@ class DeviceInfoSpecifics;
 class DeviceInformation;
 class EncryptedData;
 class EntitySpecifics;
+class EverythingDirective;
 class ExtensionSettingSpecifics;
 class ExtensionSpecifics;
+class GlobalIdDirective;
+class HistoryDeleteDirectiveSpecifics;
 class NigoriSpecifics;
 class PasswordSpecifics;
 class PasswordSpecificsData;
@@ -38,6 +41,7 @@ class SessionTab;
 class SessionWindow;
 class TabNavigation;
 class ThemeSpecifics;
+class TimeRangeDirective;
 class TypedUrlSpecifics;
 }  // namespace sync_pb
 
@@ -82,6 +86,19 @@ base::DictionaryValue* TabNavigationToValue(
 base::DictionaryValue* PasswordSpecificsDataToValue(
     const sync_pb::PasswordSpecificsData& password_specifics_data);
 
+// Sub-protocol of NigoriSpecifics.
+
+base::DictionaryValue* DeviceInformationToValue(
+    const sync_pb::DeviceInformation& device_information);
+
+// Sub-protocol of HistoryDeleteDirectiveSpecifics.
+
+base::DictionaryValue* GlobalIdDirectiveToValue(
+    const sync_pb::GlobalIdDirective& global_id_directive);
+
+base::DictionaryValue* TimeRangeDirectiveToValue(
+    const sync_pb::TimeRangeDirective& time_range_directive);
+
 // Main *SpecificsToValue functions.
 
 base::DictionaryValue* AppNotificationToValue(
@@ -107,6 +124,10 @@ base::DictionaryValue* ExtensionSettingSpecificsToValue(
 
 base::DictionaryValue* ExtensionSpecificsToValue(
     const sync_pb::ExtensionSpecifics& extension_specifics);
+
+base::DictionaryValue* HistoryDeleteDirectiveSpecificsToValue(
+    const sync_pb::HistoryDeleteDirectiveSpecifics&
+        history_delete_directive_specifics);
 
 base::DictionaryValue* NigoriSpecificsToValue(
     const sync_pb::NigoriSpecifics& nigori_specifics);
