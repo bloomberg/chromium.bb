@@ -8,9 +8,13 @@
       '<(grit_out_dir)/renderer_resources_200_percent.pak',
       '<(grit_out_dir)/theme_resources_200_percent.pak',
       '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_200_percent.pak',
-      '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources_200_percent.pak',
     ],
     'conditions': [
+      ['OS != "ios"', {
+        'pak_inputs': [
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources_200_percent.pak',
+        ],
+      }],
       ['use_aura==1', {
         'pak_inputs': [
           '<(SHARED_INTERMEDIATE_DIR)/ash/ash_resources/ash_resources_200_percent.pak',

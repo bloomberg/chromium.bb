@@ -10,41 +10,10 @@
     {
       'target_name': 'chrome_extra_resources',
       'type': 'none',
-      'dependencies': [
-        '../content/browser/debugger/devtools_resources.gyp:devtools_resources',
-      ],
       # These resources end up in resources.pak because they are resources
       # used by internal pages.  Putting them in a spearate pak file makes
       # it easier for us to reference them internally.
       'actions': [
-        {
-          'action_name': 'component_extension_resources',
-          'variables': {
-            'grit_grd_file': 'browser/resources/component_extension_resources.grd',
-          },
-          'includes': [ '../build/grit_action.gypi' ],
-        },
-        {
-          'action_name': 'net_internals_resources',
-          'variables': {
-            'grit_grd_file': 'browser/resources/net_internals_resources.grd',
-          },
-          'includes': [ '../build/grit_action.gypi' ],
-        },
-        {
-          'action_name': 'options_resources',
-          'variables': {
-            'grit_grd_file': 'browser/resources/options_resources.grd',
-          },
-          'includes': [ '../build/grit_action.gypi' ],
-        },
-        {
-          'action_name': 'quota_internals_resources',
-          'variables': {
-            'grit_grd_file': 'browser/resources/quota_internals_resources.grd',
-          },
-          'includes': [ '../build/grit_action.gypi' ],
-        },
         {
           'action_name': 'shared_resources',
           'variables': {
@@ -59,24 +28,61 @@
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
-        {
-          'action_name': 'devtools_discovery_page_resources',
-          'variables': {
-            'grit_grd_file':
-               'browser/debugger/frontend/devtools_discovery_page_resources.grd',
-          },
-          'includes': [ '../build/grit_action.gypi' ]
-        },
       ],
       'includes': [ '../build/grit_target.gypi' ],
-      'copies': [
-        {
-          'destination': '<(PRODUCT_DIR)/resources/extension/demo',
-          'files': [
-            'browser/resources/extension_resource/demo/library.js',
+      'conditions': [
+        ['OS != "ios"', {
+          'dependencies': [
+            '../content/browser/debugger/devtools_resources.gyp:devtools_resources',
           ],
-        },
-      ]
+          'actions': [
+            {
+              'action_name': 'component_extension_resources',
+              'variables': {
+                'grit_grd_file': 'browser/resources/component_extension_resources.grd',
+              },
+              'includes': [ '../build/grit_action.gypi' ],
+            },
+            {
+              'action_name': 'net_internals_resources',
+              'variables': {
+                'grit_grd_file': 'browser/resources/net_internals_resources.grd',
+              },
+              'includes': [ '../build/grit_action.gypi' ],
+            },
+            {
+              'action_name': 'options_resources',
+              'variables': {
+                'grit_grd_file': 'browser/resources/options_resources.grd',
+              },
+              'includes': [ '../build/grit_action.gypi' ],
+            },
+            {
+              'action_name': 'quota_internals_resources',
+              'variables': {
+                'grit_grd_file': 'browser/resources/quota_internals_resources.grd',
+              },
+              'includes': [ '../build/grit_action.gypi' ],
+            },
+            {
+              'action_name': 'devtools_discovery_page_resources',
+              'variables': {
+                'grit_grd_file':
+                   'browser/debugger/frontend/devtools_discovery_page_resources.grd',
+              },
+              'includes': [ '../build/grit_action.gypi' ]
+            },
+          ],
+          'copies': [
+            {
+              'destination': '<(PRODUCT_DIR)/resources/extension/demo',
+              'files': [
+                'browser/resources/extension_resource/demo/library.js',
+              ],
+            },
+          ],
+        }],
+      ],
     },
     {
       # TODO(mark): It would be better if each static library that needed
@@ -108,13 +114,19 @@
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
-        {
-          'action_name': 'extensions_api_resources',
-          'variables': {
-            'grit_grd_file': 'common/extensions_api_resources.grd',
-          },
-          'includes': [ '../build/grit_action.gypi' ],
-        }
+      ],
+      'conditions': [
+        ['OS != "ios"', {
+          'actions': [
+            {
+              'action_name': 'extensions_api_resources',
+              'variables': {
+                'grit_grd_file': 'common/extensions_api_resources.grd',
+              },
+              'includes': [ '../build/grit_action.gypi' ],
+            }
+          ],
+        }],
       ],
       'includes': [ '../build/grit_target.gypi' ],
     },
@@ -178,11 +190,11 @@
               }],
             ],
           },],
-          ['os_posix == 1 and OS != "mac" and OS != "linux"', {
+          ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "linux"', {
             'platform_locale_settings_grd':
                 'app/resources/locale_settings_linux.grd',
           },],
-          ['OS=="mac"', {
+          ['OS == "mac" or OS == "ios"', {
             'platform_locale_settings_grd':
                 'app/resources/locale_settings_mac.grd',
           }],
@@ -236,7 +248,7 @@
         },
       ],
       'conditions': [
-        ['OS != "mac"', {
+        ['OS != "mac" and OS != "ios"', {
           # We'll install the resource files to the product directory.  The Mac
           # copies the results over as bundle resources in its own special way.
           'copies': [
@@ -247,8 +259,8 @@
               ],
             },
           ],
-        }]
-      ]
+        }],
+      ],
     },
     {
       'target_name': 'packed_resources',
@@ -263,14 +275,9 @@
         'chrome_strings',
         'platform_locale_settings',
         'theme_resources',
-        # TODO(zork): Protect this with if use_aura==1
-        '<(DEPTH)/ash/ash_strings.gyp:ash_strings',
-        '<(DEPTH)/content/content_resources.gyp:content_resources',
         '<(DEPTH)/net/net.gyp:net_resources',
         '<(DEPTH)/ui/base/strings/ui_strings.gyp:ui_strings',
         '<(DEPTH)/ui/ui.gyp:ui_resources',
-        '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
-        '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_strings',
       ],
       'actions': [
         {
@@ -299,13 +306,22 @@
         },
       ],
       'conditions': [
+        ['OS != "ios"', {
+          'dependencies': [
+            # TODO(zork): Protect this with if use_aura==1
+            '<(DEPTH)/ash/ash_strings.gyp:ash_strings',
+            '<(DEPTH)/content/content_resources.gyp:content_resources',
+            '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
+            '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_strings',
+          ],
+        }],
         ['use_ash==1', {
           'dependencies': [
              '<(DEPTH)/ash/ash.gyp:ash_resources',
              '<(DEPTH)/ash/ash.gyp:ash_wallpaper_resources',
           ],
         }],
-        ['OS != "mac"', {
+        ['OS != "mac" and OS != "ios"', {
           # Copy pak files to the product directory. These files will be picked
           # up by the following installer scripts:
           #   - Windows: chrome/installer/mini_installer/chrome.release
@@ -378,7 +394,7 @@
               ],
             }],
           ], # conditions
-        }], # end OS != "mac"
+        }], # end OS != "mac" and OS != "ios"
       ], # conditions
     },
   ], # targets
