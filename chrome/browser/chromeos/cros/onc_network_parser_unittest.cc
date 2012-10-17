@@ -54,19 +54,9 @@ net::CertType GetCertType(const net::X509Certificate* cert) {
 
 class OncNetworkParserTest : public testing::Test {
  public:
-  static void SetUpTestCase() {
-    // Ideally, we'd open a test DB for each test case, and close it
-    // again, removing the temp dir, but unfortunately, there's a
-    // bug in NSS that prevents this from working, so we just open
-    // it once, and empty it for each test case.  Here's the bug:
-    // https://bugzilla.mozilla.org/show_bug.cgi?id=588269
-    ASSERT_TRUE(crypto::OpenTestNSSDB());
-    // There is no matching TearDownTestCase call to close the test NSS DB
-    // because that would leave NSS in a potentially broken state for further
-    // tests, due to https://bugzilla.mozilla.org/show_bug.cgi?id=588269
-  }
-
   virtual void SetUp() {
+    ASSERT_TRUE(test_nssdb_.is_open());
+
     slot_ = net::NSSCertDatabase::GetInstance()->GetPublicModule();
 
     // Don't run the test if the setup failed.
@@ -137,6 +127,7 @@ class OncNetworkParserTest : public testing::Test {
   }
 
   ScopedStubCrosEnabler stub_cros_enabler_;
+  crypto::ScopedTestNSSDB test_nssdb_;
 };
 
 const base::Value* OncNetworkParserTest::GetExpectedProperty(
