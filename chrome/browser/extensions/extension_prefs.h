@@ -173,6 +173,10 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   // Based on extension id, checks prefs to see if it is orphaned.
   bool IsExtensionOrphaned(const std::string& id);
 
+  // Increment the count of how many times we prompted the user to acknowledge
+  // the given extension, and return the new count.
+  int IncrementAcknowledgePromptCount(const std::string& extension_id);
+
   // Whether the user has acknowledged an external extension.
   bool IsExternalExtensionAcknowledged(const std::string& extension_id);
   void AcknowledgeExternalExtension(const std::string& extension_id);

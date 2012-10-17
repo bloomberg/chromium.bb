@@ -45,13 +45,21 @@ GlobalError* GlobalErrorService::GetGlobalErrorByMenuItemCommandID(
 }
 
 int GlobalErrorService::GetFirstBadgeResourceID() const {
+  GlobalError::Severity highest_severity = GlobalError::SEVERITY_LOW;
+  int resource_id = 0;
+
   for (GlobalErrorList::const_iterator
        it = errors_.begin(); it != errors_.end(); ++it) {
     GlobalError* error = *it;
-    if (error->HasBadge())
-      return error->GetBadgeResourceID();
+    if (error->HasBadge()) {
+      if (resource_id == 0 || error->GetSeverity() > highest_severity) {
+        highest_severity = error->GetSeverity();
+        resource_id = error->GetBadgeResourceID();
+      }
+    }
   }
-  return 0;
+
+  return resource_id;
 }
 
 GlobalError* GlobalErrorService::GetFirstGlobalErrorWithBubbleView() const {

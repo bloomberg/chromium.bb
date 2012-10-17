@@ -30,7 +30,11 @@ class CommonSwitches {
             FeatureSwitch::DEFAULT_DISABLED),
         script_bubble(
             switches::kScriptBubble,
-            FeatureSwitch::DEFAULT_DISABLED) {
+            FeatureSwitch::DEFAULT_DISABLED),
+        prompt_for_external_extensions(
+            switches::kPromptForExternalExtensions,
+            FeatureSwitch::DEFAULT_ENABLED)
+  {
 // Disabling easy off-store installation is not yet implemented for Aura. Not
 // sure what the Aura equivalent for this UI is.
 #if defined(USE_AURA)
@@ -48,6 +52,7 @@ class CommonSwitches {
   FeatureSwitch extensions_in_action_box;
   FeatureSwitch script_badges;
   FeatureSwitch script_bubble;
+  FeatureSwitch prompt_for_external_extensions;
 };
 
 base::LazyInstance<CommonSwitches> g_common_switches =
@@ -70,6 +75,9 @@ FeatureSwitch* FeatureSwitch::script_badges() {
 }
 FeatureSwitch* FeatureSwitch::script_bubble() {
   return &g_common_switches.Get().script_bubble;
+}
+FeatureSwitch* FeatureSwitch::prompt_for_external_extensions() {
+  return &g_common_switches.Get().prompt_for_external_extensions;
 }
 
 

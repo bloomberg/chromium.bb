@@ -185,12 +185,13 @@
 #define IDC_EXTENSION_ERRORS            40031
 #define IDC_SHOW_SYNC_ERROR             40032
 #define IDC_SHOW_SETTINGS_CHANGE_FIRST  40033
-#define IDC_DEV_TOOLS_TOGGLE            40034
 #define IDC_SHOW_SETTINGS_CHANGE_LAST   40133
 #define IDC_SHOW_AVATAR_MENU            40134
 #define IDC_EXTENSION_DISABLED_FIRST    40135
 #define IDC_EXTENSION_DISABLED_LAST     40235
 #define IDC_TOGGLE_REQUEST_TABLET_SITE  40236
+#define IDC_DEV_TOOLS_TOGGLE            40237
+#define IDC_EXTERNAL_EXTENSION_ALERT    40238
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.

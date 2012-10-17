@@ -590,9 +590,8 @@ class ExtensionService
   // the member variable to make it easier to test the method in isolation.
   bool PopulateExtensionErrorUI(ExtensionErrorUI* extension_error_ui);
 
-  // Marks alertable extensions as acknowledged, after the user presses the
-  // accept button.
-  void HandleExtensionAlertAccept();
+  // Checks if there are any new external extensions to notify the user about.
+  void UpdateExternalExtensionAlert();
 
   // Given a (presumably just-installed) extension id, mark that extension as
   // acknowledged.
@@ -604,6 +603,10 @@ class ExtensionService
 
   // Called when the extension alert is closed.
   void HandleExtensionAlertClosed();
+
+  // Marks alertable extensions as acknowledged, after the user presses the
+  // accept button.
+  void HandleExtensionAlertAccept();
 
   // content::NotificationObserver
   virtual void Observe(int type,
@@ -737,6 +740,10 @@ class ExtensionService
 
   // Helper to inspect an ExtensionHost after it has been loaded.
   void InspectExtensionHost(extensions::ExtensionHost* host);
+
+  // Helper to determine whether we should initially enable an installed
+  // (or upgraded) extension.
+  bool ShouldEnableOnInstall(const extensions::Extension* extension);
 
   // The normal profile associated with this ExtensionService.
   Profile* profile_;

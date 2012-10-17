@@ -15,6 +15,13 @@ class GlobalErrorBubbleViewBase;
 // This object describes a single global error.
 class GlobalError : public base::SupportsWeakPtr<GlobalError> {
  public:
+  enum Severity {
+    SEVERITY_LOW,
+    SEVERITY_MEDIUM,
+    SEVERITY_HIGH,
+    SEVERITY_CRITICAL,
+  };
+
   GlobalError();
   virtual ~GlobalError();
 
@@ -22,6 +29,10 @@ class GlobalError : public base::SupportsWeakPtr<GlobalError> {
   virtual bool HasBadge() = 0;
   // Returns the resource ID of the badge icon.
   virtual int GetBadgeResourceID();
+  // Returns the error's severity level. If there are multiple errors,
+  // the error with the highest severity will display in the menu. If not
+  // overridden, this is based on the badge resource ID.
+  virtual Severity GetSeverity();
 
   // Returns true if a menu item should be added to the wrench menu.
   virtual bool HasMenuItem() = 0;

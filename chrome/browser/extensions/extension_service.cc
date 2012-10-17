@@ -60,6 +60,7 @@
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
+#include "chrome/browser/extensions/external_install_ui.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/extensions/external_provider_interface.h"
 #include "chrome/browser/extensions/installed_loader.h"
@@ -97,6 +98,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -155,6 +157,9 @@ static const int kOmniboxIconPaddingRight = 2;
 static const int kOmniboxIconPaddingLeft = 0;
 static const int kOmniboxIconPaddingRight = 0;
 #endif
+
+// Prompt the user this many times before considering an extension acknowledged.
+static const int kMaxExtensionAcknowledgePromptCount = 3;
 
 const char* kNaClPluginMimeType = "application/x-nacl";
 
@@ -865,6 +870,9 @@ void ExtensionService::EnableExtension(const std::string& extension_id) {
   // installed yet.
   if (!extension)
     return;
+
+  if (Extension::IsExternalLocation(extension->location()))
+    AcknowledgeExternalExtension(extension->id());
 
   // Move it over to the enabled list.
   extensions_.Insert(make_scoped_refptr(extension));
@@ -1757,6 +1765,8 @@ void ExtensionService::IdentifyAlertableExtensions() {
     }
   }
 
+  UpdateExternalExtensionAlert();
+
   if (!did_show_alert)
     extension_error_ui_.reset();
 }
@@ -1767,14 +1777,6 @@ bool ExtensionService::PopulateExtensionErrorUI(
   for (ExtensionSet::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
     const Extension* e = *iter;
-    if (Extension::IsExternalLocation(e->location())) {
-      if (!e->is_hosted_app()) {
-        if (!extension_prefs_->IsExternalExtensionAcknowledged(e->id())) {
-          extension_error_ui->AddExternalExtension(e->id());
-          needs_alert = true;
-        }
-      }
-    }
     if (!extension_prefs_->UserMayLoad(e, NULL)) {
       if (!extension_prefs_->IsBlacklistedExtensionAcknowledged(e->id())) {
         extension_error_ui->AddBlacklistedExtension(e->id());
@@ -1796,13 +1798,8 @@ void ExtensionService::HandleExtensionAlertClosed() {
 }
 
 void ExtensionService::HandleExtensionAlertAccept() {
-  const ExtensionIdSet *extension_ids =
-      extension_error_ui_->get_external_extension_ids();
-  for (ExtensionIdSet::const_iterator iter = extension_ids->begin();
-       iter != extension_ids->end(); ++iter) {
-    AcknowledgeExternalExtension(*iter);
-  }
-  extension_ids = extension_error_ui_->get_blacklisted_extension_ids();
+  const ExtensionIdSet* extension_ids =
+      extension_error_ui_->get_blacklisted_extension_ids();
   for (ExtensionIdSet::const_iterator iter = extension_ids->begin();
        iter != extension_ids->end(); ++iter) {
     extension_prefs_->AcknowledgeBlacklistedExtension(*iter);
@@ -1816,10 +1813,45 @@ void ExtensionService::HandleExtensionAlertAccept() {
 
 void ExtensionService::AcknowledgeExternalExtension(const std::string& id) {
   extension_prefs_->AcknowledgeExternalExtension(id);
+  UpdateExternalExtensionAlert();
 }
 
 void ExtensionService::HandleExtensionAlertDetails() {
   extension_error_ui_->ShowExtensions();
+}
+
+void ExtensionService::UpdateExternalExtensionAlert() {
+#if !defined(OS_CHROMEOS)
+  if (!extensions::FeatureSwitch::prompt_for_external_extensions()->
+          IsEnabled())
+    return;
+
+  const Extension* extension = NULL;
+  for (ExtensionSet::const_iterator iter = disabled_extensions_.begin();
+       iter != disabled_extensions_.end(); ++iter) {
+    const Extension* e = *iter;
+    if (Extension::IsExternalLocation(e->location())) {
+      if (!e->is_hosted_app()) {
+        if (!extension_prefs_->IsExternalExtensionAcknowledged(e->id())) {
+          extension = e;
+          break;
+        }
+      }
+    }
+  }
+
+  if (extension) {
+    if (extensions::AddExternalInstallError(this, extension)) {
+      if (extension_prefs_->IncrementAcknowledgePromptCount(extension->id()) >=
+              kMaxExtensionAcknowledgePromptCount) {
+        // This will be the last time we prompt for this extension.
+        extension_prefs_->AcknowledgeExternalExtension(extension->id());
+      }
+    }
+  } else {
+    extensions::RemoveExternalInstallError(this);
+  }
+#endif
 }
 
 void ExtensionService::UnloadExtension(
@@ -2153,11 +2185,7 @@ void ExtensionService::OnExtensionInstalled(
   // Ensure extension is deleted unless we transfer ownership.
   scoped_refptr<const Extension> scoped_extension(extension);
   const std::string& id = extension->id();
-  // Extensions installed by policy can't be disabled. So even if a previous
-  // installation disabled the extension, make sure it is now enabled.
-  bool initial_enable =
-      !extension_prefs_->IsExtensionDisabled(id) ||
-      system_->management_policy()->MustRemainEnabled(extension, NULL);
+  bool initial_enable = ShouldEnableOnInstall(extension);
   const extensions::PendingExtensionInfo* pending_extension_info = NULL;
   if ((pending_extension_info = pending_extension_manager()->GetById(id))) {
     if (!pending_extension_info->ShouldAllowInstall(*extension)) {
@@ -2241,6 +2269,11 @@ void ExtensionService::OnExtensionInstalled(
 
   // Transfer ownership of |extension| to AddExtension.
   AddExtension(scoped_extension);
+
+  // If this is a new external extension that was disabled, alert the user
+  // so he can reenable it.
+  if (Extension::IsExternalLocation(extension->location()) && !initial_enable)
+    UpdateExternalExtensionAlert();
 }
 
 const Extension* ExtensionService::GetExtensionByIdInternal(
@@ -2693,4 +2726,28 @@ void ExtensionService::InspectExtensionHost(
     extensions::ExtensionHost* host) {
   if (host)
     DevToolsWindow::OpenDevToolsWindow(host->render_view_host());
+}
+
+bool ExtensionService::ShouldEnableOnInstall(const Extension* extension) {
+  // Extensions installed by policy can't be disabled. So even if a previous
+  // installation disabled the extension, make sure it is now enabled.
+  if (system_->management_policy()->MustRemainEnabled(extension, NULL))
+    return true;
+
+  if (extension_prefs_->IsExtensionDisabled(extension->id()))
+    return false;
+
+#if !defined(OS_CHROMEOS)
+  if (extensions::FeatureSwitch::prompt_for_external_extensions()->
+          IsEnabled()) {
+    // External extensions are initially disabled. We prompt the user before
+    // enabling them.
+    if (Extension::IsExternalLocation(extension->location()) &&
+        !extension_prefs_->IsExternalExtensionAcknowledged(extension->id())) {
+      return false;
+    }
+  }
+#endif
+
+  return true;
 }

@@ -50,7 +50,9 @@ ExtensionBrowserTest::ExtensionBrowserTest()
       extension_load_errors_observed_(0),
       target_page_action_count_(-1),
       target_visible_page_action_count_(-1),
-      current_channel_(chrome::VersionInfo::CHANNEL_DEV) {
+      current_channel_(chrome::VersionInfo::CHANNEL_DEV),
+      override_prompt_for_external_extensions_(
+          extensions::FeatureSwitch::prompt_for_external_extensions(), false) {
   EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
 }
 

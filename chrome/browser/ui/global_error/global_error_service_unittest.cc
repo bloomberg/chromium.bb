@@ -85,6 +85,9 @@ class BadgeError : public BaseError {
  public:
   explicit BadgeError(int resource_id) : resource_id_(resource_id) {}
   bool HasBadge() OVERRIDE { return true; }
+  Severity GetSeverity() OVERRIDE {
+    return static_cast<Severity>(resource_id_);
+  }
   virtual int GetBadgeResourceID() OVERRIDE { return resource_id_; }
 
  private:
@@ -173,8 +176,9 @@ TEST(GlobalErrorServiceTest, GetMenuItem) {
 // Test getting the badge icon resource ID of the first error.
 TEST(GlobalErrorServiceTest, GetBadgeID) {
   BaseError* error1 = new BaseError;
-  BadgeError error2(2);
+  BadgeError* error2 = new BadgeError(2);
   BadgeError* error3 = new BadgeError(3);
+  BadgeError* error4 = new BadgeError(4);
 
   GlobalErrorService service(NULL);
   EXPECT_EQ(0, service.GetFirstBadgeResourceID());
@@ -182,14 +186,19 @@ TEST(GlobalErrorServiceTest, GetBadgeID) {
   service.AddGlobalError(error1);
   EXPECT_EQ(0, service.GetFirstBadgeResourceID());
 
-  service.AddGlobalError(&error2);
+  service.AddGlobalError(error2);
   EXPECT_EQ(2, service.GetFirstBadgeResourceID());
+
+  service.AddGlobalError(error4);
+  EXPECT_EQ(4, service.GetFirstBadgeResourceID());
 
   service.AddGlobalError(error3);
-  EXPECT_EQ(2, service.GetFirstBadgeResourceID());
+  EXPECT_EQ(4, service.GetFirstBadgeResourceID());
 
-  // Remove the first error with a badge.
-  service.RemoveGlobalError(&error2);
+  // Remove the highest-severity error with a badge.
+  service.RemoveGlobalError(error4);
+  delete error4;
+
   // Now error3 should be the first error with a badge.
   EXPECT_EQ(3, service.GetFirstBadgeResourceID());
 }

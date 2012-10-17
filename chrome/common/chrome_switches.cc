@@ -1074,6 +1074,10 @@ const char kProfilingFlush[]                = "profiling-flush";
 // Specifies a custom URL for fetching NTP promo data.
 const char kPromoServerURL[]                = "promo-server-url";
 
+// Should we prompt the user before allowing external extensions to install?
+// Default is yes.
+const char kPromptForExternalExtensions[]   = "prompt-for-external-extensions";
+
 // Enables the Protector feature.
 const char kProtector[]                     = "protector";
 

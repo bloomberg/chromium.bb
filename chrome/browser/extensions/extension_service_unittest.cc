@@ -39,6 +39,7 @@
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/external_install_ui.h"
 #include "chrome/browser/extensions/external_pref_loader.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/extensions/external_provider_interface.h"
@@ -62,6 +63,7 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/pref_names.h"
@@ -513,7 +515,11 @@ void ExtensionServiceTestBase::SetUp() {
 class ExtensionServiceTest
   : public ExtensionServiceTestBase, public content::NotificationObserver {
  public:
-  ExtensionServiceTest() : installed_(NULL) {
+  ExtensionServiceTest()
+      : installed_(NULL),
+        override_external_install_prompt_(
+            extensions::FeatureSwitch::prompt_for_external_extensions(),
+            false) {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                    content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -1001,6 +1007,7 @@ class ExtensionServiceTest
   extensions::ExtensionList loaded_;
   std::string unloaded_id_;
   const Extension* installed_;
+  extensions::FeatureSwitch::ScopedOverride override_external_install_prompt_;
 
  private:
   content::NotificationRegistrar registrar_;
@@ -5558,17 +5565,21 @@ TEST_F(ExtensionSourcePriorityTest, InstallExternalBlocksSyncRequest) {
   ASSERT_FALSE(AddPendingSyncInstall());
 }
 
-TEST_F(ExtensionServiceTest, AlertableExtensionHappyPath) {
+#if !defined(OS_CHROMEOS)
+// Test that installing an external extension displays a GlobalError.
+TEST_F(ExtensionServiceTest, ExternalInstallGlobalError) {
+  extensions::FeatureSwitch::ScopedOverride prompt(
+      extensions::FeatureSwitch::prompt_for_external_extensions(), true);
+
   InitializeEmptyExtensionService();
-  scoped_ptr<ExtensionErrorUI> extension_error_ui(
-      ExtensionErrorUI::Create(service_));
   MockExtensionProvider* provider =
       new MockExtensionProvider(service_, Extension::EXTERNAL_PREF);
   AddMockExternalProvider(provider);
 
+  service_->UpdateExternalExtensionAlert();
   // Should return false, meaning there aren't any extensions that the user
   // needs to know about.
-  ASSERT_FALSE(service_->PopulateExtensionErrorUI(extension_error_ui.get()));
+  EXPECT_FALSE(extensions::HasExternalInstallError(service_));
 
   // This is a normal extension, installed normally.
   // This should NOT trigger an alert.
@@ -5576,10 +5587,9 @@ TEST_F(ExtensionServiceTest, AlertableExtensionHappyPath) {
   FilePath path = data_dir_.AppendASCII("good.crx");
   InstallCRX(path, INSTALL_NEW);
 
-  // Another normal extension, but installed externally.
-  // This SHOULD trigger an alert.
-  provider->UpdateOrAddExtension(page_action, "1.0.0.0",
-                                 data_dir_.AppendASCII("page_action.crx"));
+  service_->CheckForExternalUpdates();
+  loop_.RunAllPending();
+  EXPECT_FALSE(extensions::HasExternalInstallError(service_));
 
   // A hosted app, installed externally.
   // This should NOT trigger an alert.
@@ -5588,7 +5598,76 @@ TEST_F(ExtensionServiceTest, AlertableExtensionHappyPath) {
 
   service_->CheckForExternalUpdates();
   loop_.RunAllPending();
+  EXPECT_FALSE(extensions::HasExternalInstallError(service_));
 
-  ASSERT_TRUE(service_->PopulateExtensionErrorUI(extension_error_ui.get()));
-  ASSERT_EQ(1u, extension_error_ui->get_external_extension_ids()->size());
+  // Another normal extension, but installed externally.
+  // This SHOULD trigger an alert.
+  provider->UpdateOrAddExtension(page_action, "1.0.0.0",
+                                 data_dir_.AppendASCII("page_action.crx"));
+
+  service_->CheckForExternalUpdates();
+  loop_.RunAllPending();
+  EXPECT_TRUE(extensions::HasExternalInstallError(service_));
 }
+
+// Test that external extensions are initially disabled, and that enabling
+// them clears the prompt.
+TEST_F(ExtensionServiceTest, ExternalInstallInitiallyDisabled) {
+  extensions::FeatureSwitch::ScopedOverride prompt(
+      extensions::FeatureSwitch::prompt_for_external_extensions(), true);
+
+  InitializeEmptyExtensionService();
+  MockExtensionProvider* provider =
+      new MockExtensionProvider(service_, Extension::EXTERNAL_PREF);
+  AddMockExternalProvider(provider);
+
+  provider->UpdateOrAddExtension(page_action, "1.0.0.0",
+                                 data_dir_.AppendASCII("page_action.crx"));
+
+  service_->CheckForExternalUpdates();
+  loop_.RunAllPending();
+  EXPECT_TRUE(extensions::HasExternalInstallError(service_));
+  EXPECT_FALSE(service_->IsExtensionEnabled(page_action));
+
+  const Extension* extension =
+      service_->disabled_extensions()->GetByID(page_action);
+  EXPECT_TRUE(extension);
+  EXPECT_EQ(page_action, extension->id());
+
+  service_->EnableExtension(page_action);
+  EXPECT_FALSE(extensions::HasExternalInstallError(service_));
+  EXPECT_TRUE(service_->IsExtensionEnabled(page_action));
+}
+
+// Test that installing multiple external extensions works.
+TEST_F(ExtensionServiceTest, ExternalInstallMultiple) {
+  extensions::FeatureSwitch::ScopedOverride prompt(
+      extensions::FeatureSwitch::prompt_for_external_extensions(), true);
+
+  InitializeEmptyExtensionService();
+  MockExtensionProvider* provider =
+      new MockExtensionProvider(service_, Extension::EXTERNAL_PREF);
+  AddMockExternalProvider(provider);
+
+  provider->UpdateOrAddExtension(page_action, "1.0.0.0",
+                                 data_dir_.AppendASCII("page_action.crx"));
+  provider->UpdateOrAddExtension(good_crx, "1.0.0.0",
+                                 data_dir_.AppendASCII("good.crx"));
+  provider->UpdateOrAddExtension(theme_crx, "2.0",
+                                 data_dir_.AppendASCII("theme.crx"));
+
+  service_->CheckForExternalUpdates();
+  loop_.RunAllPending();
+  EXPECT_TRUE(extensions::HasExternalInstallError(service_));
+  EXPECT_FALSE(service_->IsExtensionEnabled(page_action));
+  EXPECT_FALSE(service_->IsExtensionEnabled(good_crx));
+  EXPECT_FALSE(service_->IsExtensionEnabled(theme_crx));
+
+  service_->EnableExtension(page_action);
+  EXPECT_TRUE(extensions::HasExternalInstallError(service_));
+  service_->EnableExtension(theme_crx);
+  EXPECT_TRUE(extensions::HasExternalInstallError(service_));
+  service_->EnableExtension(good_crx);
+  EXPECT_FALSE(extensions::HasExternalInstallError(service_));
+}
+#endif  // !defined(OS_CHROMEOS)

@@ -5301,7 +5301,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Global error messages for extensions -->
-      <message name="IDS_EXTENSION_WARNINGS_WRENCH_MENU_ITEM" desc="The wrench menu item indicating that extensions caused problems">
+      <message name="IDS_EXTENSION_WARNINGS_WRENCH_MENU_ITEM" desc="The wrench menu item indicating that extensions caused problems.">
         Extension error
       </message>
       <message name="IDS_EXTENSION_WARNINGS_TITLE" desc="The title of a section in chrome://extensions which contains the warning(s) that relates to one particular extension">
@@ -5312,6 +5312,26 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_EXTENSION_WARNINGS_NETWORK_CONFLICT" desc="Warning message which indicates that two or more extensions tried to modify a network request in a conflicting way and the modification of this extension was ignored">
         This extension failed to modify a network request because the modification conflicted with another extension.
+      </message>
+
+      <!-- External extension install alerts -->
+      <!-- TODO(mpcomplete): We may need to change Chrome to
+           PRODUCT_NAME. Leaving it as-is until we finalize
+           these strings. -->
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_ALERT" desc="The wrench menu item indicating that a new external extension was installed.">
+        New extension added (<ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>)
+      </message>
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_TITLE" desc="">
+        "<ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>" added
+      </message>
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_HEADING" desc="">
+        While you were out, another program on your computer added an extension to Chrome. This extension may change the way Chrome works.
+      </message>
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON" desc="">
+        Enable extension
+      </message>
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ABORT_BUTTON" desc="">
+        Remove from Chrome
       </message>
 
       <!-- Plugins -->

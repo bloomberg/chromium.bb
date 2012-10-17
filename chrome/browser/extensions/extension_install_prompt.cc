@@ -44,33 +44,39 @@ using extensions::BundleInstaller;
 using extensions::Extension;
 using extensions::PermissionSet;
 
+namespace {
+
 static const int kTitleIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   0,  // The regular install prompt depends on what's being installed.
   IDS_EXTENSION_INLINE_INSTALL_PROMPT_TITLE,
   IDS_EXTENSION_INSTALL_PROMPT_TITLE,
   IDS_EXTENSION_RE_ENABLE_PROMPT_TITLE,
-  IDS_EXTENSION_PERMISSIONS_PROMPT_TITLE
+  IDS_EXTENSION_PERMISSIONS_PROMPT_TITLE,
+  IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_TITLE,
 };
 static const int kHeadingIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_INSTALL_PROMPT_HEADING,
   0,  // Inline installs use the extension name.
   0,  // Heading for bundle installs depends on the bundle contents.
   IDS_EXTENSION_RE_ENABLE_PROMPT_HEADING,
-  IDS_EXTENSION_PERMISSIONS_PROMPT_HEADING
+  IDS_EXTENSION_PERMISSIONS_PROMPT_HEADING,
+  IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_HEADING,
 };
 static const int kAcceptButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_PROMPT_INSTALL_BUTTON,
   IDS_EXTENSION_PROMPT_INSTALL_BUTTON,
   IDS_EXTENSION_PROMPT_INSTALL_BUTTON,
   IDS_EXTENSION_PROMPT_RE_ENABLE_BUTTON,
-  IDS_EXTENSION_PROMPT_PERMISSIONS_BUTTON
+  IDS_EXTENSION_PROMPT_PERMISSIONS_BUTTON,
+  IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON,
 };
 static const int kAbortButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   0,  // These all use the platform's default cancel label.
   0,
   0,
   0,
-  IDS_EXTENSION_PROMPT_PERMISSIONS_ABORT_BUTTON
+  IDS_EXTENSION_PROMPT_PERMISSIONS_ABORT_BUTTON,
+  IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ABORT_BUTTON,
 };
 static const int kPermissionsHeaderIds[
     ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
@@ -79,17 +85,18 @@ static const int kPermissionsHeaderIds[
   IDS_EXTENSION_PROMPT_THESE_WILL_HAVE_ACCESS_TO,
   IDS_EXTENSION_PROMPT_WILL_NOW_HAVE_ACCESS_TO,
   IDS_EXTENSION_PROMPT_WANTS_ACCESS_TO,
+  IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO,
 };
-static const int kOAuthHeaderIds[
-    ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
+static const int kOAuthHeaderIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_PROMPT_OAUTH_HEADER,
   0,  // Inline installs don't show OAuth permissions.
   0,  // Bundle installs don't show OAuth permissions.
   IDS_EXTENSION_PROMPT_OAUTH_REENABLE_HEADER,
   IDS_EXTENSION_PROMPT_OAUTH_PERMISSIONS_HEADER,
+  // TODO(mpcomplete): Do we need this for external install UI? If we do,
+  // we need to update FetchOAuthIssueAdviceIfNeeded.
+  0,
 };
-
-namespace {
 
 // Size of extension icon in top left of dialog.
 const int kIconSize = 69;
@@ -196,6 +203,9 @@ string16 ExtensionInstallPrompt::Prompt::GetDialogTitle() const {
       resource_id = IDS_EXTENSION_INSTALL_THEME_PROMPT_TITLE;
     else
       resource_id = IDS_EXTENSION_INSTALL_EXTENSION_PROMPT_TITLE;
+  } else if (type_ == EXTERNAL_INSTALL_PROMPT) {
+    return l10n_util::GetStringFUTF16(
+        resource_id, UTF8ToUTF16(extension_->name()));
   }
 
   return l10n_util::GetStringUTF16(resource_id);
@@ -206,6 +216,8 @@ string16 ExtensionInstallPrompt::Prompt::GetHeading() const {
     return UTF8ToUTF16(extension_->name());
   } else if (type_ == BUNDLE_INSTALL_PROMPT) {
     return bundle_->GetHeadingTextFor(BundleInstaller::Item::STATE_PENDING);
+  } else if (type_ == EXTERNAL_INSTALL_PROMPT) {
+    return l10n_util::GetStringUTF16(kHeadingIds[type_]);
   } else {
     return l10n_util::GetStringFUTF16(
         kHeadingIds[type_], UTF8ToUTF16(extension_->name()));
@@ -432,6 +444,17 @@ void ExtensionInstallPrompt::ConfirmReEnable(Delegate* delegate,
   LoadImageIfNeeded();
 }
 
+void ExtensionInstallPrompt::ConfirmExternalInstall(
+    Delegate* delegate, const Extension* extension) {
+  DCHECK(ui_loop_ == MessageLoop::current());
+  extension_ = extension;
+  permissions_ = extension->GetActivePermissions();
+  delegate_ = delegate;
+  prompt_type_ = EXTERNAL_INSTALL_PROMPT;
+
+  LoadImageIfNeeded();
+}
+
 void ExtensionInstallPrompt::ConfirmPermissions(
     Delegate* delegate,
     const Extension* extension,
@@ -519,6 +542,7 @@ void ExtensionInstallPrompt::FetchOAuthIssueAdviceIfNeeded() {
   if (!extension_ ||
       prompt_type_ == BUNDLE_INSTALL_PROMPT ||
       prompt_type_ == INLINE_INSTALL_PROMPT ||
+      prompt_type_ == EXTERNAL_INSTALL_PROMPT ||
       prompt_.GetOAuthIssueCount() != 0U) {
     ShowConfirmation();
     return;
@@ -571,6 +595,7 @@ void ExtensionInstallPrompt::ShowConfirmation() {
     case PERMISSIONS_PROMPT:
     case RE_ENABLE_PROMPT:
     case INLINE_INSTALL_PROMPT:
+    case EXTERNAL_INSTALL_PROMPT:
     case INSTALL_PROMPT: {
       prompt_.set_extension(extension_);
       prompt_.set_icon(gfx::Image(icon_));

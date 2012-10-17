@@ -491,6 +491,8 @@
         'browser/extensions/extension_webkit_preferences.h',
         'browser/extensions/extensions_quota_service.cc',
         'browser/extensions/extensions_quota_service.h',
+        'browser/extensions/external_install_ui.cc',
+        'browser/extensions/external_install_ui.h',
         'browser/extensions/external_loader.cc',
         'browser/extensions/external_loader.h',
         'browser/extensions/external_policy_loader.cc',

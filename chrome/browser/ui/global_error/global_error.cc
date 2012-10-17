@@ -20,6 +20,17 @@ int GlobalError::GetBadgeResourceID() {
   return IDR_UPDATE_BADGE4;
 }
 
+GlobalError::Severity GlobalError::GetSeverity() {
+  switch (GetBadgeResourceID()) {
+    case IDR_UPDATE_BADGE: return SEVERITY_LOW;
+    case IDR_UPDATE_BADGE2: return SEVERITY_MEDIUM;
+    case IDR_UPDATE_BADGE3: return SEVERITY_HIGH;
+    case IDR_UPDATE_BADGE4: return SEVERITY_CRITICAL;
+    default: break;
+  }
+  return SEVERITY_LOW;
+}
+
 int GlobalError::MenuItemIconResourceID() {
   return IDR_UPDATE_MENU4;
 }

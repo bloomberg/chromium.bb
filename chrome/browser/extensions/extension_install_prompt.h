@@ -53,6 +53,7 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer,
     BUNDLE_INSTALL_PROMPT,
     RE_ENABLE_PROMPT,
     PERMISSIONS_PROMPT,
+    EXTERNAL_INSTALL_PROMPT,
     NUM_PROMPT_TYPES
   };
 
@@ -232,6 +233,13 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer,
   // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
   virtual void ConfirmReEnable(Delegate* delegate,
                                const extensions::Extension* extension);
+
+  // This is called by the external install alert UI to verify whether the
+  // extension should be enabled (external extensions are installed disabled).
+  //
+  // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
+  virtual void ConfirmExternalInstall(Delegate* delegate,
+                                      const extensions::Extension* extension);
 
   // This is called by the extension permissions API to verify whether an
   // extension may be granted additional permissions.

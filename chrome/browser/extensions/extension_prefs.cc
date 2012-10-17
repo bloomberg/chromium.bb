@@ -67,6 +67,10 @@ const char kPrefAppNotificationClientId[] = "app_notif_client_id";
 // Indicates whether the user has disabled notifications or not.
 const char kPrefAppNotificationDisbaled[] = "app_notif_disabled";
 
+// The count of how many times we prompted the user to acknowledge an
+// extension.
+const char kPrefAcknowledgePromptCount[] = "ack_prompt_count";
+
 // Indicates whether the user has acknowledged various types of extensions.
 const char kPrefExternalAcknowledged[] = "ack_external";
 const char kPrefBlacklistAcknowledged[] = "ack_blacklist";
@@ -600,6 +604,16 @@ bool ExtensionPrefs::IsExtensionOrphaned(const std::string& extension_id) {
   return false;
 }
 
+int ExtensionPrefs::IncrementAcknowledgePromptCount(
+    const std::string& extension_id) {
+  int count = 0;
+  ReadExtensionPrefInteger(extension_id, kPrefAcknowledgePromptCount, &count);
+  ++count;
+  UpdateExtensionPref(extension_id, kPrefAcknowledgePromptCount,
+                      Value::CreateIntegerValue(count));
+  return count;
+}
+
 bool ExtensionPrefs::IsExternalExtensionAcknowledged(
     const std::string& extension_id) {
   return ReadExtensionPrefBoolean(extension_id, kPrefExternalAcknowledged);
@@ -610,6 +624,7 @@ void ExtensionPrefs::AcknowledgeExternalExtension(
   DCHECK(Extension::IdIsValid(extension_id));
   UpdateExtensionPref(extension_id, kPrefExternalAcknowledged,
                       Value::CreateBooleanValue(true));
+  UpdateExtensionPref(extension_id, kPrefAcknowledgePromptCount, NULL);
 }
 
 bool ExtensionPrefs::IsBlacklistedExtensionAcknowledged(
@@ -622,6 +637,7 @@ void ExtensionPrefs::AcknowledgeBlacklistedExtension(
   DCHECK(Extension::IdIsValid(extension_id));
   UpdateExtensionPref(extension_id, kPrefBlacklistAcknowledged,
                       Value::CreateBooleanValue(true));
+  UpdateExtensionPref(extension_id, kPrefAcknowledgePromptCount, NULL);
 }
 
 bool ExtensionPrefs::IsOrphanedExtensionAcknowledged(
@@ -634,6 +650,7 @@ void ExtensionPrefs::AcknowledgeOrphanedExtension(
   DCHECK(Extension::IdIsValid(extension_id));
   UpdateExtensionPref(extension_id, kPrefOrphanAcknowledged,
                       Value::CreateBooleanValue(true));
+  UpdateExtensionPref(extension_id, kPrefAcknowledgePromptCount, NULL);
 }
 
 bool ExtensionPrefs::SetAlertSystemFirstRun() {

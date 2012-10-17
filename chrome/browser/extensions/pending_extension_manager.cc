@@ -114,7 +114,8 @@ bool PendingExtensionManager::AddFromSync(
 }
 
 bool PendingExtensionManager::AddFromExternalUpdateUrl(
-    const std::string& id, const GURL& update_url,
+    const std::string& id,
+    const GURL& update_url,
     Extension::Location location) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
