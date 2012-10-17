@@ -88,9 +88,13 @@ View.prototype.updateDisplay_ = function(display, values, input) {
 View.prototype.addEquation_ = function(display, values) {
   // The order of the equation children below makes them stack correctly.
   var equation = this.createDiv_(display, 'equation');
-  equation.appendChild(this.createDiv_(display, 'operand'));
-  equation.appendChild(this.createDiv_(display, 'operator'));
-  equation.appendChild(this.createDiv_(display, 'accumulator'));
+  var operation = this.createDiv_(display, 'operation');
+  operation.appendChild(this.createSpan_(display, 'operator'));
+  operation.appendChild(this.createSpan_(display, 'operand'));
+  equation.appendChild(operation);
+  var accumulator = this.createDiv_(display, 'accumulator');
+  accumulator.setAttribute('aria-hidden', 'true');
+  equation.appendChild(accumulator);
   this.updateEquation_(equation, values);
   display.appendChild(equation).scrollIntoView();
 }
@@ -124,4 +128,11 @@ View.prototype.createDiv_ = function(display, classes) {
   var div = display.ownerDocument.createElement('div');
   div.setAttribute('class', classes);
   return div;
+}
+
+/** @private */
+View.prototype.createSpan_ = function(display, classes) {
+  var span = display.ownerDocument.createElement('span');
+  span.setAttribute('class', classes);
+  return span;
 }

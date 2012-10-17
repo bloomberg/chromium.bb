@@ -9,49 +9,51 @@
         <div class="edge"></div>
         <div class="gradient"></div>
       </div>
-      <div class="display">
+      <div class="display" role="log" aria-live="polite">
         <div class="equation">
-          <div class="accumulator"></div>
-          <div class="operand">0</div>
-          <div class="operator"></div>
+          <div class="accumulator" aria-hidden="true"></div>
+          <div class="operation">
+            <span class="operator"></span>
+            <span class="operand">0</span>
+          </div>
         </div>
       </div>
       <div class="buttons">
         <div>
-          <div class="button clear"></div>
-          <div class="button negate"></div>
-          <div class="button divide"></div>
-          <div class="button multiply">
+          <button class="clear" title="clear"></button>
+          <button class="negate" title="negate"></button>
+          <button class="divide" title="divide"></button>
+          <button class="multiply" title="multiply">
             <div class="a-workaround-for-151985"></div>
-          </div>
+          </button>
         </div>
         <div>
-          <div class="button seven"></div>
-          <div class="button eight"></div>
-          <div class="button nine"></div>
-          <div class="button subtract">
+          <button class="seven" title="seven"></button>
+          <button class="eight" title="eight"></button>
+          <button class="nine" title="nine"></button>
+          <button class="subtract" title="subtract">
             <div class="a-workaround-for-151985"></div>
-          </div>
+          </button>
         </div>
         <div>
-          <div class="button four"></div>
-          <div class="button five"></div>
-          <div class="button six"></div>
-          <div class="button add">
+          <button class="four" title="four"></button>
+          <button class="five" title="five"></button>
+          <button class="six" title="six"></button>
+          <button class="add" title="add">
             <div class="a-workaround-for-151985"></div>
-          </div>
+          </button>
         </div>
         <div>
-          <div class="button one"></div>
-          <div class="button two"></div>
-          <div class="button three"></div>
-          <div class="button equals">
+          <button class="one" title="one"></button>
+          <button class="two" title="two"></button>
+          <button class="three" title="three"></button>
+          <button class="equals" title="equals">
             <div class="a-workaround-for-151985"></div>
-          </div>
+          </button>
         </div>
         <div>
-          <div class="button zero"></div>
-          <div class="button point"></div>
+          <button class="zero" title="zero"></button>
+          <button class="point" title="point"></button>
         </div>
       </div>
     </div>
