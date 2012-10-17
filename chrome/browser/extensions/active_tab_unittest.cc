@@ -11,13 +11,12 @@
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/sessions/session_id.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/value_builder.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -52,7 +51,7 @@ scoped_refptr<const Extension> CreateTestExtension(
       .Build();
 }
 
-class ActiveTabTest : public TabContentsTestHarness {
+class ActiveTabTest : public ChromeRenderViewHostTestHarness {
  public:
   ActiveTabTest()
       : current_channel_(chrome::VersionInfo::CHANNEL_DEV),
@@ -62,8 +61,13 @@ class ActiveTabTest : public TabContentsTestHarness {
         ui_thread_(BrowserThread::UI, MessageLoop::current()) {}
 
  protected:
+  virtual void SetUp() OVERRIDE {
+    ChromeRenderViewHostTestHarness::SetUp();
+    TabHelper::CreateForWebContents(web_contents());
+  }
+
   int tab_id() {
-    return SessionID::IdForTab(tab_contents()->web_contents());
+    return SessionID::IdForTab(web_contents());
   }
 
   ActiveTabPermissionGranter* active_tab_permission_granter() {
@@ -250,7 +254,8 @@ TEST_F(ActiveTabTest, Uninstalling) {
       extension_misc::UNLOAD_REASON_DISABLE);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UNLOADED,
-      content::Source<Profile>(tab_contents()->profile()),
+      content::Source<Profile>(Profile::FromBrowserContext(
+          web_contents()->GetBrowserContext())),
       content::Details<UnloadedExtensionInfo>(&details));
 
   EXPECT_FALSE(active_tab_permission_granter()->IsGranted(extension));

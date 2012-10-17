@@ -15,12 +15,11 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/script_bubble_controller.h"
 #include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/value_builder.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
@@ -31,7 +30,7 @@ using content::BrowserThread;
 namespace extensions {
 namespace {
 
-class ScriptBubbleControllerTest : public TabContentsTestHarness {
+class ScriptBubbleControllerTest : public ChromeRenderViewHostTestHarness {
  public:
   ScriptBubbleControllerTest()
       : ui_thread_(BrowserThread::UI, MessageLoop::current()),
@@ -40,12 +39,12 @@ class ScriptBubbleControllerTest : public TabContentsTestHarness {
   }
 
   virtual void SetUp() OVERRIDE {
-    TabContentsTestHarness::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
     CommandLine command_line(CommandLine::NO_PROGRAM);
-    extension_service_ =
-        static_cast<TestExtensionSystem*>(
-            ExtensionSystem::Get(tab_contents()->profile()))->
-        CreateExtensionService(
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+    extension_service_ = static_cast<TestExtensionSystem*>(
+        ExtensionSystem::Get(profile))->CreateExtensionService(
             &command_line, FilePath(), false);
     extension_service_->component_loader()->AddScriptBubble();
     extension_service_->Init();

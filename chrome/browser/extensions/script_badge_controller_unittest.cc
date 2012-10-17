@@ -13,8 +13,6 @@
 #include "chrome/browser/extensions/script_badge_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
@@ -23,6 +21,7 @@
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/value_builder.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
@@ -37,7 +36,7 @@ using content::BrowserThread;
 namespace extensions {
 namespace {
 
-class ScriptBadgeControllerTest : public TabContentsTestHarness {
+class ScriptBadgeControllerTest : public ChromeRenderViewHostTestHarness {
  public:
   ScriptBadgeControllerTest()
       : feature_override_(FeatureSwitch::script_badges(), true),
@@ -49,11 +48,12 @@ class ScriptBadgeControllerTest : public TabContentsTestHarness {
     // Note that this sets a PageActionController into the
     // extensions::TabHelper's location_bar_controller field.  Do
     // not use that for testing.
-    TabContentsTestHarness::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
 
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
     TestExtensionSystem* extension_system =
-        static_cast<TestExtensionSystem*>(ExtensionSystem::Get(
-            tab_contents()->profile()));
+        static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile));
 
     // Create an ExtensionService so the ScriptBadgeController can find its
     // extensions.
@@ -121,10 +121,12 @@ TEST_F(ScriptBadgeControllerTest, ExecutionMakesBadgeVisible) {
   NavigateAndCommit(GURL("http://www.google.com"));
 
   CountingNotificationObserver location_bar_updated;
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   notification_registrar.Add(
       &location_bar_updated,
       chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
-      content::Source<Profile>(tab_contents()->profile()));
+      content::Source<Profile>(profile));
 
   // Initially, no script badges.
   EXPECT_THAT(script_badge_controller_->GetCurrentActions(),
@@ -134,8 +136,7 @@ TEST_F(ScriptBadgeControllerTest, ExecutionMakesBadgeVisible) {
   script_badge_controller_->OnExecuteScriptFinished(
       extension->id(),
       "",  // no error
-      tab_contents()->web_contents()->GetController().GetActiveEntry()->
-      GetPageID(),
+      web_contents()->GetController().GetActiveEntry()->GetPageID(),
       GURL(""),
       val);
   EXPECT_THAT(script_badge_controller_->GetCurrentActions(),
@@ -145,6 +146,8 @@ TEST_F(ScriptBadgeControllerTest, ExecutionMakesBadgeVisible) {
 
 TEST_F(ScriptBadgeControllerTest, FragmentNavigation) {
   scoped_refptr<const Extension> extension = AddTestExtension();
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
 
   // Establish a page id.
   NavigateAndCommit(GURL("http://www.google.com"));
@@ -156,14 +159,13 @@ TEST_F(ScriptBadgeControllerTest, FragmentNavigation) {
     notification_registrar.Add(
         &location_bar_updated,
         chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
-        content::Source<Profile>(tab_contents()->profile()));
+        content::Source<Profile>(profile));
 
     ListValue val;
     script_badge_controller_->OnExecuteScriptFinished(
         extension->id(),
         "",  // no error
-        tab_contents()->web_contents()->GetController().GetActiveEntry()->
-            GetPageID(),
+        web_contents()->GetController().GetActiveEntry()->GetPageID(),
         GURL(""),
         val);
 
@@ -179,7 +181,7 @@ TEST_F(ScriptBadgeControllerTest, FragmentNavigation) {
     notification_registrar.Add(
         &location_bar_updated,
         chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
-        content::Source<Profile>(tab_contents()->profile()));
+        content::Source<Profile>(profile));
 
     NavigateAndCommit(GURL("http://www.google.com#hash"));
 
@@ -195,7 +197,7 @@ TEST_F(ScriptBadgeControllerTest, FragmentNavigation) {
     notification_registrar.Add(
         &location_bar_updated,
         chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
-        content::Source<Profile>(tab_contents()->profile()));
+        content::Source<Profile>(profile));
 
     Reload();
 
@@ -223,10 +225,12 @@ TEST_F(ScriptBadgeControllerTest, GetAttentionMakesBadgeVisible) {
   NavigateAndCommit(GURL("http://www.google.com"));
 
   CountingNotificationObserver initial_badge_display;
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   notification_registrar.Add(
       &initial_badge_display,
       chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
-      content::Source<Profile>(tab_contents()->profile()));
+      content::Source<Profile>(profile));
 
   // Initially, no script badges.
   EXPECT_THAT(script_badge_controller_->GetCurrentActions(),
@@ -243,7 +247,7 @@ TEST_F(ScriptBadgeControllerTest, GetAttentionMakesBadgeVisible) {
   notification_registrar.Add(
       &subsequent_get_attention_call,
       chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
-      content::Source<Profile>(tab_contents()->profile()));
+      content::Source<Profile>(profile));
 
   // Getting attention a second time should have no effect.
   script_badge_controller_->GetAttentionFor(extension->id());

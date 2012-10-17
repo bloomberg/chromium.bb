@@ -11,13 +11,13 @@
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/page_action_controller.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/sessions/session_id.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/value_builder.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
@@ -27,21 +27,22 @@ using content::BrowserThread;
 namespace extensions {
 namespace {
 
-class PageActionControllerTest : public TabContentsTestHarness {
+class PageActionControllerTest : public ChromeRenderViewHostTestHarness {
  public:
   PageActionControllerTest()
       : ui_thread_(BrowserThread::UI, MessageLoop::current()),
         file_thread_(BrowserThread::FILE, MessageLoop::current()) {}
 
   virtual void SetUp() OVERRIDE {
-    TabContentsTestHarness::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
+    TabHelper::CreateForWebContents(web_contents());
     // Create an ExtensionService so the PageActionController can find its
     // extensions.
     CommandLine command_line(CommandLine::NO_PROGRAM);
-    extension_service_ =
-        static_cast<TestExtensionSystem*>(
-            ExtensionSystem::Get(tab_contents()->profile()))->
-        CreateExtensionService(
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+    extension_service_ = static_cast<TestExtensionSystem*>(
+        ExtensionSystem::Get(profile))->CreateExtensionService(
             &command_line, FilePath(), false);
   }
 
