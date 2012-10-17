@@ -8,15 +8,14 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/file_util_proxy.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "chrome/browser/bookmarks/bookmark_codec.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 
 using base::TimeTicks;
@@ -107,9 +106,10 @@ BookmarkLoadDetails::~BookmarkLoadDetails() {
 
 // BookmarkStorage -------------------------------------------------------------
 
-BookmarkStorage::BookmarkStorage(Profile* profile, BookmarkModel* model)
+BookmarkStorage::BookmarkStorage(content::BrowserContext* context,
+                                 BookmarkModel* model)
     : model_(model),
-      writer_(profile->GetPath().Append(chrome::kBookmarksFileName),
+      writer_(context->GetPath().Append(chrome::kBookmarksFileName),
               BrowserThread::GetMessageLoopProxyForThread(
                   BrowserThread::FILE)) {
   writer_.set_commit_interval(base::TimeDelta::FromMilliseconds(kSaveDelayMS));

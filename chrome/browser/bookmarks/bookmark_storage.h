@@ -12,7 +12,10 @@
 
 class BookmarkModel;
 class BookmarkPermanentNode;
-class Profile;
+
+namespace content {
+class BrowserContext;
+}
 
 // BookmarkLoadDetails is used by BookmarkStorage when loading bookmarks.
 // BookmarkModel creates a BookmarkLoadDetails and passes it (including
@@ -93,7 +96,7 @@ class BookmarkStorage : public ImportantFileWriter::DataSerializer,
                         public base::RefCountedThreadSafe<BookmarkStorage> {
  public:
   // Creates a BookmarkStorage for the specified model
-  BookmarkStorage(Profile* profile, BookmarkModel* model);
+  BookmarkStorage(content::BrowserContext* context, BookmarkModel* model);
 
   // Loads the bookmarks into the model, notifying the model when done. This
   // takes ownership of |details|. See BookmarkLoadDetails for details.
