@@ -41,6 +41,7 @@ TEST(StatusTrayWinTest, CreateIconAndMenu) {
   icon->SetContextMenu(menu);
 }
 
+#if !defined(USE_AURA)  // http://crbug.com/156370
 TEST(StatusTrayWinTest, ClickOnIcon) {
   // Create an icon, send a fake click event, make sure observer is called.
   StatusTrayWin tray;
@@ -54,3 +55,4 @@ TEST(StatusTrayWinTest, ClickOnIcon) {
   tray.WndProc(NULL, icon->message_id(), icon->icon_id(), WM_RBUTTONDOWN);
   icon->RemoveObserver(&observer);
 }
+// !defined(USE_AURA)
