@@ -311,7 +311,7 @@ div.root-eject {
   cursor: pointer;
   height: 20px;
   margin-right: 6px;
-  opacity: 0;
+  opacity: 0.7;
   width: 20px;
 }
 
