@@ -40,8 +40,11 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"
+#include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
+
+#include "installer_util_strings.h"  // NOLINT
 
 using base::win::RegKey;
 
@@ -242,14 +245,31 @@ class RegistryEntry {
       entries->push_back(new RegistryEntry(model_id_shell,
                                            ShellUtil::kRegVerbOpen));
 
-      const wchar_t* const verbs[] = { ShellUtil::kRegVerbOpen,
-                                       ShellUtil::kRegVerbOpenNewWindow };
+      // Each of Chrome's shortcuts has an appid; which, as of Windows 8, is
+      // registered to handle some verbs. This registration has the side-effect
+      // that these verbs now show up in the shortcut's context menu. We
+      // mitigate this side-effect by making the context menu entries
+      // user readable/localized strings. See relevant MSDN article:
+      // http://msdn.microsoft.com/en-US/library/windows/desktop/cc144171.aspx
+      const struct {
+        const wchar_t* verb;
+        int name_id;
+      } verbs[] = {
+          { ShellUtil::kRegVerbOpen, -1 },
+          { ShellUtil::kRegVerbOpenNewWindow, IDS_SHORTCUT_NEW_WINDOW_BASE },
+      };
       for (size_t i = 0; i < arraysize(verbs); ++i) {
         string16 sub_path(model_id_shell);
         sub_path.push_back(FilePath::kSeparators[0]);
-        sub_path.append(verbs[i]);
+        sub_path.append(verbs[i].verb);
 
         // <root hkey>\Software\Classes\<app_id>\.exe\shell\<verb>
+        if (verbs[i].name_id != -1) {
+          // TODO(grt): http://crbug.com/75152 Write a reference to a localized
+          // resource.
+          string16 verb_name(installer::GetLocalizedString(verbs[i].name_id));
+          entries->push_back(new RegistryEntry(sub_path, verb_name.c_str()));
+        }
         entries->push_back(new RegistryEntry(
             sub_path, L"CommandId", L"Browser.Launch"));
 

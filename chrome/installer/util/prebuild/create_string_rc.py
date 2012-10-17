@@ -74,6 +74,7 @@ kStringIds = [
   'IDS_INSTALL_INCONSISTENT_UPDATE_POLICY',
   'IDS_OEM_MAIN_SHORTCUT_NAME',
   'IDS_SHORTCUT_TOOLTIP',
+  'IDS_SHORTCUT_NEW_WINDOW',
 ]
 
 # The ID of the first resource string.

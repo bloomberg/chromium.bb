@@ -170,6 +170,9 @@ Chrome supports. -->
         <message name="IDS_CHROME_FRAME_READY_MODE_PROMPT" desc="Ready Mode prompt message">
           This site recommends Google Chrome Frame (already installed).
         </message>
+        <message name="IDS_SHORTCUT_NEW_WINDOW" desc="The text label of the New window shortcut context menu entry as of Windows 8">
+          New window
+        </message>
       </if>
       <message name="IDS_INSTANT_OPT_IN_TITLE" desc="Title of the instant confirm dialog">
         Google Chrome Instant
