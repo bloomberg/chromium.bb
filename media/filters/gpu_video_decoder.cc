@@ -215,7 +215,10 @@ void GpuVideoDecoder::DestroyVDA() {
       base::Bind(&VideoDecodeAccelerator::Destroy, weak_vda_),
       base::Bind(&GpuVideoDecoder::Release, this));
 
+// TODO(posciak): enable for all.
+#ifdef OS_CHROMEOS
   DestroyTextures();
+#endif
 }
 
 void GpuVideoDecoder::Read(const ReadCB& read_cb) {
@@ -540,7 +543,10 @@ GpuVideoDecoder::~GpuVideoDecoder() {
   }
   bitstream_buffers_in_decoder_.clear();
 
+// TODO(posciak): enable for all.
+#ifdef OS_CHROMEOS
   DestroyTextures();
+#endif
 }
 
 void GpuVideoDecoder::EnsureDemuxOrDecode() {
