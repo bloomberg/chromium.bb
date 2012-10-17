@@ -19,7 +19,7 @@ cr.define('cloudprint', function() {
      * @type {string}
      * @private
      */
-    this.baseURL_ = baseUrl;
+    this.baseUrl_ = baseUrl;
 
     /**
      * Last received XSRF token. Sent as a parameter in every request.
@@ -92,6 +92,11 @@ cr.define('cloudprint', function() {
 
   CloudPrintInterface.prototype = {
     __proto__: cr.EventTarget.prototype,
+
+    /** @return {string} Base URL of the Google Cloud Print service. */
+    get baseUrl() {
+      return this.baseUrl_;
+    },
 
     /**
      * Sends a Google Cloud Print search API request.
@@ -247,7 +252,7 @@ cr.define('cloudprint', function() {
         // TODO(rltoscano): Should throw an error if not a read-only action or
         // issue an xsrf token request.
       }
-      var url = this.baseURL_ + '/' + action + '?xsrf=' + this.xsrfToken_;
+      var url = this.baseUrl_ + '/' + action + '?xsrf=' + this.xsrfToken_;
       var body = null;
 
       if (params) {

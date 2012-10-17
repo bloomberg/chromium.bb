@@ -286,6 +286,10 @@ cr.define('print_preview', function() {
           this.destinationStore_,
           print_preview.DestinationStore.EventType.DESTINATION_SELECT,
           this.onDestinationSelect_.bind(this));
+      this.tracker.add(
+          this.destinationStore_,
+          print_preview.DestinationStore.EventType.DESTINATION_SEARCH_DONE,
+          this.onDestinationSearchDone_.bind(this));
 
       this.tracker.add(
           this.printHeader_,
@@ -315,6 +319,21 @@ cr.define('print_preview', function() {
           this.destinationSearch_,
           print_preview.DestinationSearch.EventType.SIGN_IN,
           this.onCloudPrintSignInActivated_.bind(this));
+
+      // TODO(rltoscano): Move no-destinations-promo into its own component
+      // instead being part of PrintPreview.
+      this.tracker.add(
+          this.getChildElement('#no-destinations-promo .close-button'),
+          'click',
+          this.onNoDestinationsPromoClose_.bind(this));
+      this.tracker.add(
+          this.getChildElement('#no-destinations-promo .not-now-button'),
+          'click',
+          this.onNoDestinationsPromoClose_.bind(this));
+      this.tracker.add(
+          this.getChildElement('#no-destinations-promo .add-printer-button'),
+          'click',
+          this.onNoDestinationsPromoClick_.bind(this));
     },
 
     /** @override */
@@ -329,6 +348,14 @@ cr.define('print_preview', function() {
       this.marginSettings_.decorate($('margin-settings'));
       this.otherOptionsSettings_.decorate($('other-options-settings'));
       this.previewArea_.decorate($('preview-area'));
+
+      // Set some of the parameterized text in the no-destinations promotion.
+      var noDestsPromoGcpDescription =
+          this.getChildElement('#no-destinations-promo .gcp-description');
+      noDestsPromoGcpDescription.innerHTML = localStrings.getStringF(
+          'noDestsPromoGcpDesc',
+          '<a target="_blank" href="http://www.google.com/cloudprint/learn/">',
+          '</a>');
 
       setIsVisible($('open-pdf-in-preview-link'), cr.isMac);
     },
@@ -780,6 +807,54 @@ cr.define('print_preview', function() {
       var selectedDest = this.destinationStore_.selectedDestination;
       setIsVisible($('cloud-print-dialog-link'),
                    !cr.isChromeOS && !selectedDest.isLocal);
+    },
+
+    /**
+     * Called when the destination store loads a group of destinations. Shows
+     * a promo on Chrome OS if the user has no print destinations promoting
+     * Google Cloud Print.
+     * @private
+     */
+    onDestinationSearchDone_: function() {
+      var isPromoVisible = cr.isChromeOS &&
+          this.cloudPrintInterface_ &&
+          this.userInfo_.getUserEmail() &&
+          !this.appState_.isGcpPromoDismissed &&
+          !this.destinationStore_.isLocalDestinationsSearchInProgress &&
+          !this.destinationStore_.isCloudDestinationsSearchInProgress &&
+          this.destinationStore_.hasOnlyDefaultCloudDestinations();
+      setIsVisible(this.getChildElement('#no-destinations-promo'),
+                   isPromoVisible);
+      if (isPromoVisible) {
+        this.metrics_.incrementGcpPromoBucket(
+            print_preview.Metrics.GcpPromoBucket.SHOWN);
+      }
+    },
+
+    /**
+     * Called when the close button on the no-destinations-promotion is clicked.
+     * Hides the promotion.
+     * @private
+     */
+    onNoDestinationsPromoClose_: function() {
+      this.metrics_.incrementGcpPromoBucket(
+          print_preview.Metrics.GcpPromoBucket.DISMISSED);
+      setIsVisible(this.getChildElement('#no-destinations-promo'), false);
+      this.appState_.persistIsGcpPromoDismissed(true);
+    },
+
+    /**
+     * Called when the no-destinations promotion link is clicked. Opens the
+     * Google Cloud Print management page and closes the print preview.
+     * @private
+     */
+    onNoDestinationsPromoClick_: function() {
+      this.metrics_.incrementGcpPromoBucket(
+          print_preview.Metrics.GcpPromoBucket.CLICKED);
+      this.appState_.persistIsGcpPromoDismissed(true);
+      window.open(this.cloudPrintInterface_.baseUrl + '?user=' +
+                  this.userInfo_.getUserEmail() + '#printers');
+      this.close_();
     }
   };
 

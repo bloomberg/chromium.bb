@@ -143,14 +143,6 @@ cr.define('print_preview', function() {
   };
 
   /**
-   * Number of built-in print destinations. This includes the "Save as PDF"
-   * destination.
-   * @type {number}
-   * @const
-   */
-  DestinationStore.BUILT_IN_DESTINATION_COUNT = 1;
-
-  /**
    * Delay in milliseconds before the destination store ignores the initial
    * destination ID and just selects any printer (since the initial destination
    * was not found).
@@ -281,6 +273,18 @@ cr.define('print_preview', function() {
       if (this.isInAutoSelectMode_ && !this.isInitialDestinationLocal_) {
         this.cloudPrintInterface_.printer(this.initialDestinationId_);
       }
+    },
+
+    /**
+     * @return {boolean} Whether only default cloud destinations have been
+     *     loaded.
+     */
+    hasOnlyDefaultCloudDestinations: function() {
+      return this.destinations_.every(function(dest) {
+        return dest.isLocal ||
+            dest.id == print_preview.Destination.GooglePromotedId.DOCS ||
+            dest.id == print_preview.Destination.GooglePromotedId.FEDEX;
+      });
     },
 
     /** @param {!print_preview.Destination} Destination to select. */

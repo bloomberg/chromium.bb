@@ -280,3 +280,11 @@ span.jumping-dots > span:nth-child(3) {
   -webkit-box-orient: vertical;
   display: -webkit-box;
 }
+
+#main-container {
+  -webkit-box-flex: 1;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  height: 100%;
+  position: relative;
+}

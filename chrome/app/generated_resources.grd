@@ -8098,6 +8098,26 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_PRINT_PREVIEW_TOS_CHECKBOX_LABEL" desc="Label of the terms-of-service agreement checkbox.">
         I agree
       </message>
+      <message name="IDS_PRINT_PREVIEW_NO_DESTS_PROMO_TITLE" desc="Title of promotion shown when user has no Google Cloud Print printers.">
+        Add Printers
+      </message>
+      <message name="IDS_PRINT_PREVIEW_NO_DESTS_PROMO_BODY" desc="Main body of promotion shown when user has no Google Cloud Print printers.">
+        You can add printers to your computer by clicking the "Add a printer"
+        button below. If you have no printers to add, you'll still be able to save
+        a PDF or save to Google Drive.
+      </message>
+      <message name="IDS_PRINT_PREVIEW_NO_DESTS_GCP_DESC" desc="A description of the Google Cloud Print service.">
+        Adding your printers to Google Cloud Print allows you to print from
+        anywhere, to anywhere. Share your printers with whoever you choose and
+        print to them from Chrome, your phone, tablet, PC, or any other
+        web-connected device. <ph name="START_LINK">$1</ph>Learn more<ph name="END_LINK">$2</ph>
+      </message>
+      <message name="IDS_PRINT_PREVIEW_NO_DESTS_PROMO_ADD_PRINTER_BUTTON_LABEL" desc="Label of button to setup Google Cloud Print printers.">
+        Add a printer
+      </message>
+      <message name="IDS_PRINT_PREVIEW_NO_DESTS_PROMO_NOT_NOW_BUTTON_LABEL" desc="Label of button to cancel the Google Cloud Print promotion.">
+        Not now
+      </message>
 
       <!-- Load State -->
       <message name="IDS_LOAD_STATE_WAITING_FOR_DELEGATE">

@@ -105,6 +105,7 @@ enum PrintSettingsBuckets {
 
 enum UiBucketGroups {
   DESTINATION_SEARCH,
+  GCP_PROMO,
   UI_BUCKET_GROUP_BOUNDARY
 };
 
@@ -115,6 +116,13 @@ enum PrintDestinationBuckets {
   SIGNIN_PROMPT,
   SIGNIN_TRIGGERED,
   PRINT_DESTINATION_BUCKET_BOUNDARY
+};
+
+enum GcpPromoBuckets {
+  PROMO_SHOWN,
+  PROMO_CLOSED,
+  PROMO_CLICKED,
+  GCP_PROMO_BUCKET_BOUNDARY
 };
 
 void ReportUserActionHistogram(enum UserActionBuckets event) {
@@ -130,6 +138,11 @@ void ReportPrintSettingHistogram(enum PrintSettingsBuckets setting) {
 void ReportPrintDestinationHistogram(enum PrintDestinationBuckets event) {
   UMA_HISTOGRAM_ENUMERATION("PrintPreview.DestinationAction", event,
                             PRINT_DESTINATION_BUCKET_BOUNDARY);
+}
+
+void ReportGcpPromoHistogram(enum GcpPromoBuckets event) {
+  UMA_HISTOGRAM_ENUMERATION("PrintPreview.GcpPromo", event,
+                            GCP_PROMO_BUCKET_BOUNDARY);
 }
 
 // Name of a dictionary field holding cloud print related data;
@@ -705,10 +718,18 @@ void PrintPreviewHandler::HandleReportUiEvent(const ListValue* args) {
   switch (ui_bucket_group) {
     case DESTINATION_SEARCH: {
       enum PrintDestinationBuckets event =
-            static_cast<enum PrintDestinationBuckets>(event_number);
+          static_cast<enum PrintDestinationBuckets>(event_number);
       if (event >= PRINT_DESTINATION_BUCKET_BOUNDARY)
         return;
       ReportPrintDestinationHistogram(event);
+      break;
+    }
+    case GCP_PROMO: {
+      enum GcpPromoBuckets event =
+          static_cast<enum GcpPromoBuckets>(event_number);
+      if (event >= GCP_PROMO_BUCKET_BOUNDARY)
+        return;
+      ReportGcpPromoHistogram(event);
       break;
     }
     default:

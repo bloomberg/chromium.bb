@@ -19,7 +19,8 @@ cr.define('print_preview', function() {
    * @enum {number}
    */
   Metrics.BucketGroup = {
-    DESTINATION_SEARCH: 0
+    DESTINATION_SEARCH: 0,
+    GCP_PROMO: 1
   };
 
   /**
@@ -43,6 +44,23 @@ cr.define('print_preview', function() {
   };
 
   /**
+   * Enumeration of buckets that a user can enter while using the Google Cloud
+   * Print promotion.
+   * @enum {number}
+   */
+  Metrics.GcpPromoBucket = {
+    // Used when the Google Cloud Print pomotion (shown above the pdf preview
+    // plugin) is shown to the user.
+    SHOWN: 0,
+    // Used when the user clicks the "Get started" link in the promotion shown
+    // in CLOUDPRINT_BIG_PROMO_SHOWN.
+    CLICKED: 1,
+    // Used when the user dismisses the promotion shown in
+    // CLOUDPRINT_BIG_PROMO_SHOWN.
+    DISMISSED: 2
+  };
+
+  /**
    * Name of the C++ function to call to increment bucket counts.
    * @type {string}
    * @const
@@ -58,6 +76,15 @@ cr.define('print_preview', function() {
     incrementDestinationSearchBucket: function(bucket) {
       chrome.send(Metrics.NATIVE_FUNCTION_NAME_,
                   [Metrics.BucketGroup.DESTINATION_SEARCH, bucket]);
+    },
+
+    /**
+     * Increments the counter of a gcp-promo bucket.
+     * @param {!Metrics.GcpPromoBucket} bucket Bucket to increment.
+     */
+    incrementGcpPromoBucket: function(bucket) {
+      chrome.send(Metrics.NATIVE_FUNCTION_NAME_,
+                  [Metrics.BucketGroup.GCP_PROMO, bucket]);
     }
   };
 

@@ -150,8 +150,7 @@ cr.define('print_preview', function() {
     OPEN_SYSTEM_DIALOG_BUTTON: 'preview-area-open-system-dialog-button',
     OPEN_SYSTEM_DIALOG_BUTTON_THROBBER:
         'preview-area-open-system-dialog-button-throbber',
-    OVERLAY: 'preview-area-overlay-layer',
-    PDF_PLUGIN: 'preview-area-pdf-plugin'
+    OVERLAY: 'preview-area-overlay-layer'
   };
 
   /**
@@ -418,7 +417,8 @@ cr.define('print_preview', function() {
       this.plugin_.setAttribute('src', srcUrl);
       this.plugin_.setAttribute('aria-live', 'polite');
       this.plugin_.setAttribute('aria-atomic', 'true');
-      this.getElement().appendChild(this.plugin_);
+      this.getChildElement('.preview-area-plugin-wrapper').
+          appendChild(this.plugin_);
 
       global['onPreviewPluginLoad'] = this.onPluginLoad_.bind(this);
       this.plugin_.onload('onPreviewPluginLoad()');

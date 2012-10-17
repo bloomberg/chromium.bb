@@ -162,6 +162,15 @@ void PrintPreviewDataSource::Init() {
   AddLocalizedString("offline", IDS_PRINT_PREVIEW_OFFLINE);
   AddLocalizedString("fedexTos", IDS_PRINT_PREVIEW_FEDEX_TOS);
   AddLocalizedString("tosCheckboxLabel", IDS_PRINT_PREVIEW_TOS_CHECKBOX_LABEL);
+  AddLocalizedString("noDestsPromoTitle",
+                     IDS_PRINT_PREVIEW_NO_DESTS_PROMO_TITLE);
+  AddLocalizedString("noDestsPromoBody", IDS_PRINT_PREVIEW_NO_DESTS_PROMO_BODY);
+  AddLocalizedString("noDestsPromoGcpDesc",
+                     IDS_PRINT_PREVIEW_NO_DESTS_GCP_DESC);
+  AddLocalizedString("noDestsPromoAddPrinterButtonLabel",
+                     IDS_PRINT_PREVIEW_NO_DESTS_PROMO_ADD_PRINTER_BUTTON_LABEL);
+  AddLocalizedString("noDestsPromoNotNowButtonLabel",
+                     IDS_PRINT_PREVIEW_NO_DESTS_PROMO_NOT_NOW_BUTTON_LABEL);
 
   set_json_path("strings.js");
   add_resource_path("print_preview.js", IDR_PRINT_PREVIEW_JS);
