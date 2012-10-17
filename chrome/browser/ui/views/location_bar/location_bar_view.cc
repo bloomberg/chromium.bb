@@ -756,8 +756,10 @@ void LocationBarView::Layout() {
                     location_icon_width + kItemEditPadding);
   }
 
-  if (action_box_button_view_)
+  if (action_box_button_view_) {
+    action_box_button_view_->SetVisible(true);
     entry_width -= action_box_button_view_->width() + GetItemPadding();
+  }
   if (star_view_ && star_view_->visible())
     entry_width -= star_view_->GetPreferredSize().width() + GetItemPadding();
   if (open_pdf_in_reader_view_ && open_pdf_in_reader_view_->visible()) {
