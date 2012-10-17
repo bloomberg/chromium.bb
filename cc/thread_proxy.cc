@@ -349,17 +349,21 @@ void CCThreadProxy::postAnimationEventsToMainThreadOnImplThread(scoped_ptr<CCAni
     m_mainThreadProxy->postTask(createCCThreadTask(this, &CCThreadProxy::setAnimationEvents, events.release(), wallClockTime));
 }
 
-void CCThreadProxy::releaseContentsTexturesOnImplThread()
+bool CCThreadProxy::reduceContentsTextureMemoryOnImplThread(size_t limitBytes)
 {
     ASSERT(isImplThread());
 
-    if (m_layerTreeHost->contentsTextureManager()) 
-        m_layerTreeHost->contentsTextureManager()->reduceMemoryOnImplThread(0, m_layerTreeHostImpl->resourceProvider());
+    if (!m_layerTreeHost->contentsTextureManager())
+        return false;
+
+    if (!m_layerTreeHost->contentsTextureManager()->reduceMemoryOnImplThread(limitBytes, m_layerTreeHostImpl->resourceProvider()))
+        return false;
 
     // The texture upload queue may reference textures that were just purged, clear
     // them from the queue.
     if (m_currentTextureUpdateControllerOnImplThread.get())
         m_currentTextureUpdateControllerOnImplThread->discardUploadsToEvictedResources();
+    return true;
 }
 
 void CCThreadProxy::setNeedsRedraw()

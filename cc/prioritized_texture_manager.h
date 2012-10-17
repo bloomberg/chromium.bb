@@ -68,8 +68,9 @@ public:
     void clearPriorities();
 
     // Delete contents textures' backing resources until they use only bytesLimit bytes. This may
-    // be called on the impl thread while the main thread is running.
-    void reduceMemoryOnImplThread(size_t limitBytes, CCResourceProvider*);
+    // be called on the impl thread while the main thread is running. Returns true if resources are
+    // indeed evicted as a result of this call.
+    bool reduceMemoryOnImplThread(size_t limitBytes, CCResourceProvider*);
     // Returns true if there exist any textures that are linked to backings that have had their
     // resources evicted. Only when we commit a tree that has no textures linked to evicted backings
     // may we allow drawing.
@@ -134,7 +135,7 @@ private:
 
     CCPrioritizedTextureManager(size_t maxMemoryLimitBytes, int maxTextureSize, int pool);
 
-    void evictBackingsToReduceMemory(size_t limitBytes, EvictionPriorityPolicy, CCResourceProvider*);
+    bool evictBackingsToReduceMemory(size_t limitBytes, EvictionPriorityPolicy, CCResourceProvider*);
     CCPrioritizedTexture::Backing* createBacking(IntSize, GC3Denum format, CCResourceProvider*);
     void evictFirstBackingResource(CCResourceProvider*);
     void deleteUnlinkedEvictedBackings();

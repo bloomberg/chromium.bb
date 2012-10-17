@@ -120,6 +120,7 @@ private:
     void onMemoryAllocationChangedOnImplThread(WebKit::WebGraphicsMemoryAllocation);
     void discardFramebuffer();
     void ensureFramebuffer();
+    void enforceMemoryPolicy();
 
     // WebGraphicsContext3D::WebGraphicsContextLostCallback implementation.
     virtual void onContextLost() OVERRIDE;
@@ -209,6 +210,7 @@ private:
     IntRect m_swapBufferRect;
     bool m_isViewportChanged;
     bool m_isFramebufferDiscarded;
+    bool m_discardFramebufferWhenNotVisible;
     bool m_isUsingBindUniform;
     bool m_visible;
 

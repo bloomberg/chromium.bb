@@ -60,6 +60,7 @@ public:
         : m_onCanDrawStateChangedCalled(false)
         , m_didRequestCommit(false)
         , m_didRequestRedraw(false)
+        , m_reduceMemoryResult(true)
     {
     }
 
@@ -86,7 +87,9 @@ public:
     virtual void setNeedsRedrawOnImplThread() OVERRIDE { m_didRequestRedraw = true; }
     virtual void setNeedsCommitOnImplThread() OVERRIDE { m_didRequestCommit = true; }
     virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<CCAnimationEventsVector>, double wallClockTime) OVERRIDE { }
-    virtual void releaseContentsTexturesOnImplThread() OVERRIDE { }
+    virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes) OVERRIDE { return m_reduceMemoryResult; }
+
+    void setReduceMemoryResult(bool reduceMemoryResult) { m_reduceMemoryResult = reduceMemoryResult; }
 
     scoped_ptr<CCLayerTreeHostImpl> createLayerTreeHost(bool partialSwap, scoped_ptr<CCGraphicsContext> graphicsContext, scoped_ptr<CCLayerImpl> root)
     {
@@ -186,6 +189,7 @@ protected:
     bool m_onCanDrawStateChangedCalled;
     bool m_didRequestCommit;
     bool m_didRequestRedraw;
+    bool m_reduceMemoryResult;
     CCScopedSettings m_scopedSettings;
 };
 
@@ -229,8 +233,19 @@ TEST_P(CCLayerTreeHostImplTest, notifyIfCanDrawChanged)
     EXPECT_TRUE(m_onCanDrawStateChangedCalled);
     m_onCanDrawStateChangedCalled = false;
 
-    // Toggle contents textures purged to make sure it toggles canDraw
-    m_hostImpl->releaseContentsTextures();
+    // Toggle contents textures purged without causing any evictions,
+    // and make sure that it does not change canDraw.
+    setReduceMemoryResult(false);
+    m_hostImpl->setMemoryAllocationLimitBytes(
+        m_hostImpl->memoryAllocationLimitBytes() - 1);
+    EXPECT_TRUE(m_hostImpl->canDraw());
+    EXPECT_FALSE(m_onCanDrawStateChangedCalled);
+    m_onCanDrawStateChangedCalled = false;
+
+    // Toggle contents textures purged to make sure it toggles canDraw.
+    setReduceMemoryResult(true);
+    m_hostImpl->setMemoryAllocationLimitBytes(
+        m_hostImpl->memoryAllocationLimitBytes() - 1);
     EXPECT_FALSE(m_hostImpl->canDraw());
     EXPECT_TRUE(m_onCanDrawStateChangedCalled);
     m_onCanDrawStateChangedCalled = false;
@@ -4009,8 +4024,30 @@ TEST_P(CCLayerTreeHostImplTest, surfaceTextureCachingNoPartialSwap)
 
 TEST_P(CCLayerTreeHostImplTest, releaseContentsTextureShouldTriggerCommit)
 {
-    m_hostImpl->releaseContentsTextures();
+    setReduceMemoryResult(false);
+
+    // Even if changing the memory limit didn't result in anything being
+    // evicted, we need to re-commit because the new value may result in us
+    // drawing something different than before.
+    setReduceMemoryResult(false);
+    m_hostImpl->setMemoryAllocationLimitBytes(
+        m_hostImpl->memoryAllocationLimitBytes() - 1);
     EXPECT_TRUE(m_didRequestCommit);
+    m_didRequestCommit = false;
+
+    // Especially if changing the memory limit caused evictions, we need
+    // to re-commit.
+    setReduceMemoryResult(true);
+    m_hostImpl->setMemoryAllocationLimitBytes(
+        m_hostImpl->memoryAllocationLimitBytes() - 1);
+    EXPECT_TRUE(m_didRequestCommit);
+    m_didRequestCommit = false;
+
+    // But if we set it to the same value that it was before, we shouldn't
+    // re-commit.
+    m_hostImpl->setMemoryAllocationLimitBytes(
+        m_hostImpl->memoryAllocationLimitBytes());
+    EXPECT_FALSE(m_didRequestCommit);
 }
 
 struct RenderPassRemovalTestData : public CCLayerTreeHostImpl::FrameData {
@@ -4040,7 +4077,6 @@ public:
     virtual void didLoseContext() OVERRIDE { }
     virtual void onSwapBuffersComplete() OVERRIDE { }
     virtual void setFullRootLayerDamage() OVERRIDE { }
-    virtual void releaseContentsTextures() OVERRIDE { }
     virtual void setMemoryAllocationLimitBytes(size_t) OVERRIDE { }
 
 protected:

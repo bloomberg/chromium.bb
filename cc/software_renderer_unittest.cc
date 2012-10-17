@@ -48,7 +48,6 @@ public:
     virtual void didLoseContext() OVERRIDE { }
     virtual void onSwapBuffersComplete() OVERRIDE { }
     virtual void setFullRootLayerDamage() OVERRIDE { }
-    virtual void releaseContentsTextures() OVERRIDE { }
     virtual void setMemoryAllocationLimitBytes(size_t) OVERRIDE { }
 
 protected:

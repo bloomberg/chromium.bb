@@ -43,7 +43,8 @@ public:
     virtual void setNeedsRedrawOnImplThread() = 0;
     virtual void setNeedsCommitOnImplThread() = 0;
     virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<CCAnimationEventsVector>, double wallClockTime) = 0;
-    virtual void releaseContentsTexturesOnImplThread() = 0;
+    // Returns true if resources were deleted by this call.
+    virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes) = 0;
 };
 
 // CCPinchZoomViewport models the bounds and offset of the viewport that is used during a pinch-zoom operation.
@@ -151,7 +152,6 @@ public:
     virtual void didLoseContext() OVERRIDE;
     virtual void onSwapBuffersComplete() OVERRIDE;
     virtual void setFullRootLayerDamage() OVERRIDE;
-    virtual void releaseContentsTextures() OVERRIDE;
     virtual void setMemoryAllocationLimitBytes(size_t) OVERRIDE;
 
     // WebCompositorOutputSurfaceClient implementation.
@@ -197,6 +197,7 @@ public:
     void setContentsTexturesPurged();
     void resetContentsTexturesPurged();
     size_t memoryAllocationLimitBytes() const { return m_memoryAllocationLimitBytes; }
+    void reduceContentsTextureMemoryOnImplThread(size_t limitBytes);
 
     void setViewportSize(const IntSize& layoutViewportSize, const IntSize& deviceViewportSize);
     const IntSize& layoutViewportSize() const { return m_layoutViewportSize; }

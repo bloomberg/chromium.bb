@@ -280,11 +280,13 @@ void CCSingleThreadProxy::postAnimationEventsToMainThreadOnImplThread(scoped_ptr
     m_layerTreeHost->setAnimationEvents(events.Pass(), wallClockTime);
 }
 
-void CCSingleThreadProxy::releaseContentsTexturesOnImplThread()
+bool CCSingleThreadProxy::reduceContentsTextureMemoryOnImplThread(size_t limitBytes)
 {
     ASSERT(isImplThread());
-    if (m_layerTreeHost->contentsTextureManager())
-        m_layerTreeHost->contentsTextureManager()->reduceMemoryOnImplThread(0, m_layerTreeHostImpl->resourceProvider());
+    if (!m_layerTreeHost->contentsTextureManager())
+        return false;
+
+    return m_layerTreeHost->contentsTextureManager()->reduceMemoryOnImplThread(limitBytes, m_layerTreeHostImpl->resourceProvider());
 }
 
 // Called by the legacy scheduling path (e.g. where render_widget does the scheduling)
