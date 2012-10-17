@@ -386,18 +386,19 @@ class TransfersAllNavigationsContentBrowserClient
   }
 };
 
-enum {
-  DEFER_NONE                = 0,
+enum GenericResourceThrottleFlags {
+  NONE                      = 0,
   DEFER_STARTING_REQUEST    = 1 << 0,
-  DEFER_PROCESSING_RESPONSE = 1 << 1
+  DEFER_PROCESSING_RESPONSE = 1 << 1,
+  CANCEL_BEFORE_START       = 1 << 2
 };
 
 // Throttle that tracks the current throttle blocking a request.  Only one
 // can throttle any request at a time.
 class GenericResourceThrottle : public content::ResourceThrottle {
  public:
-  explicit GenericResourceThrottle(int defer_flags)
-      : defer_flags_(defer_flags) {
+  explicit GenericResourceThrottle(int flags)
+      : flags_(flags) {
   }
 
   virtual ~GenericResourceThrottle() {
@@ -408,15 +409,19 @@ class GenericResourceThrottle : public content::ResourceThrottle {
   // content::ResourceThrottle implementation:
   virtual void WillStartRequest(bool* defer) OVERRIDE {
     ASSERT_EQ(NULL, active_throttle_);
-    if (defer_flags_ & DEFER_STARTING_REQUEST) {
+    if (flags_ & DEFER_STARTING_REQUEST) {
       active_throttle_ = this;
       *defer = true;
+    }
+
+    if (flags_ & CANCEL_BEFORE_START) {
+      controller()->Cancel();
     }
   }
 
   virtual void WillProcessResponse(bool* defer) OVERRIDE {
     ASSERT_EQ(NULL, active_throttle_);
-    if (defer_flags_ & DEFER_PROCESSING_RESPONSE) {
+    if (flags_ & DEFER_PROCESSING_RESPONSE) {
       active_throttle_ = this;
       *defer = true;
     }
@@ -433,7 +438,7 @@ class GenericResourceThrottle : public content::ResourceThrottle {
   }
 
  private:
-  int defer_flags_;  // bit-wise union of DEFER_XXX flags.
+  int flags_;  // bit-wise union of GenericResourceThrottleFlags.
 
   // The currently active throttle, if any.
   static GenericResourceThrottle* active_throttle_;
@@ -446,15 +451,15 @@ class TestResourceDispatcherHostDelegate
  public:
   TestResourceDispatcherHostDelegate()
       : create_two_throttles_(false),
-        defer_flags_(DEFER_NONE) {
+        flags_(NONE) {
   }
 
   void set_url_request_user_data(base::SupportsUserData::Data* user_data) {
     user_data_.reset(user_data);
   }
 
-  void set_defer_flags(int value) {
-    defer_flags_ = value;
+  void set_flags(int value) {
+    flags_ = value;
   }
 
   void set_create_two_throttles(bool create_two_throttles) {
@@ -477,16 +482,16 @@ class TestResourceDispatcherHostDelegate
       request->SetUserData(key, user_data_.release());
     }
 
-    if (defer_flags_ != DEFER_NONE) {
-      throttles->push_back(new GenericResourceThrottle(defer_flags_));
+    if (flags_ != NONE) {
+      throttles->push_back(new GenericResourceThrottle(flags_));
       if (create_two_throttles_)
-        throttles->push_back(new GenericResourceThrottle(defer_flags_));
+        throttles->push_back(new GenericResourceThrottle(flags_));
     }
   }
 
  private:
   bool create_two_throttles_;
-  int defer_flags_;
+  int flags_;
   scoped_ptr<base::SupportsUserData::Data> user_data_;
 };
 
@@ -532,6 +537,7 @@ class ResourceDispatcherHostTest : public testing::Test,
     EnsureTestSchemeIsAllowed();
     delay_start_ = false;
     delay_complete_ = false;
+    url_request_jobs_created_count_ = 0;
   }
 
   virtual void TearDown() {
@@ -621,6 +627,7 @@ class ResourceDispatcherHostTest : public testing::Test,
   static net::URLRequestJob* Factory(net::URLRequest* request,
                                      net::NetworkDelegate* network_delegate,
                                      const std::string& scheme) {
+    url_request_jobs_created_count_++;
     if (test_fixture_->response_headers_.empty()) {
       if (delay_start_) {
         return new URLRequestTestDelayedStartJob(request, network_delegate);
@@ -690,11 +697,13 @@ class ResourceDispatcherHostTest : public testing::Test,
   static ResourceDispatcherHostTest* test_fixture_;
   static bool delay_start_;
   static bool delay_complete_;
+  static int url_request_jobs_created_count_;
 };
 // Static.
 ResourceDispatcherHostTest* ResourceDispatcherHostTest::test_fixture_ = NULL;
 bool ResourceDispatcherHostTest::delay_start_ = false;
 bool ResourceDispatcherHostTest::delay_complete_ = false;
+int ResourceDispatcherHostTest::url_request_jobs_created_count_ = 0;
 
 void ResourceDispatcherHostTest::MakeTestRequest(int render_view_id,
                                                  int request_id,
@@ -806,6 +815,19 @@ TEST_F(ResourceDispatcherHostTest, TestMany) {
   CheckSuccessfulRequest(msgs[2], net::URLRequestTestJob::test_data_3());
 }
 
+void CheckCancelledRequestCompleteMessage(const IPC::Message& message) {
+  ASSERT_EQ(ResourceMsg_RequestComplete::ID, message.type());
+
+  int request_id;
+  int error_code;
+
+  PickleIterator iter(message);
+  ASSERT_TRUE(IPC::ReadParam(&message, &iter, &request_id));
+  ASSERT_TRUE(IPC::ReadParam(&message, &iter, &error_code));
+
+  EXPECT_EQ(net::ERR_ABORTED, error_code);
+}
+
 // Tests whether messages get canceled properly. We issue three requests,
 // cancel one of them, and make sure that each sent the proper notifications.
 TEST_F(ResourceDispatcherHostTest, Cancel) {
@@ -834,16 +856,7 @@ TEST_F(ResourceDispatcherHostTest, Cancel) {
   // Check that request 2 got canceled.
   ASSERT_EQ(2U, msgs[1].size());
   ASSERT_EQ(ResourceMsg_ReceivedResponse::ID, msgs[1][0].type());
-  ASSERT_EQ(ResourceMsg_RequestComplete::ID, msgs[1][1].type());
-
-  int request_id;
-  int error_code;
-
-  PickleIterator iter(msgs[1][1]);
-  ASSERT_TRUE(IPC::ReadParam(&msgs[1][1], &iter, &request_id));
-  ASSERT_TRUE(IPC::ReadParam(&msgs[1][1], &iter, &error_code));
-
-  EXPECT_EQ(net::ERR_ABORTED, error_code);
+  CheckCancelledRequestCompleteMessage(msgs[1][1]);
 }
 
 TEST_F(ResourceDispatcherHostTest, CancelWhileStartIsDeferred) {
@@ -853,7 +866,7 @@ TEST_F(ResourceDispatcherHostTest, CancelWhileStartIsDeferred) {
 
   // Arrange to have requests deferred before starting.
   TestResourceDispatcherHostDelegate delegate;
-  delegate.set_defer_flags(DEFER_STARTING_REQUEST);
+  delegate.set_flags(DEFER_STARTING_REQUEST);
   delegate.set_url_request_user_data(new TestUserData(&was_deleted));
   host_.SetDelegate(&delegate);
 
@@ -874,12 +887,36 @@ TEST_F(ResourceDispatcherHostTest, CancelWhileStartIsDeferred) {
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 }
 
+// Tests if cancel is called in ResourceThrottle::WillStartRequest, then the
+// URLRequest will not be started.
+TEST_F(ResourceDispatcherHostTest, CancelInResourceThrottleWillStartRequest) {
+  TestResourceDispatcherHostDelegate delegate;
+  delegate.set_flags(CANCEL_BEFORE_START);
+  host_.SetDelegate(&delegate);
+
+  MakeTestRequest(0, 1, net::URLRequestTestJob::test_url_1());
+
+  // flush all the pending requests
+  while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
+  MessageLoop::current()->RunAllPending();
+
+  ResourceIPCAccumulator::ClassifiedMessages msgs;
+  accum_.GetClassifiedMessages(&msgs);
+
+  // Check that request got canceled.
+  ASSERT_EQ(1U, msgs[0].size());
+  CheckCancelledRequestCompleteMessage(msgs[0][0]);
+
+  // Make sure URLRequest is never started.
+  EXPECT_EQ(0, url_request_jobs_created_count_);
+}
+
 TEST_F(ResourceDispatcherHostTest, PausedStartError) {
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
   // Arrange to have requests deferred before processing response headers.
   TestResourceDispatcherHostDelegate delegate;
-  delegate.set_defer_flags(DEFER_PROCESSING_RESPONSE);
+  delegate.set_flags(DEFER_PROCESSING_RESPONSE);
   host_.SetDelegate(&delegate);
 
   SetDelayedStartJobGeneration(true);
@@ -898,7 +935,7 @@ TEST_F(ResourceDispatcherHostTest, ThrottleAndResumeTwice) {
 
   // Arrange to have requests deferred before starting.
   TestResourceDispatcherHostDelegate delegate;
-  delegate.set_defer_flags(DEFER_STARTING_REQUEST);
+  delegate.set_flags(DEFER_STARTING_REQUEST);
   delegate.set_create_two_throttles(true);
   host_.SetDelegate(&delegate);
 
