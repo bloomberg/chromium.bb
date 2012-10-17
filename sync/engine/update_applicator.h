@@ -23,7 +23,6 @@ namespace syncer {
 
 namespace sessions {
 class StatusController;
-class UpdateProgress;
 }
 
 namespace syncable {
@@ -48,38 +47,7 @@ class UpdateApplicator {
                            const std::vector<int64>& handles,
                            sessions::StatusController* status);
 
-  // This class does not automatically save its progress into the
-  // SyncSession -- to get that to happen, call this method after update
-  // application is finished (i.e., when AttemptOneAllocation stops returning
-  // true).
-  void SaveProgressIntoSessionState(
-      std::set<syncable::Id>* simple_conflict_ids,
-      sessions::UpdateProgress* update_progress);
-
  private:
-  // Track the status of all applications.
-  class ResultTracker {
-   public:
-     explicit ResultTracker();
-     virtual ~ResultTracker();
-     void AddSimpleConflict(syncable::Id);
-     void AddEncryptionConflict(syncable::Id);
-     void AddHierarchyConflict(syncable::Id);
-     void AddSuccess(syncable::Id);
-     void SaveProgress(std::set<syncable::Id>* simple_conflict_ids,
-                       sessions::UpdateProgress* update_progress);
-     void ClearHierarchyConflicts();
-
-     // Returns true iff conflicting_ids_ is empty. Does not check
-     // encryption_conflict_ids_.
-     bool no_conflicts() const;
-   private:
-    std::set<syncable::Id> conflicting_ids_;
-    std::set<syncable::Id> successful_ids_;
-    std::set<syncable::Id> encryption_conflict_ids_;
-    std::set<syncable::Id> hierarchy_conflict_ids_;
-  };
-
   // If true, AttemptOneApplication will skip over |entry| and return true.
   bool SkipUpdate(const syncable::Entry& entry);
 
@@ -89,9 +57,6 @@ class UpdateApplicator {
   ModelSafeGroup group_filter_;
 
   const ModelSafeRoutingInfo routing_info_;
-
-  // Track the result of the attempts to update applications.
-  ResultTracker application_results_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateApplicator);
 };

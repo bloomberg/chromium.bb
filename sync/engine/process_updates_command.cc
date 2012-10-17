@@ -30,7 +30,6 @@ namespace syncer {
 
 using sessions::SyncSession;
 using sessions::StatusController;
-using sessions::UpdateProgress;
 
 using syncable::GET_BY_ID;
 
@@ -141,7 +140,6 @@ SyncerError ProcessUpdatesCommand::ModelChangingExecuteImpl(
     VerifyResult verify_result = VerifyUpdate(&trans, update,
                                               requested_types,
                                               session->routing_info());
-    status->mutable_update_progress()->AddVerifyResult(verify_result, update);
     status->increment_num_updates_downloaded_by(1);
     if (!UpdateContainsNewVersion(&trans, update))
       status->increment_num_reflected_updates_downloaded_by(1);
@@ -158,7 +156,6 @@ SyncerError ProcessUpdatesCommand::ModelChangingExecuteImpl(
            process_result == SUCCESS_STORED);
   }
 
-  status->mutable_update_progress()->ClearVerifiedUpdates();
   return SYNCER_OK;
 }
 

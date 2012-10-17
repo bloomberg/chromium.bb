@@ -22,17 +22,6 @@ StatusController::StatusController(const ModelSafeRoutingInfo& routes)
 
 StatusController::~StatusController() {}
 
-const UpdateProgress* StatusController::update_progress() const {
-  const PerModelSafeGroupState* state =
-      GetModelSafeGroupState(true, group_restriction_);
-  return state ? &state->update_progress : NULL;
-}
-
-UpdateProgress* StatusController::mutable_update_progress() {
-  return &GetOrCreateModelSafeGroupState(
-      true, group_restriction_)->update_progress;
-}
-
 const std::set<syncable::Id>* StatusController::simple_conflict_ids() const {
   const PerModelSafeGroupState* state =
       GetModelSafeGroupState(true, group_restriction_);
@@ -49,18 +38,6 @@ const std::set<syncable::Id>*
         ModelSafeGroup group) const {
   const PerModelSafeGroupState* state = GetModelSafeGroupState(false, group);
   return state ? &state->simple_conflict_ids : NULL;
-}
-
-const UpdateProgress* StatusController::GetUnrestrictedUpdateProgress(
-    ModelSafeGroup group) const {
-  const PerModelSafeGroupState* state = GetModelSafeGroupState(false, group);
-  return state ? &state->update_progress : NULL;
-}
-
-UpdateProgress*
-    StatusController::GetUnrestrictedMutableUpdateProgressForTest(
-        ModelSafeGroup group) {
-  return &GetOrCreateModelSafeGroupState(false, group)->update_progress;
 }
 
 const PerModelSafeGroupState* StatusController::GetModelSafeGroupState(
@@ -187,15 +164,11 @@ int64 StatusController::CountUpdates() const {
 }
 
 bool StatusController::HasConflictingUpdates() const {
-  DCHECK(!group_restriction_in_effect_)
-      << "HasConflictingUpdates applies to all ModelSafeGroups";
-  std::map<ModelSafeGroup, PerModelSafeGroupState*>::const_iterator it =
-    per_model_group_.begin();
-  for (; it != per_model_group_.end(); ++it) {
-    if (it->second->update_progress.HasConflictingUpdates())
-      return true;
-  }
-  return false;
+  return TotalNumConflictingItems() > 0;
+}
+
+int StatusController::num_updates_applied() const {
+  return model_neutral_.num_updates_applied;
 }
 
 int StatusController::num_encryption_conflicts() const {

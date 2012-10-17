@@ -45,37 +45,22 @@ TEST_F(StatusControllerTest, ReadYourWrites) {
 TEST_F(StatusControllerTest, HasConflictingUpdates) {
   StatusController status(routes_);
   EXPECT_FALSE(status.HasConflictingUpdates());
+
   {
     ScopedModelSafeGroupRestriction r(&status, GROUP_UI);
-    EXPECT_FALSE(status.update_progress());
-    status.mutable_update_progress()->AddAppliedUpdate(SUCCESS,
-        syncable::Id());
-    status.mutable_update_progress()->AddAppliedUpdate(CONFLICT_SIMPLE,
-        syncable::Id());
-    EXPECT_TRUE(status.update_progress()->HasConflictingUpdates());
+    status.increment_num_updates_applied();
+    status.mutable_simple_conflict_ids()->insert(syncable::Id());
   }
 
   EXPECT_TRUE(status.HasConflictingUpdates());
-
-  {
-    ScopedModelSafeGroupRestriction r(&status, GROUP_PASSIVE);
-    EXPECT_FALSE(status.update_progress());
-  }
 }
 
 TEST_F(StatusControllerTest, HasConflictingUpdates_NonBlockingUpdates) {
   StatusController status(routes_);
   EXPECT_FALSE(status.HasConflictingUpdates());
-  {
-    ScopedModelSafeGroupRestriction r(&status, GROUP_UI);
-    EXPECT_FALSE(status.update_progress());
-    status.mutable_update_progress()->AddAppliedUpdate(SUCCESS,
-        syncable::Id());
-    status.mutable_update_progress()->AddAppliedUpdate(CONFLICT_HIERARCHY,
-        syncable::Id());
-    EXPECT_TRUE(status.update_progress()->HasConflictingUpdates());
-  }
 
+  status.increment_num_updates_applied();
+  status.increment_num_encryption_conflicts();
   EXPECT_TRUE(status.HasConflictingUpdates());
 }
 
@@ -116,9 +101,6 @@ TEST_F(StatusControllerTest, TotalNumConflictingItems) {
 // Basic test that non group-restricted state accessors don't cause violations.
 TEST_F(StatusControllerTest, Unrestricted) {
   StatusController status(routes_);
-  const UpdateProgress* progress =
-      status.GetUnrestrictedUpdateProgress(GROUP_UI);
-  EXPECT_FALSE(progress);
   status.model_neutral_state();
   status.download_updates_succeeded();
   status.ServerSaysNothingMoreToDownload();

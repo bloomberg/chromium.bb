@@ -55,14 +55,8 @@ class StatusController {
   // auto-create.
   const std::set<syncable::Id>* simple_conflict_ids() const;
   std::set<syncable::Id>* mutable_simple_conflict_ids();
-  const UpdateProgress* update_progress() const;
-  UpdateProgress* mutable_update_progress();
   const std::set<syncable::Id>* GetUnrestrictedSimpleConflictIds(
       ModelSafeGroup group) const;
-  const UpdateProgress* GetUnrestrictedUpdateProgress(
-      ModelSafeGroup group) const;
-  UpdateProgress* GetUnrestrictedMutableUpdateProgressForTest(
-      ModelSafeGroup group);
 
   // ClientToServer messages.
   const ModelTypeSet updates_request_types() const {
@@ -109,6 +103,9 @@ class StatusController {
 
   // Aggregate sum of all conflicting items over all conflict types.
   int TotalNumConflictingItems() const;
+
+  // Number of successfully applied updates.
+  int num_updates_applied() const;
 
   // Returns the number of updates received from the sync server.
   int64 CountUpdates() const;

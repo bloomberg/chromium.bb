@@ -13,69 +13,17 @@
 #define SYNC_SESSIONS_SESSION_STATE_H_
 
 #include <set>
-#include <vector>
 
-#include "sync/engine/syncer_types.h"
-#include "sync/protocol/sync.pb.h"
 #include "sync/syncable/syncable_id.h"
 
 namespace syncer {
 namespace sessions {
-
-typedef std::pair<VerifyResult, sync_pb::SyncEntity> VerifiedUpdate;
-typedef std::pair<UpdateAttemptResponse, syncable::Id> AppliedUpdate;
-
-// Tracks update application and verification.
-class UpdateProgress {
- public:
-  UpdateProgress();
-  ~UpdateProgress();
-
-  void AddVerifyResult(const VerifyResult& verify_result,
-                       const sync_pb::SyncEntity& entity);
-
-  // Log a successful or failing update attempt.
-  void AddAppliedUpdate(const UpdateAttemptResponse& response,
-                        const syncable::Id& id);
-
-  // Various iterators.
-  std::vector<AppliedUpdate>::iterator AppliedUpdatesBegin();
-  std::vector<VerifiedUpdate>::const_iterator VerifiedUpdatesBegin() const;
-  std::vector<AppliedUpdate>::const_iterator AppliedUpdatesEnd() const;
-  std::vector<VerifiedUpdate>::const_iterator VerifiedUpdatesEnd() const;
-
-  // Returns the number of update application attempts.  This includes both
-  // failures and successes.
-  int AppliedUpdatesSize() const { return applied_updates_.size(); }
-  int VerifiedUpdatesSize() const { return verified_updates_.size(); }
-  bool HasVerifiedUpdates() const { return !verified_updates_.empty(); }
-  bool HasAppliedUpdates() const { return !applied_updates_.empty(); }
-  void ClearVerifiedUpdates() { verified_updates_.clear(); }
-
-  // Count the number of successful update applications that have happend this
-  // cycle. Note that if an item is successfully applied twice, it will be
-  // double counted here.
-  int SuccessfullyAppliedUpdateCount() const;
-
-  // Returns true if at least one update application failed due to a conflict
-  // during this sync cycle.
-  bool HasConflictingUpdates() const;
-
- private:
-  // Container for updates that passed verification.
-  std::vector<VerifiedUpdate> verified_updates_;
-
-  // Stores the result of the various ApplyUpdate attempts we've made.
-  // May contain duplicate entries.
-  std::vector<AppliedUpdate> applied_updates_;
-};
 
 // Grouping of all state that applies to a single ModelSafeGroup.
 struct PerModelSafeGroupState {
   explicit PerModelSafeGroupState();
   ~PerModelSafeGroupState();
 
-  UpdateProgress update_progress;
   std::set<syncable::Id> simple_conflict_ids;
 };
 

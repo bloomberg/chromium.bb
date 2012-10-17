@@ -71,9 +71,6 @@ SyncerError ApplyUpdatesCommand::ModelChangingExecuteImpl(
       session->status_controller().group_restriction());
   applicator.AttemptApplications(&trans, handles,
                                  session->mutable_status_controller());
-  applicator.SaveProgressIntoSessionState(
-      session->mutable_status_controller()->mutable_simple_conflict_ids(),
-      session->mutable_status_controller()->mutable_update_progress());
 
   // This might be the first time we've fully completed a sync cycle, for
   // some subset of the currently synced datatypes.
