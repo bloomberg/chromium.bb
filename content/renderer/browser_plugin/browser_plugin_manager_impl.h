@@ -37,7 +37,6 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
   void OnDidNavigate(int instance_id,
                      const BrowserPluginMsg_DidNavigate_Params& params);
   void OnAdvanceFocus(int instance_id, bool reverse);
-  void OnGuestContentWindowReady(int instance_id, int guest_routing_id);
   void OnShouldAcceptTouchEvents(int instance_id, bool accept);
   void OnLoadStart(int instance_id,
                    const GURL& url,
