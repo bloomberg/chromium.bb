@@ -20,7 +20,7 @@ void ReturnFontListToOriginalThread(
   callback.Run(result.Pass());
 }
 
-void GetFontListOnFileThread(
+void GetFontListInBlockingPool(
     BrowserThread::ID calling_thread_id,
     const base::Callback<void(scoped_ptr<base::ListValue>)>& callback) {
   scoped_ptr<base::ListValue> result(GetFontList_SlowBlocking());
@@ -38,8 +38,8 @@ void GetFontListAsync(
   DCHECK(well_known_thread)
       << "Can only call GetFontList from a well-known thread.";
 
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&GetFontListOnFileThread, id, callback));
+  BrowserThread::PostBlockingPoolTask(FROM_HERE,
+      base::Bind(&GetFontListInBlockingPool, id, callback));
 }
 
 }  // namespace content
