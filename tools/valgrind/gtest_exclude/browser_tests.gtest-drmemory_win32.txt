@@ -22,3 +22,14 @@ NaClBrowserTestNewlib.*
 PrerenderBrowserTest.*
 RepostFormWarningTest.*
 TaskManagerBrowserTest.*
+# DrM-i#1052-c#2
+AppApiTest.*
+CaptivePortalBrowserTest.*
+DownloadExtensionTest.*
+IsolatedAppTest.*
+ProxyBrowserTest.*
+RedirectTest.*
+SafeBrowsingBlockingPageTest.*
+SafeBrowsingBlockingPageV2Test.*
+SSLUITest.*
+SSLUITestIgnoreCertErrors.*
