@@ -626,10 +626,10 @@ bool ExtensionService::UpdateExtension(const std::string& id,
     installer->set_install_source(extension->location());
   }
   // If the extension was installed from or has migrated to the webstore, or
-  // if the extension came from sync and its auto-update URL is from the
-  // webstore, treat it as a webstore install. Note that we ignore some older
-  // extensions with blank auto-update URLs because we are mostly concerned
-  // with restrictions on NaCl extensions, which are newer.
+  // its auto-update URL is from the webstore, treat it as a webstore install.
+  // Note that we ignore some older extensions with blank auto-update URLs
+  // because we are mostly concerned with restrictions on NaCl extensions,
+  // which are newer.
   int creation_flags = Extension::NO_FLAGS;
   if ((extension && extension->from_webstore()) ||
       (extension && extension->UpdatesFromGallery()) ||
