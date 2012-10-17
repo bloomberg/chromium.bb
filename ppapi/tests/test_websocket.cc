@@ -34,15 +34,13 @@
 // These servers are provided by pywebsocket server side handlers in
 // LayoutTests/http/tests/websocket/tests/hybi/*_wsh.
 // pywebsocket server itself is launched in ppapi_ui_test.cc.
-const char kEchoServerURL[] = "websocket/tests/hybi/echo-with-no-extension";
+const char kEchoServerURL[] = "echo-with-no-extension";
 
-const char kCloseServerURL[] = "websocket/tests/hybi/close";
+const char kCloseServerURL[] = "close";
 
-const char kCloseWithCodeAndReasonServerURL[] =
-    "websocket/tests/hybi/close-code-and-reason";
+const char kCloseWithCodeAndReasonServerURL[] = "close-code-and-reason";
 
-const char kProtocolTestServerURL[] =
-    "websocket/tests/hybi/protocol-test?protocol=";
+const char kProtocolTestServerURL[] = "protocol-test?protocol=";
 
 const char* const kInvalidURLs[] = {
   "http://www.google.com/invalid_scheme",
