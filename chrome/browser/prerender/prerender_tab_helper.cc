@@ -89,8 +89,8 @@ class PrerenderTabHelper::PixelStats {
       PrerenderManager* prerender_manager =
           tab_helper_->MaybeGetPrerenderManager();
       if (prerender_manager) {
-        prerender_manager->histograms()->RecordFractionPixelsFinalAtSwapin(
-            CompareBitmaps(bitmap_.get(), bitmap.get()));
+        prerender_manager->RecordFractionPixelsFinalAtSwapin(
+            web_contents, CompareBitmaps(bitmap_.get(), bitmap.get()));
       }
       bitmap_.reset();
       bitmap_web_contents_ = NULL;
@@ -144,7 +144,7 @@ void PrerenderTabHelper::ProvisionalChangeToMainFrameUrl(
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
   if (!prerender_manager)
     return;
-  if (prerender_manager->IsWebContentsPrerendering(web_contents()))
+  if (prerender_manager->IsWebContentsPrerendering(web_contents(), NULL))
     return;
   prerender_manager->MarkWebContentsAsNotPrerendered(web_contents());
 }
@@ -161,7 +161,7 @@ void PrerenderTabHelper::DidCommitProvisionalLoadForFrame(
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
   if (!prerender_manager)
     return;
-  if (prerender_manager->IsWebContentsPrerendering(web_contents()))
+  if (prerender_manager->IsWebContentsPrerendering(web_contents(), NULL))
     return;
   prerender_manager->RecordNavigation(validated_url);
 }
@@ -221,14 +221,14 @@ bool PrerenderTabHelper::IsPrerendering() {
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
   if (!prerender_manager)
     return false;
-  return prerender_manager->IsWebContentsPrerendering(web_contents());
+  return prerender_manager->IsWebContentsPrerendering(web_contents(), NULL);
 }
 
 bool PrerenderTabHelper::IsPrerendered() {
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
   if (!prerender_manager)
     return false;
-  return prerender_manager->IsWebContentsPrerendered(web_contents());
+  return prerender_manager->IsWebContentsPrerendered(web_contents(), NULL);
 }
 
 void PrerenderTabHelper::PrerenderSwappedIn() {
@@ -240,7 +240,7 @@ void PrerenderTabHelper::PrerenderSwappedIn() {
                                                   web_contents(), url_);
     PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
     if (prerender_manager)
-      prerender_manager->histograms()->RecordFractionPixelsFinalAtSwapin(1.0);
+      prerender_manager->RecordFractionPixelsFinalAtSwapin(web_contents(), 1.0);
   } else {
     // If we have not finished loading yet, record the actual load start, and
     // rebase the start time to now.

@@ -16,7 +16,8 @@ enum Origin {
   // Obsolete: ORIGIN_OMNIBOX_CONSERVATIVE = 3,
   // Obsolete: ORIGIN_OMNIBOX_EXACT = 4,
   ORIGIN_OMNIBOX = 5,
-  ORIGIN_MAX
+  ORIGIN_NONE = 6,
+  ORIGIN_MAX,
 };
 
 // Return a human-readable name for |origin|.

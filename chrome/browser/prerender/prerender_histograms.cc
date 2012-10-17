@@ -21,8 +21,10 @@ namespace prerender {
 
 namespace {
 
-// Time window for which we will record windowed PLT's from the last
-// observed link rel=prefetch tag.
+// Time window for which we will record windowed PLTs from the last observed
+// link rel=prefetch tag. This is not intended to be the same as the prerender
+// ttl, it's just intended to be a window during which a prerender has likely
+// affected performance.
 const int kWindowDurationSeconds = 30;
 
 std::string ComposeHistogramName(const std::string& prefix_type,
@@ -52,6 +54,8 @@ std::string GetHistogramName(Origin origin, uint8 experiment_id,
       return ComposeHistogramName("omnibox", name);
     case ORIGIN_LINK_REL_PRERENDER:
       return ComposeHistogramName("web", name);
+    case ORIGIN_NONE:
+      return ComposeHistogramName("none", name);
     case ORIGIN_GWS_PRERENDER:  // Handled above.
     default:
       NOTREACHED();
@@ -73,8 +77,8 @@ bool OriginIsOmnibox(Origin origin) {
 // All HISTOGRAM arguments must be UMA_HISTOGRAM... macros that contain an
 // argument "name" which these macros will eventually substitute for the
 // actual name used.
-#define PREFIXED_HISTOGRAM(histogram_name, HISTOGRAM) \
-  PREFIXED_HISTOGRAM_INTERNAL(GetCurrentOrigin(), GetCurrentExperimentId(), \
+#define PREFIXED_HISTOGRAM(histogram_name, origin, HISTOGRAM)           \
+  PREFIXED_HISTOGRAM_INTERNAL(origin, GetCurrentExperimentId(),         \
                               IsOriginExperimentWash(), HISTOGRAM, \
                               histogram_name)
 
@@ -104,6 +108,8 @@ bool OriginIsOmnibox(Origin origin) {
   } else if (origin == ORIGIN_LINK_REL_PRERENDER) { \
     HISTOGRAM; \
   } else if (origin == ORIGIN_OMNIBOX) { \
+    HISTOGRAM; \
+  } else if (origin == ORIGIN_NONE) { \
     HISTOGRAM; \
   } else if (experiment != kNoExperiment) { \
     HISTOGRAM; \
@@ -178,13 +184,15 @@ void PrerenderHistograms::RecordUsedPrerender(Origin origin) const {
 }
 
 void PrerenderHistograms::RecordTimeSinceLastRecentVisit(
+    Origin origin,
     base::TimeDelta delta) const {
   PREFIXED_HISTOGRAM(
-      "TimeSinceLastRecentVisit",
+      "TimeSinceLastRecentVisit", origin,
       UMA_HISTOGRAM_TIMES(name, delta));
 }
 
 void PrerenderHistograms::RecordFractionPixelsFinalAtSwapin(
+    Origin origin,
     double fraction) const {
   if (fraction < 0.0 || fraction > 1.0)
     return;
@@ -193,7 +201,7 @@ void PrerenderHistograms::RecordFractionPixelsFinalAtSwapin(
     return;
   PREFIXED_HISTOGRAM(
       base::FieldTrial::MakeName("FractionPixelsFinalAtSwapin", "Prerender"),
-      UMA_HISTOGRAM_PERCENTAGE(name, percentage));
+      origin, UMA_HISTOGRAM_PERCENTAGE(name, percentage));
 }
 
 base::TimeTicks PrerenderHistograms::GetCurrentTimeTicks() const {
@@ -203,8 +211,8 @@ base::TimeTicks PrerenderHistograms::GetCurrentTimeTicks() const {
 // Helper macro for histograms.
 #define RECORD_PLT(tag, perceived_page_load_time) { \
   PREFIXED_HISTOGRAM( \
-    base::FieldTrial::MakeName(tag, "Prerender"), \
-    UMA_HISTOGRAM_CUSTOM_TIMES( \
+      base::FieldTrial::MakeName(tag, "Prerender"), origin, \
+      UMA_HISTOGRAM_CUSTOM_TIMES( \
         name, \
         perceived_page_load_time, \
         base::TimeDelta::FromMilliseconds(10), \
@@ -236,7 +244,9 @@ base::TimeTicks PrerenderHistograms::GetCurrentTimeTicks() const {
 // FirstAfterMissNonOverlapping but NOT FirstAfterMiss
 
 void PrerenderHistograms::RecordPerceivedPageLoadTime(
-    base::TimeDelta perceived_page_load_time, bool was_prerender,
+    Origin origin,
+    base::TimeDelta perceived_page_load_time,
+    bool was_prerender,
     bool was_complete_prerender, const GURL& url) {
   if (!IsWebURL(url))
     return;
@@ -286,7 +296,9 @@ void PrerenderHistograms::RecordPerceivedPageLoadTime(
 }
 
 void PrerenderHistograms::RecordPageLoadTimeNotSwappedIn(
-    base::TimeDelta page_load_time, const GURL& url) const {
+    Origin origin,
+    base::TimeDelta page_load_time,
+    const GURL& url) const {
   // If the URL to be prerendered is not a http[s] URL, or is a Google URL,
   // do not record.
   if (!IsWebURL(url) || IsGoogleDomain(url))
@@ -294,24 +306,8 @@ void PrerenderHistograms::RecordPageLoadTimeNotSwappedIn(
   RECORD_PLT("PrerenderNotSwappedInPLT", page_load_time);
 }
 
-void PrerenderHistograms::RecordSimulatedLocalBrowsingBaselinePLT(
-    base::TimeDelta page_load_time, const GURL& url) const {
-  // If the URL to be prerendered is not a http[s] URL do not record.
-  if (!IsWebURL(url))
-    return;
-  RECORD_PLT("SimulatedLocalBrowsingBaselinePLT", page_load_time);
-}
-
-void PrerenderHistograms::RecordSimulatedLocalBrowsingPLT(
-    base::TimeDelta page_load_time, const GURL& url) const {
-  // If the URL to be prerendered is not a http[s] URL do not record.
-  if (!IsWebURL(url))
-    return;
-  RECORD_PLT("SimulatedLocalBrowsingPLT", page_load_time);
-}
-
-void PrerenderHistograms::RecordPercentLoadDoneAtSwapin(double fraction)
-    const {
+void PrerenderHistograms::RecordPercentLoadDoneAtSwapin(Origin origin,
+                                                        double fraction) const {
   if (fraction < 0.0 || fraction > 1.0)
     return;
   int percentage = static_cast<int>(fraction * 100);
@@ -319,7 +315,7 @@ void PrerenderHistograms::RecordPercentLoadDoneAtSwapin(double fraction)
     return;
   PREFIXED_HISTOGRAM(
       base::FieldTrial::MakeName("PercentLoadDoneAtSwapin", "Prerender"),
-      UMA_HISTOGRAM_PERCENTAGE(name, percentage));
+      origin, UMA_HISTOGRAM_PERCENTAGE(name, percentage));
 }
 
 base::TimeDelta PrerenderHistograms::GetTimeSinceLastPrerender() const {
@@ -334,10 +330,11 @@ bool PrerenderHistograms::WithinWindow() const {
 }
 
 void PrerenderHistograms::RecordTimeUntilUsed(
+    Origin origin,
     base::TimeDelta time_until_used,
     base::TimeDelta time_to_live) const {
   PREFIXED_HISTOGRAM(
-      "TimeUntilUsed",
+      "TimeUntilUsed", origin,
       UMA_HISTOGRAM_CUSTOM_TIMES(
           name,
           time_until_used,
@@ -346,16 +343,17 @@ void PrerenderHistograms::RecordTimeUntilUsed(
           50));
 }
 
-void PrerenderHistograms::RecordPerSessionCount(int count) const {
+void PrerenderHistograms::RecordPerSessionCount(Origin origin,
+                                                int count) const {
   PREFIXED_HISTOGRAM(
-      "PrerendersPerSessionCount",
+      "PrerendersPerSessionCount", origin,
       UMA_HISTOGRAM_COUNTS(name, count));
 }
 
 void PrerenderHistograms::RecordTimeBetweenPrerenderRequests(
-    base::TimeDelta time) const {
+    Origin origin, base::TimeDelta time) const {
   PREFIXED_HISTOGRAM(
-      "TimeBetweenPrerenderRequests",
+      "TimeBetweenPrerenderRequests", origin,
       UMA_HISTOGRAM_TIMES(name, time));
 }
 
@@ -389,37 +387,10 @@ uint8 PrerenderHistograms::GetCurrentExperimentId() const {
   return last_experiment_id_;
 }
 
-Origin PrerenderHistograms::GetCurrentOrigin() const {
-  if (!WithinWindow())
-    return ORIGIN_LINK_REL_PRERENDER;
-  return last_origin_;
-}
-
 bool PrerenderHistograms::IsOriginExperimentWash() const {
   if (!WithinWindow())
     return false;
   return origin_experiment_wash_;
-}
-
-void PrerenderHistograms::RecordLocalPredictorEvent(
-    PrerenderLocalPredictor::Event event) const {
-  UMA_HISTOGRAM_ENUMERATION(
-      ComposeHistogramName("", base::FieldTrial::MakeName(
-          "LocalPredictorEvent", "Prerender")),
-      event,
-      PrerenderLocalPredictor::EVENT_MAX_VALUE);
-}
-
-void PrerenderHistograms::RecordLocalPredictorTimeUntilUsed(
-    base::TimeDelta time_until_used, base::TimeDelta max_age) const {
-  PREFIXED_HISTOGRAM(
-      "LocalPredictorTimeUntilUsed",
-      UMA_HISTOGRAM_CUSTOM_TIMES(
-          name,
-          time_until_used,
-          base::TimeDelta::FromMilliseconds(10),
-          max_age,
-          50));
 }
 
 }  // namespace prerender

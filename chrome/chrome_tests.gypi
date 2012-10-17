@@ -1531,6 +1531,7 @@
         'browser/prefs/scoped_user_pref_update_unittest.cc',
         'browser/prefs/session_startup_pref_unittest.cc',
         'browser/prerender/prerender_history_unittest.cc',
+        'browser/prerender/prerender_manager_unittest.cc',
         'browser/prerender/prerender_tracker_unittest.cc',
         'browser/prerender/prerender_unittest.cc',
         'browser/prerender/prerender_util_unittest.cc',

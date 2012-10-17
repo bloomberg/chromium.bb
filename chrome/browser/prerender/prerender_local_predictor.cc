@@ -9,6 +9,7 @@
 #include <map>
 #include <set>
 
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/timer.h"
 #include "chrome/browser/prerender/prerender_histograms.h"
@@ -200,9 +201,12 @@ void PrerenderLocalPredictor::OnAddVisit(const history::BriefVisitInfo& info) {
   if (current_prerender_.get() &&
       current_prerender_->url_id == info.url_id &&
       IsPrerenderStillValid(current_prerender_.get())) {
-    prerender_manager_->histograms()->RecordLocalPredictorTimeUntilUsed(
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "Prerender.LocalPredictorTimeUntilUsed",
         GetCurrentTime() - current_prerender_->actual_start_time,
-        base::TimeDelta::FromMilliseconds(kMaxLocalPredictionTimeMs));
+        base::TimeDelta::FromMilliseconds(10),
+        base::TimeDelta::FromMilliseconds(kMaxLocalPredictionTimeMs),
+        50);
     last_swapped_in_prerender_.reset(current_prerender_.release());
     RecordEvent(EVENT_ADD_VISIT_PRERENDER_IDENTIFIED);
   }
@@ -370,17 +374,23 @@ void PrerenderLocalPredictor::OnPLTEventForURL(const GURL& url,
   if (!prerender.get())
     return;
   if (IsPrerenderStillValid(prerender.get())) {
+    UMA_HISTOGRAM_CUSTOM_TIMES("Prerender.SimulatedLocalBrowsingBaselinePLT",
+                               page_load_time,
+                               base::TimeDelta::FromMilliseconds(10),
+                               base::TimeDelta::FromSeconds(60),
+                               100);
+
     base::TimeDelta prerender_age = GetCurrentTime() - prerender->start_time;
-    prerender_manager_->histograms()->RecordSimulatedLocalBrowsingBaselinePLT(
-        page_load_time, url);
     if (prerender_age > page_load_time) {
       base::TimeDelta new_plt;
       if (prerender_age <  2 * page_load_time)
         new_plt = 2 * page_load_time - prerender_age;
-      prerender_manager_->histograms()->RecordSimulatedLocalBrowsingPLT(
-          new_plt, url);
+      UMA_HISTOGRAM_CUSTOM_TIMES("Prerender.SimulatedLocalBrowsingPLT",
+                                 new_plt,
+                                 base::TimeDelta::FromMilliseconds(10),
+                                 base::TimeDelta::FromSeconds(60),
+                                 100);
     }
-
   }
 }
 
@@ -392,9 +402,11 @@ bool PrerenderLocalPredictor::IsPrerenderStillValid(
           > GetCurrentTime());
 }
 
-void PrerenderLocalPredictor::RecordEvent(PrerenderLocalPredictor::Event event)
-    const {
-  prerender_manager_->histograms()->RecordLocalPredictorEvent(event);
+void PrerenderLocalPredictor::RecordEvent(
+    PrerenderLocalPredictor::Event event) const {
+  UMA_HISTOGRAM_ENUMERATION(
+      base::FieldTrial::MakeName("Prerender.LocalPredictorEvent", "Prerender"),
+      event, PrerenderLocalPredictor::EVENT_MAX_VALUE);
 }
 
 bool PrerenderLocalPredictor::DoesPrerenderMatchPLTRecord(

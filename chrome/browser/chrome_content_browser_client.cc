@@ -1197,7 +1197,8 @@ void ChromeContentBrowserClient::AllowCertificateError(
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(
           Profile::FromBrowserContext(tab->GetBrowserContext()));
-  if (prerender_manager && prerender_manager->IsWebContentsPrerendering(tab)) {
+  if (prerender_manager && prerender_manager->IsWebContentsPrerendering(tab,
+                                                                        NULL)) {
     if (prerender_manager->prerender_tracker()->TryCancel(
             render_process_id, render_view_id,
             prerender::FINAL_STATUS_SSL_ERROR)) {

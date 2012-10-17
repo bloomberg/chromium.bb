@@ -18,11 +18,13 @@ const char* kOriginNames[] = {
   "[Deprecated] Omnibox (conservative)",
   "[Deprecated] Omnibox (exact)",
   "Omnibox",
-  "Max"
+  "None",
+  "Max",
 };
 COMPILE_ASSERT(arraysize(kOriginNames) == ORIGIN_MAX + 1,
                PrerenderOrigin_name_count_mismatch);
-}
+
+}  // namespace
 
 const char* NameFromOrigin(Origin origin) {
   DCHECK(static_cast<int>(origin) >= 0 &&

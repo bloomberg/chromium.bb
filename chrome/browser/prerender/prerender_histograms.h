@@ -31,7 +31,8 @@ class PrerenderHistograms {
   // Records the perceived page load time for a page - effectively the time from
   // when the user navigates to a page to when it finishes loading.  The actual
   // load may have started prior to navigation due to prerender hints.
-  void RecordPerceivedPageLoadTime(base::TimeDelta perceived_page_load_time,
+  void RecordPerceivedPageLoadTime(Origin origin,
+                                   base::TimeDelta perceived_page_load_time,
                                    bool was_prerender,
                                    bool was_complete_prerender,
                                    const GURL& url);
@@ -39,33 +40,26 @@ class PrerenderHistograms {
   // Records, in a histogram, the percentage of the page load time that had
   // elapsed by the time it is swapped in.  Values outside of [0, 1.0] are
   // invalid and ignored.
-  void RecordPercentLoadDoneAtSwapin(double fraction) const;
+  void RecordPercentLoadDoneAtSwapin(Origin origin, double fraction) const;
 
   // Records the actual pageload time of a prerender that has not been swapped
   // in yet, but finished loading.
-  void RecordPageLoadTimeNotSwappedIn(base::TimeDelta page_load_time,
+  void RecordPageLoadTimeNotSwappedIn(Origin origin,
+                                      base::TimeDelta page_load_time,
                                       const GURL& url) const;
-
-  // For simulated local browsing prerendering, records the PLT without
-  // any local browsing prerendering.
-  void RecordSimulatedLocalBrowsingBaselinePLT(base::TimeDelta page_load_time,
-                                               const GURL& url) const;
-
-  // For simulated local browsing prerendering, records the PLT with
-  // local browsing prerendering.
-  void RecordSimulatedLocalBrowsingPLT(base::TimeDelta page_load_time,
-                                       const GURL& url) const;
 
   // Records the time from when a page starts prerendering to when the user
   // navigates to it. This must be called on the UI thread.
-  void RecordTimeUntilUsed(base::TimeDelta time_until_used,
+  void RecordTimeUntilUsed(Origin origin,
+                           base::TimeDelta time_until_used,
                            base::TimeDelta time_to_live) const;
 
   // Record a PerSessionCount data point.
-  void RecordPerSessionCount(int count) const;
+  void RecordPerSessionCount(Origin origin, int count) const;
 
   // Record time between two prerender requests.
-  void RecordTimeBetweenPrerenderRequests(base::TimeDelta time) const;
+  void RecordTimeBetweenPrerenderRequests(Origin origin,
+                                          base::TimeDelta time) const;
 
   // Record a final status of a prerendered page in a histogram.
   void RecordFinalStatus(Origin origin,
@@ -87,20 +81,12 @@ class PrerenderHistograms {
   void RecordUsedPrerender(Origin origin) const;
 
   // Record the time since a page was recently visited.
-  void RecordTimeSinceLastRecentVisit(base::TimeDelta time) const;
+  void RecordTimeSinceLastRecentVisit(Origin origin,
+                                      base::TimeDelta time) const;
 
   // Record a percentage of pixels of the final page already in place at
   // swap-in.
-  void RecordFractionPixelsFinalAtSwapin(double fraction) const;
-
-  // Record the occurrence of an event from the local predictor.
-  void RecordLocalPredictorEvent(PrerenderLocalPredictor::Event event) const;
-
-  // For the local predictor, records the time from when a page starts
-  // prerendering to when the user navigates to it. This must be called on the
-  // UI thread.
-  void RecordLocalPredictorTimeUntilUsed(base::TimeDelta time_until_used,
-                                         base::TimeDelta max_age) const;
+  void RecordFractionPixelsFinalAtSwapin(Origin origin, double fraction) const;
 
  private:
   base::TimeTicks GetCurrentTimeTicks() const;
@@ -115,8 +101,7 @@ class PrerenderHistograms {
 
   // Returns the current experiment.
   uint8 GetCurrentExperimentId() const;
-  // Returns the current origin.
-  Origin GetCurrentOrigin() const;
+
   // Returns whether or not there is currently an origin/experiment wash.
   bool IsOriginExperimentWash() const;
 

@@ -14,6 +14,7 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
+#include "chrome/browser/prerender/prerender_origin.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -230,6 +231,7 @@ class PrerenderContents : public content::NotificationObserver,
   // exists when this page is made visible, it will be launched.
   virtual void AddPendingPrerender(
       base::WeakPtr<PrerenderHandle> weak_prerender_handle,
+      Origin origin,
       const GURL& url,
       const content::Referrer& referrer,
       const gfx::Size& size);
@@ -246,12 +248,14 @@ class PrerenderContents : public content::NotificationObserver,
   struct PendingPrerenderInfo {
     PendingPrerenderInfo(
         base::WeakPtr<PrerenderHandle> weak_prerender_handle,
+        Origin origin,
         const GURL& url,
         const content::Referrer& referrer,
         const gfx::Size& size);
     ~PendingPrerenderInfo();
 
     base::WeakPtr<PrerenderHandle> weak_prerender_handle;
+    Origin origin;
     GURL url;
     content::Referrer referrer;
     gfx::Size size;

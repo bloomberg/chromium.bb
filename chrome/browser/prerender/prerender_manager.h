@@ -159,6 +159,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       content::WebContents* web_contents,
       const GURL& url);
 
+  // Records the percentage of pixels of the final page in place at swap-in.
+  void RecordFractionPixelsFinalAtSwapin(
+      content::WebContents* web_contents,
+      double fraction);
+
   // Set whether prerendering is currently enabled for this manager.
   // Must be called on the UI thread.
   // If |enabled| is false, existing prerendered pages will still persist until
@@ -179,8 +184,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   static bool IsNoUseGroup();
 
   // Query the list of current prerender pages to see if the given web contents
-  // is prerendering a page.
-  bool IsWebContentsPrerendering(content::WebContents* web_contents) const;
+  // is prerendering a page. The optional parameter |origin| is an output
+  // parameter which, if a prerender is found, is set to the Origin of the
+  // prerender |web_contents|.
+  bool IsWebContentsPrerendering(content::WebContents* web_contents,
+                                 Origin* origin) const;
 
   // Returns the PrerenderContents object for the given web_contents if it's
   // used for an active prerender page, otherwise returns NULL.
@@ -189,14 +197,23 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   // Maintaining and querying the set of WebContents belonging to this
   // PrerenderManager that are currently showing prerendered pages.
-  void MarkWebContentsAsPrerendered(content::WebContents* web_contents);
-  void MarkWebContentsAsWouldBePrerendered(content::WebContents* web_contents);
+  void MarkWebContentsAsPrerendered(content::WebContents* web_contents,
+                                    Origin origin);
+  void MarkWebContentsAsWouldBePrerendered(content::WebContents* web_contents,
+                                           Origin origin);
   void MarkWebContentsAsNotPrerendered(content::WebContents* web_contents);
-  bool IsWebContentsPrerendered(content::WebContents* web_contents) const;
-  bool WouldWebContentsBePrerendered(content::WebContents* web_contents) const;
+
+  // Returns true if |web_contents| was originally a prerender that has since
+  // been swapped in. The optional parameter |origin| is an output parameter
+  // which, if a prerender is found, is set to the Origin of the prerender of
+  // |web_contents|.
+  bool IsWebContentsPrerendered(content::WebContents* web_contents,
+                                Origin* origin) const;
+  bool WouldWebContentsBePrerendered(content::WebContents* web_contents,
+                                     Origin* origin) const;
 
   // Checks whether |url| has been recently navigated to.
-  bool HasRecentlyBeenNavigatedTo(const GURL& url);
+  bool HasRecentlyBeenNavigatedTo(Origin origin, const GURL& url);
 
   // Returns true if the method given is invalid for prerendering.
   static bool IsValidHttpMethod(const std::string& method);
@@ -241,8 +258,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   void RecordNavigation(const GURL& url);
 
   Profile* profile() const { return profile_; }
-
-  PrerenderHistograms* histograms() const { return histograms_.get(); }
 
  protected:
   class PrerenderData : public base::SupportsWeakPtr<PrerenderData> {
@@ -335,7 +350,36 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   class OnCloseTabContentsDeleter;
   struct NavigationRecord;
 
-  typedef base::hash_map<content::WebContents*, bool> WouldBePrerenderedMap;
+  // For each WebContents that is swapped in, we store a
+  // PrerenderedWebContentsData so that we can track the origin of the
+  // prerender.
+  struct PrerenderedWebContentsData {
+    explicit PrerenderedWebContentsData(Origin origin);
+
+    Origin origin;
+  };
+
+  // In the control group experimental group for each WebContents "not swapped
+  // in" we create a WouldBePrerenderedWebContentsData to the origin of the
+  // "prerender" we did not launch. We also track a state machine to ensure
+  // the histogram reporting tracks what histograms would have done.
+  struct WouldBePrerenderedWebContentsData {
+    // When the WebContents gets a provisional load, we'd like to remove the
+    // WebContents from  the map since the new navigation would not have swapped
+    // in a prerender. But the first provisional load after the control
+    // prerender is not "swapped in" is actually to the prerendered location! So
+    // we don't remove the item from the map on the first provisional load, but
+    // we do for subsequent loads.
+    enum State {
+      WAITING_FOR_PROVISIONAL_LOAD,
+      SEEN_PROVISIONAL_LOAD,
+    };
+
+    explicit WouldBePrerenderedWebContentsData(Origin origin);
+
+    Origin origin;
+    State state;
+  };
 
   // Time interval before a new prerender is allowed.
   static const int kMinTimeBetweenPrerendersMs = 500;
@@ -411,7 +455,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   std::list<linked_ptr<PrerenderData> >::iterator
       FindIteratorForPrerenderContents(PrerenderContents* prerender_contents);
 
-  bool DoesRateLimitAllowPrerender() const;
+  bool DoesRateLimitAllowPrerender(Origin origin) const;
 
   // Deletes old WebContents that have been replaced by prerendered ones.  This
   // is needed because they're replaced in a callback from the old WebContents,
@@ -484,8 +528,12 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // List of prerender elements to be deleted
   std::list<PrerenderContents*> pending_delete_list_;
 
-  // Set of WebContents which are currently displaying a prerendered page.
-  base::hash_set<content::WebContents*> prerendered_tab_contents_set_;
+  // This map is from all WebContents which are currently displaying a
+  // prerendered page which has already been swapped in to a
+  // PrerenderedWebContentsData for tracking full lifetime information
+  // on prerenders.
+  base::hash_map<content::WebContents*, PrerenderedWebContentsData>
+      prerendered_web_contents_data_;
 
   // WebContents that would have been swapped out for a prerendered WebContents
   // if the user was not part of the control group for measurement. When the
@@ -493,10 +541,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // the map since the new navigation would not have swapped in a prerender.
   // However, one complication exists because the first provisional load after
   // the WebContents is marked as "Would Have Been Prerendered" is actually to
-  // the prerendered location. So, we need to keep a boolean around that does
+  // the prerendered location. So, we need to keep a state around that does
   // not clear the item from the map on the first provisional load, but does
   // for subsequent loads.
-  WouldBePrerenderedMap would_be_prerendered_map_;
+  base::hash_map<content::WebContents*, WouldBePrerenderedWebContentsData>
+      would_be_prerendered_map_;
 
   scoped_ptr<PrerenderContents::Factory> prerender_contents_factory_;
 

@@ -280,7 +280,7 @@ bool TaskManagerTabContentsResource::IsPrerendering() const {
           tab_contents_->profile());
   return prerender_manager &&
          prerender_manager->IsWebContentsPrerendering(
-             tab_contents_->web_contents());
+             tab_contents_->web_contents(), NULL);
 }
 
 bool TaskManagerTabContentsResource::HostsExtension() const {

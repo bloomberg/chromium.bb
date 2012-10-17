@@ -307,11 +307,12 @@ class TestPrerenderContents : public PrerenderContents {
 
   virtual void AddPendingPrerender(
       base::WeakPtr<PrerenderHandle> weak_prerender_handle,
+      Origin origin,
       const GURL& url,
       const content::Referrer& referrer,
       const gfx::Size& size) OVERRIDE {
     PrerenderContents::AddPendingPrerender(
-        weak_prerender_handle, url, referrer, size);
+        weak_prerender_handle, origin, url, referrer, size);
     if (expected_pending_prerenders_ > 0 &&
         pending_prerenders().size() == expected_pending_prerenders_) {
       MessageLoop::current()->Quit();

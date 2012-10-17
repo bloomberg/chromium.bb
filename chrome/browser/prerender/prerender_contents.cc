@@ -169,11 +169,12 @@ class PrerenderContents::TabContentsDelegateImpl
 
 void PrerenderContents::AddPendingPrerender(
     const base::WeakPtr<PrerenderHandle> weak_prerender_handle,
+    const Origin origin,
     const GURL& url,
     const content::Referrer& referrer,
     const gfx::Size& size) {
   pending_prerenders_.push_back(
-      PendingPrerenderInfo(weak_prerender_handle, url, referrer, size));
+      PendingPrerenderInfo(weak_prerender_handle, origin, url, referrer, size));
 }
 
 bool PrerenderContents::IsPendingEntry(
@@ -206,7 +207,7 @@ void PrerenderContents::StartPendingPrerenders() {
        ++it) {
     if (it->weak_prerender_handle && it->weak_prerender_handle->IsValid()) {
       prerender_manager_->StartPendingPrerender(
-          it->weak_prerender_handle.get(), ORIGIN_LINK_REL_PRERENDER, child_id_,
+          it->weak_prerender_handle.get(), it->origin, child_id_,
           it->url, it->referrer, it->size, session_storage_namespace);
     }
   }
@@ -214,10 +215,12 @@ void PrerenderContents::StartPendingPrerenders() {
 
 PrerenderContents::PendingPrerenderInfo::PendingPrerenderInfo(
     const base::WeakPtr<PrerenderHandle> weak_prerender_handle,
+    const Origin origin,
     const GURL& url,
     const content::Referrer& referrer,
     const gfx::Size& size)
     : weak_prerender_handle(weak_prerender_handle),
+      origin(origin),
       url(url),
       referrer(referrer),
       size(size) {
@@ -522,7 +525,7 @@ bool PrerenderContents::AddAliasURL(const GURL& url) {
     return false;
   }
   if (match_complete_status_ != MATCH_COMPLETE_REPLACEMENT_PENDING &&
-      prerender_manager_->HasRecentlyBeenNavigatedTo(url)) {
+      prerender_manager_->HasRecentlyBeenNavigatedTo(origin(), url)) {
     Destroy(FINAL_STATUS_RECENTLY_VISITED);
     return false;
   }
