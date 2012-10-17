@@ -16,7 +16,7 @@ TextInputTestSupport::TextInputTestSupport() {
 TextInputTestSupport::~TextInputTestSupport() {
 }
 
-void TextInputTestSupport::Initilaize() {
+void TextInputTestSupport::Initialize() {
 #if defined(OS_CHROMEOS)
   chromeos::DBusThreadManager::InitializeWithStub();
 #endif  // OS_CHROMEOS

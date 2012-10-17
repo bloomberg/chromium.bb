@@ -56,7 +56,7 @@ AshTestBase::~AshTestBase() {
 void AshTestBase::SetUp() {
   // Disable animations during tests.
   ui::LayerAnimator::set_disable_animations_for_test(true);
-  ui::TextInputTestSupport::Initilaize();
+  ui::TextInputTestSupport::Initialize();
   // Creates Shell and hook with Desktop.
   TestShellDelegate* delegate = new TestShellDelegate;
   ash::Shell::CreateInstance(delegate);

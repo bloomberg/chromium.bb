@@ -19,7 +19,7 @@ AuraTestBase::~AuraTestBase() {
 
 void AuraTestBase::SetUp() {
   testing::Test::SetUp();
-  ui::TextInputTestSupport::Initilaize();
+  ui::TextInputTestSupport::Initialize();
 
   // Changing the parameters for gesture recognition shouldn't cause
   // tests to fail, so we use a separate set of parameters for unit

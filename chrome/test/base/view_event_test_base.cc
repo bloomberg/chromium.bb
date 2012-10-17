@@ -83,7 +83,7 @@ void ViewEventTestBase::Done() {
 }
 
 void ViewEventTestBase::SetUp() {
-  ui::TextInputTestSupport::Initilaize();
+  ui::TextInputTestSupport::Initialize();
   ui::CompositorTestSupport::Initialize();
 #if defined(USE_ASH)
   ash::Shell::CreateInstance(NULL);

@@ -15,7 +15,7 @@ class TextInputTestSupport {
   virtual ~TextInputTestSupport();
 
   // Initialize DBusThreadManager for text input testing.
-  static void Initilaize();
+  static void Initialize();
 
   // Shutdown DBusThreadManager.
   static void Shutdown();
