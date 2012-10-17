@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_intents_dispatcher.h"
@@ -103,6 +104,36 @@ class LaunchReplyHandler {
   bool waiting_;
   content::WebIntentsDispatcher* intents_dispatcher_;
   base::WeakPtrFactory<LaunchReplyHandler> weak_ptr_factory_;
+};
+
+// This class keeps track of tabs as they are added to the browser. It will be
+// "done" (i.e. won't block on Wait()) once |observations| tabs have been added.
+class TabsAddedNotificationObserver
+    : public content::WindowedNotificationObserver {
+ public:
+  explicit TabsAddedNotificationObserver(size_t observations)
+      : content::WindowedNotificationObserver(
+            chrome::NOTIFICATION_TAB_ADDED,
+            content::NotificationService::AllSources()),
+        observations_(observations) {
+  }
+
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE {
+    observed_tabs_.push_back(
+        content::Details<WebContents>(details).ptr());
+    if (observed_tabs_.size() == observations_)
+      content::WindowedNotificationObserver::Observe(type, source, details);
+  }
+
+  const std::vector<content::WebContents*>& tabs() { return observed_tabs_; }
+
+ private:
+  size_t observations_;
+  std::vector<content::WebContents*> observed_tabs_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabsAddedNotificationObserver);
 };
 
 const char kTestFilePath[] = "platform_apps/launch_files/test.txt";
@@ -324,8 +355,17 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuClicked) {
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisallowNavigation) {
+  TabsAddedNotificationObserver observer(2);
+
   ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/navigation")) << message_;
+
+  observer.Wait();
+  ASSERT_EQ(2U, observer.tabs().size());
+  EXPECT_EQ(std::string(chrome::kExtensionInvalidRequestURL),
+            observer.tabs()[0]->GetURL().spec());
+  EXPECT_EQ("http://chromium.org/",
+            observer.tabs()[1]->GetURL().spec());
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Iframes) {

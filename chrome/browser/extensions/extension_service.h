@@ -391,6 +391,10 @@ class ExtensionService
   // permissions the given extension has been granted.
   bool ExtensionBindingsAllowed(const GURL& url);
 
+  // Returns true if a normal browser window should avoid showing |url| in a
+  // tab. In this case, |url| is also rewritten to an error URL.
+  bool ShouldBlockUrlInBrowserTab(GURL* url);
+
   // Returns the icon to display in the omnibox for the given extension.
   gfx::Image GetOmniboxIcon(const std::string& extension_id);
 

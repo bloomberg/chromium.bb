@@ -379,6 +379,10 @@ void Navigate(NavigateParams* params) {
   if (!AdjustNavigateParamsForURL(params))
     return;
 
+  ExtensionService* service = params->initiating_profile->GetExtensionService();
+  if (service)
+    service->ShouldBlockUrlInBrowserTab(&params->url);
+
   // The browser window may want to adjust the disposition.
   if (params->disposition == NEW_POPUP &&
       source_browser &&

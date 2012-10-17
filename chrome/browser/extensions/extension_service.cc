@@ -2295,6 +2295,17 @@ bool ExtensionService::ExtensionBindingsAllowed(const GURL& url) {
                        extension->location() == Extension::COMPONENT);
 }
 
+bool ExtensionService::ShouldBlockUrlInBrowserTab(GURL* url) {
+  const Extension* extension = extensions_.GetExtensionOrAppByURL(
+      ExtensionURLInfo(*url));
+  if (extension && extension->is_platform_app()) {
+    *url = GURL(chrome::kExtensionInvalidRequestURL);
+    return true;
+  }
+
+  return false;
+}
+
 gfx::Image ExtensionService::GetOmniboxIcon(
     const std::string& extension_id) {
   return gfx::Image(omnibox_icon_manager_.GetIcon(extension_id));

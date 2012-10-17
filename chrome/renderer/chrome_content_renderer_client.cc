@@ -810,7 +810,7 @@ bool ChromeContentRendererClient::WillSendRequest(WebKit::WebFrame* frame,
           frame,
           transition_type,
           extension_dispatcher_->extensions())) {
-    *new_url = GURL("chrome-extension://invalid/");
+    *new_url = GURL(chrome::kExtensionInvalidRequestURL);
     return true;
 
   }
@@ -819,7 +819,7 @@ bool ChromeContentRendererClient::WillSendRequest(WebKit::WebFrame* frame,
       !extensions::ResourceRequestPolicy::CanRequestExtensionResourceScheme(
           url,
           frame)) {
-    *new_url = GURL("chrome-extension-resource://invalid/");
+    *new_url = GURL(chrome::kExtensionResourceInvalidRequestURL);
     return true;
   }
 

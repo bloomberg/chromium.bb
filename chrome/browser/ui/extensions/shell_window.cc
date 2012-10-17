@@ -225,19 +225,10 @@ WebContents* ShellWindow::OpenURLFromTab(WebContents* source,
                                          const content::OpenURLParams& params) {
   DCHECK(source == web_contents_);
 
-  if (params.url.host() == extension_->id()) {
-    AddMessageToDevToolsConsole(
-        content::CONSOLE_MESSAGE_LEVEL_ERROR,
-        base::StringPrintf(
-            "Can't navigate to \"%s\"; apps do not support navigation.",
-            params.url.spec().c_str()));
-    return NULL;
-  }
-
   // Don't allow the current tab to be navigated. It would be nice to map all
   // anchor tags (even those without target="_blank") to new tabs, but right
-  // now we can't distinguish between those and <meta> refreshes, which we
-  // don't want to allow.
+  // now we can't distinguish between those and <meta> refreshes or window.href
+  // navigations, which we don't want to allow.
   // TOOD(mihaip): Can we check for user gestures instead?
   WindowOpenDisposition disposition = params.disposition;
   if (disposition == CURRENT_TAB) {
@@ -257,13 +248,24 @@ WebContents* ShellWindow::OpenURLFromTab(WebContents* source,
 
   // Force all links to open in a new tab, even if they were trying to open a
   // window.
-  content::OpenURLParams new_tab_params = params;
+  chrome::NavigateParams new_tab_params(
+      static_cast<Browser*>(NULL), params.url, params.transition);
   new_tab_params.disposition =
       disposition == NEW_BACKGROUND_TAB ? disposition : NEW_FOREGROUND_TAB;
-  Browser* browser = browser::FindOrCreateTabbedBrowser(profile_);
-  WebContents* new_tab = browser->OpenURL(new_tab_params);
-  browser->window()->Show();
-  return new_tab;
+  new_tab_params.initiating_profile = profile_;
+  chrome::Navigate(&new_tab_params);
+
+  WebContents* new_contents = new_tab_params.target_contents ?
+      new_tab_params.target_contents->web_contents() : NULL;
+  if (!new_contents) {
+    AddMessageToDevToolsConsole(
+        content::CONSOLE_MESSAGE_LEVEL_ERROR,
+        base::StringPrintf(
+            "Can't navigate to \"%s\"; apps do not support navigation.",
+            params.url.spec().c_str()));
+  }
+
+  return new_contents;
 }
 
 void ShellWindow::AddNewContents(WebContents* source,

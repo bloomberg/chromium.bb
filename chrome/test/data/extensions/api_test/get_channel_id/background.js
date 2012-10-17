@@ -4,7 +4,7 @@
 
 function testGetChannelId() {
   chrome.experimental.pushMessaging.getChannelId(
-      chrome.test.callbackFail("3"));
+      chrome.test.callbackFail('3'));
 }
 
 chrome.test.runTests([testGetChannelId]);
