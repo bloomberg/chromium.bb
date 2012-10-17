@@ -33,6 +33,10 @@ using protocol::MouseEvent;
 #include "ui/base/keycodes/usb_keycode_map.h"
 #undef USB_KEYMAP
 
+// Pixel-to-wheel-ticks conversion ratio used by GTK.
+// From Source/WebKit/chromium/src/gtk/WebInputFactory.cc.
+const float kWheelTicksPerPixel = 3.0f / 160.0f;
+
 // A class to generate events on Linux.
 class EventExecutorLinux : public EventExecutor {
  public:
@@ -77,6 +81,8 @@ class EventExecutorLinux : public EventExecutor {
 
   std::set<int> pressed_keys_;
   SkIPoint latest_mouse_position_;
+  float wheel_ticks_x_;
+  float wheel_ticks_y_;
 
   // X11 graphics context.
   Display* display_;
@@ -96,6 +102,8 @@ EventExecutorLinux::EventExecutorLinux(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(task_runner),
       latest_mouse_position_(SkIPoint::Make(-1, -1)),
+      wheel_ticks_x_(0.0f),
+      wheel_ticks_y_(0.0f),
       display_(XOpenDisplay(NULL)),
       root_window_(BadValue) {
 #if defined(REMOTING_HOST_LINUX_CLIPBOARD)
@@ -264,14 +272,30 @@ void EventExecutorLinux::InjectMouseEvent(const MouseEvent& event) {
                          CurrentTime);
   }
 
-  if (event.has_wheel_offset_y() && event.wheel_offset_y() != 0) {
-    int dy = event.wheel_offset_y();
-    InjectScrollWheelClicks(VerticalScrollWheelToX11ButtonNumber(dy), abs(dy));
+  int ticks_y = 0;
+  if (event.has_wheel_delta_y()) {
+    wheel_ticks_y_ += event.wheel_delta_y() * kWheelTicksPerPixel;
+    ticks_y = static_cast<int>(wheel_ticks_y_);
+    wheel_ticks_y_ -= ticks_y;
+  } else if (event.has_wheel_offset_y()) {
+    ticks_y = event.wheel_offset_y();
   }
-  if (event.has_wheel_offset_x() && event.wheel_offset_x() != 0) {
-    int dx = event.wheel_offset_x();
-    InjectScrollWheelClicks(HorizontalScrollWheelToX11ButtonNumber(dx),
-                            abs(dx));
+  if (ticks_y != 0) {
+    InjectScrollWheelClicks(VerticalScrollWheelToX11ButtonNumber(ticks_y),
+                            abs(ticks_y));
+  }
+
+  int ticks_x = 0;
+  if (event.has_wheel_delta_x()) {
+    wheel_ticks_x_ += event.wheel_delta_x() * kWheelTicksPerPixel;
+    ticks_x = static_cast<int>(wheel_ticks_x_);
+    wheel_ticks_x_ -= ticks_x;
+  } else if (event.has_wheel_offset_x()) {
+    ticks_x = event.wheel_offset_x();
+  }
+  if (ticks_x != 0) {
+    InjectScrollWheelClicks(HorizontalScrollWheelToX11ButtonNumber(ticks_x),
+                            abs(ticks_x));
   }
 
   XFlush(display_);
