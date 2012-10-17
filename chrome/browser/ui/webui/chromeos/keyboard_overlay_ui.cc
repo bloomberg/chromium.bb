@@ -193,8 +193,6 @@ struct I18nContentToMessage {
     IDS_KEYBOARD_OVERLAY_SELECT_WORD_AT_A_TIME },
   { "keyboardOverlayShowWrenchMenu", IDS_KEYBOARD_OVERLAY_SHOW_WRENCH_MENU },
   { "keyboardOverlaySignOut", IDS_KEYBOARD_OVERLAY_SIGN_OUT },
-  { "keyboardOverlaySwapPrimaryMonitor",
-    IDS_KEYBOARD_OVERLAY_SWAP_PRIMARY_MONITOR },
   { "keyboardOverlayTakeScreenshot", IDS_KEYBOARD_OVERLAY_TAKE_SCREENSHOT },
   { "keyboardOverlayTaskManager", IDS_KEYBOARD_OVERLAY_TASK_MANAGER },
   { "keyboardOverlayToggleAccessibilityFeatures",
