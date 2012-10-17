@@ -100,6 +100,7 @@ bool MockDaemonProcess::OnMessageReceived(const IPC::Message& message) {
 void MockDaemonProcess::SendToNetwork(IPC::Message* message) {
   // Notify the mock method.
   Sent(*message);
+  delete message;
 }
 
 }  // namespace
