@@ -69,6 +69,7 @@
 <include src="browser_options_startup_page_list.js"></include>
 <include src="clear_browser_data_overlay.js"></include>
 <include src="content_settings.js"></include>
+<include src="content_settings2.js"></include>
 <include src="content_settings_exceptions_area.js"></include>
 <include src="content_settings_ui.js"></include>
 <include src="cookies_list.js"></include>

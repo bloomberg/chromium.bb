@@ -460,6 +460,9 @@ void ContentSettingsHandler::GetLocalizedValues(
   localized_strings->SetBoolean(
       "enable_web_intents",
       web_intents::IsWebIntentsEnabledForProfile(profile));
+
+  localized_strings->SetBoolean("newContentSettings",
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kContentSettings2));
 }
 
 void ContentSettingsHandler::InitializeHandler() {

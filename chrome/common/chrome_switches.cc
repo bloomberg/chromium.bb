@@ -192,6 +192,9 @@ const char kComponentUpdaterDebug[]         = "component-updater-debug";
 // conflicts and warn the user.
 const char kConflictingModulesCheck[]       = "conflicting-modules-check";
 
+// Toggles a new version of the content settings dialog in options.
+const char kContentSettings2[]              = "new-content-settings";
+
 // The Country we should use. This is normally obtained from the operating
 // system during first run and cached in the preferences afterwards. This is a
 // string value, the 2 letter code from ISO 3166-1.
