@@ -12,6 +12,8 @@
 
 namespace sandbox {
 
+class TargetProcess;
+
 // Sets the mitigation policy for the current process, ignoring any settings
 // that are invalid for the current version of Windows.
 bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags);
@@ -29,8 +31,8 @@ void ConvertProcessMitigationsToPolicy(MitigationFlags flags,
 
 // Adds mitigations that need to be performed on the suspended target process
 // before execution begins.
-bool ApplyProcessMitigationsToSuspendedProcess(HANDLE process,
-                                               MitigationFlags flags);
+bool ApplyProcessMitigationsToSuspendedTarget(TargetProcess* target,
+                                              MitigationFlags flags);
 
 // Returns true if all the supplied flags can be set after a process starts.
 bool CanSetProcessMitigationsPostStartup(MitigationFlags flags);
