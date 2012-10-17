@@ -1046,6 +1046,12 @@
         ['exclude', '^browser/geolocation/wifi_data_provider_linux\\.cc$'],
       ],
     }],
+    ['use_aura!=1 and OS!="win"', {
+      'sources!': [
+        'browser/renderer_host/ui_events_helper.cc',
+        'browser/renderer_host/ui_events_helper.h',
+      ],
+    }],
     ['use_aura==1', {
       'dependencies': [
         '../ui/aura/aura.gyp:aura',
