@@ -136,6 +136,12 @@ ASH_EXPORT extern const AcceleratorAction kActionsAllowedAtLockScreen[];
 // The number of elements in kActionsAllowedAtLockScreen.
 ASH_EXPORT extern const size_t kActionsAllowedAtLockScreenLength;
 
+// Actions allowed while a modal window is up.
+ASH_EXPORT extern const AcceleratorAction kActionsAllowedAtModalWindow[];
+
+// The number of elements in kActionsAllowedAtModalWindow.
+ASH_EXPORT extern const size_t kActionsAllowedAtModalWindowLength;
+
 }  // namespace ash
 
 #endif  // ASH_ACCELERATORS_ACCELERATOR_TABLE_H_

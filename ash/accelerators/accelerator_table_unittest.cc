@@ -58,4 +58,13 @@ TEST(AcceleratorTableTest, CheckDuplicatedActionsAllowedAtLoginOrLockScreen) {
   }
 }
 
+TEST(AcceleratorTableTest, CheckDuplicatedActionsAllowedAtModalWindow) {
+  std::set<AcceleratorAction> actions;
+  for (size_t i = 0; i < kActionsAllowedAtModalWindowLength; ++i) {
+    EXPECT_TRUE(actions.insert(kActionsAllowedAtModalWindow[i]).second)
+        << "Duplicated action: " << kActionsAllowedAtModalWindow[i]
+        << " at index: " << i;
+  }
+}
+
 }  // namespace ash
