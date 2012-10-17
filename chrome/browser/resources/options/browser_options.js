@@ -86,15 +86,6 @@ cr.define('options', function() {
       // Sync (Sign in) section.
       this.updateSyncState_(loadTimeData.getValue('syncData'));
 
-      $('sync-action-link').onclick = function(event) {
-        if (cr.isChromeOS) {
-          // On Chrome OS, sign out the user and sign in again to get fresh
-          // credentials on auth errors.
-          SyncSetupOverlay.doSignOutOnAuthError();
-        } else {
-          SyncSetupOverlay.showErrorUI();
-        }
-      };
       $('start-stop-sync').onclick = function(event) {
         if (self.syncSetupCompleted)
           SyncSetupOverlay.showStopSyncingUI();
@@ -649,6 +640,18 @@ cr.define('options', function() {
       $('sync-action-link').textContent = syncData.actionLinkText;
       $('sync-action-link').hidden = syncData.actionLinkText.length == 0;
       $('sync-action-link').disabled = syncData.managed;
+
+      if (cr.isChromeOS && syncData.hasError) {
+        // On Chrome OS, sign out the user and sign in again to get fresh
+        // credentials on auth errors.
+        $('sync-action-link').onclick = function(event) {
+          SyncSetupOverlay.doSignOutOnAuthError();
+        };
+      } else {
+        $('sync-action-link').onclick = function(event) {
+          SyncSetupOverlay.showErrorUI();
+        };
+      }
 
       if (syncData.hasError)
         $('sync-status').classList.add('sync-error');
