@@ -540,7 +540,10 @@ class TestUpdateVitals(unittest.TestCase):
     self.assertTrue('size' not in archive)
     self.assertTrue('checksum' not in archive)
 
-    manifest.Validate()
+    with self.assertRaises(manifest_util.Error):
+      manifest.Validate()
+
+    manifest.Validate(add_missing_info=True)
 
     self.assertEqual(archive['size'], 15)
     self.assertEqual(archive['checksum']['sha1'], self.sha1)
