@@ -27,6 +27,10 @@ class Layer;
 }
 
 namespace ash {
+
+// We force at least this many DIPs for any window on the screen.
+const int kMinimumOnScreenArea = 10;
+
 namespace internal {
 
 class Workspace2;

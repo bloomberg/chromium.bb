@@ -27,6 +27,7 @@
 using aura::Window;
 
 namespace ash {
+
 namespace internal {
 
 namespace {
@@ -292,21 +293,20 @@ void WorkspaceLayoutManager2::AdjustWindowSizeForScreenChange(
     } else if (reason == ADJUST_WINDOW_DISPLAY_INSETS_CHANGED) {
       // If the window is completely outside the display work area, then move it
       // enough to be visible again.
-      const int kMinAreaVisible = 10;
       gfx::Rect bounds = window->bounds();
       if (!work_area_.Intersects(bounds)) {
         int y_offset = 0;
         if (work_area_.bottom() < bounds.y()) {
-          y_offset = work_area_.bottom() - bounds.y() - kMinAreaVisible;
+          y_offset = work_area_.bottom() - bounds.y() - kMinimumOnScreenArea;
         } else if (bounds.bottom() < work_area_.y()) {
-          y_offset = work_area_.y() - bounds.bottom() + kMinAreaVisible;
+          y_offset = work_area_.y() - bounds.bottom() + kMinimumOnScreenArea;
         }
 
         int x_offset = 0;
         if (work_area_.right() < bounds.x()) {
-          x_offset = work_area_.right() - bounds.x() - kMinAreaVisible;
+          x_offset = work_area_.right() - bounds.x() - kMinimumOnScreenArea;
         } else if (bounds.right() < work_area_.x()) {
-          x_offset = work_area_.x() - bounds.right() + kMinAreaVisible;
+          x_offset = work_area_.x() - bounds.right() + kMinimumOnScreenArea;
         }
 
         bounds.Offset(x_offset, y_offset);

@@ -15,6 +15,7 @@
 #include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
+#include "ash/wm/workspace/workspace_layout_manager2.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "ui/aura/root_window.h"
@@ -843,6 +844,66 @@ TEST_F(WorkspaceWindowResizerTest, ResizeBottomOutsideWorkArea) {
   ASSERT_TRUE(resizer.get());
   resizer->Drag(CalculateDragPoint(*resizer, 8, 0), 0);
   EXPECT_EQ("100,200 300x380", window_->bounds().ToString());
+}
+
+TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideLeftWorkArea) {
+  Shell::GetInstance()->SetDisplayWorkAreaInsets(
+      Shell::GetPrimaryRootWindow(), gfx::Insets(0, 0, 50, 0));
+  int left = ScreenAsh::GetDisplayWorkAreaBoundsInParent(window_.get()).x();
+  int pixels_to_left_border = 50;
+  int window_width = 300;
+  int window_x = left - window_width + pixels_to_left_border;
+  window_->SetBounds(gfx::Rect(window_x, 100, window_width, 380));
+  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+      window_.get(), gfx::Point(pixels_to_left_border, 0), HTRIGHT,
+      empty_windows()));
+  ASSERT_TRUE(resizer.get());
+  resizer->Drag(CalculateDragPoint(*resizer, -window_width, 0), 0);
+  EXPECT_EQ(base::IntToString(window_x) + ",100 " +
+            base::IntToString(kMinimumOnScreenArea - window_x) +
+            "x380", window_->bounds().ToString());
+}
+
+TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideRightWorkArea) {
+  Shell::GetInstance()->SetDisplayWorkAreaInsets(
+      Shell::GetPrimaryRootWindow(), gfx::Insets(0, 0, 50, 0));
+  int right = ScreenAsh::GetDisplayWorkAreaBoundsInParent(
+      window_.get()).right();
+  int pixels_to_right_border = 50;
+  int window_width = 300;
+  int window_x = right - pixels_to_right_border;
+  window_->SetBounds(gfx::Rect(window_x, 100, window_width, 380));
+  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+      window_.get(), gfx::Point(window_x, 0), HTLEFT,
+      empty_windows()));
+  ASSERT_TRUE(resizer.get());
+  resizer->Drag(CalculateDragPoint(*resizer, window_width, 0), 0);
+  EXPECT_EQ(base::IntToString(right - kMinimumOnScreenArea) +
+            ",100 " +
+            base::IntToString(window_width - pixels_to_right_border +
+                              kMinimumOnScreenArea) +
+            "x380", window_->bounds().ToString());
+}
+
+TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideBottomWorkArea) {
+  Shell::GetInstance()->SetDisplayWorkAreaInsets(
+      Shell::GetPrimaryRootWindow(), gfx::Insets(0, 0, 50, 0));
+  int bottom = ScreenAsh::GetDisplayWorkAreaBoundsInParent(
+      window_.get()).bottom();
+  int delta_to_bottom = 50;
+  int height = 380;
+  window_->SetBounds(gfx::Rect(100, bottom - delta_to_bottom, 300, height));
+  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+      window_.get(), gfx::Point(0, bottom - delta_to_bottom), HTTOP,
+      empty_windows()));
+  ASSERT_TRUE(resizer.get());
+  resizer->Drag(CalculateDragPoint(*resizer, 0, bottom), 0);
+  EXPECT_EQ("100," +
+            base::IntToString(bottom - kMinimumOnScreenArea) +
+            " 300x" +
+            base::IntToString(height - (delta_to_bottom -
+                                        kMinimumOnScreenArea)),
+            window_->bounds().ToString());
 }
 
 // Verifies snapping to edges works.

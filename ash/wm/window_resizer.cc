@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace/workspace_layout_manager2.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -169,9 +170,13 @@ int WindowResizer::GetBoundsChangeForWindowComponent(int component) {
 // static
 gfx::Rect WindowResizer::CalculateBoundsForDrag(
     const Details& details,
-    const gfx::Point& location) {
+    const gfx::Point& passed_location) {
   if (!details.is_resizable)
     return details.initial_bounds;
+
+  gfx::Point location = passed_location;
+  gfx::Rect work_area =
+      ScreenAsh::GetDisplayWorkAreaBoundsInParent(details.window);
 
   int delta_x = location.x() - details.initial_location_in_parent.x();
   int delta_y = location.y() - details.initial_location_in_parent.y();
@@ -181,36 +186,67 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
   // repositioning the window when the minimize size is reached.
   gfx::Size size = GetSizeForDrag(details, &delta_x, &delta_y);
   gfx::Point origin = GetOriginForDrag(details, delta_x, delta_y);
-
-  // When we might want to reposition a window which is also restored to its
-  // previous size, to keep the cursor within the dragged window.
-  if (!details.restore_bounds.IsEmpty() &&
-      details.bounds_change & kBoundsChange_Repositions) {
-    // However - it is not desirable to change the origin if the window would
-    // be still hit by the cursor.
-    if (details.initial_location_in_parent.x() >
-            details.initial_bounds.x() + details.restore_bounds.width())
-      origin.set_x(location.x() - details.restore_bounds.width() / 2);
-  }
-
   gfx::Rect new_bounds(origin, size);
-  // Update bottom edge to stay in the work area when we are resizing
-  // by dragging the bottome edge or corners.
-  if (details.window_component == HTBOTTOM ||
-      details.window_component == HTBOTTOMRIGHT ||
-      details.window_component == HTBOTTOMLEFT) {
-    gfx::Rect work_area =
-        ScreenAsh::GetDisplayWorkAreaBoundsInParent(details.window);
-    if (new_bounds.bottom() > work_area.bottom())
-      new_bounds.Inset(0, 0, 0,
-                       new_bounds.bottom() - work_area.bottom());
+
+  // Sizing has to keep the result on the screen. Note that this correction
+  // has to come first since it might have an impact on the origin as well as
+  // on the size.
+  if (details.bounds_change & kBoundsChange_Resizes) {
+    if (details.size_change_direction & kBoundsChangeDirection_Horizontal) {
+      if (IsRightEdge(details.window_component) &&
+          new_bounds.right() < work_area.x() + kMinimumOnScreenArea) {
+        int delta = work_area.x() + kMinimumOnScreenArea - new_bounds.right();
+        new_bounds.set_width(new_bounds.width() + delta);
+      } else if (new_bounds.x() > work_area.right() - kMinimumOnScreenArea) {
+        int width = new_bounds.right() - work_area.right() +
+                    kMinimumOnScreenArea;
+        new_bounds.set_x(work_area.right() - kMinimumOnScreenArea);
+        new_bounds.set_width(width);
+      }
+    }
+    if (details.size_change_direction & kBoundsChangeDirection_Vertical) {
+      if (!IsBottomEdge(details.window_component) &&
+          new_bounds.y() > work_area.bottom() - kMinimumOnScreenArea) {
+        int height = new_bounds.bottom() - work_area.bottom() +
+                     kMinimumOnScreenArea;
+        new_bounds.set_y(work_area.bottom() - kMinimumOnScreenArea);
+        new_bounds.set_height(height);
+      } else if (details.window_component == HTBOTTOM ||
+                 details.window_component == HTBOTTOMRIGHT ||
+                 details.window_component == HTBOTTOMLEFT) {
+        // Update bottom edge to stay in the work area when we are resizing
+        // by dragging the bottom edge or corners.
+        if (new_bounds.bottom() > work_area.bottom())
+          new_bounds.Inset(0, 0, 0,
+                           new_bounds.bottom() - work_area.bottom());
+      }
+    }
+    if (details.bounds_change & kBoundsChange_Repositions &&
+        new_bounds.y() < 0) {
+      int delta = new_bounds.y();
+      new_bounds.set_y(0);
+      new_bounds.set_height(new_bounds.height() + delta);
+    }
   }
-  if (details.bounds_change & kBoundsChange_Resizes &&
-      details.bounds_change & kBoundsChange_Repositions && new_bounds.y() < 0) {
-    int delta = new_bounds.y();
-    new_bounds.set_y(0);
-    new_bounds.set_height(new_bounds.height() + delta);
+
+  if (details.bounds_change & kBoundsChange_Repositions) {
+    // When we might want to reposition a window which is also restored to its
+    // previous size, to keep the cursor within the dragged window.
+    if (!details.restore_bounds.IsEmpty()) {
+      // However - it is not desirable to change the origin if the window would
+      // be still hit by the cursor.
+      if (details.initial_location_in_parent.x() >
+              details.initial_bounds.x() + details.restore_bounds.width())
+        new_bounds.set_x(location.x() - details.restore_bounds.width() / 2);
+    }
+    // Make sure that the x origin does not leave the screen. Note that y is
+    // taken care of next.
+    new_bounds.set_x(
+        std::max(work_area.x() - new_bounds.width() + kMinimumOnScreenArea,
+                 std::min(work_area.right() - kMinimumOnScreenArea,
+                          new_bounds.x())));
   }
+
   return new_bounds;
 }
 
