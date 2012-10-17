@@ -107,6 +107,9 @@ void BrowserPluginEmbedder::CreateGuest(RenderViewHost* render_view_host,
   *guest_renderer_prefs = *web_contents()->GetMutableRendererPrefs();
 
   guest_renderer_prefs->throttle_input_events = false;
+  // Navigation is disabled in Chrome Apps. We want to make sure guest-initiated
+  // navigations still continue to function inside the app.
+  guest_renderer_prefs->browser_handles_all_top_level_requests = false;
   AddGuest(instance_id, guest_web_contents);
   guest_web_contents->SetDelegate(guest);
 }
