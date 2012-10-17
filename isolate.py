@@ -1481,15 +1481,21 @@ class CompleteState(object):
     self.isolated.update(command, infiles, touched, read_only, relative_cwd)
     logging.debug(self)
 
-  def process_inputs(self):
+  def process_inputs(self, subdir):
     """Updates self.isolated.files with the files' mode and hash.
+
+    If |subdir| is specified, filters to a subdirectory. The resulting .isolated
+    file is tainted.
 
     See process_input() for more information.
     """
     for infile in sorted(self.isolated.files):
-      filepath = os.path.join(self.root_dir, infile)
-      self.isolated.files[infile] = process_input(
-          filepath, self.isolated.files[infile], self.isolated.read_only)
+      if subdir and not infile.startswith(subdir):
+        self.isolated.files.pop(infile)
+      else:
+        filepath = os.path.join(self.root_dir, infile)
+        self.isolated.files[infile] = process_input(
+            filepath, self.isolated.files[infile], self.isolated.read_only)
 
   def save_files(self):
     """Saves both self.isolated and self.saved_state."""
@@ -1537,7 +1543,7 @@ class CompleteState(object):
     return out
 
 
-def load_complete_state(options):
+def load_complete_state(options, subdir):
   """Loads a CompleteState.
 
   This includes data from .isolate, .isolated and .state files.
@@ -1566,7 +1572,10 @@ def load_complete_state(options):
   complete_state.load_isolate(options.isolate, options.variables)
 
   # Regenerate complete_state.isolated.files.
-  complete_state.process_inputs()
+  if subdir:
+    subdir = eval_variables(subdir, complete_state.saved_state.variables)
+    subdir = subdir.replace('/', os.path.sep)
+  complete_state.process_inputs(subdir)
   return complete_state
 
 
@@ -1628,8 +1637,11 @@ def merge(complete_state):
 def CMDcheck(args):
   """Checks that all the inputs are present and update .isolated."""
   parser = OptionParserIsolate(command='check')
-  options, _ = parser.parse_args(args)
-  complete_state = load_complete_state(options)
+  parser.add_option('--subdir', help='Filters to a subdirectory')
+  options, args = parser.parse_args(args)
+  if args:
+    parser.error('Unsupported argument: %s' % args)
+  complete_state = load_complete_state(options, options.subdir)
 
   # Nothing is done specifically. Just store the result and state.
   complete_state.save_files()
@@ -1643,12 +1655,15 @@ def CMDhashtable(args):
   with the file name being the sha-1 of the file's content.
   """
   parser = OptionParserIsolate(command='hashtable')
-  options, _ = parser.parse_args(args)
+  parser.add_option('--subdir', help='Filters to a subdirectory')
+  options, args = parser.parse_args(args)
+  if args:
+    parser.error('Unsupported argument: %s' % args)
 
   with run_isolated.Profiler('GenerateHashtable'):
     success = False
     try:
-      complete_state = load_complete_state(options)
+      complete_state = load_complete_state(options, options.subdir)
       options.outdir = (
           options.outdir or os.path.join(complete_state.resultdir, 'hashtable'))
       # Make sure that complete_state isn't modified until save_files() is
@@ -1697,8 +1712,10 @@ def CMDmerge(args):
   Ignores --outdir.
   """
   parser = OptionParserIsolate(command='merge', require_result=False)
-  options, _ = parser.parse_args(args)
-  complete_state = load_complete_state(options)
+  options, args = parser.parse_args(args)
+  if args:
+    parser.error('Unsupported argument: %s' % args)
+  complete_state = load_complete_state(options, None)
   merge(complete_state)
   return 0
 
@@ -1709,8 +1726,10 @@ def CMDread(args):
   Ignores --outdir.
   """
   parser = OptionParserIsolate(command='read', require_result=False)
-  options, _ = parser.parse_args(args)
-  complete_state = load_complete_state(options)
+  options, args = parser.parse_args(args)
+  if args:
+    parser.error('Unsupported argument: %s' % args)
+  complete_state = load_complete_state(options, None)
   value = read_trace_as_isolate_dict(complete_state)
   pretty_print(value, sys.stdout)
   return 0
@@ -1723,8 +1742,10 @@ def CMDremap(args):
   run.
   """
   parser = OptionParserIsolate(command='remap', require_result=False)
-  options, _ = parser.parse_args(args)
-  complete_state = load_complete_state(options)
+  options, args = parser.parse_args(args)
+  if args:
+    parser.error('Unsupported argument: %s' % args)
+  complete_state = load_complete_state(options, None)
 
   if not options.outdir:
     options.outdir = run_isolated.make_temp_dir(
@@ -1763,7 +1784,7 @@ def CMDrun(args):
   parser = OptionParserIsolate(command='run', require_result=False)
   parser.enable_interspersed_args()
   options, args = parser.parse_args(args)
-  complete_state = load_complete_state(options)
+  complete_state = load_complete_state(options, None)
   cmd = complete_state.isolated.command + args
   if not cmd:
     raise ExecutionError('No command to run')
@@ -1818,7 +1839,7 @@ def CMDtrace(args):
       '-m', '--merge', action='store_true',
       help='After tracing, merge the results back in the .isolate file')
   options, args = parser.parse_args(args)
-  complete_state = load_complete_state(options)
+  complete_state = load_complete_state(options, None)
   cmd = complete_state.isolated.command + args
   if not cmd:
     raise ExecutionError('No command to run')
