@@ -204,7 +204,8 @@ bool Binary2RegisterImmediateOpTesterCase4
 
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Binary2RegisterImmediateOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -253,7 +254,8 @@ bool Binary2RegisterImmediateOpTesterCase5
 
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Binary2RegisterImmediateOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -305,7 +307,8 @@ bool Binary2RegisterImmediateOpTesterCase6
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
   EXPECT_TRUE((!(((inst.Bits() & 0x000F0000) == 0x000F0000) && ((inst.Bits() & 0x00100000) == 0x00000000))) /* (Rn(19:16)=1111 && S(20)=0) => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Binary2RegisterImmediateOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -353,7 +356,8 @@ bool Unary1RegisterImmediateOpTesterCase7
   NC_PRECOND(Unary1RegisterImmediateOpTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Unary1RegisterImmediateOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -402,7 +406,8 @@ bool Binary2RegisterImmediateOpTesterCase8
 
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Binary2RegisterImmediateOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -454,7 +459,8 @@ bool Binary2RegisterImmediateOpTesterCase9
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
   EXPECT_TRUE((!(((inst.Bits() & 0x000F0000) == 0x000F0000) && ((inst.Bits() & 0x00100000) == 0x00000000))) /* (Rn(19:16)=1111 && S(20)=0) => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Binary2RegisterImmediateOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -502,7 +508,8 @@ bool Unary1RegisterImmediateOpTesterCase10
   NC_PRECOND(Unary1RegisterImmediateOpTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Unary1RegisterImmediateOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -551,7 +558,8 @@ bool Binary2RegisterImmediateOpTesterCase11
 
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Binary2RegisterImmediateOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -600,7 +608,8 @@ bool Binary2RegisterImmediateOpTesterCase12
 
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Binary2RegisterImmediateOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -649,7 +658,8 @@ bool Binary2RegisterImmediateOpTesterCase13
 
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Binary2RegisterImmediateOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -701,7 +711,8 @@ bool Binary2RegisterImmediateOpTesterCase14
 
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Binary2RegisterImmediateOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -751,7 +762,8 @@ bool Unary1RegisterImmediateOpTesterCase15
 
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Unary1RegisterImmediateOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -800,7 +812,8 @@ bool Binary2RegisterImmediateOpTesterCase16
 
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Binary2RegisterImmediateOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -850,7 +863,8 @@ bool Unary1RegisterImmediateOpTesterCase17
 
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => DECODER_ERROR */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Unary1RegisterImmediateOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // The following are derived class decoder testers for decoder actions

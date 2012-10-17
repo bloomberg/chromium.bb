@@ -75,7 +75,8 @@ bool VectorBinary3RegisterSameLengthTesterCase0
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000 /* size(21:20)=11 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -125,7 +126,8 @@ bool VectorBinary3RegisterSameLengthTesterCase1
   NC_PRECOND(VectorBinary3RegisterSameLengthTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -177,7 +179,8 @@ bool VectorBinary3RegisterSameLengthTesterCase2
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000 /* size(21:20)=11 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -229,7 +232,8 @@ bool VectorBinary3RegisterSameLengthTesterCase3
   NC_PRECOND(VectorBinary3RegisterSameLengthTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -281,7 +285,8 @@ bool VectorBinary3RegisterSameLengthTesterCase4
   NC_PRECOND(VectorBinary3RegisterSameLengthTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -333,7 +338,8 @@ bool VectorBinary3RegisterSameLengthTesterCase5
   NC_PRECOND(VectorBinary3RegisterSameLengthTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -385,7 +391,8 @@ bool VectorBinary3RegisterSameLengthTesterCase6
   NC_PRECOND(VectorBinary3RegisterSameLengthTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -437,7 +444,8 @@ bool VectorBinary3RegisterSameLengthTesterCase7
   NC_PRECOND(VectorBinary3RegisterSameLengthTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -489,7 +497,8 @@ bool VectorBinary3RegisterSameLengthTesterCase8
   NC_PRECOND(VectorBinary3RegisterSameLengthTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -541,7 +550,8 @@ bool VectorBinary3RegisterSameLengthTesterCase9
   NC_PRECOND(VectorBinary3RegisterSameLengthTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -593,7 +603,8 @@ bool VectorBinary3RegisterSameLengthTesterCase10
   NC_PRECOND(VectorBinary3RegisterSameLengthTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -645,7 +656,8 @@ bool VectorBinary3RegisterSameLengthTesterCase11
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000 /* size(21:20)=11 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -695,7 +707,8 @@ bool VectorBinary3RegisterSameLengthTesterCase12
   NC_PRECOND(VectorBinary3RegisterSameLengthTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -747,7 +760,8 @@ bool VectorBinary3RegisterSameLengthTesterCase13
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000 /* size(21:20)=11 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -799,7 +813,8 @@ bool VectorBinary3RegisterSameLengthTesterCase14
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000 /* size(21:20)=11 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -849,7 +864,8 @@ bool VectorBinary3RegisterSameLengthTesterCase15
   NC_PRECOND(VectorBinary3RegisterSameLengthTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -899,7 +915,8 @@ bool VectorBinary3RegisterSameLengthTesterCase16
   NC_PRECOND(VectorBinary3RegisterSameLengthTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -949,7 +966,8 @@ bool VectorBinary3RegisterSameLengthTesterCase17
   NC_PRECOND(VectorBinary3RegisterSameLengthTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -999,7 +1017,8 @@ bool VectorBinary3RegisterSameLengthTesterCase18
   NC_PRECOND(VectorBinary3RegisterSameLengthTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -1051,7 +1070,8 @@ bool VectorBinary3RegisterSameLengthTesterCase19
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000 /* size(21:20)=11 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -1103,7 +1123,8 @@ bool VectorBinary3RegisterSameLengthTesterCase20
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000 /* size(21:20)=11 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -1155,7 +1176,8 @@ bool VectorBinary3RegisterSameLengthTesterCase21
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000 /* size(21:20)=11 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -1207,7 +1229,8 @@ bool VectorBinary3RegisterSameLengthTesterCase22
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000 /* size(21:20)=11 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -1258,7 +1281,8 @@ bool VectorBinary3RegisterSameLengthTesterCase23
   NC_PRECOND(VectorBinary3RegisterSameLengthTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -1309,7 +1333,8 @@ bool VectorBinary3RegisterSameLengthTesterCase24
   NC_PRECOND(VectorBinary3RegisterSameLengthTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -1362,7 +1387,8 @@ bool VectorBinary3RegisterSameLengthTesterCase25
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000 /* size(21:20)=11 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -1415,7 +1441,8 @@ bool VectorBinary3RegisterSameLengthTesterCase26
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000 /* size(21:20)=11 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -1468,7 +1495,8 @@ bool VectorBinary3RegisterSameLengthTesterCase27
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000 /* size(21:20)=11 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -1521,7 +1549,8 @@ bool VectorBinary3RegisterSameLengthTesterCase28
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000 /* size(21:20)=11 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -1574,7 +1603,8 @@ bool VectorBinary3RegisterSameLengthTesterCase29
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000 /* size(21:20)=11 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -1627,7 +1657,8 @@ bool VectorBinary3RegisterSameLengthTesterCase30
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x00300000) == 0x00000000 /* size(21:20)=~00 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -1678,7 +1709,8 @@ bool VectorBinary3RegisterSameLengthTesterCase31
 
   EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000 /* size(21:20)=11 => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x00000040) != 0x00000040 /* Q(6)=1 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -1729,7 +1761,8 @@ bool VectorBinary3RegisterSameLengthTesterCase32
 
   EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000 /* size(21:20)=11 => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x00000040) != 0x00000040 /* Q(6)=1 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -1782,7 +1815,8 @@ bool VectorBinary3RegisterSameLengthTesterCase33
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((!(((inst.Bits() & 0x00300000) == 0x00300000) || ((inst.Bits() & 0x00300000) == 0x00000000))) /* (size(21:20)=11 || size(21:20)=00) => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -1835,7 +1869,8 @@ bool VectorBinary3RegisterSameLengthTesterCase34
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((!(((inst.Bits() & 0x00300000) == 0x00300000) || ((inst.Bits() & 0x00300000) == 0x00000000))) /* (size(21:20)=11 || size(21:20)=00) => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -1887,7 +1922,8 @@ bool VectorBinary3RegisterSameLengthTesterCase35
 
   EXPECT_TRUE((inst.Bits() & 0x00300000) != 0x00300000 /* size(21:20)=11 => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x00000040) != 0x00000040 /* Q(6)=1 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -1942,7 +1978,8 @@ bool VectorBinary3RegisterSameLengthTesterCase36
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((((inst.Bits() & 0x00300000) >> 20) & 0x00000001) != 0x00000001 /* size(0)=1 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -1997,7 +2034,8 @@ bool VectorBinary3RegisterSameLengthTesterCase37
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((((inst.Bits() & 0x00300000) >> 20) & 0x00000001) != 0x00000001 /* size(0)=1 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -2051,7 +2089,8 @@ bool VectorBinary3RegisterSameLengthTesterCase38
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((((inst.Bits() & 0x00300000) >> 20) & 0x00000001) != 0x00000001 /* size(0)=1 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -2105,7 +2144,8 @@ bool VectorBinary3RegisterSameLengthTesterCase39
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((((inst.Bits() & 0x00300000) >> 20) & 0x00000001) != 0x00000001 /* size(0)=1 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -2156,7 +2196,8 @@ bool VectorBinary3RegisterSameLengthTesterCase40
   NC_PRECOND(VectorBinary3RegisterSameLengthTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!(((((inst.Bits() & 0x00300000) >> 20) & 0x00000001) == 0x00000001) || ((inst.Bits() & 0x00000040) == 0x00000040)) /* size(0)=1 || Q(6)=1 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -2210,7 +2251,8 @@ bool VectorBinary3RegisterSameLengthTesterCase41
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((((inst.Bits() & 0x00300000) >> 20) & 0x00000001) != 0x00000001 /* size(0)=1 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -2264,7 +2306,8 @@ bool VectorBinary3RegisterSameLengthTesterCase42
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((((inst.Bits() & 0x00300000) >> 20) & 0x00000001) != 0x00000001 /* size(0)=1 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -2318,7 +2361,8 @@ bool VectorBinary3RegisterSameLengthTesterCase43
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((((inst.Bits() & 0x00300000) >> 20) & 0x00000001) != 0x00000001 /* size(0)=1 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -2372,7 +2416,8 @@ bool VectorBinary3RegisterSameLengthTesterCase44
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((((inst.Bits() & 0x00300000) >> 20) & 0x00000001) != 0x00000001 /* size(0)=1 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -2426,7 +2471,8 @@ bool VectorBinary3RegisterSameLengthTesterCase45
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((((inst.Bits() & 0x00300000) >> 20) & 0x00000001) != 0x00000001 /* size(0)=1 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -2480,7 +2526,8 @@ bool VectorBinary3RegisterSameLengthTesterCase46
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((((inst.Bits() & 0x00300000) >> 20) & 0x00000001) != 0x00000001 /* size(0)=1 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -2534,7 +2581,8 @@ bool VectorBinary3RegisterSameLengthTesterCase47
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((((inst.Bits() & 0x00300000) >> 20) & 0x00000001) != 0x00000001 /* size(0)=1 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -2588,7 +2636,8 @@ bool VectorBinary3RegisterSameLengthTesterCase48
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((((inst.Bits() & 0x00300000) >> 20) & 0x00000001) != 0x00000001 /* size(0)=1 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -2642,7 +2691,8 @@ bool VectorBinary3RegisterSameLengthTesterCase49
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((((inst.Bits() & 0x00300000) >> 20) & 0x00000001) != 0x00000001 /* size(0)=1 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -2696,7 +2746,8 @@ bool VectorBinary3RegisterSameLengthTesterCase50
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((((inst.Bits() & 0x00300000) >> 20) & 0x00000001) != 0x00000001 /* size(0)=1 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -2750,7 +2801,8 @@ bool VectorBinary3RegisterSameLengthTesterCase51
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((((inst.Bits() & 0x00300000) >> 20) & 0x00000001) != 0x00000001 /* size(0)=1 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -2801,7 +2853,8 @@ bool VectorBinary3RegisterSameLengthTesterCase52
   NC_PRECOND(VectorBinary3RegisterSameLengthTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!(((((inst.Bits() & 0x00300000) >> 20) & 0x00000001) == 0x00000001) || ((inst.Bits() & 0x00000040) == 0x00000040)) /* size(0)=1 || Q(6)=1 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -2852,7 +2905,8 @@ bool VectorBinary3RegisterSameLengthTesterCase53
   NC_PRECOND(VectorBinary3RegisterSameLengthTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!(((((inst.Bits() & 0x00300000) >> 20) & 0x00000001) == 0x00000001) || ((inst.Bits() & 0x00000040) == 0x00000040)) /* size(0)=1 || Q(6)=1 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -2906,7 +2960,8 @@ bool VectorBinary3RegisterSameLengthTesterCase54
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((((inst.Bits() & 0x00300000) >> 20) & 0x00000001) != 0x00000001 /* size(0)=1 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -2960,7 +3015,8 @@ bool VectorBinary3RegisterSameLengthTesterCase55
 
   EXPECT_TRUE(!(((inst.Bits() & 0x00000040) == 0x00000040) && ((((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x000F0000) >> 16) & 0x00000001) == 0x00000001) || ((((inst.Bits() & 0x0000F000) >> 12) & 0x00000001) == 0x00000001)))) /* Q(6)=1 && (Vd(0)=1 || Vn(0)=1 || Vd(0)=1) => UNDEFINED */);
   EXPECT_TRUE((((inst.Bits() & 0x00300000) >> 20) & 0x00000001) != 0x00000001 /* size(0)=1 => UNDEFINED */);
-  return true;
+  return VectorBinary3RegisterSameLengthTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // The following are derived class decoder testers for decoder actions

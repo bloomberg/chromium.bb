@@ -73,7 +73,8 @@ bool Binary3RegisterShiftedTestTesterCase0
   NC_PRECOND(Binary3RegisterShiftedTestTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8))))) /* Pc in {Rn,Rm,Rs} => UNPREDICTABLE */);
-  return true;
+  return Binary3RegisterShiftedTestTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -123,7 +124,8 @@ bool Binary3RegisterShiftedTestTesterCase1
   NC_PRECOND(Binary3RegisterShiftedTestTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8))))) /* Pc in {Rn,Rm,Rs} => UNPREDICTABLE */);
-  return true;
+  return Binary3RegisterShiftedTestTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -173,7 +175,8 @@ bool Binary3RegisterShiftedTestTesterCase2
   NC_PRECOND(Binary3RegisterShiftedTestTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8))))) /* Pc in {Rn,Rm,Rs} => UNPREDICTABLE */);
-  return true;
+  return Binary3RegisterShiftedTestTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -223,7 +226,8 @@ bool Binary3RegisterShiftedTestTesterCase3
   NC_PRECOND(Binary3RegisterShiftedTestTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8))))) /* Pc in {Rn,Rm,Rs} => UNPREDICTABLE */);
-  return true;
+  return Binary3RegisterShiftedTestTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -273,7 +277,8 @@ bool Binary4RegisterShiftedOpTesterCase4
   NC_PRECOND(Binary4RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8)))) || (((15) == ((inst.Bits() & 0x0000000F))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
-  return true;
+  return Binary4RegisterShiftedOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -323,7 +328,8 @@ bool Binary4RegisterShiftedOpTesterCase5
   NC_PRECOND(Binary4RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8)))) || (((15) == ((inst.Bits() & 0x0000000F))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
-  return true;
+  return Binary4RegisterShiftedOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -373,7 +379,8 @@ bool Binary4RegisterShiftedOpTesterCase6
   NC_PRECOND(Binary4RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8)))) || (((15) == ((inst.Bits() & 0x0000000F))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
-  return true;
+  return Binary4RegisterShiftedOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -423,7 +430,8 @@ bool Binary4RegisterShiftedOpTesterCase7
   NC_PRECOND(Binary4RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8)))) || (((15) == ((inst.Bits() & 0x0000000F))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
-  return true;
+  return Binary4RegisterShiftedOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -473,7 +481,8 @@ bool Binary4RegisterShiftedOpTesterCase8
   NC_PRECOND(Binary4RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8)))) || (((15) == ((inst.Bits() & 0x0000000F))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
-  return true;
+  return Binary4RegisterShiftedOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -523,7 +532,8 @@ bool Binary4RegisterShiftedOpTesterCase9
   NC_PRECOND(Binary4RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8)))) || (((15) == ((inst.Bits() & 0x0000000F))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
-  return true;
+  return Binary4RegisterShiftedOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -573,7 +583,8 @@ bool Binary4RegisterShiftedOpTesterCase10
   NC_PRECOND(Binary4RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8)))) || (((15) == ((inst.Bits() & 0x0000000F))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
-  return true;
+  return Binary4RegisterShiftedOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -623,7 +634,8 @@ bool Binary4RegisterShiftedOpTesterCase11
   NC_PRECOND(Binary4RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8)))) || (((15) == ((inst.Bits() & 0x0000000F))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
-  return true;
+  return Binary4RegisterShiftedOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -673,7 +685,8 @@ bool Binary4RegisterShiftedOpTesterCase12
   NC_PRECOND(Binary4RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8)))) || (((15) == ((inst.Bits() & 0x0000000F))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
-  return true;
+  return Binary4RegisterShiftedOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -724,7 +737,8 @@ bool Binary3RegisterOpTesterCase13
   NC_PRECOND(Binary3RegisterOpTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == ((inst.Bits() & 0x0000000F)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8))))) /* Pc in {Rd,Rn,Rm} => UNPREDICTABLE */);
-  return true;
+  return Binary3RegisterOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -775,7 +789,8 @@ bool Binary3RegisterOpTesterCase14
   NC_PRECOND(Binary3RegisterOpTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == ((inst.Bits() & 0x0000000F)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8))))) /* Pc in {Rd,Rn,Rm} => UNPREDICTABLE */);
-  return true;
+  return Binary3RegisterOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -826,7 +841,8 @@ bool Binary3RegisterOpTesterCase15
   NC_PRECOND(Binary3RegisterOpTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == ((inst.Bits() & 0x0000000F)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8))))) /* Pc in {Rd,Rn,Rm} => UNPREDICTABLE */);
-  return true;
+  return Binary3RegisterOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -877,7 +893,8 @@ bool Binary3RegisterOpTesterCase16
   NC_PRECOND(Binary3RegisterOpTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == ((inst.Bits() & 0x0000000F)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8))))) /* Pc in {Rd,Rn,Rm} => UNPREDICTABLE */);
-  return true;
+  return Binary3RegisterOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -927,7 +944,8 @@ bool Binary4RegisterShiftedOpTesterCase17
   NC_PRECOND(Binary4RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8)))) || (((15) == ((inst.Bits() & 0x0000000F))))) /* Pc in {Rn,Rd,Rs,Rm} => UNPREDICTABLE */);
-  return true;
+  return Binary4RegisterShiftedOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -977,7 +995,8 @@ bool Unary3RegisterShiftedOpTesterCase18
   NC_PRECOND(Unary3RegisterShiftedOpTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == ((inst.Bits() & 0x0000000F)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8))))) /* Pc in {Rd,Rm,Rs} => UNPREDICTABLE */);
-  return true;
+  return Unary3RegisterShiftedOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // The following are derived class decoder testers for decoder actions

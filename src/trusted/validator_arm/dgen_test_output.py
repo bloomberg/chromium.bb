@@ -720,7 +720,8 @@ SAFETY_TESTER_CHECK="""
   EXPECT_TRUE(%s);"""
 
 SAFETY_TESTER_FOOTER="""
-  return true;
+  return %(base_base_tester)s::
+    ApplySanityChecks(inst, decoder);
 }
 """
 

@@ -139,7 +139,8 @@ bool Unary1RegisterImmediateOpTesterCase2
   NC_PRECOND(Unary1RegisterImmediateOpTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => UNPREDICTABLE */);
-  return true;
+  return Unary1RegisterImmediateOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -187,7 +188,8 @@ bool Unary1RegisterImmediateOpTesterCase3
   NC_PRECOND(Unary1RegisterImmediateOpTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => UNPREDICTABLE */);
-  return true;
+  return Unary1RegisterImmediateOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // The following are derived class decoder testers for decoder actions

@@ -74,7 +74,8 @@ bool Binary4RegisterDualResultTesterCase0
 
   EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8))))) /* Pc in {RdLo,RdHi,Rn,Rm} => UNPREDICTABLE */);
   EXPECT_TRUE(((((inst.Bits() & 0x000F0000) >> 16)) != (((inst.Bits() & 0x0000F000) >> 12))) /* RdHi == RdLo => UNPREDICTABLE */);
-  return true;
+  return Binary4RegisterDualResultTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -156,7 +157,8 @@ bool Binary4RegisterDualOpTesterCase2
   NC_PRECOND(Binary4RegisterDualOpTester::ApplySanityChecks(inst, decoder));
 
   EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8)))) || (((15) == (((inst.Bits() & 0x0000F000) >> 12))))) /* Pc in {Rd,Rn,Rm,Ra} => UNPREDICTABLE */);
-  return true;
+  return Binary4RegisterDualOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -239,7 +241,8 @@ bool Binary3RegisterOpAltATesterCase4
 
   EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8))))) /* Pc in {Rd,Rn,Rm} => UNPREDICTABLE */);
   EXPECT_TRUE((!((((nacl_arm_dec::ArchVersion()) < (6))) && (((((inst.Bits() & 0x000F0000) >> 16)) == ((inst.Bits() & 0x0000000F)))))) /* (ArchVersion() < 6 && Rd == Rn) => UNPREDICTABLE */);
-  return true;
+  return Binary3RegisterOpAltATester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -290,7 +293,8 @@ bool Binary4RegisterDualOpTesterCase5
 
   EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8)))) || (((15) == (((inst.Bits() & 0x0000F000) >> 12))))) /* Pc in {Rd,Rn,Rm,Ra} => UNPREDICTABLE */);
   EXPECT_TRUE((!((((nacl_arm_dec::ArchVersion()) < (6))) && (((((inst.Bits() & 0x000F0000) >> 16)) == ((inst.Bits() & 0x0000000F)))))) /* (ArchVersion() < 6 && Rd == Rn) => UNPREDICTABLE */);
-  return true;
+  return Binary4RegisterDualOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -342,7 +346,8 @@ bool Binary4RegisterDualResultTesterCase6
   EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8))))) /* Pc in {RdLo,RdHi,Rn,Rm} => UNPREDICTABLE */);
   EXPECT_TRUE(((((inst.Bits() & 0x000F0000) >> 16)) != (((inst.Bits() & 0x0000F000) >> 12))) /* RdHi == RdLo => UNPREDICTABLE */);
   EXPECT_TRUE((!((((nacl_arm_dec::ArchVersion()) < (6))) && (((((((inst.Bits() & 0x000F0000) >> 16)) == ((inst.Bits() & 0x0000000F)))) || (((((inst.Bits() & 0x0000F000) >> 12)) == ((inst.Bits() & 0x0000000F)))))))) /* (ArchVersion() < 6 && (RdHi == Rn || RdLo == Rn)) => UNPREDICTABLE */);
-  return true;
+  return Binary4RegisterDualResultTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -394,7 +399,8 @@ bool Binary4RegisterDualResultTesterCase7
   EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8))))) /* Pc in {RdLo,RdHi,Rn,Rm} => UNPREDICTABLE */);
   EXPECT_TRUE(((((inst.Bits() & 0x000F0000) >> 16)) != (((inst.Bits() & 0x0000F000) >> 12))) /* RdHi == RdLo => UNPREDICTABLE */);
   EXPECT_TRUE((!((((nacl_arm_dec::ArchVersion()) < (6))) && (((((((inst.Bits() & 0x000F0000) >> 16)) == ((inst.Bits() & 0x0000000F)))) || (((((inst.Bits() & 0x0000F000) >> 12)) == ((inst.Bits() & 0x0000000F)))))))) /* (ArchVersion() < 6 && (RdHi == Rn || RdLo == Rn)) => UNPREDICTABLE */);
-  return true;
+  return Binary4RegisterDualResultTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -446,7 +452,8 @@ bool Binary4RegisterDualResultTesterCase8
   EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8))))) /* Pc in {RdLo,RdHi,Rn,Rm} => UNPREDICTABLE */);
   EXPECT_TRUE(((((inst.Bits() & 0x000F0000) >> 16)) != (((inst.Bits() & 0x0000F000) >> 12))) /* RdHi == RdLo => UNPREDICTABLE */);
   EXPECT_TRUE((!((((nacl_arm_dec::ArchVersion()) < (6))) && (((((((inst.Bits() & 0x000F0000) >> 16)) == ((inst.Bits() & 0x0000000F)))) || (((((inst.Bits() & 0x0000F000) >> 12)) == ((inst.Bits() & 0x0000000F)))))))) /* (ArchVersion() < 6 && (RdHi == Rn || RdLo == Rn)) => UNPREDICTABLE */);
-  return true;
+  return Binary4RegisterDualResultTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -498,7 +505,8 @@ bool Binary4RegisterDualResultTesterCase9
   EXPECT_TRUE(!((((15) == (((inst.Bits() & 0x0000F000) >> 12)))) || (((15) == (((inst.Bits() & 0x000F0000) >> 16)))) || (((15) == ((inst.Bits() & 0x0000000F)))) || (((15) == (((inst.Bits() & 0x00000F00) >> 8))))) /* Pc in {RdLo,RdHi,Rn,Rm} => UNPREDICTABLE */);
   EXPECT_TRUE(((((inst.Bits() & 0x000F0000) >> 16)) != (((inst.Bits() & 0x0000F000) >> 12))) /* RdHi == RdLo => UNPREDICTABLE */);
   EXPECT_TRUE((!((((nacl_arm_dec::ArchVersion()) < (6))) && (((((((inst.Bits() & 0x000F0000) >> 16)) == ((inst.Bits() & 0x0000000F)))) || (((((inst.Bits() & 0x0000F000) >> 12)) == ((inst.Bits() & 0x0000000F)))))))) /* (ArchVersion() < 6 && (RdHi == Rn || RdLo == Rn)) => UNPREDICTABLE */);
-  return true;
+  return Binary4RegisterDualResultTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // The following are derived class decoder testers for decoder actions

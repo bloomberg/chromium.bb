@@ -398,7 +398,7 @@ class ShiftOp(BitExpr):
                          self._op,
                          self._args[1])
 
-  def __neutral_repr(self):
+  def neutral_repr(self):
     return '%s %s %s' % (neutral_repr(self._args[0]),
                          self._op,
                          neutral_repr(self._args[1]))
@@ -532,11 +532,27 @@ class Concat(BitExpr):
   def args(self):
     return self._args[:]
 
+  def to_bitfield(self, options={}):
+    # Assume we can generate a bitfield from the expression, by
+    # concatenating subfields, if each subfield is a bitfield.
+    try:
+      # As long ase each subfield is convertable, and the max number
+      # of bits is not exceeded, generate the corresponding bitfield.
+      bits = sum([ a.to_bitfield(options).num_bits() for a in self._args ])
+      if bits > 32:
+        raise exception("can't compose bitfield from concat")
+      return BitField(self, bits - 1, 0)
+    except:
+      # Can't convert,piecewise, so just assume that we can
+      # convert to an unsigned integer, and then define a
+      # bitfield on the unsigned integer.
+      return BitField(self, NUM_INST_BITS - 1, 0)
+
   def to_uint32(self, options={}):
     value = self._args[0].to_uint32()
     for arg in self._args[1:]:
       bitfield = arg.to_bitfield(options)
-      value = ("(((%s) << %s) | %s" %
+      value = ("(((%s) << %s) | %s)" %
                (value, bitfield.num_bits(), bitfield.to_uint32()))
     return value
 
@@ -733,14 +749,12 @@ class IfThenElse(BitExpr):
     return [self._test, self._then_value, self._else_value]
 
   def __repr__(self):
-    return '%s?%s:%s' % (repr(self._test),
-                         repr(self._then_value),
-                         repr(self._else_value))
+    return '%s if %s else %s' % (self._then_value, self._test, self._else_value)
 
   def neutral_repr(self):
-    return '%s?%s:%s' % (neutral_repr(self._test),
-                         neutral_repr(self._then_value),
-                         neutral_repr(self._else_value))
+    return '%s if %s else %s' % (neutral_repr(self._then_value),
+                                 neutral_repr(self._test),
+                                 neutral_repr(self._else_value))
 
 class ParenthesizedExp(BitExpr):
   """Models a parenthesized expression."""

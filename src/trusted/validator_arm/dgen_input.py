@@ -30,7 +30,6 @@ action_pattern ::= 'pattern' ':=' word rule_restrict?
 action_safety  ::= 'safety' ':=' safety_check ('&' safety_check)*
 action_rule    ::= 'rule' ':=' id
 arch           ::= '(' word+ ')'
-bit_check      ::= column '=' bitpattern
 bit_expr       ::= bit_expr1 ('if' bit_expr 'else' bit_expr)?  # conditional
 bit_expr1      ::= bit_expr2 (('&' bit_expr2)* | ('|' bit_expr2)*)?
 bit_expr2      ::= bit_expr3 | 'not' bit_expr2
@@ -46,7 +45,7 @@ bit_expr7      ::= bit_expr8 |                                 # mul ops
 bit_expr8      ::= bit_expr9 ('=' bitpattern)?                 # bit check
 bit_expr9      ::= bit_expr10 (':' bit_expr10)*                # concat
 bit_expr10     ::= bit_expr11 | bit_expr10 '(' int (':' int)? ')' # bit range
-bit_expr11     ::= int | id | bit_check | bit_set | '(' bit_expr ')' | call
+bit_expr11     ::= int | id | bit_set | '(' bit_expr ')' | call
 bit_set        ::= '{' (bit_expr (',' bit_expr)*)? '}'
 bitpattern     ::= word | negated_word
 call           ::= word '(' (bit_expr (',' bit_expr)*)? ')'
@@ -304,10 +303,10 @@ class Parser(object):
 
   def _bit_expr(self, context):
     """bit_expr ::= bit_expr1 ('if' bit_expr 'else' bit_expr)?"""
-    test = self._bit_expr1(context)
-    if not self._next_token().kind == 'if': return test
+    then_value = self._bit_expr1(context)
+    if self._next_token().kind != 'if': return then_value
     self._read_token('if')
-    then_value = self._bit_expr(context)
+    test = self._bit_expr(context)
     self._read_token('else')
     else_value = self._bit_expr(context)
     return dgen_core.IfThenElse(test, then_value, else_value)
@@ -424,13 +423,9 @@ class Parser(object):
     return value
 
   def _bit_expr11(self, context):
-    """bit_expr11 ::= int | id | bit_check | bit_set | '(' bit_expr ')' |
-                      call
-    """
+    """bit_expr11 ::= int | id | bit_set | '(' bit_expr ')' | call"""
     if self._is_int():
       return dgen_core.Literal(self._int())
-    elif self._is_bit_check():
-      return self._bit_check(context)
     elif self._next_token().kind == '{':
       return self._bit_set(context)
     elif self._next_token().kind == '(':

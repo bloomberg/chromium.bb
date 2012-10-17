@@ -204,7 +204,8 @@ bool Binary3RegisterImmedShiftedOpTesterCase4
 
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Binary3RegisterImmedShiftedOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -253,7 +254,8 @@ bool Binary3RegisterImmedShiftedOpTesterCase5
 
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Binary3RegisterImmedShiftedOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -302,7 +304,8 @@ bool Binary3RegisterImmedShiftedOpTesterCase6
 
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Binary3RegisterImmedShiftedOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -351,7 +354,8 @@ bool Binary3RegisterImmedShiftedOpTesterCase7
 
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Binary3RegisterImmedShiftedOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -400,7 +404,8 @@ bool Binary3RegisterImmedShiftedOpTesterCase8
 
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Binary3RegisterImmedShiftedOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -449,7 +454,8 @@ bool Binary3RegisterImmedShiftedOpTesterCase9
 
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Binary3RegisterImmedShiftedOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -498,7 +504,8 @@ bool Binary3RegisterImmedShiftedOpTesterCase10
 
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Binary3RegisterImmedShiftedOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -547,7 +554,8 @@ bool Binary3RegisterImmedShiftedOpTesterCase11
 
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Binary3RegisterImmedShiftedOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -596,7 +604,8 @@ bool Binary3RegisterImmedShiftedOpTesterCase12
 
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Binary3RegisterImmedShiftedOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -650,7 +659,8 @@ bool Unary2RegisterImmedShiftedOpTesterCase13
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x00000F80) != 0x00000000 /* imm5(11:7)=00000 => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Unary2RegisterImmedShiftedOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -704,7 +714,8 @@ bool Unary2RegisterImmedShiftedOpTesterCase14
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x00000F80) != 0x00000000 /* imm5(11:7)=00000 => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Unary2RegisterImmedShiftedOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -756,7 +767,8 @@ bool Unary2RegisterOpTesterCase15
 
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Unary2RegisterOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -808,7 +820,8 @@ bool Unary2RegisterOpTesterCase16
 
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Unary2RegisterOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -859,7 +872,8 @@ bool Unary2RegisterImmedShiftedOpTesterCase17
 
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Unary2RegisterImmedShiftedOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -910,7 +924,8 @@ bool Unary2RegisterImmedShiftedOpTesterCase18
 
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Unary2RegisterImmedShiftedOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -959,7 +974,8 @@ bool Binary3RegisterImmedShiftedOpTesterCase19
 
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Binary3RegisterImmedShiftedOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // Neutral case:
@@ -1009,7 +1025,8 @@ bool Unary2RegisterImmedShiftedOpTesterCase20
 
   EXPECT_TRUE((!(((inst.Bits() & 0x0000F000) == 0x0000F000) && ((inst.Bits() & 0x00100000) == 0x00100000))) /* (Rd(15:12)=1111 && S(20)=1) => UNDEFINED */);
   EXPECT_TRUE((inst.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12)=1111 => FORBIDDEN_OPERANDS */);
-  return true;
+  return Unary2RegisterImmedShiftedOpTester::
+    ApplySanityChecks(inst, decoder);
 }
 
 // The following are derived class decoder testers for decoder actions
