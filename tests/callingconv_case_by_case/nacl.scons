@@ -41,19 +41,28 @@ def MakeSelfTestEnv(base_env, extra_flags):
   link_env = base_env
   return (envlist, link_env)
 
-def MakeCrossEnvs(base_env, extra_gcc_flags, extra_pnacl_flags):
+def MakeCrossEnvs(base_env, extra_flags1, extra_flags2,
+                  both_clang=False):
   """ Make a list of four (nearly identical) envs, some of which use gcc
-  and some use pnacl, for compiling the four modules to test consistency.  """
+  and some use pnacl, for compiling the four modules to test consistency.
+  if both_clang is true, both environments will use the clang compiler;
+  otherwise one environment will use gcc (extra_flags1) and the other
+  will use clang (extra_flags2)"""
   envlist = []
   # For module0
   cc1_env = base_env.Clone()
   cc1_env.PNaClForceNative()
-  cc1_env.Append(CCFLAGS=extra_pnacl_flags)
+  cc1_env.Append(CCFLAGS=extra_flags2)
   envlist.append(cc1_env)
   # For module1
-  cc2_env = base_env.PNaClGetNNaClEnv()
-  cc2_env.Append(CCFLAGS=extra_gcc_flags)
+  if both_clang:
+    cc2_env = base_env.Clone()
+    cc2_env.PNaClForceNative()
+  else:
+    cc2_env = base_env.PNaClGetNNaClEnv()
+  cc2_env.Append(CCFLAGS=extra_flags1)
   envlist.append(cc2_env)
+
   envlist.append(cc2_env.Clone()) # For module2
   envlist.append(cc1_env.Clone()) # For module3
   link_env = cc1_env # To allow linking native objects (from ForceNative).
@@ -79,6 +88,11 @@ else:
     native_env.PNaClForceNative()
     envlist, link_env = MakeSelfTestEnv(native_env, [])
     test_configurations.append((envlist, link_env, ''))
+    envlist, link_env = MakeSelfTestEnv(native_env,
+        ['--pnacl-frontend-triple=armv7a-unknown-nacl-gnueabi',
+         '-mfloat-abi=hard'])
+    test_configurations.append((envlist, link_env, '_eabi_self'))
+
   elif env.Bit('target_x86_32'):
     # For x86-32 there is gcc, but no compatibility flags.
     envlist, link_env = MakeCrossEnvs(env, ['-msse2'], [])
@@ -97,6 +111,17 @@ else:
                                       ['-msse2', '-DTEST_ATTRIBUTE_VIA_FP'],
                                       [])
     test_configurations.append((envlist, link_env, '_fp'))
+    envlist, link_env = MakeCrossEnvs(env, ['-msse2'],
+        ['--pnacl-frontend-triple=x86_64-unknown-nacl'])
+    test_configurations.append((envlist, link_env, '_sysvabi'))
+    envlist, link_env = MakeCrossEnvs(env,
+        ['--pnacl-frontend-triple=x86_64-unknown-nacl',
+         '-DTEST_ATTRIBUTE_VIA_DECL'], [], both_clang=True)
+    test_configurations.append((envlist, link_env, '_clangdecl'))
+    envlist, link_env = MakeCrossEnvs(env,
+        ['--pnacl-frontend-triple=x86_64-unknown-nacl',
+         '-DTEST_ATTRIBUTE_VIA_FP'], [], both_clang=True)
+    test_configurations.append((envlist, link_env, '_clangfp'))
   else:
     raise "Unknown target architecture!"
 
