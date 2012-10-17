@@ -42,6 +42,8 @@ const wchar_t kValueIE9Completed[] = L"IE9RunOncePerInstallCompleted";
 const wchar_t kValueIE9CompletionTime[] = L"IE9RunOnceCompletionTime";
 const wchar_t kValueIE9LastShown[] = L"IE9RunOnceLastShown";
 const wchar_t kValueIE9TourNoShow[] = L"IE9TourNoShow";
+const wchar_t kValueIE10Completed[] = L"IE10RunOncePerInstallCompleted";
+const wchar_t kValueIE10CompletionTime[] = L"IE10RunOnceCompletionTime";
 const wchar_t kValueIgnoreFrameApprovalCheck[] = L"IgnoreFrameApprovalCheck";
 const wchar_t kValueMSCompatibilityMode[] = L"MSCompatibilityMode";
 
@@ -140,24 +142,39 @@ class IE7Configurator : public IEConfigurator {
   DISALLOW_COPY_AND_ASSIGN(IE7Configurator);
 };
 
-// A configurator for Internet Explorer 9.
-class IE9Configurator : public IEConfigurator {
+// A configurator for Internet Explorer 9 and 10.
+class ModernIEConfigurator : public IEConfigurator {
  public:
-  IE9Configurator();
-  virtual ~IE9Configurator();
+  explicit ModernIEConfigurator(IEVersion ie_version);
+  virtual ~ModernIEConfigurator();
 
   virtual void Initialize() OVERRIDE;
   virtual void ApplySettings() OVERRIDE;
   virtual void RevertSettings() OVERRIDE;
 
  private:
-  static bool IsPerUserSetupComplete();
+  // The names of the registry values used to determine if IE's one-time
+  // initialization has been completed.
+  struct RunOnceValueNames {
+    // This DWORD value is non-zero once initialization has been completed.
+    const wchar_t* completed;
+    // This 8-byte binary value is the FILETIME of completion.
+    const wchar_t* completion_time;
+  };
+
+  static const RunOnceValueNames kIE9ValueNames;
+  static const RunOnceValueNames kIE10ValueNames;
+
+  static const RunOnceValueNames* RunOnceNamesForVersion(IEVersion ie_version);
+  bool IsPerUserSetupComplete();
   static string16 GetChromeFrameBHOCLSID();
   static bool IsAddonPromptDisabledForChromeFrame();
 
+  const IEVersion ie_version_;
+  const RunOnceValueNames* run_once_value_names_;
   RegistrySetter setter_;
 
-  DISALLOW_COPY_AND_ASSIGN(IE9Configurator);
+  DISALLOW_COPY_AND_ASSIGN(ModernIEConfigurator);
 };
 
 // RegistrySetter implementation.
@@ -334,17 +351,47 @@ void IE7Configurator::RevertSettings() {
   setter_.Revert();
 }
 
-// IE9Configurator implementation
+// ModernIEConfigurator implementation
 
-IE9Configurator::IE9Configurator() {
+const ModernIEConfigurator::RunOnceValueNames
+    ModernIEConfigurator::kIE9ValueNames = {
+  kValueIE9Completed,
+  kValueIE9CompletionTime,
+};
+
+const ModernIEConfigurator::RunOnceValueNames
+    ModernIEConfigurator::kIE10ValueNames = {
+  kValueIE10Completed,
+  kValueIE10CompletionTime,
+};
+
+ModernIEConfigurator::ModernIEConfigurator(IEVersion ie_version)
+    : ie_version_(ie_version),
+      run_once_value_names_(RunOnceNamesForVersion(ie_version)) {
 }
 
-IE9Configurator::~IE9Configurator() {
+ModernIEConfigurator::~ModernIEConfigurator() {
+}
+
+// static
+const ModernIEConfigurator::RunOnceValueNames*
+    ModernIEConfigurator::RunOnceNamesForVersion(
+        IEVersion ie_version) {
+  switch (ie_version) {
+    case IE_9:
+      return &kIE9ValueNames;
+      break;
+    case IE_10:
+      return &kIE10ValueNames;
+      break;
+    default:
+      NOTREACHED();
+  }
+  return NULL;
 }
 
 // Returns true if the per-user setup is complete.
-// static
-bool IE9Configurator::IsPerUserSetupComplete() {
+bool ModernIEConfigurator::IsPerUserSetupComplete() {
   bool is_complete = false;
   base::win::RegKey key_main;
 
@@ -354,11 +401,11 @@ bool IE9Configurator::IsPerUserSetupComplete() {
     FILETIME completion_time = {};
     DWORD size = sizeof(completion_time);
 
-    if (key_main.ReadValueDW(kValueIE9Completed,
+    if (key_main.ReadValueDW(run_once_value_names_->completed,
                              &completed) == ERROR_SUCCESS &&
         completed != 0 &&
-        key_main.ReadValue(kValueIE9CompletionTime, &completion_time,
-                           &size, NULL) == ERROR_SUCCESS &&
+        key_main.ReadValue(run_once_value_names_->completion_time,
+                           &completion_time, &size, NULL) == ERROR_SUCCESS &&
         size == sizeof(completion_time)) {
       is_complete = true;
     }
@@ -369,7 +416,7 @@ bool IE9Configurator::IsPerUserSetupComplete() {
 
 // Returns the path to the IE9 Approved Extensions key for Chrome Frame.
 // static
-string16 IE9Configurator::GetChromeFrameBHOCLSID() {
+string16 ModernIEConfigurator::GetChromeFrameBHOCLSID() {
   string16 bho_guid(39, L'\0');
   int guid_len = StringFromGUID2(CLSID_ChromeFrameBHO, &bho_guid[0],
                                  bho_guid.size());
@@ -380,7 +427,7 @@ string16 IE9Configurator::GetChromeFrameBHOCLSID() {
 
 // Returns true if the add-on enablement prompt is disabled by Group Policy.
 // static
-bool IE9Configurator::IsAddonPromptDisabledForChromeFrame() {
+bool ModernIEConfigurator::IsAddonPromptDisabledForChromeFrame() {
   bool is_disabled = false;
   base::win::RegKey key;
 
@@ -411,17 +458,21 @@ bool IE9Configurator::IsAddonPromptDisabledForChromeFrame() {
   return is_disabled;
 }
 
-void IE9Configurator::Initialize() {
+void ModernIEConfigurator::Initialize() {
   // Check for per-user IE setup.
   if (!IsPerUserSetupComplete()) {
     const HKEY root = HKEY_CURRENT_USER;
-    // Suppress the "Set up Internet Explorer 9" dialog.
-    setter_.AddDWORDValue(root, kKeyIEMain, kValueIE9Completed, 1);
-    setter_.AddFILETIMEValue(root, kKeyIEMain, kValueIE9CompletionTime,
+    // Suppress the "Set up Internet Explorer" dialog.
+    setter_.AddDWORDValue(root, kKeyIEMain, run_once_value_names_->completed,
+                          1);
+    setter_.AddFILETIMEValue(root, kKeyIEMain,
+                             run_once_value_names_->completion_time,
                              base::Time::Now().ToFileTime());
-    setter_.AddDWORDValue(root, kKeyIEMain, kValueIE9LastShown, 1);
-    // Don't show a tour of IE 9.
-    setter_.AddDWORDValue(root, kKeyIEMain, kValueIE9TourNoShow, 1);
+    if (ie_version_ == IE_9) {
+      setter_.AddDWORDValue(root, kKeyIEMain, kValueIE9LastShown, 1);
+      // Don't show a tour of IE 9.
+      setter_.AddDWORDValue(root, kKeyIEMain, kValueIE9TourNoShow, 1);
+    }
     // Turn off the phishing filter.
     setter_.AddDWORDValue(root, kKeyIEPhishingFilter, kValueEnabledV9, 0);
     // Don't download compatibility view lists.
@@ -437,11 +488,11 @@ void IE9Configurator::Initialize() {
   }
 }
 
-void IE9Configurator::ApplySettings() {
+void ModernIEConfigurator::ApplySettings() {
   setter_.Apply();
 }
 
-void IE9Configurator::RevertSettings() {
+void ModernIEConfigurator::RevertSettings() {
   setter_.Revert();
 }
 
@@ -458,12 +509,14 @@ IEConfigurator::~IEConfigurator() {
 IEConfigurator* CreateConfigurator() {
   IEConfigurator* configurator = NULL;
 
-  switch (GetInstalledIEVersion()) {
+  IEVersion ie_version = GetInstalledIEVersion();
+  switch (ie_version) {
     case IE_7:
       configurator = new IE7Configurator();
       break;
     case IE_9:
-      configurator = new IE9Configurator();
+    case IE_10:
+      configurator = new ModernIEConfigurator(ie_version);
       break;
     default:
       break;
