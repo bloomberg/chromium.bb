@@ -9,6 +9,7 @@
     {
       'target_name': 'libwebview',
       'type': 'shared_library',
+      'android_unmangled_name': 1,
       'dependencies': [
         '../chrome/chrome.gyp:browser',
         '../chrome/chrome.gyp:renderer',
