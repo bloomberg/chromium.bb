@@ -2,15 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from collections import defaultdict
-import csv
-import logging
 import os
 import sys
 
-from chrome_remote_control import browser_finder
-from chrome_remote_control import browser_options
-from chrome_remote_control import page_runner
-from chrome_remote_control import page_set
 from chrome_remote_control import page_test
 
 # Get build/android/pylib scripts into our path.
@@ -156,43 +150,3 @@ class MultiPageBenchmark(page_test.PageTest):
          results.Add('two_plus_two', 'count', res)
     """
     raise NotImplementedError()
-
-
-def Main(benchmark, args=None):
-  """Turns a MultiPageBenchmark into a command-line program.
-
-  If args is not specified, sys.argv[1:] is used.
-  """
-  options = browser_options.BrowserOptions()
-  parser = options.CreateParser('%prog [options] <page_set>')
-  benchmark.AddOptions(parser)
-  _, args = parser.parse_args(args)
-
-  if len(args) != 1:
-    parser.print_usage()
-    import page_sets # pylint: disable=F0401
-    sys.stderr.write('Available pagesets:\n%s\n\n' % ',\n'.join(
-        [os.path.relpath(f) for f in page_sets.GetAllPageSetFilenames()]))
-    sys.exit(1)
-
-  ps = page_set.PageSet.FromFile(args[0])
-
-  benchmark.CustomizeBrowserOptions(options)
-  possible_browser = browser_finder.FindBrowser(options)
-  if possible_browser == None:
-    sys.stderr.write(
-      'No browser found.\n' +
-      'Use --browser=list to figure out which are available.\n')
-    sys.exit(1)
-
-  results = CsvBenchmarkResults(csv.writer(sys.stdout))
-  with page_runner.PageRunner(ps) as runner:
-    runner.Run(options, possible_browser, benchmark, results)
-  # When using an exact executable, assume it is a reference build for the
-  # purpose of outputting the perf results.
-  results.PrintSummary(options.browser_executable and '_ref' or '')
-
-  if len(results.page_failures):
-    logging.warning('Failed pages: %s', '\n'.join(
-        [failure['page'].url for failure in results.page_failures]))
-  return max(255, len(results.page_failures))

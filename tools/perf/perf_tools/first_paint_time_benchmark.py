@@ -26,6 +26,3 @@ class FirstPaintTimeBenchmark(multi_page_benchmark.MultiPageBenchmark):
       'window.chrome.loadTimes().requestTime')
 
     results.Add('first_paint', 'seconds', round(first_paint_secs, 1))
-
-def Main():
-  return multi_page_benchmark.Main(FirstPaintTimeBenchmark())
