@@ -419,10 +419,6 @@ class CONTENT_EXPORT WebContentsDelegate {
       const MediaResponseCallback& callback) {}
 
 #if defined(OS_ANDROID)
-  // Returns true if the delegate wants to handle the url instead. Default
-  // returns false.
-  virtual bool ShouldOverrideLoading(const GURL& url);
-
   // Called when a compositing layer becomes available for this web contents
   // so the delegate can add it to the layer tree.
   virtual void AttachLayer(WebContents* web_contents,

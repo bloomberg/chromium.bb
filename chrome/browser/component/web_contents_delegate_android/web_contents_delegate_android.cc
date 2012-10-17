@@ -82,33 +82,9 @@ WebContents* WebContentsDelegateAndroid::OpenURLFromTab(
     return NULL;
   }
 
-  // TODO(mkosiba): This should be in platform_utils OpenExternal, b/6174564.
-  if (transition == content::PAGE_TRANSITION_LINK && ShouldOverrideLoading(url))
-    return NULL;
-
   source->GetController().LoadURL(url, params.referrer, transition,
                                   std::string());
   return source;
-}
-
-// ShouldIgnoreNavigation will be called for every non-local top level
-// navigation made by the renderer. If true is returned the renderer will
-// not perform the navigation. This is done by using synchronous IPC so we
-// should avoid blocking calls from this method.
-bool WebContentsDelegateAndroid::ShouldIgnoreNavigation(
-    WebContents* source,
-    const GURL& url,
-    const content::Referrer& referrer,
-    WindowOpenDisposition disposition,
-    content::PageTransition transition_type) {
-
-  // Don't override new tabs.
-  if (disposition == NEW_FOREGROUND_TAB ||
-      disposition == NEW_BACKGROUND_TAB ||
-      disposition == OFF_THE_RECORD)
-    return false;
-
-  return ShouldOverrideLoading(url);
 }
 
 void WebContentsDelegateAndroid::NavigationStateChanged(
@@ -264,21 +240,6 @@ void WebContentsDelegateAndroid::UpdateTargetURL(WebContents* source,
   Java_WebContentsDelegateAndroid_onUpdateUrl(env,
                                               obj.obj(),
                                               java_url.obj());
-}
-
-bool WebContentsDelegateAndroid::ShouldOverrideLoading(const GURL& url) {
-  if (!url.is_valid())
-    return false;
-
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
-  if (obj.is_null())
-    return WebContentsDelegate::ShouldOverrideLoading(url);
-  ScopedJavaLocalRef<jstring> jstring_url =
-      ConvertUTF8ToJavaString(env, url.spec());
-  bool ret = Java_WebContentsDelegateAndroid_shouldOverrideUrlLoading(
-      env, obj.obj(), jstring_url.obj());
-  return ret;
 }
 
 void WebContentsDelegateAndroid::HandleKeyboardEvent(

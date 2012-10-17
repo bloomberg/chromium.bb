@@ -58,14 +58,6 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
       content::WebContents* source,
       const content::OpenURLParams& params) OVERRIDE;
 
-  // Don't merge back.
-  // TODO(mkosiba): Upstream base class's implementaion of this method.
-  virtual bool ShouldIgnoreNavigation(
-      content::WebContents* source,
-      const GURL& url,
-      const content::Referrer& referrer,
-      WindowOpenDisposition disposition,
-      content::PageTransition transition_type);
   virtual void NavigationStateChanged(const content::WebContents* source,
                                       unsigned changed_flags) OVERRIDE;
   virtual void AddNewContents(content::WebContents* source,
@@ -93,7 +85,6 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
   virtual void UpdateTargetURL(content::WebContents* source,
                                int32 page_id,
                                const GURL& url) OVERRIDE;
-  virtual bool ShouldOverrideLoading(const GURL& url) OVERRIDE;
   virtual void HandleKeyboardEvent(
       content::WebContents* source,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
