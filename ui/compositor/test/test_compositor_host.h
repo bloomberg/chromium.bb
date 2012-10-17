@@ -1,11 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef UI_COMPOSITOR_TEST_TEST_COMPOSITOR_HOST_H_
 #define UI_COMPOSITOR_TEST_TEST_COMPOSITOR_HOST_H_
-
-#include "base/message_loop.h"
 
 namespace gfx {
 class Rect;
@@ -25,7 +23,7 @@ class TestCompositorHost {
   // Shows the TestCompositorHost.
   virtual void Show() = 0;
 
-  virtual ui::Compositor* GetCompositor() = 0;
+  virtual Compositor* GetCompositor() = 0;
 };
 
 }  // namespace ui

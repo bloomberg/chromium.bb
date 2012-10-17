@@ -4,17 +4,18 @@
 
 #include "ui/compositor/test/test_compositor_host.h"
 
+#include <X11/Xlib.h>
+
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/rect.h"
-
-#include <X11/Xlib.h>
 
 namespace ui {
 
@@ -54,7 +55,7 @@ TestCompositorHostLinux::~TestCompositorHostLinux() {
 }
 
 void TestCompositorHostLinux::Show() {
-  Display* display = base::MessagePumpForUI::GetDefaultXDisplay();
+  Display* display = GetXDisplay();
   XSetWindowAttributes swa;
   swa.event_mask = StructureNotifyMask | ExposureMask;
   swa.override_redirect = True;
