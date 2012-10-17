@@ -312,6 +312,8 @@ def main(argv):
   if HasBitcodeInputs(inputs):
     chain = DriverChain(inputs, output, tng)
     chain.add(LinkBC, 'pre_opt.' + bitcode_type)
+    if env.getbool('STATIC') and len(native_objects) == 0:
+      chain.add(DoExpandCtors, 'expand_ctors.' + bitcode_type)
     if env.getone('OPT_LEVEL') != '0':
       chain.add(DoOPT, 'opt.' + bitcode_type)
     elif env.getone('STRIP_MODE') != 'none':
@@ -412,6 +414,9 @@ def CheckInputsArch(inputs):
 
   if count == 0:
     Log.Fatal("no input files")
+
+def DoExpandCtors(infile, outfile):
+  RunDriver('opt', ['-nacl-expand-ctors', infile, '-o', outfile])
 
 def DoOPT(infile, outfile):
   opt_flags = env.get('OPT_FLAGS')

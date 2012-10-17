@@ -83,9 +83,18 @@ def AddInitFiniTest(env, name, extra_libs):
   node = env.CommandSelLdrTestNacl(name + '.out',
                                    nexe,
                                    stdout_golden=golden_file)
+  # This test checks the ".init_array" and ".fini_array" sections,
+  # which are an internal detail of how the toolchain works.  We do
+  # not support these sections in PNaCl's static linking ABI, because
+  # PNaCl connects up initializers at bitcode linking time.  PNaCl
+  # does support __attribute__((constructor)) and
+  # __attribute__((destructor)) which are tested via
+  # run_initfini_attributes_test below.
+  is_broken = env.Bit('bitcode') and env.Bit('nacl_static_link')
   env.AddNodeToTestSuite(node,
                          ['toolchain_tests', 'small_tests'],
-                         'run_' + name + '_test')
+                         'run_' + name + '_test',
+                         is_broken=is_broken)
 
 AddInitFiniTest(env, 'initfini_static', [])
 if env.Bit('nacl_glibc') and not env.Bit('nacl_disable_shared'):
