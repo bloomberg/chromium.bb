@@ -20,17 +20,17 @@ CCTextureUpdateQueue::~CCTextureUpdateQueue()
 
 void CCTextureUpdateQueue::appendFullUpload(TextureUploader::Parameters upload)
 {
-    m_fullEntries.append(upload);
+    m_fullEntries.push_back(upload);
 }
 
 void CCTextureUpdateQueue::appendPartialUpload(TextureUploader::Parameters upload)
 {
-    m_partialEntries.append(upload);
+    m_partialEntries.push_back(upload);
 }
 
 void CCTextureUpdateQueue::appendCopy(TextureCopier::Parameters copy)
 {
-    m_copyEntries.append(copy);
+    m_copyEntries.push_back(copy);
 }
 
 void CCTextureUpdateQueue::clearUploadsToEvictedResources()
@@ -39,30 +39,37 @@ void CCTextureUpdateQueue::clearUploadsToEvictedResources()
     clearUploadsToEvictedResources(m_partialEntries);
 }
 
-void CCTextureUpdateQueue::clearUploadsToEvictedResources(Deque<TextureUploader::Parameters>& entryQueue)
+void CCTextureUpdateQueue::clearUploadsToEvictedResources(std::deque<TextureUploader::Parameters>& entryQueue)
 {
-    Deque<TextureUploader::Parameters> temp;
+    std::deque<TextureUploader::Parameters> temp;
     entryQueue.swap(temp);
     while (temp.size()) {
-        TextureUploader::Parameters upload = temp.takeFirst();
+        TextureUploader::Parameters upload = temp.front();
+        temp.pop_front();
         if (!upload.texture->backingResourceWasEvicted())
-            entryQueue.append(upload);
+            entryQueue.push_back(upload);
     }
 }
 
 TextureUploader::Parameters CCTextureUpdateQueue::takeFirstFullUpload()
 {
-    return m_fullEntries.takeFirst();
+    TextureUploader::Parameters first = m_fullEntries.front();
+    m_fullEntries.pop_front();
+    return first;
 }
 
 TextureUploader::Parameters CCTextureUpdateQueue::takeFirstPartialUpload()
 {
-    return m_partialEntries.takeFirst();
+    TextureUploader::Parameters first = m_partialEntries.front();
+    m_partialEntries.pop_front();
+    return first;
 }
 
 TextureCopier::Parameters CCTextureUpdateQueue::takeFirstCopy()
 {
-    return m_copyEntries.takeFirst();
+    TextureCopier::Parameters first = m_copyEntries.front();
+    m_copyEntries.pop_front();
+    return first;
 }
 
 bool CCTextureUpdateQueue::hasMoreUpdates() const

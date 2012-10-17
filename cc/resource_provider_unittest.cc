@@ -9,13 +9,12 @@
 #include "CCGraphicsContext.h"
 #include "CCSingleThreadProxy.h" // For DebugScopedSetImplThread
 #include "Extensions3DChromium.h"
+#include "cc/scoped_ptr_deque.h"
+#include "cc/scoped_ptr_hash_map.h"
 #include "cc/test/compositor_fake_web_graphics_context_3d.h"
 #include "cc/test/fake_web_compositor_output_surface.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebGraphicsContext3D.h>
-#include <wtf/HashMap.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/Deque.h>
 
 using namespace cc;
 using namespace WebKit;
@@ -57,17 +56,17 @@ public:
         ++m_nextMailBox;
     }
 
-    void produceTexture(const WGC3Dbyte* mailboxName, unsigned syncPoint, PassOwnPtr<Texture> texture)
+    void produceTexture(const WGC3Dbyte* mailboxName, unsigned syncPoint, scoped_ptr<Texture> texture)
     {
         unsigned mailbox = 0;
         memcpy(&mailbox, mailboxName, sizeof(mailbox));
         ASSERT(mailbox && mailbox < m_nextMailBox);
-        m_textures.set(mailbox, texture);
-        ASSERT(m_syncPointForMailbox.get(mailbox) < syncPoint);
-        m_syncPointForMailbox.set(mailbox, syncPoint);
+        m_textures.set(mailbox, texture.Pass());
+        ASSERT(m_syncPointForMailbox[mailbox] < syncPoint);
+        m_syncPointForMailbox[mailbox] = syncPoint;
     }
 
-    PassOwnPtr<Texture> consumeTexture(const WGC3Dbyte* mailboxName, unsigned syncPoint)
+    scoped_ptr<Texture> consumeTexture(const WGC3Dbyte* mailboxName, unsigned syncPoint)
     {
         unsigned mailbox = 0;
         memcpy(&mailbox, mailboxName, sizeof(mailbox));
@@ -76,8 +75,8 @@ public:
         // If the latest sync point the context has waited on is before the sync
         // point for when the mailbox was set, pretend we never saw that
         // produceTexture.
-        if (m_syncPointForMailbox.get(mailbox) < syncPoint)
-            return nullptr;
+        if (m_syncPointForMailbox[mailbox] < syncPoint)
+            return scoped_ptr<Texture>();
         return m_textures.take(mailbox);
     }
 
@@ -89,9 +88,9 @@ private:
 
     unsigned m_nextSyncPoint;
     unsigned m_nextMailBox;
-    typedef HashMap<unsigned, OwnPtr<Texture> > TextureMap;
+    typedef ScopedPtrHashMap<unsigned, Texture> TextureMap;
     TextureMap m_textures;
-    HashMap<unsigned, unsigned> m_syncPointForMailbox;
+    base::hash_map<unsigned, unsigned> m_syncPointForMailbox;
 };
 
 class ResourceProviderContext : public CompositorFakeWebGraphicsContext3D {
@@ -104,7 +103,7 @@ public:
         // Commit the produceTextureCHROMIUM calls at this point, so that
         // they're associated with the sync point.
         for (PendingProduceTextureList::iterator it = m_pendingProduceTextures.begin(); it != m_pendingProduceTextures.end(); ++it)
-            m_sharedData->produceTexture((*it)->mailbox, syncPoint, (*it)->texture.release());
+            m_sharedData->produceTexture((*it)->mailbox, syncPoint, (*it)->texture.Pass());
         m_pendingProduceTextures.clear();
         return syncPoint;
     }
@@ -124,7 +123,7 @@ public:
     virtual WebGLId createTexture()
     {
         WebGLId id = CompositorFakeWebGraphicsContext3D::createTexture();
-        m_textures.add(id, nullptr);
+        m_textures.add(id, scoped_ptr<Texture>());
         return id;
     }
 
@@ -132,7 +131,7 @@ public:
     {
         TextureMap::iterator it = m_textures.find(id);
         ASSERT(it != m_textures.end());
-        m_textures.remove(it);
+        m_textures.erase(it);
         if (m_currentTexture == id)
             m_currentTexture = 0;
     }
@@ -187,14 +186,14 @@ public:
         ASSERT(m_currentTexture);
         ASSERT(target == GraphicsContext3D::TEXTURE_2D);
 
-        // Delay movind the texture into the mailbox until the next
+        // Delay moving the texture into the mailbox until the next
         // insertSyncPoint, so that it is not visible to other contexts that
         // haven't waited on that sync point.
-        OwnPtr<PendingProduceTexture> pending(adoptPtr(new PendingProduceTexture));
+        scoped_ptr<PendingProduceTexture> pending(new PendingProduceTexture);
         memcpy(pending->mailbox, mailbox, sizeof(pending->mailbox));
         pending->texture = m_textures.take(m_currentTexture);
-        m_textures.set(m_currentTexture, nullptr);
-        m_pendingProduceTextures.append(pending.release());
+        m_textures.set(m_currentTexture, scoped_ptr<Texture>());
+        m_pendingProduceTextures.append(pending.Pass());
     }
 
     virtual void consumeTextureCHROMIUM(WGC3Denum target, const WGC3Dbyte* mailbox)
@@ -231,7 +230,7 @@ private:
     void allocateTexture(const IntSize& size, WGC3Denum format)
     {
         ASSERT(m_currentTexture);
-        m_textures.set(m_currentTexture, adoptPtr(new Texture(size, format)));
+        m_textures.set(m_currentTexture, make_scoped_ptr(new Texture(size, format)));
     }
 
     void setPixels(int xoffset, int yoffset, int width, int height, const void* pixels)
@@ -253,12 +252,12 @@ private:
         }
     }
 
-    typedef HashMap<WebGLId, OwnPtr<Texture> > TextureMap;
+    typedef ScopedPtrHashMap<WebGLId, Texture> TextureMap;
     struct PendingProduceTexture {
         WGC3Dbyte mailbox[64];
-        OwnPtr<Texture> texture;
+        scoped_ptr<Texture> texture;
     };
-    typedef Deque<OwnPtr<PendingProduceTexture> > PendingProduceTextureList;
+    typedef ScopedPtrDeque<PendingProduceTexture> PendingProduceTextureList;
     ContextSharedData* m_sharedData;
     WebGLId m_currentTexture;
     TextureMap m_textures;

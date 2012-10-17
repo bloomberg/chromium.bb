@@ -9,9 +9,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/scoped_ptr_deque.h"
 #include <deque>
-#include <wtf/Deque.h>
-#include <wtf/PassOwnPtr.h>
 
 namespace WebKit {
 class WebGraphicsContext3D;
@@ -35,7 +34,7 @@ public:
 private:
     class Query {
     public:
-        static PassOwnPtr<Query> create(WebKit::WebGraphicsContext3D* context) { return adoptPtr(new Query(context)); }
+        static scoped_ptr<Query> create(WebKit::WebGraphicsContext3D* context) { return make_scoped_ptr(new Query(context)); }
 
         virtual ~Query();
 
@@ -65,8 +64,8 @@ private:
     void processQueries();
 
     WebKit::WebGraphicsContext3D* m_context;
-    Deque<OwnPtr<Query> > m_pendingQueries;
-    Deque<OwnPtr<Query> > m_availableQueries;
+    ScopedPtrDeque<Query> m_pendingQueries;
+    ScopedPtrDeque<Query> m_availableQueries;
     std::deque<double> m_texturesPerSecondHistory;
     size_t m_numBlockingTextureUploads;
 

@@ -127,13 +127,13 @@ size_t ThrottledTextureUploader::numBlockingUploads()
 
 void ThrottledTextureUploader::markPendingUploadsAsNonBlocking()
 {
-    for (Deque<OwnPtr<Query> >::iterator it = m_pendingQueries.begin();
+    for (ScopedPtrDeque<Query>::iterator it = m_pendingQueries.begin();
          it != m_pendingQueries.end(); ++it) {
-        if (it->get()->isNonBlocking())
+        if ((*it)->isNonBlocking())
             continue;
 
         m_numBlockingTextureUploads--;
-        it->get()->markAsNonBlocking();
+        (*it)->markAsNonBlocking();
     }
 
     ASSERT(!m_numBlockingTextureUploads);

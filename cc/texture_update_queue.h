@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "cc/texture_copier.h"
 #include "cc/texture_uploader.h"
-#include <wtf/Deque.h>
+#include <deque>
 
 namespace cc {
 
@@ -34,10 +34,10 @@ public:
     bool hasMoreUpdates() const;
 
 private:
-    void clearUploadsToEvictedResources(Deque<TextureUploader::Parameters>& entryQueue);
-    Deque<TextureUploader::Parameters> m_fullEntries;
-    Deque<TextureUploader::Parameters> m_partialEntries;
-    Deque<TextureCopier::Parameters> m_copyEntries;
+    void clearUploadsToEvictedResources(std::deque<TextureUploader::Parameters>& entryQueue);
+    std::deque<TextureUploader::Parameters> m_fullEntries;
+    std::deque<TextureUploader::Parameters> m_partialEntries;
+    std::deque<TextureCopier::Parameters> m_copyEntries;
 
     DISALLOW_COPY_AND_ASSIGN(CCTextureUpdateQueue);
 };

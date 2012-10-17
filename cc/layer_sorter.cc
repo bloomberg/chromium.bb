@@ -10,7 +10,8 @@
 #include "CCRenderSurface.h"
 #include <limits.h>
 #include <public/WebTransformationMatrix.h>
-#include <wtf/Deque.h>
+#include <deque>
+#include <vector>
 
 using namespace std;
 using WebKit::WebTransformationMatrix;
@@ -353,13 +354,13 @@ void CCLayerSorter::sort(LayerList::iterator first, LayerList::iterator last)
 
     createGraphEdges();
 
-    Vector<GraphNode*> sortedList;
-    Deque<GraphNode*> noIncomingEdgeNodeList;
+    std::vector<GraphNode*> sortedList;
+    std::deque<GraphNode*> noIncomingEdgeNodeList;
 
     // Find all the nodes that don't have incoming edges.
     for (NodeList::iterator la = m_nodes.begin(); la < m_nodes.end(); la++) {
         if (!la->incoming.size())
-            noIncomingEdgeNodeList.append(la);
+            noIncomingEdgeNodeList.push_back(la);
     }
 
 #if !defined( NDEBUG )
@@ -372,10 +373,11 @@ void CCLayerSorter::sort(LayerList::iterator first, LayerList::iterator last)
             // no explicit dependencies (because this existing ordering has correct
             // z-index/layout ordering). To preserve this ordering, we process Nodes in
             // the same order that they were added to the list.
-            GraphNode* fromNode = noIncomingEdgeNodeList.takeFirst();
+            GraphNode* fromNode = noIncomingEdgeNodeList.front();
+            noIncomingEdgeNodeList.pop_front();
 
             // Add it to the final list.
-            sortedList.append(fromNode);
+            sortedList.push_back(fromNode);
 
 #if !defined( NDEBUG )
             LOG(CCLayerSorter, "%d, ", fromNode->layer->id());
@@ -390,7 +392,7 @@ void CCLayerSorter::sort(LayerList::iterator first, LayerList::iterator last)
                 outgoingEdge->to->incomingEdgeWeight -= outgoingEdge->weight;
 
                 if (!outgoingEdge->to->incoming.size())
-                    noIncomingEdgeNodeList.append(outgoingEdge->to);
+                    noIncomingEdgeNodeList.push_back(outgoingEdge->to);
             }
             fromNode->outgoing.clear();
         }
@@ -421,7 +423,7 @@ void CCLayerSorter::sort(LayerList::iterator first, LayerList::iterator last)
         }
         nextNode->incoming.clear();
         nextNode->incomingEdgeWeight = 0;
-        noIncomingEdgeNodeList.append(nextNode);
+        noIncomingEdgeNodeList.push_back(nextNode);
 #if !defined( NDEBUG )
         LOG(CCLayerSorter, "Breaking cycle by cleaning up incoming edges from %d (weight = %f)\n", nextNode->layer->id(), minIncomingEdgeWeight);
 #endif

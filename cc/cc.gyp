@@ -6,6 +6,7 @@
   'variables': {
     'cc_source_files': [
       'hash_pair.h',
+      'scoped_ptr_deque.h',
       'scoped_ptr_hash_map.h',
       'scoped_ptr_vector.h',
       'bitmap_canvas_layer_texture_updater.cc',
