@@ -9,14 +9,14 @@ function Model(precision) {
 }
 
 /**
- * Handles a calculator event, updating the calculator state accordingly and
+ * Handles a calculator key input, updating the calculator state accordingly and
  * returning an object with 'accumulator', 'operator', and 'operand' properties
  * representing that state.
  *
  * @private
  */
-Model.prototype.handle = function(event) {
-  switch (event) {
+Model.prototype.handle = function(input) {
+  switch (input) {
     case '+':
     case '-':
     case '/':
@@ -26,7 +26,7 @@ Model.prototype.handle = function(event) {
       // operator. In either case, clear the operand and the defaults.
       var operator = this.operand && this.operator;
       var result = this.calculate_(operator, this.operand);
-      return this.reset_({accumulator: result, operator: event});
+      return this.reset_({accumulator: result, operator: input});
     case '=':
       // For the equal sign, perform the current calculation and save the
       // operator and operands used as defaults, or if there is no current
@@ -55,7 +55,7 @@ Model.prototype.handle = function(event) {
              (initial !== '0') ? this.set_({operand: '-' + this.operand}) :
                                  this.set_({});
     default:
-      var operand = (this.operand || '0') + event;
+      var operand = (this.operand || '0') + input;
       var duplicate = (operand.replace(/[^.]/g, '').length > 1);
       var overflow = (operand.replace(/[^0-9]/g, '').length > this.precision);
       return operand.match(/^0[0-9]/)  ? this.set_({operand: operand[1]}) :

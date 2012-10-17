@@ -51,41 +51,41 @@ var describeTested = function(strings, object, suffix) {
 }
 
 /**
- * Tests how a calculator model handles a single event, logging the state of the
- * model before and after the test.
+ * Tests how a calculator model handles a single key of input, logging the state
+ * of the model before and after the test.
  */
-var testEvent = function(model, event, expected) {
+var testInput = function(model, input, expected) {
   var before = describeTested([], model).join('');
-  var results = model.handle(event);
+  var results = model.handle(input);
   var accumulator = results.accumulator;
   var operator = results.operator;
   var operand = results.operand;
   var actual = [accumulator, operator, operand && [operand]];
   var after = describeTested(describeTested([], actual, ' '), model).join('');
-  deepEqual(actual, expected, event + ' ' + before + ' => ' + after);
+  deepEqual(actual, expected, input + ' ' + before + ' => ' + after);
 }
 
 /**
  * Tests how a calculator model handles a sequence of digits and periods,
- * updating the expected operand values before each digit and period event is
- * tested according to these rules:
+ * updating the expected operand values before each digit and period input key
+ * is tested according to these rules:
  *
  *   - If the passed in expected values array has a null expected operand array,
  *     the expected operand used for the tests starts with the first digit or
- *     period of the sequence of number events and the following digits and
- *     periods of that sequence are appended before each new event's test.
+ *     period of the numeric sequence and the following digits and periods of
+ *     that sequence are appended before each new key's test.
  *
  *   - If the passed in expected values array has an expected operand array of
  *     the form [operand], the expected operand used for the tests start with
  *     the first character of that array's element and one additional character
  *     of that element is added before each of the following digit and period
- *     event tests.
+ *     key tests.
  *
  *   - If the passed in expected values array has an expected operand array of
  *     the form [prefix, operand], the expected operand used for the tests
  *     starts with the first element in that array and the first character of
  *     the second element, and one character of that second element is added
- *     before each of the following digit and period event tests.
+ *     before each of the following digit and period key tests.
  *
  *   - In all of these cases, leading zeros and occurences of the '=' character
  *     in the expected operand are ignored.
@@ -120,14 +120,14 @@ var testNumber = function(model, number, expected) {
     expected[2] = [prefix + suffix.slice(0, i + 1)];
     expected[2] = [expected[2][0].replace(/^0+([0-9])/, '$1')];
     expected[2] = [expected[2][0].replace(/=/g, '')];
-    this.testEvent(model, number[i], expected);
+    this.testInput(model, number[i], expected);
   }
 };
 
 /**
  * Tests how a new calculator model handles a sequence of numbers, operations,
  * and commands, verifying that the model has expected accumulator, operator,
- * and operand values after each event handled by the model.
+ * and operand values after each key input handled by the model.
  *
  * Within the sequence string, expected values must be specified as arrays of
  * the form described below. The strings '~', '<', and 'A' will be interpreted
@@ -267,7 +267,7 @@ var testModel = function(name, sequence) {
         if (current.match(NUMBER)) {
           testNumber(model, current, expected);
         } else {
-          this.testEvent(model, ABBREVIATIONS[current] || current, expected);
+          this.testInput(model, ABBREVIATIONS[current] || current, expected);
         }
       };
     }

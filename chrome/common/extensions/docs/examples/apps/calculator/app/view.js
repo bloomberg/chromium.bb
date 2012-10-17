@@ -7,76 +7,76 @@
 function View(window, model) {
   var view = this;
   var model = model;
-  var events = this.defineEvents_();
+  var inputs = this.defineInputs_();
   var display = window.document.querySelector('#calculator .display');
   var buttons = window.document.querySelectorAll('#calculator .button');
 
   Array.prototype.forEach.call(buttons, function(button) {
-    button.onclick = function(click) {
-      var button = click.target.getAttribute('class').split(' ')[1];
-      var event = events.byButton[button];
-      if (event) {
-        var values = model.handle(event.name);
-        view.updateDisplay_(display, values, event);
+    button.onclick = function(event) {
+      var button = event.target.getAttribute('class').split(' ')[1];
+      var input = inputs.byButton[button];
+      if (input) {
+        var values = model.handle(input.name);
+        view.updateDisplay_(display, values, input);
       }
     };
   });
 
-  window.onkeydown = function(keydown) {
-    var key = keydown.shiftKey ? ('^' + keydown.which) : keydown.which;
-    var event = events.byKey[key];
-    if (event) {
-      var values = model.handle(event.name);
-      view.updateDisplay_(display, values, event);
+  window.onkeydown = function(event) {
+    var key = event.shiftKey ? ('^' + event.which) : event.which;
+    var input = inputs.byKey[key];
+    if (input) {
+      var values = model.handle(input.name);
+      view.updateDisplay_(display, values, input);
     }
   };
 
 }
 
 /** @private */
-View.prototype.defineEvents_ = function() {
-  var events = {byName: {}, byButton: {}, byKey: {}};
-  this.defineEvent_(events, '0', 'zero', '48');
-  this.defineEvent_(events, '1', 'one', '49');
-  this.defineEvent_(events, '2', 'two', '50');
-  this.defineEvent_(events, '3', 'three', '51');
-  this.defineEvent_(events, '4', 'four', '52');
-  this.defineEvent_(events, '5', 'five', '53');
-  this.defineEvent_(events, '6', 'six', '54');
-  this.defineEvent_(events, '7', 'seven', '55');
-  this.defineEvent_(events, '8', 'eight', '56');
-  this.defineEvent_(events, '9', 'nine', '57');
-  this.defineEvent_(events, '.', 'point', '190');
-  this.defineEvent_(events, '+', 'add', '^187', true);
-  this.defineEvent_(events, '-', 'subtract', '189', true);
-  this.defineEvent_(events, '*', 'multiply', '^56', true);
-  this.defineEvent_(events, '/', 'divide', '191', true);
-  this.defineEvent_(events, '=', 'equals', '187');
-  this.defineEvent_(events, '=', ' ', '13');
-  this.defineEvent_(events, '+ / -', 'negate', '32');
-  this.defineEvent_(events, 'AC', 'clear', '67');
-  this.defineEvent_(events, 'back', ' ', '8');
-  return events;
+View.prototype.defineInputs_ = function() {
+  var inputs = {byName: {}, byButton: {}, byKey: {}};
+  this.defineInput_(inputs, '0', 'zero', '48');
+  this.defineInput_(inputs, '1', 'one', '49');
+  this.defineInput_(inputs, '2', 'two', '50');
+  this.defineInput_(inputs, '3', 'three', '51');
+  this.defineInput_(inputs, '4', 'four', '52');
+  this.defineInput_(inputs, '5', 'five', '53');
+  this.defineInput_(inputs, '6', 'six', '54');
+  this.defineInput_(inputs, '7', 'seven', '55');
+  this.defineInput_(inputs, '8', 'eight', '56');
+  this.defineInput_(inputs, '9', 'nine', '57');
+  this.defineInput_(inputs, '.', 'point', '190');
+  this.defineInput_(inputs, '+', 'add', '^187', true);
+  this.defineInput_(inputs, '-', 'subtract', '189', true);
+  this.defineInput_(inputs, '*', 'multiply', '^56', true);
+  this.defineInput_(inputs, '/', 'divide', '191', true);
+  this.defineInput_(inputs, '=', 'equals', '187');
+  this.defineInput_(inputs, '=', ' ', '13');
+  this.defineInput_(inputs, '+ / -', 'negate', '32');
+  this.defineInput_(inputs, 'AC', 'clear', '67');
+  this.defineInput_(inputs, 'back', ' ', '8');
+  return inputs;
 }
 
 /** @private */
-View.prototype.defineEvent_ = function(events, name, button, key, operator) {
-  var event = {name: name, button: button, key: key, operator: !!operator};
-  events.byButton[button] = event;
-  events.byKey[key] = event;
+View.prototype.defineInput_ = function(inputs, name, button, key, operator) {
+  var input = {name: name, button: button, key: key, operator: !!operator};
+  inputs.byButton[button] = input;
+  inputs.byKey[key] = input;
 };
 
 /** @private */
-View.prototype.updateDisplay_ = function(display, values, event) {
+View.prototype.updateDisplay_ = function(display, values, input) {
   var operation = {operator: values.operator, operand: values.operand};
   var result = values.accumulator;
-  if (event.name === 'AC') {
+  if (input.name === 'AC') {
     display.innerHTML = '';
     this.addEquation_(display, {operand: '0'});
-  } else if (event.name === '=') {
+  } else if (input.name === '=') {
     display.appendChild(this.createDiv_(display, 'hr'));
     this.addEquation_(display, {accumulator: result, operand:result});
-  } else if (event.operator) {
+  } else if (input.operator) {
     this.updateEquation_(display.lastElementChild, {accumulator: result});
     this.addEquation_(display, {operator: operation.operator});
   } else if (!this.updateEquation_(display.lastElementChild, operation)) {
