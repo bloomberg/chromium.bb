@@ -23,6 +23,7 @@
 #include "content/test/content_browser_test_utils.h"
 #include "content/test/layout_browsertest.h"
 #include "googleurl/src/gurl.h"
+#include "net/test/test_server.h"
 
 using content::BrowserThread;
 using content::WorkerServiceImpl;
@@ -216,37 +217,6 @@ IN_PROC_BROWSER_TEST_F(WorkerXHRHttpLayoutTest, Tests) {
 
     "xmlhttprequest-file-not-found.html"
   };
-
-  for (size_t i = 0; i < arraysize(kLayoutTestFiles); ++i)
-    RunHttpLayoutTest(kLayoutTestFiles[i]);
-}
-
-class WorkerWebSocketHttpLayoutTest : public InProcessBrowserLayoutTest {
- public:
-  WorkerWebSocketHttpLayoutTest() : InProcessBrowserLayoutTest(
-      FilePath(),
-      FilePath().AppendASCII("http").AppendASCII("tests").
-          AppendASCII("websocket").AppendASCII("tests").AppendASCII("hybi").
-          AppendASCII("workers"),
-      -1) {
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(WorkerWebSocketHttpLayoutTest, DISABLED_Tests) {
-  static const char* kLayoutTestFiles[] = {
-    "close-in-onmessage-crash.html",
-    "close-in-shared-worker.html",
-    "close-in-worker.html",
-    "shared-worker-simple.html",
-    "worker-handshake-challenge-randomness.html",
-    "worker-simple.html"
-  };
-
-  FilePath websocket_test_dir;
-  ASSERT_TRUE(PathService::Get(content::DIR_LAYOUT_TESTS, &websocket_test_dir));
-
-  content::TestWebSocketServer websocket_server;
-  ASSERT_TRUE(websocket_server.Start(websocket_test_dir));
 
   for (size_t i = 0; i < arraysize(kLayoutTestFiles); ++i)
     RunHttpLayoutTest(kLayoutTestFiles[i]);
@@ -479,4 +449,27 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, DISABLED_QueuedSharedWorkerStartedFromOtherTa
   content::NavigateToURL(CreateBrowser(), url);
 
   ASSERT_TRUE(WaitForWorkerProcessCount(max_workers_per_tab + 1));
+}
+
+IN_PROC_BROWSER_TEST_F(WorkerTest, WebSocketSharedWorker) {
+  // Launch WebSocket server.
+  net::TestServer ws_server(net::TestServer::TYPE_WS,
+                            net::TestServer::kLocalhost,
+                            FilePath(FILE_PATH_LITERAL("net/data/websocket")));
+  ASSERT_TRUE(ws_server.Start());
+
+  // Generate test URL.
+  std::string scheme("http");
+  GURL::Replacements replacements;
+  replacements.SetSchemeStr(scheme);
+  GURL url = ws_server.GetURL(
+      "websocket_shared_worker.html").ReplaceComponents(replacements);
+
+  // Run test.
+  content::Shell* window = shell();
+  const string16 expected_title = ASCIIToUTF16("OK");
+  content::TitleWatcher title_watcher(window->web_contents(), expected_title);
+  content::NavigateToURL(window, url);
+  string16 final_title = title_watcher.WaitAndGetTitle();
+  EXPECT_EQ(expected_title, final_title);
 }
