@@ -16,10 +16,9 @@
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_registrar.h"
@@ -96,7 +95,8 @@ void ClosedDelegateTracker::Clear() {
 // GeolocationPermissionContextTests ------------------------------------------
 
 // This class sets up GeolocationArbitrator.
-class GeolocationPermissionContextTests : public TabContentsTestHarness {
+class GeolocationPermissionContextTests
+    : public ChromeRenderViewHostTestHarness {
  public:
   GeolocationPermissionContextTests();
 
@@ -144,7 +144,7 @@ class GeolocationPermissionContextTests : public TabContentsTestHarness {
   ScopedVector<WebContents> extra_tabs_;
 
  private:
-  // TabContentsTestHarness:
+  // ChromeRenderViewHostTestHarness:
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
@@ -157,7 +157,7 @@ class GeolocationPermissionContextTests : public TabContentsTestHarness {
 };
 
 GeolocationPermissionContextTests::GeolocationPermissionContextTests()
-    : TabContentsTestHarness(),
+    : ChromeRenderViewHostTestHarness(),
       ui_thread_(BrowserThread::UI, MessageLoop::current()),
       db_thread_(BrowserThread::DB) {
 }
@@ -245,14 +245,20 @@ void GeolocationPermissionContextTests::CheckTabContentsState(
 
 void GeolocationPermissionContextTests::SetUp() {
   db_thread_.Start();
-  TabContentsTestHarness::SetUp();
+  ChromeRenderViewHostTestHarness::SetUp();
+
+  // Set up required helpers, and make this be as "tabby" as the code requires.
+  chrome::SetViewType(web_contents(), chrome::VIEW_TYPE_TAB_CONTENTS);
+  InfoBarTabHelper::CreateForWebContents(web_contents());
+  TabSpecificContentSettings::CreateForWebContents(web_contents());
+
   geolocation_permission_context_ =
       new ChromeGeolocationPermissionContext(profile());
 }
 
 void GeolocationPermissionContextTests::TearDown() {
   extra_tabs_.clear();
-  TabContentsTestHarness::TearDown();
+  ChromeRenderViewHostTestHarness::TearDown();
   // Schedule another task on the DB thread to notify us that it's safe to
   // carry on with the test.
   base::WaitableEvent done(false, false);

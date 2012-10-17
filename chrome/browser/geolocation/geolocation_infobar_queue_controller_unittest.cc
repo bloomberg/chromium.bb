@@ -4,14 +4,16 @@
 
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/geolocation/geolocation_infobar_queue_controller.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class GeolocationInfoBarQueueControllerTests : public TabContentsTestHarness {
+class GeolocationInfoBarQueueControllerTests
+    : public ChromeRenderViewHostTestHarness {
  public:
   GeolocationInfoBarQueueControllerTests();
 
@@ -20,6 +22,9 @@ class GeolocationInfoBarQueueControllerTests : public TabContentsTestHarness {
   int RenderId();
 
  private:
+  // ChromeRenderViewHostTestHarness:
+  virtual void SetUp() OVERRIDE;
+
   content::TestBrowserThread ui_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationInfoBarQueueControllerTests);
@@ -35,6 +40,11 @@ int GeolocationInfoBarQueueControllerTests::ProcessId() {
 
 int GeolocationInfoBarQueueControllerTests::RenderId() {
   return contents()->GetRenderViewHost()->GetRoutingID();
+}
+
+void GeolocationInfoBarQueueControllerTests::SetUp() {
+  ChromeRenderViewHostTestHarness::SetUp();
+  InfoBarTabHelper::CreateForWebContents(web_contents());
 }
 
 class ObservationCountingQueueController :
