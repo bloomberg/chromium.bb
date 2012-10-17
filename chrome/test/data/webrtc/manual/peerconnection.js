@@ -80,6 +80,14 @@ function showServerHelp() {
     + 'DME%20package:webrtc%5C.googlecode%5C.com.');
 }
 
+function toggleHelp() {
+  var help = document.getElementById('help');
+  if (help.style.display == 'none')
+    help.style.display = 'inline';
+  else
+    help.style.display = 'none';
+}
+
 function clearLog() {
   document.getElementById('messages').innerHTML = '';
   document.getElementById('debug').innerHTML = '';
