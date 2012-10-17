@@ -126,13 +126,7 @@ bool MultiDisplayManager::UpdateWorkAreaOfDisplayNearestWindow(
 }
 
 const gfx::Display& MultiDisplayManager::GetDisplayForId(int64 id) const {
-  for (DisplayList::const_iterator iter = displays_.begin();
-       iter != displays_.end(); ++iter) {
-    if ((*iter).id() == id)
-      return *iter;
-  }
-  VLOG(1) << "display not found for id:" << id;
-  return GetInvalidDisplay();
+  return const_cast<MultiDisplayManager*>(this)->FindDisplayForId(id);
 }
 
 const gfx::Display& MultiDisplayManager::FindDisplayContainingPoint(
@@ -148,6 +142,18 @@ const gfx::Display& MultiDisplayManager::FindDisplayContainingPoint(
 
 void MultiDisplayManager::SetOverscanInsets(int64 display_id,
                                             const gfx::Insets& insets_in_dip) {
+  std::map<int64, gfx::Insets>::const_iterator old_overscan =
+      overscan_mapping_.find(display_id);
+  if (old_overscan != overscan_mapping_.end()) {
+    gfx::Insets old_insets = old_overscan->second;
+    gfx::Display& display = FindDisplayForId(display_id);
+    if (display.is_valid()) {
+      // Undo the existing insets before applying the new insets.
+      gfx::Rect bounds = display.bounds_in_pixel();
+      bounds.Inset(old_insets.Scale(-display.device_scale_factor()));
+      display.SetScaleAndBounds(display.device_scale_factor(), bounds);
+    }
+  }
   overscan_mapping_[display_id] = insets_in_dip;
   OnNativeDisplaysChanged(displays_);
 }
@@ -437,7 +443,9 @@ gfx::Display& MultiDisplayManager::FindDisplayForRootWindow(
   int64 id = root_window->GetProperty(kDisplayIdKey);
   // if id is |kInvaildDisplayID|, it's being deleted.
   DCHECK(id != gfx::Display::kInvalidDisplayID);
-  return FindDisplayForId(id);
+  gfx::Display& display = FindDisplayForId(id);
+  DCHECK(display.is_valid());
+  return display;
 }
 
 gfx::Display& MultiDisplayManager::FindDisplayForId(int64 id) {
@@ -446,7 +454,7 @@ gfx::Display& MultiDisplayManager::FindDisplayForId(int64 id) {
     if ((*iter).id() == id)
       return *iter;
   }
-  DLOG(FATAL) << "Could not find display:" << id;
+  DLOG(WARNING) << "Could not find display:" << id;
   return GetInvalidDisplay();
 }
 

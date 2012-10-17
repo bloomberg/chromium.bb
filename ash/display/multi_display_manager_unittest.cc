@@ -227,10 +227,17 @@ TEST_F(MultiDisplayManagerTest, MAYBE_OverscanInsetsTest) {
   gfx::Display display2(*display_manager()->GetDisplayAt(1));
 
   display_manager()->SetOverscanInsets(
-      display2.id(), gfx::Insets(10, 11, 12, 13));
+      display2.id(), gfx::Insets(13, 12, 11, 10));
   std::vector<gfx::Display> changed_displays = changed();
   EXPECT_EQ(1u, changed_displays.size());
   EXPECT_EQ(display2.id(), changed_displays[0].id());
+  EXPECT_EQ("0,0 500x500",
+            display_manager()->GetDisplayAt(0)->bounds_in_pixel().ToString());
+  EXPECT_EQ("12,514 378x376",
+            display_manager()->GetDisplayAt(1)->bounds_in_pixel().ToString());
+
+  display_manager()->SetOverscanInsets(
+      display2.id(), gfx::Insets(10, 11, 12, 13));
   EXPECT_EQ("0,0 500x500",
             display_manager()->GetDisplayAt(0)->bounds_in_pixel().ToString());
   EXPECT_EQ("11,511 376x378",
