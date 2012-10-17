@@ -14,8 +14,8 @@
 #include "GraphicsContext3D.h"
 #include "IntRect.h"
 #include "IntSize.h"
-#include <wtf/ListHashSet.h>
 #include <wtf/Vector.h>
+#include <list>
 
 #if defined(COMPILER_GCC)
 namespace BASE_HASH_NAMESPACE {
@@ -44,7 +44,7 @@ public:
     }
     ~CCPrioritizedTextureManager();
 
-    typedef Vector<CCPrioritizedTexture::Backing*> BackingVector;
+    typedef std::list<CCPrioritizedTexture::Backing*> BackingList;
 
     // FIXME (http://crbug.com/137094): This 64MB default is a straggler from the
     // old texture manager and is just to give us a default memory allocation before
@@ -76,10 +76,10 @@ public:
     bool linkedEvictedBackingsExist() const;
     // Retrieve the list of all contents textures' backings that have been evicted, to pass to the
     // main thread to unlink them from their owning textures.
-    void getEvictedBackings(BackingVector& evictedBackings);
+    void getEvictedBackings(BackingList& evictedBackings);
     // Unlink the list of contents textures' backings from their owning textures on the main thread
     // before updating layers.
-    void unlinkEvictedBackings(const BackingVector& evictedBackings);
+    void unlinkEvictedBackings(const BackingList& evictedBackings);
 
     bool requestLate(CCPrioritizedTexture*);
 
@@ -136,13 +136,11 @@ private:
 
     void evictBackingsToReduceMemory(size_t limitBytes, EvictionPriorityPolicy, CCResourceProvider*);
     CCPrioritizedTexture::Backing* createBacking(IntSize, GC3Denum format, CCResourceProvider*);
-    void evictBackingResource(CCPrioritizedTexture::Backing*, CCResourceProvider*);
+    void evictFirstBackingResource(CCResourceProvider*);
     void deleteUnlinkedEvictedBackings();
     void sortBackings();
 
-#if !ASSERT_DISABLED
     void assertInvariants();
-#endif
 
     size_t m_maxMemoryLimitBytes;
     unsigned m_priorityCutoff;
@@ -152,15 +150,17 @@ private:
     int m_pool;
 
     typedef base::hash_set<CCPrioritizedTexture*> TextureSet;
-    typedef ListHashSet<CCPrioritizedTexture::Backing*> BackingSet;
     typedef Vector<CCPrioritizedTexture*> TextureVector;
 
     TextureSet m_textures;
-    BackingSet m_backings;
-    BackingVector m_evictedBackings;
+    // This list is always sorted in eviction order, with the exception the
+    // newly-allocated or recycled textures at the very end of the tail that 
+    // are not sorted by priority.
+    BackingList m_backings;
+    bool m_backingsTailNotSorted;
+    BackingList m_evictedBackings;
 
     TextureVector m_tempTextureVector;
-    BackingVector m_tempBackingVector;
 
     DISALLOW_COPY_AND_ASSIGN(CCPrioritizedTextureManager);
 };

@@ -165,7 +165,7 @@ bool CCPrioritizedTexture::Backing::resourceHasBeenDeleted() const
 
 bool CCPrioritizedTexture::Backing::canBeRecycled() const
 {
-    ASSERT(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
+    ASSERT(CCProxy::isImplThread());
     return !m_wasAbovePriorityCutoffAtLastPriorityUpdate && !m_inDrawingImplTree;
 }
 

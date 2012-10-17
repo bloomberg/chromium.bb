@@ -318,7 +318,7 @@ bool CCSingleThreadProxy::commitAndComposite()
         return false;
 
     // Unlink any texture backings that were deleted
-    CCPrioritizedTextureManager::BackingVector evictedContentsTexturesBackings;
+    CCPrioritizedTextureManager::BackingList evictedContentsTexturesBackings;
     {
         DebugScopedSetImplThread implThread;
         m_layerTreeHost->contentsTextureManager()->getEvictedBackings(evictedContentsTexturesBackings);
