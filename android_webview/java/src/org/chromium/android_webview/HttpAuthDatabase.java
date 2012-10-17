@@ -10,19 +10,21 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.util.Log;
-import android.webkit.WebView;
 
 /**
- * This database is used to support
- * {@link WebView#setHttpAuthUsernamePassword(String, String, String, String)} and
- * {@link WebView#getHttpAuthUsernamePassword(String, String)}.
+ * This database is used to support WebView's setHttpAuthUsernamePassword and
+ * getHttpAuthUsernamePassword methods, and WebViewDatabase's clearHttpAuthUsernamePassword and
+ * hasHttpAuthUsernamePassword methods.
  *
- * This class is a singleton and should be accessed only via
- * {@link HttpAuthDatabase#getInstance(Context)}.  Calling this method will create an instance on
- * demand and start the process of opening or creating the database in the background.
+ * While this class is intended to be used as a singleton, this property is not enforced in this
+ * layer, primarily for ease of testing. To line up with the classic implementation and behavior,
+ * there is no specific handling and reporting when SQL errors occur.
  *
- * Unfortunately, to line up with the WebViewClassic API and behavior, there isn't much we can do
- * when SQL errors occur.
+ * Note on thread-safety: As per the classic implementation, most API functions have thread safety
+ * provided by the underlying SQLiteDatabase instance. The exception is database opening: this
+ * is handled in the dedicated background thread, which also provides a performance gain
+ * if triggered early on (e.g. as a side effect of CookieSyncManager.createInstance() call),
+ * sufficiently in advance of the first blocking usage of the API.
  */
 public class HttpAuthDatabase {
 
@@ -34,7 +36,7 @@ public class HttpAuthDatabase {
 
     private static HttpAuthDatabase sInstance = null;
 
-    private static SQLiteDatabase sDatabase = null;
+    private SQLiteDatabase mDatabase = null;
 
     private static final String ID_COL = "_id";
 
@@ -54,25 +56,29 @@ public class HttpAuthDatabase {
      */
     private boolean mInitialized = false;
 
-    private HttpAuthDatabase(final Context context) {
-        // Singleton only, use getInstance()
+    /**
+     * Create an instance of HttpAuthDatabase for the named file, and kick-off background
+     * initialization of that database.
+     *
+     * @param context the Context to use for opening the database
+     * @param databaseFile Name of the file to be initialized.
+     */
+    public HttpAuthDatabase(final Context context, final String databaseFile) {
         new Thread() {
             @Override
             public void run() {
-                init(context);
+                initOnBackgroundThread(context, databaseFile);
             }
         }.start();
     }
 
     /**
-     * Fetches the singleton instance of HttpAuthDatabase, creating an instance on demand.
-     *
-     * @param context the Context to use for opening the database
-     * @return The singleton instance
+     * @deprecated Retained for merge convenience. TODO(joth): remove in next patch.
      */
+    @Deprecated
     public static synchronized HttpAuthDatabase getInstance(Context context) {
         if (sInstance == null) {
-            sInstance = new HttpAuthDatabase(context);
+            sInstance = new HttpAuthDatabase(context, DATABASE_FILE);
         }
         return sInstance;
     }
@@ -81,52 +87,55 @@ public class HttpAuthDatabase {
      * Initializes the databases and notifies any callers waiting on waitForInit.
      *
      * @param context the Context to use for opening the database
+     * @param databaseFile Name of the file to be initialized.
      */
-    private synchronized void init(Context context) {
+    private synchronized void initOnBackgroundThread(Context context, String databaseFile) {
         if (mInitialized) {
             return;
         }
 
-        initDatabase(context);
+        initDatabase(context, databaseFile);
 
         // Thread done, notify.
         mInitialized = true;
-        notify();
+        notifyAll();
     }
 
     /**
      * Opens the database, and upgrades it if necessary.
      *
      * @param context the Context to use for opening the database
+     * @param databaseFile Name of the file to be initialized.
      */
-    private static void initDatabase(Context context) {
+    private void initDatabase(Context context, String databaseFile) {
         try {
-            sDatabase = context.openOrCreateDatabase(DATABASE_FILE, 0, null);
+            mDatabase = context.openOrCreateDatabase(databaseFile, 0, null);
         } catch (SQLiteException e) {
             // try again by deleting the old db and create a new one
-            if (context.deleteDatabase(DATABASE_FILE)) {
-                sDatabase = context.openOrCreateDatabase(DATABASE_FILE, 0, null);
+            if (context.deleteDatabase(databaseFile)) {
+                mDatabase = context.openOrCreateDatabase(databaseFile, 0, null);
             }
         }
 
-        if (sDatabase == null) {
+        if (mDatabase == null) {
             // Not much we can do to recover at this point
-            Log.e(LOGTAG, "Unable to open or create " + DATABASE_FILE);
+            Log.e(LOGTAG, "Unable to open or create " + databaseFile);
+            return;
         }
 
-        if (sDatabase.getVersion() != DATABASE_VERSION) {
-            sDatabase.beginTransactionNonExclusive();
+        if (mDatabase.getVersion() != DATABASE_VERSION) {
+            mDatabase.beginTransactionNonExclusive();
             try {
                 createTable();
-                sDatabase.setTransactionSuccessful();
+                mDatabase.setTransactionSuccessful();
             } finally {
-                sDatabase.endTransaction();
+                mDatabase.endTransaction();
             }
         }
     }
 
-    private static void createTable() {
-        sDatabase.execSQL("CREATE TABLE " + HTTPAUTH_TABLE_NAME
+    private void createTable() {
+        mDatabase.execSQL("CREATE TABLE " + HTTPAUTH_TABLE_NAME
                 + " (" + ID_COL + " INTEGER PRIMARY KEY, "
                 + HTTPAUTH_HOST_COL + " TEXT, " + HTTPAUTH_REALM_COL
                 + " TEXT, " + HTTPAUTH_USERNAME_COL + " TEXT, "
@@ -134,7 +143,7 @@ public class HttpAuthDatabase {
                 + HTTPAUTH_HOST_COL + ", " + HTTPAUTH_REALM_COL
                 + ") ON CONFLICT REPLACE);");
 
-        sDatabase.setVersion(DATABASE_VERSION);
+        mDatabase.setVersion(DATABASE_VERSION);
     }
 
     /**
@@ -153,7 +162,7 @@ public class HttpAuthDatabase {
                 }
             }
         }
-        return sDatabase != null;
+        return mDatabase != null;
     }
 
     /**
@@ -165,8 +174,6 @@ public class HttpAuthDatabase {
      * @param username the username for the password.
      * @param password the password
      */
-    // TODO(leandrogracia): remove public when @VisibleForTesting works.
-    // @VisibleForTesting
     public void setHttpAuthUsernamePassword(String host, String realm, String username,
             String password) {
         if (host == null || realm == null || !waitForInit()) {
@@ -178,7 +185,7 @@ public class HttpAuthDatabase {
         c.put(HTTPAUTH_REALM_COL, realm);
         c.put(HTTPAUTH_USERNAME_COL, username);
         c.put(HTTPAUTH_PASSWORD_COL, password);
-        sDatabase.insert(HTTPAUTH_TABLE_NAME, HTTPAUTH_HOST_COL, c);
+        mDatabase.insert(HTTPAUTH_TABLE_NAME, HTTPAUTH_HOST_COL, c);
     }
 
     /**
@@ -191,8 +198,6 @@ public class HttpAuthDatabase {
      * @return a String[] if found where String[0] is username (which can be null) and
      *         String[1] is password.  Null is returned if it can't find anything.
      */
-    // TODO(leandrogracia): remove public when @VisibleForTesting works.
-    // @VisibleForTesting
     public String[] getHttpAuthUsernamePassword(String host, String realm) {
         if (host == null || realm == null || !waitForInit()){
             return null;
@@ -207,7 +212,7 @@ public class HttpAuthDatabase {
         String[] ret = null;
         Cursor cursor = null;
         try {
-            cursor = sDatabase.query(HTTPAUTH_TABLE_NAME, columns, selection,
+            cursor = mDatabase.query(HTTPAUTH_TABLE_NAME, columns, selection,
                     new String[] { host, realm }, null, null, null);
             if (cursor.moveToFirst()) {
                 ret = new String[] {
@@ -236,7 +241,7 @@ public class HttpAuthDatabase {
         Cursor cursor = null;
         boolean ret = false;
         try {
-            cursor = sDatabase.query(HTTPAUTH_TABLE_NAME, ID_PROJECTION, null, null, null, null,
+            cursor = mDatabase.query(HTTPAUTH_TABLE_NAME, ID_PROJECTION, null, null, null, null,
                     null);
             ret = cursor.moveToFirst();
         } catch (IllegalStateException e) {
@@ -254,6 +259,6 @@ public class HttpAuthDatabase {
         if (!waitForInit()) {
             return;
         }
-        sDatabase.delete(HTTPAUTH_TABLE_NAME, null, null);
+        mDatabase.delete(HTTPAUTH_TABLE_NAME, null, null);
     }
 }
