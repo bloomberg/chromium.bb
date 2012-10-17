@@ -28,8 +28,6 @@
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -87,31 +85,20 @@ class DevToolsDefaultBindingHandler
 
 // An internal implementation of DevToolsClientHost that delegates
 // messages sent for DevToolsClient to a DebuggerShell instance.
-class DevToolsClientHostImpl : public DevToolsClientHost,
-                               public NotificationObserver {
+class DevToolsClientHostImpl : public DevToolsClientHost {
  public:
   DevToolsClientHostImpl(
       MessageLoop* message_loop,
       net::HttpServer* server,
-      int connection_id,
-      RenderProcessHost* process_host)
+      int connection_id)
       : message_loop_(message_loop),
         server_(server),
-        connection_id_(connection_id),
-        is_closed_(false) {
-    registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                   Source<RenderProcessHost>(process_host));
-    registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                   Source<RenderProcessHost>(process_host));
+        connection_id_(connection_id) {
   }
-
   ~DevToolsClientHostImpl() {}
 
   // DevToolsClientHost interface
   virtual void InspectedContentsClosing() {
-    if (is_closed_)
-      return;
-    is_closed_ = true;
     message_loop_->PostTask(
         FROM_HERE,
         base::Bind(&net::HttpServer::Close, server_, connection_id_));
@@ -130,18 +117,10 @@ class DevToolsClientHostImpl : public DevToolsClientHost,
   }
 
  private:
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
-    InspectedContentsClosing();
-  }
-
   virtual void FrameNavigating(const std::string& url) {}
   MessageLoop* message_loop_;
   net::HttpServer* server_;
   int connection_id_;
-  bool is_closed_;
-  NotificationRegistrar registrar_;
 };
 
 }  // namespace
@@ -536,8 +515,7 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
   DevToolsClientHostImpl* client_host =
       new DevToolsClientHostImpl(thread_->message_loop(),
                                  server_,
-                                 connection_id,
-                                 rvh->GetProcess());
+                                 connection_id);
   connection_to_client_host_ui_[connection_id] = client_host;
 
   manager->RegisterDevToolsClientHostFor(agent, client_host);
