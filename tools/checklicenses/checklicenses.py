@@ -190,6 +190,15 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/cld/encodings/compact_lang_det': [  # http://crbug.com/98120
         'UNKNOWN',
     ],
+    # Not used. http://crbug.com/156020
+    # Using third_party/cros_dbus_cplusplus/cros_dbus_cplusplus.gyp instead.
+    'third_party/cros_dbus_cplusplus/source/autogen.sh': [
+        'UNKNOWN',
+    ],
+    # Included in the source tree but not built. http://crbug.com/156020
+    'third_party/cros_dbus_cplusplus/source/examples': [
+        'UNKNOWN',
+    ],
     'third_party/devscripts': [
         'GPL (v2 or later)',
     ],

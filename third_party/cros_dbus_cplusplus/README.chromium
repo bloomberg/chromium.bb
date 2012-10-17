@@ -1,0 +1,9 @@
+Name: dbus-cplusplus
+URL: http://dbus-cplusplus.sourceforge.net/
+Version: Unknown
+License: LGPL 2.1
+License File: source/COPYING
+Security Critical: yes
+
+Description:
+ChromiumOS's fork of dbus-c++. See git log for list of modifications.
