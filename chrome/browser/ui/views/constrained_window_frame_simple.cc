@@ -31,11 +31,14 @@ ConstrainedWindowFrameSimple::ConstrainedWindowFrameSimple(
     ConstrainedWindowViews* container,
     ConstrainedWindowViews::ChromeStyleClientInsets client_insets)
     : container_(container),
-      title_label_(
-          new views::Label(container->widget_delegate()->GetWindowTitle())),
-      ALLOW_THIS_IN_INITIALIZER_LIST(close_button_(
-          new views::ImageButton(this))) {
+      title_label_(NULL),
+      close_button_(NULL) {
   container_->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
+
+  // The NO_INSETS consumers draw atop the frame and do not get the close button
+  // and title label below.
+  if (client_insets == ConstrainedWindowViews::NO_INSETS)
+    return;
 
   views::GridLayout* layout = new views::GridLayout(this);
   const int kHeaderTopPadding = std::min(
@@ -56,6 +59,8 @@ ConstrainedWindowFrameSimple::ConstrainedWindowFrameSimple(
   layout->StartRow(0, 0);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  title_label_ = new views::Label(
+      container->widget_delegate()->GetWindowTitle());
   title_label_->SetFont(rb.GetFont(
       ConstrainedWindowConstants::kTitleFontStyle));
   title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -65,6 +70,7 @@ ConstrainedWindowFrameSimple::ConstrainedWindowFrameSimple(
       0, 0, 0));
   layout->AddView(title_label_);
 
+  close_button_ = new views::ImageButton(this);
   close_button_->SetImage(views::CustomButton::BS_NORMAL,
                           rb.GetImageSkiaNamed(IDR_SHARED_IMAGES_X));
   close_button_->SetImage(views::CustomButton::BS_HOT,
@@ -84,19 +90,15 @@ ConstrainedWindowFrameSimple::ConstrainedWindowFrameSimple(
   //   view.
   // - The header insets are the distance from the window border to the header
   //   elements.
-  //
-  // The NO_ISNETS consumers draw atop the views above.
-  if (client_insets == ConstrainedWindowViews::DEFAULT_INSETS) {
-    const int kTitleBuiltinBottomPadding = 4;
-    set_border(views::Border::CreateEmptyBorder(
-        ConstrainedWindowConstants::kClientTopPadding + kHeaderTopPadding +
-            std::max(close_button_->GetPreferredSize().height(),
-                     title_label_->GetPreferredSize().height()) -
-            kTitleBuiltinBottomPadding,
-        ConstrainedWindowConstants::kHorizontalPadding,
-        ConstrainedWindowConstants::kClientBottomPadding,
-        ConstrainedWindowConstants::kHorizontalPadding));
-  }
+  const int kTitleBuiltinBottomPadding = 4;
+  set_border(views::Border::CreateEmptyBorder(
+      ConstrainedWindowConstants::kClientTopPadding + kHeaderTopPadding +
+          std::max(close_button_->GetPreferredSize().height(),
+                   title_label_->GetPreferredSize().height()) -
+          kTitleBuiltinBottomPadding,
+      ConstrainedWindowConstants::kHorizontalPadding,
+      ConstrainedWindowConstants::kClientBottomPadding,
+      ConstrainedWindowConstants::kHorizontalPadding));
 }
 
 ConstrainedWindowFrameSimple::~ConstrainedWindowFrameSimple() {
@@ -114,8 +116,8 @@ gfx::Rect ConstrainedWindowFrameSimple::GetWindowBoundsForClientBounds(
        bounds.width(),
        ConstrainedWindowConstants::kHorizontalPadding +
            2 * ConstrainedWindowConstants::kCloseButtonPadding +
-           title_label_->GetPreferredSize().width() +
-           close_button_->GetPreferredSize().width()));
+           (title_label_ ? title_label_->GetPreferredSize().width() : 0) +
+           (close_button_ ? close_button_->GetPreferredSize().width() : 0)));
   return bounds;
 }
 
@@ -151,7 +153,8 @@ void ConstrainedWindowFrameSimple::UpdateWindowIcon() {
 }
 
 void ConstrainedWindowFrameSimple::UpdateWindowTitle() {
-  title_label_->SetText(container_->widget_delegate()->GetWindowTitle());
+  if (title_label_)
+    title_label_->SetText(container_->widget_delegate()->GetWindowTitle());
 }
 
 gfx::Size ConstrainedWindowFrameSimple::GetPreferredSize() {
@@ -161,6 +164,7 @@ gfx::Size ConstrainedWindowFrameSimple::GetPreferredSize() {
 
 void ConstrainedWindowFrameSimple::ButtonPressed(views::Button* sender,
                                                  const ui::Event& event) {
+  DCHECK(close_button_);
   if (sender == close_button_)
     sender->GetWidget()->Close();
 }
