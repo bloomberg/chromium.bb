@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/webui/set_as_default_browser_ui.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/startup_metric_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -79,8 +80,10 @@ bool ShowFirstRunDefaultBrowserPrompt(Profile* profile) {
       (ShellIntegration::IsDefaultBrowser() ==
        ShellIntegration::NOT_DEFAULT_WEB_CLIENT);
 
-  if (show_status)
+  if (show_status) {
+    startup_metric_utils::SetNonBrowserUIDisplayed();
     SetMetroBrowserFlowLauncher::LaunchSoon(profile);
+  }
 
   return show_status;
 }
