@@ -6,9 +6,6 @@
 
 #include "ash/ash_switches.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/workspace_event_handler.h"
-#include "ash/wm/workspace/workspace_layout_manager.h"
-#include "ash/wm/workspace/workspace_manager.h"
 #include "ash/wm/workspace/workspace_manager2.h"
 #include "base/command_line.h"
 #include "ui/aura/client/activation_client.h"
@@ -20,41 +17,15 @@ namespace ash {
 namespace internal {
 
 WorkspaceController::WorkspaceController(aura::Window* viewport)
-    : viewport_(viewport),
-      layout_manager_(NULL),
-      event_handler_(NULL) {
+    : viewport_(viewport) {
   aura::RootWindow* root_window = viewport->GetRootWindow();
-  if (IsWorkspace2Enabled()) {
-    WorkspaceManager2* workspace_manager = new WorkspaceManager2(viewport);
-    workspace_manager_.reset(workspace_manager);
-  } else {
-    WorkspaceManager* workspace_manager = new WorkspaceManager(viewport);
-    workspace_manager_.reset(workspace_manager);
-    layout_manager_ = new WorkspaceLayoutManager(
-        root_window, workspace_manager);
-    viewport->SetLayoutManager(layout_manager_);
-    event_handler_ = new WorkspaceEventHandler(viewport);
-    viewport->AddPreTargetHandler(event_handler_);
-  }
+  workspace_manager_.reset(new WorkspaceManager2(viewport));
   aura::client::GetActivationClient(root_window)->AddObserver(this);
 }
 
 WorkspaceController::~WorkspaceController() {
   aura::client::GetActivationClient(viewport_->GetRootWindow())->
       RemoveObserver(this);
-  // WorkspaceLayoutManager may attempt to access state from us. Destroy it now.
-  if (layout_manager_ && viewport_->layout_manager() == layout_manager_)
-    viewport_->SetLayoutManager(NULL);
-}
-
-// static
-bool WorkspaceController::IsWorkspace2Enabled() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAshDisableWorkspace2);
-}
-
-bool WorkspaceController::IsInMaximizedMode() const {
-  return workspace_manager_->IsInMaximizedMode();
 }
 
 WorkspaceWindowState WorkspaceController::GetWindowState() const {

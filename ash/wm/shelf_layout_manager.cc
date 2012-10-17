@@ -568,14 +568,11 @@ void ShelfLayoutManager::SetState(VisibilityState visibility_state) {
   state_ = state;
   TargetBounds target_bounds;
   CalculateTargetBounds(state_, &target_bounds);
-  const int animate_time_ms =
-      WorkspaceController::IsWorkspace2Enabled() ? kWorkspaceSwitchTimeMS :
-      130;
   if (launcher_widget()) {
     ui::ScopedLayerAnimationSettings launcher_animation_setter(
         GetLayer(launcher_widget())->GetAnimator());
     launcher_animation_setter.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(animate_time_ms));
+        base::TimeDelta::FromMilliseconds(kWorkspaceSwitchTimeMS));
     launcher_animation_setter.SetTweenType(ui::Tween::EASE_OUT);
     GetLayer(launcher_widget())->SetBounds(
         target_bounds.launcher_bounds_in_root);
@@ -584,7 +581,7 @@ void ShelfLayoutManager::SetState(VisibilityState visibility_state) {
   ui::ScopedLayerAnimationSettings status_animation_setter(
       GetLayer(status_)->GetAnimator());
   status_animation_setter.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(animate_time_ms));
+      base::TimeDelta::FromMilliseconds(kWorkspaceSwitchTimeMS));
   status_animation_setter.SetTweenType(ui::Tween::EASE_OUT);
 
   // Delay updating the background when going from AUTO_HIDE_SHOWN to

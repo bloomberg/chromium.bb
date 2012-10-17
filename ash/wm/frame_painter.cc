@@ -471,8 +471,7 @@ void FramePainter::PaintTitleBar(views::NonClientFrameView* view,
 void FramePainter::LayoutHeader(views::NonClientFrameView* view,
                                 bool shorter_layout) {
   // The new assets only make sense if the window is actually maximized.
-  if (internal::WorkspaceController::IsWorkspace2Enabled() &&
-      shorter_layout && frame_->IsMaximized() &&
+  if (shorter_layout && frame_->IsMaximized() &&
       GetTrackedByWorkspace(frame_->GetNativeWindow())) {
     SetButtonImages(close_button_,
                     IDR_AURA_WINDOW_MAXIMIZED_CLOSE2,
@@ -652,9 +651,7 @@ int FramePainter::GetHeaderOpacity(HeaderMode header_mode,
 
   // Maximized windows with workspace2 are totally transparent, except those not
   // tracked by workspace code (which are used for tab dragging).
-  if (frame_->IsMaximized() &&
-      internal::WorkspaceController::IsWorkspace2Enabled() &&
-      GetTrackedByWorkspace(frame_->GetNativeWindow()))
+  if (frame_->IsMaximized() && GetTrackedByWorkspace(frame_->GetNativeWindow()))
     return 0;
 
   // Single browser window is very transparent.
@@ -731,8 +728,7 @@ FramePainter* FramePainter::GetSoloPainterInRoot(
     // the existence of a layout manager gets additionally tested.
     if (IsVisibleNormalWindow((*it)->window_) &&
         (!(*it)->window_->GetProperty(ash::kConstrainedWindowKey))) {
-      if (internal::WorkspaceController::IsWorkspace2Enabled() &&
-          wm::IsWindowMaximized((*it)->window_)) {
+      if (wm::IsWindowMaximized((*it)->window_)) {
         return NULL;
       }
       if (painter)

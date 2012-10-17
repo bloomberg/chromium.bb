@@ -8,7 +8,6 @@
 #include "ash/launcher/launcher_model.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/wm/workspace_controller.h"
 #include "ui/aura/window.h"
 
 namespace ash {
@@ -48,16 +47,11 @@ WindowWatcher::WindowWatcher()
       panel_container_(ash::Shell::GetContainer(
           Shell::GetPrimaryRootWindow(),
           internal::kShellWindowId_PanelContainer)) {
-  if (internal::WorkspaceController::IsWorkspace2Enabled())
-    workspace_window_watcher_.reset(new WorkspaceWindowWatcher(this));
-  else
-    window_->AddObserver(this);
+  workspace_window_watcher_.reset(new WorkspaceWindowWatcher(this));
   panel_container_->AddObserver(this);
 }
 
 WindowWatcher::~WindowWatcher() {
-  if (!internal::WorkspaceController::IsWorkspace2Enabled())
-    window_->RemoveObserver(this);
   panel_container_->RemoveObserver(this);
 }
 

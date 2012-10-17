@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/workspace/workspace_layout_manager.h"
+#include "ash/wm/workspace/workspace_layout_manager2.h"
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"

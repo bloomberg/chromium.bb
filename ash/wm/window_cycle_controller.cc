@@ -105,12 +105,10 @@ void AddCycleWindows(aura::RootWindow* root,
                      int container_id,
                      WindowCycleList::WindowList* windows) {
   aura::Window* container = Shell::GetContainer(root, container_id);
-  if (container_id == internal::kShellWindowId_DefaultContainer &&
-      internal::WorkspaceController::IsWorkspace2Enabled()) {
+  if (container_id == internal::kShellWindowId_DefaultContainer)
     AddWorkspace2Children(container, windows);
-  } else {
+  else
     AddAllChildren(container, windows);
-  }
 }
 
 }  // namespace

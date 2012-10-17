@@ -17,17 +17,16 @@ namespace ash {
 namespace internal {
 
 // AlwaysOnTopController puts window into proper containers based on its
-// 'AlwaysOnTop' property. That is, putting a window to |default_container_|
-// if its "AlwaysOnTop" property is false. Otherwise, put it in
+// 'AlwaysOnTop' property. That is, putting a window into the worskpace
+// container if its "AlwaysOnTop" property is false. Otherwise, put it in
 // |always_on_top_container_|.
 class AlwaysOnTopController : public aura::WindowObserver {
  public:
   AlwaysOnTopController();
   virtual ~AlwaysOnTopController();
 
-  // Sets the two top level window containers.
-  void SetContainers(aura::Window* default_container,
-                     aura::Window* always_on_top_container);
+  // Sets the container for always on top windows.
+  void SetAlwaysOnTopContainer(aura::Window* always_on_top_container);
 
   // Gets container for given |window| based on its "AlwaysOnTop" property.
   aura::Window* GetContainer(aura::Window* window) const;
@@ -41,9 +40,6 @@ class AlwaysOnTopController : public aura::WindowObserver {
                                        intptr_t old) OVERRIDE;
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
 
-  // TODO(sky): remove this after workspace2 is the default.
-  // Is NULL if workspace2 is enabled.
-  aura::Window* default_container_;
   aura::Window* always_on_top_container_;
 
   DISALLOW_COPY_AND_ASSIGN(AlwaysOnTopController);

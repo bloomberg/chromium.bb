@@ -14,54 +14,38 @@ namespace ash {
 namespace internal {
 
 AlwaysOnTopController::AlwaysOnTopController()
-    : default_container_(NULL),
-      always_on_top_container_(NULL) {
+    : always_on_top_container_(NULL) {
 }
 
 AlwaysOnTopController::~AlwaysOnTopController() {
-  if (default_container_)
-    default_container_->RemoveObserver(this);
   if (always_on_top_container_)
     always_on_top_container_->RemoveObserver(this);
 }
 
-void AlwaysOnTopController::SetContainers(
-    aura::Window* default_container,
+void AlwaysOnTopController::SetAlwaysOnTopContainer(
     aura::Window* always_on_top_container) {
-  if (WorkspaceController::IsWorkspace2Enabled())
-    default_container = NULL;
-
-  // Both containers should have no children.
+  // Container should be empty.
   DCHECK(always_on_top_container->children().empty());
 
   // We are not handling any containers yet.
-  DCHECK(default_container_ == NULL && always_on_top_container_ == NULL);
-
-  default_container_ = default_container;
-  if (default_container_)
-    default_container_->AddObserver(this);
+  DCHECK(always_on_top_container_ == NULL);
 
   always_on_top_container_ = always_on_top_container;
   always_on_top_container_->AddObserver(this);
 }
 
 aura::Window* AlwaysOnTopController::GetContainer(aura::Window* window) const {
-  DCHECK(always_on_top_container_ &&
-         (default_container_ || WorkspaceController::IsWorkspace2Enabled()));
+  DCHECK(always_on_top_container_);
   if (window->GetProperty(aura::client::kAlwaysOnTopKey))
     return always_on_top_container_;
-  if (default_container_)
-    return default_container_;
   return GetRootWindowController(always_on_top_container_->GetRootWindow())->
       workspace_controller()->GetParentForNewWindow(window);
 }
 
 void AlwaysOnTopController::OnWindowAdded(aura::Window* child) {
   // Observe direct child of the containers.
-  if ((default_container_ && child->parent() == default_container_) ||
-      child->parent() == always_on_top_container_) {
+  if (child->parent() == always_on_top_container_)
     child->AddObserver(this);
-  }
 }
 
 void AlwaysOnTopController::OnWillRemoveWindow(aura::Window* child) {
@@ -81,8 +65,6 @@ void AlwaysOnTopController::OnWindowPropertyChanged(aura::Window* window,
 }
 
 void AlwaysOnTopController::OnWindowDestroyed(aura::Window* window) {
-  if (window == default_container_)
-    default_container_ = NULL;
   if (window == always_on_top_container_)
     always_on_top_container_ = NULL;
 }

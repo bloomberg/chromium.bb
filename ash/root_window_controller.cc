@@ -107,20 +107,17 @@ void ReparentAllWindows(aura::RootWindow* src, aura::RootWindow* dst) {
   };
   // For Workspace2 we need to manually reparent the windows. This way
   // Workspace2 can move the windows to the appropriate workspace.
-  if (internal::WorkspaceController::IsWorkspace2Enabled()) {
-    std::vector<aura::Window*> windows(GetWorkspaceWindows(src));
-    internal::WorkspaceController* workspace_controller =
-        GetRootWindowController(dst)->workspace_controller();
-    for (size_t i = 0; i < windows.size(); ++i) {
-      aura::Window* new_parent =
-          workspace_controller->GetParentForNewWindow(windows[i]);
-      ReparentWindow(windows[i], new_parent);
-    }
+  std::vector<aura::Window*> windows(GetWorkspaceWindows(src));
+  internal::WorkspaceController* workspace_controller =
+      GetRootWindowController(dst)->workspace_controller();
+  for (size_t i = 0; i < windows.size(); ++i) {
+    aura::Window* new_parent =
+        workspace_controller->GetParentForNewWindow(windows[i]);
+    ReparentWindow(windows[i], new_parent);
   }
   for (size_t i = 0; i < arraysize(kContainerIdsToMove); i++) {
     int id = kContainerIdsToMove[i];
-    if (id == internal::kShellWindowId_DefaultContainer &&
-        internal::WorkspaceController::IsWorkspace2Enabled())
+    if (id == internal::kShellWindowId_DefaultContainer)
       continue;
 
     aura::Window* src_container = Shell::GetContainer(src, id);
@@ -353,10 +350,6 @@ void RootWindowController::CloseChildWindows() {
   shelf_ = NULL;
 }
 
-bool RootWindowController::IsInMaximizedMode() const {
-  return workspace_controller_->IsInMaximizedMode();
-}
-
 void RootWindowController::MoveWindowsTo(aura::RootWindow* dst) {
   aura::Window* focused = dst->GetFocusManager()->GetFocusedWindow();
   aura::WindowTracker tracker;
@@ -461,10 +454,6 @@ void RootWindowController::CreateContainersInRootWindow(
       kShellWindowId_DefaultContainer,
       "DefaultContainer",
       non_lock_screen_containers);
-  if (!WorkspaceController::IsWorkspace2Enabled()) {
-    default_container_handler_.reset(
-        new ToplevelWindowEventHandler(default_container));
-  }
   SetChildWindowVisibilityChangesAnimated(default_container);
   SetUsesScreenCoordinates(default_container);
 

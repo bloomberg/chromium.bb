@@ -143,8 +143,7 @@ StackingController::GetAlwaysOnTopController(aura::RootWindow* root_window) {
       root_window->GetProperty(internal::kAlwaysOnTopControllerKey);
   if (!controller) {
     controller = new internal::AlwaysOnTopController;
-    controller->SetContainers(
-        root_window->GetChildById(internal::kShellWindowId_DefaultContainer),
+    controller->SetAlwaysOnTopContainer(
         root_window->GetChildById(
             internal::kShellWindowId_AlwaysOnTopContainer));
     // RootWindow owns the AlwaysOnTopController object.

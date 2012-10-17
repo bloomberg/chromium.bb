@@ -18,11 +18,10 @@ class Window;
 namespace ash {
 namespace internal {
 
-class BaseWorkspaceManager;
 class ShelfLayoutManager;
 class WorkspaceControllerTestHelper;
 class WorkspaceEventHandler;
-class WorkspaceLayoutManager;
+class WorkspaceManager2;
 
 // WorkspaceController acts as a central place that ties together all the
 // various workspace pieces.
@@ -31,12 +30,6 @@ class ASH_EXPORT WorkspaceController
  public:
   explicit WorkspaceController(aura::Window* viewport);
   virtual ~WorkspaceController();
-
-  // Returns true if Workspace2 is enabled.
-  static bool IsWorkspace2Enabled();
-
-  // Returns true if in maximized or fullscreen mode.
-  bool IsInMaximizedMode() const;
 
   // Returns the current window state.
   WorkspaceWindowState GetWindowState() const;
@@ -61,16 +54,7 @@ class ASH_EXPORT WorkspaceController
 
   aura::Window* viewport_;
 
-  scoped_ptr<BaseWorkspaceManager> workspace_manager_;
-
-  // TODO(sky): remove |layout_manager_| and |event_handler_| when Workspace2
-  // is the default.
-
-  // Owned by the window its attached to.
-  WorkspaceLayoutManager* layout_manager_;
-
-  // Owned by |viewport_|.
-  WorkspaceEventHandler* event_handler_;
+  scoped_ptr<WorkspaceManager2> workspace_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceController);
 };

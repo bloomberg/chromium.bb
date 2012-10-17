@@ -11,7 +11,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
-#include "ash/wm/workspace/base_workspace_manager.h"
+#include "ash/wm/workspace/workspace_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
@@ -51,9 +51,7 @@ class Workspace2;
 // workspace for the desktop.
 // Internally WorkspaceManager2 creates a Window for each Workspace. As windows
 // are maximized and restored they are reparented to the right Window.
-class ASH_EXPORT WorkspaceManager2
-    : public BaseWorkspaceManager,
-      public ash::ShellObserver {
+class ASH_EXPORT WorkspaceManager2 : public ash::ShellObserver {
  public:
   explicit WorkspaceManager2(aura::Window* viewport);
   virtual ~WorkspaceManager2();
@@ -67,13 +65,21 @@ class ASH_EXPORT WorkspaceManager2
   // window.
   static bool WillRestoreMaximized(aura::Window* window);
 
-  // BaseWorkspaceManager overrides:
-  virtual bool IsInMaximizedMode() const OVERRIDE;
-  virtual WorkspaceWindowState GetWindowState() const OVERRIDE;
-  virtual void SetShelf(ShelfLayoutManager* shelf) OVERRIDE;
-  virtual void SetActiveWorkspaceByWindow(aura::Window* window) OVERRIDE;
-  virtual aura::Window* GetParentForNewWindow(aura::Window* window) OVERRIDE;
-  virtual void DoInitialAnimation() OVERRIDE;
+  // Returns the current window state.
+  WorkspaceWindowState GetWindowState() const;
+
+  void SetShelf(ShelfLayoutManager* shelf);
+
+  // Activates the workspace containing |window|. Does nothing if |window| is
+  // NULL or not contained in a workspace.
+  void SetActiveWorkspaceByWindow(aura::Window* window);
+
+  // Returns the parent for |window|. This is invoked from StackingController
+  // when a new Window is being added.
+  aura::Window* GetParentForNewWindow(aura::Window* window);
+
+  // Starts the animation that occurs on first login.
+  void DoInitialAnimation();
 
   // ShellObserver overrides:
   virtual void OnAppTerminating() OVERRIDE;

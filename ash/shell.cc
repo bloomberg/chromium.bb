@@ -58,7 +58,6 @@
 #include "ash/wm/window_modality_controller.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -739,8 +738,7 @@ void Shell::InitRootWindowController(
   // the extended desktop is enabled by default.
   internal::AlwaysOnTopController* always_on_top_controller =
       new internal::AlwaysOnTopController;
-  always_on_top_controller->SetContainers(
-      root_window->GetChildById(internal::kShellWindowId_DefaultContainer),
+  always_on_top_controller->SetAlwaysOnTopContainer(
       root_window->GetChildById(internal::kShellWindowId_AlwaysOnTopContainer));
   root_window->SetProperty(internal::kAlwaysOnTopControllerKey,
                            always_on_top_controller);

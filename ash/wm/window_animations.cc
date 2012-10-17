@@ -87,9 +87,6 @@ const float kWindowAnimation_ScaleFactor = .95f;
 // TODO(sky): if we end up sticking with 0, nuke the code doing the rotation.
 const float kWindowAnimation_MinimizeRotate = 0.f;
 
-// Amount windows are scaled during workspace animations.
-const float kWorkspaceScale = .95f;
-
 // Tween type when cross fading a workspace window.
 const ui::Tween::Type kCrossFadeTweenType = ui::Tween::EASE_IN_OUT;
 
@@ -321,81 +318,6 @@ void AnimateHideWindow_Fade(aura::Window* window) {
   AnimateHideWindowCommon(window, gfx::Transform());
 }
 
-// Builds the transform used when switching workspaces for the specified
-// window.
-gfx::Transform BuildWorkspaceSwitchTransform(aura::Window* window,
-                                             float scale) {
-  // Animations for transitioning workspaces scale all windows. To give the
-  // effect of scaling from the center of the screen the windows are translated.
-  gfx::Rect bounds = window->bounds();
-  gfx::Rect parent_bounds(window->parent()->bounds());
-
-  float mid_x = static_cast<float>(parent_bounds.width()) / 2.0f;
-  float initial_x =
-      (static_cast<float>(bounds.x()) - mid_x) * scale + mid_x;
-  float mid_y = static_cast<float>(parent_bounds.height()) / 2.0f;
-  float initial_y =
-      (static_cast<float>(bounds.y()) - mid_y) * scale + mid_y;
-
-  gfx::Transform transform;
-  transform.ConcatTranslate(
-      initial_x - static_cast<float>(bounds.x()),
-      initial_y - static_cast<float>(bounds.y()));
-  transform.ConcatScale(scale, scale);
-  return transform;
-}
-
-void AnimateShowWindow_Workspace(aura::Window* window) {
-  gfx::Transform transform(
-      BuildWorkspaceSwitchTransform(window, kWorkspaceScale));
-  // When we call SetOpacity here, if a hide sequence is already running,
-  // the default animation preemption strategy fast forwards the hide sequence
-  // to completion and notifies the WorkspaceHidingWindowAnimationObserver to
-  // set the layer to be invisible. We should call SetVisible after SetOpacity
-  // to ensure our layer is visible again.
-  window->layer()->SetOpacity(0.0f);
-  window->layer()->SetTransform(transform);
-  window->layer()->SetVisible(true);
-
-  {
-    // Property sets within this scope will be implicitly animated.
-    ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
-
-    window->layer()->SetTransform(gfx::Transform());
-    // Opacity animates only during the first half of the animation.
-    settings.SetTransitionDuration(settings.GetTransitionDuration() / 2);
-    window->layer()->SetOpacity(1.0f);
-  }
-}
-
-void AnimateHideWindow_Workspace(aura::Window* window) {
-  gfx::Transform transform(
-      BuildWorkspaceSwitchTransform(window, kWorkspaceScale));
-  window->layer()->SetOpacity(1.0f);
-  window->layer()->SetTransform(gfx::Transform());
-
-  // Opacity animates from 1 to 0 only over the second half of the animation. To
-  // get this functionality two animations are schedule for opacity, the first
-  // from 1 to 1 (which effectively does nothing) the second from 1 to 0.
-  // Because we're scheduling two animations of the same property we need to
-  // change the preemption strategy.
-  ui::LayerAnimator* animator = window->layer()->GetAnimator();
-  animator->set_preemption_strategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
-  {
-    // Property sets within this scope will be implicitly animated.
-    ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
-    // Add an observer that sets visibility of the layer to false once animation
-    // completes.
-    settings.AddObserver(new WorkspaceHidingWindowAnimationObserver(window));
-    window->layer()->SetTransform(transform);
-    settings.SetTransitionDuration(settings.GetTransitionDuration() / 2);
-    window->layer()->SetOpacity(1.0f);
-    window->layer()->SetOpacity(0.0f);
-  }
-  animator->set_preemption_strategy(
-      ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
-}
-
 gfx::Rect GetMinimizeRectForWindow(aura::Window* window) {
   gfx::Rect target_bounds = Shell::GetInstance()->launcher()->
       GetScreenBoundsOfItemIconForWindow(window);
@@ -583,9 +505,6 @@ bool AnimateShowWindow(aura::Window* window) {
     case WINDOW_VISIBILITY_ANIMATION_TYPE_FADE:
       AnimateShowWindow_Fade(window);
       return true;
-    case WINDOW_VISIBILITY_ANIMATION_TYPE_WORKSPACE_SHOW:
-      AnimateShowWindow_Workspace(window);
-      return true;
     case WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE:
       AnimateShowWindow_Minimize(window);
       return true;
@@ -611,9 +530,6 @@ bool AnimateHideWindow(aura::Window* window) {
       return true;
     case WINDOW_VISIBILITY_ANIMATION_TYPE_FADE:
       AnimateHideWindow_Fade(window);
-      return true;
-    case WINDOW_VISIBILITY_ANIMATION_TYPE_WORKSPACE_HIDE:
-      AnimateHideWindow_Workspace(window);
       return true;
     case WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE:
       AnimateHideWindow_Minimize(window);
@@ -842,19 +758,17 @@ TimeDelta GetCrossFadeDuration(const gfx::Rect& old_bounds,
           ash::switches::kAshWindowAnimationsDisabled))
     return base::TimeDelta();
 
-  const int min_time_ms = internal::WorkspaceController::IsWorkspace2Enabled() ?
-      internal::kWorkspaceSwitchTimeMS : 0;
   int old_area = old_bounds.width() * old_bounds.height();
   int new_area = new_bounds.width() * new_bounds.height();
   int max_area = std::max(old_area, new_area);
   // Avoid divide by zero.
   if (max_area == 0)
-    return TimeDelta::FromMilliseconds(min_time_ms);
+    return TimeDelta::FromMilliseconds(internal::kWorkspaceSwitchTimeMS);
 
   int delta_area = std::abs(old_area - new_area);
   // If the area didn't change, the animation is instantaneous.
   if (delta_area == 0)
-    return TimeDelta::FromMilliseconds(min_time_ms);
+    return TimeDelta::FromMilliseconds(internal::kWorkspaceSwitchTimeMS);
 
   float factor =
       static_cast<float>(delta_area) / static_cast<float>(max_area);

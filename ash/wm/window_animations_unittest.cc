@@ -33,74 +33,6 @@ class WindowAnimationsTest : public ash::test::AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(WindowAnimationsTest);
 };
 
-TEST_F(WindowAnimationsTest, HideShow) {
-  scoped_ptr<aura::Window> window(
-      aura::test::CreateTestWindowWithId(0, NULL));
-  window->Show();
-  EXPECT_TRUE(window->layer()->visible());
-  // Hiding.
-  SetWindowVisibilityAnimationType(
-      window.get(),
-      WINDOW_VISIBILITY_ANIMATION_TYPE_WORKSPACE_HIDE);
-  ash::internal::AnimateOnChildWindowVisibilityChanged(
-      window.get(), false);
-  EXPECT_EQ(0.0f, window->layer()->GetTargetOpacity());
-  EXPECT_FALSE(window->layer()->GetTargetVisibility());
-  EXPECT_FALSE(window->layer()->visible());
-  // Showing.
-  SetWindowVisibilityAnimationType(
-      window.get(),
-      WINDOW_VISIBILITY_ANIMATION_TYPE_WORKSPACE_SHOW);
-  ash::internal::AnimateOnChildWindowVisibilityChanged(
-      window.get(), true);
-  EXPECT_EQ(1.0f, window->layer()->GetTargetOpacity());
-  EXPECT_TRUE(window->layer()->GetTargetVisibility());
-  EXPECT_TRUE(window->layer()->visible());
-  // Stays showing.
-  ui::AnimationContainerElement* element =
-      static_cast<ui::AnimationContainerElement*>(
-      window->layer()->GetAnimator());
-  element->Step(base::TimeTicks::Now() +
-                base::TimeDelta::FromSeconds(5));
-  EXPECT_EQ(1.0f, window->layer()->GetTargetOpacity());
-  EXPECT_TRUE(window->layer()->GetTargetVisibility());
-  EXPECT_TRUE(window->layer()->visible());
-}
-
-TEST_F(WindowAnimationsTest, ShowHide) {
-  scoped_ptr<aura::Window> window(
-      aura::test::CreateTestWindowWithId(0, NULL));
-  window->Show();
-  EXPECT_TRUE(window->layer()->visible());
-  // Showing -- should be a no-op.
-  SetWindowVisibilityAnimationType(
-      window.get(),
-      WINDOW_VISIBILITY_ANIMATION_TYPE_WORKSPACE_SHOW);
-  ash::internal::AnimateOnChildWindowVisibilityChanged(
-      window.get(), true);
-  EXPECT_EQ(1.0f, window->layer()->GetTargetOpacity());
-  EXPECT_TRUE(window->layer()->GetTargetVisibility());
-  EXPECT_TRUE(window->layer()->visible());
-  // Hiding.
-  SetWindowVisibilityAnimationType(
-      window.get(),
-      WINDOW_VISIBILITY_ANIMATION_TYPE_WORKSPACE_HIDE);
-  ash::internal::AnimateOnChildWindowVisibilityChanged(
-      window.get(), false);
-  EXPECT_EQ(0.0f, window->layer()->GetTargetOpacity());
-  EXPECT_FALSE(window->layer()->GetTargetVisibility());
-  EXPECT_FALSE(window->layer()->visible());
-  // Stays hidden.
-  ui::AnimationContainerElement* element =
-      static_cast<ui::AnimationContainerElement*>(
-      window->layer()->GetAnimator());
-  element->Step(base::TimeTicks::Now() +
-                base::TimeDelta::FromSeconds(5));
-  EXPECT_EQ(0.0f, window->layer()->GetTargetOpacity());
-  EXPECT_FALSE(window->layer()->GetTargetVisibility());
-  EXPECT_FALSE(window->layer()->visible());
-}
-
 TEST_F(WindowAnimationsTest, HideShowBrightnessGrayscaleAnimation) {
   scoped_ptr<aura::Window> window(
       aura::test::CreateTestWindowWithId(0, NULL));
@@ -203,41 +135,6 @@ TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
       base::TimeTicks::Now() + base::TimeDelta::FromSeconds(1));
   static_cast<ui::AnimationContainerElement*>(window->layer()->GetAnimator())->
       Step(base::TimeTicks::Now() + base::TimeDelta::FromSeconds(1));
-}
-
-TEST_F(WindowAnimationsTest, GetCrossFadeDuration) {
-  if (WorkspaceController::IsWorkspace2Enabled())
-    return;
-
-  gfx::Rect empty;
-  gfx::Rect screen(0, 0, 1000, 500);
-
-  // No change takes no time.
-  EXPECT_EQ(0, GetCrossFadeDuration(empty, empty).InMilliseconds());
-  EXPECT_EQ(0, GetCrossFadeDuration(screen, screen).InMilliseconds());
-
-  // Small changes are fast.
-  const int kMinimum = 100;
-  const int kRange = 300;
-  gfx::Rect almost_screen(10, 10, 1000, 450);  // 90% of screen area
-  EXPECT_EQ(kMinimum + kRange / 10,
-           GetCrossFadeDuration(almost_screen, screen).InMilliseconds());
-  EXPECT_EQ(kMinimum + kRange / 10,
-            GetCrossFadeDuration(screen, almost_screen).InMilliseconds());
-
-  // Large changes are slow.
-  gfx::Rect ten_percent(10, 10, 100, 500);  // 10% of screen area
-  EXPECT_EQ(kMinimum + kRange * 9 / 10,
-            GetCrossFadeDuration(ten_percent, screen).InMilliseconds());
-  EXPECT_EQ(kMinimum + kRange * 9 / 10,
-            GetCrossFadeDuration(screen, ten_percent).InMilliseconds());
-
-  // Medium changes take medium time.
-  gfx::Rect half_screen(10, 10, 500, 250);
-  EXPECT_EQ(kMinimum + kRange * 3 / 4,
-            GetCrossFadeDuration(half_screen, screen).InMilliseconds());
-  EXPECT_EQ(kMinimum + kRange * 3 / 4,
-            GetCrossFadeDuration(screen, half_screen).InMilliseconds());
 }
 
 }  // namespace internal

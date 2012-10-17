@@ -36,7 +36,6 @@ const int kWindowContainerIds[] = {
     kShellWindowId_SystemModalContainer,
     kShellWindowId_AlwaysOnTopContainer,
     kShellWindowId_AppListContainer,
-    // TODO(sky): defaultcontainer shouldn't be in the list with workspace2.
     kShellWindowId_DefaultContainer,
 
     // Panel, launcher and status are intentionally checked after other
@@ -50,16 +49,12 @@ const int kWindowContainerIds[] = {
 // Returns true if children of |window| can be activated.
 // These are the only containers in which windows can receive focus.
 bool SupportsChildActivation(aura::Window* window) {
-  // TODO(sky): straighten this out when workspace2 is the default.
-  // kShellWindowId_WorkspaceContainer isn't in |kWindowContainerIds| since it
-  // needs to be special cased in GetTopmostWindowToActivate().
   if (window->id() == kShellWindowId_WorkspaceContainer)
     return true;
 
   for (size_t i = 0; i < arraysize(kWindowContainerIds); i++) {
     if (window->id() == kWindowContainerIds[i] &&
-        (window->id() != kShellWindowId_DefaultContainer ||
-         !WorkspaceController::IsWorkspace2Enabled())) {
+        window->id() != kShellWindowId_DefaultContainer) {
       return true;
     }
   }
@@ -363,8 +358,7 @@ aura::Window* ActivationController::GetTopmostWindowToActivateInContainer(
     aura::Window* container,
     aura::Window* ignore) const {
   // Workspace2 has an extra level of windows that needs to be special cased.
-  if (container->id() == kShellWindowId_DefaultContainer &&
-      WorkspaceController::IsWorkspace2Enabled()) {
+  if (container->id() == kShellWindowId_DefaultContainer) {
     for (aura::Window::Windows::const_reverse_iterator i =
              container->children().rbegin();
          i != container->children().rend(); ++i) {

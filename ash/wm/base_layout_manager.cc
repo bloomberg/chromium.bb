@@ -4,16 +4,13 @@
 
 #include "ash/wm/base_layout_manager.h"
 
-#include "ash/ash_switches.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace/workspace_window_resizer.h"
-#include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -71,7 +68,7 @@ void BaseLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   // Only update the bounds if the window has a show state that depends on the
   // workspace area.
   if (wm::IsWindowMaximized(child) || wm::IsWindowFullscreen(child))
-    UpdateBoundsFromShowState(child, false);
+    UpdateBoundsFromShowState(child);
 }
 
 void BaseLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
@@ -136,11 +133,7 @@ void BaseLayoutManager::OnWindowPropertyChanged(aura::Window* window,
           old_state != ui::SHOW_STATE_MAXIMIZED))) {
       SetRestoreBoundsInParent(window, window->bounds());
     }
-    // Minimized state handles its own animations.
-    // TODO(sky): get animations to work with Workspace2.
-    bool animate = (old_state != ui::SHOW_STATE_MINIMIZED) &&
-        !WorkspaceController::IsWorkspace2Enabled();
-    UpdateBoundsFromShowState(window, animate);
+    UpdateBoundsFromShowState(window);
     ShowStateChanged(window, old_state);
   }
 }
@@ -177,8 +170,7 @@ void BaseLayoutManager::ShowStateChanged(aura::Window* window,
   }
 }
 
-void BaseLayoutManager::UpdateBoundsFromShowState(aura::Window* window,
-                                                  bool animate) {
+void BaseLayoutManager::UpdateBoundsFromShowState(aura::Window* window) {
   switch (window->GetProperty(aura::client::kShowStateKey)) {
     case ui::SHOW_STATE_DEFAULT:
     case ui::SHOW_STATE_NORMAL: {
@@ -186,8 +178,7 @@ void BaseLayoutManager::UpdateBoundsFromShowState(aura::Window* window,
       if (restore) {
         gfx::Rect bounds_in_parent =
             ScreenAsh::ConvertRectFromScreen(window->parent(), *restore);
-        MaybeAnimateToBounds(window,
-                             animate,
+        SetChildBoundsDirect(window,
                              BoundsWithScreenEdgeVisible(window,
                                                          bounds_in_parent));
       }
@@ -196,8 +187,7 @@ void BaseLayoutManager::UpdateBoundsFromShowState(aura::Window* window,
     }
 
     case ui::SHOW_STATE_MAXIMIZED:
-      MaybeAnimateToBounds(window,
-                           animate,
+      SetChildBoundsDirect(window,
                            ScreenAsh::GetMaximizedWindowBoundsInParent(window));
       break;
 
@@ -211,21 +201,6 @@ void BaseLayoutManager::UpdateBoundsFromShowState(aura::Window* window,
     default:
       break;
   }
-}
-
-void BaseLayoutManager::MaybeAnimateToBounds(aura::Window* window,
-                                             bool animate,
-                                             const gfx::Rect& new_bounds) {
-  // Only animate visible windows.
-  if (animate &&
-      window->TargetVisibility() &&
-      !window->GetProperty(aura::client::kAnimationsDisabledKey) &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAshWindowAnimationsDisabled)) {
-    CrossFadeToBounds(window, new_bounds);
-    return;
-  }
-  SetChildBoundsDirect(window, new_bounds);
 }
 
 void BaseLayoutManager::AdjustWindowSizesForScreenChange() {

@@ -154,10 +154,6 @@ bool WorkspaceManager2::WillRestoreMaximized(Window* window) {
       IsMaximizedState(window->GetProperty(internal::kRestoreShowStateKey));
 }
 
-bool WorkspaceManager2::IsInMaximizedMode() const {
-  return active_workspace_ && active_workspace_->is_maximized();
-}
-
 WorkspaceWindowState WorkspaceManager2::GetWindowState() const {
   if (!shelf_)
     return WORKSPACE_WINDOW_STATE_DEFAULT;

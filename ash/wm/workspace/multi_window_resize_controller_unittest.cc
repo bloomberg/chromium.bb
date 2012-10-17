@@ -10,7 +10,6 @@
 #include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace_controller_test_helper.h"
 #include "ash/wm/workspace/workspace_event_handler_test_helper.h"
-#include "ash/wm/workspace/workspace_manager.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
