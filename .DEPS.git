@@ -12,9 +12,9 @@ vars = {
 
 deps = {
     'native_client/tools/perf_expectations':
-        Var('git_url') + '/chromium/src/tools/perf_expectations.git@5a2630c1fc344fe96931d1e4d8dd758ec7970da0',
+        Var('git_url') + '/chromium/src/tools/perf_expectations.git@615a4897fd6db3b89779feef79cc9a5f8e48b3e5',
     'testing/gtest':
-        Var('git_url') + '/external/googletest.git@090d8a824857f24e5ec780112a3d4b269f9a7d3d',
+        Var('git_url') + '/external/googletest.git@a92a6f792395e1ad462472d474ab0c76949813fa',
     'third_party':
         Var('git_url') + '/native_client/src/third_party.git@65665a7b13c7dae9db56283046fbf8f114c9dc8c',
     'third_party/asan':
@@ -22,13 +22,13 @@ deps = {
     'third_party/lcov':
         Var('git_url') + '/chromium/src/third_party/lcov.git@ba4a791b2b525fc13d169b4cc671dede09bbfb64',
     'third_party/lss':
-        Var('git_url') + '/external/linux-syscall-support/lss.git@88a55e021b5cf8114901c5354894bfec13d13157',
+        Var('git_url') + '/external/linux-syscall-support/lss.git@2c73abf02fd8af961e38024882b9ce0df6b4d19b',
     'tools/clang':
-        Var('git_url') + '/chromium/src/tools/clang.git@348b9ca0608cb1a3418a0137f786ab0d6551ca5e',
+        Var('git_url') + '/chromium/src/tools/clang.git@b363ee90f841578d66b4c4f6481f0107bcf800e9',
     'tools/gyp':
-        Var('git_url') + '/external/gyp.git@0b7ad3866a1cc7fbed2e9c88629526bb9c0ccc2f',
+        Var('git_url') + '/external/gyp.git@523297f43e0c96a84e53306f8fddebeb483b27f1',
     'tools/valgrind':
-        Var('git_url') + '/chromium/src/tools/valgrind.git@bda0bee6d7276913a8a35c7471ab5c66d591070e',
+        Var('git_url') + '/chromium/src/tools/valgrind.git@81c5e6d5156ab8541536aedf98a0dfe1b4c375c3',
     'validator_snapshots':
         Var('git_url') + '/native_client/src/validator_snapshots.git@4c1ea6b6ebe020993b0a091fd4e38a6487704b60',
 }
