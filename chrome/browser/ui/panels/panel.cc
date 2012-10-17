@@ -151,6 +151,7 @@ Panel::Panel(const std::string& app_name,
 }
 
 Panel::~Panel() {
+  DCHECK(!panel_strip_);
   // Invoked by native panel destructor. Do not access native_panel_ here.
   browser::EndKeepAlive();  // Remove shutdown prevention.
 }

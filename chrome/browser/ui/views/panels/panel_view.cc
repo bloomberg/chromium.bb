@@ -244,7 +244,6 @@ PanelView::PanelView(Panel* panel, const gfx::Rect& bounds)
 }
 
 PanelView::~PanelView() {
-  web_view_->SetWebContents(NULL);
 }
 
 void PanelView::ShowPanel() {
@@ -583,6 +582,21 @@ gfx::ImageSkia PanelView::GetWindowAppIcon() {
 gfx::ImageSkia PanelView::GetWindowIcon() {
   gfx::Image icon = panel_->GetCurrentPageIcon();
   return icon.IsEmpty() ? gfx::ImageSkia() : *icon.ToImageSkia();
+}
+
+void PanelView::WindowClosing() {
+  // When closing a panel via window.close, API or the close button,
+  // ClosePanel() is called first, destroying the native |window_|
+  // which results in this method being called. ClosePanel() sets
+  // |window_| to NULL.
+  // If we still have a |window_| here, the close was triggered by the OS,
+  // (e.g. clicking on taskbar menu), which destroys the native |window_|
+  // without invoking ClosePanel() beforehand.
+  if (window_) {
+    panel_->OnWindowClosing();
+    ClosePanel();
+    DCHECK(!window_);
+  }
 }
 
 void PanelView::DeleteDelegate() {

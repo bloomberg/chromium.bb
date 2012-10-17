@@ -114,6 +114,7 @@ class PanelView : public NativePanel,
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual gfx::ImageSkia GetWindowAppIcon() OVERRIDE;
   virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
+  virtual void WindowClosing() OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
   virtual void OnWindowBeginUserBoundsChange() OVERRIDE;
   virtual void OnWindowEndUserBoundsChange() OVERRIDE;
