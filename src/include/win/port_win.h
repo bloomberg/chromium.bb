@@ -79,19 +79,48 @@ typedef int32_t           ssize_t;
 
 
 #if !defined(__cplusplus) || defined(__STDC_LIMIT_MACROS)
-/* only what we need so far */
-# define UINT8_MAX      NACL_UMAX_VAL(uint8_t)
-# define INT8_MAX       NACL_MAX_VAL(int8_t)
-# define INT8_MIN       NACL_MIN_VAL(int8_t)
-# define UINT16_MAX     NACL_UMAX_VAL(uint16_t)
-# define INT16_MAX      NACL_MAX_VAL(int16_t)
-# define INT16_MIN      NACL_MIN_VAL(int16_t)
-# define UINT32_MAX     NACL_UMAX_VAL(uint32_t)
-# define INT32_MAX      NACL_MAX_VAL(int32_t)
-# define INT32_MIN      NACL_MIN_VAL(int32_t)
-# define UINT64_MAX     NACL_UMAX_VAL(uint64_t)
-# define INT64_MAX      NACL_MAX_VAL(int64_t)
-# define INT64_MIN      NACL_MIN_VAL(int64_t)
+/*
+ * These are conditionally defined because starting in VS2012 (11.0) stdint.h
+ * includes definitions for them.
+ *
+ * Only including range values actually used in our codebase.
+ */
+# if !defined(UINT8_MAX)
+#  define UINT8_MAX      NACL_UMAX_VAL(uint8_t)
+# endif
+# if !defined(INT8_MAX)
+#  define INT8_MAX       NACL_MAX_VAL(int8_t)
+# endif
+# if !defined(INT8_MIN)
+#  define INT8_MIN       NACL_MIN_VAL(int8_t)
+# endif
+# if !defined(UINT16_MAX)
+#  define UINT16_MAX     NACL_UMAX_VAL(uint16_t)
+# endif
+# if !defined(INT16_MAX)
+#  define INT16_MAX      NACL_MAX_VAL(int16_t)
+# endif
+# if !defined(INT16_MIN)
+#  define INT16_MIN      NACL_MIN_VAL(int16_t)
+# endif
+# if !defined(UINT32_MAX)
+#  define UINT32_MAX     NACL_UMAX_VAL(uint32_t)
+# endif
+# if !defined(INT32_MAX)
+#  define INT32_MAX      NACL_MAX_VAL(int32_t)
+# endif
+# if !defined(INT32_MIN)
+#  define INT32_MIN      NACL_MIN_VAL(int32_t)
+# endif
+# if !defined(UINT64_MAX)
+#  define UINT64_MAX     NACL_UMAX_VAL(uint64_t)
+# endif
+# if !defined(INT64_MAX)
+#  define INT64_MAX      NACL_MAX_VAL(int64_t)
+# endif
+# if !defined(INT64_MIN)
+#  define INT64_MIN      NACL_MIN_VAL(int64_t)
+# endif
 #endif
 
 EXTERN_C_BEGIN
