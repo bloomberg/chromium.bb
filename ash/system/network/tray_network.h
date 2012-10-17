@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_NETWORK_TRAY_NETWORK_H
-#define ASH_SYSTEM_CHROMEOS_NETWORK_TRAY_NETWORK_H
+#ifndef ASH_SYSTEM_NETWORK_TRAY_NETWORK_H
+#define ASH_SYSTEM_NETWORK_TRAY_NETWORK_H
 
-#include "ash/system/chromeos/network/network_observer.h"
+#include "ash/system/network/network_observer.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "base/memory/scoped_ptr.h"
 
@@ -77,4 +77,4 @@ class TrayNetwork : public SystemTrayItem,
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_CHROMEOS_NETWORK_TRAY_NETWORK_H
+#endif  // ASH_SYSTEM_NETWORK_TRAY_NETWORK_H

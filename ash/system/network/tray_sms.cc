@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/network/tray_sms.h"
+#include "ash/system/network/tray_sms.h"
 
 #include "ash/ash_switches.h"
 #include "ash/shell.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/tray_display.h"
+#include "ash/system/tray_display.h"
 
 #include "ash/display/display_controller.h"
 #include "ash/screen_ash.h"
@@ -53,6 +53,7 @@ class DisplayView : public ash::internal::ActionableView {
   virtual ~DisplayView() {}
 
   void Update() {
+#if defined(OS_CHROMEOS)
     switch (Shell::GetInstance()->output_configurator()->output_state()) {
       case chromeos::STATE_INVALID:
       case chromeos::STATE_HEADLESS:
@@ -96,6 +97,7 @@ class DisplayView : public ash::internal::ActionableView {
       default:
         NOTREACHED();
     }
+#endif  // OS_CHROMEOS
   }
 
  private:
@@ -119,16 +121,22 @@ class DisplayView : public ash::internal::ActionableView {
 TrayDisplay::TrayDisplay()
     : default_(NULL) {
   aura::Env::GetInstance()->display_manager()->AddObserver(this);
+#if defined(OS_CHROMEOS)
   ash::Shell::GetInstance()->output_configurator()->AddObserver(this);
+#endif
 }
 
 TrayDisplay::~TrayDisplay() {
   aura::Env::GetInstance()->display_manager()->RemoveObserver(this);
+#if defined(OS_CHROMEOS)
   ash::Shell::GetInstance()->output_configurator()->RemoveObserver(this);
+#endif
 }
 
 views::View* TrayDisplay::CreateDefaultView(user::LoginStatus status) {
+#if defined(OS_CHROMEOS)
   default_ = new DisplayView(status);
+#endif
   return default_;
 }
 
@@ -151,10 +159,13 @@ void TrayDisplay::OnDisplayRemoved(const gfx::Display& old_display) {
     default_->Update();
 }
 
+#if defined(OS_CHROMEOS)
 void TrayDisplay::OnDisplayModeChanged() {
   if (default_)
     default_->Update();
 }
+#endif
+
 
 }  // namespace internal
 }  // namespace ash

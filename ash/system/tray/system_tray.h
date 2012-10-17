@@ -30,13 +30,11 @@ class ClockObserver;
 class DriveObserver;
 class IMEObserver;
 class LocaleObserver;
+class NetworkObserver;
+class SmsObserver;
 class PowerStatusObserver;
 class UpdateObserver;
 class UserObserver;
-#if defined(OS_CHROMEOS)
-class NetworkObserver;
-class SmsObserver;
-#endif
 
 class SystemTrayItem;
 
@@ -135,16 +133,14 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
   LocaleObserver* locale_observer() const {
     return locale_observer_;
   }
-#if defined(OS_CHROMEOS)
   NetworkObserver* network_observer() const {
     return network_observer_;
   }
-  SmsObserver* sms_observer() const {
-    return sms_observer_;
-  }
-#endif
   ObserverList<PowerStatusObserver>& power_status_observers() {
     return power_status_observers_;
+  }
+  SmsObserver* sms_observer() const {
+    return sms_observer_;
   }
   UpdateObserver* update_observer() const {
     return update_observer_;
@@ -220,11 +216,9 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
   DriveObserver* drive_observer_;
   IMEObserver* ime_observer_;
   LocaleObserver* locale_observer_;
-#if defined(OS_CHROMEOS)
   NetworkObserver* network_observer_;
-  SmsObserver* sms_observer_;
-#endif
   ObserverList<PowerStatusObserver> power_status_observers_;
+  SmsObserver* sms_observer_;
   UpdateObserver* update_observer_;
   UserObserver* user_observer_;
 

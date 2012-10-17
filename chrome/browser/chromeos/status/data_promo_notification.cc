@@ -6,7 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/system/chromeos/network/network_observer.h"
+#include "ash/system/network/network_observer.h"
 #include "ash/system/tray/system_tray.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"

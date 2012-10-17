@@ -6,7 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/system/chromeos/network/network_observer.h"
+#include "ash/system/network/network_observer.h"
 #include "ash/system/tray/system_tray.h"
 #include "base/bind.h"
 #include "base/callback.h"

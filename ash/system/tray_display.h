@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_TRAY_DISPLAY_H_
-#define ASH_SYSTEM_CHROMEOS_TRAY_DISPLAY_H_
+#ifndef ASH_SYSTEM_TRAY_DISPLAY_H_
+#define ASH_SYSTEM_TRAY_DISPLAY_H_
 
 #include "ash/system/tray/system_tray_item.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/display_observer.h"
 
+#if defined(OS_CHROMEOS)
 #include "chromeos/display/output_configurator.h"
+#endif
 
 namespace views {
 class View;
@@ -21,7 +23,9 @@ namespace internal {
 class DisplayView;
 
 class TrayDisplay : public SystemTrayItem,
+#if defined(OS_CHROMEOS)
                     public chromeos::OutputConfigurator::Observer,
+#endif
                     public aura::DisplayObserver {
  public:
   TrayDisplay();
@@ -37,8 +41,10 @@ class TrayDisplay : public SystemTrayItem,
   virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
   virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;
 
+#if defined(OS_CHROMEOS)
   // Overridden from chromeos::OutputConfigurator::Observer
   virtual void OnDisplayModeChanged() OVERRIDE;
+#endif
 
   DisplayView* default_;
 
@@ -48,4 +54,4 @@ class TrayDisplay : public SystemTrayItem,
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_CHROMEOS_TRAY_DISPLAY_H_
+#endif  // ASH_SYSTEM_TRAY_DISPLAY_H_
