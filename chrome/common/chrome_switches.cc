@@ -1304,9 +1304,6 @@ const char kUseGpuInTests[] = "use-gpu-in-tests";
 // testing flag.
 const char kUseSpdy[]                       = "use-spdy";
 
-// Ignores certificate-related errors.
-const char kIgnoreCertificateErrors[]       = "ignore-certificate-errors";
-
 // Sets the maximum SPDY sessions per domain.
 const char kMaxSpdySessionsPerDomain[]      = "max-spdy-sessions-per-domain";
 

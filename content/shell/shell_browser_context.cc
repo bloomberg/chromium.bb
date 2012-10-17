@@ -16,6 +16,7 @@
 #include "content/shell/shell_resource_context.h"
 #include "content/shell/shell_switches.h"
 #include "content/shell/shell_url_request_context_getter.h"
+#include "content/public/common/content_switches.h"
 
 #if defined(OS_WIN)
 #include "base/base_paths_win.h"
@@ -42,7 +43,7 @@ ShellBrowserContext::~ShellBrowserContext() {
 
 void ShellBrowserContext::InitWhileIOAllowed() {
   CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kDumpRenderTree))
+  if (cmd_line->HasSwitch(switches::kIgnoreCertificateErrors))
     ignore_certificate_errors_ = true;
   if (cmd_line->HasSwitch(switches::kDumpRenderTree)) {
     CHECK(testing_path_.CreateUniqueTempDir());
