@@ -917,9 +917,9 @@ bool DesktopRootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
           if (type == ui::ET_MOUSE_MOVED || type == ui::ET_MOUSE_DRAGGED) {
             // If this is a motion event, we want to coalesce all pending motion
             // events that are at the top of the queue.
-            num_coalesced = ui::CoalescePendingMotionEvents(xev, &last_event);
-            if (num_coalesced > 0)
-              xev = &last_event;
+            // num_coalesced = CoalescePendingMotionEvents(xev, &last_event);
+            // if (num_coalesced > 0)
+            //   xev = &last_event;
           } else if (type == ui::ET_MOUSE_PRESSED) {
             XIDeviceEvent* xievent =
                 static_cast<XIDeviceEvent*>(xev->xcookie.data);
