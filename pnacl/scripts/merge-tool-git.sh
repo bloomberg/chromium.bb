@@ -69,6 +69,7 @@ manual() {
   INTERACTIVE_MERGE=true
   local revision=$1
   if [[ $revision == "HEAD" ]]; then
+    pull-upstream
     revision=$(get-head-revision)
   fi
   merge-all ${revision}
@@ -92,7 +93,6 @@ upstream-remote-setup() {
 # Must have already fetched the upstream remote
 get-head-revision() {
   spushd ${TC_SRC_LLVM}
-  pull-upstream
   git rev-parse ${UPSTREAM_REMOTE_BRANCH}
   spopd
 }
