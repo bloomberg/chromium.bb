@@ -13,7 +13,6 @@ import android.webkit.WebView;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
-import org.chromium.content.common.CleanupReference;
 
 /**
  * Manages settings state for a ContentView. A ContentSettings instance is obtained
@@ -29,22 +28,11 @@ public class ContentSettings {
     // used from any thread. Internally, the class uses a message queue
     // to call native code on the UI thread only.
 
+    // The native side of this object. Ownership is retained native-side by the WebContents
+    // instance that backs the associated ContentViewCore.
     private int mNativeContentSettings = 0;
 
     private ContentViewCore mContentViewCore;
-
-    private static final class DestroyRunnable implements Runnable {
-        private int mNativeContentSettings;
-        private DestroyRunnable(int nativeContentSettings) {
-            mNativeContentSettings = nativeContentSettings;
-        }
-        @Override
-        public void run() {
-            nativeDestroy(mNativeContentSettings);
-        }
-    }
-
-    private final CleanupReference mCleanupReference;
 
     // When ContentView is used in PERSONALITY_CHROME mode, settings can't
     // be modified through the ContentSettings instance.
@@ -107,37 +95,33 @@ public class ContentSettings {
 
         EventHandler() {
             mHandler = mContentViewCore.isPersonalityView() ?
-                    new Handler() {
+                    new Handler(Looper.getMainLooper()) {
                         @Override
                         public void handleMessage(Message msg) {
                             switch (msg.what) {
                                 case SYNC:
                                     synchronized (mContentSettingsLock) {
-                                        nativeSyncToNative(mNativeContentSettings);
+                                        syncToNativeOnUiThread();
                                         mIsSyncMessagePending = false;
-                                        mContentSettingsLock.notify();
+                                        mContentSettingsLock.notifyAll();
                                     }
                                     break;
                                 case UPDATE_UA:
-                                    synchronized (mContentViewCore) {
-                                        mContentViewCore.setAllUserAgentOverridesInHistory();
-                                    }
+                                    mContentViewCore.setAllUserAgentOverridesInHistory();
                                     break;
                                 case UPDATE_MULTI_TOUCH:
-                                    synchronized (mContentViewCore) {
-                                        mContentViewCore.updateMultiTouchZoomSupport();
-                                    }
+                                    mContentViewCore.updateMultiTouchZoomSupport();
                                     break;
                             }
                         }
                     } :
-                    new Handler() {
+                    new Handler(Looper.getMainLooper()) {
                         @Override
                         public void handleMessage(Message msg) {
                             switch (msg.what) {
                                 case SYNC:
                                     synchronized (mContentSettingsLock) {
-                                        nativeSyncFromNative(mNativeContentSettings);
+                                        syncFromNativeOnUiThread();
                                         mIsSyncMessagePending = false;
                                     }
                                     break;
@@ -148,9 +132,10 @@ public class ContentSettings {
 
         private void syncSettingsLocked() {
             assert Thread.holdsLock(mContentSettingsLock);
+            if (mNativeContentSettings == 0) return;
             if (mContentViewCore.isPersonalityView()) {
                 if (Looper.myLooper() == mHandler.getLooper()) {
-                    nativeSyncToNative(mNativeContentSettings);
+                    syncToNativeOnUiThread();
                 } else {
                     // We're being called on a background thread, so post a message.
                     if (mIsSyncMessagePending) {
@@ -178,11 +163,13 @@ public class ContentSettings {
 
         private void sendUpdateUaMessageLocked() {
             assert Thread.holdsLock(mContentSettingsLock);
+            if (mNativeContentSettings == 0) return;
             mHandler.sendMessage(Message.obtain(null, UPDATE_UA));
         }
 
         private void sendUpdateMultiTouchMessageLocked() {
             assert Thread.holdsLock(mContentSettingsLock);
+            if (mNativeContentSettings == 0) return;
             mHandler.sendMessage(Message.obtain(null, UPDATE_MULTI_TOUCH));
         }
     }
@@ -198,8 +185,6 @@ public class ContentSettings {
         mCanModifySettings = mContentViewCore.isPersonalityView();
         mNativeContentSettings = nativeInit(nativeContentView, mCanModifySettings);
         assert mNativeContentSettings != 0;
-        mCleanupReference = new CleanupReference(this,
-                new DestroyRunnable(mNativeContentSettings));
 
         if (isAccessFromFileURLsGrantedByDefault) {
             mAllowUniversalAccessFromFileURLs = true;
@@ -211,24 +196,24 @@ public class ContentSettings {
             // PERSONALITY_VIEW
             mDefaultUserAgent = nativeGetDefaultUserAgent();
             mUserAgent = mDefaultUserAgent;
-            nativeSyncToNative(mNativeContentSettings);
+            syncToNativeOnUiThread();
         } else {
             // PERSONALITY_CHROME
             // Chrome has zooming enabled by default. These settings are not
             // set by the native code.
             mBuiltInZoomControls = true;
             mDisplayZoomControls = false;
-            nativeSyncFromNative(mNativeContentSettings);
+            syncFromNativeOnUiThread();
         }
     }
 
     /**
-     * Destroys the native side of the ContentSettings. This ContentSettings object
-     * cannot be used after this method has been called. Should only be called
-     * when related ContentView is destroyed.
+     * Notification from the native side that it is being destroyed.
+     * @param nativeContentSettings the native instance that is going away.
      */
-    void destroy() {
-        mCleanupReference.cleanupNow();
+    @CalledByNative
+    private void onNativeContentSettingsDestroyed(int nativeContentSettings) {
+        assert mNativeContentSettings == nativeContentSettings;
         mNativeContentSettings = 0;
     }
 
@@ -946,10 +931,16 @@ public class ContentSettings {
         }
     }
 
+    void syncToNativeOnUiThread() {
+        if (mNativeContentSettings != 0) nativeSyncToNative(mNativeContentSettings);
+    }
+
+    void syncFromNativeOnUiThread() {
+        if (mNativeContentSettings != 0) nativeSyncFromNative(mNativeContentSettings);
+    }
+
     // Initialize the ContentSettings native side.
     private native int nativeInit(int contentViewPtr, boolean isMasterMode);
-
-    private static native void nativeDestroy(int nativeContentSettings);
 
     private static native String nativeGetDefaultUserAgent();
 

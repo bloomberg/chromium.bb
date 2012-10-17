@@ -106,20 +106,22 @@ ContentSettings::ContentSettings(JNIEnv* env,
                          WebContents* contents,
                          bool is_master_mode)
     : WebContentsObserver(contents),
-      is_master_mode_(is_master_mode) {
-  content_settings_.Reset(env, obj);
+      is_master_mode_(is_master_mode),
+      content_settings_(env, obj) {
 }
 
 ContentSettings::~ContentSettings() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = content_settings_.get(env);
+  if (obj.obj()) {
+    Java_ContentSettings_onNativeContentSettingsDestroyed(env, obj.obj(),
+        reinterpret_cast<jint>(this));
+  }
 }
 
 // static
 bool ContentSettings::RegisterContentSettings(JNIEnv* env) {
   return RegisterNativesImpl(env);
-}
-
-void ContentSettings::Destroy(JNIEnv* env, jobject obj) {
-  delete this;
 }
 
 void ContentSettings::SyncFromNativeImpl() {
@@ -128,7 +130,10 @@ void ContentSettings::SyncFromNativeImpl() {
   if (!field_ids_.get())
     field_ids_.reset(new FieldIds(env));
 
-  jobject obj = content_settings_.obj();
+  ScopedJavaLocalRef<jobject> scoped_obj = content_settings_.get(env);
+  jobject obj = scoped_obj.obj();
+  if (!obj)
+    return;
   RenderViewHost* render_view_host = web_contents()->GetRenderViewHost();
   WebPreferences prefs = render_view_host->GetDelegate()->GetWebkitPrefs();
 
@@ -236,7 +241,10 @@ void ContentSettings::SyncToNativeImpl() {
   if (!field_ids_.get())
     field_ids_.reset(new FieldIds(env));
 
-  jobject obj = content_settings_.obj();
+  ScopedJavaLocalRef<jobject> scoped_obj = content_settings_.get(env);
+  jobject obj = scoped_obj.obj();
+  if (!obj)
+    return;
   RenderViewHost* render_view_host = web_contents()->GetRenderViewHost();
   WebPreferences prefs = render_view_host->GetDelegate()->GetWebkitPrefs();
 
@@ -330,6 +338,10 @@ void ContentSettings::SyncToNative(JNIEnv* env, jobject obj) {
 void ContentSettings::RenderViewCreated(RenderViewHost* render_view_host) {
   if (is_master_mode_)
     SyncToNativeImpl();
+}
+
+void ContentSettings::WebContentsDestroyed(WebContents* web_contents) {
+  delete this;
 }
 
 static jint Init(JNIEnv* env, jobject obj, jint nativeContentViewCore,

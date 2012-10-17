@@ -7,7 +7,7 @@
 
 #include <jni.h>
 
-#include "base/android/scoped_java_ref.h"
+#include "base/android/jni_helper.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -18,11 +18,8 @@ class ContentSettings : public WebContentsObserver {
   ContentSettings(JNIEnv* env, jobject obj,
                   WebContents* contents,
                   bool is_master_mode);
-  virtual ~ContentSettings();
 
   static bool RegisterContentSettings(JNIEnv* env);
-
-  void Destroy(JNIEnv* env, jobject obj);
 
   // Synchronizes the Java settings from native settings.
   void SyncFromNative(JNIEnv* env, jobject obj);
@@ -31,12 +28,15 @@ class ContentSettings : public WebContentsObserver {
 
  private:
   struct FieldIds;
+  // Self-deletes when the underlying WebContents is destroyed.
+  virtual ~ContentSettings();
 
   void SyncFromNativeImpl();
   void SyncToNativeImpl();
 
   // WebContentsObserver overrides:
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
 
   // Determines whether a sync to native should be triggered when a new render
   // view is created.
@@ -46,7 +46,7 @@ class ContentSettings : public WebContentsObserver {
   scoped_ptr<FieldIds> field_ids_;
 
   // The Java counterpart to this class.
-  base::android::ScopedJavaGlobalRef<jobject> content_settings_;
+  JavaObjectWeakGlobalRef content_settings_;
 };
 
 }  // namespace content

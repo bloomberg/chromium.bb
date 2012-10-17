@@ -560,8 +560,6 @@ public class ContentViewCore implements MotionEventDelegate {
             nativeOnJavaContentViewCoreDestroyed(mNativeContentViewCore);
         }
         mNativeContentViewCore = 0;
-        // Do not propagate the destroy() to settings, as the client may still hold a reference to
-        // that and could still be using it.
         mContentSettings = null;
         mVSyncMonitor.stop();
     }
@@ -1842,7 +1840,7 @@ public class ContentViewCore implements MotionEventDelegate {
      */
     @Override
     public void invokeZoomPicker() {
-        if (mContentSettings.supportZoom()) {
+        if (mContentSettings != null && mContentSettings.supportZoom()) {
             mZoomManager.invokeZoomPicker();
         }
     }
