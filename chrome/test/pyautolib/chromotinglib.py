@@ -170,6 +170,9 @@ class ChromotingMixIn(object):
             'document.getElementById("submit_approve_access")',
             tab_index, windex),
         msg='Did not go to permission page.')
+    # Sleeping here works around crbug.com/155292. A better fix would be to
+    # wait until this element is enabled, but that won't work yet.
+    time.sleep(1)
     self._ExecuteJavascript(
         'document.getElementById("submit_approve_access").click();',
         tab_index, windex)
