@@ -136,13 +136,18 @@ void GpuMemoryManager::UpdateAvailableGpuMemory(
 bool GpuMemoryManager::StubWithSurfaceComparator::operator()(
     GpuCommandBufferStubBase* lhs,
     GpuCommandBufferStubBase* rhs) {
-  DCHECK(lhs->has_surface_state() && rhs->has_surface_state());
-  const GpuCommandBufferStubBase::SurfaceState& lhs_ss = lhs->surface_state();
-  const GpuCommandBufferStubBase::SurfaceState& rhs_ss = rhs->surface_state();
-  if (lhs_ss.visible)
-    return !rhs_ss.visible || (lhs_ss.last_used_time > rhs_ss.last_used_time);
+  DCHECK(lhs->memory_manager_state().has_surface &&
+         rhs->memory_manager_state().has_surface);
+  const GpuCommandBufferStubBase::MemoryManagerState& lhs_mms =
+      lhs->memory_manager_state();
+  const GpuCommandBufferStubBase::MemoryManagerState& rhs_mms =
+      rhs->memory_manager_state();
+  if (lhs_mms.visible)
+    return !rhs_mms.visible || (lhs_mms.last_used_time >
+                                rhs_mms.last_used_time);
   else
-    return !rhs_ss.visible && (lhs_ss.last_used_time > rhs_ss.last_used_time);
+    return !rhs_mms.visible && (lhs_mms.last_used_time >
+                                rhs_mms.last_used_time);
 };
 
 void GpuMemoryManager::ScheduleManage(bool immediate) {
@@ -267,9 +272,10 @@ void GpuMemoryManager::Manage() {
     for (std::vector<GpuCommandBufferStubBase*>::iterator it = stubs.begin();
         it != stubs.end(); ++it) {
       GpuCommandBufferStubBase* stub = *it;
-      if (!stub->client_has_memory_allocation_changed_callback())
+      if (!stub->memory_manager_state().
+         client_has_memory_allocation_changed_callback)
         continue;
-      if (stub->has_surface_state())
+      if (stub->memory_manager_state().has_surface)
         stubs_with_surface.push_back(stub);
       else
         stubs_without_surface.push_back(stub);
@@ -294,8 +300,8 @@ void GpuMemoryManager::Manage() {
 
   for (size_t i = 0; i < stubs_with_surface.size(); ++i) {
     GpuCommandBufferStubBase* stub = stubs_with_surface[i];
-    DCHECK(stub->has_surface_state());
-    if (stub->surface_state().visible)
+    DCHECK(stub->memory_manager_state().has_surface);
+    if (stub->memory_manager_state().visible)
       stubs_with_surface_foreground.push_back(stub);
     else if (i < max_surfaces_with_frontbuffer_soft_limit_)
       stubs_with_surface_background.push_back(stub);
@@ -305,7 +311,7 @@ void GpuMemoryManager::Manage() {
   for (std::vector<GpuCommandBufferStubBase*>::const_iterator it =
       stubs_without_surface.begin(); it != stubs_without_surface.end(); ++it) {
     GpuCommandBufferStubBase* stub = *it;
-    DCHECK(!stub->has_surface_state());
+    DCHECK(!stub->memory_manager_state().has_surface);
 
     // Stubs without surfaces have deduced allocation state using the state
     // of surface stubs which are in the same context share group.

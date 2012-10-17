@@ -87,11 +87,13 @@ const int64 kHandleMoreWorkPeriodBusyMs = 1;
 
 }  // namespace
 
-GpuCommandBufferStub::SurfaceState::SurfaceState(int32 surface_id,
-                                                 bool visible,
-                                                 base::TimeTicks last_used_time)
-    : surface_id(surface_id),
+GpuCommandBufferStub::MemoryManagerState::MemoryManagerState(
+    bool has_surface,
+    bool visible,
+    base::TimeTicks last_used_time)
+    : has_surface(has_surface),
       visible(visible),
+      client_has_memory_allocation_changed_callback(false),
       last_used_time(last_used_time) {
 }
 
@@ -118,8 +120,8 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       requested_attribs_(attribs),
       gpu_preference_(gpu_preference),
       route_id_(route_id),
+      surface_id_(surface_id),
       software_(software),
-      client_has_memory_allocation_changed_callback_(false),
       last_flush_count_(0),
       parent_stub_for_initialization_(),
       parent_texture_for_initialization_(0),
@@ -137,9 +139,8 @@ GpuCommandBufferStub::GpuCommandBufferStub(
         new GpuCommandBufferMemoryTracker(channel),
         true);
   }
-  if (surface_id != 0)
-    surface_state_.reset(new GpuCommandBufferStubBase::SurfaceState(
-        surface_id, true, base::TimeTicks::Now()));
+  memory_manager_state_.reset(new GpuCommandBufferStubBase::MemoryManagerState(
+      surface_id != 0, true, base::TimeTicks::Now()));
   if (handle_.sync_point)
     OnWaitSyncPoint(handle_.sync_point);
 }
@@ -702,11 +703,10 @@ void GpuCommandBufferStub::OnDestroyVideoDecoder(int decoder_route_id) {
 
 void GpuCommandBufferStub::OnSetSurfaceVisible(bool visible) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnSetSurfaceVisible");
-  DCHECK(surface_state_.get());
-  surface_state_->visible = visible;
-  surface_state_->last_used_time = base::TimeTicks::Now();
-    channel_->gpu_channel_manager()->gpu_memory_manager()->
-        ScheduleManage(visible);
+  memory_manager_state_->visible = visible;
+  memory_manager_state_->last_used_time = base::TimeTicks::Now();
+  channel_->gpu_channel_manager()->gpu_memory_manager()->
+      ScheduleManage(visible);
 }
 
 void GpuCommandBufferStub::OnDiscardBackbuffer() {
@@ -774,7 +774,8 @@ void GpuCommandBufferStub::OnSetClientHasMemoryAllocationChangedCallback(
   TRACE_EVENT0(
       "gpu",
       "GpuCommandBufferStub::OnSetClientHasMemoryAllocationChangedCallback");
-  client_has_memory_allocation_changed_callback_ = has_callback;
+  memory_manager_state_->client_has_memory_allocation_changed_callback =
+      has_callback;
   channel_->gpu_channel_manager()->gpu_memory_manager()->
       ScheduleManage(false);
 }
@@ -826,21 +827,11 @@ bool GpuCommandBufferStub::IsInSameContextShareGroup(
       static_cast<const GpuCommandBufferStub&>(other).context_group_;
 }
 
-bool GpuCommandBufferStub::
-    client_has_memory_allocation_changed_callback() const {
-  return client_has_memory_allocation_changed_callback_;
-}
 
-bool GpuCommandBufferStub::has_surface_state() const {
-  return surface_state_ != NULL;
+const GpuCommandBufferStubBase::MemoryManagerState&
+    GpuCommandBufferStub::memory_manager_state() const {
+  return *memory_manager_state_.get();
 }
-
-const GpuCommandBufferStubBase::SurfaceState&
-    GpuCommandBufferStub::surface_state() const {
-  DCHECK(has_surface_state());
-  return *surface_state_.get();
-}
-
 void GpuCommandBufferStub::SetMemoryAllocation(
     const GpuMemoryAllocation& allocation) {
   Send(new GpuCommandBufferMsg_SetMemoryAllocation(route_id_, allocation));
