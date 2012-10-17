@@ -870,16 +870,27 @@ bool ImmediateInterpreter::UpdatePinchState(
 bool ImmediateInterpreter::TwoFingersGesturing(
     const FingerState& finger1,
     const FingerState& finger2) const {
+  // Make sure distance between fingers isn't too great
+  if (!finger_metrics_->FingersCloseEnoughToGesture(finger1, finger2))
+    return false;
+
+  // Next, if two fingers are moving a lot, they are gesturing together.
+  if (started_moving_time_ > changed_time_) {
+    // Fingers are moving
+    float dist1_sq = DistanceTravelledSq(finger1);
+    float dist2_sq = DistanceTravelledSq(finger2);
+    if (thumb_movement_factor_.val_ * thumb_movement_factor_.val_ *
+        max(dist1_sq, dist2_sq) < min(dist1_sq, dist2_sq)) {
+      return true;
+    }
+  }
+
   // Make sure the pressure difference isn't too great for vertically
   // aligned contacts
   float pdiff = fabsf(finger1.pressure - finger2.pressure);
   float xdist = fabsf(finger1.position_x - finger2.position_x);
   float ydist = fabsf(finger1.position_y - finger2.position_y);
   if (pdiff > two_finger_pressure_diff_thresh_.val_ && ydist > xdist)
-    return false;
-
-  // Next, make sure distance between fingers isn't too great
-  if (!finger_metrics_->FingersCloseEnoughToGesture(finger1, finger2))
     return false;
 
   const float kMin2fDistThreshSq = tapping_finger_min_separation_.val_ *
