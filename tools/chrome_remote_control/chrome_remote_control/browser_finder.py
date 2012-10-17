@@ -23,10 +23,10 @@ def FindBrowser(options):
   connect to and control the located browser.
   """
   if options.browser_type == 'exact' and options.browser_executable == None:
-    raise Exception('browser_type=exact requires browser_executable be set.')
+    raise Exception('--browser=exact requires --browser-executable to be set.')
 
   if options.browser_type != 'exact' and options.browser_executable != None:
-    raise Exception('browser_executable requires browser_executable=exact.')
+    raise Exception('--browser-executable requires --browser=exact.')
 
   if options.browser_type == None:
     raise BrowserTypeRequiredException('browser_type must be specified')
