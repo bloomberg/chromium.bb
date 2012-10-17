@@ -163,9 +163,6 @@ class AppNonClientFrameViewAura::FrameObserver : public views::WidgetObserver {
 };
 
 // static
-const char AppNonClientFrameViewAura::kViewClassName[] =
-    "AppNonClientFrameViewAura";
-// static
 const char AppNonClientFrameViewAura::kControlWindowName[] =
     "AppNonClientFrameViewAuraControls";
 
@@ -244,10 +241,6 @@ int AppNonClientFrameViewAura::GetThemeBackgroundXInset() const {
 }
 
 void AppNonClientFrameViewAura::UpdateThrobber(bool running) {
-}
-
-std::string AppNonClientFrameViewAura::GetClassName() const {
-  return kViewClassName;
 }
 
 void AppNonClientFrameViewAura::OnBoundsChanged(

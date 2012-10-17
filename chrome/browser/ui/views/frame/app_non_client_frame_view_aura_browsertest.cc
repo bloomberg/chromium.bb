@@ -7,7 +7,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/views/ash/browser_non_client_frame_view_ash.h"
 #include "chrome/browser/ui/views/frame/app_non_client_frame_view_aura.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -44,10 +43,6 @@ void MinimizeWindow(aura::Window* window) {
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
 }
 
-void RestoreWindow(Window* window) {
-  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-}
-
 }  // namespace
 
 class AppNonClientFrameViewAuraTest : public InProcessBrowserTest {
@@ -69,12 +64,11 @@ class AppNonClientFrameViewAuraTest : public InProcessBrowserTest {
     app_browser_->window()->Show();
   }
 
-  // Returns the class name of the NonClientFrameView.
-  std::string GetFrameClassName() const {
+  AppNonClientFrameViewAura* GetAppFrameView() const {
     BrowserView* browser_view =
         static_cast<BrowserView*>(app_browser_->window());
-    BrowserFrame* browser_frame = browser_view->frame();
-    return browser_frame->GetFrameView()->GetClassName();
+    BrowserFrame* frame = browser_view->frame();
+    return static_cast<AppNonClientFrameViewAura*>(frame->GetFrameView());
   }
 
   aura::RootWindow* GetRootWindow() const {
@@ -91,39 +85,6 @@ class AppNonClientFrameViewAuraTest : public InProcessBrowserTest {
  private:
   Browser *app_browser_;
 };
-
-// Ensure that restoring the app window replaces the frame with a normal one,
-// and maximizing again brings back the app frame. This has been the source of
-// some crash bugs like crbug.com/155634
-IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAuraTest, SwitchFrames) {
-  // We start with the app frame.
-  EXPECT_EQ(AppNonClientFrameViewAura::kViewClassName, GetFrameClassName());
-
-  // Restoring the window gives us the normal frame.
-  Window* native_window = app_browser()->window()->GetNativeWindow();
-  RestoreWindow(native_window);
-  EXPECT_EQ(BrowserNonClientFrameViewAsh::kViewClassName, GetFrameClassName());
-
-  // Maximizing the window switches back to the app frame.
-  MaximizeWindow(native_window);
-  EXPECT_EQ(AppNonClientFrameViewAura::kViewClassName, GetFrameClassName());
-
-  // Minimizing the window switches to normal frame.
-  // TODO(jamescook): This seems wasteful, since the user is likely to bring
-  // the window back to the maximized state.
-  MinimizeWindow(native_window);
-  EXPECT_EQ(BrowserNonClientFrameViewAsh::kViewClassName, GetFrameClassName());
-
-  // Coming back to maximized switches to app frame.
-  MaximizeWindow(native_window);
-  EXPECT_EQ(AppNonClientFrameViewAura::kViewClassName, GetFrameClassName());
-
-  // One more restore/maximize cycle for good measure.
-  RestoreWindow(native_window);
-  EXPECT_EQ(BrowserNonClientFrameViewAsh::kViewClassName, GetFrameClassName());
-  MaximizeWindow(native_window);
-  EXPECT_EQ(AppNonClientFrameViewAura::kViewClassName, GetFrameClassName());
-}
 
 // Ensure that we can click the close button when the controls are shown.
 // In particular make sure that we can click it on the top pixel of the button.
