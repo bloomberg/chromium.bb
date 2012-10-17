@@ -833,4 +833,93 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AcceptDragEvents) {
   EXPECT_EQ(expected_title, actual_title);
 }
 
+// This test verifies that round trip postMessage works as expected.
+// 1. The embedder posts a message 'testing123' to the guest.
+// 2. The guest receives and replies to the message using the event object's
+// source object: event.source.postMessage('foobar', '*')
+// 3. The embedder receives the message and uses the event's source
+// object to do one final reply: 'stop'
+// 4. The guest receives the final 'stop' message.
+// 5. The guest acks the 'stop' message with a 'stop_ack' message.
+// 6. The embedder changes its title to 'main guest' when it sees the 'stop_ack'
+// message.
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, PostMessage) {
+  const char* kTesting = "testing123";
+  const char* kEmbedderURL = "files/browser_plugin_embedder.html";
+  const char* kGuestURL = "files/browser_plugin_post_message_guest.html";
+  StartBrowserPluginTest(kEmbedderURL, kGuestURL, false, "");
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      test_embedder()->web_contents()->GetRenderViewHost());
+  {
+    const string16 expected_title = ASCIIToUTF16("main guest");
+    content::TitleWatcher title_watcher(test_embedder()->web_contents(),
+                                        expected_title);
+
+    // By the time we get here 'contentWindow' should be ready because the
+    // guest has begun sending pixels to the embedder. This happens after
+    // the browser process sends the guest_routing_id to the embedder via
+    // BrowserPluginMsg_GuestContentWindowReady and after the browser process
+    // issues a ViewMsg_New to create the swapped out guest in the embedder's
+    // render process.
+    ExecuteSyncJSFunction(rvh,
+        ASCIIToUTF16(StringPrintf("PostMessage('%s, false');", kTesting)));
+
+    // The title will be updated to "main guest" at the last stage of the
+    // process described above.
+    string16 actual_title = title_watcher.WaitAndGetTitle();
+    EXPECT_EQ(expected_title, actual_title);
+  }
+}
+
+// This is the same as BrowserPluginHostTest.PostMessage but also
+// posts a message to an iframe.
+// TODO(fsamuel): This test should replace the previous test once postMessage
+// iframe targeting is fixed (see http://crbug.com/153701).
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DISABLED_PostMessageToIFrame) {
+  const char* kTesting = "testing123";
+  const char* kEmbedderURL = "files/browser_plugin_embedder.html";
+  const char* kGuestURL = "files/browser_plugin_post_message_guest.html";
+  StartBrowserPluginTest(kEmbedderURL, kGuestURL, false, "");
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      test_embedder()->web_contents()->GetRenderViewHost());
+  {
+    const string16 expected_title = ASCIIToUTF16("main guest");
+    content::TitleWatcher title_watcher(test_embedder()->web_contents(),
+                                        expected_title);
+
+    ExecuteSyncJSFunction(rvh,
+        ASCIIToUTF16(StringPrintf("PostMessage('%s, false');", kTesting)));
+
+    // The title will be updated to "main guest" at the last stage of the
+    // process described above.
+    string16 actual_title = title_watcher.WaitAndGetTitle();
+    EXPECT_EQ(expected_title, actual_title);
+  }
+  {
+    content::TitleWatcher ready_watcher(test_embedder()->web_contents(),
+                                        ASCIIToUTF16("ready"));
+
+    RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
+        test_guest()->web_contents()->GetRenderViewHost());
+    GURL test_url = test_server()->GetURL(
+        "files/browser_plugin_post_message_guest.html");
+    ExecuteSyncJSFunction(guest_rvh,
+        ASCIIToUTF16(StringPrintf("CreateChildFrame('%s');",
+                                  test_url.spec().c_str())));
+
+    string16 actual_title = ready_watcher.WaitAndGetTitle();
+    EXPECT_EQ(ASCIIToUTF16("ready"), actual_title);
+
+    content::TitleWatcher iframe_watcher(test_embedder()->web_contents(),
+                                        ASCIIToUTF16("iframe"));
+    ExecuteSyncJSFunction(rvh,
+        ASCIIToUTF16(StringPrintf("PostMessage('%s', true);", kTesting)));
+
+    // The title will be updated to "iframe" at the last stage of the
+    // process described above.
+    actual_title = iframe_watcher.WaitAndGetTitle();
+    EXPECT_EQ(ASCIIToUTF16("iframe"), actual_title);
+  }
+}
+
 }  // namespace content

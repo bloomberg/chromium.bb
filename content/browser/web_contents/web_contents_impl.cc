@@ -3005,8 +3005,14 @@ void WebContentsImpl::RouteMessageEvent(
     RenderViewHost* rvh,
     const ViewMsg_PostMessage_Params& params) {
   // Only deliver the message to the active RenderViewHost if the request
-  // came from a RenderViewHost in the same BrowsingInstance.
-  if (!rvh->GetSiteInstance()->IsRelatedSiteInstance(GetSiteInstance()))
+  // came from a RenderViewHost in the same BrowsingInstance or if this
+  // WebContents is dedicated to a browser plugin guest.
+  // Note: This check means that an embedder could theoretically receive a
+  // postMessage from anyone (not just its own guests). However, this is
+  // probably not a risk for apps since other pages won't have references
+  // to App windows.
+  if (!rvh->GetSiteInstance()->IsRelatedSiteInstance(GetSiteInstance()) &&
+      !GetBrowserPluginGuest() && !GetBrowserPluginEmbedder())
     return;
 
   ViewMsg_PostMessage_Params new_params(params);
@@ -3031,8 +3037,16 @@ void WebContentsImpl::RouteMessageEvent(
     }
 
     if (source_contents) {
-      new_params.source_routing_id =
-          source_contents->CreateOpenerRenderViews(GetSiteInstance());
+      if (GetBrowserPluginGuest()) {
+        // We create a swapped out RenderView for the embedder in the guest's
+        // render process but we intentionally do not expose the embedder's
+        // opener chain to it.
+        new_params.source_routing_id =
+            source_contents->CreateSwappedOutRenderView(GetSiteInstance());
+      } else {
+        new_params.source_routing_id =
+            source_contents->CreateOpenerRenderViews(GetSiteInstance());
+      }
     } else {
       // We couldn't find it, so don't pass a source frame.
       new_params.source_routing_id = MSG_ROUTING_NONE;
@@ -3133,6 +3147,11 @@ WebPreferences WebContentsImpl::GetWebkitPrefs() {
   GURL url = controller_.GetActiveEntry()
       ? controller_.GetActiveEntry()->GetURL() : GURL::EmptyGURL();
   return GetWebkitPrefs(GetRenderViewHost(), url);
+}
+
+int WebContentsImpl::CreateSwappedOutRenderView(
+    content::SiteInstance* instance) {
+  return render_manager_.CreateRenderView(instance, MSG_ROUTING_NONE, true);
 }
 
 void WebContentsImpl::OnUserGesture() {

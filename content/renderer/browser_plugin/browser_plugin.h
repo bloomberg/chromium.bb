@@ -38,6 +38,8 @@ class CONTENT_EXPORT BrowserPlugin :
   // Set the src attribute value of the BrowserPlugin instance and reset
   // the guest_crashed_ flag.
   void SetSrcAttribute(const std::string& src);
+  // Get the guest's DOMWindow proxy.
+  NPObject* GetContentWindow() const;
   // Returns Chrome's process ID for the current guest.
   int process_id() const { return process_id_; }
   // The partition identifier string is stored as UTF-8.
@@ -71,6 +73,10 @@ class CONTENT_EXPORT BrowserPlugin :
   // Tells the BrowserPlugin to advance the focus to the next (or previous)
   // element.
   void AdvanceFocus(bool reverse);
+
+  // Inform the BrowserPlugin that the guest's contentWindow is ready,
+  // and provide it with a routing ID to grab it.
+  void GuestContentWindowReady(int content_window_routing_id);
 
   // Informs the BrowserPlugin that the guest has started/stopped accepting
   // touch events.
@@ -202,6 +208,7 @@ class CONTENT_EXPORT BrowserPlugin :
   int process_id_;
   std::string storage_partition_id_;
   bool persist_storage_;
+  int content_window_routing_id_;
   // Tracks the visibility of the browser plugin regardless of the whole
   // embedder RenderView's visibility.
   bool visible_;
