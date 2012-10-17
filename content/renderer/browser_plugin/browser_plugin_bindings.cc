@@ -41,6 +41,7 @@ const char kAddEventListener[] = "addEventListener";
 const char kBackMethod[] = "back";
 const char kCanGoBack[] = "canGoBack";
 const char kCanGoForward[] = "canGoForward";
+const char kContentWindow[] = "contentWindow";
 const char kForwardMethod[] = "forward";
 const char kGetProcessId[] = "getProcessId";
 const char kGoMethod[] = "go";
@@ -54,6 +55,10 @@ const char kTerminateMethod[] = "terminate";
 BrowserPluginBindings* GetBindings(NPObject* object) {
   return static_cast<BrowserPluginBindings::BrowserPluginNPObject*>(object)->
       message_channel;
+}
+
+bool IdentifierIsContentWindow(NPIdentifier identifier) {
+  return WebBindings::getStringIdentifier(kContentWindow) == identifier;
 }
 
 bool IdentifierIsPartitionAttribute(NPIdentifier identifier) {
@@ -141,6 +146,7 @@ bool BrowserPluginBindingsInvokeDefault(NPObject* np_obj,
 
 bool BrowserPluginBindingsHasProperty(NPObject* np_obj, NPIdentifier name) {
   return IdentifierIsSrcAttribute(name) ||
+      IdentifierIsContentWindow(name) ||
       IdentifierIsPartitionAttribute(name);
 }
 
@@ -161,6 +167,15 @@ bool BrowserPluginBindingsGetProperty(NPObject* np_obj, NPIdentifier name,
   if (IdentifierIsSrcAttribute(name)) {
     std::string src = bindings->instance()->GetSrcAttribute();
     return StringToNPVariant(src, result);
+  }
+
+  if (IdentifierIsContentWindow(name)) {
+    NPObject* obj = bindings->instance()->GetContentWindow();
+    if (obj) {
+      result->type = NPVariantType_Object;
+      result->value.objectValue = WebBindings::retainObject(obj);
+    }
+    return true;
   }
 
   if (IdentifierIsPartitionAttribute(name)) {

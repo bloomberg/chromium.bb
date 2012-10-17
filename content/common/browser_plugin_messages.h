@@ -149,6 +149,12 @@ IPC_SYNC_MESSAGE_ROUTED2_0(BrowserPluginHostMsg_ResizeGuest,
 // -----------------------------------------------------------------------------
 // These messages are from the browser process to the embedder.
 
+// Once the swapped out guest RenderView has been created in the embedder render
+// process, the browser process informs the embedder of its routing ID.
+IPC_MESSAGE_CONTROL2(BrowserPluginMsg_GuestContentWindowReady,
+                     int /* instance_id */,
+                     int /* source_routing_id */)
+
 // When the guest begins to load a page, the browser process informs the
 // embedder through the BrowserPluginMsg_LoadStart message.
 IPC_MESSAGE_CONTROL3(BrowserPluginMsg_LoadStart,
