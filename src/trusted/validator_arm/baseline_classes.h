@@ -2005,7 +2005,6 @@ class VectorBinary3RegisterOpBase : public UncondDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterOpBase);
 };
 
-
 // Vector binary operator, 3 registers same length
 // Op<c> Rd, Rn, Rm,...
 // +--------+--+--+--+--+----+--------+--------+----+--+--+--+--+--+--+--------+
@@ -2128,6 +2127,76 @@ class VectorBinary3RegisterSameLengthDI
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterSameLengthDI);
+};
+
+// Vector binary operator, 2 registers and a scalar (which is encoded in M:Vm).
+// op<c>.<dt> Rd, Rn, <Rm[x]>
+// +--------+--+--+--+--+----+--------+--------+--+--+--+--+--+--+--+--+------+
+// |31..28|27..|24|23|22|2120|19181716|15141312|11|10| 9| 8| 7| 6| 5| 4| 3.. 0|
+// +------+----+--+--+--+----+--------+--------+--+--+--+--+--+--+--+--+------+
+// | cond |    | Q|  | D|size|   Vn   |   Vd   |  |op|  | F| N|  | M|  |  Vm  |
+// +--------+--+--+--+--+----+--------+--------+--+--+--+--+--+--+--+--+------+
+// Rd - The destination register.
+// Rn - The first operand.
+// M:Vm - The incoding of the scalar.
+//
+// d = D:Vd, n = N:Vn
+//
+// Note: The vector registers are not tracked by the validator, and hence,
+// are not modeled, other than their index.
+class VectorBinary2RegisterScalar : public VectorBinary3RegisterOpBase {
+ public:
+  static const FlagBit8Interface f;
+  static const FlagBit10Interface op;
+  static const Imm2Bits20To21Interface size;
+  static const FlagBit24Interface q;
+
+  VectorBinary2RegisterScalar() {}
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary2RegisterScalar);
+};
+
+// Defines a VectorBinary2RegisterScalar that allows 16 and 32-bit integer
+// arguments.
+//   index := M:Vm(3) if size=11 else M;
+//   safety := size=11 => DECODER_ERROR &
+//             size=00 => UNDEFINED &
+//             Q=1 & (Vd(0)=1 | Vn(0)=1) => UNDEFINED;
+class VectorBinary2RegisterScalar_I16_32 : public VectorBinary2RegisterScalar {
+ public:
+  VectorBinary2RegisterScalar_I16_32() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary2RegisterScalar_I16_32);
+};
+
+// Defines a VectorBinary2RegisterScalar that allows 16 and 32-bit integer
+// arguments, and long (i.e. double sized) results.
+//   safety := size=11 => DECODER_ERROR &
+//             (size=00 | Vd(0)=1) => UNDEFINED;
+class VectorBinary2RegisterScalar_I16_32L : public VectorBinary2RegisterScalar {
+ public:
+  VectorBinary2RegisterScalar_I16_32L() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary2RegisterScalar_I16_32L);
+};
+
+// Defines a VectorBinary2RegisterScalar that allows 32-bit floating point
+//  values.
+//   safety := size=11 => DECODER_ERROR &
+//             (size=00 | size=01) => UNDEFINED &
+//             Q=1 & (Vd(0)=1 | Vn(0)=1) => UNDEFINED;
+class VectorBinary2RegisterScalar_F32 : public VectorBinary2RegisterScalar {
+ public:
+  VectorBinary2RegisterScalar_F32() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary2RegisterScalar_F32);
 };
 
 // Vector binary operator with imm4 value.

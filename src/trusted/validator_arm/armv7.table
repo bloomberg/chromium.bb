@@ -199,6 +199,9 @@ class VectorBinary3RegisterSameLength32_DQ
          : VectorBinary3RegisterSameLength
 class VectorBinary3RegisterSameLengthDI
          : VectorBinary3RegisterSameLength
+class VectorBinary2RegisterScalar_F32 : VectorBinary2RegisterScalar
+class VectorBinary2RegisterScalar_I16_32 : VectorBinary2RegisterScalar
+class VectorBinary2RegisterScalar_I16_32L : VectorBinary2RegisterScalar
 
 ##############################################################
 # The following define decoder tables.
@@ -2020,16 +2023,89 @@ class VectorBinary3RegisterSameLengthDI
 +--
 
 +-- simd_dp_2scalar (See Section A7.4.3)
+*V2RS VectorBinary2RegisterScalar
+   { Q(24), D(22), size(21:20), Vn(19:16), Vd(15:12), op(10),
+     F(8), N(7), M(5), Vm(3:0) }
+   d := D:Vd; n := N:Vn;
+   # Allows 8, 16, and 32, and 64-bit values.
+   esize := 8  << size; elements := 64 / esize;
+   defs := {};  # Doesn't affect general purpose registers.
+   uses := {};
+   arch := ASIMD;
+*V2RS_I16_32 *V2RS
+   # Allows 16 and 32-bit integers (i.e. F=0).
+   baseline := VectorBinary2RegisterScalar_I16_32;
+   regs := 1 if Q=0 else 2;
+   m  := Vm(2:0) if size=01 else Vm;
+   index := M:Vm(3) if size=01 else M;
+   safety := size=11 => DECODER_ERROR &
+             size=00 => UNDEFINED &
+             Q=1 & (Vd(0)=1 | Vn(0)=1) => UNDEFINED;
+*V2RS_I16_32L *V2RS_I16_32
+   # Allows 16 and 32-bit operands, and long (i.e. double sized) results.
+   baseline := VectorBinary2RegisterScalar_I16_32L;
+   unsigned := Q=1;
+   regs := 1;
+   safety := size=11 => DECODER_ERROR &
+             (size=00 | Vd(0)=1) => UNDEFINED;
+*V2RS_F32 *V2RS
+   # Allows 32-bit floating-point values.
+   baseline := VectorBinary2RegisterScalar_F32;
+   regs := 1 if Q=0 else 2;
+   m  := Vm;
+   index := M;
+   safety := size=11 => DECODER_ERROR &
+             (size=00 | size=01) => UNDEFINED &
+             Q=1 & (Vd(0)=1 | Vn(0)=1) => UNDEFINED;
++--
+# Note: for and/sub operations defined by bit 10, we have duplicated
+# rows and back filled bit 10 into A.
+# Note: Table advanced_simd_data_processing_instructions (the
+# caller of this table) restricts size(21:20) to be in {0x, 10}.
 | A(11:8) U(24)
-| 0x0x    -     =EffectiveNoOp  # VMLA, VMLS (scalar)
-| 0x10    -     =EffectiveNoOp  # VMLAL, VMLSL (scalar)
-| 0x11    0     =EffectiveNoOp  # VQDMLAL, VMQDLSL
-| 100x    -     =EffectiveNoOp  # VMUL(scalar)
-| 1010    -     =EffectiveNoOp  # VMULL(scalar)
-| 1011    0     =EffectiveNoOp  # VQDMULL
-| 1100    -     =EffectiveNoOp  # VQDMULH
-| 1101    -     =EffectiveNoOp  # VQRDMULH
-| else:         =Undefined  # Note on page A7-16
+| 0000    -     = *V2RS_I16_32
+                  pattern := 1111001q1dssnnnndddd0p0fn1m0mmmm & size=~11;
+                  rule := VMLA_by_scalar_A1;
+| 0001    -     = *V2RS_F32
+                  pattern := 1111001q1dssnnnndddd0p0fn1m0mmmm & size=~11;
+                  rule := VMLA_by_scalar_A1;
+| 0100    -     = *V2RS_I16_32
+                  pattern := 1111001q1dssnnnndddd0p0fn1m0mmmm & size=~11;
+                  rule := VMLS_by_scalar_A1;
+| 0101    -     = *V2RS_F32
+                  pattern := 1111001q1dssnnnndddd0p0fn1m0mmmm & size=~11;
+                  rule := VMLS_by_scalar_A1;
+| 0010    -     = *V2RS_I16_32L
+                  pattern := 1111001u1dssnnnndddd0p10n1m0mmmm & size=~11;
+                  rule := VMLAL_by_scalar_A2;
+| 0110    -     = *V2RS_I16_32L
+                  pattern := 1111001u1dssnnnndddd0p10n1m0mmmm & size=~11;
+                  rule := VMLSL_by_scalar_A2;
+| 0011    0     = *V2RS_I16_32L
+                  pattern := 111100101dssnnnndddd0p11n1m0mmmm & size=~11;
+                  rule := VQDMLAL_A1;
+| 0111    0     = *V2RS_I16_32L
+                  pattern := 111100101dssnnnndddd0p11n1m0mmmm & size=~11;
+                  rule := VQDMLSL_A1;
+| 1000    -     = *V2RS_I16_32
+                  pattern := 1111001q1dssnnnndddd100fn1m0mmmm & size=~11;
+                  rule := VMUL_by_scalar_A1;
+| 1001    -     = *V2RS_F32
+                  pattern := 1111001q1dssnnnndddd100fn1m0mmmm & size=~11;
+                  rule := VMUL_by_scalar_A1;
+| 1010    -     = *V2RS_I16_32L
+                  pattern := 1111001u1dssnnnndddd1010n1m0mmmm & size=~11;
+                  rule := VMULL_by_scalar_A2;
+| 1011    0     = *V2RS_I16_32L
+                  pattern := 111100101dssnnnndddd1011n1m0mmmm & size=~11;
+                  rule := VQDMULL_A2;
+| 1100    -     = *V2RS_I16_32
+                  pattern := 1111001q1dssnnnndddd1100n1m0mmmm & size=~11;
+                  rule := VQDMULH_A2;
+| 1101    -     = *V2RS_I16_32
+                  pattern := 1111001q1dssnnnndddd1101n1m0mmmm & size=~11;
+                  rule := VQRDMULH;
+| else:         = Undefined
 +--
 
 +-- simd_dp_2shift (See Section A7.4.4)

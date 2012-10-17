@@ -1251,6 +1251,62 @@ class UnpredictableUncondDecoder_Unpredictable
     : public UnpredictableUncondDecoder {
 };
 
+class VectorBinary2RegisterScalar_F32_VMLA_by_scalar_A1
+    : public VectorBinary2RegisterScalar_F32 {
+};
+
+class VectorBinary2RegisterScalar_F32_VMLS_by_scalar_A1
+    : public VectorBinary2RegisterScalar_F32 {
+};
+
+class VectorBinary2RegisterScalar_F32_VMUL_by_scalar_A1
+    : public VectorBinary2RegisterScalar_F32 {
+};
+
+class VectorBinary2RegisterScalar_I16_32_VMLA_by_scalar_A1
+    : public VectorBinary2RegisterScalar_I16_32 {
+};
+
+class VectorBinary2RegisterScalar_I16_32_VMLS_by_scalar_A1
+    : public VectorBinary2RegisterScalar_I16_32 {
+};
+
+class VectorBinary2RegisterScalar_I16_32_VMUL_by_scalar_A1
+    : public VectorBinary2RegisterScalar_I16_32 {
+};
+
+class VectorBinary2RegisterScalar_I16_32_VQDMULH_A2
+    : public VectorBinary2RegisterScalar_I16_32 {
+};
+
+class VectorBinary2RegisterScalar_I16_32_VQRDMULH
+    : public VectorBinary2RegisterScalar_I16_32 {
+};
+
+class VectorBinary2RegisterScalar_I16_32L_VMLAL_by_scalar_A2
+    : public VectorBinary2RegisterScalar_I16_32L {
+};
+
+class VectorBinary2RegisterScalar_I16_32L_VMLSL_by_scalar_A2
+    : public VectorBinary2RegisterScalar_I16_32L {
+};
+
+class VectorBinary2RegisterScalar_I16_32L_VMULL_by_scalar_A2
+    : public VectorBinary2RegisterScalar_I16_32L {
+};
+
+class VectorBinary2RegisterScalar_I16_32L_VQDMLAL_A1
+    : public VectorBinary2RegisterScalar_I16_32L {
+};
+
+class VectorBinary2RegisterScalar_I16_32L_VQDMLSL_A1
+    : public VectorBinary2RegisterScalar_I16_32L {
+};
+
+class VectorBinary2RegisterScalar_I16_32L_VQDMULL_A2
+    : public VectorBinary2RegisterScalar_I16_32L {
+};
+
 class VectorBinary3RegisterImmOp_Vext_Rule_305_A1_P598
     : public VectorBinary3RegisterImmOp {
 };
@@ -6264,6 +6320,174 @@ class NamedUnpredictableUncondDecoder_Unpredictable
  private:
   nacl_arm_dec::UnpredictableUncondDecoder_Unpredictable decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnpredictableUncondDecoder_Unpredictable);
+};
+
+class NamedVectorBinary2RegisterScalar_F32_VMLA_by_scalar_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterScalar_F32_VMLA_by_scalar_A1()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterScalar_F32 VMLA_by_scalar_A1")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterScalar_F32_VMLA_by_scalar_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterScalar_F32_VMLA_by_scalar_A1);
+};
+
+class NamedVectorBinary2RegisterScalar_F32_VMLS_by_scalar_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterScalar_F32_VMLS_by_scalar_A1()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterScalar_F32 VMLS_by_scalar_A1")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterScalar_F32_VMLS_by_scalar_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterScalar_F32_VMLS_by_scalar_A1);
+};
+
+class NamedVectorBinary2RegisterScalar_F32_VMUL_by_scalar_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterScalar_F32_VMUL_by_scalar_A1()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterScalar_F32 VMUL_by_scalar_A1")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterScalar_F32_VMUL_by_scalar_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterScalar_F32_VMUL_by_scalar_A1);
+};
+
+class NamedVectorBinary2RegisterScalar_I16_32_VMLA_by_scalar_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterScalar_I16_32_VMLA_by_scalar_A1()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterScalar_I16_32 VMLA_by_scalar_A1")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterScalar_I16_32_VMLA_by_scalar_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterScalar_I16_32_VMLA_by_scalar_A1);
+};
+
+class NamedVectorBinary2RegisterScalar_I16_32_VMLS_by_scalar_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterScalar_I16_32_VMLS_by_scalar_A1()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterScalar_I16_32 VMLS_by_scalar_A1")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterScalar_I16_32_VMLS_by_scalar_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterScalar_I16_32_VMLS_by_scalar_A1);
+};
+
+class NamedVectorBinary2RegisterScalar_I16_32_VMUL_by_scalar_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterScalar_I16_32_VMUL_by_scalar_A1()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterScalar_I16_32 VMUL_by_scalar_A1")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterScalar_I16_32_VMUL_by_scalar_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterScalar_I16_32_VMUL_by_scalar_A1);
+};
+
+class NamedVectorBinary2RegisterScalar_I16_32_VQDMULH_A2
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterScalar_I16_32_VQDMULH_A2()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterScalar_I16_32 VQDMULH_A2")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterScalar_I16_32_VQDMULH_A2 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterScalar_I16_32_VQDMULH_A2);
+};
+
+class NamedVectorBinary2RegisterScalar_I16_32_VQRDMULH
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterScalar_I16_32_VQRDMULH()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterScalar_I16_32 VQRDMULH")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterScalar_I16_32_VQRDMULH decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterScalar_I16_32_VQRDMULH);
+};
+
+class NamedVectorBinary2RegisterScalar_I16_32L_VMLAL_by_scalar_A2
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterScalar_I16_32L_VMLAL_by_scalar_A2()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterScalar_I16_32L VMLAL_by_scalar_A2")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterScalar_I16_32L_VMLAL_by_scalar_A2 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterScalar_I16_32L_VMLAL_by_scalar_A2);
+};
+
+class NamedVectorBinary2RegisterScalar_I16_32L_VMLSL_by_scalar_A2
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterScalar_I16_32L_VMLSL_by_scalar_A2()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterScalar_I16_32L VMLSL_by_scalar_A2")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterScalar_I16_32L_VMLSL_by_scalar_A2 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterScalar_I16_32L_VMLSL_by_scalar_A2);
+};
+
+class NamedVectorBinary2RegisterScalar_I16_32L_VMULL_by_scalar_A2
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterScalar_I16_32L_VMULL_by_scalar_A2()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterScalar_I16_32L VMULL_by_scalar_A2")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterScalar_I16_32L_VMULL_by_scalar_A2 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterScalar_I16_32L_VMULL_by_scalar_A2);
+};
+
+class NamedVectorBinary2RegisterScalar_I16_32L_VQDMLAL_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterScalar_I16_32L_VQDMLAL_A1()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterScalar_I16_32L VQDMLAL_A1")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterScalar_I16_32L_VQDMLAL_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterScalar_I16_32L_VQDMLAL_A1);
+};
+
+class NamedVectorBinary2RegisterScalar_I16_32L_VQDMLSL_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterScalar_I16_32L_VQDMLSL_A1()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterScalar_I16_32L VQDMLSL_A1")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterScalar_I16_32L_VQDMLSL_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterScalar_I16_32L_VQDMLSL_A1);
+};
+
+class NamedVectorBinary2RegisterScalar_I16_32L_VQDMULL_A2
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterScalar_I16_32L_VQDMULL_A2()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterScalar_I16_32L VQDMULL_A2")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterScalar_I16_32L_VQDMULL_A2 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterScalar_I16_32L_VQDMULL_A2);
 };
 
 class NamedVectorBinary3RegisterImmOp_Vext_Rule_305_A1_P598

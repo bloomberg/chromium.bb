@@ -109,6 +109,9 @@ class Arm32DecoderState : DecoderState {
   inline const ClassDecoder& decode_signed_multiply_signed_and_unsigned_divide(
       const Instruction inst) const;
 
+  inline const ClassDecoder& decode_simd_dp_2scalar(
+      const Instruction inst) const;
+
   inline const ClassDecoder& decode_simd_dp_3same(
       const Instruction inst) const;
 
@@ -188,6 +191,9 @@ class Arm32DecoderState : DecoderState {
   const Unary1RegisterUse Unary1RegisterUse_instance_;
   const Undefined Undefined_instance_;
   const Unpredictable Unpredictable_instance_;
+  const VectorBinary2RegisterScalar_F32 VectorBinary2RegisterScalar_F32_instance_;
+  const VectorBinary2RegisterScalar_I16_32 VectorBinary2RegisterScalar_I16_32_instance_;
+  const VectorBinary2RegisterScalar_I16_32L VectorBinary2RegisterScalar_I16_32L_instance_;
   const VectorBinary3RegisterImmOp VectorBinary3RegisterImmOp_instance_;
   const VectorBinary3RegisterLookupOp VectorBinary3RegisterLookupOp_instance_;
   const VectorBinary3RegisterSameLength32P VectorBinary3RegisterSameLength32P_instance_;

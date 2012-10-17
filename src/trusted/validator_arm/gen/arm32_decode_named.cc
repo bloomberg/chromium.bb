@@ -76,13 +76,23 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_data_proce
      const nacl_arm_dec::Instruction inst) const {
 
   if ((inst.Bits() & 0x00B00000) == 0x00A00000 /* A(23:19)=1x10x */ &&
-      (inst.Bits() & 0x00000010) == 0x00000000 /* C(7:4)=xxx0 */) {
+      (inst.Bits() & 0x00000050) == 0x00000000 /* C(7:4)=x0x0 */) {
+    return NotImplemented_None_instance_;
+  }
+
+  if ((inst.Bits() & 0x00B00000) == 0x00A00000 /* A(23:19)=1x10x */ &&
+      (inst.Bits() & 0x00000050) == 0x00000040 /* C(7:4)=x1x0 */) {
+    return decode_simd_dp_2scalar(inst);
+  }
+
+  if ((inst.Bits() & 0x00A00000) == 0x00800000 /* A(23:19)=1x0xx */ &&
+      (inst.Bits() & 0x00000050) == 0x00000000 /* C(7:4)=x0x0 */) {
     return NotImplemented_None_instance_;
   }
 
   if ((inst.Bits() & 0x00A00000) == 0x00800000 /* A(23:19)=1x0xx */ &&
-      (inst.Bits() & 0x00000010) == 0x00000000 /* C(7:4)=xxx0 */) {
-    return NotImplemented_None_instance_;
+      (inst.Bits() & 0x00000050) == 0x00000040 /* C(7:4)=x1x0 */) {
+    return decode_simd_dp_2scalar(inst);
   }
 
   if ((inst.Bits() & 0x00800000) == 0x00000000 /* A(23:19)=0xxxx */) {
@@ -2187,6 +2197,82 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_signed_multiply_signed_a
   if ((inst.Bits() & 0x00700000) == 0x00500000 /* op1(22:20)=101 */ &&
       (inst.Bits() & 0x000000C0) == 0x000000C0 /* op2(7:5)=11x */) {
     return Binary4RegisterDualOp_Smmls_Rule_175_P348_instance_;
+  }
+
+  if (true &&
+      true /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx */) {
+    return Undefined_None_instance_;
+  }
+
+  // Catch any attempt to fall through...
+  return not_implemented_;
+}
+
+
+/*
+ * Implementation of table simd_dp_2scalar.
+ * Specified by: ('See Section A7.4.3',)
+ */
+const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_2scalar(
+     const nacl_arm_dec::Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);
+  if ((inst.Bits() & 0x00000F00) == 0x00000000 /* A(11:8)=0000 */) {
+    return VectorBinary2RegisterScalar_I16_32_VMLA_by_scalar_A1_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000F00) == 0x00000100 /* A(11:8)=0001 */) {
+    return VectorBinary2RegisterScalar_F32_VMLA_by_scalar_A1_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000F00) == 0x00000200 /* A(11:8)=0010 */) {
+    return VectorBinary2RegisterScalar_I16_32L_VMLAL_by_scalar_A2_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000F00) == 0x00000300 /* A(11:8)=0011 */ &&
+      (inst.Bits() & 0x01000000) == 0x00000000 /* U(24)=0 */) {
+    return VectorBinary2RegisterScalar_I16_32L_VQDMLAL_A1_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000F00) == 0x00000400 /* A(11:8)=0100 */) {
+    return VectorBinary2RegisterScalar_I16_32_VMLS_by_scalar_A1_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000F00) == 0x00000500 /* A(11:8)=0101 */) {
+    return VectorBinary2RegisterScalar_F32_VMLS_by_scalar_A1_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000F00) == 0x00000600 /* A(11:8)=0110 */) {
+    return VectorBinary2RegisterScalar_I16_32L_VMLSL_by_scalar_A2_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000F00) == 0x00000700 /* A(11:8)=0111 */ &&
+      (inst.Bits() & 0x01000000) == 0x00000000 /* U(24)=0 */) {
+    return VectorBinary2RegisterScalar_I16_32L_VQDMLSL_A1_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000F00) == 0x00000800 /* A(11:8)=1000 */) {
+    return VectorBinary2RegisterScalar_I16_32_VMUL_by_scalar_A1_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000F00) == 0x00000900 /* A(11:8)=1001 */) {
+    return VectorBinary2RegisterScalar_F32_VMUL_by_scalar_A1_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000F00) == 0x00000A00 /* A(11:8)=1010 */) {
+    return VectorBinary2RegisterScalar_I16_32L_VMULL_by_scalar_A2_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000F00) == 0x00000B00 /* A(11:8)=1011 */ &&
+      (inst.Bits() & 0x01000000) == 0x00000000 /* U(24)=0 */) {
+    return VectorBinary2RegisterScalar_I16_32L_VQDMULL_A2_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000F00) == 0x00000C00 /* A(11:8)=1100 */) {
+    return VectorBinary2RegisterScalar_I16_32_VQDMULH_A2_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000F00) == 0x00000D00 /* A(11:8)=1101 */) {
+    return VectorBinary2RegisterScalar_I16_32_VQRDMULH_instance_;
   }
 
   if (true &&

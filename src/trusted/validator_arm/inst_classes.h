@@ -455,6 +455,28 @@ class FlagBit6Interface {
   NACL_DISALLOW_COPY_AND_ASSIGN(FlagBit6Interface);
 };
 
+// Interface class to pull out bit 8 as a flag
+class FlagBit8Interface {
+ public:
+  static bool IsDefined(const Instruction& i) {
+    return i.Bit(8);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(FlagBit8Interface);
+};
+
+// Interface class to pull out bit 10 as a flag
+class FlagBit10Interface {
+ public:
+  static bool IsDefined(const Instruction& i) {
+    return i.Bit(10);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(FlagBit10Interface);
+};
+
 // Interface class to pull out S (update) bit 20, which
 // defines if the condition bits in APSR are updated by the instruction.
 class UpdatesConditionsBit20Interface {

@@ -1938,6 +1938,35 @@ class VectorBinary3RegisterSameLengthTester
   NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterSameLengthTester);
 };
 
+// Implements a decoder tester for VectorBinary2RegisterScalar.
+// Vector binary operator, 2 registers and a scalar (which is encoded in M:Vm).
+// op<c>.<dt> Rd, Rn, <Rm[x]>
+// +--------+--+--+--+--+----+--------+--------+--+--+--+--+--+--+--+--+------+
+// |31..28|27..|24|23|22|2120|19181716|15141312|11|10| 9| 8| 7| 6| 5| 4| 3.. 0|
+// +------+----+--+--+--+----+--------+--------+--+--+--+--+--+--+--+--+------+
+// | cond |    | Q|  | D|size|   Vn   |   Vd   |  |op|  | F| N|  | M|  |  Vm  |
+// +--------+--+--+--+--+----+--------+--------+--+--+--+--+--+--+--+--+------+
+// Rd - The destination register.
+// Rn - The first operand.
+// M:Vm - The incoding of the scalar.
+//
+// d = D:Vd, n = N:Vn
+//
+// Note: The vector registers are not tracked by the validator, and hence,
+// are not modeled, other than their index.
+class VectorBinary2RegisterScalarTester
+    : public VectorBinary3RegisterOpBaseTester {
+ public:
+  explicit VectorBinary2RegisterScalarTester(const NamedClassDecoder& decoder)
+      : VectorBinary3RegisterOpBaseTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::VectorBinary2RegisterScalar expected_decoder_;
+};
+
 // Implements a decoder tester for VectorBinary3RegisterImmOp
 // Op<c> Rd, Rn, Rm, #<imm>
 // +--------+----------+--+----+--------+--------+--------+--+--+--+--+--------+

@@ -71,6 +71,9 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Unary1RegisterUse_instance_()
   , Undefined_instance_()
   , Unpredictable_instance_()
+  , VectorBinary2RegisterScalar_F32_instance_()
+  , VectorBinary2RegisterScalar_I16_32_instance_()
+  , VectorBinary2RegisterScalar_I16_32L_instance_()
   , VectorBinary3RegisterImmOp_instance_()
   , VectorBinary3RegisterLookupOp_instance_()
   , VectorBinary3RegisterSameLength32P_instance_()
@@ -137,13 +140,23 @@ const ClassDecoder& Arm32DecoderState::decode_advanced_simd_data_processing_inst
      const Instruction inst) const
 {
   if ((inst.Bits() & 0x00B00000) == 0x00A00000 /* A(23:19)=1x10x */ &&
-      (inst.Bits() & 0x00000010) == 0x00000000 /* C(7:4)=xxx0 */) {
+      (inst.Bits() & 0x00000050) == 0x00000000 /* C(7:4)=x0x0 */) {
+    return NotImplemented_instance_;
+  }
+
+  if ((inst.Bits() & 0x00B00000) == 0x00A00000 /* A(23:19)=1x10x */ &&
+      (inst.Bits() & 0x00000050) == 0x00000040 /* C(7:4)=x1x0 */) {
+    return decode_simd_dp_2scalar(inst);
+  }
+
+  if ((inst.Bits() & 0x00A00000) == 0x00800000 /* A(23:19)=1x0xx */ &&
+      (inst.Bits() & 0x00000050) == 0x00000000 /* C(7:4)=x0x0 */) {
     return NotImplemented_instance_;
   }
 
   if ((inst.Bits() & 0x00A00000) == 0x00800000 /* A(23:19)=1x0xx */ &&
-      (inst.Bits() & 0x00000010) == 0x00000000 /* C(7:4)=xxx0 */) {
-    return NotImplemented_instance_;
+      (inst.Bits() & 0x00000050) == 0x00000040 /* C(7:4)=x1x0 */) {
+    return decode_simd_dp_2scalar(inst);
   }
 
   if ((inst.Bits() & 0x00800000) == 0x00000000 /* A(23:19)=0xxxx */) {
@@ -1472,6 +1485,54 @@ const ClassDecoder& Arm32DecoderState::decode_signed_multiply_signed_and_unsigne
       (inst.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5)=000 */ &&
       (inst.Bits() & 0x0000F000) == 0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
     return Defs16To19CondsDontCareRdRmRnNotPc_instance_;
+  }
+
+  if (true) {
+    return Undefined_instance_;
+  }
+
+  // Catch any attempt to fall though ...
+  return not_implemented_;
+}
+
+// Implementation of table: simd_dp_2scalar.
+// Specified by: See Section A7.4.3
+const ClassDecoder& Arm32DecoderState::decode_simd_dp_2scalar(
+     const Instruction inst) const
+{
+  UNREFERENCED_PARAMETER(inst);
+  if ((inst.Bits() & 0x00000F00) == 0x00000900 /* A(11:8)=1001 */) {
+    return VectorBinary2RegisterScalar_F32_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000F00) == 0x00000A00 /* A(11:8)=1010 */) {
+    return VectorBinary2RegisterScalar_I16_32L_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000F00) == 0x00000B00 /* A(11:8)=1011 */ &&
+      (inst.Bits() & 0x01000000) == 0x00000000 /* U(24)=0 */) {
+    return VectorBinary2RegisterScalar_I16_32L_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000F00) == 0x00000D00 /* A(11:8)=1101 */) {
+    return VectorBinary2RegisterScalar_I16_32_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000B00) == 0x00000100 /* A(11:8)=0x01 */) {
+    return VectorBinary2RegisterScalar_F32_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000B00) == 0x00000200 /* A(11:8)=0x10 */) {
+    return VectorBinary2RegisterScalar_I16_32L_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000B00) == 0x00000300 /* A(11:8)=0x11 */ &&
+      (inst.Bits() & 0x01000000) == 0x00000000 /* U(24)=0 */) {
+    return VectorBinary2RegisterScalar_I16_32L_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000300) == 0x00000000 /* A(11:8)=xx00 */) {
+    return VectorBinary2RegisterScalar_I16_32_instance_;
   }
 
   if (true) {

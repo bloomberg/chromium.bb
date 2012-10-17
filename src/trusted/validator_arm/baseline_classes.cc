@@ -1155,6 +1155,30 @@ SafetyLevel VectorBinary3RegisterSameLengthDI::safety(Instruction i) const {
   return MAY_BE_SAFE;
 }
 
+// VectorBinary2RegisterScalar_I16_32
+SafetyLevel VectorBinary2RegisterScalar_I16_32::safety(Instruction i) const {
+  if (size.value(i) == 3) return DECODER_ERROR;
+  if (size.value(i) == 0) return UNDEFINED;
+  if (q.IsDefined(i) && (!vd.IsEven(i) || !vn.IsEven(i))) return UNDEFINED;
+  return VectorBinary2RegisterScalar::safety(i);
+}
+
+// VectorBinary2RegisterScalar_I16_32L
+SafetyLevel VectorBinary2RegisterScalar_I16_32L::safety(Instruction i) const {
+  if (size.value(i) == 3) return DECODER_ERROR;
+  if (size.value(i) == 0 || !vd.IsEven(i)) return UNDEFINED;
+  return VectorBinary2RegisterScalar::safety(i);
+}
+
+// VectorBinary2RegisterScalar_F32
+SafetyLevel VectorBinary2RegisterScalar_F32::safety(Instruction i) const {
+  uint32_t size_i = size.value(i);
+  if (size_i == 3) return DECODER_ERROR;
+  if ((size_i == 0) || (size_i == 1)) return UNDEFINED;
+  if (q.IsDefined(i) && (!vd.IsEven(i) || !vn.IsEven(i))) return UNDEFINED;
+  return VectorBinary2RegisterScalar::safety(i);
+}
+
 // VectorBinary3RegisterImmOp
 SafetyLevel VectorBinary3RegisterImmOp::safety(Instruction i) const {
   if (q.IsDefined(i)) {
