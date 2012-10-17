@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/singleton.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/browser/chromeos/mobile/mobile_activator.h"
@@ -152,7 +153,13 @@ void MobileSetupDialogDelegate::OnDialogClosed(const std::string& json_retval) {
 
 void MobileSetupDialogDelegate::OnCloseContents(WebContents* source,
                                                 bool* out_close_dialog) {
-  if (!dialog_window_ || !MobileActivator::GetInstance()->RunningActivation()) {
+  // If we're exiting, popping up the confirmation dialog can cause a
+  // crash. Note: IsTryingToQuit can be cancelled on other platforms by the
+  // onbeforeunload handler, except on ChromeOS. So IsTryingToQuit is the
+  // appropriate check to use here.
+  if (!dialog_window_ ||
+      !MobileActivator::GetInstance()->RunningActivation() ||
+      browser_shutdown::IsTryingToQuit()) {
     *out_close_dialog = true;
     return;
   }
