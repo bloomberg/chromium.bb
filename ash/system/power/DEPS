@@ -1,0 +1,4 @@
+include_rules = [
+  # TODO(stevenjb): Move this code to src/ash/system/chromeos, crbug.com/154842
+  "+chromeos/dbus/power_supply_status.h",
+]

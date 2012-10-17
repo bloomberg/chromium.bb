@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/sms_observer.h"
 
 #include "ash/shell.h"
-#include "ash/system/network/sms_observer.h"
+#include "ash/system/chromeos/network/sms_observer.h"
 #include "ash/system/tray/system_tray.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"

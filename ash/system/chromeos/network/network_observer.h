@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_NETWORK_NETWORK_OBSERVER_H
-#define ASH_SYSTEM_NETWORK_NETWORK_OBSERVER_H
+#ifndef ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_OBSERVER_H
+#define ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_OBSERVER_H
 
 #include <vector>
 
@@ -40,10 +40,10 @@ class NetworkObserver {
   // message. |delegate|->NotificationLinkClicked() will be called if any of the
   // |links| are clicked (if supplied, |links| may be empty).
   virtual void SetNetworkMessage(NetworkTrayDelegate* delegate,
-                                MessageType message_type,
-                                const string16& title,
-                                const string16& message,
-                                const std::vector<string16>& links) = 0;
+                                 MessageType message_type,
+                                 const string16& title,
+                                 const string16& message,
+                                 const std::vector<string16>& links) = 0;
   // Clears the message notification for |message_type|.
   virtual void ClearNetworkMessage(MessageType message_type) = 0;
 
@@ -55,4 +55,4 @@ class NetworkObserver {
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_NETWORK_NETWORK_OBSERVER_H
+#endif  // ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_OBSERVER_H
