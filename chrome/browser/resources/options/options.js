@@ -84,8 +84,7 @@ function load() {
                                $('show-cookies-button')]);
   OptionsPage.registerOverlay(CookiesViewApp.getInstance(),
                               ContentSettings.getInstance(),
-                              [$('privacyContentSettingsButton'),
-                               $('show-app-cookies-button')]);
+                              [$('privacyContentSettingsButton')]);
   OptionsPage.registerOverlay(DoNotTrackConfirmOverlay.getInstance(),
                               BrowserOptions.getInstance());
   OptionsPage.registerOverlay(FontSettings.getInstance(),

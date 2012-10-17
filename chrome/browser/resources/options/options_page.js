@@ -500,6 +500,11 @@ cr.define('options', function() {
         overlay.associatedSection =
             this.findSectionForNode_(associatedControls[0]);
       }
+
+      // Sanity check.
+      for (var i = 0; i < associatedControls.length; ++i) {
+        assert(associatedControls[i], 'Invalid element passed.');
+      }
     }
 
     // Reverse the button strip for views. See the documentation of
