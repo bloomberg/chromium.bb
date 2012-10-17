@@ -7,11 +7,9 @@ import time
 import traceback
 import urlparse
 
-from chrome_remote_control import browser
-from chrome_remote_control import options_for_unittests
 from chrome_remote_control import page_test
-from chrome_remote_control import replay_server
 from chrome_remote_control import util
+from chrome_remote_control import wpr_modes
 
 class PageState(object):
   def __init__(self):
@@ -21,10 +19,6 @@ class PageRunner(object):
   """Runs a given test against a given test."""
   def __init__(self, page_set):
     self.page_set = page_set
-    self._server = None
-
-  def __del__(self):
-    assert self._server == None
 
   def __enter__(self):
     return self
@@ -35,11 +29,11 @@ class PageRunner(object):
   def Run(self, options, possible_browser, test, results):
     archive_path = os.path.abspath(os.path.join(self.page_set.base_dir,
                                                 self.page_set.archive_path))
-    if browser.Browser.CanUseReplayServer(archive_path, options.record):
-      extra_browser_args = replay_server.CHROME_FLAGS
-    else:
-      extra_browser_args = []
-      if not options_for_unittests.Get():
+    if options.wpr_mode == wpr_modes.WPR_OFF:
+      if os.path.isfile(archive_path):
+        possible_browser.options.wpr_mode = wpr_modes.WPR_REPLAY
+      else:
+        possible_browser.options.wpr_mode = wpr_modes.WPR_OFF
         logging.warning("""
 The page set archive %s does not exist, benchmarking against live sites!
 Results won't be repeatable or comparable.
@@ -55,40 +49,16 @@ http://goto/read-src-internal, or create a new archive using --record.
       if not os.path.exists(credentials_path):
         credentials_path = None
 
-    with possible_browser.Create(extra_browser_args) as b:
+    with possible_browser.Create() as b:
       b.credentials.credentials_path = credentials_path
       test.SetUpBrowser(b)
 
-      self._WarnAboutCredentialsIfNeeded(b)
+      b.credentials.WarnIfMissingCredentials(self.page_set)
 
-      with b.CreateReplayServer(archive_path, options.record):
-        with b.ConnectToNthTab(0) as tab:
-          for page in self.page_set:
-            self._RunPage(options, page, tab, test, results)
-
-  def _WarnAboutCredentialsIfNeeded(self, b):
-    num_pages_missing_login = 0
-    missing_credentials = set()
-    for page in self.page_set:
-      if page.credentials and not b.credentials.CanLogin(page.credentials):
-        num_pages_missing_login += 1
-        missing_credentials.add(page.credentials)
-    if num_pages_missing_login > 0:
-      files_to_tweak = []
-      if self.page_set.credentials_path:
-        files_to_tweak.append(
-          os.path.relpath(os.path.join(self.page_set.base_dir,
-                                       self.page_set.credentials_path)))
-      files_to_tweak.append('~/.crc-credentials')
-
-      logging.warning("""
-Credentials for %s were not found. %i pages will not be benchmarked.
-
-To fix this, either add svn-internal to your .gclient using
-http://goto/read-src-internal, or add your own credentials to
-%s""" % (', '.join(missing_credentials),
-       num_pages_missing_login,
-       ' or '.join(files_to_tweak)))
+      b.SetReplayArchivePath(archive_path)
+      with b.ConnectToNthTab(0) as tab:
+        for page in self.page_set:
+          self._RunPage(options, page, tab, test, results)
 
   def _RunPage(self, options, page, tab, test, results):
     logging.info('Running %s' % page.url)
@@ -124,9 +94,7 @@ http://goto/read-src-internal, or add your own credentials to
       self.CleanUpPage(page, tab, page_state)
 
   def Close(self):
-    if self._server:
-      self._server.Close()
-      self._server = None
+    pass
 
   @staticmethod
   def WaitForPageToLoad(expression, tab):
@@ -142,29 +110,29 @@ http://goto/read-src-internal, or add your own credentials to
       path = os.path.join(self.page_set.base_dir,
                           parsed_url.netloc) # pylint: disable=E1101
       dirname, filename = os.path.split(path)
-      if self._server and self._server.path != dirname:
-        self._server.Close()
-        self._server = None
-      if not self._server:
-        self._server = tab.browser.CreateTemporaryHTTPServer(dirname)
-      page.url = self._server.UrlOf(filename)
+      tab.browser.SetHTTPServerDirectory(dirname)
+      target_side_url = tab.browser.http_server.UrlOf(filename)
+    else:
+      target_side_url = page.url
 
     if page.credentials:
       page_state.did_login = tab.browser.credentials.LoginNeeded(
         tab, page.credentials)
       if not page_state.did_login:
-        msg = 'Could not login to %s on %s' % (page.credentials, page.url)
+        msg = 'Could not login to %s on %s' % (page.credentials,
+                                               target_side_url)
         logging.info(msg)
         results.AddFailure(page, msg, "")
         return False
 
-    tab.page.Navigate(page.url)
-    # TODO(dtu): Detect HTTP redirects.
+    tab.page.Navigate(target_side_url)
+
+    # Wait for unpredictable redirects.
     if page.wait_time_after_navigate:
-      # Wait for unpredictable redirects.
       time.sleep(page.wait_time_after_navigate)
     if page.wait_for_javascript_expression is not None:
       self.WaitForPageToLoad(page.wait_for_javascript_expression, tab)
+
     tab.WaitForDocumentReadyStateToBeInteractiveOrBetter()
     return True
 

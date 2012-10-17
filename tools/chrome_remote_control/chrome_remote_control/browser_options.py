@@ -8,6 +8,7 @@ import shlex
 import logging
 
 from chrome_remote_control import browser_finder
+from chrome_remote_control import wpr_modes
 
 class BrowserOptions(optparse.Values):
   """Options to be used for discovering and launching a browser."""
@@ -26,6 +27,7 @@ class BrowserOptions(optparse.Values):
     self.show_stdout = False
 
     self.cros_remote = None
+    self.wpr_mode = wpr_modes.WPR_OFF
 
     self.verbosity = 0
 
@@ -83,8 +85,8 @@ class BrowserOptions(optparse.Values):
 
     # Page set options
     group = optparse.OptionGroup(parser, 'Page set options')
-    group.add_option('--record', action='store_true',
-        dest='record',
+    group.add_option('--record', action='store_const',
+        dest='wpr_mode', const=wpr_modes.WPR_RECORD,
         help='Record to the page set archive')
     parser.add_option_group(group)
 

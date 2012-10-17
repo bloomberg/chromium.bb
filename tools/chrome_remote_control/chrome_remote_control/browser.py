@@ -3,9 +3,10 @@
 # found in the LICENSE file.
 import os
 
-from chrome_remote_control import replay_server
 from chrome_remote_control import temporary_http_server
 from chrome_remote_control import browser_credentials
+from chrome_remote_control import wpr_modes
+from chrome_remote_control import wpr_server
 
 class Browser(object):
   """A running browser instance that can be controlled in a limited way.
@@ -20,6 +21,8 @@ class Browser(object):
   """
   def __init__(self, backend):
     self._backend = backend
+    self._http_server = None
+    self._wpr_server = None
     self.credentials = browser_credentials.BrowserCredentials()
 
   def __enter__(self):
@@ -44,18 +47,53 @@ class Browser(object):
     return self._backend.ConnectToNthTab(self, index)
 
   def Close(self):
+    if self._wpr_server:
+      self._wpr_server.Close()
+      self._wpr_server = None
+
+    if self._http_server:
+      self._http_server.Close()
+      self._http_server = None
+
     self._backend.Close()
     self.credentials = None
 
-  def CreateTemporaryHTTPServer(self, path):
-    return temporary_http_server.TemporaryHTTPServer(self._backend, path)
+  @property
+  def http_server(self):
+    return self._http_server
 
-  @classmethod
-  def CanUseReplayServer(cls, archive_path, use_record_mode):
-    return os.path.isfile(archive_path) or use_record_mode
+  def SetHTTPServerDirectory(self, path):
+    if path:
+      abs_path = os.path.abspath(path)
+      if self._http_server and self._http_server.path == path:
+        return
+    else:
+      abs_path = None
 
-  def CreateReplayServer(self, archive_path, use_record_mode):
-    replay_class = replay_server.DoNothingReplayServer
-    if self.CanUseReplayServer(archive_path, use_record_mode):
-      replay_class = replay_server.ReplayServer
-    return replay_class(self._backend, archive_path, use_record_mode)
+    if self._http_server:
+      self._http_server.Close()
+      self._http_server = None
+
+    if not abs_path:
+      return
+
+    self._http_server = temporary_http_server.TemporaryHTTPServer(
+      self._backend, abs_path)
+
+  def SetReplayArchivePath(self, archive_path):
+    if self._wpr_server:
+      self._wpr_server.Close()
+      self._wpr_server = None
+
+    if not archive_path:
+      return None
+
+    if self._backend.wpr_mode == wpr_modes.WPR_OFF:
+      return
+
+    use_record_mode = self._backend.wpr_mode == wpr_modes.WPR_RECORD
+    if not use_record_mode:
+      assert os.path.isfile(archive_path)
+
+    self._wpr_server = wpr_server.ReplayServer(
+      self._backend, archive_path, use_record_mode)

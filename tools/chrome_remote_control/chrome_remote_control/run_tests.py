@@ -116,6 +116,9 @@ def Main(args, start_dir, top_level_dir):
 
   _, args = parser.parse_args(args)
 
+  if default_options.verbosity == 0:
+    logging.getLogger().setLevel(logging.ERROR)
+
   from chrome_remote_control import browser_finder
   browser_to_create = browser_finder.FindBrowser(default_options)
   if browser_to_create == None:

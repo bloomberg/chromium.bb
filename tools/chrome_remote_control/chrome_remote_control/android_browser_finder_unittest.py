@@ -1,12 +1,21 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import logging
 import unittest
 
 from chrome_remote_control import android_browser_finder
 from chrome_remote_control import browser_options
 from chrome_remote_control import system_stub
+
+class LoggingStub(object):
+  def __init__(self):
+    self.warnings = []
+
+  def info(self, msg, *args):
+    pass
+
+  def warn(self, msg, *args):
+    self.warnings.append(msg % args)
 
 class AndroidBrowserFinderTest(unittest.TestCase):
   def setUp(self):
@@ -42,21 +51,10 @@ class AndroidBrowserFinderTest(unittest.TestCase):
 * daemon started successfully *
 """)
 
-    warnings = []
-    class TempFilter(logging.Filter):
-      def filter(self, record):
-        warnings.append(record)
-        return 0
-    temp_filter = TempFilter()
-
-    try:
-      logger = logging.getLogger()
-      logger.addFilter(temp_filter)
-
-      browsers = android_browser_finder.FindAllAvailableBrowsers(options)
-    finally:
-      logger.removeFilter(temp_filter)
-    self.assertEquals(3, len(warnings))
+    log_stub = LoggingStub()
+    browsers = android_browser_finder.FindAllAvailableBrowsers(
+      options, log_stub)
+    self.assertEquals(3, len(log_stub.warnings))
     self.assertEquals(0, len(browsers))
 
 
@@ -66,21 +64,10 @@ class AndroidBrowserFinderTest(unittest.TestCase):
     self._stubs.adb_commands.attached_devices = ['015d14fec128220c',
                                                  '015d14fec128220d']
 
-    warnings = []
-    class TempFilter(logging.Filter):
-      def filter(self, record):
-        warnings.append(record)
-        return 0
-    temp_filter = TempFilter()
-
-    try:
-      logger = logging.getLogger()
-      logger.addFilter(temp_filter)
-
-      browsers = android_browser_finder.FindAllAvailableBrowsers(options)
-    finally:
-      logger.removeFilter(temp_filter)
-    self.assertEquals(1, len(warnings))
+    log_stub = LoggingStub()
+    browsers = android_browser_finder.FindAllAvailableBrowsers(
+      options, log_stub)
+    self.assertEquals(1, len(log_stub.warnings))
     self.assertEquals(0, len(browsers))
 
   def test_adb_one_device(self):

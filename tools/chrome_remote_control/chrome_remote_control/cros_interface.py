@@ -19,7 +19,7 @@ _next_remote_port = 9224
 # around pexpect, I suspect, if we wanted it to be faster. But, this was
 # convenient.
 
-def RunCmd(args, cwd=None):
+def RunCmd(args, cwd=None, quiet=False):
   """Opens a subprocess to execute a program and returns its return value.
 
   Args:
@@ -31,13 +31,14 @@ def RunCmd(args, cwd=None):
   Returns:
     Return code from the command execution.
   """
-  logging.debug(' '.join(args) + ' ' + (cwd or ''))
+  if not quiet:
+    logging.debug(' '.join(args) + ' ' + (cwd or ''))
   with open(os.devnull, 'w') as devnull:
     p = subprocess.Popen(args=args, cwd=cwd, stdout=devnull,
                          stderr=devnull, stdin=devnull, shell=False)
     return p.wait()
 
-def GetAllCmdOutput(args, cwd=None):
+def GetAllCmdOutput(args, cwd=None, quiet=False):
   """Open a subprocess to execute a program and returns its output.
 
   Args:
@@ -50,12 +51,14 @@ def GetAllCmdOutput(args, cwd=None):
     Captures and returns the command's stdout.
     Prints the command's stderr to logger (which defaults to stdout).
   """
-  logging.debug(' '.join(args) + ' ' + (cwd or ''))
+  if not quiet:
+    logging.debug(' '.join(args) + ' ' + (cwd or ''))
   with open(os.devnull, 'w') as devnull:
     p = subprocess.Popen(args=args, cwd=cwd, stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE, stdin=devnull, shell=False)
     stdout, stderr = p.communicate()
-    logging.debug(' > stdout=[%s], stderr=[%s]', stdout, stderr)
+    if not quiet:
+      logging.debug(' > stdout=[%s], stderr=[%s]', stdout, stderr)
     return stdout, stderr
 
 class DeviceSideProcess(object):
@@ -78,7 +81,7 @@ class DeviceSideProcess(object):
     else:
       out = sys.stderr
 
-    cri.GetCmdOutput(['rm', '-rf', '/tmp/cros_interface_remote_device_pid'])
+    cri.RmRF('/tmp/cros_interface_remote_device_pid')
     cmd_str = ' '.join(device_side_args)
     if env:
       env_str = ' '.join(['%s=%s' % (k, v) for k, v in env.items()])
@@ -130,16 +133,18 @@ class DeviceSideProcess(object):
     if self.IsAlive():
       # Try to politely shutdown, first.
       if try_sigint_first:
+        logging.debug("kill -INT %i" % self._pid)
         self._cri.GetAllCmdOutput(
-          ['kill', '-INT', str(self._pid)])
+          ['kill', '-INT', str(self._pid)], quiet=True)
         try:
           self.Wait(timeout=0.5)
         except util.TimeoutException:
           pass
 
       if self.IsAlive():
+        logging.debug("kill -KILL %i" % self._pid)
         self._cri.GetAllCmdOutput(
-          ['kill', '-KILL', str(self._pid)])
+          ['kill', '-KILL', str(self._pid)], quiet=True)
         try:
           self.Wait(timeout=5)
         except util.TimeoutException:
@@ -172,18 +177,21 @@ class DeviceSideProcess(object):
     util.WaitFor(IsDone, timeout)
     self._pid = None
 
-  def IsAlive(self):
+  def IsAlive(self, quiet=True):
     if not self._pid:
       return False
-    exists = self._cri.FileExistsOnDevice('/proc/%i/cmdline' % self._pid)
+    exists = self._cri.FileExistsOnDevice('/proc/%i/cmdline' % self._pid,
+                                          quiet=quiet)
     return exists
 
 def HasSSH():
   try:
-    RunCmd(['ssh'])
-    RunCmd(['scp'])
+    RunCmd(['ssh'], quiet=True)
+    RunCmd(['scp'], quiet=True)
+    logging.debug("HasSSH()->True")
     return True
   except OSError:
+    logging.debug("HasSSH()->False")
     return False
 
 class LoginException(Exception):
@@ -222,11 +230,12 @@ class CrOSInterface(object):
     full_args.extend(args)
     return full_args
 
-  def GetAllCmdOutput(self, args, cwd=None):
-    return GetAllCmdOutput(self.FormSSHCommandLine(args), cwd)
+  def GetAllCmdOutput(self, args, cwd=None, quiet=False):
+    return GetAllCmdOutput(self.FormSSHCommandLine(args), cwd, quiet=quiet)
 
   def TryLogin(self):
-    stdout, stderr = self.GetAllCmdOutput(['echo', '$USER'])
+    logging.debug('TryLogin()')
+    stdout, stderr = self.GetAllCmdOutput(['echo', '$USER'], quiet=True)
 
     if stderr != '':
       if 'Host key verification failed' in stderr:
@@ -249,20 +258,25 @@ class CrOSInterface(object):
         'Logged into %s, expected $USER=root, but got %s.' % (
           self._hostname, stdout))
 
-  def FileExistsOnDevice(self, file_name):
+  def FileExistsOnDevice(self, file_name, quiet=False):
     stdout, stderr = self.GetAllCmdOutput([
         'if', 'test', '-a', file_name, ';',
         'then', 'echo', '1', ';',
         'fi'
-        ])
+        ], quiet=True)
     if stderr != '':
       if "Connection timed out" in stderr:
         raise OSError('Machine wasn\'t responding to ssh: %s' %
                       stderr)
       raise OSError('Unepected error: %s' % stderr)
-    return stdout == '1\n'
+    exists = stdout == '1\n'
+    if not quiet:
+      logging.debug("FileExistsOnDevice(<text>, %s)->%s" % (
+          file_name, exists))
+    return exists
 
   def PushContents(self, text, remote_filename):
+    logging.debug("PushContents(<text>, %s)" % remote_filename)
     with tempfile.NamedTemporaryFile() as f:
       f.write(text)
       f.flush()
@@ -278,7 +292,7 @@ class CrOSInterface(object):
       args.extend([os.path.abspath(f.name),
                    'root@%s:%s' % (self._hostname, remote_filename)])
 
-      stdout, stderr = GetAllCmdOutput(args)
+      stdout, stderr = GetAllCmdOutput(args, quiet=True)
       if stderr != '':
         assert 'No such file or directory' in stderr
         raise OSError
@@ -297,20 +311,22 @@ class CrOSInterface(object):
       args.extend(['root@%s:%s' % (self._hostname, filename),
                    os.path.abspath(f.name)])
 
-      stdout, stderr = GetAllCmdOutput(args)
+      stdout, stderr = GetAllCmdOutput(args, quiet=True)
 
       if stderr != '':
         assert 'No such file or directory' in stderr
         raise OSError
 
       with open(f.name, 'r') as f2:
-        return f2.read()
+        res = f2.read()
+        logging.debug("GetFileContents(%s)->%s" % (filename, res))
+        return res
 
   def ListProcesses(self):
     stdout, stderr = self.GetAllCmdOutput([
         '/bin/ps', '--no-headers',
         '-A',
-        '-o', 'pid,args'])
+        '-o', 'pid,args'], quiet=True)
     assert stderr == ''
     procs = []
     for l in stdout.split('\n'): # pylint: disable=E1103
@@ -319,7 +335,12 @@ class CrOSInterface(object):
       m = re.match('^\s*(\d+)\s+(.+)', l, re.DOTALL)
       assert m
       procs.append(m.groups())
+    logging.debug("ListProcesses(<predicate>)->[%i processes]" % len(procs))
     return procs
+
+  def RmRF(self, filename):
+    logging.debug("rm -rf %s" % filename)
+    self.GetCmdOutput(['rm', '-rf', filename], quiet=True)
 
   def KillAllMatching(self, predicate):
     kills = ['kill', '-KILL']
@@ -327,19 +348,24 @@ class CrOSInterface(object):
       if predicate(p[1]):
         logging.info('Killing %s', repr(p))
         kills.append(p[0])
+    logging.debug("KillAllMatching(<predicate>)->%i" % (len(kills) - 2))
     if len(kills) > 2:
-      self.GetCmdOutput(kills)
+      self.GetCmdOutput(kills, quiet=True)
     return len(kills) - 2
 
   def IsServiceRunning(self, service_name):
     stdout, stderr = self.GetAllCmdOutput([
-        'status', service_name])
+        'status', service_name], quiet=True)
     assert stderr == ''
-    return 'running, process' in stdout
+    running = 'running, process' in stdout
+    logging.debug("IsServiceRunning(%s)->%s" % (service_name, running))
+    return running
 
-  def GetCmdOutput(self, args):
-    stdout, stderr = self.GetAllCmdOutput(args)
+  def GetCmdOutput(self, args, quiet=False):
+    stdout, stderr = self.GetAllCmdOutput(args, quiet=True)
     assert stderr == ''
+    if not quiet:
+      logging.debug("GetCmdOutput(%s)->%s" % (repr(args), stdout))
     return stdout
 
   def GetRemotePort(self):

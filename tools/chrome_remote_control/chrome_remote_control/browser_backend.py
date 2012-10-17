@@ -6,24 +6,33 @@ import httplib
 import socket
 import json
 
+from chrome_remote_control import browser_gone_exception
 from chrome_remote_control import inspector_backend
 from chrome_remote_control import tab
 from chrome_remote_control import util
-
-class BrowserGoneException(Exception):
-  pass
+from chrome_remote_control import wpr_modes
+from chrome_remote_control import wpr_server
 
 class BrowserBackend(object):
   """A base class for broser backends. Provides basic functionality
   once a remote-debugger port has been established."""
-  _common_chrome_browser_args = [
-    '--disable-background-networking',
-    '--no-first-run',
-  ]
-
-  def __init__(self, is_content_shell):
+  def __init__(self, is_content_shell, options):
     self.is_content_shell = is_content_shell
+    self.options = options
     self._port = None
+
+  def GetBrowserStartupArgs(self):
+    args = []
+    args.extend(self.options.extra_browser_args)
+    args.append('--disable-background-networking')
+    args.append('--no-first-run')
+    if self.options.wpr_mode != wpr_modes.WPR_OFF:
+      args.extend(wpr_server.CHROME_FLAGS)
+    return args
+
+  @property
+  def wpr_mode(self):
+    return self.options.wpr_mode
 
   def _WaitForBrowserToComeUp(self):
     def IsBrowserUp():
@@ -31,22 +40,22 @@ class BrowserBackend(object):
         self._ListTabs()
       except socket.error:
         if not self.IsBrowserRunning():
-          raise BrowserGoneException()
+          raise browser_gone_exception.BrowserGoneException()
         return False
       except httplib.BadStatusLine:
         if not self.IsBrowserRunning():
-          raise BrowserGoneException()
+          raise browser_gone_exception.BrowserGoneException()
         return False
       except urllib2.URLError:
         if not self.IsBrowserRunning():
-          raise BrowserGoneException()
+          raise browser_gone_exception.BrowserGoneException()
         return False
       else:
         return True
     try:
       util.WaitFor(IsBrowserUp, timeout=30)
     except util.TimeoutException:
-      raise BrowserGoneException()
+      raise browser_gone_exception.BrowserGoneException()
 
   def _ListTabs(self, timeout=None):
     if timeout:

@@ -14,12 +14,12 @@ class TemporaryHTTPServerTest(unittest.TestCase):
     options = options_for_unittests.Get()
     browser_to_create = browser_finder.FindBrowser(options)
     with browser_to_create.Create() as b:
-      with b.CreateTemporaryHTTPServer(unittest_data_dir) as s:
-        with b.ConnectToNthTab(0) as t:
-          t.page.Navigate(s.UrlOf('/blank.html'))
-          t.WaitForDocumentReadyStateToBeComplete()
-          x = t.runtime.Evaluate('document.body.innerHTML')
-          x = x.strip()
+      b.SetHTTPServerDirectory(unittest_data_dir)
+      with b.ConnectToNthTab(0) as t:
+        t.page.Navigate(b.http_server.UrlOf('/blank.html'))
+        t.WaitForDocumentReadyStateToBeComplete()
+        x = t.runtime.Evaluate('document.body.innerHTML')
+        x = x.strip()
 
-          self.assertEquals(x, 'Hello world')
+        self.assertEquals(x, 'Hello world')
 

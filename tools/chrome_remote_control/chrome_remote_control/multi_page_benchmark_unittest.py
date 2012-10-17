@@ -5,7 +5,9 @@ import os
 
 from chrome_remote_control import multi_page_benchmark
 from chrome_remote_control import multi_page_benchmark_unittest_base
+from chrome_remote_control import page as page_module
 from chrome_remote_control import page_set
+from chrome_remote_control import wpr_modes
 
 class BenchThatFails(multi_page_benchmark.MultiPageBenchmark):
   def MeasurePage(self, page, tab, results):
@@ -34,10 +36,10 @@ class BenchForReplay(multi_page_benchmark.MultiPageBenchmark):
 class MultiPageBenchmarkUnitTest(
   multi_page_benchmark_unittest_base.MultiPageBenchmarkUnitTestBase):
 
-  _record = False
+  _wpr_mode = wpr_modes.WPR_OFF
 
   def CustomizeOptionsForTest(self, options):
-    options.record = self._record
+    options.wpr_mode = self._wpr_mode
 
   def testGotToBlank(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('blank.html')
@@ -66,20 +68,20 @@ class MultiPageBenchmarkUnitTest(
       benchmark = BenchForReplay()
 
       # First record an archive with only www.google.com.
-      self._record = True
+      self._wpr_mode = wpr_modes.WPR_RECORD
 
-      ps.pages = [page_set.Page('http://www.google.com/')]
+      ps.pages = [page_module.Page('http://www.google.com/')]
       all_results = self.RunBenchmark(benchmark, ps)
       self.assertEquals(0, len(all_results.page_failures))
 
       # Now replay it and verify that google.com is found but foo.com is not.
-      self._record = False
+      self._wpr_mode = wpr_modes.WPR_REPLAY
 
-      ps.pages = [page_set.Page('http://www.foo.com/')]
+      ps.pages = [page_module.Page('http://www.foo.com/')]
       all_results = self.RunBenchmark(benchmark, ps)
       self.assertEquals(1, len(all_results.page_failures))
 
-      ps.pages = [page_set.Page('http://www.google.com/')]
+      ps.pages = [page_module.Page('http://www.google.com/')]
       all_results = self.RunBenchmark(benchmark, ps)
       self.assertEquals(0, len(all_results.page_failures))
 

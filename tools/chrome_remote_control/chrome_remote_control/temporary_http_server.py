@@ -31,6 +31,10 @@ class TemporaryHTTPServer(object):
 
     self._forwarder = browser_backend.CreateForwarder(self._host_port)
 
+  @property
+  def path(self):
+    return self._path
+
   def __enter__(self):
     return self
 
@@ -50,10 +54,6 @@ class TemporaryHTTPServer(object):
     if self._devnull:
       self._devnull.close()
       self._devnull = None
-
-  @property
-  def path(self):
-    return self._path
 
   @property
   def url(self):

@@ -13,6 +13,7 @@ class BrowserCredentials(object):
   def __init__(self, backends = None):
     self._credentials = {}
     self._credentials_path = None
+    self._extra_credentials = {}
 
     if backends is None:
       backends = [
@@ -51,9 +52,17 @@ class BrowserCredentials(object):
   @credentials_path.setter
   def credentials_path(self, credentials_path):
     self._credentials_path = credentials_path
-    self._ReadCredentialsFile()
+    self._RebuildCredentials()
 
-  def _ReadCredentialsFile(self):
+  def Add(self, credentials_type, data):
+    if credentials_type not in self._extra_credentials:
+      self._extra_credentials[credentials_type] = {}
+    for k, v in data.items():
+      assert k not in self._extra_credentials[credentials_type]
+      self._extra_credentials[credentials_type][k] = v
+    self._RebuildCredentials()
+
+  def _RebuildCredentials(self):
     credentials = {}
     if self._credentials_path == None:
       pass
@@ -73,10 +82,41 @@ class BrowserCredentials(object):
         homedir_credentials = json.loads(f.read())
 
     self._credentials = {}
-    all_keys = set(credentials.keys()).union(homedir_credentials.keys())
+    all_keys = set(credentials.keys()).union(
+      homedir_credentials.keys()).union(
+      self._extra_credentials.keys())
+
     for k in all_keys:
       if k in credentials:
         self._credentials[k] = credentials[k]
       if k in homedir_credentials:
         logging.info("Will use ~/.crc-credentials for %s logins." % k)
         self._credentials[k] = homedir_credentials[k]
+      if k in self._extra_credentials:
+        self._credentials[k] = self._extra_credentials[k]
+
+  def WarnIfMissingCredentials(self, page_set):
+    num_pages_missing_login = 0
+    missing_credentials = set()
+    for page in page_set:
+      if (page.credentials
+          and not self.CanLogin(page.credentials)):
+        num_pages_missing_login += 1
+        missing_credentials.add(page.credentials)
+
+    if num_pages_missing_login > 0:
+      files_to_tweak = []
+      if page_set.credentials_path:
+        files_to_tweak.append(
+          os.path.relpath(os.path.join(page_set.base_dir,
+                                       page_set.credentials_path)))
+      files_to_tweak.append('~/.crc-credentials')
+
+      logging.warning("""
+        Credentials for %s were not found. %i pages will not be benchmarked.
+
+        To fix this, either add svn-internal to your .gclient using
+        http://goto/read-src-internal, or add your own credentials to
+%s""" % (', '.join(missing_credentials),
+       num_pages_missing_login,
+       ' or '.join(files_to_tweak)))

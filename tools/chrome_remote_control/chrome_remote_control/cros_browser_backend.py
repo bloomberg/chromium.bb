@@ -12,9 +12,8 @@ from chrome_remote_control import cros_interface
 class CrOSBrowserBackend(browser_backend.BrowserBackend):
   """The backend for controlling a browser instance running on CrOS.
   """
-  def __init__(self, browser_type, options, extra_browser_args,
-               is_content_shell, cri):
-    super(CrOSBrowserBackend, self).__init__(is_content_shell)
+  def __init__(self, browser_type, options, is_content_shell, cri):
+    super(CrOSBrowserBackend, self).__init__(is_content_shell, options)
     # Initialize fields so that an explosion during init doesn't break in Close.
     self._options = options
     assert not is_content_shell
@@ -26,6 +25,7 @@ class CrOSBrowserBackend(browser_backend.BrowserBackend):
     self._port = tmp.getsockname()[1]
     tmp.close()
 
+    self._remote_debugging_port = self._cri.GetRemotePort()
     self._tmpdir = None
 
     self._X = None
@@ -39,20 +39,8 @@ class CrOSBrowserBackend(browser_backend.BrowserBackend):
       logging.debug('stopping ui')
       self._cri.GetCmdOutput(['stop', 'ui'])
 
-    remote_port = self._cri.GetRemotePort()
-
-    args = ['/opt/google/chrome/chrome',
-            '--allow-webui-compositing',
-            '--aura-host-window-use-fullscreen',
-            '--enable-smooth-scrolling',
-            '--enable-threaded-compositing',
-            '--enable-per-tile-painting',
-            '--enable-gpu-sandboxing',
-            '--enable-accelerated-layers',
-            '--force-compositing-mode',
-            '--remote-debugging-port=%i' % remote_port,
-            '--start-maximized']
-
+    args = ['/opt/google/chrome/chrome']
+    args.extend(self.GetBrowserStartupArgs())
     if not is_content_shell:
       logging.info('Preparing user data dir')
       self._tmpdir = '/tmp/chrome_remote_control'
@@ -61,15 +49,9 @@ class CrOSBrowserBackend(browser_backend.BrowserBackend):
         logging.critical('Feature not (yet) implemented.')
 
       # Ensure a clean user_data_dir.
-      self._cri.GetCmdOutput(['rm', '-rf', self._tmpdir])
-
-      args.append('--user-data-dir=%s' % self._tmpdir)
+      self._cri.RmRF(self._tmpdir)
 
     # Final bits of command line prep.
-    if extra_browser_args:
-      args.extend(extra_browser_args)
-    args.extend(options.extra_browser_args)
-    args.extend(self._common_chrome_browser_args)
     def EscapeIfNeeded(arg):
       return arg.replace(' ', '" "')
     args = [EscapeIfNeeded(arg) for arg in args]
@@ -103,7 +85,8 @@ class CrOSBrowserBackend(browser_backend.BrowserBackend):
       self._cri,
       args,
       prevent_output=prevent_output,
-      extra_ssh_args=['-L%i:localhost:%i' % (self._port, remote_port)],
+      extra_ssh_args=['-L%i:localhost:%i' % (
+          self._port, self._remote_debugging_port)],
       leave_ssh_alive=True,
       env={'DISPLAY': ':0',
            'USER': 'chronos'},
@@ -118,6 +101,25 @@ class CrOSBrowserBackend(browser_backend.BrowserBackend):
       self.Close()
       raise
 
+  def GetBrowserStartupArgs(self):
+    args = super(CrOSBrowserBackend, self).GetBrowserStartupArgs()
+
+    args.extend([
+            '--allow-webui-compositing',
+            '--aura-host-window-use-fullscreen',
+            '--enable-smooth-scrolling',
+            '--enable-threaded-compositing',
+            '--enable-per-tile-painting',
+            '--enable-gpu-sandboxing',
+            '--enable-accelerated-layers',
+            '--force-compositing-mode',
+            '--remote-debugging-port=%i' % self._remote_debugging_port,
+            '--start-maximized'])
+    if not self.is_content_shell:
+      args.append('--user-data-dir=%s' % self._tmpdir)
+
+    return args
+
   def __del__(self):
     self.Close()
 
@@ -131,7 +133,7 @@ class CrOSBrowserBackend(browser_backend.BrowserBackend):
       self._X = None
 
     if self._tmpdir:
-      self._cri.GetCmdOutput(['rm', '-rf', self._tmpdir])
+      self._cri.RmRF(self._tmpdir)
       self._tmpdir = None
 
     self._cri = None

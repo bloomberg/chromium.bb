@@ -40,8 +40,6 @@ class ReplayServer(object):
     self.Close()
 
   def Close(self):
-    if self._browser_backend:
-      self._browser_backend.Close()
     if self._http_forwarder:
       self._http_forwarder.Close()
       self._http_forwarder = None
@@ -51,13 +49,3 @@ class ReplayServer(object):
     if self._web_page_replay:
       self._web_page_replay.StopServer()
       self._web_page_replay = None
-
-class DoNothingReplayServer(object):
-  def __init__(self, browser_backend, path, is_record_mode):
-    pass
-
-  def __enter__(self):
-    return self
-
-  def __exit__(self, *args):
-    pass

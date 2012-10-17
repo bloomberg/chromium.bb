@@ -8,6 +8,7 @@ from chrome_remote_control import browser_finder
 from chrome_remote_control import multi_page_benchmark
 from chrome_remote_control import options_for_unittests
 from chrome_remote_control import page_runner
+from chrome_remote_control import page as page_module
 from chrome_remote_control import page_set
 
 class MultiPageBenchmarkUnitTestBase(unittest.TestCase):
@@ -21,7 +22,7 @@ class MultiPageBenchmarkUnitTestBase(unittest.TestCase):
     path = os.path.join(self.unittest_data_dir, test_filename)
     self.assertTrue(os.path.exists(path))
 
-    page = page_set.Page('file://%s' % test_filename)
+    page = page_module.Page('file://%s' % test_filename)
 
     ps = page_set.PageSet(base_dir=self.unittest_data_dir)
     ps.pages.append(page)

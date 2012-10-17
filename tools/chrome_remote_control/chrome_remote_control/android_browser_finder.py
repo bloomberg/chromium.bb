@@ -4,7 +4,7 @@
 """Finds android browsers that can be controlled by chrome_remote_control."""
 
 import os
-import logging
+import logging as real_logging
 import re
 import subprocess
 
@@ -49,12 +49,12 @@ class PossibleAndroidBrowser(possible_browser.PossibleBrowser):
   def __repr__(self):
     return 'PossibleAndroidBrowser(browser_type=%s)' % self.browser_type
 
-  def Create(self, extra_browser_args=None):
+  def Create(self):
     backend = android_browser_backend.AndroidBrowserBackend(
-        self._options, extra_browser_args, *self._args)
+        self._options, *self._args)
     return browser.Browser(backend)
 
-def FindAllAvailableBrowsers(options):
+def FindAllAvailableBrowsers(options, logging=real_logging):
   """Finds all the desktop browsers available on this machine."""
   if not adb_commands.IsAndroidSupported():
     return []
@@ -68,14 +68,14 @@ def FindAllAvailableBrowsers(options):
                               stdin=devnull)
       stdout, _ = proc.communicate()
       if re.search(re.escape('????????????\tno permissions'), stdout) != None:
-        logging.warning(
+        logging.warn(
             ('adb devices reported a permissions error. Consider '
             'restarting adb as root:'))
-        logging.warning('  adb kill-server')
-        logging.warning('  sudo `which adb` devices\n\n')
+        logging.warn('  adb kill-server')
+        logging.warn('  sudo `which adb` devices\n\n')
   except OSError:
     logging.info('No adb command found. ' +
-                 'Will not try searching for Android browsers.')
+             'Will not try searching for Android browsers.')
     return []
 
   device = None

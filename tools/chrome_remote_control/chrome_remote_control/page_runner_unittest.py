@@ -5,6 +5,7 @@ import tempfile
 import unittest
 
 from chrome_remote_control import browser_finder
+from chrome_remote_control import page as page_module
 from chrome_remote_control import page_set
 from chrome_remote_control import page_test
 from chrome_remote_control import page_runner
@@ -58,7 +59,7 @@ class PageRunnerTests(unittest.TestCase):
   def runCredentialsTest(self, # pylint: disable=R0201
                          credentials_backend,
                          results):
-    page = page_set.Page('http://www.google.com')
+    page = page_module.Page('http://www.google.com')
     page.credentials = "test"
     ps = page_set.PageSet()
     ps.pages.append(page)

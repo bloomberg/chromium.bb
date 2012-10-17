@@ -12,23 +12,25 @@ class TabConsoleTest(tab_test_case.TabTestCase):
   def testConsoleOutputStream(self):
     unittest_data_dir = os.path.join(os.path.dirname(__file__),
                                      '..', 'unittest_data')
-    with self._browser.CreateTemporaryHTTPServer(unittest_data_dir) as s:
-      stream = StringIO.StringIO()
-      self._tab.console.MessageOutputStream = stream
+    self._browser.SetHTTPServerDirectory(unittest_data_dir)
 
-      self._tab.page.Navigate(s.UrlOf('page_that_logs_to_console.html'))
-      self._tab.WaitForDocumentReadyStateToBeComplete()
+    stream = StringIO.StringIO()
+    self._tab.console.MessageOutputStream = stream
 
-      initial = self._tab.runtime.Evaluate('window.__logCount')
-      def GotLog():
-        current = self._tab.runtime.Evaluate('window.__logCount')
-        return current > initial
-      util.WaitFor(GotLog, 5)
+    self._tab.page.Navigate(
+      self._browser.http_server.UrlOf('page_that_logs_to_console.html'))
+    self._tab.WaitForDocumentReadyStateToBeComplete()
 
-      lines = [l for l in stream.getvalue().split('\n') if len(l)]
+    initial = self._tab.runtime.Evaluate('window.__logCount')
+    def GotLog():
+      current = self._tab.runtime.Evaluate('window.__logCount')
+      return current > initial
+    util.WaitFor(GotLog, 5)
 
-      self.assertTrue(len(lines) >= 1)
-      for l in lines:
-        u_l = 'http://localhost:(\d+)/page_that_logs_to_console.html:9'
-        self.assertTrue(re.match('At %s: Hello, world' % u_l, l))
+    lines = [l for l in stream.getvalue().split('\n') if len(l)]
+
+    self.assertTrue(len(lines) >= 1)
+    for l in lines:
+      u_l = 'http://localhost:(\d+)/page_that_logs_to_console.html:9'
+      self.assertTrue(re.match('At %s: Hello, world' % u_l, l))
 

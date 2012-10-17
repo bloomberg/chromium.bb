@@ -15,8 +15,8 @@ class DesktopBrowserBackend(browser_backend.BrowserBackend):
   """The backend for controlling a locally-executed browser instance, on Linux,
   Mac or Windows.
   """
-  def __init__(self, options, executable, is_content_shell, extra_browser_args):
-    super(DesktopBrowserBackend, self).__init__(is_content_shell)
+  def __init__(self, options, executable, is_content_shell):
+    super(DesktopBrowserBackend, self).__init__(is_content_shell, options)
 
     # Initialize fields so that an explosion during init doesn't break in Close.
     self._proc = None
@@ -28,16 +28,8 @@ class DesktopBrowserBackend(browser_backend.BrowserBackend):
       raise Exception('Cannot create browser, no executable found!')
 
     self._port = DEFAULT_PORT
-    args = [self._executable,
-            '--remote-debugging-port=%i' % self._port,
-            '--window-size=1280,1024']
-    if not options.dont_override_profile:
-      self._tmpdir = tempfile.mkdtemp()
-      args.append('--user-data-dir=%s' % self._tmpdir)
-    if extra_browser_args:
-      args.extend(extra_browser_args)
-    args.extend(options.extra_browser_args)
-    args.extend(self._common_chrome_browser_args)
+    args = [self._executable]
+    args.extend(self.GetBrowserStartupArgs())
     if not options.show_stdout:
       self._devnull = open(os.devnull, 'w')
       self._proc = subprocess.Popen(
@@ -51,6 +43,15 @@ class DesktopBrowserBackend(browser_backend.BrowserBackend):
     except:
       self.Close()
       raise
+
+  def GetBrowserStartupArgs(self):
+    args = super(DesktopBrowserBackend, self).GetBrowserStartupArgs()
+    args.append('--remote-debugging-port=%i' % self._port)
+    args.append('--window-size=1280,1024')
+    if not self.options.dont_override_profile:
+      self._tmpdir = tempfile.mkdtemp()
+      args.append('--user-data-dir=%s' % self._tmpdir)
+    return args
 
   def IsBrowserRunning(self):
     return self._proc.poll() == None
