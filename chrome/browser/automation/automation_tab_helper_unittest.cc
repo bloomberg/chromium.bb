@@ -7,8 +7,7 @@
 #include "base/basictypes.h"
 #include "chrome/browser/automation/automation_tab_helper.h"
 #include "chrome/browser/automation/mock_tab_event_observer.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,14 +15,15 @@
 using content::BrowserThread;
 using testing::_;
 
-class AutomationTabHelperTest : public TabContentsTestHarness {
+class AutomationTabHelperTest : public ChromeRenderViewHostTestHarness {
  public:
   AutomationTabHelperTest()
-      : TabContentsTestHarness(),
+      : ChromeRenderViewHostTestHarness(),
         browser_thread_(BrowserThread::UI, &message_loop_) {}
 
   virtual void SetUp() {
-    TabContentsTestHarness::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
+    AutomationTabHelper::CreateForWebContents(web_contents());
     mock_observer_.StartObserving(tab_helper());
   }
 
@@ -38,7 +38,7 @@ class AutomationTabHelperTest : public TabContentsTestHarness {
     tab_helper()->DidStopLoading(NULL);
   }
 
-  void TabContentsDestroyed() {
+  void WebContentsDestroyed() {
     tab_helper()->WebContentsDestroyed(web_contents());
   }
 
@@ -208,6 +208,6 @@ TEST_F(AutomationTabHelperTest, DestroyedTabStopsLoading) {
 
   StartLoading();
   WillPerformClientRedirect(1);
-  TabContentsDestroyed();
+  WebContentsDestroyed();
   EXPECT_FALSE(tab_helper()->has_pending_loads());
 }
