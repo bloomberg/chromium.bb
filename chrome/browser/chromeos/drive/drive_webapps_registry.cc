@@ -166,17 +166,15 @@ void DriveWebAppsRegistry::UpdateFromFeed(
 
     if (VLOG_IS_ON(1)) {
       std::vector<std::string> mime_types;
-      for (size_t i = 0; app.primary_mimetypes().size(); ++i)
+      for (size_t i = 0; i < app.primary_mimetypes().size(); ++i)
         mime_types.push_back(*app.primary_mimetypes()[i]);
-      for (size_t i = 0; app.secondary_mimetypes().size(); ++i)
+      for (size_t i = 0; i < app.secondary_mimetypes().size(); ++i)
         mime_types.push_back(*app.secondary_mimetypes()[i]);
-
       std::vector<std::string> extensions;
-      for (size_t i = 0; app.primary_extensions().size(); ++i)
+      for (size_t i = 0; i < app.primary_extensions().size(); ++i)
         extensions.push_back(*app.primary_extensions()[i]);
-      for (size_t i = 0; app.secondary_extensions().size(); ++i)
+      for (size_t i = 0; i < app.secondary_extensions().size(); ++i)
         extensions.push_back(*app.secondary_extensions()[i]);
-
       VLOG(1) << "Adding app " << app.app_name()
               << " to app registry.  mime_types: "
               << JoinString(mime_types, ',') << " extensions: "
