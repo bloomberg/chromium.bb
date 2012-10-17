@@ -70,10 +70,10 @@ static inline bool appendQuadInternal(scoped_ptr<CCDrawQuad> drawQuad, const Int
 
 bool CCQuadCuller::append(scoped_ptr<CCDrawQuad> drawQuad, CCAppendQuadsData& appendQuadsData)
 {
-    ASSERT(drawQuad->sharedQuadState() == m_currentSharedQuadState);
-    ASSERT(drawQuad->sharedQuadStateId() == m_currentSharedQuadState->id);
-    ASSERT(!m_sharedQuadStateList.isEmpty());
-    ASSERT(m_sharedQuadStateList.last() == m_currentSharedQuadState);
+    DCHECK(drawQuad->sharedQuadState() == m_currentSharedQuadState);
+    DCHECK(drawQuad->sharedQuadStateId() == m_currentSharedQuadState->id);
+    DCHECK(!m_sharedQuadStateList.isEmpty());
+    DCHECK(m_sharedQuadStateList.last() == m_currentSharedQuadState);
 
     IntRect culledRect;
     bool hasOcclusionFromOutsideTargetSurface;

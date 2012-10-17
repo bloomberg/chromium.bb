@@ -37,7 +37,7 @@ void UnthrottledTextureUploader::uploadTexture(CCResourceProvider* resourceProvi
         upload.bitmap->unlockPixels();
     }
 
-    ASSERT(!upload.picture);
+    DCHECK(!upload.picture);
 }
 
 }

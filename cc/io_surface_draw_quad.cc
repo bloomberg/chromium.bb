@@ -6,6 +6,8 @@
 
 #include "CCIOSurfaceDrawQuad.h"
 
+#include "base/logging.h"
+
 namespace cc {
 
 scoped_ptr<CCIOSurfaceDrawQuad> CCIOSurfaceDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, const IntSize& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation orientation)
@@ -23,7 +25,7 @@ CCIOSurfaceDrawQuad::CCIOSurfaceDrawQuad(const CCSharedQuadState* sharedQuadStat
 
 const CCIOSurfaceDrawQuad* CCIOSurfaceDrawQuad::materialCast(const CCDrawQuad* quad)
 {
-    ASSERT(quad->material() == CCDrawQuad::IOSurfaceContent);
+    DCHECK(quad->material() == CCDrawQuad::IOSurfaceContent);
     return static_cast<const CCIOSurfaceDrawQuad*>(quad);
 }
 

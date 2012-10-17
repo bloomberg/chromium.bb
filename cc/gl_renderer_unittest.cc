@@ -43,7 +43,7 @@ public:
     int frameCount() { return m_frame; }
     void setMemoryAllocation(WebGraphicsMemoryAllocation allocation)
     {
-        ASSERT(CCProxy::isImplThread());
+        DCHECK(CCProxy::isImplThread());
         // In single threaded mode we expect this callback on main thread.
         DebugScopedSetMainThread main;
         m_memoryAllocationChangedCallback->onMemoryAllocationChanged(allocation);
@@ -251,7 +251,7 @@ public:
     // We allow querying the shader compilation and program link status in debug mode, but not release.
     virtual void getProgramiv(WebGLId program, WGC3Denum pname, WGC3Dint* value)
     {
-#ifndef NDEBUG
+#if CC_DCHECK_ENABLED()
         *value = 1;
 #else
         ADD_FAILURE();
@@ -260,7 +260,7 @@ public:
 
     virtual void getShaderiv(WebGLId shader, WGC3Denum pname, WGC3Dint* value)
     {
-#ifndef NDEBUG
+#if CC_DCHECK_ENABLED()
         *value = 1;
 #else
         ADD_FAILURE();
@@ -403,7 +403,7 @@ TEST(CCRendererGLTest2, opaqueBackground)
 
     // On DEBUG builds, render passes with opaque background clear to blue to
     // easily see regions that were not drawn on the screen.
-#if defined(NDEBUG)
+#if CC_DCHECK_ENABLED()
     EXPECT_EQ(0, context->clearCount());
 #else
     EXPECT_EQ(1, context->clearCount());

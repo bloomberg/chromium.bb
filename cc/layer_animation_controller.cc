@@ -184,7 +184,7 @@ void CCLayerAnimationController::pushNewAnimationsToImplThread(CCLayerAnimationC
         CCActiveAnimation::RunState initialRunState = CCActiveAnimation::WaitingForTargetAvailability;
         double startTime = 0;
         scoped_ptr<CCActiveAnimation> toAdd(m_activeAnimations[i]->cloneAndInitialize(CCActiveAnimation::ControllingInstance, initialRunState, startTime));
-        ASSERT(!toAdd->needsSynchronizedStartTime());
+        DCHECK(!toAdd->needsSynchronizedStartTime());
         controllerImpl->addAnimation(toAdd.Pass());
     }
 }
@@ -397,8 +397,7 @@ void CCLayerAnimationController::tickAnimations(double monotonicTime)
 
             // Do nothing for sentinel value.
             case CCActiveAnimation::TargetPropertyEnumSize:
-                ASSERT_NOT_REACHED();
-
+                NOTREACHED();
             }
         }
     }

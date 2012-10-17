@@ -31,7 +31,7 @@ void insertKeyframe(scoped_ptr<Keyframe> keyframe, ScopedPtrVector<Keyframe>& ke
 
 scoped_ptr<CCTimingFunction> cloneTimingFunction(const CCTimingFunction* timingFunction)
 {
-    ASSERT(timingFunction);
+    DCHECK(timingFunction);
     scoped_ptr<CCAnimationCurve> curve(timingFunction->clone());
     return scoped_ptr<CCTimingFunction>(static_cast<CCTimingFunction*>(curve.release()));
 }

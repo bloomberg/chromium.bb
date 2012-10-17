@@ -7,11 +7,13 @@
 
 #include "CCLayerQuad.h"
 
+#include "base/logging.h"
+
 namespace cc {
 
 CCLayerQuad::Edge::Edge(const FloatPoint& p, const FloatPoint& q)
 {
-    ASSERT(p != q);
+    DCHECK(p != q);
 
     FloatPoint tangent(p.y() - q.y(), q.x() - p.x());
     float cross2 = p.x() * q.y() - q.x() * p.y();

@@ -140,7 +140,7 @@ private:
     void deleteUnlinkedEvictedBackings();
     void sortBackings();
 
-#if !ASSERT_DISABLED
+#if CC_DCHECK_ENABLED()
     void assertInvariants();
 #endif
 

@@ -6,6 +6,7 @@
 
 #include "CCRenderSurfaceFilters.h"
 
+#include "base/logging.h"
 #include "FloatSize.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
@@ -294,7 +295,7 @@ public:
 private:
     void createCanvas()
     {
-        ASSERT(m_scratchTextures[m_currentTexture].get());
+        DCHECK(m_scratchTextures[m_currentTexture].get());
         m_device.reset(new SkGpuDevice(m_grContext, m_scratchTextures[m_currentTexture].get()));
         m_canvas.reset(new SkCanvas(m_device.get()));
         m_canvas->clear(0x0);
@@ -431,7 +432,7 @@ SkBitmap CCRenderSurfaceFilters::apply(const WebKit::WebFilterOperations& filter
         case WebKit::WebFilterOperation::FilterTypeHueRotate:
         case WebKit::WebFilterOperation::FilterTypeInvert:
         case WebKit::WebFilterOperation::FilterTypeOpacity:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             break;
         }
         state.swap();

@@ -475,7 +475,7 @@ TEST_P(CCLayerTreeHostImplTest, implPinchZoom)
     initializeRendererAndDrawFrame();
 
     CCLayerImpl* scrollLayer = m_hostImpl->rootScrollLayer();
-    ASSERT(scrollLayer);
+    DCHECK(scrollLayer);
 
     const float minPageScale = 1, maxPageScale = 4;
     const WebTransformationMatrix identityScaleTransform;
@@ -528,7 +528,7 @@ TEST_P(CCLayerTreeHostImplTest, pinchGesture)
     initializeRendererAndDrawFrame();
 
     CCLayerImpl* scrollLayer = m_hostImpl->rootScrollLayer();
-    ASSERT(scrollLayer);
+    DCHECK(scrollLayer);
 
     const float minPageScale = CCSettings::pageScalePinchZoomEnabled() ? 1 : 0.5;
     const float maxPageScale = 4;
@@ -615,7 +615,7 @@ TEST_P(CCLayerTreeHostImplTest, pageScaleAnimation)
     initializeRendererAndDrawFrame();
 
     CCLayerImpl* scrollLayer = m_hostImpl->rootScrollLayer();
-    ASSERT(scrollLayer);
+    DCHECK(scrollLayer);
 
     const float minPageScale = CCSettings::pageScalePinchZoomEnabled() ? 1 : 0.5;
     const float maxPageScale = 4;
@@ -667,7 +667,7 @@ TEST_P(CCLayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhilePinchZoomin
     initializeRendererAndDrawFrame();
 
     CCLayerImpl* scrollLayer = m_hostImpl->rootScrollLayer();
-    ASSERT(scrollLayer);
+    DCHECK(scrollLayer);
 
     const float minPageScale = CCSettings::pageScalePinchZoomEnabled() ? 1 : 0.5;
     const float maxPageScale = 4;
@@ -736,7 +736,7 @@ TEST_P(CCLayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhileAnimatingPa
     initializeRendererAndDrawFrame();
 
     CCLayerImpl* scrollLayer = m_hostImpl->rootScrollLayer();
-    ASSERT(scrollLayer);
+    DCHECK(scrollLayer);
 
     const float minPageScale = CCSettings::pageScalePinchZoomEnabled() ? 1 : 0.5;
     const float maxPageScale = 4;
@@ -2601,7 +2601,7 @@ public:
 
     void createResources(CCResourceProvider* provider)
     {
-        ASSERT(provider);
+        DCHECK(provider);
         int pool = 0;
         IntSize size(10, 10);
         GC3Denum format = GraphicsContext3D::RGBA;

@@ -132,7 +132,7 @@ void CCDirectRenderer::decideRenderPassAllocationsForFrame(const CCRenderPassLis
         const IntSize& requiredSize = renderPassTextureSize(renderPassInFrame);
         GC3Denum requiredFormat = renderPassTextureFormat(renderPassInFrame);
         CachedTexture* texture = passIterator->second;
-        ASSERT(texture);
+        DCHECK(texture);
 
         if (texture->id() && (texture->size() != requiredSize || texture->format() != requiredFormat))
             texture->free();
@@ -153,7 +153,7 @@ void CCDirectRenderer::decideRenderPassAllocationsForFrame(const CCRenderPassLis
 void CCDirectRenderer::drawFrame(const CCRenderPassList& renderPassesInDrawOrder, const CCRenderPassIdHashMap& renderPassesById)
 {
     const CCRenderPass* rootRenderPass = renderPassesInDrawOrder.back();
-    ASSERT(rootRenderPass);
+    DCHECK(rootRenderPass);
 
     DrawingFrame frame;
     frame.renderPassesById = &renderPassesById;
@@ -209,7 +209,7 @@ bool CCDirectRenderer::useRenderPass(DrawingFrame& frame, const CCRenderPass* re
     }
 
     CachedTexture* texture = m_renderPassTextures.get(renderPass->id());
-    ASSERT(texture);
+    DCHECK(texture);
     if (!texture->id() && !texture->allocate(CCRenderer::ImplPool, renderPassTextureSize(renderPass), renderPassTextureFormat(renderPass), CCResourceProvider::TextureUsageFramebuffer))
         return false;
 

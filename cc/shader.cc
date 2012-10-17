@@ -6,6 +6,7 @@
 
 #include "cc/shader.h"
 
+#include "base/logging.h"
 #include <public/WebGraphicsContext3D.h>
 #include <wtf/StdLibExtras.h>
 
@@ -21,7 +22,7 @@ namespace {
 static void getProgramUniformLocations(WebGraphicsContext3D* context, unsigned program, const char** shaderUniforms, size_t count, size_t maxLocations, int* locations, bool usingBindUniform, int* baseUniformIndex)
 {
     for (size_t uniformIndex = 0; uniformIndex < count; uniformIndex ++) {
-        ASSERT(uniformIndex < maxLocations);
+        DCHECK(uniformIndex < maxLocations);
 
         if (usingBindUniform) {
             locations[uniformIndex] = (*baseUniformIndex)++;
@@ -48,7 +49,7 @@ void VertexShaderPosTex::init(WebGraphicsContext3D* context, unsigned program, b
     getProgramUniformLocations(context, program, shaderUniforms, WTF_ARRAY_LENGTH(shaderUniforms), WTF_ARRAY_LENGTH(locations), locations, usingBindUniform, baseUniformIndex);
 
     m_matrixLocation = locations[0];
-    ASSERT(m_matrixLocation != -1);
+    DCHECK(m_matrixLocation != -1);
 }
 
 std::string VertexShaderPosTex::getShaderString() const
@@ -87,7 +88,7 @@ void VertexShaderPosTexYUVStretch::init(WebGraphicsContext3D* context, unsigned 
     m_matrixLocation = locations[0];
     m_yWidthScaleFactorLocation = locations[1];
     m_uvWidthScaleFactorLocation = locations[2];
-    ASSERT(m_matrixLocation != -1 && m_yWidthScaleFactorLocation != -1 && m_uvWidthScaleFactorLocation != -1);
+    DCHECK(m_matrixLocation != -1 && m_yWidthScaleFactorLocation != -1 && m_uvWidthScaleFactorLocation != -1);
 }
 
 std::string VertexShaderPosTexYUVStretch::getShaderString() const
@@ -125,7 +126,7 @@ void VertexShaderPos::init(WebGraphicsContext3D* context, unsigned program, bool
     getProgramUniformLocations(context, program, shaderUniforms, WTF_ARRAY_LENGTH(shaderUniforms), WTF_ARRAY_LENGTH(locations), locations, usingBindUniform, baseUniformIndex);
 
     m_matrixLocation = locations[0];
-    ASSERT(m_matrixLocation != -1);
+    DCHECK(m_matrixLocation != -1);
 }
 
 std::string VertexShaderPos::getShaderString() const
@@ -158,7 +159,7 @@ void VertexShaderPosTexTransform::init(WebGraphicsContext3D* context, unsigned p
 
     m_matrixLocation = locations[0];
     m_texTransformLocation = locations[1];
-    ASSERT(m_matrixLocation != -1 && m_texTransformLocation != -1);
+    DCHECK(m_matrixLocation != -1 && m_texTransformLocation != -1);
 }
 
 std::string VertexShaderPosTexTransform::getShaderString() const
@@ -208,7 +209,7 @@ void VertexShaderQuad::init(WebGraphicsContext3D* context, unsigned program, boo
 
     m_matrixLocation = locations[0];
     m_pointLocation = locations[1];
-    ASSERT(m_matrixLocation != -1 && m_pointLocation != -1);
+    DCHECK(m_matrixLocation != -1 && m_pointLocation != -1);
 }
 
 std::string VertexShaderQuad::getShaderString() const
@@ -254,7 +255,7 @@ void VertexShaderTile::init(WebGraphicsContext3D* context, unsigned program, boo
     m_matrixLocation = locations[0];
     m_pointLocation = locations[1];
     m_vertexTexTransformLocation = locations[2];
-    ASSERT(m_matrixLocation != -1 && m_pointLocation != -1 && m_vertexTexTransformLocation != -1);
+    DCHECK(m_matrixLocation != -1 && m_pointLocation != -1 && m_vertexTexTransformLocation != -1);
 }
 
 std::string VertexShaderTile::getShaderString() const
@@ -335,7 +336,7 @@ void FragmentTexAlphaBinding::init(WebGraphicsContext3D* context, unsigned progr
 
     m_samplerLocation = locations[0];
     m_alphaLocation = locations[1];
-    ASSERT(m_samplerLocation != -1 && m_alphaLocation != -1);
+    DCHECK(m_samplerLocation != -1 && m_alphaLocation != -1);
 }
 
 FragmentTexOpaqueBinding::FragmentTexOpaqueBinding()
@@ -353,7 +354,7 @@ void FragmentTexOpaqueBinding::init(WebGraphicsContext3D* context, unsigned prog
     getProgramUniformLocations(context, program, shaderUniforms, WTF_ARRAY_LENGTH(shaderUniforms), WTF_ARRAY_LENGTH(locations), locations, usingBindUniform, baseUniformIndex);
 
     m_samplerLocation = locations[0];
-    ASSERT(m_samplerLocation != -1);
+    DCHECK(m_samplerLocation != -1);
 }
 
 std::string FragmentShaderRGBATexFlipAlpha::getShaderString() const
@@ -521,7 +522,7 @@ void FragmentShaderRGBATexAlphaAA::init(WebGraphicsContext3D* context, unsigned 
     m_samplerLocation = locations[0];
     m_alphaLocation = locations[1];
     m_edgeLocation = locations[2];
-    ASSERT(m_samplerLocation != -1 && m_alphaLocation != -1 && m_edgeLocation != -1);
+    DCHECK(m_samplerLocation != -1 && m_alphaLocation != -1 && m_edgeLocation != -1);
 }
 
 std::string FragmentShaderRGBATexAlphaAA::getShaderString() const
@@ -573,7 +574,7 @@ void FragmentTexClampAlphaAABinding::init(WebGraphicsContext3D* context, unsigne
     m_alphaLocation = locations[1];
     m_fragmentTexTransformLocation = locations[2];
     m_edgeLocation = locations[3];
-    ASSERT(m_samplerLocation != -1 && m_alphaLocation != -1 && m_fragmentTexTransformLocation != -1 && m_edgeLocation != -1);
+    DCHECK(m_samplerLocation != -1 && m_alphaLocation != -1 && m_fragmentTexTransformLocation != -1 && m_edgeLocation != -1);
 }
 
 std::string FragmentShaderRGBATexClampAlphaAA::getShaderString() const
@@ -656,7 +657,7 @@ void FragmentShaderRGBATexAlphaMask::init(WebGraphicsContext3D* context, unsigne
     m_alphaLocation = locations[2];
     m_maskTexCoordScaleLocation = locations[3];
     m_maskTexCoordOffsetLocation = locations[4];
-    ASSERT(m_samplerLocation != -1 && m_maskSamplerLocation != -1 && m_alphaLocation != -1);
+    DCHECK(m_samplerLocation != -1 && m_maskSamplerLocation != -1 && m_alphaLocation != -1);
 }
 
 std::string FragmentShaderRGBATexAlphaMask::getShaderString() const
@@ -708,7 +709,7 @@ void FragmentShaderRGBATexAlphaMaskAA::init(WebGraphicsContext3D* context, unsig
     m_edgeLocation = locations[3];
     m_maskTexCoordScaleLocation = locations[4];
     m_maskTexCoordOffsetLocation = locations[5];
-    ASSERT(m_samplerLocation != -1 && m_maskSamplerLocation != -1 && m_alphaLocation != -1 && m_edgeLocation != -1);
+    DCHECK(m_samplerLocation != -1 && m_maskSamplerLocation != -1 && m_alphaLocation != -1 && m_edgeLocation != -1);
 }
 
 std::string FragmentShaderRGBATexAlphaMaskAA::getShaderString() const
@@ -772,7 +773,7 @@ void FragmentShaderYUVVideo::init(WebGraphicsContext3D* context, unsigned progra
     m_ccMatrixLocation = locations[4];
     m_yuvAdjLocation = locations[5];
 
-    ASSERT(m_yTextureLocation != -1 && m_uTextureLocation != -1 && m_vTextureLocation != -1
+    DCHECK(m_yTextureLocation != -1 && m_uTextureLocation != -1 && m_vTextureLocation != -1
            && m_alphaLocation != -1 && m_ccMatrixLocation != -1 && m_yuvAdjLocation != -1);
 }
 
@@ -816,7 +817,7 @@ void FragmentShaderColor::init(WebGraphicsContext3D* context, unsigned program, 
     getProgramUniformLocations(context, program, shaderUniforms, WTF_ARRAY_LENGTH(shaderUniforms), WTF_ARRAY_LENGTH(locations), locations, usingBindUniform, baseUniformIndex);
 
     m_colorLocation = locations[0];
-    ASSERT(m_colorLocation != -1);
+    DCHECK(m_colorLocation != -1);
 }
 
 std::string FragmentShaderColor::getShaderString() const
@@ -854,7 +855,7 @@ void FragmentShaderCheckerboard::init(WebGraphicsContext3D* context, unsigned pr
     m_texTransformLocation = locations[1];
     m_frequencyLocation = locations[2];
     m_colorLocation = locations[3];
-    ASSERT(m_alphaLocation != -1 && m_texTransformLocation != -1 && m_frequencyLocation != -1 && m_colorLocation != -1);
+    DCHECK(m_alphaLocation != -1 && m_texTransformLocation != -1 && m_frequencyLocation != -1 && m_colorLocation != -1);
 }
 
 std::string FragmentShaderCheckerboard::getShaderString() const

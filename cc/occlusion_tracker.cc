@@ -245,7 +245,7 @@ void CCOcclusionTrackerBase<LayerType, RenderSurfaceType>::leaveToRenderTarget(c
 template<typename LayerType>
 static inline void addOcclusionBehindLayer(Region& region, const LayerType* layer, const WebTransformationMatrix& transform, const Region& opaqueContents, const IntRect& clipRectInTarget, const IntSize& minimumTrackingSize, Vector<IntRect>* occludingScreenSpaceRects)
 {
-    ASSERT(layer->visibleContentRect().contains(opaqueContents.bounds()));
+    DCHECK(layer->visibleContentRect().contains(opaqueContents.bounds()));
 
     bool clipped;
     FloatQuad visibleTransformedQuad = CCMathUtil::mapQuad(transform, FloatQuad(layer->visibleContentRect()), clipped);
@@ -269,8 +269,8 @@ static inline void addOcclusionBehindLayer(Region& region, const LayerType* laye
 template<typename LayerType, typename RenderSurfaceType>
 void CCOcclusionTrackerBase<LayerType, RenderSurfaceType>::markOccludedBehindLayer(const LayerType* layer)
 {
-    ASSERT(!m_stack.isEmpty());
-    ASSERT(layer->renderTarget() == m_stack.last().target);
+    DCHECK(!m_stack.isEmpty());
+    DCHECK(layer->renderTarget() == m_stack.last().target);
     if (m_stack.isEmpty())
         return;
 
@@ -317,13 +317,13 @@ bool CCOcclusionTrackerBase<LayerType, RenderSurfaceType>::occluded(const LayerT
     if (hasOcclusionFromOutsideTargetSurface)
         *hasOcclusionFromOutsideTargetSurface = false;
 
-    ASSERT(!m_stack.isEmpty());
+    DCHECK(!m_stack.isEmpty());
     if (m_stack.isEmpty())
         return false;
     if (contentRect.isEmpty())
         return true;
 
-    ASSERT(layer->renderTarget() == m_stack.last().target);
+    DCHECK(layer->renderTarget() == m_stack.last().target);
 
     if (layerTransformsToTargetKnown(layer) && testContentRectOccluded(contentRect, layer->drawTransform(), layerClipRectInTarget(layer), m_stack.last().occlusionInTarget))
         return true;
@@ -362,13 +362,13 @@ static inline IntRect computeUnoccludedContentRect(const IntRect& contentRect, c
 template<typename LayerType, typename RenderSurfaceType>
 IntRect CCOcclusionTrackerBase<LayerType, RenderSurfaceType>::unoccludedContentRect(const LayerType* layer, const IntRect& contentRect, bool* hasOcclusionFromOutsideTargetSurface) const
 {
-    ASSERT(!m_stack.isEmpty());
+    DCHECK(!m_stack.isEmpty());
     if (m_stack.isEmpty())
         return contentRect;
     if (contentRect.isEmpty())
         return contentRect;
 
-    ASSERT(layer->renderTarget() == m_stack.last().target);
+    DCHECK(layer->renderTarget() == m_stack.last().target);
 
     // We want to return a rect that contains all the visible parts of |contentRect| in both screen space and in the target surface.
     // So we find the visible parts of |contentRect| in each space, and take the intersection.
@@ -390,15 +390,15 @@ IntRect CCOcclusionTrackerBase<LayerType, RenderSurfaceType>::unoccludedContentR
 template<typename LayerType, typename RenderSurfaceType>
 IntRect CCOcclusionTrackerBase<LayerType, RenderSurfaceType>::unoccludedContributingSurfaceContentRect(const LayerType* layer, bool forReplica, const IntRect& contentRect, bool* hasOcclusionFromOutsideTargetSurface) const
 {
-    ASSERT(!m_stack.isEmpty());
+    DCHECK(!m_stack.isEmpty());
     // The layer is a contributing renderTarget so it should have a surface.
-    ASSERT(layer->renderSurface());
+    DCHECK(layer->renderSurface());
     // The layer is a contributing renderTarget so its target should be itself.
-    ASSERT(layer->renderTarget() == layer);
+    DCHECK(layer->renderTarget() == layer);
     // The layer should not be the root, else what is is contributing to?
-    ASSERT(layer->parent());
+    DCHECK(layer->parent());
     // This should be called while the layer is still considered the current target in the occlusion tracker.
-    ASSERT(layer == m_stack.last().target);
+    DCHECK(layer == m_stack.last().target);
 
     if (contentRect.isEmpty())
         return contentRect;

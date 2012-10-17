@@ -54,21 +54,19 @@ CCLayerImpl::CCLayerImpl(int id)
     , m_debugBorderWidth(0)
     , m_drawTransformIsAnimating(false)
     , m_screenSpaceTransformIsAnimating(false)
-#ifndef NDEBUG
+#if CC_DCHECK_ENABLED()
     , m_betweenWillDrawAndDidDraw(false)
 #endif
     , m_layerAnimationController(CCLayerAnimationController::create(this))
 {
-    ASSERT(CCProxy::isImplThread());
-    ASSERT(m_layerId > 0);
+    DCHECK(CCProxy::isImplThread());
+    DCHECK(m_layerId > 0);
 }
 
 CCLayerImpl::~CCLayerImpl()
 {
-    ASSERT(CCProxy::isImplThread());
-#ifndef NDEBUG
-    ASSERT(!m_betweenWillDrawAndDidDraw);
-#endif
+    DCHECK(CCProxy::isImplThread());
+    DCHECK(!m_betweenWillDrawAndDidDraw);
 }
 
 void CCLayerImpl::addChild(scoped_ptr<CCLayerImpl> child)
@@ -106,7 +104,7 @@ void CCLayerImpl::clearChildList()
 
 void CCLayerImpl::createRenderSurface()
 {
-    ASSERT(!m_renderSurface);
+    DCHECK(!m_renderSurface);
     m_renderSurface = make_scoped_ptr(new CCRenderSurface(this));
     setRenderTarget(this);
 }
@@ -127,17 +125,17 @@ scoped_ptr<CCSharedQuadState> CCLayerImpl::createSharedQuadState() const
 
 void CCLayerImpl::willDraw(CCResourceProvider*)
 {
-#ifndef NDEBUG
+#if CC_DCHECK_ENABLED()
     // willDraw/didDraw must be matched.
-    ASSERT(!m_betweenWillDrawAndDidDraw);
+    DCHECK(!m_betweenWillDrawAndDidDraw);
     m_betweenWillDrawAndDidDraw = true;
 #endif
 }
 
 void CCLayerImpl::didDraw(CCResourceProvider*)
 {
-#ifndef NDEBUG
-    ASSERT(m_betweenWillDrawAndDidDraw);
+#if CC_DCHECK_ENABLED()
+    DCHECK(m_betweenWillDrawAndDidDraw);
     m_betweenWillDrawAndDidDraw = false;
 #endif
 }
@@ -168,7 +166,7 @@ CCRenderPass::Id CCLayerImpl::nextContributingRenderPassId(CCRenderPass::Id) con
 
 CCResourceProvider::ResourceId CCLayerImpl::contentsResourceId() const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return 0;
 }
 

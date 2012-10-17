@@ -7,6 +7,7 @@
 
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
+#include "cc/dcheck.h"
 
 namespace cc {
 
@@ -19,7 +20,7 @@ public:
     CCCompletionEvent()
         : m_event(false /* manual_reset */, false /* initially_signaled */)
     {
-#ifndef NDEBUG
+#if CC_DCHECK_ENABLED()
         m_waited = false;
         m_signaled = false;
 #endif
@@ -27,14 +28,14 @@ public:
 
     ~CCCompletionEvent()
     {
-        ASSERT(m_waited);
-        ASSERT(m_signaled);
+        DCHECK(m_waited);
+        DCHECK(m_signaled);
     }
 
     void wait()
     {
-        ASSERT(!m_waited);
-#ifndef NDEBUG
+        DCHECK(!m_waited);
+#if CC_DCHECK_ENABLED()
         m_waited = true;
 #endif
         base::ThreadRestrictions::ScopedAllowWait allow_wait;
@@ -43,8 +44,8 @@ public:
 
     void signal()
     {
-        ASSERT(!m_signaled);
-#ifndef NDEBUG
+        DCHECK(!m_signaled);
+#if CC_DCHECK_ENABLED()
         m_signaled = true;
 #endif
         m_event.Signal();
@@ -52,7 +53,7 @@ public:
 
 private:
     base::WaitableEvent m_event;
-#ifndef NDEBUG
+#if CC_DCHECK_ENABLED()
     // Used to assert that wait() and signal() are each called exactly once.
     bool m_waited;
     bool m_signaled;

@@ -70,7 +70,7 @@ void CCDebugRectHistory::savePropertyChangedRects(const std::vector<CCLayerImpl*
     for (int surfaceIndex = renderSurfaceLayerList.size() - 1; surfaceIndex >= 0 ; --surfaceIndex) {
         CCLayerImpl* renderSurfaceLayer = renderSurfaceLayerList[surfaceIndex];
         CCRenderSurface* renderSurface = renderSurfaceLayer->renderSurface();
-        ASSERT(renderSurface);
+        DCHECK(renderSurface);
 
         const std::vector<CCLayerImpl*>& layerList = renderSurface->layerList();
         for (unsigned layerIndex = 0; layerIndex < layerList.size(); ++layerIndex) {
@@ -93,7 +93,7 @@ void CCDebugRectHistory::saveSurfaceDamageRects(const std::vector<CCLayerImpl* >
     for (int surfaceIndex = renderSurfaceLayerList.size() - 1; surfaceIndex >= 0 ; --surfaceIndex) {
         CCLayerImpl* renderSurfaceLayer = renderSurfaceLayerList[surfaceIndex];
         CCRenderSurface* renderSurface = renderSurfaceLayer->renderSurface();
-        ASSERT(renderSurface);
+        DCHECK(renderSurface);
 
         m_debugRects.append(CCDebugRect(SurfaceDamageRectType, CCMathUtil::mapClippedRect(renderSurface->screenSpaceTransform(), renderSurface->damageTracker()->currentDamageRect())));
     }
@@ -104,7 +104,7 @@ void CCDebugRectHistory::saveScreenSpaceRects(const std::vector<CCLayerImpl* >& 
     for (int surfaceIndex = renderSurfaceLayerList.size() - 1; surfaceIndex >= 0 ; --surfaceIndex) {
         CCLayerImpl* renderSurfaceLayer = renderSurfaceLayerList[surfaceIndex];
         CCRenderSurface* renderSurface = renderSurfaceLayer->renderSurface();
-        ASSERT(renderSurface);
+        DCHECK(renderSurface);
 
         m_debugRects.append(CCDebugRect(ScreenSpaceRectType, CCMathUtil::mapClippedRect(renderSurface->screenSpaceTransform(), renderSurface->contentRect())));
 

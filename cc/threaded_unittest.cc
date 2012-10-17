@@ -378,7 +378,7 @@ void CCThreadedTest::postDidAddAnimationToMainThread()
 
 void CCThreadedTest::doBeginTest()
 {
-    ASSERT(CCProxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
     m_client = MockLayerTreeHostClient::create(this);
 
     scoped_refptr<LayerChromium> rootLayer = LayerChromium::create();
@@ -411,13 +411,13 @@ void CCThreadedTest::scheduleComposite()
 
 void CCThreadedTest::realEndTest()
 {
-    ASSERT(CCProxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
     WebKit::Platform::current()->currentThread()->exitRunLoop();
 }
 
 void CCThreadedTest::dispatchSetNeedsAnimate()
 {
-    ASSERT(CCProxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
 
     if (m_finished)
         return;
@@ -428,7 +428,7 @@ void CCThreadedTest::dispatchSetNeedsAnimate()
 
 void CCThreadedTest::dispatchAddInstantAnimation()
 {
-    ASSERT(CCProxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
 
     if (m_finished)
         return;
@@ -439,7 +439,7 @@ void CCThreadedTest::dispatchAddInstantAnimation()
 
 void CCThreadedTest::dispatchAddAnimation()
 {
-    ASSERT(CCProxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
 
     if (m_finished)
         return;
@@ -450,7 +450,7 @@ void CCThreadedTest::dispatchAddAnimation()
 
 void CCThreadedTest::dispatchSetNeedsAnimateAndCommit()
 {
-    ASSERT(CCProxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
 
     if (m_finished)
         return;
@@ -463,7 +463,7 @@ void CCThreadedTest::dispatchSetNeedsAnimateAndCommit()
 
 void CCThreadedTest::dispatchSetNeedsCommit()
 {
-    ASSERT(CCProxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
 
     if (m_finished)
         return;
@@ -474,7 +474,7 @@ void CCThreadedTest::dispatchSetNeedsCommit()
 
 void CCThreadedTest::dispatchAcquireLayerTextures()
 {
-    ASSERT(CCProxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
 
     if (m_finished)
         return;
@@ -485,7 +485,7 @@ void CCThreadedTest::dispatchAcquireLayerTextures()
 
 void CCThreadedTest::dispatchSetNeedsRedraw()
 {
-    ASSERT(CCProxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
 
     if (m_finished)
         return;
@@ -496,7 +496,7 @@ void CCThreadedTest::dispatchSetNeedsRedraw()
 
 void CCThreadedTest::dispatchSetVisible(bool visible)
 {
-    ASSERT(CCProxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
 
     if (m_finished)
         return;
@@ -514,7 +514,7 @@ void CCThreadedTest::dispatchComposite()
 
 void CCThreadedTest::dispatchDidAddAnimation()
 {
-    ASSERT(CCProxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
 
     if (m_finished)
         return;
@@ -534,7 +534,7 @@ void CCThreadedTest::runTest(bool threaded)
     } else
         Platform::current()->compositorSupport()->initialize(0);
 
-    ASSERT(CCProxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
     m_mainThreadProxy = CCScopedThreadProxy::create(CCProxy::mainThread());
 
     initializeSettings(m_settings);

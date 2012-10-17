@@ -24,20 +24,20 @@ CCRenderPassDrawQuad::CCRenderPassDrawQuad(const CCSharedQuadState* sharedQuadSt
     , m_maskTexCoordOffsetX(maskTexCoordOffsetX)
     , m_maskTexCoordOffsetY(maskTexCoordOffsetY)
 {
-    ASSERT(m_renderPassId.layerId > 0);
-    ASSERT(m_renderPassId.index >= 0);
+    DCHECK(m_renderPassId.layerId > 0);
+    DCHECK(m_renderPassId.index >= 0);
 }
 
 const CCRenderPassDrawQuad* CCRenderPassDrawQuad::materialCast(const CCDrawQuad* quad)
 {
-    ASSERT(quad->material() == CCDrawQuad::RenderPass);
+    DCHECK(quad->material() == CCDrawQuad::RenderPass);
     return static_cast<const CCRenderPassDrawQuad*>(quad);
 }
 
 scoped_ptr<CCRenderPassDrawQuad> CCRenderPassDrawQuad::copy(const CCSharedQuadState* copiedSharedQuadState, CCRenderPass::Id copiedRenderPassId) const
 {
     unsigned bytes = size();
-    ASSERT(bytes);
+    DCHECK(bytes > 0);
 
     scoped_ptr<CCRenderPassDrawQuad> copyQuad(reinterpret_cast<CCRenderPassDrawQuad*>(new char[bytes]));
     memcpy(copyQuad.get(), this, bytes);

@@ -264,7 +264,7 @@ void CCRendererSoftware::drawTextureQuad(const DrawingFrame& frame, const CCText
 
 void CCRendererSoftware::drawTileQuad(const DrawingFrame& frame, const CCTileDrawQuad* quad)
 {
-    ASSERT(isSoftwareResource(quad->resourceId()));
+    DCHECK(isSoftwareResource(quad->resourceId()));
     CCResourceProvider::ScopedReadLockSoftware quadResourceLock(m_resourceProvider, quad->resourceId());
 
     SkIRect uvRect = toSkIRect(IntRect(quad->textureOffset(), quad->quadRect().size()));
@@ -277,7 +277,7 @@ void CCRendererSoftware::drawRenderPassQuad(const DrawingFrame& frame, const CCR
     if (!contentsTexture || !contentsTexture->id())
         return;
 
-    ASSERT(isSoftwareResource(contentsTexture->id()));
+    DCHECK(isSoftwareResource(contentsTexture->id()));
     CCResourceProvider::ScopedReadLockSoftware contentsTextureLock(m_resourceProvider, contentsTexture->id());
 
     const SkBitmap* bitmap = contentsTextureLock.skBitmap();

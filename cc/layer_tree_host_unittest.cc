@@ -1429,7 +1429,7 @@ public:
             context->resetUsedTextures();
             break;
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             break;
         }
     }
@@ -1551,7 +1551,7 @@ public:
             context->resetUsedTextures();
             break;
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             break;
         }
     }
@@ -1596,7 +1596,7 @@ public:
             m_layerTreeHost->setViewportSize(IntSize(10, 20), IntSize(10, 20));
             break;
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             break;
         }
     }
@@ -2506,7 +2506,7 @@ public:
         virtual ~EvictTexturesTask() { }
         virtual void run() OVERRIDE
         {
-            ASSERT(m_test->m_implForEvictTextures);
+            DCHECK(m_test->m_implForEvictTextures);
             m_test->m_implForEvictTextures->releaseContentsTextures();
         }
 
@@ -2516,7 +2516,7 @@ public:
 
     void postEvictTextures()
     {
-        ASSERT(webThread());
+        DCHECK(webThread());
         webThread()->postTask(new EvictTexturesTask(this));
     }
 
@@ -2566,7 +2566,7 @@ public:
             endTest();
             break;
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             break;
         }
     }
@@ -2599,7 +2599,7 @@ public:
             postEvictTextures();
             break;
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             break;
         }
     }
@@ -2663,7 +2663,7 @@ public:
 
     void evictTexturesOnImplThread()
     {
-        ASSERT(m_implForEvictTextures);
+        DCHECK(m_implForEvictTextures);
         m_implForEvictTextures->releaseContentsTextures();
     }
 

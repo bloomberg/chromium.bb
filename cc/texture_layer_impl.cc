@@ -31,7 +31,7 @@ void CCTextureLayerImpl::willDraw(CCResourceProvider* resourceProvider)
 {
     if (!m_textureId)
         return;
-    ASSERT(!m_externalTextureResource);
+    DCHECK(!m_externalTextureResource);
     m_externalTextureResource = resourceProvider->createResourceFromExternalTexture(m_textureId);
 }
 
@@ -54,7 +54,7 @@ void CCTextureLayerImpl::didDraw(CCResourceProvider* resourceProvider)
     // FIXME: the following assert will not be true when sending resources to a
     // parent compositor. A synchronization scheme (double-buffering or
     // pipelining of updates) for the client will need to exist to solve this.
-    ASSERT(!resourceProvider->inUseByConsumer(m_externalTextureResource));
+    DCHECK(!resourceProvider->inUseByConsumer(m_externalTextureResource));
     resourceProvider->deleteResource(m_externalTextureResource);
     m_externalTextureResource = 0;
 }

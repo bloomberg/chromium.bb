@@ -5,6 +5,7 @@
 #ifndef FakeWebCompositorSoftwareOutputDevice_h
 #define FakeWebCompositorSoftwareOutputDevice_h
 
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include <public/WebCompositorSoftwareOutputDevice.h>
@@ -17,7 +18,7 @@ class FakeWebCompositorSoftwareOutputDevice : public WebCompositorSoftwareOutput
 public:
     virtual WebImage* lock(bool forWrite) OVERRIDE
     {
-        ASSERT(m_device.get());
+        DCHECK(m_device.get());
         m_image = m_device->accessBitmap(forWrite);
         return &m_image;
     }

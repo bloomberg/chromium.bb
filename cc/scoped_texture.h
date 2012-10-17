@@ -7,9 +7,10 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/dcheck.h"
 #include "CCTexture.h"
 
-#if !ASSERT_DISABLED
+#if CC_DCHECK_ENABLED()
 #include "base/threading/platform_thread.h"
 #endif
 
@@ -35,7 +36,7 @@ protected:
 private:
     CCResourceProvider* m_resourceProvider;
 
-#if !ASSERT_DISABLED
+#if CC_DCHECK_ENABLED()
     base::PlatformThreadId m_allocateThreadIdentifier;
 #endif
 

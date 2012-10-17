@@ -111,7 +111,7 @@ static inline bool layerClipsSubtree(LayerType* layer)
 template<typename LayerType>
 static IntRect calculateVisibleContentRect(LayerType* layer)
 {
-    ASSERT(layer->renderTarget());
+    DCHECK(layer->renderTarget());
 
     // Nothing is visible if the layer bounds are empty.
     if (!layer->drawsContent() || layer->contentBounds().isEmpty() || layer->drawableContentRect().isEmpty())
@@ -186,8 +186,8 @@ static bool layerShouldBeSkipped(LayerType* layer)
 
     LayerType* backfaceTestLayer = layer;
     if (layer->useParentBackfaceVisibility()) {
-        ASSERT(layer->parent());
-        ASSERT(!layer->parent()->useParentBackfaceVisibility());
+        DCHECK(layer->parent());
+        DCHECK(!layer->parent()->useParentBackfaceVisibility());
         backfaceTestLayer = layer->parent();
     }
 
@@ -353,7 +353,7 @@ void setupRootLayerAndSurfaceForRecursion(LayerType* rootLayer, LayerList& rende
     rootLayer->renderSurface()->setContentRect(IntRect(IntPoint::zero(), deviceViewportSize));
     rootLayer->renderSurface()->clearLayerLists();
 
-    ASSERT(renderSurfaceLayerList.empty());
+    DCHECK(renderSurfaceLayerList.empty());
     renderSurfaceLayerList.push_back(rootLayer);
 }
 
@@ -598,7 +598,7 @@ static void calculateDrawTransformsInternal(LayerType* layer, LayerType* rootLay
         layer->setDrawOpacityIsAnimating(drawOpacityIsAnimating);
 
         if (layer != rootLayer) {
-            ASSERT(layer->parent());
+            DCHECK(layer->parent());
             layer->clearRenderSurface();
 
             // Layers without renderSurfaces directly inherit the ancestor's clip status.
@@ -610,9 +610,9 @@ static void calculateDrawTransformsInternal(LayerType* layer, LayerType* rootLay
             layer->setRenderTarget(layer->parent()->renderTarget());
         } else {
             // FIXME: This root layer special case code should eventually go away. https://bugs.webkit.org/show_bug.cgi?id=92290
-            ASSERT(!layer->parent());
-            ASSERT(layer->renderSurface());
-            ASSERT(ancestorClipsSubtree);
+            DCHECK(!layer->parent());
+            DCHECK(layer->renderSurface());
+            DCHECK(ancestorClipsSubtree);
             layer->renderSurface()->setClipRect(clipRectFromAncestor);
             subtreeShouldBeClipped = false;
         }
@@ -736,7 +736,7 @@ static void calculateDrawTransformsInternal(LayerType* layer, LayerType* rootLay
                 renderSurfaceLayerList.back()->clearRenderSurface();
                 renderSurfaceLayerList.pop_back();
             }
-            ASSERT(renderSurfaceLayerList.back() == layer);
+            DCHECK(renderSurfaceLayerList.back() == layer);
             renderSurfaceLayerList.pop_back();
             layer->clearRenderSurface();
             return;

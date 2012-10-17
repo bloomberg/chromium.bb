@@ -6,25 +6,18 @@
 
 #include "CCLayerSorter.h"
 
+#include <limits>
+
+#include "base/logging.h"
 #include "CCMathUtil.h"
 #include "CCRenderSurface.h"
-#include <limits.h>
 #include <public/WebTransformationMatrix.h>
 #include <wtf/Deque.h>
 
 using namespace std;
 using WebKit::WebTransformationMatrix;
 
-#define LOG_CHANNEL_PREFIX Log
-#define SHOW_DEBUG_LOG 0
-
-#if !defined( NDEBUG )
-#if SHOW_DEBUG_LOG
-static WTFLogChannel LogCCLayerSorter = { 0x00000000, "", WTFLogChannelOn };
-#else
-static WTFLogChannel LogCCLayerSorter = { 0x00000000, "", WTFLogChannelOff };
-#endif
-#endif
+#define SHOW_DEBUG_LOG 0 && !defined(NDEBUG)
 
 namespace cc {
 
@@ -223,8 +216,8 @@ float CCLayerSorter::LayerShape::layerZFromProjectedPoint(const FloatPoint& p) c
 
 void CCLayerSorter::createGraphNodes(LayerList::iterator first, LayerList::iterator last)
 {
-#if !defined( NDEBUG )
-    LOG(CCLayerSorter, "Creating graph nodes:\n");
+#if SHOW_DEBUG_LOG
+    DLOG(INFO) << "CCLayerSorter: Creating graph nodes:\n";
 #endif
     float minZ = FLT_MAX;
     float maxZ = -FLT_MAX;
@@ -235,8 +228,8 @@ void CCLayerSorter::createGraphNodes(LayerList::iterator first, LayerList::itera
         if (!node.layer->drawsContent() && !renderSurface)
             continue;
 
-#if !defined( NDEBUG )
-        LOG(CCLayerSorter, "Layer %d (%d x %d)\n", node.layer->id(), node.layer->bounds().width(), node.layer->bounds().height());
+#if SHOW_DEBUG_LOG
+        DLOG(INFO) << "CCLayerSorter: Layer " << node.layer->id() << " (" << node.layer->bounds().width() << " x " << node.layer->bounds().height() << ")\n";
 #endif
 
         WebTransformationMatrix drawTransform;
@@ -262,8 +255,8 @@ void CCLayerSorter::createGraphNodes(LayerList::iterator first, LayerList::itera
 
 void CCLayerSorter::createGraphEdges()
 {
-#if !defined( NDEBUG )
-    LOG(CCLayerSorter, "Edges:\n");
+#if SHOW_DEBUG_LOG
+    DLOG(INFO) << "CCLayerSorter: Edges:\n";
 #endif
     // Fraction of the total zRange below which z differences
     // are not considered reliable.
@@ -291,8 +284,8 @@ void CCLayerSorter::createGraphEdges()
             }
 
             if (startNode) {
-#if !defined( NDEBUG )
-                LOG(CCLayerSorter, "%d -> %d\n", startNode->layer->id(), endNode->layer->id());
+#if SHOW_DEBUG_LOG
+                DLOG(INFO) << "CCLayerSorter: " << startNode->layer->id() << " -> " << endNode->layer->id() << "\n";
 #endif
                 m_edges.append(GraphEdge(startNode, endNode, weight));
             }
@@ -313,9 +306,9 @@ void CCLayerSorter::createGraphEdges()
 void CCLayerSorter::removeEdgeFromList(GraphEdge* edge, Vector<GraphEdge*>& list)
 {
     size_t edgeIndex = list.find(edge);
-    ASSERT(edgeIndex != notFound);
+    DCHECK(edgeIndex != notFound);
     if (list.size() == 1) {
-        ASSERT(!edgeIndex);
+        DCHECK(!edgeIndex);
         list.clear();
         return;
     }
@@ -346,8 +339,8 @@ void CCLayerSorter::removeEdgeFromList(GraphEdge* edge, Vector<GraphEdge*>& list
 //
 void CCLayerSorter::sort(LayerList::iterator first, LayerList::iterator last)
 {
-#if !defined( NDEBUG )
-    LOG(CCLayerSorter, "Sorting start ----\n");
+#if SHOW_DEBUG_LOG
+    DLOG(INFO) << "CCLayerSorter: Sorting start ----\n";
 #endif
     createGraphNodes(first, last);
 
@@ -362,8 +355,8 @@ void CCLayerSorter::sort(LayerList::iterator first, LayerList::iterator last)
             noIncomingEdgeNodeList.append(la);
     }
 
-#if !defined( NDEBUG )
-    LOG(CCLayerSorter, "Sorted list: ");
+#if SHOW_DEBUG_LOG
+    DLOG(INFO) << "CCLayerSorter: Sorted list: ";
 #endif
     while (m_activeEdges.size() || noIncomingEdgeNodeList.size()) {
         while (noIncomingEdgeNodeList.size()) {
@@ -377,8 +370,8 @@ void CCLayerSorter::sort(LayerList::iterator first, LayerList::iterator last)
             // Add it to the final list.
             sortedList.append(fromNode);
 
-#if !defined( NDEBUG )
-            LOG(CCLayerSorter, "%d, ", fromNode->layer->id());
+#if SHOW_DEBUG_LOG
+            DLOG(INFO) << fromNode->layer->id() << ", ";
 #endif
 
             // Remove all its outgoing edges from the graph.
@@ -411,7 +404,7 @@ void CCLayerSorter::sort(LayerList::iterator first, LayerList::iterator last)
                 nextNode = &m_nodes[i];
             }
         }
-        ASSERT(nextNode);
+        DCHECK(nextNode);
         // Remove all its incoming edges.
         for (unsigned e = 0; e < nextNode->incoming.size(); e++) {
             GraphEdge* incomingEdge = nextNode->incoming[e];
@@ -422,8 +415,8 @@ void CCLayerSorter::sort(LayerList::iterator first, LayerList::iterator last)
         nextNode->incoming.clear();
         nextNode->incomingEdgeWeight = 0;
         noIncomingEdgeNodeList.append(nextNode);
-#if !defined( NDEBUG )
-        LOG(CCLayerSorter, "Breaking cycle by cleaning up incoming edges from %d (weight = %f)\n", nextNode->layer->id(), minIncomingEdgeWeight);
+#if SHOW_DEBUG_LOG
+        DLOG(INFO) << "Breaking cycle by cleaning up incoming edges from " << nextNode->layer->id() << " (weight = " << minIncomingEdgeWeight<< ")\n";
 #endif
     }
 
@@ -433,8 +426,8 @@ void CCLayerSorter::sort(LayerList::iterator first, LayerList::iterator last)
     for (LayerList::iterator it = first; it < last; it++)
         *it = sortedList[count++]->layer;
 
-#if !defined( NDEBUG )
-    LOG(CCLayerSorter, "Sorting end ----\n");
+#if SHOW_DEBUG_LOG
+    DLOG(INFO) << "CCLayerSorter: Sorting end ----\n";
 #endif
 
     m_nodes.clear();

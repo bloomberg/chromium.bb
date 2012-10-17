@@ -111,7 +111,7 @@ CCLayerTreeHost::CCLayerTreeHost(CCLayerTreeHostClient* client, const CCLayerTre
     , m_hasTransparentBackground(false)
     , m_partialTextureUpdateRequests(0)
 {
-    ASSERT(CCProxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
     numLayerTreeInstances++;
 }
 
@@ -132,9 +132,9 @@ CCLayerTreeHost::~CCLayerTreeHost()
 {
     if (m_rootLayer)
         m_rootLayer->setLayerTreeHost(0);
-    ASSERT(CCProxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
     TRACE_EVENT0("cc", "CCLayerTreeHost::~CCLayerTreeHost");
-    ASSERT(m_proxy.get());
+    DCHECK(m_proxy.get());
     m_proxy->stop();
     m_proxy.reset();
     numLayerTreeInstances--;
@@ -177,7 +177,7 @@ void CCLayerTreeHost::initializeRenderer()
 CCLayerTreeHost::RecreateResult CCLayerTreeHost::recreateContext()
 {
     TRACE_EVENT0("cc", "CCLayerTreeHost::recreateContext");
-    ASSERT(m_contextLost);
+    DCHECK(m_contextLost);
 
     bool recreated = false;
     if (!m_numTimesRecreateShouldFail)
@@ -211,14 +211,14 @@ CCLayerTreeHost::RecreateResult CCLayerTreeHost::recreateContext()
 
 void CCLayerTreeHost::deleteContentsTexturesOnImplThread(CCResourceProvider* resourceProvider)
 {
-    ASSERT(CCProxy::isImplThread());
+    DCHECK(CCProxy::isImplThread());
     if (m_rendererInitialized)
         m_contentsTextureManager->clearAllMemory(resourceProvider);
 }
 
 void CCLayerTreeHost::acquireLayerTextures()
 {
-    ASSERT(CCProxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
     m_proxy->acquireLayerTextures();
 }
 
@@ -239,7 +239,7 @@ void CCLayerTreeHost::layout()
 
 void CCLayerTreeHost::beginCommitOnImplThread(CCLayerTreeHostImpl* hostImpl)
 {
-    ASSERT(CCProxy::isImplThread());
+    DCHECK(CCProxy::isImplThread());
     TRACE_EVENT0("cc", "CCLayerTreeHost::commitTo");
 }
 
@@ -250,7 +250,7 @@ void CCLayerTreeHost::beginCommitOnImplThread(CCLayerTreeHostImpl* hostImpl)
 // after the commit, but on the main thread.
 void CCLayerTreeHost::finishCommitOnImplThread(CCLayerTreeHostImpl* hostImpl)
 {
-    ASSERT(CCProxy::isImplThread());
+    DCHECK(CCProxy::isImplThread());
 
     m_contentsTextureManager->updateBackingsInDrawingImplTree();
     m_contentsTextureManager->reduceMemory(hostImpl->resourceProvider());
@@ -322,7 +322,7 @@ scoped_ptr<CCLayerTreeHostImpl> CCLayerTreeHost::createLayerTreeHostImpl(CCLayer
 void CCLayerTreeHost::didLoseContext()
 {
     TRACE_EVENT0("cc", "CCLayerTreeHost::didLoseContext");
-    ASSERT(CCProxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
     m_contextLost = true;
     m_numFailedRecreateAttempts = 0;
     setNeedsCommit();
@@ -356,7 +356,7 @@ const RendererCapabilities& CCLayerTreeHost::rendererCapabilities() const
 
 void CCLayerTreeHost::setNeedsAnimate()
 {
-    ASSERT(CCProxy::hasImplThread());
+    DCHECK(CCProxy::hasImplThread());
     m_proxy->setNeedsAnimate();
 }
 
@@ -379,7 +379,7 @@ bool CCLayerTreeHost::commitRequested() const
 
 void CCLayerTreeHost::setAnimationEvents(scoped_ptr<CCAnimationEventsVector> events, double wallClockTime)
 {
-    ASSERT(CCThreadProxy::isMainThread());
+    DCHECK(CCThreadProxy::isMainThread());
     setAnimationEventsRecursive(*events.get(), m_rootLayer.get(), wallClockTime);
 }
 
@@ -455,7 +455,7 @@ CCPrioritizedTextureManager* CCLayerTreeHost::contentsTextureManager() const
 
 void CCLayerTreeHost::composite()
 {
-    ASSERT(!CCThreadProxy::implThread());
+    DCHECK(!CCThreadProxy::implThread());
     static_cast<CCSingleThreadProxy*>(m_proxy.get())->compositeImmediately();
 }
 
@@ -481,8 +481,8 @@ bool CCLayerTreeHost::initializeRendererIfNeeded()
 
 void CCLayerTreeHost::updateLayers(CCTextureUpdateQueue& queue, size_t memoryAllocationLimitBytes)
 {
-    ASSERT(m_rendererInitialized);
-    ASSERT(memoryAllocationLimitBytes);
+    DCHECK(m_rendererInitialized);
+    DCHECK(memoryAllocationLimitBytes);
 
     if (!rootLayer())
         return;
@@ -673,10 +673,10 @@ bool CCLayerTreeHost::paintLayerContents(const LayerList& renderSurfaceLayerList
         occlusionTracker.enterLayer(it);
 
         if (it.representsTargetRenderSurface()) {
-            ASSERT(it->renderSurface()->drawOpacity() || it->renderSurface()->drawOpacityIsAnimating());
+            DCHECK(it->renderSurface()->drawOpacity() || it->renderSurface()->drawOpacityIsAnimating());
             needMoreUpdates |= paintMasksForRenderSurface(*it, queue);
         } else if (it.representsItself()) {
-            ASSERT(!it->bounds().isEmpty());
+            DCHECK(!it->bounds().isEmpty());
             it->update(queue, &occlusionTracker, m_renderingStats);
             needMoreUpdates |= it->needMoreUpdates();
         }
@@ -720,7 +720,7 @@ void CCLayerTreeHost::startRateLimiter(WebKit::WebGraphicsContext3D* context)
     if (m_animating)
         return;
 
-    ASSERT(context);
+    DCHECK(context);
     RateLimiterMap::iterator it = m_rateLimiters.find(context);
     if (it != m_rateLimiters.end())
         it->second->start();

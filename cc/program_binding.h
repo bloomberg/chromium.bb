@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/logging.h"
+
 namespace WebKit {
 class WebGraphicsContext3D;
 }
@@ -22,7 +24,7 @@ public:
     void link(WebKit::WebGraphicsContext3D*);
     void cleanup(WebKit::WebGraphicsContext3D*);
 
-    unsigned program() const { ASSERT(m_initialized); return m_program; }
+    unsigned program() const { DCHECK(m_initialized); return m_program; }
     bool initialized() const { return m_initialized; }
 
 protected:
@@ -47,9 +49,9 @@ public:
 
     void initialize(WebKit::WebGraphicsContext3D* context, bool usingBindUniform)
     {
-        ASSERT(context);
-        ASSERT(m_program);
-        ASSERT(!m_initialized);
+        DCHECK(context);
+        DCHECK(m_program);
+        DCHECK(!m_initialized);
 
         // Need to bind uniforms before linking
         if (!usingBindUniform)
