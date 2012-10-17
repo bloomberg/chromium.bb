@@ -65,15 +65,17 @@ void FixDeprecatedPolicies(PolicyMap* policies) {
 
 ConfigurationPolicyProvider::Observer::~Observer() {}
 
-void ConfigurationPolicyProvider::Observer::OnProviderGoingAway(
-    ConfigurationPolicyProvider* provider) {}
-
-ConfigurationPolicyProvider::ConfigurationPolicyProvider() {}
+ConfigurationPolicyProvider::ConfigurationPolicyProvider()
+    : did_shutdown_(false) {}
 
 ConfigurationPolicyProvider::~ConfigurationPolicyProvider() {
-  FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
-                    observer_list_,
-                    OnProviderGoingAway(this));
+  DCHECK(did_shutdown_);
+}
+
+void ConfigurationPolicyProvider::Init() {}
+
+void ConfigurationPolicyProvider::Shutdown() {
+  did_shutdown_ = true;
 }
 
 bool ConfigurationPolicyProvider::IsInitializationComplete() const {
@@ -99,48 +101,6 @@ void ConfigurationPolicyProvider::AddObserver(Observer* observer) {
 
 void ConfigurationPolicyProvider::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
-}
-
-ConfigurationPolicyObserverRegistrar::ConfigurationPolicyObserverRegistrar()
-  : provider_(NULL),
-    observer_(NULL) {}
-
-ConfigurationPolicyObserverRegistrar::~ConfigurationPolicyObserverRegistrar() {
-  // Subtle: see the comment in OnProviderGoingAway().
-  if (observer_)
-    provider_->RemoveObserver(this);
-}
-
-void ConfigurationPolicyObserverRegistrar::Init(
-    ConfigurationPolicyProvider* provider,
-    ConfigurationPolicyProvider::Observer* observer) {
-  // Must be either both NULL or both not NULL.
-  DCHECK(provider);
-  DCHECK(observer);
-  provider_ = provider;
-  observer_ = observer;
-  provider_->AddObserver(this);
-}
-
-void ConfigurationPolicyObserverRegistrar::OnUpdatePolicy(
-    ConfigurationPolicyProvider* provider) {
-  DCHECK_EQ(provider_, provider);
-  observer_->OnUpdatePolicy(provider_);
-}
-
-void ConfigurationPolicyObserverRegistrar::OnProviderGoingAway(
-    ConfigurationPolicyProvider* provider) {
-  DCHECK_EQ(provider_, provider);
-  // The |observer_| might delete |this| during this callback: don't touch any
-  // of |this| field's after it returns.
-  // It might also invoke provider() during this callback, so |provider_| can't
-  // be set to NULL. So we set |observer_| to NULL instead to signal that
-  // we're not observing the provider anymore.
-  ConfigurationPolicyProvider::Observer* observer = observer_;
-  observer_ = NULL;
-  provider_->RemoveObserver(this);
-
-  observer->OnProviderGoingAway(provider);
 }
 
 }  // namespace policy

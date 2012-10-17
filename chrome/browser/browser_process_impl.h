@@ -152,12 +152,15 @@ class BrowserProcessImpl : public BrowserProcess,
   bool created_watchdog_thread_;
   scoped_ptr<WatchDogThread> watchdog_thread_;
 
-  // Must be destroyed after |policy_service_| if StartTearDown() isn't invoked
-  // during an early shutdown.
   bool created_browser_policy_connector_;
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  // Must be destroyed after |local_state_|.
   scoped_ptr<policy::BrowserPolicyConnector> browser_policy_connector_;
+#endif
 
   // Must be destroyed after |local_state_|.
+  // This is a stub when policy is not enabled. Otherwise, the PolicyService
+  // is owned by the |browser_policy_connector_| and this is not used.
   scoped_ptr<policy::PolicyService> policy_service_;
 
   bool created_profile_manager_;

@@ -36,7 +36,6 @@ class MockConfigurationPolicyObserver
   virtual ~MockConfigurationPolicyObserver();
 
   MOCK_METHOD1(OnUpdatePolicy, void(ConfigurationPolicyProvider*));
-  MOCK_METHOD1(OnProviderGoingAway, void(ConfigurationPolicyProvider*));
 };
 
 }  // namespace policy

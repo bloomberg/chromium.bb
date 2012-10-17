@@ -18,12 +18,7 @@ CloudPolicyProvider::CloudPolicyProvider(BrowserPolicyConnector* connector)
     caches_[i] = NULL;
 }
 
-CloudPolicyProvider::~CloudPolicyProvider() {
-  for (size_t i = 0; i < CACHE_SIZE; ++i) {
-    if (caches_[i])
-      caches_[i]->RemoveObserver(this);
-  }
-}
+CloudPolicyProvider::~CloudPolicyProvider() {}
 
 void CloudPolicyProvider::SetUserPolicyCache(CloudPolicyCacheBase* cache) {
   DCHECK(!caches_[CACHE_USER]);
@@ -40,6 +35,14 @@ void CloudPolicyProvider::SetDevicePolicyCache(CloudPolicyCacheBase* cache) {
   Merge();
 }
 #endif
+
+void CloudPolicyProvider::Shutdown() {
+  for (size_t i = 0; i < CACHE_SIZE; ++i) {
+    if (caches_[i])
+      caches_[i]->RemoveObserver(this);
+  }
+  ConfigurationPolicyProvider::Shutdown();
+}
 
 bool CloudPolicyProvider::IsInitializationComplete() const {
   return initialization_complete_;

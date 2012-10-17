@@ -9,7 +9,6 @@
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/public/browser/browser_thread.h"
-#include "policy/policy_constants.h"
 
 using content::BrowserThread;
 
@@ -35,9 +34,7 @@ ManagedModePolicyProvider::ManagedModePolicyProvider(
   store_->ReadPrefsAsync(NULL);
 }
 
-ManagedModePolicyProvider::~ManagedModePolicyProvider() {
-  store_->RemoveObserver(this);
-}
+ManagedModePolicyProvider::~ManagedModePolicyProvider() {}
 
 const base::Value* ManagedModePolicyProvider::GetPolicy(
     const std::string& key) const {
@@ -55,6 +52,11 @@ void ManagedModePolicyProvider::SetPolicy(const std::string& key,
   dict->SetWithoutPathExpansion(key, value->DeepCopy());
   store_->ReportValueChanged(kPolicies);
   UpdatePolicyFromCache();
+}
+
+void ManagedModePolicyProvider::Shutdown() {
+  store_->RemoveObserver(this);
+  ConfigurationPolicyProvider::Shutdown();
 }
 
 void ManagedModePolicyProvider::RefreshPolicies() {

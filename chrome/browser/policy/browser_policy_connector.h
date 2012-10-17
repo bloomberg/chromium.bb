@@ -43,6 +43,8 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   // Builds an uninitialized BrowserPolicyConnector, suitable for testing.
   // Init() should be called to create and start the policy machinery.
   BrowserPolicyConnector();
+
+  // Invoke Shutdown() before deleting, see below.
   virtual ~BrowserPolicyConnector();
 
   // Creates the policy providers and finalizes the initialization of the
@@ -50,14 +52,25 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   // policy system running.
   void Init();
 
+  // Stops the policy providers and cleans up the connector before it can be
+  // safely deleted. This must be invoked before the destructor and while the
+  // threads are still running. The policy providers are still valid but won't
+  // update anymore after this call.
+  void Shutdown();
+
+  // Returns true if Init() has been called but Shutdown() hasn't been yet.
+  bool is_initialized() const { return is_initialized_; }
+
   // Creates a UserCloudPolicyManager for the given profile, or returns NULL if
-  // it is not supported on this platform. Ownership is transferred to the
-  // caller.
+  // it is not supported on this platform.
   scoped_ptr<UserCloudPolicyManager> CreateCloudPolicyManager(Profile* profile);
 
-  // Creates a new policy service for the given profile, or a global one if
-  // it is NULL. Ownership is transferred to the caller.
+  // Creates a new policy service for the given profile.
   scoped_ptr<PolicyService> CreatePolicyService(Profile* profile);
+
+  // Returns the browser-global PolicyService, that contains policies for the
+  // whole browser.
+  PolicyService* GetPolicyService();
 
   // Returns a weak pointer to the CloudPolicySubsystem corresponding to the
   // device policy managed by this policy connector, or NULL if no such
@@ -157,7 +170,8 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   // CreatePolicyService. This is a static method because local state is
   // created immediately after the connector, and tests don't have a chance to
   // inject the provider otherwise. |provider| must outlive the connector, and
-  // its ownership is not taken.
+  // its ownership is not taken though the connector will initialize and shut it
+  // down.
   static void SetPolicyProviderForTesting(
       ConfigurationPolicyProvider* provider);
 
@@ -181,16 +195,31 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   // Set the timezone as soon as the policies are available.
   void SetTimezoneIfPolicyAvailable();
 
+  // Creates a new PolicyService with the shared policy providers and the given
+  // |user_cloud_policy_provider| and |managed_mode_policy_provider|, which are
+  // optional.
+  scoped_ptr<PolicyService> CreatePolicyServiceWithProviders(
+      ConfigurationPolicyProvider* user_cloud_policy_provider,
+      ConfigurationPolicyProvider* managed_mode_policy_provider);
+
   static ConfigurationPolicyProvider* CreatePlatformProvider();
 
+  // Whether Init() but not Shutdown() has been invoked.
+  bool is_initialized_;
+
   // Used to convert policies to preferences. The providers declared below
-  // trigger policy updates during destruction via OnProviderGoingAway(), which
-  // will result in |handler_list_| being consulted for policy translation.
+  // may trigger policy updates during shutdown, which will result in
+  // |handler_list_| being consulted for policy translation.
   // Therefore, it's important to destroy |handler_list_| after the providers.
   ConfigurationPolicyHandlerList handler_list_;
 
   scoped_ptr<ConfigurationPolicyProvider> platform_provider_;
   scoped_ptr<CloudPolicyProvider> cloud_provider_;
+
+  ProxyPolicyProvider user_cloud_policy_provider_;
+
+  // Must be deleted before all the policy providers.
+  scoped_ptr<PolicyService> policy_service_;
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<CloudPolicyDataStore> device_data_store_;
@@ -208,8 +237,6 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   // TODO(mnissler): Remove the old-style components above once we have
   // completed the switch to the new cloud policy implementation.
   scoped_ptr<DeviceManagementService> device_management_service_;
-
-  ProxyPolicyProvider user_cloud_policy_provider_;
 
   // Used to initialize the device policy subsystem once the message loops
   // are spinning.

@@ -48,6 +48,7 @@ class CloudPolicyManager : public ConfigurationPolicyProvider,
   }
 
   // ConfigurationPolicyProvider:
+  virtual void Shutdown() OVERRIDE;
   virtual bool IsInitializationComplete() const OVERRIDE;
   virtual void RefreshPolicies() OVERRIDE;
 

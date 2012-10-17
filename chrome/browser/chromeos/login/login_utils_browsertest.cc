@@ -247,10 +247,10 @@ class LoginUtilsTest : public testing::Test,
     }
 
     // These trigger some tasks that have to run while BrowserThread::UI
-    // exists.
+    // exists. Delete all the profiles before deleting the connector.
+    browser_process_->SetProfileManager(NULL);
     connector_ = NULL;
     browser_process_->SetBrowserPolicyConnector(NULL);
-    browser_process_->SetProfileManager(NULL);
     RunAllPending();
   }
 

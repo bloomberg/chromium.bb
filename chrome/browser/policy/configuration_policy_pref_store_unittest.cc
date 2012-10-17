@@ -46,11 +46,16 @@ class ConfigurationPolicyPrefStoreTest : public testing::Test {
   ConfigurationPolicyPrefStoreTest() {
     EXPECT_CALL(provider_, IsInitializationComplete())
         .WillRepeatedly(Return(false));
+    provider_.Init();
     PolicyServiceImpl::Providers providers;
     providers.push_back(&provider_);
     policy_service_.reset(new PolicyServiceImpl(providers));
     store_ = new ConfigurationPolicyPrefStore(policy_service_.get(),
                                               POLICY_LEVEL_MANDATORY);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    provider_.Shutdown();
   }
 
   MockConfigurationPolicyProvider provider_;
@@ -997,11 +1002,13 @@ class ConfigurationPolicyPrefStoreRefreshTest
     : public ConfigurationPolicyPrefStoreTest {
  protected:
   virtual void SetUp() {
+    ConfigurationPolicyPrefStoreTest::SetUp();
     store_->AddObserver(&observer_);
   }
 
   virtual void TearDown() {
     store_->RemoveObserver(&observer_);
+    ConfigurationPolicyPrefStoreTest::TearDown();
   }
 
   PrefStoreObserverMock observer_;

@@ -300,6 +300,11 @@ TestingProfile::~TestingProfile() {
 
   DestroyTopSites();
 
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  if (user_cloud_policy_manager_)
+    user_cloud_policy_manager_->Shutdown();
+#endif
+
   if (pref_proxy_config_tracker_.get())
     pref_proxy_config_tracker_->DetachFromPrefService();
 }
@@ -551,6 +556,11 @@ net::CookieMonster* TestingProfile::GetCookieMonster() {
 
 policy::UserCloudPolicyManager* TestingProfile::GetUserCloudPolicyManager() {
   return user_cloud_policy_manager_.get();
+}
+
+policy::ManagedModePolicyProvider*
+TestingProfile::GetManagedModePolicyProvider() {
+  return NULL;
 }
 
 policy::PolicyService* TestingProfile::GetPolicyService() {

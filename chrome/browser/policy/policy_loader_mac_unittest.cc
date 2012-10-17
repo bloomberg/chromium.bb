@@ -232,6 +232,16 @@ class PolicyLoaderMacTest : public PolicyTestBase {
         provider_(scoped_ptr<AsyncPolicyLoader>(loader_)) {}
   virtual ~PolicyLoaderMacTest() {}
 
+  virtual void SetUp() OVERRIDE {
+    PolicyTestBase::SetUp();
+    provider_.Init();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    provider_.Shutdown();
+    PolicyTestBase::TearDown();
+  }
+
   MockPreferences* prefs_;
   PolicyLoaderMac* loader_;
   AsyncPolicyProvider provider_;

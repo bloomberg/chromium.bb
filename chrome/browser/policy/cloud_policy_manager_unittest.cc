@@ -164,8 +164,14 @@ class CloudPolicyManagerTest : public testing::Test {
     EXPECT_CALL(*store_, Load());
     manager_.reset(
         new TestCloudPolicyManager(scoped_ptr<CloudPolicyStore>(store_)));
+    manager_->Init();
     Mock::VerifyAndClearExpectations(store_);
-    registrar_.Init(manager_.get(), &observer_);
+    manager_->AddObserver(&observer_);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    manager_->RemoveObserver(&observer_);
+    manager_->Shutdown();
   }
 
   // Required by the refresh scheduler that's created by the manager.
@@ -180,7 +186,6 @@ class CloudPolicyManagerTest : public testing::Test {
   MockConfigurationPolicyObserver observer_;
   MockCloudPolicyStore* store_;
   scoped_ptr<TestCloudPolicyManager> manager_;
-  ConfigurationPolicyObserverRegistrar registrar_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyManagerTest);

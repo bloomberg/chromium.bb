@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include <chrome/common/pref_store.h>
+#include "chrome/common/pref_store.h"
 
 // This interface is complementary to the PrefStore interface, declaring
 // additional functionality that adds support for setting values and persisting

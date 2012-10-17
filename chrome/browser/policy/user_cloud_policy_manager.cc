@@ -18,10 +18,7 @@ UserCloudPolicyManager::UserCloudPolicyManager(
     : CloudPolicyManager(store.Pass()),
       wait_for_policy_fetch_(wait_for_policy_fetch) {}
 
-UserCloudPolicyManager::~UserCloudPolicyManager() {
-  if (cloud_policy_client())
-    cloud_policy_client()->RemoveObserver(this);
-}
+UserCloudPolicyManager::~UserCloudPolicyManager() {}
 
 // static
 scoped_ptr<UserCloudPolicyManager> UserCloudPolicyManager::Create(
@@ -91,6 +88,12 @@ void UserCloudPolicyManager::RegisterClient(const std::string& access_token) {
     DVLOG(1) << "Registering client with access token: " << access_token;
     cloud_policy_client()->Register(access_token);
   }
+}
+
+void UserCloudPolicyManager::Shutdown() {
+  if (cloud_policy_client())
+    cloud_policy_client()->RemoveObserver(this);
+  CloudPolicyManager::Shutdown();
 }
 
 bool UserCloudPolicyManager::IsInitializationComplete() const {

@@ -19,7 +19,6 @@
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/policy/managed_mode_policy_provider.h"
-#include "chrome/browser/policy/managed_mode_policy_provider_factory.h"
 #include "chrome/browser/policy/policy_service_impl.h"
 #include "chrome/browser/policy/policy_statistics_collector.h"
 #include "chrome/browser/policy/user_cloud_policy_manager.h"
@@ -118,33 +117,21 @@ ConfigurationPolicyProvider* g_testing_provider = NULL;
 }  // namespace
 
 BrowserPolicyConnector::BrowserPolicyConnector()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {}
+    : is_initialized_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {}
 
 BrowserPolicyConnector::~BrowserPolicyConnector() {
-  // Shutdown device cloud policy.
-#if defined(OS_CHROMEOS)
-  if (device_cloud_policy_subsystem_.get())
-    device_cloud_policy_subsystem_->Shutdown();
-  // The AppPackUpdater may be observing the |device_cloud_policy_subsystem_|.
-  // Delete it first.
-  app_pack_updater_.reset();
-  device_cloud_policy_subsystem_.reset();
-  device_data_store_.reset();
-#endif
-
-  // Shutdown user cloud policy.
-  if (user_cloud_policy_subsystem_.get())
-    user_cloud_policy_subsystem_->Shutdown();
-  user_cloud_policy_subsystem_.reset();
-  user_policy_token_cache_.reset();
-  user_data_store_.reset();
-
-  device_management_service_.reset();
+  if (is_initialized()) {
+    // Shutdown() wasn't invoked by our owner after having called Init().
+    // This usually means it's an early shutdown and
+    // BrowserProcessImpl::StartTearDown() wasn't invoked.
+    // Cleanup properly in those cases and avoid crashing the ToastCrasher test.
+    Shutdown();
+  }
 }
 
 void BrowserPolicyConnector::Init() {
-  DCHECK(!device_management_service_.get()) <<
-      "BrowserPolicyConnector::Init() called twice.";
+  DCHECK(!is_initialized()) << "BrowserPolicyConnector::Init() called twice.";
   platform_provider_.reset(CreatePlatformProvider());
 
   device_management_service_.reset(
@@ -163,6 +150,40 @@ void BrowserPolicyConnector::Init() {
       FROM_HERE,
       base::Bind(&BrowserPolicyConnector::CompleteInitialization,
                  weak_ptr_factory_.GetWeakPtr()));
+
+  is_initialized_ = true;
+}
+
+void BrowserPolicyConnector::Shutdown() {
+  is_initialized_ = false;
+
+#if defined(OS_CHROMEOS)
+  // Shutdown device cloud policy.
+  if (device_cloud_policy_subsystem_)
+    device_cloud_policy_subsystem_->Shutdown();
+  // The AppPackUpdater may be observing the |device_cloud_policy_subsystem_|.
+  // Delete it first.
+  app_pack_updater_.reset();
+  device_cloud_policy_subsystem_.reset();
+  device_data_store_.reset();
+#endif
+
+  // Shutdown user cloud policy.
+  if (user_cloud_policy_subsystem_)
+    user_cloud_policy_subsystem_->Shutdown();
+  user_cloud_policy_subsystem_.reset();
+  user_policy_token_cache_.reset();
+  user_data_store_.reset();
+
+  device_management_service_.reset();
+
+  if (g_testing_provider)
+    g_testing_provider->Shutdown();
+  if (platform_provider_)
+    platform_provider_->Shutdown();
+  if (cloud_provider_)
+    cloud_provider_->Shutdown();
+  user_cloud_policy_provider_.Shutdown();
 }
 
 scoped_ptr<UserCloudPolicyManager>
@@ -196,31 +217,18 @@ scoped_ptr<UserCloudPolicyManager>
 
 scoped_ptr<PolicyService> BrowserPolicyConnector::CreatePolicyService(
     Profile* profile) {
-  // |providers| in decreasing order of priority.
-  PolicyServiceImpl::Providers providers;
-  if (g_testing_provider)
-    providers.push_back(g_testing_provider);
-  if (platform_provider_.get())
-    providers.push_back(platform_provider_.get());
-  if (cloud_provider_.get())
-    providers.push_back(cloud_provider_.get());
+  DCHECK(profile);
+  return CreatePolicyServiceWithProviders(
+      profile->GetUserCloudPolicyManager(),
+      profile->GetManagedModePolicyProvider());
+}
 
-  // The global policy service uses the proxy provider to allow for swapping in
-  // user policy after startup, while profiles use |user_cloud_policy_manager_|
-  // directly as their provider, which may also block initialization on a policy
-  // fetch at login time.
-  if (profile) {
-    UserCloudPolicyManager* manager = profile->GetUserCloudPolicyManager();
-    if (manager)
-      providers.push_back(manager);
-
-    providers.push_back(
-        ManagedModePolicyProviderFactory::GetForProfile(profile));
-  } else {
-    providers.push_back(&user_cloud_policy_provider_);
+PolicyService* BrowserPolicyConnector::GetPolicyService() {
+  if (!policy_service_) {
+    policy_service_ =
+        CreatePolicyServiceWithProviders(&user_cloud_policy_provider_, NULL);
   }
-
-  return scoped_ptr<PolicyService>(new PolicyServiceImpl(providers)).Pass();
+  return policy_service_.get();
 }
 
 void BrowserPolicyConnector::RegisterForDevicePolicy(
@@ -569,6 +577,14 @@ void BrowserPolicyConnector::InitializeDevicePolicy() {
 }
 
 void BrowserPolicyConnector::CompleteInitialization() {
+  if (g_testing_provider)
+    g_testing_provider->Init();
+  if (platform_provider_)
+    platform_provider_->Init();
+  if (cloud_provider_)
+    cloud_provider_->Init();
+  user_cloud_policy_provider_.Init();
+
 #if defined(OS_CHROMEOS)
 
   // Create the AppPackUpdater to start updating the cache. It requires the
@@ -642,6 +658,26 @@ void BrowserPolicyConnector::SetTimezoneIfPolicyAvailable() {
         UTF8ToUTF16(timezone));
   }
 #endif
+}
+
+scoped_ptr<PolicyService>
+    BrowserPolicyConnector::CreatePolicyServiceWithProviders(
+        ConfigurationPolicyProvider* user_cloud_policy_provider,
+        ConfigurationPolicyProvider* managed_mode_policy_provider) {
+  // |providers| in decreasing order of priority.
+  PolicyServiceImpl::Providers providers;
+  if (g_testing_provider)
+    providers.push_back(g_testing_provider);
+  if (platform_provider_)
+    providers.push_back(platform_provider_.get());
+  if (cloud_provider_)
+    providers.push_back(cloud_provider_.get());
+  if (user_cloud_policy_provider)
+    providers.push_back(user_cloud_policy_provider);
+  if (managed_mode_policy_provider)
+    providers.push_back(managed_mode_policy_provider);
+
+  return scoped_ptr<PolicyService>(new PolicyServiceImpl(providers));
 }
 
 // static

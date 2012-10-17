@@ -6,8 +6,6 @@
 
 #include "base/string_util.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
-#include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/printing/background_printing_manager.h"
@@ -19,7 +17,9 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if !defined(ENABLE_CONFIGURATION_POLICY)
+#if defined(ENABLE_CONFIGURATION_POLICY)
+#include "chrome/browser/policy/browser_policy_connector.h"
+#else
 #include "chrome/browser/policy/policy_service_stub.h"
 #endif  // defined(ENABLE_CONFIGURATION_POLICY)
 
@@ -34,6 +34,10 @@ TestingBrowserProcess::TestingBrowserProcess()
 
 TestingBrowserProcess::~TestingBrowserProcess() {
   EXPECT_FALSE(local_state_);
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  if (browser_policy_connector_)
+    browser_policy_connector_->Shutdown();
+#endif
 }
 
 void TestingBrowserProcess::ResourceDispatcherHostCreated() {
@@ -74,21 +78,22 @@ chrome_variations::VariationsService*
 policy::BrowserPolicyConnector*
     TestingBrowserProcess::browser_policy_connector() {
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  if (!browser_policy_connector_.get())
+  if (!browser_policy_connector_)
     browser_policy_connector_.reset(new policy::BrowserPolicyConnector());
-#endif
   return browser_policy_connector_.get();
+#else
+  return NULL;
+#endif
 }
 
 policy::PolicyService* TestingBrowserProcess::policy_service() {
-  if (!policy_service_.get()) {
 #if defined(ENABLE_CONFIGURATION_POLICY)
-    policy_service_ = browser_policy_connector()->CreatePolicyService(NULL);
+  return browser_policy_connector()->GetPolicyService();
 #else
+  if (!policy_service_)
     policy_service_.reset(new policy::PolicyServiceStub());
-#endif
-  }
   return policy_service_.get();
+#endif
 }
 
 IconManager* TestingBrowserProcess::icon_manager() {
@@ -253,7 +258,9 @@ void TestingBrowserProcess::SetLocalState(PrefService* local_state) {
     // any components owned by TestingBrowserProcess that depend on local_state
     // are also freed.
     notification_ui_manager_.reset();
-    browser_policy_connector_.reset();
+#if defined(ENABLE_CONFIGURATION_POLICY)
+    SetBrowserPolicyConnector(NULL);
+#endif
   }
   local_state_ = local_state;
 }
@@ -264,7 +271,13 @@ void TestingBrowserProcess::SetIOThread(IOThread* io_thread) {
 
 void TestingBrowserProcess::SetBrowserPolicyConnector(
     policy::BrowserPolicyConnector* connector) {
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  if (browser_policy_connector_)
+    browser_policy_connector_->Shutdown();
   browser_policy_connector_.reset(connector);
+#else
+  CHECK(false);
+#endif
 }
 
 void TestingBrowserProcess::SetSafeBrowsingService(

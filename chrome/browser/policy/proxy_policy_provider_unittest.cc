@@ -15,13 +15,20 @@ namespace policy {
 class ProxyPolicyProviderTest : public testing::Test {
  protected:
   ProxyPolicyProviderTest() {
-    registrar_.Init(&proxy_provider_, &observer_);
+    mock_provider_.Init();
+    proxy_provider_.Init();
+    proxy_provider_.AddObserver(&observer_);
+  }
+
+  ~ProxyPolicyProviderTest() {
+    proxy_provider_.RemoveObserver(&observer_);
+    proxy_provider_.Shutdown();
+    mock_provider_.Shutdown();
   }
 
   MockConfigurationPolicyObserver observer_;
   MockConfigurationPolicyProvider mock_provider_;
   ProxyPolicyProvider proxy_provider_;
-  ConfigurationPolicyObserverRegistrar registrar_;
 
   static scoped_ptr<PolicyBundle> CopyBundle(const PolicyBundle& bundle) {
     scoped_ptr<PolicyBundle> copy(new PolicyBundle());

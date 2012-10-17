@@ -248,6 +248,11 @@ policy::UserCloudPolicyManager*
   return profile_->GetUserCloudPolicyManager();
 }
 
+policy::ManagedModePolicyProvider*
+    OffTheRecordProfileImpl::GetManagedModePolicyProvider() {
+  return profile_->GetManagedModePolicyProvider();
+}
+
 policy::PolicyService* OffTheRecordProfileImpl::GetPolicyService() {
   return profile_->GetPolicyService();
 }

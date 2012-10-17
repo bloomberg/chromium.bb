@@ -31,12 +31,11 @@ class AsyncPolicyProvider : public ConfigurationPolicyProvider,
   virtual ~AsyncPolicyProvider();
 
   // ConfigurationPolicyProvider implementation.
+  virtual void Init() OVERRIDE;
+  virtual void Shutdown() OVERRIDE;
   virtual void RefreshPolicies() OVERRIDE;
 
  private:
-  // Resumes initialization once the loops are spinning.
-  void InitWithLoopsReady();
-
   // Helper for RefreshPolicies().
   void ReloadAfterRefreshSync();
 
@@ -52,7 +51,7 @@ class AsyncPolicyProvider : public ConfigurationPolicyProvider,
                                    scoped_ptr<PolicyBundle> bundle);
 
   // The |loader_| that does the platform-specific policy loading. It lives
-  // on the FILE thread, and always outlives |this|.
+  // on the FILE thread but is owned by |this|.
   AsyncPolicyLoader* loader_;
 
   // Used to get a WeakPtr to |this| for the update callback given to the

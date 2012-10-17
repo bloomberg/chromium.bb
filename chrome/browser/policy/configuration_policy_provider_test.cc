@@ -83,6 +83,7 @@ void ConfigurationPolicyProviderTest::SetUp() {
 
   provider_.reset(
       test_harness_->CreateProvider(&test_policy_definitions::kList));
+  provider_->Init();
   // Some providers do a reload on init. Make sure any notifications generated
   // are fired now.
   loop_.RunAllPending();
@@ -93,6 +94,7 @@ void ConfigurationPolicyProviderTest::SetUp() {
 
 void ConfigurationPolicyProviderTest::TearDown() {
   // Give providers the chance to clean up after themselves on the file thread.
+  provider_->Shutdown();
   provider_.reset();
 
   PolicyTestBase::TearDown();
@@ -206,8 +208,7 @@ TEST_P(ConfigurationPolicyProviderTest, RefreshPolicies) {
 
   // OnUpdatePolicy is called even when there are no changes.
   MockConfigurationPolicyObserver observer;
-  ConfigurationPolicyObserverRegistrar registrar;
-  registrar.Init(provider_.get(), &observer);
+  provider_->AddObserver(&observer);
   EXPECT_CALL(observer, OnUpdatePolicy(provider_.get())).Times(1);
   provider_->RefreshPolicies();
   loop_.RunAllPending();
@@ -229,6 +230,7 @@ TEST_P(ConfigurationPolicyProviderTest, RefreshPolicies) {
            test_harness_->policy_scope(),
            base::Value::CreateStringValue("value"));
   EXPECT_TRUE(provider_->policies().Equals(bundle));
+  provider_->RemoveObserver(&observer);
 }
 
 TEST(ConfigurationPolicyProviderTest, FixDeprecatedPolicies) {
@@ -250,6 +252,7 @@ TEST(ConfigurationPolicyProviderTest, FixDeprecatedPolicies) {
                  base::Value::CreateStringValue("http://example.com/wpad.dat"));
 
   MockConfigurationPolicyProvider provider;
+  provider.Init();
   provider.UpdateChromePolicy(policy_map);
 
   PolicyBundle expected_bundle;
@@ -259,6 +262,7 @@ TEST(ConfigurationPolicyProviderTest, FixDeprecatedPolicies) {
       .Set(key::kProxySettings, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
            expected_value);
   EXPECT_TRUE(provider.policies().Equals(expected_bundle));
+  provider.Shutdown();
 }
 
 Configuration3rdPartyPolicyProviderTest::

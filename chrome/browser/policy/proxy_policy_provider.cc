@@ -6,40 +6,54 @@
 
 namespace policy {
 
-ProxyPolicyProvider::ProxyPolicyProvider() {}
+ProxyPolicyProvider::ProxyPolicyProvider() : delegate_(NULL) {}
 
-ProxyPolicyProvider::~ProxyPolicyProvider() {}
+ProxyPolicyProvider::~ProxyPolicyProvider() {
+  DCHECK(!delegate_);
+}
 
 void ProxyPolicyProvider::SetDelegate(ConfigurationPolicyProvider* delegate) {
-  if (delegate) {
-    registrar_.reset(new ConfigurationPolicyObserverRegistrar());
-    registrar_->Init(delegate, this);
-    OnUpdatePolicy(delegate);
+  if (delegate_)
+    delegate_->RemoveObserver(this);
+  delegate_ = delegate;
+  if (delegate_) {
+    delegate_->AddObserver(this);
+    OnUpdatePolicy(delegate_);
   } else {
-    registrar_.reset();
     UpdatePolicy(scoped_ptr<PolicyBundle>(new PolicyBundle()));
   }
 }
 
+void ProxyPolicyProvider::Shutdown() {
+  // Note: the delegate is not owned by the proxy provider, so this call is not
+  // forwarded. The same applies for the Init() call.
+  // Just drop the delegate without propagating updates here.
+  if (delegate_) {
+    delegate_->RemoveObserver(this);
+    delegate_ = NULL;
+  }
+  ConfigurationPolicyProvider::Shutdown();
+}
+
 void ProxyPolicyProvider::RefreshPolicies() {
-  if (registrar_.get())
-    registrar_->provider()->RefreshPolicies();
-  else
-    UpdatePolicy(scoped_ptr<PolicyBundle>(new PolicyBundle()));
+  if (delegate_) {
+    delegate_->RefreshPolicies();
+  } else {
+    // Subtle: if a RefreshPolicies() call comes after Shutdown() then the
+    // current bundle should be served instead. This also does the right thing
+    // if SetDelegate() was never called before.
+    scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
+    bundle->CopyFrom(policies());
+    UpdatePolicy(bundle.Pass());
+  }
 }
 
 void ProxyPolicyProvider::OnUpdatePolicy(
     ConfigurationPolicyProvider* provider) {
-  DCHECK_EQ(registrar_->provider(), provider);
+  DCHECK_EQ(delegate_, provider);
   scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
-  bundle->CopyFrom(registrar_->provider()->policies());
+  bundle->CopyFrom(delegate_->policies());
   UpdatePolicy(bundle.Pass());
-}
-
-void ProxyPolicyProvider::OnProviderGoingAway(
-    ConfigurationPolicyProvider* provider) {
-  registrar_.reset();
-  UpdatePolicy(scoped_ptr<PolicyBundle>(new PolicyBundle()));
 }
 
 }  // namespace policy

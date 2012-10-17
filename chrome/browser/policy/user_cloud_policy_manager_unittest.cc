@@ -52,13 +52,21 @@ class UserCloudPolicyManagerTest : public testing::Test {
         .Times(AnyNumber());
   }
 
+  virtual void TearDown() OVERRIDE {
+    if (manager_) {
+      manager_->RemoveObserver(&observer_);
+      manager_->Shutdown();
+    }
+  }
+
   void CreateManager(bool wait_for_policy_fetch) {
     store_ = new MockCloudPolicyStore();
     EXPECT_CALL(*store_, Load());
     manager_.reset(
         new UserCloudPolicyManager(scoped_ptr<CloudPolicyStore>(store_),
                                    wait_for_policy_fetch));
-    registrar_.Init(manager_.get(), &observer_);
+    manager_->Init();
+    manager_->AddObserver(&observer_);
     Mock::VerifyAndClearExpectations(store_);
   }
 
@@ -89,7 +97,6 @@ class UserCloudPolicyManagerTest : public testing::Test {
   MockDeviceManagementService device_management_service_;
   MockCloudPolicyStore* store_;
   scoped_ptr<UserCloudPolicyManager> manager_;
-  ConfigurationPolicyObserverRegistrar registrar_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManagerTest);

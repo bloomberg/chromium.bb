@@ -114,8 +114,11 @@ class TestingBrowserProcess : public BrowserProcess {
 
   // Weak pointer.
   PrefService* local_state_;
+#if defined(ENABLE_CONFIGURATION_POLICY)
   scoped_ptr<policy::BrowserPolicyConnector> browser_policy_connector_;
+#else
   scoped_ptr<policy::PolicyService> policy_service_;
+#endif
   scoped_ptr<ProfileManager> profile_manager_;
   scoped_ptr<NotificationUIManager> notification_ui_manager_;
   scoped_ptr<printing::BackgroundPrintingManager> background_printing_manager_;

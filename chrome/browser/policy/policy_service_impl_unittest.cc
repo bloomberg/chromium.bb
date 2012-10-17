@@ -72,13 +72,17 @@ class PolicyServiceTest : public testing::Test {
  public:
   PolicyServiceTest() {}
 
-  void SetUp() OVERRIDE {
+  virtual void SetUp() OVERRIDE {
     EXPECT_CALL(provider0_, IsInitializationComplete())
         .WillRepeatedly(Return(true));
     EXPECT_CALL(provider1_, IsInitializationComplete())
         .WillRepeatedly(Return(true));
     EXPECT_CALL(provider2_, IsInitializationComplete())
         .WillRepeatedly(Return(true));
+
+    provider0_.Init();
+    provider1_.Init();
+    provider2_.Init();
 
     policy0_.Set("pre", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                  base::Value::CreateIntegerValue(13));
@@ -89,6 +93,12 @@ class PolicyServiceTest : public testing::Test {
     providers.push_back(&provider1_);
     providers.push_back(&provider2_);
     policy_service_.reset(new PolicyServiceImpl(providers));
+  }
+
+  virtual void TearDown() OVERRIDE {
+    provider0_.Shutdown();
+    provider1_.Shutdown();
+    provider2_.Shutdown();
   }
 
   MOCK_METHOD2(OnPolicyValueUpdated, void(const base::Value*,

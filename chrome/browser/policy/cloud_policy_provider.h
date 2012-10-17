@@ -35,6 +35,7 @@ class CloudPolicyProvider : public ConfigurationPolicyProvider,
 #endif
 
   // ConfigurationPolicyProvider implementation.
+  virtual void Shutdown() OVERRIDE;
   virtual bool IsInitializationComplete() const OVERRIDE;
   virtual void RefreshPolicies() OVERRIDE;
 

@@ -64,6 +64,7 @@ class UserCloudPolicyManager : public CloudPolicyManager,
   void RegisterClient(const std::string& access_token);
 
   // ConfigurationPolicyProvider:
+  virtual void Shutdown() OVERRIDE;
   virtual bool IsInitializationComplete() const OVERRIDE;
 
   // CloudPolicyClient::Observer:

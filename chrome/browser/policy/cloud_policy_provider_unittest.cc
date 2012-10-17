@@ -60,8 +60,15 @@ class CloudPolicyProviderTest : public testing::Test {
   CloudPolicyProviderTest()
       : cloud_policy_provider_(&browser_policy_connector_) {}
 
-  void SetUp() OVERRIDE {
-    registrar_.Init(&cloud_policy_provider_, &observer_);
+  virtual void SetUp() OVERRIDE {
+    cloud_policy_provider_.Init();
+    cloud_policy_provider_.AddObserver(&observer_);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    cloud_policy_provider_.RemoveObserver(&observer_);
+    cloud_policy_provider_.Shutdown();
+    browser_policy_connector_.Shutdown();
   }
 
   void AddUserCache() {
@@ -103,7 +110,6 @@ class CloudPolicyProviderTest : public testing::Test {
 
   CloudPolicyProvider cloud_policy_provider_;
   MockConfigurationPolicyObserver observer_;
-  ConfigurationPolicyObserverRegistrar registrar_;
 };
 
 TEST_F(CloudPolicyProviderTest, Initialization) {

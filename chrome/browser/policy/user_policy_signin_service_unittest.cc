@@ -66,6 +66,7 @@ class UserPolicySigninServiceTest : public testing::Test {
 
     // Make sure the UserPolicySigninService is created.
     UserPolicySigninServiceFactory::GetForProfile(profile_.get());
+    testing::Mock::VerifyAndClearExpectations(mock_store_);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -96,9 +97,10 @@ class UserPolicySigninServiceTest : public testing::Test {
 };
 
 TEST_F(UserPolicySigninServiceTest, InitWhileSignedOut) {
+  EXPECT_CALL(*mock_store_, Clear());
   // Make sure user is not signed in.
   ASSERT_TRUE(SigninManagerFactory::GetForProfile(profile_.get())->
-         GetAuthenticatedUsername().empty());
+      GetAuthenticatedUsername().empty());
 
   // Let the SigninService know that the profile has been created.
   content::NotificationService::current()->Notify(
@@ -126,6 +128,7 @@ TEST_F(UserPolicySigninServiceTest, InitWhileSignedIn) {
 }
 
 TEST_F(UserPolicySigninServiceTest, SignInAfterInit) {
+  EXPECT_CALL(*mock_store_, Clear());
   // Let the SigninService know that the profile has been created.
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_ADDED,
@@ -148,6 +151,7 @@ TEST_F(UserPolicySigninServiceTest, SignInAfterInit) {
 }
 
 TEST_F(UserPolicySigninServiceTest, SignOutAfterInit) {
+  EXPECT_CALL(*mock_store_, Clear());
   // Set the user as signed in.
   SigninManagerFactory::GetForProfile(profile_.get())->SetAuthenticatedUsername(
       "testuser@test.com");

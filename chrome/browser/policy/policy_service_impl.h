@@ -28,7 +28,7 @@ class PolicyServiceImpl : public PolicyService,
   // The PolicyServiceImpl will merge policies from |providers|. |providers|
   // must be sorted in decreasing order of priority; the first provider will
   // have the highest priority. The PolicyServiceImpl does not take ownership of
-  // the providers, but handles OnProviderGoingAway() if they are destroyed.
+  // the providers, and they must outlive the PolicyServiceImpl.
   explicit PolicyServiceImpl(const Providers& providers);
   virtual ~PolicyServiceImpl();
 
@@ -46,16 +46,9 @@ class PolicyServiceImpl : public PolicyService,
  private:
   typedef ObserverList<PolicyService::Observer, true> Observers;
   typedef std::map<PolicyDomain, Observers*> ObserverMap;
-  typedef std::vector<ConfigurationPolicyObserverRegistrar*> RegistrarList;
 
   // ConfigurationPolicyProvider::Observer overrides:
   virtual void OnUpdatePolicy(ConfigurationPolicyProvider* provider) OVERRIDE;
-  virtual void OnProviderGoingAway(
-      ConfigurationPolicyProvider* provider) OVERRIDE;
-
-  // Returns an iterator to the entry in |registrars_| that corresponds to
-  // |provider|, or |registrars_.end()|.
-  RegistrarList::iterator GetRegistrar(ConfigurationPolicyProvider* provider);
 
   // Notifies observers of |ns| that its policies have changed, passing along
   // the |previous| and the |current| policies.
@@ -74,9 +67,8 @@ class PolicyServiceImpl : public PolicyService,
   // Invokes all the refresh callbacks if there are no more refreshes pending.
   void CheckRefreshComplete();
 
-  // Contains a registrar for each of the providers passed in the constructor,
-  // in order of decreasing priority.
-  RegistrarList registrars_;
+  // The providers passed in the constructor, in order of decreasing priority.
+  Providers providers_;
 
   // Maps each policy namespace to its current policies.
   PolicyBundle policy_bundle_;

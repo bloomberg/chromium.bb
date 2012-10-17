@@ -21,9 +21,12 @@ CloudPolicyManager::CloudPolicyManager(scoped_ptr<CloudPolicyStore> store)
   store_->Load();
 }
 
-CloudPolicyManager::~CloudPolicyManager() {
+CloudPolicyManager::~CloudPolicyManager() {}
+
+void CloudPolicyManager::Shutdown() {
   ShutdownService();
   store_->RemoveObserver(this);
+  ConfigurationPolicyProvider::Shutdown();
 }
 
 bool CloudPolicyManager::IsInitializationComplete() const {

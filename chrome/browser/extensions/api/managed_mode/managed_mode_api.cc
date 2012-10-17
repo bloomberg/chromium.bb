@@ -22,7 +22,6 @@
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/managed_mode_policy_provider.h"
-#include "chrome/browser/policy/managed_mode_policy_provider_factory.h"
 #endif
 
 namespace {
@@ -107,7 +106,7 @@ bool GetPolicyFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &key));
 #if defined(ENABLE_CONFIGURATION_POLICY)
   policy::ManagedModePolicyProvider* policy_provider =
-      ManagedModePolicyProviderFactory::GetForProfile(profile_);
+      profile_->GetManagedModePolicyProvider();
   const base::Value* policy = policy_provider->GetPolicy(key);
   if (policy)
     SetResult(policy->DeepCopy());
@@ -124,7 +123,7 @@ bool SetPolicyFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->Get(1, &value));
 #if defined(ENABLE_CONFIGURATION_POLICY)
   policy::ManagedModePolicyProvider* policy_provider =
-      ManagedModePolicyProviderFactory::GetForProfile(profile_);
+      profile_->GetManagedModePolicyProvider();
   policy_provider->SetPolicy(key, value);
 #endif
   return true;

@@ -23,15 +23,14 @@ class ProxyPolicyProvider : public ConfigurationPolicyProvider,
   void SetDelegate(ConfigurationPolicyProvider* delegate);
 
   // ConfigurationPolicyProvider:
+  virtual void Shutdown() OVERRIDE;
   virtual void RefreshPolicies() OVERRIDE;
 
   // ConfigurationPolicyProvider::Observer:
   virtual void OnUpdatePolicy(ConfigurationPolicyProvider* provider) OVERRIDE;
-  virtual void OnProviderGoingAway(
-      ConfigurationPolicyProvider* provider) OVERRIDE;
 
  private:
-  scoped_ptr<ConfigurationPolicyObserverRegistrar> registrar_;
+  ConfigurationPolicyProvider* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyPolicyProvider);
 };

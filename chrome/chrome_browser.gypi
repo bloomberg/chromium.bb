@@ -1320,8 +1320,6 @@
         'browser/policy/enterprise_metrics.h',
         'browser/policy/managed_mode_policy_provider.cc',
         'browser/policy/managed_mode_policy_provider.h',
-        'browser/policy/managed_mode_policy_provider_factory.cc',
-        'browser/policy/managed_mode_policy_provider_factory.h',
         'browser/policy/network_configuration_updater.cc',
         'browser/policy/network_configuration_updater.h',
         'browser/policy/policy_bundle.cc',

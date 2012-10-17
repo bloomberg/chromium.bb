@@ -85,6 +85,11 @@ class ProxyPolicyTest : public testing::Test {
     PolicyServiceImpl::Providers providers;
     providers.push_back(&provider_);
     policy_service_.reset(new PolicyServiceImpl(providers));
+    provider_.Init();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    provider_.Shutdown();
   }
 
   PrefService* CreatePrefService(bool with_managed_policies) {

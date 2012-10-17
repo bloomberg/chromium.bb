@@ -72,6 +72,7 @@ class SSLConfigService;
 }
 
 namespace policy {
+class ManagedModePolicyProvider;
 class PolicyService;
 class UserCloudPolicyManager;
 }
@@ -232,6 +233,9 @@ class Profile : public content::BrowserContext {
   // Returns the UserCloudPolicyManager (if any) that handles this profile's
   // connection to the cloud-based management service.
   virtual policy::UserCloudPolicyManager* GetUserCloudPolicyManager() = 0;
+
+  // Returns the ManagedModePolicyProvider for this profile, if it exists.
+  virtual policy::ManagedModePolicyProvider* GetManagedModePolicyProvider() = 0;
 
   // Returns the PolicyService that provides policies for this profile.
   virtual policy::PolicyService* GetPolicyService() = 0;

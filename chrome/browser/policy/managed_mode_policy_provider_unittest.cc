@@ -133,6 +133,16 @@ class ManagedModePolicyProviderAPITest : public PolicyTestBase {
         provider_(pref_store_) {}
   virtual ~ManagedModePolicyProviderAPITest() {}
 
+  virtual void SetUp() OVERRIDE {
+    PolicyTestBase::SetUp();
+    provider_.Init();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    provider_.Shutdown();
+    PolicyTestBase::TearDown();
+  }
+
   scoped_refptr<TestingPrefStore> pref_store_;
   ManagedModePolicyProvider provider_;
 };
@@ -162,7 +172,11 @@ TEST_F(ManagedModePolicyProviderAPITest, SetPolicy) {
 
   // A newly-created provider should have the same policies.
   ManagedModePolicyProvider new_provider(pref_store_);
+  new_provider.Init();
   EXPECT_TRUE(new_provider.policies().Equals(expected_bundle));
+
+  // Cleanup.
+  new_provider.Shutdown();
 }
 
 }  // namespace policy
