@@ -12,3 +12,13 @@ PPAPINaClGLibcTest.*
 PPAPINaClNewlibTest.*
 PPAPITest.*
 ReferrerPolicyTest.*
+# DrM-i#1052-c#1
+BrowserCloseTest.*
+ClickToPlayPluginTest.*
+DownloadTest.*
+ErrorPageTest.*
+LoginPromptBrowserTest.*
+NaClBrowserTestNewlib.*
+PrerenderBrowserTest.*
+RepostFormWarningTest.*
+TaskManagerBrowserTest.*
