@@ -13,8 +13,11 @@ class Window;
 }
 
 // NonClientFrameViewAura implementation for apps.
+// TODO(jamescook): Rename this to AppNonClientFrameViewAsh. It is only used
+// with the Aura shell (Ash). crbug.com/156361
 class AppNonClientFrameViewAura : public BrowserNonClientFrameView {
  public:
+  static const char kViewClassName[];  // visible for test
   static const char kControlWindowName[];  // visible for test
 
   AppNonClientFrameViewAura(
@@ -41,6 +44,7 @@ class AppNonClientFrameViewAura : public BrowserNonClientFrameView {
   virtual void UpdateThrobber(bool running) OVERRIDE;
 
   // View:
+  virtual std::string GetClassName() const OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
  private:

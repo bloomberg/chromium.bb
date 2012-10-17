@@ -18,6 +18,10 @@
 #include "ui/aura/window.h"
 #include "ui/gfx/screen.h"
 
+#if defined(USE_ASH)
+#include "chrome/browser/ui/views/ash/browser_non_client_frame_view_ash.h"
+#endif
+
 using aura::Window;
 
 namespace {
@@ -43,6 +47,10 @@ void MinimizeWindow(aura::Window* window) {
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
 }
 
+void RestoreWindow(Window* window) {
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+}
+
 }  // namespace
 
 class AppNonClientFrameViewAuraTest : public InProcessBrowserTest {
@@ -64,11 +72,12 @@ class AppNonClientFrameViewAuraTest : public InProcessBrowserTest {
     app_browser_->window()->Show();
   }
 
-  AppNonClientFrameViewAura* GetAppFrameView() const {
+  // Returns the class name of the NonClientFrameView.
+  std::string GetFrameClassName() const {
     BrowserView* browser_view =
         static_cast<BrowserView*>(app_browser_->window());
-    BrowserFrame* frame = browser_view->frame();
-    return static_cast<AppNonClientFrameViewAura*>(frame->GetFrameView());
+    BrowserFrame* browser_frame = browser_view->frame();
+    return browser_frame->GetFrameView()->GetClassName();
   }
 
   aura::RootWindow* GetRootWindow() const {
@@ -85,6 +94,47 @@ class AppNonClientFrameViewAuraTest : public InProcessBrowserTest {
  private:
   Browser *app_browser_;
 };
+
+#if defined(USE_ASH)
+// Ensure that restoring the app window replaces the frame with a normal one,
+// and maximizing again brings back the app frame. This has been the source of
+// some crash bugs like crbug.com/155634
+IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAuraTest, SwitchFrames) {
+  // Convert to std::string so Windows can match EXPECT_EQ.
+  const std::string kAppFrameClassName =
+      AppNonClientFrameViewAura::kViewClassName;
+  const std::string kNormalFrameClassName =
+      BrowserNonClientFrameViewAsh::kViewClassName;
+
+  // We start with the app frame.
+  EXPECT_EQ(kAppFrameClassName, GetFrameClassName());
+
+  // Restoring the window gives us the normal frame.
+  Window* native_window = app_browser()->window()->GetNativeWindow();
+  RestoreWindow(native_window);
+  EXPECT_EQ(kNormalFrameClassName, GetFrameClassName());
+
+  // Maximizing the window switches back to the app frame.
+  MaximizeWindow(native_window);
+  EXPECT_EQ(kAppFrameClassName, GetFrameClassName());
+
+  // Minimizing the window switches to normal frame.
+  // TODO(jamescook): This seems wasteful, since the user is likely to bring
+  // the window back to the maximized state.
+  MinimizeWindow(native_window);
+  EXPECT_EQ(kNormalFrameClassName, GetFrameClassName());
+
+  // Coming back to maximized switches to app frame.
+  MaximizeWindow(native_window);
+  EXPECT_EQ(kAppFrameClassName, GetFrameClassName());
+
+  // One more restore/maximize cycle for good measure.
+  RestoreWindow(native_window);
+  EXPECT_EQ(kNormalFrameClassName, GetFrameClassName());
+  MaximizeWindow(native_window);
+  EXPECT_EQ(kAppFrameClassName, GetFrameClassName());
+}
+#endif  // USE_ASH
 
 // Ensure that we can click the close button when the controls are shown.
 // In particular make sure that we can click it on the top pixel of the button.
