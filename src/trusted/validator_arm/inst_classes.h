@@ -23,7 +23,8 @@ namespace nacl_arm_dec {
 //
 // Note: The enumerated values are used in dgen_core.py (see class
 // SafetyAction).  Be sure to update values in that class if this list
-// changes, so that the two stay in sync.
+// changes, so that the two stay in sync. Also be sure to update Int2SafetyLevel
+// in inst_classes.cc.
 enum SafetyLevel {
   // The initial value of uninitialized SafetyLevels -- treat as unsafe.
   UNKNOWN = 0,

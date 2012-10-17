@@ -6,7 +6,6 @@
 
 #include "native_client/src/trusted/validator_arm/problem_reporter.h"
 
-
 #include <assert.h>
 
 #include <cstdarg>
@@ -19,29 +18,11 @@
 
 namespace nacl_arm_val {
 
-// Convert the given integer back to the corresponding safety level.
-// Returns UNKNOWN if unable to convert.
-static nacl_arm_dec::SafetyLevel Int2SafetyLevel(uint32_t index) {
-  static nacl_arm_dec::SafetyLevel Int2SafetyLevelMap[] = {
-    nacl_arm_dec::UNKNOWN,
-    nacl_arm_dec::UNDEFINED,
-    nacl_arm_dec::NOT_IMPLEMENTED,
-    nacl_arm_dec::UNPREDICTABLE,
-    nacl_arm_dec::DEPRECATED,
-    nacl_arm_dec::FORBIDDEN,
-    nacl_arm_dec::FORBIDDEN_OPERANDS,
-    nacl_arm_dec::DECODER_ERROR,
-    nacl_arm_dec::MAY_BE_SAFE,
-  };
-  return (index < NACL_ARRAY_SIZE(Int2SafetyLevelMap))
-      ? Int2SafetyLevelMap[index] : nacl_arm_dec::UNKNOWN;
-}
-
 void ProblemReporter::ExtractProblemSafety(
     const ValidatorProblemUserData user_data,
     nacl_arm_dec::SafetyLevel* safety) {
   if (safety != NULL)
-    *safety = Int2SafetyLevel(user_data[0]);
+    *safety = nacl_arm_dec::Int2SafetyLevel(user_data[0]);
 }
 
 void ProblemReporter::ExtractProblemAddress(
