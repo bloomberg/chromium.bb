@@ -17,7 +17,7 @@ namespace content {
 static const int kBitsPerChannel = 16;
 static const int kSampleRate = 48000;
 static const int kBufferSize = 8192;
-static const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_STEREO;
+static const media::ChannelLayout kChannelLayout = media::CHANNEL_LAYOUT_STEREO;
 
 // By sub-classing AudioDeviceFactory we've overridden the factory to use our
 // CreateAudioDevice() method globally.

@@ -735,7 +735,7 @@ void RenderMessageFilter::OnGetHardwareSampleRate(int* sample_rate) {
 }
 
 void RenderMessageFilter::OnGetHardwareInputChannelLayout(
-    ChannelLayout* layout) {
+    media::ChannelLayout* layout) {
   // TODO(henrika): add support for all available input devices.
   *layout = media::GetAudioInputHardwareChannelLayout(
       media::AudioManagerBase::kDefaultDeviceId);

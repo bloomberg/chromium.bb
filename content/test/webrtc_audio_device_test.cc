@@ -274,11 +274,11 @@ void WebRTCAudioDeviceTest::OnGetHardwareInputSampleRate(int* sample_rate) {
 }
 
 void WebRTCAudioDeviceTest::OnGetHardwareInputChannelLayout(
-    ChannelLayout* layout) {
+    media::ChannelLayout* layout) {
   EXPECT_TRUE(audio_util_callback_);
-  *layout = audio_util_callback_ ?
+  *layout = !audio_util_callback_ ? media::CHANNEL_LAYOUT_NONE :
       audio_util_callback_->GetAudioInputHardwareChannelLayout(
-          media::AudioManagerBase::kDefaultDeviceId) : CHANNEL_LAYOUT_NONE;
+          media::AudioManagerBase::kDefaultDeviceId);
 }
 
 // IPC::Listener implementation.

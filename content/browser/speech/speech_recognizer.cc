@@ -26,6 +26,7 @@ using content::SpeechRecognitionResult;
 using media::AudioInputController;
 using media::AudioManager;
 using media::AudioParameters;
+using media::ChannelLayout;
 
 namespace {
 
@@ -69,7 +70,8 @@ void KeepAudioControllerRefcountedForDtor(scoped_refptr<AudioInputController>) {
 namespace speech {
 
 const int SpeechRecognizer::kAudioSampleRate = 16000;
-const ChannelLayout SpeechRecognizer::kChannelLayout = CHANNEL_LAYOUT_MONO;
+const ChannelLayout SpeechRecognizer::kChannelLayout =
+    media::CHANNEL_LAYOUT_MONO;
 const int SpeechRecognizer::kNumBitsPerAudioSample = 16;
 const int SpeechRecognizer::kNoSpeechTimeoutMs = 8000;
 const int SpeechRecognizer::kEndpointerEstimationTimeMs = 300;

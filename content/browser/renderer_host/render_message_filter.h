@@ -188,7 +188,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
   void OnGetHardwareBufferSize(uint32* buffer_size);
   void OnGetHardwareInputSampleRate(int* sample_rate);
   void OnGetHardwareSampleRate(int* sample_rate);
-  void OnGetHardwareInputChannelLayout(ChannelLayout* layout);
+  void OnGetHardwareInputChannelLayout(media::ChannelLayout* layout);
 
   // Used to look up the monitor color profile.
   void OnGetMonitorColorProfile(std::vector<char>* profile);

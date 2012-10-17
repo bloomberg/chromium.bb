@@ -201,7 +201,7 @@ class AudioRendererHostTest : public testing::Test {
       format = media::AudioParameters::AUDIO_PCM_LINEAR;
 
     media::AudioParameters params(
-        format, CHANNEL_LAYOUT_STEREO,
+        format, media::CHANNEL_LAYOUT_STEREO,
         media::AudioParameters::kAudioCDSampleRate, 16,
         media::AudioParameters::kAudioCDSampleRate / 10);
 

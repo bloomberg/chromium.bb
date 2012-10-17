@@ -35,7 +35,7 @@ class AudioUtil : public AudioUtilInterface {
       const std::string& device_id) OVERRIDE {
     return media::GetAudioInputHardwareSampleRate(device_id);
   }
-  virtual ChannelLayout GetAudioInputHardwareChannelLayout(
+  virtual media::ChannelLayout GetAudioInputHardwareChannelLayout(
       const std::string& device_id) OVERRIDE {
     return media::GetAudioInputHardwareChannelLayout(device_id);
   }
@@ -46,7 +46,7 @@ class AudioUtil : public AudioUtilInterface {
 class AudioUtilNoHardware : public AudioUtilInterface {
  public:
   AudioUtilNoHardware(int output_rate, int input_rate,
-                      ChannelLayout input_channel_layout)
+                      media::ChannelLayout input_channel_layout)
       : output_rate_(output_rate),
         input_rate_(input_rate),
         input_channel_layout_(input_channel_layout) {
@@ -59,7 +59,7 @@ class AudioUtilNoHardware : public AudioUtilInterface {
       const std::string& device_id) OVERRIDE {
     return input_rate_;
   }
-  virtual ChannelLayout GetAudioInputHardwareChannelLayout(
+  virtual media::ChannelLayout GetAudioInputHardwareChannelLayout(
       const std::string& device_id) OVERRIDE {
     return input_channel_layout_;
   }
@@ -67,7 +67,7 @@ class AudioUtilNoHardware : public AudioUtilInterface {
  private:
   int output_rate_;
   int input_rate_;
-  ChannelLayout input_channel_layout_;
+  media::ChannelLayout input_channel_layout_;
   DISALLOW_COPY_AND_ASSIGN(AudioUtilNoHardware);
 };
 
@@ -221,7 +221,7 @@ TEST_F(WebRTCAudioDeviceTest, TestValidOutputRates) {
 // Basic test that instantiates and initializes an instance of
 // WebRtcAudioDeviceImpl.
 TEST_F(WebRTCAudioDeviceTest, Construct) {
-  AudioUtilNoHardware audio_util(48000, 48000, CHANNEL_LAYOUT_MONO);
+  AudioUtilNoHardware audio_util(48000, 48000, media::CHANNEL_LAYOUT_MONO);
   SetAudioUtilCallback(&audio_util);
   scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
       new WebRtcAudioDeviceImpl());

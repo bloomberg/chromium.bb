@@ -8,6 +8,9 @@
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread_impl.h"
 
+using media::ChannelLayout;
+using media::CHANNEL_LAYOUT_NONE;
+
 static int output_sample_rate = 0;
 static int input_sample_rate = 0;
 static size_t output_buffer_size = 0;

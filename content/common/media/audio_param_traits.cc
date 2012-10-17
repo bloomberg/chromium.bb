@@ -8,6 +8,7 @@
 #include "media/audio/audio_parameters.h"
 
 using media::AudioParameters;
+using media::ChannelLayout;
 
 namespace IPC {
 

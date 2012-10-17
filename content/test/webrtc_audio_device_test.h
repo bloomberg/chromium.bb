@@ -116,7 +116,7 @@ class AudioUtilInterface {
   virtual int GetAudioHardwareSampleRate() = 0;
   virtual int GetAudioInputHardwareSampleRate(
       const std::string& device_id) = 0;
-  virtual ChannelLayout GetAudioInputHardwareChannelLayout(
+  virtual media::ChannelLayout GetAudioInputHardwareChannelLayout(
       const std::string& device_id) = 0;
 };
 
@@ -144,7 +144,7 @@ class WebRTCAudioDeviceTest : public ::testing::Test, public IPC::Listener {
 
   void OnGetHardwareSampleRate(int* sample_rate);
   void OnGetHardwareInputSampleRate(int* sample_rate);
-  void OnGetHardwareInputChannelLayout(ChannelLayout* channels);
+  void OnGetHardwareInputChannelLayout(media::ChannelLayout* channels);
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

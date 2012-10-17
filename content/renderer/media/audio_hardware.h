@@ -29,7 +29,7 @@ CONTENT_EXPORT size_t GetOutputBufferSize();
 
 // Fetch the audio channel layout for the default input device.
 // Must be called from RenderThreadImpl::current().
-CONTENT_EXPORT ChannelLayout GetInputChannelLayout();
+CONTENT_EXPORT media::ChannelLayout GetInputChannelLayout();
 
 // Forces the next call to any of the Get functions to query the hardware
 // and repopulate the cache.

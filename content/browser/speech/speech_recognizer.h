@@ -33,7 +33,7 @@ class CONTENT_EXPORT SpeechRecognizer
       public NON_EXPORTED_BASE(SpeechRecognitionEngineDelegate) {
  public:
   static const int kAudioSampleRate;
-  static const ChannelLayout kChannelLayout;
+  static const media::ChannelLayout kChannelLayout;
   static const int kNumBitsPerAudioSample;
   static const int kNoSpeechTimeoutMs;
   static const int kEndpointerEstimationTimeMs;

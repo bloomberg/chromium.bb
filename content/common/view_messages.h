@@ -60,7 +60,6 @@
 #define IPC_MESSAGE_START ViewMsgStart
 
 IPC_ENUM_TRAITS(AccessibilityMode)
-IPC_ENUM_TRAITS(ChannelLayout)
 IPC_ENUM_TRAITS(CSSColors::CSSColorName)
 IPC_ENUM_TRAITS(NavigationGesture)
 IPC_ENUM_TRAITS(ViewMsg_Navigate_Type::Value)
@@ -77,6 +76,7 @@ IPC_ENUM_TRAITS(content::PageZoom)
 IPC_ENUM_TRAITS(content::RendererPreferencesHintingEnum)
 IPC_ENUM_TRAITS(content::RendererPreferencesSubpixelRenderingEnum)
 IPC_ENUM_TRAITS(content::StopFindAction)
+IPC_ENUM_TRAITS(media::ChannelLayout)
 IPC_ENUM_TRAITS(media::MediaLogEvent::Type)
 IPC_ENUM_TRAITS(ui::TextInputType)
 
@@ -838,7 +838,7 @@ IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetHardwareSampleRate,
 
 // Asks the browser for the default channel layout.
 IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetHardwareInputChannelLayout,
-                            ChannelLayout /* channel layout */)
+                            media::ChannelLayout /* channel layout */)
 
 // Asks the browser for CPU usage of the renderer process in percents.
 IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetCPUUsage,

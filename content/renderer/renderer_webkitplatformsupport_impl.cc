@@ -570,7 +570,7 @@ RendererWebKitPlatformSupportImpl::createAudioDevice(
     unsigned numberOfChannels,
     double sampleRate,
     WebAudioDevice::RenderCallback* callback) {
-  ChannelLayout layout = CHANNEL_LAYOUT_UNSUPPORTED;
+  media::ChannelLayout layout = media::CHANNEL_LAYOUT_UNSUPPORTED;
 
   // The |numberOfChannels| does not exactly identify the channel layout of the
   // device. The switch statement below assigns a best guess to the channel
@@ -579,31 +579,31 @@ RendererWebKitPlatformSupportImpl::createAudioDevice(
   // channel count.
   switch (numberOfChannels) {
     case 1:
-      layout = CHANNEL_LAYOUT_MONO;
+      layout = media::CHANNEL_LAYOUT_MONO;
       break;
     case 2:
-      layout = CHANNEL_LAYOUT_STEREO;
+      layout = media::CHANNEL_LAYOUT_STEREO;
       break;
     case 3:
-      layout = CHANNEL_LAYOUT_2_1;
+      layout = media::CHANNEL_LAYOUT_2_1;
       break;
     case 4:
-      layout = CHANNEL_LAYOUT_4_0;
+      layout = media::CHANNEL_LAYOUT_4_0;
       break;
     case 5:
-      layout = CHANNEL_LAYOUT_5_0;
+      layout = media::CHANNEL_LAYOUT_5_0;
       break;
     case 6:
-      layout = CHANNEL_LAYOUT_5_1;
+      layout = media::CHANNEL_LAYOUT_5_1;
       break;
     case 7:
-      layout = CHANNEL_LAYOUT_7_0;
+      layout = media::CHANNEL_LAYOUT_7_0;
       break;
     case 8:
-      layout = CHANNEL_LAYOUT_7_1;
+      layout = media::CHANNEL_LAYOUT_7_1;
       break;
     default:
-      layout = CHANNEL_LAYOUT_STEREO;
+      layout = media::CHANNEL_LAYOUT_STEREO;
   }
 
   media::AudioParameters params(

@@ -139,8 +139,8 @@ bool PepperPlatformAudioOutputImpl::Initialize(
     format = media::AudioParameters::AUDIO_PCM_LINEAR;
   }
 
-  media::AudioParameters params(format, CHANNEL_LAYOUT_STEREO, sample_rate, 16,
-                                frames_per_buffer);
+  media::AudioParameters params(format, media::CHANNEL_LAYOUT_STEREO,
+                                sample_rate, 16, frames_per_buffer);
 
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
