@@ -138,10 +138,20 @@ class NetworkLibraryStubTest : public testing::Test {
  public:
   NetworkLibraryStubTest() : cros_(NULL) {}
 
+  static void SetUpTestCase() {
+    // Ideally, we'd open a test DB for each test case, and close it
+    // again, removing the temp dir, but unfortunately, there's a
+    // bug in NSS that prevents this from working, so we just open
+    // it once, and empty it for each test case.  Here's the bug:
+    // https://bugzilla.mozilla.org/show_bug.cgi?id=588269
+    ASSERT_TRUE(crypto::OpenTestNSSDB());
+    // There is no matching TearDownTestCase call to close the test NSS DB
+    // because that would leave NSS in a potentially broken state for further
+    // tests, due to https://bugzilla.mozilla.org/show_bug.cgi?id=588269
+  }
+
  protected:
   virtual void SetUp() {
-    ASSERT_TRUE(test_nssdb_.is_open());
-
     slot_ = net::NSSCertDatabase::GetInstance()->GetPublicModule();
     cros_ = CrosLibrary::Get()->GetNetworkLibrary();
     ASSERT_TRUE(cros_) << "GetNetworkLibrary() Failed!";
@@ -197,7 +207,6 @@ class NetworkLibraryStubTest : public testing::Test {
   }
 
   scoped_refptr<net::CryptoModule> slot_;
-  crypto::ScopedTestNSSDB test_nssdb_;
 };
 
 // Default stub state:
