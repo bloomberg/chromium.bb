@@ -46,7 +46,7 @@ public:
     bool hasPendingTask() const { return m_pendingTask; }
     void runPendingTask()
     {
-        ASSERT_TRUE(m_pendingTask);
+        ASSERT(m_pendingTask);
         OwnPtr<Task> task = m_pendingTask.release();
         task->performTask();
     }
@@ -87,7 +87,7 @@ public:
 
     void tick()
     {
-        ASSERT_TRUE(m_active);
+        ASSERT(m_active);
         if (m_client)
             m_client->onTimerTick();
     }

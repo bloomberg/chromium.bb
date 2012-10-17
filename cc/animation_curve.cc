@@ -6,13 +6,11 @@
 
 #include "CCAnimationCurve.h"
 
-#include "base/logging.h"
-
 namespace cc {
 
 const CCFloatAnimationCurve* CCAnimationCurve::toFloatAnimationCurve() const
 {
-    DCHECK(type() == CCAnimationCurve::Float);
+    ASSERT(type() ==  CCAnimationCurve::Float);
     return static_cast<const CCFloatAnimationCurve*>(this);
 }
 
@@ -23,7 +21,7 @@ CCAnimationCurve::Type CCFloatAnimationCurve::type() const
 
 const CCTransformAnimationCurve* CCAnimationCurve::toTransformAnimationCurve() const
 {
-    DCHECK(type() == CCAnimationCurve::Transform);
+    ASSERT(type() ==  CCAnimationCurve::Transform);
     return static_cast<const CCTransformAnimationCurve*>(this);
 }
 

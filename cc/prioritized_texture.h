@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "cc/dcheck.h"
 #include "CCPriorityCalculator.h"
 #include "CCResourceProvider.h"
 #include "CCTexture.h"
@@ -112,7 +111,7 @@ private:
         bool m_inDrawingImplTree;
 
         bool m_resourceHasBeenDeleted;
-#if CC_DCHECK_ENABLED()
+#ifndef NDEBUG
         CCResourceProvider* m_resourceProvider;
 #endif
 

@@ -6,8 +6,6 @@
 
 #include "CCTileDrawQuad.h"
 
-#include "base/logging.h"
-
 namespace cc {
 
 scoped_ptr<CCTileDrawQuad> CCTileDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, const IntRect& opaqueRect, unsigned resourceId, const IntPoint& textureOffset, const IntSize& textureSize, GC3Dint textureFilter, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA)
@@ -34,7 +32,7 @@ CCTileDrawQuad::CCTileDrawQuad(const CCSharedQuadState* sharedQuadState, const I
 
 const CCTileDrawQuad* CCTileDrawQuad::materialCast(const CCDrawQuad* quad)
 {
-    DCHECK(quad->material() == CCDrawQuad::TiledContent);
+    ASSERT(quad->material() == CCDrawQuad::TiledContent);
     return static_cast<const CCTileDrawQuad*>(quad);
 }
 

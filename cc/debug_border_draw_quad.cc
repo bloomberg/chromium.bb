@@ -6,8 +6,6 @@
 
 #include "CCDebugBorderDrawQuad.h"
 
-#include "base/logging.h"
-
 namespace cc {
 
 scoped_ptr<CCDebugBorderDrawQuad> CCDebugBorderDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color, int width)
@@ -27,7 +25,7 @@ CCDebugBorderDrawQuad::CCDebugBorderDrawQuad(const CCSharedQuadState* sharedQuad
 
 const CCDebugBorderDrawQuad* CCDebugBorderDrawQuad::materialCast(const CCDrawQuad* quad)
 {
-    DCHECK(quad->material() == CCDrawQuad::DebugBorder);
+    ASSERT(quad->material() == CCDrawQuad::DebugBorder);
     return static_cast<const CCDebugBorderDrawQuad*>(quad);
 }
 

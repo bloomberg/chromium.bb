@@ -100,8 +100,8 @@ void TreeSynchronizer::updateScrollbarLayerPointersRecursive(const RawPtrCCLayer
     iter = newLayers.find(scrollbarLayer->scrollLayerId());
     CCLayerImpl* ccScrollLayerImpl = iter != newLayers.end() ? iter->second : NULL;
 
-    DCHECK(ccScrollbarLayerImpl);
-    DCHECK(ccScrollLayerImpl);
+    ASSERT(ccScrollbarLayerImpl);
+    ASSERT(ccScrollLayerImpl);
 
     if (ccScrollbarLayerImpl->orientation() == WebKit::WebScrollbar::Horizontal)
         ccScrollLayerImpl->setHorizontalScrollbarLayer(ccScrollbarLayerImpl);

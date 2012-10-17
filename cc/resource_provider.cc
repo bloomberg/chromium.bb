@@ -39,7 +39,7 @@ static GC3Denum textureToStorageFormat(GC3Denum textureFormat)
         storageFormat = Extensions3DChromium::BGRA8_EXT;
         break;
     default:
-        NOTREACHED();
+        ASSERT_NOT_REACHED();
         break;
     }
 
@@ -131,13 +131,13 @@ CCResourceProvider::~CCResourceProvider()
 
 WebGraphicsContext3D* CCResourceProvider::graphicsContext3D()
 {
-    DCHECK(CCProxy::isImplThread());
+    ASSERT(CCProxy::isImplThread());
     return m_context->context3D();
 }
 
 bool CCResourceProvider::inUseByConsumer(ResourceId id)
 {
-    DCHECK(CCProxy::isImplThread());
+    ASSERT(CCProxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
     Resource* resource = &it->second;
@@ -150,7 +150,7 @@ CCResourceProvider::ResourceId CCResourceProvider::createResource(int pool, cons
     case GLTexture:
         return createGLTexture(pool, size, format, hint);
     case Bitmap:
-        DCHECK(format == GraphicsContext3D::RGBA);
+        ASSERT(format == GraphicsContext3D::RGBA);
         return createBitmap(pool, size);
     }
 
@@ -160,10 +160,10 @@ CCResourceProvider::ResourceId CCResourceProvider::createResource(int pool, cons
 
 CCResourceProvider::ResourceId CCResourceProvider::createGLTexture(int pool, const IntSize& size, GC3Denum format, TextureUsageHint hint)
 {
-    DCHECK(CCProxy::isImplThread());
+    ASSERT(CCProxy::isImplThread());
     unsigned textureId = 0;
     WebGraphicsContext3D* context3d = m_context->context3D();
-    DCHECK(context3d);
+    ASSERT(context3d);
     GLC(context3d, textureId = context3d->createTexture());
     GLC(context3d, context3d->bindTexture(GraphicsContext3D::TEXTURE_2D, textureId));
     GLC(context3d, context3d->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_MIN_FILTER, GraphicsContext3D::LINEAR));
@@ -186,7 +186,7 @@ CCResourceProvider::ResourceId CCResourceProvider::createGLTexture(int pool, con
 
 CCResourceProvider::ResourceId CCResourceProvider::createBitmap(int pool, const IntSize& size)
 {
-    DCHECK(CCProxy::isImplThread());
+    ASSERT(CCProxy::isImplThread());
 
     uint8_t* pixels = new uint8_t[size.width() * size.height() * 4];
 
@@ -198,8 +198,8 @@ CCResourceProvider::ResourceId CCResourceProvider::createBitmap(int pool, const 
 
 CCResourceProvider::ResourceId CCResourceProvider::createResourceFromExternalTexture(unsigned textureId)
 {
-    DCHECK(CCProxy::isImplThread());
-    DCHECK(m_context->context3D());
+    ASSERT(CCProxy::isImplThread());
+    ASSERT(m_context->context3D());
     ResourceId id = m_nextId++;
     Resource resource(textureId, 0, IntSize(), 0);
     resource.external = true;
@@ -209,13 +209,13 @@ CCResourceProvider::ResourceId CCResourceProvider::createResourceFromExternalTex
 
 void CCResourceProvider::deleteResource(ResourceId id)
 {
-    DCHECK(CCProxy::isImplThread());
+    ASSERT(CCProxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
     Resource* resource = &it->second;
-    DCHECK(!resource->lockedForWrite);
-    DCHECK(!resource->lockForReadCount);
-    DCHECK(!resource->markedForDeletion);
+    ASSERT(!resource->lockedForWrite);
+    ASSERT(!resource->lockForReadCount);
+    ASSERT(!resource->markedForDeletion);
 
     if (resource->exported) {
         resource->markedForDeletion = true;
@@ -229,7 +229,7 @@ void CCResourceProvider::deleteResourceInternal(ResourceMap::iterator it)
     Resource* resource = &it->second;
     if (resource->glId && !resource->external) {
         WebGraphicsContext3D* context3d = m_context->context3D();
-        DCHECK(context3d);
+        ASSERT(context3d);
         GLC(context3d, context3d->deleteTexture(resource->glId));
     }
     if (resource->pixels)
@@ -240,7 +240,7 @@ void CCResourceProvider::deleteResourceInternal(ResourceMap::iterator it)
 
 void CCResourceProvider::deleteOwnedResources(int pool)
 {
-    DCHECK(CCProxy::isImplThread());
+    ASSERT(CCProxy::isImplThread());
     ResourceIdArray toDelete;
     for (ResourceMap::iterator it = m_resources.begin(); it != m_resources.end(); ++it) {
         if (it->second.pool == pool && !it->second.external && !it->second.markedForDeletion)
@@ -260,19 +260,19 @@ CCResourceProvider::ResourceType CCResourceProvider::resourceType(ResourceId id)
 
 void CCResourceProvider::upload(ResourceId id, const uint8_t* image, const IntRect& imageRect, const IntRect& sourceRect, const IntSize& destOffset)
 {
-    DCHECK(CCProxy::isImplThread());
+    ASSERT(CCProxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
     Resource* resource = &it->second;
-    DCHECK(!resource->lockedForWrite);
-    DCHECK(!resource->lockForReadCount);
-    DCHECK(!resource->external);
-    DCHECK(!resource->exported);
+    ASSERT(!resource->lockedForWrite);
+    ASSERT(!resource->lockForReadCount);
+    ASSERT(!resource->external);
+    ASSERT(!resource->exported);
 
     if (resource->glId) {
         WebGraphicsContext3D* context3d = m_context->context3D();
-        DCHECK(context3d);
-        DCHECK(m_texSubImage.get());
+        ASSERT(context3d);
+        ASSERT(m_texSubImage.get());
         context3d->bindTexture(GraphicsContext3D::TEXTURE_2D, resource->glId);
         m_texSubImage->upload(image, imageRect, sourceRect, destOffset, resource->format, context3d);
     }
@@ -294,7 +294,7 @@ void CCResourceProvider::upload(ResourceId id, const uint8_t* image, const IntRe
 
 void CCResourceProvider::flush()
 {
-    DCHECK(CCProxy::isImplThread());
+    ASSERT(CCProxy::isImplThread());
     WebGraphicsContext3D* context3d = m_context->context3D();
     if (context3d)
         context3d->flush();
@@ -302,7 +302,7 @@ void CCResourceProvider::flush()
 
 bool CCResourceProvider::shallowFlushIfSupported()
 {
-    DCHECK(CCProxy::isImplThread());
+    ASSERT(CCProxy::isImplThread());
     WebGraphicsContext3D* context3d = m_context->context3D();
     if (!context3d || !m_useShallowFlush)
         return false;
@@ -313,51 +313,51 @@ bool CCResourceProvider::shallowFlushIfSupported()
 
 const CCResourceProvider::Resource* CCResourceProvider::lockForRead(ResourceId id)
 {
-    DCHECK(CCProxy::isImplThread());
+    ASSERT(CCProxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
 
     Resource* resource = &it->second;
-    DCHECK(!resource->lockedForWrite);
-    DCHECK(!resource->exported);
+    ASSERT(!resource->lockedForWrite);
+    ASSERT(!resource->exported);
     resource->lockForReadCount++;
     return resource;
 }
 
 void CCResourceProvider::unlockForRead(ResourceId id)
 {
-    DCHECK(CCProxy::isImplThread());
+    ASSERT(CCProxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
     Resource* resource = &it->second;
-    DCHECK(resource->lockForReadCount > 0);
-    DCHECK(!resource->exported);
+    ASSERT(resource->lockForReadCount > 0);
+    ASSERT(!resource->exported);
     resource->lockForReadCount--;
 }
 
 const CCResourceProvider::Resource* CCResourceProvider::lockForWrite(ResourceId id)
 {
-    DCHECK(CCProxy::isImplThread());
+    ASSERT(CCProxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
     Resource* resource = &it->second;
-    DCHECK(!resource->lockedForWrite);
-    DCHECK(!resource->lockForReadCount);
-    DCHECK(!resource->exported);
-    DCHECK(!resource->external);
+    ASSERT(!resource->lockedForWrite);
+    ASSERT(!resource->lockForReadCount);
+    ASSERT(!resource->exported);
+    ASSERT(!resource->external);
     resource->lockedForWrite = true;
     return resource;
 }
 
 void CCResourceProvider::unlockForWrite(ResourceId id)
 {
-    DCHECK(CCProxy::isImplThread());
+    ASSERT(CCProxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
     Resource* resource = &it->second;
-    DCHECK(resource->lockedForWrite);
-    DCHECK(!resource->exported);
-    DCHECK(!resource->external);
+    ASSERT(resource->lockedForWrite);
+    ASSERT(!resource->exported);
+    ASSERT(!resource->external);
     resource->lockedForWrite = false;
 }
 
@@ -366,7 +366,7 @@ CCResourceProvider::ScopedReadLockGL::ScopedReadLockGL(CCResourceProvider* resou
     , m_resourceId(resourceId)
     , m_textureId(resourceProvider->lockForRead(resourceId)->glId)
 {
-    DCHECK(m_textureId);
+    ASSERT(m_textureId);
 }
 
 CCResourceProvider::ScopedReadLockGL::~ScopedReadLockGL()
@@ -379,7 +379,7 @@ CCResourceProvider::ScopedWriteLockGL::ScopedWriteLockGL(CCResourceProvider* res
     , m_resourceId(resourceId)
     , m_textureId(resourceProvider->lockForWrite(resourceId)->glId)
 {
-    DCHECK(m_textureId);
+    ASSERT(m_textureId);
 }
 
 CCResourceProvider::ScopedWriteLockGL::~ScopedWriteLockGL()
@@ -389,8 +389,8 @@ CCResourceProvider::ScopedWriteLockGL::~ScopedWriteLockGL()
 
 void CCResourceProvider::populateSkBitmapWithResource(SkBitmap* skBitmap, const Resource* resource)
 {
-    DCHECK(resource->pixels);
-    DCHECK(resource->format == GraphicsContext3D::RGBA);
+    ASSERT(resource->pixels);
+    ASSERT(resource->format == GraphicsContext3D::RGBA);
     skBitmap->setConfig(SkBitmap::kARGB_8888_Config, resource->size.width(), resource->size.height());
     skBitmap->setPixels(resource->pixels);
 }
@@ -434,7 +434,7 @@ CCResourceProvider::CCResourceProvider(CCGraphicsContext* context)
 
 bool CCResourceProvider::initialize()
 {
-    DCHECK(CCProxy::isImplThread());
+    ASSERT(CCProxy::isImplThread());
     WebGraphicsContext3D* context3d = m_context->context3D();
     if (!context3d) {
         m_maxTextureSize = INT_MAX / 2;
@@ -472,7 +472,7 @@ bool CCResourceProvider::initialize()
 
 int CCResourceProvider::createChild(int pool)
 {
-    DCHECK(CCProxy::isImplThread());
+    ASSERT(CCProxy::isImplThread());
     Child childInfo;
     childInfo.pool = pool;
     int child = m_nextChild++;
@@ -482,9 +482,9 @@ int CCResourceProvider::createChild(int pool)
 
 void CCResourceProvider::destroyChild(int child)
 {
-    DCHECK(CCProxy::isImplThread());
+    ASSERT(CCProxy::isImplThread());
     ChildMap::iterator it = m_children.find(child);
-    DCHECK(it != m_children.end());
+    ASSERT(it != m_children.end());
     deleteOwnedResources(it->second.pool);
     m_children.erase(it);
     trimMailboxDeque();
@@ -492,15 +492,15 @@ void CCResourceProvider::destroyChild(int child)
 
 const CCResourceProvider::ResourceIdMap& CCResourceProvider::getChildToParentMap(int child) const
 {
-    DCHECK(CCProxy::isImplThread());
+    ASSERT(CCProxy::isImplThread());
     ChildMap::const_iterator it = m_children.find(child);
-    DCHECK(it != m_children.end());
+    ASSERT(it != m_children.end());
     return it->second.childToParentMap;
 }
 
 CCResourceProvider::TransferableResourceList CCResourceProvider::prepareSendToParent(const ResourceIdArray& resources)
 {
-    DCHECK(CCProxy::isImplThread());
+    ASSERT(CCProxy::isImplThread());
     TransferableResourceList list;
     list.syncPoint = 0;
     WebGraphicsContext3D* context3d = m_context->context3D();
@@ -522,7 +522,7 @@ CCResourceProvider::TransferableResourceList CCResourceProvider::prepareSendToPa
 
 CCResourceProvider::TransferableResourceList CCResourceProvider::prepareSendToChild(int child, const ResourceIdArray& resources)
 {
-    DCHECK(CCProxy::isImplThread());
+    ASSERT(CCProxy::isImplThread());
     TransferableResourceList list;
     list.syncPoint = 0;
     WebGraphicsContext3D* context3d = m_context->context3D();
@@ -534,8 +534,8 @@ CCResourceProvider::TransferableResourceList CCResourceProvider::prepareSendToCh
     for (ResourceIdArray::const_iterator it = resources.begin(); it != resources.end(); ++it) {
         TransferableResource resource;
         if (!transferResource(context3d, *it, &resource))
-            NOTREACHED();
-        DCHECK(childInfo.parentToChildMap.find(*it) != childInfo.parentToChildMap.end());
+            ASSERT_NOT_REACHED();
+        ASSERT(childInfo.parentToChildMap.find(*it) != childInfo.parentToChildMap.end());
         resource.id = childInfo.parentToChildMap[*it];
         childInfo.parentToChildMap.erase(*it);
         childInfo.childToParentMap.erase(resource.id);
@@ -549,7 +549,7 @@ CCResourceProvider::TransferableResourceList CCResourceProvider::prepareSendToCh
 
 void CCResourceProvider::receiveFromChild(int child, const TransferableResourceList& resources)
 {
-    DCHECK(CCProxy::isImplThread());
+    ASSERT(CCProxy::isImplThread());
     WebGraphicsContext3D* context3d = m_context->context3D();
     if (!context3d || !context3d->makeContextCurrent()) {
         // FIXME: Implement this path for software compositing.
@@ -581,7 +581,7 @@ void CCResourceProvider::receiveFromChild(int child, const TransferableResourceL
 
 void CCResourceProvider::receiveFromParent(const TransferableResourceList& resources)
 {
-    DCHECK(CCProxy::isImplThread());
+    ASSERT(CCProxy::isImplThread());
     WebGraphicsContext3D* context3d = m_context->context3D();
     if (!context3d || !context3d->makeContextCurrent()) {
         // FIXME: Implement this path for software compositing.
@@ -591,9 +591,9 @@ void CCResourceProvider::receiveFromParent(const TransferableResourceList& resou
         GLC(context3d, context3d->waitSyncPoint(resources.syncPoint));
     for (Vector<TransferableResource>::const_iterator it = resources.resources.begin(); it != resources.resources.end(); ++it) {
         ResourceMap::iterator mapIterator = m_resources.find(it->id);
-        DCHECK(mapIterator != m_resources.end());
+        ASSERT(mapIterator != m_resources.end());
         Resource* resource = &mapIterator->second;
-        DCHECK(resource->exported);
+        ASSERT(resource->exported);
         resource->exported = false;
         GLC(context3d, context3d->bindTexture(GraphicsContext3D::TEXTURE_2D, resource->glId));
         GLC(context3d, context3d->consumeTextureCHROMIUM(GraphicsContext3D::TEXTURE_2D, it->mailbox.name));
@@ -605,13 +605,13 @@ void CCResourceProvider::receiveFromParent(const TransferableResourceList& resou
 
 bool CCResourceProvider::transferResource(WebGraphicsContext3D* context, ResourceId id, TransferableResource* resource)
 {
-    DCHECK(CCProxy::isImplThread());
+    ASSERT(CCProxy::isImplThread());
     ResourceMap::const_iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
     const Resource* source = &it->second;
-    DCHECK(!source->lockedForWrite);
-    DCHECK(!source->lockForReadCount);
-    DCHECK(!source->external);
+    ASSERT(!source->lockedForWrite);
+    ASSERT(!source->lockForReadCount);
+    ASSERT(!source->external);
     if (source->exported)
         return false;
     resource->id = id;

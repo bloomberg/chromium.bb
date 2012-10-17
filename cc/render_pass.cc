@@ -29,8 +29,8 @@ CCRenderPass::CCRenderPass(Id id, IntRect outputRect, const WebKit::WebTransform
     , m_hasTransparentBackground(true)
     , m_hasOcclusionFromOutsideTargetSurface(false)
 {
-    DCHECK(id.layerId > 0);
-    DCHECK(id.index >= 0);
+    ASSERT(id.layerId > 0);
+    ASSERT(id.index >= 0);
 }
 
 CCRenderPass::~CCRenderPass()
@@ -39,7 +39,7 @@ CCRenderPass::~CCRenderPass()
 
 scoped_ptr<CCRenderPass> CCRenderPass::copy(Id newId) const
 {
-    DCHECK(newId != m_id);
+    ASSERT(newId != m_id);
 
     scoped_ptr<CCRenderPass> copyPass(create(newId, m_outputRect, m_transformToRootTarget));
     copyPass->setDamageRect(m_damageRect);
@@ -92,7 +92,7 @@ void CCRenderPass::appendQuadsToFillScreen(CCLayerImpl* rootLayer, SkColor scree
     float opacity = 1;
     bool opaque = true;
     CCSharedQuadState* sharedQuadState = quadCuller.useSharedQuadState(CCSharedQuadState::create(rootLayer->drawTransform(), rootTargetRect, rootTargetRect, opacity, opaque));
-    DCHECK(rootLayer->screenSpaceTransform().isInvertible());
+    ASSERT(rootLayer->screenSpaceTransform().isInvertible());
     WebTransformationMatrix transformToLayerSpace = rootLayer->screenSpaceTransform().inverse();
     Vector<WebCore::IntRect> fillRects = fillRegion.rects();
     for (size_t i = 0; i < fillRects.size(); ++i) {

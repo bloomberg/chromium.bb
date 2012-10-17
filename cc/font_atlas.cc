@@ -31,7 +31,7 @@ CCFontAtlas::~CCFontAtlas()
 
 void CCFontAtlas::drawText(SkCanvas* canvas, const SkPaint& paint, const std::string& text, const gfx::Point& destPosition, const IntSize& clip) const
 {
-    DCHECK(CCProxy::isImplThread());
+    ASSERT(CCProxy::isImplThread());
 
     std::vector<std::string> lines;
     base::SplitString(text, '\n', &lines);
@@ -47,7 +47,7 @@ void CCFontAtlas::drawText(SkCanvas* canvas, const SkPaint& paint, const std::st
 
 void CCFontAtlas::drawOneLineOfTextInternal(SkCanvas* canvas, const SkPaint& paint, const std::string& textLine, const gfx::Point& destPosition) const
 {
-    DCHECK(CCProxy::isImplThread());
+    ASSERT(CCProxy::isImplThread());
 
     gfx::Point position = destPosition;
     for (unsigned i = 0; i < textLine.length(); ++i) {
@@ -62,7 +62,7 @@ void CCFontAtlas::drawOneLineOfTextInternal(SkCanvas* canvas, const SkPaint& pai
 
 void CCFontAtlas::drawDebugAtlas(SkCanvas* canvas, const gfx::Point& destPosition) const
 {
-    DCHECK(CCProxy::isImplThread());
+    ASSERT(CCProxy::isImplThread());
 
     SkIRect source = SkIRect::MakeWH(m_atlas.width(), m_atlas.height());
     canvas->drawBitmapRect(m_atlas, &source, SkRect::MakeXYWH(destPosition.x(), destPosition.y(), m_atlas.width(), m_atlas.height()));

@@ -105,7 +105,7 @@ void CCHeadsUpDisplayLayerImpl::updateHudTexture(CCResourceProvider* resourcePro
     SkAutoLockPixels locker(*bitmap);
 
     IntRect layerRect(IntPoint(), bounds());
-    DCHECK(bitmap->config() == SkBitmap::kARGB_8888_Config);
+    ASSERT(bitmap->config() == SkBitmap::kARGB_8888_Config);
     resourceProvider->upload(m_hudTexture->id(), static_cast<const uint8_t*>(bitmap->getPixels()), layerRect, layerRect, IntSize());
 }
 
@@ -119,7 +119,7 @@ void CCHeadsUpDisplayLayerImpl::didDraw(CCResourceProvider* resourceProvider)
     // FIXME: the following assert will not be true when sending resources to a
     // parent compositor. We will probably need to hold on to m_hudTexture for
     // longer, and have several HUD textures in the pipeline.
-    DCHECK(!resourceProvider->inUseByConsumer(m_hudTexture->id()));
+    ASSERT(!resourceProvider->inUseByConsumer(m_hudTexture->id()));
 }
 
 void CCHeadsUpDisplayLayerImpl::didLoseContext()

@@ -5,7 +5,6 @@
 {
   'variables': {
     'cc_source_files': [
-      'dcheck.h',
       'hash_pair.h',
       'scoped_ptr_hash_map.h',
       'scoped_ptr_vector.h',
@@ -356,7 +355,6 @@
         'stubs/TraceEvent.h',
         'stubs/UnitBezier.h',
 
-	'stubs/config.h'
         'stubs/extensions_3d_chromium.h',
         'stubs/extensions_3d.h',
         'stubs/float_point_3d.h',

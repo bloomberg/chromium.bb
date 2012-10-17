@@ -6,8 +6,6 @@
 
 #include "CCSolidColorDrawQuad.h"
 
-#include "base/logging.h"
-
 namespace cc {
 
 scoped_ptr<CCSolidColorDrawQuad> CCSolidColorDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color)
@@ -27,7 +25,7 @@ CCSolidColorDrawQuad::CCSolidColorDrawQuad(const CCSharedQuadState* sharedQuadSt
 
 const CCSolidColorDrawQuad* CCSolidColorDrawQuad::materialCast(const CCDrawQuad* quad)
 {
-    DCHECK(quad->material() == CCDrawQuad::SolidColor);
+    ASSERT(quad->material() == CCDrawQuad::SolidColor);
     return static_cast<const CCSolidColorDrawQuad*>(quad);
 }
 

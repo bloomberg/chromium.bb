@@ -31,7 +31,7 @@ CCSingleThreadProxy::CCSingleThreadProxy(CCLayerTreeHost* layerTreeHost)
     , m_totalCommitCount(0)
 {
     TRACE_EVENT0("cc", "CCSingleThreadProxy::CCSingleThreadProxy");
-    DCHECK(CCProxy::isMainThread());
+    ASSERT(CCProxy::isMainThread());
 }
 
 void CCSingleThreadProxy::start()
@@ -43,14 +43,14 @@ void CCSingleThreadProxy::start()
 CCSingleThreadProxy::~CCSingleThreadProxy()
 {
     TRACE_EVENT0("cc", "CCSingleThreadProxy::~CCSingleThreadProxy");
-    DCHECK(CCProxy::isMainThread());
-    DCHECK(!m_layerTreeHostImpl.get() && !m_layerTreeHost); // make sure stop() got called.
+    ASSERT(CCProxy::isMainThread());
+    ASSERT(!m_layerTreeHostImpl.get() && !m_layerTreeHost); // make sure stop() got called.
 }
 
 bool CCSingleThreadProxy::compositeAndReadback(void *pixels, const IntRect& rect)
 {
     TRACE_EVENT0("cc", "CCSingleThreadProxy::compositeAndReadback");
-    DCHECK(CCProxy::isMainThread());
+    ASSERT(CCProxy::isMainThread());
 
     if (!commitAndComposite())
         return false;
@@ -73,7 +73,7 @@ void CCSingleThreadProxy::startPageScaleAnimation(const IntSize& targetPosition,
 
 void CCSingleThreadProxy::finishAllRendering()
 {
-    DCHECK(CCProxy::isMainThread());
+    ASSERT(CCProxy::isMainThread());
     {
         DebugScopedSetImplThread impl;
         m_layerTreeHostImpl->finishAllRendering();
@@ -82,13 +82,13 @@ void CCSingleThreadProxy::finishAllRendering()
 
 bool CCSingleThreadProxy::isStarted() const
 {
-    DCHECK(CCProxy::isMainThread());
+    ASSERT(CCProxy::isMainThread());
     return m_layerTreeHostImpl.get();
 }
 
 bool CCSingleThreadProxy::initializeContext()
 {
-    DCHECK(CCProxy::isMainThread());
+    ASSERT(CCProxy::isMainThread());
     scoped_ptr<CCGraphicsContext> context = m_layerTreeHost->createContext();
     if (!context.get())
         return false;
@@ -109,8 +109,8 @@ void CCSingleThreadProxy::setVisible(bool visible)
 
 bool CCSingleThreadProxy::initializeRenderer()
 {
-    DCHECK(CCProxy::isMainThread());
-    DCHECK(m_contextBeforeInitialization.get());
+    ASSERT(CCProxy::isMainThread());
+    ASSERT(m_contextBeforeInitialization.get());
     {
         DebugScopedSetImplThread impl;
         bool ok = m_layerTreeHostImpl->initializeRenderer(m_contextBeforeInitialization.Pass());
@@ -126,8 +126,8 @@ bool CCSingleThreadProxy::initializeRenderer()
 bool CCSingleThreadProxy::recreateContext()
 {
     TRACE_EVENT0("cc", "CCSingleThreadProxy::recreateContext");
-    DCHECK(CCProxy::isMainThread());
-    DCHECK(m_contextLost);
+    ASSERT(CCProxy::isMainThread());
+    ASSERT(m_contextLost);
 
     scoped_ptr<CCGraphicsContext> context = m_layerTreeHost->createContext();
     if (!context.get())
@@ -160,14 +160,14 @@ void CCSingleThreadProxy::renderingStats(CCRenderingStats* stats)
 
 const RendererCapabilities& CCSingleThreadProxy::rendererCapabilities() const
 {
-    DCHECK(m_rendererInitialized);
+    ASSERT(m_rendererInitialized);
     // Note: this gets called during the commit by the "impl" thread
     return m_RendererCapabilitiesForMainThread;
 }
 
 void CCSingleThreadProxy::loseContext()
 {
-    DCHECK(CCProxy::isMainThread());
+    ASSERT(CCProxy::isMainThread());
     m_layerTreeHost->didLoseContext();
     m_contextLost = true;
 }
@@ -175,12 +175,12 @@ void CCSingleThreadProxy::loseContext()
 void CCSingleThreadProxy::setNeedsAnimate()
 {
     // CCThread-only feature
-    NOTREACHED();
+    ASSERT_NOT_REACHED();
 }
 
 void CCSingleThreadProxy::doCommit(scoped_ptr<CCTextureUpdateQueue> queue)
 {
-    DCHECK(CCProxy::isMainThread());
+    ASSERT(CCProxy::isMainThread());
     // Commit immediately
     {
         DebugScopedSetMainThreadBlocked mainThreadBlocked;
@@ -205,11 +205,11 @@ void CCSingleThreadProxy::doCommit(scoped_ptr<CCTextureUpdateQueue> queue)
 
         m_layerTreeHostImpl->commitComplete();
 
-#if CC_DCHECK_ENABLED()
+#if !ASSERT_DISABLED
         // In the single-threaded case, the scroll deltas should never be
         // touched on the impl layer tree.
         scoped_ptr<CCScrollAndScaleSet> scrollInfo = m_layerTreeHostImpl->processScrollDeltas();
-        DCHECK(!scrollInfo->scrolls.size());
+        ASSERT(!scrollInfo->scrolls.size());
 #endif
 
         base::TimeTicks endTime = base::TimeTicks::HighResNow();
@@ -222,7 +222,7 @@ void CCSingleThreadProxy::doCommit(scoped_ptr<CCTextureUpdateQueue> queue)
 
 void CCSingleThreadProxy::setNeedsCommit()
 {
-    DCHECK(CCProxy::isMainThread());
+    ASSERT(CCProxy::isMainThread());
     m_layerTreeHost->scheduleComposite();
 }
 
@@ -251,7 +251,7 @@ size_t CCSingleThreadProxy::maxPartialTextureUpdates() const
 void CCSingleThreadProxy::stop()
 {
     TRACE_EVENT0("cc", "CCSingleThreadProxy::stop");
-    DCHECK(CCProxy::isMainThread());
+    ASSERT(CCProxy::isMainThread());
     {
         DebugScopedSetMainThreadBlocked mainThreadBlocked;
         DebugScopedSetImplThread impl;
@@ -275,14 +275,14 @@ void CCSingleThreadProxy::setNeedsCommitOnImplThread()
 
 void CCSingleThreadProxy::postAnimationEventsToMainThreadOnImplThread(scoped_ptr<CCAnimationEventsVector> events, double wallClockTime)
 {
-    DCHECK(CCProxy::isImplThread());
+    ASSERT(CCProxy::isImplThread());
     DebugScopedSetMainThread main;
     m_layerTreeHost->setAnimationEvents(events.Pass(), wallClockTime);
 }
 
 void CCSingleThreadProxy::releaseContentsTexturesOnImplThread()
 {
-    DCHECK(isImplThread());
+    ASSERT(isImplThread());
     if (m_layerTreeHost->contentsTextureManager())
         m_layerTreeHost->contentsTextureManager()->reduceMemoryOnImplThread(0, m_layerTreeHostImpl->resourceProvider());
 }
@@ -307,12 +307,12 @@ void CCSingleThreadProxy::forceSerializeOnSwapBuffers()
 
 void CCSingleThreadProxy::onSwapBuffersCompleteOnImplThread()
 {
-    NOTREACHED();
+    ASSERT_NOT_REACHED();
 }
 
 bool CCSingleThreadProxy::commitAndComposite()
 {
-    DCHECK(CCProxy::isMainThread());
+    ASSERT(CCProxy::isMainThread());
 
     if (!m_layerTreeHost->initializeRendererIfNeeded())
         return false;
@@ -340,7 +340,7 @@ bool CCSingleThreadProxy::commitAndComposite()
 
 bool CCSingleThreadProxy::doComposite()
 {
-    DCHECK(!m_contextLost);
+    ASSERT(!m_contextLost);
     {
         DebugScopedSetImplThread impl;
 

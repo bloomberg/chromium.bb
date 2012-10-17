@@ -6,8 +6,6 @@
 
 #include "CCYUVVideoDrawQuad.h"
 
-#include "base/logging.h"
-
 namespace cc {
 
 scoped_ptr<CCYUVVideoDrawQuad> CCYUVVideoDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, const CCVideoLayerImpl::FramePlane& yPlane, const CCVideoLayerImpl::FramePlane& uPlane, const CCVideoLayerImpl::FramePlane& vPlane)
@@ -25,7 +23,7 @@ CCYUVVideoDrawQuad::CCYUVVideoDrawQuad(const CCSharedQuadState* sharedQuadState,
 
 const CCYUVVideoDrawQuad* CCYUVVideoDrawQuad::materialCast(const CCDrawQuad* quad)
 {
-    DCHECK(quad->material() == CCDrawQuad::YUVVideoContent);
+    ASSERT(quad->material() == CCDrawQuad::YUVVideoContent);
     return static_cast<const CCYUVVideoDrawQuad*>(quad);
 }
 

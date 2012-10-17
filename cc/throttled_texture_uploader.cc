@@ -136,7 +136,7 @@ void ThrottledTextureUploader::markPendingUploadsAsNonBlocking()
         it->get()->markAsNonBlocking();
     }
 
-    DCHECK(!m_numBlockingTextureUploads);
+    ASSERT(!m_numBlockingTextureUploads);
 }
 
 double ThrottledTextureUploader::estimatedTexturesPerSecond()
@@ -144,7 +144,7 @@ double ThrottledTextureUploader::estimatedTexturesPerSecond()
     processQueries();
 
     // The history should never be empty because we initialize all elements with an estimate.
-    DCHECK(m_texturesPerSecondHistory.size() == uploadHistorySize);
+    ASSERT(m_texturesPerSecondHistory.size() == uploadHistorySize);
 
     // Sort the history and use the median as our estimate.
     std::vector<double> sortedHistory(m_texturesPerSecondHistory.begin(),
@@ -199,10 +199,10 @@ void ThrottledTextureUploader::uploadTexture(CCResourceProvider* resourceProvide
         IntSize destOffset = upload.geometry.destOffset;
 
         texture->acquireBackingTexture(resourceProvider);
-        DCHECK(texture->haveBackingTexture());
+        ASSERT(texture->haveBackingTexture());
 
-        DCHECK(resourceProvider->resourceType(texture->resourceId()) ==
-                  CCResourceProvider::GLTexture);
+        ASSERT(resourceProvider->resourceType(texture->resourceId()) ==
+               CCResourceProvider::GLTexture);
 
         WebGraphicsContext3D* paintContext = CCProxy::hasImplThread() ?
             WebSharedGraphicsContext3D::compositorThreadContext() :

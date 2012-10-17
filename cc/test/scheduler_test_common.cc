@@ -6,8 +6,6 @@
 
 #include "cc/test/scheduler_test_common.h"
 
-#include "base/logging.h"
-
 namespace WebKitTests {
 
 void FakeCCTimeSourceClient::onTimerTick()
@@ -26,7 +24,7 @@ FakeCCThread::~FakeCCThread()
 
 void FakeCCThread::postTask(PassOwnPtr<Task>)
 {
-    NOTREACHED();
+    ASSERT_NOT_REACHED();
 }
 
 void FakeCCThread::postDelayedTask(PassOwnPtr<Task> task, long long delay)

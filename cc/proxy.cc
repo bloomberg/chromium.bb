@@ -13,7 +13,7 @@ using namespace WTF;
 namespace cc {
 
 namespace {
-#if CC_DCHECK_ENABLED()
+#ifndef NDEBUG
 bool implThreadIsOverridden = false;
 bool s_isMainThreadBlocked = false;
 base::PlatformThreadId threadIDOverridenToBeImplThread;
@@ -57,10 +57,10 @@ CCThread* CCProxy::currentThread()
     return 0;
 }
 
-#if CC_DCHECK_ENABLED()
+#ifndef NDEBUG
 bool CCProxy::isMainThread()
 {
-    DCHECK(s_mainThread);
+    ASSERT(s_mainThread);
     if (implThreadIsOverridden && base::PlatformThread::CurrentId() == threadIDOverridenToBeImplThread)
         return false;
     return base::PlatformThread::CurrentId() == s_mainThread->threadID();
@@ -94,12 +94,12 @@ void CCProxy::setMainThreadBlocked(bool isMainThreadBlocked)
 
 CCProxy::CCProxy()
 {
-    DCHECK(isMainThread());
+    ASSERT(isMainThread());
 }
 
 CCProxy::~CCProxy()
 {
-    DCHECK(isMainThread());
+    ASSERT(isMainThread());
 }
 
 }

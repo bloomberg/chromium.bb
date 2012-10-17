@@ -47,7 +47,7 @@ RateLimiter::RateLimiter(WebKit::WebGraphicsContext3D* context, RateLimiterClien
     , m_active(false)
     , m_client(client)
 {
-    DCHECK(context);
+    ASSERT(context);
 }
 
 RateLimiter::~RateLimiter()

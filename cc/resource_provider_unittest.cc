@@ -9,7 +9,6 @@
 #include "CCGraphicsContext.h"
 #include "CCSingleThreadProxy.h" // For DebugScopedSetImplThread
 #include "Extensions3DChromium.h"
-#include "base/logging.h"
 #include "cc/test/compositor_fake_web_graphics_context_3d.h"
 #include "cc/test/fake_web_compositor_output_surface.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,9 +60,9 @@ public:
     {
         unsigned mailbox = 0;
         memcpy(&mailbox, mailboxName, sizeof(mailbox));
-        ASSERT_TRUE(mailbox && mailbox < m_nextMailBox);
+        ASSERT(mailbox && mailbox < m_nextMailBox);
         m_textures.set(mailbox, texture);
-        ASSERT_LT(m_syncPointForMailbox.get(mailbox), syncPoint);
+        ASSERT(m_syncPointForMailbox.get(mailbox) < syncPoint);
         m_syncPointForMailbox.set(mailbox, syncPoint);
     }
 
@@ -71,7 +70,7 @@ public:
     {
         unsigned mailbox = 0;
         memcpy(&mailbox, mailboxName, sizeof(mailbox));
-        DCHECK(mailbox && mailbox < m_nextMailBox);
+        ASSERT(mailbox && mailbox < m_nextMailBox);
 
         // If the latest sync point the context has waited on is before the sync
         // point for when the mailbox was set, pretend we never saw that
@@ -116,8 +115,8 @@ public:
 
     virtual void bindTexture(WGC3Denum target, WebGLId texture)
     {
-      ASSERT_EQ(target, GraphicsContext3D::TEXTURE_2D);
-      ASSERT_TRUE(!texture || m_textures.find(texture) != m_textures.end());
+      ASSERT(target == GraphicsContext3D::TEXTURE_2D);
+      ASSERT(!texture || m_textures.find(texture) != m_textures.end());
       m_currentTexture = texture;
     }
 
@@ -131,7 +130,7 @@ public:
     virtual void deleteTexture(WebGLId id)
     {
         TextureMap::iterator it = m_textures.find(id);
-        ASSERT_NE(it, m_textures.end());
+        ASSERT(it != m_textures.end());
         m_textures.remove(it);
         if (m_currentTexture == id)
             m_currentTexture = 0;
@@ -140,9 +139,9 @@ public:
     virtual void texStorage2DEXT(WGC3Denum target, WGC3Dint levels, WGC3Duint internalformat,
                                  WGC3Dint width, WGC3Dint height)
     {
-        ASSERT_TRUE(m_currentTexture);
-        ASSERT_EQ(target, GraphicsContext3D::TEXTURE_2D);
-        ASSERT_EQ(levels, 1);
+        ASSERT(m_currentTexture);
+        ASSERT(target == GraphicsContext3D::TEXTURE_2D);
+        ASSERT(levels == 1);
         WGC3Denum format = GraphicsContext3D::RGBA;
         switch (internalformat) {
         case Extensions3D::RGBA8_OES:
@@ -151,19 +150,19 @@ public:
             format = Extensions3D::BGRA_EXT;
             break;
         default:
-            NOTREACHED();
+            ASSERT_NOT_REACHED();
         }
         allocateTexture(IntSize(width, height), format);
     }
 
     virtual void texImage2D(WGC3Denum target, WGC3Dint level, WGC3Denum internalformat, WGC3Dsizei width, WGC3Dsizei height, WGC3Dint border, WGC3Denum format, WGC3Denum type, const void* pixels)
     {
-        ASSERT_TRUE(m_currentTexture);
-        ASSERT_EQ(target, GraphicsContext3D::TEXTURE_2D);
-        ASSERT_FALSE(level);
-        ASSERT_EQ(internalformat, format);
-        ASSERT_FALSE(border);
-        ASSERT_EQ(type, GraphicsContext3D::UNSIGNED_BYTE);
+        ASSERT(m_currentTexture);
+        ASSERT(target == GraphicsContext3D::TEXTURE_2D);
+        ASSERT(!level);
+        ASSERT(internalformat == format);
+        ASSERT(!border);
+        ASSERT(type == GraphicsContext3D::UNSIGNED_BYTE);
         allocateTexture(IntSize(width, height), format);
         if (pixels)
             setPixels(0, 0, width, height, pixels);
@@ -171,21 +170,21 @@ public:
 
     virtual void texSubImage2D(WGC3Denum target, WGC3Dint level, WGC3Dint xoffset, WGC3Dint yoffset, WGC3Dsizei width, WGC3Dsizei height, WGC3Denum format, WGC3Denum type, const void* pixels)
     {
-        ASSERT_TRUE(m_currentTexture);
-        ASSERT_EQ(target, GraphicsContext3D::TEXTURE_2D);
-        ASSERT_FALSE(level);
-        ASSERT_TRUE(m_textures.get(m_currentTexture));
-        ASSERT_EQ(m_textures.get(m_currentTexture)->format, format);
-        ASSERT_EQ(type, GraphicsContext3D::UNSIGNED_BYTE);
-        ASSERT_TRUE(pixels);
+        ASSERT(m_currentTexture);
+        ASSERT(target == GraphicsContext3D::TEXTURE_2D);
+        ASSERT(!level);
+        ASSERT(m_textures.get(m_currentTexture));
+        ASSERT(m_textures.get(m_currentTexture)->format == format);
+        ASSERT(type == GraphicsContext3D::UNSIGNED_BYTE);
+        ASSERT(pixels);
         setPixels(xoffset, yoffset, width, height, pixels);
     }
 
     virtual void genMailboxCHROMIUM(WGC3Dbyte* mailbox) { return m_sharedData->genMailbox(mailbox); }
     virtual void produceTextureCHROMIUM(WGC3Denum target, const WGC3Dbyte* mailbox)
     {
-        ASSERT_TRUE(m_currentTexture);
-        ASSERT_EQ(target, GraphicsContext3D::TEXTURE_2D);
+        ASSERT(m_currentTexture);
+        ASSERT(target == GraphicsContext3D::TEXTURE_2D);
 
         // Delay movind the texture into the mailbox until the next
         // insertSyncPoint, so that it is not visible to other contexts that
@@ -199,18 +198,18 @@ public:
 
     virtual void consumeTextureCHROMIUM(WGC3Denum target, const WGC3Dbyte* mailbox)
     {
-        ASSERT_TRUE(m_currentTexture);
-        ASSERT_EQ(target, GraphicsContext3D::TEXTURE_2D);
+        ASSERT(m_currentTexture);
+        ASSERT(target == GraphicsContext3D::TEXTURE_2D);
         m_textures.set(m_currentTexture, m_sharedData->consumeTexture(mailbox, m_lastWaitedSyncPoint));
     }
 
     void getPixels(const IntSize& size, WGC3Denum format, uint8_t* pixels)
     {
-        ASSERT_TRUE(m_currentTexture);
+        ASSERT(m_currentTexture);
         Texture* texture = m_textures.get(m_currentTexture);
-        ASSERT_TRUE(texture);
-        ASSERT_EQ(texture->size, size);
-        ASSERT_EQ(texture->format, format);
+        ASSERT(texture);
+        ASSERT(texture->size == size);
+        ASSERT(texture->format == format);
         memcpy(pixels, texture->data.get(), textureSize(size, format));
     }
 
@@ -230,18 +229,18 @@ protected:
 private:
     void allocateTexture(const IntSize& size, WGC3Denum format)
     {
-        ASSERT_TRUE(m_currentTexture);
+        ASSERT(m_currentTexture);
         m_textures.set(m_currentTexture, adoptPtr(new Texture(size, format)));
     }
 
     void setPixels(int xoffset, int yoffset, int width, int height, const void* pixels)
     {
-        ASSERT_TRUE(m_currentTexture);
+        ASSERT(m_currentTexture);
         Texture* texture = m_textures.get(m_currentTexture);
-        ASSERT_TRUE(texture);
-        ASSERT_TRUE(xoffset >= 0 && xoffset+width <= texture->size.width());
-        ASSERT_TRUE(yoffset >= 0 && yoffset+height <= texture->size.height());
-        ASSERT_TRUE(pixels);
+        ASSERT(texture);
+        ASSERT(xoffset >= 0 && xoffset+width <= texture->size.width());
+        ASSERT(yoffset >= 0 && yoffset+height <= texture->size.height());
+        ASSERT(pixels);
         size_t inPitch = textureSize(IntSize(width, 1), texture->format);
         size_t outPitch = textureSize(IntSize(texture->size.width(), 1), texture->format);
         uint8_t* dest = texture->data.get() + yoffset * outPitch + textureSize(IntSize(xoffset, 1), texture->format);

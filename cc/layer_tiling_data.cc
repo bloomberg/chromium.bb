@@ -7,8 +7,6 @@
 
 #include "CCLayerTilingData.h"
 
-#include "base/logging.h"
-
 using namespace std;
 
 namespace cc {
@@ -62,7 +60,7 @@ const CCLayerTilingData& CCLayerTilingData::operator=(const CCLayerTilingData& t
 
 void CCLayerTilingData::addTile(scoped_ptr<Tile> tile, int i, int j)
 {
-    DCHECK(!tileAt(i, j));
+    ASSERT(!tileAt(i, j));
     tile->moveTo(i, j);
     m_tiles.add(make_pair(i, j), tile.Pass());
 }
@@ -87,7 +85,7 @@ void CCLayerTilingData::contentRectToTileIndices(const IntRect& contentRect, int
     // An empty rect doesn't result in an empty set of tiles, so don't pass an empty rect.
     // FIXME: Possibly we should fill a vector of tiles instead,
     //        since the normal use of this function is to enumerate some tiles.
-    DCHECK(!contentRect.isEmpty());
+    ASSERT(!contentRect.isEmpty());
 
     left = m_tilingData.tileXIndexFromSrcCoord(contentRect.x());
     top = m_tilingData.tileYIndexFromSrcCoord(contentRect.y());

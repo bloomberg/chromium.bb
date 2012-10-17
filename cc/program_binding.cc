@@ -27,10 +27,10 @@ ProgramBindingBase::ProgramBindingBase()
 ProgramBindingBase::~ProgramBindingBase()
 {
     // If you hit these asserts, you initialized but forgot to call cleanup().
-    DCHECK(!m_program);
-    DCHECK(!m_vertexShaderId);
-    DCHECK(!m_fragmentShaderId);
-    DCHECK(!m_initialized);
+    ASSERT(!m_program);
+    ASSERT(!m_vertexShaderId);
+    ASSERT(!m_fragmentShaderId);
+    ASSERT(!m_initialized);
 }
 
 static bool contextLost(WebGraphicsContext3D* context)
@@ -45,7 +45,7 @@ void ProgramBindingBase::init(WebGraphicsContext3D* context, const std::string& 
     m_vertexShaderId = loadShader(context, GraphicsContext3D::VERTEX_SHADER, vertexShader);
     if (!m_vertexShaderId) {
         if (!contextLost(context))
-            LOG(ERROR) << "Failed to create vertex shader";
+            LOG_ERROR("Failed to create vertex shader");
         return;
     }
 
@@ -54,25 +54,26 @@ void ProgramBindingBase::init(WebGraphicsContext3D* context, const std::string& 
         GLC(context, context->deleteShader(m_vertexShaderId));
         m_vertexShaderId = 0;
         if (!contextLost(context))
-            LOG(ERROR) << "Failed to create fragment shader";
+            LOG_ERROR("Failed to create fragment shader");
         return;
     }
 
     m_program = createShaderProgram(context, m_vertexShaderId, m_fragmentShaderId);
-    DCHECK(m_program || contextLost(context));
+    ASSERT(m_program || contextLost(context));
 }
 
 void ProgramBindingBase::link(WebGraphicsContext3D* context)
 {
     GLC(context, context->linkProgram(m_program));
     cleanupShaders(context);
-#if CC_DCHECK_ENABLED()
+#ifndef NDEBUG
     int linked = 0;
     GLC(context, context->getProgramiv(m_program, GraphicsContext3D::LINK_STATUS, &linked));
     if (!linked) {
         if (!contextLost(context))
-            LOG(ERROR) << "Failed to link shader program";
+            LOG_ERROR("Failed to link shader program");
         GLC(context, context->deleteProgram(m_program));
+        return;
     }
 #endif
 }
@@ -83,7 +84,7 @@ void ProgramBindingBase::cleanup(WebGraphicsContext3D* context)
     if (!m_program)
         return;
 
-    DCHECK(context);
+    ASSERT(context);
     GLC(context, context->deleteProgram(m_program));
     m_program = 0;
 
@@ -97,7 +98,7 @@ unsigned ProgramBindingBase::loadShader(WebGraphicsContext3D* context, unsigned 
         return 0;
     GLC(context, context->shaderSource(shader, shaderSource.data()));
     GLC(context, context->compileShader(shader));
-#if CC_DCHECK_ENABLED()
+#ifndef NDEBUG
     int compiled = 0;
     GLC(context, context->getShaderiv(shader, GraphicsContext3D::COMPILE_STATUS, &compiled));
     if (!compiled) {
@@ -113,7 +114,7 @@ unsigned ProgramBindingBase::createShaderProgram(WebGraphicsContext3D* context, 
     unsigned programObject = context->createProgram();
     if (!programObject) {
         if (!contextLost(context))
-            LOG(ERROR) << "Failed to create shader program";
+            LOG_ERROR("Failed to create shader program");
         return 0;
     }
 

@@ -97,7 +97,7 @@ scoped_ptr<CCLayerImpl> TiledLayerChromium::createCCLayerImpl()
 
 void TiledLayerChromium::updateTileSizeAndTilingOption()
 {
-    DCHECK(layerTreeHost());
+    ASSERT(layerTreeHost());
 
     const IntSize& defaultTileSize = layerTreeHost()->settings().defaultTileSize;
     const IntSize& maxUntiledLayerSize = layerTreeHost()->settings().maxUntiledLayerSize;
@@ -309,7 +309,7 @@ void TiledLayerChromium::invalidateContentRect(const IntRect& contentRect)
 
     for (CCLayerTilingData::TileMap::const_iterator iter = m_tiler->tiles().begin(); iter != m_tiler->tiles().end(); ++iter) {
         UpdatableTile* tile = static_cast<UpdatableTile*>(iter->second);
-        DCHECK(tile);
+        ASSERT(tile);
         // FIXME: This should not ever be null.
         if (!tile)
             continue;
@@ -379,11 +379,11 @@ void TiledLayerChromium::markOcclusionsAndRequestTextures(int left, int top, int
     for (int j = top; j <= bottom; ++j) {
         for (int i = left; i <= right; ++i) {
             UpdatableTile* tile = tileAt(i, j);
-            DCHECK(tile); // Did setTexturePriorities get skipped?
+            ASSERT(tile); // Did setTexturePriorities get skipped?
             // FIXME: This should not ever be null.
             if (!tile)
                 continue;
-            DCHECK(!tile->occluded); // Did resetUpdateState get skipped? Are we doing more than one occlusion pass?
+            ASSERT(!tile->occluded); // Did resetUpdateState get skipped? Are we doing more than one occlusion pass?
             IntRect visibleTileRect = intersection(m_tiler->tileBounds(i, j), visibleContentRect());
             if (occlusion && occlusion->occluded(this, visibleTileRect)) {
                 tile->occluded = true;
@@ -407,7 +407,7 @@ bool TiledLayerChromium::haveTexturesForTiles(int left, int top, int right, int 
     for (int j = top; j <= bottom; ++j) {
         for (int i = left; i <= right; ++i) {
             UpdatableTile* tile = tileAt(i, j);
-            DCHECK(tile); // Did setTexturePriorites get skipped?
+            ASSERT(tile); // Did setTexturePriorites get skipped?
             // FIXME: This should not ever be null.
             if (!tile)
                 continue;
@@ -434,7 +434,7 @@ IntRect TiledLayerChromium::markTilesForUpdate(int left, int top, int right, int
     for (int j = top; j <= bottom; ++j) {
         for (int i = left; i <= right; ++i) {
             UpdatableTile* tile = tileAt(i, j);
-            DCHECK(tile); // Did setTexturePriorites get skipped?
+            ASSERT(tile); // Did setTexturePriorites get skipped?
             // FIXME: This should not ever be null.
             if (!tile)
                 continue;
@@ -466,7 +466,7 @@ void TiledLayerChromium::updateTileTextures(const IntRect& paintRect, int left, 
     for (int j = top; j <= bottom; ++j) {
         for (int i = left; i <= right; ++i) {
             UpdatableTile* tile = tileAt(i, j);
-            DCHECK(tile); // Did setTexturePriorites get skipped?
+            ASSERT(tile); // Did setTexturePriorites get skipped?
             // FIXME: This should not ever be null.
             if (!tile)
                 continue;
@@ -667,7 +667,7 @@ void TiledLayerChromium::resetUpdateState()
 
 void TiledLayerChromium::update(CCTextureUpdateQueue& queue, const CCOcclusionTracker* occlusion, CCRenderingStats& stats)
 {
-    DCHECK(!m_skipsDraw && !m_failedUpdate); // Did resetUpdateState get skipped?
+    ASSERT(!m_skipsDraw && !m_failedUpdate); // Did resetUpdateState get skipped?
     updateBounds();
     if (m_tiler->hasEmptyBounds() || !drawsContent())
         return;
@@ -754,7 +754,7 @@ bool TiledLayerChromium::needsIdlePaint()
     for (int j = top; j <= bottom; ++j) {
         for (int i = left; i <= right; ++i) {
             UpdatableTile* tile = tileAt(i, j);
-            DCHECK(tile); // Did setTexturePriorities get skipped?
+            ASSERT(tile); // Did setTexturePriorities get skipped?
             if (!tile)
                 continue;
 

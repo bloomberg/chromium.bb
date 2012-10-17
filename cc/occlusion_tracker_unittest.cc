@@ -192,7 +192,7 @@ protected:
         typename Types::ContentLayerType* layerPtr = layer.get();
         setProperties(layerPtr, transform, position, bounds);
 
-        DCHECK(!m_root);
+        ASSERT(!m_root);
         m_root = Types::passLayerPtr(layer);
         return layerPtr;
     }
@@ -264,11 +264,11 @@ protected:
 
     void calcDrawEtc(TestContentLayerImpl* root)
     {
-        DCHECK(root == m_root.get());
+        ASSERT(root == m_root.get());
         int dummyMaxTextureSize = 512;
         CCLayerSorter layerSorter;
 
-        DCHECK(!root->renderSurface());
+        ASSERT(!root->renderSurface());
 
         CCLayerTreeHostCommon::calculateDrawTransforms(root, root->bounds(), 1, &layerSorter, dummyMaxTextureSize, m_renderSurfaceLayerListImpl);
 
@@ -277,10 +277,10 @@ protected:
 
     void calcDrawEtc(TestContentLayerChromium* root)
     {
-        DCHECK(root == m_root.get());
+        ASSERT(root == m_root.get());
         int dummyMaxTextureSize = 512;
 
-        DCHECK(!root->renderSurface());
+        ASSERT(!root->renderSurface());
 
         CCLayerTreeHostCommon::calculateDrawTransforms(root, root->bounds(), 1, dummyMaxTextureSize, m_renderSurfaceLayerListChromium);
 

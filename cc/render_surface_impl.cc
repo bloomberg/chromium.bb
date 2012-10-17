@@ -6,7 +6,6 @@
 
 #include "CCRenderSurface.h"
 
-#include "base/logging.h"
 #include "base/stringprintf.h"
 #include "CCDamageTracker.h"
 #include "CCDebugBorderDrawQuad.h"
@@ -135,7 +134,7 @@ bool CCRenderSurface::surfacePropertyChanged() const
     // - all other property changes come from the owning layer (or some ancestor layer
     //   that propagates its change to the owning layer).
     //
-    DCHECK(m_owningLayer);
+    ASSERT(m_owningLayer);
     return m_surfacePropertyChanged || m_owningLayer->layerPropertyChanged();
 }
 
@@ -146,7 +145,7 @@ bool CCRenderSurface::surfacePropertyChangedOnlyFromDescendant() const
 
 void CCRenderSurface::addContributingDelegatedRenderPassLayer(CCLayerImpl* layer)
 {
-    DCHECK(std::find(m_layerList.begin(), m_layerList.end(), layer) != m_layerList.end());
+    ASSERT(std::find(m_layerList.begin(), m_layerList.end(), layer) != m_layerList.end());
     CCDelegatedRendererLayerImpl* delegatedRendererLayer = static_cast<CCDelegatedRendererLayerImpl*>(layer);
     m_contributingDelegatedRenderPassLayerList.push_back(delegatedRendererLayer);
 }
@@ -159,7 +158,7 @@ void CCRenderSurface::clearLayerLists()
 
 static inline IntRect computeClippedRectInTarget(const CCLayerImpl* owningLayer)
 {
-    DCHECK(owningLayer->parent());
+    ASSERT(owningLayer->parent());
 
     const CCLayerImpl* renderTarget = owningLayer->parent()->renderTarget();
     const CCRenderSurface* self = owningLayer->renderSurface();
@@ -181,7 +180,7 @@ CCRenderPass::Id CCRenderSurface::renderPassId()
 {
     int layerId = m_owningLayer->id();
     int subId = 0;
-    DCHECK(layerId > 0);
+    ASSERT(layerId > 0);
     return CCRenderPass::Id(layerId, subId);
 }
 
@@ -199,7 +198,7 @@ void CCRenderSurface::appendRenderPasses(CCRenderPassSink& passSink)
 
 void CCRenderSurface::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& appendQuadsData, bool forReplica, CCRenderPass::Id renderPassId)
 {
-    DCHECK(!forReplica || m_owningLayer->hasReplica());
+    ASSERT(!forReplica || m_owningLayer->hasReplica());
 
     IntRect clippedRectInTarget = computeClippedRectInTarget(m_owningLayer);
     bool isOpaque = false;

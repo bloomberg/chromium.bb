@@ -80,7 +80,7 @@ public:
 
     void textureManagerAssertInvariants(CCPrioritizedTextureManager* textureManager)
     {
-#if CC_DCHECK_ENABLED()
+#if !ASSERT_DISABLED
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
         textureManager->assertInvariants();
 #endif

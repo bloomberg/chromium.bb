@@ -6,8 +6,6 @@
 
 #include "CCTextureDrawQuad.h"
 
-#include "base/logging.h"
-
 namespace cc {
 
 scoped_ptr<CCTextureDrawQuad> CCTextureDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, unsigned resourceId, bool premultipliedAlpha, const FloatRect& uvRect, bool flipped)
@@ -31,7 +29,7 @@ void CCTextureDrawQuad::setNeedsBlending()
 
 const CCTextureDrawQuad* CCTextureDrawQuad::materialCast(const CCDrawQuad* quad)
 {
-    DCHECK(quad->material() == CCDrawQuad::TextureContent);
+    ASSERT(quad->material() == CCDrawQuad::TextureContent);
     return static_cast<const CCTextureDrawQuad*>(quad);
 }
 

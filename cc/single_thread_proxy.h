@@ -8,7 +8,7 @@
 #include "CCAnimationEvents.h"
 #include "CCLayerTreeHostImpl.h"
 #include "CCProxy.h"
-#include "base/time.h"
+#include <base/time.h>
 #include <limits>
 
 namespace cc {
@@ -90,13 +90,13 @@ class DebugScopedSetImplThread {
 public:
     DebugScopedSetImplThread()
     {
-#if CC_DCHECK_ENABLED()
+#if !ASSERT_DISABLED
         CCProxy::setCurrentThreadIsImplThread(true);
 #endif
     }
     ~DebugScopedSetImplThread()
     {
-#if CC_DCHECK_ENABLED()
+#if !ASSERT_DISABLED
         CCProxy::setCurrentThreadIsImplThread(false);
 #endif
     }
@@ -108,13 +108,13 @@ class DebugScopedSetMainThread {
 public:
     DebugScopedSetMainThread()
     {
-#if CC_DCHECK_ENABLED()
+#if !ASSERT_DISABLED
         CCProxy::setCurrentThreadIsImplThread(false);
 #endif
     }
     ~DebugScopedSetMainThread()
     {
-#if CC_DCHECK_ENABLED()
+#if !ASSERT_DISABLED
         CCProxy::setCurrentThreadIsImplThread(true);
 #endif
     }

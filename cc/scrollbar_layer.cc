@@ -219,7 +219,7 @@ void ScrollbarLayerChromium::updatePart(CachingBitmapCanvasLayerTextureUpdater* 
         return;
 
     // We should always have enough memory for UI.
-    DCHECK(texture->texture()->canAcquireBackingTexture());
+    ASSERT(texture->texture()->canAcquireBackingTexture());
     if (!texture->texture()->canAcquireBackingTexture())
         return;
 

@@ -5,8 +5,8 @@
 #include "config.h"
 
 #include "CCSchedulerStateMachine.h"
-#include "base/logging.h"
 #include "base/stringprintf.h"
+
 
 namespace cc {
 
@@ -103,7 +103,7 @@ bool CCSchedulerStateMachine::shouldAcquireLayerTexturesForMainThread() const
         return false;
     if (m_textureState == LAYER_TEXTURE_STATE_UNLOCKED)
         return true;
-    DCHECK(m_textureState == LAYER_TEXTURE_STATE_ACQUIRED_BY_IMPL_THREAD);
+    ASSERT(m_textureState == LAYER_TEXTURE_STATE_ACQUIRED_BY_IMPL_THREAD);
     // Transfer the lock from impl thread to main thread immediately if the
     // impl thread is not even scheduled to draw. Guards against deadlocking.
     if (!scheduledToDraw())
@@ -151,7 +151,7 @@ CCSchedulerStateMachine::Action CCSchedulerStateMachine::nextAction() const
             return ACTION_BEGIN_FRAME;
         return ACTION_NONE;
     }
-    NOTREACHED();
+    ASSERT_NOT_REACHED();
     return ACTION_NONE;
 }
 
@@ -162,7 +162,7 @@ void CCSchedulerStateMachine::updateState(Action action)
         return;
 
     case ACTION_BEGIN_FRAME:
-        DCHECK(m_visible || m_needsForcedCommit);
+        ASSERT(m_visible || m_needsForcedCommit);
         m_commitState = COMMIT_STATE_FRAME_IN_PROGRESS;
         m_needsCommit = false;
         m_needsForcedCommit = false;
@@ -196,8 +196,8 @@ void CCSchedulerStateMachine::updateState(Action action)
         return;
 
     case ACTION_BEGIN_CONTEXT_RECREATION:
-        DCHECK(m_commitState == COMMIT_STATE_IDLE);
-        DCHECK(m_contextState == CONTEXT_LOST);
+        ASSERT(m_commitState == COMMIT_STATE_IDLE);
+        ASSERT(m_contextState == CONTEXT_LOST);
         m_contextState = CONTEXT_RECREATING;
         return;
 
@@ -212,8 +212,8 @@ void CCSchedulerStateMachine::updateState(Action action)
 
 void CCSchedulerStateMachine::setMainThreadNeedsLayerTextures()
 {
-    DCHECK(!m_mainThreadNeedsLayerTextures);
-    DCHECK(m_textureState != LAYER_TEXTURE_STATE_ACQUIRED_BY_MAIN_THREAD);
+    ASSERT(!m_mainThreadNeedsLayerTextures);
+    ASSERT(m_textureState != LAYER_TEXTURE_STATE_ACQUIRED_BY_MAIN_THREAD);
     m_mainThreadNeedsLayerTextures = true;
 }
 
@@ -284,13 +284,13 @@ void CCSchedulerStateMachine::setNeedsForcedCommit()
 
 void CCSchedulerStateMachine::beginFrameComplete()
 {
-    DCHECK(m_commitState == COMMIT_STATE_FRAME_IN_PROGRESS);
+    ASSERT(m_commitState == COMMIT_STATE_FRAME_IN_PROGRESS);
     m_commitState = COMMIT_STATE_READY_TO_COMMIT;
 }
 
 void CCSchedulerStateMachine::beginFrameAborted()
 {
-    DCHECK(m_commitState == COMMIT_STATE_FRAME_IN_PROGRESS);
+    ASSERT(m_commitState == COMMIT_STATE_FRAME_IN_PROGRESS);
     m_commitState = COMMIT_STATE_IDLE;
     setNeedsCommit();
 }
@@ -304,7 +304,7 @@ void CCSchedulerStateMachine::didLoseContext()
 
 void CCSchedulerStateMachine::didRecreateContext()
 {
-    DCHECK(m_contextState == CONTEXT_RECREATING);
+    ASSERT(m_contextState == CONTEXT_RECREATING);
     m_contextState = CONTEXT_ACTIVE;
     setNeedsCommit();
 }

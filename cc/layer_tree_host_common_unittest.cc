@@ -58,7 +58,7 @@ void executeCalculateDrawTransformsAndVisibility(LayerChromium* rootLayer, float
     IntSize deviceViewportSize = IntSize(rootLayer->bounds().width() * deviceScaleFactor, rootLayer->bounds().height() * deviceScaleFactor);
 
     // We are probably not testing what is intended if the rootLayer bounds are empty.
-    DCHECK(!rootLayer->bounds().isEmpty());
+    ASSERT(!rootLayer->bounds().isEmpty());
     CCLayerTreeHostCommon::calculateDrawTransforms(rootLayer, deviceViewportSize, deviceScaleFactor, dummyMaxTextureSize, dummyRenderSurfaceLayerList);
 }
 
@@ -72,7 +72,7 @@ void executeCalculateDrawTransformsAndVisibility(CCLayerImpl* rootLayer, float d
     IntSize deviceViewportSize = IntSize(rootLayer->bounds().width() * deviceScaleFactor, rootLayer->bounds().height() * deviceScaleFactor);
 
     // We are probably not testing what is intended if the rootLayer bounds are empty.
-    DCHECK(!rootLayer->bounds().isEmpty());
+    ASSERT(!rootLayer->bounds().isEmpty());
     CCLayerTreeHostCommon::calculateDrawTransforms(rootLayer, deviceViewportSize, deviceScaleFactor, 0, dummyMaxTextureSize, dummyRenderSurfaceLayerList);
 }
 
