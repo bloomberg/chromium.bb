@@ -315,6 +315,9 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/ply/__init__.py': [
         'UNKNOWN',
     ],
+    'third_party/pexpect': [ # http://crbug.com/156113
+        'UNKNOWN',
+    ],
     'third_party/protobuf': [  # http://crbug.com/98455
         'UNKNOWN',
     ],
