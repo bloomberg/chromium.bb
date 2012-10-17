@@ -273,6 +273,16 @@
             }],  # 'linux_dump_symbols==1'
           ],  # end of 'conditions'
         },  # end of target 'linux_symbols'
+        {
+          'target_name': 'remoting_start_host',
+          'type': 'executable',
+          'dependencies': [
+            'remoting_host_setup_base',
+          ],
+          'sources': [
+            'host/setup/start_host.cc',
+          ],
+        },  # end of target 'remoting_start_host'
       ],  # end of 'targets'
     }],  # 'OS=="linux"'
 
