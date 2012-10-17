@@ -65,6 +65,8 @@ class TabBaseAndroidImpl : public TabAndroid {
                                      int g_value,
                                      int b_value) OVERRIDE;
 
+  virtual void RunExternalProtocolDialog(const GURL& url) OVERRIDE;
+
   // Register the Tab's native methods through JNI.
   static bool RegisterTabBaseAndroidImpl(JNIEnv* env);
 

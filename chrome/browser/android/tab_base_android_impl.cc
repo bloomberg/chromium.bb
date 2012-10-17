@@ -100,6 +100,10 @@ void TabBaseAndroidImpl::AddShortcutToBookmark(
   NOTIMPLEMENTED();
 }
 
+void TabBaseAndroidImpl::RunExternalProtocolDialog(const GURL& url) {
+  NOTIMPLEMENTED();
+}
+
 bool TabBaseAndroidImpl::RegisterTabBaseAndroidImpl(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

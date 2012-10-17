@@ -7,7 +7,6 @@
 
 #include <jni.h>
 
-#include "base/android/jni_helper.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback_forward.h"
 #include "base/string16.h"
@@ -66,6 +65,10 @@ class TabAndroid {
   virtual void AddShortcutToBookmark(
       const GURL& url, const string16& title, const SkBitmap& skbitmap,
       int r_value, int g_value, int b_value) = 0;
+
+  // Called when the common ExternalProtocolHandler wants to
+  // run the external protocol dialog.
+  virtual void RunExternalProtocolDialog(const GURL& url) = 0;
 
  protected:
   virtual ~TabAndroid();
