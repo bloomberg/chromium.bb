@@ -860,10 +860,16 @@ wl_display_dispatch_pending(struct wl_display *display)
 	return dispatch_queue(display, &display->queue, 0);
 }
 
-/** Retrieve the last error sent by the server
+/** Retrieve the last error occured on a display
  *
  * \param display The display context object
- * \return The last error sent asynchronously by \c display
+ * \return The last error occured on \c display or 0 if no error occured
+ *
+ * Return the last error occured on the display. This may be an error sent
+ * by the server or caused by the local client.
+ *
+ * \note Errors are \b fatal. If this function returns non-zero the display
+ * can no longer be used.
  *
  * \memberof wl_display
  */
