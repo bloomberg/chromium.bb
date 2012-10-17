@@ -55,4 +55,4 @@ TEST(StatusTrayWinTest, ClickOnIcon) {
   tray.WndProc(NULL, icon->message_id(), icon->icon_id(), WM_RBUTTONDOWN);
   icon->RemoveObserver(&observer);
 }
-// !defined(USE_AURA)
+#endif  // !defined(USE_AURA)
