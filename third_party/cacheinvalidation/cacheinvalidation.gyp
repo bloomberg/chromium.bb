@@ -146,37 +146,43 @@
         'cacheinvalidation_proto_cpp',
       ],
     },
-    {
-      'target_name': 'cacheinvalidation_unittests_run',
-      'type': 'none',
-      'dependencies': [
-        'cacheinvalidation_unittests',
-      ],
-      'includes': [
-        'cacheinvalidation_unittests.isolate',
-      ],
-      'actions': [
+  ],
+  'conditions': [
+    ['test_isolation_mode != "noop"', {
+      'targets': [
         {
-          'action_name': 'isolate',
-          'inputs': [
+          'target_name': 'cacheinvalidation_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'cacheinvalidation_unittests',
+          ],
+          'includes': [
             'cacheinvalidation_unittests.isolate',
-            '<@(isolate_dependency_tracked)',
           ],
-          'outputs': [
-            '<(PRODUCT_DIR)/cacheinvalidation_unittests.isolated',
-          ],
-          'action': [
-            'python',
-            '../../tools/swarm_client/isolate.py',
-            '<(test_isolation_mode)',
-            '--outdir', '<(test_isolation_outdir)',
-            '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR)',
-            '--variable', 'OS', '<(OS)',
-            '--result', '<@(_outputs)',
-            '--isolate', 'cacheinvalidation_unittests.isolate',
+          'actions': [
+            {
+              'action_name': 'isolate',
+              'inputs': [
+                'cacheinvalidation_unittests.isolate',
+                '<@(isolate_dependency_tracked)',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/cacheinvalidation_unittests.isolated',
+              ],
+              'action': [
+                'python',
+                '../../tools/swarm_client/isolate.py',
+                '<(test_isolation_mode)',
+                '--outdir', '<(test_isolation_outdir)',
+                '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR)',
+                '--variable', 'OS', '<(OS)',
+                '--result', '<@(_outputs)',
+                '--isolate', 'cacheinvalidation_unittests.isolate',
+              ],
+            },
           ],
         },
       ],
-    },
+    }],
   ],
 }
