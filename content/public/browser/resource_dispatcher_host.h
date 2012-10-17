@@ -48,7 +48,7 @@ class CONTENT_EXPORT ResourceDispatcherHost {
       int child_id,
       int route_id,
       bool prefer_cache,
-      const DownloadSaveInfo& save_info,
+      scoped_ptr<DownloadSaveInfo> save_info,
       const DownloadStartedCallback& started_callback) = 0;
 
   // Clears the ResourceDispatcherHostLoginDelegate associated with the request.

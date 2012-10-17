@@ -499,7 +499,7 @@ net::Error ResourceDispatcherHostImpl::BeginDownload(
     int child_id,
     int route_id,
     bool prefer_cache,
-    const DownloadSaveInfo& save_info,
+    scoped_ptr<DownloadSaveInfo> save_info,
     const DownloadStartedCallback& started_callback) {
   if (is_shutdown_)
     return CallbackAndReturn(started_callback, net::ERR_INSUFFICIENT_RESOURCES);
@@ -552,7 +552,7 @@ net::Error ResourceDispatcherHostImpl::BeginDownload(
   // |started_callback|.
   scoped_ptr<ResourceHandler> handler(
       CreateResourceHandlerForDownload(request.get(), is_content_initiated,
-                                       save_info, started_callback));
+                                       save_info.Pass(), started_callback));
 
   BeginRequestInternal(request.Pass(), handler.Pass());
 
@@ -581,10 +581,10 @@ scoped_ptr<ResourceHandler>
 ResourceDispatcherHostImpl::CreateResourceHandlerForDownload(
     net::URLRequest* request,
     bool is_content_initiated,
-    const DownloadSaveInfo& save_info,
+    scoped_ptr<DownloadSaveInfo> save_info,
     const DownloadResourceHandler::OnStartedCallback& started_cb) {
   scoped_ptr<ResourceHandler> handler(
-      new DownloadResourceHandler(request, started_cb, save_info));
+      new DownloadResourceHandler(request, started_cb, save_info.Pass()));
   if (delegate_) {
     const ResourceRequestInfo* request_info(
         ResourceRequestInfo::ForRequest(request));

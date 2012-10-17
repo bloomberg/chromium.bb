@@ -41,7 +41,7 @@ class DragDownloadFile
   // The file path and file stream should be provided as the first two
   // parameters.
   DragDownloadFile(const FilePath& file_name_or_path,
-                   linked_ptr<net::FileStream> file_stream,
+                   scoped_ptr<net::FileStream> file_stream,
                    const GURL& url,
                    const content::Referrer& referrer,
                    const std::string& referrer_encoding,
@@ -92,7 +92,7 @@ class DragDownloadFile
   // Accessed on UI thread (MacOSX).
   FilePath file_path_;
   FilePath file_name_;
-  linked_ptr<net::FileStream> file_stream_;
+  scoped_ptr<net::FileStream> file_stream_;
   GURL url_;
   content::Referrer referrer_;
   std::string referrer_encoding_;

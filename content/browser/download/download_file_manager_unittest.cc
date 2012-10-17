@@ -56,7 +56,7 @@ class MockDownloadFileFactory : public content::DownloadFileFactory {
   virtual ~MockDownloadFileFactory() {}
 
   virtual content::DownloadFile* CreateFile(
-      DownloadCreateInfo* info,
+      scoped_ptr<DownloadCreateInfo> info,
       scoped_ptr<content::ByteStreamReader> stream,
       content::DownloadManager* download_manager,
       bool calculate_hash,
@@ -69,7 +69,7 @@ class MockDownloadFileFactory : public content::DownloadFileFactory {
 };
 
 content::DownloadFile* MockDownloadFileFactory::CreateFile(
-    DownloadCreateInfo* info,
+    scoped_ptr<DownloadCreateInfo> info,
     scoped_ptr<content::ByteStreamReader> stream,
     content::DownloadManager* download_manager,
     bool calculate_hash,

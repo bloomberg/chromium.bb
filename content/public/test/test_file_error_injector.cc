@@ -39,12 +39,14 @@ class DownloadFileWithErrors: public DownloadFileImpl {
   typedef base::Callback<void(const GURL& url)> DestructionCallback;
 
   DownloadFileWithErrors(
-      const DownloadCreateInfo* info,
+      scoped_ptr<DownloadCreateInfo> info,
       scoped_ptr<content::ByteStreamReader> stream,
-      DownloadRequestHandleInterface* request_handle,
+      scoped_ptr<DownloadRequestHandleInterface> request_handle,
       content::DownloadManager* download_manager,
       bool calculate_hash,
       const net::BoundNetLog& bound_net_log,
+      content::DownloadId download_id,
+      const GURL& source_url,
       const content::TestFileErrorInjector::FileErrorInfo& error_info,
       const ConstructionCallback& ctor_callback,
       const DestructionCallback& dtor_callback);
@@ -102,26 +104,28 @@ static void RenameErrorCallback(
 
 
 DownloadFileWithErrors::DownloadFileWithErrors(
-    const DownloadCreateInfo* info,
+    scoped_ptr<DownloadCreateInfo> info,
     scoped_ptr<content::ByteStreamReader> stream,
-    DownloadRequestHandleInterface* request_handle,
+    scoped_ptr<DownloadRequestHandleInterface> request_handle,
     content::DownloadManager* download_manager,
     bool calculate_hash,
     const net::BoundNetLog& bound_net_log,
+    content::DownloadId download_id,
+    const GURL& source_url,
     const content::TestFileErrorInjector::FileErrorInfo& error_info,
     const ConstructionCallback& ctor_callback,
     const DestructionCallback& dtor_callback)
-        : DownloadFileImpl(info,
-                           stream.Pass(),
-                           request_handle,
-                           download_manager,
-                           calculate_hash,
-                           scoped_ptr<content::PowerSaveBlocker>(NULL).Pass(),
-                           bound_net_log),
-          source_url_(info->url()),
-          error_info_(error_info),
-          destruction_callback_(dtor_callback) {
-  ctor_callback.Run(source_url_, info->download_id);
+    : DownloadFileImpl(info.Pass(),
+                       stream.Pass(),
+                       request_handle.Pass(),
+                       download_manager,
+                       calculate_hash,
+                       scoped_ptr<content::PowerSaveBlocker>(),
+                       bound_net_log),
+      source_url_(source_url),
+      error_info_(error_info),
+      destruction_callback_(dtor_callback) {
+  ctor_callback.Run(source_url_, download_id);
 }
 
 DownloadFileWithErrors::~DownloadFileWithErrors() {
@@ -198,7 +202,7 @@ class DownloadFileWithErrorsFactory : public content::DownloadFileFactory {
 
   // DownloadFileFactory interface.
   virtual DownloadFile* CreateFile(
-      DownloadCreateInfo* info,
+      scoped_ptr<DownloadCreateInfo> info,
       scoped_ptr<content::ByteStreamReader> stream,
       content::DownloadManager* download_manager,
       bool calculate_hash,
@@ -229,32 +233,38 @@ DownloadFileWithErrorsFactory::~DownloadFileWithErrorsFactory() {
 }
 
 content::DownloadFile* DownloadFileWithErrorsFactory::CreateFile(
-    DownloadCreateInfo* info,
+    scoped_ptr<DownloadCreateInfo> info,
     scoped_ptr<content::ByteStreamReader> stream,
     content::DownloadManager* download_manager,
     bool calculate_hash,
     const net::BoundNetLog& bound_net_log) {
-  std::string url = info->url().spec();
+  GURL url = info->url();
 
-  if (injected_errors_.find(url) == injected_errors_.end()) {
+  if (injected_errors_.find(url.spec()) == injected_errors_.end()) {
     // Have to create entry, because FileErrorInfo is not a POD type.
     TestFileErrorInjector::FileErrorInfo err_info = {
-      url,
+      url.spec(),
       TestFileErrorInjector::FILE_OPERATION_INITIALIZE,
       -1,
       content::DOWNLOAD_INTERRUPT_REASON_NONE
     };
-    injected_errors_[url] = err_info;
+    injected_errors_[url.spec()] = err_info;
   }
 
+  scoped_ptr<DownloadRequestHandleInterface> request_handle(
+      new DownloadRequestHandle(info->request_handle));
+  DownloadId download_id(info->download_id);
+
   return new DownloadFileWithErrors(
-      info,
+      info.Pass(),
       stream.Pass(),
-      new DownloadRequestHandle(info->request_handle),
+      request_handle.Pass(),
       download_manager,
       calculate_hash,
       bound_net_log,
-      injected_errors_[url],
+      download_id,
+      url,
+      injected_errors_[url.spec()],
       construction_callback_,
       destruction_callback_);
 }

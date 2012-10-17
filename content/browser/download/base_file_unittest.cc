@@ -57,7 +57,7 @@ class BaseFileTest : public testing::Test {
                                   0,
                                   false,
                                   "",
-                                  file_stream_,
+                                  scoped_ptr<net::FileStream>(),
                                   net::BoundNetLog()));
   }
 
@@ -108,37 +108,12 @@ class BaseFileTest : public testing::Test {
                                   0,
                                   true,
                                   "",
-                                  file_stream_,
+                                  scoped_ptr<net::FileStream>(),
                                   net::BoundNetLog()));
-  }
-
-  bool OpenMockFileStream() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-    FilePath path;
-    if (!file_util::CreateTemporaryFile(&path))
-      return false;
-
-    // Create a new file stream.
-    mock_file_stream_.reset(new net::testing::MockFileStream(NULL));
-    if (mock_file_stream_->OpenSync(
-        path,
-        base::PLATFORM_FILE_OPEN_ALWAYS | base::PLATFORM_FILE_WRITE) != 0) {
-      mock_file_stream_.reset();
-      return false;
-    }
-
-    return true;
-  }
-
-  void ForceError(net::Error error) {
-    mock_file_stream_->set_forced_error(error);
   }
 
   int AppendDataToFile(const std::string& data) {
     EXPECT_EQ(expect_in_progress_, base_file_->in_progress());
-    expected_error_ = mock_file_stream_.get() &&
-                      (mock_file_stream_->forced_error() != net::OK);
     int appended = base_file_->AppendDataToFile(data.data(), data.size());
     if (appended == net::OK)
       EXPECT_TRUE(expect_in_progress_)
@@ -159,14 +134,13 @@ class BaseFileTest : public testing::Test {
   // Create a file.  Returns the complete file path.
   FilePath CreateTestFile() {
     FilePath file_name;
-    linked_ptr<net::FileStream> dummy_file_stream;
     BaseFile file(FilePath(),
                   GURL(),
                   GURL(),
                   0,
                   false,
                   "",
-                  dummy_file_stream,
+                  scoped_ptr<net::FileStream>(),
                   net::BoundNetLog());
 
     EXPECT_EQ(net::OK, file.Initialize(temp_dir_.path()));
@@ -184,14 +158,13 @@ class BaseFileTest : public testing::Test {
   // Create a file with the specified file name.
   void CreateFileWithName(const FilePath& file_name) {
     EXPECT_NE(FilePath::StringType(), file_name.value());
-    linked_ptr<net::FileStream> dummy_file_stream;
     BaseFile duplicate_file(file_name,
                             GURL(),
                             GURL(),
                             0,
                             false,
                             "",
-                            dummy_file_stream,
+                            scoped_ptr<net::FileStream>(),
                             net::BoundNetLog());
     EXPECT_EQ(net::OK, duplicate_file.Initialize(temp_dir_.path()));
     // Write something into it.
@@ -210,8 +183,11 @@ class BaseFileTest : public testing::Test {
     return base_file_->start_tick_;
   }
 
+  void set_expected_error(net::Error err) {
+    expected_error_ = err;
+  }
+
  protected:
-  linked_ptr<net::FileStream> file_stream_;
   linked_ptr<net::testing::MockFileStream> mock_file_stream_;
 
   // BaseClass instance we are testing.
@@ -405,14 +381,13 @@ TEST_F(BaseFileTest, MultipleWritesInterruptedWithHash) {
   base_file_->Finish();
 
   // Create another file
-  linked_ptr<net::FileStream> second_stream;
   BaseFile second_file(FilePath(),
                        GURL(),
                        GURL(),
                        base_file_->bytes_so_far(),
                        true,
                        hash_state,
-                       second_stream,
+                       scoped_ptr<net::FileStream>(),
                        net::BoundNetLog());
   ASSERT_EQ(net::OK, second_file.Initialize(temp_dir_.path()));
   std::string data(kTestData3);
@@ -488,19 +463,36 @@ TEST_F(BaseFileTest, RenameWithError) {
 
 // Write data to the file multiple times.
 TEST_F(BaseFileTest, MultipleWritesWithError) {
-  ASSERT_TRUE(OpenMockFileStream());
-  base_file_.reset(new BaseFile(mock_file_stream_->get_path(),
+  FilePath path;
+  ASSERT_TRUE(file_util::CreateTemporaryFile(&path));
+  // Create a new file stream.  scoped_ptr takes ownership and passes it to
+  // BaseFile; we use the pointer anyway and rely on the BaseFile not
+  // deleting the MockFileStream until the BaseFile is reset.
+  net::testing::MockFileStream* mock_file_stream(
+      new net::testing::MockFileStream(NULL));
+  scoped_ptr<net::FileStream> mock_file_stream_scoped_ptr(mock_file_stream);
+
+  ASSERT_EQ(0,
+            mock_file_stream->OpenSync(
+                path,
+                base::PLATFORM_FILE_OPEN_ALWAYS | base::PLATFORM_FILE_WRITE));
+
+  // Copy of mock_file_stream; we pass ownership and rely on the BaseFile
+  // not deleting it until it is reset.
+
+  base_file_.reset(new BaseFile(mock_file_stream->get_path(),
                                 GURL(),
                                 GURL(),
                                 0,
                                 false,
                                 "",
-                                mock_file_stream_,
+                                mock_file_stream_scoped_ptr.Pass(),
                                 net::BoundNetLog()));
   EXPECT_EQ(net::OK, base_file_->Initialize(temp_dir_.path()));
   ASSERT_EQ(net::OK, AppendDataToFile(kTestData1));
   ASSERT_EQ(net::OK, AppendDataToFile(kTestData2));
-  ForceError(net::ERR_ACCESS_DENIED);
+  mock_file_stream->set_forced_error(net::ERR_ACCESS_DENIED);
+  set_expected_error(net::ERR_ACCESS_DENIED);
   ASSERT_NE(net::OK, AppendDataToFile(kTestData3));
   std::string hash;
   EXPECT_FALSE(base_file_->GetHash(&hash));
@@ -540,7 +532,7 @@ TEST_F(BaseFileTest, AppendToBaseFile) {
                                 kTestDataLength4,
                                 false,
                                 "",
-                                file_stream_,
+                                scoped_ptr<net::FileStream>(),
                                 net::BoundNetLog()));
 
   EXPECT_EQ(net::OK, base_file_->Initialize(temp_dir_.path()));
@@ -574,7 +566,7 @@ TEST_F(BaseFileTest, ReadonlyBaseFile) {
                                 0,
                                 false,
                                 "",
-                                file_stream_,
+                                scoped_ptr<net::FileStream>(),
                                 net::BoundNetLog()));
 
   expect_in_progress_ = false;

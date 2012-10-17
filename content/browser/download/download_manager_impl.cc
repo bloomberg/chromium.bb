@@ -75,7 +75,7 @@ class SavePageData : public base::SupportsUserData::Data {
 
 const char SavePageData::kKey[] = "DownloadItem SavePageData";
 
-void BeginDownload(content::DownloadUrlParameters* params) {
+void BeginDownload(scoped_ptr<content::DownloadUrlParameters> params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // ResourceDispatcherHost{Base} is-not-a URLRequest::Delegate, and
   // DownloadUrlParameters can-not include resource_dispatcher_host_impl.h, so
@@ -116,7 +116,7 @@ void BeginDownload(content::DownloadUrlParameters* params) {
       params->render_process_host_id(),
       params->render_view_host_routing_id(),
       params->prefer_cache(),
-      params->save_info(),
+      params->GetSaveInfo(),
       params->callback());
 }
 
@@ -778,7 +778,7 @@ void DownloadManagerImpl::DownloadUrl(
     DCHECK(params->method() == "POST");
   }
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
-      &BeginDownload, base::Owned(params.release())));
+      &BeginDownload, base::Passed(params.Pass())));
 }
 
 void DownloadManagerImpl::AddObserver(Observer* observer) {

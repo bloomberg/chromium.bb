@@ -30,7 +30,7 @@ struct CONTENT_EXPORT DownloadSaveInfo {
   string16 suggested_name;
 
   // If non-NULL, contains the source data stream for the file contents.
-  linked_ptr<net::FileStream> file_stream;
+  scoped_ptr<net::FileStream> file_stream;
 
   // The file offset at which to start the download.  May be 0.
   int64 offset;
@@ -44,6 +44,9 @@ struct CONTENT_EXPORT DownloadSaveInfo {
   // basis if |file_path| is not empty.
   // |prompt_for_save_location| defaults to false.
   bool prompt_for_save_location;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DownloadSaveInfo);
 };
 
 }  // namespace content

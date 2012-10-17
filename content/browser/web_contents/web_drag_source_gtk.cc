@@ -244,16 +244,16 @@ void WebDragSourceGtk::OnDragDataGet(GtkWidget* sender,
         FilePath file_path;
         if (net::FileURLToFilePath(file_url, &file_path)) {
           // Open the file as a stream.
-          net::FileStream* file_stream =
+          scoped_ptr<net::FileStream> file_stream(
               drag_download_util::CreateFileStreamForDrop(
                   &file_path,
-                  content::GetContentClient()->browser()->GetNetLog());
-          if (file_stream) {
+                  content::GetContentClient()->browser()->GetNetLog()));
+          if (file_stream.get()) {
             // Start downloading the file to the stream.
             scoped_refptr<DragDownloadFile> drag_file_downloader =
                 new DragDownloadFile(
                     file_path,
-                    linked_ptr<net::FileStream>(file_stream),
+                    file_stream.Pass(),
                     download_url_,
                     content::Referrer(web_contents_->GetURL(),
                                       drop_data_->referrer_policy),

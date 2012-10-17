@@ -82,12 +82,12 @@ static void StartOnUIThread(
 DownloadResourceHandler::DownloadResourceHandler(
     net::URLRequest* request,
     const DownloadResourceHandler::OnStartedCallback& started_cb,
-    const content::DownloadSaveInfo& save_info)
+    scoped_ptr<content::DownloadSaveInfo> save_info)
     : render_view_id_(0),               // Actually initialized below.
       content_length_(0),
       request_(request),
       started_cb_(started_cb),
-      save_info_(save_info),
+      save_info_(save_info.Pass()),
       last_buffer_size_(0),
       bytes_read_(0),
       pause_count_(0),
@@ -159,7 +159,7 @@ bool DownloadResourceHandler::OnResponseStarted(
   info->url_chain = request_->url_chain();
   info->referrer_url = GURL(request_->referrer());
   info->start_time = base::Time::Now();
-  info->received_bytes = save_info_.offset;
+  info->received_bytes = save_info_->offset;
   info->total_bytes = content_length_;
   info->state = DownloadItem::IN_PROGRESS;
   info->has_user_gesture = request_info->HasUserGesture();
@@ -196,9 +196,9 @@ bool DownloadResourceHandler::OnResponseStarted(
   }
 
   info->prompt_user_for_save_location =
-      save_info_.prompt_for_save_location && save_info_.file_path.empty();
+      save_info_->prompt_for_save_location && save_info_->file_path.empty();
   info->referrer_charset = request_->context()->referrer_charset();
-  info->save_info = save_info_;
+  info->save_info = save_info_.Pass();
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -429,15 +429,13 @@ std::string DownloadResourceHandler::DebugString() const {
                             " request_id = " "%d"
                             " }"
                             " render_view_id_ = " "%d"
-                            " save_info_.file_path = \"%" PRFilePath "\""
                             " }",
                             request_ ?
                                 request_->url().spec().c_str() :
                                 "<NULL request>",
                             global_id_.child_id,
                             global_id_.request_id,
-                            render_view_id_,
-                            save_info_.file_path.value().c_str());
+                            render_view_id_);
 }
 
 DownloadResourceHandler::~DownloadResourceHandler() {

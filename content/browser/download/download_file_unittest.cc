@@ -139,17 +139,17 @@ class DownloadFileTest : public testing::Test {
         .WillOnce(Invoke(this, &DownloadFileTest::RegisterCallback))
         .RetiresOnSaturation();
 
-    DownloadCreateInfo info;
+    scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo());
     // info.request_handle default constructed to null.
-    info.download_id = DownloadId(kValidIdDomain, kDummyDownloadId + offset);
-    info.save_info.file_stream = file_stream_;
+    info->download_id = DownloadId(kValidIdDomain, kDummyDownloadId + offset);
     download_file_.reset(
         new DownloadFileImpl(
-            &info,
+            info.Pass(),
             scoped_ptr<content::ByteStreamReader>(input_stream_).Pass(),
-            new DownloadRequestHandle(),
+            scoped_ptr<DownloadRequestHandleInterface>(
+                new DownloadRequestHandle()),
             download_manager_, calculate_hash,
-            scoped_ptr<content::PowerSaveBlocker>(NULL).Pass(),
+            scoped_ptr<content::PowerSaveBlocker>(),
             net::BoundNetLog()));
 
     EXPECT_CALL(*input_stream_, Read(_, _))
@@ -273,8 +273,6 @@ class DownloadFileTest : public testing::Test {
 
  protected:
   scoped_refptr<StrictMock<LocalMockDownloadManager> > download_manager_;
-
-  linked_ptr<net::FileStream> file_stream_;
 
   // DownloadFile instance we are testing.
   scoped_ptr<DownloadFile> download_file_;

@@ -41,7 +41,7 @@ class DownloadResourceHandler
   DownloadResourceHandler(
       net::URLRequest* request,
       const OnStartedCallback& started_cb,
-      const content::DownloadSaveInfo& save_info);
+      scoped_ptr<content::DownloadSaveInfo> save_info);
 
   virtual bool OnUploadProgress(int request_id,
                                 uint64 position,
@@ -106,7 +106,7 @@ class DownloadResourceHandler
   // This is read only on the IO thread, but may only
   // be called on the UI thread.
   OnStartedCallback started_cb_;
-  content::DownloadSaveInfo save_info_;
+  scoped_ptr<content::DownloadSaveInfo> save_info_;
 
   // Data flow
   scoped_refptr<net::IOBuffer> read_buffer_;       // From URLRequest.

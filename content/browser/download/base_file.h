@@ -35,7 +35,7 @@ class CONTENT_EXPORT BaseFile {
            int64 received_bytes,
            bool calculate_hash,
            const std::string& hash_state,
-           const linked_ptr<net::FileStream>& file_stream,
+           scoped_ptr<net::FileStream> file_stream,
            const net::BoundNetLog& bound_net_log);
   virtual ~BaseFile();
 
@@ -71,7 +71,7 @@ class CONTENT_EXPORT BaseFile {
   int64 CurrentSpeed() const;
 
   FilePath full_path() const { return full_path_; }
-  bool in_progress() const { return file_stream_ != NULL; }
+  bool in_progress() const { return file_stream_.get() != NULL; }
   int64 bytes_so_far() const { return bytes_so_far_; }
 
   // Fills |hash| with the hash digest for the file.
@@ -119,7 +119,7 @@ class CONTENT_EXPORT BaseFile {
   GURL referrer_url_;
 
   // OS file stream for writing
-  linked_ptr<net::FileStream> file_stream_;
+  scoped_ptr<net::FileStream> file_stream_;
 
   // Amount of data received up so far, in bytes.
   int64 bytes_so_far_;

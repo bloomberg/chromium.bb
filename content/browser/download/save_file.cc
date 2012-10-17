@@ -21,7 +21,7 @@ SaveFile::SaveFile(const SaveFileCreateInfo* info, bool calculate_hash)
             0,
             calculate_hash,
             "",
-            linked_ptr<net::FileStream>(),
+            scoped_ptr<net::FileStream>(),
             net::BoundNetLog()),
       info_(info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));

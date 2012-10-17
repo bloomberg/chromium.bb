@@ -335,7 +335,7 @@ bool BufferedResourceHandler::SelectNextHandler(bool* defer) {
       host_->CreateResourceHandlerForDownload(
           request_,
           true,  // is_content_initiated
-          DownloadSaveInfo(),
+          scoped_ptr<DownloadSaveInfo>(new DownloadSaveInfo()),
           DownloadResourceHandler::OnStartedCallback()));
   return UseAlternateNextHandler(handler.Pass());
 }

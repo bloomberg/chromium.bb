@@ -25,12 +25,12 @@ using content::WebContents;
 
 DragDownloadFile::DragDownloadFile(
     const FilePath& file_name_or_path,
-    linked_ptr<net::FileStream> file_stream,
+    scoped_ptr<net::FileStream> file_stream,
     const GURL& url,
     const content::Referrer& referrer,
     const std::string& referrer_encoding,
     WebContents* web_contents)
-    : file_stream_(file_stream),
+    : file_stream_(file_stream.Pass()),
       url_(url),
       referrer_(referrer),
       referrer_encoding_(referrer_encoding),
@@ -133,14 +133,15 @@ void DragDownloadFile::InitiateDownload() {
   download_manager_observer_added_ = true;
   download_manager_->AddObserver(this);
 
-  content::DownloadSaveInfo save_info;
-  save_info.file_path = file_path_;
-  save_info.file_stream = file_stream_;
+  scoped_ptr<content::DownloadSaveInfo> save_info;
+  save_info->file_path = file_path_;
+  save_info->file_stream = file_stream_.Pass(); // Nulls file_stream_
 
   download_stats::RecordDownloadSource(
       download_stats::INITIATED_BY_DRAG_N_DROP);
   scoped_ptr<DownloadUrlParameters> params(
-      DownloadUrlParameters::FromWebContents(web_contents_, url_, save_info));
+      DownloadUrlParameters::FromWebContents(
+          web_contents_, url_, save_info.Pass()));
   params->set_referrer(referrer_);
   params->set_referrer_encoding(referrer_encoding_);
   download_manager_->DownloadUrl(params.Pass());

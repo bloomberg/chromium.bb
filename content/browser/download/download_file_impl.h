@@ -29,9 +29,9 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
  public:
   // Takes ownership of the object pointed to by |request_handle|.
   // |bound_net_log| will be used for logging the download file's events.
-  DownloadFileImpl(const DownloadCreateInfo* info,
+  DownloadFileImpl(scoped_ptr<DownloadCreateInfo> info,
                    scoped_ptr<content::ByteStreamReader> stream,
-                   DownloadRequestHandleInterface* request_handle,
+                   scoped_ptr<DownloadRequestHandleInterface> request_handle,
                    scoped_refptr<content::DownloadManager> download_manager,
                    bool calculate_hash,
                    scoped_ptr<content::PowerSaveBlocker> power_save_blocker,

@@ -98,7 +98,7 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   std::string referrer_charset;
 
   // The download file save info.
-  content::DownloadSaveInfo save_info;
+  scoped_ptr<content::DownloadSaveInfo> save_info;
 
   // The remote IP address where the download was fetched from.  Copied from
   // UrlRequest::GetSocketAddress().
@@ -117,6 +117,9 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   // The request's |BoundNetLog|, for "source_dependency" linking with the
   // download item's.
   const net::BoundNetLog request_bound_net_log;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DownloadCreateInfo);
 };
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_CREATE_INFO_H_

@@ -753,8 +753,8 @@ void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
                                         const GURL& url,
                                         const Referrer& referrer,
                                         const string16& suggested_name) {
-  DownloadSaveInfo save_info;
-  save_info.suggested_name = suggested_name;
+  scoped_ptr<DownloadSaveInfo> save_info(new DownloadSaveInfo());
+  save_info->suggested_name = suggested_name;
   scoped_ptr<net::URLRequest> request(
       resource_context_->GetRequestContext()->CreateRequest(url, NULL));
   request->set_referrer(referrer.url.spec());
@@ -768,7 +768,7 @@ void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
       render_process_id_,
       message.routing_id(),
       false,
-      save_info,
+      save_info.Pass(),
       ResourceDispatcherHostImpl::DownloadStartedCallback());
 }
 

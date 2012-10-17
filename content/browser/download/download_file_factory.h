@@ -18,8 +18,6 @@ class BoundNetLog;
 
 namespace content {
 
-struct DownloadSaveInfo;
-
 class ByteStreamReader;
 class DownloadDestinationObserver;
 class DownloadFile;
@@ -30,7 +28,7 @@ class CONTENT_EXPORT DownloadFileFactory {
   virtual ~DownloadFileFactory();
 
   virtual content::DownloadFile* CreateFile(
-      DownloadCreateInfo* info,
+      scoped_ptr<DownloadCreateInfo> info,
       scoped_ptr<content::ByteStreamReader> stream,
       DownloadManager* download_manager,
       bool calculate_hash,

@@ -80,7 +80,7 @@ FilePath GetFileNameFromDragData(const WebDropData& drop_data) {
 // is responsible for opening the file. It takes the drop data and an open file
 // stream.
 void PromiseWriterHelper(const WebDropData& drop_data,
-                         FileStream* file_stream) {
+                         scoped_ptr<FileStream> file_stream) {
   DCHECK(file_stream);
   file_stream->WriteSync(drop_data.file_contents.data(),
                          drop_data.file_contents.length());
@@ -342,16 +342,16 @@ void PromiseWriterHelper(const WebDropData& drop_data,
   // which is blocking.  Since this operation is already blocking the
   // UI thread on OSX, it should be reasonable to let it happen.
   base::ThreadRestrictions::ScopedAllowIO allowIO;
-  FileStream* fileStream =
+  scoped_ptr<FileStream> fileStream(
       drag_download_util::CreateFileStreamForDrop(
-          &filePath, content::GetContentClient()->browser()->GetNetLog());
-  if (!fileStream)
+          &filePath, content::GetContentClient()->browser()->GetNetLog()));
+  if (!fileStream.get())
     return nil;
 
   if (downloadURL_.is_valid()) {
     scoped_refptr<DragDownloadFile> dragFileDownloader(new DragDownloadFile(
         filePath,
-        linked_ptr<net::FileStream>(fileStream),
+        fileStream.Pass(),
         downloadURL_,
         content::Referrer(contents_->GetURL(), dropData_->referrer_policy),
         contents_->GetEncoding(),
@@ -366,7 +366,7 @@ void PromiseWriterHelper(const WebDropData& drop_data,
                             FROM_HERE,
                             base::Bind(&PromiseWriterHelper,
                                        *dropData_,
-                                       base::Owned(fileStream)));
+                                       base::Passed(fileStream.Pass())));
   }
 
   // Once we've created the file, we should return the file name.

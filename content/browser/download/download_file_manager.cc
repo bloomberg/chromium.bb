@@ -63,14 +63,17 @@ void DownloadFileManager::CreateDownloadFile(
   DCHECK(info.get());
   VLOG(20) << __FUNCTION__ << "()" << " info = " << info->DebugString();
 
+  // Can't dereference info after info.Pass(), so we need to do it here.
+  DownloadId id(info->download_id);
+
   scoped_ptr<DownloadFile> download_file(download_file_factory_->CreateFile(
-      info.get(), stream.Pass(), download_manager, get_hash, bound_net_log));
+      info.Pass(), stream.Pass(), download_manager, get_hash, bound_net_log));
 
   content::DownloadInterruptReason interrupt_reason(
       download_file->Initialize());
   if (interrupt_reason == content::DOWNLOAD_INTERRUPT_REASON_NONE) {
-    DCHECK(GetDownloadFile(info->download_id) == NULL);
-    downloads_[info->download_id] = download_file.release();
+    DCHECK(GetDownloadFile(id) == NULL);
+    downloads_[id] = download_file.release();
   }
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,

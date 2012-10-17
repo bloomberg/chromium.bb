@@ -75,9 +75,9 @@ static DownloadManagerImpl* DownloadManagerForShell(Shell* shell) {
 class DownloadFileWithDelay : public DownloadFileImpl {
  public:
   DownloadFileWithDelay(
-      const DownloadCreateInfo* info,
+      scoped_ptr<DownloadCreateInfo> info,
       scoped_ptr<content::ByteStreamReader> stream,
-      DownloadRequestHandleInterface* request_handle,
+      scoped_ptr<DownloadRequestHandleInterface> request_handle,
       scoped_refptr<content::DownloadManager> download_manager,
       bool calculate_hash,
       scoped_ptr<content::PowerSaveBlocker> power_save_blocker,
@@ -123,7 +123,7 @@ class DownloadFileWithDelayFactory : public DownloadFileFactory {
 
   // DownloadFileFactory interface.
   virtual content::DownloadFile* CreateFile(
-      DownloadCreateInfo* info,
+      scoped_ptr<DownloadCreateInfo> info,
       scoped_ptr<content::ByteStreamReader> stream,
       DownloadManager* download_manager,
       bool calculate_hash,
@@ -148,17 +148,17 @@ class DownloadFileWithDelayFactory : public DownloadFileFactory {
 };
 
 DownloadFileWithDelay::DownloadFileWithDelay(
-      const DownloadCreateInfo* info,
-      scoped_ptr<content::ByteStreamReader> stream,
-      DownloadRequestHandleInterface* request_handle,
-      scoped_refptr<content::DownloadManager> download_manager,
-      bool calculate_hash,
-      scoped_ptr<content::PowerSaveBlocker> power_save_blocker,
-      const net::BoundNetLog& bound_net_log,
-      DownloadFileWithDelayFactory* owner)
-    : DownloadFileImpl(info, stream.Pass(), request_handle, download_manager,
-                       calculate_hash, power_save_blocker.Pass(),
-                       bound_net_log),
+    scoped_ptr<DownloadCreateInfo> info,
+    scoped_ptr<content::ByteStreamReader> stream,
+    scoped_ptr<DownloadRequestHandleInterface> request_handle,
+    scoped_refptr<content::DownloadManager> download_manager,
+    bool calculate_hash,
+    scoped_ptr<content::PowerSaveBlocker> power_save_blocker,
+    const net::BoundNetLog& bound_net_log,
+    DownloadFileWithDelayFactory* owner)
+    : DownloadFileImpl(info.Pass(), stream.Pass(), request_handle.Pass(),
+                       download_manager, calculate_hash,
+                       power_save_blocker.Pass(), bound_net_log),
       owner_(owner) {}
 
 DownloadFileWithDelay::~DownloadFileWithDelay() {}
@@ -203,14 +203,18 @@ DownloadFileWithDelayFactory::DownloadFileWithDelayFactory()
 DownloadFileWithDelayFactory::~DownloadFileWithDelayFactory() {}
 
 DownloadFile* DownloadFileWithDelayFactory::CreateFile(
-    DownloadCreateInfo* info,
+    scoped_ptr<DownloadCreateInfo> info,
     scoped_ptr<content::ByteStreamReader> stream,
     DownloadManager* download_manager,
     bool calculate_hash,
     const net::BoundNetLog& bound_net_log) {
+  // Ownership will be taken by DownloadFileWithDelay.
+  scoped_ptr<DownloadRequestHandleInterface> request_handle(
+      new DownloadRequestHandle(info->request_handle));
+
   return new DownloadFileWithDelay(
-      info, stream.Pass(), new DownloadRequestHandle(info->request_handle),
-      download_manager, calculate_hash,
+      info.Pass(), stream.Pass(), request_handle.Pass(), download_manager,
+      calculate_hash,
       scoped_ptr<content::PowerSaveBlocker>(
           new content::PowerSaveBlocker(
               content::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
@@ -261,16 +265,16 @@ bool WasPersisted(DownloadItem* item) {
 class CountingDownloadFile : public DownloadFileImpl {
  public:
   CountingDownloadFile(
-      const DownloadCreateInfo* info,
+      scoped_ptr<DownloadCreateInfo> info,
       scoped_ptr<content::ByteStreamReader> stream,
-      DownloadRequestHandleInterface* request_handle,
+      scoped_ptr<DownloadRequestHandleInterface> request_handle,
       scoped_refptr<content::DownloadManager> download_manager,
       bool calculate_hash,
       scoped_ptr<content::PowerSaveBlocker> power_save_blocker,
       const net::BoundNetLog& bound_net_log)
-      : DownloadFileImpl(info, stream.Pass(), request_handle, download_manager,
-                         calculate_hash, power_save_blocker.Pass(),
-                         bound_net_log) {}
+      : DownloadFileImpl(info.Pass(), stream.Pass(), request_handle.Pass(),
+                         download_manager, calculate_hash,
+                         power_save_blocker.Pass(), bound_net_log) {}
 
   virtual ~CountingDownloadFile() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -313,13 +317,17 @@ class CountingDownloadFileFactory : public DownloadFileFactory {
 
   // DownloadFileFactory interface.
   virtual content::DownloadFile* CreateFile(
-      DownloadCreateInfo* info,
+      scoped_ptr<DownloadCreateInfo> info,
       scoped_ptr<content::ByteStreamReader> stream,
       DownloadManager* download_manager,
       bool calculate_hash,
       const net::BoundNetLog& bound_net_log) OVERRIDE {
+    scoped_ptr<DownloadRequestHandleInterface> request_handle(
+        new DownloadRequestHandle(info->request_handle));
+
     return new CountingDownloadFile(
-        info, stream.Pass(), new DownloadRequestHandle(info->request_handle),
+        info.Pass(), stream.Pass(),
+        request_handle.Pass(),
         download_manager, calculate_hash,
         scoped_ptr<content::PowerSaveBlocker>(
             new content::PowerSaveBlocker(
