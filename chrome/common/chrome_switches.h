@@ -366,6 +366,7 @@ extern const char kTabletUI[];
 extern const char kAshWebUIInit[];
 extern const char kEnableCarrierSwitching[];
 extern const char kDisableBootAnimation[];
+extern const char kDisableDrivePrefetch[];
 extern const char kDisableFactoryReset[];
 extern const char kDisableGData[];
 extern const char kDisableHtml5Camera[];

@@ -1359,6 +1359,9 @@ const char kEnableCarrierSwitching[]        = "enable-carrier-switching";
 // Disables wallpaper boot animation (except of OOBE case).
 const char kDisableBootAnimation[]          = "disable-boot-animation";
 
+// Disables file prefetching in Google Drive Client for Chrome OS.
+const char kDisableDrivePrefetch[]          = "disable-drive-prefetch";
+
 // Disables reset the device to its factory state in design.
 const char kDisableFactoryReset[]           = "disable-factory-reset";
 
