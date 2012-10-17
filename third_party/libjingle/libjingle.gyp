@@ -650,6 +650,8 @@
             'source/talk/media/devices/dummydevicemanager.h',
           ],
           'sources': [
+            'source/talk/media/devices/devicemanager.cc',
+            'source/talk/media/devices/devicemanager.h',
             'source/talk/sound/nullsoundsystem.cc',
             'source/talk/sound/nullsoundsystem.h',
             'source/talk/sound/nullsoundsystemfactory.cc',
@@ -666,12 +668,18 @@
           'conditions': [
             ['OS=="win"', {
               'sources': [
+                'source/talk/base/win32window.cc',
+                'source/talk/base/win32window.h',
+                'source/talk/base/win32windowpicker.cc',
+                'source/talk/base/win32windowpicker.h',
                 'source/talk/media/devices/win32devicemanager.cc',
                 'source/talk/media/devices/win32devicemanager.h',
               ],
             }],
             ['OS=="linux"', {
               'sources': [
+                'source/talk/base/linuxwindowpicker.cc',
+                'source/talk/base/linuxwindowpicker.h',
                 'source/talk/media/devices/libudevsymboltable.cc',
                 'source/talk/media/devices/libudevsymboltable.h',
                 'source/talk/media/devices/linuxdevicemanager.cc',
@@ -696,6 +704,13 @@
                 'source/talk/media/devices/macdevicemanager.h',
                 'source/talk/media/devices/macdevicemanagermm.mm',
               ],
+              'xcode_settings': {
+                'WARNING_CFLAGS': [
+                  # Suppres warnings about using deprecated functions in
+                  # macdevicemanager.cc. 
+                  '-Wno-deprecated-declarations',
+                ],
+              },
             }],
           ],
         }],
