@@ -298,15 +298,15 @@ class VersionInfo(object):
     return map(int, [info.build_number, info.branch_build_number,
                      info.patch_number])
 
-  def BuildPrefix(self):
+  def BuildGlob(self):
     """Returns the build prefix to match the buildspecs in  manifest-versions"""
     if self.incr_type == 'branch':
       if self.patch_number == '0':
-        return '%s.' % self.build_number
+        return '%s.*.0.xml' % self.build_number
       else:
-        return '%s.%s.' % (self.build_number, self.branch_build_number)
+        return '%s.%s.*.xml' % (self.build_number, self.branch_build_number)
     # Default to build incr_type.
-    return ''
+    return '*.0.0.xml'
 
 
 class BuilderStatus(object):
@@ -419,8 +419,7 @@ class BuildSpecsManager(object):
       directory: Directory of the buildspecs.
     """
     if os.path.exists(directory):
-      match_string = version_info.BuildPrefix() + '*.xml'
-      specs = fnmatch.filter(os.listdir(directory), match_string)
+      specs = fnmatch.filter(os.listdir(directory), version_info.BuildGlob())
       return self._LatestSpecFromList([os.path.splitext(m)[0] for m in specs])
 
   def _GetSpecAge(self, version):
