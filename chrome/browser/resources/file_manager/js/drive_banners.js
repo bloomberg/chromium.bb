@@ -60,7 +60,8 @@ var GOOGLE_DRIVE_FAQ_URL =
 var GOOGLE_DRIVE_BUY_STORAGE =
     'https://www.google.com/settings/storage';
 
-var GOOGLE_DRIVE_REDEEM = 'https://drive.google.com/redeem';
+var GOOGLE_DRIVE_REDEEM =
+    'http://www.google.com/intl/en/chrome/devices/goodies.html';
 
 /**
  * Location of the FAQ about the downloads directory.
@@ -510,19 +511,12 @@ FileListBannerController.prototype.updateGDataUnmountedPanel_ = function() {
  * @private
  */
 FileListBannerController.prototype.checkPromoAvailable_ = function() {
-  var r = new XMLHttpRequest();
-  r.open('HEAD', GOOGLE_DRIVE_REDEEM, true);
-  r.onreadystatechange = function() {
-    if (r.readyState != 4)
-      return;
-    this.newWelcome_ = r.status == 200;
-    if (this.promoCallbacks_) {
-      for (var i = 0; i < this.promoCallbacks_.length; i++)
-        this.promoCallbacks_[i]();
-      this.promoCallbacks_ = undefined;
-    }
-  }.bind(this);
-  r.send();
+  this.newWelcome_ = true;
+  if (this.promoCallbacks_) {
+    for (var i = 0; i < this.promoCallbacks_.length; i++)
+      this.promoCallbacks_[i]();
+    this.promoCallbacks_ = undefined;
+  }
 };
 
 /**
