@@ -735,54 +735,6 @@ bool LaunchApplicationAssociationDialog(const string16& app_id) {
   return SUCCEEDED(hr);
 }
 
-// As of r133333, the DelegateExecute verb handler was being registered for
-// Google Chrome installs on Windows 8 even though the binary itself wasn't
-// present.  This affected Chrome 20.0.1115.1 on the dev channel (and anyone who
-// pulled a Canary >= 20.0.1112.0 and installed it manually as Google Chrome).
-// This egregious hack is here to remove the bad values for those installs, and
-// should be removed after a reasonable time, say 2012-08-01.  Anyone on Win8
-// dev channel who hasn't been autoupdated or manually updated by then will have
-// to uninstall and reinstall Chrome to repair.  See http://crbug.com/124666 and
-// http://crbug.com/123994 for gory details.
-// This function is also used to remove DelegateExecute verb handler
-// registrations on builds for which Metro is no longer supported. This will
-// also become irrelevant sometime after Windows 8 RC (thus the aforementioned
-// removal date remains correct).
-void RemoveBadWindows8RegistrationIfNeeded(
-    BrowserDistribution* dist,
-    const string16& chrome_exe) {
-  if (dist->GetCommandExecuteImplClsid(NULL) &&
-      (!InstallUtil::HasDelegateExecuteHandler(dist, chrome_exe) ||
-       !IsChromeMetroSupported())) {
-    // There's no need to rollback, so forgo the usual work item lists and just
-    // remove the values from the registry.
-    bool is_per_user_install =
-        InstallUtil::IsPerUserInstall(chrome_exe.c_str());
-    const HKEY root_key = is_per_user_install ? HKEY_CURRENT_USER :
-                                                HKEY_LOCAL_MACHINE;
-    // Use the current installation's suffix, not the about-to-be-installed
-    // suffix.
-    const string16 installation_suffix(
-        ShellUtil::GetCurrentInstallationSuffix(dist, chrome_exe));
-    const string16 app_id(ShellUtil::GetBrowserModelId(dist,
-                                                       is_per_user_install));
-
-    // <root hkey>\Software\Classes\<app_id>
-    string16 key(ShellUtil::kRegClasses);
-    key.push_back(FilePath::kSeparators[0]);
-    key.append(app_id);
-    InstallUtil::DeleteRegistryKey(root_key, key);
-
-    // <root hkey>\Software\Classes\ChromiumHTML[.user]\shell\open\command
-    key = ShellUtil::kRegClasses;
-    key.push_back(FilePath::kSeparators[0]);
-    key.append(GetBrowserProgId(installation_suffix));
-    key.append(ShellUtil::kRegShellOpen);
-    InstallUtil::DeleteRegistryValue(root_key, key,
-                                     ShellUtil::kRegDelegateExecute);
-  }
-}
-
 // Returns true if the current install's |chrome_exe| has been registered with
 // |suffix|.
 // |confirmation_level| is the level of verification desired as described in
@@ -1017,8 +969,6 @@ base::win::ShortcutProperties GetShortcutPropertiesFromChromeShortcutProperties(
 
 // Cleans up an old verb (run) we used to register in
 // <root>\Software\Classes\Chrome<.suffix>\.exe\shell\run on Windows 8.
-// TODO (gab): This was fixed before the general availability of Windows 8 and
-// thus can safely be removed in February 2013.
 void RemoveRunVerbOnWindows8(
     BrowserDistribution* dist,
     const string16& chrome_exe) {
@@ -1714,10 +1664,6 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
     return false;
   }
 
-  // TODO(grt): remove this on or after 2012-08-01; see impl for details.
-  RemoveBadWindows8RegistrationIfNeeded(dist, chrome_exe);
-
-  // TODO(gab): remove this on or after 2013-02-01; see impl for details.
   RemoveRunVerbOnWindows8(dist, chrome_exe);
 
   // Check if Chromium is already registered with this suffix.
