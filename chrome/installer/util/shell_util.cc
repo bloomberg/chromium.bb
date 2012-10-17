@@ -425,11 +425,12 @@ class RegistryEntry {
   }
 
   // This method returns a list of all the user level registry entries that
-  // are needed to make Chromium the default handler for a protocol.
-  static void GetUserProtocolEntries(const string16& protocol,
-                                     const string16& chrome_icon,
-                                     const string16& chrome_open,
-                                     ScopedVector<RegistryEntry>* entries) {
+  // are needed to make Chromium the default handler for a protocol on XP.
+  static void GetXPStyleUserProtocolEntries(
+      const string16& protocol,
+      const string16& chrome_icon,
+      const string16& chrome_open,
+      ScopedVector<RegistryEntry>* entries) {
     // Protocols associations.
     string16 url_key(ShellUtil::kRegClasses);
     url_key.push_back(FilePath::kSeparators[0]);
@@ -459,11 +460,11 @@ class RegistryEntry {
   }
 
   // This method returns a list of all the user level registry entries that
-  // are needed to make Chromium default browser.
+  // are needed to make Chromium default browser on XP.
   // Some of these entries are irrelevant in recent versions of Windows, but
   // we register them anyways as some legacy apps are hardcoded to lookup those
   // values.
-  static void GetDefaultBrowserUserEntries(
+  static void GetXPStyleDefaultBrowserUserEntries(
       BrowserDistribution* dist,
       const string16& chrome_exe,
       const string16& suffix,
@@ -481,8 +482,8 @@ class RegistryEntry {
     string16 chrome_open = ShellUtil::GetChromeShellOpenCmd(chrome_exe);
     string16 chrome_icon = ShellUtil::GetChromeIcon(dist, chrome_exe);
     for (int i = 0; ShellUtil::kBrowserProtocolAssociations[i] != NULL; i++) {
-      GetUserProtocolEntries(ShellUtil::kBrowserProtocolAssociations[i],
-                             chrome_icon, chrome_open, entries);
+      GetXPStyleUserProtocolEntries(ShellUtil::kBrowserProtocolAssociations[i],
+                                    chrome_icon, chrome_open, entries);
     }
 
     // start->Internet shortcut.
@@ -833,10 +834,10 @@ bool GetInstallationSpecificSuffix(BrowserDistribution* dist,
   return ShellUtil::GetUserSpecificRegistrySuffix(suffix);
 }
 
-// Returns the root registry key (HKLM or HKCU) into which shell integration
-// registration for default protocols must be placed. As of Windows 8 everything
-// can go in HKCU for per-user installs.
-HKEY DetermineShellIntegrationRoot(bool is_per_user) {
+// Returns the root registry key (HKLM or HKCU) under which registrations must
+// be placed for this install. As of Windows 8 everything can go in HKCU for
+// per-user installs.
+HKEY DetermineRegistrationRoot(bool is_per_user) {
   return is_per_user && base::win::GetVersion() >= base::win::VERSION_WIN8 ?
       HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
 }
@@ -844,12 +845,12 @@ HKEY DetermineShellIntegrationRoot(bool is_per_user) {
 // Associates Chrome with supported protocols and file associations. This should
 // not be required on Vista+ but since some applications still read
 // Software\Classes\http key directly, we have to do this on Vista+ as well.
-bool RegisterChromeAsDefaultForXP(BrowserDistribution* dist,
-                                  int shell_change,
-                                  const string16& chrome_exe) {
+bool RegisterChromeAsDefaultXPStyle(BrowserDistribution* dist,
+                                    int shell_change,
+                                    const string16& chrome_exe) {
   bool ret = true;
   ScopedVector<RegistryEntry> entries;
-  RegistryEntry::GetDefaultBrowserUserEntries(
+  RegistryEntry::GetXPStyleDefaultBrowserUserEntries(
       dist, chrome_exe,
       ShellUtil::GetCurrentInstallationSuffix(dist, chrome_exe), &entries);
 
@@ -874,14 +875,14 @@ bool RegisterChromeAsDefaultForXP(BrowserDistribution* dist,
 // required on Vista+ but since some applications still read these registry
 // keys directly, we have to do this on Vista+ as well.
 // See http://msdn.microsoft.com/library/aa767914.aspx for more details.
-bool RegisterChromeAsDefaultProtocolClientForXP(BrowserDistribution* dist,
-                                                const string16& chrome_exe,
-                                                const string16& protocol) {
+bool RegisterChromeAsDefaultProtocolClientXPStyle(BrowserDistribution* dist,
+                                                  const string16& chrome_exe,
+                                                  const string16& protocol) {
   ScopedVector<RegistryEntry> entries;
   const string16 chrome_open(ShellUtil::GetChromeShellOpenCmd(chrome_exe));
   const string16 chrome_icon(ShellUtil::GetChromeIcon(dist, chrome_exe));
-  RegistryEntry::GetUserProtocolEntries(protocol, chrome_icon, chrome_open,
-                                        &entries);
+  RegistryEntry::GetXPStyleUserProtocolEntries(protocol, chrome_icon,
+                                               chrome_open, &entries);
   // Change the default protocol handler for current user.
   if (!AddRegistryEntries(HKEY_CURRENT_USER, entries)) {
     LOG(ERROR) << "Could not make Chrome default protocol client (XP).";
@@ -974,7 +975,7 @@ void RemoveRunVerbOnWindows8(
     const string16& chrome_exe) {
   if (IsChromeMetroSupported()) {
     bool is_per_user_install =InstallUtil::IsPerUserInstall(chrome_exe.c_str());
-    HKEY root_key = DetermineShellIntegrationRoot(is_per_user_install);
+    HKEY root_key = DetermineRegistrationRoot(is_per_user_install);
     // There's no need to rollback, so forgo the usual work item lists and just
     // remove the key from the registry.
     string16 run_verb_key(ShellUtil::kRegClasses);
@@ -1546,7 +1547,7 @@ bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
     }
   }
 
-  if (!RegisterChromeAsDefaultForXP(dist, shell_change, chrome_exe))
+  if (!RegisterChromeAsDefaultXPStyle(dist, shell_change, chrome_exe))
     ret = false;
 
   // Send Windows notification event so that it can update icons for
@@ -1574,7 +1575,7 @@ bool ShellUtil::ShowMakeChromeDefaultSystemUI(BrowserDistribution* dist,
   const bool ret = LaunchSelectDefaultProtocolHandlerDialog(L"http");
 
   if (ret && GetChromeDefaultState() == IS_DEFAULT)
-    RegisterChromeAsDefaultForXP(dist, CURRENT_USER, chrome_exe);
+    RegisterChromeAsDefaultXPStyle(dist, CURRENT_USER, chrome_exe);
 
   return ret;
 }
@@ -1616,9 +1617,9 @@ bool ShellUtil::MakeChromeDefaultProtocolClient(BrowserDistribution* dist,
   }
 
   // Now use the old way to associate Chrome with the desired protocol. This
-  // should not be required on Vista but since some applications still read
-  // Software\Classes\http key directly, we have to do this on Vista also.
-  if (!RegisterChromeAsDefaultProtocolClientForXP(dist, chrome_exe, protocol))
+  // should not be required on Vista+, but since some applications still read
+  // Software\Classes\<protocol> key directly, do this on Vista+ also.
+  if (!RegisterChromeAsDefaultProtocolClientXPStyle(dist, chrome_exe, protocol))
     ret = false;
 
   return ret;
@@ -1645,7 +1646,7 @@ bool ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(
   const bool ret = LaunchSelectDefaultProtocolHandlerDialog(protocol.c_str());
 
   if (ret && GetChromeDefaultProtocolClientState(protocol) == IS_DEFAULT)
-    RegisterChromeAsDefaultProtocolClientForXP(dist, chrome_exe, protocol);
+    RegisterChromeAsDefaultProtocolClientXPStyle(dist, chrome_exe, protocol);
 
   return ret;
 }
@@ -1671,7 +1672,7 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
     return true;
 
   bool user_level = InstallUtil::IsPerUserInstall(chrome_exe.c_str());
-  HKEY root = DetermineShellIntegrationRoot(user_level);
+  HKEY root = DetermineRegistrationRoot(user_level);
 
   // Do the full registration if we can do it at user-level or if the user is an
   // admin.
@@ -1743,7 +1744,7 @@ bool ShellUtil::RegisterChromeForProtocol(BrowserDistribution* dist,
   if (IsChromeRegisteredForProtocol(dist, suffix, protocol))
     return true;
 
-  HKEY root = DetermineShellIntegrationRoot(
+  HKEY root = DetermineRegistrationRoot(
       InstallUtil::IsPerUserInstall(chrome_exe.c_str()));
 
   if (root == HKEY_CURRENT_USER || IsUserAnAdmin()) {
