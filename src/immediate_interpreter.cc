@@ -352,6 +352,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
       three_finger_swipe_distance_thresh_(prop_reg,
                                           "Three Finger Swipe Distance Thresh",
                                           10.0),
+      three_finger_swipe_enable_(prop_reg, "Three Finger Swipe Enable", 0),
       max_pressure_change_(prop_reg, "Max Allowed Pressure Change Per Sec",
                            800.0),
       max_pressure_change_hysteresis_(prop_reg,
@@ -1857,7 +1858,8 @@ void ImmediateInterpreter::FillResultGesture(
         end_sum_x += hwstate.GetFingerState(*it)->position_x;
       }
       double dx = (end_sum_x - start_sum_x) / fingers.size();
-      result_ = Gesture(kGestureSwipe, changed_time_, hwstate.timestamp, dx);
+      if (three_finger_swipe_enable_.val_)
+        result_ = Gesture(kGestureSwipe, changed_time_, hwstate.timestamp, dx);
       break;
     }
 

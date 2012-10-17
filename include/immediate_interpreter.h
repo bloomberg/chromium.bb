@@ -475,6 +475,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Minimum distance [mm] each of the three fingers must move to perform a
   // swipe gesture.
   DoubleProperty three_finger_swipe_distance_thresh_;
+  // If three-finger swipe should be enabled
+  BoolProperty three_finger_swipe_enable_;
   // A finger must change in pressure by less than this per second to trigger
   // motion.
   DoubleProperty max_pressure_change_;

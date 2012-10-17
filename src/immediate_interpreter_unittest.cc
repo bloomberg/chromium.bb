@@ -2662,6 +2662,7 @@ TEST(ImmediateInterpreterTest, SwipeTest) {
   };
   ii.SetHardwareProperties(hwprops);
   ii.tap_enable_.val_ = 0;
+  ii.three_finger_swipe_enable_.val_ = 1;
 
   ASSERT_FLOAT_EQ(50.0, ii.three_finger_close_distance_thresh_.val_);
   ASSERT_FLOAT_EQ(10.0, ii.three_finger_swipe_distance_thresh_.val_);
