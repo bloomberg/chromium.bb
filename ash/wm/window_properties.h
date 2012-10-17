@@ -9,6 +9,7 @@
 #include "ash/wm/property_util.h"
 #include "ash/wm/shadow_types.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_property.h"
 #include "ui/base/ui_base_types.h"
 
 namespace ui_controls {
@@ -53,7 +54,7 @@ extern const aura::WindowProperty<ShadowType>* const kShadowTypeKey;
 
 // A property key to remember the frame painter for the solo-window in the root
 // window. It is only available for root windows.
-extern const aura::WindowProperty<ash::FramePainter*>* const
+ASH_EXPORT extern const aura::WindowProperty<ash::FramePainter*>* const
     kSoloWindowFramePainterKey;
 
 // If this is set to true, the window stays in the same root window

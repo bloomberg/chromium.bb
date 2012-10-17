@@ -134,6 +134,7 @@ class ASH_EXPORT FramePainter : public aura::WindowObserver,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FramePainterTest, Basics);
+  FRIEND_TEST_ALL_PREFIXES(FramePainterTest, CreateAndDeleteSingleWindow);
   FRIEND_TEST_ALL_PREFIXES(FramePainterTest, UseSoloWindowHeader);
   FRIEND_TEST_ALL_PREFIXES(FramePainterTest, UseSoloWindowHeaderMultiDisplay);
   FRIEND_TEST_ALL_PREFIXES(FramePainterTest, GetHeaderOpacity);

@@ -147,8 +147,15 @@ FramePainter::FramePainter()
 
 FramePainter::~FramePainter() {
   // Sometimes we are destroyed before the window closes, so ensure we clean up.
-  if (window_)
+  if (window_) {
+    aura::RootWindow* root = window_->GetRootWindow();
+    if (root &&
+        root->GetProperty(internal::kSoloWindowFramePainterKey) == this) {
+      root->SetProperty(internal::kSoloWindowFramePainterKey,
+                        static_cast<FramePainter*>(NULL));
+    }
     window_->RemoveObserver(this);
+  }
   instances_->erase(this);
 }
 
@@ -751,12 +758,16 @@ void FramePainter::UpdateSoloWindowFramePainter(
       internal::kSoloWindowFramePainterKey);
   FramePainter* new_solo_painter = GetSoloPainterInRoot(ignorable_window);
   if (old_solo_painter != new_solo_painter) {
-    if (old_solo_painter)
+    if (old_solo_painter && old_solo_painter->frame_ &&
+        old_solo_painter->frame_->non_client_view()) {
       old_solo_painter->frame_->non_client_view()->SchedulePaint();
+    }
     window_->GetRootWindow()->SetProperty(
         internal::kSoloWindowFramePainterKey, new_solo_painter);
-    if (new_solo_painter)
+    if (new_solo_painter && new_solo_painter->frame_ &&
+        new_solo_painter->frame_->non_client_view()) {
       new_solo_painter->frame_->non_client_view()->SchedulePaint();
+    }
   }
 }
 

@@ -15,7 +15,7 @@
 // defined in aura.
 DECLARE_WINDOW_PROPERTY_TYPE(ash::internal::AlwaysOnTopController*);
 DECLARE_WINDOW_PROPERTY_TYPE(ash::internal::ShadowType);
-DECLARE_WINDOW_PROPERTY_TYPE(ash::FramePainter*);
+DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(ASH_EXPORT, ash::FramePainter*);
 DECLARE_WINDOW_PROPERTY_TYPE(ash::WindowPersistsAcrossAllWorkspacesType)
 DECLARE_WINDOW_PROPERTY_TYPE(ui_controls::UIControlsAura*)
 DECLARE_WINDOW_PROPERTY_TYPE(ash::internal::RootWindowController*);
