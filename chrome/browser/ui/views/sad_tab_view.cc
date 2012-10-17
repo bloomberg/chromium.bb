@@ -123,10 +123,10 @@ void SadTabView::LinkClicked(views::Link* source, int event_flags) {
   }
 }
 
-void SadTabView::ButtonPressed(views::Button* source,
+void SadTabView::ButtonPressed(views::Button* sender,
                                const ui::Event& event) {
   DCHECK(web_contents_);
-  DCHECK(source == reload_button_);
+  DCHECK_EQ(reload_button_, sender);
   web_contents_->GetController().Reload(true);
 }
 

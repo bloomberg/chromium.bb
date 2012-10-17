@@ -148,7 +148,7 @@ void OneClickSigninBubbleView::WindowClosing() {
   // We have to reset |bubble_view_| here, not in our destructor, because
   // we'll be destroyed asynchronously and the shown state will be checked
   // before then.
-  DCHECK(bubble_view_ == this);
+  DCHECK_EQ(bubble_view_, this);
   bubble_view_ = NULL;
 
   if (!start_sync_callback_.is_null()) {

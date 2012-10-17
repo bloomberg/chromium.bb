@@ -174,10 +174,9 @@ void BalloonViewImpl::DeleteDelegate() {
   balloon_->OnClose(closed_by_user_);
 }
 
-void BalloonViewImpl::ButtonPressed(views::Button* sender,
-                                    const ui::Event&) {
+void BalloonViewImpl::ButtonPressed(views::Button* sender, const ui::Event&) {
   // The only button currently is the close button.
-  DCHECK(sender == close_button_);
+  DCHECK_EQ(close_button_, sender);
   Close(true);
 }
 
@@ -235,7 +234,7 @@ void BalloonViewImpl::Update() {
 }
 
 void BalloonViewImpl::AnimationProgressed(const ui::Animation* animation) {
-  DCHECK(animation == animation_.get());
+  DCHECK_EQ(animation_.get(), animation);
 
   // Linear interpolation from start to end position.
   gfx::Rect frame_position(animation_->CurrentValueBetween(

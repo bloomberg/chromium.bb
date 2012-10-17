@@ -130,7 +130,7 @@ views::View* ChromeToMobileBubbleView::GetInitiallyFocusedView() {
 void ChromeToMobileBubbleView::WindowClosing() {
   // We have to reset |bubble_| here, not in our destructor, because we'll be
   // destroyed asynchronously and the shown state will be checked before then.
-  DCHECK(bubble_ == this);
+  DCHECK_EQ(bubble_, this);
   bubble_ = NULL;
 
   // Instruct the service to delete the snapshot file.

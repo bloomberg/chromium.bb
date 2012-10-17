@@ -447,7 +447,7 @@ void BrowserActionsContainer::AnimationEnded(const ui::Animation* animation) {
 
 void BrowserActionsContainer::NotifyMenuDeleted(
     BrowserActionOverflowMenuController* controller) {
-  DCHECK(controller == overflow_menu_);
+  DCHECK_EQ(overflow_menu_, controller);
   overflow_menu_ = NULL;
 }
 

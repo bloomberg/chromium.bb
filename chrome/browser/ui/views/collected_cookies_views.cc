@@ -525,6 +525,6 @@ void CollectedCookiesViews::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN);
+  DCHECK_EQ(chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN, type);
   window_->CloseConstrainedWindow();
 }

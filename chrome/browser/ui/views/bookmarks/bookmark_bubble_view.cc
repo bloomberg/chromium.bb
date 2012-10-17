@@ -124,7 +124,7 @@ views::View* BookmarkBubbleView::GetInitiallyFocusedView() {
 void BookmarkBubbleView::WindowClosing() {
   // We have to reset |bubble_| here, not in our destructor, because we'll be
   // destroyed asynchronously and the shown state will be checked before then.
-  DCHECK(bookmark_bubble_ == this);
+  DCHECK_EQ(bookmark_bubble_, this);
   bookmark_bubble_ = NULL;
 
   content::NotificationService::current()->Notify(
@@ -277,7 +277,7 @@ void BookmarkBubbleView::ButtonPressed(
 }
 
 void BookmarkBubbleView::LinkClicked(views::Link* source, int event_flags) {
-  DCHECK(source == remove_link_);
+  DCHECK_EQ(remove_link_, source);
   content::RecordAction(UserMetricsAction("BookmarkBubble_Unstar"));
 
   // Set this so we remove the bookmark after the window closes.

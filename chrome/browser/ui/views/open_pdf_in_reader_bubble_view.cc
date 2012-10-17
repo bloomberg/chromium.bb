@@ -64,8 +64,8 @@ void OpenPDFInReaderBubbleView::Init() {
 }
 
 void OpenPDFInReaderBubbleView::ButtonPressed(views::Button* sender,
-                                           const ui::Event& event) {
-  DCHECK(sender == close_button_);
+                                              const ui::Event& event) {
+  DCHECK_EQ(close_button_, sender);
 
   model_->Cancel();
   StartFade(false);
@@ -73,7 +73,7 @@ void OpenPDFInReaderBubbleView::ButtonPressed(views::Button* sender,
 
 void OpenPDFInReaderBubbleView::LinkClicked(views::Link* source,
                                             int event_flags) {
-  DCHECK(source == open_in_reader_link_);
+  DCHECK_EQ(open_in_reader_link_, source);
 
   model_->Accept();
   StartFade(false);

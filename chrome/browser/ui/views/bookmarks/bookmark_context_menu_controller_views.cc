@@ -184,7 +184,7 @@ void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
 }
 
 bool BookmarkContextMenuControllerViews::IsItemChecked(int id) const {
-  DCHECK(id == IDC_BOOKMARK_BAR_ALWAYS_SHOW);
+  DCHECK_EQ(IDC_BOOKMARK_BAR_ALWAYS_SHOW, id);
   return profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
 }
 

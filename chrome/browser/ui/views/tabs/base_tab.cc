@@ -588,7 +588,7 @@ void BaseTab::ButtonPressed(views::Button* sender, const ui::Event& event) {
       (event.type() == ui::ET_MOUSE_RELEASED &&
        (event.flags() & ui::EF_FROM_TOUCH) == 0) ? CLOSE_TAB_FROM_MOUSE :
       CLOSE_TAB_FROM_TOUCH;
-  DCHECK(sender == close_button_);
+  DCHECK_EQ(close_button_, sender);
   controller()->CloseTab(this, source);
 }
 

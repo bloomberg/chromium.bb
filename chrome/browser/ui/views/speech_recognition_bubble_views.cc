@@ -228,7 +228,7 @@ void SpeechRecognitionBubbleView::ButtonPressed(views::Button* source,
 
 void SpeechRecognitionBubbleView::LinkClicked(views::Link* source,
                                               int event_flags) {
-  DCHECK_EQ(source, mic_settings_);
+  DCHECK_EQ(mic_settings_, source);
   content::SpeechRecognitionManager::GetInstance()->ShowAudioInputSettings();
 }
 

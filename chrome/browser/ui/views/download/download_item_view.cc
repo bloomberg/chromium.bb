@@ -254,7 +254,7 @@ void DownloadItemView::OnExtractIconComplete(IconManager::Handle handle,
 // Update the progress graphic on the icon and our text status label
 // to reflect our current bytes downloaded, time remaining.
 void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
-  DCHECK(download == download_);
+  DCHECK_EQ(download_, download);
 
   if (IsShowingWarningDialog() && !model_->IsDangerous()) {
     // We have been approved.
@@ -992,9 +992,9 @@ void DownloadItemView::SetState(State new_body_state, State new_drop_state) {
     new_body_state = NORMAL;
 
     // Current body_state_ should always be NORMAL for warning dialogs.
-    DCHECK(body_state_ == NORMAL);
+    DCHECK_EQ(NORMAL, body_state_);
     // We shouldn't be calling SetState if we are in DANGEROUS_MODE.
-    DCHECK(mode_ != DANGEROUS_MODE);
+    DCHECK_NE(DANGEROUS_MODE, mode_);
   }
   // Avoid extra SchedulePaint()s if the state is going to be the same.
   if (body_state_ == new_body_state && drop_down_state_ == new_drop_state)

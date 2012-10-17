@@ -322,7 +322,7 @@ void ContentSettingBubbleContents::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED);
+  DCHECK_EQ(content::NOTIFICATION_WEB_CONTENTS_DESTROYED, type);
   DCHECK(source == content::Source<WebContents>(web_contents_));
   web_contents_ = NULL;
 }

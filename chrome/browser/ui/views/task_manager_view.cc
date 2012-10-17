@@ -715,7 +715,7 @@ void TaskManagerView::OnKeyDown(ui::KeyboardCode keycode) {
 }
 
 void TaskManagerView::LinkClicked(views::Link* source, int event_flags) {
-  DCHECK(source == about_memory_link_);
+  DCHECK_EQ(about_memory_link_, source);
   task_manager_->OpenAboutMemory();
 }
 
