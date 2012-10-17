@@ -69,6 +69,7 @@ void OneClickSigninSyncStarter::SigninSuccess() {
 
   if (start_mode_ == SYNC_WITH_DEFAULT_SETTINGS) {
     // Just kick off the sync machine, no need to configure it first.
+    profile_sync_service->OnUserChoseDatatypes(true, syncer::ModelTypeSet());
     profile_sync_service->SetSyncSetupCompleted();
     profile_sync_service->SetSetupInProgress(false);
   } else {
