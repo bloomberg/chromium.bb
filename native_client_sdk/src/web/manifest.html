@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <!-- much of this is stolen from omahaproxy.appspot.com/viewer -->
-<html> 
-  <head> 
-    <meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type"> 
-  </head> 
+<html>
+  <head>
+    <meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
+    <title>NaCl SDK Manifest Viewer</title>
+  </head>
   <style type="text/css" media="screen">
     body {
       font-family: monospace;
@@ -39,15 +40,20 @@
     tbody tr:hover {
       background-color: orange;
     }
+
+    td a {
+      padding: 3px;
+    }
   </style>
-  <body> 
+  <body>
+    <h1>NaCl SDK Manifest Viewer</h1>
     <table>
       <thead id="columns">
       </thead>
       <tbody id="rows">
       </tbody>
     </table>
-    <script type="application/javascript"> 
+    <script type="application/javascript">
       function loadJson(url, callback) {
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url, true);
@@ -79,7 +85,7 @@
 
         // Create the column headers.
         var tr = document.createElement('tr');
-        var columns = ['name', 'version', 'revision'];
+        var columns = ['name', 'version', 'revision', 'win', 'mac', 'linux'];
         for (var i = 0; i < columns.length; ++i) {
           var td = document.createElement('td');
           var text = document.createTextNode(columns[i]);
@@ -88,12 +94,27 @@
         }
         columnsElm.appendChild(tr);
 
+        var platforms = ['win', 'mac', 'linux'];
+
         for (var i = 0; i < data.length; ++i) {
           var tr = document.createElement('tr');
           for (var j = 0; j < columns.length; ++j) {
             var td = document.createElement('td');
-            var text = document.createTextNode(data[i][columns[j]]);
-            td.appendChild(text);
+            var node;
+            if (platforms.indexOf(columns[j]) != -1) {
+              var archives = data[i].archives;
+              for (var k = 0; k < archives.length; ++k) {
+                if (columns[j] == archives[k].host_os) {
+                  node = document.createElement('a');
+                  node.setAttribute('href', archives[k].url);
+                  node.appendChild(document.createTextNode(columns[j]));
+                  td.appendChild(node);
+                }
+              }
+            } else {
+              node = document.createTextNode(data[i][columns[j]]);
+              td.appendChild(node);
+            }
             tr.appendChild(td);
           }
           rowsElm.appendChild(tr);
@@ -101,6 +122,6 @@
       }
 
       loadJson('naclsdk_manifest2.json', display);
-    </script> 
-  </body> 
+    </script>
+  </body>
 </html>
