@@ -6427,7 +6427,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enable switching between mobile carriers.
       </message>
       <message name="IDS_FLAGS_ENABLE_CARRIER_SWITCHING_DESCRIPTION" desc="Description for the flag to set to enable carrier switching.">
-        Allows the user to switch between mobile carriers from the UI.
+        Allows the user to switch between mobile carriers from the UI. Warning: The Sprint carrier will ONLY work for users with an existing Sprint plan.
       </message>
       <message name="IDS_FLAGS_ENABLE_REQUEST_TABLET_SITE_NAME" desc="Name for the flag to set to enable Request Tablet Site in the wrench menu.">
         Enables the request tablet site option in the settings menu.
