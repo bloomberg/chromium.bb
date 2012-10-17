@@ -678,6 +678,8 @@
         'browser/google/google_url_tracker_factory.h',
         'browser/google/google_url_tracker_infobar_delegate.cc',
         'browser/google/google_url_tracker_infobar_delegate.h',
+        'browser/google/google_url_tracker_map_entry.cc',
+        'browser/google/google_url_tracker_map_entry.h',
         'browser/google/google_util.cc',
         'browser/google/google_util.h',
         'browser/google_apis/auth_service.cc',

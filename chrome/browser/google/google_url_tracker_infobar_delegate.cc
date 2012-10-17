@@ -19,22 +19,20 @@
 GoogleURLTrackerInfoBarDelegate::GoogleURLTrackerInfoBarDelegate(
     InfoBarTabHelper* infobar_helper,
     GoogleURLTracker* google_url_tracker,
-    const GURL& new_google_url)
+    const GURL& search_url)
     : ConfirmInfoBarDelegate(infobar_helper),
-      map_key_(infobar_helper),
       google_url_tracker_(google_url_tracker),
-      new_google_url_(new_google_url),
-      showing_(false),
+      search_url_(search_url),
       pending_id_(0) {
 }
 
 bool GoogleURLTrackerInfoBarDelegate::Accept() {
-  google_url_tracker_->AcceptGoogleURL(new_google_url_, true);
+  google_url_tracker_->AcceptGoogleURL(true);
   return false;
 }
 
 bool GoogleURLTrackerInfoBarDelegate::Cancel() {
-  google_url_tracker_->CancelGoogleURL(new_google_url_);
+  google_url_tracker_->CancelGoogleURL();
   return false;
 }
 
@@ -59,59 +57,24 @@ bool GoogleURLTrackerInfoBarDelegate::ShouldExpireInternal(
   return (unique_id != contents_unique_id()) && (unique_id != pending_id_);
 }
 
-void GoogleURLTrackerInfoBarDelegate::SetGoogleURL(const GURL& new_google_url) {
-  DCHECK_EQ(net::StripWWWFromHost(new_google_url_),
-            net::StripWWWFromHost(new_google_url));
-  new_google_url_ = new_google_url;
-}
-
-void GoogleURLTrackerInfoBarDelegate::Show(const GURL& search_url) {
-  if (!owner())
-    return;
+void GoogleURLTrackerInfoBarDelegate::Update(const GURL& search_url) {
   StoreActiveEntryUniqueID(owner());
   search_url_ = search_url;
   pending_id_ = 0;
-  if (!showing_) {
-    showing_ = true;
-    owner()->AddInfoBar(this);  // May delete |this| on failure!
-  }
 }
 
 void GoogleURLTrackerInfoBarDelegate::Close(bool redo_search) {
-  if (!showing_) {
-    // We haven't been added to a tab, so just delete ourselves.
-    delete this;
-    return;
-  }
-
-  // Synchronously remove ourselves from the URL tracker's list, because the
-  // RemoveInfoBar() call below may result in either a synchronous or an
-  // asynchronous call back to InfoBarClosed(), and it's easier to handle when
-  // we just guarantee the removal is synchronous.
-  google_url_tracker_->InfoBarClosed(map_key_);
-  google_url_tracker_ = NULL;
-
-  // If we're already animating closed, we won't have an owner.  Do nothing in
-  // this case.
-  // TODO(pkasting): For now, this can also happen if we were showing in a
-  // background tab that was then closed, in which case we'll have leaked and
-  // subsequently reached here due to GoogleURLTracker::CloseAllInfoBars().
-  // This case will no longer happen once infobars are refactored to own their
-  // delegates.
-  if (!owner())
-    return;
-
   if (redo_search) {
     // Re-do the user's search on the new domain.
     DCHECK(search_url_.is_valid());
     url_canon::Replacements<char> replacements;
-    const std::string& host(new_google_url_.host());
+    const std::string& host(google_url_tracker_->fetched_google_url().host());
     replacements.SetHost(host.data(), url_parse::Component(0, host.length()));
     GURL new_search_url(search_url_.ReplaceComponents(replacements));
     if (new_search_url.is_valid()) {
-      content::OpenURLParams params(new_search_url, content::Referrer(),
-          CURRENT_TAB, content::PAGE_TRANSITION_GENERATED, false);
-      owner()->GetWebContents()->OpenURL(params);
+      owner()->GetWebContents()->OpenURL(content::OpenURLParams(
+          new_search_url, content::Referrer(), CURRENT_TAB,
+          content::PAGE_TRANSITION_GENERATED, false));
     }
   }
 
@@ -119,24 +82,23 @@ void GoogleURLTrackerInfoBarDelegate::Close(bool redo_search) {
 }
 
 GoogleURLTrackerInfoBarDelegate::~GoogleURLTrackerInfoBarDelegate() {
-  if (google_url_tracker_)
-    google_url_tracker_->InfoBarClosed(map_key_);
 }
 
 string16 GoogleURLTrackerInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(
       IDS_GOOGLE_URL_TRACKER_INFOBAR_MESSAGE,
-      net::StripWWWFromHost(new_google_url_),
-      net::StripWWWFromHost(google_url_tracker_->google_url_));
+      net::StripWWWFromHost(google_url_tracker_->fetched_google_url()),
+      net::StripWWWFromHost(google_url_tracker_->google_url()));
 }
 
 string16 GoogleURLTrackerInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-  bool new_host = (button == BUTTON_OK);
+  if (button == BUTTON_OK) {
+    return l10n_util::GetStringFUTF16(
+        IDS_GOOGLE_URL_TRACKER_INFOBAR_SWITCH,
+        net::StripWWWFromHost(google_url_tracker_->fetched_google_url()));
+  }
   return l10n_util::GetStringFUTF16(
-      new_host ?
-          IDS_GOOGLE_URL_TRACKER_INFOBAR_SWITCH :
-          IDS_GOOGLE_URL_TRACKER_INFOBAR_DONT_SWITCH,
-      net::StripWWWFromHost(new_host ?
-          new_google_url_ : google_url_tracker_->google_url_));
+      IDS_GOOGLE_URL_TRACKER_INFOBAR_DONT_SWITCH,
+      net::StripWWWFromHost(google_url_tracker_->google_url()));
 }

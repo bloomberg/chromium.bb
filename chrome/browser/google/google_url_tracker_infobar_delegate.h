@@ -17,7 +17,7 @@ class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   GoogleURLTrackerInfoBarDelegate(InfoBarTabHelper* infobar_helper,
                                   GoogleURLTracker* google_url_tracker,
-                                  const GURL& new_google_url);
+                                  const GURL& search_url);
 
   // ConfirmInfoBarDelegate:
   virtual bool Accept() OVERRIDE;
@@ -27,33 +27,27 @@ class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool ShouldExpireInternal(
       const content::LoadCommittedDetails& details) const OVERRIDE;
 
-  // Allows GoogleURLTracker to change the Google base URL after the infobar has
-  // been instantiated.  This should only be called with an URL with the same
-  // TLD as the existing one, so that the prompt we're displaying will still be
-  // correct.
-  void SetGoogleURL(const GURL& new_google_url);
-
-  bool showing() const { return showing_; }
+  // Other than set_pending_id(), these accessors are only used by test code.
+  const GURL& search_url() const { return search_url_; }
+  void set_search_url(const GURL& search_url) { search_url_ = search_url; }
+  int pending_id() const { return pending_id_; }
   void set_pending_id(int pending_id) { pending_id_ = pending_id; }
 
   // These are virtual so test code can override them in a subclass.
-  virtual void Show(const GURL& search_url);
+  virtual void Update(const GURL& search_url);
   virtual void Close(bool redo_search);
 
  protected:
   virtual ~GoogleURLTrackerInfoBarDelegate();
 
-  InfoBarTabHelper* map_key_;  // What |google_url_tracker_| uses to track us.
-  GURL search_url_;
-  GoogleURLTracker* google_url_tracker_;
-  GURL new_google_url_;
-  bool showing_;  // True if this delegate has been added to a TabContents.
-  int pending_id_;
-
  private:
   // ConfirmInfoBarDelegate:
   virtual string16 GetMessageText() const OVERRIDE;
   virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+
+  GoogleURLTracker* google_url_tracker_;
+  GURL search_url_;
+  int pending_id_;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleURLTrackerInfoBarDelegate);
 };

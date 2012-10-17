@@ -9,20 +9,17 @@
 #include <string>
 #include <utility>
 
+#include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/google/google_url_tracker_map_entry.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
-class GoogleURLTrackerInfoBarDelegate;
-class InfoBarTabHelper;
 class PrefService;
 class Profile;
 
@@ -89,30 +86,23 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   // When |profile| is NULL or a testing profile, this function does nothing.
   static void GoogleURLSearchCommitted(Profile* profile);
 
+  // No one but GoogleURLTrackerInfoBarDelegate or test code should call these.
+  void AcceptGoogleURL(bool redo_searches);
+  void CancelGoogleURL();
+  const GURL& google_url() const { return google_url_; }
+  const GURL& fetched_google_url() const { return fetched_google_url_; }
+
+  // No one but GoogleURLTrackerMapEntry should call this.
+  void DeleteMapEntryForHelper(const InfoBarTabHelper* infobar_helper);
+
   static const char kDefaultGoogleHomepage[];
   static const char kSearchDomainCheckURL[];
 
  private:
-  friend class GoogleURLTrackerInfoBarDelegate;
   friend class GoogleURLTrackerTest;
 
-  struct MapEntry {
-    MapEntry();  // Required by STL.
-    MapEntry(GoogleURLTrackerInfoBarDelegate* infobar,
-             const content::NotificationSource& navigation_controller_source,
-             const content::NotificationSource& web_contents_source);
-    ~MapEntry();
-
-    GoogleURLTrackerInfoBarDelegate* infobar;
-    content::NotificationSource navigation_controller_source;
-    content::NotificationSource web_contents_source;
-  };
-
-  typedef std::map<const InfoBarTabHelper*, MapEntry> InfoBarMap;
-  typedef GoogleURLTrackerInfoBarDelegate* (*InfoBarCreator)(
-      InfoBarTabHelper* infobar_helper,
-      GoogleURLTracker* google_url_tracker,
-      const GURL& new_google_url);
+  typedef std::map<const InfoBarTabHelper*,
+                   GoogleURLTrackerMapEntry*> InfoBarMap;
 
   // net::URLFetcherDelegate:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
@@ -127,11 +117,6 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
 
   // ProfileKeyedService:
   virtual void Shutdown() OVERRIDE;
-
-  // Callbacks from GoogleURLTrackerInfoBarDelegate:
-  void AcceptGoogleURL(const GURL& google_url, bool redo_searches);
-  void CancelGoogleURL(const GURL& google_url);
-  void InfoBarClosed(const InfoBarTabHelper* infobar_helper);
 
   // Registers consumer interest in getting an updated URL from the server.
   // Observe chrome::NOTIFICATION_GOOGLE_URL_UPDATED to be notified when the URL
@@ -172,7 +157,7 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   // |search_url| is valid when this call is due to a successful navigation
   // (indicating that we should show or update the relevant infobar) as opposed
   // to tab closure (which means we should delete the infobar).
-  void OnNavigationCommittedOrTabClosed(const InfoBarTabHelper* infobar_helper,
+  void OnNavigationCommittedOrTabClosed(InfoBarTabHelper* infobar_helper,
                                         const GURL& search_url);
 
   // Called by Observe() when an instant navigation occurs.  This will call
@@ -196,15 +181,20 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   // NAV_ENTRY_COMMITTED, as we no longer need them until another search is
   // committed.
   void UnregisterForEntrySpecificNotifications(
-      const MapEntry& map_entry,
+      const GoogleURLTrackerMapEntry& map_entry,
       bool must_be_listening_for_commit);
 
   Profile* profile_;
   content::NotificationRegistrar registrar_;
-  InfoBarCreator infobar_creator_;
-  // TODO(ukai): GoogleURLTracker should track google domain (e.g. google.co.uk)
-  // rather than URL (e.g. http://www.google.co.uk/), so that user could
-  // configure to use https in search engine templates.
+
+  // Creates an infobar delegate and adds it to the provided InfoBarHelper.
+  // Returns the delegate pointer on success or NULL on failure.  The caller
+  // does not own the returned object, the InfoBarTabHelper does.
+  base::Callback<GoogleURLTrackerInfoBarDelegate*(
+      InfoBarTabHelper*,
+      GoogleURLTracker*,
+      const GURL&)> infobar_creator_;
+
   GURL google_url_;
   GURL fetched_google_url_;
   base::WeakPtrFactory<GoogleURLTracker> weak_ptr_factory_;
