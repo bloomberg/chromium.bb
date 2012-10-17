@@ -18,19 +18,22 @@ if env.Bit('bitcode') or env.Bit('target_arm'):
 env.Append(CCFLAGS=['-O0', '-g', '-fno-omit-frame-pointer'])
 
 sel_ldr = env.GetSelLdr()
-irt = env.GetIrtNexe()
 
 env_vars = [
     'OUT_DIR=%s' % env.subst('${TARGET_ROOT}/test_results'),
     'NACL_SEL_LDR=%s' % sel_ldr,
-    'NACL_IRT=%s' % irt,
     'NACL_GDB=%s' % env['GDB'],
     ]
+extra_deps = [sel_ldr]
+if env.Bit('tests_use_irt'):
+  irt = env.GetIrtNexe()
+  env_vars += ['NACL_IRT=%s' % irt]
+  extra_deps += [irt]
 if not env.Bit('nacl_static_link'):
   env_vars += ['NACL_LD_SO=%s' % env.subst('${NACL_SDK_LIB}/runnable-ld.so'),
                'NACL_LIBS=%s' % env['NACL_SDK_LIB']]
 
-test_suites = ['large_tests', 'gdb_tests']
+test_suites = ['medium_tests', 'gdb_tests']
 
 
 gdb_test_guest = env.ComponentProgram(
@@ -41,7 +44,7 @@ node = env.CommandTest(
     'gdb_stepi_after_break.out',
     command=['${PYTHON}', env.File('stepi_after_break.py')],
     osenv=env_vars + ['GDB_TEST_GUEST=%s' % gdb_test_guest.abspath],
-    extra_deps=[sel_ldr, irt, gdb_test_guest])
+    extra_deps=extra_deps + [gdb_test_guest])
 
 env.AddNodeToTestSuite(node, test_suites, 'run_gdb_stepi_after_break_test')
 env.TestBindsFixedTcpPort(node)
@@ -50,7 +53,7 @@ node = env.CommandTest(
     'gdb_print_symbol.out',
     command=['${PYTHON}', env.File('print_symbol.py')],
     osenv=env_vars + ['GDB_TEST_GUEST=%s' % gdb_test_guest.abspath],
-    extra_deps=[sel_ldr, irt, gdb_test_guest])
+    extra_deps=extra_deps + [gdb_test_guest])
 
 env.AddNodeToTestSuite(node, test_suites, 'run_gdb_print_symbol_test')
 env.TestBindsFixedTcpPort(node)
@@ -59,7 +62,7 @@ node = env.CommandTest(
     'gdb_stack_trace.out',
     command=['${PYTHON}', env.File('stack_trace.py')],
     osenv=env_vars + ['GDB_TEST_GUEST=%s' % gdb_test_guest.abspath],
-    extra_deps=[sel_ldr, irt, gdb_test_guest])
+    extra_deps=extra_deps + [gdb_test_guest])
 
 env.AddNodeToTestSuite(node, test_suites, 'run_gdb_stack_trace_test')
 env.TestBindsFixedTcpPort(node)
@@ -68,7 +71,7 @@ node = env.CommandTest(
     'gdb_step_from_func_start.out',
     command=['${PYTHON}', env.File('step_from_func_start.py')],
     osenv=env_vars + ['GDB_TEST_GUEST=%s' % gdb_test_guest.abspath],
-    extra_deps=[sel_ldr, irt, gdb_test_guest])
+    extra_deps=extra_deps + [gdb_test_guest])
 
 env.AddNodeToTestSuite(node, test_suites, 'run_gdb_step_from_func_start_test')
 env.TestBindsFixedTcpPort(node)
@@ -77,7 +80,7 @@ node = env.CommandTest(
     'gdb_call_from_gdb.out',
     command=['${PYTHON}', env.File('call_from_gdb.py')],
     osenv=env_vars + ['GDB_TEST_GUEST=%s' % gdb_test_guest.abspath],
-    extra_deps=[sel_ldr, irt, gdb_test_guest])
+    extra_deps=extra_deps + [gdb_test_guest])
 
 env.AddNodeToTestSuite(node, test_suites, 'run_gdb_call_from_gdb_test')
 env.TestBindsFixedTcpPort(node)
@@ -86,7 +89,7 @@ node = env.CommandTest(
     'gdb_change_variable.out',
     command=['${PYTHON}', env.File('change_variable.py')],
     osenv=env_vars + ['GDB_TEST_GUEST=%s' % gdb_test_guest.abspath],
-    extra_deps = [sel_ldr, irt, gdb_test_guest])
+    extra_deps = extra_deps + [gdb_test_guest])
 
 env.AddNodeToTestSuite(node, test_suites, 'run_gdb_change_variable_test')
 env.TestBindsFixedTcpPort(node)
@@ -101,7 +104,7 @@ node = env.CommandTest(
     'gdb_break_continue_thread.out',
     command=['${PYTHON}', env.File('break_continue_thread.py')],
     osenv=env_vars + ['GDB_TEST_GUEST=%s' % gdb_test_guest_thread.abspath],
-    extra_deps=[sel_ldr, irt, gdb_test_guest_thread])
+    extra_deps=extra_deps + [gdb_test_guest_thread])
 
 env.AddNodeToTestSuite(node, test_suites, 'run_gdb_break_continue_thread_test')
 env.TestBindsFixedTcpPort(node)
@@ -110,7 +113,7 @@ node = env.CommandTest(
     'gdb_syscall_thread.out',
     command=['${PYTHON}', env.File('syscall_thread.py')],
     osenv=env_vars + ['GDB_TEST_GUEST=%s' % gdb_test_guest_thread.abspath],
-    extra_deps=[sel_ldr, irt, gdb_test_guest_thread])
+    extra_deps=extra_deps + [gdb_test_guest_thread])
 
 env.AddNodeToTestSuite(node, test_suites, 'run_gdb_syscall_thread_test')
 env.TestBindsFixedTcpPort(node)
