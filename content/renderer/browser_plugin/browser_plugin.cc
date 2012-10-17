@@ -63,7 +63,8 @@ BrowserPlugin::BrowserPlugin(
     WebKit::WebFrame* frame,
     const WebPluginParams& params)
     : instance_id_(instance_id),
-      render_view_(render_view),
+      render_view_(render_view->AsWeakPtr()),
+      render_view_routing_id_(render_view->GetRoutingID()),
       container_(NULL),
       damage_buffer_(NULL),
       sad_guest_(NULL),
@@ -88,7 +89,7 @@ BrowserPlugin::~BrowserPlugin() {
   BrowserPluginManager::Get()->RemoveBrowserPlugin(instance_id_);
   BrowserPluginManager::Get()->Send(
       new BrowserPluginHostMsg_PluginDestroyed(
-          render_view_->GetRoutingID(),
+          render_view_routing_id_,
           instance_id_));
 }
 
@@ -111,7 +112,7 @@ void BrowserPlugin::SetSrcAttribute(const std::string& src) {
   if (!navigate_src_sent_) {
     BrowserPluginManager::Get()->Send(
         new BrowserPluginHostMsg_CreateGuest(
-            render_view_->GetRoutingID(),
+            render_view_routing_id_,
             instance_id_,
             storage_partition_id_,
             persist_storage_));
@@ -123,7 +124,7 @@ void BrowserPlugin::SetSrcAttribute(const std::string& src) {
 
   BrowserPluginManager::Get()->Send(
       new BrowserPluginHostMsg_NavigateGuest(
-          render_view_->GetRoutingID(),
+          render_view_routing_id_,
           instance_id_,
           src,
           *params));
@@ -228,7 +229,7 @@ void BrowserPlugin::Back() {
   if (!navigate_src_sent_)
     return;
   BrowserPluginManager::Get()->Send(
-      new BrowserPluginHostMsg_Go(render_view_->GetRoutingID(),
+      new BrowserPluginHostMsg_Go(render_view_routing_id_,
                                   instance_id_, -1));
 }
 
@@ -236,7 +237,7 @@ void BrowserPlugin::Forward() {
   if (!navigate_src_sent_)
     return;
   BrowserPluginManager::Get()->Send(
-      new BrowserPluginHostMsg_Go(render_view_->GetRoutingID(),
+      new BrowserPluginHostMsg_Go(render_view_routing_id_,
                                   instance_id_, 1));
 }
 
@@ -244,7 +245,7 @@ void BrowserPlugin::Go(int relative_index) {
   if (!navigate_src_sent_)
     return;
   BrowserPluginManager::Get()->Send(
-      new BrowserPluginHostMsg_Go(render_view_->GetRoutingID(),
+      new BrowserPluginHostMsg_Go(render_view_routing_id_,
                                   instance_id_,
                                   relative_index));
 }
@@ -253,7 +254,7 @@ void BrowserPlugin::TerminateGuest() {
   if (!navigate_src_sent_)
     return;
   BrowserPluginManager::Get()->Send(
-      new BrowserPluginHostMsg_TerminateGuest(render_view_->GetRoutingID(),
+      new BrowserPluginHostMsg_TerminateGuest(render_view_routing_id_,
                                               instance_id_));
 }
 
@@ -261,7 +262,7 @@ void BrowserPlugin::Stop() {
   if (!navigate_src_sent_)
     return;
   BrowserPluginManager::Get()->Send(
-      new BrowserPluginHostMsg_Stop(render_view_->GetRoutingID(),
+      new BrowserPluginHostMsg_Stop(render_view_routing_id_,
                                     instance_id_));
 }
 
@@ -269,7 +270,7 @@ void BrowserPlugin::Reload() {
   if (!navigate_src_sent_)
     return;
   BrowserPluginManager::Get()->Send(
-      new BrowserPluginHostMsg_Reload(render_view_->GetRoutingID(),
+      new BrowserPluginHostMsg_Reload(render_view_routing_id_,
                                       instance_id_));
 }
 
@@ -279,7 +280,7 @@ void BrowserPlugin::UpdateRect(
   if (width() != params.view_size.width() ||
       height() != params.view_size.height()) {
     BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_UpdateRect_ACK(
-        render_view_->GetRoutingID(),
+        render_view_routing_id_,
         instance_id_,
         message_id,
         gfx::Size(width(), height())));
@@ -312,7 +313,7 @@ void BrowserPlugin::UpdateRect(
   // Invalidate the container.
   container_->invalidate();
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_UpdateRect_ACK(
-      render_view_->GetRoutingID(),
+      render_view_routing_id_,
       instance_id_,
       message_id,
       gfx::Size()));
@@ -637,7 +638,7 @@ void BrowserPlugin::updateGeometry(
 
   if (navigate_src_sent_) {
     BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_ResizeGuest(
-        render_view_->GetRoutingID(),
+        render_view_routing_id_,
         instance_id_,
         *params));
     resize_pending_ = true;
@@ -715,7 +716,7 @@ TransportDIB* BrowserPlugin::CreateTransportDIB(const size_t size) {
 
 void BrowserPlugin::updateFocus(bool focused) {
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_SetFocus(
-      render_view_->GetRoutingID(),
+      render_view_routing_id_,
       instance_id_,
       focused));
 }
@@ -729,7 +730,7 @@ void BrowserPlugin::updateVisibility(bool visible) {
     return;
 
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_SetVisibility(
-      render_view_->GetRoutingID(),
+      render_view_routing_id_,
       instance_id_,
       visible));
 }
@@ -746,7 +747,7 @@ bool BrowserPlugin::handleInputEvent(const WebKit::WebInputEvent& event,
   WebCursor cursor;
   IPC::Message* message =
       new BrowserPluginHostMsg_HandleInputEvent(
-          render_view_->GetRoutingID(),
+          render_view_routing_id_,
           &handled,
           &cursor);
   message->WriteInt(instance_id_);
@@ -767,7 +768,7 @@ bool BrowserPlugin::handleDragStatusUpdate(WebKit::WebDragStatus drag_status,
     return false;
   BrowserPluginManager::Get()->Send(
       new BrowserPluginHostMsg_DragStatusUpdate(
-        render_view_->GetRoutingID(),
+        render_view_routing_id_,
         instance_id_,
         drag_status,
         WebDropData(drag_data),

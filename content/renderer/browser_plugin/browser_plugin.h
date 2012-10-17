@@ -8,6 +8,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #if defined(OS_WIN)
 #include "base/shared_memory.h"
@@ -186,7 +187,11 @@ class CONTENT_EXPORT BrowserPlugin :
   virtual void FreeDamageBuffer();
 
   int instance_id_;
-  RenderViewImpl* render_view_;
+  base::WeakPtr<RenderViewImpl> render_view_;
+  // We cache the |render_view_|'s routing ID because we need it on destruction.
+  // If the |render_view_| is destroyed before the BrowserPlugin is destroyed
+  // then we will attempt to access a NULL pointer.
+  int render_view_routing_id_;
   WebKit::WebPluginContainer* container_;
   scoped_ptr<BrowserPluginBindings> bindings_;
   scoped_ptr<BrowserPluginBackingStore> backing_store_;
