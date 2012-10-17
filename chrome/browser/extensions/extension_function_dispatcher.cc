@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/process_map.h"
@@ -183,6 +184,8 @@ void ExtensionFunctionDispatcher::Dispatch(
     const ExtensionHostMsg_Request_Params& params,
     RenderViewHost* render_view_host) {
   ExtensionService* service = profile()->GetExtensionService();
+  ExtensionProcessManager* process_manager =
+      extensions::ExtensionSystem::Get(profile())->process_manager();
   extensions::ProcessMap* process_map = service->process_map();
   if (!service || !process_map)
     return;
@@ -238,6 +241,9 @@ void ExtensionFunctionDispatcher::Dispatch(
     LogFailure(extension, params.name, kQuotaExceeded);
   }
 
+  // Note: do not access |this| after this point. We may have been deleted
+  // if function->Run() ended up closing the tab that owns us.
+
   // Check if extension was uninstalled by management.uninstall.
   if (!service->extensions()->GetByID(params.extension_id))
     return;
@@ -246,8 +252,7 @@ void ExtensionFunctionDispatcher::Dispatch(
   // now, largely for simplicity's sake. This is OK because currently, only
   // the webRequest API uses IOThreadExtensionFunction, and that API is not
   // compatible with lazy background pages.
-  profile()->GetExtensionProcessManager()->IncrementLazyKeepaliveCount(
-      extension);
+  process_manager->IncrementLazyKeepaliveCount(extension);
 }
 
 void ExtensionFunctionDispatcher::OnExtensionFunctionCompleted(
