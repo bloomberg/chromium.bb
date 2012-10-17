@@ -72,7 +72,6 @@ BrowserPlugin::BrowserPlugin(
       navigate_src_sent_(false),
       process_id_(-1),
       persist_storage_(false),
-      content_window_routing_id_(MSG_ROUTING_NONE),
       visible_(true),
       current_nav_entry_index_(0),
       nav_entry_count_(0) {
@@ -133,17 +132,6 @@ void BrowserPlugin::SetSrcAttribute(const std::string& src) {
   // so this value is used for enforcing this.
   navigate_src_sent_ = true;
   src_ = src;
-}
-
-NPObject* BrowserPlugin::GetContentWindow() const {
-  if (content_window_routing_id_ == MSG_ROUTING_NONE)
-    return NULL;
-  RenderViewImpl* guest_render_view = static_cast<RenderViewImpl*>(
-      ChildThread::current()->ResolveRoute(content_window_routing_id_));
-  if (!guest_render_view)
-    return NULL;
-  WebKit::WebFrame* guest_frame = guest_render_view->GetWebView()->mainFrame();
-  return guest_frame->windowObject();
 }
 
 std::string BrowserPlugin::GetPartitionAttribute() const {
@@ -496,11 +484,6 @@ void BrowserPlugin::AdvanceFocus(bool reverse) {
   // We do not have a RenderView when we are testing.
   if (render_view_)
     render_view_->GetWebView()->advanceFocus(reverse);
-}
-
-void BrowserPlugin::GuestContentWindowReady(int content_window_routing_id) {
-  DCHECK(content_window_routing_id != MSG_ROUTING_NONE);
-  content_window_routing_id_ = content_window_routing_id;
 }
 
 void BrowserPlugin::SetAcceptTouchEvents(bool accept) {
