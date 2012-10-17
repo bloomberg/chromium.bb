@@ -152,6 +152,8 @@ class MEDIA_EXPORT GpuVideoDecoder
   // Return a shared-memory segment to the available pool.
   void PutSHM(SHMBuffer* shm_buffer);
 
+  void DestroyTextures();
+
   StatisticsCB statistics_cb_;
 
   // Pointer to the demuxer stream that will feed us compressed buffers.
