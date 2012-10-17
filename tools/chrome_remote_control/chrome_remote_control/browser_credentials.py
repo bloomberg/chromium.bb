@@ -112,11 +112,20 @@ class BrowserCredentials(object):
                                        page_set.credentials_path)))
       files_to_tweak.append('~/.crc-credentials')
 
+      example_credentials_file = (
+        os.path.relpath(
+          os.path.join(
+            os.path.dirname(__file__),
+            '..', 'examples', 'credentials_example.json')))
+
       logging.warning("""
         Credentials for %s were not found. %i pages will not be benchmarked.
 
         To fix this, either add svn-internal to your .gclient using
-        http://goto/read-src-internal, or add your own credentials to
-%s""" % (', '.join(missing_credentials),
-       num_pages_missing_login,
-       ' or '.join(files_to_tweak)))
+        http://goto/read-src-internal, or add your own credentials to:
+            %s
+        An example credentials file you can copy from is here:
+            %s\n""" % (', '.join(missing_credentials),
+         num_pages_missing_login,
+         ' or '.join(files_to_tweak),
+         example_credentials_file))
