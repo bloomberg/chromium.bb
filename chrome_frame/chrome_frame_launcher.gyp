@@ -29,6 +29,9 @@
       }],
     ],
   },
+  'includes': [
+    '../chrome/version.gypi',
+  ],
   'target_defaults': {
     'include_dirs': [
       # all our own includes are relative to src/
@@ -60,18 +63,52 @@
   },
   'targets': [
     {
+      'target_name': 'chrome_frame_launcher_version_resources',
+      'type': 'none',
+      'conditions': [
+        ['branding == "Chrome"', {
+          'variables': {
+             'branding_path': '../chrome/app/theme/google_chrome/BRANDING',
+          },
+        }, { # else branding!="Chrome"
+          'variables': {
+             'branding_path': '../chrome/app/theme/chromium/BRANDING',
+          },
+        }],
+      ],
+      'variables': {
+        'output_dir': 'chrome_frame',
+        'template_input_path': 'chrome_frame_version.rc.version',
+        'extra_variable_files_arguments': [ '-f', 'BRANDING' ],
+        'extra_variable_files': [ 'BRANDING' ], # NOTE: matches that above
+      },
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '<(SHARED_INTERMEDIATE_DIR)/<(output_dir)',
+        ],
+      },
+      'sources': [
+        'chrome_frame_helper_dll.ver',
+        'chrome_frame_helper_exe.ver',
+        'chrome_launcher_exe.ver',
+      ],
+      'includes': [
+        '../chrome/version_resource_rules.gypi',
+      ],
+    },
+    {
       'target_name': 'chrome_launcher',
       'type': 'executable',
       'dependencies': [
         '../breakpad/breakpad.gyp:breakpad_handler',
         '../chrome/app/policy/cloud_policy_codegen.gyp:policy',
-        '../chrome/chrome.gyp:chrome_version_header',
         '../google_update/google_update.gyp:google_update',
         'chrome_frame.gyp:chrome_frame_utils',
+        'chrome_frame_launcher_version_resources',
       ],
       'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/chrome_launcher_exe_version.rc',
         'chrome_launcher_main.cc',
-        'chrome_launcher_version.rc',
         'chrome_launcher.cc',
         'chrome_launcher.h',
         'update_launcher.cc',
@@ -92,14 +129,14 @@
       'type': 'executable',
       'dependencies': [
         '../breakpad/breakpad.gyp:breakpad_handler',
-        '../chrome/chrome.gyp:chrome_version_header',
         'chrome_frame.gyp:chrome_frame_utils',
         'chrome_frame_helper_dll',
         'chrome_frame_helper_lib',
+        'chrome_frame_launcher_version_resources',
       ],
       'sources': [
         'chrome_frame_helper_main.cc',
-        'chrome_frame_helper_version.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/chrome_frame_helper_exe_version.rc',
       ],
       'msvs_settings': {
         'VCLinkerTool': {
@@ -114,16 +151,16 @@
       'target_name': 'chrome_frame_helper_dll',
       'type': 'shared_library',
       'dependencies': [
-        '../chrome/chrome.gyp:chrome_version_header',
         'chrome_frame.gyp:chrome_tab_idl',
         'chrome_frame_helper_lib',
+        'chrome_frame_launcher_version_resources',
       ],
       'sources': [
         'bho_loader.cc',
         'bho_loader.h',
         'chrome_frame_helper_dll.cc',
         'chrome_frame_helper_dll.def',
-        'chrome_frame_helper_version.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/chrome_frame_helper_dll_version.rc',
         '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/chrome_tab.h',
         'event_hooker.cc',
         'event_hooker.h',
@@ -142,7 +179,6 @@
       'target_name': 'chrome_frame_helper_lib',
       'type': 'static_library',
       'dependencies': [
-        '../chrome/chrome.gyp:chrome_version_header',
         'chrome_frame.gyp:chrome_tab_idl',
       ],
       'sources': [

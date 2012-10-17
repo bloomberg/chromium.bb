@@ -6,13 +6,6 @@
   'variables': {
     'chromium_code': 1,
 
-    'variables': {
-      'version_py_path': '../tools/build/version.py',
-      'version_path': 'VERSION',
-    },
-    'version_py_path': '<(version_py_path) -f',
-    'version_path': '<(version_path)',
-
     # Keep the archive builder happy.
     'chrome_personalization%': 1,
     'use_syncapi_stub%': 0,
@@ -31,6 +24,7 @@
   },
   'includes': [
     '../build/win_precompile.gypi',
+    '../chrome/version.gypi',
   ],
   'target_defaults': {
     'dependencies': [
@@ -47,6 +41,38 @@
     ],
   },
   'targets': [
+    {
+      'target_name': 'chrome_frame_version_resources',
+      'type': 'none',
+      'conditions': [
+        ['branding == "Chrome"', {
+          'variables': {
+             'branding_path': '../chrome/app/theme/google_chrome/BRANDING',
+          },
+        }, { # else branding!="Chrome"
+          'variables': {
+             'branding_path': '../chrome/app/theme/chromium/BRANDING',
+          },
+        }],
+      ],
+      'variables': {
+        'output_dir': 'chrome_frame',
+        'template_input_path': 'npchrome_frame_version.rc.version',
+        'extra_variable_files_arguments': [ '-f', 'BRANDING' ],
+        'extra_variable_files': [ 'BRANDING' ], # NOTE: matches that above
+      },
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '<(SHARED_INTERMEDIATE_DIR)/<(output_dir)',
+        ],
+      },
+      'sources': [
+        'npchrome_frame_dll.ver',
+      ],
+      'includes': [
+        '../chrome/version_resource_rules.gypi',
+      ],
+    },
     {
       # Builds the crash tests in crash_reporting.
       'target_name': 'chrome_frame_crash_tests',
@@ -188,7 +214,6 @@
       'dependencies': [
         '../base/base.gyp:test_support_base',
         '../build/temp_gyp/googleurl.gyp:googleurl',
-        '../chrome/chrome.gyp:chrome_version_header',
         '../chrome/chrome.gyp:common',
         '../chrome/chrome.gyp:utility',
         '../chrome/chrome.gyp:browser',
@@ -251,7 +276,7 @@
         'test/url_request_test.cc',
         'test/win_event_receiver.cc',
         'test/win_event_receiver.h',
-        'chrome_launcher_version.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/chrome_launcher_exe_version.rc',
         '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/chrome_tab.h',
         'test_utils.cc',
         'test_utils.h',
@@ -851,6 +876,7 @@
         'chrome_frame_ie',
         'chrome_frame_strings',
         'chrome_frame_utils',
+        'chrome_frame_version_resources',
         'chrome_tab_idl',
         'chrome_frame_launcher.gyp:chrome_launcher',
         'chrome_frame_launcher.gyp:chrome_frame_helper',
@@ -872,11 +898,11 @@
         'chrome_tab.cc',
         'chrome_tab.def',
         '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/chrome_tab.h',
+        '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/npchrome_frame_dll_version.rc',
         # FIXME(slightlyoff): For chrome_tab.tlb. Giant hack until we can
         #   figure out something more gyp-ish.
         'resources/tlb_resource.rc',
         'chrome_tab.rgs',
-        'chrome_tab_version.rc',
         'resource.h',
       ],
       'conditions': [

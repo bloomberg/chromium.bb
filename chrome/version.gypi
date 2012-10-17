@@ -5,7 +5,7 @@
 {
   'variables': {
     'variables': {
-      'version_py_path': 'tools/build/version.py',
+      'version_py_path': '<(DEPTH)/chrome/tools/build/version.py',
       'version_path': 'VERSION',
     },
     'version_py_path': '<(version_py_path)',

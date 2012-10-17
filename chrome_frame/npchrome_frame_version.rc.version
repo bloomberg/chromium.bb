@@ -1,0 +1,54 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifdef APSTUDIO_INVOKED
+# error Do not open this in the GUI, it will be massacred on save. Do not do it.
+#endif // APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+1 VERSIONINFO
+ FILEVERSION @MAJOR@,@MINOR@,@BUILD@,@PATCH@
+ PRODUCTVERSION @MAJOR@,@MINOR@,@BUILD@,@PATCH@
+ FILEFLAGSMASK 0x17L
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        // Note that Firefox 3.0 requires charset 04e4 (multi-lingual).
+        BLOCK "040904e4"
+        BEGIN
+            VALUE "CompanyName", "@COMPANY_FULLNAME@"
+            VALUE "FileDescription", "@PRODUCT_DESCRIPTION@"
+            VALUE "FileVersion", "@MAJOR@.@MINOR@.@BUILD@.@PATCH@"
+            VALUE "InternalName", "@INTERNAL_NAME@"
+            VALUE "LegalCopyright", "@COPYRIGHT@"
+            VALUE "OriginalFilename", "@ORIGINAL_FILENAME@"
+            VALUE "ProductName", "@PRODUCT_FULLNAME@"
+            VALUE "ProductVersion", "@MAJOR@.@MINOR@.@BUILD@.@PATCH@"
+            VALUE "CompanyShortName", "@COMPANY_SHORTNAME@"
+            VALUE "ProductShortName", "@PRODUCT_SHORTNAME@"
+            VALUE "LastChange", "@LASTCHANGE@"
+            VALUE "Official Build", "@OFFICIAL_BUILD@"
+            VALUE "MIMEType", "application/chromeframe"
+            VALUE "FileExtents", "chromeframe"
+            VALUE "FileOpenName", "chromeframe"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        // Note that Firefox 3.0 requires charset 1252 (multi-lingual).
+        VALUE "Translation", 0x409, 1252
+    END
+END

@@ -862,9 +862,24 @@
         {
           'target_name': 'chrome_version_resources',
           'type': 'none',
+          'conditions': [
+            ['branding == "Chrome"', {
+              'variables': {
+                 'branding_path': 'app/theme/google_chrome/BRANDING',
+              },
+            }, { # else branding!="Chrome"
+              'variables': {
+                 'branding_path': 'app/theme/chromium/BRANDING',
+              },
+            }],
+          ],
+          'variables': {
+            'output_dir': 'chrome_version',
+            'template_input_path': 'app/chrome_version.rc.version',
+          },
           'direct_dependent_settings': {
             'include_dirs': [
-              '<(SHARED_INTERMEDIATE_DIR)/chrome_version',
+              '<(SHARED_INTERMEDIATE_DIR)/<(output_dir)',
             ],
           },
           'sources': [
@@ -874,47 +889,8 @@
             'app/nacl64_exe.ver',
             'app/other.ver',
           ],
-          'rules': [
-            {
-              'rule_name': 'version',
-              'extension': 'ver',
-              'variables': {
-                'lastchange_path':
-                  '<(DEPTH)/build/util/LASTCHANGE',
-                'template_input_path': 'app/chrome_version.rc.version',
-              },
-              'conditions': [
-                ['branding == "Chrome"', {
-                  'variables': {
-                     'branding_path': 'app/theme/google_chrome/BRANDING',
-                  },
-                }, { # else branding!="Chrome"
-                  'variables': {
-                     'branding_path': 'app/theme/chromium/BRANDING',
-                  },
-                }],
-              ],
-              'inputs': [
-                '<(template_input_path)',
-                '<(version_path)',
-                '<(branding_path)',
-                '<(lastchange_path)',
-              ],
-              'outputs': [
-                '<(SHARED_INTERMEDIATE_DIR)/chrome_version/<(RULE_INPUT_ROOT)_version.rc',
-              ],
-              'action': [
-                'python',
-                '<(version_py_path)',
-                '-f', '<(RULE_INPUT_PATH)',
-                '-f', '<(version_path)',
-                '-f', '<(branding_path)',
-                '-f', '<(lastchange_path)',
-                '<(template_input_path)',
-                '<@(_outputs)',
-              ],
-              'message': 'Generating version information in <(_outputs)'
-            },
+          'includes': [
+            'version_resource_rules.gypi',
           ],
         },
         {
