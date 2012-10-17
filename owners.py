@@ -2,7 +2,51 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""A database of OWNERS files."""
+"""A database of OWNERS files.
+
+OWNERS files indicate who is allowed to approve changes in a specific directory
+(or who is allowed to make changes without needing approval of another OWNER).
+Note that all changes must still be reviewed by someone familiar with the code,
+so you may need approval from both an OWNER and a reviewer in many cases.
+
+The syntax of the OWNERS file is, roughly:
+
+lines     := (\s* line? \s* "\n")*
+
+line      := directive
+          | "per-file" \s+ glob "=" directive
+          | comment
+
+directive := "set noparent"
+          |  email_address
+          |  "*"
+
+glob      := [a-zA-Z0-9_-*?]+
+
+comment   := "#" [^"\n"]*
+
+Email addresses must follow the foo@bar.com short form (exact syntax given
+in BASIC_EMAIL_REGEXP, below). Filename globs follow the simple unix
+shell conventions, and relative and absolute paths are not allowed (i.e.,
+globs only refer to the files in the current directory).
+
+If a user's email is one of the email_addresses in the file, the user is
+considered an "OWNER" for all files in the directory.
+
+If the "per-file" directive is used, the line only applies to files in that
+directory that match the filename glob specified.
+
+If the "set noparent" directive used, then only entries in this OWNERS file
+apply to files in this directory; if the "set noparent" directive is not
+used, then entries in OWNERS files in enclosing (upper) directories also
+apply (up until a "set noparent is encountered").
+
+If "per-file glob=set noparent" is used, then global directives are ignored
+for the glob, and only the "per-file" owners are used for files matching that
+glob.
+
+Examples for all of these combinations can be found in tests/owners_unittest.py.
+"""
 
 import collections
 import re
@@ -43,16 +87,19 @@ class Database(object):
   of changed files, and see if a list of changed files is covered by a
   list of reviewers."""
 
-  def __init__(self, root, fopen, os_path):
+  def __init__(self, root, fopen, os_path, glob):
     """Args:
       root: the path to the root of the Repository
       open: function callback to open a text file for reading
       os_path: module/object callback with fields for 'abspath', 'dirname',
           'exists', and 'join'
+      glob: function callback to list entries in a directory match a glob
+          (i.e., glob.glob)
     """
     self.root = root
     self.fopen = fopen
     self.os_path = os_path
+    self.glob = glob
 
     # Pick a default email regexp to use; callers can override as desired.
     self.email_regexp = re.compile(BASIC_EMAIL_REGEXP)
@@ -75,6 +122,7 @@ class Database(object):
     self._load_data_needed_for(files)
     return self._covering_set_of_owners_for(files)
 
+  # TODO(dpranke): rename to objects_not_covered_by
   def directories_not_covered_by(self, files, reviewers):
     """Returns the set of directories that are not owned by a reviewer.
 
@@ -90,12 +138,20 @@ class Database(object):
     self._check_reviewers(reviewers)
     self._load_data_needed_for(files)
 
-    dirs = set([self.os_path.dirname(f) for f in files])
-    covered_dirs = self._dirs_covered_by(reviewers)
-    uncovered_dirs = [self._enclosing_dir_with_owners(d) for d in dirs
-                      if not self._is_dir_covered_by(d, covered_dirs)]
+    objs = set()
+    for f in files:
+      if f in self.owners_for:
+        objs.add(f)
+      else:
+        objs.add(self.os_path.dirname(f))
 
-    return set(uncovered_dirs)
+    covered_objs = self._objs_covered_by(reviewers)
+    uncovered_objs = [self._enclosing_obj_with_owners(o) for o in objs
+                      if not self._is_obj_covered_by(o, covered_objs)]
+
+    return set(uncovered_objs)
+
+  objects_not_covered_by = directories_not_covered_by
 
   def _check_paths(self, files):
     def _is_under(f, pfx):
@@ -107,20 +163,27 @@ class Database(object):
     _assert_is_collection(reviewers)
     assert all(self.email_regexp.match(r) for r in reviewers)
 
+  # TODO(dpranke): Rename to _objs_covered_by and update_callers
   def _dirs_covered_by(self, reviewers):
     dirs = self.owned_by[EVERYONE]
     for r in reviewers:
       dirs = dirs | self.owned_by.get(r, set())
     return dirs
 
+  _objs_covered_by = _dirs_covered_by
+
   def _stop_looking(self, dirname):
     return dirname in self.stop_looking
 
+  # TODO(dpranke): Rename to _is_dir_covered_by and update callers.
   def _is_dir_covered_by(self, dirname, covered_dirs):
     while not dirname in covered_dirs and not self._stop_looking(dirname):
       dirname = self.os_path.dirname(dirname)
     return dirname in covered_dirs
 
+  _is_obj_covered_by = _is_dir_covered_by
+
+  # TODO(dpranke): Rename to _enclosing_obj_with_owners and update callers.
   def _enclosing_dir_with_owners(self, directory):
     """Returns the innermost enclosing directory that has an OWNERS file."""
     dirpath = directory
@@ -129,6 +192,8 @@ class Database(object):
         break
       dirpath = self.os_path.dirname(dirpath)
     return dirpath
+
+  _enclosing_obj_with_owners = _enclosing_dir_with_owners
 
   def _load_data_needed_for(self, files):
     for f in files:
@@ -153,16 +218,35 @@ class Database(object):
       if line == 'set noparent':
         self.stop_looking.add(dirpath)
         continue
+
+      m = re.match("per-file (.+)=(.+)", line)
+      if m:
+        glob_string = m.group(1)
+        directive = m.group(2)
+        full_glob_string = self.os_path.join(self.root, dirpath, glob_string)
+        baselines = self.glob(full_glob_string)
+        for baseline in (self.os_path.relpath(self.root, b) for b in baselines):
+          self._add_entry(baseline, directive, "per-file line",
+                          owners_path, lineno)
+        continue
+
       if line.startswith('set '):
         raise SyntaxErrorInOwnersFile(owners_path, lineno,
             'unknown option: "%s"' % line[4:].strip())
-      if self.email_regexp.match(line) or line == EVERYONE:
-        self.owned_by.setdefault(line, set()).add(dirpath)
-        self.owners_for.setdefault(dirpath, set()).add(line)
-        continue
+
+      self._add_entry(dirpath, line, "line", owners_path, lineno)
+
+  def _add_entry(self, path, directive, line_type, owners_path, lineno):
+    if directive == "set noparent":
+      self.stop_looking.add(path)
+    elif self.email_regexp.match(directive) or directive == EVERYONE:
+      self.owned_by.setdefault(directive, set()).add(path)
+      self.owners_for.setdefault(path, set()).add(directive)
+    else:
       raise SyntaxErrorInOwnersFile(owners_path, lineno,
-            ('line is not a comment, a "set" directive, '
-             'or an email address: "%s"' % line))
+          ('%s is not a "set" directive, "*", '
+           'or an email address: "%s"' % (line_type, directive)))
+
 
   def _covering_set_of_owners_for(self, files):
     # Get the set of directories from the files.

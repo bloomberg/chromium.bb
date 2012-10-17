@@ -748,7 +748,7 @@ def CheckChangeOnCommit(input_api, output_api):
     expected_result1 = ['1', '2']
     expected_result2 = ['a', 'b', 'c']
     script = self.presubmit_tryslave_project % (
-        repr('foo'), repr(expected_result1), repr(expected_result2)) 
+        repr('foo'), repr(expected_result1), repr(expected_result2))
     self.assertEqual(
         expected_result1, executer.ExecPresubmitScript(script, '', 'foo',
                                                        change))
@@ -868,8 +868,8 @@ class InputApiUnittest(PresubmitTestsBase):
       'LocalToDepotPath',
       'PresubmitLocalPath', 'ReadFile', 'RightHandSideLines', 'ServerPaths',
       'basename', 'cPickle', 'cStringIO', 'canned_checks', 'change', 'environ',
-      'host_url', 'is_committing', 'json', 'logging', 'marshal', 'os_listdir',
-      'os_walk',
+      'glob', 'host_url', 'is_committing', 'json', 'logging', 'marshal',
+      'os_listdir', 'os_walk',
       'os_path', 'owners_db', 'pickle', 'platform', 'python_executable', 're',
       'rietveld', 'subprocess', 'tbr', 'tempfile', 'time', 'traceback',
       'unittest', 'urllib2', 'version', 'verbose',

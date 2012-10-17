@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import errno
+import fnmatch
 import os
 import re
 import StringIO
@@ -65,6 +66,9 @@ class MockFileSystem(object):
     # it works.
     return re.sub(re.escape(os.path.sep), self.sep, os.path.join(*comps))
 
+  def glob(self, path):
+    return fnmatch.filter(self.files.keys(), path)
+
   def open_for_reading(self, path):
     return StringIO.StringIO(self.read_binary_file(path))
 
@@ -73,3 +77,9 @@ class MockFileSystem(object):
     if self.files[path] is None:
       _RaiseNotFound(path)
     return self.files[path]
+
+  @staticmethod
+  def relpath(base, path):
+    if path.startswith(base):
+      return path[len(base):]
+    return path

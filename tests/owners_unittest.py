@@ -21,6 +21,8 @@ darin = 'darin@example.com'
 john = 'john@example.com'
 ken = 'ken@example.com'
 peter = 'peter@example.com'
+tom = 'tom@example.com'
+
 
 def owners_file(*email_addresses, **kwargs):
   s = ''
@@ -28,6 +30,7 @@ def owners_file(*email_addresses, **kwargs):
     s += '# %s\n' % kwargs.get('comment')
   if kwargs.get('noparent'):
     s += 'set noparent\n'
+  s += '\n'.join(kwargs.get('lines', [])) + '\n'
   return s + '\n'.join(email_addresses) + '\n'
 
 
@@ -47,6 +50,8 @@ def test_repo():
     '/content/bar/foo.cc': '',
     '/content/baz/OWNERS': owners_file(brett),
     '/content/baz/froboz.h': '',
+    '/content/baz/ugly.cc': '',
+    '/content/baz/ugly.h': '',
     '/content/views/OWNERS': owners_file(ben, john, owners.EVERYONE,
                                          noparent=True),
     '/content/views/pie.h': '',
@@ -59,12 +64,14 @@ class OwnersDatabaseTest(unittest.TestCase):
     self.files = self.repo.files
     self.root = '/'
     self.fopen = self.repo.open_for_reading
+    self.glob = self.repo.glob
 
-  def db(self, root=None, fopen=None, os_path=None):
+  def db(self, root=None, fopen=None, os_path=None, glob=None):
     root = root or self.root
     fopen = fopen or self.fopen
     os_path = os_path or self.repo
-    return owners.Database(root, fopen, os_path)
+    glob = glob or self.glob
+    return owners.Database(root, fopen, os_path, glob)
 
   def test_constructor(self):
     self.assertNotEquals(self.db(), None)
@@ -130,6 +137,42 @@ class OwnersDatabaseTest(unittest.TestCase):
         ],
         [ken],
         ['content', 'content/baz'])
+
+  def test_per_file(self):
+    # brett isn't allowed to approve ugly.cc
+    self.files['/content/baz/OWNERS'] = owners_file(brett,
+        lines=['per-file ugly.*=tom@example.com'])
+    self.assert_dirs_not_covered_by(['content/baz/ugly.cc'],
+                                    [brett],
+                                    [])
+
+    # tom is allowed to approve ugly.cc, but not froboz.h
+    self.assert_dirs_not_covered_by(['content/baz/ugly.cc'],
+                                    [tom],
+                                    [])
+    self.assert_dirs_not_covered_by(['content/baz/froboz.h'],
+                                    [tom],
+                                    ['content/baz'])
+
+  def test_per_file__set_noparent(self):
+    self.files['/content/baz/OWNERS'] = owners_file(brett,
+        lines=['per-file ugly.*=tom@example.com',
+               'per-file ugly.*=set noparent'])
+
+    # brett isn't allowed to approve ugly.cc
+    self.assert_dirs_not_covered_by(['content/baz/ugly.cc'],
+                                    [brett],
+                                    ['content/baz/ugly.cc'])
+
+    # tom is allowed to approve ugly.cc, but not froboz.h
+    self.assert_dirs_not_covered_by(['content/baz/ugly.cc'],
+                                    [tom],
+                                    [])
+
+    self.assert_dirs_not_covered_by(['content/baz/froboz.h'],
+                                    [tom],
+                                    ['content/baz'])
+
 
   def assert_reviewers_for(self, files, expected_reviewers):
     db = self.db()

@@ -238,6 +238,7 @@ class InputApi(object):
     self.basename = os.path.basename
     self.cPickle = cPickle
     self.cStringIO = cStringIO
+    self.glob = glob.glob
     self.json = json
     self.logging = logging.getLogger('PRESUBMIT')
     self.os_listdir = os.listdir
@@ -269,7 +270,7 @@ class InputApi(object):
     # TODO(dpranke): figure out a list of all approved owners for a repo
     # in order to be able to handle wildcard OWNERS files?
     self.owners_db = owners.Database(change.RepositoryRoot(),
-        fopen=file, os_path=self.os_path)
+        fopen=file, os_path=self.os_path, glob=self.glob)
     self.verbose = verbose
 
   def PresubmitLocalPath(self):
