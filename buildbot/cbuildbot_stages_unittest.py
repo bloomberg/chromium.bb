@@ -774,51 +774,36 @@ class HWTestStageTest(AbstractStageTest):
     except Exception:
       pass
 
+    self.mox.VerifyAll()
 
-class HWPerfStageTest(HWTestStageTest):
-  """Class that wraps around the HWTestStageTest for testing the HWPerfStage."""
-
-  def setUp(self):
+  def testSendPerfResults(self):
+    """Tests that we can send perf results back correctly."""
     self.suite = 'pyauto_perf'
+    self.bot_id = 'lumpy-chrome-perf'
+    self.build_config = config.config['lumpy-chrome-perf'].copy()
+
+    gs_upload_location = 'gs://dontcare/builder/version'
     self.mox.StubOutWithMock(gs.GSContext, 'Copy')
-    self.gs_upload_location = 'gs://dontcare/builder/version'
-    self.archive_stage_mock.GetGSUploadLocation().AndReturn(
-        self.gs_upload_location)
-    result = self.mox.CreateMock(cros_build_lib.CommandResult)
-    result.output = 'my perf results'
-    gs.GSContext.Copy('%s/%s' % (
-        self.gs_upload_location,
-        stages.HWPerfStage.RESULT_FILE), '-').AndReturn(result)
-
-  def ConstructStage(self):
-    return stages.HWPerfStage(self.options, self.build_config,
-                              self._current_board, self.archive_stage_mock)
-
-  def testWithSuiteWithInfrastructureFailure(self):
-    """We suppress the verify here as GetGSUploadLocation will not be called."""
-    self.mox_suppress_verify_all = True
-    HWTestStageTest.testWithSuiteWithInfrastructureFailure(self)
-
-  def testWithTimeout(self):
-    """Test that we correctly raise a TestTimeoutException when we timeout."""
-    build = '%s/%s' % (self.bot_id, 'ver')
-    self.mox_suppress_verify_all = True
     self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
-    error = cros_build_lib.TimeoutError('Test ran outta time')
+    result = self.mox.CreateMock(cros_build_lib.CommandResult)
+
+    build = '%s/%s' % (self.bot_id, 'ver')
     commands.RunHWTestSuite(build,
                             self.suite,
                             self._current_board,
-                            constants.HWTEST_MACH_POOL,
-                            constants.HWTEST_DEFAULT_NUM,
+                            self.build_config['hw_tests_pool'],
+                            self.build_config['hw_tests_num'],
                             False,
-                            False).AndRaise(error)
+                            False)
+
+    self.archive_stage_mock.GetGSUploadLocation().AndReturn(gs_upload_location)
+    result.output = 'my perf results'
+    gs.GSContext.Copy('%s/%s' % (
+        gs_upload_location, 'pyauto_perf.results'), '-').AndReturn(result)
 
     self.mox.ReplayAll()
-    results_lib.Results.Clear()
     self.RunStage()
-    # Results should contain a timeout expception when this test fails.
-    self.assertTrue(isinstance(results_lib.Results.Get()[0][1],
-                               stages.TestTimeoutException))
+    self.mox.VerifyAll()
 
 
 class UprevStageTest(AbstractStageTest):

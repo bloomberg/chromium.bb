@@ -25,6 +25,8 @@ CONFIG_TYPE_DUMP_ORDER = (
     'release-group',
     'sdk',
     'chromium-pfq',
+    'chrome-perf',
+    'chrome-pgo',
     'chrome-pfq',
     'chrome-pfq-informational',
     'pre-flight-branch',
@@ -223,6 +225,10 @@ _settings = dict(
 # vm_tests -- Run vm test type defined in constants.
   vm_tests=constants.SIMPLE_AU_TEST_TYPE,
 
+# hw_copy_perf_results: If set to True, copy test results back from GS and send
+# them to the perf dashboard.
+  hw_copy_perf_results=False,
+
 # hw_tests_timeout -- Usually, 2 hours and twenty minutes.
   hw_tests_timeout=8400,
 
@@ -413,8 +419,8 @@ class _config(dict):
     """
     board_specific_configs = {}
     for x in configs:
-      for board in x['boards']:
-        board_specific_configs[board] = _default.derive(x, grouped=True)
+      for my_board in x['boards']:
+        board_specific_configs[my_board] = _default.derive(x, grouped=True)
     return configs[0].add_config(name,
       boards=list(itertools.chain.from_iterable(x['boards'] for x in configs)),
       board_specific_configs=board_specific_configs
@@ -617,31 +623,32 @@ chrome_pfq = internal_chromium_pfq.derive(
   official,
   important=True,
   overlays=constants.BOTH_OVERLAYS,
-  prebuilts=False,
-  #useflags=official['useflags'] + ['pgo_generate'],
-  chroot_replace=True,
-  #hw_tests=['PGO_record'],
-  hw_tests_num=1,
-  hw_tests_pool=constants.HWTEST_CHROME_PFQ_POOL,
-  hw_tests_timeout=90 * 60,
   description='Preflight Chrome build (internal)',
 )
 
 chrome_pfq.add_config('alex-chrome-pfq',
   boards=['x86-alex'],
-  hw_tests_critical=False,
 )
 
 chrome_pfq.add_config('lumpy-chrome-pfq',
   boards=['lumpy'],
-  # lumpy changes optimization relevant flags from x86-generic, so we should
-  # ignore target pkgs built on parent/other boards.  Setup_board packages
-  # are OK, since we aren't profiling them.
-  usepkg_build_packages=False,
-  hw_tests_critical=False,
 )
 
-chromium_pfq_info = chromium_pfq.derive(
+chrome_pgo = chrome_pfq.derive(
+  useflags=official['useflags'] + ['pgo_generate'],
+  usepkg_build_packages=False,
+  chroot_replace=True,
+  prebuilts=False,
+
+  vm_tests=None,
+  hw_tests=['PGO_record'],
+  hw_tests_critical=False, # Set to true once hw tests are stable for pgo.
+  hw_tests_pool=constants.HWTEST_CHROME_PFQ_POOL,
+  hw_tests_num=1,
+  hw_tests_timeout=90 * 60,
+)
+
+chromium_info = chromium_pfq.derive(
   chrome_rev=constants.CHROME_REV_TOT,
   use_lkgm=True,
   important=False,
@@ -650,13 +657,32 @@ chromium_pfq_info = chromium_pfq.derive(
   upload_hw_test_artifacts=False,
 )
 
-# TODO(petermayo): We may want to update the -chrome-pfq-i... as above.
-chromium_pfq_info.add_config('x86-generic-tot-chrome-pfq-informational',
+chrome_info = chromium_info.derive(
+  chrome_pfq,
+)
+
+chrome_perf = chrome_info.derive(
+  vm_tests=None,
+  upload_hw_test_artifacts=True,
+
+  hw_copy_perf_results=True,
+  hw_tests=['pyauto_perf'],
+  hw_tests_critical=True,
+  hw_tests_pool=constants.HWTEST_CHROME_PERF_POOL,
+  hw_tests_num=1,
+  hw_tests_timeout=90 * 60,
+)
+
+chrome_perf.add_config('lumpy-chrome-perf',
+  boards=['lumpy'],
+)
+
+chromium_info.add_config('x86-generic-tot-chrome-pfq-informational',
   boards=['x86-generic'],
 )
 
 cpfq_arm = \
-chromium_pfq_info.add_config('arm-tegra2-tot-chrome-pfq-informational',
+chromium_info.add_config('arm-tegra2-tot-chrome-pfq-informational',
   arm,
   boards=['tegra2'],
 )
@@ -665,7 +691,7 @@ cpfq_arm.add_config('daisy-tot-chrome-pfq-informational',
   boards=['daisy'],
 )
 
-chromium_pfq_info.add_config('amd64-generic-tot-chrome-pfq-informational',
+chromium_info.add_config('amd64-generic-tot-chrome-pfq-informational',
   amd64,
   boards=['amd64-generic'],
   chrome_tests=True,
@@ -1042,8 +1068,8 @@ def _GetDisplayPosition(config_name, type_order=CONFIG_TYPE_DUMP_ORDER):
   position after the last element of suffix_order.
   """
   for index, config_type in enumerate(type_order):
-   if config_name.endswith('-' + config_type) or config_name == config_type:
-     return index
+    if config_name.endswith('-' + config_type) or config_name == config_type:
+      return index
 
   return len(type_order)
 
