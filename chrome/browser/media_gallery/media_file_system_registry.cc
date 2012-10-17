@@ -469,17 +469,19 @@ void MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
     AddAttachedMediaDeviceGalleries(preferences);
   MediaGalleryPrefIdSet galleries =
       preferences->GalleriesForExtension(*extension);
-  ExtensionGalleriesHost* extension_host =
-      extension_hosts_map_[profile][extension->id()].get();
 
   // If the extension has no galleries and it didn't have any last time, just
   // return the empty list. The second check is needed because of
   // http://crbug.com/145855.
-  if (galleries.empty() && !extension_host) {
+  bool has_extension_host = ContainsKey(extension_hosts_map_, profile) &&
+      ContainsKey(extension_hosts_map_[profile], extension->id());
+  if (galleries.empty() && !has_extension_host) {
     callback.Run(std::vector<MediaFileSystemInfo>());
     return;
   }
 
+  ExtensionGalleriesHost* extension_host =
+      extension_hosts_map_[profile][extension->id()].get();
   if (!extension_host) {
     extension_host = new ExtensionGalleriesHost(
         file_system_context_.get(),
