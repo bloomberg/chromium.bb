@@ -20,6 +20,9 @@ const base::Time kZeroTime;
 
 class TestErrorDelegate : public sql::ErrorDelegate {
  public:
+  TestErrorDelegate() {}
+  virtual ~TestErrorDelegate() {}
+
   virtual int OnError(int error,
                       sql::Connection* connection,
                       sql::Statement* stmt) OVERRIDE {
@@ -27,7 +30,7 @@ class TestErrorDelegate : public sql::ErrorDelegate {
   }
 
  private:
-  virtual ~TestErrorDelegate() {}
+  DISALLOW_COPY_AND_ASSIGN(TestErrorDelegate);
 };
 
 }  // namespace
@@ -89,8 +92,7 @@ TEST(AppCacheDatabaseTest, EntryRecords) {
   EXPECT_TRUE(db.LazyOpen(true));
 
   // Set an error delegate that will make all operations return false on error.
-  scoped_refptr<TestErrorDelegate> error_delegate(new TestErrorDelegate);
-  db.db_->set_error_delegate(error_delegate);
+  db.db_->set_error_delegate(new TestErrorDelegate());
 
   AppCacheDatabase::EntryRecord entry;
 
@@ -163,8 +165,7 @@ TEST(AppCacheDatabaseTest, CacheRecords) {
   AppCacheDatabase db(kEmptyPath);
   EXPECT_TRUE(db.LazyOpen(true));
 
-  scoped_refptr<TestErrorDelegate> error_delegate(new TestErrorDelegate);
-  db.db_->set_error_delegate(error_delegate);
+  db.db_->set_error_delegate(new TestErrorDelegate());
 
   const AppCacheDatabase::CacheRecord kZeroRecord;
   AppCacheDatabase::CacheRecord record;
@@ -206,8 +207,7 @@ TEST(AppCacheDatabaseTest, GroupRecords) {
   AppCacheDatabase db(kEmptyPath);
   EXPECT_TRUE(db.LazyOpen(true));
 
-  scoped_refptr<TestErrorDelegate> error_delegate(new TestErrorDelegate);
-  db.db_->set_error_delegate(error_delegate);
+  db.db_->set_error_delegate(new TestErrorDelegate());
 
   const GURL kManifestUrl("http://blah/manifest");
   const GURL kOrigin(kManifestUrl.GetOrigin());
@@ -334,8 +334,7 @@ TEST(AppCacheDatabaseTest, NamespaceRecords) {
   AppCacheDatabase db(kEmptyPath);
   EXPECT_TRUE(db.LazyOpen(true));
 
-  scoped_refptr<TestErrorDelegate> error_delegate(new TestErrorDelegate);
-  db.db_->set_error_delegate(error_delegate);
+  db.db_->set_error_delegate(new TestErrorDelegate());
 
   const GURL kFooNameSpace1("http://foo/namespace1");
   const GURL kFooNameSpace2("http://foo/namespace2");
@@ -435,8 +434,7 @@ TEST(AppCacheDatabaseTest, OnlineWhiteListRecords) {
   AppCacheDatabase db(kEmptyPath);
   EXPECT_TRUE(db.LazyOpen(true));
 
-  scoped_refptr<TestErrorDelegate> error_delegate(new TestErrorDelegate);
-  db.db_->set_error_delegate(error_delegate);
+  db.db_->set_error_delegate(new TestErrorDelegate());
 
   const GURL kFooNameSpace1("http://foo/namespace1");
   const GURL kFooNameSpace2("http://foo/namespace2");
@@ -482,8 +480,7 @@ TEST(AppCacheDatabaseTest, DeletableResponseIds) {
   AppCacheDatabase db(kEmptyPath);
   EXPECT_TRUE(db.LazyOpen(true));
 
-  scoped_refptr<TestErrorDelegate> error_delegate(new TestErrorDelegate);
-  db.db_->set_error_delegate(error_delegate);
+  db.db_->set_error_delegate(new TestErrorDelegate());
 
   std::vector<int64> ids;
 
@@ -559,8 +556,7 @@ TEST(AppCacheDatabaseTest, OriginUsage) {
   AppCacheDatabase db(kEmptyPath);
   EXPECT_TRUE(db.LazyOpen(true));
 
-  scoped_refptr<TestErrorDelegate> error_delegate(new TestErrorDelegate);
-  db.db_->set_error_delegate(error_delegate);
+  db.db_->set_error_delegate(new TestErrorDelegate());
 
   std::vector<AppCacheDatabase::CacheRecord> cache_records;
   EXPECT_EQ(0, db.GetOriginUsage(kOrigin));

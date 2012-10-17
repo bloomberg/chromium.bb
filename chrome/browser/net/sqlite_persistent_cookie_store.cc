@@ -75,8 +75,6 @@ class SQLitePersistentCookieStore::Backend
         num_cookies_read_(0),
         num_priority_waiting_(0),
         total_priority_requests_(0) {
-    error_delegate_ =
-      new KillDatabaseErrorDelegate(this, GetErrorHandlerForCookieDb());
   }
 
   // Creates or loads the SQLite database.
@@ -111,35 +109,26 @@ class SQLitePersistentCookieStore::Backend
    public:
     KillDatabaseErrorDelegate(Backend* backend,
                               sql::ErrorDelegate* wrapped_delegate);
+
+    virtual ~KillDatabaseErrorDelegate() {}
+
     // ErrorDelegate implementation.
     virtual int OnError(int error,
                         sql::Connection* connection,
                         sql::Statement* stmt) OVERRIDE;
 
-    void reset_backend() {
-      backend_ = NULL;
-    }
-
-   protected:
-    virtual ~KillDatabaseErrorDelegate() {}
-
    private:
 
     // Do not increment the count on Backend, as that would create a circular
-    // reference (Backend -> Connection -> ErrorDelegate -> Backend). Instead,
-    // Backend will call reset_backend() when it is going away.
+    // reference (Backend -> Connection -> ErrorDelegate -> Backend).
     Backend* backend_;
-    scoped_refptr<sql::ErrorDelegate> wrapped_delegate_;
+    scoped_ptr<sql::ErrorDelegate> wrapped_delegate_;
 
     DISALLOW_COPY_AND_ASSIGN(KillDatabaseErrorDelegate);
   };
 
   // You should call Close() before destructing this object.
   ~Backend() {
-    if (error_delegate_.get()) {
-      error_delegate_->reset_backend();
-      error_delegate_ = NULL;
-    }
     DCHECK(!db_.get()) << "Close should have already been called.";
     DCHECK(num_pending_ == 0 && pending_.empty());
   }
@@ -227,7 +216,6 @@ class SQLitePersistentCookieStore::Backend
 
   FilePath path_;
   scoped_ptr<sql::Connection> db_;
-  scoped_refptr<KillDatabaseErrorDelegate> error_delegate_;
   sql::MetaTable meta_table_;
 
   typedef std::list<PendingOperation*> PendingOperationsList;
@@ -371,10 +359,9 @@ int SQLitePersistentCookieStore::Backend::KillDatabaseErrorDelegate::OnError(
     MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&Backend::KillDatabase, backend_));
 
-    // Avoid being called more than once. There should still be a reference to
-    // this ErrorDelegate in the backend, but just in case don't refer to any
-    // members from here forward.
-    connection->set_error_delegate(wrapped_delegate_.get());
+    // Avoid being called more than once. This will destroy the
+    // KillDatabaseErrorDelegate. Do not refer to any members from here forward.
+    connection->set_error_delegate(wrapped_delegate_.release());
   }
 
   return error;
@@ -627,7 +614,8 @@ bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
   }
 
   db_.reset(new sql::Connection);
-  db_->set_error_delegate(error_delegate_.get());
+  db_->set_error_delegate(
+      new KillDatabaseErrorDelegate(this, GetErrorHandlerForCookieDb()));
 
   if (!db_->Open(path_)) {
     NOTREACHED() << "Unable to open cookie DB.";

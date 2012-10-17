@@ -13,14 +13,17 @@ namespace {
 
 class TestErrorDelegate : public sql::ErrorDelegate {
  public:
+  TestErrorDelegate() {}
+  virtual ~TestErrorDelegate() {}
+
   virtual int OnError(int error,
                       sql::Connection* connection,
                       sql::Statement* stmt) OVERRIDE {
     return error;
   }
 
- protected:
-  virtual ~TestErrorDelegate() {}
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestErrorDelegate);
 };
 
 }  // namespace
@@ -46,8 +49,7 @@ TEST(DatabasesTableTest, TestIt) {
   sql::Connection db;
 
   // Set an error delegate that will make all operations return false on error.
-  scoped_refptr<TestErrorDelegate> error_delegate(new TestErrorDelegate());
-  db.set_error_delegate(error_delegate);
+  db.set_error_delegate(new TestErrorDelegate());
 
   // Initialize the temp dir and the 'Databases' table.
   EXPECT_TRUE(db.OpenInMemory());
