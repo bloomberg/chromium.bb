@@ -134,3 +134,18 @@ IN_PROC_BROWSER_TEST_F(PanelViewTest, PanelLayout) {
   EXPECT_LT(title_text->x() + title_text->width(), minimize_button->x());
   EXPECT_LT(minimize_button->x() + minimize_button->width(), close_button->x());
 }
+
+IN_PROC_BROWSER_TEST_F(PanelViewTest, CheckTitleOnlyHeight) {
+  gfx::Rect bounds(0, 0, 200, 50);
+  Panel* panel = CreatePanelWithBounds("PanelTest", bounds);
+
+  // Change titlebar to title-only and check its height.
+  bounds.set_height(panel->TitleOnlyHeight());
+  panel->SetPanelBoundsInstantly(bounds);
+  EXPECT_EQ(panel->TitleOnlyHeight(), panel->GetBounds().height());
+  EXPECT_EQ(0, GetPanelView(panel)->height());
+  EXPECT_EQ(panel->TitleOnlyHeight(),
+            GetPanelView(panel)->GetFrameView()->height());
+
+  panel->Close();
+}

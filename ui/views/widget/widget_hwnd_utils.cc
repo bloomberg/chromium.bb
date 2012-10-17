@@ -53,7 +53,11 @@ void CalculateWindowStylesFromInitParams(
   switch (params.type) {
     case Widget::InitParams::TYPE_PANEL:
       *ex_style |= WS_EX_TOPMOST;
-      // No break. Fall through to TYPE_WINDOW.
+      if (params.remove_standard_frame) {
+        *style |= WS_POPUP;
+        break;
+      }
+      // Else, no break. Fall through to TYPE_WINDOW.
     case Widget::InitParams::TYPE_WINDOW: {
       *style |= WS_SYSMENU | WS_CAPTION;
       bool can_resize = widget_delegate->CanResize();

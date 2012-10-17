@@ -2067,19 +2067,6 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
     window_pos->flags &= ~SWP_SHOWWINDOW;
   }
 
-  // When WM_WINDOWPOSCHANGING message is handled by DefWindowProc, it will
-  // enforce (cx, cy) not to be smaller than (6, 6) for any non-popup window.
-  // We work around this by changing cy back to our intended value.
-  if (!GetParent(hwnd()) && !(window_pos->flags & SWP_NOSIZE) &&
-      window_pos->cy < 6) {
-    LONG old_cy = window_pos->cy;
-    DefWindowProc(hwnd(), WM_WINDOWPOSCHANGING, 0,
-        reinterpret_cast<LPARAM>(window_pos));
-    window_pos->cy = old_cy;
-    SetMsgHandled(TRUE);
-    return;
-  }
-
   SetMsgHandled(FALSE);
 }
 
