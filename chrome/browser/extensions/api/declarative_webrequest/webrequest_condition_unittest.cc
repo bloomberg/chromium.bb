@@ -244,10 +244,38 @@ TEST(WebRequestConditionTest, TestPortFilter) {
   ASSERT_EQ(0u, url_match_ids.size());
 }
 
-// TODO(vabr): Once the condition attribute for request headers has been
-// implemented, add a new test for WebRequestCondition::Create that
-// creates a condition with two attributes: one on the request header
-// and one on the response header. The Create() method should fail complaining
-// that it is impossible that both conditions are fulfilled at the same time.
+// Create a condition with two attributes: one on the request header and one on
+// the response header. The Create() method should fail and complain that it is
+// impossible that both conditions are fulfilled at the same time.
+TEST(WebRequestConditionTest, ConditionsWithConflictingStages) {
+  // Necessary for TestURLRequest.
+  MessageLoop message_loop(MessageLoop::TYPE_IO);
+  URLMatcher matcher;
+
+  std::string error;
+  scoped_ptr<WebRequestCondition> result;
+
+  DictionaryValue condition_value;
+  condition_value.SetString(keys::kInstanceTypeKey, keys::kRequestMatcherType);
+
+  // Create two JS arrays, each with one empty object...
+  scoped_ptr<ListValue> request_header_filters(new ListValue());
+  request_header_filters->Append(new DictionaryValue());
+  scoped_ptr<ListValue> response_header_filters(new ListValue());
+  response_header_filters->Append(new DictionaryValue());
+
+  // ...and pass them as the header filters to the request matcher.
+  condition_value.Set(keys::kRequestHeadersKey,
+                      request_header_filters.release());
+  condition_value.Set(keys::kResponseHeadersKey,
+                      response_header_filters.release());
+
+  // Test error on incompatible application stages for involved attributes.
+  error.clear();
+  result = WebRequestCondition::Create(matcher.condition_factory(),
+                                       condition_value, &error);
+  EXPECT_FALSE(error.empty());
+  EXPECT_FALSE(result.get());
+}
 
 }  // namespace extensions
