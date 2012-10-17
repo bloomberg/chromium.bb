@@ -373,16 +373,9 @@
   000000000000000b: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
   000000000000000f: f3 66 ab                                     [P] dontcare [%rdi] (s), %ax (u)
 @rdfa_output:
-  return code: 0
-@validators_disagree:
-  TODO(shcherbina): do something about it, see
-    http://code.google.com/p/nativeclient/issues/detail?id=1950
-  
-  old validator verdict: False
-  rdfa validator verdict: True
-  errors reported by old validator but not by rdfa one:
-    0x6
-    0xf
+  6: [0] unrecognized instruction
+  f: [1] unrecognized instruction
+  return code: 1
 ----------------------------------------------------------------------
 @hex:
   # lock add %eax, (%esp)

@@ -102,9 +102,6 @@
 
   include decode_x86_64 "validator_x86_64_instruction.rl";
 
-  data16condrep = (data16 | condrep data16 | data16 condrep);
-  data16rep = (data16 | rep data16 | data16 rep);
-
   # Special %rbp modifications without required sandboxing
   rbp_modifications =
     (b_0100_10x0 0x89 0xe5                         | # mov %rsp,%rbp
@@ -264,6 +261,15 @@
       @CPUFeature_AVX modrm_registers;
   mmx_sse_rdi_instruction = maskmovq | maskmovdqu | vmaskmovdqu;
 
+  # Temporary fix: for string instructions combination of data16 and rep(ne)
+  # prefixes is disallowed to mimic old validator behavior.
+  # See http://code.google.com/p/nativeclient/issues/detail?id=1950
+
+  # data16rep = (data16 | rep data16 | data16 rep);
+  # data16condrep = (data16 | condrep data16 | data16 condrep);
+  data16rep = data16;
+  data16condrep = data16;
+
   # String instructions which use only %ds:(%rsi)
   string_instruction_rsi_no_rdi =
     (rep? 0xac                 | # lods   %ds:(%rsi),%al
@@ -280,15 +286,15 @@
     data16rep 0xab            | # stos   %ax,%es:(%rdi)
     rep? REXW_NONE? 0xab      ; # stos   %eax/%rax,%es:(%rdi)
 
-  # String instructions which use both %ds:(%rsi) and %ds:(%rdi)
+  # String instructions which use both %ds:(%rsi) and %es:(%rdi)
   string_instruction_rsi_rdi =
     condrep? 0xa6            | # cmpsb    %es:(%rdi),%ds:(%rsi)
     data16condrep 0xa7       | # cmpsw    %es:(%rdi),%ds:(%rsi)
     condrep? REXW_NONE? 0xa7 | # cmps[lq] %es:(%rdi),%ds:(%rsi)
 
-    rep? 0xa4                | # movsb    %es:(%rdi),%ds:(%rsi)
-    data16rep 0xa5           | # movsw    %es:(%rdi),%ds:(%rsi)
-    rep? REXW_NONE? 0xa5     ; # movs[lq] %es:(%rdi),%ds:(%rsi)
+    rep? 0xa4                | # movsb    %ds:(%rsi),%es:(%rdi)
+    data16rep 0xa5           | # movsw    %ds:(%rsi),%es:(%rdi)
+    rep? REXW_NONE? 0xa5     ; # movs[lq] %ds:(%rsi),%es:(%rdi)
 
   sandbox_instruction_rsi_no_rdi =
     (0x89 | 0x8b) 0xf6       . # mov %esi,%esi

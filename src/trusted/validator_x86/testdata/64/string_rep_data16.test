@@ -1,0 +1,200 @@
+@hex:
+  # Due to bug, REP(NE) is not allowed for 16-bit versions of string instructions
+  # (because there would be two non-rex prefixes: rep and data16).
+  # See http://code.google.com/p/nativeclient/issues/detail?id=1950
+  
+  # mov %edi, %edi
+  89 ff
+  # lea (%r15,%rdi,1), %rdi
+  49 8d 3c 3f
+  # rep scasw %es:(%rdi), %ax
+  66 f3 af
+@rval:
+  VALIDATOR: 0000000000000006: 66 f3 af                                     scasw [%rdi]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: Checking jump targets: 0 to 9
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 89 ff                                        mov %edi, %edi
+  0000000000000002: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000006: 66 f3 af                                     scasw [%rdi]
+@rdfa_output:
+  6: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # mov %edi, %edi
+  89 ff
+  # lea (%r15,%rdi,1), %rdi
+  49 8d 3c 3f
+  # repne scasw %es:(%rdi), %ax
+  66 f2 af
+@rval:
+  VALIDATOR: 0000000000000006: 66 f2 af                                     scasw [%rdi]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: Checking jump targets: 0 to 9
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 89 ff                                        mov %edi, %edi
+  0000000000000002: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000006: 66 f2 af                                     scasw [%rdi]
+@rdfa_output:
+  6: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # mov %edi, %edi
+  89 ff
+  # lea (%r15,%rdi,1), %rdi
+  49 8d 3c 3f
+  # rep stosw %ax, %es:(%rdi)
+  66 f3 ab
+@rval:
+  VALIDATOR: 0000000000000006: 66 f3 ab                                     stosw [%rdi]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: Checking jump targets: 0 to 9
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 89 ff                                        mov %edi, %edi
+  0000000000000002: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000006: 66 f3 ab                                     stosw [%rdi]
+@rdfa_output:
+  6: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # mov %esi, %esi
+  89 f6
+  # lea (%r15,%rsi,1), %rsi
+  49 8d 34 37
+  # rep lodsw %ds:(%rsi), %ax
+  66 f3 ad
+@rval:
+  VALIDATOR: 0000000000000006: 66 f3 ad                                     lodsw [%rsi]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: Checking jump targets: 0 to 9
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 89 f6                                        mov %esi, %esi
+  0000000000000002: 49 8d 34 37                                  lea %rsi, [%r15+%rsi*1]
+  0000000000000006: 66 f3 ad                                     lodsw [%rsi]
+@rdfa_output:
+  6: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # mov %esi, %esi
+  89 f6
+  # lea (%r15,%rsi,1), %rsi
+  49 8d 34 37
+  # mov %edi, %edi
+  89 ff
+  # lea (%r15,%rdi,1), %rdi
+  49 8d 3c 3f
+  # rep movsw %ds:(%rsi), %es:(%rdi)
+  66 f3 a5
+@rval:
+  VALIDATOR: 000000000000000c: 66 f3 a5                                     movsw [%rdi], [%rsi]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: Checking jump targets: 0 to f
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 89 f6                                        mov %esi, %esi
+  0000000000000002: 49 8d 34 37                                  lea %rsi, [%r15+%rsi*1]
+  0000000000000006: 89 ff                                        mov %edi, %edi
+  0000000000000008: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  000000000000000c: 66 f3 a5                                     movsw [%rdi], [%rsi]
+@rdfa_output:
+  c: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # mov %esi, %esi
+  89 f6
+  # lea (%r15,%rsi,1), %rsi
+  49 8d 34 37
+  # mov %edi, %edi
+  89 ff
+  # lea (%r15,%rdi,1), %rdi
+  49 8d 3c 3f
+  # rep cmpsw %es:(%rdi), %ds:(%rsi)
+  66 f3 a7
+@rval:
+  VALIDATOR: 000000000000000c: 66 f3 a7                                     cmpsw [%rdi], [%rsi]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: Checking jump targets: 0 to f
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 89 f6                                        mov %esi, %esi
+  0000000000000002: 49 8d 34 37                                  lea %rsi, [%r15+%rsi*1]
+  0000000000000006: 89 ff                                        mov %edi, %edi
+  0000000000000008: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  000000000000000c: 66 f3 a7                                     cmpsw [%rdi], [%rsi]
+@rdfa_output:
+  c: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # mov %esi, %esi
+  89 f6
+  # lea (%r15,%rsi,1), %rsi
+  49 8d 34 37
+  # mov %edi, %edi
+  89 ff
+  # lea (%r15,%rdi,1), %rdi
+  49 8d 3c 3f
+  # repne cmpsw %es:(%rdi), %ds:(%rsi)
+  66 f2 a7
+@rval:
+  VALIDATOR: 000000000000000c: 66 f2 a7                                     cmpsw [%rdi], [%rsi]
+  VALIDATOR: ERROR: More than one (non-REX) prefix byte specified
+  VALIDATOR: Checking jump targets: 0 to f
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
+@dis:
+  0000000000000000: 89 f6                                        mov %esi, %esi
+  0000000000000002: 49 8d 34 37                                  lea %rsi, [%r15+%rsi*1]
+  0000000000000006: 89 ff                                        mov %edi, %edi
+  0000000000000008: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  000000000000000c: 66 f2 a7                                     cmpsw [%rdi], [%rsi]
+@rdfa_output:
+  c: [0] unrecognized instruction
+  return code: 1
+----------------------------------------------------------------------
+@hex:
+  # Examples of valid string instructions.
+  
+  # DATA16, but no REP/REPNE prefix:
+  # mov %edi, %edi
+  89 ff
+  # lea (%r15,%rdi,1), %rdi
+  49 8d 3c 3f
+  # scasw %es:(%rdi), %ax
+  66 af
+  
+  # REP, but no DATA16 prefix:
+  # mov %edi, %edi
+  89 ff
+  # lea (%r15,%rdi,1),%rdi
+  49 8d 3c 3f
+  # rep stosb %al, %es:(%rdi)
+  f3 aa
+@rval:
+  VALIDATOR: Checking jump targets: 0 to 10
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> is safe ***
+@dis:
+  0000000000000000: 89 ff                                        mov %edi, %edi
+  0000000000000002: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  0000000000000006: 66 af                                        scasw [%rdi]
+  0000000000000008: 89 ff                                        mov %edi, %edi
+  000000000000000a: 49 8d 3c 3f                                  lea %rdi, [%r15+%rdi*1]
+  000000000000000e: f3 aa                                        stosb [%rdi]
+@rdfa_output:
+  return code: 0
