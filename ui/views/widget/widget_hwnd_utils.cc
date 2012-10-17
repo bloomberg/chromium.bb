@@ -60,7 +60,7 @@ void CalculateWindowStylesFromInitParams(
       bool can_maximize = widget_delegate->CanMaximize();
       if (can_maximize) {
         *style |= WS_OVERLAPPEDWINDOW;
-      } else if (can_resize) {
+      } else if (can_resize || params.remove_standard_frame) {
         *style |= WS_OVERLAPPED | WS_THICKFRAME;
       }
       if (native_widget_delegate->IsDialogBox()) {
