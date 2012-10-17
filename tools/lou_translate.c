@@ -73,7 +73,7 @@ translate_input (int forward_translation, char *table_name)
       k = 0;
       while ((ch = getchar ()) != '\n' && ch != EOF && k < BUFSIZE)
 	charbuf[k++] = ch;
-      if (ch == EOF)
+      if (ch == EOF && k == 0)
 	break;
       charbuf[k] = 0;
       inlen = extParseChars (charbuf, inbuf);
