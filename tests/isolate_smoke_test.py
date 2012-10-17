@@ -31,7 +31,6 @@ EXPECTED_MODES = (
   'check',
   'hashtable',
   'help',
-  'noop',
   'merge',
   'read',
   'remap',
@@ -335,7 +334,6 @@ class Isolate(unittest.TestCase):
     out = out[:out.index('')]
     modes = [re.match(r'^  (\w+) .+', l) for l in out]
     modes = tuple(m.group(1) for m in modes if m)
-    # noop doesn't do anything so no point in testing it.
     self.assertEquals(sorted(EXPECTED_MODES), sorted(modes))
 
   def test_modes(self):
@@ -359,7 +357,6 @@ class Isolate(unittest.TestCase):
     modes_to_check = list(EXPECTED_MODES)
     modes_to_check.remove('help')
     modes_to_check.remove('merge')
-    modes_to_check.remove('noop')
     modes_to_check.remove('read')
     modes_to_check.remove('trace')
     modes_to_check.append('trace_read_merge')

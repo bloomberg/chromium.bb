@@ -1691,19 +1691,6 @@ def CMDhashtable(args):
         os.remove(options.result)
 
 
-def CMDnoop(args):
-  """Touches --result but does nothing else.
-
-  This mode is to help transition since some builders do not have all the test
-  data files checked out. Touch result_file and exit silently.
-  """
-  parser = OptionParserIsolate(command='noop')
-  options, _ = parser.parse_args(args)
-  # In particular, do not call load_complete_state().
-  open(options.result, 'a').close()
-  return 0
-
-
 def CMDmerge(args):
   """Reads and merges the data from the trace back into the original .isolate.
 
