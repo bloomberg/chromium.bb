@@ -5,6 +5,8 @@
 #ifndef REMOTING_HOST_DAEMON_PROCESS_H_
 #define REMOTING_HOST_DAEMON_PROCESS_H_
 
+#include <list>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -23,19 +25,26 @@ class SingleThreadTaskRunner;
 
 namespace remoting {
 
+class DesktopSession;
+
 // This class implements core of the daemon process. It manages the networking
-// process running at lower privileges and maintains the list of virtual
-// terminals.
+// process running at lower privileges and maintains the list of desktop
+// sessions.
 class DaemonProcess
     : public Stoppable,
       public ConfigFileWatcher::Delegate,
       public WorkerProcessIpcDelegate {
  public:
+  typedef std::list<DesktopSession*> DesktopSessionList;
+
   virtual ~DaemonProcess();
 
-  // Creates a platform-specific implementation of the daemon process object.
+  // Creates a platform-specific implementation of the daemon process object
+  // passing relevant task runners. Public methods of this class must be called
+  // on the |caller_task_runner| thread. |io_task_runner| is used to handle IPC
+  // and background I/O tasks.
   static scoped_ptr<DaemonProcess> Create(
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       const base::Closure& stopped_callback);
 
@@ -50,41 +59,73 @@ class DaemonProcess
 
   // Sends an IPC message to the network process. The message will be dropped
   // unless the network process is connected over the IPC channel.
-  virtual void Send(IPC::Message* message) = 0;
+  virtual void SendToNetwork(IPC::Message* message) = 0;
+
+  // Closes the desktop session identified by |terminal_id|.
+  void CloseDesktopSession(int terminal_id);
 
  protected:
-  DaemonProcess(scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+  DaemonProcess(scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
                 scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
                 const base::Closure& stopped_callback);
 
-  // Reads the host configuration and launches the networking process.
+  // Reads the host configuration and launches the network process.
   void Initialize();
+
+  // Creates a desktop session and assigns a unique ID to it.
+  void CreateDesktopSession(int terminal_id);
+
+  // Returns true if |terminal_id| is considered to be known. I.e. it is
+  // less or equal to the highest ID we have seen so far.
+  bool IsTerminalIdKnown(int terminal_id);
 
   // Stoppable implementation.
   virtual void DoStop() OVERRIDE;
 
+  // Creates a platform-specific desktop session and assigns a unique ID to it.
+  virtual scoped_ptr<DesktopSession> DoCreateDesktopSession(
+      int terminal_id) = 0;
+
   // Launches the network process and establishes an IPC channel with it.
   virtual void LaunchNetworkProcess() = 0;
 
-  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner() {
-    return main_task_runner_;
+  // Restart the network process.
+  virtual void RestartNetworkProcess() = 0;
+
+  scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner() {
+    return caller_task_runner_;
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner() {
     return io_task_runner_;
   }
 
+  // Let the test code analyze the list of desktop sessions.
+  friend class DaemonProcessTest;
+  const DesktopSessionList& desktop_sessions() const {
+    return desktop_sessions_;
+  }
+
  private:
+  // Deletes all desktop sessions.
+  void DeleteAllDesktopSessions();
+
+  // Task runner on which public methods of this class must be called.
+  scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
+
+  // Handles IPC and background I/O tasks.
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+
   scoped_ptr<ConfigFileWatcher> config_watcher_;
 
   // The configuration file contents.
   std::string serialized_config_;
 
-  // The main task runner. Typically it is the UI message loop.
-  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+  // The list of active desktop sessions.
+  DesktopSessionList desktop_sessions_;
 
-  // Handles IPC and background I/O tasks.
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  // The highest desktop session ID that has been seen so far.
+  int next_terminal_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DaemonProcess);
 };

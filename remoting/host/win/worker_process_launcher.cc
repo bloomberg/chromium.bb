@@ -186,7 +186,11 @@ void WorkerProcessLauncher::Core::Stop() {
 void WorkerProcessLauncher::Core::Send(IPC::Message* message) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  launcher_delegate_->Send(message);
+  if (ipc_enabled_) {
+    launcher_delegate_->Send(message);
+  } else {
+    delete message;
+  }
 }
 
 void WorkerProcessLauncher::Core::OnObjectSignaled(HANDLE object) {

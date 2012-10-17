@@ -114,6 +114,8 @@ void HostService::AddWtsConsoleObserver(WtsConsoleObserver* observer) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   console_observers_.AddObserver(observer);
+  if (console_session_id_ != kInvalidSessionId)
+    observer->OnSessionAttached(console_session_id_);
 }
 
 void HostService::RemoveWtsConsoleObserver(WtsConsoleObserver* observer) {
@@ -128,6 +130,8 @@ void HostService::OnChildStopped() {
 }
 
 void HostService::OnSessionChange() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
   // WTSGetActiveConsoleSessionId is a very cheap API. It basically reads
   // a single value from shared memory. Therefore it is better to check if
   // the console session is still the same every time a session change

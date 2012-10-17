@@ -626,6 +626,10 @@
             'host/daemon_process.cc',
             'host/daemon_process.h',
             'host/daemon_process_win.cc',
+            'host/desktop_session.cc',
+            'host/desktop_session.h',
+            'host/desktop_session_win.cc',
+            'host/desktop_session_win.h',
             'host/host_exit_codes.h',
             'host/ipc_consts.cc',
             'host/ipc_consts.h',
@@ -1426,6 +1430,7 @@
         'remoting_protocol',
         'differ_block',
         '../crypto/crypto.gyp:crypto',
+        '../ipc/ipc.gyp:ipc',
       ],
       'defines': [
         'VERSION=<(version_full)',
@@ -1446,6 +1451,8 @@
         'host/chromoting_host.h',
         'host/chromoting_host_context.cc',
         'host/chromoting_host_context.h',
+        'host/chromoting_messages.cc',
+        'host/chromoting_messages.h',
         'host/client_session.cc',
         'host/client_session.h',
         'host/clipboard.h',
@@ -1626,12 +1633,6 @@
             ],
           },
         }],
-        ['OS=="win"', {
-          'sources': [
-            'host/chromoting_messages.cc',
-            'host/chromoting_messages.h',
-          ],
-        }],
       ],
     },  # end of target 'remoting_host'
 
@@ -1700,7 +1701,6 @@
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../google_apis/google_apis.gyp:google_apis',
-        '../ipc/ipc.gyp:ipc',
         '../media/media.gyp:media',
         '../net/net.gyp:net',
       ],
@@ -2031,9 +2031,18 @@
         'codec/video_encoder_row_based_unittest.cc',
         'codec/video_encoder_vp8_unittest.cc',
         'host/audio_capturer_win_unittest.cc',
+        'host/branding.cc',
+        'host/branding.h',
         'host/chromoting_host_context_unittest.cc',
         'host/chromoting_host_unittest.cc',
         'host/client_session_unittest.cc',
+        'host/config_file_watcher.cc',
+        'host/config_file_watcher.h',
+        'host/daemon_process.cc',
+        'host/daemon_process.h',
+        'host/daemon_process_unittest.cc',
+        'host/desktop_session.cc',
+        'host/desktop_session.h',
         'host/differ_block_unittest.cc',
         'host/differ_unittest.cc',
         'host/heartbeat_sender_unittest.cc',
@@ -2101,9 +2110,6 @@
       ],
       'conditions': [
         [ 'OS=="win"', {
-          'dependencies': [
-            '../ipc/ipc.gyp:ipc',
-          ],
           'include_dirs': [
             '../breakpad/src',
           ],

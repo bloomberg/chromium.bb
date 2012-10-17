@@ -12,58 +12,111 @@
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/branding.h"
 #include "remoting/host/chromoting_messages.h"
+#include "remoting/host/desktop_session.h"
 
 namespace remoting {
 
 DaemonProcess::~DaemonProcess() {
-  CHECK(!config_watcher_.get());
+  DCHECK(!config_watcher_.get());
+  DCHECK(desktop_sessions_.empty());
 }
 
 void DaemonProcess::OnConfigUpdated(const std::string& serialized_config) {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
   if (serialized_config_ != serialized_config) {
     serialized_config_ = serialized_config;
-    Send(new ChromotingDaemonNetworkMsg_Configuration(serialized_config_));
+    SendToNetwork(
+        new ChromotingDaemonNetworkMsg_Configuration(serialized_config_));
   }
 }
 
 void DaemonProcess::OnConfigWatcherError() {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
   Stop();
 }
 
 void DaemonProcess::OnChannelConnected() {
-  DCHECK(main_task_runner()->BelongsToCurrentThread());
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  DeleteAllDesktopSessions();
+
+  // Reset the last known desktop session ID because no IDs have been allocated
+  // by the the newly started process yet.
+  next_terminal_id_ = 0;
 
   // Send the configuration to the network process.
-  Send(new ChromotingDaemonNetworkMsg_Configuration(serialized_config_));
+  SendToNetwork(
+      new ChromotingDaemonNetworkMsg_Configuration(serialized_config_));
 }
 
 bool DaemonProcess::OnMessageReceived(const IPC::Message& message) {
-  DCHECK(main_task_runner()->BelongsToCurrentThread());
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
-  return false;
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(DaemonProcess, message)
+    IPC_MESSAGE_HANDLER(ChromotingNetworkHostMsg_ConnectTerminal,
+                        CreateDesktopSession)
+    IPC_MESSAGE_HANDLER(ChromotingNetworkHostMsg_DisconnectTerminal,
+                        CloseDesktopSession)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void DaemonProcess::OnPermanentError() {
-  DCHECK(main_task_runner()->BelongsToCurrentThread());
-
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
   Stop();
 }
 
+void DaemonProcess::CloseDesktopSession(int terminal_id) {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  // Validate the supplied terminal ID. An attempt to close a desktop session
+  // with an ID that couldn't possibly have been allocated is considered
+  // a protocol error and the network process will be restarted.
+  if (!IsTerminalIdKnown(terminal_id)) {
+    LOG(ERROR) << "An invalid terminal ID. terminal_id=" << terminal_id;
+    RestartNetworkProcess();
+    DeleteAllDesktopSessions();
+    return;
+  }
+
+  DesktopSessionList::iterator i;
+  for (i = desktop_sessions_.begin(); i != desktop_sessions_.end(); ++i) {
+    if ((*i)->id() == terminal_id) {
+      break;
+    }
+  }
+
+  // It is OK if the desktop session ID wasn't found. There is a race between
+  // the network and daemon processes. Each frees its own recources first and
+  // notifies the other party if there was something to clean up.
+  if (i == desktop_sessions_.end())
+    return;
+
+  delete *i;
+  desktop_sessions_.erase(i);
+
+  VLOG(1) << "Daemon: closed desktop session " << terminal_id;
+  SendToNetwork(
+      new ChromotingDaemonNetworkMsg_TerminalDisconnected(terminal_id));
+}
+
 DaemonProcess::DaemonProcess(
-    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     const base::Closure& stopped_callback)
-    : Stoppable(main_task_runner, stopped_callback),
-      main_task_runner_(main_task_runner),
-      io_task_runner_(io_task_runner) {
-  // Initialize on the same thread that will be used for shutting down.
-  main_task_runner_->PostTask(
-    FROM_HERE,
-    base::Bind(&DaemonProcess::Initialize, base::Unretained(this)));
+    : Stoppable(caller_task_runner, stopped_callback),
+      caller_task_runner_(caller_task_runner),
+      io_task_runner_(io_task_runner),
+      next_terminal_id_(0) {
+  DCHECK(caller_task_runner->BelongsToCurrentThread());
 }
 
 void DaemonProcess::Initialize() {
-  DCHECK(main_task_runner()->BelongsToCurrentThread());
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   // Get the name of the host configuration file.
   FilePath default_config_dir = remoting::GetConfigDir();
@@ -74,7 +127,7 @@ void DaemonProcess::Initialize() {
   }
 
   // Start watching the host configuration file.
-  config_watcher_.reset(new ConfigFileWatcher(main_task_runner(),
+  config_watcher_.reset(new ConfigFileWatcher(caller_task_runner(),
                                               io_task_runner(),
                                               this));
   config_watcher_->Watch(config_path);
@@ -83,11 +136,43 @@ void DaemonProcess::Initialize() {
   LaunchNetworkProcess();
 }
 
+bool DaemonProcess::IsTerminalIdKnown(int terminal_id) {
+  return terminal_id < next_terminal_id_;
+}
+
+void DaemonProcess::CreateDesktopSession(int terminal_id) {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  // Validate the supplied terminal ID. An attempt to create a desktop session
+  // with an ID that could possibly have been allocated already is considered
+  // a protocol error and the network process will be restarted.
+  if (IsTerminalIdKnown(terminal_id)) {
+    LOG(ERROR) << "An invalid terminal ID. terminal_id=" << terminal_id;
+    RestartNetworkProcess();
+    DeleteAllDesktopSessions();
+    return;
+  }
+
+  VLOG(1) << "Daemon: opened desktop session " << terminal_id;
+  desktop_sessions_.push_back(
+      DoCreateDesktopSession(terminal_id).release());
+  next_terminal_id_ = std::max(next_terminal_id_, terminal_id + 1);
+}
+
 void DaemonProcess::DoStop() {
-  DCHECK(main_task_runner()->BelongsToCurrentThread());
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   config_watcher_.reset();
+  DeleteAllDesktopSessions();
+
   CompleteStopping();
+}
+
+void DaemonProcess::DeleteAllDesktopSessions() {
+  while (!desktop_sessions_.empty()) {
+    delete desktop_sessions_.front();
+    desktop_sessions_.pop_front();
+  }
 }
 
 }  // namespace remoting
