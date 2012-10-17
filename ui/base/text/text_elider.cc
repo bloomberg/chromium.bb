@@ -907,7 +907,7 @@ bool RectangleText::Finalize() {
 
 void RectangleText::AddLine(const string16& line) {
   const int line_width = font_.GetStringWidth(line);
-  if (line_width < available_pixel_width_) {
+  if (line_width <= available_pixel_width_) {
     AddToCurrentLineWithWidth(line, line_width);
   } else {
     // Iterate over positions that are valid to break the line at. In general,
