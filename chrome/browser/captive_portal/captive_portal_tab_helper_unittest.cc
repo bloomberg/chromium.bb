@@ -8,8 +8,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/captive_portal/captive_portal_service.h"
 #include "chrome/browser/captive_portal/captive_portal_tab_reloader.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -62,7 +62,7 @@ class MockCaptivePortalTabReloader : public CaptivePortalTabReloader {
 // CreateTestWebContents.  Since the tests need to micromanage order of
 // WebContentsObserver function calls, does not actually make sure of
 // the harness in any other way.
-class CaptivePortalTabHelperTest : public TabContentsTestHarness {
+class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
  public:
   CaptivePortalTabHelperTest()
       : tab_helper_(NULL),
@@ -73,7 +73,7 @@ class CaptivePortalTabHelperTest : public TabContentsTestHarness {
   virtual ~CaptivePortalTabHelperTest() {}
 
   virtual void SetUp() OVERRIDE {
-    TabContentsTestHarness::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
     web_contents1_.reset(CreateTestWebContents());
     web_contents2_.reset(CreateTestWebContents());
   }
@@ -81,7 +81,7 @@ class CaptivePortalTabHelperTest : public TabContentsTestHarness {
   virtual void TearDown() OVERRIDE {
     web_contents2_.reset(NULL);
     web_contents1_.reset(NULL);
-    TabContentsTestHarness::TearDown();
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
   // Simulates a successful load of |url|.
