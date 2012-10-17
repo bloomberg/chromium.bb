@@ -52,6 +52,10 @@ void MockTsfBridge::RemoveFocusedClient(TextInputClient* client) {
   focused_window_ = NULL;
 }
 
+base::win::ScopedComPtr<ITfThreadMgr> MockTsfBridge::GetThreadManager() {
+  return thread_manager_;
+}
+
 void MockTsfBridge::Reset() {
   shutdown_call_count_ = 0;
   enable_ime_call_count_ = 0;

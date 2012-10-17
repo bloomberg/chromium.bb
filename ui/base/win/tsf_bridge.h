@@ -6,7 +6,10 @@
 #define UI_BASE_WIN_TSF_BRIDGE_H_
 
 #include <Windows.h>
+#include <msctf.h>
+
 #include "base/basictypes.h"
+#include "base/win/scoped_comptr.h"
 #include "ui/base/ui_export.h"
 
 namespace ui {
@@ -60,6 +63,9 @@ class UI_EXPORT TsfBridge {
   // Removes currently focused TextInputClient.
   // Caller must free |client|.
   virtual void RemoveFocusedClient(TextInputClient* client) = 0;
+
+  // Obtains current thread manager.
+  virtual base::win::ScopedComPtr<ITfThreadMgr> GetThreadManager() = 0;
 
  protected:
   // Uses GetInstance() instead.

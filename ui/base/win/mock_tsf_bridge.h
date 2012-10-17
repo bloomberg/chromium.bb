@@ -5,7 +5,10 @@
 #ifndef UI_BASE_WIN_MOCK_TSF_BRIDGE_H_
 #define UI_BASE_WIN_MOCK_TSF_BRIDGE_H_
 
+#include <msctf.h>
+
 #include "base/compiler_specific.h"
+#include "base/win/scoped_comptr.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/win/tsf_bridge.h"
 
@@ -31,6 +34,9 @@ class MockTsfBridge : public TsfBridge {
 
   // TsfBridge override.
   virtual void RemoveFocusedClient(TextInputClient* client) OVERRIDE;
+
+  // TsfBridge override.
+  virtual base::win::ScopedComPtr<ITfThreadMgr> GetThreadManager() OVERRIDE;
 
   // Resets MockTsfBridge state including function call counter.
   void Reset();
@@ -84,6 +90,7 @@ class MockTsfBridge : public TsfBridge {
   TextInputClient* text_input_client_;
   HWND focused_window_;
   TextInputType latest_text_input_type_;
+  base::win::ScopedComPtr<ITfThreadMgr> thread_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTsfBridge);
 };

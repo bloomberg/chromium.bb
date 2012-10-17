@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <msctf.h>
+
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -181,6 +182,12 @@ class TsfBridgeDelegate : public TsfBridge {
       text_store_->get()->SetFocusedTextInputClient(NULL, NULL);
       password_text_store_->get()->SetFocusedTextInputClient(NULL, NULL);
     }
+  }
+
+  virtual base::win::ScopedComPtr<ITfThreadMgr> GetThreadManager() OVERRIDE {
+    DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
+    DCHECK(IsInitialized());
+    return thread_manager_;
   }
 
  private:
