@@ -1307,6 +1307,58 @@ class VectorBinary2RegisterScalar_I16_32L_VQDMULL_A2
     : public VectorBinary2RegisterScalar_I16_32L {
 };
 
+class VectorBinary3RegisterDifferentLength_I16_32L_VQDMLAL_VQDMLSL_A1
+    : public VectorBinary3RegisterDifferentLength_I16_32L {
+};
+
+class VectorBinary3RegisterDifferentLength_I16_32L_VQDMULL_A1
+    : public VectorBinary3RegisterDifferentLength_I16_32L {
+};
+
+class VectorBinary3RegisterDifferentLength_I16_32_64_VADDHN
+    : public VectorBinary3RegisterDifferentLength_I16_32_64 {
+};
+
+class VectorBinary3RegisterDifferentLength_I16_32_64_VRADDHN
+    : public VectorBinary3RegisterDifferentLength_I16_32_64 {
+};
+
+class VectorBinary3RegisterDifferentLength_I16_32_64_VRSUBHN
+    : public VectorBinary3RegisterDifferentLength_I16_32_64 {
+};
+
+class VectorBinary3RegisterDifferentLength_I16_32_64_VSUBHN
+    : public VectorBinary3RegisterDifferentLength_I16_32_64 {
+};
+
+class VectorBinary3RegisterDifferentLength_I8_16_32_VADDL_VADDW
+    : public VectorBinary3RegisterDifferentLength_I8_16_32 {
+};
+
+class VectorBinary3RegisterDifferentLength_I8_16_32_VSUBL_VSUBW
+    : public VectorBinary3RegisterDifferentLength_I8_16_32 {
+};
+
+class VectorBinary3RegisterDifferentLength_I8_16_32L_VABAL_A2
+    : public VectorBinary3RegisterDifferentLength_I8_16_32L {
+};
+
+class VectorBinary3RegisterDifferentLength_I8_16_32L_VABDL_integer_A2
+    : public VectorBinary3RegisterDifferentLength_I8_16_32L {
+};
+
+class VectorBinary3RegisterDifferentLength_I8_16_32L_VMLAL_VMLSL_integer_A2
+    : public VectorBinary3RegisterDifferentLength_I8_16_32L {
+};
+
+class VectorBinary3RegisterDifferentLength_I8_16_32L_VMULL_integer_A2
+    : public VectorBinary3RegisterDifferentLength_I8_16_32L {
+};
+
+class VectorBinary3RegisterDifferentLength_P8_VMULL_polynomial_A2
+    : public VectorBinary3RegisterDifferentLength_P8 {
+};
+
 class VectorBinary3RegisterImmOp_Vext_Rule_305_A1_P598
     : public VectorBinary3RegisterImmOp {
 };
@@ -6488,6 +6540,162 @@ class NamedVectorBinary2RegisterScalar_I16_32L_VQDMULL_A2
  private:
   nacl_arm_dec::VectorBinary2RegisterScalar_I16_32L_VQDMULL_A2 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterScalar_I16_32L_VQDMULL_A2);
+};
+
+class NamedVectorBinary3RegisterDifferentLength_I16_32L_VQDMLAL_VQDMLSL_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterDifferentLength_I16_32L_VQDMLAL_VQDMLSL_A1()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterDifferentLength_I16_32L VQDMLAL_VQDMLSL_A1")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterDifferentLength_I16_32L_VQDMLAL_VQDMLSL_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterDifferentLength_I16_32L_VQDMLAL_VQDMLSL_A1);
+};
+
+class NamedVectorBinary3RegisterDifferentLength_I16_32L_VQDMULL_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterDifferentLength_I16_32L_VQDMULL_A1()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterDifferentLength_I16_32L VQDMULL_A1")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterDifferentLength_I16_32L_VQDMULL_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterDifferentLength_I16_32L_VQDMULL_A1);
+};
+
+class NamedVectorBinary3RegisterDifferentLength_I16_32_64_VADDHN
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterDifferentLength_I16_32_64_VADDHN()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterDifferentLength_I16_32_64 VADDHN")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterDifferentLength_I16_32_64_VADDHN decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterDifferentLength_I16_32_64_VADDHN);
+};
+
+class NamedVectorBinary3RegisterDifferentLength_I16_32_64_VRADDHN
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterDifferentLength_I16_32_64_VRADDHN()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterDifferentLength_I16_32_64 VRADDHN")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterDifferentLength_I16_32_64_VRADDHN decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterDifferentLength_I16_32_64_VRADDHN);
+};
+
+class NamedVectorBinary3RegisterDifferentLength_I16_32_64_VRSUBHN
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterDifferentLength_I16_32_64_VRSUBHN()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterDifferentLength_I16_32_64 VRSUBHN")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterDifferentLength_I16_32_64_VRSUBHN decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterDifferentLength_I16_32_64_VRSUBHN);
+};
+
+class NamedVectorBinary3RegisterDifferentLength_I16_32_64_VSUBHN
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterDifferentLength_I16_32_64_VSUBHN()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterDifferentLength_I16_32_64 VSUBHN")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterDifferentLength_I16_32_64_VSUBHN decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterDifferentLength_I16_32_64_VSUBHN);
+};
+
+class NamedVectorBinary3RegisterDifferentLength_I8_16_32_VADDL_VADDW
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterDifferentLength_I8_16_32_VADDL_VADDW()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterDifferentLength_I8_16_32 VADDL_VADDW")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterDifferentLength_I8_16_32_VADDL_VADDW decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterDifferentLength_I8_16_32_VADDL_VADDW);
+};
+
+class NamedVectorBinary3RegisterDifferentLength_I8_16_32_VSUBL_VSUBW
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterDifferentLength_I8_16_32_VSUBL_VSUBW()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterDifferentLength_I8_16_32 VSUBL_VSUBW")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterDifferentLength_I8_16_32_VSUBL_VSUBW decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterDifferentLength_I8_16_32_VSUBL_VSUBW);
+};
+
+class NamedVectorBinary3RegisterDifferentLength_I8_16_32L_VABAL_A2
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterDifferentLength_I8_16_32L_VABAL_A2()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterDifferentLength_I8_16_32L VABAL_A2")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterDifferentLength_I8_16_32L_VABAL_A2 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterDifferentLength_I8_16_32L_VABAL_A2);
+};
+
+class NamedVectorBinary3RegisterDifferentLength_I8_16_32L_VABDL_integer_A2
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterDifferentLength_I8_16_32L_VABDL_integer_A2()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterDifferentLength_I8_16_32L VABDL_integer_A2")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterDifferentLength_I8_16_32L_VABDL_integer_A2 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterDifferentLength_I8_16_32L_VABDL_integer_A2);
+};
+
+class NamedVectorBinary3RegisterDifferentLength_I8_16_32L_VMLAL_VMLSL_integer_A2
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterDifferentLength_I8_16_32L_VMLAL_VMLSL_integer_A2()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterDifferentLength_I8_16_32L VMLAL_VMLSL_integer_A2")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterDifferentLength_I8_16_32L_VMLAL_VMLSL_integer_A2 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterDifferentLength_I8_16_32L_VMLAL_VMLSL_integer_A2);
+};
+
+class NamedVectorBinary3RegisterDifferentLength_I8_16_32L_VMULL_integer_A2
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterDifferentLength_I8_16_32L_VMULL_integer_A2()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterDifferentLength_I8_16_32L VMULL_integer_A2")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterDifferentLength_I8_16_32L_VMULL_integer_A2 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterDifferentLength_I8_16_32L_VMULL_integer_A2);
+};
+
+class NamedVectorBinary3RegisterDifferentLength_P8_VMULL_polynomial_A2
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary3RegisterDifferentLength_P8_VMULL_polynomial_A2()
+    : NamedClassDecoder(decoder_, "VectorBinary3RegisterDifferentLength_P8 VMULL_polynomial_A2")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary3RegisterDifferentLength_P8_VMULL_polynomial_A2 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary3RegisterDifferentLength_P8_VMULL_polynomial_A2);
 };
 
 class NamedVectorBinary3RegisterImmOp_Vext_Rule_305_A1_P598

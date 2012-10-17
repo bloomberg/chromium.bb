@@ -112,6 +112,9 @@ class Arm32DecoderState : DecoderState {
   inline const ClassDecoder& decode_simd_dp_2scalar(
       const Instruction inst) const;
 
+  inline const ClassDecoder& decode_simd_dp_3diff(
+      const Instruction inst) const;
+
   inline const ClassDecoder& decode_simd_dp_3same(
       const Instruction inst) const;
 
@@ -194,6 +197,11 @@ class Arm32DecoderState : DecoderState {
   const VectorBinary2RegisterScalar_F32 VectorBinary2RegisterScalar_F32_instance_;
   const VectorBinary2RegisterScalar_I16_32 VectorBinary2RegisterScalar_I16_32_instance_;
   const VectorBinary2RegisterScalar_I16_32L VectorBinary2RegisterScalar_I16_32L_instance_;
+  const VectorBinary3RegisterDifferentLength_I16_32L VectorBinary3RegisterDifferentLength_I16_32L_instance_;
+  const VectorBinary3RegisterDifferentLength_I16_32_64 VectorBinary3RegisterDifferentLength_I16_32_64_instance_;
+  const VectorBinary3RegisterDifferentLength_I8_16_32 VectorBinary3RegisterDifferentLength_I8_16_32_instance_;
+  const VectorBinary3RegisterDifferentLength_I8_16_32L VectorBinary3RegisterDifferentLength_I8_16_32L_instance_;
+  const VectorBinary3RegisterDifferentLength_P8 VectorBinary3RegisterDifferentLength_P8_instance_;
   const VectorBinary3RegisterImmOp VectorBinary3RegisterImmOp_instance_;
   const VectorBinary3RegisterLookupOp VectorBinary3RegisterLookupOp_instance_;
   const VectorBinary3RegisterSameLength32P VectorBinary3RegisterSameLength32P_instance_;

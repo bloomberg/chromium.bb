@@ -2129,6 +2129,108 @@ class VectorBinary3RegisterSameLengthDI
   NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterSameLengthDI);
 };
 
+// Vector binary operator, 3 registers different length (One Q and two D, or
+// two D and one Q). Which register is Q (vs D) is instruction dependent.
+// Op<c> Rd, Rn, Rm,...
+// +--------+--+--+--+--+----+--------+--------+----+--+--+--+--+--+--+--------+
+// |31..28|27..|24|23|22|2120|19181716|15141312|1110| 9| 8| 7| 6| 5| 4| 3 2 1 0|
+// +------+----+--+--+--+----+--------+--------+----+--+--+--+--+--+--+--------+
+// | cond |    | U|  | D|size|   Vn   |   Vd   |    |  |op| N| Q| M|  |   Vm   |
+// +--------+--+--+--+--+----+--------+--------+----+--+--+--+--+--+--+--------+
+// Rd - The destination register.
+// Rn - The first operand.
+// Rm - The second operand.
+//
+// d = D:Vd, n = N:Vn, m = M:Vm
+//
+// Note: The vector registers are not tracked by the validator, and hence,
+// are not modeled, other than their index.
+class VectorBinary3RegisterDifferentLength
+    : public VectorBinary3RegisterOpBase {
+ public:
+  static const FlagBit6Interface q;
+  static const FlagBit8Interface op;
+  static const Imm2Bits20To21Interface size;
+  static const FlagBit24Interface u;
+
+  VectorBinary3RegisterDifferentLength() {}
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterDifferentLength);
+};
+
+// Defines a VectorBinary3RegisterDifferentLength that allows 8, 16, and
+// 32-bit integer arguments.
+//   safety := size=11 => DECODER_ERROR &
+//             Vd(0)=1 | (op=1 & Vn(0)=1) => UNDEFINED;
+class VectorBinary3RegisterDifferentLength_I8_16_32
+    : public VectorBinary3RegisterDifferentLength {
+ public:
+  VectorBinary3RegisterDifferentLength_I8_16_32() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      VectorBinary3RegisterDifferentLength_I8_16_32);
+};
+
+// Defines a VectorBinary3RegisterDifferentLength that allows 16, 32, and
+// 64-bit integer values (defined by 2*size).
+//   safety := size=11 => DECODER_ERROR &
+//             Vn(0)=1 | Vm(0)=1 => UNDEFINED;
+class VectorBinary3RegisterDifferentLength_I16_32_64
+    : public VectorBinary3RegisterDifferentLength {
+ public:
+  VectorBinary3RegisterDifferentLength_I16_32_64() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterDifferentLength_I16_32_64);
+};
+
+// Defines a VectorBinary3RegisterDifferentLength that allows 8, 16, and
+// 32-bit integer argments, and long (i.e. double sized) results.
+//   safety := size=11 => DECODER_ERROR &
+//             Vd(0)=1 => UNDEFINED;
+class VectorBinary3RegisterDifferentLength_I8_16_32L
+    : public VectorBinary3RegisterDifferentLength {
+ public:
+  VectorBinary3RegisterDifferentLength_I8_16_32L() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterDifferentLength_I8_16_32L);
+};
+
+// Defines a VectorBinary3RegisterDifferentLength that allows 16 and
+// 32-bit operands, and long (i.e. double sized) results.
+//   safety := size=11 => DECODER_ERROR &
+//             size=00 | Vd(0)=1 => UNDEFINED;
+class VectorBinary3RegisterDifferentLength_I16_32L
+    : public VectorBinary3RegisterDifferentLength {
+ public:
+  VectorBinary3RegisterDifferentLength_I16_32L() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterDifferentLength_I16_32L);
+};
+
+// Defines a VectorBinary3RegisterDifferentLength that allows 8-bit
+// vector polynomial operations.
+//   safety := size=11 => DECODER_ERROR &
+//             U=1 | size=~00 => UNDEFINED &
+//             Vd(0)=1 => UNDEFINED;
+class VectorBinary3RegisterDifferentLength_P8
+    : public VectorBinary3RegisterDifferentLength {
+ public:
+  VectorBinary3RegisterDifferentLength_P8() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterDifferentLength_P8);
+};
+
 // Vector binary operator, 2 registers and a scalar (which is encoded in M:Vm).
 // op<c>.<dt> Rd, Rn, <Rm[x]>
 // +--------+--+--+--+--+----+--------+--------+--+--+--+--+--+--+--+--+------+

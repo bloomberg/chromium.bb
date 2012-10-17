@@ -1154,6 +1154,50 @@ SafetyLevel VectorBinary3RegisterSameLengthDI::safety(Instruction i) const {
   if (q.IsDefined(i)) return UNDEFINED;
   return MAY_BE_SAFE;
 }
+// VectorBinary3RegisterDifferentLength_I8_16_32
+SafetyLevel VectorBinary3RegisterDifferentLength_I8_16_32::
+safety(Instruction i) const {
+  if (size.value(i) == 3) return DECODER_ERROR;
+  if (!vd.IsEven(i)) return UNDEFINED;
+  if ((op.IsDefined(i)) && !vn.IsEven(i)) return UNDEFINED;
+  return VectorBinary3RegisterDifferentLength::safety(i);
+}
+
+// VectorBinary3RegisterDifferentLength_I16_32_64
+SafetyLevel VectorBinary3RegisterDifferentLength_I16_32_64::
+safety(Instruction i) const {
+  if (size.value(i) == 3) return DECODER_ERROR;
+  if (!vn.IsEven(i)) return UNDEFINED;
+  if (!vm.IsEven(i)) return UNDEFINED;
+  return VectorBinary3RegisterDifferentLength::safety(i);
+}
+
+// VectorBinary3RegisterDifferentLength_I8_16_32L
+SafetyLevel VectorBinary3RegisterDifferentLength_I8_16_32L::
+safety(Instruction i) const {
+  if (size.value(i) == 3) return DECODER_ERROR;
+  if (!vd.IsEven(i)) return UNDEFINED;
+  return VectorBinary3RegisterDifferentLength::safety(i);
+}
+
+// VectorBinary3RegisterDifferentLength_I16_32L
+SafetyLevel VectorBinary3RegisterDifferentLength_I16_32L::
+safety(Instruction i) const {
+  if (size.value(i) == 3) return DECODER_ERROR;
+  if (size.value(i) == 0) return UNDEFINED;
+  if (!vd.IsEven(i)) return UNDEFINED;
+  return VectorBinary3RegisterDifferentLength::safety(i);
+}
+
+// VectorBinary3RegisterDifferentLength_P8
+SafetyLevel VectorBinary3RegisterDifferentLength_P8::
+safety(Instruction i) const {
+  if (size.value(i) == 3) return DECODER_ERROR;
+  if (u.IsDefined(i)) return UNDEFINED;
+  if (size.value(i) != 0) return UNDEFINED;
+  if (!vd.IsEven(i)) return UNDEFINED;
+  return VectorBinary3RegisterDifferentLength::safety(i);
+}
 
 // VectorBinary2RegisterScalar_I16_32
 SafetyLevel VectorBinary2RegisterScalar_I16_32::safety(Instruction i) const {

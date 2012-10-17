@@ -185,6 +185,18 @@ class Unary1RegisterImmediateOpDynCodeReplace : Unary1RegisterImmediateOp
 class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 class UndefinedCondDecoder : UnsafeCondDecoder
 class UnpredictableUncondDecoder : UnsafeUncondDecoder
+class VectorBinary3RegisterDifferentLength_I8_16_32
+         : VectorBinary3RegisterDifferentLength
+class VectorBinary3RegisterDifferentLength_I8_16_32
+         : VectorBinary3RegisterDifferentLength
+class VectorBinary3RegisterDifferentLength_I16_32_64
+         : VectorBinary3RegisterDifferentLength
+class VectorBinary3RegisterDifferentLength_I8_16_32L
+         : VectorBinary3RegisterDifferentLength
+class VectorBinary3RegisterDifferentLength_I16_32L
+         : VectorBinary3RegisterDifferentLength
+class VectorBinary3RegisterDifferentLength_P8
+         : VectorBinary3RegisterDifferentLength
 class VectorBinary3RegisterSameLengthDQ
          : VectorBinary3RegisterSameLength
 class VectorBinary3RegisterSameLengthDQI16_32
@@ -2005,21 +2017,90 @@ class VectorBinary2RegisterScalar_I16_32L : VectorBinary2RegisterScalar
 +--
 
 +-- simd_dp_3diff (See Section A7.4.2)
+*V3RDL VectorBinary3RegisterDifferentLength
+   { U(24), D(22), size(21:20), Vn(19:16), Vd(15:12), op(8),
+     N(7), M(5), Vm(3:0) }
+   d := D:Vd; n := N:Vn; m := M:Vm;
+   unsigned := U=1;
+   esize := 8  << size; elements := 64 / esize;
+   defs := {};  # Doesn't affect general purpose registers.
+   uses := {};
+*V3RDL_I8_16_32 *V3RDL
+   # Allows 8, 16, and 32-bit integer values (defined by size).
+   baseline := VectorBinary3RegisterDifferentLength_I8_16_32;
+   is_w := op=1;
+   safety := size=11 => DECODER_ERROR &
+             Vd(0)=1 | (op=1 & Vn(0)=1) => UNDEFINED;
+*V3RDL_I16_32_64 *V3RDL
+   # Allows 16, 32, and 64-bit operands (defined by 2*size).
+   baseline := VectorBinary3RegisterDifferentLength_I16_32_64;
+   safety := size=11 => DECODER_ERROR &
+             Vn(0)=1 | Vm(0)=1 => UNDEFINED;
+*V3RDL_I8_16_32L *V3RDL
+   # Allows 8, 16, and 32-bit operands, and long (i.e. double
+   # sized) results.
+   baseline := VectorBinary3RegisterDifferentLength_I8_16_32L;
+   safety := size=11 => DECODER_ERROR &
+             Vd(0)=1 => UNDEFINED;
+*V3RDL_I16_32L *V3RDL
+   # Allows 16 and 32-bit operands, and long (i.e. double sized)
+   # results.
+   baseline := VectorBinary3RegisterDifferentLength_I16_32L;
+   add := op=0;
+   m := Vm(2:0) if size=01 else Vm;
+   safety := size=11 => DECODER_ERROR &
+             size=00 | Vd(0)=1 => UNDEFINED;
+*V3RDL_P8 *V3RDL
+   # Defines an 8-bit polynomial vector operation.
+   baseline := VectorBinary3RegisterDifferentLength_P8;
+   safety := size=11 => DECODER_ERROR &
+             U=1 | size=~00 => UNDEFINED &
+             Vd(0)=1 => UNDEFINED;
++--
+# Note: Table advanced_simd_data_processing_instructions (the
+# caller of this table) restricts size(21:20) to be in {0x, 10}.
 | A(11:8) U(24)
-| 000x    -     =EffectiveNoOp  # VADDL
-| 001x    -     =EffectiveNoOp  # VSUBL
-| 0100    0     =EffectiveNoOp  # VADDHN
-| "       1     =EffectiveNoOp  # VRADDHN
-| 0101    -     =EffectiveNoOp  # VABA, VABAL
-| 0110    0     =EffectiveNoOp  # VSUBHN
-| "       1     =EffectiveNoOp  # VRSUBHN
-| 0111    -     =EffectiveNoOp  # VABD, VABDL(integer)
-| 10x0    -     =EffectiveNoOp  # VMLA, VMLAL, VMLS, VMLSL (integer)
-| 10x1    0     =EffectiveNoOp  # VQDMLAL, VQDMLSL
-| 1100    -     =EffectiveNoOp  # VMUL, VMULL (integer)
-| 1101    0     =EffectiveNoOp  # VQDMULL
-| 1110    -     =EffectiveNoOp  # VMUL, VMULL (polynomial)
-| else:         =Undefined  # Note on page A7-15
+| 000x    -     = *V3RDL_I8_16_32
+                  pattern := 1111001u1dssnnnndddd000pn0m0mmmm & size=~11;
+                  is_vaddw := U=1;
+                  rule := VADDL_VADDW;
+| 001x    -     = *V3RDL_I8_16_32
+                  pattern := 1111001u1dssnnnndddd001pn0m0mmmm & size=~11;
+                  rule := VSUBL_VSUBW;
+| 0100    0     = *V3RDL_I16_32_64
+                  pattern := 111100101dssnnnndddd0100nqm0mmmm & size=~11;
+                  rule := VADDHN;
+| "       1     = *V3RDL_I16_32_64
+                  pattern := 111100111dssnnnndddd0100n0m0mmmm & size=~11;
+                  rule := VRADDHN;
+| 0101    -     = *V3RDL_I8_16_32L
+                  pattern := 1111001u1dssnnnndddd0101n0m0mmmm & size=~11;
+                  rule := VABAL_A2;
+| 0110    0     = *V3RDL_I16_32_64
+                  pattern := 111100101dssnnnndddd0110n0m0mmmm & size=~11;
+                  rule := VSUBHN;
+| "       1     = *V3RDL_I16_32_64
+                  pattern := 111100111dssnnnndddd0110n0m0mmmm & size=~11;
+                  rule := VRSUBHN;
+| 0111    -     = *V3RDL_I8_16_32L
+                  pattern := 1111001u1dssnnnndddd0111n0m0mmmm & size=~11;
+                  rule := VABDL_integer_A2;
+| 10x0    -     = *V3RDL_I8_16_32L
+                  pattern := 1111001u1dssnnnndddd10p0n0m0mmmm & size=~11;
+                  rule := VMLAL_VMLSL_integer_A2;
+| 10x1    0     = *V3RDL_I16_32L
+                  pattern := 111100101dssnnnndddd10p1n0m0mmmm & size=~11;
+                  rule := VQDMLAL_VQDMLSL_A1;
+| 1100    -     = *V3RDL_I8_16_32L  # Note: inst(9)=0, implying not polynomial.
+                  pattern := 1111001u1dssnnnndddd11p0n0m0mmmm & size=~11;
+                  rule := VMULL_integer_A2;
+| 1101    0     = *V3RDL_I16_32L
+                  pattern := 111100101dssnnnndddd1101n0m0mmmm & size=~11;
+                  rule := VQDMULL_A1;
+| 1110    -     = *V3RDL_P8  # Note: inst(9)=1, implying polynomial.
+                  pattern := 1111001u1dssnnnndddd11p0n0m0mmmm & size=~11;
+                  rule := VMULL_polynomial_A2;
+| else:         = Undefined
 +--
 
 +-- simd_dp_2scalar (See Section A7.4.3)

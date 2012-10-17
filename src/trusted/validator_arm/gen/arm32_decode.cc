@@ -74,6 +74,11 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , VectorBinary2RegisterScalar_F32_instance_()
   , VectorBinary2RegisterScalar_I16_32_instance_()
   , VectorBinary2RegisterScalar_I16_32L_instance_()
+  , VectorBinary3RegisterDifferentLength_I16_32L_instance_()
+  , VectorBinary3RegisterDifferentLength_I16_32_64_instance_()
+  , VectorBinary3RegisterDifferentLength_I8_16_32_instance_()
+  , VectorBinary3RegisterDifferentLength_I8_16_32L_instance_()
+  , VectorBinary3RegisterDifferentLength_P8_instance_()
   , VectorBinary3RegisterImmOp_instance_()
   , VectorBinary3RegisterLookupOp_instance_()
   , VectorBinary3RegisterSameLength32P_instance_()
@@ -141,7 +146,7 @@ const ClassDecoder& Arm32DecoderState::decode_advanced_simd_data_processing_inst
 {
   if ((inst.Bits() & 0x00B00000) == 0x00A00000 /* A(23:19)=1x10x */ &&
       (inst.Bits() & 0x00000050) == 0x00000000 /* C(7:4)=x0x0 */) {
-    return NotImplemented_instance_;
+    return decode_simd_dp_3diff(inst);
   }
 
   if ((inst.Bits() & 0x00B00000) == 0x00A00000 /* A(23:19)=1x10x */ &&
@@ -151,7 +156,7 @@ const ClassDecoder& Arm32DecoderState::decode_advanced_simd_data_processing_inst
 
   if ((inst.Bits() & 0x00A00000) == 0x00800000 /* A(23:19)=1x0xx */ &&
       (inst.Bits() & 0x00000050) == 0x00000000 /* C(7:4)=x0x0 */) {
-    return NotImplemented_instance_;
+    return decode_simd_dp_3diff(inst);
   }
 
   if ((inst.Bits() & 0x00A00000) == 0x00800000 /* A(23:19)=1x0xx */ &&
@@ -1533,6 +1538,54 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_2scalar(
 
   if ((inst.Bits() & 0x00000300) == 0x00000000 /* A(11:8)=xx00 */) {
     return VectorBinary2RegisterScalar_I16_32_instance_;
+  }
+
+  if (true) {
+    return Undefined_instance_;
+  }
+
+  // Catch any attempt to fall though ...
+  return not_implemented_;
+}
+
+// Implementation of table: simd_dp_3diff.
+// Specified by: See Section A7.4.2
+const ClassDecoder& Arm32DecoderState::decode_simd_dp_3diff(
+     const Instruction inst) const
+{
+  UNREFERENCED_PARAMETER(inst);
+  if ((inst.Bits() & 0x00000F00) == 0x00000C00 /* A(11:8)=1100 */) {
+    return VectorBinary3RegisterDifferentLength_I8_16_32L_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000F00) == 0x00000D00 /* A(11:8)=1101 */ &&
+      (inst.Bits() & 0x01000000) == 0x00000000 /* U(24)=0 */) {
+    return VectorBinary3RegisterDifferentLength_I16_32L_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000F00) == 0x00000E00 /* A(11:8)=1110 */) {
+    return VectorBinary3RegisterDifferentLength_P8_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000D00) == 0x00000400 /* A(11:8)=01x0 */) {
+    return VectorBinary3RegisterDifferentLength_I16_32_64_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000D00) == 0x00000500 /* A(11:8)=01x1 */) {
+    return VectorBinary3RegisterDifferentLength_I8_16_32L_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000D00) == 0x00000800 /* A(11:8)=10x0 */) {
+    return VectorBinary3RegisterDifferentLength_I8_16_32L_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000D00) == 0x00000900 /* A(11:8)=10x1 */ &&
+      (inst.Bits() & 0x01000000) == 0x00000000 /* U(24)=0 */) {
+    return VectorBinary3RegisterDifferentLength_I16_32L_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000C00) == 0x00000000 /* A(11:8)=00xx */) {
+    return VectorBinary3RegisterDifferentLength_I8_16_32_instance_;
   }
 
   if (true) {

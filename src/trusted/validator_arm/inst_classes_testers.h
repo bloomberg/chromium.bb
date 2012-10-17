@@ -1938,6 +1938,37 @@ class VectorBinary3RegisterSameLengthTester
   NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterSameLengthTester);
 };
 
+// Implements a decoder tester for VectorBinary3RegisterDifferntLength.
+// Vector binary operator, 3 registers different length (One Q and two D, or
+// two D and one Q). Which register is Q (vs D) is instruction dependent.
+// Op<c> Rd, Rn, Rm,...
+// +--------+--+--+--+--+----+--------+--------+----+--+--+--+--+--+--+--------+
+// |31..28|27..|24|23|22|2120|19181716|15141312|1110| 9| 8| 7| 6| 5| 4| 3 2 1 0|
+// +------+----+--+--+--+----+--------+--------+----+--+--+--+--+--+--+--------+
+// | cond |    | U|  | D|size|   Vn   |   Vd   |    |  |op| N| Q| M|  |   Vm   |
+// +--------+--+--+--+--+----+--------+--------+----+--+--+--+--+--+--+--------+
+// Rd - The destination register.
+// Rn - The first operand.
+// Rm - The second operand.
+//
+// d = D:Vd, n = N:Vn, m = M:Vm
+class VectorBinary3RegisterDifferentLengthTester
+    : public VectorBinary3RegisterOpBaseTester {
+ public:
+  explicit VectorBinary3RegisterDifferentLengthTester(
+      const NamedClassDecoder& decoder)
+      : VectorBinary3RegisterOpBaseTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::VectorBinary3RegisterDifferentLength expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterDifferentLengthTester);
+};
+
 // Implements a decoder tester for VectorBinary2RegisterScalar.
 // Vector binary operator, 2 registers and a scalar (which is encoded in M:Vm).
 // op<c>.<dt> Rd, Rn, <Rm[x]>

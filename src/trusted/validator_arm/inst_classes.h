@@ -363,6 +363,17 @@ class Imm12Bits8To19Interface {
   NACL_DISALLOW_COPY_AND_ASSIGN(Imm12Bits8To19Interface);
 };
 
+// Interface class to pull out value in bit 8
+class FlagBit8Interface {
+ public:
+  static bool IsDefined(const Instruction& i) {
+    return i.Bit(8);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(FlagBit8Interface);
+};
+
 // Interface class to pull out value in bit 9
 class FlagBit9Interface {
  public:
@@ -453,17 +464,6 @@ class FlagBit6Interface {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(FlagBit6Interface);
-};
-
-// Interface class to pull out bit 8 as a flag
-class FlagBit8Interface {
- public:
-  static bool IsDefined(const Instruction& i) {
-    return i.Bit(8);
-  }
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(FlagBit8Interface);
 };
 
 // Interface class to pull out bit 10 as a flag
