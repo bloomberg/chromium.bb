@@ -165,15 +165,12 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
   // Sets |email|'s wallpaper.
   void SetUserWallpaper(const std::string& email);
 
+  // Sets the default wallpaper for the sign-in screen.
+  void SetSigninWallpaper();
+
   // Sets wallpaper to |wallpaper|.
   void SetWallpaperFromImageSkia(const gfx::ImageSkia& wallpaper,
                                  ash::WallpaperLayout layout);
-
-  // User was deselected at login screen, reset wallpaper if needed.
-  void OnUserDeselected() {}
-
-  // User |email| was selected at login screen, load wallpaper.
-  void OnUserSelected(const std::string& email);
 
  private:
   typedef std::map<std::string, gfx::ImageSkia> CustomWallpaperMap;

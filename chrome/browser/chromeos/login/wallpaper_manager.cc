@@ -681,15 +681,16 @@ void WallpaperManager::SetUserWallpaper(const std::string& email) {
   }
 }
 
+void WallpaperManager::SetSigninWallpaper() {
+  ash::Shell::GetInstance()->desktop_background_controller()->
+      SetDefaultWallpaper(kDefaultOOBEWallpaperIndex, false);
+}
+
 void WallpaperManager::SetWallpaperFromImageSkia(
     const gfx::ImageSkia& wallpaper,
     ash::WallpaperLayout layout) {
   ash::Shell::GetInstance()->desktop_background_controller()->
       SetCustomWallpaper(wallpaper, layout);
-}
-
-void WallpaperManager::OnUserSelected(const std::string& email) {
-  SetUserWallpaper(email);
 }
 
 // WallpaperManager, private: --------------------------------------------------

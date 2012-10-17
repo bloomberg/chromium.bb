@@ -304,11 +304,8 @@ void SigninScreenHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("shutdownSystem",
       base::Bind(&SigninScreenHandler::HandleShutdownSystem,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("userSelectedDelayed",
-      base::Bind(&SigninScreenHandler::HandleUserSelected,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("userDeselected",
-      base::Bind(&SigninScreenHandler::HandleUserDeselected,
+  web_ui()->RegisterMessageCallback("loadWallpaper",
+      base::Bind(&SigninScreenHandler::HandleLoadWallpaper,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("removeUser",
       base::Bind(&SigninScreenHandler::HandleRemoveUser,
@@ -474,6 +471,12 @@ void SigninScreenHandler::ShowSigninScreenIfReady() {
     focus_stolen_ = false;
   }
 
+  // Note that LoadAuthExtension clears |email_|.
+  if (email_.empty())
+    delegate_->LoadSigninWallpaper();
+  else
+    delegate_->LoadWallpaper(email_);
+
   LoadAuthExtension(!gaia_silent_load_, false, false);
   ShowScreen(kGaiaSigninScreen, NULL);
 
@@ -632,12 +635,7 @@ void SigninScreenHandler::HandleShutdownSystem(const base::ListValue* args) {
 #endif
 }
 
-void SigninScreenHandler::HandleUserDeselected(const base::ListValue* args) {
-  if (delegate_)
-    delegate_->OnUserDeselected();
-}
-
-void SigninScreenHandler::HandleUserSelected(const base::ListValue* args) {
+void SigninScreenHandler::HandleLoadWallpaper(const base::ListValue* args) {
   if (!delegate_)
     return;
 
@@ -647,7 +645,7 @@ void SigninScreenHandler::HandleUserSelected(const base::ListValue* args) {
     return;
   }
 
-  delegate_->OnUserSelected(email);
+  delegate_->LoadWallpaper(email);
 }
 
 void SigninScreenHandler::HandleRemoveUser(const base::ListValue* args) {

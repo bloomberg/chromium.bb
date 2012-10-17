@@ -426,6 +426,9 @@ cr.define('login', function() {
     // Activated pod, i.e. the pod of current login attempt.
     activatedPod_: undefined,
 
+    // Pod that was most recently focused, if any.
+    lastFocusedPod_: undefined,
+
     // When moving through users quickly at login screen, set a timeout to
     // prevent loading intermediate wallpapers.
     loadWallpaperTimeout_: null,
@@ -596,6 +599,7 @@ cr.define('login', function() {
       this.innerHTML = '';
       this.focusedPod_ = undefined;
       this.activatedPod_ = undefined;
+      this.lastFocusedPod_ = undefined;
 
       // Populate the pod row.
       for (var i = 0; i < users.length; ++i) {
@@ -667,16 +671,27 @@ cr.define('login', function() {
           this.loadWallpaper_();
         }
         this.firstShown_ = false;
-      } else {
-        chrome.send('userDeselected');
+        this.lastFocusedPod_ = podToFocus;
       }
       this.insideFocusPod_ = false;
       this.keyboardActivated_ = false;
     },
 
+    /**
+     * Loads wallpaper for the active user pod, if any.
+     * @private
+     */
     loadWallpaper_: function() {
       if (this.focusedPod_)
-        chrome.send('userSelectedDelayed', [this.focusedPod_.user.username]);
+        chrome.send('loadWallpaper', [this.focusedPod_.user.username]);
+    },
+
+    /**
+     * Resets wallpaper to the last active user's wallpaper, if any.
+     */
+    loadLastWallpaper: function() {
+      if (this.lastFocusedPod_)
+        chrome.send('loadWallpaper', [this.lastFocusedPod_.user.username]);
     },
 
     /**
@@ -732,6 +747,7 @@ cr.define('login', function() {
       // Clear any error messages that might still be around.
       Oobe.clearErrors();
       this.disabled = true;
+      this.lastFocusedPod_ = this.getPodWithUsername_(email);
       Oobe.showSigninUI(email);
     },
 

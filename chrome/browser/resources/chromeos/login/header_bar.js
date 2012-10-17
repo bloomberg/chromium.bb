@@ -76,6 +76,7 @@ cr.define('login', function() {
      */
     handleCancelAddUserClick_: function(e) {
       $('login-header-bar').signinUIActive = false;
+      $('pod-row').loadLastWallpaper();
       Oobe.showScreen({id: SCREEN_ACCOUNT_PICKER});
       Oobe.resetSigninUI(true);
     },
