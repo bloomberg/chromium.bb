@@ -71,8 +71,7 @@ void AddCacheEntryOnIOThread(net::URLRequestContextGetter* context_getter,
 
   // Add entry to the cache.
   cache->Set(net::HostCache::Key(hostname, net::ADDRESS_FAMILY_UNSPECIFIED, 0),
-             net_error,
-             address_list,
+             net::HostCache::Entry(net_error, address_list),
              base::TimeTicks::Now(),
              ttl);
 }
