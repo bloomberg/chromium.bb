@@ -951,8 +951,9 @@ void RenderWidgetHostViewWin::SetBackground(const SkBitmap& background) {
   render_widget_host_->SetBackground(background);
 }
 
-void RenderWidgetHostViewWin::ProcessTouchAck(bool processed) {
-
+void RenderWidgetHostViewWin::ProcessAckedTouchEvent(
+    const WebKit::WebTouchEvent& touch,
+    bool processed) {
   DCHECK(render_widget_host_->has_touch_handler() &&
       touch_events_enabled_);
 

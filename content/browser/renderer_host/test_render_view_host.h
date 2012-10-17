@@ -156,7 +156,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE {}
   virtual gfx::Rect GetBoundsInRootWindow() OVERRIDE;
 #endif
-  virtual void ProcessTouchAck(bool processed) OVERRIDE { }
   virtual void SetHasHorizontalScrollbar(
       bool has_horizontal_scrollbar) OVERRIDE { }
   virtual void SetScrollOffsetPinning(

@@ -116,7 +116,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) OVERRIDE;
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id) OVERRIDE;
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) OVERRIDE;
-  virtual void ProcessTouchAck(bool processed) OVERRIDE;
   virtual void SetHasHorizontalScrollbar(
       bool has_horizontal_scrollbar) OVERRIDE;
   virtual void SetScrollOffsetPinning(

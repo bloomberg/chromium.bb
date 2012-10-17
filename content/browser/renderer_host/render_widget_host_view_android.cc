@@ -380,7 +380,9 @@ void RenderWidgetHostViewAndroid::UnhandledWheelEvent(
   // intentionally empty, like RenderWidgetHostViewViews
 }
 
-void RenderWidgetHostViewAndroid::ProcessTouchAck(bool processed) {
+void RenderWidgetHostViewAndroid::ProcessAckedTouchEvent(
+    const WebKit::WebTouchEvent& touch_event,
+    bool processed) {
   // intentionally empty, like RenderWidgetHostViewViews
 }
 

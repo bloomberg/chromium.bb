@@ -1318,9 +1318,6 @@ void RenderWidgetHostViewMac::ForceTextureReload() {
   plugin_container_manager_.ForceTextureReload();
 }
 
-void RenderWidgetHostViewMac::ProcessTouchAck(bool processed) {
-}
-
 void RenderWidgetHostViewMac::SetHasHorizontalScrollbar(
     bool has_horizontal_scrollbar) {
   [cocoa_view_ setHasHorizontalScrollbar:has_horizontal_scrollbar];

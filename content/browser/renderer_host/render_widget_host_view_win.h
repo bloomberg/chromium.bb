@@ -201,7 +201,8 @@ class RenderWidgetHostViewWin
       const base::Callback<void(bool)>& callback,
       skia::PlatformBitmap* output) OVERRIDE;
   virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
-  virtual void ProcessTouchAck(bool processed) OVERRIDE;
+  virtual void ProcessAckedTouchEvent(const WebKit::WebTouchEvent& touch,
+                                      bool processed) OVERRIDE;
   virtual void SetHasHorizontalScrollbar(
       bool has_horizontal_scrollbar) OVERRIDE;
   virtual void SetScrollOffsetPinning(

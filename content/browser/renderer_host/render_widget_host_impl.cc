@@ -28,6 +28,7 @@
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/tap_suppression_controller.h"
+#include "content/browser/renderer_host/touch_event_queue.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
@@ -149,6 +150,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       has_touch_handler_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       tick_active_smooth_scroll_gestures_task_posted_(false),
+      touch_event_queue_(new TouchEventQueue(this)),
       gesture_event_filter_(new GestureEventFilter(this)) {
   CHECK(delegate_);
   if (routing_id_ == MSG_ROUTING_NONE) {
@@ -940,6 +942,15 @@ void RenderWidgetHostImpl::ForwardGestureEvent(
   ForwardInputEvent(gesture_event, sizeof(WebGestureEvent), false);
 }
 
+void RenderWidgetHostImpl::ForwardTouchEventImmediately(
+    const WebKit::WebTouchEvent& touch_event) {
+  TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::ForwardTouchEvent");
+  if (ignore_input_events_ || process_->IgnoreInputEvents())
+    return;
+
+  ForwardInputEvent(touch_event, sizeof(WebKit::WebTouchEvent), false);
+}
+
 void RenderWidgetHostImpl::ForwardGestureEventImmediately(
     const WebKit::WebGestureEvent& gesture_event) {
   if (ignore_input_events_ || process_->IgnoreInputEvents())
@@ -1047,12 +1058,7 @@ void RenderWidgetHostImpl::ForwardInputEvent(const WebInputEvent& input_event,
 
 void RenderWidgetHostImpl::ForwardTouchEvent(
     const WebKit::WebTouchEvent& touch_event) {
-  TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::ForwardTouchEvent");
-  if (ignore_input_events_ || process_->IgnoreInputEvents())
-    return;
-
-  // TODO(sad): Do touch-event coalescing when appropriate.
-  ForwardInputEvent(touch_event, sizeof(WebKit::WebTouchEvent), false);
+  touch_event_queue_->QueueEvent(touch_event);
 }
 
 #if defined(TOOLKIT_GTK)
@@ -1734,8 +1740,7 @@ void RenderWidgetHostImpl::ProcessGestureAck(bool processed, int type) {
 }
 
 void RenderWidgetHostImpl::ProcessTouchAck(bool processed) {
-  if (view_)
-    view_->ProcessTouchAck(processed);
+  touch_event_queue_->ProcessTouchAck(processed);
 }
 
 void RenderWidgetHostImpl::OnMsgFocus() {

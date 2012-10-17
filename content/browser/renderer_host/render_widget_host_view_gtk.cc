@@ -1241,9 +1241,6 @@ void RenderWidgetHostViewGtk::DestroyPluginContainer(
   plugin_container_manager_.DestroyPluginContainer(id);
 }
 
-void RenderWidgetHostViewGtk::ProcessTouchAck(bool processed) {
-}
-
 void RenderWidgetHostViewGtk::SetHasHorizontalScrollbar(
     bool has_horizontal_scrollbar) {
 }

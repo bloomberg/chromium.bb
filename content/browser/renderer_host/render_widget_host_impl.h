@@ -60,6 +60,7 @@ class GestureEventFilter;
 class RenderWidgetHostDelegate;
 class RenderWidgetHostViewPort;
 class SmoothScrollGesture;
+class TouchEventQueue;
 
 // This implements the RenderWidgetHost interface that is exposed to
 // embedders of content, and adds things only visible to content.
@@ -239,6 +240,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   virtual void ForwardTouchEvent(const WebKit::WebTouchEvent& touch_event);
 
   // Forwards the given event immediately to the renderer.
+  void ForwardTouchEventImmediately(const WebKit::WebTouchEvent& touch_event);
   void ForwardGestureEventImmediately(
       const WebKit::WebGestureEvent& gesture_event);
 
@@ -829,6 +831,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   base::TimeTicks last_smooth_scroll_gestures_tick_time_;
   bool tick_active_smooth_scroll_gestures_task_posted_;
 
+  scoped_ptr<TouchEventQueue> touch_event_queue_;
   scoped_ptr<GestureEventFilter> gesture_event_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostImpl);

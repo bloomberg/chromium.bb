@@ -59,6 +59,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual WebKit::WebPopupType GetPopupType() OVERRIDE;
   virtual BrowserAccessibilityManager*
       GetBrowserAccessibilityManager() const OVERRIDE;
+  virtual void ProcessAckedTouchEvent(const WebKit::WebTouchEvent& touch,
+                                      bool processed) OVERRIDE;
   virtual SmoothScrollGesture* CreateSmoothScrollGesture(
       bool scroll_down, bool scroll_far, int mouse_event_x,
       int mouse_event_y) OVERRIDE;

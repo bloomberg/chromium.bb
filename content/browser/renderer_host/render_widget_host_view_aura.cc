@@ -1006,7 +1006,9 @@ gfx::Rect RenderWidgetHostViewAura::GetBoundsInRootWindow() {
   return window_->GetToplevelWindow()->GetBoundsInRootWindow();
 }
 
-void RenderWidgetHostViewAura::ProcessTouchAck(bool processed) {
+void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
+    const WebKit::WebTouchEvent& touch_event,
+    bool processed) {
   // The ACKs for the touch-events arrive in the same sequence as they were
   // dispatched.
   aura::RootWindow* root_window = window_->GetRootWindow();
