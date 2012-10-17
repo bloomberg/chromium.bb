@@ -306,7 +306,7 @@ private:
     void dumpRenderSurfaces(std::string*, int indent, const CCLayerImpl*) const;
 
     scoped_ptr<CCGraphicsContext> m_context;
-    OwnPtr<CCResourceProvider> m_resourceProvider;
+    scoped_ptr<CCResourceProvider> m_resourceProvider;
     scoped_ptr<CCRenderer> m_renderer;
     scoped_ptr<CCLayerImpl> m_rootLayerImpl;
     CCLayerImpl* m_rootScrollLayerImpl;

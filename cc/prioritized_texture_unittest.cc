@@ -35,7 +35,7 @@ public:
     virtual ~CCPrioritizedTextureTest()
     {
         DebugScopedSetImplThread implThread;
-        m_resourceProvider.clear();
+        m_resourceProvider.reset();
     }
 
     size_t texturesMemorySize(size_t textureCount)
@@ -96,7 +96,7 @@ protected:
     const GC3Denum m_textureFormat;
     WebCompositorInitializer m_compositorInitializer;
     scoped_ptr<CCGraphicsContext> m_context;
-    OwnPtr<CCResourceProvider> m_resourceProvider;
+    scoped_ptr<CCResourceProvider> m_resourceProvider;
 };
 
 }

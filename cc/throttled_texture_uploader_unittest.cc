@@ -47,7 +47,7 @@ private:
 TEST(ThrottledTextureUploaderTest, NumBlockingUploads)
 {
     OwnPtr<FakeWebGraphicsContext3DWithQueryTesting> fakeContext(adoptPtr(new FakeWebGraphicsContext3DWithQueryTesting));
-    OwnPtr<ThrottledTextureUploader> uploader = ThrottledTextureUploader::create(fakeContext.get());
+    scoped_ptr<ThrottledTextureUploader> uploader = ThrottledTextureUploader::create(fakeContext.get());
     scoped_ptr<CCPrioritizedTexture> texture =
         CCPrioritizedTexture::create(NULL, IntSize(256, 256), GL_RGBA);
     TextureUploader::Parameters upload;
@@ -77,7 +77,7 @@ TEST(ThrottledTextureUploaderTest, NumBlockingUploads)
 TEST(ThrottledTextureUploaderTest, MarkPendingUploadsAsNonBlocking)
 {
     OwnPtr<FakeWebGraphicsContext3DWithQueryTesting> fakeContext(adoptPtr(new FakeWebGraphicsContext3DWithQueryTesting));
-    OwnPtr<ThrottledTextureUploader> uploader = ThrottledTextureUploader::create(fakeContext.get());
+    scoped_ptr<ThrottledTextureUploader> uploader = ThrottledTextureUploader::create(fakeContext.get());
     scoped_ptr<CCPrioritizedTexture> texture =
         CCPrioritizedTexture::create(NULL, IntSize(256, 256), GL_RGBA);
     TextureUploader::Parameters upload;

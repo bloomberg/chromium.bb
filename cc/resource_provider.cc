@@ -112,12 +112,12 @@ CCResourceProvider::Child::~Child()
 {
 }
 
-PassOwnPtr<CCResourceProvider> CCResourceProvider::create(CCGraphicsContext* context)
+scoped_ptr<CCResourceProvider> CCResourceProvider::create(CCGraphicsContext* context)
 {
-    OwnPtr<CCResourceProvider> resourceProvider(adoptPtr(new CCResourceProvider(context)));
+    scoped_ptr<CCResourceProvider> resourceProvider(new CCResourceProvider(context));
     if (!resourceProvider->initialize())
-        return nullptr;
-    return resourceProvider.release();
+        return scoped_ptr<CCResourceProvider>();
+    return resourceProvider.Pass();
 }
 
 CCResourceProvider::~CCResourceProvider()
@@ -125,8 +125,8 @@ CCResourceProvider::~CCResourceProvider()
     WebGraphicsContext3D* context3d = m_context->context3D();
     if (!context3d || !context3d->makeContextCurrent())
         return;
-    m_textureUploader.clear();
-    m_textureCopier.clear();
+    m_textureUploader.reset();
+    m_textureCopier.reset();
 }
 
 WebGraphicsContext3D* CCResourceProvider::graphicsContext3D()
@@ -244,7 +244,7 @@ void CCResourceProvider::deleteOwnedResources(int pool)
     ResourceIdArray toDelete;
     for (ResourceMap::iterator it = m_resources.begin(); it != m_resources.end(); ++it) {
         if (it->second.pool == pool && !it->second.external && !it->second.markedForDeletion)
-            toDelete.append(it->first);
+            toDelete.push_back(it->first);
     }
     for (ResourceIdArray::iterator it = toDelete.begin(); it != toDelete.end(); ++it)
         deleteResource(*it);
@@ -412,7 +412,7 @@ CCResourceProvider::ScopedWriteLockSoftware::ScopedWriteLockSoftware(CCResourceP
     , m_resourceId(resourceId)
 {
     CCResourceProvider::populateSkBitmapWithResource(&m_skBitmap, resourceProvider->lockForWrite(resourceId));
-    m_skCanvas = adoptPtr(new SkCanvas(m_skBitmap));
+    m_skCanvas.reset(new SkCanvas(m_skBitmap));
 }
 
 CCResourceProvider::ScopedWriteLockSoftware::~ScopedWriteLockSoftware()
@@ -462,7 +462,7 @@ bool CCResourceProvider::initialize()
             useBindUniform = true;
     }
 
-    m_texSubImage = adoptPtr(new LayerTextureSubImage(useMapSub));
+    m_texSubImage.reset(new LayerTextureSubImage(useMapSub));
     m_textureCopier = AcceleratedTextureCopier::create(context3d, useBindUniform);
 
     m_textureUploader = ThrottledTextureUploader::create(context3d);
@@ -512,7 +512,7 @@ CCResourceProvider::TransferableResourceList CCResourceProvider::prepareSendToPa
         TransferableResource resource;
         if (transferResource(context3d, *it, &resource)) {
             m_resources.find(*it)->second.exported = true;
-            list.resources.append(resource);
+            list.resources.push_back(resource);
         }
     }
     if (list.resources.size())
@@ -539,7 +539,7 @@ CCResourceProvider::TransferableResourceList CCResourceProvider::prepareSendToCh
         resource.id = childInfo.parentToChildMap[*it];
         childInfo.parentToChildMap.erase(*it);
         childInfo.childToParentMap.erase(resource.id);
-        list.resources.append(resource);
+        list.resources.push_back(resource);
         deleteResource(*it);
     }
     if (list.resources.size())
@@ -565,7 +565,7 @@ void CCResourceProvider::receiveFromChild(int child, const TransferableResourceL
         GLC(context3d, context3d->waitSyncPoint(resources.syncPoint));
     }
     Child& childInfo = m_children.find(child)->second;
-    for (Vector<TransferableResource>::const_iterator it = resources.resources.begin(); it != resources.resources.end(); ++it) {
+    for (TransferableResourceArray::const_iterator it = resources.resources.begin(); it != resources.resources.end(); ++it) {
         unsigned textureId;
         GLC(context3d, textureId = context3d->createTexture());
         GLC(context3d, context3d->bindTexture(GraphicsContext3D::TEXTURE_2D, textureId));
@@ -573,7 +573,7 @@ void CCResourceProvider::receiveFromChild(int child, const TransferableResourceL
         ResourceId id = m_nextId++;
         Resource resource(textureId, childInfo.pool, it->size, it->format);
         m_resources[id] = resource;
-        m_mailboxes.append(it->mailbox);
+        m_mailboxes.push_back(it->mailbox);
         childInfo.parentToChildMap[id] = it->id;
         childInfo.childToParentMap[it->id] = id;
     }
@@ -589,7 +589,7 @@ void CCResourceProvider::receiveFromParent(const TransferableResourceList& resou
     }
     if (resources.syncPoint)
         GLC(context3d, context3d->waitSyncPoint(resources.syncPoint));
-    for (Vector<TransferableResource>::const_iterator it = resources.resources.begin(); it != resources.resources.end(); ++it) {
+    for (TransferableResourceArray::const_iterator it = resources.resources.begin(); it != resources.resources.end(); ++it) {
         ResourceMap::iterator mapIterator = m_resources.find(it->id);
         ASSERT(mapIterator != m_resources.end());
         Resource* resource = &mapIterator->second;
@@ -597,7 +597,7 @@ void CCResourceProvider::receiveFromParent(const TransferableResourceList& resou
         resource->exported = false;
         GLC(context3d, context3d->bindTexture(GraphicsContext3D::TEXTURE_2D, resource->glId));
         GLC(context3d, context3d->consumeTextureCHROMIUM(GraphicsContext3D::TEXTURE_2D, it->mailbox.name));
-        m_mailboxes.append(it->mailbox);
+        m_mailboxes.push_back(it->mailbox);
         if (resource->markedForDeletion)
             deleteResourceInternal(mapIterator);
     }
@@ -617,8 +617,10 @@ bool CCResourceProvider::transferResource(WebGraphicsContext3D* context, Resourc
     resource->id = id;
     resource->format = source->format;
     resource->size = source->size;
-    if (!m_mailboxes.isEmpty())
-        resource->mailbox = m_mailboxes.takeFirst();
+    if (m_mailboxes.size()) {
+        resource->mailbox = m_mailboxes.front();
+        m_mailboxes.pop_front();
+    }
     else
         GLC(context, context->genMailboxCHROMIUM(resource->mailbox.name));
     GLC(context, context->bindTexture(GraphicsContext3D::TEXTURE_2D, source->glId));
@@ -649,7 +651,7 @@ void CCResourceProvider::trimMailboxDeque()
         }
     }
     while (m_mailboxes.size() > maxMailboxCount)
-        m_mailboxes.removeFirst();
+        m_mailboxes.pop_front();
 }
 
 }

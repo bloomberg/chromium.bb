@@ -5,20 +5,17 @@
 #ifndef CCResourceProvider_h
 #define CCResourceProvider_h
 
-#include "CCGraphicsContext.h"
-#include "GraphicsContext3D.h"
-#include "IntSize.h"
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
+#include "base/memory/scoped_ptr.h"
+#include "CCGraphicsContext.h"
 #include "cc/texture_copier.h"
+#include "GraphicsContext3D.h"
+#include "IntSize.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include <wtf/Deque.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
+#include <deque>
+#include <vector>
 
 namespace WebKit {
 class WebGraphicsContext3D;
@@ -36,7 +33,7 @@ class TextureUploader;
 class CCResourceProvider {
 public:
     typedef unsigned ResourceId;
-    typedef Vector<ResourceId> ResourceIdArray;
+    typedef std::vector<ResourceId> ResourceIdArray;
     typedef base::hash_map<ResourceId, ResourceId> ResourceIdMap;
     enum TextureUsageHint { TextureUsageAny, TextureUsageFramebuffer };
     enum ResourceType {
@@ -52,7 +49,7 @@ public:
         IntSize size;
         Mailbox mailbox;
     };
-    typedef Vector<TransferableResource> TransferableResourceArray;
+    typedef std::vector<TransferableResource> TransferableResourceArray;
     struct TransferableResourceList {
         TransferableResourceList();
         ~TransferableResourceList();
@@ -61,7 +58,7 @@ public:
         unsigned syncPoint;
     };
 
-    static PassOwnPtr<CCResourceProvider> create(CCGraphicsContext*);
+    static scoped_ptr<CCResourceProvider> create(CCGraphicsContext*);
 
     virtual ~CCResourceProvider();
 
@@ -205,7 +202,7 @@ public:
         CCResourceProvider* m_resourceProvider;
         CCResourceProvider::ResourceId m_resourceId;
         SkBitmap m_skBitmap;
-        OwnPtr<SkCanvas> m_skCanvas;
+        scoped_ptr<SkCanvas> m_skCanvas;
 
         DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockSoftware);
     };
@@ -258,15 +255,15 @@ private:
     int m_nextChild;
     ChildMap m_children;
 
-    Deque<Mailbox> m_mailboxes;
+    std::deque<Mailbox> m_mailboxes;
 
     ResourceType m_defaultResourceType;
     bool m_useTextureStorageExt;
     bool m_useTextureUsageHint;
     bool m_useShallowFlush;
-    OwnPtr<LayerTextureSubImage> m_texSubImage;
-    OwnPtr<TextureUploader> m_textureUploader;
-    OwnPtr<AcceleratedTextureCopier> m_textureCopier;
+    scoped_ptr<LayerTextureSubImage> m_texSubImage;
+    scoped_ptr<TextureUploader> m_textureUploader;
+    scoped_ptr<AcceleratedTextureCopier> m_textureCopier;
     int m_maxTextureSize;
 
     DISALLOW_COPY_AND_ASSIGN(CCResourceProvider);

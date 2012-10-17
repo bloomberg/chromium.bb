@@ -136,7 +136,7 @@ protected:
     WebCompositorInitializer m_compositorInitializer;
     scoped_ptr<CCGraphicsContext> m_context;
     FakeCCRendererClient m_mockClient;
-    OwnPtr<CCResourceProvider> m_resourceProvider;
+    scoped_ptr<CCResourceProvider> m_resourceProvider;
     FakeCCRendererGL m_renderer;
     CCScopedSettings m_scopedSettings;
 };
@@ -298,7 +298,7 @@ TEST(CCRendererGLTest2, initializationDoesNotMakeSynchronousCalls)
     CCScopedSettings scopedSettings;
     FakeCCRendererClient mockClient;
     scoped_ptr<CCGraphicsContext> context(FakeWebCompositorOutputSurface::create(adoptPtr(new ForbidSynchronousCallContext)));
-    OwnPtr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
+    scoped_ptr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
     FakeCCRendererGL renderer(&mockClient, resourceProvider.get());
 
     EXPECT_TRUE(renderer.initialize());
@@ -342,7 +342,7 @@ TEST(CCRendererGLTest2, initializationWithQuicklyLostContextDoesNotAssert)
     CCScopedSettings scopedSettings;
     FakeCCRendererClient mockClient;
     scoped_ptr<CCGraphicsContext> context(FakeWebCompositorOutputSurface::create(adoptPtr(new LoseContextOnFirstGetContext)));
-    OwnPtr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
+    scoped_ptr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
     FakeCCRendererGL renderer(&mockClient, resourceProvider.get());
 
     renderer.initialize();
@@ -364,7 +364,7 @@ TEST(CCRendererGLTest2, initializationWithoutGpuMemoryManagerExtensionSupportSho
 {
     FakeCCRendererClient mockClient;
     scoped_ptr<CCGraphicsContext> context(FakeWebCompositorOutputSurface::create(adoptPtr(new ContextThatDoesNotSupportMemoryManagmentExtensions)));
-    OwnPtr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
+    scoped_ptr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
     FakeCCRendererGL renderer(&mockClient, resourceProvider.get());
 
     renderer.initialize();
@@ -392,7 +392,7 @@ TEST(CCRendererGLTest2, opaqueBackground)
     FakeCCRendererClient mockClient;
     scoped_ptr<CCGraphicsContext> ccContext(FakeWebCompositorOutputSurface::create(adoptPtr(new ClearCountingContext)));
     ClearCountingContext* context = static_cast<ClearCountingContext*>(ccContext->context3D());
-    OwnPtr<CCResourceProvider> resourceProvider(CCResourceProvider::create(ccContext.get()));
+    scoped_ptr<CCResourceProvider> resourceProvider(CCResourceProvider::create(ccContext.get()));
     FakeCCRendererGL renderer(&mockClient, resourceProvider.get());
 
     mockClient.rootRenderPass()->setHasTransparentBackground(false);
@@ -415,7 +415,7 @@ TEST(CCRendererGLTest2, transparentBackground)
     FakeCCRendererClient mockClient;
     scoped_ptr<CCGraphicsContext> ccContext(FakeWebCompositorOutputSurface::create(adoptPtr(new ClearCountingContext)));
     ClearCountingContext* context = static_cast<ClearCountingContext*>(ccContext->context3D());
-    OwnPtr<CCResourceProvider> resourceProvider(CCResourceProvider::create(ccContext.get()));
+    scoped_ptr<CCResourceProvider> resourceProvider(CCResourceProvider::create(ccContext.get()));
     FakeCCRendererGL renderer(&mockClient, resourceProvider.get());
 
     mockClient.rootRenderPass()->setHasTransparentBackground(true);

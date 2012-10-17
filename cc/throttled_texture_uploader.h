@@ -8,6 +8,7 @@
 #include "cc/texture_uploader.h"
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include <deque>
 #include <wtf/Deque.h>
 #include <wtf/PassOwnPtr.h>
@@ -20,9 +21,9 @@ namespace cc {
 
 class ThrottledTextureUploader : public TextureUploader {
 public:
-    static PassOwnPtr<ThrottledTextureUploader> create(WebKit::WebGraphicsContext3D* context)
+    static scoped_ptr<ThrottledTextureUploader> create(WebKit::WebGraphicsContext3D* context)
     {
-        return adoptPtr(new ThrottledTextureUploader(context));
+        return make_scoped_ptr(new ThrottledTextureUploader(context));
     }
     virtual ~ThrottledTextureUploader();
 

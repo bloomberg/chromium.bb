@@ -28,7 +28,7 @@ public:
 
 TEST(TextureCopierTest, testDrawArraysCopy)
 {
-    OwnPtr<MockContext> mockContext = adoptPtr(new MockContext);
+    scoped_ptr<MockContext> mockContext(new MockContext);
 
     {
         InSequence sequence;
@@ -53,7 +53,7 @@ TEST(TextureCopierTest, testDrawArraysCopy)
     int sourceTextureId = 1;
     int destTextureId = 2;
     IntSize size(256, 128);
-    OwnPtr<AcceleratedTextureCopier> copier(AcceleratedTextureCopier::create(mockContext.get(), false));
+    scoped_ptr<AcceleratedTextureCopier> copier(AcceleratedTextureCopier::create(mockContext.get(), false));
     TextureCopier::Parameters copy = { sourceTextureId, destTextureId, size };
     copier->copyTexture(copy);
 }

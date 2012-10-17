@@ -55,7 +55,7 @@ protected:
     DebugScopedSetImplThread m_alwaysImplThread;
 
     scoped_ptr<FakeWebCompositorOutputSurface> m_outputSurface;
-    OwnPtr<CCResourceProvider> m_resourceProvider;
+    scoped_ptr<CCResourceProvider> m_resourceProvider;
     scoped_ptr<CCRendererSoftware> m_renderer;
     IntSize m_viewportSize;
     CCLayerTreeSettings m_settings;

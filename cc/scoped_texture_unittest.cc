@@ -23,7 +23,7 @@ TEST(CCScopedTextureTest, NewScopedTexture)
 {
     scoped_ptr<CCGraphicsContext> context(createFakeCCGraphicsContext());
     DebugScopedSetImplThread implThread;
-    OwnPtr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
+    scoped_ptr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
     scoped_ptr<CCScopedTexture> texture = CCScopedTexture::create(resourceProvider.get());
 
     // New scoped textures do not hold a texture yet.
@@ -38,7 +38,7 @@ TEST(CCScopedTextureTest, CreateScopedTexture)
 {
     scoped_ptr<CCGraphicsContext> context(createFakeCCGraphicsContext());
     DebugScopedSetImplThread implThread;
-    OwnPtr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
+    scoped_ptr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
     scoped_ptr<CCScopedTexture> texture = CCScopedTexture::create(resourceProvider.get());
     texture->allocate(CCRenderer::ImplPool, IntSize(30, 30), GraphicsContext3D::RGBA, CCResourceProvider::TextureUsageAny);
 
@@ -55,7 +55,7 @@ TEST(CCScopedTextureTest, ScopedTextureIsDeleted)
 {
     scoped_ptr<CCGraphicsContext> context(createFakeCCGraphicsContext());
     DebugScopedSetImplThread implThread;
-    OwnPtr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
+    scoped_ptr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
 
     {
         scoped_ptr<CCScopedTexture> texture = CCScopedTexture::create(resourceProvider.get());
@@ -83,7 +83,7 @@ TEST(CCScopedTextureTest, LeakScopedTexture)
 {
     scoped_ptr<CCGraphicsContext> context(createFakeCCGraphicsContext());
     DebugScopedSetImplThread implThread;
-    OwnPtr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
+    scoped_ptr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
 
     {
         scoped_ptr<CCScopedTexture> texture = CCScopedTexture::create(resourceProvider.get());

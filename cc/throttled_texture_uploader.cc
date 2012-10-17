@@ -29,7 +29,7 @@ static const size_t uploadHistorySize = 100;
 // More than one thread will not access this variable, so we do not need to synchronize access.
 static double estimatedTexturesPerSecondGlobal = 48.0 * 60.0;
 
-PassOwnPtr<SkCanvas> createAcceleratedCanvas(GrContext* grContext,
+scoped_ptr<SkCanvas> createAcceleratedCanvas(GrContext* grContext,
                                              cc::IntSize canvasSize,
                                              unsigned textureId)
 {
@@ -42,7 +42,7 @@ PassOwnPtr<SkCanvas> createAcceleratedCanvas(GrContext* grContext,
     SkAutoTUnref<GrTexture> target(
         grContext->createPlatformTexture(textureDesc));
     SkAutoTUnref<SkDevice> device(new SkGpuDevice(grContext, target.get()));
-    return adoptPtr(new SkCanvas(device.get()));
+    return make_scoped_ptr(new SkCanvas(device.get()));
 }
 
 } // anonymous namespace
@@ -223,7 +223,7 @@ void ThrottledTextureUploader::uploadTexture(CCResourceProvider* resourceProvide
         paintContext->makeContextCurrent();
 
         // Create an accelerated canvas to draw on.
-        OwnPtr<SkCanvas> canvas = createAcceleratedCanvas(
+        scoped_ptr<SkCanvas> canvas = createAcceleratedCanvas(
             paintGrContext, texture->size(), lock.textureId());
 
         // The compositor expects the textures to be upside-down so it can flip

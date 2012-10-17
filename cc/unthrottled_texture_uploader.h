@@ -13,9 +13,9 @@ namespace cc {
 
 class UnthrottledTextureUploader : public TextureUploader {
 public:
-    static PassOwnPtr<UnthrottledTextureUploader> create()
+    static scoped_ptr<UnthrottledTextureUploader> create()
     {
-        return adoptPtr(new UnthrottledTextureUploader());
+        return make_scoped_ptr(new UnthrottledTextureUploader());
     }
     virtual ~UnthrottledTextureUploader() { }
 

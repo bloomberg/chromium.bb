@@ -4020,13 +4020,13 @@ struct RenderPassRemovalTestData : public CCLayerTreeHostImpl::FrameData {
 
 class CCTestRenderer : public CCRendererGL, public CCRendererClient {
 public:
-    static PassOwnPtr<CCTestRenderer> create(CCResourceProvider* resourceProvider)
+    static scoped_ptr<CCTestRenderer> create(CCResourceProvider* resourceProvider)
     {
-        OwnPtr<CCTestRenderer> renderer(adoptPtr(new CCTestRenderer(resourceProvider)));
+        scoped_ptr<CCTestRenderer> renderer(new CCTestRenderer(resourceProvider));
         if (!renderer->initialize())
-            return nullptr;
+            return scoped_ptr<CCTestRenderer>();
 
-        return renderer.release();
+        return renderer.Pass();
     }
 
     void clearCachedTextures() { m_textures.clear(); }
@@ -4326,9 +4326,9 @@ TEST_P(CCLayerTreeHostImplTest, testRemoveRenderPasses)
 {
     scoped_ptr<CCGraphicsContext> context(createContext());
     ASSERT_TRUE(context->context3D());
-    OwnPtr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
+    scoped_ptr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
 
-    OwnPtr<CCTestRenderer> renderer(CCTestRenderer::create(resourceProvider.get()));
+    scoped_ptr<CCTestRenderer> renderer(CCTestRenderer::create(resourceProvider.get()));
 
     int testCaseIndex = 0;
     while (removeRenderPassesCases[testCaseIndex].name) {

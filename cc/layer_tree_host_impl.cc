@@ -837,13 +837,13 @@ bool CCLayerTreeHostImpl::initializeRenderer(scoped_ptr<CCGraphicsContext> conte
     }
     // Note: order is important here.
     m_renderer.reset();
-    m_resourceProvider.clear();
+    m_resourceProvider.reset();
     m_context.reset();
 
     if (!context->bindToClient(this))
         return false;
 
-    OwnPtr<CCResourceProvider> resourceProvider = CCResourceProvider::create(context.get());
+    scoped_ptr<CCResourceProvider> resourceProvider = CCResourceProvider::create(context.get());
     if (!resourceProvider)
         return false;
 
@@ -854,7 +854,7 @@ bool CCLayerTreeHostImpl::initializeRenderer(scoped_ptr<CCGraphicsContext> conte
     if (!m_renderer)
         return false;
 
-    m_resourceProvider = resourceProvider.release();
+    m_resourceProvider = resourceProvider.Pass();
     m_context = context.Pass();
 
     if (!m_visible)

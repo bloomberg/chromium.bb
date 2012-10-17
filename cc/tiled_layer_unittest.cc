@@ -23,7 +23,6 @@
 
 using namespace cc;
 using namespace WebKitTests;
-using namespace WTF;
 using WebKit::WebTransformationMatrix;
 
 namespace {
@@ -64,7 +63,7 @@ public:
     {
         textureManagerClearAllMemory(m_textureManager.get(), m_resourceProvider.get());
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
-        m_resourceProvider.clear();
+        m_resourceProvider.reset();
     }
 
     // Helper classes and functions that set the current thread to be the impl thread
@@ -161,7 +160,7 @@ public:
 public:
     WebKitTests::WebCompositorInitializer m_compositorInitializer;
     scoped_ptr<CCGraphicsContext> m_context;
-    OwnPtr<CCResourceProvider> m_resourceProvider;
+    scoped_ptr<CCResourceProvider> m_resourceProvider;
     scoped_ptr<CCTextureUpdateQueue> m_queue;
     CCRenderingStats m_stats;
     FakeTextureUploader m_uploader;

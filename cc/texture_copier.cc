@@ -7,7 +7,6 @@
 #include "cc/texture_copier.h"
 
 #include "CCRendererGL.h" // For the GLC() macro.
-#include "GraphicsContext3D.h"
 #include "TraceEvent.h"
 #include <public/WebGraphicsContext3D.h>
 
@@ -32,7 +31,7 @@ AcceleratedTextureCopier::AcceleratedTextureCopier(WebKit::WebGraphicsContext3D*
     GLC(m_context, m_context->bufferData(GraphicsContext3D::ARRAY_BUFFER, sizeof(kPositions), kPositions, GraphicsContext3D::STATIC_DRAW));
     GLC(m_context, m_context->bindBuffer(GraphicsContext3D::ARRAY_BUFFER, 0));
 
-    m_blitProgram = adoptPtr(new BlitProgram(m_context));
+    m_blitProgram.reset(new BlitProgram(m_context));
 }
 
 AcceleratedTextureCopier::~AcceleratedTextureCopier()

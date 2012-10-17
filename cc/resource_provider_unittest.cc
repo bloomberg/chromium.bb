@@ -15,6 +15,7 @@
 #include <public/WebGraphicsContext3D.h>
 #include <wtf/HashMap.h>
 #include <wtf/OwnPtr.h>
+#include <wtf/Deque.h>
 
 using namespace cc;
 using namespace WebKit;
@@ -301,7 +302,7 @@ protected:
     DebugScopedSetImplThread implThread;
     OwnPtr<ContextSharedData> m_sharedData;
     scoped_ptr<CCGraphicsContext> m_context;
-    OwnPtr<CCResourceProvider> m_resourceProvider;
+    scoped_ptr<CCResourceProvider> m_resourceProvider;
 };
 
 TEST_P(CCResourceProviderTest, Basic)
@@ -416,7 +417,7 @@ TEST_P(CCResourceProviderTest, TransferResources)
         return;
 
     scoped_ptr<CCGraphicsContext> childContext(FakeWebCompositorOutputSurface::create(ResourceProviderContext::create(m_sharedData.get())));
-    OwnPtr<CCResourceProvider> childResourceProvider(CCResourceProvider::create(childContext.get()));
+    scoped_ptr<CCResourceProvider> childResourceProvider(CCResourceProvider::create(childContext.get()));
 
     IntSize size(1, 1);
     WGC3Denum format = GraphicsContext3D::RGBA;
@@ -439,8 +440,8 @@ TEST_P(CCResourceProviderTest, TransferResources)
     {
         // Transfer some resources to the parent.
         CCResourceProvider::ResourceIdArray resourceIdsToTransfer;
-        resourceIdsToTransfer.append(id1);
-        resourceIdsToTransfer.append(id2);
+        resourceIdsToTransfer.push_back(id1);
+        resourceIdsToTransfer.push_back(id2);
         CCResourceProvider::TransferableResourceList list = childResourceProvider->prepareSendToParent(resourceIdsToTransfer);
         EXPECT_NE(0u, list.syncPoint);
         EXPECT_EQ(2u, list.resources.size());
@@ -470,7 +471,7 @@ TEST_P(CCResourceProviderTest, TransferResources)
         // Check that transfering again the same resource from the child to the
         // parent is a noop.
         CCResourceProvider::ResourceIdArray resourceIdsToTransfer;
-        resourceIdsToTransfer.append(id1);
+        resourceIdsToTransfer.push_back(id1);
         CCResourceProvider::TransferableResourceList list = childResourceProvider->prepareSendToParent(resourceIdsToTransfer);
         EXPECT_EQ(0u, list.syncPoint);
         EXPECT_EQ(0u, list.resources.size());
@@ -479,8 +480,8 @@ TEST_P(CCResourceProviderTest, TransferResources)
     {
         // Transfer resources back from the parent to the child.
         CCResourceProvider::ResourceIdArray resourceIdsToTransfer;
-        resourceIdsToTransfer.append(mappedId1);
-        resourceIdsToTransfer.append(mappedId2);
+        resourceIdsToTransfer.push_back(mappedId1);
+        resourceIdsToTransfer.push_back(mappedId2);
         CCResourceProvider::TransferableResourceList list = m_resourceProvider->prepareSendToChild(childId, resourceIdsToTransfer);
         EXPECT_NE(0u, list.syncPoint);
         EXPECT_EQ(2u, list.resources.size());
@@ -510,8 +511,8 @@ TEST_P(CCResourceProviderTest, TransferResources)
     {
         // Transfer resources to the parent again.
         CCResourceProvider::ResourceIdArray resourceIdsToTransfer;
-        resourceIdsToTransfer.append(id1);
-        resourceIdsToTransfer.append(id2);
+        resourceIdsToTransfer.push_back(id1);
+        resourceIdsToTransfer.push_back(id2);
         CCResourceProvider::TransferableResourceList list = childResourceProvider->prepareSendToParent(resourceIdsToTransfer);
         EXPECT_NE(0u, list.syncPoint);
         EXPECT_EQ(2u, list.resources.size());
@@ -533,7 +534,7 @@ TEST_P(CCResourceProviderTest, DeleteTransferredResources)
         return;
 
     scoped_ptr<CCGraphicsContext> childContext(FakeWebCompositorOutputSurface::create(ResourceProviderContext::create(m_sharedData.get())));
-    OwnPtr<CCResourceProvider> childResourceProvider(CCResourceProvider::create(childContext.get()));
+    scoped_ptr<CCResourceProvider> childResourceProvider(CCResourceProvider::create(childContext.get()));
 
     IntSize size(1, 1);
     WGC3Denum format = GraphicsContext3D::RGBA;
@@ -552,7 +553,7 @@ TEST_P(CCResourceProviderTest, DeleteTransferredResources)
     {
         // Transfer some resource to the parent.
         CCResourceProvider::ResourceIdArray resourceIdsToTransfer;
-        resourceIdsToTransfer.append(id);
+        resourceIdsToTransfer.push_back(id);
         CCResourceProvider::TransferableResourceList list = childResourceProvider->prepareSendToParent(resourceIdsToTransfer);
         EXPECT_NE(0u, list.syncPoint);
         EXPECT_EQ(1u, list.resources.size());
@@ -570,7 +571,7 @@ TEST_P(CCResourceProviderTest, DeleteTransferredResources)
         CCResourceProvider::ResourceId mappedId = resourceMap[id];
         EXPECT_NE(0u, mappedId);
         CCResourceProvider::ResourceIdArray resourceIdsToTransfer;
-        resourceIdsToTransfer.append(mappedId);
+        resourceIdsToTransfer.push_back(mappedId);
         CCResourceProvider::TransferableResourceList list = m_resourceProvider->prepareSendToChild(childId, resourceIdsToTransfer);
         EXPECT_NE(0u, list.syncPoint);
         EXPECT_EQ(1u, list.resources.size());

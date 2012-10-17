@@ -5,12 +5,12 @@
 #ifndef TextureCopier_h
 #define TextureCopier_h
 
-#include "GraphicsContext3D.h"
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "cc/program_binding.h"
 #include "cc/shader.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
+#include "GraphicsContext3D.h"
+#include "IntSize.h"
 
 namespace WebKit {
 class WebGraphicsContext3D;
@@ -37,9 +37,9 @@ public:
 
 class AcceleratedTextureCopier : public TextureCopier {
 public:
-    static PassOwnPtr<AcceleratedTextureCopier> create(WebKit::WebGraphicsContext3D* context, bool usingBindUniforms)
+    static scoped_ptr<AcceleratedTextureCopier> create(WebKit::WebGraphicsContext3D* context, bool usingBindUniforms)
     {
-        return adoptPtr(new AcceleratedTextureCopier(context, usingBindUniforms));
+        return make_scoped_ptr(new AcceleratedTextureCopier(context, usingBindUniforms));
     }
     virtual ~AcceleratedTextureCopier();
 
@@ -55,7 +55,7 @@ private:
     WebKit::WebGraphicsContext3D* m_context;
     Platform3DObject m_fbo;
     Platform3DObject m_positionBuffer;
-    OwnPtr<BlitProgram> m_blitProgram;
+    scoped_ptr<BlitProgram> m_blitProgram;
     bool m_usingBindUniforms;
 
     DISALLOW_COPY_AND_ASSIGN(AcceleratedTextureCopier);
