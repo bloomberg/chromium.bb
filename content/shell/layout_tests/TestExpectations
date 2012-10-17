@@ -4,4 +4,9 @@
 
 # Crash in WebCore::RenderTextControlSingleLine::layout
 crbug.com/153282 fast/dom/shadow/input-with-validation.html [ Crash ]
+
+# Crash in WebCore::ElementAttributeData::isMutable
 crbug.com/155474 fast/dom/shadow/shadowdom-for-progress-dynamic.html [ Crash ]
+
+# Crash in WebCore::Node::getFlag
+crbug.com/156376 editing/pasteboard/paste-noscript-xhtml.xhtml [ Crash ]
