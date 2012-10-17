@@ -148,3 +148,15 @@ href="http://en.wikipedia.org/wiki/Man-in-the-middle_attack">"man-in-the-middle"
 could modify the response and, potentially, attack your extension.  Instead,
 prefer HTTPS whenever possible.
 </p>
+
+<h3 id="interaction-with-csp">Interaction with Content Security Policy</h3>
+
+<p>
+If you modify the default <a href="contentSecurityPolicy.html">Content
+Security Policy</a> for apps or extensions by adding a
+<code>content_security_policy</code> attribute to your manifest, you'll need to
+ensure that any hosts to which you'd like to connect are allowed. While the
+default policy doesn't restrict connections to hosts, be careful when explicitly
+adding either the <code>connect-src</code> or <code>default-src</code>
+directives.
+</p>
