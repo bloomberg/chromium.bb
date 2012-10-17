@@ -476,7 +476,7 @@ bool RenderWidgetHostViewAura::HasFocus() const {
 }
 
 bool RenderWidgetHostViewAura::IsSurfaceAvailableForCopy() const {
-  return current_surface_ != 0;
+  return current_surface_ != 0 || !!host_->GetBackingStore(false);
 }
 
 void RenderWidgetHostViewAura::Show() {
