@@ -271,10 +271,6 @@ IPC_MESSAGE_CONTROL5(IndexedDBMsg_CallbacksUpgradeNeeded,
                      int64) /* old_version */
 
 // IDBTransactionCallback message handlers.
-// TODO(jsbell): Remove once WK99097 has landed.
-IPC_MESSAGE_CONTROL2(IndexedDBMsg_TransactionCallbacksAbortLegacy,
-                     int32 /* thread_id */,
-                     int32 /* transaction_id */)
 IPC_MESSAGE_CONTROL4(IndexedDBMsg_TransactionCallbacksAbort,
                      int32 /* thread_id */,
                      int32 /* transaction_id */,

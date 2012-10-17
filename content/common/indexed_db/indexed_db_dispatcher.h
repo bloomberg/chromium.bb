@@ -256,8 +256,6 @@ class CONTENT_EXPORT IndexedDBDispatcher
                        int32 transaction_id,
                        int32 database_id,
                        int64 old_version);
-  // TODO(jsbell): Remove once WK99097 has landed.
-  void OnAbortLegacy(int32 thread_id, int32 transaction_id);
   void OnAbort(int32 thread_id,
                int32 transaction_id,
                int code,

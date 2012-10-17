@@ -20,8 +20,6 @@ class IndexedDBTransactionCallbacks
 
   virtual ~IndexedDBTransactionCallbacks();
 
-  // TODO(jsbell): Remove once WK99097 has landed.
-  virtual void onAbort();
   virtual void onAbort(const WebKit::WebIDBDatabaseError& error);
   virtual void onComplete();
 
