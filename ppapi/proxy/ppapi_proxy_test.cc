@@ -4,10 +4,13 @@
 
 #include "ppapi/proxy/ppapi_proxy_test.h"
 
+#include <sstream>
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop_proxy.h"
 #include "base/observer_list.h"
+#include "base/process_util.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_proxy_private.h"
@@ -415,8 +418,11 @@ void TwoWayTest::SetUp() {
   io_thread_.StartWithOptions(options);
   plugin_thread_.Start();
 
-  IPC::ChannelHandle handle;
-  handle.name = "TwoWayTestChannel";
+  // Construct the IPC handle name using the process ID so we can safely run
+  // multiple |TwoWayTest|s concurrently.
+  std::ostringstream handle_name;
+  handle_name << "TwoWayTestChannel" << base::GetCurrentProcId();
+  IPC::ChannelHandle handle(handle_name.str());
   base::WaitableEvent remote_harness_set_up(true, false);
   plugin_thread_.message_loop_proxy()->PostTask(
       FROM_HERE,
