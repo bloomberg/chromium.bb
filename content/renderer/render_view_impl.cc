@@ -1914,6 +1914,7 @@ WebKit::WebCompositorOutputSurface* RenderViewImpl::createOutputSurface() {
   WebKit::WebGraphicsContext3D::Attributes attributes;
   attributes.antialias = false;
   attributes.shareResources = true;
+  attributes.noAutomaticFlushes = true;
   WebGraphicsContext3D* context = CreateGraphicsContext3D(attributes);
   if (!context)
     return NULL;

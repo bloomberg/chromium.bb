@@ -343,6 +343,9 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
   if (!gles2_helper_->Initialize(kCommandBufferSize))
     return false;
 
+  if (attributes_.noAutomaticFlushes)
+    gles2_helper_->SetAutomaticFlushes(false);
+
   // Create a transfer buffer used to copy resources between the renderer
   // process and the GPU process.
   transfer_buffer_ = new gpu::TransferBuffer(gles2_helper_);

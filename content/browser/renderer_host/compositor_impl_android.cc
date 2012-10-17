@@ -246,6 +246,7 @@ void CompositorImpl::applyScrollAndScale(const WebKit::WebSize& scrollDelta,
 WebKit::WebCompositorOutputSurface* CompositorImpl::createOutputSurface() {
   WebKit::WebGraphicsContext3D::Attributes attrs;
   attrs.shareResources = true;
+  attrs.noAutomaticFlushes = true;
   GpuChannelHostFactory* factory = BrowserGpuChannelHostFactory::instance();
   GURL url("chrome://gpu/Compositor::createContext3D");
   base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> swap_client;

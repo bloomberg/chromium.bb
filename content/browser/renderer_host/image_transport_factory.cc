@@ -400,6 +400,7 @@ class GpuProcessTransportFactory :
     attrs.depth = false;
     attrs.stencil = false;
     attrs.antialias = false;
+    attrs.noAutomaticFlushes = true;
     GpuChannelHostFactory* factory = BrowserGpuChannelHostFactory::instance();
     GURL url("chrome://gpu/GpuProcessTransportFactory::CreateContextCommon");
     scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(

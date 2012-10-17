@@ -44,6 +44,10 @@ class GPU_EXPORT CommandBufferHelper {
   //       buffer.
   bool Initialize(int32 ring_buffer_size);
 
+  // Sets whether the command buffer should automatically flush periodically
+  // to try to increase performance. Defaults to true.
+  void SetAutomaticFlushes(bool enabled);
+
   // True if the context is lost.
   bool IsContextLost();
 
@@ -292,6 +296,7 @@ class GPU_EXPORT CommandBufferHelper {
   int commands_issued_;
   bool usable_;
   bool context_lost_;
+  bool flush_automatically_;
 
   // Using C runtime instead of base because this file cannot depend on base.
   clock_t last_flush_time_;
