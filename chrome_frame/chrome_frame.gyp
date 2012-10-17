@@ -862,6 +862,9 @@
         '../chrome/chrome.gyp:chrome_version_resources',
         '../chrome/chrome.gyp:common',
       ],
+      'defines': [
+        '_WINDLL',
+      ],
       'sources': [
         'chrome_frame_elevation.rgs',
         'chrome_frame_reporting.cc',
