@@ -743,7 +743,7 @@ void GDataWapiFeedLoader::OnNotifyDocumentFeedFetched(
     return;
   }
 
-  base::TimeDelta elapsed_time =
+  base::TimeDelta ui_elapsed_time =
       base::TimeTicks::Now() - ui_state->start_time;
 
   if (ui_state->num_showing_documents + kFetchUiUpdateStep <=
@@ -759,13 +759,20 @@ void GDataWapiFeedLoader::OnNotifyDocumentFeedFetched(
       // Heuristically, we use fetched time duration to calculate the next
       // UI update timing.
       base::TimeDelta remaining_duration =
-          ui_state->feed_fetching_elapsed_time - elapsed_time;
+          ui_state->feed_fetching_elapsed_time - ui_elapsed_time;
+      base::TimeDelta interval = remaining_duration / num_remaining_ui_updates;
+      // If UI update is slow for some reason, the interval can be
+      // negative, or very small. This rarely happens but should be handled.
+      const int kMinIntervalMs = 10;
+      if (interval.InMilliseconds() < kMinIntervalMs)
+        interval = base::TimeDelta::FromMilliseconds(kMinIntervalMs);
+
       base::MessageLoopProxy::current()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&GDataWapiFeedLoader::OnNotifyDocumentFeedFetched,
                      weak_ptr_factory_.GetWeakPtr(),
                      ui_state->weak_ptr_factory.GetWeakPtr()),
-          remaining_duration / num_remaining_ui_updates);
+          interval);
     }
   }
 }
