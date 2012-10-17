@@ -168,6 +168,10 @@ class DependencySettings(GClientKeywords):
     # recursion limit and controls gclient's behavior so it does not misbehave.
     self._managed = managed
     self._should_process = should_process
+    # This is a mutable value that overrides the normal recursion limit for this
+    # dependency.  It is read from the actual DEPS file so cannot be set on
+    # class instantiation.
+    self.recursion_override = None
 
     # These are only set in .gclient and not in DEPS files.
     self._custom_vars = custom_vars or {}
@@ -231,6 +235,8 @@ class DependencySettings(GClientKeywords):
   @property
   def recursion_limit(self):
     """Returns > 0 if this dependency is not too recursed to be processed."""
+    if self.recursion_override is not None:
+      return self.recursion_override
     return max(self.parent.recursion_limit - 1, 0)
 
   def get_custom_deps(self, name, url):
@@ -445,6 +451,10 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       except SyntaxError, e:
         gclient_utils.SyntaxErrorToError(filepath, e)
     deps = local_scope.get('deps', {})
+    if 'recursion' in local_scope:
+      self.recursion_override = local_scope.get('recursion')
+      logging.warning(
+          'Setting %s recursion to %d.', self.name, self.recursion_limit)
     # load os specific dependencies if defined.  these dependencies may
     # override or extend the values defined by the 'deps' member.
     if 'deps_os' in local_scope:

@@ -306,7 +306,57 @@ class GclientTest(trial_dir.TestCase):
 
     obj = gclient.GClient.LoadCurrentConfig(options)
     self.assertEqual(['baz', 'unix'], sorted(obj.enforced_os))
-    
+
+  def testRecursionOverride(self):
+    """Verifies gclient respects the recursion var syntax.
+
+    We check several things here:
+    - recursion = 3 sets recursion on the foo dep to exactly 3
+      (we pull /fizz, but not /fuzz)
+    - pulling foo/bar at recursion level 1 (in .gclient) is overriden by
+      a later pull of foo/bar at recursion level 2 (in the dep tree)
+    """
+    write(
+        '.gclient',
+        'solutions = [\n'
+        '  { "name": "foo", "url": "svn://example.com/foo" },\n'
+        '  { "name": "foo/bar", "url": "svn://example.com/bar" },\n'
+          ']')
+    write(
+        os.path.join('foo', 'DEPS'),
+        'deps = {\n'
+        '  "bar": "/bar",\n'
+        '}\n'
+        'recursion = 3')
+    write(
+        os.path.join('bar', 'DEPS'),
+        'deps = {\n'
+        '  "baz": "/baz",\n'
+        '}')
+    write(
+        os.path.join('baz', 'DEPS'),
+        'deps = {\n'
+        '  "fizz": "/fizz",\n'
+        '}')
+    write(
+        os.path.join('fizz', 'DEPS'),
+        'deps = {\n'
+        '  "fuzz": "/fuzz",\n'
+        '}')
+
+    options, _ = gclient.Parser().parse_args([])
+    obj = gclient.GClient.LoadCurrentConfig(options)
+    obj.RunOnDeps('None', [])
+    self.assertEquals(
+        [
+          'svn://example.com/foo',
+          'svn://example.com/bar',
+          'svn://example.com/foo/bar',
+          'svn://example.com/foo/bar/baz',
+          'svn://example.com/foo/bar/baz/fizz',
+        ],
+        self._get_processed())
+
 
 if __name__ == '__main__':
   sys.stdout = gclient_utils.MakeFileAutoFlush(sys.stdout)
