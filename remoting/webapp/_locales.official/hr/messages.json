@@ -113,6 +113,9 @@
   "error_invalid_access_code": {
     "message": "Pristupni k\u00f4d neva\u017ee\u0107i je. Poku\u0161ajte ponovo."
   },
+  "error_invalid_host_domain": {
+    "message": "Postavke pravila ne dopu\u0161taju dijeljenje ovog ra\u010dunala kao hosta za Chrome udaljenu radnu povr\u0161inu. Obratite se administratoru sustava za pomo\u0107."
+  },
   "error_missing_plugin": {
     "message": "Nedostaju neke komponente potrebne za aplikaciju Chrome Remote Desktop. Provjerite imate li pokrenutu najnoviju verziju aplikacije Google Chrome i poku\u0161ajte ponovno."
   },
@@ -324,7 +327,7 @@
     "message": "Putem interneta pristupajte drugim ra\u010dunalima ili drugim korisnicima omogu\u0107ite siguran pristup svojem ra\u010dunalu."
   },
   "product_name": {
-    "message": "Udaljene radne povr\u0161ine Chrome"
+    "message": "Chrome Remote Desktop"
   },
   "reconnect": {
     "message": "Ponovno povezivanje"
@@ -340,6 +343,9 @@
   },
   "send_keys": {
     "message": "Tipke za slanje"
+  },
+  "send_print_screen": {
+    "message": "PrtScn"
   },
   "shrink_to_fit": {
     "message": "Smanji da stane u prozor"

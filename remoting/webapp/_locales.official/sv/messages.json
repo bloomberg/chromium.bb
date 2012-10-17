@@ -113,6 +113,9 @@
   "error_invalid_access_code": {
     "message": "Koden \u00e4r ogiltig. F\u00f6rs\u00f6k igen."
   },
+  "error_invalid_host_domain": {
+    "message": "Enligt policyinst\u00e4llningarna f\u00e5r du inte dela den h\u00e4r datorn som en Chrome Remote Desktop-v\u00e4rd. Kontakta systemadministrat\u00f6ren om du beh\u00f6ver hj\u00e4lp."
+  },
   "error_missing_plugin": {
     "message": "Vissa komponenter som kr\u00e4vs f\u00f6r Chrome Remote Desktop saknas. Kontrollera att du anv\u00e4nder den senaste versionen av Google Chrome och f\u00f6rs\u00f6k igen."
   },
@@ -340,6 +343,9 @@
   },
   "send_keys": {
     "message": "Skicka tangenter"
+  },
+  "send_print_screen": {
+    "message": "PrtScn"
   },
   "shrink_to_fit": {
     "message": "Krymp den s\u00e5 att den passar in"

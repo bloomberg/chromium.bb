@@ -113,6 +113,9 @@
   "error_invalid_access_code": {
     "message": "De toegangscode is ongeldig. Probeer het opnieuw."
   },
+  "error_invalid_host_domain": {
+    "message": "De beleidsinstellingen staan het delen van deze computer als host voor Chrome Remote Desktop niet toe. Neem contact op met uw systeembeheerder voor hulp."
+  },
   "error_missing_plugin": {
     "message": "Er ontbreken enkele componenten die vereist zijn voor Chrome Remote Desktop. Controleer of u de nieuwste versie van Google Chrome gebruikt en probeer het opnieuw."
   },
@@ -340,6 +343,9 @@
   },
   "send_keys": {
     "message": "Toetsen verzenden"
+  },
+  "send_print_screen": {
+    "message": "PrtScn"
   },
   "shrink_to_fit": {
     "message": "Aanpassen aan venster"

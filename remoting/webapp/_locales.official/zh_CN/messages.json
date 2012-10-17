@@ -113,6 +113,9 @@
   "error_invalid_access_code": {
     "message": "\u8bbf\u95ee\u4ee3\u7801\u65e0\u6548\uff0c\u8bf7\u91cd\u8bd5\u3002"
   },
+  "error_invalid_host_domain": {
+    "message": "\u7b56\u7565\u8bbe\u7f6e\u4e0d\u5141\u8bb8\u4ee5 Chrome \u8fdc\u7a0b\u684c\u9762\u4e3b\u673a\u7684\u5f62\u5f0f\u5171\u4eab\u6b64\u8ba1\u7b97\u673a\u3002\u8bf7\u4e0e\u60a8\u7684\u7cfb\u7edf\u7ba1\u7406\u5458\u8054\u7cfb\u5bfb\u6c42\u5e2e\u52a9\u3002"
+  },
   "error_missing_plugin": {
     "message": "\u7f3a\u5c11 Chrome \u8fdc\u7a0b\u684c\u9762\u6240\u9700\u7684\u67d0\u4e9b\u7ec4\u4ef6\u3002\u8bf7\u786e\u4fdd\u60a8\u6240\u8fd0\u884c\u7684\u662f Google Chrome \u6d4f\u89c8\u5668\u7684\u6700\u65b0\u7248\u672c\uff0c\u7136\u540e\u91cd\u8bd5\u3002"
   },
@@ -273,7 +276,7 @@
     "message": "\u60a8\u7684 Chrome \u8fdc\u7a0b\u684c\u9762\u4f1a\u8bdd\u5df2\u7ed3\u675f\u3002"
   },
   "message_shared": {
-    "message": "\u60a8\u76ee\u524d\u6b63\u4e0e $1 \u5171\u4eab\u60a8\u7684\u684c\u9762\u3002",
+    "message": "\u60a8\u76ee\u524d\u6b63\u4e0e$1\u5171\u4eab\u60a8\u7684\u684c\u9762\u3002",
     "placeholders": {
       "1": {
         "content": "$1"
@@ -340,6 +343,9 @@
   },
   "send_keys": {
     "message": "\u53d1\u9001\u6309\u952e"
+  },
+  "send_print_screen": {
+    "message": "PrtScn"
   },
   "shrink_to_fit": {
     "message": "\u7f29\u5c0f\u4ee5\u9002\u5408\u6d4f\u89c8\u5668\u7a97\u53e3\u5927\u5c0f"

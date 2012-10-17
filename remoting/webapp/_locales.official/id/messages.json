@@ -113,6 +113,9 @@
   "error_invalid_access_code": {
     "message": "Kode akses tidak valid. Harap coba lagi."
   },
+  "error_invalid_host_domain": {
+    "message": "Setelan kebijakan tidak mengizinkan berbagi komputer ini sebagai hosting Chrome Desktop Jarak Jauh. Hubungi administrator sistem Anda untuk mendapatkan bantuan."
+  },
   "error_missing_plugin": {
     "message": "Beberapa komponen yang diperlukan untuk Chrome Desktop Jarak Jauh hilang. Pastikan bahwa Anda menjalankan Google Chrome versi teranyar dan coba lagi."
   },
@@ -273,7 +276,7 @@
     "message": "Sesi Chrome Desktop Jarak Jauh Anda telah berakhir."
   },
   "message_shared": {
-    "message": "Saat ini desktop Anda sedang dibagikan dengan $1.",
+    "message": "Desktop Anda saat ini sedang dibagikan dengan $1.",
     "placeholders": {
       "1": {
         "content": "$1"
@@ -340,6 +343,9 @@
   },
   "send_keys": {
     "message": "Kirim kunci"
+  },
+  "send_print_screen": {
+    "message": "PrtScn"
   },
   "shrink_to_fit": {
     "message": "Susutkan agar sesuai"

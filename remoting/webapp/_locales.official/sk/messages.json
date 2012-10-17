@@ -113,6 +113,9 @@
   "error_invalid_access_code": {
     "message": "Pr\u00edstupov\u00fd k\u00f3d je neplatn\u00fd. Sk\u00faste to znova."
   },
+  "error_invalid_host_domain": {
+    "message": "Nastavenia pravidiel nepovo\u013euj\u00fa zdie\u013eanie tohto po\u010d\u00edta\u010da ako hostite\u013ea Vzdialenej plochy Chrome. Po\u017eiadajte o pomoc svojho spr\u00e1vcu syst\u00e9mu."
+  },
   "error_missing_plugin": {
     "message": "Niektor\u00e9 s\u00fa\u010dasti potrebn\u00e9 pre Vzdialen\u00fa plochu Chrome ch\u00fdbaj\u00fa. Uistite sa, \u017ee pou\u017e\u00edvate najnov\u0161iu verziu prehliada\u010da Google Chrome a sk\u00faste to znova."
   },
@@ -273,7 +276,7 @@
     "message": "Va\u0161a rel\u00e1cia Vzdialenej plochy Chrome bola ukon\u010den\u00e1."
   },
   "message_shared": {
-    "message": "Va\u0161a pracovn\u00e1 plocha je moment\u00e1lne zdie\u013ean\u00e1 s pou\u017e\u00edvate\u013eom $1.",
+    "message": "Moment\u00e1lne zdie\u013eate pracovn\u00fa plochu s pou\u017e\u00edvate\u013eom $1.",
     "placeholders": {
       "1": {
         "content": "$1"
@@ -340,6 +343,9 @@
   },
   "send_keys": {
     "message": "Odosla\u0165 kombin\u00e1ciu kl\u00e1vesov"
+  },
+  "send_print_screen": {
+    "message": "PrtScn"
   },
   "shrink_to_fit": {
     "message": "Zmen\u0161i\u0165 a prisp\u00f4sobi\u0165"

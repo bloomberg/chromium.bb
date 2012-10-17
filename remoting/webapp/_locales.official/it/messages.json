@@ -113,6 +113,9 @@
   "error_invalid_access_code": {
     "message": "Il codice di accesso non \u00e8 valido. Riprova."
   },
+  "error_invalid_host_domain": {
+    "message": "Le impostazioni dei criteri non consentono la condivisione di questo computer come host Chrome Remote Desktop. Contatta l'amministratore di sistema per assistenza."
+  },
   "error_missing_plugin": {
     "message": "Mancano alcuni componenti necessari per Chrome Remote Desktop. Assicurati che sia in uso la versione pi\u00f9 recente di Google Chrome e riprova."
   },
@@ -273,7 +276,7 @@
     "message": "La sessione Chrome Remote Desktop \u00e8 terminata."
   },
   "message_shared": {
-    "message": "Il desktop \u00e8 attualmente condiviso con $1.",
+    "message": "Il tuo desktop \u00e8 attualmente condiviso con $1.",
     "placeholders": {
       "1": {
         "content": "$1"
@@ -340,6 +343,9 @@
   },
   "send_keys": {
     "message": "Invia tasti"
+  },
+  "send_print_screen": {
+    "message": "PrtScn"
   },
   "shrink_to_fit": {
     "message": "Riduci e adatta"

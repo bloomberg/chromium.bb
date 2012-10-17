@@ -113,6 +113,9 @@
   "error_invalid_access_code": {
     "message": "The access code is invalid. Please try again."
   },
+  "error_invalid_host_domain": {
+    "message": "Policy settings do not permit sharing this computer as a Chrome Remote Desktop host. Contact your system administrator for assistance."
+  },
   "error_missing_plugin": {
     "message": "Some components required for Chrome Remote Desktop are missing. Please make sure that you're running the latest version of Google Chrome and try again."
   },
@@ -273,7 +276,7 @@
     "message": "Your Chrome Remote Desktop session has ended."
   },
   "message_shared": {
-    "message": "Your desktop is currently being shared with $1.",
+    "message": "Your desktop is currently shared with $1.",
     "placeholders": {
       "1": {
         "content": "$1"
@@ -340,6 +343,9 @@
   },
   "send_keys": {
     "message": "Send keys"
+  },
+  "send_print_screen": {
+    "message": "PrtScn"
   },
   "shrink_to_fit": {
     "message": "Shrink to fit"

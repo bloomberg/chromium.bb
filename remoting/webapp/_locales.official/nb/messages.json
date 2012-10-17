@@ -113,6 +113,9 @@
   "error_invalid_access_code": {
     "message": "Tilgangskoden er ugyldig. Pr\u00f8v p\u00e5 nytt."
   },
+  "error_invalid_host_domain": {
+    "message": "Innstillingene for retningslinjene tillater ikke at denne datamaskinen deles som vert for Chrome Eksternt skrivebord. Ta kontakt med systemadministratoren for \u00e5 f\u00e5 hjelp."
+  },
   "error_missing_plugin": {
     "message": "Du mangler noen komponenter som kreves for Chrome Eksternt skrivebord. S\u00f8rg for at du kj\u00f8rer den nyeste versjonen av Google Chrome, og pr\u00f8v p\u00e5 nytt."
   },
@@ -340,6 +343,9 @@
   },
   "send_keys": {
     "message": "Send n\u00f8kler"
+  },
+  "send_print_screen": {
+    "message": "PrtScn"
   },
   "shrink_to_fit": {
     "message": "Minsk til den passer"

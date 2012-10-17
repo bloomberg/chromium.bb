@@ -113,6 +113,9 @@
   "error_invalid_access_code": {
     "message": "Koda za dostop je neveljavna. Poskusite znova."
   },
+  "error_invalid_host_domain": {
+    "message": "Nastavitve pravilnika ne dovoljujejo skupno rabo tega ra\u010dunalnika kot gostitelja oddaljenega namizja za Chrome. \u010ce \u017eelite pomo\u010d, se obrnite na sistemskega skrbnika."
+  },
   "error_missing_plugin": {
     "message": "Ni nekaterih delov, ki so zahtevani za oddaljeno namizje Chrome. Preverite, ali imate najnovej\u0161o razli\u010dico Google Chroma in poskusite znova."
   },
@@ -273,7 +276,7 @@
     "message": "Seja oddaljenega namizja Chrome je kon\u010dana."
   },
   "message_shared": {
-    "message": "Namizje trenutno delite z uporabnikom $1.",
+    "message": "Va\u0161e namizje je trenutno v skupni rabi z uporabnikom $1.",
     "placeholders": {
       "1": {
         "content": "$1"
@@ -324,7 +327,7 @@
     "message": "Dostopajte do drugih ra\u010dunalnikov ali omogo\u010dite drugemu uporabniku dostop do svojega ra\u010dunalnika varno po internetu."
   },
   "product_name": {
-    "message": "Oddaljeno namizje za Chrome"
+    "message": "Oddaljeno namizje Chrome"
   },
   "reconnect": {
     "message": "Znova vzpostavi povezavo"
@@ -340,6 +343,9 @@
   },
   "send_keys": {
     "message": "Po\u0161lji tipke"
+  },
+  "send_print_screen": {
+    "message": "PrtScn"
   },
   "shrink_to_fit": {
     "message": "Skr\u010di na ustrezno velikost"

@@ -113,6 +113,9 @@
   "error_invalid_access_code": {
     "message": "\u5b58\u53d6\u78bc\u7121\u6548\uff0c\u8acb\u518d\u8a66\u4e00\u6b21\u3002"
   },
+  "error_invalid_host_domain": {
+    "message": "\u653f\u7b56\u8a2d\u5b9a\u4e0d\u5141\u8a31\u4ee5 Chrome \u9060\u7aef\u684c\u9762\u4e3b\u6a5f\u7684\u5f62\u5f0f\u5171\u7528\u9019\u53f0\u96fb\u8166\u3002\u5982\u9700\u5354\u52a9\uff0c\u8acb\u8207\u60a8\u7684\u7cfb\u7d71\u7ba1\u7406\u54e1\u806f\u7d61\u3002"
+  },
   "error_missing_plugin": {
     "message": "\u627e\u4e0d\u5230\u300cChrome \u9060\u7aef\u684c\u9762\u300d\u6240\u9700\u7684\u90e8\u5206\u5143\u4ef6\u3002\u8acb\u78ba\u8a8d\u60a8\u57f7\u884c\u7684\u662f\u6700\u65b0\u7248\u672c\u7684 Google Chrome\uff0c\u7136\u5f8c\u518d\u8a66\u4e00\u6b21\u3002"
   },
@@ -132,7 +135,7 @@
     "message": "\u767c\u751f\u672a\u9810\u671f\u7684\u932f\u8aa4\uff0c\u8acb\u5411\u958b\u767c\u4eba\u54e1\u56de\u5831\u9019\u500b\u554f\u984c\u3002"
   },
   "footer_connecting": {
-    "message": "\u9023\u7dda\u4e2d..."
+    "message": "\u9023\u7dda\u4e2d\u2026"
   },
   "footer_waiting": {
     "message": "\u6b63\u5728\u7b49\u5f85\u9023\u7dda\u2026"
@@ -273,7 +276,7 @@
     "message": "\u60a8\u7684\u300cChrome \u9060\u7aef\u684c\u9762\u300d\u5de5\u4f5c\u968e\u6bb5\u5df2\u7d50\u675f\u3002"
   },
   "message_shared": {
-    "message": "\u60a8\u76ee\u524d\u8207 $1 \u5171\u7528\u96fb\u8166\u3002",
+    "message": "\u60a8\u76ee\u524d\u6b63\u8207 $1 \u5171\u7528\u96fb\u8166\u3002",
     "placeholders": {
       "1": {
         "content": "$1"
@@ -340,6 +343,9 @@
   },
   "send_keys": {
     "message": "\u9001\u51fa\u6309\u9375\u8a0a\u865f"
+  },
+  "send_print_screen": {
+    "message": "PrtScn"
   },
   "shrink_to_fit": {
     "message": "\u7e2e\u5c0f\u4ee5\u7b26\u5408\u8996\u7a97\u5927\u5c0f"

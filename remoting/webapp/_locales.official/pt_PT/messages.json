@@ -113,6 +113,9 @@
   "error_invalid_access_code": {
     "message": "O c\u00f3digo de acesso \u00e9 inv\u00e1lido. Tente novamente."
   },
+  "error_invalid_host_domain": {
+    "message": "As defini\u00e7\u00f5es da pol\u00edtica n\u00e3o permitem a partilha deste computador como um anfitri\u00e3o do Ambiente de Trabalho Remoto do Chrome. Contacte o administrador do sistema para obter assist\u00eancia."
+  },
   "error_missing_plugin": {
     "message": "Faltam alguns componentes necess\u00e1rios ao Ambiente de Trabalho Remoto do Chrome. Certifique-se de que est\u00e1 a executar a vers\u00e3o mais recente do Google Chrome e tente novamente."
   },
@@ -273,7 +276,7 @@
     "message": "A sess\u00e3o do  Ambiente de Trabalho Remoto do Chrome terminou."
   },
   "message_shared": {
-    "message": "O seu computador est\u00e1 a ser atualmente partilhado com $1.",
+    "message": "O computador est\u00e1 a ser atualmente partilhado com $1.",
     "placeholders": {
       "1": {
         "content": "$1"
@@ -340,6 +343,9 @@
   },
   "send_keys": {
     "message": "Enviar teclas"
+  },
+  "send_print_screen": {
+    "message": "PrtScn"
   },
   "shrink_to_fit": {
     "message": "Ajustar texto"

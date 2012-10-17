@@ -113,6 +113,9 @@
   "error_invalid_access_code": {
     "message": "P\u00e4\u00e4sukood on kehtetu. Proovige uuesti."
   },
+  "error_invalid_host_domain": {
+    "message": "Reegli seaded ei luba jagada seda arvutit Chrome Remote Desktopi hostina. Abi saamiseks v\u00f5tke \u00fchendust oma s\u00fcsteemi administraatoriga."
+  },
   "error_missing_plugin": {
     "message": "M\u00f5ned Chrome Remote Desktopi jaoks vajalikud komponendid on puudu. Veenduge, et arvutis t\u00f6\u00f6tab Google Chrome'i uusim versioon ja proovige uuesti."
   },
@@ -340,6 +343,9 @@
   },
   "send_keys": {
     "message": "Klahvide saatmine"
+  },
+  "send_print_screen": {
+    "message": "PrtScn"
   },
   "shrink_to_fit": {
     "message": "V\u00e4henda parajaks"

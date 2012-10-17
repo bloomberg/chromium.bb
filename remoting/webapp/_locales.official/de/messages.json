@@ -113,6 +113,9 @@
   "error_invalid_access_code": {
     "message": "Der Zugriffscode ist ung\u00fcltig. Versuchen Sie es erneut."
   },
+  "error_invalid_host_domain": {
+    "message": "Gem\u00e4\u00df den Richtlinieneinstellungen k\u00f6nnen Sie diesen Computer nicht als Chrome Remote Desktop-Host verwenden. Wenden Sie sich f\u00fcr weitere Hilfe an Ihren Systemadministrator."
+  },
   "error_missing_plugin": {
     "message": "Es fehlen einige Komponenten, die f\u00fcr Chrome Remote Desktop erforderlich sind. \u00dcberpr\u00fcfen Sie, ob Sie die neueste Version von Google Chrome verwenden, und versuchen Sie es erneut."
   },
@@ -340,6 +343,9 @@
   },
   "send_keys": {
     "message": "Eingabe senden"
+  },
+  "send_print_screen": {
+    "message": "Druck"
   },
   "shrink_to_fit": {
     "message": "Gr\u00f6\u00dfe anpassen"

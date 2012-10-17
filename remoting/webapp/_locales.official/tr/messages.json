@@ -113,6 +113,9 @@
   "error_invalid_access_code": {
     "message": "Eri\u015fim kodu ge\u00e7ersiz. L\u00fctfen tekrar deneyin."
   },
+  "error_invalid_host_domain": {
+    "message": "Politika ayarlar\u0131 bu bilgisayar\u0131n bir Chrome Uzak Masa\u00fcst\u00fc ana makinesi olarak payla\u015f\u0131lmas\u0131na izin vermiyor. Yard\u0131m i\u00e7in sistem y\u00f6neticinizle ileti\u015fim kurun."
+  },
   "error_missing_plugin": {
     "message": "Chrome Uzaktan Masa\u00fcst\u00fc i\u00e7in gereken baz\u0131 bile\u015fenler eksik. L\u00fctfen Google Chrome'un son s\u00fcr\u00fcm\u00fcn\u00fc \u00e7al\u0131\u015ft\u0131rd\u0131\u011f\u0131n\u0131zdan emin olun ve tekrar deneyin."
   },
@@ -273,7 +276,7 @@
     "message": "Chrome Uzaktan Masa\u00fcst\u00fc oturumunuz sonland\u0131."
   },
   "message_shared": {
-    "message": "Masa\u00fcst\u00fcn\u00fcz \u015fu anda $1 adl\u0131 kullan\u0131c\u0131yla payla\u015f\u0131l\u0131yor.",
+    "message": "Masa\u00fcst\u00fcn\u00fcz \u015fu anda $1 ile payla\u015f\u0131l\u0131yor.",
     "placeholders": {
       "1": {
         "content": "$1"
@@ -340,6 +343,9 @@
   },
   "send_keys": {
     "message": "Tu\u015flar\u0131 g\u00f6nder"
+  },
+  "send_print_screen": {
+    "message": "PrtScn"
   },
   "shrink_to_fit": {
     "message": "S\u0131\u011facak \u015fekilde k\u00fc\u00e7\u00fclt"

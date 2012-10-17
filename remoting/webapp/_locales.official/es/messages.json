@@ -113,6 +113,9 @@
   "error_invalid_access_code": {
     "message": "El c\u00f3digo de acceso no es v\u00e1lido. Vuelve a intentarlo."
   },
+  "error_invalid_host_domain": {
+    "message": "La configuraci\u00f3n de la pol\u00edtica no permite compartir este ordenador como un host de Escritorio remoto de Chrome. Ponte en contacto con el administrador del sistema para obtener asistencia."
+  },
   "error_missing_plugin": {
     "message": "Faltan algunos de los componentes necesarios para Escritorio remoto de Chrome. Aseg\u00farate de estar ejecutando la \u00faltima versi\u00f3n de Google Chrome y vuelve a intentarlo."
   },
@@ -273,7 +276,7 @@
     "message": "Ha finalizado tu sesi\u00f3n en Escritorio remoto de Chrome."
   },
   "message_shared": {
-    "message": "Actualmente est\u00e1s compartiendo tu escritorio con $1.",
+    "message": "Tu ordenador est\u00e1 compartido actualmente con $1.",
     "placeholders": {
       "1": {
         "content": "$1"
@@ -324,7 +327,7 @@
     "message": "Accede a otros ordenadores o permite que otro usuario acceda a tu ordenador de forma segura a trav\u00e9s de Internet."
   },
   "product_name": {
-    "message": "Escritorio remoto de Chrome"
+    "message": "Chrome Remote Desktop"
   },
   "reconnect": {
     "message": "Volver a conectar"
@@ -340,6 +343,9 @@
   },
   "send_keys": {
     "message": "Enviar teclas"
+  },
+  "send_print_screen": {
+    "message": "Impr Pant"
   },
   "shrink_to_fit": {
     "message": "Ajustar tama\u00f1o"

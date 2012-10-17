@@ -113,6 +113,9 @@
   "error_invalid_access_code": {
     "message": "Di-wasto ang access code. Pakisubukang muli."
   },
+  "error_invalid_host_domain": {
+    "message": "Hindi pinapahintulutan ng mga setting ng patakaran ang pagbabahagi sa computer na ito bilang host ng Remote na Desktop ng Chrome. Makipag-ugnay sa iyong system administrator para humingi ng tulong."
+  },
   "error_missing_plugin": {
     "message": "Nawawala ang ilang bahaging kinakailangan para sa Chrome Remote Desktop. Mangyaring tiyaking pinapatakbo mo ang pinakabagong bersyon ng Google Chrome at subukang muli."
   },
@@ -324,7 +327,7 @@
     "message": "Mag-access ng iba pang mga computer o payagan ang isa pang user na i-access sa Internet ang iyong computer nang secure."
   },
   "product_name": {
-    "message": "Remote na Desktop ng Chrome"
+    "message": "Chrome Remote Desktop"
   },
   "reconnect": {
     "message": "Muling kumonekta"
@@ -340,6 +343,9 @@
   },
   "send_keys": {
     "message": "Ipadala ang mga key"
+  },
+  "send_print_screen": {
+    "message": "PrtScn"
   },
   "shrink_to_fit": {
     "message": "Paliitin upang magkasya"

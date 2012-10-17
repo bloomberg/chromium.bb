@@ -113,6 +113,9 @@
   "error_invalid_access_code": {
     "message": "Le code d'acc\u00e8s n'est pas valide. Veuillez r\u00e9essayer."
   },
+  "error_invalid_host_domain": {
+    "message": "Les param\u00e8tres des r\u00e8gles n'autorisent pas le partage de cet ordinateur en tant qu'h\u00f4te du bureau \u00e0 distance de Google\u00a0Chrome. Veuillez contacter votre administrateur syst\u00e8me pour obtenir de l'aide."
+  },
   "error_missing_plugin": {
     "message": "Certains composants n\u00e9cessaires \u00e0 l'utilisation du bureau \u00e0 distance Chrome sont introuvables. Veuillez vous assurer que vous utilisez la derni\u00e8re version de Google\u00a0Chrome, puis r\u00e9essayer."
   },
@@ -324,7 +327,7 @@
     "message": "Acc\u00e9dez \u00e0 d'autres ordinateurs ou permettez \u00e0 un utilisateur d'acc\u00e9der au v\u00f4tre en toute s\u00e9curit\u00e9 via Internet."
   },
   "product_name": {
-    "message": "Bureau \u00e0 distance Google\u00a0Chrome"
+    "message": "Bureau \u00e0 distance Chrome"
   },
   "reconnect": {
     "message": "Se reconnecter"
@@ -340,6 +343,9 @@
   },
   "send_keys": {
     "message": "Envoyer des touches"
+  },
+  "send_print_screen": {
+    "message": "Impr. \u00e9cran"
   },
   "shrink_to_fit": {
     "message": "Ajuster \u00e0 la page"

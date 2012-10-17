@@ -113,6 +113,9 @@
   "error_invalid_access_code": {
     "message": "Netinkamas prieigos kodas. Bandykite dar kart\u0105."
   },
+  "error_invalid_host_domain": {
+    "message": "Pagal politikos nustatymus \u0161io kompiuterio negalima bendrinti kaip \u201eChrome\u201c nuotolinio kompiuterio valdymo prieglobos. Kreipkit\u0117s pagalbos \u012f sistemos administratori\u0173."
+  },
   "error_missing_plugin": {
     "message": "Tr\u016bksta kai kuri\u0173 nuotoliniam \u201eChrome\u201c darbalaukiui reikaling\u0173 komponent\u0173. \u012esitikinkite, kad naudojate naujausios versijos \u201eGoogle Chrome\u201c, ir bandykite dar kart\u0105."
   },
@@ -273,7 +276,7 @@
     "message": "Baig\u0117si nuotolinio \u201eChrome\u201c darbalaukio sesija."
   },
   "message_shared": {
-    "message": "\u0160iuo metu darbalaukis bendrinamas su $1.",
+    "message": "\u0160iuo metu darbalaukis bendrinamas su \u0161iuo naudotoju: $1.",
     "placeholders": {
       "1": {
         "content": "$1"
@@ -324,7 +327,7 @@
     "message": "Pasiekite kitus kompiuterius arba leiskite kitam naudotojui saugiai pasiekti kompiuter\u012f internetu."
   },
   "product_name": {
-    "message": "\u201eChrome\u201c nuotolinis kompiuterio valdymas"
+    "message": "Nuotolinis \u201eChrome\u201c darbalaukis"
   },
   "reconnect": {
     "message": "Prisijungti i\u0161 naujo"
@@ -340,6 +343,9 @@
   },
   "send_keys": {
     "message": "Si\u0173sti klavi\u0161\u0173 paspaudim\u0105"
+  },
+  "send_print_screen": {
+    "message": "PrtScn"
   },
   "shrink_to_fit": {
     "message": "Suma\u017einti, kad tilpt\u0173"

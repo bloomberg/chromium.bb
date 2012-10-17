@@ -113,6 +113,9 @@
   "error_invalid_access_code": {
     "message": "M\u00e3 truy c\u1eadp kh\u00f4ng h\u1ee3p l\u1ec7. Vui l\u00f2ng th\u1eed l\u1ea1i."
   },
+  "error_invalid_host_domain": {
+    "message": "C\u00e0i \u0111\u1eb7t ch\u00ednh s\u00e1ch kh\u00f4ng cho ph\u00e9p chia s\u1ebb m\u00e1y t\u00ednh n\u00e0y d\u01b0\u1edbi d\u1ea1ng m\u00e1y ch\u1ee7 l\u01b0u tr\u1eef Chrome Remote Desktop. Li\u00ean h\u1ec7 v\u1edbi qu\u1ea3n tr\u1ecb vi\u00ean h\u1ec7 th\u1ed1ng c\u1ee7a b\u1ea1n \u0111\u1ec3 \u0111\u01b0\u1ee3c h\u1ed7 tr\u1ee3."
+  },
   "error_missing_plugin": {
     "message": "Thi\u1ebfu m\u1ed9t s\u1ed1 th\u00e0nh ph\u1ea7n c\u1ea7n thi\u1ebft cho Chrome Remote Desktop. Vui l\u00f2ng \u0111\u1ea3m b\u1ea3o b\u1ea1n \u0111ang ch\u1ea1y phi\u00ean b\u1ea3n Google Chrome m\u1edbi nh\u1ea5t v\u00e0 th\u1eed l\u1ea1i."
   },
@@ -324,7 +327,7 @@
     "message": "Truy c\u1eadp m\u00e1y t\u00ednh kh\u00e1c ho\u1eb7c cho ph\u00e9p ng\u01b0\u1eddi d\u00f9ng kh\u00e1c truy c\u1eadp m\u00e1y t\u00ednh c\u1ee7a b\u1ea1n m\u1ed9t c\u00e1ch an to\u00e0n qua Internet."
   },
   "product_name": {
-    "message": "M\u00e1y t\u00ednh t\u1eeb xa Chrome"
+    "message": "Chrome Remote Desktop"
   },
   "reconnect": {
     "message": "K\u1ebft n\u1ed1i l\u1ea1i"
@@ -340,6 +343,9 @@
   },
   "send_keys": {
     "message": "G\u1eedi ph\u00edm"
+  },
+  "send_print_screen": {
+    "message": "PrtScn"
   },
   "shrink_to_fit": {
     "message": "Co la\u0323i cho v\u01b0\u0300a"

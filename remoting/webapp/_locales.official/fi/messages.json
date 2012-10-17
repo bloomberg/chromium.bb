@@ -113,6 +113,9 @@
   "error_invalid_access_code": {
     "message": "K\u00e4ytt\u00f6koodi on virheellinen. Yrit\u00e4 uudelleen."
   },
+  "error_invalid_host_domain": {
+    "message": "K\u00e4yt\u00e4nt\u00f6asetukset eiv\u00e4t salli t\u00e4m\u00e4n tietokoneen jakamista Chrome-et\u00e4k\u00e4ytt\u00f6is\u00e4nt\u00e4n\u00e4. Ota yhteytt\u00e4 j\u00e4rjestelm\u00e4nvalvojaan."
+  },
   "error_missing_plugin": {
     "message": "Jotkin Chrome-et\u00e4k\u00e4ytt\u00f6\u00f6n vaadittavat komponentit puuttuvat. Varmista, ett\u00e4 k\u00e4yt\u00e4t uusinta Google Chrome -versiota ja yrit\u00e4 uudelleen."
   },
@@ -340,6 +343,9 @@
   },
   "send_keys": {
     "message": "L\u00e4het\u00e4 n\u00e4pp\u00e4invalinta"
+  },
+  "send_print_screen": {
+    "message": "PrtScn"
   },
   "shrink_to_fit": {
     "message": "Sovita ikkunaan"

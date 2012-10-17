@@ -113,6 +113,9 @@
   "error_invalid_access_code": {
     "message": "Piek\u013cuves kods nav der\u012bgs. M\u0113\u0123iniet v\u0113lreiz."
   },
+  "error_invalid_host_domain": {
+    "message": "Saska\u0146\u0101 ar politikas iestat\u012bjumiem \u0161o datoru nevar koplietot k\u0101 Chrome att\u0101l\u0101s darbvirsmas saimniekdatoru. Lai sa\u0146emtu pal\u012bdz\u012bbu, sazinieties ar sist\u0113mas administratoru."
+  },
   "error_missing_plugin": {
     "message": "Tr\u016bkst da\u017eu Chrome att\u0101lajai darbvirsmai nepiecie\u0161amo komponentu. P\u0101rbaudiet, vai lietojat jaun\u0101ko p\u0101rl\u016bka Google Chrome versiju un m\u0113\u0123iniet v\u0113lreiz."
   },
@@ -273,7 +276,7 @@
     "message": "J\u016bsu Chrome att\u0101l\u0101s darbvirsmas sesija ir p\u0101rtraukta."
   },
   "message_shared": {
-    "message": "\u0160obr\u012bd j\u016bs kop\u012bgojat savu darbvirsmu ar lietot\u0101ju $1.",
+    "message": "J\u016bsu darbvirsma \u0161obr\u012bd tiek koplietota ar lietot\u0101ju $1.",
     "placeholders": {
       "1": {
         "content": "$1"
@@ -324,7 +327,7 @@
     "message": "Piek\u013c\u016bstiet citiem datoriem vai \u013caujiet citam lietot\u0101jam piek\u013c\u016bt j\u016bsu datoram dro\u0161\u0101 veid\u0101, izmantojot interneta savienojumu."
   },
   "product_name": {
-    "message": "Chrome att\u0101l\u0101s darbvirsmas"
+    "message": "Chrome att\u0101l\u0101 darbvirsma"
   },
   "reconnect": {
     "message": "Atk\u0101rtoti izveidot savienojumu"
@@ -340,6 +343,9 @@
   },
   "send_keys": {
     "message": "Nos\u016bt\u012bt tausti\u0146us"
+  },
+  "send_print_screen": {
+    "message": "Ekr\u0101ndruk\u0101\u0161anas tausti\u0146\u0161"
   },
   "shrink_to_fit": {
     "message": "Samazin\u0101t, lai ietilptu"

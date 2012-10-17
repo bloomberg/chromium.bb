@@ -113,6 +113,9 @@
   "error_invalid_access_code": {
     "message": "El codi d'acc\u00e9s no \u00e9s v\u00e0lid. Torneu-ho a provar."
   },
+  "error_invalid_host_domain": {
+    "message": "La configuraci\u00f3 de la pol\u00edtica no permet compartir aquest equip com a amfitri\u00f3 de l'escriptori remot de Chrome. Contacteu amb l'administrador del sistema per obtenir assist\u00e8ncia."
+  },
   "error_missing_plugin": {
     "message": "Falten alguns components que es requereixen per a Chrome Remote Desktop. Assegureu-vos que executeu la versi\u00f3 m\u00e9s recent de Google Chrome i torneu-ho a provar."
   },
@@ -324,7 +327,7 @@
     "message": "Accediu a altres equips o permeteu que un altre usuari accedeixi al vostre equip de manera segura per Internet."
   },
   "product_name": {
-    "message": "Escriptori remot de Chrome"
+    "message": "Chrome Remote Desktop"
   },
   "reconnect": {
     "message": "Torna a connectar"
@@ -340,6 +343,9 @@
   },
   "send_keys": {
     "message": "Envia les claus"
+  },
+  "send_print_screen": {
+    "message": "PrtScn"
   },
   "shrink_to_fit": {
     "message": "Redueix per ajustar"

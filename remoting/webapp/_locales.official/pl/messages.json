@@ -113,6 +113,9 @@
   "error_invalid_access_code": {
     "message": "Kod dost\u0119pu jest nieprawid\u0142owy. Spr\u00f3buj ponownie."
   },
+  "error_invalid_host_domain": {
+    "message": "Ustawienia zasad nie zezwalaj\u0105 na udost\u0119pnianie tego komputera jako hosta dla Pulpitu zdalnego Chrome. Aby uzyska\u0107 pomoc, skontaktuj si\u0119 z administratorem systemu."
+  },
   "error_missing_plugin": {
     "message": "Brak niekt\u00f3rych element\u00f3w wymaganych dla Pulpitu zdalnego Chrome. Upewnij si\u0119, \u017ce korzystasz z najnowszej wersji Google Chrome i spr\u00f3buj ponownie."
   },
@@ -340,6 +343,9 @@
   },
   "send_keys": {
     "message": "Wy\u015blij naci\u015bni\u0119cia klawiszy"
+  },
+  "send_print_screen": {
+    "message": "PrtScn"
   },
   "shrink_to_fit": {
     "message": "Zmniejsz, by dopasowa\u0107"

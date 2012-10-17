@@ -113,6 +113,9 @@
   "error_invalid_access_code": {
     "message": "Codul de acces nu este valid. \u00cencerca\u0163i din nou."
   },
+  "error_invalid_host_domain": {
+    "message": "Set\u0103rile politicii nu accept\u0103 permiterea accesului la acest computer \u00een calitate de gazd\u0103 pentru Desktop la distan\u0163\u0103 Chrome. Contacta\u0163i administratorul de sistem pentru asisten\u0163\u0103."
+  },
   "error_missing_plugin": {
     "message": "Unele componente necesare pentru aplica\u0163ia Desktop la distan\u0163\u0103 Chrome lipsesc. Asigura\u0163i-v\u0103 c\u0103 rula\u0163i cea mai recent\u0103 versiune a browserului Google Chrome \u015fi \u00eencerca\u0163i din nou."
   },
@@ -340,6 +343,9 @@
   },
   "send_keys": {
     "message": "Trimite\u0163i ap\u0103s\u0103ri de taste"
+  },
+  "send_print_screen": {
+    "message": "PrtScn"
   },
   "shrink_to_fit": {
     "message": "Potrivi\u0163i prin mic\u015forare"

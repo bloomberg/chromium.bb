@@ -113,6 +113,9 @@
   "error_invalid_access_code": {
     "message": "P\u0159\u00edstupov\u00fd k\u00f3d je neplatn\u00fd. Zkuste to pros\u00edm znovu."
   },
+  "error_invalid_host_domain": {
+    "message": "Nastaven\u00ed z\u00e1sad nepovoluje sd\u00edlen\u00ed tohoto po\u010d\u00edta\u010de jako hostitele Vzd\u00e1len\u00e9 plochy Chrome. Po\u017e\u00e1dejte o pomoc sv\u00e9ho spr\u00e1vce syst\u00e9mu."
+  },
   "error_missing_plugin": {
     "message": "N\u011bkter\u00e9 sou\u010d\u00e1sti pot\u0159ebn\u00e9 pro Vzd\u00e1lenou plochu Chrome chyb\u00ed. Zkontrolujte, zda pou\u017e\u00edv\u00e1te nejnov\u011bj\u0161\u00ed verzi prohl\u00ed\u017ee\u010de Google Chrome, a zkuste to znovu."
   },
@@ -340,6 +343,9 @@
   },
   "send_keys": {
     "message": "Odeslat kombinaci kl\u00e1ves"
+  },
+  "send_print_screen": {
+    "message": "PrtScn"
   },
   "shrink_to_fit": {
     "message": "Zmen\u0161it dle m\u00edsta"
