@@ -4,10 +4,13 @@
 # found in the LICENSE file.
 
 import os
+import psutil
 import subprocess
 
+# Note: pyauto_functional must come before pyauto.
 import pyauto_functional
 import pyauto
+import pyauto_utils
 import webrtc_test_base
 
 
@@ -35,7 +38,7 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
     pyauto.PyUITest.tearDown(self)
     self.assertEquals('', self.CheckErrorsAndCrashes())
 
-  def _SimpleWebrtcCall(self, test_page):
+  def _SimpleWebrtcCall(self):
     """Tests we can call and hang up with WebRTC.
 
     This test exercises pretty much the whole happy-case for the WebRTC
@@ -43,40 +46,49 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
     defined at http://dev.w3.org/2011/webrtc/editor/webrtc.html. The API is
     still evolving.
 
-    The test will load the supplied HTML file, which in turn will load different
-    javascript files depending on which version of the signaling protocol
-    we are running.
-    The supplied HTML file will be loaded in two tabs and tell the web
-    pages to start up WebRTC, which will acquire video and audio devices on the
-    system. This will launch a dialog in Chrome which we click past using the
-    automation controller. Then, we will order both tabs to connect the server,
-    which will make the two tabs aware of each other. Once that is done we order
-    one tab to call the other.
+    Assuming two tabs are loaded using self._LoadPageInTwoTabs, the test will
+    acquire video and audio devices on the system. This will launch a dialog in
+    Chrome which we click past using the automation controller. Then, we will
+    order both tabs to connect the peerconnection server, which will make the
+    two tabs aware of each other. Once that is done we order one tab to call
+    the other.
 
     We make sure that the javascript tells us that the call succeeded, lets it
     run for a while and try to hang up the call after that. We verify video is
     playing by using the video detector.
     """
-    self._SetupCall(test_page)
+    self._SetupCall()
 
     # The hang-up will automatically propagate to the second tab.
     self.HangUp(from_tab_with_index=0)
     self.WaitUntilHangUpVerified(tab_index=1)
 
-    self.Disconnect(tab_index=0)
-    self.Disconnect(tab_index=1)
-
     # Ensure we didn't miss any errors.
     self.AssertNoFailures(tab_index=0)
     self.AssertNoFailures(tab_index=1)
 
+    self.Disconnect(tab_index=0)
+    self.Disconnect(tab_index=1)
+
   def testSimpleWebrtcJsep00Call(self):
     """Uses a draft of the PeerConnection API, using JSEP00."""
-    self._SimpleWebrtcCall('webrtc_jsep00_test.html')
+    self._LoadPageInTwoTabs('webrtc_jsep00_test.html')
+    self._SimpleWebrtcCall()
 
   def testSimpleWebrtcJsep01Call(self):
     """Uses a draft of the PeerConnection API, using JSEP01."""
-    self._SimpleWebrtcCall('webrtc_jsep01_test.html')
+    self._LoadPageInTwoTabs('webrtc_jsep01_test.html')
+
+    # Prepare CPU measurements.
+    renderer_process = self._GetChromeRendererProcess(tab_index=0)
+    renderer_process.get_cpu_percent()
+
+    self._SimpleWebrtcCall()
+
+    cpu_usage = renderer_process.get_cpu_percent(interval=0)
+    mem_usage_mb = renderer_process.get_memory_info()[0] / 1024 / 1024
+    pyauto_utils.PrintPerfResult('cpu', 'jsep01_call', cpu_usage, '%')
+    pyauto_utils.PrintPerfResult('memory', 'jsep01_call', mem_usage_mb, 'MB')
 
   def testLocalPreview(self):
     """Brings up a local preview and ensures video is playing.
@@ -123,7 +135,8 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
     # feature is implemented.
     # TODO(perkj): Verify that audio is muted.
 
-    self._SetupCall('webrtc_jsep01_test.html')
+    self._LoadPageInTwoTabs('webrtc_jsep01_test.html')
+    self._SetupCall()
     select_video_function = 'function(local) { return local.videoTracks[0]; }'
     self.assertEquals('ok-video-toggled-to-false', self.ExecuteJavascript(
         'toggleLocalStream(' + select_video_function + ', "video")',
@@ -146,11 +159,16 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
         tab_index=1))
     self._WaitForVideo(tab_index=1, expect_playing=True)
 
-  def _SetupCall(self, test_page):
+  def _LoadPageInTwoTabs(self, test_page):
     url = self.GetFileURLForDataPath('webrtc', test_page)
     self.NavigateToURL(url)
     self.AppendTab(pyauto.GURL(url))
 
+  def _SetupCall(self):
+    """Gets user media and establishes a call.
+
+    Assumes that two tabs are already opened with a suitable test page.
+    """
     self.assertEquals('ok-got-stream', self.GetUserMedia(tab_index=0))
     self.assertEquals('ok-got-stream', self.GetUserMedia(tab_index=1))
     self.Connect('user_1', tab_index=0)
@@ -179,6 +197,14 @@ class WebrtcCallTest(webrtc_test_base.WebrtcTestBase):
     self.assertTrue(video_playing,
                     msg= 'Timed out while waiting for isVideoPlaying to ' +
                          'return ' + expect_retval + '.')
+
+  def _GetChromeRendererProcess(self, tab_index):
+    """Returns the Chrome renderer process as a psutil process wrapper."""
+    tab_info = self.GetBrowserInfo()['windows'][0]['tabs'][tab_index]
+    renderer_id = tab_info['renderer_pid']
+    if not renderer_id:
+      self.fail('Can not find the tab renderer process.')
+    return psutil.Process(renderer_id)
 
 
 if __name__ == '__main__':
