@@ -84,8 +84,6 @@
         'display/output_configurator_animation.h',
         'display/screen_position_controller.cc',
         'display/screen_position_controller.h',
-        'display/secondary_display_view.cc',
-        'display/secondary_display_view.h',
         'display/shared_display_edge_indicator.cc',
         'display/shared_display_edge_indicator.h',
         'drag_drop/drag_drop_controller.cc',

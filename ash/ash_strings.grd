@@ -431,12 +431,6 @@ Press Search or Shift to cancel.
       <message name="IDS_ASH_STATUS_TRAY_NO_NETWORKS" desc="The message to display in the network info bubble when it is otherwise empty.">
         No network information available
       </message>
-      <message name="IDS_ASH_SECONDARY_MONITOR" desc="The message shown on the secondary monitors.">
-        This screen intentionally left blank
-      </message>
-      <message name="IDS_ASH_SECONDARY_MONITOR_SHORTCUT" desc="The shortcut text on the secondary monitors.">
-        Ctrl +
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_PREVIOUS_MENU" desc="The accessible text for header entries for detailed versions of status tray items.">
         Previous menu
       </message>

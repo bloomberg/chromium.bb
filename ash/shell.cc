@@ -17,7 +17,6 @@
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/display/multi_display_manager.h"
 #include "ash/display/screen_position_controller.h"
-#include "ash/display/secondary_display_view.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/focus_cycler.h"
 #include "ash/high_contrast/high_contrast_controller.h"
