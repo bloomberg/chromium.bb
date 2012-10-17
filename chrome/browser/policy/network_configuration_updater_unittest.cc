@@ -29,9 +29,14 @@ class NetworkConfigurationUpdaterTest
         .WillRepeatedly(Return(true));
     EXPECT_CALL(provider_, IsInitializationComplete())
         .WillRepeatedly(Return(true));
+    provider_.Init();
     PolicyServiceImpl::Providers providers;
     providers.push_back(&provider_);
     policy_service_.reset(new PolicyServiceImpl(providers));
+  }
+
+  virtual void TearDown() OVERRIDE {
+    provider_.Shutdown();
   }
 
   // Maps configuration policy name to corresponding ONC source.
