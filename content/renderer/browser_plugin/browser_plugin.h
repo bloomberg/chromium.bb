@@ -108,6 +108,7 @@ class CONTENT_EXPORT BrowserPlugin :
   virtual void destroy() OVERRIDE;
   virtual NPObject* scriptableObject() OVERRIDE;
   virtual bool supportsKeyboardFocus() const OVERRIDE;
+  virtual bool canProcessDrag() const OVERRIDE;
   virtual void paint(
       WebKit::WebCanvas* canvas,
       const WebKit::WebRect& rect) OVERRIDE;

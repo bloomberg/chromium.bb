@@ -549,6 +549,10 @@ bool BrowserPlugin::supportsKeyboardFocus() const {
   return true;
 }
 
+bool BrowserPlugin::canProcessDrag() const {
+  return true;
+}
+
 void BrowserPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
   if (guest_crashed_) {
     if (!sad_guest_)  // Lazily initialize bitmap.
