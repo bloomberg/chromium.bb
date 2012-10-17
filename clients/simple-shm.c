@@ -328,7 +328,7 @@ main(int argc, char **argv)
 	struct sigaction sigint;
 	struct display *display;
 	struct window *window;
-	int ret;
+	int ret = 0;
 
 	display = create_display();
 	window = create_window(display, 250, 250);
