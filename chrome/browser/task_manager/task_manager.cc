@@ -1083,11 +1083,6 @@ void TaskManagerModel::BytesRead(BytesReadParam param) {
     return;
   }
 
-  if (param.byte_count == 0) {
-    // Nothing to do if no bytes were actually read.
-    return;
-  }
-
   // TODO(jcampan): this should be improved once we have a better way of
   // linking a network notification back to the object that initiated it.
   TaskManager::Resource* resource = NULL;
@@ -1125,9 +1120,32 @@ void TaskManagerModel::BytesRead(BytesReadParam param) {
     current_byte_count_map_[resource] = iter_res->second + param.byte_count;
 }
 
+void TaskManagerModel::MultipleBytesRead(
+    const std::vector<BytesReadParam>* params) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  for (std::vector<BytesReadParam>::const_iterator it = params->begin();
+       it != params->end(); ++it) {
+    BytesRead(*it);
+  }
+}
+
+void TaskManagerModel::NotifyMultipleBytesRead() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!bytes_read_buffer_.empty());
+
+  std::vector<BytesReadParam>* bytes_read_buffer =
+      new std::vector<BytesReadParam>;
+  bytes_read_buffer_.swap(*bytes_read_buffer);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&TaskManagerModel::MultipleBytesRead, this,
+                 base::Owned(bytes_read_buffer)));
+}
 
 void TaskManagerModel::NotifyBytesRead(const net::URLRequest& request,
                                        int byte_count) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
   // Only net::URLRequestJob instances created by the ResourceDispatcherHost
   // have an associated ResourceRequestInfo.
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(&request);
@@ -1146,12 +1164,16 @@ void TaskManagerModel::NotifyBytesRead(const net::URLRequest& request,
   if (info)
     origin_pid = info->GetOriginPID();
 
-  // This happens in the IO thread, post it to the UI thread.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&TaskManagerModel::BytesRead, this,
-                 BytesReadParam(origin_pid, render_process_host_child_id,
-                                routing_id, byte_count)));
+  if (bytes_read_buffer_.empty()) {
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&TaskManagerModel::NotifyMultipleBytesRead, this),
+        base::TimeDelta::FromSeconds(1));
+  }
+
+  bytes_read_buffer_.push_back(
+      BytesReadParam(origin_pid, render_process_host_child_id,
+                     routing_id, byte_count));
 }
 
 bool TaskManagerModel::GetProcessMetricsForRow(

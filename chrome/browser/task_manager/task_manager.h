@@ -516,6 +516,14 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   // Called on the UI thread when some bytes are read.
   void BytesRead(BytesReadParam param);
 
+  void MultipleBytesRead(const std::vector<BytesReadParam>* params);
+
+  // Notifies the UI thread about all the bytes read. Allows for coalescing
+  // multiple bytes read into a single task for the UI thread. This is important
+  // for when downloading a lot of data on the IO thread, since posting a Task
+  // for each one is expensive.
+  void NotifyMultipleBytesRead();
+
   // Returns the network usage (in byte per second) that should be displayed for
   // the passed |resource|.  -1 means the information is not available for that
   // resource.
@@ -603,6 +611,10 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
 
   // Resource identifier that is unique within single session.
   int last_unique_id_;
+
+  // Buffer for coalescing BytesReadParam so we don't have to post a task on
+  // each NotifyBytesRead() call.
+  std::vector<BytesReadParam> bytes_read_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerModel);
 };
