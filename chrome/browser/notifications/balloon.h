@@ -42,6 +42,9 @@ class BalloonView {
   // The host for the view's contents. May be NULL if an implementation does
   // not have a host associated with it (i.e. does not do html rendering).
   virtual BalloonHost* GetHost() const = 0;
+
+  // Returns the horizontal margin the content is inset by.
+  static int GetHorizontalMargin();
 };
 
 // Represents a Notification on the screen.

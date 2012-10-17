@@ -369,7 +369,8 @@ gfx::Point BalloonCollectionImpl::Layout::OffScreenLocation() const {
       break;
     case VERTICALLY_FROM_TOP_RIGHT:
     case VERTICALLY_FROM_BOTTOM_RIGHT:
-      location.Offset(-kBalloonMaxWidth, kBalloonMaxHeight);
+      location.Offset(-kBalloonMaxWidth - BalloonView::GetHorizontalMargin(),
+                      kBalloonMaxHeight);
       break;
     default:
       NOTREACHED();

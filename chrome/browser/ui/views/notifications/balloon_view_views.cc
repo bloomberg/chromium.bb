@@ -87,6 +87,11 @@ const SkColor kControlBarSeparatorLineColor = SkColorSetRGB(180, 180, 180);
 
 }  // namespace
 
+// static
+int BalloonView::GetHorizontalMargin() {
+  return kLeftMargin + kRightMargin + kLeftShadowWidth + kRightShadowWidth;
+}
+
 BalloonViewImpl::BalloonViewImpl(BalloonCollection* collection)
     : balloon_(NULL),
       collection_(collection),
@@ -203,9 +208,7 @@ void BalloonViewImpl::RepositionToBalloon() {
   DCHECK(balloon_);
 
   if (!kAnimateEnabled) {
-    frame_container_->SetBounds(
-        gfx::Rect(balloon_->GetPosition().x(), balloon_->GetPosition().y(),
-                  GetTotalWidth(), GetTotalHeight()));
+    frame_container_->SetBounds(GetBoundsForFrameContainer());
     gfx::Rect contents_rect = GetContentsRectangle();
     html_container_->SetBounds(contents_rect);
     html_contents_->SetPreferredSize(contents_rect.size());
@@ -216,9 +219,7 @@ void BalloonViewImpl::RepositionToBalloon() {
     return;
   }
 
-  anim_frame_end_ = gfx::Rect(
-      balloon_->GetPosition().x(), balloon_->GetPosition().y(),
-      GetTotalWidth(), GetTotalHeight());
+  anim_frame_end_ = GetBoundsForFrameContainer();
   anim_frame_start_ = frame_container_->GetClientAreaBoundsInScreen();
   animation_.reset(new ui::SlideAnimation(this));
   animation_->Show();
@@ -237,18 +238,8 @@ void BalloonViewImpl::AnimationProgressed(const ui::Animation* animation) {
   DCHECK(animation == animation_.get());
 
   // Linear interpolation from start to end position.
-  double e = animation->GetCurrentValue();
-  double s = (1.0 - e);
-
-  gfx::Rect frame_position(
-    static_cast<int>(s * anim_frame_start_.x() +
-                     e * anim_frame_end_.x()),
-    static_cast<int>(s * anim_frame_start_.y() +
-                     e * anim_frame_end_.y()),
-    static_cast<int>(s * anim_frame_start_.width() +
-                     e * anim_frame_end_.width()),
-    static_cast<int>(s * anim_frame_start_.height() +
-                     e * anim_frame_end_.height()));
+  gfx::Rect frame_position(animation_->CurrentValueBetween(
+                               anim_frame_start_, anim_frame_end_));
   frame_container_->SetBounds(frame_position);
 
   gfx::Path path;
@@ -332,7 +323,6 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   //
   // We don't let the OS manage the RTL layout of these widgets, because
   // this code is already taking care of correctly reversing the layout.
-  gfx::Rect contents_rect = GetContentsRectangle();
 #if defined(OS_CHROMEOS) && defined(USE_AURA)
   html_contents_.reset(new chromeos::BalloonViewHost(balloon));
 #else
@@ -344,18 +334,21 @@ void BalloonViewImpl::Show(Balloon* balloon) {
 
   html_container_ = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-  params.bounds = contents_rect;
   html_container_->Init(params);
   html_container_->SetContentsView(html_contents_->view());
 
-  gfx::Rect balloon_rect(x(), y(), GetTotalWidth(), GetTotalHeight());
   frame_container_ = new views::Widget;
   params.delegate = this;
   params.transparent = true;
-  params.bounds = balloon_rect;
+  params.bounds = GetBoundsForFrameContainer();
   frame_container_->Init(params);
   frame_container_->SetContentsView(this);
   frame_container_->StackAboveWidget(html_container_);
+
+  // GetContentsRectangle() is calculated relative to |frame_container_|. Make
+  // sure |frame_container_| has bounds before we ask for
+  // GetContentsRectangle().
+  html_container_->SetBounds(GetContentsRectangle());
 
   // SetAlwaysOnTop should be called after StackAboveWidget because otherwise
   // the top-most flag will be removed.
@@ -457,6 +450,11 @@ void BalloonViewImpl::GetFrameMask(const gfx::Rect& rect,
 gfx::Point BalloonViewImpl::GetContentsOffset() const {
   return gfx::Point(kLeftShadowWidth + kLeftMargin,
                     kTopShadowWidth + kTopMargin);
+}
+
+gfx::Rect BalloonViewImpl::GetBoundsForFrameContainer() const {
+  return gfx::Rect(balloon_->GetPosition().x(), balloon_->GetPosition().y(),
+                   GetTotalWidth(), GetTotalHeight());
 }
 
 int BalloonViewImpl::GetShelfHeight() const {

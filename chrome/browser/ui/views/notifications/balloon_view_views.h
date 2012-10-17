@@ -117,6 +117,9 @@ class BalloonViewImpl : public BalloonView,
   // Where the balloon contents should be in screen coordinates.
   gfx::Rect GetContentsRectangle() const;
 
+  // Returns the bounds for the frame container.
+  gfx::Rect GetBoundsForFrameContainer() const;
+
   // Non-owned pointer to the balloon which owns this object.
   Balloon* balloon_;
 
