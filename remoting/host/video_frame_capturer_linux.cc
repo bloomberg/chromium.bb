@@ -63,6 +63,7 @@ class VideoFrameBuffer {
   uint8* ptr() const { return ptr_.get(); }
 
   void set_needs_update() { needs_update_ = true; }
+  bool needs_update() const { return needs_update_; }
 
  private:
   SkISize size_;
@@ -174,7 +175,7 @@ class VideoFrameCapturerLinux : public VideoFrameCapturer {
   SkRegion last_invalid_region_;
 
   // Last capture buffer used.
-  uint8* last_buffer_;
+  int last_buffer_;
 
   // |Differ| for use when polling for changes.
   scoped_ptr<Differ> differ_;
@@ -196,7 +197,7 @@ VideoFrameCapturerLinux::VideoFrameCapturerLinux()
       damage_region_(0),
       current_buffer_(0),
       pixel_format_(media::VideoFrame::RGB32),
-      last_buffer_(NULL) {
+      last_buffer_(kNumBuffers - 1) {
   helper_.SetLogGridSize(4);
 }
 
@@ -317,14 +318,23 @@ void VideoFrameCapturerLinux::CaptureInvalidRegion(
   // screen-resolution.
   VideoFrameBuffer &current = buffers_[current_buffer_];
   current.Update(display_, root_window_);
-  // Also refresh the Differ helper used by CaptureFrame(), if needed.
-  if (!use_damage_ && !last_buffer_) {
-    differ_.reset(new Differ(current.size().width(), current.size().height(),
-                             kBytesPerPixel, current.bytes_per_row()));
+
+  // Mark the previous frame for update if its dimensions no longer match.
+  if (buffers_[last_buffer_].size() != current.size()) {
+    buffers_[last_buffer_].set_needs_update();
+
+    // Also refresh the Differ helper used by CaptureFrame(), if needed.
+    if (!use_damage_) {
+      differ_.reset(new Differ(current.size().width(), current.size().height(),
+                               kBytesPerPixel, current.bytes_per_row()));
+    }
   }
 
   scoped_refptr<CaptureData> capture_data(CaptureFrame());
 
+  // Swap the current & previous buffers ready for the next capture.
+  last_invalid_region_ = capture_data->dirty_region();
+  last_buffer_ = current_buffer_;
   current_buffer_ = (current_buffer_ + 1) % kNumBuffers;
 
   callback.Run(capture_data);
@@ -410,13 +420,13 @@ CaptureData* VideoFrameCapturerLinux::CaptureFrame() {
   // if any.  If there isn't a previous frame, that means a screen-resolution
   // change occurred, and |invalid_rects| will be updated to include the whole
   // screen.
-  if (use_damage_ && last_buffer_)
+  if (use_damage_ && !buffers_[last_buffer_].needs_update())
     SynchronizeFrame();
 
   SkRegion invalid_region;
 
   x_server_pixel_buffer_.Synchronize();
-  if (use_damage_ && last_buffer_) {
+  if (use_damage_ && !buffers_[last_buffer_].needs_update()) {
     // Atomically fetch and clear the damage region.
     XDamageSubtract(display_, damage_handle_, None, damage_region_);
     int nRects = 0;
@@ -443,11 +453,13 @@ CaptureData* VideoFrameCapturerLinux::CaptureFrame() {
                                           buffer.size().height());
     CaptureRect(screen_rect, capture_data);
 
-    if (last_buffer_) {
+    if (!buffers_[last_buffer_].needs_update()) {
       // Full-screen polling, so calculate the invalid rects here, based on the
       // changed pixels between current and previous buffers.
       DCHECK(differ_ != NULL);
-      differ_->CalcDirtyRegion(last_buffer_, buffer.ptr(), &invalid_region);
+      VideoFrameBuffer& last_buffer = buffers_[last_buffer_];
+      differ_->CalcDirtyRegion(
+          last_buffer.ptr(), buffer.ptr(), &invalid_region);
     } else {
       // No previous buffer, so always invalidate the whole screen, whether
       // or not DAMAGE is being used.  DAMAGE doesn't necessarily send a
@@ -458,13 +470,10 @@ CaptureData* VideoFrameCapturerLinux::CaptureFrame() {
   }
 
   capture_data->mutable_dirty_region() = invalid_region;
-  last_invalid_region_ = invalid_region;
-  last_buffer_ = buffer.ptr();
   return capture_data;
 }
 
 void VideoFrameCapturerLinux::ScreenConfigurationChanged() {
-  last_buffer_ = NULL;
   for (int i = 0; i < kNumBuffers; ++i) {
     buffers_[i].set_needs_update();
   }
@@ -481,13 +490,15 @@ void VideoFrameCapturerLinux::SynchronizeFrame() {
   // TODO(hclam): We can reduce the amount of copying here by subtracting
   // |capturer_helper_|s region from |last_invalid_region_|.
   // http://crbug.com/92354
-  DCHECK(last_buffer_);
+  DCHECK(!buffers_[last_buffer_].needs_update());
+  DCHECK_NE(last_buffer_, current_buffer_);
   VideoFrameBuffer& buffer = buffers_[current_buffer_];
+  VideoFrameBuffer& last_buffer = buffers_[last_buffer_];
   for (SkRegion::Iterator it(last_invalid_region_); !it.done(); it.next()) {
     const SkIRect& r = it.rect();
     int offset = r.fTop * buffer.bytes_per_row() + r.fLeft * kBytesPerPixel;
     for (int i = 0; i < r.height(); ++i) {
-      memcpy(buffer.ptr() + offset, last_buffer_ + offset,
+      memcpy(buffer.ptr() + offset, last_buffer.ptr() + offset,
              r.width() * kBytesPerPixel);
       offset += buffer.size().width() * kBytesPerPixel;
     }
