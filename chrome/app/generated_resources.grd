@@ -4313,6 +4313,9 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_TASK_MANAGER_INSTANT_PREVIEW_PREFIX" desc="The prefix for an Instant preview in the Task Manager">
         Instant: <ph name="INSTANT_PREVIEW_NAME">$1<ex>http://www.google.com/</ex></ph>
       </message>
+      <message name="IDS_TASK_MANAGER_BROWSER_TAG_PREFIX" desc="The prefix for a guest page loaded in browser tag in the Task Manager">
+        Browser Tag: <ph name="BROWSER_TAG_NAME">$1<ex>Google</ex></ph>
+      </message>
 
       <!-- Performance Monitor page -->
       <!-- Event-Related -->

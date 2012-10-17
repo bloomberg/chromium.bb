@@ -101,6 +101,8 @@ TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
       new TaskManagerChildProcessResourceProvider(task_manager));
   AddResourceProvider(
       new TaskManagerExtensionProcessResourceProvider(task_manager));
+  AddResourceProvider(
+      new TaskManagerGuestResourceProvider(task_manager));
 
 #if defined(ENABLE_NOTIFICATIONS)
   TaskManager::ResourceProvider* provider =

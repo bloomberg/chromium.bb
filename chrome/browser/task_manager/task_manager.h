@@ -49,6 +49,7 @@ class URLRequest;
     def(RENDERER)        /* A normal WebContents renderer process. */ \
     def(EXTENSION)       /* An extension or app process. */ \
     def(NOTIFICATION)    /* A notification process. */ \
+    def(GUEST)           /* A browser plugin guest process. */ \
     def(PLUGIN)          /* A plugin process. */ \
     def(WORKER)          /* A web worker process. */ \
     def(NACL)            /* A NativeClient loader or broker process. */ \

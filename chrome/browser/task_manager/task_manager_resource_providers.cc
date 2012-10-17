@@ -55,6 +55,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/process_type.h"
 #include "grit/generated_resources.h"
@@ -75,6 +76,9 @@
 
 using content::BrowserChildProcessHostIterator;
 using content::BrowserThread;
+using content::RenderProcessHost;
+using content::RenderViewHost;
+using content::RenderWidgetHost;
 using content::WebContents;
 using extensions::Extension;
 
@@ -119,6 +123,28 @@ string16 GetProfileNameFromInfoCache(Profile* profile) {
     return string16();
   else
     return cache.GetNameOfProfileAtIndex(index);
+}
+
+string16 GetTitleFromWebContents(WebContents* web_contents) {
+  string16 title = web_contents->GetTitle();
+  if (title.empty()) {
+    GURL url = web_contents->GetURL();
+    title = UTF8ToUTF16(url.spec());
+    // Force URL to be LTR.
+    title = base::i18n::GetDisplayStringInLTRDirectionality(title);
+  } else {
+    // Since the tab_title will be concatenated with
+    // IDS_TASK_MANAGER_TAB_PREFIX, we need to explicitly set the tab_title to
+    // be LTR format if there is no strong RTL charater in it. Otherwise, if
+    // IDS_TASK_MANAGER_TAB_PREFIX is an RTL word, the concatenated result
+    // might be wrong. For example, http://mail.yahoo.com, whose title is
+    // "Yahoo! Mail: The best web-based Email!", without setting it explicitly
+    // as LTR format, the concatenated result will be "!Yahoo! Mail: The best
+    // web-based Email :BAT", in which the capital letters "BAT" stands for
+    // the Hebrew word for "tab".
+    base::i18n::AdjustStringForLocaleDirection(&title);
+  }
+  return title;
 }
 
 }  // namespace
@@ -295,24 +321,8 @@ TaskManager::Resource::Type TaskManagerTabContentsResource::GetType() const {
 string16 TaskManagerTabContentsResource::GetTitle() const {
   // Fall back on the URL if there's no title.
   WebContents* contents = tab_contents_->web_contents();
-  string16 tab_title = contents->GetTitle();
   GURL url = contents->GetURL();
-  if (tab_title.empty()) {
-    tab_title = UTF8ToUTF16(url.spec());
-    // Force URL to be LTR.
-    tab_title = base::i18n::GetDisplayStringInLTRDirectionality(tab_title);
-  } else {
-    // Since the tab_title will be concatenated with
-    // IDS_TASK_MANAGER_TAB_PREFIX, we need to explicitly set the tab_title to
-    // be LTR format if there is no strong RTL charater in it. Otherwise, if
-    // IDS_TASK_MANAGER_TAB_PREFIX is an RTL word, the concatenated result
-    // might be wrong. For example, http://mail.yahoo.com, whose title is
-    // "Yahoo! Mail: The best web-based Email!", without setting it explicitly
-    // as LTR format, the concatenated result will be "!Yahoo! Mail: The best
-    // web-based Email :BAT", in which the capital letters "BAT" stands for
-    // the Hebrew word for "tab".
-    base::i18n::AdjustStringForLocaleDirection(&tab_title);
-  }
+  string16 tab_title = GetTitleFromWebContents(contents);
 
   // Only classify as an app if the URL is an app and the tab is hosting an
   // extension process.  (It's possible to be showing the URL from before it
@@ -1689,4 +1699,179 @@ void TaskManagerBrowserProcessResourceProvider::StartUpdating() {
 }
 
 void TaskManagerBrowserProcessResourceProvider::StopUpdating() {
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TaskManagerGuestResource class
+////////////////////////////////////////////////////////////////////////////////
+
+TaskManagerGuestResource::TaskManagerGuestResource(
+    RenderViewHost* render_view_host)
+    : TaskManagerRendererResource(
+          render_view_host->GetSiteInstance()->GetProcess()->GetHandle(),
+          render_view_host) {
+}
+
+TaskManagerGuestResource::~TaskManagerGuestResource() {
+}
+
+TaskManager::Resource::Type TaskManagerGuestResource::GetType() const {
+  return GUEST;
+}
+
+string16 TaskManagerGuestResource::GetTitle() const {
+  WebContents* web_contents = GetWebContents();
+  const int message_id = IDS_TASK_MANAGER_BROWSER_TAG_PREFIX;
+  if (web_contents) {
+    string16 title = GetTitleFromWebContents(web_contents);
+    return l10n_util::GetStringFUTF16(message_id, title);
+  }
+  return l10n_util::GetStringFUTF16(message_id, string16());
+}
+
+string16 TaskManagerGuestResource::GetProfileName() const {
+  WebContents* web_contents = GetWebContents();
+  if (web_contents) {
+    Profile* profile = Profile::FromBrowserContext(
+        web_contents->GetBrowserContext());
+    return GetProfileNameFromInfoCache(profile);
+  }
+  return string16();
+}
+
+gfx::ImageSkia TaskManagerGuestResource::GetIcon() const {
+  WebContents* web_contents = GetWebContents();
+  if (web_contents && FaviconTabHelper::FromWebContents(web_contents)) {
+    return FaviconTabHelper::FromWebContents(web_contents)->
+        GetFavicon().AsImageSkia();
+  }
+  return gfx::ImageSkia();
+}
+
+WebContents* TaskManagerGuestResource::GetWebContents() const {
+  return WebContents::FromRenderViewHost(render_view_host());
+}
+
+const Extension* TaskManagerGuestResource::GetExtension() const {
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TaskManagerGuestContentsResourceProvider class
+////////////////////////////////////////////////////////////////////////////////
+
+TaskManagerGuestResourceProvider::
+    TaskManagerGuestResourceProvider(TaskManager* task_manager)
+    :  updating_(false),
+       task_manager_(task_manager) {
+}
+
+TaskManagerGuestResourceProvider::~TaskManagerGuestResourceProvider() {
+}
+
+TaskManager::Resource* TaskManagerGuestResourceProvider::GetResource(
+    int origin_pid,
+    int render_process_host_id,
+    int routing_id) {
+  // If an origin PID was specified then the request originated in a plugin
+  // working on the WebContents's behalf, so ignore it.
+  if (origin_pid)
+    return NULL;
+
+  for (GuestResourceMap::iterator i = resources_.begin();
+       i != resources_.end(); ++i) {
+    WebContents* contents = WebContents::FromRenderViewHost(i->first);
+    if (contents &&
+        contents->GetRenderProcessHost()->GetID() == render_process_host_id &&
+        contents->GetRenderViewHost()->GetRoutingID() == routing_id) {
+      return i->second;
+    }
+  }
+
+  return NULL;
+}
+
+void TaskManagerGuestResourceProvider::StartUpdating() {
+  DCHECK(!updating_);
+  updating_ = true;
+
+  // Add all the existing guest WebContents.
+  for (RenderProcessHost::iterator i(
+           RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd(); i.Advance()) {
+    RenderProcessHost* host = i.GetCurrentValue();
+    if (host->IsGuest()) {
+      RenderProcessHost::RenderWidgetHostsIterator iter =
+          host->GetRenderWidgetHostsIterator();
+      for (; !iter.IsAtEnd(); iter.Advance()) {
+        const RenderWidgetHost* widget = iter.GetCurrentValue();
+        Add(RenderViewHost::From(
+                const_cast<RenderWidgetHost*>(widget)));
+      }
+    }
+  }
+
+  // Then we register for notifications to get new guests.
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
+      content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
+      content::NotificationService::AllBrowserContextsAndSources());
+}
+
+void TaskManagerGuestResourceProvider::StopUpdating() {
+  DCHECK(updating_);
+  updating_ = false;
+
+  // Unregister for notifications.
+  registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
+      content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
+      content::NotificationService::AllBrowserContextsAndSources());
+
+  // Delete all the resources.
+  STLDeleteContainerPairSecondPointers(resources_.begin(), resources_.end());
+
+  resources_.clear();
+}
+
+void TaskManagerGuestResourceProvider::Add(
+    RenderViewHost* render_view_host) {
+  TaskManagerGuestResource* resource =
+      new TaskManagerGuestResource(render_view_host);
+  resources_[render_view_host] = resource;
+  task_manager_->AddResource(resource);
+}
+
+void TaskManagerGuestResourceProvider::Remove(
+    RenderViewHost* render_view_host) {
+  if (!updating_)
+    return;
+
+  GuestResourceMap::iterator iter = resources_.find(render_view_host);
+  if (iter == resources_.end())
+    return;
+
+  TaskManagerGuestResource* resource = iter->second;
+  task_manager_->RemoveResource(resource);
+  resources_.erase(iter);
+  delete resource;
+}
+
+void TaskManagerGuestResourceProvider::Observe(int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  WebContents* web_contents = content::Source<WebContents>(source).ptr();
+  if (!web_contents || !web_contents->GetRenderProcessHost()->IsGuest())
+    return;
+
+  switch (type) {
+    case content::NOTIFICATION_WEB_CONTENTS_CONNECTED:
+      Add(web_contents->GetRenderViewHost());
+      break;
+    case content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED:
+      Remove(web_contents->GetRenderViewHost());
+      break;
+    default:
+      NOTREACHED() << "Unexpected notification.";
+  }
 }
