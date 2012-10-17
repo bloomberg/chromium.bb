@@ -374,6 +374,7 @@ void MemoryDetails::UpdateHistograms() {
   int extension_count = 0;
   int plugin_count = 0;
   int pepper_plugin_count = 0;
+  int pepper_plugin_broker_count = 0;
   int renderer_count = 0;
   int other_count = 0;
   int worker_count = 0;
@@ -444,6 +445,10 @@ void MemoryDetails::UpdateHistograms() {
         UMA_HISTOGRAM_MEMORY_KB("Memory.PepperPlugin", sample);
         pepper_plugin_count++;
         break;
+      case content::PROCESS_TYPE_PPAPI_BROKER:
+        UMA_HISTOGRAM_MEMORY_KB("Memory.PepperPluginBroker", sample);
+        pepper_plugin_broker_count++;
+        break;
       default:
         NOTREACHED();
         break;
@@ -460,6 +465,8 @@ void MemoryDetails::UpdateHistograms() {
   UMA_HISTOGRAM_COUNTS_100("Memory.PluginProcessCount", plugin_count);
   UMA_HISTOGRAM_COUNTS_100("Memory.PepperPluginProcessCount",
       pepper_plugin_count);
+  UMA_HISTOGRAM_COUNTS_100("Memory.PepperPluginBrokerProcessCount",
+      pepper_plugin_broker_count);
   UMA_HISTOGRAM_COUNTS_100("Memory.RendererProcessCount", renderer_count);
   UMA_HISTOGRAM_COUNTS_100("Memory.WorkerProcessCount", worker_count);
   // TODO(viettrungluu): Do we want separate counts for the other
