@@ -114,6 +114,19 @@ void WebIntentPickerModel::AddSuggestedExtensions(
     observer_->OnModelChanged(this);
 }
 
+void WebIntentPickerModel::RemoveSuggestedExtension(const std::string& id) {
+  std::vector<SuggestedExtension>::iterator it;
+  for (it = suggested_extensions_.begin();
+       it < suggested_extensions_.end();
+       ++it) {
+    SuggestedExtension extension = *it;
+    if (extension.id == id) {
+      suggested_extensions_.erase(it);
+      break;
+    }
+  }
+}
+
 const WebIntentPickerModel::SuggestedExtension&
     WebIntentPickerModel::GetSuggestedExtensionAt(size_t index) const {
   DCHECK_LT(index, suggested_extensions_.size());

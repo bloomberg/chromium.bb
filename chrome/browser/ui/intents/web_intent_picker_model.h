@@ -113,6 +113,9 @@ class WebIntentPickerModel {
   void AddSuggestedExtensions(
       const std::vector<SuggestedExtension>& suggestions);
 
+  // Remove the suggested extension with this id.
+  void RemoveSuggestedExtension(const std::string& id);
+
   // Return the suggested extension at |index|.
   const SuggestedExtension& GetSuggestedExtensionAt(size_t index) const;
 

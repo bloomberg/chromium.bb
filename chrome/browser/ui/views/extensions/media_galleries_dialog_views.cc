@@ -56,7 +56,8 @@ MediaGalleriesDialogViews::MediaGalleriesDialogViews(
   // Ownership of |contents_| is handed off by this call. |window_| will take
   // care of deleting itself after calling DeleteDelegate().
   window_ = new ConstrainedWindowViews(
-      controller->tab_contents()->web_contents(), this, false);
+      controller->tab_contents()->web_contents(), this, false,
+      ConstrainedWindowViews::DEFAULT_INSETS);
 }
 
 MediaGalleriesDialogViews::~MediaGalleriesDialogViews() {}
