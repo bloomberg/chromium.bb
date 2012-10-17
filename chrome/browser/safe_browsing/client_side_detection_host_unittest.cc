@@ -10,11 +10,10 @@
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -154,7 +153,7 @@ void QuitUIMessageLoopFromIO() {
 }
 }  // namespace
 
-class ClientSideDetectionHostTest : public TabContentsTestHarness {
+class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
  public:
   virtual void SetUp() {
     // Set custom profile object so that we can mock calls to IsOffTheRecord.
@@ -173,13 +172,13 @@ class ClientSideDetectionHostTest : public TabContentsTestHarness {
     io_thread_.reset(new content::TestBrowserThread(BrowserThread::IO));
     ASSERT_TRUE(io_thread_->Start());
 
-    TabContentsTestHarness::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
 
     // Inject service classes.
     csd_service_.reset(new StrictMock<MockClientSideDetectionService>());
     sb_service_ = new StrictMock<MockSafeBrowsingService>();
     csd_host_.reset(safe_browsing::ClientSideDetectionHost::Create(
-        tab_contents()->web_contents()));
+        web_contents()));
     csd_host_->set_client_side_detection_service(csd_service_.get());
     csd_host_->set_safe_browsing_service(sb_service_.get());
     // We need to create this here since we don't call
@@ -199,7 +198,7 @@ class ClientSideDetectionHostTest : public TabContentsTestHarness {
                               csd_host_.release());
     sb_service_ = NULL;
     message_loop_.RunAllPending();
-    TabContentsTestHarness::TearDown();
+    ChromeRenderViewHostTestHarness::TearDown();
 
     // Let the tasks on the IO thread run to avoid memory leaks.
     base::WaitableEvent done(false, false);
