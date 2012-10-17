@@ -41,7 +41,7 @@ STDMETHODIMP UrlmonUploadDataStream::Read(void* pv, ULONG cb, ULONG* read) {
 
     scoped_refptr<net::IOBufferWithSize> buf(
         new net::IOBufferWithSize(bytes_to_copy_now));
-    int bytes_read = request_body_stream_->Read(buf, buf->size());
+    int bytes_read = request_body_stream_->ReadSync(buf, buf->size());
     if (bytes_read == 0)  // Reached the end of the stream.
       break;
 
