@@ -155,10 +155,10 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
       content::DownloadDangerType danger_type,
       const FilePath& intermediate_path);
 
-  // Called when the download is ready to complete.
-  // This may perform final rename if necessary and will eventually call
-  // DownloadItem::Completed().
-  virtual void OnDownloadCompleting();
+  // If all pre-requisites have been met, complete download processing, i.e. do
+  // internal cleanup, file rename, and potentially auto-open.  (Dangerous
+  // downloads still may block on user acceptance after this point.)
+  virtual void MaybeCompleteDownload();
 
   // Needed because of interwining with DownloadManagerImpl --------------------
 
@@ -252,10 +252,14 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   void OnDownloadRenamedToIntermediateName(
       content::DownloadInterruptReason reason, const FilePath& full_path);
 
-  // If all pre-requisites have been met, complete download processing, i.e. do
-  // internal cleanup, file rename, and potentially auto-open.  (Dangerous
-  // downloads still may block on user acceptance after this point.)
-  void MaybeCompleteDownload();
+  // Called when the download is ready to complete.
+  // This may perform final rename if necessary and will eventually call
+  // DownloadItem::Completed().
+  virtual void OnDownloadCompleting();
+
+  // Called after the delegate has given the go-ahead to actually complete
+  // the download.
+  void ReadyForDownloadCompletionDone();
 
   void OnDownloadRenamedToFinalName(content::DownloadInterruptReason reason,
                                     const FilePath& full_path);
@@ -267,6 +271,9 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
   void Completed();
 
   // Helper routines -----------------------------------------------------------
+
+  // Check if a download is ready for completion.
+  bool IsDownloadReadyForCompletion();
 
   // Returns true if the download still needs to be renamed to
   // GetTargetFilePath().

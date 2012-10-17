@@ -100,7 +100,6 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_CONST_METHOD0(PercentComplete, int());
   MOCK_CONST_METHOD0(AllDataSaved, bool());
   MOCK_METHOD0(TogglePause, void());
-  MOCK_METHOD0(OnDownloadCompleting, void());
   MOCK_CONST_METHOD1(MatchesQuery, bool(const string16& query));
   MOCK_CONST_METHOD0(IsPartialDownload, bool());
   MOCK_CONST_METHOD0(IsInProgress, bool());
@@ -178,8 +177,8 @@ class MockDownloadManagerDelegate : public content::DownloadManagerDelegate {
                     const content::DownloadTargetCallback&));
   MOCK_METHOD0(GetAlternativeWebContentsToNotifyForDownload, WebContents*());
   MOCK_METHOD1(ShouldOpenFileBasedOnExtension, bool(const FilePath&));
-  MOCK_METHOD2(ShouldCompleteDownload, bool(
-      DownloadItem*, const base::Closure&));
+  MOCK_METHOD2(ShouldCompleteDownload,
+               bool(DownloadItem*, const base::Closure&));
   MOCK_METHOD1(ShouldOpenDownload, bool(DownloadItem*));
   MOCK_METHOD0(GenerateFileHash, bool());
   MOCK_METHOD1(AddItemToPersistentStore, void(DownloadItem*));
@@ -552,9 +551,9 @@ class DownloadManagerTest : public testing::Test {
     EXPECT_CALL(item, IsInProgress())
         .WillOnce(Return(true));
 
-    // Null out MaybeCompleteDownload
-    EXPECT_CALL(item, AllDataSaved())
-        .WillOnce(Return(false));
+    // History addition should result in a call into MaybeCompleteDownload().
+    EXPECT_CALL(item, MaybeCompleteDownload())
+        .WillOnce(Return());
 
     download_manager_->OnItemAddedToPersistentStore(item.GetId(), db_handle);
   }

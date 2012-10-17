@@ -25,6 +25,12 @@ void DownloadItemImplDelegate::Detach() {
   --count_;
 }
 
+void DownloadItemImplDelegate::ReadyForDownloadCompletion(
+    DownloadItemImpl* download,
+    const base::Closure& complete_callback) {
+  complete_callback.Run();
+}
+
 bool DownloadItemImplDelegate::ShouldOpenFileBasedOnExtension(
     const FilePath& path) {
   return false;
@@ -37,9 +43,6 @@ bool DownloadItemImplDelegate::ShouldOpenDownload(DownloadItemImpl* download) {
 void DownloadItemImplDelegate::CheckForFileRemoval(
     DownloadItemImpl* download_item) {}
 
-void DownloadItemImplDelegate::MaybeCompleteDownload(
-    DownloadItemImpl* download) {}
-
 content::BrowserContext* DownloadItemImplDelegate::GetBrowserContext() const {
   return NULL;
 }
@@ -47,6 +50,8 @@ content::BrowserContext* DownloadItemImplDelegate::GetBrowserContext() const {
 DownloadFileManager* DownloadItemImplDelegate::GetDownloadFileManager() {
   return NULL;
 }
+
+void DownloadItemImplDelegate::UpdatePersistence(DownloadItemImpl* download) {}
 
 void DownloadItemImplDelegate::DownloadStopped(DownloadItemImpl* download) {}
 

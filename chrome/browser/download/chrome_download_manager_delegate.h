@@ -57,7 +57,7 @@ class ChromeDownloadManagerDelegate
 
   void SetDownloadManager(content::DownloadManager* dm);
 
-  // Should be called before the first call to ShouldCompleteDownload() to
+  // Should be called before the call to ShouldCompleteDownload() to
   // disable SafeBrowsing checks for |item|.
   static void DisableSafeBrowsing(content::DownloadItem* item);
 

@@ -333,22 +333,13 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
   return true;
 }
 
-// ShouldCompleteDownloadInternal() will never be called directly by a user, it
-// will only be called asynchronously, so it should run
-// |user_complete_callback|. ShouldCompleteDownload() will only be called
-// directly by a user, so it does not need to run |user_complete_callback|
-// because it can return true synchronously. The two methods look very similar,
-// but their semantics are very different.
-
 void ChromeDownloadManagerDelegate::ShouldCompleteDownloadInternal(
     int download_id,
     const base::Closure& user_complete_callback) {
   DownloadItem* item = download_manager_->GetDownload(download_id);
   if (!item)
     return;
-  if (IsDownloadReadyForCompletion(item, base::Bind(
-        &ChromeDownloadManagerDelegate::ShouldCompleteDownloadInternal, this,
-        download_id, user_complete_callback)))
+  if (ShouldCompleteDownload(item, user_complete_callback))
     user_complete_callback.Run();
 }
 
@@ -356,8 +347,8 @@ bool ChromeDownloadManagerDelegate::ShouldCompleteDownload(
     DownloadItem* item,
     const base::Closure& user_complete_callback) {
   return IsDownloadReadyForCompletion(item, base::Bind(
-      &ChromeDownloadManagerDelegate::ShouldCompleteDownloadInternal, this,
-      item->GetId(), user_complete_callback));
+      &ChromeDownloadManagerDelegate::ShouldCompleteDownloadInternal,
+      this, item->GetId(), user_complete_callback));
 }
 
 bool ChromeDownloadManagerDelegate::ShouldOpenDownload(DownloadItem* item) {

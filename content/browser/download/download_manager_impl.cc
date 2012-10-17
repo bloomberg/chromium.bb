@@ -233,11 +233,14 @@ DownloadFileManager* DownloadManagerImpl::GetDownloadFileManager() {
   return file_manager_;
 }
 
-bool DownloadManagerImpl::ShouldOpenDownload(DownloadItemImpl* item) {
-  if (!delegate_)
-    return true;
-
-  return delegate_->ShouldOpenDownload(item);
+void DownloadManagerImpl::ReadyForDownloadCompletion(
+    DownloadItemImpl* item, const base::Closure& complete_callback) {
+  if (!delegate_ ||
+      delegate_->ShouldCompleteDownload(item, complete_callback)) {
+    complete_callback.Run();
+  }
+  // Otherwise, the delegate has accepted responsibility to run the
+  // callback when the download is ready for completion.
 }
 
 bool DownloadManagerImpl::ShouldOpenFileBasedOnExtension(const FilePath& path) {
@@ -245,6 +248,13 @@ bool DownloadManagerImpl::ShouldOpenFileBasedOnExtension(const FilePath& path) {
     return false;
 
   return delegate_->ShouldOpenFileBasedOnExtension(path);
+}
+
+bool DownloadManagerImpl::ShouldOpenDownload(DownloadItemImpl* item) {
+  if (!delegate_)
+    return true;
+
+  return delegate_->ShouldOpenDownload(item);
 }
 
 void DownloadManagerImpl::SetDelegate(
@@ -546,8 +556,12 @@ void DownloadManagerImpl::OnResponseCompleted(int32 download_id,
     return;
 
   DownloadItemImpl* download = active_downloads_[download_id];
+  // TODO(rdsmith): Make OnAllDataSaved call MaybeCompleteDownload() directly.
+  // This would allow MaybeCompleteDownload() to be private to the
+  // DownloadItemImpl.  It can't currently be done because SavePackage
+  // calls OnAllDataSaved and shouldn't initiate the download cascade.
   download->OnAllDataSaved(size, hash);
-  MaybeCompleteDownload(download);
+  download->MaybeCompleteDownload();
 }
 
 void DownloadManagerImpl::AssertStateConsistent(
@@ -566,85 +580,6 @@ void DownloadManagerImpl::AssertStateConsistent(
     CHECK(ContainsKey(active_downloads_, download->GetId()));
 }
 
-bool DownloadManagerImpl::IsDownloadReadyForCompletion(
-    DownloadItemImpl* download) {
-  // If we don't have all the data, the download is not ready for
-  // completion.
-  if (!download->AllDataSaved())
-    return false;
-
-  // If the download is dangerous, but not yet validated, it's not ready for
-  // completion.
-  if (download->GetSafetyState() == DownloadItem::DANGEROUS)
-    return false;
-
-  // If the download isn't active (e.g. has been cancelled) it's not
-  // ready for completion.
-  if (active_downloads_.count(download->GetId()) == 0)
-    return false;
-
-  // If the download hasn't been inserted into the history system
-  // (which occurs strictly after file name determination, intermediate
-  // file rename, and UI display) then it's not ready for completion.
-  if (!download->IsPersisted())
-    return false;
-
-  return true;
-}
-
-// When SavePackage downloads MHTML to GData (see
-// SavePackageFilePickerChromeOS), GData calls MaybeCompleteDownload() like it
-// does for non-SavePackage downloads, but SavePackage downloads never satisfy
-// IsDownloadReadyForCompletion(). GDataDownloadObserver manually calls
-// DownloadItem::UpdateObservers() when the upload completes so that SavePackage
-// notices that the upload has completed and runs its normal Finish() pathway.
-// MaybeCompleteDownload() is never the mechanism by which SavePackage completes
-// downloads. SavePackage always uses its own Finish() to mark downloads
-// complete.
-
-void DownloadManagerImpl::MaybeCompleteDownload(
-    DownloadItemImpl* download) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  VLOG(20) << __FUNCTION__ << "()" << " download = "
-           << download->DebugString(false);
-
-  if (!IsDownloadReadyForCompletion(download))
-    return;
-
-  // TODO(rdsmith): DCHECK that we only pass through this point
-  // once per download.  The natural way to do this is by a state
-  // transition on the DownloadItem.
-
-  // Confirm we're in the proper set of states to be here;
-  // have all data, have a history handle, (validated or safe).
-  DCHECK(download->IsInProgress());
-  DCHECK_NE(DownloadItem::DANGEROUS, download->GetSafetyState());
-  DCHECK(download->AllDataSaved());
-  DCHECK(download->IsPersisted());
-
-  // Give the delegate a chance to override.  It's ok to keep re-setting the
-  // delegate's |complete_callback| cb as long as there isn't another call-point
-  // trying to set it to a different cb.  TODO(benjhayden): Change the callback
-  // to point directly to the item instead of |this| when DownloadItem supports
-  // weak-ptrs.
-  if (delegate_ && !delegate_->ShouldCompleteDownload(download, base::Bind(
-          &DownloadManagerImpl::MaybeCompleteDownloadById,
-          this, download->GetId())))
-    return;
-
-  VLOG(20) << __FUNCTION__ << "()" << " executing: download = "
-           << download->DebugString(false);
-
-  if (delegate_)
-    delegate_->UpdateItemInPersistentStore(download);
-  download->OnDownloadCompleting();
-}
-
-void DownloadManagerImpl::MaybeCompleteDownloadById(int download_id) {
-  if (ContainsKey(active_downloads_, download_id))
-    MaybeCompleteDownload(active_downloads_[download_id]);
-}
-
 void DownloadManagerImpl::DownloadCompleted(DownloadItemImpl* download) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(download);
@@ -659,6 +594,11 @@ void DownloadManagerImpl::CancelDownload(int32 download_id) {
   // |active_downloads_| map before we get here.
   if (ContainsKey(active_downloads_, download_id))
     active_downloads_[download_id]->Cancel(true);
+}
+
+void DownloadManagerImpl::UpdatePersistence(DownloadItemImpl* download) {
+  if (delegate_)
+    delegate_->UpdateItemInPersistentStore(download);
 }
 
 void DownloadManagerImpl::DownloadStopped(DownloadItemImpl* download) {
@@ -875,7 +815,7 @@ void DownloadManagerImpl::OnDownloadItemAddedToPersistentStore(
   // completion status, and also inform any observers so that they get
   // more than just the start notification.
   if (item->IsInProgress()) {
-    MaybeCompleteDownload(item);
+    item->MaybeCompleteDownload();
   } else {
     DCHECK(item->IsCancelled());
     active_downloads_.erase(item->GetId());

@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_IMPL_DELEGATE_H_
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_IMPL_DELEGATE_H_
 
+#include "base/callback.h"
 #include "base/file_path.h"
 #include "content/common/content_export.h"
 
@@ -28,6 +29,15 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
   void Attach();
   void Detach();
 
+  // Allows the delegate to delay completion of the download.  This function
+  // will call the callback passed when the download is ready for completion.
+  // This may be done immediately, from within the routine itself, or it
+  // may be delayed.
+  // This routine should only be called once per download.
+  virtual void ReadyForDownloadCompletion(
+      DownloadItemImpl* download,
+      const base::Closure& complete_callback);
+
   // Tests if a file type should be opened automatically.
   virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path);
 
@@ -41,15 +51,14 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
   // to OnDownloadedFileRemoved().
   virtual void CheckForFileRemoval(DownloadItemImpl* download_item);
 
-  // If all pre-requisites have been met, complete download processing.
-  // TODO(rdsmith): Move into DownloadItem.
-  virtual void MaybeCompleteDownload(DownloadItemImpl* download);
-
   // For contextual issues like language and prefs.
   virtual content::BrowserContext* GetBrowserContext() const;
 
   // Get the DownloadFileManager to use for this download.
   virtual DownloadFileManager* GetDownloadFileManager();
+
+  // Update the persistent store with our information.
+  virtual void UpdatePersistence(DownloadItemImpl* download);
 
   // Handle any delegate portions of a state change operation on the
   // DownloadItem.

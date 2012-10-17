@@ -31,7 +31,7 @@ bool DownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
 
 bool DownloadManagerDelegate::ShouldCompleteDownload(
     DownloadItem* item,
-    const base::Closure& complete_callback) {
+    const base::Closure& callback) {
   return true;
 }
 

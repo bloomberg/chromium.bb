@@ -189,7 +189,7 @@ class DriveDownloadObserver : public content::DownloadManager::Observer,
   // |download_id| has completed. |error| indicated whether the
   // call was successful. This function takes ownership of DocumentEntry from
   // for use by MoveFileToDriveCache(). It also invokes the
-  // MaybeCompleteDownload() method on the DownloadItem to allow it to complete.
+  // download callback method to allow it to complete.
   void OnUploadComplete(int32 download_id,
                         DriveFileError error,
                         const FilePath& drive_path,

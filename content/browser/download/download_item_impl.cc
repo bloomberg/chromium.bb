@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// File method ordering: Methods in this file are in the same order
-// as in download_item_impl.h, with the following exception: The public
-// interfaces DelayedDownloadOpened, OnDownloadTargetDetermined, and
-// OnDownloadCompleting are placed in chronological order with the other
-// (private) routines that together define a DownloadItem's state transitions
-// as the download progresses.  See "Download progression cascade" later in
-// this file.
+// File method ordering: Methods in this file are in the same order as
+// in download_item_impl.h, with the following exception: The public
+// interfaces DelayedDownloadOpened, OnDownloadTargetDetermined,
+// MaybeCompleteDownload, and OnDownloadCompleting are placed in
+// chronological order with the other (private) routines that together
+// define a DownloadItem's state transitions as the download
+// progresses.  See "Download progression cascade" later in this file.
 
 // A regular DownloadItem (created for a download in this session of the
 // browser) normally goes through the following states:
@@ -321,7 +321,7 @@ void DownloadItemImpl::DangerousDownloadValidated() {
 
   UpdateObservers();
 
-  delegate_->MaybeCompleteDownload(this);
+  MaybeCompleteDownload();
 }
 
 void DownloadItemImpl::TogglePause() {
@@ -1012,16 +1012,52 @@ void DownloadItemImpl::OnDownloadRenamedToIntermediateName(
   delegate_->DownloadRenamedToIntermediateName(this);
 }
 
+// When SavePackage downloads MHTML to GData (see
+// SavePackageFilePickerChromeOS), GData calls MaybeCompleteDownload() like it
+// does for non-SavePackage downloads, but SavePackage downloads never satisfy
+// IsDownloadReadyForCompletion(). GDataDownloadObserver manually calls
+// DownloadItem::UpdateObservers() when the upload completes so that SavePackage
+// notices that the upload has completed and runs its normal Finish() pathway.
+// MaybeCompleteDownload() is never the mechanism by which SavePackage completes
+// downloads. SavePackage always uses its own Finish() to mark downloads
+// complete.
 void DownloadItemImpl::MaybeCompleteDownload() {
-  // TODO(rdsmith): Move logic for this function here.
-  delegate_->MaybeCompleteDownload(this);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!IsDownloadReadyForCompletion())
+    return;
+
+  // TODO(rdsmith): DCHECK that we only pass through this point
+  // once per download.  The natural way to do this is by a state
+  // transition on the DownloadItem.
+
+  // Confirm we're in the proper set of states to be here;
+  // have all data, have a history handle, (validated or safe).
+  DCHECK_EQ(IN_PROGRESS_INTERNAL, state_);
+  DCHECK_NE(DownloadItem::DANGEROUS, GetSafetyState());
+  DCHECK(all_data_saved_);
+  DCHECK(is_persisted_);
+
+  delegate_->UpdatePersistence(this);
+
+  OnDownloadCompleting();
 }
 
-// Called by DownloadManagerImpl::MaybeCompleteDownload() when it has
-// determined that the download is ready for completion.
+// Called by MaybeCompleteDownload() when it has determined that the download
+// is ready for completion.
 void DownloadItemImpl::OnDownloadCompleting() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  if (state_ != IN_PROGRESS_INTERNAL)
+    return;
+
+  // Give the delegate a chance to override.
+  delegate_->ReadyForDownloadCompletion(
+      this, base::Bind(&DownloadItemImpl::ReadyForDownloadCompletionDone,
+                       weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DownloadItemImpl::ReadyForDownloadCompletionDone() {
   if (state_ != IN_PROGRESS_INTERNAL)
     return;
 
@@ -1130,6 +1166,31 @@ void DownloadItemImpl::Completed() {
 }
 
 // **** End of Download progression cascade
+
+bool DownloadItemImpl::IsDownloadReadyForCompletion() {
+  // If we don't have all the data, the download is not ready for
+  // completion.
+  if (!AllDataSaved())
+    return false;
+
+  // If the download is dangerous, but not yet validated, it's not ready for
+  // completion.
+  if (GetSafetyState() == DownloadItem::DANGEROUS)
+    return false;
+
+  // If the download isn't active (e.g. has been cancelled) it's not
+  // ready for completion.
+  if (state_ != IN_PROGRESS_INTERNAL)
+    return false;
+
+  // If the download hasn't been inserted into the history system
+  // (which occurs strictly after file name determination, intermediate
+  // file rename, and UI display) then it's not ready for completion.
+  if (!IsPersisted())
+    return false;
+
+  return true;
+}
 
 bool DownloadItemImpl::NeedsRename() const {
   DCHECK(target_path_.DirName() == current_path_.DirName());

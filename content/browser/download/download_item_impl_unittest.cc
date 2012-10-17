@@ -37,11 +37,13 @@ class MockDelegate : public DownloadItemImplDelegate {
   MockDelegate(DownloadFileManager* file_manager)
       : file_manager_(file_manager) {
   }
+  MOCK_METHOD2(ReadyForDownloadCompletion,
+               void(DownloadItemImpl*, const base::Closure&));
   MOCK_METHOD1(ShouldOpenFileBasedOnExtension, bool(const FilePath& path));
   MOCK_METHOD1(ShouldOpenDownload, bool(DownloadItemImpl* download));
   MOCK_METHOD1(CheckForFileRemoval, void(DownloadItemImpl* download));
-  MOCK_METHOD1(MaybeCompleteDownload, void(DownloadItemImpl* download));
   MOCK_CONST_METHOD0(GetBrowserContext, content::BrowserContext*());
+  MOCK_METHOD1(UpdatePersistence, void(DownloadItemImpl* download));
   MOCK_METHOD1(DownloadStopped, void(DownloadItemImpl* download));
   MOCK_METHOD1(DownloadCompleted, void(DownloadItemImpl* download));
   MOCK_METHOD1(DownloadOpened, void(DownloadItemImpl* download));
@@ -118,6 +120,11 @@ ACTION_P(ScheduleRenameCallback, new_path) {
 // Similarly for scheduling a completion callback.
 ACTION(ScheduleCompleteCallback) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(arg1));
+}
+
+// Just run the callback in arg1
+ACTION(RunArg1Callback) {
+  arg1.Run();
 }
 
 MockDownloadFileManager::MockDownloadFileManager()
@@ -267,7 +274,6 @@ const FilePath::CharType kDummyPath[] = FILE_PATH_LITERAL("/testpath");
 //  void OpenDownload();
 //  void ShowDownloadInShell();
 //  void CompleteDelayedDownload();
-//  void OnDownloadCompleting();
 //  set_* mutators
 
 TEST_F(DownloadItemTest, NotificationAfterUpdate) {
@@ -476,6 +482,9 @@ TEST_F(DownloadItemTest, CallbackAfterRename) {
   ::testing::Mock::VerifyAndClearExpectations(mock_delegate());
 
   item->OnAllDataSaved(10, "");
+  EXPECT_CALL(*mock_delegate(), ReadyForDownloadCompletion(item, _))
+      .WillOnce(RunArg1Callback());
+  EXPECT_CALL(*mock_delegate(), UpdatePersistence(item));
   EXPECT_CALL(*mock_file_manager(),
               RenameDownloadFile(item->GetGlobalId(),
                                  final_path, true, _))
@@ -495,7 +504,8 @@ TEST_F(DownloadItemTest, CallbackAfterRename) {
   EXPECT_CALL(*mock_delegate(), DownloadCompleted(item));
   EXPECT_CALL(*mock_delegate(), ShouldOpenDownload(item))
       .WillOnce(Return(true));
-  item->OnDownloadCompleting();
+  item->SetIsPersisted();
+  item->MaybeCompleteDownload();
   RunAllPendingInMessageLoops();
   ::testing::Mock::VerifyAndClearExpectations(mock_file_manager());
   ::testing::Mock::VerifyAndClearExpectations(mock_delegate());

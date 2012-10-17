@@ -346,8 +346,12 @@ void SavePackage::OnMHTMLGenerated(const FilePath& path, int64 size) {
     download_->OnAllDataSaved(size, DownloadItem::kEmptyFileHash);
   }
 
-  if (!download_manager_->GetDelegate() ||
-      download_manager_->GetDelegate()->ShouldCompleteDownload(
+  if (!download_manager_->GetDelegate()) {
+    Finish();
+    return;
+  }
+
+  if (download_manager_->GetDelegate()->ShouldCompleteDownload(
           download_, base::Bind(&SavePackage::Finish, this))) {
     Finish();
   }

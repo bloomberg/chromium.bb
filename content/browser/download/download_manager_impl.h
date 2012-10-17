@@ -102,14 +102,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   // Returns the |BoundNetLog| used by the |DownloadItem|.
   virtual net::BoundNetLog CreateDownloadItem(DownloadCreateInfo* info);
 
-  // Does nothing if |download_id| is not an active download.
-  void MaybeCompleteDownloadById(int download_id);
-
-  // Determine if the download is ready for completion, i.e. has had
-  // all data saved, and completed the filename determination and
-  // history insertion.
-  bool IsDownloadReadyForCompletion(DownloadItemImpl* download);
-
   // Show the download in the browser.
   void ShowDownloadInBrowser(DownloadItemImpl* download);
 
@@ -167,10 +159,12 @@ class CONTENT_EXPORT DownloadManagerImpl
   // Overridden from DownloadItemImplDelegate
   // (Note that |GetBrowserContext| are present in both interfaces.)
   virtual DownloadFileManager* GetDownloadFileManager() OVERRIDE;
-  virtual bool ShouldOpenDownload(DownloadItemImpl* item) OVERRIDE;
+  virtual void ReadyForDownloadCompletion(
+      DownloadItemImpl* item, const base::Closure& complete_callback) OVERRIDE;
   virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path) OVERRIDE;
+  virtual bool ShouldOpenDownload(DownloadItemImpl* item) OVERRIDE;
   virtual void CheckForFileRemoval(DownloadItemImpl* download_item) OVERRIDE;
-  virtual void MaybeCompleteDownload(DownloadItemImpl* download) OVERRIDE;
+  virtual void UpdatePersistence(DownloadItemImpl* download) OVERRIDE;
   virtual void DownloadStopped(DownloadItemImpl* download) OVERRIDE;
   virtual void DownloadCompleted(DownloadItemImpl* download) OVERRIDE;
   virtual void DownloadOpened(DownloadItemImpl* download) OVERRIDE;
