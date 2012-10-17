@@ -501,6 +501,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, SetFaviconsReplaceBitmapData);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
                            SetFaviconsSameFaviconURLForTwoPages);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
+                           UpdateFaviconMappingsAndFetchNoChange);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MergeFaviconPageURLNotInDB);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MergeFaviconPageURLInDB);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MergeFaviconMaxFaviconsPerPage);
@@ -648,12 +650,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // For each entry in |favicon_bitmap_data|, if a favicon bitmap already
   // exists at the entry's pixel size, replace the favicon bitmap's data with
   // the entry's bitmap data. Otherwise add a new favicon bitmap.
-  // |favicon_bitmap_added| is set to true if the function has added a favicon
-  // bitmap.
   void SetFaviconBitmaps(
       FaviconID icon_id,
-      const std::vector<FaviconBitmapData>& favicon_bitmap_data,
-      bool* favicon_bitmap_added);
+      const std::vector<FaviconBitmapData>& favicon_bitmap_data);
 
   // Returns true if |favicon_bitmap_data| and |icon_url_sizes| passed to
   // SetFavicons() are valid.
@@ -675,11 +674,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // detailed description of FaviconSizes.
   // Deletes any favicon bitmaps currently mapped to |icon_id| whose pixel
   // sizes are not contained in |favicon_sizes|.
-  // |favicon_bitmap_removed| is set to true if the function removed a favicon
-  // bitmap.
   void SetFaviconSizes(FaviconID icon_id,
-                       const FaviconSizes& favicon_sizes,
-                       bool* favicon_bitmap_removed);
+                       const FaviconSizes& favicon_sizes);
 
   // Returns true if there are favicons for |page_url| and one of the types in
   // |icon_types|.
