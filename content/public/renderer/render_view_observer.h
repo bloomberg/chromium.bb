@@ -27,6 +27,7 @@ class WebFormElement;
 class WebMediaPlayerClient;
 class WebMouseEvent;
 class WebNode;
+struct WebRect;
 class WebTouchEvent;
 class WebURL;
 struct WebURLError;
@@ -88,6 +89,10 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
   virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event) {}
   virtual void DidHandleTouchEvent(const WebKit::WebTouchEvent& event) {}
   virtual void DidCreatePepperPlugin(RendererPpapiHost* host) {}
+  virtual void DidInvalidateRect(const WebKit::WebRect& rect) {}
+  virtual void DidScrollRect(int dx, int dy, const WebKit::WebRect& rect) {}
+  virtual void DidRequestScheduleComposite() {}
+  virtual void DidRequestScheduleAnimation() {}
 
   // These match incoming IPCs.
   virtual void Navigate(const GURL& url) {}

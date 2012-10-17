@@ -304,6 +304,12 @@ class CONTENT_EXPORT RenderWidget
   virtual void DidInitiatePaint() {}
   virtual void DidFlushPaint() {}
 
+  // Override points to notify derived classes of WebWidgetClient callbacks.
+  virtual void DidInvalidateRect(const WebKit::WebRect& rect) {}
+  virtual void DidScrollRect(int dx, int dy, const WebKit::WebRect& rect) {}
+  virtual void DidRequestScheduleComposite() {}
+  virtual void DidRequestScheduleAnimation() {}
+
   // Override and return true when the widget is rendered with a graphics
   // context that supports asynchronous swapbuffers. When returning true, the
   // subclass must call OnSwapBuffersPosted() when swap is posted,

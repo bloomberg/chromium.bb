@@ -767,6 +767,12 @@ class RenderViewImpl : public RenderWidget,
   virtual void WillInitiatePaint() OVERRIDE;
   virtual void DidInitiatePaint() OVERRIDE;
   virtual void DidFlushPaint() OVERRIDE;
+  virtual void DidInvalidateRect(const WebKit::WebRect& rect) OVERRIDE;
+  virtual void DidScrollRect(int dx,
+                             int dy,
+                             const WebKit::WebRect& rect) OVERRIDE;
+  virtual void DidRequestScheduleComposite() OVERRIDE;
+  virtual void DidRequestScheduleAnimation() OVERRIDE;
   virtual webkit::ppapi::PluginInstance* GetBitmapForOptimizedPluginPaint(
       const gfx::Rect& paint_bounds,
       TransportDIB** dib,

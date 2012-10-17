@@ -1059,6 +1059,8 @@ void RenderWidget::DoDeferredUpdate() {
 // WebWidgetClient
 
 void RenderWidget::didInvalidateRect(const WebRect& rect) {
+  DidInvalidateRect(rect);
+
   // The invalidated rect might be outside the bounds of the view.
   gfx::Rect view_rect(size_);
   gfx::Rect damaged_rect = view_rect.Intersect(rect);
@@ -1094,6 +1096,8 @@ void RenderWidget::didInvalidateRect(const WebRect& rect) {
 }
 
 void RenderWidget::didScrollRect(int dx, int dy, const WebRect& clip_rect) {
+  DidScrollRect(dx, dy, clip_rect);
+
   // Drop scrolls on the floor when we are in compositing mode.
   // TODO(nduca): stop WebViewImpl from sending scrolls in the first place.
   if (is_accelerated_compositing_active_)
@@ -1232,6 +1236,8 @@ void RenderWidget::didCompleteSwapBuffers() {
 }
 
 void RenderWidget::scheduleComposite() {
+  DidRequestScheduleComposite();
+
   if (WebWidgetHandlesCompositorScheduling()) {
     webwidget_->composite(false);
   } else {
@@ -1246,6 +1252,8 @@ void RenderWidget::scheduleComposite() {
 }
 
 void RenderWidget::scheduleAnimation() {
+  DidRequestScheduleAnimation();
+
   if (animation_update_pending_)
     return;
 
