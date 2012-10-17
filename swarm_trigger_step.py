@@ -74,7 +74,7 @@ class Manifest(object):
     base_url = switches.data_server.rstrip('/')
     self.data_server_retrieval = base_url + '/content/retrieve?hash_key='
     self.data_server_storage = base_url + '/content/store'
-    self.data_server_has = base_url + '/content/has'
+    self.data_server_has = base_url + '/content/contains'
     self.zip_file_hash = ''
 
   def add_task(self, task_name, actions, time_out=600):
@@ -115,6 +115,7 @@ class Manifest(object):
       if response[0] == chr(1):
         print 'Zip file already on server, no need to reupload.'
         return True
+      print 'Zip file not on server, starting uploading.'
 
       url = (self.data_server_storage + '?' +
              urllib.urlencode({'hash_key': self.zip_file_hash,
