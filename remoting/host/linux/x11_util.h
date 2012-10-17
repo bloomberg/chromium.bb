@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_X11_UTILS_H_
-#define REMOTING_HOST_X11_UTILS_H_
+#ifndef REMOTING_HOST_LINUX_X11_UTIL_H_
+#define REMOTING_HOST_LINUX_X11_UTIL_H_
 
 // Xlib.h defines XErrorEvent as an anonymous struct, so we can't forward-
 // declare it in this header. Since Xlib.h is not generally something you
@@ -60,4 +60,4 @@ class ScopedXGrabServer {
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_X11_UTILS_H_
+#endif  // REMOTING_HOST_LINUX_X11_UTIL_H_
