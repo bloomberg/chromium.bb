@@ -11,15 +11,23 @@
 
 namespace remoting {
 
+namespace {
+const char kLocaleResourcesDirName[] = "remoting_locales";
+const char kCommonResourcesFileName[] = "chrome_remote_desktop.pak";
+}  // namespace
+
 // Loads chromoting resources.
 bool LoadResources(const std::string& locale) {
   FilePath path;
   if (!PathService::Get(base::DIR_MODULE, &path))
     return false;
-  path = path.Append(FILE_PATH_LITERAL("remoting_locales"));
-  PathService::Override(ui::DIR_LOCALES, path);
 
+  PathService::Override(ui::DIR_LOCALES,
+                        path.AppendASCII(kLocaleResourcesDirName));
   ui::ResourceBundle::InitSharedInstanceLocaleOnly(locale, NULL);
+
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+      path.AppendASCII(kCommonResourcesFileName), ui::SCALE_FACTOR_100P);
 
   return true;
 }
