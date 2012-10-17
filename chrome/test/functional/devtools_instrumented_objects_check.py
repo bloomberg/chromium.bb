@@ -65,11 +65,8 @@ class DevToolsInstrumentedObjectsCheck(devtools_test_base.DevToolsTestBase):
       return
     logging.info('Got data for: %s, objects count = %d (unknown = %d) ' %
         (hostname, counted_objects, counted_unknown_objects))
-    graph_name = 'DevTools Instrumented Objects - ' + hostname
-    pyauto_utils.PrintPerfResult(graph_name, 'Reported instrumented objects',
-        counted_objects, 'objects')
-    pyauto_utils.PrintPerfResult(graph_name, 'Not allocated by tcmalloc',
-        counted_unknown_objects, 'objects')
+    pyauto_utils.PrintPerfResult('DevTools Unknown Instrumented Objects',
+        hostname, counted_unknown_objects, 'objects')
 
 
 if __name__ == '__main__':
