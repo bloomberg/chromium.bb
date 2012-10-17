@@ -111,16 +111,22 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   virtual float GetFilteredTimePerFrame() const = 0;
 
   // Shows a context menu with the given information. The given client will
-  // be called with the result. The client pointer is owned by the caller and
-  // must remain valid as long as the RenderView is alive.
+  // be called with the result.
   //
   // The request ID will be returned by this function. This is passed to the
   // client functions for identification.
+  //
+  // If the client is destroyed, CancelContextMenu() should be called with the
+  // request ID returned by this function.
   //
   // Note: if you end up having clients outliving the RenderView, we should add
   // a CancelContextMenuCallback function that takes a request id.
   virtual int ShowContextMenu(ContextMenuClient* client,
                               const ContextMenuParams& params) = 0;
+
+  // Cancels a context menu in the event that the client is destroyed before the
+  // menu is closed.
+  virtual void CancelContextMenu(int request_id) = 0;
 
   // Returns the current visibility of the WebView.
   virtual WebKit::WebPageVisibilityState GetVisibilityState() const = 0;

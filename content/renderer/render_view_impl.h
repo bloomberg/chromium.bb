@@ -718,6 +718,7 @@ class RenderViewImpl : public RenderWidget,
   virtual int ShowContextMenu(
       content::ContextMenuClient* client,
       const content::ContextMenuParams& params) OVERRIDE;
+  virtual void CancelContextMenu(int request_id) OVERRIDE;
   virtual WebKit::WebPageVisibilityState GetVisibilityState() const OVERRIDE;
   virtual void RunModalAlertDialog(WebKit::WebFrame* frame,
                                    const WebKit::WebString& message) OVERRIDE;

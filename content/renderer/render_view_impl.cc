@@ -4434,6 +4434,11 @@ int RenderViewImpl::ShowContextMenu(content::ContextMenuClient* client,
   return our_params.custom_context.request_id;
 }
 
+void RenderViewImpl::CancelContextMenu(int request_id) {
+  DCHECK(pending_context_menus_.Lookup(request_id));
+  pending_context_menus_.Remove(request_id);
+}
+
 WebKit::WebPageVisibilityState RenderViewImpl::GetVisibilityState() const {
   return visibilityState();
 }
@@ -5166,7 +5171,8 @@ void RenderViewImpl::OnCustomContextMenuAction(
     // External context menu request, look in our map.
     content::ContextMenuClient* client =
         pending_context_menus_.Lookup(custom_context.request_id);
-    client->OnMenuAction(custom_context.request_id, action);
+    if (client)
+      client->OnMenuAction(custom_context.request_id, action);
   } else {
     // Internal request, forward to WebKit.
     webview()->performCustomContextMenuAction(action);
@@ -6308,8 +6314,10 @@ void RenderViewImpl::OnContextMenuClosed(
     // External request, should be in our map.
     content::ContextMenuClient* client =
         pending_context_menus_.Lookup(custom_context.request_id);
-    client->OnMenuClosed(custom_context.request_id);
-    pending_context_menus_.Remove(custom_context.request_id);
+    if (client) {
+      client->OnMenuClosed(custom_context.request_id);
+      pending_context_menus_.Remove(custom_context.request_id);
+    }
   } else {
     // Internal request, forward to WebKit.
     context_menu_node_.reset();

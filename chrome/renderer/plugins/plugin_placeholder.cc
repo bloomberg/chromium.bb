@@ -246,6 +246,8 @@ PluginPlaceholder::~PluginPlaceholder() {
             routing_id(), placeholder_routing_id_));
   }
 #endif
+  if (context_menu_request_id_)
+    render_view()->CancelContextMenu(context_menu_request_id_);
 }
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)

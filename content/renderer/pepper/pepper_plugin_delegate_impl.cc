@@ -335,6 +335,10 @@ PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderViewImpl* render_view)
 
 PepperPluginDelegateImpl::~PepperPluginDelegateImpl() {
   DCHECK(mouse_lock_instances_.empty());
+  for (PendingContextMenuMap::iterator it = pending_context_menus_.begin();
+       it != pending_context_menus_.end(); ++it) {
+    render_view()->CancelContextMenu(it->first);
+  }
 }
 
 scoped_refptr<webkit::ppapi::PluginModule>
