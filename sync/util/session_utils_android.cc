@@ -17,8 +17,8 @@ using base::android::CheckException;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::GetApplicationContext;
 using base::android::GetClass;
-using base::android::MethodID;
 using base::android::JavaRef;
+using base::android::MethodID;
 using base::android::ScopedJavaLocalRef;
 
 namespace {

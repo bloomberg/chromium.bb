@@ -19,8 +19,8 @@ using base::android::AttachCurrentThread;
 using base::android::CheckException;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::GetClass;
-using base::android::MethodID;
 using base::android::JavaRef;
+using base::android::MethodID;
 using base::android::ScopedJavaLocalRef;
 
 // These constants are from the android source tree and need to be kept in
