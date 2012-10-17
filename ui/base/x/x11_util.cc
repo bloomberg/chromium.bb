@@ -496,6 +496,90 @@ XcursorImage* SkBitmapToXcursorImage(const SkBitmap* cursor_image,
 
   return image;
 }
+
+
+int CoalescePendingMotionEvents(const XEvent* xev,
+                                XEvent* last_event) {
+  XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev->xcookie.data);
+  int num_coalesed = 0;
+  Display* display = xev->xany.display;
+  int event_type = xev->xgeneric.evtype;
+
+#if defined(USE_XI2_MT)
+  float tracking_id = -1;
+  if (event_type == XI_TouchUpdate) {
+    if (!ui::ValuatorTracker::GetInstance()->ExtractValuator(*xev,
+          ui::ValuatorTracker::VAL_TRACKING_ID, &tracking_id))
+      tracking_id = -1;
+  }
+#endif
+
+  while (XPending(display)) {
+    XEvent next_event;
+    XPeekEvent(display, &next_event);
+
+    // If we can't get the cookie, abort the check.
+    if (!XGetEventData(next_event.xgeneric.display, &next_event.xcookie))
+      return num_coalesed;
+
+    // If this isn't from a valid device, throw the event away, as
+    // that's what the message pump would do. Device events come in pairs
+    // with one from the master and one from the slave so there will
+    // always be at least one pending.
+    if (!ui::TouchFactory::GetInstance()->ShouldProcessXI2Event(&next_event)) {
+      XFreeEventData(display, &next_event.xcookie);
+      XNextEvent(display, &next_event);
+      continue;
+    }
+
+    if (next_event.type == GenericEvent &&
+        next_event.xgeneric.evtype == event_type &&
+        !ui::GetScrollOffsets(&next_event, NULL, NULL)) {
+      XIDeviceEvent* next_xievent =
+          static_cast<XIDeviceEvent*>(next_event.xcookie.data);
+#if defined(USE_XI2_MT)
+      float next_tracking_id = -1;
+      if (event_type == XI_TouchUpdate) {
+        // If this is a touch motion event (as opposed to mouse motion event),
+        // then make sure the events are from the same touch-point.
+        if (!ui::ValuatorTracker::GetInstance()->ExtractValuator(next_event,
+              ui::ValuatorTracker::VAL_TRACKING_ID, &next_tracking_id))
+          next_tracking_id = -1;
+      }
+#endif
+      // Confirm that the motion event is targeted at the same window
+      // and that no buttons or modifiers have changed.
+      if (xievent->event == next_xievent->event &&
+          xievent->child == next_xievent->child &&
+#if defined(USE_XI2_MT)
+          (event_type == XI_Motion || tracking_id == next_tracking_id) &&
+#endif
+          xievent->buttons.mask_len == next_xievent->buttons.mask_len &&
+          (memcmp(xievent->buttons.mask,
+                  next_xievent->buttons.mask,
+                  xievent->buttons.mask_len) == 0) &&
+          xievent->mods.base == next_xievent->mods.base &&
+          xievent->mods.latched == next_xievent->mods.latched &&
+          xievent->mods.locked == next_xievent->mods.locked &&
+          xievent->mods.effective == next_xievent->mods.effective) {
+        XFreeEventData(display, &next_event.xcookie);
+        // Free the previous cookie.
+        if (num_coalesed > 0)
+          XFreeEventData(display, &last_event->xcookie);
+        // Get the event and its cookie data.
+        XNextEvent(display, last_event);
+        XGetEventData(display, &last_event->xcookie);
+        ++num_coalesed;
+        continue;
+      } else {
+        // This isn't an event we want so free its cookie data.
+        XFreeEventData(display, &next_event.xcookie);
+      }
+    }
+    break;
+  }
+  return num_coalesed;
+}
 #endif
 
 void HideHostCursor() {
@@ -1435,89 +1519,6 @@ bool IsMotionEvent(XEvent* event) {
   if (type == GenericEvent)
     type = event->xgeneric.evtype;
   return type == MotionNotify;
-}
-
-int CoalescePendingMotionEvents(const XEvent* xev,
-                                XEvent* last_event) {
-  XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev->xcookie.data);
-  int num_coalesed = 0;
-  Display* display = xev->xany.display;
-  int event_type = xev->xgeneric.evtype;
-
-#if defined(USE_XI2_MT)
-  float tracking_id = -1;
-  if (event_type == XI_TouchUpdate) {
-    if (!ui::ValuatorTracker::GetInstance()->ExtractValuator(*xev,
-          ui::ValuatorTracker::VAL_TRACKING_ID, &tracking_id))
-      tracking_id = -1;
-  }
-#endif
-
-  while (XPending(display)) {
-    XEvent next_event;
-    XPeekEvent(display, &next_event);
-
-    // If we can't get the cookie, abort the check.
-    if (!XGetEventData(next_event.xgeneric.display, &next_event.xcookie))
-      return num_coalesed;
-
-    // If this isn't from a valid device, throw the event away, as
-    // that's what the message pump would do. Device events come in pairs
-    // with one from the master and one from the slave so there will
-    // always be at least one pending.
-    if (!ui::TouchFactory::GetInstance()->ShouldProcessXI2Event(&next_event)) {
-      XFreeEventData(display, &next_event.xcookie);
-      XNextEvent(display, &next_event);
-      continue;
-    }
-
-    if (next_event.type == GenericEvent &&
-        next_event.xgeneric.evtype == event_type &&
-        !ui::GetScrollOffsets(&next_event, NULL, NULL)) {
-      XIDeviceEvent* next_xievent =
-          static_cast<XIDeviceEvent*>(next_event.xcookie.data);
-#if defined(USE_XI2_MT)
-      float next_tracking_id = -1;
-      if (event_type == XI_TouchUpdate) {
-        // If this is a touch motion event (as opposed to mouse motion event),
-        // then make sure the events are from the same touch-point.
-        if (!ui::ValuatorTracker::GetInstance()->ExtractValuator(next_event,
-              ui::ValuatorTracker::VAL_TRACKING_ID, &next_tracking_id))
-          next_tracking_id = -1;
-      }
-#endif
-      // Confirm that the motion event is targeted at the same window
-      // and that no buttons or modifiers have changed.
-      if (xievent->event == next_xievent->event &&
-          xievent->child == next_xievent->child &&
-#if defined(USE_XI2_MT)
-          (event_type == XI_Motion || tracking_id == next_tracking_id) &&
-#endif
-          xievent->buttons.mask_len == next_xievent->buttons.mask_len &&
-          (memcmp(xievent->buttons.mask,
-                  next_xievent->buttons.mask,
-                  xievent->buttons.mask_len) == 0) &&
-          xievent->mods.base == next_xievent->mods.base &&
-          xievent->mods.latched == next_xievent->mods.latched &&
-          xievent->mods.locked == next_xievent->mods.locked &&
-          xievent->mods.effective == next_xievent->mods.effective) {
-        XFreeEventData(display, &next_event.xcookie);
-        // Free the previous cookie.
-        if (num_coalesed > 0)
-          XFreeEventData(display, &last_event->xcookie);
-        // Get the event and its cookie data.
-        XNextEvent(display, last_event);
-        XGetEventData(display, &last_event->xcookie);
-        ++num_coalesed;
-        continue;
-      } else {
-        // This isn't an event we want so free its cookie data.
-        XFreeEventData(display, &next_event.xcookie);
-      }
-    }
-    break;
-  }
-  return num_coalesed;
 }
 
 int GetMappedButton(int button) {
