@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/string_util.h"
+#include "ui/views/controls/progress_bar.h"
+
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "ui/views/controls/progress_bar.h"
 
 namespace views {
 

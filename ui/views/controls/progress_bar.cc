@@ -41,8 +41,6 @@ void AddRoundRectPathWithPadding(int x, int y,
                                  SkScalar padding,
                                  SkPath* path) {
   DCHECK(path);
-  if (path == NULL)
-    return;
   SkRect rect;
   rect.set(
       SkIntToScalar(x) + padding, SkIntToScalar(y) + padding,
@@ -169,9 +167,7 @@ void ProgressBar::SetTooltipText(const string16& tooltip_text) {
 
 bool ProgressBar::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
   DCHECK(tooltip);
-  if (tooltip == NULL)
-    return false;
-  tooltip->assign(tooltip_text_);
+  *tooltip = tooltip_text_;
   return !tooltip_text_.empty();
 }
 
