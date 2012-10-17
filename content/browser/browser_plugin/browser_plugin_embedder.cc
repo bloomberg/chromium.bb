@@ -94,8 +94,7 @@ void BrowserPluginEmbedder::CreateGuest(RenderViewHost* render_view_host,
       instance_id);
 
   guest = guest_web_contents->GetBrowserPluginGuest();
-  guest->set_embedder_render_process_host(render_view_host->GetProcess());
-  guest->set_embedder_render_view_host(render_view_host);
+  guest->set_embedder_web_contents(web_contents());
 
   RendererPreferences* guest_renderer_prefs =
       guest_web_contents->GetMutableRendererPrefs();

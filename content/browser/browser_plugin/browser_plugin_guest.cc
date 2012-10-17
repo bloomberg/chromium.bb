@@ -42,8 +42,7 @@ BrowserPluginGuest::BrowserPluginGuest(int instance_id,
                                        WebContentsImpl* web_contents,
                                        RenderViewHost* render_view_host)
     : WebContentsObserver(web_contents),
-      embedder_render_process_host_(NULL),
-      embedder_render_view_host_(NULL),
+      embedder_web_contents_(NULL),
       instance_id_(instance_id),
 #if defined(OS_WIN)
       damage_buffer_size_(0),
@@ -135,6 +134,11 @@ void BrowserPluginGuest::RendererUnresponsive(WebContents* source) {
   RecordAction(UserMetricsAction("BrowserPlugin.Guest.Hung"));
 }
 
+void BrowserPluginGuest::RunFileChooser(WebContents* web_contents,
+                                        const FileChooserParams& params) {
+  embedder_web_contents_->GetDelegate()->RunFileChooser(web_contents, params);
+}
+
 void BrowserPluginGuest::SetIsAcceptingTouchEvents(bool accept) {
   SendMessageToEmbedder(
       new BrowserPluginMsg_ShouldAcceptTouchEvents(instance_id(), accept));
@@ -172,9 +176,12 @@ void BrowserPluginGuest::DragStatusUpdate(WebKit::WebDragStatus drag_status,
 }
 
 void BrowserPluginGuest::UpdateDragCursor(WebKit::WebDragOperation operation) {
-  CHECK(embedder_render_view_host_);
+  RenderViewHostImpl* embedder_render_view_host =
+      static_cast<RenderViewHostImpl*>(
+          embedder_web_contents_->GetRenderViewHost());
+  CHECK(embedder_render_view_host);
   RenderViewHostDelegateView* view =
-      embedder_render_view_host_->GetDelegate()->GetDelegateView();
+      embedder_render_view_host->GetDelegate()->GetDelegateView();
   if (view)
     view->UpdateDragCursor(operation);
 }
@@ -463,8 +470,7 @@ void BrowserPluginGuest::RenderViewGone(base::TerminationStatus status) {
 }
 
 void BrowserPluginGuest::SendMessageToEmbedder(IPC::Message* msg) {
-  DCHECK(embedder_render_process_host());
-  embedder_render_process_host()->Send(msg);
+  embedder_web_contents_->GetRenderProcessHost()->Send(msg);
 }
 
 }  // namespace content

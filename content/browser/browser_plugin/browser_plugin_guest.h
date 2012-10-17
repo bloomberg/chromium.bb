@@ -82,12 +82,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
     guest_hang_timeout_ = timeout;
   }
 
-  void set_embedder_render_process_host(
-      RenderProcessHost* render_process_host) {
-    embedder_render_process_host_ = render_process_host;
-  }
-  void set_embedder_render_view_host(RenderViewHost* render_view_host) {
-    embedder_render_view_host_ = render_view_host;
+  void set_embedder_web_contents(WebContents* web_contents) {
+    embedder_web_contents_ = web_contents;
   }
 
   bool visible() const { return visible_; }
@@ -126,6 +122,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
                            const std::string& request_method) OVERRIDE;
   virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
   virtual void RendererUnresponsive(WebContents* source) OVERRIDE;
+  virtual void RunFileChooser(WebContents* web_contents,
+                              const FileChooserParams& params) OVERRIDE;
 
   void UpdateRect(RenderViewHost* render_view_host,
                   const ViewHostMsg_UpdateRect_Params& params);
@@ -215,9 +213,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
                      WebContentsImpl* web_contents,
                      RenderViewHost* render_view_host);
 
-  RenderProcessHost* embedder_render_process_host() {
-    return embedder_render_process_host_;
-  }
   // Returns the identifier that uniquely identifies a browser plugin guest
   // within an embedder.
   int instance_id() const { return instance_id_; }
@@ -240,8 +235,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public NotificationObserver,
   static content::BrowserPluginHostFactory* factory_;
 
   NotificationRegistrar notification_registrar_;
-  RenderProcessHost* embedder_render_process_host_;
-  RenderViewHost* embedder_render_view_host_;
+  WebContents* embedder_web_contents_;
   // An identifier that uniquely identifies a browser plugin guest within an
   // embedder.
   int instance_id_;
