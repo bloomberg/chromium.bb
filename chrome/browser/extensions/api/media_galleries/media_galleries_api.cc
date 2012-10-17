@@ -121,7 +121,12 @@ void MediaGalleriesGetMediaFileSystemsFunction::GetAndReturnGalleries() {
 
 void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
     const std::vector<MediaFileSystemInfo>& filesystems) {
-  const int child_id = render_view_host()->GetProcess()->GetID();
+  content::RenderViewHost* rvh = render_view_host();
+  if (!rvh) {
+    SendResponse(false);
+    return;
+  }
+  const int child_id = rvh->GetProcess()->GetID();
   std::set<std::string> file_system_names;
   base::ListValue* list = new base::ListValue();
   for (size_t i = 0; i < filesystems.size(); i++) {
