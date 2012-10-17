@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "cc/math_util.h"
+#include "CCMathUtil.h"
 #include "FloatQuad.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>

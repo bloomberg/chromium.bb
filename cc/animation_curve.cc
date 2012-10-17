@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "cc/animation_curve.h"
+#include "CCAnimationCurve.h"
 
 namespace cc {
 

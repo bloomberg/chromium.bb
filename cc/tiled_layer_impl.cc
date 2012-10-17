@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "cc/tiled_layer_impl.h"
+#include "CCTiledLayerImpl.h"
 
 #include "base/basictypes.h"
 #include "base/stringprintf.h"
@@ -12,10 +12,10 @@
 #include "CCCheckerboardDrawQuad.h"
 #include "CCDebugBorderDrawQuad.h"
 #include "CCLayerTilingData.h"
-#include "cc/math_util.h"
+#include "CCMathUtil.h"
 #include "CCQuadSink.h"
 #include "CCSolidColorDrawQuad.h"
-#include "cc/tile_draw_quad.h"
+#include "CCTileDrawQuad.h"
 #include "FloatQuad.h"
 #include "GraphicsContext3D.h"
 #include "third_party/skia/include/core/SkColor.h"

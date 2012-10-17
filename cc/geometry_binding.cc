@@ -6,7 +6,7 @@
 
 #include "cc/geometry_binding.h"
 
-#include "cc/gl_renderer.h" // For the GLC() macro.
+#include "CCRendererGL.h" // For the GLC() macro.
 #include "GraphicsContext3D.h"
 #include <public/WebGraphicsContext3D.h>
 

@@ -9,7 +9,7 @@
 #include "CCDamageTracker.h"
 #include "CCLayerImpl.h"
 #include "CCLayerTreeHost.h"
-#include "cc/math_util.h"
+#include "CCMathUtil.h"
 
 namespace cc {
 

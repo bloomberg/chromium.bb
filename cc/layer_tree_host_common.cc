@@ -9,7 +9,7 @@
 #include "CCLayerImpl.h"
 #include "CCLayerIterator.h"
 #include "CCLayerSorter.h"
-#include "cc/math_util.h"
+#include "CCMathUtil.h"
 #include "CCRenderSurface.h"
 #include "FloatQuad.h"
 #include "IntRect.h"

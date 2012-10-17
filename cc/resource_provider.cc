@@ -4,13 +4,15 @@
 
 #include "config.h"
 
-#include "cc/resource_provider.h"
+#include "CCResourceProvider.h"
 #ifdef LOG
 #undef LOG
 #endif
 
 #include <limits.h>
 
+#include "CCProxy.h"
+#include "CCRendererGL.h" // For the GLC() macro.
 #include "Extensions3DChromium.h"
 #include "IntRect.h"
 #include "base/debug/alias.h"
@@ -18,9 +20,7 @@
 #include "base/stl_util.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
-#include "cc/gl_renderer.h" // For the GLC() macro.
 #include "cc/layer_texture_sub_image.h"
-#include "cc/proxy.h"
 #include "cc/throttled_texture_uploader.h"
 #include "cc/unthrottled_texture_uploader.h"
 #include <public/WebGraphicsContext3D.h>

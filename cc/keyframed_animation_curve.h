@@ -5,8 +5,8 @@
 #ifndef CCKeyframedAnimationCurve_h
 #define CCKeyframedAnimationCurve_h
 
-#include "cc/animation_curve.h"
-#include "cc/timing_function.h"
+#include "CCAnimationCurve.h"
+#include "CCTimingFunction.h"
 #include "scoped_ptr_vector.h"
 #include <public/WebTransformOperations.h>
 

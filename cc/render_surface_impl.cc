@@ -11,7 +11,7 @@
 #include "CCDebugBorderDrawQuad.h"
 #include "CCDelegatedRendererLayerImpl.h"
 #include "CCLayerImpl.h"
-#include "cc/math_util.h"
+#include "CCMathUtil.h"
 #include "CCQuadSink.h"
 #include "CCRenderPass.h"
 #include "CCRenderPassDrawQuad.h"

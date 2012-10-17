@@ -4,16 +4,16 @@
 
 #include "config.h"
 
-#include "cc/video_layer_impl.h"
+#include "CCVideoLayerImpl.h"
 
 #include "CCIOSurfaceDrawQuad.h"
 #include "CCLayerTreeHostImpl.h"
-#include "cc/proxy.h"
+#include "CCProxy.h"
 #include "CCQuadSink.h"
-#include "cc/resource_provider.h"
+#include "CCResourceProvider.h"
 #include "CCStreamVideoDrawQuad.h"
 #include "CCTextureDrawQuad.h"
-#include "cc/yuv_video_draw_quad.h"
+#include "CCYUVVideoDrawQuad.h"
 #include "Extensions3DChromium.h"
 #include "GraphicsContext3D.h"
 #include "NotImplemented.h"

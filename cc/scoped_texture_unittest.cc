@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "cc/scoped_texture.h"
+#include "CCScopedTexture.h"
 
 #include "CCRenderer.h"
 #include "CCSingleThreadProxy.h" // For DebugScopedSetImplThread

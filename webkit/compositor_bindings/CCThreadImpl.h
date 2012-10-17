@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCThreadImpl_h
-#define CCThreadImpl_h
-
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/platform_thread.h"
 #include "cc/thread.h"
+#include <wtf/OwnPtr.h>
+#include <wtf/PassOwnPtr.h>
+
+#ifndef CCThreadImpl_h
+#define CCThreadImpl_h
 
 namespace WebKit {
 

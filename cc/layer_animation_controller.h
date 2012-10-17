@@ -5,7 +5,7 @@
 #ifndef CCLayerAnimationController_h
 #define CCLayerAnimationController_h
 
-#include "cc/animation_events.h"
+#include "CCAnimationEvents.h"
 
 #include "base/basictypes.h"
 #include "base/hash_tables.h"

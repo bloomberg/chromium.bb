@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "cc/yuv_video_draw_quad.h"
+#include "CCYUVVideoDrawQuad.h"
 
 namespace cc {
 

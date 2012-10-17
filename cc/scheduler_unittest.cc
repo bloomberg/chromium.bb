@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "cc/scheduler.h"
+#include "CCScheduler.h"
 
 #include "cc/test/scheduler_test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"

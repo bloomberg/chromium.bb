@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "cc/resource_provider.h"
+#include "CCResourceProvider.h"
 
 #include "CCGraphicsContext.h"
 #include "CCSingleThreadProxy.h" // For DebugScopedSetImplThread

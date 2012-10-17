@@ -7,7 +7,7 @@
 #include "CCLayerSorter.h"
 
 #include "CCLayerImpl.h"
-#include "cc/math_util.h"
+#include "CCMathUtil.h"
 #include "CCSingleThreadProxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>

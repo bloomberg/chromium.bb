@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "cc/thread_proxy.h"
+#include "CCThreadProxy.h"
 
 #include "CCDelayBasedTimeSource.h"
 #include "CCDrawQuad.h"
@@ -12,9 +12,9 @@
 #include "CCGraphicsContext.h"
 #include "CCInputHandler.h"
 #include "CCLayerTreeHost.h"
-#include "cc/scheduler.h"
-#include "cc/scoped_thread_proxy.h"
-#include "cc/thread_task.h"
+#include "CCScheduler.h"
+#include "CCScopedThreadProxy.h"
+#include "CCThreadTask.h"
 #include "TraceEvent.h"
 #include <public/WebSharedGraphicsContext3D.h>
 #include <wtf/CurrentTime.h>

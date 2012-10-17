@@ -4,10 +4,10 @@
 
 #include "config.h"
 
-#include "cc/timer.h"
+#include "CCTimer.h"
 
 #include "base/compiler_specific.h"
-#include "cc/thread.h"
+#include "CCThread.h"
 
 namespace cc {
 

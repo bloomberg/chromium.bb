@@ -8,7 +8,7 @@
 
 #include "CCAppendQuadsData.h"
 #include "CCQuadSink.h"
-#include "cc/math_util.h"
+#include "CCMathUtil.h"
 #include "CCRenderPassDrawQuad.h"
 #include "CCRenderPassSink.h"
 

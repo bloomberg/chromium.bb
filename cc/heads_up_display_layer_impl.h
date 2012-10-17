@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "CCFontAtlas.h"
 #include "CCLayerImpl.h"
-#include "cc/scoped_texture.h"
+#include "CCScopedTexture.h"
 
 class SkCanvas;
 

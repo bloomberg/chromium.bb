@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "cc/scheduler_state_machine.h"
+#include "CCSchedulerStateMachine.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

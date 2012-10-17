@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "CCDrawQuad.h"
 #include "CCRenderPass.h"
-#include "cc/resource_provider.h"
+#include "CCResourceProvider.h"
 #include "IntRect.h"
 
 namespace cc {

@@ -11,7 +11,7 @@
 #include "CCIOSurfaceDrawQuad.h"
 #include "CCLayerTreeHostImpl.h"
 #include "CCQuadSink.h"
-#include "cc/gl_renderer.h" // For the GLC() macro.
+#include "CCRendererGL.h" // For the GLC() macro.
 #include "Extensions3D.h"
 #include <public/WebGraphicsContext3D.h>
 

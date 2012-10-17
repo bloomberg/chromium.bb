@@ -8,7 +8,7 @@
 
 #include "CCLayerAnimationController.h"
 #include "CCLayerImpl.h"
-#include "cc/proxy.h"
+#include "CCProxy.h"
 #include "CCSingleThreadProxy.h"
 #include "Region.h"
 #include "cc/layer.h"

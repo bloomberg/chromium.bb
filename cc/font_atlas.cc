@@ -10,7 +10,7 @@
 
 #include "base/string_split.h"
 #include "ui/gfx/point.h"
-#include "cc/proxy.h"
+#include "CCProxy.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
 namespace cc {

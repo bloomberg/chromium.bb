@@ -6,7 +6,7 @@
 
 #include "cc/canvas_layer_texture_updater.h"
 
-#include "cc/rendering_stats.h"
+#include "CCRenderingStats.h"
 #include "FloatRect.h"
 #include "SkiaUtils.h"
 #include "TraceEvent.h"

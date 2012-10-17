@@ -5,7 +5,7 @@
 #ifndef CCTexture_h
 #define CCTexture_h
 
-#include "cc/resource_provider.h"
+#include "CCResourceProvider.h"
 #include "CCTexture.h"
 #include "GraphicsContext3D.h"
 #include "IntSize.h"

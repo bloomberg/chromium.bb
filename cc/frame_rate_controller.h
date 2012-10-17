@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include "cc/timer.h"
+#include "CCTimer.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 

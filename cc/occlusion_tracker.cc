@@ -7,7 +7,7 @@
 #include "CCOcclusionTracker.h"
 
 #include "CCLayerImpl.h"
-#include "cc/math_util.h"
+#include "CCMathUtil.h"
 #include "CCOverdrawMetrics.h"
 #include "cc/layer.h"
 #include <algorithm>

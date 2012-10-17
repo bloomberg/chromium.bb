@@ -6,7 +6,7 @@
 #include "cc/throttled_texture_uploader.h"
 
 #include "CCPrioritizedTexture.h"
-#include "cc/proxy.h"
+#include "CCProxy.h"
 #include "Extensions3DChromium.h"
 #include "TraceEvent.h"
 #include "third_party/skia/include/gpu/SkGpuDevice.h"

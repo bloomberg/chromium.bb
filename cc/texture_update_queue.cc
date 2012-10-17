@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "cc/texture_update_queue.h"
+#include "CCTextureUpdateQueue.h"
 
 #include "CCPrioritizedTexture.h"
 

@@ -5,7 +5,7 @@
 #ifndef CCTimingFunction_h
 #define CCTimingFunction_h
 
-#include "cc/animation_curve.h"
+#include "CCAnimationCurve.h"
 #include "UnitBezier.h"
 
 namespace cc {

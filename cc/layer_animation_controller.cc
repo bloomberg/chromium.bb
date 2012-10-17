@@ -6,7 +6,7 @@
 
 #include "CCLayerAnimationController.h"
 
-#include "cc/active_animation.h"
+#include "CCActiveAnimation.h"
 #include "CCKeyframedAnimationCurve.h"
 #include <public/WebTransformationMatrix.h>
 #include <wtf/CurrentTime.h>

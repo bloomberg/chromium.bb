@@ -8,12 +8,12 @@
 
 #include "CCAppendQuadsData.h"
 #include "CCLayerTilingData.h"
-#include "cc/math_util.h"
+#include "CCMathUtil.h"
 #include "CCOcclusionTracker.h"
 #include "CCOverdrawMetrics.h"
 #include "CCSingleThreadProxy.h"
-#include "cc/tile_draw_quad.h"
-#include "cc/tiled_layer_impl.h"
+#include "CCTileDrawQuad.h"
+#include "CCTiledLayerImpl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>

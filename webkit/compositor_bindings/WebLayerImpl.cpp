@@ -10,7 +10,6 @@
 #ifdef LOG
 #undef LOG
 #endif
-#include "cc/active_animation.h"
 #include "base/string_util.h"
 #include "cc/active_animation.h"
 #include "cc/layer.h"

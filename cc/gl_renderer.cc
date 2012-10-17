@@ -4,18 +4,18 @@
 
 #include "config.h"
 
-#include "cc/gl_renderer.h"
+#include "CCRendererGL.h"
 
 #include "CCDamageTracker.h"
 #include "CCLayerQuad.h"
-#include "cc/math_util.h"
-#include "cc/proxy.h"
+#include "CCMathUtil.h"
+#include "CCProxy.h"
 #include "CCRenderPass.h"
 #include "CCRenderSurfaceFilters.h"
-#include "cc/scoped_texture.h"
+#include "CCScopedTexture.h"
 #include "CCSettings.h"
 #include "CCSingleThreadProxy.h"
-#include "cc/video_layer_impl.h"
+#include "CCVideoLayerImpl.h"
 #include "Extensions3D.h"
 #include "FloatQuad.h"
 #include "GrTexture.h"

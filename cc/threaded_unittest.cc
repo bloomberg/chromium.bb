@@ -4,26 +4,26 @@
 
 #include "config.h"
 
-#include "cc/threaded_unittest.h"
+#include "CCThreadedTest.h"
 
+#include "CCActiveAnimation.h"
 #include "CCInputHandler.h"
 #include "CCLayerAnimationController.h"
 #include "CCLayerImpl.h"
 #include "CCLayerTreeHostImpl.h"
+#include "CCScopedThreadProxy.h"
 #include "CCSingleThreadProxy.h"
+#include "CCTextureUpdateQueue.h"
+#include "CCThreadTask.h"
+#include "CCTimingFunction.h"
 #include "base/stl_util.h"
-#include "cc/active_animation.h"
 #include "cc/content_layer.h"
 #include "cc/layer.h"
-#include "cc/scoped_thread_proxy.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_web_compositor_output_surface.h"
 #include "cc/test/fake_web_graphics_context_3d.h"
 #include "cc/test/occlusion_tracker_test_common.h"
 #include "cc/test/tiled_layer_test_common.h"
-#include "cc/texture_update_queue.h"
-#include "cc/thread_task.h"
-#include "cc/timing_function.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include <public/Platform.h>
 #include <public/WebCompositorSupport.h>

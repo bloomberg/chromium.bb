@@ -4,10 +4,10 @@
 
 #include "config.h"
 
-#include "cc/texture_update_controller.h"
+#include "CCTextureUpdateController.h"
 
+#include "CCResourceProvider.h"
 #include "TraceEvent.h"
-#include "cc/resource_provider.h"
 #include "cc/texture_copier.h"
 #include "cc/texture_uploader.h"
 #include <limits>

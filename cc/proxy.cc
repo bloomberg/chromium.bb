@@ -4,9 +4,9 @@
 
 #include "config.h"
 
-#include "cc/proxy.h"
+#include "CCProxy.h"
 
-#include "cc/thread_task.h"
+#include "CCThreadTask.h"
 
 using namespace WTF;
 

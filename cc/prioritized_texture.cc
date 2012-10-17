@@ -8,7 +8,7 @@
 
 #include "CCPrioritizedTextureManager.h"
 #include "CCPriorityCalculator.h"
-#include "cc/proxy.h"
+#include "CCProxy.h"
 #include <algorithm>
 
 using namespace std;

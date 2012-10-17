@@ -8,7 +8,7 @@
 
 #include "CCLayerTreeHost.h"
 #include "CCLayerTreeHostImpl.h"
-#include "cc/math_util.h"
+#include "CCMathUtil.h"
 #include "FloatQuad.h"
 #include "IntRect.h"
 #include "TraceEvent.h"

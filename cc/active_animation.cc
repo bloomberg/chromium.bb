@@ -4,9 +4,9 @@
 
 #include "config.h"
 
-#include "cc/active_animation.h"
+#include "CCActiveAnimation.h"
 
-#include "cc/animation_curve.h"
+#include "CCAnimationCurve.h"
 #include "TraceEvent.h"
 #ifdef LOG
 #undef LOG

@@ -4,12 +4,12 @@
 
 #include "config.h"
 
-#include "cc/tiled_layer_impl.h"
+#include "CCTiledLayerImpl.h"
 
 #include "CCAppendQuadsData.h"
 #include "CCLayerTilingData.h"
 #include "CCSingleThreadProxy.h"
-#include "cc/tile_draw_quad.h"
+#include "CCTileDrawQuad.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/mock_quad_culler.h"
 #include "testing/gmock/include/gmock/gmock.h"

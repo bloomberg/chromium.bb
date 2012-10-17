@@ -6,7 +6,7 @@
 
 #include "cc/video_layer.h"
 
-#include "cc/video_layer_impl.h"
+#include "CCVideoLayerImpl.h"
 
 namespace cc {
 

@@ -7,7 +7,7 @@
 #include "CCScrollbarLayerImpl.h"
 
 #include "CCQuadSink.h"
-#include "cc/scrollbar_animation_controller.h"
+#include "CCScrollbarAnimationController.h"
 #include "CCTextureDrawQuad.h"
 
 using WebKit::WebRect;

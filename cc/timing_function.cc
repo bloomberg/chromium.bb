@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "cc/timing_function.h"
+#include "CCTimingFunction.h"
 
 namespace {
 const double epsilon = 1e-6;

@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "cc/texture_layer_impl.h"
+#include "CCTextureLayerImpl.h"
 
 #include "base/stringprintf.h"
 #include "CCQuadSink.h"

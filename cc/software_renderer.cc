@@ -4,12 +4,12 @@
 
 #include "config.h"
 
-#include "cc/software_renderer.h"
+#include "CCRendererSoftware.h"
 
 #include "CCDebugBorderDrawQuad.h"
 #include "CCSolidColorDrawQuad.h"
 #include "CCTextureDrawQuad.h"
-#include "cc/tile_draw_quad.h"
+#include "CCTileDrawQuad.h"
 #include "CCRenderPassDrawQuad.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"

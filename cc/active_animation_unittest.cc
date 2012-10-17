@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "cc/active_animation.h"
+#include "CCActiveAnimation.h"
 
 #include "cc/test/animation_test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"

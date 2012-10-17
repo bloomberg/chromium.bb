@@ -7,9 +7,9 @@
 
 #include "CCGraphicsContext.h"
 #include "CCPrioritizedTexture.h"
-#include "cc/resource_provider.h"
-#include "cc/texture_update_queue.h"
-#include "cc/tiled_layer_impl.h"
+#include "CCResourceProvider.h"
+#include "CCTextureUpdateQueue.h"
+#include "CCTiledLayerImpl.h"
 #include "IntRect.h"
 #include "IntSize.h"
 #include "Region.h"
