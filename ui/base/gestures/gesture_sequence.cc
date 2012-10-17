@@ -384,7 +384,8 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
       }
       break;
     case GST_PENDING_SYNTHETIC_CLICK_FIRST_MOVED_PROCESSED:
-      point.UpdateForScroll();
+      // TODO(rbyers): This should be able to trigger a TapCancel
+      // if we moved far enough. crbug.com/146397
       break;
     case GST_PENDING_SYNTHETIC_CLICK_FIRST_RELEASED_HANDLED:
     case GST_PENDING_SYNTHETIC_CLICK_FIRST_CANCELLED:

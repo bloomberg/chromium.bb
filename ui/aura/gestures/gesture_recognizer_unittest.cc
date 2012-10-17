@@ -2530,8 +2530,8 @@ class ConsumesTouchMovesDelegate : public GestureEventConsumeDelegate {
   DISALLOW_COPY_AND_ASSIGN(ConsumesTouchMovesDelegate);
 };
 
-// Same as GestureEventScroll, but tests the different behaviour for consumed
-// touch-move events before and after scroll has started.
+// Same as GestureEventScroll, but tests that the behavior is the same
+// even if all the touch-move events are consumed.
 TEST_F(GestureRecognizerTest, GestureEventScrollTouchMoveConsumed) {
   scoped_ptr<ConsumesTouchMovesDelegate> delegate(
       new ConsumesTouchMovesDelegate());
@@ -2557,8 +2557,66 @@ TEST_F(GestureRecognizerTest, GestureEventScrollTouchMoveConsumed) {
 
   // Move the touch-point enough so that it would normally be considered a
   // scroll. But since the touch-moves will be consumed, the scroll should not
-  // start.  We should, however, get the TAP_CANCEL event now (since it's now
-  // impossible for the gesture to become a tap).
+  // start.
+  SendScrollEvent(root_window(), 130, 230, kTouchId, delegate.get());
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_FALSE(delegate->tap_down());
+  // TODO(rbyers): Really we should get the TapCancel here instead of below,
+  // but this is a symptom of a larger issue: crbug.com/146397.
+  EXPECT_FALSE(delegate->tap_cancel());
+  EXPECT_FALSE(delegate->begin());
+  EXPECT_FALSE(delegate->double_tap());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+
+  // Release the touch back at the start point. This should end without causing
+  // a tap.
+  delegate->Reset();
+  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(130, 230),
+                             kTouchId, press.time_stamp() +
+                                 base::TimeDelta::FromMilliseconds(50));
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_FALSE(delegate->tap_down());
+  EXPECT_TRUE(delegate->tap_cancel());
+  EXPECT_FALSE(delegate->begin());
+  EXPECT_TRUE(delegate->end());
+  EXPECT_FALSE(delegate->double_tap());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+}
+
+// Like as GestureEventTouchMoveConsumed but tests the different behavior
+// depending on whether the events were consumed before or after the scroll
+// started.
+TEST_F(GestureRecognizerTest, GestureEventScrollTouchMovePartialConsumed) {
+  scoped_ptr<ConsumesTouchMovesDelegate> delegate(
+      new ConsumesTouchMovesDelegate());
+  const int kWindowWidth = 123;
+  const int kWindowHeight = 45;
+  const int kTouchId = 5;
+  gfx::Rect bounds(100, 200, kWindowWidth, kWindowHeight);
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      delegate.get(), -1234, bounds, NULL));
+
+  delegate->Reset();
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(101, 201),
+                           kTouchId, GetTime());
+  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  EXPECT_FALSE(delegate->tap());
+  EXPECT_TRUE(delegate->tap_down());
+  EXPECT_FALSE(delegate->tap_cancel());
+  EXPECT_TRUE(delegate->begin());
+  EXPECT_FALSE(delegate->double_tap());
+  EXPECT_FALSE(delegate->scroll_begin());
+  EXPECT_FALSE(delegate->scroll_update());
+  EXPECT_FALSE(delegate->scroll_end());
+
+  // Move the touch-point enough so that it would normally be considered a
+  // scroll. But since the touch-moves will be consumed, the scroll should not
+  // start.
   SendScrollEvent(root_window(), 130, 230, kTouchId, delegate.get());
   EXPECT_FALSE(delegate->tap());
   EXPECT_FALSE(delegate->tap_down());
@@ -2582,9 +2640,11 @@ TEST_F(GestureRecognizerTest, GestureEventScrollTouchMoveConsumed) {
   EXPECT_TRUE(delegate->scroll_begin());
   EXPECT_TRUE(delegate->scroll_update());
   EXPECT_FALSE(delegate->scroll_end());
-  EXPECT_EQ(29, delegate->scroll_x());
-  EXPECT_EQ(29, delegate->scroll_y());
-  EXPECT_EQ(gfx::Point(30, 30).ToString(),
+  // Consuming move events doesn't effect what the ultimate scroll position
+  // will be if scrolling is later allowed to happen.
+  EXPECT_EQ(58, delegate->scroll_x());
+  EXPECT_EQ(58, delegate->scroll_y());
+  EXPECT_EQ(gfx::Point(1, 1).ToString(),
             delegate->scroll_begin_position().ToString());
 
   // Start consuming touch-move events again. However, since gesture-scroll has

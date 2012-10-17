@@ -101,8 +101,11 @@ class GesturePoint {
   void UpdateEnclosingRectangle(const TouchEvent& event);
   void clear_enclosing_rectangle() { enclosing_rect_ = gfx::Rect(); }
 
+  // The position of touchdown event, or of the last scroll gesture event.
+  // We may want to consider tracking these two things in separate variables.
   gfx::Point first_touch_position_;
   double first_touch_time_;
+
   gfx::Point last_touch_position_;
   double last_touch_time_;
 
