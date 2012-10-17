@@ -347,8 +347,21 @@ SegmentID HistoryBackend::UpdateSegments(
       content::PageTransitionStripQualifier(transition_type);
 
   // Are we at the beginning of a new segment?
-  if (t == content::PAGE_TRANSITION_TYPED ||
-      t == content::PAGE_TRANSITION_AUTO_BOOKMARK) {
+  // Note that navigating to an existing entry (with back/forward) reuses the
+  // same transition type.  We are not adding it as a new segment in that case
+  // because if this was the target of a redirect, we might end up with
+  // 2 entries for the same final URL. Ex: User types google.net, gets
+  // redirected to google.com. A segment is created for google.net. On
+  // google.com users navigates through a link, then press back. That last
+  // navigation is for the entry google.com transition typed. We end up adding
+  // a segment for that one as well. So we end up with google.net and google.com
+  // in the segement table, showing as 2 entries in the NTP.
+  // Note also that we should still be updating the visit count for that segment
+  // which we are not doing now. It should be addressed when
+  // http://crbug.com/96860 is fixed.
+  if ((t == content::PAGE_TRANSITION_TYPED ||
+       t == content::PAGE_TRANSITION_AUTO_BOOKMARK) &&
+      (transition_type & content::PAGE_TRANSITION_FORWARD_BACK) == 0) {
     // If so, create or get the segment.
     std::string segment_name = db_->ComputeSegmentName(url);
     URLID url_id = db_->GetRowForURL(url, NULL);
