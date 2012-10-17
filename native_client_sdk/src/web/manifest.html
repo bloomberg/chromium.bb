@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<!-- much of this is stolen from omahaproxy.appspot.com/viewer -->
+<html> 
+  <head> 
+    <meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type"> 
+  </head> 
+  <style type="text/css" media="screen">
+    body {
+      font-family: monospace;
+      font-size: 10pt;
+    }
+
+    table {
+      border-collapse: collapse;
+      border-color: rgb(100, 100, 100);
+      border-style: solid;
+      border-width: 1px 0px 1px 0px;
+    }
+
+    table td {
+      padding: 3px;
+      border-color: rgb(100, 100, 100);
+      border-style: solid;
+      border-width: 0px 1px 0px 1px;
+    }
+
+    thead {
+      background-color: lightblue;
+      font-weight: bold;
+      border-style: solid;
+      border-color: rgb(100, 100, 100);
+      border-width: 0px 0px 2px 0px;
+    }
+
+    tbody tr:nth-child(odd) {
+      background-color: rgb(230, 230, 230);
+    }
+
+    tbody tr:hover {
+      background-color: orange;
+    }
+  </style>
+  <body> 
+    <table>
+      <thead id="columns">
+      </thead>
+      <tbody id="rows">
+      </tbody>
+    </table>
+    <script type="application/javascript"> 
+      function loadJson(url, callback) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.onreadystatechange = function (e) {
+          if (xhr.readyState == 4) {
+            if (xhr.status == 200) {
+              callback(JSON.parse(xhr.responseText));
+            } else {
+              alert("Failed to load: error " + xhr.status);
+            }
+          }
+        }
+        xhr.send(null);
+      }
+
+      function removeAllChildren(elm) {
+        while (elm.childNodes.length) {
+          elm.removeChild(elm.firstChild);
+        }
+      }
+
+      function display(data) {
+        data = data.bundles;
+
+        var columnsElm = document.getElementById('columns');
+        var rowsElm = document.getElementById('rows');
+        removeAllChildren(columnsElm);
+        removeAllChildren(rowsElm);
+
+        // Create the column headers.
+        var tr = document.createElement('tr');
+        var columns = ['name', 'version', 'revision'];
+        for (var i = 0; i < columns.length; ++i) {
+          var td = document.createElement('td');
+          var text = document.createTextNode(columns[i]);
+          td.appendChild(text);
+          tr.appendChild(td);
+        }
+        columnsElm.appendChild(tr);
+
+        for (var i = 0; i < data.length; ++i) {
+          var tr = document.createElement('tr');
+          for (var j = 0; j < columns.length; ++j) {
+            var td = document.createElement('td');
+            var text = document.createTextNode(data[i][columns[j]]);
+            td.appendChild(text);
+            tr.appendChild(td);
+          }
+          rowsElm.appendChild(tr);
+        }
+      }
+
+      loadJson('naclsdk_manifest2.json', display);
+    </script> 
+  </body> 
+</html>
