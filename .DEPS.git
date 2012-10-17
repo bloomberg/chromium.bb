@@ -11,7 +11,7 @@ vars = {
     'git_url':
          'http://git.chromium.org',
     'webkit_rev':
-         '@9f2b66e5972c9721a5b4590c7d1d154b262e2417'
+         '@ced0d03df99593f6090c440404f8e4739ac74d04'
 }
 
 deps = {
@@ -214,7 +214,7 @@ deps_os = {
         'src/third_party/WebKit/Source/Platform/chromium/public':
             Var('git_url') + '/external/WebKit/Source/Platform/chromium/public.git@27b718c688cd53a9a06e91427aecd3f8ae3e88e8',
         'src/third_party/WebKit/Source/WebKit/chromium/public':
-            Var('git_url') + '/external/WebKit/Source/WebKit/chromium/public.git@c6f46dcd7295e7740e0acbb9d9d345f1d2dc678a',
+            Var('git_url') + '/external/WebKit/Source/WebKit/chromium/public.git@34d8953d01953b8915def15d853be403ef044061',
         'src/third_party/WebKit/Tools/DumpRenderTree':
             None,
         'src/third_party/WebKit/Tools/Scripts':
@@ -326,7 +326,7 @@ deps_os = {
         'src/third_party/gold':
             Var('git_url') + '/chromium/deps/gold.git@74c34c19eadc0135b189318e393e78ca1dd431aa',
         'src/third_party/libmtp':
-            Var('git_url') + '/chromium/deps/libmtp.git@07c54f6511906d0b04833451c6fe8663db77dafd',
+            Var('git_url') + '/chromium/deps/libmtp.git@a8eb0cc17138dd0f6ea0ed93242d25e8d349be88',
         'src/third_party/lss':
             Var('git_url') + '/external/linux-syscall-support/lss.git@2c73abf02fd8af961e38024882b9ce0df6b4d19b',
         'src/third_party/openssl':
