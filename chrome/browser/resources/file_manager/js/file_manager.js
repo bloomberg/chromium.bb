@@ -991,12 +991,7 @@ FileManager.prototype = {
     var self = this;
     this.grid_.itemConstructor =
         GridItem.bind(null, this, this.showCheckboxes_);
-    // TODO(bshe): should override cr.ui.List's activateItemAtIndex function
-    // rather than listen explicitly for double click or tap events.
-    this.grid_.addEventListener(
-        'dblclick', this.onDetailDoubleClick_.bind(this));
-    this.grid_.addEventListener(
-        'click', this.onDetailClick_.bind(this));
+    this.grid_.addEventListener('click', this.onDetailClick_.bind(this));
   };
 
   /**
@@ -1051,13 +1046,7 @@ FileManager.prototype = {
       this.gdataColumnModel_ = null;
     }
 
-    // TODO(bshe): should override cr.ui.List's activateItemAtIndex function
-    // rather than listen explicitly for double click or tap events.
-    // Don't pay attention to double clicks on the table header.
-    this.table_.list.addEventListener(
-        'dblclick', this.onDetailDoubleClick_.bind(this));
-    this.table_.list.addEventListener(
-        'click', this.onDetailClick_.bind(this));
+    this.table_.list.addEventListener('click', this.onDetailClick_.bind(this));
   };
 
   FileManager.prototype.onCopyProgress_ = function(event) {
@@ -1453,14 +1442,15 @@ FileManager.prototype = {
     input.classList.add('common');
     input.addEventListener('mousedown', stopEventPropagation);
     input.addEventListener('mouseup', stopEventPropagation);
-    input.addEventListener('dblclick', stopEventPropagation);
 
     var self = this;
     input.addEventListener('click', function(event) {
-      // Revert default action if this is a double click or Shift is pressed.
-      if (self.checkForIgnoredClick_(event) || event.shiftKey)
+      // Revert default action and swallow the event
+      // if this is a multiple click or Shift is pressed.
+      if (event.detail > 1 || event.shiftKey) {
         this.checked = !this.checked;
-      self.ignoreNextClick_();
+        stopEventPropagation(event);
+      }
     });
     return input;
   };
@@ -2804,58 +2794,7 @@ FileManager.prototype = {
   };
 
   /**
-   * Ignore click/tap events for a brief interval.
-   * @private
-   */
-  FileManager.prototype.ignoreNextClick_ = function() {
-    this.ignoreClickTimeout_ = Date.now() + DOUBLE_CLICK_TIMEOUT;
-  };
-
-  /**
-   * @param {Event} e Event
-   * @return {boolean} True if the click/tap event is ignored.
-   * @private
-   */
-  FileManager.prototype.checkForIgnoredClick_ = function(e) {
-    if (Date.now() > (this.ignoreClickTimeout_ || 0))
-      return false;
-
-    e.preventDefault();
-    e.stopPropagation();
-    return true;
-  };
-
-  /**
-   * Handle a double-click or tap event on an entry in the detail list.
-   *
-   * @param {Event} event The click event.
-   */
-  FileManager.prototype.onDetailDoubleClick_ = function(event) {
-    if (this.checkForIgnoredClick_(event))
-      return;
-
-    if (this.isRenamingInProgress()) {
-      // Don't pay attention to double clicks during a rename.
-      return;
-    }
-
-    var listItem = this.findListItemForEvent_(event);
-    if (!listItem || !listItem.selected ||
-        this.selection.totalCount != 1) {
-      return;
-    }
-    var entry = this.selection.entries[0];
-
-    if (entry.isDirectory) {
-      return this.onDirectoryAction(entry);
-    }
-
-    this.dispatchSelectionAction_();
-  };
-
-  /**
-   * Handles mouse click or tap. Simulates double click if click happens
-   * on the file name or the icon.
+   * Handles mouse click or tap.
    * @param {Event} event The click event.
    */
   FileManager.prototype.onDetailClick_ = function(event) {
@@ -2863,15 +2802,33 @@ FileManager.prototype = {
       // Don't pay attention to clicks during a rename.
       return;
     }
-    if (this.dialogType_ != FileManager.DialogType.FULL_PAGE)
+
+    var listItem = this.findListItemForEvent_(event);
+    if (!listItem || !listItem.selected || this.selection.totalCount != 1) {
+      // Ignore empty or multiple selection.
+      return;
+    }
+
+    var clickNumber;
+    if (this.dialogType_ == FileManager.DialogType.FULL_PAGE &&
+            (event.target.parentElement.classList.contains('filename-label') ||
+             event.target.classList.contains('detail-icon'))) {
+      // If full page mode the file name and icon should react on single click.
+      clickNumber = 1;
+    } else if (this.lastClickedItem_ == listItem) {
+      // React on double click, but only if both clicks hit the same item.
+      clickNumber = 2;
+    }
+    this.lastClickedItem_ = listItem;
+
+    if (event.detail != clickNumber)
       return;
 
-    if (event.target.parentElement.classList.contains('filename-label') ||
-        event.target.classList.contains('detail-icon')) {
-      this.onDetailDoubleClick_(event);
-      this.ignoreNextClick_();
-      event.stopPropagation();
-      event.preventDefault();
+    var entry = this.selection.entries[0];
+    if (entry.isDirectory) {
+      this.onDirectoryAction(entry);
+    } else {
+      this.dispatchSelectionAction_();
     }
   };
 
