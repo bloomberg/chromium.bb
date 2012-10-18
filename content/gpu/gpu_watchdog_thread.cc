@@ -10,10 +10,12 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/process_util.h"
 #include "base/process.h"
 #include "build/build_config.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 
 namespace {
@@ -198,8 +200,13 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
   LOG(ERROR) << "The GPU process hung. Terminating after "
              << timeout_.InMilliseconds() << " ms.";
 
-  base::Process current_process(base::GetCurrentProcessHandle());
-  current_process.Terminate(content::RESULT_CODE_HUNG);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kCrashOnGpuHang)) {
+    // Deliberately crash the process to create a crash dump.
+    *((volatile int*)0) = 0x1337;
+  } else {
+    base::Process current_process(base::GetCurrentProcessHandle());
+    current_process.Terminate(content::RESULT_CODE_HUNG);
+  }
 
   terminated = true;
 }

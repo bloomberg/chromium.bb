@@ -36,6 +36,10 @@ const char kBrowserSubprocessPath[]         = "browser-subprocess-path";
 // as a dependent process of the Chrome Frame plugin.
 const char kChromeFrame[]                   = "chrome-frame";
 
+// Cause a GPU hang to cause a crash dump, allowing for easier debugging of
+// them.
+const char kCrashOnGpuHang[]                = "crash-on-gpu-hang";
+
 // Disables client-visible 3D APIs, in particular WebGL and Pepper 3D.
 // This is controlled by policy and is kept separate from the other
 // enable/disable switches to avoid accidentally regressing the policy

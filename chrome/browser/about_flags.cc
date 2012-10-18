@@ -962,6 +962,13 @@ const Experiment kExperiments[] = {
     kOsWin | kOsLinux | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnablePasswordGeneration)
   },
+  {
+    "crash-on-gpu-hang",
+    IDS_FLAGS_CRASH_ON_GPU_HANG_NAME,
+    IDS_FLAGS_CRASH_ON_GPU_HANG_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kCrashOnGpuHang)
+  },
 };
 
 const Experiment* experiments = kExperiments;
