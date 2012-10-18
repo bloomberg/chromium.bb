@@ -253,7 +253,7 @@ deps = {
     Var("libjingle_revision"),
 
   "src/third_party/libsrtp":
-    "/trunk/deps/third_party/libsrtp@162022",
+    "/trunk/deps/third_party/libsrtp@162569",
 
   "src/third_party/speex":
     "/trunk/deps/third_party/speex@160092",
