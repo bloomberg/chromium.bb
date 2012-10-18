@@ -221,11 +221,14 @@ void AppListController::ProcessLocatedEvent(aura::Window* target,
   }
 
   if (view_ && is_visible_) {
-    views::Widget* widget = view_->GetWidget();
-    if (!widget->GetNativeView()->GetBoundsInRootWindow().Contains(
-        event.root_location())) {
+    aura::Window* window = view_->GetWidget()->GetNativeView();
+    gfx::Point window_local_point(event.root_location());
+    aura::Window::ConvertPointToTarget(window->GetRootWindow(),
+                                       window,
+                                       &window_local_point);
+    // Use HitTest to respect the hit test mask of the bubble.
+    if (!window->HitTest(window_local_point))
       SetVisible(false);
-    }
   }
 }
 
