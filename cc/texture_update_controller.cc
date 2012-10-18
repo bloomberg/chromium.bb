@@ -7,7 +7,7 @@
 #include "CCTextureUpdateController.h"
 
 #include "CCResourceProvider.h"
-#include "TraceEvent.h"
+#include "base/debug/trace_event.h"
 #include "cc/prioritized_texture.h"
 #include "cc/proxy.h"
 #include "cc/texture_copier.h"

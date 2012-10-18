@@ -7,7 +7,7 @@
 #include "cc/texture_copier.h"
 
 #include "CCRendererGL.h" // For the GLC() macro.
-#include "TraceEvent.h"
+#include "base/debug/trace_event.h"
 #include <public/WebGraphicsContext3D.h>
 
 namespace cc {

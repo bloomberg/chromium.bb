@@ -9,7 +9,7 @@
 #include "CCRendererGL.h" // For the GLC() macro.
 #include "GraphicsContext3D.h"
 #include "Extensions3DChromium.h"
-#include "TraceEvent.h"
+#include "base/debug/trace_event.h"
 #include <public/WebGraphicsContext3D.h>
 
 using WebKit::WebGraphicsContext3D;

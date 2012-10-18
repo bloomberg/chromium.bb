@@ -6,8 +6,8 @@
 
 #include "CCScheduler.h"
 
-#include "TraceEvent.h"
-#include <base/auto_reset.h>
+#include "base/debug/trace_event.h"
+#include "base/auto_reset.h"
 
 namespace cc {
 

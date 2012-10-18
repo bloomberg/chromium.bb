@@ -35,5 +35,8 @@ include_rules = [
   "+webkit/compositor_bindings/web_compositor_support_impl.h",
   "+webkit/glue/webthread_impl.h",
 # http://crbug.com/154052
-  "+webkit/glue/webkit_glue_export.h"
+  "+webkit/glue/webkit_glue_export.h",
+# http://crbug.com/154451
+  "+third_party/WebKit/Source/WTF/config.h",
+  "+Source/WTF/config.h",
 ]

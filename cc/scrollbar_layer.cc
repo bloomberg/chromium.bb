@@ -9,8 +9,8 @@
 #include "CCLayerTreeHost.h"
 #include "CCScrollbarLayerImpl.h"
 #include "CCTextureUpdateQueue.h"
-#include "TraceEvent.h"
 #include "base/basictypes.h"
+#include "base/debug/trace_event.h"
 #include "cc/layer_painter.h"
 #include <public/WebRect.h>
 

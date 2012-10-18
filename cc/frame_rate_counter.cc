@@ -9,9 +9,6 @@
 #include <cmath>
 
 #include "CCProxy.h"
-#ifdef LOG
-#undef LOG
-#endif
 #include "base/metrics/histogram.h"
 
 namespace cc {

@@ -8,9 +8,6 @@
 
 #include "CCLayerTreeHost.h"
 #include "CCSettings.h"
-#ifdef LOG
-#undef LOG
-#endif
 #include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "cc/bitmap_canvas_layer_texture_updater.h"

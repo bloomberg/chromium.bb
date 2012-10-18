@@ -9,7 +9,7 @@
 #include "CCRenderingStats.h"
 #include "FloatRect.h"
 #include "SkiaUtils.h"
-#include "TraceEvent.h"
+#include "base/debug/trace_event.h"
 #include "cc/layer_painter.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"

@@ -5,9 +5,6 @@
 #include "config.h"
 
 #include "CCResourceProvider.h"
-#ifdef LOG
-#undef LOG
-#endif
 
 #include <limits.h>
 

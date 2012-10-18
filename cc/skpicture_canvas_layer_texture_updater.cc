@@ -7,7 +7,7 @@
 #include "cc/skpicture_canvas_layer_texture_updater.h"
 
 #include "CCTextureUpdateQueue.h"
-#include "TraceEvent.h"
+#include "base/debug/trace_event.h"
 #include "cc/layer_painter.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 

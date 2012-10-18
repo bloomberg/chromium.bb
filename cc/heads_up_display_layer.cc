@@ -8,7 +8,7 @@
 
 #include "CCHeadsUpDisplayLayerImpl.h"
 #include "CCLayerTreeHost.h"
-#include "TraceEvent.h"
+#include "base/debug/trace_event.h"
 
 namespace cc {
 

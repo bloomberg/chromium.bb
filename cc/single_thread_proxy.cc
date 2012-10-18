@@ -11,7 +11,7 @@
 #include "CCLayerTreeHost.h"
 #include "CCTextureUpdateController.h"
 #include "CCTimer.h"
-#include "TraceEvent.h"
+#include "base/debug/trace_event.h"
 #include <wtf/CurrentTime.h>
 
 using namespace WTF;

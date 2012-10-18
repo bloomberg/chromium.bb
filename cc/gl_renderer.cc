@@ -20,10 +20,7 @@
 #include "FloatQuad.h"
 #include "GrTexture.h"
 #include "NotImplemented.h"
-#include "TraceEvent.h"
-#ifdef LOG
-#undef LOG
-#endif
+#include "base/debug/trace_event.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "cc/geometry_binding.h"

@@ -15,7 +15,7 @@
 #include "CCScheduler.h"
 #include "CCScopedThreadProxy.h"
 #include "CCThreadTask.h"
-#include "TraceEvent.h"
+#include "base/debug/trace_event.h"
 #include <public/WebSharedGraphicsContext3D.h>
 #include <wtf/CurrentTime.h>
 

@@ -7,10 +7,7 @@
 #include "CCActiveAnimation.h"
 
 #include "CCAnimationCurve.h"
-#include "TraceEvent.h"
-#ifdef LOG
-#undef LOG
-#endif
+#include "base/debug/trace_event.h"
 #include "base/string_util.h"
 #include <cmath>
 

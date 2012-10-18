@@ -6,7 +6,7 @@
 
 #include "CCDelayBasedTimeSource.h"
 
-#include "TraceEvent.h"
+#include "base/debug/trace_event.h"
 #include <algorithm>
 #include <wtf/CurrentTime.h>
 #include <wtf/MathExtras.h>

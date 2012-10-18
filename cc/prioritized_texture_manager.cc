@@ -6,11 +6,11 @@
 
 #include "CCPrioritizedTextureManager.h"
 
+#include "base/debug/trace_event.h"
 #include "base/stl_util.h"
 #include "CCPrioritizedTexture.h"
 #include "CCPriorityCalculator.h"
 #include "CCProxy.h"
-#include "TraceEvent.h"
 #include <algorithm>
 
 using namespace std;

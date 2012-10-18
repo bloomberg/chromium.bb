@@ -7,7 +7,7 @@
 
 #include "CCPrioritizedTexture.h"
 #include "Extensions3DChromium.h"
-#include "TraceEvent.h"
+#include "base/debug/trace_event.h"
 #include "base/metrics/histogram.h"
 #include <algorithm>
 #include <public/WebGraphicsContext3D.h>

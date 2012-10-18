@@ -20,7 +20,7 @@
 #include "CCSingleThreadProxy.h"
 #include "CCThreadProxy.h"
 #include "Region.h"
-#include "TraceEvent.h"
+#include "base/debug/trace_event.h"
 #include "cc/heads_up_display_layer.h"
 #include "cc/layer.h"
 #include "cc/tree_synchronizer.h"

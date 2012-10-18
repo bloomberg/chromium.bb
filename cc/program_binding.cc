@@ -8,7 +8,7 @@
 
 #include "CCRendererGL.h" // For the GLC() macro.
 #include "GraphicsContext3D.h"
-#include "TraceEvent.h"
+#include "base/debug/trace_event.h"
 #include "cc/geometry_binding.h"
 #include <public/WebGraphicsContext3D.h>
 

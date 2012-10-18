@@ -8,9 +8,6 @@
 
 #include "CCMathUtil.h"
 #include "CCRenderSurface.h"
-#ifdef LOG
-#undef LOG
-#endif
 #include "base/logging.h"
 #include <limits.h>
 #include <public/WebTransformationMatrix.h>

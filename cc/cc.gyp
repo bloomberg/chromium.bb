@@ -355,9 +355,9 @@
         'stubs/Region.h',
         'stubs/SkiaUtils.h',
         'stubs/TilingData.h',
-        'stubs/TraceEvent.h',
         'stubs/UnitBezier.h',
 
+        'stubs/config.h',
         'stubs/extensions_3d_chromium.h',
         'stubs/extensions_3d.h',
         'stubs/float_point_3d.h',
@@ -373,7 +373,6 @@
         'stubs/not_implemented.h',
         'stubs/skia_utils.h',
         'stubs/tiling_data.h',
-        'stubs/trace_event.h',
         'stubs/unit_bezier.h',
       ],
     },

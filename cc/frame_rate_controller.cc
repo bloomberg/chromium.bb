@@ -8,7 +8,7 @@
 
 #include "CCDelayBasedTimeSource.h"
 #include "CCTimeSource.h"
-#include "TraceEvent.h"
+#include "base/debug/trace_event.h"
 #include <wtf/CurrentTime.h>
 
 namespace {
