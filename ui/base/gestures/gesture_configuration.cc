@@ -8,6 +8,9 @@ namespace ui {
 
 // Ordered alphabetically ignoring underscores, to align with the
 // associated list of prefs in gesture_prefs_aura.cc.
+// NOTE: When updating values here, also update
+// browser/resources/gesture_config.js for chrome://gesture config UI.
+// TODO(rbyers) unify these - crbug.com/156392
 int GestureConfiguration::default_radius_ = 15;
 double GestureConfiguration::long_press_time_in_seconds_ = 1.0;
 double GestureConfiguration::semi_long_press_time_in_seconds_ = 0.4;
@@ -19,7 +22,7 @@ double
 double GestureConfiguration::max_swipe_deviation_ratio_ = 3;
 double
   GestureConfiguration::max_touch_down_duration_in_seconds_for_click_ = 0.8;
-double GestureConfiguration::max_touch_move_in_pixels_for_click_ = 5;
+double GestureConfiguration::max_touch_move_in_pixels_for_click_ = 10;
 double GestureConfiguration::max_distance_between_taps_for_double_tap_ = 20;
 double GestureConfiguration::min_distance_for_pinch_scroll_in_pixels_ = 20;
 double GestureConfiguration::min_flick_speed_squared_ = 550.f * 550.f;

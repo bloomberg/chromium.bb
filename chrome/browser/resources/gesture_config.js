@@ -61,7 +61,7 @@ var gesture_config = (function() {
       key: 'max_touch_move_in_pixels_for_click',
       label: 'Maximum Touch-Move for Click',
       units: 'pixels',
-      default: 5
+      default: 10
     },
     {
       key: 'max_distance_between_taps_for_double_tap',
