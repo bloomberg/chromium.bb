@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_WIN_MOCK_TSF_BRIDGE_H_
-#define UI_BASE_WIN_MOCK_TSF_BRIDGE_H_
+#ifndef UI_BASE_IME_WIN_MOCK_TSF_BRIDGE_H_
+#define UI_BASE_IME_WIN_MOCK_TSF_BRIDGE_H_
 
 #include <msctf.h>
 
 #include "base/compiler_specific.h"
 #include "base/win/scoped_comptr.h"
 #include "ui/base/ime/text_input_type.h"
-#include "ui/base/win/tsf_bridge.h"
+#include "ui/base/ime/win/tsf_bridge.h"
 
 namespace ui {
 
@@ -97,4 +97,4 @@ class MockTsfBridge : public TsfBridge {
 
 }  // namespace ui
 
-#endif  // UI_BASE_WIN_MOCK_TSF_BRIDGE_H_
+#endif  // UI_BASE_IME_WIN_MOCK_TSF_BRIDGE_H_

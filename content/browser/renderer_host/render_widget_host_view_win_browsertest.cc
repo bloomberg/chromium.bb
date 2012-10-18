@@ -12,8 +12,8 @@
 #include "content/test/content_browser_test_utils.h"
 #include "content/test/content_browser_test.h"
 #include "ui/base/ime/text_input_type.h"
-#include "ui/base/win/mock_tsf_bridge.h"
-#include "ui/base/win/tsf_bridge.h"
+#include "ui/base/ime/win/mock_tsf_bridge.h"
+#include "ui/base/ime/win/tsf_bridge.h"
 
 namespace {
 class RenderWidgetHostViewWinTest : public content::ContentBrowserTest {

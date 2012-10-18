@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_WIN_TSF_TEXT_STORE_H_
-#define UI_BASE_WIN_TSF_TEXT_STORE_H_
+#ifndef UI_BASE_IME_WIN_TSF_TEXT_STORE_H_
+#define UI_BASE_IME_WIN_TSF_TEXT_STORE_H_
 
 #include <msctf.h>
 #include <deque>
@@ -303,4 +303,4 @@ class UI_EXPORT TsfTextStore : public ITextStoreACP,
 
 }  // namespace ui
 
-#endif  // UI_BASE_WIN_TSF_TEXT_STORE_H_
+#endif  // UI_BASE_IME_WIN_TSF_TEXT_STORE_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_WIN_TSF_INPUT_SCOPE_H_
-#define UI_BASE_WIN_TSF_INPUT_SCOPE_H_
+#ifndef UI_BASE_IME_WIN_TSF_INPUT_SCOPE_H_
+#define UI_BASE_IME_WIN_TSF_INPUT_SCOPE_H_
 
 #include <InputScope.h>
 
@@ -59,4 +59,4 @@ class TsfInputScope : public ITfInputScope {
 
 }  // namespace ui
 
-#endif  // UI_BASE_WIN_TSF_INPUT_SCOPE_H_
+#endif  // UI_BASE_IME_WIN_TSF_INPUT_SCOPE_H_

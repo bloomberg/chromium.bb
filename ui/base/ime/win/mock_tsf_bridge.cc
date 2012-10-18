@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/win/mock_tsf_bridge.h"
+#include "ui/base/ime/win/mock_tsf_bridge.h"
 
 #include "ui/base/ime/text_input_client.h"
 #include "base/logging.h"

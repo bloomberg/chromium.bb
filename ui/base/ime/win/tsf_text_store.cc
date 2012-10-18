@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #define INITGUID  // required for GUID_PROP_INPUTSCOPE
-#include "ui/base/win/tsf_text_store.h"
+#include "ui/base/ime/win/tsf_text_store.h"
 
 #include <OleCtl.h>
 
 #include "base/win/scoped_variant.h"
 #include "ui/base/ime/text_input_client.h"
-#include "ui/base/win/tsf_input_scope.h"
+#include "ui/base/ime/win/tsf_input_scope.h"
 #include "ui/gfx/rect.h"
 
 namespace ui {

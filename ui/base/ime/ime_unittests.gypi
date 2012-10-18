@@ -11,11 +11,17 @@
   },
   'sources': [
     '<@(ime_test_files)',
+    'win/tsf_text_store_unittest.cc',
   ],
   'conditions': [
     ['use_aura==0 or use_x11==0 or chromeos==0', {
       'sources!': [
         '<@(ime_test_files)',
+      ],
+    }],
+    ['OS!="win"', {
+      'sources!': [
+        'win/tsf_text_store_unittest.cc',
       ],
     }],
   ],

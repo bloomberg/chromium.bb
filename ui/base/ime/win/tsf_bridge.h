@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_WIN_TSF_BRIDGE_H_
-#define UI_BASE_WIN_TSF_BRIDGE_H_
+#ifndef UI_BASE_IME_WIN_TSF_BRIDGE_H_
+#define UI_BASE_IME_WIN_TSF_BRIDGE_H_
 
 #include <Windows.h>
 #include <msctf.h>
@@ -77,4 +77,4 @@ class UI_EXPORT TsfBridge {
 
 }  // namespace ui
 
-#endif  // UI_BASE_WIN_TSF_BRIDGE_H_
+#endif  // UI_BASE_IME_WIN_TSF_BRIDGE_H_

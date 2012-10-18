@@ -13,8 +13,8 @@
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
 #include "ui/base/ime/text_input_client.h"
-#include "ui/base/win/tsf_bridge.h"
-#include "ui/base/win/tsf_text_store.h"
+#include "ui/base/ime/win/tsf_bridge.h"
+#include "ui/base/ime/win/tsf_text_store.h"
 
 namespace ui {
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/win/tsf_input_scope.h"
+#include "ui/base/ime/win/tsf_input_scope.h"
 
 #include "base/logging.h"
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_WIN_TSF_EVENT_ROUTER_H_
-#define UI_BASE_WIN_TSF_EVENT_ROUTER_H_
+#ifndef UI_BASE_IME_WIN_TSF_EVENT_ROUTER_H_
+#define UI_BASE_IME_WIN_TSF_EVENT_ROUTER_H_
 
 #include <msctf.h>
 
@@ -57,4 +57,4 @@ class TsfEventRouter : public IUnknown {
 
 }  // namespace ui
 
-#endif  // UI_BASE_WIN_TSF_EVENT_ROUTER_H_
+#endif  // UI_BASE_IME_WIN_TSF_EVENT_ROUTER_H_
