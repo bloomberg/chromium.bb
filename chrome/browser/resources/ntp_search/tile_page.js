@@ -339,6 +339,7 @@ cr.define('ntp', function() {
 
       // Event handlers.
       this.eventTracker = new EventTracker();
+      this.eventTracker.add(window, 'resize', this.onResize_.bind(this));
       this.eventTracker.add(window, 'keyup', this.onKeyUp_.bind(this));
 
       // TODO(pedrosimonetti): Check duplication of these methods.
@@ -467,10 +468,7 @@ cr.define('ntp', function() {
      * @private
      */
     handleCardSelection_: function(e) {
-      // TODO(pedrosimonetti): TEMPORARY! REMOVE ONCE crbug.com/148728 IS FIXED!
-      // TODO(pedrosimonetti): CLEANUP BUG crbug.com/155657.
-      if (ntp.isReady())
-        this.layout();
+      this.layout();
     },
 
     /**
@@ -1247,6 +1245,14 @@ cr.define('ntp', function() {
 
     // event handlers
     // -------------------------------------------------------------------------
+
+    /**
+     * Handles the window resize event.
+     * @param {Event} e The window resize event.
+     */
+    onResize_: function(e) {
+      this.layout();
+    },
 
     /**
      * Handles the end of the horizontal tile grid transition.

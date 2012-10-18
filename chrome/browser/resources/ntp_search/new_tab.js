@@ -587,12 +587,7 @@ cr.define('ntp', function() {
      * @private
      */
     onWindowResize_: function(e) {
-      // TODO(pedrosimonetti): TEMPORARY! REMOVE ONCE crbug.com/148728 IS FIXED!
-      // TODO(pedrosimonetti): CLEANUP BUG crbug.com/155657.
-      if (isNTPReady) {
-        this.cardSlider.resize(this.sliderFrame.offsetWidth);
-        newTabView.cardSlider.currentCardValue.layout();
-      }
+      this.cardSlider.resize(this.sliderFrame.offsetWidth);
     },
 
     /**
@@ -687,9 +682,10 @@ cr.define('ntp', function() {
     doWhenAllSectionsReady(function() {
       // Tell the slider about the pages.
       newTabView.updateSliderCards();
-      // TODO(pedrosimonetti): TEMPORARY! REMOVE ONCE crbug.com/148728 IS FIXED!
-      // TODO(pedrosimonetti): CLEANUP BUG crbug.com/155657.
-      showNTPWithDelay();
+      // Restore the visibility only after calling updateSliderCards to avoid
+      // flickering, otherwise for a small fraction of a second the Page List is
+      // partially rendered.
+      newTabView.cardSlider.frame_.style.visibility = 'visible';
       if (loadTimeData.valueExists('serverpromo')) {
         var promo = loadTimeData.getString('serverpromo');
         var tags = ['IMG'];
@@ -882,6 +878,7 @@ cr.define('ntp', function() {
 
   function setForeignSessions(dataList, isTabSyncEnabled) {
     newTabView.otherDevicesPage.setDataList(dataList);
+    cr.dispatchSimpleEvent(document, 'sectionready', true, true);
   }
 
   function getThumbnailUrl(url) {
@@ -949,82 +946,6 @@ cr.define('ntp', function() {
     newTabView.highlightAppId = appId;
   }
 
-  // Temporary fix for the bouncing problem. See crbug.com/148728.
-  // TODO(pedrosimonetti): TEMPORARY! REMOVE ONCE crbug.com/148728 IS FIXED!
-  // TODO(pedrosimonetti): CLEANUP BUG crbug.com/155657.
-  //----------------------------------------------------------------------------
-
-  /**
-   * The amount of delay that should be used when displaying the NTP in
-   * milliseconds.
-   * @type {Number}
-   */
-  var ntpMillisecondsDelay = 95;
-
-  /**
-   * @type {Boolean} Whether the NTP is visible.
-   */
-  var isVisible = true;
-
-  /**
-   * @type {Boolean} Whether the NTP is ready.
-   */
-  var isNTPReady = false;
-
-  /**
-   * Shows the NTP after a delay.
-   */
-  function showNTPWithDelay() {
-    setTimeout(function() {
-      showNTP();
-    }, ntpMillisecondsDelay);
-  }
-
-  /**
-   * Shows the NTP.
-   */
-  function showNTP() {
-    if (!isNTPReady) {
-      newTabView.cardSlider.currentCardValue.layout(true);
-      newTabView.cardSlider.frame_.style.visibility = 'visible';
-      isNTPReady = true;
-    }
-  }
-
-  /**
-   * Handles the visibility change.
-   */
-  var visibilityChangeTimeout;
-  function handleVisibilityChange() {
-    var wasVisible = isVisible;
-    isVisible = document.webkitVisibilityState == 'visible';
-
-    if (!isVisible) {
-      isNTPReady = false;
-      newTabView.cardSlider.frame_.style.visibility = 'hidden';
-    }
-
-    if (!wasVisible && isVisible) {
-      if (!visibilityChangeTimeout) {
-        visibilityChangeTimeout = window.setTimeout(function() {
-          window.clearTimeout(visibilityChangeTimeout);
-          visibilityChangeTimeout = null;
-          showNTP();
-        }, ntpMillisecondsDelay);
-      }
-    }
-  }
-
-  /**
-   * @return {Boolean} Whether the NTP is ready.
-   */
-  function isReady() {
-    return isNTPReady;
-  }
-
-  // End of temporary fix for the bouncing problem. See crbug.com/148728.
-  //----------------------------------------------------------------------------
-
   // Return an object with all the exports
   return {
     APP_LAUNCH: APP_LAUNCH,
@@ -1036,13 +957,7 @@ cr.define('ntp', function() {
     getAppsPageIndex: getAppsPageIndex,
     getCardSlider: getCardSlider,
     getThumbnailUrl: getThumbnailUrl,
-    // TODO(pedrosimonetti): TEMPORARY! REMOVE ONCE crbug.com/148728 IS FIXED!
-    // TODO(pedrosimonetti): CLEANUP BUG crbug.com/155657.
-    handleVisibilityChange: handleVisibilityChange,
     incrementHoveredThumbnailCount: incrementHoveredThumbnailCount,
-    // TODO(pedrosimonetti): TEMPORARY! REMOVE ONCE crbug.com/148728 IS FIXED!
-    // TODO(pedrosimonetti): CLEANUP BUG crbug.com/155657.
-    isReady: isReady,
     logTimeToClickAndHoverCount: logTimeToClickAndHoverCount,
     onLoad: onLoad,
     // This property is being used to disable NTP5 features that are not ready
@@ -1061,9 +976,5 @@ cr.define('ntp', function() {
 });
 
 document.addEventListener('DOMContentLoaded', ntp.onLoad);
-// TODO(pedrosimonetti): TEMPORARY! REMOVE ONCE crbug.com/148728 IS FIXED!
-// TODO(pedrosimonetti): CLEANUP BUG crbug.com/155657.
-document.addEventListener('webkitvisibilitychange',
-    ntp.handleVisibilityChange, false);
 
 var toCssPx = cr.ui.toCssPx;

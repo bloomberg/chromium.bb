@@ -366,6 +366,9 @@ void SearchViewController::SetState(State state) {
   if (state_ == state)
     return;
 
+  content::WebContents* saved = content_view_ ?
+      content_view_->web_contents() : NULL;
+
   State old_state = state_;
   switch (state) {
     case STATE_NOT_VISIBLE:
@@ -374,8 +377,12 @@ void SearchViewController::SetState(State state) {
 
     case STATE_NTP_LOADING:
     case STATE_NTP:
+      if (content_view_ && saved)
+        content_view_->SetWebContents(NULL);
       DestroyViews();
       CreateViews(state);
+      if (content_view_ && saved)
+        content_view_->SetWebContents(saved);
       break;
 
     case STATE_NTP_ANIMATING:
