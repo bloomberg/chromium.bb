@@ -172,7 +172,7 @@ class ShellUtil {
     }
 
     bool has_dual_mode() const {
-      return (options & PROPERTIES_CHROME_EXE) != 0;
+      return (options & PROPERTIES_DUAL_MODE) != 0;
     }
 
     // The level to install this shortcut at (CURRENT_USER for a per-user

@@ -257,6 +257,26 @@ TEST_F(ShellUtilShortcutTest, UpdateQuickLaunchShortcutArguments) {
                          expected_properties);
 }
 
+TEST_F(ShellUtilShortcutTest, UpdateAddDualModeToStartMenuShortcut) {
+  ShellUtil::ChromeShortcutProperties properties(ShellUtil::CURRENT_USER);
+  properties.set_chrome_exe(chrome_exe_);
+  ASSERT_TRUE(ShellUtil::CreateOrUpdateChromeShortcut(
+                  ShellUtil::SHORTCUT_START_MENU, dist_, properties,
+                  ShellUtil::SHORTCUT_CREATE_ALWAYS));
+
+  ShellUtil::ChromeShortcutProperties added_properties(ShellUtil::CURRENT_USER);
+  added_properties.set_dual_mode(true);
+  ASSERT_TRUE(ShellUtil::CreateOrUpdateChromeShortcut(
+                  ShellUtil::SHORTCUT_START_MENU, dist_, added_properties,
+                  ShellUtil::SHORTCUT_UPDATE_EXISTING));
+
+  ShellUtil::ChromeShortcutProperties expected_properties(properties);
+  expected_properties.set_dual_mode(true);
+
+  ValidateChromeShortcut(ShellUtil::SHORTCUT_START_MENU, dist_,
+                         expected_properties);
+}
+
 TEST_F(ShellUtilShortcutTest, CreateIfNoSystemLevel) {
   ASSERT_TRUE(ShellUtil::CreateOrUpdateChromeShortcut(
                   ShellUtil::SHORTCUT_DESKTOP, dist_, *test_properties_,
