@@ -39,9 +39,19 @@ class DevToolsNativeMemorySnapshotTest(devtools_test_base.DevToolsTestBase):
     unknown = snapshot.GetUnknownSize()
     logging.info('Got data for: %s, total size = %d, unknown size = %d' %
         (hostname, total, unknown))
-    graph_name = 'DevTools Native Snapshot - ' + hostname
-    pyauto_utils.PrintPerfResult(graph_name, 'Total', total, 'bytes')
-    pyauto_utils.PrintPerfResult(graph_name, 'Unknown', unknown, 'bytes')
+
+    graph_name = 'Native Memory Unknown Bytes'
+    pyauto_utils.PrintPerfResult(graph_name, hostname + ': total', total,
+        'bytes')
+    pyauto_utils.PrintPerfResult(graph_name, hostname + ': unknown', unknown,
+        'bytes')
+
+    if total == 0:
+      logging.info('No total process memory size')
+      return
+    unknown_percent = float(unknown) / total
+    pyauto_utils.PrintPerfResult('Native Memory Unknown %', hostname,
+        unknown_percent, '%')
 
 
 if __name__ == '__main__':
