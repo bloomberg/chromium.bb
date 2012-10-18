@@ -16,7 +16,6 @@
 
 using namespace cc;
 using namespace WebKitTests;
-using namespace WTF;
 
 namespace cc {
 

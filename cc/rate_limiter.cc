@@ -10,7 +10,6 @@
 #include "CCThread.h"
 #include "base/debug/trace_event.h"
 #include <public/WebGraphicsContext3D.h>
-#include <wtf/RefPtr.h>
 
 namespace cc {
 

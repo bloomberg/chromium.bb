@@ -39,7 +39,7 @@ private:
     CCFrameRateController* m_frameRateController;
 };
 
-CCFrameRateController::CCFrameRateController(PassRefPtr<CCTimeSource> timer)
+CCFrameRateController::CCFrameRateController(scoped_refptr<CCTimeSource> timer)
     : m_client(0)
     , m_numFramesPending(0)
     , m_maxFramesPending(defaultMaxFramesPending)

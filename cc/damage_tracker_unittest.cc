@@ -18,7 +18,6 @@
 
 using namespace cc;
 using namespace WebKit;
-using namespace WTF;
 using namespace WebKitTests;
 
 namespace {

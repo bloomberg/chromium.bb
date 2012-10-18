@@ -45,7 +45,7 @@ public:
 protected:
     virtual void SetUp()
     {
-        m_layerTreeHost = adoptPtr(new MockCCLayerTreeHost);
+        m_layerTreeHost.reset(new MockCCLayerTreeHost);
     }
 
     virtual void TearDown()
@@ -54,10 +54,10 @@ protected:
         EXPECT_CALL(*m_layerTreeHost, acquireLayerTextures()).Times(AnyNumber());
 
         m_layerTreeHost->setRootLayer(0);
-        m_layerTreeHost.clear();
+        m_layerTreeHost.reset();
     }
 
-    OwnPtr<MockCCLayerTreeHost> m_layerTreeHost;
+    scoped_ptr<MockCCLayerTreeHost> m_layerTreeHost;
 private:
     WebKitTests::WebCompositorInitializer m_compositorInitializer;
 };

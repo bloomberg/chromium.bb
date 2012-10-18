@@ -11,7 +11,6 @@
 
 using namespace cc;
 using namespace WebKitTests;
-using namespace WTF;
 
 namespace {
 
@@ -34,7 +33,7 @@ TEST(CCFrameRateControllerTest, TestFrameThrottling_ImmediateAck)
     FakeCCThread thread;
     FakeCCFrameRateControllerClient client;
     base::TimeDelta interval = base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond / 60);
-    RefPtr<FakeCCDelayBasedTimeSource> timeSource = FakeCCDelayBasedTimeSource::create(interval, &thread);
+    scoped_refptr<FakeCCDelayBasedTimeSource> timeSource = FakeCCDelayBasedTimeSource::create(interval, &thread);
     CCFrameRateController controller(timeSource);
 
     controller.setClient(&client);
@@ -69,7 +68,7 @@ TEST(CCFrameRateControllerTest, TestFrameThrottling_TwoFramesInFlight)
     FakeCCThread thread;
     FakeCCFrameRateControllerClient client;
     base::TimeDelta interval = base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond / 60);
-    RefPtr<FakeCCDelayBasedTimeSource> timeSource = FakeCCDelayBasedTimeSource::create(interval, &thread);
+    scoped_refptr<FakeCCDelayBasedTimeSource> timeSource = FakeCCDelayBasedTimeSource::create(interval, &thread);
     CCFrameRateController controller(timeSource);
 
     controller.setClient(&client);

@@ -9,21 +9,19 @@
 #include "cc/test/fake_web_compositor_software_output_device.h"
 #include <public/WebCompositorOutputSurface.h>
 #include <public/WebGraphicsContext3D.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
 
 namespace WebKit {
 
 class FakeWebCompositorOutputSurface : public WebCompositorOutputSurface {
 public:
-    static inline scoped_ptr<FakeWebCompositorOutputSurface> create(PassOwnPtr<WebGraphicsContext3D> context3D)
+    static inline scoped_ptr<FakeWebCompositorOutputSurface> create(scoped_ptr<WebGraphicsContext3D> context3D)
     {
-        return make_scoped_ptr(new FakeWebCompositorOutputSurface(context3D));
+        return make_scoped_ptr(new FakeWebCompositorOutputSurface(context3D.Pass()));
     }
 
-    static inline scoped_ptr<FakeWebCompositorOutputSurface> createSoftware(PassOwnPtr<WebCompositorSoftwareOutputDevice> softwareDevice)
+    static inline scoped_ptr<FakeWebCompositorOutputSurface> createSoftware(scoped_ptr<WebCompositorSoftwareOutputDevice> softwareDevice)
     {
-        return make_scoped_ptr(new FakeWebCompositorOutputSurface(softwareDevice));
+        return make_scoped_ptr(new FakeWebCompositorOutputSurface(softwareDevice.Pass()));
     }
 
     virtual bool bindToClient(WebCompositorOutputSurfaceClient* client) OVERRIDE
@@ -56,18 +54,18 @@ public:
     }
 
 private:
-    explicit FakeWebCompositorOutputSurface(PassOwnPtr<WebGraphicsContext3D> context3D)
+    explicit FakeWebCompositorOutputSurface(scoped_ptr<WebGraphicsContext3D> context3D)
     {
-        m_context3D = context3D;
+        m_context3D = context3D.Pass();
     }
 
-    explicit FakeWebCompositorOutputSurface(PassOwnPtr<WebCompositorSoftwareOutputDevice> softwareDevice)
+    explicit FakeWebCompositorOutputSurface(scoped_ptr<WebCompositorSoftwareOutputDevice> softwareDevice)
     {
-        m_softwareDevice = softwareDevice;
+        m_softwareDevice = softwareDevice.Pass();
     }
 
-    OwnPtr<WebGraphicsContext3D> m_context3D;
-    OwnPtr<WebCompositorSoftwareOutputDevice> m_softwareDevice;
+    scoped_ptr<WebGraphicsContext3D> m_context3D;
+    scoped_ptr<WebCompositorSoftwareOutputDevice> m_softwareDevice;
     Capabilities m_capabilities;
     WebCompositorOutputSurfaceClient* m_client;
 };

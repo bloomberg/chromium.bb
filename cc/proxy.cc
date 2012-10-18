@@ -8,8 +8,6 @@
 
 #include "CCThreadTask.h"
 
-using namespace WTF;
-
 namespace cc {
 
 namespace {

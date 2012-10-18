@@ -23,7 +23,7 @@ public:
 
     virtual WebCompositorOutputSurface* createOutputSurface() OVERRIDE
     {
-        return FakeWebCompositorOutputSurface::create(CompositorFakeWebGraphicsContext3D::create(WebGraphicsContext3D::Attributes())).release();
+        return FakeWebCompositorOutputSurface::create(CompositorFakeWebGraphicsContext3D::create(WebGraphicsContext3D::Attributes()).PassAs<WebKit::WebGraphicsContext3D>()).release();
     }
     virtual void didRecreateOutputSurface(bool) OVERRIDE { }
 

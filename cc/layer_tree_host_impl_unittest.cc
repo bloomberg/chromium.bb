@@ -179,7 +179,7 @@ public:
 protected:
     scoped_ptr<CCGraphicsContext> createContext()
     {
-        return FakeWebCompositorOutputSurface::create(adoptPtr(new FakeWebGraphicsContext3D)).PassAs<CCGraphicsContext>();
+        return FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new FakeWebGraphicsContext3D)).PassAs<CCGraphicsContext>();
     }
 
     DebugScopedSetImplThread m_alwaysImplThread;
@@ -348,7 +348,7 @@ TEST_P(CCLayerTreeHostImplTest, scrollWithoutRenderer)
     m_hostImpl = CCLayerTreeHostImpl::create(settings, this);
 
     // Initialization will fail here.
-    m_hostImpl->initializeRenderer(FakeWebCompositorOutputSurface::create(adoptPtr(new FakeWebGraphicsContext3DMakeCurrentFails)).PassAs<CCGraphicsContext>());
+    m_hostImpl->initializeRenderer(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new FakeWebGraphicsContext3DMakeCurrentFails)).PassAs<CCGraphicsContext>());
     m_hostImpl->setViewportSize(IntSize(10, 10), IntSize(10, 10));
 
     setupScrollAndContentsLayers(IntSize(100, 100));
@@ -1891,7 +1891,7 @@ protected:
 // viewport size is never set.
 TEST_P(CCLayerTreeHostImplTest, reshapeNotCalledUntilDraw)
 {
-    scoped_ptr<CCGraphicsContext> ccContext = FakeWebCompositorOutputSurface::create(adoptPtr(new ReshapeTrackerContext)).PassAs<CCGraphicsContext>();
+    scoped_ptr<CCGraphicsContext> ccContext = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new ReshapeTrackerContext)).PassAs<CCGraphicsContext>();
     ReshapeTrackerContext* reshapeTracker = static_cast<ReshapeTrackerContext*>(ccContext->context3D());
     m_hostImpl->initializeRenderer(ccContext.Pass());
 
@@ -1934,7 +1934,7 @@ private:
 // where it should request to swap only the subBuffer that is damaged.
 TEST_P(CCLayerTreeHostImplTest, partialSwapReceivesDamageRect)
 {
-    scoped_ptr<CCGraphicsContext> ccContext = FakeWebCompositorOutputSurface::create(adoptPtr(new PartialSwapTrackerContext)).PassAs<CCGraphicsContext>();
+    scoped_ptr<CCGraphicsContext> ccContext = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapTrackerContext)).PassAs<CCGraphicsContext>();
     PartialSwapTrackerContext* partialSwapTracker = static_cast<PartialSwapTrackerContext*>(ccContext->context3D());
 
     // This test creates its own CCLayerTreeHostImpl, so
@@ -2148,7 +2148,7 @@ public:
 
 TEST_P(CCLayerTreeHostImplTest, noPartialSwap)
 {
-    scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(adoptPtr(new MockContext)).PassAs<CCGraphicsContext>();
+    scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(scoped_ptr<WebGraphicsContext3D>(new MockContext)).PassAs<CCGraphicsContext>();
     MockContext* mockContext = static_cast<MockContext*>(context->context3D());
     MockContextHarness harness(mockContext);
 
@@ -2167,7 +2167,7 @@ TEST_P(CCLayerTreeHostImplTest, noPartialSwap)
 
 TEST_P(CCLayerTreeHostImplTest, partialSwap)
 {
-    scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(adoptPtr(new MockContext)).PassAs<CCGraphicsContext>();
+    scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new MockContext)).PassAs<CCGraphicsContext>();
     MockContext* mockContext = static_cast<MockContext*>(context->context3D());
     MockContextHarness harness(mockContext);
 
@@ -2225,7 +2225,7 @@ static scoped_ptr<CCLayerTreeHostImpl> setupLayersForOpacity(bool partialSwap, C
 {
     CCSettings::setPartialSwapEnabled(partialSwap);
 
-    scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(adoptPtr(new PartialSwapContext)).PassAs<CCGraphicsContext>();
+    scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<CCGraphicsContext>();
 
     CCLayerTreeSettings settings;
     scoped_ptr<CCLayerTreeHostImpl> myHostImpl = CCLayerTreeHostImpl::create(settings, client);
@@ -2381,7 +2381,7 @@ TEST_P(CCLayerTreeHostImplTest, finishAllRenderingAfterContextLost)
     m_hostImpl = CCLayerTreeHostImpl::create(settings, this);
 
     // The context initialization will fail, but we should still be able to call finishAllRendering() without any ill effects.
-    m_hostImpl->initializeRenderer(FakeWebCompositorOutputSurface::create(adoptPtr(new FakeWebGraphicsContext3DMakeCurrentFails)).PassAs<CCGraphicsContext>());
+    m_hostImpl->initializeRenderer(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new FakeWebGraphicsContext3DMakeCurrentFails)).PassAs<CCGraphicsContext>());
     m_hostImpl->finishAllRendering();
 }
 
@@ -2419,14 +2419,14 @@ TEST_P(CCLayerTreeHostImplTest, contextLostDuringInitialize)
     for (unsigned i = 0; i < kMakeCurrentSuccessesNeededForSuccessfulInitialization; ++i) {
         // The context will get lost during initialization, we shouldn't crash. We
         // should also be in a consistent state.
-        EXPECT_FALSE(m_hostImpl->initializeRenderer(FakeWebCompositorOutputSurface::create(adoptPtr(new FakeWebGraphicsContext3DMakeCurrentFailsEventually(i))).PassAs<CCGraphicsContext>()));
+        EXPECT_FALSE(m_hostImpl->initializeRenderer(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new FakeWebGraphicsContext3DMakeCurrentFailsEventually(i))).PassAs<CCGraphicsContext>()));
         EXPECT_EQ(0, m_hostImpl->context());
         EXPECT_EQ(0, m_hostImpl->renderer());
         EXPECT_EQ(0, m_hostImpl->resourceProvider());
         EXPECT_TRUE(m_hostImpl->initializeRenderer(createContext()));
     }
 
-    EXPECT_TRUE(m_hostImpl->initializeRenderer(FakeWebCompositorOutputSurface::create(adoptPtr(new FakeWebGraphicsContext3DMakeCurrentFailsEventually(kMakeCurrentSuccessesNeededForSuccessfulInitialization))).PassAs<CCGraphicsContext>()));
+    EXPECT_TRUE(m_hostImpl->initializeRenderer(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new FakeWebGraphicsContext3DMakeCurrentFailsEventually(kMakeCurrentSuccessesNeededForSuccessfulInitialization))).PassAs<CCGraphicsContext>()));
     EXPECT_TRUE(m_hostImpl->context());
     EXPECT_TRUE(m_hostImpl->renderer());
     EXPECT_TRUE(m_hostImpl->resourceProvider());
@@ -2754,7 +2754,7 @@ TEST_P(CCLayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
     rootLayer->addChild(delegatedRendererLayer.PassAs<CCLayerImpl>());
 
     // Use a context that supports IOSurfaces
-    m_hostImpl->initializeRenderer(FakeWebCompositorOutputSurface::create(adoptPtr(new FakeWebGraphicsContext3DWithIOSurface)).PassAs<CCGraphicsContext>());
+    m_hostImpl->initializeRenderer(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new FakeWebGraphicsContext3DWithIOSurface)).PassAs<CCGraphicsContext>());
 
     hwVideoFrame.setTextureId(m_hostImpl->resourceProvider()->graphicsContext3D()->createTexture());
 
@@ -2770,7 +2770,7 @@ TEST_P(CCLayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
 
     // Lose the context, replacing it with a StrictWebGraphicsContext3DWithIOSurface,
     // that will warn if any resource from the previous context gets used.
-    m_hostImpl->initializeRenderer(FakeWebCompositorOutputSurface::create(adoptPtr(new StrictWebGraphicsContext3DWithIOSurface)).PassAs<CCGraphicsContext>());
+    m_hostImpl->initializeRenderer(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new StrictWebGraphicsContext3DWithIOSurface)).PassAs<CCGraphicsContext>());
 
     // Create dummy resources so that looking up an old resource will get an
     // invalid texture id mapping.
@@ -2807,17 +2807,17 @@ public:
     {
         WebGLId id = FakeWebGraphicsContext3D::createTexture();
 
-        m_textures.set(id, true);
+        m_textures[id] = true;
         ++m_numTextures;
         return id;
     }
 
     virtual void deleteTexture(WebGLId id) OVERRIDE
     {
-        if (!m_textures.get(id))
+        if (m_textures.find(id) == m_textures.end())
             return;
 
-        m_textures.set(id, false);
+        m_textures[id] = false;
         --m_numTextures;
     }
 
@@ -2832,7 +2832,7 @@ public:
     unsigned numTextures() const { return m_numTextures; }
 
 private:
-    HashMap<WebGLId, bool> m_textures;
+    base::hash_map<WebGLId, bool> m_textures;
     unsigned m_numTextures;
 };
 
@@ -2881,7 +2881,7 @@ TEST_P(CCLayerTreeHostImplTest, layersFreeTextures)
     rootLayer->addChild(ioSurfaceLayer.PassAs<CCLayerImpl>());
 
     // Lose the context, replacing it with a TrackingWebGraphicsContext3D (which the CCLayerTreeHostImpl takes ownership of).
-    scoped_ptr<CCGraphicsContext> ccContext(FakeWebCompositorOutputSurface::create(adoptPtr(new TrackingWebGraphicsContext3D)));
+    scoped_ptr<CCGraphicsContext> ccContext(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new TrackingWebGraphicsContext3D)));
     TrackingWebGraphicsContext3D* trackingWebGraphicsContext = static_cast<TrackingWebGraphicsContext3D*>(ccContext->context3D());
     m_hostImpl->initializeRenderer(ccContext.Pass());
 
@@ -2909,7 +2909,7 @@ public:
 
 TEST_P(CCLayerTreeHostImplTest, hasTransparentBackground)
 {
-    scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(adoptPtr(new MockDrawQuadsToFillScreenContext)).PassAs<CCGraphicsContext>();
+    scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new MockDrawQuadsToFillScreenContext)).PassAs<CCGraphicsContext>();
     MockDrawQuadsToFillScreenContext* mockContext = static_cast<MockDrawQuadsToFillScreenContext*>(context->context3D());
 
     // Run test case
@@ -2953,7 +2953,7 @@ static void addDrawingLayerTo(CCLayerImpl* parent, int id, const IntRect& layerR
 
 static void setupLayersForTextureCaching(CCLayerTreeHostImpl* layerTreeHostImpl, CCLayerImpl*& rootPtr, CCLayerImpl*& intermediateLayerPtr, CCLayerImpl*& surfaceLayerPtr, CCLayerImpl*& childPtr, const IntSize& rootSize)
 {
-    scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(adoptPtr(new PartialSwapContext)).PassAs<CCGraphicsContext>();
+    scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<CCGraphicsContext>();
 
     layerTreeHostImpl->initializeRenderer(context.Pass());
     layerTreeHostImpl->setViewportSize(rootSize, rootSize);
@@ -2997,7 +2997,7 @@ TEST_P(CCLayerTreeHostImplTest, textureCachingWithClipping)
     CCLayerImpl* rootPtr;
     CCLayerImpl* surfaceLayerPtr;
 
-    scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(adoptPtr(new PartialSwapContext)).PassAs<CCGraphicsContext>();
+    scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<CCGraphicsContext>();
 
     IntSize rootSize(100, 100);
 
@@ -3109,7 +3109,7 @@ TEST_P(CCLayerTreeHostImplTest, textureCachingWithOcclusion)
     CCLayerImpl* layerS1Ptr;
     CCLayerImpl* layerS2Ptr;
 
-    scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(adoptPtr(new PartialSwapContext)).PassAs<CCGraphicsContext>();
+    scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<CCGraphicsContext>();
 
     IntSize rootSize(1000, 1000);
 
@@ -3222,7 +3222,7 @@ TEST_P(CCLayerTreeHostImplTest, textureCachingWithOcclusionEarlyOut)
     CCLayerImpl* layerS1Ptr;
     CCLayerImpl* layerS2Ptr;
 
-    scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(adoptPtr(new PartialSwapContext)).PassAs<CCGraphicsContext>();
+    scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<CCGraphicsContext>();
 
     IntSize rootSize(1000, 1000);
 
@@ -3336,7 +3336,7 @@ TEST_P(CCLayerTreeHostImplTest, textureCachingWithOcclusionExternalOverInternal)
     CCLayerImpl* layerS1Ptr;
     CCLayerImpl* layerS2Ptr;
 
-    scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(adoptPtr(new PartialSwapContext)).PassAs<CCGraphicsContext>();
+    scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<CCGraphicsContext>();
 
     IntSize rootSize(1000, 1000);
 
@@ -3419,7 +3419,7 @@ TEST_P(CCLayerTreeHostImplTest, textureCachingWithOcclusionExternalNotAligned)
     CCLayerImpl* rootPtr;
     CCLayerImpl* layerS1Ptr;
 
-    scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(adoptPtr(new PartialSwapContext)).PassAs<CCGraphicsContext>();
+    scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<CCGraphicsContext>();
 
     IntSize rootSize(1000, 1000);
 
@@ -3504,7 +3504,7 @@ TEST_P(CCLayerTreeHostImplTest, textureCachingWithOcclusionPartialSwap)
     CCLayerImpl* layerS1Ptr;
     CCLayerImpl* layerS2Ptr;
 
-    scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(adoptPtr(new PartialSwapContext)).PassAs<CCGraphicsContext>();
+    scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<CCGraphicsContext>();
 
     IntSize rootSize(1000, 1000);
 
@@ -3625,7 +3625,7 @@ TEST_P(CCLayerTreeHostImplTest, textureCachingWithScissor)
     IntRect childRect(10, 10, 50, 50);
     IntRect grandChildRect(5, 5, 150, 150);
 
-    scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(adoptPtr(new PartialSwapContext)).PassAs<CCGraphicsContext>();
+    scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<CCGraphicsContext>();
     myHostImpl->initializeRenderer(context.Pass());
 
     root->setAnchorPoint(FloatPoint(0, 0));

@@ -14,7 +14,6 @@
 #include "cc/test/web_compositor_initializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebThread.h>
-#include <wtf/RefPtr.h>
 
 using namespace cc;
 using namespace WebKit;
@@ -112,7 +111,7 @@ public:
 protected:
     virtual void SetUp()
     {
-        m_context = FakeWebCompositorOutputSurface::create(adoptPtr(new WebGraphicsContext3DForUploadTest(this)));
+        m_context = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new WebGraphicsContext3DForUploadTest(this)));
         m_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 300, 150);
         m_bitmap.allocPixels();
         DebugScopedSetImplThread implThread;
@@ -181,7 +180,7 @@ protected:
     scoped_ptr<CCTextureUpdateQueue> m_queue;
     scoped_ptr<CCPrioritizedTexture> m_textures[4];
     TextureUploaderForUploadTest m_uploader;
-    OwnPtr<WebThread> m_thread;
+    scoped_ptr<WebThread> m_thread;
     WebCompositorInitializer m_compositorInitializer;
     SkBitmap m_bitmap;
 

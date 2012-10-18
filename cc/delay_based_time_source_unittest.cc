@@ -9,10 +9,8 @@
 #include "CCThread.h"
 #include "cc/test/scheduler_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <wtf/RefPtr.h>
 
 using namespace cc;
-using namespace WTF;
 using namespace WebKitTests;
 
 namespace {
@@ -26,7 +24,7 @@ TEST(CCDelayBasedTimeSourceTest, TaskPostedAndTickCalled)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
+    scoped_refptr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
 
     timer->setActive(true);
@@ -43,7 +41,7 @@ TEST(CCDelayBasedTimeSource, TickNotCalledWithTaskPosted)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
+    scoped_refptr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
     timer->setActive(true);
     EXPECT_TRUE(thread.hasPendingTask());
@@ -56,7 +54,7 @@ TEST(CCDelayBasedTimeSource, StartTwiceEnqueuesOneTask)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
+    scoped_refptr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
     timer->setActive(true);
     EXPECT_TRUE(thread.hasPendingTask());
@@ -69,7 +67,7 @@ TEST(CCDelayBasedTimeSource, StartWhenRunningDoesntTick)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
+    scoped_refptr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
     timer->setActive(true);
     thread.runPendingTask();
@@ -84,7 +82,7 @@ TEST(CCDelayBasedTimeSource, NextDelaySaneWhenExactlyOnRequestedTime)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
+    scoped_refptr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
     timer->setActive(true);
     // Run the first task, as that activates the timer and picks up a timebase.
@@ -104,7 +102,7 @@ TEST(CCDelayBasedTimeSource, NextDelaySaneWhenSlightlyAfterRequestedTime)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
+    scoped_refptr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
     timer->setActive(true);
     // Run the first task, as that activates the timer and picks up a timebase.
@@ -124,7 +122,7 @@ TEST(CCDelayBasedTimeSource, NextDelaySaneWhenExactlyTwiceAfterRequestedTime)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
+    scoped_refptr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
     timer->setActive(true);
     // Run the first task, as that activates the timer and picks up a timebase.
@@ -144,7 +142,7 @@ TEST(CCDelayBasedTimeSource, NextDelaySaneWhenSlightlyAfterTwiceRequestedTime)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
+    scoped_refptr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
     timer->setActive(true);
     // Run the first task, as that activates the timer and picks up a timebase.
@@ -164,7 +162,7 @@ TEST(CCDelayBasedTimeSource, NextDelaySaneWhenHalfAfterRequestedTime)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
+    scoped_refptr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
     timer->setActive(true);
     // Run the first task, as that activates the timer and picks up a timebase.
@@ -184,7 +182,7 @@ TEST(CCDelayBasedTimeSource, SaneHandlingOfJitteryTimebase)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
+    scoped_refptr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
     timer->setActive(true);
     // Run the first task, as that activates the timer and picks up a timebase.
@@ -212,7 +210,7 @@ TEST(CCDelayBasedTimeSource, HandlesSignificantTimebaseChangesImmediately)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
+    scoped_refptr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
     timer->setActive(true);
     // Run the first task, as that activates the timer and picks up a timebase.
@@ -254,7 +252,7 @@ TEST(CCDelayBasedTimeSource, HanldlesSignificantIntervalChangesImmediately)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
+    scoped_refptr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
     timer->setActive(true);
     // Run the first task, as that activates the timer and picks up a timebase.
@@ -297,7 +295,7 @@ TEST(CCDelayBasedTimeSourceTest, AchievesTargetRateWithNoNoise)
 
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
+    scoped_refptr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
     timer->setActive(true);
 
@@ -320,11 +318,11 @@ TEST(CCDelayBasedTimeSource, TestDeactivateWhilePending)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
+    scoped_refptr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
     timer->setActive(true); // Should post a task.
     timer->setActive(false);
-    timer.clear();
+    timer = NULL;
     thread.runPendingTask(); // Should run the posted task without crashing.
 }
 
@@ -332,7 +330,7 @@ TEST(CCDelayBasedTimeSource, TestDeactivateAndReactivateBeforeNextTickTime)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
+    scoped_refptr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
 
     // Should run the activate task, and pick up a new timebase.
@@ -356,7 +354,7 @@ TEST(CCDelayBasedTimeSource, TestDeactivateAndReactivateAfterNextTickTime)
 {
     FakeCCThread thread;
     FakeCCTimeSourceClient client;
-    RefPtr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
+    scoped_refptr<FakeCCDelayBasedTimeSource> timer = FakeCCDelayBasedTimeSource::create(interval(), &thread);
     timer->setClient(&client);
 
     // Should run the activate task, and pick up a new timebase.

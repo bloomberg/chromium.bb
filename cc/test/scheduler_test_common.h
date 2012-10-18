@@ -73,10 +73,7 @@ public:
         : m_active(false)
         , m_client(0)
     {
-        turnOffVerifier();
     }
-
-    virtual ~FakeCCTimeSource() { }
 
     virtual void setClient(cc::CCTimeSourceClient* client) OVERRIDE;
     virtual void setActive(bool b) OVERRIDE;
@@ -95,6 +92,8 @@ public:
     void setNextTickTime(base::TimeTicks nextTickTime) { m_nextTickTime = nextTickTime; }
 
 protected:
+    virtual ~FakeCCTimeSource() { }
+
     bool m_active;
     base::TimeTicks m_nextTickTime;
     cc::CCTimeSourceClient* m_client;
@@ -102,9 +101,9 @@ protected:
 
 class FakeCCDelayBasedTimeSource : public cc::CCDelayBasedTimeSource {
 public:
-    static PassRefPtr<FakeCCDelayBasedTimeSource> create(base::TimeDelta interval, cc::CCThread* thread)
+    static scoped_refptr<FakeCCDelayBasedTimeSource> create(base::TimeDelta interval, cc::CCThread* thread)
     {
-        return adoptRef(new FakeCCDelayBasedTimeSource(interval, thread));
+        return make_scoped_refptr(new FakeCCDelayBasedTimeSource(interval, thread));
     }
 
     void setNow(base::TimeTicks time) { m_now = time; }
@@ -115,13 +114,14 @@ protected:
         : CCDelayBasedTimeSource(interval, thread)
     {
     }
+    virtual ~FakeCCDelayBasedTimeSource() { }
 
     base::TimeTicks m_now;
 };
 
 class FakeCCFrameRateController : public cc::CCFrameRateController {
 public:
-    FakeCCFrameRateController(PassRefPtr<cc::CCTimeSource> timer) : cc::CCFrameRateController(timer) { }
+    FakeCCFrameRateController(scoped_refptr<cc::CCTimeSource> timer) : cc::CCFrameRateController(timer) { }
 
     int numFramesPending() const { return m_numFramesPending; }
 };

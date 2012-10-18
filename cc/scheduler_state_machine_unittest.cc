@@ -9,7 +9,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using namespace cc;
-using namespace WTF;
 
 namespace {
 

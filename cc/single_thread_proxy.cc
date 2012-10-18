@@ -14,8 +14,6 @@
 #include "base/debug/trace_event.h"
 #include <wtf/CurrentTime.h>
 
-using namespace WTF;
-
 namespace cc {
 
 scoped_ptr<CCProxy> CCSingleThreadProxy::create(CCLayerTreeHost* layerTreeHost)

@@ -6,7 +6,6 @@
 #define CCInputHandler_h
 
 #include "base/basictypes.h"
-#include <wtf/PassOwnPtr.h>
 
 namespace cc {
 

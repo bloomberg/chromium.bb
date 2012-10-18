@@ -30,11 +30,11 @@ TEST(CCLayerSorterTest, BasicOverlap)
     // Trivial test, with one layer directly obscuring the other.
     WebTransformationMatrix neg4Translate;
     neg4Translate.translate3d(0, 0, -4);
-    CCLayerSorter::LayerShape front(2, 2, neg4Translate);
+    LayerShape front(2, 2, neg4Translate);
 
     WebTransformationMatrix neg5Translate;
     neg5Translate.translate3d(0, 0, -5);
-    CCLayerSorter::LayerShape back(2, 2, neg5Translate);
+    LayerShape back(2, 2, neg5Translate);
 
     overlapResult = CCLayerSorter::checkOverlap(&front, &back, zThreshold, weight);
     EXPECT_EQ(CCLayerSorter::BBeforeA, overlapResult);
@@ -47,7 +47,7 @@ TEST(CCLayerSorterTest, BasicOverlap)
     // One layer translated off to the right. No overlap should be detected.
     WebTransformationMatrix rightTranslate;
     rightTranslate.translate3d(10, 0, -5);
-    CCLayerSorter::LayerShape backRight(2, 2, rightTranslate);
+    LayerShape backRight(2, 2, rightTranslate);
     overlapResult = CCLayerSorter::checkOverlap(&front, &backRight, zThreshold, weight);
     EXPECT_EQ(CCLayerSorter::None, overlapResult);
 
@@ -70,11 +70,11 @@ TEST(CCLayerSorterTest, RightAngleOverlap)
     leftFaceMatrix.rotate3d(0, 1, 0, -90);
     leftFaceMatrix.translateRight3d(-1, 0, -5);
     leftFaceMatrix.translate(-1, -1);
-    CCLayerSorter::LayerShape leftFace(2, 2, perspectiveMatrix * leftFaceMatrix);
+    LayerShape leftFace(2, 2, perspectiveMatrix * leftFaceMatrix);
     WebTransformationMatrix frontFaceMatrix;
     frontFaceMatrix.translate3d(0, 0, -4);
     frontFaceMatrix.translate(-1, -1);
-    CCLayerSorter::LayerShape frontFace(2, 2, perspectiveMatrix * frontFaceMatrix);
+    LayerShape frontFace(2, 2, perspectiveMatrix * frontFaceMatrix);
 
     overlapResult = CCLayerSorter::checkOverlap(&frontFace, &leftFace, zThreshold, weight);
     EXPECT_EQ(CCLayerSorter::BBeforeA, overlapResult);
@@ -94,13 +94,13 @@ TEST(CCLayerSorterTest, IntersectingLayerOverlap)
     WebTransformationMatrix frontFaceMatrix;
     frontFaceMatrix.translate3d(0, 0, -4);
     frontFaceMatrix.translate(-1, -1);
-    CCLayerSorter::LayerShape frontFace(2, 2, perspectiveMatrix * frontFaceMatrix);
+    LayerShape frontFace(2, 2, perspectiveMatrix * frontFaceMatrix);
 
     WebTransformationMatrix throughMatrix;
     throughMatrix.rotate3d(0, 1, 0, 45);
     throughMatrix.translateRight3d(0, 0, -4);
     throughMatrix.translate(-1, -1);
-    CCLayerSorter::LayerShape rotatedFace(2, 2, perspectiveMatrix * throughMatrix);
+    LayerShape rotatedFace(2, 2, perspectiveMatrix * throughMatrix);
     overlapResult = CCLayerSorter::checkOverlap(&frontFace, &rotatedFace, zThreshold, weight);
     EXPECT_NE(CCLayerSorter::None, overlapResult);
     EXPECT_EQ(0, weight);
@@ -127,17 +127,17 @@ TEST(CCLayerSorterTest, LayersAtAngleOverlap)
     WebTransformationMatrix transformA;
     transformA.translate3d(-6, 0, 1);
     transformA.translate(-4, -10);
-    CCLayerSorter::LayerShape layerA(8, 20, transformA);
+    LayerShape layerA(8, 20, transformA);
 
     WebTransformationMatrix transformB;
     transformB.translate3d(6, 0, -1);
     transformB.translate(-4, -10);
-    CCLayerSorter::LayerShape layerB(8, 20, transformB);
+    LayerShape layerB(8, 20, transformB);
 
     WebTransformationMatrix transformC;
     transformC.rotate3d(0, 1, 0, 40);
     transformC.translate(-4, -10);
-    CCLayerSorter::LayerShape layerC(8, 20, transformC);
+    LayerShape layerC(8, 20, transformC);
 
     overlapResult = CCLayerSorter::checkOverlap(&layerA, &layerC, zThreshold, weight);
     EXPECT_EQ(CCLayerSorter::ABeforeB, overlapResult);
@@ -164,7 +164,7 @@ TEST(CCLayerSorterTest, LayersUnderPathologicalPerspectiveTransform)
     WebTransformationMatrix transformA;
     transformA.translate3d(-15, 0, -2);
     transformA.translate(-5, -5);
-    CCLayerSorter::LayerShape layerA(10, 10, perspectiveMatrix * transformA);
+    LayerShape layerA(10, 10, perspectiveMatrix * transformA);
 
     // With this sequence of transforms, when layer B is correctly clipped, it will be
     // visible on the left half of the projection plane, in front of layerA. When it is
@@ -174,7 +174,7 @@ TEST(CCLayerSorterTest, LayersUnderPathologicalPerspectiveTransform)
     transformB.translate3d(0, 0, 0.7);
     transformB.rotate3d(0, 45, 0);
     transformB.translate(-5, -5);
-    CCLayerSorter::LayerShape layerB(10, 10, perspectiveMatrix * transformB);
+    LayerShape layerB(10, 10, perspectiveMatrix * transformB);
 
     // Sanity check that the test case actually covers the intended scenario, where part
     // of layer B go behind the w = 0 plane.

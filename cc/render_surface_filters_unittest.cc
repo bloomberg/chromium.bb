@@ -10,7 +10,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebFilterOperation.h>
 #include <public/WebFilterOperations.h>
-#include <wtf/RefPtr.h>
 
 using namespace cc;
 using namespace WebKit;

@@ -5,11 +5,10 @@
 #ifndef CCFrameRateController_h
 #define CCFrameRateController_h
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "CCTimer.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
 
 namespace cc {
 
@@ -29,7 +28,7 @@ class CCFrameRateControllerTimeSourceAdapter;
 
 class CCFrameRateController : public CCTimerClient {
 public:
-    explicit CCFrameRateController(PassRefPtr<CCTimeSource>);
+    explicit CCFrameRateController(scoped_refptr<CCTimeSource>);
     // Alternate form of CCFrameRateController with unthrottled frame-rate.
     explicit CCFrameRateController(CCThread*);
     virtual ~CCFrameRateController();
@@ -67,7 +66,7 @@ protected:
     CCFrameRateControllerClient* m_client;
     int m_numFramesPending;
     int m_maxFramesPending;
-    RefPtr<CCTimeSource> m_timeSource;
+    scoped_refptr<CCTimeSource> m_timeSource;
     scoped_ptr<CCFrameRateControllerTimeSourceAdapter> m_timeSourceClientAdapter;
     bool m_active;
     bool m_swapBuffersCompleteSupported;

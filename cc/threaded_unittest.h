@@ -116,7 +116,7 @@ protected:
     WebKit::WebThread* webThread() const { return m_webThread.get(); }
 
     cc::CCLayerTreeSettings m_settings;
-    OwnPtr<MockCCLayerTreeHostClient> m_client;
+    scoped_ptr<MockCCLayerTreeHostClient> m_client;
     scoped_ptr<cc::CCLayerTreeHost> m_layerTreeHost;
 
 protected:
@@ -130,7 +130,7 @@ private:
     bool m_scheduled;
     bool m_started;
 
-    OwnPtr<WebKit::WebThread> m_webThread;
+    scoped_ptr<WebKit::WebThread> m_webThread;
     TimeoutTask* m_timeoutTask;
     BeginTask* m_beginTask;
 };
@@ -169,7 +169,7 @@ private:
 
 class CompositorFakeWebGraphicsContext3DWithTextureTracking : public WebKit::CompositorFakeWebGraphicsContext3D {
 public:
-    static PassOwnPtr<CompositorFakeWebGraphicsContext3DWithTextureTracking> create(Attributes);
+    static scoped_ptr<CompositorFakeWebGraphicsContext3DWithTextureTracking> create(Attributes);
     virtual ~CompositorFakeWebGraphicsContext3DWithTextureTracking();
 
     virtual WebKit::WebGLId createTexture();

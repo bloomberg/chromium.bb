@@ -158,7 +158,7 @@ WebTransformationMatrix CCPinchZoomViewport::implTransform() const
 
 class CCLayerTreeHostImplTimeSourceAdapter : public CCTimeSourceClient {
 public:
-    static scoped_ptr<CCLayerTreeHostImplTimeSourceAdapter> create(CCLayerTreeHostImpl* layerTreeHostImpl, PassRefPtr<CCDelayBasedTimeSource> timeSource)
+    static scoped_ptr<CCLayerTreeHostImplTimeSourceAdapter> create(CCLayerTreeHostImpl* layerTreeHostImpl, scoped_refptr<CCDelayBasedTimeSource> timeSource)
     {
         return make_scoped_ptr(new CCLayerTreeHostImplTimeSourceAdapter(layerTreeHostImpl, timeSource));
     }
@@ -185,7 +185,7 @@ public:
     }
 
 private:
-    CCLayerTreeHostImplTimeSourceAdapter(CCLayerTreeHostImpl* layerTreeHostImpl, PassRefPtr<CCDelayBasedTimeSource> timeSource)
+    CCLayerTreeHostImplTimeSourceAdapter(CCLayerTreeHostImpl* layerTreeHostImpl, scoped_refptr<CCDelayBasedTimeSource> timeSource)
         : m_layerTreeHostImpl(layerTreeHostImpl)
         , m_timeSource(timeSource)
     {
@@ -193,7 +193,7 @@ private:
     }
 
     CCLayerTreeHostImpl* m_layerTreeHostImpl;
-    RefPtr<CCDelayBasedTimeSource> m_timeSource;
+    scoped_refptr<CCDelayBasedTimeSource> m_timeSource;
 
     DISALLOW_COPY_AND_ASSIGN(CCLayerTreeHostImplTimeSourceAdapter);
 };

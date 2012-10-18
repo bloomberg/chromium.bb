@@ -19,7 +19,6 @@
 #include <public/WebSharedGraphicsContext3D.h>
 #include <wtf/CurrentTime.h>
 
-using namespace WTF;
 using WebKit::WebSharedGraphicsContext3D;
 
 namespace {

@@ -11,7 +11,7 @@ namespace cc {
 scoped_ptr<WebKit::WebCompositorOutputSurface> FakeCCLayerTreeHostClient::createOutputSurface()
 {
     WebKit::WebGraphicsContext3D::Attributes attrs;
-    return scoped_ptr<WebKit::WebCompositorOutputSurface>(WebKit::FakeWebCompositorOutputSurface::create(WebKit::CompositorFakeWebGraphicsContext3D::create(attrs)));
+    return WebKit::FakeWebCompositorOutputSurface::create(WebKit::CompositorFakeWebGraphicsContext3D::create(attrs).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<WebKit::WebCompositorOutputSurface>();
 }
 
 scoped_ptr<CCInputHandler> FakeCCLayerTreeHostClient::createInputHandler()

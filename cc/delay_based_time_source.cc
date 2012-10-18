@@ -28,9 +28,9 @@ const double phaseChangeThreshold = 0.25;
 
 }  // namespace
 
-PassRefPtr<CCDelayBasedTimeSource> CCDelayBasedTimeSource::create(base::TimeDelta interval, CCThread* thread)
+scoped_refptr<CCDelayBasedTimeSource> CCDelayBasedTimeSource::create(base::TimeDelta interval, CCThread* thread)
 {
-    return adoptRef(new CCDelayBasedTimeSource(interval, thread));
+    return make_scoped_refptr(new CCDelayBasedTimeSource(interval, thread));
 }
 
 CCDelayBasedTimeSource::CCDelayBasedTimeSource(base::TimeDelta interval, CCThread* thread)
@@ -41,7 +41,6 @@ CCDelayBasedTimeSource::CCDelayBasedTimeSource(base::TimeDelta interval, CCThrea
     , m_state(STATE_INACTIVE)
     , m_timer(thread, this)
 {
-    turnOffVerifier();
 }
 
 CCDelayBasedTimeSource::~CCDelayBasedTimeSource()

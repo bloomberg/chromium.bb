@@ -101,14 +101,14 @@ class CancelableTaskWrapper : public base::RefCounted<CancelableTaskWrapper> {
     };
 
 public:
-    CancelableTaskWrapper(PassOwnPtr<WebThread::Task> task)
-        : m_task(task)
+    CancelableTaskWrapper(scoped_ptr<WebThread::Task> task)
+        : m_task(task.Pass())
     {
     }
 
     void cancel()
     {
-        m_task.clear();
+        m_task.reset();
     }
 
     WebThread::Task* createTask()
@@ -122,14 +122,14 @@ public:
         if (!m_task)
             return;
         m_task->run();
-        m_task.clear();
+        m_task.reset();
     }
 
 private:
     friend class base::RefCounted<CancelableTaskWrapper>;
     ~CancelableTaskWrapper() { }
 
-    OwnPtr<WebThread::Task> m_task;
+    scoped_ptr<WebThread::Task> m_task;
 };
 
 class WebLayerTreeViewThreadedTest : public WebLayerTreeViewTestBase {
@@ -144,7 +144,7 @@ protected:
     void composite()
     {
         m_view->setNeedsRedraw();
-        scoped_refptr<CancelableTaskWrapper> timeoutTask(new CancelableTaskWrapper(adoptPtr(new TimeoutTask())));
+        scoped_refptr<CancelableTaskWrapper> timeoutTask(new CancelableTaskWrapper(scoped_ptr<WebThread::Task>(new TimeoutTask())));
         WebKit::Platform::current()->currentThread()->postDelayedTask(timeoutTask->createTask(), 5000);
         WebKit::Platform::current()->currentThread()->enterRunLoop();
         timeoutTask->cancel();

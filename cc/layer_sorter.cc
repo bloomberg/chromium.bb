@@ -53,13 +53,13 @@ static bool edgeEdgeTest(const FloatPoint& a, const FloatPoint& b, const FloatPo
     return true;
 }
 
-CCLayerSorter::GraphNode::GraphNode(CCLayerImpl* cclayer)
+GraphNode::GraphNode(CCLayerImpl* cclayer)
     : layer(cclayer)
     , incomingEdgeWeight(0)
 {
 }
 
-CCLayerSorter::GraphNode::~GraphNode()
+GraphNode::~GraphNode()
 {
 }
 
@@ -142,11 +142,11 @@ CCLayerSorter::ABCompareResult CCLayerSorter::checkOverlap(LayerShape* a, LayerS
     return BBeforeA;
 }
 
-CCLayerSorter::LayerShape::LayerShape()
+LayerShape::LayerShape()
 {
 }
 
-CCLayerSorter::LayerShape::LayerShape(float width, float height, const WebTransformationMatrix& drawTransform)
+LayerShape::LayerShape(float width, float height, const WebTransformationMatrix& drawTransform)
 {
     FloatQuad layerQuad(FloatRect(0, 0, width, height));
 
@@ -193,7 +193,7 @@ CCLayerSorter::LayerShape::LayerShape(float width, float height, const WebTransf
 // to point p which lies on the z = 0 plane. It does it by computing the
 // intersection of a line starting from p along the Z axis and the plane
 // of the layer.
-float CCLayerSorter::LayerShape::layerZFromProjectedPoint(const FloatPoint& p) const
+float LayerShape::layerZFromProjectedPoint(const FloatPoint& p) const
 {
     const FloatPoint3D zAxis(0, 0, 1);
     FloatPoint3D w = FloatPoint3D(p) - transformOrigin;
@@ -218,7 +218,7 @@ void CCLayerSorter::createGraphNodes(LayerList::iterator first, LayerList::itera
     float minZ = FLT_MAX;
     float maxZ = -FLT_MAX;
     for (LayerList::const_iterator it = first; it < last; it++) {
-        m_nodes.append(GraphNode(*it));
+        m_nodes.push_back(GraphNode(*it));
         GraphNode& node = m_nodes.at(m_nodes.size() - 1);
         CCRenderSurface* renderSurface = node.layer->renderSurface();
         if (!node.layer->drawsContent() && !renderSurface)
@@ -277,35 +277,27 @@ void CCLayerSorter::createGraphEdges()
 
             if (startNode) {
                 DVLOG(2) << startNode->layer->id() << " -> " << endNode->layer->id();
-                m_edges.append(GraphEdge(startNode, endNode, weight));
+                m_edges.push_back(GraphEdge(startNode, endNode, weight));
             }
         }
     }
 
     for (unsigned i = 0; i < m_edges.size(); i++) {
         GraphEdge& edge = m_edges[i];
-        m_activeEdges.add(&edge, &edge);
-        edge.from->outgoing.append(&edge);
-        edge.to->incoming.append(&edge);
+        m_activeEdges[&edge] = &edge;
+        edge.from->outgoing.push_back(&edge);
+        edge.to->incoming.push_back(&edge);
         edge.to->incomingEdgeWeight += edge.weight;
     }
 }
 
 // Finds and removes an edge from the list by doing a swap with the
 // last element of the list.
-void CCLayerSorter::removeEdgeFromList(GraphEdge* edge, Vector<GraphEdge*>& list)
+void CCLayerSorter::removeEdgeFromList(GraphEdge* edge, std::vector<GraphEdge*>& list)
 {
-    size_t edgeIndex = list.find(edge);
-    ASSERT(edgeIndex != notFound);
-    if (list.size() == 1) {
-        ASSERT(!edgeIndex);
-        list.clear();
-        return;
-    }
-    if (edgeIndex != list.size() - 1)
-        list[edgeIndex] = list[list.size() - 1];
-
-    list.removeLast();
+    std::vector<GraphEdge*>::iterator iter = std::find(list.begin(), list.end(), edge);
+    ASSERT(iter != list.end());
+    list.erase(iter);
 }
 
 // Sorts the given list of layers such that they can be painted in a back-to-front
@@ -340,7 +332,7 @@ void CCLayerSorter::sort(LayerList::iterator first, LayerList::iterator last)
     // Find all the nodes that don't have incoming edges.
     for (NodeList::iterator la = m_nodes.begin(); la < m_nodes.end(); la++) {
         if (!la->incoming.size())
-            noIncomingEdgeNodeList.push_back(la);
+            noIncomingEdgeNodeList.push_back(&(*la));
     }
 
     DVLOG(2) << "Sorted list: ";
@@ -363,7 +355,7 @@ void CCLayerSorter::sort(LayerList::iterator first, LayerList::iterator last)
             for (unsigned i = 0; i < fromNode->outgoing.size(); i++) {
                 GraphEdge* outgoingEdge = fromNode->outgoing[i];
 
-                m_activeEdges.remove(outgoingEdge);
+                m_activeEdges.erase(outgoingEdge);
                 removeEdgeFromList(outgoingEdge, outgoingEdge->to->incoming);
                 outgoingEdge->to->incomingEdgeWeight -= outgoingEdge->weight;
 
@@ -394,7 +386,7 @@ void CCLayerSorter::sort(LayerList::iterator first, LayerList::iterator last)
         for (unsigned e = 0; e < nextNode->incoming.size(); e++) {
             GraphEdge* incomingEdge = nextNode->incoming[e];
 
-            m_activeEdges.remove(incomingEdge);
+            m_activeEdges.erase(incomingEdge);
             removeEdgeFromList(incomingEdge, incomingEdge->from->outgoing);
         }
         nextNode->incoming.clear();

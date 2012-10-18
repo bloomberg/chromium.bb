@@ -36,9 +36,9 @@ using namespace WebKit;
 
 namespace WebKitTests {
 
-PassOwnPtr<CompositorFakeWebGraphicsContext3DWithTextureTracking> CompositorFakeWebGraphicsContext3DWithTextureTracking::create(Attributes attrs)
+scoped_ptr<CompositorFakeWebGraphicsContext3DWithTextureTracking> CompositorFakeWebGraphicsContext3DWithTextureTracking::create(Attributes attrs)
 {
-    return adoptPtr(new CompositorFakeWebGraphicsContext3DWithTextureTracking(attrs));
+    return make_scoped_ptr(new CompositorFakeWebGraphicsContext3DWithTextureTracking(attrs));
 }
 
 WebGLId CompositorFakeWebGraphicsContext3DWithTextureTracking::createTexture()
@@ -90,7 +90,7 @@ bool TestHooks::prepareToDrawOnCCThread(cc::CCLayerTreeHostImpl*)
 
 scoped_ptr<WebCompositorOutputSurface> TestHooks::createOutputSurface()
 {
-    return FakeWebCompositorOutputSurface::create(CompositorFakeWebGraphicsContext3DWithTextureTracking::create(WebGraphicsContext3D::Attributes())).PassAs<WebCompositorOutputSurface>();
+    return FakeWebCompositorOutputSurface::create(CompositorFakeWebGraphicsContext3DWithTextureTracking::create(WebGraphicsContext3D::Attributes()).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<WebKit::WebCompositorOutputSurface>();
 }
 
 scoped_ptr<MockLayerTreeHostImpl> MockLayerTreeHostImpl::create(TestHooks* testHooks, const CCLayerTreeSettings& settings, CCLayerTreeHostImplClient* client)
@@ -184,9 +184,9 @@ private:
 // Implementation of CCLayerTreeHost callback interface.
 class MockLayerTreeHostClient : public MockCCLayerTreeHostClient {
 public:
-    static PassOwnPtr<MockLayerTreeHostClient> create(TestHooks* testHooks)
+    static scoped_ptr<MockLayerTreeHostClient> create(TestHooks* testHooks)
     {
-        return adoptPtr(new MockLayerTreeHostClient(testHooks));
+        return make_scoped_ptr(new MockLayerTreeHostClient(testHooks));
     }
 
     virtual void willBeginFrame() OVERRIDE
@@ -529,7 +529,7 @@ void CCThreadedTest::runTest(bool threaded)
     Platform::current()->compositorSupport()->setAcceleratedAnimationEnabled(true);
 
     if (threaded) {
-        m_webThread = adoptPtr(WebKit::Platform::current()->createThread("CCThreadedTest"));
+        m_webThread.reset(WebKit::Platform::current()->createThread("CCThreadedTest"));
         Platform::current()->compositorSupport()->initialize(m_webThread.get());
     } else
         Platform::current()->compositorSupport()->initialize(0);
@@ -553,7 +553,7 @@ void CCThreadedTest::runTest(bool threaded)
         m_timeoutTask->clearTest();
 
     ASSERT_FALSE(m_layerTreeHost.get());
-    m_client.clear();
+    m_client.reset();
     if (m_timedOut) {
         FAIL() << "Test timed out";
         Platform::current()->compositorSupport()->shutdown();

@@ -45,7 +45,7 @@ struct Texture {
 // contents as well as information about sync points.
 class ContextSharedData {
 public:
-    static PassOwnPtr<ContextSharedData> create() { return adoptPtr(new ContextSharedData()); }
+    static scoped_ptr<ContextSharedData> create() { return make_scoped_ptr(new ContextSharedData()); }
 
     unsigned insertSyncPoint() { return m_nextSyncPoint++; }
 
@@ -95,7 +95,7 @@ private:
 
 class ResourceProviderContext : public CompositorFakeWebGraphicsContext3D {
 public:
-    static PassOwnPtr<ResourceProviderContext> create(ContextSharedData* sharedData) { return adoptPtr(new ResourceProviderContext(Attributes(), sharedData)); }
+    static scoped_ptr<ResourceProviderContext> create(ContextSharedData* sharedData) { return make_scoped_ptr(new ResourceProviderContext(Attributes(), sharedData)); }
 
     virtual unsigned insertSyncPoint()
     {
@@ -269,7 +269,7 @@ class CCResourceProviderTest : public testing::TestWithParam<CCResourceProvider:
 public:
     CCResourceProviderTest()
         : m_sharedData(ContextSharedData::create())
-        , m_context(FakeWebCompositorOutputSurface::create(ResourceProviderContext::create(m_sharedData.get())))
+        , m_context(FakeWebCompositorOutputSurface::create(ResourceProviderContext::create(m_sharedData.get()).PassAs<WebKit::WebGraphicsContext3D>().PassAs<WebKit::WebGraphicsContext3D>()))
         , m_resourceProvider(CCResourceProvider::create(m_context.get()))
     {
         m_resourceProvider->setDefaultResourceType(GetParam());
@@ -299,7 +299,7 @@ public:
 
 protected:
     DebugScopedSetImplThread implThread;
-    OwnPtr<ContextSharedData> m_sharedData;
+    scoped_ptr<ContextSharedData> m_sharedData;
     scoped_ptr<CCGraphicsContext> m_context;
     scoped_ptr<CCResourceProvider> m_resourceProvider;
 };
@@ -415,7 +415,7 @@ TEST_P(CCResourceProviderTest, TransferResources)
     if (GetParam() != CCResourceProvider::GLTexture)
         return;
 
-    scoped_ptr<CCGraphicsContext> childContext(FakeWebCompositorOutputSurface::create(ResourceProviderContext::create(m_sharedData.get())));
+    scoped_ptr<CCGraphicsContext> childContext(FakeWebCompositorOutputSurface::create(ResourceProviderContext::create(m_sharedData.get()).PassAs<WebKit::WebGraphicsContext3D>()));
     scoped_ptr<CCResourceProvider> childResourceProvider(CCResourceProvider::create(childContext.get()));
 
     IntSize size(1, 1);
@@ -532,7 +532,7 @@ TEST_P(CCResourceProviderTest, DeleteTransferredResources)
     if (GetParam() != CCResourceProvider::GLTexture)
         return;
 
-    scoped_ptr<CCGraphicsContext> childContext(FakeWebCompositorOutputSurface::create(ResourceProviderContext::create(m_sharedData.get())));
+    scoped_ptr<CCGraphicsContext> childContext(FakeWebCompositorOutputSurface::create(ResourceProviderContext::create(m_sharedData.get()).PassAs<WebKit::WebGraphicsContext3D>()));
     scoped_ptr<CCResourceProvider> childResourceProvider(CCResourceProvider::create(childContext.get()));
 
     IntSize size(1, 1);

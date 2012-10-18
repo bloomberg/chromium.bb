@@ -31,7 +31,7 @@ namespace {
 class CCRendererSoftwareTest : public testing::Test, public CCRendererClient {
 public:
     void initializeRenderer() {
-        m_outputSurface = FakeWebCompositorOutputSurface::createSoftware(adoptPtr(new FakeWebCompositorSoftwareOutputDevice));
+        m_outputSurface = FakeWebCompositorOutputSurface::createSoftware(scoped_ptr<WebKit::WebCompositorSoftwareOutputDevice>(new FakeWebCompositorSoftwareOutputDevice));
         m_resourceProvider = CCResourceProvider::create(m_outputSurface.get());
         m_renderer = CCRendererSoftware::create(this, resourceProvider(), softwareDevice());
     }

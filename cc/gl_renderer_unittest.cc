@@ -111,7 +111,7 @@ protected:
         : m_suggestHaveBackbufferYes(1, true)
         , m_suggestHaveBackbufferNo(1, false)
         , m_compositorInitializer(0)
-        , m_context(FakeWebCompositorOutputSurface::create(adoptPtr(new FrameCountingMemoryAllocationSettingContext())))
+        , m_context(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new FrameCountingMemoryAllocationSettingContext())))
         , m_resourceProvider(CCResourceProvider::create(m_context.get()))
         , m_renderer(&m_mockClient, m_resourceProvider.get())
     {
@@ -296,7 +296,7 @@ TEST(CCRendererGLTest2, initializationDoesNotMakeSynchronousCalls)
 {
     CCScopedSettings scopedSettings;
     FakeCCRendererClient mockClient;
-    scoped_ptr<CCGraphicsContext> context(FakeWebCompositorOutputSurface::create(adoptPtr(new ForbidSynchronousCallContext)));
+    scoped_ptr<CCGraphicsContext> context(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new ForbidSynchronousCallContext)));
     scoped_ptr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
     FakeCCRendererGL renderer(&mockClient, resourceProvider.get());
 
@@ -340,7 +340,7 @@ TEST(CCRendererGLTest2, initializationWithQuicklyLostContextDoesNotAssert)
 {
     CCScopedSettings scopedSettings;
     FakeCCRendererClient mockClient;
-    scoped_ptr<CCGraphicsContext> context(FakeWebCompositorOutputSurface::create(adoptPtr(new LoseContextOnFirstGetContext)));
+    scoped_ptr<CCGraphicsContext> context(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new LoseContextOnFirstGetContext)));
     scoped_ptr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
     FakeCCRendererGL renderer(&mockClient, resourceProvider.get());
 
@@ -362,7 +362,7 @@ public:
 TEST(CCRendererGLTest2, initializationWithoutGpuMemoryManagerExtensionSupportShouldDefaultToNonZeroAllocation)
 {
     FakeCCRendererClient mockClient;
-    scoped_ptr<CCGraphicsContext> context(FakeWebCompositorOutputSurface::create(adoptPtr(new ContextThatDoesNotSupportMemoryManagmentExtensions)));
+    scoped_ptr<CCGraphicsContext> context(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new ContextThatDoesNotSupportMemoryManagmentExtensions)));
     scoped_ptr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
     FakeCCRendererGL renderer(&mockClient, resourceProvider.get());
 
@@ -389,7 +389,7 @@ private:
 TEST(CCRendererGLTest2, opaqueBackground)
 {
     FakeCCRendererClient mockClient;
-    scoped_ptr<CCGraphicsContext> ccContext(FakeWebCompositorOutputSurface::create(adoptPtr(new ClearCountingContext)));
+    scoped_ptr<CCGraphicsContext> ccContext(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new ClearCountingContext)));
     ClearCountingContext* context = static_cast<ClearCountingContext*>(ccContext->context3D());
     scoped_ptr<CCResourceProvider> resourceProvider(CCResourceProvider::create(ccContext.get()));
     FakeCCRendererGL renderer(&mockClient, resourceProvider.get());
@@ -412,7 +412,7 @@ TEST(CCRendererGLTest2, opaqueBackground)
 TEST(CCRendererGLTest2, transparentBackground)
 {
     FakeCCRendererClient mockClient;
-    scoped_ptr<CCGraphicsContext> ccContext(FakeWebCompositorOutputSurface::create(adoptPtr(new ClearCountingContext)));
+    scoped_ptr<CCGraphicsContext> ccContext(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new ClearCountingContext)));
     ClearCountingContext* context = static_cast<ClearCountingContext*>(ccContext->context3D());
     scoped_ptr<CCResourceProvider> resourceProvider(CCResourceProvider::create(ccContext.get()));
     FakeCCRendererGL renderer(&mockClient, resourceProvider.get());

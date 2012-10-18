@@ -5,8 +5,8 @@
 #ifndef CCTimeSource_h
 #define CCTimeSource_h
 
+#include "base/memory/ref_counted.h"
 #include "base/time.h"
-#include <wtf/RefCounted.h>
 
 namespace cc {
 
@@ -25,16 +25,21 @@ protected:
 //
 // Be sure to call setActive(false) before releasing your reference to the
 // timer, or it will keep on ticking!
-class CCTimeSource : public RefCounted<CCTimeSource> {
+class CCTimeSource : public base::RefCounted<CCTimeSource> {
 public:
-    virtual ~CCTimeSource() { }
     virtual void setClient(CCTimeSourceClient*) = 0;
     virtual void setActive(bool) = 0;
     virtual bool active() const = 0;
     virtual void setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval) = 0;
     virtual base::TimeTicks lastTickTime() = 0;
     virtual base::TimeTicks nextTickTime() = 0;
+
+protected:
+    virtual ~CCTimeSource() { }
+
+private:
+    friend class base::RefCounted<CCTimeSource>;
 };
 
 }
-#endif // CCSmoothedTimer_h
+#endif  // CCTimeSource_h

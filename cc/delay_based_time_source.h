@@ -7,7 +7,6 @@
 
 #include "CCTimeSource.h"
 #include "CCTimer.h"
-#include <wtf/PassRefPtr.h>
 
 namespace cc {
 
@@ -17,9 +16,7 @@ class CCThread;
 // in face of millisecond-precision delayed callbacks and random queueing delays.
 class CCDelayBasedTimeSource : public CCTimeSource, CCTimerClient {
 public:
-    static PassRefPtr<CCDelayBasedTimeSource> create(base::TimeDelta interval, CCThread*);
-
-    virtual ~CCDelayBasedTimeSource();
+    static scoped_refptr<CCDelayBasedTimeSource> create(base::TimeDelta interval, CCThread*);
 
     virtual void setClient(CCTimeSourceClient* client) OVERRIDE;
 
@@ -42,6 +39,8 @@ public:
 
 protected:
     CCDelayBasedTimeSource(base::TimeDelta interval, CCThread*);
+    virtual ~CCDelayBasedTimeSource();
+
     base::TimeTicks nextTickTarget(base::TimeTicks now);
     void postNextTickTask(base::TimeTicks now);
 

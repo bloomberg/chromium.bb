@@ -37,8 +37,6 @@ private:
 
     void appendRenderPassQuads(CCQuadSink&, CCAppendQuadsData&, CCRenderPass* fromDelegatedRenderPass) const;
 
-    PassOwnPtr<CCDrawQuad> createCopyOfQuad(const CCDrawQuad*);
-
     virtual const char* layerTypeAsString() const OVERRIDE;
 
     ScopedPtrVector<CCRenderPass> m_renderPassesInDrawOrder;

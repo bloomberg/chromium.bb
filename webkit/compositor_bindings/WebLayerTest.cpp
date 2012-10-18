@@ -46,9 +46,10 @@ public:
 
     virtual void SetUp()
     {
-        m_rootLayer = adoptPtr(WebLayer::create());
+        m_rootLayer.reset(WebLayer::create());
         EXPECT_CALL(m_client, scheduleComposite()).Times(AnyNumber());
-        EXPECT_TRUE(m_view = adoptPtr(WebLayerTreeView::create(&m_client, *m_rootLayer, WebLayerTreeView::Settings())));
+        m_view.reset(WebLayerTreeView::create(&m_client, *m_rootLayer, WebLayerTreeView::Settings()));
+        EXPECT_TRUE(m_view);
         Mock::VerifyAndClearExpectations(&m_client);
     }
 
@@ -56,15 +57,15 @@ public:
     {
         // We may get any number of scheduleComposite calls during shutdown.
         EXPECT_CALL(m_client, scheduleComposite()).Times(AnyNumber());
-        m_rootLayer.clear();
-        m_view.clear();
+        m_rootLayer.reset();
+        m_view.reset();
     }
 
 protected:
     WebKitTests::WebCompositorInitializer m_compositorInitializer;
     MockWebLayerTreeViewClient m_client;
-    OwnPtr<WebLayer> m_rootLayer;
-    OwnPtr<WebLayerTreeView> m_view;
+    scoped_ptr<WebLayer> m_rootLayer;
+    scoped_ptr<WebLayerTreeView> m_view;
 };
 
 // Tests that the client gets called to ask for a composite if we change the
@@ -73,7 +74,7 @@ TEST_F(WebLayerTest, Client)
 {
     // Base layer.
     EXPECT_CALL(m_client, scheduleComposite()).Times(AnyNumber());
-    OwnPtr<WebLayer> layer = adoptPtr(WebLayer::create());
+    scoped_ptr<WebLayer> layer(WebLayer::create());
     m_rootLayer->addChild(layer.get());
     Mock::VerifyAndClearExpectations(&m_client);
 
@@ -101,7 +102,7 @@ TEST_F(WebLayerTest, Client)
     EXPECT_TRUE(layer->masksToBounds());
 
     EXPECT_CALL(m_client, scheduleComposite()).Times(AnyNumber());
-    OwnPtr<WebLayer> otherLayer = adoptPtr(WebLayer::create());
+    scoped_ptr<WebLayer> otherLayer(WebLayer::create());
     m_rootLayer->addChild(otherLayer.get());
     EXPECT_CALL(m_client, scheduleComposite()).Times(AtLeast(1));
     layer->setMaskLayer(otherLayer.get());
@@ -125,7 +126,7 @@ TEST_F(WebLayerTest, Client)
 
     // Texture layer.
     EXPECT_CALL(m_client, scheduleComposite()).Times(AtLeast(1));
-    OwnPtr<WebExternalTextureLayer> textureLayer = adoptPtr(WebExternalTextureLayer::create());
+    scoped_ptr<WebExternalTextureLayer> textureLayer(WebExternalTextureLayer::create());
     m_rootLayer->addChild(textureLayer->layer());
     Mock::VerifyAndClearExpectations(&m_client);
 
@@ -147,7 +148,7 @@ TEST_F(WebLayerTest, Client)
     MockWebContentLayerClient contentClient;
     EXPECT_CALL(contentClient, paintContents(_, _, _)).Times(AnyNumber());
     EXPECT_CALL(m_client, scheduleComposite()).Times(AnyNumber());
-    OwnPtr<WebContentLayer> contentLayer = adoptPtr(WebContentLayer::create(&contentClient));
+    scoped_ptr<WebContentLayer> contentLayer(WebContentLayer::create(&contentClient));
     m_rootLayer->addChild(contentLayer->layer());
     Mock::VerifyAndClearExpectations(&m_client);
 
@@ -158,7 +159,7 @@ TEST_F(WebLayerTest, Client)
 
     // Solid color layer.
     EXPECT_CALL(m_client, scheduleComposite()).Times(AtLeast(1));
-    OwnPtr<WebSolidColorLayer> solidColorLayer = adoptPtr(WebSolidColorLayer::create());
+    scoped_ptr<WebSolidColorLayer> solidColorLayer(WebSolidColorLayer::create());
     m_rootLayer->addChild(solidColorLayer->layer());
     Mock::VerifyAndClearExpectations(&m_client);
 
