@@ -45,7 +45,6 @@
         'dbus/bluetooth_node_client.h',
         'dbus/bluetooth_out_of_band_client.cc',
         'dbus/bluetooth_out_of_band_client.h',
-        'dbus/bluetooth_out_of_band_pairing_data.h',
         'dbus/bluetooth_property.cc',
         'dbus/bluetooth_property.h',
         'dbus/cashew_client.cc',

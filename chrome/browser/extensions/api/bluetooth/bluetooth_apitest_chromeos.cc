@@ -4,11 +4,8 @@
 
 #include <string.h>
 
-#include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
-#include "chrome/browser/chromeos/bluetooth/test/mock_bluetooth_adapter.h"
-#include "chrome/browser/chromeos/bluetooth/test/mock_bluetooth_device.h"
-#include "chrome/browser/chromeos/extensions/bluetooth_event_router.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api.h"
+#include "chrome/browser/extensions/bluetooth_event_router.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -17,9 +14,17 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/dbus/bluetooth_out_of_band_client.h"
-#include "chromeos/dbus/bluetooth_out_of_band_pairing_data.h"
+#include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/bluetooth_out_of_band_pairing_data.h"
+#include "device/bluetooth/test/mock_bluetooth_adapter.h"
+#include "device/bluetooth/test/mock_bluetooth_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using device::BluetoothAdapter;
+using device::BluetoothDevice;
+using device::BluetoothOutOfBandPairingData;
+using device::MockBluetoothAdapter;
+using device::MockBluetoothDevice;
 using extensions::Extension;
 
 namespace utils = extension_function_test_utils;
@@ -41,14 +46,14 @@ class BluetoothApiTest : public ExtensionApiTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     // The browser will clean this up when it is torn down
-    mock_adapter_ = new testing::StrictMock<chromeos::MockBluetoothAdapter>(
+    mock_adapter_ = new testing::StrictMock<MockBluetoothAdapter>(
         kAdapterAddress, kName);
     event_router()->SetAdapterForTest(mock_adapter_);
 
-    device1_.reset(new testing::NiceMock<chromeos::MockBluetoothDevice>(
+    device1_.reset(new testing::NiceMock<MockBluetoothDevice>(
         mock_adapter_, "d1", "11:12:13:14:15:16",
         true /* paired */, false /* bonded */, true /* connected */));
-    device2_.reset(new testing::NiceMock<chromeos::MockBluetoothDevice>(
+    device2_.reset(new testing::NiceMock<MockBluetoothDevice>(
         mock_adapter_, "d2", "21:22:23:24:25:26",
         false /* paired */, true /* bonded */, false /* connected */));
   }
@@ -87,11 +92,11 @@ class BluetoothApiTest : public ExtensionApiTest {
   }
 
  protected:
-  testing::StrictMock<chromeos::MockBluetoothAdapter>* mock_adapter_;
-  scoped_ptr<testing::NiceMock<chromeos::MockBluetoothDevice> > device1_;
-  scoped_ptr<testing::NiceMock<chromeos::MockBluetoothDevice> > device2_;
+  testing::StrictMock<MockBluetoothAdapter>* mock_adapter_;
+  scoped_ptr<testing::NiceMock<MockBluetoothDevice> > device1_;
+  scoped_ptr<testing::NiceMock<MockBluetoothDevice> > device2_;
 
-  chromeos::ExtensionBluetoothEventRouter* event_router() {
+  extensions::ExtensionBluetoothEventRouter* event_router() {
     return browser()->profile()->GetExtensionService()->
         bluetooth_event_router();
   }
@@ -104,12 +109,12 @@ class BluetoothApiTest : public ExtensionApiTest {
 static const char kOutOfBandPairingDataHash[] = "0123456789ABCDEh";
 static const char kOutOfBandPairingDataRandomizer[] = "0123456789ABCDEr";
 
-static chromeos::BluetoothOutOfBandPairingData GetOutOfBandPairingData() {
-  chromeos::BluetoothOutOfBandPairingData data;
+static BluetoothOutOfBandPairingData GetOutOfBandPairingData() {
+  BluetoothOutOfBandPairingData data;
   memcpy(&(data.hash), kOutOfBandPairingDataHash,
-      chromeos::kBluetoothOutOfBandPairingDataSize);
+      device::kBluetoothOutOfBandPairingDataSize);
   memcpy(&(data.randomizer), kOutOfBandPairingDataRandomizer,
-      chromeos::kBluetoothOutOfBandPairingDataSize);
+      device::kBluetoothOutOfBandPairingDataSize);
   return data;
 }
 
@@ -119,16 +124,15 @@ static bool CallClosure(const base::Closure& callback) {
 }
 
 static void CallOutOfBandPairingDataCallback(
-    const chromeos::BluetoothAdapter::BluetoothOutOfBandPairingDataCallback&
-        callback,
-    const chromeos::BluetoothAdapter::ErrorCallback& error_callback) {
+    const BluetoothAdapter::BluetoothOutOfBandPairingDataCallback& callback,
+    const BluetoothAdapter::ErrorCallback& error_callback) {
   callback.Run(GetOutOfBandPairingData());
 }
 
 template <bool Value>
 static void CallProvidesServiceCallback(
-      const std::string& name,
-      const chromeos::BluetoothDevice::ProvidesServiceCallback& callback) {
+    const std::string& name,
+    const BluetoothDevice::ProvidesServiceCallback& callback) {
   callback.Run(Value);
 }
 
@@ -365,7 +369,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Events) {
 
   // Load and wait for setup
   ExtensionTestMessageListener listener("ready", true);
-  const extensions::Extension* extension =
+  const Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("bluetooth"));
   GURL page_url = extension->GetResourceURL("test_events.html");
   ui_test_utils::NavigateToURL(browser(), page_url);
@@ -387,7 +391,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevices) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
 
-  chromeos::BluetoothAdapter::ConstDeviceList devices;
+  BluetoothAdapter::ConstDeviceList devices;
   devices.push_back(device1_.get());
   devices.push_back(device2_.get());
 
@@ -420,12 +424,12 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevicesConcurrently) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
 
-  chromeos::BluetoothAdapter::ConstDeviceList devices;
+  BluetoothAdapter::ConstDeviceList devices;
   devices.push_back(device1_.get());
 
   // Save the callback to delay execution so that we can force the calls to
   // happen concurrently.  This will be called after the listener is satisfied.
-  chromeos::BluetoothDevice::ProvidesServiceCallback callback;
+  BluetoothDevice::ProvidesServiceCallback callback;
   EXPECT_CALL(*device1_, ProvidesServiceWithName(testing::_, testing::_))
       .WillOnce(testing::SaveArg<1>(&callback));
 

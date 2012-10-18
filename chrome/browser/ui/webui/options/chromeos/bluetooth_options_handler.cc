@@ -11,10 +11,10 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
-#include "chrome/browser/chromeos/bluetooth/bluetooth_adapter_factory.h"
-#include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
 #include "content/public/browser/web_ui.h"
+#include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "device/bluetooth/bluetooth_device.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -124,8 +124,9 @@ void BluetoothOptionsHandler::GetLocalizedValues(
 
 // TODO(kevers): Reorder methods to match ordering in the header file.
 
-void BluetoothOptionsHandler::AdapterPresentChanged(BluetoothAdapter* adapter,
-                                                    bool present) {
+void BluetoothOptionsHandler::AdapterPresentChanged(
+    device::BluetoothAdapter* adapter,
+    bool present) {
   DCHECK(adapter == adapter_.get());
   if (present) {
     web_ui()->CallJavascriptFunction(
@@ -140,8 +141,9 @@ void BluetoothOptionsHandler::AdapterPresentChanged(BluetoothAdapter* adapter,
   }
 }
 
-void BluetoothOptionsHandler::AdapterPoweredChanged(BluetoothAdapter* adapter,
-                                                    bool powered) {
+void BluetoothOptionsHandler::AdapterPoweredChanged(
+    device::BluetoothAdapter* adapter,
+    bool powered) {
   DCHECK(adapter == adapter_.get());
   base::FundamentalValue checked(powered);
   web_ui()->CallJavascriptFunction(
@@ -167,7 +169,8 @@ void BluetoothOptionsHandler::RegisterMessages() {
 }
 
 void BluetoothOptionsHandler::InitializeHandler() {
-  adapter_ = BluetoothAdapterFactory::DefaultAdapter();
+  adapter_ = device::BluetoothAdapterFactory::DefaultAdapter();
+  DCHECK(adapter_.get());
   adapter_->AddObserver(this);
 }
 
@@ -216,7 +219,7 @@ void BluetoothOptionsHandler::UpdateDeviceCallback(
   std::string address;
   args->GetString(kUpdateDeviceAddressIndex, &address);
 
-  BluetoothDevice* device = adapter_->GetDevice(address);
+  device::BluetoothDevice* device = adapter_->GetDevice(address);
   if (!device)
     return;
 
@@ -324,15 +327,15 @@ void BluetoothOptionsHandler::StopDiscoveryError() {
 
 void BluetoothOptionsHandler::GetPairedDevicesCallback(
     const ListValue* args) {
-  BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
+  device::BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
 
-  for (BluetoothAdapter::DeviceList::iterator iter = devices.begin();
+  for (device::BluetoothAdapter::DeviceList::iterator iter = devices.begin();
        iter != devices.end(); ++iter)
     SendDeviceNotification(*iter, NULL);
 }
 
 void BluetoothOptionsHandler::SendDeviceNotification(
-    const BluetoothDevice* device,
+    const device::BluetoothDevice* device,
     base::DictionaryValue* params) {
   base::DictionaryValue js_properties;
   js_properties.SetString("name", device->GetName());
@@ -348,19 +351,19 @@ void BluetoothOptionsHandler::SendDeviceNotification(
       js_properties);
 }
 
-void BluetoothOptionsHandler::RequestPinCode(BluetoothDevice* device) {
+void BluetoothOptionsHandler::RequestPinCode(device::BluetoothDevice* device) {
   DictionaryValue params;
   params.SetString("pairing", kEnterPinCode);
   SendDeviceNotification(device, &params);
 }
 
-void BluetoothOptionsHandler::RequestPasskey(BluetoothDevice* device) {
+void BluetoothOptionsHandler::RequestPasskey(device::BluetoothDevice* device) {
   DictionaryValue params;
   params.SetString("pairing", kEnterPasskey);
   SendDeviceNotification(device, &params);
 }
 
-void BluetoothOptionsHandler::DisplayPinCode(BluetoothDevice* device,
+void BluetoothOptionsHandler::DisplayPinCode(device::BluetoothDevice* device,
                                              const std::string& pincode) {
   DictionaryValue params;
   params.SetString("pairing", kRemotePinCode);
@@ -368,7 +371,7 @@ void BluetoothOptionsHandler::DisplayPinCode(BluetoothDevice* device,
   SendDeviceNotification(device, &params);
 }
 
-void BluetoothOptionsHandler::DisplayPasskey(BluetoothDevice* device,
+void BluetoothOptionsHandler::DisplayPasskey(device::BluetoothDevice* device,
                                              uint32 passkey) {
   DictionaryValue params;
   params.SetString("pairing", kRemotePasskey);
@@ -376,7 +379,7 @@ void BluetoothOptionsHandler::DisplayPasskey(BluetoothDevice* device,
   SendDeviceNotification(device, &params);
 }
 
-void BluetoothOptionsHandler::ConfirmPasskey(BluetoothDevice* device,
+void BluetoothOptionsHandler::ConfirmPasskey(device::BluetoothDevice* device,
                                              uint32 passkey) {
   DictionaryValue params;
   params.SetString("pairing", kConfirmPasskey);
@@ -400,22 +403,22 @@ void BluetoothOptionsHandler::ReportError(
       properties);
 }
 
-void BluetoothOptionsHandler::DeviceAdded(BluetoothAdapter* adapter,
-                                          BluetoothDevice* device) {
+void BluetoothOptionsHandler::DeviceAdded(device::BluetoothAdapter* adapter,
+                                          device::BluetoothDevice* device) {
   DCHECK(adapter == adapter_.get());
   DCHECK(device);
   SendDeviceNotification(device, NULL);
 }
 
-void BluetoothOptionsHandler::DeviceChanged(BluetoothAdapter* adapter,
-                                            BluetoothDevice* device) {
+void BluetoothOptionsHandler::DeviceChanged(device::BluetoothAdapter* adapter,
+                                            device::BluetoothDevice* device) {
   DCHECK(adapter == adapter_.get());
   DCHECK(device);
   SendDeviceNotification(device, NULL);
 }
 
-void BluetoothOptionsHandler::DeviceRemoved(BluetoothAdapter* adapter,
-                                            BluetoothDevice* device) {
+void BluetoothOptionsHandler::DeviceRemoved(device::BluetoothAdapter* adapter,
+                                            device::BluetoothDevice* device) {
   DCHECK(adapter == adapter_.get());
   DCHECK(device);
 

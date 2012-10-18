@@ -44,6 +44,7 @@
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/app_sync_data.h"
+#include "chrome/browser/extensions/bluetooth_event_router.h"
 #include "chrome/browser/extensions/browser_event_router.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -118,7 +119,6 @@
 #include "webkit/database/database_util.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/extensions/bluetooth_event_router.h"
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
@@ -517,13 +517,12 @@ void ExtensionService::InitEventRouters() {
   push_messaging_event_router_->Init();
   media_galleries_private_event_router_.reset(
       new extensions::MediaGalleriesPrivateEventRouter(profile_));
+  bluetooth_event_router_.reset(
+      new extensions::ExtensionBluetoothEventRouter(profile_));
 
 #if defined(OS_CHROMEOS)
   FileBrowserEventRouterFactory::GetForProfile(
       profile_)->ObserveFileSystemEvents();
-
-  bluetooth_event_router_.reset(
-      new chromeos::ExtensionBluetoothEventRouter(profile_));
 
   input_method_event_router_.reset(
       new chromeos::ExtensionInputMethodEventRouter);

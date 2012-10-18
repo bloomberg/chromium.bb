@@ -65,7 +65,6 @@ extern const char kOnTerminalProcessOutput[];
 // OffscreenTabs.
 extern const char kOnOffscreenTabUpdated[];
 
-#if defined(OS_CHROMEOS)
 // Bluetooth.
 extern const char kBluetoothOnAvailabilityChanged[];
 extern const char kBluetoothOnDeviceDiscovered[];
@@ -73,7 +72,6 @@ extern const char kBluetoothOnDeviceSearchFinished[];
 extern const char kBluetoothOnDeviceSearchResult[];
 extern const char kBluetoothOnDiscoveringChanged[];
 extern const char kBluetoothOnPowerChanged[];
-#endif
 
 // Push messaging.
 extern const char kOnPushMessage[];

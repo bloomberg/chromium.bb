@@ -7,21 +7,17 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/api_function.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "device/bluetooth/bluetooth_device.h"
 
-#if defined(OS_CHROMEOS)
-#include "base/memory/ref_counted.h"
-#include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
-#include "chrome/browser/chromeos/bluetooth/bluetooth_socket.h"
-
-namespace chromeos {
+namespace device {
 
 class BluetoothSocket;
 struct BluetoothOutOfBandPairingData;
 
-}  // namespace chromeos
-#endif
+}  // namespace device
 
 namespace extensions {
 namespace api {
@@ -74,9 +70,7 @@ class BluetoothGetDevicesFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.getDevices")
 
-#if defined(OS_CHROMEOS)
   BluetoothGetDevicesFunction();
-#endif
 
  protected:
   virtual ~BluetoothGetDevicesFunction() {}
@@ -85,15 +79,13 @@ class BluetoothGetDevicesFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-#if defined(OS_CHROMEOS)
-  void DispatchDeviceSearchResult(const chromeos::BluetoothDevice& device);
-  void ProvidesServiceCallback(const chromeos::BluetoothDevice* device,
+  void DispatchDeviceSearchResult(const device::BluetoothDevice& device);
+  void ProvidesServiceCallback(const device::BluetoothDevice* device,
                                bool providesService);
   void FinishDeviceSearch();
 
   int callbacks_pending_;
   int device_events_sent_;
-#endif
 };
 
 class BluetoothGetServicesFunction : public AsyncExtensionFunction {
@@ -106,13 +98,11 @@ class BluetoothGetServicesFunction : public AsyncExtensionFunction {
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 
-#if defined(OS_CHROMEOS)
  private:
   void GetServiceRecordsCallback(
       base::ListValue* services,
-      const chromeos::BluetoothDevice::ServiceRecordList& records);
+      const device::BluetoothDevice::ServiceRecordList& records);
   void OnErrorCallback();
-#endif
 };
 
 class BluetoothConnectFunction : public AsyncExtensionFunction {
@@ -125,12 +115,10 @@ class BluetoothConnectFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-#if defined(OS_CHROMEOS)
   void ConnectToServiceCallback(
-      const chromeos::BluetoothDevice* device,
+      const device::BluetoothDevice* device,
       const std::string& service_uuid,
-      scoped_refptr<chromeos::BluetoothSocket> socket);
-#endif
+      scoped_refptr<device::BluetoothSocket> socket);
 };
 
 class BluetoothDisconnectFunction : public SyncExtensionFunction {
@@ -158,10 +146,8 @@ class BluetoothReadFunction : public AsyncApiFunction {
   virtual void Work() OVERRIDE;
 
  private:
-#if defined(OS_CHROMEOS)
   bool success_;
-  scoped_refptr<chromeos::BluetoothSocket> socket_;
-#endif
+  scoped_refptr<device::BluetoothSocket> socket_;
 };
 
 class BluetoothWriteFunction : public AsyncApiFunction {
@@ -178,11 +164,9 @@ class BluetoothWriteFunction : public AsyncApiFunction {
   virtual void Work() OVERRIDE;
 
  private:
-#if defined(OS_CHROMEOS)
   bool success_;
   const base::BinaryValue* data_to_write_;  // memory is owned by args_
-  scoped_refptr<chromeos::BluetoothSocket> socket_;
-#endif
+  scoped_refptr<device::BluetoothSocket> socket_;
 };
 
 class BluetoothSetOutOfBandPairingDataFunction
@@ -194,10 +178,8 @@ class BluetoothSetOutOfBandPairingDataFunction
  protected:
   virtual ~BluetoothSetOutOfBandPairingDataFunction() {}
 
-#if defined(OS_CHROMEOS)
   void OnSuccessCallback();
   void OnErrorCallback();
-#endif
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
@@ -212,10 +194,9 @@ class BluetoothGetLocalOutOfBandPairingDataFunction
  protected:
   virtual ~BluetoothGetLocalOutOfBandPairingDataFunction() {}
 
-#if defined(OS_CHROMEOS)
-  void ReadCallback(const chromeos::BluetoothOutOfBandPairingData& data);
+  void ReadCallback(
+      const device::BluetoothOutOfBandPairingData& data);
   void ErrorCallback();
-#endif
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
@@ -231,11 +212,9 @@ class BluetoothStartDiscoveryFunction : public AsyncExtensionFunction {
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 
-#if defined(OS_CHROMEOS)
  private:
   void OnSuccessCallback();
   void OnErrorCallback();
-#endif
 };
 
 class BluetoothStopDiscoveryFunction : public AsyncExtensionFunction {
@@ -248,11 +227,9 @@ class BluetoothStopDiscoveryFunction : public AsyncExtensionFunction {
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 
-#if defined(OS_CHROMEOS)
  private:
   void OnSuccessCallback();
   void OnErrorCallback();
-#endif
 };
 
 }  // namespace api

@@ -30,9 +30,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/audio/audio_handler.h"
-#include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
-#include "chrome/browser/chromeos/bluetooth/bluetooth_adapter_factory.h"
-#include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
@@ -72,6 +69,9 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
+#include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "device/bluetooth/bluetooth_device.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -154,7 +154,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public content::NotificationObserver,
                            public input_method::InputMethodManager::Observer,
                            public system::TimezoneSettings::Observer,
-                           public BluetoothAdapter::Observer,
+                           public device::BluetoothAdapter::Observer,
                            public SystemKeyEventListener::CapsLockObserver,
                            public ash::NetworkTrayDelegate {
  public:
@@ -216,7 +216,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     network_icon_->SetResourceColorTheme(NetworkMenuIcon::COLOR_LIGHT);
     network_icon_dark_->SetResourceColorTheme(NetworkMenuIcon::COLOR_DARK);
 
-    bluetooth_adapter_ = BluetoothAdapterFactory::DefaultAdapter();
+    bluetooth_adapter_ = device::BluetoothAdapterFactory::DefaultAdapter();
     bluetooth_adapter_->AddObserver(this);
   }
 
@@ -362,9 +362,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void GetAvailableBluetoothDevices(
       ash::BluetoothDeviceList* list) OVERRIDE {
-    BluetoothAdapter::DeviceList devices = bluetooth_adapter_->GetDevices();
+    device::BluetoothAdapter::DeviceList devices =
+        bluetooth_adapter_->GetDevices();
     for (size_t i = 0; i < devices.size(); ++i) {
-      BluetoothDevice* device = devices[i];
+      device::BluetoothDevice* device = devices[i];
       if (!device->IsPaired())
         continue;
       ash::BluetoothDeviceInfo info;
@@ -376,7 +377,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void ToggleBluetoothConnection(const std::string& address) OVERRIDE {
-    BluetoothDevice* device = bluetooth_adapter_->GetDevice(address);
+    device::BluetoothDevice* device = bluetooth_adapter_->GetDevice(address);
     if (!device)
       return;
     if (device->IsConnected()) {
@@ -1155,34 +1156,34 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   // Overridden from BluetoothAdapter::Observer.
-  virtual void AdapterPresentChanged(BluetoothAdapter* adapter,
+  virtual void AdapterPresentChanged(device::BluetoothAdapter* adapter,
                                      bool present) OVERRIDE {
     NotifyRefreshBluetooth();
   }
 
-  virtual void AdapterPoweredChanged(BluetoothAdapter* adapter,
+  virtual void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
                                      bool powered) OVERRIDE {
     NotifyRefreshBluetooth();
   }
 
-  virtual void AdapterDiscoveringChanged(BluetoothAdapter* adapter,
+  virtual void AdapterDiscoveringChanged(device::BluetoothAdapter* adapter,
                                          bool discovering) OVERRIDE {
     // TODO: Perhaps start/stop throbbing the icon, or some other visual
     // effects?
   }
 
-  virtual void DeviceAdded(BluetoothAdapter* adapter,
-                           BluetoothDevice* device) OVERRIDE {
+  virtual void DeviceAdded(device::BluetoothAdapter* adapter,
+                           device::BluetoothDevice* device) OVERRIDE {
     NotifyRefreshBluetooth();
   }
 
-  virtual void DeviceChanged(BluetoothAdapter* adapter,
-                             BluetoothDevice* device) OVERRIDE {
+  virtual void DeviceChanged(device::BluetoothAdapter* adapter,
+                             device::BluetoothDevice* device) OVERRIDE {
     NotifyRefreshBluetooth();
   }
 
-  virtual void DeviceRemoved(BluetoothAdapter* adapter,
-                             BluetoothDevice* device) OVERRIDE {
+  virtual void DeviceRemoved(device::BluetoothAdapter* adapter,
+                             device::BluetoothDevice* device) OVERRIDE {
     NotifyRefreshBluetooth();
   }
 
@@ -1251,7 +1252,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   std::string last_connection_string_;
 
-  scoped_refptr<BluetoothAdapter> bluetooth_adapter_;
+  scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
 
   BooleanPrefMember accessibility_enabled_;
 

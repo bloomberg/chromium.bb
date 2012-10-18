@@ -5,28 +5,25 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_BLUETOOTH_API_UTILS_H_
 #define CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_BLUETOOTH_API_UTILS_H_
 
-#if defined(OS_CHROMEOS)
-
 #include "base/values.h"
-#include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
 #include "chrome/common/extensions/api/experimental_bluetooth.h"
+#include "device/bluetooth/bluetooth_device.h"
 
 namespace extensions {
 namespace api {
 namespace experimental_bluetooth {
 
-// Fill in a Device object from a chromeos::BluetoothDevice.
+// Fill in a Device object from a BluetoothDevice.
 void BluetoothDeviceToApiDevice(
-    const chromeos::BluetoothDevice& device,
+    const device::BluetoothDevice& device,
     Device* out);
 
 // The caller takes ownership of the returned pointer.
-base::Value* BluetoothDeviceToValue(const chromeos::BluetoothDevice& device);
+base::Value* BluetoothDeviceToValue(
+    const device::BluetoothDevice& device);
 
 }  // namespace experimental_bluetooth
 }  // namespace api
 }  // namespace extensions
-
-#endif
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_BLUETOOTH_API_UTILS_H_

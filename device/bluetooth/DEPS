@@ -1,0 +1,11 @@
+include_rules = [
+  "+chrome/common",
+  "+chrome/test/base",
+  "+content/public/test",
+  "+chromeos/dbus",
+  "+dbus",
+  "+grit",
+  "+ui/base/l10n",
+  "+third_party/cros_system_api/dbus",
+  "+third_party/libxml/chromium",
+]

@@ -16,9 +16,11 @@ namespace dbus {
 class Bus;
 }  // namespace dbus
 
-namespace chromeos {
-
+namespace device {
 struct BluetoothOutOfBandPairingData;
+}  // namespace device
+
+namespace chromeos {
 
 // BluetoothOutOfBandClient is used to manage Out Of Band Pairing
 // Data for the local adapter and remote devices.
@@ -26,7 +28,8 @@ class CHROMEOS_EXPORT BluetoothOutOfBandClient {
  public:
   virtual ~BluetoothOutOfBandClient();
 
-  typedef base::Callback<void(const BluetoothOutOfBandPairingData& data,
+  typedef base::Callback<void(
+      const device::BluetoothOutOfBandPairingData& data,
       bool success)> DataCallback;
 
   typedef base::Callback<void(bool success)> SuccessCallback;
@@ -41,7 +44,7 @@ class CHROMEOS_EXPORT BluetoothOutOfBandClient {
   virtual void AddRemoteData(
       const dbus::ObjectPath& object_path,
       const std::string& address,
-      const BluetoothOutOfBandPairingData& data,
+      const device::BluetoothOutOfBandPairingData& data,
       const SuccessCallback& callback) = 0;
 
   // Clears the Out Of Band Pairing Data for the device at |address|, indicating

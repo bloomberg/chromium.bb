@@ -10,11 +10,11 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "chromeos/dbus/bluetooth_adapter_client.h"
-#include "chromeos/dbus/bluetooth_out_of_band_pairing_data.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
+#include "device/bluetooth/bluetooth_out_of_band_pairing_data.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -49,7 +49,7 @@ class BluetoothOutOfBandClientImpl: public BluetoothOutOfBandClient {
   virtual void AddRemoteData(
       const dbus::ObjectPath& object_path,
       const std::string& address,
-      const BluetoothOutOfBandPairingData& data,
+      const device::BluetoothOutOfBandPairingData& data,
       const SuccessCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(
         bluetooth_outofband::kBluetoothOutOfBandInterface,
@@ -57,9 +57,10 @@ class BluetoothOutOfBandClientImpl: public BluetoothOutOfBandClient {
 
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(address);
-    writer.AppendArrayOfBytes(data.hash, kBluetoothOutOfBandPairingDataSize);
-    writer.AppendArrayOfBytes(data.randomizer,
-        kBluetoothOutOfBandPairingDataSize);
+    writer.AppendArrayOfBytes(
+        data.hash, device::kBluetoothOutOfBandPairingDataSize);
+    writer.AppendArrayOfBytes(
+        data.randomizer, device::kBluetoothOutOfBandPairingDataSize);
 
     dbus::ObjectProxy* object_proxy = GetObjectProxy(object_path);
 
@@ -115,16 +116,16 @@ class BluetoothOutOfBandClientImpl: public BluetoothOutOfBandClient {
   void OnReadLocalData(const DataCallback& callback,
                        dbus::Response* response) {
     bool success = false;
-    BluetoothOutOfBandPairingData data;
+    device::BluetoothOutOfBandPairingData data;
     if (response != NULL) {
       dbus::MessageReader reader(response);
       uint8_t* bytes = NULL;
-      size_t length = kBluetoothOutOfBandPairingDataSize;
+      size_t length = device::kBluetoothOutOfBandPairingDataSize;
       if (reader.PopArrayOfBytes(&bytes, &length)) {
-        if (length == kBluetoothOutOfBandPairingDataSize) {
+        if (length == device::kBluetoothOutOfBandPairingDataSize) {
           memcpy(&data.hash, bytes, length);
           if (reader.PopArrayOfBytes(&bytes, &length)) {
-            if (length == kBluetoothOutOfBandPairingDataSize) {
+            if (length == device::kBluetoothOutOfBandPairingDataSize) {
               memcpy(&data.randomizer, bytes, length);
               success = true;
             }
@@ -162,7 +163,7 @@ class BluetoothOutOfBandClientStubImpl : public BluetoothOutOfBandClient {
       const dbus::ObjectPath& object_path,
       const DataCallback& callback) OVERRIDE {
     VLOG(1) << "ReadLocalData: " << object_path.value();
-    BluetoothOutOfBandPairingData data;
+    device::BluetoothOutOfBandPairingData data;
     callback.Run(data, false);
   }
 
@@ -170,7 +171,7 @@ class BluetoothOutOfBandClientStubImpl : public BluetoothOutOfBandClient {
   virtual void AddRemoteData(
       const dbus::ObjectPath& object_path,
       const std::string& address,
-      const BluetoothOutOfBandPairingData& data,
+      const device::BluetoothOutOfBandPairingData& data,
       const SuccessCallback& callback) OVERRIDE {
     VLOG(1) << "AddRemoteData: " << object_path.value();
     callback.Run(false);

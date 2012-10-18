@@ -39,6 +39,7 @@
         '../content/content.gyp:content_browser',
         '../content/content.gyp:content_common',
         '../crypto/crypto.gyp:crypto',
+        '../device/device.gyp:device_bluetooth',
         '../media/media.gyp:media',
         '../net/net.gyp:net_with_v8',
         '../ppapi/ppapi_internal.gyp:ppapi_ipc',  # For PpapiMsg_LoadPlugin

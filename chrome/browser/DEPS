@@ -5,6 +5,7 @@ include_rules = [
   "+chrome/tools/profiles",  # For history unit tests.
   "+chromeos",
   "+content/public/browser",
+  "+device",
   "+google/cacheinvalidation",  # Sync invalidation API protobuf files.
   "+google_apis",
   "+google_update",

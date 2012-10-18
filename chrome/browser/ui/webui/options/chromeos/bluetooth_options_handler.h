@@ -11,9 +11,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
-#include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "device/bluetooth/bluetooth_adapter.h"
+#include "device/bluetooth/bluetooth_device.h"
 
 namespace base {
 class DictionaryValue;
@@ -23,9 +23,10 @@ namespace chromeos {
 namespace options {
 
 // Handler for Bluetooth options on the system options page.
-class BluetoothOptionsHandler : public ::options::OptionsPageUIHandler,
-                                public chromeos::BluetoothAdapter::Observer,
-                                public BluetoothDevice::PairingDelegate {
+class BluetoothOptionsHandler
+    : public ::options::OptionsPageUIHandler,
+      public device::BluetoothAdapter::Observer,
+      public device::BluetoothDevice::PairingDelegate {
  public:
   BluetoothOptionsHandler();
   virtual ~BluetoothOptionsHandler();
@@ -40,10 +41,10 @@ class BluetoothOptionsHandler : public ::options::OptionsPageUIHandler,
   // Sends a notification to the Web UI of the status of a Bluetooth device.
   // |device| is the Bluetooth device.
   // |params| is an optional set of parameters.
-  void SendDeviceNotification(const BluetoothDevice* device,
+  void SendDeviceNotification(const device::BluetoothDevice* device,
                               base::DictionaryValue* params);
 
-  // BluetoothDevice::PairingDelegate override.
+  // device::BluetoothDevice::PairingDelegate override.
   //
   // This method will be called when the Bluetooth daemon requires a
   // PIN Code for authentication of the device |device|, the UI will display
@@ -51,9 +52,9 @@ class BluetoothOptionsHandler : public ::options::OptionsPageUIHandler,
   //
   // PIN Codes are generally required for Bluetooth 2.0 and earlier devices
   // for which there is no automatic pairing or special handling.
-  virtual void RequestPinCode(BluetoothDevice* device) OVERRIDE;
+  virtual void RequestPinCode(device::BluetoothDevice* device) OVERRIDE;
 
-  // BluetoothDevice::PairingDelegate override.
+  // device::BluetoothDevice::PairingDelegate override.
   //
   // This method will be called when the Bluetooth daemon requires a
   // Passkey for authentication of the device |device|, the UI will display
@@ -63,9 +64,9 @@ class BluetoothOptionsHandler : public ::options::OptionsPageUIHandler,
   // Passkeys are generally required for Bluetooth 2.1 and later devices
   // which cannot provide input or display on their own, and don't accept
   // passkey-less pairing.
-  virtual void RequestPasskey(BluetoothDevice* device) OVERRIDE;
+  virtual void RequestPasskey(device::BluetoothDevice* device) OVERRIDE;
 
-  // BluetoothDevice::PairingDelegate override.
+  // device::BluetoothDevice::PairingDelegate override.
   //
   // This method will be called when the Bluetooth daemon requires that the
   // user enter the PIN code |pincode| into the device |device| so that it
@@ -75,10 +76,10 @@ class BluetoothOptionsHandler : public ::options::OptionsPageUIHandler,
   // This is used for Bluetooth 2.0 and earlier keyboard devices, the
   // |pincode| will always be a six-digit numeric in the range 000000-999999
   // for compatibilty with later specifications.
-  virtual void DisplayPinCode(BluetoothDevice* device,
+  virtual void DisplayPinCode(device::BluetoothDevice* device,
                               const std::string& pincode) OVERRIDE;
 
-  // BluetoothDevice::PairingDelegate override.
+  // device::BluetoothDevice::PairingDelegate override.
   //
   // This method will be called when the Bluetooth daemon requires that the
   // user enter the Passkey |passkey| into the device |device| so that it
@@ -89,9 +90,10 @@ class BluetoothOptionsHandler : public ::options::OptionsPageUIHandler,
   // but not display, such as keyboards. The Passkey is a numeric in the
   // range 0-999999 and should be always presented zero-padded to six
   // digits.
-  virtual void DisplayPasskey(BluetoothDevice* device, uint32 passkey) OVERRIDE;
+  virtual void DisplayPasskey(
+      device::BluetoothDevice* device, uint32 passkey) OVERRIDE;
 
-  // BluetoothDevice::PairingDelegate override.
+  // device::BluetoothDevice::PairingDelegate override.
   //
   // This method will be called when the Bluetooth daemon requires that the
   // user confirm that the Passkey |passkey| is displayed on the screen
@@ -102,9 +104,10 @@ class BluetoothOptionsHandler : public ::options::OptionsPageUIHandler,
   // such as other computers or phones. The Passkey is a numeric in the
   // range 0-999999 and should be always present zero-padded to six
   // digits.
-  virtual void ConfirmPasskey(BluetoothDevice* device, uint32 passkey) OVERRIDE;
+  virtual void ConfirmPasskey(
+      device::BluetoothDevice* device, uint32 passkey) OVERRIDE;
 
-  // BluetoothDevice::PairingDelegate override.
+  // device::BluetoothDevice::PairingDelegate override.
   //
   // This method will be called when any previous DisplayPinCode(),
   // DisplayPasskey() or ConfirmPasskey() request should be concluded
@@ -117,41 +120,41 @@ class BluetoothOptionsHandler : public ::options::OptionsPageUIHandler,
   // string if the error is not specific to a single device.
   void ReportError(const std::string& error, const std::string& address);
 
-  // BluetoothAdapter::Observer implementation.
-  virtual void AdapterPresentChanged(BluetoothAdapter* adapter,
+  // device::BluetoothAdapter::Observer implementation.
+  virtual void AdapterPresentChanged(device::BluetoothAdapter* adapter,
                                      bool present) OVERRIDE;
-  virtual void AdapterPoweredChanged(BluetoothAdapter* adapter,
+  virtual void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
                                      bool powered) OVERRIDE;
-  virtual void DeviceAdded(BluetoothAdapter* adapter,
-                           BluetoothDevice* device) OVERRIDE;
-  virtual void DeviceChanged(BluetoothAdapter* adapter,
-                             BluetoothDevice* device) OVERRIDE;
-  virtual void DeviceRemoved(BluetoothAdapter* adapter,
-                             BluetoothDevice* device) OVERRIDE;
+  virtual void DeviceAdded(device::BluetoothAdapter* adapter,
+                           device::BluetoothDevice* device) OVERRIDE;
+  virtual void DeviceChanged(device::BluetoothAdapter* adapter,
+                             device::BluetoothDevice* device) OVERRIDE;
+  virtual void DeviceRemoved(device::BluetoothAdapter* adapter,
+                             device::BluetoothDevice* device) OVERRIDE;
 
  private:
-  // Called by BluetoothAdapter in response to a failure to change the power
-  // status of the adapter.
+  // Called by device::BluetoothAdapter in response to a failure to
+  // change the power status of the adapter.
   void EnableChangeError();
 
-  // Called by BluetoothAdapter in response to a failure to set the adapter into
-  // discovery mode.
+  // Called by device::BluetoothAdapter in response to a failure to
+  // set the adapter into discovery mode.
   void FindDevicesError();
 
-  // Called by BluetoothAdapter in response to a failure to remove the adapter
-  // from discovery mode.
+  // Called by device::BluetoothAdapter in response to a failure to
+  // remove the adapter from discovery mode.
   void StopDiscoveryError();
 
-  // Called by BluetoothDevice in response to a failure to connect to the device
-  // with bluetooth address |address|.
+  // Called by device::BluetoothDevice in response to a failure to
+  // connect to the device with bluetooth address |address|.
   void ConnectError(const std::string& address);
 
-  // Called by BluetoothDevice in response to a failure to disconnect the device
-  // with bluetooth address |address|.
+  // Called by device::BluetoothDevice in response to a failure to
+  // disconnect the device with bluetooth address |address|.
   void DisconnectError(const std::string& address);
 
-  // Called by BluetoothDevice in response to a failure to disconnect and unpair
-  // the device with bluetooth address |address|.
+  // Called by device::BluetoothDevice in response to a failure to
+  // disconnect and unpair the device with bluetooth address |address|.
   void ForgetError(const std::string& address);
 
   // Called when the 'Enable bluetooth' checkbox value is changed.
@@ -182,7 +185,7 @@ class BluetoothOptionsHandler : public ::options::OptionsPageUIHandler,
   void GetPairedDevicesCallback(const base::ListValue* args);
 
   // Default bluetooth adapter, used for all operations.
-  scoped_refptr<BluetoothAdapter> adapter_;
+  scoped_refptr<device::BluetoothAdapter> adapter_;
 
   // Weak pointer factory for generating 'this' pointers that might live longer
   // than this object does.

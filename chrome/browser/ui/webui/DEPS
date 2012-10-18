@@ -6,6 +6,7 @@ include_rules = [
   "+sync/internal_api/public/util/weak_handle.h",
 
   # Other libraries.
+  "+device/bluetooth",
   "+third_party/angle",       # For ANGLE version.
   "+third_party/zlib/zlib.h", # For compression level constants.
 ]
