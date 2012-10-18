@@ -102,16 +102,12 @@
   0000000000000000: 31 e5                                        [P] dontcare %ebp (suz), %esp (u)
   0000000000000002: 49 8d 2c 2f                                  lea %rbp, [%r15+%rbp*1]
 @rdfa_output:
-  return code: 0
+  2: [0] improper %rbp sandboxing
+  2: [0] error - %bpl or %bp is changed
+  return code: 1
 @validators_disagree:
-  TODO(shcherbina): do something about it, see
-    http://code.google.com/p/nativeclient/issues/detail?id=3081
-  
-  old validator verdict: False
-  rdfa validator verdict: True
   errors reported by old validator but not by rdfa one:
-    0x0
-    0x2
+    0x0 (rdfa reported only 0x2)
 ----------------------------------------------------------------------
 @hex:
   # xor %ebp,%esp

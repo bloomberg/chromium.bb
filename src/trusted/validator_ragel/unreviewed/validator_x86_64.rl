@@ -110,10 +110,13 @@
 
   # Special instructions used for %rbp sandboxing
   rbp_sandboxing =
-    (b_0100_11x0 0x01 0xfd            | # add %r15,%rbp
-     b_0100_10x1 0x03 0xef            | # add %r15,%rbp
-     0x49 0x8d 0x2c 0x2f              | # lea (%r15,%rbp,1),%rbp
-     0x4a 0x8d 0x6c 0x3d 0x00)          # lea 0x0(%rbp,%r15,1),%rbp
+    (b_0100_11x0 0x01 0xfd                  | # add %r15,%rbp
+     b_0100_10x1 0x03 0xef                  | # add %r15,%rbp
+     # lea sandboxing for rbp is temporarily disallowed to mimic old validator,
+     # see http://code.google.com/p/nativeclient/issues/detail?id=3081
+     #0x49 0x8d 0x2c 0x2f                   | # lea (%r15,%rbp,1),%rbp
+     0x4a 0x8d 0x6c 0x3d 0x00               | # lea 0x00(%rbp,%r15,1),%rbp
+     0x4a 0x8d 0xac 0x3d 0x00 0x00 0x00 0x00) # lea 0x00000000(%rbp,%r15,1),%rbp
     @{ if (restricted_register == REG_RBP)
          instruction_info_collected |= RESTRICTED_REGISTER_USED;
        else
