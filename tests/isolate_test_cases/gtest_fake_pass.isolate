@@ -4,10 +4,10 @@
 {
   'variables': {
     'command': [
-      'gtest_fake_pass.py',
+      '../gtest_fake/gtest_fake_pass.py',
     ],
     'isolate_dependency_tracked': [
-      'gtest_fake_pass.py',
+      '../gtest_fake/gtest_fake_pass.py',
     ],
   },
 }

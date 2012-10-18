@@ -106,7 +106,7 @@ class RunTestCases(unittest.TestCase):
       self.assertEquals(['Foo.Bar1', 'Foo.Bar3'], test_cases)
       self.assertEquals(run_test_cases.num_processors(), jobs)
       self.assertEquals(120, timeout)
-      self.assertEquals(False, run_all)
+      self.assertEquals(None, run_all)
       self.assertEquals(exe + '.run_test_cases', result_file)
       return 89
 

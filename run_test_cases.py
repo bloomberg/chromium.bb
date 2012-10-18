@@ -852,7 +852,6 @@ def main(argv):
   parser.add_option(
       '--run-all',
       action='store_true',
-      default=bool(int(os.environ.get('RUN_TEST_CASES_RUN_ALL', '0'))),
       help='Do not fail early when a large number of test cases fail')
   parser.add_option(
       '--no-dump',
@@ -860,7 +859,6 @@ def main(argv):
       help='do not generate a .run_test_cases file')
   parser.add_option(
       '--result',
-      default=os.environ.get('RUN_TEST_CASES_RESULT_FILE', ''),
       help='Override the default name of the generated .run_test_cases file')
   parser.add_option(
       '--gtest_list_tests',
@@ -890,10 +888,7 @@ def main(argv):
   if options.no_dump:
     result_file = None
   else:
-    if options.result:
-      result_file = options.result
-    else:
-      result_file = '%s.run_test_cases' % args[-1]
+    result_file = options.result or '%s.run_test_cases' % args[-1]
 
   return run_test_cases(
       cmd,

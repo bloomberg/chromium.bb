@@ -7,6 +7,7 @@
 or updates an .isolate file.
 """
 
+import logging
 import os
 import subprocess
 import sys
@@ -17,7 +18,6 @@ import trace_inputs
 import trace_test_cases
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-ROOT_DIR = os.path.dirname(os.path.dirname(BASE_DIR))
 
 
 def isolate_test_cases(
@@ -49,6 +49,7 @@ def isolate_test_cases(
       log_dict = logs[test_case]
       if log_dict.get('exception'):
         exception = exception or log_dict['exception']
+        logging.error('Got exception')
         continue
       files = log_dict['results'].strip_root(root_dir).files
       tracked, touched = isolate.split_touched(files)
@@ -59,22 +60,48 @@ def isolate_test_cases(
           root_dir,
           variables,
           cwd_dir)
-
-      with open(basename + '.' + test_case + '.isolate', 'w') as f:
+      out = basename + '.' + test_case + '.isolate'
+      with open(out, 'w') as f:
         isolate.pretty_print(value, f)
-      test_cases.append(inputs)
+      inputs.append(out)
 
     # Merges back. Note that it is possible to blow up the command line
     # argument length here but writing the files is still useful. Convert to
     # importing the module instead if necessary.
-    merge_cmd = ['isolate_merge.py', isolate_file] + inputs
-    merge_cmd.extend(['-o', isolate_file])
-    proc = subprocess.Popen(run_test_cases.fix_python_path(merge_cmd))
+    merge_cmd = [
+      sys.executable,
+      os.path.join(BASE_DIR, 'isolate_merge.py'),
+      isolate_file,
+      '-o', isolate_file,
+    ]
+    merge_cmd.extend(inputs)
+    logging.info(merge_cmd)
+    proc = subprocess.Popen(merge_cmd)
     proc.communicate()
     return proc.returncode
   finally:
     if exception:
       raise exception[0], exception[1], exception[2]
+
+
+def test_xvfb(command, rel_dir):
+  """Calls back ourself if not running inside Xvfb and it's on the command line
+  to run.
+
+  Otherwise the X session will die while trying to start too many Xvfb
+  instances.
+  """
+  if os.environ.get('_CHROMIUM_INSIDE_XVFB') == '1':
+    return
+  for index, item in enumerate(command):
+    if item.endswith('xvfb.py'):
+      # Note this has inside knowledge about src/testing/xvfb.py.
+      print('Restarting itself under Xvfb')
+      prefix = command[index:index+2]
+      prefix[0] = os.path.normpath(os.path.join(rel_dir, prefix[0]))
+      prefix[1] = os.path.normpath(os.path.join(rel_dir, prefix[1]))
+      cmd = run_test_cases.fix_python_path(prefix + sys.argv)
+      sys.exit(subprocess.call(cmd))
 
 
 def main():
@@ -92,10 +119,13 @@ def main():
     config = isolate.CompleteState.load_files(options.result)
     reldir = os.path.join(config.root_dir, config.isolated.relative_cwd)
     command = run_test_cases.fix_python_path(config.isolated.command)
+    test_xvfb(command, reldir)
     test_cases = parser.process_gtest_options(command, reldir, options)
     if not test_cases:
       print >> sys.stderr, 'No test case to run'
       return 1
+
+    config.saved_state.variables.update(options.variables)
     return isolate_test_cases(
         command,
         reldir,
@@ -105,7 +135,7 @@ def main():
         config.isolated_filepath,
         config.saved_state.isolate_file,
         config.root_dir,
-        options.variables)
+        config.saved_state.variables)
   except isolate.ExecutionError, e:
     print >> sys.stderr, str(e)
     return 1

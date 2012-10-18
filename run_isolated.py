@@ -26,7 +26,7 @@ import time
 import urllib
 
 
-# Types of action accepted by recreate_tree().
+# Types of action accepted by link_file().
 HARDLINK, SYMLINK, COPY = range(1, 4)
 
 RE_IS_SHA1 = re.compile(r'^[a-fA-F0-9]{40}$')

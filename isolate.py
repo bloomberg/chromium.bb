@@ -729,6 +729,7 @@ def generate_simplified(
     for variable, root_path in variables.iteritems():
       if f.startswith(root_path):
         f = variable + f[len(root_path):]
+        logging.debug('Converted to %s' % f)
         break
 
     # Now strips off known files we want to ignore and to any specific mangling

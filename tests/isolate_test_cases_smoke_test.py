@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import hashlib
+import json
 import logging
 import os
 import re
@@ -17,9 +19,6 @@ ROOT_DIR = os.path.dirname(BASE_DIR)
 sys.path.insert(0, ROOT_DIR)
 
 import isolate
-
-TARGET_UTIL_PATH = os.path.join(BASE_DIR, 'gtest_fake', 'gtest_fake_base.py')
-TARGET_PATH = os.path.join(BASE_DIR, 'gtest_fake', 'gtest_fake_fail.py')
 
 
 class IsolateTestCases(unittest.TestCase):
@@ -52,10 +51,34 @@ class IsolateTestCases(unittest.TestCase):
     if self.tempdir:
       shutil.rmtree(self.tempdir)
 
+  def _copy(self, *relpath):
+    relpath = os.path.join(*relpath)
+    shutil.copy(
+        os.path.join(ROOT_DIR, relpath),
+        os.path.join(self.tempdir, relpath))
+
   def test_simple(self):
     # Create a directory and re-use tests/gtest_fake/gtest_fake_pass.isolate.
+    # Warning: we need to copy the files around, since the original .isolate
+    # file is modified.
+    gtest_fake_base_py = os.path.join(
+        'tests', 'gtest_fake', 'gtest_fake_base.py')
+    gtest_fake_pass_py = os.path.join(
+        'tests', 'gtest_fake', 'gtest_fake_pass.py')
+    gtest_fake_pass_isolate = os.path.join(
+        'tests', 'isolate_test_cases', 'gtest_fake_pass.isolate')
+
     self.tempdir = tempfile.mkdtemp(prefix='isolate_test_cases_test')
-    basename = os.path.join(self.tempdir, 'gtest_fake_pass')
+    os.mkdir(os.path.join(self.tempdir, 'isolated'))
+    os.mkdir(os.path.join(self.tempdir, 'tests'))
+    os.mkdir(os.path.join(self.tempdir, 'tests', 'gtest_fake'))
+    os.mkdir(os.path.join(self.tempdir, 'tests', 'isolate_test_cases'))
+    self._copy('isolate.py')
+    self._copy(gtest_fake_base_py)
+    self._copy(gtest_fake_pass_isolate)
+    self._copy(gtest_fake_pass_py)
+
+    basename = os.path.join(self.tempdir, 'isolated', 'gtest_fake_pass')
     isolated = basename + '.isolated'
 
     # Create a proper .isolated file.
@@ -63,12 +86,36 @@ class IsolateTestCases(unittest.TestCase):
       sys.executable, 'isolate.py',
       'check',
       '-V', 'FLAG', 'run',
-      '-i', os.path.join('tests', 'gtest_fake', 'gtest_fake_pass.isolate'),
+      '-i', os.path.join(self.tempdir, gtest_fake_pass_isolate),
       '-r', isolated,
     ]
     if VERBOSE:
       cmd.extend(['-v'] * 3)
     subprocess.check_call(cmd, cwd=ROOT_DIR)
+
+    # Assert the content of the .isolated file.
+    with open(isolated) as f:
+      actual_isolated = json.load(f)
+    root_dir_gtest_fake_pass_py = os.path.join(ROOT_DIR, gtest_fake_pass_py)
+    rel_gtest_fake_pass_py = os.path.join(u'gtest_fake', 'gtest_fake_pass.py')
+    expected_isolated = {
+      u'command': [u'../gtest_fake/gtest_fake_pass.py'],
+      u'files': {
+        rel_gtest_fake_pass_py: {
+          u'mode': 488,
+          u'sha-1': unicode(hashlib.sha1(
+              open(root_dir_gtest_fake_pass_py, 'rb').read()).hexdigest()),
+          u'size': os.stat(root_dir_gtest_fake_pass_py).st_size,
+        },
+      },
+      u'os': unicode(isolate.get_flavor()),
+      u'relative_cwd': u'isolate_test_cases',
+    }
+    self.assertTrue(
+        actual_isolated['files'][rel_gtest_fake_pass_py].pop('timestamp'))
+    if sys.platform == 'win32':
+      expected_isolated['files'][rel_gtest_fake_pass_py].pop('mode')
+    self.assertEquals(expected_isolated, actual_isolated)
 
     cmd = [
         sys.executable,
@@ -90,10 +137,6 @@ class IsolateTestCases(unittest.TestCase):
       r'\[1/3\]   \d\.\d\ds .+',
       r'\[2/3\]   \d\.\d\ds .+',
       r'\[3/3\]   \d\.\d\ds .+',
-      #r'\d+\.\ds Done post-processing logs\. Parsing logs\.',
-      #r'\d+\.\ds Done parsing logs\.',
-      #r'\d+\.\ds Done stripping root\.',
-      #r'\d+\.\ds Done flattening\.',
     ]
     self.assertEqual(len(expected_out_re), len(lines), (out, err))
     for index in range(len(expected_out_re)):
@@ -112,11 +155,10 @@ class IsolateTestCases(unittest.TestCase):
     )
     expected = {
       'conditions': [
-        ['OS=="linux"', {
+        ['OS=="%s"' % isolate.get_flavor(), {
           'variables': {
-            'isolate_dependency_tracked': [
-              'gtest_fake_base.py',
-              'gtest_fake_pass.py',
+            'isolate_dependency_untracked': [
+              '../gtest_fake/',
             ],
           },
         }],
@@ -126,6 +168,32 @@ class IsolateTestCases(unittest.TestCase):
       with open(basename + '.' + test_case + '.isolate', 'r') as f:
         result = eval(f.read(), {'__builtins__': None}, None)
         self.assertEqual(expected, result)
+
+    # Now verify the .isolate file was updated! (That's the magical part where
+    # you say wow!)
+    with open(os.path.join(self.tempdir, gtest_fake_pass_isolate)) as f:
+      actual = eval(f.read(), {'__builtins__': None}, None)
+    expected = {
+      'variables': {
+        'command': ['../gtest_fake/gtest_fake_pass.py'],
+        'isolate_dependency_tracked': [
+          # TODO(maruel): In theory, this file should be listed in the else
+          # clause of the condition below but that becomes tricky at that
+          # point.
+          '../gtest_fake/gtest_fake_pass.py',
+        ],
+      },
+      'conditions': [
+        ['OS=="%s"' % isolate.get_flavor(), {
+          'variables': {
+            'isolate_dependency_untracked': [
+              '../gtest_fake/',
+            ],
+          },
+        }],
+      ],
+    }
+    self.assertEqual(expected, actual)
 
 
 if __name__ == '__main__':

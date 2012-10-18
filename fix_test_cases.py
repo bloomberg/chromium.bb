@@ -3,9 +3,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Runs a test, grab the failures and trace them."""
+"""Runs through isolate_test_cases.py all the tests cases in a google-test
+executable, grabs the failures and traces them to generate a new .isolate.
+
+This scripts requires a .isolated file. This file is generated from a .isolate
+file. You can use 'GYP_DEFINES=test_isolation_mode=check ninja foo_test_run' to
+generate it.
+"""
 
 import json
+import logging
+import optparse
 import os
 import subprocess
 import sys
@@ -14,118 +22,65 @@ import tempfile
 import run_test_cases
 
 
-XVFB_PATH = os.path.join('..', '..', 'testing', 'xvfb.py')
+def load_run_test_cases_results(run_test_cases_file):
+  """Loads a .run_test_cases result file.
 
-
-if sys.platform == 'win32':
-  import msvcrt  # pylint: disable=F0401
-
-  def get_keyboard():
-    """Returns a letter from the keyboard if any.
-
-    This function returns immediately.
-    """
-    if msvcrt.kbhit():
-      return ord(msvcrt.getch())
-
-else:
-  import select
-
-  def get_keyboard():
-    """Returns a letter from the keyboard if any, as soon as he pressed enter.
-
-    This function returns (almost) immediately.
-
-    The library doesn't give a way to just get the initial letter.
-    """
-    if select.select([sys.stdin], [], [], 0.00001)[0]:
-      return sys.stdin.read(1)
-
-
-def trace_and_merge(result, test):
-  """Traces a single test case and merges the result back into .isolate."""
-  env = os.environ.copy()
-  env['RUN_TEST_CASES_RUN_ALL'] = '1'
-
-  print 'Starting trace of %s' % test
-  subprocess.call(
-      [
-        sys.executable, 'isolate.py', 'trace', '-r', result,
-        '--', '--gtest_filter=' + test,
-      ],
-      env=env)
-
-  print 'Starting merge of %s' % test
-  return not subprocess.call(
-      [sys.executable, 'isolate.py', 'merge', '-r', result])
-
-
-def run_all(result, shard_index, shard_count):
-  """Runs all the tests. Returns the tests that failed or None on failure.
-
-  Assumes run_test_cases.py is implicitly called.
+  Returns a tuple of two lists, (success, failures).
   """
-  handle, result_file = tempfile.mkstemp(prefix='run_test_cases')
-  os.close(handle)
-  env = os.environ.copy()
-  env['RUN_TEST_CASES_RESULT_FILE'] = result_file
-  env['RUN_TEST_CASES_RUN_ALL'] = '1'
-  env['GTEST_SHARD_INDEX'] = str(shard_index)
-  env['GTEST_TOTAL_SHARDS'] = str(shard_count)
-  cmd = [sys.executable, 'isolate.py', 'run', '-r', result]
-  subprocess.call(cmd, env=env)
-  if not os.path.isfile(result_file):
-    print >> sys.stderr, 'Failed to find %s' % result_file
+  if not os.path.isfile(run_test_cases_file):
+    print >> sys.stderr, 'Failed to find %s' % run_test_cases_file
     return None
-  with open(result_file) as f:
+  with open(run_test_cases_file) as f:
     try:
       data = json.load(f)
     except ValueError as e:
       print >> sys.stderr, ('Unable to load json file, %s: %s' %
-                            (result_file, str(e)))
+                            (run_test_cases_file, str(e)))
       return None
-  os.remove(result_file)
-  return [
+  failure = [
     test for test, runs in data.iteritems()
     if not any(not run['returncode'] for run in runs)
   ]
+  success = [
+    test for test, runs in data.iteritems()
+    if any(not run['returncode'] for run in runs)
+  ]
+  return success, failure
 
 
-def run(result, test):
-  """Runs a single test case in an isolated environment.
-
-  Returns True if the test passed.
-  """
-  return not subprocess.call([
-    sys.executable, 'isolate.py', 'run', '-r', result,
-    '--', '--gtest_filter=' + test,
-  ])
-
-
-def run_normally(executable, test):
-  return not subprocess.call([
-    sys.executable, XVFB_PATH, os.path.dirname(executable), executable,
-    '--gtest_filter=' + test])
+def run_all(isolated, run_test_cases_file):
+  """Runs the test cases in an isolated environment."""
+  cmd = [
+    sys.executable, 'isolate.py',
+    'run',
+    '-r', isolated,
+    '--',
+    '--result', run_test_cases_file,
+    '--run-all',
+  ]
+  logging.debug(cmd)
+  return subprocess.call(cmd)
 
 
-def diff_and_commit(test):
-  """Prints the diff and commit."""
-  subprocess.call(['git', 'diff'])
-  subprocess.call(['git', 'commit', '-a', '-m', test])
+def trace_all(isolated, test_cases):
+  """Traces the test cases."""
+  handle, test_cases_file = tempfile.mkstemp(prefix='fix_test_cases')
+  os.write(handle, '\n'.join(test_cases))
+  os.close(handle)
+  try:
+    cmd = [
+      sys.executable, 'isolate_test_cases.py',
+      '-r', isolated,
+      '--test-case-file', test_cases_file,
+      '-v',
+    ]
+    logging.debug(cmd)
+    return subprocess.call(cmd)
+  finally:
+    os.remove(test_cases_file)
 
 
-def trace_and_verify(result, test):
-  """Traces a test case, updates .isolate and makes sure it passes afterward.
-
-  Return None if the test was already passing,  True on success.
-  """
-  trace_and_merge(result, test)
-  diff_and_commit(test)
-  print 'Verifying trace...'
-  return run(result, test)
-
-
-def fix_all(result, shard_index, shard_count, executable):
+def fix_all(isolated):
   """Runs all the test cases in a gtest executable and trace the failing tests.
 
   Returns True on success.
@@ -134,90 +89,63 @@ def fix_all(result, shard_index, shard_count, executable):
   """
   # These could have adverse side-effects.
   # TODO(maruel): Be more intelligent about it, for now be safe.
-  run_test_cases_env = ['RUN_TEST_CASES_RESULT_FILE', 'RUN_TEST_CASES_RUN_ALL']
-  for i in run_test_cases.KNOWN_GTEST_ENV_VARS + run_test_cases_env:
+  for i in run_test_cases.KNOWN_GTEST_ENV_VARS:
     if i in os.environ:
       print >> 'Please unset %s' % i
       return False
 
-  test_cases = run_all(result, shard_index, shard_count)
-  if test_cases is None:
-    return False
-
-  print '\nFound %d broken test cases.' % len(test_cases)
-  if not test_cases:
-    return True
-
-  failed_alone = []
-  failures = []
-  fixed_tests = []
+  handle, run_test_cases_file = tempfile.mkstemp(prefix='fix_test_cases')
+  os.close(handle)
   try:
-    for index, test_case in enumerate(test_cases):
-      if get_keyboard():
-        # Return early.
-        return True
+    run_all(isolated, run_test_cases_file)
+    success, failures = load_run_test_cases_results(run_test_cases_file)
+    print(
+        '\nFound %d working and %d broken test cases.' %
+        (len(success), len(failures)))
+    if not failures:
+      return True
 
-      try:
-        # Check if the test passes normally, because otherwise there is no
-        # reason to trace its failure.
-        if not run_normally(executable, test_case):
-          print '%s is broken when run alone, please fix the test.' % test_case
-          failed_alone.append(test_case)
-          continue
+    # Trace them all and update the .isolate file.
+    print('\nTracing the failing tests.')
+    if trace_all(isolated, failures):
+      return False
 
-        if not trace_and_verify(result, test_case):
-          failures.append(test_case)
-          print 'Failed to fix %s' % test_case
-        else:
-          fixed_tests.append(test_case)
-      except:  # pylint: disable=W0702
-        failures.append(test_case)
-        print 'Failed to fix %s' % test_case
-      print '%d/%d' % (index+1, len(test_cases))
+    print('\nRunning again to confirm.')
+    run_all(isolated, run_test_cases_file)
+    fixed_success, fixed_failures = load_run_test_cases_results(
+        run_test_cases_file)
+
+    print(
+        '\nFound %d working and %d broken test cases.' %
+        (len(fixed_success), len(fixed_failures)))
+    for failure in fixed_failures:
+      print('  %s' % failure)
+    return not fixed_failures
   finally:
-    print 'Test cases fixed (%d):' % len(fixed_tests)
-    for fixed_test in fixed_tests:
-      print '  %s' % fixed_test
-    print ''
-
-    print 'Test cases still failing (%d):' % len(failures)
-    for failure in failures:
-      print '  %s' % failure
-
-    if failed_alone:
-      print ('Test cases that failed normally when run alone (%d):' %
-             len(failed_alone))
-      for failed in failed_alone:
-        print failed
-  return not failures
+    os.remove(run_test_cases_file)
 
 
 def main():
-  parser = run_test_cases.OptionParserWithTestSharding(
-      usage='%prog <option> [test]')
-  parser.add_option('-d', '--dir', default='../../out/Release',
-                    help='The directory containing the the test executable and '
-                    'result file. Defaults to %default')
+  parser = optparse.OptionParser(
+      usage='%prog <option>',
+      description=sys.modules[__name__].__doc__)
+  parser.add_option(
+      '-r', '--result',
+      help='The isolated file')
+  parser.add_option(
+      '-v', '--verbose', action='store_true',
+      help='Logs information')
   options, args = parser.parse_args()
 
-  if len(args) != 1:
-    parser.error('Use with the name of the test only, e.g. unit_tests')
-
-  basename = args[0]
-  executable = os.path.join(options.dir, basename)
-  result = '%s.isolated' % executable
-  if sys.platform in('win32', 'cygwin'):
-    executable += '.exe'
-  if not os.path.isfile(executable):
-    print >> sys.stderr, (
-        '%s doesn\'t exist, please build %s_run' % (executable, basename))
-    return 1
-  if not os.path.isfile(result):
-    print >> sys.stderr, (
-        '%s doesn\'t exist, please build %s_run' % (result, basename))
-    return 1
-
-  return not fix_all(result, options.index, options.shards, executable)
+  logging.basicConfig(
+      level=(logging.DEBUG if options.verbose else logging.ERROR))
+  if args:
+    parser.error('Unsupported arg: %s' % args)
+  if not options.result:
+    parser.error('--result is required')
+  if not options.result.endswith('.isolated'):
+    parser.error('--result argument must end with .isolated')
+  return not fix_all(options.result)
 
 
 if __name__ == '__main__':
