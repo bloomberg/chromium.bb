@@ -133,7 +133,8 @@ void DragDownloadFile::InitiateDownload() {
   download_manager_observer_added_ = true;
   download_manager_->AddObserver(this);
 
-  scoped_ptr<content::DownloadSaveInfo> save_info;
+  scoped_ptr<content::DownloadSaveInfo> save_info(
+      new content::DownloadSaveInfo());
   save_info->file_path = file_path_;
   save_info->file_stream = file_stream_.Pass(); // Nulls file_stream_
 
