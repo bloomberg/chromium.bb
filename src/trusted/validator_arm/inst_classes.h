@@ -364,6 +364,17 @@ class Imm12Bits8To19Interface {
   NACL_DISALLOW_COPY_AND_ASSIGN(Imm12Bits8To19Interface);
 };
 
+// Interface class to pull out an immediate value in bits 16 through 21.
+class Imm6Bits16To21Interface {
+ public:
+  static uint32_t value(const Instruction& i) {
+    return i.Bits(21, 16);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Imm6Bits16To21Interface);
+};
+
 // Interface class to pull out value in bit 8
 class FlagBit8Interface {
  public:

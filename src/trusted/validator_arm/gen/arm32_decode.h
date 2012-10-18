@@ -112,6 +112,9 @@ class Arm32DecoderState : DecoderState {
   inline const ClassDecoder& decode_simd_dp_2scalar(
       const Instruction inst) const;
 
+  inline const ClassDecoder& decode_simd_dp_2shift(
+      const Instruction inst) const;
+
   inline const ClassDecoder& decode_simd_dp_3diff(
       const Instruction inst) const;
 
@@ -197,6 +200,12 @@ class Arm32DecoderState : DecoderState {
   const VectorBinary2RegisterScalar_F32 VectorBinary2RegisterScalar_F32_instance_;
   const VectorBinary2RegisterScalar_I16_32 VectorBinary2RegisterScalar_I16_32_instance_;
   const VectorBinary2RegisterScalar_I16_32L VectorBinary2RegisterScalar_I16_32L_instance_;
+  const VectorBinary2RegisterShiftAmount_CVT VectorBinary2RegisterShiftAmount_CVT_instance_;
+  const VectorBinary2RegisterShiftAmount_E8_16_32L VectorBinary2RegisterShiftAmount_E8_16_32L_instance_;
+  const VectorBinary2RegisterShiftAmount_I VectorBinary2RegisterShiftAmount_I_instance_;
+  const VectorBinary2RegisterShiftAmount_ILS VectorBinary2RegisterShiftAmount_ILS_instance_;
+  const VectorBinary2RegisterShiftAmount_N16_32_64R VectorBinary2RegisterShiftAmount_N16_32_64R_instance_;
+  const VectorBinary2RegisterShiftAmount_N16_32_64RS VectorBinary2RegisterShiftAmount_N16_32_64RS_instance_;
   const VectorBinary3RegisterDifferentLength_I16_32L VectorBinary3RegisterDifferentLength_I16_32L_instance_;
   const VectorBinary3RegisterDifferentLength_I16_32_64 VectorBinary3RegisterDifferentLength_I16_32_64_instance_;
   const VectorBinary3RegisterDifferentLength_I8_16_32 VectorBinary3RegisterDifferentLength_I8_16_32_instance_;

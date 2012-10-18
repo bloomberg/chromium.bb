@@ -2005,6 +2005,124 @@ class VectorBinary3RegisterOpBase : public UncondDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterOpBase);
 };
 
+// Vector binary operator, 2 registers and a shift amount
+// op<c>.<type<size>> Rd, Rm, #<imm>
+// +--------+--+--+--+--+------------+--------+--+----+--+--+--+--+--+------+
+// |31..28|27..|24|23|22|212019181716|15141312|11|10 9| 8| 7| 6| 5| 4| 3.. 0|
+// +------+----+--+--+--+------------+--------+--+----+--+--+--+--+--+------+
+// | cond |    | U|  | D|     imm6   |   Vd   |  |    |op| L| Q| M|  |  Vm  |
+// +--------+--+--+--+--+------------+--------+--+----+--+--+--+--+--+------+
+// Rd - The destination register.
+// Rm - The source register.
+//
+// d = D:Vd, m = M:Vm
+//
+// Note: The vector registers are not tracked by the validator, and hence,
+// are not modeled, other than their index.
+class VectorBinary2RegisterShiftAmount : public VectorBinary3RegisterOpBase {
+ public:
+  static const FlagBit6Interface q;
+  static const Imm1Bit7Interface l;
+  static const FlagBit8Interface op;
+  static const Imm6Bits16To21Interface imm6;
+  static const FlagBit24Interface u;
+
+  VectorBinary2RegisterShiftAmount() {}
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary2RegisterShiftAmount);
+};
+
+// Defines a VectorBinary2RegisterShiftAmount that shifts 8, 16, 32, and
+// 64-bit integers.
+//   safety := L:imm6=0000xxx => DECODER_ERROR &
+//             Q=1 & (Vd(0)=1 | Vm(1)=1) => UNDEFINED;
+class VectorBinary2RegisterShiftAmount_I
+    : public VectorBinary2RegisterShiftAmount {
+ public:
+  VectorBinary2RegisterShiftAmount_I() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary2RegisterShiftAmount_I);
+};
+
+// Defines a VectorBinary2RegisterShiftAmount_I that shifts left with
+// signed/unsigned integers.
+//   safety := L:imm6=0000xxx => DECODER_ERROR &
+//             Q=1 & (Vd(0)=1 | Vm(1)=1) => UNDEFINED &
+//             U=0 & op=0 => UNDEFINED;
+class VectorBinary2RegisterShiftAmount_ILS
+    : public VectorBinary2RegisterShiftAmount_I {
+ public:
+  VectorBinary2RegisterShiftAmount_ILS() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary2RegisterShiftAmount_ILS);
+};
+
+// Defines a VectorBinary2RegisterShiftAmount that right shifts 16, 32,
+// and 64-bit integers while narrowing the result to half the length of
+// the arguments.
+//   safety := imm6=000xxx => DECODER_ERROR &
+//             Vm(0)=1 => UNDEFINED;
+class VectorBinary2RegisterShiftAmount_N16_32_64R
+    : public VectorBinary2RegisterShiftAmount {
+ public:
+  VectorBinary2RegisterShiftAmount_N16_32_64R() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary2RegisterShiftAmount_N16_32_64R);
+};
+
+// Defines a VectorBinary2RegisterShiftAmount_N16_32_64R that narrows
+// signed/unsigned arguments.
+//   safety := imm6=000xxx => DECODER_ERROR &
+//             Vm(0)=1 => UNDEFINED &
+//             U=0 & op=0 => DECODER_ERROR;
+class VectorBinary2RegisterShiftAmount_N16_32_64RS
+    : public VectorBinary2RegisterShiftAmount_N16_32_64R {
+ public:
+  VectorBinary2RegisterShiftAmount_N16_32_64RS() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary2RegisterShiftAmount_N16_32_64RS);
+};
+
+// Defines a VectorBinary2RegisterShiftAmount that left shifts 8, 16, and 32-bit
+// integers and expands the result to twice the length of the arguments.
+// Shift_amount == 0 => VMOVL
+//
+//   safety := imm6=000xxx => DECODER_ERROR &
+//             Vd(0)=1 => UNDEFINED;
+class VectorBinary2RegisterShiftAmount_E8_16_32L
+    : public VectorBinary2RegisterShiftAmount {
+ public:
+  VectorBinary2RegisterShiftAmount_E8_16_32L() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary2RegisterShiftAmount_E8_16_32L);
+};
+
+// Defines a VectorBinary2RegisterShiftAmount that converts between
+// floating-point and fixed-point.
+//   safety := imm6=000xxx => DECODER_ERROR &
+//             imm6=0xxxxx => UNDEFINED &
+//             Q=1 & (Vd(0)=1 | Vm(0)=1)  => UNDEFINED;
+class VectorBinary2RegisterShiftAmount_CVT
+    : public VectorBinary2RegisterShiftAmount {
+ public:
+  VectorBinary2RegisterShiftAmount_CVT() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary2RegisterShiftAmount_CVT);
+};
+
 // Vector binary operator, 3 registers same length
 // Op<c> Rd, Rn, Rm,...
 // +--------+--+--+--+--+----+--------+--------+----+--+--+--+--+--+--+--------+

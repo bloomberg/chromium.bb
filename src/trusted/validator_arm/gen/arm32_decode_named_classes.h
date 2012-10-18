@@ -1307,6 +1307,70 @@ class VectorBinary2RegisterScalar_I16_32L_VQDMULL_A2
     : public VectorBinary2RegisterScalar_I16_32L {
 };
 
+class VectorBinary2RegisterShiftAmount_CVT_VCVT_between_floating_point_and_fixed_point
+    : public VectorBinary2RegisterShiftAmount_CVT {
+};
+
+class VectorBinary2RegisterShiftAmount_E8_16_32L_VSHLL_A1_or_VMOVL
+    : public VectorBinary2RegisterShiftAmount_E8_16_32L {
+};
+
+class VectorBinary2RegisterShiftAmount_I_VRSHR
+    : public VectorBinary2RegisterShiftAmount_I {
+};
+
+class VectorBinary2RegisterShiftAmount_I_VRSRA
+    : public VectorBinary2RegisterShiftAmount_I {
+};
+
+class VectorBinary2RegisterShiftAmount_I_VSHL_immediate
+    : public VectorBinary2RegisterShiftAmount_I {
+};
+
+class VectorBinary2RegisterShiftAmount_I_VSHR
+    : public VectorBinary2RegisterShiftAmount_I {
+};
+
+class VectorBinary2RegisterShiftAmount_I_VSLI
+    : public VectorBinary2RegisterShiftAmount_I {
+};
+
+class VectorBinary2RegisterShiftAmount_I_VSRA
+    : public VectorBinary2RegisterShiftAmount_I {
+};
+
+class VectorBinary2RegisterShiftAmount_I_VSRI
+    : public VectorBinary2RegisterShiftAmount_I {
+};
+
+class VectorBinary2RegisterShiftAmount_ILS_VQSHL_VQSHLU_immediate
+    : public VectorBinary2RegisterShiftAmount_ILS {
+};
+
+class VectorBinary2RegisterShiftAmount_N16_32_64R_VRSHRN
+    : public VectorBinary2RegisterShiftAmount_N16_32_64R {
+};
+
+class VectorBinary2RegisterShiftAmount_N16_32_64R_VSHRN
+    : public VectorBinary2RegisterShiftAmount_N16_32_64R {
+};
+
+class VectorBinary2RegisterShiftAmount_N16_32_64RS_VQRSHRN
+    : public VectorBinary2RegisterShiftAmount_N16_32_64RS {
+};
+
+class VectorBinary2RegisterShiftAmount_N16_32_64RS_VQRSHRUN
+    : public VectorBinary2RegisterShiftAmount_N16_32_64RS {
+};
+
+class VectorBinary2RegisterShiftAmount_N16_32_64RS_VQSHRN
+    : public VectorBinary2RegisterShiftAmount_N16_32_64RS {
+};
+
+class VectorBinary2RegisterShiftAmount_N16_32_64RS_VQSHRUN
+    : public VectorBinary2RegisterShiftAmount_N16_32_64RS {
+};
+
 class VectorBinary3RegisterDifferentLength_I16_32L_VQDMLAL_VQDMLSL_A1
     : public VectorBinary3RegisterDifferentLength_I16_32L {
 };
@@ -6540,6 +6604,198 @@ class NamedVectorBinary2RegisterScalar_I16_32L_VQDMULL_A2
  private:
   nacl_arm_dec::VectorBinary2RegisterScalar_I16_32L_VQDMULL_A2 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterScalar_I16_32L_VQDMULL_A2);
+};
+
+class NamedVectorBinary2RegisterShiftAmount_CVT_VCVT_between_floating_point_and_fixed_point
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterShiftAmount_CVT_VCVT_between_floating_point_and_fixed_point()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterShiftAmount_CVT VCVT_between_floating_point_and_fixed_point")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterShiftAmount_CVT_VCVT_between_floating_point_and_fixed_point decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterShiftAmount_CVT_VCVT_between_floating_point_and_fixed_point);
+};
+
+class NamedVectorBinary2RegisterShiftAmount_E8_16_32L_VSHLL_A1_or_VMOVL
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterShiftAmount_E8_16_32L_VSHLL_A1_or_VMOVL()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterShiftAmount_E8_16_32L VSHLL_A1_or_VMOVL")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterShiftAmount_E8_16_32L_VSHLL_A1_or_VMOVL decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterShiftAmount_E8_16_32L_VSHLL_A1_or_VMOVL);
+};
+
+class NamedVectorBinary2RegisterShiftAmount_I_VRSHR
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterShiftAmount_I_VRSHR()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterShiftAmount_I VRSHR")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterShiftAmount_I_VRSHR decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterShiftAmount_I_VRSHR);
+};
+
+class NamedVectorBinary2RegisterShiftAmount_I_VRSRA
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterShiftAmount_I_VRSRA()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterShiftAmount_I VRSRA")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterShiftAmount_I_VRSRA decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterShiftAmount_I_VRSRA);
+};
+
+class NamedVectorBinary2RegisterShiftAmount_I_VSHL_immediate
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterShiftAmount_I_VSHL_immediate()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterShiftAmount_I VSHL_immediate")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterShiftAmount_I_VSHL_immediate decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterShiftAmount_I_VSHL_immediate);
+};
+
+class NamedVectorBinary2RegisterShiftAmount_I_VSHR
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterShiftAmount_I_VSHR()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterShiftAmount_I VSHR")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterShiftAmount_I_VSHR decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterShiftAmount_I_VSHR);
+};
+
+class NamedVectorBinary2RegisterShiftAmount_I_VSLI
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterShiftAmount_I_VSLI()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterShiftAmount_I VSLI")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterShiftAmount_I_VSLI decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterShiftAmount_I_VSLI);
+};
+
+class NamedVectorBinary2RegisterShiftAmount_I_VSRA
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterShiftAmount_I_VSRA()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterShiftAmount_I VSRA")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterShiftAmount_I_VSRA decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterShiftAmount_I_VSRA);
+};
+
+class NamedVectorBinary2RegisterShiftAmount_I_VSRI
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterShiftAmount_I_VSRI()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterShiftAmount_I VSRI")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterShiftAmount_I_VSRI decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterShiftAmount_I_VSRI);
+};
+
+class NamedVectorBinary2RegisterShiftAmount_ILS_VQSHL_VQSHLU_immediate
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterShiftAmount_ILS_VQSHL_VQSHLU_immediate()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterShiftAmount_ILS VQSHL_VQSHLU_immediate")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterShiftAmount_ILS_VQSHL_VQSHLU_immediate decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterShiftAmount_ILS_VQSHL_VQSHLU_immediate);
+};
+
+class NamedVectorBinary2RegisterShiftAmount_N16_32_64R_VRSHRN
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterShiftAmount_N16_32_64R_VRSHRN()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterShiftAmount_N16_32_64R VRSHRN")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterShiftAmount_N16_32_64R_VRSHRN decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterShiftAmount_N16_32_64R_VRSHRN);
+};
+
+class NamedVectorBinary2RegisterShiftAmount_N16_32_64R_VSHRN
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterShiftAmount_N16_32_64R_VSHRN()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterShiftAmount_N16_32_64R VSHRN")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterShiftAmount_N16_32_64R_VSHRN decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterShiftAmount_N16_32_64R_VSHRN);
+};
+
+class NamedVectorBinary2RegisterShiftAmount_N16_32_64RS_VQRSHRN
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterShiftAmount_N16_32_64RS_VQRSHRN()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterShiftAmount_N16_32_64RS VQRSHRN")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterShiftAmount_N16_32_64RS_VQRSHRN decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterShiftAmount_N16_32_64RS_VQRSHRN);
+};
+
+class NamedVectorBinary2RegisterShiftAmount_N16_32_64RS_VQRSHRUN
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterShiftAmount_N16_32_64RS_VQRSHRUN()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterShiftAmount_N16_32_64RS VQRSHRUN")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterShiftAmount_N16_32_64RS_VQRSHRUN decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterShiftAmount_N16_32_64RS_VQRSHRUN);
+};
+
+class NamedVectorBinary2RegisterShiftAmount_N16_32_64RS_VQSHRN
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterShiftAmount_N16_32_64RS_VQSHRN()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterShiftAmount_N16_32_64RS VQSHRN")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterShiftAmount_N16_32_64RS_VQSHRN decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterShiftAmount_N16_32_64RS_VQSHRN);
+};
+
+class NamedVectorBinary2RegisterShiftAmount_N16_32_64RS_VQSHRUN
+    : public NamedClassDecoder {
+ public:
+  NamedVectorBinary2RegisterShiftAmount_N16_32_64RS_VQSHRUN()
+    : NamedClassDecoder(decoder_, "VectorBinary2RegisterShiftAmount_N16_32_64RS VQSHRUN")
+  {}
+
+ private:
+  nacl_arm_dec::VectorBinary2RegisterShiftAmount_N16_32_64RS_VQSHRUN decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVectorBinary2RegisterShiftAmount_N16_32_64RS_VQSHRUN);
 };
 
 class NamedVectorBinary3RegisterDifferentLength_I16_32L_VQDMLAL_VQDMLSL_A1

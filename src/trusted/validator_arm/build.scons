@@ -88,7 +88,6 @@ GEN_TABLES = ["ARMv7",
 # in the corresponding table will be accepted by the NACL ARM validator.
 # TODO(karl): Remove this list when NEON tables are ready.
 TURNED_OFF_TABLES = [
-    'simd_dp_2shift',
     'simd_dp_2misc',
     'simd_dp_1imm',
     'advanced_simd_element_or_structure_load_store_instructions',

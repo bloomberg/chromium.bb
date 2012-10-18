@@ -1088,6 +1088,61 @@ SafetyLevel VectorUnary2RegisterDup::safety(Instruction i) const {
   return VectorUnary2RegisterOpBase::safety(i);
 }
 
+// VectorBinary2RegisterShiftAmount_I
+SafetyLevel VectorBinary2RegisterShiftAmount_I::safety(Instruction i) const {
+  // L:imm6=0000xxx => DECODER_ERROR
+  if ((l.value(i) == 0) && ((imm6.value(i) & 0x38) == 0)) return DECODER_ERROR;
+  // Q=1 & (Vd(0)=1 | Vm(1)=1) => UNDEFINED
+  if (q.IsDefined(i) && (!vd.IsEven(i) || !vm.IsEven(i))) return UNDEFINED;
+  return VectorBinary2RegisterShiftAmount::safety(i);
+}
+
+// VectorBinary2RegisterShiftAmount_ILS
+SafetyLevel VectorBinary2RegisterShiftAmount_ILS::safety(Instruction i) const {
+  // U=0 & op=0 => UNDEFINED
+  if (!u.IsDefined(i) && !op.IsDefined(i)) return UNDEFINED;
+  return VectorBinary2RegisterShiftAmount_I::safety(i);
+}
+
+// VectorBinary2RegisterShiftAmount_N16_32_64R
+SafetyLevel VectorBinary2RegisterShiftAmount_N16_32_64R::
+safety(Instruction i) const {
+  // L:imm6=0000xxx => DECODER_ERROR
+  if ((l.value(i) == 0) && ((imm6.value(i) & 0x38) == 0)) return DECODER_ERROR;
+  // Vm(0)=1 => UNDEFINED;
+  if (!vm.IsEven(i)) return UNDEFINED;
+  return VectorBinary2RegisterShiftAmount::safety(i);
+}
+
+// VectorBinary2RegisterShiftAmount_N16_32_64RS
+SafetyLevel VectorBinary2RegisterShiftAmount_N16_32_64RS::
+safety(Instruction i) const {
+  // U=0 & op=0 => DECODER_ERROR;
+  if (!u.IsDefined(i) && !op.IsDefined(i)) return DECODER_ERROR;
+  return VectorBinary2RegisterShiftAmount_N16_32_64R::safety(i);
+}
+
+// VectorBinary2RegisterShiftAmount_E8_16_32L
+SafetyLevel VectorBinary2RegisterShiftAmount_E8_16_32L::
+safety(Instruction i) const {
+  // imm6=000xxx => DECODER_ERROR
+  if ((imm6.value(i) & 0x38) == 0) return DECODER_ERROR;
+  // Vd(0)=1 => UNDEFINED;
+  if (!vd.IsEven(i)) return UNDEFINED;
+  return VectorBinary2RegisterShiftAmount::safety(i);
+}
+
+// VectorBinary2RegisterShiftAmount_CVT
+SafetyLevel VectorBinary2RegisterShiftAmount_CVT::safety(Instruction i) const {
+  // imm6=000xxx => DECODER_ERROR
+  if ((imm6.value(i) & 0x38) == 0) return DECODER_ERROR;
+  // imm6=0xxxxx => UNDEFINED
+  if ((imm6.value(i) & 0x20) == 0) return UNDEFINED;
+  // Q=1 & (Vd(0)=1 | Vm(1)=1) => UNDEFINED
+  if (q.IsDefined(i) && (!vd.IsEven(i) || !vm.IsEven(i))) return UNDEFINED;
+  return VectorBinary2RegisterShiftAmount::safety(i);
+}
+
 // VectorBinary3RegisterSameLengthDQ
 SafetyLevel VectorBinary3RegisterSameLengthDQ::safety(Instruction i) const {
   if (q.IsDefined(i) && (!vd.IsEven(i) || !vn.IsEven(i) || vm.IsEven(i))) {

@@ -2189,6 +2189,24 @@ ApplySanityChecks(Instruction inst,
   return true;
 }
 
+// VectorBinary2RegisterShiftAmountTester
+bool VectorBinary2RegisterShiftAmountTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  // Check if expected class name found.
+  NC_PRECOND(VectorBinary3RegisterOpBaseTester::
+             ApplySanityChecks(inst, decoder));
+
+  // Check additional fields not checked in base class.
+  EXPECT_EQ(expected_decoder_.q.IsDefined(inst), inst.Bit(6));
+  EXPECT_EQ(expected_decoder_.l.value(inst), inst.Bits(7, 7));
+  EXPECT_EQ(expected_decoder_.op.IsDefined(inst), inst.Bit(8));
+  EXPECT_EQ(expected_decoder_.imm6.value(inst), inst.Bits(21, 16));
+  EXPECT_EQ(expected_decoder_.u.IsDefined(inst), inst.Bit(24));
+
+  return true;
+}
+
 // VectorBinary3RegisterSameLengthTester
 bool VectorBinary3RegisterSameLengthTester::
 ApplySanityChecks(Instruction inst,

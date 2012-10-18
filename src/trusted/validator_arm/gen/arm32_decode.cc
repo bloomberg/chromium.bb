@@ -74,6 +74,12 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , VectorBinary2RegisterScalar_F32_instance_()
   , VectorBinary2RegisterScalar_I16_32_instance_()
   , VectorBinary2RegisterScalar_I16_32L_instance_()
+  , VectorBinary2RegisterShiftAmount_CVT_instance_()
+  , VectorBinary2RegisterShiftAmount_E8_16_32L_instance_()
+  , VectorBinary2RegisterShiftAmount_I_instance_()
+  , VectorBinary2RegisterShiftAmount_ILS_instance_()
+  , VectorBinary2RegisterShiftAmount_N16_32_64R_instance_()
+  , VectorBinary2RegisterShiftAmount_N16_32_64RS_instance_()
   , VectorBinary3RegisterDifferentLength_I16_32L_instance_()
   , VectorBinary3RegisterDifferentLength_I16_32_64_instance_()
   , VectorBinary3RegisterDifferentLength_I8_16_32_instance_()
@@ -144,6 +150,21 @@ const ClassDecoder& Arm32DecoderState::decode_ARMv7(
 const ClassDecoder& Arm32DecoderState::decode_advanced_simd_data_processing_instructions(
      const Instruction inst) const
 {
+  if ((inst.Bits() & 0x00B80000) == 0x00800000 /* A(23:19)=1x000 */ &&
+      (inst.Bits() & 0x00000090) == 0x00000010 /* C(7:4)=0xx1 */) {
+    return NotImplemented_instance_;
+  }
+
+  if ((inst.Bits() & 0x00B80000) == 0x00880000 /* A(23:19)=1x001 */ &&
+      (inst.Bits() & 0x00000090) == 0x00000010 /* C(7:4)=0xx1 */) {
+    return decode_simd_dp_2shift(inst);
+  }
+
+  if ((inst.Bits() & 0x00B00000) == 0x00900000 /* A(23:19)=1x01x */ &&
+      (inst.Bits() & 0x00000090) == 0x00000010 /* C(7:4)=0xx1 */) {
+    return decode_simd_dp_2shift(inst);
+  }
+
   if ((inst.Bits() & 0x00B00000) == 0x00A00000 /* A(23:19)=1x10x */ &&
       (inst.Bits() & 0x00000050) == 0x00000000 /* C(7:4)=x0x0 */) {
     return decode_simd_dp_3diff(inst);
@@ -162,6 +183,11 @@ const ClassDecoder& Arm32DecoderState::decode_advanced_simd_data_processing_inst
   if ((inst.Bits() & 0x00A00000) == 0x00800000 /* A(23:19)=1x0xx */ &&
       (inst.Bits() & 0x00000050) == 0x00000040 /* C(7:4)=x1x0 */) {
     return decode_simd_dp_2scalar(inst);
+  }
+
+  if ((inst.Bits() & 0x00A00000) == 0x00A00000 /* A(23:19)=1x1xx */ &&
+      (inst.Bits() & 0x00000090) == 0x00000010 /* C(7:4)=0xx1 */) {
+    return decode_simd_dp_2shift(inst);
   }
 
   if ((inst.Bits() & 0x00800000) == 0x00000000 /* A(23:19)=0xxxx */) {
@@ -169,8 +195,8 @@ const ClassDecoder& Arm32DecoderState::decode_advanced_simd_data_processing_inst
   }
 
   if ((inst.Bits() & 0x00800000) == 0x00800000 /* A(23:19)=1xxxx */ &&
-      (inst.Bits() & 0x00000010) == 0x00000010 /* C(7:4)=xxx1 */) {
-    return NotImplemented_instance_;
+      (inst.Bits() & 0x00000090) == 0x00000090 /* C(7:4)=1xx1 */) {
+    return decode_simd_dp_2shift(inst);
   }
 
   if ((inst.Bits() & 0x01000000) == 0x00000000 /* U(24)=0 */ &&
@@ -1538,6 +1564,66 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_2scalar(
 
   if ((inst.Bits() & 0x00000300) == 0x00000000 /* A(11:8)=xx00 */) {
     return VectorBinary2RegisterScalar_I16_32_instance_;
+  }
+
+  if (true) {
+    return Undefined_instance_;
+  }
+
+  // Catch any attempt to fall though ...
+  return not_implemented_;
+}
+
+// Implementation of table: simd_dp_2shift.
+// Specified by: See Section A7.4.4
+const ClassDecoder& Arm32DecoderState::decode_simd_dp_2shift(
+     const Instruction inst) const
+{
+  UNREFERENCED_PARAMETER(inst);
+  if ((inst.Bits() & 0x00000F00) == 0x00000500 /* A(11:8)=0101 */ &&
+      (inst.Bits() & 0x01000000) == 0x00000000 /* U(24)=0 */) {
+    return VectorBinary2RegisterShiftAmount_I_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000F00) == 0x00000800 /* A(11:8)=1000 */ &&
+      (inst.Bits() & 0x01000000) == 0x00000000 /* U(24)=0 */ &&
+      (inst.Bits() & 0x00000080) == 0x00000000 /* L(7)=0 */) {
+    return VectorBinary2RegisterShiftAmount_N16_32_64R_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000F00) == 0x00000800 /* A(11:8)=1000 */ &&
+      (inst.Bits() & 0x01000000) == 0x01000000 /* U(24)=1 */ &&
+      (inst.Bits() & 0x00000080) == 0x00000000 /* L(7)=0 */) {
+    return VectorBinary2RegisterShiftAmount_N16_32_64RS_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000F00) == 0x00000900 /* A(11:8)=1001 */ &&
+      (inst.Bits() & 0x00000080) == 0x00000000 /* L(7)=0 */) {
+    return VectorBinary2RegisterShiftAmount_N16_32_64RS_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000F00) == 0x00000A00 /* A(11:8)=1010 */ &&
+      (inst.Bits() & 0x00000040) == 0x00000000 /* B(6)=0 */ &&
+      (inst.Bits() & 0x00000080) == 0x00000000 /* L(7)=0 */) {
+    return VectorBinary2RegisterShiftAmount_E8_16_32L_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000E00) == 0x00000400 /* A(11:8)=010x */ &&
+      (inst.Bits() & 0x01000000) == 0x01000000 /* U(24)=1 */) {
+    return VectorBinary2RegisterShiftAmount_I_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000E00) == 0x00000600 /* A(11:8)=011x */) {
+    return VectorBinary2RegisterShiftAmount_ILS_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000E00) == 0x00000E00 /* A(11:8)=111x */ &&
+      (inst.Bits() & 0x00000080) == 0x00000000 /* L(7)=0 */) {
+    return VectorBinary2RegisterShiftAmount_CVT_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000C00) == 0x00000000 /* A(11:8)=00xx */) {
+    return VectorBinary2RegisterShiftAmount_I_instance_;
   }
 
   if (true) {

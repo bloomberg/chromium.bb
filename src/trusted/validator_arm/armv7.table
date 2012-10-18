@@ -185,6 +185,9 @@ class Unary1RegisterImmediateOpDynCodeReplace : Unary1RegisterImmediateOp
 class Unary2RegisterOpNotRmIsPcNoCondUpdates : Unary2RegisterOpNotRmIsPc
 class UndefinedCondDecoder : UnsafeCondDecoder
 class UnpredictableUncondDecoder : UnsafeUncondDecoder
+class VectorBinary2RegisterScalar_I16_32 : VectorBinary2RegisterScalar
+class VectorBinary2RegisterScalar_I16_32L : VectorBinary2RegisterScalar
+class VectorBinary2RegisterScalar_F32 : VectorBinary2RegisterScalar
 class VectorBinary3RegisterDifferentLength_I8_16_32
          : VectorBinary3RegisterDifferentLength
 class VectorBinary3RegisterDifferentLength_I8_16_32
@@ -211,9 +214,19 @@ class VectorBinary3RegisterSameLength32_DQ
          : VectorBinary3RegisterSameLength
 class VectorBinary3RegisterSameLengthDI
          : VectorBinary3RegisterSameLength
-class VectorBinary2RegisterScalar_F32 : VectorBinary2RegisterScalar
-class VectorBinary2RegisterScalar_I16_32 : VectorBinary2RegisterScalar
-class VectorBinary2RegisterScalar_I16_32L : VectorBinary2RegisterScalar
+class VectorBinary2RegisterShiftAmount_E8_16_32L
+        : VectorBinary2RegisterShiftAmount
+class VectorBinary2RegisterShiftAmount_CVT
+        : VectorBinary2RegisterShiftAmount
+class VectorBinary2RegisterShiftAmount_E8_16_32L
+        : VectorBinary2RegisterShiftAmount
+class VectorBinary2RegisterShiftAmount_I : VectorBinary2RegisterShiftAmount
+class VectorBinary2RegisterShiftAmount_ILS : VectorBinary2RegisterShiftAmount
+class VectorBinary2RegisterShiftAmount_N16_32_64R
+        : VectorBinary2RegisterShiftAmount
+class VectorBinary2RegisterShiftAmount_N16_32_64RS
+        : VectorBinary2RegisterShiftAmount
+class VectorBinary2RegisterShiftAmount_CVT : VectorBinary2RegisterShiftAmount
 
 ##############################################################
 # The following define decoder tables.
@@ -2190,24 +2203,157 @@ class VectorBinary2RegisterScalar_I16_32L : VectorBinary2RegisterScalar
 +--
 
 +-- simd_dp_2shift (See Section A7.4.4)
+*V2RSA 
+   { U(24), D(22), imm6(21:16), Vd(15:12), op(8), L(7), Q(6), M(5), Vm(3:0) }
+   baseline := VectorBinary2RegisterShiftAmount;
+   d := D:Vd; n := M:Vm;
+   regs := 1 if Q=0 else 2;
+   defs := {};  # Doesn't affect general purpose registers.
+   uses := {};
+   arch := ASIMD;
+*V2RSA_I *V2RSA
+   # allows 8, 16, 32, or 64-bit integers.
+   baseline := VectorBinary2RegisterShiftAmount_I;
+   esize := 8  if L:imm6=0001xxx else
+            16 if L:imm6=001xxxx else
+            32 if L:imm6=01xxxxx else
+            64 if L:imm6=1xxxxxx else
+            0;  # i.e. error.
+   elements := 8 if L:imm6=0001xxx else
+               4 if L:imm6=001xxxx else
+               2 if L:imm6=01xxxxx else
+               1 if L:imm6=1xxxxxx else
+               0;  # i.e. error.
+   unsigned := U=1;
+   safety := L:imm6=0000xxx => DECODER_ERROR &
+             Q=1 & (Vd(0)=1 | Vm(0)=1) => UNDEFINED;
+*V2RSA_IR *V2RSA_I
+   # Shifts right 8, 16, 32, or 64-bit integers.
+   shift_amount := 16 - imm6 if L:imm6=0001xxx else
+                   32 - imm6 if L:imm6=001xxxx else
+                   64 - imm6;
+*V2RSA_IL *V2RSA_I
+   # Shifts left 8, 16, 32, or 64-bit integers.
+   shift_amount := imm6 - 8  if L:imm6=0001xxx else
+                   imm6 - 16 if L:imm6=001xxxx else
+                   imm6 - 32 if L:imm6=01xxxxx else
+                   imm6      if L:imm6=1xxxxxx else
+                   0;
+*V2RSA_ILS *V2RSA_IL
+   # Shifts left with signed/unsigned arguments.
+   baseline := VectorBinary2RegisterShiftAmount_ILS;
+   src_unsigned := U=1 & op=1;
+   dest_unsigned := U=1;
+   safety := L:imm6=0000xxx => DECODER_ERROR &
+             Q=1 & (Vd(0)=1 | Vm(0)=1) => UNDEFINED &
+             U=0 & op=0 => UNDEFINED;
+*V2RSA_NE16_32_64 *V2RSA
+   # Shifts 16, 32 or 64-bit integers when narrowing (right)
+   # shifts 8, 16, and 32-bit integers when expanding (left)
+   # these instructions narrow the result, resulting in
+   # saving 8, 16, and 32-bit values.
+   esize := 8  if imm6=001xxx else
+            16 if imm6=01xxxx else
+            32 if imm6=1xxxxx else
+            0;  # i.e. error
+   elements := 8 if imm6=001xxx else
+               4 if imm6=01xxxx else
+               2 if imm6=1xxxxx else
+               0;  # i.e. error
+*V2RSA_N16_32_64R *V2RSA_NE16_32_64
+   # Shifts right.
+   baseline := VectorBinary2RegisterShiftAmount_N16_32_64R;
+   shift_amount := 16 - imm6 if imm6=001xxx else
+                   32 - imm6 if imm6=01xxxx else
+                   64 - imm6 if imm6=1xxxxx else
+                   0;  # i.e. error
+   safety := imm6=000xxx => DECODER_ERROR &
+             Vm(0)=1 => UNDEFINED;
+*V2RSA_N16_32_64RS *V2RSA_N16_32_64R
+   # Shifts right narrows with signed/unsigned arguments.
+   baseline := VectorBinary2RegisterShiftAmount_N16_32_64RS;
+   src_unsigned := U=1 & op=1;
+   dest_unsigned := U=1;
+   safety := imm6=000xxx => DECODER_ERROR &
+             Vm(0)=1 => UNDEFINED &
+             U=0 & op=0 => DECODER_ERROR;
+*V2RSA_E8_16_32L *V2RSA_NE16_32_64
+   # Shifts left 8, 16, or 32-bit integers, and expands
+   # result to twice the length of the arguments.
+   # shift_amount == 0 => VMOVL
+   baseline := VectorBinary2RegisterShiftAmount_E8_16_32L;
+   shift_amount := imm6 - 8  if imm6=001xxx else
+                   imm6 - 16 if imm6=01xxxx else
+                   imm6 - 32 if imm6=1xxxxx else
+                   0;
+   safety := imm6=000xxx => DECODER_ERROR &
+             Vd(0)=1 => UNDEFINED;
+*V2RSA_CVT *V2RSA
+   # converts between floating-point and fixed-point.
+   baseline := VectorBinary2RegisterShiftAmount_CVT;
+   to_fixed := op=1;
+   unsigned := U=1;
+   esize := 32; frac_bits := 64 - imm6; elements := 2;
+   safety := imm6=000xxx => DECODER_ERROR &
+             imm6=0xxxxx => UNDEFINED &
+             Q=1 & (Vd(0)=1 | Vm(0)=1)  => UNDEFINED;
++--
 | A(11:8) U(24) B(6) L(7)
-| 0000    -     -    -    =EffectiveNoOp  # VSHR
-| 0001    -     -    -    =EffectiveNoOp  # VSRA
-| 0010    -     -    -    =EffectiveNoOp  # VRSHR
-| 0011    -     -    -    =EffectiveNoOp  # VRSRA
-| 0100    1     -    -    =EffectiveNoOp  # VSRI
-| 0101    0     -    -    =EffectiveNoOp  # VSHL(immediate)
-| 0101    1     -    -    =EffectiveNoOp  # VSLI
-| 011x    -     -    -    =EffectiveNoOp  # VQSHL, VQSHLU(immediate)
-| 1000    0     0    0    =EffectiveNoOp  # VSHRN
-| "       "     1    -    =EffectiveNoOp  # VRSHRN
-| "       1     0    -    =EffectiveNoOp  # VQSHRUN
-| "       "     1    -    =EffectiveNoOp  # VQRSHRUN
-| 1001    -     0    -    =EffectiveNoOp  # VQSHRN
-| "       -     1    -    =EffectiveNoOp  # VQRSHRN
-| 1010    -     0    -    =EffectiveNoOp  # VSHLL, VMOVL
-| 111x    -     -    -    =EffectiveNoOp  # VCVT (floating- and fixed-point)
-| else:                   =Undefined  # Note on page A7-17
+| 0000    -     -    -    = *V2RSA_IR
+                            pattern := 1111001u1diiiiiidddd0000lqm1mmmm;
+                            rule := VSHR;
+| 0001    -     -    -    = *V2RSA_IR
+                            pattern := 1111001u1diiiiiidddd0001lqm1mmmm;
+                            rule := VSRA;
+| 0010    -     -    -    = *V2RSA_IR
+                            pattern := 1111001u1diiiiiidddd0010lqm1mmmm;
+                            rule := VRSHR;
+| 0011    -     -    -    = *V2RSA_IR
+                            pattern := 1111001u1diiiiiidddd0011lqm1mmmm;
+                            rule := VRSRA;
+| 0100    1     -    -    = *V2RSA_IR
+                            pattern := 111100111diiiiiidddd0100lqm1mmmm;
+                            rule := VSRI;
+| 0101    0     -    -    = *V2RSA_IL
+                            pattern := 111100101diiiiiidddd0101lqm1mmmm;
+                            rule := VSHL_immediate;
+| "       1     -    -    = *V2RSA_IL
+                            pattern := 111100111diiiiiidddd0101lqm1mmmm;
+                            rule := VSLI;
+| 011x    -     -    -    = *V2RSA_ILS
+                            pattern := 1111001u1diiiiiidddd011plqm1mmmm;
+                            rule := VQSHL_VQSHLU_immediate;
+| 1000    0     0    0    = *V2RSA_N16_32_64R
+                            pattern := 111100101diiiiiidddd100000m1mmmm;
+                            rule := VSHRN;
+| "       "     1    0    = *V2RSA_N16_32_64R
+                            pattern := 111100101diiiiiidddd100001m1mmmm;
+                            rule := VRSHRN;
+| "       1     0    0    = *V2RSA_N16_32_64RS
+                            pattern := 1111001u1diiiiiidddd100p00m1mmmm;
+                            rule := VQRSHRUN;
+| "       "     1    0    = *V2RSA_N16_32_64RS
+                            pattern := 1111001u1diiiiiidddd100p01m1mmmm;
+                            rule := VQRSHRUN;
+| 1001    0     0    0    = *V2RSA_N16_32_64RS
+                            pattern := 1111001u1diiiiiidddd100p00m1mmmm;
+                            rule := VQSHRN;
+| "       1     "    "    = *V2RSA_N16_32_64RS
+                            pattern := 1111001u1diiiiiidddd100p00m1mmmm;
+                            rule := VQSHRUN;
+| "       0     1    0    = *V2RSA_N16_32_64RS
+                            pattern := 1111001u1diiiiiidddd100p01m1mmmm;
+                            rule := VQRSHRN;
+| "       1     "    "    = *V2RSA_N16_32_64RS
+                            pattern := 1111001u1diiiiiidddd100p01m1mmmm;
+                            rule := VQRSHRN;
+| 1010    -     0    0    = *V2RSA_E8_16_32L
+                            pattern := 1111001u1diiiiiidddd101000m1mmmm;
+                            rule := VSHLL_A1_or_VMOVL;
+| 111x    -     -    0    = *V2RSA_CVT
+                            pattern := 1111001u1diiiiiidddd111p0qm1mmmm;
+                            rule := VCVT_between_floating_point_and_fixed_point;
+| else:                   = Undefined
 +--
 
 +-- simd_dp_2misc (See Section A7.4.5)

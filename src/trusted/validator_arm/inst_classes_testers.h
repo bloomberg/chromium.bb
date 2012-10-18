@@ -1909,6 +1909,35 @@ class VectorBinary3RegisterOpBaseTester : public UncondDecoderTester {
   NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterOpBaseTester);
 };
 
+// Implements a decoder tester for VectorBinary2RegisterShiftAmount.
+// Vector binary operator, 2 registers and a shift amount
+// op<c>.<type<size>> Rd, Rm, #<imm>
+// +--------+--+--+--+--+------------+--------+--+----+--+--+--+--+--+------+
+// |31..28|27..|24|23|22|212019181716|15141312|11|10 9| 8| 7| 6| 5| 4| 3.. 0|
+// +------+----+--+--+--+------------+--------+--+----+--+--+--+--+--+------+
+// | cond |    | U|  | D|     imm6   |   Vd   |  |    |op| L| Q| M|  |  Vm  |
+// +--------+--+--+--+--+------------+--------+--+----+--+--+--+--+--+------+
+// Rd - The destination register.
+// Rm - The source register.
+//
+// d = D:Vd, m = M:Vm
+//
+// Note: The vector registers are not tracked by the validator, and hence,
+// are not modeled, other than their index.
+class VectorBinary2RegisterShiftAmountTester
+    : public VectorBinary3RegisterOpBaseTester {
+ public:
+  explicit VectorBinary2RegisterShiftAmountTester(
+      const NamedClassDecoder& decoder)
+      : VectorBinary3RegisterOpBaseTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::VectorBinary2RegisterShiftAmount expected_decoder_;
+};
+
 // Implements a decoder tester for VectorBinary3RegisterSameLength.
 // Op<c> Rd, Rn, Rm,...
 // +--------+-------+--+----+--------+--------+----+--+--+--+--+--+--+--------+
