@@ -364,6 +364,24 @@ if sys.platform != 'win32':
       }
       self.assertEquals(expected, self._load_context(lines, ROOT_DIR))
 
+    def test_futex_died(self):
+      # That's a pretty bad fork, copy-pasted from a real log.
+      lines = [
+        (self._ROOT_PID, 'close(9)                                = 0'),
+        (self._ROOT_PID, 'futex( <unfinished ... exit status 0>'),
+      ]
+      expected = {
+        'root': {
+          'children': [],
+          'command': None,
+          'executable': None,
+          'files': [],
+          'initial_cwd': unicode(ROOT_DIR),
+          'pid': self._ROOT_PID,
+        },
+      }
+      self.assertEquals(expected, self._load_context(lines, ROOT_DIR))
+
     def test_open(self):
       lines = [
         (self._ROOT_PID,

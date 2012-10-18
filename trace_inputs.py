@@ -1043,6 +1043,10 @@ class Strace(ApiBase):
       RE_HEADER = re.compile(r'^([a-z_0-9]+)\((.+?)\)\s+= (.+)$')
       # An interrupted function call, only grab the minimal header.
       RE_UNFINISHED = re.compile(r'^([^\(]+)(.*) \<unfinished \.\.\.\>$')
+      # An interrupted function call, with the process exiting. It must be the
+      # last line in the log.
+      RE_UNFINISHED_EXIT = re.compile(
+          r'^([^\(]+)(.*) \<unfinished \.\.\.\ exit status \d+>$')
       # A resumed function call.
       RE_RESUMED = re.compile(r'^<\.\.\. ([^ ]+) resumed> (.+)$')
       # A process received a signal.
@@ -1137,6 +1141,7 @@ class Strace(ApiBase):
         # Current directory when the process started.
         self.initial_cwd = self.RelativePath(self._root(), None)
         self.parentid = None
+        self._done = False
 
       def get_cwd(self):
         """Returns the best known value of cwd."""
@@ -1154,6 +1159,11 @@ class Strace(ApiBase):
 
       def on_line(self, line):
         self._line_number += 1
+        if self._done:
+          raise TracingFailure(
+              'Found a trace for a terminated process',
+              None, None, None)
+
         if self.RE_SIGNAL.match(line):
           # Ignore signals.
           return
@@ -1180,6 +1190,12 @@ class Strace(ApiBase):
                   self._pending_calls)
             self._pending_calls[match.group(1)] = (
                 match.group(1) + match.group(2))
+            return
+
+          match = self.RE_UNFINISHED_EXIT.match(line)
+          if match:
+            # The process died. No other line can be processed afterward.
+            self._done = True
             return
 
           match = self.RE_UNAVAILABLE.match(line)
@@ -1285,6 +1301,9 @@ class Strace(ApiBase):
 
       def handle_fork(self, args, result):
         self._handle_unknown('fork', args, result)
+
+      def handle_futex(self, _args, _result):
+        pass
 
       def handle_getcwd(self, _args, _result):
         pass
