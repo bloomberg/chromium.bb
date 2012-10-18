@@ -39,13 +39,21 @@
       ],
       'cflags!': [
         '-fno-exceptions',
-        '-fvisibility=hidden',
       ],
       'defines': [
         'DBUS_HAS_RECURSIVE_MUTEX',
         'DBUS_HAS_THREADS_INIT_DEFAULT',
+        'GCC_HASCLASSVISIBILITY',
       ],
       'direct_dependent_settings': {
+        'cflags!': [
+          '-fno-exceptions',
+        ],
+        'defines': [
+          'DBUS_HAS_RECURSIVE_MUTEX',
+          'DBUS_HAS_THREADS_INIT_DEFAULT',
+          'GCC_HASCLASSVISIBILITY',
+        ],
         'include_dirs': [
           'source/include',
         ],
