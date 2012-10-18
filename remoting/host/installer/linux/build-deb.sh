@@ -6,12 +6,20 @@
 
 if [[ -z "$version_full" ]]; then
   src_root=./../../../..
+  remoting_version_path=$src_root/remoting/VERSION
+  chrome_version_path=$src_root/chrome/VERSION
   version_helper=$src_root/chrome/tools/build/version.py
-  version_base=$($version_helper -f $src_root/remoting/VERSION \
-                 -t "@MAJOR@.@MINOR@")
-  version_build=$($version_helper -f $src_root/chrome/VERSION \
-                  -t "@BUILD@.@PATCH@")
-  version_full="$version_base.$version_build"
+
+  # TODO(lambroslambrou): Refactor to share the logic with remoting.gyp.
+  version_major=$($version_helper -f $chrome_version_path \
+                  -f $remoting_version_path -t "@MAJOR@")
+  version_minor=$($version_helper -f $remoting_version_path \
+                  -t "@REMOTING_PATCH@")
+  version_build=$($version_helper -f $chrome_version_path \
+                  -f $remoting_version_path -t "@BUILD@")
+  version_patch=$($version_helper -f $chrome_version_path \
+                  -f $remoting_version_path -t "@PATCH@")
+  version_full="$version_major.$version_minor.$version_build.$version_patch"
 fi
 
 if [[ ! "$version_full" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then

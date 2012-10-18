@@ -5,4 +5,9 @@
 # found in the LICENSE file.
 
 %:
-	dh $@ 
+	dh $@
+
+# Don't restart the service on package upgrade, as that will restart users'
+# virtual desktops, possibly losing unsaved work.
+override_dh_installinit:
+	dh_installinit -r

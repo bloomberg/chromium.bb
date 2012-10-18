@@ -20,3 +20,5 @@ install:
 	install $(TOOLS)/is-remoting-session $(INSTALL_DIR)
 	install $(RELEASE)/remoting_me2me_host -m 0755 \
 	  $(INSTALL_DIR)/chrome-remote-desktop-host
+	install $(RELEASE)/remoting_start_host -m 0755 \
+	  $(INSTALL_DIR)/start-host
