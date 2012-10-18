@@ -1794,7 +1794,12 @@
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/remoting/host/remoting_host_messages.rc',
             '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_host_me2me_version.rc',
+            'host/desktop_session_connector.h',
             'host/host_ui.rc',
+            'host/ipc_desktop_environment_factory.cc',
+            'host/ipc_desktop_environment_factory.h',
+            'host/ipc_desktop_environment.cc',
+            'host/ipc_desktop_environment.h',
           ],
           'link_settings': {
             'libraries': [

@@ -32,7 +32,7 @@ using testing::ReturnRef;
 
 class ClientSessionTest : public testing::Test {
  public:
-  ClientSessionTest() {}
+  ClientSessionTest() : event_executor_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
     ui_task_runner_ = new AutoThreadTaskRunner(
@@ -55,22 +55,14 @@ class ClientSessionTest : public testing::Test {
 
     client_jid_ = "user@domain/rest-of-jid";
 
-    event_executor_ = new MockEventExecutor();
-    capturer_ = new MockVideoFrameCapturer();
-    EXPECT_CALL(*capturer_, Start(_));
-    EXPECT_CALL(*capturer_, Stop());
-    EXPECT_CALL(*capturer_, InvalidateRegion(_)).Times(AnyNumber());
-    EXPECT_CALL(*capturer_, CaptureInvalidRegion(_)).Times(AnyNumber());
-
-    scoped_ptr<DesktopEnvironment> desktop_environment(new DesktopEnvironment(
-        scoped_ptr<AudioCapturer>(NULL),
-        scoped_ptr<EventExecutor>(event_executor_),
-        scoped_ptr<VideoFrameCapturer>(capturer_)));
+    desktop_environment_factory_.reset(new MockDesktopEnvironmentFactory());
+    EXPECT_CALL(*desktop_environment_factory_, CreatePtr(_))
+        .Times(AnyNumber())
+        .WillRepeatedly(Invoke(this,
+                               &ClientSessionTest::CreateDesktopEnvironment));
 
     // Set up a large default screen size that won't affect most tests.
     screen_size_.set(1000, 1000);
-    EXPECT_CALL(*capturer_, size_most_recent())
-        .WillRepeatedly(ReturnRef(screen_size_));
 
     session_config_ = SessionConfig::GetDefault();
 
@@ -89,7 +81,7 @@ class ClientSessionTest : public testing::Test {
         context_.encode_task_runner(),
         context_.network_task_runner(),
         connection.Pass(),
-        desktop_environment.Pass(),
+        desktop_environment_factory_.get(),
         base::TimeDelta());
   }
 
@@ -108,6 +100,22 @@ class ClientSessionTest : public testing::Test {
   }
 
  protected:
+  DesktopEnvironment* CreateDesktopEnvironment(ClientSession* client) {
+    MockVideoFrameCapturer* capturer = new MockVideoFrameCapturer();
+    EXPECT_CALL(*capturer, Start(_));
+    EXPECT_CALL(*capturer, Stop());
+    EXPECT_CALL(*capturer, InvalidateRegion(_)).Times(AnyNumber());
+    EXPECT_CALL(*capturer, CaptureInvalidRegion(_)).Times(AnyNumber());
+    EXPECT_CALL(*capturer, size_most_recent())
+        .WillRepeatedly(ReturnRef(screen_size_));
+
+    EXPECT_TRUE(!event_executor_);
+    event_executor_ = new MockEventExecutor();
+    return new DesktopEnvironment(scoped_ptr<AudioCapturer>(NULL),
+                                  scoped_ptr<EventExecutor>(event_executor_),
+                                  scoped_ptr<VideoFrameCapturer>(capturer));
+  }
+
   void DisconnectClientSession() {
     client_session_->Disconnect();
     // MockSession won't trigger OnConnectionClosed, so fake it.
@@ -130,13 +138,13 @@ class ClientSessionTest : public testing::Test {
   std::string client_jid_;
   MockHostStub host_stub_;
   MockEventExecutor* event_executor_;
-  MockVideoFrameCapturer* capturer_;
   MockClientSessionEventHandler session_event_handler_;
   scoped_refptr<ClientSession> client_session_;
   SessionConfig session_config_;
 
   // ClientSession owns |connection_| but tests need it to inject fake events.
   protocol::ConnectionToClient* connection_;
+  scoped_ptr<MockDesktopEnvironmentFactory> desktop_environment_factory_;
 };
 
 MATCHER_P2(EqualsClipboardEvent, m, d, "") {

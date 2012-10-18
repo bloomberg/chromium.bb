@@ -15,6 +15,7 @@ class SingleThreadTaskRunner;
 
 namespace remoting {
 
+class ClientSession;
 class DesktopEnvironment;
 
 class DesktopEnvironmentFactory {
@@ -24,7 +25,8 @@ class DesktopEnvironmentFactory {
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   virtual ~DesktopEnvironmentFactory();
 
-  virtual scoped_ptr<DesktopEnvironment> Create();
+  // Creates an instance of |DesktopEnvironment| to be used by |client|.
+  virtual scoped_ptr<DesktopEnvironment> Create(ClientSession* client);
 
   // Returns |true| if created |DesktopEnvironment| instances support audio
   // capture.

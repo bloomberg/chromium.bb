@@ -11,7 +11,6 @@
 #include "build/build_config.h"
 #include "remoting/base/constants.h"
 #include "remoting/host/chromoting_host_context.h"
-#include "remoting/host/desktop_environment.h"
 #include "remoting/host/desktop_environment_factory.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/host_config.h"
@@ -307,10 +306,6 @@ void ChromotingHost::OnIncomingSession(
 
   LOG(INFO) << "Client connected: " << session->jid();
 
-  // Create the desktop integration implementation for the client to use.
-  scoped_ptr<DesktopEnvironment> desktop_environment =
-      desktop_environment_factory_->Create();
-
   // Create a client object.
   scoped_ptr<protocol::ConnectionToClient> connection(
       new protocol::ConnectionToClient(session));
@@ -320,7 +315,7 @@ void ChromotingHost::OnIncomingSession(
       encode_task_runner_,
       network_task_runner_,
       connection.Pass(),
-      desktop_environment.Pass(),
+      desktop_environment_factory_,
       max_session_duration_);
   clients_.push_back(client);
   clients_count_++;
@@ -372,6 +367,17 @@ void ChromotingHost::DisconnectAllClients() {
     size_t size = clients_.size();
     clients_.front()->Disconnect();
     CHECK_EQ(clients_.size(), size - 1);
+  }
+}
+
+void ChromotingHost::DisconnectClient(DesktopEnvironment* desktop_environment) {
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
+
+  for (ClientList::iterator i = clients_.begin(); i != clients_.end(); ++i) {
+    if ((*i)->desktop_environment() == desktop_environment) {
+      (*i)->Disconnect();
+      break;
+    }
   }
 }
 

@@ -1,0 +1,94 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "remoting/host/ipc_desktop_environment_factory.h"
+
+#include <utility>
+
+#include "ipc/ipc_channel_proxy.h"
+#include "remoting/host/audio_capturer.h"
+#include "remoting/host/chromoting_host.h"
+#include "remoting/host/chromoting_host_context.h"
+#include "remoting/host/chromoting_messages.h"
+#include "remoting/host/desktop_session_connector.h"
+#include "remoting/host/event_executor.h"
+#include "remoting/host/ipc_desktop_environment.h"
+#include "remoting/host/video_frame_capturer.h"
+
+namespace remoting {
+
+IpcDesktopEnvironmentFactory::IpcDesktopEnvironmentFactory(
+    IPC::ChannelProxy* daemon_channel,
+    scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    : DesktopEnvironmentFactory(input_task_runner, ui_task_runner),
+      daemon_channel_(daemon_channel),
+      network_task_runner_(network_task_runner),
+      next_id_(0) {
+}
+
+IpcDesktopEnvironmentFactory::~IpcDesktopEnvironmentFactory() {
+}
+
+scoped_ptr<DesktopEnvironment> IpcDesktopEnvironmentFactory::Create(
+    ClientSession* client) {
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
+
+  return scoped_ptr<DesktopEnvironment>(new IpcDesktopEnvironment(
+      input_task_runner_, ui_task_runner_, this, client));
+}
+
+void IpcDesktopEnvironmentFactory::ConnectTerminal(
+    IpcDesktopEnvironment* desktop_environment) {
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
+
+  int id = next_id_++;
+  bool inserted = active_connections_.insert(
+      std::make_pair(id, desktop_environment)).second;
+  CHECK(inserted);
+
+  VLOG(1) << "Network: registered desktop environment " << id;
+  daemon_channel_->Send(new ChromotingNetworkHostMsg_ConnectTerminal(id));
+}
+
+void IpcDesktopEnvironmentFactory::DisconnectTerminal(
+    IpcDesktopEnvironment* desktop_environment) {
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
+
+  ActiveConnectionsList::iterator i;
+  for (i = active_connections_.begin(); i != active_connections_.end(); ++i) {
+    if (i->second == desktop_environment)
+      break;
+  }
+
+  if (i != active_connections_.end()) {
+    int id = i->first;
+    active_connections_.erase(i);
+
+    VLOG(1) << "Network: unregistered desktop environment " << id;
+    daemon_channel_->Send(new ChromotingNetworkHostMsg_DisconnectTerminal(id));
+  }
+}
+
+void IpcDesktopEnvironmentFactory::OnTerminalDisconnected(int terminal_id) {
+  if (!network_task_runner_->BelongsToCurrentThread()) {
+    network_task_runner_->PostTask(FROM_HERE, base::Bind(
+        &IpcDesktopEnvironmentFactory::OnTerminalDisconnected,
+        base::Unretained(this), terminal_id));
+    return;
+  }
+
+  ActiveConnectionsList::iterator i =
+      active_connections_.find(terminal_id);
+  if (i != active_connections_.end()) {
+    IpcDesktopEnvironment* desktop_environment = i->second;
+    active_connections_.erase(i);
+
+    // Disconnect the client for the given desktop environment.
+    desktop_environment->DisconnectClient();
+  }
+}
+
+}  // namespace remoting

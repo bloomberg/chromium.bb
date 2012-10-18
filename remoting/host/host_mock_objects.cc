@@ -26,6 +26,17 @@ void MockCaptureCompletedCallback::CaptureCompleted(
   CaptureCompletedPtr(capture_data.get());
 }
 
+MockDesktopEnvironmentFactory::MockDesktopEnvironmentFactory()
+    : DesktopEnvironmentFactory(NULL, NULL) {
+}
+
+MockDesktopEnvironmentFactory::~MockDesktopEnvironmentFactory() {}
+
+scoped_ptr<DesktopEnvironment> MockDesktopEnvironmentFactory::Create(
+    ClientSession* client) {
+  return scoped_ptr<DesktopEnvironment>(CreatePtr(client));
+}
+
 MockEventExecutor::MockEventExecutor() {}
 
 MockEventExecutor::~MockEventExecutor() {}

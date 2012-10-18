@@ -15,6 +15,7 @@
 #include "remoting/codec/video_encoder_vp8.h"
 #include "remoting/host/audio_scheduler.h"
 #include "remoting/host/desktop_environment.h"
+#include "remoting/host/desktop_environment_factory.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/screen_recorder.h"
 #include "remoting/host/video_frame_capturer.h"
@@ -31,11 +32,12 @@ ClientSession::ClientSession(
     scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
     scoped_ptr<protocol::ConnectionToClient> connection,
-    scoped_ptr<DesktopEnvironment> desktop_environment,
+    DesktopEnvironmentFactory* desktop_environment_factory,
     const base::TimeDelta& max_duration)
     : event_handler_(event_handler),
       connection_(connection.Pass()),
-      desktop_environment_(desktop_environment.Pass()),
+      desktop_environment_(desktop_environment_factory->Create(
+          ALLOW_THIS_IN_INITIALIZER_LIST(this))),
       client_jid_(connection_->session()->jid()),
       host_clipboard_stub_(desktop_environment_->event_executor()),
       host_input_stub_(desktop_environment_->event_executor()),

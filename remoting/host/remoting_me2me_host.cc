@@ -41,6 +41,7 @@
 #include "remoting/host/curtaining_host_observer.h"
 #include "remoting/host/desktop_environment_factory.h"
 #include "remoting/host/desktop_resizer.h"
+#include "remoting/host/desktop_session_connector.h"
 #include "remoting/host/dns_blackhole_checker.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/heartbeat_sender.h"
@@ -49,6 +50,7 @@
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/host_user_interface.h"
 #include "remoting/host/ipc_consts.h"
+#include "remoting/host/ipc_desktop_environment_factory.h"
 #include "remoting/host/json_host_config.h"
 #include "remoting/host/logging.h"
 #include "remoting/host/log_to_server.h"
@@ -113,23 +115,19 @@ void QuitMessageLoop(MessageLoop* message_loop) {
 namespace remoting {
 
 class HostProcess
-    : public HeartbeatSender::Listener,
-      public IPC::Listener,
-      public ConfigFileWatcher::Delegate {
+    : public ConfigFileWatcher::Delegate,
+      public HeartbeatSender::Listener,
+      public IPC::Listener {
  public:
   explicit HostProcess(scoped_ptr<ChromotingHostContext> context)
       : context_(context.Pass()),
         allow_nat_traversal_(true),
         restarting_(false),
         shutting_down_(false),
-#if defined(OS_WIN)
-        desktop_environment_factory_(new SessionDesktopEnvironmentFactory(
-            context_->input_task_runner(), context_->ui_task_runner())),
-#else  // !defined(OS_WIN)
-        desktop_environment_factory_(new DesktopEnvironmentFactory(
-            context_->input_task_runner(), context_->ui_task_runner())),
-#endif  // !defined(OS_WIN)
         desktop_resizer_(DesktopResizer::Create()),
+#if defined(REMOTING_MULTI_PROCESS)
+        desktop_session_connector_(NULL),
+#endif  // defined(REMOTING_MULTI_PROCESS)
         exit_code_(kSuccessExitCode) {
     network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
     curtain_ = CurtainMode::Create(
@@ -300,6 +298,9 @@ class HostProcess
     IPC_BEGIN_MESSAGE_MAP(HostProcess, message)
       IPC_MESSAGE_HANDLER(ChromotingDaemonNetworkMsg_Configuration,
                           OnConfigUpdated)
+      IPC_MESSAGE_FORWARD(ChromotingDaemonNetworkMsg_TerminalDisconnected,
+                          desktop_session_connector_,
+                          DesktopSessionConnector::OnTerminalDisconnected)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     return handled;
@@ -315,6 +316,32 @@ class HostProcess
       OnConfigWatcherError();
       return;
     }
+
+    // Create a desktop environment factory appropriate to the build type &
+    // platform.
+#if defined(OS_WIN)
+
+#if defined(REMOTING_MULTI_PROCESS)
+    IpcDesktopEnvironmentFactory* desktop_environment_factory =
+        new IpcDesktopEnvironmentFactory(
+            daemon_channel_.get(),
+            context_->input_task_runner(),
+            context_->network_task_runner(),
+            context_->ui_task_runner());
+    desktop_session_connector_ = desktop_environment_factory;
+#else // !defined(REMOTING_MULTI_PROCESS)
+    DesktopEnvironmentFactory* desktop_environment_factory =
+        new SessionDesktopEnvironmentFactory(
+            context_->input_task_runner(), context_->ui_task_runner());
+#endif  // !defined(REMOTING_MULTI_PROCESS)
+
+#else  // !defined(OS_WIN)
+    DesktopEnvironmentFactory* desktop_environment_factory =
+        new DesktopEnvironmentFactory(
+            context_->input_task_runner(), context_->ui_task_runner());
+#endif  // !defined(OS_WIN)
+
+    desktop_environment_factory_.reset(desktop_environment_factory);
 
     context_->network_task_runner()->PostTask(
         FROM_HERE,
@@ -729,6 +756,10 @@ class HostProcess
   scoped_ptr<HostUserInterface> host_user_interface_;
 
   scoped_refptr<ChromotingHost> host_;
+
+#if defined(REMOTING_MULTI_PROCESS)
+  DesktopSessionConnector* desktop_session_connector_;
+#endif  // defined(REMOTING_MULTI_PROCESS)
 
   int exit_code_;
 };

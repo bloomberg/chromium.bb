@@ -36,6 +36,7 @@
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/chromoting_host.h"
+#include "remoting/host/client_session.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/desktop_environment_factory.h"
@@ -102,7 +103,7 @@ class FakeDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
   FakeDesktopEnvironmentFactory();
   virtual ~FakeDesktopEnvironmentFactory();
 
-  virtual scoped_ptr<DesktopEnvironment> Create() OVERRIDE;
+  virtual scoped_ptr<DesktopEnvironment> Create(ClientSession* client) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeDesktopEnvironmentFactory);
@@ -115,7 +116,8 @@ class FakeDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
 FakeDesktopEnvironmentFactory::~FakeDesktopEnvironmentFactory() {
 }
 
-scoped_ptr<DesktopEnvironment> FakeDesktopEnvironmentFactory::Create() {
+scoped_ptr<DesktopEnvironment> FakeDesktopEnvironmentFactory::Create(
+    ClientSession* client) {
   scoped_ptr<VideoFrameCapturer> capturer(new VideoFrameCapturerFake());
   scoped_ptr<EventExecutor> event_executor(new EventExecutorFake());
   return scoped_ptr<DesktopEnvironment>(new DesktopEnvironment(

@@ -35,6 +35,7 @@ class AudioEncoder;
 class AudioScheduler;
 struct ClientSessionTraits;
 class DesktopEnvironment;
+class DesktopEnvironmentFactory;
 class ScreenRecorder;
 class VideoEncoder;
 class VideoFrameCapturer;
@@ -85,12 +86,14 @@ class ClientSession
     virtual ~EventHandler() {}
   };
 
+  // |event_handler| must outlive |this|. |desktop_environment_factory| is only
+  // used by the constructor to create an instance of DesktopEnvironment.
   ClientSession(EventHandler* event_handler,
                 scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
                 scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner,
                 scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
                 scoped_ptr<protocol::ConnectionToClient> connection,
-                scoped_ptr<DesktopEnvironment> desktop_environment,
+                DesktopEnvironmentFactory* desktop_environment_factory,
                 const base::TimeDelta& max_duration);
 
   // protocol::HostStub interface.

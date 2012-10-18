@@ -42,7 +42,7 @@ void DaemonProcess::OnChannelConnected() {
 
   DeleteAllDesktopSessions();
 
-  // Reset the last known desktop session ID because no IDs have been allocated
+  // Reset the last known terminal ID because no IDs have been allocated
   // by the the newly started process yet.
   next_terminal_id_ = 0;
 
@@ -90,7 +90,7 @@ void DaemonProcess::CloseDesktopSession(int terminal_id) {
     }
   }
 
-  // It is OK if the desktop session ID wasn't found. There is a race between
+  // It is OK if the terminal ID wasn't found. There is a race between
   // the network and daemon processes. Each frees its own recources first and
   // notifies the other party if there was something to clean up.
   if (i == desktop_sessions_.end())

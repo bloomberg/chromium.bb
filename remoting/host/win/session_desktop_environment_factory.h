@@ -9,6 +9,8 @@
 
 namespace remoting {
 
+class ClientSession;
+
 class SessionDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
  public:
   SessionDesktopEnvironmentFactory(
@@ -16,7 +18,7 @@ class SessionDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   virtual ~SessionDesktopEnvironmentFactory();
 
-  virtual scoped_ptr<DesktopEnvironment> Create() OVERRIDE;
+  virtual scoped_ptr<DesktopEnvironment> Create(ClientSession* client) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionDesktopEnvironmentFactory);
