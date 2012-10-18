@@ -211,7 +211,7 @@ remoting/branding_Chromium
 # String 'copyright' used in project file.
 remoting/host/installer/mac/uninstaller/remoting_uninstaller-Info.plist
 # String 'copyright' used in project file.
-remoting/host/me2me_preference_pane-Info.plist
+remoting/host/mac/me2me_preference_pane-Info.plist
 # String 'copyright' used in project file.
 remoting/host/remoting_me2me_host-Info.plist
 # String 'copyright' used in file.
