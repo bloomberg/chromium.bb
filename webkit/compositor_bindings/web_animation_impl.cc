@@ -4,14 +4,14 @@
 
 #include "config.h"
 
-#include "WebAnimationImpl.h"
+#include "web_animation_impl.h"
 
-#include "WebFloatAnimationCurveImpl.h"
-#include "WebTransformAnimationCurveImpl.h"
 #include "cc/active_animation.h"
 #include "cc/animation_curve.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebAnimation.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebAnimationCurve.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebAnimation.h"
+#include "web_float_animation_curve_impl.h"
+#include "web_transform_animation_curve_impl.h"
 
 using cc::CCActiveAnimation;
 

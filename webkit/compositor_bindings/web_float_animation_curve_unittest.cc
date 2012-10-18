@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "WebFloatAnimationCurveImpl.h"
+#include "web_float_animation_curve_impl.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/timing_function.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "WebCompositorImpl.h"
+#include "web_compositor_impl.h"
 
 #ifdef LOG
 #undef LOG
@@ -13,9 +13,9 @@
 #include "cc/layer_tree_host.h"
 #include "cc/proxy.h"
 #include "cc/settings.h"
+#include "ccthread_impl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
 #include "webkit/glue/webthread_impl.h"
-#include "CCThreadImpl.h"
 
 using namespace cc;
 

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "CCThreadImpl.h"
+#include "ccthread_impl.h"
 
 #include "cc/completion_event.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"

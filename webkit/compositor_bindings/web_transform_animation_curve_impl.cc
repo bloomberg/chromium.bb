@@ -4,11 +4,11 @@
 
 #include "config.h"
 
-#include "WebTransformAnimationCurveImpl.h"
+#include "web_transform_animation_curve_impl.h"
 
-#include "WebAnimationCurveCommon.h"
 #include "cc/keyframed_animation_curve.h"
 #include "cc/timing_function.h"
+#include "web_animation_curve_common.h"
 
 namespace WebKit {
 

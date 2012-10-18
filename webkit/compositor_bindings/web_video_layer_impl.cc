@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "WebVideoLayerImpl.h"
+#include "web_video_layer_impl.h"
 
-#include "WebLayerImpl.h"
+#include "web_layer_impl.h"
 #include "cc/video_layer.h"
 
 namespace WebKit {

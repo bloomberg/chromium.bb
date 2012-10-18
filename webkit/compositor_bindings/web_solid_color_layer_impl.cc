@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "WebSolidColorLayerImpl.h"
+#include "web_solid_color_layer_impl.h"
 
-#include "WebLayerImpl.h"
 #include "cc/solid_color_layer.h"
+#include "web_layer_impl.h"
 
 using cc::SolidColorLayerChromium;
 

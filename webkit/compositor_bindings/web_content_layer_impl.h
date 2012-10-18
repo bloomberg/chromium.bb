@@ -5,10 +5,15 @@
 #ifndef WebContentLayerImpl_h
 #define WebContentLayerImpl_h
 
-#include "WebLayerImpl.h"
+// FIXME: WebContentLayer should forward declare this
+namespace WebKit {
+class WebLayer;
+}
+
 #include "base/memory/scoped_ptr.h"
 #include "cc/content_layer_client.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebContentLayer.h"
+#include "web_layer_impl.h"
 
 namespace cc {
 class IntRect;

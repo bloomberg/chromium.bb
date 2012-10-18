@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "WebIOSurfaceLayerImpl.h"
+#include "web_io_surface_layer_impl.h"
 
-#include "WebLayerImpl.h"
 #include "cc/io_surface_layer.h"
 #include "webcore_convert.h"
+#include "web_layer_impl.h"
 
 using cc::IOSurfaceLayerChromium;
 

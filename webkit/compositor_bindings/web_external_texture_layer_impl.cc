@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "WebExternalTextureLayerImpl.h"
+#include "web_external_texture_layer_impl.h"
 
-#include "WebLayerImpl.h"
 #include "cc/texture_layer.h"
 #include "cc/texture_update_queue.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebExternalTextureLayerClient.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "webcore_convert.h"
+#include "web_layer_impl.h"
 
 using namespace cc;
 

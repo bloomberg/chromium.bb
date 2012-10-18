@@ -4,9 +4,6 @@
 
 #include "config.h"
 
-#include "WebLayerImpl.h"
-#include "WebLayerTreeViewImpl.h"
-#include "WebLayerTreeViewTestCommon.h"
 #include "base/memory/ref_counted.h"
 #include "cc/test/compositor_fake_web_graphics_context_3d.h"
 #include "cc/test/fake_web_compositor_output_surface.h"
@@ -14,9 +11,12 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorSupport.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeViewClient.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebThread.h"
+#include "web_layer_impl.h"
+#include "web_layer_tree_view_impl.h"
+#include "web_layer_tree_view_test_common.h"
 
 using namespace WebKit;
 using testing::Mock;

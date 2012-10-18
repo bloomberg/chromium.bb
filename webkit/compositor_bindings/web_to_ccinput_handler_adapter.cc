@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "WebToCCInputHandlerAdapter.h"
+#include "web_to_ccinput_handler_adapter.h"
 
 #include "cc/stubs/int_point.h"
 #include "cc/stubs/int_size.h"

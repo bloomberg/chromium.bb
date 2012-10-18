@@ -7,8 +7,8 @@
 
 #include "cc/test/compositor_fake_web_graphics_context_3d.h"
 #include "cc/test/web_compositor_initializer.h"
-#include "WebLayerImpl.h"
-#include "WebLayerTreeViewTestCommon.h"
+#include "web_layer_impl.h"
+#include "web_layer_tree_view_test_common.h"
 #include <public/WebContentLayer.h>
 #include <public/WebContentLayerClient.h>
 #include <public/WebExternalTextureLayer.h>

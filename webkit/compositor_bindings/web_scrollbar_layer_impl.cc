@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "WebScrollbarLayerImpl.h"
+#include "web_scrollbar_layer_impl.h"
 
-#include "WebLayerImpl.h"
 #include "cc/scrollbar_layer.h"
+#include "web_layer_impl.h"
 
 using cc::ScrollbarLayerChromium;
 

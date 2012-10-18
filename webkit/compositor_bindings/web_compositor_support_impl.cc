@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "config.h"
 #include "webkit/compositor_bindings/web_compositor_support_impl.h"
 
-#include "config.h"
 #include "base/memory/scoped_ptr.h"
-#include "webkit/compositor_bindings/WebLayerImpl.h"
-#include "webkit/compositor_bindings/WebLayerTreeViewImpl.h"
-#include "webkit/compositor_bindings/WebCompositorImpl.h"
-#include "webkit/compositor_bindings/WebContentLayerImpl.h"
-#include "webkit/compositor_bindings/WebDelegatedRendererLayerImpl.h"
-#include "webkit/compositor_bindings/WebExternalTextureLayerImpl.h"
-#include "webkit/compositor_bindings/WebIOSurfaceLayerImpl.h"
-#include "webkit/compositor_bindings/WebSolidColorLayerImpl.h"
-#include "webkit/compositor_bindings/WebImageLayerImpl.h"
-#include "webkit/compositor_bindings/WebVideoLayerImpl.h"
-#include "webkit/compositor_bindings/WebScrollbarLayerImpl.h"
-#include "webkit/compositor_bindings/WebAnimationImpl.h"
-#include "webkit/compositor_bindings/WebFloatAnimationCurveImpl.h"
-#include "webkit/compositor_bindings/WebTransformAnimationCurveImpl.h"
+#include "webkit/compositor_bindings/web_animation_impl.h"
+#include "webkit/compositor_bindings/web_compositor_impl.h"
+#include "webkit/compositor_bindings/web_content_layer_impl.h"
+#include "webkit/compositor_bindings/web_delegated_renderer_layer_impl.h"
+#include "webkit/compositor_bindings/web_external_texture_layer_impl.h"
+#include "webkit/compositor_bindings/web_float_animation_curve_impl.h"
+#include "webkit/compositor_bindings/web_image_layer_impl.h"
+#include "webkit/compositor_bindings/web_io_surface_layer_impl.h"
+#include "webkit/compositor_bindings/web_layer_impl.h"
+#include "webkit/compositor_bindings/web_layer_tree_view_impl.h"
+#include "webkit/compositor_bindings/web_scrollbar_layer_impl.h"
+#include "webkit/compositor_bindings/web_solid_color_layer_impl.h"
+#include "webkit/compositor_bindings/web_transform_animation_curve_impl.h"
+#include "webkit/compositor_bindings/web_video_layer_impl.h"
 
 using WebKit::WebAnimation;
 using WebKit::WebAnimationCurve;

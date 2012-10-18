@@ -5,7 +5,7 @@
 #ifndef WebDelegatedRendererLayerImpl_h
 #define WebDelegatedRendererLayerImpl_h
 
-#include "WebLayerImpl.h"
+#include "web_layer_impl.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebDelegatedRendererLayer.h"
 

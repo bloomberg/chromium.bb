@@ -3,10 +3,8 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "WebLayerTreeViewImpl.h"
+#include "web_layer_tree_view_impl.h"
 
-#include "WebLayerImpl.h"
-#include "WebToCCInputHandlerAdapter.h"
 #include "cc/font_atlas.h"
 #include "cc/input_handler.h"
 #include "cc/layer.h"
@@ -14,11 +12,13 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebInputHandler.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
-#include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeViewClient.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRenderingStats.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "webcore_convert.h"
+#include "web_layer_impl.h"
+#include "web_to_ccinput_handler_adapter.h"
 
 using namespace cc;
 

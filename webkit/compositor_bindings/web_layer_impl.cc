@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "WebLayerImpl.h"
+#include "web_layer_impl.h"
 
 #include "SkMatrix44.h"
-#include "WebAnimationImpl.h"
 #ifdef LOG
 #undef LOG
 #endif
@@ -17,6 +16,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebTransformationMatrix.h"
+#include "web_animation_impl.h"
 #include "webcore_convert.h"
 
 using cc::CCActiveAnimation;

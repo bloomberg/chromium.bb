@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "WebImageLayerImpl.h"
+#include "web_image_layer_impl.h"
 
 #include "cc/image_layer.h"
-#include "WebLayerImpl.h"
+#include "web_layer_impl.h"
 
 using cc::ImageLayerChromium;
 

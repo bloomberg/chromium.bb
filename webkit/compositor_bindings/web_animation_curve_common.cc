@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "WebAnimationCurveCommon.h"
+#include "web_animation_curve_common.h"
 
 #include "cc/timing_function.h"
 
