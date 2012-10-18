@@ -14,6 +14,8 @@ var BROWSER_TAG_ATTRIBUTES = ['src', 'width', 'height'];
 var BROWSER_TAG_API_METHODS = [
     'addEventListener',
     'back',
+    'canGoBack',
+    'canGoForward',
     'forward',
     'getProcessId',
     'go',

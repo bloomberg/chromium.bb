@@ -56,6 +56,8 @@ onload = function() {
       var apiMethodsToCheck = [
         'addEventListener',
         'back',
+        'canGoBack',
+        'canGoForward',
         'forward',
         'getProcessId',
         'go',
