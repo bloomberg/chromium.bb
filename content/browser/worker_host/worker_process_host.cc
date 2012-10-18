@@ -166,11 +166,9 @@ bool WorkerProcessHost::Init(int render_process_id) {
     switches::kDisableFileSystem,
     switches::kDisableSeccompFilterSandbox,
     switches::kDisableWebSockets,
-    switches::kEnableLogging,
 #if defined(OS_MACOSX)
     switches::kEnableSandboxLogging,
 #endif
-    switches::kLoggingLevel,
   };
   cmd_line->CopySwitchesFrom(*CommandLine::ForCurrentProcess(), kSwitchNames,
                              arraysize(kSwitchNames));

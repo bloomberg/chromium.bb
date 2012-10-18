@@ -4,6 +4,7 @@
 
 #include "content/browser/browser_child_process_host_impl.h"
 
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -121,10 +122,20 @@ void BrowserChildProcessHostImpl::Launch(
   content::GetContentClient()->browser()->AppendExtraCommandLineSwitches(
       cmd_line, data_.id);
 
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  static const char* kForwardSwitches[] = {
 #if defined(OS_POSIX)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kChildCleanExit))
-    cmd_line->AppendSwitch(switches::kChildCleanExit);
+    switches::kChildCleanExit,
 #endif
+    switches::kDisableLogging,
+    switches::kEnableDCHECK,
+    switches::kEnableLogging,
+    switches::kLoggingLevel,
+    switches::kV,
+    switches::kVModule,
+  };
+  cmd_line->CopySwitchesFrom(browser_command_line, kForwardSwitches,
+                             arraysize(kForwardSwitches));
 
   child_process_.reset(new ChildProcessLauncher(
 #if defined(OS_WIN)

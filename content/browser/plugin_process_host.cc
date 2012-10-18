@@ -185,11 +185,6 @@ bool PluginProcessHost::Init(const webkit::WebPluginInfo& info) {
 #if defined(OS_MACOSX)
     switches::kDisableCompositedCoreAnimationPlugins,
     switches::kDisableCoreAnimationPlugins,
-#endif
-    switches::kDisableLogging,
-    switches::kEnableDCHECK,
-    switches::kEnableLogging,
-#if defined(OS_MACOSX)
     switches::kEnableSandboxLogging,
 #endif
     switches::kEnableStatsTable,
@@ -202,7 +197,6 @@ bool PluginProcessHost::Init(const webkit::WebPluginInfo& info) {
     switches::kTraceStartup,
     switches::kUseGL,
     switches::kUserAgent,
-    switches::kV,
   };
 
   cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
