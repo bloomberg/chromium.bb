@@ -13,6 +13,11 @@ namespace base {
 class DictionaryValue;
 }
 
+// These strings are used from logs to pull out specific data from sync; we
+// don't want these to ever go out of sync between the logs and sync util.
+extern const char kCredentialsTitle[];
+extern const char kDetailsKey[];
+
 namespace sync_ui_util {
 // This function returns a DictionaryValue which contains all the information
 // required to populate the 'About' tab of about:sync.

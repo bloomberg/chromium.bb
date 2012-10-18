@@ -1461,9 +1461,6 @@ const char kEchoExtensionPath[]             = "echo-ext-path";
 // This option is for testing the chromeos build of chrome on the desktop only.
 const char kStubCrosSettings[]              = "stub-cros-settings";
 
-// Triggers ChromeOS system log compression during feedback submit.
-const char kCompressSystemFeedback[]        = "compress-sys-feedback";
-
 // Enables overriding the path for the default authentication extension.
 const char kAuthExtensionPath[]             = "auth-ext-path";
 

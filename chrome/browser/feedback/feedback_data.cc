@@ -4,10 +4,59 @@
 
 #include "chrome/browser/feedback/feedback_data.h"
 
+#include "base/json/json_string_value_serializer.h"
+#include "base/values.h"
 #include "chrome/browser/feedback/feedback_util.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sync/about_sync_util.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
+
+#if defined(OS_CHROMEOS)
+// TODO(rkc): Remove all the code that gather sync data and move it to a
+// log data source once crbug.com/138582 is fixed.
+namespace {
+
+void AddSyncLogs(chromeos::system::LogDictionaryType* logs) {
+  Profile* profile = ProfileManager::GetDefaultProfile();
+  if (!ProfileSyncServiceFactory::GetInstance()->HasProfileSyncService(
+      profile))
+    return;
+
+  ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  scoped_ptr<DictionaryValue> sync_logs(
+      sync_ui_util::ConstructAboutInformation(service));
+
+  // Remove credentials section.
+  ListValue* details = NULL;
+  sync_logs->GetList(kDetailsKey, &details);
+  if (!details)
+    return;
+  for (ListValue::iterator it = details->begin();
+      it != details->end(); ++it) {
+    DictionaryValue* dict = NULL;
+    if ((*it)->GetAsDictionary(&dict)) {
+      std::string title;
+      dict->GetString("title", &title);
+      if (title == kCredentialsTitle) {
+        details->Erase(it, NULL);
+        break;
+      }
+    }
+  }
+
+  // Add sync logs to logs.
+  std::string sync_logs_string;
+  JSONStringValueSerializer serializer(&sync_logs_string);
+  serializer.Serialize(*sync_logs.get());
+  (*logs)[kSyncDataKey] = sync_logs_string;
+}
+
+}
+#endif // OS_CHROMEOS
 
 FeedbackData::FeedbackData()
     : profile_(NULL)
@@ -106,6 +155,10 @@ void FeedbackData::SyslogsComplete(chromeos::system::LogDictionaryType* logs,
     if (zip_content)
       delete zip_content;
   } else {
+
+    // TODO(rkc): Move to the correct place once crbug.com/138582 is done.
+    AddSyncLogs(logs);
+
     zip_content_ = zip_content;
     sys_info_ = logs;  // Will get deleted when SendReport() is called.
     if (send_sys_info_) {

@@ -29,6 +29,8 @@ namespace content {
 class WebContents;
 }
 
+extern const char kSyncDataKey[];
+
 class FeedbackUtil {
  public:
 

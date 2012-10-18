@@ -18,6 +18,9 @@
 using base::DictionaryValue;
 using base::ListValue;
 
+const char kCredentialsTitle[] = "Credentials";
+const char kDetailsKey[] = "details";
+
 namespace {
 
 // Creates a 'section' for display on about:sync, consisting of a title and a
@@ -175,7 +178,7 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
   StringSyncStat client_version(section_version, "Client Version");
   StringSyncStat server_url(section_version, "Server URL");
 
-  ListValue* section_credentials = AddSection(stats_list, "Credentials");
+  ListValue* section_credentials = AddSection(stats_list, kCredentialsTitle);
   StringSyncStat client_id(section_credentials, "Client ID");
   StringSyncStat username(section_credentials, "Username");
   BoolSyncStat is_token_available(section_credentials, "Sync Token Available");
@@ -265,7 +268,7 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
 
   // This list of sections belongs in the 'details' field of the returned
   // message.
-  about_info->Set("details", stats_list);
+  about_info->Set(kDetailsKey, stats_list);
 
   // Populate all the fields we declared above.
   client_version.SetValue(GetVersionString());

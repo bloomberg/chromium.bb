@@ -39,6 +39,8 @@
 
 using content::WebContents;
 
+const char kSyncDataKey[] = "about_sync_data";
+
 namespace {
 
 const int kFeedbackVersion = 1;
@@ -322,15 +324,13 @@ void FeedbackUtil::SendReport(
     // Add the product specific data
     for (chromeos::system::LogDictionaryType::const_iterator i =
              sys_info->begin(); i != sys_info->end(); ++i) {
-      if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kCompressSystemFeedback) || ValidFeedbackSize(i->second)) {
+      if (i->first == kSyncDataKey || ValidFeedbackSize(i->second)) {
         AddFeedbackData(&feedback_data, i->first, i->second);
       }
     }
 
     // If we have zipped logs, add them here
-    if (zipped_logs_data && CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kCompressSystemFeedback)) {
+    if (zipped_logs_data) {
       userfeedback::ProductSpecificBinaryData attachment;
       attachment.set_mime_type(kBZip2MimeType);
       attachment.set_name(kLogsAttachmentName);

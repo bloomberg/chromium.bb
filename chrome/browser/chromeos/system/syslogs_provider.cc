@@ -272,10 +272,6 @@ void SyslogsProviderImpl::ReadSyslogs(
   if (request->canceled())
     return;
 
-  if (compress_logs && !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kCompressSystemFeedback))
-    compress_logs = false;
-
   // Create temp file.
   FilePath zip_file;
   if (compress_logs && !file_util::CreateTemporaryFile(&zip_file)) {
