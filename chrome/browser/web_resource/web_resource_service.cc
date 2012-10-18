@@ -27,14 +27,15 @@ WebResourceService::WebResourceService(
     int start_fetch_delay_ms,
     int cache_update_delay_ms)
     : prefs_(prefs),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       json_unpacker_(NULL),
       in_fetch_(false),
       web_resource_server_(web_resource_server),
       apply_locale_to_url_(apply_locale_to_url),
       last_update_time_pref_name_(last_update_time_pref_name),
       start_fetch_delay_ms_(start_fetch_delay_ms),
-      cache_update_delay_ms_(cache_update_delay_ms) {
+      cache_update_delay_ms_(cache_update_delay_ms),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+  resource_request_allowed_notifier_.Init(this);
   DCHECK(prefs);
 }
 
@@ -62,6 +63,12 @@ void WebResourceService::EndFetch() {
 }
 
 void WebResourceService::StartAfterDelay() {
+  // If resource requests are not allowed, we'll get a callback when they are.
+  if (resource_request_allowed_notifier_.ResourceRequestsAllowed())
+    OnResourceRequestsAllowed();
+}
+
+void WebResourceService::OnResourceRequestsAllowed() {
   int64 delay = start_fetch_delay_ms_;
   // Check whether we have ever put a value in the web resource cache;
   // if so, pull it out and see if it's time to update again.

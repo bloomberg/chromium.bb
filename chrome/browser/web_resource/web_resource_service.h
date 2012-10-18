@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/metrics/variations/resource_request_allowed_notifier.h"
 #include "chrome/browser/web_resource/json_asynchronous_unpacker.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -29,7 +30,8 @@ class URLFetcher;
 class WebResourceService
     : public net::URLFetcherDelegate,
       public JSONAsynchronousUnpackerDelegate,
-      public base::RefCountedThreadSafe<WebResourceService> {
+      public base::RefCountedThreadSafe<WebResourceService>,
+      public ResourceRequestAllowedNotifier::Observer {
  public:
   WebResourceService(PrefService* prefs,
                      const GURL& web_resource_server,
@@ -71,9 +73,12 @@ class WebResourceService
   // Set |in_fetch_| to false, clean up temp directories (in the future).
   void EndFetch();
 
-  // So that we can delay our start so as not to affect start-up time; also,
-  // so that we can schedule future cache updates.
-  base::WeakPtrFactory<WebResourceService> weak_ptr_factory_;
+  // Implements ResourceRequestAllowedNotifier::Observer.
+  virtual void OnResourceRequestsAllowed() OVERRIDE;
+
+  // Helper class used to tell this service if it's allowed to make network
+  // resource requests.
+  ResourceRequestAllowedNotifier resource_request_allowed_notifier_;
 
   // The tool that fetches the url data from the server.
   scoped_ptr<net::URLFetcher> url_fetcher_;
@@ -102,6 +107,10 @@ class WebResourceService
   // Delay between calls to update the web resource cache. This delay may be
   // different for different builds of Chrome.
   int cache_update_delay_ms_;
+
+  // So that we can delay our start so as not to affect start-up time; also,
+  // so that we can schedule future cache updates.
+  base::WeakPtrFactory<WebResourceService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebResourceService);
 };
