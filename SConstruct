@@ -3016,6 +3016,20 @@ nacl_irt_env.Replace(LIBPATH='${LIB_DIR}')
 if nacl_irt_env.Bit('bitcode'):
   nacl_irt_env.AddBiasForPNaCl()
   nacl_irt_env.Append(LINKFLAGS=['-static'])
+
+  # Use biased bitcode to ensure proper native calling conventions
+  # We do not actually build the IRT with pnacl on x86 currently but this is
+  # here just for testing
+  if nacl_irt_env.Bit('target_arm'):
+    nacl_irt_env.Append(
+        CCFLAGS=['--pnacl-frontend-triple=armv7-unknown-nacl-gnueabi',
+                 '-mfloat-abi=hard'])
+  elif nacl_irt_env.Bit('target_x86_32'):
+    nacl_irt_env.Append(CCFLAGS=['--pnacl-frontend-triple=i686-unknown-nacl'])
+  elif nacl_irt_env.Bit('target_x86_64'):
+    nacl_irt_env.Append(CCFLAGS=['--pnacl-frontend-triple=x86_64-unknown-nacl'])
+
+
 # All IRT code must avoid direct use of the TLS ABI register, which
 # is reserved for user TLS.  Instead, ensure all TLS accesses use a
 # call to __nacl_read_tp, which the IRT code overrides to segregate
@@ -3107,9 +3121,11 @@ nacl_env.AddMethod(NaClAddObject, 'AddObjectToSdk')
 def AddImplicitLibs(env):
   implicit_libs = []
 
-  # Require the pnacl_irt_shim for pnacl x86-64.
+  # Require the pnacl_irt_shim for pnacl x86-64 and arm.
   # Use -B to have the compiler look for the fresh libpnacl_irt_shim.a.
-  if env.Bit('bitcode') and env.Bit('target_x86_64'):
+  if ( env.Bit('bitcode') and
+       (env.Bit('target_x86_64') or env.Bit('target_arm'))
+       and env['NACL_BUILD_FAMILY'] != 'UNTRUSTED_IRT'):
     # Note: without this hack ibpnacl_irt_shim.a will be deleted
     #       when "built_elsewhere=1"
     #       Since we force the build in a previous step the dependency
