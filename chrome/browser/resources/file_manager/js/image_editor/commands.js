@@ -98,13 +98,12 @@ CommandQueue.prototype.clearBusy_ = function() {
 
 /**
  * Commit the image change: save and unlock the UI.
+ * @param {number} opt_delay Delay in ms (to avoid disrupting the animation).
  * @private
  */
-CommandQueue.prototype.commit_ = function() {
-  setTimeout(function() {
-        this.saveFunction_(this.clearBusy_.bind(this));
-      }.bind(this),
-      ImageView.ANIMATION_WAIT_INTERVAL);
+CommandQueue.prototype.commit_ = function(opt_delay) {
+  setTimeout(this.saveFunction_.bind(null, this.clearBusy_.bind(this)),
+      opt_delay || 0);
 };
 
 /**
@@ -121,14 +120,13 @@ CommandQueue.prototype.doExecute_ = function(command, uiContext, callback) {
 
   // Remember one previous image so that the first undo is as fast as possible.
   this.previousImage_ = this.currentImage_;
-  var self = this;
   command.execute(
       this.document_,
       this.currentImage_,
-      function(result) {
-        self.currentImage_ = result;
-        callback();
-      },
+      function(result, opt_delay) {
+        this.currentImage_ = result;
+        callback(opt_delay);
+      }.bind(this),
       uiContext);
 };
 
@@ -171,10 +169,9 @@ CommandQueue.prototype.undo = function() {
   var self = this;
 
   function complete() {
-    if (self.UIContext_.imageView) {
-      command.revertView(self.currentImage_, self.UIContext_.imageView);
-    }
-    self.commit_();
+    var delay = command.revertView(
+        self.currentImage_, self.UIContext_.imageView);
+    self.commit_(delay);
   }
 
   if (this.previousImage_) {
@@ -241,11 +238,12 @@ Command.prototype.toString = function() {
  *
  * @param {Document} document Document on which to execute command.
  * @param {HTMLCanvasElement} srcCanvas Canvas to execute on.
- * @param {function(HTMLCanvasElement)} callback Callback to call on completion.
+ * @param {function(HTMLCanvasElement, number)} callback Callback to call on
+ *   completion.
  * @param {Object} uiContext Context to work in.
  */
 Command.prototype.execute = function(document, srcCanvas, callback, uiContext) {
-  setTimeout(callback.bind(null, null), 0);
+  console.error('Command.prototype.execute not implemented');
 };
 
 /**
@@ -253,9 +251,11 @@ Command.prototype.execute = function(document, srcCanvas, callback, uiContext) {
  *
  * @param {HTMLCanvasElement} canvas Image data to use.
  * @param {ImageView} imageView ImageView to revert.
+ * @return {number} Animation duration in ms.
  */
 Command.prototype.revertView = function(canvas, imageView) {
   imageView.replace(canvas);
+  return 0;
 };
 
 /**
@@ -300,15 +300,16 @@ Command.Rotate.prototype.execute = function(
       (this.rotate90_ & 1) ? srcCanvas.width : srcCanvas.height);
   ImageUtil.drawImageTransformed(
       result, srcCanvas, 1, 1, this.rotate90_ * Math.PI / 2);
+  var delay;
   if (uiContext.imageView) {
-    uiContext.imageView.replaceAndAnimate(result, null, this.rotate90_);
+    delay = uiContext.imageView.replaceAndAnimate(result, null, this.rotate90_);
   }
-  setTimeout(callback.bind(null, result), 0);
+  setTimeout(callback, 0, result, delay);
 };
 
 /** @inheritDoc */
 Command.Rotate.prototype.revertView = function(canvas, imageView) {
-  imageView.replaceAndAnimate(canvas, null, -this.rotate90_);
+  return imageView.replaceAndAnimate(canvas, null, -this.rotate90_);
 };
 
 
@@ -332,15 +333,16 @@ Command.Crop.prototype.execute = function(
   var result = this.createCanvas_(
       document, srcCanvas, this.imageRect_.width, this.imageRect_.height);
   Rect.drawImage(result.getContext('2d'), srcCanvas, null, this.imageRect_);
+  var delay;
   if (uiContext.imageView) {
-    uiContext.imageView.replaceAndAnimate(result, this.imageRect_, 0);
+    delay = uiContext.imageView.replaceAndAnimate(result, this.imageRect_, 0);
   }
-  setTimeout(callback.bind(null, result), 0);
+  setTimeout(callback, 0, result, delay);
 };
 
 /** @inheritDoc */
 Command.Crop.prototype.revertView = function(canvas, imageView) {
-  imageView.animateAndReplace(canvas, this.imageRect_);
+  return imageView.animateAndReplace(canvas, this.imageRect_);
 };
 
 

@@ -105,10 +105,8 @@ body {
 }
 
 .gallery .image-container > .image {
-  /* Keep in sync with ImageView.ANIMATION_DURATION in image_view.js*/
-  -webkit-transition-duration: 180ms;
+  /* Duration and timing function are set in Javascript. */
   -webkit-transition-property: -webkit-transform, opacity;
-  -webkit-transition-timing-function: linear;
   pointer-events: none;
   position: absolute;
 }

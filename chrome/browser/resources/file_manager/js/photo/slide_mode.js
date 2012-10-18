@@ -231,7 +231,7 @@ SlideMode.prototype.enter = function(
   this.sequenceDirection_ = 0;
   this.sequenceLength_ = 0;
 
-  var loadDone = function() {
+  var loadDone = function(loadType, delay) {
     this.active_ = true;
 
     this.selectionModel_.addEventListener('change', this.onSelectionBound_);
@@ -240,10 +240,8 @@ SlideMode.prototype.enter = function(
     ImageUtil.setAttribute(this.arrowBox_, 'active', this.getItemCount_() > 1);
     this.ribbon_.enable();
 
-    this.prefetchTimer_ = setTimeout(function() {
-      this.prefetchTimer_ = null;
-      this.requestPrefetch(1);   // Prefetch the next image.
-    }.bind(this), 1000);
+    // Wait 1000ms after the animation is done, then prefetch the next image.
+    this.requestPrefetch(1, delay + 1000);
 
     if (loadCallback) loadCallback();
   }.bind(this);
@@ -291,11 +289,6 @@ SlideMode.prototype.enter = function(
  *   the zoom-out animation has started.
  */
 SlideMode.prototype.leave = function(zoomToRect, callback) {
-  if (this.prefetchTimer_) {
-    clearTimeout(this.prefetchTimer_);
-    this.prefetchTimer_ = null;
-  }
-
   var commitDone = function() {
       this.stopEditing_();
       this.stopSlideshow_();
@@ -466,14 +459,14 @@ SlideMode.prototype.loadSelectedItem_ = function() {
   var onMetadata = function(metadata) {
     if (selectedItem != this.getSelectedItem()) return;
     this.loadItem_(selectedItem.getUrl(), metadata,
-        new ImageView.Effect.Slide(step),
+        new ImageView.Effect.Slide(step, this.isSlideshowPlaying_()),
         function() {} /* no displayCallback */,
-        function(loadType) {
+        function(loadType, delay) {
           if (selectedItem != this.getSelectedItem()) return;
           if (shouldPrefetch(loadType, step, this.sequenceLength_)) {
-            this.requestPrefetch(step);
+            this.requestPrefetch(step, delay);
           }
-          if (this.isSlideshowOn_())
+          if (this.isSlideshowPlaying_())
             this.scheduleNextSlide_();
         }.bind(this));
   }.bind(this);
@@ -618,7 +611,7 @@ SlideMode.prototype.loadItem_ = function(
 
   this.showSpinner_(true);
 
-  var loadDone = function(loadType) {
+  var loadDone = function(loadType, delay) {
     var video = this.isShowingVideo_();
     ImageUtil.setAttribute(this.container_, 'video', video);
 
@@ -666,7 +659,7 @@ SlideMode.prototype.loadItem_ = function(
       }
     }
 
-    loadCallback(loadType);
+    loadCallback(loadType, delay);
   }.bind(this);
 
   this.editor_.openSession(url, metadata, effect,
@@ -694,19 +687,15 @@ SlideMode.prototype.commitItem_ = function(callback) {
  * Request a prefetch for the next image.
  *
  * @param {number} direction -1 or 1.
+ * @param {number} delay Delay in ms. Used to prevent the CPU-heavy image
+ *   loading from disrupting the animation that might be still in progress.
  */
-SlideMode.prototype.requestPrefetch = function(direction) {
+SlideMode.prototype.requestPrefetch = function(direction, delay) {
   if (this.getItemCount_() <= 1) return;
 
   var index = this.getNextSelectedIndex_(direction);
   var nextItemUrl = this.getItem(index).getUrl();
-
-  var selectedItem = this.getSelectedItem();
-  this.metadataCache_.get(nextItemUrl, Gallery.METADATA_TYPE,
-      function(metadata) {
-        if (selectedItem != this.getSelectedItem()) return;
-        this.editor_.prefetchImage(nextItemUrl);
-      }.bind(this));
+  this.imageView_.prefetch(nextItemUrl, delay);
 };
 
 // Event handlers.
@@ -1096,8 +1085,7 @@ SlideMode.prototype.toggleSlideshowPause_ = function() {
  * @private
  */
 SlideMode.prototype.scheduleNextSlide_ = function(opt_interval) {
-  if (!this.isSlideshowPlaying_())
-    return;
+  console.assert(this.isSlideshowPlaying_(), 'Inconsistent slideshow state');
 
   if (this.slideShowTimeout_)
     clearTimeout(this.slideShowTimeout_);

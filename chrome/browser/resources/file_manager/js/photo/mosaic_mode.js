@@ -403,7 +403,7 @@ Mosaic.prototype.canZoom = function() {
  * Show the mosaic.
  */
 Mosaic.prototype.show = function() {
-  var duration = ImageView.ZOOM_ANIMATION_DURATION;
+  var duration = ImageView.MODE_TRANSITION_DURATION;
   if (this.canZoom()) {
     // Fade in in parallel with the zoom effect.
     this.setAttribute('visible', 'zooming');
@@ -435,11 +435,12 @@ Mosaic.prototype.hide = function() {
  * @param {boolean} opt_instant True of the transition should be instant.
  */
 Mosaic.prototype.transform = function(tileRect, imageRect, opt_instant) {
-  if (opt_instant)
+  if (opt_instant) {
     this.style.webkitTransitionDuration = '0';
-  else
+  } else {
     this.style.webkitTransitionDuration =
-        ImageView.ZOOM_ANIMATION_DURATION + 'ms';
+        ImageView.MODE_TRANSITION_DURATION + 'ms';
+  }
 
   if (this.canZoom() && tileRect && imageRect) {
     var scaleX = imageRect.width / tileRect.width;

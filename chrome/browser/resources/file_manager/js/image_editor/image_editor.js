@@ -96,14 +96,6 @@ ImageEditor.prototype.onContentUpdate_ = function() {
 };
 
 /**
- * Request prefetch for an image.
- * @param {string} url Image url.
- */
-ImageEditor.prototype.prefetchImage = function(url) {
-  this.imageView_.prefetch(url);
-};
-
-/**
  * Open the editing session for a new image.
  *
  * @param {string} url Image url.
@@ -122,7 +114,7 @@ ImageEditor.prototype.openSession = function(
 
   var self = this;
   this.imageView_.load(
-      url, metadata, effect, displayCallback, function(loadType) {
+      url, metadata, effect, displayCallback, function(loadType, delay) {
     self.lockUI(false);
     self.commandQueue_ = new CommandQueue(
         self.container_.ownerDocument,
@@ -131,7 +123,7 @@ ImageEditor.prototype.openSession = function(
     self.commandQueue_.attachUI(
         self.getImageView(), self.getPrompt(), self.lockUI.bind(self));
     self.updateUndoRedo();
-    loadCallback(loadType);
+    loadCallback(loadType, delay);
   });
 };
 
