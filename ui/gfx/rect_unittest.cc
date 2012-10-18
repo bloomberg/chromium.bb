@@ -575,11 +575,8 @@ TEST(RectTest, ToRectF) {
   gfx::RectF intersect = b.Intersect(a);
   EXPECT_EQ(b.ToString(), intersect.ToString());
 
-  bool equals = a == b;
-  EXPECT_EQ(true, equals);
-
-  equals = b == a;
-  EXPECT_EQ(true, equals);
+  EXPECT_EQ(a, b);
+  EXPECT_EQ(b, a);
 }
 
 }  // namespace ui

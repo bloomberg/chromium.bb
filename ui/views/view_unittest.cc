@@ -348,7 +348,7 @@ TEST_F(ViewTest, OnBoundsChanged) {
   v.Reset();
   v.SetBoundsRect(new_rect);
 
-  EXPECT_EQ(v.did_change_bounds_, true);
+  EXPECT_TRUE(v.did_change_bounds_);
   EXPECT_EQ(v.new_bounds_, new_rect);
   EXPECT_EQ(v.bounds(), new_rect);
 }

@@ -10,22 +10,23 @@
 
 namespace ui {
 
-static int test_pointf(const gfx::PointF& p) {
+namespace {
+
+int TestPointF(const gfx::PointF& p) {
   return p.x();
 }
+
+}  // namespace
 
 TEST(PointTest, ToPointF) {
   // Check that implicit conversion from integer to float compiles.
   gfx::Point a(10, 20);
-  float x = test_pointf(a);
+  float x = TestPointF(a);
   EXPECT_EQ(x, a.x());
 
   gfx::PointF b(10, 20);
-  bool equals = a == b;
-  EXPECT_EQ(true, equals);
-
-  equals = b == a;
-  EXPECT_EQ(true, equals);
+  EXPECT_EQ(a, b);
+  EXPECT_EQ(b, a);
 }
 
 TEST(PointTest, IsOrigin) {

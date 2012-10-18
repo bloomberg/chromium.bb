@@ -100,7 +100,7 @@ TEST_F(RenderTextTest, CustomDefaultStyle) {
   render_text->set_default_style(strike);
   render_text->ApplyDefaultStyle();
   EXPECT_EQ(1U, render_text->style_ranges().size());
-  EXPECT_EQ(true, render_text->style_ranges()[0].strike);
+  EXPECT_TRUE(render_text->style_ranges()[0].strike);
   EXPECT_EQ(strike.foreground, render_text->style_ranges()[0].foreground);
 }
 

@@ -11,127 +11,129 @@
 
 namespace ui {
 
-static int test_sizef(const gfx::SizeF& s) {
+namespace {
+
+int TestSizeF(const gfx::SizeF& s) {
   return s.width();
 }
+
+}  // namespace
 
 TEST(SizeTest, ToSizeF) {
   // Check that implicit conversion from integer to float compiles.
   gfx::Size a(10, 20);
-  float width = test_sizef(a);
+  float width = TestSizeF(a);
   EXPECT_EQ(width, a.width());
 
   gfx::SizeF b(10, 20);
-  bool equals = a == b;
-  EXPECT_EQ(true, equals);
 
-  equals = b == a;
-  EXPECT_EQ(true, equals);
+  EXPECT_EQ(a, b);
+  EXPECT_EQ(b, a);
 }
 
 TEST(SizeTest, ToFlooredSize) {
-    EXPECT_EQ(gfx::Size(0, 0),
-              gfx::ToFlooredSize(gfx::SizeF(0, 0)));
-    EXPECT_EQ(gfx::Size(0, 0),
-              gfx::ToFlooredSize(gfx::SizeF(0.0001f, 0.0001f)));
-    EXPECT_EQ(gfx::Size(0, 0),
-              gfx::ToFlooredSize(gfx::SizeF(0.4999f, 0.4999f)));
-    EXPECT_EQ(gfx::Size(0, 0),
-              gfx::ToFlooredSize(gfx::SizeF(0.5f, 0.5f)));
-    EXPECT_EQ(gfx::Size(0, 0),
-              gfx::ToFlooredSize(gfx::SizeF(0.9999f, 0.9999f)));
+  EXPECT_EQ(gfx::Size(0, 0),
+            gfx::ToFlooredSize(gfx::SizeF(0, 0)));
+  EXPECT_EQ(gfx::Size(0, 0),
+            gfx::ToFlooredSize(gfx::SizeF(0.0001f, 0.0001f)));
+  EXPECT_EQ(gfx::Size(0, 0),
+            gfx::ToFlooredSize(gfx::SizeF(0.4999f, 0.4999f)));
+  EXPECT_EQ(gfx::Size(0, 0),
+            gfx::ToFlooredSize(gfx::SizeF(0.5f, 0.5f)));
+  EXPECT_EQ(gfx::Size(0, 0),
+            gfx::ToFlooredSize(gfx::SizeF(0.9999f, 0.9999f)));
 
-    EXPECT_EQ(gfx::Size(10, 10),
-              gfx::ToFlooredSize(gfx::SizeF(10, 10)));
-    EXPECT_EQ(gfx::Size(10, 10),
-              gfx::ToFlooredSize(gfx::SizeF(10.0001f, 10.0001f)));
-    EXPECT_EQ(gfx::Size(10, 10),
-              gfx::ToFlooredSize(gfx::SizeF(10.4999f, 10.4999f)));
-    EXPECT_EQ(gfx::Size(10, 10),
-              gfx::ToFlooredSize(gfx::SizeF(10.5f, 10.5f)));
-    EXPECT_EQ(gfx::Size(10, 10),
-              gfx::ToFlooredSize(gfx::SizeF(10.9999f, 10.9999f)));
+  EXPECT_EQ(gfx::Size(10, 10),
+            gfx::ToFlooredSize(gfx::SizeF(10, 10)));
+  EXPECT_EQ(gfx::Size(10, 10),
+            gfx::ToFlooredSize(gfx::SizeF(10.0001f, 10.0001f)));
+  EXPECT_EQ(gfx::Size(10, 10),
+            gfx::ToFlooredSize(gfx::SizeF(10.4999f, 10.4999f)));
+  EXPECT_EQ(gfx::Size(10, 10),
+            gfx::ToFlooredSize(gfx::SizeF(10.5f, 10.5f)));
+  EXPECT_EQ(gfx::Size(10, 10),
+            gfx::ToFlooredSize(gfx::SizeF(10.9999f, 10.9999f)));
 
-    EXPECT_EQ(gfx::Size(-10, -10),
-              gfx::ToFlooredSize(gfx::SizeF(-10, -10)));
-    EXPECT_EQ(gfx::Size(-11, -11),
-              gfx::ToFlooredSize(gfx::SizeF(-10.0001f, -10.0001f)));
-    EXPECT_EQ(gfx::Size(-11, -11),
-              gfx::ToFlooredSize(gfx::SizeF(-10.4999f, -10.4999f)));
-    EXPECT_EQ(gfx::Size(-11, -11),
-              gfx::ToFlooredSize(gfx::SizeF(-10.5f, -10.5f)));
-    EXPECT_EQ(gfx::Size(-11, -11),
-              gfx::ToFlooredSize(gfx::SizeF(-10.9999f, -10.9999f)));
+  EXPECT_EQ(gfx::Size(-10, -10),
+            gfx::ToFlooredSize(gfx::SizeF(-10, -10)));
+  EXPECT_EQ(gfx::Size(-11, -11),
+            gfx::ToFlooredSize(gfx::SizeF(-10.0001f, -10.0001f)));
+  EXPECT_EQ(gfx::Size(-11, -11),
+            gfx::ToFlooredSize(gfx::SizeF(-10.4999f, -10.4999f)));
+  EXPECT_EQ(gfx::Size(-11, -11),
+            gfx::ToFlooredSize(gfx::SizeF(-10.5f, -10.5f)));
+  EXPECT_EQ(gfx::Size(-11, -11),
+            gfx::ToFlooredSize(gfx::SizeF(-10.9999f, -10.9999f)));
 }
 
 TEST(SizeTest, ToCeiledSize) {
-    EXPECT_EQ(gfx::Size(0, 0),
-              gfx::ToCeiledSize(gfx::SizeF(0, 0)));
-    EXPECT_EQ(gfx::Size(1, 1),
-              gfx::ToCeiledSize(gfx::SizeF(0.0001f, 0.0001f)));
-    EXPECT_EQ(gfx::Size(1, 1),
-              gfx::ToCeiledSize(gfx::SizeF(0.4999f, 0.4999f)));
-    EXPECT_EQ(gfx::Size(1, 1),
-              gfx::ToCeiledSize(gfx::SizeF(0.5f, 0.5f)));
-    EXPECT_EQ(gfx::Size(1, 1),
-              gfx::ToCeiledSize(gfx::SizeF(0.9999f, 0.9999f)));
+  EXPECT_EQ(gfx::Size(0, 0),
+            gfx::ToCeiledSize(gfx::SizeF(0, 0)));
+  EXPECT_EQ(gfx::Size(1, 1),
+            gfx::ToCeiledSize(gfx::SizeF(0.0001f, 0.0001f)));
+  EXPECT_EQ(gfx::Size(1, 1),
+            gfx::ToCeiledSize(gfx::SizeF(0.4999f, 0.4999f)));
+  EXPECT_EQ(gfx::Size(1, 1),
+            gfx::ToCeiledSize(gfx::SizeF(0.5f, 0.5f)));
+  EXPECT_EQ(gfx::Size(1, 1),
+            gfx::ToCeiledSize(gfx::SizeF(0.9999f, 0.9999f)));
 
-    EXPECT_EQ(gfx::Size(10, 10),
-              gfx::ToCeiledSize(gfx::SizeF(10, 10)));
-    EXPECT_EQ(gfx::Size(11, 11),
-              gfx::ToCeiledSize(gfx::SizeF(10.0001f, 10.0001f)));
-    EXPECT_EQ(gfx::Size(11, 11),
-              gfx::ToCeiledSize(gfx::SizeF(10.4999f, 10.4999f)));
-    EXPECT_EQ(gfx::Size(11, 11),
-              gfx::ToCeiledSize(gfx::SizeF(10.5f, 10.5f)));
-    EXPECT_EQ(gfx::Size(11, 11),
-              gfx::ToCeiledSize(gfx::SizeF(10.9999f, 10.9999f)));
+  EXPECT_EQ(gfx::Size(10, 10),
+            gfx::ToCeiledSize(gfx::SizeF(10, 10)));
+  EXPECT_EQ(gfx::Size(11, 11),
+            gfx::ToCeiledSize(gfx::SizeF(10.0001f, 10.0001f)));
+  EXPECT_EQ(gfx::Size(11, 11),
+            gfx::ToCeiledSize(gfx::SizeF(10.4999f, 10.4999f)));
+  EXPECT_EQ(gfx::Size(11, 11),
+            gfx::ToCeiledSize(gfx::SizeF(10.5f, 10.5f)));
+  EXPECT_EQ(gfx::Size(11, 11),
+            gfx::ToCeiledSize(gfx::SizeF(10.9999f, 10.9999f)));
 
-    EXPECT_EQ(gfx::Size(-10, -10),
-              gfx::ToCeiledSize(gfx::SizeF(-10, -10)));
-    EXPECT_EQ(gfx::Size(-10, -10),
-              gfx::ToCeiledSize(gfx::SizeF(-10.0001f, -10.0001f)));
-    EXPECT_EQ(gfx::Size(-10, -10),
-              gfx::ToCeiledSize(gfx::SizeF(-10.4999f, -10.4999f)));
-    EXPECT_EQ(gfx::Size(-10, -10),
-              gfx::ToCeiledSize(gfx::SizeF(-10.5f, -10.5f)));
-    EXPECT_EQ(gfx::Size(-10, -10),
-              gfx::ToCeiledSize(gfx::SizeF(-10.9999f, -10.9999f)));
+  EXPECT_EQ(gfx::Size(-10, -10),
+            gfx::ToCeiledSize(gfx::SizeF(-10, -10)));
+  EXPECT_EQ(gfx::Size(-10, -10),
+            gfx::ToCeiledSize(gfx::SizeF(-10.0001f, -10.0001f)));
+  EXPECT_EQ(gfx::Size(-10, -10),
+            gfx::ToCeiledSize(gfx::SizeF(-10.4999f, -10.4999f)));
+  EXPECT_EQ(gfx::Size(-10, -10),
+            gfx::ToCeiledSize(gfx::SizeF(-10.5f, -10.5f)));
+  EXPECT_EQ(gfx::Size(-10, -10),
+            gfx::ToCeiledSize(gfx::SizeF(-10.9999f, -10.9999f)));
 }
 
 TEST(SizeTest, ToRoundedSize) {
-    EXPECT_EQ(gfx::Size(0, 0),
-              gfx::ToRoundedSize(gfx::SizeF(0, 0)));
-    EXPECT_EQ(gfx::Size(0, 0),
-              gfx::ToRoundedSize(gfx::SizeF(0.0001f, 0.0001f)));
-    EXPECT_EQ(gfx::Size(0, 0),
-              gfx::ToRoundedSize(gfx::SizeF(0.4999f, 0.4999f)));
-    EXPECT_EQ(gfx::Size(1, 1),
-              gfx::ToRoundedSize(gfx::SizeF(0.5f, 0.5f)));
-    EXPECT_EQ(gfx::Size(1, 1),
-              gfx::ToRoundedSize(gfx::SizeF(0.9999f, 0.9999f)));
+  EXPECT_EQ(gfx::Size(0, 0),
+            gfx::ToRoundedSize(gfx::SizeF(0, 0)));
+  EXPECT_EQ(gfx::Size(0, 0),
+            gfx::ToRoundedSize(gfx::SizeF(0.0001f, 0.0001f)));
+  EXPECT_EQ(gfx::Size(0, 0),
+            gfx::ToRoundedSize(gfx::SizeF(0.4999f, 0.4999f)));
+  EXPECT_EQ(gfx::Size(1, 1),
+            gfx::ToRoundedSize(gfx::SizeF(0.5f, 0.5f)));
+  EXPECT_EQ(gfx::Size(1, 1),
+            gfx::ToRoundedSize(gfx::SizeF(0.9999f, 0.9999f)));
 
-    EXPECT_EQ(gfx::Size(10, 10),
-              gfx::ToRoundedSize(gfx::SizeF(10, 10)));
-    EXPECT_EQ(gfx::Size(10, 10),
-              gfx::ToRoundedSize(gfx::SizeF(10.0001f, 10.0001f)));
-    EXPECT_EQ(gfx::Size(10, 10),
-              gfx::ToRoundedSize(gfx::SizeF(10.4999f, 10.4999f)));
-    EXPECT_EQ(gfx::Size(11, 11),
-              gfx::ToRoundedSize(gfx::SizeF(10.5f, 10.5f)));
-    EXPECT_EQ(gfx::Size(11, 11),
-              gfx::ToRoundedSize(gfx::SizeF(10.9999f, 10.9999f)));
+  EXPECT_EQ(gfx::Size(10, 10),
+            gfx::ToRoundedSize(gfx::SizeF(10, 10)));
+  EXPECT_EQ(gfx::Size(10, 10),
+            gfx::ToRoundedSize(gfx::SizeF(10.0001f, 10.0001f)));
+  EXPECT_EQ(gfx::Size(10, 10),
+            gfx::ToRoundedSize(gfx::SizeF(10.4999f, 10.4999f)));
+  EXPECT_EQ(gfx::Size(11, 11),
+            gfx::ToRoundedSize(gfx::SizeF(10.5f, 10.5f)));
+  EXPECT_EQ(gfx::Size(11, 11),
+            gfx::ToRoundedSize(gfx::SizeF(10.9999f, 10.9999f)));
 
-    EXPECT_EQ(gfx::Size(-10, -10),
-              gfx::ToRoundedSize(gfx::SizeF(-10, -10)));
-    EXPECT_EQ(gfx::Size(-10, -10),
-              gfx::ToRoundedSize(gfx::SizeF(-10.0001f, -10.0001f)));
-    EXPECT_EQ(gfx::Size(-10, -10),
-              gfx::ToRoundedSize(gfx::SizeF(-10.4999f, -10.4999f)));
-    EXPECT_EQ(gfx::Size(-11, -11),
-              gfx::ToRoundedSize(gfx::SizeF(-10.5f, -10.5f)));
-    EXPECT_EQ(gfx::Size(-11, -11),
-              gfx::ToRoundedSize(gfx::SizeF(-10.9999f, -10.9999f)));
+  EXPECT_EQ(gfx::Size(-10, -10),
+            gfx::ToRoundedSize(gfx::SizeF(-10, -10)));
+  EXPECT_EQ(gfx::Size(-10, -10),
+            gfx::ToRoundedSize(gfx::SizeF(-10.0001f, -10.0001f)));
+  EXPECT_EQ(gfx::Size(-10, -10),
+            gfx::ToRoundedSize(gfx::SizeF(-10.4999f, -10.4999f)));
+  EXPECT_EQ(gfx::Size(-11, -11),
+            gfx::ToRoundedSize(gfx::SizeF(-10.5f, -10.5f)));
+  EXPECT_EQ(gfx::Size(-11, -11),
+            gfx::ToRoundedSize(gfx::SizeF(-10.9999f, -10.9999f)));
 }
 
 }  // namespace ui
