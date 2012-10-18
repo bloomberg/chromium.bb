@@ -13,6 +13,8 @@
       'type': 'none',
       'dependencies': [
         'android_webview.gyp:libwebview',
+        # Needed by android_webview_java
+        '../net/net.gyp:net_errors_java',
       ],
     }, # target_name: All
   ],  # targets

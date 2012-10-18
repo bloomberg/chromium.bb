@@ -9,6 +9,7 @@
 # Android.mk that may exist in the Chromium tree.
 
 ifdef CHROME_ANDROID_BUILD_WEBVIEW
-include $(call my-dir)/GypAndroid.mk
-include $(call my-dir)/android_webview/Android.mk
+CHROMIUM_WEBVIEW_DIR := $(call my-dir)
+include $(CHROMIUM_WEBVIEW_DIR)/GypAndroid.mk
+include $(CHROMIUM_WEBVIEW_DIR)/android_webview/Android.mk
 endif
