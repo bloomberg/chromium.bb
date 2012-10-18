@@ -31,10 +31,6 @@ class ASH_EXPORT ScreenAsh : public gfx::Screen {
   // Maximized windows trigger auto-hiding the shelf.
   static gfx::Rect GetMaximizedWindowBoundsInParent(aura::Window* window);
 
-  // Returns work area when a maximized window is not present in
-  // parent coordinates.
-  static gfx::Rect GetUnmaximizedWorkAreaBoundsInParent(aura::Window* window);
-
   // Returns the display bounds in parent coordinates.
   static gfx::Rect GetDisplayBoundsInParent(aura::Window* window);
 

@@ -450,7 +450,7 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3_Compress) {
 // Assertions around dragging to the left/right edge of the screen.
 TEST_F(WorkspaceWindowResizerTest, Edge) {
   int bottom =
-      ScreenAsh::GetUnmaximizedWorkAreaBoundsInParent(window_.get()).bottom();
+      ScreenAsh::GetDisplayWorkAreaBoundsInParent(window_.get()).bottom();
   window_->SetBounds(gfx::Rect(20, 30, 50, 60));
   {
     scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
@@ -1000,7 +1000,19 @@ TEST_F(WorkspaceWindowResizerTest, TestProperSizerResolutions) {
   scoped_ptr<SnapSizer> resizer(new SnapSizer(
       window_.get(), gfx::Point(), SnapSizer::LEFT_EDGE));
   ASSERT_TRUE(resizer.get());
+  Shell::GetInstance()->shelf()->SetAutoHideBehavior(
+      SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   gfx::Rect rect = resizer->GetTargetBoundsForSize(0);
+  EXPECT_EQ("0,0 720x597", rect.ToString());
+  rect = resizer->GetTargetBoundsForSize(1);
+  EXPECT_EQ("0,0 720x597", rect.ToString());
+  rect = resizer->GetTargetBoundsForSize(2);
+  EXPECT_EQ("0,0 720x597", rect.ToString());
+  rect = resizer->GetTargetBoundsForSize(3);
+  EXPECT_EQ("0,0 640x597", rect.ToString());
+  Shell::GetInstance()->shelf()->SetAutoHideBehavior(
+      SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  rect = resizer->GetTargetBoundsForSize(0);
   EXPECT_EQ("0,0 720x552", rect.ToString());
   rect = resizer->GetTargetBoundsForSize(1);
   EXPECT_EQ("0,0 720x552", rect.ToString());

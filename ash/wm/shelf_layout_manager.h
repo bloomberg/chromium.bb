@@ -214,10 +214,6 @@ class ASH_EXPORT ShelfLayoutManager :
     bool is_screen_locked;
   };
 
-  // Returns the bounds the specified window should be when maximized.
-  gfx::Rect GetMaximizedWindowBounds(aura::Window* window);
-  gfx::Rect GetUnmaximizedWorkAreaBounds(aura::Window* window);
-
   // Sets the visibility of the shelf to |state|.
   void SetState(VisibilityState visibility_state);
 

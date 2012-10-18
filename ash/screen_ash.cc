@@ -40,18 +40,9 @@ gfx::Display ScreenAsh::FindDisplayContainingPoint(const gfx::Point& point) {
 // static
 gfx::Rect ScreenAsh::GetMaximizedWindowBoundsInParent(aura::Window* window) {
   if (window->GetRootWindow() == Shell::GetPrimaryRootWindow())
-    return Shell::GetInstance()->shelf()->GetMaximizedWindowBounds(window);
+    return GetDisplayWorkAreaBoundsInParent(window);
   else
     return GetDisplayBoundsInParent(window);
-}
-
-// static
-gfx::Rect ScreenAsh::GetUnmaximizedWorkAreaBoundsInParent(
-    aura::Window* window) {
-  if (window->GetRootWindow() == Shell::GetPrimaryRootWindow())
-    return Shell::GetInstance()->shelf()->GetUnmaximizedWorkAreaBounds(window);
-  else
-    return GetDisplayWorkAreaBoundsInParent(window);
 }
 
 // static
