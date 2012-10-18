@@ -213,6 +213,7 @@ bool FileSelectorImpl::StartSelectFile(
   // Convert |allowed_extensions| to ui::SelectFileDialog::FileTypeInfo.
   ui::SelectFileDialog::FileTypeInfo allowed_file_info =
       ConvertExtensionsToFileTypeInfo(allowed_extensions);
+  allowed_file_info.support_gdata = true;
 
   dialog_->SelectFile(ui::SelectFileDialog::SELECT_SAVEAS_FILE,
                       string16() /* dialog title*/,
