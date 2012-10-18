@@ -1065,10 +1065,12 @@ int MetricsService::GetLowEntropySource() {
       // so the below line ensures 8192 gets mapped to 0 and also guards against
       // the case of corrupted values.
       low_entropy_source_ = value % kMaxLowEntropySize;
+      UMA_HISTOGRAM_BOOLEAN("UMA.GeneratedLowEntropySource", false);
       return low_entropy_source_;
     }
   }
 
+  UMA_HISTOGRAM_BOOLEAN("UMA.GeneratedLowEntropySource", true);
   low_entropy_source_ = GenerateLowEntropySource();
   pref->SetInteger(prefs::kMetricsLowEntropySource, low_entropy_source_);
 
