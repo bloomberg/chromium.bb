@@ -35,6 +35,10 @@ message SyncEnums {
     ACTIONABLE_ERROR = 8; // Client received an actionable error.
   }
 
+  // See content/public/common/page_transition_types.h for detailed
+  // information on the values of PageTransition and
+  // PageTransitionRedirectType below.
+
   // Types of transitions between pages.
   enum PageTransition {
     LINK = 0;
