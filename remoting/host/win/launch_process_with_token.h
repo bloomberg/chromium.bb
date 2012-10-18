@@ -14,15 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_handle.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}  // namespace base
-
-namespace IPC {
-class ChannelProxy;
-class Listener;
-}  // namespace IPC
-
 namespace remoting {
 
 // Pipe name prefix used by Chrome IPC channels to convert a channel name into
@@ -30,15 +21,11 @@ namespace remoting {
 extern const char kChromePipeNamePrefix[];
 
 // Creates the server end of the IPC channel and applies the security
-// descriptor |pipe_security_descriptor| to it. The created channel proxy will
-// invoke methods of |delegate| on the calling thread while using
-// |io_task_runner| to send and receive messages in the background.
+// descriptor |pipe_security_descriptor| to it.
 bool CreateIpcChannel(
     const std::string& channel_name,
     const std::string& pipe_security_descriptor,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    IPC::Listener* delegate,
-    scoped_ptr<IPC::ChannelProxy>* channel_out);
+    base::win::ScopedHandle* pipe_out);
 
 // Creates a copy of the current process token for the given |session_id| so
 // it can be used to launch a process in that session.

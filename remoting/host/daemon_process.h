@@ -53,7 +53,7 @@ class DaemonProcess
   virtual void OnConfigWatcherError() OVERRIDE;
 
   // WorkerProcessIpcDelegate implementation.
-  virtual void OnChannelConnected() OVERRIDE;
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnPermanentError() OVERRIDE;
 

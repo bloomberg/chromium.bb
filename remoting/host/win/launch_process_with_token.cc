@@ -15,13 +15,12 @@
 #include "base/process_util.h"
 #include "base/rand_util.h"
 #include "base/scoped_native_library.h"
-#include "base/single_thread_task_runner.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
 #include "base/win/windows_version.h"
-#include "ipc/ipc_channel_proxy.h"
+#include "ipc/ipc_channel.h"
 
 using base::win::ScopedHandle;
 
@@ -413,9 +412,7 @@ const char kChromePipeNamePrefix[] = "\\\\.\\pipe\\chrome.";
 bool CreateIpcChannel(
     const std::string& channel_name,
     const std::string& pipe_security_descriptor,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    IPC::Listener* delegate,
-    scoped_ptr<IPC::ChannelProxy>* channel_out) {
+    base::win::ScopedHandle* pipe_out) {
   // Create security descriptor for the channel.
   SECURITY_ATTRIBUTES security_attributes;
   security_attributes.nLength = sizeof(security_attributes);
@@ -458,12 +455,7 @@ bool CreateIpcChannel(
 
   LocalFree(security_attributes.lpSecurityDescriptor);
 
-  // Wrap the pipe into an IPC channel.
-  channel_out->reset(new IPC::ChannelProxy(
-      IPC::ChannelHandle(pipe),
-      IPC::Channel::MODE_SERVER,
-      delegate,
-      io_task_runner));
+  *pipe_out = pipe.Pass();
   return true;
 }
 

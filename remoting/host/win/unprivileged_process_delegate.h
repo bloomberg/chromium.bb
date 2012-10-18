@@ -38,23 +38,14 @@ class UnprivilegedProcessDelegate : public WorkerProcessLauncher::Delegate {
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
   // WorkerProcessLauncher::Delegate implementation.
-  virtual DWORD GetExitCode() OVERRIDE;
+  virtual DWORD GetProcessId() const OVERRIDE;
+  virtual bool IsPermanentError(int failure_count) const OVERRIDE;
   virtual void KillProcess(DWORD exit_code) OVERRIDE;
   virtual bool LaunchProcess(
       IPC::Listener* delegate,
       base::win::ScopedHandle* process_exit_event_out) OVERRIDE;
 
  private:
-  // Creates an already connected IPC channel. The server end of the channel
-  // is wrapped into a channel proxy that will invoke methods of |delegate|
-  // on the |main_task_runner| thread while using |io_task_runner| to send and
-  // receive messages in the background. The client end is returned as
-  // an inheritable NT handle.
-  bool CreateConnectedIpcChannel(const std::string& channel_name,
-                                 IPC::Listener* delegate,
-                                 base::win::ScopedHandle* client_out,
-                                 scoped_ptr<IPC::ChannelProxy>* server_out);
-
   // The task runner all public methods of this class should be called on.
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 

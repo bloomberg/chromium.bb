@@ -66,7 +66,8 @@ class WtsSessionProcessDelegate::Core
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
   // WorkerProcessLauncher::Delegate implementation.
-  virtual DWORD GetExitCode() OVERRIDE;
+  virtual DWORD GetProcessId() const OVERRIDE;
+  virtual bool IsPermanentError(int failure_count) const OVERRIDE;
   virtual void KillProcess(DWORD exit_code) OVERRIDE;
   virtual bool LaunchProcess(
       IPC::Listener* delegate,
@@ -115,11 +116,18 @@ class WtsSessionProcessDelegate::Core
   // Security descriptor (as SDDL) to be applied to |channel_|.
   std::string channel_security_;
 
+  // Pointer to GetNamedPipeClientProcessId() API if it is available.
+  typedef BOOL (WINAPI * GetNamedPipeClientProcessIdFn)(HANDLE, DWORD*);
+  GetNamedPipeClientProcessIdFn get_named_pipe_client_pid_;
+
   // The job object used to control the lifetime of child processes.
   base::win::ScopedHandle job_;
 
   // True if the worker process should be launched elevated.
   bool launch_elevated_;
+
+  // The named pipe used as the transport by |channel_|.
+  base::win::ScopedHandle pipe_;
 
   // A handle that becomes signalled once all processes associated with the job
   // have been terminated.
@@ -147,6 +155,7 @@ WtsSessionProcessDelegate::Core::Core(
       io_task_runner_(io_task_runner),
       binary_path_(binary_path),
       channel_security_(channel_security),
+      get_named_pipe_client_pid_(NULL),
       launch_elevated_(launch_elevated),
       stopping_(false) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
@@ -176,9 +185,18 @@ bool WtsSessionProcessDelegate::Core::Send(IPC::Message* message) {
   }
 }
 
-DWORD WtsSessionProcessDelegate::Core::GetExitCode() {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
+DWORD WtsSessionProcessDelegate::Core::GetProcessId() const {
+  DWORD pid = 0;
+  if (pipe_.IsValid() && get_named_pipe_client_pid_(pipe_, &pid)) {
+    return pid;
+  } else {
+    return 0;
+  }
+}
 
+bool WtsSessionProcessDelegate::Core::IsPermanentError(
+    int failure_count) const {
+  // Get exit code of the worker process if it is available.
   DWORD exit_code = CONTROL_C_EXIT;
   if (worker_process_.IsValid()) {
     if (!::GetExitCodeProcess(worker_process_, &exit_code)) {
@@ -188,13 +206,17 @@ DWORD WtsSessionProcessDelegate::Core::GetExitCode() {
     }
   }
 
-  return exit_code;
+  // Stop trying to restart the worker process if it exited due to
+  // misconfiguration.
+  return (kMinPermanentErrorExitCode <= exit_code &&
+      exit_code <= kMaxPermanentErrorExitCode);
 }
 
 void WtsSessionProcessDelegate::Core::KillProcess(DWORD exit_code) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   channel_.reset();
+  pipe_.Close();
 
   if (launch_elevated_) {
     if (job_.IsValid()) {
@@ -235,11 +257,17 @@ bool WtsSessionProcessDelegate::Core::LaunchProcess(
   }
 
   // Create the server end of the IPC channel.
-  scoped_ptr<IPC::ChannelProxy> channel;
   std::string channel_name = GenerateIpcChannelName(this);
-  if (!CreateIpcChannel(channel_name, channel_security_, io_task_runner_,
-                        delegate, &channel))
+  ScopedHandle pipe;
+  if (!CreateIpcChannel(channel_name, channel_security_, &pipe))
     return false;
+
+  // Wrap the pipe into an IPC channel.
+  scoped_ptr<IPC::ChannelProxy> channel(new IPC::ChannelProxy(
+      IPC::ChannelHandle(pipe),
+      IPC::Channel::MODE_SERVER,
+      delegate,
+      io_task_runner_));
 
   // Create the command line passing the name of the IPC channel to use and
   // copying known switches from the caller's command line.
@@ -299,6 +327,7 @@ bool WtsSessionProcessDelegate::Core::LaunchProcess(
   }
 
   channel_ = channel.Pass();
+  pipe_ = pipe.Pass();
   *process_exit_event_out = process_exit_event.Pass();
   return true;
 }
@@ -308,6 +337,15 @@ bool WtsSessionProcessDelegate::Core::Initialize(uint32 session_id) {
     launch_elevated_ = false;
 
   if (launch_elevated_) {
+    // GetNamedPipeClientProcessId() is available starting from Vista.
+    HMODULE kernel32 = ::GetModuleHandle(L"kernel32.dll");
+    CHECK(kernel32 != NULL);
+
+    get_named_pipe_client_pid_ =
+        reinterpret_cast<GetNamedPipeClientProcessIdFn>(
+            GetProcAddress(kernel32, "GetNamedPipeClientProcessId"));
+    CHECK(get_named_pipe_client_pid_ != NULL);
+
     process_exit_event_.Set(CreateEvent(NULL, TRUE, FALSE, NULL));
     if (!process_exit_event_.IsValid()) {
       LOG(ERROR) << "Failed to create a nameless event";
@@ -417,7 +455,7 @@ void WtsSessionProcessDelegate::Core::InitializeJobCompleted(
 }
 
 void WtsSessionProcessDelegate::Core::OnJobNotification(DWORD message,
-                                                      DWORD pid) {
+                                                        DWORD pid) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   switch (message) {
@@ -457,11 +495,18 @@ bool WtsSessionProcessDelegate::Send(IPC::Message* message) {
   return core_->Send(message);
 }
 
-DWORD WtsSessionProcessDelegate::GetExitCode() {
-  if (!core_)
-    return CONTROL_C_EXIT;
+DWORD WtsSessionProcessDelegate::GetProcessId() const {
+  if (core_)
+    return 0;
 
-  return core_->GetExitCode();
+  return core_->GetProcessId();
+}
+
+bool WtsSessionProcessDelegate::IsPermanentError(int failure_count) const {
+  if (core_)
+    return false;
+
+  return core_->IsPermanentError(failure_count);
 }
 
 void WtsSessionProcessDelegate::KillProcess(DWORD exit_code) {

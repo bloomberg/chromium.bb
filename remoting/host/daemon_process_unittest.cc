@@ -175,7 +175,7 @@ DesktopSession* DaemonProcessTest::DoCreateDesktopSession(int terminal_id) {
 
 void DaemonProcessTest::LaunchNetworkProcess() {
   terminal_id_ = 0;
-  daemon_process_->OnChannelConnected();
+  daemon_process_->OnChannelConnected(0);
 }
 
 void DaemonProcessTest::DeleteDaemonProcess() {

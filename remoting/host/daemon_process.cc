@@ -37,7 +37,7 @@ void DaemonProcess::OnConfigWatcherError() {
   Stop();
 }
 
-void DaemonProcess::OnChannelConnected() {
+void DaemonProcess::OnChannelConnected(int32 peer_pid) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   DeleteAllDesktopSessions();

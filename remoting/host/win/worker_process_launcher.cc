@@ -9,10 +9,10 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "base/win/object_watcher.h"
+#include "base/win/windows_version.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "net/base/backoff_entry.h"
-#include "remoting/host/host_exit_codes.h"
 #include "remoting/host/worker_process_ipc_delegate.h"
 
 using base::TimeDelta;
@@ -112,6 +112,10 @@ class WorkerProcessLauncher::Core
   // Handles IPC messages sent by the worker process.
   WorkerProcessIpcDelegate* worker_delegate_;
 
+  // Pointer to GetNamedPipeClientProcessId() API if it is available.
+  typedef BOOL (WINAPI * GetNamedPipeClientProcessIdFn)(HANDLE, DWORD*);
+  GetNamedPipeClientProcessIdFn get_named_pipe_client_pid_;
+
   // True if IPC messages should be passed to |worker_delegate_|.
   bool ipc_enabled_;
 
@@ -135,10 +139,6 @@ class WorkerProcessLauncher::Core
   // been terminated.
   ScopedHandle process_exit_event_;
 
-  // Self reference to keep the object alive while the worker process is being
-  // terminated.
-  scoped_refptr<Core> self_;
-
   // True when Stop() has been called.
   bool stopping_;
 
@@ -155,6 +155,7 @@ WorkerProcessLauncher::Core::Core(
     : caller_task_runner_(caller_task_runner),
       launcher_delegate_(launcher_delegate.Pass()),
       worker_delegate_(worker_delegate),
+      get_named_pipe_client_pid_(NULL),
       ipc_enabled_(false),
       launch_backoff_(&kDefaultBackoffPolicy),
       stopping_(false) {
@@ -213,16 +214,21 @@ bool WorkerProcessLauncher::Core::OnMessageReceived(
 void WorkerProcessLauncher::Core::OnChannelConnected(int32 peer_pid) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  // |peer_pid| is send by the client and cannot be trusted.
-  // GetNamedPipeClientProcessId() is not available on XP. The pipe's security
-  // descriptor is the only protection we currently have against malicious
-  // clients.
-  //
-  // If we'd like to be able to launch low-privileged workers and let them
-  // connect back, the pipe handle should be passed to the worker instead of
-  // the pipe name.
-  if (ipc_enabled_)
-    worker_delegate_->OnChannelConnected();
+  if (!ipc_enabled_)
+    return;
+
+  // Verify |peer_pid| because it is controlled by the client and cannot be
+  // trusted.
+  DWORD actual_pid = launcher_delegate_->GetProcessId();
+  if (peer_pid != static_cast<int32>(actual_pid)) {
+    LOG(ERROR) << "The actual client PID " << actual_pid
+               << " does not match the one reported by the client: "
+               << peer_pid;
+    StopWorker();
+    return;
+  }
+
+  worker_delegate_->OnChannelConnected(peer_pid);
 }
 
 void WorkerProcessLauncher::Core::OnChannelError() {
@@ -277,14 +283,14 @@ void WorkerProcessLauncher::Core::RecordSuccessfulLaunch() {
 void WorkerProcessLauncher::Core::StopWorker() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
+  // Keep the object alive in case one of delegates decides to delete |this|.
+  scoped_refptr<Core> self = this;
+
   // Record a launch failure if the process exited too soon.
   if (launch_success_timer_->IsRunning()) {
     launch_success_timer_->Stop();
     launch_backoff_.InformOfRequest(false);
   }
-
-  // Keep |this| alive until the worker process is terminated.
-  self_ = this;
 
   // Ignore any remaining IPC messages.
   ipc_enabled_ = false;
@@ -292,10 +298,15 @@ void WorkerProcessLauncher::Core::StopWorker() {
   // Kill the process if it has been started already.
   if (process_watcher_.GetWatchedObject() != NULL) {
     launcher_delegate_->KillProcess(CONTROL_C_EXIT);
-    return;
-  }
 
-  DCHECK(process_watcher_.GetWatchedObject() == NULL);
+    // Wait until the process is actually stopped if the caller keeps
+    // a reference to |this|. Otherwise terminate everything right now - there
+    // won't be a second chance.
+    if (!stopping_)
+      return;
+
+    process_watcher_.StopWatching();
+  }
 
   ipc_error_timer_->Stop();
   process_exit_event_.Close();
@@ -304,27 +315,17 @@ void WorkerProcessLauncher::Core::StopWorker() {
   if (stopping_) {
     ipc_error_timer_.reset();
     launch_timer_.reset();
-    self_ = NULL;
     return;
   }
 
-  self_ = NULL;
-
-  // Stop trying to restart the worker process if it exited due to
-  // misconfiguration.
-  DWORD exit_code = launcher_delegate_->GetExitCode();
-  if (kMinPermanentErrorExitCode <= exit_code &&
-      exit_code <= kMaxPermanentErrorExitCode) {
-    // |delegate_| must be valid because Stop() hasn't been called yet and
-    // |running_| is true. |worker_delegate_| is valid here because Stop()
-    // hasn't been called yet (|stopping_| is false).
-    worker_delegate_->OnPermanentError();
-    return;
+  if (launcher_delegate_->IsPermanentError(launch_backoff_.failure_count())) {
+    if (!stopping_)
+      worker_delegate_->OnPermanentError();
+  } else {
+    // Schedule the next attempt to launch the worker process.
+    launch_timer_->Start(FROM_HERE, launch_backoff_.GetTimeUntilRelease(),
+                         this, &Core::LaunchWorker);
   }
-
-  // Schedule the next attempt to launch the worker process.
-  launch_timer_->Start(FROM_HERE, launch_backoff_.GetTimeUntilRelease(),
-                       this, &Core::LaunchWorker);
 }
 
 WorkerProcessLauncher::WorkerProcessLauncher(

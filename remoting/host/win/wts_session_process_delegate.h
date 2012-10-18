@@ -41,7 +41,8 @@ class WtsSessionProcessDelegate
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
   // WorkerProcessLauncher::Delegate implementation.
-  virtual DWORD GetExitCode() OVERRIDE;
+  virtual DWORD GetProcessId() const OVERRIDE;
+  virtual bool IsPermanentError(int failure_count) const OVERRIDE;
   virtual void KillProcess(DWORD exit_code) OVERRIDE;
   virtual bool LaunchProcess(
       IPC::Listener* delegate,

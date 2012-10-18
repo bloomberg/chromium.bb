@@ -35,8 +35,11 @@ class WorkerProcessLauncher {
    public:
     virtual ~Delegate();
 
-    // Returns the exit code of the worker process.
-    virtual DWORD GetExitCode() = 0;
+    // Returns PID of the worker process or 0 if it is not available.
+    virtual DWORD GetProcessId() const = 0;
+
+    // Returns true if the worker process should not be restarted any more.
+    virtual bool IsPermanentError(int failure_count) const = 0;
 
     // Terminates the worker process with the given exit code. Destroys the IPC
     // channel created by LaunchProcess().
