@@ -227,6 +227,9 @@ WebIntentPickerGtk::WebIntentPickerGtk(TabContents* tab_contents,
   theme_service->InitThemesFor(this);
 
   window_ = new ConstrainedWindowGtk(tab_contents->web_contents(), this);
+
+  if (model_->IsInlineDisposition())
+    OnInlineDisposition(string16(), model_->inline_disposition_url());
 }
 
 WebIntentPickerGtk::~WebIntentPickerGtk() {
@@ -290,7 +293,7 @@ void WebIntentPickerGtk::OnExtensionIconChanged(
   UpdateSuggestedExtensions();
 }
 
-void WebIntentPickerGtk::OnInlineDisposition(const string16& title,
+void WebIntentPickerGtk::OnInlineDisposition(const string16&,
                                              const GURL& url) {
   content::WebContents* web_contents =
       delegate_->CreateWebContentsForInlineDisposition(
@@ -321,7 +324,9 @@ void WebIntentPickerGtk::OnInlineDisposition(const string16& title,
   // TODO(gbillock): Eventually get the service icon button here.
 
   // Intent action label.
-  GtkWidget* action_label = gtk_label_new(UTF16ToUTF8(title).c_str());
+  const WebIntentPickerModel::InstalledService* service =
+      model_->GetInstalledServiceWithURL(url);
+  GtkWidget* action_label = gtk_label_new(UTF16ToUTF8(service->title).c_str());
   gtk_util::ForceFontSizePixels(action_label, kMainContentPixelSize);
   // Hardcode color; don't allow theming.
   gtk_util::SetLabelColor(action_label, &ui::kGdkBlack);
@@ -334,8 +339,9 @@ void WebIntentPickerGtk::OnInlineDisposition(const string16& title,
 
   // Add link for "choose another service" if other suggestions are available
   // or if more than one (the current) service is installed.
-  if (model_->GetInstalledServiceCount() > 1 ||
-       model_->GetSuggestedExtensionCount()) {
+  if (model_->show_use_another_service() &&
+      (model_->GetInstalledServiceCount() > 1 ||
+       model_->GetSuggestedExtensionCount())) {
     GtkWidget* use_alternate_link = theme_service->BuildChromeLinkButton(
         l10n_util::GetStringUTF8(
             IDS_INTENT_PICKER_USE_ALTERNATE_SERVICE).c_str());
@@ -631,6 +637,7 @@ void WebIntentPickerGtk::InitMainContents() {
 void WebIntentPickerGtk::ClearContents() {
   // Wipe out all currently displayed widgets.
   gtk_util::RemoveAllChildren(contents_);
+  header_label_ = NULL;
   button_vbox_ = NULL;
   cws_label_ = NULL;
   extensions_vbox_ = NULL;
