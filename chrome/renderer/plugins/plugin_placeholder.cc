@@ -162,9 +162,7 @@ PluginPlaceholder* PluginPlaceholder::CreateBlockedPlugin(
     const std::string& identifier,
     const string16& name,
     int template_id,
-    int message_id) {
-  string16 message = l10n_util::GetStringFUTF16(message_id, name);
-
+    const string16& message) {
   DictionaryValue values;
   values.SetString("message", message);
   values.SetString("name", name);
