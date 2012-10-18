@@ -35,12 +35,9 @@ NSString* const kButtonDecorationKey = @"ButtonDecoration";
 CGFloat RightDecorationXOffset() {
   const CGFloat kRightDecorationXOffset = 5.0;
   const CGFloat kScriptBadgeRightDecorationXOffset = 9.0;
-  const CGFloat kActionBoxRightDecorationXOffset = 0.0;
 
   if (FeatureSwitch::script_badges()->IsEnabled()) {
     return kScriptBadgeRightDecorationXOffset;
-  } else if (FeatureSwitch::action_box()->IsEnabled()) {
-    return kActionBoxRightDecorationXOffset;
   } else {
     return kRightDecorationXOffset;
   }
@@ -67,26 +64,36 @@ const NSTimeInterval kLocationIconDragTimeout = 0.25;
 // visible and which fit, in the same order as |all_decorations|,
 // while |decoration_frames| will be the corresponding frames.
 // |x_edge| describes the edge to layout the decorations against
-// (|NSMinXEdge| or |NSMaxXEdge|).  |initial_padding| is the padding
-// from the edge of |cell_frame| (|DecorationHorizontalPad()| is used
-// between decorations).
+// (|NSMinXEdge| or |NSMaxXEdge|).  |regular_padding| is the padding
+// from the edge of |cell_frame| to use when the first visible decoration
+// is a regular decoration. |action_padding| is the padding to use when the
+// first decoration is a button decoration, ie. the action box button.
+// (|DecorationHorizontalPad()| is used between decorations).
 void CalculatePositionsHelper(
     NSRect frame,
     const std::vector<LocationBarDecoration*>& all_decorations,
     NSRectEdge x_edge,
-    CGFloat initial_padding,
+    CGFloat regular_padding,
+    CGFloat action_padding,
     std::vector<LocationBarDecoration*>* decorations,
     std::vector<NSRect>* decoration_frames,
     NSRect* remaining_frame) {
   DCHECK(x_edge == NSMinXEdge || x_edge == NSMaxXEdge);
   DCHECK_EQ(decorations->size(), decoration_frames->size());
 
-  // The outer-most decoration will be inset a bit further from the
-  // edge.
-  CGFloat padding = initial_padding;
+  // The initial padding depends on whether the first visible decoration is
+  // a button or not.
+  bool is_first_visible_decoration = true;
 
   for (size_t i = 0; i < all_decorations.size(); ++i) {
     if (all_decorations[i]->IsVisible()) {
+      CGFloat padding = DecorationHorizontalPad();
+      if (is_first_visible_decoration) {
+        padding = all_decorations[i]->AsButtonDecoration() ?
+            action_padding : regular_padding;
+        is_first_visible_decoration = false;
+      }
+
       NSRect padding_rect, available;
 
       // Peel off the outside padding.
@@ -120,20 +127,21 @@ void CalculatePositionsHelper(
   *remaining_frame = frame;
 }
 
-// Helper function for calculating placement of decorations w/in the
-// cell.  |frame| is the cell's boundary rectangle, |remaining_frame|
-// will get any space left after decorations are laid out (for text).
-// |left_decorations| is a set of decorations for the left-hand side
-// of the cell, |right_decorations| for the right-hand side.
+// Helper function for calculating placement of decorations w/in the cell.
+// |frame| is the cell's boundary rectangle, |remaining_frame| will get any
+// space left after decorations are laid out (for text).  |left_decorations| is
+// a set of decorations for the left-hand side of the cell, |right_decorations|
+// for the right-hand side.  |edge_width| is the width of one vertical edge of
+// the omnibox, this depends on whether the display is low DPI or high DPI.
 // |decorations| will contain the resulting visible decorations, and
-// |decoration_frames| will contain their frames in the same
-// coordinates as |frame|.  Decorations will be ordered left to right.
-// As a convenience returns the index of the first right-hand
-// decoration.
+// |decoration_frames| will contain their frames in the same coordinates as
+// |frame|.  Decorations will be ordered left to right. As a convenience returns
+// the index of the first right-hand decoration.
 size_t CalculatePositionsInFrame(
     NSRect frame,
     const std::vector<LocationBarDecoration*>& left_decorations,
     const std::vector<LocationBarDecoration*>& right_decorations,
+    CGFloat edge_width,
     std::vector<LocationBarDecoration*>* decorations,
     std::vector<NSRect>* decoration_frames,
     NSRect* remaining_frame) {
@@ -141,8 +149,8 @@ size_t CalculatePositionsInFrame(
   decoration_frames->clear();
 
   // Layout |left_decorations| against the LHS.
-  CalculatePositionsHelper(frame, left_decorations,
-                           NSMinXEdge, kLeftDecorationXOffset,
+  CalculatePositionsHelper(frame, left_decorations, NSMinXEdge,
+                           kLeftDecorationXOffset, kLeftDecorationXOffset,
                            decorations, decoration_frames, &frame);
   DCHECK_EQ(decorations->size(), decoration_frames->size());
 
@@ -150,9 +158,9 @@ size_t CalculatePositionsInFrame(
   const size_t left_count = decorations->size();
 
   // Layout |right_decorations| against the RHS.
-  CalculatePositionsHelper(frame, right_decorations,
-                           NSMaxXEdge, RightDecorationXOffset(),
-                           decorations, decoration_frames, &frame);
+  CalculatePositionsHelper(frame, right_decorations, NSMaxXEdge,
+                           RightDecorationXOffset(), edge_width, decorations,
+                           decoration_frames, &frame);
   DCHECK_EQ(decorations->size(), decoration_frames->size());
 
   // Reverse the right-hand decorations so that overall everything is
@@ -173,41 +181,6 @@ size_t CalculatePositionsInFrame(
   return left_count;
 }
 
-// Wrapper for |CalculatePositionsInFrame|, that snaps the edges of the leftmost
-// and/or rightmost decorations' frames to the edge of the cell, if there are
-// left and/or right decorations and if they are ButtonDecorations.
-void CalculateSnappedPositionsInFrame(
-    NSRect frame,
-    const std::vector<LocationBarDecoration*>& left_decorations,
-    const std::vector<LocationBarDecoration*>& right_decorations,
-    std::vector<LocationBarDecoration*>* decorations,
-    std::vector<NSRect>* decoration_frames,
-    NSRect* remaining_frame,
-    NSView* control_view) {
-  // The Action Box is snapped to the right edge, so subtract the line width to
-  // draw up to but excluding the omnibox's border.
-  if (FeatureSwitch::action_box()->IsEnabled())
-    frame.size.width -= [control_view cr_lineWidth];
-
-  size_t left_count = CalculatePositionsInFrame(frame,
-                                                left_decorations,
-                                                right_decorations,
-                                                decorations,
-                                                decoration_frames,
-                                                remaining_frame);
-
-  if (left_count > 0 && decorations->front()->AsButtonDecoration()) {
-    NSRect& snap_frame = decoration_frames->front();
-    snap_frame.size.width = NSMaxX(snap_frame) - NSMinX(frame);
-    snap_frame.origin.x = NSMinX(frame);
-  }
-  if (left_count < decoration_frames->size() &&
-      decorations->back()->AsButtonDecoration()) {
-    NSRect& snap_frame = decoration_frames->back();
-    snap_frame.size.width = NSMaxX(frame) - NSMinX(snap_frame);
-  }
-}
-
 }  // namespace
 
 @implementation AutocompleteTextFieldCell
@@ -218,6 +191,11 @@ void CalculateSnappedPositionsInFrame(
 
 - (CGFloat)cornerRadius {
   return kCornerRadius;
+}
+
+- (CGFloat)edgeWidth {
+  // The omnibox vertical edge width is 1 pixel both in low DPI and high DPI.
+  return [[self controlView] cr_lineWidth];
 }
 
 - (BOOL)shouldDrawBezel {
@@ -242,7 +220,8 @@ void CalculateSnappedPositionsInFrame(
   std::vector<NSRect> decorationFrames;
   NSRect textFrame;
   CalculatePositionsInFrame(frame, leftDecorations_, rightDecorations_,
-                            &decorations, &decorationFrames, &textFrame);
+                            [self edgeWidth], &decorations, &decorationFrames,
+                            &textFrame);
 
   return NSWidth(textFrame);
 }
@@ -258,7 +237,8 @@ void CalculateSnappedPositionsInFrame(
   std::vector<NSRect> decorationFrames;
   NSRect textFrame;
   CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
-                            &decorations, &decorationFrames, &textFrame);
+                            [self edgeWidth], &decorations, &decorationFrames,
+                            &textFrame);
 
   // Find our decoration and return the corresponding frame.
   std::vector<LocationBarDecoration*>::const_iterator iter =
@@ -282,7 +262,8 @@ void CalculateSnappedPositionsInFrame(
   std::vector<NSRect> decorationFrames;
   NSRect textFrame = [super textFrameForFrame:cellFrame];
   CalculatePositionsInFrame(textFrame, leftDecorations_, rightDecorations_,
-                            &decorations, &decorationFrames, &textFrame);
+                            [self edgeWidth], &decorations, &decorationFrames,
+                            &textFrame);
 
   // NOTE: This function must closely match the logic in
   // |-drawInteriorWithFrame:inView:|.
@@ -301,7 +282,8 @@ void CalculateSnappedPositionsInFrame(
   NSRect textFrame;
   size_t left_count =
       CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
-                                &decorations, &decorationFrames, &textFrame);
+                                [self edgeWidth], &decorations,
+                                &decorationFrames, &textFrame);
 
   // Determine the left-most extent for the i-beam cursor.
   CGFloat minX = NSMinX(textFrame);
@@ -340,10 +322,9 @@ void CalculateSnappedPositionsInFrame(
   std::vector<NSRect> decorationFrames;
   NSRect workingFrame;
 
-  CalculateSnappedPositionsInFrame(cellFrame, leftDecorations_,
-                                   rightDecorations_, &decorations,
-                                   &decorationFrames, &workingFrame,
-                                   controlView);
+  CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
+                            [self edgeWidth], &decorations, &decorationFrames,
+                            &workingFrame);
 
   // Draw the decorations.
   for (size_t i = 0; i < decorations.size(); ++i) {
@@ -373,9 +354,9 @@ void CalculateSnappedPositionsInFrame(
   std::vector<LocationBarDecoration*> decorations;
   std::vector<NSRect> decorationFrames;
   NSRect textFrame;
-  CalculateSnappedPositionsInFrame(cellFrame, leftDecorations_,
-                                   rightDecorations_, &decorations,
-                                   &decorationFrames, &textFrame, controlView);
+  CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
+                            [self edgeWidth], &decorations, &decorationFrames,
+                            &textFrame);
 
   for (size_t i = 0; i < decorations.size(); ++i) {
     if (NSMouseInRect(location, decorationFrames[i], flipped))
@@ -527,9 +508,9 @@ void CalculateSnappedPositionsInFrame(
   std::vector<NSRect> decorationFrames;
   NSRect textFrame;
   NSRect cellRect = [self clickableFrameForFrame:[view bounds]];
-  CalculateSnappedPositionsInFrame(cellRect, leftDecorations_,
-                                   rightDecorations_, &decorations,
-                                   &decorationFrames, &textFrame, view);
+  CalculatePositionsInFrame(cellRect, leftDecorations_, rightDecorations_,
+                            [self edgeWidth], &decorations, &decorationFrames,
+                            &textFrame);
 
   // Remove previously-registered tracking areas, since we'll update them below.
   for (CrTrackingArea* area in [view trackingAreas]) {
@@ -745,7 +726,8 @@ static NSString* UnusedLegalNameForNewDropFile(NSURL* saveLocation,
   std::vector<NSRect> decorationFrames;
   NSRect textFrame;
   CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
-                            &decorations, &decorationFrames, &textFrame);
+                            [self edgeWidth], &decorations, &decorationFrames,
+                            &textFrame);
 
   for (size_t i = 0; i < decorations.size(); ++i) {
     NSString* tooltip = decorations[i]->GetToolTip();
