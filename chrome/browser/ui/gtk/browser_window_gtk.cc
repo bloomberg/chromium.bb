@@ -242,7 +242,7 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
        contents_hsplit_(NULL),
        contents_vsplit_(NULL),
        frame_cursor_(NULL),
-       is_active_(!ui::ActiveWindowWatcherX::WMSupportsActivation()),
+       is_active_(false),
        show_state_after_show_(ui::SHOW_STATE_DEFAULT),
        suppress_window_raise_(false),
        accel_group_(NULL),
@@ -555,7 +555,7 @@ void BrowserWindowGtk::DrawCustomFrame(cairo_t* cr,
   if (theme_provider->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
       !browser()->profile()->IsOffTheRecord()) {
     gfx::CairoCachedSurface* theme_overlay = theme_provider->GetImageNamed(
-        IsActive() ? IDR_THEME_FRAME_OVERLAY
+        DrawFrameAsActive() ? IDR_THEME_FRAME_OVERLAY
         : IDR_THEME_FRAME_OVERLAY_INACTIVE).ToCairo();
     theme_overlay->SetSource(cr, widget, 0, GetVerticalOffset());
     cairo_paint(cr);
@@ -570,7 +570,7 @@ int BrowserWindowGtk::GetVerticalOffset() {
 int BrowserWindowGtk::GetThemeFrameResource() {
   bool incognito = browser()->profile()->IsOffTheRecord();
   int image_name;
-  if (IsActive()) {
+  if (DrawFrameAsActive()) {
     image_name = incognito ? IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
   } else {
     image_name = incognito ? IDR_THEME_FRAME_INCOGNITO_INACTIVE :
@@ -692,7 +692,11 @@ void BrowserWindowGtk::Deactivate() {
 }
 
 bool BrowserWindowGtk::IsActive() const {
-  return is_active_;
+  if (ui::ActiveWindowWatcherX::WMSupportsActivation())
+    return is_active_;
+
+  // This still works even though we don't get the activation notification.
+  return gtk_window_is_active(window_);
 }
 
 void BrowserWindowGtk::FlashFrame(bool flash) {
@@ -1842,7 +1846,7 @@ void BrowserWindowGtk::SetBackgroundColor() {
   int frame_color_id;
   if (UsingCustomPopupFrame()) {
     frame_color_id = ThemeService::COLOR_TOOLBAR;
-  } else if (IsActive()) {
+  } else if (DrawFrameAsActive()) {
     frame_color_id = browser()->profile()->IsOffTheRecord()
        ? ThemeService::COLOR_FRAME_INCOGNITO
        : ThemeService::COLOR_FRAME;
@@ -2392,6 +2396,16 @@ void BrowserWindowGtk::PlaceBookmarkBar(bool is_floating) {
     gtk_box_pack_end(GTK_BOX(target_parent), bookmark_bar_->widget(),
                      FALSE, FALSE, 0);
   }
+}
+
+bool BrowserWindowGtk::DrawFrameAsActive() const {
+  if (ui::ActiveWindowWatcherX::WMSupportsActivation())
+    return is_active_;
+
+  // Since we don't get notifications when the active state of the frame
+  // changes, we can't consistently repaint the frame at the right time. Instead
+  // we always draw the frame as active.
+  return true;
 }
 
 // static

@@ -447,6 +447,9 @@ class BrowserWindowGtk
   // Put the bookmark bar where it belongs.
   void PlaceBookmarkBar(bool is_floating);
 
+  // Decides if we should draw the frame as if the window is active.
+  bool DrawFrameAsActive() const;
+
   // Determine whether we use should default to native decorations or the custom
   // frame based on the currently-running window manager.
   static bool GetCustomFramePrefDefault();

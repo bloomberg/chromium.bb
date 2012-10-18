@@ -32,7 +32,7 @@ ShellWindowGtk::ShellWindowGtk(ShellWindow* shell_window,
     : shell_window_(shell_window),
       window_(NULL),
       state_(GDK_WINDOW_STATE_WITHDRAWN),
-      is_active_(!ui::ActiveWindowWatcherX::WMSupportsActivation()),
+      is_active_(false),
       content_thinks_its_fullscreen_(false),
       frameless_(params.frame == ShellWindow::CreateParams::FRAME_NONE) {
   window_ = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
@@ -128,7 +128,11 @@ ShellWindowGtk::~ShellWindowGtk() {
 }
 
 bool ShellWindowGtk::IsActive() const {
-  return is_active_;
+  if (ui::ActiveWindowWatcherX::WMSupportsActivation())
+    return is_active_;
+
+  // This still works even though we don't get the activation notification.
+  return gtk_window_is_active(window_);
 }
 
 bool ShellWindowGtk::IsMaximized() const {
