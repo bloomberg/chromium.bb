@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/metrics/histogram.h"
@@ -148,6 +149,15 @@ bool UpdateModifiedTimeOnDBThread(const GURL& origin,
                                   QuotaDatabase* database) {
   DCHECK(database);
   return database->SetOriginLastModifiedTime(origin, type, modified_time);
+}
+
+int64 CallSystemGetAmountOfFreeDiskSpace(const FilePath& profile_path) {
+  // Ensure the profile path exists.
+  if(!file_util::CreateDirectory(profile_path)) {
+    LOG(WARNING) << "Create directory failed for path" << profile_path.value();
+    return 0;
+  }
+  return base::SysInfo::AmountOfFreeDiskSpace(profile_path);
 }
 
 }  // anonymous namespace
@@ -883,7 +893,7 @@ QuotaManager::QuotaManager(bool is_incognito,
     desired_available_space_(-1),
     special_storage_policy_(special_storage_policy),
     weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-    get_disk_space_fn_(&base::SysInfo::AmountOfFreeDiskSpace) {
+    get_disk_space_fn_(&CallSystemGetAmountOfFreeDiskSpace) {
 }
 
 void QuotaManager::GetUsageInfo(const GetUsageInfoCallback& callback) {
