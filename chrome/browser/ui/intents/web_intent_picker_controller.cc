@@ -44,6 +44,11 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_intents_dispatcher.h"
 #include "ipc/ipc_message.h"
+#include "net/base/load_flags.h"
+#include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_fetcher_delegate.h"
+#include "skia/ext/image_operations.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
 
@@ -69,6 +74,37 @@ CWSIntentsRegistry* GetCWSIntentsRegistry(Profile* profile) {
   return CWSIntentsRegistryFactory::GetForProfile(profile);
 }
 
+// Self-deleting trampoline that forwards A URLFetcher response to a callback.
+class URLFetcherTrampoline : public net::URLFetcherDelegate {
+ public:
+  typedef base::Callback<void(const net::URLFetcher* source)>
+      ForwardingCallback;
+
+  explicit URLFetcherTrampoline(const ForwardingCallback& callback);
+  ~URLFetcherTrampoline();
+
+  // net::URLFetcherDelegate implementation.
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+
+ private:
+  // Fowarding callback from |OnURLFetchComplete|.
+  ForwardingCallback callback_;
+};
+
+URLFetcherTrampoline::URLFetcherTrampoline(const ForwardingCallback& callback)
+    : callback_(callback) {
+}
+
+URLFetcherTrampoline::~URLFetcherTrampoline() {
+}
+
+void URLFetcherTrampoline::OnURLFetchComplete(
+    const net::URLFetcher* source) {
+  DCHECK(!callback_.is_null());
+  callback_.Run(source);
+  delete source;
+  delete this;
+}
 class SourceWindowObserver : content::WebContentsObserver {
  public:
   SourceWindowObserver(content::WebContents* web_contents,
@@ -657,7 +693,20 @@ void WebIntentPickerController::OnCWSIntentServicesAvailable(
     suggestions.push_back(WebIntentPickerModel::SuggestedExtension(
         info.name, info.id, info.average_rating));
 
-    icon_loader_->LoadExtensionIcon(info.icon_url, info.id);
+    pending_async_count_++;
+    net::URLFetcher* icon_url_fetcher = net::URLFetcher::Create(
+        0,
+        info.icon_url,
+        net::URLFetcher::GET,
+        new URLFetcherTrampoline(
+            base::Bind(
+                &WebIntentPickerController::OnExtensionIconURLFetchComplete,
+                weak_ptr_factory_.GetWeakPtr(), info.id)));
+
+    icon_url_fetcher->SetLoadFlags(
+        net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);
+    icon_url_fetcher->SetRequestContext(profile_->GetRequestContext());
+    icon_url_fetcher->Start();
   }
 
   picker_model_->AddSuggestedExtensions(suggestions);
@@ -667,6 +716,50 @@ void WebIntentPickerController::OnCWSIntentServicesAvailable(
   OnIntentDataArrived();
 }
 
+void WebIntentPickerController::OnExtensionIconURLFetchComplete(
+    const std::string& extension_id, const net::URLFetcher* source) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  if (source->GetResponseCode() != 200) {
+    AsyncOperationFinished();
+    return;
+  }
+
+  scoped_ptr<std::string> response(new std::string);
+  if (!source->GetResponseAsString(response.get())) {
+    AsyncOperationFinished();
+    return;
+  }
+
+  // I'd like to have the worker thread post a task directly to the UI thread
+  // to call OnExtensionIcon[Un]Available, but this doesn't work: To do so
+  // would require DecodeExtensionIconAndResize to be a member function (so it
+  // has access to |this|) but a weak pointer cannot be dereferenced on a
+  // thread other than the thread where the WeakPtrFactory was created. Since
+  // the stored |this| pointer is weak, DecodeExtensionIconAndResize asserts
+  // before it even starts.
+  //
+  // Instead, I package up the callbacks that I want the worker thread to call,
+  // and make DecodeExtensionIconAndResize static. The stored weak |this|
+  // pointers are not dereferenced until invocation (on the UI thread).
+  ExtensionIconAvailableCallback available_callback =
+      base::Bind(
+          &WebIntentPickerController::OnExtensionIconAvailable,
+          weak_ptr_factory_.GetWeakPtr(),
+          extension_id);
+  base::Closure unavailable_callback =
+      base::Bind(
+          &WebIntentPickerController::OnExtensionIconUnavailable,
+          weak_ptr_factory_.GetWeakPtr(),
+          extension_id);
+
+  // Decode PNG and resize on worker thread.
+  content::BrowserThread::PostBlockingPoolTask(
+      FROM_HERE,
+      base::Bind(&DecodeExtensionIconAndResize,
+                 base::Passed(&response),
+                 available_callback,
+                 unavailable_callback));
+}
 
 void WebIntentPickerController::OnIntentDataArrived() {
   DCHECK(picker_model_.get());
@@ -698,6 +791,46 @@ void WebIntentPickerController::Reset() {
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
       ConstrainedWindowTabHelper::FromWebContents(web_contents_);
   constrained_window_tab_helper->BlockTabContent(false);
+}
+
+// static
+void WebIntentPickerController::DecodeExtensionIconAndResize(
+    scoped_ptr<std::string> icon_response,
+    const ExtensionIconAvailableCallback& callback,
+    const base::Closure& unavailable_callback) {
+  SkBitmap icon_bitmap;
+  if (gfx::PNGCodec::Decode(
+        reinterpret_cast<const unsigned char*>(icon_response->data()),
+        icon_response->length(),
+        &icon_bitmap)) {
+    SkBitmap resized_icon = skia::ImageOperations::Resize(
+        icon_bitmap,
+        skia::ImageOperations::RESIZE_BEST,
+        gfx::kFaviconSize, gfx::kFaviconSize);
+    gfx::Image icon_image(resized_icon);
+
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(callback, icon_image));
+  } else {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI,
+        FROM_HERE,
+        unavailable_callback);
+  }
+}
+
+void WebIntentPickerController::OnExtensionIconAvailable(
+    const std::string& extension_id,
+    const gfx::Image& icon_image) {
+  picker_model_->SetSuggestedExtensionIconWithId(extension_id, icon_image);
+  AsyncOperationFinished();
+}
+
+void WebIntentPickerController::OnExtensionIconUnavailable(
+    const std::string& extension_id) {
+  AsyncOperationFinished();
 }
 
 void WebIntentPickerController::OnShowExtensionInstallDialog(

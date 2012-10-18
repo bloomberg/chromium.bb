@@ -211,10 +211,30 @@ class WebIntentPickerController
   void OnCWSIntentServicesAvailable(
       const CWSIntentsRegistry::IntentExtensionList& extensions);
 
+  // Called when a suggested extension's icon is fetched.
+  void OnExtensionIconURLFetchComplete(const std::string& extension_id,
+                                       const net::URLFetcher* source);
+
+  // Called whenever intent data (both from registry and CWS) arrives.
   void OnIntentDataArrived();
 
   // Reset internal state to default values.
   void Reset();
+
+  typedef base::Callback<void(const gfx::Image&)>
+      ExtensionIconAvailableCallback;
+  // Called on a worker thread to decode and resize the extension's icon.
+  static void DecodeExtensionIconAndResize(
+      scoped_ptr<std::string> icon_response,
+      const ExtensionIconAvailableCallback& callback,
+      const base::Closure& unavailable_callback);
+
+  // Called when an extension's icon is successfully decoded and resized.
+  void OnExtensionIconAvailable(const std::string& extension_id,
+                                const gfx::Image& icon_image);
+
+  // Called when an extension's icon failed to be decoded or resized.
+  void OnExtensionIconUnavailable(const std::string& extension_id);
 
   // Called to show a custom extension install dialog.
   void OnShowExtensionInstallDialog(
