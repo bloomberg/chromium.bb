@@ -19,7 +19,6 @@ namespace {
 
 const CGFloat kWindowMinWidth = 500;
 const CGFloat kButtonGap = 6;
-const CGFloat kButtonMinWidth = 72;
 
 }  // namespace
 
@@ -126,10 +125,6 @@ const CGFloat kButtonMinWidth = 72;
   for (NSButton* button in buttons_.get()) {
     [button sizeToFit];
     NSSize size = [button frame].size;
-    if (size.width < kButtonMinWidth) {
-      size.width = kButtonMinWidth;
-      [button setFrameSize:size];
-    }
     buttonWidth += size.width;
   }
   if ([buttons_ count])

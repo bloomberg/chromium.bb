@@ -18,6 +18,8 @@ enum ButtonState {
   BUTTON_DISABLED,
 };
 
+const CGFloat kButtonMinWidth = 72;
+
 }  // namespace
 
 @interface ConstrainedWindowButton ()
@@ -157,6 +159,15 @@ NSAttributedString* GetButtonAttributedString(NSString* title,
     mouseInView = [self mouse:mousePoint inRect:[self bounds]];
   }
   return mouseInView;
+}
+
+- (void)sizeToFit {
+  [super sizeToFit];
+  NSSize size = [self frame].size;
+  if (size.width < kButtonMinWidth) {
+    size.width = kButtonMinWidth;
+    [self setFrameSize:size];
+  }
 }
 
 @end
