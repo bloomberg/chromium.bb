@@ -442,7 +442,7 @@ class Upgrader(object):
                                       portage_configroot=self._emptydir)
 
     # Point equery to the upstream source to get latest version for keywords.
-    equery = ['equery', 'which', pkg ]
+    equery = ['equery', 'which', pkg]
     cmd_result = cros_build_lib.RunCommand(
         equery, extra_env=envvars, print_cmd=self._verbose,
         error_code_ok=True, redirect_stdout=True, combine_stdout_stderr=True)
@@ -1476,29 +1476,26 @@ class Upgrader(object):
                                (arg, self._curr_arch))
 
         any_cpv = local_cpv if local_cpv else upstream_cpv
-        if any_cpv:
-          self._FillPInfoFromCPV(pinfo, any_cpv)
-
-        if local_cpv and upstream_cpv:
-          oper.Notice('Resolved "%s" to "%s" (local) and "%s" (upstream).' %
-                      (arg, local_cpv, upstream_cpv))
-          pinfo.cpv = local_cpv
-          pinfo.upstream_cpv = upstream_cpv
-        elif local_cpv:
-          oper.Notice('Resolved "%s" to "%s" (local).' %
-                      (arg, local_cpv))
-          pinfo.cpv = local_cpv
-        elif upstream_cpv:
-          oper.Notice('Resolved "%s" to "%s" (upstream).' %
-                      (arg, upstream_cpv))
-          pinfo.upstream_cpv = upstream_cpv
-        else:
+        if not any_cpv:
           msg = ('Unable to resolve "%s" as a package either local or upstream.'
                  % arg)
           if arg.find('/') < 0:
             msg = msg + ' Try specifying the full category/package_name.'
 
           raise RuntimeError(msg)
+
+        self._FillPInfoFromCPV(pinfo, any_cpv)
+        pinfo.cpv = local_cpv
+        pinfo.upstream_cpv = upstream_cpv
+        if local_cpv and upstream_cpv:
+          oper.Notice('Resolved "%s" to "%s" (local) and "%s" (upstream).' %
+                      (arg, local_cpv, upstream_cpv))
+        elif local_cpv:
+          oper.Notice('Resolved "%s" to "%s" (local).' %
+                      (arg, local_cpv))
+        elif upstream_cpv:
+          oper.Notice('Resolved "%s" to "%s" (upstream).' %
+                      (arg, upstream_cpv))
 
       pinfolist.append(pinfo)
 
