@@ -109,7 +109,7 @@ class NetworkDevice {
   // returns false: GSM modem and SIM card is present or CDMA modem.
   bool is_sim_absent() const {
     return technology_family() == TECHNOLOGY_FAMILY_GSM &&
-           !is_sim_locked() && imsi().empty();
+           !is_sim_locked() && !sim_present_;
   }
   const int sim_retries_left() const { return sim_retries_left_; }
   SimPinRequire sim_pin_required() const { return sim_pin_required_; }
@@ -217,6 +217,9 @@ class NetworkDevice {
   void set_sim_pin_required(SimPinRequire sim_pin_required) {
     sim_pin_required_ = sim_pin_required;
   }
+  void set_sim_present(bool sim_present) {
+    sim_present_ = sim_present;
+  }
   void set_firmware_revision(const std::string& firmware_revision) {
     firmware_revision_ = firmware_revision;
   }
@@ -269,6 +272,7 @@ class NetworkDevice {
   SimLockState sim_lock_state_;
   int sim_retries_left_;
   SimPinRequire sim_pin_required_;
+  bool sim_present_;
   std::string firmware_revision_;
   std::string hardware_revision_;
   int prl_version_;

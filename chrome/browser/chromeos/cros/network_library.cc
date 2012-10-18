@@ -183,6 +183,7 @@ NetworkDevice::NetworkDevice(const std::string& device_path)
       sim_lock_state_(SIM_UNKNOWN),
       sim_retries_left_(kDefaultSimUnlockRetriesCount),
       sim_pin_required_(SIM_PIN_REQUIRE_UNKNOWN),
+      sim_present_(false),
       prl_version_(0),
       data_roaming_allowed_(false),
       support_network_scan_(false),
