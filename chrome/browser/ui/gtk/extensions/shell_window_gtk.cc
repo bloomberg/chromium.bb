@@ -287,8 +287,7 @@ gboolean ShellWindowGtk::OnWindowState(GtkWidget* sender,
 
 gboolean ShellWindowGtk::OnButtonPress(GtkWidget* widget,
                                        GdkEventButton* event) {
-  if (!draggable_region_->isEmpty() &&
-      draggable_region_->contains(event->x, event->y)) {
+  if (draggable_region_ && draggable_region_->contains(event->x, event->y)) {
     if (event->button == 1) {
       if (GDK_BUTTON_PRESS == event->type) {
         if (!suppress_window_raise_)
