@@ -18,12 +18,12 @@ CCTextureUpdateQueue::~CCTextureUpdateQueue()
 {
 }
 
-void CCTextureUpdateQueue::appendFullUpload(TextureUploader::Parameters upload)
+void CCTextureUpdateQueue::appendFullUpload(const ResourceUpdate& upload)
 {
     m_fullEntries.push_back(upload);
 }
 
-void CCTextureUpdateQueue::appendPartialUpload(TextureUploader::Parameters upload)
+void CCTextureUpdateQueue::appendPartialUpload(const ResourceUpdate& upload)
 {
     m_partialEntries.push_back(upload);
 }
@@ -39,28 +39,28 @@ void CCTextureUpdateQueue::clearUploadsToEvictedResources()
     clearUploadsToEvictedResources(m_partialEntries);
 }
 
-void CCTextureUpdateQueue::clearUploadsToEvictedResources(std::deque<TextureUploader::Parameters>& entryQueue)
+void CCTextureUpdateQueue::clearUploadsToEvictedResources(std::deque<ResourceUpdate>& entryQueue)
 {
-    std::deque<TextureUploader::Parameters> temp;
+    std::deque<ResourceUpdate> temp;
     entryQueue.swap(temp);
     while (temp.size()) {
-        TextureUploader::Parameters upload = temp.front();
+        ResourceUpdate upload = temp.front();
         temp.pop_front();
         if (!upload.texture->backingResourceWasEvicted())
             entryQueue.push_back(upload);
     }
 }
 
-TextureUploader::Parameters CCTextureUpdateQueue::takeFirstFullUpload()
+ResourceUpdate CCTextureUpdateQueue::takeFirstFullUpload()
 {
-    TextureUploader::Parameters first = m_fullEntries.front();
+    ResourceUpdate first = m_fullEntries.front();
     m_fullEntries.pop_front();
     return first;
 }
 
-TextureUploader::Parameters CCTextureUpdateQueue::takeFirstPartialUpload()
+ResourceUpdate CCTextureUpdateQueue::takeFirstPartialUpload()
 {
-    TextureUploader::Parameters first = m_partialEntries.front();
+    ResourceUpdate first = m_partialEntries.front();
     m_partialEntries.pop_front();
     return first;
 }

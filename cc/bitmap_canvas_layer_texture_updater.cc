@@ -9,6 +9,7 @@
 #include "CCTextureUpdateQueue.h"
 #include "cc/layer_painter.h"
 #include "cc/platform_color.h"
+#include "cc/resource_update.h"
 #include "skia/ext/platform_canvas.h"
 
 namespace cc {
@@ -67,7 +68,12 @@ void BitmapCanvasLayerTextureUpdater::prepareToUpdate(const IntRect& contentRect
 
 void BitmapCanvasLayerTextureUpdater::updateTexture(CCTextureUpdateQueue& queue, CCPrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate)
 {
-    TextureUploader::Parameters upload = { texture, &m_canvas->getDevice()->accessBitmap(false), NULL, { contentRect(), sourceRect, destOffset } };
+    ResourceUpdate upload = ResourceUpdate::Create(
+        texture,
+        &m_canvas->getDevice()->accessBitmap(false),
+        contentRect(),
+        sourceRect,
+        destOffset);
     if (partialUpdate)
         queue.appendPartialUpload(upload);
     else

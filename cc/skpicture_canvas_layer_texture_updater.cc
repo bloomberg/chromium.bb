@@ -38,7 +38,8 @@ void SkPictureCanvasLayerTextureUpdater::drawPicture(SkCanvas* canvas)
 
 void SkPictureCanvasLayerTextureUpdater::updateTexture(CCTextureUpdateQueue& queue, CCPrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate)
 {
-    TextureUploader::Parameters upload = { texture, NULL, &m_picture, { contentRect(), sourceRect, destOffset } };
+    ResourceUpdate upload = ResourceUpdate::CreateFromPicture(
+        texture, &m_picture, contentRect(), sourceRect, destOffset);
     if (partialUpdate)
         queue.appendPartialUpload(upload);
     else

@@ -33,7 +33,8 @@ void BitmapSkPictureCanvasLayerTextureUpdater::Texture::update(CCTextureUpdateQu
     textureUpdater()->paintContentsRect(&canvas, sourceRect, stats);
     stats.totalPaintTimeInSeconds += monotonicallyIncreasingTime() - paintBeginTime;
 
-    TextureUploader::Parameters upload = { texture(), &m_bitmap, NULL, { sourceRect, sourceRect, destOffset } };
+    ResourceUpdate upload = ResourceUpdate::Create(
+        texture(), &m_bitmap, sourceRect, sourceRect, destOffset);
     if (partialUpdate)
         queue.appendPartialUpload(upload);
     else

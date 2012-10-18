@@ -555,7 +555,8 @@ TEST_F(CCPrioritizedTextureTest, clearUploadsToEvictedResources)
     CCTextureUpdateQueue queue;
     DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
     for (size_t i = 0; i < maxTextures; ++i) {
-        const TextureUploader::Parameters upload = { textures[i].get() };
+        const ResourceUpdate upload = ResourceUpdate::Create(
+            textures[i].get(), NULL, IntRect(), IntRect(), IntSize());
         queue.appendFullUpload(upload);
     }
 

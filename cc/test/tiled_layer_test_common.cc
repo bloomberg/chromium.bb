@@ -14,6 +14,8 @@ FakeLayerTextureUpdater::Texture::Texture(FakeLayerTextureUpdater* layer, scoped
     : LayerTextureUpdater::Texture(texture.Pass())
     , m_layer(layer)
 {
+    m_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
+    m_bitmap.allocPixels();
 }
 
 FakeLayerTextureUpdater::Texture::~Texture()
@@ -22,7 +24,9 @@ FakeLayerTextureUpdater::Texture::~Texture()
 
 void FakeLayerTextureUpdater::Texture::update(CCTextureUpdateQueue& queue, const IntRect&, const IntSize&, bool partialUpdate, CCRenderingStats&)
 {
-    TextureUploader::Parameters upload = { texture(), NULL, NULL, { IntRect(), IntRect(), IntSize() } };
+    const IntRect rect(0, 0, 10, 10);
+    ResourceUpdate upload = ResourceUpdate::Create(
+        texture(), &m_bitmap, rect, rect, IntSize());
     if (partialUpdate)
         queue.appendPartialUpload(upload);
     else
@@ -149,9 +153,14 @@ void FakeTextureUploader::markPendingUploadsAsNonBlocking()
 {
 }
 
-void FakeTextureUploader::uploadTexture(cc::CCResourceProvider* resourceProvider, Parameters upload)
+void FakeTextureUploader::uploadTexture(CCResourceProvider* resourceProvider,
+                                        CCPrioritizedTexture* texture,
+                                        const SkBitmap*,
+                                        IntRect,
+                                        IntRect,
+                                        IntSize)
 {
-    upload.texture->acquireBackingTexture(resourceProvider);
+    texture->acquireBackingTexture(resourceProvider);
 }
 
 double FakeTextureUploader::estimatedTexturesPerSecond()

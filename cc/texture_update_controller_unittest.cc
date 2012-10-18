@@ -57,7 +57,12 @@ class TextureUploaderForUploadTest : public FakeTextureUploader {
 public:
     TextureUploaderForUploadTest(CCTextureUpdateControllerTest *test) : m_test(test) { }
 
-    virtual void uploadTexture(cc::CCResourceProvider*, Parameters) OVERRIDE;
+    virtual void uploadTexture(cc::CCResourceProvider*,
+                               cc::CCPrioritizedTexture*,
+                               const SkBitmap*,
+                               cc::IntRect content_rect,
+                               cc::IntRect source_rect,
+                               cc::IntSize dest_offset) OVERRIDE;
 
 private:
     CCTextureUpdateControllerTest* m_test;
@@ -108,11 +113,13 @@ protected:
     virtual void SetUp()
     {
         m_context = FakeWebCompositorOutputSurface::create(adoptPtr(new WebGraphicsContext3DForUploadTest(this)));
+        m_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 300, 150);
+        m_bitmap.allocPixels();
         DebugScopedSetImplThread implThread;
         m_resourceProvider = CCResourceProvider::create(m_context.get());
         for (int i = 0; i < 4; i++)
-          m_textures[i] = CCPrioritizedTexture::create(
-              NULL, IntSize(256, 256), GL_RGBA);
+            m_textures[i] = CCPrioritizedTexture::create(
+                NULL, IntSize(300, 150), GL_RGBA);
     }
 
 
@@ -122,7 +129,8 @@ protected:
         m_totalUploadCountExpected += count;
 
         const IntRect rect(0, 0, 300, 150);
-        const TextureUploader::Parameters upload = { m_textures[textureIndex].get(), NULL, NULL, { rect, rect, IntSize() } };
+        const ResourceUpdate upload = ResourceUpdate::Create(
+            m_textures[textureIndex].get(), &m_bitmap, rect, rect, IntSize());
         for (int i = 0; i < count; i++)
             m_queue->appendFullUpload(upload);
     }
@@ -138,7 +146,8 @@ protected:
         m_totalUploadCountExpected += count;
 
         const IntRect rect(0, 0, 100, 100);
-        const TextureUploader::Parameters upload = { m_textures[textureIndex].get(), NULL, NULL, { rect, rect, IntSize() } };
+        const ResourceUpdate upload = ResourceUpdate::Create(
+            m_textures[textureIndex].get(), &m_bitmap, rect, rect, IntSize());
         for (int i = 0; i < count; i++)
             m_queue->appendPartialUpload(upload);
     }
@@ -174,7 +183,7 @@ protected:
     TextureUploaderForUploadTest m_uploader;
     OwnPtr<WebThread> m_thread;
     WebCompositorInitializer m_compositorInitializer;
-
+    SkBitmap m_bitmap;
 
     // Properties / expectations of this test
     int m_fullUploadCountExpected;
@@ -199,7 +208,12 @@ void WebGraphicsContext3DForUploadTest::shallowFlushCHROMIUM(void)
     m_test->onFlush();
 }
 
-void TextureUploaderForUploadTest::uploadTexture(cc::CCResourceProvider*, Parameters)
+void TextureUploaderForUploadTest::uploadTexture(CCResourceProvider*,
+                                                 CCPrioritizedTexture*,
+                                                 const SkBitmap*,
+                                                 IntRect,
+                                                 IntRect,
+                                                 IntSize)
 {
     m_test->onUpload();
 }

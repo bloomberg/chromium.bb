@@ -8,10 +8,18 @@
 
 #include "CCResourceProvider.h"
 #include "TraceEvent.h"
+#include "cc/prioritized_texture.h"
+#include "cc/proxy.h"
 #include "cc/texture_copier.h"
 #include "cc/texture_uploader.h"
 #include <limits>
+#include <public/WebGraphicsContext3D.h>
+#include <public/WebSharedGraphicsContext3D.h>
+#include "third_party/skia/include/gpu/SkGpuDevice.h"
 #include <wtf/CurrentTime.h>
+
+using WebKit::WebGraphicsContext3D;
+using WebKit::WebSharedGraphicsContext3D;
 
 namespace {
 
@@ -29,6 +37,21 @@ const int textureUploadFlushPeriod = 4;
 
 // Number of blocking update intervals to allow.
 const size_t maxBlockingUpdateIntervals = 4;
+
+scoped_ptr<SkCanvas> createAcceleratedCanvas(
+    GrContext* grContext, cc::IntSize canvasSize, unsigned textureId)
+{
+    GrPlatformTextureDesc textureDesc;
+    textureDesc.fFlags = kRenderTarget_GrPlatformTextureFlag;
+    textureDesc.fWidth = canvasSize.width();
+    textureDesc.fHeight = canvasSize.height();
+    textureDesc.fConfig = kSkia8888_GrPixelConfig;
+    textureDesc.fTextureHandle = textureId;
+    SkAutoTUnref<GrTexture> target(
+        grContext->createPlatformTexture(textureDesc));
+    SkAutoTUnref<SkDevice> device(new SkGpuDevice(grContext, target.get()));
+    return make_scoped_ptr(new SkCanvas(device.get()));
+}
 
 }  // namespace
 
@@ -89,6 +112,78 @@ void CCTextureUpdateController::discardUploadsToEvictedResources()
     m_queue->clearUploadsToEvictedResources();
 }
 
+void CCTextureUpdateController::updateTexture(ResourceUpdate update)
+{
+    if (update.picture) {
+        CCPrioritizedTexture* texture = update.texture;
+        IntRect pictureRect = update.content_rect;
+        IntRect sourceRect = update.source_rect;
+        IntSize destOffset = update.dest_offset;
+
+        texture->acquireBackingTexture(m_resourceProvider);
+        ASSERT(texture->haveBackingTexture());
+
+        ASSERT(m_resourceProvider->resourceType(texture->resourceId()) ==
+               CCResourceProvider::GLTexture);
+
+        WebGraphicsContext3D* paintContext = CCProxy::hasImplThread() ?
+            WebSharedGraphicsContext3D::compositorThreadContext() :
+            WebSharedGraphicsContext3D::mainThreadContext();
+        GrContext* paintGrContext = CCProxy::hasImplThread() ?
+            WebSharedGraphicsContext3D::compositorThreadGrContext() :
+            WebSharedGraphicsContext3D::mainThreadGrContext();
+
+        // Flush the context in which the backing texture is created so that it
+        // is available in other shared contexts. It is important to do here
+        // because the backing texture is created in one context while it is
+        // being written to in another.
+        m_resourceProvider->flush();
+        CCResourceProvider::ScopedWriteLockGL lock(
+            m_resourceProvider, texture->resourceId());
+
+        // Make sure ganesh uses the correct GL context.
+        paintContext->makeContextCurrent();
+
+        // Create an accelerated canvas to draw on.
+        scoped_ptr<SkCanvas> canvas = createAcceleratedCanvas(
+            paintGrContext, texture->size(), lock.textureId());
+
+        // The compositor expects the textures to be upside-down so it can flip
+        // the final composited image. Ganesh renders the image upright so we
+        // need to do a y-flip.
+        canvas->translate(0.0, texture->size().height());
+        canvas->scale(1.0, -1.0);
+        // Clip to the destination on the texture that must be updated.
+        canvas->clipRect(SkRect::MakeXYWH(destOffset.width(),
+                                          destOffset.height(),
+                                          sourceRect.width(),
+                                          sourceRect.height()));
+        // Translate the origin of pictureRect to destOffset.
+        // Note that destOffset is defined relative to sourceRect.
+        canvas->translate(
+            pictureRect.x() - sourceRect.x() + destOffset.width(),
+            pictureRect.y() - sourceRect.y() + destOffset.height());
+        canvas->drawPicture(*update.picture);
+
+        // Flush ganesh context so that all the rendered stuff appears on the
+        // texture.
+        paintGrContext->flush();
+
+        // Flush the GL context so rendering results from this context are
+        // visible in the compositor's context.
+        paintContext->flush();
+    }
+
+    if (update.bitmap) {
+        m_uploader->uploadTexture(m_resourceProvider,
+                                  update.texture,
+                                  update.bitmap,
+                                  update.content_rect,
+                                  update.source_rect,
+                                  update.dest_offset);
+    }
+}
+
 void CCTextureUpdateController::finalize()
 {
     size_t uploadCount = 0;
@@ -96,8 +191,7 @@ void CCTextureUpdateController::finalize()
         if (!(uploadCount % textureUploadFlushPeriod) && uploadCount)
             m_resourceProvider->shallowFlushIfSupported();
 
-        m_uploader->uploadTexture(
-            m_resourceProvider, m_queue->takeFirstFullUpload());
+        updateTexture(m_queue->takeFirstFullUpload());
         uploadCount++;
     }
 
@@ -105,8 +199,7 @@ void CCTextureUpdateController::finalize()
         if (!(uploadCount % textureUploadFlushPeriod) && uploadCount)
             m_resourceProvider->shallowFlushIfSupported();
 
-        m_uploader->uploadTexture(
-            m_resourceProvider, m_queue->takeFirstPartialUpload());
+        updateTexture(m_queue->takeFirstPartialUpload());
         uploadCount++;
     }
 
@@ -188,7 +281,7 @@ void CCTextureUpdateController::updateMoreTexturesNow()
     while (m_queue->fullUploadSize() && uploadCount < uploads) {
         if (!(uploadCount % textureUploadFlushPeriod) && uploadCount)
             m_resourceProvider->shallowFlushIfSupported();
-        m_uploader->uploadTexture(m_resourceProvider, m_queue->takeFirstFullUpload());
+        updateTexture(m_queue->takeFirstFullUpload());
         uploadCount++;
     }
     m_resourceProvider->shallowFlushIfSupported();

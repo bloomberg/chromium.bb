@@ -13,6 +13,7 @@
 
 namespace cc {
 
+class CCResourceProvider;
 class TextureUploader;
 
 class CCTextureUpdateControllerClient {
@@ -53,6 +54,8 @@ protected:
     static size_t maxFullUpdatesPerTick(TextureUploader*);
 
     size_t maxBlockingUpdates() const;
+
+    void updateTexture(ResourceUpdate);
 
     // This returns true when there were textures left to update.
     bool updateMoreTexturesIfEnoughTimeRemaining();

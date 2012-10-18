@@ -62,7 +62,11 @@ public:
 
         IntSize clippedDestOffset = destOffset + IntSize(clippedSourceRect.location() - sourceRect.location());
 
-        TextureUploader::Parameters upload = { texture, &m_bitmap, NULL, { imageRect, clippedSourceRect, clippedDestOffset } };
+        ResourceUpdate upload = ResourceUpdate::Create(texture,
+                                                       &m_bitmap,
+                                                       imageRect,
+                                                       clippedSourceRect,
+                                                       clippedDestOffset);
         if (partialUpdate)
             queue.appendPartialUpload(upload);
         else

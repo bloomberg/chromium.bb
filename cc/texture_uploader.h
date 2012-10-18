@@ -17,18 +17,6 @@ class CCResourceProvider;
 
 class TextureUploader {
 public:
-    struct Geometry {
-        IntRect contentRect;
-        IntRect sourceRect;
-        IntSize destOffset;
-    };
-    struct Parameters {
-        CCPrioritizedTexture* texture;
-        const SkBitmap* bitmap;
-        SkPicture* picture;
-        Geometry geometry;
-    };
-
     virtual ~TextureUploader() { }
 
     virtual size_t numBlockingUploads() = 0;
@@ -36,7 +24,12 @@ public:
 
     // Returns our throughput on the GPU process
     virtual double estimatedTexturesPerSecond() = 0;
-    virtual void uploadTexture(CCResourceProvider*, Parameters) = 0;
+    virtual void uploadTexture(CCResourceProvider*,
+                               CCPrioritizedTexture*,
+                               const SkBitmap*,
+                               IntRect content_rect,
+                               IntRect source_rect,
+                               IntSize dest_offset) = 0;
 };
 
 }

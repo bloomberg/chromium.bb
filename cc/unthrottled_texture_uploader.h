@@ -22,7 +22,12 @@ public:
     virtual size_t numBlockingUploads() OVERRIDE;
     virtual void markPendingUploadsAsNonBlocking() OVERRIDE;
     virtual double estimatedTexturesPerSecond() OVERRIDE;
-    virtual void uploadTexture(CCResourceProvider* resourceProvider, Parameters upload) OVERRIDE;
+    virtual void uploadTexture(CCResourceProvider*,
+                               CCPrioritizedTexture*,
+                               const SkBitmap*,
+                               IntRect content_rect,
+                               IntRect source_rect,
+                               IntSize dest_offset) OVERRIDE;
 
 protected:
     UnthrottledTextureUploader() { }

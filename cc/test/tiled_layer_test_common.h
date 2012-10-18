@@ -33,6 +33,7 @@ public:
 
     private:
         FakeLayerTextureUpdater* m_layer;
+        SkBitmap m_bitmap;
     };
 
     FakeLayerTextureUpdater();
@@ -129,7 +130,12 @@ public:
     virtual size_t numBlockingUploads() OVERRIDE;
     virtual void markPendingUploadsAsNonBlocking() OVERRIDE;
     virtual double estimatedTexturesPerSecond() OVERRIDE;
-    virtual void uploadTexture(cc::CCResourceProvider*, Parameters) OVERRIDE;
+    virtual void uploadTexture(cc::CCResourceProvider*,
+                               cc::CCPrioritizedTexture*,
+                               const SkBitmap*,
+                               cc::IntRect content_rect,
+                               cc::IntRect source_rect,
+                               cc::IntSize dest_offset) OVERRIDE;
 };
 
 }

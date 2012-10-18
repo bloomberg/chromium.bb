@@ -45,6 +45,16 @@ private:
     unsigned m_resultAvailable;
 };
 
+void uploadTexture(
+    ThrottledTextureUploader* uploader, CCPrioritizedTexture* texture)
+{
+    uploader->uploadTexture(NULL,
+                            texture,
+                            NULL,
+                            IntRect(IntPoint(0,0), texture->size()),
+                            IntRect(IntPoint(0,0), texture->size()),
+                            IntSize());
+}
 
 TEST(ThrottledTextureUploaderTest, NumBlockingUploads)
 {
@@ -52,27 +62,20 @@ TEST(ThrottledTextureUploaderTest, NumBlockingUploads)
     scoped_ptr<ThrottledTextureUploader> uploader = ThrottledTextureUploader::create(fakeContext.get());
     scoped_ptr<CCPrioritizedTexture> texture =
         CCPrioritizedTexture::create(NULL, IntSize(256, 256), GL_RGBA);
-    TextureUploader::Parameters upload;
-    upload.texture = texture.get();
-    upload.bitmap = NULL;
-    upload.picture = NULL;
-    upload.geometry.contentRect = IntRect(IntPoint(0,0), texture->size());
-    upload.geometry.sourceRect = IntRect(IntPoint(0,0), texture->size());
-    upload.geometry.destOffset = IntSize();
 
     fakeContext->setResultAvailable(0);
     EXPECT_EQ(0, uploader->numBlockingUploads());
-    uploader->uploadTexture(NULL, upload);
+    uploadTexture(uploader.get(), texture.get());
     EXPECT_EQ(1, uploader->numBlockingUploads());
-    uploader->uploadTexture(NULL, upload);
+    uploadTexture(uploader.get(), texture.get());
     EXPECT_EQ(2, uploader->numBlockingUploads());
 
     fakeContext->setResultAvailable(1);
     EXPECT_EQ(0, uploader->numBlockingUploads());
-    uploader->uploadTexture(NULL, upload);
+    uploadTexture(uploader.get(), texture.get());
     EXPECT_EQ(0, uploader->numBlockingUploads());
-    uploader->uploadTexture(NULL, upload);
-    uploader->uploadTexture(NULL, upload);
+    uploadTexture(uploader.get(), texture.get());
+    uploadTexture(uploader.get(), texture.get());
     EXPECT_EQ(0, uploader->numBlockingUploads());
 }
 
@@ -82,28 +85,21 @@ TEST(ThrottledTextureUploaderTest, MarkPendingUploadsAsNonBlocking)
     scoped_ptr<ThrottledTextureUploader> uploader = ThrottledTextureUploader::create(fakeContext.get());
     scoped_ptr<CCPrioritizedTexture> texture =
         CCPrioritizedTexture::create(NULL, IntSize(256, 256), GL_RGBA);
-    TextureUploader::Parameters upload;
-    upload.texture = texture.get();
-    upload.bitmap = NULL;
-    upload.picture = NULL;
-    upload.geometry.contentRect = IntRect(IntPoint(0,0), texture->size());
-    upload.geometry.sourceRect = IntRect(IntPoint(0,0), texture->size());
-    upload.geometry.destOffset = IntSize();
 
     fakeContext->setResultAvailable(0);
     EXPECT_EQ(0, uploader->numBlockingUploads());
-    uploader->uploadTexture(NULL, upload);
-    uploader->uploadTexture(NULL, upload);
+    uploadTexture(uploader.get(), texture.get());
+    uploadTexture(uploader.get(), texture.get());
     EXPECT_EQ(2, uploader->numBlockingUploads());
 
     uploader->markPendingUploadsAsNonBlocking();
     EXPECT_EQ(0, uploader->numBlockingUploads());
-    uploader->uploadTexture(NULL, upload);
+    uploadTexture(uploader.get(), texture.get());
     EXPECT_EQ(1, uploader->numBlockingUploads());
 
     fakeContext->setResultAvailable(1);
     EXPECT_EQ(0, uploader->numBlockingUploads());
-    uploader->uploadTexture(NULL, upload);
+    uploadTexture(uploader.get(), texture.get());
     uploader->markPendingUploadsAsNonBlocking();
     EXPECT_EQ(0, uploader->numBlockingUploads());
 }

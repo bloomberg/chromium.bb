@@ -24,20 +24,23 @@ double UnthrottledTextureUploader::estimatedTexturesPerSecond()
     return std::numeric_limits<double>::max();
 }
 
-void UnthrottledTextureUploader::uploadTexture(CCResourceProvider* resourceProvider, Parameters upload)
+void UnthrottledTextureUploader::uploadTexture(
+    CCResourceProvider* resourceProvider,
+    CCPrioritizedTexture* texture,
+    const SkBitmap* bitmap,
+    IntRect content_rect,
+    IntRect source_rect,
+    IntSize dest_offset)
 {
-    if (upload.bitmap) {
-        upload.bitmap->lockPixels();
-        upload.texture->upload(
-            resourceProvider,
-            static_cast<const uint8_t*>(upload.bitmap->getPixels()),
-            upload.geometry.contentRect,
-            upload.geometry.sourceRect,
-            upload.geometry.destOffset);
-        upload.bitmap->unlockPixels();
+    if (bitmap) {
+        bitmap->lockPixels();
+        texture->upload(resourceProvider,
+                        static_cast<const uint8_t*>(bitmap->getPixels()),
+                        content_rect,
+                        source_rect,
+                        dest_offset);
+        bitmap->unlockPixels();
     }
-
-    ASSERT(!upload.picture);
 }
 
 }

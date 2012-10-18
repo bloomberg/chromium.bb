@@ -2465,7 +2465,9 @@ void EvictionTestLayer::update(CCTextureUpdateQueue& queue, const CCOcclusionTra
     if (!m_texture.get())
         return;
     IntRect fullRect(0, 0, 10, 10);
-    TextureUploader::Parameters upload = { m_texture.get(), &m_bitmap, NULL, { fullRect, fullRect, IntSize() } };
+
+    ResourceUpdate upload = ResourceUpdate::Create(
+        m_texture.get(), &m_bitmap, fullRect, fullRect, IntSize());
     queue.appendFullUpload(upload);
 }
 
