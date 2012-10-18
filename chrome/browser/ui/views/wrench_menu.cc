@@ -760,6 +760,8 @@ void WrenchMenu::RunMenu(views::MenuButton* host) {
   }
   if (selected_menu_model_)
     selected_menu_model_->ActivatedAt(selected_index_);
+  menu_runner_.reset();
+  root_ = NULL;
 }
 
 bool WrenchMenu::IsShowing() {
