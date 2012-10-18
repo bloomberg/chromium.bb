@@ -34,6 +34,9 @@ const size_t kSeparatorHeight = 1;
 // The amount of minimum padding between the Autofill value and label in pixels.
 const size_t kLabelPadding = 15;
 
+// The maximum amount of characters to display from either the label or value.
+const size_t kMaxTextLength = 15;
+
 struct DataResource {
   const char* name;
   int id;
@@ -96,6 +99,14 @@ void AutofillPopupView::Show(const std::vector<string16>& autofill_values,
   autofill_labels_ = autofill_labels;
   autofill_icons_ = autofill_icons;
   autofill_unique_ids_ = autofill_unique_ids;
+
+  // TODO(csharp): Fix crbug.com/156163 and use better logic when clipping.
+  for (size_t i = 0; i < autofill_values_.size(); ++i) {
+    if (autofill_values_[i].length() > 15)
+      autofill_values_[i].erase(15);
+    if (autofill_labels[i].length() > 15)
+      autofill_labels_[i].erase(15);
+  }
 
   ShowInternal();
 }
