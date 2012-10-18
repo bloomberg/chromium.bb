@@ -2932,7 +2932,8 @@ class CommitTest(CpuTestBase):
       result = cpu.Upgrader._CreateCommitMessage(mocked_upgrader, upgrade_lines)
     self.mox.VerifyAll()
 
-    self.assertTrue(result.startswith('Upgraded '))
+    self.assertTrue(': upgraded package' in result or
+                    'Upgraded the following' in result)
     return result
 
   def testCreateCommitMessageOnePkg(self):
@@ -2946,7 +2947,7 @@ class CommitTest(CpuTestBase):
     # -- BUG= line (with space after '=' to invalidate it)
     # -- TEST= line (with space after '=' to invalidate it)
     body = r'\n'.join([re.sub('\s+', r'\s', line) for line in upgrade_lines])
-    regexp = re.compile(r'''^Upgraded\s.*efg.*package\n       # Summary
+    regexp = re.compile(r'''^efg:\supgraded\spackage\sto\supstream\n # Summary
                             ^\s*\n                            # Blank line
                             %s\n                              # Body
                             ^\s*\n                            # Blank line
@@ -2970,7 +2971,7 @@ class CommitTest(CpuTestBase):
     # -- BUG= line (with space after '=' to invalidate it)
     # -- TEST= line (with space after '=' to invalidate it)
     body = r'\n'.join([re.sub('\s+', r'\s', line) for line in upgrade_lines])
-    regexp = re.compile(r'''^Upgraded\s.*efg,\spqr,\suvw.*packages\n # Summary
+    regexp = re.compile(r'''^efg,\spqr,\suvw:\supgraded\spackages.*\n # Summary
                             ^\s*\n                            # Blank line
                             %s\n                              # Body
                             ^\s*\n                            # Blank line

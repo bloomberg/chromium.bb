@@ -1090,15 +1090,12 @@ class Upgrader(object):
     upgrade_pkgs = self._ExtractUpgradedPkgs(upgrade_lines)
     upgrade_count = len(upgrade_pkgs)
     upgrade_str = '\n'.join(upgrade_lines)
-    if upgrade_count == 1:
-      message = ('Upgraded the %s Portage package\n\n%s\n' %
-                 (upgrade_pkgs[0], upgrade_str))
-    elif upgrade_count < 6:
-      message = ('Upgraded the %s Portage packages\n\n%s\n' %
-                 (', '.join(upgrade_pkgs), upgrade_str))
+    if upgrade_count < 6:
+      message = ('%s: upgraded package%s to upstream' %
+                 (', '.join(upgrade_pkgs), '' if upgrade_count == 1 else 's'))
     else:
-      message = ('Upgraded the following %d Portage packages\n\n%s\n' %
-                 (upgrade_count, upgrade_str))
+      message = 'Upgraded the following %d packages' % upgrade_count
+    message += '\n\n' + upgrade_str + '\n'
 
     if remaining_lines:
       # Keep previous remaining lines verbatim.
