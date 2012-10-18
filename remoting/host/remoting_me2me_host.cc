@@ -607,8 +607,10 @@ class HostProcess
     resizing_host_observer_.reset(
         new ResizingHostObserver(desktop_resizer_.get(), host_));
 
-    curtaining_host_observer_.reset(new CurtainingHostObserver(
-          curtain_.get(), host_));
+    // Curtain mode is currently broken on Mac (the only supported platform),
+    // so it's disabled until we've had time to fully investigate.
+    //    curtaining_host_observer_.reset(new CurtainingHostObserver(
+    //          curtain_.get(), host_));
 
     if (host_user_interface_.get()) {
       host_user_interface_->Start(
