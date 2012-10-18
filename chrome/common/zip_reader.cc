@@ -10,10 +10,15 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/zip_internal.h"
 #include "net/base/file_stream.h"
+
+#if defined(USE_SYSTEM_MINIZIP)
+#include <minizip/unzip.h>
+#else
 #include "third_party/zlib/contrib/minizip/unzip.h"
 #if defined(OS_WIN)
 #include "third_party/zlib/contrib/minizip/iowin32.h"
-#endif
+#endif  // defined(OS_WIN)
+#endif  // defined(USE_SYSTEM_MINIZIP)
 
 namespace zip {
 

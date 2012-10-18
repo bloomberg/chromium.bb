@@ -7,8 +7,13 @@
 
 #include <string>
 
+#if defined(USE_SYSTEM_MINIZIP)
+#include <minizip/unzip.h>
+#include <minizip/zip.h>
+#else
 #include "third_party/zlib/contrib/minizip/unzip.h"
 #include "third_party/zlib/contrib/minizip/zip.h"
+#endif
 
 // Utility functions and constants used internally for the zip file
 // library in the directory. Don't use them outside of the library.

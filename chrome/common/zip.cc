@@ -12,8 +12,14 @@
 #include "chrome/common/zip_internal.h"
 #include "chrome/common/zip_reader.h"
 #include "net/base/file_stream.h"
+
+#if defined(USE_SYSTEM_MINIZIP)
+#include <minizip/unzip.h>
+#include <minizip/zip.h>
+#else
 #include "third_party/zlib/contrib/minizip/unzip.h"
 #include "third_party/zlib/contrib/minizip/zip.h"
+#endif
 
 namespace {
 

@@ -8,13 +8,20 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+
+#if defined(USE_SYSTEM_MINIZIP)
+#include <minizip/unzip.h>
+#include <minizip/zip.h>
+#include <minizip/ioapi.h>
+#else
 #include "third_party/zlib/contrib/minizip/unzip.h"
 #include "third_party/zlib/contrib/minizip/zip.h"
 #if defined(OS_WIN)
 #include "third_party/zlib/contrib/minizip/iowin32.h"
 #elif defined(OS_POSIX)
 #include "third_party/zlib/contrib/minizip/ioapi.h"
-#endif
+#endif  // defined(OS_POSIX)
+#endif  // defined(USE_SYSTEM_MINIZIP)
 
 namespace {
 
