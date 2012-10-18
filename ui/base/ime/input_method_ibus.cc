@@ -68,24 +68,6 @@ uint32 IBusStateFromXFlags(unsigned int flags) {
                    Button1Mask | Button2Mask | Button3Mask));
 }
 
-void IBusKeyEventFromNativeKeyEvent(const base::NativeEvent& native_event,
-                                    uint32* ibus_keyval,
-                                    uint32* ibus_keycode,
-                                    uint32* ibus_state) {
-  DCHECK(native_event);  // A fabricated event is not supported here.
-  XKeyEvent* x_key = GetKeyEvent(native_event);
-
-  // Yes, ibus uses X11 keysym. We cannot use XLookupKeysym(), which doesn't
-  // translate Shift and CapsLock states.
-  KeySym keysym = NoSymbol;
-  ::XLookupString(x_key, NULL, 0, &keysym, NULL);
-  *ibus_keyval = keysym;
-  *ibus_keycode = x_key->keycode;
-  *ibus_state = IBusStateFromXFlags(x_key->state);
-  if (native_event->type == KeyRelease)
-    *ibus_state |= kIBusReleaseMask;
-}
-
 chromeos::IBusInputContextClient* GetInputContextClient() {
   return chromeos::DBusThreadManager::Get()->GetIBusInputContextClient();
 }
@@ -549,6 +531,25 @@ void InputMethodIBus::ProcessKeyEventPostIME(
     ProcessUnfilteredKeyPressEvent(native_event, ibus_keyval);
   else if (native_event->type == KeyRelease)
     DispatchKeyEventPostIME(native_event);
+}
+
+void InputMethodIBus::IBusKeyEventFromNativeKeyEvent(
+    const base::NativeEvent& native_event,
+    uint32* ibus_keyval,
+    uint32* ibus_keycode,
+    uint32* ibus_state) {
+  DCHECK(native_event);  // A fabricated event is not supported here.
+  XKeyEvent* x_key = GetKeyEvent(native_event);
+
+  // Yes, ibus uses X11 keysym. We cannot use XLookupKeysym(), which doesn't
+  // translate Shift and CapsLock states.
+  KeySym keysym = NoSymbol;
+  ::XLookupString(x_key, NULL, 0, &keysym, NULL);
+  *ibus_keyval = keysym;
+  *ibus_keycode = x_key->keycode;
+  *ibus_state = IBusStateFromXFlags(x_key->state);
+  if (native_event->type == KeyRelease)
+    *ibus_state |= kIBusReleaseMask;
 }
 
 void InputMethodIBus::ProcessFilteredKeyPressEvent(

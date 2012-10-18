@@ -66,6 +66,21 @@ class UI_EXPORT InputMethodIBus : public InputMethodBase {
                               uint32 cursor_position,
                               CompositionText* out_composition) const;
 
+  // Process a key returned from the input method.
+  virtual void ProcessKeyEventPostIME(const base::NativeEvent& native_key_event,
+                                      uint32 ibus_keycode,
+                                      bool handled);
+
+  // Converts |native_event| to ibus representation.
+  virtual void IBusKeyEventFromNativeKeyEvent(
+      const base::NativeEvent& native_event,
+      uint32* ibus_keyval,
+      uint32* ibus_keycode,
+      uint32* ibus_state);
+
+  // Resets context and abandon all pending results and key events.
+  void ResetContext();
+
  private:
   enum InputContextState {
     // The input context is not working.
@@ -96,17 +111,9 @@ class UI_EXPORT InputMethodIBus : public InputMethodBase {
   // Asks the client to confirm current composition text.
   void ConfirmCompositionText();
 
-  // Resets context and abandon all pending results and key events.
-  void ResetContext();
-
   // Checks the availability of focused text input client and update focus
   // state.
   void UpdateContextFocusState();
-
-  // Process a key returned from the input method.
-  void ProcessKeyEventPostIME(const base::NativeEvent& native_key_event,
-                              uint32 ibus_keycode,
-                              bool handled);
 
   // Processes a key event that was already filtered by the input method.
   // A VKEY_PROCESSKEY may be dispatched to the focused View.
