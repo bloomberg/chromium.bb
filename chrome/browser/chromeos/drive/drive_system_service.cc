@@ -42,6 +42,22 @@ namespace {
 DriveServiceInterface* g_test_drive_service = NULL;
 const std::string* g_test_cache_root = NULL;
 
+// Returns true if Drive is enabled for the given Profile.
+bool IsDriveEnabledForProfile(Profile* profile) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!gdata::AuthService::CanAuthenticate(profile))
+    return false;
+
+  // Disable Drive if preference is set.  This can happen with commandline flag
+  // --disable-gdata or enterprise policy, or probably with user settings too
+  // in the future.
+  if (profile->GetPrefs()->GetBoolean(prefs::kDisableGData))
+    return false;
+
+  return true;
+}
+
 }  // namespace
 
 DriveSystemService::DriveSystemService(Profile* profile)
@@ -114,13 +130,7 @@ void DriveSystemService::Shutdown() {
 bool DriveSystemService::IsDriveEnabled() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!gdata::AuthService::CanAuthenticate(profile_))
-    return false;
-
-  // Disable Drive if preference is set.  This can happen with commandline flag
-  // --disable-gdata or enterprise policy, or probably with user settings too
-  // in the future.
-  if (profile_->GetPrefs()->GetBoolean(prefs::kDisableGData))
+  if (!IsDriveEnabledForProfile(profile_))
     return false;
 
   // Drive may be disabled for cache initialization failure, etc.
@@ -157,9 +167,6 @@ void DriveSystemService::AddBackDriveMountPoint(
 
 void DriveSystemService::AddDriveMountPoint() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!IsDriveEnabled())
-    return;
 
   const FilePath mount_point = util::GetDriveMountPointPath();
   fileapi::ExternalFileSystemMountPointProvider* provider =
@@ -230,15 +237,23 @@ void DriveSystemService::DisableDrive() {
 // static
 DriveSystemService* DriveSystemServiceFactory::GetForProfile(
     Profile* profile) {
-  return static_cast<DriveSystemService*>(
+  DriveSystemService* service = static_cast<DriveSystemService*>(
       GetInstance()->GetServiceForProfile(profile, true));
+  if (service && !service->IsDriveEnabled())
+    return NULL;
+
+  return service;
 }
 
 // static
 DriveSystemService* DriveSystemServiceFactory::FindForProfile(
     Profile* profile) {
-  return static_cast<DriveSystemService*>(
+  DriveSystemService* service = static_cast<DriveSystemService*>(
       GetInstance()->GetServiceForProfile(profile, false));
+  if (service && !service->IsDriveEnabled())
+    return NULL;
+
+  return service;
 }
 
 // static
@@ -273,6 +288,9 @@ void DriveSystemServiceFactory::set_cache_root_for_test(
 
 ProfileKeyedService* DriveSystemServiceFactory::BuildServiceInstanceFor(
     Profile* profile) const {
+  if (!IsDriveEnabledForProfile(profile))
+    return NULL;
+
   DriveSystemService* service = new DriveSystemService(profile);
 
   DriveServiceInterface* drive_service = g_test_drive_service;
