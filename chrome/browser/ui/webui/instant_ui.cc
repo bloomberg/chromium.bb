@@ -175,7 +175,7 @@ bool InstantUI::ShouldShowWhiteNTP(
 void InstantUI::RegisterUserPrefs(PrefService* user_prefs) {
   user_prefs->RegisterBooleanPref(prefs::kInstantShowSearchProviderLogo, false,
                                   PrefService::UNSYNCABLE_PREF);
-  user_prefs->RegisterBooleanPref(prefs::kInstantShowWhiteNTP, false,
+  user_prefs->RegisterBooleanPref(prefs::kInstantShowWhiteNTP, true,
                                   PrefService::UNSYNCABLE_PREF);
   user_prefs->RegisterStringPref(prefs::kExperimentalZeroSuggestUrlPrefix, "",
                                  PrefService::UNSYNCABLE_PREF);
