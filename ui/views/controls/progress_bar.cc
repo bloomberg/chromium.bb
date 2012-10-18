@@ -8,18 +8,9 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/string_util.h"
-#include "base/utf_string_conversions.h"
-#include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/color_utils.h"
-#include "ui/gfx/font.h"
-#include "ui/gfx/insets.h"
-#include "ui/views/background.h"
-#include "ui/views/border.h"
-#include "ui/views/painter.h"
 
 namespace {
 
