@@ -13,7 +13,7 @@
 #include "ppapi/cpp/image_data.h"
 #include "remoting/base/util.h"
 #include "remoting/codec/video_decoder.h"
-#include "remoting/codec/video_decoder_row_based.h"
+#include "remoting/codec/video_decoder_verbatim.h"
 #include "remoting/codec/video_decoder_vp8.h"
 #include "remoting/client/frame_consumer.h"
 #include "remoting/protocol/session_config.h"
@@ -46,9 +46,7 @@ void RectangleUpdateDecoder::Initialize(const SessionConfig& config) {
   // Initialize decoder based on the selected codec.
   ChannelConfig::Codec codec = config.video_config().codec;
   if (codec == ChannelConfig::CODEC_VERBATIM) {
-    decoder_.reset(VideoDecoderRowBased::CreateVerbatimDecoder());
-  } else if (codec == ChannelConfig::CODEC_ZIP) {
-    decoder_.reset(VideoDecoderRowBased::CreateZlibDecoder());
+    decoder_.reset(new VideoDecoderVerbatim());
   } else if (codec == ChannelConfig::CODEC_VP8) {
     decoder_.reset(new VideoDecoderVp8());
   } else {

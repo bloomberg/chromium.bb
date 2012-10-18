@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CODEC_VIDEO_DECODER_ROW_BASED_H_
-#define REMOTING_CODEC_VIDEO_DECODER_ROW_BASED_H_
+#ifndef REMOTING_CODEC_VIDEO_DECODER_VERBATIM_H_
+#define REMOTING_CODEC_VIDEO_DECODER_VERBATIM_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -11,14 +11,14 @@
 
 namespace remoting {
 
-class Decompressor;
-
-class VideoDecoderRowBased : public VideoDecoder {
+// Video decoder implementations that decodes video packet encoded by
+// VideoEncoderVerbatim. It just copies data from incoming packets to the
+// video frames.
+class VideoDecoderVerbatim : public VideoDecoder {
  public:
-  virtual ~VideoDecoderRowBased();
+  virtual ~VideoDecoderVerbatim();
 
-  static VideoDecoderRowBased* CreateZlibDecoder();
-  static VideoDecoderRowBased* CreateVerbatimDecoder();
+  VideoDecoderVerbatim();
 
   // VideoDecoder implementation.
   virtual bool IsReadyForData() OVERRIDE;
@@ -43,9 +43,6 @@ class VideoDecoderRowBased : public VideoDecoder {
     kError,
   };
 
-  VideoDecoderRowBased(Decompressor* decompressor,
-                       VideoPacketFormat::Encoding encoding);
-
   // Helper method. Called from DecodePacket to updated state of the decoder.
   void UpdateStateForPacket(const VideoPacket* packet);
 
@@ -54,12 +51,6 @@ class VideoDecoderRowBased : public VideoDecoder {
 
   // Keeps track of the updating rect.
   SkIRect clip_;
-
-  // The compression for the input byte stream.
-  scoped_ptr<Decompressor> decompressor_;
-
-  // The encoding of the incoming stream.
-  VideoPacketFormat::Encoding encoding_;
 
   // The position in the row that we are updating.
   int row_pos_;
@@ -76,9 +67,9 @@ class VideoDecoderRowBased : public VideoDecoder {
   // The bitmap holding the remote screen bits.
   scoped_array<uint8> screen_buffer_;
 
-  DISALLOW_COPY_AND_ASSIGN(VideoDecoderRowBased);
+  DISALLOW_COPY_AND_ASSIGN(VideoDecoderVerbatim);
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_CODEC_VIDEO_DECODER_ROW_BASED_H_
+#endif  // REMOTING_CODEC_VIDEO_DECODER_VERBATIM_H_

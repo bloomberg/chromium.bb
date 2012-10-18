@@ -11,7 +11,7 @@
 #include "remoting/codec/audio_encoder_speex.h"
 #include "remoting/codec/audio_encoder_verbatim.h"
 #include "remoting/codec/video_encoder.h"
-#include "remoting/codec/video_encoder_row_based.h"
+#include "remoting/codec/video_encoder_verbatim.h"
 #include "remoting/codec/video_encoder_vp8.h"
 #include "remoting/host/audio_scheduler.h"
 #include "remoting/host/desktop_environment.h"
@@ -273,9 +273,7 @@ VideoEncoder* ClientSession::CreateVideoEncoder(
   const protocol::ChannelConfig& video_config = config.video_config();
 
   if (video_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
-    return VideoEncoderRowBased::CreateVerbatimEncoder();
-  } else if (video_config.codec == protocol::ChannelConfig::CODEC_ZIP) {
-    return VideoEncoderRowBased::CreateZlibEncoder();
+    return new remoting::VideoEncoderVerbatim();
   } else if (video_config.codec == protocol::ChannelConfig::CODEC_VP8) {
     return new remoting::VideoEncoderVp8();
   }

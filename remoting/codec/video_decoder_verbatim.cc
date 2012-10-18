@@ -2,12 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/codec/video_decoder_row_based.h"
+#include "remoting/codec/video_decoder_verbatim.h"
 
 #include "base/logging.h"
-#include "remoting/base/decompressor.h"
-#include "remoting/base/decompressor_zlib.h"
-#include "remoting/base/decompressor_verbatim.h"
 #include "remoting/base/util.h"
 
 namespace remoting {
@@ -15,33 +12,21 @@ namespace remoting {
 namespace {
 // Both input and output data are assumed to be RGBA32.
 const int kBytesPerPixel = 4;
-}
+}  // namespace
 
-VideoDecoderRowBased* VideoDecoderRowBased::CreateZlibDecoder() {
-  return new VideoDecoderRowBased(new DecompressorZlib(),
-                                  VideoPacketFormat::ENCODING_ZLIB);
-}
 
-VideoDecoderRowBased* VideoDecoderRowBased::CreateVerbatimDecoder() {
-  return new VideoDecoderRowBased(new DecompressorVerbatim(),
-                                  VideoPacketFormat::ENCODING_VERBATIM);
-}
-
-VideoDecoderRowBased::VideoDecoderRowBased(Decompressor* decompressor,
-                                           VideoPacketFormat::Encoding encoding)
+VideoDecoderVerbatim::VideoDecoderVerbatim()
     : state_(kUninitialized),
       clip_(SkIRect::MakeEmpty()),
-      decompressor_(decompressor),
-      encoding_(encoding),
       row_pos_(0),
       row_y_(0),
       screen_size_(SkISize::Make(0, 0)) {
 }
 
-VideoDecoderRowBased::~VideoDecoderRowBased() {
+VideoDecoderVerbatim::~VideoDecoderVerbatim() {
 }
 
-bool VideoDecoderRowBased::IsReadyForData() {
+bool VideoDecoderVerbatim::IsReadyForData() {
   switch (state_) {
     case kUninitialized:
     case kError:
@@ -56,8 +41,7 @@ bool VideoDecoderRowBased::IsReadyForData() {
   return false;
 }
 
-void VideoDecoderRowBased::Initialize(const SkISize& screen_size) {
-  decompressor_->Reset();
+void VideoDecoderVerbatim::Initialize(const SkISize& screen_size) {
   updated_region_.setEmpty();
   screen_buffer_.reset(NULL);
 
@@ -71,7 +55,7 @@ void VideoDecoderRowBased::Initialize(const SkISize& screen_size) {
   state_ = kReady;
 }
 
-VideoDecoder::DecodeResult VideoDecoderRowBased::DecodePacket(
+VideoDecoder::DecodeResult VideoDecoderVerbatim::DecodePacket(
     const VideoPacket* packet) {
   UpdateStateForPacket(packet);
 
@@ -88,22 +72,19 @@ VideoDecoder::DecodeResult VideoDecoderRowBased::DecodePacket(
       kBytesPerPixel * clip_.left();
 
   // Consume all the data in the message.
-  bool decompress_again = true;
   int used = 0;
-  while (decompress_again && used < in_size) {
+  while (used < in_size) {
     if (row_y_ >= clip_.height()) {
       state_ = kError;
       LOG(WARNING) << "Too much data is received for the given rectangle.";
       return DECODE_ERROR;
     }
 
-    int written = 0;
-    int consumed = 0;
-    decompress_again = decompressor_->Process(
-        in + used, in_size - used, out + row_pos_, row_size - row_pos_,
-        &consumed, &written);
-    used += consumed;
-    row_pos_ += written;
+    int bytes_to_copy = std::min(in_size - used, row_size - row_pos_);
+    memcpy(out + row_pos_, in + used, bytes_to_copy);
+
+    used += bytes_to_copy;
+    row_pos_ += bytes_to_copy;
 
     // If this row is completely filled then move onto the next row.
     if (row_pos_ == row_size) {
@@ -121,7 +102,6 @@ VideoDecoder::DecodeResult VideoDecoderRowBased::DecodePacket(
     }
 
     updated_region_.op(clip_, SkRegion::kUnion_Op);
-    decompressor_->Reset();
   }
 
   if (state_ == kDone) {
@@ -131,7 +111,7 @@ VideoDecoder::DecodeResult VideoDecoderRowBased::DecodePacket(
   }
 }
 
-void VideoDecoderRowBased::UpdateStateForPacket(const VideoPacket* packet) {
+void VideoDecoderVerbatim::UpdateStateForPacket(const VideoPacket* packet) {
   if (state_ == kError) {
     return;
   }
@@ -184,16 +164,16 @@ void VideoDecoderRowBased::UpdateStateForPacket(const VideoPacket* packet) {
   return;
 }
 
-VideoPacketFormat::Encoding VideoDecoderRowBased::Encoding() {
-  return encoding_;
+VideoPacketFormat::Encoding VideoDecoderVerbatim::Encoding() {
+  return VideoPacketFormat::ENCODING_VERBATIM;
 }
 
-void VideoDecoderRowBased::Invalidate(const SkISize& view_size,
+void VideoDecoderVerbatim::Invalidate(const SkISize& view_size,
                                       const SkRegion& region) {
   updated_region_.op(region, SkRegion::kUnion_Op);
 }
 
-void VideoDecoderRowBased::RenderFrame(const SkISize& view_size,
+void VideoDecoderVerbatim::RenderFrame(const SkISize& view_size,
                                        const SkIRect& clip_area,
                                        uint8* image_buffer,
                                        int image_stride,
