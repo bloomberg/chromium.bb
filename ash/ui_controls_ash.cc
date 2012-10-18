@@ -32,24 +32,18 @@ ui_controls::UIControlsAura* GetUIControlsForRootWindow(
   return native_ui_control;
 }
 
-// Returns the UIControls object for the RootWindow at the |point| in
-// virtual screen coordinates, and updates the |point| relative to the
+// Returns the UIControls object for the RootWindow at the |point_in_screen|
+// in virtual screen coordinates, and updates the |point| relative to the
 // UIControlsAura's root window.  NULL if there is no RootWindow under
-// the |point|.
-ui_controls::UIControlsAura* GetUIControlsAt(gfx::Point* point) {
-  // If there is a capture events must be relative to it.
-  aura::client::CaptureClient* capture_client =
-      GetCaptureClient(ash::Shell::GetInstance()->GetPrimaryRootWindow());
-  aura::RootWindow* root = NULL;
-  if (capture_client && capture_client->GetCaptureWindow())
-    root = capture_client->GetCaptureWindow()->GetRootWindow();
-  else
-    root = wm::GetRootWindowAt(*point);
+// the |point_in_screen|.
+ui_controls::UIControlsAura* GetUIControlsAt(gfx::Point* point_in_screen) {
+  // TODO(mazda): Support the case passive grab is taken.
+  aura::RootWindow* root = wm::GetRootWindowAt(*point_in_screen);
 
   aura::client::ScreenPositionClient* screen_position_client =
       aura::client::GetScreenPositionClient(root);
   if (screen_position_client)
-    screen_position_client->ConvertPointFromScreen(root, point);
+    screen_position_client->ConvertPointFromScreen(root, point_in_screen);
 
   return GetUIControlsForRootWindow(root);
 }

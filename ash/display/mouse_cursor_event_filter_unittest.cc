@@ -6,7 +6,9 @@
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/cursor_manager_test_api.h"
 #include "ash/display/display_controller.h"
+#include "ash/wm/cursor_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/display.h"
@@ -270,6 +272,31 @@ TEST_F(MouseCursorEventFilterTest, IndicatorBoundsTestOnTopBottom) {
   EXPECT_EQ("0,359 360x1", event_filter->dst_indicator_bounds_.ToString());
 
   event_filter->HideSharedEdgeIndicator();
+}
+
+// Verifies cursor's device scale factor is updated when a cursor has moved
+// across root windows with different device scale factors
+// (http://crbug.com/154183).
+TEST_F(MouseCursorEventFilterTest, CursorDeviceScaleFactor) {
+  UpdateDisplay("400x400,800x800*2");
+  DisplayController* controller =
+      Shell::GetInstance()->display_controller();
+  DisplayLayout default_layout(DisplayLayout::RIGHT, 0);
+  controller->SetDefaultDisplayLayout(default_layout);
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  ASSERT_EQ(2U, root_windows.size());
+  test::CursorManagerTestApi cursor_test_api(
+      Shell::GetInstance()->cursor_manager());
+  MouseCursorEventFilter* event_filter =
+      Shell::GetInstance()->mouse_cursor_filter();
+
+  EXPECT_EQ(1.0f, cursor_test_api.GetDeviceScaleFactor());
+  event_filter->WarpMouseCursorIfNecessary(root_windows[0],
+                                           gfx::Point(399, 200));
+  EXPECT_EQ(2.0f, cursor_test_api.GetDeviceScaleFactor());
+  event_filter->WarpMouseCursorIfNecessary(root_windows[1],
+                                           gfx::Point(400, 200));
+  EXPECT_EQ(1.0f, cursor_test_api.GetDeviceScaleFactor());
 }
 
 }  // namespace internal

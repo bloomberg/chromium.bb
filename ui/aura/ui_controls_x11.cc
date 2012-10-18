@@ -15,6 +15,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/ui_controls_aura.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
+#include "ui/compositor/dip_util.h"
 #include "ui/ui_controls/ui_controls_aura.h"
 
 namespace aura {
@@ -136,8 +137,11 @@ class UIControlsX11 : public ui_controls::UIControlsAura {
     XEvent xevent = {0};
     XMotionEvent* xmotion = &xevent.xmotion;
     xmotion->type = MotionNotify;
-    g_current_x = xmotion->x = x;
-    g_current_y = xmotion->y = y;
+    gfx::Point point = ui::ConvertPointToPixel(
+        root_window_->layer(),
+        gfx::Point(static_cast<int>(x), static_cast<int>(y)));
+    g_current_x = xmotion->x = point.x();
+    g_current_y = xmotion->y = point.y();
     xmotion->state = button_down_mask;
     xmotion->same_screen = True;
     // RootWindow will take care of other necessary fields.

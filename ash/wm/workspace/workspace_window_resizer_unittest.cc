@@ -10,6 +10,8 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/cursor_manager_test_api.h"
+#include "ash/wm/cursor_manager.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
@@ -146,12 +148,14 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
   DISABLED_WindowDragWithMultiDisplaysRightToLeft
 #define MAYBE_PhantomStyle DISABLED_PhantomStyle
 #define MAYBE_CancelSnapPhantom DISABLED_CancelSnapPhantom
+#define MAYBE_CursorDeviceScaleFactor DISABLED_CursorDeviceScaleFactor
 #else
 #define MAYBE_WindowDragWithMultiDisplays WindowDragWithMultiDisplays
 #define MAYBE_WindowDragWithMultiDisplaysRightToLeft \
   WindowDragWithMultiDisplaysRightToLeft
 #define MAYBE_PhantomStyle PhantomStyle
 #define MAYBE_CancelSnapPhantom CancelSnapPhantom
+#define MAYBE_CursorDeviceScaleFactor CursorDeviceScaleFactor
 #endif
 
 // Assertions around attached window resize dragging from the right with 2
@@ -1078,6 +1082,60 @@ TEST_F(WorkspaceWindowResizerTest, MagneticallyAttach) {
   // Move |window| one pixel above the bottom of |window2|.
   resizer->Drag(CalculateDragPoint(*resizer, 142, 169), 0);
   EXPECT_EQ("152,180 20x30", window_->bounds().ToString());
+}
+
+// Verifies cursor's device scale factor is updated whe a window is moved across
+// root windows with different device scale factors (http://crbug.com/154183).
+TEST_F(WorkspaceWindowResizerTest, MAYBE_CursorDeviceScaleFactor) {
+  // The secondary display is logically on the right, but on the system (e.g. X)
+  // layer, it's below the primary one. See UpdateDisplay() in ash_test_base.cc.
+  UpdateDisplay("400x400,800x800*2");
+  Shell::GetInstance()->shelf()->LayoutShelf();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  ASSERT_EQ(2U, root_windows.size());
+
+  test::CursorManagerTestApi cursor_test_api(
+      Shell::GetInstance()->cursor_manager());
+  MouseCursorEventFilter* event_filter =
+      Shell::GetInstance()->mouse_cursor_filter();
+  // Move window from the root window with 1.0 device scale factor to the root
+  // window with 2.0 device scale factor.
+  {
+    window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
+                               Shell::GetScreen()->GetPrimaryDisplay());
+    EXPECT_EQ(root_windows[0], window_->GetRootWindow());
+    // Grab (0, 0) of the window.
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
+    EXPECT_EQ(1.0f, cursor_test_api.GetDeviceScaleFactor());
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
+    event_filter->WarpMouseCursorIfNecessary(root_windows[0],
+                                             gfx::Point(399, 200));
+    EXPECT_EQ(2.0f, cursor_test_api.GetDeviceScaleFactor());
+    resizer->CompleteDrag(0);
+    EXPECT_EQ(2.0f, cursor_test_api.GetDeviceScaleFactor());
+  }
+
+  // Move window from the root window with 2.0 device scale factor to the root
+  // window with 1.0 device scale factor.
+  {
+    window_->SetBoundsInScreen(
+        gfx::Rect(600, 0, 50, 60),
+        Shell::GetScreen()->GetDisplayNearestWindow(root_windows[1]));
+    EXPECT_EQ(root_windows[1], window_->GetRootWindow());
+    // Grab (0, 0) of the window.
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
+    EXPECT_EQ(2.0f, cursor_test_api.GetDeviceScaleFactor());
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, -200, 200), 0);
+    event_filter->WarpMouseCursorIfNecessary(root_windows[1],
+                                             gfx::Point(400, 200));
+    EXPECT_EQ(1.0f, cursor_test_api.GetDeviceScaleFactor());
+    resizer->CompleteDrag(0);
+    EXPECT_EQ(1.0f, cursor_test_api.GetDeviceScaleFactor());
+  }
 }
 
 }  // namespace internal

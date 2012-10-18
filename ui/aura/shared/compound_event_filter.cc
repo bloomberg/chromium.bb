@@ -147,8 +147,6 @@ void CompoundEventFilter::UpdateCursor(Window* target, ui::MouseEvent* event) {
     }
 
     cursor_client->SetCursor(cursor);
-    cursor_client->SetDeviceScaleFactor(
-        root_window->AsRootWindowHostDelegate()->GetDeviceScaleFactor());
   }
 }
 

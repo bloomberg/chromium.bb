@@ -100,9 +100,10 @@ gfx::Rect SnapSizer::GetTargetBoundsForSize(size_t size_index) const {
     width = std::max(1024, work_area.width() / 2);
   } else {
     while (width >= work_area.width()) {
+      ++size_index;
       if (size_index >= arraysize(kSizes))
         break;
-      width = kSizes[++size_index];
+      width = kSizes[size_index];
     }
   }
 

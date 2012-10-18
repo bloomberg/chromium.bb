@@ -598,6 +598,11 @@
             '../ui/views/views.gyp:views_test_support',
           ],
         }],
+        ['use_ash==1', {
+          'dependencies': [
+            '../ash/ash.gyp:test_support_ash',
+          ],
+        }],
         ['chromeos==1', {
           'sources': [
             'browser/chromeos/cros/cros_in_process_browser_test.cc',
