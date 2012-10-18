@@ -4,6 +4,8 @@
 
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
 
+#include <set>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -27,9 +29,9 @@ namespace fileapi {
 class LocalFileChangeTrackerTest : public testing::Test {
  public:
   LocalFileChangeTrackerTest()
-    : message_loop_(MessageLoop::TYPE_IO),
-      file_system_(GURL("http://example.com"), "test",
-                   base::MessageLoopProxy::current()) {}
+      : message_loop_(MessageLoop::TYPE_IO),
+        file_system_(GURL("http://example.com"), "test",
+                     base::MessageLoopProxy::current()) {}
 
   virtual void SetUp() OVERRIDE {
     file_system_.SetUp();

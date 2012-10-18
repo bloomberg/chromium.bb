@@ -19,10 +19,11 @@
 #include "webkit/fileapi/syncable/sync_status_code.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
-// This tests SyncableContext behavior in multi-thread /
+// This tests LocalFileSyncContext behavior in multi-thread /
 // multi-file-system-context environment.
 // Basic combined tests (single-thread / single-file-system-context)
-// that involve SyncableContext are also in syncable_file_system_unittests.cc.
+// that involve LocalFileSyncContext are also in
+// syncable_file_system_unittests.cc.
 
 namespace fileapi {
 
