@@ -457,11 +457,6 @@ void Layer::SendDamagedRects() {
           sk_damaged.width(),
           sk_damaged.height());
 
-      if (scale_content_ && web_layer_is_accelerated_) {
-        damaged.Inset(-1, -1);
-        damaged = damaged.Intersect(gfx::Rect(bounds_.size()));
-      }
-
       gfx::Rect damaged_in_pixel = ConvertRectToPixel(this, damaged);
       WebKit::WebFloatRect web_rect(
           damaged_in_pixel.x(),
@@ -504,7 +499,8 @@ void Layer::paintContents(WebKit::WebCanvas* web_canvas,
   scoped_ptr<gfx::Canvas> canvas(gfx::Canvas::CreateCanvasWithoutScaling(
       web_canvas, ui::GetScaleFactorFromScale(device_scale_factor_)));
 
-  if (scale_content_) {
+  bool scale_content = scale_content_;
+  if (scale_content) {
     canvas->Save();
     canvas->sk_canvas()->scale(SkFloatToScalar(device_scale_factor_),
                                SkFloatToScalar(device_scale_factor_));
@@ -512,7 +508,7 @@ void Layer::paintContents(WebKit::WebCanvas* web_canvas,
 
   if (delegate_)
     delegate_->OnPaintLayer(canvas.get());
-  if (scale_content_)
+  if (scale_content)
     canvas->Restore();
 }
 
@@ -767,13 +763,8 @@ void Layer::RecomputeDrawsContentAndUVRect() {
   } else {
     DCHECK(texture_);
 
-    gfx::Size texture_size;
-    if (scale_content_) {
-      texture_size = texture_->size();
-    } else {
-      texture_size = gfx::ToFlooredSize(
+    gfx::Size texture_size = gfx::ToFlooredSize(
           texture_->size().Scale(1.0f / texture_->device_scale_factor()));
-    }
 
     gfx::Size size(std::min(bounds().width(), texture_size.width()),
                    std::min(bounds().height(), texture_size.height()));

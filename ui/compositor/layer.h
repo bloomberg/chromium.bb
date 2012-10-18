@@ -247,9 +247,10 @@ class COMPOSITOR_EXPORT Layer
 
   // Sets whether the layer should scale its content. If true, the canvas will
   // be scaled in software rendering mode before it is passed to
-  // |LayerDelegate::OnPaint| and the texture will be scaled in accelerated
-  // mode. Set to false if the delegate handles scaling and the texture is
-  // the correct pixel size.
+  // |LayerDelegate::OnPaint|.
+  // Set to false if the delegate handles scaling.
+  // NOTE: if this is called during |LayerDelegate::OnPaint|, the new value will
+  // not apply to the canvas passed to the pending draw.
   void set_scale_content(bool scale_content) { scale_content_ = scale_content; }
 
   // Returns true if the layer scales its content.

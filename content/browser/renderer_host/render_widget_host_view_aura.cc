@@ -698,14 +698,8 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
   // Delay processing accelerated compositing state change till here where we
   // act upon the state change. (Clear the external texture if switching to
   // software mode or set the external texture if going to accelerated mode).
-  if (accelerated_compositing_state_changed_) {
-    // Don't scale the contents in accelerated mode because the renderer takes
-    // care of it.
-    window_->layer()->set_scale_content(
-        !host_->is_accelerated_compositing_active());
-
+  if (accelerated_compositing_state_changed_)
     accelerated_compositing_state_changed_ = false;
-  }
 
   if (current_surface_ != 0 && host_->is_accelerated_compositing_active()) {
     ui::Texture* container = image_transport_clients_[current_surface_];
