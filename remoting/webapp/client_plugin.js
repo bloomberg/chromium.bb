@@ -57,6 +57,7 @@ remoting.ClientPlugin.Feature = {
   INJECT_KEY_EVENT: 'injectKeyEvent',
   NOTIFY_CLIENT_DIMENSIONS: 'notifyClientDimensions',
   PAUSE_VIDEO: 'pauseVideo',
+  PAUSE_AUDIO: 'pauseAudio',
   REMAP_KEY: 'remapKey',
   SEND_CLIPBOARD_ITEM: 'sendClipboardItem'
 };
@@ -152,4 +153,12 @@ remoting.ClientPlugin.prototype.notifyClientDimensions =
  * @param {boolean} pause True to suspend video updates, false otherwise.
  */
 remoting.ClientPlugin.prototype.pauseVideo =
+    function(pause) {};
+
+/**
+ * Requests that the host pause or resume sending audio updates.
+ *
+ * @param {boolean} pause True to suspend audio updates, false otherwise.
+ */
+remoting.ClientPlugin.prototype.pauseAudio =
     function(pause) {};

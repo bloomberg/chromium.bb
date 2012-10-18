@@ -126,7 +126,7 @@ logging::LogMessageHandlerFunction g_logging_old_handler = NULL;
 // String sent in the "hello" message to the plugin to describe features.
 const char ChromotingInstance::kApiFeatures[] =
     "highQualityScaling injectKeyEvent sendClipboardItem remapKey trapKey "
-    "notifyClientDimensions pauseVideo";
+    "notifyClientDimensions pauseVideo pauseAudio";
 
 bool ChromotingInstance::ParseAuthMethods(const std::string& auth_methods_str,
                                           ClientConfig* config) {
@@ -345,6 +345,13 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
       return;
     }
     PauseVideo(pause);
+  } else if (method == "pauseAudio") {
+    bool pause = false;
+    if (!data->GetBoolean("pause", &pause)) {
+      LOG(ERROR) << "Invalid pauseAudio.";
+      return;
+    }
+    PauseAudio(pause);
   }
 }
 
@@ -578,6 +585,15 @@ void ChromotingInstance::PauseVideo(bool pause) {
   protocol::VideoControl video_control;
   video_control.set_enable(!pause);
   host_connection_->host_stub()->ControlVideo(video_control);
+}
+
+void ChromotingInstance::PauseAudio(bool pause) {
+  if (!IsConnected()) {
+    return;
+  }
+  protocol::AudioControl audio_control;
+  audio_control.set_enable(!pause);
+  host_connection_->host_stub()->ControlAudio(audio_control);
 }
 
 ChromotingStats* ChromotingInstance::GetStats() {

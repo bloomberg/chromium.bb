@@ -16,6 +16,7 @@ namespace protocol {
 
 class ClientDimensions;
 class VideoControl;
+class AudioControl;
 
 class HostStub {
  public:
@@ -29,6 +30,10 @@ class HostStub {
   // Configures video update properties. Currently only pausing & resuming the
   // video channel is supported.
   virtual void ControlVideo(const VideoControl& video_control) = 0;
+
+  // Configures audio properties. Currently only pausing & resuming the audio
+  // channel is supported.
+  virtual void ControlAudio(const AudioControl& audio_control) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HostStub);

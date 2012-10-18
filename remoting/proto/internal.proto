@@ -20,6 +20,7 @@ message ControlMessage {
   optional ClientDimensions client_dimensions = 2;
   optional CursorShapeInfo cursor_shape = 4;
   optional VideoControl video_control = 3;
+  optional AudioControl audio_control = 5;
 }
 
 // Defines an event message on the event channel.

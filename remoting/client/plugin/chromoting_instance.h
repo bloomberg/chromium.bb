@@ -132,6 +132,7 @@ class ChromotingInstance :
   void SendClipboardItem(const std::string& mime_type, const std::string& item);
   void NotifyClientDimensions(int width, int height);
   void PauseVideo(bool pause);
+  void PauseAudio(bool pause);
 
   // Return statistics record by ChromotingClient.
   // If no connection is currently active then NULL will be returned.

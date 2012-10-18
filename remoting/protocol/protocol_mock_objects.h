@@ -106,6 +106,8 @@ class MockHostStub : public HostStub {
                void(const ClientDimensions& dimensions));
   MOCK_METHOD1(ControlVideo,
                void(const VideoControl& video_control));
+  MOCK_METHOD1(ControlAudio,
+               void(const AudioControl& audio_control));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockHostStub);

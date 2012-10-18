@@ -54,6 +54,12 @@ void ClientControlDispatcher::ControlVideo(const VideoControl& video_control) {
   writer_.Write(SerializeAndFrameMessage(message), base::Closure());
 }
 
+void ClientControlDispatcher::ControlAudio(const AudioControl& audio_control) {
+  ControlMessage message;
+  message.mutable_audio_control()->CopyFrom(audio_control);
+  writer_.Write(SerializeAndFrameMessage(message), base::Closure());
+}
+
 void ClientControlDispatcher::OnMessageReceived(
     scoped_ptr<ControlMessage> message, const base::Closure& done_task) {
   DCHECK(client_stub_);

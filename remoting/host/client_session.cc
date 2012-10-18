@@ -87,6 +87,13 @@ void ClientSession::ControlVideo(const protocol::VideoControl& video_control) {
   }
 }
 
+void ClientSession::ControlAudio(const protocol::AudioControl& audio_control) {
+  if (audio_control.has_enable()) {
+    VLOG(1) << "Received AudioControl (enable="
+            << audio_control.enable() << ")";
+  }
+}
+
 void ClientSession::OnConnectionAuthenticated(
     protocol::ConnectionToClient* connection) {
   DCHECK(CalledOnValidThread());

@@ -98,6 +98,8 @@ class ClientSession
       const protocol::ClientDimensions& dimensions) OVERRIDE;
   virtual void ControlVideo(
       const protocol::VideoControl& video_control) OVERRIDE;
+  virtual void ControlAudio(
+      const protocol::AudioControl& audio_control) OVERRIDE;
 
   // protocol::ConnectionToClient::EventHandler interface.
   virtual void OnConnectionAuthenticated(

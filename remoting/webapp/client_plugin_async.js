@@ -399,6 +399,19 @@ remoting.ClientPluginAsync.prototype.pauseVideo =
 };
 
 /**
+ * Requests that the host pause or resume sending audio updates.
+ *
+ * @param {boolean} pause True to suspend audio updates, false otherwise.
+ */
+remoting.ClientPluginAsync.prototype.pauseAudio =
+    function(pause) {
+  if (!this.hasFeature(remoting.ClientPlugin.Feature.PAUSE_AUDIO))
+    return;
+  this.plugin.postMessage(JSON.stringify(
+      { method: 'pauseAudio', data: { pause: pause }}));
+};
+
+/**
  * If we haven't yet received a "hello" message from the plugin, change its
  * size so that the user can confirm it if click-to-play is enabled, or can
  * see the "this plugin is disabled" message if it is actually disabled.

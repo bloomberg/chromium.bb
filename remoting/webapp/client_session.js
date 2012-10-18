@@ -600,6 +600,18 @@ remoting.ClientSession.prototype.pauseVideo = function(pause) {
 }
 
 /**
+ * Requests that the host pause or resume audio.
+ *
+ * @param {boolean} pause True to pause audio, false to resume.
+ * @return {void} Nothing.
+ */
+remoting.ClientSession.prototype.pauseAudio = function(pause) {
+  if (this.plugin) {
+    this.plugin.pauseAudio(pause)
+  }
+}
+
+/**
  * This is a callback that gets called when the plugin notifies us of a change
  * in the size of the remote desktop.
  *

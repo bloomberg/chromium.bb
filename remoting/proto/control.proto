@@ -21,6 +21,11 @@ message VideoControl {
   optional bool enable = 1;
 }
 
+message AudioControl {
+  // Enables the audio channel if true, pauses if false.
+  optional bool enable = 1;
+}
+
 message CursorShapeInfo {
   // Width, height (in screen pixels) of the cursor.
   optional int32 width = 1;
