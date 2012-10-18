@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/drive/drive_file_system.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_proxy.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
+#include "chrome/browser/chromeos/drive/drive_prefetcher.h"
 #include "chrome/browser/chromeos/drive/drive_sync_client.h"
 #include "chrome/browser/chromeos/drive/drive_uploader.h"
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
@@ -80,6 +81,9 @@ void DriveSystemService::Initialize(
   download_observer_.reset(new DriveDownloadObserver(uploader(),
                                                      file_system()));
   sync_client_.reset(new DriveSyncClient(profile_, file_system(), cache()));
+  prefetcher_.reset(new DrivePrefetcher(file_system(),
+                                        DrivePrefetcherOptions()));
+  sync_client_->AddObserver(prefetcher_.get());
   stale_cache_files_remover_.reset(new StaleCacheFilesRemover(file_system(),
                                                               cache()));
 
@@ -96,6 +100,8 @@ void DriveSystemService::Shutdown() {
 
   // Shut down the member objects in the reverse order of creation.
   stale_cache_files_remover_.reset();
+  sync_client_->RemoveObserver(prefetcher_.get());
+  prefetcher_.reset();
   sync_client_.reset();
   download_observer_.reset();
   file_write_helper_.reset();

@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
+#include "chrome/browser/chromeos/drive/drive_sync_client_observer.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -138,9 +139,16 @@ void DriveSyncClient::StartSyncLoop() {
 void DriveSyncClient::DoSyncLoop() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (queue_.empty() || ShouldStopSyncLoop()) {
+  if (ShouldStopSyncLoop()) {
     // Note that |queue_| is not cleared so the sync loop can resume.
     sync_loop_is_running_ = false;
+    FOR_EACH_OBSERVER(DriveSyncClientObserver, observers_,
+                      OnSyncClientStopped());
+    return;
+  }
+  if (queue_.empty()) {
+    sync_loop_is_running_ = false;
+    FOR_EACH_OBSERVER(DriveSyncClientObserver, observers_, OnSyncClientIdle());
     return;
   }
   sync_loop_is_running_ = true;
@@ -160,6 +168,8 @@ void DriveSyncClient::DoSyncLoop() {
     DCHECK(posted);
     return;
   }
+
+  FOR_EACH_OBSERVER(DriveSyncClientObserver, observers_, OnSyncTaskStarted());
 
   queue_.pop_front();
   if (sync_task.sync_type == FETCH) {
@@ -239,6 +249,14 @@ void DriveSyncClient::OnCacheCommitted(const std::string& resource_id) {
 
   AddTaskToQueue(SyncTask(UPLOAD, resource_id, base::Time::Now()));
   StartSyncLoop();
+}
+
+void DriveSyncClient::AddObserver(DriveSyncClientObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void DriveSyncClient::RemoveObserver(DriveSyncClientObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void DriveSyncClient::AddTaskToQueue(const SyncTask& sync_task) {

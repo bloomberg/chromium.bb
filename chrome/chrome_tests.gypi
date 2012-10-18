@@ -1132,6 +1132,7 @@
         'browser/chromeos/drive/drive_cache_unittest.cc',
         'browser/chromeos/drive/drive_file_system_unittest.cc',
         'browser/chromeos/drive/drive_file_system_util_unittest.cc',
+        'browser/chromeos/drive/drive_prefetcher_unittest.cc',
         'browser/chromeos/drive/drive_resource_metadata_unittest.cc',
         'browser/chromeos/drive/drive_scheduler_unittest.cc',
         'browser/chromeos/drive/drive_sync_client_unittest.cc',

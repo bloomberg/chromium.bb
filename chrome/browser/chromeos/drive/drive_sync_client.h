@@ -26,6 +26,8 @@ namespace drive {
 
 class DriveEntryProto;
 class DriveFileSystemInterface;
+class DrivePrefetcher;
+class DriveSyncClientObserver;
 
 // The DriveSyncClient is used to synchronize pinned files on Drive and the
 // cache on the local drive. The sync client works as follows.
@@ -84,6 +86,10 @@ class DriveSyncClient
   virtual void OnCacheUnpinned(const std::string& resource_id,
                                const std::string& md5) OVERRIDE;
   virtual void OnCacheCommitted(const std::string& resource_id) OVERRIDE;
+
+  // Adds/Removes an observer.
+  void AddObserver(DriveSyncClientObserver* observer);
+  void RemoveObserver(DriveSyncClientObserver* observer);
 
   // Starts processing the backlog (i.e. pinned-but-not-filed files and
   // dirty-but-not-uploaded files). Kicks off retrieval of the resource
@@ -185,6 +191,7 @@ class DriveSyncClient
   DriveFileSystemInterface* file_system_;  // Owned by DriveSystemService.
   DriveCache* cache_;  // Owned by DriveSystemService.
   scoped_ptr<PrefChangeRegistrar> registrar_;
+  ObserverList<DriveSyncClientObserver> observers_;
 
   // The queue of tasks used to fetch/upload files in the background
   // thread. Note that this class does not use a lock to protect |queue_| as

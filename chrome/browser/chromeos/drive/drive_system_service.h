@@ -27,6 +27,7 @@ class DriveUploader;
 class DriveWebAppsRegistry;
 class FileWriteHelper;
 class DriveSyncClient;
+class DrivePrefetcher;
 class StaleCacheFilesRemover;
 
 // DriveSystemService runs the Drive system, including the Drive file system
@@ -99,6 +100,7 @@ class DriveSystemService : public ProfileKeyedService  {
   scoped_ptr<FileWriteHelper> file_write_helper_;
   scoped_ptr<DriveDownloadObserver> download_observer_;
   scoped_ptr<DriveSyncClient> sync_client_;
+  scoped_ptr<DrivePrefetcher> prefetcher_;
   scoped_ptr<StaleCacheFilesRemover> stale_cache_files_remover_;
 
   // Note: This should remain the last member so it'll be destroyed and
