@@ -93,8 +93,12 @@ public class WebViewSynchronousFindApisTest extends WebViewFindApisTestBase {
         assertEquals(0, findNextOnUiThread(true));
     }
 
-    @SmallTest
-    @Feature({"Android-WebView", "FindInPage"})
+    /**
+     * @SmallTest
+     * @Feature({"Android-WebView", "FindInPage"})
+     * http://crbug.com/154760
+     */
+    @FlakyTest
     public void testFindAllEmptyNext() throws Throwable {
         assertEquals(4, findAllSyncOnUiThread("wood"));
         assertEquals(1, findNextOnUiThread(true));
