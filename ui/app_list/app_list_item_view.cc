@@ -43,7 +43,7 @@ const int kTitleFontSize = 11;
 const int kLeftRightPaddingChars = 1;
 
 // Delay in milliseconds of when a touch drag should start after tap down.
-const int kTouchDragStartDelayInMs = 100;
+const int kTouchDragStartDelayInMs = 200;
 
 // Scale to transform when touch drag starts.
 const float kTouchDraggingScale = 1.5f;
