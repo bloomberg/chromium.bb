@@ -387,7 +387,7 @@ Press Search or Shift to cancel.
         Battery full
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT" desc="The label in the tray dialog to show the remaining battery power as a percent.">
-        <ph name="percentage">$1<ex>56</ex></ph>% full
+        <ph name="percentage">$1<ex>56</ex></ph>% remaining
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_ONLY" desc="The label in the tray bubble setting row to show the remaining battery power as a percent.">
         <ph name="percentage">$1<ex>56</ex></ph>%
