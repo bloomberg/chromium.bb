@@ -2068,7 +2068,7 @@ class VectorBinary2RegisterScalar_I16_32L : VectorBinary2RegisterScalar
                   pattern := 1111001u1dssnnnndddd001pn0m0mmmm & size=~11;
                   rule := VSUBL_VSUBW;
 | 0100    0     = *V3RDL_I16_32_64
-                  pattern := 111100101dssnnnndddd0100nqm0mmmm & size=~11;
+                  pattern := 111100101dssnnnndddd0100n0m0mmmm & size=~11;
                   rule := VADDHN;
 | "       1     = *V3RDL_I16_32_64
                   pattern := 111100111dssnnnndddd0100n0m0mmmm & size=~11;

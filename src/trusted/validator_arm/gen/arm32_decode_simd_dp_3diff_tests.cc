@@ -1084,7 +1084,7 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //    = {actual: 'VectorBinary3RegisterDifferentLength_I16_32_64',
 //       baseline: 'VectorBinary3RegisterDifferentLength_I16_32_64',
 //       constraints: & inst(21:20)=~11 ,
-//       pattern: '111100101dssnnnndddd0100nqm0mmmm',
+//       pattern: '111100101dssnnnndddd0100n0m0mmmm',
 //       rule: 'VADDHN',
 //       safety: ['inst(21:20)=11 => DECODER_ERROR', 'inst(19:16)(0)=1 || inst(3:0)(0)=1 => UNDEFINED']}
 //
@@ -1096,14 +1096,14 @@ class Arm32DecoderStateTests : public ::testing::Test {
 //       baseline: VectorBinary3RegisterDifferentLength_I16_32_64,
 //       constraints: & size(21:20)=~11 ,
 //       fields: [size(21:20), Vn(19:16), Vm(3:0)],
-//       pattern: 111100101dssnnnndddd0100nqm0mmmm,
+//       pattern: 111100101dssnnnndddd0100n0m0mmmm,
 //       rule: VADDHN,
 //       safety: [size(21:20)=11 => DECODER_ERROR, Vn(0)=1 || Vm(0)=1 => UNDEFINED],
 //       size: size(21:20)}
 TEST_F(Arm32DecoderStateTests,
        VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case0_TestCase0) {
   VectorBinary3RegisterDifferentLength_I16_32_64Tester_Case0 tester;
-  tester.Test("111100101dssnnnndddd0100nqm0mmmm");
+  tester.Test("111100101dssnnnndddd0100n0m0mmmm");
 }
 
 // Neutral case:
