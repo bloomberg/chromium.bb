@@ -50,6 +50,7 @@
 
   "ApplicationLocaleValue": {
     "pref": "intl.app_locale",
+    "can_be_recommended": true,
     "test_policy": { "ApplicationLocaleValue": "fr" },
     "settings_pages": [],
     "local_state": true,
@@ -58,21 +59,30 @@
 
   "AlternateErrorPagesEnabled": {
     "pref": "alternate_error_pages.enabled",
+    "can_be_recommended": true,
     "test_policy": { "AlternateErrorPagesEnabled": false },
+    "indicator_tests": [
+      { "policy": { "AlternateErrorPagesEnabled": false }}],
     "settings_pages": ["chrome://settings-frame"],
     "os": ["win", "linux", "mac", "chromeos"]
   },
 
   "SearchSuggestEnabled": {
     "pref": "search.suggest_enabled",
+    "can_be_recommended": true,
     "test_policy": { "SearchSuggestEnabled": false },
+    "indicator_tests": [
+      { "policy": { "SearchSuggestEnabled": false }}],
     "settings_pages": ["chrome://settings-frame"],
     "os": ["win", "linux", "mac", "chromeos"]
   },
 
   "DnsPrefetchingEnabled": {
     "pref": "dns_prefetching.enabled",
+    "can_be_recommended": true,
     "test_policy": { "DnsPrefetchingEnabled": false },
+    "indicator_tests": [
+      { "policy": { "DnsPrefetchingEnabled": false }}],
     "settings_pages": ["chrome://settings-frame"],
     "os": ["win", "linux", "mac", "chromeos"]
   },

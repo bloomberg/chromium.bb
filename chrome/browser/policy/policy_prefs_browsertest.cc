@@ -298,7 +298,7 @@ void VerifyControlledSettingIndicators(Browser* browser,
   std::wstringstream javascript;
   javascript << "var nodes = document.querySelectorAll("
              << "    'span.controlled-setting-indicator["
-             << "        pref=" << pref.c_str() << "]');"
+             << "        pref=\"" << pref.c_str() << "\"]');"
              << "var indicators = [];"
              << "for (var i = 0; i < nodes.length; i++) {"
              << "  var node = nodes[i];"

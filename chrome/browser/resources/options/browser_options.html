@@ -212,26 +212,46 @@
             i18n-values="href:privacyLearnMoreURL"></a>
       </p>
       <div class="checkbox">
-        <label>
+        <span class="controlled-setting-with-label">
           <input id="alternateErrorPagesEnabled"
               pref="alternate_error_pages.enabled"
               metric="Options_LinkDoctorCheckbox" type="checkbox">
-          <span i18n-content="linkDoctorPref"></span>
-        </label>
+          <span>
+            <label for="alternateErrorPagesEnabled"
+                i18n-content="linkDoctorPref">
+            </label>
+            <span class="controlled-setting-indicator"
+                pref="alternate_error_pages.enabled">
+            </span>
+          </span>
+        </span>
       </div>
       <div class="checkbox" guest-visibility="disabled">
-        <label>
+        <span class="controlled-setting-with-label">
           <input id="searchSuggestEnabled" pref="search.suggest_enabled"
               metric="Options_UseSuggestCheckbox" type="checkbox">
-          <span i18n-content="suggestPref"></span>
-        </label>
+          <span>
+            <label for="searchSuggestEnabled" i18n-content="suggestPref">
+            </label>
+            <span class="controlled-setting-indicator"
+                pref="search.suggest_enabled">
+            </span>
+          </span>
+        </span>
       </div>
       <div class="checkbox" guest-visibility="disabled">
-        <label>
+        <span class="controlled-setting-with-label">
           <input id="dnsPrefetchingEnabled" pref="dns_prefetching.enabled"
               metric="Options_DnsPrefetchCheckbox" type="checkbox">
-          <span i18n-content="networkPredictionEnabledDescription"></span>
-        </label>
+          <span>
+            <label for="dnsPrefetchingEnabled"
+                i18n-content="networkPredictionEnabledDescription">
+            </label>
+            <span class="controlled-setting-indicator"
+                pref="dns_prefetching.enabled">
+            </span>
+          </span>
+        </span>
       </div>
       <div class="checkbox">
         <label>
