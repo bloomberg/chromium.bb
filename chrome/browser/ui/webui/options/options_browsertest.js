@@ -167,20 +167,6 @@ TEST_F('OptionsWebUITest', 'EnableDoNotTrackAndCancelInterstitial',
   this.testDoNotTrackInterstitial(false);
 });
 
-// Mock4JS action that calls the function |fun| when a mock method is called.
-function CallFunctionAction(fun) {
-  this._fun = fun;
-}
-
-CallFunctionAction.prototype = {
-  invoke: function() {
-    this._fun();
-  },
-  describe: function() {
-    return "calls the passed function";
-  }
-}
-
 // Check that the "Do not Track" preference can be correctly disabled.
 // In order to do that, we need to enable it first.
 TEST_F('OptionsWebUITest', 'EnableAndDisableDoNotTrack', function() {
@@ -226,7 +212,7 @@ TEST_F('OptionsWebUITest', 'EnableAndDisableDoNotTrack', function() {
   }
   this.mockHandler.expects(once()).setBooleanPref(
       eq(["enable_do_not_track", false, 'Options_DoNotTrackCheckbox'])).will(
-          new CallFunctionAction(verifyCorrectEndState));
+          callFunction(verifyCorrectEndState));
 
   dntCheckbox.click();
 });
