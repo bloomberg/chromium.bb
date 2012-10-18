@@ -21,6 +21,13 @@ using content::BrowserThread;
 
 namespace {
 
+// Force a prefix to prevent user from opening "magic" files.
+const char* kExpectedFilePrefix = "pnacl_public_";
+
+// Restrict PNaCl file lengths to reduce likelyhood of hitting bugs
+// in file name limit error-handling-code-paths, etc.
+const size_t kMaxFileLength = 40;
+
 void NotifyRendererOfError(
     ChromeRenderMessageFilter* chrome_render_message_filter,
     IPC::Message* reply_msg) {
@@ -134,43 +141,35 @@ void GetReadonlyPnaclFd(
   }
 }
 
+// This function is security sensitive.  Be sure to check with a security
+// person before you modify it.
 bool PnaclCanOpenFile(const std::string& filename,
                       FilePath* file_to_open) {
-  // The file must use only ASCII characters.
-  if (!IsStringASCII(filename)) {
+  if (filename.length() > kMaxFileLength)
     return false;
+
+  if (filename.empty())
+    return false;
+
+  // Restrict character set of the file name to something really simple
+  // (a-z, 0-9, and underscores).
+  for (size_t i = 0; i < filename.length(); ++i) {
+    char charAt = filename[i];
+    if (charAt < 'a' || charAt > 'z')
+      if (charAt < '0' || charAt > '9')
+        if (charAt != '_')
+          return false;
   }
 
-  // Disallow special shell characters, just in case...
-  if (filename.find('%') != std::string::npos ||
-      filename.find('$') != std::string::npos) {
-    return false;
-  }
-
-#if defined(OS_WIN)
-  FilePath file_to_find(ASCIIToUTF16(filename));
-#elif defined(OS_POSIX)
-  FilePath file_to_find(filename);
-#endif
-
-  if (file_to_find.empty() || file_util::IsDot(file_to_find)) {
-    return false;
-  }
-
-  // Disallow peeking outside of the pnacl component directory.
-  if (file_to_find.ReferencesParent() || file_to_find.IsAbsolute()) {
-    return false;
-  }
-
+  // PNaCl must be installed.
   FilePath pnacl_dir;
-  if (!PathService::Get(chrome::DIR_PNACL_COMPONENT, &pnacl_dir)) {
+  if (!PathService::Get(chrome::DIR_PNACL_COMPONENT, &pnacl_dir) ||
+      pnacl_dir.empty())
     return false;
-  }
-  if (pnacl_dir.empty()) {
-    return false;
-  }
 
-  FilePath full_path = pnacl_dir.Append(file_to_find);
+  // Prepend the prefix to restrict files to a whitelisted set.
+  FilePath full_path = pnacl_dir.AppendASCII(
+      std::string(kExpectedFilePrefix) + filename);
   *file_to_open = full_path;
   return true;
 }

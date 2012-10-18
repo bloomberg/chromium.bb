@@ -29,7 +29,10 @@ bool PnaclUrls::UsePnaclExtension(const Plugin* plugin) {
   // --enable-pnacl is used and not use the chrome extension.
   // Some UI work, etc. remains before --enable-pnacl is usable:
   // http://code.google.com/p/nativeclient/issues/detail?id=2813
-  return !(plugin->nacl_interface()->IsPnaclEnabled());
+  // TODO(jvoung): re-enable the non-extension path if we decide
+  // to use that / once we have renamed and remap some of the files.
+  return true;
+  // return !(plugin->nacl_interface()->IsPnaclEnabled());
 }
 
 nacl::string PnaclUrls::GetBaseUrl(bool use_extension) {
