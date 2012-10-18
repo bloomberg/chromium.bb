@@ -32,9 +32,11 @@ class MetroViewerProcessHost : public IPC::Listener,
 
  private:
   void OnSetTargetSurface(gfx::NativeViewId target_surface);
-  void OnMouseEvent(int msg, WPARAM w_param, LPARAM l_param);
-  void OnMouseMoved(int x, int y, int modifiers);
-  void OnMouseButton(int x, int y, int modifiers);
+  void OnMouseEvent(int32 msg, WPARAM w_param, LPARAM l_param);
+  void OnMouseMoved(int32 x, int32 y, int32 modifiers);
+  void OnMouseButton(int32 x, int32 y, int32 modifiers);
+  void OnKeyDown(uint32 vkey, uint32 repeat_count, uint32 scan_code);
+  void OnKeyUp(uint32 vkey, uint32 repeat_count, uint32 scan_code);
 
   scoped_ptr<IPC::ChannelProxy> channel_;
 

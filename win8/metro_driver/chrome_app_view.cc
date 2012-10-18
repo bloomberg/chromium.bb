@@ -52,6 +52,10 @@ typedef winfoundtn::ITypedEventHandler<
     winui::Core::CoreWindow*,
     winui::Core::PointerEventArgs*> PointerEventHandler;
 
+typedef winfoundtn::ITypedEventHandler<
+    winui::Core::CoreWindow*,
+    winui::Core::KeyEventArgs*> KeyEventHandler;
+
 struct Globals globals;
 
 // TODO(ananta)
@@ -702,14 +706,9 @@ ChromeAppView::SetWindow(winui::Core::ICoreWindow* window) {
   HRESULT hr = url_launch_handler_.Initialize();
   CheckHR(hr, "Failed to initialize url launch handler.");
 
-  // Register for size notifications.
-  hr = window_->add_SizeChanged(mswr::Callback<SizeChangedHandler>(
-      this, &ChromeAppView::OnSizeChanged).Get(),
-      &sizechange_token_);
-  CheckHR(hr);
-
 #if defined(USE_AURA)
-  // Register for pointer notifications.
+  // Register for pointer and keyboard notifications. We forward
+  // them to the browser process via IPC.
   hr = window_->add_PointerMoved(mswr::Callback<PointerEventHandler>(
       this, &ChromeAppView::OnPointerMoved).Get(),
       &pointermoved_token_);
@@ -724,7 +723,27 @@ ChromeAppView::SetWindow(winui::Core::ICoreWindow* window) {
       this, &ChromeAppView::OnPointerReleased).Get(),
       &pointerreleased_token_);
   CheckHR(hr);
-#endif
+
+  hr = window_->add_KeyDown(mswr::Callback<KeyEventHandler>(
+      this, &ChromeAppView::OnKeyDown).Get(),
+      &keydown_token_);
+  CheckHR(hr);
+
+  hr = window_->add_KeyUp(mswr::Callback<KeyEventHandler>(
+      this, &ChromeAppView::OnKeyUp).Get(),
+      &keyup_token_);
+  CheckHR(hr);
+
+  // By initializing the direct 3D swap chain with the corewindow
+  // we can now directly blit to it from the browser process.
+  direct3d_helper_.Initialize(window);
+  DVLOG(1) << "Initialized Direct3D.";
+#else
+  // Register for size notifications.
+  hr = window_->add_SizeChanged(mswr::Callback<SizeChangedHandler>(
+      this, &ChromeAppView::OnSizeChanged).Get(),
+      &sizechange_token_);
+  CheckHR(hr);
 
   // Register for edge gesture notifications.
   mswr::ComPtr<winui::Input::IEdgeGestureStatics> edge_gesture_statics;
@@ -772,15 +791,13 @@ ChromeAppView::SetWindow(winui::Core::ICoreWindow* window) {
 
   DVLOG(1) << "Created appview instance.";
 
-  direct3d_helper_.Initialize(window);
-
-  DVLOG(1) << "Initialized Direct3D.";
-
   hr = devices_handler_.Initialize(window);
   // Don't check or return the failure here, we need to let the app
   // initialization succeed. Even if we won't be able to access devices
   // we still want to allow the app to start.
   LOG_IF(ERROR, FAILED(hr)) << "Failed to initialize devices handler.";
+#endif
+
   return S_OK;
 }
 
@@ -1011,7 +1028,6 @@ HRESULT ChromeAppView::OnActivate(winapp::Core::ICoreApplicationView*,
       return E_UNEXPECTED;
     }
   }
-#endif
 
   if (RegisterHotKey(globals.core_window, kFlipWindowsHotKeyId,
                      MOD_CONTROL, VK_F12)) {
@@ -1022,6 +1038,9 @@ HRESULT ChromeAppView::OnActivate(winapp::Core::ICoreApplicationView*,
   HRESULT hr = settings_handler_.Initialize();
   CheckHR(hr,"Failed to initialize settings handler.");
   return hr;
+#else
+  return S_OK;
+#endif
 }
 
 // We subclass the core window for moving the associated chrome window when the
@@ -1129,6 +1148,40 @@ HRESULT ChromeAppView::OnPointerReleased(winui::Core::ICoreWindow* sender,
   ui_channel_->Send(new MetroViewerHostMsg_MouseButton(pointer.x(),
                                                        pointer.y(),
                                                        0));
+  return S_OK;
+}
+
+HRESULT ChromeAppView::OnKeyDown(winui::Core::ICoreWindow* sender,
+                                 winui::Core::IKeyEventArgs* args) {
+  winsys::VirtualKey virtual_key;
+  HRESULT hr = args->get_VirtualKey(&virtual_key);
+  if (FAILED(hr))
+    return hr;
+  winui::Core::CorePhysicalKeyStatus status;
+  hr = args->get_KeyStatus(&status);
+  if (FAILED(hr))
+    return hr;
+
+  ui_channel_->Send(new MetroViewerHostMsg_KeyDown(virtual_key,
+                                                   status.RepeatCount,
+                                                   status.ScanCode));
+  return S_OK;
+}
+
+HRESULT ChromeAppView::OnKeyUp(winui::Core::ICoreWindow* sender,
+                               winui::Core::IKeyEventArgs* args) {
+  winsys::VirtualKey virtual_key;
+  HRESULT hr = args->get_VirtualKey(&virtual_key);
+  if (FAILED(hr))
+    return hr;
+  winui::Core::CorePhysicalKeyStatus status;
+  hr = args->get_KeyStatus(&status);
+  if (FAILED(hr))
+    return hr;
+
+  ui_channel_->Send(new MetroViewerHostMsg_KeyUp(virtual_key,
+                                                 status.RepeatCount,
+                                                 status.ScanCode));
   return S_OK;
 }
 

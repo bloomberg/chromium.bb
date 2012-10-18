@@ -17,13 +17,21 @@ IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_SetTargetSurface,
                      gfx::NativeViewId /* target hwnd */)
 // Informs the browser that the mouse moved.
 IPC_MESSAGE_CONTROL3(MetroViewerHostMsg_MouseMoved,
-                     int,       /* x-coordinate */
-                     int,       /* y-coordinate */
-                     int        /* modifiers */)
+                     int32,       /* x-coordinate */
+                     int32,       /* y-coordinate */
+                     int32        /* modifiers */)
 // Inforoms the brower that a mouse button was pressed.
 IPC_MESSAGE_CONTROL3(MetroViewerHostMsg_MouseButton,
-                     int,       /* x-coordinate */
-                     int,       /* y-coordinate */
-                     int        /* modifiers */)
-
-
+                     int32,       /* x-coordinate */
+                     int32,       /* y-coordinate */
+                     int32        /* modifiers */)
+// Informs the browser that a key was pressed.
+IPC_MESSAGE_CONTROL3(MetroViewerHostMsg_KeyDown,
+                     uint32,       /* virtual key */
+                     uint32,       /* repeat count */
+                     uint32        /* scan code*/);
+// Informs the browser that a key was released.
+IPC_MESSAGE_CONTROL3(MetroViewerHostMsg_KeyUp,
+                     uint32,       /* virtual key */
+                     uint32,       /* repeat count */
+                     uint32        /* scan code*/);

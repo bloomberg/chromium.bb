@@ -91,6 +91,12 @@ class ChromeAppView
   HRESULT OnPointerReleased(winui::Core::ICoreWindow* sender,
                             winui::Core::IPointerEventArgs* args);
 
+  HRESULT OnKeyDown(winui::Core::ICoreWindow* sender,
+                    winui::Core::IKeyEventArgs* args);
+
+  HRESULT OnKeyUp(winui::Core::ICoreWindow* sender,
+                  winui::Core::IKeyEventArgs* args);
+
   HRESULT OnEdgeGestureCompleted(winui::Input::IEdgeGesture* gesture,
                                  winui::Input::IEdgeGestureEventArgs* args);
 
@@ -127,6 +133,8 @@ class ChromeAppView
   EventRegistrationToken pointermoved_token_;
   EventRegistrationToken pointerpressed_token_;
   EventRegistrationToken pointerreleased_token_;
+  EventRegistrationToken keydown_token_;
+  EventRegistrationToken keyup_token_;
 
   ChromeUrlLaunchHandler url_launch_handler_;
   metro_driver::DevicesHandler devices_handler_;

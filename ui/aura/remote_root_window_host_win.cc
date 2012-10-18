@@ -14,6 +14,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/events/event.h"
+#include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/view_prop.h"
 
 using std::max;
@@ -136,13 +137,13 @@ void RemoteRootWindowHostWin::PrepareForShutdown() {
   NOTIMPLEMENTED();
 }
 
-void RemoteRootWindowHostWin::OnMouseMoved(int x, int y, int extra) {
+void RemoteRootWindowHostWin::OnMouseMoved(int32 x, int32 y, int32 extra) {
   gfx::Point location(x, y);
   ui::MouseEvent event(ui::ET_MOUSE_MOVED, location, location, 0);
   delegate_->OnHostMouseEvent(&event);
 }
 
-void RemoteRootWindowHostWin::OnMouseClick(int x, int y, int extra) {
+void RemoteRootWindowHostWin::OnMouseClick(int32 x, int32 y, int32 extra) {
   gfx::Point location(x, y);
   ui::EventType type = (extra == 1) ?
       ui::ET_MOUSE_PRESSED : ui::ET_MOUSE_RELEASED;
@@ -150,6 +151,24 @@ void RemoteRootWindowHostWin::OnMouseClick(int x, int y, int extra) {
   event.SetClickCount(1);
   event.set_flags(ui::EF_LEFT_MOUSE_BUTTON);
   delegate_->OnHostMouseEvent(&event);
+}
+
+void RemoteRootWindowHostWin::OnKeyDown(uint32 vkey,
+                                        uint32 repeat_count,
+                                        uint32 scan_code) {
+  ui::KeyEvent event(ui::ET_KEY_PRESSED,
+                     ui::KeyboardCodeForWindowsKeyCode(vkey),
+                     0);
+  delegate_->OnHostKeyEvent(&event);
+}
+
+void RemoteRootWindowHostWin::OnKeyUp(uint32 vkey,
+                                      uint32 repeat_count,
+                                      uint32 scan_code) {
+  ui::KeyEvent event(ui::ET_KEY_RELEASED,
+                     ui::KeyboardCodeForWindowsKeyCode(vkey),
+                     0);
+  delegate_->OnHostKeyEvent(&event);
 }
 
 }  // namespace aura

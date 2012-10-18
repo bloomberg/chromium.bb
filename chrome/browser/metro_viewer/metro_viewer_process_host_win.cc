@@ -37,6 +37,8 @@ bool MetroViewerProcessHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_SetTargetSurface, OnSetTargetSurface)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_MouseMoved, OnMouseMoved)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_MouseButton, OnMouseButton)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_KeyDown, OnKeyDown)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_KeyUp, OnKeyUp)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -59,12 +61,26 @@ void MetroViewerProcessHost::OnSetTargetSurface(
   any_window->SetNewTargetWindow(hwnd);
 }
 
-void MetroViewerProcessHost::OnMouseMoved(int x, int y, int modifiers) {
-  // TODO(cpu): Find a decent way to get to the root window host.
+// TODO(cpu): Find a decent way to get to the root window host in the
+// next four methods.
+void MetroViewerProcessHost::OnMouseMoved(int32 x, int32 y, int32 modifiers) {
   aura::RemoteRootWindowHostWin::Instance()->OnMouseMoved(x, y, modifiers);
 }
 
-void MetroViewerProcessHost::OnMouseButton(int x, int y, int modifiers) {
-  // TODO(cpu): Find a decent way to get to the root window host.
+void MetroViewerProcessHost::OnMouseButton(int32 x, int32 y, int32 modifiers) {
   aura::RemoteRootWindowHostWin::Instance()->OnMouseClick(x, y, modifiers);
+}
+
+void MetroViewerProcessHost::OnKeyDown(uint32 vkey,
+                                       uint32 repeat_count,
+                                       uint32 scan_code) {
+  aura::RemoteRootWindowHostWin::Instance()->OnKeyDown(
+      vkey, repeat_count, scan_code);
+}
+
+void MetroViewerProcessHost::OnKeyUp(uint32 vkey,
+                                     uint32 repeat_count,
+                                     uint32 scan_code) {
+  aura::RemoteRootWindowHostWin::Instance()->OnKeyUp(
+      vkey, repeat_count, scan_code);
 }

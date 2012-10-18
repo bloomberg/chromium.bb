@@ -23,14 +23,17 @@
 #include <windows.graphics.printing.h>
 #include <windows.ui.notifications.h>
 
-namespace mswr = Microsoft::WRL;
-namespace mswrw = Microsoft::WRL::Wrappers;
-namespace winapp = ABI::Windows::ApplicationModel;
-namespace windata = ABI::Windows::Data;
-namespace windevs = ABI::Windows::Devices;
+namespace mswr =       Microsoft::WRL;
+namespace mswrw =      Microsoft::WRL::Wrappers;
+
+namespace winapp =     ABI::Windows::ApplicationModel;
+namespace windata =    ABI::Windows::Data;
+namespace winxml =     ABI::Windows::Data::Xml;
+namespace windevs =    ABI::Windows::Devices;
 namespace winfoundtn = ABI::Windows::Foundation;
-namespace wingfx = ABI::Windows::Graphics;
-namespace winui = ABI::Windows::UI;
-namespace winxml = windata::Xml;
+namespace wingfx =     ABI::Windows::Graphics;
+namespace winui =      ABI::Windows::UI;
+namespace winsys =     ABI::Windows::System;
+
 
 #endif  // CHROME_BROWSER_UI_METRO_DRIVER_STDAFX_H_
