@@ -1158,8 +1158,9 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
   } else if (!params.state.empty()) {
     // We must know the page ID of the page we are navigating back to.
     DCHECK_NE(params.page_id, -1);
-    main_frame->loadHistoryItem(
-        webkit_glue::HistoryItemFromString(params.state));
+    WebHistoryItem item = webkit_glue::HistoryItemFromString(params.state);
+    if (!item.isNull())
+      main_frame->loadHistoryItem(item);
   } else if (!params.base_url_for_data_url.is_empty()) {
     // A loadData request with a specified base URL.
     std::string mime_type, charset, data;
