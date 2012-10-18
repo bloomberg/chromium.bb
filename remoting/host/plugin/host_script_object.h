@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
@@ -21,7 +22,6 @@
 #include "remoting/base/plugin_thread_task_runner.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_key_pair.h"
-#include "remoting/host/host_status_observer.h"
 #include "remoting/host/log_to_server.h"
 #include "remoting/host/plugin/host_plugin_utils.h"
 #include "remoting/host/setup/daemon_controller.h"
@@ -32,31 +32,17 @@
 
 namespace remoting {
 
-class ChromotingHost;
-class DesktopEnvironmentFactory;
-class HostEventLogger;
-class It2MeHostUserInterface;
-class MutableHostConfig;
-class RegisterSupportHostRequest;
-class SignalStrategy;
-class SupportAccessVerifier;
-
-namespace policy_hack {
-class PolicyWatcher;
-}  // namespace policy_hack
-
 // NPAPI plugin implementation for remoting host script object.
 // HostNPScriptObject creates threads that are required to run
 // ChromotingHost and starts/stops the host on those threads. When
 // destroyed it synchronously shuts down the host and all threads.
-class HostNPScriptObject : public HostStatusObserver {
+class HostNPScriptObject {
  public:
   HostNPScriptObject(NPP plugin, NPObject* parent,
                      PluginThreadTaskRunner::Delegate* plugin_thread_delegate);
   virtual ~HostNPScriptObject();
 
-  bool Init();
-
+  // Implementations used to implement the NPObject interface.
   bool HasMethod(const std::string& method_name);
   bool InvokeDefault(const NPVariant* args,
                      uint32_t arg_count,
@@ -71,12 +57,6 @@ class HostNPScriptObject : public HostStatusObserver {
   bool RemoveProperty(const std::string& property_name);
   bool Enumerate(std::vector<std::string>* values);
 
-  // remoting::HostStatusObserver implementation.
-  virtual void OnAccessDenied(const std::string& jid) OVERRIDE;
-  virtual void OnClientAuthenticated(const std::string& jid) OVERRIDE;
-  virtual void OnClientDisconnected(const std::string& jid) OVERRIDE;
-  virtual void OnShutdown() OVERRIDE;
-
   // Post LogDebugInfo to the correct proxy (and thus, on the correct thread).
   // This should only be called by HostLogHandler. To log to the UI, use the
   // standard LOG(INFO) and it will be sent to this method.
@@ -85,6 +65,11 @@ class HostNPScriptObject : public HostStatusObserver {
   void SetWindow(NPWindow* np_window);
 
  private:
+  //////////////////////////////////////////////////////////
+  // Definitions for It2Me host.
+
+  class It2MeImpl;
+
   // These state values are duplicated in host_session.js. Remember to update
   // both copies when making changes.
   enum State {
@@ -181,42 +166,23 @@ class HostNPScriptObject : public HostStatusObserver {
   bool StopDaemon(const NPVariant* args, uint32_t arg_count, NPVariant* result);
 
   //////////////////////////////////////////////////////////
-  // Helper methods for It2Me host.
-
-  // Updates state of the host. Can be called only on the main thread.
-  void SetState(State state);
+  // Helper methods used by the It2Me host implementation.
 
   // Notifies OnStateChanged handler of a state change.
   void NotifyStateChanged(State state);
 
-  // Callbacks invoked during session setup.
-  void OnReceivedSupportID(bool success,
-                           const std::string& support_id,
-                           const base::TimeDelta& lifetime);
+  // If the web-app has registered a callback to be notified of changes to the
+  // NAT traversal policy, notify it.
+  void NotifyNatPolicyChanged(bool nat_traversal_enabled);
 
-  // Helper functions that run on main thread. Can be called on any
-  // other thread.
-  void ReadPolicyAndConnect(const std::string& uid,
-                            const std::string& auth_token,
-                            const std::string& auth_service);
-  void FinishConnect(const std::string& uid,
-                     const std::string& auth_token,
-                     const std::string& auth_service);
+  // Stores the Access Code for the web-app to query.
+  void StoreAccessCode(const std::string& access_code,
+                       base::TimeDelta access_code_lifetime);
 
-  void DisconnectInternal();
+  // Stores the client user's name for the web-app to query.
+  void StoreClientUsername(const std::string& client_username);
 
-  // Callback for ChromotingHost::Shutdown().
-  void OnShutdownFinished();
-
-  // Called when a policy is updated.
-  void OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies);
-
-  // Called when the nat traversal policy is updated.
-  void UpdateNatPolicy(bool nat_traversal_enabled);
-
-  // Called when the host domain policy is updated.
-  void UpdateHostDomainPolicy(const std::string& host_domain);
-
+  // Used to generate localized strings to pass to the It2Me host core.
   void LocalizeStrings(NPObject* localize_func);
 
   // Helper function for executing InvokeDefault on an NPObject that performs
@@ -234,10 +200,6 @@ class HostNPScriptObject : public HostStatusObserver {
                                       const char* tag,
                                       const char* substitution,
                                       string16* result);
-
-  // If the web-app has registered a callback to be notified of changes to the
-  // NAT traversal policy, notify it.
-  void UpdateWebappNatPolicy(bool nat_traversal_enabled);
 
   //////////////////////////////////////////////////////////
   // Helper methods for Me2Me host.
@@ -287,70 +249,53 @@ class HostNPScriptObject : public HostStatusObserver {
   //////////////////////////////////////////////////////////
   // Plugin state variables shared between It2Me and Me2Me.
 
-  // True if we're in the middle of handling a log message.
   NPP plugin_;
   NPObject* parent_;
+  scoped_refptr<PluginThreadTaskRunner> plugin_task_runner_;
+
+  scoped_refptr<AutoThreadTaskRunner> auto_plugin_task_runner_;
+
+  // True if we're in the middle of handling a log message.
   bool am_currently_logging_;
+
+  ScopedRefNPObject log_debug_info_func_;
 
   //////////////////////////////////////////////////////////
   // It2Me host state.
-  State state_;
 
-  base::Lock access_code_lock_;
+  // Internal implementation of the It2Me host function.
+  scoped_refptr<It2MeImpl> it2me_impl_;
+
+  // Cached, read-only copies of |it2me_impl_| session state.
+  State state_;
   std::string access_code_;
   base::TimeDelta access_code_lifetime_;
-
   std::string client_username_;
-  ScopedRefNPObject log_debug_info_func_;
+
+  // Localized strings for use by the |it2me_impl_| UI.
+  UiStrings ui_strings_;
+
+  // Callbacks to notify in response to |it2me_impl_| events.
   ScopedRefNPObject on_nat_traversal_policy_changed_func_;
   ScopedRefNPObject on_state_changed_func_;
-  base::PlatformThreadId np_thread_id_;
-  scoped_refptr<PluginThreadTaskRunner> plugin_task_runner_;
-
-  scoped_ptr<ChromotingHostContext> host_context_;
-  HostKeyPair host_key_pair_;
-  scoped_ptr<SignalStrategy> signal_strategy_;
-  scoped_ptr<RegisterSupportHostRequest> register_request_;
-  scoped_ptr<LogToServer> log_to_server_;
-  scoped_ptr<DesktopEnvironmentFactory> desktop_environment_factory_;
-  scoped_ptr<It2MeHostUserInterface> it2me_host_user_interface_;
-  scoped_ptr<HostEventLogger> host_event_logger_;
-
-  scoped_refptr<ChromotingHost> host_;
-  int failed_login_attempts_;
-
-  UiStrings ui_strings_;
-  base::Lock ui_strings_lock_;
-
-  base::Lock nat_policy_lock_;
-
-  scoped_ptr<policy_hack::PolicyWatcher> policy_watcher_;
-
-  // Host the current nat traversal policy setting.
-  bool nat_traversal_enabled_;
-
-  // The host domain policy setting.
-  std::string required_host_domain_;
-
-  // Indicates whether or not a policy has ever been read. This is to ensure
-  // that on startup, we do not accidentally start a connection before we have
-  // queried our policy restrictions.
-  bool policy_received_;
-
-  // On startup, it is possible to have Connect() called before the policy read
-  // is completed.  Rather than just failing, we thunk the connection call so
-  // it can be executed after at least one successful policy read. This
-  // variable contains the thunk if it is necessary.
-  base::Closure pending_connect_;
 
   //////////////////////////////////////////////////////////
   // Me2Me host state.
+
+  // Platform-specific installation & configuration implementation.
   scoped_ptr<DaemonController> daemon_controller_;
 
   // TODO(sergeyu): Replace this thread with
   // SequencedWorkerPool. Problem is that SequencedWorkerPool relies
   // on MessageLoopProxy::current().
   base::Thread worker_thread_;
+
+  //////////////////////////////////////////////////////////
+  // Plugin state used for both Ir2Me and Me2Me.
+
+  // Used to cancel pending tasks for this object when it is destroyed.
+  base::WeakPtrFactory<HostNPScriptObject> weak_factory_;
+  base::WeakPtr<HostNPScriptObject> weak_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(HostNPScriptObject);
 };

@@ -207,10 +207,6 @@ class HostNPPlugin : public remoting::PluginThreadTaskRunner::Delegate {
     object->_class = aClass;
     object->referenceCount = 1;
     object->scriptable_object = new HostNPScriptObject(npp, object, plugin);
-    if (!object->scriptable_object->Init()) {
-      Deallocate(object);
-      object = NULL;
-    }
     return object;
   }
 
