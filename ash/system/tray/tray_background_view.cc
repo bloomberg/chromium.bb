@@ -313,14 +313,14 @@ gfx::Rect TrayBackgroundView::GetAnchorRect(
         bool rtl = base::i18n::IsRTL();
         rect.Inset(
             rtl ? kPaddingFromRightEdgeOfScreenBottomAlignment : 0,
-            0,
+            4,
             rtl ? 0 : kPaddingFromRightEdgeOfScreenBottomAlignment,
             kPaddingFromBottomOfScreenBottomAlignment);
       } else if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_LEFT) {
-        rect.Inset(0, 0, kPaddingFromInnerEdgeOfLauncherVerticalAlignment,
+        rect.Inset(0, 0, kPaddingFromInnerEdgeOfLauncherVerticalAlignment + 5,
                    kPaddingFromBottomOfScreenVerticalAlignment);
       } else {
-        rect.Inset(kPaddingFromInnerEdgeOfLauncherVerticalAlignment,
+        rect.Inset(kPaddingFromInnerEdgeOfLauncherVerticalAlignment + 1,
                    0, 0, kPaddingFromBottomOfScreenVerticalAlignment);
       }
     } else if (anchor_type == TrayBubbleView::ANCHOR_TYPE_BUBBLE) {

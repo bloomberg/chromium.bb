@@ -82,10 +82,8 @@ void AppListView::InitAsBubble(
   set_move_with_anchor(true);
   set_parent_window(parent);
   set_close_on_deactivate(false);
-  // Shift anchor rect up 1px because app menu icon center is 1px above anchor
-  // rect center when shelf is on left/right.
-  set_anchor_insets(gfx::Insets(kArrowOffset - 1, kArrowOffset,
-                                kArrowOffset + 1, kArrowOffset));
+  set_anchor_insets(gfx::Insets(kArrowOffset, kArrowOffset,
+                                kArrowOffset, kArrowOffset));
   set_shadow(views::BubbleBorder::BIG_SHADOW);
   views::BubbleDelegateView::CreateBubble(this);
   SetBubbleArrowLocation(arrow_location);
