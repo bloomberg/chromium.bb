@@ -851,7 +851,7 @@ content::GeolocationPermissionContext*
     ProfileImpl::GetGeolocationPermissionContext() {
   if (!geolocation_permission_context_.get()) {
     geolocation_permission_context_ =
-        new ChromeGeolocationPermissionContext(this);
+        ChromeGeolocationPermissionContext::Create(this);
   }
   return geolocation_permission_context_.get();
 }

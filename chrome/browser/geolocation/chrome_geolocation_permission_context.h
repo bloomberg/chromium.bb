@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_GEOLOCATION_CHROME_GEOLOCATION_PERMISSION_CONTEXT_H_
 #define CHROME_BROWSER_GEOLOCATION_CHROME_GEOLOCATION_PERMISSION_CONTEXT_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/geolocation_permission_context.h"
 
@@ -18,7 +20,7 @@ class Profile;
 class ChromeGeolocationPermissionContext
     : public content::GeolocationPermissionContext {
  public:
-  explicit ChromeGeolocationPermissionContext(Profile* profile);
+  static ChromeGeolocationPermissionContext* Create(Profile* profile);
 
   static void RegisterUserPrefs(PrefService *user_prefs);
 
@@ -35,23 +37,60 @@ class ChromeGeolocationPermissionContext
       int bridge_id,
       const GURL& requesting_frame) OVERRIDE;
 
- private:
+ protected:
+  explicit ChromeGeolocationPermissionContext(Profile* profile);
   virtual ~ChromeGeolocationPermissionContext();
 
-  // Removes any pending InfoBar request.
-  void CancelPendingInfoBarRequest(int render_process_id,
-                                   int render_view_id,
-                                   int bridge_id);
+  Profile* profile() const { return profile_; }
+
+  // Return an instance of the infobar queue controller, creating it
+  // if necessary.
+  GeolocationInfoBarQueueController* QueueController();
 
   // Notifies whether or not the corresponding bridge is allowed to use
   // geolocation via
   // GeolocationPermissionContext::SetGeolocationPermissionResponse().
+  // Called on the UI thread.
   void NotifyPermissionSet(int render_process_id,
                            int render_view_id,
                            int bridge_id,
                            const GURL& requesting_frame,
                            base::Callback<void(bool)> callback,
                            bool allowed);
+
+  // ChromeGeolocationPermissionContext implementation:
+  // Decide whether the geolocation permission should be granted.
+  // Calls PermissionDecided if permission can be decided non-interactively,
+  // or NotifyPermissionSet if permission decided by presenting an
+  // infobar to the user. Called on the UI thread.
+  virtual void DecidePermission(int render_process_id,
+                                int render_view_id,
+                                int bridge_id,
+                                const GURL& requesting_frame,
+                                const GURL& embedder,
+                                base::Callback<void(bool)> callback);
+
+  // Called when permission is granted without interactively asking
+  // the user. Can be overridden to introduce additional UI flow.
+  // Should ultimately ensure that NotifyPermissionSet is called.
+  // Called on the UI thread.
+  virtual void PermissionDecided(int render_process_id,
+                                 int render_view_id,
+                                 int bridge_id,
+                                 const GURL& requesting_frame,
+                                 const GURL& embedder,
+                                 base::Callback<void(bool)> callback,
+                                 bool allowed);
+
+  // Create an InfoBarQueueController. overriden in derived classes to provide
+  // additional UI flow.  Called on the UI thread.
+  virtual GeolocationInfoBarQueueController* CreateQueueController();
+
+ private:
+  // Removes any pending InfoBar request.
+  void CancelPendingInfoBarRequest(int render_process_id,
+                                   int render_view_id,
+                                   int bridge_id);
 
   // This must only be accessed from the UI thread.
   Profile* const profile_;

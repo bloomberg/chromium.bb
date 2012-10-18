@@ -253,7 +253,7 @@ void GeolocationPermissionContextTests::SetUp() {
   TabSpecificContentSettings::CreateForWebContents(web_contents());
 
   geolocation_permission_context_ =
-      new ChromeGeolocationPermissionContext(profile());
+      ChromeGeolocationPermissionContext::Create(profile());
 }
 
 void GeolocationPermissionContextTests::TearDown() {

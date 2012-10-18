@@ -10,6 +10,7 @@
 #include "content/public/browser/notification_registrar.h"
 
 class GURL;
+class GeolocationConfirmInfoBarDelegate;
 class InfoBarTabHelper;
 class Profile;
 
@@ -23,16 +24,9 @@ class Profile;
 // the notification infrastructure would simplify.
 class GeolocationInfoBarQueueController : content::NotificationObserver {
  public:
-  typedef base::Callback<void(int /* render_process_id */,
-                              int /* render_view_id */,
-                              int /* bridge_id */,
-                              const GURL& /* requesting_frame */,
-                              base::Callback<void(bool)> /* callback */,
-                              bool /* allowed */)> NotifyPermissionSetCallback;
+  typedef base::Callback<void(bool /* allowed */)> PermissionDecidedCallback;
 
-  GeolocationInfoBarQueueController(
-      NotifyPermissionSetCallback notify_permission_set_callback,
-      Profile* profile);
+  explicit GeolocationInfoBarQueueController(Profile* profile);
   virtual ~GeolocationInfoBarQueueController();
 
   // The InfoBar will be displayed immediately if the tab is not already
@@ -41,8 +35,8 @@ class GeolocationInfoBarQueueController : content::NotificationObserver {
                             int render_view_id,
                             int bridge_id,
                             const GURL& requesting_frame,
-                            const GURL& emebedder,
-                            base::Callback<void(bool)> callback);
+                            const GURL& embedder,
+                            PermissionDecidedCallback callback);
 
   // Cancels a specific infobar request.
   void CancelInfoBarRequest(int render_process_id,
@@ -57,12 +51,26 @@ class GeolocationInfoBarQueueController : content::NotificationObserver {
                        int bridge_id,
                        const GURL& requesting_frame,
                        const GURL& embedder,
+                       bool update_content_setting,
                        bool allowed);
 
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+ protected:
+  // Create an Infobar delegate to ask the whether the requesting frame
+  // url should be granted geolocation permission. Overrided in
+  // derived classes to implement alternative UI.
+  virtual GeolocationConfirmInfoBarDelegate* CreateInfoBarDelegate(
+      InfoBarTabHelper* infobar_helper,
+      GeolocationInfoBarQueueController* controller,
+      int render_process_id,
+      int render_view_id,
+      int bridge_id,
+      const GURL& requesting_frame_url,
+      const std::string& display_languages);
 
  private:
   struct PendingInfoBarRequest;
@@ -86,7 +94,6 @@ class GeolocationInfoBarQueueController : content::NotificationObserver {
 
   content::NotificationRegistrar registrar_;
 
-  NotifyPermissionSetCallback notify_permission_set_callback_;
   Profile* const profile_;
   PendingInfoBarRequests pending_infobar_requests_;
 };

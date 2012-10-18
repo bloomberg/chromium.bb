@@ -73,7 +73,6 @@ class ObservationCountingQueueController :
 ObservationCountingQueueController::ObservationCountingQueueController(
     Profile* profile)
     : GeolocationInfoBarQueueController(
-          base::Bind(&ObservationCountingQueueController::NotifyPermissionSet),
           profile),
       call_count_(0) {
 }

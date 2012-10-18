@@ -655,6 +655,8 @@
         'browser/geolocation/chrome_access_token_store.h',
         'browser/geolocation/chrome_geolocation_permission_context.cc',
         'browser/geolocation/chrome_geolocation_permission_context.h',
+        'browser/geolocation/geolocation_confirm_infobar_delegate.cc',
+        'browser/geolocation/geolocation_confirm_infobar_delegate.h',
         'browser/geolocation/geolocation_infobar_queue_controller.cc',
         'browser/geolocation/geolocation_infobar_queue_controller.h',
         'browser/geolocation/geolocation_prefs.cc',
