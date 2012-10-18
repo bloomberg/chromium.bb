@@ -782,8 +782,10 @@ class NinjaWriter:
       obj_ext = self.obj_ext
       if ext in ('cc', 'cpp', 'cxx'):
         command = 'cxx'
-      elif ext == 'c' or (ext in ('s', 'S') and self.flavor != 'win'):
+      elif ext == 'c' or (ext == 'S' and self.flavor != 'win'):
         command = 'cc'
+      elif ext == 's' and self.flavor != 'win':  # Doesn't generate .o.d files.
+        command = 'cc_s'
       elif (self.flavor == 'win' and ext == 'asm' and
             self.msvs_settings.GetTargetPlatform(config_name) == 'Win32'):
         # Asm files only get auto assembled for x86 (not x64).
@@ -1430,6 +1432,11 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       command=('$cc -MMD -MF $out.d $defines $includes $cflags $cflags_c '
               '$cflags_pch_c -c $in -o $out'),
       depfile='$out.d')
+    master_ninja.rule(
+      'cc_s',
+      description='CC $out',
+      command=('$cc $defines $includes $cflags $cflags_c '
+              '$cflags_pch_c -c $in -o $out'))
     master_ninja.rule(
       'cxx',
       description='CXX $out',
