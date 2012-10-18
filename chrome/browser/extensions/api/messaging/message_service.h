@@ -10,7 +10,9 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/extensions/api/messaging/native_message_process_host.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -46,13 +48,47 @@ class LazyBackgroundTaskQueue;
 // port: an IPC::Message::Process interface and an optional routing_id (in the
 // case that the port is a tab).  The Process is usually either a
 // RenderProcessHost or a RenderViewHost.
-class MessageService : public content::NotificationObserver {
+class MessageService : public content::NotificationObserver,
+                       public NativeMessageProcessHost::Client {
  public:
   // A messaging channel. Note that the opening port can be the same as the
   // receiver, if an extension background page wants to talk to its tab (for
   // example).
   struct MessageChannel;
-  struct MessagePort;
+
+  // One side of the communication handled by extensions::MessageService.
+  class MessagePort {
+   public:
+    virtual ~MessagePort() {}
+    // Notify the port that the channel has been opened.
+    virtual void DispatchOnConnect(int dest_port_id,
+                                   const std::string& channel_name,
+                                   const std::string& tab_json,
+                                   const std::string& source_extension_id,
+                                   const std::string& target_extension_id) {}
+
+    // Notify the port that the channel has been closed.
+    virtual void DispatchOnDisconnect(int source_port_id,
+                                      bool connection_error) {}
+
+    // Dispatch a message to this end of the communication.
+    virtual void DispatchOnMessage(const std::string& message,
+                                   int target_port_id) = 0;
+
+    // MessagPorts that target extensions will need to adjust their keepalive
+    // counts for their lazy background page.
+    virtual void IncrementLazyKeepaliveCount() {}
+    virtual void DecrementLazyKeepaliveCount() {}
+
+    // Get the RenderProcessHost (if any) associated with the port.
+    virtual content::RenderProcessHost* GetRenderProcessHost();
+
+   protected:
+    MessagePort() {}
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(MessagePort);
+  };
 
   // Allocates a pair of port ids.
   // NOTE: this can be called from any thread.
@@ -78,12 +114,33 @@ class MessageService : public content::NotificationObserver {
       int tab_id, const std::string& extension_id,
       const std::string& channel_name);
 
+  void OpenChannelToNativeApp(
+      int source_process_id,
+      int source_routing_id,
+      int receiver_port_id,
+      const std::string& source_extension_id,
+      const std::string& native_app_name,
+      const std::string& channel_name,
+      const std::string& connect_message);
+
+  // Should be called on the UI thread.
+  void FinalizeOpenChannelToNativeApp(
+      int receiver_port_id,
+      const std::string& channel_name,
+      scoped_ptr<MessageChannel> channel,
+      const std::string& tab_json,
+      NativeMessageProcessHost::ScopedHost native_process);
+
   // Closes the message channel associated with the given port, and notifies
   // the other side.
-  void CloseChannel(int port_id, bool connection_error);
+  virtual void CloseChannel(int port_id, bool connection_error) OVERRIDE;
 
-  // Sends a message from a renderer to the given port.
-  void PostMessageFromRenderer(int port_id, const std::string& message);
+  // Sends a message to the given port.
+  void PostMessage(int port_id, const std::string& message);
+
+  // NativeMessageProcessHost::Client
+  virtual void PostMessageFromNativeProcess(
+      int port_id, const std::string& message) OVERRIDE;
 
  private:
   friend class MockMessageService;
@@ -99,11 +156,15 @@ class MessageService : public content::NotificationObserver {
   typedef std::map<int, PendingChannel> PendingChannelMap;
 
   // Common among OpenChannel* variants.
-  bool OpenChannelImpl(const OpenChannelParams& params);
+  bool OpenChannelImpl(scoped_ptr<OpenChannelParams> params);
 
   void CloseChannelImpl(MessageChannelMap::iterator channel_iter,
                         int port_id, bool connection_error,
                         bool notify_other_port);
+
+  // Have MessageService take ownership of |channel|, and remove any pending
+  // channels with the same id.
+  void AddChannel(MessageChannel* channel, int receiver_port_id);
 
   // content::NotificationObserver interface.
   virtual void Observe(int type,
@@ -115,13 +176,14 @@ class MessageService : public content::NotificationObserver {
 
   // Potentially registers a pending task with the LazyBackgroundTaskQueue
   // to open a channel. Returns true if a task was queued.
+  // Takes ownership of |params| if true is returned.
   bool MaybeAddPendingOpenChannelTask(Profile* profile,
-                                      const OpenChannelParams& params);
+                                      OpenChannelParams* params);
 
   // Callbacks for LazyBackgroundTaskQueue tasks. The queue passes in an
   // ExtensionHost to its task callbacks, though some of our callbacks don't
   // use that argument.
-  void PendingOpenChannel(const OpenChannelParams& params,
+  void PendingOpenChannel(scoped_ptr<OpenChannelParams> params,
                           int source_process_id,
                           extensions::ExtensionHost* host);
   void PendingCloseChannel(int port_id,
@@ -134,7 +196,7 @@ class MessageService : public content::NotificationObserver {
                           const std::string& message,
                           extensions::ExtensionHost* host) {
     if (host)
-      PostMessageFromRenderer(port_id, message);
+      PostMessage(port_id, message);
   }
 
   content::NotificationRegistrar registrar_;
@@ -143,6 +205,8 @@ class MessageService : public content::NotificationObserver {
 
   // Weak pointer. Guaranteed to outlive this class.
   LazyBackgroundTaskQueue* lazy_background_task_queue_;
+
+  base::WeakPtrFactory<MessageService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageService);
 };

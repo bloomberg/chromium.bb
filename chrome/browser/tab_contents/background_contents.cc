@@ -5,7 +5,6 @@
 #include "chrome/browser/tab_contents/background_contents.h"
 
 #include "chrome/browser/background/background_contents_service.h"
-#include "chrome/browser/extensions/api/messaging/message_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"

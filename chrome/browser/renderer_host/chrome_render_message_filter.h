@@ -100,6 +100,18 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
                                         const std::string& source_extension_id,
                                         const std::string& target_extension_id,
                                         const std::string& channel_name);
+  void OnOpenChannelToNativeApp(int routing_id,
+                                const std::string& source_extension_id,
+                                const std::string& native_app_name,
+                                const std::string& channel_name,
+                                const std::string& connect_message,
+                                int* port_id);
+  void OpenChannelToNativeAppOnUIThread(int source_routing_id,
+                                        int receiver_port_id,
+                                        const std::string& source_extension_id,
+                                        const std::string& native_app_name,
+                                        const std::string& channel_name,
+                                        const std::string& connect_message);
   void OnOpenChannelToTab(int routing_id, int tab_id,
                           const std::string& extension_id,
                           const std::string& channel_name, int* port_id);

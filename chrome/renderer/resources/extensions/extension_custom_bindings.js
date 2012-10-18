@@ -7,6 +7,7 @@
 var extensionNatives = requireNative('extension');
 var GetExtensionViews = extensionNatives.GetExtensionViews;
 var OpenChannelToExtension = extensionNatives.OpenChannelToExtension;
+var OpenChannelToNativeApp = extensionNatives.OpenChannelToNativeApp;
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 
@@ -93,6 +94,8 @@ chromeHidden.registerCustomHook('extension',
       sendMessageUpdateArguments.bind(null, 'sendRequest'));
   apiFunctions.setUpdateArgumentsPreValidate('sendMessage',
       sendMessageUpdateArguments.bind(null, 'sendMessage'));
+  apiFunctions.setUpdateArgumentsPreValidate('sendNativeMessage',
+      sendMessageUpdateArguments.bind(null, 'sendNativeMessage'));
 
   apiFunctions.setHandleRequest('sendRequest',
                                 function(targetId, request, responseCallback) {
@@ -106,6 +109,13 @@ chromeHidden.registerCustomHook('extension',
     var port = chrome.extension.connect(targetId || extensionId,
                                         {name: chromeHidden.kMessageChannel});
     chromeHidden.Port.sendMessageImpl(port, message, responseCallback);
+  });
+
+  apiFunctions.setHandleRequest('sendNativeMessage',
+                                function(targetId, message, responseCallback) {
+    var port = chrome.extension.connectNative(
+        targetId, message, chromeHidden.kNativeMessageChannel);
+    chromeHidden.Port.sendMessageImpl(port, '', responseCallback);
   });
 
   apiFunctions.setUpdateArgumentsPreValidate('connect', function() {
@@ -126,8 +136,27 @@ chromeHidden.registerCustomHook('extension',
       connectInfo = arguments[nextArg++];
 
     if (nextArg != arguments.length)
-      throw new Error('Invalid arguments to connect');
+      throw new Error('Invalid arguments to connect.');
     return [targetId, connectInfo];
+  });
+
+  apiFunctions.setUpdateArgumentsPreValidate('connectNative', function() {
+    var nextArg = 0;
+
+    // appName is required.
+    var appName = arguments[nextArg++];
+
+    // connectionMessage is required.
+    var connectMessage = arguments[nextArg++];
+
+    // channelName is only passed by sendMessage
+    var channelName = 'connectNative';
+    if (typeof(arguments[nextArg]) == 'string')
+      channelName = arguments[nextArg++];
+
+    if (nextArg != arguments.length)
+      throw new Error('Invalid arguments to connectNative.');
+    return [appName, {name: channelName, message: connectMessage}];
   });
 
   apiFunctions.setHandleRequest('connect', function(targetId, connectInfo) {
@@ -141,5 +170,18 @@ chromeHidden.registerCustomHook('extension',
     if (portId >= 0)
       return chromeHidden.Port.createPort(portId, name);
     throw new Error('Error connecting to extension ' + targetId);
+  });
+
+  apiFunctions.setHandleRequest('connectNative',
+                                function(nativeAppName, connectInfo) {
+    // Turn the object into a string here, because it eventually will be.
+    var portId = OpenChannelToNativeApp(extensionId,
+                                        nativeAppName,
+                                        connectInfo.name,
+                                        JSON.stringify(connectInfo.message));
+    if (portId >= 0) {
+      return chromeHidden.Port.createPort(portId, connectInfo.name);
+    }
+    throw new Error('Error connecting to native app: ' + nativeAppName);
   });
 });

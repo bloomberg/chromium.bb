@@ -589,6 +589,9 @@ const char kEnableNaClIPCProxy[]            = "enable-nacl-ipc-proxy";
 // Enables hardware exception handling via debugger process.
 const char kEnableNaClExceptionHandling[]   = "enable-nacl-exception-handling";
 
+// Enables the native messaging extensions API.
+const char kEnableNativeMessaging[]         = "enable-native-messaging";
+
 // Enables NPN and SPDY. In case server supports SPDY, browser will use SPDY.
 const char kEnableNpn[]                     = "enable-npn";
 

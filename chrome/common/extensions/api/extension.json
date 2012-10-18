@@ -75,6 +75,31 @@
         }
       },
       {
+        "name": "connectNative",
+        "nodoc": true,
+        "type": "function",
+        "description": "Attempts to connect a native application in the host machine. The native application must have already registered itself in the proper directory.",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "appName",
+            "description": "The name of the registered app to connect to."
+          },
+          {
+            "name": "connectionMessage",
+            "description": "The object that will be passed to the registered native app on connection.",
+            "type": "object",
+            "additionalProperties": {
+              "type": "any"
+            }
+          }
+        ],
+        "returns": {
+          "$ref": "Port",
+          "description": "Port through which messages can be sent and received with the application"
+        }
+      },
+      {
         "name": "sendRequest",
         "nodoc": true,
         "type": "function",
@@ -116,6 +141,43 @@
                 "name": "response",
                 "type": "any",
                 "description": "The JSON response object sent by the handler of the message. If an error occurs while connecting to the extension, the callback will be called with no arguments and <a href='extension.html#property-lastError'>chrome.extension.lastError</a> will be set to the error message."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "sendNativeMessage",
+        "nodoc": true,
+        "type": "function",
+        "description": "Send a single message to a registered native application.",
+        "parameters": [
+          {
+            "name": "registeredNativeApp",
+            "description": "The name of the registered native application.",
+            "type": "string"
+          },
+          {
+            "name": "message",
+            "description": "The message that will be passed to the registered native application.",
+            "type": "object",
+            "additionalProperties": {
+              "type": "any"
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called with the response from the native application.",
+            "parameters": [
+              {
+                "name": "nativeResponse",
+                "type": "object",
+                "description": "Whatever the native application responds with.",
+                "additionalProperties": {
+                  "type": "any"
+                }
               }
             ]
           }

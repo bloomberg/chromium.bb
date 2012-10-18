@@ -163,6 +163,7 @@ extern const char kEnableNaCl[];
 extern const char kEnableNaClDebug[];
 extern const char kEnableNaClExceptionHandling[];
 extern const char kEnableNaClIPCProxy[];
+extern const char kEnableNativeMessaging[];
 extern const char kEnableNpn[];
 extern const char kDisableSyncTabs[];
 extern const char kEnableNpnHttpOnly[];
