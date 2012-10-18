@@ -23,7 +23,6 @@
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/file_path.h"
-#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
@@ -49,6 +48,7 @@
 #include "remoting/host/host_secret.h"
 #include "remoting/host/it2me_host_user_interface.h"
 #include "remoting/host/json_host_config.h"
+#include "remoting/host/logging.h"
 #include "remoting/host/log_to_server.h"
 #include "remoting/host/network_settings.h"
 #include "remoting/host/register_support_host_request.h"
@@ -389,18 +389,7 @@ int main(int argc, char** argv) {
 
   base::AtExitManager exit_manager;
 
-  // Initialize logging with an appropriate log-file location, and default to
-  // log to that on Windows, or to standard error output otherwise.
-  FilePath debug_log(FILE_PATH_LITERAL("debug.log"));
-  InitLogging(debug_log.value().c_str(),
-#if defined(OS_WIN)
-              logging::LOG_ONLY_TO_FILE,
-#else
-              logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
-#endif
-              logging::DONT_LOCK_LOG_FILE,
-              logging::APPEND_TO_OLD_LOG_FILE,
-              logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+  remoting::InitHostLogging();
 
 #if defined(TOOLKIT_GTK)
   gfx::GtkInitFromCommandLine(*cmd_line);

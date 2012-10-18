@@ -353,6 +353,38 @@
         </RegistryKey>
 
       </Component>
+
+      <!-- Register with Sawbuck. See http://code.google.com/p/sawbuck/. -->
+      <Component Id="sawbuck_provider" Guid="*">
+        <RegistryKey Root="HKLM"
+                     Key="SOFTWARE\Google\Sawbuck\Providers">
+          <RegistryKey Key="{2db51ca1-4fd8-4b88-b5a2-fb8606b66b02}"
+                       Action="create">
+            <RegistryValue Type="string" Value="Chromoting"/>
+            <RegistryValue Name="default_flags" Type="integer" Value="1"/>
+            <RegistryValue Name="default_level" Type="integer" Value="4"/>
+            <RegistryKey Key="Flags" Action="create">
+              <RegistryKey Key="Stack Trace" Action="create">
+                <RegistryValue Type="integer" Value="1"/>
+              </RegistryKey>
+              <RegistryKey Key="Text Only" Action="create">
+                <RegistryValue Type="integer" Value="2"/>
+              </RegistryKey>
+            </RegistryKey>
+          </RegistryKey>
+        </RegistryKey>
+      </Component>
+
+    </DirectoryRef>
+
+    <DirectoryRef Id="config_files">
+      <!-- Delete debug.log from previous versions -->
+      <Component Id="delete_debug_log"
+                 Guid="b309082a-e6fa-4dc7-98e4-3d83c896561d">
+        <RemoveFile Id="debug.log"
+                    Name="debug.log"
+                    On="both" />
+      </Component>
     </DirectoryRef>
 
     <!-- The service is always installed in the stopped state with start type
@@ -403,6 +435,7 @@
     <UIRef Id="WixUI_ErrorProgressText" />
 
     <Feature Id="chromoting_host" Level="1" Title="$(var.ChromotingHost)">
+      <ComponentRef Id="delete_debug_log"/>
       <?if $(var.OfficialBuild) != 0 ?>
         <ComponentRef Id="omaha_registration"/>
       <?endif?>
@@ -413,6 +446,7 @@
       <?endif?>
       <ComponentRef Id="remoting_host"/>
       <ComponentRef Id="sas"/>
+      <ComponentRef Id="sawbuck_provider"/>
     </Feature>
 
     <!-- Set the icon shown in Add/Remove Programs. -->

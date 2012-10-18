@@ -7,8 +7,8 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/win/scoped_handle.h"
+#include "remoting/host/logging.h"
 
 namespace {
 
@@ -38,11 +38,7 @@ int main(int argc, char** argv) {
 
   base::AtExitManager exit_manager;
 
-  InitLogging(NULL,
-              logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
-              logging::DONT_LOCK_LOG_FILE,
-              logging::APPEND_TO_OLD_LOG_FILE,
-              logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+  remoting::InitHostLogging();
 
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(kHelpSwitchName) ||

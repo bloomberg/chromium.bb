@@ -8,10 +8,8 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
-#include "base/file_path.h"
-#include "base/logging.h"
 #include "remoting/base/breakpad.h"
-#include "remoting/host/branding.h"
+#include "remoting/host/logging.h"
 #include "remoting/host/usage_stats_consent.h"
 
 // MIDL-generated declarations.
@@ -49,14 +47,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int command) {
   // FilePath, LazyInstance, MessageLoop).
   base::AtExitManager exit_manager;
 
-  // Write logs to the application profile directory.
-  FilePath debug_log = remoting::GetConfigDir().
-      Append(FILE_PATH_LITERAL("debug.log"));
-  InitLogging(debug_log.value().c_str(),
-              logging::LOG_ONLY_TO_FILE,
-              logging::DONT_LOCK_LOG_FILE,
-              logging::APPEND_TO_OLD_LOG_FILE,
-              logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+  remoting::InitHostLogging();
 
   return _AtlModule.WinMain(command);
 }

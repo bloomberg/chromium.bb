@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/scoped_native_library.h"
@@ -51,6 +50,7 @@
 #include "remoting/host/host_user_interface.h"
 #include "remoting/host/ipc_consts.h"
 #include "remoting/host/json_host_config.h"
+#include "remoting/host/logging.h"
 #include "remoting/host/log_to_server.h"
 #include "remoting/host/network_settings.h"
 #include "remoting/host/policy_hack/policy_watcher.h"
@@ -752,19 +752,7 @@ int main(int argc, char** argv) {
     return 0;
   }
 
-  // Initialize logging with an appropriate log-file location, and default to
-  // log to that on Windows, or to standard error output otherwise.
-  FilePath debug_log = remoting::GetConfigDir().
-      Append(FILE_PATH_LITERAL("debug.log"));
-  InitLogging(debug_log.value().c_str(),
-#if defined(OS_WIN)
-              logging::LOG_ONLY_TO_FILE,
-#else
-              logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
-#endif
-              logging::DONT_LOCK_LOG_FILE,
-              logging::APPEND_TO_OLD_LOG_FILE,
-              logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+  remoting::InitHostLogging();
 
 #if defined(TOOLKIT_GTK)
   // Required for any calls into GTK functions, such as the Disconnect and

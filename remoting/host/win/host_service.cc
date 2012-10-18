@@ -17,7 +17,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
-#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stringprintf.h"
@@ -29,6 +28,7 @@
 #include "remoting/base/scoped_sc_handle_win.h"
 #include "remoting/base/stoppable.h"
 #include "remoting/host/branding.h"
+#include "remoting/host/logging.h"
 
 #if defined(REMOTING_MULTI_PROCESS)
 #include "remoting/host/daemon_process.h"
@@ -486,14 +486,7 @@ int CALLBACK WinMain(HINSTANCE instance,
   // FilePath, LazyInstance, MessageLoop).
   base::AtExitManager exit_manager;
 
-  // Write logs to the application profile directory.
-  FilePath debug_log = remoting::GetConfigDir().
-      Append(FILE_PATH_LITERAL("debug.log"));
-  InitLogging(debug_log.value().c_str(),
-              logging::LOG_ONLY_TO_FILE,
-              logging::DONT_LOCK_LOG_FILE,
-              logging::APPEND_TO_OLD_LOG_FILE,
-              logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+  remoting::InitHostLogging();
 
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(kHelpSwitchName) ||

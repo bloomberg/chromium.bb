@@ -497,6 +497,7 @@
           'variables': { 'enable_wexit_time_destructors': 1, },
           'dependencies': [
             '../base/base.gyp:base',
+            'remoting_host_logging',
           ],
           'sources': [
             'tools/breakpad_tester_win.cc',
@@ -596,13 +597,12 @@
             '../base/base.gyp:base',
             'remoting_breakpad',
             'remoting_elevated_controller',
+            'remoting_host_logging',
             'remoting_protocol',
             'remoting_version_resources',
           ],
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_controller_version.rc',
-            'host/branding.cc',
-            'host/branding.h',
             'host/pin_hash.cc',
             'host/pin_hash.h',
             'host/usage_stats_consent.h',
@@ -647,13 +647,12 @@
             '../net/net.gyp:net',
             'remoting_base',
             'remoting_breakpad',
+            'remoting_host_logging',
             'remoting_version_resources',
           ],
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_daemon_version.rc',
             'base/scoped_sc_handle_win.h',
-            'host/branding.cc',
-            'host/branding.h',
             'host/chromoting_messages.cc',
             'host/chromoting_messages.h',
             'host/config_file_watcher.cc',
@@ -923,13 +922,12 @@
             'remoting_base',
             'remoting_breakpad',
             'remoting_host',
+            'remoting_host_logging',
             'remoting_version_resources',
             '../base/base.gyp:base',
             '../ipc/ipc.gyp:ipc',
           ],
           'sources': [
-            'host/branding.cc',
-            'host/branding.h',
             'host/desktop_process.cc',
             'host/desktop_process.h',
             'host/host_ui.rc',
@@ -1131,16 +1129,15 @@
       'dependencies': [
         'remoting_base',
         'remoting_host',
-        'remoting_host_setup_base',
         'remoting_host_event_logger',
+        'remoting_host_logging',
+        'remoting_host_setup_base',
         'remoting_jingle_glue',
         '../net/net.gyp:net',
         '../third_party/npapi/npapi.gyp:npapi',
       ],
       'sources': [
         'base/dispatch_win.h',
-        'host/branding.cc',
-        'host/branding.h',
         'host/host_ui_resource.h',
         'host/plugin/host_log_handler.cc',
         'host/plugin/host_log_handler.h',
@@ -1672,6 +1669,22 @@
     },  # end of target 'remoting_host'
 
     {
+      'target_name': 'remoting_host_logging',
+      'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
+      'sources': [
+        'host/branding.cc',
+        'host/branding.h',
+        'host/logging.h',
+        'host/logging_posix.cc',
+        'host/logging_win.cc',
+      ],
+    },  # end of target 'remoting_host_logging'
+
+    {
       'target_name': 'remoting_client',
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },
@@ -1712,6 +1725,7 @@
       'dependencies': [
         'remoting_base',
         'remoting_host',
+        'remoting_host_logging',
         'remoting_jingle_glue',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
@@ -1732,6 +1746,7 @@
         'remoting_breakpad',
         'remoting_host',
         'remoting_host_event_logger',
+        'remoting_host_logging',
         'remoting_jingle_glue',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
@@ -1743,8 +1758,6 @@
         'VERSION=<(version_full)',
       ],
       'sources': [
-        'host/branding.cc',
-        'host/branding.h',
         'host/config_file_watcher.cc',
         'host/config_file_watcher.h',
         'host/curtain_mode.h',
