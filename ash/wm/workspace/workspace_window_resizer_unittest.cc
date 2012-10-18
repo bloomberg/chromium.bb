@@ -144,7 +144,7 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
 
 }  // namespace
 
-// Fails on win_aura since wm::GetRootWindowRelativeToWindow is not implemented
+// Fails on win_aura since ash::GetRootWindowRelativeToWindow is not implemented
 // yet for the platform.
 #if defined(OS_WIN)
 #define MAYBE_WindowDragWithMultiDisplays \

@@ -7,14 +7,13 @@
 
 #include "ash/ash_export.h"
 
-#include "ui/gfx/point.h"
-
 namespace aura {
 class RootWindow;
 class Window;
 }  // namespace gfx
 
 namespace gfx {
+class Point;
 class Rect;
 }  // namespace gfx
 
@@ -29,14 +28,6 @@ ASH_EXPORT aura::RootWindow* GetRootWindowAt(const gfx::Point& point);
 // Returns the RootWindow that shares the most area with |rect| in
 // the virtual scren coordinates.
 ASH_EXPORT aura::RootWindow* GetRootWindowMatching(const gfx::Rect& rect);
-
-// Finds the root window at |location| in |window|'s coordinates and returns a
-// pair of root window and location in that root window's coordinates. The
-// function usually returns |window->GetRootWindow()|, but if the mouse pointer
-// is moved outside the |window|'s root while the mouse is captured, it returns
-// the other root window.
-ASH_EXPORT std::pair<aura::RootWindow*, gfx::Point>
-GetRootWindowRelativeToWindow(aura::Window* window, const gfx::Point& location);
 
 // Converts the |point| from a given |window|'s coordinates into the screen
 // coordinates.
