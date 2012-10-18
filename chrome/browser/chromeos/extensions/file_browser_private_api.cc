@@ -523,7 +523,7 @@ void RequestLocalFileSystemFunction::RespondSuccessOnUIThread(
   // proper authentication.
   drive::DriveSystemService* system_service =
       drive::DriveSystemServiceFactory::GetForProfile(profile_);
-  if (system_service)
+  if (system_service && system_service->IsDriveEnabled())
     AddDriveMountPoint(profile_, extension_id(), render_view_host());
   DictionaryValue* dict = new DictionaryValue();
   SetResult(dict);
@@ -2028,7 +2028,8 @@ bool FileDialogStringsFunction::RunImpl() {
 
   drive::DriveSystemService* system_service =
       drive::DriveSystemServiceFactory::GetForProfile(profile_);
-  dict->SetBoolean("ENABLE_GDATA", system_service != NULL);
+  dict->SetBoolean("ENABLE_GDATA",
+                   system_service && system_service->IsDriveEnabled());
 
 #if defined(USE_ASH)
   dict->SetBoolean("ASH", true);
@@ -2602,7 +2603,7 @@ bool GetPreferencesFunction::RunImpl() {
 
   drive::DriveSystemService* system_service =
       drive::DriveSystemServiceFactory::GetForProfile(profile_);
-  bool drive_enabled = (system_service != NULL);
+  bool drive_enabled = (system_service && system_service->IsDriveEnabled());
 
   if (drive_enabled)
     AddDriveMountPoint(profile_, extension_id(), render_view_host());

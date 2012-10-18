@@ -1142,7 +1142,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   DriveSystemService* FindDriveSystemService() {
     Profile* profile = ProfileManager::GetDefaultProfile();
-    return DriveSystemServiceFactory::FindForProfile(profile);
+    DriveSystemService* service =
+        DriveSystemServiceFactory::FindForProfile(profile);
+    if (!service || !service->IsDriveEnabled())
+      return NULL;
+    return service;
   }
 
   // Overridden from system::TimezoneSettings::Observer.
