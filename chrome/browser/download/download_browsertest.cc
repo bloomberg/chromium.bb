@@ -796,7 +796,8 @@ class DownloadTest : public InProcessBrowserTest {
 
     // Set up file failures.
     scoped_refptr<content::TestFileErrorInjector> injector(
-        content::TestFileErrorInjector::Create());
+        content::TestFileErrorInjector::Create(
+            DownloadManagerForBrowser(browser())));
 
     for (size_t i = 0; i < count; ++i) {
       // Set up the full URL, for download file tracking.
@@ -1529,8 +1530,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, AnchorDownloadTag) {
 }
 
 // Test to make sure auto-open works.
-// Feel free to re-disable this test if it starts failing again, but please see
-// if the failure looks like http://crbug.com/118159 and use that bug if so.
 IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpen) {
   FilePath file(FILE_PATH_LITERAL("download-autoopen.txt"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
@@ -1539,8 +1538,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpen) {
       GetDownloadPrefs(browser())->EnableAutoOpenBasedOnExtension(file));
 
   // Mock out external opening on all downloads until end of test.
-  MockDownloadOpeningObserver observer(
-      DownloadManagerForBrowser(browser()));
+  MockDownloadOpeningObserver observer(DownloadManagerForBrowser(browser()));
 
   DownloadAndWait(browser(), url);
 
@@ -1549,7 +1547,12 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpen) {
   DownloadManagerForBrowser(browser())->GetAllDownloads(&downloads);
   ASSERT_EQ(1u, downloads.size());
   EXPECT_EQ(DownloadItem::COMPLETE, downloads[0]->GetState());
-  EXPECT_TRUE(downloads[0]->GetOpened());
+
+  // Unfortunately, this will block forever, causing a timeout, if
+  // the download is never opened.
+  content::DownloadUpdatedObserver(
+      downloads[0], base::Bind(&WasAutoOpened)).WaitForEvent();
+  EXPECT_TRUE(downloads[0]->GetOpened());  // Confirm it anyway.
 
   // As long as we're here, confirmed everything else is good.
   EXPECT_EQ(1, browser()->tab_count());
@@ -1651,7 +1654,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallAcceptPermissions) {
   DownloadManagerForBrowser(browser())->GetAllDownloads(&downloads);
   ASSERT_EQ(1u, downloads.size());
   content::DownloadUpdatedObserver(
-      downloads[0], base::Bind(WasAutoOpened)).WaitForEvent();
+      downloads[0], base::Bind(&WasAutoOpened)).WaitForEvent();
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 
   // Check that the extension was installed.
@@ -1713,7 +1716,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxLargeTheme) {
   DownloadManagerForBrowser(browser())->GetAllDownloads(&downloads);
   ASSERT_EQ(1u, downloads.size());
   content::DownloadUpdatedObserver(
-      downloads[0], base::Bind(WasAutoOpened)).WaitForEvent();
+      downloads[0], base::Bind(&WasAutoOpened)).WaitForEvent();
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 
   // Check that the extension was installed.
@@ -1784,7 +1787,13 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToPath) {
                                      target_file_full_path,
                                      OriginFile(file)));
 
-  // Temporary downloads won't be visible.
+  // Temporary are treated as auto-opened, and after that open won't be
+  // visible; wait for auto-open and confirm not visible.
+  std::vector<DownloadItem*> downloads;
+  DownloadManagerForBrowser(browser())->GetAllDownloads(&downloads);
+  ASSERT_EQ(1u, downloads.size());
+  content::DownloadUpdatedObserver(
+      downloads[0], base::Bind(&WasAutoOpened)).WaitForEvent();
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 }
 

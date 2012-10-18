@@ -12,23 +12,23 @@ namespace content {
 DownloadFileFactory::~DownloadFileFactory() {}
 
 DownloadFile* DownloadFileFactory::CreateFile(
-    scoped_ptr<DownloadCreateInfo> info,
-    scoped_ptr<content::ByteStreamReader> stream,
-    DownloadManager* download_manager,
+    scoped_ptr<DownloadSaveInfo> save_info,
+    const FilePath& default_downloads_directory,
+    const GURL& url,
+    const GURL& referrer_url,
+    int64 received_bytes,
     bool calculate_hash,
-    const net::BoundNetLog& bound_net_log) {
-  // Ownership will be taken by DownloadFileImpl.
-  scoped_ptr<DownloadRequestHandleInterface> request_handle(
-      new DownloadRequestHandle(info->request_handle));
-
+    scoped_ptr<ByteStreamReader> stream,
+    const net::BoundNetLog& bound_net_log,
+    base::WeakPtr<DownloadDestinationObserver> observer) {
+  scoped_ptr<PowerSaveBlocker> psb(
+      new PowerSaveBlocker(
+          PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
+          "Download in progress"));
   return new DownloadFileImpl(
-      info.Pass(), stream.Pass(), request_handle.Pass(), download_manager,
-      calculate_hash,
-      scoped_ptr<content::PowerSaveBlocker>(
-          new content::PowerSaveBlocker(
-              content::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
-              "Download in progress")).Pass(),
-      bound_net_log);
+      save_info.Pass(), default_downloads_directory, url, referrer_url,
+      received_bytes, calculate_hash, stream.Pass(), bound_net_log,
+      psb.Pass(), observer);
 }
 
 }  // namespace content

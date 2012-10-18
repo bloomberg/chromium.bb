@@ -220,13 +220,7 @@ BaseFile::BaseFile(const FilePath& full_path,
       calculate_hash_(calculate_hash),
       detached_(false),
       bound_net_log_(bound_net_log) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   memcpy(sha256_hash_, kEmptySha256Hash, kSha256HashLen);
-  if (file_stream_.get()) {
-    file_stream_->SetBoundNetLogSource(bound_net_log_);
-    file_stream_->EnableErrorStatistics();
-  }
-
   if (calculate_hash_) {
     secure_hash_.reset(crypto::SecureHash::Create(crypto::SecureHash::SHA256));
     if ((bytes_so_far_ > 0) &&  // Not starting at the beginning.
@@ -248,6 +242,11 @@ BaseFile::~BaseFile() {
 net::Error BaseFile::Initialize(const FilePath& default_directory) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!detached_);
+
+  if (file_stream_.get()) {
+    file_stream_->SetBoundNetLogSource(bound_net_log_);
+    file_stream_->EnableErrorStatistics();
+  }
 
   if (full_path_.empty()) {
     FilePath initial_directory(default_directory);

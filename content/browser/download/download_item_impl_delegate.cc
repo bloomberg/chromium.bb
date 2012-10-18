@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
 #include "content/browser/download/download_item_impl_delegate.h"
 
-class DownloadItemImpl;
+#include "base/logging.h"
+#include "content/browser/download/download_item_impl.h"
 
 // Infrastructure in DownloadItemImplDelegate to assert invariant that
 // delegate always outlives all attached DownloadItemImpls.
@@ -25,18 +25,28 @@ void DownloadItemImplDelegate::Detach() {
   --count_;
 }
 
+void DownloadItemImplDelegate::DetermineDownloadTarget(
+    DownloadItemImpl* download, const DownloadTargetCallback& callback) {
+  // TODO(rdsmith/asanka): Do something useful if forced file path is null.
+  FilePath target_path(download->GetForcedFilePath());
+  callback.Run(target_path,
+               content::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+               content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+               target_path);
+}
+
 void DownloadItemImplDelegate::ReadyForDownloadCompletion(
     DownloadItemImpl* download,
     const base::Closure& complete_callback) {
   complete_callback.Run();
 }
 
-bool DownloadItemImplDelegate::ShouldOpenFileBasedOnExtension(
-    const FilePath& path) {
+bool DownloadItemImplDelegate::ShouldOpenDownload(DownloadItemImpl* download) {
   return false;
 }
 
-bool DownloadItemImplDelegate::ShouldOpenDownload(DownloadItemImpl* download) {
+bool DownloadItemImplDelegate::ShouldOpenFileBasedOnExtension(
+    const FilePath& path) {
   return false;
 }
 

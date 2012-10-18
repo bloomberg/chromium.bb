@@ -5,11 +5,11 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_FILE_FACTORY_H_
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_FILE_FACTORY_H_
 
+#include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "content/browser/download/download_create_info.h"
 #include "googleurl/src/gurl.h"
 
 namespace net {
@@ -22,17 +22,22 @@ class ByteStreamReader;
 class DownloadDestinationObserver;
 class DownloadFile;
 class DownloadManager;
+struct DownloadSaveInfo;
 
 class CONTENT_EXPORT DownloadFileFactory {
  public:
   virtual ~DownloadFileFactory();
 
-  virtual content::DownloadFile* CreateFile(
-      scoped_ptr<DownloadCreateInfo> info,
-      scoped_ptr<content::ByteStreamReader> stream,
-      DownloadManager* download_manager,
+  virtual DownloadFile* CreateFile(
+      scoped_ptr<DownloadSaveInfo> save_info,
+      const FilePath& default_downloads_directory,
+      const GURL& url,
+      const GURL& referrer_url,
+      int64 received_bytes,
       bool calculate_hash,
-      const net::BoundNetLog& bound_net_log);
+      scoped_ptr<ByteStreamReader> stream,
+      const net::BoundNetLog& bound_net_log,
+      base::WeakPtr<DownloadDestinationObserver> observer);
 };
 
 }  // namespace content

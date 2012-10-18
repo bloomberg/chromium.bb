@@ -8,6 +8,8 @@
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/download_danger_type.h"
+#include "content/public/browser/download_item.h"
 
 class DownloadFileManager;
 class DownloadItemImpl;
@@ -22,12 +24,23 @@ class BrowserContext;
 // be left unimplemented.
 class CONTENT_EXPORT DownloadItemImplDelegate {
  public:
+  typedef base::Callback<void(
+      const FilePath&,                  // Target path
+      content::DownloadItem::TargetDisposition,  // overwrite/uniquify target
+      content::DownloadDangerType,
+      const FilePath&                   // Intermediate file path
+                              )> DownloadTargetCallback;
+
   DownloadItemImplDelegate();
   virtual ~DownloadItemImplDelegate();
 
   // Used for catching use-after-free errors.
   void Attach();
   void Detach();
+
+  // Request determination of the download target from the delegate.
+  virtual void DetermineDownloadTarget(
+      DownloadItemImpl* download, const DownloadTargetCallback& callback);
 
   // Allows the delegate to delay completion of the download.  This function
   // will call the callback passed when the download is ready for completion.
@@ -38,12 +51,12 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
       DownloadItemImpl* download,
       const base::Closure& complete_callback);
 
-  // Tests if a file type should be opened automatically.
-  virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path);
-
   // Allows the delegate to override the opening of a download. If it returns
   // true then it's reponsible for opening the item.
   virtual bool ShouldOpenDownload(DownloadItemImpl* download);
+
+  // Tests if a file type should be opened automatically.
+  virtual bool ShouldOpenFileBasedOnExtension(const FilePath& path);
 
   // Checks whether a downloaded file still exists and updates the
   // file's state if the file is already removed.

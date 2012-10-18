@@ -8,14 +8,13 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_impl.h"
-#include "content/browser/download/download_file_manager.h"
+#include "content/browser/download/download_file_factory.h"
 #include "content/browser/download/download_interrupt_reasons_impl.h"
+#include "content/browser/download/download_manager_impl.h"
 #include "content/browser/power_save_blocker.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_id.h"
 #include "googleurl/src/gurl.h"
 
 namespace content {
@@ -24,37 +23,32 @@ class ByteStreamReader;
 
 namespace {
 
-DownloadFileManager* GetDownloadFileManager() {
-  content::ResourceDispatcherHostImpl* rdh =
-      content::ResourceDispatcherHostImpl::Get();
-  DCHECK(rdh != NULL);
-  return rdh->download_file_manager();
-}
-
 // A class that performs file operations and injects errors.
 class DownloadFileWithErrors: public DownloadFileImpl {
  public:
-  typedef base::Callback<void(const GURL& url, content::DownloadId id)>
-      ConstructionCallback;
+  typedef base::Callback<void(const GURL& url)> ConstructionCallback;
   typedef base::Callback<void(const GURL& url)> DestructionCallback;
 
   DownloadFileWithErrors(
-      scoped_ptr<DownloadCreateInfo> info,
-      scoped_ptr<content::ByteStreamReader> stream,
-      scoped_ptr<DownloadRequestHandleInterface> request_handle,
-      content::DownloadManager* download_manager,
+      scoped_ptr<content::DownloadSaveInfo> save_info,
+      const FilePath& default_download_directory,
+      const GURL& url,
+      const GURL& referrer_url,
+      int64 received_bytes,
       bool calculate_hash,
+      scoped_ptr<content::ByteStreamReader> stream,
       const net::BoundNetLog& bound_net_log,
-      content::DownloadId download_id,
-      const GURL& source_url,
+      scoped_ptr<content::PowerSaveBlocker> power_save_blocker,
+      base::WeakPtr<content::DownloadDestinationObserver> observer,
       const content::TestFileErrorInjector::FileErrorInfo& error_info,
       const ConstructionCallback& ctor_callback,
       const DestructionCallback& dtor_callback);
 
   ~DownloadFileWithErrors();
 
+  virtual void Initialize(const InitializeCallback& callback) OVERRIDE;
+
   // DownloadFile interface.
-  virtual content::DownloadInterruptReason Initialize() OVERRIDE;
   virtual content::DownloadInterruptReason AppendDataToFile(
       const char* data, size_t data_len) OVERRIDE;
   virtual void Rename(const FilePath& full_path,
@@ -91,6 +85,13 @@ class DownloadFileWithErrors: public DownloadFileImpl {
   DestructionCallback destruction_callback_;
 };
 
+static void InitializeErrorCallback(
+    const content::DownloadFile::InitializeCallback original_callback,
+    content::DownloadInterruptReason overwrite_error,
+    content::DownloadInterruptReason original_error) {
+  original_callback.Run(overwrite_error);
+}
+
 static void RenameErrorCallback(
     const content::DownloadFile::RenameCompletionCallback original_callback,
     content::DownloadInterruptReason overwrite_error,
@@ -102,40 +103,49 @@ static void RenameErrorCallback(
       path_result : FilePath());
 }
 
-
 DownloadFileWithErrors::DownloadFileWithErrors(
-    scoped_ptr<DownloadCreateInfo> info,
-    scoped_ptr<content::ByteStreamReader> stream,
-    scoped_ptr<DownloadRequestHandleInterface> request_handle,
-    content::DownloadManager* download_manager,
+    scoped_ptr<content::DownloadSaveInfo> save_info,
+    const FilePath& default_download_directory,
+    const GURL& url,
+    const GURL& referrer_url,
+    int64 received_bytes,
     bool calculate_hash,
+    scoped_ptr<content::ByteStreamReader> stream,
     const net::BoundNetLog& bound_net_log,
-    content::DownloadId download_id,
-    const GURL& source_url,
+    scoped_ptr<content::PowerSaveBlocker> power_save_blocker,
+    base::WeakPtr<content::DownloadDestinationObserver> observer,
     const content::TestFileErrorInjector::FileErrorInfo& error_info,
     const ConstructionCallback& ctor_callback,
     const DestructionCallback& dtor_callback)
-    : DownloadFileImpl(info.Pass(),
-                       stream.Pass(),
-                       request_handle.Pass(),
-                       download_manager,
-                       calculate_hash,
-                       scoped_ptr<content::PowerSaveBlocker>(),
-                       bound_net_log),
-      source_url_(source_url),
-      error_info_(error_info),
-      destruction_callback_(dtor_callback) {
-  ctor_callback.Run(source_url_, download_id);
+        : DownloadFileImpl(
+            save_info.Pass(), default_download_directory, url, referrer_url,
+            received_bytes, calculate_hash, stream.Pass(), bound_net_log,
+            power_save_blocker.Pass(), observer),
+          source_url_(url),
+          error_info_(error_info),
+          destruction_callback_(dtor_callback) {
+  ctor_callback.Run(source_url_);
 }
 
 DownloadFileWithErrors::~DownloadFileWithErrors() {
   destruction_callback_.Run(source_url_);
 }
 
-content::DownloadInterruptReason DownloadFileWithErrors::Initialize() {
-  return ShouldReturnError(
-      content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE,
-      DownloadFileImpl::Initialize());
+void DownloadFileWithErrors::Initialize(
+    const InitializeCallback& callback) {
+  content::DownloadInterruptReason error_to_return =
+      content::DOWNLOAD_INTERRUPT_REASON_NONE;
+  InitializeCallback callback_to_use = callback;
+
+  // Replace callback if the error needs to be overwritten.
+  if (OverwriteError(
+          content::TestFileErrorInjector::FILE_OPERATION_INITIALIZE,
+          &error_to_return)) {
+    callback_to_use = base::Bind(&InitializeErrorCallback, callback,
+                                 error_to_return);
+  }
+
+  DownloadFileImpl::Initialize(callback_to_use);
 }
 
 content::DownloadInterruptReason DownloadFileWithErrors::AppendDataToFile(
@@ -192,9 +202,8 @@ content::DownloadInterruptReason DownloadFileWithErrors::ShouldReturnError(
 namespace content {
 
 // A factory for constructing DownloadFiles that inject errors.
-class DownloadFileWithErrorsFactory : public content::DownloadFileFactory {
+class DownloadFileWithErrorsFactory : public DownloadFileFactory {
  public:
-
   DownloadFileWithErrorsFactory(
       const DownloadFileWithErrors::ConstructionCallback& ctor_callback,
       const DownloadFileWithErrors::DestructionCallback& dtor_callback);
@@ -202,11 +211,15 @@ class DownloadFileWithErrorsFactory : public content::DownloadFileFactory {
 
   // DownloadFileFactory interface.
   virtual DownloadFile* CreateFile(
-      scoped_ptr<DownloadCreateInfo> info,
-      scoped_ptr<content::ByteStreamReader> stream,
-      content::DownloadManager* download_manager,
+      scoped_ptr<DownloadSaveInfo> save_info,
+      const FilePath& default_download_directory,
+      const GURL& url,
+      const GURL& referrer_url,
+      int64 received_bytes,
       bool calculate_hash,
-      const net::BoundNetLog& bound_net_log);
+      scoped_ptr<ByteStreamReader> stream,
+      const net::BoundNetLog& bound_net_log,
+      base::WeakPtr<DownloadDestinationObserver> observer) OVERRIDE;
 
   bool AddError(
       const TestFileErrorInjector::FileErrorInfo& error_info);
@@ -232,38 +245,43 @@ DownloadFileWithErrorsFactory::DownloadFileWithErrorsFactory(
 DownloadFileWithErrorsFactory::~DownloadFileWithErrorsFactory() {
 }
 
-content::DownloadFile* DownloadFileWithErrorsFactory::CreateFile(
-    scoped_ptr<DownloadCreateInfo> info,
-    scoped_ptr<content::ByteStreamReader> stream,
-    content::DownloadManager* download_manager,
+DownloadFile* DownloadFileWithErrorsFactory::CreateFile(
+    scoped_ptr<DownloadSaveInfo> save_info,
+    const FilePath& default_download_directory,
+    const GURL& url,
+    const GURL& referrer_url,
+    int64 received_bytes,
     bool calculate_hash,
-    const net::BoundNetLog& bound_net_log) {
-  GURL url = info->url();
-
+    scoped_ptr<ByteStreamReader> stream,
+    const net::BoundNetLog& bound_net_log,
+    base::WeakPtr<DownloadDestinationObserver> observer) {
   if (injected_errors_.find(url.spec()) == injected_errors_.end()) {
     // Have to create entry, because FileErrorInfo is not a POD type.
     TestFileErrorInjector::FileErrorInfo err_info = {
       url.spec(),
       TestFileErrorInjector::FILE_OPERATION_INITIALIZE,
       -1,
-      content::DOWNLOAD_INTERRUPT_REASON_NONE
+      DOWNLOAD_INTERRUPT_REASON_NONE
     };
     injected_errors_[url.spec()] = err_info;
   }
 
-  scoped_ptr<DownloadRequestHandleInterface> request_handle(
-      new DownloadRequestHandle(info->request_handle));
-  DownloadId download_id(info->download_id);
+  scoped_ptr<PowerSaveBlocker> psb(
+      new PowerSaveBlocker(
+          PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
+          "Download in progress"));
 
   return new DownloadFileWithErrors(
-      info.Pass(),
-      stream.Pass(),
-      request_handle.Pass(),
-      download_manager,
-      calculate_hash,
-      bound_net_log,
-      download_id,
+      save_info.Pass(),
+      default_download_directory,
       url,
+      referrer_url,
+      received_bytes,
+      calculate_hash,
+      stream.Pass(),
+      bound_net_log,
+      psb.Pass(),
+      observer,
       injected_errors_[url.spec()],
       construction_callback_,
       destruction_callback_);
@@ -281,49 +299,34 @@ void DownloadFileWithErrorsFactory::ClearErrors() {
   injected_errors_.clear();
 }
 
-TestFileErrorInjector::TestFileErrorInjector()
-    : created_factory_(NULL) {
+TestFileErrorInjector::TestFileErrorInjector(
+    scoped_refptr<DownloadManager> download_manager)
+    : created_factory_(NULL),
+      // This code is only used for browser_tests, so a
+      // DownloadManager is always a DownloadManagerImpl.
+      download_manager_(
+          static_cast<DownloadManagerImpl*>(download_manager.release())) {
   // Record the value of the pointer, for later validation.
   created_factory_ =
       new DownloadFileWithErrorsFactory(
-          base::Bind(&TestFileErrorInjector::
-                         RecordDownloadFileConstruction,
+          base::Bind(&TestFileErrorInjector::RecordDownloadFileConstruction,
                      this),
-          base::Bind(&TestFileErrorInjector::
-                         RecordDownloadFileDestruction,
+          base::Bind(&TestFileErrorInjector::RecordDownloadFileDestruction,
                      this));
 
-  // We will transfer ownership of the factory to the download file manager.
-  scoped_ptr<DownloadFileWithErrorsFactory> download_file_factory(
+  // We will transfer ownership of the factory to the download manager.
+  scoped_ptr<DownloadFileFactory> download_file_factory(
       created_factory_);
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&TestFileErrorInjector::AddFactory,
-                 this,
-                 base::Passed(&download_file_factory)));
+  download_manager_->SetDownloadFileFactoryForTesting(
+      download_file_factory.Pass());
 }
 
 TestFileErrorInjector::~TestFileErrorInjector() {
 }
 
-void TestFileErrorInjector::AddFactory(
-    scoped_ptr<DownloadFileWithErrorsFactory> factory) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-
-  DownloadFileManager* download_file_manager = GetDownloadFileManager();
-  DCHECK(download_file_manager);
-
-  // Convert to base class pointer, for GCC.
-  scoped_ptr<content::DownloadFileFactory> plain_factory(
-      factory.release());
-
-  download_file_manager->SetFileFactoryForTesting(plain_factory.Pass());
-}
-
 bool TestFileErrorInjector::AddError(const FileErrorInfo& error_info) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_LE(0, error_info.operation_instance);
   DCHECK(injected_errors_.find(error_info.url) == injected_errors_.end());
 
@@ -334,124 +337,84 @@ bool TestFileErrorInjector::AddError(const FileErrorInfo& error_info) {
 }
 
 void TestFileErrorInjector::ClearErrors() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   injected_errors_.clear();
 }
 
 bool TestFileErrorInjector::InjectErrors() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   ClearFoundFiles();
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&TestFileErrorInjector::InjectErrorsOnFileThread,
-                 this,
-                 injected_errors_,
-                 created_factory_));
+  DCHECK_EQ(static_cast<DownloadFileFactory*>(created_factory_),
+            download_manager_->GetDownloadFileFactoryForTesting());
+
+  created_factory_->ClearErrors();
+
+  for (ErrorMap::const_iterator it = injected_errors_.begin();
+       it != injected_errors_.end(); ++it)
+    created_factory_->AddError(it->second);
 
   return true;
 }
 
-void TestFileErrorInjector::InjectErrorsOnFileThread(
-    ErrorMap map, DownloadFileWithErrorsFactory* factory) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
-
-  // Validate that our factory is in use.
-  DownloadFileManager* download_file_manager = GetDownloadFileManager();
-  DCHECK(download_file_manager);
-
-  content::DownloadFileFactory* file_factory =
-      download_file_manager->GetFileFactoryForTesting();
-
-  // Validate that we still have the same factory.
-  DCHECK_EQ(static_cast<content::DownloadFileFactory*>(factory),
-            file_factory);
-
-  // We want to replace all existing injection errors.
-  factory->ClearErrors();
-
-  for (ErrorMap::const_iterator it = map.begin(); it != map.end(); ++it)
-    factory->AddError(it->second);
-}
-
 size_t TestFileErrorInjector::CurrentFileCount() const {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return files_.size();
 }
 
 size_t TestFileErrorInjector::TotalFileCount() const {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return found_files_.size();
 }
 
 
 bool TestFileErrorInjector::HadFile(const GURL& url) const {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   return (found_files_.find(url) != found_files_.end());
-}
-
-const content::DownloadId TestFileErrorInjector::GetId(
-    const GURL& url) const {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  FileMap::const_iterator it = found_files_.find(url);
-  if (it == found_files_.end())
-    return content::DownloadId::Invalid();
-
-  return it->second;
 }
 
 void TestFileErrorInjector::ClearFoundFiles() {
   found_files_.clear();
 }
 
-void TestFileErrorInjector::DownloadFileCreated(GURL url,
-                                                    content::DownloadId id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+void TestFileErrorInjector::DownloadFileCreated(GURL url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(files_.find(url) == files_.end());
 
-  files_[url] = id;
-  found_files_[url] = id;
+  files_.insert(url);
+  found_files_.insert(url);
 }
 
 void TestFileErrorInjector::DestroyingDownloadFile(GURL url) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(files_.find(url) != files_.end());
 
   files_.erase(url);
 }
 
-void TestFileErrorInjector::RecordDownloadFileConstruction(
-    const GURL& url, content::DownloadId id) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
+void TestFileErrorInjector::RecordDownloadFileConstruction(const GURL& url) {
+  BrowserThread::PostTask(
+      BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&TestFileErrorInjector::DownloadFileCreated,
-                 this,
-                 url,
-                 id));
+      base::Bind(&TestFileErrorInjector::DownloadFileCreated, this, url));
 }
 
 void TestFileErrorInjector::RecordDownloadFileDestruction(const GURL& url) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&TestFileErrorInjector::DestroyingDownloadFile,
-                 this,
-                 url));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      base::Bind(&TestFileErrorInjector::DestroyingDownloadFile, this, url));
 }
 
 // static
-scoped_refptr<TestFileErrorInjector> TestFileErrorInjector::Create() {
+scoped_refptr<TestFileErrorInjector> TestFileErrorInjector::Create(
+    scoped_refptr<DownloadManager> download_manager) {
   static bool visited = false;
   DCHECK(!visited);  // Only allowed to be called once.
   visited = true;
 
   scoped_refptr<TestFileErrorInjector> single_injector(
-      new TestFileErrorInjector);
+      new TestFileErrorInjector(download_manager));
 
   return single_injector;
 }
