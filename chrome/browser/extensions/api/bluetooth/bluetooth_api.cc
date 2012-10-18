@@ -12,6 +12,7 @@
 
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api_utils.h"
 #include "chrome/browser/extensions/event_names.h"
+#include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/experimental_bluetooth.h"
@@ -100,7 +101,8 @@ bool BluetoothGetNameFunction::RunImpl() {
 }
 
 BluetoothGetDevicesFunction::BluetoothGetDevicesFunction()
-    : callbacks_pending_(0) {}
+    : callbacks_pending_(0),
+      device_events_sent_(0) {}
 
 void BluetoothGetDevicesFunction::DispatchDeviceSearchResult(
     const chromeos::BluetoothDevice& device) {
@@ -109,6 +111,8 @@ void BluetoothGetDevicesFunction::DispatchDeviceSearchResult(
   GetEventRouter(profile())->DispatchDeviceEvent(
       extensions::event_names::kBluetoothOnDeviceSearchResult,
       extension_device);
+
+  device_events_sent_++;
 }
 
 void BluetoothGetDevicesFunction::ProvidesServiceCallback(
@@ -122,7 +126,22 @@ void BluetoothGetDevicesFunction::ProvidesServiceCallback(
 
   callbacks_pending_--;
   if (callbacks_pending_ == -1)
-    SendResponse(true);
+    FinishDeviceSearch();
+}
+
+void BluetoothGetDevicesFunction::FinishDeviceSearch() {
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  scoped_ptr<base::DictionaryValue> info(new base::DictionaryValue());
+  info->SetInteger("expectedEventCount", device_events_sent_);
+  args->Append(info.release());
+
+  profile()->GetExtensionEventRouter()->DispatchEventToRenderers(
+      extensions::event_names::kBluetoothOnDeviceSearchFinished,
+      args.Pass(),
+      NULL,
+      GURL());
+
+  SendResponse(true);
 }
 
 bool BluetoothGetDevicesFunction::RunImpl() {
@@ -171,7 +190,7 @@ bool BluetoothGetDevicesFunction::RunImpl() {
   // for-loop, which ensures that all requests have been made before
   // SendResponse happens.
   if (callbacks_pending_ == -1)
-    SendResponse(true);
+    FinishDeviceSearch();
 
   return true;
 }

@@ -89,8 +89,10 @@ class BluetoothGetDevicesFunction : public AsyncExtensionFunction {
   void DispatchDeviceSearchResult(const chromeos::BluetoothDevice& device);
   void ProvidesServiceCallback(const chromeos::BluetoothDevice* device,
                                bool providesService);
+  void FinishDeviceSearch();
 
   int callbacks_pending_;
+  int device_events_sent_;
 #endif
 };
 

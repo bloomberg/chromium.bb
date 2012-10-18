@@ -407,10 +407,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevices) {
 
   // Load and wait for setup
   ExtensionTestMessageListener listener("ready", true);
-  const extensions::Extension* extension =
-      LoadExtension(test_data_dir_.AppendASCII("bluetooth"));
-  GURL page_url = extension->GetResourceURL("test_getdevices.html");
-  ui_test_utils::NavigateToURL(browser(), page_url);
+  ASSERT_TRUE(
+      LoadExtension(test_data_dir_.AppendASCII("bluetooth/get_devices")));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 
   listener.Reply("go");
@@ -436,14 +434,26 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevicesConcurrently) {
 
   // Load and wait for setup
   ExtensionTestMessageListener listener("ready", true);
-  const extensions::Extension* extension =
-      LoadExtension(test_data_dir_.AppendASCII("bluetooth"));
-  GURL page_url =
-      extension->GetResourceURL("test_getdevices_concurrently.html");
-  ui_test_utils::NavigateToURL(browser(), page_url);
+  ASSERT_TRUE(LoadExtension(
+        test_data_dir_.AppendASCII("bluetooth/get_devices_concurrently")));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 
   callback.Run(false);
+  listener.Reply("go");
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevicesError) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+
+  // Load and wait for setup
+  ExtensionTestMessageListener listener("ready", true);
+  ASSERT_TRUE(LoadExtension(
+        test_data_dir_.AppendASCII("bluetooth/get_devices_error")));
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
   listener.Reply("go");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();

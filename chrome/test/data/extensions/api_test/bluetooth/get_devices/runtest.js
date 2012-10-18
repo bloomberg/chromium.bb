@@ -27,23 +27,32 @@ function recordDevicesInto(arrayKey) {
   };
 }
 
+function failOnError() {
+  if (chrome.runtime.lastError) {
+    chrome.test.fail(chrome.runtime.lastError.message);
+  }
+}
+
 chrome.experimental.bluetooth.getDevices(
     {
       deviceCallback:recordDevicesInto('all')
     },
     function() {
+      failOnError();
       chrome.experimental.bluetooth.getDevices(
           {
             name:'fooservice',
             deviceCallback:recordDevicesInto('name')
           },
           function() {
+            failOnError();
             chrome.experimental.bluetooth.getDevices(
                 {
                   uuid:'00000010-0000-1000-8000-00805f9b34fb',
                   deviceCallback:recordDevicesInto('uuid')
                 },
                 function() {
+                  failOnError();
                   chrome.test.sendMessage('ready',
                       function(message) {
                         chrome.test.runTests([

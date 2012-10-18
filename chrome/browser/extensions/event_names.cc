@@ -62,6 +62,8 @@ const char kBluetoothOnAvailabilityChanged[] =
     "experimental.bluetooth.onAvailabilityChanged";
 const char kBluetoothOnDeviceDiscovered[] =
     "experimental.bluetooth.onDeviceDiscovered";
+const char kBluetoothOnDeviceSearchFinished[] =
+    "experimental.bluetooth.onDeviceSearchFinished";
 const char kBluetoothOnDeviceSearchResult[] =
     "experimental.bluetooth.onDeviceSearchResult";
 const char kBluetoothOnDiscoveringChanged[] =
