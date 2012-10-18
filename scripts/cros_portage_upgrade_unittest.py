@@ -1976,8 +1976,13 @@ class RunBoardTest(CpuTestBase):
 
     # Replay script
     mocked_upgrader._RunGit(
-        '/tmp', ['clone', '--branch', 'gentoo', '--depth', '1',
-                 cpu.Upgrader.PORTAGE_GIT_URL, 'portage'])
+        '/tmp/portage', ['remote', 'set-url', 'origin',
+                         cpu.Upgrader.PORTAGE_GIT_URL])
+    mocked_upgrader._RunGit(
+        '/tmp/portage', ['remote', 'update'])
+    mocked_upgrader._RunGit(
+        '/tmp/portage', ['checkout', 'origin/gentoo'],
+        combine_stdout_stderr=True, redirect_stdout=True)
     self.mox.ReplayAll()
 
     # Verify
