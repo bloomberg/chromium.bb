@@ -8,7 +8,6 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -106,12 +105,13 @@ void ContentSettingBlockedImageModel::UpdateFromWebContents(
 
   // If a content type is blocked by default and was accessed, display the
   // accessed icon.
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents);
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   if (!content_settings->IsContentBlocked(get_content_settings_type())) {
     if (!content_settings->IsContentAccessed(get_content_settings_type()) ||
-        (tab_contents->profile()->GetHostContentSettingsMap()->
+        (profile->GetHostContentSettingsMap()->
             GetDefaultContentSetting(get_content_settings_type(), NULL) !=
                 CONTENT_SETTING_BLOCK))
       return;

@@ -8,9 +8,8 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/cookies/cookie_options.h"
@@ -18,12 +17,17 @@
 
 using content::BrowserThread;
 
-class ContentSettingImageModelTest : public TabContentsTestHarness {
+class ContentSettingImageModelTest : public ChromeRenderViewHostTestHarness {
  public:
   ContentSettingImageModelTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {}
 
  private:
+  virtual void SetUp() OVERRIDE {
+    ChromeRenderViewHostTestHarness::SetUp();
+    TabSpecificContentSettings::CreateForWebContents(web_contents());
+  }
+
   content::TestBrowserThread ui_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingImageModelTest);
@@ -31,8 +35,7 @@ class ContentSettingImageModelTest : public TabContentsTestHarness {
 
 TEST_F(ContentSettingImageModelTest, UpdateFromWebContents) {
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(
-          tab_contents()->web_contents());
+      TabSpecificContentSettings::FromWebContents(web_contents());
   scoped_ptr<ContentSettingImageModel> content_setting_image_model(
      ContentSettingImageModel::CreateContentSettingImageModel(
          CONTENT_SETTINGS_TYPE_IMAGES));
@@ -57,8 +60,7 @@ TEST_F(ContentSettingImageModelTest, RPHUpdateFromWebContents) {
   EXPECT_FALSE(content_setting_image_model->is_visible());
 
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(
-          tab_contents()->web_contents());
+      TabSpecificContentSettings::FromWebContents(web_contents());
   content_settings->set_pending_protocol_handler(
       ProtocolHandler::CreateProtocolHandler(
           "mailto", GURL("http://www.google.com/"), ASCIIToUTF16("Handler")));
@@ -68,8 +70,7 @@ TEST_F(ContentSettingImageModelTest, RPHUpdateFromWebContents) {
 
 TEST_F(ContentSettingImageModelTest, CookieAccessed) {
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(
-          tab_contents()->web_contents());
+      TabSpecificContentSettings::FromWebContents(web_contents());
   profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_BLOCK);
   scoped_ptr<ContentSettingImageModel> content_setting_image_model(
