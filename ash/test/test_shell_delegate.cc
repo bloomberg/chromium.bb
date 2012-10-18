@@ -19,7 +19,8 @@ namespace test {
 
 TestShellDelegate::TestShellDelegate()
     : locked_(false),
-      spoken_feedback_enabled_(false) {
+      spoken_feedback_enabled_(false),
+      num_exit_requests_(0) {
 }
 
 TestShellDelegate::~TestShellDelegate() {
@@ -53,6 +54,7 @@ void TestShellDelegate::Shutdown() {
 }
 
 void TestShellDelegate::Exit() {
+  num_exit_requests_++;
 }
 
 void TestShellDelegate::NewTab() {

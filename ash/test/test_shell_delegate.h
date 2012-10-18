@@ -55,9 +55,12 @@ class TestShellDelegate : public ShellDelegate {
   virtual void SaveScreenMagnifierScale(double scale) OVERRIDE;
   virtual double GetSavedScreenMagnifierScale() OVERRIDE;
 
+  int num_exit_requests() const { return num_exit_requests_; }
  private:
   bool locked_;
   bool spoken_feedback_enabled_;
+  int num_exit_requests_;
+
   scoped_ptr<content::BrowserContext> current_browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(TestShellDelegate);

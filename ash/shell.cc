@@ -46,6 +46,7 @@
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/root_window_layout_manager.h"
 #include "ash/wm/screen_dimmer.h"
+#include "ash/wm/session_state_controller.h"
 #include "ash/wm/shadow_controller.h"
 #include "ash/wm/stacking_controller.h"
 #include "ash/wm/system_gesture_event_filter.h"
@@ -247,6 +248,7 @@ Shell::~Shell() {
   drag_drop_controller_.reset();
   magnification_controller_.reset();
   power_button_controller_.reset();
+  session_state_controller_.reset();
   resize_shadow_controller_.reset();
   shadow_controller_.reset();
   tooltip_controller_.reset();
@@ -488,8 +490,10 @@ void Shell::Init() {
   // the correct size.
   user_wallpaper_delegate_->InitializeWallpaper();
 
-  power_button_controller_.reset(new PowerButtonController);
-  AddShellObserver(power_button_controller_.get());
+  session_state_controller_.reset(new SessionStateController);
+  power_button_controller_.reset(new PowerButtonController(
+      session_state_controller_.get()));
+  AddShellObserver(session_state_controller_.get());
 
   if (initially_hide_cursor_)
     cursor_manager_.ShowCursor(false);
