@@ -360,6 +360,7 @@ void GLES2Implementation::GenBuffers(GLsizei n, GLuint* buffers) {
   GetIdHandler(id_namespaces::kBuffers)->
       MakeIds(this, 0, n, buffers);
   helper_->GenBuffersImmediate(n, buffers);
+  helper_->CommandBufferHelper::Flush();
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
       GPU_CLIENT_LOG("  " << i << ": " << buffers[i]);
@@ -383,6 +384,7 @@ void GLES2Implementation::GenFramebuffers(GLsizei n, GLuint* framebuffers) {
   GetIdHandler(id_namespaces::kFramebuffers)->
       MakeIds(this, 0, n, framebuffers);
   helper_->GenFramebuffersImmediate(n, framebuffers);
+  helper_->CommandBufferHelper::Flush();
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
       GPU_CLIENT_LOG("  " << i << ": " << framebuffers[i]);
@@ -400,6 +402,7 @@ void GLES2Implementation::GenRenderbuffers(GLsizei n, GLuint* renderbuffers) {
   GetIdHandler(id_namespaces::kRenderbuffers)->
       MakeIds(this, 0, n, renderbuffers);
   helper_->GenRenderbuffersImmediate(n, renderbuffers);
+  helper_->CommandBufferHelper::Flush();
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
       GPU_CLIENT_LOG("  " << i << ": " << renderbuffers[i]);
@@ -417,6 +420,7 @@ void GLES2Implementation::GenTextures(GLsizei n, GLuint* textures) {
   GetIdHandler(id_namespaces::kTextures)->
       MakeIds(this, 0, n, textures);
   helper_->GenTexturesImmediate(n, textures);
+  helper_->CommandBufferHelper::Flush();
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
       GPU_CLIENT_LOG("  " << i << ": " << textures[i]);
@@ -1332,6 +1336,7 @@ void GLES2Implementation::GenQueriesEXT(GLsizei n, GLuint* queries) {
   GetIdHandler(id_namespaces::kQueries)->
       MakeIds(this, 0, n, queries);
   helper_->GenQueriesEXTImmediate(n, queries);
+  helper_->CommandBufferHelper::Flush();
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
       GPU_CLIENT_LOG("  " << i << ": " << queries[i]);
@@ -1369,6 +1374,7 @@ void GLES2Implementation::GenVertexArraysOES(GLsizei n, GLuint* arrays) {
   GetIdHandler(id_namespaces::kVertexArrays)->
       MakeIds(this, 0, n, arrays);
   helper_->GenVertexArraysOESImmediate(n, arrays);
+  helper_->CommandBufferHelper::Flush();
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
       GPU_CLIENT_LOG("  " << i << ": " << arrays[i]);

@@ -2968,6 +2968,7 @@ class GENnHandler(TypeHandler):
   GetIdHandler(id_namespaces::k%(resource_types)s)->
       MakeIds(this, 0, %(args)s);
   helper_->%(name)sImmediate(%(args)s);
+  helper_->CommandBufferHelper::Flush();
 %(log_code)s
 }
 
