@@ -79,11 +79,15 @@ class HostStarter :
   std::string host_pin_;
   bool consent_to_data_collection_;
   CompletionCallback on_done_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   std::string refresh_token_;
   std::string access_token_;
   std::string user_email_;
   remoting::HostKeyPair key_pair_;
   std::string host_id_;
+
+  base::WeakPtrFactory<HostStarter> weak_ptr_factory_;
+  base::WeakPtr<HostStarter> weak_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(HostStarter);
 };

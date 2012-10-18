@@ -1,0 +1,47 @@
+#include <windows.h>
+
+#include "host_configurer_resource.h"
+
+IDD_MAIN DIALOGEX 0, 0, 180, 74
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+FONT 8, "MS Sans Serif"
+{
+  PUSHBUTTON "Start host" IDC_START_HOST, 65, 8, 50, 14
+  PUSHBUTTON "Change PIN" IDC_CHANGE_PIN 65, 30, 50, 14
+  PUSHBUTTON "Stop host" IDC_STOP_HOST 65, 52, 50, 14
+}
+
+IDD_START_HOST DIALOGEX 0, 0, 350, 120
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+FONT 8, "MS Sans Serif"
+{
+  LTEXT "Host name", IDC_HOST_NAME_LABEL, 8, 10, 50, 14
+  EDITTEXT IDC_HOST_NAME, 60, 8, 150, 14
+  LTEXT "PIN", IDC_PIN_LABEL, 8, 30, 50, 14
+  EDITTEXT IDC_PIN, 60, 28, 70, 14, ES_PASSWORD | ES_NUMBER
+  LTEXT "Confirm PIN", IDC_CONFIRM_PIN_LABEL, 8, 50, 50, 14
+  EDITTEXT IDC_CONFIRM_PIN, 60, 48, 70, 14, ES_PASSWORD | ES_NUMBER
+  CHECKBOX "", IDC_CONSENT, 8, 68, 350, 30
+  PUSHBUTTON "OK" IDOK, 8, 100, 50, 14
+  PUSHBUTTON "Cancel" IDCANCEL, 66, 100, 50, 14
+}
+
+STRINGTABLE
+{
+#ifdef OFFICIAL_BUILD
+  IDS_TITLE, "Chrome Remote Desktop Host Configurer"
+  IDS_CONSENT, "Help us improve Chrome Remote Desktop by allowing us to collect \
+              usage statistics and crash reports."
+#else
+  IDS_TITLE, "Chromoting Host Configurer"
+  IDS_CONSENT, "Help us improve Chromoting by allowing us to collect \
+                usage statistics and crash reports."
+#endif
+  IDS_SAME_PIN, "Please enter the same PIN in both boxes."
+  IDS_HOST_START_SUCCEEDED, "The host has started."
+  IDS_HOST_START_FAILED, "Couldn't start the host."
+  IDS_INVALID_PIN, "Please choose a PIN of at least 6 digits."
+  IDS_USE_BROWSER, "After you press OK, a browser will start. \
+      Use it to sign on to your Google account, and to give \
+      the host the permissions it needs."
+}

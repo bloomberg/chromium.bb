@@ -1,0 +1,28 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef REMOTING_HOST_SETUP_WIN_HOST_CONFIGURER_RESOURCE_H_
+#define REMOTING_HOST_SETUP_WIN_HOST_CONFIGURER_RESOURCE_H_
+
+#define IDD_MAIN 101
+#define IDC_START_HOST 102
+#define IDC_STOP_HOST 103
+#define IDD_START_HOST 104
+#define IDC_HOST_NAME_LABEL 105
+#define IDC_HOST_NAME 106
+#define IDC_PIN_LABEL 107
+#define IDC_PIN 108
+#define IDC_CONFIRM_PIN_LABEL 109
+#define IDC_CONFIRM_PIN 110
+#define IDC_CONSENT 111
+#define IDS_TITLE 112
+#define IDS_SAME_PIN 113
+#define IDS_HOST_START_SUCCEEDED 114
+#define IDS_HOST_START_FAILED 115
+#define IDS_INVALID_PIN 116
+#define IDS_USE_BROWSER 117
+#define IDC_CHANGE_PIN 118
+#define IDS_CONSENT 119
+
+#endif  // REMOTING_HOST_SETUP_WIN_HOST_CONFIGURER_RESOURCE_H_

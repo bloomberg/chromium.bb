@@ -544,6 +544,41 @@
           ],
         },  # end of target 'remoting_elevated_controller'
         {
+          'target_name': 'remoting_configurer',
+          'type': 'executable',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../crypto/crypto.gyp:crypto',
+            'remoting_host',
+            'remoting_host_setup_base',
+          ],
+          'sources': [
+            'host/branding.cc',
+            'host/setup/win/host_configurer.cc',
+            'host/setup/win/host_configurer.rc',
+            'host/setup/win/host_configurer_window.cc',
+            'host/setup/win/host_configurer_window.h',
+            'host/setup/win/host_configurer_resource.h',
+            'host/setup/win/load_string_from_resource.cc',
+            'host/setup/win/load_string_from_resource.h',
+            'host/setup/win/start_host_window.cc',
+            'host/setup/win/start_host_window.h',
+          ],
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'AdditionalOptions': [
+                "\"/manifestdependency:type='win32' "
+                    "name='Microsoft.Windows.Common-Controls' "
+                    "version='6.0.0.0' "
+                    "processorArchitecture='*' "
+                    "publicKeyToken='6595b64144ccf1df' language='*'\"",
+              ],
+              # 2 == /SUBSYSTEM:WINDOWS
+              'SubSystem': '2',
+            },
+          },
+        },  # end of target 'remoting_configurer'
+        {
           'target_name': 'remoting_controller',
           'type': 'executable',
           'variables': { 'enable_wexit_time_destructors': 1, },

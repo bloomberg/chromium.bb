@@ -9,7 +9,7 @@
 
 namespace remoting {
 
-// Returns whether a PIN is valid.
+// Returns true if a PIN is valid.
 bool IsPinValid(const std::string& pin);
 
 }  // namespace remoting
