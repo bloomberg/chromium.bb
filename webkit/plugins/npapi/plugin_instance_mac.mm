@@ -17,14 +17,6 @@
 #undef try
 #undef catch
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5
-@interface NSMenu (SnowLeopardMenuPopUpDeclaration)
-- (BOOL)popUpMenuPositioningItem:(NSMenuItem*)item
-                      atLocation:(NSPoint)location
-                          inView:(NSView*)view;
-@end
-#endif
-
 namespace webkit {
 namespace npapi {
 
@@ -91,40 +83,12 @@ NPError PluginInstance::PopUpContextMenu(NPMenu* menu) {
 
   NSMenu* nsmenu = reinterpret_cast<NSMenu*>(menu);
   NPError return_val = NPERR_NO_ERROR;
-  NSWindow* window = nil;
   @try {
-    if ([nsmenu respondsToSelector:
-           @selector(popUpMenuPositioningItem:atLocation:inView:)]) {
-      [nsmenu popUpMenuPositioningItem:nil atLocation:screen_point inView:nil];
-    } else {
-      NSRect dummy_window_rect = NSMakeRect(screen_point.x, screen_point.y,
-                                            1, 1);
-      window = [[NSWindow alloc] initWithContentRect:dummy_window_rect
-                                           styleMask:NSBorderlessWindowMask
-                                             backing:NSBackingStoreNonretained
-                                               defer:YES];
-      [window setTitle:@"PopupMenuDummy"];  // Lets interposing identify it.
-      [window setAlphaValue:0];
-      [window makeKeyAndOrderFront:nil];
-      [NSMenu popUpContextMenu:nsmenu
-                     withEvent:NSEventForNPCocoaEvent(currently_handled_event_,
-                                                      window)
-                       forView:[window contentView]];
-    }
+    [nsmenu popUpMenuPositioningItem:nil atLocation:screen_point inView:nil];
   }
   @catch (NSException* e) {
     NSLog(@"Caught exception while handling PopUpContextMenu: %@", e);
     return_val = NPERR_GENERIC_ERROR;
-  }
-
-  if (window) {
-    @try {
-      [window orderOut:nil];
-      [window release];
-    }
-    @catch (NSException* e) {
-      NSLog(@"Caught exception while cleaning up in PopUpContextMenu: %@", e);
-    }
   }
 
   return return_val;
