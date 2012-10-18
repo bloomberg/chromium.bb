@@ -76,8 +76,8 @@ void PlatformVideoDecoderImpl::Reset() {
 }
 
 void PlatformVideoDecoderImpl::Destroy() {
-  DCHECK(decoder_.get());
-  decoder_.release()->Destroy();
+  if (decoder_.get())
+    decoder_.release()->Destroy();
   client_ = NULL;
   delete this;
 }
