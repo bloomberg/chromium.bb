@@ -36,6 +36,15 @@
   overflow-y: auto;
 }
 
+/* Avoid additional margins between text fields and controlled setting
+   indicators as the fields in these dialogs have sufficient spacing around
+   them already. */
+#internet-details-content-area
+    input:-webkit-any([type='text'],[type='url'],:not([type])) +
+    .controlled-setting-indicator {
+  -webkit-margin-start: 0;
+}
+
 #vpn-tab td {
   padding: 0;
 }
