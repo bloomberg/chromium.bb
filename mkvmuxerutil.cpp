@@ -502,3 +502,17 @@ void GetVersion(int32* major, int32* minor, int32* build, int32* revision) {
 }
 
 }  // namespace mkvmuxer
+
+mkvmuxer::uint64 mkvmuxer::MakeUID(unsigned int* seed) {
+  uint64 uid = 0;
+  for (int i = 0; i < 7; ++i) {  // avoid problems with 8-byte values
+    uid <<= 8;
+
+    const int32 nn = rand_r(seed);
+    const int32 n = 0xFF & (nn >> 4);  // throw away low-order bits
+
+    uid |= n;
+  }
+
+  return uid;
+}
