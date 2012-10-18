@@ -27,8 +27,7 @@ generated_crx = env.Command(
     env.GetPnaclExtensionNode(),
     # Inputs -- just the command and any scons files.  We don't model
     # deps to files in the toolchain dir, since that doesn't seem to work.
-    ['${SOURCE_ROOT}/native_client/pnacl/' +
-     'pnacl_packaging/pnacl_component_crx_gen.py'] + lib_dep,
+    ['pnacl_component_crx_gen.py'] + lib_dep,
     # Command.
     ('${PYTHON} ${SOURCES[0]} ' +
      '--dest=' + output_dir + ' ' +

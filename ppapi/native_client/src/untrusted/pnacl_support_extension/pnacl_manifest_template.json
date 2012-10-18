@@ -1,0 +1,7 @@
+{
+  "description": "Portable Native Client",
+  "name": "PNaCl",
+  "manifest_version": 2,
+  %(extra)s
+  "version": "%(version)s"
+}
