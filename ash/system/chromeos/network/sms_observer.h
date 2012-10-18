@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_NETWORK_SMS_OBSERVER_H
-#define ASH_SYSTEM_NETWORK_SMS_OBSERVER_H
-
-#include "base/string16.h"
+#ifndef ASH_SYSTEM_CHROMEOS_NETWORK_SMS_OBSERVER_H
+#define ASH_SYSTEM_CHROMEOS_NETWORK_SMS_OBSERVER_H
 
 namespace base {
 class DictionaryValue;
@@ -25,4 +23,4 @@ class SmsObserver {
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_NETWORK_SMS_OBSERVER_H
+#endif  // ASH_SYSTEM_CHROMEOS_NETWORK_SMS_OBSERVER_H

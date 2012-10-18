@@ -10,12 +10,11 @@
 #include "ash/system/audio/tray_volume.h"
 #include "ash/system/bluetooth/tray_bluetooth.h"
 #include "ash/system/brightness/tray_brightness.h"
+#include "ash/system/chromeos/tray_display.h"
 #include "ash/system/date/tray_date.h"
 #include "ash/system/drive/tray_drive.h"
 #include "ash/system/ime/tray_ime.h"
 #include "ash/system/locale/tray_locale.h"
-#include "ash/system/network/tray_network.h"
-#include "ash/system/network/tray_sms.h"
 #include "ash/system/power/power_status_observer.h"
 #include "ash/system/power/power_supply_status.h"
 #include "ash/system/power/tray_power.h"
@@ -27,7 +26,6 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray_accessibility.h"
 #include "ash/system/tray_caps_lock.h"
-#include "ash/system/tray_display.h"
 #include "ash/system/tray_update.h"
 #include "ash/system/user/login_status.h"
 #include "ash/system/user/tray_user.h"
@@ -49,6 +47,11 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/system/chromeos/network/tray_network.h"
+#include "ash/system/chromeos/network/tray_sms.h"
+#endif
+
 namespace ash {
 
 // SystemTray
@@ -67,7 +70,10 @@ SystemTray::SystemTray(internal::StatusAreaWidget* status_area_widget)
       drive_observer_(NULL),
       ime_observer_(NULL),
       locale_observer_(NULL),
+#if defined(OS_CHROMEOS)
       network_observer_(NULL),
+      sms_observer_(NULL),
+#endif
       update_observer_(NULL),
       user_observer_(NULL),
       default_bubble_height_(0),
@@ -90,8 +96,6 @@ void SystemTray::CreateItems() {
   internal::TrayBrightness* tray_brightness = new internal::TrayBrightness();
   internal::TrayDate* tray_date = new internal::TrayDate();
   internal::TrayPower* tray_power = new internal::TrayPower();
-  internal::TrayNetwork* tray_network = new internal::TrayNetwork;
-  internal::TraySms* tray_sms = new internal::TraySms();
   internal::TrayUser* tray_user = new internal::TrayUser;
   internal::TrayAccessibility* tray_accessibility =
       new internal::TrayAccessibility;
@@ -101,7 +105,6 @@ void SystemTray::CreateItems() {
   internal::TrayLocale* tray_locale = new internal::TrayLocale;
   internal::TrayUpdate* tray_update = new internal::TrayUpdate;
   internal::TraySettings* tray_settings = new internal::TraySettings();
-  internal::TrayDisplay* tray_display = new internal::TrayDisplay;
 
   accessibility_observer_ = tray_accessibility;
   audio_observer_ = tray_volume;
@@ -112,22 +115,32 @@ void SystemTray::CreateItems() {
   drive_observer_ = tray_drive;
   ime_observer_ = tray_ime;
   locale_observer_ = tray_locale;
-  network_observer_ = tray_network;
   power_status_observers_.AddObserver(tray_power);
   power_status_observers_.AddObserver(tray_settings);
-  sms_observer_ = tray_sms;
   update_observer_ = tray_update;
   user_observer_ = tray_user;
 
+#if defined(OS_CHROMEOS)
+  internal::TrayDisplay* tray_display = new internal::TrayDisplay;
+  internal::TrayNetwork* tray_network = new internal::TrayNetwork;
+  internal::TraySms* tray_sms = new internal::TraySms();
+  network_observer_ = tray_network;
+  sms_observer_ = tray_sms;
+#endif
+
   AddTrayItem(tray_user);
   AddTrayItem(tray_power);
+#if defined(OS_CHROMEOS)
   AddTrayItem(tray_network);
-  AddTrayItem(tray_bluetooth);
   AddTrayItem(tray_sms);
+#endif
+  AddTrayItem(tray_bluetooth);
   AddTrayItem(tray_drive);
   AddTrayItem(tray_ime);
   AddTrayItem(tray_locale);
+#if defined(OS_CHROMEOS)
   AddTrayItem(tray_display);
+#endif
   AddTrayItem(tray_volume);
   AddTrayItem(tray_brightness);
   AddTrayItem(tray_update);

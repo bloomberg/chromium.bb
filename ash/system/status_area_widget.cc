@@ -9,7 +9,6 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/bluetooth/bluetooth_observer.h"
-#include "ash/system/network/network_observer.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -201,30 +200,14 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
 
   virtual void ToggleWifi() OVERRIDE {
     wifi_enabled_ = !wifi_enabled_;
-    ash::NetworkObserver* observer =
-        ash::Shell::GetInstance()->system_tray()->network_observer();
-    if (observer) {
-      ash::NetworkIconInfo info;
-      observer->OnNetworkRefresh(info);
-    }
   }
 
   virtual void ToggleMobile() OVERRIDE {
     cellular_enabled_ = !cellular_enabled_;
-    ash::NetworkObserver* observer =
-        ash::Shell::GetInstance()->system_tray()->network_observer();
-    if (observer) {
-      ash::NetworkIconInfo info;
-      observer->OnNetworkRefresh(info);
-    }
   }
 
   virtual void ToggleBluetooth() OVERRIDE {
     bluetooth_enabled_ = !bluetooth_enabled_;
-    ash::BluetoothObserver* observer =
-        ash::Shell::GetInstance()->system_tray()->bluetooth_observer();
-    if (observer)
-      observer->OnBluetoothRefresh();
   }
 
   virtual void ShowOtherWifi() OVERRIDE {
