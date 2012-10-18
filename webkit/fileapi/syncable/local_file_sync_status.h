@@ -30,19 +30,19 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncStatus : public base::NonThreadSafe {
   LocalFileSyncStatus();
   ~LocalFileSyncStatus();
 
-  // Tries to increment writing counter for |url|.
-  // This fails if the target |url| is in syncing.
-  bool TryIncrementWriting(const FileSystemURL& url);
+  // Increment writing counter for |url|.
+  // This should not be called if the |url| is not writable.
+  void StartWriting(const FileSystemURL& url);
 
   // Decrement writing counter for |url|.
-  void DecrementWriting(const FileSystemURL& url);
+  void EndWriting(const FileSystemURL& url);
 
-  // Tries to mark syncing flag for |url| to enable writing.
-  // This fails if the target |url| is in writing.
-  bool TryDisableWriting(const FileSystemURL& url);
+  // Start syncing for |url| and disable writing.
+  // This should not be called if |url| is in writing.
+  void StartSyncing(const FileSystemURL& url);
 
-  // Clears the syncing flag for |url| to disable writing.
-  void EnableWriting(const FileSystemURL& url);
+  // Clears the syncing flag for |url| and enable writing.
+  void EndSyncing(const FileSystemURL& url);
 
   // Returns true if the |url| or its parent or child is in writing.
   bool IsWriting(const FileSystemURL& url) const;
@@ -54,7 +54,6 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncStatus : public base::NonThreadSafe {
   typedef std::map<FileSystemURL, int64, FileSystemURL::Comparator> URLCountMap;
   typedef std::set<FileSystemURL, FileSystemURL::Comparator> URLSet;
 
-  // These private methods must be called with the lock_ held.
   bool IsChildOrParentWriting(const FileSystemURL& url) const;
   bool IsChildOrParentSyncing(const FileSystemURL& url) const;
 

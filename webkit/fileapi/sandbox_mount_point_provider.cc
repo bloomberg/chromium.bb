@@ -29,6 +29,7 @@
 #include "webkit/fileapi/obfuscated_file_util.h"
 #include "webkit/fileapi/sandbox_file_stream_writer.h"
 #include "webkit/fileapi/sandbox_quota_observer.h"
+#include "webkit/fileapi/syncable/syncable_file_system_operation.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/quota/quota_manager.h"
 
@@ -458,11 +459,15 @@ FileSystemOperation* SandboxMountPointProvider::CreateFileSystemOperation(
   if (url.type() == kFileSystemTypeSyncable) {
     operation_context->set_update_observers(syncable_update_observers_);
     operation_context->set_change_observers(syncable_change_observers_);
-  } else {
-    operation_context->set_update_observers(update_observers_);
+    operation_context->set_access_observers(access_observers_);
+    return new SyncableFileSystemOperation(
+        context,
+        new LocalFileSystemOperation(context, operation_context.Pass()));
   }
-  operation_context->set_access_observers(access_observers_);
 
+  // For regular sandboxed types.
+  operation_context->set_update_observers(update_observers_);
+  operation_context->set_access_observers(access_observers_);
   return new LocalFileSystemOperation(context, operation_context.Pass());
 }
 

@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/syncable/file_change.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
@@ -28,6 +29,7 @@ namespace fileapi {
 
 class FileSystemContext;
 class LocalFileChangeTracker;
+class SyncableFileOperationRunner;
 
 // This class works as a bridge between LocalFileSyncService (which is a
 // per-profile object) and FileSystemContext's (which is a per-storage-partition
@@ -53,6 +55,9 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
   // Called when the corresponding LocalFileSyncService exits.
   // This method must be called on UI thread.
   void ShutdownOnUIThread();
+
+  // OperationRunner is accessible only on IO thread.
+  base::WeakPtr<SyncableFileOperationRunner> operation_runner() const;
 
  private:
   typedef std::deque<StatusCallback> StatusCallbackQueue;
@@ -82,6 +87,9 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+
+  // OperationRunner. This must be accessed only on IO thread.
+  scoped_ptr<SyncableFileOperationRunner> operation_runner_;
 
   // Pointers to file system contexts that have been initialized for
   // synchronization (i.e. that own this instance).

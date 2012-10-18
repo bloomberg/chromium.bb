@@ -174,6 +174,8 @@ LocalFileSystemTestOriginHelper::ComputeCurrentDirectoryDatabaseUsage() const {
 LocalFileSystemOperation* LocalFileSystemTestOriginHelper::NewOperation() {
   DCHECK(file_system_context_.get());
   DCHECK(file_util_);
+  scoped_ptr<FileSystemOperationContext> operation_context(
+      NewOperationContext());
   LocalFileSystemOperation* operation = static_cast<LocalFileSystemOperation*>(
       file_system_context_->CreateFileSystemOperation(
           CreateURL(FilePath()), NULL));

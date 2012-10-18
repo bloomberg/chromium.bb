@@ -13,6 +13,7 @@
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
+#include "webkit/fileapi/syncable/syncable_file_operation_runner.h"
 
 namespace fileapi {
 
@@ -59,10 +60,20 @@ void LocalFileSyncContext::ShutdownOnUIThread() {
                  this));
 }
 
-LocalFileSyncContext::~LocalFileSyncContext() {}
+base::WeakPtr<SyncableFileOperationRunner>
+LocalFileSyncContext::operation_runner() const {
+  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  if (operation_runner_.get())
+    return operation_runner_->AsWeakPtr();
+  return base::WeakPtr<SyncableFileOperationRunner>();
+}
+
+LocalFileSyncContext::~LocalFileSyncContext() {
+}
 
 void LocalFileSyncContext::ShutdownOnIOThread() {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  operation_runner_.reset();
 }
 
 void LocalFileSyncContext::InitializeFileSystemContextOnIOThread(
@@ -87,6 +98,8 @@ void LocalFileSyncContext::InitializeFileSystemContextOnIOThread(
                    make_scoped_refptr(file_system_context)));
     return;
   }
+  if (!operation_runner_.get())
+    operation_runner_.reset(new SyncableFileOperationRunner);
   file_system_context->set_sync_context(this);
   DidInitialize(source_url, file_system_context, SYNC_STATUS_OK);
 }

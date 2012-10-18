@@ -226,6 +226,24 @@ PlatformFileError CannedSyncableFileSystem::Remove(
                  base::Unretained(this), url, recursive));
 }
 
+PlatformFileError CannedSyncableFileSystem::FileExists(
+    const FileSystemURL& url) {
+  return RunOnThread<PlatformFileError>(
+      io_task_runner_,
+      FROM_HERE,
+      base::Bind(&CannedSyncableFileSystem::DoFileExists,
+                 base::Unretained(this), url));
+}
+
+PlatformFileError CannedSyncableFileSystem::DirectoryExists(
+    const FileSystemURL& url) {
+  return RunOnThread<PlatformFileError>(
+      io_task_runner_,
+      FROM_HERE,
+      base::Bind(&CannedSyncableFileSystem::DoDirectoryExists,
+                 base::Unretained(this), url));
+}
+
 int64 CannedSyncableFileSystem::Write(
     net::URLRequestContext* url_request_context,
     const FileSystemURL& url, const GURL& blob_url) {
@@ -294,6 +312,18 @@ void CannedSyncableFileSystem::DoRemove(
     const StatusCallback& callback) {
   EXPECT_TRUE(is_filesystem_opened_);
   NewOperation()->Remove(url, recursive, callback);
+}
+
+void CannedSyncableFileSystem::DoFileExists(
+    const FileSystemURL& url, const StatusCallback& callback) {
+  EXPECT_TRUE(is_filesystem_opened_);
+  NewOperation()->FileExists(url, callback);
+}
+
+void CannedSyncableFileSystem::DoDirectoryExists(
+    const FileSystemURL& url, const StatusCallback& callback) {
+  EXPECT_TRUE(is_filesystem_opened_);
+  NewOperation()->DirectoryExists(url, callback);
 }
 
 void CannedSyncableFileSystem::DoWrite(

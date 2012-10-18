@@ -12,32 +12,26 @@ LocalFileSyncStatus::LocalFileSyncStatus() {}
 
 LocalFileSyncStatus::~LocalFileSyncStatus() {}
 
-bool LocalFileSyncStatus::TryIncrementWriting(const FileSystemURL& url) {
+void LocalFileSyncStatus::StartWriting(const FileSystemURL& url) {
   DCHECK(CalledOnValidThread());
-  if (IsChildOrParentSyncing(url))
-    return false;
+  DCHECK(!IsChildOrParentSyncing(url));
   writing_[url]++;
-  return true;
 }
 
-void LocalFileSyncStatus::DecrementWriting(const FileSystemURL& url) {
+void LocalFileSyncStatus::EndWriting(const FileSystemURL& url) {
   DCHECK(CalledOnValidThread());
   int count = --writing_[url];
-  if (count == 0) {
+  if (count == 0)
     writing_.erase(url);
-    // TODO(kinuko): fire NeedsSynchronization notification.
-  }
 }
 
-bool LocalFileSyncStatus::TryDisableWriting(const FileSystemURL& url) {
+void LocalFileSyncStatus::StartSyncing(const FileSystemURL& url) {
   DCHECK(CalledOnValidThread());
-  if (IsChildOrParentWriting(url))
-    return false;
+  DCHECK(!IsChildOrParentWriting(url));
   syncing_.insert(url);
-  return true;
 }
 
-void LocalFileSyncStatus::EnableWriting(const FileSystemURL& url) {
+void LocalFileSyncStatus::EndSyncing(const FileSystemURL& url) {
   DCHECK(CalledOnValidThread());
   syncing_.erase(url);
 }

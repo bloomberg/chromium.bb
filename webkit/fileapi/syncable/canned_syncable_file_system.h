@@ -87,6 +87,8 @@ class CannedSyncableFileSystem {
                                const FileSystemURL& dest_url);
   base::PlatformFileError TruncateFile(const FileSystemURL& url, int64 size);
   base::PlatformFileError Remove(const FileSystemURL& url, bool recursive);
+  base::PlatformFileError FileExists(const FileSystemURL& url);
+  base::PlatformFileError DirectoryExists(const FileSystemURL& url);
 
   // Returns the # of bytes written (>=0) or an error code (<0).
   int64 Write(net::URLRequestContext* url_request_context,
@@ -116,6 +118,10 @@ class CannedSyncableFileSystem {
   void DoRemove(const FileSystemURL& url,
                 bool recursive,
                 const StatusCallback& callback);
+  void DoFileExists(const FileSystemURL& url,
+                    const StatusCallback& callback);
+  void DoDirectoryExists(const FileSystemURL& url,
+                         const StatusCallback& callback);
   void DoWrite(net::URLRequestContext* url_request_context,
                const FileSystemURL& url,
                const GURL& blob_url,
