@@ -52,9 +52,9 @@ class DriveSystemService : public ProfileKeyedService  {
   // ProfileKeyedService override:
   virtual void Shutdown() OVERRIDE;
 
-  // Returns true if Drive is enabled for the specified profile.
+  // Returns true if Drive is enabled.
   // Must be called on UI thread.
-  static bool IsDriveEnabled(Profile* profile);
+  bool IsDriveEnabled();
 
  private:
   explicit DriveSystemService(Profile* profile);
@@ -79,9 +79,17 @@ class DriveSystemService : public ProfileKeyedService  {
   // the cache initialization is successful.
   void OnCacheInitialized(bool success);
 
+  // Disables Drive. Used to disable Drive when needed (ex. initialization of
+  // the Drive cache failed).
+  // Must be called on UI thread.
+  void DisableDrive();
+
   friend class DriveSystemServiceFactory;
 
   Profile* profile_;
+  // True if Drive is disabled due to initialization errors.
+  bool drive_disabled_;
+
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   DriveCache* cache_;
   scoped_ptr<DriveServiceInterface> drive_service_;
@@ -92,8 +100,10 @@ class DriveSystemService : public ProfileKeyedService  {
   scoped_ptr<DriveDownloadObserver> download_observer_;
   scoped_ptr<DriveSyncClient> sync_client_;
   scoped_ptr<StaleCacheFilesRemover> stale_cache_files_remover_;
-  base::WeakPtrFactory<DriveSystemService> weak_ptr_factory_;
 
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<DriveSystemService> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(DriveSystemService);
 };
 

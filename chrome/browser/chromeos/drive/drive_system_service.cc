@@ -41,28 +41,11 @@ namespace {
 DriveServiceInterface* g_test_drive_service = NULL;
 const std::string* g_test_cache_root = NULL;
 
-// Map to collect profiles with Drive disabled.
-std::map<Profile*, bool>* g_drive_disabled_map = NULL;
-
-// Disables Drive for the specified profile. Used to disable Drive when
-// needed (ex. initialization of the Drive cache failed).
-// Must be called on UI thread.
-void DisableDrive(Profile* profile) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // We don't change kDisableGData preference here. If we do, we'll end up
-  // disabling Drive on other devices, as kDisableGData is a syncable
-  // preference. Hence the map is used here.
-  if (!g_drive_disabled_map)
-    g_drive_disabled_map = new std::map<Profile*, bool>;
-
-  g_drive_disabled_map->insert(std::make_pair(profile, true));
-}
-
 }  // namespace
 
 DriveSystemService::DriveSystemService(Profile* profile)
     : profile_(profile),
+      drive_disabled_(false),
       cache_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -122,20 +105,20 @@ void DriveSystemService::Shutdown() {
   drive_service_.reset();
 }
 
-// static
-bool DriveSystemService::IsDriveEnabled(Profile* profile) {
+bool DriveSystemService::IsDriveEnabled() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!gdata::AuthService::CanAuthenticate(profile))
+  if (!gdata::AuthService::CanAuthenticate(profile_))
     return false;
 
-  // Disable gdata if preference is set.  This can happen with commandline flag
+  // Disable Drive if preference is set.  This can happen with commandline flag
   // --disable-gdata or enterprise policy, or probably with user settings too
   // in the future.
-  if (profile->GetPrefs()->GetBoolean(prefs::kDisableGData))
+  if (profile_->GetPrefs()->GetBoolean(prefs::kDisableGData))
     return false;
 
-  if (g_drive_disabled_map && g_drive_disabled_map->count(profile) > 0)
+  // Drive may be disabled for cache initialization failure, etc.
+  if (drive_disabled_)
     return false;
 
   return true;
@@ -167,7 +150,9 @@ void DriveSystemService::AddBackDriveMountPoint(
 }
 
 void DriveSystemService::AddDriveMountPoint() {
-  if (!IsDriveEnabled(profile_))
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (!IsDriveEnabled())
     return;
 
   const FilePath mount_point = util::GetDriveMountPointPath();
@@ -184,6 +169,8 @@ void DriveSystemService::AddDriveMountPoint() {
 }
 
 void DriveSystemService::RemoveDriveMountPoint() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   file_system_->NotifyFileSystemToBeUnmounted();
   file_system_->StopPolling();
 
@@ -200,19 +187,7 @@ void DriveSystemService::OnCacheInitialized(bool success) {
 
   if (!success) {
     LOG(WARNING) << "Failed to initialize the cache. Disabling Drive";
-    DisableDrive(profile_);
-    // Change the download directory to the default value if the download
-    // destination is set to under Drive mount point.
-    //
-    // TODO(satorux): This cannot be done in DisableDrive(), as there is a
-    // dependency problem. We should move this code to DisableDrive() once
-    // the dependency problem is solved. crbug.com/153962
-    PrefService* pref_service = profile_->GetPrefs();
-    if (util::IsUnderDriveMountPoint(
-            pref_service->GetFilePath(prefs::kDownloadDefaultDirectory))) {
-      pref_service->SetFilePath(prefs::kDownloadDefaultDirectory,
-                                download_util::GetDefaultDownloadDirectory());
-    }
+    DisableDrive();
     return;
   }
 
@@ -228,6 +203,20 @@ void DriveSystemService::OnCacheInitialized(bool success) {
 
   // Start prefetching of Drive metadata.
   file_system_->StartInitialFeedFetch();
+}
+
+void DriveSystemService::DisableDrive() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  drive_disabled_ = true;
+  // Change the download directory to the default value if the download
+  // destination is set to under Drive mount point.
+  PrefService* pref_service = profile_->GetPrefs();
+  if (util::IsUnderDriveMountPoint(
+          pref_service->GetFilePath(prefs::kDownloadDefaultDirectory))) {
+    pref_service->SetFilePath(prefs::kDownloadDefaultDirectory,
+                              download_util::GetDefaultDownloadDirectory());
+  }
 }
 
 //===================== DriveSystemServiceFactory =============================
