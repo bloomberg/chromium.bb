@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
+#include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decryptor_client.h"
 #include "media/base/video_decoder_config.h"
@@ -75,8 +76,11 @@ void PpapiDecryptor::AddKey(const std::string& key_system,
     ReportFailureToCallPlugin(key_system, session_id);
   }
 
-  if (!key_added_cb_.is_null())
-    key_added_cb_.Run();
+  if (!audio_key_added_cb_.is_null())
+    audio_key_added_cb_.Run();
+
+  if (!video_key_added_cb_.is_null())
+    video_key_added_cb_.Run();
 }
 
 void PpapiDecryptor::CancelKeyRequest(const std::string& key_system,
@@ -90,22 +94,55 @@ void PpapiDecryptor::CancelKeyRequest(const std::string& key_system,
 }
 
 void PpapiDecryptor::Decrypt(
+    StreamType stream_type,
     const scoped_refptr<media::DecoderBuffer>& encrypted,
     const DecryptCB& decrypt_cb) {
   if (!render_loop_proxy_->BelongsToCurrentThread()) {
     render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &PpapiDecryptor::Decrypt, weak_this_, encrypted, decrypt_cb));
+        &PpapiDecryptor::Decrypt, weak_this_,
+        stream_type, encrypted, decrypt_cb));
     return;
   }
 
-  DVLOG(3) << "Decrypt()";
+  DVLOG(3) << "Decrypt() - stream_type: " << stream_type;
   if (!cdm_plugin_->Decrypt(encrypted, decrypt_cb))
     decrypt_cb.Run(kError, NULL);
 }
 
-void PpapiDecryptor::CancelDecrypt() {
-  DVLOG(1) << "CancelDecrypt()";
+void PpapiDecryptor::CancelDecrypt(StreamType stream_type) {
+  DVLOG(1) << "CancelDecrypt() - stream_type: " << stream_type;
   // TODO(xhwang): Implement CancelDecrypt() in PluginInstance and call it here.
+}
+
+void PpapiDecryptor::InitializeAudioDecoder(
+      scoped_ptr<media::AudioDecoderConfig> config,
+      const DecoderInitCB& init_cb,
+      const KeyAddedCB& key_added_cb) {
+  if (!render_loop_proxy_->BelongsToCurrentThread()) {
+    render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+        &PpapiDecryptor::InitializeAudioDecoder, weak_this_,
+        base::Passed(&config), init_cb, key_added_cb));
+    return;
+  }
+
+  DVLOG(2) << "InitializeAudioDecoder()";
+  DCHECK(config->is_encrypted());
+  DCHECK(config->IsValidConfig());
+
+  audio_decoder_init_cb_ = init_cb;
+  // TODO(xhwang): Implement InitializeAudioDecoder() in PluginInstance and call
+  // it here.
+  NOTIMPLEMENTED();
+#if 0
+  if (!cdm_plugin_->InitializeAudioDecoder(*config, base::Bind(
+      &PpapiDecryptor::OnDecoderInitialized, weak_this_,
+      kAudio, key_added_cb))) {
+#endif
+    base::ResetAndReturn(&audio_decoder_init_cb_).Run(false);
+#if 0
+    return;
+  }
+#endif
 }
 
 void PpapiDecryptor::InitializeVideoDecoder(
@@ -124,15 +161,31 @@ void PpapiDecryptor::InitializeVideoDecoder(
   DCHECK(config->IsValidConfig());
 
   video_decoder_init_cb_ = init_cb;
-  key_added_cb_ = key_added_cb;
-
-  if (!cdm_plugin_->InitializeVideoDecoder(
-      *config,
-      base::Bind(&PpapiDecryptor::OnVideoDecoderInitialized, weak_this_))) {
-    key_added_cb_.Reset();
+  if (!cdm_plugin_->InitializeVideoDecoder(*config, base::Bind(
+      &PpapiDecryptor::OnDecoderInitialized, weak_this_,
+      kVideo, key_added_cb))) {
     base::ResetAndReturn(&video_decoder_init_cb_).Run(false);
     return;
   }
+}
+
+void PpapiDecryptor::DecryptAndDecodeAudio(
+    const scoped_refptr<media::DecoderBuffer>& encrypted,
+    const AudioDecodeCB& audio_decode_cb) {
+  if (!render_loop_proxy_->BelongsToCurrentThread()) {
+    render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+        &PpapiDecryptor::DecryptAndDecodeAudio, weak_this_,
+        encrypted, audio_decode_cb));
+    return;
+  }
+
+  DVLOG(1) << "DecryptAndDecodeAudio()";
+  NOTIMPLEMENTED();
+  // TODO(xhwang): Enable this once PluginInstance is updated.
+#if 0
+  if (!cdm_plugin_->DecryptAndDecodeAudio(encrypted, audio_decode_cb))
+#endif
+    audio_decode_cb.Run(kError, AudioBuffers());
 }
 
 void PpapiDecryptor::DecryptAndDecodeVideo(
@@ -150,24 +203,26 @@ void PpapiDecryptor::DecryptAndDecodeVideo(
     video_decode_cb.Run(kError, NULL);
 }
 
-void PpapiDecryptor::CancelDecryptAndDecodeVideo() {
+void PpapiDecryptor::ResetDecoder(StreamType stream_type) {
   if (!render_loop_proxy_->BelongsToCurrentThread()) {
     render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &PpapiDecryptor::CancelDecryptAndDecodeVideo, weak_this_));
+        &PpapiDecryptor::ResetDecoder, weak_this_, stream_type));
     return;
   }
 
-  DVLOG(2) << "CancelDecryptAndDecodeVideo()";
+  DVLOG(2) << "ResetDecoder() - stream_type: " << stream_type;
+  // TODO(xhwang): Support stream type in PluginInstance.
   cdm_plugin_->ResetDecoder();
 }
 
-void PpapiDecryptor::StopVideoDecoder() {
+void PpapiDecryptor::DeinitializeDecoder(StreamType stream_type) {
   if (!render_loop_proxy_->BelongsToCurrentThread()) {
     render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &PpapiDecryptor::StopVideoDecoder, weak_this_));
+        &PpapiDecryptor::DeinitializeDecoder, weak_this_, stream_type));
     return;
   }
-  DVLOG(2) << "StopVideoDecoder()";
+  DVLOG(2) << "DeinitializeDecoder() - stream_type: " << stream_type;
+  // TODO(xhwang): Support stream type in PluginInstance.
   cdm_plugin_->DeinitializeDecoder();
 }
 
@@ -177,14 +232,31 @@ void PpapiDecryptor::ReportFailureToCallPlugin(const std::string& key_system,
   client_->KeyError(key_system, session_id, kUnknownError, 0);
 }
 
-void PpapiDecryptor::OnVideoDecoderInitialized(bool success) {
-  DCHECK(!key_added_cb_.is_null());
-  DCHECK(!video_decoder_init_cb_.is_null());
+void PpapiDecryptor::OnDecoderInitialized(StreamType stream_type,
+                                          const KeyAddedCB& key_added_cb,
+                                          bool success) {
+  DCHECK(!key_added_cb.is_null());
 
-  if (!success)
-    key_added_cb_.Reset();
+  switch (stream_type) {
+    case kAudio:
+      DCHECK(audio_key_added_cb_.is_null());
+      DCHECK(!audio_decoder_init_cb_.is_null());
+      if (success)
+        audio_key_added_cb_ = key_added_cb;
+      base::ResetAndReturn(&audio_decoder_init_cb_).Run(success);
+      break;
 
-  base::ResetAndReturn(&video_decoder_init_cb_).Run(success);
+    case kVideo:
+      DCHECK(video_key_added_cb_.is_null());
+      DCHECK(!video_decoder_init_cb_.is_null());
+      if (success)
+        video_key_added_cb_ = key_added_cb;
+      base::ResetAndReturn(&video_decoder_init_cb_).Run(success);
+      break;
+
+    default:
+      NOTREACHED();
+  }
 }
 
 }  // namespace webkit_media

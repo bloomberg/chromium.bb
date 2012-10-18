@@ -53,7 +53,7 @@ static scoped_refptr<DecoderBuffer> CreateFakeEncryptedBuffer() {
 }
 
 ACTION_P2(RunDecryptCB, status, buffer) {
-  arg1.Run(status, buffer);
+  arg2.Run(status, buffer);
 }
 
 ACTION_P3(ResetAndRunDecryptCB, decrypt_cb, status, buffer) {
@@ -74,6 +74,7 @@ class ProxyDecryptorTest : public testing::Test {
                          &client_, NULL, NULL),
         real_decryptor_(new media::MockDecryptor()),
         scoped_real_decryptor_(real_decryptor_),
+        stream_type_(media::Decryptor::kVideo),
         decrypt_cb_(base::Bind(&ProxyDecryptorTest::DeliverBuffer,
                                base::Unretained(this))),
         encrypted_buffer_(CreateFakeEncryptedBuffer()),
@@ -122,6 +123,8 @@ class ProxyDecryptorTest : public testing::Test {
   // GenerateKeyRequest().
   scoped_ptr<Decryptor> scoped_real_decryptor_;
 
+  media::Decryptor::StreamType stream_type_;
+
   Decryptor::DecryptCB decrypt_cb_;
 
   scoped_refptr<DecoderBuffer> encrypted_buffer_;
@@ -137,10 +140,10 @@ TEST_F(ProxyDecryptorTest, NormalDecryption_Success) {
   GenerateKeyRequest();
   AddKey();
 
-  EXPECT_CALL(*real_decryptor_, Decrypt(encrypted_buffer_, _))
+  EXPECT_CALL(*real_decryptor_, Decrypt(stream_type_, encrypted_buffer_, _))
       .WillOnce(RunDecryptCB(Decryptor::kSuccess, decrypted_buffer_));
   EXPECT_CALL(*this, DeliverBuffer(Decryptor::kSuccess, decrypted_buffer_));
-  proxy_decryptor_.Decrypt(encrypted_buffer_, decrypt_cb_);
+  proxy_decryptor_.Decrypt(stream_type_, encrypted_buffer_, decrypt_cb_);
 }
 
 // Tests the case where Decrypt() fails.
@@ -148,34 +151,34 @@ TEST_F(ProxyDecryptorTest, NormalDecryption_Error) {
   GenerateKeyRequest();
   AddKey();
 
-  EXPECT_CALL(*real_decryptor_, Decrypt(encrypted_buffer_, _))
+  EXPECT_CALL(*real_decryptor_, Decrypt(stream_type_, encrypted_buffer_, _))
       .WillOnce(RunDecryptCB(Decryptor::kError, null_buffer_));
   EXPECT_CALL(*this, DeliverBuffer(Decryptor::kError, IsNull()));
-  proxy_decryptor_.Decrypt(encrypted_buffer_, decrypt_cb_);
+  proxy_decryptor_.Decrypt(stream_type_, encrypted_buffer_, decrypt_cb_);
 }
 
 // Tests the case where no key is available for decryption.
 TEST_F(ProxyDecryptorTest, NormalDecryption_NoKey) {
   GenerateKeyRequest();
 
-  EXPECT_CALL(*real_decryptor_, Decrypt(encrypted_buffer_, _))
+  EXPECT_CALL(*real_decryptor_, Decrypt(stream_type_, encrypted_buffer_, _))
       .WillOnce(RunDecryptCB(Decryptor::kNoKey, null_buffer_));
   EXPECT_CALL(client_, NeedKeyMock("", "", NotNull(), arraysize(kFakeKeyId)));
-  proxy_decryptor_.Decrypt(encrypted_buffer_, decrypt_cb_);
+  proxy_decryptor_.Decrypt(stream_type_, encrypted_buffer_, decrypt_cb_);
 
   EXPECT_CALL(*this, DeliverBuffer(Decryptor::kSuccess, null_buffer_));
-  proxy_decryptor_.CancelDecrypt();
+  proxy_decryptor_.CancelDecrypt(stream_type_);
 }
 
 // Tests the case where Decrypt() is called after the right key is added.
 TEST_F(ProxyDecryptorTest, DecryptBeforeAddKey) {
   EXPECT_CALL(client_, NeedKeyMock("", "", NotNull(), arraysize(kFakeKeyId)));
   GenerateKeyRequest();
-  EXPECT_CALL(*real_decryptor_, Decrypt(encrypted_buffer_, _))
+  EXPECT_CALL(*real_decryptor_, Decrypt(stream_type_, encrypted_buffer_, _))
       .WillOnce(RunDecryptCB(Decryptor::kNoKey, null_buffer_));
-  proxy_decryptor_.Decrypt(encrypted_buffer_, decrypt_cb_);
+  proxy_decryptor_.Decrypt(stream_type_, encrypted_buffer_, decrypt_cb_);
 
-  EXPECT_CALL(*real_decryptor_, Decrypt(encrypted_buffer_, _))
+  EXPECT_CALL(*real_decryptor_, Decrypt(stream_type_, encrypted_buffer_, _))
       .WillOnce(RunDecryptCB(Decryptor::kSuccess, decrypted_buffer_));
   EXPECT_CALL(*this, DeliverBuffer(Decryptor::kSuccess, decrypted_buffer_))
       .WillOnce(ScheduleMessageLoopToStop(&message_loop_));
@@ -188,9 +191,9 @@ TEST_F(ProxyDecryptorTest, DecryptBeforeAddKey) {
 // added.
 TEST_F(ProxyDecryptorTest, DecryptBeforeGenerateKeyRequest) {
   EXPECT_CALL(client_, NeedKeyMock("", "", NotNull(), arraysize(kFakeKeyId)));
-  proxy_decryptor_.Decrypt(encrypted_buffer_, decrypt_cb_);
+  proxy_decryptor_.Decrypt(stream_type_, encrypted_buffer_, decrypt_cb_);
 
-  EXPECT_CALL(*real_decryptor_, Decrypt(encrypted_buffer_, _))
+  EXPECT_CALL(*real_decryptor_, Decrypt(stream_type_, encrypted_buffer_, _))
       .WillOnce(RunDecryptCB(Decryptor::kSuccess, decrypted_buffer_));
   EXPECT_CALL(*this, DeliverBuffer(Decryptor::kSuccess, decrypted_buffer_))
       .WillOnce(ScheduleMessageLoopToStop(&message_loop_));
@@ -205,16 +208,16 @@ TEST_F(ProxyDecryptorTest, DecryptBeforeGenerateKeyRequest) {
 TEST_F(ProxyDecryptorTest, MultipleAddKeys) {
   EXPECT_CALL(client_, NeedKeyMock("", "", NotNull(), arraysize(kFakeKeyId)))
       .Times(AtLeast(1));
-  proxy_decryptor_.Decrypt(encrypted_buffer_, decrypt_cb_);
+  proxy_decryptor_.Decrypt(stream_type_, encrypted_buffer_, decrypt_cb_);
 
-  EXPECT_CALL(*real_decryptor_, Decrypt(encrypted_buffer_, _))
+  EXPECT_CALL(*real_decryptor_, Decrypt(stream_type_, encrypted_buffer_, _))
       .WillRepeatedly(RunDecryptCB(Decryptor::kNoKey, null_buffer_));
   GenerateKeyRequest();
   const int number_of_irrelevant_addkey = 5;
   for (int i = 0; i < number_of_irrelevant_addkey; ++i)
     AddKey();  // Some irrelevant keys are added.
 
-  EXPECT_CALL(*real_decryptor_, Decrypt(encrypted_buffer_, _))
+  EXPECT_CALL(*real_decryptor_, Decrypt(stream_type_, encrypted_buffer_, _))
       .WillOnce(RunDecryptCB(Decryptor::kSuccess, decrypted_buffer_));
   EXPECT_CALL(*this, DeliverBuffer(Decryptor::kSuccess, decrypted_buffer_))
       .WillOnce(ScheduleMessageLoopToStop(&message_loop_));
@@ -232,16 +235,16 @@ TEST_F(ProxyDecryptorTest, MultipleAddKeys) {
 // and get the buffer decrypted!
 TEST_F(ProxyDecryptorTest, AddKeyAfterDecryptButBeforeNoKeyReturned) {
   Decryptor::DecryptCB decrypt_cb;
-  EXPECT_CALL(*real_decryptor_, Decrypt(encrypted_buffer_, _))
-      .WillOnce(SaveArg<1>(&decrypt_cb));
+  EXPECT_CALL(*real_decryptor_, Decrypt(stream_type_, encrypted_buffer_, _))
+      .WillOnce(SaveArg<2>(&decrypt_cb));
 
   GenerateKeyRequest();
-  proxy_decryptor_.Decrypt(encrypted_buffer_, decrypt_cb_);
+  proxy_decryptor_.Decrypt(stream_type_, encrypted_buffer_, decrypt_cb_);
   EXPECT_FALSE(decrypt_cb.is_null());
 
   AddKey();
 
-  EXPECT_CALL(*real_decryptor_, Decrypt(encrypted_buffer_, _))
+  EXPECT_CALL(*real_decryptor_, Decrypt(stream_type_, encrypted_buffer_, _))
       .WillOnce(RunDecryptCB(Decryptor::kSuccess, decrypted_buffer_));
   EXPECT_CALL(*this, DeliverBuffer(Decryptor::kSuccess, decrypted_buffer_))
       .WillOnce(ScheduleMessageLoopToStop(&message_loop_));
@@ -256,11 +259,11 @@ TEST_F(ProxyDecryptorTest, AddKeyAfterDecryptButBeforeNoKeyReturned) {
 TEST_F(ProxyDecryptorTest, CancelDecryptWithoutGenerateKeyRequestCalled) {
   EXPECT_CALL(client_, NeedKeyMock("", "", NotNull(), arraysize(kFakeKeyId)))
       .Times(AtLeast(1));
-  proxy_decryptor_.Decrypt(encrypted_buffer_, decrypt_cb_);
+  proxy_decryptor_.Decrypt(stream_type_, encrypted_buffer_, decrypt_cb_);
 
   EXPECT_CALL(*this, DeliverBuffer(Decryptor::kSuccess, null_buffer_))
       .WillOnce(ScheduleMessageLoopToStop(&message_loop_));
-  proxy_decryptor_.CancelDecrypt();
+  proxy_decryptor_.CancelDecrypt(stream_type_);
 
   message_loop_.Run();
 }
@@ -270,14 +273,14 @@ TEST_F(ProxyDecryptorTest, CancelDecryptWithoutGenerateKeyRequestCalled) {
 TEST_F(ProxyDecryptorTest, CancelDecryptWhenDecryptPendingInProxyDecryptor) {
   EXPECT_CALL(client_, NeedKeyMock("", "", NotNull(), arraysize(kFakeKeyId)))
       .Times(AtLeast(1));
-  EXPECT_CALL(*real_decryptor_, Decrypt(encrypted_buffer_, _))
+  EXPECT_CALL(*real_decryptor_, Decrypt(stream_type_, encrypted_buffer_, _))
       .WillRepeatedly(RunDecryptCB(Decryptor::kNoKey, null_buffer_));
   GenerateKeyRequest();
-  proxy_decryptor_.Decrypt(encrypted_buffer_, decrypt_cb_);
+  proxy_decryptor_.Decrypt(stream_type_, encrypted_buffer_, decrypt_cb_);
 
   EXPECT_CALL(*this, DeliverBuffer(Decryptor::kSuccess, null_buffer_))
       .WillOnce(ScheduleMessageLoopToStop(&message_loop_));
-  proxy_decryptor_.CancelDecrypt();
+  proxy_decryptor_.CancelDecrypt(stream_type_);
 
   message_loop_.Run();
 }
@@ -286,21 +289,21 @@ TEST_F(ProxyDecryptorTest, CancelDecryptWhenDecryptPendingInProxyDecryptor) {
 // pending at the |real_decryptor_|.
 TEST_F(ProxyDecryptorTest, CancelDecryptWhenDecryptPendingInRealDecryptor) {
   Decryptor::DecryptCB decrypt_cb;
-  EXPECT_CALL(*real_decryptor_, Decrypt(encrypted_buffer_, _))
-      .WillOnce(SaveArg<1>(&decrypt_cb));
+  EXPECT_CALL(*real_decryptor_, Decrypt(stream_type_, encrypted_buffer_, _))
+      .WillOnce(SaveArg<2>(&decrypt_cb));
   GenerateKeyRequest();
-  proxy_decryptor_.Decrypt(encrypted_buffer_, decrypt_cb_);
+  proxy_decryptor_.Decrypt(stream_type_, encrypted_buffer_, decrypt_cb_);
   EXPECT_FALSE(decrypt_cb.is_null());
 
   // Even though the real decryptor returns kError, DeliverBuffer() should
   // still be called with kSuccess and NULL because we are canceling the
   // decryption.
-  EXPECT_CALL(*real_decryptor_, CancelDecrypt())
+  EXPECT_CALL(*real_decryptor_, CancelDecrypt(stream_type_))
       .WillOnce(ResetAndRunDecryptCB(&decrypt_cb,
                                      Decryptor::kError, null_buffer_));
   EXPECT_CALL(*this, DeliverBuffer(Decryptor::kSuccess, null_buffer_))
       .WillOnce(ScheduleMessageLoopToStop(&message_loop_));
-  proxy_decryptor_.CancelDecrypt();
+  proxy_decryptor_.CancelDecrypt(stream_type_);
 
   message_loop_.Run();
 }
@@ -310,21 +313,21 @@ TEST_F(ProxyDecryptorTest, CancelDecryptWhenDecryptPendingInRealDecryptor) {
 TEST_F(ProxyDecryptorTest, DecryptAfterCancelDecrypt) {
   EXPECT_CALL(client_, NeedKeyMock("", "", NotNull(), arraysize(kFakeKeyId)))
       .Times(AtLeast(1));
-  EXPECT_CALL(*real_decryptor_, Decrypt(encrypted_buffer_, _))
+  EXPECT_CALL(*real_decryptor_, Decrypt(stream_type_, encrypted_buffer_, _))
       .WillRepeatedly(RunDecryptCB(Decryptor::kNoKey, null_buffer_));
-  proxy_decryptor_.Decrypt(encrypted_buffer_, decrypt_cb_);
+  proxy_decryptor_.Decrypt(stream_type_, encrypted_buffer_, decrypt_cb_);
   GenerateKeyRequest();
 
   EXPECT_CALL(*this, DeliverBuffer(Decryptor::kSuccess, null_buffer_));
-  proxy_decryptor_.CancelDecrypt();
+  proxy_decryptor_.CancelDecrypt(stream_type_);
 
   AddKey();
 
-  EXPECT_CALL(*real_decryptor_, Decrypt(encrypted_buffer_, _))
+  EXPECT_CALL(*real_decryptor_, Decrypt(stream_type_, encrypted_buffer_, _))
       .WillOnce(RunDecryptCB(Decryptor::kSuccess, decrypted_buffer_));
   EXPECT_CALL(*this, DeliverBuffer(Decryptor::kSuccess, decrypted_buffer_))
       .WillOnce(ScheduleMessageLoopToStop(&message_loop_));
-  proxy_decryptor_.Decrypt(encrypted_buffer_, decrypt_cb_);
+  proxy_decryptor_.Decrypt(stream_type_, encrypted_buffer_, decrypt_cb_);
 
   message_loop_.Run();
 }

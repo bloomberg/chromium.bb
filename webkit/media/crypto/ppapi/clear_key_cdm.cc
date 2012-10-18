@@ -213,7 +213,9 @@ cdm::Status ClearKeyCdm::Decrypt(
   // Callback is called synchronously, so we can use variables on the stack.
   media::Decryptor::Status status;
   scoped_refptr<media::DecoderBuffer> buffer;
-  decryptor_.Decrypt(decoder_buffer,
+  // We don't care what stream type it is here. So just pick video.
+  decryptor_.Decrypt(media::Decryptor::kVideo,
+                     decoder_buffer,
                      base::Bind(&CopyDecryptResults, &status, &buffer));
 
   if (status == media::Decryptor::kError)
@@ -267,7 +269,8 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
   // Callback is called synchronously, so we can use variables on the stack.
   media::Decryptor::Status status;
   scoped_refptr<media::DecoderBuffer> buffer;
-  decryptor_.Decrypt(decoder_buffer,
+  decryptor_.Decrypt(media::Decryptor::kVideo,
+                     decoder_buffer,
                      base::Bind(&CopyDecryptResults, &status, &buffer));
 
   if (status == media::Decryptor::kError)
@@ -295,8 +298,8 @@ void ClearKeyCdm::GenerateFakeVideoFrame(base::TimeDelta timestamp,
 
   int width = video_size_.width;
   int height = video_size_.height;
-  DCHECK(width % 2 == 0);
-  DCHECK(height % 2 == 0);
+  DCHECK_EQ(width % 2, 0);
+  DCHECK_EQ(height % 2, 0);
 
   int y_stride = (width + kAlignment - 1) / kAlignment * kAlignment + kPadding;
   int uv_stride =

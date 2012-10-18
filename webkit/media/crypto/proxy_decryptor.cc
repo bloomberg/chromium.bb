@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
+#include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decryptor_client.h"
 #include "media/base/video_decoder_config.h"
@@ -152,10 +153,12 @@ void ProxyDecryptor::CancelKeyRequest(const std::string& key_system,
 }
 
 void ProxyDecryptor::Decrypt(
+    StreamType stream_type,
     const scoped_refptr<media::DecoderBuffer>& encrypted,
     const DecryptCB& decrypt_cb) {
   DVLOG(2) << "Decrypt()";
   DCHECK(decryption_message_loop_->BelongsToCurrentThread());
+  DCHECK_EQ(stream_type, kVideo);  // Only support video decrypt-only for now.
 
   DCHECK(!is_canceling_decrypt_);
   DCHECK(!pending_buffer_to_decrypt_);
@@ -183,9 +186,10 @@ void ProxyDecryptor::Decrypt(
   DecryptPendingBuffer();
 }
 
-void ProxyDecryptor::CancelDecrypt() {
+void ProxyDecryptor::CancelDecrypt(StreamType stream_type) {
   DVLOG(1) << "CancelDecrypt()";
   DCHECK(decryption_message_loop_->BelongsToCurrentThread());
+  DCHECK_EQ(stream_type, kVideo);  // Only support video decrypt-only for now.
 
   if (!pending_buffer_to_decrypt_) {
     DCHECK(pending_decrypt_cb_.is_null());
@@ -201,7 +205,14 @@ void ProxyDecryptor::CancelDecrypt() {
   }
 
   is_canceling_decrypt_ = true;
-  decryptor_->CancelDecrypt();
+  decryptor_->CancelDecrypt(stream_type);
+}
+
+void ProxyDecryptor::InitializeAudioDecoder(
+    scoped_ptr<media::AudioDecoderConfig> config,
+    const DecoderInitCB& init_cb,
+    const KeyAddedCB& key_added_cb) {
+  NOTREACHED() << "ProxyDecryptor does not support audio decoding";
 }
 
 void ProxyDecryptor::InitializeVideoDecoder(
@@ -211,18 +222,24 @@ void ProxyDecryptor::InitializeVideoDecoder(
   NOTREACHED() << "ProxyDecryptor does not support video decoding";
 }
 
+void ProxyDecryptor::DecryptAndDecodeAudio(
+    const scoped_refptr<media::DecoderBuffer>& encrypted,
+    const AudioDecodeCB& audio_decode_cb) {
+  NOTREACHED() << "ProxyDecryptor does not support audio decoding";
+}
+
 void ProxyDecryptor::DecryptAndDecodeVideo(
     const scoped_refptr<media::DecoderBuffer>& encrypted,
     const VideoDecodeCB& video_decode_cb) {
   NOTREACHED() << "ProxyDecryptor does not support video decoding";
 }
 
-void ProxyDecryptor::CancelDecryptAndDecodeVideo() {
-  NOTREACHED() << "ProxyDecryptor does not support video decoding";
+void ProxyDecryptor::ResetDecoder(StreamType stream_type) {
+  NOTREACHED() << "ProxyDecryptor does not support audio/video decoding";
 }
 
-void ProxyDecryptor::StopVideoDecoder() {
-  NOTREACHED() << "ProxyDecryptor does not support video decoding";
+void ProxyDecryptor::DeinitializeDecoder(StreamType stream_type) {
+  NOTREACHED() << "ProxyDecryptor does not support audio/video decoding";
 }
 
 scoped_ptr<media::Decryptor> ProxyDecryptor::CreatePpapiDecryptor(
@@ -290,6 +307,7 @@ void ProxyDecryptor::DecryptPendingBuffer() {
 
   is_waiting_for_decryptor_ = true;
   decryptor_->Decrypt(
+      kVideo,  // Only support video decrypt-only for now.
       pending_buffer_to_decrypt_,
       base::Bind(&ProxyDecryptor::OnBufferDecrypted, base::Unretained(this)));
 }

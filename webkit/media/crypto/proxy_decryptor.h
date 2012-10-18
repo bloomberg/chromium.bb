@@ -64,18 +64,26 @@ class ProxyDecryptor : public media::Decryptor {
                       const std::string& session_id) OVERRIDE;
   virtual void CancelKeyRequest(const std::string& key_system,
                                 const std::string& session_id) OVERRIDE;
-  virtual void Decrypt(const scoped_refptr<media::DecoderBuffer>& encrypted,
+  virtual void Decrypt(StreamType stream_type,
+                       const scoped_refptr<media::DecoderBuffer>& encrypted,
                        const DecryptCB& decrypt_cb) OVERRIDE;
-  virtual void CancelDecrypt() OVERRIDE;
+  virtual void CancelDecrypt(StreamType stream_type) OVERRIDE;
+  virtual void InitializeAudioDecoder(
+      scoped_ptr<media::AudioDecoderConfig> config,
+      const DecoderInitCB& init_cb,
+      const KeyAddedCB& key_added_cb) OVERRIDE;
   virtual void InitializeVideoDecoder(
       scoped_ptr<media::VideoDecoderConfig> config,
       const DecoderInitCB& init_cb,
       const KeyAddedCB& key_added_cb) OVERRIDE;
+  virtual void DecryptAndDecodeAudio(
+      const scoped_refptr<media::DecoderBuffer>& encrypted,
+      const AudioDecodeCB& audio_decode_cb) OVERRIDE;
   virtual void DecryptAndDecodeVideo(
       const scoped_refptr<media::DecoderBuffer>& encrypted,
       const VideoDecodeCB& video_decode_cb) OVERRIDE;
-  virtual void CancelDecryptAndDecodeVideo() OVERRIDE;
-  virtual void StopVideoDecoder() OVERRIDE;
+  virtual void ResetDecoder(StreamType stream_type) OVERRIDE;
+  virtual void DeinitializeDecoder(StreamType stream_type) OVERRIDE;
 
  private:
   // Helper functions to create decryptors to handle the given |key_system|.
