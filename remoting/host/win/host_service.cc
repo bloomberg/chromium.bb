@@ -28,6 +28,7 @@
 #include "remoting/base/scoped_sc_handle_win.h"
 #include "remoting/base/stoppable.h"
 #include "remoting/host/branding.h"
+#include "remoting/host/host_exit_codes.h"
 #include "remoting/host/logging.h"
 
 #if defined(REMOTING_MULTI_PROCESS)
@@ -81,11 +82,6 @@ const wchar_t kUsageMessage[] =
 // line when launching an elevated child.
 const char* kCopiedSwitchNames[] = {
     "host-config", "daemon-pipe", switches::kV, switches::kVModule };
-
-// Exit codes:
-const int kSuccessExitCode = 0;
-const int kUsageExitCode = 1;
-const int kErrorExitCode = 2;
 
 void usage(const FilePath& program_name) {
   LOG(INFO) << StringPrintf(kUsageMessage,
@@ -281,7 +277,7 @@ int HostService::RunAsService() {
   if (!StartServiceCtrlDispatcherW(dispatch_table)) {
     LOG_GETLASTERROR(ERROR)
         << "Failed to connect to the service control manager";
-    return kErrorExitCode;
+    return kInitializationFailed;
   }
 
   return kSuccessExitCode;
@@ -296,7 +292,7 @@ int HostService::RunInConsole() {
       new AutoThreadTaskRunner(message_loop.message_loop_proxy(),
                                base::Bind(&QuitMessageLoop, &message_loop));
 
-  int result = kErrorExitCode;
+  int result = kInitializationFailed;
 
   // Subscribe to Ctrl-C and other console events.
   if (!SetConsoleCtrlHandler(&HostService::ConsoleControlHandler, TRUE)) {
@@ -492,13 +488,13 @@ int CALLBACK WinMain(HINSTANCE instance,
   if (command_line->HasSwitch(kHelpSwitchName) ||
       command_line->HasSwitch(kQuestionSwitchName)) {
     usage(command_line->GetProgram());
-    return kSuccessExitCode;
+    return remoting::kSuccessExitCode;
   }
 
   remoting::HostService* service = remoting::HostService::GetInstance();
   if (!service->InitWithCommandLine(command_line)) {
     usage(command_line->GetProgram());
-    return kUsageExitCode;
+    return remoting::kUsageExitCode;
   }
 
   return service->Run();

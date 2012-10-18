@@ -21,7 +21,7 @@ class DesktopSession {
   int id() const { return id_; }
 
  protected:
-  // Creates a terminal and assigns a unique identifier to it. |deamon_process|
+  // Creates a terminal and assigns a unique identifier to it. |daemon_process|
   // must outlive |this|.
   DesktopSession(DaemonProcess* daemon_process, int id);
 

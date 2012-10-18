@@ -279,7 +279,7 @@ class HostProcess
     std::string local_certificate = key_pair_.GenerateCertificate();
     if (local_certificate.empty()) {
       LOG(ERROR) << "Failed to generate host certificate.";
-      Shutdown(kHostInitializationFailed);
+      Shutdown(kInitializationFailed);
       return;
     }
 
@@ -814,7 +814,7 @@ int main(int argc, char** argv) {
 #endif  // defined(OS_LINUX)
 
   if (!context->Start())
-    return remoting::kHostInitializationFailed;
+    return remoting::kInitializationFailed;
 
   // Create the host process instance and enter the main message loop.
   remoting::HostProcess me2me_host(context.Pass());
