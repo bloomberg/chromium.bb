@@ -521,8 +521,9 @@ class TestUpdateVitals(unittest.TestCase):
     f = tempfile.NamedTemporaryFile('w', prefix="test_update_nacl_manifest")
     self.test_file = f.name
     f.close()
-    test_data = "Some test data\n"
+    test_data = "Some test data"
     self.sha1 = hashlib.sha1(test_data).hexdigest()
+    self.data_len = len(test_data)
     with open(self.test_file, 'w') as f:
       f.write(test_data)
 
@@ -531,7 +532,14 @@ class TestUpdateVitals(unittest.TestCase):
 
   def testUpdateVitals(self):
     archive = manifest_util.Archive(manifest_util.GetHostOS())
-    archive.url = 'file://%s' % os.path.abspath(self.test_file)
+    path = os.path.abspath(self.test_file)
+    if sys.platform == 'win32':
+      # On Windows, the path must start with three slashes, i.e.
+      # (file:///C:\whatever)
+      path = '/' + path
+    archive.url = 'file://' + path
+    print archive.url
+
     bundle = MakeBundle(18)
     bundle.AddArchive(archive)
     manifest = MakeManifest(bundle)
@@ -543,7 +551,7 @@ class TestUpdateVitals(unittest.TestCase):
 
     manifest.Validate(add_missing_info=True)
 
-    self.assertEqual(archive['size'], 15)
+    self.assertEqual(archive['size'], self.data_len)
     self.assertEqual(archive['checksum']['sha1'], self.sha1)
 
 
