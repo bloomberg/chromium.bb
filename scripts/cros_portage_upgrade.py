@@ -850,7 +850,8 @@ class Upgrader(object):
     """Return state value for package in |pinfo|."""
     # See whether this specific cpv exists upstream.
     cpv = pinfo.cpv
-    cpv_exists_upstream = bool(self._FindUpstreamCPV(cpv, unstable_ok=True))
+    cpv_exists_upstream = bool(cpv and
+                               self._FindUpstreamCPV(cpv, unstable_ok=True))
 
     # The value in pinfo.cpv_cmp_upstream represents a comparison of cpv
     # version and the upstream version, where:
@@ -870,6 +871,8 @@ class Upgrader(object):
       # if the package is coming from 'portage' or 'portage-stable' overlays.
       if locally_patched and pinfo.latest_upstream_cpv is None:
         state = utable.UpgradeTable.STATE_LOCAL_ONLY
+      elif not cpv:
+        state = utable.UpgradeTable.STATE_UPSTREAM_ONLY
       else:
         state = utable.UpgradeTable.STATE_UNKNOWN
     elif pinfo.cpv_cmp_upstream > 0:
