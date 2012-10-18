@@ -480,6 +480,7 @@ void Label::CalculateDrawStringParams(string16* paint_text,
                                       int* flags) const {
   DCHECK(paint_text && text_bounds && flags);
 
+  // TODO(msw): Use ElideRectangleText to support eliding multi-line text.
   if (is_email_) {
     *paint_text = ui::ElideEmail(text_, font_, GetAvailableRect().width());
   } else if (elide_behavior_ == ELIDE_IN_MIDDLE) {

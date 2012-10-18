@@ -45,7 +45,6 @@ LabelButton::LabelButton(ButtonListener* listener, const string16& text)
   AddChildView(label_);
   label_->SetAutoColorReadabilityEnabled(false);
   label_->SetHorizontalAlignment(Label::ALIGN_LEFT);
-  label_->SetElideBehavior(Label::ELIDE_AT_END);
 
   // Initialize the colors, border, and layout for a Views-themed button.
   SetNativeTheme(false);
@@ -143,9 +142,6 @@ void LabelButton::StateChanged() {
 
 gfx::Size LabelButton::GetPreferredSize() {
   gfx::Size size(label_->GetPreferredSize());
-  // TODO(msw): Multi-line labels are cut off at their preferred bounds.
-  //            This apparent bug in CanvasSkia requires investigation.
-  size.set_width(size.width() * (GetTextMultiLine() ? 2 : 1));
   const gfx::Size image_size(image_->GetPreferredSize());
   if (image_size.width() > 0 && size.width() > 0)
     size.Enlarge(kSpacing, 0);
@@ -173,16 +169,15 @@ void LabelButton::Layout() {
   image_size.set_width(std::min(image_size.width(), child_area.width()));
   image_size.set_height(std::min(image_size.height(), child_area.height()));
 
-  // The label takes any remaining width after sizing the image.
+  // The label takes any remaining width after sizing the image, unless both
+  // views are centered. In that case, using the tighter preferred label width
+  // avoids wasted space within the label that would look like awkward padding.
   gfx::Size label_size(child_area.size());
   if (!image_size.IsEmpty() && !label_size.IsEmpty()) {
     label_size.set_width(child_area.width() - image_size.width() - kSpacing);
     if (GetHorizontalAlignment() == Label::ALIGN_CENTER) {
-      gfx::Size preferred(label_->GetPreferredSize());
-      // TODO(msw): Multi-line labels are cut off at their preferred bounds.
-      //            This apparent bug in CanvasSkia requires investigation.
-      preferred.set_width(preferred.width() * (GetTextMultiLine() ? 2 : 1));
-      label_size.set_width(std::min(label_size.width(), preferred.width()));
+      label_size.set_width(std::min(label_size.width(),
+                                    label_->GetPreferredSize().width()));
     }
   }
 
