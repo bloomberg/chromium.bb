@@ -1769,6 +1769,10 @@ void RenderViewHostImpl::UpdateWebkitPreferences(
   Send(new ViewMsg_UpdateWebPreferences(GetRoutingID(), prefs));
 }
 
+void RenderViewHostImpl::NotifyTimezoneChange() {
+  Send(new ViewMsg_TimezoneChange(GetRoutingID()));
+}
+
 void RenderViewHostImpl::ClearFocusedNode() {
   Send(new ViewMsg_ClearFocusedNode(GetRoutingID()));
 }

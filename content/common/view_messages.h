@@ -869,6 +869,9 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetRendererPrefs,
 IPC_MESSAGE_ROUTED1(ViewMsg_UpdateWebPreferences,
                     webkit_glue::WebPreferences)
 
+// Informs the renderer that the timezone has changed.
+IPC_MESSAGE_ROUTED0(ViewMsg_TimezoneChange)
+
 // Tells the render view to close.
 IPC_MESSAGE_ROUTED0(ViewMsg_Close)
 

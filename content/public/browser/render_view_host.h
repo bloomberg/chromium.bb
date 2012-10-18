@@ -266,6 +266,9 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   virtual void UpdateWebkitPreferences(
       const webkit_glue::WebPreferences& prefs) = 0;
 
+  // Informs the renderer process of a change in timezone.
+  virtual void NotifyTimezoneChange() = 0;
+
 #if defined(OS_ANDROID)
   // Selects and zooms to the find result nearest to the point (x,y)
   // defined in find-in-page coordinates.

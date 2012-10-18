@@ -222,6 +222,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual webkit_glue::WebPreferences GetWebkitPreferences() OVERRIDE;
   virtual void UpdateWebkitPreferences(
       const webkit_glue::WebPreferences& prefs) OVERRIDE;
+  virtual void NotifyTimezoneChange() OVERRIDE;
 
 #if defined(OS_ANDROID)
   virtual void ActivateNearestFindResult(int request_id,

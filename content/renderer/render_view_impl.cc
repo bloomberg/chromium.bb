@@ -494,6 +494,15 @@ static bool IsNonLocalTopLevelNavigation(const GURL& url,
   return false;
 }
 
+static void NotifyTimezoneChange(WebKit::WebFrame* frame) {
+  v8::HandleScope handle_scope;
+  v8::Context::Scope context_scope(frame->mainWorldScriptContext());
+  v8::Date::DateTimeConfigurationChangeNotification();
+  WebKit::WebFrame* child = frame->firstChild();
+  for (; child; child = child->nextSibling())
+    NotifyTimezoneChange(child);
+}
+
 // Recursively walks the frame tree and serializes it to JSON as described in
 // the comment for ViewMsg_UpdateFrameTree.  If |exclude_frame_subtree| is not
 // NULL, the subtree for the frame is not included in the serialized form.
@@ -995,6 +1004,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnScrollFocusedEditableNodeIntoRect)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateTargetURL_ACK, OnUpdateTargetURLAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateWebPreferences, OnUpdateWebPreferences)
+    IPC_MESSAGE_HANDLER(ViewMsg_TimezoneChange, OnUpdateTimezone)
     IPC_MESSAGE_HANDLER(ViewMsg_SetAltErrorPageURL, OnSetAltErrorPageURL)
     IPC_MESSAGE_HANDLER(ViewMsg_EnumerateDirectoryResponse,
                         OnEnumerateDirectoryResponse)
@@ -5163,6 +5173,11 @@ void RenderViewImpl::OnDragSourceSystemDragEnded() {
 void RenderViewImpl::OnUpdateWebPreferences(const WebPreferences& prefs) {
   webkit_preferences_ = prefs;
   webkit_preferences_.Apply(webview());
+}
+
+void RenderViewImpl::OnUpdateTimezone() {
+  if (webview())
+    NotifyTimezoneChange(webview()->mainFrame());
 }
 
 void RenderViewImpl::OnSetAltErrorPageURL(const GURL& url) {

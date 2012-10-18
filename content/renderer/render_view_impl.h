@@ -1032,6 +1032,7 @@ class RenderViewImpl : public RenderWidget,
   void OnThemeChanged();
   void OnUndo();
   void OnUpdateTargetURLAck();
+  void OnUpdateTimezone();
   CONTENT_EXPORT void OnUpdateWebPreferences(
       const webkit_glue::WebPreferences& prefs);
   CONTENT_EXPORT void OnUnselect();
