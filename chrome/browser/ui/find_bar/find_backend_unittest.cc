@@ -8,9 +8,8 @@
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread.h"
@@ -20,13 +19,18 @@ using content::BrowserThread;
 using content::WebContents;
 using content::WebContentsTester;
 
-class FindBackendTest : public TabContentsTestHarness {
+class FindBackendTest : public ChromeRenderViewHostTestHarness {
  public:
   FindBackendTest()
-      : TabContentsTestHarness(),
+      : ChromeRenderViewHostTestHarness(),
         browser_thread_(BrowserThread::UI, &message_loop_) {}
 
  private:
+  virtual void SetUp() OVERRIDE {
+    ChromeRenderViewHostTestHarness::SetUp();
+    FindTabHelper::CreateForWebContents(web_contents());
+  }
+
   content::TestBrowserThread browser_thread_;
 };
 
@@ -43,7 +47,7 @@ string16 FindPrepopulateText(WebContents* contents) {
 // tests the internal state for find_text and find_prepopulate_text.
 TEST_F(FindBackendTest, InternalState) {
   FindTabHelper* find_tab_helper =
-      FindTabHelper::FromWebContents(tab_contents()->web_contents());
+      FindTabHelper::FromWebContents(web_contents());
   // Initial state for the WebContents is blank strings.
   EXPECT_EQ(string16(), FindPrepopulateText(contents()));
   EXPECT_EQ(string16(), find_tab_helper->find_text());
