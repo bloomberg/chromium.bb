@@ -247,6 +247,25 @@
    fun:WebKit::WebLayerTreeViewImpl::composite
    fun:ui::Compositor::Draw
 }
+# There is not CloseTestNSSDB due to NSS bug 588269.
+# When NSS 3.14 is the minimum version required, this should be removed.
+# http://crbug.com/156433 .
+{
+   bug_156433_a
+   Heapcheck:Leak
+   fun:sqlite3MemMalloc
+   fun:crypto::::NSSInitSingleton::OpenUserDB
+   fun:crypto::::NSSInitSingleton::OpenTestNSSDB
+   fun:crypto::ScopedTestNSSDB::ScopedTestNSSDB
+}
+{
+   bug_156433_b
+   Heapcheck:Leak
+   fun:PORT_Alloc_Util
+   fun:crypto::::NSSInitSingleton::OpenUserDB
+   fun:crypto::::NSSInitSingleton::OpenTestNSSDB
+   fun:crypto::ScopedTestNSSDB::ScopedTestNSSDB
+}
 
 
 #-----------------------------------------------------------------------
