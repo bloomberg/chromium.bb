@@ -40,6 +40,12 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
                                      public ui::ListModelObserver,
                                      public PaginationModelObserver {
  public:
+  enum Pointer {
+    NONE,
+    MOUSE,
+    TOUCH,
+  };
+
   AppsGridView(AppsGridViewDelegate* delegate,
                PaginationModel* pagination_model);
   virtual ~AppsGridView();
@@ -59,8 +65,12 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // transition, this does not thing.
   void EnsureViewVisible(const views::View* view);
 
-  void InitiateDrag(views::View* view, const ui::LocatedEvent& event);
-  void UpdateDrag(views::View* view, const ui::LocatedEvent& event);
+  void InitiateDrag(views::View* view,
+                    Pointer pointer,
+                    const ui::LocatedEvent& event);
+  void UpdateDrag(views::View* view,
+                  Pointer pointer,
+                  const ui::LocatedEvent& event);
   void EndDrag(bool cancel);
   bool IsDraggedView(const views::View* view) const;
 
@@ -90,6 +100,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   };
 
   int tiles_per_page() const { return cols_ * rows_per_page_; }
+  bool dragging() const { return drag_pointer_ != NONE; }
 
   // Updates from model.
   void Update();
@@ -155,7 +166,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   views::View* drag_view_;
   gfx::Point drag_offset_;
-  bool dragging_;
+  Pointer drag_pointer_;
   Index drop_target_;
 
   gfx::Point last_drag_point_;

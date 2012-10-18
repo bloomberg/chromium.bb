@@ -164,7 +164,9 @@ class AppsGridViewTest : public testing::Test {
   }
 
   // Points are in |apps_grid_view_|'s coordinates.
-  void SimulateDrag(const gfx::Point& from, const gfx::Point& to) {
+  void SimulateDrag(AppsGridView::Pointer pointer,
+                    const gfx::Point& from,
+                    const gfx::Point& to) {
     AppListItemView* view = GetItemViewForPoint(from);
     DCHECK(view);
 
@@ -173,11 +175,11 @@ class AppsGridViewTest : public testing::Test {
 
     ui::MouseEvent pressed_event(ui::ET_MOUSE_PRESSED,
                                  translated_from, translated_from, 0);
-    apps_grid_view_->InitiateDrag(view, pressed_event);
+    apps_grid_view_->InitiateDrag(view, pointer, pressed_event);
 
     ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED,
                               translated_to, translated_to, 0);
-    apps_grid_view_->UpdateDrag(view, drag_event);
+    apps_grid_view_->UpdateDrag(view, pointer, drag_event);
   }
 
   scoped_ptr<AppListModel::Apps> apps_model_;
@@ -252,21 +254,21 @@ TEST_F(AppsGridViewTest, MouseDrag) {
   gfx::Point to = GetItemTileRectAt(0, 1).CenterPoint();
 
   // Dragging changes model order.
-  SimulateDrag(from, to);
+  SimulateDrag(AppsGridView::MOUSE, from, to);
   apps_grid_view_->EndDrag(false);
   EXPECT_EQ(std::string("Item 1,Item 0,Item 2,Item 3"),
             GetModelContent());
   test_api_->LayoutToIdealBounds();
 
   // Canceling drag should keep existing order.
-  SimulateDrag(from, to);
+  SimulateDrag(AppsGridView::MOUSE, from, to);
   apps_grid_view_->EndDrag(true);
   EXPECT_EQ(std::string("Item 1,Item 0,Item 2,Item 3"),
             GetModelContent());
   test_api_->LayoutToIdealBounds();
 
   // Deleting an item keeps remaining intact.
-  SimulateDrag(from, to);
+  SimulateDrag(AppsGridView::MOUSE, from, to);
   apps_model_->DeleteAt(1);
   apps_grid_view_->EndDrag(false);
   EXPECT_EQ(std::string("Item 1,Item 2,Item 3"),
@@ -274,7 +276,7 @@ TEST_F(AppsGridViewTest, MouseDrag) {
   test_api_->LayoutToIdealBounds();
 
   // Adding a launcher item cancels the drag and respects the order.
-  SimulateDrag(from, to);
+  SimulateDrag(AppsGridView::MOUSE, from, to);
   apps_model_->Add(CreateItem(std::string("Extra")));
   apps_grid_view_->EndDrag(false);
   EXPECT_EQ(std::string("Item 1,Item 2,Item 3,Extra"),
@@ -299,7 +301,7 @@ TEST_F(AppsGridViewTest, MouseDragFlipPage) {
                              apps_grid_view_->height() / 2);
 
   // Drag to right edge.
-  SimulateDrag(from, to);
+  SimulateDrag(AppsGridView::MOUSE, from, to);
 
   // Page should be flipped after sometime.
   EXPECT_TRUE(page_flip_waiter.Wait(100));
@@ -318,7 +320,7 @@ TEST_F(AppsGridViewTest, MouseDragFlipPage) {
   // Now drag to the left edge and test the other direction.
   to.set_x(0);
 
-  SimulateDrag(from, to);
+  SimulateDrag(AppsGridView::MOUSE, from, to);
 
   EXPECT_TRUE(page_flip_waiter.Wait(100));
   EXPECT_EQ(1, pagination_model_->selected_page());
@@ -329,6 +331,37 @@ TEST_F(AppsGridViewTest, MouseDragFlipPage) {
   EXPECT_FALSE(page_flip_waiter.Wait(100));
   EXPECT_EQ(0, pagination_model_->selected_page());
   apps_grid_view_->EndDrag(true);
+}
+
+TEST_F(AppsGridViewTest, SimultaneousDrag) {
+  const int kTotalItems = 4;
+  PopulateApps(kTotalItems);
+  EXPECT_EQ(std::string("Item 0,Item 1,Item 2,Item 3"),
+            GetModelContent());
+
+  gfx::Point mouse_from = GetItemTileRectAt(0, 0).CenterPoint();
+  gfx::Point mouse_to = GetItemTileRectAt(0, 1).CenterPoint();
+
+  gfx::Point touch_from = GetItemTileRectAt(1, 0).CenterPoint();
+  gfx::Point touch_to = GetItemTileRectAt(1, 1).CenterPoint();
+
+  // Starts a mouse drag first then a touch drag.
+  SimulateDrag(AppsGridView::MOUSE, mouse_from, mouse_to);
+  SimulateDrag(AppsGridView::TOUCH, touch_from, touch_to);
+  // Finishes the drag and mouse drag wins.
+  apps_grid_view_->EndDrag(false);
+  EXPECT_EQ(std::string("Item 1,Item 0,Item 2,Item 3"),
+            GetModelContent());
+  test_api_->LayoutToIdealBounds();
+
+  // Starts a touch drag first then a mouse drag.
+  SimulateDrag(AppsGridView::TOUCH, touch_from, touch_to);
+  SimulateDrag(AppsGridView::MOUSE, mouse_from, mouse_to);
+  // Finishes the drag and touch drag wins.
+  apps_grid_view_->EndDrag(false);
+  EXPECT_EQ(std::string("Item 1,Item 0,Item 3,Item 2"),
+            GetModelContent());
+  test_api_->LayoutToIdealBounds();
 }
 
 }  // namespace test

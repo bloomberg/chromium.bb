@@ -12,9 +12,12 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/transform_util.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_item_view.h"
@@ -38,6 +41,12 @@ const SkColor kHighlightedColor = kHoverAndPushedColor;
 
 const int kTitleFontSize = 11;
 const int kLeftRightPaddingChars = 1;
+
+// Delay in milliseconds of when a touch drag should start after tap down.
+const int kTouchDragStartDelayInMs = 100;
+
+// Scale to transform when touch drag starts.
+const float kTouchDraggingScale = 1.5f;
 
 const gfx::Font& GetTitleFont() {
   static gfx::Font* font = NULL;
@@ -65,7 +74,8 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
       model_(model),
       apps_grid_view_(apps_grid_view),
       icon_(new views::ImageView),
-      title_(new views::Label) {
+      title_(new views::Label),
+      touch_dragging_(false) {
   icon_->set_interactive(false);
 
   title_->SetBackgroundColor(0);
@@ -119,6 +129,31 @@ void AppListItemView::UpdateIcon() {
       gfx::ImageSkiaOperations::CreateImageWithDropShadow(resized,
                                                           icon_shadows_));
   icon_->SetImage(shadow);
+}
+
+void AppListItemView::OnTouchDragTimer() {
+  SetTouchDragging(true);
+}
+
+void AppListItemView::SetTouchDragging(bool touch_dragging) {
+  if (touch_dragging_ == touch_dragging)
+    return;
+
+  touch_dragging_ = touch_dragging;
+
+#if !defined(OS_WIN)
+  ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
+  if (touch_dragging_) {
+    title_->SetVisible(false);
+    const gfx::Rect bounds(layer()->bounds().size());
+    layer()->SetTransform(gfx::GetScaleTransform(
+        bounds.CenterPoint(),
+        kTouchDraggingScale));
+  } else {
+    title_->SetVisible(true);
+    layer()->SetTransform(gfx::Transform());
+  }
+#endif
 }
 
 void AppListItemView::ItemIconChanged() {
@@ -221,7 +256,7 @@ bool AppListItemView::ShouldEnterPushedState(const ui::Event& event) {
 
 bool AppListItemView::OnMousePressed(const ui::MouseEvent& event) {
   CustomButton::OnMousePressed(event);
-  apps_grid_view_->InitiateDrag(this, event);
+  apps_grid_view_->InitiateDrag(this, AppsGridView::MOUSE, event);
   return true;
 }
 
@@ -237,8 +272,49 @@ void AppListItemView::OnMouseCaptureLost() {
 
 bool AppListItemView::OnMouseDragged(const ui::MouseEvent& event) {
   CustomButton::OnMouseDragged(event);
-  apps_grid_view_->UpdateDrag(this, event);
+  apps_grid_view_->UpdateDrag(this, AppsGridView::MOUSE, event);
   return true;
+}
+
+ui::EventResult AppListItemView::OnGestureEvent(
+    const ui::GestureEvent& event) {
+  switch (event.type()) {
+    case ui::ET_GESTURE_TAP_DOWN:
+      touch_drag_timer_.Start(FROM_HERE,
+         base::TimeDelta::FromMilliseconds(kTouchDragStartDelayInMs),
+         this, &AppListItemView::OnTouchDragTimer);
+      break;
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+      if (touch_dragging_) {
+        apps_grid_view_->InitiateDrag(this, AppsGridView::TOUCH, event);
+        return ui::ER_CONSUMED;
+      } else {
+        touch_drag_timer_.Stop();
+      }
+      break;
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      if (touch_dragging_) {
+        apps_grid_view_->UpdateDrag(this, AppsGridView::TOUCH, event);
+        return ui::ER_CONSUMED;
+      }
+      break;
+    case ui::ET_GESTURE_SCROLL_END:
+    case ui::ET_SCROLL_FLING_START:
+      if (touch_dragging_) {
+        SetTouchDragging(false);
+        apps_grid_view_->EndDrag(false);
+        return ui::ER_CONSUMED;
+      }
+      break;
+    case ui::ET_GESTURE_END:
+    case ui::ET_GESTURE_LONG_PRESS:
+      touch_drag_timer_.Stop();
+      SetTouchDragging(false);
+      break;
+    default:
+      break;
+  }
+  return CustomButton::OnGestureEvent(event);
 }
 
 }  // namespace app_list

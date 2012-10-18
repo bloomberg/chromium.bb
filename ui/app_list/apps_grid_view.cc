@@ -49,7 +49,7 @@ AppsGridView::AppsGridView(AppsGridViewDelegate* delegate,
       rows_per_page_(0),
       selected_view_(NULL),
       drag_view_(NULL),
-      dragging_(false),
+      drag_pointer_(NONE),
       page_flip_target_(-1),
       page_flip_delay_in_ms_(kPageFlipDelayInMs),
       ALLOW_THIS_IN_INITIALIZER_LIST(bounds_animator_(this)) {
@@ -112,6 +112,7 @@ void AppsGridView::EnsureViewVisible(const views::View* view) {
 }
 
 void AppsGridView::InitiateDrag(views::View* view,
+                                Pointer pointer,
                                 const ui::LocatedEvent& event) {
   if (drag_view_)
     return;
@@ -121,16 +122,17 @@ void AppsGridView::InitiateDrag(views::View* view,
 }
 
 void AppsGridView::UpdateDrag(views::View* view,
+                              Pointer pointer,
                               const ui::LocatedEvent& event) {
-  if (!dragging_ && drag_view_ &&
+  if (!dragging() && drag_view_ &&
       ExceededDragThreshold(event.x() - drag_offset_.x(),
                             event.y() - drag_offset_.y())) {
-    dragging_ = true;
+    drag_pointer_ = pointer;
     // Move the view to the front so that it appears on top of other views.
     ReorderChildView(drag_view_, -1);
     bounds_animator_.StopAnimatingView(drag_view_);
   }
-  if (dragging_) {
+  if (drag_pointer_ == pointer) {
     last_drag_point_ = event.location();
     views::View::ConvertPointToTarget(drag_view_, this, &last_drag_point_);
 
@@ -143,16 +145,15 @@ void AppsGridView::UpdateDrag(views::View* view,
     page_switcher_view_->UpdateUIForDragPoint(page_switcher_point);
 
     AnimateToIdealBounds();
-    bounds_animator_.StopAnimatingView(drag_view_);
     drag_view_->SetPosition(last_drag_point_.Subtract(drag_offset_));
   }
 }
 
 void AppsGridView::EndDrag(bool cancel) {
-  if (!cancel && dragging_ && drag_view_ && IsValidIndex(drop_target_))
+  if (!cancel && dragging() && drag_view_ && IsValidIndex(drop_target_))
     MoveItemInModel(drag_view_, drop_target_);
 
-  dragging_ = false;
+  drag_pointer_ = NONE;
   drop_target_ = Index();
   if (drag_view_) {
     drag_view_ = NULL;
@@ -180,15 +181,14 @@ gfx::Size AppsGridView::GetPreferredSize() {
 }
 
 void AppsGridView::Layout() {
-  if (bounds_animator_.IsAnimating()) {
-    AnimateToIdealBounds();
-  } else {
-    CalculateIdealBounds();
-    for (int i = 0; i < view_model_.view_size(); ++i) {
-      views::View* view = view_model_.view_at(i);
-      if (view != drag_view_)
-        view->SetBoundsRect(view_model_.ideal_bounds(i));
-    }
+  if (bounds_animator_.IsAnimating())
+    bounds_animator_.Cancel();
+
+  CalculateIdealBounds();
+  for (int i = 0; i < view_model_.view_size(); ++i) {
+    views::View* view = view_model_.view_at(i);
+    if (view != drag_view_)
+      view->SetBoundsRect(view_model_.ideal_bounds(i));
   }
 
   const int page_switcher_height =
@@ -412,8 +412,11 @@ void AppsGridView::CalculateIdealBounds() {
 void AppsGridView::AnimateToIdealBounds() {
   CalculateIdealBounds();
   for (int i = 0; i < view_model_.view_size(); ++i) {
-    bounds_animator_.AnimateViewTo(view_model_.view_at(i),
-                                   view_model_.ideal_bounds(i));
+    views::View* view = view_model_.view_at(i);
+    if (view != drag_view_) {
+      bounds_animator_.AnimateViewTo(view,
+                                     view_model_.ideal_bounds(i));
+    }
   }
 }
 
@@ -511,7 +514,7 @@ void AppsGridView::MoveItemInModel(views::View* item_view,
 
 void AppsGridView::ButtonPressed(views::Button* sender,
                                  const ui::Event& event) {
-  if (dragging_)
+  if (dragging())
     return;
 
   if (sender->GetClassName() != AppListItemView::kViewClassName)
@@ -525,7 +528,6 @@ void AppsGridView::ButtonPressed(views::Button* sender,
 
 void AppsGridView::ListItemsAdded(size_t start, size_t count) {
   EndDrag(true);
-  bounds_animator_.Cancel();
 
   for (size_t i = start; i < start + count; ++i) {
     views::View* view = CreateViewForItemAtIndex(i);
@@ -541,7 +543,6 @@ void AppsGridView::ListItemsAdded(size_t start, size_t count) {
 
 void AppsGridView::ListItemsRemoved(size_t start, size_t count) {
   EndDrag(true);
-  bounds_animator_.Cancel();
 
   for (size_t i = 0; i < count; ++i) {
     views::View* view = view_model_.view_at(start);
@@ -571,7 +572,7 @@ void AppsGridView::TotalPagesChanged() {
 }
 
 void AppsGridView::SelectedPageChanged(int old_selected, int new_selected) {
-  if (dragging_ && drag_view_) {
+  if (dragging()) {
     CalculateDropTarget(last_drag_point_);
     Layout();
     MaybeStartPageFlipTimer(last_drag_point_);
