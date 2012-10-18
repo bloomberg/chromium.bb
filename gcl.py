@@ -123,6 +123,9 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
   Note: The cache will be inconsistent if the same file is retrieved with both
         use_root=True and use_root=False. Don't be stupid.
   """
+  if not os.path.isdir(GetCacheDir()):
+    os.makedirs(GetCacheDir())
+
   if filename not in FILES_CACHE:
     # Don't try to look up twice.
     FILES_CACHE[filename] = None
