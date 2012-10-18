@@ -43,6 +43,7 @@ class ContentDecryptor_Private {
                                    uint32_t request_id) = 0;
   virtual void ResetDecoder(PP_DecryptorStreamType decoder_type,
                             uint32_t request_id) = 0;
+  // Null |encrypted_frame| means end-of-stream buffer.
   virtual void DecryptAndDecode(
       PP_DecryptorStreamType decoder_type,
       pp::Buffer_Dev encrypted_buffer,

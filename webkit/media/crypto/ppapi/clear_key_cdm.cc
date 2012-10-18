@@ -15,6 +15,7 @@ static const char kClearKeyCdmVersion[] = "0.1.0.0";
 
 static scoped_refptr<media::DecoderBuffer> CopyDecoderBufferFrom(
     const cdm::InputBuffer& input_buffer) {
+  DCHECK(input_buffer.data);
   // TODO(tomfinegan): Get rid of this copy.
   scoped_refptr<media::DecoderBuffer> output_buffer =
       media::DecoderBuffer::CopyFrom(input_buffer.data, input_buffer.data_size);

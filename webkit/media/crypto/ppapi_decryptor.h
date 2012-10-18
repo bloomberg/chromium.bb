@@ -66,10 +66,13 @@ class PpapiDecryptor : public media::Decryptor {
   void ReportFailureToCallPlugin(const std::string& key_system,
                                  const std::string& session_id);
 
+  void OnVideoDecoderInitialized(bool success);
+
   media::DecryptorClient* client_;
   scoped_refptr<webkit::ppapi::PluginInstance> cdm_plugin_;
   scoped_refptr<base::MessageLoopProxy> render_loop_proxy_;
 
+  DecoderInitCB video_decoder_init_cb_;
   KeyAddedCB key_added_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(PpapiDecryptor);

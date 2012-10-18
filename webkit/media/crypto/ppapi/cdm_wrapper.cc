@@ -62,6 +62,8 @@ void ConfigureInputBuffer(
     std::vector<cdm::SubsampleEntry>* subsamples,
     cdm::InputBuffer* input_buffer) {
   PP_DCHECK(subsamples);
+  PP_DCHECK(!encrypted_buffer.is_null());
+
   input_buffer->data = reinterpret_cast<uint8_t*>(encrypted_buffer.data());
   input_buffer->data_size = encrypted_buffer.size();
   input_buffer->data_offset = encrypted_block_info.data_offset;
@@ -644,16 +646,16 @@ void CdmWrapper::DecryptAndDecode(
     const PP_EncryptedBlockInfo& encrypted_block_info) {
   // TODO(tomfinegan): Remove this check when audio decoding is added.
   PP_DCHECK(decoder_type == PP_DECRYPTORSTREAMTYPE_VIDEO);
-
-  PP_DCHECK(!encrypted_buffer.is_null());
   PP_DCHECK(cdm_);
 
   cdm::InputBuffer input_buffer;
   std::vector<cdm::SubsampleEntry> subsamples;
-  ConfigureInputBuffer(encrypted_buffer,
-                       encrypted_block_info,
-                       &subsamples,
-                       &input_buffer);
+  if (!encrypted_buffer.is_null()) {
+    ConfigureInputBuffer(encrypted_buffer,
+                         encrypted_block_info,
+                         &subsamples,
+                         &input_buffer);
+  }
 
   LinkedVideoFrame video_frame(new VideoFrameImpl());
   cdm::Status status = cdm_->DecryptAndDecodeFrame(input_buffer,
@@ -784,12 +786,19 @@ void CdmWrapper::DeliverFrame(
 
   switch (status) {
     case cdm::kSuccess:
-      PP_DCHECK(video_frame->format() == cdm::kI420 ||
+      PP_DCHECK(video_frame.get());
+      PP_DCHECK(video_frame->format() == cdm::kEmptyVideoFrame ||
+                video_frame->format() == cdm::kI420 ||
                 video_frame->format() == cdm::kYv12);
-      PP_DCHECK(video_frame.get() && video_frame->frame_buffer());
+
       decrypted_frame_info.result = PP_DECRYPTRESULT_SUCCESS;
       decrypted_frame_info.format =
           CdmVideoFormatToPpDecryptedFrameFormat(video_frame->format());
+
+      if (video_frame->format() == cdm::kEmptyVideoFrame)
+        break;
+
+      PP_DCHECK(video_frame->frame_buffer());
       decrypted_frame_info.width = video_frame->size().width;
       decrypted_frame_info.height = video_frame->size().height;
       decrypted_frame_info.plane_offsets[PP_DECRYPTEDFRAMEPLANES_Y] =

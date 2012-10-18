@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -37,7 +38,7 @@ PpapiDecryptor::~PpapiDecryptor() {
 bool PpapiDecryptor::GenerateKeyRequest(const std::string& key_system,
                                         const uint8* init_data,
                                         int init_data_length) {
-  DVLOG(1) << "GenerateKeyRequest()";
+  DVLOG(2) << "GenerateKeyRequest()";
   DCHECK(render_loop_proxy_->BelongsToCurrentThread());
   DCHECK(cdm_plugin_);
 
@@ -60,7 +61,7 @@ void PpapiDecryptor::AddKey(const std::string& key_system,
                             const uint8* init_data,
                             int init_data_length,
                             const std::string& session_id) {
-  DVLOG(1) << "AddKey()";
+  DVLOG(2) << "AddKey()";
   DCHECK(render_loop_proxy_->BelongsToCurrentThread());
   DCHECK(cdm_plugin_);
 
@@ -78,7 +79,7 @@ void PpapiDecryptor::AddKey(const std::string& key_system,
 
 void PpapiDecryptor::CancelKeyRequest(const std::string& key_system,
                                       const std::string& session_id) {
-  DVLOG(1) << "CancelKeyRequest()";
+  DVLOG(2) << "CancelKeyRequest()";
   DCHECK(render_loop_proxy_->BelongsToCurrentThread());
   DCHECK(cdm_plugin_);
 
@@ -99,7 +100,7 @@ void PpapiDecryptor::Decrypt(
     return;
   }
 
-  DVLOG(1) << "Decrypt()";
+  DVLOG(3) << "Decrypt()";
   if (!cdm_plugin_->Decrypt(encrypted, decrypt_cb))
     decrypt_cb.Run(kError, NULL);
 }
@@ -122,19 +123,21 @@ void PpapiDecryptor::InitializeVideoDecoder(
     return;
   }
 
-  DVLOG(1) << "InitializeVideoDecoder()";
+  DVLOG(2) << "InitializeVideoDecoder()";
   DCHECK(config->is_encrypted());
   DCHECK(config->IsValidConfig());
 
-  // TODO(xhwang): Enable this once PluginInstance is updated.
-  // if (!cdm_plugin_->InitializeVideoDecoder(video_config.Pass(), init_cb))
-  {
-    init_cb.Run(false);
+  video_decoder_init_cb_ = init_cb;
+  key_added_cb_ = key_added_cb;
+
+  if (!cdm_plugin_->InitializeVideoDecoder(
+      *config,
+      base::Bind(&PpapiDecryptor::OnVideoDecoderInitialized,
+                 base::Unretained(this)))) {
+    key_added_cb_.Reset();
+    base::ResetAndReturn(&video_decoder_init_cb_).Run(false);
     return;
   }
-
-  key_added_cb_ = key_added_cb;
-  init_cb.Run(true);
 }
 
 void PpapiDecryptor::DecryptAndDecodeVideo(
@@ -148,32 +151,50 @@ void PpapiDecryptor::DecryptAndDecodeVideo(
     return;
   }
 
-  DVLOG(1) << "DecryptAndDecodeVideo()";
-  // TODO(xhwang): Enable this once PluginInstance is updated.
-  // if (!cdm_plugin_->DecryptAndDecodeVideo(encrypted, video_decode_cb))
-  //   video_decode_cb.Run(kError, NULL);
-  NOTIMPLEMENTED();
-  video_decode_cb.Run(kError, NULL);
+  DVLOG(3) << "DecryptAndDecodeVideo()";
+  if (!cdm_plugin_->DecryptAndDecode(encrypted, video_decode_cb))
+    video_decode_cb.Run(kError, NULL);
 }
 
 void PpapiDecryptor::CancelDecryptAndDecodeVideo() {
-  DVLOG(1) << "CancelDecryptAndDecodeVideo()";
-  // TODO(xhwang): Implement CancelDecryptAndDecodeVideo() in PluginInstance
-  // and call it here.
-  NOTIMPLEMENTED();
+  if (!render_loop_proxy_->BelongsToCurrentThread()) {
+    render_loop_proxy_->PostTask(
+        FROM_HERE,
+        base::Bind(&PpapiDecryptor::CancelDecryptAndDecodeVideo,
+                   base::Unretained(this)));
+    return;
+  }
+
+  DVLOG(2) << "CancelDecryptAndDecodeVideo()";
+  cdm_plugin_->ResetDecoder();
 }
 
 void PpapiDecryptor::StopVideoDecoder() {
-  DVLOG(1) << "StopVideoDecoder()";
-  // TODO(xhwang): Implement StopVideoDecoder() in PluginInstance
-  // and call it here.
-  NOTIMPLEMENTED();
+  if (!render_loop_proxy_->BelongsToCurrentThread()) {
+    render_loop_proxy_->PostTask(
+        FROM_HERE,
+        base::Bind(&PpapiDecryptor::StopVideoDecoder, base::Unretained(this)));
+    return;
+  }
+
+  DVLOG(2) << "StopVideoDecoder()";
+  cdm_plugin_->DeinitializeDecoder();
 }
 
 void PpapiDecryptor::ReportFailureToCallPlugin(const std::string& key_system,
                                                const std::string& session_id) {
   DVLOG(1) << "Failed to call plugin.";
   client_->KeyError(key_system, session_id, kUnknownError, 0);
+}
+
+void PpapiDecryptor::OnVideoDecoderInitialized(bool success) {
+  DCHECK(!key_added_cb_.is_null());
+  DCHECK(!video_decoder_init_cb_.is_null());
+
+  if (!success)
+    key_added_cb_.Reset();
+
+  base::ResetAndReturn(&video_decoder_init_cb_).Run(success);
 }
 
 }  // namespace webkit_media

@@ -263,19 +263,17 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   bool CancelKeyRequest(const std::string& session_id);
   bool Decrypt(const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
                const media::Decryptor::DecryptCB& decrypt_cb);
-  // TODO(xhwang): Change DecryptCB to a DecoderInitCB.
   bool InitializeVideoDecoder(
       const media::VideoDecoderConfig& decoder_config,
-      const media::Decryptor::DecryptCB& decrypt_cb);
+      const media::Decryptor::DecoderInitCB& decoder_init_cb);
   // TODO(tomfinegan): Add callback args for DeinitializeDecoder() and
   // ResetDecoder()
   bool DeinitializeDecoder();
   bool ResetDecoder();
-  // TODO(xhwang): Update this when we need to support decrypt and decode.
   // Note: This method can be used with an unencrypted frame.
   bool DecryptAndDecode(
       const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
-      const media::Decryptor::DecryptCB& decrypt_cb);
+      const media::Decryptor::VideoDecodeCB& video_decode_cb);
 
   // There are 2 implementations of the fullscreen interface
   // PPB_FlashFullscreen is used by Pepper Flash.
@@ -782,9 +780,23 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   scoped_refptr<PPB_URLLoader_Impl> document_loader_;
 
   media::DecryptorClient* decryptor_client_;
+
+  // Request ID for tracking pending content decryption callbacks.
+  // Note that zero indicates an invalid request ID.
+  // TODO(xhwang): Add completion callbacks for Reset/Stop and remove the use
+  // of request IDs.
   uint32_t next_decryption_request_id_;
+
+  // TODO(xhwang): Use two separate callbacks for video and audio instead using
+  // a map here.
   typedef std::map<uint32_t, media::Decryptor::DecryptCB> DecryptionCBMap;
   DecryptionCBMap pending_decryption_cbs_;
+
+  uint32_t pending_video_decoder_init_request_id_;
+  media::Decryptor::DecoderInitCB pending_video_decoder_init_cb_;
+
+  uint32_t pending_video_decode_request_id_;
+  media::Decryptor::VideoDecodeCB pending_video_decode_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInstance);
 };

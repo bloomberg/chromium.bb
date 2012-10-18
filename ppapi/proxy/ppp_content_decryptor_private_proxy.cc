@@ -100,6 +100,13 @@ bool InitializePppDecryptorBuffer(PP_Instance instance,
     return false;
   }
 
+  if (resource == 0) {
+    buffer->resource = HostResource();
+    buffer->handle = base::SharedMemoryHandle();
+    buffer->size = 0;
+    return true;
+  }
+
   if (!AddRefResourceForPlugin(dispatcher, resource))
     return false;
 
