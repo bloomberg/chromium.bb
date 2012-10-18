@@ -97,8 +97,10 @@ TEST_F(QueryParserTest, ParseQueryNodesAndMatch) {
     const size_t m2_start;
     const size_t m2_end;
   } data[] = {
+    { "foo",           "fooey foo",        true,  0, 3, 6, 9 },
     { "foo foo",       "foo",              true,  0, 3, 0, 0 },
     { "foo fooey",     "fooey",            true,  0, 5, 0, 0 },
+    { "fooey foo",     "fooey",            true,  0, 5, 0, 0 },
     { "foo fooey bar", "bar fooey",        true,  0, 3, 4, 9 },
     { "blah",          "blah",             true,  0, 4, 0, 0 },
     { "blah",          "foo",              false, 0, 0, 0, 0 },

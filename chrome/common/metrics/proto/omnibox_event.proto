@@ -86,6 +86,7 @@ message OmniboxEventProto {
     SHORTCUTS = 7;         // Recently selected omnibox suggestions
     EXTENSION_APPS = 8;    // Custom suggestions from extensions and/or apps
     CONTACT = 9;           // The user's contacts
+    BOOKMARK = 10;         // The user's bookmarks
   }
 
   // The result set displayed on the completion popup
@@ -116,6 +117,7 @@ message OmniboxEventProto {
       EXTENSION_APP = 11;         // An Extension App with a title/url that
                                   // contains the input
       CONTACT = 12;               // One of the user's contacts
+      BOOKMARK_TITLE = 13;        // A bookmark whose title contains the input.
     };
     optional ResultType result_type = 2;
 

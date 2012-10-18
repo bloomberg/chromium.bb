@@ -123,6 +123,10 @@ void BookmarkIndex::SortMatches(const Matches& matches,
 
   std::sort(node_typed_counts->begin(), node_typed_counts->end(),
             &NodeTypedCountPairSortFunc);
+  // Eliminate duplicates.
+  node_typed_counts->erase(std::unique(node_typed_counts->begin(),
+                                       node_typed_counts->end()),
+                           node_typed_counts->end());
 }
 
 void BookmarkIndex::ExtractBookmarkNodePairs(

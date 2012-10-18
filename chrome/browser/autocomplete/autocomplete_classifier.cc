@@ -13,6 +13,7 @@
 
 // static
 const int AutocompleteClassifier::kDefaultOmniboxProviders =
+    AutocompleteProvider::TYPE_BOOKMARK |
     AutocompleteProvider::TYPE_BUILTIN |
     AutocompleteProvider::TYPE_EXTENSION_APP |
     AutocompleteProvider::TYPE_HISTORY_CONTENTS |

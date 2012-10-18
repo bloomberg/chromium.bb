@@ -34,6 +34,8 @@ AutocompleteProvider::AutocompleteProvider(
 // static
 const char* AutocompleteProvider::TypeToString(Type type) {
   switch (type) {
+    case TYPE_BOOKMARK:
+      return "Bookmark";
     case TYPE_BUILTIN:
       return "Builtin";
     case TYPE_CONTACT:
@@ -71,6 +73,8 @@ const char* AutocompleteProvider::GetName() const {
 metrics::OmniboxEventProto_ProviderType AutocompleteProvider::
     AsOmniboxEventProviderType() const {
   switch (type_) {
+    case TYPE_BOOKMARK:
+      return metrics::OmniboxEventProto::BOOKMARK;
     case TYPE_BUILTIN:
       return metrics::OmniboxEventProto::BUILTIN;
     case TYPE_CONTACT:

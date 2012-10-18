@@ -50,6 +50,7 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // Search Primary Provider (past query in history older than 2 days)   | 1050--
 // HistoryContents (any match in title of starred page)                | 1000++
 // HistoryURL (some inexact matches)                                   |  900++
+// BookmarkProvider (prefix match in bookmark title)                   |  900+-
 // Search Primary Provider (navigational suggestion)                   |  800++
 // HistoryContents (any match in title of nonstarred page)             |  700++
 // Search Primary Provider (suggestion)                                |  600++
@@ -121,6 +122,7 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // Search Primary Provider (past query in history older than 2 days)   | 1050--
 // HistoryContents (any match in title of starred page)                | 1000++
 // HistoryURL (inexact match)                                          |  900++
+// BookmarkProvider (prefix match in bookmark title)                   |  900+-
 // Search Primary Provider (navigational suggestion)                   |  800++
 // HistoryContents (any match in title of nonstarred page)             |  700++
 // Search Primary Provider (suggestion)                                |  600++
@@ -166,6 +168,8 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // *~: Partial matches get a score on a sliding scale from about 575-1125 based
 //     on how many times the URL for the Extension App has been typed and how
 //     many of the letters match.
+// +-: A base score that the provider will adjust upward or downward based on
+//     provider-specific metrics.
 //
 // A single result provider for the autocomplete system.  Given user input, the
 // provider decides what (if any) matches to return, their relevance, and their
@@ -175,16 +179,17 @@ class AutocompleteProvider
  public:
   // Different AutocompleteProvider implementations.
   enum Type {
-    TYPE_BUILTIN          = 1 << 0,
-    TYPE_CONTACT          = 1 << 1,
-    TYPE_EXTENSION_APP    = 1 << 2,
-    TYPE_HISTORY_CONTENTS = 1 << 3,
-    TYPE_HISTORY_QUICK    = 1 << 4,
-    TYPE_HISTORY_URL      = 1 << 5,
-    TYPE_KEYWORD          = 1 << 6,
-    TYPE_SEARCH           = 1 << 7,
-    TYPE_SHORTCUTS        = 1 << 8,
-    TYPE_ZERO_SUGGEST     = 1 << 9,
+    TYPE_BOOKMARK         = 1 << 0,
+    TYPE_BUILTIN          = 1 << 1,
+    TYPE_CONTACT          = 1 << 2,
+    TYPE_EXTENSION_APP    = 1 << 3,
+    TYPE_HISTORY_CONTENTS = 1 << 4,
+    TYPE_HISTORY_QUICK    = 1 << 5,
+    TYPE_HISTORY_URL      = 1 << 6,
+    TYPE_KEYWORD          = 1 << 7,
+    TYPE_SEARCH           = 1 << 8,
+    TYPE_SHORTCUTS        = 1 << 9,
+    TYPE_ZERO_SUGGEST     = 1 << 10,
   };
 
   AutocompleteProvider(AutocompleteProviderListener* listener,

@@ -22,7 +22,7 @@ int CompareMatchPosition(const Snippet::MatchPosition& mp1,
 }
 
 // Returns true if |mp2| intersects |mp1|. This is intended for use by
-// CoalesceMatchesFrom and isn't meant as a general intersectpion comparison
+// CoalesceMatchesFrom and isn't meant as a general intersection comparison
 // function.
 bool SnippetIntersects(const Snippet::MatchPosition& mp1,
                        const Snippet::MatchPosition& mp2) {
@@ -36,7 +36,7 @@ void CoalesceMatchesFrom(size_t index, Snippet::MatchPositions* matches) {
   for (Snippet::MatchPositions::iterator i = matches->begin() + index + 1;
        i != matches->end(); ) {
     if (SnippetIntersects(mp, *i)) {
-      mp.second = i->second;
+      mp.second = std::max(mp.second, i->second);
       i = matches->erase(i);
     } else {
       return;
@@ -125,16 +125,17 @@ bool QueryNodeWord::Matches(const string16& word, bool exact) const {
 
 bool QueryNodeWord::HasMatchIn(const std::vector<QueryWord>& words,
                                Snippet::MatchPositions* match_positions) const {
+  bool matched = false;
   for (size_t i = 0; i < words.size(); ++i) {
     if (Matches(words[i].word, false)) {
       size_t match_start = words[i].position;
       match_positions->push_back(
           Snippet::MatchPosition(match_start,
                                  match_start + static_cast<int>(word_.size())));
-      return true;
+      matched = true;
     }
   }
-  return false;
+  return matched;
 }
 
 void QueryNodeWord::AppendWords(std::vector<string16>* words) const {

@@ -15,6 +15,7 @@
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
+#include "chrome/browser/autocomplete/bookmark_provider.h"
 #include "chrome/browser/autocomplete/builtin_provider.h"
 #include "chrome/browser/autocomplete/extension_app_provider.h"
 #include "chrome/browser/autocomplete/history_contents_provider.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -52,6 +54,8 @@ int AutocompleteMatchToAssistedQueryType(const AutocompleteMatch::Type& type) {
     case AutocompleteMatch::HISTORY_TITLE:         return 61;
     case AutocompleteMatch::HISTORY_BODY:          return 62;
     case AutocompleteMatch::HISTORY_KEYWORD:       return 63;
+    case AutocompleteMatch::BOOKMARK_TITLE:        return 65;
+    // NOTE: Default must remain 64 for server-side compatability.
     default:                                       return 64;
   }
 }
@@ -136,6 +140,11 @@ AutocompleteController::AutocompleteController(
     if (zero_suggest_provider_)
       providers_.push_back(zero_suggest_provider_);
   }
+
+  if ((provider_types & AutocompleteProvider::TYPE_BOOKMARK) &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableBookmarkAutocompleteProvider))
+    providers_.push_back(new BookmarkProvider(this, profile));
 
   for (ACProviders::iterator i(providers_.begin()); i != providers_.end(); ++i)
     (*i)->AddRef();

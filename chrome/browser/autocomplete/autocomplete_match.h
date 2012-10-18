@@ -90,6 +90,7 @@ struct AutocompleteMatch {
     EXTENSION_APP,           // An Extension App with a title/url that contains
                              // the input.
     CONTACT,                 // One of the user's contacts.
+    BOOKMARK_TITLE,          // A bookmark whose title contains the input.
     NUM_TYPES,
   };
 

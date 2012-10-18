@@ -62,8 +62,8 @@ class BookmarkIndex {
   typedef std::pair<const BookmarkNode*, int> NodeTypedCountPair;
   typedef std::vector<NodeTypedCountPair> NodeTypedCountPairs;
 
-  // Extracts |matches.nodes| into NodeTypedCountPairs and sorts the pairs in
-  // decreasing order of typed count.
+  // Extracts |matches.nodes| into NodeTypedCountPairs, sorts the pairs in
+  // decreasing order of typed count, and then de-dupes the matches.
   void SortMatches(const Matches& matches,
                    NodeTypedCountPairs* node_typed_counts) const;
 

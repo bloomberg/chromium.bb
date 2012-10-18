@@ -127,6 +127,8 @@ OmniboxEventProto::Suggestion::ResultType AsOmniboxEventResultType(
       return OmniboxEventProto::Suggestion::EXTENSION_APP;
     case AutocompleteMatch::CONTACT:
       return OmniboxEventProto::Suggestion::CONTACT;
+    case AutocompleteMatch::BOOKMARK_TITLE:
+      return OmniboxEventProto::Suggestion::BOOKMARK_TITLE;
     default:
       NOTREACHED();
       return OmniboxEventProto::Suggestion::UNKNOWN_RESULT_TYPE;

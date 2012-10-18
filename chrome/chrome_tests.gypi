@@ -1026,6 +1026,7 @@
         'browser/autocomplete/autocomplete_match_unittest.cc',
         'browser/autocomplete/autocomplete_provider_unittest.cc',
         'browser/autocomplete/autocomplete_result_unittest.cc',
+        'browser/autocomplete/bookmark_provider_unittest.cc',
         'browser/autocomplete/builtin_provider_unittest.cc',
         'browser/autocomplete/contact_provider_chromeos_unittest.cc',
         'browser/autocomplete/extension_app_provider_unittest.cc',

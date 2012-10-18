@@ -184,6 +184,8 @@
         'browser/autocomplete/autocomplete_provider_listener.h',
         'browser/autocomplete/autocomplete_result.cc',
         'browser/autocomplete/autocomplete_result.h',
+        'browser/autocomplete/bookmark_provider.cc',
+        'browser/autocomplete/bookmark_provider.h',
         'browser/autocomplete/builtin_provider.cc',
         'browser/autocomplete/builtin_provider.h',
         'browser/autocomplete/contact_provider_chromeos.cc',

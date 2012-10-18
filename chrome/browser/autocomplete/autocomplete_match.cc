@@ -144,6 +144,7 @@ std::string AutocompleteMatch::TypeToString(Type type) {
     "search-other-engine",
     "extension-app",
     "contact",
+    "bookmark-title",
   };
   COMPILE_ASSERT(arraysize(strings) == NUM_TYPES,
                  strings_array_must_match_type_enum);
@@ -167,6 +168,7 @@ int AutocompleteMatch::TypeToIcon(Type type) {
     // ContactProvider isn't used by the omnibox, so this icon is never
     // displayed.
     IDR_OMNIBOX_SEARCH,
+    IDR_OMNIBOX_HTTP,
   };
   COMPILE_ASSERT(arraysize(icons) == NUM_TYPES,
                  icons_array_must_match_type_enum);

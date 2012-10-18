@@ -40,9 +40,9 @@ class QueryNode {
   // must exactly match. Otherwise, this uses a starts with comparison.
   virtual bool Matches(const string16& word, bool exact) const = 0;
 
-  // Returns true if this node matches at least one of the words in |words|. If
-  // the node matches at least one word, an entry is added to |match_positions|
-  // giving the matching region.
+  // Returns true if this node matches at least one of the words in |words|. An
+  // entry is added to |match_positions| for all matching words giving the
+  // matching regions.
   virtual bool HasMatchIn(const std::vector<QueryWord>& words,
                           Snippet::MatchPositions* match_positions) const = 0;
 
