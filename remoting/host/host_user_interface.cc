@@ -30,6 +30,13 @@ HostUserInterface::~HostUserInterface() {
   ShowDisconnectWindow(false, std::string());
 }
 
+void HostUserInterface::Init() {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+
+  disconnect_window_ = DisconnectWindow::Create();
+  local_input_monitor_ = LocalInputMonitor::Create();
+}
+
 void HostUserInterface::Start(ChromotingHost* host,
                               const base::Closure& disconnect_callback) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
@@ -37,8 +44,6 @@ void HostUserInterface::Start(ChromotingHost* host,
 
   host_ = host;
   disconnect_callback_ = disconnect_callback;
-  disconnect_window_ = DisconnectWindow::Create();
-  local_input_monitor_ = LocalInputMonitor::Create();
   host_->AddStatusObserver(this);
 }
 
@@ -110,20 +115,6 @@ void HostUserInterface::ProcessOnClientDisconnected() {
 
   MonitorLocalInputs(false);
   ShowDisconnectWindow(false, std::string());
-}
-
-void HostUserInterface::StartForTest(
-    ChromotingHost* host,
-    const base::Closure& disconnect_callback,
-    scoped_ptr<DisconnectWindow> disconnect_window,
-    scoped_ptr<LocalInputMonitor> local_input_monitor) {
-  DCHECK(network_task_runner()->BelongsToCurrentThread());
-  DCHECK(host_ == NULL);
-
-  host_ = host;
-  disconnect_callback_ = disconnect_callback;
-  disconnect_window_ = disconnect_window.Pass();
-  local_input_monitor_ = local_input_monitor.Pass();
 }
 
 void HostUserInterface::MonitorLocalInputs(bool enable) {

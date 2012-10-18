@@ -32,6 +32,10 @@ class HostUserInterface : public HostStatusObserver {
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   virtual ~HostUserInterface();
 
+  // Initialize the OS-specific UI objects.
+  // Init must be called from |ui_task_runner_|.
+  virtual void Init();
+
   // Start the HostUserInterface for |host|.  |disconnect_callback| will be
   // called on |ui_task_runner| when |host| is shut down.  |host| must remain
   // valid at least until ChromotingHost::Shutdown() completes.
@@ -61,13 +65,17 @@ class HostUserInterface : public HostStatusObserver {
   virtual void ProcessOnClientAuthenticated(const std::string& username);
   virtual void ProcessOnClientDisconnected();
 
-  // Used by unit-tests as an alternative to Start() so that mock versions of
-  // internal objects can be used.
-  void StartForTest(
-      ChromotingHost* host,
-      const base::Closure& disconnect_callback,
-      scoped_ptr<DisconnectWindow> disconnect_window,
-      scoped_ptr<LocalInputMonitor> local_input_monitor);
+  ChromotingHost* host_;
+
+  // Used to ask the host to disconnect the session.
+  base::Closure disconnect_callback_;
+
+  // Provide a user interface allowing the host user to close the connection.
+  scoped_ptr<DisconnectWindow> disconnect_window_;
+
+  // Monitor local inputs to allow remote inputs to be blocked while the local
+  // user is trying to do something.
+  scoped_ptr<LocalInputMonitor> local_input_monitor_;
 
  private:
   // Invoked from the UI thread when the user clicks on the Disconnect button
@@ -84,24 +92,12 @@ class HostUserInterface : public HostStatusObserver {
   // is connected).
   std::string authenticated_jid_;
 
-  ChromotingHost* host_;
-
   // Thread on which the ChromotingHost processes network events.
   // Notifications from the host, and some calls into it, use this thread.
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
   // Thread on which to run the user interface.
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
-
-  // Used to ask the host to disconnect the session.
-  base::Closure disconnect_callback_;
-
-  // Provide a user interface allowing the host user to close the connection.
-  scoped_ptr<DisconnectWindow> disconnect_window_;
-
-  // Monitor local inputs to allow remote inputs to be blocked while the local
-  // user is trying to do something.
-  scoped_ptr<LocalInputMonitor> local_input_monitor_;
 
   bool is_monitoring_local_inputs_;
 

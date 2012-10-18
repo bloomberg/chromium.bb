@@ -367,6 +367,7 @@ class HostProcess
       host_user_interface_.reset(
           new HostUserInterface(context_->network_task_runner(),
                                 context_->ui_task_runner()));
+      host_user_interface_->Init();
     }
 
     StartWatchingConfigChanges();

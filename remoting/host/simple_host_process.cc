@@ -286,6 +286,7 @@ class SimpleHost : public HeartbeatSender::Listener {
       it2me_host_user_interface_.reset(
           new It2MeHostUserInterface(context_.network_task_runner(),
                                      context_.ui_task_runner()));
+      it2me_host_user_interface_->Init();
       it2me_host_user_interface_->Start(
           host_,
           base::Bind(&ChromotingHost::Shutdown, host_, base::Closure()));

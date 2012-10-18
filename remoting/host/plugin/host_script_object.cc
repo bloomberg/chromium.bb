@@ -232,6 +232,7 @@ void HostNPScriptObject::It2MeImpl::Connect(
   it2me_host_user_interface_.reset(
       new It2MeHostUserInterface(host_context_->network_task_runner(),
                                  host_context_->ui_task_runner()));
+  it2me_host_user_interface_->Init();
 
   // Switch to the network thread to start the actual connection.
   host_context_->network_task_runner()->PostTask(

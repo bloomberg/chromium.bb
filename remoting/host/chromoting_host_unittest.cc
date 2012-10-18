@@ -66,6 +66,49 @@ void DoNothing() {
 
 }  // namespace
 
+class MockIt2MeHostUserInterface : public It2MeHostUserInterface {
+ public:
+  MockIt2MeHostUserInterface(
+      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+
+  void InitFrom(
+      scoped_ptr<DisconnectWindow> disconnect_window,
+      scoped_ptr<ContinueWindow> continue_window,
+      scoped_ptr<LocalInputMonitor> local_input_monitor);
+
+  // A test-only version of Start that does not register a HostStatusObserver.
+  // TODO(rmsousa): Make the unit tests work with the regular Start().
+  virtual void Start(ChromotingHost* host,
+                     const base::Closure& disconnect_callback) OVERRIDE;
+};
+
+MockIt2MeHostUserInterface::MockIt2MeHostUserInterface(
+    scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    : It2MeHostUserInterface(network_task_runner, ui_task_runner) {
+}
+
+void MockIt2MeHostUserInterface::InitFrom(
+    scoped_ptr<DisconnectWindow> disconnect_window,
+    scoped_ptr<ContinueWindow> continue_window,
+    scoped_ptr<LocalInputMonitor> local_input_monitor) {
+  DCHECK(ui_task_runner()->BelongsToCurrentThread());
+
+  disconnect_window_ = disconnect_window.Pass();
+  continue_window_ = continue_window.Pass();
+  local_input_monitor_ = local_input_monitor.Pass();
+}
+
+void MockIt2MeHostUserInterface::Start(
+    ChromotingHost* host, const base::Closure& disconnect_callback) {
+  DCHECK(network_task_runner()->BelongsToCurrentThread());
+  DCHECK(host_ == NULL);
+
+  host_ = host;
+  disconnect_callback_ = disconnect_callback;
+}
+
 class ChromotingHostTest : public testing::Test {
  public:
   ChromotingHostTest() {
@@ -111,14 +154,15 @@ class ChromotingHostTest : public testing::Test {
     continue_window_ = new MockContinueWindow();
     local_input_monitor_ = new MockLocalInputMonitor();
     it2me_host_user_interface_.reset(
-        new It2MeHostUserInterface(context_.network_task_runner(),
-                                   context_.ui_task_runner()));
-    it2me_host_user_interface_->StartForTest(
-        host_,
-        base::Bind(&ChromotingHost::Shutdown, host_, base::Closure()),
+        new MockIt2MeHostUserInterface(context_.network_task_runner(),
+                                       context_.ui_task_runner()));
+    it2me_host_user_interface_->InitFrom(
         scoped_ptr<DisconnectWindow>(disconnect_window_),
         scoped_ptr<ContinueWindow>(continue_window_),
         scoped_ptr<LocalInputMonitor>(local_input_monitor_));
+
+    it2me_host_user_interface_->Start(
+        host_, base::Bind(&ChromotingHost::Shutdown, host_, base::Closure()));
 
     xmpp_login_ = "host@domain";
     session1_ = new MockSession();
@@ -403,7 +447,7 @@ class ChromotingHostTest : public testing::Test {
   MockConnectionToClientEventHandler handler_;
   MockSignalStrategy signal_strategy_;
   scoped_ptr<MockDesktopEnvironmentFactory> desktop_environment_factory_;
-  scoped_ptr<It2MeHostUserInterface> it2me_host_user_interface_;
+  scoped_ptr<MockIt2MeHostUserInterface> it2me_host_user_interface_;
   scoped_refptr<ChromotingHost> host_;
   MockHostStatusObserver host_status_observer_;
   protocol::MockSessionManager* session_manager_;

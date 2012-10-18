@@ -30,8 +30,7 @@ class It2MeHostUserInterface : public HostUserInterface {
   virtual ~It2MeHostUserInterface();
 
   // HostUserInterface overrides.
-  virtual void Start(ChromotingHost* host,
-                     const base::Closure& disconnect_callback)  OVERRIDE;
+  virtual void Init() OVERRIDE;
 
   // HostStatusObserver implementation.  These methods will be called from the
   // network thread.
@@ -42,20 +41,12 @@ class It2MeHostUserInterface : public HostUserInterface {
       const std::string& username) OVERRIDE;
   virtual void ProcessOnClientDisconnected() OVERRIDE;
 
+  // Provide a user interface requiring the user to periodically re-confirm
+  // the connection.
+  scoped_ptr<ContinueWindow> continue_window_;
+
  private:
   class TimerTask;
-
-  // Allow ChromotingHostTest::SetUp() to call StartForTest().
-  friend class ChromotingHostTest;
-
-  // Used by unit-tests as an alternative to Start() so that mock versions of
-  // internal objects can be used.
-  void StartForTest(
-      ChromotingHost* host,
-      const base::Closure& disconnect_callback,
-      scoped_ptr<DisconnectWindow> disconnect_window,
-      scoped_ptr<ContinueWindow> continue_window,
-      scoped_ptr<LocalInputMonitor> local_input_monitor);
 
   // Called by the ContinueWindow implementation (on the UI thread) when the
   // user dismisses the Continue prompt.
@@ -66,10 +57,6 @@ class It2MeHostUserInterface : public HostUserInterface {
   // Show or hide the Continue Sharing window on the UI thread.
   void ShowContinueWindow(bool show);
   void StartContinueWindowTimer(bool start);
-
-  // Provide a user interface requiring the user to periodically re-confirm
-  // the connection.
-  scoped_ptr<ContinueWindow> continue_window_;
 
   // Weak pointer factory used to abandon the "continue session" timer when
   // hiding the "continue session" dialog, or tearing down the IT2Me UI.
