@@ -435,12 +435,12 @@
             'host/constants_mac.cc',
             'host/constants_mac.h',
             'host/host_config.cc',
-            'host/me2me_preference_pane.h',
-            'host/me2me_preference_pane.mm',
-            'host/me2me_preference_pane_confirm_pin.h',
-            'host/me2me_preference_pane_confirm_pin.mm',
-            'host/me2me_preference_pane_disable.h',
-            'host/me2me_preference_pane_disable.mm',
+            'host/mac/me2me_preference_pane.h',
+            'host/mac/me2me_preference_pane.mm',
+            'host/mac/me2me_preference_pane_confirm_pin.h',
+            'host/mac/me2me_preference_pane_confirm_pin.mm',
+            'host/mac/me2me_preference_pane_disable.h',
+            'host/mac/me2me_preference_pane_disable.mm',
           ],
           'link_settings': {
             'libraries': [
@@ -463,19 +463,19 @@
           'xcode_settings': {
             'ARCHS': ['i386', 'x86_64'],
             'GCC_ENABLE_OBJC_GC': 'supported',
-            'INFOPLIST_FILE': 'host/me2me_preference_pane-Info.plist',
+            'INFOPLIST_FILE': 'host/mac/me2me_preference_pane-Info.plist',
             'INFOPLIST_PREPROCESS': 'YES',
             'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_NAME="<(bundle_name)" BUNDLE_ID="<(bundle_id)" COPYRIGHT_INFO="<(copyright_info)" PREF_PANE_ICON_LABEL="<(pref_pane_icon_label)"',
           },
           'mac_bundle_resources': [
-            'host/me2me_preference_pane.xib',
-            'host/me2me_preference_pane_confirm_pin.xib',
-            'host/me2me_preference_pane_disable.xib',
-            'host/me2me_preference_pane-Info.plist',
+            'host/mac/me2me_preference_pane.xib',
+            'host/mac/me2me_preference_pane_confirm_pin.xib',
+            'host/mac/me2me_preference_pane_disable.xib',
+            'host/mac/me2me_preference_pane-Info.plist',
             'resources/chromoting128.png',
           ],
           'mac_bundle_resources!': [
-            'host/me2me_preference_pane-Info.plist',
+            'host/mac/me2me_preference_pane-Info.plist',
           ],
           'conditions': [
             ['mac_breakpad==1', {

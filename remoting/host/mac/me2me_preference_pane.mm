@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "remoting/host/me2me_preference_pane.h"
+#import "remoting/host/mac/me2me_preference_pane.h"
 
 #import <Cocoa/Cocoa.h>
 #include <CommonCrypto/CommonHMAC.h>
@@ -20,8 +20,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "remoting/host/constants_mac.h"
 #include "remoting/host/host_config.h"
-#import "remoting/host/me2me_preference_pane_confirm_pin.h"
-#import "remoting/host/me2me_preference_pane_disable.h"
+#import "remoting/host/mac/me2me_preference_pane_confirm_pin.h"
+#import "remoting/host/mac/me2me_preference_pane_disable.h"
 #include "third_party/jsoncpp/source/include/json/reader.h"
 #include "third_party/jsoncpp/source/include/json/writer.h"
 #include "third_party/modp_b64/modp_b64.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "me2me_preference_pane_confirm_pin.h"
+#import "remoting/host/mac/me2me_preference_pane_confirm_pin.h"
 
 @implementation Me2MePreferencePaneConfirmPin
 
