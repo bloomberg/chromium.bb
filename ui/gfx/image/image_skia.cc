@@ -58,6 +58,16 @@ class ImageSkiaStorage : public base::RefCounted<ImageSkiaStorage>,
         read_only_(false) {
   }
 
+  ImageSkiaStorage(ImageSkiaSource* source, ui::ScaleFactor scale_factor)
+      : source_(source),
+        read_only_(false) {
+    const ImageSkiaRep& image = *FindRepresentation(scale_factor, true);
+    if (image.is_null())
+      source_.reset();
+    else
+      size_.SetSize(image.GetWidth(), image.GetHeight());
+  }
+
   bool has_source() const { return source_.get() != NULL; }
 
   std::vector<gfx::ImageSkiaRep>& image_reps() { return image_reps_; }
@@ -162,7 +172,7 @@ class ImageSkiaStorage : public base::RefCounted<ImageSkiaStorage>,
   scoped_ptr<ImageSkiaSource> source_;
 
   // Size of the image in DIP.
-  const gfx::Size size_;
+  gfx::Size size_;
 
   bool read_only_;
 
@@ -177,6 +187,15 @@ ImageSkia::ImageSkia() : storage_(NULL) {
 ImageSkia::ImageSkia(ImageSkiaSource* source, const gfx::Size& size)
     : storage_(new internal::ImageSkiaStorage(source, size)) {
   DCHECK(source);
+  // No other thread has reference to this, so it's safe to detach the thread.
+  DetachStorageFromThread();
+}
+
+ImageSkia::ImageSkia(ImageSkiaSource* source, ui::ScaleFactor scale_factor)
+    : storage_(new internal::ImageSkiaStorage(source, scale_factor)) {
+  DCHECK(source);
+  if (!storage_->has_source())
+    storage_ = NULL;
   // No other thread has reference to this, so it's safe to detach the thread.
   DetachStorageFromThread();
 }

@@ -17,6 +17,7 @@
 #include "base/synchronization/lock.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "net/base/big_endian.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -28,6 +29,7 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_source.h"
+#include "ui/gfx/safe_integer_conversions.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skbitmap_operations.h"
@@ -41,6 +43,11 @@ const int kSmallFontSizeDelta = -2;
 const int kMediumFontSizeDelta = 3;
 const int kLargeFontSizeDelta = 8;
 
+// PNG-related constants.
+const unsigned char kPngMagic[8] = { 0x89, 'P', 'N', 'G', 13, 10, 26, 10 };
+const size_t kPngChunkMetadataSize = 12;  // length, type, crc32
+const unsigned char kPngScaleChunkType[4] = { 'c', 's', 'C', 'l' };
+
 ResourceBundle* g_shared_instance_ = NULL;
 
 bool ShouldHighlightMissingScaledResources() {
@@ -48,90 +55,90 @@ bool ShouldHighlightMissingScaledResources() {
       switches::kHighlightMissingScaledResources);
 }
 
+// A wrapper for PNGCodec::Decode that returns information about custom chunks.
+// For security reasons we can't alter PNGCodec to return this information. Our
+// PNG files are preprocessed by GRIT to move our custom chunks to the beginning
+// (before even the PNG header), and we omit them entirely from the data that we
+// pass on to PNGCodec::Decode.
+bool DecodePNG(const unsigned char* buf,
+               size_t size,
+               SkBitmap* bitmap,
+               bool* fell_back_to_1x) {
+  *fell_back_to_1x = false;
+  size_t pos = 0;
+  // Scan for special chunks until we find the PNG header.
+  for (;;) {
+    if (size - pos < kPngChunkMetadataSize)
+      return false;
+    if (memcmp(buf + pos, kPngMagic, sizeof(kPngMagic)) == 0)
+      break;
+    uint32 length = 0;
+    net::ReadBigEndian(reinterpret_cast<const char*>(buf + pos), &length);
+    if (size - pos - kPngChunkMetadataSize < length)
+      return false;
+    if (length == 0 && memcmp(buf + pos + sizeof(uint32), kPngScaleChunkType,
+                              sizeof(kPngScaleChunkType)) == 0)
+      *fell_back_to_1x = true;
+    pos += length + kPngChunkMetadataSize;
+  }
+  // Pass the rest of the data to the PNG decoder.
+  return gfx::PNGCodec::Decode(buf + pos, size - pos, bitmap);
+}
+
 }  // namespace
 
-// An ImageSkiaSource that loads bitmaps for requested scale factor from
-// ResourceBundle on demand for given resource_id. It falls back
-// to the 1x bitmap if the bitmap for the requested scale factor does not
-// exist. If the resource for the requested scale factor is not exactly
-// |scale_factor| * the size of the 1x resource, it will end up with
-// broken UI because it will be drawn as if the bitmap was the correct size.
-// When --highlight-missing-scaled-resources flag is specified, it
-// will show the scaled image blended with red instead.
+// An ImageSkiaSource that loads bitmaps for the requested scale factor from
+// ResourceBundle on demand for a given |resource_id|. If the bitmap for the
+// requested scale factor does not exist, it will return the 1x bitmap scaled
+// by the scale factor. This may lead to broken UI if the correct size of the
+// scaled image is not exactly |scale_factor| * the size of the 1x resource.
+// When --highlight-missing-scaled-resources flag is specified, scaled 1x images
+// are higlighted by blending them with red.
 class ResourceBundle::ResourceBundleImageSource : public gfx::ImageSkiaSource {
  public:
-  ResourceBundleImageSource(ResourceBundle* rb,
-                            int resource_id,
-                            const gfx::Size& size_in_dip)
-      : rb_(rb),
-        resource_id_(resource_id),
-        size_in_dip_(size_in_dip) {
-  }
+  ResourceBundleImageSource(ResourceBundle* rb, int resource_id)
+      : rb_(rb), resource_id_(resource_id) {}
   virtual ~ResourceBundleImageSource() {}
 
   // gfx::ImageSkiaSource overrides:
   virtual gfx::ImageSkiaRep GetImageForScale(
       ui::ScaleFactor scale_factor) OVERRIDE {
-    scoped_ptr<SkBitmap> result(rb_->LoadBitmap(resource_id_, scale_factor));
-    float scale = ui::GetScaleFactorScale(scale_factor);
-    gfx::Size size_in_pixel = gfx::ToFlooredSize(size_in_dip_.Scale(scale));
+    SkBitmap image;
+    bool fell_back_to_1x = false;
+    bool found = rb_->LoadBitmap(resource_id_, scale_factor,
+                                 &image, &fell_back_to_1x);
+    if (!found)
+      return gfx::ImageSkiaRep();
 
-    if (scale_factor != SCALE_FACTOR_100P &&
-        (!result.get() ||
-         result->width() != size_in_pixel.width() ||
-         result->height() != size_in_pixel.height())) {
-
-      // If non 1x resource is missing from |image| or is the incorrect
-      // size and --highlight-missing-scaled-resources is specified, logs
-      // the resource id and creates a version of the resource at the correct
-      // size. Blends the created resource with red to make it
-      // distinguishable from bitmaps in the resource pak.
+    if (fell_back_to_1x) {
+      // GRIT fell back to the 100% image, so rescale it to the correct size.
+      float scale = GetScaleFactorScale(scale_factor);
+      image = skia::ImageOperations::Resize(
+          image,
+          skia::ImageOperations::RESIZE_LANCZOS3,
+          gfx::ToFlooredInt(image.width() * scale),
+          gfx::ToFlooredInt(image.height() * scale));
+      // If --highlight-missing-scaled-resources is specified, log the resource
+      // id and blend the created resource with red.
       if (ShouldHighlightMissingScaledResources()) {
-        if (!result.get()) {
-          LOG(ERROR) << "Missing " << scale << "x resource. id="
-                     << resource_id_;
-        } else {
-          LOG(ERROR) << "Incorrectly sized " << scale << "x resource. id="
-                     << resource_id_;
-        }
-
-        scoped_ptr<SkBitmap> bitmap1x(
-            rb_->LoadBitmap(resource_id_, SCALE_FACTOR_100P));
-        DCHECK(bitmap1x.get());
-        SkBitmap bitmap_scaled = skia::ImageOperations::Resize(
-            *bitmap1x,
-            skia::ImageOperations::RESIZE_LANCZOS3,
-            size_in_pixel.width(),
-            size_in_pixel.height());
+        LOG(ERROR) << "Missing " << scale << "x scaled resource. id="
+                   << resource_id_;
 
         SkBitmap mask;
         mask.setConfig(SkBitmap::kARGB_8888_Config,
-                       bitmap_scaled.width(),
-                       bitmap_scaled.height());
+                       image.width(), image.height());
         mask.allocPixels();
         mask.eraseColor(SK_ColorRED);
-        result.reset(new SkBitmap());
-        *result.get() = SkBitmapOperations::CreateBlendedBitmap(
-            bitmap_scaled, mask, 0.2);
-      } else if (!result.get() || result->width() == size_in_dip_.width()) {
-        // The scaled resource pack may have the 1x image if its grd file
-        // points to 1x image. Fallback to 1x by returning empty image
-        // in this case. This 1x image will be scaled when drawn.
-        return gfx::ImageSkiaRep();
+        image = SkBitmapOperations::CreateBlendedBitmap(image, mask, 0.2);
       }
-      // If the size of scaled image isn't exactly |scale| * 1x version,
-      // create ImageSkia as usual. This will end up with
-      // corrupted visual representation as the size of image doesn't
-      // match the expected size.
     }
-    DCHECK(result.get());
-    return gfx::ImageSkiaRep(*result.get(), scale_factor);
+
+    return gfx::ImageSkiaRep(image, scale_factor);
   }
 
  private:
   ResourceBundle* rb_;
   const int resource_id_;
-  const gfx::Size size_in_dip_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceBundleImageSource);
 };
@@ -350,24 +357,20 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
     DCHECK(!delegate_ && !data_packs_.empty()) <<
         "Missing call to SetResourcesDataDLL?";
 
-    // TODO(oshima): Pick the scale factor from currently used scale factors.
-    scoped_ptr<SkBitmap> bitmap(LoadBitmap(resource_id, SCALE_FACTOR_100P));
-    if (!bitmap.get()) {
+    // TODO(oshima): This should be GetPrimaryDisplay().device_scale_factor(),
+    // but GetPrimaryDisplay() crashes at startup.
+    ScaleFactor primary_scale_factor = SCALE_FACTOR_100P;
+    // ResourceBundle::GetSharedInstance() is destroyed after the
+    // BrowserMainLoop has finished running. |image_skia| is guaranteed to be
+    // destroyed before the resource bundle is destroyed.
+    gfx::ImageSkia image_skia(new ResourceBundleImageSource(this, resource_id),
+                              primary_scale_factor);
+    if (image_skia.isNull()) {
       LOG(WARNING) << "Unable to load image with id " << resource_id;
       NOTREACHED();  // Want to assert in debug mode.
       // The load failed to retrieve the image; show a debugging red square.
       return GetEmptyImage();
     }
-
-    // ResourceBundle::GetSharedInstance() is destroyed after the
-    // BrowserMainLoop has finished running. |image_skia| is guaranteed to be
-    // destroyed before the resource bundle is destroyed.
-    gfx::Size size_in_dip(bitmap->width(), bitmap->height());
-    gfx::ImageSkia image_skia(
-        new ResourceBundleImageSource(this, resource_id, size_in_dip),
-        size_in_dip);
-    image_skia.AddRepresentation(gfx::ImageSkiaRep(*bitmap.get(),
-                                                   SCALE_FACTOR_100P));
     image_skia.SetReadOnly();
     image = gfx::Image(image_skia);
   }
@@ -595,40 +598,47 @@ void ResourceBundle::LoadFontsIfNecessary() {
   }
 }
 
-SkBitmap* ResourceBundle::LoadBitmap(const ResourceHandle& data_handle,
-                                     int resource_id) const {
+bool ResourceBundle::LoadBitmap(const ResourceHandle& data_handle,
+                                int resource_id,
+                                SkBitmap* bitmap,
+                                bool* fell_back_to_1x) const {
+  DCHECK(fell_back_to_1x);
   scoped_refptr<base::RefCountedMemory> memory(
       data_handle.GetStaticMemory(resource_id));
   if (!memory)
-    return NULL;
+    return false;
 
-  SkBitmap bitmap;
-  if (gfx::PNGCodec::Decode(memory->front(), memory->size(), &bitmap))
-    return new SkBitmap(bitmap);
+  if (DecodePNG(memory->front(), memory->size(), bitmap, fell_back_to_1x))
+    return true;
 
 #if !defined(OS_IOS)
   // iOS does not compile or use the JPEG codec.  On other platforms,
   // 99% of our assets are PNGs, however fallback to JPEG.
-  SkBitmap* allocated_bitmap =
-      gfx::JPEGCodec::Decode(memory->front(), memory->size());
-  if (allocated_bitmap)
-    return allocated_bitmap;
+  scoped_ptr<SkBitmap> jpeg_bitmap(
+      gfx::JPEGCodec::Decode(memory->front(), memory->size()));
+  if (jpeg_bitmap.get()) {
+    bitmap->swap(*jpeg_bitmap.get());
+    *fell_back_to_1x = false;
+    return true;
+  }
 #endif
 
   NOTREACHED() << "Unable to decode theme image resource " << resource_id;
-  return NULL;
+  return false;
 }
 
-SkBitmap* ResourceBundle::LoadBitmap(int resource_id,
-                                     ScaleFactor scale_factor) const {
+bool ResourceBundle::LoadBitmap(int resource_id,
+                                ScaleFactor scale_factor,
+                                SkBitmap* bitmap,
+                                bool* fell_back_to_1x) const {
+  DCHECK(fell_back_to_1x);
   for (size_t i = 0; i < data_packs_.size(); ++i) {
     if (data_packs_[i]->GetScaleFactor() == scale_factor) {
-      SkBitmap* bitmap = LoadBitmap(*data_packs_[i], resource_id);
-      if (bitmap)
-        return bitmap;
+      if (LoadBitmap(*data_packs_[i], resource_id, bitmap, fell_back_to_1x))
+        return true;
     }
   }
-  return NULL;
+  return false;
 }
 
 gfx::Image& ResourceBundle::GetEmptyImage() {
