@@ -117,7 +117,7 @@ bool InitPipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
   scoped_ptr<media::FilterCollection> collection(
       new media::FilterCollection());
   collection->SetDemuxer(new media::FFmpegDemuxer(message_loop, data_source));
-  collection->AddAudioDecoder(new media::FFmpegAudioDecoder(
+  collection->GetAudioDecoders()->push_back(new media::FFmpegAudioDecoder(
       base::Bind(&media::MessageLoopFactory::GetMessageLoop,
                  base::Unretained(message_loop_factory),
                  media::MessageLoopFactory::kDecoder)));

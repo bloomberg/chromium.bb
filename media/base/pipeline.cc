@@ -264,7 +264,6 @@ const char* Pipeline::GetStateString(State state) {
   switch (state) {
     RETURN_STRING(kCreated);
     RETURN_STRING(kInitDemuxer);
-    RETURN_STRING(kInitAudioDecoder);
     RETURN_STRING(kInitAudioRenderer);
     RETURN_STRING(kInitVideoRenderer);
     RETURN_STRING(kInitPrerolling);
@@ -293,13 +292,10 @@ Pipeline::State Pipeline::GetNextState() const {
 
     case kInitDemuxer:
       if (demuxer_->GetStream(DemuxerStream::AUDIO))
-        return kInitAudioDecoder;
+        return kInitAudioRenderer;
       if (demuxer_->GetStream(DemuxerStream::VIDEO))
         return kInitVideoRenderer;
       return kInitPrerolling;
-
-    case kInitAudioDecoder:
-      return kInitAudioRenderer;
 
     case kInitAudioRenderer:
       if (demuxer_->GetStream(DemuxerStream::VIDEO))
@@ -463,9 +459,6 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
   switch (state_) {
     case kInitDemuxer:
       return InitializeDemuxer(done_cb);
-
-    case kInitAudioDecoder:
-      return InitializeAudioDecoder(done_cb);
 
     case kInitAudioRenderer:
       return InitializeAudioRenderer(done_cb);
@@ -633,7 +626,6 @@ void Pipeline::OnStopCompleted(PipelineStatus status) {
   SetState(kStopped);
   pending_callbacks_.reset();
   filter_collection_.reset();
-  audio_decoder_ = NULL;
   audio_renderer_ = NULL;
   video_renderer_ = NULL;
   demuxer_ = NULL;
@@ -886,31 +878,25 @@ void Pipeline::InitializeDemuxer(const PipelineStatusCB& done_cb) {
   demuxer_->Initialize(this, done_cb);
 }
 
-void Pipeline::InitializeAudioDecoder(const PipelineStatusCB& done_cb) {
+void Pipeline::InitializeAudioRenderer(const PipelineStatusCB& done_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
   scoped_refptr<DemuxerStream> stream =
       demuxer_->GetStream(DemuxerStream::AUDIO);
   DCHECK(stream);
 
-  filter_collection_->SelectAudioDecoder(&audio_decoder_);
-  audio_decoder_->Initialize(
-      stream, done_cb, base::Bind(&Pipeline::OnUpdateStatistics, this));
-}
-
-void Pipeline::InitializeAudioRenderer(const PipelineStatusCB& done_cb) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-  DCHECK(audio_decoder_);
-
   filter_collection_->SelectAudioRenderer(&audio_renderer_);
   audio_renderer_->Initialize(
-      audio_decoder_,
+      stream,
+      *filter_collection_->GetAudioDecoders(),
       done_cb,
+      base::Bind(&Pipeline::OnUpdateStatistics, this),
       base::Bind(&Pipeline::OnAudioUnderflow, this),
       base::Bind(&Pipeline::OnAudioTimeUpdate, this),
       base::Bind(&Pipeline::OnAudioRendererEnded, this),
       base::Bind(&Pipeline::OnAudioDisabled, this),
       base::Bind(&Pipeline::SetError, this));
+  filter_collection_->GetAudioDecoders()->clear();
 }
 
 void Pipeline::InitializeVideoRenderer(const PipelineStatusCB& done_cb) {
