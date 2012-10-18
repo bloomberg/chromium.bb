@@ -168,8 +168,8 @@ class BookmarkBarFolderControllerTest : public CocoaProfileTest {
     // Make parent frame for bookmark bar then open it.
     NSRect frame = [[test_window() contentView] frame];
     frame = NSMakeRect(frame.origin.x,
-                       frame.size.height - bookmarks::kNTPBookmarkBarHeight,
-                       frame.size.width, bookmarks::kNTPBookmarkBarHeight);
+                       frame.size.height - chrome::kNTPBookmarkBarHeight,
+                       frame.size.width, chrome::kNTPBookmarkBarHeight);
     NSView* fakeToolbarView = [[[NSView alloc] initWithFrame:frame]
                                 autorelease];
     [[test_window() contentView] addSubview:fakeToolbarView];

@@ -15,7 +15,6 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/defaults.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/bookmarks/bookmark_bar_constants.h"
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_ui.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -55,11 +55,6 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/sys_color_change_listener.h"
 
-#if defined(OS_MACOSX)
-#include "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
-#elif defined(TOOLKIT_GTK)
-#include "chrome/browser/ui/gtk/bookmarks/bookmark_bar_gtk.h"
-#endif
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/platform_util.h"
@@ -141,25 +136,18 @@ std::string GetNewTabBackgroundCSS(const ui::ThemeProvider* theme_provider,
   if (bar_attached)
     return ThemeService::AlignmentToString(alignment);
 
-  // The bar is detached, so we must offset the background by the bar size
-  // if it's a top-aligned bar.
-#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
-  int offset = browser_defaults::kNewtabBookmarkBarHeight;
-#elif defined(OS_MACOSX)
-  int offset = bookmarks::kNTPBookmarkBarHeight;
-#elif defined(TOOLKIT_GTK)
-  int offset = BookmarkBarGtk::kBookmarkBarNTPHeight;
-#else
-  int offset = 0;
-#endif
-
   if (alignment & ThemeService::ALIGN_TOP) {
+    // The bar is detached, so we must offset the background by the bar size
+    // if it's a top-aligned bar.
+    int offset = chrome::kNTPBookmarkBarHeight;
+
     if (alignment & ThemeService::ALIGN_LEFT)
       return "left " + base::IntToString(-offset) + "px";
     else if (alignment & ThemeService::ALIGN_RIGHT)
       return "right " + base::IntToString(-offset) + "px";
     return "center " + base::IntToString(-offset) + "px";
   }
+
   return ThemeService::AlignmentToString(alignment);
 }
 

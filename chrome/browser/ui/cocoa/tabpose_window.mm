@@ -234,7 +234,7 @@ void ThumbnailLoader::LoadThumbnail() {
       bookmark_tab_helper->ShouldShowBookmarkBar() &&
       !always_show_bookmark_bar;
   if (has_detached_bookmark_bar)
-    topOffset += bookmarks::kNTPBookmarkBarHeight;
+    topOffset += chrome::kNTPBookmarkBarHeight;
 
   return topOffset;
 }

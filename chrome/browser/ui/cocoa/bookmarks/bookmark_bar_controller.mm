@@ -1023,7 +1023,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     [[self backgroundGradientView] setShowsDivider:YES];
     [[self view] setHidden:NO];
     AnimatableView* view = [self animatableView];
-    [view animateToNewHeight:bookmarks::kNTPBookmarkBarHeight
+    [view animateToNewHeight:chrome::kNTPBookmarkBarHeight
                     duration:kBookmarkBarAnimationDuration];
   } else if ([self isAnimatingFromState:bookmarks::kDetachedState
                                 toState:bookmarks::kShowingState]) {
@@ -1157,7 +1157,7 @@ void RecordAppLaunch(Profile* profile, GURL url) {
     case bookmarks::kShowingState:
       return bookmarks::kBookmarkBarHeight;
     case bookmarks::kDetachedState:
-      return bookmarks::kNTPBookmarkBarHeight;
+      return chrome::kNTPBookmarkBarHeight;
     case bookmarks::kHiddenState:
       return 0;
     case bookmarks::kInvalidState:
