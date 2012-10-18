@@ -39,6 +39,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/program_manager.h"
@@ -54,6 +55,7 @@
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 #if defined(OS_MACOSX)
@@ -616,6 +618,10 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
     return group_->mailbox_manager();
   }
 
+  ImageManager* image_manager() {
+    return group_->image_manager();
+  }
+
   VertexArrayManager* vertex_array_manager() {
     return vertex_array_manager_.get();
   }
@@ -653,99 +659,106 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   // Wrapper for CompressedTexImage2D commands.
   error::Error DoCompressedTexImage2D(
-    GLenum target,
-    GLint level,
-    GLenum internal_format,
-    GLsizei width,
-    GLsizei height,
-    GLint border,
-    GLsizei image_size,
-    const void* data);
+      GLenum target,
+      GLint level,
+      GLenum internal_format,
+      GLsizei width,
+      GLsizei height,
+      GLint border,
+      GLsizei image_size,
+      const void* data);
 
   // Wrapper for CompressedTexSubImage2D.
   void DoCompressedTexSubImage2D(
-    GLenum target,
-    GLint level,
-    GLint xoffset,
-    GLint yoffset,
-    GLsizei width,
-    GLsizei height,
-    GLenum format,
-    GLsizei imageSize,
-    const void * data);
+      GLenum target,
+      GLint level,
+      GLint xoffset,
+      GLint yoffset,
+      GLsizei width,
+      GLsizei height,
+      GLenum format,
+      GLsizei imageSize,
+      const void * data);
 
   // Wrapper for CopyTexImage2D.
   void DoCopyTexImage2D(
-    GLenum target,
-    GLint level,
-    GLenum internal_format,
-    GLint x,
-    GLint y,
-    GLsizei width,
-    GLsizei height,
-    GLint border);
+      GLenum target,
+      GLint level,
+      GLenum internal_format,
+      GLint x,
+      GLint y,
+      GLsizei width,
+      GLsizei height,
+      GLint border);
 
   // Wrapper for CopyTexSubImage2D.
   void DoCopyTexSubImage2D(
-    GLenum target,
-    GLint level,
-    GLint xoffset,
-    GLint yoffset,
-    GLint x,
-    GLint y,
-    GLsizei width,
-    GLsizei height);
+      GLenum target,
+      GLint level,
+      GLint xoffset,
+      GLint yoffset,
+      GLint x,
+      GLint y,
+      GLsizei width,
+      GLsizei height);
 
   // Wrapper for TexImage2D commands.
   error::Error DoTexImage2D(
-    GLenum target,
-    GLint level,
-    GLenum internal_format,
-    GLsizei width,
-    GLsizei height,
-    GLint border,
-    GLenum format,
-    GLenum type,
-    const void* pixels,
-    uint32 pixels_size);
+      GLenum target,
+      GLint level,
+      GLenum internal_format,
+      GLsizei width,
+      GLsizei height,
+      GLint border,
+      GLenum format,
+      GLenum type,
+      const void* pixels,
+      uint32 pixels_size);
 
   // Wrapper for TexSubImage2D.
   void DoTexSubImage2D(
-    GLenum target,
-    GLint level,
-    GLint xoffset,
-    GLint yoffset,
-    GLsizei width,
-    GLsizei height,
-    GLenum format,
-    GLenum type,
-    const void * data);
+      GLenum target,
+      GLint level,
+      GLint xoffset,
+      GLint yoffset,
+      GLsizei width,
+      GLsizei height,
+      GLenum format,
+      GLenum type,
+      const void * data);
 
   // Wrapper for TexImageIOSurface2DCHROMIUM.
   void DoTexImageIOSurface2DCHROMIUM(
-    GLenum target,
-    GLsizei width,
-    GLsizei height,
-    GLuint io_surface_id,
-    GLuint plane);
+      GLenum target,
+      GLsizei width,
+      GLsizei height,
+      GLuint io_surface_id,
+      GLuint plane);
 
   void DoCopyTextureCHROMIUM(
-    GLenum target,
-    GLuint source_id,
-    GLuint target_id,
-    GLint level,
-    GLenum internal_format);
+      GLenum target,
+      GLuint source_id,
+      GLuint target_id,
+      GLint level,
+      GLenum internal_format);
 
   // Wrapper for TexStorage2DEXT.
   void DoTexStorage2DEXT(
-    GLenum target,
-    GLint levels,
-    GLenum internal_format,
-    GLsizei width,
-    GLsizei height);
+      GLenum target,
+      GLint levels,
+      GLenum internal_format,
+      GLsizei width,
+      GLsizei height);
 
   void DoProduceTextureCHROMIUM(GLenum target, const GLbyte* key);
   void DoConsumeTextureCHROMIUM(GLenum target, const GLbyte* key);
+
+  void DoBindTexImage2DCHROMIUM(
+      GLenum target,
+      GLint image_id);
+  void DoReleaseTexImage2DCHROMIUM(
+      GLenum target,
+      GLint image_id);
 
   // Creates a ProgramInfo for the given program.
   ProgramManager::ProgramInfo* CreateProgramInfo(
@@ -1265,6 +1278,16 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
         NOTREACHED();
         return NULL;
     }
+    return info;
+  }
+
+  TextureManager::TextureInfo* GetTextureInfoForTargetUnlessDefault(
+      GLenum target) {
+    TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
+    if (!info)
+      return NULL;
+    if (info == texture_manager()->GetDefaultTextureInfo(target))
+      return NULL;
     return info;
   }
 
@@ -8922,16 +8945,13 @@ void GLES2DecoderImpl::DoTexImageIOSurface2DCHROMIUM(
     return;
   }
 
-  TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
+  // Default target might be conceptually valid, but disallow it to avoid
+  // accidents.
+  TextureManager::TextureInfo* info = GetTextureInfoForTargetUnlessDefault(
+      target);
   if (!info) {
     SetGLError(GL_INVALID_OPERATION,
                "glTexImageIOSurface2DCHROMIUM", "no rectangle texture bound");
-    return;
-  }
-  if (info == texture_manager()->GetDefaultTextureInfo(target)) {
-    // Maybe this is conceptually valid, but disallow it to avoid accidents.
-    SetGLError(GL_INVALID_OPERATION,
-               "glTexImageIOSurface2DCHROMIUM", "can't bind default texture");
     return;
   }
 
@@ -9333,6 +9353,88 @@ void GLES2DecoderImpl::DoPopGroupMarkerEXT(void) {
   debug_marker_manager_.PopGroup();
 }
 
+void GLES2DecoderImpl::DoBindTexImage2DCHROMIUM(
+    GLenum target, GLint image_id) {
+  TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoBindTexImage2DCHROMIUM");
+  if (target != GL_TEXTURE_2D) {
+    // This might be supported in the future.
+    SetGLError(
+        GL_INVALID_OPERATION,
+        "glBindTexImage2DCHROMIUM", "requires TEXTURE_2D target");
+    return;
+  }
+
+  // Default target might be conceptually valid, but disallow it to avoid
+  // accidents.
+  TextureManager::TextureInfo* info = GetTextureInfoForTargetUnlessDefault(
+      target);
+  if (!info) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glBindTexImage2DCHROMIUM", "no texture bound");
+    return;
+  }
+
+  gfx::GLImage* gl_image = image_manager()->LookupImage(image_id);
+  if (!gl_image) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glBindTexImage2DCHROMIUM",
+               "no image found with the given ID");
+    return;
+  }
+
+  if (!gl_image->BindTexImage()) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glBindTexImage2DCHROMIUM",
+               "fail to bind image with the given ID");
+    return;
+  }
+
+  gfx::Size size = gl_image->GetSize();
+  texture_manager()->SetLevelInfo(
+      info, target, 0, GL_RGBA, size.width(), size.height(), 1, 0,
+      GL_RGBA, GL_UNSIGNED_BYTE, true);
+  texture_manager()->SetLevelImage(info, target, 0, gl_image);
+}
+
+void GLES2DecoderImpl::DoReleaseTexImage2DCHROMIUM(
+    GLenum target, GLint image_id) {
+  TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoReleaseTexImage2DCHROMIUM");
+  if (target != GL_TEXTURE_2D) {
+    // This might be supported in the future.
+    SetGLError(
+        GL_INVALID_OPERATION,
+        "glReleaseTexImage2DCHROMIUM", "requires TEXTURE_2D target");
+    return;
+  }
+
+  // Default target might be conceptually valid, but disallow it to avoid
+  // accidents.
+  TextureManager::TextureInfo* info = GetTextureInfoForTargetUnlessDefault(
+      target);
+  if (!info) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glReleaseTexImage2DCHROMIUM", "no texture bound");
+    return;
+  }
+
+  gfx::GLImage* gl_image = image_manager()->LookupImage(image_id);
+  if (!gl_image) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glReleaseTexImage2DCHROMIUM",
+               "no image found with the given ID");
+    return;
+  }
+
+  // Do nothing when image is not currently bound.
+  if (info->GetLevelImage(target, 0) != gl_image)
+    return;
+
+  gl_image->ReleaseTexImage();
+
+  texture_manager()->SetLevelInfo(
+      info, target, 0, GL_RGBA, 0, 0, 1, 0,
+      GL_RGBA, GL_UNSIGNED_BYTE, false);
+}
 
 // Include the auto-generated part of this file. We split this because it means
 // we can easily edit the non-auto generated parts right here in this file

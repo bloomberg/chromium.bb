@@ -963,6 +963,17 @@ int32 RenderThreadImpl::CreateViewCommandBuffer(
   return route_id;
 }
 
+void RenderThreadImpl::CreateImage(
+    gfx::PluginWindowHandle window,
+    int32 image_id,
+    const CreateImageCallback& callback) {
+  NOTREACHED();
+}
+
+void RenderThreadImpl::DeleteImage(int32 image_id, int32 sync_point) {
+  NOTREACHED();
+}
+
 void RenderThreadImpl::DoNotSuspendWebKitSharedTimer() {
   suspend_webkit_shared_timer_ = false;
 }

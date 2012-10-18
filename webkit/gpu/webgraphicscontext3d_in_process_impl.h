@@ -489,6 +489,9 @@ class WebGraphicsContext3DInProcessImpl : public WebGraphicsContext3D {
   virtual void consumeTextureCHROMIUM(WGC3Denum target,
                                       const WGC3Dbyte* mailbox);
 
+  virtual void bindTexImage2DCHROMIUM(WGC3Denum target, WGC3Dint imageId);
+  virtual void releaseTexImage2DCHROMIUM(WGC3Denum target, WGC3Dint imageId);
+
  protected:
   virtual GrGLInterface* onCreateGrGLInterface();
 

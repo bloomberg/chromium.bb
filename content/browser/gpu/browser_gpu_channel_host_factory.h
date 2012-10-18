@@ -31,6 +31,11 @@ class BrowserGpuChannelHostFactory : public GpuChannelHostFactory {
   virtual int32 CreateViewCommandBuffer(
       int32 surface_id,
       const GPUCreateCommandBufferConfig& init_params) OVERRIDE;
+  virtual void CreateImage(
+      gfx::PluginWindowHandle window,
+      int32 image_id,
+      const CreateImageCallback& callback) OVERRIDE;
+  virtual void DeleteImage(int32 image_idu, int32 sync_point) OVERRIDE;
   virtual GpuChannelHost* EstablishGpuChannelSync(
       CauseForGpuLaunch cause_for_gpu_launch) OVERRIDE;
 
@@ -62,6 +67,15 @@ class BrowserGpuChannelHostFactory : public GpuChannelHostFactory {
       int32 surface_id,
       const GPUCreateCommandBufferConfig& init_params);
   static void CommandBufferCreatedOnIO(CreateRequest* request, int32 route_id);
+  void CreateImageOnIO(
+      gfx::PluginWindowHandle window,
+      int32 image_id,
+      const CreateImageCallback& callback);
+  static void ImageCreatedOnIO(
+      const CreateImageCallback& callback, const gfx::Size size);
+  static void OnImageCreated(
+      const CreateImageCallback& callback, const gfx::Size size);
+  void DeleteImageOnIO(int32 image_id, int32 sync_point);
   void EstablishGpuChannelOnIO(EstablishRequest* request);
   void GpuChannelEstablishedOnIO(
       EstablishRequest* request,

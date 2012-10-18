@@ -36,6 +36,7 @@ class ScopedPtrXFree {
 Display* g_display;
 const char* g_glx_extensions = NULL;
 bool g_glx_create_context_robustness_supported = false;
+bool g_glx_texture_from_pixmap_supported = false;
 
 }  // namespace
 
@@ -66,6 +67,8 @@ bool GLSurfaceGLX::InitializeOneOff() {
   g_glx_extensions = glXQueryExtensionsString(g_display, 0);
   g_glx_create_context_robustness_supported =
       HasGLXExtension("GLX_ARB_create_context_robustness");
+  g_glx_texture_from_pixmap_supported =
+      HasGLXExtension("GLX_EXT_texture_from_pixmap");
 
   initialized = true;
   return true;
@@ -84,6 +87,11 @@ bool GLSurfaceGLX::HasGLXExtension(const char* name) {
 // static
 bool GLSurfaceGLX::IsCreateContextRobustnessSupported() {
   return g_glx_create_context_robustness_supported;
+}
+
+// static
+bool GLSurfaceGLX::IsTextureFromPixmapSupported() {
+  return g_glx_texture_from_pixmap_supported;
 }
 
 void* GLSurfaceGLX::GetDisplay() {

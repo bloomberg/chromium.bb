@@ -153,6 +153,11 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   virtual int32 CreateViewCommandBuffer(
       int32 surface_id,
       const GPUCreateCommandBufferConfig& init_params) OVERRIDE;
+  virtual void CreateImage(
+      gfx::PluginWindowHandle window,
+      int32 image_id,
+      const CreateImageCallback& callback) OVERRIDE;
+  virtual void DeleteImage(int32 image_id, int32 sync_point) OVERRIDE;
 
   // Synchronously establish a channel to the GPU plugin if not previously
   // established or if it has been lost (for example if the GPU plugin crashed).

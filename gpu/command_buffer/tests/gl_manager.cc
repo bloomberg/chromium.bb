@@ -99,6 +99,7 @@ void GLManager::Setup(
   if (!context_group) {
     context_group = new gles2::ContextGroup(mailbox_manager_.get(),
                                             NULL,
+                                            NULL,
                                             kBindGeneratesResource);
   }
 

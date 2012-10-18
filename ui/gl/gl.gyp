@@ -53,6 +53,14 @@
         'gl_export.h',
         'gl_fence.cc',
         'gl_fence.h',
+        'gl_image.cc',
+        'gl_image.h',
+        'gl_image_android.cc',
+        'gl_image_linux.cc',
+        'gl_image_mac.cc',
+        'gl_image_stub.cc',
+        'gl_image_stub.h',
+        'gl_image_win.cc',
         'gl_implementation.cc',
         'gl_implementation.h',
         'gl_implementation_android.cc',
@@ -143,6 +151,8 @@
           'sources': [
             'gl_context_glx.cc',
             'gl_context_glx.h',
+            'gl_image_glx.cc',
+            'gl_image_glx.h',
             'gl_surface_glx.cc',
             'gl_surface_glx.h',
             '<(gl_binding_output_dir)/gl_bindings_autogen_glx.cc',
@@ -151,6 +161,12 @@
           'all_dependent_settings': {
             'defines': [
               'GL_GLEXT_PROTOTYPES',
+            ],
+          },
+          'link_settings': {
+            'libraries': [
+              '-lX11',
+              '-lXcomposite',
             ],
           },
         }],

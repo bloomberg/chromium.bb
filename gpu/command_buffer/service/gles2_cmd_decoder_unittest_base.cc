@@ -88,6 +88,7 @@ void GLES2DecoderTestBase::InitDecoder(
   ::gfx::GLInterface::SetGLInterface(gl_.get());
   group_ = ContextGroup::Ref(new ContextGroup(NULL,
                                               NULL,
+                                              NULL,
                                               bind_generates_resource));
 
   InSequence sequence;
