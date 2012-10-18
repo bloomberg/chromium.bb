@@ -18,6 +18,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
+#include "content/browser/ssl/ssl_host_state.h"
 #include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/browser/web_contents/navigation_entry_impl.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
@@ -972,6 +973,12 @@ void ContentViewCoreImpl::ImeUpdateAdapter(int native_ime_adapter,
                                         selection_start, selection_end,
                                         composition_start, composition_end,
                                         show_ime_if_needed);
+}
+
+void ContentViewCoreImpl::ClearSslPreferences(JNIEnv* env, jobject obj) {
+  SSLHostState* state = SSLHostState::GetFor(
+      web_contents_->GetController().GetBrowserContext());
+  state->Clear();
 }
 
 void ContentViewCoreImpl::SetUseDesktopUserAgent(

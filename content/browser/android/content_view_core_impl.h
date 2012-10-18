@@ -156,6 +156,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   void SetBackgroundColor(JNIEnv* env, jobject obj, jint color);
   void OnShow(JNIEnv* env, jobject obj);
   void OnHide(JNIEnv* env, jobject obj);
+  void ClearSslPreferences(JNIEnv* env, jobject /* obj */);
   void SetUseDesktopUserAgent(JNIEnv* env,
                               jobject /* obj */,
                               jboolean state,

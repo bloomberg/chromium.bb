@@ -987,7 +987,7 @@ public class ContentViewCore implements MotionEventDelegate {
      * @see View#onAttachedToWindow()
      */
     @SuppressWarnings("javadoc")
-    protected void onAttachedToWindow() {
+    public void onAttachedToWindow() {
         setAccessibilityState(true);
     }
 
@@ -995,7 +995,7 @@ public class ContentViewCore implements MotionEventDelegate {
      * @see View#onDetachedFromWindow()
      */
     @SuppressWarnings("javadoc")
-    protected void onDetachedFromWindow() {
+    public void onDetachedFromWindow() {
         setAccessibilityState(false);
     }
 
@@ -1577,6 +1577,10 @@ public class ContentViewCore implements MotionEventDelegate {
         if (mNativeContentViewCore != 0) {
             nativeSetUseDesktopUserAgent(mNativeContentViewCore, override, reloadOnChange);
         }
+    }
+
+    public void clearSslPreferences() {
+        nativeClearSslPreferences(mNativeContentViewCore);
     }
 
     /**
@@ -2182,6 +2186,8 @@ public class ContentViewCore implements MotionEventDelegate {
     private native void nativeSetUseDesktopUserAgent(int nativeContentViewCoreImpl,
             boolean enabled, boolean reloadOnChange);
     private native boolean nativeGetUseDesktopUserAgent(int nativeContentViewCoreImpl);
+
+    private native void nativeClearSslPreferences(int nativeContentViewCoreImpl);
 
     private native void nativeAddJavascriptInterface(int nativeContentViewCoreImpl, Object object,
                                                      String name, boolean requireAnnotation);
