@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
@@ -104,6 +105,21 @@ void DownloadStatusUpdater::UpdateAppIconDownloadProgress(
       download->IsTemporary() ||
       download->GetAutoOpened())
     return;
+
+  // Don't display the Windows8 metro notifications for an incognito download.
+  if (download->GetBrowserContext() &&
+      download->GetBrowserContext()->IsOffTheRecord())
+    return;
+
+  // Don't display the Windows 8 metro notifications if we are in the
+  // foreground.
+  HWND foreground_window = ::GetForegroundWindow();
+  if (::IsWindow(foreground_window)) {
+    DWORD process_id = 0;
+    ::GetWindowThreadProcessId(foreground_window, &process_id);
+    if (process_id == ::GetCurrentProcessId())
+      return;
+  }
 
   // In Windows 8 metro mode display a metro style notification which
   // informs the user that the download is complete.
