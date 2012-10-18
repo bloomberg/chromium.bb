@@ -88,7 +88,7 @@ void NaClSetSignalHandler(void) {
 }
 
 static struct NaClTestInjectionTable const g_test_injection_functions = {
-  NaClInjectThreadCaptureTrampoline,  /* ChangeTrampolines */
+  NaClInjectThreadCaptureSyscall,  /* ChangeTrampolines */
   NaClSetSignalHandler,  /* BeforeMainThreadLaunches */
 };
 

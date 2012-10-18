@@ -11,7 +11,7 @@
 
 struct NaClApp;
 
-void NaClInjectThreadCaptureTrampoline(struct NaClApp *nap);
+void NaClInjectThreadCaptureSyscall(struct NaClApp *nap);
 
 /*
  * This is a text section label, but not code that actually follows

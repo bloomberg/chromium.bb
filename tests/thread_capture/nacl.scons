@@ -24,16 +24,13 @@ test_injection_files = [
 if trusted_env.Bit('linux') or trusted_env.Bit('mac'):
   if env.Bit('target_x86_32'):
     test_injection_files += [
-      'arch/x86_32/thread_capture_test_injection.c',
-      'arch/x86_32/nacl_test_capture_32.S']
+      'arch/x86_32/thread_capture_test_injection.c']
   elif env.Bit('target_x86_64'):
     test_injection_files += [
-      'arch/x86_64/thread_capture_test_injection.c',
-      'arch/x86_64/nacl_test_capture_64.S']
+      'arch/x86_64/thread_capture_test_injection.c']
   elif env.Bit('target_arm'):
     test_injection_files += [
-      'arch/arm/thread_capture_test_injection.c',
-      'arch/arm/nacl_test_capture_arm.S']
+      'arch/arm/thread_capture_test_injection.c']
   else:
     raise Exception('Unsupported target')
 
