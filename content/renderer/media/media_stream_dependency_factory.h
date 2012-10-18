@@ -116,7 +116,8 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   // Asks the PeerConnection factory to create a Local VideoTrack object.
   virtual scoped_refptr<webrtc::LocalVideoTrackInterface>
       CreateLocalVideoTrack(const std::string& label,
-                            int video_session_id);
+                            int video_session_id,
+                            bool is_screencast);
 
   // Asks the PeerConnection factory to create a Local AudioTrack object.
   virtual scoped_refptr<webrtc::LocalAudioTrackInterface>

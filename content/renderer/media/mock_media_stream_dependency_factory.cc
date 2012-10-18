@@ -292,7 +292,8 @@ MockMediaStreamDependencyFactory::CreateLocalMediaStream(
 scoped_refptr<webrtc::LocalVideoTrackInterface>
 MockMediaStreamDependencyFactory::CreateLocalVideoTrack(
     const std::string& label,
-    int video_session_id) {
+    int video_session_id,
+    bool is_screencast) {
   DCHECK(mock_pc_factory_created_);
   scoped_refptr<webrtc::LocalVideoTrackInterface> track(
       new talk_base::RefCountedObject<webrtc::MockLocalVideoTrack>(label));

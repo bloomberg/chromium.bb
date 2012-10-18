@@ -71,7 +71,8 @@ class PeerConnectionHandlerJsepTest : public ::testing::Test {
                                                         NULL));
     native_stream->AddTrack(audio_track);
     talk_base::scoped_refptr<webrtc::LocalVideoTrackInterface> video_track(
-        mock_dependency_factory_->CreateLocalVideoTrack(video_track_label, 0));
+        mock_dependency_factory_->CreateLocalVideoTrack(
+            video_track_label, 0, false));
     native_stream->AddTrack(video_track);
 
     WebKit::WebVector<WebKit::WebMediaStreamSource> audio_sources(
@@ -103,8 +104,8 @@ class PeerConnectionHandlerJsepTest : public ::testing::Test {
         mock_dependency_factory_->CreateLocalMediaStream(stream_label));
     if (!video_track_label.empty()) {
       talk_base::scoped_refptr<webrtc::LocalVideoTrackInterface> video_track(
-          mock_dependency_factory_->CreateLocalVideoTrack(video_track_label,
-                                                          0));
+          mock_dependency_factory_->CreateLocalVideoTrack(
+              video_track_label, 0, false));
       stream->AddTrack(video_track);
     }
     if (!audio_track_label.empty()) {

@@ -8,8 +8,10 @@
 
 RtcVideoCapturer::RtcVideoCapturer(
     const media::VideoCaptureSessionId id,
-    VideoCaptureImplManager* vc_manager)
-    : delegate_(new RtcVideoCaptureDelegate(id, vc_manager)),
+    VideoCaptureImplManager* vc_manager,
+    bool is_screencast)
+    : is_screencast_(is_screencast),
+      delegate_(new RtcVideoCaptureDelegate(id, vc_manager)),
       state_(video_capture::kStopped) {
 }
 
@@ -61,7 +63,7 @@ bool RtcVideoCapturer::GetPreferredFourccs(std::vector<uint32>* fourccs) {
 }
 
 bool RtcVideoCapturer::IsScreencast() {
-  return false;
+  return is_screencast_;
 }
 
 bool RtcVideoCapturer::GetBestCaptureFormat(const cricket::VideoFormat& desired,

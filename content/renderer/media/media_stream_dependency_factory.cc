@@ -172,9 +172,12 @@ bool MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
       NOTIMPLEMENTED();
       continue;
     }
+    const bool is_screencast = (source_data->device_info().stream_type ==
+                                    content::MEDIA_TAB_VIDEO_CAPTURE);
     scoped_refptr<webrtc::LocalVideoTrackInterface> video_track(
         CreateLocalVideoTrack(UTF16ToUTF8(source.id()),
-                              source_data->device_info().session_id));
+                              source_data->device_info().session_id,
+                              is_screencast));
     native_stream->AddTrack(video_track);
     video_track->set_enabled(video_components[i].isEnabled());
   }
@@ -253,9 +256,10 @@ MediaStreamDependencyFactory::CreateLocalMediaStream(
 scoped_refptr<webrtc::LocalVideoTrackInterface>
 MediaStreamDependencyFactory::CreateLocalVideoTrack(
     const std::string& label,
-    int video_session_id) {
-  RtcVideoCapturer* capturer = new RtcVideoCapturer(video_session_id,
-                                                    vc_manager_.get());
+    int video_session_id,
+    bool is_screencast) {
+  RtcVideoCapturer* capturer = new RtcVideoCapturer(
+      video_session_id, vc_manager_.get(), is_screencast);
 
   // The video track takes ownership of |capturer|.
   return pc_factory_->CreateLocalVideoTrack(label, capturer).get();

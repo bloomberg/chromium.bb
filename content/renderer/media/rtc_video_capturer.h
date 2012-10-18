@@ -23,7 +23,8 @@ class RtcVideoCapturer
     : public cricket::VideoCapturer {
  public:
   RtcVideoCapturer(const media::VideoCaptureSessionId id,
-                   VideoCaptureImplManager* vc_manager);
+                   VideoCaptureImplManager* vc_manager,
+                   bool is_screencast);
   virtual ~RtcVideoCapturer();
 
   // cricket::VideoCapturer implementation.
@@ -42,6 +43,7 @@ class RtcVideoCapturer
   virtual void OnFrameCaptured(
       const media::VideoCapture::VideoFrameBuffer& frame);
 
+  const bool is_screencast_;
   scoped_refptr<RtcVideoCaptureDelegate> delegate_;
   video_capture::State state_;
   base::Time start_time_;

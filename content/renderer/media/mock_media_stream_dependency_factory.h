@@ -85,7 +85,8 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
       CreateLocalMediaStream(const std::string& label) OVERRIDE;
   virtual scoped_refptr<webrtc::LocalVideoTrackInterface>
       CreateLocalVideoTrack(const std::string& label,
-                            int video_session_id) OVERRIDE;
+                            int video_session_id,
+                            bool is_screencast) OVERRIDE;
   virtual scoped_refptr<webrtc::LocalAudioTrackInterface>
       CreateLocalAudioTrack(const std::string& label,
                             webrtc::AudioDeviceModule* audio_device) OVERRIDE;
