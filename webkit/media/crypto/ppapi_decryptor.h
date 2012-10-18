@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "media/base/decryptor.h"
 #include "media/base/video_decoder_config.h"
 
@@ -29,7 +30,7 @@ namespace webkit_media {
 
 // PpapiDecryptor implements media::Decryptor and forwards all calls to the
 // PluginInstance.
-// This class should always be created on the main renderer thread.
+// This class should always be created & destroyed on the main renderer thread.
 class PpapiDecryptor : public media::Decryptor {
  public:
   PpapiDecryptor(
@@ -74,6 +75,9 @@ class PpapiDecryptor : public media::Decryptor {
 
   DecoderInitCB video_decoder_init_cb_;
   KeyAddedCB key_added_cb_;
+
+  base::WeakPtrFactory<PpapiDecryptor> weak_ptr_factory_;
+  base::WeakPtr<PpapiDecryptor> weak_this_;
 
   DISALLOW_COPY_AND_ASSIGN(PpapiDecryptor);
 };

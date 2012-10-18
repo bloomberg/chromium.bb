@@ -26,7 +26,9 @@ PpapiDecryptor::PpapiDecryptor(
   const scoped_refptr<webkit::ppapi::PluginInstance>& plugin_instance)
     : client_(client),
       cdm_plugin_(plugin_instance),
-      render_loop_proxy_(base::MessageLoopProxy::current()) {
+      render_loop_proxy_(base::MessageLoopProxy::current()),
+      weak_ptr_factory_(this),
+      weak_this_(weak_ptr_factory_.GetWeakPtr()) {
   DCHECK(client_);
   DCHECK(cdm_plugin_);
   cdm_plugin_->set_decrypt_client(client);
@@ -87,16 +89,12 @@ void PpapiDecryptor::CancelKeyRequest(const std::string& key_system,
     ReportFailureToCallPlugin(key_system, session_id);
 }
 
-// TODO(xhwang): Remove Unretained in the following methods.
-
 void PpapiDecryptor::Decrypt(
     const scoped_refptr<media::DecoderBuffer>& encrypted,
     const DecryptCB& decrypt_cb) {
   if (!render_loop_proxy_->BelongsToCurrentThread()) {
-    render_loop_proxy_->PostTask(
-        FROM_HERE,
-        base::Bind(&PpapiDecryptor::Decrypt, base::Unretained(this),
-                   encrypted, decrypt_cb));
+    render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+        &PpapiDecryptor::Decrypt, weak_this_, encrypted, decrypt_cb));
     return;
   }
 
@@ -115,11 +113,9 @@ void PpapiDecryptor::InitializeVideoDecoder(
     const DecoderInitCB& init_cb,
     const KeyAddedCB& key_added_cb) {
   if (!render_loop_proxy_->BelongsToCurrentThread()) {
-    render_loop_proxy_->PostTask(
-        FROM_HERE,
-        base::Bind(&PpapiDecryptor::InitializeVideoDecoder,
-                   base::Unretained(this), base::Passed(&config),
-                   init_cb, key_added_cb));
+    render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+        &PpapiDecryptor::InitializeVideoDecoder, weak_this_,
+        base::Passed(&config), init_cb, key_added_cb));
     return;
   }
 
@@ -132,8 +128,7 @@ void PpapiDecryptor::InitializeVideoDecoder(
 
   if (!cdm_plugin_->InitializeVideoDecoder(
       *config,
-      base::Bind(&PpapiDecryptor::OnVideoDecoderInitialized,
-                 base::Unretained(this)))) {
+      base::Bind(&PpapiDecryptor::OnVideoDecoderInitialized, weak_this_))) {
     key_added_cb_.Reset();
     base::ResetAndReturn(&video_decoder_init_cb_).Run(false);
     return;
@@ -144,10 +139,9 @@ void PpapiDecryptor::DecryptAndDecodeVideo(
     const scoped_refptr<media::DecoderBuffer>& encrypted,
     const VideoDecodeCB& video_decode_cb) {
   if (!render_loop_proxy_->BelongsToCurrentThread()) {
-    render_loop_proxy_->PostTask(
-        FROM_HERE,
-        base::Bind(&PpapiDecryptor::DecryptAndDecodeVideo,
-                   base::Unretained(this), encrypted, video_decode_cb));
+    render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+        &PpapiDecryptor::DecryptAndDecodeVideo, weak_this_,
+        encrypted, video_decode_cb));
     return;
   }
 
@@ -158,10 +152,8 @@ void PpapiDecryptor::DecryptAndDecodeVideo(
 
 void PpapiDecryptor::CancelDecryptAndDecodeVideo() {
   if (!render_loop_proxy_->BelongsToCurrentThread()) {
-    render_loop_proxy_->PostTask(
-        FROM_HERE,
-        base::Bind(&PpapiDecryptor::CancelDecryptAndDecodeVideo,
-                   base::Unretained(this)));
+    render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+        &PpapiDecryptor::CancelDecryptAndDecodeVideo, weak_this_));
     return;
   }
 
@@ -171,12 +163,10 @@ void PpapiDecryptor::CancelDecryptAndDecodeVideo() {
 
 void PpapiDecryptor::StopVideoDecoder() {
   if (!render_loop_proxy_->BelongsToCurrentThread()) {
-    render_loop_proxy_->PostTask(
-        FROM_HERE,
-        base::Bind(&PpapiDecryptor::StopVideoDecoder, base::Unretained(this)));
+    render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
+        &PpapiDecryptor::StopVideoDecoder, weak_this_));
     return;
   }
-
   DVLOG(2) << "StopVideoDecoder()";
   cdm_plugin_->DeinitializeDecoder();
 }
