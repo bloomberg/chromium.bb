@@ -6,18 +6,8 @@
 
 #include "ui/gfx/point3.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/safe_integer_conversions.h"
 #include "ui/gfx/skia_util.h"
-
-namespace {
-
-static int SymmetricRound(float x) {
-  return static_cast<int>(
-    x > 0
-      ? std::floor(x + 0.5f)
-      : std::ceil(x - 0.5f));
-}
-
-} // namespace
 
 namespace gfx {
 
@@ -192,16 +182,12 @@ void Transform::TransformPointInternal(const SkMatrix44& xform,
 
 void Transform::TransformPointInternal(const SkMatrix44& xform,
                                        Point& point) const {
-  SkScalar p[4] = {
-    SkIntToScalar(point.x()),
-    SkIntToScalar(point.y()),
-    0,
-    1 };
+  SkScalar p[4] = { SkIntToScalar(point.x()),  SkIntToScalar(point.y()),
+                    0, 1 };
 
   xform.map(p);
 
-  point.SetPoint(SymmetricRound(p[0]),
-                 SymmetricRound(p[1]));
+  point.SetPoint(ToRoundedInt(p[0]), ToRoundedInt(p[1]));
 }
 
 }  // namespace gfx
