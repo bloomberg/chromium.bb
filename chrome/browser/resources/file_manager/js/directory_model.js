@@ -770,7 +770,9 @@ DirectoryModel.prototype.changeDirectoryEntrySilent_ = function(dirEntry,
  */
 DirectoryModel.prototype.changeDirectoryEntry_ = function(initial, dirEntry,
                                                           opt_callback) {
-  if (dirEntry == DirectoryModel.fakeGDataEntry_)
+  if (dirEntry == DirectoryModel.fakeGDataEntry_ &&
+      this.volumeManager_.getGDataStatus() ==
+          VolumeManager.GDataStatus.UNMOUNTED)
     this.volumeManager_.mountGData(function() {}, function() {});
 
   this.clearSearch_();
@@ -1081,11 +1083,12 @@ DirectoryModel.prototype.updateRootsListSelection_ = function() {
 };
 
 /**
- * @return {true} True if GDATA mounted.
+ * @return {boolean} True if GDATA if fully mounted.
  * @private
  */
 DirectoryModel.prototype.isGDataMounted_ = function() {
-  return this.volumeManager_.isMounted(RootDirectory.GDATA);
+  return this.volumeManager_.getGDataStatus() ==
+      VolumeManager.GDataStatus.MOUNTED;
 };
 
 /**
