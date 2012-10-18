@@ -1109,11 +1109,6 @@ void RenderWidgetHostImpl::NotifyScreenInfoChanged() {
 }
 
 void RenderWidgetHostImpl::SetDeviceScaleFactor(float scale) {
-  // Send secreen info as well because JavaScript API |window.open|
-  // uses screen info to determine the scale factor (crbug.com/155201).
-  // TODO(oshima|thakis): Consolidate SetDeviceScaleFactor and
-  // ScreenInfoChanged. crbug.com/155213.
-  NotifyScreenInfoChanged();
   Send(new ViewMsg_SetDeviceScaleFactor(GetRoutingID(), scale));
 }
 
