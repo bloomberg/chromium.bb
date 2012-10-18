@@ -48,6 +48,9 @@ const int kTouchDragStartDelayInMs = 200;
 // Scale to transform when touch drag starts.
 const float kTouchDraggingScale = 1.5f;
 
+// Delay in milliseconds of when the dragging UI should be shown for mouse drag.
+const int kMouseDragUIDelayInMs = 100;
+
 const gfx::Font& GetTitleFont() {
   static gfx::Font* font = NULL;
 
@@ -75,6 +78,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
       apps_grid_view_(apps_grid_view),
       icon_(new views::ImageView),
       title_(new views::Label),
+      ui_state_(UI_STATE_NORMAL),
       touch_dragging_(false) {
   icon_->set_interactive(false);
 
@@ -131,6 +135,30 @@ void AppListItemView::UpdateIcon() {
   icon_->SetImage(shadow);
 }
 
+void AppListItemView::SetUIState(UIState state) {
+  if (ui_state_ == state)
+    return;
+
+  ui_state_ = state;
+
+#if !defined(OS_WIN)
+  ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
+  switch(ui_state_) {
+    case UI_STATE_NORMAL:
+      title_->SetVisible(true);
+      layer()->SetTransform(gfx::Transform());
+      break;
+    case UI_STATE_DRAGGING:
+      title_->SetVisible(false);
+      const gfx::Rect bounds(layer()->bounds().size());
+      layer()->SetTransform(gfx::GetScaleTransform(
+          bounds.CenterPoint(),
+          kTouchDraggingScale));
+      break;
+  }
+#endif
+}
+
 void AppListItemView::OnTouchDragTimer() {
   SetTouchDragging(true);
 }
@@ -140,20 +168,12 @@ void AppListItemView::SetTouchDragging(bool touch_dragging) {
     return;
 
   touch_dragging_ = touch_dragging;
+  SetUIState(touch_dragging_ ? UI_STATE_DRAGGING : UI_STATE_NORMAL);
+}
 
-#if !defined(OS_WIN)
-  ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
-  if (touch_dragging_) {
-    title_->SetVisible(false);
-    const gfx::Rect bounds(layer()->bounds().size());
-    layer()->SetTransform(gfx::GetScaleTransform(
-        bounds.CenterPoint(),
-        kTouchDraggingScale));
-  } else {
-    title_->SetVisible(true);
-    layer()->SetTransform(gfx::Transform());
-  }
-#endif
+void AppListItemView::OnMouseDragTimer() {
+  DCHECK(apps_grid_view_->IsDraggedView(this));
+  SetUIState(UI_STATE_DRAGGING);
 }
 
 void AppListItemView::ItemIconChanged() {
@@ -257,22 +277,40 @@ bool AppListItemView::ShouldEnterPushedState(const ui::Event& event) {
 bool AppListItemView::OnMousePressed(const ui::MouseEvent& event) {
   CustomButton::OnMousePressed(event);
   apps_grid_view_->InitiateDrag(this, AppsGridView::MOUSE, event);
+
+  if (apps_grid_view_->IsDraggedView(this)) {
+    mouse_drag_timer_.Start(FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kMouseDragUIDelayInMs),
+        this, &AppListItemView::OnMouseDragTimer);
+  }
   return true;
 }
 
 void AppListItemView::OnMouseReleased(const ui::MouseEvent& event) {
   CustomButton::OnMouseReleased(event);
   apps_grid_view_->EndDrag(false);
+  mouse_drag_timer_.Stop();
+  SetUIState(UI_STATE_NORMAL);
 }
 
 void AppListItemView::OnMouseCaptureLost() {
   CustomButton::OnMouseCaptureLost();
   apps_grid_view_->EndDrag(true);
+  mouse_drag_timer_.Stop();
+  SetUIState(UI_STATE_NORMAL);
 }
 
 bool AppListItemView::OnMouseDragged(const ui::MouseEvent& event) {
   CustomButton::OnMouseDragged(event);
   apps_grid_view_->UpdateDrag(this, AppsGridView::MOUSE, event);
+
+  // Shows dragging UI when it's confirmed without waiting for the timer.
+  if (ui_state_ != UI_STATE_DRAGGING &&
+      apps_grid_view_->dragging() &&
+      apps_grid_view_->IsDraggedView(this)) {
+    mouse_drag_timer_.Stop();
+    SetUIState(UI_STATE_DRAGGING);
+  }
   return true;
 }
 
@@ -280,9 +318,11 @@ ui::EventResult AppListItemView::OnGestureEvent(
     const ui::GestureEvent& event) {
   switch (event.type()) {
     case ui::ET_GESTURE_TAP_DOWN:
-      touch_drag_timer_.Start(FROM_HERE,
-         base::TimeDelta::FromMilliseconds(kTouchDragStartDelayInMs),
-         this, &AppListItemView::OnTouchDragTimer);
+      if (!apps_grid_view_->has_dragged_view()) {
+        touch_drag_timer_.Start(FROM_HERE,
+           base::TimeDelta::FromMilliseconds(kTouchDragStartDelayInMs),
+           this, &AppListItemView::OnTouchDragTimer);
+      }
       break;
     case ui::ET_GESTURE_SCROLL_BEGIN:
       if (touch_dragging_) {

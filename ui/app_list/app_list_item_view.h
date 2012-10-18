@@ -44,8 +44,15 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   AppListItemModel* model() const { return model_; }
 
  private:
+  enum UIState {
+    UI_STATE_NORMAL,    // Normal UI (icon + label)
+    UI_STATE_DRAGGING,  // Dragging UI (scaled icon only)
+  };
+
   // Get icon from model and schedule background processing.
   void UpdateIcon();
+
+  void SetUIState(UIState state);
 
   // Invoked when |touch_drag_timer_| fires. It sets touch dragging flag so
   // that further touch scroll gestures contribute to drag.
@@ -53,6 +60,9 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
 
   // Sets |touch_dragging_| flag and updates UI.
   void SetTouchDragging(bool touch_dragging);
+
+  // Invoked when |mouse_drag_timer_| fires to show dragging UI.
+  void OnMouseDragTimer();
 
   // AppListItemModelObserver overrides:
   virtual void ItemIconChanged() OVERRIDE;
@@ -92,6 +102,8 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   gfx::Size icon_size_;
   gfx::ShadowValues icon_shadows_;
 
+  UIState ui_state_;
+
   // A timer to track whether user has pressed on the item long enough. When it
   // fires, subsequent scroll gesture events will contribute to drag instead
   // scrolling.
@@ -99,6 +111,9 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
 
   // True if scroll gestures should contribute to dragging.
   bool touch_dragging_;
+
+  // A timer to defer showing drag UI when mouse is pressed.
+  base::OneShotTimer<AppListItemView> mouse_drag_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListItemView);
 };

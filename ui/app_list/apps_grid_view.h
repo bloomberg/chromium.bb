@@ -74,6 +74,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void EndDrag(bool cancel);
   bool IsDraggedView(const views::View* view) const;
 
+  bool has_dragged_view() const { return drag_view_ != NULL; }
+  bool dragging() const { return drag_pointer_ != NONE; }
+
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
@@ -100,7 +103,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   };
 
   int tiles_per_page() const { return cols_ * rows_per_page_; }
-  bool dragging() const { return drag_pointer_ != NONE; }
 
   // Updates from model.
   void Update();
