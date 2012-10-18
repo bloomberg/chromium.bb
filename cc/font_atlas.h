@@ -20,9 +20,6 @@ class Point;
 
 namespace cc {
 
-class Color;
-class FontDescription;
-class GraphicsContext;
 class IntSize;
 
 // This class provides basic ability to draw text onto the heads-up display.
