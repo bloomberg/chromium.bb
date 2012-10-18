@@ -7,7 +7,7 @@
 #ifndef CHROME_BROWSER_CHROME_BROWSER_MAIN_WIN_H_
 #define CHROME_BROWSER_CHROME_BROWSER_MAIN_WIN_H_
 
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chrome_browser_main.h"
 
 class CommandLine;
@@ -68,7 +68,7 @@ class ChromeBrowserMainPartsWin : public ChromeBrowserMainParts {
   static void SetupInstallerUtilStrings();
 
  private:
-  scoped_refptr<chrome::RemovableDeviceNotificationsWindowWin>
+  scoped_ptr<chrome::RemovableDeviceNotificationsWindowWin>
       removable_device_notifications_window_;
 #if defined(USE_AURA)
   scoped_ptr<MetroViewerProcessHost> metro_viewer_process_host_;

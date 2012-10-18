@@ -200,8 +200,8 @@ void ChromeBrowserMainPartsWin::PreMainMessageLoopStart() {
     // Make sure that we know how to handle exceptions from the message loop.
     InitializeWindowProcExceptions();
   }
-  removable_device_notifications_window_ =
-      new chrome::RemovableDeviceNotificationsWindowWin();
+  removable_device_notifications_window_.reset(
+      chrome::RemovableDeviceNotificationsWindowWin::Create());
 }
 
 void ChromeBrowserMainPartsWin::PostMainMessageLoopStart() {
