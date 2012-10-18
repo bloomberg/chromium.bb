@@ -504,16 +504,14 @@ TEST_PPAPI_NACL_VIA_HTTP(Memory)
 TEST_PPAPI_IN_PROCESS(VideoDecoder)
 TEST_PPAPI_OUT_OF_PROCESS(VideoDecoder)
 
-// Touch and SetLength fail on Mac and Linux due to sandbox restrictions.
+// SetLength fails on Mac and Linux due to sandbox restrictions.
 // http://crbug.com/101128
 #if defined(OS_MACOSX) || defined(OS_LINUX)
 #define MAYBE_FileIO_ReadWriteSetLength DISABLED_FileIO_ReadWriteSetLength
-#define MAYBE_FileIO_TouchQuery DISABLED_FileIO_TouchQuery
 #define MAYBE_FileIO_WillWriteWillSetLength \
     DISABLED_FileIO_WillWriteWillSetLength
 #else
 #define MAYBE_FileIO_ReadWriteSetLength FileIO_ReadWriteSetLength
-#define MAYBE_FileIO_TouchQuery FileIO_TouchQuery
 #define MAYBE_FileIO_WillWriteWillSetLength FileIO_WillWriteWillSetLength
 #endif
 
@@ -523,7 +521,7 @@ TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileIO_ParallelReads)
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileIO_ParallelWrites)
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileIO_NotAllowMixedReadWrite)
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(MAYBE_FileIO_ReadWriteSetLength)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(MAYBE_FileIO_TouchQuery)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileIO_TouchQuery)
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(MAYBE_FileIO_WillWriteWillSetLength)
 
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileIO_Open)
@@ -532,7 +530,7 @@ TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileIO_ParallelReads)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileIO_ParallelWrites)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileIO_NotAllowMixedReadWrite)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(MAYBE_FileIO_ReadWriteSetLength)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(MAYBE_FileIO_TouchQuery)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileIO_TouchQuery)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(MAYBE_FileIO_WillWriteWillSetLength)
 
 // PPAPINaclTest.FileIO_ParallelReads is flaky on Mac. http://crbug.com/121104
@@ -546,7 +544,7 @@ TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(MAYBE_FileIO_WillWriteWillSetLength)
 #if defined(OS_WIN)
 #define MAYBE_NACL_FileIO_TouchQuery DISABLED_FileIO_TouchQuery
 #else
-#define MAYBE_NACL_FileIO_TouchQuery MAYBE_FileIO_TouchQuery
+#define MAYBE_NACL_FileIO_TouchQuery FileIO_TouchQuery
 #endif
 
 TEST_PPAPI_NACL_VIA_HTTP(FileIO_Open)

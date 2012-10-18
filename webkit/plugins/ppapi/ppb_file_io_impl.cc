@@ -22,9 +22,12 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_file_ref_api.h"
 #include "webkit/plugins/ppapi/common.h"
+#include "webkit/plugins/ppapi/file_callbacks.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppb_directory_reader_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
+#include "webkit/plugins/ppapi/ppb_file_system_impl.h"
 #include "webkit/plugins/ppapi/quota_file_io.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
@@ -108,6 +111,18 @@ int32_t PPB_FileIO_Impl::TouchValidated(
   if (!plugin_delegate)
     return PP_ERROR_FAILED;
 
+  if (file_system_type_ != PP_FILESYSTEMTYPE_EXTERNAL) {
+    if (!plugin_delegate->Touch(
+            file_system_url_,
+            PPTimeToTime(last_access_time),
+            PPTimeToTime(last_modified_time),
+            new FileCallbacks(this, callback, NULL, NULL, NULL)))
+      return PP_ERROR_FAILED;
+    return PP_OK_COMPLETIONPENDING;
+  }
+
+  // TODO(nhiroki): fix a failure of FileIO.Touch for an external filesystem on
+  // Mac and Linux due to sandbox restrictions (http://crbug.com/101128).
   if (!base::FileUtilProxy::Touch(
           plugin_delegate->GetFileThreadMessageLoopProxy(),
           file_, PPTimeToTime(last_access_time),
