@@ -81,7 +81,9 @@ class TraceTestCases(unittest.TestCase):
     cmd.append(TARGET_PATH)
     logging.debug(' '.join(cmd))
     proc = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        cmd,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        universal_newlines=True)
     out, err = proc.communicate() or ('', '')  # pylint is confused.
     self.assertEqual(0, proc.returncode, (out, err))
     lines = out.splitlines()
@@ -132,18 +134,24 @@ class TraceTestCases(unittest.TestCase):
           '\n' +
           gtest_fake_base.get_footer(1, 1) +
           '\n')
-      self.assertEqual(expected_output, actual['output'])
+      # On Windows, actual['output'] is unprocessed so it will contain CRLF.
+      output = actual['output']
+      if sys.platform == 'win32':
+        output = output.replace('\r\n', '\n')
+      self.assertEqual(expected_output, output, repr(output))
 
       expected_trace = {
-        'root': {
-          'children': [],
-          'command': [
+        u'root': {
+          u'children': [],
+          u'command': [
             sys.executable, TARGET_PATH, '--gtest_filter=' + test_case,
           ],
-          'executable': sys.executable,
-          'initial_cwd': ROOT_DIR,
+          u'executable': trace_inputs.get_native_path_case(sys.executable),
+          u'initial_cwd': ROOT_DIR,
         },
       }
+      if sys.platform == 'win32':
+        expected_trace['root']['initial_cwd'] = None
       self.assertGreater(actual['trace']['root'].pop('pid'), 1)
       self.assertGreater(len(actual['trace']['root'].pop('files')), 10)
       self.assertEqual(expected_trace, actual['trace'])

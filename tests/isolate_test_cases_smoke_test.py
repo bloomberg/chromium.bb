@@ -144,6 +144,7 @@ class IsolateTestCases(unittest.TestCase):
           re.match('^%s$' % expected_out_re[index], lines[index]),
           '%d\n%r\n%r\n%r' % (
             index, expected_out_re[index], lines[index], out))
+    logging.info(err)
     # Junk is printed on win32.
     if sys.platform != 'win32' and not VERBOSE:
       self.assertEqual('', err)

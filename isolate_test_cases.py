@@ -21,13 +21,13 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def isolate_test_cases(
-    cmd, cwd_dir, test_cases, jobs, _timeout, isolated_file, isolate_file,
-    root_dir, variables):
+    cmd, test_cases, jobs, _timeout, isolated_file, isolate_file,
+    root_dir, reldir, variables):
   assert os.path.isabs(root_dir) and os.path.isdir(root_dir), root_dir
 
   logname = isolated_file + '.log'
   basename = isolated_file.rsplit('.', 1)[0]
-
+  cwd_dir = os.path.join(root_dir, reldir)
   # Do the actual tracing.
   results = trace_test_cases.trace_test_cases(
       cmd, cwd_dir, test_cases, jobs, logname)
@@ -59,7 +59,7 @@ def isolate_test_cases(
           touched,
           root_dir,
           variables,
-          cwd_dir)
+          reldir)
       out = basename + '.' + test_case + '.isolate'
       with open(out, 'w') as f:
         isolate.pretty_print(value, f)
@@ -128,13 +128,13 @@ def main():
     config.saved_state.variables.update(options.variables)
     return isolate_test_cases(
         command,
-        reldir,
         test_cases,
         options.jobs,
         options.timeout,
         config.isolated_filepath,
         config.saved_state.isolate_file,
         config.root_dir,
+        config.isolated.relative_cwd,
         config.saved_state.variables)
   except isolate.ExecutionError, e:
     print >> sys.stderr, str(e)

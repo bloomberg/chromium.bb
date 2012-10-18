@@ -696,6 +696,7 @@ def generate_simplified(
 
   # Preparation work.
   relative_cwd = cleanup_path(relative_cwd)
+  assert not os.path.isabs(relative_cwd), relative_cwd
   # Creates the right set of variables here. We only care about PATH_VARIABLES.
   variables = dict(
       ('<(%s)' % k, variables[k].replace(os.path.sep, '/'))
@@ -712,19 +713,21 @@ def generate_simplified(
   # touched is not compressed, otherwise it would result in files to be archived
   # that we don't need.
 
+  root_dir_posix = root_dir.replace(os.path.sep, '/')
   def fix(f):
     """Bases the file on the most restrictive variable."""
-    logging.debug('fix(%s)' % f)
     # Important, GYP stores the files with / and not \.
     f = f.replace(os.path.sep, '/')
+    logging.debug('fix(%s)' % f)
     # If it's not already a variable.
     if not f.startswith('<'):
       # relative_cwd is usually the directory containing the gyp file. It may be
       # empty if the whole directory containing the gyp file is needed.
       # Use absolute paths in case cwd_dir is outside of root_dir.
+      # Convert the whole thing to / since it's isolate's speak.
       f = posix_relpath(
-          os.path.join(root_dir, f),
-          os.path.join(root_dir, relative_cwd)) or './'
+          posixpath.join(root_dir_posix, f),
+          posixpath.join(root_dir_posix, relative_cwd)) or './'
 
     for variable, root_path in variables.iteritems():
       if f.startswith(root_path):
@@ -1630,7 +1633,7 @@ def merge(complete_state):
   # pylint: disable=E1103
   data = convert_map_to_isolate_dict(
       *reduce_inputs(*invert_map(config.flatten())))
-  print 'Updating %s' % complete_state.saved_state.isolate_file
+  print('Updating %s' % complete_state.saved_state.isolate_file)
   with open(complete_state.saved_state.isolate_file, 'wb') as f:
     print_all(config.file_comment, data, f)
 
@@ -1754,7 +1757,7 @@ def CMDremap(args):
   else:
     if not os.path.isdir(options.outdir):
       os.makedirs(options.outdir)
-  print 'Remapping into %s' % options.outdir
+  print('Remapping into %s' % options.outdir)
   if len(os.listdir(options.outdir)):
     raise ExecutionError('Can\'t remap in a non-empty directory')
   recreate_tree(
