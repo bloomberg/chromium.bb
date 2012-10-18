@@ -52,10 +52,12 @@ std::string GetHistogramName(Origin origin, uint8 experiment_id,
   switch (origin) {
     case ORIGIN_OMNIBOX:
       return ComposeHistogramName("omnibox", name);
-    case ORIGIN_LINK_REL_PRERENDER:
-      return ComposeHistogramName("web", name);
     case ORIGIN_NONE:
       return ComposeHistogramName("none", name);
+    case ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN:
+      return ComposeHistogramName("websame", name);
+    case ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN:
+      return ComposeHistogramName("webcross", name);
     case ORIGIN_GWS_PRERENDER:  // Handled above.
     default:
       NOTREACHED();
@@ -105,11 +107,13 @@ bool OriginIsOmnibox(Origin origin) {
   } else if (experiment != kNoExperiment && \
              (origin != ORIGIN_GWS_PRERENDER || \
               experiment != recording_experiment)) { \
-  } else if (origin == ORIGIN_LINK_REL_PRERENDER) { \
-    HISTOGRAM; \
   } else if (origin == ORIGIN_OMNIBOX) { \
     HISTOGRAM; \
   } else if (origin == ORIGIN_NONE) { \
+    HISTOGRAM; \
+  } else if (origin == ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN) { \
+    HISTOGRAM; \
+  } else if (origin == ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN) { \
     HISTOGRAM; \
   } else if (experiment != kNoExperiment) { \
     HISTOGRAM; \
@@ -120,7 +124,7 @@ bool OriginIsOmnibox(Origin origin) {
 
 PrerenderHistograms::PrerenderHistograms()
     : last_experiment_id_(kNoExperiment),
-      last_origin_(ORIGIN_LINK_REL_PRERENDER),
+      last_origin_(ORIGIN_MAX),
       origin_experiment_wash_(false),
       seen_any_pageload_(true),
       seen_pageload_started_after_prerender_(true) {

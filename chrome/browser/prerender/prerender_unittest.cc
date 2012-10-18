@@ -52,7 +52,9 @@ class DummyPrerenderContents : public PrerenderContents {
       bool is_control_group) OVERRIDE;
 
   virtual bool GetChildId(int* child_id) const OVERRIDE {
-    *child_id = 0;
+    // Having a default child_id of -1 forces pending prerenders not to fail
+    // on session storage and cross domain checking.
+    *child_id = -1;
     return true;
   }
 
@@ -133,7 +135,7 @@ class UnitTestPrerenderManager : public PrerenderManager {
       FinalStatus expected_final_status) {
     DummyPrerenderContents* prerender_contents =
         new DummyPrerenderContents(this, prerender_tracker_, url,
-                                   ORIGIN_LINK_REL_PRERENDER,
+                                   ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN,
                                    expected_final_status);
     SetNextPrerenderContents(prerender_contents);
     return prerender_contents;
@@ -156,7 +158,7 @@ class UnitTestPrerenderManager : public PrerenderManager {
       FinalStatus expected_final_status) {
     DummyPrerenderContents* prerender_contents =
         new DummyPrerenderContents(this, prerender_tracker_, url,
-                                   ORIGIN_LINK_REL_PRERENDER,
+                                   ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN,
                                    expected_final_status);
     for (std::vector<GURL>::const_iterator it = alias_urls.begin();
          it != alias_urls.end();

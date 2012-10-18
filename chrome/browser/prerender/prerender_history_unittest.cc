@@ -67,7 +67,7 @@ TEST(PrerenderHistoryTest, GetAsValue)  {
   // Add a single entry and make sure that it matches up.
   const char* const kFirstUrl = "http://www.alpha.com/";
   const FinalStatus kFirstFinalStatus = FINAL_STATUS_USED;
-  const Origin kFirstOrigin = ORIGIN_LINK_REL_PRERENDER;
+  const Origin kFirstOrigin = ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN;
   PrerenderHistory::Entry entry_first(
       GURL(kFirstUrl), kFirstFinalStatus, kFirstOrigin, epoch_start);
   history.AddEntry(entry_first);
@@ -98,7 +98,7 @@ TEST(PrerenderHistoryTest, GetAsValue)  {
   // Add a third entry and make sure that the first one drops off.
   const char* const kThirdUrl = "http://www.gamma.com/";
   const FinalStatus kThirdFinalStatus = FINAL_STATUS_AUTH_NEEDED;
-  const Origin kThirdOrigin = ORIGIN_LINK_REL_PRERENDER;
+  const Origin kThirdOrigin = ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN;
   PrerenderHistory::Entry entry_third(
       GURL(kThirdUrl), kThirdFinalStatus, kThirdOrigin,
       epoch_start + base::TimeDelta::FromMilliseconds(2));

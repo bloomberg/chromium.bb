@@ -232,6 +232,26 @@ PrerenderHandle* PrerenderManager::AddPrerenderFromLinkRelPrerender(
   return NULL;
 #else
   DCHECK(!size.IsEmpty());
+  Origin origin = ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN;
+  SessionStorageNamespace* session_storage_namespace = NULL;
+  // Unit tests pass in a process_id == -1.
+  if (process_id != -1) {
+    RenderViewHost* source_render_view_host =
+        RenderViewHost::FromID(process_id, route_id);
+    if (!source_render_view_host)
+      return NULL;
+    WebContents* source_web_contents =
+        WebContents::FromRenderViewHost(source_render_view_host);
+    if (!source_web_contents)
+      return NULL;
+    if (source_web_contents->GetURL().host() == url.host())
+      origin = ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN;
+    // TODO(ajwong): This does not correctly handle storage for isolated apps.
+    session_storage_namespace =
+        source_web_contents->GetController()
+            .GetDefaultSessionStorageNamespace();
+  }
+
   if (PrerenderData* parent_prerender_data =
           FindPrerenderDataForChildAndRoute(process_id, route_id)) {
     // Instead of prerendering from inside of a running prerender, we will defer
@@ -242,31 +262,13 @@ PrerenderHandle* PrerenderManager::AddPrerenderFromLinkRelPrerender(
       PrerenderHandle* prerender_handle =
           new PrerenderHandle(pending_prerender_list_.back().get());
       contents->AddPendingPrerender(
-          prerender_handle->weak_ptr_factory_.GetWeakPtr(),
-          ORIGIN_LINK_REL_PRERENDER, url, referrer, size);
+          prerender_handle->weak_ptr_factory_.GetWeakPtr(), origin,
+          url, referrer, size);
       return prerender_handle;
     }
   }
 
-  // Unit tests pass in a process_id == -1.
-  SessionStorageNamespace* session_storage_namespace = NULL;
-  if (process_id != -1) {
-    RenderViewHost* source_render_view_host =
-        RenderViewHost::FromID(process_id, route_id);
-    if (!source_render_view_host)
-      return NULL;
-    WebContents* source_web_contents =
-        WebContents::FromRenderViewHost(source_render_view_host);
-    if (!source_web_contents)
-      return NULL;
-    // TODO(ajwong): This does not correctly handle storage for isolated apps.
-    session_storage_namespace =
-        source_web_contents->GetController()
-            .GetDefaultSessionStorageNamespace();
-  }
-
-  return AddPrerender(ORIGIN_LINK_REL_PRERENDER,
-                      process_id, url, referrer, size,
+  return AddPrerender(origin, process_id, url, referrer, size,
                       session_storage_namespace);
 #endif
 }
@@ -987,7 +989,8 @@ PrerenderHandle* PrerenderManager::AddPrerender(
   if (!IsEnabled())
     return NULL;
 
-  if (origin == ORIGIN_LINK_REL_PRERENDER &&
+  if ((origin == ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN ||
+       origin == ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN) &&
       IsGoogleSearchResultURL(referrer.url)) {
     origin = ORIGIN_GWS_PRERENDER;
   }

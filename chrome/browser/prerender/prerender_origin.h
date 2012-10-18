@@ -10,13 +10,15 @@ namespace prerender {
 // Origin indicates what caused the prerender.
 // NOTE: New values need to be appended, since they are used in histograms.
 enum Origin {
-  ORIGIN_LINK_REL_PRERENDER = 0,
+  // Obsolete: ORIGIN_LINK_REL_PRERENDER = 0,
   // Obsolete: ORIGIN_OMNIBOX_ORIGINAL = 1,
   ORIGIN_GWS_PRERENDER = 2,
   // Obsolete: ORIGIN_OMNIBOX_CONSERVATIVE = 3,
   // Obsolete: ORIGIN_OMNIBOX_EXACT = 4,
   ORIGIN_OMNIBOX = 5,
   ORIGIN_NONE = 6,
+  ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN = 7,
+  ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN = 8,
   ORIGIN_MAX,
 };
 
