@@ -1121,12 +1121,6 @@ enum NotificationType {
   // Sent each time the InstantController is updated.
   NOTIFICATION_INSTANT_CONTROLLER_UPDATED,
 
-  // Sent each time the InstantController shows the InstantLoader.
-  NOTIFICATION_INSTANT_CONTROLLER_SHOWN,
-
-  // Sent each time the InstantController hides the InstantLoader.
-  NOTIFICATION_INSTANT_CONTROLLER_HIDDEN,
-
   // Sent when an Instant preview is committed. The Source is the WebContents
   // containing the committed preview.
   NOTIFICATION_INSTANT_COMMITTED,
@@ -1134,6 +1128,10 @@ enum NotificationType {
   // Sent when the Instant loader determines whether the page supports the
   // Instant API or not.
   NOTIFICATION_INSTANT_SUPPORT_DETERMINED,
+
+  // Sent when the Browser Instant controller resets, this may result from
+  // a preference change.
+  NOTIFICATION_BROWSER_INSTANT_RESET,
 
   // Sent when the CaptivePortalService checks if we're behind a captive portal.
   // The Source is the Profile the CaptivePortalService belongs to, and the

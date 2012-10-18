@@ -324,8 +324,6 @@ class WebContents;
 - (NSPoint)bookmarkBubblePoint;
 
 // Shows or hides the Instant preview contents.
-- (void)showInstant:(content::WebContents*)previewContents;
-- (void)hideInstant;
 - (void)commitInstant;
 - (BOOL)isInstantTabShowing;
 

@@ -130,10 +130,6 @@ class TestBrowserWindow : public BrowserWindow {
   virtual bool InPresentationMode() OVERRIDE;
 #endif
 
-  virtual void ShowInstant(TabContents* preview_contents,
-                           int height,
-                           InstantSizeUnits units) OVERRIDE {}
-  virtual void HideInstant() OVERRIDE {}
   virtual gfx::Rect GetInstantBounds() OVERRIDE;
   virtual bool IsInstantTabShowing() OVERRIDE;
   virtual WindowOpenDisposition GetDispositionForPopupBounds(

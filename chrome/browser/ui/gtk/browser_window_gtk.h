@@ -35,6 +35,7 @@ class FindBarGtk;
 class FullscreenExitBubbleGtk;
 class GlobalMenuBar;
 class InfoBarContainerGtk;
+class InstantPreviewControllerGtk;
 class LocationBar;
 class PrefService;
 class StatusBubbleGtk;
@@ -159,10 +160,6 @@ class BrowserWindowGtk
   virtual void Cut() OVERRIDE;
   virtual void Copy() OVERRIDE;
   virtual void Paste() OVERRIDE;
-  virtual void ShowInstant(TabContents* preview,
-                           int height,
-                           InstantSizeUnits units) OVERRIDE;
-  virtual void HideInstant() OVERRIDE;
   virtual gfx::Rect GetInstantBounds() OVERRIDE;
   virtual bool IsInstantTabShowing() OVERRIDE;
   virtual WindowOpenDisposition GetDispositionForPopupBounds(
@@ -269,6 +266,9 @@ class BrowserWindowGtk
   // |relative_to| coordinates. This is the middle of the omnibox location icon.
   int GetXPositionOfLocationIcon(GtkWidget* relative_to);
 
+  // Show or hide the bookmark bar.
+  void MaybeShowBookmarkBar(bool animate);
+
  protected:
   virtual void DestroyBrowser() OVERRIDE;
 
@@ -315,9 +315,6 @@ class BrowserWindowGtk
   scoped_ptr<Browser> browser_;
 
  private:
-  // Show or hide the bookmark bar.
-  void MaybeShowBookmarkBar(bool animate);
-
   // Connect to signals on |window_|.
   void ConnectHandlersToSignals();
 
@@ -494,6 +491,9 @@ class BrowserWindowGtk
   // A container that manages the GtkWidget*s of developer tools for the
   // selected tab contents.
   scoped_ptr<TabContentsContainerGtk> devtools_container_;
+
+  // A sub-controller that manages the Instant preview visual state.
+  scoped_ptr<InstantPreviewControllerGtk> instant_preview_controller_;
 
   // The Extension Keybinding Registry responsible for registering listeners for
   // accelerators that are sent to the window, that are destined to be turned

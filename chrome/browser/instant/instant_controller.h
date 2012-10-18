@@ -17,6 +17,7 @@
 #include "base/timer.h"
 #include "chrome/browser/instant/instant_commit_type.h"
 #include "chrome/browser/instant/instant_loader_delegate.h"
+#include "chrome/browser/instant/instant_model.h"
 #include "chrome/common/instant_types.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
@@ -37,10 +38,10 @@ class TemplateURL;
 // BrowserInstantController.
 //
 // At any time the WebContents maintained by InstantController may be hidden
-// from view by way of Hide(), which may result in HideInstant() being invoked
-// on the delegate. Similarly the preview may be committed at any time by
-// invoking CommitCurrentPreview(), which results in CommitInstant() being
-// invoked on the delegate.
+// from view by way of Hide(), which may result in a change in the model's
+// display state and subsequent change in model observers. Similarly the preview
+// may be committed at any time by invoking CommitCurrentPreview(), which
+// results in CommitInstant() being invoked on the delegate.
 class InstantController : public InstantLoaderDelegate {
  public:
   // Amount of time to wait before starting the animation for suggested text.
@@ -169,9 +170,10 @@ class InstantController : public InstantLoaderDelegate {
 
 #if defined(UNIT_TEST)
   // Accessors used only in tests.
-  bool is_showing() const { return is_showing_; }
   InstantLoader* loader() const { return loader_.get(); }
 #endif
+
+  const InstantModel* model() const { return &model_; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(InstantTest, InstantLoaderRefresh);
@@ -219,6 +221,8 @@ class InstantController : public InstantLoaderDelegate {
 
   InstantControllerDelegate* const delegate_;
 
+  InstantModel model_;
+
   scoped_ptr<InstantLoader> loader_;
 
   // See the enum description above.
@@ -248,10 +252,6 @@ class InstantController : public InstantLoaderDelegate {
 
   // True if the last match passed to Update() was a search (versus a URL).
   bool last_match_was_search_;
-
-  // True if the preview is currently being displayed. Guaranteed to be false
-  // if IsOutOfDate() is true.
-  bool is_showing_;
 
   // True if we've received a response from the loader for the last Update(),
   // thus indicating that the page is ready to be shown.

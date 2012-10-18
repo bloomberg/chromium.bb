@@ -45,6 +45,7 @@ class ContentsContainer;
 class DownloadShelfView;
 class FullscreenExitBubbleViews;
 class InfoBarContainerView;
+class InstantPreviewControllerViews;
 class LocationBarView;
 class StatusBubbleViews;
 class TabStrip;
@@ -337,10 +338,6 @@ class BrowserView : public BrowserWindow,
   virtual void Cut() OVERRIDE;
   virtual void Copy() OVERRIDE;
   virtual void Paste() OVERRIDE;
-  virtual void ShowInstant(TabContents* preview,
-                           int height,
-                           InstantSizeUnits units) OVERRIDE;
-  virtual void HideInstant() OVERRIDE;
   virtual gfx::Rect GetInstantBounds() OVERRIDE;
   virtual bool IsInstantTabShowing() OVERRIDE;
   virtual WindowOpenDisposition GetDispositionForPopupBounds(
@@ -426,6 +423,12 @@ class BrowserView : public BrowserWindow,
   // Returns the resource ID to use for the OTR icon, which depends on
   // which layout is being shown and whether we are full-screen.
   int GetOTRIconResourceID() const;
+
+  // Forces the LocationBarContainer to the top of the native window stacking
+  // order. This is needed for the Instant extended API when the location bar
+  // can be placed over web contents.
+  // Used by |InstantPreviewControllerViews| which manages the instant preview.
+  void RestackLocationBarContainer();
 
  protected:
   // Appends to |toolbars| a pointer to each AccessiblePaneView that
@@ -566,11 +569,6 @@ class BrowserView : public BrowserWindow,
   // Create an icon for this window in the launcher (currently only for Ash).
   void CreateLauncherIcon();
 
-  // Forces the LocationBarContainer to the top of the native window stacking
-  // order. This is needed for the Instant extended API when the location bar
-  // can be placed over web contents.
-  void RestackLocationBarContainer();
-
   // Calls |method| which is either RenderWidgetHost::Cut, ::Copy, or ::Paste
   // and returns true if the focus is currently on a WebContent.
   bool DoCutCopyPaste(void (content::RenderWidgetHost::*method)());
@@ -602,7 +600,7 @@ class BrowserView : public BrowserWindow,
   // |Page content (contents_)                                     ||
   // |-------------------------------------------------------------||
   // || contents_container_ and/or                                |||
-  // || preview_container_                                        |||
+  // || preview_controller_->preview_container_                   |||
   // ||                                                           |||
   // ||                                                           |||
   // ||                                                           |||
@@ -625,7 +623,8 @@ class BrowserView : public BrowserWindow,
   // * - The bookmark bar and info bar are swapped when on the new tab page.
   //     Additionally contents_ is positioned on top of the bookmark bar when
   //     the bookmark bar is detached. This is done to allow the
-  //     preview_container_ to appear over the bookmark bar.
+  //     preview_controller_->preview_container_ to appear over the bookmark
+  //     bar.
 
   // Tool/Info bars that we are currently showing. Used for layout.
   // active_bookmark_bar_ is either NULL, if the bookmark bar isn't showing,
@@ -658,10 +657,8 @@ class BrowserView : public BrowserWindow,
   // The view that contains devtools window for the selected WebContents.
   views::WebView* devtools_container_;
 
-  // The view that contains instant's WebContents.
-  views::WebView* preview_container_;
-
-  // The view managing both the contents_container_ and preview_container_.
+  // The view managing both the contents_container_ and
+  // preview_controller_->preview_container_.
   ContentsContainer* contents_;
 
   // Split view containing the contents container and devtools container.
@@ -731,6 +728,8 @@ class BrowserView : public BrowserWindow,
 #if defined(USE_AURA)
   scoped_ptr<SearchViewController> search_view_controller_;
 #endif
+
+  scoped_ptr<InstantPreviewControllerViews> preview_controller_;
 
   mutable base::WeakPtrFactory<BrowserView> activate_modal_dialog_factory_;
 

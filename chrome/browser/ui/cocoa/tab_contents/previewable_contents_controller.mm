@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
+#include "chrome/browser/ui/cocoa/tab_contents/instant_preview_controller_mac.h"
 #include "content/public/browser/web_contents.h"
 
 using content::WebContents;
@@ -15,9 +16,19 @@ using content::WebContents;
 
 @synthesize activeContainer = activeContainer_;
 
+// For testing.  Use |-initWithBrowser:| for production.
 - (id)init {
   if ((self = [super initWithNibName:@"PreviewableContents"
                               bundle:base::mac::FrameworkBundle()])) {
+  }
+  return self;
+}
+
+- (id)initWithBrowser:(Browser*)browser
+     windowController:(BrowserWindowController*)windowController {
+  if ((self = [self init])) {
+    instantPreviewController_.reset(
+        new InstantPreviewControllerMac(browser, windowController, self));
   }
   return self;
 }

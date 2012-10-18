@@ -62,15 +62,6 @@ bool BrowserInstantController::OpenInstant(WindowOpenDisposition disposition) {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserInstantController, InstantControllerDelegate implementation:
 
-void BrowserInstantController::ShowInstant(int height, InstantSizeUnits units) {
-  browser_->window()->ShowInstant(instant_->GetPreviewContents(),
-                                  height, units);
-}
-
-void BrowserInstantController::HideInstant() {
-  browser_->window()->HideInstant();
-}
-
 void BrowserInstantController::CommitInstant(TabContents* preview,
                                              bool in_new_tab) {
   if (in_new_tab) {
@@ -154,6 +145,12 @@ void BrowserInstantController::ResetInstant() {
       !browser_shutdown::ShuttingDownWithoutClosingBrowsers() &&
       browser_->is_type_tabbed() ?
           InstantController::CreateInstant(browser_->profile(), this) : NULL);
+
+  // Notify any observers that they need to reset.
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_BROWSER_INSTANT_RESET,
+      content::Source<BrowserInstantController>(this),
+      content::NotificationService::NoDetails());
 }
 
 }  // namespace chrome

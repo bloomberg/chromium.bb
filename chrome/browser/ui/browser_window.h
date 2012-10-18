@@ -318,14 +318,6 @@ class BrowserWindow : public BaseWindow {
   virtual bool InPresentationMode() = 0;
 #endif
 
-  // Invoked when instant's tab contents should be shown with given |height|.
-  virtual void ShowInstant(TabContents* preview,
-                           int height,
-                           InstantSizeUnits units) = 0;
-
-  // Invoked when instant's tab contents should be hidden.
-  virtual void HideInstant() = 0;
-
   // Returns the desired bounds for instant in screen coordinates. Note that if
   // instant isn't currently visible this returns the bounds instant would be
   // placed at.

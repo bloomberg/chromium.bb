@@ -19,6 +19,7 @@
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/managed_mode.h"
 #include "chrome/browser/native_window_notification_source.h"
 #include "chrome/browser/ntp_background_util.h"
@@ -39,6 +40,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_instant_controller.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window_state.h"
@@ -61,6 +63,7 @@
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/contents_container.h"
+#include "chrome/browser/ui/views/frame/instant_preview_controller_views.h"
 #include "chrome/browser/ui/views/fullscreen_exit_bubble_views.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_container.h"
@@ -339,7 +342,6 @@ BrowserView::BrowserView(Browser* browser)
       infobar_container_(NULL),
       contents_container_(NULL),
       devtools_container_(NULL),
-      preview_container_(NULL),
       contents_(NULL),
       contents_split_(NULL),
       devtools_dock_side_(DEVTOOLS_DOCK_SIDE_BOTTOM),
@@ -367,6 +369,8 @@ BrowserView::~BrowserView() {
 #if defined(USE_AURA)
   search_view_controller_.reset(NULL);
 #endif
+
+  preview_controller_.reset(NULL);
 
   browser_->tab_strip_model()->RemoveObserver(this);
   browser_->search_model()->RemoveObserver(this);
@@ -1366,36 +1370,12 @@ void BrowserView::Paste() {
   }
 }
 
-void BrowserView::ShowInstant(TabContents* preview,
-                              int height,
-                              InstantSizeUnits units) {
-  if (!preview_container_) {
-    preview_container_ = new views::WebView(browser_->profile());
-    preview_container_->set_id(VIEW_ID_TAB_CONTAINER);
-  }
-  contents_->SetPreview(preview_container_, preview->web_contents(),
-                        height, units);
-  preview_container_->SetWebContents(preview->web_contents());
-  RestackLocationBarContainer();
-}
-
-void BrowserView::HideInstant() {
-  if (!preview_container_)
-    return;
-
-  // The contents must be changed before SetPreview is invoked.
-  preview_container_->SetWebContents(NULL);
-  contents_->SetPreview(NULL, NULL, 100, INSTANT_SIZE_PERCENT);
-  delete preview_container_;
-  preview_container_ = NULL;
-}
-
 gfx::Rect BrowserView::GetInstantBounds() {
   return contents_->GetPreviewBounds();
 }
 
 bool BrowserView::IsInstantTabShowing() {
-  return preview_container_ != NULL;
+  return preview_controller_->preview_container() != NULL;
 }
 
 WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
@@ -1491,10 +1471,9 @@ void BrowserView::TabReplacedAt(TabStripModel* tab_strip_model,
     // delete what was the active.
     contents_->MakePreviewContentsActiveContents();
     views::WebView* old_container = contents_container_;
-    contents_container_ = preview_container_;
+    contents_container_ = preview_controller_->release_preview_container();
     old_container->SetWebContents(NULL);
     delete old_container;
-    preview_container_ = NULL;
   }
   // Update the UI for the new contents.
   ProcessTabSelected(new_contents);
@@ -2003,6 +1982,9 @@ void BrowserView::Init() {
         toolbar_->location_bar_container());
   }
 #endif
+
+  preview_controller_.reset(
+      new InstantPreviewControllerViews(browser(), this, contents_));
 
   SkColor bg_color = GetWidget()->GetThemeProvider()->
       GetColor(ThemeService::COLOR_TOOLBAR);
@@ -2651,11 +2633,13 @@ void BrowserView::RestackLocationBarContainer() {
 #if defined(USE_AURA)
   if (search_view_controller_.get())
     search_view_controller_->StackAtTop();
-  if (preview_container_ && preview_container_->web_contents()) {
+  if (preview_controller_ && preview_controller_->preview_container() &&
+      preview_controller_->preview_container()->web_contents()) {
     // Keep the preview on top so that a doodle can be shown on the NTP in
     // InstantExtended mode.
     ui::Layer* native_view_layer =
-        preview_container_->web_contents()->GetNativeView()->layer();
+        preview_controller_->preview_container()->web_contents()->
+            GetNativeView()->layer();
     native_view_layer->parent()->StackAtTop(native_view_layer);
   }
 #endif

@@ -305,15 +305,8 @@ TabContents* InstantController::GetPreviewContents() const {
 
 void InstantController::Hide() {
   last_active_tab_ = NULL;
-  if (is_showing_) {
-    is_showing_ = false;
-    delegate_->HideInstant();
+  model_.SetDisplayState(InstantModel::NOT_READY, 0, INSTANT_SIZE_PERCENT);
 
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_INSTANT_CONTROLLER_HIDDEN,
-        content::Source<InstantController>(this),
-        content::NotificationService::NoDetails());
-  }
   if (GetPreviewContents() && !last_full_text_.empty()) {
     // Send a blank query to ask the preview to clear out old results.
     last_full_text_.clear();
@@ -434,7 +427,7 @@ void InstantController::OnAutocompleteLostFocus(
   loader_->OnAutocompleteLostFocus();
 
   // If the preview is not showing, only need to check for loader staleness.
-  if (!is_showing_) {
+  if (!model_.is_ready()) {
     MaybeOnStaleLoader();
     return;
   }
@@ -580,7 +573,7 @@ void InstantController::SetSuggestions(
 }
 
 void InstantController::CommitInstantLoader(InstantLoader* loader) {
-  if (loader_ != loader || !is_showing_ || IsOutOfDate())
+  if (loader_ != loader || !model_.is_ready() || IsOutOfDate())
     return;
 
   CommitCurrentPreview(INSTANT_COMMIT_FOCUS_LOST);
@@ -626,15 +619,15 @@ void InstantController::InstantSupportDetermined(InstantLoader* loader,
 }
 
 void InstantController::SwappedTabContents(InstantLoader* loader) {
-  if (loader_ == loader && is_showing_)
-    delegate_->ShowInstant(100, INSTANT_SIZE_PERCENT);
+  if (loader_ == loader)
+    model_.SetPreviewContents(GetPreviewContents());
 }
 
 void InstantController::InstantLoaderContentsFocused(InstantLoader* loader) {
 #if defined(USE_AURA)
   // On aura the omnibox only receives a focus lost if we initiate the focus
   // change. This does that.
-  if (is_showing_ && !IsOutOfDate())
+  if (model_.is_ready() && !IsOutOfDate())
     delegate_->InstantPreviewFocused();
 #endif
 }
@@ -642,12 +635,12 @@ void InstantController::InstantLoaderContentsFocused(InstantLoader* loader) {
 InstantController::InstantController(InstantControllerDelegate* delegate,
                                      Mode mode)
     : delegate_(delegate),
+      model_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       mode_(mode),
       last_active_tab_(NULL),
       last_verbatim_(false),
       last_transition_type_(content::PAGE_TRANSITION_LINK),
       last_match_was_search_(false),
-      is_showing_(false),
       loader_processed_last_update_(false),
       is_omnibox_focused_(false),
       active_tab_is_ntp_(false) {
@@ -700,7 +693,7 @@ bool InstantController::CreateDefaultLoader() {
 void InstantController::OnStaleLoader() {
   // If the loader is showing, do not delete it. It will get deleted the next
   // time the autocomplete loses focus.
-  if (is_showing_)
+  if (model_.is_ready())
     return;
 
   DeleteLoader();
@@ -719,7 +712,7 @@ void InstantController::DeleteLoader() {
   last_verbatim_ = false;
   last_suggestion_ = InstantSuggestion();
   last_match_was_search_ = false;
-  is_showing_ = false;
+  model_.SetDisplayState(InstantModel::NOT_READY, 0, INSTANT_SIZE_PERCENT);
   loader_processed_last_update_ = false;
   last_omnibox_bounds_ = gfx::Rect();
   url_for_history_ = GURL();
@@ -730,16 +723,9 @@ void InstantController::DeleteLoader() {
 
 void InstantController::Show(int height, InstantSizeUnits units) {
   // Call even if showing in case height changed.
-  delegate_->ShowInstant(height, units);
-  if (!is_showing_) {
-    is_showing_ = true;
+  if (!model_.is_ready())
     AddPreviewUsageForHistogram(mode_, PREVIEW_SHOWED);
-
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_INSTANT_CONTROLLER_SHOWN,
-        content::Source<InstantController>(this),
-        content::NotificationService::NoDetails());
-  }
+  model_.SetDisplayState(InstantModel::QUERY_RESULTS, height, units);
 }
 
 void InstantController::SendBoundsToPage() {

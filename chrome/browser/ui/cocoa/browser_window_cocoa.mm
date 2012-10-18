@@ -568,18 +568,6 @@ bool BrowserWindowCocoa::InPresentationMode() {
   return [controller_ inPresentationMode];
 }
 
-void BrowserWindowCocoa::ShowInstant(TabContents* preview,
-                                     int height,
-                                     InstantSizeUnits units) {
-  // TODO(jered): Support height < 100%.
-  DCHECK(height == 100 && units == INSTANT_SIZE_PERCENT);
-  [controller_ showInstant:preview->web_contents()];
-}
-
-void BrowserWindowCocoa::HideInstant() {
-  [controller_ hideInstant];
-}
-
 gfx::Rect BrowserWindowCocoa::GetInstantBounds() {
   // Flip coordinates based on the primary screen.
   NSScreen* screen = [[NSScreen screens] objectAtIndex:0];

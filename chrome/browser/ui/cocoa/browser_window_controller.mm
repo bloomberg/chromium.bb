@@ -303,7 +303,8 @@ enum {
     // Create the previewable contents controller.  This provides the switch
     // view that TabStripController needs.
     previewableContentsController_.reset(
-        [[PreviewableContentsController alloc] init]);
+        [[PreviewableContentsController alloc] initWithBrowser:browser
+                                              windowController:self]);
     [[previewableContentsController_ view]
         setFrame:[[devToolsController_ view] bounds]];
     [[devToolsController_ view]
@@ -1906,21 +1907,6 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 // (Private/TestingAPI)
 - (FullscreenExitBubbleController*)fullscreenExitBubbleController {
   return fullscreenExitBubbleController_.get();
-}
-
-- (void)showInstant:(WebContents*)previewContents {
-  [previewableContentsController_ showPreview:previewContents];
-  [self updateBookmarkBarVisibilityWithAnimation:NO];
-}
-
-- (void)hideInstant {
-  // TODO(rohitrao): Revisit whether or not this method should be called when
-  // instant isn't showing.
-  if (![previewableContentsController_ isShowingPreview])
-    return;
-
-  [previewableContentsController_ hidePreview];
-  [self updateBookmarkBarVisibilityWithAnimation:NO];
 }
 
 - (void)commitInstant {

@@ -65,6 +65,7 @@
 #include "chrome/browser/ui/gtk/gtk_window_util.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_container_gtk.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
+#include "chrome/browser/ui/gtk/instant_preview_controller_gtk.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/ui/gtk/nine_box.h"
 #include "chrome/browser/ui/gtk/one_click_signin_bubble_gtk.h"
@@ -1134,20 +1135,6 @@ void BrowserWindowGtk::Paste() {
       window_, chrome::GetActiveWebContents(browser_.get()));
 }
 
-void BrowserWindowGtk::ShowInstant(TabContents* preview,
-                                   int height,
-                                   InstantSizeUnits units) {
-  // TODO(jered): Support height < 100%.
-  DCHECK(height == 100 && units == INSTANT_SIZE_PERCENT);
-  contents_container_->SetPreview(preview);
-  MaybeShowBookmarkBar(false);
-}
-
-void BrowserWindowGtk::HideInstant() {
-  contents_container_->SetPreview(NULL);
-  MaybeShowBookmarkBar(false);
-}
-
 gfx::Rect BrowserWindowGtk::GetInstantBounds() {
   return ui::GetWidgetScreenBounds(contents_container_->widget());
 }
@@ -1324,28 +1311,6 @@ extensions::ActiveTabPermissionGranter*
     return NULL;
   return extensions::TabHelper::FromWebContents(tab->web_contents())->
       active_tab_permission_granter();
-}
-
-void BrowserWindowGtk::MaybeShowBookmarkBar(bool animate) {
-  TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::MaybeShowBookmarkBar");
-  if (!IsBookmarkBarSupported())
-    return;
-
-  TabContents* tab = GetDisplayedTab();
-
-  if (tab)
-    bookmark_bar_->SetPageNavigator(browser_.get());
-
-  BookmarkBar::State state = browser_->bookmark_bar_state();
-  if (contents_container_->HasPreview() && state == BookmarkBar::DETACHED)
-    state = BookmarkBar::HIDDEN;
-
-  toolbar_->UpdateForBookmarkBarVisibility(state == BookmarkBar::DETACHED);
-  PlaceBookmarkBar(state == BookmarkBar::DETACHED);
-  bookmark_bar_->SetBookmarkBarState(
-      state,
-      animate ? BookmarkBar::ANIMATE_STATE_CHANGE :
-                BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
 }
 
 void BrowserWindowGtk::UpdateDevToolsForContents(WebContents* contents) {
@@ -1822,6 +1787,11 @@ void BrowserWindowGtk::InitWidgets() {
   gtk_box_pack_end(GTK_BOX(window_vbox_), render_area_event_box_,
                    TRUE, TRUE, 0);
 
+  instant_preview_controller_.reset(
+      new InstantPreviewControllerGtk(browser_.get(),
+                                      this,
+                                      contents_container_.get()));
+
   if (IsBookmarkBarSupported()) {
     bookmark_bar_.reset(new BookmarkBarGtk(this,
                                            browser_.get(),
@@ -2052,6 +2022,28 @@ int BrowserWindowGtk::GetXPositionOfLocationIcon(GtkWidget* relative_to) {
   }
 
   return x;
+}
+
+void BrowserWindowGtk::MaybeShowBookmarkBar(bool animate) {
+  TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::MaybeShowBookmarkBar");
+  if (!IsBookmarkBarSupported())
+    return;
+
+  TabContents* tab = GetDisplayedTab();
+
+  if (tab)
+    bookmark_bar_->SetPageNavigator(browser_.get());
+
+  BookmarkBar::State state = browser_->bookmark_bar_state();
+  if (contents_container_->HasPreview() && state == BookmarkBar::DETACHED)
+    state = BookmarkBar::HIDDEN;
+
+  toolbar_->UpdateForBookmarkBarVisibility(state == BookmarkBar::DETACHED);
+  PlaceBookmarkBar(state == BookmarkBar::DETACHED);
+  bookmark_bar_->SetBookmarkBarState(
+      state,
+      animate ? BookmarkBar::ANIMATE_STATE_CHANGE :
+                BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
 }
 
 void BrowserWindowGtk::OnLocationIconSizeAllocate(GtkWidget* sender,
