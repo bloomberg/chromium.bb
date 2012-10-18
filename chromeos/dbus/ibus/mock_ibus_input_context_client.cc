@@ -110,4 +110,9 @@ void MockIBusInputContextClient::SetSurroundingText(
     uint32 anchor_pos) {
 }
 
+void MockIBusInputContextClient::PropertyActivate(
+    const std::string& key,
+    ibus::IBusPropertyState state) {
+}
+
 }  // namespace chromeos

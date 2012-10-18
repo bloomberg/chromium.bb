@@ -33,7 +33,8 @@ const char kResetMethod[] = "Reset";
 const char kSetCapabilitiesMethod[] = "SetCapabilities";
 const char kSetCursorLocationMethod[] = "SetCursorLocation";
 const char kProcessKeyEventMethod[] = "ProcessKeyEvent";
-const char kSetSurroundingText[] = "SetSurroundingText";
+const char kSetSurroundingTextMethod[] = "SetSurroundingText";
+const char kPropertyActivateMethod[] = "PropertyActivate";
 }  // namespace input_context
 
 namespace engine_factory {
@@ -66,6 +67,13 @@ const char kForwardKeyEventSignal[] = "ForwardKeyEvent";
 const char kRequireSurroundingTextSignal[] = "RequireSurroundingText";
 const char kCommitTextSignal[] = "CommitText";
 }  // namespace engine
+
+// Following variables indicate state of IBusProperty.
+enum IBusPropertyState {
+  IBUS_PROPERTY_STATE_UNCHECKED = 0,
+  IBUS_PROPERTY_STATE_CHECKED = 1,
+  IBUS_PROPERTY_STATE_INCONSISTENT = 2,
+};
 
 }  // namespace ibus
 }  // namespace chromeos

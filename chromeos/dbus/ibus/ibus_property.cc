@@ -6,6 +6,7 @@
 
 #include <string>
 #include "base/logging.h"
+#include "chromeos/dbus/ibus/ibus_constants.h"
 #include "chromeos/dbus/ibus/ibus_object.h"
 #include "chromeos/dbus/ibus/ibus_text.h"
 #include "dbus/message.h"
@@ -13,13 +14,6 @@
 namespace chromeos {
 // TODO(nona): remove ibus namespace after complete libibus removal.
 namespace ibus {
-
-namespace {
-// Following variables indicate state of IBusProperty.
-const uint32 kIBusPropertyStateUnchecked = 0;
-const uint32 kIBusPropertyStateChecked = 1;
-const uint32 kIBusPropertyStateInconsistent = 2;
-};
 
 bool CHROMEOS_EXPORT PopIBusProperty(dbus::MessageReader* reader,
                                      IBusProperty* property) {
@@ -100,10 +94,10 @@ bool CHROMEOS_EXPORT PopIBusProperty(dbus::MessageReader* reader,
   }
 
   DCHECK_LE(state, 3UL);
-  if (state == kIBusPropertyStateInconsistent) {
+  if (state == IBUS_PROPERTY_STATE_INCONSISTENT) {
     LOG(ERROR) << "PROP_STATE_INCONSISTENT is not supported in Chrome OS.";
   } else {
-    property->set_checked(state == kIBusPropertyStateChecked);
+    property->set_checked(state == IBUS_PROPERTY_STATE_CHECKED);
   }
 
   if (!ibus_property_reader.PopIBusPropertyList(

@@ -47,6 +47,8 @@ class MockIBusInputContextClient : public IBusInputContextClient {
   virtual void SetSurroundingText(const std::string& text,
                                   uint32 cursor_pos,
                                   uint32 anchor_pos) OVERRIDE;
+  virtual void PropertyActivate(const std::string& key,
+                                ibus::IBusPropertyState state) OVERRIDE;
 
   // Call count of Initialize().
   int initialize_call_count() const { return initialize_call_count_; }

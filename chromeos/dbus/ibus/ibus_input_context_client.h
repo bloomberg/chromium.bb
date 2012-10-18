@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
+#include "chromeos/dbus/ibus/ibus_constants.h"
 #include "dbus/object_path.h"
 
 namespace dbus {
@@ -110,6 +111,11 @@ class CHROMEOS_EXPORT IBusInputContextClient {
   virtual void SetSurroundingText(const std::string& text,
                                   uint32 start_index,
                                   uint32 end_index) = 0;
+
+  // Invokes PropertyActivate method call. The PROP_STATE_INCONSISTENT in
+  // original IBus spec is not supported in Chrome.
+  virtual void PropertyActivate(const std::string& key,
+                                ibus::IBusPropertyState state) = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().

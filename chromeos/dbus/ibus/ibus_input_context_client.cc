@@ -187,16 +187,32 @@ class IBusInputContextClientImpl : public IBusInputContextClient {
   virtual void SetSurroundingText(const std::string& text,
                                   uint32 start_index,
                                   uint32 end_index) OVERRIDE {
-    dbus::MethodCall method_call(ibus::input_context::kServiceInterface,
-                                 ibus::input_context::kSetSurroundingText);
+    dbus::MethodCall method_call(
+        ibus::input_context::kServiceInterface,
+        ibus::input_context::kSetSurroundingTextMethod);
     dbus::MessageWriter writer(&method_call);
     ibus::AppendStringAsIBusText(text, &writer);
     writer.AppendUint32(start_index);
     writer.AppendUint32(end_index);
     CallNoResponseMethod(&method_call,
-                         ibus::input_context::kSetSurroundingText);
+                         ibus::input_context::kSetSurroundingTextMethod);
   }
 
+  // IBusInputContextClient override.
+  virtual void PropertyActivate(const std::string& key,
+                                ibus::IBusPropertyState state) OVERRIDE {
+    dbus::MethodCall method_call(ibus::input_context::kServiceInterface,
+                                 ibus::input_context::kPropertyActivateMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(key);
+    if (state == ibus::IBUS_PROPERTY_STATE_CHECKED) {
+      writer.AppendUint32(ibus::IBUS_PROPERTY_STATE_CHECKED);
+    } else {
+      writer.AppendUint32(ibus::IBUS_PROPERTY_STATE_UNCHECKED);
+    }
+    CallNoResponseMethod(&method_call,
+                         ibus::input_context::kPropertyActivateMethod);
+  }
  private:
   void CallNoResponseMethod(dbus::MethodCall* method_call,
                             const std::string& method_name) {
@@ -427,6 +443,8 @@ class IBusInputContextClientStubImpl : public IBusInputContextClient {
   virtual void SetSurroundingText(const std::string& text,
                                   uint32 start_index,
                                   uint32 end_index) OVERRIDE {}
+  virtual void PropertyActivate(const std::string& key,
+                                ibus::IBusPropertyState state) OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IBusInputContextClientStubImpl);
