@@ -153,6 +153,7 @@ class WebDOMMessageEvent;
 class WebDataSource;
 class WebDragData;
 class WebGeolocationClient;
+class WebGestureEvent;
 #if defined(OS_ANDROID)
 class WebHitTestResult;
 #endif
@@ -495,6 +496,9 @@ class RenderViewImpl : public RenderWidget,
   virtual void numberOfWheelEventHandlersChanged(unsigned num_handlers);
   virtual void hasTouchEventHandlers(bool has_handlers);
   virtual void didUpdateLayout();
+  virtual bool didTapMultipleTargets(
+      const WebKit::WebGestureEvent& event,
+      const WebKit::WebVector<WebKit::WebRect>& target_rects);
   virtual void navigateBackForwardSoon(int offset);
   virtual int historyBackListCount();
   virtual int historyForwardListCount();
@@ -987,6 +991,7 @@ class RenderViewImpl : public RenderWidget,
   void OnPasteAndMatchStyle();
   void OnPostMessageEvent(const ViewMsg_PostMessage_Params& params);
   void OnRedo();
+  void OnReleaseDisambiguationPopupDIB(TransportDIB::Handle dib_handle);
   void OnReloadFrame();
   void OnReplace(const string16& text);
   CONTENT_EXPORT void OnReplaceAll(const string16& text);

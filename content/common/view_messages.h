@@ -1431,6 +1431,11 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SelectPopupMenuItem,
                     int /* selected index, -1 means no selection */)
 #endif
 
+// An acknowledge to ViewHostMsg_MultipleTargetsTouched to notify the renderer
+// process to release the magnified image.
+IPC_MESSAGE_ROUTED1(ViewMsg_ReleaseDisambiguationPopupDIB,
+                    TransportDIB::Handle /* DIB handle */)
+
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 
@@ -2395,3 +2400,10 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_FindMatchRects_Reply,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_StartContentIntent,
                     GURL /* content_url */)
 #endif
+
+// Notifies that multiple touch targets may have been pressed, and to show
+// the disambiguation popup.
+IPC_MESSAGE_ROUTED3(ViewHostMsg_ShowDisambiguationPopup,
+                    gfx::Rect, /* Border of touched targets */
+                    gfx::Size, /* Size of zoomed image */
+                    TransportDIB::Id /* DIB of zoomed image */)

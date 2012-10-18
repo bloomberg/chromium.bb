@@ -352,6 +352,7 @@
         'renderer/active_notification_tracker_unittest.cc',
         'renderer/android/email_detector_unittest.cc',
         'renderer/android/phone_number_detector_unittest.cc',
+        'renderer/disambiguation_popup_helper_unittest.cc',
         'renderer/gpu/input_event_filter_unittest.cc',
         'renderer/hyphenator/hyphenator_unittest.cc',
         'renderer/media/audio_message_filter_unittest.cc',

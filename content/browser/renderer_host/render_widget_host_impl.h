@@ -574,6 +574,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
                       bool privileged);
   void OnMsgUnlockMouse();
 
+  void OnMsgShowDisambiguationPopup(const gfx::Rect& rect,
+                                    const gfx::Size& size,
+                                    const TransportDIB::Id& id);
+
 #if defined(OS_POSIX) || defined(USE_AURA)
   void OnMsgGetWindowRect(gfx::NativeViewId window_id, gfx::Rect* results);
   void OnMsgGetRootWindowRect(gfx::NativeViewId window_id, gfx::Rect* results);

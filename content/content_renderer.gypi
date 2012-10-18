@@ -68,6 +68,8 @@
     'renderer/devtools_agent_filter.h',
     'renderer/devtools_client.cc',
     'renderer/devtools_client.h',
+    'renderer/disambiguation_popup_helper.cc',
+    'renderer/disambiguation_popup_helper.h',
     'renderer/do_not_track_bindings.cc',
     'renderer/do_not_track_bindings.h',
     'renderer/dom_automation_controller.cc',

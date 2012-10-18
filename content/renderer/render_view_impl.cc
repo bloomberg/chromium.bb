@@ -68,6 +68,7 @@
 #include "content/renderer/browser_plugin/old/guest_to_embedder_channel.h"
 #include "content/renderer/device_orientation_dispatcher.h"
 #include "content/renderer/devtools_agent.h"
+#include "content/renderer/disambiguation_popup_helper.h"
 #include "content/renderer/dom_automation_controller.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/do_not_track_bindings.h"
@@ -180,6 +181,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/size_conversions.h"
 #include "v8/include/v8.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/dom_storage/dom_storage_types.h"
@@ -1059,6 +1061,8 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetWindowVisibility, OnSetWindowVisibility)
     IPC_MESSAGE_HANDLER(ViewMsg_WindowFrameChanged, OnWindowFrameChanged)
 #endif
+    IPC_MESSAGE_HANDLER(ViewMsg_ReleaseDisambiguationPopupDIB,
+                        OnReleaseDisambiguationPopupDIB)
 
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(handled = RenderWidget::OnMessageReceived(message))
@@ -6387,4 +6391,47 @@ void RenderViewImpl::OnUpdatedFrameTree(
   CreateFrameTree(webview()->mainFrame(), frames);
 
   updating_frame_tree_ = false;
+}
+
+bool RenderViewImpl::didTapMultipleTargets(
+    const WebKit::WebGestureEvent& event,
+    const WebVector<WebRect>& target_rects) {
+  using content::DisambiguationPopupHelper;
+  gfx::Rect finger_rect(
+      event.x - event.data.tap.width / 2, event.y - event.data.tap.height / 2,
+      event.data.tap.width, event.data.tap.height);
+  gfx::Rect zoom_rect;
+  float scale = DisambiguationPopupHelper::ComputeZoomAreaAndScaleFactor(
+      finger_rect, target_rects, GetSize(), &zoom_rect);
+  if (!scale)
+    return false;
+
+  gfx::Size canvas_size = zoom_rect.size();
+  canvas_size = ToCeiledSize(canvas_size.Scale(scale));
+  TransportDIB* transport_dib = NULL;
+  {
+    scoped_ptr<skia::PlatformCanvas> canvas(
+        RenderProcess::current()->GetDrawingCanvas(&transport_dib,
+                                                   gfx::Rect(canvas_size)));
+    if (!canvas.get())
+      return false;
+
+    canvas->scale(scale, scale);
+
+    canvas->translate(-zoom_rect.x(), -zoom_rect.y());
+    webwidget_->paint(webkit_glue::ToWebCanvas(canvas.get()), zoom_rect,
+        WebWidget::ForceSoftwareRenderingAndIgnoreGPUResidentContent);
+  }
+  Send(new ViewHostMsg_ShowDisambiguationPopup(routing_id_,
+                                               zoom_rect,
+                                               canvas_size,
+                                               transport_dib->id()));
+
+  return true;
+}
+
+void RenderViewImpl::OnReleaseDisambiguationPopupDIB(
+    TransportDIB::Handle dib_handle) {
+  TransportDIB* dib = TransportDIB::CreateWithHandle(dib_handle);
+  RenderProcess::current()->ReleaseTransportDIB(dib);
 }

@@ -316,6 +316,8 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnMsgDidActivateAcceleratedCompositing)
     IPC_MESSAGE_HANDLER(ViewHostMsg_LockMouse, OnMsgLockMouse)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UnlockMouse, OnMsgUnlockMouse)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowDisambiguationPopup,
+                        OnMsgShowDisambiguationPopup)
 #if defined(OS_POSIX) || defined(USE_AURA)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetWindowRect, OnMsgGetWindowRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetRootWindowRect, OnMsgGetRootWindowRect)
@@ -1823,6 +1825,19 @@ void RenderWidgetHostImpl::OnMsgLockMouse(bool user_gesture,
 
 void RenderWidgetHostImpl::OnMsgUnlockMouse() {
   RejectMouseLockOrUnlockIfNecessary();
+}
+
+void RenderWidgetHostImpl::OnMsgShowDisambiguationPopup(
+    const gfx::Rect& rect,
+    const gfx::Size& size,
+    const TransportDIB::Id& id) {
+  TransportDIB* dib = process_->GetTransportDIB(id);
+
+  // TODO(trchen): implement the platform-specific disambiguation popup
+  NOTIMPLEMENTED();
+
+  Send(new ViewMsg_ReleaseDisambiguationPopupDIB(GetRoutingID(),
+                                                 dib->handle()));
 }
 
 #if defined(OS_POSIX) || defined(USE_AURA)
