@@ -33,6 +33,18 @@
   VALIDATOR: ERROR: Illegal assignment to RSP
   VALIDATOR: Checking block alignment and jump targets: 0 to c
   *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000000: 87 e5                                        [P] dontcare %ebp (suz), %esp (suz)
+  VALIDATOR: ERROR: Illegal assignment to ESP
+  VALIDATOR: 0000000000000000: 87 e5                                        [P] dontcare %ebp (suz), %esp (suz)
+  VALIDATOR: ERROR: Illegal assignment to EBP
+  VALIDATOR: 0000000000000003: 48 87 e5                                     [P] dontcare %rbp (suz), %rsp (suz)
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: 0000000000000003: 48 87 e5                                     [P] dontcare %rbp (suz), %rsp (suz)
+  VALIDATOR: ERROR: Illegal assignment to RSP
+  VALIDATOR: Checking jump targets: 0 to c
+  VALIDATOR: Checking that basic blocks are aligned
+  *** <input> IS UNSAFE ***
 @dis:
   0000000000000000: 87 e5                                        xchg %ebp, %esp
   0000000000000002: 90                                           nop
@@ -74,6 +86,14 @@
   VALIDATOR: 0000000000000000: 31 e5                                        xor %ebp, %esp
   VALIDATOR: ERROR: Illegal assignment to EBP
   VALIDATOR: Checking block alignment and jump targets: 0 to 6
+  *** <input> IS UNSAFE ***
+@vd-rval:
+  VALIDATOR: 0000000000000002: 49 8d 2c 2f                                  lea %rbp, [%r15+%rbp*1]
+  VALIDATOR: ERROR: Illegal change to register RBP
+  VALIDATOR: 0000000000000000: 31 e5                                        [P] dontcare %ebp (suz), %esp (u)
+  VALIDATOR: ERROR: Illegal assignment to EBP
+  VALIDATOR: Checking jump targets: 0 to 6
+  VALIDATOR: Checking that basic blocks are aligned
   *** <input> IS UNSAFE ***
 @dis:
   0000000000000000: 31 e5                                        xor %ebp, %esp
