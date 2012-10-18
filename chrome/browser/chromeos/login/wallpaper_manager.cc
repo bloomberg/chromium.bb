@@ -841,7 +841,9 @@ void WallpaperManager::LoadWallpaper(const std::string& email,
     std::string file_name = GURL(info.file).ExtractFileName();
     ash::WallpaperResolution resolution = ash::Shell::GetInstance()->
       desktop_background_controller()->GetAppropriateResolution();
-    if (resolution == ash::SMALL) {
+    // Only solid color wallpapers have stretch layout and they have only one
+    // resolution.
+    if (info.layout != ash::STRETCH && resolution == ash::SMALL) {
       file_name = FilePath(file_name).InsertBeforeExtension(
           kSmallWallpaperSuffix).value();
     }
