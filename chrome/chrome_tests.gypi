@@ -4922,7 +4922,13 @@
           'type': 'none',
           'dependencies': [
             'sync_integration_tests',
-            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+          ],
+          'conditions': [
+            ['use_x11 == 1', {
+              'dependencies': [
+                '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+              ],
+            }],
           ],
           'includes': [
             'sync_integration_tests.isolate',
