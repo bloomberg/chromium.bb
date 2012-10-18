@@ -15,42 +15,68 @@ onload = function() {
       var expectedSrcTwo = 'data:text/html,<body>Two</body>';
       var expectedSrcThree = 'data:text/html,<body>Three</body>';
 
+      var step = 1;
       // For setting src, we check if both browserTag.setAttribute('src', ?);
       // and browserTag.src = ?; works propertly.
       var browserTag = document.querySelector('browser');
 
-      // Check if initial src is set correctly.
-      checkSrc(browserTag, expectedSrcOne);
+      var runStep2 = function() {
+        step = 2;
+        chrome.test.log('run step: ' + step);
+        // Check if initial src is set correctly.
+        checkSrc(browserTag, expectedSrcOne);
+        browserTag.setAttribute('src', expectedSrcTwo);
+      };
 
-      // Change the src.
-      browserTag.setAttribute('src', expectedSrcTwo);
-
-      // Timeout is necessary to give the mutation observers a chance to fire.
-      setTimeout(function() {
+      var runStep3 = function() {
+        step = 3;
+        chrome.test.log('run step: ' + step);
         // Expect the src change to be reflected.
         checkSrc(browserTag, expectedSrcTwo);
         // Set src attribute directly on the element.
         browserTag.src = expectedSrcThree;
+      };
+
+      var runStep4 = function() {
+        step = 4;
+        chrome.test.log('run step: ' + step);
+        // Expect the src change to be reflected.
+        checkSrc(browserTag, expectedSrcThree);
+        // Set empty src, this will be ignored.
+        browserTag.setAttribute('src', '');
+
         setTimeout(function() {
-          // Expect the src change to be reflected.
+          // Expect empty src to be ignored.
           checkSrc(browserTag, expectedSrcThree);
-          // Set empty src, this will be ignored.
-          browserTag.setAttribute('src', '');
+          // Set empty src again, directly changing the src attribute.
+          browserTag.src = '';
 
           setTimeout(function() {
             // Expect empty src to be ignored.
             checkSrc(browserTag, expectedSrcThree);
-            // Set empty src again, directly changing the src attribute.
-            browserTag.src = '';
-
-            setTimeout(function() {
-              // Expect empty src to be ignored.
-              checkSrc(browserTag, expectedSrcThree);
-              chrome.test.succeed();
-            }, 0);
+            chrome.test.succeed();
           }, 0);
         }, 0);
-      }, 0);
+      };
+
+
+      // Wait for navigation to complete before checking src attribute.
+      browserTag.addEventListener('navigation', function(e) {
+        switch (step) {
+          case 1:
+            runStep2();
+            break;
+          case 2:
+            runStep3();
+            break;
+          case 3:
+            runStep4();
+            break;
+          default:
+            // Unchecked.
+            chrome.test.fail('Unexpected step: ' + step);
+        }
+      });
     }
   ]);
 };
