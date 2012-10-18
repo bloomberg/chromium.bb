@@ -85,11 +85,12 @@ class ASH_EXPORT TrayBackgroundView : public internal::ActionableView,
   virtual void AnchorUpdated() {}
 
   // Called from GetAccessibleState, must return a valid accessible name.
-  virtual string16 GetAccessibleName() = 0;
+  virtual string16 GetAccessibleNameForTray() = 0;
 
   // Hides the bubble associated with |bubble_view|. Called when the widget
   // is closed.
-  virtual void HideBubbleWithView(const TrayBubbleView* bubble_view) = 0;
+  virtual void HideBubbleWithView(
+      const message_center::TrayBubbleView* bubble_view) = 0;
 
   // Called by the bubble wrapper when a click event occurs outside the bubble.
   // May close the bubble. Returns true if the event is handled.
@@ -114,13 +115,13 @@ class ASH_EXPORT TrayBackgroundView : public internal::ActionableView,
   aura::Window* GetBubbleWindowContainer() const;
 
   // Returns the anchor rect for the bubble.
-  gfx::Rect GetAnchorRect(
+  gfx::Rect GetBubbleAnchorRect(
       views::Widget* anchor_widget,
-      TrayBubbleView::AnchorType anchor_type,
-      TrayBubbleView::AnchorAlignment anchor_alignment) const;
+      message_center::TrayBubbleView::AnchorType anchor_type,
+      message_center::TrayBubbleView::AnchorAlignment anchor_alignment) const;
 
   // Returns the bubble anchor alignment based on |shelf_alignment_|.
-  TrayBubbleView::AnchorAlignment GetAnchorAlignment() const;
+  message_center::TrayBubbleView::AnchorAlignment GetAnchorAlignment() const;
 
   StatusAreaWidget* status_area_widget() {
     return status_area_widget_;

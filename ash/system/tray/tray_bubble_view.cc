@@ -29,7 +29,9 @@ const int kBubbleSpacing = 20;
 
 }  // namespace
 
-namespace ash {
+namespace message_center {
+
+namespace internal {
 
 // Custom border for TrayBubbleView. Contains special logic for GetBounds()
 // to stack bubbles with no arrows correctly. Also calculates the arrow offset.
@@ -208,6 +210,12 @@ class BottomAlignedBoxLayout : public views::BoxLayout {
   DISALLOW_COPY_AND_ASSIGN(BottomAlignedBoxLayout);
 };
 
+}  // namespace internal
+
+using internal::TrayBubbleBorder;
+using internal::TrayBubbleBackground;
+using internal::BottomAlignedBoxLayout;
+
 // static
 const int TrayBubbleView::InitParams::kArrowDefaultOffset = -1;
 
@@ -363,7 +371,7 @@ void TrayBubbleView::OnMouseExited(const ui::MouseEvent& event) {
 void TrayBubbleView::GetAccessibleState(ui::AccessibleViewState* state) {
   if (params_.can_activate) {
     state->role = ui::AccessibilityTypes::ROLE_WINDOW;
-    state->name = delegate_->GetAccessibleName();
+    state->name = delegate_->GetAccessibleNameForBubble();
   }
 }
 
@@ -381,4 +389,4 @@ void TrayBubbleView::ViewHierarchyChanged(bool is_add,
   }
 }
 
-}  // namespace ash
+}  // namespace message_center

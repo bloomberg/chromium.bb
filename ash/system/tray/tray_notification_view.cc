@@ -53,7 +53,7 @@ void TrayNotificationView::InitView(views::View* contents) {
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
 
-  columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal/2);
+  columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal / 2);
 
   // Icon
   columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
@@ -61,7 +61,7 @@ void TrayNotificationView::InitView(views::View* contents) {
                      views::GridLayout::FIXED,
                      kNotificationIconWidth, kNotificationIconWidth);
 
-  columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal/2);
+  columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal / 2);
 
   // Contents
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
@@ -70,7 +70,7 @@ void TrayNotificationView::InitView(views::View* contents) {
                      kTrayNotificationContentsWidth,
                      kTrayNotificationContentsWidth);
 
-  columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal/2);
+  columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal / 2);
 
   // Close button
   columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::LEADING,

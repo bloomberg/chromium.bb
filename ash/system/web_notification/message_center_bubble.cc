@@ -4,46 +4,43 @@
 
 #include "ash/system/web_notification/message_center_bubble.h"
 
-#include "ash/system/tray/tray_constants.h"
-#include "ash/system/tray/tray_views.h"
-#include "ash/system/web_notification/web_notification_list.h"
-#include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/system/web_notification/web_notification_view.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/size.h"
+#include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-namespace ash {
-
-using internal::TrayPopupTextButton;
-
 namespace message_center {
 
-// Web Notification Bubble constants
+namespace {
+
 const int kWebNotificationBubbleMinHeight = 80;
 const int kWebNotificationBubbleMaxHeight = 400;
+const SkColor kBorderDarkColor = SkColorSetRGB(0xaa, 0xaa, 0xaa);
 
 // The view for the buttons at the bottom of the web notification tray.
 class WebNotificationButtonView : public views::View,
                                   public views::ButtonListener {
  public:
-  explicit WebNotificationButtonView(WebNotificationTray* tray)
-  : tray_(tray),
-    close_all_button_(NULL) {
+  explicit WebNotificationButtonView(
+      WebNotificationList::Delegate* list_delegate)
+      : list_delegate_(list_delegate),
+        close_all_button_(NULL) {
     set_background(views::Background::CreateBackgroundPainter(
         true,
         views::Painter::CreateVerticalGradient(
-            kHeaderBackgroundColorLight,
-            kHeaderBackgroundColorDark)));
+            WebNotificationBubble::kHeaderBackgroundColorLight,
+            WebNotificationBubble::kHeaderBackgroundColorDark)));
     set_border(views::Border::CreateSolidSidedBorder(
-        2, 0, 0, 0, ash::kBorderDarkColor));
+        2, 0, 0, 0, kBorderDarkColor));
 
     views::GridLayout* layout = new views::GridLayout(this);
     SetLayoutManager(layout);
@@ -52,11 +49,16 @@ class WebNotificationButtonView : public views::View,
     columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
                        0, /* resize percent */
                        views::GridLayout::USE_PREF, 0, 0);
+    columns->AddPaddingColumn(0, 4);
 
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    close_all_button_ = new TrayPopupTextButton(
+    close_all_button_ = new views::TextButton(
         this, rb.GetLocalizedString(IDS_ASH_WEB_NOTFICATION_TRAY_CLEAR_ALL));
+    close_all_button_->set_alignment(views::TextButton::ALIGN_CENTER);
+    close_all_button_->set_focusable(true);
+    close_all_button_->set_request_focus_on_press(false);
 
+    layout->AddPaddingRow(0, 4);
     layout->StartRow(0, 0);
     layout->AddView(close_all_button_);
   }
@@ -71,61 +73,121 @@ class WebNotificationButtonView : public views::View,
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE {
     if (sender == close_all_button_)
-      tray_->SendRemoveAllNotifications();
+      list_delegate_->SendRemoveAllNotifications();
   }
 
  private:
-  WebNotificationTray* tray_;
-  internal::TrayPopupTextButton* close_all_button_;
+  WebNotificationList::Delegate* list_delegate_;
+  views::TextButton* close_all_button_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationButtonView);
 };
 
+// A custom scroll-view that has a specified size.
+class FixedSizedScrollView : public views::ScrollView {
+ public:
+  FixedSizedScrollView() {
+    set_focusable(true);
+    set_notify_enter_exit_on_child(true);
+  }
+
+  virtual ~FixedSizedScrollView() {}
+
+  void SetFixedSize(const gfx::Size& size) {
+    if (fixed_size_ == size)
+      return;
+    fixed_size_ = size;
+    PreferredSizeChanged();
+  }
+
+  // views::View overrides.
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
+    gfx::Size size = fixed_size_.IsEmpty() ?
+        GetContents()->GetPreferredSize() : fixed_size_;
+    gfx::Insets insets = GetInsets();
+    size.Enlarge(insets.width(), insets.height());
+    return size;
+  }
+
+  virtual void Layout() OVERRIDE {
+    views::View* contents = GetContents();
+    gfx::Rect bounds = gfx::Rect(contents->GetPreferredSize());
+    bounds.set_width(std::max(0, width() - GetScrollBarWidth()));
+    contents->SetBoundsRect(bounds);
+
+    views::ScrollView::Layout();
+    if (!vertical_scroll_bar()->visible()) {
+      gfx::Rect bounds = contents->bounds();
+      bounds.set_width(bounds.width() + GetScrollBarWidth());
+      contents->SetBoundsRect(bounds);
+    }
+  }
+
+  virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE {
+    views::View* contents = GetContents();
+    gfx::Rect bounds = gfx::Rect(contents->GetPreferredSize());
+    bounds.set_width(std::max(0, width() - GetScrollBarWidth()));
+    contents->SetBoundsRect(bounds);
+  }
+
+ private:
+  gfx::Size fixed_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(FixedSizedScrollView);
+};
+
+// Container for the messages.
+class ScrollContentView : public views::View {
+ public:
+  ScrollContentView() {
+    views::BoxLayout* layout =
+        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1);
+    layout->set_spread_blank_space(true);
+    SetLayoutManager(layout);
+  }
+
+  virtual ~ScrollContentView() {
+  }
+
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
+    if (!preferred_size_.IsEmpty())
+      return preferred_size_;
+    return views::View::GetPreferredSize();
+  }
+
+  void set_preferred_size(const gfx::Size& size) { preferred_size_ = size; }
+
+ private:
+  gfx::Size preferred_size_;
+  DISALLOW_COPY_AND_ASSIGN(ScrollContentView);
+};
+
+}  // namespace
 
 // Message Center contents.
 class MessageCenterContentsView : public views::View {
  public:
-  class ScrollContentView : public views::View {
-   public:
-    ScrollContentView() {
-      views::BoxLayout* layout =
-          new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1);
-      layout->set_spread_blank_space(true);
-      SetLayoutManager(layout);
-    }
-
-    virtual ~ScrollContentView() {
-    }
-
-    virtual gfx::Size GetPreferredSize() OVERRIDE {
-      if (!preferred_size_.IsEmpty())
-        return preferred_size_;
-      return views::View::GetPreferredSize();
-    }
-
-    void set_preferred_size(const gfx::Size& size) { preferred_size_ = size; }
-
-   private:
-    gfx::Size preferred_size_;
-    DISALLOW_COPY_AND_ASSIGN(ScrollContentView);
-  };
-
-  explicit MessageCenterContentsView(WebNotificationTray* tray)
-      : tray_(tray) {
+  explicit MessageCenterContentsView(
+      WebNotificationList::Delegate* list_delegate)
+      : list_delegate_(list_delegate) {
     SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
 
     scroll_content_ = new ScrollContentView;
-    scroller_ = new internal::FixedSizedScrollView;
-    scroller_->SetContentsView(scroll_content_);
+    scroller_ = new FixedSizedScrollView;
+    scroller_->SetContents(scroll_content_);
     AddChildView(scroller_);
 
     scroller_->SetPaintToLayer(true);
     scroller_->SetFillsBoundsOpaquely(false);
     scroller_->layer()->SetMasksToBounds(true);
 
-    button_view_ = new WebNotificationButtonView(tray);
+    button_view_ = new WebNotificationButtonView(list_delegate);
     AddChildView(button_view_);
+  }
+
+  void FocusContents() {
+    scroller_->RequestFocus();
   }
 
   void Update(const WebNotificationList::Notifications& notifications)  {
@@ -134,12 +196,14 @@ class MessageCenterContentsView : public views::View {
     size_t num_children = 0;
     for (WebNotificationList::Notifications::const_iterator iter =
              notifications.begin(); iter != notifications.end(); ++iter) {
-      WebNotificationView* view =
-          new WebNotificationView(tray_, *iter, scroller_->GetScrollBarWidth());
+      WebNotificationView* view = new WebNotificationView(
+          list_delegate_, *iter, scroller_->GetScrollBarWidth());
       view->set_scroller(scroller_);
       scroll_content_->AddChildView(view);
-      if (++num_children >= WebNotificationTray::kMaxVisibleTrayNotifications)
+      if (++num_children >=
+          WebNotificationList::kMaxVisibleMessageCenterNotifications) {
         break;
+      }
     }
     if (num_children == 0) {
       views::Label* label = new views::Label(l10n_util::GetStringUTF16(
@@ -158,7 +222,7 @@ class MessageCenterContentsView : public views::View {
       GetWidget()->GetRootView()->SchedulePaint();
   }
 
-  size_t NumMessageViewsForTest() const {
+  size_t NumMessageViews() const {
     return scroll_content_->child_count();
   }
 
@@ -180,8 +244,8 @@ class MessageCenterContentsView : public views::View {
     scroll_content_->InvalidateLayout();
   }
 
-  WebNotificationTray* tray_;
-  internal::FixedSizedScrollView* scroller_;
+  WebNotificationList::Delegate* list_delegate_;
+  FixedSizedScrollView* scroller_;
   ScrollContentView* scroll_content_;
   WebNotificationButtonView* button_view_;
 
@@ -189,37 +253,52 @@ class MessageCenterContentsView : public views::View {
 };
 
 // Message Center Bubble.
-MessageCenterBubble::MessageCenterBubble(WebNotificationTray* tray) :
-    WebNotificationBubble(tray),
-    contents_view_(NULL) {
-  TrayBubbleView::InitParams init_params = GetInitParams();
-  init_params.max_height = message_center::kWebNotificationBubbleMaxHeight;
-  init_params.can_activate = true;
-  views::View* anchor = tray_->tray_container();
-  bubble_view_ = TrayBubbleView::Create(
-      tray_->GetBubbleWindowContainer(), anchor, this, &init_params);
-  contents_view_ = new MessageCenterContentsView(tray);
-
-  Initialize(contents_view_);
+MessageCenterBubble::MessageCenterBubble(
+    WebNotificationList::Delegate* delegate)
+    : WebNotificationBubble(delegate),
+      contents_view_(NULL) {
 }
 
 MessageCenterBubble::~MessageCenterBubble() {}
 
-size_t MessageCenterBubble::NumMessageViewsForTest() const {
-  return contents_view_->NumMessageViewsForTest();
+TrayBubbleView::InitParams MessageCenterBubble::GetInitParams(
+    TrayBubbleView::AnchorAlignment anchor_alignment) {
+  TrayBubbleView::InitParams init_params =
+      GetDefaultInitParams(anchor_alignment);
+  init_params.max_height = message_center::kWebNotificationBubbleMaxHeight;
+  init_params.can_activate = true;
+  return init_params;
 }
 
-void MessageCenterBubble::BubbleViewDestroyed() {
+void MessageCenterBubble::InitializeContents(TrayBubbleView* bubble_view) {
+  bubble_view_ = bubble_view;
+  contents_view_ = new MessageCenterContentsView(list_delegate_);
+  bubble_view_->AddChildView(contents_view_);
+  UpdateBubbleView();
+  contents_view_->FocusContents();
+}
+
+void MessageCenterBubble::OnBubbleViewDestroyed() {
   contents_view_ = NULL;
-  WebNotificationBubble::BubbleViewDestroyed();
 }
 
 void MessageCenterBubble::UpdateBubbleView() {
-  contents_view_->Update(tray_->notification_list()->notifications());
+  if (!bubble_view_)
+    return;  // Could get called after view is closed
+  contents_view_->Update(
+      list_delegate_->GetNotificationList()->notifications());
   bubble_view_->Show();
   bubble_view_->UpdateBubble();
 }
 
-}  // namespace message_center
+void MessageCenterBubble::OnMouseEnteredView() {
+}
 
-}  // namespace ash
+void MessageCenterBubble::OnMouseExitedView() {
+}
+
+size_t MessageCenterBubble::NumMessageViewsForTest() const {
+  return contents_view_->NumMessageViews();
+}
+
+}  // namespace message_center

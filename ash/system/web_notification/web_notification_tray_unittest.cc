@@ -9,6 +9,9 @@
 #include "ash/root_window_controller.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_item.h"
+#include "ash/system/web_notification/message_center_bubble.h"
+#include "ash/system/web_notification/popup_bubble.h"
+#include "ash/system/web_notification/web_notification_list.h"
 #include "ash/test/ash_test_base.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
@@ -96,31 +99,31 @@ TEST_F(WebNotificationTrayTest, WebNotifications) {
 
   // Add a notification.
   delegate->AddNotification(tray, "test_id1");
-  EXPECT_EQ(1u, tray->GetNotificationCountForTest());
-  EXPECT_TRUE(tray->HasNotificationForTest("test_id1"));
+  EXPECT_EQ(1u, tray->notification_list()->notifications().size());
+  EXPECT_TRUE(tray->notification_list()->HasNotification("test_id1"));
   delegate->AddNotification(tray, "test_id2");
   delegate->AddNotification(tray, "test_id2");
-  EXPECT_EQ(2u, tray->GetNotificationCountForTest());
-  EXPECT_TRUE(tray->HasNotificationForTest("test_id2"));
+  EXPECT_EQ(2u, tray->notification_list()->notifications().size());
+  EXPECT_TRUE(tray->notification_list()->HasNotification("test_id2"));
 
   // Ensure that updating a notification does not affect the count.
   delegate->UpdateNotification(tray, "test_id2", "test_id3");
   delegate->UpdateNotification(tray, "test_id3", "test_id3");
-  EXPECT_EQ(2u, tray->GetNotificationCountForTest());
+  EXPECT_EQ(2u, tray->notification_list()->notifications().size());
   EXPECT_FALSE(delegate->HasNotificationId("test_id2"));
-  EXPECT_FALSE(tray->HasNotificationForTest("test_id2"));
+  EXPECT_FALSE(tray->notification_list()->HasNotification("test_id2"));
   EXPECT_TRUE(delegate->HasNotificationId("test_id3"));
 
   // Ensure that Removing the first notification removes it from the tray.
   delegate->RemoveNotification(tray, "test_id1");
   EXPECT_FALSE(delegate->HasNotificationId("test_id1"));
-  EXPECT_FALSE(tray->HasNotificationForTest("test_id1"));
-  EXPECT_EQ(1u, tray->GetNotificationCountForTest());
+  EXPECT_FALSE(tray->notification_list()->HasNotification("test_id1"));
+  EXPECT_EQ(1u, tray->notification_list()->notifications().size());
 
   // Remove the remianing notification.
   delegate->RemoveNotification(tray, "test_id3");
-  EXPECT_EQ(0u, tray->GetNotificationCountForTest());
-  EXPECT_FALSE(tray->HasNotificationForTest("test_id3"));
+  EXPECT_EQ(0u, tray->notification_list()->notifications().size());
+  EXPECT_FALSE(tray->notification_list()->HasNotification("test_id3"));
 }
 
 TEST_F(WebNotificationTrayTest, WebNotificationPopupBubble) {
@@ -148,6 +151,8 @@ TEST_F(WebNotificationTrayTest, WebNotificationPopupBubble) {
   EXPECT_TRUE(tray->popup_bubble() == NULL);
 }
 
+using message_center::WebNotificationList;
+
 TEST_F(WebNotificationTrayTest, ManyMessageCenterNotifications) {
   WebNotificationTray* tray = GetWebNotificationTray();
   scoped_ptr<TestDelegate> delegate(new TestDelegate);
@@ -155,7 +160,7 @@ TEST_F(WebNotificationTrayTest, ManyMessageCenterNotifications) {
 
   // Add the max visible notifications +1, ensure the correct visible number.
   size_t notifications_to_add =
-      WebNotificationTray::kMaxVisibleTrayNotifications + 1;
+      WebNotificationList::kMaxVisibleMessageCenterNotifications + 1;
   for (size_t i = 0; i < notifications_to_add; ++i) {
     std::string id = StringPrintf("test_id%d", static_cast<int>(i));
     delegate->AddNotification(tray, id);
@@ -163,9 +168,10 @@ TEST_F(WebNotificationTrayTest, ManyMessageCenterNotifications) {
   tray->ShowMessageCenterBubble();
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(tray->message_center_bubble() != NULL);
-  EXPECT_EQ(notifications_to_add, tray->GetNotificationCountForTest());
-  EXPECT_EQ(WebNotificationTray::kMaxVisibleTrayNotifications,
-            tray->GetMessageCenterNotificationCountForTest());
+  EXPECT_EQ(notifications_to_add,
+            tray->notification_list()->notifications().size());
+  EXPECT_EQ(WebNotificationList::kMaxVisibleMessageCenterNotifications,
+            tray->GetMessageCenterBubbleForTest()->NumMessageViewsForTest());
 }
 
 TEST_F(WebNotificationTrayTest, ManyPopupNotifications) {
@@ -175,7 +181,7 @@ TEST_F(WebNotificationTrayTest, ManyPopupNotifications) {
 
   // Add the max visible popup notifications +1, ensure the correct num visible.
   size_t notifications_to_add =
-      WebNotificationTray::kMaxVisiblePopupNotifications + 1;
+      WebNotificationList::kMaxVisiblePopupNotifications + 1;
   for (size_t i = 0; i < notifications_to_add; ++i) {
     std::string id = StringPrintf("test_id%d", static_cast<int>(i));
     delegate->AddNotification(tray, id);
@@ -184,9 +190,10 @@ TEST_F(WebNotificationTrayTest, ManyPopupNotifications) {
   tray->HidePopupBubble();
   tray->ShowPopupBubble();
   EXPECT_TRUE(tray->popup_bubble() != NULL);
-  EXPECT_EQ(notifications_to_add, tray->GetNotificationCountForTest());
-  EXPECT_EQ(WebNotificationTray::kMaxVisiblePopupNotifications,
-            tray->GetPopupNotificationCountForTest());
+  EXPECT_EQ(notifications_to_add,
+            tray->notification_list()->notifications().size());
+  EXPECT_EQ(WebNotificationList::kMaxVisiblePopupNotifications,
+            tray->GetPopupBubbleForTest()->NumMessageViewsForTest());
 }
 
 }  // namespace ash

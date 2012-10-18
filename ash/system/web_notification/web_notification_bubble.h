@@ -2,35 +2,46 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_NOTIFICATION_WEB_NOTIFICATION_BUBBLE_H_
-#define ASH_SYSTEM_NOTIFICATION_WEB_NOTIFICATION_BUBBLE_H_
+#ifndef ASH_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_BUBBLE_H_
+#define ASH_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_BUBBLE_H_
 
+#include "ash/ash_export.h"
 #include "ash/system/tray/tray_bubble_view.h"
+#include "ash/system/web_notification/web_notification_list.h"
 #include "base/memory/scoped_ptr.h"
-
-namespace ash {
-
-class WebNotificationTray;
-
-namespace internal {
-class TrayBubbleWrapper;
-}
 
 namespace message_center {
 
 class WebNotificationContentsView;
 class WebNotificationView;
 
-class WebNotificationBubble : public TrayBubbleView::Delegate {
+class ASH_EXPORT WebNotificationBubble {
  public:
-  explicit WebNotificationBubble(WebNotificationTray* tray);
+  explicit WebNotificationBubble(WebNotificationList::Delegate* list_delegate);
 
   virtual ~WebNotificationBubble();
 
-  void Initialize(views::View* contents_view);
+  // Gets called when when the bubble view associated with this bubble is
+  // destroyed. Clears |bubble_view_| and calls OnBubbleViewDestroyed.
+  void BubbleViewDestroyed();
+
+  // Gets the init params for the implementation.
+  virtual TrayBubbleView::InitParams GetInitParams(
+      TrayBubbleView::AnchorAlignment anchor_alignment) = 0;
+
+  // Called after the bubble view has been constructed. Creates and initializes
+  // the bubble contents.
+  virtual void InitializeContents(TrayBubbleView* bubble_view) = 0;
+
+  // Called from BubbleViewDestroyed for implementation specific details.
+  virtual void OnBubbleViewDestroyed() = 0;
 
   // Updates the bubble; implementation dependent.
   virtual void UpdateBubbleView() = 0;
+
+  // Called when the mouse enters/exists the view.
+  virtual void OnMouseEnteredView() = 0;
+  virtual void OnMouseExitedView() = 0;
 
   // Schedules bubble for layout after all notifications have been
   // added and icons have had a chance to load.
@@ -40,21 +51,16 @@ class WebNotificationBubble : public TrayBubbleView::Delegate {
 
   TrayBubbleView* bubble_view() const { return bubble_view_; }
 
-  // Overridden from TrayBubbleView::Delegate.
-  virtual void BubbleViewDestroyed() OVERRIDE;
-  virtual void OnMouseEnteredView() OVERRIDE;
-  virtual void OnMouseExitedView() OVERRIDE;
-  virtual string16 GetAccessibleName() OVERRIDE;
-  virtual gfx::Rect GetAnchorRect(views::Widget* anchor_widget,
-                                  AnchorType anchor_type,
-                                  AnchorAlignment anchor_alignment) OVERRIDE;
+  static const SkColor kBackgroundColor;
+  static const SkColor kHeaderBackgroundColorLight;
+  static const SkColor kHeaderBackgroundColorDark;
 
  protected:
-  TrayBubbleView::InitParams GetInitParams();
+  TrayBubbleView::InitParams GetDefaultInitParams(
+      TrayBubbleView::AnchorAlignment anchor_alignment);
 
-  WebNotificationTray* tray_;
+  WebNotificationList::Delegate* list_delegate_;
   TrayBubbleView* bubble_view_;
-  scoped_ptr<internal::TrayBubbleWrapper> bubble_wrapper_;
   base::WeakPtrFactory<WebNotificationBubble> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationBubble);
@@ -62,6 +68,4 @@ class WebNotificationBubble : public TrayBubbleView::Delegate {
 
 }  // namespace message_center
 
-}  // namespace ash
-
-#endif // ASH_SYSTEM_NOTIFICATION_WEB_NOTIFICATION_BUBBLE_H_
+#endif // ASH_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_BUBBLE_H_

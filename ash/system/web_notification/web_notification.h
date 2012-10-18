@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_NOTIFICATION_WEB_NOTIFICATION_H_
-#define ASH_SYSTEM_NOTIFICATION_WEB_NOTIFICATION_H_
+#ifndef ASH_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_H_
+#define ASH_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_H_
 
 #include <string>
 
 #include "base/string16.h"
 #include "ui/gfx/image/image_skia.h"
-
-namespace ash {
 
 namespace message_center {
 
@@ -30,6 +28,4 @@ struct WebNotification {
 
 }  // namespace message_center
 
-}  // namespace ash
-
-#endif // ASH_SYSTEM_NOTIFICATION_WEB_NOTIFICATION_H_
+#endif // ASH_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_H_

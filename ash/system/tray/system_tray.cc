@@ -20,9 +20,9 @@
 #include "ash/system/power/tray_power.h"
 #include "ash/system/settings/tray_settings.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/tray/system_tray_bubble.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_item.h"
+#include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray_accessibility.h"
 #include "ash/system/tray_caps_lock.h"
@@ -52,7 +52,46 @@
 #include "ash/system/chromeos/network/tray_sms.h"
 #endif
 
+using message_center::TrayBubbleView;
+
 namespace ash {
+
+namespace internal {
+
+// Class to initialize and manage the SystemTrayBubble and TrayBubbleWrapper
+// instances for a bubble.
+
+class SystemBubbleWrapper {
+ public:
+  // Takes ownership of |bubble|.
+  explicit SystemBubbleWrapper(internal::SystemTrayBubble* bubble)
+      : bubble_(bubble) {
+  }
+
+  // Initializes the bubble view and creates |bubble_wrapper_|.
+  void InitView(TrayBackgroundView* tray,
+                views::View* anchor,
+                TrayBubbleView::InitParams* init_params) {
+    user::LoginStatus login_status =
+        Shell::GetInstance()->tray_delegate()->GetUserLoginStatus();
+    bubble_->InitView(anchor, login_status, init_params);
+    bubble_wrapper_.reset(
+        new internal::TrayBubbleWrapper(tray, bubble_->bubble_view()));
+  }
+
+  // Convenience accessors:
+  SystemTrayBubble* bubble() const { return bubble_.get(); }
+  SystemTrayBubble::BubbleType bubble_type() const {
+    return bubble_->bubble_type();
+  }
+  TrayBubbleView* bubble_view() const { return bubble_->bubble_view(); }
+
+ private:
+  scoped_ptr<internal::SystemTrayBubble> bubble_;
+  scoped_ptr<internal::TrayBubbleWrapper> bubble_wrapper_;
+};
+
+}  // namespace internal
 
 // SystemTray
 
@@ -82,7 +121,9 @@ SystemTray::SystemTray(internal::StatusAreaWidget* status_area_widget)
 }
 
 SystemTray::~SystemTray() {
-  bubble_.reset();
+  // Destroy any child views that might have back pointers before ~View().
+  system_bubble_.reset();
+  notification_bubble_.reset();
   for (std::vector<SystemTrayItem*>::iterator it = items_.begin();
        it != items_.end();
        ++it) {
@@ -182,19 +223,18 @@ void SystemTray::ShowDetailedView(SystemTrayItem* item,
   std::vector<SystemTrayItem*> items;
   items.push_back(item);
   ShowItems(items, true, activate, creation_type, GetTrayXOffset(item));
-  bubble_->StartAutoCloseTimer(close_delay);
+  system_bubble_->bubble()->StartAutoCloseTimer(close_delay);
 }
 
 void SystemTray::SetDetailedViewCloseDelay(int close_delay) {
-  if (bubble_.get() &&
-      bubble_->bubble_type() == SystemTrayBubble::BUBBLE_TYPE_DETAILED)
-    bubble_->StartAutoCloseTimer(close_delay);
+  if (HasSystemBubbleType(SystemTrayBubble::BUBBLE_TYPE_DETAILED))
+    system_bubble_->bubble()->StartAutoCloseTimer(close_delay);
 }
 
 void SystemTray::HideDetailedView(SystemTrayItem* item) {
   if (item != detailed_item_)
     return;
-  DestroyBubble();
+  DestroySystemBubble();
   UpdateNotificationBubble();
 }
 
@@ -218,7 +258,7 @@ void SystemTray::HideNotificationView(SystemTrayItem* item) {
 }
 
 void SystemTray::UpdateAfterLoginStatusChange(user::LoginStatus login_status) {
-  DestroyBubble();
+  DestroySystemBubble();
 
   for (std::vector<SystemTrayItem*>::iterator it = items_.begin();
       it != items_.end();
@@ -240,20 +280,25 @@ void SystemTray::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
 
 void SystemTray::SetHideNotifications(bool hide_notifications) {
   if (notification_bubble_.get())
-    notification_bubble_->SetVisible(!hide_notifications);
+    notification_bubble_->bubble()->SetVisible(!hide_notifications);
   hide_notifications_ = hide_notifications;
 }
 
 bool SystemTray::HasSystemBubble() const {
-  return bubble_.get() != NULL;
+  return system_bubble_.get() != NULL;
+}
+
+internal::SystemTrayBubble* SystemTray::GetSystemBubble() {
+  if (!system_bubble_.get())
+    return NULL;
+  return system_bubble_->bubble();
 }
 
 bool SystemTray::IsAnyBubbleVisible() const {
-  if (bubble_.get() && bubble_->IsVisible())
-    return true;
-  if (notification_bubble_.get() && notification_bubble_->IsVisible())
-    return true;
-  return false;
+  return ((system_bubble_.get() &&
+           system_bubble_->bubble()->IsVisible()) ||
+          (notification_bubble_.get() &&
+           notification_bubble_->bubble()->IsVisible()));
 }
 
 bool SystemTray::IsMouseInNotificationBubble() const {
@@ -264,16 +309,21 @@ bool SystemTray::IsMouseInNotificationBubble() const {
 }
 
 bool SystemTray::CloseBubbleForTest() const {
-  if (!bubble_.get())
+  if (!system_bubble_.get())
     return false;
-  bubble_->Close();
+  system_bubble_->bubble()->Close();
   return true;
 }
 
 // Private methods.
 
-void SystemTray::DestroyBubble() {
-  bubble_.reset();
+bool SystemTray::HasSystemBubbleType(SystemTrayBubble::BubbleType type) {
+  DCHECK(type != SystemTrayBubble::BUBBLE_TYPE_NOTIFICATION);
+  return system_bubble_.get() && system_bubble_->bubble_type() == type;
+}
+
+void SystemTray::DestroySystemBubble() {
+  system_bubble_.reset();
   detailed_item_ = NULL;
 }
 
@@ -323,13 +373,9 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
   // while we add items to the main bubble_ (e.g. in HideNotificationView).
   notification_bubble_.reset();
 
-  if (bubble_.get() && creation_type == BUBBLE_USE_EXISTING) {
-    bubble_->UpdateView(items, bubble_type);
+  if (system_bubble_.get() && creation_type == BUBBLE_USE_EXISTING) {
+    system_bubble_->bubble()->UpdateView(items, bubble_type);
   } else {
-    bubble_.reset(new SystemTrayBubble(this, items, bubble_type));
-    ash::SystemTrayDelegate* delegate =
-        ash::Shell::GetInstance()->tray_delegate();
-    views::View* anchor = tray_container();
     TrayBubbleView::InitParams init_params(TrayBubbleView::ANCHOR_TYPE_TRAY,
                                            GetAnchorAlignment(),
                                            kTrayPopupWidth);
@@ -345,11 +391,13 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
       init_params.arrow_color = kHeaderBackgroundColorDark;
     }
     init_params.arrow_offset = arrow_offset;
-    bubble_->InitView(anchor, delegate->GetUserLoginStatus(), &init_params);
+    SystemTrayBubble* bubble = new SystemTrayBubble(this, items, bubble_type);
+    system_bubble_.reset(new internal::SystemBubbleWrapper(bubble));
+    system_bubble_->InitView(this, tray_container(), &init_params);
   }
   // Save height of default view for creating detailed views directly.
   if (!detailed)
-    default_bubble_height_ = bubble_->bubble_view()->height();
+    default_bubble_height_ = system_bubble_->bubble_view()->height();
 
   if (detailed && items.size() > 0)
     detailed_item_ = items[0];
@@ -365,13 +413,14 @@ void SystemTray::UpdateNotificationBubble() {
   // Only show the notification buble if we have notifications and we are not
   // showing the default bubble.
   if (notification_items_.empty() ||
-      (bubble_.get() &&
-       bubble_->bubble_type() == SystemTrayBubble::BUBBLE_TYPE_DEFAULT)) {
+      HasSystemBubbleType(SystemTrayBubble::BUBBLE_TYPE_DEFAULT)) {
     DestroyNotificationBubble();
     return;
   }
-  if (bubble_.get() &&
-      bubble_->bubble_type() == SystemTrayBubble::BUBBLE_TYPE_DETAILED) {
+  // Destroy the existing bubble before constructing a new one.
+  notification_bubble_.reset();
+  SystemTrayBubble* notification_bubble;
+  if (HasSystemBubbleType(SystemTrayBubble::BUBBLE_TYPE_DETAILED)) {
     // Skip notifications for any currently displayed detailed item.
     std::vector<SystemTrayItem*> items;
     for (std::vector<SystemTrayItem*>::iterator iter =
@@ -384,17 +433,17 @@ void SystemTray::UpdateNotificationBubble() {
       DestroyNotificationBubble();
       return;
     }
-    notification_bubble_.reset(new SystemTrayBubble(
-        this, items, SystemTrayBubble::BUBBLE_TYPE_NOTIFICATION));
+    notification_bubble = new SystemTrayBubble(
+        this, items, SystemTrayBubble::BUBBLE_TYPE_NOTIFICATION);
   } else {
     // Show all notifications.
-    notification_bubble_.reset(new SystemTrayBubble(
-        this, notification_items_, SystemTrayBubble::BUBBLE_TYPE_NOTIFICATION));
+    notification_bubble = new SystemTrayBubble(
+        this, notification_items_, SystemTrayBubble::BUBBLE_TYPE_NOTIFICATION);
   }
   views::View* anchor;
   TrayBubbleView::AnchorType anchor_type;
-  if (bubble_.get()) {
-    anchor = bubble_->bubble_view();
+  if (system_bubble_.get()) {
+    anchor = system_bubble_->bubble_view();
     anchor_type = TrayBubbleView::ANCHOR_TYPE_BUBBLE;
   } else {
     anchor = tray_container();
@@ -406,16 +455,17 @@ void SystemTray::UpdateNotificationBubble() {
   init_params.top_color = kBackgroundColor;
   init_params.arrow_color = kBackgroundColor;
   init_params.arrow_offset = GetTrayXOffset(notification_items_[0]);
-  user::LoginStatus login_status =
-      Shell::GetInstance()->tray_delegate()->GetUserLoginStatus();
-  notification_bubble_->InitView(anchor, login_status, &init_params);
-  if (notification_bubble_->bubble_view()->child_count() == 0) {
+  notification_bubble_.reset(
+      new internal::SystemBubbleWrapper(notification_bubble));
+  notification_bubble_->InitView(this, anchor, &init_params);
+
+  if (notification_bubble->bubble_view()->child_count() == 0) {
     // It is possible that none of the items generated actual notifications.
     DestroyNotificationBubble();
     return;
   }
   if (hide_notifications_)
-    notification_bubble_->SetVisible(false);
+    notification_bubble->SetVisible(false);
   else
     status_area_widget()->SetHideWebNotifications(true);
 }
@@ -431,7 +481,7 @@ void SystemTray::SetShelfAlignment(ShelfAlignment alignment) {
   internal::TrayBackgroundView::SetShelfAlignment(alignment);
   UpdateAfterShelfAlignmentChange(alignment);
   // Destroy any existing bubble so that it is rebuilt correctly.
-  bubble_.reset();
+  system_bubble_.reset();
   // Rebuild any notification bubble.
   if (notification_bubble_.get()) {
     notification_bubble_.reset();
@@ -445,17 +495,17 @@ void SystemTray::AnchorUpdated() {
     // Ensure that the notification buble is above the launcher/status area.
     notification_bubble_->bubble_view()->GetWidget()->StackAtTop();
   }
-  if (bubble_.get())
-    bubble_->bubble_view()->UpdateBubble();
+  if (system_bubble_.get())
+    system_bubble_->bubble_view()->UpdateBubble();
 }
 
-string16 SystemTray::GetAccessibleName() {
+string16 SystemTray::GetAccessibleNameForTray() {
   return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBLE_NAME);
 }
 
 void SystemTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
-  if (bubble_.get() && bubble_view == bubble_->bubble_view()) {
-    DestroyBubble();
+  if (system_bubble_.get() && bubble_view == system_bubble_->bubble_view()) {
+    DestroySystemBubble();
     UpdateNotificationBubble();  // State changed, re-create notifications.
     GetShelfLayoutManager()->UpdateAutoHideState();
   } else if (notification_bubble_.get() &&
@@ -465,20 +515,49 @@ void SystemTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
 }
 
 bool SystemTray::ClickedOutsideBubble() {
-  if (!bubble_.get() ||
-      bubble_->bubble_type() == SystemTrayBubble::BUBBLE_TYPE_NOTIFICATION) {
+  if (!system_bubble_.get())
     return false;
-  }
-  HideBubbleWithView(bubble_->bubble_view());
+  HideBubbleWithView(system_bubble_->bubble_view());
   return true;
+}
+
+void SystemTray::BubbleViewDestroyed() {
+  if (system_bubble_.get()) {
+    system_bubble_->bubble()->DestroyItemViews();
+    system_bubble_->bubble()->BubbleViewDestroyed();
+  }
+}
+
+void SystemTray::OnMouseEnteredView() {
+  if (system_bubble_.get())
+    system_bubble_->bubble()->StopAutoCloseTimer();
+}
+
+void SystemTray::OnMouseExitedView() {
+  if (system_bubble_.get())
+    system_bubble_->bubble()->RestartAutoCloseTimer();
+}
+
+string16 SystemTray::GetAccessibleNameForBubble() {
+  return GetAccessibleNameForTray();
+}
+
+gfx::Rect SystemTray::GetAnchorRect(
+    views::Widget* anchor_widget,
+    TrayBubbleView::AnchorType anchor_type,
+    TrayBubbleView::AnchorAlignment anchor_alignment) {
+  return GetBubbleAnchorRect(anchor_widget, anchor_type, anchor_alignment);
+}
+
+void SystemTray::HideBubble(const TrayBubbleView* bubble_view) {
+  HideBubbleWithView(bubble_view);
 }
 
 bool SystemTray::PerformAction(const ui::Event& event) {
   // If we're already showing the default view, hide it; otherwise, show it
   // (and hide any popup that's currently shown).
-  if (bubble_.get() &&
-      bubble_->bubble_type() == SystemTrayBubble::BUBBLE_TYPE_DEFAULT) {
-    bubble_->Close();
+  if (HasSystemBubbleType(SystemTrayBubble::BUBBLE_TYPE_DEFAULT)) {
+    system_bubble_->bubble()->Close();
   } else {
     int arrow_offset = TrayBubbleView::InitParams::kArrowDefaultOffset;
     if (event.IsMouseEvent() || event.type() == ui::ET_GESTURE_TAP) {

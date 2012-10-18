@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_NOTIFICATION_WEB_NOTIFICATION_VIEW_H_
-#define ASH_SYSTEM_NOTIFICATION_WEB_NOTIFICATION_VIEW_H_
+#ifndef ASH_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_VIEW_H_
+#define ASH_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_VIEW_H_
 
 #include "ash/system/web_notification/web_notification.h"
+#include "ash/system/web_notification/web_notification_list.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
@@ -15,10 +16,6 @@ class ImageButton;
 class ImageView;
 class ScrollView;
 }
-
-namespace ash {
-
-class WebNotificationTray;
 
 namespace message_center {
 
@@ -32,7 +29,7 @@ class WebNotificationView : public views::View,
                             public views::ButtonListener,
                             public ui::ImplicitAnimationObserver {
  public:
-  WebNotificationView(WebNotificationTray* tray,
+  WebNotificationView(WebNotificationList::Delegate* list_delegate,
                       const WebNotification& notification,
                       int scroll_bar_width);
 
@@ -68,7 +65,7 @@ class WebNotificationView : public views::View,
   // Slides the view out and closes it after the animation.
   void SlideOutAndClose(SlideDirection direction);
 
-  WebNotificationTray* tray_;
+  WebNotificationList::Delegate* list_delegate_;
   WebNotification notification_;
   views::ImageView* icon_;
   views::ImageButton* close_button_;
@@ -81,6 +78,4 @@ class WebNotificationView : public views::View,
 
 }  // namespace message_center
 
-}  // namespace ash
-
-#endif // ASH_SYSTEM_NOTIFICATION_WEB_NOTIFICATION_VIEW_H_
+#endif // ASH_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_VIEW_H_

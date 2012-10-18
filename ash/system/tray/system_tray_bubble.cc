@@ -20,6 +20,8 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
+using message_center::TrayBubbleView;
+
 namespace ash {
 
 namespace {
@@ -240,35 +242,9 @@ void SystemTrayBubble::InitView(views::View* anchor,
     init_params->close_on_deactivate = false;
   }
   bubble_view_ = TrayBubbleView::Create(
-      tray_->GetBubbleWindowContainer(), anchor, this, init_params);
+      tray_->GetBubbleWindowContainer(), anchor, tray_, init_params);
 
   CreateItemViews(login_status);
-
-  bubble_wrapper_.reset(new internal::TrayBubbleWrapper(tray_, bubble_view_));
-}
-
-void SystemTrayBubble::BubbleViewDestroyed() {
-  DestroyItemViews();
-  bubble_view_ = NULL;
-}
-
-void SystemTrayBubble::OnMouseEnteredView() {
-  StopAutoCloseTimer();
-}
-
-void SystemTrayBubble::OnMouseExitedView() {
-  RestartAutoCloseTimer();
-}
-
-string16 SystemTrayBubble::GetAccessibleName() {
-  return tray_->GetAccessibleName();
-}
-
-gfx::Rect SystemTrayBubble::GetAnchorRect(
-    views::Widget* anchor_widget,
-    TrayBubbleView::AnchorType anchor_type,
-    TrayBubbleView::AnchorAlignment anchor_alignment) {
-  return tray_->GetAnchorRect(anchor_widget, anchor_type, anchor_alignment);
 }
 
 void SystemTrayBubble::DestroyItemViews() {
@@ -287,6 +263,10 @@ void SystemTrayBubble::DestroyItemViews() {
         break;
     }
   }
+}
+
+void SystemTrayBubble::BubbleViewDestroyed() {
+  bubble_view_ = NULL;
 }
 
 void SystemTrayBubble::StartAutoCloseTimer(int seconds) {

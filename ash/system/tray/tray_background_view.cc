@@ -37,6 +37,8 @@ const int kAnimationDurationForPopupMS = 200;
 
 }  // namespace
 
+using message_center::TrayBubbleView;
+
 namespace ash {
 namespace internal {
 
@@ -217,7 +219,7 @@ void TrayBackgroundView::OnPaintFocusBorder(gfx::Canvas* canvas) {
 
 void TrayBackgroundView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
-  state->name = GetAccessibleName();
+  state->name = GetAccessibleNameForTray();
 }
 
 void TrayBackgroundView::AboutToRequestFocusFromTabTraversal(bool reverse) {
@@ -307,7 +309,7 @@ aura::Window* TrayBackgroundView::GetBubbleWindowContainer() const {
       ash::internal::kShellWindowId_SettingBubbleContainer);
 }
 
-gfx::Rect TrayBackgroundView::GetAnchorRect(
+gfx::Rect TrayBackgroundView::GetBubbleAnchorRect(
     views::Widget* anchor_widget,
     TrayBubbleView::AnchorType anchor_type,
     TrayBubbleView::AnchorAlignment anchor_alignment) const {

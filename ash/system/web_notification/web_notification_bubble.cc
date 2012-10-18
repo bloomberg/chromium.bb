@@ -4,39 +4,42 @@
 
 #include "ash/system/web_notification/web_notification_bubble.h"
 
-#include "ash/system/tray/tray_bubble_wrapper.h"
-#include "ash/system/tray/tray_constants.h"
-#include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/system/web_notification/web_notification_view.h"
 #include "base/bind.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
-namespace ash {
-
-namespace message_center {
-
+namespace {
 // Delay laying out the WebNotificationBubble until all notifications have been
 // added and icons have had a chance to load.
 const int kUpdateDelayMs = 50;
-
-WebNotificationBubble::WebNotificationBubble(WebNotificationTray* tray)
-    : tray_(tray),
-      bubble_view_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+const int kNotificationBubbleWidth = 300;
 }
 
-void WebNotificationBubble::Initialize(views::View* contents_view) {
-  DCHECK(bubble_view_);
-  bubble_view_->AddChildView(contents_view);
+namespace message_center {
 
-  bubble_wrapper_.reset(new internal::TrayBubbleWrapper(tray_, bubble_view_));
-  UpdateBubbleView();
+const SkColor WebNotificationBubble::kBackgroundColor =
+    SkColorSetRGB(0xfe, 0xfe, 0xfe);
+const SkColor WebNotificationBubble::kHeaderBackgroundColorLight =
+    SkColorSetRGB(0xf1, 0xf1, 0xf1);
+const SkColor WebNotificationBubble::kHeaderBackgroundColorDark =
+    SkColorSetRGB(0xe7, 0xe7, 0xe7);
+
+WebNotificationBubble::WebNotificationBubble(
+    WebNotificationList::Delegate* list_delegate)
+    : list_delegate_(list_delegate),
+      bubble_view_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 WebNotificationBubble::~WebNotificationBubble() {
   if (bubble_view_)
     bubble_view_->reset_delegate();
+}
+
+void WebNotificationBubble::BubbleViewDestroyed() {
+  bubble_view_ = NULL;
+  OnBubbleViewDestroyed();
 }
 
 void WebNotificationBubble::ScheduleUpdate() {
@@ -52,46 +55,15 @@ bool WebNotificationBubble::IsVisible() const {
   return bubble_view() && bubble_view()->GetWidget()->IsVisible();
 }
 
-void WebNotificationBubble::BubbleViewDestroyed() {
-  bubble_view_ = NULL;
-}
-
-void WebNotificationBubble::OnMouseEnteredView() {
-}
-
-void WebNotificationBubble::OnMouseExitedView() {
-}
-
-string16 WebNotificationBubble::GetAccessibleName() {
-  return tray_->GetAccessibleName();
-}
-
-gfx::Rect WebNotificationBubble::GetAnchorRect(
-    views::Widget* anchor_widget,
-    TrayBubbleView::AnchorType anchor_type,
+TrayBubbleView::InitParams WebNotificationBubble::GetDefaultInitParams(
     TrayBubbleView::AnchorAlignment anchor_alignment) {
-  return tray_->GetAnchorRect(anchor_widget, anchor_type, anchor_alignment);
-}
-
-TrayBubbleView::InitParams WebNotificationBubble::GetInitParams() {
-  TrayBubbleView::AnchorAlignment anchor_alignment =
-      tray_->GetAnchorAlignment();
   TrayBubbleView::InitParams init_params(TrayBubbleView::ANCHOR_TYPE_TRAY,
                                          anchor_alignment,
-                                         kTrayPopupWidth);
+                                         kNotificationBubbleWidth);
   init_params.top_color = kBackgroundColor;
   init_params.arrow_color = kHeaderBackgroundColorDark;
   init_params.bubble_width = kWebNotificationWidth;
-  if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM) {
-    views::View* anchor = tray_->tray_container();
-    gfx::Point bounds(anchor->width() / 2, 0);
-
-    views::View::ConvertPointToWidget(anchor, &bounds);
-    init_params.arrow_offset = bounds.x();
-  }
   return init_params;
 }
 
 }  // namespace message_center
-
-}  // namespace ash

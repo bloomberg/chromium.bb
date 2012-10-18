@@ -4,8 +4,6 @@
 
 #include "ash/system/web_notification/web_notification.h"
 
-namespace ash {
-
 namespace message_center {
 
 WebNotification::WebNotification() : is_read(false),
@@ -16,5 +14,3 @@ WebNotification::~WebNotification() {
 }
 
 }  // namespace message_center
-
-}  // namespace ash

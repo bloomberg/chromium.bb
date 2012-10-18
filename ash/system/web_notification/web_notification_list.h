@@ -2,26 +2,46 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_NOTIFICATION_WEB_NOTIFICATION_LIST_H_
-#define ASH_SYSTEM_NOTIFICATION_WEB_NOTIFICATION_LIST_H_
+#ifndef ASH_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_LIST_H_
+#define ASH_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_LIST_H_
 
 #include <list>
 #include <string>
 
+#include "ash/ash_export.h"
 #include "ash/system/web_notification/web_notification.h"
-
-namespace ash {
-
-class WebNotificationTray;
 
 namespace message_center {
 
 // A helper class to manage the list of notifications.
-class WebNotificationList {
+class ASH_EXPORT WebNotificationList {
  public:
   typedef std::list<WebNotification> Notifications;
 
-  WebNotificationList();
+  class ASH_EXPORT Delegate {
+   public:
+    Delegate() {}
+    virtual ~Delegate() {}
+
+    // Removes notifications
+    virtual void SendRemoveNotification(const std::string& id) = 0;
+    virtual void SendRemoveAllNotifications() = 0;
+
+    // Disables notifications
+    virtual void DisableNotificationByExtension(const std::string& id) = 0;
+    virtual void DisableNotificationByUrl(const std::string& id) = 0;
+
+    // Requests the Delegate to the settings dialog.
+    virtual void ShowNotificationSettings(const std::string& id) = 0;
+
+    // Called when a notification is clicked on.
+    virtual void OnNotificationClicked(const std::string& id) = 0;
+
+    // Returns the list of notifications to display.
+    virtual WebNotificationList* GetNotificationList() = 0;
+  };
+
+  explicit WebNotificationList(Delegate* delegate);
   virtual ~WebNotificationList();
 
   void SetMessageCenterVisible(bool visible);
@@ -42,11 +62,9 @@ class WebNotificationList {
 
   void RemoveAllNotifications();
 
-  void SendRemoveNotificationsBySource(WebNotificationTray* tray,
-                                       const std::string& id);
+  void SendRemoveNotificationsBySource(const std::string& id);
 
-  void SendRemoveNotificationsByExtension(WebNotificationTray* tray,
-                                          const std::string& id);
+  void SendRemoveNotificationsByExtension(const std::string& id);
 
   // Returns true if the notification exists and was updated.
   bool SetNotificationImage(const std::string& id,
@@ -68,6 +86,9 @@ class WebNotificationList {
   const Notifications& notifications() const { return notifications_; }
   int unread_count() const { return unread_count_; }
 
+  static const size_t kMaxVisiblePopupNotifications;
+  static const size_t kMaxVisibleMessageCenterNotifications;
+
  private:
   // Iterates through the list and returns the first notification matching |id|
   // (should always be unique).
@@ -82,6 +103,7 @@ class WebNotificationList {
   void GetPopupIterators(Notifications::iterator& first,
                          Notifications::iterator& last);
 
+  Delegate* delegate_;
   Notifications notifications_;
   bool message_center_visible_;
   int unread_count_;
@@ -91,6 +113,4 @@ class WebNotificationList {
 
 }  // namespace message_center
 
-}  // namespace ash
-
-#endif // ASH_SYSTEM_NOTIFICATION_WEB_NOTIFICATION_LIST_H_
+#endif // ASH_SYSTEM_WEB_NOTIFICATION_WEB_NOTIFICATION_LIST_H_

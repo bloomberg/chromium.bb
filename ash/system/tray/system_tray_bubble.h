@@ -20,9 +20,7 @@ class SystemTrayItem;
 
 namespace internal {
 
-class TrayBubbleWrapper;
-
-class SystemTrayBubble : public TrayBubbleView::Delegate {
+class SystemTrayBubble {
  public:
   enum BubbleType {
     BUBBLE_TYPE_DEFAULT,
@@ -43,21 +41,13 @@ class SystemTrayBubble : public TrayBubbleView::Delegate {
   // Also creates |bubble_wrapper_|. |init_params| may be modified.
   void InitView(views::View* anchor,
                 user::LoginStatus login_status,
-                TrayBubbleView::InitParams* init_params);
-
-  // Overridden from TrayBubbleView::Delegate.
-  virtual void BubbleViewDestroyed() OVERRIDE;
-  virtual void OnMouseEnteredView() OVERRIDE;
-  virtual void OnMouseExitedView() OVERRIDE;
-  virtual string16 GetAccessibleName() OVERRIDE;
-  virtual gfx::Rect GetAnchorRect(views::Widget* anchor_widget,
-                                  AnchorType anchor_type,
-                                  AnchorAlignment anchor_alignment) OVERRIDE;
+                message_center::TrayBubbleView::InitParams* init_params);
 
   BubbleType bubble_type() const { return bubble_type_; }
-  TrayBubbleView* bubble_view() const { return bubble_view_; }
+  message_center::TrayBubbleView* bubble_view() const { return bubble_view_; }
 
   void DestroyItemViews();
+  void BubbleViewDestroyed();
   void StartAutoCloseTimer(int seconds);
   void StopAutoCloseTimer();
   void RestartAutoCloseTimer();
@@ -69,8 +59,7 @@ class SystemTrayBubble : public TrayBubbleView::Delegate {
   void CreateItemViews(user::LoginStatus login_status);
 
   ash::SystemTray* tray_;
-  TrayBubbleView* bubble_view_;
-  scoped_ptr<TrayBubbleWrapper> bubble_wrapper_;
+  message_center::TrayBubbleView* bubble_view_;
   std::vector<ash::SystemTrayItem*> items_;
   BubbleType bubble_type_;
 

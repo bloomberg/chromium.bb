@@ -5,15 +5,10 @@
 #include "ash/system/web_notification/popup_bubble.h"
 
 #include "ash/system/tray/tray_bubble_view.h"
-#include "ash/system/tray/tray_constants.h"
-#include "ash/system/web_notification/web_notification_list.h"
-#include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/system/web_notification/web_notification_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-
-namespace ash {
 
 namespace message_center {
 
@@ -22,8 +17,9 @@ const int kAutocloseDelaySeconds = 5;
 // Popup notifications contents.
 class PopupBubbleContentsView : public views::View {
  public:
-  explicit PopupBubbleContentsView(WebNotificationTray* tray)
-      : tray_(tray) {
+  explicit PopupBubbleContentsView(
+      WebNotificationList::Delegate* list_delegate)
+      : list_delegate_(list_delegate) {
     SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
 
@@ -42,7 +38,8 @@ class PopupBubbleContentsView : public views::View {
     for (WebNotificationList::Notifications::const_iterator iter =
              popup_notifications.begin();
          iter != popup_notifications.end(); ++iter) {
-      WebNotificationView* view = new WebNotificationView(tray_, *iter, 0);
+      WebNotificationView* view = new WebNotificationView(
+          list_delegate_, *iter, 0);
       content_->AddChildView(view);
     }
     content_->SizeToPreferredSize();
@@ -52,73 +49,73 @@ class PopupBubbleContentsView : public views::View {
       GetWidget()->GetRootView()->SchedulePaint();
   }
 
-  size_t NumMessageViewsForTest() const {
+  size_t NumMessageViews() const {
     return content_->child_count();
   }
 
  private:
-  WebNotificationTray* tray_;
+  WebNotificationList::Delegate* list_delegate_;
   views::View* content_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupBubbleContentsView);
 };
 
 // PopupBubble
-PopupBubble::PopupBubble(WebNotificationTray* tray) :
-    WebNotificationBubble(tray),
+PopupBubble::PopupBubble(WebNotificationList::Delegate* delegate) :
+    WebNotificationBubble(delegate),
     contents_view_(NULL),
-    num_popups_(0),
-    dirty_(false) {
-  TrayBubbleView::InitParams init_params = GetInitParams();
+    num_popups_(0) {
+}
+
+PopupBubble::~PopupBubble() {
+}
+
+TrayBubbleView::InitParams PopupBubble::GetInitParams(
+    TrayBubbleView::AnchorAlignment anchor_alignment) {
+  TrayBubbleView::InitParams init_params =
+      GetDefaultInitParams(anchor_alignment);
   init_params.top_color = kBackgroundColor;
   init_params.arrow_color = kBackgroundColor;
   init_params.close_on_deactivate = false;
-  views::View* anchor = tray_->tray_container();
-  bubble_view_ = TrayBubbleView::Create(
-      tray_->GetBubbleWindowContainer(), anchor, this, &init_params);
-  contents_view_ = new PopupBubbleContentsView(tray);
-
-  Initialize(contents_view_);
+  return init_params;
 }
 
-PopupBubble::~PopupBubble() {}
-
-size_t PopupBubble::NumMessageViewsForTest() const {
-  return contents_view_->NumMessageViewsForTest();
+void PopupBubble::InitializeContents(TrayBubbleView* bubble_view) {
+  bubble_view_ = bubble_view;
+  contents_view_ = new PopupBubbleContentsView(list_delegate_);
+  bubble_view_->AddChildView(contents_view_);
+  UpdateBubbleView();
 }
 
-void PopupBubble::BubbleViewDestroyed() {
+void PopupBubble::OnBubbleViewDestroyed() {
   contents_view_ = NULL;
-  WebNotificationBubble::BubbleViewDestroyed();
-}
-
-void PopupBubble::OnMouseEnteredView() {
-  StopAutoCloseTimer();
-  WebNotificationBubble::OnMouseEnteredView();
-}
-
-void PopupBubble::OnMouseExitedView() {
-  StartAutoCloseTimer();
-  WebNotificationBubble::OnMouseExitedView();
 }
 
 void PopupBubble::UpdateBubbleView() {
   WebNotificationList::Notifications popup_notifications;
-  tray_->notification_list()->GetPopupNotifications(&popup_notifications);
+  list_delegate_->GetNotificationList()->GetPopupNotifications(
+      &popup_notifications);
   if (popup_notifications.size() == 0) {
-    tray_->HideBubbleWithView(bubble_view());  // deletes |this|
+    if (bubble_view())
+      bubble_view()->delegate()->HideBubble(bubble_view());  // deletes |this|
     return;
   }
-  // Only update the popup tray if the number of visible popup notifications
-  // has changed.
-  if (popup_notifications.size() != num_popups_ || dirty()) {
-    set_dirty(false);
+  // Only reset the timer when the number of visible notifications changes.
+  if (num_popups_ != popup_notifications.size()) {
     num_popups_ = popup_notifications.size();
-    contents_view_->Update(popup_notifications);
-    bubble_view_->Show();
-    bubble_view_->UpdateBubble();
     StartAutoCloseTimer();
   }
+  contents_view_->Update(popup_notifications);
+  bubble_view_->Show();
+  bubble_view_->UpdateBubble();
+}
+
+void PopupBubble::OnMouseEnteredView() {
+  StopAutoCloseTimer();
+}
+
+void PopupBubble::OnMouseExitedView() {
+  StartAutoCloseTimer();
 }
 
 void PopupBubble::StartAutoCloseTimer() {
@@ -133,11 +130,13 @@ void PopupBubble::StopAutoCloseTimer() {
 }
 
 void PopupBubble::OnAutoClose() {
-  tray_->notification_list()->MarkPopupsAsShown();
+  list_delegate_->GetNotificationList()->MarkPopupsAsShown();
   num_popups_ = 0;
   UpdateBubbleView();
 }
 
-}  // namespace message_center
+size_t PopupBubble::NumMessageViewsForTest() const {
+  return contents_view_->NumMessageViews();
+}
 
-}  // namespace ash
+}  // namespace message_center

@@ -4,23 +4,25 @@
 
 #include "ash/system/web_notification/web_notification_view.h"
 
-#include "ash/system/tray/tray_constants.h"
-#include "ash/system/tray/tray_views.h"
-#include "ash/system/web_notification/web_notification.h"
-#include "ash/system/web_notification/web_notification_tray.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/image_view.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 
-namespace ash {
+namespace {
+const int kPaddingHorizontal = 18;
+const int kPaddingBetweenItems = 10;
+}
 
 namespace message_center {
 
@@ -36,10 +38,10 @@ const int kShowSettingsCommand = 2;
 class WebNotificationMenuModel : public ui::SimpleMenuModel,
                                  public ui::SimpleMenuModel::Delegate {
  public:
-  explicit WebNotificationMenuModel(WebNotificationTray* tray,
-                                    const WebNotification& notification)
+  WebNotificationMenuModel(WebNotificationList::Delegate* list_delegate,
+                           const WebNotification& notification)
       : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
-        tray_(tray),
+        list_delegate_(list_delegate),
         notification_(notification) {
     // Add 'disable notifications' menu item.
     if (!notification.extension_id.empty()) {
@@ -96,13 +98,13 @@ class WebNotificationMenuModel : public ui::SimpleMenuModel,
   virtual void ExecuteCommand(int command_id) OVERRIDE {
     switch (command_id) {
       case kToggleExtensionCommand:
-        tray_->DisableByExtension(notification_.id);
+        list_delegate_->DisableNotificationByExtension(notification_.id);
         break;
       case kTogglePermissionCommand:
-        tray_->DisableByUrl(notification_.id);
+        list_delegate_->DisableNotificationByUrl(notification_.id);
         break;
       case kShowSettingsCommand:
-        tray_->ShowSettings(notification_.id);
+        list_delegate_->ShowNotificationSettings(notification_.id);
         break;
       default:
         NOTREACHED();
@@ -110,16 +112,17 @@ class WebNotificationMenuModel : public ui::SimpleMenuModel,
   }
 
  private:
-  WebNotificationTray* tray_;
+  WebNotificationList::Delegate* list_delegate_;
   WebNotification notification_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationMenuModel);
 };
 
-WebNotificationView::WebNotificationView(WebNotificationTray* tray,
-                                         const WebNotification& notification,
-                                         int scroll_bar_width)
-    : tray_(tray),
+WebNotificationView::WebNotificationView(
+    WebNotificationList::Delegate* list_delegate,
+    const WebNotification& notification,
+    int scroll_bar_width)
+    : list_delegate_(list_delegate),
       notification_(notification),
       icon_(NULL),
       close_button_(NULL),
@@ -156,7 +159,7 @@ WebNotificationView::WebNotificationView(WebNotificationTray* tray,
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
 
-  const int padding_width = kTrayPopupPaddingHorizontal/2;
+  const int padding_width = kPaddingHorizontal / 2;
   columns->AddPaddingColumn(0, padding_width);
 
   // Notification Icon.
@@ -185,7 +188,7 @@ WebNotificationView::WebNotificationView(WebNotificationTray* tray,
                      kWebNotificationButtonWidth);
 
   // Layout rows
-  layout->AddPaddingRow(0, kTrayPopupPaddingBetweenItems);
+  layout->AddPaddingRow(0, kPaddingBetweenItems);
 
   layout->StartRow(0, 0);
   layout->AddView(icon_, 1, 2);
@@ -195,7 +198,7 @@ WebNotificationView::WebNotificationView(WebNotificationTray* tray,
   layout->StartRow(0, 0);
   layout->SkipColumns(2);
   layout->AddView(message, 1, 1);
-  layout->AddPaddingRow(0, kTrayPopupPaddingBetweenItems);
+  layout->AddPaddingRow(0, kPaddingBetweenItems);
 }
 
 WebNotificationView::~WebNotificationView() {
@@ -206,14 +209,14 @@ bool WebNotificationView::OnMousePressed(const ui::MouseEvent& event) {
     ShowMenu(event.location());
     return true;
   }
-  tray_->OnClicked(notification_.id);
+  list_delegate_->OnNotificationClicked(notification_.id);
   return true;
 }
 
 ui::EventResult WebNotificationView::OnGestureEvent(
     const ui::GestureEvent& event) {
   if (event.type() == ui::ET_GESTURE_TAP) {
-    tray_->OnClicked(notification_.id);
+    list_delegate_->OnNotificationClicked(notification_.id);
     return ui::ER_CONSUMED;
   }
 
@@ -268,15 +271,15 @@ ui::EventResult WebNotificationView::OnGestureEvent(
 void WebNotificationView::ButtonPressed(views::Button* sender,
                                         const ui::Event& event) {
   if (sender == close_button_)
-    tray_->SendRemoveNotification(notification_.id);
+    list_delegate_->SendRemoveNotification(notification_.id);
 }
 
 void WebNotificationView::OnImplicitAnimationsCompleted() {
-  tray_->SendRemoveNotification(notification_.id);
+  list_delegate_->SendRemoveNotification(notification_.id);
 }
 
 void WebNotificationView::ShowMenu(gfx::Point screen_location) {
-  WebNotificationMenuModel menu_model(tray_, notification_);
+  WebNotificationMenuModel menu_model(list_delegate_, notification_);
   if (menu_model.GetItemCount() == 0)
     return;
 
@@ -317,5 +320,3 @@ void WebNotificationView::SlideOutAndClose(SlideDirection direction) {
 }
 
 }  // namespace message_center
-
-}  // namespace ash

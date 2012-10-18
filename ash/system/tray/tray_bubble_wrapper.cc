@@ -9,6 +9,8 @@
 #include "ash/system/tray/tray_event_filter.h"
 #include "ui/views/widget/widget.h"
 
+using message_center::TrayBubbleView;
+
 namespace ash {
 namespace internal {
 

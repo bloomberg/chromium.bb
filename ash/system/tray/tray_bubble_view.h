@@ -5,7 +5,13 @@
 #ifndef ASH_SYSTEM_TRAY_TRAY_BUBBLE_VIEW_H_
 #define ASH_SYSTEM_TRAY_TRAY_BUBBLE_VIEW_H_
 
+#include "ash/ash_export.h"
 #include "ui/views/bubble/bubble_delegate.h"
+
+// Specialized bubble view for bubbles associated with a tray icon (e.g. the
+// Ash status area). Mostly this handles custom anchor location and arrow and
+// border rendering. This also has its own delegate for handling mouse events
+// and other implementation specific details.
 
 namespace ui {
 class LocatedEvent;
@@ -16,14 +22,15 @@ class View;
 class Widget;
 }
 
-namespace ash {
+// TODO(stevenjb): Move this out of message_center namespace once in views.
+namespace message_center {
 
+namespace internal {
 class TrayBubbleBorder;
 class TrayBubbleBackground;
+}
 
-// Specialized bubble view for status area tray bubbles.
-// Mostly this handles custom anchor location and arrow and border rendering.
-class TrayBubbleView : public views::BubbleDelegateView {
+class ASH_EXPORT TrayBubbleView : public views::BubbleDelegateView {
  public:
   enum AnchorType {
     ANCHOR_TYPE_TRAY,
@@ -36,7 +43,7 @@ class TrayBubbleView : public views::BubbleDelegateView {
     ANCHOR_ALIGNMENT_RIGHT
   };
 
-  class Delegate {
+  class ASH_EXPORT Delegate {
    public:
     typedef TrayBubbleView::AnchorType AnchorType;
     typedef TrayBubbleView::AnchorAlignment AnchorAlignment;
@@ -44,13 +51,27 @@ class TrayBubbleView : public views::BubbleDelegateView {
     Delegate() {}
     virtual ~Delegate() {}
 
+    // Called when the view is destroyed. Any pointers to the view should be
+    // cleared when this gets called.
     virtual void BubbleViewDestroyed() = 0;
+
+    // Called when the mouse enters/exits the view.
     virtual void OnMouseEnteredView() = 0;
     virtual void OnMouseExitedView() = 0;
-    virtual string16 GetAccessibleName() = 0;
+
+    // Called from GetAccessibleState(); should return the appropriate
+    // accessible name for the bubble.
+    virtual string16 GetAccessibleNameForBubble() = 0;
+
+    // Passes responsibility for BubbleDelegateView::GetAnchorRect to the
+    // delegate.
     virtual gfx::Rect GetAnchorRect(views::Widget* anchor_widget,
                                     AnchorType anchor_type,
                                     AnchorAlignment anchor_alignment) = 0;
+
+    // Called when a bubble wants to hide/destroy itself (e.g. last visible
+    // child view was closed).
+    virtual void HideBubble(const TrayBubbleView* bubble_view) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
@@ -99,6 +120,8 @@ class TrayBubbleView : public views::BubbleDelegateView {
   // Called when the delegate is destroyed.
   void reset_delegate() { delegate_ = NULL; }
 
+  Delegate* delegate() { return delegate_; }
+
   void set_gesture_dragging(bool dragging) { is_gesture_dragging_ = dragging; }
   bool is_gesture_dragging() const { return is_gesture_dragging_; }
 
@@ -136,13 +159,13 @@ class TrayBubbleView : public views::BubbleDelegateView {
  private:
   InitParams params_;
   Delegate* delegate_;
-  TrayBubbleBorder* bubble_border_;
-  TrayBubbleBackground* bubble_background_;
+  internal::TrayBubbleBorder* bubble_border_;
+  internal::TrayBubbleBackground* bubble_background_;
   bool is_gesture_dragging_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayBubbleView);
 };
 
-}  // namespace ash
+}  // namespace message_center
 
 #endif  // ASH_SYSTEM_TRAY_TRAY_BUBBLE_VIEW_H_

@@ -4,14 +4,14 @@
 
 #include "ash/system/web_notification/web_notification_list.h"
 
-#include "ash/system/web_notification/web_notification_tray.h"
-
-namespace ash {
-
 namespace message_center {
 
-WebNotificationList::WebNotificationList()
-    : message_center_visible_(false),
+const size_t WebNotificationList::kMaxVisibleMessageCenterNotifications = 100;
+const size_t WebNotificationList::kMaxVisiblePopupNotifications = 5;
+
+WebNotificationList::WebNotificationList(Delegate* delegate)
+    : delegate_(delegate),
+      message_center_visible_(false),
       unread_count_(0) {
 }
 
@@ -77,7 +77,6 @@ void WebNotificationList::RemoveAllNotifications() {
 }
 
 void WebNotificationList::SendRemoveNotificationsBySource(
-    WebNotificationTray* tray,
     const std::string& id) {
   Notifications::iterator source_iter = GetNotification(id);
   if (source_iter == notifications_.end())
@@ -87,12 +86,11 @@ void WebNotificationList::SendRemoveNotificationsBySource(
        loopiter != notifications_.end(); ) {
     Notifications::iterator curiter = loopiter++;
     if (curiter->display_source == display_source)
-      tray->SendRemoveNotification(curiter->id);
+      delegate_->SendRemoveNotification(curiter->id);
   }
 }
 
 void WebNotificationList::SendRemoveNotificationsByExtension(
-    WebNotificationTray* tray,
     const std::string& id) {
   Notifications::iterator source_iter = GetNotification(id);
   if (source_iter == notifications_.end())
@@ -102,7 +100,7 @@ void WebNotificationList::SendRemoveNotificationsByExtension(
        loopiter != notifications_.end(); ) {
     Notifications::iterator curiter = loopiter++;
     if (curiter->extension_id == extension_id)
-      tray->SendRemoveNotification(curiter->id);
+      delegate_->SendRemoveNotification(curiter->id);
   }
 }
 
@@ -182,7 +180,7 @@ void WebNotificationList::GetPopupIterators(Notifications::iterator& first,
     if (last->shown_as_popup)
       break;
     ++last;
-    if (popup_count < WebNotificationTray::kMaxVisiblePopupNotifications)
+    if (popup_count < kMaxVisiblePopupNotifications)
       ++popup_count;
     else
       ++first;
@@ -190,5 +188,3 @@ void WebNotificationList::GetPopupIterators(Notifications::iterator& first,
 }
 
 }  // namespace message_center
-
-}  // namespace ash

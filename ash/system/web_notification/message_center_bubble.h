@@ -2,35 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_NOTIFICATION_MESSAGE_CENTER_BUBBLE_H_
-#define ASH_SYSTEM_NOTIFICATION_MESSAGE_CENTER_BUBBLE_H_
+#ifndef ASH_SYSTEM_WEB_NOTIFICATION_MESSAGE_CENTER_BUBBLE_H_
+#define ASH_SYSTEM_WEB_NOTIFICATION_MESSAGE_CENTER_BUBBLE_H_
 
+#include "ash/ash_export.h"
 #include "ash/system/web_notification/web_notification_bubble.h"
-
-namespace ash {
-
-class WebNotificationTray;
+#include "ash/system/web_notification/web_notification_list.h"
 
 namespace message_center {
 
 class MessageCenterContentsView;
 
 // Bubble for message center.
-class MessageCenterBubble : public WebNotificationBubble {
+class ASH_EXPORT MessageCenterBubble : public WebNotificationBubble {
  public:
-  explicit MessageCenterBubble(WebNotificationTray* tray);
+  explicit MessageCenterBubble(WebNotificationList::Delegate* delegate);
 
   virtual ~MessageCenterBubble();
 
+  // Overridden from WebNotificationBubble.
+  virtual TrayBubbleView::InitParams GetInitParams(
+      TrayBubbleView::AnchorAlignment anchor_alignment) OVERRIDE;
+  virtual void InitializeContents(TrayBubbleView* bubble_view) OVERRIDE;
+  virtual void OnBubbleViewDestroyed() OVERRIDE;
+  virtual void UpdateBubbleView() OVERRIDE;
+  virtual void OnMouseEnteredView() OVERRIDE;
+  virtual void OnMouseExitedView() OVERRIDE;
+
   size_t NumMessageViewsForTest() const;
 
-  // Overridden from TrayBubbleView::Delegate.
-  virtual void BubbleViewDestroyed() OVERRIDE;
-
  private:
-  // Overridden from WebNotificationBubble.
-  virtual void UpdateBubbleView() OVERRIDE;
-
   MessageCenterContentsView* contents_view_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterBubble);
@@ -38,6 +39,4 @@ class MessageCenterBubble : public WebNotificationBubble {
 
 }  // namespace message_center
 
-}  // namespace ash
-
-#endif // ASH_SYSTEM_NOTIFICATION_MESSAGE_CENTER_BUBBLE_H_
+#endif // ASH_SYSTEM_WEB_NOTIFICATION_MESSAGE_CENTER_BUBBLE_H_

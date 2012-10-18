@@ -2,57 +2,49 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_NOTIFICATION_POPUP_BUBBLE_H_
-#define ASH_SYSTEM_NOTIFICATION_POPUP_BUBBLE_H_
+#ifndef ASH_SYSTEM_WEB_NOTIFICATION_POPUP_BUBBLE_H_
+#define ASH_SYSTEM_WEB_NOTIFICATION_POPUP_BUBBLE_H_
 
+#include "ash/ash_export.h"
 #include "ash/system/web_notification/web_notification_bubble.h"
+#include "ash/system/web_notification/web_notification_list.h"
 #include "base/timer.h"
-
-namespace ash {
-
-class WebNotificationTray;
 
 namespace message_center {
 
 class PopupBubbleContentsView;
 
 // Bubble for popup notifications.
-class PopupBubble : public WebNotificationBubble {
+class ASH_EXPORT PopupBubble : public WebNotificationBubble {
  public:
-  explicit PopupBubble(WebNotificationTray* tray);
+  explicit PopupBubble(WebNotificationList::Delegate* delegate);
 
   virtual ~PopupBubble();
 
-  size_t NumMessageViewsForTest() const;
+  void StartAutoCloseTimer();
+  void StopAutoCloseTimer();
 
-  bool dirty() const { return dirty_; }
-  void set_dirty(bool dirty) { dirty_ = dirty; }
-
-  // Overridden from TrayBubbleView::Delegate.
-  virtual void BubbleViewDestroyed() OVERRIDE;
+  // Overridden from WebNotificationBubble.
+  virtual TrayBubbleView::InitParams GetInitParams(
+      TrayBubbleView::AnchorAlignment anchor_alignment) OVERRIDE;
+  virtual void InitializeContents(TrayBubbleView* bubble_view) OVERRIDE;
+  virtual void OnBubbleViewDestroyed() OVERRIDE;
+  virtual void UpdateBubbleView() OVERRIDE;
   virtual void OnMouseEnteredView() OVERRIDE;
   virtual void OnMouseExitedView() OVERRIDE;
 
+   size_t NumMessageViewsForTest() const;
+
  private:
-  // Overridden from WebNotificationBubble.
-  virtual void UpdateBubbleView() OVERRIDE;
-
-  void StartAutoCloseTimer();
-
-  void StopAutoCloseTimer();
-
   void OnAutoClose();
 
   base::OneShotTimer<PopupBubble> autoclose_;
   PopupBubbleContentsView* contents_view_;
   size_t num_popups_;
-  bool dirty_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupBubble);
 };
 
 }  // namespace message_center
 
-}  // namespace ash
-
-#endif // ASH_SYSTEM_NOTIFICATION_POPUP_BUBBLE_H_
+#endif // ASH_SYSTEM_WEB_NOTIFICATION_POPUP_BUBBLE_H_
