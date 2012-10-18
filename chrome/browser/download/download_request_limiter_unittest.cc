@@ -4,8 +4,9 @@
 
 #include "base/bind.h"
 #include "chrome/browser/download/download_request_limiter.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
@@ -15,7 +16,7 @@
 using content::BrowserThread;
 using content::WebContents;
 
-class DownloadRequestLimiterTest : public TabContentsTestHarness {
+class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
  public:
   DownloadRequestLimiterTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
@@ -25,7 +26,9 @@ class DownloadRequestLimiterTest : public TabContentsTestHarness {
   }
 
   virtual void SetUp() {
-    TabContentsTestHarness::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
+    BlockedContentTabHelper::CreateForWebContents(web_contents());
+    InfoBarTabHelper::CreateForWebContents(web_contents());
 
     allow_download_ = true;
     ask_allow_count_ = cancel_count_ = continue_count_ = 0;
@@ -37,7 +40,7 @@ class DownloadRequestLimiterTest : public TabContentsTestHarness {
 
   virtual void TearDown() {
     UnsetDelegate();
-    TabContentsTestHarness::TearDown();
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
   virtual void UnsetDelegate() {
@@ -234,15 +237,10 @@ TEST_F(DownloadRequestLimiterTest,
 
 TEST_F(DownloadRequestLimiterTest,
        DownloadRequestLimiter_RawWebContents) {
-  // By-pass TabContentsTestHarness and use
-  // RenderViewHostTestHarness::CreateTestWebContents() directly so that there
-  // will be no TabContents for web_contents.
   scoped_ptr<WebContents> web_contents(CreateTestWebContents());
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents.get());
-  ASSERT_TRUE(tab_contents == NULL);
   // DownloadRequestLimiter won't try to make an infobar if it doesn't have a
-  // TabContents, and we want to test that it will Cancel() instead of prompting
-  // when it doesn't have a TabContents, so unset the delegate.
+  // InfoBarTabHelper, and we want to test that it will Cancel() instead of
+  // prompting when it doesn't have a InfoBarTabHelper, so unset the delegate.
   UnsetDelegate();
   EXPECT_EQ(0, continue_count_);
   EXPECT_EQ(0, cancel_count_);

@@ -11,7 +11,6 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -61,17 +60,18 @@ DownloadRequestLimiter::TabDownloadState::~TabDownloadState() {
 
 void DownloadRequestLimiter::TabDownloadState::DidGetUserGesture() {
   if (is_showing_prompt()) {
-    // Don't change the state if the user clicks on the page some where.
+    // Don't change the state if the user clicks on the page somewhere.
     return;
   }
 
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
-  // See PromptUserForDownload(): if there's no TabContents, then
+  InfoBarTabHelper* infobar_helper =
+      InfoBarTabHelper::FromWebContents(web_contents());
+  // See PromptUserForDownload(): if there's no InfoBarTabHelper, then
   // DOWNLOADS_NOT_ALLOWED is functionally equivalent to PROMPT_BEFORE_DOWNLOAD.
-  if ((tab_contents &&
+  if ((infobar_helper &&
        status_ != DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS &&
        status_ != DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED) ||
-      (!tab_contents &&
+      (!infobar_helper &&
        status_ != DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS)) {
     // Revert to default status.
     host_->Remove(this);
