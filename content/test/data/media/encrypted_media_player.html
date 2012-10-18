@@ -5,64 +5,13 @@
   </head>
   <body onload="runTest();">
     <video controls></video>
+    <script src="encrypted_media_utils.js" type="text/javascript"></script>
     <script type="text/javascript">
-      var FILE_NAME = 'bear-320x240-encrypted.webm';
-      var KEY = new Uint8Array([0xeb, 0xdd, 0x62, 0xf1, 0x68, 0x14, 0xd2, 0x7b,
-          0x68, 0xef, 0x12, 0x2a, 0xfc, 0xe4, 0xae, 0x3c]);
-      // Global reference to the video element.
       var video = document.querySelector('video');
-      var mediaSource = null;
-      var keyRequested = false;
-      var keyAdded = false;
-      // The key system to use passed as a URL flag 'keysystem'.
-      var keySystem = null;
-      var failMessage = '';
-
-      function onSourceOpen(e) {
-        console.log('onSourceOpen', e);
-        var srcBuffer =
-            mediaSource.addSourceBuffer('video/webm; codecs="vorbis, vp8"');
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', FILE_NAME);
-        xhr.responseType = 'arraybuffer';
-        xhr.addEventListener('load', function(e) {
-          srcBuffer.append(new Uint8Array(e.target.response));
-          mediaSource.endOfStream();
-        });
-        xhr.send();
-      }
-
-      function onWebkitNeedKey(e) {
-        if (keyRequested)
-          return;
-        keyRequested = true;
-        console.log('onWebkitNeedKey', e);
-        try {
-          video.webkitGenerateKeyRequest(keySystem, e.initData);
-        }
-        catch(error) {
-          setDocTitle("GenerateKeyRequestException");
-        }
-      }
-
-      function onWebkitKeyMessage(e) {
-        console.log('webkitkeymessage', e);
-        video.webkitAddKey(keySystem, KEY, e.message);
-      }
-
-      function onWebkitKeyAdded() {
-        keyAdded = true;
-      }
-
-      function installTitleEventHandler(element, event) {
-        element.addEventListener(event, function(e) {
-          setDocTitle(event.toString());
-        }, false);
-      }
 
       function onTimeUpdate() {
         // webkitkeyadded should have been fired before playback.
-        if (!keyAdded)
+        if (!video.hasKeyAdded)
           failTest('Key not added.');
         if (video.currentTime < 1)
           return;
@@ -71,53 +20,10 @@
         video.removeEventListener('timeupdate', onTimeUpdate);
       }
 
-      function failTest(msg) {
-        if (msg instanceof Event)
-          failMessage = msg.target + '.' + msg.type;
-        else
-          failMessage = msg;
-        setDocTitle('FAILED');
-      }
-
-      function setDocTitle(title) {
-        document.title = title.toUpperCase();
-      }
-
-      function selectKeySystem() {
-        var url_parts = window.location.href.split('?');
-        if (url_parts.length != 2)
-          return null;
-
-        var query_parts = url_parts[1].split('=');
-        if (query_parts.length != 2)
-          return null;
-
-        var tag = query_parts[0];
-        if (tag != 'keysystem')
-          failTest('Unsupported query parameter.');
-        else
-          keySystem = query_parts[1];
-      }
-
-      // Uses the URL query parameter to decide what type of key system to use
-      // in the form of "encrypted_media_player.html?keysystem=[system]".  The
-      // test completes after playing the encrypted media for X seconds and
+      // The test completes after playing the encrypted media for 1 second and
       // getting the ended event or when an error occurs at any time.
       function runTest() {
-        selectKeySystem();
-        if (keySystem == null)
-          return;
-        mediaSource = new WebKitMediaSource();
-        video.src = window.URL.createObjectURL(mediaSource);
-        mediaSource.addEventListener('sourceopen', onSourceOpen);
-        mediaSource.addEventListener('webkitsourceopen', onSourceOpen);
-        video.addEventListener('webkitneedkey', onWebkitNeedKey);
-        video.addEventListener('webkitkeymessage', onWebkitKeyMessage);
-        video.addEventListener('webkitkeyerror', failTest);
-        video.addEventListener('webkitkeyadded', onWebkitKeyAdded);
-        installTitleEventHandler(video, 'error');
-        // The video should not end before timeupdate events playing for X secs.
-        video.addEventListener('ended', failTest);
+        loadEncryptedMediaFromURL(video);
         video.addEventListener('timeupdate', onTimeUpdate);
         video.play();
       }
