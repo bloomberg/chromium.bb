@@ -128,6 +128,12 @@ void ChromeWebContentsViewDelegateViews::RestoreFocus() {
 void ChromeWebContentsViewDelegateViews::ShowContextMenu(
     const content::ContextMenuParams& params,
     content::ContextMenuSourceType type) {
+  // Menus need a Widget to work. If we're not the active tab we won't
+  // necessarily be in a widget.
+  views::Widget* top_level_widget = GetTopLevelWidget();
+  if (!top_level_widget)
+    return;
+
   context_menu_.reset(
       RenderViewContextMenuViews::Create(web_contents_, params));
   context_menu_->Init();
@@ -158,7 +164,7 @@ void ChromeWebContentsViewDelegateViews::ShowContextMenu(
   // Enable recursive tasks on the message loop so we can get updates while
   // the context menu is being displayed.
   MessageLoop::ScopedNestableTaskAllower allow(MessageLoop::current());
-  context_menu_->RunMenuAt(GetTopLevelWidget(), screen_point, type);
+  context_menu_->RunMenuAt(top_level_widget, screen_point, type);
 }
 
 void ChromeWebContentsViewDelegateViews::SizeChanged(const gfx::Size& size) {
