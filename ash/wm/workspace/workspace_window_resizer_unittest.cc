@@ -6,6 +6,7 @@
 
 #include "ash/display/display_controller.h"
 #include "ash/display/mouse_cursor_event_filter.h"
+#include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -124,6 +125,10 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
 
   std::vector<aura::Window*> empty_windows() const {
     return std::vector<aura::Window*>();
+  }
+
+  internal::ShelfLayoutManager* shelf_layout_manager() {
+    return Shell::GetPrimaryRootWindowController()->shelf();
   }
 
   TestWindowDelegate delegate_;
@@ -485,7 +490,7 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_WindowDragWithMultiDisplays) {
   // The secondary display is logically on the right, but on the system (e.g. X)
   // layer, it's below the primary one. See UpdateDisplay() in ash_test_base.cc.
   UpdateDisplay("800x600,800x600");
-  Shell::GetInstance()->shelf()->LayoutShelf();
+  shelf_layout_manager()->LayoutShelf();
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(2U, root_windows.size());
 
@@ -546,7 +551,7 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_WindowDragWithMultiDisplays) {
 TEST_F(WorkspaceWindowResizerTest,
        MAYBE_WindowDragWithMultiDisplaysRightToLeft) {
   UpdateDisplay("800x600,800x600");
-  Shell::GetInstance()->shelf()->LayoutShelf();
+  shelf_layout_manager()->LayoutShelf();
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(2U, root_windows.size());
 
@@ -1004,7 +1009,7 @@ TEST_F(WorkspaceWindowResizerTest, TestProperSizerResolutions) {
   scoped_ptr<SnapSizer> resizer(new SnapSizer(
       window_.get(), gfx::Point(), SnapSizer::LEFT_EDGE));
   ASSERT_TRUE(resizer.get());
-  Shell::GetInstance()->shelf()->SetAutoHideBehavior(
+  shelf_layout_manager()->SetAutoHideBehavior(
       SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   gfx::Rect rect = resizer->GetTargetBoundsForSize(0);
   EXPECT_EQ("0,0 720x597", rect.ToString());
@@ -1014,7 +1019,7 @@ TEST_F(WorkspaceWindowResizerTest, TestProperSizerResolutions) {
   EXPECT_EQ("0,0 720x597", rect.ToString());
   rect = resizer->GetTargetBoundsForSize(3);
   EXPECT_EQ("0,0 640x597", rect.ToString());
-  Shell::GetInstance()->shelf()->SetAutoHideBehavior(
+  shelf_layout_manager()->SetAutoHideBehavior(
       SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   rect = resizer->GetTargetBoundsForSize(0);
   EXPECT_EQ("0,0 720x552", rect.ToString());
@@ -1093,7 +1098,7 @@ TEST_F(WorkspaceWindowResizerTest, MAYBE_CursorDeviceScaleFactor) {
   // The secondary display is logically on the right, but on the system (e.g. X)
   // layer, it's below the primary one. See UpdateDisplay() in ash_test_base.cc.
   UpdateDisplay("400x400,800x800*2");
-  Shell::GetInstance()->shelf()->LayoutShelf();
+  shelf_layout_manager()->LayoutShelf();
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(2U, root_windows.size());
 

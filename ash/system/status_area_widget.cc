@@ -351,7 +351,7 @@ bool StatusAreaWidget::ShouldShowLauncher() const {
        web_notification_tray_->IsMessageCenterBubbleVisible()))
     return true;
 
-  if (!Shell::GetInstance()->shelf()->IsVisible())
+  if (!RootWindowController::ForLauncher(GetNativeView())->shelf()->IsVisible())
     return false;
 
   // If the launcher is currently visible, don't hide the launcher if the mouse

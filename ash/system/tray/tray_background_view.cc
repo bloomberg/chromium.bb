@@ -5,6 +5,7 @@
 #include "ash/system/tray/tray_background_view.h"
 
 #include "ash/launcher/background_animator.h"
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
@@ -252,6 +253,11 @@ void TrayBackgroundView::SetPaintsBackground(
       bool value,
       internal::BackgroundAnimator::ChangeType change_type) {
   hide_background_animator_.SetPaintsBackground(value, change_type);
+}
+
+ShelfLayoutManager* TrayBackgroundView::GetShelfLayoutManager() {
+  return
+      RootWindowController::ForLauncher(GetWidget()->GetNativeView())->shelf();
 }
 
 void TrayBackgroundView::SetShelfAlignment(ShelfAlignment alignment) {

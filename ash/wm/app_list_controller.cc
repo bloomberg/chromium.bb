@@ -115,7 +115,7 @@ void AppListController::SetVisible(bool visible) {
 
   // App list needs to know the new shelf layout in order to calculate its
   // UI layout when AppListView visibility changes.
-  Shell::GetInstance()->shelf()->UpdateAutoHideState();
+  Shell::GetPrimaryRootWindowController()->shelf()->UpdateAutoHideState();
 
   if (view_) {
     ScheduleAnimation();
@@ -128,7 +128,7 @@ void AppListController::SetVisible(bool visible) {
         Shell::GetPrimaryRootWindowController()->GetContainer(
             kShellWindowId_AppListContainer),
         pagination_model_.get(),
-        Shell::GetInstance()->launcher()->GetAppListButtonView(),
+        Launcher::ForWindow(GetWindow())->GetAppListButtonView(),
         gfx::Point(),
         GetBubbleArrowLocation());
     SetView(view);
@@ -154,7 +154,7 @@ void AppListController::SetView(app_list::AppListView* view) {
     views::Widget* widget = view_->GetWidget();
     widget->AddObserver(this);
     Shell::GetInstance()->AddEnvEventFilter(this);
-    Shell::GetInstance()->launcher()->AddIconObserver(this);
+    Launcher::ForWindow(GetWindow())->AddIconObserver(this);
     widget->GetNativeView()->GetRootWindow()->AddRootWindowObserver(this);
     widget->GetNativeView()->GetFocusManager()->AddObserver(this);
     widget->SetOpacity(0);
@@ -174,7 +174,7 @@ void AppListController::ResetView() {
   widget->RemoveObserver(this);
   GetLayer(widget)->GetAnimator()->RemoveObserver(this);
   Shell::GetInstance()->RemoveEnvEventFilter(this);
-  Shell::GetInstance()->launcher()->RemoveIconObserver(this);
+  Launcher::ForWindow(GetWindow())->RemoveIconObserver(this);
   widget->GetNativeView()->GetRootWindow()->RemoveRootWindowObserver(this);
   widget->GetNativeView()->GetFocusManager()->RemoveObserver(this);
   view_ = NULL;

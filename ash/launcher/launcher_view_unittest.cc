@@ -74,8 +74,7 @@ class LauncherViewIconObserverTest : public ash::test::AshTestBase {
 
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
-
-    Launcher* launcher = Shell::GetInstance()->launcher();
+    Launcher* launcher = Launcher::ForPrimaryDisplay();
     observer_.reset(new TestLauncherIconObserver(launcher));
 
     launcher_view_test_.reset(new LauncherViewTestAPI(
@@ -125,7 +124,7 @@ TEST_F(LauncherViewIconObserverTest, AddRemove) {
 }
 
 TEST_F(LauncherViewIconObserverTest, BoundsChanged) {
-  Launcher* launcher = Shell::GetInstance()->launcher();
+  Launcher* launcher = Launcher::ForPrimaryDisplay();
   gfx::Size launcher_size =
       launcher->widget()->GetWindowBoundsInScreen().size();
   int total_width = launcher_size.width() / 2;

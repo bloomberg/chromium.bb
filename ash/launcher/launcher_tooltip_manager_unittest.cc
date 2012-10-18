@@ -4,6 +4,8 @@
 
 #include "ash/launcher/launcher_tooltip_manager.h"
 
+#include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/window_util.h"
@@ -26,11 +28,12 @@ class LauncherTooltipManagerTest : public AshTestBase {
 
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
-
+    internal::RootWindowController* controller =
+        Shell::GetPrimaryRootWindowController();
     tooltip_manager_.reset(new internal::LauncherTooltipManager(
         SHELF_ALIGNMENT_BOTTOM,
-        Shell::GetInstance()->shelf(),
-        Shell::GetInstance()->launcher()->GetLauncherViewForTest()));
+        controller->shelf(),
+        controller->launcher()->GetLauncherViewForTest()));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -96,8 +99,9 @@ TEST_F(LauncherTooltipManagerTest, HideWhenShelfIsHidden) {
   widget->Show();
 
   // Once the shelf is hidden, the tooltip should be invisible.
-  ASSERT_EQ(internal::ShelfLayoutManager::HIDDEN,
-            Shell::GetInstance()->shelf()->visibility_state());
+  ASSERT_EQ(
+      internal::ShelfLayoutManager::HIDDEN,
+      Shell::GetPrimaryRootWindowController()->shelf()->visibility_state());
   EXPECT_FALSE(TooltipIsVisible());
 
   // Do not show the view if the shelf is hidden.
@@ -113,7 +117,8 @@ TEST_F(LauncherTooltipManagerTest, HideWhenShelfIsAutoHide) {
   ShowImmediately();
   ASSERT_TRUE(TooltipIsVisible());
 
-  internal::ShelfLayoutManager* shelf = Shell::GetInstance()->shelf();
+  internal::ShelfLayoutManager* shelf =
+      Shell::GetPrimaryRootWindowController()->shelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   shelf->UpdateAutoHideState();
   ASSERT_EQ(internal::ShelfLayoutManager::AUTO_HIDE_HIDDEN,

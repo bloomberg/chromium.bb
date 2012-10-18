@@ -136,7 +136,7 @@ gfx::Rect SystemPinchHandler::GetPhantomWindowScreenBounds(
       return window->bounds();
     }
 
-    Launcher* launcher = Shell::GetInstance()->launcher();
+    Launcher* launcher = Launcher::ForWindow(window);
     gfx::Rect rect = launcher->GetScreenBoundsOfItemIconForWindow(target_);
     if (rect.IsEmpty())
       rect = launcher->widget()->GetWindowBoundsInScreen();

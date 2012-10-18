@@ -4,6 +4,7 @@
 
 #include "ash/wm/status_area_layout_manager.h"
 
+#include "ash/system/status_area_widget.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "base/auto_reset.h"
 #include "ui/aura/window.h"
@@ -49,7 +50,7 @@ void StatusAreaLayoutManager::SetChildBounds(
     const gfx::Rect& requested_bounds) {
   // Only need to have the shelf do a layout if the child changing is the status
   // area and the shelf isn't in the process of doing a layout.
-  if (child != shelf_->status()->GetNativeView() || in_layout_) {
+  if (child != shelf_->status_area_widget()->GetNativeView() || in_layout_) {
     SetChildBoundsDirect(child, requested_bounds);
     return;
   }

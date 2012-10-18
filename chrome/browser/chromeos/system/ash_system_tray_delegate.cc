@@ -14,7 +14,6 @@
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/network/network_observer.h"
 #include "ash/system/power/power_status_observer.h"
-#include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray_accessibility.h"
@@ -944,14 +943,14 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   // Overridden from SessionManagerClient::Observer.
   virtual void LockScreen() OVERRIDE {
     screen_locked_ = true;
-    ash::Shell::GetInstance()->status_area_widget()->
-        UpdateAfterLoginStatusChange(GetUserLoginStatus());
+    ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(
+        GetUserLoginStatus());
   }
 
   virtual void UnlockScreen() OVERRIDE {
     screen_locked_ = false;
-    ash::Shell::GetInstance()->status_area_widget()->
-        UpdateAfterLoginStatusChange(GetUserLoginStatus());
+    ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(
+        GetUserLoginStatus());
   }
 
   // TODO(sad): Override more from PowerManagerClient::Observer here (e.g.
@@ -1075,8 +1074,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         break;
       }
       case chrome::NOTIFICATION_SESSION_STARTED: {
-        ash::Shell::GetInstance()->status_area_widget()->
-            UpdateAfterLoginStatusChange(GetUserLoginStatus());
+        ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(
+            GetUserLoginStatus());
         SetProfile(ProfileManager::GetDefaultProfile());
         break;
       }

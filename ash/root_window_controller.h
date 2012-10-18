@@ -48,6 +48,12 @@ class ASH_EXPORT RootWindowController {
   explicit RootWindowController(aura::RootWindow* root_window);
   ~RootWindowController();
 
+  // Returns a RootWindowController that has a launcher for given
+  // |window|. This returns the RootWindowController for the |window|'s
+  // root window when multiple launcher mode is enabled, or the primary
+  // RootWindowController otherwise.
+  static RootWindowController* ForLauncher(aura::Window* window);
+
   aura::RootWindow* root_window() { return root_window_.get(); }
 
   RootWindowLayoutManager* root_window_layout() { return root_window_layout_; }
@@ -60,10 +66,9 @@ class ASH_EXPORT RootWindowController {
 
   Launcher* launcher() { return launcher_.get(); }
 
-  // TODO(sky): don't expose this!
-  internal::ShelfLayoutManager* shelf() const { return shelf_; }
+  ShelfLayoutManager* shelf() const { return shelf_; }
 
-  internal::StatusAreaWidget* status_area_widget() const {
+  StatusAreaWidget* status_area_widget() const {
     return status_area_widget_;
   }
 
@@ -131,15 +136,15 @@ private:
   RootWindowLayoutManager* root_window_layout_;
 
   // Widget containing system tray.
-  internal::StatusAreaWidget* status_area_widget_;
+  StatusAreaWidget* status_area_widget_;
 
   // The shelf for managing the launcher and the status widget.
   // RootWindowController does not own the shelf. Instead, it is owned
   // by container of the status area.
-  internal::ShelfLayoutManager* shelf_;
+  ShelfLayoutManager* shelf_;
 
   // Manages layout of panels. Owned by PanelContainer.
-  internal::PanelLayoutManager* panel_layout_manager_;
+  PanelLayoutManager* panel_layout_manager_;
 
   scoped_ptr<Launcher> launcher_;
 

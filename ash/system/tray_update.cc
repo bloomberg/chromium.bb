@@ -4,6 +4,7 @@
 
 #include "ash/system/tray_update.h"
 
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -125,7 +126,9 @@ class UpdateNagger : public ui::LayerAnimationObserver {
   // Overridden from ui::LayerAnimationObserver.
   virtual void OnLayerAnimationEnded(
       ui::LayerAnimationSequence* sequence) OVERRIDE {
-    if (Shell::GetInstance()->shelf()->IsVisible())
+    // TODO(oshima): Find out if the updator will be shown on non
+    // primary display.
+    if (Shell::GetPrimaryRootWindowController()->shelf()->IsVisible())
       timer_.Stop();
     else if (!timer_.IsRunning())
       RestartTimer();
@@ -180,7 +183,8 @@ void TrayUpdate::OnUpdateRecommended(UpdateObserver::UpdateSeverity severity) {
   severity_ = severity;
   SetImageFromResourceId(DecideResource(severity_, false));
   tray_view()->SetVisible(true);
-  if (!Shell::GetInstance()->shelf()->IsVisible() && !nagger_.get()) {
+  if (!Shell::GetPrimaryRootWindowController()->shelf()->IsVisible() &&
+      !nagger_.get()) {
     // The shelf is not visible, and there is no nagger scheduled.
     nagger_.reset(new tray::UpdateNagger(this));
   }

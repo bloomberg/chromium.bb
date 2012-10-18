@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
@@ -15,8 +16,9 @@ typedef InProcessBrowserTest ShelfBrowserTest;
 
 // Confirm that a status bubble doesn't cause the shelf to darken.
 IN_PROC_BROWSER_TEST_F(ShelfBrowserTest, StatusBubble) {
-  ash::Shell* shell = ash::Shell::GetInstance();
-  ash::internal::ShelfLayoutManager* shelf = shell->shelf();
+  ash::internal::ShelfLayoutManager* shelf =
+      ash::internal::RootWindowController::ForLauncher(
+          browser()->window()->GetNativeWindow())->shelf();
   EXPECT_TRUE(shelf->IsVisible());
 
   // Ensure that the browser abuts the shelf.

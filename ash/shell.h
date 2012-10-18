@@ -75,6 +75,7 @@ class SystemTray;
 class UserActivityDetector;
 class UserWallpaperDelegate;
 class VideoDetector;
+class WebNotificationTray;
 class WindowCycleController;
 
 namespace internal {
@@ -237,6 +238,10 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate{
   // Called when the user logs in.
   void OnLoginStateChanged(user::LoginStatus status);
 
+  // Called when the login status changes.
+  // TODO(oshima): Investigate if we can merge this and |OnLoginStateChanged|.
+  void UpdateAfterLoginStatusChange(user::LoginStatus status);
+
   // Called when the application is exiting.
   void OnAppTerminating();
 
@@ -316,9 +321,6 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate{
     return magnification_controller_.get();
   }
 
-  // TODO(oshima): Remove methods that are moved to RootWindowController.
-  Launcher* launcher();
-
   const ScreenAsh* screen() { return screen_.get(); }
 
   // Force the shelf to query for it's current visibility state.
@@ -343,10 +345,8 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate{
   // on all displays.
   void OnModalWindowRemoved(aura::Window* removed);
 
-  // TODO(sky): don't expose this!
-  internal::ShelfLayoutManager* shelf() const;
-
-  internal::StatusAreaWidget* status_area_widget() const;
+  // Returns WebNotificationTray on the primary root window.
+  WebNotificationTray* GetWebNotificationTray();
 
   // Convenience accessor for members of StatusAreaWidget.
   SystemTrayDelegate* tray_delegate();

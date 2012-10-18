@@ -35,6 +35,7 @@
 #include "ash/wm/app_list_controller.h"
 #include "ash/wm/base_layout_manager.h"
 #include "ash/wm/capture_controller.h"
+#include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/custom_frame_view_ash.h"
 #include "ash/wm/dialog_frame_view.h"
 #include "ash/wm/event_client_impl.h"
@@ -513,8 +514,9 @@ void Shell::ShowContextMenu(const gfx::Point& location) {
   // No context menus when screen is locked.
   if (IsScreenLocked())
     return;
-  if (launcher())
-    launcher()->ShowContextMenu(location);
+  aura::RootWindow* root =
+      wm::GetRootWindowMatching(gfx::Rect(location, gfx::Size()));
+  Launcher::ForWindow(root)->ShowContextMenu(location);
 }
 
 void Shell::ToggleAppList() {
@@ -580,6 +582,11 @@ void Shell::OnLoginStateChanged(user::LoginStatus status) {
   ash::Shell::GetInstance()->UpdateShelfVisibility();
 }
 
+void Shell::UpdateAfterLoginStatusChange(user::LoginStatus status) {
+  GetPrimaryRootWindowController()->status_area_widget()->
+      UpdateAfterLoginStatusChange(status);
+}
+
 void Shell::OnAppTerminating() {
   FOR_EACH_OBSERVER(ShellObserver, observers_, OnAppTerminating());
 }
@@ -604,11 +611,8 @@ void Shell::RemoveShellObserver(ShellObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-Launcher* Shell::launcher() {
-  return GetPrimaryRootWindowController()->launcher();
-}
-
 void Shell::UpdateShelfVisibility() {
+  // TODO(oshima): Update all root windows.
   GetPrimaryRootWindowController()->UpdateShelfVisibility();
 }
 
@@ -665,22 +669,22 @@ void Shell::OnModalWindowRemoved(aura::Window* removed) {
   }
 }
 
-internal::ShelfLayoutManager* Shell::shelf() const {
-  return GetPrimaryRootWindowController()->shelf();
-}
-
-internal::StatusAreaWidget* Shell::status_area_widget() const {
-  return GetPrimaryRootWindowController()->status_area_widget();
+WebNotificationTray* Shell::GetWebNotificationTray() {
+  return GetPrimaryRootWindowController()->status_area_widget()->
+      web_notification_tray();
 }
 
 SystemTrayDelegate* Shell::tray_delegate() {
-  return status_area_widget() ? status_area_widget()->system_tray_delegate() :
-                                NULL;
+  // TODO(oshima): Decouple system tray and its delegate.
+  internal::StatusAreaWidget* status_area_widget =
+      GetPrimaryRootWindowController()->status_area_widget();
+  return status_area_widget ? status_area_widget->system_tray_delegate() : NULL;
 }
 
 SystemTray* Shell::system_tray() {
-  return status_area_widget() ? status_area_widget()->system_tray() :
-                                NULL;
+  internal::StatusAreaWidget* status_area_widget =
+      GetPrimaryRootWindowController()->status_area_widget();
+  return status_area_widget ? status_area_widget->system_tray() : NULL;
 }
 
 void Shell::InitRootWindowForSecondaryDisplay(aura::RootWindow* root) {

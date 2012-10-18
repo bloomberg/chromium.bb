@@ -5,9 +5,11 @@
 #include "ash/wm/workspace/workspace_manager2.h"
 
 #include "ash/ash_switches.h"
+#include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/property_util.h"
@@ -33,14 +35,6 @@ using aura::Window;
 
 namespace ash {
 namespace internal {
-
-namespace {
-
-bool GetWindowOverlapsShelf() {
-  return Shell::GetInstance()->shelf()->window_overlaps_shelf();
-}
-
-}  // namespace
 
 class WorkspaceManager2Test : public test::AshTestBase {
  public:
@@ -79,6 +73,14 @@ class WorkspaceManager2Test : public test::AshTestBase {
 
   Workspace2* active_workspace() {
     return manager_->active_workspace_;
+  }
+
+  ShelfLayoutManager* shelf_layout_manager() {
+    return Shell::GetPrimaryRootWindowController()->shelf();
+  }
+
+  bool GetWindowOverlapsShelf() {
+    return shelf_layout_manager()->window_overlaps_shelf();
   }
 
   Workspace2* FindBy(aura::Window* window) const {
@@ -460,7 +462,7 @@ TEST_F(WorkspaceManager2Test, ShelfStateUpdated) {
 
   scoped_ptr<Window> w1(CreateTestWindow());
   const gfx::Rect w1_bounds(0, 1, 101, 102);
-  ShelfLayoutManager* shelf = Shell::GetInstance()->shelf();
+  ShelfLayoutManager* shelf = shelf_layout_manager();
   shelf->SetAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   const gfx::Rect touches_shelf_bounds(
       0, shelf->GetIdealBounds().y() - 10, 101, 102);
@@ -675,7 +677,7 @@ TEST_F(WorkspaceManager2Test, ShowMinimizedPersistWindow) {
 // Test that we report we're in the fullscreen state even if the fullscreen
 // window isn't being managed by us (http://crbug.com/123931).
 TEST_F(WorkspaceManager2Test, GetWindowStateWithUnmanagedFullscreenWindow) {
-  ShelfLayoutManager* shelf = Shell::GetInstance()->shelf();
+  ShelfLayoutManager* shelf = shelf_layout_manager();
 
   // We need to create a regular window first so there's an active workspace.
   scoped_ptr<Window> w1(CreateTestWindow());
@@ -718,7 +720,7 @@ TEST_F(WorkspaceManager2Test, GetWindowStateWithUnmanagedFullscreenWindow) {
 // window rather than a normal window.
 TEST_F(WorkspaceManager2Test,
        GetWindowStateWithUnmanagedFullscreenWindowWithMaximized) {
-  ShelfLayoutManager* shelf = Shell::GetInstance()->shelf();
+  ShelfLayoutManager* shelf = shelf_layout_manager();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
 
   // Make the first window maximized.
@@ -783,8 +785,8 @@ TEST_F(WorkspaceManager2Test, MinimizeResetsVisibility) {
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
   EXPECT_EQ(ShelfLayoutManager::VISIBLE,
-            Shell::GetInstance()->shelf()->visibility_state());
-  EXPECT_FALSE(Shell::GetInstance()->launcher()->paints_background());
+            shelf_layout_manager()->visibility_state());
+  EXPECT_FALSE(Launcher::ForPrimaryDisplay()->paints_background());
 }
 
 // Verifies transients are moved when maximizing.
@@ -884,7 +886,7 @@ TEST_F(WorkspaceManager2Test, DontMoveOnSwitch) {
   generator.MoveMouseTo(0, 0);
 
   scoped_ptr<Window> w1(CreateTestWindow());
-  ShelfLayoutManager* shelf = Shell::GetInstance()->shelf();
+  ShelfLayoutManager* shelf = shelf_layout_manager();
   const gfx::Rect touches_shelf_bounds(
       0, shelf->GetIdealBounds().y() - 10, 101, 102);
   // Move |w1| to overlap the shelf.
@@ -912,7 +914,7 @@ TEST_F(WorkspaceManager2Test, MoveOnSwitch) {
   generator.MoveMouseTo(0, 0);
 
   scoped_ptr<Window> w1(CreateTestWindow());
-  ShelfLayoutManager* shelf = Shell::GetInstance()->shelf();
+  ShelfLayoutManager* shelf = shelf_layout_manager();
   const gfx::Rect w1_bounds(0, shelf->GetIdealBounds().y(), 100, 200);
   // Move |w1| so that the top edge is the same as the top edge of the shelf.
   w1->SetBounds(w1_bounds);
@@ -929,9 +931,9 @@ TEST_F(WorkspaceManager2Test, MoveOnSwitch) {
 
   // Increase the size of the shelf. This would make |w1| fall completely out of
   // the display work area.
-  gfx::Size size = shelf->status()->GetWindowBoundsInScreen().size();
+  gfx::Size size(shelf->status_area_widget()->GetWindowBoundsInScreen().size());
   size.Enlarge(0, 30);
-  shelf->status()->SetSize(size);
+  shelf->status_area_widget()->SetSize(size);
 
   // Switch to w1. The window should have moved.
   wm::ActivateWindow(w1.get());
@@ -992,7 +994,7 @@ class DontCrashOnChangeAndActivateDelegate
 // . show the window and during the bounds change activate it.
 TEST_F(WorkspaceManager2Test, DontCrashOnChangeAndActivate) {
   // Force the shelf
-  ShelfLayoutManager* shelf = Shell::GetInstance()->shelf();
+  ShelfLayoutManager* shelf = shelf_layout_manager();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
 
   DontCrashOnChangeAndActivateDelegate delegate;

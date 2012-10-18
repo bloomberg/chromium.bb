@@ -319,7 +319,11 @@ void AnimateHideWindow_Fade(aura::Window* window) {
 }
 
 gfx::Rect GetMinimizeRectForWindow(aura::Window* window) {
-  gfx::Rect target_bounds = Shell::GetInstance()->launcher()->
+  Launcher* launcher = Launcher::ForWindow(window);
+  // Launcher is created lazily and can be NULL.
+  if (!launcher)
+    return gfx::Rect();
+  gfx::Rect target_bounds = Launcher::ForWindow(window)->
       GetScreenBoundsOfItemIconForWindow(window);
   if (target_bounds.IsEmpty()) {
     // Assume the launcher is overflowed, zoom off to the bottom right of the

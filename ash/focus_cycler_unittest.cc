@@ -68,7 +68,7 @@ TEST_F(FocusCyclerTest, CycleFocusForward) {
       focus_cycler.get());
 
   // Add the launcher
-  Launcher* launcher = Shell::GetInstance()->launcher();
+  Launcher* launcher = Launcher::ForPrimaryDisplay();
   ASSERT_TRUE(launcher);
   views::Widget* launcher_widget = launcher->widget();
   ASSERT_TRUE(launcher_widget);
@@ -103,7 +103,7 @@ TEST_F(FocusCyclerTest, CycleFocusBackward) {
       focus_cycler.get());
 
   // Add the launcher
-  Launcher* launcher = Shell::GetInstance()->launcher();
+  Launcher* launcher = Launcher::ForPrimaryDisplay();
   ASSERT_TRUE(launcher);
   views::Widget* launcher_widget = launcher->widget();
   ASSERT_TRUE(launcher_widget);
@@ -138,7 +138,7 @@ TEST_F(FocusCyclerTest, CycleFocusForwardBackward) {
       focus_cycler.get());
 
   // Add the launcher
-  Launcher* launcher = Shell::GetInstance()->launcher();
+  Launcher* launcher = Launcher::ForPrimaryDisplay();
   ASSERT_TRUE(launcher);
   views::Widget* launcher_widget = launcher->widget();
   ASSERT_TRUE(launcher_widget);
@@ -185,7 +185,7 @@ TEST_F(FocusCyclerTest, CycleFocusNoBrowser) {
       focus_cycler.get());
 
   // Add the launcher and focus it
-  Launcher* launcher = Shell::GetInstance()->launcher();
+  Launcher* launcher = Launcher::ForPrimaryDisplay();
   ASSERT_TRUE(launcher);
   views::Widget* launcher_widget = launcher->widget();
   ASSERT_TRUE(launcher_widget);
@@ -222,7 +222,7 @@ class FocusCyclerLauncherTest : public AshTestBase {
     AshTestBase::SetUp();
 
     // Hide the launcher
-    Launcher* launcher = Shell::GetInstance()->launcher();
+    Launcher* launcher = Launcher::ForPrimaryDisplay();
     ASSERT_TRUE(launcher);
     views::Widget* launcher_widget = launcher->widget();
     ASSERT_TRUE(launcher_widget);
@@ -231,7 +231,7 @@ class FocusCyclerLauncherTest : public AshTestBase {
 
   virtual void TearDown() OVERRIDE {
     // Show the launcher
-    Launcher* launcher = Shell::GetInstance()->launcher();
+    Launcher* launcher = Launcher::ForPrimaryDisplay();
     ASSERT_TRUE(launcher);
     views::Widget* launcher_widget = launcher->widget();
     ASSERT_TRUE(launcher_widget);
@@ -255,7 +255,7 @@ TEST_F(FocusCyclerLauncherTest, CycleFocusForwardInvisible) {
       focus_cycler.get());
 
   // Add the launcher
-  Launcher* launcher = Shell::GetInstance()->launcher();
+  Launcher* launcher = Launcher::ForPrimaryDisplay();
   ASSERT_TRUE(launcher);
   views::Widget* launcher_widget = launcher->widget();
   ASSERT_TRUE(launcher_widget);
@@ -286,7 +286,7 @@ TEST_F(FocusCyclerLauncherTest, CycleFocusBackwardInvisible) {
       focus_cycler.get());
 
   // Add the launcher
-  Launcher* launcher = Shell::GetInstance()->launcher();
+  Launcher* launcher = Launcher::ForPrimaryDisplay();
   ASSERT_TRUE(launcher);
   views::Widget* launcher_widget = launcher->widget();
   ASSERT_TRUE(launcher_widget);

@@ -4,6 +4,7 @@
 
 #include "ash/wm/gestures/shelf_gesture_handler.h"
 
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/system/status_area_widget.h"
@@ -40,7 +41,8 @@ bool ShelfGestureHandler::ProcessGestureEvent(const ui::GestureEvent& event) {
   if (active && wm::IsWindowFullscreen(active))
     return false;
 
-  ShelfLayoutManager* shelf = shell->shelf();
+  // TODO(oshima): Find the root window controller from event's location.
+  ShelfLayoutManager* shelf = Shell::GetPrimaryRootWindowController()->shelf();
   if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN) {
     drag_in_progress_ = true;
     shelf->StartGestureDrag(event);

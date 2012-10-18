@@ -161,6 +161,15 @@ RootWindowController::~RootWindowController() {
   root_window_.reset();
 }
 
+// static
+internal::RootWindowController*
+RootWindowController::ForLauncher(aura::Window* window) {
+  if (Shell::IsLauncherPerDisplayEnabled())
+    return GetRootWindowController(window->GetRootWindow());
+  else
+    return Shell::GetPrimaryRootWindowController();
+}
+
 void RootWindowController::Shutdown() {
   CloseChildWindows();
   if (Shell::GetActiveRootWindow() == root_window_.get()) {

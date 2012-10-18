@@ -44,6 +44,15 @@ class ASH_EXPORT Launcher  {
            internal::ShelfLayoutManager* shelf_layout_manager);
   virtual ~Launcher();
 
+  // Return the launcher for the primary display. NULL if no user is
+  // logged in yet.
+  static Launcher* ForPrimaryDisplay();
+
+  // Return the launcher for the display that |window| is currently on,
+  // or a launcher on primary display if the launcher per display feature
+  // is disabled. NULL if no user is logged in yet.
+  static Launcher* ForWindow(aura::Window* window);
+
   // Sets the focus cycler.  Also adds the launcher to the cycle.
   void SetFocusCycler(internal::FocusCycler* focus_cycler);
   internal::FocusCycler* GetFocusCycler();

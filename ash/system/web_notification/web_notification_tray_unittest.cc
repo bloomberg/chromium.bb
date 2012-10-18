@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/root_window_controller.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/test/ash_test_base.h"
@@ -21,7 +22,8 @@ namespace ash {
 namespace {
 
 WebNotificationTray* GetWebNotificationTray() {
-  return Shell::GetInstance()->status_area_widget()->web_notification_tray();
+  return Shell::GetPrimaryRootWindowController()->status_area_widget()->
+      web_notification_tray();
 }
 
 class TestDelegate : public WebNotificationTray::Delegate {

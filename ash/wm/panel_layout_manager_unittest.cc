@@ -33,9 +33,8 @@ class PanelLayoutManagerTest : public ash::test::AshTestBase {
     ash::test::AshTestBase::SetUp();
     ASSERT_TRUE(ash::test::TestLauncherDelegate::instance());
 
-    Launcher* launcher = Shell::GetInstance()->launcher();
     launcher_view_test_.reset(new test::LauncherViewTestAPI(
-        launcher->GetLauncherViewForTest()));
+        Launcher::ForPrimaryDisplay()->GetLauncherViewForTest()));
     launcher_view_test_->SetAnimationDuration(1);
   }
 
@@ -79,7 +78,7 @@ class PanelLayoutManagerTest : public ash::test::AshTestBase {
     // Waits until all launcher view animations are done.
     launcher_view_test()->RunMessageLoopUntilAnimationsDone();
 
-    Launcher* launcher = Shell::GetInstance()->launcher();
+    Launcher* launcher = Launcher::ForPrimaryDisplay();
     gfx::Rect icon_bounds = launcher->GetScreenBoundsOfItemIconForWindow(panel);
     ASSERT_FALSE(icon_bounds.IsEmpty());
 

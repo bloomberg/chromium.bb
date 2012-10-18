@@ -477,7 +477,10 @@ gfx::Rect FrameMaximizeButton::ScreenBoundsForType(
           window->parent(),
           ScreenAsh::GetMaximizedWindowBoundsInParent(window));
     case SNAP_MINIMIZE: {
-      Launcher* launcher = Shell::GetInstance()->launcher();
+      Launcher* launcher = Launcher::ForWindow(window);
+      // Launcher is created lazily and can be NULL.
+      if (!launcher)
+        return gfx::Rect();
       gfx::Rect item_rect(launcher->GetScreenBoundsOfItemIconForWindow(
           window));
       if (!item_rect.IsEmpty()) {

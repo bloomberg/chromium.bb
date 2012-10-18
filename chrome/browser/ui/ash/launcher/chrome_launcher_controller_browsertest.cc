@@ -6,7 +6,6 @@
 
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
-#include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
@@ -50,7 +49,7 @@ class LauncherPlatformAppBrowserTest
   virtual ~LauncherPlatformAppBrowserTest() {}
 
   virtual void RunTestOnMainThreadLoop() {
-    launcher_ = ash::Shell::GetInstance()->launcher();
+    launcher_ = ash::Launcher::ForPrimaryDisplay();
     controller_ = static_cast<ChromeLauncherController*>(launcher_->delegate());
     return extensions::PlatformAppBrowserTest::RunTestOnMainThreadLoop();
   }
@@ -74,7 +73,7 @@ class LauncherAppBrowserTest : public ExtensionBrowserTest {
   virtual ~LauncherAppBrowserTest() {}
 
   virtual void RunTestOnMainThreadLoop() {
-    launcher_ = ash::Shell::GetInstance()->launcher();
+    launcher_ = ash::Launcher::ForPrimaryDisplay();
     model_ = launcher_->model();
     return ExtensionBrowserTest::RunTestOnMainThreadLoop();
   }
@@ -123,7 +122,7 @@ class LauncherAppBrowserTest : public ExtensionBrowserTest {
 
 // Test that we can launch a platform app and get a running item.
 IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, LaunchUnpinned) {
-  ash::Launcher* launcher = ash::Shell::GetInstance()->launcher();
+  ash::Launcher* launcher = ash::Launcher::ForPrimaryDisplay();
   int item_count = launcher->model()->item_count();
   const Extension* extension = LoadAndLaunchPlatformApp("launch");
   ShellWindow* window = CreateShellWindow(extension);

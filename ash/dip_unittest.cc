@@ -63,7 +63,7 @@ TEST_F(DIPTest, MAYBE_WorkArea) {
 
   // Sanity check if the workarea's inset hight is same as
   // the launcher's height.
-  Launcher* launcher = Shell::GetInstance()->launcher();
+  Launcher* launcher = Launcher::ForPrimaryDisplay();
   EXPECT_EQ(
       display_2x.bounds().InsetsFrom(work_area).height(),
       launcher->widget()->GetNativeView()->layer()->bounds().height());

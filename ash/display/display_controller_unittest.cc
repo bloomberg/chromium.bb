@@ -205,7 +205,7 @@ TEST_F(DisplayControllerTest, SwapPrimary) {
       display_controller->GetRootWindowForDisplayId(secondary_display.id());
   EXPECT_NE(primary_root, secondary_root);
   aura::Window* launcher_window =
-      Shell::GetInstance()->launcher()->widget()->GetNativeView();
+      Launcher::ForPrimaryDisplay()->widget()->GetNativeView();
   EXPECT_TRUE(primary_root->Contains(launcher_window));
   EXPECT_FALSE(secondary_root->Contains(launcher_window));
   EXPECT_EQ(primary_display.id(),
@@ -277,7 +277,7 @@ TEST_F(DisplayControllerTest, SwapPrimaryById) {
   aura::RootWindow* secondary_root =
       display_controller->GetRootWindowForDisplayId(secondary_display.id());
   aura::Window* launcher_window =
-      Shell::GetInstance()->launcher()->widget()->GetNativeView();
+      Launcher::ForPrimaryDisplay()->widget()->GetNativeView();
   EXPECT_TRUE(primary_root->Contains(launcher_window));
   EXPECT_FALSE(secondary_root->Contains(launcher_window));
   EXPECT_NE(primary_root, secondary_root);

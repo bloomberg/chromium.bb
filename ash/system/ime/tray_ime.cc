@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -335,7 +336,8 @@ void TrayIME::OnIMERefresh(bool show_message) {
     // refreshed.
     if (notification_) {
       notification_->UpdateLabel();
-    } else if (!Shell::GetInstance()->shelf()->IsVisible() || !message_shown_) {
+    } else if (!Shell::GetPrimaryRootWindowController()->shelf()->IsVisible() ||
+               !message_shown_) {
       ShowNotificationView();
       message_shown_ = true;
     }

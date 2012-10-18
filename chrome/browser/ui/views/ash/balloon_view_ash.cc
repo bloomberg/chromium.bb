@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/ash/balloon_view_ash.h"
 
 #include "ash/shell.h"
-#include "ash/system/status_area_widget.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "base/logging.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -30,8 +29,7 @@ namespace {
 const int kNotificationIconImageSize = 32;
 
 ash::WebNotificationTray* GetWebNotificationTray() {
-  return ash::Shell::GetInstance()->
-      status_area_widget()->web_notification_tray();
+  return ash::Shell::GetInstance()->GetWebNotificationTray();
 }
 
 }  // namespace
@@ -134,9 +132,8 @@ BalloonHost* BalloonViewAsh::GetHost() const {
 
 void BalloonViewAsh::FetchIcon(const Notification& notification) {
   if (!notification.icon().isNull()) {
-    ash::Shell::GetInstance()->status_area_widget()->
-        web_notification_tray()->SetNotificationImage(
-            notification.notification_id(), notification.icon());
+    ash::Shell::GetInstance()->GetWebNotificationTray()->SetNotificationImage(
+        notification.notification_id(), notification.icon());
     return;
   }
   if (notification.icon_url().is_empty())

@@ -345,7 +345,7 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
 
   UpdateNotificationBubble();  // State changed, re-create notifications.
   status_area_widget()->SetHideWebNotifications(true);
-  Shell::GetInstance()->shelf()->UpdateAutoHideState();
+  GetShelfLayoutManager()->UpdateAutoHideState();
 }
 
 void SystemTray::UpdateNotificationBubble() {
@@ -444,7 +444,7 @@ void SystemTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
   if (bubble_.get() && bubble_view == bubble_->bubble_view()) {
     DestroyBubble();
     UpdateNotificationBubble();  // State changed, re-create notifications.
-    Shell::GetInstance()->shelf()->UpdateAutoHideState();
+    GetShelfLayoutManager()->UpdateAutoHideState();
   } else if (notification_bubble_.get() &&
              bubble_view == notification_bubble_->bubble_view()) {
     DestroyNotificationBubble();

@@ -14,6 +14,7 @@
 namespace ash {
 namespace internal {
 
+class ShelfLayoutManager;
 class StatusAreaWidget;
 class TrayBackground;
 class TrayLayerAnimationObserver;
@@ -129,6 +130,8 @@ class ASH_EXPORT TrayBackgroundView : public internal::ActionableView,
   }
   TrayContainer* tray_container() const { return tray_container_; }
   ShelfAlignment shelf_alignment() const { return shelf_alignment_; }
+
+  ShelfLayoutManager* GetShelfLayoutManager();
 
  private:
   friend class TrayLayerAnimationObserver;

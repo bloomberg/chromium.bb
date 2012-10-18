@@ -138,7 +138,7 @@ void WebNotificationTray::ShowMessageCenterBubble() {
   HidePopupBubble();
   message_center_bubble_.reset(new MessageCenterBubble(this));
   status_area_widget()->SetHideSystemNotifications(true);
-  Shell::GetInstance()->shelf()->UpdateAutoHideState();
+  GetShelfLayoutManager()->UpdateAutoHideState();
 }
 
 void WebNotificationTray::HideMessageCenterBubble() {
@@ -149,7 +149,7 @@ void WebNotificationTray::HideMessageCenterBubble() {
   notification_list_->SetMessageCenterVisible(false);
   UpdateTray();
   status_area_widget()->SetHideSystemNotifications(false);
-  Shell::GetInstance()->shelf()->UpdateAutoHideState();
+  GetShelfLayoutManager()->UpdateAutoHideState();
 }
 
 void WebNotificationTray::SetHidePopupBubble(bool hide) {

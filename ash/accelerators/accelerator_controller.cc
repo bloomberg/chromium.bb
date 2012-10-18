@@ -88,7 +88,7 @@ bool HandleCycleWindowMRU(WindowCycleController::Direction direction,
 }
 
 void HandleCycleWindowLinear(CycleDirection direction) {
-  Shell::GetInstance()->launcher()->CycleWindowLinear(direction);
+  Launcher::ForPrimaryDisplay()->CycleWindowLinear(direction);
 }
 
 #if defined(OS_CHROMEOS)
@@ -602,8 +602,8 @@ bool AcceleratorController::PerformAction(int action,
           HandleVolumeUp(accelerator);
       break;
     case FOCUS_LAUNCHER:
-      if (shell->launcher())
-        return shell->focus_cycler()->FocusWidget(shell->launcher()->widget());
+      return shell->focus_cycler()->FocusWidget(
+          Launcher::ForPrimaryDisplay()->widget());
       break;
     case FOCUS_NEXT_PANE:
       return HandleRotatePaneFocus(Shell::FORWARD);
@@ -851,10 +851,9 @@ bool AcceleratorController::AcceleratorPressed(
 }
 
 void AcceleratorController::SwitchToWindow(int window) {
-  const LauncherItems& items =
-      Shell::GetInstance()->launcher()->model()->items();
-  int item_count =
-      Shell::GetInstance()->launcher()->model()->item_count();
+  Launcher* launcher = Launcher::ForPrimaryDisplay();
+  const LauncherItems& items = launcher->model()->items();
+  int item_count = launcher->model()->item_count();
   int indexes_left = window >= 0 ? window : item_count;
   int found_index = -1;
 
@@ -875,7 +874,7 @@ void AcceleratorController::SwitchToWindow(int window) {
       (items[found_index].status == ash::STATUS_RUNNING ||
        items[found_index].status == ash::STATUS_CLOSED)) {
     // Then set this one as active.
-    Shell::GetInstance()->launcher()->ActivateLauncherItem(found_index);
+    launcher->ActivateLauncherItem(found_index);
   }
 }
 
