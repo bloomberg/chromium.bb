@@ -150,11 +150,7 @@ TextureManager::TextureInfo::LevelInfo::LevelInfo(const LevelInfo& rhs)
       border(rhs.border),
       format(rhs.format),
       type(rhs.type),
-      image(rhs.image),
       estimated_size(rhs.estimated_size) {
-}
-
-TextureManager::TextureInfo::LevelInfo::~LevelInfo() {
 }
 
 bool TextureManager::TextureInfo::CanRender(
@@ -256,8 +252,7 @@ bool TextureManager::TextureInfo::CanGenerateMipmaps(
         (info.internal_format != first.internal_format) ||
         (info.type != first.type) ||
         feature_info->validators()->compressed_texture_format.IsValid(
-            info.internal_format) ||
-        info.image) {
+            info.internal_format)) {
         return false;
     }
   }
@@ -332,7 +327,6 @@ void TextureManager::TextureInfo::SetLevelInfo(
   info.border = border;
   info.format = format;
   info.type = type;
-  info.image = 0;
 
   estimated_size_ -= info.estimated_size;
   GLES2Util::ComputeImageDataSizes(
@@ -620,36 +614,6 @@ bool TextureManager::TextureInfo::ClearLevel(
     ++num_uncleared_mips_;
   }
   return info.cleared;
-}
-
-void TextureManager::TextureInfo::SetLevelImage(
-    const FeatureInfo* feature_info,
-    GLenum target,
-    GLint level,
-    gfx::GLImage* image) {
-  DCHECK_GE(level, 0);
-  DCHECK_LT(static_cast<size_t>(GLTargetToFaceIndex(target)),
-            level_infos_.size());
-  DCHECK_LT(static_cast<size_t>(level),
-            level_infos_[GLTargetToFaceIndex(target)].size());
-  TextureInfo::LevelInfo& info =
-      level_infos_[GLTargetToFaceIndex(target)][level];
-  DCHECK_EQ(info.target, target);
-  DCHECK_EQ(info.level, level);
-  info.image = image;
-}
-
-gfx::GLImage* TextureManager::TextureInfo::GetLevelImage(
-  GLint face, GLint level) const {
-  size_t face_index = GLTargetToFaceIndex(face);
-  if (level >= 0 && face_index < level_infos_.size() &&
-      static_cast<size_t>(level) < level_infos_[face_index].size()) {
-    const LevelInfo& info = level_infos_[GLTargetToFaceIndex(face)][level];
-    if (info.target != 0) {
-      return info.image;
-    }
-  }
-  return 0;
 }
 
 TextureManager::TextureManager(
@@ -1104,29 +1068,6 @@ bool TextureManager::GetClientId(GLuint service_id, GLuint* client_id) const {
 GLsizei TextureManager::ComputeMipMapCount(
     GLsizei width, GLsizei height, GLsizei depth) {
   return 1 + base::bits::Log2Floor(std::max(std::max(width, height), depth));
-}
-
-void TextureManager::SetLevelImage(
-    TextureManager::TextureInfo* info,
-    GLenum target,
-    GLint level,
-    gfx::GLImage* image) {
-  DCHECK(info);
-  if (!info->CanRender(feature_info_)) {
-    DCHECK_NE(0, num_unrenderable_textures_);
-    --num_unrenderable_textures_;
-  }
-  if (!info->SafeToRenderFrom()) {
-    DCHECK_NE(0, num_unsafe_textures_);
-    --num_unsafe_textures_;
-  }
-  info->SetLevelImage(feature_info_, target, level, image);
-  if (!info->CanRender(feature_info_)) {
-    ++num_unrenderable_textures_;
-  }
-  if (!info->SafeToRenderFrom()) {
-    ++num_unsafe_textures_;
-  }
 }
 
 }  // namespace gles2

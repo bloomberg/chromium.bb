@@ -461,9 +461,6 @@ class WebGraphicsContext3DInProcessCommandBufferImpl
       WGC3Denum target, WGC3Dint width, WGC3Dint height,
       WGC3Duint ioSurfaceId, WGC3Duint plane);
 
-  virtual void bindTexImage2DCHROMIUM(WGC3Denum target, WGC3Dint imageId);
-  virtual void releaseTexImage2DCHROMIUM(WGC3Denum target, WGC3Dint imageId);
-
   virtual void texStorage2DEXT(
       WGC3Denum target, WGC3Dint levels, WGC3Duint internalformat,
       WGC3Dint width, WGC3Dint height);

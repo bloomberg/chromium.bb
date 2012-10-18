@@ -679,12 +679,6 @@ void GLES2BindUniformLocationCHROMIUM(
     GLuint program, GLint location, const char* name) {
   gles2::GetGLContext()->BindUniformLocationCHROMIUM(program, location, name);
 }
-void GLES2BindTexImage2DCHROMIUM(GLenum target, GLint imageId) {
-  gles2::GetGLContext()->BindTexImage2DCHROMIUM(target, imageId);
-}
-void GLES2ReleaseTexImage2DCHROMIUM(GLenum target, GLint imageId) {
-  gles2::GetGLContext()->ReleaseTexImage2DCHROMIUM(target, imageId);
-}
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_C_LIB_AUTOGEN_H_
 

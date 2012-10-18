@@ -592,9 +592,6 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual WGC3Dboolean isVertexArrayOES(WebGLId array);
   virtual void bindVertexArrayOES(WebGLId array);
 
-  virtual void bindTexImage2DCHROMIUM(WGC3Denum target, WGC3Dint image_id);
-  virtual void releaseTexImage2DCHROMIUM(WGC3Denum target, WGC3Dint image_id);
-
  protected:
   virtual GrGLInterface* onCreateGrGLInterface();
 

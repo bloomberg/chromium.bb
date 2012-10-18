@@ -999,26 +999,6 @@ TEST_F(TextureInfoTest, UseDeletedTexture) {
   info = NULL;
 }
 
-TEST_F(TextureInfoTest, GetLevelImage) {
-  manager_.SetInfoTarget(info_, GL_TEXTURE_2D);
-  manager_.SetLevelInfo(info_,
-      GL_TEXTURE_2D, 1, GL_RGBA, 2, 2, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
-  EXPECT_TRUE(info_->GetLevelImage(GL_TEXTURE_2D, 1) == NULL);
-  // Set image.
-  manager_.SetLevelImage(info_,
-      GL_TEXTURE_2D, 1, gfx::GLImage::CreateGLImage(0));
-  EXPECT_FALSE(info_->GetLevelImage(GL_TEXTURE_2D, 1) == NULL);
-  // Remove it.
-  manager_.SetLevelImage(info_, GL_TEXTURE_2D, 1, NULL);
-  EXPECT_TRUE(info_->GetLevelImage(GL_TEXTURE_2D, 1) == NULL);
-  manager_.SetLevelImage(info_,
-      GL_TEXTURE_2D, 1, gfx::GLImage::CreateGLImage(0));
-  // Image should be reset when SetLevelInfo is called.
-  manager_.SetLevelInfo(info_,
-      GL_TEXTURE_2D, 1, GL_RGBA, 2, 2, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
-  EXPECT_TRUE(info_->GetLevelImage(GL_TEXTURE_2D, 1) == NULL);
-}
-
 }  // namespace gles2
 }  // namespace gpu
 

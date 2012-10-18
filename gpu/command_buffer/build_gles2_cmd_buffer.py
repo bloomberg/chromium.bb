@@ -1759,18 +1759,6 @@ _FUNCTION_INFO = {
     'expectation': False,
     'unit_test': False,
   },
-  'BindTexImage2DCHROMIUM': {
-    'decoder_func': 'DoBindTexImage2DCHROMIUM',
-    'unit_test': False,
-    'extension': True,
-    'chromium': True,
-  },
-  'ReleaseTexImage2DCHROMIUM': {
-    'decoder_func': 'DoReleaseTexImage2DCHROMIUM',
-    'unit_test': False,
-    'extension': True,
-    'chromium': True,
-  },
 }
 
 

@@ -2887,29 +2887,5 @@ error::Error GLES2DecoderImpl::HandleConsumeTextureCHROMIUMImmediate(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleBindTexImage2DCHROMIUM(
-    uint32 immediate_data_size, const gles2::BindTexImage2DCHROMIUM& c) {
-  GLenum target = static_cast<GLenum>(c.target);
-  GLint imageId = static_cast<GLint>(c.imageId);
-  if (!validators_->texture_bind_target.IsValid(target)) {
-    SetGLErrorInvalidEnum("glBindTexImage2DCHROMIUM", target, "target");
-    return error::kNoError;
-  }
-  DoBindTexImage2DCHROMIUM(target, imageId);
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderImpl::HandleReleaseTexImage2DCHROMIUM(
-    uint32 immediate_data_size, const gles2::ReleaseTexImage2DCHROMIUM& c) {
-  GLenum target = static_cast<GLenum>(c.target);
-  GLint imageId = static_cast<GLint>(c.imageId);
-  if (!validators_->texture_bind_target.IsValid(target)) {
-    SetGLErrorInvalidEnum("glReleaseTexImage2DCHROMIUM", target, "target");
-    return error::kNoError;
-  }
-  DoReleaseTexImage2DCHROMIUM(target, imageId);
-  return error::kNoError;
-}
-
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_AUTOGEN_H_
 

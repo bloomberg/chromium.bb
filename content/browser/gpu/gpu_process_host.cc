@@ -478,7 +478,6 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GpuHostMsg_ChannelEstablished, OnChannelEstablished)
     IPC_MESSAGE_HANDLER(GpuHostMsg_CommandBufferCreated, OnCommandBufferCreated)
     IPC_MESSAGE_HANDLER(GpuHostMsg_DestroyCommandBuffer, OnDestroyCommandBuffer)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_ImageCreated, OnImageCreated)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                         OnAcceleratedSurfaceBuffersSwapped)
@@ -567,33 +566,6 @@ void GpuProcessHost::CreateViewCommandBuffer(
   }
 }
 
-void GpuProcessHost::CreateImage(
-    gfx::PluginWindowHandle window,
-    int client_id,
-    int image_id,
-    const CreateImageCallback& callback) {
-  TRACE_EVENT0("gpu", "GpuProcessHostUIShim::CreateImage");
-
-  DCHECK(CalledOnValidThread());
-
-  if (Send(new GpuMsg_CreateImage(window, client_id, image_id))) {
-    create_image_requests_.push(callback);
-  } else {
-    CreateImageError(callback, gfx::Size());
-  }
-}
-
-void GpuProcessHost::DeleteImage(
-    int client_id,
-    int image_id,
-    int sync_point) {
-  TRACE_EVENT0("gpu", "GpuProcessHostUIShim::DeleteImage");
-
-  DCHECK(CalledOnValidThread());
-
-  Send(new GpuMsg_DeleteImage(client_id, image_id, sync_point));
-}
-
 void GpuProcessHost::OnInitialized(bool result) {
   UMA_HISTOGRAM_BOOLEAN("GPU.GPUProcessInitialized", result);
 }
@@ -647,16 +619,6 @@ void GpuProcessHost::OnDestroyCommandBuffer(int32 surface_id) {
   if (it != surface_refs_.end())
     surface_refs_.erase(it);
 #endif  // defined(TOOLKIT_GTK)
-}
-
-void GpuProcessHost::OnImageCreated(const gfx::Size size) {
-  TRACE_EVENT0("gpu", "GpuProcessHost::OnImageCreated");
-
-  if (!create_image_requests_.empty()) {
-    CreateImageCallback callback = create_image_requests_.front();
-    create_image_requests_.pop();
-    callback.Run(size);
-  }
 }
 
 #if defined(OS_MACOSX)
@@ -951,9 +913,4 @@ void GpuProcessHost::EstablishChannelError(
 void GpuProcessHost::CreateCommandBufferError(
     const CreateCommandBufferCallback& callback, int32 route_id) {
   callback.Run(route_id);
-}
-
-void GpuProcessHost::CreateImageError(
-    const CreateImageCallback& callback, const gfx::Size size) {
-  callback.Run(size);
 }

@@ -1698,16 +1698,6 @@ void WebGraphicsContext3DInProcessImpl::copyTextureCHROMIUM(
   NOTIMPLEMENTED();
 }
 
-void WebGraphicsContext3DInProcessImpl::bindTexImage2DCHROMIUM(
-    WGC3Denum target, WGC3Dint imageId) {
-  NOTIMPLEMENTED();
-}
-
-void WebGraphicsContext3DInProcessImpl::releaseTexImage2DCHROMIUM(
-    WGC3Denum target, WGC3Dint imageId) {
-  NOTIMPLEMENTED();
-}
-
 GrGLInterface* WebGraphicsContext3DInProcessImpl::onCreateGrGLInterface() {
   return gfx::CreateInProcessSkiaGLBinding();
 }

@@ -27,7 +27,6 @@ class GL_EXPORT GLSurfaceGLX : public GLSurface {
   static const char* GetGLXExtensions();
   static bool HasGLXExtension(const char* name);
   static bool IsCreateContextRobustnessSupported();
-  static bool IsTextureFromPixmapSupported();
 
   virtual void* GetDisplay() OVERRIDE;
 

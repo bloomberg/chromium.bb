@@ -39,9 +39,6 @@ class WaitableEvent;
 
 namespace gpu {
 struct RefCountedCounter;
-namespace gles2 {
-class ImageManager;
-}
 }
 
 #if defined(OS_ANDROID)
@@ -102,12 +99,6 @@ class GpuChannel : public IPC::Listener,
       int32 surface_id,
       const GPUCreateCommandBufferConfig& init_params,
       int32* route_id);
-
-  void CreateImage(
-      gfx::PluginWindowHandle window,
-      int32 image_id,
-      gfx::Size* size);
-  void DeleteImage(int32 image_id);
 
   gfx::GLShareGroup* share_group() const { return share_group_.get(); }
 
@@ -207,7 +198,6 @@ class GpuChannel : public IPC::Listener,
   scoped_refptr<gfx::GLShareGroup> share_group_;
 
   scoped_refptr<gpu::gles2::MailboxManager> mailbox_manager_;
-  scoped_refptr<gpu::gles2::ImageManager> image_manager_;
 
 #if defined(ENABLE_GPU)
   typedef IDMap<GpuCommandBufferStub, IDMapOwnPointer> StubMap;

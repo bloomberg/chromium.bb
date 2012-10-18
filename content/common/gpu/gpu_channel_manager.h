@@ -5,7 +5,6 @@
 #ifndef CONTENT_COMMON_GPU_GPU_CHANNEL_MANAGER_H_
 #define CONTENT_COMMON_GPU_GPU_CHANNEL_MANAGER_H_
 
-#include <deque>
 #include <vector>
 
 #include "base/hash_tables.h"
@@ -97,16 +96,6 @@ class GpuChannelManager : public IPC::Listener,
   gfx::GLSurface* GetDefaultOffscreenSurface();
 
  private:
-  struct ImageOperation {
-    ImageOperation(int32 sync_point, base::Closure callback);
-    ~ImageOperation();
-
-    int32 sync_point;
-    base::Closure callback;
-  };
-  typedef base::hash_map<int, scoped_refptr<GpuChannel> > GpuChannelMap;
-  typedef std::deque<ImageOperation*> ImageOperationQueue;
-
   // Message handlers.
   void OnEstablishChannel(int client_id, bool share_context);
   void OnCloseChannel(const IPC::ChannelHandle& channel_handle);
@@ -117,13 +106,6 @@ class GpuChannelManager : public IPC::Listener,
       int32 render_view_id,
       int32 client_id,
       const GPUCreateCommandBufferConfig& init_params);
-  void CreateImage(
-      gfx::PluginWindowHandle window, int32 client_id, int32 image_id);
-  void OnCreateImage(
-      gfx::PluginWindowHandle window, int32 client_id, int32 image_id);
-  void DeleteImage(int32 client_id, int32 image_id);
-  void OnDeleteImage(int32 client_id, int32 image_id, int32 sync_point);
-  void OnDeleteImageSyncPointRetired(ImageOperation*);
 
   void OnLoseAllContexts();
 
@@ -136,6 +118,7 @@ class GpuChannelManager : public IPC::Listener,
   // These objects manage channels to individual renderer processes there is
   // one channel for each renderer process that has connected to this GPU
   // process.
+  typedef base::hash_map<int, scoped_refptr<GpuChannel> > GpuChannelMap;
   GpuChannelMap gpu_channels_;
   scoped_refptr<gfx::GLShareGroup> share_group_;
   scoped_refptr<gpu::gles2::MailboxManager> mailbox_manager_;
@@ -144,7 +127,6 @@ class GpuChannelManager : public IPC::Listener,
   scoped_refptr<SyncPointManager> sync_point_manager_;
   scoped_ptr<gpu::gles2::ProgramCache> program_cache_;
   scoped_refptr<gfx::GLSurface> default_offscreen_surface_;
-  ImageOperationQueue image_operations_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannelManager);
 };

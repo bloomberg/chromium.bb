@@ -20,7 +20,6 @@
 #include "content/public/common/gpu_info.h"
 #include "ipc/ipc_sender.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/size.h"
 
 class GpuMainThread;
 struct GPUCreateCommandBufferConfig;
@@ -49,8 +48,6 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
       EstablishChannelCallback;
 
   typedef base::Callback<void(int32)> CreateCommandBufferCallback;
-
-  typedef base::Callback<void(const gfx::Size)> CreateImageCallback;
 
   static bool gpu_enabled() { return gpu_enabled_; }
 
@@ -93,16 +90,6 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
       const GPUCreateCommandBufferConfig& init_params,
       const CreateCommandBufferCallback& callback);
 
-  // Tells the GPU process to create a new image using the given window.
-  void CreateImage(
-      gfx::PluginWindowHandle window,
-      int client_id,
-      int image_id,
-      const CreateImageCallback& callback);
-
-    // Tells the GPU process to delete image.
-  void DeleteImage(int client_id, int image_id, int sync_point);
-
   // Whether this GPU process is set up to use software rendering.
   bool software_rendering();
 
@@ -133,7 +120,6 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
   void OnChannelEstablished(const IPC::ChannelHandle& channel_handle);
   void OnCommandBufferCreated(const int32 route_id);
   void OnDestroyCommandBuffer(int32 surface_id);
-  void OnImageCreated(const gfx::Size size);
 
 #if defined(OS_MACOSX)
   void OnAcceleratedSurfaceBuffersSwapped(
@@ -160,8 +146,6 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
       const content::GPUInfo& gpu_info);
   void CreateCommandBufferError(const CreateCommandBufferCallback& callback,
                                 int32 route_id);
-  void CreateImageError(const CreateImageCallback& callback,
-                        const gfx::Size size);
 
   // The serial number of the GpuProcessHost / GpuProcessHostUIShim pair.
   int host_id_;
@@ -172,9 +156,6 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
 
   // The pending create command buffer requests we need to reply to.
   std::queue<CreateCommandBufferCallback> create_command_buffer_requests_;
-
-  // The pending create image requests we need to reply to.
-  std::queue<CreateImageCallback> create_image_requests_;
 
 #if defined(TOOLKIT_GTK)
   // Encapsulates surfaces that we lock when creating view command buffers.

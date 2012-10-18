@@ -14,7 +14,6 @@
 #include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
-#include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/program_manager.h"
@@ -29,11 +28,9 @@ namespace gles2 {
 
 ContextGroup::ContextGroup(
     MailboxManager* mailbox_manager,
-    ImageManager* image_manager,
     MemoryTracker* memory_tracker,
     bool bind_generates_resource)
     : mailbox_manager_(mailbox_manager ? mailbox_manager : new MailboxManager),
-      image_manager_(image_manager ? image_manager : new ImageManager),
       memory_tracker_(memory_tracker),
       num_contexts_(0),
       enforce_gl_minimums_(CommandLine::ForCurrentProcess()->HasSwitch(
