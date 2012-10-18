@@ -162,6 +162,7 @@ TEST_F(BrowserWindowCocoaCloseTest, DelegateRespondsYes) {
   [[[window_ stub] andReturn:controller_] delegate];
   [[[controller_ stub] andReturn:window_] window];
   [[[controller_ stub] andReturnValue:ValueYES()] windowShouldClose:window_];
+  [[window_ expect] orderOut:nil];
   [[window_ expect] close];
   CreateAndCloseBrowserWindow();
   EXPECT_OCMOCK_VERIFY(controller_);
@@ -194,6 +195,7 @@ TEST_F(BrowserWindowCocoaCloseTest, WindowRespondsYes) {
   [[[window_ stub] andReturn:nil] delegate];
   [[[controller_ stub] andReturn:window_] window];
   [[[window_ stub] andReturnValue:ValueYES()] windowShouldClose:window_];
+  [[window_ expect] orderOut:nil];
   [[window_ expect] close];
   CreateAndCloseBrowserWindow();
   EXPECT_OCMOCK_VERIFY(controller_);
@@ -217,6 +219,7 @@ TEST_F(BrowserWindowCocoaCloseTest, DelegateRespondsYesWindowRespondsNo) {
   [[[controller_ stub] andReturn:window_] window];
   [[[controller_ stub] andReturnValue:ValueYES()] windowShouldClose:window_];
   [[[window_ stub] andReturnValue:ValueNO()] windowShouldClose:window_];
+  [[window_ expect] orderOut:nil];
   [[window_ expect] close];
   CreateAndCloseBrowserWindow();
   EXPECT_OCMOCK_VERIFY(controller_);
@@ -238,6 +241,7 @@ TEST_F(BrowserWindowCocoaCloseTest, DelegateRespondsNoWindowRespondsYes) {
 TEST_F(BrowserWindowCocoaCloseTest, NoResponseFromDelegateNorWindow) {
   [[[window_ stub] andReturn:nil] delegate];
   [[[controller_ stub] andReturn:window_] window];
+  [[window_ expect] orderOut:nil];
   [[window_ expect] close];
   CreateAndCloseBrowserWindow();
   EXPECT_OCMOCK_VERIFY(controller_);

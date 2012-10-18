@@ -175,15 +175,25 @@ void BrowserWindowCocoa::Close() {
     // documented at <http://crbug.com/118424>. Re-implement
     // -[NSWindow performClose:] as closely as possible to how Apple documents
     // it.
+    //
+    // Before calling |-close|, hide the window immediately. |-performClose:|
+    // would do something similar, and this ensures that the window is removed
+    // from AppKit's display list. Not doing so can lead to crashes like
+    // <http://crbug.com/156101>.
     id<NSWindowDelegate> delegate = [window() delegate];
     SEL window_should_close = @selector(windowShouldClose:);
     if ([delegate respondsToSelector:window_should_close]) {
-      if ([delegate windowShouldClose:window()])
+      if ([delegate windowShouldClose:window()]) {
+        [window() orderOut:nil];
         [window() close];
+      }
     } else if ([window() respondsToSelector:window_should_close]) {
-      if ([window() performSelector:window_should_close withObject:window()])
+      if ([window() performSelector:window_should_close withObject:window()]) {
+        [window() orderOut:nil];
         [window() close];
+      }
     } else {
+      [window() orderOut:nil];
       [window() close];
     }
   }
