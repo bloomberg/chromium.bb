@@ -99,6 +99,7 @@ class ExtensionHelper
   void OnUpdateBrowserWindowId(int window_id);
   void OnAddMessageToConsole(content::ConsoleMessageLevel level,
                              const std::string& message);
+  void OnAppWindowClosed();
 
   // Callback triggered when we finish downloading the application definition
   // file.

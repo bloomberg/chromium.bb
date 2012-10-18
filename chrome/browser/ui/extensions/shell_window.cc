@@ -295,6 +295,8 @@ void ShellWindow::HandleKeyboardEvent(
 
 void ShellWindow::OnNativeClose() {
   extensions::ShellWindowRegistry::Get(profile_)->RemoveShellWindow(this);
+  content::RenderViewHost* rvh = web_contents_->GetRenderViewHost();
+  rvh->Send(new ExtensionMsg_AppWindowClosed(rvh->GetRoutingID()));
   delete this;
 }
 

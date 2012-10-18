@@ -387,6 +387,9 @@ IPC_MESSAGE_ROUTED2(ExtensionMsg_AddMessageToConsole,
                     content::ConsoleMessageLevel /* level */,
                     std::string /* message */)
 
+// Notify the renderer that its window has closed.
+IPC_MESSAGE_ROUTED0(ExtensionMsg_AppWindowClosed)
+
 // Messages sent from the renderer to the browser.
 
 // A renderer sends this message when an extension process starts an API

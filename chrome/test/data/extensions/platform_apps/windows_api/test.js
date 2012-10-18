@@ -17,6 +17,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
        var cw = win.contentWindow.chrome.app.window.current();
        chrome.test.assertEq(cw, win);
        chrome.test.assertEq('testId', cw.id);
+       win.contentWindow.close();
      }));
    },
 
@@ -35,6 +36,8 @@ chrome.app.runtime.onLaunched.addListener(function() {
         chrome.test.assertTrue(cw1 === win1);
         chrome.test.assertTrue(cw2 === win2);
         chrome.test.assertFalse(cw1 === cw2);
+        win1.contentWindow.close();
+        win2.contentWindow.close();
       }));
      }));
    },
@@ -50,7 +53,17 @@ chrome.app.runtime.onLaunched.addListener(function() {
            win.contentWindow.resizeBy(-256, 0);
            chrome.test.assertEq(oldWidth - 256, win.contentWindow.outerWidth);
            chrome.test.assertEq(oldHeight, win.contentWindow.outerHeight);
+           win.contentWindow.close();
          }));
+   },
+
+   function testOnCloseEvent() {
+     chrome.app.window.create('test.html', callbackPass(function(win) {
+       win.onClose.addListener(callbackPass(function() {
+         // Mission accomplished.
+       }));
+       win.contentWindow.close();
+     }));
    },
 
    /*function testMaximize() {
