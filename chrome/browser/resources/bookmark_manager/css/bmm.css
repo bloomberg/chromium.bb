@@ -316,6 +316,8 @@ html[dir=rtl] .summary button {
   background-position: left center;
 }
 
-menu > button {
-  line-height: 28px;
+@media (pointer:coarse) {
+  menu > button {
+    line-height: 28px;
+  }
 }
