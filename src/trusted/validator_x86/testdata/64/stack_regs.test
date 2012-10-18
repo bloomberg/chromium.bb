@@ -67,8 +67,7 @@
     0x2 - error recovery
 ----------------------------------------------------------------------
 @hex:
-  # See http://code.google.com/p/nativeclient/issues/detail?id=3081
-  # xor %esp,%ebp
+  # Wrong order (shoule be (%rbp, %r15) according to ABI)
   # lea (%r15,%rbp,1),%rbp
   31 e5
   49 8d 2c 2f

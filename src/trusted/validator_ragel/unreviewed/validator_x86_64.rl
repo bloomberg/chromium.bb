@@ -112,9 +112,8 @@
   rbp_sandboxing =
     (b_0100_11x0 0x01 0xfd                  | # add %r15,%rbp
      b_0100_10x1 0x03 0xef                  | # add %r15,%rbp
-     # lea sandboxing for rbp is temporarily disallowed to mimic old validator,
-     # see http://code.google.com/p/nativeclient/issues/detail?id=3081
-     #0x49 0x8d 0x2c 0x2f                   | # lea (%r15,%rbp,1),%rbp
+     # Note that unlike %rsp case, there is no 'lea (%rbp,%r15,1),%rbp'
+     # instruction (it gets assembled as 'lea 0x00(%rbp,%r15,1),%rbp').
      0x4a 0x8d 0x6c 0x3d 0x00               | # lea 0x00(%rbp,%r15,1),%rbp
      0x4a 0x8d 0xac 0x3d 0x00 0x00 0x00 0x00) # lea 0x00000000(%rbp,%r15,1),%rbp
     @{ if (restricted_register == REG_RBP)
@@ -136,13 +135,15 @@
 
   # Special instructions used for %rsp sandboxing
   rsp_sandboxing =
-    (b_0100_11x0 0x01 0xfc            | # add %r15,%rsp
-     b_0100_10x1 0x03 0xe7            | # add %r15,%rsp
+    (b_0100_11x0 0x01 0xfc                  | # add %r15,%rsp
+     b_0100_10x1 0x03 0xe7                  | # add %r15,%rsp
      # OR can be used as well, see
      # http://code.google.com/p/nativeclient/issues/detail?id=3070
-     b_0100_11x0 0x09 0xfc            | # or %r15,%rsp
-     b_0100_10x1 0x0b 0xe7            | # or %r15,%rsp
-     0x4a 0x8d 0x24 0x3c)               # lea (%rsp,%r15,1),%rsp
+     b_0100_11x0 0x09 0xfc                  | # or %r15,%rsp
+     b_0100_10x1 0x0b 0xe7                  | # or %r15,%rsp
+     0x4a 0x8d 0x24 0x3c                    | # lea (%rsp,%r15,1),%rsp
+     0x4a 0x8d 0x64 0x3c 0x00               | # lea 0x00(%rsp,%r15,1),%rsp
+     0x4a 0x8d 0xa4 0x3c 0x00 0x00 0x00 0x00) # lea 0x00000000(%rsp,%r15,1),%rsp
     @{ if (restricted_register == REG_RSP)
          instruction_info_collected |= RESTRICTED_REGISTER_USED;
        else
