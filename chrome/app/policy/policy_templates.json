@@ -2581,7 +2581,6 @@
       'supported_on': ['chrome_os:0.16-'],
       'device_only': True,
       'features': {'dynamic_refresh': True},
-      'future': True,
       'example_value': '{ "NetworkConfigurations": [ { "GUID": "{4b224dfd-6849-7a63-5e394343244ae9c9}", "Name": "my WiFi", "Type": "WiFi", "WiFi": { "SSID": "my WiFi", "HiddenSSID": false, "Security": "None", "AutoConnect": true } } ] }',
       'id': 108,
       'caption': '''Device-level network configuration''',
