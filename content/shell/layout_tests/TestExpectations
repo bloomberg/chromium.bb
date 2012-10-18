@@ -10,3 +10,6 @@ crbug.com/155474 fast/dom/shadow/shadowdom-for-progress-dynamic.html [ Crash ]
 
 # Crash in WebCore::Node::getFlag
 crbug.com/156376 editing/pasteboard/paste-noscript-xhtml.xhtml [ Crash ]
+
+# Crash in GrContext::gaussianBlur
+crbug.com/156505 css3/filters/huge-region-composited.html [ Crash ]
