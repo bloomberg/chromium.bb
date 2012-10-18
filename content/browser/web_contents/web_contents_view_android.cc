@@ -152,11 +152,6 @@ gfx::Rect WebContentsViewAndroid::GetViewBounds() const {
     return gfx::Rect();
 }
 
-void WebContentsViewAndroid::ConfirmTouchEvent(bool handled) {
-  if (content_view_core_)
-    content_view_core_->ConfirmTouchEvent(handled);
-}
-
 void WebContentsViewAndroid::ShowContextMenu(
     const ContextMenuParams& params,
     content::ContextMenuSourceType type) {

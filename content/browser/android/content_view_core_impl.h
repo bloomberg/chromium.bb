@@ -199,7 +199,7 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   bool HasFocus();
   void ConfirmTouchEvent(bool handled);
-  void DidSetNeedTouchEvents(bool need_touch_events);
+  void HasTouchEventHandlers(bool need_touch_events);
   void OnSelectionChanged(const std::string& text);
   void OnSelectionBoundsChanged(
       const gfx::Rect& start_rect, base::i18n::TextDirection start_dir,

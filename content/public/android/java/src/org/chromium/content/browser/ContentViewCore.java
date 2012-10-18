@@ -832,8 +832,8 @@ public class ContentViewCore implements MotionEventDelegate {
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private void didSetNeedTouchEvents(boolean needTouchEvents) {
-        mContentViewGestureHandler.didSetNeedTouchEvents(needTouchEvents);
+    private void hasTouchEventHandlers(boolean hasTouchHandlers) {
+        mContentViewGestureHandler.hasTouchEventHandlers(hasTouchHandlers);
     }
 
     @SuppressWarnings("unused")

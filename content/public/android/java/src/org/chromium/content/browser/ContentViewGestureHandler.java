@@ -67,7 +67,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
             new ArrayDeque<Pair<MotionEvent, Boolean>>();
 
     // Has WebKit told us the current page requires touch events.
-    private boolean mNeedTouchEvents = false;
+    private boolean mHasTouchHandlers = false;
 
     // Remember whether onShowPress() is called. If it is not, in onSingleTapConfirmed()
     // we will first show the press state, then trigger the click.
@@ -606,19 +606,19 @@ class ContentViewGestureHandler implements LongPressDelegate {
     /**
      * Sets the flag indicating that the content has registered listeners for touch events.
      */
-    void didSetNeedTouchEvents(boolean needTouchEvents) {
-        mNeedTouchEvents = needTouchEvents;
+    void hasTouchEventHandlers(boolean hasTouchHandlers) {
+        mHasTouchHandlers = hasTouchHandlers;
         // When mainframe is loading, FrameLoader::transitionToCommitted will
-        // call this method to set mNeedTouchEvents to false. We use this as
+        // call this method to set mHasTouchHandlers to false. We use this as
         // an indicator to clear the pending motion events so that events from
         // the previous page will not be carried over to the new page.
-        if (!mNeedTouchEvents) mPendingMotionEvents.clear();
+        if (!mHasTouchHandlers) mPendingMotionEvents.clear();
     }
 
     private boolean offerTouchEventToJavaScript(MotionEvent event) {
         mLongPressDetector.onOfferTouchEventToJavaScript(event);
 
-        if (!mNeedTouchEvents) return false;
+        if (!mHasTouchHandlers) return false;
 
         if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
             // Only send move events if the move has exceeded the slop threshold.

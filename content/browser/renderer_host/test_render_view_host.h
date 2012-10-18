@@ -148,7 +148,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual void UpdateFrameInfo(const gfx::Point& scroll_offset,
                                float page_scale_factor,
                                const gfx::Size& content_size) OVERRIDE {}
-  virtual void DidSetNeedTouchEvents(bool need_touch_events) OVERRIDE {}
+  virtual void HasTouchEventHandlers(bool need_touch_events) OVERRIDE {}
 #elif defined(OS_WIN) && !defined(USE_AURA)
   virtual void WillWmDestroy() OVERRIDE;
 #endif

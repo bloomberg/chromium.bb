@@ -50,7 +50,6 @@ class WebContentsViewAndroid : public WebContentsView,
   virtual bool IsEventTracking() const OVERRIDE;
   virtual void CloseTabAfterEventTracking() OVERRIDE;
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
-  virtual void ConfirmTouchEvent(bool handled) OVERRIDE;
 
   // Backend implementation of RenderViewHostDelegateView.
   virtual void ShowContextMenu(

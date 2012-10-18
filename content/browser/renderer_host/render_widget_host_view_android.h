@@ -115,7 +115,7 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
   virtual void StartContentIntent(const GURL& content_url) OVERRIDE;
-  virtual void DidSetNeedTouchEvents(bool need_touch_events) OVERRIDE;
+  virtual void HasTouchEventHandlers(bool need_touch_events) OVERRIDE;
   virtual void SetCachedBackgroundColor(SkColor color) OVERRIDE;
   virtual void SetCachedPageScaleFactorLimits(float minimum_scale,
                                               float maximum_scale) OVERRIDE;

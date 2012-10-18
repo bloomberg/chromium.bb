@@ -383,7 +383,8 @@ void RenderWidgetHostViewAndroid::UnhandledWheelEvent(
 void RenderWidgetHostViewAndroid::ProcessAckedTouchEvent(
     const WebKit::WebTouchEvent& touch_event,
     bool processed) {
-  // intentionally empty, like RenderWidgetHostViewViews
+  if (content_view_core_)
+    content_view_core_->ConfirmTouchEvent(processed);
 }
 
 void RenderWidgetHostViewAndroid::SetHasHorizontalScrollbar(
@@ -483,10 +484,10 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
   }
 }
 
-void RenderWidgetHostViewAndroid::DidSetNeedTouchEvents(
+void RenderWidgetHostViewAndroid::HasTouchEventHandlers(
     bool need_touch_events) {
   if (content_view_core_)
-    content_view_core_->DidSetNeedTouchEvents(need_touch_events);
+    content_view_core_->HasTouchEventHandlers(need_touch_events);
 }
 
 // static

@@ -379,12 +379,12 @@ void ContentViewCoreImpl::ConfirmTouchEvent(bool handled) {
   Java_ContentViewCore_confirmTouchEvent(env, j_obj.obj(), handled);
 }
 
-void ContentViewCoreImpl::DidSetNeedTouchEvents(bool need_touch_events) {
+void ContentViewCoreImpl::HasTouchEventHandlers(bool need_touch_events) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())
     return;
-  Java_ContentViewCore_didSetNeedTouchEvents(env,
+  Java_ContentViewCore_hasTouchEventHandlers(env,
                                              j_obj.obj(),
                                              need_touch_events);
 }
