@@ -22,8 +22,6 @@ ConstrainedWindowMac2::ConstrainedWindowMac2(
       window_([window retain]) {
   DCHECK(web_contents);
   DCHECK(window_.get());
-  ConstrainedWindowTabHelper::CreateForWebContents(web_contents);
-
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
       ConstrainedWindowTabHelper::FromWebContents(web_contents);
   constrained_window_tab_helper->AddConstrainedDialog(this);

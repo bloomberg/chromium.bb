@@ -94,8 +94,6 @@ ConstrainedWindowMac::ConstrainedWindowMac(
       closing_(false) {
   DCHECK(web_contents);
   DCHECK(delegate);
-  ConstrainedWindowTabHelper::CreateForWebContents(web_contents);
-
   ConstrainedWindowTabHelper* constrained_window_tab_helper =
       ConstrainedWindowTabHelper::FromWebContents(web_contents);
   constrained_window_tab_helper->AddConstrainedDialog(this);

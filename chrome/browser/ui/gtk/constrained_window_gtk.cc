@@ -42,7 +42,6 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
   DCHECK(web_contents);
   DCHECK(delegate);
   GtkWidget* dialog = delegate->GetWidgetRoot();
-  ConstrainedWindowTabHelper::CreateForWebContents(web_contents);
 
   // Unlike other users of CreateBorderBin, we need a dedicated frame around
   // our "window".

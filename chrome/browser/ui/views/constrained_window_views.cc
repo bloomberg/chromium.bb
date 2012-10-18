@@ -575,7 +575,6 @@ ConstrainedWindowViews::ConstrainedWindowViews(
   params.delegate = widget_delegate;
   params.native_widget = native_constrained_window_->AsNativeWidget();
   params.child = true;
-  ConstrainedWindowTabHelper::CreateForWebContents(web_contents);
 
   if (enable_chrome_style_) {
     params.parent_widget = Widget::GetTopLevelWidgetForNativeView(
