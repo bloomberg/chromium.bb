@@ -101,10 +101,12 @@ class MultiDisplayManagerTest : public test::AshTestBase,
 #define MAYBE_NativeDisplayTest NativeDisplayTest
 #define MAYBE_EmulatorTest EmulatorTest
 #define MAYBE_OverscanInsetsTest OverscanInsetsTest
+#define MAYBE_ZeroOverscanInsets ZeroOverscanInsets
 #else
 #define MAYBE_NativeDisplayTest DISABLED_NativeDisplayTest
 #define MAYBE_EmulatorTest DISABLED_EmulatorTest
 #define MAYBE_OverscanInsetsTest DISABLED_OverscanInsetsTest
+#define MAYBE_ZeroOverscanInsets DISABLED_ZeroOverscanInsets
 #endif
 
 TEST_F(MultiDisplayManagerTest, MAYBE_NativeDisplayTest) {
@@ -274,6 +276,27 @@ TEST_F(MultiDisplayManagerTest, MAYBE_OverscanInsetsTest) {
   EXPECT_EQ("10,509 376x380",
             display_manager()->GetDisplayAt(1)->bounds_in_pixel().ToString());
   EXPECT_EQ("188x190", display_manager()->GetDisplayAt(1)->size().ToString());
+}
+
+TEST_F(MultiDisplayManagerTest, MAYBE_ZeroOverscanInsets) {
+  // Make sure the display change events is emitted for overscan inset changes.
+  UpdateDisplay("0+0-500x500,0+501-400x400");
+  ASSERT_EQ(2u, display_manager()->GetNumDisplays());
+  int64 display2_id = display_manager()->GetDisplayAt(1)->id();
+
+  reset();
+  display_manager()->SetOverscanInsets(display2_id, gfx::Insets(0, 0, 0, 0));
+  EXPECT_EQ(0u, changed().size());
+
+  reset();
+  display_manager()->SetOverscanInsets(display2_id, gfx::Insets(1, 0, 0, 0));
+  EXPECT_EQ(1u, changed().size());
+  EXPECT_EQ(display2_id, changed()[0].id());
+
+  reset();
+  display_manager()->SetOverscanInsets(display2_id, gfx::Insets(0, 0, 0, 0));
+  EXPECT_EQ(1u, changed().size());
+  EXPECT_EQ(display2_id, changed()[0].id());
 }
 
 // TODO(oshima): Device scale factor is supported on chromeos only for now.
