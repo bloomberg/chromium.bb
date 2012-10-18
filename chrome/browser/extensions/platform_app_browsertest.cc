@@ -604,6 +604,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MutationEventsDisabled) {
 
 // Test that windows created with an id will remember and restore their
 // geometry when opening new windows.
+// Flaky, see http://crbug.com/155459.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
                        FLAKY_ShellWindowRestorePosition) {
   ExtensionTestMessageListener page2_listener("WaitForPage2", true);
