@@ -8,6 +8,10 @@
 
 #include "CCMathUtil.h"
 #include "CCRenderSurface.h"
+#ifdef LOG
+#undef LOG
+#endif
+#include "base/logging.h"
 #include <limits.h>
 #include <public/WebTransformationMatrix.h>
 #include <deque>
@@ -15,17 +19,6 @@
 
 using namespace std;
 using WebKit::WebTransformationMatrix;
-
-#define LOG_CHANNEL_PREFIX Log
-#define SHOW_DEBUG_LOG 0
-
-#if !defined( NDEBUG )
-#if SHOW_DEBUG_LOG
-static WTFLogChannel LogCCLayerSorter = { 0x00000000, "", WTFLogChannelOn };
-#else
-static WTFLogChannel LogCCLayerSorter = { 0x00000000, "", WTFLogChannelOff };
-#endif
-#endif
 
 namespace cc {
 
@@ -224,9 +217,7 @@ float CCLayerSorter::LayerShape::layerZFromProjectedPoint(const FloatPoint& p) c
 
 void CCLayerSorter::createGraphNodes(LayerList::iterator first, LayerList::iterator last)
 {
-#if !defined( NDEBUG )
-    LOG(CCLayerSorter, "Creating graph nodes:\n");
-#endif
+    DVLOG(2) << "Creating graph nodes:";
     float minZ = FLT_MAX;
     float maxZ = -FLT_MAX;
     for (LayerList::const_iterator it = first; it < last; it++) {
@@ -236,9 +227,7 @@ void CCLayerSorter::createGraphNodes(LayerList::iterator first, LayerList::itera
         if (!node.layer->drawsContent() && !renderSurface)
             continue;
 
-#if !defined( NDEBUG )
-        LOG(CCLayerSorter, "Layer %d (%d x %d)\n", node.layer->id(), node.layer->bounds().width(), node.layer->bounds().height());
-#endif
+        DVLOG(2) << "Layer " << node.layer->id() << " (" << node.layer->bounds().width() << " x " << node.layer->bounds().height() << ")";
 
         WebTransformationMatrix drawTransform;
         float layerWidth, layerHeight;
@@ -263,9 +252,7 @@ void CCLayerSorter::createGraphNodes(LayerList::iterator first, LayerList::itera
 
 void CCLayerSorter::createGraphEdges()
 {
-#if !defined( NDEBUG )
-    LOG(CCLayerSorter, "Edges:\n");
-#endif
+    DVLOG(2) << "Edges:";
     // Fraction of the total zRange below which z differences
     // are not considered reliable.
     const float zThresholdFactor = 0.01f;
@@ -292,9 +279,7 @@ void CCLayerSorter::createGraphEdges()
             }
 
             if (startNode) {
-#if !defined( NDEBUG )
-                LOG(CCLayerSorter, "%d -> %d\n", startNode->layer->id(), endNode->layer->id());
-#endif
+                DVLOG(2) << startNode->layer->id() << " -> " << endNode->layer->id();
                 m_edges.append(GraphEdge(startNode, endNode, weight));
             }
         }
@@ -347,9 +332,7 @@ void CCLayerSorter::removeEdgeFromList(GraphEdge* edge, Vector<GraphEdge*>& list
 //
 void CCLayerSorter::sort(LayerList::iterator first, LayerList::iterator last)
 {
-#if !defined( NDEBUG )
-    LOG(CCLayerSorter, "Sorting start ----\n");
-#endif
+    DVLOG(2) << "Sorting start ----";
     createGraphNodes(first, last);
 
     createGraphEdges();
@@ -363,9 +346,7 @@ void CCLayerSorter::sort(LayerList::iterator first, LayerList::iterator last)
             noIncomingEdgeNodeList.push_back(la);
     }
 
-#if !defined( NDEBUG )
-    LOG(CCLayerSorter, "Sorted list: ");
-#endif
+    DVLOG(2) << "Sorted list: ";
     while (m_activeEdges.size() || noIncomingEdgeNodeList.size()) {
         while (noIncomingEdgeNodeList.size()) {
 
@@ -379,9 +360,7 @@ void CCLayerSorter::sort(LayerList::iterator first, LayerList::iterator last)
             // Add it to the final list.
             sortedList.push_back(fromNode);
 
-#if !defined( NDEBUG )
-            LOG(CCLayerSorter, "%d, ", fromNode->layer->id());
-#endif
+            DVLOG(2) << fromNode->layer->id() << ", ";
 
             // Remove all its outgoing edges from the graph.
             for (unsigned i = 0; i < fromNode->outgoing.size(); i++) {
@@ -424,9 +403,7 @@ void CCLayerSorter::sort(LayerList::iterator first, LayerList::iterator last)
         nextNode->incoming.clear();
         nextNode->incomingEdgeWeight = 0;
         noIncomingEdgeNodeList.push_back(nextNode);
-#if !defined( NDEBUG )
-        LOG(CCLayerSorter, "Breaking cycle by cleaning up incoming edges from %d (weight = %f)\n", nextNode->layer->id(), minIncomingEdgeWeight);
-#endif
+        DVLOG(2) << "Breaking cycle by cleaning up incoming edges from " << nextNode->layer->id() << " (weight = " << minIncomingEdgeWeight << ")";
     }
 
     // Note: The original elements of the list are in no danger of having their ref count go to zero
@@ -435,9 +412,7 @@ void CCLayerSorter::sort(LayerList::iterator first, LayerList::iterator last)
     for (LayerList::iterator it = first; it < last; it++)
         *it = sortedList[count++]->layer;
 
-#if !defined( NDEBUG )
-    LOG(CCLayerSorter, "Sorting end ----\n");
-#endif
+    DVLOG(2) << "Sorting end ----";
 
     m_nodes.clear();
     m_edges.clear();

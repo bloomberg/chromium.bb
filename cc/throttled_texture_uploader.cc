@@ -8,8 +8,8 @@
 #include "CCPrioritizedTexture.h"
 #include "Extensions3DChromium.h"
 #include "TraceEvent.h"
+#include "base/metrics/histogram.h"
 #include <algorithm>
-#include <public/Platform.h>
 #include <public/WebGraphicsContext3D.h>
 #include <vector>
 
@@ -184,7 +184,7 @@ void ThrottledTextureUploader::processQueries()
             break;
 
         unsigned usElapsed = m_pendingQueries.first()->value();
-        WebKit::Platform::current()->histogramCustomCounts("Renderer4.TextureGpuUploadTimeUS", usElapsed, 0, 100000, 50);
+        HISTOGRAM_CUSTOM_COUNTS("Renderer4.TextureGpuUploadTimeUS", usElapsed, 0, 100000, 50);
 
         if (!m_pendingQueries.first()->isNonBlocking())
             m_numBlockingTextureUploads--;

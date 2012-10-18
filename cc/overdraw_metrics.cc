@@ -12,7 +12,7 @@
 #include "FloatQuad.h"
 #include "IntRect.h"
 #include "TraceEvent.h"
-#include <public/Platform.h>
+#include "base/metrics/histogram.h"
 #include <public/WebTransformationMatrix.h>
 
 using WebKit::WebTransformationMatrix;
@@ -147,25 +147,24 @@ void CCOverdrawMetrics::recordMetricsInternal(MetricsType metricsType, const Lay
     float byteNormalization = normalization / 4;
 
     switch (metricsType) {
-    case DrawingToScreen:
-        WebKit::Platform::current()->histogramCustomCounts("Renderer4.pixelCountOpaque_Draw", static_cast<int>(normalization * m_pixelsDrawnOpaque), 100, 1000000, 50);
-        WebKit::Platform::current()->histogramCustomCounts("Renderer4.pixelCountTranslucent_Draw", static_cast<int>(normalization * m_pixelsDrawnTranslucent), 100, 1000000, 50);
-        WebKit::Platform::current()->histogramCustomCounts("Renderer4.pixelCountCulled_Draw", static_cast<int>(normalization * m_pixelsCulledForDrawing), 100, 1000000, 50);
+    case DrawingToScreen: {
+        HISTOGRAM_CUSTOM_COUNTS("Renderer4.pixelCountOpaque_Draw", static_cast<int>(normalization * m_pixelsDrawnOpaque), 100, 1000000, 50);
+        HISTOGRAM_CUSTOM_COUNTS("Renderer4.pixelCountTranslucent_Draw", static_cast<int>(normalization * m_pixelsDrawnTranslucent), 100, 1000000, 50);
+        HISTOGRAM_CUSTOM_COUNTS("Renderer4.pixelCountCulled_Draw", static_cast<int>(normalization * m_pixelsCulledForDrawing), 100, 1000000, 50);
 
-        {
-            TRACE_COUNTER_ID1("cc", "DrawPixelsCulled", layerTreeHost, m_pixelsCulledForDrawing);
-            TRACE_EVENT2("cc", "CCOverdrawMetrics", "PixelsDrawnOpaque", m_pixelsDrawnOpaque, "PixelsDrawnTranslucent", m_pixelsDrawnTranslucent);
-        }
+        TRACE_COUNTER_ID1("cc", "DrawPixelsCulled", layerTreeHost, m_pixelsCulledForDrawing);
+        TRACE_EVENT2("cc", "CCOverdrawMetrics", "PixelsDrawnOpaque", m_pixelsDrawnOpaque, "PixelsDrawnTranslucent", m_pixelsDrawnTranslucent);
         break;
-    case UpdateAndCommit:
-        WebKit::Platform::current()->histogramCustomCounts("Renderer4.pixelCountPainted", static_cast<int>(normalization * m_pixelsPainted), 100, 1000000, 50);
-        WebKit::Platform::current()->histogramCustomCounts("Renderer4.pixelCountOpaque_Upload", static_cast<int>(normalization * m_pixelsUploadedOpaque), 100, 1000000, 50);
-        WebKit::Platform::current()->histogramCustomCounts("Renderer4.pixelCountTranslucent_Upload", static_cast<int>(normalization * m_pixelsUploadedTranslucent), 100, 1000000, 50);
-        WebKit::Platform::current()->histogramCustomCounts("Renderer4.tileCountCulled_Upload", static_cast<int>(tileNormalization * m_tilesCulledForUpload), 100, 10000000, 50);
-        WebKit::Platform::current()->histogramCustomCounts("Renderer4.renderSurfaceTextureBytes_ViewportScaled", static_cast<int>(byteNormalization * m_renderSurfaceTextureUseBytes), 10, 1000000, 50);
-        WebKit::Platform::current()->histogramCustomCounts("Renderer4.renderSurfaceTextureBytes_Unscaled", static_cast<int>(m_renderSurfaceTextureUseBytes / 1000), 1000, 100000000, 50);
-        WebKit::Platform::current()->histogramCustomCounts("Renderer4.contentsTextureBytes_ViewportScaled", static_cast<int>(byteNormalization * m_contentsTextureUseBytes), 10, 1000000, 50);
-        WebKit::Platform::current()->histogramCustomCounts("Renderer4.contentsTextureBytes_Unscaled", static_cast<int>(m_contentsTextureUseBytes / 1000), 1000, 100000000, 50);
+    }
+    case UpdateAndCommit: {
+        HISTOGRAM_CUSTOM_COUNTS("Renderer4.pixelCountPainted", static_cast<int>(normalization * m_pixelsPainted), 100, 1000000, 50);
+        HISTOGRAM_CUSTOM_COUNTS("Renderer4.pixelCountOpaque_Upload", static_cast<int>(normalization * m_pixelsUploadedOpaque), 100, 1000000, 50);
+        HISTOGRAM_CUSTOM_COUNTS("Renderer4.pixelCountTranslucent_Upload", static_cast<int>(normalization * m_pixelsUploadedTranslucent), 100, 1000000, 50);
+        HISTOGRAM_CUSTOM_COUNTS("Renderer4.tileCountCulled_Upload", static_cast<int>(tileNormalization * m_tilesCulledForUpload), 100, 10000000, 50);
+        HISTOGRAM_CUSTOM_COUNTS("Renderer4.renderSurfaceTextureBytes_ViewportScaled", static_cast<int>(byteNormalization * m_renderSurfaceTextureUseBytes), 10, 1000000, 50);
+        HISTOGRAM_CUSTOM_COUNTS("Renderer4.renderSurfaceTextureBytes_Unscaled", static_cast<int>(m_renderSurfaceTextureUseBytes / 1000), 1000, 100000000, 50);
+        HISTOGRAM_CUSTOM_COUNTS("Renderer4.contentsTextureBytes_ViewportScaled", static_cast<int>(byteNormalization * m_contentsTextureUseBytes), 10, 1000000, 50);
+        HISTOGRAM_CUSTOM_COUNTS("Renderer4.contentsTextureBytes_Unscaled", static_cast<int>(m_contentsTextureUseBytes / 1000), 1000, 100000000, 50);
 
         {
             TRACE_COUNTER_ID1("cc", "UploadTilesCulled", layerTreeHost, m_tilesCulledForUpload);
@@ -180,6 +179,7 @@ void CCOverdrawMetrics::recordMetricsInternal(MetricsType metricsType, const Lay
             TRACE_EVENT2("cc", "CCOverdrawPaintMetrics", "ContentsTextureBytes", m_contentsTextureUseBytes, "RenderSurfaceTextureBytes", m_renderSurfaceTextureUseBytes);
         }
         break;
+    }
     }
 }
 

@@ -8,13 +8,16 @@
 
 #include "CCLayerTreeHost.h"
 #include "CCSettings.h"
+#ifdef LOG
+#undef LOG
+#endif
+#include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "cc/bitmap_canvas_layer_texture_updater.h"
 #include "cc/bitmap_skpicture_canvas_layer_texture_updater.h"
 #include "cc/content_layer_client.h"
 #include "cc/frame_buffer_skpicture_canvas_layer_texture_updater.h"
 #include "cc/layer_painter.h"
-#include <public/Platform.h>
 
 namespace cc {
 
@@ -34,8 +37,8 @@ void ContentLayerPainter::paint(SkCanvas* canvas, const IntRect& contentRect, Fl
     m_client->paintContents(canvas, contentRect, opaque);
     base::TimeTicks paintEnd = base::TimeTicks::HighResNow();
     double pixelsPerSec = (contentRect.width() * contentRect.height()) / (paintEnd - paintStart).InSecondsF();
-    WebKit::Platform::current()->histogramCustomCounts("Renderer4.AccelContentPaintDurationMS", (paintEnd - paintStart).InMillisecondsF(), 0, 120, 30);
-    WebKit::Platform::current()->histogramCustomCounts("Renderer4.AccelContentPaintMegapixPerSecond", pixelsPerSec / 1000000, 10, 210, 30);
+    HISTOGRAM_CUSTOM_COUNTS("Renderer4.AccelContentPaintDurationMS", (paintEnd - paintStart).InMilliseconds(), 0, 120, 30);
+    HISTOGRAM_CUSTOM_COUNTS("Renderer4.AccelContentPaintMegapixPerSecond", pixelsPerSec / 1000000, 10, 210, 30);
 }
 
 scoped_refptr<ContentLayerChromium> ContentLayerChromium::create(ContentLayerChromiumClient* client)

@@ -9,7 +9,10 @@
 #include <cmath>
 
 #include "CCProxy.h"
-#include <public/Platform.h>
+#ifdef LOG
+#undef LOG
+#endif
+#include "base/metrics/histogram.h"
 
 namespace cc {
 
@@ -55,8 +58,7 @@ void CCFrameRateCounter::markBeginningOfFrame(base::TimeTicks timestamp)
     base::TimeDelta frameIntervalSeconds = frameInterval(m_currentFrameNumber);
 
     if (CCProxy::hasImplThread() && m_currentFrameNumber > 0) {
-        double drawDelayMs = frameIntervalSeconds.InMillisecondsF();
-        WebKit::Platform::current()->histogramCustomCounts("Renderer4.CompositorThreadImplDrawDelay", static_cast<int>(drawDelayMs), 1, 120, 60);
+        HISTOGRAM_CUSTOM_COUNTS("Renderer4.CompositorThreadImplDrawDelay", frameIntervalSeconds.InMilliseconds(), 1, 120, 60);
     }
 
     if (!isBadFrameInterval(frameIntervalSeconds) &&
