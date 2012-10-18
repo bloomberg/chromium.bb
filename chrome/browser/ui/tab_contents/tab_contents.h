@@ -34,7 +34,6 @@ class WebDialogWindowControllerTabContentsCreator;
 class WebIntentInlineDispositionBrowserTest;
 class WebIntentPickerCocoa;
 class WebIntentPickerGtk;
-class WebUITestContentsCreator;
 
 namespace chromeos {
 class SimpleWebViewDialog;
@@ -100,7 +99,6 @@ class TabContents : public content::WebContentsObserver {
     friend class WebIntentInlineDispositionBrowserTest;
     friend class WebIntentPickerCocoa;
     friend class WebIntentPickerGtk;
-    friend class WebUITestContentsCreator;
     FRIEND_TEST_ALL_PREFIXES(SessionRestoreTest, SessionStorageAfterTabReplace);
 
     static TabContents* CreateTabContents(content::WebContents* contents);

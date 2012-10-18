@@ -5,10 +5,9 @@
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
@@ -26,15 +25,7 @@ using content::SiteInstance;
 using content::WebContents;
 using content::WebContentsTester;
 
-// TODO(avi): Kill this when TabContents goes away.
-class WebUITestContentsCreator {
- public:
-  static TabContents* CreateTabContents(content::WebContents* contents) {
-    return TabContents::Factory::CreateTabContents(contents);
-  }
-};
-
-class WebUITest : public TabContentsTestHarness {
+class WebUITest : public ChromeRenderViewHostTestHarness {
  public:
   WebUITest() : ui_thread_(BrowserThread::UI, MessageLoop::current()) {}
 
@@ -42,11 +33,10 @@ class WebUITest : public TabContentsTestHarness {
   // state, through pending, committed, then another navigation. The first page
   // ID that we should use is passed as a parameter. We'll use the next two
   // values. This must be increasing for the life of the tests.
-  static void DoNavigationTest(TabContents* tab_contents, int page_id) {
-    WebContents* contents = tab_contents->web_contents();
-    NavigationController* controller = &contents->GetController();
+  static void DoNavigationTest(WebContents* web_contents, int page_id) {
+    NavigationController* controller = &web_contents->GetController();
     FaviconTabHelper* favicon_tab_helper =
-        FaviconTabHelper::FromWebContents(contents);
+        FaviconTabHelper::FromWebContents(web_contents);
 
     // Start a pending load.
     GURL new_tab_url(chrome::kChromeUINewTabURL);
@@ -60,15 +50,15 @@ class WebUITest : public TabContentsTestHarness {
 
     // Check the things the pending Web UI should have set.
     EXPECT_FALSE(favicon_tab_helper->ShouldDisplayFavicon());
-    EXPECT_TRUE(contents->FocusLocationBarByDefault());
+    EXPECT_TRUE(web_contents->FocusLocationBarByDefault());
 
     // Now commit the load.
     RenderViewHostTester::For(
-        contents->GetRenderViewHost())->SendNavigate(page_id, new_tab_url);
+        web_contents->GetRenderViewHost())->SendNavigate(page_id, new_tab_url);
 
     // The same flags should be set as before now that the load has committed.
     EXPECT_FALSE(favicon_tab_helper->ShouldDisplayFavicon());
-    EXPECT_TRUE(contents->FocusLocationBarByDefault());
+    EXPECT_TRUE(web_contents->FocusLocationBarByDefault());
 
     // Start a pending navigation to a regular page.
     GURL next_url("http://google.com/");
@@ -79,7 +69,7 @@ class WebUITest : public TabContentsTestHarness {
     // Check the flags. Some should reflect the new page (URL, title), some
     // should reflect the old one (bookmark bar) until it has committed.
     EXPECT_TRUE(favicon_tab_helper->ShouldDisplayFavicon());
-    EXPECT_FALSE(contents->FocusLocationBarByDefault());
+    EXPECT_FALSE(web_contents->FocusLocationBarByDefault());
 
     // Commit the regular page load. Note that we must send it to the "pending"
     // RenderViewHost if there is one, since this transition will also cause a
@@ -89,19 +79,24 @@ class WebUITest : public TabContentsTestHarness {
     RenderViewHost* pending_rvh =
         RenderViewHostTester::GetPendingForController(controller);
     if (pending_rvh) {
-      RenderViewHostTester::For(
-          pending_rvh)->SendNavigate(page_id + 1, next_url);
+      RenderViewHostTester::For(pending_rvh)->
+          SendNavigate(page_id + 1, next_url);
     } else {
-      RenderViewHostTester::For(
-          contents->GetRenderViewHost())->SendNavigate(page_id + 1, next_url);
+      RenderViewHostTester::For(web_contents->GetRenderViewHost())->
+          SendNavigate(page_id + 1, next_url);
     }
 
     // The state should now reflect a regular page.
     EXPECT_TRUE(favicon_tab_helper->ShouldDisplayFavicon());
-    EXPECT_FALSE(contents->FocusLocationBarByDefault());
+    EXPECT_FALSE(web_contents->FocusLocationBarByDefault());
   }
 
  private:
+  virtual void SetUp() OVERRIDE {
+    ChromeRenderViewHostTestHarness::SetUp();
+    FaviconTabHelper::CreateForWebContents(web_contents());
+  }
+
   content::TestBrowserThread ui_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUITest);
@@ -111,18 +106,17 @@ class WebUITest : public TabContentsTestHarness {
 // WebContents when we first navigate to a Web UI page, then to a standard
 // non-DOM-UI page.
 TEST_F(WebUITest, WebUIToStandard) {
-  DoNavigationTest(tab_contents(), 1);
+  DoNavigationTest(web_contents(), 1);
 
   // Test the case where we're not doing the initial navigation. This is
   // slightly different than the very-first-navigation case since the
   // SiteInstance will be the same (the original WebContents must still be
   // alive), which will trigger different behavior in RenderViewHostManager.
-  WebContents* contents2 =
-      WebContentsTester::CreateTestWebContents(profile(), NULL);
-  scoped_ptr<TabContents> tab_contents2(
-      WebUITestContentsCreator::CreateTabContents(contents2));
+  scoped_ptr<WebContents> contents2(
+      WebContentsTester::CreateTestWebContents(profile(), NULL));
+  FaviconTabHelper::CreateForWebContents(contents2.get());
 
-  DoNavigationTest(tab_contents2.get(), 101);
+  DoNavigationTest(contents2.get(), 101);
 }
 
 TEST_F(WebUITest, WebUIToWebUI) {
