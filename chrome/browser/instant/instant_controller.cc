@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram.h"
+#include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
@@ -32,6 +33,8 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
+#include "unicode/normalizer2.h"
+#include "unicode/unistr.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/views/widget/widget.h"
@@ -120,6 +123,30 @@ InstantController::Mode GetModeForProfile(Profile* profile) {
 
   return chrome::search::IsInstantExtendedAPIEnabled(profile) ?
       InstantController::EXTENDED : InstantController::INSTANT;
+}
+
+string16 Normalize(const string16& str) {
+  UErrorCode status = U_ZERO_ERROR;
+  const icu::Normalizer2* normalizer =
+      icu::Normalizer2::getInstance(NULL, "nfkc_cf", UNORM2_COMPOSE, status);
+  if (normalizer == NULL || U_FAILURE(status))
+    return str;
+  icu::UnicodeString norm_str(normalizer->normalize(
+      icu::UnicodeString(FALSE, str.c_str(), str.size()), status));
+  if (U_FAILURE(status))
+    return str;
+  return string16(norm_str.getBuffer(), norm_str.length());
+}
+
+bool NormalizeAndStripPrefix(string16* text, const string16& prefix) {
+  const string16 norm_prefix = Normalize(prefix);
+  string16 norm_text = Normalize(*text);
+  if (norm_prefix.size() <= norm_text.size() &&
+      norm_text.compare(0, norm_prefix.size(), norm_prefix) == 0) {
+    *text = norm_text.erase(0, norm_prefix.size());
+    return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -214,8 +241,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
   // Don't send an update to the loader if the query text hasn't changed.
   if (query_text == last_query_text && verbatim == last_verbatim_) {
     // Reuse the last suggestion, as it's still valid.
-    delegate_->SetSuggestedText(last_suggestion_.text,
-                                last_suggestion_.behavior);
+    delegate_->SetInstantSuggestion(last_suggestion_);
 
     // We need to call Show() here because of this:
     // 1. User has typed a query (say Q). Instant overlay is showing results.
@@ -243,7 +269,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
   }
 
   // We don't have suggestions yet, but need to reset any existing "gray text".
-  delegate_->SetSuggestedText(string16(), INSTANT_COMPLETE_NOW);
+  delegate_->SetInstantSuggestion(InstantSuggestion());
 
   // Though we may have handled a URL match above, we return false here, so that
   // omnibox prerendering can kick in. TODO(sreeram): Remove this (and always
@@ -540,32 +566,33 @@ void InstantController::SetSuggestions(
     last_verbatim_ = true;
     last_suggestion_ = InstantSuggestion();
     last_match_was_search_ = suggestion.type == INSTANT_SUGGESTION_SEARCH;
-    delegate_->SetSuggestedText(suggestion.text, suggestion.behavior);
+    delegate_->SetInstantSuggestion(suggestion);
   } else {
-    // Match case-sensitively first, to preserve suggestion case if possible.
-    // If that fails, match case-insensitively. http://crbug.com/150728
-    if (last_user_text_.size() < suggestion.text.size() &&
-        !suggestion.text.compare(0, last_user_text_.size(), last_user_text_)) {
+    // Suggestion text should be a full URL for URL suggestions, or the
+    // completion of a query for query suggestions.
+    if (suggestion.type == INSTANT_SUGGESTION_URL) {
+      if (!StartsWith(suggestion.text, ASCIIToUTF16("http://"), false) &&
+          !StartsWith(suggestion.text, ASCIIToUTF16("https://"), false))
+        suggestion.text = ASCIIToUTF16("http://") + suggestion.text;
+    } else if (StartsWith(suggestion.text, last_user_text_, true)) {
+      // The user typed an exact prefix of the suggestion.
       suggestion.text.erase(0, last_user_text_.size());
-    } else {
-      string16 suggestion_lower = base::i18n::ToLower(suggestion.text);
-      string16 user_text_lower = base::i18n::ToLower(last_user_text_);
-      if (user_text_lower.size() < suggestion_lower.size() &&
-          !suggestion_lower.compare(0, user_text_lower.size(),
-                                    user_text_lower)) {
-        suggestion.text.assign(suggestion_lower, user_text_lower.size(),
-            suggestion_lower.size() - user_text_lower.size());
-      } else {
-        suggestion.text.clear();
-      }
+    } else if (!NormalizeAndStripPrefix(&suggestion.text, last_user_text_)) {
+      // Unicode normalize and case-fold the user text and suggestion. If the
+      // user text is a prefix, suggest the normalized, case-folded completion;
+      // for instance, if the user types 'i' and the suggestion is 'INSTANT',
+      // suggestion 'nstant'. Otherwise, the user text really isn't a prefix,
+      // so suggest nothing.
+      suggestion.text.clear();
     }
 
     last_suggestion_ = suggestion;
+
     // Set the suggested text if the suggestion behavior is
     // INSTANT_COMPLETE_NEVER irrespective of verbatim because in this case
     // the suggested text does not get committed if the user presses enter.
     if (suggestion.behavior == INSTANT_COMPLETE_NEVER || !last_verbatim_)
-      delegate_->SetSuggestedText(suggestion.text, suggestion.behavior);
+      delegate_->SetInstantSuggestion(suggestion);
   }
 
   if (mode_ != SUGGEST)

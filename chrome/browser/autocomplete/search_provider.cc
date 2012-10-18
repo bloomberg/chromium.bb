@@ -142,7 +142,7 @@ SearchProvider::SearchProvider(AutocompleteProviderListener* listener,
 }
 
 void SearchProvider::FinalizeInstantQuery(const string16& input_text,
-                                          const string16& suggest_text) {
+                                          const InstantSuggestion& suggestion) {
   if (done_ || instant_finalized_)
     return;
 
@@ -156,13 +156,13 @@ void SearchProvider::FinalizeInstantQuery(const string16& input_text,
     return;
   }
 
-  default_provider_suggest_text_ = suggest_text;
+  default_provider_suggestion_ = suggestion;
 
   string16 adjusted_input_text(input_text);
   AutocompleteInput::RemoveForcedQueryStringIfNecessary(input_.type(),
                                                         &adjusted_input_text);
 
-  const string16 text = adjusted_input_text + suggest_text;
+  const string16 text = adjusted_input_text + suggestion.text;
   bool results_updated = false;
   // Remove any matches that are identical to |text|. We don't use the
   // destination_url for comparison as it varies depending upon the index passed
@@ -180,15 +180,27 @@ void SearchProvider::FinalizeInstantQuery(const string16& input_text,
 
   // Add the new instant suggest result. We give it a rank higher than
   // SEARCH_WHAT_YOU_TYPED so that it gets autocompleted.
-  int did_not_accept_default_suggestion = default_suggest_results_.empty() ?
+  const int verbatim_relevance = GetVerbatimRelevance();
+  if (suggestion.type == INSTANT_SUGGESTION_SEARCH) {
+    // Instant has a query suggestion.
+    int did_not_accept_default_suggestion = default_suggest_results_.empty() ?
         TemplateURLRef::NO_SUGGESTIONS_AVAILABLE :
         TemplateURLRef::NO_SUGGESTION_CHOSEN;
-  MatchMap match_map;
-  AddMatchToMap(text, adjusted_input_text, GetVerbatimRelevance() + 1,
-                AutocompleteMatch::SEARCH_SUGGEST,
-                did_not_accept_default_suggestion, false, &match_map);
-  if (!match_map.empty()) {
-    matches_.push_back(match_map.begin()->second);
+    MatchMap match_map;
+    AddMatchToMap(text, adjusted_input_text, verbatim_relevance + 1,
+                  AutocompleteMatch::SEARCH_SUGGEST,
+                  did_not_accept_default_suggestion, false, &match_map);
+    if (!match_map.empty()) {
+      matches_.push_back(match_map.begin()->second);
+      results_updated = true;
+    }
+  } else {
+    // Instant has an URL suggestion.
+    matches_.push_back(NavigationToMatch(
+        NavigationResult(GURL(UTF16ToUTF8(suggestion.text)),
+                         string16(),
+                         verbatim_relevance + 1),
+        false));
     results_updated = true;
   }
 
@@ -241,7 +253,7 @@ void SearchProvider::Start(const AutocompleteInput& input,
   if (!minimal_changes ||
       !providers_.equal(default_provider_keyword, keyword_provider_keyword)) {
     if (done_)
-      default_provider_suggest_text_.clear();
+      default_provider_suggestion_ = InstantSuggestion();
     else
       Stop(false);
   }
@@ -333,7 +345,7 @@ void SearchProvider::Run() {
 void SearchProvider::Stop(bool clear_cached_results) {
   StopSuggest();
   done_ = true;
-  default_provider_suggest_text_.clear();
+  default_provider_suggestion_ = InstantSuggestion();
 
   if (clear_cached_results)
     ClearResults();
@@ -765,12 +777,12 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
                   did_not_accept_default_suggestion, false, &map);
   }
   const size_t what_you_typed_size = map.size();
-  if (!default_provider_suggest_text_.empty()) {
-    AddMatchToMap(input_.text() + default_provider_suggest_text_,
+  if (!default_provider_suggestion_.text.empty() &&
+      default_provider_suggestion_.type == INSTANT_SUGGESTION_SEARCH)
+    AddMatchToMap(input_.text() + default_provider_suggestion_.text,
                   input_.text(), verbatim_relevance + 1,
                   AutocompleteMatch::SEARCH_SUGGEST,
                   did_not_accept_default_suggestion, false, &map);
-  }
 
   AddHistoryResultsToMap(keyword_history_results_, true,
                          did_not_accept_keyword_suggestion, &map);
@@ -785,6 +797,13 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   for (MatchMap::const_iterator i(map.begin()); i != map.end(); ++i)
     matches_.push_back(i->second);
 
+  if (!default_provider_suggestion_.text.empty() &&
+      default_provider_suggestion_.type == INSTANT_SUGGESTION_URL)
+    matches_.push_back(NavigationToMatch(
+        NavigationResult(GURL(UTF16ToUTF8(default_provider_suggestion_.text)),
+                         string16(),
+                         verbatim_relevance + 1),
+        false));
   AddNavigationResultsToMatches(keyword_navigation_results_, true);
   AddNavigationResultsToMatches(default_navigation_results_, false);
 

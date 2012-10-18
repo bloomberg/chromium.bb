@@ -86,11 +86,10 @@ void BrowserInstantController::CommitInstant(TabContents* preview,
   }
 }
 
-void BrowserInstantController::SetSuggestedText(
-    const string16& text,
-    InstantCompleteBehavior behavior) {
+void BrowserInstantController::SetInstantSuggestion(
+    const InstantSuggestion& suggestion) {
   if (browser_->window()->GetLocationBar())
-    browser_->window()->GetLocationBar()->SetSuggestedText(text, behavior);
+    browser_->window()->GetLocationBar()->SetInstantSuggestion(suggestion);
 }
 
 gfx::Rect BrowserInstantController::GetInstantBounds() {

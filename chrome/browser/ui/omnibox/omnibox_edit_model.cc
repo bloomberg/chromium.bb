@@ -174,10 +174,10 @@ void OmniboxEditModel::SetUserText(const string16& text) {
 }
 
 void OmniboxEditModel::FinalizeInstantQuery(const string16& input_text,
-                                            const string16& suggest_text,
+                                            const InstantSuggestion& suggestion,
                                             bool skip_inline_autocomplete) {
   if (skip_inline_autocomplete) {
-    const string16 final_text = input_text + suggest_text;
+    const string16 final_text = input_text + suggestion.text;
     view_->OnBeforePossibleChange();
     view_->SetWindowTextAndCaretPos(final_text, final_text.length(), false,
         false);
@@ -187,34 +187,37 @@ void OmniboxEditModel::FinalizeInstantQuery(const string16& input_text,
         autocomplete_controller_->search_provider();
     // There may be no providers during testing; guard against that.
     if (search_provider)
-      search_provider->FinalizeInstantQuery(input_text, suggest_text);
+      search_provider->FinalizeInstantQuery(input_text, suggestion);
   }
 }
 
-void OmniboxEditModel::SetSuggestedText(const string16& text,
-                                        InstantCompleteBehavior behavior) {
-  switch (behavior) {
+void OmniboxEditModel::SetInstantSuggestion(
+    const InstantSuggestion& suggestion) {
+  switch (suggestion.behavior) {
     case INSTANT_COMPLETE_NOW:
       view_->SetInstantSuggestion(string16(), false);
-      if (!text.empty())
-        FinalizeInstantQuery(view_->GetText(), text, false);
+      if (!suggestion.text.empty())
+        FinalizeInstantQuery(view_->GetText(), suggestion, false);
       break;
 
     case INSTANT_COMPLETE_DELAYED:
+      DCHECK_EQ(INSTANT_SUGGESTION_SEARCH, suggestion.type);
       // Starts out as gray text (i.e., INSTANT_COMPLETE_NEVER) and animates to
       // completed blue text by way of CommitSuggestedText().
-      view_->SetInstantSuggestion(text, true);
+      view_->SetInstantSuggestion(suggestion.text, true);
       break;
 
     case INSTANT_COMPLETE_NEVER:
-      view_->SetInstantSuggestion(text, false);
+      DCHECK_EQ(INSTANT_SUGGESTION_SEARCH, suggestion.type);
+      view_->SetInstantSuggestion(suggestion.text, false);
       break;
 
     case INSTANT_COMPLETE_REPLACE:
       view_->SetInstantSuggestion(string16(), false);
       has_temporary_text_ = true;
       is_temporary_text_set_by_instant_ = true;
-      view_->SetWindowTextAndCaretPos(text, text.size(), false, false);
+      view_->SetWindowTextAndCaretPos(suggestion.text, suggestion.text.size(),
+                                      false, false);
       break;
   }
 }
@@ -227,7 +230,12 @@ bool OmniboxEditModel::CommitSuggestedText(bool skip_inline_autocomplete) {
   if (suggestion.empty())
     return false;
 
-  FinalizeInstantQuery(view_->GetText(), suggestion, skip_inline_autocomplete);
+  // Assume delayed commits are always search suggestions.
+  FinalizeInstantQuery(view_->GetText(),
+                       InstantSuggestion(suggestion,
+                                         INSTANT_COMPLETE_NOW,
+                                         INSTANT_SUGGESTION_SEARCH),
+                       skip_inline_autocomplete);
   return true;
 }
 
@@ -287,7 +295,7 @@ void OmniboxEditModel::OnChanged() {
     view_->SetInstantSuggestion(string16(), false);
 
     // No need to wait any longer for instant.
-    FinalizeInstantQuery(string16(), string16(), false);
+    FinalizeInstantQuery(string16(), InstantSuggestion(), false);
   }
 
   controller_->OnChanged();
@@ -736,7 +744,7 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
 }
 
 void OmniboxEditModel::OnWillKillFocus(gfx::NativeView view_gaining_focus) {
-  SetSuggestedText(string16(), INSTANT_COMPLETE_NOW);
+  SetInstantSuggestion(InstantSuggestion());
 
   if (InstantController* instant = controller_->GetInstant())
     instant->OnAutocompleteLostFocus(view_gaining_focus);

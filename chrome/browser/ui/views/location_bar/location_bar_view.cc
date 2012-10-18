@@ -1469,9 +1469,9 @@ void LocationBarView::ShowFirstRunBubble() {
   ShowFirstRunBubbleInternal();
 }
 
-void LocationBarView::SetSuggestedText(const string16& text,
-                                       InstantCompleteBehavior behavior) {
-  location_entry_->model()->SetSuggestedText(text, behavior);
+void LocationBarView::SetInstantSuggestion(
+    const InstantSuggestion& suggestion) {
+  location_entry_->model()->SetInstantSuggestion(suggestion);
 }
 
 string16 LocationBarView::GetInputString() const {

@@ -486,7 +486,6 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetQuerySuggestion(
 
     if (args.Length() >= 2 && args[1]->Uint32Value() == 2) {
       behavior = INSTANT_COMPLETE_NEVER;
-      // TODO(sreeram): The page should really set the type explicitly.
       type = INSTANT_SUGGESTION_SEARCH;
     }
 
@@ -565,6 +564,8 @@ v8::Handle<v8::Value>
     if (result) {
       string16 text = UTF8ToUTF16(result->destination_url.spec());
       InstantCompleteBehavior behavior = INSTANT_COMPLETE_REPLACE;
+      // TODO(jered): Distinguish between history URLs and search provider
+      // navsuggest URLs so that we can do proper accounting on history URLs.
       InstantSuggestionType type = INSTANT_SUGGESTION_URL;
 
       if ((args.Length() >= 2 && args[1]->Uint32Value() == 0) ||

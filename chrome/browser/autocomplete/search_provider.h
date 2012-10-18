@@ -25,6 +25,7 @@
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/common/instant_types.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 class Profile;
@@ -60,14 +61,15 @@ class SearchProvider : public AutocompleteProvider,
 #endif
 
   // Marks the instant query as done. If |input_text| is non-empty this changes
-  // the 'search what you typed' results text to |input_text| + |suggest_text|.
-  // |input_text| is the text the user input into the edit. |input_text| differs
-  // from |input_.text()| if the input contained whitespace.
+  // the 'search what you typed' results text to |input_text| +
+  // |suggestion.text|. |input_text| is the text the user input into the edit.
+  // |input_text| differs from |input_.text()| if the input contained
+  // whitespace.
   //
   // This method also marks the search provider as no longer needing to wait for
   // the instant result.
   void FinalizeInstantQuery(const string16& input_text,
-                            const string16& suggest_text);
+                            const InstantSuggestion& suggestion);
 
   // AutocompleteProvider:
   virtual void Start(const AutocompleteInput& input,
@@ -374,8 +376,8 @@ class SearchProvider : public AutocompleteProvider,
   // Has FinalizeInstantQuery been invoked since the last |Start|?
   bool instant_finalized_;
 
-  // The |suggest_text| parameter passed to FinalizeInstantQuery.
-  string16 default_provider_suggest_text_;
+  // The |suggestion| parameter passed to FinalizeInstantQuery.
+  InstantSuggestion default_provider_suggestion_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchProvider);
 };

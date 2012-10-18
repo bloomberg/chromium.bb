@@ -180,9 +180,9 @@ string16 LocationBarViewMac::GetInputString() const {
   return location_input_;
 }
 
-void LocationBarViewMac::SetSuggestedText(const string16& text,
-                                          InstantCompleteBehavior behavior) {
-  omnibox_view_->model()->SetSuggestedText(text, behavior);
+void LocationBarViewMac::SetInstantSuggestion(
+    const InstantSuggestion& suggestion) {
+  omnibox_view_->model()->SetInstantSuggestion(suggestion);
 }
 
 WindowOpenDisposition LocationBarViewMac::GetWindowOpenDisposition() const {

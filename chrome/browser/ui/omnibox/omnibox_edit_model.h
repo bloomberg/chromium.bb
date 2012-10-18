@@ -130,14 +130,14 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
   void SetUserText(const string16& text);
 
   // Calls through to SearchProvider::FinalizeInstantQuery.
-  // If |skip_inline_autocomplete| is true then the |suggest_text| will be
+  // If |skip_inline_autocomplete| is true then the |suggestion| text will be
   // turned into final text instead of inline autocomplete suggest.
   void FinalizeInstantQuery(const string16& input_text,
-                            const string16& suggest_text,
+                            const InstantSuggestion& suggestion,
                             bool skip_inline_autocomplete);
 
   // Sets the suggestion text.
-  void SetSuggestedText(const string16& text, InstantCompleteBehavior behavior);
+  void SetInstantSuggestion(const InstantSuggestion& suggestion);
 
   // Commits the suggested text. If |skip_inline_autocomplete| is true then the
   // suggested text will be committed as final text as if it's inputted by the

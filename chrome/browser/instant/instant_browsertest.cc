@@ -961,4 +961,14 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SuggestionsAreCaseInsensitive) {
   instant()->Hide();
   SetOmniboxTextAndWaitForInstantToShow("IN");
   EXPECT_EQ(ASCIIToUTF16("IN"), omnibox()->GetText());
+
+  // Check that a d with a dot above and below it is completed regardless of
+  // how that is encoded.
+  // U+1E0D = LATIN SMALL LETTER D WITH DOT BELOW
+  // U+1E0B = LATIN SMALL LETTER D WITH DOT ABOVE
+  EXPECT_TRUE(ExecuteScript("suggestion = [ { value: '\\u1e0d\\u0307oh' } ]"));
+
+  instant()->Hide();
+  SetOmniboxTextAndWaitForInstantToShow(WideToUTF8(L"\u1e0b\u0323"));
+  EXPECT_EQ(WideToUTF16(L"\u1e0b\u0323oh"), omnibox()->GetText());
 }
