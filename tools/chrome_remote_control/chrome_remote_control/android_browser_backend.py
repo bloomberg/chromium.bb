@@ -26,7 +26,7 @@ class AndroidBrowserBackend(browser_backend.BrowserBackend):
 
     # Kill old browser.
     self._adb.KillAll(self._package)
-    self._adb.KillAll('forwarder')
+    self._adb.KillAll('device_forwarder')
     self._adb.Forward('tcp:9222', self._devtools_remote_port)
 
     # Chrome Android doesn't listen to --user-data-dir.

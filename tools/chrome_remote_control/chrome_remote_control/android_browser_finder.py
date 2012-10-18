@@ -136,11 +136,9 @@ def FindAllAvailableBrowsers(options, logging=real_logging):
   # but make it accessible to the device.
   if len(possible_browsers) and not adb_commands.HasForwarder(adb):
     logging.warn('chrome_remote_control detected an android device. However,')
-    logging.warn('Chrome\'s port-forwarder app is not installed on the device.')
+    logging.warn('Chrome\'s port-forwarder app is not available.')
     logging.warn('To build:')
-    logging.warn('  make -j16 out/$BUILDTYPE/forwarder')
-    logging.warn('And then install it:')
-    logging.warn('  %s', adb_commands.HowToInstallForwarder())
+    logging.warn('  make -j16 host_forwarder device_forwarder')
     logging.warn('')
     logging.warn('')
     return []

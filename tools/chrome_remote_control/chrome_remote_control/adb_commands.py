@@ -119,12 +119,12 @@ class AdbCommands(object):
   def IsRootEnabled(self):
     return self._adb.IsRootEnabled()
 
-def HasForwarder(adb):
-  return adb.FileExistsOnDevice('/data/local/tmp/forwarder')
-
-def HowToInstallForwarder():
-  return 'adb push out/$BUILD_TYPE/forwarder %s' % (
-    '/data/local/tmp/forwarder')
+def HasForwarder(adb, buildtype=None):
+  if not buildtype:
+    return (HasForwarder(adb, buildtype='Release') or
+            HasForwarder(adb, buildtype='Debug'))
+  return (os.path.exists(os.path.join('out', buildtype, 'device_forwarder')) and
+          os.path.exists(os.path.join('out', buildtype, 'host_forwarder')))
 
 class Forwarder(object):
   def __init__(self, adb, host_port):
@@ -134,27 +134,12 @@ class Forwarder(object):
     tool = valgrind_tools.BaseTool()
 
     self._host_port = host_port
-
-    # Currently, Forwarder requires that ../out/Debug/forwarder exists,
-    # in case it needs to push it to the device. However, to get to here,
-    # android_browser_finder has ensured that device HasForwarder, above.
-    #
-    # Therefore, here, we just need to instantiate the forwarder, no push
-    # needed.
-    #
-    # To do this, we monkey patch adb.PushIfNeeded to a noop.
-    #
-    # TODO(nduca): Fix build.android.pylib.Forwarder to not need this.
-    real_push_if_needed = adb.Adb().PushIfNeeded
-    def FakePush(_, device_path):
-      assert adb.FileExistsOnDevice(device_path)
-    try:
-      adb.Adb().PushIfNeeded = FakePush
-      self._forwarder = forwarder.Forwarder(
+    buildtype = 'Debug'
+    if HasForwarder(adb, 'Release'):
+      buildtype = 'Release'
+    self._forwarder = forwarder.Forwarder(
         adb.Adb(), port_pairs,
-        tool, 'localhost', 'unused')
-    finally:
-      adb.Adb().PushIfNeeded = real_push_if_needed
+        tool, '127.0.0.1', buildtype)
     self._device_port = self._forwarder.DevicePortForHostPort(self._host_port)
 
   @property
