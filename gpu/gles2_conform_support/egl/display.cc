@@ -113,6 +113,7 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
 
   gpu::gles2::ContextGroup::Ref group(new gpu::gles2::ContextGroup(NULL,
                                                                    NULL,
+                                                                   NULL,
                                                                    true));
 
   decoder_.reset(gpu::gles2::GLES2Decoder::Create(group.get()));

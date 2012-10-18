@@ -239,6 +239,8 @@
   OP(BindUniformLocationCHROMIUM)                              /* 482 */ \
   OP(BindUniformLocationCHROMIUMImmediate)                     /* 483 */ \
   OP(BindUniformLocationCHROMIUMBucket)                        /* 484 */ \
+  OP(BindTexImage2DCHROMIUM)                                   /* 485 */ \
+  OP(ReleaseTexImage2DCHROMIUM)                                /* 486 */ \
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.

@@ -10432,6 +10432,82 @@ COMPILE_ASSERT(
     offsetof(BindUniformLocationCHROMIUMBucket, name_bucket_id) == 12,
                OffsetOf_BindUniformLocationCHROMIUMBucket_name_bucket_id_not_12);  // NOLINT
 
+struct BindTexImage2DCHROMIUM {
+  typedef BindTexImage2DCHROMIUM ValueType;
+  static const CommandId kCmdId = kBindTexImage2DCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(GLenum _target, GLint _imageId) {
+    SetHeader();
+    target = _target;
+    imageId = _imageId;
+  }
+
+  void* Set(void* cmd, GLenum _target, GLint _imageId) {
+    static_cast<ValueType*>(cmd)->Init(_target, _imageId);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 target;
+  int32 imageId;
+};
+
+COMPILE_ASSERT(sizeof(BindTexImage2DCHROMIUM) == 12,
+               Sizeof_BindTexImage2DCHROMIUM_is_not_12);
+COMPILE_ASSERT(offsetof(BindTexImage2DCHROMIUM, header) == 0,
+               OffsetOf_BindTexImage2DCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(BindTexImage2DCHROMIUM, target) == 4,
+               OffsetOf_BindTexImage2DCHROMIUM_target_not_4);
+COMPILE_ASSERT(offsetof(BindTexImage2DCHROMIUM, imageId) == 8,
+               OffsetOf_BindTexImage2DCHROMIUM_imageId_not_8);
+
+struct ReleaseTexImage2DCHROMIUM {
+  typedef ReleaseTexImage2DCHROMIUM ValueType;
+  static const CommandId kCmdId = kReleaseTexImage2DCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(GLenum _target, GLint _imageId) {
+    SetHeader();
+    target = _target;
+    imageId = _imageId;
+  }
+
+  void* Set(void* cmd, GLenum _target, GLint _imageId) {
+    static_cast<ValueType*>(cmd)->Init(_target, _imageId);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 target;
+  int32 imageId;
+};
+
+COMPILE_ASSERT(sizeof(ReleaseTexImage2DCHROMIUM) == 12,
+               Sizeof_ReleaseTexImage2DCHROMIUM_is_not_12);
+COMPILE_ASSERT(offsetof(ReleaseTexImage2DCHROMIUM, header) == 0,
+               OffsetOf_ReleaseTexImage2DCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(ReleaseTexImage2DCHROMIUM, target) == 4,
+               OffsetOf_ReleaseTexImage2DCHROMIUM_target_not_4);
+COMPILE_ASSERT(offsetof(ReleaseTexImage2DCHROMIUM, imageId) == 8,
+               OffsetOf_ReleaseTexImage2DCHROMIUM_imageId_not_8);
+
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
 

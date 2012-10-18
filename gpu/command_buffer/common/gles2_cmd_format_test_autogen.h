@@ -4202,5 +4202,35 @@ TEST_F(GLES2FormatTest, BindUniformLocationCHROMIUMBucket) {
       next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, BindTexImage2DCHROMIUM) {
+  BindTexImage2DCHROMIUM& cmd = *GetBufferAs<BindTexImage2DCHROMIUM>();
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLenum>(11),
+      static_cast<GLint>(12));
+  EXPECT_EQ(static_cast<uint32>(BindTexImage2DCHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.imageId);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, ReleaseTexImage2DCHROMIUM) {
+  ReleaseTexImage2DCHROMIUM& cmd = *GetBufferAs<ReleaseTexImage2DCHROMIUM>();
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLenum>(11),
+      static_cast<GLint>(12));
+  EXPECT_EQ(static_cast<uint32>(ReleaseTexImage2DCHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.imageId);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd));
+}
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_TEST_AUTOGEN_H_
 

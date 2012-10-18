@@ -13,6 +13,7 @@
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_surface_mock.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_base.h"
+#include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/stream_texture_manager_mock.h"
@@ -7805,6 +7806,87 @@ TEST_F(GLES2DecoderVertexArraysOESTest, BindVertexArrayOESValidArgsNewId) {
 TEST_F(GLES2DecoderEmulatedVertexArraysOESTest,
     BindVertexArrayOESValidArgsNewId) {
   BindVertexArrayOESValidArgsNewId();
+}
+
+TEST_F(GLES2DecoderTest, BindTexImage2DCHROMIUM) {
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 3, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               0, 0);
+  TextureManager::TextureInfo* info =
+      group().texture_manager()->GetTextureInfo(client_texture_id_);
+  EXPECT_EQ(kServiceTextureId, info->service_id());
+
+  group().image_manager()->AddImage(gfx::GLImage::CreateGLImage(0), 1);
+  EXPECT_FALSE(group().image_manager()->LookupImage(1) == NULL);
+
+  GLsizei width;
+  GLsizei height;
+  GLenum type;
+  GLenum internal_format;
+
+  EXPECT_TRUE(info->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));
+  EXPECT_EQ(3, width);
+  EXPECT_EQ(1, height);
+  EXPECT_TRUE(info->GetLevelType(GL_TEXTURE_2D, 0, &type, &internal_format));
+  EXPECT_EQ(static_cast<GLenum>(GL_RGBA), internal_format);
+  EXPECT_EQ(static_cast<GLenum>(GL_UNSIGNED_BYTE), type);
+  EXPECT_TRUE(info->GetLevelImage(GL_TEXTURE_2D, 0) == NULL);
+
+  // Bind image to texture.
+  BindTexImage2DCHROMIUM bind_tex_image_2d_cmd;
+  bind_tex_image_2d_cmd.Init(GL_TEXTURE_2D, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(bind_tex_image_2d_cmd));
+  EXPECT_TRUE(info->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));
+  // Image should now be set.
+  EXPECT_FALSE(info->GetLevelImage(GL_TEXTURE_2D, 0) == NULL);
+
+  // Define new texture image.
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 3, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               0, 0);
+  EXPECT_TRUE(info->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));
+  // Image should no longer be set.
+  EXPECT_TRUE(info->GetLevelImage(GL_TEXTURE_2D, 0) == NULL);
+}
+
+TEST_F(GLES2DecoderTest, ReleaseTexImage2DCHROMIUM) {
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 3, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               0, 0);
+  TextureManager::TextureInfo* info =
+      group().texture_manager()->GetTextureInfo(client_texture_id_);
+  EXPECT_EQ(kServiceTextureId, info->service_id());
+
+  group().image_manager()->AddImage(gfx::GLImage::CreateGLImage(0), 1);
+  EXPECT_FALSE(group().image_manager()->LookupImage(1) == NULL);
+
+  GLsizei width;
+  GLsizei height;
+  GLenum type;
+  GLenum internal_format;
+
+  EXPECT_TRUE(info->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));
+  EXPECT_EQ(3, width);
+  EXPECT_EQ(1, height);
+  EXPECT_TRUE(info->GetLevelType(GL_TEXTURE_2D, 0, &type, &internal_format));
+  EXPECT_EQ(static_cast<GLenum>(GL_RGBA), internal_format);
+  EXPECT_EQ(static_cast<GLenum>(GL_UNSIGNED_BYTE), type);
+  EXPECT_TRUE(info->GetLevelImage(GL_TEXTURE_2D, 0) == NULL);
+
+  // Bind image to texture.
+  BindTexImage2DCHROMIUM bind_tex_image_2d_cmd;
+  bind_tex_image_2d_cmd.Init(GL_TEXTURE_2D, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(bind_tex_image_2d_cmd));
+  EXPECT_TRUE(info->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));
+  // Image should now be set.
+  EXPECT_FALSE(info->GetLevelImage(GL_TEXTURE_2D, 0) == NULL);
+
+  // Release image from texture.
+  ReleaseTexImage2DCHROMIUM release_tex_image_2d_cmd;
+  release_tex_image_2d_cmd.Init(GL_TEXTURE_2D, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(release_tex_image_2d_cmd));
+  EXPECT_TRUE(info->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height));
+  // Image should no longer be set.
+  EXPECT_TRUE(info->GetLevelImage(GL_TEXTURE_2D, 0) == NULL);
 }
 
 // TODO(gman): Complete this test.

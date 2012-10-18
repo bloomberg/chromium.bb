@@ -1902,5 +1902,21 @@
     }
   }
 
+  void BindTexImage2DCHROMIUM(GLenum target, GLint imageId) {
+    gles2::BindTexImage2DCHROMIUM* c =
+        GetCmdSpace<gles2::BindTexImage2DCHROMIUM>();
+    if (c) {
+      c->Init(target, imageId);
+    }
+  }
+
+  void ReleaseTexImage2DCHROMIUM(GLenum target, GLint imageId) {
+    gles2::ReleaseTexImage2DCHROMIUM* c =
+        GetCmdSpace<gles2::ReleaseTexImage2DCHROMIUM>();
+    if (c) {
+      c->Init(target, imageId);
+    }
+  }
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_
 

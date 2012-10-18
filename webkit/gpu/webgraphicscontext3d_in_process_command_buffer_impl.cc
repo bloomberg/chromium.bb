@@ -414,7 +414,8 @@ bool GLInProcessContext::Initialize(const gfx::Size& size,
   bool bind_generates_resource = false;
   decoder_.reset(::gpu::gles2::GLES2Decoder::Create(context_group ?
       context_group->decoder_->GetContextGroup() :
-          new ::gpu::gles2::ContextGroup(NULL, NULL, bind_generates_resource)));
+          new ::gpu::gles2::ContextGroup(
+              NULL, NULL, NULL, bind_generates_resource)));
 
   gpu_scheduler_.reset(new GpuScheduler(command_buffer_.get(),
                                         decoder_.get(),
@@ -1636,6 +1637,11 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::pushGroupMarkerEXT(
 }
 
 DELEGATE_TO_GL(popGroupMarkerEXT, PopGroupMarkerEXT);
+
+DELEGATE_TO_GL_2(bindTexImage2DCHROMIUM, BindTexImage2DCHROMIUM,
+                 WGC3Denum, WGC3Dint)
+DELEGATE_TO_GL_2(releaseTexImage2DCHROMIUM, ReleaseTexImage2DCHROMIUM,
+                 WGC3Denum, WGC3Dint)
 
 GrGLInterface* WebGraphicsContext3DInProcessCommandBufferImpl::
     onCreateGrGLInterface() {

@@ -1557,6 +1557,11 @@ void WebGraphicsContext3DCommandBufferImpl::deleteVertexArrayOES(
 DELEGATE_TO_GL_1R(isVertexArrayOES, IsVertexArrayOES, WebGLId, WGC3Dboolean)
 DELEGATE_TO_GL_1(bindVertexArrayOES, BindVertexArrayOES, WebGLId)
 
+DELEGATE_TO_GL_2(bindTexImage2DCHROMIUM, BindTexImage2DCHROMIUM,
+                 WGC3Denum, WGC3Dint)
+DELEGATE_TO_GL_2(releaseTexImage2DCHROMIUM, ReleaseTexImage2DCHROMIUM,
+                 WGC3Denum, WGC3Dint)
+
 GrGLInterface* WebGraphicsContext3DCommandBufferImpl::onCreateGrGLInterface() {
   return webkit_glue::CreateCommandBufferSkiaGLBinding();
 }

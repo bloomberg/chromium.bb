@@ -40,6 +40,7 @@ class GpuWatchdog;
 
 namespace gpu {
 namespace gles2 {
+class ImageManager;
 class MailboxManager;
 }
 }
@@ -99,6 +100,7 @@ class GpuCommandBufferStub
       GpuCommandBufferStub* share_group,
       const gfx::GLSurfaceHandle& handle,
       gpu::gles2::MailboxManager* mailbox_manager,
+      gpu::gles2::ImageManager* image_manager,
       const gfx::Size& size,
       const gpu::gles2::DisallowedFeatures& disallowed_features,
       const std::string& allowed_extensions,

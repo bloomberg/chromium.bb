@@ -1771,5 +1771,27 @@ TEST_F(GLES2ImplementationTest, ConsumeTextureCHROMIUM) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 // TODO: Implement unit test for BindUniformLocationCHROMIUM
+
+TEST_F(GLES2ImplementationTest, BindTexImage2DCHROMIUM) {
+  struct Cmds {
+    BindTexImage2DCHROMIUM cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(GL_TEXTURE_2D, 2);
+
+  gl_->BindTexImage2DCHROMIUM(GL_TEXTURE_2D, 2);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, ReleaseTexImage2DCHROMIUM) {
+  struct Cmds {
+    ReleaseTexImage2DCHROMIUM cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(GL_TEXTURE_2D, 2);
+
+  gl_->ReleaseTexImage2DCHROMIUM(GL_TEXTURE_2D, 2);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_UNITTEST_AUTOGEN_H_
 
