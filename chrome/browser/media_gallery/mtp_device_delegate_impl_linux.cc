@@ -10,11 +10,12 @@
 #include "base/sequenced_task_runner.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/string_util.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/media_transfer_protocol/media_transfer_protocol_manager.h"
 #include "chrome/browser/media_transfer_protocol/mtp_file_entry.pb.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_service.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using base::Bind;
@@ -97,19 +98,30 @@ class OpenStorageWorker
     : public RefCountedThreadSafe<OpenStorageWorker, OpenStorageWorkerDeleter> {
  public:
   // Constructed on |media_task_runner_| thread.
-  OpenStorageWorker(const std::string& name, SequencedTaskRunner* task_runner)
+  OpenStorageWorker(const std::string& name, SequencedTaskRunner* task_runner,
+                    WaitableEvent* task_completed_event,
+                    WaitableEvent* shutdown_event)
       : storage_name_(name),
         media_task_runner_(task_runner),
-        event_(false, false) {
+        on_task_completed_event_(task_completed_event),
+        on_shutdown_event_(shutdown_event) {
+    DCHECK(on_task_completed_event_);
+    DCHECK(on_shutdown_event_);
   }
 
   // This function is invoked on |media_task_runner_| to post the task on UI
   // thread. This blocks the |media_task_runner_| until the task is complete.
   void Run() {
+    if (on_shutdown_event_->IsSignaled()) {
+      // Process is in shutdown mode.
+      // Do not post any task on |media_task_runner_|.
+      return;
+    }
+
     DCHECK(media_task_runner_->RunsTasksOnCurrentThread());
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             Bind(&OpenStorageWorker::DoWorkOnUIThread, this));
-    event_.Wait();
+    on_task_completed_event_->Wait();
   }
 
   // Returns a device handle string if the OpenStorage() request was
@@ -151,7 +163,7 @@ class OpenStorageWorker
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (!error)
       device_handle_ = device_handle;
-    event_.Signal();
+    on_task_completed_event_->Signal();
   }
 
   // Stores the storage name to open the device.
@@ -165,7 +177,10 @@ class OpenStorageWorker
   // is complete.
   // TODO(kmadhusu): Remove this WaitableEvent after modifying the
   // DeviceMediaFileUtil functions as asynchronous functions.
-  WaitableEvent event_;
+  WaitableEvent* on_task_completed_event_;
+
+  // Stores a reference to waitable event associated with the shut down message.
+  WaitableEvent* on_shutdown_event_;
 
   // Stores the result of OpenStorage() request.
   std::string device_handle_;
@@ -180,20 +195,31 @@ class GetFileInfoWorker
   // Constructed on |media_task_runner_| thread.
   GetFileInfoWorker(const std::string& handle,
                     const std::string& path,
-                    SequencedTaskRunner* task_runner)
+                    SequencedTaskRunner* task_runner,
+                    WaitableEvent* task_completed_event,
+                    WaitableEvent* shutdown_event)
       : device_handle_(handle),
         path_(path),
         media_task_runner_(task_runner),
         error_(base::PLATFORM_FILE_OK),
-        event_(false, false) {
+        on_task_completed_event_(task_completed_event),
+        on_shutdown_event_(shutdown_event) {
+    DCHECK(on_task_completed_event_);
+    DCHECK(on_shutdown_event_);
   }
 
   // This function is invoked on |media_task_runner_| to post the task on UI
   // thread. This blocks the |media_task_runner_| until the task is complete.
   void Run() {
+    if (on_shutdown_event_->IsSignaled()) {
+      // Process is in shutdown mode.
+      // Do not post any task on |media_task_runner_|.
+      return;
+    }
+
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             Bind(&GetFileInfoWorker::DoWorkOnUIThread, this));
-    event_.Wait();
+    on_task_completed_event_->Wait();
   }
 
   // Returns GetFileInfo() result and fills in |file_info| with requested file
@@ -250,7 +276,7 @@ class GetFileInfoWorker
           base::Time::FromTimeT(file_entry.modification_time());
       file_entry_info_.creation_time = base::Time();
     }
-    event_.Signal();
+    on_task_completed_event_->Signal();
   }
 
   // Stores the device handle to query the device.
@@ -273,7 +299,10 @@ class GetFileInfoWorker
   // is complete.
   // TODO(kmadhusu): Remove this WaitableEvent after modifying the
   // DeviceMediaFileUtil functions as asynchronous functions.
-  WaitableEvent event_;
+  WaitableEvent* on_task_completed_event_;
+
+  // Stores a reference to waitable event associated with the shut down message.
+  WaitableEvent* on_shutdown_event_;
 
   DISALLOW_COPY_AND_ASSIGN(GetFileInfoWorker);
 };
@@ -285,19 +314,30 @@ class ReadFileWorker
   // Constructed on |media_task_runner_| thread.
   ReadFileWorker(const std::string& handle,
                  const std::string& path,
-                 SequencedTaskRunner* task_runner)
+                 SequencedTaskRunner* task_runner,
+                 WaitableEvent* task_completed_event,
+                 WaitableEvent* shutdown_event)
       : device_handle_(handle),
         path_(path),
         media_task_runner_(task_runner),
-        event_(false, false) {
+        on_task_completed_event_(task_completed_event),
+        on_shutdown_event_(shutdown_event) {
+    DCHECK(on_task_completed_event_);
+    DCHECK(on_shutdown_event_);
   }
 
   // This function is invoked on |media_task_runner_| to post the task on UI
   // thread. This blocks the |media_task_runner_| until the task is complete.
   void Run() {
+    if (on_shutdown_event_->IsSignaled()) {
+      // Process is in shutdown mode.
+      // Do not post any task on |media_task_runner_|.
+      return;
+    }
+
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             Bind(&ReadFileWorker::DoWorkOnUIThread, this));
-    event_.Wait();
+    on_task_completed_event_->Wait();
   }
 
   // Returns the media file contents received by ReadFileByPath() callback
@@ -339,7 +379,7 @@ class ReadFileWorker
       // pointer/ref rather than by value here to avoid an extra data copy.
       data_ = data;
     }
-    event_.Signal();
+    on_task_completed_event_->Signal();
   }
 
   // Stores the device unique identifier to query the device.
@@ -359,7 +399,10 @@ class ReadFileWorker
   // is complete.
   // TODO(kmadhusu): Remove this WaitableEvent after modifying the
   // DeviceMediaFileUtil functions as asynchronous functions.
-  WaitableEvent event_;
+  WaitableEvent* on_task_completed_event_;
+
+  // Stores a reference to waitable event associated with the shut down message.
+  WaitableEvent* on_shutdown_event_;
 
   DISALLOW_COPY_AND_ASSIGN(ReadFileWorker);
 };
@@ -374,32 +417,48 @@ class ReadDirectoryWorker
   // constructed on |media_task_runner_| thread.
   ReadDirectoryWorker(const std::string& handle,
                       const std::string& path,
-                      SequencedTaskRunner* task_runner)
+                      SequencedTaskRunner* task_runner,
+                      WaitableEvent* task_completed_event,
+                      WaitableEvent* shutdown_event)
       : device_handle_(handle),
         dir_path_(path),
         dir_entry_id_(0),
         media_task_runner_(task_runner),
-        event_(false, false) {
+        on_task_completed_event_(task_completed_event),
+        on_shutdown_event_(shutdown_event) {
     DCHECK(!dir_path_.empty());
+    DCHECK(on_task_completed_event_);
+    DCHECK(on_shutdown_event_);
   }
 
   // Construct a worker object given the directory |entry_id|. This object is
   // constructed on |media_task_runner_| thread.
   ReadDirectoryWorker(const std::string& storage_name,
                       const uint32_t entry_id,
-                      SequencedTaskRunner* task_runner)
+                      SequencedTaskRunner* task_runner,
+                      WaitableEvent* task_completed_event,
+                      WaitableEvent* shutdown_event)
       : device_handle_(storage_name),
         dir_entry_id_(entry_id),
         media_task_runner_(task_runner),
-        event_(false, false) {
+        on_task_completed_event_(task_completed_event),
+        on_shutdown_event_(shutdown_event) {
+    DCHECK(on_task_completed_event_);
+    DCHECK(on_shutdown_event_);
   }
 
   // This function is invoked on |media_task_runner_| to post the task on UI
   // thread. This blocks the |media_task_runner_| until the task is complete.
   void Run() {
+    if (on_shutdown_event_->IsSignaled()) {
+      // Process is in shutdown mode.
+      // Do not post any task on |media_task_runner_|.
+      return;
+    }
+
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             Bind(&ReadDirectoryWorker::DoWorkOnUIThread, this));
-    event_.Wait();
+    on_task_completed_event_->Wait();
   }
 
   // Returns the directory entries for the given directory path.
@@ -449,7 +508,7 @@ class ReadDirectoryWorker
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (!error)
       file_entries_ = file_entries;
-    event_.Signal();
+    on_task_completed_event_->Signal();
   }
 
   // Stores the device handle to communicate with storage device.
@@ -469,7 +528,10 @@ class ReadDirectoryWorker
   // is complete.
   // TODO(kmadhusu): Remove this WaitableEvent after modifying the
   // DeviceMediaFileUtil functions as asynchronous functions.
-  WaitableEvent event_;
+  WaitableEvent* on_task_completed_event_;
+
+  // Stores a reference to waitable event associated with the shut down message.
+  WaitableEvent* on_shutdown_event_;
 
   // Stores the result of read directory request.
   std::vector<MtpFileEntry> file_entries_;
@@ -537,11 +599,17 @@ class RecursiveMediaFileEnumerator
  public:
   RecursiveMediaFileEnumerator(const std::string& handle,
                                SequencedTaskRunner* task_runner,
-                               const std::vector<MtpFileEntry>& entries)
+                               const std::vector<MtpFileEntry>& entries,
+                               WaitableEvent* task_completed_event,
+                               WaitableEvent* shutdown_event)
       : device_handle_(handle),
         media_task_runner_(task_runner),
         file_entries_(entries),
-        file_entry_iter_(file_entries_.begin()) {
+        file_entry_iter_(file_entries_.begin()),
+        on_task_completed_event_(task_completed_event),
+        on_shutdown_event_(shutdown_event) {
+    DCHECK(on_task_completed_event_);
+    DCHECK(on_shutdown_event_);
     current_enumerator_.reset(new MediaFileEnumerator(entries));
   }
 
@@ -551,6 +619,11 @@ class RecursiveMediaFileEnumerator
   // Returns the next file entry path on success and empty file path on
   // failure or when it reaches the end.
   virtual FilePath Next() OVERRIDE {
+    if (on_shutdown_event_->IsSignaled()) {
+      // Process is in shut down mode.
+      return FilePath();
+    }
+
     FilePath path = current_enumerator_->Next();
     if (!path.empty())
       return path;
@@ -565,7 +638,8 @@ class RecursiveMediaFileEnumerator
 
     // Create a ReadDirectoryWorker object to enumerate sub directories.
     scoped_refptr<ReadDirectoryWorker> worker(new ReadDirectoryWorker(
-        device_handle_, next_file_entry.item_id(), media_task_runner_));
+        device_handle_, next_file_entry.item_id(), media_task_runner_,
+        on_task_completed_event_, on_shutdown_event_));
     worker->Run();
     if (!worker->get_file_entries().empty()) {
       current_enumerator_.reset(
@@ -611,6 +685,13 @@ class RecursiveMediaFileEnumerator
   // Enumerator to access current directory Id/path entries.
   scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> current_enumerator_;
 
+  // |media_task_runner_| can wait on this event until the requested operation
+  // is complete.
+  WaitableEvent* on_task_completed_event_;
+
+  // Stores a reference to waitable event associated with the shut down message.
+  WaitableEvent* on_shutdown_event_;
+
   DISALLOW_COPY_AND_ASSIGN(RecursiveMediaFileEnumerator);
 };
 
@@ -618,17 +699,23 @@ class RecursiveMediaFileEnumerator
 
 MtpDeviceDelegateImplLinux::MtpDeviceDelegateImplLinux(
     const std::string& device_location)
-    : device_path_(device_location) {
+    : device_path_(device_location),
+      on_task_completed_event_(false, false),
+      on_shutdown_event_(true, false) {
   CHECK(!device_path_.empty());
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   base::SequencedWorkerPool::SequenceToken media_sequence_token =
       pool->GetNamedSequenceToken("media-task-runner");
   media_task_runner_ = pool->GetSequencedTaskRunner(media_sequence_token);
+  registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
+                 content::NotificationService::AllSources());
+
   DCHECK(media_task_runner_);
 }
 
 MtpDeviceDelegateImplLinux::~MtpDeviceDelegateImplLinux() {
+  registrar_.RemoveAll();
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   GetMediaTransferProtocolManager()->CloseStorage(device_handle_,
                                                   Bind(&DoNothing));
@@ -642,7 +729,7 @@ PlatformFileError MtpDeviceDelegateImplLinux::GetFileInfo(
 
   scoped_refptr<GetFileInfoWorker> worker(new GetFileInfoWorker(
       device_handle_, GetDeviceRelativePath(device_path_, file_path.value()),
-      media_task_runner_));
+      media_task_runner_, &on_task_completed_event_, &on_shutdown_event_));
   worker->Run();
   return worker->get_file_info(file_info);
 }
@@ -656,7 +743,7 @@ MtpDeviceDelegateImplLinux::CreateFileEnumerator(
 
   scoped_refptr<ReadDirectoryWorker> worker(new ReadDirectoryWorker(
       device_handle_, GetDeviceRelativePath(device_path_, root.value()),
-      media_task_runner_));
+      media_task_runner_, &on_task_completed_event_, &on_shutdown_event_));
   worker->Run();
 
   if (worker->get_file_entries().empty())
@@ -664,7 +751,8 @@ MtpDeviceDelegateImplLinux::CreateFileEnumerator(
 
   if (recursive) {
     return new RecursiveMediaFileEnumerator(
-        device_handle_, media_task_runner_, worker->get_file_entries());
+        device_handle_, media_task_runner_, worker->get_file_entries(),
+        &on_task_completed_event_, &on_shutdown_event_);
   }
   return new MediaFileEnumerator(worker->get_file_entries());
 }
@@ -679,7 +767,7 @@ PlatformFileError MtpDeviceDelegateImplLinux::CreateSnapshotFile(
   scoped_refptr<ReadFileWorker> worker(new ReadFileWorker(
       device_handle_,
       GetDeviceRelativePath(device_path_, device_file_path.value()),
-      media_task_runner_));
+      media_task_runner_, &on_task_completed_event_, &on_shutdown_event_));
   worker->Run();
 
   const std::string& file_data = worker->data();
@@ -710,6 +798,15 @@ void MtpDeviceDelegateImplLinux::DeleteOnCorrectThread() const {
   delete this;
 }
 
+void MtpDeviceDelegateImplLinux::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_APP_TERMINATING, type);
+  on_shutdown_event_.Signal();
+  on_task_completed_event_.Signal();
+}
+
 bool MtpDeviceDelegateImplLinux::LazyInit() {
   DCHECK(media_task_runner_);
   DCHECK(media_task_runner_->RunsTasksOnCurrentThread());
@@ -721,7 +818,8 @@ bool MtpDeviceDelegateImplLinux::LazyInit() {
   RemoveChars(device_path_, kRootPath, &storage_name);
   DCHECK(!storage_name.empty());
   scoped_refptr<OpenStorageWorker> worker(new OpenStorageWorker(
-      storage_name, media_task_runner_));
+      storage_name, media_task_runner_, &on_task_completed_event_,
+      &on_shutdown_event_));
   worker->Run();
   device_handle_ = worker->device_handle();
   return !device_handle_.empty();

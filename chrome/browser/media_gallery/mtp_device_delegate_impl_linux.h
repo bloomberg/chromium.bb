@@ -7,6 +7,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
+#include "base/synchronization/waitable_event.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/media/mtp_device_delegate.h"
 
@@ -22,7 +25,8 @@ namespace chrome {
 // operations. This class contains platform specific code to communicate with
 // the attached MTP storage. Instantiate this class per MTP storage.
 // This class is ref-counted, because MtpDeviceDelegate is ref-counted.
-class MtpDeviceDelegateImplLinux : public fileapi::MtpDeviceDelegate {
+class MtpDeviceDelegateImplLinux : public fileapi::MtpDeviceDelegate,
+                                   public content::NotificationObserver {
  public:
   // Constructed on UI thread. Defer the device initializations until the first
   // file operation request. Do all the initializations in LazyInit() function.
@@ -49,6 +53,11 @@ class MtpDeviceDelegateImplLinux : public fileapi::MtpDeviceDelegate {
   // Private because this class is ref-counted.
   virtual ~MtpDeviceDelegateImplLinux();
 
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   // Opens the device for communication. This function is called on
   // |media_task_runner_|. Returns true if the device is ready for
   // communication, else false.
@@ -65,6 +74,18 @@ class MtpDeviceDelegateImplLinux : public fileapi::MtpDeviceDelegate {
   // Stores a reference to worker pool thread. All requests and response of file
   // operations are posted on |media_task_runner_|.
   scoped_refptr<base::SequencedTaskRunner> media_task_runner_;
+
+  // |media_task_runner_| can wait on this event until the requested task is
+  // complete.
+  base::WaitableEvent on_task_completed_event_;
+
+  // Used to notify |media_task_runner_| pending tasks about the shutdown
+  // sequence.
+  base::WaitableEvent on_shutdown_event_;
+
+  // Handles registering notifications with the NotificationService.
+  // Used to listen for application termination message.
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(MtpDeviceDelegateImplLinux);
 };
