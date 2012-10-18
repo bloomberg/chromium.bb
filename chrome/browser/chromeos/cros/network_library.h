@@ -122,6 +122,9 @@ class NetworkDevice {
   }
   const std::string& home_provider_id() const { return home_provider_id_; }
   const std::string& home_provider_name() const { return home_provider_name_; }
+  const bool provider_requires_roaming() const {
+    return provider_requires_roaming_;
+  }
   const std::string& selected_cellular_network() const {
     return selected_cellular_network_;
   }
@@ -195,6 +198,9 @@ class NetworkDevice {
   void set_home_provider_name(const std::string& home_provider_name) {
     home_provider_name_ = home_provider_name;
   }
+  void set_provider_requires_roaming(bool provider_requires_roaming) {
+    provider_requires_roaming_ = provider_requires_roaming;
+  }
   void set_model_id(const std::string& model_id) { model_id_ = model_id; }
   void set_manufacturer(const std::string& manufacturer) {
     manufacturer_ = manufacturer;
@@ -251,6 +257,7 @@ class NetworkDevice {
   std::string home_provider_country_;
   std::string home_provider_id_;
   std::string home_provider_name_;
+  bool provider_requires_roaming_;
   std::string meid_;
   std::string imei_;
   std::string imsi_;
