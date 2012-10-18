@@ -23,6 +23,16 @@ function SetSize(w, h) {
   plugin.width = w;
   plugin.height = h;
 }
+function PostMessage(data, shouldTargetIframe) {
+  plugin = document.getElementById('plugin');
+  // TODO(fsamuel): contentWindow can be accessed directly once
+  // http://wkbug.com/85679 lands.
+  if (shouldTargetIframe) {
+    plugin.contentWindow.frames[0].postMessage('testing123', '*');
+  } else {
+    plugin.contentWindow.frames.postMessage('testing123', '*');
+  }
+}
 function Back() {
   var plugin = document.getElementById('plugin');
   plugin.back();
@@ -55,10 +65,28 @@ document.title = 'embedder';
     width="640"
     height="480"
     border="0px"></object>
-
-<script>
+<script type="text/javascript">
+var msg;
+function receiveMessage(event) {
+  msg = event.data;
+  if (msg == 'ready') {
+    document.title = 'ready';
+    return;
+  }
+  if (msg.indexOf('stop_ack') == -1) {
+    event.source.postMessage('stop', '*');
+  } else {
+    var name = msg.replace("stop_ack", "").trim();
+    if (name !== '') {
+      window.document.title = name;
+    } else {
+      window.document.title = 'main guest';
+    }
+  }
+}
   var plugin = document.getElementById('plugin');
   plugin.addEventListener('loadStart', loadStart);
   plugin.addEventListener('loadAbort', loadAbort);
   plugin.addEventListener('loadRedirect', loadRedirect);
+  window.addEventListener('message', receiveMessage, false);
 </script>

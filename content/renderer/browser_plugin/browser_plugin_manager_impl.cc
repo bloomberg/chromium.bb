@@ -39,6 +39,8 @@ bool BrowserPluginManagerImpl::OnControlMessageReceived(
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestCrashed, OnGuestCrashed)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_DidNavigate, OnDidNavigate)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_AdvanceFocus, OnAdvanceFocus)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestContentWindowReady,
+                        OnGuestContentWindowReady)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_ShouldAcceptTouchEvents,
                         OnShouldAcceptTouchEvents)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadStart, OnLoadStart)
@@ -76,6 +78,13 @@ void BrowserPluginManagerImpl::OnAdvanceFocus(int instance_id, bool reverse) {
   BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
   if (plugin)
     plugin->AdvanceFocus(reverse);
+}
+
+void BrowserPluginManagerImpl::OnGuestContentWindowReady(int instance_id,
+                                                         int guest_routing_id) {
+  BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
+  if (plugin)
+    plugin->GuestContentWindowReady(guest_routing_id);
 }
 
 void BrowserPluginManagerImpl::OnShouldAcceptTouchEvents(int instance_id,

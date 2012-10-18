@@ -112,6 +112,14 @@ void BrowserPluginEmbedder::CreateGuest(RenderViewHost* render_view_host,
   guest_renderer_prefs->browser_handles_all_top_level_requests = false;
   AddGuest(instance_id, guest_web_contents);
   guest_web_contents->SetDelegate(guest);
+
+  // Create a swapped out RenderView for the guest in the embedder render
+  // process, so that the embedder can access the guest's window object.
+  int guest_routing_id =
+      static_cast<WebContentsImpl*>(guest->GetWebContents())->
+            CreateSwappedOutRenderView(web_contents()->GetSiteInstance());
+  render_view_host->Send(new BrowserPluginMsg_GuestContentWindowReady(
+      instance_id, guest_routing_id));
 }
 
 void BrowserPluginEmbedder::NavigateGuest(
@@ -134,7 +142,7 @@ void BrowserPluginEmbedder::NavigateGuest(
     // TODO(creis): Check the validity of the URL: http://crbug.com/139397.
     guest_web_contents->GetController().LoadURL(url,
                                                 Referrer(),
-                                                PAGE_TRANSITION_AUTO_SUBFRAME,
+                                                PAGE_TRANSITION_AUTO_TOPLEVEL,
                                                 std::string());
   }
 
@@ -246,7 +254,6 @@ void BrowserPluginEmbedder::DestroyGuestByInstanceID(int instance_id) {
 
 void BrowserPluginEmbedder::RenderViewDeleted(
     RenderViewHost* render_view_host) {
-  DestroyGuests();
 }
 
 void BrowserPluginEmbedder::RenderViewGone(base::TerminationStatus status) {

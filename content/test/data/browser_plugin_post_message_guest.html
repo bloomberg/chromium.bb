@@ -1,0 +1,23 @@
+<script>
+  var embedder;
+  function receiveMessage(event) {
+    embedder = event.source;
+    if (event.data !== 'stop') {
+      event.source.postMessage('foobar', '*');
+    } else {
+      if (event.data !== '') {
+        event.source.postMessage('stop_ack ' + window.name, '*');
+      }
+    }
+  }
+  window.addEventListener('message', receiveMessage, false);
+  function CreateChildFrame(src) {
+    var ifrm = document.createElement("IFRAME");
+    ifrm.style.width = "640px";
+    ifrm.style.height = "480px";
+    ifrm.src = src;
+    ifrm.name = 'iframe';
+    document.body.appendChild(ifrm);
+    embedder.postMessage('ready', '*');
+  }
+</script>
