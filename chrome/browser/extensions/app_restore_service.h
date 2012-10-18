@@ -23,9 +23,9 @@ class AppRestoreService : public ProfileKeyedService,
  public:
   explicit AppRestoreService(Profile* profile);
 
-  // Dispatches the app.runtime.onRestarted event to apps that were running in
-  // the last session.
-  void RestoreApps();
+  // Restart apps that need to be restarted and clear the "running" preference
+  // from apps to prevent them being restarted in subsequent restarts.
+  void HandleStartup(bool is_restart);
 
  private:
   // content::NotificationObserver.

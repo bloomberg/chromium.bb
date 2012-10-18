@@ -642,14 +642,11 @@ bool StartupBrowserCreatorImpl::ProcessStartupURLs(
   else if (pref.type == SessionStartupPref::DEFAULT)
     VLOG(1) << "Pref: default";
 
-  // The only time apps get restored is when the browser process is restarted.
-  if (StartupBrowserCreator::WasRestarted()) {
-    extensions::AppRestoreService* service =
-        extensions::AppRestoreServiceFactory::GetForProfile(profile_);
-    // NULL in incognito mode.
-    if (service)
-      service->RestoreApps();
-  }
+  extensions::AppRestoreService* service =
+      extensions::AppRestoreServiceFactory::GetForProfile(profile_);
+  // NULL in incognito mode.
+  if (service)
+    service->HandleStartup(StartupBrowserCreator::WasRestarted());
 
   if (pref.type == SessionStartupPref::LAST) {
     if (profile_->GetLastSessionExitType() == Profile::EXIT_CRASHED &&

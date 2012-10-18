@@ -679,7 +679,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, RunningAppsAreRecorded) {
   extension_prefs->SetExtensionRunning(extension->id(), true);
 
   ExtensionTestMessageListener restart_listener("onRestarted", false);
-  AppRestoreServiceFactory::GetForProfile(browser()->profile())->RestoreApps();
+  AppRestoreServiceFactory::GetForProfile(browser()->profile())->
+      HandleStartup(true);
   restart_listener.WaitUntilSatisfied();
 }
 

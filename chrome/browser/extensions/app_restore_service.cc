@@ -34,17 +34,20 @@ AppRestoreService::AppRestoreService(Profile* profile)
       content::NotificationService::AllSources());
 }
 
-void AppRestoreService::RestoreApps() {
+void AppRestoreService::HandleStartup(bool is_restart) {
   ExtensionService* extension_service =
       ExtensionSystem::Get(profile_)->extension_service();
   const ExtensionSet* extensions = extension_service->extensions();
   ExtensionPrefs* extension_prefs = extension_service->extension_prefs();
 
   for (ExtensionSet::const_iterator it = extensions->begin();
-       it != extensions->end(); ++it) {
+      it != extensions->end(); ++it) {
     const Extension* extension = *it;
-    if (extension_prefs->IsExtensionRunning(extension->id()))
-      RestoreApp(extension);
+    if (extension_prefs->IsExtensionRunning(extension->id())) {
+      RecordAppStop(extension->id());
+      if (is_restart)
+        RestoreApp(*it);
+    }
   }
 }
 
