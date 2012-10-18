@@ -9,11 +9,11 @@ function View(window, model) {
   var model = model;
   var inputs = this.defineInputs_();
   var display = window.document.querySelector('#calculator .display');
-  var buttons = window.document.querySelectorAll('#calculator .button');
+  var buttons = window.document.querySelectorAll('#calculator .buttons button');
 
   Array.prototype.forEach.call(buttons, function(button) {
     button.onclick = function(event) {
-      var button = event.target.getAttribute('class').split(' ')[1];
+      var button = event.target.dataset.button;
       var input = inputs.byButton[button];
       if (input) {
         var values = model.handle(input.name);
