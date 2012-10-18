@@ -19,7 +19,7 @@
 #include "webkit/fileapi/file_system_origin_database.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_url.h"
-#include "webkit/fileapi/fileapi_export.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
 struct PlatformFileInfo;
@@ -40,7 +40,8 @@ class FileSystemOperationContext;
 //
 // This class must be deleted on the FILE thread, because that's where
 // DropDatabases needs to be called.
-class FILEAPI_EXPORT_PRIVATE ObfuscatedFileUtil : public FileSystemFileUtil {
+class WEBKIT_STORAGE_EXPORT_PRIVATE ObfuscatedFileUtil
+    : public FileSystemFileUtil {
  public:
   // Origin enumerator interface.
   // An instance of this interface is assumed to be called on the file thread.

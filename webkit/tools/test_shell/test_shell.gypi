@@ -49,10 +49,8 @@
         '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         '<(DEPTH)/webkit/support/webkit_support.gyp:appcache',
-        '<(DEPTH)/webkit/support/webkit_support.gyp:blob',
         '<(DEPTH)/webkit/support/webkit_support.gyp:database',
         '<(DEPTH)/webkit/support/webkit_support.gyp:dom_storage',
-        '<(DEPTH)/webkit/support/webkit_support.gyp:fileapi',
         '<(DEPTH)/webkit/support/webkit_support.gyp:glue',
         '<(DEPTH)/webkit/support/webkit_support.gyp:quota',
         '<(DEPTH)/webkit/support/webkit_support.gyp:user_agent',
@@ -60,6 +58,7 @@
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_gpu',
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_media',
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_resources',
+        '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_storage',
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_support_common',
       ],
       'sources': [

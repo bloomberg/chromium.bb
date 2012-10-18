@@ -7,14 +7,14 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "webkit/fileapi/file_system_file_util.h"
-#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/media/media_path_filter.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace fileapi {
 
 // This class wraps another file enumerator and filters out non-media files
 // from its result, refering given MediaPathFilter.
-class FILEAPI_EXPORT FilteringFileEnumerator
+class WEBKIT_STORAGE_EXPORT FilteringFileEnumerator
     : public NON_EXPORTED_BASE(FileSystemFileUtil::AbstractFileEnumerator) {
  public:
   FilteringFileEnumerator(

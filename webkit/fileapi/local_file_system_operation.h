@@ -15,8 +15,8 @@
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_writer_delegate.h"
-#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/quota/quota_types.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace chromeos {
 class CrosMountPointProvider;
@@ -27,7 +27,7 @@ namespace fileapi {
 class FileSystemContext;
 
 // FileSystemOperation implementation for local file systems.
-class FILEAPI_EXPORT LocalFileSystemOperation
+class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
     : public NON_EXPORTED_BASE(FileSystemOperation) {
  public:
   virtual ~LocalFileSystemOperation();

@@ -7,8 +7,8 @@
 
 #include "base/file_path.h"
 #include "base/platform_file.h"
-#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/file_system_file_util.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
 class Time;
@@ -18,7 +18,8 @@ namespace fileapi {
 
 class FileSystemOperationContext;
 
-class FILEAPI_EXPORT_PRIVATE DeviceMediaFileUtil : public FileSystemFileUtil {
+class WEBKIT_STORAGE_EXPORT_PRIVATE DeviceMediaFileUtil
+    : public FileSystemFileUtil {
  public:
   explicit DeviceMediaFileUtil(const FilePath& profile_path);
   virtual ~DeviceMediaFileUtil() {}

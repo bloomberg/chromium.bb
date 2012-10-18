@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "webkit/blob/blob_export.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
 class TaskRunner;
@@ -22,7 +22,7 @@ namespace webkit_blob {
 // the file to be deleted upon final release and/or to notify a consumer
 // when final release occurs. This class is single-threaded and should
 // only be invoked on the IO thread in chrome.
-class BLOB_EXPORT ShareableFileReference
+class WEBKIT_STORAGE_EXPORT ShareableFileReference
     : public base::RefCounted<ShareableFileReference> {
  public:
   typedef base::Callback<void(const FilePath&)> FinalReleaseCallback;

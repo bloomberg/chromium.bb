@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/threading/thread_checker.h"
-#include "webkit/fileapi/fileapi_export.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace fileapi {
 
@@ -19,7 +19,7 @@ class MtpDeviceDelegate;
 
 // Helper class to manage media device delegates which can communicate with mtp
 // devices to complete media file system operations.
-class FILEAPI_EXPORT MtpDeviceMapService {
+class WEBKIT_STORAGE_EXPORT MtpDeviceMapService {
  public:
   static MtpDeviceMapService* GetInstance();
 

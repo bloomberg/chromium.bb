@@ -11,7 +11,7 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include "webkit/fileapi/fileapi_export.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace tracked_objects {
 class Location;
@@ -34,11 +34,11 @@ namespace fileapi {
 // TODO(ericu): Safe mode, which does more checks such as the above on debug
 // builds.
 // TODO(ericu): Add a method that will give a unique filename for a data file.
-class FILEAPI_EXPORT_PRIVATE FileSystemDirectoryDatabase {
+class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemDirectoryDatabase {
  public:
   typedef int64 FileId;
 
-  struct FILEAPI_EXPORT_PRIVATE FileInfo {
+  struct WEBKIT_STORAGE_EXPORT_PRIVATE FileInfo {
     FileInfo();
     ~FileInfo();
 

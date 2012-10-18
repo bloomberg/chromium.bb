@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
 #include "webkit/fileapi/file_system_url.h"
-#include "webkit/fileapi/fileapi_export.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
 class Time;
@@ -31,7 +31,7 @@ class FileSystemOperationContext;
 //
 // Layering structure of the FileSystemFileUtil was split out.
 // See http://crbug.com/128136 if you need it.
-class FILEAPI_EXPORT FileSystemFileUtil {
+class WEBKIT_STORAGE_EXPORT FileSystemFileUtil {
  public:
   // It will be implemented by each subclass such as FileSystemFileEnumerator.
   class AbstractFileEnumerator {

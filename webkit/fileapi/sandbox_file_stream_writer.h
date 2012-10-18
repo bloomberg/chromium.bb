@@ -12,9 +12,9 @@
 #include "webkit/fileapi/file_stream_writer.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_url.h"
-#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/task_runner_bound_observer_list.h"
 #include "webkit/quota/quota_types.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace fileapi {
 
@@ -22,7 +22,8 @@ class FileSystemContext;
 class FileSystemQuotaUtil;
 class LocalFileStreamWriter;
 
-class FILEAPI_EXPORT_PRIVATE SandboxFileStreamWriter : public FileStreamWriter {
+class WEBKIT_STORAGE_EXPORT_PRIVATE SandboxFileStreamWriter
+    : public FileStreamWriter {
  public:
   SandboxFileStreamWriter(FileSystemContext* file_system_context,
                           const FileSystemURL& url,

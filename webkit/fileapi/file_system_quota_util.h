@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/file_system_types.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -29,7 +29,7 @@ class FileSystemContext;
 // for file_system_quota_client.
 // All the methods of this class are synchronous and need to be called on
 // the thread that the method name implies.
-class FILEAPI_EXPORT FileSystemQuotaUtil {
+class WEBKIT_STORAGE_EXPORT FileSystemQuotaUtil {
  public:
   virtual ~FileSystemQuotaUtil() {}
 

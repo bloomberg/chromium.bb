@@ -5,15 +5,16 @@
 #ifndef WEBKIT_FILEAPI_MEDIA_NATIVE_MEDIA_FILE_UTIL_H_
 #define WEBKIT_FILEAPI_MEDIA_NATIVE_MEDIA_FILE_UTIL_H_
 
-#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/isolated_file_util.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace fileapi {
 
 // This class handles native file system operations with media type filtering
 // which is passed to each method via FileSystemOperationContext as
 // MediaPathFilter.
-class FILEAPI_EXPORT_PRIVATE NativeMediaFileUtil : public IsolatedFileUtil {
+class WEBKIT_STORAGE_EXPORT_PRIVATE NativeMediaFileUtil
+    : public IsolatedFileUtil {
  public:
   NativeMediaFileUtil();
 

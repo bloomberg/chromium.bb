@@ -7,14 +7,14 @@
 
 #include <utility>
 
-#include "base/compiler_specific.h"
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
-#include "base/platform_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "webkit/fileapi/fileapi_export.h"
+#include "base/platform_file.h"
 #include "webkit/fileapi/file_stream_writer.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace net {
 class FileStream;
@@ -23,7 +23,8 @@ class FileStream;
 namespace fileapi {
 
 // This class is a thin wrapper around net::FileStream for writing local files.
-class FILEAPI_EXPORT_PRIVATE LocalFileStreamWriter : public FileStreamWriter {
+class WEBKIT_STORAGE_EXPORT_PRIVATE LocalFileStreamWriter
+    : public FileStreamWriter {
  public:
   // Create a writer for the existing file in the path |file_path| starting from
   // |initial_offset|.

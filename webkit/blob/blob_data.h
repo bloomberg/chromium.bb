@@ -12,13 +12,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/blob/blob_export.h"
-#include "webkit/blob/shareable_file_reference.h"
 #include "webkit/base/data_element.h"
+#include "webkit/blob/shareable_file_reference.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace webkit_blob {
 
-class BLOB_EXPORT BlobData : public base::RefCounted<BlobData> {
+class WEBKIT_STORAGE_EXPORT BlobData : public base::RefCounted<BlobData> {
  public:
   typedef webkit_base::DataElement Item;
 

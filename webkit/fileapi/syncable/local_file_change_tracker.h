@@ -16,9 +16,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "webkit/fileapi/file_observers.h"
 #include "webkit/fileapi/file_system_url.h"
-#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/syncable/file_change.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -31,7 +31,7 @@ class FileSystemContext;
 // Tracks local file changes for cloud-backed file systems.
 // All methods must be called on the file_task_runner given to the constructor.
 // Owned by FileSystemContext.
-class FILEAPI_EXPORT LocalFileChangeTracker
+class WEBKIT_STORAGE_EXPORT LocalFileChangeTracker
     : public FileUpdateObserver,
       public FileChangeObserver {
  public:

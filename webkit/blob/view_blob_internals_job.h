@@ -9,7 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "net/url_request/url_request_simple_job.h"
-#include "webkit/blob/blob_export.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace net {
 class URLRequest;
@@ -22,7 +22,8 @@ class BlobStorageController;
 
 // A job subclass that implements a protocol to inspect the internal
 // state of blob registry.
-class BLOB_EXPORT ViewBlobInternalsJob : public net::URLRequestSimpleJob {
+class WEBKIT_STORAGE_EXPORT ViewBlobInternalsJob
+    : public net::URLRequestSimpleJob {
  public:
   ViewBlobInternalsJob(net::URLRequest* request,
                        net::NetworkDelegate* network_delegate,

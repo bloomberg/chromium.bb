@@ -7,9 +7,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "webkit/fileapi/file_system_context.h"
-#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/media/mtp_device_file_system_config.h"
 #include "webkit/fileapi/task_runner_bound_observer_list.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
 #include "webkit/fileapi/media/mtp_device_delegate.h"
@@ -23,7 +23,7 @@ namespace fileapi {
 
 class MediaPathFilter;
 
-class FILEAPI_EXPORT_PRIVATE FileSystemOperationContext {
+class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOperationContext {
  public:
   explicit FileSystemOperationContext(FileSystemContext* context);
   ~FileSystemOperationContext();

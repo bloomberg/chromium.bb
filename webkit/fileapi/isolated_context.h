@@ -12,11 +12,11 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
-#include "base/lazy_instance.h"
 #include "webkit/fileapi/file_system_types.h"
-#include "webkit/fileapi/fileapi_export.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace fileapi {
 
@@ -52,9 +52,9 @@ namespace fileapi {
 // TODO(kinuko): This should have a better name since this handles both
 // isolated and external file systems.
 //
-class FILEAPI_EXPORT IsolatedContext {
+class WEBKIT_STORAGE_EXPORT IsolatedContext {
  public:
-  struct FILEAPI_EXPORT FileInfo {
+  struct WEBKIT_STORAGE_EXPORT FileInfo {
     FileInfo();
     FileInfo(const std::string& name, const FilePath& path);
 
@@ -70,7 +70,7 @@ class FILEAPI_EXPORT IsolatedContext {
     bool operator<(const FileInfo& that) const { return name < that.name; }
   };
 
-  class FILEAPI_EXPORT FileInfoSet {
+  class WEBKIT_STORAGE_EXPORT FileInfoSet {
    public:
     FileInfoSet();
     ~FileInfoSet();
@@ -244,7 +244,7 @@ class FILEAPI_EXPORT IsolatedContext {
 };
 
 // Registers a scoped external filesystem which gets revoked when it scopes out.
-class FILEAPI_EXPORT ScopedExternalFileSystem {
+class WEBKIT_STORAGE_EXPORT ScopedExternalFileSystem {
  public:
   ScopedExternalFileSystem(const std::string& mount_name,
                            FileSystemType type,

@@ -17,8 +17,8 @@
         '<(DEPTH)/webkit/support/webkit_support.gyp:database',
         '<(DEPTH)/webkit/support/webkit_support.gyp:quota',
         '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
-	'fileapi',
 	'glue',
+        'webkit_storage',
       ],
       'sources': [
         'dom_storage_area.cc',

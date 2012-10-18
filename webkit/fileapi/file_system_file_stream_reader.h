@@ -9,10 +9,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
 #include "base/time.h"
-#include "webkit/fileapi/file_system_url.h"
-#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/blob/file_stream_reader.h"
 #include "webkit/blob/shareable_file_reference.h"
+#include "webkit/fileapi/file_system_url.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 class FilePath;
 
@@ -32,7 +32,7 @@ class FileSystemContext;
 // filesystems but remote filesystem should implement its own reader
 // rather than relying on FileSystemOperation::GetSnapshotFile() which
 // may force downloading the entire contents for remote files.
-class FILEAPI_EXPORT_PRIVATE FileSystemFileStreamReader
+class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemFileStreamReader
     : public webkit_blob::FileStreamReader {
  public:
   // Creates a new FileReader for a filesystem URL |url| form |initial_offset|.

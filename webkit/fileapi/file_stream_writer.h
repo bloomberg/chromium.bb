@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "net/base/completion_callback.h"
-#include "webkit/fileapi/fileapi_export.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace net {
 class IOBuffer;
@@ -16,7 +16,7 @@ class IOBuffer;
 namespace fileapi {
 
 // A generic interface for writing to a file-like object.
-class FILEAPI_EXPORT_PRIVATE FileStreamWriter {
+class WEBKIT_STORAGE_EXPORT_PRIVATE FileStreamWriter {
  public:
   // Closes the file. If there's an in-flight operation, it is canceled (i.e.,
   // the callback function associated with the operation is not called).

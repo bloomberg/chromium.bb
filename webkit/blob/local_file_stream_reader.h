@@ -8,11 +8,11 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
-#include "base/platform_file.h"
 #include "base/memory/weak_ptr.h"
+#include "base/platform_file.h"
 #include "base/time.h"
-#include "webkit/blob/blob_export.h"
 #include "webkit/blob/file_stream_reader.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
 class TaskRunner;
@@ -26,7 +26,7 @@ namespace webkit_blob {
 
 // A thin wrapper of net::FileStream with range support for sliced file
 // handling.
-class BLOB_EXPORT LocalFileStreamReader : public FileStreamReader {
+class WEBKIT_STORAGE_EXPORT LocalFileStreamReader : public FileStreamReader {
  public:
   // Creates a new FileReader for a local file |file_path|.
   // |initial_offset| specifies the offset in the file where the first read

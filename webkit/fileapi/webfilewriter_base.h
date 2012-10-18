@@ -8,7 +8,7 @@
 #include "base/platform_file.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileWriter.h"
-#include "webkit/fileapi/fileapi_export.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace WebKit {
 class WebFileWriterClient;
@@ -17,7 +17,7 @@ class WebURL;
 
 namespace fileapi {
 
-class FILEAPI_EXPORT WebFileWriterBase
+class WEBKIT_STORAGE_EXPORT WebFileWriterBase
     : public NON_EXPORTED_BASE(WebKit::WebFileWriter) {
  public:
   WebFileWriterBase(

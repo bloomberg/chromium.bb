@@ -25,7 +25,7 @@ namespace fileapi {
 // An invariant of this class is: no FileSystem objects should be both
 // in syncing_ and writing_ status, i.e. trying to increment writing
 // while the target url is in syncing must fail and vice versa.
-class FILEAPI_EXPORT LocalFileSyncStatus : public base::NonThreadSafe {
+class WEBKIT_STORAGE_EXPORT LocalFileSyncStatus : public base::NonThreadSafe {
  public:
   LocalFileSyncStatus();
   ~LocalFileSyncStatus();

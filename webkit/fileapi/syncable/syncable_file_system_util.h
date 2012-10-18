@@ -9,19 +9,21 @@
 
 #include "base/file_path.h"
 #include "webkit/fileapi/file_system_url.h"
-#include "webkit/fileapi/fileapi_export.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace fileapi {
 
 // Registers a syncable filesystem with the given |service_name|.
-FILEAPI_EXPORT bool RegisterSyncableFileSystem(const std::string& service_name);
+WEBKIT_STORAGE_EXPORT bool RegisterSyncableFileSystem(
+    const std::string& service_name);
 
 // Revokes the syncable filesystem that was registered with |service_name|.
-FILEAPI_EXPORT bool RevokeSyncableFileSystem(const std::string& service_name);
+WEBKIT_STORAGE_EXPORT bool RevokeSyncableFileSystem(
+    const std::string& service_name);
 
 // Returns the root URI of the syncable filesystem that can be specified by a
 // pair of |origin| and |service_name|.
-FILEAPI_EXPORT GURL GetSyncableFileSystemRootURI(
+WEBKIT_STORAGE_EXPORT GURL GetSyncableFileSystemRootURI(
     const GURL& origin, const std::string& service_name);
 
 // Creates a FileSystem URL for the |path| in a syncable filesystem
@@ -32,7 +34,7 @@ FILEAPI_EXPORT GURL GetSyncableFileSystemRootURI(
 //   service_name: 'service_name',
 //   path: '/foo/bar',
 // returns 'filesystem:http://www.example.com/external/service_name/foo/bar'
-FILEAPI_EXPORT FileSystemURL CreateSyncableFileSystemURL(
+WEBKIT_STORAGE_EXPORT FileSystemURL CreateSyncableFileSystemURL(
     const GURL& origin, const std::string& service_name, const FilePath& path);
 
 // Serializes a given FileSystemURL |url| and sets the serialized string to
@@ -50,7 +52,7 @@ FILEAPI_EXPORT FileSystemURL CreateSyncableFileSystemURL(
 //   'filesystem:http://www.example.com/external/service_name/foo\\bar'
 // (on others)
 //   'filesystem:http://www.example.com/external/service_name/foo/bar'
-FILEAPI_EXPORT bool SerializeSyncableFileSystemURL(
+WEBKIT_STORAGE_EXPORT bool SerializeSyncableFileSystemURL(
     const FileSystemURL& url, std::string* serialized_url);
 
 // Deserializes a serialized FileSystem URL string |serialized_url| and sets the
@@ -63,7 +65,7 @@ FILEAPI_EXPORT bool SerializeSyncableFileSystemURL(
 // behavior).
 //
 // See the comment of SerializeSyncableFileSystemURL() for more details.
-FILEAPI_EXPORT bool DeserializeSyncableFileSystemURL(
+WEBKIT_STORAGE_EXPORT bool DeserializeSyncableFileSystemURL(
     const std::string& serialized_url, FileSystemURL* url);
 
 }  // namespace fileapi

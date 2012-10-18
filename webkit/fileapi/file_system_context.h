@@ -14,8 +14,8 @@
 #include "base/platform_file.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "webkit/fileapi/file_system_types.h"
-#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/task_runner_bound_observer_list.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 class FilePath;
 
@@ -47,7 +47,7 @@ struct DefaultContextDeleter;
 
 // This class keeps and provides a file system context for FileSystem API.
 // An instance of this class is created and owned by profile.
-class FILEAPI_EXPORT FileSystemContext
+class WEBKIT_STORAGE_EXPORT FileSystemContext
     : public base::RefCountedThreadSafe<FileSystemContext,
                                         DefaultContextDeleter> {
  public:

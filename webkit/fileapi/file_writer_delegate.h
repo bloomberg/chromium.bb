@@ -13,8 +13,8 @@
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request.h"
-#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/file_system_operation.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace fileapi {
 
@@ -22,7 +22,7 @@ class FileStreamWriter;
 class FileSystemOperationContext;
 class FileSystemQuotaUtil;
 
-class FILEAPI_EXPORT_PRIVATE FileWriterDelegate
+class WEBKIT_STORAGE_EXPORT_PRIVATE FileWriterDelegate
     : public net::URLRequest::Delegate {
  public:
   enum WriteProgressStatus {

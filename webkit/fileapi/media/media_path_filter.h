@@ -9,7 +9,7 @@
 
 #include "base/file_path.h"
 #include "base/synchronization/lock.h"
-#include "webkit/fileapi/fileapi_export.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 class FilePath;
 
@@ -17,7 +17,7 @@ namespace fileapi {
 
 // This class holds the list of file path extensions that we should expose on
 // media filesystem.
-class FILEAPI_EXPORT MediaPathFilter {
+class WEBKIT_STORAGE_EXPORT MediaPathFilter {
  public:
   MediaPathFilter();
   ~MediaPathFilter();

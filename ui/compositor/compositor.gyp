@@ -17,9 +17,9 @@
         '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '<(DEPTH)/ui/gl/gl.gyp:gl',
         '<(DEPTH)/ui/ui.gyp:ui',
-        '<(DEPTH)/webkit/support/webkit_support.gyp:fileapi',
         '<(DEPTH)/webkit/support/webkit_support.gyp:glue',
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_gpu',
+        '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_storage',
       ],
       'defines': [
         'COMPOSITOR_IMPLEMENTATION',

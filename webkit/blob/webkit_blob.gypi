@@ -4,54 +4,21 @@
 
 {
   'variables': {
-    'conditions': [
-      ['inside_chromium_build==0', {
-        'webkit_src_dir': '../../../../..',
-      },{
-        'webkit_src_dir': '../../third_party/WebKit',
-      }],
-      ],
-    },
-  'targets': [
-    {
-      'target_name': 'blob',
-      'type': '<(component)',
-      'variables': { 'enable_wexit_time_destructors': 1, },
-      'dependencies': [
-        '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/base/base.gyp:base_i18n',
-        '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
-        '<(DEPTH)/net/net.gyp:net',
-        '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_base',
-        '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
-      ],
-      'defines': [
-        'BLOB_IMPLEMENTATION'
-      ],
-      'sources': [
-        'blob_data.cc',
-        'blob_data.h',
-        'blob_storage_controller.cc',
-        'blob_storage_controller.h',
-        'blob_url_request_job.cc',
-        'blob_url_request_job.h',
-        'blob_url_request_job_factory.cc',
-        'blob_url_request_job_factory.h',
-        'local_file_stream_reader.cc',
-        'local_file_stream_reader.h',
-        'shareable_file_reference.cc',
-        'shareable_file_reference.h',
-        'view_blob_internals_job.cc',
-        'view_blob_internals_job.h',
-      ],
-      'conditions': [
-        ['inside_chromium_build==0', {
-          'dependencies': [
-            '<(DEPTH)/webkit/support/setup_third_party.gyp:third_party_headers',
-          ],
-        }],
-      ],
-    },
-  ],
+    'webkit_blob_sources': [
+      '../blob/blob_data.cc',
+      '../blob/blob_data.h',
+      '../blob/blob_storage_controller.cc',
+      '../blob/blob_storage_controller.h',
+      '../blob/blob_url_request_job.cc',
+      '../blob/blob_url_request_job.h',
+      '../blob/blob_url_request_job_factory.cc',
+      '../blob/blob_url_request_job_factory.h',
+      '../blob/local_file_stream_reader.cc',
+      '../blob/local_file_stream_reader.h',
+      '../blob/shareable_file_reference.cc',
+      '../blob/shareable_file_reference.h',
+      '../blob/view_blob_internals_job.cc',
+      '../blob/view_blob_internals_job.h',
+    ],
+  },
 }

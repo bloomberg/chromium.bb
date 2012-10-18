@@ -7,11 +7,11 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "webkit/fileapi/fileapi_export.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace fileapi {
 
-class FILEAPI_EXPORT_PRIVATE FileSystemUsageCache {
+class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemUsageCache {
  public:
   // Gets the size described in the .usage file even if dirty > 0 or
   // is_valid == false.  Returns less than zero if the .usage file is not

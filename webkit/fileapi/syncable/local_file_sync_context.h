@@ -16,9 +16,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/syncable/file_change.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -34,7 +34,7 @@ class LocalFileChangeTracker;
 // object and may exist multiple in a profile).
 // An instance of this class is shared by FileSystemContexts and outlives
 // LocalFileSyncService.
-class FILEAPI_EXPORT LocalFileSyncContext
+class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
     : public base::RefCountedThreadSafe<LocalFileSyncContext> {
  public:
   typedef base::Callback<void(SyncStatusCode status)> StatusCallback;

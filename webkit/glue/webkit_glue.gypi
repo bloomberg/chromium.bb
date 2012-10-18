@@ -94,12 +94,11 @@
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         '<(DEPTH)/webkit/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
         '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
-        'blob',
-        'fileapi',
         'user_agent',
         'webkit_base',
         'webkit_media',
         'webkit_resources',
+        'webkit_storage',
         'webkit_strings',
       ],
       'include_dirs': [

@@ -6,7 +6,7 @@
 #define WEBKIT_FILEAPI_FILE_OBSERVERS_H_
 
 #include "base/basictypes.h"
-#include "webkit/fileapi/fileapi_export.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 // TODO(kinuko): Split this file into per-observer multiple files.
 
@@ -27,7 +27,7 @@ class FileSystemURL;
 //
 // OnUpdate() is called each time the |url| is updated but works only for
 // sandboxed files (where usage is tracked).
-class FILEAPI_EXPORT FileUpdateObserver {
+class WEBKIT_STORAGE_EXPORT FileUpdateObserver {
  public:
   FileUpdateObserver() {}
   virtual ~FileUpdateObserver() {}
@@ -44,7 +44,7 @@ class FILEAPI_EXPORT FileUpdateObserver {
 // OnAccess is called whenever an operation reads file contents or metadata.
 // (It is called only once per operation regardless of whether the operation
 // is recursive or not)
-class FILEAPI_EXPORT FileAccessObserver {
+class WEBKIT_STORAGE_EXPORT FileAccessObserver {
  public:
   FileAccessObserver() {}
   virtual ~FileAccessObserver() {}
@@ -60,7 +60,7 @@ class FILEAPI_EXPORT FileAccessObserver {
 // removed or modified.  For recursive operations each method is called for
 // each subdirectory/subfile.  Currently ChangeObserver is only supported
 // by the local sandbox file system.
-class FILEAPI_EXPORT FileChangeObserver {
+class WEBKIT_STORAGE_EXPORT FileChangeObserver {
  public:
   FileChangeObserver() {}
   virtual ~FileChangeObserver() {}

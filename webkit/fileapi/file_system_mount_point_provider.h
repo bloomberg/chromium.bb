@@ -11,8 +11,8 @@
 #include "base/callback_forward.h"
 #include "base/file_path.h"
 #include "base/platform_file.h"
-#include "webkit/fileapi/fileapi_export.h"
 #include "webkit/fileapi/file_system_types.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace webkit_blob {
 class FileStreamReader;
@@ -30,7 +30,7 @@ class RemoteFileSystemProxyInterface;
 
 // An interface to provide mount-point-specific path-related utilities
 // and specialized FileSystemFileUtil instance.
-class FILEAPI_EXPORT FileSystemMountPointProvider {
+class WEBKIT_STORAGE_EXPORT FileSystemMountPointProvider {
  public:
   // Callback for ValidateFileSystemRoot.
   typedef base::Callback<void(base::PlatformFileError error)>
