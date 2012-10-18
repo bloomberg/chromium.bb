@@ -19,7 +19,7 @@ VideoLayerChromium::VideoLayerChromium(WebKit::WebVideoFrameProvider* provider)
     : LayerChromium()
     , m_provider(provider)
 {
-    ASSERT(m_provider);
+    DCHECK(m_provider);
 }
 
 VideoLayerChromium::~VideoLayerChromium()

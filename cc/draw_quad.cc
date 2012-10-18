@@ -5,6 +5,7 @@
 #include "config.h"
 #include "CCDrawQuad.h"
 
+#include "base/logging.h"
 #include "CCCheckerboardDrawQuad.h"
 #include "CCDebugBorderDrawQuad.h"
 #include "CCIOSurfaceDrawQuad.h"
@@ -27,8 +28,8 @@ CCDrawQuad::CCDrawQuad(const CCSharedQuadState* sharedQuadState, Material materi
     , m_quadOpaque(true)
     , m_needsBlending(false)
 {
-    ASSERT(m_sharedQuadState);
-    ASSERT(m_material != Invalid);
+    DCHECK(m_sharedQuadState);
+    DCHECK(m_material != Invalid);
 }
 
 IntRect CCDrawQuad::opaqueRect() const
@@ -79,10 +80,10 @@ unsigned CCDrawQuad::size() const
 scoped_ptr<CCDrawQuad> CCDrawQuad::copy(const CCSharedQuadState* copiedSharedQuadState) const
 {
     // RenderPass quads have their own copy() method.
-    ASSERT(material() != RenderPass);
+    DCHECK(material() != RenderPass);
 
     unsigned bytes = size();
-    ASSERT(bytes);
+    DCHECK(bytes > 0);
 
     scoped_ptr<CCDrawQuad> copyQuad(reinterpret_cast<CCDrawQuad*>(new char[bytes]));
     memcpy(copyQuad.get(), this, bytes);

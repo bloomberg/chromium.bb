@@ -12,6 +12,8 @@
 #else
 #include "third_party/WebKit/Source/WTF/config.h"
 #endif
+
+#include <wtf/Assertions.h>
 #ifdef LOG
 #undef LOG
 #endif

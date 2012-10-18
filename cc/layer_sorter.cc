@@ -296,7 +296,7 @@ void CCLayerSorter::createGraphEdges()
 void CCLayerSorter::removeEdgeFromList(GraphEdge* edge, std::vector<GraphEdge*>& list)
 {
     std::vector<GraphEdge*>::iterator iter = std::find(list.begin(), list.end(), edge);
-    ASSERT(iter != list.end());
+    DCHECK(iter != list.end());
     list.erase(iter);
 }
 
@@ -381,7 +381,7 @@ void CCLayerSorter::sort(LayerList::iterator first, LayerList::iterator last)
                 nextNode = &m_nodes[i];
             }
         }
-        ASSERT(nextNode);
+        DCHECK(nextNode);
         // Remove all its incoming edges.
         for (unsigned e = 0; e < nextNode->incoming.size(); e++) {
             GraphEdge* incomingEdge = nextNode->incoming[e];

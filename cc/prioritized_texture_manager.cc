@@ -33,16 +33,16 @@ CCPrioritizedTextureManager::~CCPrioritizedTextureManager()
         unregisterTexture(*m_textures.begin());
 
     deleteUnlinkedEvictedBackings();
-    ASSERT(m_evictedBackings.empty());
+    DCHECK(m_evictedBackings.empty());
 
     // Each remaining backing is a leaked opengl texture. There should be none.
-    ASSERT(m_backings.empty());
+    DCHECK(m_backings.empty());
 }
 
 void CCPrioritizedTextureManager::prioritizeTextures()
 {
     TRACE_EVENT0("cc", "CCPrioritizedTextureManager::prioritizeTextures");
-    ASSERT(CCProxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
 
     // Sorting textures in this function could be replaced by a slightly
     // modified O(n) quick-select to partition textures rather than
@@ -95,14 +95,14 @@ void CCPrioritizedTextureManager::prioritizeTextures()
     }
     sortedTextures.clear();
 
-    ASSERT(m_memoryAboveCutoffBytes <= m_memoryAvailableBytes);
-    ASSERT(memoryAboveCutoffBytes() <= maxMemoryLimitBytes());
+    DCHECK(m_memoryAboveCutoffBytes <= m_memoryAvailableBytes);
+    DCHECK(memoryAboveCutoffBytes() <= maxMemoryLimitBytes());
 }
 
 void CCPrioritizedTextureManager::pushTexturePrioritiesToBackings()
 {
     TRACE_EVENT0("cc", "CCPrioritizedTextureManager::pushTexturePrioritiesToBackings");
-    ASSERT(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
+    DCHECK(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
 
     assertInvariants();
     for (BackingList::iterator it = m_backings.begin(); it != m_backings.end(); ++it)
@@ -114,7 +114,7 @@ void CCPrioritizedTextureManager::pushTexturePrioritiesToBackings()
 void CCPrioritizedTextureManager::updateBackingsInDrawingImplTree()
 {
     TRACE_EVENT0("cc", "CCPrioritizedTextureManager::updateBackingsInDrawingImplTree");
-    ASSERT(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
+    DCHECK(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
 
     assertInvariants();
     for (BackingList::iterator it = m_backings.begin(); it != m_backings.end(); ++it) {
@@ -128,7 +128,7 @@ void CCPrioritizedTextureManager::updateBackingsInDrawingImplTree()
 void CCPrioritizedTextureManager::sortBackings()
 {
     TRACE_EVENT0("cc", "CCPrioritizedTextureManager::sortBackings");
-    ASSERT(CCProxy::isImplThread());
+    DCHECK(CCProxy::isImplThread());
 
     // Put backings in eviction/recycling order.
     m_backings.sort(compareBackings);
@@ -137,7 +137,7 @@ void CCPrioritizedTextureManager::sortBackings()
 
 void CCPrioritizedTextureManager::clearPriorities()
 {
-    ASSERT(CCProxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
     for (TextureSet::iterator it = m_textures.begin(); it != m_textures.end(); ++it) {
         // FIXME: We should remove this and just set all priorities to
         //        CCPriorityCalculator::lowestPriority() once we have priorities
@@ -149,7 +149,7 @@ void CCPrioritizedTextureManager::clearPriorities()
 
 bool CCPrioritizedTextureManager::requestLate(CCPrioritizedTexture* texture)
 {
-    ASSERT(CCProxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
 
     // This is already above cutoff, so don't double count it's memory below.
     if (texture->isAbovePriorityCutoff())
@@ -169,9 +169,9 @@ bool CCPrioritizedTextureManager::requestLate(CCPrioritizedTexture* texture)
 
 void CCPrioritizedTextureManager::acquireBackingTextureIfNeeded(CCPrioritizedTexture* texture, CCResourceProvider* resourceProvider)
 {
-    ASSERT(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
-    ASSERT(!texture->isSelfManaged());
-    ASSERT(texture->isAbovePriorityCutoff());
+    DCHECK(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
+    DCHECK(!texture->isSelfManaged());
+    DCHECK(texture->isAbovePriorityCutoff());
     if (texture->backing() || !texture->isAbovePriorityCutoff())
         return;
 
@@ -209,7 +209,7 @@ void CCPrioritizedTextureManager::acquireBackingTextureIfNeeded(CCPrioritizedTex
 
 bool CCPrioritizedTextureManager::evictBackingsToReduceMemory(size_t limitBytes, EvictionPriorityPolicy evictionPolicy, CCResourceProvider* resourceProvider)
 {
-    ASSERT(CCProxy::isImplThread());
+    DCHECK(CCProxy::isImplThread());
     if (memoryUseBytes() <= limitBytes)
         return false;
 
@@ -227,10 +227,10 @@ bool CCPrioritizedTextureManager::evictBackingsToReduceMemory(size_t limitBytes,
 
 void CCPrioritizedTextureManager::reduceMemory(CCResourceProvider* resourceProvider)
 {
-    ASSERT(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
+    DCHECK(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
 
     evictBackingsToReduceMemory(m_memoryAvailableBytes, RespectManagerPriorityCutoff, resourceProvider);
-    ASSERT(memoryUseBytes() <= maxMemoryLimitBytes());
+    DCHECK(memoryUseBytes() <= maxMemoryLimitBytes());
 
     // We currently collect backings from deleted textures for later recycling.
     // However, if we do that forever we will always use the max limit even if
@@ -259,15 +259,15 @@ void CCPrioritizedTextureManager::reduceMemory(CCResourceProvider* resourceProvi
 
 void CCPrioritizedTextureManager::clearAllMemory(CCResourceProvider* resourceProvider)
 {
-    ASSERT(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
-    ASSERT(resourceProvider);
+    DCHECK(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
+    DCHECK(resourceProvider);
     evictBackingsToReduceMemory(0, DoNotRespectManagerPriorityCutoff, resourceProvider);
 }
 
 bool CCPrioritizedTextureManager::reduceMemoryOnImplThread(size_t limitBytes, CCResourceProvider* resourceProvider)
 {
-    ASSERT(CCProxy::isImplThread());
-    ASSERT(resourceProvider);
+    DCHECK(CCProxy::isImplThread());
+    DCHECK(resourceProvider);
     // If we are in the process of uploading a new frame then the backings at the very end of
     // the list are not sorted by priority. Sort them before doing the eviction.
     if (m_backingsTailNotSorted)
@@ -277,14 +277,14 @@ bool CCPrioritizedTextureManager::reduceMemoryOnImplThread(size_t limitBytes, CC
 
 void CCPrioritizedTextureManager::getEvictedBackings(BackingList& evictedBackings)
 {
-    ASSERT(CCProxy::isImplThread());
+    DCHECK(CCProxy::isImplThread());
     evictedBackings.clear();
     evictedBackings.insert(evictedBackings.begin(), m_evictedBackings.begin(), m_evictedBackings.end());
 }
 
 void CCPrioritizedTextureManager::unlinkEvictedBackings(const BackingList& evictedBackings)
 {
-    ASSERT(CCProxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
     for (BackingList::const_iterator it = evictedBackings.begin(); it != evictedBackings.end(); ++it) {
         CCPrioritizedTexture::Backing* backing = (*it);
         if (backing->owner())
@@ -294,7 +294,7 @@ void CCPrioritizedTextureManager::unlinkEvictedBackings(const BackingList& evict
 
 void CCPrioritizedTextureManager::deleteUnlinkedEvictedBackings()
 {
-    ASSERT(CCProxy::isMainThread() || (CCProxy::isImplThread() && CCProxy::isMainThreadBlocked()));
+    DCHECK(CCProxy::isMainThread() || (CCProxy::isImplThread() && CCProxy::isMainThreadBlocked()));
     BackingList newEvictedBackings;
     for (BackingList::const_iterator it = m_evictedBackings.begin(); it != m_evictedBackings.end(); ++it) {
         CCPrioritizedTexture::Backing* backing = (*it);
@@ -317,11 +317,11 @@ bool CCPrioritizedTextureManager::linkedEvictedBackingsExist() const
 
 void CCPrioritizedTextureManager::registerTexture(CCPrioritizedTexture* texture)
 {
-    ASSERT(CCProxy::isMainThread());
-    ASSERT(texture);
-    ASSERT(!texture->textureManager());
-    ASSERT(!texture->backing());
-    ASSERT(!ContainsKey(m_textures, texture));
+    DCHECK(CCProxy::isMainThread());
+    DCHECK(texture);
+    DCHECK(!texture->textureManager());
+    DCHECK(!texture->backing());
+    DCHECK(!ContainsKey(m_textures, texture));
 
     texture->setManagerInternal(this);
     m_textures.insert(texture);
@@ -330,9 +330,9 @@ void CCPrioritizedTextureManager::registerTexture(CCPrioritizedTexture* texture)
 
 void CCPrioritizedTextureManager::unregisterTexture(CCPrioritizedTexture* texture)
 {
-    ASSERT(CCProxy::isMainThread() || (CCProxy::isImplThread() && CCProxy::isMainThreadBlocked()));
-    ASSERT(texture);
-    ASSERT(ContainsKey(m_textures, texture));
+    DCHECK(CCProxy::isMainThread() || (CCProxy::isImplThread() && CCProxy::isMainThreadBlocked()));
+    DCHECK(texture);
+    DCHECK(ContainsKey(m_textures, texture));
 
     returnBackingTexture(texture);
     texture->setManagerInternal(0);
@@ -342,15 +342,15 @@ void CCPrioritizedTextureManager::unregisterTexture(CCPrioritizedTexture* textur
 
 void CCPrioritizedTextureManager::returnBackingTexture(CCPrioritizedTexture* texture)
 {
-    ASSERT(CCProxy::isMainThread() || (CCProxy::isImplThread() && CCProxy::isMainThreadBlocked()));
+    DCHECK(CCProxy::isMainThread() || (CCProxy::isImplThread() && CCProxy::isMainThreadBlocked()));
     if (texture->backing())
         texture->unlink();
 }
 
 CCPrioritizedTexture::Backing* CCPrioritizedTextureManager::createBacking(IntSize size, GC3Denum format, CCResourceProvider* resourceProvider)
 {
-    ASSERT(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
-    ASSERT(resourceProvider);
+    DCHECK(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
+    DCHECK(resourceProvider);
     CCResourceProvider::ResourceId resourceId = resourceProvider->createResource(m_pool, size, format, CCResourceProvider::TextureUsageAny);
     CCPrioritizedTexture::Backing* backing = new CCPrioritizedTexture::Backing(resourceId, resourceProvider, size, format);
     m_memoryUseBytes += backing->bytes();
@@ -359,9 +359,9 @@ CCPrioritizedTexture::Backing* CCPrioritizedTextureManager::createBacking(IntSiz
 
 void CCPrioritizedTextureManager::evictFirstBackingResource(CCResourceProvider* resourceProvider)
 {
-    ASSERT(CCProxy::isImplThread());
-    ASSERT(resourceProvider);
-    ASSERT(!m_backings.empty());
+    DCHECK(CCProxy::isImplThread());
+    DCHECK(resourceProvider);
+    DCHECK(!m_backings.empty());
     CCPrioritizedTexture::Backing* backing = m_backings.front();
 
     // Note that we create a backing and its resource at the same time, but we
@@ -376,8 +376,8 @@ void CCPrioritizedTextureManager::evictFirstBackingResource(CCResourceProvider* 
 
 void CCPrioritizedTextureManager::assertInvariants()
 {
-#if !ASSERT_DISABLED
-    ASSERT(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
+#ifndef NDEBUG
+    DCHECK(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
 
     // If we hit any of these asserts, there is a bug in this class. To see
     // where the bug is, call this function at the beginning and end of
@@ -386,8 +386,8 @@ void CCPrioritizedTextureManager::assertInvariants()
     // Backings/textures must be doubly-linked and only to other backings/textures in this manager.
     for (BackingList::iterator it = m_backings.begin(); it != m_backings.end(); ++it) {
         if ((*it)->owner()) {
-            ASSERT(ContainsKey(m_textures, (*it)->owner()));
-            ASSERT((*it)->owner()->backing() == (*it));
+            DCHECK(ContainsKey(m_textures, (*it)->owner()));
+            DCHECK((*it)->owner()->backing() == (*it));
         }
     }
     for (TextureSet::iterator it = m_textures.begin(); it != m_textures.end(); ++it) {
@@ -395,13 +395,13 @@ void CCPrioritizedTextureManager::assertInvariants()
         CCPrioritizedTexture::Backing* backing = texture->backing();
         if (backing) {
             if (backing->resourceHasBeenDeleted()) {
-                ASSERT(std::find(m_backings.begin(), m_backings.end(), backing) == m_backings.end());
-                ASSERT(std::find(m_evictedBackings.begin(), m_evictedBackings.end(), backing) != m_evictedBackings.end());
+                DCHECK(std::find(m_backings.begin(), m_backings.end(), backing) == m_backings.end());
+                DCHECK(std::find(m_evictedBackings.begin(), m_evictedBackings.end(), backing) != m_evictedBackings.end());
             } else {
-                ASSERT(std::find(m_backings.begin(), m_backings.end(), backing) != m_backings.end());
-                ASSERT(std::find(m_evictedBackings.begin(), m_evictedBackings.end(), backing) == m_evictedBackings.end());
+                DCHECK(std::find(m_backings.begin(), m_backings.end(), backing) != m_backings.end());
+                DCHECK(std::find(m_evictedBackings.begin(), m_evictedBackings.end(), backing) == m_evictedBackings.end());
             }
-            ASSERT(backing->owner() == texture);
+            DCHECK(backing->owner() == texture);
         }
     }
 
@@ -413,13 +413,13 @@ void CCPrioritizedTextureManager::assertInvariants()
     for (BackingList::iterator it = m_backings.begin(); it != m_backings.end(); ++it) {
         CCPrioritizedTexture::Backing* backing = *it;
         if (previous_backing && (!m_backingsTailNotSorted || !backing->wasAbovePriorityCutoffAtLastPriorityUpdate()))
-            ASSERT(compareBackings(previous_backing, backing));
+            DCHECK(compareBackings(previous_backing, backing));
         if (!backing->canBeRecycled())
             reachedUnrecyclable = true;
         if (reachedUnrecyclable)
-            ASSERT(!backing->canBeRecycled());
+            DCHECK(!backing->canBeRecycled());
         else
-            ASSERT(backing->canBeRecycled());
+            DCHECK(backing->canBeRecycled());
         previous_backing = backing;
     }
 #endif

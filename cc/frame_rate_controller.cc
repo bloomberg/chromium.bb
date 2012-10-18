@@ -6,6 +6,7 @@
 
 #include "CCFrameRateController.h"
 
+#include "base/logging.h"
 #include "CCDelayBasedTimeSource.h"
 #include "CCTimeSource.h"
 #include "base/debug/trace_event.h"
@@ -88,7 +89,7 @@ void CCFrameRateController::setActive(bool active)
 
 void CCFrameRateController::setMaxFramesPending(int maxFramesPending)
 {
-    ASSERT(maxFramesPending > 0);
+    DCHECK(maxFramesPending > 0);
     m_maxFramesPending = maxFramesPending;
 }
 
@@ -105,7 +106,7 @@ void CCFrameRateController::setSwapBuffersCompleteSupported(bool supported)
 
 void CCFrameRateController::onTimerTick()
 {
-    ASSERT(m_active);
+    DCHECK(m_active);
 
     // Check if we have too many frames in flight.
     bool throttled = m_numFramesPending >= m_maxFramesPending;
@@ -138,7 +139,7 @@ void CCFrameRateController::didBeginFrame()
 
 void CCFrameRateController::didFinishFrame()
 {
-    ASSERT(m_swapBuffersCompleteSupported);
+    DCHECK(m_swapBuffersCompleteSupported);
 
     m_numFramesPending--;
     if (!m_isTimeSourceThrottling)

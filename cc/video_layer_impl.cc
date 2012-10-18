@@ -38,24 +38,24 @@ CCVideoLayerImpl::CCVideoLayerImpl(int id, WebKit::WebVideoFrameProvider* provid
     // thread is blocked. That makes this a thread-safe call to set the video
     // frame provider client that does not require a lock. The same is true of
     // the call in the destructor.
-    ASSERT(CCProxy::isMainThreadBlocked());
+    DCHECK(CCProxy::isMainThreadBlocked());
     m_provider->setVideoFrameProviderClient(this);
 }
 
 CCVideoLayerImpl::~CCVideoLayerImpl()
 {
     // See comment in constructor for why this doesn't need a lock.
-    ASSERT(CCProxy::isMainThreadBlocked());
+    DCHECK(CCProxy::isMainThreadBlocked());
     if (m_provider) {
         m_provider->setVideoFrameProviderClient(0);
         m_provider = 0;
     }
     freePlaneData(layerTreeHostImpl()->resourceProvider());
 
-#if !ASSERT_DISABLED
+#ifndef NDEBUG
     for (unsigned i = 0; i < WebKit::WebVideoFrame::maxPlanes; ++i)
-        ASSERT(!m_framePlanes[i].resourceId);
-    ASSERT(!m_externalTextureResource);
+      DCHECK(!m_framePlanes[i].resourceId);
+    DCHECK(!m_externalTextureResource);
 #endif
 }
 
@@ -64,7 +64,7 @@ void CCVideoLayerImpl::stopUsingProvider()
     // Block the provider from shutting down until this client is done
     // using the frame.
     base::AutoLock locker(m_providerLock);
-    ASSERT(!m_frame);
+    DCHECK(!m_frame);
     m_provider = 0;
 }
 
@@ -88,7 +88,7 @@ static GC3Denum convertVFCFormatToGC3DFormat(const WebKit::WebVideoFrame& frame)
 
 void CCVideoLayerImpl::willDraw(CCResourceProvider* resourceProvider)
 {
-    ASSERT(CCProxy::isImplThread());
+    DCHECK(CCProxy::isImplThread());
     CCLayerImpl::willDraw(resourceProvider);
 
     // Explicitly acquire and release the provider mutex so it can be held from
@@ -109,8 +109,8 @@ void CCVideoLayerImpl::willDraw(CCResourceProvider* resourceProvider)
 
 void CCVideoLayerImpl::willDrawInternal(CCResourceProvider* resourceProvider)
 {
-    ASSERT(CCProxy::isImplThread());
-    ASSERT(!m_externalTextureResource);
+    DCHECK(CCProxy::isImplThread());
+    DCHECK(!m_externalTextureResource);
 
     if (!m_provider) {
         m_frame = 0;
@@ -154,7 +154,7 @@ void CCVideoLayerImpl::willDrawInternal(CCResourceProvider* resourceProvider)
 
 void CCVideoLayerImpl::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& appendQuadsData)
 {
-    ASSERT(CCProxy::isImplThread());
+    DCHECK(CCProxy::isImplThread());
 
     if (!m_frame)
         return;
@@ -217,18 +217,18 @@ void CCVideoLayerImpl::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& appe
 
 void CCVideoLayerImpl::didDraw(CCResourceProvider* resourceProvider)
 {
-    ASSERT(CCProxy::isImplThread());
+    DCHECK(CCProxy::isImplThread());
     CCLayerImpl::didDraw(resourceProvider);
 
     if (!m_frame)
         return;
 
     if (m_format == GraphicsContext3D::TEXTURE_2D) {
-        ASSERT(m_externalTextureResource);
+        DCHECK(m_externalTextureResource);
         // FIXME: the following assert will not be true when sending resources to a
         // parent compositor. We will probably need to hold on to m_frame for
         // longer, and have several "current frames" in the pipeline.
-        ASSERT(!resourceProvider->inUseByConsumer(m_externalTextureResource));
+        DCHECK(!resourceProvider->inUseByConsumer(m_externalTextureResource));
         resourceProvider->deleteResource(m_externalTextureResource);
         m_externalTextureResource = 0;
     }

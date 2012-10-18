@@ -31,7 +31,7 @@ public:
                 textureFormat = Extensions3D::BGRA_EXT;
             break;
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             break;
         }
         return textureFormat;
@@ -47,7 +47,7 @@ public:
         case GraphicsContext3D::SourceFormatBGRA8:
             return textureFormat == Extensions3D::BGRA_EXT;
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             return false;
         }
     }

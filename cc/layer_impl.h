@@ -6,6 +6,7 @@
 #define CCLayerImpl_h
 
 #include "base/memory/scoped_ptr.h"
+#include "base/logging.h"
 #include "cc/scoped_ptr_vector.h"
 #include "CCInputHandler.h"
 #include "CCLayerAnimationController.h"
@@ -160,7 +161,7 @@ public:
     bool drawOpacityIsAnimating() const { return m_drawOpacityIsAnimating; }
     void setDrawOpacityIsAnimating(bool drawOpacityIsAnimating) { m_drawOpacityIsAnimating = drawOpacityIsAnimating; }
 
-    CCLayerImpl* renderTarget() const { ASSERT(!m_renderTarget || m_renderTarget->renderSurface()); return m_renderTarget; }
+    CCLayerImpl* renderTarget() const { DCHECK(!m_renderTarget || m_renderTarget->renderSurface()); return m_renderTarget; }
     void setRenderTarget(CCLayerImpl* target) { m_renderTarget = target; }
 
     void setBounds(const IntSize&);

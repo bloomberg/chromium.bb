@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/logging.h"
 #include "CCPriorityCalculator.h"
 #include "CCResourceProvider.h"
 #include "CCTexture.h"

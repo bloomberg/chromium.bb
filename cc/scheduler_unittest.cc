@@ -6,6 +6,7 @@
 
 #include "CCScheduler.h"
 
+#include "base/logging.h"
 #include "cc/test/scheduler_test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -221,7 +222,7 @@ public:
 
     virtual CCScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapForced() OVERRIDE
     {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return CCScheduledActionDrawAndSwapResult(true, true);
     }
 
@@ -323,7 +324,7 @@ public:
 
     virtual CCScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapForced() OVERRIDE
     {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return CCScheduledActionDrawAndSwapResult(true, true);
     }
 

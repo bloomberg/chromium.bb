@@ -73,9 +73,9 @@ CCTiledLayerImpl::~CCTiledLayerImpl()
 CCResourceProvider::ResourceId CCTiledLayerImpl::contentsResourceId() const
 {
     // This function is only valid for single texture layers, e.g. masks.
-    ASSERT(m_tiler);
-    ASSERT(m_tiler->numTilesX() == 1);
-    ASSERT(m_tiler->numTilesY() == 1);
+    DCHECK(m_tiler);
+    DCHECK(m_tiler->numTilesX() == 1);
+    DCHECK(m_tiler->numTilesY() == 1);
 
     DrawableTile* tile = tileAt(0, 0);
     CCResourceProvider::ResourceId resourceId = tile ? tile->resourceId() : 0;

@@ -7,6 +7,7 @@
 #include "CCTimer.h"
 
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "CCThread.h"
 
 namespace cc {
@@ -24,7 +25,7 @@ public:
         if (!m_timer)
             return;
 
-        ASSERT(m_timer->m_task == this);
+        DCHECK(m_timer->m_task == this);
         m_timer->stop();
     }
 

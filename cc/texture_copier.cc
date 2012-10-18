@@ -16,7 +16,7 @@ AcceleratedTextureCopier::AcceleratedTextureCopier(WebKit::WebGraphicsContext3D*
     : m_context(context)
     , m_usingBindUniforms(usingBindUniforms)
 {
-    ASSERT(m_context);
+    DCHECK(m_context);
     GLC(m_context, m_fbo = m_context->createFramebuffer());
     GLC(m_context, m_positionBuffer = m_context->createBuffer());
 

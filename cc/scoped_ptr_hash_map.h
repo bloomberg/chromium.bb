@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/memory/scoped_ptr.h"
 
@@ -66,7 +67,7 @@ class ScopedPtrHashMap {
   }
 
   scoped_ptr<Value> take(iterator it) {
-    ASSERT(it != data_.end());
+    DCHECK(it != data_.end());
     if (it == data_.end())
       return scoped_ptr<Value>(NULL);
 
@@ -86,7 +87,7 @@ class ScopedPtrHashMap {
   }
 
   scoped_ptr<Value> take_and_erase(iterator it) {
-    ASSERT(it != data_.end());
+    DCHECK(it != data_.end());
     if (it == data_.end())
       return scoped_ptr<Value>(NULL);
 

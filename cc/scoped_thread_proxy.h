@@ -6,6 +6,7 @@
 #define CCScopedThreadProxy_h
 
 #include "CCThreadTask.h"
+#include "base/logging.h"
 #include "base/threading/platform_thread.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
@@ -27,7 +28,7 @@ class CCScopedThreadProxy : public ThreadSafeRefCounted<CCScopedThreadProxy> {
 public:
     static PassRefPtr<CCScopedThreadProxy> create(CCThread* targetThread)
     {
-        ASSERT(base::PlatformThread::CurrentId() == targetThread->threadID());
+        DCHECK(base::PlatformThread::CurrentId() == targetThread->threadID());
         return adoptRef(new CCScopedThreadProxy(targetThread));
     }
 
@@ -43,8 +44,8 @@ public:
 
     void shutdown()
     {
-        ASSERT(base::PlatformThread::CurrentId() == m_targetThread->threadID());
-        ASSERT(!m_shutdown);
+        DCHECK(base::PlatformThread::CurrentId() == m_targetThread->threadID());
+        DCHECK(!m_shutdown);
         m_shutdown = true;
     }
 
@@ -60,7 +61,7 @@ private:
             deref();
             return;
         }
-        ASSERT(base::PlatformThread::CurrentId() == m_targetThread->threadID());
+        DCHECK(base::PlatformThread::CurrentId() == m_targetThread->threadID());
         task->performTask();
         deref();
     }

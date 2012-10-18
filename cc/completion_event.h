@@ -7,6 +7,7 @@
 
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/logging.h"
 
 namespace cc {
 
@@ -27,14 +28,16 @@ public:
 
     ~CCCompletionEvent()
     {
-        ASSERT(m_waited);
-        ASSERT(m_signaled);
+#ifndef NDEBUG
+        DCHECK(m_waited);
+        DCHECK(m_signaled);
+#endif
     }
 
     void wait()
     {
-        ASSERT(!m_waited);
 #ifndef NDEBUG
+        DCHECK(!m_waited);
         m_waited = true;
 #endif
         base::ThreadRestrictions::ScopedAllowWait allow_wait;
@@ -43,8 +46,8 @@ public:
 
     void signal()
     {
-        ASSERT(!m_signaled);
 #ifndef NDEBUG
+        DCHECK(!m_signaled);
         m_signaled = true;
 #endif
         m_event.Signal();

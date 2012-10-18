@@ -6,6 +6,8 @@
 
 #include "CCStreamVideoDrawQuad.h"
 
+#include "base/logging.h"
+
 namespace cc {
 
 scoped_ptr<CCStreamVideoDrawQuad> CCStreamVideoDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, unsigned textureId, const WebKit::WebTransformationMatrix& matrix)
@@ -22,7 +24,7 @@ CCStreamVideoDrawQuad::CCStreamVideoDrawQuad(const CCSharedQuadState* sharedQuad
 
 const CCStreamVideoDrawQuad* CCStreamVideoDrawQuad::materialCast(const CCDrawQuad* quad)
 {
-    ASSERT(quad->material() == CCDrawQuad::StreamVideoContent);
+    DCHECK(quad->material() == CCDrawQuad::StreamVideoContent);
     return static_cast<const CCStreamVideoDrawQuad*>(quad);
 }
 

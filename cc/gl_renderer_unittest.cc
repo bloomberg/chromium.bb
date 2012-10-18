@@ -43,7 +43,7 @@ public:
     int frameCount() { return m_frame; }
     void setMemoryAllocation(WebGraphicsMemoryAllocation allocation)
     {
-        ASSERT(CCProxy::isImplThread());
+        DCHECK(CCProxy::isImplThread());
         // In single threaded mode we expect this callback on main thread.
         DebugScopedSetMainThread main;
         m_memoryAllocationChangedCallback->onMemoryAllocationChanged(allocation);
@@ -402,7 +402,7 @@ TEST(CCRendererGLTest2, opaqueBackground)
 
     // On DEBUG builds, render passes with opaque background clear to blue to
     // easily see regions that were not drawn on the screen.
-#if defined(NDEBUG)
+#ifdef NDEBUG
     EXPECT_EQ(0, context->clearCount());
 #else
     EXPECT_EQ(1, context->clearCount());

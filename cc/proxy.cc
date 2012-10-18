@@ -55,35 +55,49 @@ CCThread* CCProxy::currentThread()
     return 0;
 }
 
-#ifndef NDEBUG
 bool CCProxy::isMainThread()
 {
-    ASSERT(s_mainThread);
+#ifndef NDEBUG
+    DCHECK(s_mainThread);
     if (implThreadIsOverridden && base::PlatformThread::CurrentId() == threadIDOverridenToBeImplThread)
         return false;
     return base::PlatformThread::CurrentId() == s_mainThread->threadID();
+#else
+    return true;
+#endif
 }
 
 bool CCProxy::isImplThread()
 {
+#ifndef NDEBUG
     base::PlatformThreadId implThreadID = s_implThread ? s_implThread->threadID() : 0;
     if (implThreadIsOverridden && base::PlatformThread::CurrentId() == threadIDOverridenToBeImplThread)
         return true;
     return base::PlatformThread::CurrentId() == implThreadID;
+#else
+    return true;
+#endif
 }
 
+#ifndef NDEBUG
 void CCProxy::setCurrentThreadIsImplThread(bool isImplThread)
 {
     implThreadIsOverridden = isImplThread;
     if (isImplThread)
         threadIDOverridenToBeImplThread = base::PlatformThread::CurrentId();
 }
+#endif
 
 bool CCProxy::isMainThreadBlocked()
 {
+#ifndef NDEBUG
     return s_isMainThreadBlocked;
+#else
+    return true;
+#endif
 }
 
+#ifndef NDEBUG
 void CCProxy::setMainThreadBlocked(bool isMainThreadBlocked)
 {
     s_isMainThreadBlocked = isMainThreadBlocked;
@@ -92,12 +106,12 @@ void CCProxy::setMainThreadBlocked(bool isMainThreadBlocked)
 
 CCProxy::CCProxy()
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 }
 
 CCProxy::~CCProxy()
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
 }
 
 }

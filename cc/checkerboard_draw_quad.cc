@@ -6,6 +6,8 @@
 
 #include "CCCheckerboardDrawQuad.h"
 
+#include "base/logging.h"
+
 namespace cc {
 
 scoped_ptr<CCCheckerboardDrawQuad> CCCheckerboardDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color)
@@ -21,7 +23,7 @@ CCCheckerboardDrawQuad::CCCheckerboardDrawQuad(const CCSharedQuadState* sharedQu
 
 const CCCheckerboardDrawQuad* CCCheckerboardDrawQuad::materialCast(const CCDrawQuad* quad)
 {
-    ASSERT(quad->material() == CCDrawQuad::Checkerboard);
+    DCHECK(quad->material() == CCDrawQuad::Checkerboard);
     return static_cast<const CCCheckerboardDrawQuad*>(quad);
 }
 

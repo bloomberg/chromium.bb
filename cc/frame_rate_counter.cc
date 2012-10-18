@@ -125,7 +125,8 @@ void CCFrameRateCounter::getAverageFPSAndStandardDeviation(double& averageFPS, d
 
 base::TimeTicks CCFrameRateCounter::timeStampOfRecentFrame(int n)
 {
-    ASSERT(n >= 0 && n < kTimeStampHistorySize);
+    DCHECK(n >= 0);
+    DCHECK(n < kTimeStampHistorySize);
     int desiredIndex = (frameIndex(m_currentFrameNumber) + n) % kTimeStampHistorySize;
     return m_timeStampHistory[desiredIndex];
 }

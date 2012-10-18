@@ -7,6 +7,7 @@
 #include "CCDelayBasedTimeSource.h"
 
 #include "base/debug/trace_event.h"
+#include "base/logging.h"
 #include <algorithm>
 #include <wtf/CurrentTime.h>
 #include <wtf/MathExtras.h>
@@ -90,7 +91,7 @@ base::TimeTicks CCDelayBasedTimeSource::nextTickTime()
 
 void CCDelayBasedTimeSource::onTimerFired()
 {
-    ASSERT(m_state != STATE_INACTIVE);
+    DCHECK(m_state != STATE_INACTIVE);
 
     base::TimeTicks now = this->now();
     m_lastTickTime = now;
@@ -202,7 +203,7 @@ base::TimeTicks CCDelayBasedTimeSource::nextTickTarget(base::TimeTicks now)
     int intervalsElapsed = static_cast<int>(floor((now - m_nextParameters.tickTarget).InSecondsF() / newInterval.InSecondsF()));
     base::TimeTicks lastEffectiveTick = m_nextParameters.tickTarget + newInterval * intervalsElapsed;
     base::TimeTicks newTickTarget = lastEffectiveTick + newInterval;
-    ASSERT(newTickTarget > now);
+    DCHECK(newTickTarget > now);
 
     // Avoid double ticks when:
     // 1) Turning off the timer and turning it right back on.
@@ -219,7 +220,7 @@ void CCDelayBasedTimeSource::postNextTickTask(base::TimeTicks now)
 
     // Post another task *before* the tick and update state
     base::TimeDelta delay = newTickTarget - now;
-    ASSERT(delay.InMillisecondsF() <=
+    DCHECK(delay.InMillisecondsF() <=
            m_nextParameters.interval.InMillisecondsF() * (1.0 + doubleTickThreshold));
     m_timer.startOneShot(delay.InSecondsF());
 

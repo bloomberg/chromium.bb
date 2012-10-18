@@ -11,7 +11,7 @@ namespace cc {
 CCScopedTexture::CCScopedTexture(CCResourceProvider* resourceProvider)
     : m_resourceProvider(resourceProvider)
 {
-    ASSERT(m_resourceProvider);
+    DCHECK(m_resourceProvider);
 }
 
 CCScopedTexture::~CCScopedTexture()
@@ -21,13 +21,13 @@ CCScopedTexture::~CCScopedTexture()
 
 bool CCScopedTexture::allocate(int pool, const IntSize& size, GC3Denum format, CCResourceProvider::TextureUsageHint hint)
 {
-    ASSERT(!id());
-    ASSERT(!size.isEmpty());
+    DCHECK(!id());
+    DCHECK(!size.isEmpty());
 
     setDimensions(size, format);
     setId(m_resourceProvider->createResource(pool, size, format, hint));
 
-#if !ASSERT_DISABLED
+#ifndef NDEBUG
     m_allocateThreadIdentifier = base::PlatformThread::CurrentId();
 #endif
 
@@ -37,7 +37,9 @@ bool CCScopedTexture::allocate(int pool, const IntSize& size, GC3Denum format, C
 void CCScopedTexture::free()
 {
     if (id()) {
-        ASSERT(m_allocateThreadIdentifier == base::PlatformThread::CurrentId());
+#ifndef NDEBUG
+        DCHECK(m_allocateThreadIdentifier == base::PlatformThread::CurrentId());
+#endif
         m_resourceProvider->deleteResource(id());
     }
     setId(0);

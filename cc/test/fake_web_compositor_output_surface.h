@@ -5,6 +5,7 @@
 #ifndef FakeWebCompositorOutputSurface_h
 #define FakeWebCompositorOutputSurface_h
 
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/test/fake_web_compositor_software_output_device.h"
 #include <public/WebCompositorOutputSurface.h>
@@ -28,7 +29,7 @@ public:
     {
         if (!m_context3D)
             return true;
-        ASSERT(client);
+        DCHECK(client);
         if (!m_context3D->makeContextCurrent())
             return false;
         m_client = client;

@@ -90,20 +90,20 @@ CCRenderPass::Id CCDelegatedRendererLayerImpl::nextContributingRenderPassId(CCRe
 CCRenderPass::Id CCDelegatedRendererLayerImpl::convertDelegatedRenderPassId(CCRenderPass::Id delegatedRenderPassId) const
 {
     base::hash_map<CCRenderPass::Id, int>::const_iterator it = m_renderPassesIndexById.find(delegatedRenderPassId);
-    ASSERT(it != m_renderPassesIndexById.end());
+    DCHECK(it != m_renderPassesIndexById.end());
     unsigned delegatedRenderPassIndex = it->second;
     return CCRenderPass::Id(id(), indexToId(delegatedRenderPassIndex));
 }
 
 void CCDelegatedRendererLayerImpl::appendContributingRenderPasses(CCRenderPassSink& renderPassSink)
 {
-    ASSERT(hasContributingDelegatedRenderPasses());
+    DCHECK(hasContributingDelegatedRenderPasses());
 
     for (size_t i = 0; i < m_renderPassesInDrawOrder.size() - 1; ++i) {
         CCRenderPass::Id outputRenderPassId = convertDelegatedRenderPassId(m_renderPassesInDrawOrder[i]->id());
 
         // Don't clash with the RenderPass we generate if we own a RenderSurface.
-        ASSERT(outputRenderPassId.index > 0);
+        DCHECK(outputRenderPassId.index > 0);
 
         renderPassSink.appendRenderPass(m_renderPassesInDrawOrder[i]->copy(outputRenderPassId));
     }
@@ -123,13 +123,13 @@ void CCDelegatedRendererLayerImpl::appendQuads(CCQuadSink& quadSink, CCAppendQua
     bool shouldMergeRootRenderPassWithTarget = !targetRenderPassId.index;
     if (shouldMergeRootRenderPassWithTarget) {
         // Verify that the renderPass we are appending to is created our renderTarget.
-        ASSERT(targetRenderPassId.layerId == renderTarget()->id());
+        DCHECK(targetRenderPassId.layerId == renderTarget()->id());
 
         CCRenderPass* rootDelegatedRenderPass = m_renderPassesInDrawOrder.last();
         appendRenderPassQuads(quadSink, appendQuadsData, rootDelegatedRenderPass);
     } else {
         // Verify that the renderPass we are appending to was created by us.
-        ASSERT(targetRenderPassId.layerId == id());
+        DCHECK(targetRenderPassId.layerId == id());
 
         int renderPassIndex = idToIndex(targetRenderPassId.index);
         CCRenderPass* delegatedRenderPass = m_renderPassesInDrawOrder[renderPassIndex];
@@ -150,16 +150,16 @@ void CCDelegatedRendererLayerImpl::appendRenderPassQuads(CCQuadSink& quadSink, C
             bool targetIsFromDelegatedRendererLayer = appendQuadsData.renderPassId.layerId == id();
             if (!targetIsFromDelegatedRendererLayer) {
               // Should be the root render pass.
-              ASSERT(delegatedRenderPass == m_renderPassesInDrawOrder.last());
+              DCHECK(delegatedRenderPass == m_renderPassesInDrawOrder.last());
               // This layer must be drawing to a renderTarget other than itself.
-              ASSERT(renderTarget() != this);
+              DCHECK(renderTarget() != this);
 
               copiedSharedQuadState->clippedRectInTarget = CCMathUtil::mapClippedRect(drawTransform(), copiedSharedQuadState->clippedRectInTarget);
               copiedSharedQuadState->quadTransform = copiedSharedQuadState->quadTransform * drawTransform();
               copiedSharedQuadState->opacity *= drawOpacity();
             }
         }
-        ASSERT(copiedSharedQuadState);
+        DCHECK(copiedSharedQuadState);
 
         scoped_ptr<CCDrawQuad> copyQuad;
         if (quad->material() != CCDrawQuad::RenderPass)
@@ -167,11 +167,11 @@ void CCDelegatedRendererLayerImpl::appendRenderPassQuads(CCQuadSink& quadSink, C
         else {
             CCRenderPass::Id contributingDelegatedRenderPassId = CCRenderPassDrawQuad::materialCast(quad)->renderPassId();
             CCRenderPass::Id contributingRenderPassId = convertDelegatedRenderPassId(contributingDelegatedRenderPassId);
-            ASSERT(contributingRenderPassId != appendQuadsData.renderPassId);
+            DCHECK(contributingRenderPassId != appendQuadsData.renderPassId);
 
             copyQuad = CCRenderPassDrawQuad::materialCast(quad)->copy(copiedSharedQuadState, contributingRenderPassId).PassAs<CCDrawQuad>();
         }
-        ASSERT(copyQuad.get());
+        DCHECK(copyQuad.get());
 
         quadSink.append(copyQuad.Pass(), appendQuadsData);
     }

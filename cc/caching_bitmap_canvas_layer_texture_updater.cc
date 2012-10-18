@@ -45,7 +45,7 @@ void CachingBitmapCanvasLayerTextureUpdater::prepareToUpdate(
 
   const SkBitmap& new_bitmap = m_canvas->getDevice()->accessBitmap(false);
   SkAutoLockPixels lock(new_bitmap);
-  ASSERT(new_bitmap.bytesPerPixel() > 0);
+  DCHECK(new_bitmap.bytesPerPixel() > 0);
   pixels_did_change_ = new_bitmap.config() != cached_bitmap_.config() ||
                        new_bitmap.height() != cached_bitmap_.height() ||
                        new_bitmap.width() != cached_bitmap_.width() ||

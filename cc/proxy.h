@@ -6,6 +6,7 @@
 #define CCProxy_h
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include <public/WebCompositorOutputSurface.h>
 
 namespace cc {
@@ -81,10 +82,10 @@ public:
     virtual void acquireLayerTextures() = 0;
 
     // Debug hooks
-#ifndef NDEBUG
     static bool isMainThread();
     static bool isImplThread();
     static bool isMainThreadBlocked();
+#ifndef NDEBUG
     static void setMainThreadBlocked(bool);
 #endif
 
@@ -108,15 +109,15 @@ class DebugScopedSetMainThreadBlocked {
 public:
     DebugScopedSetMainThreadBlocked()
     {
-#if !ASSERT_DISABLED
-        ASSERT(!CCProxy::isMainThreadBlocked());
+#ifndef NDEBUG
+        DCHECK(!CCProxy::isMainThreadBlocked());
         CCProxy::setMainThreadBlocked(true);
 #endif
     }
     ~DebugScopedSetMainThreadBlocked()
     {
-#if !ASSERT_DISABLED
-        ASSERT(CCProxy::isMainThreadBlocked());
+#ifndef NDEBUG
+        DCHECK(CCProxy::isMainThreadBlocked());
         CCProxy::setMainThreadBlocked(false);
 #endif
     }

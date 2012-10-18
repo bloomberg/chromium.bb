@@ -225,7 +225,7 @@ private:
 // will significantly degrade performance.
 #define DEBUG_GL_CALLS 0
 
-#if DEBUG_GL_CALLS && !defined ( NDEBUG )
+#if DEBUG_GL_CALLS && !defined(NDEBUG)
 #define GLC(context, x) (x, CCRendererGL::debugGLCall(&*context, #x, __FILE__, __LINE__))
 #else
 #define GLC(context, x) (x)

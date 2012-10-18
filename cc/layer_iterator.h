@@ -125,7 +125,7 @@ private:
     {
         for (size_t i = 0; i < renderSurfaceLayerList->size(); ++i) {
             if (!(*renderSurfaceLayerList)[i]->renderSurface()) {
-                ASSERT_NOT_REACHED();
+                NOTREACHED();
                 m_actions.end(*this);
                 return;
             }

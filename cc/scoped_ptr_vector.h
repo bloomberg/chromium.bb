@@ -6,6 +6,7 @@
 #define CC_SCOPED_PTR_VECTOR_H_
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 
@@ -31,7 +32,7 @@ class ScopedPtrVector {
   }
 
   T* Peek(size_t index) const {
-    ASSERT(index < size());
+    DCHECK(index < size());
     return data_[index];
   }
 
@@ -40,12 +41,12 @@ class ScopedPtrVector {
   }
 
   T* first() const {
-    ASSERT(!isEmpty());
+    DCHECK(!isEmpty());
     return Peek(0);
   }
 
   T* last() const {
-    ASSERT(!isEmpty());
+    DCHECK(!isEmpty());
     return Peek(size() - 1);
   }
 
@@ -54,14 +55,14 @@ class ScopedPtrVector {
   }
 
   scoped_ptr<T> take(size_t index) {
-    ASSERT(index < size());
+    DCHECK(index < size());
     scoped_ptr<T> ret(data_[index]);
     data_[index] = NULL;
     return ret.Pass();
   }
 
   void remove(size_t index) {
-    ASSERT(index < size());
+    DCHECK(index < size());
     delete data_[index];
     data_.erase(data_.begin() + index);
   }
@@ -75,7 +76,7 @@ class ScopedPtrVector {
   }
 
   void insert(size_t index, scoped_ptr<T> item) {
-    ASSERT(index < size());
+    DCHECK(index < size());
     data_.insert(data_.begin() + index, item.release());
   }
 

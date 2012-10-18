@@ -6,8 +6,9 @@
 
 #include "CCScheduler.h"
 
-#include "base/debug/trace_event.h"
 #include "base/auto_reset.h"
+#include "base/debug/trace_event.h"
+#include "base/logging.h"
 
 namespace cc {
 
@@ -16,9 +17,9 @@ CCScheduler::CCScheduler(CCSchedulerClient* client, scoped_ptr<CCFrameRateContro
     , m_frameRateController(frameRateController.Pass())
     , m_insideProcessScheduledActions(false)
 {
-    ASSERT(m_client);
+    DCHECK(m_client);
     m_frameRateController->setClient(this);
-    ASSERT(!m_stateMachine.vsyncCallbackNeeded());
+    DCHECK(!m_stateMachine.vsyncCallbackNeeded());
 }
 
 CCScheduler::~CCScheduler()

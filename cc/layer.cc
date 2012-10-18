@@ -77,7 +77,7 @@ LayerChromium::~LayerChromium()
 {
     // Our parent should be holding a reference to us so there should be no
     // way for us to be destroyed while we still have a parent.
-    ASSERT(!parent());
+    DCHECK(!parent());
 
     // Remove the parent reference from all children.
     removeAllChildren();
@@ -125,7 +125,7 @@ IntRect LayerChromium::layerRectToContentRect(const WebKit::WebRect& layerRect)
 
 void LayerChromium::setParent(LayerChromium* layer)
 {
-    ASSERT(!layer || !layer->hasAncestor(this));
+    DCHECK(!layer || !layer->hasAncestor(this));
     m_parent = layer;
     setLayerTreeHost(m_parent ? m_parent->layerTreeHost() : 0);
 }
@@ -186,7 +186,7 @@ void LayerChromium::replaceChild(LayerChromium* reference, scoped_refptr<LayerCh
 
     int referenceIndex = indexOfChild(reference);
     if (referenceIndex == -1) {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return;
     }
 
@@ -234,7 +234,7 @@ void LayerChromium::removeAllChildren()
 {
     while (m_children.size()) {
         LayerChromium* layer = m_children[0].get();
-        ASSERT(layer->parent());
+        DCHECK(layer->parent());
         layer->removeFromParent();
     }
 }
@@ -654,7 +654,7 @@ void LayerChromium::setBoundsContainPageScale(bool boundsContainPageScale)
 
 void LayerChromium::createRenderSurface()
 {
-    ASSERT(!m_renderSurface);
+    DCHECK(!m_renderSurface);
     m_renderSurface = make_scoped_ptr(new RenderSurfaceChromium(this));
     setRenderTarget(this);
 }

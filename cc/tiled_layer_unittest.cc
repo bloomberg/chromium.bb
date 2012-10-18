@@ -100,7 +100,7 @@ public:
     void updateTextures()
     {
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
-        ASSERT(m_queue);
+        DCHECK(m_queue);
         scoped_ptr<CCTextureUpdateController> updateController =
             CCTextureUpdateController::create(
                 NULL,

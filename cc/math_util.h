@@ -5,6 +5,7 @@
 #ifndef CCMathUtil_h
 #define CCMathUtil_h
 
+#include "base/logging.h"
 #include "FloatPoint.h"
 #include "FloatPoint3D.h"
 
@@ -38,7 +39,7 @@ struct HomogeneousCoordinate {
             return FloatPoint(x, y);
 
         // For now, because this code is used privately only by CCMathUtil, it should never be called when w == 0, and we do not yet need to handle that case.
-        ASSERT(w);
+        DCHECK(w);
         double invW = 1.0 / w;
         return FloatPoint(x * invW, y * invW);
     }
@@ -49,7 +50,7 @@ struct HomogeneousCoordinate {
             return FloatPoint3D(x, y, z);
 
         // For now, because this code is used privately only by CCMathUtil, it should never be called when w == 0, and we do not yet need to handle that case.
-        ASSERT(w);
+        DCHECK(w);
         double invW = 1.0 / w;
         return FloatPoint3D(x * invW, y * invW, z * invW);
     }

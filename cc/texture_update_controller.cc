@@ -121,9 +121,9 @@ void CCTextureUpdateController::updateTexture(ResourceUpdate update)
         IntSize destOffset = update.dest_offset;
 
         texture->acquireBackingTexture(m_resourceProvider);
-        ASSERT(texture->haveBackingTexture());
+        DCHECK(texture->haveBackingTexture());
 
-        ASSERT(m_resourceProvider->resourceType(texture->resourceId()) ==
+        DCHECK(m_resourceProvider->resourceType(texture->resourceId()) ==
                CCResourceProvider::GLTexture);
 
         WebGraphicsContext3D* paintContext = CCProxy::hasImplThread() ?

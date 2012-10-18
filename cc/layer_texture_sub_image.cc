@@ -93,7 +93,7 @@ void LayerTextureSubImage::uploadWithMapTexSubImage(const uint8_t* image, const 
         componentsPerPixel = 1;
         break;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
     unsigned int bytesPerComponent = 1;
 

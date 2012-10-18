@@ -66,9 +66,9 @@ static HomogeneousCoordinate computeClippedPointForEdge(const HomogeneousCoordin
     // Once paramter t is known, the rest of p can be computed via p = (1-t) h1 + (t) h2.
 
     // Technically this is a special case of the following assertion, but its a good idea to keep it an explicit sanity check here.
-    ASSERT(h2.w != h1.w);
+    DCHECK(h2.w != h1.w);
     // Exactly one of h1 or h2 (but not both) must be on the negative side of the w plane when this is called.
-    ASSERT(h1.shouldBeClipped() ^ h2.shouldBeClipped());
+    DCHECK(h1.shouldBeClipped() ^ h2.shouldBeClipped());
 
     double w = 0.00001; // or any positive non-zero small epsilon
 
@@ -165,7 +165,7 @@ void CCMathUtil::mapClippedQuad(const WebTransformationMatrix& transform, const 
     if (h4.shouldBeClipped() ^ h1.shouldBeClipped())
         addVertexToClippedQuad(computeClippedPointForEdge(h4, h1).cartesianPoint2d(), clippedQuad, numVerticesInClippedQuad);
 
-    ASSERT(numVerticesInClippedQuad <= 8);
+    DCHECK(numVerticesInClippedQuad <= 8);
 }
 
 FloatRect CCMathUtil::computeEnclosingRectOfVertices(FloatPoint vertices[], int numVertices)
