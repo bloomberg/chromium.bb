@@ -70,11 +70,6 @@ HostStarter::HostStarter(
       consent_to_data_collection_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       weak_ptr_(weak_ptr_factory_.GetWeakPtr()) {
-  oauth_client_info_.client_id =
-    google_apis::GetOAuth2ClientID(google_apis::CLIENT_REMOTING);
-  oauth_client_info_.client_secret =
-    google_apis::GetOAuth2ClientSecret(google_apis::CLIENT_REMOTING);
-  oauth_client_info_.redirect_uri = GetOauthRedirectUrl();
   main_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
 
@@ -102,6 +97,7 @@ void HostStarter::StartHost(
     const std::string& host_pin,
     bool consent_to_data_collection,
     const std::string& auth_code,
+    const std::string& redirect_url,
     CompletionCallback on_done) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (in_progress_) {
@@ -113,6 +109,11 @@ void HostStarter::StartHost(
   host_pin_ = host_pin;
   consent_to_data_collection_ = consent_to_data_collection;
   on_done_ = on_done;
+  oauth_client_info_.client_id =
+      google_apis::GetOAuth2ClientID(google_apis::CLIENT_REMOTING);
+  oauth_client_info_.client_secret =
+      google_apis::GetOAuth2ClientSecret(google_apis::CLIENT_REMOTING);
+  oauth_client_info_.redirect_uri = redirect_url;
   // Map the authorization code to refresh and access tokens.
   oauth_client_->GetTokensFromAuthCode(oauth_client_info_, auth_code,
                                        kMaxGetTokensRetries, this);

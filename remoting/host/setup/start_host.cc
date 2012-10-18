@@ -12,6 +12,7 @@
 #include "base/threading/thread.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/host/setup/host_starter.h"
+#include "remoting/host/setup/oauth_helper.h"
 #include "remoting/host/setup/pin_validator.h"
 #include "remoting/host/url_request_context.h"
 
@@ -92,10 +93,12 @@ int main(int argc, char** argv) {
   std::string host_name = command_line->GetSwitchValueASCII("name");
   std::string host_pin = command_line->GetSwitchValueASCII("pin");
   std::string auth_code = command_line->GetSwitchValueASCII("code");
+  std::string redirect_url = command_line->GetSwitchValueASCII("redirect-url");
 
   if (host_name.empty()) {
     fprintf(stderr,
-            "Usage: %s --name=<hostname> [--code=<auth-code>] [--pin=<PIN>]\n",
+            "Usage: %s --name=<hostname> [--code=<auth-code>] [--pin=<PIN>] "
+            "[--redirect-url=<redirectURL>]\n",
             argv[0]);
     return 1;
   }
@@ -154,7 +157,10 @@ int main(int argc, char** argv) {
   // Start the host.
   scoped_ptr<HostStarter> host_starter(
       HostStarter::Create(url_request_context_getter));
-  host_starter->StartHost(host_name, host_pin, true, auth_code,
+  if (redirect_url.empty()) {
+    redirect_url = remoting::GetDefaultOauthRedirectUrl();
+  }
+  host_starter->StartHost(host_name, host_pin, true, auth_code, redirect_url,
                           base::Bind(&OnDone));
 
   // Run the message loop until the StartHost completion callback.

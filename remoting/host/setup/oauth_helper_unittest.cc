@@ -18,49 +18,58 @@ std::string Replace(const std::string& s, const std::string& old_substr,
       s.substr(pos + old_substr.length(), std::string::npos);
 }
 
+std::string GetTestRedirectUrl() {
+  return std::string("https://google.com/redirect");
+}
+
 }  // namespace
 
 namespace remoting {
 
 TEST(OauthHelperTest, TestNotCode) {
-  ASSERT_EQ("", GetOauthCodeInUrl("notURL"));
+  ASSERT_EQ("", GetOauthCodeInUrl("notURL", GetTestRedirectUrl()));
 }
 
 TEST(OauthHelperTest, TestVeryShort) {
-  ASSERT_EQ("", GetOauthCodeInUrl(GetOauthRedirectUrl()));
+  ASSERT_EQ("", GetOauthCodeInUrl(GetTestRedirectUrl(), GetTestRedirectUrl()));
 }
 
 TEST(OauthHelperTest, TestEmptyQuery) {
-  ASSERT_EQ("", GetOauthCodeInUrl(GetOauthRedirectUrl() + "?"));
+  ASSERT_EQ("", GetOauthCodeInUrl(GetTestRedirectUrl() + "?",
+                                  GetTestRedirectUrl()));
 }
 
 TEST(OauthHelperTest, TestNoQueryValue) {
-  ASSERT_EQ("", GetOauthCodeInUrl(GetOauthRedirectUrl() + "?code"));
+  ASSERT_EQ("", GetOauthCodeInUrl(GetTestRedirectUrl() + "?code",
+                                  GetTestRedirectUrl()));
 }
 
 TEST(OauthHelperTest, TestEmptyCode) {
-  ASSERT_EQ("", GetOauthCodeInUrl(GetOauthRedirectUrl() + "?code="));
+  ASSERT_EQ("", GetOauthCodeInUrl(GetTestRedirectUrl() + "?code=",
+                                  GetTestRedirectUrl()));
 }
 
 TEST(OauthHelperTest, TestCode) {
-  ASSERT_EQ("Dummy", GetOauthCodeInUrl(GetOauthRedirectUrl() + "?code=Dummy"));
+  ASSERT_EQ("Dummy", GetOauthCodeInUrl(GetTestRedirectUrl() + "?code=Dummy",
+                                       GetTestRedirectUrl()));
 }
 
 TEST(OauthHelperTest, TestCodeInLongQuery) {
-  ASSERT_EQ("Dummy", GetOauthCodeInUrl(GetOauthRedirectUrl() +
-                                       "?x=1&code=Dummy&y=2"));
+  ASSERT_EQ("Dummy", GetOauthCodeInUrl(GetTestRedirectUrl() +
+                                           "?x=1&code=Dummy&y=2",
+                                       GetTestRedirectUrl()));
 }
 
 TEST(OauthHelperTest, TestBadScheme) {
-  std::string url = GetOauthRedirectUrl() + "?code=Dummy";
+  std::string url = GetTestRedirectUrl() + "?code=Dummy";
   url = Replace(url, "https:", "http");
-  ASSERT_EQ("", GetOauthCodeInUrl(url));
+  ASSERT_EQ("", GetOauthCodeInUrl(url, GetTestRedirectUrl()));
 }
 
 TEST(OauthHelperTest, TestBadHost) {
-  std::string url = GetOauthRedirectUrl() + "?code=Dummy";
+  std::string url = GetTestRedirectUrl() + "?code=Dummy";
   url = Replace(url, "google", "goggle");
-  ASSERT_EQ("", GetOauthCodeInUrl(url));
+  ASSERT_EQ("", GetOauthCodeInUrl(url, GetTestRedirectUrl()));
 }
 
 }  // namespace remoting

@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
+#include "remoting/host/setup/oauth_helper.h"
 #include "remoting/host/setup/pin_validator.h"
 #include "remoting/host/setup/win/load_string_from_resource.h"
 
@@ -73,6 +74,7 @@ void StartHostWindow::OnOk(UINT code, int id, HWND control) {
 void StartHostWindow::OnAuthCode(const std::string& auth_code) {
   host_starter_->StartHost(
       host_name_, pin_, consent_to_collect_data_, auth_code,
+      GetDefaultOauthRedirectUrl(),
       base::Bind(&StartHostWindow::OnHostStarted, weak_ptr_));
 }
 

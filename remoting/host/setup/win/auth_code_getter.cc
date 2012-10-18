@@ -40,7 +40,8 @@ void AuthCodeGetter::GetAuthCode(
     return;
   }
   browser_running_ = true;
-  base::win::ScopedBstr url(UTF8ToWide(GetOauthStartUrl()).c_str());
+  base::win::ScopedBstr url(UTF8ToWide(
+      GetOauthStartUrl(GetDefaultOauthRedirectUrl())).c_str());
   base::win::ScopedVariant empty_variant;
   hr = browser_->Navigate(url, empty_variant.AsInput(), empty_variant.AsInput(),
                           empty_variant.AsInput(), empty_variant.AsInput());
@@ -77,7 +78,8 @@ bool AuthCodeGetter::TestBrowserUrl(std::string* auth_code) {
     KillBrowser();
     return true;
   }
-  *auth_code = GetOauthCodeInUrl(WideToUTF8(static_cast<BSTR>(url)));
+  *auth_code = GetOauthCodeInUrl(WideToUTF8(static_cast<BSTR>(url)),
+                                 GetDefaultOauthRedirectUrl());
   if (!auth_code->empty()) {
     KillBrowser();
     return true;

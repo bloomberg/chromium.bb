@@ -30,39 +30,40 @@ std::string GetOauthScope() {
       "https://www.googleapis.com/auth/userinfo.email ";
 }
 
-std::string GetOauthStartUrl() {
-  return base::StringPrintf(
-    "https://accounts.google.com/o/oauth2/auth"
-    "?scope=%s"
-    "&redirect_uri=%s"
-    "&response_type=code"
-    "&client_id=%s"
-    "&access_type=offline"
-    "&approval_prompt=force",
-    net::EscapeUrlEncodedData(GetOauthScope(), true).c_str(),
-    net::EscapeUrlEncodedData(GetOauthRedirectUrl(), true).c_str(),
-    net::EscapeUrlEncodedData(google_apis::GetOAuth2ClientID(
-        google_apis::CLIENT_REMOTING), true).c_str());
-}
-
-std::string GetOauthRedirectUrl() {
+std::string GetDefaultOauthRedirectUrl() {
   return
-    "https://chromoting-oauth.talkgadget.google.com/talkgadget/oauth/"
-    "chrome-remote-desktop/rel/kgngmbheleoaphbjbaiobfdepmghbfah";
+      "https://chromoting-oauth.talkgadget.google.com/talkgadget/oauth/"
+      "chrome-remote-desktop/rel/kgngmbheleoaphbjbaiobfdepmghbfah";
 }
 
-std::string GetOauthCodeInUrl(const std::string& url) {
+std::string GetOauthStartUrl(const std::string& redirect_url) {
+  return base::StringPrintf(
+      "https://accounts.google.com/o/oauth2/auth"
+      "?scope=%s"
+      "&redirect_uri=%s"
+      "&response_type=code"
+      "&client_id=%s"
+      "&access_type=offline"
+      "&approval_prompt=force",
+      net::EscapeUrlEncodedData(GetOauthScope(), true).c_str(),
+      redirect_url.c_str(),
+      net::EscapeUrlEncodedData(google_apis::GetOAuth2ClientID(
+          google_apis::CLIENT_REMOTING), true).c_str());
+}
+
+std::string GetOauthCodeInUrl(const std::string& url,
+                              const std::string& redirect_url) {
   url_parse::Parsed url_parsed;
   ParseStandardURL(url.c_str(), url.length(), &url_parsed);
-  std::string redirect = GetOauthRedirectUrl();
-  url_parse::Parsed redirect_parsed;
-  ParseStandardURL(redirect.c_str(), redirect.length(), &redirect_parsed);
+  url_parse::Parsed redirect_url_parsed;
+  ParseStandardURL(redirect_url.c_str(), redirect_url.length(),
+                   &redirect_url_parsed);
   if (GetComponent(url, url_parsed.scheme) !=
-      GetComponent(redirect, redirect_parsed.scheme)) {
+      GetComponent(redirect_url, redirect_url_parsed.scheme)) {
     return "";
   }
   if (GetComponent(url, url_parsed.host) !=
-      GetComponent(redirect, redirect_parsed.host)) {
+      GetComponent(redirect_url, redirect_url_parsed.host)) {
     return "";
   }
   url_parse::Component query = url_parsed.query;

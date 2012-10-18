@@ -12,11 +12,11 @@ namespace remoting {
 // Gets the OAuth scope of the host's refresh token.
 std::string GetOauthScope();
 
-// Gets a URL at which the OAuth dance starts.
-std::string GetOauthStartUrl();
+// Gets the default redirect URL for the OAuth dance.
+std::string GetDefaultOauthRedirectUrl();
 
-// Gets a redirect URL for the OAuth dance.
-std::string GetOauthRedirectUrl();
+// Gets a URL at which the OAuth dance starts.
+std::string GetOauthStartUrl(const std::string& redirect_url);
 
 // Returns the OAuth authorization code embedded in a URL, or the empty string
 // if there is no such code.
@@ -25,7 +25,8 @@ std::string GetOauthRedirectUrl();
 // and grant the requested permissions, (iv) monitor the URLs that the browser
 // shows, passing each one to |GetOauthCodeInUrl()|, until that function returns
 // a non-empty string. That string is the authorization code.
-std::string GetOauthCodeInUrl(const std::string& url);
+std::string GetOauthCodeInUrl(const std::string& url,
+                              const std::string& redirect_url);
 
 }  // namespace remoting
 
