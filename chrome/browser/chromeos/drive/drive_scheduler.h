@@ -170,6 +170,9 @@ class DriveScheduler
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<DriveScheduler> weak_ptr_factory_;
 
+  // Whether this instance is initialized or not.
+  bool initialized_;
+
   DISALLOW_COPY_AND_ASSIGN(DriveScheduler);
 };
 

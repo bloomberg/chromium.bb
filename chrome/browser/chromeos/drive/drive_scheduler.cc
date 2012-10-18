@@ -59,22 +59,28 @@ DriveScheduler::DriveScheduler(Profile* profile,
       disable_throttling_(false),
       drive_operations_(drive_operations),
       profile_(profile),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      initialized_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 DriveScheduler::~DriveScheduler() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
+  DCHECK(initialized_);
   net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
 }
 
 void DriveScheduler::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
-}
+  // Initialize() may be called more than once for the lifetime when the
+  // file system is remounted.
+  if (initialized_)
+    return;
 
+  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
+  initialized_ = true;
+}
 
 void DriveScheduler::Remove(const FilePath& file_path,
                             bool is_recursive,
