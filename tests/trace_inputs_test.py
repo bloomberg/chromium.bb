@@ -382,6 +382,43 @@ if sys.platform != 'win32':
       }
       self.assertEquals(expected, self._load_context(lines, ROOT_DIR))
 
+    def test_futex_missing_in_action(self):
+      # That's how futex() calls roll.
+      lines = [
+        (self._ROOT_PID,
+          'clone(child_stack=0x7fae9f4bed70, flags=CLONE_VM|CLONE_FS|'
+          'CLONE_FILES|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|CLONE_SETTLS|'
+          'CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID, '
+          'parent_tidptr=0x7fae9f4bf9d0, tls=0x7fae9f4bf700, '
+          'child_tidptr=0x7fae9f4bf9d0) = 3862'),
+        (self._ROOT_PID,
+          'futex(0x1407670, FUTEX_WAIT_PRIVATE, 2, {0, 0}) = -1 EAGAIN '
+          '(Resource temporarily unavailable)'),
+        (self._ROOT_PID, 'futex(0x1407670, FUTEX_WAKE_PRIVATE, 1) = 0'),
+        (self._ROOT_PID, 'close(9)                                = 0'),
+        (self._ROOT_PID, 'futex('),
+      ]
+      expected = {
+        'root': {
+          'children': [
+            {
+              'children': [],
+              'command': None,
+              'executable': None,
+              'files': [],
+              'initial_cwd': unicode(ROOT_DIR),
+              'pid': 3862,
+            },
+          ],
+          'command': None,
+          'executable': None,
+          'files': [],
+          'initial_cwd': unicode(ROOT_DIR),
+          'pid': self._ROOT_PID,
+        },
+      }
+      self.assertEquals(expected, self._load_context(lines, ROOT_DIR))
+
     def test_open(self):
       lines = [
         (self._ROOT_PID,

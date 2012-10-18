@@ -1047,6 +1047,9 @@ class Strace(ApiBase):
       # last line in the log.
       RE_UNFINISHED_EXIT = re.compile(
           r'^([^\(]+)(.*) \<unfinished \.\.\.\ exit status \d+>$')
+      # An interrupted function call the hard way. Usually observed with futex()
+      # on ubuntu 12.04.
+      RE_INTERRUPTED_HARD = re.compile(r'^([^\(]+)\($')
       # A resumed function call.
       RE_RESUMED = re.compile(r'^<\.\.\. ([^ ]+) resumed> (.+)$')
       # A process received a signal.
@@ -1192,7 +1195,9 @@ class Strace(ApiBase):
                 match.group(1) + match.group(2))
             return
 
-          match = self.RE_UNFINISHED_EXIT.match(line)
+          match = (
+              self.RE_UNFINISHED_EXIT.match(line) or
+              self.RE_INTERRUPTED_HARD.match(line))
           if match:
             # The process died. No other line can be processed afterward.
             self._done = True
