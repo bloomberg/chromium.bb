@@ -177,6 +177,7 @@ WebIntentPickerController::WebIntentPickerController(
       window_disposition_source_(NULL),
       source_intents_dispatcher_(NULL),
       intents_dispatcher_(NULL),
+      location_bar_button_indicated_(true),
       service_tab_(NULL),
       icon_loader_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
@@ -849,6 +850,7 @@ void WebIntentPickerController::SetWindowDispositionSource(
     content::WebIntentsDispatcher* dispatcher) {
   DCHECK(source);
   DCHECK(dispatcher);
+  location_bar_button_indicated_ = false;
   window_disposition_source_ = source;
   if (window_disposition_source_) {
     // This object is self-deleting when the source WebContents is destroyed.
