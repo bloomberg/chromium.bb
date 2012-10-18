@@ -4,10 +4,13 @@
 
 #include "chrome/browser/prerender/prerender_local_predictor.h"
 
-#include <algorithm>
 #include <ctype.h>
+
+#include <algorithm>
 #include <map>
 #include <set>
+#include <string>
+#include <utility>
 
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
@@ -133,7 +136,7 @@ base::Time GetCurrentTime() {
 bool StrCaseStr(std::string haystack, std::string needle) {
   std::transform(haystack.begin(), haystack.end(), haystack.begin(), ::tolower);
   std::transform(needle.begin(), needle.end(), needle.begin(), ::tolower);
-  return (haystack.find(needle)!=std::string::npos);
+  return haystack.find(needle) != std::string::npos;
 }
 
 bool IsRootPageURL(const GURL& url) {
