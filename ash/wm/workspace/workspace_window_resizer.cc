@@ -62,23 +62,58 @@ aura::RootWindow* GetAnotherRootWindow(aura::RootWindow* root_window) {
   return root_windows[0];
 }
 
-// Returns the origin for |src| when magnetically attaching to |attach_to|
-// along the edge |edge|.
-gfx::Point OriginForMagneticAttach(const gfx::Rect& src,
-                                   const gfx::Rect& attach_to,
-                                   MagnetismEdge edge) {
+// Returns the coordinate along the secondary axis to snap to.
+int CoordinateAlongSecondaryAxis(SecondaryMagnetismEdge edge,
+                                 int leading,
+                                 int trailing,
+                                 int none) {
   switch (edge) {
-    case MAGNETISM_EDGE_TOP:
-      return gfx::Point(src.x(), attach_to.bottom());
-    case MAGNETISM_EDGE_LEFT:
-      return gfx::Point(attach_to.right(), src.y());
-    case MAGNETISM_EDGE_BOTTOM:
-      return gfx::Point(src.x(), attach_to.y() - src.height());
-    case MAGNETISM_EDGE_RIGHT:
-      return gfx::Point(attach_to.x() - src.width(), src.y());
+    case SECONDARY_MAGNETISM_EDGE_LEADING:
+      return leading;
+    case SECONDARY_MAGNETISM_EDGE_TRAILING:
+      return trailing;
+    case SECONDARY_MAGNETISM_EDGE_NONE:
+      return none;
   }
   NOTREACHED();
-  return gfx::Point();
+  return none;
+}
+
+// Returns the origin for |src| when magnetically attaching to |attach_to| along
+// the edges |edges|. |edges| is a bitmask of the MagnetismEdges.
+gfx::Point OriginForMagneticAttach(const gfx::Rect& src,
+                                   const gfx::Rect& attach_to,
+                                   const MatchedEdge& edge) {
+  int x = 0, y = 0;
+  switch (edge.primary_edge) {
+    case MAGNETISM_EDGE_TOP:
+      y = attach_to.bottom();
+      break;
+    case MAGNETISM_EDGE_LEFT:
+      x = attach_to.right();
+      break;
+    case MAGNETISM_EDGE_BOTTOM:
+      y = attach_to.y() - src.height();
+      break;
+    case MAGNETISM_EDGE_RIGHT:
+      x = attach_to.x() - src.width();
+      break;
+  }
+  switch (edge.primary_edge) {
+    case MAGNETISM_EDGE_TOP:
+    case MAGNETISM_EDGE_BOTTOM:
+      x = CoordinateAlongSecondaryAxis(
+          edge.secondary_edge, attach_to.x(), attach_to.right() - src.width(),
+          src.x());
+      break;
+    case MAGNETISM_EDGE_LEFT:
+    case MAGNETISM_EDGE_RIGHT:
+      y = CoordinateAlongSecondaryAxis(
+          edge.secondary_edge, attach_to.y(), attach_to.bottom() - src.height(),
+          src.y());
+      break;
+  }
+  return gfx::Point(x, y);
 }
 
 }  // namespace
@@ -256,8 +291,7 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
       num_mouse_moves_since_bounds_change_(0),
       layer_(NULL),
       destroyed_(NULL),
-      magnetism_window_(NULL),
-      magnetism_edge_(MAGNETISM_EDGE_TOP) {
+      magnetism_window_(NULL) {
   DCHECK(details_.is_resizable);
 
   Shell* shell = Shell::GetInstance();
@@ -387,12 +421,12 @@ void WorkspaceWindowResizer::CalculateAttachedSizes(
 }
 
 void WorkspaceWindowResizer::MagneticallySnapToOtherWindows(gfx::Rect* bounds) {
+  MagnetismMatcher matcher(*bounds);
     // If we snapped to a window then check it first. That way we don't bounce
     // around when close to multiple edges.
   if (magnetism_window_) {
     if (window_tracker_.Contains(magnetism_window_) &&
-        MagnetismMatcher::ShouldAttachOnEdge(
-            *bounds, magnetism_window_->bounds(), magnetism_edge_)) {
+        matcher.ShouldAttach(magnetism_window_->bounds(), &magnetism_edge_)) {
       bounds->set_origin(
           OriginForMagneticAttach(*bounds, magnetism_window_->bounds(),
                                   magnetism_edge_));
@@ -402,7 +436,6 @@ void WorkspaceWindowResizer::MagneticallySnapToOtherWindows(gfx::Rect* bounds) {
     magnetism_window_ = NULL;
   }
 
-  MagnetismMatcher matcher(*bounds);
   aura::Window* parent = window()->parent();
   const aura::Window::Windows& windows(parent->children());
   for (aura::Window::Windows::const_reverse_iterator i = windows.rbegin();

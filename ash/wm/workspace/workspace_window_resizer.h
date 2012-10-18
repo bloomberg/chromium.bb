@@ -211,12 +211,15 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // been deleted.
   bool* destroyed_;
 
+  // Window the drag has magnetically attached to.
   aura::Window* magnetism_window_;
 
   // Used to verify |magnetism_window_| is still valid.
   aura::WindowTracker window_tracker_;
 
-  MagnetismEdge magnetism_edge_;
+  // If |magnetism_window_| is non-NULL this indicates how the two windows
+  // should attach.
+  MatchedEdge magnetism_edge_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceWindowResizer);
 };

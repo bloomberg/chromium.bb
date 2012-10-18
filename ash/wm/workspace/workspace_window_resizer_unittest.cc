@@ -1067,21 +1067,24 @@ TEST_F(WorkspaceWindowResizerTest, MagneticallyAttach) {
   scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
       window_.get(), gfx::Point(), HTCAPTION, empty_windows()));
   ASSERT_TRUE(resizer.get());
-  // Move |window| one pixel to the left of |window2|.
+  // Move |window| one pixel to the left of |window2|. Should snap to right and
+  // top.
   resizer->Drag(CalculateDragPoint(*resizer, 119, 145), 0);
-  EXPECT_EQ("130,155 20x30", window_->bounds().ToString());
+  EXPECT_EQ("130,160 20x30", window_->bounds().ToString());
 
-  // Move |window| one pixel to the right of |window2|.
+  // Move |window| one pixel to the right of |window2|. Should snap to left and
+  // top.
   resizer->Drag(CalculateDragPoint(*resizer, 164, 145), 0);
-  EXPECT_EQ("175,155 20x30", window_->bounds().ToString());
+  EXPECT_EQ("175,160 20x30", window_->bounds().ToString());
 
-  // Move |window| one pixel above |window2|.
+  // Move |window| one pixel above |window2|. Should snap to top and left.
   resizer->Drag(CalculateDragPoint(*resizer, 142, 119), 0);
-  EXPECT_EQ("152,130 20x30", window_->bounds().ToString());
+  EXPECT_EQ("150,130 20x30", window_->bounds().ToString());
 
-  // Move |window| one pixel above the bottom of |window2|.
+  // Move |window| one pixel above the bottom of |window2|. Should snap to
+  // bottom and left.
   resizer->Drag(CalculateDragPoint(*resizer, 142, 169), 0);
-  EXPECT_EQ("152,180 20x30", window_->bounds().ToString());
+  EXPECT_EQ("150,180 20x30", window_->bounds().ToString());
 }
 
 // Verifies cursor's device scale factor is updated whe a window is moved across
