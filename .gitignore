@@ -61,8 +61,8 @@
 
 # Chromium stuff.
 /chromium/binaries/Chrome
-/ffmpeg.props
-/ffmpeg.sln
-/ffmpeg.targets
-/ffmpeg.vcxproj*
-/ffmpeg.xml
+/*.props
+/*.sln
+/*.targets
+/*.vcxproj*
+/*.xml

@@ -206,21 +206,6 @@ function build {
       echo "make -j$JOBS $lib"
       make -j$JOBS $lib
       if [ -f $lib ]; then
-        if [[ "$TARGET_ARCH" = "arm" ||
-              "$TARGET_ARCH" = "arm-neon" ]]; then
-          # Assume we are in chroot for CrOS.
-          /usr/bin/armv7a-cros-linux-gnueabi-strip $lib
-        elif [[ "$TARGET_OS" = "win" ]]; then
-          # Windows doesn't care if global symbols get stripped, saving us a
-          # cool 100KB.
-          strip $lib
-
-          # Windows binaries need /NXCOMPAT and /DYNAMICBASE.
-          editbin -nxcompat -dynamicbase $lib
-        else
-          strip -x $lib
-        fi
-
         cp $lib out
       else
         echo "Build failed!"
@@ -346,15 +331,9 @@ fi
 if [ "$TARGET_OS" = "win" ]; then
   if [ "$HOST_OS" = "win" ]; then
     if [ "$TARGET_ARCH" = "ia32" ]; then
-      add_flag_common --enable-filter=buffer
-      add_flag_common --enable-memalign-hack
-      add_flag_common --cc=mingw32-gcc
-      add_flag_common --extra-cflags=-mtune=atom
-      add_flag_common --extra-cflags=-U__STRICT_ANSI__
-      add_flag_common --extra-cflags=-I/usr/local/include
-      add_flag_common --extra-ldflags=-L/usr/local/lib
-      add_flag_common --extra-ldflags=-Wl,--enable-auto-import
-      add_flag_common --extra-ldflags=-Wl,--no-seh
+      add_flag_common --toolchain=msvc
+      add_flag_common --enable-yasm
+      add_flag_common --extra-cflags=-I$FFMPEG_PATH/chromium/include/win
     else
       echo "Error: Unknown TARGET_ARCH=$TARGET_ARCH for TARGET_OS=$TARGET_OS!"
       exit 1
