@@ -75,7 +75,7 @@ struct RendererCapabilities {
     RendererCapabilities();
     ~RendererCapabilities();
 
-    GC3Denum bestTextureFormat;
+    GLenum bestTextureFormat;
     bool contextHasCachedFrontBuffer;
     bool usingPartialSwap;
     bool usingAcceleratedPainting;

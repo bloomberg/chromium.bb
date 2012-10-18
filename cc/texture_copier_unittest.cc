@@ -6,10 +6,10 @@
 
 #include "cc/texture_copier.h"
 
-#include "GraphicsContext3D.h"
 #include "cc/test/fake_web_graphics_context_3d.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/khronos/GLES2/gl2.h"
 
 using namespace cc;
 using namespace WebKit;
@@ -33,20 +33,20 @@ TEST(TextureCopierTest, testDrawArraysCopy)
         InSequence sequence;
 
         // Here we check just some essential properties of copyTexture() to avoid mirroring the full implementation.
-        EXPECT_CALL(*mockContext, bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, _));
+        EXPECT_CALL(*mockContext, bindFramebuffer(GL_FRAMEBUFFER, _));
 
         // Make sure linear filtering is disabled during the copy.
-        EXPECT_CALL(*mockContext, texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_MIN_FILTER, GraphicsContext3D::NEAREST));
-        EXPECT_CALL(*mockContext, texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_MAG_FILTER, GraphicsContext3D::NEAREST));
+        EXPECT_CALL(*mockContext, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+        EXPECT_CALL(*mockContext, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
 
         EXPECT_CALL(*mockContext, drawArrays(_, _, _));
 
         // Linear filtering should be restored.
-        EXPECT_CALL(*mockContext, texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_MIN_FILTER, GraphicsContext3D::LINEAR));
-        EXPECT_CALL(*mockContext, texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_MAG_FILTER, GraphicsContext3D::LINEAR));
+        EXPECT_CALL(*mockContext, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+        EXPECT_CALL(*mockContext, texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 
         // Default framebuffer should be restored
-        EXPECT_CALL(*mockContext, bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, 0));
+        EXPECT_CALL(*mockContext, bindFramebuffer(GL_FRAMEBUFFER, 0));
     }
 
     int sourceTextureId = 1;

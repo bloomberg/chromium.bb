@@ -7,7 +7,7 @@
 
 #include "base/synchronization/lock.h"
 #include "CCLayerImpl.h"
-#include "GraphicsContext3D.h"
+#include "third_party/khronos/GLES2/gl2.h"
 #include "IntSize.h"
 #include <public/WebTransformationMatrix.h>
 #include <public/WebVideoFrameProvider.h>
@@ -49,7 +49,7 @@ public:
     struct FramePlane {
         CCResourceProvider::ResourceId resourceId;
         IntSize size;
-        GC3Denum format;
+        GLenum format;
         IntSize visibleSize;
 
         FramePlane() : resourceId(0) { }
@@ -77,7 +77,7 @@ private:
     WebKit::WebTransformationMatrix m_streamTextureMatrix;
 
     WebKit::WebVideoFrame* m_frame;
-    GC3Denum m_format;
+    GLenum m_format;
     CCResourceProvider::ResourceId m_externalTextureResource;
 
     // Each index in this array corresponds to a plane in WebKit::WebVideoFrame.

@@ -10,13 +10,13 @@
 #include "CCResourceProvider.h"
 #include "CCSettings.h"
 #include "CCSingleThreadProxy.h"
-#include "GraphicsContext3D.h"
 #include "cc/test/fake_web_compositor_output_surface.h"
 #include "cc/test/fake_web_graphics_context_3d.h"
 #include "cc/test/test_common.h"
 #include "cc/test/web_compositor_initializer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/khronos/GLES2/gl2.h"
 #include <public/WebTransformationMatrix.h>
 
 using namespace cc;
@@ -34,7 +34,7 @@ public:
     virtual void setMemoryAllocationChangedCallbackCHROMIUM(WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback) { m_memoryAllocationChangedCallback = callback; }
     virtual WebString getString(WebKit::WGC3Denum name)
     {
-        if (name == GraphicsContext3D::EXTENSIONS)
+        if (name == GL_EXTENSIONS)
             return WebString("GL_CHROMIUM_set_visibility GL_CHROMIUM_gpu_memory_manager GL_CHROMIUM_discard_framebuffer");
         return WebString();
     }
@@ -241,7 +241,7 @@ public:
     virtual void getFramebufferAttachmentParameteriv(WGC3Denum target, WGC3Denum attachment, WGC3Denum pname, WGC3Dint* value) { ADD_FAILURE(); }
     virtual void getIntegerv(WGC3Denum pname, WGC3Dint* value)
     {
-        if (pname == GraphicsContext3D::MAX_TEXTURE_SIZE)
+        if (pname == GL_MAX_TEXTURE_SIZE)
             *value = 1024; // MAX_TEXTURE_SIZE is cached client side, so it's OK to query.
         else
             ADD_FAILURE();
@@ -270,7 +270,7 @@ public:
     {
         // We allow querying the extension string.
         // FIXME: It'd be better to check that we only do this before starting any other expensive work (like starting a compilation)
-        if (name != GraphicsContext3D::EXTENSIONS)
+        if (name != GL_EXTENSIONS)
             ADD_FAILURE();
         return WebString();
     }

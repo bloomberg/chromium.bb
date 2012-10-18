@@ -46,7 +46,7 @@ public:
         return scoped_ptr<LayerTextureUpdater::Texture>(new Texture(this, CCPrioritizedTexture::create(manager)));
     }
 
-    virtual SampledTexelFormat sampledTexelFormat(GC3Denum textureFormat) OVERRIDE
+    virtual SampledTexelFormat sampledTexelFormat(GLenum textureFormat) OVERRIDE
     {
         return PlatformColor::sameComponentOrder(textureFormat) ?
                 LayerTextureUpdater::SampledTexelFormatRGBA : LayerTextureUpdater::SampledTexelFormatBGRA;
@@ -138,7 +138,7 @@ void ImageLayerChromium::createTextureUpdaterIfNeeded()
         return;
 
     m_textureUpdater = ImageLayerTextureUpdater::create();
-    GC3Denum textureFormat = layerTreeHost()->rendererCapabilities().bestTextureFormat;
+    GLenum textureFormat = layerTreeHost()->rendererCapabilities().bestTextureFormat;
     setTextureFormat(textureFormat);
     setSampledTexelFormat(textureUpdater()->sampledTexelFormat(textureFormat));
 }

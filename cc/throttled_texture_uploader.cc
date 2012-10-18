@@ -6,9 +6,10 @@
 #include "cc/throttled_texture_uploader.h"
 
 #include "CCPrioritizedTexture.h"
-#include "Extensions3DChromium.h"
 #include "base/debug/trace_event.h"
 #include "base/metrics/histogram.h"
+#include "third_party/khronos/GLES2/gl2.h"
+#include "third_party/khronos/GLES2/gl2ext.h"
 #include <algorithm>
 #include <public/WebGraphicsContext3D.h>
 #include <vector>
@@ -46,18 +47,18 @@ void ThrottledTextureUploader::Query::begin()
 {
     m_hasValue = false;
     m_isNonBlocking = false;
-    m_context->beginQueryEXT(Extensions3DChromium::COMMANDS_ISSUED_CHROMIUM, m_queryId);
+    m_context->beginQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM, m_queryId);
 }
 
 void ThrottledTextureUploader::Query::end()
 {
-    m_context->endQueryEXT(Extensions3DChromium::COMMANDS_ISSUED_CHROMIUM);
+    m_context->endQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM);
 }
 
 bool ThrottledTextureUploader::Query::isPending()
 {
     unsigned available = 1;
-    m_context->getQueryObjectuivEXT(m_queryId, Extensions3DChromium::QUERY_RESULT_AVAILABLE_EXT, &available);
+    m_context->getQueryObjectuivEXT(m_queryId, GL_QUERY_RESULT_AVAILABLE_EXT, &available);
     return !available;
 }
 
@@ -70,7 +71,7 @@ void ThrottledTextureUploader::Query::wait()
 unsigned ThrottledTextureUploader::Query::value()
 {
     if (!m_hasValue) {
-        m_context->getQueryObjectuivEXT(m_queryId, Extensions3DChromium::QUERY_RESULT_EXT, &m_value);
+        m_context->getQueryObjectuivEXT(m_queryId, GL_QUERY_RESULT_EXT, &m_value);
         m_hasValue = true;
     }
     return m_value;

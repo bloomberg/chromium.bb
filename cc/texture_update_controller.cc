@@ -6,6 +6,7 @@
 
 #include "CCTextureUpdateController.h"
 
+#include "third_party/khronos/GLES2/gl2.h"
 #include "CCResourceProvider.h"
 #include "base/debug/trace_event.h"
 #include "cc/prioritized_texture.h"

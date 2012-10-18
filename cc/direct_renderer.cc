@@ -130,7 +130,7 @@ void CCDirectRenderer::decideRenderPassAllocationsForFrame(const CCRenderPassLis
 
         const CCRenderPass* renderPassInFrame = it->second;
         const IntSize& requiredSize = renderPassTextureSize(renderPassInFrame);
-        GC3Denum requiredFormat = renderPassTextureFormat(renderPassInFrame);
+        GLenum requiredFormat = renderPassTextureFormat(renderPassInFrame);
         CachedTexture* texture = passIterator->second;
         DCHECK(texture);
 
@@ -229,9 +229,9 @@ IntSize CCDirectRenderer::renderPassTextureSize(const CCRenderPass* pass)
 }
 
 // static
-GC3Denum CCDirectRenderer::renderPassTextureFormat(const CCRenderPass*)
+GLenum CCDirectRenderer::renderPassTextureFormat(const CCRenderPass*)
 {
-    return GraphicsContext3D::RGBA;
+    return GL_RGBA;
 }
 
 }

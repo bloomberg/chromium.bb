@@ -256,7 +256,7 @@ TEST(CCDrawQuadTest, copyTileDrawQuad)
     unsigned resourceId = 104;
     IntPoint textureOffset(-31, 47);
     IntSize textureSize(85, 32);
-    GC3Dint textureFilter = 82;
+    GLint textureFilter = 82;
     bool swizzleContents = true;
     bool leftEdgeAA = true;
     bool topEdgeAA = true;

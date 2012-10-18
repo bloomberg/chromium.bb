@@ -15,7 +15,7 @@ using namespace std;
 
 namespace cc {
 
-CCPrioritizedTexture::CCPrioritizedTexture(CCPrioritizedTextureManager* manager, IntSize size, GC3Denum format)
+CCPrioritizedTexture::CCPrioritizedTexture(CCPrioritizedTextureManager* manager, IntSize size, GLenum format)
     : m_size(size)
     , m_format(format)
     , m_bytes(0)
@@ -49,7 +49,7 @@ void CCPrioritizedTexture::setTextureManager(CCPrioritizedTextureManager* manage
         manager->registerTexture(this);
 }
 
-void CCPrioritizedTexture::setDimensions(IntSize size, GC3Denum format)
+void CCPrioritizedTexture::setDimensions(IntSize size, GLenum format)
 {
     if (m_format != format || m_size != size) {
         m_isAbovePriorityCutoff = false;
@@ -120,12 +120,12 @@ void CCPrioritizedTexture::unlink()
 
 void CCPrioritizedTexture::setToSelfManagedMemoryPlaceholder(size_t bytes)
 {
-    setDimensions(IntSize(), GraphicsContext3D::RGBA);
+    setDimensions(IntSize(), GL_RGBA);
     setIsSelfManaged(true);
     m_bytes = bytes;
 }
 
-CCPrioritizedTexture::Backing::Backing(unsigned id, CCResourceProvider* resourceProvider, IntSize size, GC3Denum format)
+CCPrioritizedTexture::Backing::Backing(unsigned id, CCResourceProvider* resourceProvider, IntSize size, GLenum format)
     : CCTexture(id, size, format)
     , m_owner(0)
     , m_priorityAtLastPriorityUpdate(CCPriorityCalculator::lowestPriority())

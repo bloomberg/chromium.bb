@@ -26,7 +26,7 @@ public:
     using CCTexture::format;
     using CCTexture::bytes;
 
-    bool allocate(int pool, const IntSize&, GC3Denum format, CCResourceProvider::TextureUsageHint);
+    bool allocate(int pool, const IntSize&, GLenum format, CCResourceProvider::TextureUsageHint);
     void free();
     void leak();
 

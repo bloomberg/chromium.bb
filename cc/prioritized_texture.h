@@ -5,15 +5,15 @@
 #ifndef CCPrioritizedTexture_h
 #define CCPrioritizedTexture_h
 
-#include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/logging.h"
 #include "CCPriorityCalculator.h"
 #include "CCResourceProvider.h"
 #include "CCTexture.h"
-#include "GraphicsContext3D.h"
 #include "IntRect.h"
 #include "IntSize.h"
+#include "base/basictypes.h"
+#include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
+#include "third_party/khronos/GLES2/gl2.h"
 
 namespace cc {
 
@@ -21,7 +21,7 @@ class CCPrioritizedTextureManager;
 
 class CCPrioritizedTexture {
 public:
-    static scoped_ptr<CCPrioritizedTexture> create(CCPrioritizedTextureManager* manager, IntSize size, GC3Denum format)
+    static scoped_ptr<CCPrioritizedTexture> create(CCPrioritizedTextureManager* manager, IntSize size, GLenum format)
     {
         return make_scoped_ptr(new CCPrioritizedTexture(manager, size, format));
     }
@@ -35,8 +35,8 @@ public:
     // Setting these to the same value is a no-op.
     void setTextureManager(CCPrioritizedTextureManager*);
     CCPrioritizedTextureManager* textureManager() { return m_manager; }
-    void setDimensions(IntSize, GC3Denum format);
-    GC3Denum format() const { return m_format; }
+    void setDimensions(IntSize, GLenum format);
+    GLenum format() const { return m_format; }
     IntSize size() const { return m_size; }
     size_t bytes() const { return m_bytes; }
 
@@ -88,7 +88,7 @@ private:
 
     class Backing : public CCTexture {
     public:
-        Backing(unsigned id, CCResourceProvider*, IntSize, GC3Denum format);
+        Backing(unsigned id, CCResourceProvider*, IntSize, GLenum format);
         ~Backing();
         void updatePriority();
         void updateInDrawingImplTree();
@@ -119,7 +119,7 @@ private:
         DISALLOW_COPY_AND_ASSIGN(Backing);
     };
 
-    CCPrioritizedTexture(CCPrioritizedTextureManager*, IntSize, GC3Denum format);
+    CCPrioritizedTexture(CCPrioritizedTextureManager*, IntSize, GLenum format);
 
     bool isAbovePriorityCutoff() { return m_isAbovePriorityCutoff; }
     void setAbovePriorityCutoff(bool isAbovePriorityCutoff) { m_isAbovePriorityCutoff = isAbovePriorityCutoff; }
@@ -130,7 +130,7 @@ private:
     void unlink();
 
     IntSize m_size;
-    GC3Denum m_format;
+    GLenum m_format;
     size_t m_bytes;
 
     int m_priority;

@@ -18,7 +18,6 @@
 #include "CCTextureDrawQuad.h"
 #include "CCTileDrawQuad.h"
 #include "CCYUVVideoDrawQuad.h"
-#include "Extensions3DChromium.h"
 
 namespace WebKit {
 class WebGraphicsContext3D;

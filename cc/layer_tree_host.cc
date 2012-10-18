@@ -164,7 +164,7 @@ void CCLayerTreeHost::initializeRenderer()
     m_settings.maxPartialTextureUpdates = min(m_settings.maxPartialTextureUpdates, m_proxy->maxPartialTextureUpdates());
 
     m_contentsTextureManager = CCPrioritizedTextureManager::create(0, m_proxy->rendererCapabilities().maxTextureSize, CCRenderer::ContentPool);
-    m_surfaceMemoryPlaceholder = m_contentsTextureManager->createTexture(IntSize(), GraphicsContext3D::RGBA);
+    m_surfaceMemoryPlaceholder = m_contentsTextureManager->createTexture(IntSize(), GL_RGBA);
 
     m_rendererInitialized = true;
 
@@ -621,7 +621,7 @@ size_t CCLayerTreeHost::calculateMemoryForRenderSurfaces(const LayerList& update
         LayerChromium* renderSurfaceLayer = updateList[i].get();
         RenderSurfaceChromium* renderSurface = renderSurfaceLayer->renderSurface();
 
-        size_t bytes = CCTexture::memorySizeBytes(renderSurface->contentRect().size(), GraphicsContext3D::RGBA);
+        size_t bytes = CCTexture::memorySizeBytes(renderSurface->contentRect().size(), GL_RGBA);
         contentsTextureBytes += bytes;
 
         if (renderSurfaceLayer->backgroundFilters().isEmpty())
@@ -630,7 +630,7 @@ size_t CCLayerTreeHost::calculateMemoryForRenderSurfaces(const LayerList& update
         if (bytes > maxBackgroundTextureBytes)
             maxBackgroundTextureBytes = bytes;
         if (!readbackBytes)
-            readbackBytes = CCTexture::memorySizeBytes(m_deviceViewportSize, GraphicsContext3D::RGBA);
+            readbackBytes = CCTexture::memorySizeBytes(m_deviceViewportSize, GL_RGBA);
     }
     return readbackBytes + maxBackgroundTextureBytes + contentsTextureBytes;
 }

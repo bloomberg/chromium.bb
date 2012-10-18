@@ -35,7 +35,7 @@ public:
     static scoped_refptr<BitmapCanvasLayerTextureUpdater> create(scoped_ptr<LayerPainterChromium>);
 
     virtual scoped_ptr<LayerTextureUpdater::Texture> createTexture(CCPrioritizedTextureManager*) OVERRIDE;
-    virtual SampledTexelFormat sampledTexelFormat(GC3Denum textureFormat) OVERRIDE;
+    virtual SampledTexelFormat sampledTexelFormat(GLenum textureFormat) OVERRIDE;
     virtual void prepareToUpdate(const IntRect& contentRect, const IntSize& tileSize, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, CCRenderingStats&) OVERRIDE;
     void updateTexture(CCTextureUpdateQueue&, CCPrioritizedTexture*, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate);
 

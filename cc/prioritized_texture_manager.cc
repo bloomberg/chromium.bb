@@ -347,7 +347,7 @@ void CCPrioritizedTextureManager::returnBackingTexture(CCPrioritizedTexture* tex
         texture->unlink();
 }
 
-CCPrioritizedTexture::Backing* CCPrioritizedTextureManager::createBacking(IntSize size, GC3Denum format, CCResourceProvider* resourceProvider)
+CCPrioritizedTexture::Backing* CCPrioritizedTextureManager::createBacking(IntSize size, GLenum format, CCResourceProvider* resourceProvider)
 {
     DCHECK(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
     DCHECK(resourceProvider);

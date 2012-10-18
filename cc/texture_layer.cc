@@ -6,6 +6,7 @@
 
 #include "cc/texture_layer.h"
 
+#include "third_party/khronos/GLES2/gl2.h"
 #include "CCLayerTreeHost.h"
 #include "CCTextureLayerImpl.h"
 #include "cc/texture_layer_client.h"
@@ -110,7 +111,7 @@ void TextureLayerChromium::update(CCTextureUpdateQueue& queue, const CCOcclusion
 {
     if (m_client) {
         m_textureId = m_client->prepareTexture(queue);
-        m_contextLost = m_client->context()->getGraphicsResetStatusARB() != GraphicsContext3D::NO_ERROR;
+        m_contextLost = m_client->context()->getGraphicsResetStatusARB() != GL_NO_ERROR;
     }
 
     m_needsDisplay = false;

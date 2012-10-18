@@ -30,7 +30,7 @@ public:
     static scoped_refptr<BitmapSkPictureCanvasLayerTextureUpdater> create(scoped_ptr<LayerPainterChromium>);
 
     virtual scoped_ptr<LayerTextureUpdater::Texture> createTexture(CCPrioritizedTextureManager*) OVERRIDE;
-    virtual SampledTexelFormat sampledTexelFormat(GC3Denum textureFormat) OVERRIDE;
+    virtual SampledTexelFormat sampledTexelFormat(GLenum textureFormat) OVERRIDE;
     void paintContentsRect(SkCanvas*, const IntRect& sourceRect, CCRenderingStats&);
 
 private:

@@ -112,8 +112,8 @@ TEST_F(CCRendererSoftwareTest, tileQuad)
     setViewportSize(outerSize);
     initializeRenderer();
 
-    CCResourceProvider::ResourceId resourceYellow = resourceProvider()->createResource(1, outerSize, GraphicsContext3D::RGBA, CCResourceProvider::TextureUsageAny);
-    CCResourceProvider::ResourceId resourceCyan = resourceProvider()->createResource(1, innerSize, GraphicsContext3D::RGBA, CCResourceProvider::TextureUsageAny);
+    CCResourceProvider::ResourceId resourceYellow = resourceProvider()->createResource(1, outerSize, GL_RGBA, CCResourceProvider::TextureUsageAny);
+    CCResourceProvider::ResourceId resourceCyan = resourceProvider()->createResource(1, innerSize, GL_RGBA, CCResourceProvider::TextureUsageAny);
 
     SkColor yellow = SK_ColorYELLOW;
     SkColor cyan = SK_ColorCYAN;

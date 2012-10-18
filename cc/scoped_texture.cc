@@ -19,7 +19,7 @@ CCScopedTexture::~CCScopedTexture()
     free();
 }
 
-bool CCScopedTexture::allocate(int pool, const IntSize& size, GC3Denum format, CCResourceProvider::TextureUsageHint hint)
+bool CCScopedTexture::allocate(int pool, const IntSize& size, GLenum format, CCResourceProvider::TextureUsageHint hint)
 {
     DCHECK(!id());
     DCHECK(!size.isEmpty());

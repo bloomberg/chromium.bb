@@ -49,7 +49,7 @@ scoped_ptr<LayerTextureUpdater::Texture> BitmapCanvasLayerTextureUpdater::create
     return scoped_ptr<LayerTextureUpdater::Texture>(new Texture(this, CCPrioritizedTexture::create(manager)));
 }
 
-LayerTextureUpdater::SampledTexelFormat BitmapCanvasLayerTextureUpdater::sampledTexelFormat(GC3Denum textureFormat)
+LayerTextureUpdater::SampledTexelFormat BitmapCanvasLayerTextureUpdater::sampledTexelFormat(GLenum textureFormat)
 {
     // The component order may be bgra if we uploaded bgra pixels to rgba textures.
     return PlatformColor::sameComponentOrder(textureFormat) ?

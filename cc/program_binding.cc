@@ -7,9 +7,9 @@
 #include "cc/program_binding.h"
 
 #include "CCRendererGL.h" // For the GLC() macro.
-#include "GraphicsContext3D.h"
 #include "base/debug/trace_event.h"
 #include "cc/geometry_binding.h"
+#include "third_party/khronos/GLES2/gl2.h"
 #include <public/WebGraphicsContext3D.h>
 
 using WebKit::WebGraphicsContext3D;
@@ -35,21 +35,21 @@ ProgramBindingBase::~ProgramBindingBase()
 
 static bool contextLost(WebGraphicsContext3D* context)
 {
-    return (context->getGraphicsResetStatusARB() != GraphicsContext3D::NO_ERROR);
+    return (context->getGraphicsResetStatusARB() != GL_NO_ERROR);
 }
 
 
 void ProgramBindingBase::init(WebGraphicsContext3D* context, const std::string& vertexShader, const std::string& fragmentShader)
 {
     TRACE_EVENT0("cc", "ProgramBindingBase::init");
-    m_vertexShaderId = loadShader(context, GraphicsContext3D::VERTEX_SHADER, vertexShader);
+    m_vertexShaderId = loadShader(context, GL_VERTEX_SHADER, vertexShader);
     if (!m_vertexShaderId) {
         if (!contextLost(context))
             LOG(ERROR) << "Failed to create vertex shader";
         return;
     }
 
-    m_fragmentShaderId = loadShader(context, GraphicsContext3D::FRAGMENT_SHADER, fragmentShader);
+    m_fragmentShaderId = loadShader(context, GL_FRAGMENT_SHADER, fragmentShader);
     if (!m_fragmentShaderId) {
         GLC(context, context->deleteShader(m_vertexShaderId));
         m_vertexShaderId = 0;
@@ -68,7 +68,7 @@ void ProgramBindingBase::link(WebGraphicsContext3D* context)
     cleanupShaders(context);
 #ifndef NDEBUG
     int linked = 0;
-    GLC(context, context->getProgramiv(m_program, GraphicsContext3D::LINK_STATUS, &linked));
+    GLC(context, context->getProgramiv(m_program, GL_LINK_STATUS, &linked));
     if (!linked) {
         if (!contextLost(context))
             LOG(ERROR) << "Failed to link shader program";
@@ -99,7 +99,7 @@ unsigned ProgramBindingBase::loadShader(WebGraphicsContext3D* context, unsigned 
     GLC(context, context->compileShader(shader));
 #ifndef NDEBUG
     int compiled = 0;
-    GLC(context, context->getShaderiv(shader, GraphicsContext3D::COMPILE_STATUS, &compiled));
+    GLC(context, context->getShaderiv(shader, GL_COMPILE_STATUS, &compiled));
     if (!compiled) {
         GLC(context, context->deleteShader(shader));
         return 0;

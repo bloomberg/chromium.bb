@@ -7,12 +7,13 @@
 #include "CCIOSurfaceLayerImpl.h"
 
 #include "base/stringprintf.h"
+#include "third_party/khronos/GLES2/gl2.h"
+#include "third_party/khronos/GLES2/gl2ext.h"
 #include "CCGraphicsContext.h"
 #include "CCIOSurfaceDrawQuad.h"
 #include "CCLayerTreeHostImpl.h"
 #include "CCQuadSink.h"
 #include "CCRendererGL.h" // For the GLC() macro.
-#include "Extensions3D.h"
 #include <public/WebGraphicsContext3D.h>
 
 namespace cc {
@@ -52,13 +53,13 @@ void CCIOSurfaceLayerImpl::willDraw(CCResourceProvider* resourceProvider)
         if (!m_ioSurfaceTextureId)
             m_ioSurfaceTextureId = context3d->createTexture();
 
-        GLC(context3d, context3d->activeTexture(GraphicsContext3D::TEXTURE0));
-        GLC(context3d, context3d->bindTexture(Extensions3D::TEXTURE_RECTANGLE_ARB, m_ioSurfaceTextureId));
-        GLC(context3d, context3d->texParameteri(Extensions3D::TEXTURE_RECTANGLE_ARB, GraphicsContext3D::TEXTURE_MIN_FILTER, GraphicsContext3D::LINEAR));
-        GLC(context3d, context3d->texParameteri(Extensions3D::TEXTURE_RECTANGLE_ARB, GraphicsContext3D::TEXTURE_MAG_FILTER, GraphicsContext3D::LINEAR));
-        GLC(context3d, context3d->texParameteri(Extensions3D::TEXTURE_RECTANGLE_ARB, GraphicsContext3D::TEXTURE_WRAP_S, GraphicsContext3D::CLAMP_TO_EDGE));
-        GLC(context3d, context3d->texParameteri(Extensions3D::TEXTURE_RECTANGLE_ARB, GraphicsContext3D::TEXTURE_WRAP_T, GraphicsContext3D::CLAMP_TO_EDGE));
-        context3d->texImageIOSurface2DCHROMIUM(Extensions3D::TEXTURE_RECTANGLE_ARB,
+        GLC(context3d, context3d->activeTexture(GL_TEXTURE0));
+        GLC(context3d, context3d->bindTexture(GL_TEXTURE_RECTANGLE_ARB, m_ioSurfaceTextureId));
+        GLC(context3d, context3d->texParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+        GLC(context3d, context3d->texParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+        GLC(context3d, context3d->texParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+        GLC(context3d, context3d->texParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+        context3d->texImageIOSurface2DCHROMIUM(GL_TEXTURE_RECTANGLE_ARB,
                                                m_ioSurfaceSize.width(),
                                                m_ioSurfaceSize.height(),
                                                m_ioSurfaceId,

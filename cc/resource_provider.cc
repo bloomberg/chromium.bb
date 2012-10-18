@@ -10,7 +10,6 @@
 
 #include "CCProxy.h"
 #include "CCRendererGL.h" // For the GLC() macro.
-#include "Extensions3DChromium.h"
 #include "IntRect.h"
 #include "base/debug/alias.h"
 #include "base/hash_tables.h"
@@ -20,20 +19,22 @@
 #include "cc/layer_texture_sub_image.h"
 #include "cc/throttled_texture_uploader.h"
 #include "cc/unthrottled_texture_uploader.h"
+#include "third_party/khronos/GLES2/gl2.h"
+#include "third_party/khronos/GLES2/gl2ext.h"
 #include <public/WebGraphicsContext3D.h>
 
 using WebKit::WebGraphicsContext3D;
 
 namespace cc {
 
-static GC3Denum textureToStorageFormat(GC3Denum textureFormat)
+static GLenum textureToStorageFormat(GLenum textureFormat)
 {
-    GC3Denum storageFormat = Extensions3D::RGBA8_OES;
+    GLenum storageFormat = GL_RGBA8_OES;
     switch (textureFormat) {
-    case GraphicsContext3D::RGBA:
+    case GL_RGBA:
         break;
-    case Extensions3D::BGRA_EXT:
-        storageFormat = Extensions3DChromium::BGRA8_EXT;
+    case GL_BGRA_EXT:
+        storageFormat = GL_BGRA8_EXT;
         break;
     default:
         NOTREACHED();
@@ -43,9 +44,9 @@ static GC3Denum textureToStorageFormat(GC3Denum textureFormat)
     return storageFormat;
 }
 
-static bool isTextureFormatSupportedForStorage(GC3Denum format)
+static bool isTextureFormatSupportedForStorage(GLenum format)
 {
-    return (format == GraphicsContext3D::RGBA || format == Extensions3D::BGRA_EXT);
+    return (format == GL_RGBA || format == GL_BGRA_EXT);
 }
 
 CCResourceProvider::TransferableResourceList::TransferableResourceList()
@@ -71,7 +72,7 @@ CCResourceProvider::Resource::Resource()
 {
 }
 
-CCResourceProvider::Resource::Resource(unsigned textureId, int pool, const IntSize& size, GC3Denum format)
+CCResourceProvider::Resource::Resource(unsigned textureId, int pool, const IntSize& size, GLenum format)
     : glId(textureId)
     , pixels(0)
     , pool(pool)
@@ -86,7 +87,7 @@ CCResourceProvider::Resource::Resource(unsigned textureId, int pool, const IntSi
 {
 }
 
-CCResourceProvider::Resource::Resource(uint8_t* pixels, int pool, const IntSize& size, GC3Denum format)
+CCResourceProvider::Resource::Resource(uint8_t* pixels, int pool, const IntSize& size, GLenum format)
     : glId(0)
     , pixels(pixels)
     , pool(pool)
@@ -141,13 +142,13 @@ bool CCResourceProvider::inUseByConsumer(ResourceId id)
     return !!resource->lockForReadCount || resource->exported;
 }
 
-CCResourceProvider::ResourceId CCResourceProvider::createResource(int pool, const IntSize& size, GC3Denum format, TextureUsageHint hint)
+CCResourceProvider::ResourceId CCResourceProvider::createResource(int pool, const IntSize& size, GLenum format, TextureUsageHint hint)
 {
     switch (m_defaultResourceType) {
     case GLTexture:
         return createGLTexture(pool, size, format, hint);
     case Bitmap:
-        DCHECK(format == GraphicsContext3D::RGBA);
+        DCHECK(format == GL_RGBA);
         return createBitmap(pool, size);
     }
 
@@ -155,26 +156,26 @@ CCResourceProvider::ResourceId CCResourceProvider::createResource(int pool, cons
     return 0;
 }
 
-CCResourceProvider::ResourceId CCResourceProvider::createGLTexture(int pool, const IntSize& size, GC3Denum format, TextureUsageHint hint)
+CCResourceProvider::ResourceId CCResourceProvider::createGLTexture(int pool, const IntSize& size, GLenum format, TextureUsageHint hint)
 {
     DCHECK(CCProxy::isImplThread());
     unsigned textureId = 0;
     WebGraphicsContext3D* context3d = m_context->context3D();
     DCHECK(context3d);
     GLC(context3d, textureId = context3d->createTexture());
-    GLC(context3d, context3d->bindTexture(GraphicsContext3D::TEXTURE_2D, textureId));
-    GLC(context3d, context3d->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_MIN_FILTER, GraphicsContext3D::LINEAR));
-    GLC(context3d, context3d->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_MAG_FILTER, GraphicsContext3D::LINEAR));
-    GLC(context3d, context3d->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_WRAP_S, GraphicsContext3D::CLAMP_TO_EDGE));
-    GLC(context3d, context3d->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_WRAP_T, GraphicsContext3D::CLAMP_TO_EDGE));
+    GLC(context3d, context3d->bindTexture(GL_TEXTURE_2D, textureId));
+    GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+    GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+    GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+    GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
     if (m_useTextureUsageHint && hint == TextureUsageFramebuffer)
-        GLC(context3d, context3d->texParameteri(GraphicsContext3D::TEXTURE_2D, Extensions3DChromium::GL_TEXTURE_USAGE_ANGLE, Extensions3DChromium::GL_FRAMEBUFFER_ATTACHMENT_ANGLE));
+        GLC(context3d, context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_USAGE_ANGLE, GL_FRAMEBUFFER_ATTACHMENT_ANGLE));
     if (m_useTextureStorageExt && isTextureFormatSupportedForStorage(format)) {
-        GC3Denum storageFormat = textureToStorageFormat(format);
-        GLC(context3d, context3d->texStorage2DEXT(GraphicsContext3D::TEXTURE_2D, 1, storageFormat, size.width(), size.height()));
+        GLenum storageFormat = textureToStorageFormat(format);
+        GLC(context3d, context3d->texStorage2DEXT(GL_TEXTURE_2D, 1, storageFormat, size.width(), size.height()));
     } else
-        GLC(context3d, context3d->texImage2D(GraphicsContext3D::TEXTURE_2D, 0, format, size.width(), size.height(), 0, format, GraphicsContext3D::UNSIGNED_BYTE, 0));
+        GLC(context3d, context3d->texImage2D(GL_TEXTURE_2D, 0, format, size.width(), size.height(), 0, format, GL_UNSIGNED_BYTE, 0));
     ResourceId id = m_nextId++;
     Resource resource(textureId, pool, size, format);
     m_resources[id] = resource;
@@ -188,7 +189,7 @@ CCResourceProvider::ResourceId CCResourceProvider::createBitmap(int pool, const 
     uint8_t* pixels = new uint8_t[size.width() * size.height() * 4];
 
     ResourceId id = m_nextId++;
-    Resource resource(pixels, pool, size, GraphicsContext3D::RGBA);
+    Resource resource(pixels, pool, size, GL_RGBA);
     m_resources[id] = resource;
     return id;
 }
@@ -270,7 +271,7 @@ void CCResourceProvider::upload(ResourceId id, const uint8_t* image, const IntRe
         WebGraphicsContext3D* context3d = m_context->context3D();
         DCHECK(context3d);
         DCHECK(m_texSubImage.get());
-        context3d->bindTexture(GraphicsContext3D::TEXTURE_2D, resource->glId);
+        context3d->bindTexture(GL_TEXTURE_2D, resource->glId);
         m_texSubImage->upload(image, imageRect, sourceRect, destOffset, resource->format, context3d);
     }
 
@@ -387,7 +388,7 @@ CCResourceProvider::ScopedWriteLockGL::~ScopedWriteLockGL()
 void CCResourceProvider::populateSkBitmapWithResource(SkBitmap* skBitmap, const Resource* resource)
 {
     DCHECK(resource->pixels);
-    DCHECK(resource->format == GraphicsContext3D::RGBA);
+    DCHECK(resource->format == GL_RGBA);
     skBitmap->setConfig(SkBitmap::kARGB_8888_Config, resource->size.width(), resource->size.height());
     skBitmap->setPixels(resource->pixels);
 }
@@ -441,7 +442,7 @@ bool CCResourceProvider::initialize()
     if (!context3d->makeContextCurrent())
         return false;
 
-    std::string extensionsString = UTF16ToASCII(context3d->getString(GraphicsContext3D::EXTENSIONS));
+    std::string extensionsString = UTF16ToASCII(context3d->getString(GL_EXTENSIONS));
     std::vector<std::string> extensions;
     base::SplitString(extensionsString, ' ', &extensions);
     bool useMapSub = false;
@@ -463,7 +464,7 @@ bool CCResourceProvider::initialize()
     m_textureCopier = AcceleratedTextureCopier::create(context3d, useBindUniform);
 
     m_textureUploader = ThrottledTextureUploader::create(context3d);
-    GLC(context3d, context3d->getIntegerv(GraphicsContext3D::MAX_TEXTURE_SIZE, &m_maxTextureSize));
+    GLC(context3d, context3d->getIntegerv(GL_MAX_TEXTURE_SIZE, &m_maxTextureSize));
     return true;
 }
 
@@ -565,8 +566,8 @@ void CCResourceProvider::receiveFromChild(int child, const TransferableResourceL
     for (TransferableResourceArray::const_iterator it = resources.resources.begin(); it != resources.resources.end(); ++it) {
         unsigned textureId;
         GLC(context3d, textureId = context3d->createTexture());
-        GLC(context3d, context3d->bindTexture(GraphicsContext3D::TEXTURE_2D, textureId));
-        GLC(context3d, context3d->consumeTextureCHROMIUM(GraphicsContext3D::TEXTURE_2D, it->mailbox.name));
+        GLC(context3d, context3d->bindTexture(GL_TEXTURE_2D, textureId));
+        GLC(context3d, context3d->consumeTextureCHROMIUM(GL_TEXTURE_2D, it->mailbox.name));
         ResourceId id = m_nextId++;
         Resource resource(textureId, childInfo.pool, it->size, it->format);
         m_resources[id] = resource;
@@ -592,8 +593,8 @@ void CCResourceProvider::receiveFromParent(const TransferableResourceList& resou
         Resource* resource = &mapIterator->second;
         DCHECK(resource->exported);
         resource->exported = false;
-        GLC(context3d, context3d->bindTexture(GraphicsContext3D::TEXTURE_2D, resource->glId));
-        GLC(context3d, context3d->consumeTextureCHROMIUM(GraphicsContext3D::TEXTURE_2D, it->mailbox.name));
+        GLC(context3d, context3d->bindTexture(GL_TEXTURE_2D, resource->glId));
+        GLC(context3d, context3d->consumeTextureCHROMIUM(GL_TEXTURE_2D, it->mailbox.name));
         m_mailboxes.push_back(it->mailbox);
         if (resource->markedForDeletion)
             deleteResourceInternal(mapIterator);
@@ -620,8 +621,8 @@ bool CCResourceProvider::transferResource(WebGraphicsContext3D* context, Resourc
     }
     else
         GLC(context, context->genMailboxCHROMIUM(resource->mailbox.name));
-    GLC(context, context->bindTexture(GraphicsContext3D::TEXTURE_2D, source->glId));
-    GLC(context, context->produceTextureCHROMIUM(GraphicsContext3D::TEXTURE_2D, resource->mailbox.name));
+    GLC(context, context->bindTexture(GL_TEXTURE_2D, source->glId));
+    GLC(context, context->produceTextureCHROMIUM(GL_TEXTURE_2D, resource->mailbox.name));
     return true;
 }
 

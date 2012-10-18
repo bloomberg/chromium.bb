@@ -50,7 +50,7 @@ private:
     scoped_ptr<WebKit::WebScrollbarThemeGeometry> m_geometry;
     int m_scrollLayerId;
 
-    GC3Denum m_textureFormat;
+    GLenum m_textureFormat;
 
     scoped_refptr<CachingBitmapCanvasLayerTextureUpdater> m_backTrackUpdater;
     scoped_refptr<CachingBitmapCanvasLayerTextureUpdater> m_foreTrackUpdater;

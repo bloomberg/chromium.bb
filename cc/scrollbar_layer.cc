@@ -33,7 +33,7 @@ ScrollbarLayerChromium::ScrollbarLayerChromium(scoped_ptr<WebKit::WebScrollbar> 
     , m_painter(painter)
     , m_geometry(geometry.Pass())
     , m_scrollLayerId(scrollLayerId)
-    , m_textureFormat(GraphicsContext3D::INVALID_ENUM)
+    , m_textureFormat(GL_INVALID_ENUM)
 {
 }
 

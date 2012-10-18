@@ -23,7 +23,7 @@ class CCPrioritizedTextureTest : public testing::Test {
 public:
     CCPrioritizedTextureTest()
         : m_textureSize(256, 256)
-        , m_textureFormat(GraphicsContext3D::RGBA)
+        , m_textureFormat(GL_RGBA)
         , m_compositorInitializer(0)
         , m_context(WebKit::createFakeCCGraphicsContext())
     {
@@ -92,7 +92,7 @@ public:
 
 protected:
     const IntSize m_textureSize;
-    const GC3Denum m_textureFormat;
+    const GLenum m_textureFormat;
     WebCompositorInitializer m_compositorInitializer;
     scoped_ptr<CCGraphicsContext> m_context;
     scoped_ptr<CCResourceProvider> m_resourceProvider;

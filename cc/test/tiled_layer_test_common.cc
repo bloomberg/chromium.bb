@@ -68,7 +68,7 @@ scoped_ptr<LayerTextureUpdater::Texture> FakeLayerTextureUpdater::createTexture(
     return scoped_ptr<LayerTextureUpdater::Texture>(new Texture(this, CCPrioritizedTexture::create(manager)));
 }
 
-LayerTextureUpdater::SampledTexelFormat FakeLayerTextureUpdater::sampledTexelFormat(GC3Denum)
+LayerTextureUpdater::SampledTexelFormat FakeLayerTextureUpdater::sampledTexelFormat(GLenum)
 {
     return SampledTexelFormatRGBA;
 }
@@ -88,7 +88,7 @@ FakeTiledLayerChromium::FakeTiledLayerChromium(CCPrioritizedTextureManager* text
     , m_textureManager(textureManager)
 {
     setTileSize(tileSize());
-    setTextureFormat(GraphicsContext3D::RGBA);
+    setTextureFormat(GL_RGBA);
     setBorderTexelOption(CCLayerTilingData::NoBorderTexels);
     setIsDrawable(true); // So that we don't get false positives if any of these tests expect to return false from drawsContent() for other reasons.
 }

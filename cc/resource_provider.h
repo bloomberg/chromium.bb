@@ -5,13 +5,13 @@
 #ifndef CCResourceProvider_h
 #define CCResourceProvider_h
 
+#include "IntSize.h"
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
-#include "CCGraphicsContext.h"
+#include "cc/graphics_context.h"
 #include "cc/texture_copier.h"
-#include "GraphicsContext3D.h"
-#include "IntSize.h"
+#include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include <deque>
@@ -41,11 +41,11 @@ public:
         Bitmap,
     };
     struct Mailbox {
-        GC3Dbyte name[64];
+        GLbyte name[64];
     };
     struct TransferableResource {
         unsigned id;
-        GC3Denum format;
+        GLenum format;
         IntSize size;
         Mailbox mailbox;
     };
@@ -79,10 +79,10 @@ public:
     ResourceType resourceType(ResourceId);
 
     // Creates a resource of the default resource type.
-    ResourceId createResource(int pool, const IntSize&, GC3Denum format, TextureUsageHint);
+    ResourceId createResource(int pool, const IntSize&, GLenum format, TextureUsageHint);
 
     // You can also explicitly create a specific resource type.
-    ResourceId createGLTexture(int pool, const IntSize&, GC3Denum format, TextureUsageHint);
+    ResourceId createGLTexture(int pool, const IntSize&, GLenum format, TextureUsageHint);
     ResourceId createBitmap(int pool, const IntSize&);
     // Wraps an external texture into a GL resource.
     ResourceId createResourceFromExternalTexture(unsigned textureId);
@@ -210,8 +210,8 @@ public:
 private:
     struct Resource {
         Resource();
-        Resource(unsigned textureId, int pool, const IntSize& size, GC3Denum format);
-        Resource(uint8_t* pixels, int pool, const IntSize& size, GC3Denum format);
+        Resource(unsigned textureId, int pool, const IntSize& size, GLenum format);
+        Resource(uint8_t* pixels, int pool, const IntSize& size, GLenum format);
 
         unsigned glId;
         uint8_t* pixels;
@@ -222,7 +222,7 @@ private:
         bool exported;
         bool markedForDeletion;
         IntSize size;
-        GC3Denum format;
+        GLenum format;
         ResourceType type;
     };
     typedef base::hash_map<ResourceId, Resource> ResourceMap;

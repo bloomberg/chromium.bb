@@ -7,11 +7,11 @@
 #include "cc/throttled_texture_uploader.h"
 
 #include "CCPrioritizedTexture.h"
-#include "Extensions3DChromium.h"
-#include "GraphicsContext3D.h"
 #include "cc/test/fake_web_graphics_context_3d.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/khronos/GLES2/gl2.h"
+#include "third_party/khronos/GLES2/gl2ext.h"
 
 using namespace cc;
 using namespace WebKit;
@@ -24,10 +24,10 @@ public:
     {
     }
 
-    virtual void getQueryObjectuivEXT(WebGLId, GC3Denum type, GC3Duint* value)
+    virtual void getQueryObjectuivEXT(WebGLId, WGC3Denum type, WGC3Duint* value)
     {
         switch (type) {
-        case Extensions3DChromium::QUERY_RESULT_AVAILABLE_EXT:
+        case GL_QUERY_RESULT_AVAILABLE_EXT:
             *value = m_resultAvailable;
             break;
         default:

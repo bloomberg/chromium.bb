@@ -6,6 +6,8 @@
 
 #include "CCVideoLayerImpl.h"
 
+#include "third_party/khronos/GLES2/gl2ext.h"
+#include "third_party/khronos/GLES2/gl2.h"
 #include "CCIOSurfaceDrawQuad.h"
 #include "CCLayerTreeHostImpl.h"
 #include "CCProxy.h"
@@ -14,8 +16,6 @@
 #include "CCStreamVideoDrawQuad.h"
 #include "CCTextureDrawQuad.h"
 #include "CCYUVVideoDrawQuad.h"
-#include "Extensions3DChromium.h"
-#include "GraphicsContext3D.h"
 #include "NotImplemented.h"
 #include <public/WebVideoFrame.h>
 
@@ -69,12 +69,12 @@ void CCVideoLayerImpl::stopUsingProvider()
 }
 
 // Convert WebKit::WebVideoFrame::Format to GraphicsContext3D's format enum values.
-static GC3Denum convertVFCFormatToGC3DFormat(const WebKit::WebVideoFrame& frame)
+static GLenum convertVFCFormatToGC3DFormat(const WebKit::WebVideoFrame& frame)
 {
     switch (frame.format()) {
     case WebKit::WebVideoFrame::FormatYV12:
     case WebKit::WebVideoFrame::FormatYV16:
-        return GraphicsContext3D::LUMINANCE;
+        return GL_LUMINANCE;
     case WebKit::WebVideoFrame::FormatNativeTexture:
         return frame.textureTarget();
     case WebKit::WebVideoFrame::FormatInvalid:
@@ -83,7 +83,7 @@ static GC3Denum convertVFCFormatToGC3DFormat(const WebKit::WebVideoFrame& frame)
     case WebKit::WebVideoFrame::FormatI420:
         notImplemented();
     }
-    return GraphicsContext3D::INVALID_VALUE;
+    return GL_INVALID_VALUE;
 }
 
 void CCVideoLayerImpl::willDraw(CCResourceProvider* resourceProvider)
@@ -124,7 +124,7 @@ void CCVideoLayerImpl::willDrawInternal(CCResourceProvider* resourceProvider)
 
     m_format = convertVFCFormatToGC3DFormat(*m_frame);
 
-    if (m_format == GraphicsContext3D::INVALID_VALUE) {
+    if (m_format == GL_INVALID_VALUE) {
         m_provider->putCurrentFrame(m_frame);
         m_frame = 0;
         return;
@@ -148,7 +148,7 @@ void CCVideoLayerImpl::willDrawInternal(CCResourceProvider* resourceProvider)
         return;
     }
 
-    if (m_format == GraphicsContext3D::TEXTURE_2D)
+    if (m_format == GL_TEXTURE_2D)
         m_externalTextureResource = resourceProvider->createResourceFromExternalTexture(m_frame->textureId());
 }
 
@@ -168,7 +168,7 @@ void CCVideoLayerImpl::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& appe
     IntRect quadRect(IntPoint(), contentBounds());
 
     switch (m_format) {
-    case GraphicsContext3D::LUMINANCE: {
+    case GL_LUMINANCE: {
         // YUV software decoder.
         const FramePlane& yPlane = m_framePlanes[WebKit::WebVideoFrame::yPlane];
         const FramePlane& uPlane = m_framePlanes[WebKit::WebVideoFrame::uPlane];
@@ -177,7 +177,7 @@ void CCVideoLayerImpl::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& appe
         quadSink.append(yuvVideoQuad.PassAs<CCDrawQuad>(), appendQuadsData);
         break;
     }
-    case GraphicsContext3D::RGBA: {
+    case GL_RGBA: {
         // RGBA software decoder.
         const FramePlane& plane = m_framePlanes[WebKit::WebVideoFrame::rgbPlane];
         float widthScaleFactor = static_cast<float>(plane.visibleSize.width()) / plane.size.width();
@@ -189,7 +189,7 @@ void CCVideoLayerImpl::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& appe
         quadSink.append(textureQuad.PassAs<CCDrawQuad>(), appendQuadsData);
         break;
     }
-    case GraphicsContext3D::TEXTURE_2D: {
+    case GL_TEXTURE_2D: {
         // NativeTexture hardware decoder.
         bool premultipliedAlpha = true;
         FloatRect uvRect(0, 0, 1, 1);
@@ -198,13 +198,13 @@ void CCVideoLayerImpl::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& appe
         quadSink.append(textureQuad.PassAs<CCDrawQuad>(), appendQuadsData);
         break;
     }
-    case Extensions3D::TEXTURE_RECTANGLE_ARB: {
+    case GL_TEXTURE_RECTANGLE_ARB: {
         IntSize textureSize(m_frame->width(), m_frame->height()); 
         scoped_ptr<CCIOSurfaceDrawQuad> ioSurfaceQuad = CCIOSurfaceDrawQuad::create(sharedQuadState, quadRect, textureSize, m_frame->textureId(), CCIOSurfaceDrawQuad::Unflipped);
         quadSink.append(ioSurfaceQuad.PassAs<CCDrawQuad>(), appendQuadsData);
         break;
     }
-    case Extensions3DChromium::GL_TEXTURE_EXTERNAL_OES: {
+    case GL_TEXTURE_EXTERNAL_OES: {
         // StreamTexture hardware decoder.
         scoped_ptr<CCStreamVideoDrawQuad> streamVideoQuad = CCStreamVideoDrawQuad::create(sharedQuadState, quadRect, m_frame->textureId(), m_streamTextureMatrix);
         quadSink.append(streamVideoQuad.PassAs<CCDrawQuad>(), appendQuadsData);
@@ -223,7 +223,7 @@ void CCVideoLayerImpl::didDraw(CCResourceProvider* resourceProvider)
     if (!m_frame)
         return;
 
-    if (m_format == GraphicsContext3D::TEXTURE_2D) {
+    if (m_format == GL_TEXTURE_2D) {
         DCHECK(m_externalTextureResource);
         // FIXME: the following assert will not be true when sending resources to a
         // parent compositor. We will probably need to hold on to m_frame for

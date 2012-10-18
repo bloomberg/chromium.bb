@@ -6,6 +6,8 @@
 
 #include "CCRendererGL.h"
 
+#include "third_party/khronos/GLES2/gl2.h"
+#include "third_party/khronos/GLES2/gl2ext.h"
 #include "CCDamageTracker.h"
 #include "CCLayerQuad.h"
 #include "CCMathUtil.h"
@@ -16,7 +18,6 @@
 #include "CCSettings.h"
 #include "CCSingleThreadProxy.h"
 #include "CCVideoLayerImpl.h"
-#include "Extensions3D.h"
 #include "FloatQuad.h"
 #include "GrTexture.h"
 #include "NotImplemented.h"
@@ -89,7 +90,7 @@ bool CCRendererGL::initialize()
     m_context->setContextLostCallback(this);
     m_context->pushGroupMarkerEXT("CompositorContext");
 
-    std::string extensionsString = UTF16ToASCII(m_context->getString(GraphicsContext3D::EXTENSIONS));
+    std::string extensionsString = UTF16ToASCII(m_context->getString(GL_EXTENSIONS));
     std::vector<std::string> extensionsList;
     base::SplitString(extensionsString, ' ', &extensionsList);
     std::set<string> extensions(extensionsList.begin(), extensionsList.end());
@@ -124,7 +125,7 @@ bool CCRendererGL::initialize()
 
     m_capabilities.usingEglImage = extensions.count("GL_OES_EGL_image_external");
 
-    GLC(m_context, m_context->getIntegerv(GraphicsContext3D::MAX_TEXTURE_SIZE, &m_capabilities.maxTextureSize));
+    GLC(m_context, m_context->getIntegerv(GL_MAX_TEXTURE_SIZE, &m_capabilities.maxTextureSize));
     m_capabilities.bestTextureFormat = PlatformColor::bestTextureFormat(m_context, extensions.count("GL_EXT_texture_format_BGRA8888"));
 
     m_isUsingBindUniform = extensions.count("GL_CHROMIUM_bind_uniform_location");
@@ -159,7 +160,7 @@ WebGraphicsContext3D* CCRendererGL::context()
 void CCRendererGL::debugGLCall(WebGraphicsContext3D* context, const char* command, const char* file, int line)
 {
     unsigned long error = context->getError();
-    if (error != GraphicsContext3D::NO_ERROR)
+    if (error != GL_NO_ERROR)
         LOG(ERROR) << "GL command failed: File: " << file << "\n\tLine " << line << "\n\tcommand: " << command << ", error " << static_cast<int>(error) << "\n";
 }
 
@@ -198,7 +199,7 @@ void CCRendererGL::clearFramebuffer(DrawingFrame& frame)
 #ifdef NDEBUG
     if (frame.currentRenderPass->hasTransparentBackground())
 #endif
-        m_context->clear(GraphicsContext3D::COLOR_BUFFER_BIT);
+        m_context->clear(GL_COLOR_BUFFER_BIT);
 }
 
 void CCRendererGL::beginDrawingFrame(DrawingFrame& frame)
@@ -222,25 +223,25 @@ void CCRendererGL::beginDrawingFrame(DrawingFrame& frame)
     // Bind the common vertex attributes used for drawing all the layers.
     m_sharedGeometry->prepareForDraw();
 
-    GLC(m_context, m_context->disable(GraphicsContext3D::DEPTH_TEST));
-    GLC(m_context, m_context->disable(GraphicsContext3D::CULL_FACE));
+    GLC(m_context, m_context->disable(GL_DEPTH_TEST));
+    GLC(m_context, m_context->disable(GL_CULL_FACE));
     GLC(m_context, m_context->colorMask(true, true, true, true));
-    GLC(m_context, m_context->enable(GraphicsContext3D::BLEND));
-    GLC(m_context, m_context->blendFunc(GraphicsContext3D::ONE, GraphicsContext3D::ONE_MINUS_SRC_ALPHA));
+    GLC(m_context, m_context->enable(GL_BLEND));
+    GLC(m_context, m_context->blendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
 }
 
 void CCRendererGL::doNoOp()
 {
-    GLC(m_context, m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, 0));
+    GLC(m_context, m_context->bindFramebuffer(GL_FRAMEBUFFER, 0));
     GLC(m_context, m_context->flush());
 }
 
 void CCRendererGL::drawQuad(DrawingFrame& frame, const CCDrawQuad* quad)
 {
     if (quad->needsBlending())
-        GLC(m_context, m_context->enable(GraphicsContext3D::BLEND));
+        GLC(m_context, m_context->enable(GL_BLEND));
     else
-        GLC(m_context, m_context->disable(GraphicsContext3D::BLEND));
+        GLC(m_context, m_context->disable(GL_BLEND));
 
     switch (quad->material()) {
     case CCDrawQuad::Invalid:
@@ -324,7 +325,7 @@ void CCRendererGL::drawDebugBorderQuad(const DrawingFrame& frame, const CCDebugB
     GLC(context(), context()->lineWidth(quad->width()));
 
     // The indices for the line are stored in the same array as the triangle indices.
-    GLC(context(), context()->drawElements(GraphicsContext3D::LINE_LOOP, 4, GraphicsContext3D::UNSIGNED_SHORT, 6 * sizeof(unsigned short)));
+    GLC(context(), context()->drawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, 6 * sizeof(unsigned short)));
 }
 
 static inline SkBitmap applyFilters(CCRendererGL* renderer, const WebKit::WebFilterOperations& filters, CCScopedTexture* sourceTexture)
@@ -394,7 +395,7 @@ scoped_ptr<CCScopedTexture> CCRendererGL::drawBackgroundFilters(DrawingFrame& fr
     int filteredDeviceBackgroundTextureId = texture->getTextureHandle();
 
     scoped_ptr<CCScopedTexture> backgroundTexture = CCScopedTexture::create(m_resourceProvider);
-    if (!backgroundTexture->allocate(CCRenderer::ImplPool, quad->quadRect().size(), GraphicsContext3D::RGBA, CCResourceProvider::TextureUsageFramebuffer))
+    if (!backgroundTexture->allocate(CCRenderer::ImplPool, quad->quadRect().size(), GL_RGBA, CCResourceProvider::TextureUsageFramebuffer))
         return scoped_ptr<CCScopedTexture>();
 
     const CCRenderPass* targetRenderPass = frame.currentRenderPass;
@@ -479,8 +480,8 @@ void CCRendererGL::drawRenderPassQuad(DrawingFrame& frame, const CCRenderPassDra
 
     // FIXME: use the backgroundTexture and blend the background in with this draw instead of having a separate copy of the background texture.
 
-    GLC(context(), context()->activeTexture(GraphicsContext3D::TEXTURE0));
-    context()->bindTexture(GraphicsContext3D::TEXTURE_2D, contentsTextureId);
+    GLC(context(), context()->activeTexture(GL_TEXTURE0));
+    context()->bindTexture(GL_TEXTURE_2D, contentsTextureId);
 
     int shaderQuadLocation = -1;
     int shaderEdgeLocation = -1;
@@ -532,12 +533,12 @@ void CCRendererGL::drawRenderPassQuad(DrawingFrame& frame, const CCRenderPassDra
     if (shaderMaskSamplerLocation != -1) {
         DCHECK(shaderMaskTexCoordScaleLocation != 1);
         DCHECK(shaderMaskTexCoordOffsetLocation != 1);
-        GLC(context(), context()->activeTexture(GraphicsContext3D::TEXTURE1));
+        GLC(context(), context()->activeTexture(GL_TEXTURE1));
         GLC(context(), context()->uniform1i(shaderMaskSamplerLocation, 1));
         GLC(context(), context()->uniform2f(shaderMaskTexCoordScaleLocation, quad->maskTexCoordScaleX(), quad->maskTexCoordScaleY()));
         GLC(context(), context()->uniform2f(shaderMaskTexCoordOffsetLocation, quad->maskTexCoordOffsetX(), quad->maskTexCoordOffsetY()));
-        context()->bindTexture(GraphicsContext3D::TEXTURE_2D, maskTextureId);
-        GLC(context(), context()->activeTexture(GraphicsContext3D::TEXTURE0));
+        context()->bindTexture(GL_TEXTURE_2D, maskTextureId);
+        GLC(context(), context()->activeTexture(GL_TEXTURE0));
     }
 
     if (shaderEdgeLocation != -1) {
@@ -663,11 +664,11 @@ void CCRendererGL::drawTileQuad(const DrawingFrame& frame, const CCTileDrawQuad*
 
     GLC(context(), context()->useProgram(uniforms.program));
     GLC(context(), context()->uniform1i(uniforms.samplerLocation, 0));
-    GLC(context(), context()->activeTexture(GraphicsContext3D::TEXTURE0));
+    GLC(context(), context()->activeTexture(GL_TEXTURE0));
     CCResourceProvider::ScopedReadLockGL quadResourceLock(m_resourceProvider, quad->resourceId());
-    GLC(context(), context()->bindTexture(GraphicsContext3D::TEXTURE_2D, quadResourceLock.textureId()));
-    GLC(context(), context()->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_MIN_FILTER, quad->textureFilter()));
-    GLC(context(), context()->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_MAG_FILTER, quad->textureFilter()));
+    GLC(context(), context()->bindTexture(GL_TEXTURE_2D, quadResourceLock.textureId()));
+    GLC(context(), context()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, quad->textureFilter()));
+    GLC(context(), context()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, quad->textureFilter()));
 
     bool useAA = !clipped && quad->isAntialiased();
     if (useAA) {
@@ -774,12 +775,12 @@ void CCRendererGL::drawYUVVideoQuad(const DrawingFrame& frame, const CCYUVVideoD
     CCResourceProvider::ScopedReadLockGL yPlaneLock(m_resourceProvider, yPlane.resourceId);
     CCResourceProvider::ScopedReadLockGL uPlaneLock(m_resourceProvider, uPlane.resourceId);
     CCResourceProvider::ScopedReadLockGL vPlaneLock(m_resourceProvider, vPlane.resourceId);
-    GLC(context(), context()->activeTexture(GraphicsContext3D::TEXTURE1));
-    GLC(context(), context()->bindTexture(GraphicsContext3D::TEXTURE_2D, yPlaneLock.textureId()));
-    GLC(context(), context()->activeTexture(GraphicsContext3D::TEXTURE2));
-    GLC(context(), context()->bindTexture(GraphicsContext3D::TEXTURE_2D, uPlaneLock.textureId()));
-    GLC(context(), context()->activeTexture(GraphicsContext3D::TEXTURE3));
-    GLC(context(), context()->bindTexture(GraphicsContext3D::TEXTURE_2D, vPlaneLock.textureId()));
+    GLC(context(), context()->activeTexture(GL_TEXTURE1));
+    GLC(context(), context()->bindTexture(GL_TEXTURE_2D, yPlaneLock.textureId()));
+    GLC(context(), context()->activeTexture(GL_TEXTURE2));
+    GLC(context(), context()->bindTexture(GL_TEXTURE_2D, uPlaneLock.textureId()));
+    GLC(context(), context()->activeTexture(GL_TEXTURE3));
+    GLC(context(), context()->bindTexture(GL_TEXTURE_2D, vPlaneLock.textureId()));
 
     GLC(context(), context()->useProgram(program->program()));
 
@@ -819,7 +820,7 @@ void CCRendererGL::drawYUVVideoQuad(const DrawingFrame& frame, const CCYUVVideoD
     drawQuadGeometry(frame, quad->quadTransform(), quad->quadRect(), program->vertexShader().matrixLocation());
 
     // Reset active texture back to texture 0.
-    GLC(context(), context()->activeTexture(GraphicsContext3D::TEXTURE0));
+    GLC(context(), context()->activeTexture(GL_TEXTURE0));
 }
 
 void CCRendererGL::drawStreamVideoQuad(const DrawingFrame& frame, const CCStreamVideoDrawQuad* quad)
@@ -834,8 +835,8 @@ void CCRendererGL::drawStreamVideoQuad(const DrawingFrame& frame, const CCStream
     toGLMatrix(&glMatrix[0], quad->matrix());
     GLC(context(), context()->uniformMatrix4fv(program->vertexShader().texMatrixLocation(), 1, false, glMatrix));
 
-    GLC(context(), context()->activeTexture(GraphicsContext3D::TEXTURE0));
-    GLC(context(), context()->bindTexture(Extensions3DChromium::GL_TEXTURE_EXTERNAL_OES, quad->textureId()));
+    GLC(context(), context()->activeTexture(GL_TEXTURE0));
+    GLC(context(), context()->bindTexture(GL_TEXTURE_EXTERNAL_OES, quad->textureId()));
 
     GLC(context(), context()->uniform1i(program->fragmentShader().samplerLocation(), 0));
 
@@ -881,16 +882,16 @@ void CCRendererGL::drawTextureQuad(const DrawingFrame& frame, const CCTextureDra
     const FloatRect& uvRect = quad->uvRect();
     GLC(context(), context()->uniform4f(binding.texTransformLocation, uvRect.x(), uvRect.y(), uvRect.width(), uvRect.height()));
 
-    GLC(context(), context()->activeTexture(GraphicsContext3D::TEXTURE0));
+    GLC(context(), context()->activeTexture(GL_TEXTURE0));
     CCResourceProvider::ScopedReadLockGL quadResourceLock(m_resourceProvider, quad->resourceId());
-    GLC(context(), context()->bindTexture(GraphicsContext3D::TEXTURE_2D, quadResourceLock.textureId()));
+    GLC(context(), context()->bindTexture(GL_TEXTURE_2D, quadResourceLock.textureId()));
 
     // FIXME: setting the texture parameters every time is redundant. Move this code somewhere
     // where it will only happen once per texture.
-    GLC(context(), context()->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_MIN_FILTER, GraphicsContext3D::LINEAR));
-    GLC(context(), context()->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_MAG_FILTER, GraphicsContext3D::LINEAR));
-    GLC(context(), context()->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_WRAP_S, GraphicsContext3D::CLAMP_TO_EDGE));
-    GLC(context(), context()->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_WRAP_T, GraphicsContext3D::CLAMP_TO_EDGE));
+    GLC(context(), context()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+    GLC(context(), context()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+    GLC(context(), context()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+    GLC(context(), context()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
     if (!quad->premultipliedAlpha()) {
         // As it turns out, the premultiplied alpha blending function (ONE, ONE_MINUS_SRC_ALPHA)
@@ -901,14 +902,14 @@ void CCRendererGL::drawTextureQuad(const DrawingFrame& frame, const CCTextureDra
         // https://bugs.webkit.org/show_bug.cgi?id=82412), so in this situation, use a separate
         // blend function for the alpha channel to avoid modifying it. Don't use colorMask for this
         // as it has performance implications on some platforms.
-        GLC(context(), context()->blendFuncSeparate(GraphicsContext3D::SRC_ALPHA, GraphicsContext3D::ONE_MINUS_SRC_ALPHA, GraphicsContext3D::ZERO, GraphicsContext3D::ONE));
+        GLC(context(), context()->blendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE));
     }
 
     setShaderOpacity(quad->opacity(), binding.alphaLocation);
     drawQuadGeometry(frame, quad->quadTransform(), quad->quadRect(), binding.matrixLocation);
 
     if (!quad->premultipliedAlpha())
-        GLC(m_context, m_context->blendFunc(GraphicsContext3D::ONE, GraphicsContext3D::ONE_MINUS_SRC_ALPHA));
+        GLC(m_context, m_context->blendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
 }
 
 void CCRendererGL::drawIOSurfaceQuad(const DrawingFrame& frame, const CCIOSurfaceDrawQuad* quad)
@@ -924,13 +925,13 @@ void CCRendererGL::drawIOSurfaceQuad(const DrawingFrame& frame, const CCIOSurfac
     else
         GLC(context(), context()->uniform4f(binding.texTransformLocation, 0, 0, quad->ioSurfaceSize().width(), quad->ioSurfaceSize().height()));
 
-    GLC(context(), context()->activeTexture(GraphicsContext3D::TEXTURE0));
-    GLC(context(), context()->bindTexture(Extensions3D::TEXTURE_RECTANGLE_ARB, quad->ioSurfaceTextureId()));
+    GLC(context(), context()->activeTexture(GL_TEXTURE0));
+    GLC(context(), context()->bindTexture(GL_TEXTURE_RECTANGLE_ARB, quad->ioSurfaceTextureId()));
 
     setShaderOpacity(quad->opacity(), binding.alphaLocation);
     drawQuadGeometry(frame, quad->quadTransform(), quad->quadRect(), binding.matrixLocation);
 
-    GLC(context(), context()->bindTexture(Extensions3D::TEXTURE_RECTANGLE_ARB, 0));
+    GLC(context(), context()->bindTexture(GL_TEXTURE_RECTANGLE_ARB, 0));
 }
 
 void CCRendererGL::finishDrawingFrame(DrawingFrame& frame)
@@ -938,8 +939,8 @@ void CCRendererGL::finishDrawingFrame(DrawingFrame& frame)
     m_currentFramebufferLock.reset();
     m_swapBufferRect.unite(enclosingIntRect(frame.rootDamageRect));
 
-    GLC(m_context, m_context->disable(GraphicsContext3D::SCISSOR_TEST));
-    GLC(m_context, m_context->disable(GraphicsContext3D::BLEND));
+    GLC(m_context, m_context->disable(GL_SCISSOR_TEST));
+    GLC(m_context, m_context->disable(GL_BLEND));
 }
 
 bool CCRendererGL::flippedFramebuffer() const
@@ -998,19 +999,19 @@ void CCRendererGL::drawQuadGeometry(const DrawingFrame& frame, const WebKit::Web
     toGLMatrix(&glMatrix[0], frame.projectionMatrix * quadRectMatrix);
     GLC(m_context, m_context->uniformMatrix4fv(matrixLocation, 1, false, &glMatrix[0]));
 
-    GLC(m_context, m_context->drawElements(GraphicsContext3D::TRIANGLES, 6, GraphicsContext3D::UNSIGNED_SHORT, 0));
+    GLC(m_context, m_context->drawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0));
 }
 
 void CCRendererGL::copyTextureToFramebuffer(const DrawingFrame& frame, int textureId, const IntRect& rect, const WebTransformationMatrix& drawMatrix)
 {
     const RenderPassProgram* program = renderPassProgram();
 
-    GLC(context(), context()->activeTexture(GraphicsContext3D::TEXTURE0));
-    GLC(context(), context()->bindTexture(GraphicsContext3D::TEXTURE_2D, textureId));
-    GLC(context(), context()->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_MIN_FILTER, GraphicsContext3D::LINEAR));
-    GLC(context(), context()->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_MAG_FILTER, GraphicsContext3D::LINEAR));
-    GLC(context(), context()->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_WRAP_S, GraphicsContext3D::CLAMP_TO_EDGE));
-    GLC(context(), context()->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_WRAP_T, GraphicsContext3D::CLAMP_TO_EDGE));
+    GLC(context(), context()->activeTexture(GL_TEXTURE0));
+    GLC(context(), context()->bindTexture(GL_TEXTURE_2D, textureId));
+    GLC(context(), context()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+    GLC(context(), context()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+    GLC(context(), context()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+    GLC(context(), context()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
     GLC(context(), context()->useProgram(program->program()));
     GLC(context(), context()->uniform1i(program->fragmentShader().samplerLocation(), 0));
@@ -1097,7 +1098,7 @@ void CCRendererGL::discardFramebuffer()
         return;
 
     // FIXME: Update attachments argument to appropriate values once they are no longer ignored.
-    m_context->discardFramebufferEXT(GraphicsContext3D::TEXTURE_2D, 0, 0);
+    m_context->discardFramebufferEXT(GL_TEXTURE_2D, 0, 0);
     m_isFramebufferDiscarded = true;
 
     // Damage tracker needs a full reset every time framebuffer is discarded.
@@ -1134,8 +1135,8 @@ void CCRendererGL::getFramebufferPixels(void *pixels, const IntRect& rect)
 
     bool doWorkaround = needsIOSurfaceReadbackWorkaround();
 
-    Platform3DObject temporaryTexture = 0;
-    Platform3DObject temporaryFBO = 0;
+    GLuint temporaryTexture = 0;
+    GLuint temporaryFBO = 0;
 
     if (doWorkaround) {
         // On Mac OS X, calling glReadPixels against an FBO whose color attachment is an
@@ -1144,24 +1145,24 @@ void CCRendererGL::getFramebufferPixels(void *pixels, const IntRect& rect)
         // http://crbug.com/99393. <rdar://problem/10949687>
 
         temporaryTexture = m_context->createTexture();
-        GLC(m_context, m_context->bindTexture(GraphicsContext3D::TEXTURE_2D, temporaryTexture));
-        GLC(m_context, m_context->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_MIN_FILTER, GraphicsContext3D::LINEAR));
-        GLC(m_context, m_context->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_MAG_FILTER, GraphicsContext3D::LINEAR));
-        GLC(m_context, m_context->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_WRAP_S, GraphicsContext3D::CLAMP_TO_EDGE));
-        GLC(m_context, m_context->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_WRAP_T, GraphicsContext3D::CLAMP_TO_EDGE));
+        GLC(m_context, m_context->bindTexture(GL_TEXTURE_2D, temporaryTexture));
+        GLC(m_context, m_context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+        GLC(m_context, m_context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+        GLC(m_context, m_context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+        GLC(m_context, m_context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
         // Copy the contents of the current (IOSurface-backed) framebuffer into a temporary texture.
-        GLC(m_context, m_context->copyTexImage2D(GraphicsContext3D::TEXTURE_2D, 0, GraphicsContext3D::RGBA, 0, 0, viewportSize().width(), viewportSize().height(), 0));
+        GLC(m_context, m_context->copyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, viewportSize().width(), viewportSize().height(), 0));
         temporaryFBO = m_context->createFramebuffer();
         // Attach this texture to an FBO, and perform the readback from that FBO.
-        GLC(m_context, m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, temporaryFBO));
-        GLC(m_context, m_context->framebufferTexture2D(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::COLOR_ATTACHMENT0, GraphicsContext3D::TEXTURE_2D, temporaryTexture, 0));
+        GLC(m_context, m_context->bindFramebuffer(GL_FRAMEBUFFER, temporaryFBO));
+        GLC(m_context, m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, temporaryTexture, 0));
 
-        DCHECK(m_context->checkFramebufferStatus(GraphicsContext3D::FRAMEBUFFER) == GraphicsContext3D::FRAMEBUFFER_COMPLETE);
+        DCHECK(m_context->checkFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
     }
 
     scoped_array<uint8_t> srcPixels(new uint8_t[rect.width() * rect.height() * 4]);
     GLC(m_context, m_context->readPixels(rect.x(), viewportSize().height() - rect.maxY(), rect.width(), rect.height(),
-                                     GraphicsContext3D::RGBA, GraphicsContext3D::UNSIGNED_BYTE, srcPixels.get()));
+                                     GL_RGBA, GL_UNSIGNED_BYTE, srcPixels.get()));
 
     uint8_t* destPixels = static_cast<uint8_t*>(pixels);
     size_t rowBytes = rect.width() * 4;
@@ -1181,8 +1182,8 @@ void CCRendererGL::getFramebufferPixels(void *pixels, const IntRect& rect)
 
     if (doWorkaround) {
         // Clean up.
-        GLC(m_context, m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, 0));
-        GLC(m_context, m_context->bindTexture(GraphicsContext3D::TEXTURE_2D, 0));
+        GLC(m_context, m_context->bindFramebuffer(GL_FRAMEBUFFER, 0));
+        GLC(m_context, m_context->bindTexture(GL_TEXTURE_2D, 0));
         GLC(m_context, m_context->deleteFramebuffer(temporaryFBO));
         GLC(m_context, m_context->deleteTexture(temporaryTexture));
     }
@@ -1192,14 +1193,14 @@ void CCRendererGL::getFramebufferPixels(void *pixels, const IntRect& rect)
 
 bool CCRendererGL::getFramebufferTexture(CCScopedTexture* texture, const IntRect& deviceRect)
 {
-    DCHECK(!texture->id() || (texture->size() == deviceRect.size() && texture->format() == GraphicsContext3D::RGB));
+    DCHECK(!texture->id() || (texture->size() == deviceRect.size() && texture->format() == GL_RGB));
 
-    if (!texture->id() && !texture->allocate(CCRenderer::ImplPool, deviceRect.size(), GraphicsContext3D::RGB, CCResourceProvider::TextureUsageAny))
+    if (!texture->id() && !texture->allocate(CCRenderer::ImplPool, deviceRect.size(), GL_RGB, CCResourceProvider::TextureUsageAny))
         return false;
 
     CCResourceProvider::ScopedWriteLockGL lock(m_resourceProvider, texture->id());
-    GLC(m_context, m_context->bindTexture(GraphicsContext3D::TEXTURE_2D, lock.textureId()));
-    GLC(m_context, m_context->copyTexImage2D(GraphicsContext3D::TEXTURE_2D, 0, texture->format(),
+    GLC(m_context, m_context->bindTexture(GL_TEXTURE_2D, lock.textureId()));
+    GLC(m_context, m_context->copyTexImage2D(GL_TEXTURE_2D, 0, texture->format(),
                                              deviceRect.x(), deviceRect.y(), deviceRect.width(), deviceRect.height(), 0));
     return true;
 }
@@ -1216,19 +1217,19 @@ bool CCRendererGL::useScopedTexture(DrawingFrame& frame, const CCScopedTexture* 
 void CCRendererGL::bindFramebufferToOutputSurface(DrawingFrame& frame)
 {
     m_currentFramebufferLock.reset();
-    GLC(m_context, m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, 0));
+    GLC(m_context, m_context->bindFramebuffer(GL_FRAMEBUFFER, 0));
 }
 
 bool CCRendererGL::bindFramebufferToTexture(DrawingFrame& frame, const CCScopedTexture* texture, const IntRect& framebufferRect)
 {
     DCHECK(texture->id());
 
-    GLC(m_context, m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, m_offscreenFramebufferId));
+    GLC(m_context, m_context->bindFramebuffer(GL_FRAMEBUFFER, m_offscreenFramebufferId));
     m_currentFramebufferLock = make_scoped_ptr(new CCResourceProvider::ScopedWriteLockGL(m_resourceProvider, texture->id()));
     unsigned textureId = m_currentFramebufferLock->textureId();
-    GLC(m_context, m_context->framebufferTexture2D(GraphicsContext3D::FRAMEBUFFER, GraphicsContext3D::COLOR_ATTACHMENT0, GraphicsContext3D::TEXTURE_2D, textureId, 0));
+    GLC(m_context, m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureId, 0));
 
-    DCHECK(m_context->checkFramebufferStatus(GraphicsContext3D::FRAMEBUFFER) == GraphicsContext3D::FRAMEBUFFER_COMPLETE);
+    DCHECK(m_context->checkFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 
     initializeMatrices(frame, framebufferRect, false);
     setDrawViewportSize(framebufferRect.size());
@@ -1238,13 +1239,13 @@ bool CCRendererGL::bindFramebufferToTexture(DrawingFrame& frame, const CCScopedT
 
 void CCRendererGL::enableScissorTestRect(const IntRect& scissorRect)
 {
-    GLC(m_context, m_context->enable(GraphicsContext3D::SCISSOR_TEST));
+    GLC(m_context, m_context->enable(GL_SCISSOR_TEST));
     GLC(m_context, m_context->scissor(scissorRect.x(), scissorRect.y(), scissorRect.width(), scissorRect.height()));
 }
 
 void CCRendererGL::disableScissorTest()
 {
-    GLC(m_context, m_context->disable(GraphicsContext3D::SCISSOR_TEST));
+    GLC(m_context, m_context->disable(GL_SCISSOR_TEST));
 }
 
 void CCRendererGL::setDrawViewportSize(const IntSize& viewportSize)
@@ -1514,7 +1515,7 @@ void CCRendererGL::cleanupSharedObjects()
 
 bool CCRendererGL::isContextLost()
 {
-    return (m_context->getGraphicsResetStatusARB() != GraphicsContext3D::NO_ERROR);
+    return (m_context->getGraphicsResetStatusARB() != GL_NO_ERROR);
 }
 
 } // namespace cc

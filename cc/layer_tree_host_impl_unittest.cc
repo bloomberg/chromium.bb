@@ -965,7 +965,7 @@ private:
         setTilingData(*tilingData.get());
         setSkipsDraw(skipsDraw);
         if (!tileMissing) {
-            CCResourceProvider::ResourceId resource = resourceProvider->createResource(CCRenderer::ContentPool, IntSize(), GraphicsContext3D::RGBA, CCResourceProvider::TextureUsageAny);
+            CCResourceProvider::ResourceId resource = resourceProvider->createResource(CCRenderer::ContentPool, IntSize(), GL_RGBA, CCResourceProvider::TextureUsageAny);
             pushTileProperties(0, 0, resource, IntRect());
         }
         if (animating)
@@ -1510,13 +1510,13 @@ public:
 
     virtual void enable(WGC3Denum cap)
     {
-        if (cap == GraphicsContext3D::BLEND)
+        if (cap == GL_BLEND)
             m_blend = true;
     }
 
     virtual void disable(WGC3Denum cap)
     {
-        if (cap == GraphicsContext3D::BLEND)
+        if (cap == GL_BLEND)
             m_blend = false;
     }
 
@@ -1569,7 +1569,7 @@ private:
         , m_quadsAppended(false)
         , m_quadRect(5, 5, 5, 5)
         , m_quadVisibleRect(5, 5, 5, 5)
-        , m_resourceId(resourceProvider->createResource(CCRenderer::ContentPool, IntSize(1, 1), GraphicsContext3D::RGBA, CCResourceProvider::TextureUsageAny))
+        , m_resourceId(resourceProvider->createResource(CCRenderer::ContentPool, IntSize(1, 1), GL_RGBA, CCResourceProvider::TextureUsageAny))
     {
         setAnchorPoint(FloatPoint(0, 0));
         setBounds(IntSize(10, 10));
@@ -1918,7 +1918,7 @@ public:
 
     virtual WebString getString(WGC3Denum name)
     {
-        if (name == GraphicsContext3D::EXTENSIONS)
+        if (name == GL_EXTENSIONS)
             return WebString("GL_CHROMIUM_post_sub_buffer GL_CHROMIUM_set_visibility");
 
         return WebString();
@@ -2095,7 +2095,7 @@ public:
             .WillRepeatedly(Return(WebString()));
 
         // Support for partial swap, if needed
-        EXPECT_CALL(*m_context, getString(GraphicsContext3D::EXTENSIONS))
+        EXPECT_CALL(*m_context, getString(GL_EXTENSIONS))
             .WillRepeatedly(Return(WebString("GL_CHROMIUM_post_sub_buffer")));
 
         EXPECT_CALL(*m_context, getRequestableExtensionsCHROMIUM())
@@ -2112,7 +2112,7 @@ public:
 
     void mustDrawSolidQuad()
     {
-        EXPECT_CALL(*m_context, drawElements(GraphicsContext3D::TRIANGLES, 6, GraphicsContext3D::UNSIGNED_SHORT, 0))
+        EXPECT_CALL(*m_context, drawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0))
             .WillOnce(Return())
             .RetiresOnSaturation();
 
@@ -2125,7 +2125,7 @@ public:
 
     void mustSetScissor(int x, int y, int width, int height)
     {
-        EXPECT_CALL(*m_context, enable(GraphicsContext3D::SCISSOR_TEST))
+        EXPECT_CALL(*m_context, enable(GL_SCISSOR_TEST))
             .WillRepeatedly(Return());
 
         EXPECT_CALL(*m_context, scissor(x, y, width, height))
@@ -2135,10 +2135,10 @@ public:
 
     void mustSetNoScissor()
     {
-        EXPECT_CALL(*m_context, disable(GraphicsContext3D::SCISSOR_TEST))
+        EXPECT_CALL(*m_context, disable(GL_SCISSOR_TEST))
             .WillRepeatedly(Return());
 
-        EXPECT_CALL(*m_context, enable(GraphicsContext3D::SCISSOR_TEST))
+        EXPECT_CALL(*m_context, enable(GL_SCISSOR_TEST))
             .Times(0);
 
         EXPECT_CALL(*m_context, scissor(_, _, _, _))
@@ -2203,7 +2203,7 @@ class PartialSwapContext : public FakeWebGraphicsContext3D {
 public:
     WebString getString(WGC3Denum name)
     {
-        if (name == GraphicsContext3D::EXTENSIONS)
+        if (name == GL_EXTENSIONS)
             return WebString("GL_CHROMIUM_post_sub_buffer");
         return WebString();
     }
@@ -2216,7 +2216,7 @@ public:
     // Unlimited texture size.
     virtual void getIntegerv(WGC3Denum pname, WGC3Dint* value)
     {
-        if (pname == cc::GraphicsContext3D::MAX_TEXTURE_SIZE)
+        if (pname == GL_MAX_TEXTURE_SIZE)
             *value = 8192;
     }
 };
@@ -2544,7 +2544,7 @@ public:
     virtual int stride(unsigned plane) const { return 4; }
     virtual const void* data(unsigned plane) const { return m_data; }
     virtual unsigned textureId() const { return m_textureId; }
-    virtual unsigned textureTarget() const { return m_textureId ? GraphicsContext3D::TEXTURE_2D : 0; }
+    virtual unsigned textureTarget() const { return m_textureId ? GL_TEXTURE_2D : 0; }
 
     void setTextureId(unsigned id) { m_textureId = id; }
 
@@ -2578,7 +2578,7 @@ class StrictWebGraphicsContext3DWithIOSurface : public StrictWebGraphicsContext3
 public:
     virtual WebString getString(WGC3Denum name) OVERRIDE
     {
-        if (name == cc::GraphicsContext3D::EXTENSIONS)
+        if (name == GL_EXTENSIONS)
             return WebString("GL_CHROMIUM_iosurface GL_ARB_texture_rectangle");
 
         return WebString();
@@ -2589,7 +2589,7 @@ class FakeWebGraphicsContext3DWithIOSurface : public FakeWebGraphicsContext3D {
 public:
     virtual WebString getString(WGC3Denum name) OVERRIDE
     {
-        if (name == cc::GraphicsContext3D::EXTENSIONS)
+        if (name == GL_EXTENSIONS)
             return WebString("GL_CHROMIUM_iosurface GL_ARB_texture_rectangle");
 
         return WebString();
@@ -2619,7 +2619,7 @@ public:
         DCHECK(provider);
         int pool = 0;
         IntSize size(10, 10);
-        GC3Denum format = GraphicsContext3D::RGBA;
+        GLenum format = GL_RGBA;
         CCResourceProvider::TextureUsageHint hint = CCResourceProvider::TextureUsageAny;
         setScrollbarGeometry(CCScrollbarGeometryFixedThumb::create(FakeWebScrollbarThemeGeometryNonEmpty::create()));
 
@@ -2637,7 +2637,7 @@ protected:
 
 static inline scoped_ptr<CCRenderPass> createRenderPassWithResource(CCResourceProvider* provider)
 {
-    CCResourceProvider::ResourceId resourceId = provider->createResource(0, IntSize(1, 1), GraphicsContext3D::RGBA, CCResourceProvider::TextureUsageAny);
+    CCResourceProvider::ResourceId resourceId = provider->createResource(0, IntSize(1, 1), GL_RGBA, CCResourceProvider::TextureUsageAny);
 
     scoped_ptr<CCRenderPass> pass = CCRenderPass::create(CCRenderPass::Id(1, 1), IntRect(0, 0, 1, 1), WebTransformationMatrix());
     scoped_ptr<CCSharedQuadState> sharedState = CCSharedQuadState::create(WebTransformationMatrix(), IntRect(0, 0, 1, 1), IntRect(0, 0, 1, 1), 1, false);
@@ -2823,7 +2823,7 @@ public:
 
     virtual WebString getString(WGC3Denum name) OVERRIDE
     {
-        if (name == cc::GraphicsContext3D::EXTENSIONS)
+        if (name == GL_EXTENSIONS)
             return WebString("GL_CHROMIUM_iosurface GL_ARB_texture_rectangle");
 
         return WebString();

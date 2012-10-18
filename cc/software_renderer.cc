@@ -78,7 +78,7 @@ CCRendererSoftware::CCRendererSoftware(CCRendererClient* client, CCResourceProvi
     m_resourceProvider->setDefaultResourceType(CCResourceProvider::Bitmap);
 
     m_capabilities.maxTextureSize = INT_MAX;
-    m_capabilities.bestTextureFormat = GraphicsContext3D::RGBA;
+    m_capabilities.bestTextureFormat = GL_RGBA;
     m_capabilities.contextHasCachedFrontBuffer = true;
     m_capabilities.usingSetVisibility = true;
 

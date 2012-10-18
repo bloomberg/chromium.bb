@@ -6,7 +6,7 @@
 #define LayerTextureSubImage_h
 
 #include "base/memory/scoped_ptr.h"
-#include "GraphicsTypes3D.h"
+#include "third_party/khronos/GLES2/gl2.h"
 #include "IntRect.h"
 #include "IntSize.h"
 
@@ -23,15 +23,15 @@ public:
 
     void upload(const uint8_t* image, const IntRect& imageRect,
                 const IntRect& sourceRect, const IntSize& destOffset,
-                GC3Denum format, WebKit::WebGraphicsContext3D*);
+                GLenum format, WebKit::WebGraphicsContext3D*);
 
 private:
     void uploadWithTexSubImage(const uint8_t* image, const IntRect& imageRect,
                                const IntRect& sourceRect, const IntSize& destOffset,
-                               GC3Denum format, WebKit::WebGraphicsContext3D*);
+                               GLenum format, WebKit::WebGraphicsContext3D*);
     void uploadWithMapTexSubImage(const uint8_t* image, const IntRect& imageRect,
                                   const IntRect& sourceRect, const IntSize& destOffset,
-                                  GC3Denum format, WebKit::WebGraphicsContext3D*);
+                                  GLenum format, WebKit::WebGraphicsContext3D*);
 
     bool m_useMapTexSubImage;
     size_t m_subImageSize;

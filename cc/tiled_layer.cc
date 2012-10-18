@@ -13,6 +13,7 @@
 #include "CCTiledLayerImpl.h"
 #include "Region.h"
 #include "base/basictypes.h"
+#include "third_party/khronos/GLES2/gl2.h"
 
 using namespace std;
 using WebKit::WebTransformationMatrix;
@@ -77,7 +78,7 @@ private:
 
 TiledLayerChromium::TiledLayerChromium()
     : LayerChromium()
-    , m_textureFormat(GraphicsContext3D::INVALID_ENUM)
+    , m_textureFormat(GL_INVALID_ENUM)
     , m_skipsDraw(false)
     , m_failedUpdate(false)
     , m_sampledTexelFormat(LayerTextureUpdater::SampledTexelFormatInvalid)

@@ -6,8 +6,6 @@
 
 #include "CCTiledLayerImpl.h"
 
-#include "base/basictypes.h"
-#include "base/stringprintf.h"
 #include "CCAppendQuadsData.h"
 #include "CCCheckerboardDrawQuad.h"
 #include "CCDebugBorderDrawQuad.h"
@@ -17,7 +15,9 @@
 #include "CCSolidColorDrawQuad.h"
 #include "CCTileDrawQuad.h"
 #include "FloatQuad.h"
-#include "GraphicsContext3D.h"
+#include "base/basictypes.h"
+#include "base/stringprintf.h"
+#include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 using namespace std;
@@ -194,7 +194,7 @@ void CCTiledLayerImpl::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& appe
             bool rightEdgeAA = i == m_tiler->numTilesX() - 1 && useAA;
             bool bottomEdgeAA = j == m_tiler->numTilesY() - 1 && useAA;
 
-            const GC3Dint textureFilter = m_tiler->hasBorderTexels() ? GraphicsContext3D::LINEAR : GraphicsContext3D::NEAREST;
+            const GLint textureFilter = m_tiler->hasBorderTexels() ? GL_LINEAR : GL_NEAREST;
             quadSink.append(CCTileDrawQuad::create(sharedQuadState, tileRect, tileOpaqueRect, tile->resourceId(), textureOffset, textureSize, textureFilter, contentsSwizzled(), leftEdgeAA, topEdgeAA, rightEdgeAA, bottomEdgeAA).PassAs<CCDrawQuad>(), appendQuadsData);
         }
     }

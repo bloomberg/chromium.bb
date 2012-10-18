@@ -5,7 +5,6 @@
 #ifndef CCPriorityCalculator_h
 #define CCPriorityCalculator_h
 
-#include "GraphicsContext3D.h"
 #include "IntRect.h"
 #include "IntSize.h"
 

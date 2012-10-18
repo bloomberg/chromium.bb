@@ -9,15 +9,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/program_binding.h"
 #include "cc/shader.h"
-#include "GraphicsContext3D.h"
 #include "IntSize.h"
+#include "third_party/khronos/GLES2/gl2.h"
 
 namespace WebKit {
 class WebGraphicsContext3D;
 }
 
 namespace cc {
-class IntSize;
 
 class TextureCopier {
 public:
@@ -53,8 +52,8 @@ private:
     typedef ProgramBinding<VertexShaderPosTexIdentity, FragmentShaderRGBATex> BlitProgram;
 
     WebKit::WebGraphicsContext3D* m_context;
-    Platform3DObject m_fbo;
-    Platform3DObject m_positionBuffer;
+    GLuint m_fbo;
+    GLuint m_positionBuffer;
     scoped_ptr<BlitProgram> m_blitProgram;
     bool m_usingBindUniforms;
 

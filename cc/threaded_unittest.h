@@ -19,7 +19,6 @@ class CCLayerImpl;
 class CCLayerTreeHost;
 class CCLayerTreeHostClient;
 class CCLayerTreeHostImpl;
-class GraphicsContext3D;
 }
 
 namespace WebKitTests {

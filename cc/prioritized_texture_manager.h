@@ -8,10 +8,10 @@
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
+#include "third_party/khronos/GLES2/gl2.h"
 #include "CCPrioritizedTexture.h"
 #include "CCPriorityCalculator.h"
 #include "CCTexture.h"
-#include "GraphicsContext3D.h"
 #include "IntRect.h"
 #include "IntSize.h"
 #include <wtf/Vector.h>
@@ -38,7 +38,7 @@ public:
     {
         return make_scoped_ptr(new CCPrioritizedTextureManager(maxMemoryLimitBytes, maxTextureSize, pool));
     }
-    scoped_ptr<CCPrioritizedTexture> createTexture(IntSize size, GC3Denum format)
+    scoped_ptr<CCPrioritizedTexture> createTexture(IntSize size, GLenum format)
     {
         return make_scoped_ptr(new CCPrioritizedTexture(this, size, format));
     }
@@ -136,7 +136,7 @@ private:
     CCPrioritizedTextureManager(size_t maxMemoryLimitBytes, int maxTextureSize, int pool);
 
     bool evictBackingsToReduceMemory(size_t limitBytes, EvictionPriorityPolicy, CCResourceProvider*);
-    CCPrioritizedTexture::Backing* createBacking(IntSize, GC3Denum format, CCResourceProvider*);
+    CCPrioritizedTexture::Backing* createBacking(IntSize, GLenum format, CCResourceProvider*);
     void evictFirstBackingResource(CCResourceProvider*);
     void deleteUnlinkedEvictedBackings();
     void sortBackings();

@@ -46,7 +46,7 @@ protected:
 
     // Exposed to subclasses for testing.
     void setTileSize(const IntSize&);
-    void setTextureFormat(GC3Denum textureFormat) { m_textureFormat = textureFormat; }
+    void setTextureFormat(GLenum textureFormat) { m_textureFormat = textureFormat; }
     void setBorderTexelOption(CCLayerTilingData::BorderTexelOption);
     void setSampledTexelFormat(LayerTextureUpdater::SampledTexelFormat sampledTexelFormat) { m_sampledTexelFormat = sampledTexelFormat; }
     size_t numPaintedTiles() { return m_tiler->tiles().size(); }
@@ -88,7 +88,7 @@ private:
     UpdatableTile* tileAt(int, int) const;
     UpdatableTile* createTile(int, int);
 
-    GC3Denum m_textureFormat;
+    GLenum m_textureFormat;
     bool m_skipsDraw;
     bool m_failedUpdate;
     LayerTextureUpdater::SampledTexelFormat m_sampledTexelFormat;

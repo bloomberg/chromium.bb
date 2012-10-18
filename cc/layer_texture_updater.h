@@ -6,9 +6,9 @@
 #ifndef LayerTextureUpdater_h
 #define LayerTextureUpdater_h
 
-#include "base/memory/ref_counted.h"
 #include "CCPrioritizedTexture.h"
-#include "GraphicsTypes3D.h"
+#include "base/memory/ref_counted.h"
+#include "third_party/khronos/GLES2/gl2.h"
 
 namespace cc {
 
@@ -49,7 +49,7 @@ public:
     // This format should not be confused by texture internal format.
     // This format specifies the component order in the sampled texel.
     // If the format is TexelFormatBGRA, vec4.x is blue and vec4.z is red.
-    virtual SampledTexelFormat sampledTexelFormat(GC3Denum textureFormat) = 0;
+    virtual SampledTexelFormat sampledTexelFormat(GLenum textureFormat) = 0;
     // The |resultingOpaqueRect| gives back a region of the layer that was painted opaque. If the layer is marked opaque in the updater,
     // then this region should be ignored in preference for the entire layer's area.
     virtual void prepareToUpdate(const IntRect& contentRect, const IntSize& tileSize, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, CCRenderingStats&) { }

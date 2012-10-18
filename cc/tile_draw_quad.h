@@ -6,7 +6,7 @@
 #define CCTileDrawQuad_h
 
 #include "CCDrawQuad.h"
-#include "GraphicsTypes3D.h"
+#include "third_party/khronos/GLES2/gl2.h"
 #include "IntPoint.h"
 #include "IntSize.h"
 #include "base/memory/scoped_ptr.h"
@@ -17,12 +17,12 @@ namespace cc {
 
 class CCTileDrawQuad : public CCDrawQuad {
 public:
-    static scoped_ptr<CCTileDrawQuad> create(const CCSharedQuadState*, const IntRect& quadRect, const IntRect& opaqueRect, unsigned resourceId, const IntPoint& textureOffset, const IntSize& textureSize, GC3Dint textureFilter, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA);
+    static scoped_ptr<CCTileDrawQuad> create(const CCSharedQuadState*, const IntRect& quadRect, const IntRect& opaqueRect, unsigned resourceId, const IntPoint& textureOffset, const IntSize& textureSize, GLint textureFilter, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA);
 
     unsigned resourceId() const { return m_resourceId; }
     IntPoint textureOffset() const { return m_textureOffset; }
     IntSize textureSize() const { return m_textureSize; }
-    GC3Dint textureFilter() const { return m_textureFilter; }
+    GLint textureFilter() const { return m_textureFilter; }
     bool swizzleContents() const { return m_swizzleContents; }
 
     bool leftEdgeAA() const { return m_leftEdgeAA; }
@@ -34,12 +34,12 @@ public:
 
     static const CCTileDrawQuad* materialCast(const CCDrawQuad*);
 private:
-     CCTileDrawQuad(const CCSharedQuadState*, const IntRect& quadRect, const IntRect& opaqueRect, unsigned resourceId, const IntPoint& textureOffset, const IntSize& textureSize, GC3Dint textureFilter, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA);
+     CCTileDrawQuad(const CCSharedQuadState*, const IntRect& quadRect, const IntRect& opaqueRect, unsigned resourceId, const IntPoint& textureOffset, const IntSize& textureSize, GLint textureFilter, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA);
 
     unsigned m_resourceId;
     IntPoint m_textureOffset;
     IntSize m_textureSize;
-    GC3Dint m_textureFilter;
+    GLint m_textureFilter;
     bool m_swizzleContents;
     bool m_leftEdgeAA;
     bool m_topEdgeAA;

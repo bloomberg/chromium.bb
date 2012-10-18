@@ -6,20 +6,21 @@
 
 #include "CCHeadsUpDisplayLayerImpl.h"
 
-#include "base/stringprintf.h"
-#include "ui/gfx/point.h"
 #include "CCDebugRectHistory.h"
 #include "CCFontAtlas.h"
 #include "CCFrameRateCounter.h"
 #include "CCLayerTreeHostImpl.h"
 #include "CCQuadSink.h"
 #include "CCTextureDrawQuad.h"
-#include "Extensions3DChromium.h"
-#include "GraphicsContext3D.h"
+#include "base/stringprintf.h"
 #include "skia/ext/platform_canvas.h"
+#include "skia/ext/platform_canvas.h"
+#include "third_party/khronos/GLES2/gl2.h"
+#include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
+#include "ui/gfx/point.h"
 
 namespace cc {
 
@@ -67,7 +68,7 @@ void CCHeadsUpDisplayLayerImpl::willDraw(CCResourceProvider* resourceProvider)
         m_hudTexture->free();
 
     if (!m_hudTexture->id())
-        m_hudTexture->allocate(CCRenderer::ImplPool, bounds(), GraphicsContext3D::RGBA, CCResourceProvider::TextureUsageAny);
+        m_hudTexture->allocate(CCRenderer::ImplPool, bounds(), GL_RGBA, CCResourceProvider::TextureUsageAny);
 }
 
 void CCHeadsUpDisplayLayerImpl::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& appendQuadsData)

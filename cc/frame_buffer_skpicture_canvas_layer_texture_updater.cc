@@ -44,7 +44,7 @@ scoped_ptr<LayerTextureUpdater::Texture> FrameBufferSkPictureCanvasLayerTextureU
     return scoped_ptr<LayerTextureUpdater::Texture>(new Texture(this, CCPrioritizedTexture::create(manager)));
 }
 
-LayerTextureUpdater::SampledTexelFormat FrameBufferSkPictureCanvasLayerTextureUpdater::sampledTexelFormat(GC3Denum textureFormat)
+LayerTextureUpdater::SampledTexelFormat FrameBufferSkPictureCanvasLayerTextureUpdater::sampledTexelFormat(GLenum textureFormat)
 {
     // Here we directly render to the texture, so the component order is always correct.
     return LayerTextureUpdater::SampledTexelFormatRGBA;

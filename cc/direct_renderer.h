@@ -77,7 +77,7 @@ protected:
 
     bool haveCachedResources(CCRenderPass::Id) const;
     static IntSize renderPassTextureSize(const CCRenderPass*);
-    static GC3Denum renderPassTextureFormat(const CCRenderPass*);
+    static GLenum renderPassTextureFormat(const CCRenderPass*);
 
     void drawRenderPass(DrawingFrame&, const CCRenderPass*);
     bool useRenderPass(DrawingFrame&, const CCRenderPass*);

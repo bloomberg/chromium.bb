@@ -6,8 +6,8 @@
 
 #include "cc/geometry_binding.h"
 
+#include "third_party/khronos/GLES2/gl2.h"
 #include "CCRendererGL.h" // For the GLC() macro.
-#include "GraphicsContext3D.h"
 #include <public/WebGraphicsContext3D.h>
 
 namespace cc {
@@ -28,10 +28,10 @@ GeometryBinding::GeometryBinding(WebKit::WebGraphicsContext3D* context, const Fl
 
     GLC(m_context, m_quadVerticesVbo = m_context->createBuffer());
     GLC(m_context, m_quadElementsVbo = m_context->createBuffer());
-    GLC(m_context, m_context->bindBuffer(GraphicsContext3D::ARRAY_BUFFER, m_quadVerticesVbo));
-    GLC(m_context, m_context->bufferData(GraphicsContext3D::ARRAY_BUFFER, sizeof(vertices), vertices, GraphicsContext3D::STATIC_DRAW));
-    GLC(m_context, m_context->bindBuffer(GraphicsContext3D::ELEMENT_ARRAY_BUFFER, m_quadElementsVbo));
-    GLC(m_context, m_context->bufferData(GraphicsContext3D::ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GraphicsContext3D::STATIC_DRAW));
+    GLC(m_context, m_context->bindBuffer(GL_ARRAY_BUFFER, m_quadVerticesVbo));
+    GLC(m_context, m_context->bufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW));
+    GLC(m_context, m_context->bindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_quadElementsVbo));
+    GLC(m_context, m_context->bufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW));
 
     m_initialized = true;
 }
@@ -44,12 +44,12 @@ GeometryBinding::~GeometryBinding()
 
 void GeometryBinding::prepareForDraw()
 {
-    GLC(m_context, m_context->bindBuffer(GraphicsContext3D::ARRAY_BUFFER, quadVerticesVbo()));
-    GLC(m_context, m_context->bindBuffer(GraphicsContext3D::ELEMENT_ARRAY_BUFFER, quadElementsVbo()));
+    GLC(m_context, m_context->bindBuffer(GL_ARRAY_BUFFER, quadVerticesVbo()));
+    GLC(m_context, m_context->bindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadElementsVbo()));
     unsigned offset = 0;
-    GLC(m_context, m_context->vertexAttribPointer(positionAttribLocation(), 3, GraphicsContext3D::FLOAT, false, 5 * sizeof(float), offset));
+    GLC(m_context, m_context->vertexAttribPointer(positionAttribLocation(), 3, GL_FLOAT, false, 5 * sizeof(float), offset));
     offset += 3 * sizeof(float);
-    GLC(m_context, m_context->vertexAttribPointer(texCoordAttribLocation(), 2, GraphicsContext3D::FLOAT, false, 5 * sizeof(float), offset));
+    GLC(m_context, m_context->vertexAttribPointer(texCoordAttribLocation(), 2, GL_FLOAT, false, 5 * sizeof(float), offset));
     GLC(m_context, m_context->enableVertexAttribArray(positionAttribLocation()));
     GLC(m_context, m_context->enableVertexAttribArray(texCoordAttribLocation()));
 }

@@ -13,7 +13,6 @@
 #include "CCTextureUpdateQueue.h"
 #include "CCThreadedTest.h"
 #include "CCTimingFunction.h"
-#include "Extensions3DChromium.h"
 #include "base/synchronization/lock.h"
 #include "cc/content_layer.h"
 #include "cc/content_layer_client.h"
@@ -21,6 +20,8 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/occlusion_tracker_test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/khronos/GLES2/gl2.h"
+#include "third_party/khronos/GLES2/gl2ext.h"
 #include <public/Platform.h>
 #include <public/WebLayerScrollClient.h>
 #include <public/WebSize.h>
@@ -2419,7 +2420,7 @@ private:
         if (m_texture.get())
             return;
         m_texture = CCPrioritizedTexture::create(layerTreeHost()->contentsTextureManager());
-        m_texture->setDimensions(IntSize(10, 10), cc::GraphicsContext3D::RGBA);
+        m_texture->setDimensions(IntSize(10, 10), GL_RGBA);
         m_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
     }
 
@@ -2725,8 +2726,8 @@ public:
     virtual void setContextLostCallback(WebGraphicsContextLostCallback* callback) { m_contextLostCallback = callback; }
     virtual bool isContextLost() { return m_isContextLost; }
 
-    virtual void beginQueryEXT(GC3Denum, WebGLId) { }
-    virtual void endQueryEXT(GC3Denum)
+    virtual void beginQueryEXT(WGC3Denum, WebGLId) { }
+    virtual void endQueryEXT(WGC3Denum)
     {
         // Lose context.
         if (!m_isContextLost) {
@@ -2734,10 +2735,10 @@ public:
             m_isContextLost = true;
         }
     }
-    virtual void getQueryObjectuivEXT(WebGLId, GC3Denum pname, GC3Duint* params)
+    virtual void getQueryObjectuivEXT(WebGLId, WGC3Denum pname, WGC3Duint* params)
     {
         // Context is lost. We need to behave as if result is available.
-        if (pname == Extensions3DChromium::QUERY_RESULT_AVAILABLE_EXT)
+        if (pname == GL_QUERY_RESULT_AVAILABLE_EXT)
             *params = 1;
     }
 
