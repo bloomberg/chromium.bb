@@ -3,15 +3,22 @@
 // found in the LICENSE file.
 
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/extensions/api/identity/web_auth_flow.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
+#include "content/public/test/test_utils.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
 #include "googleurl/src/gurl.h"
@@ -20,6 +27,7 @@
 
 using extensions::Extension;
 using extensions::IdentityGetAuthTokenFunction;
+using extensions::IdentityLaunchWebAuthFlowFunction;
 using testing::_;
 using testing::Return;
 using testing::ReturnRef;
@@ -388,4 +396,59 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_EQ(std::string(kAccessToken), access_token);
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_TRUE(func->install_ui_shown());
+}
+
+class LaunchWebAuthFlowFunctionTest : public ExtensionBrowserTest {
+ protected:
+  void RunAndCheckBounds(
+      const std::string& extra_params,
+      int expected_x,
+      int expected_y,
+      int expected_width,
+      int expected_height) {
+    content::WindowedNotificationObserver observer(
+        chrome::NOTIFICATION_BROWSER_WINDOW_READY,
+        content::NotificationService::AllSources());
+
+   scoped_refptr<IdentityLaunchWebAuthFlowFunction> function(
+      new IdentityLaunchWebAuthFlowFunction());
+    scoped_refptr<extensions::Extension> empty_extension(
+        utils::CreateEmptyExtension());
+    function->set_extension(empty_extension.get());
+    std::string args = base::StringPrintf(
+        "[{\"interactive\": true, \"url\": \"data:text/html,auth\"%s%s}]",
+        extra_params.length() ? "," : "",
+        extra_params.c_str());
+    scoped_ptr<base::ListValue> parsed_args(utils::ParseList(args));
+    EXPECT_TRUE(parsed_args.get()) <<
+          "Could not parse extension function arguments: " << args;
+    function->SetArgs(parsed_args.get());
+    function->set_profile(browser()->profile());
+
+    // We don't use util::RunFunction because that waits until the function
+    // responds, but we want to check the size of the created browser as soon as
+    // it's created, even though there's no actual redirect to an auth URL.
+    function->Run();
+
+    observer.Wait();
+
+    Browser* web_auth_flow_browser =
+        content::Source<Browser>(observer.source()).ptr();
+    EXPECT_EQ(expected_x, web_auth_flow_browser->override_bounds().x());
+    EXPECT_EQ(expected_y, web_auth_flow_browser->override_bounds().y());
+    EXPECT_EQ(expected_width, web_auth_flow_browser->override_bounds().width());
+    EXPECT_EQ(
+        expected_height, web_auth_flow_browser->override_bounds().height());
+
+    web_auth_flow_browser->window()->Close();
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(LaunchWebAuthFlowFunctionTest, Bounds) {
+  RunAndCheckBounds("", 0, 0, 0, 0);
+  RunAndCheckBounds("\"width\": 100, \"height\": 200", 0, 0, 100, 200);
+  RunAndCheckBounds("\"left\": 100, \"top\": 200", 100, 200, 0, 0);
+  RunAndCheckBounds(
+      "\"left\": 100, \"top\": 200, \"width\": 300, \"height\": 400",
+      100, 200, 300, 400);
 }

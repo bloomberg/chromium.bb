@@ -13,6 +13,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
+#include "ui/gfx/rect.h"
 
 class Profile;
 class TabContents;
@@ -63,7 +64,8 @@ class WebAuthFlow : public content::NotificationObserver {
               Profile* profile,
               const std::string& extension_id,
               const GURL& provider_url,
-              Mode mode);
+              Mode mode,
+              const gfx::Rect& initial_bounds);
   virtual ~WebAuthFlow();
 
   // Starts the flow.
@@ -96,6 +98,7 @@ class WebAuthFlow : public content::NotificationObserver {
   Profile* profile_;
   GURL provider_url_;
   Mode mode_;
+  gfx::Rect initial_bounds_;
   // List of valid redirect URL prefixes.
   std::vector<std::string> valid_prefixes_;
 

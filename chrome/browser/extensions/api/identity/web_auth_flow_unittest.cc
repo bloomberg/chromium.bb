@@ -45,7 +45,8 @@ class MockWebAuthFlow : public WebAuthFlow {
            profile,
            extension_id,
            provider_url,
-           interactive ? WebAuthFlow::INTERACTIVE : WebAuthFlow::SILENT),
+           interactive ? WebAuthFlow::INTERACTIVE : WebAuthFlow::SILENT,
+           gfx::Rect()),
        profile_(profile),
        web_contents_(NULL),
        window_shown_(false) { }

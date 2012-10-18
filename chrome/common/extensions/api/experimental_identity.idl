@@ -16,6 +16,18 @@ namespace experimental.identity {
 
     // Whether to launch auth flow in interactive mode. Default is false.
     boolean? interactive;
+
+    // Width of the window, if one is shown in interactive mode.
+    long? width;
+
+    // Height of the window, if one is shown in interactive mode.
+    long? height;
+
+    // X coordinate of the window, if one is shown in interactive mode.
+    long? left;
+
+    // Y coordinate of the window, if one is shown in interactive mode.
+    long? top;
   };
 
   callback GetAuthTokenCallback = void (optional DOMString token);
