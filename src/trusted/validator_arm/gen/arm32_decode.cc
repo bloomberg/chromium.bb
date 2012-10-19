@@ -71,6 +71,9 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Unary1RegisterUse_instance_()
   , Undefined_instance_()
   , Unpredictable_instance_()
+  , Vector1RegisterImmediate_BIT_instance_()
+  , Vector1RegisterImmediate_MOV_instance_()
+  , Vector1RegisterImmediate_MVN_instance_()
   , Vector2RegisterMiscellaneous_CVT_F2I_instance_()
   , Vector2RegisterMiscellaneous_CVT_H2S_instance_()
   , Vector2RegisterMiscellaneous_F32_instance_()
@@ -164,7 +167,7 @@ const ClassDecoder& Arm32DecoderState::decode_advanced_simd_data_processing_inst
 {
   if ((inst.Bits() & 0x00B80000) == 0x00800000 /* A(23:19)=1x000 */ &&
       (inst.Bits() & 0x00000090) == 0x00000010 /* C(7:4)=0xx1 */) {
-    return NotImplemented_instance_;
+    return decode_simd_dp_1imm(inst);
   }
 
   if ((inst.Bits() & 0x00B80000) == 0x00880000 /* A(23:19)=1x001 */ &&
@@ -240,6 +243,20 @@ const ClassDecoder& Arm32DecoderState::decode_advanced_simd_data_processing_inst
 
   if (true) {
     return Undefined_instance_;
+  }
+
+  // Catch any attempt to fall though ...
+  return not_implemented_;
+}
+
+// Implementation of table: advanced_simd_element_or_structure_load_store_instructions.
+// Specified by: See Section A7.7
+const ClassDecoder& Arm32DecoderState::decode_advanced_simd_element_or_structure_load_store_instructions(
+     const Instruction inst) const
+{
+  UNREFERENCED_PARAMETER(inst);
+  if (true) {
+    return NotImplemented_instance_;
   }
 
   // Catch any attempt to fall though ...
@@ -1013,7 +1030,7 @@ const ClassDecoder& Arm32DecoderState::decode_memory_hints_advanced_simd_instruc
   }
 
   if ((inst.Bits() & 0x07100000) == 0x04000000 /* op1(26:20)=100xxx0 */) {
-    return NotImplemented_instance_;
+    return decode_advanced_simd_element_or_structure_load_store_instructions(inst);
   }
 
   if ((inst.Bits() & 0x06000000) == 0x02000000 /* op1(26:20)=01xxxxx */) {
@@ -1532,6 +1549,64 @@ const ClassDecoder& Arm32DecoderState::decode_signed_multiply_signed_and_unsigne
 
   if (true) {
     return Undefined_instance_;
+  }
+
+  // Catch any attempt to fall though ...
+  return not_implemented_;
+}
+
+// Implementation of table: simd_dp_1imm.
+// Specified by: See Section A7.4.6
+const ClassDecoder& Arm32DecoderState::decode_simd_dp_1imm(
+     const Instruction inst) const
+{
+  UNREFERENCED_PARAMETER(inst);
+  if ((inst.Bits() & 0x00000D00) == 0x00000900 /* cmode(11:8)=10x1 */) {
+    return Vector1RegisterImmediate_BIT_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000900) == 0x00000100 /* cmode(11:8)=0xx1 */) {
+    return Vector1RegisterImmediate_BIT_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000020) == 0x00000000 /* op(5)=0 */ &&
+      (inst.Bits() & 0x00000D00) == 0x00000800 /* cmode(11:8)=10x0 */) {
+    return Vector1RegisterImmediate_MOV_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000020) == 0x00000000 /* op(5)=0 */ &&
+      (inst.Bits() & 0x00000900) == 0x00000000 /* cmode(11:8)=0xx0 */) {
+    return Vector1RegisterImmediate_MOV_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000020) == 0x00000000 /* op(5)=0 */ &&
+      (inst.Bits() & 0x00000C00) == 0x00000C00 /* cmode(11:8)=11xx */) {
+    return Vector1RegisterImmediate_MOV_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000020) == 0x00000020 /* op(5)=1 */ &&
+      (inst.Bits() & 0x00000F00) == 0x00000E00 /* cmode(11:8)=1110 */) {
+    return Vector1RegisterImmediate_MOV_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000020) == 0x00000020 /* op(5)=1 */ &&
+      (inst.Bits() & 0x00000F00) == 0x00000F00 /* cmode(11:8)=1111 */) {
+    return Undefined_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000020) == 0x00000020 /* op(5)=1 */ &&
+      (inst.Bits() & 0x00000D00) == 0x00000800 /* cmode(11:8)=10x0 */) {
+    return Vector1RegisterImmediate_MVN_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000020) == 0x00000020 /* op(5)=1 */ &&
+      (inst.Bits() & 0x00000E00) == 0x00000C00 /* cmode(11:8)=110x */) {
+    return Vector1RegisterImmediate_MVN_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000020) == 0x00000020 /* op(5)=1 */ &&
+      (inst.Bits() & 0x00000900) == 0x00000000 /* cmode(11:8)=0xx0 */) {
+    return Vector1RegisterImmediate_MVN_instance_;
   }
 
   // Catch any attempt to fall though ...

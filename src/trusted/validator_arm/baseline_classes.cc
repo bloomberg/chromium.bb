@@ -1389,6 +1389,34 @@ SafetyLevel VectorBinary3RegisterImmOp::safety(Instruction i) const {
   return VectorBinary3RegisterOpBase::safety(i);
 }
 
+// Vector1RegisterImmediate_MOV
+SafetyLevel Vector1RegisterImmediate_MOV::safety(Instruction i) const {
+  if (!op.IsDefined(i) &&
+      ((cmode.value(i) & 0x1) == 1) &&
+      ((cmode.value(i) & 0x6) != 6))
+    return DECODER_ERROR;
+  if (op.IsDefined(i) && (cmode.value(i) !=  14)) return DECODER_ERROR;
+  if (q.IsDefined(i) && !vd.IsEven(i)) return UNDEFINED;
+  return Vector1RegisterImmediate::safety(i);
+}
+
+// Vector1RegisterImmediate_BIT
+SafetyLevel Vector1RegisterImmediate_BIT::safety(Instruction i) const {
+  if (((cmode.value(i) & 0x1) == 0) || ((cmode.value(i) & 0x6) == 6))
+    return DECODER_ERROR;
+  if (q.IsDefined(i) && !vd.IsEven(i)) return UNDEFINED;
+  return Vector1RegisterImmediate::safety(i);
+}
+
+// Vector1RegisterImmediate_MVN
+SafetyLevel Vector1RegisterImmediate_MVN::safety(Instruction i) const {
+  if ((((cmode.value(i) & 0x1) ==1) && (cmode.value(i) & 0x6) != 6) ||
+      ((cmode.value(i) & 0xE) == 0xE))
+    return DECODER_ERROR;
+  if (q.IsDefined(i) && !vd.IsEven(i)) return UNDEFINED;
+  return Vector1RegisterImmediate::safety(i);
+}
+
 // VectorBinary3RegisterLookupOp
 SafetyLevel VectorBinary3RegisterLookupOp::safety(Instruction i) const {
   if (n_reg_index(i) + length(i) > 32)

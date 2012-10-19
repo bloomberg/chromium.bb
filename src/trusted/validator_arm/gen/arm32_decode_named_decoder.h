@@ -348,6 +348,10 @@ class NamedArm32DecoderState : nacl_arm_dec::DecoderState {
   const NamedUndefinedCondDecoder_Undefined_A5_6 UndefinedCondDecoder_Undefined_A5_6_instance_;
   const NamedUndefinedCondDecoder_None UndefinedCondDecoder_None_instance_;
   const NamedUnpredictableUncondDecoder_Unpredictable UnpredictableUncondDecoder_Unpredictable_instance_;
+  const NamedVector1RegisterImmediate_BIT_VBIC_immediate Vector1RegisterImmediate_BIT_VBIC_immediate_instance_;
+  const NamedVector1RegisterImmediate_BIT_VORR_immediate Vector1RegisterImmediate_BIT_VORR_immediate_instance_;
+  const NamedVector1RegisterImmediate_MOV_VMOV_immediate_A1 Vector1RegisterImmediate_MOV_VMOV_immediate_A1_instance_;
+  const NamedVector1RegisterImmediate_MVN_VMVN_immediate Vector1RegisterImmediate_MVN_VMVN_immediate_instance_;
   const NamedVector2RegisterMiscellaneous_CVT_F2I_VCVT Vector2RegisterMiscellaneous_CVT_F2I_VCVT_instance_;
   const NamedVector2RegisterMiscellaneous_CVT_H2S_CVT_between_half_precision_and_single_precision Vector2RegisterMiscellaneous_CVT_H2S_CVT_between_half_precision_and_single_precision_instance_;
   const NamedVector2RegisterMiscellaneous_F32_VABS_A1 Vector2RegisterMiscellaneous_F32_VABS_A1_instance_;
@@ -770,6 +774,8 @@ class NamedArm32DecoderState : nacl_arm_dec::DecoderState {
       const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_advanced_simd_data_processing_instructions(
       const nacl_arm_dec::Instruction inst) const;
+  inline const NamedClassDecoder& decode_advanced_simd_element_or_structure_load_store_instructions(
+      const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_branch_branch_with_link_and_block_data_transfer(
       const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_coprocessor_instructions_and_supervisor_call(
@@ -815,6 +821,8 @@ class NamedArm32DecoderState : nacl_arm_dec::DecoderState {
   inline const NamedClassDecoder& decode_saturating_addition_and_subtraction(
       const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_signed_multiply_signed_and_unsigned_divide(
+      const nacl_arm_dec::Instruction inst) const;
+  inline const NamedClassDecoder& decode_simd_dp_1imm(
       const nacl_arm_dec::Instruction inst) const;
   inline const NamedClassDecoder& decode_simd_dp_2misc(
       const nacl_arm_dec::Instruction inst) const;

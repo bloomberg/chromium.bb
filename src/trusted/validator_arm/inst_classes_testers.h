@@ -2156,6 +2156,30 @@ class VectorBinary3RegisterImmOpTester
   NACL_DISALLOW_COPY_AND_ASSIGN(VectorBinary3RegisterImmOpTester);
 };
 
+// Implements a decoder tester for Vector1RegisterImmediate.
+// Vector 1 register immediate SIMD instruction.
+// +--------------+--+--+--+------+------+--------+--------+--+--+--+--+-----+
+// |31302928272625|24|23|22|212019|181716|15141312|1110 9 8| 7| 6| 5| 4| 3..0|
+// +--------------+--+--+--+------+------+--------+--------+--+--+--+--+-----+
+// |              | i|  | D|      | imm3 |   Vd   |  cmode |  | Q|op|  | imm4|
+// +--------------+--+--+--+------+------+--------+----+---+--+--+--+--+-----+
+// d := D:Vd;
+// imm64 := AdvSIMDExpandImm(op, cmode, i:imm3:imm4);
+class Vector1RegisterImmediateTester : public UncondDecoderTester {
+ public:
+  explicit Vector1RegisterImmediateTester(const NamedClassDecoder& decoder)
+      : UncondDecoderTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::Vector1RegisterImmediate expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Vector1RegisterImmediateTester);
+};
+
 // Implements a decoder tester for VectorBinary3RegisterLookupOp
 // Op<c> <Dd>, <list>, <Dm>
 // +--------+----------+--+----+--------+--------+----+----+--+--+--+--+--------

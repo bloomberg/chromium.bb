@@ -1251,6 +1251,22 @@ class UnpredictableUncondDecoder_Unpredictable
     : public UnpredictableUncondDecoder {
 };
 
+class Vector1RegisterImmediate_BIT_VBIC_immediate
+    : public Vector1RegisterImmediate_BIT {
+};
+
+class Vector1RegisterImmediate_BIT_VORR_immediate
+    : public Vector1RegisterImmediate_BIT {
+};
+
+class Vector1RegisterImmediate_MOV_VMOV_immediate_A1
+    : public Vector1RegisterImmediate_MOV {
+};
+
+class Vector1RegisterImmediate_MVN_VMVN_immediate
+    : public Vector1RegisterImmediate_MVN {
+};
+
 class Vector2RegisterMiscellaneous_CVT_F2I_VCVT
     : public Vector2RegisterMiscellaneous_CVT_F2I {
 };
@@ -6584,6 +6600,54 @@ class NamedUnpredictableUncondDecoder_Unpredictable
  private:
   nacl_arm_dec::UnpredictableUncondDecoder_Unpredictable decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnpredictableUncondDecoder_Unpredictable);
+};
+
+class NamedVector1RegisterImmediate_BIT_VBIC_immediate
+    : public NamedClassDecoder {
+ public:
+  NamedVector1RegisterImmediate_BIT_VBIC_immediate()
+    : NamedClassDecoder(decoder_, "Vector1RegisterImmediate_BIT VBIC_immediate")
+  {}
+
+ private:
+  nacl_arm_dec::Vector1RegisterImmediate_BIT_VBIC_immediate decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector1RegisterImmediate_BIT_VBIC_immediate);
+};
+
+class NamedVector1RegisterImmediate_BIT_VORR_immediate
+    : public NamedClassDecoder {
+ public:
+  NamedVector1RegisterImmediate_BIT_VORR_immediate()
+    : NamedClassDecoder(decoder_, "Vector1RegisterImmediate_BIT VORR_immediate")
+  {}
+
+ private:
+  nacl_arm_dec::Vector1RegisterImmediate_BIT_VORR_immediate decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector1RegisterImmediate_BIT_VORR_immediate);
+};
+
+class NamedVector1RegisterImmediate_MOV_VMOV_immediate_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVector1RegisterImmediate_MOV_VMOV_immediate_A1()
+    : NamedClassDecoder(decoder_, "Vector1RegisterImmediate_MOV VMOV_immediate_A1")
+  {}
+
+ private:
+  nacl_arm_dec::Vector1RegisterImmediate_MOV_VMOV_immediate_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector1RegisterImmediate_MOV_VMOV_immediate_A1);
+};
+
+class NamedVector1RegisterImmediate_MVN_VMVN_immediate
+    : public NamedClassDecoder {
+ public:
+  NamedVector1RegisterImmediate_MVN_VMVN_immediate()
+    : NamedClassDecoder(decoder_, "Vector1RegisterImmediate_MVN VMVN_immediate")
+  {}
+
+ private:
+  nacl_arm_dec::Vector1RegisterImmediate_MVN_VMVN_immediate decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector1RegisterImmediate_MVN_VMVN_immediate);
 };
 
 class NamedVector2RegisterMiscellaneous_CVT_F2I_VCVT

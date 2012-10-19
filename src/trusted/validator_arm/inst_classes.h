@@ -231,6 +231,17 @@ class Imm1Bit22Interface {
   NACL_DISALLOW_COPY_AND_ASSIGN(Imm1Bit22Interface);
 };
 
+// Interface class to pull out an immediate value from bit 24;
+class Imm1Bit24Interface {
+ public:
+  static uint32_t value(const Instruction& i) {
+    return i.Bits(24, 24);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Imm1Bit24Interface);
+};
+
 // Interface class to pull out an immediate value in bits 0 through 3.
 class Imm4Bits0To3Interface {
  public:
@@ -390,6 +401,17 @@ class Imm12Bits8To19Interface {
   NACL_DISALLOW_COPY_AND_ASSIGN(Imm12Bits8To19Interface);
 };
 
+// Interface class to pull out an immediate value in bits 16 through 18.
+class Imm3Bits16To18Interface {
+ public:
+  static uint32_t value(const Instruction& i) {
+    return i.Bits(18, 16);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Imm3Bits16To18Interface);
+};
+
 // Interface class to pull out an immediate value in bits 16 through 21.
 class Imm6Bits16To21Interface {
  public:
@@ -399,6 +421,17 @@ class Imm6Bits16To21Interface {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Imm6Bits16To21Interface);
+};
+
+// Interface class to pull out value in bit 5
+class FlagBit5Interface {
+ public:
+  static bool IsDefined(const Instruction& i) {
+    return i.Bit(5);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(FlagBit5Interface);
 };
 
 // Interface class to pull out value in bit 8

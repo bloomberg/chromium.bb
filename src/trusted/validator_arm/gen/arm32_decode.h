@@ -40,6 +40,9 @@ class Arm32DecoderState : DecoderState {
   inline const ClassDecoder& decode_advanced_simd_data_processing_instructions(
       const Instruction inst) const;
 
+  inline const ClassDecoder& decode_advanced_simd_element_or_structure_load_store_instructions(
+      const Instruction inst) const;
+
   inline const ClassDecoder& decode_branch_branch_with_link_and_block_data_transfer(
       const Instruction inst) const;
 
@@ -107,6 +110,9 @@ class Arm32DecoderState : DecoderState {
       const Instruction inst) const;
 
   inline const ClassDecoder& decode_signed_multiply_signed_and_unsigned_divide(
+      const Instruction inst) const;
+
+  inline const ClassDecoder& decode_simd_dp_1imm(
       const Instruction inst) const;
 
   inline const ClassDecoder& decode_simd_dp_2misc(
@@ -200,6 +206,9 @@ class Arm32DecoderState : DecoderState {
   const Unary1RegisterUse Unary1RegisterUse_instance_;
   const Undefined Undefined_instance_;
   const Unpredictable Unpredictable_instance_;
+  const Vector1RegisterImmediate_BIT Vector1RegisterImmediate_BIT_instance_;
+  const Vector1RegisterImmediate_MOV Vector1RegisterImmediate_MOV_instance_;
+  const Vector1RegisterImmediate_MVN Vector1RegisterImmediate_MVN_instance_;
   const Vector2RegisterMiscellaneous_CVT_F2I Vector2RegisterMiscellaneous_CVT_F2I_instance_;
   const Vector2RegisterMiscellaneous_CVT_H2S Vector2RegisterMiscellaneous_CVT_H2S_instance_;
   const Vector2RegisterMiscellaneous_F32 Vector2RegisterMiscellaneous_F32_instance_;

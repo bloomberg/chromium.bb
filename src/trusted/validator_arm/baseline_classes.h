@@ -2670,6 +2670,69 @@ class VectorBinary3RegisterImmOp : public VectorBinary3RegisterOpBase {
   virtual SafetyLevel safety(Instruction i) const;
 };
 
+// Vector 1 register immediate SIMD instruction.
+// +--------------+--+--+--+------+------+--------+--------+--+--+--+--+-----+
+// |31302928272625|24|23|22|212019|181716|15141312|1110 9 8| 7| 6| 5| 4| 3..0|
+// +--------------+--+--+--+------+------+--------+--------+--+--+--+--+-----+
+// |              | i|  | D|      | imm3 |   Vd   |  cmode |  | Q|op|  | imm4|
+// +--------------+--+--+--+------+------+--------+----+---+--+--+--+--+-----+
+// d := D:Vd;
+// imm64 := AdvSIMDExpandImm(op, cmode, i:imm3:imm4);
+class Vector1RegisterImmediate : public UncondDecoder {
+ public:
+  static const Imm4Bits0To3Interface imm4;
+  static const FlagBit5Interface op;
+  static const FlagBit6Interface q;
+  static const Imm4Bits8To11Interface cmode;
+  static const RegBits12To15Interface vd;
+  static const Imm3Bits16To18Interface imm3;
+  static const Imm1Bit22Interface d;
+  static const Imm1Bit24Interface i;
+
+  Vector1RegisterImmediate() {}
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Vector1RegisterImmediate);
+};
+
+// Defines a Vector1RegisterImmediate that implements a VMOV instruction.
+//   safety := op=0 & cmode(0)=1 & cmode(3:2)=~11 => DECODER_ERROR &
+//             op=1 & cmode=~1110 => DECODER_ERROR &
+//             Q=1 & Vd(0)=1 => UNDEFINED;
+class Vector1RegisterImmediate_MOV : public Vector1RegisterImmediate {
+ public:
+  Vector1RegisterImmediate_MOV() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Vector1RegisterImmediate_MOV);
+};
+
+// Defines a Vector1RegisterImmediate that implements a VORR or VBIC
+// instruction.
+//   safety := cmode(0)=0 | cmode(3:2)=11 => DECODER_ERROR &
+//             Q=1 & Vd(0)=1 => UNDEFINED;
+class Vector1RegisterImmediate_BIT : public Vector1RegisterImmediate {
+ public:
+  Vector1RegisterImmediate_BIT() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Vector1RegisterImmediate_BIT);
+};
+
+// Defines a Vector1RegisterImmediate that implements a VMVN instruction.
+//   safety := (cmode(0)=1 & cmode(3:2)=~11) | cmode(3:1)=111 => DECODER_ERROR &
+//             Q=1 & Vd(0)=1 => UNDEFINED;
+class Vector1RegisterImmediate_MVN : public Vector1RegisterImmediate {
+ public:
+  Vector1RegisterImmediate_MVN() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Vector1RegisterImmediate_MVN);
+};
+
 // Vector table lookup
 // Op<c> <Dd>, <list>, <Dm>
 // +--------+----------+--+----+--------+--------+----+----+--+--+--+--+--------

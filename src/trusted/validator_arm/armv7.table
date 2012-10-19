@@ -237,6 +237,9 @@ class VectorBinary2RegisterShiftAmount_N16_32_64R
 class VectorBinary2RegisterShiftAmount_N16_32_64RS
         : VectorBinary2RegisterShiftAmount
 class VectorBinary2RegisterShiftAmount_CVT : VectorBinary2RegisterShiftAmount
+class Vector1RegisterImmediate_MOV : Vector1RegisterImmediate
+class Vector1RegisterImmediate_BIT : Vector1RegisterImmediate
+class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 
 ##############################################################
 # The following define decoder tables.
@@ -2583,19 +2586,62 @@ class VectorBinary2RegisterShiftAmount_CVT : VectorBinary2RegisterShiftAmount
 +--
 
 +-- simd_dp_1imm (See Section A7.4.6)
+*V1RI
+   { i(24), D(22), imm3(18:16), Vd(15:12), cmode(11:8), Q(6), op(5), imm4(3:0) }
+   baseline := Vector1RegisterImmediate;
+   imm64 := AdvSIMDExpandImm(op, cmode, i:imm3:imm4);
+   d := D:Vd; regs := 1 if Q=0 else 2;
+   arch := ASIMD;
+*V1RI_MOV *V1RI
+   baseline := Vector1RegisterImmediate_MOV;
+   single_register := false;
+   safety := op=0 & cmode(0)=1 & cmode(3:2)=~11 => DECODER_ERROR &
+             op=1 & cmode=~1110 => DECODER_ERROR &
+             Q=1 & Vd(0)=1 => UNDEFINED;
+*V1RI_BIT *V1RI
+   baseline := Vector1RegisterImmediate_BIT;
+   safety := cmode(0)=0 | cmode(3:2)=11 => DECODER_ERROR &
+             Q=1 & Vd(0)=1 => UNDEFINED;
+*V1RI_MVN *V1RI
+   baseline := Vector1RegisterImmediate_MVN;
+   safety := (cmode(0)=1 & cmode(3:2)=~11) | cmode(3:1)=111 => DECODER_ERROR &
+             Q=1 & Vd(0)=1 => UNDEFINED;
++--
 | op(5) cmode(11:8)
-| 0     0xx0        =EffectiveNoOp  # VMOV(immediate)
-| "     0xx1        =EffectiveNoOp  # VORR(immediate)
-| "     10x0        =EffectiveNoOp  # VMOV(immediate)
-| "     10x1        =EffectiveNoOp  # VORR(immediate)
-| "     11xx        =EffectiveNoOp  # VMOV(immediate)
-| 1     0xx0        =EffectiveNoOp  # VMVN(immediate)
-| "     0xx1        =EffectiveNoOp  # VBIC(immediate)
-| "     10x0        =EffectiveNoOp  # VMVN(immediate)
-| "     10x1        =EffectiveNoOp  # VBIC(immediate)
-| "     110x        =EffectiveNoOp  # VMVN(immediate)
-| "     1110        =EffectiveNoOp  # VMOV(immediate)
-| "     1111        =Undefined
+| 0     0xx0        = *V1RI_MOV
+                      pattern := 1111001m1d000mmmddddcccc0qp1mmmm;
+                      rule := VMOV_immediate_A1;
+| "     0xx1        = *V1RI_BIT
+                      pattern := 1111001i1d000mmmddddcccc0q01mmmm;
+                      rule := VORR_immediate;
+| "     10x0        = *V1RI_MOV
+                      pattern := 1111001m1d000mmmddddcccc0qp1mmmm;
+                      rule := VMOV_immediate_A1;
+| "     10x1        = *V1RI_BIT
+                      pattern := 1111001i1d000mmmddddcccc0q01mmmm;
+                      rule := VORR_immediate;
+| "     11xx        = *V1RI_MOV
+                      pattern := 1111001m1d000mmmddddcccc0qp1mmmm;
+                      rule := VMOV_immediate_A1;
+| 1     0xx0        = *V1RI_MVN
+                      pattern := 1111001i1d000mmmddddcccc0q11mmmm;
+                      rule := VMVN_immediate;
+| "     0xx1        = *V1RI_BIT
+                      pattern := 1111001i1d000mmmddddcccc0q11mmmm;
+                      rule := VBIC_immediate;
+| "     10x0        = *V1RI_MVN
+                      pattern := 1111001i1d000mmmddddcccc0q11mmmm;
+                      rule := VMVN_immediate;
+| "     10x1        = *V1RI_BIT
+                      pattern := 1111001i1d000mmmddddcccc0q11mmmm;
+                      rule := VBIC_immediate;
+| "     110x        = *V1RI_MVN
+                      pattern := 1111001i1d000mmmddddcccc0q11mmmm;
+                      rule := VMVN_immediate;
+| "     1110        = *V1RI_MOV
+                      pattern := 1111001m1d000mmmddddcccc0qp1mmmm;
+                      rule := VMOV_immediate_A1;
+| "     1111        = Undefined
 +--
 
 +-- advanced_simd_element_or_structure_load_store_instructions (See Section A7.7)

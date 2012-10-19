@@ -2315,6 +2315,25 @@ ApplySanityChecks(Instruction inst,
   return true;
 }
 
+// Vector1RegisterImmediateTester
+bool Vector1RegisterImmediateTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  NC_PRECOND(UncondDecoderTester::ApplySanityChecks(inst, decoder));
+
+  // Check Registers and flags used.
+  EXPECT_EQ(expected_decoder_.imm4.value(inst), inst.Bits(3, 0));
+  EXPECT_EQ(expected_decoder_.op.IsDefined(inst), inst.Bit(5));
+  EXPECT_EQ(expected_decoder_.q.IsDefined(inst), inst.Bit(6));
+  EXPECT_EQ(expected_decoder_.cmode.value(inst), inst.Bits(11, 8));
+  EXPECT_EQ(expected_decoder_.vd.number(inst), inst.Bits(15, 12));
+  EXPECT_EQ(expected_decoder_.imm3.value(inst), inst.Bits(18, 16));
+  EXPECT_EQ(expected_decoder_.d.value(inst), inst.Bits(22, 22));
+  EXPECT_EQ(expected_decoder_.i.value(inst), inst.Bits(24, 24));
+
+  return true;
+}
+
 // VectorBinary3RegisterLookupOpTester
 bool VectorBinary3RegisterLookupOpTester::
 ApplySanityChecks(Instruction inst,

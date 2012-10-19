@@ -77,7 +77,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_data_proce
 
   if ((inst.Bits() & 0x00B80000) == 0x00800000 /* A(23:19)=1x000 */ &&
       (inst.Bits() & 0x00000090) == 0x00000010 /* C(7:4)=0xx1 */) {
-    return NotImplemented_None_instance_;
+    return decode_simd_dp_1imm(inst);
   }
 
   if ((inst.Bits() & 0x00B80000) == 0x00880000 /* A(23:19)=1x001 */ &&
@@ -154,6 +154,22 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_data_proce
   if (true &&
       true /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx */) {
     return Undefined_None_instance_;
+  }
+
+  // Catch any attempt to fall through...
+  return not_implemented_;
+}
+
+
+/*
+ * Implementation of table advanced_simd_element_or_structure_load_store_instructions.
+ * Specified by: ('See Section A7.7',)
+ */
+const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or_structure_load_store_instructions(
+     const nacl_arm_dec::Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);
+  if (true) {
+    return NotImplemented_None_instance_;
   }
 
   // Catch any attempt to fall through...
@@ -1362,7 +1378,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_memory_hints_advanced_si
   }
 
   if ((inst.Bits() & 0x07100000) == 0x04000000 /* op1(26:20)=100xxx0 */) {
-    return NotImplemented_None_instance_;
+    return decode_advanced_simd_element_or_structure_load_store_instructions(inst);
   }
 
   if ((inst.Bits() & 0x06000000) == 0x02000000 /* op1(26:20)=01xxxxx */) {
@@ -2222,6 +2238,78 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_signed_multiply_signed_a
   if (true &&
       true /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx */) {
     return Undefined_None_instance_;
+  }
+
+  // Catch any attempt to fall through...
+  return not_implemented_;
+}
+
+
+/*
+ * Implementation of table simd_dp_1imm.
+ * Specified by: ('See Section A7.4.6',)
+ */
+const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_1imm(
+     const nacl_arm_dec::Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);
+  if ((inst.Bits() & 0x00000020) == 0x00000000 /* op(5)=0 */ &&
+      (inst.Bits() & 0x00000D00) == 0x00000800 /* cmode(11:8)=10x0 */) {
+    return Vector1RegisterImmediate_MOV_VMOV_immediate_A1_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000020) == 0x00000000 /* op(5)=0 */ &&
+      (inst.Bits() & 0x00000D00) == 0x00000900 /* cmode(11:8)=10x1 */) {
+    return Vector1RegisterImmediate_BIT_VORR_immediate_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000020) == 0x00000000 /* op(5)=0 */ &&
+      (inst.Bits() & 0x00000900) == 0x00000000 /* cmode(11:8)=0xx0 */) {
+    return Vector1RegisterImmediate_MOV_VMOV_immediate_A1_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000020) == 0x00000000 /* op(5)=0 */ &&
+      (inst.Bits() & 0x00000900) == 0x00000100 /* cmode(11:8)=0xx1 */) {
+    return Vector1RegisterImmediate_BIT_VORR_immediate_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000020) == 0x00000000 /* op(5)=0 */ &&
+      (inst.Bits() & 0x00000C00) == 0x00000C00 /* cmode(11:8)=11xx */) {
+    return Vector1RegisterImmediate_MOV_VMOV_immediate_A1_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000020) == 0x00000020 /* op(5)=1 */ &&
+      (inst.Bits() & 0x00000F00) == 0x00000E00 /* cmode(11:8)=1110 */) {
+    return Vector1RegisterImmediate_MOV_VMOV_immediate_A1_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000020) == 0x00000020 /* op(5)=1 */ &&
+      (inst.Bits() & 0x00000F00) == 0x00000F00 /* cmode(11:8)=1111 */) {
+    return Undefined_None_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000020) == 0x00000020 /* op(5)=1 */ &&
+      (inst.Bits() & 0x00000D00) == 0x00000800 /* cmode(11:8)=10x0 */) {
+    return Vector1RegisterImmediate_MVN_VMVN_immediate_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000020) == 0x00000020 /* op(5)=1 */ &&
+      (inst.Bits() & 0x00000D00) == 0x00000900 /* cmode(11:8)=10x1 */) {
+    return Vector1RegisterImmediate_BIT_VBIC_immediate_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000020) == 0x00000020 /* op(5)=1 */ &&
+      (inst.Bits() & 0x00000E00) == 0x00000C00 /* cmode(11:8)=110x */) {
+    return Vector1RegisterImmediate_MVN_VMVN_immediate_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000020) == 0x00000020 /* op(5)=1 */ &&
+      (inst.Bits() & 0x00000900) == 0x00000000 /* cmode(11:8)=0xx0 */) {
+    return Vector1RegisterImmediate_MVN_VMVN_immediate_instance_;
+  }
+
+  if ((inst.Bits() & 0x00000020) == 0x00000020 /* op(5)=1 */ &&
+      (inst.Bits() & 0x00000900) == 0x00000100 /* cmode(11:8)=0xx1 */) {
+    return Vector1RegisterImmediate_BIT_VBIC_immediate_instance_;
   }
 
   // Catch any attempt to fall through...
