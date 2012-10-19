@@ -63,8 +63,17 @@ bool MakeUITouchEventsFromWebTouchEvents(const WebKit::WebTouchEvent& touch,
       static_cast<int64>(touch.timeStampSeconds * 1000000));
   for (unsigned i = 0; i < touch.touchesLength; ++i) {
     const WebKit::WebTouchPoint& point = touch.touches[i];
+    // In aura, the touch-event needs to be in the screen coordinate, since the
+    // touch-event is routed to RootWindow first. In Windows, on the other hand,
+    // the touch-event is dispatched directly to the gesture-recognizer, so the
+    // location needs to be in the local coordinate space.
+#if defined(USE_AURA)
+    gfx::Point location(point.screenPosition.x, point.screenPosition.y);
+#else
+    gfx::Point location(point.position.x, point.position.y);
+#endif
     ui::TouchEvent* uievent = new ui::TouchEvent(type,
-          gfx::Point(point.position.x, point.position.y),
+          location,
           flags,
           point.id,
           timestamp,

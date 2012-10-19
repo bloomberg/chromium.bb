@@ -114,7 +114,8 @@ BOOL CALLBACK ShowWindowsCallback(HWND window, LPARAM param) {
 
 void UpdateWebTouchEventAfterDispatch(WebKit::WebTouchEvent* event,
                                       WebKit::WebTouchPoint* point) {
-  if (point->state != WebKit::WebTouchPoint::StateReleased)
+  if (point->state != WebKit::WebTouchPoint::StateReleased &&
+      point->state != WebKit::WebTouchPoint::StateCancelled)
     return;
   --event->touchesLength;
   for (unsigned i = point - event->touches;

@@ -26,20 +26,30 @@ void TouchEventQueue::QueueEvent(const WebKit::WebTouchEvent& event) {
     return;
   }
 
+  WebKit::WebTouchEvent copy = event;
+
   // If the last queued touch-event was a touch-move, and the current event is
   // also a touch-move, then the events can be coalesced into a single event.
-  if (!empty()) {
-    WebKit::WebTouchEvent& last_event = touch_queue_.back();
-    if (event.type == WebKit::WebInputEvent::TouchMove &&
+  if (touch_queue_.size() > 1) {
+    const WebKit::WebTouchEvent& last_event = touch_queue_.back();
+    if (copy.type == WebKit::WebInputEvent::TouchMove &&
         last_event.type == WebKit::WebInputEvent::TouchMove &&
-        event.modifiers == last_event.modifiers &&
-        event.touchesLength == last_event.touchesLength) {
+        copy.modifiers == last_event.modifiers &&
+        copy.touchesLength == last_event.touchesLength) {
       // The WebTouchPoints include absolute position information. So it is
       // sufficient to simply replace the previous event with the new event.
+      // However, it is necessary to make sure that all the points have the
+      // correct state, i.e. the touch-points that moved in the last event, but
+      // didn't change in the current event, will have Stationary state. It is
+      // necessary to change them back to Moved state.
+      for (unsigned i = 0; i < last_event.touchesLength; ++i) {
+        if (last_event.touches[i].state == WebKit::WebTouchPoint::StateMoved)
+          copy.touches[i].state = WebKit::WebTouchPoint::StateMoved;
+      }
       touch_queue_.pop_back();
     }
   }
-  touch_queue_.push_back(event);
+  touch_queue_.push_back(copy);
 }
 
 void TouchEventQueue::ProcessTouchAck(bool processed) {
