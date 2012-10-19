@@ -259,10 +259,16 @@ class BrowsingDataRemover : public content::NotificationObserver,
 
   // Callback to deal with the list gathered in ClearLocalStorageOnUIThread.
   void OnGotLocalStorageUsageInfo(
-      const std::vector<dom_storage::DomStorageContext::UsageInfo>& infos);
+      const std::vector<
+          dom_storage::DomStorageContext::LocalStorageUsageInfo>& infos);
 
-  // Callback on deletion of local storage data. Invokes NotifyAndDeleteIfDone.
-  void OnLocalStorageCleared();
+  // Invoked on the UI thread to delete session storage.
+  void ClearSessionStorageOnUIThread();
+
+  // Callback to deal with the list gathered in ClearSessionStorageOnUIThread.
+  void OnGotSessionStorageUsageInfo(
+      const std::vector<
+          dom_storage::DomStorageContext::SessionStorageUsageInfo>& infos);
 
   // Invoked on the IO thread to delete all storage types managed by the quota
   // system: AppCache, Databases, FileSystems.
@@ -359,6 +365,7 @@ class BrowsingDataRemover : public content::NotificationObserver,
   int waiting_for_clear_cookies_count_;
   bool waiting_for_clear_history_;
   bool waiting_for_clear_local_storage_;
+  bool waiting_for_clear_session_storage_;
   bool waiting_for_clear_networking_history_;
   bool waiting_for_clear_server_bound_certs_;
   bool waiting_for_clear_plugin_data_;

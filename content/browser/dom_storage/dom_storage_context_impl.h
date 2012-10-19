@@ -25,8 +25,14 @@ class CONTENT_EXPORT DOMStorageContextImpl :
                         quota::SpecialStoragePolicy* special_storage_policy);
 
   // DOMStorageContext implementation.
-  virtual void GetUsageInfo(const GetUsageInfoCallback& callback) OVERRIDE;
-  virtual void DeleteOrigin(const GURL& origin) OVERRIDE;
+  virtual void GetLocalStorageUsage(
+      const GetLocalStorageUsageCallback& callback) OVERRIDE;
+  virtual void GetSessionStorageUsage(
+      const GetSessionStorageUsageCallback& callback) OVERRIDE;
+  virtual void DeleteLocalStorage(const GURL& origin) OVERRIDE;
+  virtual void DeleteSessionStorage(
+      const dom_storage::DomStorageContext::SessionStorageUsageInfo& usage_info)
+      OVERRIDE;
   virtual void SetSaveSessionStorageOnDisk() OVERRIDE;
   virtual scoped_refptr<content::SessionStorageNamespace>
       RecreateSessionStorage(const std::string& persistent_id) OVERRIDE;

@@ -22,14 +22,31 @@ class SessionStorageNamespace;
 class DOMStorageContext {
  public:
   typedef base::Callback<
-      void(const std::vector<dom_storage::DomStorageContext::UsageInfo>&)>
-          GetUsageInfoCallback;
+      void(const std::vector<
+          dom_storage::DomStorageContext::LocalStorageUsageInfo>&)>
+              GetLocalStorageUsageCallback;
+
+  typedef base::Callback<
+      void(const std::vector<
+          dom_storage::DomStorageContext::SessionStorageUsageInfo>&)>
+              GetSessionStorageUsageCallback;
 
   // Returns a collection of origins using local storage to the given callback.
-  virtual void GetUsageInfo(const GetUsageInfoCallback& callback) = 0;
+  virtual void GetLocalStorageUsage(
+      const GetLocalStorageUsageCallback& callback) = 0;
+
+  // Returns a collection of origins using session storage to the given
+  // callback.
+  virtual void GetSessionStorageUsage(
+      const GetSessionStorageUsageCallback& callback) = 0;
 
   // Deletes the local storage data for the given origin.
-  virtual void DeleteOrigin(const GURL& origin) = 0;
+  virtual void DeleteLocalStorage(const GURL& origin) = 0;
+
+  // Deletes the session storage data identified by |usage_info|.
+  virtual void DeleteSessionStorage(
+      const dom_storage::DomStorageContext::SessionStorageUsageInfo& usage_info)
+      = 0;
 
   // If this is called, sessionStorage data will be stored on disk, and can be
   // restored after a browser restart (with RecreateSessionStorage). This

@@ -58,6 +58,7 @@ class DOM_STORAGE_EXPORT DomStorageArea
                NullableString16* old_value);
   bool RemoveItem(const string16& key, string16* old_value);
   bool Clear();
+  void FastClear();
 
   DomStorageArea* ShallowCopy(
       int64 destination_namespace_id,

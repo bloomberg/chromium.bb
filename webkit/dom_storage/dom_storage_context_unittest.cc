@@ -55,8 +55,8 @@ class DomStorageContextTest : public testing::Test {
     // Use a new instance to examine the contexts of temp_dir_.
     scoped_refptr<DomStorageContext> context =
         new DomStorageContext(temp_dir_.path(), FilePath(), NULL, NULL);
-    std::vector<DomStorageContext::UsageInfo> infos;
-    context->GetUsageInfo(&infos, kDontIncludeFileInfo);
+    std::vector<DomStorageContext::LocalStorageUsageInfo> infos;
+    context->GetLocalStorageUsage(&infos, kDontIncludeFileInfo);
     ASSERT_EQ(1u, infos.size());
     EXPECT_EQ(origin, infos[0].origin);
   }
@@ -78,23 +78,23 @@ TEST_F(DomStorageContextTest, Basics) {
   EXPECT_EQ(FilePath(), context_->sessionstorage_directory());
   EXPECT_EQ(storage_policy_.get(), context_->special_storage_policy_.get());
   context_->PurgeMemory();
-  context_->DeleteOrigin(GURL("http://chromium.org/"));
+  context_->DeleteLocalStorage(GURL("http://chromium.org/"));
   const int kFirstSessionStorageNamespaceId = 1;
   EXPECT_TRUE(context_->GetStorageNamespace(kLocalStorageNamespaceId));
   EXPECT_FALSE(context_->GetStorageNamespace(kFirstSessionStorageNamespaceId));
   EXPECT_EQ(kFirstSessionStorageNamespaceId, context_->AllocateSessionId());
-  std::vector<DomStorageContext::UsageInfo> infos;
-  context_->GetUsageInfo(&infos, kDontIncludeFileInfo);
+  std::vector<DomStorageContext::LocalStorageUsageInfo> infos;
+  context_->GetLocalStorageUsage(&infos, kDontIncludeFileInfo);
   EXPECT_TRUE(infos.empty());
   context_->Shutdown();
 }
 
 TEST_F(DomStorageContextTest, UsageInfo) {
   // Should be empty initially
-  std::vector<DomStorageContext::UsageInfo> infos;
-  context_->GetUsageInfo(&infos, kDontIncludeFileInfo);
+  std::vector<DomStorageContext::LocalStorageUsageInfo> infos;
+  context_->GetLocalStorageUsage(&infos, kDontIncludeFileInfo);
   EXPECT_TRUE(infos.empty());
-  context_->GetUsageInfo(&infos, kDoIncludeFileInfo);
+  context_->GetLocalStorageUsage(&infos, kDoIncludeFileInfo);
   EXPECT_TRUE(infos.empty());
 
   // Put some data into local storage and shutdown the context
@@ -109,13 +109,13 @@ TEST_F(DomStorageContextTest, UsageInfo) {
   // Create a new context that points to the same directory, see that
   // it knows about the origin that we stored data for.
   context_ = new DomStorageContext(temp_dir_.path(), FilePath(), NULL, NULL);
-  context_->GetUsageInfo(&infos, kDontIncludeFileInfo);
+  context_->GetLocalStorageUsage(&infos, kDontIncludeFileInfo);
   EXPECT_EQ(1u, infos.size());
   EXPECT_EQ(kOrigin, infos[0].origin);
   EXPECT_EQ(0u, infos[0].data_size);
   EXPECT_EQ(base::Time(), infos[0].last_modified);
   infos.clear();
-  context_->GetUsageInfo(&infos, kDoIncludeFileInfo);
+  context_->GetLocalStorageUsage(&infos, kDoIncludeFileInfo);
   EXPECT_EQ(1u, infos.size());
   EXPECT_EQ(kOrigin, infos[0].origin);
   EXPECT_NE(0u, infos[0].data_size);
@@ -186,6 +186,74 @@ TEST_F(DomStorageContextTest, PersistentIds) {
   // Verify that the areas inherit the persistent ID.
   DomStorageArea* cloned_area = cloned_dom_namespace->OpenStorageArea(kOrigin);
   EXPECT_EQ(kClonedPersistentId, cloned_area->persistent_namespace_id_);
+}
+
+TEST_F(DomStorageContextTest, DeleteSessionStorage) {
+  // Create a DomStorageContext which will save sessionStorage on disk.
+  context_ = new DomStorageContext(temp_dir_.path(),
+                                   temp_dir_.path(),
+                                   storage_policy_,
+                                   task_runner_);
+  context_->SetSaveSessionStorageOnDisk();
+  ASSERT_EQ(temp_dir_.path(), context_->sessionstorage_directory());
+
+  // Write data.
+  const int kSessionStorageNamespaceId = 1;
+  const std::string kPersistentId = "persistent";
+  context_->CreateSessionNamespace(kSessionStorageNamespaceId,
+                                   kPersistentId);
+  DomStorageNamespace* dom_namespace =
+      context_->GetStorageNamespace(kSessionStorageNamespaceId);
+  DomStorageArea* area = dom_namespace->OpenStorageArea(kOrigin);
+  const string16 kKey(ASCIIToUTF16("foo"));
+  const string16 kValue(ASCIIToUTF16("bar"));
+  NullableString16 old_nullable_value;
+  area->SetItem(kKey, kValue, &old_nullable_value);
+  dom_namespace->CloseStorageArea(area);
+
+  // Destroy and recreate the DomStorageContext.
+  context_->Shutdown();
+  context_ = NULL;
+  MessageLoop::current()->RunAllPending();
+  context_ = new DomStorageContext(temp_dir_.path(),
+                                   temp_dir_.path(),
+                                   storage_policy_,
+                                   task_runner_);
+  context_->SetSaveSessionStorageOnDisk();
+
+  // Read the data back.
+  context_->CreateSessionNamespace(kSessionStorageNamespaceId,
+                                   kPersistentId);
+  dom_namespace = context_->GetStorageNamespace(kSessionStorageNamespaceId);
+  area = dom_namespace->OpenStorageArea(kOrigin);
+  NullableString16 read_value;
+  read_value = area->GetItem(kKey);
+  EXPECT_EQ(kValue, read_value.string());
+  dom_namespace->CloseStorageArea(area);
+
+  DomStorageContext::SessionStorageUsageInfo info;
+  info.origin = kOrigin;
+  info.persistent_namespace_id = kPersistentId;
+  context_->DeleteSessionStorage(info);
+
+  // Destroy and recreate again.
+  context_->Shutdown();
+  context_ = NULL;
+  MessageLoop::current()->RunAllPending();
+  context_ = new DomStorageContext(temp_dir_.path(),
+                                   temp_dir_.path(),
+                                   storage_policy_,
+                                   task_runner_);
+  context_->SetSaveSessionStorageOnDisk();
+
+  // Now there should be no data.
+  context_->CreateSessionNamespace(kSessionStorageNamespaceId,
+                                   kPersistentId);
+  dom_namespace = context_->GetStorageNamespace(kSessionStorageNamespaceId);
+  area = dom_namespace->OpenStorageArea(kOrigin);
+  read_value = area->GetItem(kKey);
+  EXPECT_TRUE(read_value.is_null());
+  dom_namespace->CloseStorageArea(area);
 }
 
 }  // namespace dom_storage

@@ -414,7 +414,7 @@ class RemoveLocalStorageTester {
 
   // Returns true, if the given origin URL exists.
   bool DOMStorageExistsForOrigin(const GURL& origin) {
-    GetUsageInfo();
+    GetLocalStorageUsage();
     await_completion_.BlockUntilNotified();
     for (size_t i = 0; i < infos_.size(); ++i) {
       if (origin == infos_[i].origin)
@@ -447,13 +447,14 @@ class RemoveLocalStorageTester {
   }
 
  private:
-  void GetUsageInfo() {
-    dom_storage_context_->GetUsageInfo(
-        base::Bind(&RemoveLocalStorageTester::OnGotUsageInfo,
+  void GetLocalStorageUsage() {
+    dom_storage_context_->GetLocalStorageUsage(
+        base::Bind(&RemoveLocalStorageTester::OnGotLocalStorageUsage,
                    base::Unretained(this)));
   }
-  void OnGotUsageInfo(
-      const std::vector<dom_storage::DomStorageContext::UsageInfo>& infos) {
+  void OnGotLocalStorageUsage(
+      const std::vector<
+          dom_storage::DomStorageContext::LocalStorageUsageInfo>& infos) {
     infos_ = infos;
     await_completion_.Notify();
   }
@@ -462,7 +463,7 @@ class RemoveLocalStorageTester {
   TestingProfile* profile_;
   content::DOMStorageContext* dom_storage_context_;
 
-  std::vector<dom_storage::DomStorageContext::UsageInfo> infos_;
+  std::vector<dom_storage::DomStorageContext::LocalStorageUsageInfo> infos_;
 
   AwaitCompletionHelper await_completion_;
 

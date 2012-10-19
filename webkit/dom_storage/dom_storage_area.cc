@@ -173,6 +173,25 @@ bool DomStorageArea::Clear() {
   return true;
 }
 
+void DomStorageArea::FastClear() {
+  // TODO(marja): Unify clearing localStorage and sessionStorage. The problem is
+  // to make the following 3 to work together: 1) FastClear, 2) PurgeMemory and
+  // 3) not creating events when clearing an empty area.
+  if (is_shutdown_)
+    return;
+
+  map_ = new DomStorageMap(kPerAreaQuota + kPerAreaOverQuotaAllowance);
+  // This ensures no import will happen while we're waiting to clear the data
+  // from the database. This mechanism fails if PurgeMemory is called.
+  is_initial_import_done_ = true;
+
+  if (backing_.get()) {
+    CommitBatch* commit_batch = CreateCommitBatchIfNeeded();
+    commit_batch->clear_all_first = true;
+    commit_batch->changed_values.clear();
+  }
+}
+
 DomStorageArea* DomStorageArea::ShallowCopy(
     int64 destination_namespace_id,
     const std::string& destination_persistent_namespace_id) {
@@ -223,6 +242,8 @@ void DomStorageArea::DeleteOrigin() {
 
 void DomStorageArea::PurgeMemory() {
   DCHECK(!is_shutdown_);
+  // Purging sessionStorage is not supported; it won't work with FastClear.
+  DCHECK(!session_storage_backing_.get());
   if (!is_initial_import_done_ ||  // We're not using any memory.
       !backing_.get() ||  // We can't purge anything.
       HasUncommittedChanges())  // We leave things alone with changes pending.

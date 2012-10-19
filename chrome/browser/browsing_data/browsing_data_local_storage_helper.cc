@@ -43,23 +43,23 @@ void BrowsingDataLocalStorageHelper::StartFetching(
 
   is_fetching_ = true;
   completion_callback_ = callback;
-  dom_storage_context_->GetUsageInfo(
+  dom_storage_context_->GetLocalStorageUsage(
       base::Bind(
           &BrowsingDataLocalStorageHelper::GetUsageInfoCallback, this));
 }
 
 void BrowsingDataLocalStorageHelper::DeleteOrigin(const GURL& origin) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  dom_storage_context_->DeleteOrigin(origin);
+  dom_storage_context_->DeleteLocalStorage(origin);
 }
 
 void BrowsingDataLocalStorageHelper::GetUsageInfoCallback(
-    const std::vector<DomStorageContext::UsageInfo>& infos) {
+    const std::vector<DomStorageContext::LocalStorageUsageInfo>& infos) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   for (size_t i = 0; i < infos.size(); ++i) {
     // Non-websafe state is not considered browsing data.
-    const DomStorageContext::UsageInfo& info = infos[i];
+    const DomStorageContext::LocalStorageUsageInfo& info = infos[i];
     if (BrowsingDataHelper::HasWebScheme(info.origin)) {
       local_storage_info_.push_back(
           LocalStorageInfo(info.origin, info.data_size, info.last_modified));

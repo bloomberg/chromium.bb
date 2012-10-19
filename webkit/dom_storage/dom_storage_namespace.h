@@ -57,7 +57,8 @@ class DOM_STORAGE_EXPORT DomStorageNamespace
   DomStorageNamespace* Clone(int64 clone_namespace_id,
                              const std::string& clone_persistent_namespace_id);
 
-  void DeleteOrigin(const GURL& origin);
+  void DeleteLocalStorageOrigin(const GURL& origin);
+  void DeleteSessionStorageOrigin(const GURL& origin);
   void PurgeMemory();
   void Shutdown();
 

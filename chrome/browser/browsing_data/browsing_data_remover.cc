@@ -140,6 +140,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       waiting_for_clear_cookies_count_(0),
       waiting_for_clear_history_(false),
       waiting_for_clear_local_storage_(false),
+      waiting_for_clear_session_storage_(false),
       waiting_for_clear_networking_history_(false),
       waiting_for_clear_server_bound_certs_(false),
       waiting_for_clear_plugin_data_(false),
@@ -370,12 +371,14 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
 
   if (remove_mask & REMOVE_LOCAL_STORAGE) {
     waiting_for_clear_local_storage_ = true;
+    waiting_for_clear_session_storage_ = true;
     if (!dom_storage_context_) {
       dom_storage_context_ =
           BrowserContext::GetDefaultStoragePartition(profile_)->
               GetDOMStorageContext();
     }
     ClearLocalStorageOnUIThread();
+    ClearSessionStorageOnUIThread();
   }
 
   if (remove_mask & REMOVE_INDEXEDDB || remove_mask & REMOVE_WEBSQL ||
@@ -546,6 +549,7 @@ bool BrowsingDataRemover::AllDone() {
       !waiting_for_clear_cookies_count_&&
       !waiting_for_clear_history_ &&
       !waiting_for_clear_local_storage_ &&
+      !waiting_for_clear_session_storage_ &&
       !waiting_for_clear_networking_history_ &&
       !waiting_for_clear_server_bound_certs_ &&
       !waiting_for_clear_plugin_data_ &&
@@ -752,15 +756,17 @@ void BrowsingDataRemover::ClearNaClCacheOnIOThread() {
 
 void BrowsingDataRemover::ClearLocalStorageOnUIThread() {
   DCHECK(waiting_for_clear_local_storage_);
-
-  dom_storage_context_->GetUsageInfo(
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  dom_storage_context_->GetLocalStorageUsage(
       base::Bind(&BrowsingDataRemover::OnGotLocalStorageUsageInfo,
                  base::Unretained(this)));
 }
 
 void BrowsingDataRemover::OnGotLocalStorageUsageInfo(
-    const std::vector<dom_storage::DomStorageContext::UsageInfo>& infos) {
+    const std::vector<
+        dom_storage::DomStorageContext::LocalStorageUsageInfo>& infos) {
   DCHECK(waiting_for_clear_local_storage_);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   for (size_t i = 0; i < infos.size(); ++i) {
     if (!BrowsingDataHelper::DoesOriginMatchMask(infos[i].origin,
@@ -769,19 +775,38 @@ void BrowsingDataRemover::OnGotLocalStorageUsageInfo(
       continue;
 
     if (infos[i].last_modified >= delete_begin_ &&
-        infos[i].last_modified <= delete_end_)
-      dom_storage_context_->DeleteOrigin(infos[i].origin);
+        infos[i].last_modified <= delete_end_) {
+      dom_storage_context_->DeleteLocalStorage(infos[i].origin);
+    }
   }
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&BrowsingDataRemover::OnLocalStorageCleared,
+  waiting_for_clear_local_storage_ = false;
+  NotifyAndDeleteIfDone();
+}
+
+void BrowsingDataRemover::ClearSessionStorageOnUIThread() {
+  DCHECK(waiting_for_clear_session_storage_);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  dom_storage_context_->GetSessionStorageUsage(
+      base::Bind(&BrowsingDataRemover::OnGotSessionStorageUsageInfo,
                  base::Unretained(this)));
 }
 
-void BrowsingDataRemover::OnLocalStorageCleared() {
+void BrowsingDataRemover::OnGotSessionStorageUsageInfo(
+    const std::vector<
+        dom_storage::DomStorageContext::SessionStorageUsageInfo>& infos) {
+  DCHECK(waiting_for_clear_session_storage_);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(waiting_for_clear_local_storage_);
-  waiting_for_clear_local_storage_ = false;
+
+  for (size_t i = 0; i < infos.size(); ++i) {
+    if (!BrowsingDataHelper::DoesOriginMatchMask(infos[i].origin,
+                                                 origin_set_mask_,
+                                                 special_storage_policy_))
+      continue;
+
+    dom_storage_context_->DeleteSessionStorage(infos[i]);
+  }
+  waiting_for_clear_session_storage_ = false;
   NotifyAndDeleteIfDone();
 }
 

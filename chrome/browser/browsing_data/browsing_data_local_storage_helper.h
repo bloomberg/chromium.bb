@@ -62,7 +62,8 @@ class BrowsingDataLocalStorageHelper
 
  private:
   void GetUsageInfoCallback(
-      const std::vector<dom_storage::DomStorageContext::UsageInfo>& infos);
+      const std::vector<
+          dom_storage::DomStorageContext::LocalStorageUsageInfo>& infos);
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataLocalStorageHelper);
 };

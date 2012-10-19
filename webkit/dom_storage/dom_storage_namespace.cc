@@ -97,7 +97,7 @@ DomStorageNamespace* DomStorageNamespace::Clone(
   return clone;
 }
 
-void DomStorageNamespace::DeleteOrigin(const GURL& origin) {
+void DomStorageNamespace::DeleteLocalStorageOrigin(const GURL& origin) {
   DCHECK(!session_storage_database_.get());
   AreaHolder* holder = GetAreaHolder(origin);
   if (holder) {
@@ -109,6 +109,12 @@ void DomStorageNamespace::DeleteOrigin(const GURL& origin) {
         new DomStorageArea(origin, directory_, task_runner_);
     area->DeleteOrigin();
   }
+}
+
+void DomStorageNamespace::DeleteSessionStorageOrigin(const GURL& origin) {
+  DomStorageArea* area = OpenStorageArea(origin);
+  area->FastClear();
+  CloseStorageArea(area);
 }
 
 void DomStorageNamespace::PurgeMemory() {

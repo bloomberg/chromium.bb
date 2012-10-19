@@ -48,7 +48,7 @@ void DataDeleter::StartDeleting(Profile* profile,
       base::Bind(&DataDeleter::DeleteCookiesOnIOThread, deleter));
 
   content::BrowserContext::GetDefaultStoragePartition(profile)->
-      GetDOMStorageContext()->DeleteOrigin(storage_origin);
+      GetDOMStorageContext()->DeleteLocalStorage(storage_origin);
 
   BrowserThread::PostTask(
       BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,

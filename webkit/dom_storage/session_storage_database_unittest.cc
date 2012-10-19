@@ -333,12 +333,13 @@ void SessionStorageDatabaseTest::CompareValuesMaps(
 
 void SessionStorageDatabaseTest::CheckNamespaceIds(
     const std::set<std::string>& expected_namespace_ids) const {
-  std::vector<std::string> namespace_ids;
-  EXPECT_TRUE(db_->ReadNamespaceIds(&namespace_ids));
-  EXPECT_EQ(expected_namespace_ids.size(), namespace_ids.size());
-  for (std::vector<std::string>::const_iterator it = namespace_ids.begin();
-       it != namespace_ids.end(); ++it) {
-    EXPECT_TRUE(expected_namespace_ids.find(*it) !=
+  std::map<std::string, std::vector<GURL> > namespaces_and_origins;
+  EXPECT_TRUE(db_->ReadNamespacesAndOrigins(&namespaces_and_origins));
+  EXPECT_EQ(expected_namespace_ids.size(), namespaces_and_origins.size());
+  for (std::map<std::string, std::vector<GURL> >::const_iterator it =
+           namespaces_and_origins.begin();
+       it != namespaces_and_origins.end(); ++it) {
+    EXPECT_TRUE(expected_namespace_ids.find(it->first) !=
                 expected_namespace_ids.end());
   }
 }
@@ -346,8 +347,9 @@ void SessionStorageDatabaseTest::CheckNamespaceIds(
 void SessionStorageDatabaseTest::CheckOrigins(
     const std::string& namespace_id,
     const std::set<GURL>& expected_origins) const {
-  std::vector<GURL> origins;
-  EXPECT_TRUE(db_->ReadOriginsInNamespace(namespace_id, &origins));
+  std::map<std::string, std::vector<GURL> > namespaces_and_origins;
+  EXPECT_TRUE(db_->ReadNamespacesAndOrigins(&namespaces_and_origins));
+  const std::vector<GURL>& origins = namespaces_and_origins[namespace_id];
   EXPECT_EQ(expected_origins.size(), origins.size());
   for (std::vector<GURL>::const_iterator it = origins.begin();
        it != origins.end(); ++it) {

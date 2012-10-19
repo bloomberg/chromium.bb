@@ -193,24 +193,35 @@ bool SessionStorageDatabase::DeleteNamespace(const std::string& namespace_id) {
   return DatabaseErrorCheck(s.ok());
 }
 
-bool SessionStorageDatabase::ReadNamespaceIds(
-    std::vector<std::string>* namespace_ids) {
+bool SessionStorageDatabase::ReadNamespacesAndOrigins(
+    std::map<std::string, std::vector<GURL> >* namespaces_and_origins) {
   if (!LazyOpen(true))
     return false;
 
+  // While ReadNamespacesAndOrigins is in progress, another thread can call
+  // CommitAreaChanges. To protect the reading operation, create a snapshot and
+  // read from it.
+  leveldb::ReadOptions options;
+  options.snapshot = db_->GetSnapshot();
+
   std::string namespace_prefix = NamespacePrefix();
-  scoped_ptr<leveldb::Iterator> it(db_->NewIterator(leveldb::ReadOptions()));
+  scoped_ptr<leveldb::Iterator> it(db_->NewIterator(options));
   it->Seek(namespace_prefix);
   // If the key is not found, the status of the iterator won't be IsNotFound(),
   // but the iterator will be invalid.
-  if (!it->Valid())
+  if (!it->Valid()) {
+    db_->ReleaseSnapshot(options.snapshot);
     return true;
+  }
 
-  if (!DatabaseErrorCheck(it->status().ok()))
+  if (!DatabaseErrorCheck(it->status().ok())) {
+    db_->ReleaseSnapshot(options.snapshot);
     return false;
+  }
 
   // Skip the dummy entry "namespace-" and iterate the namespaces.
   std::string current_namespace_start_key;
+  std::string current_namespace_id;
   for (it->Next(); it->Valid(); it->Next()) {
     std::string key = it->key().ToString();
     if (key.find(namespace_prefix) != 0) {
@@ -226,22 +237,16 @@ bool SessionStorageDatabase::ReadNamespaceIds(
       // The key is of the form "namespace-<namespaceid>-" for a new
       // <namespaceid>.
       current_namespace_start_key = key;
-      namespace_ids->push_back(
+      current_namespace_id =
           key.substr(namespace_prefix.length(),
-                     key.length() - namespace_prefix.length() - 1));
+                     key.length() - namespace_prefix.length() - 1);
+    } else {
+      // The key is of the form "namespace-<namespaceid>-<origin>".
+      std::string origin = key.substr(current_namespace_start_key.length());
+      (*namespaces_and_origins)[current_namespace_id].push_back(GURL(origin));
     }
   }
-  return true;
-}
-
-bool SessionStorageDatabase::ReadOriginsInNamespace(
-    const std::string& namespace_id, std::vector<GURL>* origins) {
-  std::map<std::string, std::string> areas;
-  if (!GetAreasInNamespace(namespace_id, &areas))
-    return false;
-  for (std::map<std::string, std::string>::const_iterator it = areas.begin();
-       it != areas.end(); ++it)
-    origins->push_back(GURL(it->first));
+  db_->ReleaseSnapshot(options.snapshot);
   return true;
 }
 

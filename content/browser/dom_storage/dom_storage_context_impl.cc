@@ -26,22 +26,41 @@ namespace {
 const char kLocalStorageDirectory[] = "Local Storage";
 const char kSessionStorageDirectory[] = "Session Storage";
 
-void InvokeUsageInfoCallbackHelper(
-      const DOMStorageContext::GetUsageInfoCallback& callback,
-      const std::vector<DomStorageContext::UsageInfo>* infos) {
+void InvokeLocalStorageUsageCallbackHelper(
+      const DOMStorageContext::GetLocalStorageUsageCallback& callback,
+      const std::vector<DomStorageContext::LocalStorageUsageInfo>* infos) {
   callback.Run(*infos);
 }
 
-void GetUsageInfoHelper(
-      base::MessageLoopProxy* reply_loop,
-      DomStorageContext* context,
-      const DOMStorageContext::GetUsageInfoCallback& callback) {
-  std::vector<DomStorageContext::UsageInfo>* infos =
-      new std::vector<DomStorageContext::UsageInfo>;
-  context->GetUsageInfo(infos, true);
+void GetLocalStorageUsageHelper(
+    base::MessageLoopProxy* reply_loop,
+    DomStorageContext* context,
+    const DOMStorageContext::GetLocalStorageUsageCallback& callback) {
+  std::vector<DomStorageContext::LocalStorageUsageInfo>* infos =
+      new std::vector<DomStorageContext::LocalStorageUsageInfo>;
+  context->GetLocalStorageUsage(infos, true);
   reply_loop->PostTask(
       FROM_HERE,
-      base::Bind(&InvokeUsageInfoCallbackHelper,
+      base::Bind(&InvokeLocalStorageUsageCallbackHelper,
+                 callback, base::Owned(infos)));
+}
+
+void InvokeSessionStorageUsageCallbackHelper(
+      const DOMStorageContext::GetSessionStorageUsageCallback& callback,
+      const std::vector<DomStorageContext::SessionStorageUsageInfo>* infos) {
+  callback.Run(*infos);
+}
+
+void GetSessionStorageUsageHelper(
+    base::MessageLoopProxy* reply_loop,
+    DomStorageContext* context,
+    const DOMStorageContext::GetSessionStorageUsageCallback& callback) {
+  std::vector<DomStorageContext::SessionStorageUsageInfo>* infos =
+      new std::vector<DomStorageContext::SessionStorageUsageInfo>;
+  context->GetSessionStorageUsage(infos);
+  reply_loop->PostTask(
+      FROM_HERE,
+      base::Bind(&InvokeSessionStorageUsageCallbackHelper,
                  callback, base::Owned(infos)));
 }
 
@@ -67,22 +86,44 @@ DOMStorageContextImpl::DOMStorageContextImpl(
 DOMStorageContextImpl::~DOMStorageContextImpl() {
 }
 
-void DOMStorageContextImpl::GetUsageInfo(const GetUsageInfoCallback& callback) {
+void DOMStorageContextImpl::GetLocalStorageUsage(
+    const GetLocalStorageUsageCallback& callback) {
   DCHECK(context_);
   context_->task_runner()->PostShutdownBlockingTask(
       FROM_HERE,
       DomStorageTaskRunner::PRIMARY_SEQUENCE,
-      base::Bind(&GetUsageInfoHelper,
+      base::Bind(&GetLocalStorageUsageHelper,
                  base::MessageLoopProxy::current(),
                  context_, callback));
 }
 
-void DOMStorageContextImpl::DeleteOrigin(const GURL& origin) {
+void DOMStorageContextImpl::GetSessionStorageUsage(
+    const GetSessionStorageUsageCallback& callback) {
   DCHECK(context_);
   context_->task_runner()->PostShutdownBlockingTask(
       FROM_HERE,
       DomStorageTaskRunner::PRIMARY_SEQUENCE,
-      base::Bind(&DomStorageContext::DeleteOrigin, context_, origin));
+      base::Bind(&GetSessionStorageUsageHelper,
+                 base::MessageLoopProxy::current(),
+                 context_, callback));
+}
+
+void DOMStorageContextImpl::DeleteLocalStorage(const GURL& origin) {
+  DCHECK(context_);
+  context_->task_runner()->PostShutdownBlockingTask(
+      FROM_HERE,
+      DomStorageTaskRunner::PRIMARY_SEQUENCE,
+      base::Bind(&DomStorageContext::DeleteLocalStorage, context_, origin));
+}
+
+void DOMStorageContextImpl::DeleteSessionStorage(
+    const dom_storage::DomStorageContext::SessionStorageUsageInfo& usage_info) {
+  DCHECK(context_);
+  context_->task_runner()->PostShutdownBlockingTask(
+      FROM_HERE,
+      DomStorageTaskRunner::PRIMARY_SEQUENCE,
+      base::Bind(&DomStorageContext::DeleteSessionStorage, context_,
+                 usage_info));
 }
 
 void DOMStorageContextImpl::SetSaveSessionStorageOnDisk() {
