@@ -166,8 +166,16 @@ scons-tests-x86-64-zero-based-sandbox() {
 # and re-run gclient runhooks.
 archived-frontend-test() {
   local arch=$1
+  # Build the IRT with the latest toolchain before building user
+  # pexes with the archived toolchain.
   echo "@@@BUILD_STEP archived_frontend [${arch}]\
-        rev ${ARCHIVED_TOOLCHAIN_REV}@@@"
+        rev ${ARCHIVED_TOOLCHAIN_REV} BUILD IRT@@@"
+  ${SCONS_COMMON} --mode=opt-host,nacl platform=${arch} bitcode=1 \
+    irt_core || handle-error
+
+
+  echo "@@@BUILD_STEP archived_frontend [${arch}]\
+        rev ${ARCHIVED_TOOLCHAIN_REV} BUILD@@@"
   local targets="small_tests medium_tests large_tests"
   local flags="--mode=opt-host,nacl bitcode=1 platform=${arch} \
                translate_in_build_step=0 -j${PNACL_CONCURRENCY} \
@@ -191,11 +199,13 @@ archived-frontend-test() {
     scons-out/nacl-${arch}-pnacl-fast-pexe-clang
 
   # Translate them with the new translator, and run the tests
+  echo "@@@BUILD_STEP archived_frontend [${arch}]\
+        rev ${ARCHIVED_TOOLCHAIN_REV} RUN@@@"
   ${SCONS_COMMON} ${SCONS_PICK_TC} \
     ${flags} ${targets} built_elsewhere=1 || handle-error
-  echo "@@@BUILD_STEP archived_frontend [${arch} translate-fast]\
-        rev ${ARCHIVED_TOOLCHAIN_REV}@@@"
   # Also test the fast-translation option
+  echo "@@@BUILD_STEP archived_frontend [${arch} translate-fast]\
+        rev ${ARCHIVED_TOOLCHAIN_REV} RUN@@@"
   ${SCONS_COMMON} ${SCONS_PICK_TC} ${flags} translate_fast=1 built_elsewhere=1 \
     ${targets} || handle-error
 }
