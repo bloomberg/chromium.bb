@@ -37,6 +37,7 @@
 #include "../shared/config-parser.h"
 #include "weston-egl-ext.h"
 
+#define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
 struct weston_transform {
 	struct weston_matrix matrix;

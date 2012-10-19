@@ -32,6 +32,8 @@
 #include <wayland-client.h>
 #include "../shared/os-compatibility.h"
 
+#define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
+
 struct touch {
 	struct wl_display *display;
 	struct wl_registry *registry;
