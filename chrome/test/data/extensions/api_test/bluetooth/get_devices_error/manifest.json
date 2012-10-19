@@ -7,5 +7,5 @@
       "scripts": ["runtest.js"]
     }
   },
-  "permissions": ["experimental"]
+  "permissions": ["bluetooth"]
 }

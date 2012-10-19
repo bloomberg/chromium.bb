@@ -17,7 +17,7 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/api/experimental_bluetooth.h"
+#include "chrome/common/extensions/api/bluetooth.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -74,14 +74,14 @@ const char kStopDiscoveryFailed[] = "Failed to stop discovery";
 
 }  // namespace
 
-namespace Connect = extensions::api::experimental_bluetooth::Connect;
-namespace Disconnect = extensions::api::experimental_bluetooth::Disconnect;
-namespace GetDevices = extensions::api::experimental_bluetooth::GetDevices;
-namespace GetServices = extensions::api::experimental_bluetooth::GetServices;
-namespace Read = extensions::api::experimental_bluetooth::Read;
+namespace Connect = extensions::api::bluetooth::Connect;
+namespace Disconnect = extensions::api::bluetooth::Disconnect;
+namespace GetDevices = extensions::api::bluetooth::GetDevices;
+namespace GetServices = extensions::api::bluetooth::GetServices;
+namespace Read = extensions::api::bluetooth::Read;
 namespace SetOutOfBandPairingData =
-    extensions::api::experimental_bluetooth::SetOutOfBandPairingData;
-namespace Write = extensions::api::experimental_bluetooth::Write;
+    extensions::api::bluetooth::SetOutOfBandPairingData;
+namespace Write = extensions::api::bluetooth::Write;
 
 namespace extensions {
 namespace api {
@@ -132,8 +132,8 @@ BluetoothGetDevicesFunction::BluetoothGetDevicesFunction()
 
 void BluetoothGetDevicesFunction::DispatchDeviceSearchResult(
     const BluetoothDevice& device) {
-  experimental_bluetooth::Device extension_device;
-  experimental_bluetooth::BluetoothDeviceToApiDevice(device, &extension_device);
+  bluetooth::Device extension_device;
+  bluetooth::BluetoothDeviceToApiDevice(device, &extension_device);
   GetEventRouter(profile())->DispatchDeviceEvent(
       extensions::event_names::kBluetoothOnDeviceSearchResult,
       extension_device);
@@ -179,7 +179,7 @@ bool BluetoothGetDevicesFunction::RunImpl() {
 
   scoped_ptr<GetDevices::Params> params(GetDevices::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
-  const experimental_bluetooth::GetDevicesOptions& options = params->options;
+  const bluetooth::GetDevicesOptions& options = params->options;
 
   std::string uuid;
   if (options.uuid.get() != NULL) {
@@ -231,7 +231,7 @@ void BluetoothGetServicesFunction::GetServiceRecordsCallback(
   for (BluetoothDevice::ServiceRecordList::const_iterator i = records.begin();
       i != records.end(); ++i) {
     const BluetoothServiceRecord& record = **i;
-    experimental_bluetooth::ServiceRecord api_record;
+    bluetooth::ServiceRecord api_record;
     api_record.name = record.name();
     if (!record.uuid().empty())
       api_record.uuid.reset(new std::string(record.uuid()));
@@ -254,7 +254,7 @@ bool BluetoothGetServicesFunction::RunImpl() {
 
   scoped_ptr<GetServices::Params> params(GetServices::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
-  const experimental_bluetooth::GetServicesOptions& options = params->options;
+  const bluetooth::GetServicesOptions& options = params->options;
 
   BluetoothDevice* device =
       GetMutableAdapter(profile())->GetDevice(options.device_address);
@@ -283,9 +283,8 @@ void BluetoothConnectFunction::ConnectToServiceCallback(
   if (socket.get()) {
     int socket_id = GetEventRouter(profile())->RegisterSocket(socket);
 
-    experimental_bluetooth::Socket result_socket;
-    experimental_bluetooth::BluetoothDeviceToApiDevice(
-        *device, &result_socket.device);
+    bluetooth::Socket result_socket;
+    bluetooth::BluetoothDeviceToApiDevice(*device, &result_socket.device);
     result_socket.service_uuid = service_uuid;
     result_socket.id = socket_id;
     SetResult(result_socket.ToValue().release());
@@ -304,7 +303,7 @@ bool BluetoothConnectFunction::RunImpl() {
 
   scoped_ptr<Connect::Params> params(Connect::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
-  const experimental_bluetooth::ConnectOptions& options = params->options;
+  const bluetooth::ConnectOptions& options = params->options;
 
   std::string uuid = device::bluetooth_utils::CanonicalUuid(
       options.service_uuid);
@@ -331,7 +330,7 @@ bool BluetoothConnectFunction::RunImpl() {
 bool BluetoothDisconnectFunction::RunImpl() {
   scoped_ptr<Disconnect::Params> params(Disconnect::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
-  const experimental_bluetooth::DisconnectOptions& options = params->options;
+  const bluetooth::DisconnectOptions& options = params->options;
   return GetEventRouter(profile())->ReleaseSocket(options.socket_id);
 }
 
@@ -341,7 +340,7 @@ BluetoothReadFunction::~BluetoothReadFunction() {}
 bool BluetoothReadFunction::Prepare() {
   scoped_ptr<Read::Params> params(Read::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
-  const experimental_bluetooth::ReadOptions& options = params->options;
+  const bluetooth::ReadOptions& options = params->options;
 
   socket_ = GetEventRouter(profile())->GetSocket(options.socket_id);
   if (socket_.get() == NULL) {
@@ -524,7 +523,7 @@ void BluetoothGetLocalOutOfBandPairingDataFunction::ReadCallback(
       reinterpret_cast<const char*>(data.randomizer),
       device::kBluetoothOutOfBandPairingDataSize);
 
-  // TODO(bryeung): convert to experimental_bluetooth::OutOfBandPairingData
+  // TODO(bryeung): convert to bluetooth::OutOfBandPairingData
   // when ArrayBuffer support within objects is completed.
   DictionaryValue* result = new DictionaryValue();
   result->Set("hash", hash);

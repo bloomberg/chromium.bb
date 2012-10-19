@@ -24,7 +24,7 @@ namespace api {
 
 class BluetoothIsAvailableFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.isAvailable")
+  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.isAvailable")
 
  protected:
   virtual ~BluetoothIsAvailableFunction() {}
@@ -35,7 +35,7 @@ class BluetoothIsAvailableFunction : public SyncExtensionFunction {
 
 class BluetoothIsPoweredFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.isPowered")
+  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.isPowered")
 
  protected:
   virtual ~BluetoothIsPoweredFunction() {}
@@ -46,7 +46,7 @@ class BluetoothIsPoweredFunction : public SyncExtensionFunction {
 
 class BluetoothGetAddressFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.getAddress")
+  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.getAddress")
 
  protected:
   virtual ~BluetoothGetAddressFunction() {}
@@ -57,7 +57,7 @@ class BluetoothGetAddressFunction : public SyncExtensionFunction {
 
 class BluetoothGetNameFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.getName")
+  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.getName")
 
  protected:
   virtual ~BluetoothGetNameFunction() {}
@@ -68,7 +68,7 @@ class BluetoothGetNameFunction : public SyncExtensionFunction {
 
 class BluetoothGetDevicesFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.getDevices")
+  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.getDevices")
 
   BluetoothGetDevicesFunction();
 
@@ -90,7 +90,7 @@ class BluetoothGetDevicesFunction : public AsyncExtensionFunction {
 
 class BluetoothGetServicesFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.getServices")
+  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.getServices")
 
  protected:
   virtual ~BluetoothGetServicesFunction() {}
@@ -107,7 +107,7 @@ class BluetoothGetServicesFunction : public AsyncExtensionFunction {
 
 class BluetoothConnectFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.connect")
+  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.connect")
 
  protected:
   virtual ~BluetoothConnectFunction() {}
@@ -123,7 +123,7 @@ class BluetoothConnectFunction : public AsyncExtensionFunction {
 
 class BluetoothDisconnectFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.disconnect")
+  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.disconnect")
 
  protected:
   virtual ~BluetoothDisconnectFunction() {}
@@ -134,7 +134,7 @@ class BluetoothDisconnectFunction : public SyncExtensionFunction {
 
 class BluetoothReadFunction : public AsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.read")
+  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.read")
   BluetoothReadFunction();
 
  protected:
@@ -152,7 +152,7 @@ class BluetoothReadFunction : public AsyncApiFunction {
 
 class BluetoothWriteFunction : public AsyncApiFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.write")
+  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.write")
   BluetoothWriteFunction();
 
  protected:
@@ -172,8 +172,7 @@ class BluetoothWriteFunction : public AsyncApiFunction {
 class BluetoothSetOutOfBandPairingDataFunction
     : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.bluetooth.setOutOfBandPairingData")
+  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.setOutOfBandPairingData")
 
  protected:
   virtual ~BluetoothSetOutOfBandPairingDataFunction() {}
@@ -188,8 +187,7 @@ class BluetoothSetOutOfBandPairingDataFunction
 class BluetoothGetLocalOutOfBandPairingDataFunction
     : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.bluetooth.getLocalOutOfBandPairingData")
+  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.getLocalOutOfBandPairingData")
 
  protected:
   virtual ~BluetoothGetLocalOutOfBandPairingDataFunction() {}
@@ -204,7 +202,7 @@ class BluetoothGetLocalOutOfBandPairingDataFunction
 
 class BluetoothStartDiscoveryFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.startDiscovery")
+  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.startDiscovery")
 
  protected:
   virtual ~BluetoothStartDiscoveryFunction() {}
@@ -219,7 +217,7 @@ class BluetoothStartDiscoveryFunction : public AsyncExtensionFunction {
 
 class BluetoothStopDiscoveryFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.stopDiscovery")
+  DECLARE_EXTENSION_FUNCTION_NAME("bluetooth.stopDiscovery")
 
  protected:
   virtual ~BluetoothStopDiscoveryFunction() {}

@@ -45,6 +45,7 @@ class APIPermission {
     kAppWindow,
     kAudioCapture,
     kBackground,
+    kBluetooth,
     kBookmark,
     kBookmarkManagerPrivate,
     kBrowserTag,

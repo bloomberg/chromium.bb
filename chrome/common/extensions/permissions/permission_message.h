@@ -51,6 +51,7 @@ class PermissionMessage {
     kSocketAnyHost,
     kSocketDomainHosts,
     kSocketSpecificHosts,
+    kBluetooth,
     kEnumBoundary
   };
 

@@ -5,7 +5,7 @@
 // Bluetooth API.
 // TODO(bryeung): mark this API as ChromeOS only (see crbug.com/119398).
 
-namespace experimental.bluetooth {
+namespace bluetooth {
   dictionary Device {
     // The address of the device, in the format 'XX:XX:XX:XX:XX:XX'.
     DOMString address;

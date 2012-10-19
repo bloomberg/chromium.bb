@@ -11,7 +11,7 @@ var lastError = require('lastError');
 // Use custom bindings to create an undocumented event listener that will
 // receive events about device discovery and call the event listener that was
 // provided with the request to begin discovery.
-chromeHidden.registerCustomHook('experimental.bluetooth', function(api) {
+chromeHidden.registerCustomHook('bluetooth', function(api) {
   var apiFunctions = api.apiFunctions;
 
   chromeHidden.bluetooth = {};
@@ -24,7 +24,7 @@ chromeHidden.registerCustomHook('experimental.bluetooth', function(api) {
 
   chromeHidden.bluetooth.deviceDiscoveredHandler = null;
   chromeHidden.bluetooth.onDeviceDiscovered =
-      new chrome.Event("experimental.bluetooth.onDeviceDiscovered");
+      new chrome.Event("bluetooth.onDeviceDiscovered");
   function clearDeviceDiscoveredHandler() {
     chromeHidden.bluetooth.onDeviceDiscovered.removeListener(
         chromeHidden.bluetooth.deviceDiscoveredHandler);
@@ -71,9 +71,9 @@ chromeHidden.registerCustomHook('experimental.bluetooth', function(api) {
 
   // Hidden events used to deliver getDevices data to the client callbacks
   chromeHidden.bluetooth.onDeviceSearchResult =
-      new chrome.Event("experimental.bluetooth.onDeviceSearchResult");
+      new chrome.Event("bluetooth.onDeviceSearchResult");
   chromeHidden.bluetooth.onDeviceSearchFinished =
-      new chrome.Event("experimental.bluetooth.onDeviceSearchFinished");
+      new chrome.Event("bluetooth.onDeviceSearchFinished");
 
   function deviceSearchResultHandler(device) {
     chromeHidden.bluetooth.getDevicesState.actualEvents++;

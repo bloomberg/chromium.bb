@@ -1,7 +1,0 @@
-{
-  "manifest_version": 2,
-  "name": "bluetooth API Tests",
-  "version": "1.0",
-  "description": "Tests the bluetooth API.",
-  "permissions": ["experimental"]
-}

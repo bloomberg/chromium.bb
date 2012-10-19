@@ -13,18 +13,18 @@
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api_utils.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
-#include "chrome/common/extensions/api/experimental_bluetooth.h"
+#include "chrome/common/extensions/api/bluetooth.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_socket.h"
 
-namespace experimental_bluetooth = extensions::api::experimental_bluetooth;
-
 namespace extensions {
 
 ExtensionBluetoothEventRouter::ExtensionBluetoothEventRouter(Profile* profile)
-    : profile_(profile),
+    : send_discovery_events_(false),
+      responsible_for_discovery_(false),
+      profile_(profile),
       adapter_(device::BluetoothAdapterFactory::DefaultAdapter()),
       next_socket_id_(1) {
   DCHECK(profile_);
@@ -93,7 +93,7 @@ void ExtensionBluetoothEventRouter::SetSendDiscoveryEvents(bool should_send) {
 }
 
 void ExtensionBluetoothEventRouter::DispatchDeviceEvent(
-    const char* event_name, const experimental_bluetooth::Device& device) {
+    const char* event_name, const extensions::api::bluetooth::Device& device) {
   scoped_ptr<ListValue> args(new ListValue());
   args->Append(device.ToValue().release());
   profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
@@ -153,9 +153,10 @@ void ExtensionBluetoothEventRouter::DeviceAdded(
     return;
   }
 
-  experimental_bluetooth::Device* extension_device =
-      new experimental_bluetooth::Device();
-  experimental_bluetooth::BluetoothDeviceToApiDevice(*device, extension_device);
+  extensions::api::bluetooth::Device* extension_device =
+      new extensions::api::bluetooth::Device();
+  extensions::api::bluetooth::BluetoothDeviceToApiDevice(
+      *device, extension_device);
   discovered_devices_.push_back(extension_device);
 
   if (!send_discovery_events_)

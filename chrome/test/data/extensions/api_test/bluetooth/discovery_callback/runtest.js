@@ -24,7 +24,7 @@ function sendReady(callback) {
 }
 
 function stopDiscoveryAndContinue() {
-  chrome.experimental.bluetooth.stopDiscovery();
+  chrome.bluetooth.stopDiscovery();
   sendReady(startTests);
 }
 
@@ -33,6 +33,6 @@ function recordDevice(device) {
   discoveredDevices.push(device);
 }
 
-chrome.experimental.bluetooth.startDiscovery(
+chrome.bluetooth.startDiscovery(
     { deviceCallback:recordDevice },
     function() { sendReady(stopDiscoveryAndContinue); });

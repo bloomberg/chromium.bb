@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/api/experimental_bluetooth.h"
+#include "chrome/common/extensions/api/bluetooth.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_socket.h"
 
@@ -57,7 +57,7 @@ class ExtensionBluetoothEventRouter
   // Dispatch an event that takes a device as a parameter to all renderers.
   void DispatchDeviceEvent(
       const char* event_name,
-      const extensions::api::experimental_bluetooth::Device& device);
+      const extensions::api::bluetooth::Device& device);
 
   // Override from device::BluetoothAdapter::Observer
   virtual void AdapterPresentChanged(device::BluetoothAdapter* adapter,
@@ -90,7 +90,7 @@ class ExtensionBluetoothEventRouter
   typedef std::map<int, scoped_refptr<device::BluetoothSocket> > SocketMap;
   SocketMap socket_map_;
 
-  typedef ScopedVector<extensions::api::experimental_bluetooth::Device>
+  typedef ScopedVector<extensions::api::bluetooth::Device>
       DeviceList;
   DeviceList discovered_devices_;
 

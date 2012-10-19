@@ -6,12 +6,12 @@
 
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/extensions/api/experimental_bluetooth.h"
+#include "chrome/common/extensions/api/bluetooth.h"
 #include "device/bluetooth/bluetooth_device.h"
 
 namespace extensions {
 namespace api {
-namespace experimental_bluetooth {
+namespace bluetooth {
 
 // Fill in a Device object from a BluetoothDevice.
 void BluetoothDeviceToApiDevice(const device::BluetoothDevice& device,
@@ -25,11 +25,11 @@ void BluetoothDeviceToApiDevice(const device::BluetoothDevice& device,
 
 // The caller takes ownership of the returned pointer.
 base::Value* BluetoothDeviceToValue(const device::BluetoothDevice& device) {
-  extensions::api::experimental_bluetooth::Device api_device;
+  extensions::api::bluetooth::Device api_device;
   BluetoothDeviceToApiDevice(device, &api_device);
   return api_device.ToValue().release();
 }
 
-}  // namespace experimental_bluetooth
+}  // namespace bluetooth
 }  // namespace api
 }  // namespace extensions

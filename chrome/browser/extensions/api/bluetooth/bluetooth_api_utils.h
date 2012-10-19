@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_BLUETOOTH_API_UTILS_H_
 
 #include "base/values.h"
-#include "chrome/common/extensions/api/experimental_bluetooth.h"
+#include "chrome/common/extensions/api/bluetooth.h"
 #include "device/bluetooth/bluetooth_device.h"
 
 namespace extensions {
 namespace api {
-namespace experimental_bluetooth {
+namespace bluetooth {
 
 // Fill in a Device object from a BluetoothDevice.
 void BluetoothDeviceToApiDevice(
@@ -22,7 +22,7 @@ void BluetoothDeviceToApiDevice(
 base::Value* BluetoothDeviceToValue(
     const device::BluetoothDevice& device);
 
-}  // namespace experimental_bluetooth
+}  // namespace bluetooth
 }  // namespace api
 }  // namespace extensions
 

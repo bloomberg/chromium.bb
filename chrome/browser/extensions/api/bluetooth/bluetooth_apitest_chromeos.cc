@@ -357,6 +357,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DiscoveryInProgress) {
   ExtensionTestMessageListener discovery_stopped("ready", true);
   EXPECT_TRUE(discovery_stopped.WaitUntilSatisfied());
 
+  // This should never be received.
   event_router()->DeviceAdded(mock_adapter_, device2_.get());
   discovery_stopped.Reply("go");
 
@@ -369,10 +370,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Events) {
 
   // Load and wait for setup
   ExtensionTestMessageListener listener("ready", true);
-  const Extension* extension =
-      LoadExtension(test_data_dir_.AppendASCII("bluetooth"));
-  GURL page_url = extension->GetResourceURL("test_events.html");
-  ui_test_utils::NavigateToURL(browser(), page_url);
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("bluetooth/events")));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 
   event_router()->AdapterPoweredChanged(mock_adapter_, true);

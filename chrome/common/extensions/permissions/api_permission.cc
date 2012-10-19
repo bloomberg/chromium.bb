@@ -318,6 +318,9 @@ void APIPermissionInfo::RegisterAllPermissions(
       IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_ALL_GALLERIES,
       PermissionMessage::kMediaGalleriesAllGalleries },
     { APIPermission::kPushMessaging, "pushMessaging", kFlagCannotBeOptional },
+    { APIPermission::kBluetooth, "bluetooth", kFlagNone,
+      IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH,
+      PermissionMessage::kBluetooth },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(PermissionsToRegister); ++i) {

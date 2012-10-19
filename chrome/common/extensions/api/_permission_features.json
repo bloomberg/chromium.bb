@@ -35,6 +35,10 @@
       "extension", "packaged_app", "hosted_app", "platform_app"
     ]
   },
+  "bluetooth": {
+    "channel": "dev",
+    "extension_types": ["platform_app"]
+  },
   "bookmarkManagerPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"],

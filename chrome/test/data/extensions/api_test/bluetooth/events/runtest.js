@@ -21,15 +21,15 @@ var powerChangedValues = [];
 var availabilityChangedValues = [];
 var discoveringChangedValues = [];
 var kExpectedValues = [true, false];
-chrome.experimental.bluetooth.onPowerChanged.addListener(
+chrome.bluetooth.onPowerChanged.addListener(
     function(result) {
       powerChangedValues.push(result);
     });
-chrome.experimental.bluetooth.onAvailabilityChanged.addListener(
+chrome.bluetooth.onAvailabilityChanged.addListener(
     function(result) {
       availabilityChangedValues.push(result);
     });
-chrome.experimental.bluetooth.onDiscoveringChanged.addListener(
+chrome.bluetooth.onDiscoveringChanged.addListener(
     function(result) {
       discoveringChangedValues.push(result);
     });

@@ -8,7 +8,7 @@ function testGetDevicesReturnsError() {
 }
 
 var error = "";
-chrome.experimental.bluetooth.getDevices(
+chrome.bluetooth.getDevices(
     {
       uuid:'this is nonsense',
       deviceCallback:function() {}

@@ -10,8 +10,8 @@ function nop() {}
 
 try {
   var getDevicesOptions = { deviceCallback:nop, name:'foo' };
-  chrome.experimental.bluetooth.getDevices(getDevicesOptions, nop);
-  chrome.experimental.bluetooth.getDevices(getDevicesOptions, nop);
+  chrome.bluetooth.getDevices(getDevicesOptions, nop);
+  chrome.bluetooth.getDevices(getDevicesOptions, nop);
 } catch(e) {
   chrome.test.sendMessage('ready',
       function(message) {
