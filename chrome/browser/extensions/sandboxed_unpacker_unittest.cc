@@ -63,7 +63,8 @@ class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
 class SandboxedUnpackerTest : public testing::Test {
  public:
   virtual void SetUp() {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+   ASSERT_TRUE(extensions_dir_.CreateUniqueTempDir());
     file_thread_.reset(new content::TestBrowserThread(BrowserThread::FILE,
                                                       &loop_));
     // It will delete itself.
@@ -104,7 +105,8 @@ class SandboxedUnpackerTest : public testing::Test {
 
     sandboxed_unpacker_ =
         new SandboxedUnpacker(crx_path, false, Extension::INTERNAL,
-                              Extension::NO_FLAGS, client_);
+                              Extension::NO_FLAGS, extensions_dir_.path(),
+                              client_);
 
     // Hack since SandboxedUnpacker gets its background thread id from
     // the Start call, but we don't call it here.
@@ -157,6 +159,7 @@ class SandboxedUnpackerTest : public testing::Test {
 
  protected:
   ScopedTempDir temp_dir_;
+  ScopedTempDir extensions_dir_;
   FilePath temp_path_;
   MockSandboxedUnpackerClient* client_;
   scoped_ptr<Unpacker> unpacker_;

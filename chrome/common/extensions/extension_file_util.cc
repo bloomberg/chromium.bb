@@ -36,6 +36,8 @@ namespace errors = extension_manifest_errors;
 
 namespace {
 
+const FilePath::CharType kTempDirectoryName[] = FILE_PATH_LITERAL("Temp");
+
 bool ValidateExtensionIconSet(const ExtensionIconSet& icon_set,
                               const Extension* extension,
                               int error_message_id,
@@ -66,13 +68,11 @@ static bool ValidateLocaleInfo(const Extension& extension,
 static bool IsScriptValid(const FilePath& path, const FilePath& relative_path,
                           int message_id, std::string* error);
 
-const char kInstallDirectoryName[] = "Extensions";
-
 FilePath InstallExtension(const FilePath& unpacked_source_dir,
                           const std::string& id,
                           const std::string& version,
-                          const FilePath& all_extensions_dir) {
-  FilePath extension_dir = all_extensions_dir.AppendASCII(id);
+                          const FilePath& extensions_dir) {
+  FilePath extension_dir = extensions_dir.AppendASCII(id);
   FilePath version_dir;
 
   // Create the extension directory if it doesn't exist already.
@@ -81,10 +81,11 @@ FilePath InstallExtension(const FilePath& unpacked_source_dir,
       return FilePath();
   }
 
-  FilePath profile_temp_dir = GetUserDataTempDir();
+  // Get a temp directory on the same file system as the profile.
+  FilePath install_temp_dir = GetInstallTempDir(extensions_dir);
   ScopedTempDir extension_temp_dir;
-  if (profile_temp_dir.empty() ||
-      !extension_temp_dir.CreateUniqueTempDirUnderPath(profile_temp_dir)) {
+  if (install_temp_dir.empty() ||
+      !extension_temp_dir.CreateUniqueTempDirUnderPath(install_temp_dir)) {
     LOG(ERROR) << "Creating of temp dir under in the profile failed.";
     return FilePath();
   }
@@ -436,6 +437,14 @@ void GarbageCollectExtensions(
     std::string extension_id;
 
     FilePath basename = extension_path.BaseName();
+    // Clean up temporary files left if Chrome crashed or quit in the middle
+    // of an extension install.
+    if (basename.value() == kTempDirectoryName) {
+      file_util::Delete(extension_path, true);  // Recursive
+      continue;
+    }
+
+    // Parse directory name as a potential extension ID.
     if (IsStringASCII(basename.value())) {
       extension_id = UTF16ToASCII(basename.LossyDisplayName());
       if (!Extension::IdIsValid(extension_id))
@@ -708,68 +717,36 @@ FilePath ExtensionResourceURLToFilePath(const GURL& url, const FilePath& root) {
   return path;
 }
 
-FilePath GetUserDataTempDir() {
+FilePath GetInstallTempDir(const FilePath& extensions_dir) {
   // We do file IO in this function, but only when the current profile's
   // Temp directory has never been used before, or in a rare error case.
   // Developers are not likely to see these situations often, so do an
   // explicit thread check.
   base::ThreadRestrictions::AssertIOAllowed();
 
-  // The following enum used to be sent as a histogram to diagnose issues
-  // accessing the temp path (crbug/70056).  The histogram is gone, but
-  // the enum makes it clear exactly why the temp directory can not be
-  // accessed, which may aid debugging in the future.
-  enum DirectoryCreationResult {
-    SUCCESS = 0,
-
-    CANT_GET_PARENT_PATH,
-    CANT_GET_UDT_PATH,
-    NOT_A_DIRECTORY,
-    CANT_CREATE_DIR,
-    CANT_WRITE_TO_PATH,
-
-    UNSET,
-    NUM_DIRECTORY_CREATION_RESULTS
-  };
-
-  // All paths should set |result|.
-  DirectoryCreationResult result = UNSET;
-
-  FilePath temp_path;
-  if (!PathService::Get(chrome::DIR_USER_DATA_TEMP, &temp_path)) {
-    FilePath parent_path;
-    if (!PathService::Get(chrome::DIR_USER_DATA, &parent_path))
-      result = CANT_GET_PARENT_PATH;
-    else
-      result = CANT_GET_UDT_PATH;
-
-  } else if (file_util::PathExists(temp_path)) {
-
-    // Path exists.  Check that it is a directory we can write to.
+  // Create the temp directory as a sub-directory of the Extensions directory.
+  // This guarantees it is on the same file system as the extension's eventual
+  // install target.
+  FilePath temp_path = extensions_dir.Append(kTempDirectoryName);
+  if (file_util::PathExists(temp_path)) {
     if (!file_util::DirectoryExists(temp_path)) {
-      result = NOT_A_DIRECTORY;
-
-    } else if (!file_util::PathIsWritable(temp_path)) {
-      result = CANT_WRITE_TO_PATH;
-
-    } else {
-      // Temp is a writable directory.
-      result = SUCCESS;
+      DLOG(WARNING) << "Not a directory: " << temp_path.value();
+      return FilePath();
     }
-
-  } else if (!file_util::CreateDirectory(temp_path)) {
-    // Path doesn't exist, and we failed to create it.
-    result = CANT_CREATE_DIR;
-
-  } else {
-    // Successfully created the Temp directory.
-    result = SUCCESS;
+    if (!file_util::PathIsWritable(temp_path)) {
+      DLOG(WARNING) << "Can't write to path: " << temp_path.value();
+      return FilePath();
+    }
+    // This is a directory we can write to.
+    return temp_path;
   }
 
-  if (result == SUCCESS)
-    return temp_path;
-
-  return FilePath();
+  // Directory doesn't exist, so create it.
+  if (!file_util::CreateDirectory(temp_path)) {
+    DLOG(WARNING) << "Couldn't create directory: " << temp_path.value();
+    return FilePath();
+  }
+  return temp_path;
 }
 
 void DeleteFile(const FilePath& path, bool recursive) {

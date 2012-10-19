@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 
+class FilePath;
 
 namespace base {
 class Time;
@@ -39,7 +40,8 @@ std::string ConvertTimeToExtensionVersion(const base::Time& time);
 // returned object.
 scoped_refptr<Extension> ConvertWebAppToExtension(
     const WebApplicationInfo& web_app_info,
-    const base::Time& create_time);
+    const base::Time& create_time,
+    const FilePath& extensions_dir);
 
 }  // namespace extensions
 

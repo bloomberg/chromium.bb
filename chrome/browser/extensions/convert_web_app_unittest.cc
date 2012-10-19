@@ -93,6 +93,9 @@ TEST(ExtensionFromWebApp, GenerateVersion) {
 }
 
 TEST(ExtensionFromWebApp, Basic) {
+  ScopedTempDir extensions_dir;
+  ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
+
   WebApplicationInfo web_app;
   web_app.manifest_url = GURL("http://aaronboodman.com/gearpad/manifest.json");
   web_app.title = ASCIIToUTF16("Gearpad");
@@ -109,7 +112,8 @@ TEST(ExtensionFromWebApp, Basic) {
   }
 
   scoped_refptr<Extension> extension = ConvertWebAppToExtension(
-      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0));
+      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0),
+      extensions_dir.path());
   ASSERT_TRUE(extension.get());
 
   ScopedTempDir extension_dir;
@@ -146,13 +150,17 @@ TEST(ExtensionFromWebApp, Basic) {
 }
 
 TEST(ExtensionFromWebApp, Minimal) {
+  ScopedTempDir extensions_dir;
+  ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
+
   WebApplicationInfo web_app;
   web_app.manifest_url = GURL("http://aaronboodman.com/gearpad/manifest.json");
   web_app.title = ASCIIToUTF16("Gearpad");
   web_app.app_url = GURL("http://aaronboodman.com/gearpad/");
 
   scoped_refptr<Extension> extension = ConvertWebAppToExtension(
-      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0));
+      web_app, GetTestTime(1978, 12, 11, 0, 0, 0, 0),
+      extensions_dir.path());
   ASSERT_TRUE(extension.get());
 
   ScopedTempDir extension_dir;

@@ -158,6 +158,7 @@ void CrxInstaller::InstallCrx(const FilePath& source_file) {
           content::ResourceDispatcherHost::Get() != NULL,
           install_source_,
           creation_flags_,
+          install_directory_,
           this));
 
   if (!BrowserThread::PostTask(
@@ -182,7 +183,7 @@ void CrxInstaller::InstallUserScript(const FilePath& source_file,
 void CrxInstaller::ConvertUserScriptOnFileThread() {
   string16 error;
   scoped_refptr<Extension> extension = ConvertUserScriptToExtension(
-      source_file_, download_url_, &error);
+      source_file_, download_url_, install_directory_, &error);
   if (!extension) {
     ReportFailureFromFileThread(CrxInstallerError(error));
     return;
@@ -194,15 +195,18 @@ void CrxInstaller::ConvertUserScriptOnFileThread() {
 void CrxInstaller::InstallWebApp(const WebApplicationInfo& web_app) {
   if (!BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
-          base::Bind(&CrxInstaller::ConvertWebAppOnFileThread, this, web_app)))
+          base::Bind(&CrxInstaller::ConvertWebAppOnFileThread,
+                     this,
+                     web_app,
+                     install_directory_)))
     NOTREACHED();
 }
 
 void CrxInstaller::ConvertWebAppOnFileThread(
-    const WebApplicationInfo& web_app) {
+    const WebApplicationInfo& web_app, const FilePath& install_directory) {
   string16 error;
   scoped_refptr<Extension> extension(
-      ConvertWebAppToExtension(web_app, base::Time::Now()));
+      ConvertWebAppToExtension(web_app, base::Time::Now(), install_directory));
   if (!extension) {
     // Validation should have stopped any potential errors before getting here.
     NOTREACHED() << "Could not convert web app to extension.";

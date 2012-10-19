@@ -73,10 +73,11 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
   // |client| with the result. If |run_out_of_process| is provided, unpacking
   // is done in a sandboxed subprocess. Otherwise, it is done in-process.
   SandboxedUnpacker(const FilePath& crx_path,
-                             bool run_out_of_process,
-                             Extension::Location location,
-                             int creation_flags,
-                             SandboxedUnpackerClient* client);
+                    bool run_out_of_process,
+                    Extension::Location location,
+                    int creation_flags,
+                    const FilePath& extensions_dir,
+                    SandboxedUnpackerClient* client);
 
   // Start unpacking the extension. The client is called with the results.
   void Start();
@@ -197,6 +198,9 @@ class SandboxedUnpacker : public content::UtilityProcessHostClient {
 
   // Our client.
   scoped_refptr<SandboxedUnpackerClient> client_;
+
+  // The Extensions directory inside the profile.
+  FilePath extensions_dir_;
 
   // A temporary directory to use for unpacking.
   ScopedTempDir temp_dir_;

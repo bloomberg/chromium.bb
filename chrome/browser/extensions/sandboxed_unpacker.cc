@@ -147,11 +147,12 @@ bool VerifyJunctionFreeLocation(FilePath* temp_dir) {
 // proceed and should fail.
 // The result will be written to |temp_dir|. The function will write to this
 // parameter even if it returns false.
-bool FindWritableTempLocation(FilePath* temp_dir) {
+bool FindWritableTempLocation(const FilePath& extensions_dir,
+                              FilePath* temp_dir) {
   PathService::Get(base::DIR_TEMP, temp_dir);
   if (VerifyJunctionFreeLocation(temp_dir))
     return true;
-  *temp_dir = extension_file_util::GetUserDataTempDir();
+  *temp_dir = extension_file_util::GetInstallTempDir(extensions_dir);
   if (VerifyJunctionFreeLocation(temp_dir))
     return true;
   // Neither paths is link free chances are good installation will fail.
@@ -169,11 +170,13 @@ SandboxedUnpacker::SandboxedUnpacker(
     bool run_out_of_process,
     Extension::Location location,
     int creation_flags,
+    const FilePath& extensions_dir,
     SandboxedUnpackerClient* client)
     : crx_path_(crx_path),
       thread_identifier_(BrowserThread::ID_COUNT),
       run_out_of_process_(run_out_of_process),
       client_(client),
+      extensions_dir_(extensions_dir),
       got_response_(false),
       location_(location),
       creation_flags_(creation_flags) {
@@ -183,7 +186,7 @@ bool SandboxedUnpacker::CreateTempDirectory() {
   CHECK(BrowserThread::GetCurrentThreadIdentifier(&thread_identifier_));
 
   FilePath temp_dir;
-  if (!FindWritableTempLocation(&temp_dir)) {
+  if (!FindWritableTempLocation(extensions_dir_, &temp_dir)) {
     ReportFailure(
         COULD_NOT_GET_TEMP_DIRECTORY,
         l10n_util::GetStringFUTF16(

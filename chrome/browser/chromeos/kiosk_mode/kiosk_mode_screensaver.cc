@@ -144,12 +144,18 @@ void KioskModeScreensaver::ScreensaverPathCallback(
   if (screensaver_crx.empty())
     return;
 
+  Profile* default_profile = ProfileManager::GetDefaultProfile();
+  if (!default_profile)
+    return;
+  FilePath extensions_dir =
+      default_profile->GetExtensionService()->install_directory();
   scoped_refptr<SandboxedUnpacker> screensaver_unpacker(
       new SandboxedUnpacker(
           screensaver_crx,
           true,
           Extension::COMPONENT,
           Extension::NO_FLAGS,
+          extensions_dir,
           new ScreensaverUnpackerClient(base::Bind(
               &KioskModeScreensaver::SetupScreensaver,
               weak_ptr_factory_.GetWeakPtr()))));

@@ -24,7 +24,8 @@ class Extension;
 // NOTE: The caller takes ownership of the directory at extension->path() on the
 // returned object.
 scoped_refptr<extensions::Extension> ConvertUserScriptToExtension(
-    const FilePath& user_script, const GURL& original_url, string16* error);
+    const FilePath& user_script, const GURL& original_url,
+    const FilePath& extensions_dir, string16* error);
 
 }  // namespace extensions
 

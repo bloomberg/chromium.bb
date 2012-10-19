@@ -31,7 +31,7 @@ namespace extensions {
 
 scoped_refptr<Extension> ConvertUserScriptToExtension(
     const FilePath& user_script_path, const GURL& original_url,
-    string16* error) {
+    const FilePath& extensions_dir, string16* error) {
   std::string content;
   if (!file_util::ReadFileToString(user_script_path, &content)) {
     *error = ASCIIToUTF16("Could not read source file.");
@@ -50,14 +50,15 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
     return NULL;
   }
 
-  FilePath user_data_temp_dir = extension_file_util::GetUserDataTempDir();
-  if (user_data_temp_dir.empty()) {
+  FilePath install_temp_dir =
+      extension_file_util::GetInstallTempDir(extensions_dir);
+  if (install_temp_dir.empty()) {
     *error = ASCIIToUTF16("Could not get path to profile temporary directory.");
     return NULL;
   }
 
   ScopedTempDir temp_dir;
-  if (!temp_dir.CreateUniqueTempDirUnderPath(user_data_temp_dir)) {
+  if (!temp_dir.CreateUniqueTempDirUnderPath(install_temp_dir)) {
     *error = ASCIIToUTF16("Could not create temporary directory.");
     return NULL;
   }

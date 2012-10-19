@@ -35,13 +35,6 @@ enum {
                                 // "My Documents/Downloads", (Windows) or
                                 // "Downloads". (Linux)
   DIR_DEFAULT_DOWNLOADS,        // Directory for a user's downloads.
-  DIR_USER_DATA_TEMP,           // A temp directory within DIR_USER_DATA.  Use
-                                // this when a temporary file or directory will
-                                // be moved into the profile, to avoid issues
-                                // moving across volumes.  See crbug.com/13044 .
-                                // Getting this path does not create it.  Users
-                                // should check that the path exists before
-                                // using it.
   DIR_INTERNAL_PLUGINS,         // Directory where internal plugins reside.
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   DIR_POLICY_FILES,             // Directory for system-wide read-only

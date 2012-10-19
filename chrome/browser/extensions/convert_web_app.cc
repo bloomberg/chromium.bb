@@ -85,15 +85,17 @@ std::string ConvertTimeToExtensionVersion(const Time& create_time) {
 
 scoped_refptr<Extension> ConvertWebAppToExtension(
     const WebApplicationInfo& web_app,
-    const Time& create_time) {
-  FilePath user_data_temp_dir = extension_file_util::GetUserDataTempDir();
-  if (user_data_temp_dir.empty()) {
+    const Time& create_time,
+    const FilePath& extensions_dir) {
+  FilePath install_temp_dir =
+      extension_file_util::GetInstallTempDir(extensions_dir);
+  if (install_temp_dir.empty()) {
     LOG(ERROR) << "Could not get path to profile temporary directory.";
     return NULL;
   }
 
   ScopedTempDir temp_dir;
-  if (!temp_dir.CreateUniqueTempDirUnderPath(user_data_temp_dir)) {
+  if (!temp_dir.CreateUniqueTempDirUnderPath(install_temp_dir)) {
     LOG(ERROR) << "Could not create temporary directory.";
     return NULL;
   }

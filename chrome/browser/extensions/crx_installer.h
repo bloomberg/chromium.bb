@@ -187,7 +187,8 @@ class CrxInstaller
   void ConvertUserScriptOnFileThread();
 
   // Converts the source web app to an extension.
-  void ConvertWebAppOnFileThread(const WebApplicationInfo& web_app);
+  void ConvertWebAppOnFileThread(const WebApplicationInfo& web_app,
+                                 const FilePath& install_directory);
 
   // Called after OnUnpackSuccess as a last check to see whether the install
   // should complete.

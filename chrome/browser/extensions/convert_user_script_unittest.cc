@@ -28,6 +28,9 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 namespace extensions {
 
 TEST(ExtensionFromUserScript, Basic) {
+  ScopedTempDir extensions_dir;
+  ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
+
   FilePath test_file;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_file));
   test_file = test_file.AppendASCII("extensions")
@@ -35,7 +38,8 @@ TEST(ExtensionFromUserScript, Basic) {
 
   string16 error;
   scoped_refptr<Extension> extension(ConvertUserScriptToExtension(
-      test_file, GURL("http://www.google.com/foo"), &error));
+      test_file, GURL("http://www.google.com/foo"),
+      extensions_dir.path(), &error));
 
   ASSERT_TRUE(extension.get());
   EXPECT_EQ(string16(), error);
@@ -74,6 +78,9 @@ TEST(ExtensionFromUserScript, Basic) {
 }
 
 TEST(ExtensionFromUserScript, NoMetdata) {
+  ScopedTempDir extensions_dir;
+  ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
+
   FilePath test_file;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_file));
   test_file = test_file.AppendASCII("extensions")
@@ -81,7 +88,8 @@ TEST(ExtensionFromUserScript, NoMetdata) {
 
   string16 error;
   scoped_refptr<Extension> extension(ConvertUserScriptToExtension(
-      test_file, GURL("http://www.google.com/foo/bar.user.js?monkey"), &error));
+      test_file, GURL("http://www.google.com/foo/bar.user.js?monkey"),
+      extensions_dir.path(), &error));
 
   ASSERT_TRUE(extension.get());
   EXPECT_EQ(string16(), error);
@@ -116,21 +124,27 @@ TEST(ExtensionFromUserScript, NoMetdata) {
 }
 
 TEST(ExtensionFromUserScript, NotUTF8) {
-  FilePath test_file;
+  ScopedTempDir extensions_dir;
+  ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
 
+  FilePath test_file;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_file));
   test_file = test_file.AppendASCII("extensions")
                        .AppendASCII("user_script_not_utf8.user.js");
 
   string16 error;
   scoped_refptr<Extension> extension(ConvertUserScriptToExtension(
-      test_file, GURL("http://www.google.com/foo/bar.user.js?monkey"), &error));
+      test_file, GURL("http://www.google.com/foo/bar.user.js?monkey"),
+      extensions_dir.path(), &error));
 
   ASSERT_FALSE(extension.get());
   EXPECT_EQ(ASCIIToUTF16("User script must be UTF8 encoded."), error);
 }
 
 TEST(ExtensionFromUserScript, RunAtDocumentStart) {
+  ScopedTempDir extensions_dir;
+  ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
+
   FilePath test_file;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_file));
   test_file = test_file.AppendASCII("extensions")
@@ -138,7 +152,8 @@ TEST(ExtensionFromUserScript, RunAtDocumentStart) {
 
   string16 error;
   scoped_refptr<Extension> extension(ConvertUserScriptToExtension(
-      test_file, GURL("http://www.google.com/foo"), &error));
+      test_file, GURL("http://www.google.com/foo"),
+      extensions_dir.path(), &error));
 
   ASSERT_TRUE(extension.get());
   EXPECT_EQ(string16(), error);
@@ -160,6 +175,9 @@ TEST(ExtensionFromUserScript, RunAtDocumentStart) {
 }
 
 TEST(ExtensionFromUserScript, RunAtDocumentEnd) {
+  ScopedTempDir extensions_dir;
+  ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
+
   FilePath test_file;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_file));
   test_file = test_file.AppendASCII("extensions")
@@ -167,7 +185,8 @@ TEST(ExtensionFromUserScript, RunAtDocumentEnd) {
 
   string16 error;
   scoped_refptr<Extension> extension(ConvertUserScriptToExtension(
-      test_file, GURL("http://www.google.com/foo"), &error));
+      test_file, GURL("http://www.google.com/foo"),
+      extensions_dir.path(), &error));
 
   ASSERT_TRUE(extension.get());
   EXPECT_EQ(string16(), error);
@@ -189,6 +208,9 @@ TEST(ExtensionFromUserScript, RunAtDocumentEnd) {
 }
 
 TEST(ExtensionFromUserScript, RunAtDocumentIdle) {
+  ScopedTempDir extensions_dir;
+  ASSERT_TRUE(extensions_dir.CreateUniqueTempDir());
+
   FilePath test_file;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_file));
   test_file = test_file.AppendASCII("extensions")
@@ -197,7 +219,8 @@ TEST(ExtensionFromUserScript, RunAtDocumentIdle) {
 
   string16 error;
   scoped_refptr<Extension> extension(ConvertUserScriptToExtension(
-      test_file, GURL("http://www.google.com/foo"), &error));
+      test_file, GURL("http://www.google.com/foo"),
+      extensions_dir.path(), &error));
 
   ASSERT_TRUE(extension.get());
   EXPECT_EQ(string16(), error);

@@ -25,10 +25,6 @@ class MessageBundle;
 // Utilities for manipulating the on-disk storage of extensions.
 namespace extension_file_util {
 
-// The name of the directory inside the profile that we store installed
-// extension in.
-extern const char kInstallDirectoryName[];
-
 // Copies |unpacked_source_dir| into the right location under |extensions_dir|.
 // The destination directory is returned on success, or empty path is returned
 // on failure.
@@ -119,11 +115,12 @@ FilePath ExtensionURLToRelativeFilePath(const GURL& url);
 // points a file outside of root, this function will return empty FilePath.
 FilePath ExtensionResourceURLToFilePath(const GURL& url, const FilePath& root);
 
-// Get a path to a temp directory for unpacking an extension.
-// This is essentially PathService::Get(chrome::DIR_USER_DATA_TEMP, ...),
-// with a histogram that allows us to understand why it is failing.
-// Return an empty file path on failure.
-FilePath GetUserDataTempDir();
+// Returns a path to a temporary directory for unpacking an extension that will
+// be installed into |extensions_dir|. Creates the directory if necessary.
+// The directory will be on the same file system as |extensions_dir| so
+// that the extension directory can be efficiently renamed into place. Returns
+// an empty file path on failure.
+FilePath GetInstallTempDir(const FilePath& extensions_dir);
 
 // Helper function to delete files. This is used to avoid ugly casts which
 // would be necessary with PostMessage since file_util::Delete is overloaded.
