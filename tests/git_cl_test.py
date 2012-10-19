@@ -93,11 +93,12 @@ class TestGitCl(TestCase):
     return result
 
   @classmethod
-  def _upload_calls(cls, similarity):
-    return cls._git_base_calls(similarity) + cls._git_upload_calls()
+  def _upload_calls(cls, similarity, find_copies):
+    return (cls._git_base_calls(similarity, find_copies) +
+            cls._git_upload_calls())
 
   @staticmethod
-  def _git_base_calls(similarity):
+  def _git_base_calls(similarity, find_copies):
     if similarity is None:
       similarity = '50'
       similarity_call = ((['git', 'config', '--int', '--get',
@@ -105,11 +106,31 @@ class TestGitCl(TestCase):
     else:
       similarity_call = ((['git', 'config', '--int',
                          'branch.master.git-cl-similarity', similarity],), '')
+
+    if find_copies is None:
+      find_copies = True
+      find_copies_call = ((['git', 'config', '--int', '--get',
+                          'branch.master.git-find-copies'],), '')
+    else:
+      val = str(int(find_copies))
+      find_copies_call = ((['git', 'config', '--int',
+                          'branch.master.git-find-copies', val],), '')
+
+    if find_copies:
+      stat_call = ((['git', 'diff', '--no-ext-diff', '--stat',
+                   '--find-copies-harder', '-l100000', '-C'+similarity,
+                   'master...'],), '+dat')
+    else:
+      stat_call = ((['git', 'diff', '--no-ext-diff', '--stat',
+                   '-M'+similarity, 'master...'],), '+dat')
+
     return [
       ((['git', 'config', 'gerrit.host'],), ''),
       ((['git', 'config', 'rietveld.server'],), 'codereview.example.com'),
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       similarity_call,
+      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+      find_copies_call,
       ((['git', 'update-index', '--refresh', '-q'],), ''),
       ((['git', 'diff-index', 'HEAD'],), ''),
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
@@ -123,9 +144,7 @@ class TestGitCl(TestCase):
       ((['git', 'config', 'branch.master.rietveldpatchset'],), ''),
       ((['git', 'log', '--pretty=format:%s%n%n%b', 'master...'],), 'foo'),
       ((['git', 'config', 'user.email'],), 'me@example.com'),
-      ((['git', 'diff', '--no-ext-diff', '--stat', '--find-copies-harder',
-         '-C'+similarity, '-l100000', 'master...'],),
-       '+dat'),
+      stat_call,
       ((['git', 'log', '--pretty=format:%s\n\n%b', 'master..'],), 'desc\n'),
     ]
 
@@ -156,6 +175,9 @@ class TestGitCl(TestCase):
       ((['git', 'symbolic-ref', 'HEAD'],), 'refs/heads/working'),
       ((['git', 'config', '--int', '--get',
         'branch.working.git-cl-similarity'],), ''),
+      ((['git', 'symbolic-ref', 'HEAD'],), 'refs/heads/working'),
+      ((['git', 'config', '--int', '--get',
+        'branch.working.git-find-copies'],), ''),
       ((['git', 'symbolic-ref', 'HEAD'],), 'refs/heads/working'),
       ((['git', 'config', 'branch.working.merge'],), 'refs/heads/master'),
       ((['git', 'config', 'branch.working.remote'],), 'origin'),
@@ -205,7 +227,7 @@ class TestGitCl(TestCase):
   def _dcommit_calls_3(cls):
     return [
       ((['git', 'diff', '--no-ext-diff', '--stat', '--find-copies-harder',
-         '-C50', '-l100000', 'refs/remotes/origin/master',
+         '-l100000', '-C50', 'refs/remotes/origin/master',
          'refs/heads/working'],),
        (' PRESUBMIT.py |    2 +-\n'
         ' 1 files changed, 1 insertions(+), 1 deletions(-)\n')),
@@ -229,7 +251,7 @@ class TestGitCl(TestCase):
   ]
 
   @staticmethod
-  def _cmd_line(description, args, similarity):
+  def _cmd_line(description, args, similarity, find_copies):
     """Returns the upload command line passed to upload.RealMain()."""
     return [
         'upload', '--assume_yes', '--server',
@@ -237,7 +259,8 @@ class TestGitCl(TestCase):
         '--message', description
     ] + args + [
         '--cc', 'joe@example.com',
-        '--git_similarity', similarity or '50',
+        '--git_similarity', similarity or '50'
+    ] + (['--git_no_find_copies'] if find_copies == False else []) + [
         'master...'
     ]
 
@@ -253,7 +276,15 @@ class TestGitCl(TestCase):
       similarity = upload_args[upload_args.index('--similarity')+1]
     except ValueError:
       similarity = None
-    self.calls = self._upload_calls(similarity)
+
+    if '--find-copies' in upload_args:
+      find_copies = True
+    elif '--no-find-copies' in upload_args:
+      find_copies = False
+    else:
+      find_copies = None
+
+    self.calls = self._upload_calls(similarity, find_copies)
     def RunEditor(desc, _):
       self.assertEquals(
           '# Enter a description of the change.\n'
@@ -264,7 +295,8 @@ class TestGitCl(TestCase):
       return returned_description
     self.mock(git_cl.gclient_utils, 'RunEditor', RunEditor)
     def check_upload(args):
-      cmd_line = self._cmd_line(final_description, reviewers, similarity)
+      cmd_line = self._cmd_line(final_description, reviewers, similarity,
+                                find_copies)
       self.assertEquals(cmd_line, args)
       return 1, 2
     self.mock(git_cl.upload, 'RealMain', check_upload)
@@ -281,6 +313,14 @@ class TestGitCl(TestCase):
   def test_keep_similarity(self):
     self._run_reviewer_test(
         ['--similarity', '70'],
+        'desc\n\nBUG=\n',
+        '# Blah blah comment.\ndesc\n\nBUG=\n',
+        'desc\n\nBUG=\n',
+        [])
+
+  def test_keep_find_copies(self):
+    self._run_reviewer_test(
+        ['--no-find-copies'],
         'desc\n\nBUG=\n',
         '# Blah blah comment.\ndesc\n\nBUG=\n',
         'desc\n\nBUG=\n',
@@ -337,7 +377,7 @@ class TestGitCl(TestCase):
 
     mock = FileMock()
     try:
-      self.calls = self._git_base_calls(None)
+      self.calls = self._git_base_calls(None, None)
       def RunEditor(desc, _):
         return desc
       self.mock(git_cl.gclient_utils, 'RunEditor', RunEditor)
@@ -371,6 +411,9 @@ class TestGitCl(TestCase):
         ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
         ((['git', 'config', '--int', '--get',
           'branch.master.git-cl-similarity'],), ''),
+        ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+        ((['git', 'config', '--int', '--get',
+          'branch.master.git-find-copies'],), ''),
         ((['git', 'update-index', '--refresh', '-q'],), ''),
         ((['git', 'diff-index', 'HEAD'],), ''),
         ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
@@ -385,7 +428,7 @@ class TestGitCl(TestCase):
         ((['git', 'log', '--pretty=format:%s%n%n%b', 'master...'],), 'foo'),
         ((['git', 'config', 'user.email'],), 'me@example.com'),
         ((['git', 'diff', '--no-ext-diff', '--stat', '--find-copies-harder',
-           '-C50', '-l100000', 'master...'],),
+           '-l100000', '-C50', 'master...'],),
          '+dat'),
         ]
 

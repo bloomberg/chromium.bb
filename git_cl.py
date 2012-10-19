@@ -92,33 +92,55 @@ def ask_for_data(prompt):
     sys.exit(1)
 
 
+def git_set_branch_value(key, value):
+  branch = Changelist().GetBranch()
+  if branch:
+    git_key = 'branch.%s.%s' % (branch, key)
+    RunGit(['config', '--int', git_key, "%d" % value])
+
+
+def git_get_branch_default(key, default):
+  branch = Changelist().GetBranch()
+  if branch:
+    git_key = 'branch.%s.%s' % (branch, key)
+    (_, stdout) = RunGitWithCode(['config', '--int', '--get', git_key])
+    try:
+      return int(stdout.strip())
+    except ValueError:
+      pass
+  return default
+
+
 def add_git_similarity(parser):
   parser.add_option(
-      '--similarity', metavar='SIM', type='int', action='store', default=None,
+      '--similarity', metavar='SIM', type='int', action='store',
       help='Sets the percentage that a pair of files need to match in order to'
            ' be considered copies (default 50)')
+  parser.add_option(
+      '--find-copies', action='store_true',
+      help='Allows git to look for copies.')
+  parser.add_option(
+      '--no-find-copies', action='store_false', dest='find_copies',
+      help='Disallows git from looking for copies.')
 
   old_parser_args = parser.parse_args
   def Parse(args):
     options, args = old_parser_args(args)
 
-    branch = Changelist().GetBranch()
-    key = 'branch.%s.git-cl-similarity' % branch
     if options.similarity is None:
-      if branch:
-        (_, stdout) = RunGitWithCode(['config', '--int', '--get', key])
-        try:
-          options.similarity = int(stdout.strip())
-        except ValueError:
-          pass
-      options.similarity = options.similarity or 50
+      options.similarity = git_get_branch_default('git-cl-similarity', 50)
     else:
-      if branch:
-        print('Note: Saving similarity of %d%% in git config.'
-              % options.similarity)
-        RunGit(['config', '--int', key, str(options.similarity)])
+      print('Note: Saving similarity of %d%% in git config.'
+            % options.similarity)
+      git_set_branch_value('git-cl-similarity', options.similarity)
 
-    options.similarity = max(1, min(options.similarity, 100))
+    options.similarity = max(0, min(options.similarity, 100))
+
+    if options.find_copies is None:
+      options.find_copies = bool(
+          git_get_branch_default('git-find-copies', True))
+    else:
+      git_set_branch_value('git-find-copies', int(options.find_copies))
 
     print('Using %d%% similarity for rename/copy detection. '
           'Override with --similarity.' % options.similarity)
@@ -169,7 +191,7 @@ def MatchSvnGlob(url, base_url, glob_spec, allow_wildcards):
   return None
 
 
-def print_stats(similarity, args):
+def print_stats(similarity, find_copies, args):
   """Prints statistics about the change to the user."""
   # --no-ext-diff is broken in some versions of Git, so try to work around
   # this by overriding the environment (but there is still a problem if the
@@ -177,9 +199,16 @@ def print_stats(similarity, args):
   env = os.environ.copy()
   if 'GIT_EXTERNAL_DIFF' in env:
     del env['GIT_EXTERNAL_DIFF']
+
+  if find_copies:
+    similarity_options = ['--find-copies-harder', '-l100000',
+                          '-C%s' % similarity]
+  else:
+    similarity_options = ['-M%s' % similarity]
+
   return subprocess2.call(
-      ['git', 'diff', '--no-ext-diff', '--stat', '--find-copies-harder',
-       '-C%s' % similarity, '-l100000'] + args, env=env)
+      ['git', 'diff', '--no-ext-diff', '--stat'] + similarity_options + args,
+      env=env)
 
 
 class Settings(object):
@@ -1073,6 +1102,8 @@ def RietveldUpload(options, args, cl):
       upload_args.extend(['--cc', cc])
 
   upload_args.extend(['--git_similarity', str(options.similarity)])
+  if not options.find_copies:
+    upload_args.extend(['--git_no_find_copies'])
 
   # Include the upstream repo's URL in the change -- this is useful for
   # projects that have their source spread across multiple repos.
@@ -1176,7 +1207,7 @@ def CMDupload(parser, args):
     if not options.reviewers and hook_results.reviewers:
       options.reviewers = hook_results.reviewers
 
-  print_stats(options.similarity, args)
+  print_stats(options.similarity, options.find_copies, args)
   if settings.GetIsGerrit():
     return GerritUpload(options, args, cl)
   return RietveldUpload(options, args, cl)
@@ -1310,7 +1341,7 @@ def SendUpstream(parser, args, cmd):
 
   branches = [base_branch, cl.GetBranchRef()]
   if not options.force:
-    print_stats(options.similarity, branches)
+    print_stats(options.similarity, options.find_copies, branches)
     ask_for_data('About to commit; enter to confirm.')
 
   # We want to squash all this branch's commits into one commit with the proper
