@@ -9,6 +9,8 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/api/infobars/infobar_delegate.h"
+#include "chrome/browser/content_settings/content_settings_provider.h"
+#include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
@@ -364,7 +366,8 @@ TEST_F(WebsiteSettingsTest, ShowInfoBar) {
 
   // SetPermissionInfo() is called once initially, and then again every time
   // OnSitePermissionChanged() is called.
-// TODO(markusheintz): This is a temporary hack to fix issue: http://crbug.com/144203.
+  // TODO(markusheintz): This is a temporary hack to fix issue:
+  // http://crbug.com/144203.
 #if defined(OS_MACOSX)
   EXPECT_CALL(*mock_ui(), SetPermissionInfo(_)).Times(2);
 #else
@@ -389,4 +392,57 @@ TEST_F(WebsiteSettingsTest, ShowInfoBar) {
   // InfoBarClosed(); once InfoBars own their delegates, this can become a
   // simple reset() call
   delegate.release()->InfoBarClosed();
+}
+
+TEST_F(WebsiteSettingsTest, MediaSettingException) {
+  // Create a value for a CONTENT_SETTINGS_TYPE_MEDIASTREAM exception.
+  DictionaryValue* dictionary_value = new DictionaryValue();
+  dictionary_value->SetString("audio", "Dummy audio device");
+  dictionary_value->SetString("video", "Dummy video device");
+
+  // Set the CONTENT_SETTINGS_TYPE_MEDIASTREAM exception.
+  ContentSettingsPattern primary_pattern =
+      ContentSettingsPattern::FromURLNoWildcard(url());
+  profile()->GetHostContentSettingsMap()->SetWebsiteSetting(
+      primary_pattern,
+      ContentSettingsPattern::Wildcard(),
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM,
+      NO_RESOURCE_IDENTIFIER,
+      dictionary_value);
+
+  // Set the expectations for the mock ui.
+  EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
+  EXPECT_CALL(*mock_ui(), SetCookieInfo(_));
+  EXPECT_CALL(*mock_ui(), SetFirstVisit(string16()));
+  // SetPermissionInfo() is called once initially, and then again every time
+  // OnSitePermissionChanged() is called.
+  // TODO(markusheintz): This is a temporary hack to fix issue:
+  // http://crbug.com/144203.
+#if defined(OS_MACOSX)
+  EXPECT_CALL(*mock_ui(), SetPermissionInfo(_)).Times(2);
+#else
+  EXPECT_CALL(*mock_ui(), SetPermissionInfo(_)).Times(1);
+#endif
+  EXPECT_CALL(*mock_ui(), SetSelectedTab(
+      WebsiteSettingsUI::TAB_ID_PERMISSIONS));
+
+  // Assert that the website settings object does not crash (see
+  // http://crbug.com/156371).
+  ASSERT_TRUE(website_settings());
+
+  // Reset the CONTENT_SETTINGS_TYPE_MEDIASTREAM exception and test if the
+  // content settings are changed correctly.
+  website_settings()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_MEDIASTREAM,
+                                              CONTENT_SETTING_DEFAULT);
+  scoped_ptr<base::Value> value(
+      profile()->GetHostContentSettingsMap()->GetWebsiteSetting(
+          url(),
+          url(),
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM,
+          NO_RESOURCE_IDENTIFIER,
+          NULL));
+  // The value type for the default media stream settings is integer.
+  ASSERT_EQ(base::Value::TYPE_INTEGER, value->GetType());
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            content_settings::ValueToContentSetting(value.get()));
 }

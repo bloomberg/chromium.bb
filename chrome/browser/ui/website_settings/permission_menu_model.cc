@@ -33,11 +33,13 @@ PermissionMenuModel::PermissionMenuModel(
   }
   AddCheckItem(COMMAND_SET_TO_DEFAULT, label);
 
-  label = l10n_util::GetStringUTF16(
-      IDS_WEBSITE_SETTINGS_MENU_ITEM_ALLOW);
-  AddCheckItem(COMMAND_SET_TO_ALLOW, label);
-
-  if (type != CONTENT_SETTINGS_TYPE_FULLSCREEN) {
+  if (type != CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
+    label = l10n_util::GetStringUTF16(
+        IDS_WEBSITE_SETTINGS_MENU_ITEM_ALLOW);
+    AddCheckItem(COMMAND_SET_TO_ALLOW, label);
+  }
+  if (type != CONTENT_SETTINGS_TYPE_FULLSCREEN &&
+      type != CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
     label = l10n_util::GetStringUTF16(
         IDS_WEBSITE_SETTINGS_MENU_ITEM_BLOCK);
     AddCheckItem(COMMAND_SET_TO_BLOCK, label);

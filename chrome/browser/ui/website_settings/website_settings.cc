@@ -454,8 +454,23 @@ void WebsiteSettings::PresentSitePermissions() {
     scoped_ptr<Value> value(content_settings_->GetWebsiteSetting(
         site_url_, site_url_, permission_info.type, "", &info));
     DCHECK(value.get());
-    permission_info.setting =
-        content_settings::ValueToContentSetting(value.get());
+    // The values for default settings of the CONTENT_SETTINGS_TYPE_MEDIASTREAM
+    // are of type integer, while the values for exceptions are of type
+    // dictionary. Content settings exceptions of type
+    // CONTENT_SETTINGS_TYPE_MEDIASTREAM can only be set in order to allow the
+    // use of a specific camera and/or microphone for a certain website. This
+    // means if the value is of type dictionary then the url has the permission
+    // to use a specific camera and/or microphone.
+    if (value->GetType() == Value::TYPE_INTEGER) {
+      permission_info.setting =
+          content_settings::ValueToContentSetting(value.get());
+    } else if (value->GetType() == Value::TYPE_DICTIONARY &&
+               permission_info.type == CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
+      permission_info.setting = CONTENT_SETTING_ALLOW;
+    } else {
+      NOTREACHED();
+    }
+
     permission_info.source = info.source;
 
     if (info.primary_pattern == ContentSettingsPattern::Wildcard() &&
