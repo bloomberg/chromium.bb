@@ -199,21 +199,12 @@ void SBProcessSubs(SBAddPrefixes* add_prefixes,
   RemoveMatchingPrefixes(removed_adds, add_full_hashes);
   RemoveMatchingPrefixes(removed_adds, sub_full_hashes);
 
-  // http://crbug.com/52385
-  // TODO(shess): AFAICT this pass is not done on the trunk.  I
-  // believe that's a bug, but it may not matter because full-hash
-  // subs almost never happen (I think you'd need multiple collisions
-  // where one of the sites stopped being flagged?).  Enable this once
-  // everything is in.  [if(0) instead of #ifdef 0 to make sure it
-  // compiles.]
-  if (0) {
-    // Factor out the full-hash subs.
-    std::vector<SBAddFullHash> removed_full_adds;
-    KnockoutSubs(sub_full_hashes, add_full_hashes,
-                 SBAddPrefixHashLess<SBAddFullHash,SBSubFullHash>,
-                 SBAddPrefixHashLess<SBSubFullHash,SBAddFullHash>,
-                 &removed_full_adds);
-  }
+  // Factor out the full-hash subs.
+  std::vector<SBAddFullHash> removed_full_adds;
+  KnockoutSubs(sub_full_hashes, add_full_hashes,
+               SBAddPrefixHashLess<SBAddFullHash,SBSubFullHash>,
+               SBAddPrefixHashLess<SBSubFullHash,SBAddFullHash>,
+               &removed_full_adds);
 
   // Remove items from the deleted chunks.  This is done after other
   // processing to allow subs to knock out adds (and be removed) even

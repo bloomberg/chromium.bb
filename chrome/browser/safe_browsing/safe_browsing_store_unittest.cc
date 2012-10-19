@@ -132,6 +132,7 @@ TEST(SafeBrowsingStoreTest, SBProcessSubsKnockout) {
   const SBFullHash kHash1(SBFullHashFromString("one"));
   const SBFullHash kHash2(SBFullHashFromString("two"));
   const SBFullHash kHash3(SBFullHashFromString("three"));
+  const SBFullHash kHash4(SBFullHashFromString("four"));
   const int kAddChunk1 = 1;  // Use different chunk numbers just in case.
   const int kSubChunk1 = 2;
 
@@ -142,6 +143,10 @@ TEST(SafeBrowsingStoreTest, SBProcessSubsKnockout) {
   kHash1mod2.full_hash[sizeof(kHash1mod2.full_hash) - 1] ++;
   SBFullHash kHash1mod3 = kHash1mod2;
   kHash1mod3.full_hash[sizeof(kHash1mod3.full_hash) - 1] ++;
+
+  // A second full-hash for the full-hash-sub test.
+  SBFullHash kHash4mod = kHash4;
+  kHash4mod.full_hash[sizeof(kHash4mod.full_hash) - 1] ++;
 
   SBAddPrefixes add_prefixes;
   std::vector<SBAddFullHash> add_hashes;
@@ -165,23 +170,38 @@ TEST(SafeBrowsingStoreTest, SBProcessSubsKnockout) {
   sub_hashes.push_back(SBSubFullHash(kSubChunk1, kAddChunk1, kHash3));
   sub_prefixes.push_back(SBSubPrefix(kSubChunk1, kAddChunk1, kHash3.prefix));
 
+  // An add with prefix and a couple hashes, plus a sub for one of the
+  // hashes.
+  add_prefixes.push_back(SBAddPrefix(kAddChunk1, kHash4.prefix));
+  add_hashes.push_back(SBAddFullHash(kAddChunk1, kNow, kHash4));
+  add_hashes.push_back(SBAddFullHash(kAddChunk1, kNow, kHash4mod));
+  sub_hashes.push_back(SBSubFullHash(kSubChunk1, kAddChunk1, kHash4mod));
+
   const base::hash_set<int32> no_deletions;
   SBProcessSubs(&add_prefixes, &sub_prefixes, &add_hashes, &sub_hashes,
                 no_deletions, no_deletions);
 
-  EXPECT_EQ(1U, add_prefixes.size());
+  ASSERT_LE(2U, add_prefixes.size());
+  EXPECT_EQ(2U, add_prefixes.size());
   EXPECT_EQ(kAddChunk1, add_prefixes[0].chunk_id);
   EXPECT_EQ(kHash2.prefix, add_prefixes[0].prefix);
+  EXPECT_EQ(kAddChunk1, add_prefixes[1].chunk_id);
+  EXPECT_EQ(kHash4.prefix, add_prefixes[1].prefix);
 
-  EXPECT_EQ(1U, add_hashes.size());
+  ASSERT_LE(2U, add_hashes.size());
+  EXPECT_EQ(2U, add_hashes.size());
   EXPECT_EQ(kAddChunk1, add_hashes[0].chunk_id);
   EXPECT_TRUE(SBFullHashEq(kHash2, add_hashes[0].full_hash));
+  EXPECT_EQ(kAddChunk1, add_hashes[1].chunk_id);
+  EXPECT_TRUE(SBFullHashEq(kHash4, add_hashes[1].full_hash));
 
+  ASSERT_LE(1U, sub_prefixes.size());
   EXPECT_EQ(1U, sub_prefixes.size());
   EXPECT_EQ(kSubChunk1, sub_prefixes[0].chunk_id);
   EXPECT_EQ(kAddChunk1, sub_prefixes[0].add_chunk_id);
   EXPECT_EQ(kHash3.prefix, sub_prefixes[0].add_prefix);
 
+  ASSERT_LE(1U, sub_hashes.size());
   EXPECT_EQ(1U, sub_hashes.size());
   EXPECT_EQ(kSubChunk1, sub_hashes[0].chunk_id);
   EXPECT_EQ(kAddChunk1, sub_hashes[0].add_chunk_id);

@@ -135,10 +135,6 @@ bool SBAddPrefixHashLess(const T& a, const U& b) {
 // in parallel.  At this time this code does the sorting internally,
 // but it might make sense to make sorting an API requirement so that
 // the storage can optimize for it.
-//
-// TODO(shess): The original code did not process |sub_full_hashes|
-// for matches in |add_full_hashes|, so this code doesn't, either.  I
-// think this is probably a bug.
 void SBProcessSubs(SBAddPrefixes* add_prefixes,
                    std::vector<SBSubPrefix>* sub_prefixes,
                    std::vector<SBAddFullHash>* add_full_hashes,
