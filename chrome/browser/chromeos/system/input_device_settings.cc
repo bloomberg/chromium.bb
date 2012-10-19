@@ -16,8 +16,9 @@
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/stringprintf.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"
+
+using content::BrowserThread;
 
 namespace chromeos {
 namespace system {
@@ -32,7 +33,7 @@ bool ScriptExists(const std::string& script) {
 
 // Executes the input control script asynchronously, if it exists.
 void ExecuteScriptOnFileThread(const std::vector<std::string>& argv) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!argv.empty());
   const std::string& script(argv[0]);
 
@@ -48,7 +49,7 @@ void ExecuteScriptOnFileThread(const std::vector<std::string>& argv) {
 }
 
 void ExecuteScript(int argc, ...) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::vector<std::string> argv;
   va_list vl;
   va_start(vl, argc);
@@ -57,7 +58,8 @@ void ExecuteScript(int argc, ...) {
   }
   va_end(vl);
 
-  content::BrowserThread::GetBlockingPool()->PostTask(FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       base::Bind(&ExecuteScriptOnFileThread, argv));
 }
 
@@ -67,7 +69,7 @@ void SetPointerSensitivity(const char* script, int value) {
 }
 
 bool DeviceExists(const char* script) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (!ScriptExists(script))
     return false;
 
@@ -85,7 +87,7 @@ namespace touchpad_settings {
 
 bool TouchpadExists() {
   // We only need to do this check once, assuming no pluggable touchpad devices.
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   static bool init = false;
   static bool exists = false;
 
