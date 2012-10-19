@@ -18,11 +18,15 @@ namespace ash {
 namespace internal {
 
 enum MagnetismEdge {
-  MAGNETISM_EDGE_TOP,
-  MAGNETISM_EDGE_LEFT,
-  MAGNETISM_EDGE_BOTTOM,
-  MAGNETISM_EDGE_RIGHT,
+  MAGNETISM_EDGE_TOP    = 1 << 0,
+  MAGNETISM_EDGE_LEFT   = 1 << 1,
+  MAGNETISM_EDGE_BOTTOM = 1 << 2,
+  MAGNETISM_EDGE_RIGHT  = 1 << 3,
 };
+
+const uint32 kAllMagnetismEdges =
+    MAGNETISM_EDGE_TOP | MAGNETISM_EDGE_LEFT | MAGNETISM_EDGE_BOTTOM |
+    MAGNETISM_EDGE_RIGHT;
 
 // MagnetismEdgeMatcher is used for matching a particular edge of a window. You
 // shouldn't need to use this directly, instead use MagnetismMatcher which takes
@@ -155,7 +159,8 @@ class ASH_EXPORT MagnetismMatcher {
  public:
   static const int kMagneticDistance;
 
-  explicit MagnetismMatcher(const gfx::Rect& bounds);
+  // |edges| is a bitmask of MagnetismEdges to match against.
+  MagnetismMatcher(const gfx::Rect& bounds, uint32 edges);
   ~MagnetismMatcher();
 
   // Returns true if |bounds| is close enough to the initial bounds that the two
@@ -171,6 +176,9 @@ class ASH_EXPORT MagnetismMatcher {
   void AttachToSecondaryEdge(const gfx::Rect& bounds,
                              MagnetismEdge edge,
                              SecondaryMagnetismEdge* secondary_edge) const;
+
+  // The edges to match against.
+  const int32 edges_;
 
   ScopedVector<MagnetismEdgeMatcher> matchers_;
 

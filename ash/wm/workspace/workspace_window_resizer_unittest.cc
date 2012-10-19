@@ -1092,6 +1092,156 @@ TEST_F(WorkspaceWindowResizerTest, MagneticallyAttach) {
   EXPECT_EQ("150,180 20x30", window_->bounds().ToString());
 }
 
+// The following variants verify magnetic snapping during resize when dragging a
+// particular edge.
+TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_TOP) {
+  window_->SetBounds(gfx::Rect(100, 200, 20, 30));
+  window2_->SetBounds(gfx::Rect(99, 179, 10, 20));
+  window2_->Show();
+
+  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+    window_.get(), gfx::Point(), HTTOP, empty_windows()));
+  ASSERT_TRUE(resizer.get());
+  resizer->Drag(CalculateDragPoint(*resizer, 0, 0), 0);
+  EXPECT_EQ("100,199 20x31", window_->bounds().ToString());
+}
+
+TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_TOPLEFT) {
+  window_->SetBounds(gfx::Rect(100, 200, 20, 30));
+  window2_->SetBounds(gfx::Rect(99, 179, 10, 20));
+  window2_->Show();
+
+  {
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTTOPLEFT, empty_windows()));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 0), 0);
+    EXPECT_EQ("99,199 21x31", window_->bounds().ToString());
+    resizer->RevertDrag();
+  }
+
+  {
+    window2_->SetBounds(gfx::Rect(88, 201, 10, 20));
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTTOPLEFT, empty_windows()));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 0), 0);
+    EXPECT_EQ("98,201 22x29", window_->bounds().ToString());
+    resizer->RevertDrag();
+  }
+}
+
+TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_TOPRIGHT) {
+  window_->SetBounds(gfx::Rect(100, 200, 20, 30));
+  window2_->Show();
+
+  {
+    window2_->SetBounds(gfx::Rect(111, 179, 10, 20));
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTTOPRIGHT, empty_windows()));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 0), 0);
+    EXPECT_EQ("100,199 21x31", window_->bounds().ToString());
+    resizer->RevertDrag();
+  }
+
+  {
+    window2_->SetBounds(gfx::Rect(121, 199, 10, 20));
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTTOPRIGHT, empty_windows()));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 0), 0);
+    EXPECT_EQ("100,199 21x31", window_->bounds().ToString());
+    resizer->RevertDrag();
+  }
+}
+
+TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_RIGHT) {
+  window_->SetBounds(gfx::Rect(100, 200, 20, 30));
+  window2_->SetBounds(gfx::Rect(121, 199, 10, 20));
+  window2_->Show();
+
+  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+      window_.get(), gfx::Point(), HTRIGHT, empty_windows()));
+  ASSERT_TRUE(resizer.get());
+  resizer->Drag(CalculateDragPoint(*resizer, 0, 0), 0);
+  EXPECT_EQ("100,200 21x30", window_->bounds().ToString());
+}
+
+TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_BOTTOMRIGHT) {
+  window_->SetBounds(gfx::Rect(100, 200, 20, 30));
+  window2_->Show();
+
+  {
+    window2_->SetBounds(gfx::Rect(122, 212, 10, 20));
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTBOTTOMRIGHT, empty_windows()));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 0), 0);
+    EXPECT_EQ("100,200 22x32", window_->bounds().ToString());
+    resizer->RevertDrag();
+  }
+
+  {
+    window2_->SetBounds(gfx::Rect(111, 233, 10, 20));
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTBOTTOMRIGHT, empty_windows()));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 0), 0);
+    EXPECT_EQ("100,200 21x33", window_->bounds().ToString());
+    resizer->RevertDrag();
+  }
+}
+
+TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_BOTTOM) {
+  window_->SetBounds(gfx::Rect(100, 200, 20, 30));
+  window2_->SetBounds(gfx::Rect(111, 233, 10, 20));
+  window2_->Show();
+
+  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTBOTTOM, empty_windows()));
+  ASSERT_TRUE(resizer.get());
+  resizer->Drag(CalculateDragPoint(*resizer, 0, 0), 0);
+  EXPECT_EQ("100,200 20x33", window_->bounds().ToString());
+}
+
+TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_BOTTOMLEFT) {
+  window_->SetBounds(gfx::Rect(100, 200, 20, 30));
+  window2_->Show();
+
+  {
+    window2_->SetBounds(gfx::Rect(99, 231, 10, 20));
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTBOTTOMLEFT, empty_windows()));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 0), 0);
+    EXPECT_EQ("99,200 21x31", window_->bounds().ToString());
+    resizer->RevertDrag();
+  }
+
+  {
+    window2_->SetBounds(gfx::Rect(89, 209, 10, 20));
+    scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+        window_.get(), gfx::Point(), HTBOTTOMLEFT, empty_windows()));
+    ASSERT_TRUE(resizer.get());
+    resizer->Drag(CalculateDragPoint(*resizer, 0, 0), 0);
+    EXPECT_EQ("99,200 21x29", window_->bounds().ToString());
+    resizer->RevertDrag();
+  }
+}
+
+TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_LEFT) {
+  window2_->SetBounds(gfx::Rect(89, 209, 10, 20));
+  window_->SetBounds(gfx::Rect(100, 200, 20, 30));
+  window2_->Show();
+
+  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+      window_.get(), gfx::Point(), HTLEFT, empty_windows()));
+  ASSERT_TRUE(resizer.get());
+  resizer->Drag(CalculateDragPoint(*resizer, 0, 0), 0);
+  EXPECT_EQ("99,200 21x30", window_->bounds().ToString());
+}
+
 // Verifies cursor's device scale factor is updated whe a window is moved across
 // root windows with different device scale factors (http://crbug.com/154183).
 TEST_F(WorkspaceWindowResizerTest, MAYBE_CursorDeviceScaleFactor) {

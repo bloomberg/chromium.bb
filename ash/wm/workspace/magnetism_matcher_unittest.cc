@@ -13,7 +13,7 @@ namespace internal {
 TEST(MagnetismMatcherTest, TrivialLeft) {
   const int distance = MagnetismMatcher::kMagneticDistance;
   const gfx::Rect initial_bounds(20, 10, 50, 60);
-  MagnetismMatcher matcher(initial_bounds);
+  MagnetismMatcher matcher(initial_bounds, kAllMagnetismEdges);
   EXPECT_FALSE(matcher.AreEdgesObscured());
   MatchedEdge edge;
   EXPECT_FALSE(matcher.ShouldAttach(
@@ -38,7 +38,7 @@ TEST(MagnetismMatcherTest, TrivialLeft) {
 TEST(MagnetismMatcherTest, TrivialBottom) {
   const int distance = MagnetismMatcher::kMagneticDistance;
   const gfx::Rect initial_bounds(20, 10, 50, 60);
-  MagnetismMatcher matcher(initial_bounds);
+  MagnetismMatcher matcher(initial_bounds, kAllMagnetismEdges);
   EXPECT_FALSE(matcher.AreEdgesObscured());
   MatchedEdge edge;
   EXPECT_FALSE(matcher.ShouldAttach(
@@ -47,22 +47,19 @@ TEST(MagnetismMatcherTest, TrivialBottom) {
   EXPECT_FALSE(matcher.AreEdgesObscured());
   EXPECT_TRUE(matcher.ShouldAttach(
                   gfx::Rect(initial_bounds.x() - 2,
-                            initial_bounds.bottom() + 4, 10, 1),
-                  &edge));
+                            initial_bounds.bottom() + 4, 10, 1), &edge));
   EXPECT_EQ(MAGNETISM_EDGE_BOTTOM, edge.primary_edge);
   EXPECT_EQ(SECONDARY_MAGNETISM_EDGE_LEADING, edge.secondary_edge);
 
   EXPECT_TRUE(matcher.ShouldAttach(
                   gfx::Rect(initial_bounds.x() + distance + 1,
-                            initial_bounds.bottom() + 4, 10, 1),
-                  &edge));
+                            initial_bounds.bottom() + 4, 10, 1), &edge));
   EXPECT_EQ(MAGNETISM_EDGE_BOTTOM, edge.primary_edge);
   EXPECT_EQ(SECONDARY_MAGNETISM_EDGE_NONE, edge.secondary_edge);
 
   EXPECT_TRUE(matcher.ShouldAttach(
                   gfx::Rect(initial_bounds.right() - 10 - 1,
-                            initial_bounds.bottom() + 4, 10, 1),
-                  &edge));
+                            initial_bounds.bottom() + 4, 10, 1), &edge));
   EXPECT_EQ(MAGNETISM_EDGE_BOTTOM, edge.primary_edge);
   EXPECT_EQ(SECONDARY_MAGNETISM_EDGE_TRAILING, edge.secondary_edge);
 }
@@ -71,7 +68,7 @@ TEST(MagnetismMatcherTest, TrivialBottom) {
 TEST(MagnetismMatcherTest, ObscureLeading) {
   const int distance = MagnetismMatcher::kMagneticDistance;
   const gfx::Rect initial_bounds(20, 10, 150, 160);
-  MagnetismMatcher matcher(initial_bounds);
+  MagnetismMatcher matcher(initial_bounds, kAllMagnetismEdges);
   MatchedEdge edge;
   // Overlap with the upper right corner.
   EXPECT_FALSE(matcher.ShouldAttach(
@@ -100,7 +97,7 @@ TEST(MagnetismMatcherTest, ObscureLeading) {
 TEST(MagnetismMatcherTest, DontObscureOtherSide) {
   const int distance = MagnetismMatcher::kMagneticDistance;
   const gfx::Rect initial_bounds(20, 10, 150, 160);
-  MagnetismMatcher matcher(initial_bounds);
+  MagnetismMatcher matcher(initial_bounds, kAllMagnetismEdges);
   MatchedEdge edge;
   // Overlap with the left side.
   EXPECT_FALSE(matcher.ShouldAttach(
@@ -123,7 +120,7 @@ TEST(MagnetismMatcherTest, DontObscureOtherSide) {
 TEST(MagnetismMatcherTest, ObscureCenter) {
   const int distance = MagnetismMatcher::kMagneticDistance;
   const gfx::Rect initial_bounds(20, 10, 150, 160);
-  MagnetismMatcher matcher(initial_bounds);
+  MagnetismMatcher matcher(initial_bounds, kAllMagnetismEdges);
   MatchedEdge edge;
   // Overlap with the center bottom edge.
   EXPECT_FALSE(matcher.ShouldAttach(
@@ -148,7 +145,7 @@ TEST(MagnetismMatcherTest, ObscureCenter) {
 TEST(MagnetismMatcherTest, ObscureTrailing) {
   const int distance = MagnetismMatcher::kMagneticDistance;
   const gfx::Rect initial_bounds(20, 10, 150, 160);
-  MagnetismMatcher matcher(initial_bounds);
+  MagnetismMatcher matcher(initial_bounds, kAllMagnetismEdges);
   MatchedEdge edge;
   // Overlap with the trailing left edge.
   EXPECT_FALSE(matcher.ShouldAttach(

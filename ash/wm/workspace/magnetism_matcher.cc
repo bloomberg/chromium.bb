@@ -17,6 +17,37 @@ bool IsCloseEnough(int a, int b) {
   return abs(a - b) <= MagnetismMatcher::kMagneticDistance;
 }
 
+// Returns true if the specified SecondaryMagnetismEdge can be matched with a
+// primary edge of |primary|. |edges| is a bitmask of the allowed
+// MagnetismEdges.
+bool CanMatchSecondaryEdge(MagnetismEdge primary,
+                           SecondaryMagnetismEdge secondary,
+                           uint32 edges) {
+  // Convert |secondary| to a MagnetismEdge so we can compare it to |edges|.
+  MagnetismEdge secondary_as_magnetism_edge = MAGNETISM_EDGE_TOP;
+  switch (primary) {
+    case MAGNETISM_EDGE_TOP:
+    case MAGNETISM_EDGE_BOTTOM:
+      if (secondary == SECONDARY_MAGNETISM_EDGE_LEADING)
+        secondary_as_magnetism_edge = MAGNETISM_EDGE_LEFT;
+      else if (secondary == SECONDARY_MAGNETISM_EDGE_TRAILING)
+        secondary_as_magnetism_edge = MAGNETISM_EDGE_RIGHT;
+      else
+        NOTREACHED();
+      break;
+    case MAGNETISM_EDGE_LEFT:
+    case MAGNETISM_EDGE_RIGHT:
+      if (secondary == SECONDARY_MAGNETISM_EDGE_LEADING)
+        secondary_as_magnetism_edge = MAGNETISM_EDGE_TOP;
+      else if (secondary == SECONDARY_MAGNETISM_EDGE_TRAILING)
+        secondary_as_magnetism_edge = MAGNETISM_EDGE_BOTTOM;
+      else
+        NOTREACHED();
+      break;
+  }
+  return (edges & secondary_as_magnetism_edge) != 0;
+}
+
 }  // namespace
 
 // MagnetismEdgeMatcher --------------------------------------------------------
@@ -91,11 +122,18 @@ void MagnetismEdgeMatcher::UpdateRanges(const Range& range) {
 // static
 const int MagnetismMatcher::kMagneticDistance = 8;
 
-MagnetismMatcher::MagnetismMatcher(const gfx::Rect& bounds) {
-  matchers_.push_back(new MagnetismEdgeMatcher(bounds, MAGNETISM_EDGE_TOP));
-  matchers_.push_back(new MagnetismEdgeMatcher(bounds, MAGNETISM_EDGE_LEFT));
-  matchers_.push_back(new MagnetismEdgeMatcher(bounds, MAGNETISM_EDGE_BOTTOM));
-  matchers_.push_back(new MagnetismEdgeMatcher(bounds, MAGNETISM_EDGE_RIGHT));
+MagnetismMatcher::MagnetismMatcher(const gfx::Rect& bounds, uint32 edges)
+    : edges_(edges) {
+  if (edges & MAGNETISM_EDGE_TOP)
+    matchers_.push_back(new MagnetismEdgeMatcher(bounds, MAGNETISM_EDGE_TOP));
+  if (edges & MAGNETISM_EDGE_LEFT)
+    matchers_.push_back(new MagnetismEdgeMatcher(bounds, MAGNETISM_EDGE_LEFT));
+  if (edges & MAGNETISM_EDGE_BOTTOM) {
+    matchers_.push_back(new MagnetismEdgeMatcher(bounds,
+                                                 MAGNETISM_EDGE_BOTTOM));
+  }
+  if (edges & MAGNETISM_EDGE_RIGHT)
+    matchers_.push_back(new MagnetismEdgeMatcher(bounds, MAGNETISM_EDGE_RIGHT));
 }
 
 MagnetismMatcher::~MagnetismMatcher() {
@@ -128,17 +166,23 @@ void MagnetismMatcher::AttachToSecondaryEdge(
     SecondaryMagnetismEdge* secondary_edge) const {
   const gfx::Rect& src_bounds(matchers_[0]->bounds());
   if (edge == MAGNETISM_EDGE_LEFT || edge == MAGNETISM_EDGE_RIGHT) {
-    if (IsCloseEnough(bounds.y(), src_bounds.y())) {
+    if (CanMatchSecondaryEdge(edge, SECONDARY_MAGNETISM_EDGE_LEADING, edges_) &&
+        IsCloseEnough(bounds.y(), src_bounds.y())) {
       *secondary_edge = SECONDARY_MAGNETISM_EDGE_LEADING;
-    } else if (IsCloseEnough(bounds.bottom(), src_bounds.bottom())) {
+    } else if (CanMatchSecondaryEdge(edge, SECONDARY_MAGNETISM_EDGE_TRAILING,
+                                     edges_) &&
+               IsCloseEnough(bounds.bottom(), src_bounds.bottom())) {
       *secondary_edge = SECONDARY_MAGNETISM_EDGE_TRAILING;
     } else {
       *secondary_edge = SECONDARY_MAGNETISM_EDGE_NONE;
     }
   } else {
-    if (IsCloseEnough(bounds.x(), src_bounds.x())) {
+    if (CanMatchSecondaryEdge(edge, SECONDARY_MAGNETISM_EDGE_LEADING, edges_) &&
+        IsCloseEnough(bounds.x(), src_bounds.x())) {
       *secondary_edge = SECONDARY_MAGNETISM_EDGE_LEADING;
-    } else if (IsCloseEnough(bounds.right(), src_bounds.right())) {
+    } else if (CanMatchSecondaryEdge(edge, SECONDARY_MAGNETISM_EDGE_TRAILING,
+                                     edges_) &&
+               IsCloseEnough(bounds.right(), src_bounds.right())) {
       *secondary_edge = SECONDARY_MAGNETISM_EDGE_TRAILING;
     } else {
       *secondary_edge = SECONDARY_MAGNETISM_EDGE_NONE;

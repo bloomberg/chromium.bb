@@ -105,19 +105,31 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
                               int end,
                               std::vector<int>* sizes) const;
 
-  // Attempts to snap the window to any other nearly windows, update |bounds| if
-  // there was a close enough window.
+  // If possible snaps the window to a neary window. Updates |bounds| if there
+  // was a close enough window.
   void MagneticallySnapToOtherWindows(gfx::Rect* bounds);
 
-  // Adjusts the bounds to enforce that windows are vertically contained in the
-  // work area.
-  void AdjustBoundsForMainWindow(gfx::Rect* bounds, int grid_size);
+  // If possible snaps the resize to a neary window. Updates |bounds| if there
+  // was a close enough window.
+  void MagneticallySnapResizeToOtherWindows(gfx::Rect* bounds);
+
+  // Finds the neareset window to magentically snap to. Updates
+  // |magnetism_window_| and |magnetism_edge_| appropriately. |edges| is a
+  // bitmask of the MagnetismEdges to match again. Returns true if a match is
+  // found.
+  bool UpdateMagnetismWindow(const gfx::Rect& bounds, uint32 edges);
+
+  // Adjusts the bounds of the window: magnetically snapping, ensuring the
+  // window has enough on screen... |snap_size| is the distance from an edge of
+  // the work area before the window is snapped. A value of 0 results in no
+  // snapping.
+  void AdjustBoundsForMainWindow(int snap_size, gfx::Rect* bounds);
 
   // Snaps the window bounds to the work area edges if necessary.
   void SnapToWorkAreaEdges(
       const gfx::Rect& work_area,
-      gfx::Rect* bounds,
-      int grid_size) const;
+      int snap_size,
+      gfx::Rect* bounds) const;
 
   // Returns true if the window touches the bottom edge of the work area.
   bool TouchesBottomOfScreen() const;

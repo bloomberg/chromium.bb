@@ -116,6 +116,81 @@ gfx::Point OriginForMagneticAttach(const gfx::Rect& src,
   return gfx::Point(x, y);
 }
 
+// Returns the bounds for a magnetic attach when resizing. |src| is the bounds
+// of window being resized, |attach_to| the bounds of the window to attach to
+// and |edge| identifies the edge to attach to.
+gfx::Rect BoundsForMagneticResizeAttach(const gfx::Rect& src,
+                                        const gfx::Rect& attach_to,
+                                        const MatchedEdge& edge) {
+  int x = src.x();
+  int y = src.y();
+  int w = src.width();
+  int h = src.height();
+  gfx::Point attach_origin(OriginForMagneticAttach(src, attach_to, edge));
+  switch (edge.primary_edge) {
+    case MAGNETISM_EDGE_LEFT:
+      x = attach_origin.x();
+      w = src.right() - x;
+      break;
+    case MAGNETISM_EDGE_RIGHT:
+      w += attach_origin.x() - src.x();
+      break;
+    case MAGNETISM_EDGE_TOP:
+      y = attach_origin.y();
+      h = src.bottom() - y;
+      break;
+    case MAGNETISM_EDGE_BOTTOM:
+      h += attach_origin.y() - src.y();
+      break;
+  }
+  switch (edge.primary_edge) {
+    case MAGNETISM_EDGE_LEFT:
+    case MAGNETISM_EDGE_RIGHT:
+      if (edge.secondary_edge == SECONDARY_MAGNETISM_EDGE_LEADING) {
+        y = attach_origin.y();
+        h = src.bottom() - y;
+      } else if (edge.secondary_edge == SECONDARY_MAGNETISM_EDGE_TRAILING) {
+        h += attach_origin.y() - src.y();
+      }
+      break;
+    case MAGNETISM_EDGE_TOP:
+    case MAGNETISM_EDGE_BOTTOM:
+      if (edge.secondary_edge == SECONDARY_MAGNETISM_EDGE_LEADING) {
+        x = attach_origin.x();
+        w = src.right() - x;
+      } else if (edge.secondary_edge == SECONDARY_MAGNETISM_EDGE_TRAILING) {
+        w += attach_origin.x() - src.x();
+      }
+      break;
+  }
+  return gfx::Rect(x, y, w, h);
+}
+
+// Converts a window comopnent edge to the magnetic edge to snap to.
+uint32 WindowComponentToMagneticEdge(int window_component) {
+  switch (window_component) {
+    case HTTOPLEFT:
+      return MAGNETISM_EDGE_LEFT | MAGNETISM_EDGE_TOP;
+    case HTTOPRIGHT:
+      return MAGNETISM_EDGE_TOP | MAGNETISM_EDGE_RIGHT;
+    case HTBOTTOMLEFT:
+      return MAGNETISM_EDGE_LEFT | MAGNETISM_EDGE_BOTTOM;
+    case HTBOTTOMRIGHT:
+      return MAGNETISM_EDGE_RIGHT | MAGNETISM_EDGE_BOTTOM;
+    case HTTOP:
+      return MAGNETISM_EDGE_TOP;
+    case HTBOTTOM:
+      return MAGNETISM_EDGE_BOTTOM;
+    case HTRIGHT:
+      return MAGNETISM_EDGE_RIGHT;
+    case HTLEFT:
+      return MAGNETISM_EDGE_LEFT;
+    default:
+      break;
+  }
+  return 0;
+}
+
 }  // namespace
 
 // static
@@ -161,12 +236,13 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
                                   int event_flags) {
   last_mouse_location_ = location_in_parent;
 
-  int grid_size = event_flags & ui::EF_CONTROL_DOWN ? 0 : kScreenEdgeInset;
-  gfx::Rect bounds =  // in |window()->parent()|'s coordinates.
-      CalculateBoundsForDrag(details_, location_in_parent);
+  const int snap_size =
+      event_flags & ui::EF_CONTROL_DOWN ? 0 : kScreenEdgeInset;
+  // |bounds| is in |window()->parent()|'s coordinates.
+  gfx::Rect bounds = CalculateBoundsForDrag(details_, location_in_parent);
 
   if (wm::IsWindowNormal(window()))
-    AdjustBoundsForMainWindow(&bounds, grid_size);
+    AdjustBoundsForMainWindow(snap_size, &bounds);
 
   if (bounds != window()->bounds()) {
     if (!did_move_or_resize_) {
@@ -421,16 +497,32 @@ void WorkspaceWindowResizer::CalculateAttachedSizes(
 }
 
 void WorkspaceWindowResizer::MagneticallySnapToOtherWindows(gfx::Rect* bounds) {
-  MagnetismMatcher matcher(*bounds);
-    // If we snapped to a window then check it first. That way we don't bounce
-    // around when close to multiple edges.
+  if (UpdateMagnetismWindow(*bounds, kAllMagnetismEdges)) {
+    bounds->set_origin(
+        OriginForMagneticAttach(*bounds, magnetism_window_->bounds(),
+                                magnetism_edge_));
+  }
+}
+
+void WorkspaceWindowResizer::MagneticallySnapResizeToOtherWindows(
+    gfx::Rect* bounds) {
+  const uint32 edges = WindowComponentToMagneticEdge(details_.window_component);
+  if (UpdateMagnetismWindow(*bounds, edges)) {
+    *bounds = BoundsForMagneticResizeAttach(
+          *bounds, magnetism_window_->bounds(), magnetism_edge_);
+  }
+}
+
+bool WorkspaceWindowResizer::UpdateMagnetismWindow(const gfx::Rect& bounds,
+                                                    uint32 edges) {
+  MagnetismMatcher matcher(bounds, edges);
+
+  // If we snapped to a window then check it first. That way we don't bounce
+  // around when close to multiple edges.
   if (magnetism_window_) {
     if (window_tracker_.Contains(magnetism_window_) &&
         matcher.ShouldAttach(magnetism_window_->bounds(), &magnetism_edge_)) {
-      bounds->set_origin(
-          OriginForMagneticAttach(*bounds, magnetism_window_->bounds(),
-                                  magnetism_edge_));
-      return;
+      return true;
     }
     window_tracker_.Remove(magnetism_window_);
     magnetism_window_ = NULL;
@@ -446,18 +538,15 @@ void WorkspaceWindowResizer::MagneticallySnapToOtherWindows(gfx::Rect* bounds) {
     if (matcher.ShouldAttach(other->bounds(), &magnetism_edge_)) {
       magnetism_window_ = other;
       window_tracker_.Add(magnetism_window_);
-      bounds->set_origin(
-          OriginForMagneticAttach(*bounds, magnetism_window_->bounds(),
-                                  magnetism_edge_));
-      return;
+      return true;
     }
   }
+  return false;
 }
 
 void WorkspaceWindowResizer::AdjustBoundsForMainWindow(
-    gfx::Rect* bounds,
-    int grid_size) {
-
+    int snap_size,
+    gfx::Rect* bounds) {
   gfx::Point last_mouse_location_in_screen = last_mouse_location_;
   wm::ConvertPointToScreen(window()->parent(), &last_mouse_location_in_screen);
   gfx::Display display = Shell::GetScreen()->GetDisplayNearestPoint(
@@ -475,12 +564,13 @@ void WorkspaceWindowResizer::AdjustBoundsForMainWindow(
       // cursor reaches the work area above if any.
       bounds->set_y(work_area.y());
     }
-  }
 
-  if (grid_size > 0 && details_.window_component == HTCAPTION) {
-    SnapToWorkAreaEdges(work_area, bounds, grid_size);
-
-    MagneticallySnapToOtherWindows(bounds);
+    if (snap_size > 0) {
+      SnapToWorkAreaEdges(work_area, snap_size, bounds);
+      MagneticallySnapToOtherWindows(bounds);
+    }
+  } else if (snap_size > 0) {
+    MagneticallySnapResizeToOtherWindows(bounds);
   }
 
   if (attached_windows_.empty())
@@ -498,21 +588,21 @@ void WorkspaceWindowResizer::AdjustBoundsForMainWindow(
 
 void WorkspaceWindowResizer::SnapToWorkAreaEdges(
     const gfx::Rect& work_area,
-    gfx::Rect* bounds,
-    int grid_size) const {
+    int snap_size,
+    gfx::Rect* bounds) const {
   int left_edge = work_area.x();
   int right_edge = work_area.right();
   int top_edge = work_area.y();
   int bottom_edge = work_area.bottom();
-  if (ShouldSnapToEdge(bounds->x() - left_edge, grid_size)) {
+  if (ShouldSnapToEdge(bounds->x() - left_edge, snap_size)) {
     bounds->set_x(left_edge);
   } else if (ShouldSnapToEdge(right_edge - bounds->right(),
-                              grid_size)) {
+                              snap_size)) {
     bounds->set_x(right_edge - bounds->width());
   }
-  if (ShouldSnapToEdge(bounds->y() - top_edge, grid_size)) {
+  if (ShouldSnapToEdge(bounds->y() - top_edge, snap_size)) {
     bounds->set_y(top_edge);
-  } else if (ShouldSnapToEdge(bottom_edge - bounds->bottom(), grid_size) &&
+  } else if (ShouldSnapToEdge(bottom_edge - bounds->bottom(), snap_size) &&
              bounds->height() < (bottom_edge - top_edge)) {
     // Only snap to the bottom if the window is smaller than the work area.
     // Doing otherwise can lead to window snapping in weird ways as it bounces
