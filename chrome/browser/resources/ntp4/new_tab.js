@@ -199,6 +199,14 @@ cr.define('ntp', function() {
       promoBubble.deactivateToDismissDelay = 2000;
       promoBubble.content = parseHtmlSubset(loadTimeData.getString(
           'bubblePromoText'), ['BR']);
+
+      var bubbleLink = promoBubble.querySelector('a');
+      if (bubbleLink) {
+        bubbleLink.addEventListener('click', function(e) {
+          chrome.send('bubblePromoLinkClicked');
+        });
+      }
+
       promoBubble.handleCloseEvent = function() {
         promoBubble.hide();
         chrome.send('bubblePromoClosed');

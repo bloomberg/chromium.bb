@@ -63,6 +63,9 @@ void NewTabPageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("bubblePromoViewed",
       base::Bind(&NewTabPageHandler::HandleBubblePromoViewed,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("bubblePromoLinkClicked",
+      base::Bind(&NewTabPageHandler::HandleBubblePromoLinkClicked,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("pageSelected",
       base::Bind(&NewTabPageHandler::HandlePageSelected,
                  base::Unretained(this)));
@@ -72,12 +75,14 @@ void NewTabPageHandler::RegisterMessages() {
 }
 
 void NewTabPageHandler::HandleNotificationPromoClosed(const ListValue* args) {
+  UMA_HISTOGRAM_BOOLEAN("NewTabPage.Promo.Notification.Closed", true);
   NotificationPromo::HandleClosed(Profile::FromWebUI(web_ui()),
                                   NotificationPromo::NTP_NOTIFICATION_PROMO);
   Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED);
 }
 
 void NewTabPageHandler::HandleNotificationPromoViewed(const ListValue* args) {
+  UMA_HISTOGRAM_BOOLEAN("NewTabPage.Promo.Notification.Viewed", true);
   if (NotificationPromo::HandleViewed(Profile::FromWebUI(web_ui()),
           NotificationPromo::NTP_NOTIFICATION_PROMO)) {
     Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED);
@@ -85,16 +90,23 @@ void NewTabPageHandler::HandleNotificationPromoViewed(const ListValue* args) {
 }
 
 void NewTabPageHandler::HandleBubblePromoClosed(const ListValue* args) {
+  UMA_HISTOGRAM_BOOLEAN("NewTabPage.Promo.Bubble.Closed", true);
   NotificationPromo::HandleClosed(Profile::FromWebUI(web_ui()),
                                   NotificationPromo::NTP_BUBBLE_PROMO);
   Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED);
 }
 
 void NewTabPageHandler::HandleBubblePromoViewed(const ListValue* args) {
+  UMA_HISTOGRAM_BOOLEAN("NewTabPage.Promo.Bubble.Viewed", true);
   if (NotificationPromo::HandleViewed(Profile::FromWebUI(web_ui()),
                                       NotificationPromo::NTP_BUBBLE_PROMO)) {
     Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED);
   }
+}
+
+void NewTabPageHandler::HandleBubblePromoLinkClicked(const ListValue* args) {
+  DVLOG(1) << "HandleBubblePromoLinkClicked";
+  UMA_HISTOGRAM_BOOLEAN("NewTabPage.Promo.Bubble.LinkClicked", true);
 }
 
 void NewTabPageHandler::HandlePageSelected(const ListValue* args) {
