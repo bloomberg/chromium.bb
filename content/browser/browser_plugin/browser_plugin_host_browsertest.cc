@@ -922,4 +922,44 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DISABLED_PostMessageToIFrame) {
   }
 }
 
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadStop) {
+  const char* kEmbedderURL = "files/browser_plugin_embedder.html";
+  StartBrowserPluginTest(kEmbedderURL, "about:blank", true, "");
+
+  const string16 expected_title = ASCIIToUTF16("loadStop");
+  content::TitleWatcher title_watcher(
+     test_embedder()->web_contents(), expected_title);
+  // Renavigate the guest to |kHTMLForGuest|.
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      test_embedder()->web_contents()->GetRenderViewHost());
+  ExecuteSyncJSFunction(rvh, ASCIIToUTF16(
+      StringPrintf("SetSrc('%s');", kHTMLForGuest)));
+
+  string16 actual_title = title_watcher.WaitAndGetTitle();
+  EXPECT_EQ(expected_title, actual_title);
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, LoadCommit) {
+  const char* kEmbedderURL = "files/browser_plugin_embedder.html";
+  StartBrowserPluginTest(kEmbedderURL, "about:blank", true, "");
+
+  const string16 expected_title = ASCIIToUTF16(
+      StringPrintf("loadCommit:%s", kHTMLForGuest));
+  content::TitleWatcher title_watcher(
+      test_embedder()->web_contents(), expected_title);
+  // Renavigate the guest to |kHTMLForGuest|.
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      test_embedder()->web_contents()->GetRenderViewHost());
+  ExecuteSyncJSFunction(rvh, ASCIIToUTF16(
+      StringPrintf("SetSrc('%s');", kHTMLForGuest)));
+
+  string16 actual_title = title_watcher.WaitAndGetTitle();
+  EXPECT_EQ(expected_title, actual_title);
+  scoped_ptr<base::Value> is_top_level(rvh->ExecuteJavascriptAndGetValue(
+      string16(), ASCIIToUTF16("commitIsTopLevel")));
+  bool top_level_bool = false;
+  EXPECT_TRUE(is_top_level->GetAsBoolean(&top_level_bool));
+  EXPECT_EQ(true, top_level_bool);
+}
+
 }  // namespace content

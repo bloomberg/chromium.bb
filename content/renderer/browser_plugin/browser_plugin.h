@@ -19,7 +19,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDragStatus.h"
 
 struct BrowserPluginHostMsg_ResizeGuest_Params;
-struct BrowserPluginMsg_DidNavigate_Params;
+struct BrowserPluginMsg_LoadCommit_Params;
 struct BrowserPluginMsg_UpdateRect_Params;
 
 namespace content {
@@ -61,10 +61,12 @@ class CONTENT_EXPORT BrowserPlugin :
                   const BrowserPluginMsg_UpdateRect_Params& params);
   // Inform the BrowserPlugin that its guest has crashed.
   void GuestCrashed();
-  // Informs the BrowserPlugin that the guest has navigated to a new URL.
-  void DidNavigate(const BrowserPluginMsg_DidNavigate_Params& params);
+  // Inform the BrowserPlugin that the guest has navigated to a new URL.
+  void LoadCommit(const BrowserPluginMsg_LoadCommit_Params& params);
   // Inform the BrowserPlugin that the guest has started loading a new page.
   void LoadStart(const GURL& url, bool is_top_level);
+  // Inform the BrowserPlugin that the guest has finished loading a new page.
+  void LoadStop();
   // Inform the BrowserPlugin that the guest has aborted loading a new page.
   void LoadAbort(const GURL& url, bool is_top_level, const std::string& type);
   // Inform the BrowserPlugin that the guest has redirected a navigation.

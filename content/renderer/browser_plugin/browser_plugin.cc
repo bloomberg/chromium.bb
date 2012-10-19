@@ -45,9 +45,10 @@ namespace {
 const char kCrashEventName[] = "crash";
 const char kIsTopLevel[] = "isTopLevel";
 const char kLoadAbortEventName[] = "loadAbort";
+const char kLoadCommitEventName[] = "loadCommit";
 const char kLoadRedirectEventName[] = "loadRedirect";
 const char kLoadStartEventName[] = "loadStart";
-const char kNavigationEventName[] = "navigation";
+const char kLoadStopEventName[] = "loadStop";
 const char kNewURL[] = "newUrl";
 const char kOldURL[] = "oldUrl";
 const char kPartitionAttribute[] = "partition";
@@ -358,46 +359,6 @@ void BrowserPlugin::GuestCrashed() {
   }
 }
 
-void BrowserPlugin::DidNavigate(
-    const BrowserPluginMsg_DidNavigate_Params& params) {
-  // If the guest has just committed a new navigation then it is no longer
-  // crashed.
-  guest_crashed_ = false;
-  src_ = params.url.spec();
-  process_id_ = params.process_id;
-  current_nav_entry_index_ = params.current_entry_index;
-  nav_entry_count_ = params.entry_count;
-
-  if (!HasListeners(kNavigationEventName))
-    return;
-
-  WebKit::WebElement plugin = container()->element();
-  v8::HandleScope handle_scope;
-  v8::Context::Scope context_scope(
-      plugin.document().frame()->mainWorldScriptContext());
-
-  // Construct the navigation event object.
-  v8::Local<v8::Object> event = v8::Object::New();
-  event->Set(v8::String::New(kURL, sizeof(kURL) - 1),
-             v8::String::New(src_.data(), src_.size()));
-  event->Set(v8::String::New(kIsTopLevel, sizeof(kIsTopLevel) - 1),
-             v8::Boolean::New(params.is_top_level));
-  v8::Local<v8::Value> val = event;
-
-  // TODO(fsamuel): Copying the event listeners is insufficent because
-  // new persistent handles are not created when the copy constructor is
-  // called. See http://crbug.com/155044.
-  EventListeners listeners(event_listener_map_[kNavigationEventName]);
-  EventListeners::iterator it = listeners.begin();
-  for (; it != listeners.end(); ++it) {
-    WebKit::WebFrame* frame = plugin.document().frame();
-    if (frame) {
-      frame->callFunctionEvenIfScriptDisabled(
-          *it, v8::Object::New(), 1, &val);
-    }
-  }
-}
-
 void BrowserPlugin::LoadStart(const GURL& url, bool is_top_level) {
   if (!HasListeners(kLoadStartEventName))
     return;
@@ -419,6 +380,69 @@ void BrowserPlugin::LoadStart(const GURL& url, bool is_top_level) {
   // new persistent handles are not created when the copy constructor is
   // called. See http://crbug.com/155044.
   EventListeners listeners(event_listener_map_[kLoadStartEventName]);
+  EventListeners::iterator it = listeners.begin();
+  for (; it != listeners.end(); ++it) {
+    WebKit::WebFrame* frame = plugin.document().frame();
+    if (frame)
+      frame->callFunctionEvenIfScriptDisabled(*it, v8::Object::New(), 1, &val);
+  }
+}
+
+void BrowserPlugin::LoadCommit(
+    const BrowserPluginMsg_LoadCommit_Params& params) {
+  // If the guest has just committed a new navigation then it is no longer
+  // crashed.
+  guest_crashed_ = false;
+  src_ = params.url.spec();
+  process_id_ = params.process_id;
+  current_nav_entry_index_ = params.current_entry_index;
+  nav_entry_count_ = params.entry_count;
+
+  if (!HasListeners(kLoadCommitEventName))
+    return;
+
+  WebKit::WebElement plugin = container()->element();
+  v8::HandleScope handle_scope;
+  v8::Context::Scope context_scope(
+      plugin.document().frame()->mainWorldScriptContext());
+
+  // Construct the loadCommit event object.
+  v8::Local<v8::Object> event = v8::Object::New();
+  event->Set(v8::String::New(kURL, sizeof(kURL) - 1),
+             v8::String::New(src_.data(), src_.size()));
+  event->Set(v8::String::New(kIsTopLevel, sizeof(kIsTopLevel) - 1),
+             v8::Boolean::New(params.is_top_level));
+  v8::Local<v8::Value> val = event;
+
+  // TODO(fsamuel): Copying the event listeners is insufficent because
+  // new persistent handles are not created when the copy constructor is
+  // called. See http://crbug.com/155044.
+  EventListeners listeners(event_listener_map_[kLoadCommitEventName]);
+  EventListeners::iterator it = listeners.begin();
+  for (; it != listeners.end(); ++it) {
+    WebKit::WebFrame* frame = plugin.document().frame();
+    if (frame)
+      frame->callFunctionEvenIfScriptDisabled(*it, v8::Object::New(), 1, &val);
+  }
+}
+
+void BrowserPlugin::LoadStop() {
+  if (!HasListeners(kLoadStopEventName))
+    return;
+
+  WebKit::WebElement plugin = container()->element();
+  v8::HandleScope handle_scope;
+  v8::Context::Scope context_scope(
+      plugin.document().frame()->mainWorldScriptContext());
+
+  // Construct the loadStop event object.
+  v8::Local<v8::Object> event = v8::Object::New();
+  v8::Local<v8::Value> val = event;
+
+  // TODO(fsamuel): Copying the event listeners is insufficent because
+  // new persistent handles are not created when the copy constructor is
+  // called. See http://crbug.com/155044.
+  EventListeners listeners(event_listener_map_[kLoadStopEventName]);
   EventListeners::iterator it = listeners.begin();
   for (; it != listeners.end(); ++it) {
     WebKit::WebFrame* frame = plugin.document().frame();

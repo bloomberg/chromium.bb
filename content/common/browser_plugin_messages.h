@@ -180,7 +180,7 @@ IPC_MESSAGE_CONTROL4(BrowserPluginMsg_LoadRedirect,
                      GURL /* new_url */,
                      bool /* is_top_level */)
 
-IPC_STRUCT_BEGIN(BrowserPluginMsg_DidNavigate_Params)
+IPC_STRUCT_BEGIN(BrowserPluginMsg_LoadCommit_Params)
   // The current URL of the guest.
   IPC_STRUCT_MEMBER(GURL, url)
   // Indicates whether the navigation was on the top-level frame.
@@ -194,12 +194,16 @@ IPC_STRUCT_BEGIN(BrowserPluginMsg_DidNavigate_Params)
   IPC_STRUCT_MEMBER(int, entry_count)
 IPC_STRUCT_END()
 
-// When the guest navigates, the browser process informs the embedder through
-// the BrowserPluginMsg_DidNavigate message along with information about the
-// guest's current navigation state.
-IPC_MESSAGE_CONTROL2(BrowserPluginMsg_DidNavigate,
+// When the guest commits a navigation, the browser process informs
+// the embedder through the BrowserPluginMsg_DidCommit message.
+IPC_MESSAGE_CONTROL2(BrowserPluginMsg_LoadCommit,
                      int /* instance_id */,
-                     BrowserPluginMsg_DidNavigate_Params)
+                     BrowserPluginMsg_LoadCommit_Params)
+
+// When the guest page has completed loading (including subframes), the browser
+// process informs the embedder through the BrowserPluginMsg_LoadStop message.
+IPC_MESSAGE_CONTROL1(BrowserPluginMsg_LoadStop,
+                     int /* instance_id */)
 
 // When the guest crashes, the browser process informs the embedder through this
 // message.

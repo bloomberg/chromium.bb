@@ -37,7 +37,6 @@ bool BrowserPluginManagerImpl::OnControlMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginManagerImpl, message)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_UpdateRect, OnUpdateRect)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestCrashed, OnGuestCrashed)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_DidNavigate, OnDidNavigate)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_AdvanceFocus, OnAdvanceFocus)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestContentWindowReady,
                         OnGuestContentWindowReady)
@@ -46,6 +45,8 @@ bool BrowserPluginManagerImpl::OnControlMessageReceived(
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadStart, OnLoadStart)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadAbort, OnLoadAbort)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadRedirect, OnLoadRedirect)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadCommit, OnLoadCommit)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadStop, OnLoadStop)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -64,14 +65,6 @@ void BrowserPluginManagerImpl::OnGuestCrashed(int instance_id) {
   BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
   if (plugin)
     plugin->GuestCrashed();
-}
-
-void BrowserPluginManagerImpl::OnDidNavigate(
-    int instance_id,
-    const BrowserPluginMsg_DidNavigate_Params& params) {
-  BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
-  if (plugin)
-    plugin->DidNavigate(params);
 }
 
 void BrowserPluginManagerImpl::OnAdvanceFocus(int instance_id, bool reverse) {
@@ -100,6 +93,20 @@ void BrowserPluginManagerImpl::OnLoadStart(int instance_id,
   BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
   if (plugin)
     plugin->LoadStart(url, is_top_level);
+}
+
+void BrowserPluginManagerImpl::OnLoadCommit(
+    int instance_id,
+    const BrowserPluginMsg_LoadCommit_Params& params) {
+  BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
+  if (plugin)
+    plugin->LoadCommit(params);
+}
+
+void BrowserPluginManagerImpl::OnLoadStop(int instance_id) {
+  BrowserPlugin* plugin = GetBrowserPlugin(instance_id);
+  if (plugin)
+    plugin->LoadStop();
 }
 
 void BrowserPluginManagerImpl::OnLoadAbort(int instance_id,

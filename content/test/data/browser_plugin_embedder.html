@@ -5,6 +5,16 @@ function loadAbort(evt) {
 function loadStart(evt) {
   document.title = evt.url;
 }
+function loadStop(evt) {
+  document.title = "loadStop";
+}
+
+var commitIsTopLevel;
+function loadCommit(evt) {
+  document.title = "loadCommit:" + evt.url;
+  commitIsTopLevel = evt.isTopLevel;
+}
+
 var redirectOldUrl;
 var redirectNewUrl;
 function loadRedirect(event) {
@@ -89,4 +99,6 @@ function receiveMessage(event) {
   plugin.addEventListener('loadAbort', loadAbort);
   plugin.addEventListener('loadRedirect', loadRedirect);
   window.addEventListener('message', receiveMessage, false);
+  plugin.addEventListener('loadStop', loadStop);
+  plugin.addEventListener('loadCommit', loadCommit);
 </script>
