@@ -72,6 +72,8 @@ using WebKit::WebInputEvent;
 using WebKit::WebString;
 using WebKit::WebView;
 
+namespace content {
+
 namespace {
 
 class ScopedLogLevel {
@@ -458,7 +460,7 @@ void WebPluginDelegateProxy::DidManualLoadFail() {
 }
 
 bool WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
-  content::GetContentClient()->SetActiveURL(page_url_);
+  GetContentClient()->SetActiveURL(page_url_);
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebPluginDelegateProxy, msg)
@@ -555,8 +557,8 @@ static void CopyTransportDIBHandleForMessage(
 #elif defined(OS_WIN)
   // On Windows we need to duplicate the handle for the plugin process.
   *handle_out = NULL;
-  content::BrokerDuplicateHandle(handle_in, peer_pid, handle_out,
-                                 FILE_MAP_READ | FILE_MAP_WRITE, 0);
+  BrokerDuplicateHandle(handle_in, peer_pid, handle_out,
+                        FILE_MAP_READ | FILE_MAP_WRITE, 0);
   DCHECK(*handle_out != NULL);
 #else
   // Don't need to do anything special for other platforms.
@@ -1255,7 +1257,7 @@ void WebPluginDelegateProxy::PaintSadPlugin(WebKit::WebCanvas* native_context,
                                             const gfx::Rect& rect) {
   // Lazily load the sad plugin image.
   if (!sad_plugin_)
-    sad_plugin_ = content::GetContentClient()->renderer()->GetSadPluginBitmap();
+    sad_plugin_ = GetContentClient()->renderer()->GetSadPluginBitmap();
   if (sad_plugin_)
     webkit::PaintSadPlugin(native_context, plugin_rect_, *sad_plugin_);
 }
@@ -1532,3 +1534,5 @@ void WebPluginDelegateProxy::OnURLRedirectResponse(bool allow,
 
   plugin_->URLRedirectResponse(allow, resource_id);
 }
+
+}  // namespace content

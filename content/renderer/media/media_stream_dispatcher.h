@@ -22,6 +22,8 @@ namespace base {
 class MessageLoopProxy;
 }
 
+namespace content {
+
 class RenderViewImpl;
 
 // MediaStreamDispatcher is a delegate for the Media Stream API messages.
@@ -30,7 +32,7 @@ class RenderViewImpl;
 // It's the complement of MediaStreamDispatcherHost (owned by
 // BrowserRenderProcessHost).
 class CONTENT_EXPORT MediaStreamDispatcher
-    : public content::RenderViewObserver,
+    : public RenderViewObserver,
       public base::SupportsWeakPtr<MediaStreamDispatcher> {
  public:
   explicit MediaStreamDispatcher(RenderViewImpl* render_view);
@@ -160,5 +162,7 @@ class CONTENT_EXPORT MediaStreamDispatcher
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDispatcher);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_MEDIA_STREAM_DISPATCHER_H_

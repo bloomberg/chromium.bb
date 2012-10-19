@@ -9,6 +9,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebExternalPopupMenuClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 
+namespace content {
+
 ExternalPopupMenu::ExternalPopupMenu(
     RenderViewImpl* render_view,
     const WebKit::WebPopupMenuInfo& popup_menu_info,
@@ -61,3 +63,4 @@ void ExternalPopupMenu::DidSelectItems(bool canceled,
 }
 #endif
 
+}  // namespace content

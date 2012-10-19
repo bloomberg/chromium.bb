@@ -10,6 +10,8 @@
 #include "content/renderer/render_view_impl.h"
 #include "googleurl/src/gurl.h"
 
+namespace content {
+
 struct MediaStreamDispatcher::Request {
   Request(const base::WeakPtr<MediaStreamDispatcherEventHandler>& handler,
           int request_id,
@@ -59,7 +61,7 @@ struct MediaStreamDispatcher::EnumerationState::CachedDevices {
 };
 
 MediaStreamDispatcher::MediaStreamDispatcher(RenderViewImpl* render_view)
-    : content::RenderViewObserver(render_view),
+    : RenderViewObserver(render_view),
       main_loop_(base::MessageLoopProxy::current()),
       next_ipc_id_(0) {
 }
@@ -117,13 +119,13 @@ void MediaStreamDispatcher::EnumerateDevices(
     media_stream::MediaStreamType type,
     const GURL& security_origin) {
   DCHECK(main_loop_->BelongsToCurrentThread());
-  DCHECK(type == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
-         type == content::MEDIA_DEVICE_VIDEO_CAPTURE);
+  DCHECK(type == MEDIA_DEVICE_AUDIO_CAPTURE ||
+         type == MEDIA_DEVICE_VIDEO_CAPTURE);
   DVLOG(1) << "MediaStreamDispatcher::EnumerateDevices("
            << request_id << ")";
 
   EnumerationState* state =
-      (type == content::MEDIA_DEVICE_AUDIO_CAPTURE ?
+      (type == MEDIA_DEVICE_AUDIO_CAPTURE ?
        &audio_enumeration_state_ : &video_enumeration_state_);
   state->requests.push_back(EnumerationRequest(event_handler, request_id));
 
@@ -328,9 +330,9 @@ void MediaStreamDispatcher::OnDeviceOpened(
     if (request.ipc_request == request_id) {
       Stream new_stream;
       new_stream.handler = request.handler;
-      if (content::IsAudioMediaType(device_info.stream_type)) {
+      if (IsAudioMediaType(device_info.stream_type)) {
         new_stream.audio_array.push_back(device_info);
-      } else if (content::IsVideoMediaType(device_info.stream_type)) {
+      } else if (IsVideoMediaType(device_info.stream_type)) {
         new_stream.video_array.push_back(device_info);
       } else {
         NOTREACHED();
@@ -388,3 +390,5 @@ int MediaStreamDispatcher::video_session_id(const std::string& label,
   DCHECK_GT(it->second.video_array.size(), static_cast<size_t>(index));
   return it->second.video_array[index].session_id;
 }
+
+}  // namespace content

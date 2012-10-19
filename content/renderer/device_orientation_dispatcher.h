@@ -11,11 +11,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_view_observer.h"
 
-class RenderViewImpl;
-
 struct DeviceOrientationMsg_Updated_Params;
 
-class DeviceOrientationDispatcher : public content::RenderViewObserver,
+namespace content {
+class RenderViewImpl;
+
+class DeviceOrientationDispatcher : public RenderViewObserver,
                                     public WebKit::WebDeviceOrientationClient {
  public:
   explicit DeviceOrientationDispatcher(RenderViewImpl* render_view);
@@ -39,5 +40,7 @@ class DeviceOrientationDispatcher : public content::RenderViewObserver,
   WebKit::WebDeviceOrientation last_orientation_;
   bool started_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_DEVICE_ORIENTATION_DISPATCHER_H_

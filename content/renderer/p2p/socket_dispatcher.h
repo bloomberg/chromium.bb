@@ -33,8 +33,6 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "net/base/net_util.h"
 
-class RenderViewImpl;
-
 namespace base {
 class MessageLoopProxy;
 }  // namespace base
@@ -49,6 +47,7 @@ class NetworkListObserver;
 
 namespace content {
 
+class RenderViewImpl;
 class P2PHostAddressRequest;
 class P2PSocketClient;
 

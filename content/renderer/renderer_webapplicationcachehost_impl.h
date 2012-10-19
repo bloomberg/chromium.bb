@@ -7,6 +7,7 @@
 
 #include "webkit/appcache/web_application_cache_host_impl.h"
 
+namespace content {
 class RenderViewImpl;
 
 class RendererWebApplicationCacheHostImpl
@@ -28,5 +29,7 @@ class RendererWebApplicationCacheHostImpl
 
   int routing_id_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_RENDERER_WEBAPPLICATIONCACHEHOST_IMPL_H_

@@ -20,8 +20,10 @@ using WebKit::WebGeolocationPermissionRequest;
 using WebKit::WebGeolocationPermissionRequestManager;
 using WebKit::WebGeolocationPosition;
 
+namespace content {
+
 GeolocationDispatcher::GeolocationDispatcher(RenderViewImpl* render_view)
-    : content::RenderViewObserver(render_view),
+    : RenderViewObserver(render_view),
       pending_permissions_(new WebGeolocationPermissionRequestManager()),
       enable_high_accuracy_(false),
       updating_(false) {
@@ -113,7 +115,7 @@ void GeolocationDispatcher::OnPermissionSet(int bridge_id, bool is_allowed) {
 
 // We have an updated geolocation position or error code.
 void GeolocationDispatcher::OnPositionUpdated(
-    const content::Geoposition& geoposition) {
+    const Geoposition& geoposition) {
   // It is possible for the browser process to have queued an update message
   // before receiving the stop updating message.
   if (!updating_)
@@ -137,10 +139,10 @@ void GeolocationDispatcher::OnPositionUpdated(
   } else {
     WebGeolocationError::Error code;
     switch (geoposition.error_code) {
-      case content::Geoposition::ERROR_CODE_PERMISSION_DENIED:
+      case Geoposition::ERROR_CODE_PERMISSION_DENIED:
         code = WebGeolocationError::ErrorPermissionDenied;
         break;
-      case content::Geoposition::ERROR_CODE_POSITION_UNAVAILABLE:
+      case Geoposition::ERROR_CODE_POSITION_UNAVAILABLE:
         code = WebGeolocationError::ErrorPositionUnavailable;
         break;
       default:
@@ -152,3 +154,5 @@ void GeolocationDispatcher::OnPositionUpdated(
             code, WebKit::WebString::fromUTF8(geoposition.error_message)));
   }
 }
+
+}  // namespace content

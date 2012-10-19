@@ -182,18 +182,18 @@ bool MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
     video_track->set_enabled(video_components[i].isEnabled());
   }
 
-  description->setExtraData(new MediaStreamExtraData(native_stream));
+  description->setExtraData(new content::MediaStreamExtraData(native_stream));
   return true;
 }
 
 bool MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
     WebKit::WebMediaStreamDescriptor* description,
-    const MediaStreamExtraData::StreamStopCallback& stream_stop) {
+    const content::MediaStreamExtraData::StreamStopCallback& stream_stop) {
   if (!CreateNativeLocalMediaStream(description))
     return false;
 
-  MediaStreamExtraData* extra_data =
-      static_cast<MediaStreamExtraData*>(description->extraData());
+  content::MediaStreamExtraData* extra_data =
+      static_cast<content::MediaStreamExtraData*>(description->extraData());
   extra_data->SetLocalStreamStopCallback(stream_stop);
   return true;
 }
@@ -201,7 +201,7 @@ bool MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
 bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
   if (!pc_factory_.get()) {
     DCHECK(!audio_device_);
-    audio_device_ = new WebRtcAudioDeviceImpl();
+    audio_device_ = new content::WebRtcAudioDeviceImpl();
     scoped_refptr<webrtc::PeerConnectionFactoryInterface> factory(
         webrtc::CreatePeerConnectionFactory(worker_thread_,
                                             signaling_thread_,

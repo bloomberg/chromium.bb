@@ -9,17 +9,14 @@
 #include "ppapi/host/host_factory.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
-class RenderViewImpl;
-
 namespace ppapi {
 class PpapiPermissions;
 }
 
 namespace content {
-
-class RendererPpapiHostImpl;
-
 class PepperInstanceStateAccessor;
+class RendererPpapiHostImpl;
+class RenderViewImpl;
 
 class ContentRendererPepperHostFactory : public ppapi::host::HostFactory {
  public:

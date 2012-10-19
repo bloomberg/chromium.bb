@@ -11,16 +11,18 @@
 #include "ui/base/range/range.h"
 #include "ui/gfx/point.h"
 
-class RenderViewImpl;
-
 namespace WebKit {
 class WebView;
 }
 
+namespace content {
+
+class RenderViewImpl;
+
 // This is the renderer-side message filter that generates the replies for the
 // messages sent by the TextInputClientMac. See
 // content/browser/renderer_host/text_input_client_mac.h for more information.
-class TextInputClientObserver : public content::RenderViewObserver {
+class TextInputClientObserver : public RenderViewObserver {
  public:
   explicit TextInputClientObserver(RenderViewImpl* render_view);
   virtual ~TextInputClientObserver();
@@ -41,5 +43,7 @@ class TextInputClientObserver : public content::RenderViewObserver {
 
   DISALLOW_COPY_AND_ASSIGN(TextInputClientObserver);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_TEXT_INPUT_CLIENT_OBSERVER_H_

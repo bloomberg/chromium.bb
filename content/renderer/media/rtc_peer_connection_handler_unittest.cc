@@ -92,7 +92,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     WebKit::WebMediaStreamDescriptor local_stream;
     local_stream.initialize(UTF8ToUTF16(stream_label), audio_sources,
                             video_sources);
-    local_stream.setExtraData(new MediaStreamExtraData(native_stream));
+    local_stream.setExtraData(new content::MediaStreamExtraData(native_stream));
     return local_stream;
   }
 

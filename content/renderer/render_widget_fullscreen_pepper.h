@@ -25,13 +25,15 @@ class PluginInstance;
 }  // namespace ppapi
 }  // namespace webkit
 
+namespace content {
+
 // A RenderWidget that hosts a fullscreen pepper plugin. This provides a
 // FullscreenContainer that the plugin instance can callback into to e.g.
 // invalidate rects.
 class RenderWidgetFullscreenPepper :
     public RenderWidgetFullscreen,
     public webkit::ppapi::FullscreenContainer,
-    public content::PepperParentContextProvider,
+    public PepperParentContextProvider,
     public WebGraphicsContext3DSwapBuffersClient {
  public:
   static RenderWidgetFullscreenPepper* Create(
@@ -126,5 +128,7 @@ class RenderWidgetFullscreenPepper :
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetFullscreenPepper);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_RENDER_WIDGET_FULLSCREEN_PEPPER_H_

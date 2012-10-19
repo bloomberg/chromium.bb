@@ -15,8 +15,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSpeechRecognitionResult.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSpeechRecognizerClient.h"
 
-using content::SpeechRecognitionError;
-using content::SpeechRecognitionResult;
 using WebKit::WebVector;
 using WebKit::WebString;
 using WebKit::WebSpeechGrammar;
@@ -25,9 +23,11 @@ using WebKit::WebSpeechRecognitionResult;
 using WebKit::WebSpeechRecognitionParams;
 using WebKit::WebSpeechRecognizerClient;
 
+namespace content {
+
 SpeechRecognitionDispatcher::SpeechRecognitionDispatcher(
     RenderViewImpl* render_view)
-    : content::RenderViewObserver(render_view),
+    : RenderViewObserver(render_view),
       recognizer_client_(NULL),
       next_id_(1) {
 }
@@ -63,8 +63,7 @@ void SpeechRecognitionDispatcher::start(
   for (size_t i = 0; i < params.grammars().size(); ++i) {
     const WebSpeechGrammar& grammar = params.grammars()[i];
     msg_params.grammars.push_back(
-        content::SpeechRecognitionGrammar(grammar.src().spec(),
-                                          grammar.weight()));
+        SpeechRecognitionGrammar(grammar.src().spec(), grammar.weight()));
   }
   msg_params.language = UTF16ToUTF8(params.language());
   msg_params.max_hypotheses = static_cast<uint32>(params.maxAlternatives());
@@ -118,25 +117,25 @@ void SpeechRecognitionDispatcher::OnAudioEnded(int request_id) {
 }
 
 static WebSpeechRecognizerClient::ErrorCode WebKitErrorCode(
-    content::SpeechRecognitionErrorCode e) {
+    SpeechRecognitionErrorCode e) {
   switch (e) {
-    case content::SPEECH_RECOGNITION_ERROR_NONE:
+    case SPEECH_RECOGNITION_ERROR_NONE:
       NOTREACHED();
       return WebSpeechRecognizerClient::OtherError;
-    case content::SPEECH_RECOGNITION_ERROR_ABORTED:
+    case SPEECH_RECOGNITION_ERROR_ABORTED:
       return WebSpeechRecognizerClient::AbortedError;
-    case content::SPEECH_RECOGNITION_ERROR_AUDIO:
+    case SPEECH_RECOGNITION_ERROR_AUDIO:
       return WebSpeechRecognizerClient::AudioCaptureError;
-    case content::SPEECH_RECOGNITION_ERROR_NETWORK:
+    case SPEECH_RECOGNITION_ERROR_NETWORK:
       return WebSpeechRecognizerClient::NetworkError;
-    case content::SPEECH_RECOGNITION_ERROR_NOT_ALLOWED:
+    case SPEECH_RECOGNITION_ERROR_NOT_ALLOWED:
       return WebSpeechRecognizerClient::NotAllowedError;
-    case content::SPEECH_RECOGNITION_ERROR_NO_SPEECH:
+    case SPEECH_RECOGNITION_ERROR_NO_SPEECH:
       return WebSpeechRecognizerClient::NoSpeechError;
-    case content::SPEECH_RECOGNITION_ERROR_NO_MATCH:
+    case SPEECH_RECOGNITION_ERROR_NO_MATCH:
       NOTREACHED();
       return WebSpeechRecognizerClient::OtherError;
-    case content::SPEECH_RECOGNITION_ERROR_BAD_GRAMMAR:
+    case SPEECH_RECOGNITION_ERROR_BAD_GRAMMAR:
       return WebSpeechRecognizerClient::BadGrammarError;
   }
   NOTREACHED();
@@ -145,7 +144,7 @@ static WebSpeechRecognizerClient::ErrorCode WebKitErrorCode(
 
 void SpeechRecognitionDispatcher::OnErrorOccurred(
     int request_id, const SpeechRecognitionError& error) {
-  if (error.code == content::SPEECH_RECOGNITION_ERROR_NO_MATCH) {
+  if (error.code == SPEECH_RECOGNITION_ERROR_NO_MATCH) {
     recognizer_client_->didReceiveNoMatch(GetHandleFromID(request_id),
                                           WebSpeechRecognitionResult());
   } else {
@@ -213,3 +212,5 @@ const WebSpeechRecognitionHandle& SpeechRecognitionDispatcher::GetHandleFromID(
   DCHECK(iter != handle_map_.end());
   return iter->second;
 }
+
+}  // namespace content

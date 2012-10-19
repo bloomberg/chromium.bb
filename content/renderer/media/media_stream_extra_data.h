@@ -16,6 +16,8 @@ class MediaStreamInterface;
 class LocalMediaStreamInterface;
 }  // namespace webrtc
 
+namespace content {
+
 class CONTENT_EXPORT MediaStreamExtraData
     : NON_EXPORTED_BASE(public WebKit::WebMediaStreamDescriptor::ExtraData) {
  public:
@@ -42,5 +44,7 @@ class CONTENT_EXPORT MediaStreamExtraData
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamExtraData);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_MEDIA_STREAM_EXTRA_DATA_H_

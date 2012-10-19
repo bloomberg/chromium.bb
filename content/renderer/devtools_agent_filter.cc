@@ -15,6 +15,8 @@
 using WebKit::WebDevToolsAgent;
 using WebKit::WebString;
 
+namespace content {
+
 namespace {
 
 class MessageImpl : public WebDevToolsAgent::MessageDescriptor {
@@ -71,3 +73,5 @@ void DevToolsAgentFilter::OnDispatchOnInspectorBackend(
   render_thread_loop_->PostTask(
       FROM_HERE, base::Bind(&WebDevToolsAgent::processPendingMessages));
 }
+
+}  // namespace content

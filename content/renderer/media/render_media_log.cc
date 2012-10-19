@@ -9,6 +9,8 @@
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread_impl.h"
 
+namespace content {
+
 RenderMediaLog::RenderMediaLog()
     : render_loop_(base::MessageLoopProxy::current()) {
   DCHECK(RenderThreadImpl::current()) <<
@@ -26,3 +28,5 @@ void RenderMediaLog::AddEvent(scoped_ptr<media::MediaLogEvent> event) {
 }
 
 RenderMediaLog::~RenderMediaLog() {}
+
+}  // namespace content

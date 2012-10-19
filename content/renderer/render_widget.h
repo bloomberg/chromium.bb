@@ -7,7 +7,6 @@
 
 #include <deque>
 #include <map>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -30,7 +29,6 @@
 #include "ui/base/range/range.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
-#include "ui/gfx/size.h"
 #include "ui/surface/transport_dib.h"
 #include "webkit/glue/webcursor.h"
 
@@ -44,16 +42,6 @@ class SyncMessage;
 namespace WebKit {
 class WebMouseEvent;
 class WebTouchEvent;
-class WebWidget;
-}
-
-namespace content {
-struct GpuRenderingStats;
-class RenderWidgetTest;
-}
-
-namespace gfx {
-class Point;
 }
 
 namespace skia {
@@ -73,6 +61,10 @@ namespace ppapi {
 class PluginInstance;
 }  // namespace ppapi
 }  // namespace webkit
+
+namespace content {
+struct GpuRenderingStats;
+class RenderWidgetTest;
 
 // RenderWidget provides a communication bridge between a WebWidget and
 // a RenderWidgetHost, the latter of which lives in a different process.
@@ -166,7 +158,7 @@ class CONTENT_EXPORT RenderWidget
   // GPU rendering, e.g. count of texture uploads performed, time spent
   // uploading.
   // This call is relatively expensive as it blocks on the GPU process
-  bool GetGpuRenderingStats(content::GpuRenderingStats*) const;
+  bool GetGpuRenderingStats(GpuRenderingStats*) const;
 
   // Callback for use with BeginSmoothScroll.
   typedef base::Callback<void()> SmoothScrollCompletionCallback;
@@ -197,7 +189,7 @@ class CONTENT_EXPORT RenderWidget
   // without ref-counting is an error.
   friend class base::RefCounted<RenderWidget>;
   // For unit tests.
-  friend class content::RenderWidgetTest;
+  friend class RenderWidgetTest;
 
   enum ResizeAck {
     SEND_RESIZE_ACK,
@@ -372,7 +364,6 @@ class CONTENT_EXPORT RenderWidget
   virtual void UpdateCompositionInfo(
       const ui::Range& range,
       const std::vector<gfx::Rect>& character_bounds);
-
 
   // Override point to obtain that the current input method state and caret
   // position.
@@ -617,5 +608,7 @@ class CONTENT_EXPORT RenderWidget
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_RENDER_WIDGET_H_

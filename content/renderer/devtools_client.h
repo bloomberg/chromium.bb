@@ -12,12 +12,14 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsFrontendClient.h"
 
-class RenderViewImpl;
-
 namespace WebKit {
 class WebDevToolsFrontend;
 class WebString;
 }
+
+namespace content {
+
+class RenderViewImpl;
 
 // Developer tools UI end of communication channel between the render process of
 // the page being inspected and tools UI renderer process. All messages will
@@ -25,7 +27,7 @@ class WebString;
 // corresponding DevToolsAgent object.
 // TODO(yurys): now the client is almost empty later it will delegate calls to
 // code in glue
-class DevToolsClient : public content::RenderViewObserver,
+class DevToolsClient : public RenderViewObserver,
                        public WebKit::WebDevToolsFrontendClient {
  public:
   explicit DevToolsClient(RenderViewImpl* render_view);
@@ -58,5 +60,7 @@ class DevToolsClient : public content::RenderViewObserver,
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsClient);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_DEVTOOLS_CLIENT_H_

@@ -9,11 +9,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 
-class RenderViewImpl;
-
 namespace WebKit {
 class WebFrame;
 }
+
+namespace content {
+class RenderViewImpl;
 
 class LoadProgressTracker {
  public:
@@ -41,5 +42,7 @@ class LoadProgressTracker {
 
   DISALLOW_COPY_AND_ASSIGN(LoadProgressTracker);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_LOAD_PROGRESS_TRACKER_H_

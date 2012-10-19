@@ -16,6 +16,8 @@ namespace dom_storage {
 class DomStorageCachedArea;
 }
 
+namespace content {
+
 class WebStorageAreaImpl : public WebKit::WebStorageArea {
  public:
   static WebStorageAreaImpl* FromConnectionId(int id);
@@ -39,5 +41,7 @@ class WebStorageAreaImpl : public WebKit::WebStorageArea {
   int connection_id_;
   scoped_refptr<dom_storage::DomStorageCachedArea> cached_area_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_DOM_STORAGE_WEBSTORAGEAREA_IMPL_H_

@@ -16,8 +16,6 @@
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_reply_data.h"
 
-class RenderViewImpl;
-
 namespace WebKit {
 class WebDeliveredIntentClient;
 class WebIntentRequest;
@@ -28,10 +26,13 @@ namespace webkit_glue {
 struct WebIntentData;
 }
 
+namespace content {
+class RenderViewImpl;
+
 // WebIntentsHost is a delegate for Web Intents messages. It is the
 // renderer-side handler for IPC messages delivering the intent payload data
 // and preparing it for access by the service page.
-class WebIntentsHost : public content::RenderViewObserver {
+class WebIntentsHost : public RenderViewObserver {
  public:
   // |render_view| must not be NULL.
   explicit WebIntentsHost(RenderViewImpl* render_view);
@@ -96,5 +97,7 @@ class WebIntentsHost : public content::RenderViewObserver {
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentsHost);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_WEB_INTENTS_HOST_H_

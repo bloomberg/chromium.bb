@@ -10,8 +10,6 @@
 #include "content/public/renderer/render_process_observer.h"
 #include "ipc/ipc_sender.h"
 
-class RenderViewImpl;
-
 namespace WebKit {
 class WebFrame;
 struct WebPluginParams;
@@ -20,6 +18,7 @@ struct WebPluginParams;
 namespace content {
 
 class BrowserPlugin;
+class RenderViewImpl;
 
 // BrowserPluginManager manages the routing of messages to the appropriate
 // BrowserPlugin object based on its instance ID. There is only one

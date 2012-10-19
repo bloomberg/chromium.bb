@@ -42,6 +42,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #endif  // OS_MACOSX
 
+namespace content {
+
 namespace {
 
 #if defined(OS_MACOSX)
@@ -122,7 +124,7 @@ class RendererMessageLoopObserver : public MessageLoop::TaskObserver {
 };
 
 // mainline routine for running as the Renderer process
-int RendererMain(const content::MainFunctionParams& parameters) {
+int RendererMain(const MainFunctionParams& parameters) {
   TRACE_EVENT_BEGIN_ETW("RendererMain", 0, "");
 
   const CommandLine& parsed_command_line = parameters.command_line;
@@ -154,7 +156,7 @@ int RendererMain(const content::MainFunctionParams& parameters) {
 
   webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager =
       webkit::ppapi::PpapiInterfaceFactoryManager::GetInstance();
-  content::GetContentClient()->renderer()->RegisterPPAPIInterfaceFactories(
+  GetContentClient()->renderer()->RegisterPPAPIInterfaceFactories(
       factory_manager);
 
   base::StatsCounterTimer stats_counter_timer("Content.RendererInit");
@@ -224,7 +226,7 @@ int RendererMain(const content::MainFunctionParams& parameters) {
     RenderProcessImpl render_process;
     new RenderThreadImpl();
 #endif
-    new content::BrowserPluginManagerImpl();
+    new BrowserPluginManagerImpl();
 
     platform.RunSandboxTests();
 
@@ -244,3 +246,5 @@ int RendererMain(const content::MainFunctionParams& parameters) {
   TRACE_EVENT_END_ETW("RendererMain", 0, "");
   return 0;
 }
+
+}  // namespace content

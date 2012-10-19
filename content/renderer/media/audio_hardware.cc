@@ -8,6 +8,7 @@
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread_impl.h"
 
+using content::RenderThreadImpl;
 using media::ChannelLayout;
 using media::CHANNEL_LAYOUT_NONE;
 

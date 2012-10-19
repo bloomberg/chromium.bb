@@ -13,6 +13,8 @@
 #include "media/video/video_decode_accelerator.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
+namespace content {
+
 class PlatformVideoDecoderImpl
     : public webkit::ppapi::PluginDelegate::PlatformVideoDecoder,
       public media::VideoDecodeAccelerator::Client {
@@ -62,4 +64,7 @@ class PlatformVideoDecoderImpl
 
   DISALLOW_COPY_AND_ASSIGN(PlatformVideoDecoderImpl);
 };
+
+}  // namespace content
+
 #endif  // CONTENT_RENDERER_MEDIA_PEPPER_PLATFORM_VIDEO_DECODER_IMPL_H_

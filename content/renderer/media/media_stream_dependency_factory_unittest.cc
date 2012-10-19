@@ -82,8 +82,8 @@ TEST_F(MediaStreamDependencyFactoryTest, CreateNativeMediaStream) {
                                                                          true);
   EXPECT_TRUE(dependency_factory_->CreateNativeLocalMediaStream(&stream_desc));
 
-  MediaStreamExtraData* extra_data = static_cast<MediaStreamExtraData*>(
-      stream_desc.extraData());
+  content::MediaStreamExtraData* extra_data =
+      static_cast<content::MediaStreamExtraData*>(stream_desc.extraData());
   ASSERT_TRUE(extra_data && extra_data->local_stream());
   EXPECT_EQ(1u, extra_data->local_stream()->audio_tracks()->count());
   EXPECT_EQ(1u, extra_data->local_stream()->video_tracks()->count());
@@ -108,8 +108,8 @@ TEST_F(MediaStreamDependencyFactoryTest, CreateNativeMediaStreamWithoutSource) {
   stream_desc.initialize("new stream", audio_sources, video_sources);
 
   EXPECT_TRUE(dependency_factory_->CreateNativeLocalMediaStream(&stream_desc));
-  MediaStreamExtraData* extra_data = static_cast<MediaStreamExtraData*>(
-      stream_desc.extraData());
+  content::MediaStreamExtraData* extra_data =
+      static_cast<content::MediaStreamExtraData*>(stream_desc.extraData());
   ASSERT_TRUE(extra_data && extra_data->local_stream());
   EXPECT_EQ(0u, extra_data->local_stream()->video_tracks()->count());
   EXPECT_EQ(0u, extra_data->local_stream()->audio_tracks()->count());

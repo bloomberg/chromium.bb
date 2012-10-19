@@ -7,6 +7,8 @@
 
 #include <string>
 
+namespace content {
+
 class RenderThreadImplUnittest : public testing::Test {
  public:
   RenderThreadImplUnittest()
@@ -76,3 +78,5 @@ TEST_F(RenderThreadImplUnittest, CustomHistogramsForTwoRenderViews) {
             histogram_customizer_.ConvertToCustomHistogramName(
                 kCustomizableHistogram_));
 }
+
+}  // namespace content

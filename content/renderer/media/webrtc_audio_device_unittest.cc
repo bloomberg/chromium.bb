@@ -22,6 +22,8 @@ using testing::InvokeWithoutArgs;
 using testing::Return;
 using testing::StrEq;
 
+namespace content {
+
 namespace {
 
 class AudioUtil : public AudioUtilInterface {
@@ -518,3 +520,5 @@ TEST_F(WebRTCAudioDeviceTest, FullDuplexAudioWithAGC) {
   EXPECT_EQ(0, base->DeleteChannel(ch));
   EXPECT_EQ(0, base->Terminate());
 }
+
+}  // namespace content

@@ -12,8 +12,6 @@
 #include "ipc/ipc_sender.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIconURL.h"
 
-class RenderViewImpl;
-
 namespace ppapi {
 namespace host {
 class PpapiHost;
@@ -36,6 +34,7 @@ namespace content {
 
 class RendererPpapiHost;
 class RenderView;
+class RenderViewImpl;
 
 // Base class for objects that want to filter incoming IPCs, and also get
 // notified of changes to the frame.
@@ -107,7 +106,7 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
   int routing_id() { return routing_id_; }
 
  private:
-  friend class ::RenderViewImpl;
+  friend class RenderViewImpl;
 
   // This is called by the RenderView when it's going away so that this object
   // can null out its pointer.

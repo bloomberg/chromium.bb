@@ -12,8 +12,7 @@
 #include <Cocoa/Cocoa.h>
 #include <Carbon/Carbon.h>  // for the kVK_* constants.
 
-using content::NativeWebKeyboardEvent;
-using content::RenderViewTest;
+namespace content {
 
 NSEvent* CmdDeadKeyEvent(NSEventType type, unsigned short code) {
   UniChar uniChar = 0;
@@ -147,3 +146,4 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   EXPECT_EQ(kArrowUpNoScroll, UTF16ToASCII(output));
 }
 
+}  // namespace content

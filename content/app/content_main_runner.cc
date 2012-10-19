@@ -95,15 +95,15 @@ extern int GpuMain(const content::MainFunctionParams&);
 extern int PluginMain(const content::MainFunctionParams&);
 extern int PpapiPluginMain(const content::MainFunctionParams&);
 extern int PpapiBrokerMain(const content::MainFunctionParams&);
-extern int RendererMain(const content::MainFunctionParams&);
 extern int WorkerMain(const content::MainFunctionParams&);
 extern int UtilityMain(const content::MainFunctionParams&);
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 namespace content {
+extern int RendererMain(const MainFunctionParams&);
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 extern int ZygoteMain(const MainFunctionParams&,
                       ZygoteForkDelegate* forkdelegate);
-}  // namespace content
 #endif
+}  // namespace content
 
 namespace {
 #if defined(OS_WIN)

@@ -30,7 +30,6 @@
 #include "webkit/plugins/ppapi/ppb_flash_menu_impl.h"
 
 class FilePath;
-class RenderViewImpl;
 class TransportDIB;
 
 namespace gfx {
@@ -72,6 +71,7 @@ class GamepadSharedMemoryReader;
 class PepperBrokerImpl;
 class PepperDeviceEnumerationEventHandler;
 class PepperPluginDelegateImpl;
+class RenderViewImpl;
 
 class PepperPluginDelegateImpl
     : public webkit::ppapi::PluginDelegate,

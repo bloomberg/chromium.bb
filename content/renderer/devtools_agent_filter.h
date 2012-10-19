@@ -12,6 +12,8 @@
 class MessageLoop;
 struct DevToolsMessageData;
 
+namespace content {
+
 // DevToolsAgentFilter is registered as an IPC filter in order to be able to
 // dispatch messages while on the IO thread. The reason for that is that while
 // debugging, Render thread is being held by the v8 and hence no messages
@@ -40,5 +42,7 @@ class DevToolsAgentFilter : public IPC::ChannelProxy::MessageFilter {
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsAgentFilter);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_DEVTOOLS_AGENT_FILTER_H_

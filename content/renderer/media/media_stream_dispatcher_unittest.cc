@@ -14,6 +14,7 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace content {
 namespace {
 
 const int kRouteId = 0;
@@ -25,12 +26,9 @@ const int kRequestId3 = 30;
 const int kRequestId4 = 40;
 static const char kLabel[] = "test";
 
-const content::MediaStreamDeviceType kAudioType =
-    content::MEDIA_DEVICE_AUDIO_CAPTURE;
-const content::MediaStreamDeviceType kVideoType =
-    content::MEDIA_DEVICE_VIDEO_CAPTURE;
-const content::MediaStreamDeviceType kNoAudioType =
-    content::MEDIA_NO_SERVICE;
+const MediaStreamDeviceType kAudioType = MEDIA_DEVICE_AUDIO_CAPTURE;
+const MediaStreamDeviceType kVideoType = MEDIA_DEVICE_VIDEO_CAPTURE;
+const MediaStreamDeviceType kNoAudioType = MEDIA_NO_SERVICE;
 
 class MockMediaStreamDispatcherEventHandler
     : public MediaStreamDispatcherEventHandler,
@@ -408,3 +406,5 @@ TEST(MediaStreamDispatcherTest, CancelGenerateStream) {
   EXPECT_EQ(handler->label_, stream_label1);
   EXPECT_EQ(0u, dispatcher->requests_.size());
 }
+
+}  // namespace content

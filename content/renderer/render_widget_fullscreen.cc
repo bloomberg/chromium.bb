@@ -9,6 +9,8 @@
 
 using WebKit::WebWidget;
 
+namespace content {
+
 // static
 RenderWidgetFullscreen* RenderWidgetFullscreen::Create(int32 opener_id) {
   DCHECK_NE(MSG_ROUTING_NONE, opener_id);
@@ -51,3 +53,5 @@ void RenderWidgetFullscreen::Init(int32 opener_id) {
       new ViewHostMsg_CreateFullscreenWidget(
           opener_id, &routing_id_, &surface_id_));
 }
+
+}  // namespace content

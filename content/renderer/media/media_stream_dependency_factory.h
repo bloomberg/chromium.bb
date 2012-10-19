@@ -22,6 +22,7 @@ class WaitableEvent;
 namespace content {
 class IpcNetworkManager;
 class IpcPacketSocketFactory;
+class WebRtcAudioDeviceImpl;
 }
 
 namespace talk_base {
@@ -44,7 +45,6 @@ class WebRTCPeerConnectionHandlerClient;
 }
 
 class VideoCaptureImplManager;
-class WebRtcAudioDeviceImpl;
 
 // Object factory for RTC MediaStreams and RTC PeerConnections.
 class CONTENT_EXPORT MediaStreamDependencyFactory
@@ -76,7 +76,7 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   // stopped.
   bool CreateNativeLocalMediaStream(
       WebKit::WebMediaStreamDescriptor* description,
-      const MediaStreamExtraData::StreamStopCallback& stream_stop);
+      const content::MediaStreamExtraData::StreamStopCallback& stream_stop);
 
   // Asks the libjingle PeerConnection factory to create a libjingle
   // PeerConnection object.
@@ -149,7 +149,7 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
 
   scoped_refptr<VideoCaptureImplManager> vc_manager_;
   scoped_refptr<content::P2PSocketDispatcher> p2p_socket_dispatcher_;
-  scoped_refptr<WebRtcAudioDeviceImpl> audio_device_;
+  scoped_refptr<content::WebRtcAudioDeviceImpl> audio_device_;
 
   // PeerConnection threads. signaling_thread_ is created from the
   // "current" chrome thread.

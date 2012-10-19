@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
+namespace content {
+
 MouseLockDispatcher::MouseLockDispatcher() : mouse_locked_(false),
                                              pending_lock_request_(false),
                                              pending_unlock_request_(false),
@@ -100,3 +102,5 @@ void MouseLockDispatcher::OnMouseLockLost() {
   if (last_target)
     last_target->OnMouseLockLost();
 }
+
+}  // namespace content

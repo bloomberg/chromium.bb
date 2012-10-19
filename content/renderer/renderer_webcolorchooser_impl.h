@@ -15,10 +15,11 @@ namespace WebKit {
 class WebFrame;
 }
 
+namespace content {
 class RenderViewImpl;
 
 class RendererWebColorChooserImpl : public WebKit::WebColorChooser,
-                                    public content::RenderViewObserver {
+                                    public RenderViewObserver {
  public:
   explicit RendererWebColorChooserImpl(RenderViewImpl* sender,
                                        WebKit::WebColorChooserClient*);
@@ -43,5 +44,7 @@ class RendererWebColorChooserImpl : public WebKit::WebColorChooser,
 
   DISALLOW_COPY_AND_ASSIGN(RendererWebColorChooserImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_RENDERER_WEBCOLORCHOOSER_IMPL_H_

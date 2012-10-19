@@ -8,11 +8,13 @@
 #include "base/basictypes.h"
 #include "content/public/renderer/render_view_observer.h"
 
+namespace content {
+
 // Class which observes user input events and postpones
 // idle notifications if the user is active.
-class IdleUserDetector : public content::RenderViewObserver {
+class IdleUserDetector : public RenderViewObserver {
  public:
-  IdleUserDetector(content::RenderView* render_view);
+  IdleUserDetector(RenderView* render_view);
   virtual ~IdleUserDetector();
 
  private:
@@ -23,5 +25,7 @@ class IdleUserDetector : public content::RenderViewObserver {
 
   DISALLOW_COPY_AND_ASSIGN(IdleUserDetector);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_IDLE_USER_DETECTOR_H_

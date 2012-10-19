@@ -14,8 +14,8 @@
 
 static webrtc::LocalMediaStreamInterface* GetLocalNativeMediaStream(
     const WebKit::WebMediaStreamDescriptor& stream) {
-  MediaStreamExtraData* extra_data =
-    static_cast<MediaStreamExtraData*>(stream.extraData());
+  content::MediaStreamExtraData* extra_data =
+      static_cast<content::MediaStreamExtraData*>(stream.extraData());
   if (extra_data)
     return extra_data->local_stream();
   return NULL;
@@ -91,6 +91,6 @@ PeerConnectionHandlerBase::CreateWebKitStreamDescriptor(
   WebKit::WebMediaStreamDescriptor descriptor;
   descriptor.initialize(UTF8ToUTF16(stream->label()),
                         audio_source_vector, video_source_vector);
-  descriptor.setExtraData(new MediaStreamExtraData(stream));
+  descriptor.setExtraData(new content::MediaStreamExtraData(stream));
   return descriptor;
 }

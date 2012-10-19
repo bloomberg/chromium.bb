@@ -11,10 +11,12 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebExternalPopupMenu.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupMenuInfo.h"
 
-class RenderViewImpl;
 namespace WebKit {
 class WebExternalPopupMenuClient;
 }
+
+namespace content {
+class RenderViewImpl;
 
 class ExternalPopupMenu : public WebKit::WebExternalPopupMenu {
  public:
@@ -46,5 +48,7 @@ class ExternalPopupMenu : public WebKit::WebExternalPopupMenu {
 
   DISALLOW_COPY_AND_ASSIGN(ExternalPopupMenu);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_EXTERNAL_POPUP_MENU_H_

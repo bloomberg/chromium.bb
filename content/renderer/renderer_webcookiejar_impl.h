@@ -9,6 +9,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCookieJar.h"
 
+namespace content {
 class RenderViewImpl;
 
 class RendererWebCookieJarImpl : public WebKit::WebCookieJar {
@@ -37,5 +38,7 @@ class RendererWebCookieJarImpl : public WebKit::WebCookieJar {
 
   RenderViewImpl* sender_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_RENDERER_WEBCOOKIEJAR_IMPL_H_

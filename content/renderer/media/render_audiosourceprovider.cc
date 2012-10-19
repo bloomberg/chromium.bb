@@ -16,10 +16,10 @@
 #include "media/base/audio_renderer_mixer_input.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAudioSourceProviderClient.h"
 
-using content::AudioDeviceFactory;
-using content::AudioRendererMixerManager;
 using std::vector;
 using WebKit::WebVector;
+
+namespace content {
 
 RenderAudioSourceProvider::RenderAudioSourceProvider()
     : is_initialized_(false),
@@ -149,3 +149,5 @@ void RenderAudioSourceProvider::Initialize(
 }
 
 RenderAudioSourceProvider::~RenderAudioSourceProvider() {}
+
+}  // namespace content

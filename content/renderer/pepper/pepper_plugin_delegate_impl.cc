@@ -144,7 +144,7 @@ class HostDispatcherWrapper
       return false;
     }
     dispatcher_->channel()->SetRestrictDispatchChannelGroup(
-        content::kRendererRestrictDispatchGroup_Pepper);
+        kRendererRestrictDispatchGroup_Pepper);
     return true;
   }
 
@@ -315,7 +315,7 @@ void CreateHostForInProcessModule(RenderViewImpl* render_view,
       PepperPluginRegistry::GetInstance()->GetInfoForPlugin(
           webplugin_info)->permissions);
   RendererPpapiHostImpl* host_impl =
-      content::RendererPpapiHostImpl::CreateOnModuleForInProcess(
+      RendererPpapiHostImpl::CreateOnModuleForInProcess(
           module, perms);
   render_view->PpapiPluginCreated(host_impl);
 }
@@ -418,7 +418,7 @@ scoped_refptr<webkit::ppapi::PluginModule>
     PepperPluginDelegateImpl::CreateBrowserPluginModule(
         const IPC::ChannelHandle& channel_handle,
         int guest_process_id) {
-  content::old::BrowserPluginRegistry* registry =
+  old::BrowserPluginRegistry* registry =
       RenderThreadImpl::current()->browser_plugin_registry();
   scoped_refptr<webkit::ppapi::PluginModule> module =
       registry->GetModule(guest_process_id);
@@ -501,7 +501,7 @@ RendererPpapiHost* PepperPluginDelegateImpl::CreateOutOfProcessModule(
     return NULL;
 
   RendererPpapiHostImpl* host_impl =
-      content::RendererPpapiHostImpl::CreateOnModuleForOutOfProcess(
+      RendererPpapiHostImpl::CreateOnModuleForOutOfProcess(
           module, dispatcher->dispatcher(), permissions);
   render_view_->PpapiPluginCreated(host_impl);
 
@@ -1496,7 +1496,7 @@ void PepperPluginDelegateImpl::SetContentRestriction(int restrictions) {
 
 void PepperPluginDelegateImpl::SaveURLAs(const GURL& url) {
   WebFrame* frame = render_view_->webview()->mainFrame();
-  content::Referrer referrer(frame->document().url(),
+  Referrer referrer(frame->document().url(),
                              frame->document().referrerPolicy());
   render_view_->Send(new ViewHostMsg_SaveURLAs(
       render_view_->routing_id(), url, referrer));

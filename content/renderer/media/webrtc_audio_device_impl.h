@@ -201,6 +201,9 @@
 //    (WebRTC client a media layer). This approach ensures that we can avoid
 //    transferring maximum levels between the renderer and the browser.
 //
+
+namespace content {
+
 class CONTENT_EXPORT WebRtcAudioDeviceImpl
     : NON_EXPORTED_BASE(public webrtc::AudioDeviceModule),
       NON_EXPORTED_BASE(public media::AudioRendererSink::RenderCallback),
@@ -447,5 +450,7 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcAudioDeviceImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_WEBRTC_AUDIO_DEVICE_IMPL_H_

@@ -10,6 +10,8 @@
 
 using WebKit::WebFrame;
 
+namespace content {
+
 namespace {
 
 v8::Handle<v8::Value> GetDoNotTrack(v8::Local<v8::String> property,
@@ -26,8 +28,6 @@ v8::Handle<v8::Value> GetDoNotTrack(v8::Local<v8::String> property,
 }
 
 }  // namespace
-
-namespace content {
 
 void InjectDoNotTrackBindings(WebFrame* frame) {
   v8::HandleScope handle_scope;

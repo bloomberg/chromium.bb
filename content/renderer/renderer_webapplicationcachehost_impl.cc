@@ -14,6 +14,8 @@ using appcache::AppCacheBackend;
 using WebKit::WebApplicationCacheHostClient;
 using WebKit::WebConsoleMessage;
 
+namespace content {
+
 RendererWebApplicationCacheHostImpl::RendererWebApplicationCacheHostImpl(
     RenderViewImpl* render_view,
     WebApplicationCacheHostClient* client,
@@ -54,3 +56,5 @@ RenderViewImpl* RendererWebApplicationCacheHostImpl::GetRenderView() {
   return static_cast<RenderViewImpl*>
       (RenderThreadImpl::current()->ResolveRoute(routing_id_));
 }
+
+}  // namespace content

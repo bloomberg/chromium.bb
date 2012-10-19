@@ -31,6 +31,8 @@ namespace WebKit {
 class WebAudioSourceProviderClient;
 }
 
+namespace content {
+
 class RenderAudioSourceProvider
     : public WebKit::WebAudioSourceProvider,
       public media::AudioRendererSink {
@@ -79,5 +81,7 @@ class RenderAudioSourceProvider
 
   DISALLOW_COPY_AND_ASSIGN(RenderAudioSourceProvider);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_RENDER_AUDIOSOURCEPROVIDER_H_

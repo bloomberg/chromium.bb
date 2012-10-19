@@ -31,6 +31,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 
+namespace content {
 namespace {
 
 const int kVideoCaptureWidth = 640;
@@ -50,21 +51,21 @@ std::string GetMandatoryStreamConstraint(
 void UpdateOptionsIfTabMediaRequest(
     const WebKit::WebUserMediaRequest& user_media_request,
     media_stream::StreamOptions* options) {
-  if (options->audio_type != content::MEDIA_NO_SERVICE &&
+  if (options->audio_type != MEDIA_NO_SERVICE &&
       GetMandatoryStreamConstraint(user_media_request.audioConstraints(),
                                    media_stream::kMediaStreamSource) ==
           media_stream::kMediaStreamSourceTab) {
-    options->audio_type = content::MEDIA_TAB_AUDIO_CAPTURE;
+    options->audio_type = MEDIA_TAB_AUDIO_CAPTURE;
     options->audio_device_id = GetMandatoryStreamConstraint(
         user_media_request.audioConstraints(),
         media_stream::kMediaStreamSourceId);
   }
 
-  if (options->video_type != content::MEDIA_NO_SERVICE &&
+  if (options->video_type != MEDIA_NO_SERVICE &&
       GetMandatoryStreamConstraint(user_media_request.videoConstraints(),
                                    media_stream::kMediaStreamSource) ==
           media_stream::kMediaStreamSourceTab) {
-    options->video_type = content::MEDIA_TAB_VIDEO_CAPTURE;
+    options->video_type = MEDIA_TAB_VIDEO_CAPTURE;
     options->video_device_id = GetMandatoryStreamConstraint(
         user_media_request.videoConstraints(),
         media_stream::kMediaStreamSourceId);
@@ -96,11 +97,11 @@ static void CreateWebKitSourceVector(
 }
 
 MediaStreamImpl::MediaStreamImpl(
-    content::RenderView* render_view,
+    RenderView* render_view,
     MediaStreamDispatcher* media_stream_dispatcher,
     VideoCaptureImplManager* vc_manager,
     MediaStreamDependencyFactory* dependency_factory)
-    : content::RenderViewObserver(render_view),
+    : RenderViewObserver(render_view),
       dependency_factory_(dependency_factory),
       media_stream_dispatcher_(media_stream_dispatcher),
       vc_manager_(vc_manager) {
@@ -126,8 +127,7 @@ void MediaStreamImpl::requestUserMedia(
   UpdateWebRTCMethodCount(WEBKIT_GET_USER_MEDIA);
   DCHECK(CalledOnValidThread());
   int request_id = g_next_request_id++;
-  media_stream::StreamOptions options(content::MEDIA_NO_SERVICE,
-                                      content::MEDIA_NO_SERVICE);
+  media_stream::StreamOptions options(MEDIA_NO_SERVICE, MEDIA_NO_SERVICE);
   WebKit::WebFrame* frame = NULL;
   GURL security_origin;
 
@@ -136,14 +136,14 @@ void MediaStreamImpl::requestUserMedia(
   if (user_media_request.isNull()) {
     // We are in a test.
     if (audio_sources.size() > 0)
-      options.audio_type = content::MEDIA_DEVICE_AUDIO_CAPTURE;
+      options.audio_type = MEDIA_DEVICE_AUDIO_CAPTURE;
     if (video_sources.size() > 0)
-      options.video_type = content::MEDIA_DEVICE_VIDEO_CAPTURE;
+      options.video_type = MEDIA_DEVICE_VIDEO_CAPTURE;
   } else {
     if (user_media_request.audio())
-      options.audio_type = content::MEDIA_DEVICE_AUDIO_CAPTURE;
+      options.audio_type = MEDIA_DEVICE_AUDIO_CAPTURE;
     if (user_media_request.video())
-      options.video_type = content::MEDIA_DEVICE_VIDEO_CAPTURE;
+      options.video_type = MEDIA_DEVICE_VIDEO_CAPTURE;
 
     security_origin = GURL(user_media_request.securityOrigin().toString());
     // Get the WebFrame that requested a MediaStream.
@@ -405,7 +405,7 @@ MediaStreamImpl::CreateLocalVideoFrameProvider(
   DVLOG(1) << "MediaStreamImpl::CreateLocalVideoFrameProvider video_session_id:"
            << video_session_id;
 
-  return new content::LocalVideoCapture(
+  return new LocalVideoCapture(
       video_session_id,
       vc_manager_.get(),
       capability,
@@ -424,7 +424,7 @@ MediaStreamImpl::CreateRemoteVideoFrameProvider(
   DVLOG(1) << "MediaStreamImpl::CreateRemoteVideoFrameProvider label:"
            << stream->label();
 
-  return new content::RTCVideoRenderer(
+  return new RTCVideoRenderer(
       stream->video_tracks()->at(0),
       error_cb,
       repaint_cb);
@@ -494,3 +494,5 @@ void MediaStreamExtraData::OnLocalStreamStop() {
   if (!stream_stop_callback_.is_null())
     stream_stop_callback_.Run(local_stream_->label());
 }
+
+}  // namespace content

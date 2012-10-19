@@ -12,9 +12,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
-using content::AccessibilityNodeData;
+namespace content {
 
-class RendererAccessibilityTest : public content::RenderViewTest {
+class RendererAccessibilityTest : public RenderViewTest {
  public:
   RendererAccessibilityTest() {}
 
@@ -23,7 +23,7 @@ class RendererAccessibilityTest : public content::RenderViewTest {
   }
 
   virtual void SetUp() {
-    content::RenderViewTest::SetUp();
+    RenderViewTest::SetUp();
     sink_ = &render_thread_->sink();
   }
 
@@ -188,3 +188,5 @@ TEST_F(RendererAccessibilityTest, EditableTextModeFocusNotifications) {
     EXPECT_EQ(notification.id, 1);
   }
 }
+
+}  // namespace content

@@ -24,6 +24,8 @@ using dom_storage::DomStorageCachedArea;
 using dom_storage::DomStorageProxy;
 using dom_storage::ValuesMap;
 
+namespace content {
+
 namespace {
 // MessageThrottlingFilter -------------------------------------------
 // Used to limit the number of ipc messages pending completion so we
@@ -334,3 +336,5 @@ void DomStorageDispatcher::OnStorageEvent(
 void DomStorageDispatcher::OnAsyncOperationComplete(bool success) {
   proxy_->CompleteOnePendingCallback(success);
 }
+
+}  // namespace content

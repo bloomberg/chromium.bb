@@ -30,7 +30,6 @@ struct NPObject;
 class NPObjectStub;
 class PluginChannelHost;
 struct PluginHostMsg_URLRequest_Params;
-class RenderViewImpl;
 class SkBitmap;
 
 namespace base {
@@ -46,6 +45,9 @@ namespace npapi {
 class WebPlugin;
 }
 }
+
+namespace content {
+class RenderViewImpl;
 
 // An implementation of WebPluginDelegate that proxies all calls to
 // the plugin process.
@@ -326,5 +328,7 @@ class WebPluginDelegateProxy
 
   DISALLOW_COPY_AND_ASSIGN(WebPluginDelegateProxy);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_WEBPLUGIN_DELEGATE_PROXY_H_

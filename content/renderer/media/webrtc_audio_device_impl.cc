@@ -15,9 +15,10 @@
 #include "media/audio/audio_util.h"
 #include "media/audio/sample_rates.h"
 
-using content::AudioDeviceFactory;
 using media::AudioParameters;
 using media::ChannelLayout;
+
+namespace content {
 
 static const int64 kMillisecondsBetweenProcessCalls = 5000;
 static const double kMaxVolumeLevel = 255.0;
@@ -1164,3 +1165,5 @@ int32_t WebRtcAudioDeviceImpl::GetLoudspeakerStatus(bool* enabled) const {
 void WebRtcAudioDeviceImpl::SetSessionId(int session_id) {
   session_id_ = session_id;
 }
+
+}  // namespace content

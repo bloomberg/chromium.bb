@@ -9,6 +9,8 @@
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
 
+namespace content {
+
 // TODO(boliu): Override non-supported methods with no-op? eg setWindowRect().
 class RenderWidgetFullscreen : public RenderWidget {
  public:
@@ -26,5 +28,7 @@ class RenderWidgetFullscreen : public RenderWidget {
 
   void Init(int32 opener_id);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_RENDER_WIDGET_FULLSCREEN_H_

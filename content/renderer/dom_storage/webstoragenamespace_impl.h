@@ -8,6 +8,8 @@
 #include "base/basictypes.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebStorageNamespace.h"
 
+namespace content {
+
 class WebStorageNamespaceImpl : public WebKit::WebStorageNamespace {
  public:
   // The default constructor creates a local storage namespace, the second
@@ -25,5 +27,7 @@ class WebStorageNamespaceImpl : public WebKit::WebStorageNamespace {
  private:
   int64 namespace_id_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_DOM_STORAGE_WEBSTORAGENAMESPACE_IMPL_H_

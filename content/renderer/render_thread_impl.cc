@@ -118,8 +118,8 @@ using WebKit::WebScriptController;
 using WebKit::WebSecurityPolicy;
 using WebKit::WebString;
 using WebKit::WebView;
-using content::AudioRendererMixerManager;
-using content::RenderProcessObserver;
+
+namespace content {
 
 namespace {
 
@@ -133,13 +133,13 @@ const int kIdleCPUUsageThresholdInPercents = 3;
 base::LazyInstance<base::ThreadLocalPointer<RenderThreadImpl> >
     lazy_tls = LAZY_INSTANCE_INITIALIZER;
 
-class RenderViewZoomer : public content::RenderViewVisitor {
+class RenderViewZoomer : public RenderViewVisitor {
  public:
   RenderViewZoomer(const std::string& host, double zoom_level)
       : host_(host), zoom_level_(zoom_level) {
   }
 
-  virtual bool Visit(content::RenderView* render_view) {
+  virtual bool Visit(RenderView* render_view) {
     WebView* webview = render_view->GetWebView();
     WebDocument document = webview->mainFrame()->document();
 
@@ -297,9 +297,9 @@ void RenderThreadImpl::Init() {
   dom_storage_dispatcher_.reset(new DomStorageDispatcher());
   main_thread_indexed_db_dispatcher_.reset(new IndexedDBDispatcher());
 
-  browser_plugin_registry_.reset(new content::old::BrowserPluginRegistry());
+  browser_plugin_registry_.reset(new old::BrowserPluginRegistry());
   browser_plugin_channel_manager_.reset(
-      new content::old::BrowserPluginChannelManager());
+      new old::BrowserPluginChannelManager());
   AddObserver(browser_plugin_channel_manager_.get());
 
   media_stream_center_ = NULL;
@@ -308,8 +308,7 @@ void RenderThreadImpl::Init() {
   AddFilter(db_message_filter_.get());
 
 #if defined(ENABLE_WEBRTC)
-  p2p_socket_dispatcher_ = new content::P2PSocketDispatcher(
-      GetIOMessageLoopProxy());
+  p2p_socket_dispatcher_ = new P2PSocketDispatcher(GetIOMessageLoopProxy());
   AddFilter(p2p_socket_dispatcher_);
 #endif  // defined(ENABLE_WEBRTC)
   vc_manager_ = new VideoCaptureImplManager();
@@ -323,18 +322,18 @@ void RenderThreadImpl::Init() {
 
   AddFilter(new IndexedDBMessageFilter);
 
-  content::GetContentClient()->renderer()->RenderThreadStarted();
+  GetContentClient()->renderer()->RenderThreadStarted();
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kEnableGpuBenchmarking))
-      RegisterExtension(content::GpuBenchmarkingExtension::Get());
+      RegisterExtension(GpuBenchmarkingExtension::Get());
 
   context_lost_cb_.reset(new GpuVDAContextLostCallback());
 
   // Note that under Linux, the media library will normally already have
   // been initialized by the Zygote before this instance became a Renderer.
   FilePath media_path;
-  PathService::Get(content::DIR_MEDIA_LIBS, &media_path);
+  PathService::Get(DIR_MEDIA_LIBS, &media_path);
   if (!media_path.empty())
     media::InitializeMediaLibrary(media_path);
 
@@ -415,7 +414,7 @@ bool RenderThreadImpl::Send(IPC::Message* msg) {
       if ((msg->type() == ViewHostMsg_GetCookies::ID ||
            msg->type() == ViewHostMsg_GetRawCookies::ID ||
            msg->type() == ViewHostMsg_CookiesEnabled::ID) &&
-          content::GetContentClient()->renderer()->
+          GetContentClient()->renderer()->
               ShouldPumpEventsDuringCookieMessage()) {
         pumping_events = true;
       }
@@ -522,17 +521,16 @@ void RenderThreadImpl::SetOutgoingMessageFilter(
     IPC::ChannelProxy::OutgoingMessageFilter* filter) {
 }
 
-void RenderThreadImpl::AddObserver(content::RenderProcessObserver* observer) {
+void RenderThreadImpl::AddObserver(RenderProcessObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void RenderThreadImpl::RemoveObserver(
-    content::RenderProcessObserver* observer) {
+void RenderThreadImpl::RemoveObserver(RenderProcessObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
 void RenderThreadImpl::SetResourceDispatcherDelegate(
-    content::ResourceDispatcherDelegate* delegate) {
+    ResourceDispatcherDelegate* delegate) {
   resource_dispatcher()->set_delegate(delegate);
 }
 
@@ -540,8 +538,7 @@ void RenderThreadImpl::WidgetHidden() {
   DCHECK(hidden_widget_count_ < widget_count_);
   hidden_widget_count_++;
 
-  if (!content::GetContentClient()->renderer()->
-          RunIdleHandlerWhenWidgetsHidden()) {
+  if (!GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden()) {
     return;
   }
 
@@ -552,8 +549,7 @@ void RenderThreadImpl::WidgetHidden() {
 void RenderThreadImpl::WidgetRestored() {
   DCHECK_GT(hidden_widget_count_, 0);
   hidden_widget_count_--;
-  if (!content::GetContentClient()->renderer()->
-          RunIdleHandlerWhenWidgetsHidden()) {
+  if (!GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden()) {
     return;
   }
 
@@ -576,7 +572,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   // The new design can be tracked at: http://crbug.com/134492.
   bool is_guest = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kGuestRenderer);
-  bool enable = content::IsThreadedCompositingEnabled() && !is_guest;
+  bool enable = IsThreadedCompositingEnabled() && !is_guest;
   if (enable) {
     compositor_thread_.reset(new CompositorThread(this));
     AddFilter(compositor_thread_->GetMessageFilter());
@@ -603,7 +599,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDomAutomationController)) {
-    base::StringPiece extension = content::GetContentClient()->GetDataResource(
+    base::StringPiece extension = GetContentClient()->GetDataResource(
         IDR_DOM_AUTOMATION_JS, ui::SCALE_FACTOR_NONE);
     RegisterExtension(new v8::Extension(
         "dom_automation.js", extension.data(), 0, NULL, extension.size()));
@@ -709,10 +705,8 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   devtools_agent_message_filter_ = new DevToolsAgentFilter();
   AddFilter(devtools_agent_message_filter_.get());
 
-  if (content::GetContentClient()->renderer()->
-         RunIdleHandlerWhenWidgetsHidden()) {
+  if (GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
     ScheduleIdleHandler(kLongIdleHandlerDelayMs);
-  }
 }
 
 void RenderThreadImpl::RegisterSchemes() {
@@ -749,7 +743,7 @@ void RenderThreadImpl::ScheduleIdleHandler(int64 initial_delay_ms) {
 
 void RenderThreadImpl::IdleHandler() {
   bool run_in_foreground_tab = (widget_count_ > hidden_widget_count_) &&
-                               content::GetContentClient()->renderer()->
+                               GetContentClient()->renderer()->
                                    RunIdleHandlerWhenWidgetsHidden();
   if (run_in_foreground_tab) {
     IdleHandlerInForegroundTab();
@@ -859,8 +853,7 @@ RenderThreadImpl::GetGpuVDAContext3D() {
   return gpu_vda_context3d_.get();
 }
 
-content::AudioRendererMixerManager*
-RenderThreadImpl::GetAudioRendererMixerManager() {
+AudioRendererMixerManager* RenderThreadImpl::GetAudioRendererMixerManager() {
   if (!audio_renderer_mixer_manager_.get()) {
     audio_renderer_mixer_manager_.reset(new AudioRendererMixerManager(
         audio_hardware::GetOutputSampleRate(),
@@ -977,7 +970,7 @@ void RenderThreadImpl::DoNotNotifyWebKitOfModalLoop() {
 void RenderThreadImpl::OnSetZoomLevelForCurrentURL(const std::string& host,
                                                    double zoom_level) {
   RenderViewZoomer zoomer(host, zoom_level);
-  content::RenderView::ForEach(&zoomer);
+  RenderView::ForEach(&zoomer);
 }
 
 bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
@@ -1057,7 +1050,7 @@ void RenderThreadImpl::OnCreateNewView(const ViewMsg_New_Params& params) {
 }
 
 GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
-    content::CauseForGpuLaunch cause_for_gpu_launch) {
+    CauseForGpuLaunch cause_for_gpu_launch) {
   TRACE_EVENT0("gpu", "RenderThreadImpl::EstablishGpuChannelSync");
 
   if (gpu_channel_.get()) {
@@ -1074,7 +1067,7 @@ GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
   // Ask the browser for the channel name.
   int client_id = 0;
   IPC::ChannelHandle channel_handle;
-  content::GPUInfo gpu_info;
+  GPUInfo gpu_info;
   if (!Send(new GpuHostMsg_EstablishGpuChannel(cause_for_gpu_launch,
                                                &client_id,
                                                &channel_handle,
@@ -1090,7 +1083,7 @@ GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(
 
   gpu_channel_ = new GpuChannelHost(this, 0, client_id);
   gpu_channel_->set_gpu_info(gpu_info);
-  content::GetContentClient()->SetGpuInfo(gpu_info);
+  GetContentClient()->SetGpuInfo(gpu_info);
 
   // Connect to the GPU process if a channel name was received.
   gpu_channel_->Connect(channel_handle);
@@ -1102,7 +1095,7 @@ WebKit::WebMediaStreamCenter* RenderThreadImpl::CreateMediaStreamCenter(
     WebKit::WebMediaStreamCenterClient* client) {
 #if defined(ENABLE_WEBRTC)
   if (!media_stream_center_)
-    media_stream_center_ = new content::MediaStreamCenter(
+    media_stream_center_ = new MediaStreamCenter(
         client, GetMediaStreamDependencyFactory());
 #endif
   return media_stream_center_;
@@ -1148,7 +1141,7 @@ void RenderThreadImpl::OnNetworkStateChanged(bool online) {
 }
 
 void RenderThreadImpl::OnTempCrashWithData(const GURL& data) {
-  content::GetContentClient()->SetActiveURL(data);
+  GetContentClient()->SetActiveURL(data);
   CHECK(false);
 }
 
@@ -1161,3 +1154,5 @@ RenderThreadImpl::GetFileThreadMessageLoopProxy() {
   }
   return file_thread_->message_loop_proxy();
 }
+
+}  // namespace content

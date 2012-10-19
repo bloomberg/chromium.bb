@@ -10,9 +10,11 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
 
+namespace content {
+
 RenderViewMouseLockDispatcher::RenderViewMouseLockDispatcher(
     RenderViewImpl* render_view_impl)
-    : content::RenderViewObserver(render_view_impl),
+    : RenderViewObserver(render_view_impl),
       render_view_impl_(render_view_impl) {
 }
 
@@ -60,3 +62,5 @@ void RenderViewMouseLockDispatcher::OnMsgLockMouseACK(bool succeeded) {
   if (succeeded && render_view_impl_->webwidget())
     render_view_impl_->webwidget()->mouseCaptureLost();
 }
+
+}  // namespace content

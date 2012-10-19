@@ -10,15 +10,16 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotification.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 
-class RenderViewImpl;
-
 namespace WebKit {
 class WebNotificationPermissionCallback;
 }
 
+namespace content {
+class RenderViewImpl;
+
 // NotificationProvider class is owned by the RenderView.  Only
 // to be used on the main thread.
-class NotificationProvider : public content::RenderViewObserver,
+class NotificationProvider : public RenderViewObserver,
                              public WebKit::WebNotificationPresenter {
  public:
   explicit NotificationProvider(RenderViewImpl* render_view);
@@ -55,5 +56,7 @@ class NotificationProvider : public content::RenderViewObserver,
 
   DISALLOW_COPY_AND_ASSIGN(NotificationProvider);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_NOTIFICATION_PROVIDER_H_

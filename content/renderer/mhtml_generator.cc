@@ -10,8 +10,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializer.h"
 
+namespace content {
+
 MHTMLGenerator::MHTMLGenerator(RenderViewImpl* render_view)
-    : content::RenderViewObserver(render_view),
+    : RenderViewObserver(render_view),
       file_(base::kInvalidPlatformFileValue) {
 }
 
@@ -63,3 +65,5 @@ int64 MHTMLGenerator::GenerateMHTML() {
   }
   return total_bytes_written;
 }
+
+}  // namespace content

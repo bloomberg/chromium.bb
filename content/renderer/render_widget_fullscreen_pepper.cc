@@ -43,6 +43,8 @@ using WebKit::WebVector;
 using WebKit::WebWidget;
 using WebKit::WGC3Dintptr;
 
+namespace content {
+
 namespace {
 
 // See third_party/WebKit/Source/WebCore/dom/WheelEvent.h.
@@ -435,7 +437,7 @@ void RenderWidgetFullscreenPepper::DidChangeCursor(
 webkit::ppapi::PluginDelegate::PlatformContext3D*
 RenderWidgetFullscreenPepper::CreateContext3D() {
 #ifdef ENABLE_GPU
-  return new content::PlatformContext3DImpl(this);
+  return new PlatformContext3DImpl(this);
 #else
   return NULL;
 #endif
@@ -443,7 +445,7 @@ RenderWidgetFullscreenPepper::CreateContext3D() {
 
 void RenderWidgetFullscreenPepper::ReparentContext(
     webkit::ppapi::PluginDelegate::PlatformContext3D* context) {
-  static_cast<content::PlatformContext3DImpl*>(context)->SetParentContext(this);
+  static_cast<PlatformContext3DImpl*>(context)->SetParentContext(this);
 }
 
 MouseLockDispatcher* RenderWidgetFullscreenPepper::GetMouseLockDispatcher() {
@@ -542,7 +544,7 @@ void RenderWidgetFullscreenPepper::CreateContext() {
       attributes,
       true /* bind generates resources */,
       active_url_,
-      content::CAUSE_FOR_GPU_LAUNCH_RENDERWIDGETFULLSCREENPEPPER_CREATECONTEXT);
+      CAUSE_FOR_GPU_LAUNCH_RENDERWIDGETFULLSCREENPEPPER_CREATECONTEXT);
   if (!context_)
     return;
 
@@ -680,3 +682,5 @@ RenderWidgetFullscreenPepper::GetParentContextForPlatformContext3D() {
     return NULL;
   return context_;
 }
+
+}  // namespace content

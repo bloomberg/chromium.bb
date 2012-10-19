@@ -20,15 +20,6 @@
 
 class AudioInputRendererHost;
 class AudioRendererHost;
-class RenderThreadImpl;
-class WebRTCMockRenderProcess;
-
-namespace content {
-class ContentRendererClient;
-class MockResourceContext;
-class ResourceContext;
-class TestBrowserThread;
-}
 
 namespace media {
 class AudioManager;
@@ -53,6 +44,14 @@ class ScopedCOMInitializer;
 }
 }
 #endif
+
+namespace content {
+class ContentRendererClient;
+class MockResourceContext;
+class RenderThreadImpl;
+class ResourceContext;
+class TestBrowserThread;
+class WebRTCMockRenderProcess;
 
 // Scoped class for WebRTC interfaces.  Fetches the wrapped interface
 // in the constructor via WebRTC's GetInterface mechanism and then releases
@@ -210,5 +209,7 @@ class WebRTCTransportImpl : public webrtc::Transport {
  private:
   webrtc::VoENetwork* network_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_TEST_WEBRTC_AUDIO_DEVICE_TEST_H_

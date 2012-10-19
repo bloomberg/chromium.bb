@@ -7,6 +7,8 @@
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view_impl.h"
 
+namespace content {
+
 static int GenerateColorChooserIdentifier() {
   static int next = 0;
   return ++next;
@@ -15,7 +17,7 @@ static int GenerateColorChooserIdentifier() {
 RendererWebColorChooserImpl::RendererWebColorChooserImpl(
     RenderViewImpl* render_view,
     WebKit::WebColorChooserClient* client)
-    : content::RenderViewObserver(render_view),
+    : RenderViewObserver(render_view),
       identifier_(GenerateColorChooserIdentifier()),
       client_(client) {
 }
@@ -62,3 +64,5 @@ void RendererWebColorChooserImpl::OnDidEndColorChooser(int color_chooser_id) {
     return;
   client_->didEndChooser();
 }
+
+}  // namespace content

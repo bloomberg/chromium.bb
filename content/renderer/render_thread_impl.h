@@ -25,14 +25,10 @@
 class AppCacheDispatcher;
 class AudioInputMessageFilter;
 class AudioMessageFilter;
-class CompositorThread;
 class DBMessageFilter;
-class DevToolsAgentFilter;
-class DomStorageDispatcher;
 class GpuChannelHost;
 class IndexedDBDispatcher;
 class MediaStreamDependencyFactory;
-class RendererWebKitPlatformSupportImpl;
 class SkBitmap;
 class VideoCaptureImplManager;
 struct ViewMsg_New_Params;
@@ -59,21 +55,24 @@ namespace IPC {
 class ForwardingMessageFilter;
 }
 
+namespace v8 {
+class Extension;
+}
+
 namespace content {
+
 class AudioRendererMixerManager;
+class CompositorThread;
+class DevToolsAgentFilter;
+class DomStorageDispatcher;
 class MediaStreamCenter;
 class P2PSocketDispatcher;
+class RendererWebKitPlatformSupportImpl;
 class RenderProcessObserver;
 
 namespace old {
 class BrowserPluginChannelManager;
 class BrowserPluginRegistry;
-}
-
-}
-
-namespace v8 {
-class Extension;
 }
 
 // The RenderThreadImpl class represents a background thread where RenderView
@@ -85,7 +84,7 @@ class Extension;
 // Most of the communication occurs in the form of IPC messages.  They are
 // routed to the RenderThread according to the routing IDs of the messages.
 // The routing IDs correspond to RenderView instances.
-class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
+class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
                                         public ChildThread,
                                         public GpuChannelHostFactory {
  public:
@@ -100,7 +99,7 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   // module are registered properly.  Static to allow sharing with tests.
   static void RegisterSchemes();
 
-  // content::RenderThread implementation:
+  // RenderThread implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
   virtual MessageLoop* GetMessageLoop() OVERRIDE;
   virtual IPC::SyncChannel* GetChannel() OVERRIDE;
@@ -115,11 +114,10 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   virtual void RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) OVERRIDE;
   virtual void SetOutgoingMessageFilter(
       IPC::ChannelProxy::OutgoingMessageFilter* filter) OVERRIDE;
-  virtual void AddObserver(content::RenderProcessObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(
-      content::RenderProcessObserver* observer) OVERRIDE;
+  virtual void AddObserver(RenderProcessObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(RenderProcessObserver* observer) OVERRIDE;
   virtual void SetResourceDispatcherDelegate(
-      content::ResourceDispatcherDelegate* delegate) OVERRIDE;
+      ResourceDispatcherDelegate* delegate) OVERRIDE;
   virtual void WidgetHidden() OVERRIDE;
   virtual void WidgetRestored() OVERRIDE;
   virtual void EnsureWebKitInitialized() OVERRIDE;
@@ -139,7 +137,7 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   virtual void ReleaseCachedFonts() OVERRIDE;
 #endif
 
-  // content::ChildThread:
+  // ChildThread:
   virtual bool IsWebFrameValid(WebKit::WebFrame* frame) OVERRIDE;
 
   // GpuChannelHostFactory implementation:
@@ -163,8 +161,7 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   // established or if it has been lost (for example if the GPU plugin crashed).
   // If there is a pending asynchronous request, it will be completed by the
   // time this routine returns.
-  virtual GpuChannelHost* EstablishGpuChannelSync(
-      content::CauseForGpuLaunch) OVERRIDE;
+  virtual GpuChannelHost* EstablishGpuChannelSync(CauseForGpuLaunch) OVERRIDE;
 
 
   // These methods modify how the next message is sent.  Normally, when sending
@@ -184,12 +181,11 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
     return compositor_thread_.get();
   }
 
-  content::old::BrowserPluginRegistry* browser_plugin_registry() const {
+  old::BrowserPluginRegistry* browser_plugin_registry() const {
     return browser_plugin_registry_.get();
   }
 
-  content::old::BrowserPluginChannelManager*
-      browser_plugin_channel_manager() const {
+  old::BrowserPluginChannelManager* browser_plugin_channel_manager() const {
     return browser_plugin_channel_manager_.get();
   }
 
@@ -220,7 +216,7 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   MediaStreamDependencyFactory* GetMediaStreamDependencyFactory();
 
   // Current P2PSocketDispatcher. Set to NULL if P2P API is disabled.
-  content::P2PSocketDispatcher* p2p_socket_dispatcher() {
+  P2PSocketDispatcher* p2p_socket_dispatcher() {
     return p2p_socket_dispatcher_.get();
   }
 
@@ -255,7 +251,7 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   // AudioRendererMixerManager instance which manages renderer side mixer
   // instances shared based on configured audio parameters.  Lazily created on
   // first call.
-  content::AudioRendererMixerManager* GetAudioRendererMixerManager();
+  AudioRendererMixerManager* GetAudioRendererMixerManager();
 
   // For producing custom V8 histograms. Custom histograms are produced if all
   // RenderViews share the same host, and the host is in the pre-specified set
@@ -324,11 +320,10 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   scoped_ptr<DomStorageDispatcher> dom_storage_dispatcher_;
   scoped_ptr<IndexedDBDispatcher> main_thread_indexed_db_dispatcher_;
   scoped_ptr<RendererWebKitPlatformSupportImpl> webkit_platform_support_;
-  scoped_ptr<content::old::BrowserPluginChannelManager>
-      browser_plugin_channel_manager_;
+  scoped_ptr<old::BrowserPluginChannelManager> browser_plugin_channel_manager_;
 
   // Used on the render thread and deleted by WebKit at shutdown.
-  content::MediaStreamCenter* media_stream_center_;
+  MediaStreamCenter* media_stream_center_;
 
   // Used on the renderer and IPC threads.
   scoped_refptr<DBMessageFilter> db_message_filter_;
@@ -339,7 +334,7 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   scoped_ptr<MediaStreamDependencyFactory> media_stream_factory_;
 
   // Dispatches all P2P sockets.
-  scoped_refptr<content::P2PSocketDispatcher> p2p_socket_dispatcher_;
+  scoped_refptr<P2PSocketDispatcher> p2p_socket_dispatcher_;
 
   // Used on multiple threads.
   scoped_refptr<VideoCaptureImplManager> vc_manager_;
@@ -380,19 +375,21 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   scoped_ptr<CompositorThread> compositor_thread_;
   scoped_refptr<IPC::ForwardingMessageFilter> compositor_output_surface_filter_;
 
-  scoped_ptr<content::old::BrowserPluginRegistry> browser_plugin_registry_;
+  scoped_ptr<old::BrowserPluginRegistry> browser_plugin_registry_;
 
-  ObserverList<content::RenderProcessObserver> observers_;
+  ObserverList<RenderProcessObserver> observers_;
 
   class GpuVDAContextLostCallback;
   scoped_ptr<GpuVDAContextLostCallback> context_lost_cb_;
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> gpu_vda_context3d_;
 
-  scoped_ptr<content::AudioRendererMixerManager> audio_renderer_mixer_manager_;
+  scoped_ptr<AudioRendererMixerManager> audio_renderer_mixer_manager_;
 
   HistogramCustomizer histogram_customizer_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_RENDER_THREAD_IMPL_H_

@@ -19,6 +19,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 
+namespace content {
+
 class MediaStreamImplUnderTest : public MediaStreamImpl {
  public:
   MediaStreamImplUnderTest(MediaStreamDispatcher* media_stream_dispatcher,
@@ -77,8 +79,8 @@ class MediaStreamImplTest : public ::testing::Test {
                                 ms_dispatcher_->video_array());
 
     WebKit::WebMediaStreamDescriptor desc = ms_impl_->last_generated_stream();
-    MediaStreamExtraData* extra_data = static_cast<MediaStreamExtraData*>(
-        desc.extraData());
+    content::MediaStreamExtraData* extra_data =
+        static_cast<content::MediaStreamExtraData*>(desc.extraData());
     if (!extra_data || !extra_data->local_stream()) {
       ADD_FAILURE();
       return desc;
@@ -137,3 +139,5 @@ TEST_F(MediaStreamImplTest, LocalMediaStream) {
   ms_impl_->FrameWillClose(NULL);
   EXPECT_EQ(3, ms_dispatcher_->stop_stream_counter());
 }
+
+}  // namespace content

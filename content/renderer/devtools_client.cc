@@ -19,8 +19,10 @@
 using WebKit::WebDevToolsFrontend;
 using WebKit::WebString;
 
+namespace content {
+
 DevToolsClient::DevToolsClient(RenderViewImpl* render_view)
-    : content::RenderViewObserver(render_view) {
+    : RenderViewObserver(render_view) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   web_tools_frontend_.reset(
       WebDevToolsFrontend::create(
@@ -104,3 +106,5 @@ void DevToolsClient::OnDispatchOnInspectorFrontend(const std::string& message) {
   web_tools_frontend_->dispatchOnInspectorFrontend(
       WebString::fromUTF8(message));
 }
+
+}  // namespace content

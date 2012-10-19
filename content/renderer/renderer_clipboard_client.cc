@@ -6,11 +6,6 @@
 
 #include "content/renderer/renderer_clipboard_client.h"
 
-#include "build/build_config.h"
-
-#include <string>
-#include <vector>
-
 #include "base/shared_memory.h"
 #include "base/string16.h"
 #include "content/common/clipboard_messages.h"
@@ -19,6 +14,8 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/gfx/size.h"
 #include "webkit/glue/scoped_clipboard_writer_glue.h"
+
+namespace content {
 
 namespace {
 
@@ -185,3 +182,5 @@ webkit_glue::ClipboardClient::WriteContext*
 RendererClipboardClient::CreateWriteContext() {
   return new RendererClipboardWriteContext;
 }
+
+}  // namespace content

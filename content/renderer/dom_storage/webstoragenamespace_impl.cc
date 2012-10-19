@@ -14,6 +14,8 @@ using WebKit::WebStorageArea;
 using WebKit::WebStorageNamespace;
 using WebKit::WebString;
 
+namespace content {
+
 WebStorageNamespaceImpl::WebStorageNamespaceImpl()
     : namespace_id_(dom_storage::kLocalStorageNamespaceId) {
 }
@@ -46,3 +48,5 @@ bool WebStorageNamespaceImpl::isSameNamespace(
       static_cast<const WebStorageNamespaceImpl*>(&other);
   return namespace_id_ == other_impl->namespace_id_;
 }
+
+}  // namespace content

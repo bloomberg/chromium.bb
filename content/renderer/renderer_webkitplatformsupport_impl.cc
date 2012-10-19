@@ -30,7 +30,6 @@
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_clipboard_client.h"
 #include "content/renderer/websharedworkerrepository_impl.h"
 #include "googleurl/src/gurl.h"
@@ -76,7 +75,6 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
-using content::RenderThread;
 using WebKit::WebAudioDevice;
 using WebKit::WebBlobRegistry;
 using WebKit::WebFileInfo;
@@ -95,6 +93,8 @@ using WebKit::WebStorageNamespace;
 using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebVector;
+
+namespace content {
 
 static bool g_sandbox_enabled = true;
 
@@ -243,13 +243,12 @@ bool RendererWebKitPlatformSupportImpl::sandboxEnabled() {
 unsigned long long RendererWebKitPlatformSupportImpl::visitedLinkHash(
     const char* canonical_url,
     size_t length) {
-  return content::GetContentClient()->renderer()->VisitedLinkHash(
-      canonical_url, length);
+  return GetContentClient()->renderer()->VisitedLinkHash(canonical_url, length);
 }
 
 bool RendererWebKitPlatformSupportImpl::isLinkVisited(
     unsigned long long link_hash) {
-  return content::GetContentClient()->renderer()->IsLinkVisited(link_hash);
+  return GetContentClient()->renderer()->IsLinkVisited(link_hash);
 }
 
 WebKit::WebMessagePortChannel*
@@ -264,7 +263,7 @@ void RendererWebKitPlatformSupportImpl::prefetchHostName(
 
   std::string hostname_utf8;
   UTF16ToUTF8(hostname.data(), hostname.length(), &hostname_utf8);
-  content::GetContentClient()->renderer()->PrefetchHostName(
+  GetContentClient()->renderer()->PrefetchHostName(
       hostname_utf8.data(), hostname_utf8.length());
 }
 
@@ -488,7 +487,7 @@ RendererWebKitPlatformSupportImpl::SandboxSupport::getFontFamilyForCharacters(
     return;
   }
 
-  content::GetFontFamilyForCharacters(
+  GetFontFamilyForCharacters(
       characters,
       num_characters,
       preferred_locale,
@@ -499,7 +498,7 @@ RendererWebKitPlatformSupportImpl::SandboxSupport::getFontFamilyForCharacters(
 void
 RendererWebKitPlatformSupportImpl::SandboxSupport::getRenderStyleForStrike(
     const char* family, int sizeAndStyle, WebKit::WebFontRenderStyle* out) {
-  content::GetRenderStyleForStrike(family, sizeAndStyle, out);
+  GetRenderStyleForStrike(family, sizeAndStyle, out);
 }
 
 #endif
@@ -545,11 +544,11 @@ RendererWebKitPlatformSupportImpl::sharedWorkerRepository() {
 bool RendererWebKitPlatformSupportImpl::canAccelerate2dCanvas() {
   RenderThreadImpl* thread = RenderThreadImpl::current();
   GpuChannelHost* host = thread->EstablishGpuChannelSync(
-      content::CAUSE_FOR_GPU_LAUNCH_CANVAS_2D);
+      CAUSE_FOR_GPU_LAUNCH_CANVAS_2D);
   if (!host)
     return false;
 
-  const content::GPUInfo& gpu_info = host->gpu_info();
+  const GPUInfo& gpu_info = host->gpu_info();
   if (gpu_info.can_lose_context || gpu_info.software_rendering)
     return false;
 
@@ -653,7 +652,7 @@ WebBlobRegistry* RendererWebKitPlatformSupportImpl::blobRegistry() {
 
 void RendererWebKitPlatformSupportImpl::sampleGamepads(WebGamepads& gamepads) {
   if (!gamepad_shared_memory_reader_.get())
-    gamepad_shared_memory_reader_.reset(new content::GamepadSharedMemoryReader);
+    gamepad_shared_memory_reader_.reset(new GamepadSharedMemoryReader);
   gamepad_shared_memory_reader_->SampleGamepads(gamepads);
 }
 
@@ -741,7 +740,7 @@ bool RendererWebKitPlatformSupportImpl::canHyphenate(
   // Create a hyphenator object and attach it to the render thread so it can
   // receive a dictionary file opened by a browser.
   if (!hyphenator_.get()) {
-    hyphenator_.reset(new content::Hyphenator(base::kInvalidPlatformFileValue));
+    hyphenator_.reset(new Hyphenator(base::kInvalidPlatformFileValue));
     if (!hyphenator_.get())
       return false;
     return hyphenator_->Attach(RenderThreadImpl::current(), locale);
@@ -760,3 +759,5 @@ size_t RendererWebKitPlatformSupportImpl::computeLastHyphenLocation(
   return hyphenator_->ComputeLastHyphenLocation(string16(characters, length),
                                                 before_index);
 }
+
+}  // namespace content

@@ -15,6 +15,8 @@
 using WebKit::WebCompositorInputHandler;
 using WebKit::WebInputEvent;
 
+namespace content {
+
 //------------------------------------------------------------------------------
 
 class CompositorThread::InputHandlerWrapper
@@ -163,3 +165,5 @@ void CompositorThread::HandleInputEvent(
 
   it->second->input_handler()->handleInputEvent(*input_event);
 }
+
+}  // namespace content

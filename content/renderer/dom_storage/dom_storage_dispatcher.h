@@ -16,6 +16,8 @@ namespace IPC {
 class Message;
 }
 
+namespace content {
+
 // Dispatches DomStorage related messages sent to a renderer process from the
 // main browser process. There is one instance per child process. Messages
 // are dispatched on the main renderer thread. The RenderThreadImpl
@@ -43,5 +45,7 @@ class DomStorageDispatcher {
 
   scoped_refptr<ProxyImpl> proxy_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_DOM_STORAGE_DOM_STORAGE_DISPATCHER_H_

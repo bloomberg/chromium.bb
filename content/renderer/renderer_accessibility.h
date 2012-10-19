@@ -9,14 +9,13 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityNotification.h"
 
-class RenderViewImpl;
-
 namespace WebKit {
 class WebAccessibilityObject;
 class WebDocument;
 };
 
 namespace content {
+class RenderViewImpl;
 
 // The browser process implement native accessibility APIs, allowing
 // assistive technology (e.g., screen readers, magnifiers) to access and

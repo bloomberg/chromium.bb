@@ -9,6 +9,7 @@
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view_impl.h"
 
+namespace content {
 namespace {
 
 const int kMinimumDelayBetweenUpdatesMS = 100;
@@ -87,3 +88,5 @@ void LoadProgressTracker::ResetStates() {
   weak_factory_.InvalidateWeakPtrs();
   last_time_progress_sent_ = base::TimeTicks();
 }
+
+}  // namespace content

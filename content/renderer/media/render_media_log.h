@@ -11,6 +11,8 @@ namespace base {
 class MessageLoopProxy;
 }
 
+namespace content {
+
 // RenderMediaLog is an implementation of MediaLog that passes all events to the
 // browser process.
 class RenderMediaLog : public media::MediaLog {
@@ -27,5 +29,7 @@ class RenderMediaLog : public media::MediaLog {
 
   DISALLOW_COPY_AND_ASSIGN(RenderMediaLog);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_RENDER_MEDIA_LOG_H_

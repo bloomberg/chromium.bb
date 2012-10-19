@@ -9,19 +9,21 @@
 
 using WebKit::WebFontRendering;
 
+namespace content {
+
 static SkPaint::Hinting RendererPreferencesToSkiaHinting(
-    const content::RendererPreferences& prefs) {
+    const RendererPreferences& prefs) {
   if (!prefs.should_antialias_text) {
     // When anti-aliasing is off, GTK maps all non-zero hinting settings to
     // 'Normal' hinting so we do the same. Otherwise, folks who have 'Slight'
     // hinting selected will see readable text in everything expect Chromium.
     switch (prefs.hinting) {
-      case content::RENDERER_PREFERENCES_HINTING_NONE:
+      case RENDERER_PREFERENCES_HINTING_NONE:
         return SkPaint::kNo_Hinting;
-      case content::RENDERER_PREFERENCES_HINTING_SYSTEM_DEFAULT:
-      case content::RENDERER_PREFERENCES_HINTING_SLIGHT:
-      case content::RENDERER_PREFERENCES_HINTING_MEDIUM:
-      case content::RENDERER_PREFERENCES_HINTING_FULL:
+      case RENDERER_PREFERENCES_HINTING_SYSTEM_DEFAULT:
+      case RENDERER_PREFERENCES_HINTING_SLIGHT:
+      case RENDERER_PREFERENCES_HINTING_MEDIUM:
+      case RENDERER_PREFERENCES_HINTING_FULL:
         return SkPaint::kNormal_Hinting;
       default:
         NOTREACHED();
@@ -30,15 +32,15 @@ static SkPaint::Hinting RendererPreferencesToSkiaHinting(
   }
 
   switch (prefs.hinting) {
-  case content::RENDERER_PREFERENCES_HINTING_SYSTEM_DEFAULT:
+  case RENDERER_PREFERENCES_HINTING_SYSTEM_DEFAULT:
     return SkPaint::kNormal_Hinting;
-  case content::RENDERER_PREFERENCES_HINTING_NONE:
+  case RENDERER_PREFERENCES_HINTING_NONE:
     return SkPaint::kNo_Hinting;
-  case content::RENDERER_PREFERENCES_HINTING_SLIGHT:
+  case RENDERER_PREFERENCES_HINTING_SLIGHT:
     return SkPaint::kSlight_Hinting;
-  case content::RENDERER_PREFERENCES_HINTING_MEDIUM:
+  case RENDERER_PREFERENCES_HINTING_MEDIUM:
     return SkPaint::kNormal_Hinting;
-  case content::RENDERER_PREFERENCES_HINTING_FULL:
+  case RENDERER_PREFERENCES_HINTING_FULL:
     return SkPaint::kFull_Hinting;
   default:
     NOTREACHED();
@@ -47,15 +49,15 @@ static SkPaint::Hinting RendererPreferencesToSkiaHinting(
 }
 
 static SkFontHost::LCDOrder RendererPreferencesToSkiaLCDOrder(
-    content::RendererPreferencesSubpixelRenderingEnum subpixel) {
+    RendererPreferencesSubpixelRenderingEnum subpixel) {
   switch (subpixel) {
-  case content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_SYSTEM_DEFAULT:
-  case content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_NONE:
-  case content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_RGB:
-  case content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_VRGB:
+  case RENDERER_PREFERENCES_SUBPIXEL_RENDERING_SYSTEM_DEFAULT:
+  case RENDERER_PREFERENCES_SUBPIXEL_RENDERING_NONE:
+  case RENDERER_PREFERENCES_SUBPIXEL_RENDERING_RGB:
+  case RENDERER_PREFERENCES_SUBPIXEL_RENDERING_VRGB:
     return SkFontHost::kRGB_LCDOrder;
-  case content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_BGR:
-  case content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_VBGR:
+  case RENDERER_PREFERENCES_SUBPIXEL_RENDERING_BGR:
+  case RENDERER_PREFERENCES_SUBPIXEL_RENDERING_VBGR:
     return SkFontHost::kBGR_LCDOrder;
   default:
     NOTREACHED();
@@ -65,15 +67,15 @@ static SkFontHost::LCDOrder RendererPreferencesToSkiaLCDOrder(
 
 static SkFontHost::LCDOrientation
     RendererPreferencesToSkiaLCDOrientation(
-        content::RendererPreferencesSubpixelRenderingEnum subpixel) {
+        RendererPreferencesSubpixelRenderingEnum subpixel) {
   switch (subpixel) {
-  case content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_SYSTEM_DEFAULT:
-  case content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_NONE:
-  case content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_RGB:
-  case content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_BGR:
+  case RENDERER_PREFERENCES_SUBPIXEL_RENDERING_SYSTEM_DEFAULT:
+  case RENDERER_PREFERENCES_SUBPIXEL_RENDERING_NONE:
+  case RENDERER_PREFERENCES_SUBPIXEL_RENDERING_RGB:
+  case RENDERER_PREFERENCES_SUBPIXEL_RENDERING_BGR:
     return SkFontHost::kHorizontal_LCDOrientation;
-  case content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_VRGB:
-  case content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_VBGR:
+  case RENDERER_PREFERENCES_SUBPIXEL_RENDERING_VRGB:
+  case RENDERER_PREFERENCES_SUBPIXEL_RENDERING_VBGR:
     return SkFontHost::kVertical_LCDOrientation;
   default:
     NOTREACHED();
@@ -82,23 +84,23 @@ static SkFontHost::LCDOrientation
 }
 
 static bool RendererPreferencesToAntiAliasFlag(
-    const content::RendererPreferences& prefs) {
+    const RendererPreferences& prefs) {
   return prefs.should_antialias_text;
 }
 
 static bool RendererPreferencesToSubpixelRenderingFlag(
-    const content::RendererPreferences& prefs) {
+    const RendererPreferences& prefs) {
   if (prefs.subpixel_rendering !=
-        content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_SYSTEM_DEFAULT &&
+        RENDERER_PREFERENCES_SUBPIXEL_RENDERING_SYSTEM_DEFAULT &&
       prefs.subpixel_rendering !=
-        content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_NONE) {
+        RENDERER_PREFERENCES_SUBPIXEL_RENDERING_NONE) {
     return true;
   }
   return false;
 }
 
 void RenderViewImpl::UpdateFontRenderingFromRendererPrefs() {
-  const content::RendererPreferences& prefs = renderer_preferences_;
+  const RendererPreferences& prefs = renderer_preferences_;
   WebFontRendering::setHinting(RendererPreferencesToSkiaHinting(prefs));
   WebFontRendering::setAutoHint(prefs.use_autohinter);
   WebFontRendering::setUseBitmaps(prefs.use_bitmaps);
@@ -111,3 +113,5 @@ void RenderViewImpl::UpdateFontRenderingFromRendererPrefs() {
       RendererPreferencesToSubpixelRenderingFlag(prefs));
   WebFontRendering::setSubpixelPositioning(prefs.use_subpixel_positioning);
 }
+
+}  // namespace content

@@ -15,6 +15,8 @@
 using WebKit::WebGraphicsContext3D;
 using WebKit::WebCompositorSoftwareOutputDevice;
 
+namespace content {
+
 //------------------------------------------------------------------------------
 
 // static
@@ -112,3 +114,5 @@ void CompositorOutputSurface::OnUpdateVSyncParameters(
       static_cast<double>(base::Time::kMicrosecondsPerSecond);
   client_->onVSyncParametersChanged(monotonicTimebase, intervalInSeconds);
 }
+
+}  // namespace content

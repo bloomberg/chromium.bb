@@ -19,6 +19,8 @@ class WebInputEvent;
 
 class InputEventFilter;
 
+namespace content {
+
 // The CompositorThread class manages the background thread for the compositor.
 // The CompositorThread instance can be assumed to outlive the background
 // thread it manages.
@@ -67,5 +69,7 @@ class CompositorThread {
   webkit_glue::WebThreadImpl thread_;
   scoped_refptr<InputEventFilter> filter_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_GPU_COMPOSITOR_THREAD_H_

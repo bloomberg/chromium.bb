@@ -4,8 +4,6 @@
 
 #include "content/renderer/media/pepper_platform_video_decoder_impl.h"
 
-#include <vector>
-
 #include "base/bind.h"
 #include "base/logging.h"
 #include "content/common/child_process.h"
@@ -13,6 +11,8 @@
 #include "content/renderer/render_thread_impl.h"
 
 using media::BitstreamBuffer;
+
+namespace content {
 
 PlatformVideoDecoderImpl::PlatformVideoDecoderImpl(
     VideoDecodeAccelerator::Client* client,
@@ -35,7 +35,7 @@ bool PlatformVideoDecoderImpl::Initialize(media::VideoCodecProfile profile) {
   // it is okay to immediately send IPC messages through the returned channel.
   GpuChannelHost* channel =
       render_thread->EstablishGpuChannelSync(
-          content::CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE);
+          CAUSE_FOR_GPU_LAUNCH_VIDEODECODEACCELERATOR_INITIALIZE);
 
   if (!channel)
     return false;
@@ -126,3 +126,5 @@ void PlatformVideoDecoderImpl::NotifyResetDone() {
   DCHECK(RenderThreadImpl::current());
   client_->NotifyResetDone();
 }
+
+}  // namespace content

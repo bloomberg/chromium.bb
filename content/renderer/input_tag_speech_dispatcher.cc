@@ -25,10 +25,12 @@ using WebKit::WebInputElement;
 using WebKit::WebNode;
 using WebKit::WebView;
 
+namespace content {
+
 InputTagSpeechDispatcher::InputTagSpeechDispatcher(
     RenderViewImpl* render_view,
     WebKit::WebSpeechInputListener* listener)
-    : content::RenderViewObserver(render_view),
+    : RenderViewObserver(render_view),
       listener_(listener) {
 }
 
@@ -85,7 +87,7 @@ void InputTagSpeechDispatcher::stopRecording(int request_id) {
 
 void InputTagSpeechDispatcher::OnSpeechRecognitionResult(
     int request_id,
-    const content::SpeechRecognitionResult& result) {
+    const SpeechRecognitionResult& result) {
   VLOG(1) << "InputTagSpeechDispatcher::OnSpeechRecognitionResult enter";
   WebKit::WebSpeechInputResultArray webkit_result(result.hypotheses.size());
   for (size_t i = 0; i < result.hypotheses.size(); ++i) {
@@ -138,3 +140,5 @@ void InputTagSpeechDispatcher::OnSpeechRecognitionToggleSpeechInput() {
     input_element->stopSpeechInput();
   }
 }
+
+}  // namespace content

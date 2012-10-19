@@ -19,16 +19,17 @@ namespace base {
 }
 
 namespace IPC {
-  class ForwardingMessageFilter;
-  class Message;
-  class SyncChannel;
+class ForwardingMessageFilter;
+class Message;
 }
+
+namespace content {
 
 // This class can be created only on the main thread, but then becomes pinned
 // to a fixed thread when bindToClient is called.
 class CompositorOutputSurface
-    : NON_EXPORTED_BASE(public WebKit::WebCompositorOutputSurface)
-    , NON_EXPORTED_BASE(public base::NonThreadSafe) {
+    : NON_EXPORTED_BASE(public WebKit::WebCompositorOutputSurface), 
+    NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   static IPC::ForwardingMessageFilter* CreateFilter(
       base::TaskRunner* target_task_runner);
@@ -80,5 +81,7 @@ class CompositorOutputSurface
   scoped_ptr<WebKit::WebGraphicsContext3D> context3D_;
   scoped_ptr<WebKit::WebCompositorSoftwareOutputDevice> software_device_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_GPU_COMPOSITOR_OUTPUT_SURFACE_H_

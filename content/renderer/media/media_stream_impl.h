@@ -26,9 +26,11 @@ namespace WebKit {
 class WebMediaStreamDescriptor;
 }
 
-class MediaStreamDispatcher;
 class MediaStreamDependencyFactory;
 class VideoCaptureImplManager;
+
+namespace content {
+class MediaStreamDispatcher;
 
 // MediaStreamImpl is a delegate for the Media Stream API messages used by
 // WebKit. It ties together WebKit, native PeerConnection in libjingle and
@@ -37,7 +39,7 @@ class VideoCaptureImplManager;
 // render thread.
 // MediaStreamImpl have weak pointers to a MediaStreamDispatcher.
 class CONTENT_EXPORT MediaStreamImpl
-    : public content::RenderViewObserver,
+    : public RenderViewObserver,
       NON_EXPORTED_BASE(public WebKit::WebUserMediaClient),
       NON_EXPORTED_BASE(public webkit_media::MediaStreamClient),
       public MediaStreamDispatcherEventHandler,
@@ -45,7 +47,7 @@ class CONTENT_EXPORT MediaStreamImpl
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   MediaStreamImpl(
-      content::RenderView* render_view,
+      RenderView* render_view,
       MediaStreamDispatcher* media_stream_dispatcher,
       VideoCaptureImplManager* vc_manager,
       MediaStreamDependencyFactory* dependency_factory);
@@ -93,7 +95,7 @@ class CONTENT_EXPORT MediaStreamImpl
       const media_stream::StreamDeviceInfo& device_info) OVERRIDE;
   virtual void OnDeviceOpenFailed(int request_id) OVERRIDE;
 
-  // content::RenderViewObserver OVERRIDE
+  // RenderViewObserver OVERRIDE
   virtual void FrameWillClose(WebKit::WebFrame* frame) OVERRIDE;
 
  protected:
@@ -160,5 +162,7 @@ class CONTENT_EXPORT MediaStreamImpl
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_MEDIA_STREAM_IMPL_H_

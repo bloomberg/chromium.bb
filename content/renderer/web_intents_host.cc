@@ -10,7 +10,6 @@
 #include "content/common/intents_messages.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "content/renderer/render_view_impl.h"
-#include "ipc/ipc_message.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBlob.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDeliveredIntentClient.h"
@@ -37,6 +36,8 @@ using WebKit::WebIntentRequest;
 using WebKit::WebString;
 using WebKit::WebSerializedScriptValue;
 using WebKit::WebVector;
+
+namespace content {
 
 namespace {
 
@@ -85,7 +86,7 @@ class DeliveredIntentClientImpl : public WebDeliveredIntentClient {
 };
 
 WebIntentsHost::WebIntentsHost(RenderViewImpl* render_view)
-    : content::RenderViewObserver(render_view),
+    : RenderViewObserver(render_view),
       id_counter_(0) {
 }
 
@@ -237,8 +238,8 @@ WebIntent WebIntentsHost::CreateWebIntent(
     }
 
     case webkit_glue::WebIntentData::MIME_TYPE: {
-      scoped_ptr<content::V8ValueConverter> converter(
-          content::V8ValueConverter::create());
+      scoped_ptr<V8ValueConverter> converter(
+          V8ValueConverter::create());
       v8::Handle<v8::Value> valV8 = converter->ToV8Value(
           &intent_data.mime_data, v8::Context::GetCurrent());
 
@@ -253,3 +254,5 @@ WebIntent WebIntentsHost::CreateWebIntent(
   NOTREACHED();
   return WebIntent();
 }
+
+}  // namespace content

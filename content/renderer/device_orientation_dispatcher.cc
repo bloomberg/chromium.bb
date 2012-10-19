@@ -9,9 +9,12 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDeviceOrientation.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDeviceOrientationController.h"
 
+namespace content {
+
+
 DeviceOrientationDispatcher::DeviceOrientationDispatcher(
     RenderViewImpl* render_view)
-    : content::RenderViewObserver(render_view),
+    : RenderViewObserver(render_view),
       controller_(NULL),
       started_(false) {
 }
@@ -91,3 +94,5 @@ void DeviceOrientationDispatcher::OnDeviceOrientationUpdated(
     last_orientation_.setAbsolute(p.absolute);
   controller_->didChangeDeviceOrientation(last_orientation_);
 }
+
+}  // namespace content

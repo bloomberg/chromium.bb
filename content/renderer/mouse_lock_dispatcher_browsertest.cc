@@ -13,6 +13,7 @@
 
 using ::testing::_;
 
+namespace content {
 namespace {
 
 class MockLockTarget : public MouseLockDispatcher::LockTarget {
@@ -25,18 +26,17 @@ class MockLockTarget : public MouseLockDispatcher::LockTarget {
 
 // MouseLockDispatcher is a RenderViewObserver, and we test it by creating a
 // fixture containing a RenderViewImpl view() and interacting to that interface.
-class MouseLockDispatcherTest
-    : public content::RenderViewTest {
+class MouseLockDispatcherTest : public RenderViewTest {
  public:
   virtual void SetUp() {
-    content::RenderViewTest::SetUp();
+    RenderViewTest::SetUp();
     route_id_ = view()->GetRoutingID();
     target_ = new MockLockTarget();
     alternate_target_ = new MockLockTarget();
   }
 
   virtual void TearDown() {
-    content::RenderViewTest::TearDown();
+    RenderViewTest::TearDown();
     delete target_;
     delete alternate_target_;
   }
@@ -230,3 +230,4 @@ TEST_F(MouseLockDispatcherTest, MultipleTargets) {
   EXPECT_FALSE(dispatcher()->IsMouseLockedTo(target_));
 }
 
+}  // namespace content

@@ -12,6 +12,8 @@ namespace WebKit {
 class WebMouseEvent;
 }  // namespace WebKit
 
+namespace content {
+
 class CONTENT_EXPORT MouseLockDispatcher {
  public:
   MouseLockDispatcher();
@@ -79,5 +81,7 @@ class CONTENT_EXPORT MouseLockDispatcher {
 
   DISALLOW_COPY_AND_ASSIGN(MouseLockDispatcher);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_MOUSE_LOCK_DISPATCHER_H_

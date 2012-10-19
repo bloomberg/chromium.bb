@@ -14,7 +14,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
 #include "webkit/glue/web_intent_data.h"
 
-class WebIntentsHostTest : public content::RenderViewTest {
+namespace content {
+
+class WebIntentsHostTest : public RenderViewTest {
  protected:
   RenderViewImpl* view() { return static_cast<RenderViewImpl*>(view_); }
   WebIntentsHost* web_intents_host() { return view()->intents_host_; }
@@ -33,8 +35,7 @@ class WebIntentsHostTest : public content::RenderViewTest {
     v8::Local<v8::Context> ctx = GetMainFrame()->mainWorldScriptContext();
     v8::Context::Scope cscope(ctx);
     v8::Handle<v8::Value> v8_val = serialized_data.deserialize();
-    scoped_ptr<content::V8ValueConverter> converter(
-        content::V8ValueConverter::create());
+    scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
     base::Value* reply = converter->FromV8Value(v8_val, ctx);
     EXPECT_TRUE(reply->IsType(base::Value::TYPE_DICTIONARY));
     base::DictionaryValue* dict = NULL;
@@ -118,3 +119,5 @@ TEST_F(WebIntentsHostTest, TestVector) {
   v2->GetStringASCII(std::string("key2"), &val2);
   EXPECT_EQ("val2", val2);
 }
+
+}  // namespace content

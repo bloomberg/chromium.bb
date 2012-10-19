@@ -18,6 +18,8 @@ using dom_storage::DomStorageCachedArea;
 using WebKit::WebString;
 using WebKit::WebURL;
 
+namespace content {
+
 namespace {
 typedef IDMap<WebStorageAreaImpl> AreaImplMap;
 base::LazyInstance<AreaImplMap>::Leaky
@@ -80,3 +82,5 @@ void WebStorageAreaImpl::clear(const WebURL& page_url) {
 size_t WebStorageAreaImpl::memoryBytesUsedByCache() const {
   return cached_area_->MemoryBytesUsedByCache();
 }
+
+}  // namespace content

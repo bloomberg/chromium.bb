@@ -10,12 +10,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationController.h"
 
-class RenderViewImpl;
-
-namespace content {
-struct Geoposition;
-}
-
 namespace WebKit {
 class WebGeolocationController;
 class WebGeolocationPermissionRequest;
@@ -23,10 +17,14 @@ class WebGeolocationPermissionRequestManager;
 class WebGeolocationPosition;
 }
 
+namespace content {
+class RenderViewImpl;
+struct Geoposition;
+
 // GeolocationDispatcher is a delegate for Geolocation messages used by
 // WebKit.
 // It's the complement of GeolocationDispatcherHost (owned by RenderViewHost).
-class GeolocationDispatcher : public content::RenderViewObserver,
+class GeolocationDispatcher : public RenderViewObserver,
                               public WebKit::WebGeolocationClient {
  public:
   explicit GeolocationDispatcher(RenderViewImpl* render_view);
@@ -64,5 +62,7 @@ class GeolocationDispatcher : public content::RenderViewObserver,
   bool enable_high_accuracy_;
   bool updating_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_GEOLOCATION_DISPATCHER_H_

@@ -53,7 +53,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 class MockRenderProcess;
-class RenderThreadImpl;
 struct ResourceHostMsg_Request;
 
 namespace WebKit {
@@ -62,6 +61,7 @@ class WebHistoryItem;
 }
 
 namespace content {
+class RenderThreadImpl;
 
 class RenderViewFakeResourcesTest : public ::testing::Test,
                                     public IPC::Listener,

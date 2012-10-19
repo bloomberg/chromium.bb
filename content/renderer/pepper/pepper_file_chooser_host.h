@@ -15,11 +15,10 @@
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/resource_message_params.h"
 
-class RenderViewImpl;
-
 namespace content {
 
 class RendererPpapiHost;
+class RenderViewImpl;
 
 class CONTENT_EXPORT PepperFileChooserHost
     : public ppapi::host::ResourceHost,
