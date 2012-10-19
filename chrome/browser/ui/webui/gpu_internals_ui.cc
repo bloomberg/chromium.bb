@@ -17,6 +17,7 @@
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/values.h"
+#include "cc/switches.h"
 #include "chrome/browser/crash_upload_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -238,7 +239,7 @@ Value* GetFeatureStatus() {
           "css_animation",
           flags & (content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING |
                    content::GPU_FEATURE_TYPE_3D_CSS),
-          command_line.HasSwitch(switches::kDisableThreadedAnimation) ||
+          command_line.HasSwitch(cc::switches::kDisableThreadedAnimation) ||
           command_line.HasSwitch(switches::kDisableAcceleratedCompositing) ||
           command_line.HasSwitch(switches::kDisableAcceleratedLayers),
           "Accelerated CSS animation has been disabled at the command line.",

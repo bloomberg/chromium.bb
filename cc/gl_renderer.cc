@@ -104,7 +104,7 @@ bool CCRendererGL::initialize()
 
     m_capabilities.contextHasCachedFrontBuffer = extensions.count("GL_CHROMIUM_front_buffer_cached");
 
-    m_capabilities.usingPartialSwap = CCSettings::partialSwapEnabled() && extensions.count("GL_CHROMIUM_post_sub_buffer");
+    m_capabilities.usingPartialSwap = Settings::partialSwapEnabled() && extensions.count("GL_CHROMIUM_post_sub_buffer");
 
     // Use the swapBuffers callback only with the threaded proxy.
     if (CCProxy::hasImplThread())

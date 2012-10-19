@@ -24,6 +24,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "cc/switches.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
@@ -756,12 +757,10 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kDisableOobeAnimation,
       ::switches::kDisableSeccompFilterSandbox,
       ::switches::kDisableSeccompSandbox,
-      ::switches::kDisableThreadedAnimation,
       ::switches::kEnableBrowserTextSubpixelPositioning,
       ::switches::kEnableCompositingForFixedPosition,
       ::switches::kEnableGView,
       ::switches::kEnableLogging,
-      ::switches::kEnablePartialSwap,
       ::switches::kEnableUIReleaseFrontSurface,
       ::switches::kEnablePinch,
       ::switches::kEnableGestureTapHighlight,
@@ -792,6 +791,9 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ash::switches::kAuraLegacyPowerButton,
       ash::switches::kAuraNoShadows,
       ash::switches::kAshDisablePanelFitting,
+      cc::switches::kDisableThreadedAnimation,
+      cc::switches::kEnablePartialSwap,
+      cc::switches::kEnablePinchInCompositor,
       ::switches::kUIEnablePartialSwap,
       ::switches::kUIPrioritizeInGpuProcess,
 #if defined(USE_CRAS)

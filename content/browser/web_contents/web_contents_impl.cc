@@ -15,6 +15,7 @@
 #include "base/sys_info.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "cc/switches.h"
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/browser_plugin/old/old_browser_plugin_host.h"
@@ -683,7 +684,7 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
   prefs.number_of_cpu_cores = base::SysInfo::NumberOfProcessors();
 
   prefs.apply_page_scale_factor_in_compositor =
-      command_line.HasSwitch(switches::kEnablePinchInCompositor);
+      command_line.HasSwitch(cc::switches::kEnablePinchInCompositor);
 
   content::GetContentClient()->browser()->OverrideWebkitPrefs(rvh, url, &prefs);
 

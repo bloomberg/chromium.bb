@@ -570,14 +570,6 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebKit::WebCompositorSupport* compositor_support =
       WebKit::Platform::current()->compositorSupport();
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  compositor_support->setAcceleratedAnimationEnabled(
-      !command_line.HasSwitch(switches::kDisableThreadedAnimation));
-  compositor_support->setPerTilePaintingEnabled(
-      command_line.HasSwitch(switches::kEnablePerTilePainting));
-  compositor_support->setPartialSwapEnabled(
-      command_line.HasSwitch(switches::kEnablePartialSwap));
-  compositor_support->setPageScalePinchZoomEnabled(
-      command_line.HasSwitch(switches::kEnablePinchInCompositor));
 
   // TODO(fsamuel): Guests don't currently support threaded compositing.
   // This should go away with the new design of the browser plugin.

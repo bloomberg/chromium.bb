@@ -546,7 +546,7 @@ void CCLayerTreeHost::updateLayers(LayerChromium* rootLayer, CCTextureUpdateQueu
     LayerList updateList;
 
     {
-        if (CCSettings::pageScalePinchZoomEnabled()) {
+        if (Settings::pageScalePinchZoomEnabled()) {
             LayerChromium* rootScroll = findFirstScrollableLayer(rootLayer);
             if (rootScroll)
                 rootScroll->setImplTransform(m_implTransform);
@@ -777,7 +777,7 @@ void CCLayerTreeHost::setDeviceScaleFactor(float deviceScaleFactor)
 
 void CCLayerTreeHost::animateLayers(double monotonicTime)
 {
-    if (!CCSettings::acceleratedAnimationEnabled() || !m_needsAnimateLayers)
+    if (!Settings::acceleratedAnimationEnabled() || !m_needsAnimateLayers)
         return;
 
     TRACE_EVENT0("cc", "CCLayerTreeHostImpl::animateLayers");

@@ -5,46 +5,108 @@
 #include "config.h"
 
 #include "base/command_line.h"
-#include "CCSettings.h"
+#include "cc/settings.h"
 #include "cc/switches.h"
 
 namespace {
+static bool s_settingsInitialized = false;
+
 static bool s_perTilePaintingEnabled = false;
 static bool s_partialSwapEnabled = false;
 static bool s_acceleratedAnimationEnabled = false;
 static bool s_pageScalePinchZoomEnabled = false;
-} // namespace
+static bool s_jankInsteadOfCheckerboard = false;
+static bool s_backgroundColorInsteadOfCheckerboard = false;
+
+void reset()
+{
+    s_settingsInitialized = true;
+
+    s_perTilePaintingEnabled = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kEnablePerTilePainting);
+    s_partialSwapEnabled = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kEnablePartialSwap);
+    s_acceleratedAnimationEnabled = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kDisableThreadedAnimation);
+    s_pageScalePinchZoomEnabled = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kEnablePinchInCompositor);
+    s_jankInsteadOfCheckerboard = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kJankInsteadOfCheckerboard);
+    s_backgroundColorInsteadOfCheckerboard = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kBackgroundColorInsteadOfCheckerboard);
+}
+
+}
 
 namespace cc {
 
-bool CCSettings::perTilePaintingEnabled() { return s_perTilePaintingEnabled; }
-void CCSettings::setPerTilePaintingEnabled(bool enabled) { s_perTilePaintingEnabled = enabled; }
-
-bool CCSettings::partialSwapEnabled() { return s_partialSwapEnabled; }
-void CCSettings::setPartialSwapEnabled(bool enabled) { s_partialSwapEnabled = enabled; }
-
-bool CCSettings::acceleratedAnimationEnabled() { return s_acceleratedAnimationEnabled; }
-void CCSettings::setAcceleratedAnimationEnabled(bool enabled) { s_acceleratedAnimationEnabled = enabled; }
-
-bool CCSettings::pageScalePinchZoomEnabled() { return s_pageScalePinchZoomEnabled; }
-void CCSettings::setPageScalePinchZoomEnabled(bool enabled) { s_pageScalePinchZoomEnabled = enabled; }
-
-bool CCSettings::jankInsteadOfCheckerboard()
+bool Settings::perTilePaintingEnabled()
 {
-    return CommandLine::ForCurrentProcess()->HasSwitch(switches::kJankInsteadOfCheckerboard);
+    if (!s_settingsInitialized)
+        reset();
+    return s_perTilePaintingEnabled;
 }
 
-bool CCSettings::backgroundColorInsteadOfCheckerboard()
+bool Settings::partialSwapEnabled()
 {
-    return CommandLine::ForCurrentProcess()->HasSwitch(switches::kBackgroundColorInsteadOfCheckerboard);
+    if (!s_settingsInitialized)
+        reset();
+    return s_partialSwapEnabled;
 }
 
-void CCSettings::reset()
+bool Settings::acceleratedAnimationEnabled()
 {
-    s_perTilePaintingEnabled = false;
-    s_partialSwapEnabled = false;
-    s_acceleratedAnimationEnabled = false;
-    s_pageScalePinchZoomEnabled = false;
+    if (!s_settingsInitialized)
+        reset();
+    return s_acceleratedAnimationEnabled;
+}
+
+bool Settings::pageScalePinchZoomEnabled()
+{
+    if (!s_settingsInitialized)
+        reset();
+    return s_pageScalePinchZoomEnabled;
+}
+
+bool Settings::jankInsteadOfCheckerboard()
+{
+    if (!s_settingsInitialized)
+        reset();
+    return s_jankInsteadOfCheckerboard;
+}
+
+bool Settings::backgroundColorInsteadOfCheckerboard()
+{
+    if (!s_settingsInitialized)
+        reset();
+    return s_backgroundColorInsteadOfCheckerboard;
+}
+
+void Settings::resetForTest()
+{
+    reset();
+}
+
+void Settings::setPartialSwapEnabled(bool enabled)
+{
+    if (!s_settingsInitialized)
+        reset();
+    s_partialSwapEnabled = enabled;
+}
+
+void Settings::setPerTilePaintingEnabled(bool enabled)
+{
+    if (!s_settingsInitialized)
+        reset();
+    s_partialSwapEnabled = enabled;
+}
+
+void Settings::setAcceleratedAnimationEnabled(bool enabled)
+{
+    if (!s_settingsInitialized)
+        reset();
+    s_acceleratedAnimationEnabled = enabled;
+}
+
+void Settings::setPageScalePinchZoomEnabled(bool enabled)
+{
+    if (!s_settingsInitialized)
+        reset();
+    s_pageScalePinchZoomEnabled = enabled;
 }
 
 } // namespace cc

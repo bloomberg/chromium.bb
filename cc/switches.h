@@ -15,8 +15,12 @@
 namespace cc {
 namespace switches {
 
-WEBKIT_GLUE_EXPORT extern const char kJankInsteadOfCheckerboard[];
 WEBKIT_GLUE_EXPORT extern const char kBackgroundColorInsteadOfCheckerboard[];
+WEBKIT_GLUE_EXPORT extern const char kDisableThreadedAnimation[];
+WEBKIT_GLUE_EXPORT extern const char kEnablePartialSwap[];
+WEBKIT_GLUE_EXPORT extern const char kEnablePerTilePainting[];
+WEBKIT_GLUE_EXPORT extern const char kEnablePinchInCompositor[];
+WEBKIT_GLUE_EXPORT extern const char kJankInsteadOfCheckerboard[];
 
 }  // namespace switches
 }  // namespace cc

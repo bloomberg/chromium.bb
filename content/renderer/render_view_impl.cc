@@ -28,6 +28,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "cc/switches.h"
 #include "content/common/appcache/appcache_dispatcher.h"
 #include "content/common/child_thread.h"
 #include "content/common/clipboard_messages.h"
@@ -3204,7 +3205,7 @@ void RenderViewImpl::ProcessAcceleratedPinchZoomFlags(
   bool enable_pinch = enable_viewport ||
                       command_line.HasSwitch(switches::kEnablePinch);
   bool enable_pinch_in_compositor =
-      command_line.HasSwitch(switches::kEnablePinchInCompositor);
+      command_line.HasSwitch(cc::switches::kEnablePinchInCompositor);
 
   if (!enable_pinch &&
       webview()->isAcceleratedCompositingActive() &&

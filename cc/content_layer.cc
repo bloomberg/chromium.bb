@@ -90,7 +90,7 @@ void ContentLayerChromium::createTextureUpdaterIfNeeded()
     scoped_ptr<LayerPainterChromium> painter = ContentLayerPainter::create(m_client).PassAs<LayerPainterChromium>();
     if (layerTreeHost()->settings().acceleratePainting)
         m_textureUpdater = FrameBufferSkPictureCanvasLayerTextureUpdater::create(painter.Pass());
-    else if (CCSettings::perTilePaintingEnabled())
+    else if (Settings::perTilePaintingEnabled())
         m_textureUpdater = BitmapSkPictureCanvasLayerTextureUpdater::create(painter.Pass());
     else
         m_textureUpdater = BitmapCanvasLayerTextureUpdater::create(painter.Pass());

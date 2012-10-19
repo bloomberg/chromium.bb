@@ -78,7 +78,6 @@ extern const char kDisableSiteSpecificQuirks[];
 CONTENT_EXPORT extern const char kDisableSpeechInput[];
 CONTENT_EXPORT extern const char kEnableScriptedSpeech[];
 extern const char kSpeechRecognitionWebserviceKey[];
-CONTENT_EXPORT extern const char kDisableThreadedAnimation[];
 #if defined(OS_ANDROID)
 CONTENT_EXPORT extern const char kEnableWebAudio[];
 #else
@@ -110,10 +109,8 @@ extern const char kDisableMediaSource[];
 extern const char kDisableWebMediaPlayerMS[];
 extern const char kEnableDeprecatedPeerConnection[];
 extern const char kEnableMonitorProfile[];
-extern const char kEnablePartialSwap[];
 extern const char kEnableUIReleaseFrontSurface[];
 extern const char kEnablePinch[];
-CONTENT_EXPORT extern const char kEnablePinchInCompositor[];
 extern const char kEnablePreparsedJsCaching[];
 CONTENT_EXPORT extern const char kEnablePrivilegedWebGLExtensions[];
 extern const char kEnablePruneGpuCommandBuffers[];
@@ -235,8 +232,6 @@ extern const char kScrollPixels[];
 #if defined(OS_MACOSX) || defined(OS_WIN)
 extern const char kUseSystemSSL[];
 #endif
-
-extern const char kEnablePerTilePainting[];
 
 #if defined(USE_AURA)
 CONTENT_EXPORT extern const char kFlingTapSuppressMaxDown[];

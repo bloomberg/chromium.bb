@@ -24,6 +24,8 @@
 #include "cc/test/fake_web_graphics_context_3d.h"
 #include "cc/test/occlusion_tracker_test_common.h"
 #include "cc/test/tiled_layer_test_common.h"
+#include "cc/test/test_common.h"
+#include "cc/settings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include <public/Platform.h>
 #include <public/WebCompositorSupport.h>
@@ -526,7 +528,8 @@ void CCThreadedTest::dispatchDidAddAnimation()
 void CCThreadedTest::runTest(bool threaded)
 {
     // For these tests, we will enable threaded animations.
-    Platform::current()->compositorSupport()->setAcceleratedAnimationEnabled(true);
+    CCScopedSettings scopedSettings;
+    Settings::setAcceleratedAnimationEnabled(true);
 
     if (threaded) {
         m_webThread.reset(WebKit::Platform::current()->createThread("CCThreadedTest"));

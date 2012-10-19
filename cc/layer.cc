@@ -707,7 +707,7 @@ bool LayerChromium::addAnimation(scoped_ptr <CCActiveAnimation> animation)
     if (!m_layerTreeHost)
         return false;
 
-    if (!CCSettings::acceleratedAnimationEnabled())
+    if (!Settings::acceleratedAnimationEnabled())
         return false;
 
     m_layerAnimationController->addAnimation(animation.Pass());

@@ -147,7 +147,7 @@ WebTransformationMatrix CCPinchZoomViewport::implTransform() const
 
     // If the pinch state is applied in the impl, then push it to the
     // impl transform, otherwise the scale is handled by WebCore.
-    if (CCSettings::pageScalePinchZoomEnabled()) {
+    if (Settings::pageScalePinchZoomEnabled()) {
         transform.scale(m_pageScaleFactor);
         transform.translate(-m_pinchViewportScrollDelta.x(),
                             -m_pinchViewportScrollDelta.y());
@@ -440,7 +440,7 @@ bool CCLayerTreeHostImpl::calculateRenderPasses(FrameData& frame)
 
         if (appendQuadsData.hadMissingTiles) {
             bool layerHasAnimatingTransform = it->screenSpaceTransformIsAnimating() || it->drawTransformIsAnimating();
-            if (layerHasAnimatingTransform || CCSettings::jankInsteadOfCheckerboard())
+            if (layerHasAnimatingTransform || Settings::jankInsteadOfCheckerboard())
                 drawFrame = false;
         }
 
@@ -934,7 +934,7 @@ void CCLayerTreeHostImpl::setPageScaleFactorAndLimits(float pageScaleFactor, flo
     float pageScaleChange = pageScaleFactor / m_pinchZoomViewport.pageScaleFactor();
     m_pinchZoomViewport.setPageScaleFactorAndLimits(pageScaleFactor, minPageScaleFactor, maxPageScaleFactor);
 
-    if (!CCSettings::pageScalePinchZoomEnabled()) {
+    if (!Settings::pageScalePinchZoomEnabled()) {
         if (pageScaleChange != 1)
             adjustScrollsForPageScaleChange(m_rootScrollLayerImpl, pageScaleChange);
     }
@@ -966,7 +966,7 @@ void CCLayerTreeHostImpl::updateMaxScrollPosition()
     }
 
     IntSize contentBounds = contentSize();
-    if (CCSettings::pageScalePinchZoomEnabled()) {
+    if (Settings::pageScalePinchZoomEnabled()) {
         // Pinch with pageScale scrolls entirely in layout space.  contentSize
         // returns the bounds including the page scale factor, so calculate the
         // pre page-scale layout size here.
@@ -1202,12 +1202,12 @@ void CCLayerTreeHostImpl::pinchGestureUpdate(float magnifyDelta,
 
     m_previousPinchAnchor = anchor;
 
-    if (CCSettings::pageScalePinchZoomEnabled()) {
+    if (Settings::pageScalePinchZoomEnabled()) {
         // Compute the application of the delta with respect to the current page zoom of the page.
         move.scale(1 / (m_pinchZoomViewport.pageScaleFactor() * m_deviceScaleFactor));
     }
 
-    FloatSize scrollOverflow = CCSettings::pageScalePinchZoomEnabled() ? m_pinchZoomViewport.applyScroll(move) : move;
+    FloatSize scrollOverflow = Settings::pageScalePinchZoomEnabled() ? m_pinchZoomViewport.applyScroll(move) : move;
     m_rootScrollLayerImpl->scrollBy(roundedIntSize(scrollOverflow));
 
     if (m_rootScrollLayerImpl->scrollbarAnimationController())
@@ -1308,7 +1308,7 @@ scoped_ptr<CCScrollAndScaleSet> CCLayerTreeHostImpl::processScrollDeltas()
         m_pinchZoomViewport.setSentPageScaleDelta(1);
         // FIXME(aelias): Make these painting optimizations compatible with
         // compositor-side scaling.
-        if (!CCSettings::pageScalePinchZoomEnabled()) {
+        if (!Settings::pageScalePinchZoomEnabled()) {
             if (m_pinchGestureActive)
                 computePinchZoomDeltas(scrollInfo.get());
             else if (m_pageScaleAnimation.get())
@@ -1359,7 +1359,7 @@ void CCLayerTreeHostImpl::animatePageScale(double monotonicTime)
 
 void CCLayerTreeHostImpl::animateLayers(double monotonicTime, double wallClockTime)
 {
-    if (!CCSettings::acceleratedAnimationEnabled() || !m_needsAnimateLayers || !m_rootLayerImpl)
+    if (!Settings::acceleratedAnimationEnabled() || !m_needsAnimateLayers || !m_rootLayerImpl)
         return;
 
     TRACE_EVENT0("cc", "CCLayerTreeHostImpl::animateLayers");

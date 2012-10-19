@@ -16,7 +16,6 @@
 #include "CCRendererGL.h"
 #include "CCScrollbarGeometryFixedThumb.h"
 #include "CCScrollbarLayerImpl.h"
-#include "CCSettings.h"
 #include "CCSingleThreadProxy.h"
 #include "CCSolidColorDrawQuad.h"
 #include "CCTextureDrawQuad.h"
@@ -24,6 +23,7 @@
 #include "CCTileDrawQuad.h"
 #include "CCTiledLayerImpl.h"
 #include "CCVideoLayerImpl.h"
+#include "base/command_line.h"
 #include "base/hash_tables.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_web_compositor_output_surface.h"
@@ -33,6 +33,7 @@
 #include "cc/test/layer_test_common.h"
 #include "cc/test/render_pass_test_common.h"
 #include "cc/test/test_common.h"
+#include "cc/settings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebVideoFrame.h>
@@ -52,7 +53,7 @@ using ::testing::_;
 namespace {
 
 // This test is parametrized to run all tests with the
-// CCSettings::pageScalePinchZoomEnabled field enabled and disabled.
+// Settings::pageScalePinchZoomEnabled field enabled and disabled.
 class CCLayerTreeHostImplTest : public testing::TestWithParam<bool>,
                                 public CCLayerTreeHostImplClient {
 public:
@@ -66,7 +67,7 @@ public:
 
     virtual void SetUp()
     {
-        CCSettings::setPageScalePinchZoomEnabled(GetParam());
+        Settings::setPageScalePinchZoomEnabled(GetParam());
         CCLayerTreeSettings settings;
         settings.minimumOcclusionTrackingSize = IntSize();
 
@@ -77,7 +78,6 @@ public:
 
     virtual void TearDown()
     {
-        CCSettings::reset();
     }
 
     virtual void didLoseContextOnImplThread() OVERRIDE { }
@@ -93,7 +93,7 @@ public:
 
     scoped_ptr<CCLayerTreeHostImpl> createLayerTreeHost(bool partialSwap, scoped_ptr<CCGraphicsContext> graphicsContext, scoped_ptr<CCLayerImpl> root)
     {
-        CCSettings::setPartialSwapEnabled(partialSwap);
+        Settings::setPartialSwapEnabled(partialSwap);
 
         CCLayerTreeSettings settings;
         settings.minimumOcclusionTrackingSize = IntSize();
@@ -482,7 +482,7 @@ TEST_P(CCLayerTreeHostImplTest, maxScrollPositionChangedByDeviceScaleFactor)
 TEST_P(CCLayerTreeHostImplTest, implPinchZoom)
 {
     // This test is specific to the page-scale based pinch zoom.
-    if (!CCSettings::pageScalePinchZoomEnabled())
+    if (!Settings::pageScalePinchZoomEnabled())
         return;
 
     setupScrollAndContentsLayers(IntSize(100, 100));
@@ -545,7 +545,7 @@ TEST_P(CCLayerTreeHostImplTest, pinchGesture)
     CCLayerImpl* scrollLayer = m_hostImpl->rootScrollLayer();
     DCHECK(scrollLayer);
 
-    const float minPageScale = CCSettings::pageScalePinchZoomEnabled() ? 1 : 0.5;
+    const float minPageScale = Settings::pageScalePinchZoomEnabled() ? 1 : 0.5;
     const float maxPageScale = 4;
     const WebTransformationMatrix identityScaleTransform;
 
@@ -596,7 +596,7 @@ TEST_P(CCLayerTreeHostImplTest, pinchGesture)
         scoped_ptr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
         EXPECT_EQ(scrollInfo->pageScaleDelta, minPageScale);
 
-        if (!CCSettings::pageScalePinchZoomEnabled()) {
+        if (!Settings::pageScalePinchZoomEnabled()) {
             // Pushed to (0,0) via clamping against contents layer size.
             expectContains(*scrollInfo, scrollLayer->id(), IntSize(-50, -50));
         } else {
@@ -632,7 +632,7 @@ TEST_P(CCLayerTreeHostImplTest, pageScaleAnimation)
     CCLayerImpl* scrollLayer = m_hostImpl->rootScrollLayer();
     DCHECK(scrollLayer);
 
-    const float minPageScale = CCSettings::pageScalePinchZoomEnabled() ? 1 : 0.5;
+    const float minPageScale = Settings::pageScalePinchZoomEnabled() ? 1 : 0.5;
     const float maxPageScale = 4;
     const double startTime = 1;
     const double duration = 0.1;
@@ -684,7 +684,7 @@ TEST_P(CCLayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhilePinchZoomin
     CCLayerImpl* scrollLayer = m_hostImpl->rootScrollLayer();
     DCHECK(scrollLayer);
 
-    const float minPageScale = CCSettings::pageScalePinchZoomEnabled() ? 1 : 0.5;
+    const float minPageScale = Settings::pageScalePinchZoomEnabled() ? 1 : 0.5;
     const float maxPageScale = 4;
 
     // Pinch zoom in.
@@ -705,7 +705,7 @@ TEST_P(CCLayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhilePinchZoomin
         m_hostImpl->pinchGestureEnd();
         scrollInfo = m_hostImpl->processScrollDeltas();
         EXPECT_EQ(scrollInfo->pageScaleDelta, zoomInDelta);
-        if (!CCSettings::pageScalePinchZoomEnabled()) {
+        if (!Settings::pageScalePinchZoomEnabled()) {
             expectContains(*scrollInfo, scrollLayer->id(), IntSize(25, 25));
         } else {
             EXPECT_TRUE(scrollInfo->scrolls.isEmpty());
@@ -723,7 +723,7 @@ TEST_P(CCLayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhilePinchZoomin
         // Since we are pinch zooming out, we should get an update to zoom all
         // the way out to the minimum page scale.
         scoped_ptr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
-        if (!CCSettings::pageScalePinchZoomEnabled()) {
+        if (!Settings::pageScalePinchZoomEnabled()) {
             EXPECT_EQ(scrollInfo->pageScaleDelta, minPageScale);
             expectContains(*scrollInfo, scrollLayer->id(), IntSize(0, 0));
         } else {
@@ -734,7 +734,7 @@ TEST_P(CCLayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhilePinchZoomin
         // Once the gesture ends, we get the final scroll and page scale values.
         m_hostImpl->pinchGestureEnd();
         scrollInfo = m_hostImpl->processScrollDeltas();
-        if (CCSettings::pageScalePinchZoomEnabled()) {
+        if (Settings::pageScalePinchZoomEnabled()) {
             EXPECT_EQ(scrollInfo->pageScaleDelta, minPageScale);
             expectContains(*scrollInfo, scrollLayer->id(), IntSize(25, 25));
         } else {
@@ -753,7 +753,7 @@ TEST_P(CCLayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhileAnimatingPa
     CCLayerImpl* scrollLayer = m_hostImpl->rootScrollLayer();
     DCHECK(scrollLayer);
 
-    const float minPageScale = CCSettings::pageScalePinchZoomEnabled() ? 1 : 0.5;
+    const float minPageScale = Settings::pageScalePinchZoomEnabled() ? 1 : 0.5;
     const float maxPageScale = 4;
     const double startTime = 1;
     const double duration = 0.1;
@@ -770,7 +770,7 @@ TEST_P(CCLayerTreeHostImplTest, inhibitScrollAndPageScaleUpdatesWhileAnimatingPa
     m_hostImpl->animate(halfwayThroughAnimation, halfwayThroughAnimation);
     scoped_ptr<CCScrollAndScaleSet> scrollInfo = m_hostImpl->processScrollDeltas();
 
-    if (!CCSettings::pageScalePinchZoomEnabled()) {
+    if (!Settings::pageScalePinchZoomEnabled()) {
         EXPECT_EQ(scrollInfo->pageScaleDelta, pageScaleDelta);
         expectContains(*scrollInfo, scrollLayer->id(), IntSize(25, 25));
     } else {
@@ -1154,7 +1154,7 @@ TEST_P(CCLayerTreeHostImplTest, scrollRootAndChangePageScaleOnMainThread)
     // Set new page scale from main thread.
     m_hostImpl->setPageScaleFactorAndLimits(pageScale, pageScale, pageScale);
 
-    if (!CCSettings::pageScalePinchZoomEnabled()) {
+    if (!Settings::pageScalePinchZoomEnabled()) {
         // The scale should apply to the scroll delta.
         expectedScrollDelta.scale(pageScale);
     }
@@ -1277,7 +1277,7 @@ TEST_P(CCLayerTreeHostImplTest, scrollChildAndChangePageScaleOnMainThread)
 
     m_hostImpl->updateRootScrollLayerImplTransform();
 
-    if (!CCSettings::pageScalePinchZoomEnabled()) {
+    if (!Settings::pageScalePinchZoomEnabled()) {
         // The scale should apply to the scroll delta.
         expectedScrollDelta.scale(pageScale);
     }
@@ -1940,7 +1940,7 @@ TEST_P(CCLayerTreeHostImplTest, partialSwapReceivesDamageRect)
     // This test creates its own CCLayerTreeHostImpl, so
     // that we can force partial swap enabled.
     CCLayerTreeSettings settings;
-    CCSettings::setPartialSwapEnabled(true);
+    Settings::setPartialSwapEnabled(true);
     scoped_ptr<CCLayerTreeHostImpl> layerTreeHostImpl = CCLayerTreeHostImpl::create(settings, this);
     layerTreeHostImpl->initializeRenderer(ccContext.Pass());
     layerTreeHostImpl->setViewportSize(IntSize(500, 500), IntSize(500, 500));
@@ -2223,7 +2223,7 @@ public:
 
 static scoped_ptr<CCLayerTreeHostImpl> setupLayersForOpacity(bool partialSwap, CCLayerTreeHostImplClient* client)
 {
-    CCSettings::setPartialSwapEnabled(partialSwap);
+    Settings::setPartialSwapEnabled(partialSwap);
 
     scoped_ptr<CCGraphicsContext> context = FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new PartialSwapContext)).PassAs<CCGraphicsContext>();
 
@@ -2988,7 +2988,7 @@ public:
 
 TEST_P(CCLayerTreeHostImplTest, textureCachingWithClipping)
 {
-    CCSettings::setPartialSwapEnabled(true);
+    Settings::setPartialSwapEnabled(true);
 
     CCLayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = IntSize();
@@ -3085,7 +3085,7 @@ TEST_P(CCLayerTreeHostImplTest, textureCachingWithClipping)
 
 TEST_P(CCLayerTreeHostImplTest, textureCachingWithOcclusion)
 {
-    CCSettings::setPartialSwapEnabled(false);
+    Settings::setPartialSwapEnabled(false);
 
     CCLayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = IntSize();
@@ -3201,7 +3201,7 @@ TEST_P(CCLayerTreeHostImplTest, textureCachingWithOcclusion)
 
 TEST_P(CCLayerTreeHostImplTest, textureCachingWithOcclusionEarlyOut)
 {
-    CCSettings::setPartialSwapEnabled(false);
+    Settings::setPartialSwapEnabled(false);
 
     CCLayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = IntSize();
@@ -3317,7 +3317,7 @@ TEST_P(CCLayerTreeHostImplTest, textureCachingWithOcclusionEarlyOut)
 
 TEST_P(CCLayerTreeHostImplTest, textureCachingWithOcclusionExternalOverInternal)
 {
-    CCSettings::setPartialSwapEnabled(false);
+    Settings::setPartialSwapEnabled(false);
 
     CCLayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = IntSize();
@@ -3406,7 +3406,7 @@ TEST_P(CCLayerTreeHostImplTest, textureCachingWithOcclusionExternalOverInternal)
 
 TEST_P(CCLayerTreeHostImplTest, textureCachingWithOcclusionExternalNotAligned)
 {
-    CCSettings::setPartialSwapEnabled(false);
+    Settings::setPartialSwapEnabled(false);
 
     CCLayerTreeSettings settings;
     scoped_ptr<CCLayerTreeHostImpl> myHostImpl = CCLayerTreeHostImpl::create(settings, this);
@@ -3480,7 +3480,7 @@ TEST_P(CCLayerTreeHostImplTest, textureCachingWithOcclusionExternalNotAligned)
 
 TEST_P(CCLayerTreeHostImplTest, textureCachingWithOcclusionPartialSwap)
 {
-    CCSettings::setPartialSwapEnabled(true);
+    Settings::setPartialSwapEnabled(true);
 
     CCLayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = IntSize();
@@ -3593,7 +3593,7 @@ TEST_P(CCLayerTreeHostImplTest, textureCachingWithOcclusionPartialSwap)
 
 TEST_P(CCLayerTreeHostImplTest, textureCachingWithScissor)
 {
-    CCSettings::setPartialSwapEnabled(false);
+    Settings::setPartialSwapEnabled(false);
 
     CCLayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = IntSize();
@@ -3700,7 +3700,7 @@ TEST_P(CCLayerTreeHostImplTest, textureCachingWithScissor)
 
 TEST_P(CCLayerTreeHostImplTest, surfaceTextureCaching)
 {
-    CCSettings::setPartialSwapEnabled(true);
+    Settings::setPartialSwapEnabled(true);
 
     CCLayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = IntSize();
@@ -3861,7 +3861,7 @@ TEST_P(CCLayerTreeHostImplTest, surfaceTextureCaching)
 
 TEST_P(CCLayerTreeHostImplTest, surfaceTextureCachingNoPartialSwap)
 {
-    CCSettings::setPartialSwapEnabled(false);
+    Settings::setPartialSwapEnabled(false);
 
     CCLayerTreeSettings settings;
     settings.minimumOcclusionTrackingSize = IntSize();

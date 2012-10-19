@@ -14,6 +14,8 @@
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/web_compositor_initializer.h"
+#include "cc/test/test_common.h"
+#include "cc/settings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>
@@ -806,7 +808,8 @@ TEST(LayerChromiumLayerTreeHostTest, shouldNotAddAnimationWithoutLayerTreeHost)
     // layers cannot actually animate yet. So, to prevent violating this WebCore assumption,
     // the animation should not be accepted if the layer doesn't already have a layerTreeHost.
 
-    WebKit::Platform::current()->compositorSupport()->setAcceleratedAnimationEnabled(true);
+    CCScopedSettings scopedSettings;
+    Settings::setAcceleratedAnimationEnabled(true);
 
     WebCompositorInitializer compositorInitializer(0);
     scoped_refptr<LayerChromium> layer = LayerChromium::create();

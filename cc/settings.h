@@ -5,7 +5,7 @@
 #ifndef CCSettings_h
 #define CCSettings_h
 
-#include "IntSize.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 namespace cc {
 
@@ -13,28 +13,23 @@ namespace cc {
 // CCLayerTreeSettings if a ui and renderer compositor might not want the same
 // setting.
 
-class CCSettings {
+class Settings {
 public:
     static bool perTilePaintingEnabled();
     static bool partialSwapEnabled();
     static bool acceleratedAnimationEnabled();
     static bool pageScalePinchZoomEnabled();
-
     static bool jankInsteadOfCheckerboard();
     static bool backgroundColorInsteadOfCheckerboard();
 
-    // These setters should only be used on the main thread before the layer
-    // renderer is initialized.
-    static void setPerTilePaintingEnabled(bool);
     static void setPartialSwapEnabled(bool);
+    static void setPerTilePaintingEnabled(bool);
     static void setAcceleratedAnimationEnabled(bool);
     static void setPageScalePinchZoomEnabled(bool);
 
-    // These settings are meant to be set only once, and only read thereafter.
-    // This function is only for resetting settings in tests.
-    static void reset();
+    static void resetForTest();
 };
 
 } // namespace cc
 
-#endif // CCSettings_h
+#endif // Settings_h

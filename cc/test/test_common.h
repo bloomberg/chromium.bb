@@ -5,7 +5,7 @@
 #ifndef CCTestCommon_h
 #define CCTestCommon_h
 
-#include "CCSettings.h"
+#include "cc/settings.h"
 
 namespace WebKitTests {
 
@@ -13,8 +13,8 @@ namespace WebKitTests {
 // of this class to ensure that you start and end with a clean slate.
 class CCScopedSettings {
 public:
-    CCScopedSettings() { cc::CCSettings::reset(); }
-    ~CCScopedSettings() { cc::CCSettings::reset(); }
+    CCScopedSettings() { cc::Settings::resetForTest(); }
+    ~CCScopedSettings() { cc::Settings::resetForTest(); }
 };
 
 } // namespace WebKitTests

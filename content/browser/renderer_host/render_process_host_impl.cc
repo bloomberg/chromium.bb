@@ -785,7 +785,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableSharedWorkers,
     switches::kDisableSpeechInput,
     switches::kEnableScriptedSpeech,
-    switches::kDisableThreadedAnimation,
 #if defined(OS_ANDROID)
     switches::kEnableWebAudio,
 #else
@@ -807,8 +806,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableLogging,
     switches::kDisableMediaSource,
     switches::kDisableWebMediaPlayerMS,
-    switches::kEnablePartialSwap,
-    switches::kEnablePerTilePainting,
     switches::kEnableRendererSideMixing,
     switches::kEnableStrictSiteIsolation,
     switches::kDisableFullScreen,
@@ -816,7 +813,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnablePreparsedJsCaching,
     switches::kEnablePruneGpuCommandBuffers,
     switches::kEnablePinch,
-    switches::kEnablePinchInCompositor,
 #if defined(OS_MACOSX)
     // Allow this to be set when invoking the browser and relayed along.
     switches::kEnableSandboxLogging,
@@ -864,8 +860,12 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kVideoThreads,
     switches::kVModule,
     switches::kWebCoreLogChannels,
-    cc::switches::kJankInsteadOfCheckerboard,
     cc::switches::kBackgroundColorInsteadOfCheckerboard,
+    cc::switches::kDisableThreadedAnimation,
+    cc::switches::kEnablePartialSwap,
+    cc::switches::kEnablePerTilePainting,
+    cc::switches::kEnablePinchInCompositor,
+    cc::switches::kJankInsteadOfCheckerboard,
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));

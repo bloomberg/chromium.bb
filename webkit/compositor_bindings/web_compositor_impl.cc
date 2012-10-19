@@ -38,31 +38,6 @@ bool WebCompositor::isThreadingEnabled()
 void WebCompositor::shutdown()
 {
     WebCompositorImpl::shutdown();
-    CCSettings::reset();
-}
-
-void WebCompositor::setPerTilePaintingEnabled(bool enabled)
-{
-    ASSERT(!WebCompositorImpl::initialized());
-    CCSettings::setPerTilePaintingEnabled(enabled);
-}
-
-void WebCompositor::setPartialSwapEnabled(bool enabled)
-{
-    ASSERT(!WebCompositorImpl::initialized());
-    CCSettings::setPartialSwapEnabled(enabled);
-}
-
-void WebCompositor::setAcceleratedAnimationEnabled(bool enabled)
-{
-    ASSERT(!WebCompositorImpl::initialized());
-    CCSettings::setAcceleratedAnimationEnabled(enabled);
-}
-
-void WebCompositor::setPageScalePinchZoomEnabled(bool enabled)
-{
-    ASSERT(!WebCompositorImpl::initialized());
-    CCSettings::setPageScalePinchZoomEnabled(enabled);
 }
 
 void WebCompositorImpl::initialize(WebThread* implThread)

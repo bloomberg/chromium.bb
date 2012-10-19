@@ -14,6 +14,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "cc/switches.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_content_client.h"
@@ -310,7 +311,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_DISABLE_THREADED_ANIMATION_NAME,
     IDS_FLAGS_DISABLE_THREADED_ANIMATION_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kDisableThreadedAnimation)
+    SINGLE_VALUE_TYPE(cc::switches::kDisableThreadedAnimation)
   },
   {
     "composited-layer-borders",
@@ -618,7 +619,7 @@ const Experiment kExperiments[] = {
 #else
     0,
 #endif
-    SINGLE_VALUE_TYPE(switches::kEnablePerTilePainting)
+    SINGLE_VALUE_TYPE(cc::switches::kEnablePerTilePainting)
   },
   {
     "enable-javascript-harmony",

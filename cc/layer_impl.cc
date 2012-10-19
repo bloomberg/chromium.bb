@@ -227,7 +227,7 @@ CCInputHandlerClient::ScrollStatus CCLayerImpl::tryScroll(const IntPoint& viewpo
 
 bool CCLayerImpl::drawCheckerboardForMissingTiles() const
 {
-    return m_drawCheckerboardForMissingTiles && !CCSettings::backgroundColorInsteadOfCheckerboard();
+    return m_drawCheckerboardForMissingTiles && !Settings::backgroundColorInsteadOfCheckerboard();
 }
 
 IntRect CCLayerImpl::layerRectToContentRect(const WebKit::WebRect& layerRect)

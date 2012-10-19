@@ -6,6 +6,7 @@
 #include "webkit/compositor_bindings/web_compositor_support_impl.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "cc/settings.h"
 #include "webkit/compositor_bindings/web_animation_impl.h"
 #include "webkit/compositor_bindings/web_compositor_impl.h"
 #include "webkit/compositor_bindings/web_content_layer_impl.h"
@@ -67,19 +68,19 @@ void WebCompositorSupportImpl::shutdown() {
 }
 
 void WebCompositorSupportImpl::setPerTilePaintingEnabled(bool enabled) {
-  WebCompositorImpl::setPerTilePaintingEnabled(enabled);
+  cc::Settings::setPerTilePaintingEnabled(enabled);
 }
 
 void WebCompositorSupportImpl::setPartialSwapEnabled(bool enabled) {
-  WebCompositorImpl::setPartialSwapEnabled(enabled);
+  cc::Settings::setPartialSwapEnabled(enabled);
 }
 
 void WebCompositorSupportImpl::setAcceleratedAnimationEnabled(bool enabled) {
-  WebCompositorImpl::setAcceleratedAnimationEnabled(enabled);
+  cc::Settings::setAcceleratedAnimationEnabled(enabled);
 }
 
 void WebCompositorSupportImpl::setPageScalePinchZoomEnabled(bool enabled) {
-  WebCompositorImpl::setPageScalePinchZoomEnabled(enabled);
+  cc::Settings::setPageScalePinchZoomEnabled(enabled);
 }
 
 WebLayerTreeView* WebCompositorSupportImpl::createLayerTreeView(

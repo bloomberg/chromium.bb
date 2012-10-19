@@ -209,9 +209,6 @@ const char kEnableScriptedSpeech[]          = "enable-scripted-speech";
 // Specifies the request key for the continuous speech recognition webservice.
 const char kSpeechRecognitionWebserviceKey[] = "speech-service-key";
 
-// Disables animation on the compositor thread.
-const char kDisableThreadedAnimation[]      = "disable-threaded-animation";
-
 #if defined(OS_ANDROID)
 // Enable web audio API.
 const char kEnableWebAudio[]                = "enable-webaudio";
@@ -318,19 +315,12 @@ const char kEnableDeprecatedPeerConnection[] =
 // assumed to be sRGB.
 const char kEnableMonitorProfile[]          = "enable-monitor-profile";
 
-// Enables partial swaps in the WK compositor on platforms that support it.
-const char kEnablePartialSwap[]             = "enable-partial-swap";
-
 // Enables UI releasing handle to front surface for background tabs on platforms
 // that support it.
 const char kEnableUIReleaseFrontSurface[] = "enable-ui-release-front-surface";
 
 // Enables touch-screen pinch gestures.
 const char kEnablePinch[]                   = "enable-pinch";
-
-// Enables an alternative pinch-zoom gesture support, via the threaded
-// compositor.
-const char kEnablePinchInCompositor[]       = "enable-pinch-in-compositor";
 
 // Enable caching of pre-parsed JS script data.  See http://crbug.com/32407.
 const char kEnablePreparsedJsCaching[]      = "enable-preparsed-js-caching";
@@ -723,9 +713,6 @@ const char kScrollPixels[]                  = "scroll-pixels";
 // instead of NSS for SSL.
 const char kUseSystemSSL[]                  = "use-system-ssl";
 #endif
-
-// Enable per-tile page painting.
-const char kEnablePerTilePainting[]         = "enable-per-tile-painting";
 
 // Disables the use of a 3D software rasterizer.
 const char kDisableSoftwareRasterizer[]     = "disable-software-rasterizer";
