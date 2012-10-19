@@ -4,55 +4,15 @@
 
 #include "remoting/host/setup/host_starter.h"
 
+#include "base/guid.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "crypto/random.h"
 #include "google_apis/google_api_keys.h"
 #include "remoting/host/pin_hash.h"
 #include "remoting/host/setup/oauth_helper.h"
 
 namespace {
-
-void AppendByte(std::string& s, uint8 byte) {
-  const char alphabet[] = "0123456789abcdef";
-  s.push_back(alphabet[byte / 16]);
-  s.push_back(alphabet[byte & 15]);
-}
-
-std::string MakeHostId() {
-  static const int random_byte_num = 16;
-  static const unsigned int id_len = 36;
-  scoped_array<uint8> random_bytes(new uint8[random_byte_num]);
-  crypto::RandBytes(&random_bytes[0], random_byte_num);
-  std::string id;
-  id.reserve(id_len);
-  int byte_count = 0;
-  for (int i = 0; i < 4; i++) {
-    AppendByte(id, random_bytes[byte_count++]);
-  }
-  id.push_back('-');
-  for (int i = 0; i < 2; i++) {
-    AppendByte(id, random_bytes[byte_count++]);
-  }
-  id.push_back('-');
-  for (int i = 0; i < 2; i++) {
-    AppendByte(id, random_bytes[byte_count++]);
-  }
-  id.push_back('-');
-  for (int i = 0; i < 2; i++) {
-    AppendByte(id, random_bytes[byte_count++]);
-  }
-  id.push_back('-');
-  for (int i = 0; i < 6; i++) {
-    AppendByte(id, random_bytes[byte_count++]);
-  }
-  DCHECK_EQ(random_byte_num, byte_count);
-  DCHECK_EQ(id_len, id.length());
-  return id;
-}
-
 const int kMaxGetTokensRetries = 3;
-
 }  // namespace
 
 namespace remoting {
@@ -143,7 +103,7 @@ void HostStarter::OnGetUserEmailResponse(const std::string& user_email) {
   }
   user_email_ = user_email;
   // Register the host.
-  host_id_ = MakeHostId();
+  host_id_ = base::GenerateGUID();
   key_pair_.Generate();
   service_client_->RegisterHost(
       host_id_, host_name_, key_pair_.GetPublicKey(), access_token_, this);
