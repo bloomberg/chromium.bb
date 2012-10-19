@@ -19,6 +19,7 @@
 #include "base/system_monitor/system_monitor.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_event_router.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -66,10 +67,11 @@ struct InvalidatedGalleriesInfo {
   std::set<MediaGalleryPrefId> pref_ids;
 };
 
-// Make a JSON string out of |name| and |id|. The |id| makes the combined name
-// unique. The JSON string should not contain any slashes.
+// Make a JSON string out of |name|, |pref_id| and |device_id|. The IDs makes
+// the combined name unique. The JSON string should not contain any slashes.
 std::string MakeJSONFileSystemName(const string16& name,
-                                   const MediaGalleryPrefId& id) {
+                                   const MediaGalleryPrefId& pref_id,
+                                   const std::string& device_id) {
   string16 sanitized_name;
   string16 separators =
 #if defined(FILE_PATH_USES_WIN_SEPARATORS)
@@ -83,11 +85,24 @@ std::string MakeJSONFileSystemName(const string16& name,
   base::DictionaryValue dict_value;
   dict_value.SetWithoutPathExpansion(
       "name", Value::CreateStringValue(sanitized_name));
-  dict_value.SetWithoutPathExpansion("id", Value::CreateIntegerValue(id));
+  dict_value.SetWithoutPathExpansion("id", Value::CreateIntegerValue(pref_id));
+  // |device_id| can be empty, in which case, just omit it.
+  if (!device_id.empty()) {
+    dict_value.SetWithoutPathExpansion("deviceId",
+                                       Value::CreateStringValue(device_id));
+  }
 
   std::string json_string;
   base::JSONWriter::Write(&dict_value, &json_string);
   return json_string;
+}
+
+std::string GetTransientIdForRemovableDeviceId(const std::string& device_id) {
+  using extensions::MediaGalleriesPrivateEventRouter;
+
+  if (!MediaStorageUtil::IsRemovableDevice(device_id))
+    return std::string();
+  return MediaGalleriesPrivateEventRouter::GetTransientIdForDeviceId(device_id);
 }
 
 }  // namespace
@@ -333,7 +348,9 @@ class ExtensionGalleriesHost
       DCHECK(!fsid.empty());
 
       MediaFileSystemInfo new_entry(
-          MakeJSONFileSystemName(gallery_info.display_name, pref_id),
+          MakeJSONFileSystemName(gallery_info.display_name,
+                                 pref_id,
+                                 GetTransientIdForRemovableDeviceId(device_id)),
           path,
           fsid);
       result.push_back(new_entry);

@@ -29,43 +29,33 @@ class TransientDeviceIds {
  public:
   static TransientDeviceIds* GetInstance();
 
-  // Returns the transient for a given |unique_id|.
+  // Returns the transient for a given |device_id|.
   // Returns an empty string on error.
-  std::string GetTransientIdForUniqueId(const std::string& unique_id) const {
-    UniqueIdToTransientIdMap::const_iterator it = id_map_.find(unique_id);
-    return (it == id_map_.end()) ? std::string() :
-                                   base::Uint64ToString(it->second);
+  std::string GetTransientIdForDeviceId(const std::string& device_id) const {
+    DeviceIdToTransientIdMap::const_iterator it = id_map_.find(device_id);
+    CHECK(it != id_map_.end());
+    return base::Uint64ToString(it->second);
   }
 
-  bool DeviceAttached(const std::string& unique_id) {
+  void DeviceAttached(const std::string& device_id) {
     bool inserted =
-        id_map_.insert(std::make_pair(unique_id, transient_id_)).second;
-    if (!inserted) {
-      NOTREACHED();
-      return false;
+        id_map_.insert(std::make_pair(device_id, transient_id_)).second;
+    if (inserted) {
+      // Inserted a device that has never been seen before.
+      ++transient_id_;
     }
-    ++transient_id_;
-    return true;
-  }
-
-  bool DeviceDetached(const std::string& unique_id) {
-    if (id_map_.erase(unique_id) == 0) {
-      NOTREACHED();
-      return false;
-    }
-    return true;
   }
 
  private:
   friend struct base::DefaultLazyInstanceTraits<TransientDeviceIds>;
 
-  typedef std::map<std::string, uint64_t> UniqueIdToTransientIdMap;
+  typedef std::map<std::string, uint64_t> DeviceIdToTransientIdMap;
 
   // Use GetInstance().
   TransientDeviceIds() : transient_id_(0) {}
   ~TransientDeviceIds() {}
 
-  UniqueIdToTransientIdMap id_map_;
+  DeviceIdToTransientIdMap id_map_;
   uint64_t transient_id_;
 
   DISALLOW_COPY_AND_ASSIGN(TransientDeviceIds);
@@ -87,6 +77,8 @@ using extensions::api::media_galleries_private::DeviceDetachmentDetails;
 MediaGalleriesPrivateEventRouter::MediaGalleriesPrivateEventRouter(
     Profile* profile)
     : profile_(profile) {
+  CHECK(profile_);
+
   base::SystemMonitor* system_monitor = base::SystemMonitor::Get();
   if (system_monitor) {
     system_monitor->AddDevicesChangedObserver(this);
@@ -107,24 +99,26 @@ MediaGalleriesPrivateEventRouter::~MediaGalleriesPrivateEventRouter() {
     system_monitor->RemoveDevicesChangedObserver(this);
 }
 
+// static
+std::string MediaGalleriesPrivateEventRouter::GetTransientIdForDeviceId(
+    const std::string& device_id) {
+  return TransientDeviceIds::GetInstance()->GetTransientIdForDeviceId(
+      device_id);
+}
+
 void MediaGalleriesPrivateEventRouter::OnRemovableStorageAttached(
     const std::string& id,
     const string16& name,
     const FilePath::StringType& location) {
-  TransientDeviceIds* device_ids = TransientDeviceIds::GetInstance();
-  if (!device_ids->DeviceAttached(id))
-    return;
+  TransientDeviceIds::GetInstance()->DeviceAttached(id);
 
   EventRouter* router = profile_->GetExtensionEventRouter();
   if (!router->HasEventListener(kOnAttachEventName))
     return;
 
-  std::string transient_id = device_ids->GetTransientIdForUniqueId(id);
-  CHECK(!transient_id.empty());
-
   DeviceAttachmentDetails details;
   details.device_name = UTF16ToUTF8(name);
-  details.device_id = transient_id;
+  details.device_id = GetTransientIdForDeviceId(id);
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(details.ToValue().release());
@@ -133,20 +127,12 @@ void MediaGalleriesPrivateEventRouter::OnRemovableStorageAttached(
 
 void MediaGalleriesPrivateEventRouter::OnRemovableStorageDetached(
     const std::string& id) {
-  TransientDeviceIds* device_ids = TransientDeviceIds::GetInstance();
-  std::string transient_id = device_ids->GetTransientIdForUniqueId(id);
-  if (transient_id.empty()) {
-    NOTREACHED();
-    return;
-  }
-  CHECK(device_ids->DeviceDetached(id));
-
   EventRouter* router = profile_->GetExtensionEventRouter();
   if (!router->HasEventListener(kOnDetachEventName))
     return;
 
   DeviceDetachmentDetails details;
-  details.device_id = transient_id;
+  details.device_id = GetTransientIdForDeviceId(id);
 
   scoped_ptr<base::ListValue> args(new ListValue());
   args->Append(details.ToValue().release());
@@ -156,7 +142,7 @@ void MediaGalleriesPrivateEventRouter::OnRemovableStorageDetached(
 void MediaGalleriesPrivateEventRouter::DispatchEvent(
     const std::string& event_name,
     scoped_ptr<base::ListValue> event_args) {
-  EventRouter* router = profile_ ? profile_->GetExtensionEventRouter() : NULL;
+  EventRouter* router = profile_->GetExtensionEventRouter();
   if (!router)
     return;
   router->DispatchEventToRenderers(event_name, event_args.Pass(), profile_,

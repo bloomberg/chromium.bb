@@ -27,6 +27,9 @@ class MediaGalleriesPrivateEventRouter
   explicit MediaGalleriesPrivateEventRouter(Profile* profile);
   virtual ~MediaGalleriesPrivateEventRouter();
 
+  // Returns the transient id for a given |device_id|.
+  static std::string GetTransientIdForDeviceId(const std::string& device_id);
+
  private:
   // base::SystemMonitor::DevicesChangedObserver implementation.
   virtual void OnRemovableStorageAttached(
