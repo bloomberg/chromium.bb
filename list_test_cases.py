@@ -43,7 +43,8 @@ def main():
         options.shards,
         options.disabled,
         options.fails,
-        options.flaky)
+        options.flaky,
+        0)
     for test in tests:
       print test
   except run_test_cases.Failure, e:

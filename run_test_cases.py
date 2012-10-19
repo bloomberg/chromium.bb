@@ -15,6 +15,7 @@ import logging
 import optparse
 import os
 import Queue
+import random
 import subprocess
 import sys
 import threading
@@ -46,7 +47,6 @@ GTEST_ENV_VARS_TO_REMOVE = [
   'GTEST_FILTER',
   # TODO(maruel): Handle.
   'GTEST_OUTPUT',
-  # TODO(maruel): Handle.
   'GTEST_RANDOM_SEED',
   # TODO(maruel): Handle.
   'GTEST_REPEAT',
@@ -438,11 +438,16 @@ def filter_bad_tests(tests, disabled=False, fails=False, flaky=False):
   return [test for test in tests if valid(test)]
 
 
-def parse_gtest_cases(out):
+def parse_gtest_cases(out, seed):
   """Returns the flattened list of test cases in the executable.
 
   The returned list is sorted so it is not dependent on the order of the linked
-  objects.
+  objects. Then |seed| is applied to deterministically shuffle the list if
+  |seed| is a positive value. The rationale is that the probability of two test
+  cases stomping on each other when run simultaneously is high for test cases in
+  the same fixture. By shuffling the tests, the probability of these badly
+  written tests running simultaneously, let alone being in the same shard, is
+  lower.
 
   Expected format is a concatenation of this:
   TestFixture1
@@ -465,12 +470,23 @@ def parse_gtest_cases(out):
         break
       assert ' ' not in case
       tests.append(fixture + case)
-  return sorted(tests)
+  tests = sorted(tests)
+  if seed:
+    # Sadly, python's random module doesn't permit local seeds.
+    state = random.getstate()
+    try:
+      # This is totally deterministic.
+      random.seed(seed)
+      random.shuffle(tests)
+    finally:
+      random.setstate(state)
+  return tests
 
 
-def list_test_cases(cmd, cwd, index, shards, disabled, fails, flaky):
+def list_test_cases(cmd, cwd, index, shards, disabled, fails, flaky, seed):
   """Returns the list of test cases according to the specified criterias."""
-  tests = parse_gtest_cases(gtest_list_tests(cmd, cwd))
+  tests = parse_gtest_cases(gtest_list_tests(cmd, cwd), seed)
+
   if shards:
     tests = filter_shards(tests, index, shards)
   return filter_bad_tests(tests, disabled, fails, flaky)
@@ -619,13 +635,13 @@ class Runner(object):
     return out
 
 
-def get_test_cases(cmd, cwd, whitelist, blacklist, index, shards):
+def get_test_cases(cmd, cwd, whitelist, blacklist, index, shards, seed):
   """Returns the filtered list of test cases.
 
   This is done synchronously.
   """
   try:
-    tests = list_test_cases(cmd, cwd, index, shards, False, False, False)
+    tests = list_test_cases(cmd, cwd, index, shards, False, False, False, seed)
   except Failure, e:
     print('Failed to list test cases')
     print(e.args[0])
@@ -792,6 +808,12 @@ class OptionParserWithTestShardingAndFiltering(OptionParserWithTestSharding):
         default=os.environ.get('GTEST_FILTER', ''),
         help='Runs a single test, provideded to keep compatibility with '
         'other tools')
+    group.add_option(
+        '--seed',
+        type='int',
+        default=os.environ.get('GTEST_RANDOM_SEED', '1'),
+        help='Deterministically shuffle the test list if non-0. default: '
+             '%default')
     self.add_option_group(group)
 
   def parse_args(self, *args, **kwargs):
@@ -818,7 +840,8 @@ class OptionParserWithTestShardingAndFiltering(OptionParserWithTestSharding):
     """Grabs the test cases."""
     if options.test_case_file:
       with open(options.test_case_file, 'r') as f:
-        return sorted(filter(None, f.read().splitlines()))
+        # Do not shuffle or alter the file in any way in that case.
+        return filter(None, f.read().splitlines())
     else:
       return get_test_cases(
           cmd,
@@ -826,7 +849,8 @@ class OptionParserWithTestShardingAndFiltering(OptionParserWithTestSharding):
           options.whitelist,
           options.blacklist,
           options.index,
-          options.shards)
+          options.shards,
+          options.seed)
 
 
 class OptionParserTestCases(OptionParserWithTestShardingAndFiltering):
