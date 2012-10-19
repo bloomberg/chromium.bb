@@ -31,7 +31,6 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
-#include "grit/shared_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "ipc/ipc_message.h"
@@ -106,11 +105,11 @@ views::ImageButton* CreateCloseButton(views::ButtonListener* listener) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   views::ImageButton* close_button = new views::ImageButton(listener);
   close_button->SetImage(views::CustomButton::BS_NORMAL,
-                         rb.GetImageSkiaNamed(IDR_SHARED_IMAGES_X));
+                         rb.GetImageSkiaNamed(IDR_WEB_UI_CLOSE));
   close_button->SetImage(views::CustomButton::BS_HOT,
-                         rb.GetImageSkiaNamed(IDR_SHARED_IMAGES_X_HOVER));
+                         rb.GetImageSkiaNamed(IDR_WEB_UI_CLOSE_HOVER));
   close_button->SetImage(views::CustomButton::BS_PUSHED,
-                         rb.GetImageSkiaNamed(IDR_SHARED_IMAGES_X_HOVER));
+                         rb.GetImageSkiaNamed(IDR_WEB_UI_CLOSE_PRESSED));
   return close_button;
 }
 

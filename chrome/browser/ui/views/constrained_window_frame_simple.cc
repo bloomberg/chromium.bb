@@ -10,7 +10,6 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
-#include "grit/shared_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "ui/base/hit_test.h"
@@ -72,11 +71,11 @@ ConstrainedWindowFrameSimple::ConstrainedWindowFrameSimple(
 
   close_button_ = new views::ImageButton(this);
   close_button_->SetImage(views::CustomButton::BS_NORMAL,
-                          rb.GetImageSkiaNamed(IDR_SHARED_IMAGES_X));
+                          rb.GetImageSkiaNamed(IDR_WEB_UI_CLOSE));
   close_button_->SetImage(views::CustomButton::BS_HOT,
-                          rb.GetImageSkiaNamed(IDR_SHARED_IMAGES_X_HOVER));
+                          rb.GetImageSkiaNamed(IDR_WEB_UI_CLOSE_HOVER));
   close_button_->SetImage(views::CustomButton::BS_PUSHED,
-                          rb.GetImageSkiaNamed(IDR_SHARED_IMAGES_X_PRESSED));
+                          rb.GetImageSkiaNamed(IDR_WEB_UI_CLOSE_PRESSED));
   close_button_->set_border(views::Border::CreateEmptyBorder(
       ConstrainedWindowConstants::kCloseButtonPadding - kHeaderTopPadding,
       0, 0, 0));

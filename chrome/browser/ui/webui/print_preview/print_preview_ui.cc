@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_data_source.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_handler.h"
+#include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/print_messages.h"
 #include "content/public/browser/web_contents.h"
 #include "printing/page_size_margins.h"
@@ -98,6 +99,9 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
   // Set up the chrome://print/ data source.
   Profile* profile = Profile::FromWebUI(web_ui);
   ChromeURLDataManager::AddDataSource(profile, new PrintPreviewDataSource());
+
+  // Set up the chrome://theme/ source.
+  ChromeURLDataManager::AddDataSource(profile, new ThemeSource(profile));
 
   // WebUI owns |handler_|.
   handler_ = new PrintPreviewHandler();
