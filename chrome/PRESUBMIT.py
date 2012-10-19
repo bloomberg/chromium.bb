@@ -38,8 +38,6 @@ EXCLUDE = (
   r'nss_decryptor_linux\.cc$',
   # Has safe printf usage that cpplint complains about
   r'safe_browsing_util\.cc$',
-  # Too much math on one line?
-  r'bloom_filter\.cc$',
   # Bogus ifdef tricks
   r'renderer_webkitplatformsupport_impl\.cc$',
   # Lines > 100 chars

@@ -23,7 +23,6 @@ namespace safe_browsing {
 class PrefixSet;
 }
 
-class BloomFilter;
 class GURL;
 class MessageLoop;
 class SafeBrowsingDatabase;
@@ -156,6 +155,7 @@ class SafeBrowsingDatabase {
       const std::vector<SBFullHashResult>& full_hits) = 0;
 
   // The name of the bloom-filter file for the given database file.
+  // NOTE(shess): OBSOLETE.  Present for deleting stale files.
   static FilePath BloomFilterForFilename(const FilePath& db_filename);
 
   // The name of the prefix set file for the given database file.
@@ -182,9 +182,9 @@ class SafeBrowsingDatabase {
     FAILURE_DATABASE_CORRUPT_HANDLER,
     FAILURE_BROWSE_DATABASE_UPDATE_BEGIN,
     FAILURE_BROWSE_DATABASE_UPDATE_FINISH,
-    FAILURE_DATABASE_FILTER_MISSING,
-    FAILURE_DATABASE_FILTER_READ,
-    FAILURE_DATABASE_FILTER_WRITE,
+    FAILURE_DATABASE_FILTER_MISSING_OBSOLETE,
+    FAILURE_DATABASE_FILTER_READ_OBSOLETE,
+    FAILURE_DATABASE_FILTER_WRITE_OBSOLETE,
     FAILURE_DATABASE_FILTER_DELETE,
     FAILURE_DATABASE_STORE_MISSING,
     FAILURE_DATABASE_STORE_DELETE,
@@ -275,8 +275,8 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
     // Deletes the files on disk.
   bool Delete();
 
-  // Load the prefix set or bloom filter off disk, if available.
-  void LoadBloomFilterOrPrefixSet();
+  // Load the prefix set off disk, if available.
+  void LoadPrefixSet();
 
   // Writes the current prefix set to disk.
   void WritePrefixSet();
@@ -327,9 +327,9 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   MessageLoop* creation_loop_;
 
   // Lock for protecting access to variables that may be used on the
-  // IO thread.  This includes |browse_bloom_filter_|, |prefix_set_|,
-  // |full_browse_hashes_|, |pending_browse_hashes_|,
-  // |prefix_miss_cache_|, |csd_whitelist_|, and |csd_whitelist_all_urls_|.
+  // IO thread.  This includes |prefix_set_|, |full_browse_hashes_|,
+  // |pending_browse_hashes_|, |prefix_miss_cache_|, |csd_whitelist_|,
+  // and |csd_whitelist_all_urls_|.
   base::Lock lookup_lock_;
 
   // Underlying persistent store for chunk data.
@@ -353,12 +353,6 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
 
   SBWhitelist csd_whitelist_;
   SBWhitelist download_whitelist_;
-
-  // Bloom filter generated from the add-prefixes in |browse_store_|.
-  // Only browse_store_ requires the BloomFilter for fast query.
-  // TODO(shess): Do not use, being replaced by prefix_set_.
-  FilePath bloom_filter_filename_;
-  scoped_refptr<BloomFilter> browse_bloom_filter_;
 
   // Cached browse store related full-hash items, ordered by prefix for
   // efficient scanning.

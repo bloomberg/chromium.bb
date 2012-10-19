@@ -1570,7 +1570,6 @@
         'browser/resources/shared/js/cr.js',
         'browser/resources_util_unittest.cc',
         'browser/rlz/rlz_unittest.cc',
-        'browser/safe_browsing/bloom_filter_unittest.cc',
         'browser/safe_browsing/browser_feature_extractor_unittest.cc',
         'browser/safe_browsing/chunk_range_unittest.cc',
         'browser/safe_browsing/client_side_detection_host_unittest.cc',
