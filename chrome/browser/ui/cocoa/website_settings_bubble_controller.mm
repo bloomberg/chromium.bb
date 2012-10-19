@@ -828,13 +828,18 @@ NSColor* IdentityVerifiedTextColor() {
   [button setTarget:self];
 
   // Create the popup menu.
+  // TODO(dubroy): Refactor this code to use PermissionMenuModel.
 
-  [button addItemWithTitle:
-      l10n_util::GetNSString(IDS_WEBSITE_SETTINGS_MENU_ITEM_ALLOW)];
-  [[button lastItem] setTag:CONTENT_SETTING_ALLOW];
+  // Media stream permission does not support "Always allow".
+  if (permissionInfo.type != CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
+    [button addItemWithTitle:
+        l10n_util::GetNSString(IDS_WEBSITE_SETTINGS_MENU_ITEM_ALLOW)];
+    [[button lastItem] setTag:CONTENT_SETTING_ALLOW];
+  }
 
-  // Fullscreen permission does not support "Always block".
-  if (permissionInfo.type != CONTENT_SETTINGS_TYPE_FULLSCREEN) {
+  // Fullscreen and media stream do not support "Always block".
+  if (permissionInfo.type != CONTENT_SETTINGS_TYPE_FULLSCREEN &&
+      permissionInfo.type != CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
     [button addItemWithTitle:
         l10n_util::GetNSString(IDS_WEBSITE_SETTINGS_MENU_ITEM_BLOCK)];
     [[button lastItem] setTag:CONTENT_SETTING_BLOCK];
