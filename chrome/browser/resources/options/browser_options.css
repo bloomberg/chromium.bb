@@ -145,6 +145,10 @@ input[type='range'] {
   width: 320px;
 }
 
+#download-location-label.disabled {
+  color: #999;
+}
+
 .network-group {
   -webkit-box-orient: horizontal;
   height: 42px;

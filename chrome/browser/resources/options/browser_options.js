@@ -773,6 +773,11 @@ cr.define('options', function() {
         path = path.replace(/\//g, ' \u203a ');
         $('downloadLocationPath').value = path;
       }
+      if (event.value.disabled)
+        $('download-location-label').classList.add('disabled');
+      else
+        $('download-location-label').classList.remove('disabled');
+      $('downloadLocationChangeButton').disabled = event.value.disabled;
     },
 
     /**

@@ -254,11 +254,18 @@
         </span>
       </div>
       <div class="checkbox">
-        <label>
+        <span class="controlled-setting-with-label">
           <input id="safeBrowsingEnabled" pref="safebrowsing.enabled"
               metric="Options_SafeBrowsingCheckbox" type="checkbox">
-          <span i18n-content="safeBrowsingEnableProtection"></span>
-        </label>
+          <span>
+            <label for="safeBrowsingEnabled"
+                i18n-content="safeBrowsingEnableProtection">
+            </label>
+            <span class="controlled-setting-indicator"
+                pref="safebrowsing.enabled">
+            </span>
+          </span>
+        </span>
       </div>
 <if expr="pp_ifdef('_google_chrome')">
       <div class="checkbox">
@@ -269,7 +276,7 @@
         </label>
       </div>
       <div id="metricsReportingSetting" class="checkbox">
-        <label>
+        <span class="controlled-setting-with-label">
 <if expr="pp_ifdef('chromeos')">
           <input id="metricsReportingEnabled"
               pref="cros.metrics.reportingEnabled" type="checkbox">
@@ -278,8 +285,14 @@
           <input id="metricsReportingEnabled"
               pref="user_experience_metrics.reporting_enabled" type="checkbox">
 </if>
-          <span i18n-content="enableLogging"></span>
-        </label>
+          <span>
+            <label for="metricsReportingEnabled" i18n-content="enableLogging">
+            </label>
+            <span class="controlled-setting-indicator"
+                pref="user_experience_metrics.reporting_enabled">
+            </span>
+          </span>
+        </span>
       </div>
 </if>  <!-- pp_ifdef('_google_chrome') -->
       <div class="checkbox">
@@ -322,25 +335,36 @@
   <section id="passwords-and-autofill-section">
     <h3 i18n-content="passwordsAndAutofillGroupName"></h3>
     <div class="checkbox">
-      <label>
+      <span class="controlled-setting-with-label">
         <input id="autofill-enabled" pref="autofill.enabled"
             metric="Options_FormAutofill" type="checkbox">
-        <span i18n-content="autofillEnabled"></span>
-      </label>
-      <button id="autofill-settings" class="link-button"
-          pref="autofill.enabled"
-          i18n-content="manageAutofillSettings"></button>
+        <span>
+          <label for="autofill-enabled" i18n-content="autofillEnabled"></label>
+          <span class="controlled-setting-indicator" pref="autofill.enabled">
+          </span>
+          <button id="autofill-settings" class="link-button"
+              i18n-content="manageAutofillSettings">
+          </button>
+        </span>
+      </span>
     </div>
     <div class="checkbox">
-      <label>
+      <span class="controlled-setting-with-label">
         <input id="password-manager-enabled"
             pref="profile.password_manager_enabled"
             metric="Options_PasswordManager" type="checkbox">
-        <span i18n-content="passwordManagerEnabled"></span>
-      </label>
-      <button id="manage-passwords" class="link-button"
-          i18n-content="managePasswords"
-          pref="profile.password_manager_enabled"></button>
+        <span>
+          <label for="password-manager-enabled"
+              i18n-content="passwordManagerEnabled">
+          </label>
+          <span class="controlled-setting-indicator"
+              pref="profile.password_manager_enabled">
+          </span>
+          <button id="manage-passwords" class="link-button"
+              i18n-content="managePasswords">
+          </button>
+        </span>
+      </span>
     </div>
     <div class="checkbox" id="password-generation-checkbox">
       <label>
@@ -426,21 +450,33 @@
     <div>
       <div class="settings-row">
         <label>
-          <span i18n-content="downloadLocationBrowseTitle"></span>
+          <span id="download-location-label"
+              i18n-content="downloadLocationBrowseTitle">
+          </span>
           <input id="downloadLocationPath" class="weakrtl" type="text"
-            size="36" readonly>
+              size="36" readonly>
         </label>
         <button id="downloadLocationChangeButton"
-            pref="download.prompt_for_download"
-            i18n-content="downloadLocationChangeButton"></button>
+            i18n-content="downloadLocationChangeButton">
+        </button>
+        <span class="controlled-setting-indicator"
+          pref="download.default_directory">
+        </span>
       </div>
       <div class="checkbox">
-        <label>
-          <input type="checkbox"
-              pref="download.prompt_for_download"
-              metric="Options_AskForSaveLocation">
-          <span i18n-content="downloadLocationAskForSaveLocation"></span>
-        </label>
+        <span class="controlled-setting-with-label">
+          <input id="prompt-for-download" type="checkbox"
+                pref="download.prompt_for_download"
+                metric="Options_AskForSaveLocation">
+          <span>
+            <label for="prompt-for-download"
+                i18n-content="downloadLocationAskForSaveLocation">
+            </label>
+            <span class="controlled-setting-indicator"
+                pref="download.prompt_for_download">
+            </span>
+          </span>
+        </span>
       </div>
 <if expr="pp_ifdef('chromeos')">
       <div class="checkbox" guest-visibility="disabled">
