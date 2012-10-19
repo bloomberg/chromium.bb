@@ -52,4 +52,16 @@ bool NavigationID::IsSameRenderer(const NavigationID& other) const {
       render_view_id == other.render_view_id;
 }
 
+ResourcePrefetchPredictorConfig::ResourcePrefetchPredictorConfig()
+    : max_navigation_lifetime_seconds(60),
+      max_urls_to_track(500),
+      min_url_visit_count(3),
+      max_resources_per_entry(50),
+      max_consecutive_misses(3),
+      min_resource_confidence_to_trigger_prefetch(0.8f),
+      min_resource_hits_to_trigger_prefetch(4),
+      max_prefetches_inflight_per_navigation(24),
+      max_prefetches_inflight_per_host_per_navigation(3) {
+}
+
 }  // namespace predictors

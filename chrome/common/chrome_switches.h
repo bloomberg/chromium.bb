@@ -318,6 +318,7 @@ extern const char kSpeculativeResourcePrefetching[];
 extern const char kSpeculativeResourcePrefetchingDisabled[];
 extern const char kSpeculativeResourcePrefetchingLearning[];
 extern const char kSpdyProxyOrigin[];
+extern const char kSpeculativeResourcePrefetchingEnabled[];
 extern const char kSSLVersionMax[];
 extern const char kSSLVersionMin[];
 extern const char kStartMaximized[];

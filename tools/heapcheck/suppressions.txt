@@ -1571,3 +1571,15 @@
    fun:PluginPrefsTest::EnablePluginSynchronously
    fun:PluginPrefsTest_UnifiedPepperFlashState_Test::TestBody
 }
+{
+   bug_151976_a
+   Heapcheck:Leak
+   ...
+   fun:TestURLRequestContext::Init
+   fun:TestURLRequestContext::TestURLRequestContext
+   fun:TestURLRequestContextGetter::GetURLRequestContext
+   fun:predictors::TestResourcePrefetcherDelegate::GetURLRequestContext
+   fun:predictors::ResourcePrefetcher::SendRequest
+   fun:predictors::ResourcePrefetcher::TryToLaunchPrefetchRequests
+   fun:predictors::ResourcePrefetcher::Start
+}
