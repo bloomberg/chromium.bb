@@ -312,10 +312,10 @@ TEST_F(BrowserPluginTest, CustomEvents) {
     "  url = u.url;"
     "}"
     "document.getElementById('browserplugin')."
-    "    addEventListener('loadCommit', nav);";
+    "    addEventListener('loadcommit', nav);";
   const char* kRemoveEventListener =
     "document.getElementById('browserplugin')."
-    "    removeEventListener('loadCommit', nav);";
+    "    removeEventListener('loadcommit', nav);";
   const char* kGetProcessID =
       "document.getElementById('browserplugin').getProcessId()";
   const char* kGoogleURL = "http://www.google.com/";

@@ -61,7 +61,7 @@ onload = function() {
 
 
       // Wait for navigation to complete before checking src attribute.
-      browserTag.addEventListener('loadCommit', function(e) {
+      browserTag.addEventListener('loadcommit', function(e) {
         switch (step) {
           case 1:
             runStep2();

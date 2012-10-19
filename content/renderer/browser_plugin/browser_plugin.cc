@@ -44,11 +44,11 @@ namespace content {
 namespace {
 const char kCrashEventName[] = "crash";
 const char kIsTopLevel[] = "isTopLevel";
-const char kLoadAbortEventName[] = "loadAbort";
-const char kLoadCommitEventName[] = "loadCommit";
-const char kLoadRedirectEventName[] = "loadRedirect";
-const char kLoadStartEventName[] = "loadStart";
-const char kLoadStopEventName[] = "loadStop";
+const char kLoadAbortEventName[] = "loadabort";
+const char kLoadCommitEventName[] = "loadcommit";
+const char kLoadRedirectEventName[] = "loadredirect";
+const char kLoadStartEventName[] = "loadstart";
+const char kLoadStopEventName[] = "loadstop";
 const char kNewURL[] = "newUrl";
 const char kOldURL[] = "oldUrl";
 const char kPartitionAttribute[] = "partition";

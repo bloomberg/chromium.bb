@@ -92,14 +92,14 @@ onload = function() {
 
       var validEvents = [
         'crash',
-        'loadAbort',
-        'loadRedirect',
-        'loadStart',
-        'loadStop'
+        'loadabort',
+        'loadredirect',
+        'loadstart',
+        'loadstop'
       ];
       var invalidEvents = [
-        'makeMeSandwich',
-        'sudoMakeMeSandwich'
+        'makemesandwich',
+        'sudomakemesandwich'
       ];
 
       // Timeout is necessary to give the mutation observers of the browser tag
@@ -125,12 +125,12 @@ onload = function() {
       document.body.appendChild(browserTag);
 
       setTimeout(function() {
-        browserTag.addEventListener('loadStart', function(evt) {
-          chrome.test.assertEq('loadStart', evt.name);
+        browserTag.addEventListener('loadstart', function(evt) {
+          chrome.test.assertEq('loadstart', evt.name);
         });
 
-        browserTag.addEventListener('loadStop', function(evt) {
-          chrome.test.assertEq('loadStop', evt.name);
+        browserTag.addEventListener('loadstop', function(evt) {
+          chrome.test.assertEq('loadstop', evt.name);
           browserTag.terminate();
         });
 

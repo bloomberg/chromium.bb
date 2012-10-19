@@ -95,10 +95,10 @@ function receiveMessage(event) {
   }
 }
   var plugin = document.getElementById('plugin');
-  plugin.addEventListener('loadStart', loadStart);
-  plugin.addEventListener('loadAbort', loadAbort);
-  plugin.addEventListener('loadRedirect', loadRedirect);
+  plugin.addEventListener('loadstart', loadStart);
+  plugin.addEventListener('loadabort', loadAbort);
+  plugin.addEventListener('loadredirect', loadRedirect);
   window.addEventListener('message', receiveMessage, false);
-  plugin.addEventListener('loadStop', loadStop);
-  plugin.addEventListener('loadCommit', loadCommit);
+  plugin.addEventListener('loadstop', loadStop);
+  plugin.addEventListener('loadcommit', loadCommit);
 </script>
