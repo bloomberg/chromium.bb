@@ -57,9 +57,9 @@ chrome.app.runtime.onLaunched.addListener(function() {
          }));
    },
 
-   function testOnCloseEvent() {
+   function testOnClosedEvent() {
      chrome.app.window.create('test.html', callbackPass(function(win) {
-       win.onClose.addListener(callbackPass(function() {
+       win.onClosed.addListener(callbackPass(function() {
          // Mission accomplished.
        }));
        win.contentWindow.close();

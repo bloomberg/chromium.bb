@@ -49,7 +49,7 @@ chromeHidden.registerCustomHook('app.window', function(bindingsAPI) {
   chromeHidden.OnAppWindowClosed = function() {
     if (!chromeHidden.currentAppWindow)
       return;
-    chromeHidden.currentAppWindow.onClose.dispatch();
+    chromeHidden.currentAppWindow.onClosed.dispatch();
   }
 
   // This is an internal function, but needs to be bound with setHandleRequest
@@ -63,7 +63,7 @@ chromeHidden.registerCustomHook('app.window', function(bindingsAPI) {
     AppWindow.prototype.moveTo = window.moveTo.bind(window);
     AppWindow.prototype.resizeTo = window.resizeTo.bind(window);
     AppWindow.prototype.contentWindow = window;
-    AppWindow.prototype.onClose = new chrome.Event;
+    AppWindow.prototype.onClosed = new chrome.Event;
     AppWindow.prototype.close = function() {
       this.contentWindow.close();
     };
