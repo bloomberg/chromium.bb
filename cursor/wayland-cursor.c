@@ -31,6 +31,8 @@
 
 #include "os-compatibility.h"
 
+#define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
+
 struct shm_pool {
 	struct wl_shm_pool *pool;
 	int fd;

@@ -35,6 +35,7 @@
 #include <unistd.h>
 #include <assert.h>
 #include "wayland-server.h"
+#include "wayland-private.h"
 #include "wayland-os.h"
 
 struct wl_event_loop {

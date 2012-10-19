@@ -28,6 +28,8 @@
 #include <ffi.h>
 #include "wayland-util.h"
 
+#define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
+
 #define WL_ZOMBIE_OBJECT ((void *) 2)
 
 #define WL_MAP_SERVER_SIDE 0

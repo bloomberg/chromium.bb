@@ -127,6 +127,18 @@ struct parse_context {
 	unsigned int character_data_length;
 };
 
+static int
+list_length(struct wl_list *list)
+{
+	struct wl_list *l;
+	int i;
+
+	for (i = 0, l = list->next; l != list; i++, l = l->next)
+		;
+
+	return i;
+}
+
 static char *
 uppercase_dup(const char *src)
 {
@@ -1106,14 +1118,14 @@ emit_code(struct protocol *protocol)
 		       i->name, i->name, i->version);
 
 		if (!wl_list_empty(&i->request_list))
-			printf("\tARRAY_LENGTH(%s_requests), %s_requests,\n",
-			       i->name, i->name);
+			printf("\t%d, %s_requests,\n",
+			       list_length(&i->request_list), i->name);
 		else
 			printf("\t0, NULL,\n");
 
 		if (!wl_list_empty(&i->event_list))
-			printf("\tARRAY_LENGTH(%s_events), %s_events,\n",
-			       i->name, i->name);
+			printf("\t%d, %s_events,\n",
+			       list_length(&i->event_list), i->name);
 		else
 			printf("\t0, NULL,\n");
 
