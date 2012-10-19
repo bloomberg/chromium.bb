@@ -71,15 +71,15 @@
     'sig_files': ['chromium/ffmpegsumo.sigs'],
     'extra_header': 'chromium/ffmpeg_stub_headers.fragment',
   },
-  'includes': [
-    'ffmpeg_generated.gypi',
-  ],
   'conditions': [
     ['OS != "win" and use_system_ffmpeg == 0 and build_ffmpegsumo != 0', {
       'variables': {
         # Path to platform configuration files.
         'platform_config_root': 'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
       },
+      'includes': [
+        'ffmpeg_generated.gypi',
+      ],
       'targets': [
         {
           'target_name': 'ffmpegsumo',
@@ -296,6 +296,9 @@
         # Path to platform configuration files.
         'platform_config_root': 'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
       },
+      'includes': [
+        'ffmpeg_generated.gypi',
+      ],
       'targets': [
         {
           'target_name': 'convert_ffmpeg_sources',
