@@ -1180,7 +1180,9 @@ bool OmniboxEditModel::CreatedKeywordSearchByInsertingSpaceInMiddle(
   // Then check if the text before the inserted space matches a keyword.
   string16 keyword;
   TrimWhitespace(new_text.substr(0, space_position), TRIM_LEADING, &keyword);
-  return !keyword.empty() &&
+  // TODO(sreeram): Once the Instant extended API supports keywords properly,
+  // keyword_provider() should never be NULL. Remove that clause.
+  return !keyword.empty() && autocomplete_controller_->keyword_provider() &&
       !autocomplete_controller_->keyword_provider()->
           GetKeywordForText(keyword).empty();
 }
