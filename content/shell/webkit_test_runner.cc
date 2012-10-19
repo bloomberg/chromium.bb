@@ -18,7 +18,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#ifdef WEBKIT_TESTING_SUPPORT_AVAILABLE
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTestingSupport.h"
+#endif
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -26,7 +28,9 @@ using WebKit::WebFrame;
 using WebKit::WebElement;
 using WebKit::WebRect;
 using WebKit::WebSize;
+#ifdef WEBKIT_TESTING_SUPPORT_AVAILABLE
 using WebKit::WebTestingSupport;
+#endif
 using WebKit::WebView;
 
 namespace content {
@@ -131,7 +135,9 @@ WebKitTestRunner::~WebKitTestRunner() {
 }
 
 void WebKitTestRunner::DidClearWindowObject(WebFrame* frame) {
+#ifdef WEBKIT_TESTING_SUPPORT_AVAILABLE
   WebTestingSupport::injectInternalsObject(frame);
+#endif
 }
 
 void WebKitTestRunner::DidFinishLoad(WebFrame* frame) {

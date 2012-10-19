@@ -188,25 +188,6 @@
             '../chromeos/chromeos.gyp:chromeos',
            ],
         }], # chromeos==1
-        ['inside_chromium_build==0 or component!="shared_library"', {
-          'dependencies': [
-            '<(webkit_src_dir)/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore_test_support',
-            '<(webkit_src_dir)/Source/WTF/WTF.gyp/WTF.gyp:wtf',
-          ],
-          'include_dirs': [
-            # Required for WebTestingSupport.cpp to find our custom config.h.
-            'shell/',
-            '<(webkit_src_dir)/Source/WebKit/chromium/public',
-            # WARNING: Do not view this particular case as a precedent for
-            # including WebCore headers in the content shell.
-            '<(webkit_src_dir)/Source/WebCore/testing/v8', # for WebCoreTestSupport.h needed  to link in window.internals code.
-          ],
-          'sources': [
-            'shell/config.h',
-            '<(webkit_src_dir)/Source/WebKit/chromium/src/WebTestingSupport.cpp',
-            '<(webkit_src_dir)/Source/WebKit/chromium/public/WebTestingSupport.h',
-          ],
-        }],
       ],
     },
     {
