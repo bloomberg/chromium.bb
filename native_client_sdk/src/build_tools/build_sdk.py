@@ -463,7 +463,7 @@ def GypNinjaBuild_X86_Chrome(rel_out_dir):
   GypNinjaBuild('ia32', gyp_py, gyp_file, 'ppapi_lib', out_dir)
 
 
-def GypNinjaBuild_Pnacl(rel_out_dir):
+def GypNinjaBuild_Pnacl(rel_out_dir, target_arch):
   # TODO(binji): This will build the pnacl_irt_shim twice; once as part of the
   # Chromium build, and once here. When we move more of the SDK build process
   # to gyp, we can remove this.
@@ -473,7 +473,7 @@ def GypNinjaBuild_Pnacl(rel_out_dir):
   gyp_file = os.path.join(SRC_DIR, 'ppapi', 'native_client', 'src', 'untrusted',
                           'pnacl_irt_shim', 'pnacl_irt_shim.gyp')
   targets = ['pnacl_irt_shim']
-  GypNinjaBuild('ia32', gyp_py, gyp_file, targets, out_dir)
+  GypNinjaBuild(target_arch, gyp_py, gyp_file, targets, out_dir)
 
 
 def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets, out_dir):
@@ -528,13 +528,17 @@ def BuildStepBuildToolchains(pepperdir, platform, arch, pepper_ver, toolchains):
           GetBuildArgs('pnacl', pnacldir, pepperdir, 'x86', '64'),
           cwd=NACL_DIR, shell=(platform=='win'))
 
-      # Fill in the latest native pnacl shim library from the chrome build.
-      GypNinjaBuild_Pnacl('gypbuild')
-      release_build_dir = os.path.join(OUT_DIR, 'gypbuild', 'Release')
+      for arch in ('ia32', 'arm'):
+        # Fill in the latest native pnacl shim library from the chrome build.
+        GypNinjaBuild_Pnacl('gypbuild-' + arch, arch)
+        release_build_dir = os.path.join(OUT_DIR, 'gypbuild-' + arch,
+                                         'Release')
 
-      buildbot_common.CopyFile(
-          os.path.join(release_build_dir, 'libpnacl_irt_shim.a'),
-          GetPNaClNativeLib(pnacldir, 'x86-64'))
+        pnacl_libdir_map = { 'ia32': 'x86-64', 'arm': 'arm' }
+        buildbot_common.CopyFile(
+            os.path.join(release_build_dir, 'libpnacl_irt_shim.a'),
+            GetPNaClNativeLib(pnacldir, pnacl_libdir_map[arch]))
+
       InstallHeaders(GetToolchainNaClInclude('pnacl', pnacldir, 'x86'),
                      pepper_ver,
                      'newlib')

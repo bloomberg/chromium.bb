@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* Last generated from IDL: Thu Oct 11 22:28:05 2012. */
+/* Last generated from IDL: Wed Oct 17 11:39:28 2012. */
 #include "ppapi/generators/pnacl_shim.h"
 
 #include "ppapi/c/ppb.h"
@@ -102,8 +102,8 @@
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 
 
-/* The PNaCl PPAPI shims are only needed on x86-64. */
-#if defined(__x86_64__)
+/* The PNaCl PPAPI shims are only needed on x86-64 and arm. */
+#if defined(__x86_64__) || defined(__arm__)
 
 /* Use local strcmp to avoid dependency on libc. */
 static int mystrcmp(const char* s1, const char *s2) {

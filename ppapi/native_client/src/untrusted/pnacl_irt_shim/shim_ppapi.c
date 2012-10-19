@@ -12,8 +12,8 @@
 #include "native_client/src/untrusted/irt/irt_ppapi.h"
 #include "ppapi/generators/pnacl_shim.h"
 
-/* The PNaCl PPAPI shims are only needed on x86-64. */
-#if defined(__x86_64__)
+/* The PNaCl PPAPI shims are only needed on x86-64 and arm. */
+#if defined(__x86_64__) || defined(__arm__)
 
 /* Use local strcmp to avoid dependency on libc. */
 static int mystrcmp(const char* s1, const char *s2) {

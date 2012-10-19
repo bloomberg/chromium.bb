@@ -17,7 +17,7 @@
  */
 void _pnacl_wrapper_start(uint32_t *info) {
   /* The PNaCl PPAPI shims are only needed on x86-64. */
-#if defined(__x86_64__)
+#if defined(__x86_64__) || defined(__arm__)
   Elf32_auxv_t *auxv = nacl_startup_auxv(info);
 
   Elf32_auxv_t *entry = NULL;

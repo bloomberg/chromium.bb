@@ -6,24 +6,28 @@
 Import('env')
 
 # This library contains PNaCl ABI shims which convert between the
-# x86-64 calling conventions used by the IRT library (which uses gcc's
-# ABI) and those used by the PNaCl translator.  It was necessitated by
-# problems in passing structures by value on x86-64.
+# x86-64/ARM native calling conventions used by the IRT library
+# (which uses gcc's ABI) and those used by the PNaCl translator.
+# It was necessitated by problems in passing structures by value using
+# portable bitcode
 #
 # We build the library on all architectures so that we can use the
-# same entry point symbol everywhere.  On architectures other than
-# x86-64, the library currently does no calling conventions
+# same entry point symbol everywhere.  On x86-32,
+# the library currently does no calling conventions
 # conversion.
 if not env.Bit('bitcode'):
   Return()
 
-# The library must be compiled with nacl-gcc.
+# The library is currently compiled with nacl-gcc on x86 and with
+# PNaCl on ARM.
 # Clear out the pnacl_generate_pexe bit to allow building this as a
 # library dependency (much like the IRT).
 native_env = env.Clone()
 native_env.ClearBits('pnacl_generate_pexe')
 if env.Bit('target_arm'):
   native_env.PNaClForceNative()
+  native_env.Append(CCFLAGS=['--pnacl-frontend-triple=armv7-unknown-nacl-gnueabi',
+                             '-mfloat-abi=hard'])
 else:
   native_env = native_env.PNaClGetNNaClEnv()
 

@@ -52,8 +52,8 @@ class PnaclGen(WrapperGen):
     return 'ppapi/generators/pnacl_shim.h'
 
   def GetGuardStart(self):
-    return ('\n/* The PNaCl PPAPI shims are only needed on x86-64. */\n'
-            '#if defined(__x86_64__)\n\n')
+    return ('\n/* The PNaCl PPAPI shims are only needed on x86-64 and arm. */\n'
+            '#if defined(__x86_64__) || defined(__arm__)\n\n')
 
   def GetGuardEnd(self):
     return '\n#endif\n'

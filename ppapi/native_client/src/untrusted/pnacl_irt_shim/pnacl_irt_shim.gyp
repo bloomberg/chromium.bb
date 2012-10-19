@@ -13,6 +13,7 @@
       'variables': {
         'nlib_target': 'pnacl_irt_shim.a',
         'out_newlib64': '<(PRODUCT_DIR)/libpnacl_irt_shim.a',
+        'out_newlib_arm': '<(PRODUCT_DIR)/libpnacl_irt_shim.a',
         'build_glibc': 0,
         'build_newlib': 1,
         'sources': [
@@ -22,6 +23,15 @@
         ],
         'include_dirs': [
           '../../../..',
+        ],
+        'conditions': [
+          ['target_arch=="arm"', {
+            'compile_flags': [
+              '--pnacl-allow-translate',
+              '--pnacl-allow-native',
+              '-arch', 'arm',
+            ],
+          }],
         ],
       },
       'dependencies': [
