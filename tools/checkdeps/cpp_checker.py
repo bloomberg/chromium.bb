@@ -9,7 +9,7 @@ import os
 import re
 
 import results
-from rules import Rule
+from rules import Rule, MessageRule
 
 
 class CppChecker(object):
@@ -52,8 +52,10 @@ class CppChecker(object):
     include_path = found_item.group(1)
 
     if '\\' in include_path:
-      return True, rules.SpecificRule(
-          'Include paths may not include backslashes.')
+      return True, results.DependencyViolation(
+          include_path,
+          MessageRule('Include paths may not include backslashes.'),
+          rules)
 
     if '/' not in include_path:
       # Don't fail when no directory is specified. We may want to be more
