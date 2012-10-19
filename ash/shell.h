@@ -325,7 +325,7 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate{
     return magnification_controller_.get();
   }
 
-  const ScreenAsh* screen() { return screen_.get(); }
+  const ScreenAsh* screen() { return screen_; }
 
   // Force the shelf to query for it's current visibility state.
   void UpdateShelfVisibility();
@@ -420,7 +420,7 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate{
   // when the screen is initially created.
   static bool initially_hide_cursor_;
 
-  scoped_ptr<ScreenAsh> screen_;
+  ScreenAsh* screen_;
 
   // Active root window. Never becomes NULL during the session.
   aura::RootWindow* active_root_window_;
