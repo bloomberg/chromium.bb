@@ -24,13 +24,6 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
                           nacl_reg_t                prog_ctr,
                           nacl_reg_t                stack_ptr,
                           nacl_reg_t                tls_idx) {
-  /*
-   * This is set by NaClTlsAllocate before we get here, so don't wipe it.
-   * TODO(mseaborn): Clean this up to avoid these awkward ordering issues.
-   * See http://code.google.com/p/nativeclient/issues/detail?id=3041
-   */
-  uint32_t r9 = ntcp->r9;
-
   UNREFERENCED_PARAMETER(nap);
 
   /*
@@ -43,7 +36,7 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
   ntcp->stack_ptr = stack_ptr;
   ntcp->prog_ctr = prog_ctr;
   ntcp->tls_idx = tls_idx;
-  ntcp->r9 = r9;
+  ntcp->r9 = (uintptr_t) &ntcp->tls_value1;
 
   /*
    * Save the system's state of the FPSCR so we can restore

@@ -110,14 +110,9 @@ static int NaClThreadIdxAllocate() {
  * that thread.  Setting it must wait until the thread actually launches.
  */
 uint32_t NaClTlsAllocate(struct NaClAppThread *natp) {
-  int idx = NaClThreadIdxAllocate();
+  UNREFERENCED_PARAMETER(natp);
 
-  NaClLog(2, "NaClTlsAllocate: idx %d\n", idx);
-  if (NACL_TLS_INDEX_INVALID != idx) {
-    natp->user.r9 = (uintptr_t) &natp->user.tls_value1;
-  }
-
-  return idx;
+  return NaClThreadIdxAllocate();
 }
 
 
