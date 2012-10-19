@@ -81,6 +81,8 @@ BrowserPlugin::BrowserPlugin(
   BrowserPluginManager::Get()->AddBrowserPlugin(instance_id, this);
   bindings_.reset(new BrowserPluginBindings(this));
 
+  InitializeEvents();
+
   ParseAttributes(params);
 }
 
@@ -223,6 +225,15 @@ float BrowserPlugin::GetDeviceScaleFactor() const {
   return render_view_->GetWebView()->deviceScaleFactor();
 }
 
+void BrowserPlugin::InitializeEvents() {
+  event_listener_map_[kCrashEventName] = EventListeners();
+  event_listener_map_[kLoadAbortEventName] = EventListeners();
+  event_listener_map_[kLoadCommitEventName] = EventListeners();
+  event_listener_map_[kLoadRedirectEventName] = EventListeners();
+  event_listener_map_[kLoadStartEventName] = EventListeners();
+  event_listener_map_[kLoadStopEventName] = EventListeners();
+}
+
 void BrowserPlugin::RemoveEventListeners() {
   EventListenerMap::iterator event_listener_map_iter =
       event_listener_map_.begin();
@@ -236,6 +247,30 @@ void BrowserPlugin::RemoveEventListeners() {
     }
   }
   event_listener_map_.clear();
+}
+
+bool BrowserPlugin::IsValidEvent(const std::string& event_name) {
+  return event_listener_map_.find(event_name) != event_listener_map_.end();
+}
+
+void BrowserPlugin::TriggerEvent(const std::string& event_name,
+                                 v8::Local<v8::Object>* event) {
+  WebKit::WebElement plugin = container()->element();
+  WebKit::WebFrame* frame = plugin.document().frame();
+  if (!frame)
+    return;
+
+  // TODO(fsamuel): Copying the event listeners is insufficent because
+  // new persistent handles are not created when the copy constructor is
+  // called. See http://crbug.com/155044.
+  EventListeners listeners(event_listener_map_[event_name.c_str()]);
+  (*event)->Set(v8::String::New("name"), v8::String::New(event_name.c_str()));
+  v8::Local<v8::Value> argv[] = { *event };
+  for (EventListeners::iterator it = listeners.begin();
+       it != listeners.end();
+       ++it) {
+    frame->callFunctionEvenIfScriptDisabled(*it, v8::Object::New(), 1, argv);
+  }
 }
 
 void BrowserPlugin::Back() {
@@ -347,16 +382,8 @@ void BrowserPlugin::GuestCrashed() {
   v8::Context::Scope context_scope(
       plugin.document().frame()->mainWorldScriptContext());
 
-  // TODO(fsamuel): Copying the event listeners is insufficent because
-  // new persistent handles are not created when the copy constructor is
-  // called. See http://crbug.com/155044.
-  EventListeners listeners(event_listener_map_[kCrashEventName]);
-  EventListeners::iterator it = listeners.begin();
-  for (; it != listeners.end(); ++it) {
-    WebKit::WebFrame* frame = plugin.document().frame();
-    if (frame)
-      frame->callFunctionEvenIfScriptDisabled(*it, v8::Object::New(), 0, NULL);
-  }
+  v8::Local<v8::Object> event = v8::Object::New();
+  TriggerEvent(kCrashEventName, &event);
 }
 
 void BrowserPlugin::LoadStart(const GURL& url, bool is_top_level) {
@@ -374,18 +401,7 @@ void BrowserPlugin::LoadStart(const GURL& url, bool is_top_level) {
              v8::String::New(url.spec().data(), url.spec().size()));
   event->Set(v8::String::New(kIsTopLevel, sizeof(kIsTopLevel) - 1),
              v8::Boolean::New(is_top_level));
-  v8::Local<v8::Value> val = event;
-
-  // TODO(fsamuel): Copying the event listeners is insufficent because
-  // new persistent handles are not created when the copy constructor is
-  // called. See http://crbug.com/155044.
-  EventListeners listeners(event_listener_map_[kLoadStartEventName]);
-  EventListeners::iterator it = listeners.begin();
-  for (; it != listeners.end(); ++it) {
-    WebKit::WebFrame* frame = plugin.document().frame();
-    if (frame)
-      frame->callFunctionEvenIfScriptDisabled(*it, v8::Object::New(), 1, &val);
-  }
+  TriggerEvent(kLoadStartEventName, &event);
 }
 
 void BrowserPlugin::LoadCommit(
@@ -412,18 +428,8 @@ void BrowserPlugin::LoadCommit(
              v8::String::New(src_.data(), src_.size()));
   event->Set(v8::String::New(kIsTopLevel, sizeof(kIsTopLevel) - 1),
              v8::Boolean::New(params.is_top_level));
-  v8::Local<v8::Value> val = event;
 
-  // TODO(fsamuel): Copying the event listeners is insufficent because
-  // new persistent handles are not created when the copy constructor is
-  // called. See http://crbug.com/155044.
-  EventListeners listeners(event_listener_map_[kLoadCommitEventName]);
-  EventListeners::iterator it = listeners.begin();
-  for (; it != listeners.end(); ++it) {
-    WebKit::WebFrame* frame = plugin.document().frame();
-    if (frame)
-      frame->callFunctionEvenIfScriptDisabled(*it, v8::Object::New(), 1, &val);
-  }
+  TriggerEvent(kLoadCommitEventName, &event);
 }
 
 void BrowserPlugin::LoadStop() {
@@ -437,18 +443,7 @@ void BrowserPlugin::LoadStop() {
 
   // Construct the loadStop event object.
   v8::Local<v8::Object> event = v8::Object::New();
-  v8::Local<v8::Value> val = event;
-
-  // TODO(fsamuel): Copying the event listeners is insufficent because
-  // new persistent handles are not created when the copy constructor is
-  // called. See http://crbug.com/155044.
-  EventListeners listeners(event_listener_map_[kLoadStopEventName]);
-  EventListeners::iterator it = listeners.begin();
-  for (; it != listeners.end(); ++it) {
-    WebKit::WebFrame* frame = plugin.document().frame();
-    if (frame)
-      frame->callFunctionEvenIfScriptDisabled(*it, v8::Object::New(), 1, &val);
-  }
+  TriggerEvent(kLoadStopEventName, &event);
 }
 
 void BrowserPlugin::LoadAbort(const GURL& url,
@@ -470,18 +465,8 @@ void BrowserPlugin::LoadAbort(const GURL& url,
              v8::Boolean::New(is_top_level));
   event->Set(v8::String::New(kType, sizeof(kType) - 1),
              v8::String::New(type.data(), type.size()));
-  v8::Local<v8::Value> val = event;
 
-  // TODO(fsamuel): Copying the event listeners is insufficent because
-  // new persistent handles are not created when the copy constructor is
-  // called. See http://crbug.com/155044.
-  EventListeners listeners(event_listener_map_[kLoadAbortEventName]);
-  EventListeners::iterator it = listeners.begin();
-  for (; it != listeners.end(); ++it) {
-    WebKit::WebFrame* frame = plugin.document().frame();
-    if (frame)
-      frame->callFunctionEvenIfScriptDisabled(*it, v8::Object::New(), 1, &val);
-  }
+  TriggerEvent(kLoadAbortEventName, &event);
 }
 
 void BrowserPlugin::LoadRedirect(const GURL& old_url,
@@ -503,18 +488,8 @@ void BrowserPlugin::LoadRedirect(const GURL& old_url,
              v8::String::New(new_url.spec().data(), new_url.spec().size()));
   event->Set(v8::String::New(kIsTopLevel, sizeof(kIsTopLevel) - 1),
              v8::Boolean::New(is_top_level));
-  v8::Local<v8::Value> val = event;
 
-  // TODO(fsamuel): Copying the event listeners is insufficent because
-  // new persistent handles are not created when the copy constructor is
-  // called. See http://crbug.com/155044.
-  EventListeners listeners(event_listener_map_[kLoadRedirectEventName]);
-  EventListeners::iterator it = listeners.begin();
-  for (; it != listeners.end(); ++it) {
-    WebKit::WebFrame* frame = plugin.document().frame();
-    if (frame)
-      frame->callFunctionEvenIfScriptDisabled(*it, v8::Object::New(), 1, &val);
-  }
+  TriggerEvent(kLoadRedirectEventName, &event);
 }
 
 void BrowserPlugin::AdvanceFocus(bool reverse) {
@@ -534,11 +509,14 @@ void BrowserPlugin::SetAcceptTouchEvents(bool accept) {
 }
 
 bool BrowserPlugin::HasListeners(const std::string& event_name) {
-  return event_listener_map_.find(event_name) != event_listener_map_.end();
+  return IsValidEvent(event_name) &&
+         !event_listener_map_[event_name].empty();
 }
 
 bool BrowserPlugin::AddEventListener(const std::string& event_name,
                                      v8::Local<v8::Function> function) {
+  if (!IsValidEvent(event_name))
+    return false;
   EventListeners& listeners = event_listener_map_[event_name];
   for (unsigned int i = 0; i < listeners.size(); ++i) {
     if (listeners[i] == function)
@@ -552,7 +530,7 @@ bool BrowserPlugin::AddEventListener(const std::string& event_name,
 
 bool BrowserPlugin::RemoveEventListener(const std::string& event_name,
                                         v8::Local<v8::Function> function) {
-  if (event_listener_map_.find(event_name) == event_listener_map_.end())
+  if (!HasListeners(event_name))
     return false;
 
   EventListeners& listeners = event_listener_map_[event_name];

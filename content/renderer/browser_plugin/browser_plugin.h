@@ -149,7 +149,7 @@ class CONTENT_EXPORT BrowserPlugin :
       const WebKit::WebURL& url,
       void* notify_data,
       const WebKit::WebURLError& error) OVERRIDE;
- protected:
+ private:
   friend class base::DeleteHelper<BrowserPlugin>;
   // Only the manager is allowed to create a BrowserPlugin.
   friend class BrowserPluginManagerImpl;
@@ -186,9 +186,20 @@ class CONTENT_EXPORT BrowserPlugin :
   // with invalid transport dib otherwise.
   BrowserPluginHostMsg_ResizeGuest_Params* GetPendingResizeParams();
 
+  // Initializes the valid events.
+  void InitializeEvents();
+
   // Cleanup event listener state to free v8 resources when a BrowserPlugin
   // is destroyed.
   void RemoveEventListeners();
+
+  // Returns whether |event_name| is a valid event.
+  bool IsValidEvent(const std::string& event_name);
+
+  // Triggers the event-listeners for |event_name|.
+  void TriggerEvent(const std::string& event_name,
+                    v8::Local<v8::Object>* event);
+
   // Creates and maps transport dib. Overridden in tests.
   virtual TransportDIB* CreateTransportDIB(const size_t size);
   // Frees up the damage buffer. Overridden in tests.

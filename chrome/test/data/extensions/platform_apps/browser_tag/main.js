@@ -68,7 +68,8 @@ onload = function() {
       ];
       document.body.appendChild(browserTag);
 
-      // Timeout is necessary to give the mutation observers a chance to fire.
+      // Timeout is necessary to give the mutation observers of the browser tag
+      // shim a chance to fire.
       setTimeout(function() {
         for (var i = 0; i < apiMethodsToCheck.length; ++i) {
           chrome.test.assertEq('function',
@@ -81,6 +82,64 @@ onload = function() {
                              typeof browserTag.contentWindow.postMessage);
 
         chrome.test.succeed();
+      }, 0);
+    },
+
+    function browserTagEventListeners() {
+      var browserTag = document.createElement('browser');
+      browserTag.setAttribute('src', 'data:text/html,browser tag check api');
+      document.body.appendChild(browserTag);
+
+      var validEvents = [
+        'crash',
+        'loadAbort',
+        'loadRedirect',
+        'loadStart',
+        'loadStop'
+      ];
+      var invalidEvents = [
+        'makeMeSandwich',
+        'sudoMakeMeSandwich'
+      ];
+
+      // Timeout is necessary to give the mutation observers of the browser tag
+      // shim a chance to fire.
+      setTimeout(function() {
+        for (var i = 0; i < validEvents.length; ++i) {
+          chrome.test.assertTrue(
+              browserTag.addEventListener(validEvents[i], function() {}));
+        }
+
+        for (var i = 0; i < invalidEvents.length; ++i) {
+          chrome.test.assertFalse(
+              browserTag.addEventListener(invalidEvents[i], function() {}));
+        }
+
+        chrome.test.succeed();
+      }, 0);
+    },
+
+    function browserTagEventName() {
+      var browserTag = document.createElement('browser');
+      browserTag.setAttribute('src', 'data:text/html,browser tag check api');
+      document.body.appendChild(browserTag);
+
+      setTimeout(function() {
+        browserTag.addEventListener('loadStart', function(evt) {
+          chrome.test.assertEq('loadStart', evt.name);
+        });
+
+        browserTag.addEventListener('loadStop', function(evt) {
+          chrome.test.assertEq('loadStop', evt.name);
+          browserTag.terminate();
+        });
+
+        browserTag.addEventListener('crash', function(evt) {
+          chrome.test.assertEq('crash', evt.name);
+          chrome.test.succeed();
+        });
+
+        browserTag.setAttribute('src', 'data:text/html,trigger navigation');
       }, 0);
     }
   ]);
