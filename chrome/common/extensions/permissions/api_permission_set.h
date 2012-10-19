@@ -11,7 +11,13 @@
 #include "base/memory/linked_ptr.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 
+namespace base {
+class ListValue;
+}  // namespace base
+
 namespace extensions {
+
+class Extension;
 
 typedef std::map<APIPermission::ID,
   linked_ptr<APIPermission> > APIPermissionMap;
@@ -130,6 +136,18 @@ class APIPermissionSet {
       const APIPermissionSet& set1,
       const APIPermissionSet& set2,
       APIPermissionSet* set3);
+
+  // Parses permissions from |permissions_data| and adds the parsed permissions
+  // to |api_permissions|. If |unhandled_permissions| is not NULL the names of
+  // all permissions that couldn't be parsed will be added to this vector.
+  // If |error| is NULL, parsing will continue with the next permission if
+  // invalid data is detected. If |error| is not NULL, it will be set to an
+  // error message and false is returned when an invalid permission is found.
+  static bool ParseFromJSON(
+      const base::ListValue* permissions_data,
+      APIPermissionSet* api_permissions,
+      string16* error,
+      std::vector<std::string>* unhandled_permissions);
 
  private:
   APIPermissionMap map_;

@@ -5,6 +5,7 @@
 #include "chrome/common/extensions/permissions/permissions_info.h"
 
 #include "base/logging.h"
+#include "base/string_util.h"
 
 namespace extensions {
 
@@ -42,6 +43,12 @@ APIPermissionSet PermissionsInfo::GetAllByName(
       permissions.insert(permission_info->id());
   }
   return permissions;
+}
+
+bool PermissionsInfo::HasChildPermissions(const std::string& name) const {
+  NameMap::const_iterator i = name_map_.lower_bound(name + '.');
+  if (i == name_map_.end()) return false;
+  return StartsWithASCII(i->first, name + '.', true);
 }
 
 PermissionsInfo::~PermissionsInfo() {

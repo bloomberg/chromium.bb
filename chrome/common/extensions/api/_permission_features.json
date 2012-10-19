@@ -133,6 +133,10 @@
     "channel": "stable",
     "extension_types": ["platform_app"]
   },
+  "fileSystem.write": {
+    "channel": "stable",
+    "extension_types": ["platform_app"]
+  },
   "fontSettings": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
@@ -177,6 +181,14 @@
     "extension_types": ["extension", "packaged_app"]
   },
   "mediaGalleries": {
+    "channel": "stable",
+    "extension_types": [ "platform_app" ]
+  },
+  "mediaGalleries.allAutoDetected": {
+    "channel": "stable",
+    "extension_types": [ "platform_app" ]
+  },
+  "mediaGalleries.read": {
     "channel": "stable",
     "extension_types": [ "platform_app" ]
   },

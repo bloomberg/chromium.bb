@@ -20,9 +20,10 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/api/experimental_media_galleries.h"
 #include "chrome/common/extensions/api/media_galleries.h"
-#include "chrome/common/extensions/permissions/media_galleries_permission.h"
+#include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
@@ -150,7 +151,7 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
     list->Append(file_system_dict_value.release());
 
     if (!filesystems[i].path.empty() &&
-        MediaGalleriesPermission::HasReadAccess(*GetExtension())) {
+        GetExtension()->HasAPIPermission(APIPermission::kMediaGalleriesRead)) {
       content::ChildProcessSecurityPolicy* policy =
           ChildProcessSecurityPolicy::GetInstance();
       if (!policy->CanReadFile(child_id, filesystems[i].path))

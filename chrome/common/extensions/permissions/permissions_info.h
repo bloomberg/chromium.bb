@@ -38,6 +38,10 @@ class PermissionsInfo {
   APIPermissionSet GetAllByName(
       const std::set<std::string>& permission_names) const;
 
+  // Checks if any permissions have names that start with |name| followed by a
+  // period.
+  bool HasChildPermissions(const std::string& name) const;
+
   // Gets the total number of API permissions.
   size_t get_permission_count() const { return permission_count_; }
 

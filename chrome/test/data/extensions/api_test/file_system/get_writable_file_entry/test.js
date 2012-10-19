@@ -9,7 +9,7 @@ chrome.test.runTests([
       // Test that we cannot get a writable entry when we don't have permission
       // to.
       chrome.fileSystem.getWritableEntry(entry, chrome.test.callbackFail(
-          'Operation requires fileSystemWrite permission', function() {}));
+          'Operation requires fileSystem.write permission', function() {}));
     }));
   }
 ]);

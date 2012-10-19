@@ -4,8 +4,6 @@
 
 #include "chrome/common/extensions/permissions/api_permission.h"
 
-#include "chrome/common/extensions/permissions/filesystem_permission.h"
-#include "chrome/common/extensions/permissions/media_galleries_permission.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
 #include "grit/generated_resources.h"
@@ -309,11 +307,16 @@ void APIPermissionInfo::RegisterAllPermissions(
     // present. Read-only access is only granted after the user has been shown
     // a file chooser dialog and selected a file. Selecting the file is
     // considered consent to read it.
-    { APIPermission::kFileSystem, "fileSystem", kFlagNone, 0,
-      PermissionMessage::kNone, &::CreateAPIPermission<FileSystemPermission> },
-    { APIPermission::kMediaGalleries, "mediaGalleries", kFlagNone, 0,
-      PermissionMessage::kNone,
-      &::CreateAPIPermission<MediaGalleriesPermission> },
+    { APIPermission::kFileSystem, "fileSystem" },
+    { APIPermission::kFileSystemWrite, "fileSystem.write", kFlagNone,
+      IDS_EXTENSION_PROMPT_WARNING_FILE_SYSTEM_WRITE,
+      PermissionMessage::kFileSystemWrite },
+    { APIPermission::kMediaGalleries, "mediaGalleries" },
+    { APIPermission::kMediaGalleriesRead, "mediaGalleries.read" },
+    { APIPermission::kMediaGalleriesAllAutoDetected,
+      "mediaGalleries.allAutoDetected", kFlagNone,
+      IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_ALL_GALLERIES,
+      PermissionMessage::kMediaGalleriesAllGalleries },
     { APIPermission::kPushMessaging, "pushMessaging", kFlagCannotBeOptional },
   };
 

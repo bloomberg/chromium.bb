@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/extensions/api/file_system.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
-#include "chrome/common/extensions/permissions/filesystem_permission.h"
 #include "grit/generated_resources.h"
 #include "net/base/mime_util.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -44,7 +43,7 @@ const char kInvalidCallingPage[] = "Invalid calling page";
 const char kUserCancelled[] = "User cancelled";
 const char kWritableFileError[] = "Invalid file for writing";
 const char kRequiresFileSystemWriteError[] =
-    "Operation requires fileSystemWrite permission";
+    "Operation requires fileSystem.write permission";
 const char kUnknownChooseEntryType[] = "Unknown type";
 
 const char kOpenFileOption[] = "openFile";
@@ -271,7 +270,7 @@ bool FileSystemEntryFunction::HasFileSystemWritePermission() {
   if (!extension)
     return false;
 
-  return FileSystemPermission::HasWriteAccess(*extension);
+  return extension->HasAPIPermission(APIPermission::kFileSystemWrite);
 }
 
 void FileSystemEntryFunction::CheckWritableFile(const FilePath& path) {

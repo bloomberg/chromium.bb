@@ -3357,81 +3357,74 @@ bool Extension::ParsePermissions(const char* key,
       return false;
     }
 
-    for (size_t i = 0; i < permissions->GetSize(); ++i) {
-      std::string permission_str;
-      const base::Value* permission_value = NULL;
-      if (!permissions->GetString(i, &permission_str)) {
-        const base::DictionaryValue* dict = NULL;
-        // permission should be a string or a single key dict.
-        if (!permissions->GetDictionary(i, &dict) || dict->size() != 1) {
-          *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
-              errors::kInvalidPermission, base::IntToString(i));
-          return false;
-        }
-        base::DictionaryValue::Iterator it(*dict);
-        permission_str = it.key();
-        permission_value = &it.value();
-      }
+    // NOTE: We need to get the APIPermission before we check if features
+    // associated with them are available because the feature system does not
+    // know about aliases.
 
-      // NOTE: We need to get the APIPermission before the Feature
-      // object because the feature system does not know about aliases.
-      const APIPermissionInfo* permission_info =
-          PermissionsInfo::GetInstance()->GetByName(permission_str);
-      if (permission_info) {
-        extensions::SimpleFeatureProvider* permission_features =
-            extensions::SimpleFeatureProvider::GetPermissionFeatures();
-        extensions::Feature* feature =
-            permission_features->GetFeature(permission_info->name());
+    std::vector<std::string> host_data;
+    if (!APIPermissionSet::ParseFromJSON(permissions, api_permissions,
+                                         error, &host_data))
+      return false;
 
-        // The feature should exist since we just got an APIPermission
-        // for it. The two systems should be updated together whenever a
-        // permission is added.
-        CHECK(feature);
+    // Verify feature availability of permissions.
+    std::vector<APIPermission::ID> to_remove;
+    SimpleFeatureProvider* permission_features =
+        SimpleFeatureProvider::GetPermissionFeatures();
+    for (APIPermissionSet::const_iterator it = api_permissions->begin();
+         it != api_permissions->end(); ++it) {
+      extensions::Feature* feature =
+          permission_features->GetFeature(it->name());
 
-        extensions::Feature::Availability availability =
-            feature->IsAvailableToManifest(
-                id(),
-                GetType(),
-                extensions::Feature::ConvertLocation(location()),
-                manifest_version());
-        if (!availability.is_available()) {
-          // Don't fail, but warn the developer that the manifest contains
-          // unrecognized permissions. This may happen legitimately if the
-          // extensions requests platform- or channel-specific permissions.
-          install_warnings_.push_back(InstallWarning(
-              InstallWarning::FORMAT_TEXT, availability.message()));
-          continue;
-        }
+      // The feature should exist since we just got an APIPermission
+      // for it. The two systems should be updated together whenever a
+      // permission is added.
+      CHECK(feature);
 
-        if (permission_info->id() == APIPermission::kExperimental) {
-          if (!CanSpecifyExperimentalPermission()) {
-            *error = ASCIIToUTF16(errors::kExperimentalFlagRequired);
-            return false;
-          }
-        }
-
-        scoped_ptr<APIPermission> permission(
-            permission_info->CreateAPIPermission());
-        if (!permission->FromValue(permission_value)) {
-          *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
-              errors::kInvalidPermission, base::IntToString(i));
-          return false;
-        }
-
-        api_permissions->insert(permission.release());
+      Feature::Availability availability =
+          feature->IsAvailableToManifest(
+              id(),
+              GetType(),
+              Feature::ConvertLocation(location()),
+              manifest_version());
+      if (!availability.is_available()) {
+        // Don't fail, but warn the developer that the manifest contains
+        // unrecognized permissions. This may happen legitimately if the
+        // extensions requests platform- or channel-specific permissions.
+        install_warnings_.push_back(InstallWarning(InstallWarning::FORMAT_TEXT,
+                                                   availability.message()));
+        to_remove.push_back(it->id());
         continue;
       }
 
-      // Check if it's a host pattern permission.
-      const int kAllowedSchemes = CanExecuteScriptEverywhere() ?
-          URLPattern::SCHEME_ALL : kValidHostPermissionSchemes;
+      if (it->id() == APIPermission::kExperimental) {
+        if (!CanSpecifyExperimentalPermission()) {
+          *error = ASCIIToUTF16(errors::kExperimentalFlagRequired);
+          return false;
+        }
+      }
+    }
 
+    // Remove permissions that are not available to this extension.
+    for (std::vector<APIPermission::ID>::const_iterator it = to_remove.begin();
+         it != to_remove.end(); ++it) {
+      api_permissions->erase(*it);
+    }
+
+    // Parse host pattern permissions.
+    const int kAllowedSchemes = CanExecuteScriptEverywhere() ?
+        URLPattern::SCHEME_ALL : kValidHostPermissionSchemes;
+
+    for (std::vector<std::string>::const_iterator it = host_data.begin();
+         it != host_data.end(); ++it) {
+      const std::string& permission_str = *it;
+
+      // Check if it's a host pattern permission.
       URLPattern pattern = URLPattern(kAllowedSchemes);
       URLPattern::ParseResult parse_result = pattern.Parse(permission_str);
       if (parse_result == URLPattern::PARSE_SUCCESS) {
         if (!CanSpecifyHostPermission(pattern, *api_permissions)) {
           *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
-              errors::kInvalidPermissionScheme, base::IntToString(i));
+              errors::kInvalidPermissionScheme, permission_str);
           return false;
         }
 

@@ -500,42 +500,7 @@ PermissionSet* ExtensionPrefs::ReadExtensionPrefPermissionSet(
   const ListValue* api_values = NULL;
   std::string api_pref = JoinPrefs(pref_key, kPrefAPIs);
   if (ReadExtensionPrefList(extension_id, api_pref, &api_values)) {
-    PermissionsInfo* info = PermissionsInfo::GetInstance();
-    for (size_t i = 0; i < api_values->GetSize(); ++i) {
-      const DictionaryValue* permission_dict = NULL;
-      std::string permission_name;
-      if (!api_values->GetString(i, &permission_name) &&
-          !api_values->GetDictionary(i, &permission_dict)) {
-        LOG(WARNING) << "Permission is not a string or dict. ";
-        continue;
-      }
-
-      const base::Value *permission_detail = NULL;
-      if (permission_dict) {
-        if (permission_dict->size() != 1u) {
-          LOG(WARNING) << "Permission is not a single key dict.";
-          continue;
-        }
-        base::DictionaryValue::Iterator it(*permission_dict);
-        permission_name = it.key();
-        permission_detail = &it.value();
-      }
-
-      const APIPermissionInfo *permission_info =
-        info->GetByName(permission_name);
-      if (!permission_info) {
-        LOG(WARNING) << "Unknown permission[" << permission_name << "].";
-        continue;
-      }
-
-      scoped_ptr<APIPermission> permission(
-          permission_info->CreateAPIPermission());
-      if (!permission->FromValue(permission_detail)) {
-        LOG(WARNING) << "Parse permission failed.";
-        continue;
-      }
-      apis.insert(permission.release());
-    }
+    APIPermissionSet::ParseFromJSON(api_values, &apis, NULL, NULL);
   }
 
   // Retrieve the explicit host permissions.

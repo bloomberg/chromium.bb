@@ -5,7 +5,97 @@
 #include "chrome/common/extensions/permissions/api_permission_set.h"
 
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
+#include "base/values.h"
+#include "chrome/common/extensions/extension_error_utils.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
+
+namespace errors = extension_manifest_errors;
+
+namespace {
+
+using extensions::PermissionsInfo;
+using extensions::APIPermission;
+using extensions::APIPermissionInfo;
+using extensions::APIPermissionSet;
+
+bool CreateAPIPermission(
+    const std::string& permission_str,
+    const base::Value* permission_value,
+    APIPermissionSet* api_permissions,
+    string16* error,
+    std::vector<std::string>* unhandled_permissions) {
+  PermissionsInfo* info = PermissionsInfo::GetInstance();
+
+  const APIPermissionInfo* permission_info = info->GetByName(permission_str);
+  if (permission_info) {
+    scoped_ptr<APIPermission> permission(
+        permission_info->CreateAPIPermission());
+    if (!permission->FromValue(permission_value)) {
+      if (error) {
+        *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+            errors::kInvalidPermission, permission_info->name());
+        return false;
+      }
+      LOG(WARNING) << "Parse permission failed.";
+    } else {
+      api_permissions->insert(permission.release());
+    }
+    return true;
+  }
+
+  if (unhandled_permissions)
+    unhandled_permissions->push_back(permission_str);
+  else
+    LOG(WARNING) << "Unknown permission[" << permission_str << "].";
+
+  return true;
+}
+
+bool ParseChildPermissions(const std::string& base_name,
+                          const Value* permission_value,
+                          APIPermissionSet* api_permissions,
+                          string16* error,
+                          std::vector<std::string>* unhandled_permissions) {
+  if (permission_value) {
+    const ListValue* permissions;
+    if (!permission_value->GetAsList(&permissions)) {
+      if (error) {
+        *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+            errors::kInvalidPermission, base_name);
+        return false;
+      }
+      LOG(WARNING) << "Permission value is not a list.";
+      // Failed to parse, but since error is NULL, failures are not fatal so
+      // return true here anyway.
+      return true;
+    }
+
+    for (size_t i = 0; i < permissions->GetSize(); ++i) {
+      std::string permission_str;
+      if (!permissions->GetString(i, &permission_str)) {
+        // permission should be a string
+        if (error) {
+          *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+              errors::kInvalidPermission,
+              base_name + '.' + base::IntToString(i));
+          return false;
+        }
+        LOG(WARNING) << "Permission is not a string.";
+        continue;
+      }
+
+      if (!CreateAPIPermission(base_name + '.' + permission_str, NULL,
+          api_permissions, error, unhandled_permissions))
+        return false;
+    }
+  }
+
+  return CreateAPIPermission(base_name, NULL, api_permissions, error, NULL);
+}
+
+}  // namespace
 
 namespace extensions {
 
@@ -186,6 +276,49 @@ void APIPermissionSet::Union(
       ++it2;
     }
   }
+}
+
+// static
+bool APIPermissionSet::ParseFromJSON(
+    const ListValue* permissions,
+    APIPermissionSet* api_permissions,
+    string16* error,
+    std::vector<std::string>* unhandled_permissions) {
+  PermissionsInfo* info = PermissionsInfo::GetInstance();
+  for (size_t i = 0; i < permissions->GetSize(); ++i) {
+    std::string permission_str;
+    const base::Value* permission_value = NULL;
+    if (!permissions->GetString(i, &permission_str)) {
+      const base::DictionaryValue* dict = NULL;
+      // permission should be a string or a single key dict.
+      if (!permissions->GetDictionary(i, &dict) || dict->size() != 1) {
+        if (error) {
+          *error = ExtensionErrorUtils::FormatErrorMessageUTF16(
+              errors::kInvalidPermission, base::IntToString(i));
+          return false;
+        }
+        LOG(WARNING) << "Permission is not a string or single key dict.";
+        continue;
+      }
+      base::DictionaryValue::Iterator it(*dict);
+      permission_str = it.key();
+      permission_value = &it.value();
+    }
+
+    // Check if this permission is a special case where its value should
+    // be treated as a list of child permissions.
+    if (info->HasChildPermissions(permission_str)) {
+      if (!ParseChildPermissions(permission_str, permission_value,
+                                 api_permissions, error, unhandled_permissions))
+        return false;
+      continue;
+    }
+
+    if (!CreateAPIPermission(permission_str, permission_value,
+        api_permissions, error, unhandled_permissions))
+      return false;
+  }
+  return true;
 }
 
 }  // namespace extensions
