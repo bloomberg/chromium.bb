@@ -13,13 +13,13 @@
 
 namespace cc {
 
-scoped_refptr<TextureLayerChromium> TextureLayerChromium::create(TextureLayerChromiumClient* client)
+scoped_refptr<TextureLayer> TextureLayer::create(TextureLayerClient* client)
 {
-    return scoped_refptr<TextureLayerChromium>(new TextureLayerChromium(client));
+    return scoped_refptr<TextureLayer>(new TextureLayer(client));
 }
 
-TextureLayerChromium::TextureLayerChromium(TextureLayerChromiumClient* client)
-    : LayerChromium()
+TextureLayer::TextureLayer(TextureLayerClient* client)
+    : Layer()
     , m_client(client)
     , m_flipped(true)
     , m_uvRect(0, 0, 1, 1)
@@ -30,7 +30,7 @@ TextureLayerChromium::TextureLayerChromium(TextureLayerChromiumClient* client)
 {
 }
 
-TextureLayerChromium::~TextureLayerChromium()
+TextureLayer::~TextureLayer()
 {
     if (layerTreeHost()) {
         if (m_textureId)
@@ -40,30 +40,30 @@ TextureLayerChromium::~TextureLayerChromium()
     }
 }
 
-scoped_ptr<CCLayerImpl> TextureLayerChromium::createCCLayerImpl()
+scoped_ptr<LayerImpl> TextureLayer::createLayerImpl()
 {
-    return CCTextureLayerImpl::create(m_layerId).PassAs<CCLayerImpl>();
+    return TextureLayerImpl::create(m_layerId).PassAs<LayerImpl>();
 }
 
-void TextureLayerChromium::setFlipped(bool flipped)
+void TextureLayer::setFlipped(bool flipped)
 {
     m_flipped = flipped;
     setNeedsCommit();
 }
 
-void TextureLayerChromium::setUVRect(const FloatRect& rect)
+void TextureLayer::setUVRect(const FloatRect& rect)
 {
     m_uvRect = rect;
     setNeedsCommit();
 }
 
-void TextureLayerChromium::setPremultipliedAlpha(bool premultipliedAlpha)
+void TextureLayer::setPremultipliedAlpha(bool premultipliedAlpha)
 {
     m_premultipliedAlpha = premultipliedAlpha;
     setNeedsCommit();
 }
 
-void TextureLayerChromium::setRateLimitContext(bool rateLimit)
+void TextureLayer::setRateLimitContext(bool rateLimit)
 {
     if (!rateLimit && m_rateLimitContext && m_client && layerTreeHost())
         layerTreeHost()->stopRateLimiter(m_client->context());
@@ -71,7 +71,7 @@ void TextureLayerChromium::setRateLimitContext(bool rateLimit)
     m_rateLimitContext = rateLimit;
 }
 
-void TextureLayerChromium::setTextureId(unsigned id)
+void TextureLayer::setTextureId(unsigned id)
 {
     if (m_textureId == id)
         return;
@@ -81,33 +81,33 @@ void TextureLayerChromium::setTextureId(unsigned id)
     setNeedsCommit();
 }
 
-void TextureLayerChromium::willModifyTexture()
+void TextureLayer::willModifyTexture()
 {
     if (layerTreeHost())
         layerTreeHost()->acquireLayerTextures();
 }
 
-void TextureLayerChromium::setNeedsDisplayRect(const FloatRect& dirtyRect)
+void TextureLayer::setNeedsDisplayRect(const FloatRect& dirtyRect)
 {
-    LayerChromium::setNeedsDisplayRect(dirtyRect);
+    Layer::setNeedsDisplayRect(dirtyRect);
 
     if (m_rateLimitContext && m_client && layerTreeHost())
         layerTreeHost()->startRateLimiter(m_client->context());
 }
 
-void TextureLayerChromium::setLayerTreeHost(CCLayerTreeHost* host)
+void TextureLayer::setLayerTreeHost(LayerTreeHost* host)
 {
     if (m_textureId && layerTreeHost() && host != layerTreeHost())
         layerTreeHost()->acquireLayerTextures();
-    LayerChromium::setLayerTreeHost(host);
+    Layer::setLayerTreeHost(host);
 }
 
-bool TextureLayerChromium::drawsContent() const
+bool TextureLayer::drawsContent() const
 {
-    return (m_client || m_textureId) && !m_contextLost && LayerChromium::drawsContent();
+    return (m_client || m_textureId) && !m_contextLost && Layer::drawsContent();
 }
 
-void TextureLayerChromium::update(CCTextureUpdateQueue& queue, const CCOcclusionTracker*, CCRenderingStats&)
+void TextureLayer::update(TextureUpdateQueue& queue, const OcclusionTracker*, RenderingStats&)
 {
     if (m_client) {
         m_textureId = m_client->prepareTexture(queue);
@@ -117,11 +117,11 @@ void TextureLayerChromium::update(CCTextureUpdateQueue& queue, const CCOcclusion
     m_needsDisplay = false;
 }
 
-void TextureLayerChromium::pushPropertiesTo(CCLayerImpl* layer)
+void TextureLayer::pushPropertiesTo(LayerImpl* layer)
 {
-    LayerChromium::pushPropertiesTo(layer);
+    Layer::pushPropertiesTo(layer);
 
-    CCTextureLayerImpl* textureLayer = static_cast<CCTextureLayerImpl*>(layer);
+    TextureLayerImpl* textureLayer = static_cast<TextureLayerImpl*>(layer);
     textureLayer->setFlipped(m_flipped);
     textureLayer->setUVRect(m_uvRect);
     textureLayer->setPremultipliedAlpha(m_premultipliedAlpha);

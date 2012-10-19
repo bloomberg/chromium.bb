@@ -8,7 +8,7 @@
 
 namespace cc {
 
-ResourceUpdate ResourceUpdate::Create(CCPrioritizedTexture* texture,
+ResourceUpdate ResourceUpdate::Create(PrioritizedTexture* texture,
                                       const SkBitmap* bitmap,
                                       IntRect content_rect,
                                       IntRect source_rect,
@@ -22,7 +22,7 @@ ResourceUpdate ResourceUpdate::Create(CCPrioritizedTexture* texture,
     return update;
 }
 
-ResourceUpdate ResourceUpdate::CreateFromPicture(CCPrioritizedTexture* texture,
+ResourceUpdate ResourceUpdate::CreateFromPicture(PrioritizedTexture* texture,
                                                  SkPicture* picture,
                                                  IntRect content_rect,
                                                  IntRect source_rect,

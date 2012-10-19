@@ -12,96 +12,96 @@ using WebKit::WebScrollbarThemeGeometry;
 
 namespace cc {
 
-CCScrollbarGeometryStub::CCScrollbarGeometryStub(scoped_ptr<WebScrollbarThemeGeometry> geometry)
+ScrollbarGeometryStub::ScrollbarGeometryStub(scoped_ptr<WebScrollbarThemeGeometry> geometry)
     : m_geometry(geometry.Pass())
 {
 }
 
-CCScrollbarGeometryStub::~CCScrollbarGeometryStub()
+ScrollbarGeometryStub::~ScrollbarGeometryStub()
 {
 }
 
-WebScrollbarThemeGeometry* CCScrollbarGeometryStub::clone() const
+WebScrollbarThemeGeometry* ScrollbarGeometryStub::clone() const
 {
     return m_geometry->clone();
 }
 
-int CCScrollbarGeometryStub::thumbPosition(WebScrollbar* scrollbar)
+int ScrollbarGeometryStub::thumbPosition(WebScrollbar* scrollbar)
 {
     return m_geometry->thumbPosition(scrollbar);
 }
 
-int CCScrollbarGeometryStub::thumbLength(WebScrollbar* scrollbar)
+int ScrollbarGeometryStub::thumbLength(WebScrollbar* scrollbar)
 {
     return m_geometry->thumbLength(scrollbar);
 }
 
-int CCScrollbarGeometryStub::trackPosition(WebScrollbar* scrollbar)
+int ScrollbarGeometryStub::trackPosition(WebScrollbar* scrollbar)
 {
     return m_geometry->trackPosition(scrollbar);
 }
 
-int CCScrollbarGeometryStub::trackLength(WebScrollbar* scrollbar)
+int ScrollbarGeometryStub::trackLength(WebScrollbar* scrollbar)
 {
     return m_geometry->trackLength(scrollbar);
 }
 
-bool CCScrollbarGeometryStub::hasButtons(WebScrollbar* scrollbar)
+bool ScrollbarGeometryStub::hasButtons(WebScrollbar* scrollbar)
 {
     return m_geometry->hasButtons(scrollbar);
 }
 
-bool CCScrollbarGeometryStub::hasThumb(WebScrollbar* scrollbar)
+bool ScrollbarGeometryStub::hasThumb(WebScrollbar* scrollbar)
 {
     return m_geometry->hasThumb(scrollbar);
 }
 
-WebRect CCScrollbarGeometryStub::trackRect(WebScrollbar* scrollbar)
+WebRect ScrollbarGeometryStub::trackRect(WebScrollbar* scrollbar)
 {
     return m_geometry->trackRect(scrollbar);
 }
 
-WebRect CCScrollbarGeometryStub::thumbRect(WebScrollbar* scrollbar)
+WebRect ScrollbarGeometryStub::thumbRect(WebScrollbar* scrollbar)
 {
     return m_geometry->thumbRect(scrollbar);
 }
 
-int CCScrollbarGeometryStub::minimumThumbLength(WebScrollbar* scrollbar)
+int ScrollbarGeometryStub::minimumThumbLength(WebScrollbar* scrollbar)
 {
     return m_geometry->minimumThumbLength(scrollbar);
 }
 
-int CCScrollbarGeometryStub::scrollbarThickness(WebScrollbar* scrollbar)
+int ScrollbarGeometryStub::scrollbarThickness(WebScrollbar* scrollbar)
 {
     return m_geometry->scrollbarThickness(scrollbar);
 }
 
-WebRect CCScrollbarGeometryStub::backButtonStartRect(WebScrollbar* scrollbar)
+WebRect ScrollbarGeometryStub::backButtonStartRect(WebScrollbar* scrollbar)
 {
     return m_geometry->backButtonStartRect(scrollbar);
 }
 
-WebRect CCScrollbarGeometryStub::backButtonEndRect(WebScrollbar* scrollbar)
+WebRect ScrollbarGeometryStub::backButtonEndRect(WebScrollbar* scrollbar)
 {
     return m_geometry->backButtonEndRect(scrollbar);
 }
 
-WebRect CCScrollbarGeometryStub::forwardButtonStartRect(WebScrollbar* scrollbar)
+WebRect ScrollbarGeometryStub::forwardButtonStartRect(WebScrollbar* scrollbar)
 {
     return m_geometry->forwardButtonStartRect(scrollbar);
 }
 
-WebRect CCScrollbarGeometryStub::forwardButtonEndRect(WebScrollbar* scrollbar)
+WebRect ScrollbarGeometryStub::forwardButtonEndRect(WebScrollbar* scrollbar)
 {
     return m_geometry->forwardButtonEndRect(scrollbar);
 }
 
-WebRect CCScrollbarGeometryStub::constrainTrackRectToTrackPieces(WebScrollbar* scrollbar, const WebRect& rect)
+WebRect ScrollbarGeometryStub::constrainTrackRectToTrackPieces(WebScrollbar* scrollbar, const WebRect& rect)
 {
     return m_geometry->constrainTrackRectToTrackPieces(scrollbar, rect);
 }
 
-void CCScrollbarGeometryStub::splitTrack(WebScrollbar* scrollbar, const WebRect& unconstrainedTrackRect, WebRect& beforeThumbRect, WebRect& thumbRect, WebRect& afterThumbRect)
+void ScrollbarGeometryStub::splitTrack(WebScrollbar* scrollbar, const WebRect& unconstrainedTrackRect, WebRect& beforeThumbRect, WebRect& thumbRect, WebRect& afterThumbRect)
 {
     m_geometry->splitTrack(scrollbar, unconstrainedTrackRect, beforeThumbRect, thumbRect, afterThumbRect);
 }

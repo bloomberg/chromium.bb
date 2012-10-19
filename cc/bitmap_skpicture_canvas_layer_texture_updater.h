@@ -11,14 +11,14 @@
 namespace cc {
 
 // This class records the contentRect into an SkPicture, then software rasterizes
-// the SkPicture into bitmaps for each tile. This implements CCSettings::perTilePainting.
+// the SkPicture into bitmaps for each tile. This implements Settings::perTilePainting.
 class BitmapSkPictureCanvasLayerTextureUpdater : public SkPictureCanvasLayerTextureUpdater {
 public:
     class Texture : public CanvasLayerTextureUpdater::Texture {
     public:
-        Texture(BitmapSkPictureCanvasLayerTextureUpdater*, scoped_ptr<CCPrioritizedTexture>);
+        Texture(BitmapSkPictureCanvasLayerTextureUpdater*, scoped_ptr<PrioritizedTexture>);
 
-        virtual void update(CCTextureUpdateQueue&, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, CCRenderingStats&) OVERRIDE;
+        virtual void update(TextureUpdateQueue&, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&) OVERRIDE;
 
     private:
         BitmapSkPictureCanvasLayerTextureUpdater* textureUpdater() { return m_textureUpdater; }
@@ -27,14 +27,14 @@ public:
         BitmapSkPictureCanvasLayerTextureUpdater* m_textureUpdater;
     };
 
-    static scoped_refptr<BitmapSkPictureCanvasLayerTextureUpdater> create(scoped_ptr<LayerPainterChromium>);
+    static scoped_refptr<BitmapSkPictureCanvasLayerTextureUpdater> create(scoped_ptr<LayerPainter>);
 
-    virtual scoped_ptr<LayerTextureUpdater::Texture> createTexture(CCPrioritizedTextureManager*) OVERRIDE;
+    virtual scoped_ptr<LayerTextureUpdater::Texture> createTexture(PrioritizedTextureManager*) OVERRIDE;
     virtual SampledTexelFormat sampledTexelFormat(GLenum textureFormat) OVERRIDE;
-    void paintContentsRect(SkCanvas*, const IntRect& sourceRect, CCRenderingStats&);
+    void paintContentsRect(SkCanvas*, const IntRect& sourceRect, RenderingStats&);
 
 private:
-    explicit BitmapSkPictureCanvasLayerTextureUpdater(scoped_ptr<LayerPainterChromium>);
+    explicit BitmapSkPictureCanvasLayerTextureUpdater(scoped_ptr<LayerPainter>);
     virtual ~BitmapSkPictureCanvasLayerTextureUpdater();
 };
 

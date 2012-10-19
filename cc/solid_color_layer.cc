@@ -10,22 +10,22 @@
 
 namespace cc {
 
-scoped_ptr<CCLayerImpl> SolidColorLayerChromium::createCCLayerImpl()
+scoped_ptr<LayerImpl> SolidColorLayer::createLayerImpl()
 {
-    return CCSolidColorLayerImpl::create(id()).PassAs<CCLayerImpl>();
+    return SolidColorLayerImpl::create(id()).PassAs<LayerImpl>();
 }
 
-scoped_refptr<SolidColorLayerChromium> SolidColorLayerChromium::create()
+scoped_refptr<SolidColorLayer> SolidColorLayer::create()
 {
-    return make_scoped_refptr(new SolidColorLayerChromium());
+    return make_scoped_refptr(new SolidColorLayer());
 }
 
-SolidColorLayerChromium::SolidColorLayerChromium()
-    : LayerChromium()
+SolidColorLayer::SolidColorLayer()
+    : Layer()
 {
 }
 
-SolidColorLayerChromium::~SolidColorLayerChromium()
+SolidColorLayer::~SolidColorLayer()
 {
 }
 

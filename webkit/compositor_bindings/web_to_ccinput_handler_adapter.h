@@ -11,13 +11,13 @@
 
 namespace WebKit {
 
-class WebToCCInputHandlerAdapter : public cc::CCInputHandler {
+class WebToCCInputHandlerAdapter : public cc::InputHandler {
 public:
     static scoped_ptr<WebToCCInputHandlerAdapter> create(scoped_ptr<WebInputHandler>);
     virtual ~WebToCCInputHandlerAdapter();
 
-    // cc::CCInputHandler implementation.
-    virtual void bindToClient(cc::CCInputHandlerClient*) OVERRIDE;
+    // cc::InputHandler implementation.
+    virtual void bindToClient(cc::InputHandlerClient*) OVERRIDE;
     virtual void animate(double monotonicTime) OVERRIDE;
 
 private:

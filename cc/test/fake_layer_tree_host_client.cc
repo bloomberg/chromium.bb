@@ -8,15 +8,15 @@
 
 namespace cc {
 
-scoped_ptr<WebKit::WebCompositorOutputSurface> FakeCCLayerTreeHostClient::createOutputSurface()
+scoped_ptr<WebKit::WebCompositorOutputSurface> FakeLayerImplTreeHostClient::createOutputSurface()
 {
     WebKit::WebGraphicsContext3D::Attributes attrs;
     return WebKit::FakeWebCompositorOutputSurface::create(WebKit::CompositorFakeWebGraphicsContext3D::create(attrs).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<WebKit::WebCompositorOutputSurface>();
 }
 
-scoped_ptr<CCInputHandler> FakeCCLayerTreeHostClient::createInputHandler()
+scoped_ptr<InputHandler> FakeLayerImplTreeHostClient::createInputHandler()
 {
-    return scoped_ptr<CCInputHandler>();
+    return scoped_ptr<InputHandler>();
 }
 
 }

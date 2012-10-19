@@ -12,7 +12,7 @@
 
 namespace cc {
 
-CCScheduler::CCScheduler(CCSchedulerClient* client, scoped_ptr<CCFrameRateController> frameRateController)
+Scheduler::Scheduler(SchedulerClient* client, scoped_ptr<FrameRateController> frameRateController)
     : m_client(client)
     , m_frameRateController(frameRateController.Pass())
     , m_insideProcessScheduledActions(false)
@@ -22,117 +22,117 @@ CCScheduler::CCScheduler(CCSchedulerClient* client, scoped_ptr<CCFrameRateContro
     DCHECK(!m_stateMachine.vsyncCallbackNeeded());
 }
 
-CCScheduler::~CCScheduler()
+Scheduler::~Scheduler()
 {
     m_frameRateController->setActive(false);
 }
 
-void CCScheduler::setCanBeginFrame(bool can)
+void Scheduler::setCanBeginFrame(bool can)
 {
     m_stateMachine.setCanBeginFrame(can);
     processScheduledActions();
 }
 
-void CCScheduler::setVisible(bool visible)
+void Scheduler::setVisible(bool visible)
 {
     m_stateMachine.setVisible(visible);
     processScheduledActions();
 }
 
-void CCScheduler::setCanDraw(bool canDraw)
+void Scheduler::setCanDraw(bool canDraw)
 {
     m_stateMachine.setCanDraw(canDraw);
     processScheduledActions();
 }
 
-void CCScheduler::setNeedsCommit()
+void Scheduler::setNeedsCommit()
 {
     m_stateMachine.setNeedsCommit();
     processScheduledActions();
 }
 
-void CCScheduler::setNeedsForcedCommit()
+void Scheduler::setNeedsForcedCommit()
 {
     m_stateMachine.setNeedsForcedCommit();
     processScheduledActions();
 }
 
-void CCScheduler::setNeedsRedraw()
+void Scheduler::setNeedsRedraw()
 {
     m_stateMachine.setNeedsRedraw();
     processScheduledActions();
 }
 
-void CCScheduler::setNeedsForcedRedraw()
+void Scheduler::setNeedsForcedRedraw()
 {
     m_stateMachine.setNeedsForcedRedraw();
     processScheduledActions();
 }
 
-void CCScheduler::setMainThreadNeedsLayerTextures()
+void Scheduler::setMainThreadNeedsLayerTextures()
 {
     m_stateMachine.setMainThreadNeedsLayerTextures();
     processScheduledActions();
 }
 
-void CCScheduler::beginFrameComplete()
+void Scheduler::beginFrameComplete()
 {
-    TRACE_EVENT0("cc", "CCScheduler::beginFrameComplete");
+    TRACE_EVENT0("cc", "Scheduler::beginFrameComplete");
     m_stateMachine.beginFrameComplete();
     processScheduledActions();
 }
 
-void CCScheduler::beginFrameAborted()
+void Scheduler::beginFrameAborted()
 {
-    TRACE_EVENT0("cc", "CCScheduler::beginFrameAborted");
+    TRACE_EVENT0("cc", "Scheduler::beginFrameAborted");
     m_stateMachine.beginFrameAborted();
     processScheduledActions();
 }
 
-void CCScheduler::setMaxFramesPending(int maxFramesPending)
+void Scheduler::setMaxFramesPending(int maxFramesPending)
 {
     m_frameRateController->setMaxFramesPending(maxFramesPending);
 }
 
-void CCScheduler::setSwapBuffersCompleteSupported(bool supported)
+void Scheduler::setSwapBuffersCompleteSupported(bool supported)
 {
     m_frameRateController->setSwapBuffersCompleteSupported(supported);
 }
 
-void CCScheduler::didSwapBuffersComplete()
+void Scheduler::didSwapBuffersComplete()
 {
-    TRACE_EVENT0("cc", "CCScheduler::didSwapBuffersComplete");
+    TRACE_EVENT0("cc", "Scheduler::didSwapBuffersComplete");
     m_frameRateController->didFinishFrame();
 }
 
-void CCScheduler::didLoseContext()
+void Scheduler::didLoseContext()
 {
-    TRACE_EVENT0("cc", "CCScheduler::didLoseContext");
+    TRACE_EVENT0("cc", "Scheduler::didLoseContext");
     m_frameRateController->didAbortAllPendingFrames();
     m_stateMachine.didLoseContext();
     processScheduledActions();
 }
 
-void CCScheduler::didRecreateContext()
+void Scheduler::didRecreateContext()
 {
-    TRACE_EVENT0("cc", "CCScheduler::didRecreateContext");
+    TRACE_EVENT0("cc", "Scheduler::didRecreateContext");
     m_stateMachine.didRecreateContext();
     processScheduledActions();
 }
 
-void CCScheduler::setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval)
+void Scheduler::setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval)
 {
     m_frameRateController->setTimebaseAndInterval(timebase, interval);
 }
 
-base::TimeTicks CCScheduler::anticipatedDrawTime()
+base::TimeTicks Scheduler::anticipatedDrawTime()
 {
     return m_frameRateController->nextTickTime();
 }
 
-void CCScheduler::vsyncTick(bool throttled)
+void Scheduler::vsyncTick(bool throttled)
 {
-    TRACE_EVENT1("cc", "CCScheduler::vsyncTick", "throttled", throttled);
+    TRACE_EVENT1("cc", "Scheduler::vsyncTick", "throttled", throttled);
     if (!throttled)
         m_stateMachine.didEnterVSync();
     processScheduledActions();
@@ -140,7 +140,7 @@ void CCScheduler::vsyncTick(bool throttled)
         m_stateMachine.didLeaveVSync();
 }
 
-void CCScheduler::processScheduledActions()
+void Scheduler::processScheduledActions()
 {
     // We do not allow processScheduledActions to be recursive.
     // The top-level call will iteratively execute the next action for us anyway.
@@ -149,36 +149,36 @@ void CCScheduler::processScheduledActions()
 
     AutoReset<bool> markInside(&m_insideProcessScheduledActions, true);
 
-    CCSchedulerStateMachine::Action action = m_stateMachine.nextAction();
-    while (action != CCSchedulerStateMachine::ACTION_NONE) {
+    SchedulerStateMachine::Action action = m_stateMachine.nextAction();
+    while (action != SchedulerStateMachine::ACTION_NONE) {
         m_stateMachine.updateState(action);
-        TRACE_EVENT1("cc", "CCScheduler::processScheduledActions()", "action", action);
+        TRACE_EVENT1("cc", "Scheduler::processScheduledActions()", "action", action);
 
         switch (action) {
-        case CCSchedulerStateMachine::ACTION_NONE:
+        case SchedulerStateMachine::ACTION_NONE:
             break;
-        case CCSchedulerStateMachine::ACTION_BEGIN_FRAME:
+        case SchedulerStateMachine::ACTION_BEGIN_FRAME:
             m_client->scheduledActionBeginFrame();
             break;
-        case CCSchedulerStateMachine::ACTION_COMMIT:
+        case SchedulerStateMachine::ACTION_COMMIT:
             m_client->scheduledActionCommit();
             break;
-        case CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE: {
-            CCScheduledActionDrawAndSwapResult result = m_client->scheduledActionDrawAndSwapIfPossible();
+        case SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE: {
+            ScheduledActionDrawAndSwapResult result = m_client->scheduledActionDrawAndSwapIfPossible();
             m_stateMachine.didDrawIfPossibleCompleted(result.didDraw);
             if (result.didSwap)
                 m_frameRateController->didBeginFrame();
             break;
         }
-        case CCSchedulerStateMachine::ACTION_DRAW_FORCED: {
-            CCScheduledActionDrawAndSwapResult result = m_client->scheduledActionDrawAndSwapForced();
+        case SchedulerStateMachine::ACTION_DRAW_FORCED: {
+            ScheduledActionDrawAndSwapResult result = m_client->scheduledActionDrawAndSwapForced();
             if (result.didSwap)
                 m_frameRateController->didBeginFrame();
             break;
-        } case CCSchedulerStateMachine::ACTION_BEGIN_CONTEXT_RECREATION:
+        } case SchedulerStateMachine::ACTION_BEGIN_CONTEXT_RECREATION:
             m_client->scheduledActionBeginContextRecreation();
             break;
-        case CCSchedulerStateMachine::ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD:
+        case SchedulerStateMachine::ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD:
             m_client->scheduledActionAcquireLayerTexturesForMainThread();
             break;
         }

@@ -15,10 +15,10 @@
 #include <public/WebThread.h>
 
 namespace cc {
-class CCLayerImpl;
-class CCLayerTreeHost;
-class CCLayerTreeHostClient;
-class CCLayerTreeHostImpl;
+class LayerImpl;
+class LayerTreeHost;
+class LayerTreeHostClient;
+class LayerTreeHostImpl;
 }
 
 namespace WebKitTests {
@@ -26,12 +26,12 @@ namespace WebKitTests {
 // Used by test stubs to notify the test when something interesting happens.
 class TestHooks : public WebKit::WebAnimationDelegate {
 public:
-    virtual void beginCommitOnCCThread(cc::CCLayerTreeHostImpl*) { }
-    virtual void commitCompleteOnCCThread(cc::CCLayerTreeHostImpl*) { }
-    virtual bool prepareToDrawOnCCThread(cc::CCLayerTreeHostImpl*);
-    virtual void drawLayersOnCCThread(cc::CCLayerTreeHostImpl*) { }
-    virtual void animateLayers(cc::CCLayerTreeHostImpl*, double monotonicTime) { }
-    virtual void willAnimateLayers(cc::CCLayerTreeHostImpl*, double monotonicTime) { }
+    virtual void beginCommitOnThread(cc::LayerTreeHostImpl*) { }
+    virtual void commitCompleteOnThread(cc::LayerTreeHostImpl*) { }
+    virtual bool prepareToDrawOnThread(cc::LayerTreeHostImpl*);
+    virtual void drawLayersOnThread(cc::LayerTreeHostImpl*) { }
+    virtual void animateLayers(cc::LayerTreeHostImpl*, double monotonicTime) { }
+    virtual void willAnimateLayers(cc::LayerTreeHostImpl*, double monotonicTime) { }
     virtual void applyScrollAndScale(const cc::IntSize&, float) { }
     virtual void animate(double monotonicTime) { }
     virtual void layout() { }
@@ -51,22 +51,22 @@ public:
 class TimeoutTask;
 class BeginTask;
 
-class MockCCLayerTreeHostClient : public cc::CCLayerTreeHostClient {
+class MockLayerImplTreeHostClient : public cc::LayerTreeHostClient {
 };
 
-// The CCThreadedTests runs with the main loop running. It instantiates a single MockLayerTreeHost and associated
-// MockLayerTreeHostImpl/MockLayerTreeHostClient.
+// The ThreadedTests runs with the main loop running. It instantiates a single MockLayerTreeHost and associated
+// MockLayerTreeHostImpl/ThreadedMockLayerTreeHostClient.
 //
 // beginTest() is called once the main message loop is running and the layer tree host is initialized.
 //
-// Key stages of the drawing loop, e.g. drawing or commiting, redirect to CCThreadedTest methods of similar names.
+// Key stages of the drawing loop, e.g. drawing or commiting, redirect to ThreadedTest methods of similar names.
 // To track the commit process, override these functions.
 //
 // The test continues until someone calls endTest. endTest can be called on any thread, but be aware that
 // ending the test is an asynchronous process.
-class CCThreadedTest : public testing::Test, public TestHooks {
+class ThreadedTest : public testing::Test, public TestHooks {
 public:
-    virtual ~CCThreadedTest();
+    virtual ~ThreadedTest();
 
     virtual void afterTest() = 0;
     virtual void beginTest() = 0;
@@ -89,12 +89,12 @@ public:
 
     void clearTimeout() { m_timeoutTask = 0; }
 
-    cc::CCLayerTreeHost* layerTreeHost() { return m_layerTreeHost.get(); }
+    cc::LayerTreeHost* layerTreeHost() { return m_layerTreeHost.get(); }
 
 protected:
-    CCThreadedTest();
+    ThreadedTest();
 
-    virtual void initializeSettings(cc::CCLayerTreeSettings&) { }
+    virtual void initializeSettings(cc::LayerTreeSettings&) { }
 
     virtual void scheduleComposite() OVERRIDE;
 
@@ -114,12 +114,12 @@ protected:
     virtual void runTest(bool threaded);
     WebKit::WebThread* webThread() const { return m_webThread.get(); }
 
-    cc::CCLayerTreeSettings m_settings;
-    scoped_ptr<MockCCLayerTreeHostClient> m_client;
-    scoped_ptr<cc::CCLayerTreeHost> m_layerTreeHost;
+    cc::LayerTreeSettings m_settings;
+    scoped_ptr<MockLayerImplTreeHostClient> m_client;
+    scoped_ptr<cc::LayerTreeHost> m_layerTreeHost;
 
 protected:
-    RefPtr<cc::CCScopedThreadProxy> m_mainThreadProxy;
+    RefPtr<cc::ScopedThreadProxy> m_mainThreadProxy;
 
 private:
     bool m_beginning;
@@ -134,18 +134,18 @@ private:
     BeginTask* m_beginTask;
 };
 
-class CCThreadedTestThreadOnly : public CCThreadedTest {
+class ThreadedTestThreadOnly : public ThreadedTest {
 public:
     void runTestThreaded()
     {
-        CCThreadedTest::runTest(true);
+        ThreadedTest::runTest(true);
     }
 };
 
-// Adapts CCLayerTreeHostImpl for test. Runs real code, then invokes test hooks.
-class MockLayerTreeHostImpl : public cc::CCLayerTreeHostImpl {
+// Adapts LayerTreeHostImpl for test. Runs real code, then invokes test hooks.
+class MockLayerTreeHostImpl : public cc::LayerTreeHostImpl {
 public:
-    static scoped_ptr<MockLayerTreeHostImpl> create(TestHooks*, const cc::CCLayerTreeSettings&, cc::CCLayerTreeHostImplClient*);
+    static scoped_ptr<MockLayerTreeHostImpl> create(TestHooks*, const cc::LayerTreeSettings&, cc::LayerTreeHostImplClient*);
 
     virtual void beginCommit() OVERRIDE;
     virtual void commitComplete() OVERRIDE;
@@ -153,15 +153,15 @@ public:
     virtual void drawLayers(const FrameData&) OVERRIDE;
 
     // Make these public.
-    typedef std::vector<cc::CCLayerImpl*> CCLayerList;
-    using CCLayerTreeHostImpl::calculateRenderSurfaceLayerList;
+    typedef std::vector<cc::LayerImpl*> LayerList;
+    using LayerTreeHostImpl::calculateRenderSurfaceLayerList;
 
 protected:
     virtual void animateLayers(double monotonicTime, double wallClockTime) OVERRIDE;
     virtual base::TimeDelta lowFrequencyAnimationInterval() const OVERRIDE;
 
 private:
-    MockLayerTreeHostImpl(TestHooks*, const cc::CCLayerTreeSettings&, cc::CCLayerTreeHostImplClient*);
+    MockLayerTreeHostImpl(TestHooks*, const cc::LayerTreeSettings&, cc::LayerTreeHostImplClient*);
 
     TestHooks* m_testHooks;
 };

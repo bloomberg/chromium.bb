@@ -23,13 +23,13 @@ namespace cc {
 class IntSize;
 
 // This class provides basic ability to draw text onto the heads-up display.
-class CCFontAtlas {
+class FontAtlas {
 public:
-    static scoped_ptr<CCFontAtlas> create(SkBitmap bitmap, IntRect asciiToRectTable[128], int fontHeight)
+    static scoped_ptr<FontAtlas> create(SkBitmap bitmap, IntRect asciiToRectTable[128], int fontHeight)
     {
-        return make_scoped_ptr(new CCFontAtlas(bitmap, asciiToRectTable, fontHeight));
+        return make_scoped_ptr(new FontAtlas(bitmap, asciiToRectTable, fontHeight));
     }
-    ~CCFontAtlas();
+    ~FontAtlas();
 
     // Draws multiple lines of text where each line of text is separated by '\n'.
     // - Correct glyphs will be drawn for ASCII codes in the range 32-127; any characters
@@ -43,7 +43,7 @@ public:
     void drawDebugAtlas(SkCanvas*, const gfx::Point& destPosition) const;
 
 private:
-    CCFontAtlas(SkBitmap, IntRect asciiToRectTable[128], int fontHeight);
+    FontAtlas(SkBitmap, IntRect asciiToRectTable[128], int fontHeight);
 
     void drawOneLineOfTextInternal(SkCanvas*, const SkPaint&, const std::string&, const gfx::Point& destPosition) const;
 
@@ -55,7 +55,7 @@ private:
 
     int m_fontHeight;
 
-    DISALLOW_COPY_AND_ASSIGN(CCFontAtlas);
+    DISALLOW_COPY_AND_ASSIGN(FontAtlas);
 };
 
 }  // namespace cc

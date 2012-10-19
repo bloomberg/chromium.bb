@@ -13,19 +13,19 @@ class WebGraphicsContext3D;
 
 namespace cc {
 
-class TextureLayerChromiumClient;
+class TextureLayerClient;
 
 // A Layer containing a the rendered output of a plugin instance.
-class TextureLayerChromium : public LayerChromium {
+class TextureLayer : public Layer {
 public:
     // If this texture layer requires special preparation logic for each frame driven by
     // the compositor, pass in a non-nil client. Pass in a nil client pointer if texture updates
     // are driven by an external process.
-    static scoped_refptr<TextureLayerChromium> create(TextureLayerChromiumClient*);
+    static scoped_refptr<TextureLayer> create(TextureLayerClient*);
 
     void clearClient() { m_client = 0; }
 
-    virtual scoped_ptr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
+    virtual scoped_ptr<LayerImpl> createLayerImpl() OVERRIDE;
 
     // Sets whether this texture should be Y-flipped at draw time. Defaults to true.
     void setFlipped(bool);
@@ -48,17 +48,17 @@ public:
 
     virtual void setNeedsDisplayRect(const FloatRect&) OVERRIDE;
 
-    virtual void setLayerTreeHost(CCLayerTreeHost*) OVERRIDE;
+    virtual void setLayerTreeHost(LayerTreeHost*) OVERRIDE;
     virtual bool drawsContent() const OVERRIDE;
-    virtual void update(CCTextureUpdateQueue&, const CCOcclusionTracker*, CCRenderingStats&) OVERRIDE;
-    virtual void pushPropertiesTo(CCLayerImpl*) OVERRIDE;
+    virtual void update(TextureUpdateQueue&, const OcclusionTracker*, RenderingStats&) OVERRIDE;
+    virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
 
 protected:
-    explicit TextureLayerChromium(TextureLayerChromiumClient*);
-    virtual ~TextureLayerChromium();
+    explicit TextureLayer(TextureLayerClient*);
+    virtual ~TextureLayer();
 
 private:
-    TextureLayerChromiumClient* m_client;
+    TextureLayerClient* m_client;
 
     bool m_flipped;
     FloatRect m_uvRect;

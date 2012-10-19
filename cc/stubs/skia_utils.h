@@ -7,7 +7,7 @@
 
 namespace cc {
 
-inline SkScalar CCFloatToSkScalar(float f)
+inline SkScalar FloatToSkScalar(float f)
 {
     return SkFloatToScalar(isfinite(f) ? f : 0);
 }

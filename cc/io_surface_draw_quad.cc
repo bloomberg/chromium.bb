@@ -10,23 +10,23 @@
 
 namespace cc {
 
-scoped_ptr<CCIOSurfaceDrawQuad> CCIOSurfaceDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, const IntSize& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation orientation)
+scoped_ptr<IOSurfaceDrawQuad> IOSurfaceDrawQuad::create(const SharedQuadState* sharedQuadState, const IntRect& quadRect, const IntSize& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation orientation)
 {
-    return make_scoped_ptr(new CCIOSurfaceDrawQuad(sharedQuadState, quadRect, ioSurfaceSize, ioSurfaceTextureId, orientation));
+    return make_scoped_ptr(new IOSurfaceDrawQuad(sharedQuadState, quadRect, ioSurfaceSize, ioSurfaceTextureId, orientation));
 }
 
-CCIOSurfaceDrawQuad::CCIOSurfaceDrawQuad(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, const IntSize& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation orientation)
-    : CCDrawQuad(sharedQuadState, CCDrawQuad::IOSurfaceContent, quadRect)
+IOSurfaceDrawQuad::IOSurfaceDrawQuad(const SharedQuadState* sharedQuadState, const IntRect& quadRect, const IntSize& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation orientation)
+    : DrawQuad(sharedQuadState, DrawQuad::IOSurfaceContent, quadRect)
     , m_ioSurfaceSize(ioSurfaceSize)
     , m_ioSurfaceTextureId(ioSurfaceTextureId)
     , m_orientation(orientation)
 {
 }
 
-const CCIOSurfaceDrawQuad* CCIOSurfaceDrawQuad::materialCast(const CCDrawQuad* quad)
+const IOSurfaceDrawQuad* IOSurfaceDrawQuad::materialCast(const DrawQuad* quad)
 {
-    DCHECK(quad->material() == CCDrawQuad::IOSurfaceContent);
-    return static_cast<const CCIOSurfaceDrawQuad*>(quad);
+    DCHECK(quad->material() == DrawQuad::IOSurfaceContent);
+    return static_cast<const IOSurfaceDrawQuad*>(quad);
 }
 
 }  // namespace cc

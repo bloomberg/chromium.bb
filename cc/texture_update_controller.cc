@@ -57,22 +57,22 @@ scoped_ptr<SkCanvas> createAcceleratedCanvas(
 
 namespace cc {
 
-size_t CCTextureUpdateController::maxPartialTextureUpdates()
+size_t TextureUpdateController::maxPartialTextureUpdates()
 {
     return partialTextureUpdatesMax;
 }
 
-size_t CCTextureUpdateController::maxFullUpdatesPerTick(
-    CCResourceProvider* resourceProvider)
+size_t TextureUpdateController::maxFullUpdatesPerTick(
+    ResourceProvider* resourceProvider)
 {
     double texturesPerSecond = resourceProvider->estimatedUploadsPerSecond();
     size_t texturesPerTick = floor(textureUpdateTickRate * texturesPerSecond);
     return texturesPerTick ? texturesPerTick : 1;
 }
 
-CCTextureUpdateController::CCTextureUpdateController(CCTextureUpdateControllerClient* client, CCThread* thread, scoped_ptr<CCTextureUpdateQueue> queue, CCResourceProvider* resourceProvider)
+TextureUpdateController::TextureUpdateController(TextureUpdateControllerClient* client, Thread* thread, scoped_ptr<TextureUpdateQueue> queue, ResourceProvider* resourceProvider)
     : m_client(client)
-    , m_timer(new CCTimer(thread, this))
+    , m_timer(new Timer(thread, this))
     , m_queue(queue.Pass())
     , m_resourceProvider(resourceProvider)
     , m_textureUpdatesPerTick(maxFullUpdatesPerTick(resourceProvider))
@@ -80,11 +80,11 @@ CCTextureUpdateController::CCTextureUpdateController(CCTextureUpdateControllerCl
 {
 }
 
-CCTextureUpdateController::~CCTextureUpdateController()
+TextureUpdateController::~TextureUpdateController()
 {
 }
 
-void CCTextureUpdateController::performMoreUpdates(
+void TextureUpdateController::performMoreUpdates(
     base::TimeTicks timeLimit)
 {
     m_timeLimit = timeLimit;
@@ -107,15 +107,15 @@ void CCTextureUpdateController::performMoreUpdates(
         updateMoreTexturesNow();
 }
 
-void CCTextureUpdateController::discardUploadsToEvictedResources()
+void TextureUpdateController::discardUploadsToEvictedResources()
 {
     m_queue->clearUploadsToEvictedResources();
 }
 
-void CCTextureUpdateController::updateTexture(ResourceUpdate update)
+void TextureUpdateController::updateTexture(ResourceUpdate update)
 {
     if (update.picture) {
-        CCPrioritizedTexture* texture = update.texture;
+        PrioritizedTexture* texture = update.texture;
         IntRect pictureRect = update.content_rect;
         IntRect sourceRect = update.source_rect;
         IntSize destOffset = update.dest_offset;
@@ -124,12 +124,12 @@ void CCTextureUpdateController::updateTexture(ResourceUpdate update)
         DCHECK(texture->haveBackingTexture());
 
         DCHECK(m_resourceProvider->resourceType(texture->resourceId()) ==
-               CCResourceProvider::GLTexture);
+               ResourceProvider::GLTexture);
 
-        WebGraphicsContext3D* paintContext = CCProxy::hasImplThread() ?
+        WebGraphicsContext3D* paintContext = Proxy::hasImplThread() ?
             WebSharedGraphicsContext3D::compositorThreadContext() :
             WebSharedGraphicsContext3D::mainThreadContext();
-        GrContext* paintGrContext = CCProxy::hasImplThread() ?
+        GrContext* paintGrContext = Proxy::hasImplThread() ?
             WebSharedGraphicsContext3D::compositorThreadGrContext() :
             WebSharedGraphicsContext3D::mainThreadGrContext();
 
@@ -138,7 +138,7 @@ void CCTextureUpdateController::updateTexture(ResourceUpdate update)
         // because the backing texture is created in one context while it is
         // being written to in another.
         m_resourceProvider->flush();
-        CCResourceProvider::ScopedWriteLockGL lock(
+        ResourceProvider::ScopedWriteLockGL lock(
             m_resourceProvider, texture->resourceId());
 
         // Make sure ganesh uses the correct GL context.
@@ -186,7 +186,7 @@ void CCTextureUpdateController::updateTexture(ResourceUpdate update)
     }
 }
 
-void CCTextureUpdateController::finalize()
+void TextureUpdateController::finalize()
 {
     size_t uploadCount = 0;
     while (m_queue->fullUploadSize()) {
@@ -221,33 +221,33 @@ void CCTextureUpdateController::finalize()
     }
 }
 
-void CCTextureUpdateController::onTimerFired()
+void TextureUpdateController::onTimerFired()
 {
     if (!updateMoreTexturesIfEnoughTimeRemaining())
         m_client->readyToFinalizeTextureUpdates();
 }
 
-base::TimeTicks CCTextureUpdateController::now() const
+base::TimeTicks TextureUpdateController::now() const
 {
     return base::TimeTicks::Now();
 }
 
-base::TimeDelta CCTextureUpdateController::updateMoreTexturesTime() const
+base::TimeDelta TextureUpdateController::updateMoreTexturesTime() const
 {
     return base::TimeDelta::FromMilliseconds(textureUpdateTickRate * 1000);
 }
 
-size_t CCTextureUpdateController::updateMoreTexturesSize() const
+size_t TextureUpdateController::updateMoreTexturesSize() const
 {
     return m_textureUpdatesPerTick;
 }
 
-size_t CCTextureUpdateController::maxBlockingUpdates() const
+size_t TextureUpdateController::maxBlockingUpdates() const
 {
     return updateMoreTexturesSize() * maxBlockingUpdateIntervals;
 }
 
-bool CCTextureUpdateController::updateMoreTexturesIfEnoughTimeRemaining()
+bool TextureUpdateController::updateMoreTexturesIfEnoughTimeRemaining()
 {
     // Blocking uploads will increase when we're too aggressive in our upload
     // time estimate. We use a different timeout here to prevent unnecessary
@@ -268,7 +268,7 @@ bool CCTextureUpdateController::updateMoreTexturesIfEnoughTimeRemaining()
     return true;
 }
 
-void CCTextureUpdateController::updateMoreTexturesNow()
+void TextureUpdateController::updateMoreTexturesNow()
 {
     size_t uploads = std::min(
         m_queue->fullUploadSize(), updateMoreTexturesSize());

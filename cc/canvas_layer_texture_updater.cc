@@ -18,7 +18,7 @@
 
 namespace cc {
 
-CanvasLayerTextureUpdater::CanvasLayerTextureUpdater(scoped_ptr<LayerPainterChromium> painter)
+CanvasLayerTextureUpdater::CanvasLayerTextureUpdater(scoped_ptr<LayerPainter> painter)
     : m_painter(painter.Pass())
 {
 }
@@ -27,16 +27,16 @@ CanvasLayerTextureUpdater::~CanvasLayerTextureUpdater()
 {
 }
 
-void CanvasLayerTextureUpdater::paintContents(SkCanvas* canvas, const IntRect& contentRect, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, CCRenderingStats& stats)
+void CanvasLayerTextureUpdater::paintContents(SkCanvas* canvas, const IntRect& contentRect, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, RenderingStats& stats)
 {
     TRACE_EVENT0("cc", "CanvasLayerTextureUpdater::paintContents");
     canvas->save();
-    canvas->translate(CCFloatToSkScalar(-contentRect.x()), CCFloatToSkScalar(-contentRect.y()));
+    canvas->translate(FloatToSkScalar(-contentRect.x()), FloatToSkScalar(-contentRect.y()));
 
     IntRect layerRect = contentRect;
 
     if (contentsWidthScale != 1 || contentsHeightScale != 1) {
-        canvas->scale(CCFloatToSkScalar(contentsWidthScale), CCFloatToSkScalar(contentsHeightScale));
+        canvas->scale(FloatToSkScalar(contentsWidthScale), FloatToSkScalar(contentsHeightScale));
 
         FloatRect rect = contentRect;
         rect.scale(1 / contentsWidthScale, 1 / contentsHeightScale);

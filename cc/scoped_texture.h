@@ -16,31 +16,31 @@
 
 namespace cc {
 
-class CCScopedTexture : protected CCTexture {
+class ScopedTexture : protected Texture {
 public:
-    static scoped_ptr<CCScopedTexture> create(CCResourceProvider* resourceProvider) { return make_scoped_ptr(new CCScopedTexture(resourceProvider)); }
-    virtual ~CCScopedTexture();
+    static scoped_ptr<ScopedTexture> create(ResourceProvider* resourceProvider) { return make_scoped_ptr(new ScopedTexture(resourceProvider)); }
+    virtual ~ScopedTexture();
 
-    using CCTexture::id;
-    using CCTexture::size;
-    using CCTexture::format;
-    using CCTexture::bytes;
+    using Texture::id;
+    using Texture::size;
+    using Texture::format;
+    using Texture::bytes;
 
-    bool allocate(int pool, const IntSize&, GLenum format, CCResourceProvider::TextureUsageHint);
+    bool allocate(int pool, const IntSize&, GLenum format, ResourceProvider::TextureUsageHint);
     void free();
     void leak();
 
 protected:
-    explicit CCScopedTexture(CCResourceProvider*);
+    explicit ScopedTexture(ResourceProvider*);
 
 private:
-    CCResourceProvider* m_resourceProvider;
+    ResourceProvider* m_resourceProvider;
 
 #ifndef NDEBUG
     base::PlatformThreadId m_allocateThreadIdentifier;
 #endif
 
-    DISALLOW_COPY_AND_ASSIGN(CCScopedTexture);
+    DISALLOW_COPY_AND_ASSIGN(ScopedTexture);
 };
 
 }

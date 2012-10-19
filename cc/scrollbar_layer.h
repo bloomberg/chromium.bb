@@ -16,33 +16,33 @@ namespace cc {
 
 class Scrollbar;
 class ScrollbarThemeComposite;
-class CCTextureUpdateQueue;
+class TextureUpdateQueue;
 
-class ScrollbarLayerChromium : public LayerChromium {
+class ScrollbarLayer : public Layer {
 public:
-    virtual scoped_ptr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
+    virtual scoped_ptr<LayerImpl> createLayerImpl() OVERRIDE;
 
-    static scoped_refptr<ScrollbarLayerChromium> create(scoped_ptr<WebKit::WebScrollbar>, WebKit::WebScrollbarThemePainter, scoped_ptr<WebKit::WebScrollbarThemeGeometry>, int scrollLayerId);
+    static scoped_refptr<ScrollbarLayer> create(scoped_ptr<WebKit::WebScrollbar>, WebKit::WebScrollbarThemePainter, scoped_ptr<WebKit::WebScrollbarThemeGeometry>, int scrollLayerId);
 
-    // LayerChromium interface
+    // Layer interface
     virtual bool needsContentsScale() const OVERRIDE;
     virtual IntSize contentBounds() const OVERRIDE;
-    virtual void setTexturePriorities(const CCPriorityCalculator&) OVERRIDE;
-    virtual void update(CCTextureUpdateQueue&, const CCOcclusionTracker*, CCRenderingStats&) OVERRIDE;
-    virtual void setLayerTreeHost(CCLayerTreeHost*) OVERRIDE;
-    virtual void pushPropertiesTo(CCLayerImpl*) OVERRIDE;
+    virtual void setTexturePriorities(const PriorityCalculator&) OVERRIDE;
+    virtual void update(TextureUpdateQueue&, const OcclusionTracker*, RenderingStats&) OVERRIDE;
+    virtual void setLayerTreeHost(LayerTreeHost*) OVERRIDE;
+    virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
 
     int scrollLayerId() const { return m_scrollLayerId; }
     void setScrollLayerId(int id) { m_scrollLayerId = id; }
 
-    virtual ScrollbarLayerChromium* toScrollbarLayerChromium() OVERRIDE;
+    virtual ScrollbarLayer* toScrollbarLayer() OVERRIDE;
 
 protected:
-    ScrollbarLayerChromium(scoped_ptr<WebKit::WebScrollbar>, WebKit::WebScrollbarThemePainter, scoped_ptr<WebKit::WebScrollbarThemeGeometry>, int scrollLayerId);
-    virtual ~ScrollbarLayerChromium();
+    ScrollbarLayer(scoped_ptr<WebKit::WebScrollbar>, WebKit::WebScrollbarThemePainter, scoped_ptr<WebKit::WebScrollbarThemeGeometry>, int scrollLayerId);
+    virtual ~ScrollbarLayer();
 
 private:
-    void updatePart(CachingBitmapCanvasLayerTextureUpdater*, LayerTextureUpdater::Texture*, const IntRect&, CCTextureUpdateQueue&, CCRenderingStats&);
+    void updatePart(CachingBitmapCanvasLayerTextureUpdater*, LayerTextureUpdater::Texture*, const IntRect&, TextureUpdateQueue&, RenderingStats&);
     void createTextureUpdaterIfNeeded();
 
     scoped_ptr<WebKit::WebScrollbar> m_scrollbar;

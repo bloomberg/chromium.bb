@@ -16,13 +16,13 @@
 
 namespace cc {
 
-class CCLayerTilingData {
+class LayerTilingData {
 public:
     enum BorderTexelOption { HasBorderTexels, NoBorderTexels };
 
-    ~CCLayerTilingData();
+    ~LayerTilingData();
 
-    static scoped_ptr<CCLayerTilingData> create(const IntSize& tileSize, BorderTexelOption);
+    static scoped_ptr<LayerTilingData> create(const IntSize& tileSize, BorderTexelOption);
 
     bool hasEmptyBounds() const { return m_tilingData.hasEmptyBounds(); }
     int numTilesX() const { return m_tilingData.numTilesX(); }
@@ -39,7 +39,7 @@ public:
 
     bool isEmpty() const { return hasEmptyBounds() || !tiles().size(); }
 
-    const CCLayerTilingData& operator=(const CCLayerTilingData&);
+    const LayerTilingData& operator=(const LayerTilingData&);
 
     class Tile {
     public:
@@ -77,7 +77,7 @@ public:
     void reset();
 
 protected:
-    CCLayerTilingData(const IntSize& tileSize, BorderTexelOption);
+    LayerTilingData(const IntSize& tileSize, BorderTexelOption);
 
     TileMap m_tiles;
     TilingData m_tilingData;

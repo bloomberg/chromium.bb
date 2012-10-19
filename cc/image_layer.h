@@ -13,20 +13,20 @@ namespace cc {
 class ImageLayerTextureUpdater;
 
 // A Layer that contains only an Image element.
-class ImageLayerChromium : public TiledLayerChromium {
+class ImageLayer : public TiledLayer {
 public:
-    static scoped_refptr<ImageLayerChromium> create();
+    static scoped_refptr<ImageLayer> create();
 
     virtual bool drawsContent() const OVERRIDE;
-    virtual void setTexturePriorities(const CCPriorityCalculator&) OVERRIDE;
-    virtual void update(CCTextureUpdateQueue&, const CCOcclusionTracker*, CCRenderingStats&) OVERRIDE;
+    virtual void setTexturePriorities(const PriorityCalculator&) OVERRIDE;
+    virtual void update(TextureUpdateQueue&, const OcclusionTracker*, RenderingStats&) OVERRIDE;
     virtual bool needsContentsScale() const OVERRIDE;
 
     void setBitmap(const SkBitmap& image);
 
 private:
-    ImageLayerChromium();
-    virtual ~ImageLayerChromium();
+    ImageLayer();
+    virtual ~ImageLayer();
 
     void setTilingOption(TilingOption);
 

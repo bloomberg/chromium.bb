@@ -14,99 +14,99 @@
 
 namespace cc {
 
-scoped_ptr<CCLayerImpl> TreeSynchronizer::synchronizeTrees(LayerChromium* layerChromiumRoot, scoped_ptr<CCLayerImpl> oldCCLayerImplRoot, CCLayerTreeHostImpl* hostImpl)
+scoped_ptr<LayerImpl> TreeSynchronizer::synchronizeTrees(Layer* layerRoot, scoped_ptr<LayerImpl> oldLayerImplRoot, LayerTreeHostImpl* hostImpl)
 {
-    ScopedPtrCCLayerImplMap oldLayers;
-    RawPtrCCLayerImplMap newLayers;
+    ScopedPtrLayerImplMap oldLayers;
+    RawPtrLayerImplMap newLayers;
 
-    collectExistingCCLayerImplRecursive(oldLayers, oldCCLayerImplRoot.Pass());
+    collectExistingLayerImplRecursive(oldLayers, oldLayerImplRoot.Pass());
 
-    scoped_ptr<CCLayerImpl> newTree = synchronizeTreeRecursive(newLayers, oldLayers, layerChromiumRoot, hostImpl);
+    scoped_ptr<LayerImpl> newTree = synchronizeTreeRecursive(newLayers, oldLayers, layerRoot, hostImpl);
 
-    updateScrollbarLayerPointersRecursive(newLayers, layerChromiumRoot);
+    updateScrollbarLayerPointersRecursive(newLayers, layerRoot);
 
     return newTree.Pass();
 }
 
-void TreeSynchronizer::collectExistingCCLayerImplRecursive(ScopedPtrCCLayerImplMap& oldLayers, scoped_ptr<CCLayerImpl> ccLayerImpl)
+void TreeSynchronizer::collectExistingLayerImplRecursive(ScopedPtrLayerImplMap& oldLayers, scoped_ptr<LayerImpl> layerImpl)
 {
-    if (!ccLayerImpl)
+    if (!layerImpl)
         return;
 
-    ScopedPtrVector<CCLayerImpl>& children = ccLayerImpl->m_children;
+    ScopedPtrVector<LayerImpl>& children = layerImpl->m_children;
     for (size_t i = 0; i < children.size(); ++i)
-        collectExistingCCLayerImplRecursive(oldLayers, children.take(i));
+        collectExistingLayerImplRecursive(oldLayers, children.take(i));
 
-    collectExistingCCLayerImplRecursive(oldLayers, ccLayerImpl->m_maskLayer.Pass());
-    collectExistingCCLayerImplRecursive(oldLayers, ccLayerImpl->m_replicaLayer.Pass());
+    collectExistingLayerImplRecursive(oldLayers, layerImpl->m_maskLayer.Pass());
+    collectExistingLayerImplRecursive(oldLayers, layerImpl->m_replicaLayer.Pass());
 
-    int id = ccLayerImpl->id();
-    oldLayers.set(id, ccLayerImpl.Pass());
+    int id = layerImpl->id();
+    oldLayers.set(id, layerImpl.Pass());
 }
 
-scoped_ptr<CCLayerImpl> TreeSynchronizer::reuseOrCreateCCLayerImpl(RawPtrCCLayerImplMap& newLayers, ScopedPtrCCLayerImplMap& oldLayers, LayerChromium* layer)
+scoped_ptr<LayerImpl> TreeSynchronizer::reuseOrCreateLayerImpl(RawPtrLayerImplMap& newLayers, ScopedPtrLayerImplMap& oldLayers, Layer* layer)
 {
-    scoped_ptr<CCLayerImpl> ccLayerImpl = oldLayers.take(layer->id());
+    scoped_ptr<LayerImpl> layerImpl = oldLayers.take(layer->id());
 
-    if (!ccLayerImpl)
-        ccLayerImpl = layer->createCCLayerImpl();
+    if (!layerImpl)
+        layerImpl = layer->createLayerImpl();
 
-    newLayers[layer->id()] = ccLayerImpl.get();
-    return ccLayerImpl.Pass();
+    newLayers[layer->id()] = layerImpl.get();
+    return layerImpl.Pass();
 }
 
-scoped_ptr<CCLayerImpl> TreeSynchronizer::synchronizeTreeRecursive(RawPtrCCLayerImplMap& newLayers, ScopedPtrCCLayerImplMap& oldLayers, LayerChromium* layer, CCLayerTreeHostImpl* hostImpl)
+scoped_ptr<LayerImpl> TreeSynchronizer::synchronizeTreeRecursive(RawPtrLayerImplMap& newLayers, ScopedPtrLayerImplMap& oldLayers, Layer* layer, LayerTreeHostImpl* hostImpl)
 {
     if (!layer)
-        return scoped_ptr<CCLayerImpl>();
+        return scoped_ptr<LayerImpl>();
 
-    scoped_ptr<CCLayerImpl> ccLayerImpl = reuseOrCreateCCLayerImpl(newLayers, oldLayers, layer);
+    scoped_ptr<LayerImpl> layerImpl = reuseOrCreateLayerImpl(newLayers, oldLayers, layer);
 
-    ccLayerImpl->clearChildList();
-    const std::vector<scoped_refptr<LayerChromium> >& children = layer->children();
+    layerImpl->clearChildList();
+    const std::vector<scoped_refptr<Layer> >& children = layer->children();
     for (size_t i = 0; i < children.size(); ++i)
-        ccLayerImpl->addChild(synchronizeTreeRecursive(newLayers, oldLayers, children[i].get(), hostImpl));
+        layerImpl->addChild(synchronizeTreeRecursive(newLayers, oldLayers, children[i].get(), hostImpl));
 
-    ccLayerImpl->setMaskLayer(synchronizeTreeRecursive(newLayers, oldLayers, layer->maskLayer(), hostImpl));
-    ccLayerImpl->setReplicaLayer(synchronizeTreeRecursive(newLayers, oldLayers, layer->replicaLayer(), hostImpl));
+    layerImpl->setMaskLayer(synchronizeTreeRecursive(newLayers, oldLayers, layer->maskLayer(), hostImpl));
+    layerImpl->setReplicaLayer(synchronizeTreeRecursive(newLayers, oldLayers, layer->replicaLayer(), hostImpl));
 
-    layer->pushPropertiesTo(ccLayerImpl.get());
-    ccLayerImpl->setLayerTreeHostImpl(hostImpl);
+    layer->pushPropertiesTo(layerImpl.get());
+    layerImpl->setLayerTreeHostImpl(hostImpl);
 
     // Remove all dangling pointers. The pointers will be setup later in updateScrollbarLayerPointersRecursive phase
-    if (CCScrollbarAnimationController* scrollbarController = ccLayerImpl->scrollbarAnimationController()) {
+    if (ScrollbarAnimationController* scrollbarController = layerImpl->scrollbarAnimationController()) {
         scrollbarController->setHorizontalScrollbarLayer(0);
         scrollbarController->setVerticalScrollbarLayer(0);
     }
 
-    return ccLayerImpl.Pass();
+    return layerImpl.Pass();
 }
 
-void TreeSynchronizer::updateScrollbarLayerPointersRecursive(const RawPtrCCLayerImplMap& newLayers, LayerChromium* layer)
+void TreeSynchronizer::updateScrollbarLayerPointersRecursive(const RawPtrLayerImplMap& newLayers, Layer* layer)
 {
     if (!layer)
         return;
 
-    const std::vector<scoped_refptr<LayerChromium> >& children = layer->children();
+    const std::vector<scoped_refptr<Layer> >& children = layer->children();
     for (size_t i = 0; i < children.size(); ++i)
         updateScrollbarLayerPointersRecursive(newLayers, children[i].get());
 
-    ScrollbarLayerChromium* scrollbarLayer = layer->toScrollbarLayerChromium();
+    ScrollbarLayer* scrollbarLayer = layer->toScrollbarLayer();
     if (!scrollbarLayer)
         return;
 
-    RawPtrCCLayerImplMap::const_iterator iter = newLayers.find(scrollbarLayer->id());
-    CCScrollbarLayerImpl* ccScrollbarLayerImpl = iter != newLayers.end() ? static_cast<CCScrollbarLayerImpl*>(iter->second) : NULL;
+    RawPtrLayerImplMap::const_iterator iter = newLayers.find(scrollbarLayer->id());
+    ScrollbarLayerImpl* scrollbarLayerImpl = iter != newLayers.end() ? static_cast<ScrollbarLayerImpl*>(iter->second) : NULL;
     iter = newLayers.find(scrollbarLayer->scrollLayerId());
-    CCLayerImpl* ccScrollLayerImpl = iter != newLayers.end() ? iter->second : NULL;
+    LayerImpl* scrollLayerImpl = iter != newLayers.end() ? iter->second : NULL;
 
-    DCHECK(ccScrollbarLayerImpl);
-    DCHECK(ccScrollLayerImpl);
+    DCHECK(scrollbarLayerImpl);
+    DCHECK(scrollLayerImpl);
 
-    if (ccScrollbarLayerImpl->orientation() == WebKit::WebScrollbar::Horizontal)
-        ccScrollLayerImpl->setHorizontalScrollbarLayer(ccScrollbarLayerImpl);
+    if (scrollbarLayerImpl->orientation() == WebKit::WebScrollbar::Horizontal)
+        scrollLayerImpl->setHorizontalScrollbarLayer(scrollbarLayerImpl);
     else
-        ccScrollLayerImpl->setVerticalScrollbarLayer(ccScrollbarLayerImpl);
+        scrollLayerImpl->setVerticalScrollbarLayer(scrollbarLayerImpl);
 }
 
 } // namespace cc

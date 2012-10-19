@@ -15,18 +15,18 @@ namespace cc {
 
 class ScrollView;
 
-class CCScrollbarLayerImpl : public CCLayerImpl {
+class ScrollbarLayerImpl : public LayerImpl {
 public:
-    static scoped_ptr<CCScrollbarLayerImpl> create(int id);
-    virtual ~CCScrollbarLayerImpl();
+    static scoped_ptr<ScrollbarLayerImpl> create(int id);
+    virtual ~ScrollbarLayerImpl();
 
-    CCScrollbarGeometryFixedThumb* scrollbarGeometry() const { return m_geometry.get(); }
-    void setScrollbarGeometry(scoped_ptr<CCScrollbarGeometryFixedThumb>);
+    ScrollbarGeometryFixedThumb* scrollbarGeometry() const { return m_geometry.get(); }
+    void setScrollbarGeometry(scoped_ptr<ScrollbarGeometryFixedThumb>);
     void setScrollbarData(WebKit::WebScrollbar*);
 
-    void setBackTrackResourceId(CCResourceProvider::ResourceId id) { m_backTrackResourceId = id; }
-    void setForeTrackResourceId(CCResourceProvider::ResourceId id) { m_foreTrackResourceId = id; }
-    void setThumbResourceId(CCResourceProvider::ResourceId id) { m_thumbResourceId = id; }
+    void setBackTrackResourceId(ResourceProvider::ResourceId id) { m_backTrackResourceId = id; }
+    void setForeTrackResourceId(ResourceProvider::ResourceId id) { m_foreTrackResourceId = id; }
+    void setThumbResourceId(ResourceProvider::ResourceId id) { m_thumbResourceId = id; }
 
     float currentPos() const { return m_currentPos; }
     void setCurrentPos(float currentPos) { m_currentPos = currentPos; }
@@ -39,18 +39,18 @@ public:
 
     WebKit::WebScrollbar::Orientation orientation() const { return m_orientation; }
 
-    virtual void appendQuads(CCQuadSink&, CCAppendQuadsData&) OVERRIDE;
+    virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
 
     virtual void didLoseContext() OVERRIDE;
 
 protected:
-    explicit CCScrollbarLayerImpl(int id);
+    explicit ScrollbarLayerImpl(int id);
 
 private:
     // nested class only to avoid namespace problem
-    class CCScrollbar : public WebKit::WebScrollbar {
+    class Scrollbar : public WebKit::WebScrollbar {
     public:
-        explicit CCScrollbar(CCScrollbarLayerImpl* owner) : m_owner(owner) { }
+        explicit Scrollbar(ScrollbarLayerImpl* owner) : m_owner(owner) { }
 
         // WebScrollbar implementation
         virtual bool isOverlay() const;
@@ -71,21 +71,21 @@ private:
         virtual bool isCustomScrollbar() const;
 
     private:
-        CCScrollbarLayerImpl* m_owner;
+        ScrollbarLayerImpl* m_owner;
 
     };
 
     virtual const char* layerTypeAsString() const OVERRIDE;
 
-    CCScrollbar m_scrollbar;
+    Scrollbar m_scrollbar;
 
-    CCResourceProvider::ResourceId m_backTrackResourceId;
-    CCResourceProvider::ResourceId m_foreTrackResourceId;
-    CCResourceProvider::ResourceId m_thumbResourceId;
+    ResourceProvider::ResourceId m_backTrackResourceId;
+    ResourceProvider::ResourceId m_foreTrackResourceId;
+    ResourceProvider::ResourceId m_thumbResourceId;
 
-    scoped_ptr<CCScrollbarGeometryFixedThumb> m_geometry;
+    scoped_ptr<ScrollbarGeometryFixedThumb> m_geometry;
 
-    // Data to implement CCScrollbar
+    // Data to implement Scrollbar
     WebKit::WebScrollbar::ScrollbarOverlayStyle m_scrollbarOverlayStyle;
     WebKit::WebVector<WebKit::WebRect> m_tickmarks;
     WebKit::WebScrollbar::Orientation m_orientation;

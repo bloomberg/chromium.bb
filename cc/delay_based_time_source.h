@@ -10,17 +10,17 @@
 
 namespace cc {
 
-class CCThread;
+class Thread;
 
 // This timer implements a time source that achieves the specified interval
 // in face of millisecond-precision delayed callbacks and random queueing delays.
-class CCDelayBasedTimeSource : public CCTimeSource, CCTimerClient {
+class DelayBasedTimeSource : public TimeSource, TimerClient {
 public:
-    static scoped_refptr<CCDelayBasedTimeSource> create(base::TimeDelta interval, CCThread*);
+    static scoped_refptr<DelayBasedTimeSource> create(base::TimeDelta interval, Thread*);
 
-    virtual void setClient(CCTimeSourceClient* client) OVERRIDE;
+    virtual void setClient(TimeSourceClient* client) OVERRIDE;
 
-    // CCTimeSource implementation
+    // TimeSource implementation
     virtual void setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval) OVERRIDE;
 
     virtual void setActive(bool) OVERRIDE;
@@ -31,15 +31,15 @@ public:
     virtual base::TimeTicks lastTickTime() OVERRIDE;
     virtual base::TimeTicks nextTickTime() OVERRIDE;
 
-    // CCTimerClient implementation.
+    // TimerClient implementation.
     virtual void onTimerFired() OVERRIDE;
 
     // Virtual for testing.
     virtual base::TimeTicks now() const;
 
 protected:
-    CCDelayBasedTimeSource(base::TimeDelta interval, CCThread*);
-    virtual ~CCDelayBasedTimeSource();
+    DelayBasedTimeSource(base::TimeDelta interval, Thread*);
+    virtual ~DelayBasedTimeSource();
 
     base::TimeTicks nextTickTarget(base::TimeTicks now);
     void postNextTickTask(base::TimeTicks now);
@@ -58,7 +58,7 @@ protected:
         base::TimeTicks tickTarget;
     };
 
-    CCTimeSourceClient* m_client;
+    TimeSourceClient* m_client;
     bool m_hasTickTarget;
     base::TimeTicks m_lastTickTime;
 
@@ -70,8 +70,8 @@ protected:
     Parameters m_nextParameters;
 
     State m_state;
-    CCThread* m_thread;
-    CCTimer m_timer;
+    Thread* m_thread;
+    Timer m_timer;
 };
 
 }  // namespace cc

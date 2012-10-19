@@ -14,12 +14,12 @@ namespace cc {
 // double-tap zoom. Initialize it with starting and ending scroll/page scale
 // positions and an animation length time, then call ...AtTime() at every frame
 // to obtain the current interpolated position.
-class CCPageScaleAnimation {
+class PageScaleAnimation {
 public:
     // Construct with the starting page scale and scroll offset (which is in
     // pageScaleStart space). The window size is the user-viewable area
     // in pixels.
-    static scoped_ptr<CCPageScaleAnimation> create(const IntSize& scrollStart, float pageScaleStart, const IntSize& windowSize, const IntSize& contentSize, double startTime);
+    static scoped_ptr<PageScaleAnimation> create(const IntSize& scrollStart, float pageScaleStart, const IntSize& windowSize, const IntSize& contentSize, double startTime);
 
     // The following methods initialize the animation. Call one of them
     // immediately after construction to set the final scroll and page scale.
@@ -48,7 +48,7 @@ public:
     float finalPageScale() const { return m_pageScaleEnd; }
 
 protected:
-    CCPageScaleAnimation(const IntSize& scrollStart, float pageScaleStart, const IntSize& windowSize, const IntSize& contentSize, double startTime);
+    PageScaleAnimation(const IntSize& scrollStart, float pageScaleStart, const IntSize& windowSize, const IntSize& contentSize, double startTime);
 
 private:
     float progressRatioForTime(double time) const;

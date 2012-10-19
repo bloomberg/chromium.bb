@@ -13,13 +13,13 @@ class WebTransformationMatrix;
 
 namespace cc {
 class IntRect;
-class CCLayerTreeHost;
-class CCLayerTreeHostImpl;
+class LayerTreeHost;
+class LayerTreeHostImpl;
 
 // FIXME: compute overdraw metrics only occasionally, not every frame.
-class CCOverdrawMetrics {
+class OverdrawMetrics {
 public:
-    static scoped_ptr<CCOverdrawMetrics> create(bool recordMetricsForFrame) { return make_scoped_ptr(new CCOverdrawMetrics(recordMetricsForFrame)); }
+    static scoped_ptr<OverdrawMetrics> create(bool recordMetricsForFrame) { return make_scoped_ptr(new OverdrawMetrics(recordMetricsForFrame)); }
 
     // These methods are used for saving metrics during update/commit.
 
@@ -31,7 +31,7 @@ public:
     void didUpload(const WebKit::WebTransformationMatrix& transformToTarget, const IntRect& uploadRect, const IntRect& opaqueRect);
     // Record contents texture(s) behind present using the given number of bytes.
     void didUseContentsTextureMemoryBytes(size_t contentsTextureUseBytes);
-    // Record RenderSurface texture(s) being present using the given number of bytes.
+    // Record RenderSurfaceImpl texture(s) being present using the given number of bytes.
     void didUseRenderSurfaceTextureMemoryBytes(size_t renderSurfaceUseBytes);
 
     // These methods are used for saving metrics during draw.
@@ -41,8 +41,8 @@ public:
     // Record pixels that were drawn to screen.
     void didDraw(const WebKit::WebTransformationMatrix& transformToTarget, const IntRect& afterCullRect, const IntRect& opaqueRect);
 
-    void recordMetrics(const CCLayerTreeHost*) const;
-    void recordMetrics(const CCLayerTreeHostImpl*) const;
+    void recordMetrics(const LayerTreeHost*) const;
+    void recordMetrics(const LayerTreeHostImpl*) const;
 
     // Accessors for tests.
     float pixelsDrawnOpaque() const { return m_pixelsDrawnOpaque; }
@@ -59,7 +59,7 @@ private:
         DrawingToScreen
     };
 
-    explicit CCOverdrawMetrics(bool recordMetricsForFrame);
+    explicit OverdrawMetrics(bool recordMetricsForFrame);
 
     template<typename LayerTreeHostType>
     void recordMetricsInternal(MetricsType, const LayerTreeHostType*) const;
@@ -79,7 +79,7 @@ private:
     int m_tilesCulledForUpload;
     // Count the number of bytes in contents textures.
     unsigned long long m_contentsTextureUseBytes;
-    // Count the number of bytes in RenderSurface textures.
+    // Count the number of bytes in RenderSurfaceImpl textures.
     unsigned long long m_renderSurfaceTextureUseBytes;
 
     // These values are used for saving metrics during draw.

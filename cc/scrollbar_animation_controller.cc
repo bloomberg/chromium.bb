@@ -16,66 +16,66 @@
 namespace cc {
 
 #if OS(ANDROID)
-scoped_ptr<CCScrollbarAnimationController> CCScrollbarAnimationController::create(CCLayerImpl* scrollLayer)
+scoped_ptr<ScrollbarAnimationController> ScrollbarAnimationController::create(LayerImpl* scrollLayer)
 {
     static const double fadeoutDelay = 0.3;
     static const double fadeoutLength = 0.3;
-    return CCScrollbarAnimationControllerLinearFade::create(scrollLayer, fadeoutDelay, fadeoutLength).PassAs<CCScrollbarAnimationController>();
+    return ScrollbarAnimationControllerLinearFade::create(scrollLayer, fadeoutDelay, fadeoutLength).PassAs<ScrollbarAnimationController>();
 }
 #else
-scoped_ptr<CCScrollbarAnimationController> CCScrollbarAnimationController::create(CCLayerImpl* scrollLayer)
+scoped_ptr<ScrollbarAnimationController> ScrollbarAnimationController::create(LayerImpl* scrollLayer)
 {
-    return make_scoped_ptr(new CCScrollbarAnimationController(scrollLayer));
+    return make_scoped_ptr(new ScrollbarAnimationController(scrollLayer));
 }
 #endif
 
-CCScrollbarAnimationController::CCScrollbarAnimationController(CCLayerImpl* scrollLayer)
+ScrollbarAnimationController::ScrollbarAnimationController(LayerImpl* scrollLayer)
     : m_horizontalScrollbarLayer(0)
     , m_verticalScrollbarLayer(0)
 {
-    CCScrollbarAnimationController::updateScrollOffsetAtTime(scrollLayer, 0);
+    ScrollbarAnimationController::updateScrollOffsetAtTime(scrollLayer, 0);
 }
 
-CCScrollbarAnimationController::~CCScrollbarAnimationController()
+ScrollbarAnimationController::~ScrollbarAnimationController()
 {
 }
 
-bool CCScrollbarAnimationController::animate(double)
+bool ScrollbarAnimationController::animate(double)
 {
     return false;
 }
 
-void CCScrollbarAnimationController::didPinchGestureBegin()
+void ScrollbarAnimationController::didPinchGestureBegin()
 {
     didPinchGestureBeginAtTime((base::TimeTicks::Now() - base::TimeTicks()).InSecondsF());
 }
 
-void CCScrollbarAnimationController::didPinchGestureUpdate()
+void ScrollbarAnimationController::didPinchGestureUpdate()
 {
     didPinchGestureUpdateAtTime((base::TimeTicks::Now() - base::TimeTicks()).InSecondsF());
 }
 
-void CCScrollbarAnimationController::didPinchGestureEnd()
+void ScrollbarAnimationController::didPinchGestureEnd()
 {
     didPinchGestureEndAtTime((base::TimeTicks::Now() - base::TimeTicks()).InSecondsF());
 }
 
-void CCScrollbarAnimationController::updateScrollOffset(CCLayerImpl* scrollLayer)
+void ScrollbarAnimationController::updateScrollOffset(LayerImpl* scrollLayer)
 {
     updateScrollOffsetAtTime(scrollLayer, (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF());
 }
 
-IntSize CCScrollbarAnimationController::getScrollLayerBounds(const CCLayerImpl* scrollLayer)
+IntSize ScrollbarAnimationController::getScrollLayerBounds(const LayerImpl* scrollLayer)
 {
     if (!scrollLayer->children().size())
         return IntSize();
-    // Copy & paste from CCLayerTreeHostImpl...
+    // Copy & paste from LayerTreeHostImpl...
     // FIXME: Hardcoding the first child here is weird. Think of
     // a cleaner way to get the contentBounds on the Impl side.
     return scrollLayer->children()[0]->bounds();
 }
 
-void CCScrollbarAnimationController::updateScrollOffsetAtTime(CCLayerImpl* scrollLayer, double)
+void ScrollbarAnimationController::updateScrollOffsetAtTime(LayerImpl* scrollLayer, double)
 {
     m_currentPos = scrollLayer->scrollPosition() + scrollLayer->scrollDelta();
     m_totalSize = getScrollLayerBounds(scrollLayer);

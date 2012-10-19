@@ -11,27 +11,27 @@
 
 namespace cc {
 
-class CCLayerImpl;
-class CCLayerTreeHostImpl;
-class LayerChromium;
+class LayerImpl;
+class LayerTreeHostImpl;
+class Layer;
 
 class TreeSynchronizer {
 public:
-    // Accepts a LayerChromium tree and returns a reference to a CCLayerImpl tree that duplicates the structure
-    // of the LayerChromium tree, reusing the CCLayerImpls in the tree provided by oldCCLayerImplRoot if possible.
-    static scoped_ptr<CCLayerImpl> synchronizeTrees(LayerChromium* layerRoot, scoped_ptr<CCLayerImpl> oldCCLayerImplRoot, CCLayerTreeHostImpl*);
+    // Accepts a Layer tree and returns a reference to a LayerImpl tree that duplicates the structure
+    // of the Layer tree, reusing the LayerImpls in the tree provided by oldLayerImplRoot if possible.
+    static scoped_ptr<LayerImpl> synchronizeTrees(Layer* layerRoot, scoped_ptr<LayerImpl> oldLayerImplRoot, LayerTreeHostImpl*);
 
 private:
     TreeSynchronizer(); // Not instantiable.
 
-    typedef ScopedPtrHashMap<int, CCLayerImpl> ScopedPtrCCLayerImplMap;
-    typedef base::hash_map<int, CCLayerImpl*> RawPtrCCLayerImplMap;
+    typedef ScopedPtrHashMap<int, LayerImpl> ScopedPtrLayerImplMap;
+    typedef base::hash_map<int, LayerImpl*> RawPtrLayerImplMap;
 
-    // Declared as static member functions so they can access functions on LayerChromium as a friend class.
-    static scoped_ptr<CCLayerImpl> reuseOrCreateCCLayerImpl(RawPtrCCLayerImplMap& newLayers, ScopedPtrCCLayerImplMap& oldLayers, LayerChromium*);
-    static void collectExistingCCLayerImplRecursive(ScopedPtrCCLayerImplMap& oldLayers, scoped_ptr<CCLayerImpl>);
-    static scoped_ptr<CCLayerImpl> synchronizeTreeRecursive(RawPtrCCLayerImplMap& newLayers, ScopedPtrCCLayerImplMap& oldLayers, LayerChromium*, CCLayerTreeHostImpl*);
-    static void updateScrollbarLayerPointersRecursive(const RawPtrCCLayerImplMap& newLayers, LayerChromium*);
+    // Declared as static member functions so they can access functions on Layer as a friend class.
+    static scoped_ptr<LayerImpl> reuseOrCreateLayerImpl(RawPtrLayerImplMap& newLayers, ScopedPtrLayerImplMap& oldLayers, Layer*);
+    static void collectExistingLayerImplRecursive(ScopedPtrLayerImplMap& oldLayers, scoped_ptr<LayerImpl>);
+    static scoped_ptr<LayerImpl> synchronizeTreeRecursive(RawPtrLayerImplMap& newLayers, ScopedPtrLayerImplMap& oldLayers, Layer*, LayerTreeHostImpl*);
+    static void updateScrollbarLayerPointersRecursive(const RawPtrLayerImplMap& newLayers, Layer*);
 
     DISALLOW_COPY_AND_ASSIGN(TreeSynchronizer);
 };

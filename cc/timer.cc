@@ -12,15 +12,15 @@
 
 namespace cc {
 
-class CCTimerTask : public CCThread::Task {
+class TimerTask : public Thread::Task {
 public:
-    explicit CCTimerTask(CCTimer* timer)
-        : CCThread::Task(0)
+    explicit TimerTask(Timer* timer)
+        : Thread::Task(0)
         , m_timer(timer)
     {
     }
 
-    virtual ~CCTimerTask()
+    virtual ~TimerTask()
     {
         if (!m_timer)
             return;
@@ -34,7 +34,7 @@ public:
         if (!m_timer)
             return;
 
-        CCTimerClient* client = m_timer->m_client;
+        TimerClient* client = m_timer->m_client;
 
         m_timer->stop();
         if (client)
@@ -42,34 +42,34 @@ public:
     }
 
 private:
-    friend class CCTimer;
+    friend class Timer;
 
-    CCTimer* m_timer; // null if cancelled
+    Timer* m_timer; // null if cancelled
 };
 
-CCTimer::CCTimer(CCThread* thread, CCTimerClient* client)
+Timer::Timer(Thread* thread, TimerClient* client)
     : m_client(client)
     , m_thread(thread)
     , m_task(0)
 {
 }
 
-CCTimer::~CCTimer()
+Timer::~Timer()
 {
     stop();
 }
 
-void CCTimer::startOneShot(double intervalSeconds)
+void Timer::startOneShot(double intervalSeconds)
 {
     stop();
 
-    m_task = new CCTimerTask(this);
+    m_task = new TimerTask(this);
 
     // The thread expects delays in milliseconds.
     m_thread->postDelayedTask(adoptPtr(m_task), intervalSeconds * 1000.0);
 }
 
-void CCTimer::stop()
+void Timer::stop()
 {
     if (!m_task)
         return;

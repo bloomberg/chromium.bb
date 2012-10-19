@@ -13,7 +13,7 @@ class SkCanvas;
 
 namespace cc {
 
-class LayerPainterChromium;
+class LayerPainter;
 
 // This class records the contentRect into an SkPicture. Subclasses, provide
 // different implementations of tile updating based on this recorded picture.
@@ -25,12 +25,12 @@ public:
     virtual void setOpaque(bool) OVERRIDE;
 
 protected:
-    explicit SkPictureCanvasLayerTextureUpdater(scoped_ptr<LayerPainterChromium>);
+    explicit SkPictureCanvasLayerTextureUpdater(scoped_ptr<LayerPainter>);
     virtual ~SkPictureCanvasLayerTextureUpdater();
 
-    virtual void prepareToUpdate(const IntRect& contentRect, const IntSize& tileSize, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, CCRenderingStats&) OVERRIDE;
+    virtual void prepareToUpdate(const IntRect& contentRect, const IntSize& tileSize, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, RenderingStats&) OVERRIDE;
     void drawPicture(SkCanvas*);
-    void updateTexture(CCTextureUpdateQueue& queue, CCPrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate);
+    void updateTexture(TextureUpdateQueue& queue, PrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate);
 
     bool layerIsOpaque() const { return m_layerIsOpaque; }
 

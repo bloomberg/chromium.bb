@@ -48,15 +48,15 @@ static bool isTextureFormatSupportedForStorage(GLenum format)
     return (format == GL_RGBA || format == GL_BGRA_EXT);
 }
 
-CCResourceProvider::TransferableResourceList::TransferableResourceList()
+ResourceProvider::TransferableResourceList::TransferableResourceList()
 {
 }
 
-CCResourceProvider::TransferableResourceList::~TransferableResourceList()
+ResourceProvider::TransferableResourceList::~TransferableResourceList()
 {
 }
 
-CCResourceProvider::Resource::Resource()
+ResourceProvider::Resource::Resource()
     : glId(0)
     , pixels(0)
     , pool(0)
@@ -71,7 +71,7 @@ CCResourceProvider::Resource::Resource()
 {
 }
 
-CCResourceProvider::Resource::Resource(unsigned textureId, int pool, const IntSize& size, GLenum format)
+ResourceProvider::Resource::Resource(unsigned textureId, int pool, const IntSize& size, GLenum format)
     : glId(textureId)
     , pixels(0)
     , pool(pool)
@@ -86,7 +86,7 @@ CCResourceProvider::Resource::Resource(unsigned textureId, int pool, const IntSi
 {
 }
 
-CCResourceProvider::Resource::Resource(uint8_t* pixels, int pool, const IntSize& size, GLenum format)
+ResourceProvider::Resource::Resource(uint8_t* pixels, int pool, const IntSize& size, GLenum format)
     : glId(0)
     , pixels(pixels)
     , pool(pool)
@@ -101,23 +101,23 @@ CCResourceProvider::Resource::Resource(uint8_t* pixels, int pool, const IntSize&
 {
 }
 
-CCResourceProvider::Child::Child()
+ResourceProvider::Child::Child()
 {
 }
 
-CCResourceProvider::Child::~Child()
+ResourceProvider::Child::~Child()
 {
 }
 
-scoped_ptr<CCResourceProvider> CCResourceProvider::create(CCGraphicsContext* context)
+scoped_ptr<ResourceProvider> ResourceProvider::create(GraphicsContext* context)
 {
-    scoped_ptr<CCResourceProvider> resourceProvider(new CCResourceProvider(context));
+    scoped_ptr<ResourceProvider> resourceProvider(new ResourceProvider(context));
     if (!resourceProvider->initialize())
-        return scoped_ptr<CCResourceProvider>();
+        return scoped_ptr<ResourceProvider>();
     return resourceProvider.Pass();
 }
 
-CCResourceProvider::~CCResourceProvider()
+ResourceProvider::~ResourceProvider()
 {
     WebGraphicsContext3D* context3d = m_context->context3D();
     if (!context3d || !context3d->makeContextCurrent())
@@ -126,22 +126,22 @@ CCResourceProvider::~CCResourceProvider()
     m_textureCopier.reset();
 }
 
-WebGraphicsContext3D* CCResourceProvider::graphicsContext3D()
+WebGraphicsContext3D* ResourceProvider::graphicsContext3D()
 {
-    DCHECK(CCProxy::isImplThread());
+    DCHECK(Proxy::isImplThread());
     return m_context->context3D();
 }
 
-bool CCResourceProvider::inUseByConsumer(ResourceId id)
+bool ResourceProvider::inUseByConsumer(ResourceId id)
 {
-    DCHECK(CCProxy::isImplThread());
+    DCHECK(Proxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
     Resource* resource = &it->second;
     return !!resource->lockForReadCount || resource->exported;
 }
 
-CCResourceProvider::ResourceId CCResourceProvider::createResource(int pool, const IntSize& size, GLenum format, TextureUsageHint hint)
+ResourceProvider::ResourceId ResourceProvider::createResource(int pool, const IntSize& size, GLenum format, TextureUsageHint hint)
 {
     switch (m_defaultResourceType) {
     case GLTexture:
@@ -155,9 +155,9 @@ CCResourceProvider::ResourceId CCResourceProvider::createResource(int pool, cons
     return 0;
 }
 
-CCResourceProvider::ResourceId CCResourceProvider::createGLTexture(int pool, const IntSize& size, GLenum format, TextureUsageHint hint)
+ResourceProvider::ResourceId ResourceProvider::createGLTexture(int pool, const IntSize& size, GLenum format, TextureUsageHint hint)
 {
-    DCHECK(CCProxy::isImplThread());
+    DCHECK(Proxy::isImplThread());
     unsigned textureId = 0;
     WebGraphicsContext3D* context3d = m_context->context3D();
     DCHECK(context3d);
@@ -181,9 +181,9 @@ CCResourceProvider::ResourceId CCResourceProvider::createGLTexture(int pool, con
     return id;
 }
 
-CCResourceProvider::ResourceId CCResourceProvider::createBitmap(int pool, const IntSize& size)
+ResourceProvider::ResourceId ResourceProvider::createBitmap(int pool, const IntSize& size)
 {
-    DCHECK(CCProxy::isImplThread());
+    DCHECK(Proxy::isImplThread());
 
     uint8_t* pixels = new uint8_t[size.width() * size.height() * 4];
 
@@ -193,9 +193,9 @@ CCResourceProvider::ResourceId CCResourceProvider::createBitmap(int pool, const 
     return id;
 }
 
-CCResourceProvider::ResourceId CCResourceProvider::createResourceFromExternalTexture(unsigned textureId)
+ResourceProvider::ResourceId ResourceProvider::createResourceFromExternalTexture(unsigned textureId)
 {
-    DCHECK(CCProxy::isImplThread());
+    DCHECK(Proxy::isImplThread());
     DCHECK(m_context->context3D());
     ResourceId id = m_nextId++;
     Resource resource(textureId, 0, IntSize(), 0);
@@ -204,9 +204,9 @@ CCResourceProvider::ResourceId CCResourceProvider::createResourceFromExternalTex
     return id;
 }
 
-void CCResourceProvider::deleteResource(ResourceId id)
+void ResourceProvider::deleteResource(ResourceId id)
 {
-    DCHECK(CCProxy::isImplThread());
+    DCHECK(Proxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
     Resource* resource = &it->second;
@@ -221,7 +221,7 @@ void CCResourceProvider::deleteResource(ResourceId id)
         deleteResourceInternal(it);
 }
 
-void CCResourceProvider::deleteResourceInternal(ResourceMap::iterator it)
+void ResourceProvider::deleteResourceInternal(ResourceMap::iterator it)
 {
     Resource* resource = &it->second;
     if (resource->glId && !resource->external) {
@@ -235,9 +235,9 @@ void CCResourceProvider::deleteResourceInternal(ResourceMap::iterator it)
     m_resources.erase(it);
 }
 
-void CCResourceProvider::deleteOwnedResources(int pool)
+void ResourceProvider::deleteOwnedResources(int pool)
 {
-    DCHECK(CCProxy::isImplThread());
+    DCHECK(Proxy::isImplThread());
     ResourceIdArray toDelete;
     for (ResourceMap::iterator it = m_resources.begin(); it != m_resources.end(); ++it) {
         if (it->second.pool == pool && !it->second.external && !it->second.markedForDeletion)
@@ -247,7 +247,7 @@ void CCResourceProvider::deleteOwnedResources(int pool)
         deleteResource(*it);
 }
 
-CCResourceProvider::ResourceType CCResourceProvider::resourceType(ResourceId id)
+ResourceProvider::ResourceType ResourceProvider::resourceType(ResourceId id)
 {
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
@@ -255,9 +255,9 @@ CCResourceProvider::ResourceType CCResourceProvider::resourceType(ResourceId id)
     return resource->type;
 }
 
-void CCResourceProvider::upload(ResourceId id, const uint8_t* image, const IntRect& imageRect, const IntRect& sourceRect, const IntSize& destOffset)
+void ResourceProvider::upload(ResourceId id, const uint8_t* image, const IntRect& imageRect, const IntRect& sourceRect, const IntSize& destOffset)
 {
-    DCHECK(CCProxy::isImplThread());
+    DCHECK(Proxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
     Resource* resource = &it->second;
@@ -294,7 +294,7 @@ void CCResourceProvider::upload(ResourceId id, const uint8_t* image, const IntRe
     }
 }
 
-size_t CCResourceProvider::numBlockingUploads()
+size_t ResourceProvider::numBlockingUploads()
 {
     if (!m_textureUploader)
         return 0;
@@ -302,7 +302,7 @@ size_t CCResourceProvider::numBlockingUploads()
     return m_textureUploader->numBlockingUploads();
 }
 
-void CCResourceProvider::markPendingUploadsAsNonBlocking()
+void ResourceProvider::markPendingUploadsAsNonBlocking()
 {
     if (!m_textureUploader)
         return;
@@ -310,7 +310,7 @@ void CCResourceProvider::markPendingUploadsAsNonBlocking()
     m_textureUploader->markPendingUploadsAsNonBlocking();
 }
 
-double CCResourceProvider::estimatedUploadsPerSecond()
+double ResourceProvider::estimatedUploadsPerSecond()
 {
     if (!m_textureUploader)
         return 0.0;
@@ -318,17 +318,17 @@ double CCResourceProvider::estimatedUploadsPerSecond()
     return m_textureUploader->estimatedTexturesPerSecond();
 }
 
-void CCResourceProvider::flush()
+void ResourceProvider::flush()
 {
-    DCHECK(CCProxy::isImplThread());
+    DCHECK(Proxy::isImplThread());
     WebGraphicsContext3D* context3d = m_context->context3D();
     if (context3d)
         context3d->flush();
 }
 
-bool CCResourceProvider::shallowFlushIfSupported()
+bool ResourceProvider::shallowFlushIfSupported()
 {
-    DCHECK(CCProxy::isImplThread());
+    DCHECK(Proxy::isImplThread());
     WebGraphicsContext3D* context3d = m_context->context3D();
     if (!context3d || !m_useShallowFlush)
         return false;
@@ -337,9 +337,9 @@ bool CCResourceProvider::shallowFlushIfSupported()
     return true;
 }
 
-const CCResourceProvider::Resource* CCResourceProvider::lockForRead(ResourceId id)
+const ResourceProvider::Resource* ResourceProvider::lockForRead(ResourceId id)
 {
-    DCHECK(CCProxy::isImplThread());
+    DCHECK(Proxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
 
@@ -350,9 +350,9 @@ const CCResourceProvider::Resource* CCResourceProvider::lockForRead(ResourceId i
     return resource;
 }
 
-void CCResourceProvider::unlockForRead(ResourceId id)
+void ResourceProvider::unlockForRead(ResourceId id)
 {
-    DCHECK(CCProxy::isImplThread());
+    DCHECK(Proxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
     Resource* resource = &it->second;
@@ -361,9 +361,9 @@ void CCResourceProvider::unlockForRead(ResourceId id)
     resource->lockForReadCount--;
 }
 
-const CCResourceProvider::Resource* CCResourceProvider::lockForWrite(ResourceId id)
+const ResourceProvider::Resource* ResourceProvider::lockForWrite(ResourceId id)
 {
-    DCHECK(CCProxy::isImplThread());
+    DCHECK(Proxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
     Resource* resource = &it->second;
@@ -375,9 +375,9 @@ const CCResourceProvider::Resource* CCResourceProvider::lockForWrite(ResourceId 
     return resource;
 }
 
-void CCResourceProvider::unlockForWrite(ResourceId id)
+void ResourceProvider::unlockForWrite(ResourceId id)
 {
-    DCHECK(CCProxy::isImplThread());
+    DCHECK(Proxy::isImplThread());
     ResourceMap::iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
     Resource* resource = &it->second;
@@ -387,7 +387,7 @@ void CCResourceProvider::unlockForWrite(ResourceId id)
     resource->lockedForWrite = false;
 }
 
-CCResourceProvider::ScopedReadLockGL::ScopedReadLockGL(CCResourceProvider* resourceProvider, CCResourceProvider::ResourceId resourceId)
+ResourceProvider::ScopedReadLockGL::ScopedReadLockGL(ResourceProvider* resourceProvider, ResourceProvider::ResourceId resourceId)
     : m_resourceProvider(resourceProvider)
     , m_resourceId(resourceId)
     , m_textureId(resourceProvider->lockForRead(resourceId)->glId)
@@ -395,12 +395,12 @@ CCResourceProvider::ScopedReadLockGL::ScopedReadLockGL(CCResourceProvider* resou
     DCHECK(m_textureId);
 }
 
-CCResourceProvider::ScopedReadLockGL::~ScopedReadLockGL()
+ResourceProvider::ScopedReadLockGL::~ScopedReadLockGL()
 {
     m_resourceProvider->unlockForRead(m_resourceId);
 }
 
-CCResourceProvider::ScopedWriteLockGL::ScopedWriteLockGL(CCResourceProvider* resourceProvider, CCResourceProvider::ResourceId resourceId)
+ResourceProvider::ScopedWriteLockGL::ScopedWriteLockGL(ResourceProvider* resourceProvider, ResourceProvider::ResourceId resourceId)
     : m_resourceProvider(resourceProvider)
     , m_resourceId(resourceId)
     , m_textureId(resourceProvider->lockForWrite(resourceId)->glId)
@@ -408,12 +408,12 @@ CCResourceProvider::ScopedWriteLockGL::ScopedWriteLockGL(CCResourceProvider* res
     DCHECK(m_textureId);
 }
 
-CCResourceProvider::ScopedWriteLockGL::~ScopedWriteLockGL()
+ResourceProvider::ScopedWriteLockGL::~ScopedWriteLockGL()
 {
     m_resourceProvider->unlockForWrite(m_resourceId);
 }
 
-void CCResourceProvider::populateSkBitmapWithResource(SkBitmap* skBitmap, const Resource* resource)
+void ResourceProvider::populateSkBitmapWithResource(SkBitmap* skBitmap, const Resource* resource)
 {
     DCHECK(resource->pixels);
     DCHECK(resource->format == GL_RGBA);
@@ -421,32 +421,32 @@ void CCResourceProvider::populateSkBitmapWithResource(SkBitmap* skBitmap, const 
     skBitmap->setPixels(resource->pixels);
 }
 
-CCResourceProvider::ScopedReadLockSoftware::ScopedReadLockSoftware(CCResourceProvider* resourceProvider, CCResourceProvider::ResourceId resourceId)
+ResourceProvider::ScopedReadLockSoftware::ScopedReadLockSoftware(ResourceProvider* resourceProvider, ResourceProvider::ResourceId resourceId)
     : m_resourceProvider(resourceProvider)
     , m_resourceId(resourceId)
 {
-    CCResourceProvider::populateSkBitmapWithResource(&m_skBitmap, resourceProvider->lockForRead(resourceId));
+    ResourceProvider::populateSkBitmapWithResource(&m_skBitmap, resourceProvider->lockForRead(resourceId));
 }
 
-CCResourceProvider::ScopedReadLockSoftware::~ScopedReadLockSoftware()
+ResourceProvider::ScopedReadLockSoftware::~ScopedReadLockSoftware()
 {
     m_resourceProvider->unlockForRead(m_resourceId);
 }
 
-CCResourceProvider::ScopedWriteLockSoftware::ScopedWriteLockSoftware(CCResourceProvider* resourceProvider, CCResourceProvider::ResourceId resourceId)
+ResourceProvider::ScopedWriteLockSoftware::ScopedWriteLockSoftware(ResourceProvider* resourceProvider, ResourceProvider::ResourceId resourceId)
     : m_resourceProvider(resourceProvider)
     , m_resourceId(resourceId)
 {
-    CCResourceProvider::populateSkBitmapWithResource(&m_skBitmap, resourceProvider->lockForWrite(resourceId));
+    ResourceProvider::populateSkBitmapWithResource(&m_skBitmap, resourceProvider->lockForWrite(resourceId));
     m_skCanvas.reset(new SkCanvas(m_skBitmap));
 }
 
-CCResourceProvider::ScopedWriteLockSoftware::~ScopedWriteLockSoftware()
+ResourceProvider::ScopedWriteLockSoftware::~ScopedWriteLockSoftware()
 {
     m_resourceProvider->unlockForWrite(m_resourceId);
 }
 
-CCResourceProvider::CCResourceProvider(CCGraphicsContext* context)
+ResourceProvider::ResourceProvider(GraphicsContext* context)
     : m_context(context)
     , m_nextId(1)
     , m_nextChild(1)
@@ -458,9 +458,9 @@ CCResourceProvider::CCResourceProvider(CCGraphicsContext* context)
 {
 }
 
-bool CCResourceProvider::initialize()
+bool ResourceProvider::initialize()
 {
-    DCHECK(CCProxy::isImplThread());
+    DCHECK(Proxy::isImplThread());
     WebGraphicsContext3D* context3d = m_context->context3D();
     if (!context3d) {
         m_maxTextureSize = INT_MAX / 2;
@@ -494,9 +494,9 @@ bool CCResourceProvider::initialize()
     return true;
 }
 
-int CCResourceProvider::createChild(int pool)
+int ResourceProvider::createChild(int pool)
 {
-    DCHECK(CCProxy::isImplThread());
+    DCHECK(Proxy::isImplThread());
     Child childInfo;
     childInfo.pool = pool;
     int child = m_nextChild++;
@@ -504,9 +504,9 @@ int CCResourceProvider::createChild(int pool)
     return child;
 }
 
-void CCResourceProvider::destroyChild(int child)
+void ResourceProvider::destroyChild(int child)
 {
-    DCHECK(CCProxy::isImplThread());
+    DCHECK(Proxy::isImplThread());
     ChildMap::iterator it = m_children.find(child);
     DCHECK(it != m_children.end());
     deleteOwnedResources(it->second.pool);
@@ -514,17 +514,17 @@ void CCResourceProvider::destroyChild(int child)
     trimMailboxDeque();
 }
 
-const CCResourceProvider::ResourceIdMap& CCResourceProvider::getChildToParentMap(int child) const
+const ResourceProvider::ResourceIdMap& ResourceProvider::getChildToParentMap(int child) const
 {
-    DCHECK(CCProxy::isImplThread());
+    DCHECK(Proxy::isImplThread());
     ChildMap::const_iterator it = m_children.find(child);
     DCHECK(it != m_children.end());
     return it->second.childToParentMap;
 }
 
-CCResourceProvider::TransferableResourceList CCResourceProvider::prepareSendToParent(const ResourceIdArray& resources)
+ResourceProvider::TransferableResourceList ResourceProvider::prepareSendToParent(const ResourceIdArray& resources)
 {
-    DCHECK(CCProxy::isImplThread());
+    DCHECK(Proxy::isImplThread());
     TransferableResourceList list;
     list.syncPoint = 0;
     WebGraphicsContext3D* context3d = m_context->context3D();
@@ -544,9 +544,9 @@ CCResourceProvider::TransferableResourceList CCResourceProvider::prepareSendToPa
     return list;
 }
 
-CCResourceProvider::TransferableResourceList CCResourceProvider::prepareSendToChild(int child, const ResourceIdArray& resources)
+ResourceProvider::TransferableResourceList ResourceProvider::prepareSendToChild(int child, const ResourceIdArray& resources)
 {
-    DCHECK(CCProxy::isImplThread());
+    DCHECK(Proxy::isImplThread());
     TransferableResourceList list;
     list.syncPoint = 0;
     WebGraphicsContext3D* context3d = m_context->context3D();
@@ -571,9 +571,9 @@ CCResourceProvider::TransferableResourceList CCResourceProvider::prepareSendToCh
     return list;
 }
 
-void CCResourceProvider::receiveFromChild(int child, const TransferableResourceList& resources)
+void ResourceProvider::receiveFromChild(int child, const TransferableResourceList& resources)
 {
-    DCHECK(CCProxy::isImplThread());
+    DCHECK(Proxy::isImplThread());
     WebGraphicsContext3D* context3d = m_context->context3D();
     if (!context3d || !context3d->makeContextCurrent()) {
         // FIXME: Implement this path for software compositing.
@@ -603,9 +603,9 @@ void CCResourceProvider::receiveFromChild(int child, const TransferableResourceL
     }
 }
 
-void CCResourceProvider::receiveFromParent(const TransferableResourceList& resources)
+void ResourceProvider::receiveFromParent(const TransferableResourceList& resources)
 {
-    DCHECK(CCProxy::isImplThread());
+    DCHECK(Proxy::isImplThread());
     WebGraphicsContext3D* context3d = m_context->context3D();
     if (!context3d || !context3d->makeContextCurrent()) {
         // FIXME: Implement this path for software compositing.
@@ -627,9 +627,9 @@ void CCResourceProvider::receiveFromParent(const TransferableResourceList& resou
     }
 }
 
-bool CCResourceProvider::transferResource(WebGraphicsContext3D* context, ResourceId id, TransferableResource* resource)
+bool ResourceProvider::transferResource(WebGraphicsContext3D* context, ResourceId id, TransferableResource* resource)
 {
-    DCHECK(CCProxy::isImplThread());
+    DCHECK(Proxy::isImplThread());
     ResourceMap::const_iterator it = m_resources.find(id);
     CHECK(it != m_resources.end());
     const Resource* source = &it->second;
@@ -652,7 +652,7 @@ bool CCResourceProvider::transferResource(WebGraphicsContext3D* context, Resourc
     return true;
 }
 
-void CCResourceProvider::trimMailboxDeque()
+void ResourceProvider::trimMailboxDeque()
 {
     // Trim the mailbox deque to the maximum number of resources we may need to
     // send.

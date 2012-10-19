@@ -10,13 +10,13 @@
 
 namespace cc {
 
-scoped_ptr<CCSolidColorDrawQuad> CCSolidColorDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color)
+scoped_ptr<SolidColorDrawQuad> SolidColorDrawQuad::create(const SharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color)
 {
-    return make_scoped_ptr(new CCSolidColorDrawQuad(sharedQuadState, quadRect, color));
+    return make_scoped_ptr(new SolidColorDrawQuad(sharedQuadState, quadRect, color));
 }
 
-CCSolidColorDrawQuad::CCSolidColorDrawQuad(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color)
-    : CCDrawQuad(sharedQuadState, CCDrawQuad::SolidColor, quadRect)
+SolidColorDrawQuad::SolidColorDrawQuad(const SharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color)
+    : DrawQuad(sharedQuadState, DrawQuad::SolidColor, quadRect)
     , m_color(color)
 {
     if (SkColorGetA(m_color) < 255)
@@ -25,10 +25,10 @@ CCSolidColorDrawQuad::CCSolidColorDrawQuad(const CCSharedQuadState* sharedQuadSt
         m_opaqueRect = quadRect;
 }
 
-const CCSolidColorDrawQuad* CCSolidColorDrawQuad::materialCast(const CCDrawQuad* quad)
+const SolidColorDrawQuad* SolidColorDrawQuad::materialCast(const DrawQuad* quad)
 {
-    DCHECK(quad->material() == CCDrawQuad::SolidColor);
-    return static_cast<const CCSolidColorDrawQuad*>(quad);
+    DCHECK(quad->material() == DrawQuad::SolidColor);
+    return static_cast<const SolidColorDrawQuad*>(quad);
 }
 
 }  // namespacec cc

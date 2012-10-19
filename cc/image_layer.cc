@@ -18,13 +18,13 @@ class ImageLayerTextureUpdater : public LayerTextureUpdater {
 public:
     class Texture : public LayerTextureUpdater::Texture {
     public:
-        Texture(ImageLayerTextureUpdater* textureUpdater, scoped_ptr<CCPrioritizedTexture> texture)
+        Texture(ImageLayerTextureUpdater* textureUpdater, scoped_ptr<PrioritizedTexture> texture)
             : LayerTextureUpdater::Texture(texture.Pass())
             , m_textureUpdater(textureUpdater)
         {
         }
 
-        virtual void update(CCTextureUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, CCRenderingStats&) OVERRIDE
+        virtual void update(TextureUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&) OVERRIDE
         {
             textureUpdater()->updateTexture(queue, texture(), sourceRect, destOffset, partialUpdate);
         }
@@ -41,9 +41,9 @@ public:
     }
 
     virtual scoped_ptr<LayerTextureUpdater::Texture> createTexture(
-        CCPrioritizedTextureManager* manager) OVERRIDE
+        PrioritizedTextureManager* manager) OVERRIDE
     {
-        return scoped_ptr<LayerTextureUpdater::Texture>(new Texture(this, CCPrioritizedTexture::create(manager)));
+        return scoped_ptr<LayerTextureUpdater::Texture>(new Texture(this, PrioritizedTexture::create(manager)));
     }
 
     virtual SampledTexelFormat sampledTexelFormat(GLenum textureFormat) OVERRIDE
@@ -52,7 +52,7 @@ public:
                 LayerTextureUpdater::SampledTexelFormatRGBA : LayerTextureUpdater::SampledTexelFormatBGRA;
     }
 
-    void updateTexture(CCTextureUpdateQueue& queue, CCPrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate)
+    void updateTexture(TextureUpdateQueue& queue, PrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate)
     {
         // Source rect should never go outside the image pixels, even if this
         // is requested because the texture extends outside the image.
@@ -85,21 +85,21 @@ private:
     SkBitmap m_bitmap;
 };
 
-scoped_refptr<ImageLayerChromium> ImageLayerChromium::create()
+scoped_refptr<ImageLayer> ImageLayer::create()
 {
-    return make_scoped_refptr(new ImageLayerChromium());
+    return make_scoped_refptr(new ImageLayer());
 }
 
-ImageLayerChromium::ImageLayerChromium()
-    : TiledLayerChromium()
-{
-}
-
-ImageLayerChromium::~ImageLayerChromium()
+ImageLayer::ImageLayer()
+    : TiledLayer()
 {
 }
 
-void ImageLayerChromium::setBitmap(const SkBitmap& bitmap)
+ImageLayer::~ImageLayer()
+{
+}
+
+void ImageLayer::setBitmap(const SkBitmap& bitmap)
 {
     // setBitmap() currently gets called whenever there is any
     // style change that affects the layer even if that change doesn't
@@ -112,15 +112,15 @@ void ImageLayerChromium::setBitmap(const SkBitmap& bitmap)
     setNeedsDisplay();
 }
 
-void ImageLayerChromium::setTexturePriorities(const CCPriorityCalculator& priorityCalc)
+void ImageLayer::setTexturePriorities(const PriorityCalculator& priorityCalc)
 {
     // Update the tile data before creating all the layer's tiles.
     updateTileSizeAndTilingOption();
 
-    TiledLayerChromium::setTexturePriorities(priorityCalc);
+    TiledLayer::setTexturePriorities(priorityCalc);
 }
 
-void ImageLayerChromium::update(CCTextureUpdateQueue& queue, const CCOcclusionTracker* occlusion, CCRenderingStats& stats)
+void ImageLayer::update(TextureUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats)
 {
     createTextureUpdaterIfNeeded();
     if (m_needsDisplay) {
@@ -129,10 +129,10 @@ void ImageLayerChromium::update(CCTextureUpdateQueue& queue, const CCOcclusionTr
         invalidateContentRect(IntRect(IntPoint(), contentBounds()));
         m_needsDisplay = false;
     }
-    TiledLayerChromium::update(queue, occlusion, stats);
+    TiledLayer::update(queue, occlusion, stats);
 }
 
-void ImageLayerChromium::createTextureUpdaterIfNeeded()
+void ImageLayer::createTextureUpdaterIfNeeded()
 {
     if (m_textureUpdater)
         return;
@@ -143,22 +143,22 @@ void ImageLayerChromium::createTextureUpdaterIfNeeded()
     setSampledTexelFormat(textureUpdater()->sampledTexelFormat(textureFormat));
 }
 
-LayerTextureUpdater* ImageLayerChromium::textureUpdater() const
+LayerTextureUpdater* ImageLayer::textureUpdater() const
 {
     return m_textureUpdater.get();
 }
 
-IntSize ImageLayerChromium::contentBounds() const
+IntSize ImageLayer::contentBounds() const
 {
     return IntSize(m_bitmap.width(), m_bitmap.height());
 }
 
-bool ImageLayerChromium::drawsContent() const
+bool ImageLayer::drawsContent() const
 {
-    return !m_bitmap.isNull() && TiledLayerChromium::drawsContent();
+    return !m_bitmap.isNull() && TiledLayer::drawsContent();
 }
 
-bool ImageLayerChromium::needsContentsScale() const
+bool ImageLayer::needsContentsScale() const
 {
     // Contents scale is not need for image layer because this can be done in compositor more efficiently.
     return false;

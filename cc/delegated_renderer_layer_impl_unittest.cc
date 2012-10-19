@@ -31,78 +31,78 @@ using namespace WebKitTests;
 
 namespace {
 
-class CCDelegatedRendererLayerImplTest : public testing::Test, public CCLayerTreeHostImplClient {
+class DelegatedRendererLayerImplTest : public testing::Test, public LayerTreeHostImplClient {
 public:
-    CCDelegatedRendererLayerImplTest()
+    DelegatedRendererLayerImplTest()
     {
-        CCLayerTreeSettings settings;
+        LayerTreeSettings settings;
         settings.minimumOcclusionTrackingSize = IntSize();
 
-        m_hostImpl = CCLayerTreeHostImpl::create(settings, this);
+        m_hostImpl = LayerTreeHostImpl::create(settings, this);
         m_hostImpl->initializeRenderer(createContext());
         m_hostImpl->setViewportSize(IntSize(10, 10), IntSize(10, 10));
     }
 
-    // CCLayerTreeHostImplClient implementation.
+    // LayerTreeHostImplClient implementation.
     virtual void didLoseContextOnImplThread() OVERRIDE { }
     virtual void onSwapBuffersCompleteOnImplThread() OVERRIDE { }
     virtual void onVSyncParametersChanged(double, double) OVERRIDE { }
     virtual void onCanDrawStateChanged(bool) OVERRIDE { }
     virtual void setNeedsRedrawOnImplThread() OVERRIDE { }
     virtual void setNeedsCommitOnImplThread() OVERRIDE { }
-    virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<CCAnimationEventsVector>, double wallClockTime) OVERRIDE { }
+    virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector>, double wallClockTime) OVERRIDE { }
     virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes) OVERRIDE { return true; }
 
 protected:
-    scoped_ptr<CCGraphicsContext> createContext()
+    scoped_ptr<GraphicsContext> createContext()
     {
-        return FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new FakeWebGraphicsContext3D)).PassAs<CCGraphicsContext>();
+        return FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new FakeWebGraphicsContext3D)).PassAs<GraphicsContext>();
     }
 
     DebugScopedSetImplThread m_alwaysImplThread;
     DebugScopedSetMainThreadBlocked m_alwaysMainThreadBlocked;
 
-    scoped_ptr<CCLayerTreeHostImpl> m_hostImpl;
+    scoped_ptr<LayerTreeHostImpl> m_hostImpl;
 };
 
-static CCTestRenderPass* addRenderPass(ScopedPtrVector<CCRenderPass>& passList, CCRenderPass::Id id, IntRect outputRect, WebTransformationMatrix rootTransform)
+static TestRenderPass* addRenderPass(ScopedPtrVector<RenderPass>& passList, RenderPass::Id id, IntRect outputRect, WebTransformationMatrix rootTransform)
 {
-    scoped_ptr<CCRenderPass> pass(CCRenderPass::create(id, outputRect, rootTransform));
-    CCTestRenderPass* testPass = static_cast<CCTestRenderPass*>(pass.get());
+    scoped_ptr<RenderPass> pass(RenderPass::create(id, outputRect, rootTransform));
+    TestRenderPass* testPass = static_cast<TestRenderPass*>(pass.get());
     passList.append(pass.Pass());
     return testPass;
 }
 
-static CCSolidColorDrawQuad* addQuad(CCTestRenderPass* pass, IntRect rect, SkColor color)
+static SolidColorDrawQuad* addQuad(TestRenderPass* pass, IntRect rect, SkColor color)
 {
-    MockCCQuadCuller quadSink(pass->quadList(), pass->sharedQuadStateList());
-    CCAppendQuadsData data(pass->id());
-    CCSharedQuadState* sharedState = quadSink.useSharedQuadState(CCSharedQuadState::create(WebTransformationMatrix(), rect, rect, 1, false));
-    scoped_ptr<CCSolidColorDrawQuad> quad = CCSolidColorDrawQuad::create(sharedState, rect, color);
-    CCSolidColorDrawQuad* quadPtr = quad.get();
-    quadSink.append(quad.PassAs<CCDrawQuad>(), data);
+    MockQuadCuller quadSink(pass->quadList(), pass->sharedQuadStateList());
+    AppendQuadsData data(pass->id());
+    SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::create(WebTransformationMatrix(), rect, rect, 1, false));
+    scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::create(sharedState, rect, color);
+    SolidColorDrawQuad* quadPtr = quad.get();
+    quadSink.append(quad.PassAs<DrawQuad>(), data);
     return quadPtr;
 }
 
-static void addRenderPassQuad(CCTestRenderPass* toPass, CCTestRenderPass* contributingPass)
+static void addRenderPassQuad(TestRenderPass* toPass, TestRenderPass* contributingPass)
 {
-    MockCCQuadCuller quadSink(toPass->quadList(), toPass->sharedQuadStateList());
-    CCAppendQuadsData data(toPass->id());
+    MockQuadCuller quadSink(toPass->quadList(), toPass->sharedQuadStateList());
+    AppendQuadsData data(toPass->id());
     IntRect outputRect = contributingPass->outputRect();
-    CCSharedQuadState* sharedState = quadSink.useSharedQuadState(CCSharedQuadState::create(WebTransformationMatrix(), outputRect, outputRect, 1, false));
-    scoped_ptr<CCRenderPassDrawQuad> quad = CCRenderPassDrawQuad::create(sharedState, outputRect, contributingPass->id(), false, 0, outputRect, 0, 0, 0, 0);
-    quadSink.append(quad.PassAs<CCDrawQuad>(), data);
+    SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::create(WebTransformationMatrix(), outputRect, outputRect, 1, false));
+    scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::create(sharedState, outputRect, contributingPass->id(), false, 0, outputRect, 0, 0, 0, 0);
+    quadSink.append(quad.PassAs<DrawQuad>(), data);
 }
 
-class CCDelegatedRendererLayerImplTestSimple : public CCDelegatedRendererLayerImplTest {
+class DelegatedRendererLayerImplTestSimple : public DelegatedRendererLayerImplTest {
 public:
-    CCDelegatedRendererLayerImplTestSimple()
-        : CCDelegatedRendererLayerImplTest()
+    DelegatedRendererLayerImplTestSimple()
+        : DelegatedRendererLayerImplTest()
     {
-        scoped_ptr<CCLayerImpl> rootLayer = CCSolidColorLayerImpl::create(1).PassAs<CCLayerImpl>();
-        scoped_ptr<CCLayerImpl> layerBefore = CCSolidColorLayerImpl::create(2).PassAs<CCLayerImpl>();
-        scoped_ptr<CCLayerImpl> layerAfter = CCSolidColorLayerImpl::create(3).PassAs<CCLayerImpl>();
-        scoped_ptr<CCDelegatedRendererLayerImpl> delegatedRendererLayer = CCDelegatedRendererLayerImpl::create(4);
+        scoped_ptr<LayerImpl> rootLayer = SolidColorLayerImpl::create(1).PassAs<LayerImpl>();
+        scoped_ptr<LayerImpl> layerBefore = SolidColorLayerImpl::create(2).PassAs<LayerImpl>();
+        scoped_ptr<LayerImpl> layerAfter = SolidColorLayerImpl::create(3).PassAs<LayerImpl>();
+        scoped_ptr<DelegatedRendererLayerImpl> delegatedRendererLayer = DelegatedRendererLayerImpl::create(4);
 
         m_hostImpl->setViewportSize(IntSize(100, 100), IntSize(100, 100));
         rootLayer->setBounds(IntSize(100, 100));
@@ -127,13 +127,13 @@ public:
         transform.translate(1, 1);
         delegatedRendererLayer->setTransform(transform);
 
-        ScopedPtrVector<CCRenderPass> delegatedRenderPasses;
-        CCTestRenderPass* pass1 = addRenderPass(delegatedRenderPasses, CCRenderPass::Id(9, 6), IntRect(6, 6, 6, 6), WebTransformationMatrix());
+        ScopedPtrVector<RenderPass> delegatedRenderPasses;
+        TestRenderPass* pass1 = addRenderPass(delegatedRenderPasses, RenderPass::Id(9, 6), IntRect(6, 6, 6, 6), WebTransformationMatrix());
         addQuad(pass1, IntRect(0, 0, 6, 6), 33u);
-        CCTestRenderPass* pass2 = addRenderPass(delegatedRenderPasses, CCRenderPass::Id(9, 7), IntRect(7, 7, 7, 7), WebTransformationMatrix());
+        TestRenderPass* pass2 = addRenderPass(delegatedRenderPasses, RenderPass::Id(9, 7), IntRect(7, 7, 7, 7), WebTransformationMatrix());
         addQuad(pass2, IntRect(0, 0, 7, 7), 22u);
         addRenderPassQuad(pass2, pass1);
-        CCTestRenderPass* pass3 = addRenderPass(delegatedRenderPasses, CCRenderPass::Id(9, 8), IntRect(8, 8, 8, 8), WebTransformationMatrix());
+        TestRenderPass* pass3 = addRenderPass(delegatedRenderPasses, RenderPass::Id(9, 8), IntRect(8, 8, 8, 8), WebTransformationMatrix());
         addRenderPassQuad(pass3, pass2);
         delegatedRendererLayer->setRenderPasses(delegatedRenderPasses);
 
@@ -146,7 +146,7 @@ public:
         m_delegatedRendererLayerPtr = delegatedRendererLayer.get();
 
         // Force the delegated RenderPasses to come before the RenderPass from layerAfter.
-        layerAfter->addChild(delegatedRendererLayer.PassAs<CCLayerImpl>());
+        layerAfter->addChild(delegatedRendererLayer.PassAs<LayerImpl>());
         rootLayer->addChild(layerAfter.Pass());
 
         // Get the RenderPass generated by layerBefore to come before the delegated RenderPasses.
@@ -156,15 +156,15 @@ public:
     }
 
 protected:
-    CCLayerImpl* m_rootLayerPtr;
-    CCLayerImpl* m_layerBeforePtr;
-    CCLayerImpl* m_layerAfterPtr;
-    CCDelegatedRendererLayerImpl* m_delegatedRendererLayerPtr;
+    LayerImpl* m_rootLayerPtr;
+    LayerImpl* m_layerBeforePtr;
+    LayerImpl* m_layerAfterPtr;
+    DelegatedRendererLayerImpl* m_delegatedRendererLayerPtr;
 };
 
-TEST_F(CCDelegatedRendererLayerImplTestSimple, AddsContributingRenderPasses)
+TEST_F(DelegatedRendererLayerImplTestSimple, AddsContributingRenderPasses)
 {
-    CCLayerTreeHostImpl::FrameData frame;
+    LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
     m_hostImpl->drawLayers(frame);
     m_hostImpl->didDrawAllLayers(frame);
@@ -190,9 +190,9 @@ TEST_F(CCDelegatedRendererLayerImplTestSimple, AddsContributingRenderPasses)
     EXPECT_RECT_EQ(IntRect(7, 7, 7, 7), frame.renderPasses[2]->outputRect());
 }
 
-TEST_F(CCDelegatedRendererLayerImplTestSimple, AddsQuadsToContributingRenderPasses)
+TEST_F(DelegatedRendererLayerImplTestSimple, AddsQuadsToContributingRenderPasses)
 {
-    CCLayerTreeHostImpl::FrameData frame;
+    LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
     m_hostImpl->drawLayers(frame);
     m_hostImpl->didDrawAllLayers(frame);
@@ -218,9 +218,9 @@ TEST_F(CCDelegatedRendererLayerImplTestSimple, AddsQuadsToContributingRenderPass
     EXPECT_RECT_EQ(IntRect(0, 0, 6, 6), frame.renderPasses[1]->quadList()[0]->quadRect());
 }
 
-TEST_F(CCDelegatedRendererLayerImplTestSimple, AddsQuadsToTargetRenderPass)
+TEST_F(DelegatedRendererLayerImplTestSimple, AddsQuadsToTargetRenderPass)
 {
-    CCLayerTreeHostImpl::FrameData frame;
+    LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
     m_hostImpl->drawLayers(frame);
     m_hostImpl->didDrawAllLayers(frame);
@@ -229,7 +229,7 @@ TEST_F(CCDelegatedRendererLayerImplTestSimple, AddsQuadsToTargetRenderPass)
     ASSERT_EQ(5u, frame.renderPasses.size());
 
     // The layer's target is the RenderPass from m_layerAfter.
-    EXPECT_EQ(CCRenderPass::Id(3, 0), frame.renderPasses[3]->id());
+    EXPECT_EQ(RenderPass::Id(3, 0), frame.renderPasses[3]->id());
 
     // The DelegatedRendererLayer should have added copies of quads in its root RenderPass to its target RenderPass.
     // The m_layerAfter also adds one quad.
@@ -242,9 +242,9 @@ TEST_F(CCDelegatedRendererLayerImplTestSimple, AddsQuadsToTargetRenderPass)
     EXPECT_RECT_EQ(IntRect(0, 0, 15, 15), frame.renderPasses[3]->quadList()[1]->quadRect());
 }
 
-TEST_F(CCDelegatedRendererLayerImplTestSimple, QuadsFromRootRenderPassAreModifiedForTheTarget)
+TEST_F(DelegatedRendererLayerImplTestSimple, QuadsFromRootRenderPassAreModifiedForTheTarget)
 {
-    CCLayerTreeHostImpl::FrameData frame;
+    LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
     m_hostImpl->drawLayers(frame);
     m_hostImpl->didDrawAllLayers(frame);
@@ -266,18 +266,18 @@ TEST_F(CCDelegatedRendererLayerImplTestSimple, QuadsFromRootRenderPassAreModifie
     EXPECT_TRANSFORMATION_MATRIX_EQ(WebTransformationMatrix(), frame.renderPasses[1]->quadList()[0]->quadTransform());
 }
 
-class CCDelegatedRendererLayerImplTestOwnSurface : public CCDelegatedRendererLayerImplTestSimple {
+class DelegatedRendererLayerImplTestOwnSurface : public DelegatedRendererLayerImplTestSimple {
 public:
-    CCDelegatedRendererLayerImplTestOwnSurface()
-        : CCDelegatedRendererLayerImplTestSimple()
+    DelegatedRendererLayerImplTestOwnSurface()
+        : DelegatedRendererLayerImplTestSimple()
     {
         m_delegatedRendererLayerPtr->setForceRenderSurface(true);
     }
 };
 
-TEST_F(CCDelegatedRendererLayerImplTestOwnSurface, AddsRenderPasses)
+TEST_F(DelegatedRendererLayerImplTestOwnSurface, AddsRenderPasses)
 {
-    CCLayerTreeHostImpl::FrameData frame;
+    LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
     m_hostImpl->drawLayers(frame);
     m_hostImpl->didDrawAllLayers(frame);
@@ -306,9 +306,9 @@ TEST_F(CCDelegatedRendererLayerImplTestOwnSurface, AddsRenderPasses)
     EXPECT_RECT_EQ(IntRect(7, 7, 7, 7), frame.renderPasses[2]->outputRect());
 }
 
-TEST_F(CCDelegatedRendererLayerImplTestOwnSurface, AddsQuadsToContributingRenderPasses)
+TEST_F(DelegatedRendererLayerImplTestOwnSurface, AddsQuadsToContributingRenderPasses)
 {
-    CCLayerTreeHostImpl::FrameData frame;
+    LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
     m_hostImpl->drawLayers(frame);
     m_hostImpl->didDrawAllLayers(frame);
@@ -334,9 +334,9 @@ TEST_F(CCDelegatedRendererLayerImplTestOwnSurface, AddsQuadsToContributingRender
     EXPECT_RECT_EQ(IntRect(0, 0, 6, 6), frame.renderPasses[1]->quadList()[0]->quadRect());
 }
 
-TEST_F(CCDelegatedRendererLayerImplTestOwnSurface, AddsQuadsToTargetRenderPass)
+TEST_F(DelegatedRendererLayerImplTestOwnSurface, AddsQuadsToTargetRenderPass)
 {
-    CCLayerTreeHostImpl::FrameData frame;
+    LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
     m_hostImpl->drawLayers(frame);
     m_hostImpl->didDrawAllLayers(frame);
@@ -345,7 +345,7 @@ TEST_F(CCDelegatedRendererLayerImplTestOwnSurface, AddsQuadsToTargetRenderPass)
     ASSERT_EQ(6u, frame.renderPasses.size());
 
     // The layer's target is the RenderPass owned by itself.
-    EXPECT_EQ(CCRenderPass::Id(4, 0), frame.renderPasses[3]->id());
+    EXPECT_EQ(RenderPass::Id(4, 0), frame.renderPasses[3]->id());
 
     // The DelegatedRendererLayer should have added copies of quads in its root RenderPass to its target RenderPass.
     // The m_layerAfter also adds one quad.
@@ -355,9 +355,9 @@ TEST_F(CCDelegatedRendererLayerImplTestOwnSurface, AddsQuadsToTargetRenderPass)
     EXPECT_RECT_EQ(IntRect(7, 7, 7, 7), frame.renderPasses[3]->quadList()[0]->quadRect());
 }
 
-TEST_F(CCDelegatedRendererLayerImplTestOwnSurface, QuadsFromRootRenderPassAreNotModifiedForTheTarget)
+TEST_F(DelegatedRendererLayerImplTestOwnSurface, QuadsFromRootRenderPassAreNotModifiedForTheTarget)
 {
-    CCLayerTreeHostImpl::FrameData frame;
+    LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
     m_hostImpl->drawLayers(frame);
     m_hostImpl->didDrawAllLayers(frame);
@@ -365,7 +365,7 @@ TEST_F(CCDelegatedRendererLayerImplTestOwnSurface, QuadsFromRootRenderPassAreNot
     // Each non-DelegatedRendererLayer added one RenderPass. The DelegatedRendererLayer added two contributing passes and its owned surface added one pass.
     ASSERT_EQ(6u, frame.renderPasses.size());
 
-    // Because the DelegatedRendererLayer owns a RenderSurface, its root RenderPass' quads do not need to be
+    // Because the DelegatedRendererLayer owns a RenderSurfaceImpl, its root RenderPass' quads do not need to be
     // modified at all.
     EXPECT_TRANSFORMATION_MATRIX_EQ(WebTransformationMatrix(), frame.renderPasses[3]->quadList()[0]->quadTransform());
 
@@ -377,13 +377,13 @@ TEST_F(CCDelegatedRendererLayerImplTestOwnSurface, QuadsFromRootRenderPassAreNot
     EXPECT_TRANSFORMATION_MATRIX_EQ(WebTransformationMatrix(), frame.renderPasses[1]->quadList()[0]->quadTransform());
 }
 
-class CCDelegatedRendererLayerImplTestSharedData : public CCDelegatedRendererLayerImplTest {
+class DelegatedRendererLayerImplTestSharedData : public DelegatedRendererLayerImplTest {
 public:
-    CCDelegatedRendererLayerImplTestSharedData()
-        : CCDelegatedRendererLayerImplTest()
+    DelegatedRendererLayerImplTestSharedData()
+        : DelegatedRendererLayerImplTest()
     {
-        scoped_ptr<CCLayerImpl> rootLayer = CCLayerImpl::create(1);
-        scoped_ptr<CCDelegatedRendererLayerImpl> delegatedRendererLayer = CCDelegatedRendererLayerImpl::create(2);
+        scoped_ptr<LayerImpl> rootLayer = LayerImpl::create(1);
+        scoped_ptr<DelegatedRendererLayerImpl> delegatedRendererLayer = DelegatedRendererLayerImpl::create(2);
 
         m_hostImpl->setViewportSize(IntSize(100, 100), IntSize(100, 100));
         rootLayer->setBounds(IntSize(100, 100));
@@ -396,16 +396,16 @@ public:
         transform.translate(10, 10);
         delegatedRendererLayer->setTransform(transform);
 
-        ScopedPtrVector<CCRenderPass> delegatedRenderPasses;
+        ScopedPtrVector<RenderPass> delegatedRenderPasses;
         IntRect passRect(0, 0, 50, 50);
-        CCTestRenderPass* pass = addRenderPass(delegatedRenderPasses, CCRenderPass::Id(9, 6), passRect, WebTransformationMatrix());
-        MockCCQuadCuller quadSink(pass->quadList(), pass->sharedQuadStateList());
-        CCAppendQuadsData data(pass->id());
-        CCSharedQuadState* sharedState = quadSink.useSharedQuadState(CCSharedQuadState::create(WebTransformationMatrix(), passRect, passRect, 1, false));
-        quadSink.append(CCSolidColorDrawQuad::create(sharedState, IntRect(0, 0, 10, 10), 1u).PassAs<CCDrawQuad>(), data);
-        quadSink.append(CCSolidColorDrawQuad::create(sharedState, IntRect(0, 10, 10, 10), 2u).PassAs<CCDrawQuad>(), data);
-        quadSink.append(CCSolidColorDrawQuad::create(sharedState, IntRect(10, 0, 10, 10), 3u).PassAs<CCDrawQuad>(), data);
-        quadSink.append(CCSolidColorDrawQuad::create(sharedState, IntRect(10, 10, 10, 10), 4u).PassAs<CCDrawQuad>(), data);
+        TestRenderPass* pass = addRenderPass(delegatedRenderPasses, RenderPass::Id(9, 6), passRect, WebTransformationMatrix());
+        MockQuadCuller quadSink(pass->quadList(), pass->sharedQuadStateList());
+        AppendQuadsData data(pass->id());
+        SharedQuadState* sharedState = quadSink.useSharedQuadState(SharedQuadState::create(WebTransformationMatrix(), passRect, passRect, 1, false));
+        quadSink.append(SolidColorDrawQuad::create(sharedState, IntRect(0, 0, 10, 10), 1u).PassAs<DrawQuad>(), data);
+        quadSink.append(SolidColorDrawQuad::create(sharedState, IntRect(0, 10, 10, 10), 2u).PassAs<DrawQuad>(), data);
+        quadSink.append(SolidColorDrawQuad::create(sharedState, IntRect(10, 0, 10, 10), 3u).PassAs<DrawQuad>(), data);
+        quadSink.append(SolidColorDrawQuad::create(sharedState, IntRect(10, 10, 10, 10), 4u).PassAs<DrawQuad>(), data);
         delegatedRendererLayer->setRenderPasses(delegatedRenderPasses);
 
         // The RenderPasses should be taken by the layer.
@@ -414,19 +414,19 @@ public:
         m_rootLayerPtr = rootLayer.get();
         m_delegatedRendererLayerPtr = delegatedRendererLayer.get();
 
-        rootLayer->addChild(delegatedRendererLayer.PassAs<CCLayerImpl>());
+        rootLayer->addChild(delegatedRendererLayer.PassAs<LayerImpl>());
 
         m_hostImpl->setRootLayer(rootLayer.Pass());
     }
 
 protected:
-    CCLayerImpl* m_rootLayerPtr;
-    CCDelegatedRendererLayerImpl* m_delegatedRendererLayerPtr;
+    LayerImpl* m_rootLayerPtr;
+    DelegatedRendererLayerImpl* m_delegatedRendererLayerPtr;
 };
 
-TEST_F(CCDelegatedRendererLayerImplTestSharedData, SharedData)
+TEST_F(DelegatedRendererLayerImplTestSharedData, SharedData)
 {
-    CCLayerTreeHostImpl::FrameData frame;
+    LayerTreeHostImpl::FrameData frame;
     EXPECT_TRUE(m_hostImpl->prepareToDraw(frame));
     m_hostImpl->drawLayers(frame);
     m_hostImpl->didDrawAllLayers(frame);
@@ -435,11 +435,11 @@ TEST_F(CCDelegatedRendererLayerImplTestSharedData, SharedData)
     EXPECT_EQ(1, frame.renderPasses[0]->id().layerId);
     EXPECT_EQ(0, frame.renderPasses[0]->id().index);
 
-    const CCQuadList& quadList = frame.renderPasses[0]->quadList();
+    const QuadList& quadList = frame.renderPasses[0]->quadList();
     ASSERT_EQ(4u, quadList.size());
 
     // All quads should share the same state.
-    const CCSharedQuadState* sharedState = quadList[0]->sharedQuadState();
+    const SharedQuadState* sharedState = quadList[0]->sharedQuadState();
     EXPECT_EQ(sharedState, quadList[1]->sharedQuadState());
     EXPECT_EQ(sharedState, quadList[2]->sharedQuadState());
     EXPECT_EQ(sharedState, quadList[3]->sharedQuadState());

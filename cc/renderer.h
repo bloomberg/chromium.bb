@@ -13,34 +13,34 @@
 
 namespace cc {
 
-class CCScopedTexture;
+class ScopedTexture;
 
-class CCRendererClient {
+class RendererClient {
 public:
     virtual const IntSize& deviceViewportSize() const = 0;
-    virtual const CCLayerTreeSettings& settings() const = 0;
+    virtual const LayerTreeSettings& settings() const = 0;
     virtual void didLoseContext() = 0;
     virtual void onSwapBuffersComplete() = 0;
     virtual void setFullRootLayerDamage() = 0;
     virtual void setMemoryAllocationLimitBytes(size_t) = 0;
 protected:
-    virtual ~CCRendererClient() { }
+    virtual ~RendererClient() { }
 };
 
-class CCRenderer {
+class Renderer {
 public:
-    // This enum defines the various resource pools for the CCResourceProvider
+    // This enum defines the various resource pools for the ResourceProvider
     // where textures get allocated.
     enum ResourcePool {
       ImplPool = 1, // This pool is for textures that get allocated on the impl thread (e.g. RenderSurfaces).
       ContentPool // This pool is for textures that get allocated on the main thread (e.g. tiles).
     };
 
-    virtual ~CCRenderer() { }
+    virtual ~Renderer() { }
 
     virtual const RendererCapabilities& capabilities() const = 0;
 
-    const CCLayerTreeSettings& settings() const { return m_client->settings(); }
+    const LayerTreeSettings& settings() const { return m_client->settings(); }
 
     const IntSize& viewportSize() { return m_client->deviceViewportSize(); }
     int viewportWidth() { return viewportSize().width(); }
@@ -48,10 +48,10 @@ public:
 
     virtual void viewportChanged() { }
 
-    virtual void decideRenderPassAllocationsForFrame(const CCRenderPassList&) { }
-    virtual bool haveCachedResourcesForRenderPassId(CCRenderPass::Id) const;
+    virtual void decideRenderPassAllocationsForFrame(const RenderPassList&) { }
+    virtual bool haveCachedResourcesForRenderPassId(RenderPass::Id) const;
 
-    virtual void drawFrame(const CCRenderPassList&, const CCRenderPassIdHashMap&) = 0;
+    virtual void drawFrame(const RenderPassList&, const RenderPassIdHashMap&) = 0;
 
     // waits for rendering to finish
     virtual void finish() = 0;
@@ -67,14 +67,14 @@ public:
     virtual void setVisible(bool) = 0;
 
 protected:
-    explicit CCRenderer(CCRendererClient* client)
+    explicit Renderer(RendererClient* client)
         : m_client(client)
     {
     }
 
-    CCRendererClient* m_client;
+    RendererClient* m_client;
 
-    DISALLOW_COPY_AND_ASSIGN(CCRenderer);
+    DISALLOW_COPY_AND_ASSIGN(Renderer);
 };
 
 }

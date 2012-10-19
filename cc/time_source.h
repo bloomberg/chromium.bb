@@ -10,14 +10,14 @@
 
 namespace cc {
 
-class CCThread;
+class Thread;
 
-class CCTimeSourceClient {
+class TimeSourceClient {
 public:
     virtual void onTimerTick() = 0;
 
 protected:
-    virtual ~CCTimeSourceClient() { }
+    virtual ~TimeSourceClient() { }
 };
 
 // An generic interface for getting a reliably-ticking timesource of
@@ -25,9 +25,9 @@ protected:
 //
 // Be sure to call setActive(false) before releasing your reference to the
 // timer, or it will keep on ticking!
-class CCTimeSource : public base::RefCounted<CCTimeSource> {
+class TimeSource : public base::RefCounted<TimeSource> {
 public:
-    virtual void setClient(CCTimeSourceClient*) = 0;
+    virtual void setClient(TimeSourceClient*) = 0;
     virtual void setActive(bool) = 0;
     virtual bool active() const = 0;
     virtual void setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval) = 0;
@@ -35,10 +35,10 @@ public:
     virtual base::TimeTicks nextTickTime() = 0;
 
 protected:
-    virtual ~CCTimeSource() { }
+    virtual ~TimeSource() { }
 
 private:
-    friend class base::RefCounted<CCTimeSource>;
+    friend class base::RefCounted<TimeSource>;
 };
 
 }

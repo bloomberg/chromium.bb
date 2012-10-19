@@ -11,50 +11,50 @@
 namespace cc {
 
 // See http://www.w3.org/TR/css3-transitions/.
-class CCTimingFunction : public CCFloatAnimationCurve {
+class TimingFunction : public FloatAnimationCurve {
 public:
-    virtual ~CCTimingFunction();
+    virtual ~TimingFunction();
 
-    // Partial implementation of CCFloatAnimationCurve.
+    // Partial implementation of FloatAnimationCurve.
     virtual double duration() const OVERRIDE;
 
 protected:
-    CCTimingFunction();
+    TimingFunction();
 };
 
-class CCCubicBezierTimingFunction : public CCTimingFunction {
+class CubicBezierTimingFunction : public TimingFunction {
 public:
-    static scoped_ptr<CCCubicBezierTimingFunction> create(double x1, double y1, double x2, double y2);
-    virtual ~CCCubicBezierTimingFunction();
+    static scoped_ptr<CubicBezierTimingFunction> create(double x1, double y1, double x2, double y2);
+    virtual ~CubicBezierTimingFunction();
 
-    // Partial implementation of CCFloatAnimationCurve.
+    // Partial implementation of FloatAnimationCurve.
     virtual float getValue(double time) const OVERRIDE;
-    virtual scoped_ptr<CCAnimationCurve> clone() const OVERRIDE;
+    virtual scoped_ptr<AnimationCurve> clone() const OVERRIDE;
 
 protected:
-    CCCubicBezierTimingFunction(double x1, double y1, double x2, double y2);
+    CubicBezierTimingFunction(double x1, double y1, double x2, double y2);
 
     UnitBezier m_curve;
 };
 
-class CCEaseTimingFunction {
+class EaseTimingFunction {
 public:
-    static scoped_ptr<CCTimingFunction> create();
+    static scoped_ptr<TimingFunction> create();
 };
 
-class CCEaseInTimingFunction {
+class EaseInTimingFunction {
 public:
-    static scoped_ptr<CCTimingFunction> create();
+    static scoped_ptr<TimingFunction> create();
 };
 
-class CCEaseOutTimingFunction {
+class EaseOutTimingFunction {
 public:
-    static scoped_ptr<CCTimingFunction> create();
+    static scoped_ptr<TimingFunction> create();
 };
 
-class CCEaseInOutTimingFunction {
+class EaseInOutTimingFunction {
 public:
-    static scoped_ptr<CCTimingFunction> create();
+    static scoped_ptr<TimingFunction> create();
 };
 
 } // namespace cc

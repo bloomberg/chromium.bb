@@ -19,7 +19,7 @@ using WebKit::WebTransformationMatrix;
 
 namespace cc {
 
-class UpdatableTile : public CCLayerTilingData::Tile {
+class UpdatableTile : public LayerTilingData::Tile {
 public:
     static scoped_ptr<UpdatableTile> create(scoped_ptr<LayerTextureUpdater::Texture> texture)
     {
@@ -27,7 +27,7 @@ public:
     }
 
     LayerTextureUpdater::Texture* texture() { return m_texture.get(); }
-    CCPrioritizedTexture* managedTexture() { return m_texture->texture(); }
+    PrioritizedTexture* managedTexture() { return m_texture->texture(); }
 
     bool isDirty() const { return !dirtyRect.isEmpty(); }
 
@@ -75,27 +75,27 @@ private:
     DISALLOW_COPY_AND_ASSIGN(UpdatableTile);
 };
 
-TiledLayerChromium::TiledLayerChromium()
-    : LayerChromium()
+TiledLayer::TiledLayer()
+    : Layer()
     , m_textureFormat(GL_INVALID_ENUM)
     , m_skipsDraw(false)
     , m_failedUpdate(false)
     , m_sampledTexelFormat(LayerTextureUpdater::SampledTexelFormatInvalid)
     , m_tilingOption(AutoTile)
 {
-    m_tiler = CCLayerTilingData::create(IntSize(), CCLayerTilingData::HasBorderTexels);
+    m_tiler = LayerTilingData::create(IntSize(), LayerTilingData::HasBorderTexels);
 }
 
-TiledLayerChromium::~TiledLayerChromium()
+TiledLayer::~TiledLayer()
 {
 }
 
-scoped_ptr<CCLayerImpl> TiledLayerChromium::createCCLayerImpl()
+scoped_ptr<LayerImpl> TiledLayer::createLayerImpl()
 {
-    return CCTiledLayerImpl::create(id()).PassAs<CCLayerImpl>();
+    return TiledLayerImpl::create(id()).PassAs<LayerImpl>();
 }
 
-void TiledLayerChromium::updateTileSizeAndTilingOption()
+void TiledLayer::updateTileSizeAndTilingOption()
 {
     DCHECK(layerTreeHost());
 
@@ -130,7 +130,7 @@ void TiledLayerChromium::updateTileSizeAndTilingOption()
     setTileSize(clampedSize);
 }
 
-void TiledLayerChromium::updateBounds()
+void TiledLayer::updateBounds()
 {
     IntSize oldBounds = m_tiler->bounds();
     IntSize newBounds = contentBounds();
@@ -147,19 +147,19 @@ void TiledLayerChromium::updateBounds()
         invalidateContentRect(rects[i]);
 }
 
-void TiledLayerChromium::setTileSize(const IntSize& size)
+void TiledLayer::setTileSize(const IntSize& size)
 {
     m_tiler->setTileSize(size);
 }
 
-void TiledLayerChromium::setBorderTexelOption(CCLayerTilingData::BorderTexelOption borderTexelOption)
+void TiledLayer::setBorderTexelOption(LayerTilingData::BorderTexelOption borderTexelOption)
 {
     m_tiler->setBorderTexelOption(borderTexelOption);
 }
 
-bool TiledLayerChromium::drawsContent() const
+bool TiledLayer::drawsContent() const
 {
-    if (!LayerChromium::drawsContent())
+    if (!Layer::drawsContent())
         return false;
 
     bool hasMoreThanOneTile = m_tiler->numTilesX() > 1 || m_tiler->numTilesY() > 1;
@@ -169,38 +169,38 @@ bool TiledLayerChromium::drawsContent() const
     return true;
 }
 
-bool TiledLayerChromium::needsContentsScale() const
+bool TiledLayer::needsContentsScale() const
 {
     return true;
 }
 
-IntSize TiledLayerChromium::contentBounds() const
+IntSize TiledLayer::contentBounds() const
 {
     return IntSize(lroundf(bounds().width() * contentsScale()), lroundf(bounds().height() * contentsScale()));
 }
 
-void TiledLayerChromium::setTilingOption(TilingOption tilingOption)
+void TiledLayer::setTilingOption(TilingOption tilingOption)
 {
     m_tilingOption = tilingOption;
 }
 
-void TiledLayerChromium::setIsMask(bool isMask)
+void TiledLayer::setIsMask(bool isMask)
 {
     setTilingOption(isMask ? NeverTile : AutoTile);
 }
 
-void TiledLayerChromium::pushPropertiesTo(CCLayerImpl* layer)
+void TiledLayer::pushPropertiesTo(LayerImpl* layer)
 {
-    LayerChromium::pushPropertiesTo(layer);
+    Layer::pushPropertiesTo(layer);
 
-    CCTiledLayerImpl* tiledLayer = static_cast<CCTiledLayerImpl*>(layer);
+    TiledLayerImpl* tiledLayer = static_cast<TiledLayerImpl*>(layer);
 
     tiledLayer->setSkipsDraw(m_skipsDraw);
     tiledLayer->setContentsSwizzled(m_sampledTexelFormat != LayerTextureUpdater::SampledTexelFormatRGBA);
     tiledLayer->setTilingData(*m_tiler);
     Vector<UpdatableTile*> invalidTiles;
 
-    for (CCLayerTilingData::TileMap::const_iterator iter = m_tiler->tiles().begin(); iter != m_tiler->tiles().end(); ++iter) {
+    for (LayerTilingData::TileMap::const_iterator iter = m_tiler->tiles().begin(); iter != m_tiler->tiles().end(); ++iter) {
         int i = iter->first.first;
         int j = iter->first.second;
         UpdatableTile* tile = static_cast<UpdatableTile*>(iter->second);
@@ -229,17 +229,17 @@ void TiledLayerChromium::pushPropertiesTo(CCLayerImpl* layer)
         m_tiler->takeTile((*iter)->i(), (*iter)->j());
 }
 
-CCPrioritizedTextureManager* TiledLayerChromium::textureManager() const
+PrioritizedTextureManager* TiledLayer::textureManager() const
 {
     if (!layerTreeHost())
         return 0;
     return layerTreeHost()->contentsTextureManager();
 }
 
-void TiledLayerChromium::setLayerTreeHost(CCLayerTreeHost* host)
+void TiledLayer::setLayerTreeHost(LayerTreeHost* host)
 {
     if (host && host != layerTreeHost()) {
-        for (CCLayerTilingData::TileMap::const_iterator iter = m_tiler->tiles().begin(); iter != m_tiler->tiles().end(); ++iter) {
+        for (LayerTilingData::TileMap::const_iterator iter = m_tiler->tiles().begin(); iter != m_tiler->tiles().end(); ++iter) {
             UpdatableTile* tile = static_cast<UpdatableTile*>(iter->second);
             // FIXME: This should not ever be null.
             if (!tile)
@@ -247,15 +247,15 @@ void TiledLayerChromium::setLayerTreeHost(CCLayerTreeHost* host)
             tile->managedTexture()->setTextureManager(host->contentsTextureManager());
         }
     }
-    LayerChromium::setLayerTreeHost(host);
+    Layer::setLayerTreeHost(host);
 }
 
-UpdatableTile* TiledLayerChromium::tileAt(int i, int j) const
+UpdatableTile* TiledLayer::tileAt(int i, int j) const
 {
     return static_cast<UpdatableTile*>(m_tiler->tileAt(i, j));
 }
 
-UpdatableTile* TiledLayerChromium::createTile(int i, int j)
+UpdatableTile* TiledLayer::createTile(int i, int j)
 {
     createTextureUpdaterIfNeeded();
 
@@ -263,7 +263,7 @@ UpdatableTile* TiledLayerChromium::createTile(int i, int j)
     tile->managedTexture()->setDimensions(m_tiler->tileSize(), m_textureFormat);
 
     UpdatableTile* addedTile = tile.get();
-    m_tiler->addTile(tile.PassAs<CCLayerTilingData::Tile>(), i, j);
+    m_tiler->addTile(tile.PassAs<LayerTilingData::Tile>(), i, j);
 
     addedTile->dirtyRect = m_tiler->tileRect(addedTile);
 
@@ -276,7 +276,7 @@ UpdatableTile* TiledLayerChromium::createTile(int i, int j)
     return addedTile;
 }
 
-void TiledLayerChromium::setNeedsDisplayRect(const FloatRect& dirtyRect)
+void TiledLayer::setNeedsDisplayRect(const FloatRect& dirtyRect)
 {
     float contentsWidthScale = static_cast<float>(contentBounds().width()) / bounds().width();
     float contentsHeightScale = static_cast<float>(contentBounds().height()) / bounds().height();
@@ -284,30 +284,30 @@ void TiledLayerChromium::setNeedsDisplayRect(const FloatRect& dirtyRect)
     scaledDirtyRect.scale(contentsWidthScale, contentsHeightScale);
     IntRect dirty = enclosingIntRect(scaledDirtyRect);
     invalidateContentRect(dirty);
-    LayerChromium::setNeedsDisplayRect(dirtyRect);
+    Layer::setNeedsDisplayRect(dirtyRect);
 }
 
-void TiledLayerChromium::setUseLCDText(bool useLCDText)
+void TiledLayer::setUseLCDText(bool useLCDText)
 {
-    LayerChromium::setUseLCDText(useLCDText);
+    Layer::setUseLCDText(useLCDText);
 
-    CCLayerTilingData::BorderTexelOption borderTexelOption;
+    LayerTilingData::BorderTexelOption borderTexelOption;
 #if OS(ANDROID)
     // Always want border texels and GL_LINEAR due to pinch zoom.
-    borderTexelOption = CCLayerTilingData::HasBorderTexels;
+    borderTexelOption = LayerTilingData::HasBorderTexels;
 #else
-    borderTexelOption = useLCDText ? CCLayerTilingData::NoBorderTexels : CCLayerTilingData::HasBorderTexels;
+    borderTexelOption = useLCDText ? LayerTilingData::NoBorderTexels : LayerTilingData::HasBorderTexels;
 #endif
     setBorderTexelOption(borderTexelOption);
 }
 
-void TiledLayerChromium::invalidateContentRect(const IntRect& contentRect)
+void TiledLayer::invalidateContentRect(const IntRect& contentRect)
 {
     updateBounds();
     if (m_tiler->isEmpty() || contentRect.isEmpty() || m_skipsDraw)
         return;
 
-    for (CCLayerTilingData::TileMap::const_iterator iter = m_tiler->tiles().begin(); iter != m_tiler->tiles().end(); ++iter) {
+    for (LayerTilingData::TileMap::const_iterator iter = m_tiler->tiles().begin(); iter != m_tiler->tiles().end(); ++iter) {
         UpdatableTile* tile = static_cast<UpdatableTile*>(iter->second);
         DCHECK(tile);
         // FIXME: This should not ever be null.
@@ -320,14 +320,14 @@ void TiledLayerChromium::invalidateContentRect(const IntRect& contentRect)
 }
 
 // Returns true if tile is dirty and only part of it needs to be updated.
-bool TiledLayerChromium::tileOnlyNeedsPartialUpdate(UpdatableTile* tile)
+bool TiledLayer::tileOnlyNeedsPartialUpdate(UpdatableTile* tile)
 {
     return !tile->dirtyRect.contains(m_tiler->tileRect(tile));
 }
 
 // Dirty tiles with valid textures needs buffered update to guarantee that
 // we don't modify textures currently used for drawing by the impl thread.
-bool TiledLayerChromium::tileNeedsBufferedUpdate(UpdatableTile* tile)
+bool TiledLayer::tileNeedsBufferedUpdate(UpdatableTile* tile)
 {
     if (!tile->managedTexture()->haveBackingTexture())
         return false;
@@ -342,7 +342,7 @@ bool TiledLayerChromium::tileNeedsBufferedUpdate(UpdatableTile* tile)
 }
 
 
-bool TiledLayerChromium::updateTiles(int left, int top, int right, int bottom, CCTextureUpdateQueue& queue, const CCOcclusionTracker* occlusion, CCRenderingStats& stats, bool& didPaint)
+bool TiledLayer::updateTiles(int left, int top, int right, int bottom, TextureUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats, bool& didPaint)
 {
     didPaint = false;
     createTextureUpdaterIfNeeded();
@@ -366,7 +366,7 @@ bool TiledLayerChromium::updateTiles(int left, int top, int right, int bottom, C
     return true;
 }
 
-void TiledLayerChromium::markOcclusionsAndRequestTextures(int left, int top, int right, int bottom, const CCOcclusionTracker* occlusion)
+void TiledLayer::markOcclusionsAndRequestTextures(int left, int top, int right, int bottom, const OcclusionTracker* occlusion)
 {
     // There is some difficult dependancies between occlusions, recording occlusion metrics
     // and requesting memory so those are encapsulated in this function:
@@ -402,7 +402,7 @@ void TiledLayerChromium::markOcclusionsAndRequestTextures(int left, int top, int
         occlusion->overdrawMetrics().didCullTileForUpload();
 }
 
-bool TiledLayerChromium::haveTexturesForTiles(int left, int top, int right, int bottom, bool ignoreOcclusions)
+bool TiledLayer::haveTexturesForTiles(int left, int top, int right, int bottom, bool ignoreOcclusions)
 {
     for (int j = top; j <= bottom; ++j) {
         for (int i = left; i <= right; ++i) {
@@ -428,7 +428,7 @@ bool TiledLayerChromium::haveTexturesForTiles(int left, int top, int right, int 
     return true;
 }
 
-IntRect TiledLayerChromium::markTilesForUpdate(int left, int top, int right, int bottom, bool ignoreOcclusions)
+IntRect TiledLayer::markTilesForUpdate(int left, int top, int right, int bottom, bool ignoreOcclusions)
 {
     IntRect paintRect;
     for (int j = top; j <= bottom; ++j) {
@@ -447,7 +447,7 @@ IntRect TiledLayerChromium::markTilesForUpdate(int left, int top, int right, int
     return paintRect;
 }
 
-void TiledLayerChromium::updateTileTextures(const IntRect& paintRect, int left, int top, int right, int bottom, CCTextureUpdateQueue& queue, const CCOcclusionTracker* occlusion, CCRenderingStats& stats)
+void TiledLayer::updateTileTextures(const IntRect& paintRect, int left, int top, int right, int bottom, TextureUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats)
 {
     // The updateRect should be in layer space. So we have to convert the paintRect from content space to layer space.
     m_updateRect = FloatRect(paintRect);
@@ -535,7 +535,7 @@ namespace {
 // This picks a small animated layer to be anything less than one viewport. This
 // is specifically for page transitions which are viewport-sized layers. The extra
 // 64 pixels is due to these layers being slightly larger than the viewport in some cases.
-bool isSmallAnimatedLayer(TiledLayerChromium* layer)
+bool isSmallAnimatedLayer(TiledLayer* layer)
 {
     if (!layer->drawTransformIsAnimating() && !layer->screenSpaceTransformIsAnimating())
         return false;
@@ -552,19 +552,19 @@ void setPriorityForTexture(const IntRect& visibleRect,
                            const IntRect& tileRect,
                            bool drawsToRoot,
                            bool isSmallAnimatedLayer,
-                           CCPrioritizedTexture* texture)
+                           PrioritizedTexture* texture)
 {
-    int priority = CCPriorityCalculator::lowestPriority();
+    int priority = PriorityCalculator::lowestPriority();
     if (!visibleRect.isEmpty())
-        priority = CCPriorityCalculator::priorityFromDistance(visibleRect, tileRect, drawsToRoot);
+        priority = PriorityCalculator::priorityFromDistance(visibleRect, tileRect, drawsToRoot);
     if (isSmallAnimatedLayer)
-        priority = CCPriorityCalculator::maxPriority(priority, CCPriorityCalculator::smallAnimatedLayerMinPriority());
-    if (priority != CCPriorityCalculator::lowestPriority())
+        priority = PriorityCalculator::maxPriority(priority, PriorityCalculator::smallAnimatedLayerMinPriority());
+    if (priority != PriorityCalculator::lowestPriority())
         texture->setRequestPriority(priority);
 }
 }
 
-void TiledLayerChromium::setTexturePriorities(const CCPriorityCalculator& priorityCalc)
+void TiledLayer::setTexturePriorities(const PriorityCalculator& priorityCalc)
 {
     updateBounds();
     resetUpdateState();
@@ -620,7 +620,7 @@ void TiledLayerChromium::setTexturePriorities(const CCPriorityCalculator& priori
                 tile->dirtyRect = tileRect;
                 LayerTextureUpdater::Texture* backBuffer = tile->texture();
                 setPriorityForTexture(visibleContentRect(), tile->dirtyRect, drawsToRoot, smallAnimatedLayer, backBuffer->texture());
-                scoped_ptr<CCPrioritizedTexture> frontBuffer = CCPrioritizedTexture::create(backBuffer->texture()->textureManager(),
+                scoped_ptr<PrioritizedTexture> frontBuffer = PrioritizedTexture::create(backBuffer->texture()->textureManager(),
                                                                                         backBuffer->texture()->size(),
                                                                                         backBuffer->texture()->format());
                 // Swap backBuffer into frontBuffer and add it to delete after commit queue.
@@ -631,7 +631,7 @@ void TiledLayerChromium::setTexturePriorities(const CCPriorityCalculator& priori
     }
 
     // Now update priorities on all tiles we have in the layer, no matter where they are.
-    for (CCLayerTilingData::TileMap::const_iterator iter = m_tiler->tiles().begin(); iter != m_tiler->tiles().end(); ++iter) {
+    for (LayerTilingData::TileMap::const_iterator iter = m_tiler->tiles().begin(); iter != m_tiler->tiles().end(); ++iter) {
         UpdatableTile* tile = static_cast<UpdatableTile*>(iter->second);
         // FIXME: This should not ever be null.
         if (!tile)
@@ -641,7 +641,7 @@ void TiledLayerChromium::setTexturePriorities(const CCPriorityCalculator& priori
     }
 }
 
-Region TiledLayerChromium::visibleContentOpaqueRegion() const
+Region TiledLayer::visibleContentOpaqueRegion() const
 {
     if (m_skipsDraw)
         return Region();
@@ -650,13 +650,13 @@ Region TiledLayerChromium::visibleContentOpaqueRegion() const
     return m_tiler->opaqueRegionInContentRect(visibleContentRect());
 }
 
-void TiledLayerChromium::resetUpdateState()
+void TiledLayer::resetUpdateState()
 {
     m_skipsDraw = false;
     m_failedUpdate = false;
 
-    CCLayerTilingData::TileMap::const_iterator end = m_tiler->tiles().end();
-    for (CCLayerTilingData::TileMap::const_iterator iter = m_tiler->tiles().begin(); iter != end; ++iter) {
+    LayerTilingData::TileMap::const_iterator end = m_tiler->tiles().end();
+    for (LayerTilingData::TileMap::const_iterator iter = m_tiler->tiles().begin(); iter != end; ++iter) {
         UpdatableTile* tile = static_cast<UpdatableTile*>(iter->second);
         // FIXME: This should not ever be null.
         if (!tile)
@@ -665,7 +665,7 @@ void TiledLayerChromium::resetUpdateState()
     }
 }
 
-void TiledLayerChromium::update(CCTextureUpdateQueue& queue, const CCOcclusionTracker* occlusion, CCRenderingStats& stats)
+void TiledLayer::update(TextureUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats)
 {
     DCHECK(!m_skipsDraw && !m_failedUpdate); // Did resetUpdateState get skipped?
     updateBounds();
@@ -738,7 +738,7 @@ void TiledLayerChromium::update(CCTextureUpdateQueue& queue, const CCOcclusionTr
     }
 }
 
-bool TiledLayerChromium::needsIdlePaint()
+bool TiledLayer::needsIdlePaint()
 {
     // Don't trigger more paints if we failed (as we'll just fail again).
     if (m_failedUpdate || visibleContentRect().isEmpty() || m_tiler->hasEmptyBounds() || !drawsContent())
@@ -768,7 +768,7 @@ bool TiledLayerChromium::needsIdlePaint()
     return false;
 }
 
-IntRect TiledLayerChromium::idlePaintRect()
+IntRect TiledLayer::idlePaintRect()
 {
     // Don't inflate an empty rect.
     if (visibleContentRect().isEmpty())

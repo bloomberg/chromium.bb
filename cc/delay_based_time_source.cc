@@ -29,12 +29,12 @@ const double phaseChangeThreshold = 0.25;
 
 }  // namespace
 
-scoped_refptr<CCDelayBasedTimeSource> CCDelayBasedTimeSource::create(base::TimeDelta interval, CCThread* thread)
+scoped_refptr<DelayBasedTimeSource> DelayBasedTimeSource::create(base::TimeDelta interval, Thread* thread)
 {
-    return make_scoped_refptr(new CCDelayBasedTimeSource(interval, thread));
+    return make_scoped_refptr(new DelayBasedTimeSource(interval, thread));
 }
 
-CCDelayBasedTimeSource::CCDelayBasedTimeSource(base::TimeDelta interval, CCThread* thread)
+DelayBasedTimeSource::DelayBasedTimeSource(base::TimeDelta interval, Thread* thread)
     : m_client(0)
     , m_hasTickTarget(false)
     , m_currentParameters(interval, base::TimeTicks())
@@ -44,13 +44,13 @@ CCDelayBasedTimeSource::CCDelayBasedTimeSource(base::TimeDelta interval, CCThrea
 {
 }
 
-CCDelayBasedTimeSource::~CCDelayBasedTimeSource()
+DelayBasedTimeSource::~DelayBasedTimeSource()
 {
 }
 
-void CCDelayBasedTimeSource::setActive(bool active)
+void DelayBasedTimeSource::setActive(bool active)
 {
-    TRACE_EVENT1("cc", "CCDelayBasedTimeSource::setActive", "active", active);
+    TRACE_EVENT1("cc", "DelayBasedTimeSource::setActive", "active", active);
     if (!active) {
         m_state = STATE_INACTIVE;
         m_timer.stop();
@@ -74,22 +74,22 @@ void CCDelayBasedTimeSource::setActive(bool active)
     postNextTickTask(now());
 }
 
-bool CCDelayBasedTimeSource::active() const
+bool DelayBasedTimeSource::active() const
 {
     return m_state != STATE_INACTIVE;
 }
 
-base::TimeTicks CCDelayBasedTimeSource::lastTickTime()
+base::TimeTicks DelayBasedTimeSource::lastTickTime()
 {
     return m_lastTickTime;
 }
 
-base::TimeTicks CCDelayBasedTimeSource::nextTickTime()
+base::TimeTicks DelayBasedTimeSource::nextTickTime()
 {
     return active() ? m_currentParameters.tickTarget : base::TimeTicks();
 }
 
-void CCDelayBasedTimeSource::onTimerFired()
+void DelayBasedTimeSource::onTimerFired()
 {
     DCHECK(m_state != STATE_INACTIVE);
 
@@ -108,12 +108,12 @@ void CCDelayBasedTimeSource::onTimerFired()
         m_client->onTimerTick();
 }
 
-void CCDelayBasedTimeSource::setClient(CCTimeSourceClient* client)
+void DelayBasedTimeSource::setClient(TimeSourceClient* client)
 {
     m_client = client;
 }
 
-void CCDelayBasedTimeSource::setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval)
+void DelayBasedTimeSource::setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval)
 {
     m_nextParameters.interval = interval;
     m_nextParameters.tickTarget = timebase;
@@ -149,7 +149,7 @@ void CCDelayBasedTimeSource::setTimebaseAndInterval(base::TimeTicks timebase, ba
     }
 }
 
-base::TimeTicks CCDelayBasedTimeSource::now() const
+base::TimeTicks DelayBasedTimeSource::now() const
 {
     return base::TimeTicks::Now();
 }
@@ -197,7 +197,7 @@ base::TimeTicks CCDelayBasedTimeSource::now() const
 //
 // For the really late delay, we we move to the next logical tick. The timebase is not reset.
 //      now=37   tickTarget=16.667  newTarget=50.000  --> tick(), postDelayedTask(floor(50.000-37)) --> postDelayedTask(13)
-base::TimeTicks CCDelayBasedTimeSource::nextTickTarget(base::TimeTicks now)
+base::TimeTicks DelayBasedTimeSource::nextTickTarget(base::TimeTicks now)
 {
     base::TimeDelta newInterval = m_nextParameters.interval;
     int intervalsElapsed = static_cast<int>(floor((now - m_nextParameters.tickTarget).InSecondsF() / newInterval.InSecondsF()));
@@ -214,7 +214,7 @@ base::TimeTicks CCDelayBasedTimeSource::nextTickTarget(base::TimeTicks now)
     return newTickTarget;
 }
 
-void CCDelayBasedTimeSource::postNextTickTask(base::TimeTicks now)
+void DelayBasedTimeSource::postNextTickTask(base::TimeTicks now)
 {
     base::TimeTicks newTickTarget = nextTickTarget(now);
 

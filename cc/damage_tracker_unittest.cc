@@ -22,9 +22,9 @@ using namespace WebKitTests;
 
 namespace {
 
-void executeCalculateDrawTransformsAndVisibility(CCLayerImpl* root, std::vector<CCLayerImpl*>& renderSurfaceLayerList)
+void executeCalculateDrawTransformsAndVisibility(LayerImpl* root, std::vector<LayerImpl*>& renderSurfaceLayerList)
 {
-    CCLayerSorter layerSorter;
+    LayerSorter layerSorter;
     int dummyMaxTextureSize = 512;
 
     // Sanity check: The test itself should create the root layer's render surface, so
@@ -33,10 +33,10 @@ void executeCalculateDrawTransformsAndVisibility(CCLayerImpl* root, std::vector<
     ASSERT_TRUE(root->renderSurface());
     ASSERT_FALSE(renderSurfaceLayerList.size());
 
-    CCLayerTreeHostCommon::calculateDrawTransforms(root, root->bounds(), 1, &layerSorter, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawTransforms(root, root->bounds(), 1, &layerSorter, dummyMaxTextureSize, renderSurfaceLayerList);
 }
 
-void clearDamageForAllSurfaces(CCLayerImpl* layer)
+void clearDamageForAllSurfaces(LayerImpl* layer)
 {
     if (layer->renderSurface())
         layer->renderSurface()->damageTracker()->didDrawDamagedArea();
@@ -46,29 +46,29 @@ void clearDamageForAllSurfaces(CCLayerImpl* layer)
         clearDamageForAllSurfaces(layer->children()[i]);
 }
 
-void emulateDrawingOneFrame(CCLayerImpl* root)
+void emulateDrawingOneFrame(LayerImpl* root)
 {
     // This emulates only the steps that are relevant to testing the damage tracker:
     //   1. computing the render passes and layerlists
     //   2. updating all damage trackers in the correct order
     //   3. resetting all updateRects and propertyChanged flags for all layers and surfaces.
 
-    std::vector<CCLayerImpl*> renderSurfaceLayerList;
+    std::vector<LayerImpl*> renderSurfaceLayerList;
     executeCalculateDrawTransformsAndVisibility(root, renderSurfaceLayerList);
 
     // Iterate back-to-front, so that damage correctly propagates from descendant surfaces to ancestors.
     for (int i = renderSurfaceLayerList.size() - 1; i >= 0; --i) {
-        CCRenderSurface* targetSurface = renderSurfaceLayerList[i]->renderSurface();
+        RenderSurfaceImpl* targetSurface = renderSurfaceLayerList[i]->renderSurface();
         targetSurface->damageTracker()->updateDamageTrackingState(targetSurface->layerList(), targetSurface->owningLayerId(), targetSurface->surfacePropertyChangedOnlyFromDescendant(), targetSurface->contentRect(), renderSurfaceLayerList[i]->maskLayer(), renderSurfaceLayerList[i]->filters());
     }
 
     root->resetAllChangeTrackingForSubtree();
 }
 
-scoped_ptr<CCLayerImpl> createTestTreeWithOneSurface()
+scoped_ptr<LayerImpl> createTestTreeWithOneSurface()
 {
-    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(1);
-    scoped_ptr<CCLayerImpl> child = CCLayerImpl::create(2);
+    scoped_ptr<LayerImpl> root = LayerImpl::create(1);
+    scoped_ptr<LayerImpl> child = LayerImpl::create(2);
 
     root->setPosition(FloatPoint::zero());
     root->setAnchorPoint(FloatPoint::zero());
@@ -88,17 +88,17 @@ scoped_ptr<CCLayerImpl> createTestTreeWithOneSurface()
     return root.Pass();
 }
 
-scoped_ptr<CCLayerImpl> createTestTreeWithTwoSurfaces()
+scoped_ptr<LayerImpl> createTestTreeWithTwoSurfaces()
 {
     // This test tree has two render surfaces: one for the root, and one for
     // child1. Additionally, the root has a second child layer, and child1 has two
     // children of its own.
 
-    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(1);
-    scoped_ptr<CCLayerImpl> child1 = CCLayerImpl::create(2);
-    scoped_ptr<CCLayerImpl> child2 = CCLayerImpl::create(3);
-    scoped_ptr<CCLayerImpl> grandChild1 = CCLayerImpl::create(4);
-    scoped_ptr<CCLayerImpl> grandChild2 = CCLayerImpl::create(5);
+    scoped_ptr<LayerImpl> root = LayerImpl::create(1);
+    scoped_ptr<LayerImpl> child1 = LayerImpl::create(2);
+    scoped_ptr<LayerImpl> child2 = LayerImpl::create(3);
+    scoped_ptr<LayerImpl> grandChild1 = LayerImpl::create(4);
+    scoped_ptr<LayerImpl> grandChild2 = LayerImpl::create(5);
 
     root->setPosition(FloatPoint::zero());
     root->setAnchorPoint(FloatPoint::zero());
@@ -141,9 +141,9 @@ scoped_ptr<CCLayerImpl> createTestTreeWithTwoSurfaces()
     return root.Pass();
 }
 
-scoped_ptr<CCLayerImpl> createAndSetUpTestTreeWithOneSurface()
+scoped_ptr<LayerImpl> createAndSetUpTestTreeWithOneSurface()
 {
-    scoped_ptr<CCLayerImpl> root = createTestTreeWithOneSurface();
+    scoped_ptr<LayerImpl> root = createTestTreeWithOneSurface();
 
     // Setup includes going past the first frame which always damages everything, so
     // that we can actually perform specific tests.
@@ -152,9 +152,9 @@ scoped_ptr<CCLayerImpl> createAndSetUpTestTreeWithOneSurface()
     return root.Pass();
 }
 
-scoped_ptr<CCLayerImpl> createAndSetUpTestTreeWithTwoSurfaces()
+scoped_ptr<LayerImpl> createAndSetUpTestTreeWithTwoSurfaces()
 {
-    scoped_ptr<CCLayerImpl> root = createTestTreeWithTwoSurfaces();
+    scoped_ptr<LayerImpl> root = createTestTreeWithTwoSurfaces();
 
     // Setup includes going past the first frame which always damages everything, so
     // that we can actually perform specific tests.
@@ -163,18 +163,18 @@ scoped_ptr<CCLayerImpl> createAndSetUpTestTreeWithTwoSurfaces()
     return root.Pass();
 }
 
-class CCDamageTrackerTest : public testing::Test {
+class DamageTrackerTest : public testing::Test {
 private:
     // For testing purposes, fake that we are on the impl thread.
     DebugScopedSetImplThread setImplThread;
 };
 
-TEST_F(CCDamageTrackerTest, sanityCheckTestTreeWithOneSurface)
+TEST_F(DamageTrackerTest, sanityCheckTestTreeWithOneSurface)
 {
     // Sanity check that the simple test tree will actually produce the expected render
     // surfaces and layer lists.
 
-    scoped_ptr<CCLayerImpl> root = createAndSetUpTestTreeWithOneSurface();
+    scoped_ptr<LayerImpl> root = createAndSetUpTestTreeWithOneSurface();
 
     EXPECT_EQ(2u, root->renderSurface()->layerList().size());
     EXPECT_EQ(1, root->renderSurface()->layerList()[0]->id());
@@ -184,15 +184,15 @@ TEST_F(CCDamageTrackerTest, sanityCheckTestTreeWithOneSurface)
     EXPECT_FLOAT_RECT_EQ(FloatRect(0, 0, 500, 500), rootDamageRect);
 }
 
-TEST_F(CCDamageTrackerTest, sanityCheckTestTreeWithTwoSurfaces)
+TEST_F(DamageTrackerTest, sanityCheckTestTreeWithTwoSurfaces)
 {
     // Sanity check that the complex test tree will actually produce the expected render
     // surfaces and layer lists.
 
-    scoped_ptr<CCLayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
+    scoped_ptr<LayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
 
-    CCLayerImpl* child1 = root->children()[0];
-    CCLayerImpl* child2 = root->children()[1];
+    LayerImpl* child1 = root->children()[0];
+    LayerImpl* child2 = root->children()[1];
     FloatRect childDamageRect = child1->renderSurface()->damageTracker()->currentDamageRect();
     FloatRect rootDamageRect = root->renderSurface()->damageTracker()->currentDamageRect();
 
@@ -206,10 +206,10 @@ TEST_F(CCDamageTrackerTest, sanityCheckTestTreeWithTwoSurfaces)
     EXPECT_FLOAT_RECT_EQ(FloatRect(0, 0, 500, 500), rootDamageRect);
 }
 
-TEST_F(CCDamageTrackerTest, verifyDamageForUpdateRects)
+TEST_F(DamageTrackerTest, verifyDamageForUpdateRects)
 {
-    scoped_ptr<CCLayerImpl> root = createAndSetUpTestTreeWithOneSurface();
-    CCLayerImpl* child = root->children()[0];
+    scoped_ptr<LayerImpl> root = createAndSetUpTestTreeWithOneSurface();
+    LayerImpl* child = root->children()[0];
 
     // CASE 1: Setting the update rect should cause the corresponding damage to the surface.
     //
@@ -240,10 +240,10 @@ TEST_F(CCDamageTrackerTest, verifyDamageForUpdateRects)
     EXPECT_FLOAT_RECT_EQ(FloatRect(120, 125, 1, 2), rootDamageRect);
 }
 
-TEST_F(CCDamageTrackerTest, verifyDamageForPropertyChanges)
+TEST_F(DamageTrackerTest, verifyDamageForPropertyChanges)
 {
-    scoped_ptr<CCLayerImpl> root = createAndSetUpTestTreeWithOneSurface();
-    CCLayerImpl* child = root->children()[0];
+    scoped_ptr<LayerImpl> root = createAndSetUpTestTreeWithOneSurface();
+    LayerImpl* child = root->children()[0];
 
     // CASE 1: The layer's property changed flag takes priority over update rect.
     //
@@ -281,13 +281,13 @@ TEST_F(CCDamageTrackerTest, verifyDamageForPropertyChanges)
     EXPECT_FLOAT_RECT_EQ(expectedRect, rootDamageRect);
 }
 
-TEST_F(CCDamageTrackerTest, verifyDamageForTransformedLayer)
+TEST_F(DamageTrackerTest, verifyDamageForTransformedLayer)
 {
     // If a layer is transformed, the damage rect should still enclose the entire
     // transformed layer.
 
-    scoped_ptr<CCLayerImpl> root = createAndSetUpTestTreeWithOneSurface();
-    CCLayerImpl* child = root->children()[0];
+    scoped_ptr<LayerImpl> root = createAndSetUpTestTreeWithOneSurface();
+    LayerImpl* child = root->children()[0];
 
     WebTransformationMatrix rotation;
     rotation.rotate(45);
@@ -317,7 +317,7 @@ TEST_F(CCDamageTrackerTest, verifyDamageForTransformedLayer)
     EXPECT_FLOAT_RECT_EQ(expectedRect, rootDamageRect);
 }
 
-TEST_F(CCDamageTrackerTest, verifyDamageForPerspectiveClippedLayer)
+TEST_F(DamageTrackerTest, verifyDamageForPerspectiveClippedLayer)
 {
     // If a layer has a perspective transform that causes w < 0, then not clipping the
     // layer can cause an invalid damage rect. This test checks that the w < 0 case is
@@ -329,8 +329,8 @@ TEST_F(CCDamageTrackerTest, verifyDamageForPerspectiveClippedLayer)
     // and positioned so that the right-most bound rect will be approximately 501 units in root surface space.
     //
 
-    scoped_ptr<CCLayerImpl> root = createAndSetUpTestTreeWithOneSurface();
-    CCLayerImpl* child = root->children()[0];
+    scoped_ptr<LayerImpl> root = createAndSetUpTestTreeWithOneSurface();
+    LayerImpl* child = root->children()[0];
 
     WebTransformationMatrix transform;
     transform.translate3d(500, 500, 0);
@@ -349,7 +349,7 @@ TEST_F(CCDamageTrackerTest, verifyDamageForPerspectiveClippedLayer)
     // otherwise this test is not actually testing the intended scenario.
     FloatQuad testQuad(FloatRect(FloatPoint::zero(), FloatSize(100, 100)));
     bool clipped = false;
-    CCMathUtil::mapQuad(transform, testQuad, clipped);
+    MathUtil::mapQuad(transform, testQuad, clipped);
     EXPECT_TRUE(clipped);
 
     // Damage the child without moving it.
@@ -364,10 +364,10 @@ TEST_F(CCDamageTrackerTest, verifyDamageForPerspectiveClippedLayer)
     EXPECT_TRUE(rootDamageRect.contains(damageWeCareAbout));
 }
 
-TEST_F(CCDamageTrackerTest, verifyDamageForBlurredSurface)
+TEST_F(DamageTrackerTest, verifyDamageForBlurredSurface)
 {
-    scoped_ptr<CCLayerImpl> root = createAndSetUpTestTreeWithOneSurface();
-    CCLayerImpl* child = root->children()[0];
+    scoped_ptr<LayerImpl> root = createAndSetUpTestTreeWithOneSurface();
+    LayerImpl* child = root->children()[0];
 
     WebFilterOperations filters;
     filters.append(WebFilterOperation::createBlurFilter(5));
@@ -392,11 +392,11 @@ TEST_F(CCDamageTrackerTest, verifyDamageForBlurredSurface)
     EXPECT_FLOAT_RECT_EQ(expectedDamageRect, rootDamageRect);
 }
 
-TEST_F(CCDamageTrackerTest, verifyDamageForBackgroundBlurredChild)
+TEST_F(DamageTrackerTest, verifyDamageForBackgroundBlurredChild)
 {
-    scoped_ptr<CCLayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
-    CCLayerImpl* child1 = root->children()[0];
-    CCLayerImpl* child2 = root->children()[1];
+    scoped_ptr<LayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
+    LayerImpl* child1 = root->children()[0];
+    LayerImpl* child2 = root->children()[1];
 
     // Allow us to set damage on child1 too.
     child1->setDrawsContent(true);
@@ -495,16 +495,16 @@ TEST_F(CCDamageTrackerTest, verifyDamageForBackgroundBlurredChild)
     EXPECT_FLOAT_RECT_EQ(expectedDamageRect, rootDamageRect);
 }
 
-TEST_F(CCDamageTrackerTest, verifyDamageForAddingAndRemovingLayer)
+TEST_F(DamageTrackerTest, verifyDamageForAddingAndRemovingLayer)
 {
-    scoped_ptr<CCLayerImpl> root = createAndSetUpTestTreeWithOneSurface();
-    CCLayerImpl* child1 = root->children()[0];
+    scoped_ptr<LayerImpl> root = createAndSetUpTestTreeWithOneSurface();
+    LayerImpl* child1 = root->children()[0];
 
     // CASE 1: Adding a new layer should cause the appropriate damage.
     //
     clearDamageForAllSurfaces(root.get());
     {
-        scoped_ptr<CCLayerImpl> child2 = CCLayerImpl::create(3);
+        scoped_ptr<LayerImpl> child2 = LayerImpl::create(3);
         child2->setPosition(FloatPoint(400, 380));
         child2->setAnchorPoint(FloatPoint::zero());
         child2->setBounds(IntSize(6, 8));
@@ -535,16 +535,16 @@ TEST_F(CCDamageTrackerTest, verifyDamageForAddingAndRemovingLayer)
     EXPECT_FLOAT_RECT_EQ(FloatRect(100, 100, 30, 30), rootDamageRect);
 }
 
-TEST_F(CCDamageTrackerTest, verifyDamageForNewUnchangedLayer)
+TEST_F(DamageTrackerTest, verifyDamageForNewUnchangedLayer)
 {
     // If child2 is added to the layer tree, but it doesn't have any explicit damage of
     // its own, it should still indeed damage the target surface.
 
-    scoped_ptr<CCLayerImpl> root = createAndSetUpTestTreeWithOneSurface();
+    scoped_ptr<LayerImpl> root = createAndSetUpTestTreeWithOneSurface();
 
     clearDamageForAllSurfaces(root.get());
     {
-        scoped_ptr<CCLayerImpl> child2 = CCLayerImpl::create(3);
+        scoped_ptr<LayerImpl> child2 = LayerImpl::create(3);
         child2->setPosition(FloatPoint(400, 380));
         child2->setAnchorPoint(FloatPoint::zero());
         child2->setBounds(IntSize(6, 8));
@@ -566,15 +566,15 @@ TEST_F(CCDamageTrackerTest, verifyDamageForNewUnchangedLayer)
     EXPECT_FLOAT_RECT_EQ(FloatRect(400, 380, 6, 8), rootDamageRect);
 }
 
-TEST_F(CCDamageTrackerTest, verifyDamageForMultipleLayers)
+TEST_F(DamageTrackerTest, verifyDamageForMultipleLayers)
 {
-    scoped_ptr<CCLayerImpl> root = createAndSetUpTestTreeWithOneSurface();
-    CCLayerImpl* child1 = root->children()[0];
+    scoped_ptr<LayerImpl> root = createAndSetUpTestTreeWithOneSurface();
+    LayerImpl* child1 = root->children()[0];
 
     // In this test we don't want the above tree manipulation to be considered part of the same frame.
     clearDamageForAllSurfaces(root.get());
     {
-        scoped_ptr<CCLayerImpl> child2 = CCLayerImpl::create(3);
+        scoped_ptr<LayerImpl> child2 = LayerImpl::create(3);
         child2->setPosition(FloatPoint(400, 380));
         child2->setAnchorPoint(FloatPoint::zero());
         child2->setBounds(IntSize(6, 8));
@@ -582,7 +582,7 @@ TEST_F(CCDamageTrackerTest, verifyDamageForMultipleLayers)
         child2->setDrawsContent(true);
         root->addChild(child2.Pass());
     }
-    CCLayerImpl* child2 = root->children()[1];
+    LayerImpl* child2 = root->children()[1];
     emulateDrawingOneFrame(root.get());
 
     // Damaging two layers simultaneously should cause combined damage.
@@ -596,12 +596,12 @@ TEST_F(CCDamageTrackerTest, verifyDamageForMultipleLayers)
     EXPECT_FLOAT_RECT_EQ(FloatRect(100, 100, 303, 284), rootDamageRect);
 }
 
-TEST_F(CCDamageTrackerTest, verifyDamageForNestedSurfaces)
+TEST_F(DamageTrackerTest, verifyDamageForNestedSurfaces)
 {
-    scoped_ptr<CCLayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
-    CCLayerImpl* child1 = root->children()[0];
-    CCLayerImpl* child2 = root->children()[1];
-    CCLayerImpl* grandChild1 = root->children()[0]->children()[0];
+    scoped_ptr<LayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
+    LayerImpl* child1 = root->children()[0];
+    LayerImpl* child2 = root->children()[1];
+    LayerImpl* grandChild1 = root->children()[0]->children()[0];
     FloatRect childDamageRect;
     FloatRect rootDamageRect;
 
@@ -628,7 +628,7 @@ TEST_F(CCDamageTrackerTest, verifyDamageForNestedSurfaces)
     EXPECT_FLOAT_RECT_EQ(FloatRect(11, 11, 295, 297), rootDamageRect);
 }
 
-TEST_F(CCDamageTrackerTest, verifyDamageForSurfaceChangeFromDescendantLayer)
+TEST_F(DamageTrackerTest, verifyDamageForSurfaceChangeFromDescendantLayer)
 {
     // If descendant layer changes and affects the content bounds of the render surface,
     // then the entire descendant surface should be damaged, and it should damage its
@@ -637,9 +637,9 @@ TEST_F(CCDamageTrackerTest, verifyDamageForSurfaceChangeFromDescendantLayer)
     // This is a tricky case, since only the first grandChild changes, but the entire
     // surface should be marked dirty.
 
-    scoped_ptr<CCLayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
-    CCLayerImpl* child1 = root->children()[0];
-    CCLayerImpl* grandChild1 = root->children()[0]->children()[0];
+    scoped_ptr<LayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
+    LayerImpl* child1 = root->children()[0];
+    LayerImpl* grandChild1 = root->children()[0]->children()[0];
     FloatRect childDamageRect;
     FloatRect rootDamageRect;
 
@@ -657,11 +657,11 @@ TEST_F(CCDamageTrackerTest, verifyDamageForSurfaceChangeFromDescendantLayer)
     EXPECT_FLOAT_RECT_EQ(FloatRect(290, 290, 16, 23), rootDamageRect);
 }
 
-TEST_F(CCDamageTrackerTest, verifyDamageForSurfaceChangeFromAncestorLayer)
+TEST_F(DamageTrackerTest, verifyDamageForSurfaceChangeFromAncestorLayer)
 {
     // An ancestor/owning layer changes that affects the position/transform of the render
     // surface. Note that in this case, the layerPropertyChanged flag already propagates
-    // to the subtree (tested in CCLayerImpltest), which damages the entire child1
+    // to the subtree (tested in LayerImpltest), which damages the entire child1
     // surface, but the damage tracker still needs the correct logic to compute the
     // exposed region on the root surface.
 
@@ -670,8 +670,8 @@ TEST_F(CCDamageTrackerTest, verifyDamageForSurfaceChangeFromAncestorLayer)
     //        should be completely unchanged, since we are only transforming it, while the
     //        root surface would be damaged appropriately.
 
-    scoped_ptr<CCLayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
-    CCLayerImpl* child1 = root->children()[0];
+    scoped_ptr<LayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
+    LayerImpl* child1 = root->children()[0];
     FloatRect childDamageRect;
     FloatRect rootDamageRect;
 
@@ -690,10 +690,10 @@ TEST_F(CCDamageTrackerTest, verifyDamageForSurfaceChangeFromAncestorLayer)
     EXPECT_FLOAT_RECT_EQ(FloatRect(240, 240, 66, 68), rootDamageRect);
 }
 
-TEST_F(CCDamageTrackerTest, verifyDamageForAddingAndRemovingRenderSurfaces)
+TEST_F(DamageTrackerTest, verifyDamageForAddingAndRemovingRenderSurfaces)
 {
-    scoped_ptr<CCLayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
-    CCLayerImpl* child1 = root->children()[0];
+    scoped_ptr<LayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
+    LayerImpl* child1 = root->children()[0];
     FloatRect childDamageRect;
     FloatRect rootDamageRect;
 
@@ -734,10 +734,10 @@ TEST_F(CCDamageTrackerTest, verifyDamageForAddingAndRemovingRenderSurfaces)
     EXPECT_FLOAT_RECT_EQ(FloatRect(290, 290, 16, 18), rootDamageRect);
 }
 
-TEST_F(CCDamageTrackerTest, verifyNoDamageWhenNothingChanged)
+TEST_F(DamageTrackerTest, verifyNoDamageWhenNothingChanged)
 {
-    scoped_ptr<CCLayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
-    CCLayerImpl* child1 = root->children()[0];
+    scoped_ptr<LayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
+    LayerImpl* child1 = root->children()[0];
     FloatRect childDamageRect;
     FloatRect rootDamageRect;
 
@@ -760,10 +760,10 @@ TEST_F(CCDamageTrackerTest, verifyNoDamageWhenNothingChanged)
     EXPECT_TRUE(rootDamageRect.isEmpty());
 }
 
-TEST_F(CCDamageTrackerTest, verifyNoDamageForUpdateRectThatDoesNotDrawContent)
+TEST_F(DamageTrackerTest, verifyNoDamageForUpdateRectThatDoesNotDrawContent)
 {
-    scoped_ptr<CCLayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
-    CCLayerImpl* child1 = root->children()[0];
+    scoped_ptr<LayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
+    LayerImpl* child1 = root->children()[0];
     FloatRect childDamageRect;
     FloatRect rootDamageRect;
 
@@ -778,12 +778,12 @@ TEST_F(CCDamageTrackerTest, verifyNoDamageForUpdateRectThatDoesNotDrawContent)
     EXPECT_TRUE(rootDamageRect.isEmpty());
 }
 
-TEST_F(CCDamageTrackerTest, verifyDamageForReplica)
+TEST_F(DamageTrackerTest, verifyDamageForReplica)
 {
-    scoped_ptr<CCLayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
-    CCLayerImpl* child1 = root->children()[0];
-    CCLayerImpl* grandChild1 = child1->children()[0];
-    CCLayerImpl* grandChild2 = child1->children()[1];
+    scoped_ptr<LayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
+    LayerImpl* child1 = root->children()[0];
+    LayerImpl* grandChild1 = child1->children()[0];
+    LayerImpl* grandChild2 = child1->children()[1];
 
     // Damage on a surface that has a reflection should cause the target surface to
     // receive the surface's damage and the surface's reflected damage.
@@ -793,7 +793,7 @@ TEST_F(CCDamageTrackerTest, verifyDamageForReplica)
     // contentBounds of the surface.
     grandChild2->setPosition(FloatPoint(180, 180));
     {
-        scoped_ptr<CCLayerImpl> grandChild3 = CCLayerImpl::create(6);
+        scoped_ptr<LayerImpl> grandChild3 = LayerImpl::create(6);
         grandChild3->setPosition(FloatPoint(240, 240));
         grandChild3->setAnchorPoint(FloatPoint::zero());
         grandChild3->setBounds(IntSize(10, 10));
@@ -808,7 +808,7 @@ TEST_F(CCDamageTrackerTest, verifyDamageForReplica)
     //
     clearDamageForAllSurfaces(root.get());
     {
-        scoped_ptr<CCLayerImpl> grandChild1Replica = CCLayerImpl::create(7);
+        scoped_ptr<LayerImpl> grandChild1Replica = LayerImpl::create(7);
         grandChild1Replica->setPosition(FloatPoint::zero());
         grandChild1Replica->setAnchorPoint(FloatPoint::zero());
         WebTransformationMatrix reflection;
@@ -851,7 +851,7 @@ TEST_F(CCDamageTrackerTest, verifyDamageForReplica)
     // CASE 3: removing the reflection should cause the entire region including reflection
     //         to damage the target surface.
     clearDamageForAllSurfaces(root.get());
-    grandChild1->setReplicaLayer(scoped_ptr<CCLayerImpl>());
+    grandChild1->setReplicaLayer(scoped_ptr<LayerImpl>());
     emulateDrawingOneFrame(root.get());
     ASSERT_EQ(oldContentRect.width(), child1->renderSurface()->contentRect().width());
     ASSERT_EQ(oldContentRect.height(), child1->renderSurface()->contentRect().height());
@@ -864,10 +864,10 @@ TEST_F(CCDamageTrackerTest, verifyDamageForReplica)
     EXPECT_FLOAT_RECT_EQ(FloatRect(289, 305, 12, 8), rootDamageRect);
 }
 
-TEST_F(CCDamageTrackerTest, verifyDamageForMask)
+TEST_F(DamageTrackerTest, verifyDamageForMask)
 {
-    scoped_ptr<CCLayerImpl> root = createAndSetUpTestTreeWithOneSurface();
-    CCLayerImpl* child = root->children()[0];
+    scoped_ptr<LayerImpl> root = createAndSetUpTestTreeWithOneSurface();
+    LayerImpl* child = root->children()[0];
 
     // In the current implementation of the damage tracker, changes to mask layers should
     // damage the entire corresponding surface.
@@ -876,19 +876,19 @@ TEST_F(CCDamageTrackerTest, verifyDamageForMask)
 
     // Set up the mask layer.
     {
-        scoped_ptr<CCLayerImpl> maskLayer = CCLayerImpl::create(3);
+        scoped_ptr<LayerImpl> maskLayer = LayerImpl::create(3);
         maskLayer->setPosition(child->position());
         maskLayer->setAnchorPoint(FloatPoint::zero());
         maskLayer->setBounds(child->bounds());
         maskLayer->setContentBounds(child->bounds());
         child->setMaskLayer(maskLayer.Pass());
     }
-    CCLayerImpl* maskLayer = child->maskLayer();
+    LayerImpl* maskLayer = child->maskLayer();
 
     // Add opacity and a grandChild so that the render surface persists even after we remove the mask.
     child->setOpacity(0.5);
     {
-        scoped_ptr<CCLayerImpl> grandChild = CCLayerImpl::create(4);
+        scoped_ptr<LayerImpl> grandChild = LayerImpl::create(4);
         grandChild->setPosition(FloatPoint(2, 2));
         grandChild->setAnchorPoint(FloatPoint::zero());
         grandChild->setBounds(IntSize(2, 2));
@@ -937,7 +937,7 @@ TEST_F(CCDamageTrackerTest, verifyDamageForMask)
 
     // Then test mask removal.
     clearDamageForAllSurfaces(root.get());
-    child->setMaskLayer(scoped_ptr<CCLayerImpl>());
+    child->setMaskLayer(scoped_ptr<LayerImpl>());
     ASSERT_TRUE(child->layerPropertyChanged());
     emulateDrawingOneFrame(root.get());
 
@@ -948,11 +948,11 @@ TEST_F(CCDamageTrackerTest, verifyDamageForMask)
     EXPECT_FLOAT_RECT_EQ(FloatRect(0, 0, 30, 30), childDamageRect);
 }
 
-TEST_F(CCDamageTrackerTest, verifyDamageForReplicaMask)
+TEST_F(DamageTrackerTest, verifyDamageForReplicaMask)
 {
-    scoped_ptr<CCLayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
-    CCLayerImpl* child1 = root->children()[0];
-    CCLayerImpl* grandChild1 = child1->children()[0];
+    scoped_ptr<LayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
+    LayerImpl* child1 = root->children()[0];
+    LayerImpl* grandChild1 = child1->children()[0];
 
     // Changes to a replica's mask should not damage the original surface, because it is
     // not masked. But it does damage the ancestor target surface.
@@ -961,7 +961,7 @@ TEST_F(CCDamageTrackerTest, verifyDamageForReplicaMask)
 
     // Create a reflection about the left edge of grandChild1.
     {
-        scoped_ptr<CCLayerImpl> grandChild1Replica = CCLayerImpl::create(6);
+        scoped_ptr<LayerImpl> grandChild1Replica = LayerImpl::create(6);
         grandChild1Replica->setPosition(FloatPoint::zero());
         grandChild1Replica->setAnchorPoint(FloatPoint::zero());
         WebTransformationMatrix reflection;
@@ -969,18 +969,18 @@ TEST_F(CCDamageTrackerTest, verifyDamageForReplicaMask)
         grandChild1Replica->setTransform(reflection);
         grandChild1->setReplicaLayer(grandChild1Replica.Pass());
     }
-    CCLayerImpl* grandChild1Replica = grandChild1->replicaLayer();
+    LayerImpl* grandChild1Replica = grandChild1->replicaLayer();
 
     // Set up the mask layer on the replica layer
     {
-        scoped_ptr<CCLayerImpl> replicaMaskLayer = CCLayerImpl::create(7);
+        scoped_ptr<LayerImpl> replicaMaskLayer = LayerImpl::create(7);
         replicaMaskLayer->setPosition(FloatPoint::zero());
         replicaMaskLayer->setAnchorPoint(FloatPoint::zero());
         replicaMaskLayer->setBounds(grandChild1->bounds());
         replicaMaskLayer->setContentBounds(grandChild1->bounds());
         grandChild1Replica->setMaskLayer(replicaMaskLayer.Pass());
     }
-    CCLayerImpl* replicaMaskLayer = grandChild1Replica->maskLayer();
+    LayerImpl* replicaMaskLayer = grandChild1Replica->maskLayer();
 
     emulateDrawingOneFrame(root.get());
 
@@ -1001,7 +1001,7 @@ TEST_F(CCDamageTrackerTest, verifyDamageForReplicaMask)
     // CASE 2: removing the replica mask damages only the reflected region on the target surface.
     //
     clearDamageForAllSurfaces(root.get());
-    grandChild1Replica->setMaskLayer(scoped_ptr<CCLayerImpl>());
+    grandChild1Replica->setMaskLayer(scoped_ptr<LayerImpl>());
     emulateDrawingOneFrame(root.get());
 
     grandChildDamageRect = grandChild1->renderSurface()->damageTracker()->currentDamageRect();
@@ -1011,11 +1011,11 @@ TEST_F(CCDamageTrackerTest, verifyDamageForReplicaMask)
     EXPECT_FLOAT_RECT_EQ(FloatRect(194, 200, 6, 8), childDamageRect);
 }
 
-TEST_F(CCDamageTrackerTest, verifyDamageForReplicaMaskWithAnchor)
+TEST_F(DamageTrackerTest, verifyDamageForReplicaMaskWithAnchor)
 {
-    scoped_ptr<CCLayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
-    CCLayerImpl* child1 = root->children()[0];
-    CCLayerImpl* grandChild1 = child1->children()[0];
+    scoped_ptr<LayerImpl> root = createAndSetUpTestTreeWithTwoSurfaces();
+    LayerImpl* child1 = root->children()[0];
+    LayerImpl* grandChild1 = child1->children()[0];
 
     // Verify that the correct replicaOriginTransform is used for the replicaMask;
     clearDamageForAllSurfaces(root.get());
@@ -1023,7 +1023,7 @@ TEST_F(CCDamageTrackerTest, verifyDamageForReplicaMaskWithAnchor)
     grandChild1->setAnchorPoint(FloatPoint(1, 0)); // This is not exactly the anchor being tested, but by convention its expected to be the same as the replica's anchor point.
 
     {
-        scoped_ptr<CCLayerImpl> grandChild1Replica = CCLayerImpl::create(6);
+        scoped_ptr<LayerImpl> grandChild1Replica = LayerImpl::create(6);
         grandChild1Replica->setPosition(FloatPoint::zero());
         grandChild1Replica->setAnchorPoint(FloatPoint(1, 0)); // This is the anchor being tested.
         WebTransformationMatrix reflection;
@@ -1031,18 +1031,18 @@ TEST_F(CCDamageTrackerTest, verifyDamageForReplicaMaskWithAnchor)
         grandChild1Replica->setTransform(reflection);
         grandChild1->setReplicaLayer(grandChild1Replica.Pass());
     }
-    CCLayerImpl* grandChild1Replica = grandChild1->replicaLayer();
+    LayerImpl* grandChild1Replica = grandChild1->replicaLayer();
 
     // Set up the mask layer on the replica layer
     {
-        scoped_ptr<CCLayerImpl> replicaMaskLayer = CCLayerImpl::create(7);
+        scoped_ptr<LayerImpl> replicaMaskLayer = LayerImpl::create(7);
         replicaMaskLayer->setPosition(FloatPoint::zero());
         replicaMaskLayer->setAnchorPoint(FloatPoint::zero()); // note, this is not the anchor being tested.
         replicaMaskLayer->setBounds(grandChild1->bounds());
         replicaMaskLayer->setContentBounds(grandChild1->bounds());
         grandChild1Replica->setMaskLayer(replicaMaskLayer.Pass());
     }
-    CCLayerImpl* replicaMaskLayer = grandChild1Replica->maskLayer();
+    LayerImpl* replicaMaskLayer = grandChild1Replica->maskLayer();
 
     emulateDrawingOneFrame(root.get());
 
@@ -1059,10 +1059,10 @@ TEST_F(CCDamageTrackerTest, verifyDamageForReplicaMaskWithAnchor)
     EXPECT_FLOAT_RECT_EQ(FloatRect(206, 200, 6, 8), childDamageRect);
 }
 
-TEST_F(CCDamageTrackerTest, verifyDamageWhenForcedFullDamage)
+TEST_F(DamageTrackerTest, verifyDamageWhenForcedFullDamage)
 {
-    scoped_ptr<CCLayerImpl> root = createAndSetUpTestTreeWithOneSurface();
-    CCLayerImpl* child = root->children()[0];
+    scoped_ptr<LayerImpl> root = createAndSetUpTestTreeWithOneSurface();
+    LayerImpl* child = root->children()[0];
 
     // Case 1: This test ensures that when the tracker is forced to have full damage, that
     //         it takes priority over any other partial damage.
@@ -1084,16 +1084,16 @@ TEST_F(CCDamageTrackerTest, verifyDamageWhenForcedFullDamage)
     EXPECT_FLOAT_RECT_EQ(FloatRect(0, 0, 500, 500), rootDamageRect);
 }
 
-TEST_F(CCDamageTrackerTest, verifyDamageForEmptyLayerList)
+TEST_F(DamageTrackerTest, verifyDamageForEmptyLayerList)
 {
     // Though it should never happen, its a good idea to verify that the damage tracker
     // does not crash when it receives an empty layerList.
 
-    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(1);
+    scoped_ptr<LayerImpl> root = LayerImpl::create(1);
     root->createRenderSurface();
 
     ASSERT_TRUE(root == root->renderTarget());
-    CCRenderSurface* targetSurface = root->renderSurface();
+    RenderSurfaceImpl* targetSurface = root->renderSurface();
     targetSurface->clearLayerLists();
     targetSurface->damageTracker()->updateDamageTrackingState(targetSurface->layerList(), targetSurface->owningLayerId(), false, IntRect(), 0, WebFilterOperations());
 
@@ -1101,12 +1101,12 @@ TEST_F(CCDamageTrackerTest, verifyDamageForEmptyLayerList)
     EXPECT_TRUE(damageRect.isEmpty());
 }
 
-TEST_F(CCDamageTrackerTest, verifyDamageAccumulatesUntilReset)
+TEST_F(DamageTrackerTest, verifyDamageAccumulatesUntilReset)
 {
     // If damage is not cleared, it should accumulate.
 
-    scoped_ptr<CCLayerImpl> root = createAndSetUpTestTreeWithOneSurface();
-    CCLayerImpl* child = root->children()[0];
+    scoped_ptr<LayerImpl> root = createAndSetUpTestTreeWithOneSurface();
+    LayerImpl* child = root->children()[0];
 
     clearDamageForAllSurfaces(root.get());
     child->setUpdateRect(FloatRect(10, 11, 1, 2));

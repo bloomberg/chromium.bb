@@ -14,20 +14,20 @@ using namespace WebKitTests;
 
 namespace {
 
-class CCTimerTest : public testing::Test, public CCTimerClient {
+class TimerTest : public testing::Test, public TimerClient {
 public:
-    CCTimerTest() : m_flag(false) { }
+    TimerTest() : m_flag(false) { }
 
     void onTimerFired() { m_flag = true; }
 
 protected:
-    FakeCCThread m_thread;
+    FakeThread m_thread;
     bool m_flag;
 };
 
-TEST_F(CCTimerTest, OneShot)
+TEST_F(TimerTest, OneShot)
 {
-    CCTimer timer(&m_thread, this);
+    Timer timer(&m_thread, this);
     timer.startOneShot(0.001);
     EXPECT_TRUE(timer.isActive());
     m_thread.runPendingTask();
@@ -36,9 +36,9 @@ TEST_F(CCTimerTest, OneShot)
     EXPECT_FALSE(m_thread.hasPendingTask());
 }
 
-TEST_F(CCTimerTest, StopManually)
+TEST_F(TimerTest, StopManually)
 {
-    CCTimer timer(&m_thread, this);
+    Timer timer(&m_thread, this);
     timer.startOneShot(0.001);
     EXPECT_TRUE(timer.isActive());
     timer.stop();
@@ -49,10 +49,10 @@ TEST_F(CCTimerTest, StopManually)
     EXPECT_FALSE(m_thread.hasPendingTask());
 }
 
-TEST_F(CCTimerTest, StopByScope)
+TEST_F(TimerTest, StopByScope)
 {
     {
-        CCTimer timer(&m_thread, this);
+        Timer timer(&m_thread, this);
         timer.startOneShot(0.001);
     }
 

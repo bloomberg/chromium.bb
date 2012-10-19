@@ -11,27 +11,27 @@
 
 namespace cc {
 
-// These classes provide means to iterate over the RenderSurface-Layer tree.
+// These classes provide means to iterate over the RenderSurfaceImpl-Layer tree.
 
-// Example code follows, for a tree of LayerChromium/RenderSurfaceChromium objects. See below for details.
+// Example code follows, for a tree of Layer/RenderSurface objects. See below for details.
 //
-// void doStuffOnLayers(const std::vector<scoped_refptr<LayerChromium> >& renderSurfaceLayerList)
+// void doStuffOnLayers(const std::vector<scoped_refptr<Layer> >& renderSurfaceLayerList)
 // {
-//     typedef CCLayerIterator<LayerChromium, RenderSurfaceChromium, CCLayerIteratorActions::FrontToBack> CCLayerIteratorType;
+//     typedef LayerIterator<Layer, RenderSurface, LayerIteratorActions::FrontToBack> LayerIteratorType;
 //
-//     CCLayerIteratorType end = CCLayerIteratorType::end(&renderSurfaceLayerList);
-//     for (CCLayerIteratorType it = CCLayerIteratorType::begin(&renderSurfaceLayerList); it != end; ++it) {
+//     LayerIteratorType end = LayerIteratorType::end(&renderSurfaceLayerList);
+//     for (LayerIteratorType it = LayerIteratorType::begin(&renderSurfaceLayerList); it != end; ++it) {
 //         // Only one of these will be true
 //         if (it.representsTargetRenderSurface())
-//             foo(*it); // *it is a layer representing a target RenderSurface
+//             foo(*it); // *it is a layer representing a target RenderSurfaceImpl
 //         if (it.representsContributingRenderSurface())
-//             bar(*it); // *it is a layer representing a RenderSurface that contributes to the layer's target RenderSurface
+//             bar(*it); // *it is a layer representing a RenderSurfaceImpl that contributes to the layer's target RenderSurfaceImpl
 //         if (it.representsItself())
-//             baz(*it); // *it is a layer representing itself, as it contributes to its own target RenderSurface
+//             baz(*it); // *it is a layer representing itself, as it contributes to its own target RenderSurfaceImpl
 //     }
 // }
 
-// A RenderSurface R may be referred to in one of two different contexts. One RenderSurface is "current" at any time, for
+// A RenderSurfaceImpl R may be referred to in one of two different contexts. One RenderSurfaceImpl is "current" at any time, for
 // whatever operation is being performed. This current surface is referred to as a target surface. For example, when R is
 // being painted it would be the target surface. Once R has been painted, its contents may be included into another
 // surface S. While S is considered the target surface when it is being painted, R is called a contributing surface
@@ -40,12 +40,12 @@ namespace cc {
 // The iterator's current position in the tree always points to some layer. The state of the iterator indicates the role of the
 // layer, and will be one of the following three states. A single layer L will appear in the iteration process in at least one,
 // and possibly all, of these states.
-// 1. Representing the target surface: The iterator in this state, pointing at layer L, indicates that the target RenderSurface
-// is now the surface owned by L. This will occur exactly once for each RenderSurface in the tree.
-// 2. Representing a contributing surface: The iterator in this state, pointing at layer L, refers to the RenderSurface owned
-// by L as a contributing surface, without changing the current target RenderSurface.
+// 1. Representing the target surface: The iterator in this state, pointing at layer L, indicates that the target RenderSurfaceImpl
+// is now the surface owned by L. This will occur exactly once for each RenderSurfaceImpl in the tree.
+// 2. Representing a contributing surface: The iterator in this state, pointing at layer L, refers to the RenderSurfaceImpl owned
+// by L as a contributing surface, without changing the current target RenderSurfaceImpl.
 // 3. Representing itself: The iterator in this state, pointing at layer L, refers to the layer itself, as a child of the
-// current target RenderSurface.
+// current target RenderSurfaceImpl.
 //
 // The BackToFront iterator will return a layer representing the target surface before returning layers representing themselves
 // as children of the current target surface. Whereas the FrontToBack ordering will iterate over children layers of a surface
@@ -53,7 +53,7 @@ namespace cc {
 //
 // To use the iterators:
 //
-// Create a stepping iterator and end iterator by calling CCLayerIterator::begin() and CCLayerIterator::end() and passing in the
+// Create a stepping iterator and end iterator by calling LayerIterator::begin() and LayerIterator::end() and passing in the
 // list of layers owning target RenderSurfaces. Step through the tree by incrementing the stepping iterator while it is != to
 // the end iterator. At each step the iterator knows what the layer is representing, and you can query the iterator to decide
 // what actions to perform with the layer given what it represents.
@@ -61,7 +61,7 @@ namespace cc {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Non-templated constants
-struct CCLayerIteratorValue {
+struct LayerIteratorValue {
     static const int InvalidTargetRenderSurfaceLayerIndex = -1;
     // This must be -1 since the iterator action code assumes that this value can be
     // reached by subtracting one from the position of the first layer in the current
@@ -71,7 +71,7 @@ struct CCLayerIteratorValue {
 
 // The position of a layer iterator that is independent of its many template types.
 template <typename LayerType>
-struct CCLayerIteratorPosition {
+struct LayerIteratorPosition {
     bool representsTargetRenderSurface;
     bool representsContributingRenderSurface;
     bool representsItself;
@@ -79,24 +79,24 @@ struct CCLayerIteratorPosition {
     LayerType* currentLayer;
 };
 
-// An iterator class for walking over layers in the RenderSurface-Layer tree.
+// An iterator class for walking over layers in the RenderSurfaceImpl-Layer tree.
 template <typename LayerType, typename LayerList, typename RenderSurfaceType, typename IteratorActionType>
-class CCLayerIterator {
-    typedef CCLayerIterator<LayerType, LayerList, RenderSurfaceType, IteratorActionType> CCLayerIteratorType;
+class LayerIterator {
+    typedef LayerIterator<LayerType, LayerList, RenderSurfaceType, IteratorActionType> LayerIteratorType;
 
 public:
-    CCLayerIterator() : m_renderSurfaceLayerList(0) { }
+    LayerIterator() : m_renderSurfaceLayerList(0) { }
 
-    static CCLayerIteratorType begin(const LayerList* renderSurfaceLayerList) { return CCLayerIteratorType(renderSurfaceLayerList, true); }
-    static CCLayerIteratorType end(const LayerList* renderSurfaceLayerList) { return CCLayerIteratorType(renderSurfaceLayerList, false); }
+    static LayerIteratorType begin(const LayerList* renderSurfaceLayerList) { return LayerIteratorType(renderSurfaceLayerList, true); }
+    static LayerIteratorType end(const LayerList* renderSurfaceLayerList) { return LayerIteratorType(renderSurfaceLayerList, false); }
 
-    CCLayerIteratorType& operator++() { m_actions.next(*this); return *this; }
-    bool operator==(const CCLayerIterator& other) const
+    LayerIteratorType& operator++() { m_actions.next(*this); return *this; }
+    bool operator==(const LayerIterator& other) const
     {
         return m_targetRenderSurfaceLayerIndex == other.m_targetRenderSurfaceLayerIndex
             && m_currentLayerIndex == other.m_currentLayerIndex;
     }
-    bool operator!=(const CCLayerIteratorType& other) const { return !(*this == other); }
+    bool operator!=(const LayerIteratorType& other) const { return !(*this == other); }
 
     LayerType* operator->() const { return currentLayer(); }
     LayerType* operator*() const { return currentLayer(); }
@@ -107,9 +107,9 @@ public:
 
     LayerType* targetRenderSurfaceLayer() const { return getRawPtr((*m_renderSurfaceLayerList)[m_targetRenderSurfaceLayerIndex]); }
 
-    operator const CCLayerIteratorPosition<LayerType>() const
+    operator const LayerIteratorPosition<LayerType>() const
     {
-        CCLayerIteratorPosition<LayerType> position;
+        LayerIteratorPosition<LayerType> position;
         position.representsTargetRenderSurface = representsTargetRenderSurface();
         position.representsContributingRenderSurface = representsContributingRenderSurface();
         position.representsItself = representsItself();
@@ -119,7 +119,7 @@ public:
     }
 
 private:
-    CCLayerIterator(const LayerList* renderSurfaceLayerList, bool start)
+    LayerIterator(const LayerList* renderSurfaceLayerList, bool start)
         : m_renderSurfaceLayerList(renderSurfaceLayerList)
         , m_targetRenderSurfaceLayerIndex(0)
     {
@@ -137,13 +137,13 @@ private:
             m_actions.end(*this);
     }
 
-    inline static LayerChromium* getRawPtr(const scoped_refptr<LayerChromium>& ptr) { return ptr.get(); }
-    inline static CCLayerImpl* getRawPtr(CCLayerImpl* ptr) { return ptr; }
+    inline static Layer* getRawPtr(const scoped_refptr<Layer>& ptr) { return ptr.get(); }
+    inline static LayerImpl* getRawPtr(LayerImpl* ptr) { return ptr; }
 
     inline LayerType* currentLayer() const { return currentLayerRepresentsTargetRenderSurface() ? targetRenderSurfaceLayer() : getRawPtr(targetRenderSurfaceChildren()[m_currentLayerIndex]); }
 
-    inline bool currentLayerRepresentsContributingRenderSurface() const { return CCLayerTreeHostCommon::renderSurfaceContributesToTarget<LayerType>(currentLayer(), targetRenderSurfaceLayer()->id()); }
-    inline bool currentLayerRepresentsTargetRenderSurface() const { return m_currentLayerIndex == CCLayerIteratorValue::LayerIndexRepresentingTargetRenderSurface; }
+    inline bool currentLayerRepresentsContributingRenderSurface() const { return LayerTreeHostCommon::renderSurfaceContributesToTarget<LayerType>(currentLayer(), targetRenderSurfaceLayer()->id()); }
+    inline bool currentLayerRepresentsTargetRenderSurface() const { return m_currentLayerIndex == LayerIteratorValue::LayerIndexRepresentingTargetRenderSurface; }
 
     inline RenderSurfaceType* targetRenderSurface() const { return targetRenderSurfaceLayer()->renderSurface(); }
     inline const LayerList& targetRenderSurfaceChildren() const { return targetRenderSurface()->layerList(); }
@@ -155,31 +155,31 @@ private:
 
     // A position in the renderSurfaceLayerList. This points to a layer which owns the current target surface.
     // This is a value from 0 to n-1 (n = size of renderSurfaceLayerList = number of surfaces). A value outside of
-    // this range (for example, CCLayerIteratorValue::InvalidTargetRenderSurfaceLayerIndex) is used to
+    // this range (for example, LayerIteratorValue::InvalidTargetRenderSurfaceLayerIndex) is used to
     // indicate a position outside the bounds of the tree.
     int m_targetRenderSurfaceLayerIndex;
     // A position in the list of layers that are children of the current target surface. When pointing to one of
     // these layers, this is a value from 0 to n-1 (n = number of children). Since the iterator must also stop at
     // the layers representing the target surface, this is done by setting the currentLayerIndex to a value of
-    // CCLayerIteratorValue::LayerRepresentingTargetRenderSurface.
+    // LayerIteratorValue::LayerRepresentingTargetRenderSurface.
     int m_currentLayerIndex;
 
-    friend struct CCLayerIteratorActions;
+    friend struct LayerIteratorActions;
 };
 
-// Orderings for iterating over the RenderSurface-Layer tree.
-struct CCLayerIteratorActions {
+// Orderings for iterating over the RenderSurfaceImpl-Layer tree.
+struct LayerIteratorActions {
     // Walks layers sorted by z-order from back to front.
     class BackToFront {
     public:
         template <typename LayerType, typename LayerList, typename RenderSurfaceType, typename ActionType>
-        void begin(CCLayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>&);
+        void begin(LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>&);
 
         template <typename LayerType, typename LayerList, typename RenderSurfaceType, typename ActionType>
-        void end(CCLayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>&);
+        void end(LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>&);
 
         template <typename LayerType, typename LayerList, typename RenderSurfaceType, typename ActionType>
-        void next(CCLayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>&);
+        void next(LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>&);
 
     private:
         int m_highestTargetRenderSurfaceLayer;
@@ -189,17 +189,17 @@ struct CCLayerIteratorActions {
     class FrontToBack {
     public:
         template <typename LayerType, typename LayerList, typename RenderSurfaceType, typename ActionType>
-        void begin(CCLayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>&);
+        void begin(LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>&);
 
         template <typename LayerType, typename LayerList, typename RenderSurfaceType, typename ActionType>
-        void end(CCLayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>&);
+        void end(LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>&);
 
         template <typename LayerType, typename LayerList, typename RenderSurfaceType, typename ActionType>
-        void next(CCLayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>&);
+        void next(LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>&);
 
     private:
         template <typename LayerType, typename LayerList, typename RenderSurfaceType, typename ActionType>
-        void goToHighestInSubtree(CCLayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>&);
+        void goToHighestInSubtree(LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>&);
     };
 };
 

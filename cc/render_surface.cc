@@ -14,7 +14,7 @@ using WebKit::WebTransformationMatrix;
 
 namespace cc {
 
-RenderSurfaceChromium::RenderSurfaceChromium(LayerChromium* owningLayer)
+RenderSurface::RenderSurface(Layer* owningLayer)
     : m_owningLayer(owningLayer)
     , m_drawOpacity(1)
     , m_drawOpacityIsAnimating(false)
@@ -24,15 +24,15 @@ RenderSurfaceChromium::RenderSurfaceChromium(LayerChromium* owningLayer)
 {
 }
 
-RenderSurfaceChromium::~RenderSurfaceChromium()
+RenderSurface::~RenderSurface()
 {
 }
 
-FloatRect RenderSurfaceChromium::drawableContentRect() const
+FloatRect RenderSurface::drawableContentRect() const
 {
-    FloatRect drawableContentRect = CCMathUtil::mapClippedRect(m_drawTransform, m_contentRect);
+    FloatRect drawableContentRect = MathUtil::mapClippedRect(m_drawTransform, m_contentRect);
     if (m_owningLayer->hasReplica())
-        drawableContentRect.unite(CCMathUtil::mapClippedRect(m_replicaDrawTransform, m_contentRect));
+        drawableContentRect.unite(MathUtil::mapClippedRect(m_replicaDrawTransform, m_contentRect));
     return drawableContentRect;
 }
 

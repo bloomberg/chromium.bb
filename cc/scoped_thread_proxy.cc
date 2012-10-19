@@ -8,13 +8,13 @@
 
 namespace cc {
 
-CCScopedThreadProxy::CCScopedThreadProxy(CCThread* targetThread)
+ScopedThreadProxy::ScopedThreadProxy(Thread* targetThread)
     : m_targetThread(targetThread)
     , m_shutdown(false)
 {
 }
 
-CCScopedThreadProxy::~CCScopedThreadProxy()
+ScopedThreadProxy::~ScopedThreadProxy()
 {
 }
 

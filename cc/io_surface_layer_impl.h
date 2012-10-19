@@ -10,25 +10,25 @@
 
 namespace cc {
 
-class CCIOSurfaceLayerImpl : public CCLayerImpl {
+class IOSurfaceLayerImpl : public LayerImpl {
 public:
-    static scoped_ptr<CCIOSurfaceLayerImpl> create(int id)
+    static scoped_ptr<IOSurfaceLayerImpl> create(int id)
     {
-        return make_scoped_ptr(new CCIOSurfaceLayerImpl(id));
+        return make_scoped_ptr(new IOSurfaceLayerImpl(id));
     }
-    virtual ~CCIOSurfaceLayerImpl();
+    virtual ~IOSurfaceLayerImpl();
 
     void setIOSurfaceProperties(unsigned ioSurfaceId, const IntSize&);
 
-    virtual void appendQuads(CCQuadSink&, CCAppendQuadsData&) OVERRIDE;
+    virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
 
-    virtual void willDraw(CCResourceProvider*) OVERRIDE;
+    virtual void willDraw(ResourceProvider*) OVERRIDE;
     virtual void didLoseContext() OVERRIDE;
 
     virtual void dumpLayerProperties(std::string*, int indent) const OVERRIDE;
 
 private:
-    explicit CCIOSurfaceLayerImpl(int);
+    explicit IOSurfaceLayerImpl(int);
 
     virtual const char* layerTypeAsString() const OVERRIDE;
 

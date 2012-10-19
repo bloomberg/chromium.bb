@@ -12,15 +12,15 @@ class SkPicture;
 
 namespace cc {
 
-class CCPrioritizedTexture;
+class PrioritizedTexture;
 
 struct ResourceUpdate {
-    static ResourceUpdate Create(CCPrioritizedTexture*,
+    static ResourceUpdate Create(PrioritizedTexture*,
                                  const SkBitmap*,
                                  IntRect content_rect,
                                  IntRect source_rect,
                                  IntSize dest_offset);
-    static ResourceUpdate CreateFromPicture(CCPrioritizedTexture*,
+    static ResourceUpdate CreateFromPicture(PrioritizedTexture*,
                                             SkPicture*,
                                             IntRect content_rect,
                                             IntRect source_rect,
@@ -29,7 +29,7 @@ struct ResourceUpdate {
     ResourceUpdate();
     virtual ~ResourceUpdate();
 
-    CCPrioritizedTexture* texture;
+    PrioritizedTexture* texture;
     const SkBitmap* bitmap;
     SkPicture* picture;
     IntRect content_rect;

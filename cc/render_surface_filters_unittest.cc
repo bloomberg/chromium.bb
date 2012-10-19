@@ -22,11 +22,11 @@ bool isCombined(const WebFilterOperation& op)
     WebFilterOperations filters;
     filters.append(op);
     filters.append(WebFilterOperation::createBrightnessFilter(0)); // brightness(0) is identity.
-    WebFilterOperations optimized = CCRenderSurfaceFilters::optimize(filters);
+    WebFilterOperations optimized = RenderSurfaceFilters::optimize(filters);
     return optimized.size() == 1;
 }
 
-TEST(CCRenderSurfaceFiltersTest, testColorMatrixFiltersCombined)
+TEST(RenderSurfaceFiltersTest, testColorMatrixFiltersCombined)
 {
     // Several filters should always combine for any amount between 0 and 1:
     // grayscale, saturate, invert, contrast, opacity.
@@ -103,37 +103,37 @@ TEST(CCRenderSurfaceFiltersTest, testColorMatrixFiltersCombined)
     EXPECT_TRUE(isCombined(WebFilterOperation::createColorMatrixFilter(matrix4)));
 }
 
-TEST(CCRenderSurfaceFiltersTest, testOptimize)
+TEST(RenderSurfaceFiltersTest, testOptimize)
 {
     WebFilterOperation combines(WebFilterOperation::createBrightnessFilter(0));
     WebFilterOperation doesntCombine(WebFilterOperation::createBrightnessFilter(1));
 
     WebFilterOperations filters;
-    WebFilterOperations optimized = CCRenderSurfaceFilters::optimize(filters);
+    WebFilterOperations optimized = RenderSurfaceFilters::optimize(filters);
     EXPECT_EQ(0u, optimized.size());
 
     filters.append(combines);
-    optimized = CCRenderSurfaceFilters::optimize(filters);
+    optimized = RenderSurfaceFilters::optimize(filters);
     EXPECT_EQ(1u, optimized.size());
 
     filters.append(combines);
-    optimized = CCRenderSurfaceFilters::optimize(filters);
+    optimized = RenderSurfaceFilters::optimize(filters);
     EXPECT_EQ(1u, optimized.size());
 
     filters.append(doesntCombine);
-    optimized = CCRenderSurfaceFilters::optimize(filters);
+    optimized = RenderSurfaceFilters::optimize(filters);
     EXPECT_EQ(1u, optimized.size());
 
     filters.append(combines);
-    optimized = CCRenderSurfaceFilters::optimize(filters);
+    optimized = RenderSurfaceFilters::optimize(filters);
     EXPECT_EQ(2u, optimized.size());
 
     filters.append(doesntCombine);
-    optimized = CCRenderSurfaceFilters::optimize(filters);
+    optimized = RenderSurfaceFilters::optimize(filters);
     EXPECT_EQ(2u, optimized.size());
 
     filters.append(doesntCombine);
-    optimized = CCRenderSurfaceFilters::optimize(filters);
+    optimized = RenderSurfaceFilters::optimize(filters);
     EXPECT_EQ(3u, optimized.size());
 }
 

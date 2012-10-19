@@ -12,32 +12,32 @@
 
 namespace cc {
 
-class CCResourceProvider;
+class ResourceProvider;
 
 // This is the base class for code shared between the GL and software
 // renderer implementations.  "Direct" refers to the fact that it does not
 // delegate rendering to another compositor.
-class CCDirectRenderer : public CCRenderer {
+class DirectRenderer : public Renderer {
 public:
-    virtual ~CCDirectRenderer();
+    virtual ~DirectRenderer();
 
-    CCResourceProvider* resourceProvider() const { return m_resourceProvider; }
+    ResourceProvider* resourceProvider() const { return m_resourceProvider; }
 
-    virtual void decideRenderPassAllocationsForFrame(const CCRenderPassList& renderPassesInDrawOrder) OVERRIDE;
-    virtual bool haveCachedResourcesForRenderPassId(CCRenderPass::Id) const OVERRIDE;
-    virtual void drawFrame(const CCRenderPassList& renderPassesInDrawOrder, const CCRenderPassIdHashMap& renderPassesById) OVERRIDE;
+    virtual void decideRenderPassAllocationsForFrame(const RenderPassList& renderPassesInDrawOrder) OVERRIDE;
+    virtual bool haveCachedResourcesForRenderPassId(RenderPass::Id) const OVERRIDE;
+    virtual void drawFrame(const RenderPassList& renderPassesInDrawOrder, const RenderPassIdHashMap& renderPassesById) OVERRIDE;
 
 protected:
-    CCDirectRenderer(CCRendererClient* client, CCResourceProvider* resourceProvider);
+    DirectRenderer(RendererClient* client, ResourceProvider* resourceProvider);
 
     struct DrawingFrame {
         DrawingFrame();
         ~DrawingFrame();
 
-        const CCRenderPassIdHashMap* renderPassesById;
-        const CCRenderPass* rootRenderPass;
-        const CCRenderPass* currentRenderPass;
-        const CCScopedTexture* currentTexture;
+        const RenderPassIdHashMap* renderPassesById;
+        const RenderPass* rootRenderPass;
+        const RenderPass* currentRenderPass;
+        const ScopedTexture* currentTexture;
 
         FloatRect rootDamageRect;
 
@@ -47,9 +47,9 @@ protected:
         FloatRect scissorRectInRenderPassSpace;
     };
 
-    class CachedTexture : public CCScopedTexture {
+    class CachedTexture : public ScopedTexture {
     public:
-        static scoped_ptr<CachedTexture> create(CCResourceProvider* resourceProvider) {
+        static scoped_ptr<CachedTexture> create(ResourceProvider* resourceProvider) {
           return make_scoped_ptr(new CachedTexture(resourceProvider));
         }
         virtual ~CachedTexture() {}
@@ -58,8 +58,8 @@ protected:
         void setIsComplete(bool isComplete) { m_isComplete = isComplete; }
 
     protected:
-        explicit CachedTexture(CCResourceProvider* resourceProvider)
-            : CCScopedTexture(resourceProvider)
+        explicit CachedTexture(ResourceProvider* resourceProvider)
+            : ScopedTexture(resourceProvider)
             , m_isComplete(false)
         {
         }
@@ -75,29 +75,29 @@ protected:
     static void initializeMatrices(DrawingFrame&, const IntRect& drawRect, bool flipY);
     static IntRect moveScissorToWindowSpace(const DrawingFrame&, FloatRect scissorRect);
 
-    bool haveCachedResources(CCRenderPass::Id) const;
-    static IntSize renderPassTextureSize(const CCRenderPass*);
-    static GLenum renderPassTextureFormat(const CCRenderPass*);
+    bool haveCachedResources(RenderPass::Id) const;
+    static IntSize renderPassTextureSize(const RenderPass*);
+    static GLenum renderPassTextureFormat(const RenderPass*);
 
-    void drawRenderPass(DrawingFrame&, const CCRenderPass*);
-    bool useRenderPass(DrawingFrame&, const CCRenderPass*);
+    void drawRenderPass(DrawingFrame&, const RenderPass*);
+    bool useRenderPass(DrawingFrame&, const RenderPass*);
 
     virtual void bindFramebufferToOutputSurface(DrawingFrame&) = 0;
-    virtual bool bindFramebufferToTexture(DrawingFrame&, const CCScopedTexture*, const IntRect& framebufferRect) = 0;
+    virtual bool bindFramebufferToTexture(DrawingFrame&, const ScopedTexture*, const IntRect& framebufferRect) = 0;
     virtual void setDrawViewportSize(const IntSize&) = 0;
     virtual void enableScissorTestRect(const IntRect& scissorRect) = 0;
     virtual void disableScissorTest() = 0;
     virtual void clearFramebuffer(DrawingFrame&) = 0;
-    virtual void drawQuad(DrawingFrame&, const CCDrawQuad*) = 0;
+    virtual void drawQuad(DrawingFrame&, const DrawQuad*) = 0;
     virtual void beginDrawingFrame(DrawingFrame&) = 0;
     virtual void finishDrawingFrame(DrawingFrame&) = 0;
     virtual bool flippedFramebuffer() const = 0;
 
-    ScopedPtrHashMap<CCRenderPass::Id, CachedTexture> m_renderPassTextures;
-    CCResourceProvider* m_resourceProvider;
+    ScopedPtrHashMap<RenderPass::Id, CachedTexture> m_renderPassTextures;
+    ResourceProvider* m_resourceProvider;
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(CCDirectRenderer);
+    DISALLOW_COPY_AND_ASSIGN(DirectRenderer);
 };
 
 }  // namespace cc

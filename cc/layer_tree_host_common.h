@@ -14,19 +14,19 @@
 
 namespace cc {
 
-class CCLayerImpl;
-class CCLayerSorter;
-class LayerChromium;
+class LayerImpl;
+class LayerSorter;
+class Layer;
 
-class CCLayerTreeHostCommon {
+class LayerTreeHostCommon {
 public:
     static IntRect calculateVisibleRect(const IntRect& targetSurfaceRect, const IntRect& layerBoundRect, const WebKit::WebTransformationMatrix&);
 
-    static void calculateDrawTransforms(LayerChromium* rootLayer, const IntSize& deviceViewportSize, float deviceScaleFactor, int maxTextureSize, std::vector<scoped_refptr<LayerChromium> >& renderSurfaceLayerList);
-    static void calculateDrawTransforms(CCLayerImpl* rootLayer, const IntSize& deviceViewportSize, float deviceScaleFactor, CCLayerSorter*, int maxTextureSize, std::vector<CCLayerImpl*>& renderSurfaceLayerList);
+    static void calculateDrawTransforms(Layer* rootLayer, const IntSize& deviceViewportSize, float deviceScaleFactor, int maxTextureSize, std::vector<scoped_refptr<Layer> >& renderSurfaceLayerList);
+    static void calculateDrawTransforms(LayerImpl* rootLayer, const IntSize& deviceViewportSize, float deviceScaleFactor, LayerSorter*, int maxTextureSize, std::vector<LayerImpl*>& renderSurfaceLayerList);
 
     // Performs hit testing for a given renderSurfaceLayerList.
-    static CCLayerImpl* findLayerThatIsHitByPoint(const IntPoint& screenSpacePoint, std::vector<CCLayerImpl*>& renderSurfaceLayerList);
+    static LayerImpl* findLayerThatIsHitByPoint(const IntPoint& screenSpacePoint, std::vector<LayerImpl*>& renderSurfaceLayerList);
 
     template<typename LayerType> static bool renderSurfaceContributesToTarget(LayerType*, int targetSurfaceLayerID);
 
@@ -34,12 +34,12 @@ public:
     // from the given root layer (including mask and replica layers).
     template<typename LayerType> static LayerType* findLayerInSubtree(LayerType* rootLayer, int layerId);
 
-    static LayerChromium* getChildAsRawPtr(const std::vector<scoped_refptr<LayerChromium> >& children, size_t index)
+    static Layer* getChildAsRawPtr(const std::vector<scoped_refptr<Layer> >& children, size_t index)
     {
         return children[index].get();
     }
 
-    static CCLayerImpl* getChildAsRawPtr(const ScopedPtrVector<CCLayerImpl>& children, size_t index)
+    static LayerImpl* getChildAsRawPtr(const ScopedPtrVector<LayerImpl>& children, size_t index)
     {
         return children[index];
     }
@@ -50,16 +50,16 @@ public:
     };
 };
 
-struct CCScrollAndScaleSet {
-    CCScrollAndScaleSet();
-    ~CCScrollAndScaleSet();
+struct ScrollAndScaleSet {
+    ScrollAndScaleSet();
+    ~ScrollAndScaleSet();
 
-    Vector<CCLayerTreeHostCommon::ScrollUpdateInfo> scrolls;
+    Vector<LayerTreeHostCommon::ScrollUpdateInfo> scrolls;
     float pageScaleDelta;
 };
 
 template<typename LayerType>
-bool CCLayerTreeHostCommon::renderSurfaceContributesToTarget(LayerType* layer, int targetSurfaceLayerID)
+bool LayerTreeHostCommon::renderSurfaceContributesToTarget(LayerType* layer, int targetSurfaceLayerID)
 {
     // A layer will either contribute its own content, or its render surface's content, to
     // the target surface. The layer contributes its surface's content when both the
@@ -73,7 +73,7 @@ bool CCLayerTreeHostCommon::renderSurfaceContributesToTarget(LayerType* layer, i
 }
 
 template<typename LayerType>
-LayerType* CCLayerTreeHostCommon::findLayerInSubtree(LayerType* rootLayer, int layerId)
+LayerType* LayerTreeHostCommon::findLayerInSubtree(LayerType* rootLayer, int layerId)
 {
     if (rootLayer->id() == layerId)
         return rootLayer;

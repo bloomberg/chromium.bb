@@ -95,12 +95,12 @@ static inline void addVertexToClippedQuad(const FloatPoint& newVertex, FloatPoin
     numVerticesInClippedQuad++;
 }
 
-IntRect CCMathUtil::mapClippedRect(const WebTransformationMatrix& transform, const IntRect& srcRect)
+IntRect MathUtil::mapClippedRect(const WebTransformationMatrix& transform, const IntRect& srcRect)
 {
     return enclosingIntRect(mapClippedRect(transform, FloatRect(srcRect)));
 }
 
-FloatRect CCMathUtil::mapClippedRect(const WebTransformationMatrix& transform, const FloatRect& srcRect)
+FloatRect MathUtil::mapClippedRect(const WebTransformationMatrix& transform, const FloatRect& srcRect)
 {
     if (transform.isIdentityOrTranslation()) {
         FloatRect mappedRect(srcRect);
@@ -118,7 +118,7 @@ FloatRect CCMathUtil::mapClippedRect(const WebTransformationMatrix& transform, c
     return computeEnclosingClippedRect(h1, h2, h3, h4);
 }
 
-FloatRect CCMathUtil::projectClippedRect(const WebTransformationMatrix& transform, const FloatRect& srcRect)
+FloatRect MathUtil::projectClippedRect(const WebTransformationMatrix& transform, const FloatRect& srcRect)
 {
     // Perform the projection, but retain the result in homogeneous coordinates.
     FloatQuad q = FloatQuad(FloatRect(srcRect));
@@ -130,7 +130,7 @@ FloatRect CCMathUtil::projectClippedRect(const WebTransformationMatrix& transfor
     return computeEnclosingClippedRect(h1, h2, h3, h4);
 }
 
-void CCMathUtil::mapClippedQuad(const WebTransformationMatrix& transform, const FloatQuad& srcQuad, FloatPoint clippedQuad[8], int& numVerticesInClippedQuad)
+void MathUtil::mapClippedQuad(const WebTransformationMatrix& transform, const FloatQuad& srcQuad, FloatPoint clippedQuad[8], int& numVerticesInClippedQuad)
 {
     HomogeneousCoordinate h1 = mapHomogeneousPoint(transform, srcQuad.p1());
     HomogeneousCoordinate h2 = mapHomogeneousPoint(transform, srcQuad.p2());
@@ -168,7 +168,7 @@ void CCMathUtil::mapClippedQuad(const WebTransformationMatrix& transform, const 
     DCHECK(numVerticesInClippedQuad <= 8);
 }
 
-FloatRect CCMathUtil::computeEnclosingRectOfVertices(FloatPoint vertices[], int numVertices)
+FloatRect MathUtil::computeEnclosingRectOfVertices(FloatPoint vertices[], int numVertices)
 {
     if (numVertices < 2)
         return FloatRect();
@@ -184,7 +184,7 @@ FloatRect CCMathUtil::computeEnclosingRectOfVertices(FloatPoint vertices[], int 
     return FloatRect(FloatPoint(xmin, ymin), FloatSize(xmax - xmin, ymax - ymin));
 }
 
-FloatRect CCMathUtil::computeEnclosingClippedRect(const HomogeneousCoordinate& h1, const HomogeneousCoordinate& h2, const HomogeneousCoordinate& h3, const HomogeneousCoordinate& h4)
+FloatRect MathUtil::computeEnclosingClippedRect(const HomogeneousCoordinate& h1, const HomogeneousCoordinate& h2, const HomogeneousCoordinate& h3, const HomogeneousCoordinate& h4)
 {
     // This function performs clipping as necessary and computes the enclosing 2d
     // FloatRect of the vertices. Doing these two steps simultaneously allows us to avoid
@@ -234,7 +234,7 @@ FloatRect CCMathUtil::computeEnclosingClippedRect(const HomogeneousCoordinate& h
     return FloatRect(FloatPoint(xmin, ymin), FloatSize(xmax - xmin, ymax - ymin));
 }
 
-FloatQuad CCMathUtil::mapQuad(const WebTransformationMatrix& transform, const FloatQuad& q, bool& clipped)
+FloatQuad MathUtil::mapQuad(const WebTransformationMatrix& transform, const FloatQuad& q, bool& clipped)
 {
     if (transform.isIdentityOrTranslation()) {
         FloatQuad mappedQuad(q);
@@ -254,7 +254,7 @@ FloatQuad CCMathUtil::mapQuad(const WebTransformationMatrix& transform, const Fl
     return FloatQuad(h1.cartesianPoint2d(), h2.cartesianPoint2d(), h3.cartesianPoint2d(), h4.cartesianPoint2d());
 }
 
-FloatPoint CCMathUtil::mapPoint(const WebTransformationMatrix& transform, const FloatPoint& p, bool& clipped)
+FloatPoint MathUtil::mapPoint(const WebTransformationMatrix& transform, const FloatPoint& p, bool& clipped)
 {
     HomogeneousCoordinate h = mapHomogeneousPoint(transform, p);
 
@@ -277,7 +277,7 @@ FloatPoint CCMathUtil::mapPoint(const WebTransformationMatrix& transform, const 
     return h.cartesianPoint2d();
 }
 
-FloatPoint3D CCMathUtil::mapPoint(const WebTransformationMatrix& transform, const FloatPoint3D& p, bool& clipped)
+FloatPoint3D MathUtil::mapPoint(const WebTransformationMatrix& transform, const FloatPoint3D& p, bool& clipped)
 {
     HomogeneousCoordinate h = mapHomogeneousPoint(transform, p);
 
@@ -300,7 +300,7 @@ FloatPoint3D CCMathUtil::mapPoint(const WebTransformationMatrix& transform, cons
     return h.cartesianPoint3d();
 }
 
-FloatQuad CCMathUtil::projectQuad(const WebTransformationMatrix& transform, const FloatQuad& q, bool& clipped)
+FloatQuad MathUtil::projectQuad(const WebTransformationMatrix& transform, const FloatQuad& q, bool& clipped)
 {
     FloatQuad projectedQuad;
     bool clippedPoint;
@@ -316,7 +316,7 @@ FloatQuad CCMathUtil::projectQuad(const WebTransformationMatrix& transform, cons
     return projectedQuad;
 }
 
-FloatPoint CCMathUtil::projectPoint(const WebTransformationMatrix& transform, const FloatPoint& p, bool& clipped)
+FloatPoint MathUtil::projectPoint(const WebTransformationMatrix& transform, const FloatPoint& p, bool& clipped)
 {
     HomogeneousCoordinate h = projectHomogeneousPoint(transform, p);
 
@@ -340,7 +340,7 @@ FloatPoint CCMathUtil::projectPoint(const WebTransformationMatrix& transform, co
     return h.cartesianPoint2d();
 }
 
-void CCMathUtil::flattenTransformTo2d(WebTransformationMatrix& transform)
+void MathUtil::flattenTransformTo2d(WebTransformationMatrix& transform)
 {
     // Set both the 3rd row and 3rd column to (0, 0, 1, 0).
     //
@@ -361,7 +361,7 @@ void CCMathUtil::flattenTransformTo2d(WebTransformationMatrix& transform)
     transform.setM43(0);
 }
 
-float CCMathUtil::smallestAngleBetweenVectors(const FloatSize& v1, const FloatSize& v2)
+float MathUtil::smallestAngleBetweenVectors(const FloatSize& v1, const FloatSize& v2)
 {
     float dotProduct = (v1.width() * v2.width() + v1.height() * v2.height()) / (v1.diagonalLength() * v2.diagonalLength());
     // Clamp to compensate for rounding errors.
@@ -369,7 +369,7 @@ float CCMathUtil::smallestAngleBetweenVectors(const FloatSize& v1, const FloatSi
     return rad2deg(acosf(dotProduct));
 }
 
-FloatSize CCMathUtil::projectVector(const FloatSize& source, const FloatSize& destination)
+FloatSize MathUtil::projectVector(const FloatSize& source, const FloatSize& destination)
 {
     float sourceDotDestination = source.width() * destination.width() + source.height() * destination.height();
     float projectedLength = sourceDotDestination / destination.diagonalLengthSquared();

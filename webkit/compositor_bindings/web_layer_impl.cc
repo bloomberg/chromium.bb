@@ -19,8 +19,8 @@
 #include "web_animation_impl.h"
 #include "webcore_convert.h"
 
-using cc::CCActiveAnimation;
-using cc::LayerChromium;
+using cc::ActiveAnimation;
+using cc::Layer;
 
 namespace WebKit {
 
@@ -66,11 +66,11 @@ WebLayer* WebLayer::create()
 }
 
 WebLayerImpl::WebLayerImpl()
-    : m_layer(LayerChromium::create())
+    : m_layer(Layer::create())
 {
 }
 
-WebLayerImpl::WebLayerImpl(scoped_refptr<LayerChromium> layer)
+WebLayerImpl::WebLayerImpl(scoped_refptr<Layer> layer)
     : m_layer(layer)
 {
 }
@@ -294,7 +294,7 @@ void WebLayerImpl::setAnimationDelegate(WebAnimationDelegate* delegate)
 
 bool WebLayerImpl::addAnimation(WebAnimation* animation)
 {
-    return m_layer->addAnimation(static_cast<WebAnimationImpl*>(animation)->cloneToCCAnimation());
+    return m_layer->addAnimation(static_cast<WebAnimationImpl*>(animation)->cloneToAnimation());
 }
 
 void WebLayerImpl::removeAnimation(int animationId)
@@ -304,7 +304,7 @@ void WebLayerImpl::removeAnimation(int animationId)
 
 void WebLayerImpl::removeAnimation(int animationId, WebAnimation::TargetProperty targetProperty)
 {
-    m_layer->layerAnimationController()->removeAnimation(animationId, static_cast<CCActiveAnimation::TargetProperty>(targetProperty));
+    m_layer->layerAnimationController()->removeAnimation(animationId, static_cast<ActiveAnimation::TargetProperty>(targetProperty));
 }
 
 void WebLayerImpl::pauseAnimation(int animationId, double timeOffset)
@@ -433,7 +433,7 @@ void WebLayerImpl::setScrollClient(WebLayerScrollClient* scrollClient)
     m_layer->setLayerScrollClient(scrollClient);
 }
 
-LayerChromium* WebLayerImpl::layer() const
+Layer* WebLayerImpl::layer() const
 {
     return m_layer.get();
 }

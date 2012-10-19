@@ -26,7 +26,7 @@ static const int debugTileBorderColorRed = 160;
 static const int debugTileBorderColorGreen = 100;
 static const int debugTileBorderColorBlue = 0;
 
-CCQuadCuller::CCQuadCuller(CCQuadList& quadList, CCSharedQuadStateList& sharedQuadStateList, CCLayerImpl* layer, const CCOcclusionTrackerImpl* occlusionTracker, bool showCullingWithDebugBorderQuads, bool forSurface)
+QuadCuller::QuadCuller(QuadList& quadList, SharedQuadStateList& sharedQuadStateList, LayerImpl* layer, const OcclusionTrackerImpl* occlusionTracker, bool showCullingWithDebugBorderQuads, bool forSurface)
     : m_quadList(quadList)
     , m_sharedQuadStateList(sharedQuadStateList)
     , m_currentSharedQuadState(0)
@@ -37,7 +37,7 @@ CCQuadCuller::CCQuadCuller(CCQuadList& quadList, CCSharedQuadStateList& sharedQu
 {
 }
 
-CCSharedQuadState* CCQuadCuller::useSharedQuadState(scoped_ptr<CCSharedQuadState> sharedQuadState)
+SharedQuadState* QuadCuller::useSharedQuadState(scoped_ptr<SharedQuadState> sharedQuadState)
 {
     sharedQuadState->id = m_sharedQuadStateList.size();
 
@@ -47,7 +47,7 @@ CCSharedQuadState* CCQuadCuller::useSharedQuadState(scoped_ptr<CCSharedQuadState
     return m_currentSharedQuadState;
 }
 
-static inline bool appendQuadInternal(scoped_ptr<CCDrawQuad> drawQuad, const IntRect& culledRect, CCQuadList& quadList, const CCOcclusionTrackerImpl& occlusionTracker, bool createDebugBorderQuads)
+static inline bool appendQuadInternal(scoped_ptr<DrawQuad> drawQuad, const IntRect& culledRect, QuadList& quadList, const OcclusionTrackerImpl& occlusionTracker, bool createDebugBorderQuads)
 {
     bool keepQuad = !culledRect.isEmpty();
     if (keepQuad)
@@ -59,7 +59,7 @@ static inline bool appendQuadInternal(scoped_ptr<CCDrawQuad> drawQuad, const Int
     if (keepQuad) {
         if (createDebugBorderQuads && !drawQuad->isDebugQuad() && drawQuad->quadVisibleRect() != drawQuad->quadRect()) {
             SkColor borderColor = SkColorSetARGB(debugTileBorderAlpha, debugTileBorderColorRed, debugTileBorderColorGreen, debugTileBorderColorBlue);
-            quadList.append(CCDebugBorderDrawQuad::create(drawQuad->sharedQuadState(), drawQuad->quadVisibleRect(), borderColor, debugTileBorderWidth).PassAs<CCDrawQuad>());
+            quadList.append(DebugBorderDrawQuad::create(drawQuad->sharedQuadState(), drawQuad->quadVisibleRect(), borderColor, debugTileBorderWidth).PassAs<DrawQuad>());
         }
 
         // Pass the quad after we're done using it.
@@ -68,7 +68,7 @@ static inline bool appendQuadInternal(scoped_ptr<CCDrawQuad> drawQuad, const Int
     return keepQuad;
 }
 
-bool CCQuadCuller::append(scoped_ptr<CCDrawQuad> drawQuad, CCAppendQuadsData& appendQuadsData)
+bool QuadCuller::append(scoped_ptr<DrawQuad> drawQuad, AppendQuadsData& appendQuadsData)
 {
     DCHECK(drawQuad->sharedQuadState() == m_currentSharedQuadState);
     DCHECK(drawQuad->sharedQuadStateId() == m_currentSharedQuadState->id);

@@ -14,41 +14,41 @@ class SkCanvas;
 
 namespace cc {
 
-class CCDebugRectHistory;
-class CCFontAtlas;
-class CCFrameRateCounter;
+class DebugRectHistory;
+class FontAtlas;
+class FrameRateCounter;
 
-class CCHeadsUpDisplayLayerImpl : public CCLayerImpl {
+class HeadsUpDisplayLayerImpl : public LayerImpl {
 public:
-    static scoped_ptr<CCHeadsUpDisplayLayerImpl> create(int id)
+    static scoped_ptr<HeadsUpDisplayLayerImpl> create(int id)
     {
-        return make_scoped_ptr(new CCHeadsUpDisplayLayerImpl(id));
+        return make_scoped_ptr(new HeadsUpDisplayLayerImpl(id));
     }
-    virtual ~CCHeadsUpDisplayLayerImpl();
+    virtual ~HeadsUpDisplayLayerImpl();
 
-    void setFontAtlas(scoped_ptr<CCFontAtlas>);
+    void setFontAtlas(scoped_ptr<FontAtlas>);
 
-    virtual void willDraw(CCResourceProvider*) OVERRIDE;
-    virtual void appendQuads(CCQuadSink&, CCAppendQuadsData&) OVERRIDE;
-    void updateHudTexture(CCResourceProvider*);
-    virtual void didDraw(CCResourceProvider*) OVERRIDE;
+    virtual void willDraw(ResourceProvider*) OVERRIDE;
+    virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
+    void updateHudTexture(ResourceProvider*);
+    virtual void didDraw(ResourceProvider*) OVERRIDE;
 
     virtual void didLoseContext() OVERRIDE;
 
     virtual bool layerIsAlwaysDamaged() const OVERRIDE;
 
 private:
-    explicit CCHeadsUpDisplayLayerImpl(int);
+    explicit HeadsUpDisplayLayerImpl(int);
 
     virtual const char* layerTypeAsString() const OVERRIDE;
 
     void drawHudContents(SkCanvas*);
-    void drawFPSCounter(SkCanvas*, CCFrameRateCounter*, int top, int height);
-    void drawFPSCounterText(SkCanvas*, CCFrameRateCounter*, int top, int width, int height);
-    void drawDebugRects(SkCanvas*, CCDebugRectHistory*);
+    void drawFPSCounter(SkCanvas*, FrameRateCounter*, int top, int height);
+    void drawFPSCounterText(SkCanvas*, FrameRateCounter*, int top, int width, int height);
+    void drawDebugRects(SkCanvas*, DebugRectHistory*);
 
-    scoped_ptr<CCFontAtlas> m_fontAtlas;
-    scoped_ptr<CCScopedTexture> m_hudTexture;
+    scoped_ptr<FontAtlas> m_fontAtlas;
+    scoped_ptr<ScopedTexture> m_hudTexture;
     scoped_ptr<SkCanvas> m_hudCanvas;
 };
 

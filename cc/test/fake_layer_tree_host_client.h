@@ -14,7 +14,7 @@
 
 namespace cc {
 
-class FakeCCLayerTreeHostClient : public CCLayerTreeHostClient {
+class FakeLayerImplTreeHostClient : public LayerTreeHostClient {
 public:
     virtual void willBeginFrame() OVERRIDE { }
     virtual void didBeginFrame() OVERRIDE { }
@@ -24,7 +24,7 @@ public:
 
     virtual scoped_ptr<WebKit::WebCompositorOutputSurface> createOutputSurface() OVERRIDE;
     virtual void didRecreateOutputSurface(bool success) OVERRIDE { }
-    virtual scoped_ptr<CCInputHandler> createInputHandler() OVERRIDE;
+    virtual scoped_ptr<InputHandler> createInputHandler() OVERRIDE;
     virtual void willCommit() OVERRIDE { }
     virtual void didCommit() OVERRIDE { }
     virtual void didCommitAndDrawFrame() OVERRIDE { }

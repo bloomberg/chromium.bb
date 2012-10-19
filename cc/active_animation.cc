@@ -25,7 +25,7 @@ static const char* const s_runStateNames[] = {
     "Aborted"
 };
 
-COMPILE_ASSERT(static_cast<int>(cc::CCActiveAnimation::RunStateEnumSize) == arraysize(s_runStateNames), RunState_names_match_enum);
+COMPILE_ASSERT(static_cast<int>(cc::ActiveAnimation::RunStateEnumSize) == arraysize(s_runStateNames), RunState_names_match_enum);
 
 // This should match the TargetProperty enum.
 static const char* const s_targetPropertyNames[] = {
@@ -33,18 +33,18 @@ static const char* const s_targetPropertyNames[] = {
     "Opacity"
 };
 
-COMPILE_ASSERT(static_cast<int>(cc::CCActiveAnimation::TargetPropertyEnumSize) == arraysize(s_targetPropertyNames), TargetProperty_names_match_enum);
+COMPILE_ASSERT(static_cast<int>(cc::ActiveAnimation::TargetPropertyEnumSize) == arraysize(s_targetPropertyNames), TargetProperty_names_match_enum);
 
 } // namespace
 
 namespace cc {
 
-scoped_ptr<CCActiveAnimation> CCActiveAnimation::create(scoped_ptr<CCAnimationCurve> curve, int animationId, int groupId, TargetProperty targetProperty)
+scoped_ptr<ActiveAnimation> ActiveAnimation::create(scoped_ptr<AnimationCurve> curve, int animationId, int groupId, TargetProperty targetProperty)
 {
-    return make_scoped_ptr(new CCActiveAnimation(curve.Pass(), animationId, groupId, targetProperty));
+    return make_scoped_ptr(new ActiveAnimation(curve.Pass(), animationId, groupId, targetProperty));
 }
 
-CCActiveAnimation::CCActiveAnimation(scoped_ptr<CCAnimationCurve> curve, int animationId, int groupId, TargetProperty targetProperty)
+ActiveAnimation::ActiveAnimation(scoped_ptr<AnimationCurve> curve, int animationId, int groupId, TargetProperty targetProperty)
     : m_curve(curve.Pass())
     , m_id(animationId)
     , m_group(groupId)
@@ -62,13 +62,13 @@ CCActiveAnimation::CCActiveAnimation(scoped_ptr<CCAnimationCurve> curve, int ani
 {
 }
 
-CCActiveAnimation::~CCActiveAnimation()
+ActiveAnimation::~ActiveAnimation()
 {
     if (m_runState == Running || m_runState == Paused)
         setRunState(Aborted, 0);
 }
 
-void CCActiveAnimation::setRunState(RunState runState, double monotonicTime)
+void ActiveAnimation::setRunState(RunState runState, double monotonicTime)
 {
     if (m_suspended)
         return;
@@ -81,7 +81,7 @@ void CCActiveAnimation::setRunState(RunState runState, double monotonicTime)
         || m_runState == WaitingForStartTime;
 
     if (isWaitingToStart && runState == Running)
-        TRACE_EVENT_ASYNC_BEGIN1("cc", "CCActiveAnimation", this, "Name", TRACE_STR_COPY(nameBuffer));
+        TRACE_EVENT_ASYNC_BEGIN1("cc", "ActiveAnimation", this, "Name", TRACE_STR_COPY(nameBuffer));
 
     bool wasFinished = isFinished();
 
@@ -96,27 +96,27 @@ void CCActiveAnimation::setRunState(RunState runState, double monotonicTime)
     const char* newRunStateName = s_runStateNames[runState];
 
     if (!wasFinished && isFinished())
-        TRACE_EVENT_ASYNC_END0("cc", "CCActiveAnimation", this);
+        TRACE_EVENT_ASYNC_END0("cc", "ActiveAnimation", this);
 
     char stateBuffer[256];
     base::snprintf(stateBuffer, sizeof(stateBuffer), "%s->%s", oldRunStateName, newRunStateName);
 
-    TRACE_EVENT_INSTANT2("cc", "CCLayerAnimationController::setRunState", "Name", TRACE_STR_COPY(nameBuffer), "State", TRACE_STR_COPY(stateBuffer));
+    TRACE_EVENT_INSTANT2("cc", "LayerAnimationController::setRunState", "Name", TRACE_STR_COPY(nameBuffer), "State", TRACE_STR_COPY(stateBuffer));
 }
 
-void CCActiveAnimation::suspend(double monotonicTime)
+void ActiveAnimation::suspend(double monotonicTime)
 {
     setRunState(Paused, monotonicTime);
     m_suspended = true;
 }
 
-void CCActiveAnimation::resume(double monotonicTime)
+void ActiveAnimation::resume(double monotonicTime)
 {
     m_suspended = false;
     setRunState(Running, monotonicTime);
 }
 
-bool CCActiveAnimation::isFinishedAt(double monotonicTime) const
+bool ActiveAnimation::isFinishedAt(double monotonicTime) const
 {
     if (isFinished())
         return true;
@@ -129,7 +129,7 @@ bool CCActiveAnimation::isFinishedAt(double monotonicTime) const
         && m_iterations * m_curve->duration() <= monotonicTime - startTime() - m_totalPausedTime;
 }
 
-double CCActiveAnimation::trimTimeToCurrentIteration(double monotonicTime) const
+double ActiveAnimation::trimTimeToCurrentIteration(double monotonicTime) const
 {
     double trimmed = monotonicTime + m_timeOffset;
 
@@ -177,14 +177,14 @@ double CCActiveAnimation::trimTimeToCurrentIteration(double monotonicTime) const
     return trimmed;
 }
 
-scoped_ptr<CCActiveAnimation> CCActiveAnimation::clone(InstanceType instanceType) const
+scoped_ptr<ActiveAnimation> ActiveAnimation::clone(InstanceType instanceType) const
 {
     return cloneAndInitialize(instanceType, m_runState, m_startTime);
 }
 
-scoped_ptr<CCActiveAnimation> CCActiveAnimation::cloneAndInitialize(InstanceType instanceType, RunState initialRunState, double startTime) const
+scoped_ptr<ActiveAnimation> ActiveAnimation::cloneAndInitialize(InstanceType instanceType, RunState initialRunState, double startTime) const
 {
-    scoped_ptr<CCActiveAnimation> toReturn(new CCActiveAnimation(m_curve->clone(), m_id, m_group, m_targetProperty));
+    scoped_ptr<ActiveAnimation> toReturn(new ActiveAnimation(m_curve->clone(), m_id, m_group, m_targetProperty));
     toReturn->m_runState = initialRunState;
     toReturn->m_iterations = m_iterations;
     toReturn->m_startTime = startTime;
@@ -196,10 +196,10 @@ scoped_ptr<CCActiveAnimation> CCActiveAnimation::cloneAndInitialize(InstanceType
     return toReturn.Pass();
 }
 
-void CCActiveAnimation::pushPropertiesTo(CCActiveAnimation* other) const
+void ActiveAnimation::pushPropertiesTo(ActiveAnimation* other) const
 {
     // Currently, we only push changes due to pausing and resuming animations on the main thread.
-    if (m_runState == CCActiveAnimation::Paused || other->m_runState == CCActiveAnimation::Paused) {
+    if (m_runState == ActiveAnimation::Paused || other->m_runState == ActiveAnimation::Paused) {
         other->m_runState = m_runState;
         other->m_pauseTime = m_pauseTime;
         other->m_totalPausedTime = m_totalPausedTime;

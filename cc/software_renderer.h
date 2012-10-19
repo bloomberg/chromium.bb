@@ -11,18 +11,18 @@
 
 namespace cc {
 
-class CCDebugBorderDrawQuad;
-class CCRendererClient;
-class CCResourceProvider;
-class CCSolidColorDrawQuad;
-class CCTextureDrawQuad;
-class CCTileDrawQuad;
-class CCRenderPassDrawQuad;
+class DebugBorderDrawQuad;
+class RendererClient;
+class ResourceProvider;
+class SolidColorDrawQuad;
+class TextureDrawQuad;
+class TileDrawQuad;
+class RenderPassDrawQuad;
 
-class CCRendererSoftware : public CCDirectRenderer {
+class SoftwareRenderer : public DirectRenderer {
 public:
-    static scoped_ptr<CCRendererSoftware> create(CCRendererClient*, CCResourceProvider*, WebKit::WebCompositorSoftwareOutputDevice*);
-    virtual ~CCRendererSoftware();
+    static scoped_ptr<SoftwareRenderer> create(RendererClient*, ResourceProvider*, WebKit::WebCompositorSoftwareOutputDevice*);
+    virtual ~SoftwareRenderer();
 
     virtual const RendererCapabilities& capabilities() const OVERRIDE;
 
@@ -38,27 +38,27 @@ public:
 
 protected:
     virtual void bindFramebufferToOutputSurface(DrawingFrame&) OVERRIDE;
-    virtual bool bindFramebufferToTexture(DrawingFrame&, const CCScopedTexture*, const IntRect& framebufferRect) OVERRIDE;
+    virtual bool bindFramebufferToTexture(DrawingFrame&, const ScopedTexture*, const IntRect& framebufferRect) OVERRIDE;
     virtual void setDrawViewportSize(const IntSize&) OVERRIDE;
     virtual void enableScissorTestRect(const IntRect& scissorRect) OVERRIDE;
     virtual void disableScissorTest() OVERRIDE;
     virtual void clearFramebuffer(DrawingFrame&) OVERRIDE;
-    virtual void drawQuad(DrawingFrame&, const CCDrawQuad*) OVERRIDE;
+    virtual void drawQuad(DrawingFrame&, const DrawQuad*) OVERRIDE;
     virtual void beginDrawingFrame(DrawingFrame&) OVERRIDE;
     virtual void finishDrawingFrame(DrawingFrame&) OVERRIDE;
     virtual bool flippedFramebuffer() const OVERRIDE;
 
 private:
-    CCRendererSoftware(CCRendererClient*, CCResourceProvider*, WebKit::WebCompositorSoftwareOutputDevice*);
+    SoftwareRenderer(RendererClient*, ResourceProvider*, WebKit::WebCompositorSoftwareOutputDevice*);
 
-    bool isSoftwareResource(CCResourceProvider::ResourceId) const;
+    bool isSoftwareResource(ResourceProvider::ResourceId) const;
 
-    void drawDebugBorderQuad(const DrawingFrame&, const CCDebugBorderDrawQuad*);
-    void drawSolidColorQuad(const DrawingFrame&, const CCSolidColorDrawQuad*);
-    void drawTextureQuad(const DrawingFrame&, const CCTextureDrawQuad*);
-    void drawTileQuad(const DrawingFrame&, const CCTileDrawQuad*);
-    void drawRenderPassQuad(const DrawingFrame& frame, const CCRenderPassDrawQuad*);
-    void drawUnsupportedQuad(const DrawingFrame&, const CCDrawQuad*);
+    void drawDebugBorderQuad(const DrawingFrame&, const DebugBorderDrawQuad*);
+    void drawSolidColorQuad(const DrawingFrame&, const SolidColorDrawQuad*);
+    void drawTextureQuad(const DrawingFrame&, const TextureDrawQuad*);
+    void drawTileQuad(const DrawingFrame&, const TileDrawQuad*);
+    void drawRenderPassQuad(const DrawingFrame& frame, const RenderPassDrawQuad*);
+    void drawUnsupportedQuad(const DrawingFrame&, const DrawQuad*);
 
     RendererCapabilities m_capabilities;
     bool m_visible;
@@ -67,9 +67,9 @@ private:
     scoped_ptr<SkCanvas> m_skRootCanvas;
     SkCanvas* m_skCurrentCanvas;
     SkPaint m_skCurrentPaint;
-    scoped_ptr<CCResourceProvider::ScopedWriteLockSoftware> m_currentFramebufferLock;
+    scoped_ptr<ResourceProvider::ScopedWriteLockSoftware> m_currentFramebufferLock;
 
-    DISALLOW_COPY_AND_ASSIGN(CCRendererSoftware);
+    DISALLOW_COPY_AND_ASSIGN(SoftwareRenderer);
 };
 
 }
