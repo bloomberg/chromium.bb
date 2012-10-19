@@ -381,13 +381,7 @@ FileManager.prototype = {
        return this.metadataCache_.isInitialized();
     }.bind(this));
 
-    this.dateFormatter_ = v8Intl.DateTimeFormat(
-        [] /* default locale */,
-        {year: 'numeric', month: 'short', day: 'numeric',
-         hour: 'numeric', minute: 'numeric', hour12: true});
-    this.timeFormatter_ = v8Intl.DateTimeFormat(
-        [] /* default locale */,
-        {hour: 'numeric', minute: 'numeric', hour12: true});
+    this.initDateTimeFormatters_();
 
     this.collator_ = v8Intl.Collator([], {numeric: true, sensitivity: 'base'});
 
@@ -466,6 +460,19 @@ FileManager.prototype = {
 
     metrics.recordInterval('Load.DOM');
     metrics.recordInterval('Load.Total');
+  };
+
+  FileManager.prototype.initDateTimeFormatters_ = function() {
+    var use12hourClock = !this.preferences_['use24hourClock'];
+    this.dateFormatter_ = v8Intl.DateTimeFormat(
+        [] /* default locale */,
+        {year: 'numeric', month: 'short', day: 'numeric',
+         hour: 'numeric', minute: 'numeric',
+         hour12: use12hourClock});
+    this.timeFormatter_ = v8Intl.DateTimeFormat(
+        [] /* default locale */,
+        {hour: 'numeric', minute: 'numeric',
+         hour12: use12hourClock});
   };
 
   FileManager.prototype.initDataTransferOperations_ = function() {
@@ -2473,6 +2480,9 @@ FileManager.prototype = {
     this.updateNetworkStateAndPreferences_(function() {
       var gdata = self.preferences_;
       var network = self.networkState_;
+
+      self.initDateTimeFormatters_();
+      self.refreshCurrentDirectoryMetadata_();
 
       self.directoryModel_.setGDataEnabled(self.isGDataEnabled());
       self.directoryModel_.setOffline(!network.online);

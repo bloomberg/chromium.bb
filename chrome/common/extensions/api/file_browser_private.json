@@ -918,7 +918,8 @@
                 "properties": {
                   "driveEnabled": {"type":"boolean"},
                   "cellularDisabled": {"type":"boolean"},
-                  "hostedFilesDisabled": {"type":"boolean"}
+                  "hostedFilesDisabled": {"type":"boolean"},
+                  "use24hourClock": {"type":"boolean"}
                 }
               }
             ]

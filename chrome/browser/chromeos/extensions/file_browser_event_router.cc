@@ -156,6 +156,7 @@ void FileBrowserEventRouter::ObserveFileSystemEvents() {
   pref_change_registrar_->Add(prefs::kDisableGDataOverCellular, this);
   pref_change_registrar_->Add(prefs::kDisableGDataHostedFiles, this);
   pref_change_registrar_->Add(prefs::kDisableGData, this);
+  pref_change_registrar_->Add(prefs::kUse24HourClock, this);
   pref_change_registrar_->Add(prefs::kExternalStorageDisabled, this);
 }
 
@@ -405,7 +406,8 @@ void FileBrowserEventRouter::Observe(
       return;
     } else if (*pref_name == prefs::kDisableGDataOverCellular ||
         *pref_name == prefs::kDisableGDataHostedFiles ||
-        *pref_name == prefs::kDisableGData) {
+        *pref_name == prefs::kDisableGData ||
+        *pref_name == prefs::kUse24HourClock) {
       profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
           extensions::event_names::kOnFileBrowserPreferencesChanged,
           scoped_ptr<ListValue>(new ListValue()), NULL, GURL());

@@ -2615,6 +2615,9 @@ bool GetPreferencesFunction::RunImpl() {
   value->SetBoolean("hostedFilesDisabled",
                     service->GetBoolean(prefs::kDisableGDataHostedFiles));
 
+  value->SetBoolean("use24hourClock",
+                    service->GetBoolean(prefs::kUse24HourClock));
+
   SetResult(value.release());
   return true;
 }
