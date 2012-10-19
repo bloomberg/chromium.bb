@@ -27,7 +27,8 @@ bool Verifier::VerifyBPF(const std::vector<struct sock_filter>& program,
     // indicates either i386 or x86-64; and a set bit 30 indicates x32. And
     // unless we pay attention to setting this bit correctly, an early check in
     // our BPF program will make us fail with a misleading error code.
-    struct arch_seccomp_data data = { sysnum, SECCOMP_ARCH };
+    struct arch_seccomp_data data = { static_cast<int>(sysnum),
+                                      static_cast<uint32_t>(SECCOMP_ARCH) };
 #if defined(__i386__) || defined(__x86_64__)
 #if defined(__x86_64__) && defined(__ILP32__)
     if (!(sysnum & 0x40000000u)) {
