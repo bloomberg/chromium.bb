@@ -41,6 +41,11 @@
             'src/libusb',
             'src/libusb/os',
           ],
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '.',
+            ],
+          },
           'conditions': [
             [ 'OS == "linux" or OS == "android"', {
               'sources': [
