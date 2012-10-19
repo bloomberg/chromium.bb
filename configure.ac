@@ -86,6 +86,14 @@ if test "x$enable_documentation" = "xyes"; then
 
 	AC_PATH_PROG(PUBLICAN, publican)
 
+	if test "x$PUBLICAN" != "x"; then
+		PUBLICAN_VERSION=`$PUBLICAN -v | cut -d'=' -f2`
+
+		if test [ 1 -eq `echo "${PUBLICAN_VERSION} < 2.8" | bc` ]; then
+			AC_MSG_ERROR([Publican version is not supported. Install publican >= 2.8 or disable the documentation using --disable-documentation])
+		fi
+	fi
+
 	AC_CONFIG_FILES([
 	doc/doxygen/wayland.doxygen
 	])
