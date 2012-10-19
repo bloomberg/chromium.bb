@@ -608,8 +608,8 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
   if (!window) {
     Profile* profile = Profile::FromBrowserContext(
         inspected_rvh->GetProcess()->GetBrowserContext());
-    std::string dock_side = GetOrMigrateDockSidePref(profile);
-    window = Create(profile, inspected_rvh, SideFromString(dock_side), false);
+    DevToolsDockSide dock_side = GetDockSideFromPrefs(profile);
+    window = Create(profile, inspected_rvh, dock_side, false);
     manager->RegisterDevToolsClientHostFor(agent, window->frontend_host_);
     do_open = true;
   }
@@ -708,7 +708,20 @@ void DevToolsWindow::SetDockSide(const std::string& side) {
       inspected_window->UpdateDevTools();
   }
 
-  profile_->GetPrefs()->SetString(prefs::kDevToolsDockSide, side);
+  std::string pref_value = kPrefBottom;
+  switch (dock_side_) {
+    case DEVTOOLS_DOCK_SIDE_UNDOCKED:
+        pref_value = kPrefUndocked;
+        break;
+    case DEVTOOLS_DOCK_SIDE_RIGHT:
+        pref_value = kPrefRight;
+        break;
+    case DEVTOOLS_DOCK_SIDE_BOTTOM:
+        pref_value = kPrefBottom;
+        break;
+  }
+  profile_->GetPrefs()->SetString(prefs::kDevToolsDockSide, pref_value);
+
   Show(DEVTOOLS_TOGGLE_ACTION_SHOW);
 }
 
@@ -788,17 +801,25 @@ bool DevToolsWindow::IsDocked() {
 }
 
 // static
-std::string DevToolsWindow::GetOrMigrateDockSidePref(Profile* profile) {
+DevToolsDockSide DevToolsWindow::GetDockSideFromPrefs(Profile* profile) {
   std::string dock_side =
       profile->GetPrefs()->GetString(prefs::kDevToolsDockSide);
+
+  // Migrate prefs
   if (dock_side == kOldPrefBottom || dock_side == kOldPrefRight) {
     bool docked = profile->GetPrefs()->GetBoolean(prefs::kDevToolsOpenDocked);
     if (dock_side == kOldPrefBottom)
-      return docked ? kDockSideBottom : kDockSideUndocked;
+      return docked ? DEVTOOLS_DOCK_SIDE_BOTTOM : DEVTOOLS_DOCK_SIDE_UNDOCKED;
     else
-      return docked ? kDockSideRight : kDockSideUndocked;
+      return docked ? DEVTOOLS_DOCK_SIDE_RIGHT : DEVTOOLS_DOCK_SIDE_UNDOCKED;
   }
-  return dock_side;
+
+  if (dock_side == kPrefUndocked)
+    return DEVTOOLS_DOCK_SIDE_UNDOCKED;
+  else if (dock_side == kPrefRight)
+    return DEVTOOLS_DOCK_SIDE_RIGHT;
+  // Default to docked to bottom
+  return DEVTOOLS_DOCK_SIDE_BOTTOM;
 }
 
 // static

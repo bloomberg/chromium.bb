@@ -49,7 +49,7 @@ class ViewIDTest : public InProcessBrowserTest {
 
     // Make sure docked devtools is created to test VIEW_ID_DEV_TOOLS_DOCKED
     browser()->profile()->GetPrefs()->SetString(prefs::kDevToolsDockSide,
-                                                "undocked");
+                                                "dock_bottom");
     chrome::ToggleDevToolsWindow(browser(), DEVTOOLS_TOGGLE_ACTION_INSPECT);
 
     // Make sure download shelf is created to test VIEW_ID_DOWNLOAD_SHELF

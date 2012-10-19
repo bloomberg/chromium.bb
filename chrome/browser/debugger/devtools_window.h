@@ -169,7 +169,7 @@ class DevToolsWindow : private content::NotificationObserver,
 
   void UpdateBrowserToolbar();
   bool IsDocked();
-  static std::string GetOrMigrateDockSidePref(Profile* profile);
+  static DevToolsDockSide GetDockSideFromPrefs(Profile* profile);
   static std::string SideToString(DevToolsDockSide dock_side);
   static DevToolsDockSide SideFromString(const std::string& dock_side);
 
