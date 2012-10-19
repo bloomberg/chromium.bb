@@ -49,11 +49,6 @@ class Rect;
 class Size;
 }
 
-enum DevToolsDockSide {
-  DEVTOOLS_DOCK_SIDE_BOTTOM = 0,
-  DEVTOOLS_DOCK_SIDE_RIGHT = 1
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserWindow interface
 //  An interface implemented by the "view" of the Browser window.
@@ -103,9 +98,6 @@ class BrowserWindow : public BaseWindow {
   // Inform the frame that the dev tools window for the selected tab has
   // changed.
   virtual void UpdateDevTools() = 0;
-
-  // Requests that the docked dev tools window changes its dock mode.
-  virtual void SetDevToolsDockSide(DevToolsDockSide side) = 0;
 
   // Update any loading animations running in the window. |should_animate| is
   // true if there are tabs loading and the animations should continue, false

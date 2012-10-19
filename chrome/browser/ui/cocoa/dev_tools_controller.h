@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/memory/scoped_nsobject.h"
+#include "chrome/browser/debugger/devtools_window.h"
 
 @class NSSplitView;
 @class NSView;
@@ -26,7 +27,7 @@ class WebContents;
   // A view hosting docked devTools contents.
   scoped_nsobject<NSSplitView> splitView_;
 
-  BOOL dockToRight_;
+  DevToolsDockSide dockSide_;
 }
 
 - (id)init;
@@ -43,10 +44,6 @@ class WebContents;
 // the actual resize).
 - (void)updateDevToolsForWebContents:(content::WebContents*)contents
                          withProfile:(Profile*)profile;
-
-// Specifies whether devtools should dock to right.
-- (void)setDockToRight:(BOOL)dock_to_right
-           withProfile:(Profile*)profile;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_DEV_TOOLS_CONTROLLER_H_

@@ -241,17 +241,18 @@ void ThumbnailLoader::LoadThumbnail() {
 
 - (int)bottomOffset {
   int bottomOffset = 0;
-  TabContents* devToolsContents =
-      DevToolsWindow::GetDevToolsContents(contents_->web_contents());
-  if (devToolsContents && devToolsContents->web_contents() &&
-      devToolsContents->web_contents()->GetRenderViewHost() &&
-      devToolsContents->web_contents()->GetRenderViewHost()->GetView()) {
+  DevToolsWindow* devToolsWindow =
+      DevToolsWindow::GetDockedInstanceForInspectedTab(
+          contents_->web_contents());
+  content::WebContents* devToolsContents = devToolsWindow ?
+      devToolsWindow->tab_contents()->web_contents() : NULL;
+  if (devToolsContents->GetRenderViewHost() &&
+      devToolsContents->GetRenderViewHost()->GetView()) {
     // The devtool's size might not be up-to-date, but since its height doesn't
     // change on window resize, and since most users don't use devtools, this is
     // good enough.
-    bottomOffset +=
-        devToolsContents->web_contents()->GetRenderViewHost()->GetView()->
-            GetViewBounds().height();
+    bottomOffset += devToolsContents->GetRenderViewHost()->GetView()->
+        GetViewBounds().height();
     bottomOffset += 1;  // :-( Divider line between web contents and devtools.
   }
   return bottomOffset;

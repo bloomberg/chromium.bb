@@ -44,8 +44,6 @@ class DevToolsFrontendHost : public DevToolsClientHost,
   void OnActivateWindow();
   void OnCloseWindow();
   void OnMoveWindow(int x, int y);
-  void OnRequestDockWindow();
-  void OnRequestUndockWindow();
   void OnRequestSetDockSide(const std::string& side);
   void OnOpenInNewTab(const std::string& url);
   void OnSave(const std::string& url, const std::string& content, bool save_as);

@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "build/build_config.h"
+#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/infobars/infobar_container.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -258,7 +259,6 @@ class BrowserView : public BrowserWindow,
   virtual void BookmarkBarStateChanged(
       BookmarkBar::AnimateChangeType change_type) OVERRIDE;
   virtual void UpdateDevTools() OVERRIDE;
-  virtual void SetDevToolsDockSide(DevToolsDockSide side) OVERRIDE;
   virtual void UpdateLoadingAnimations(bool should_animate) OVERRIDE;
   virtual void SetStarredState(bool is_starred) OVERRIDE;
   virtual void ZoomChangedForActiveTab(bool can_show_bubble) OVERRIDE;
@@ -508,10 +508,13 @@ class BrowserView : public BrowserWindow,
   bool MaybeShowInfoBar(TabContents* contents);
 
   // Shows docked devtools.
-  void ShowDevToolsContainer();
+  void ShowDevToolsContainer(DevToolsDockSide side);
 
   // Hides docked devtools.
   void HideDevToolsContainer();
+
+  // Updates devtools dock side.
+  void SetDevToolsDockSide(DevToolsDockSide side);
 
   // Updated devtools window for given contents.
   void UpdateDevToolsForContents(TabContents* tab_contents);

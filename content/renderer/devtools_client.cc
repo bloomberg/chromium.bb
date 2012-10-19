@@ -62,15 +62,20 @@ void DevToolsClient::moveWindowBy(const WebKit::WebFloatPoint& offset) {
   Send(new DevToolsHostMsg_MoveWindow(routing_id(), offset.x, offset.y));
 }
 
+// TODO(pfeldman): remove once migrated to SetDockSide.
 void DevToolsClient::requestDockWindow() {
-  Send(new DevToolsHostMsg_RequestDockWindow(routing_id()));
+  if (last_dock_side_.empty())
+    last_dock_side_ = "bottom";
+  Send(new DevToolsHostMsg_RequestSetDockSide(routing_id(), last_dock_side_));
 }
 
+// TODO(pfeldman): remove once migration to SetDockSide.
 void DevToolsClient::requestUndockWindow() {
-  Send(new DevToolsHostMsg_RequestUndockWindow(routing_id()));
+  Send(new DevToolsHostMsg_RequestSetDockSide(routing_id(), "undocked"));
 }
 
 void DevToolsClient::requestSetDockSide(const WebKit::WebString& side) {
+  last_dock_side_ = side.utf8();
   Send(new DevToolsHostMsg_RequestSetDockSide(routing_id(), side.utf8()));
 }
 

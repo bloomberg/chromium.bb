@@ -15,6 +15,7 @@
 #include "base/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/api/prefs/pref_member.h"
+#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/infobars/infobar_container.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -86,7 +87,6 @@ class BrowserWindowGtk
   virtual void BookmarkBarStateChanged(
       BookmarkBar::AnimateChangeType change_type) OVERRIDE;
   virtual void UpdateDevTools() OVERRIDE;
-  virtual void SetDevToolsDockSide(DevToolsDockSide side) OVERRIDE;
   virtual void UpdateLoadingAnimations(bool should_animate) OVERRIDE;
   virtual void SetStarredState(bool is_starred) OVERRIDE;
   virtual void ZoomChangedForActiveTab(bool can_show_bubble) OVERRIDE;
@@ -204,10 +204,13 @@ class BrowserWindowGtk
   void UpdateDevToolsForContents(content::WebContents* contents);
 
   // Shows docked devtools.
-  void ShowDevToolsContainer();
+  void ShowDevToolsContainer(DevToolsDockSide dock_side);
 
   // Hides docked devtools.
   void HideDevToolsContainer();
+
+  // Updates dock side orientation for the devtools.
+  void SetDevToolsDockSide(DevToolsDockSide side);
 
   void OnDebouncedBoundsChanged();
 

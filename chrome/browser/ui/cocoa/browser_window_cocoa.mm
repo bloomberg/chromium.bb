@@ -257,10 +257,6 @@ void BrowserWindowCocoa::UpdateDevTools() {
       chrome::GetActiveWebContents(browser_)];
 }
 
-void BrowserWindowCocoa::SetDevToolsDockSide(DevToolsDockSide side) {
-  [controller_ setDevToolsDockToRight:side == DEVTOOLS_DOCK_SIDE_RIGHT];
-}
-
 void BrowserWindowCocoa::UpdateLoadingAnimations(bool should_animate) {
   // Do nothing on Mac.
 }

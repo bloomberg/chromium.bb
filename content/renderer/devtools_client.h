@@ -54,6 +54,7 @@ class DevToolsClient : public content::RenderViewObserver,
   void OnDispatchOnInspectorFrontend(const std::string& message);
 
   scoped_ptr<WebKit::WebDevToolsFrontend> web_tools_frontend_;
+  std::string last_dock_side_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsClient);
 };

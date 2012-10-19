@@ -935,7 +935,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabled) {
   // Open devtools.
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_DEV_TOOLS));
   content::WebContents* contents = chrome::GetActiveWebContents(browser());
-  EXPECT_TRUE(DevToolsWindow::GetDevToolsContents(contents));
+  EXPECT_TRUE(DevToolsWindow::GetDockedInstanceForInspectedTab(contents));
 
   // Disable devtools via policy.
   PolicyMap policies;
@@ -943,10 +943,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabled) {
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(true));
   provider_.UpdateChromePolicy(policies);
   // The existing devtools window should have closed.
-  EXPECT_FALSE(DevToolsWindow::GetDevToolsContents(contents));
+  EXPECT_FALSE(DevToolsWindow::GetDockedInstanceForInspectedTab(contents));
   // And it's not possible to open it again.
   EXPECT_FALSE(chrome::ExecuteCommand(browser(), IDC_DEV_TOOLS));
-  EXPECT_FALSE(DevToolsWindow::GetDevToolsContents(contents));
+  EXPECT_FALSE(DevToolsWindow::GetDockedInstanceForInspectedTab(contents));
 }
 
 // This policy isn't available on Chrome OS.

@@ -16,7 +16,6 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/instant/instant_controller.h"
@@ -688,8 +687,7 @@ void BrowserView::SetDevToolsDockSide(DevToolsDockSide side) {
 
   if (devtools_container_->visible()) {
     HideDevToolsContainer();
-    devtools_dock_side_ = side;
-    ShowDevToolsContainer();
+    ShowDevToolsContainer(side);
   } else {
     devtools_dock_side_ = side;
   }
@@ -2100,12 +2098,19 @@ bool BrowserView::MaybeShowInfoBar(TabContents* contents) {
 }
 
 void BrowserView::UpdateDevToolsForContents(TabContents* tab_contents) {
-  WebContents* devtools_contents = NULL;
-  if (tab_contents) {
-    TabContents* devtools_tab_contents =
-        DevToolsWindow::GetDevToolsContents(tab_contents->web_contents());
-    if (devtools_tab_contents)
-      devtools_contents = devtools_tab_contents->web_contents();
+  DevToolsWindow* devtools_window = tab_contents ?
+      DevToolsWindow::GetDockedInstanceForInspectedTab(
+          tab_contents->web_contents()) : NULL;
+  TabContents* devtools_tab_contents =
+      devtools_window ? devtools_window->tab_contents() : NULL;
+  WebContents* devtools_contents = devtools_tab_contents ?
+      devtools_tab_contents->web_contents() : NULL;
+
+  if (devtools_contents == devtools_container_->web_contents()) {
+    if (devtools_contents &&
+        devtools_window->dock_side() != devtools_dock_side_)
+      SetDevToolsDockSide(devtools_window->dock_side());
+    return;
   }
 
   bool should_show = devtools_contents && !devtools_container_->visible();
@@ -2115,12 +2120,13 @@ void BrowserView::UpdateDevToolsForContents(TabContents* tab_contents) {
   RestackLocationBarContainer();
 
   if (should_show)
-    ShowDevToolsContainer();
+    ShowDevToolsContainer(devtools_window->dock_side());
   else if (should_hide)
     HideDevToolsContainer();
 }
 
-void BrowserView::ShowDevToolsContainer() {
+void BrowserView::ShowDevToolsContainer(DevToolsDockSide dock_side) {
+  devtools_dock_side_ = dock_side;
   if (!devtools_focus_tracker_.get()) {
     // Install devtools focus tracker when dev tools window is shown for the
     // first time.

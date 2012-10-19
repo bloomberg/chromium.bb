@@ -69,8 +69,16 @@ using content::WebContents;
 
 const char DevToolsWindow::kDevToolsApp[] = "DevToolsApp";
 
+const char kOldPrefBottom[] = "bottom";
+const char kOldPrefRight[] = "right";
+
+const char kPrefBottom[] = "dock_bottom";
+const char kPrefRight[] = "dock_right";
+const char kPrefUndocked[] = "undocked";
+
 const char kDockSideBottom[] = "bottom";
 const char kDockSideRight[] = "right";
+const char kDockSideUndocked[] = "undocked";
 
 // static
 void DevToolsWindow::RegisterUserPrefs(PrefService* prefs) {
@@ -85,7 +93,8 @@ void DevToolsWindow::RegisterUserPrefs(PrefService* prefs) {
 }
 
 // static
-TabContents* DevToolsWindow::GetDevToolsContents(WebContents* inspected_tab) {
+DevToolsWindow* DevToolsWindow::GetDockedInstanceForInspectedTab(
+    WebContents* inspected_tab) {
   if (!inspected_tab)
     return NULL;
 
@@ -97,9 +106,7 @@ TabContents* DevToolsWindow::GetDevToolsContents(WebContents* inspected_tab) {
   DevToolsManager* manager = DevToolsManager::GetInstance();
   DevToolsClientHost* client_host = manager->GetDevToolsClientHostFor(agent);
   DevToolsWindow* window = AsDevToolsWindow(client_host);
-  if (!window || !window->is_docked())
-    return NULL;
-  return window->tab_contents();
+  return window && window->IsDocked() ? window : NULL;
 }
 
 // static
@@ -131,7 +138,7 @@ DevToolsWindow* DevToolsWindow::OpenDevToolsWindowForWorker(
 // static
 DevToolsWindow* DevToolsWindow::CreateDevToolsWindowForWorker(
     Profile* profile) {
-  return Create(profile, NULL, false, true);
+  return Create(profile, NULL, DEVTOOLS_DOCK_SIDE_UNDOCKED, true);
 }
 
 // static
@@ -172,7 +179,7 @@ void DevToolsWindow::InspectElement(RenderViewHost* inspected_rvh,
 DevToolsWindow* DevToolsWindow::Create(
     Profile* profile,
     RenderViewHost* inspected_rvh,
-    bool docked,
+    DevToolsDockSide dock_side,
     bool shared_worker_frontend) {
   // Create TabContents with devtools.
   TabContents* tab_contents =
@@ -180,22 +187,22 @@ DevToolsWindow* DevToolsWindow::Create(
   tab_contents->web_contents()->GetRenderViewHost()->AllowBindings(
       content::BINDINGS_POLICY_WEB_UI);
   tab_contents->web_contents()->GetController().LoadURL(
-      GetDevToolsUrl(profile, docked, shared_worker_frontend),
+      GetDevToolsUrl(profile, dock_side, shared_worker_frontend),
       content::Referrer(),
       content::PAGE_TRANSITION_AUTO_TOPLEVEL,
       std::string());
-  return new DevToolsWindow(tab_contents, profile, inspected_rvh, docked);
+  return new DevToolsWindow(tab_contents, profile, inspected_rvh, dock_side);
 }
 
 DevToolsWindow::DevToolsWindow(TabContents* tab_contents,
                                Profile* profile,
                                RenderViewHost* inspected_rvh,
-                               bool docked)
+                               DevToolsDockSide dock_side)
     : profile_(profile),
       inspected_tab_(NULL),
       tab_contents_(tab_contents),
       browser_(NULL),
-      docked_(docked),
+      dock_side_(dock_side),
       is_loaded_(false),
       action_on_load_(DEVTOOLS_TOGGLE_ACTION_SHOW) {
   frontend_host_ = DevToolsClientHost::CreateDevToolsFrontendHost(
@@ -246,7 +253,7 @@ DevToolsWindow::~DevToolsWindow() {
 void DevToolsWindow::InspectedContentsClosing() {
   UpdateBrowserToolbar();
 
-  if (docked_) {
+  if (IsDocked()) {
     // Update dev tools to reflect removed dev tools window.
     BrowserWindow* inspected_window = GetInspectedBrowserWindow();
     if (inspected_window)
@@ -275,7 +282,7 @@ void DevToolsWindow::ContentsReplaced(WebContents* new_contents) {
 }
 
 void DevToolsWindow::Show(DevToolsToggleAction action) {
-  if (docked_) {
+  if (IsDocked()) {
     Browser* inspected_browser;
     int inspected_tab_index;
     // Tell inspected browser to update splitter and switch to inspected panel.
@@ -284,10 +291,6 @@ void DevToolsWindow::Show(DevToolsToggleAction action) {
                                         &inspected_tab_index)) {
       BrowserWindow* inspected_window = inspected_browser->window();
       tab_contents_->web_contents()->SetDelegate(this);
-      std::string dock_side =
-          profile_->GetPrefs()->GetString(prefs::kDevToolsDockSide);
-      inspected_window->SetDevToolsDockSide(dock_side == kDockSideRight ?
-          DEVTOOLS_DOCK_SIDE_RIGHT : DEVTOOLS_DOCK_SIDE_BOTTOM);
       inspected_window->UpdateDevTools();
       tab_contents_->web_contents()->GetView()->SetInitialFocus();
       inspected_window->Show();
@@ -297,8 +300,8 @@ void DevToolsWindow::Show(DevToolsToggleAction action) {
       return;
     } else {
       // Sometimes we don't know where to dock. Stay undocked.
-      docked_ = false;
-      UpdateFrontendAttachedState();
+      dock_side_ = DEVTOOLS_DOCK_SIDE_UNDOCKED;
+      UpdateFrontendDockSide();
     }
   }
 
@@ -316,40 +319,6 @@ void DevToolsWindow::Show(DevToolsToggleAction action) {
   }
 
   ScheduleAction(action);
-}
-
-void DevToolsWindow::RequestSetDocked(bool docked) {
-  if (docked_ == docked)
-    return;
-
-  if (!inspected_tab_)
-    return;
-
-  profile_->GetPrefs()->SetBoolean(prefs::kDevToolsOpenDocked, docked);
-
-  if (docked && (!GetInspectedBrowserWindow() ||
-                 IsInspectedBrowserPopupOrPanel())) {
-    // Cannot dock, avoid window flashing due to close-reopen cycle.
-    return;
-  }
-  docked_ = docked;
-
-  if (docked) {
-    // Detach window from the external devtools browser. It will lead to
-    // the browser object's close and delete. Remove observer first.
-    TabStripModel* tab_strip_model = browser_->tab_strip_model();
-    tab_strip_model->DetachTabContentsAt(
-        tab_strip_model->GetIndexOfTabContents(tab_contents_));
-    browser_ = NULL;
-  } else {
-    // Update inspected window to hide split and reset it.
-    BrowserWindow* inspected_window = GetInspectedBrowserWindow();
-    if (inspected_window) {
-      inspected_window->UpdateDevTools();
-      inspected_window = NULL;
-    }
-  }
-  Show(DEVTOOLS_TOGGLE_ACTION_SHOW);
 }
 
 RenderViewHost* DevToolsWindow::GetRenderViewHost() {
@@ -419,8 +388,10 @@ bool DevToolsWindow::IsInspectedBrowserPopupOrPanel() {
   return browser->is_type_popup() || browser->is_type_panel();
 }
 
-void DevToolsWindow::UpdateFrontendAttachedState() {
-  base::FundamentalValue docked(docked_);
+void DevToolsWindow::UpdateFrontendDockSide() {
+  base::StringValue dock_side(SideToString(dock_side_));
+  CallClientFunction("InspectorFrontendAPI.setDockSide", &dock_side);
+  base::FundamentalValue docked(IsDocked());
   CallClientFunction("InspectorFrontendAPI.setAttachedWindow", &docked);
 }
 
@@ -507,7 +478,7 @@ void DevToolsWindow::ScheduleAction(DevToolsToggleAction action) {
 }
 
 void DevToolsWindow::DoAction() {
-  UpdateFrontendAttachedState();
+  UpdateFrontendDockSide();
   // TODO: these messages should be pushed through the WebKit API instead.
   switch (action_on_load_) {
     case DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE:
@@ -534,7 +505,8 @@ std::string SkColorToRGBAString(SkColor color) {
 }
 
 // static
-GURL DevToolsWindow::GetDevToolsUrl(Profile* profile, bool docked,
+GURL DevToolsWindow::GetDevToolsUrl(Profile* profile,
+                                    DevToolsDockSide dock_side,
                                     bool shared_worker_frontend) {
   ThemeService* tp = ThemeServiceFactory::GetForProfile(profile);
   CHECK(tp);
@@ -548,14 +520,13 @@ GURL DevToolsWindow::GetDevToolsUrl(Profile* profile, bool docked,
   bool experiments_enabled =
       command_line.HasSwitch(switches::kEnableDevToolsExperiments);
 
-  std::string dock_side =
-      profile->GetPrefs()->GetString(prefs::kDevToolsDockSide);
-
+  // TODO(pfeldman): remove docked parameter once migrated to
+  // setDockSide.
   std::string url_string = StringPrintf("%sdevtools.html?"
       "docked=%s&dockSide=%s&toolbarColor=%s&textColor=%s%s%s",
       chrome::kChromeUIDevToolsURL,
-      docked ? "true" : "false",
-      dock_side.c_str(),
+      dock_side == DEVTOOLS_DOCK_SIDE_UNDOCKED ? "false" : "true",
+      SideToString(dock_side).c_str(),
       SkColorToRGBAString(color_toolbar).c_str(),
       SkColorToRGBAString(color_tab_text).c_str(),
       shared_worker_frontend ? "&isSharedWorker=true" : "",
@@ -595,7 +566,7 @@ void DevToolsWindow::AddNewContents(WebContents* source,
 bool DevToolsWindow::PreHandleKeyboardEvent(
     content::WebContents* source,
     const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) {
-  if (docked_) {
+  if (IsDocked()) {
     BrowserWindow* inspected_window = GetInspectedBrowserWindow();
     if (inspected_window)
       return inspected_window->PreHandleKeyboardEvent(
@@ -606,7 +577,7 @@ bool DevToolsWindow::PreHandleKeyboardEvent(
 
 void DevToolsWindow::HandleKeyboardEvent(content::WebContents* source,
                                          const NativeWebKeyboardEvent& event) {
-  if (docked_) {
+  if (IsDocked()) {
     if (event.windowsKeyCode == 0x08) {
       // Do not navigate back in history on Windows (http://crbug.com/74156).
       return;
@@ -637,8 +608,8 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
   if (!window) {
     Profile* profile = Profile::FromBrowserContext(
         inspected_rvh->GetProcess()->GetBrowserContext());
-    bool docked = profile->GetPrefs()->GetBoolean(prefs::kDevToolsOpenDocked);
-    window = Create(profile, inspected_rvh, docked, false);
+    std::string dock_side = GetOrMigrateDockSidePref(profile);
+    window = Create(profile, inspected_rvh, SideFromString(dock_side), false);
     manager->RegisterDevToolsClientHostFor(agent, window->frontend_host_);
     do_open = true;
   }
@@ -648,7 +619,7 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
 
   // If window is docked and visible, we hide it on toggle. If window is
   // undocked, we show (activate) it.
-  if (!window->is_docked() || do_open)
+  if (!window->IsDocked() || do_open)
     window->Show(action);
   else
     manager->UnregisterDevToolsClientHostFor(agent);
@@ -684,7 +655,7 @@ DevToolsWindow* DevToolsWindow::AsDevToolsWindow(RenderViewHost* window_rvh) {
 }
 
 void DevToolsWindow::ActivateWindow() {
-  if (!docked_) {
+  if (!IsDocked()) {
     if (!browser_->window()->IsActive()) {
       browser_->window()->Activate();
     }
@@ -696,38 +667,49 @@ void DevToolsWindow::ActivateWindow() {
 }
 
 void DevToolsWindow::CloseWindow() {
-  DCHECK(docked_);
+  DCHECK(IsDocked());
   DevToolsManager::GetInstance()->ClientHostClosing(frontend_host_);
   InspectedContentsClosing();
 }
 
 void DevToolsWindow::MoveWindow(int x, int y) {
-  if (!docked_) {
+  if (!IsDocked()) {
     gfx::Rect bounds = browser_->window()->GetBounds();
     bounds.Offset(x, y);
     browser_->window()->SetBounds(bounds);
   }
 }
 
-void DevToolsWindow::DockWindow() {
-  RequestSetDocked(true);
-}
-
-void DevToolsWindow::UndockWindow() {
-  RequestSetDocked(false);
-}
-
 void DevToolsWindow::SetDockSide(const std::string& side) {
-  std::string pref_value = kDockSideBottom;
-  if (side == kDockSideRight)
-    pref_value = kDockSideRight;
-  profile_->GetPrefs()->SetString(prefs::kDevToolsDockSide, pref_value);
+  DevToolsDockSide requested_side = SideFromString(side);
+  bool dock_requested = requested_side != DEVTOOLS_DOCK_SIDE_UNDOCKED;
+  bool is_docked = IsDocked();
 
-  BrowserWindow* inspected_window = GetInspectedBrowserWindow();
-  if (inspected_window) {
-    inspected_window->SetDevToolsDockSide(pref_value == kDockSideRight ?
-            DEVTOOLS_DOCK_SIDE_RIGHT : DEVTOOLS_DOCK_SIDE_BOTTOM);
+  if (dock_requested && (!inspected_tab_ || !GetInspectedBrowserWindow() ||
+      IsInspectedBrowserPopupOrPanel())) {
+      // Cannot dock, avoid window flashing due to close-reopen cycle.
+    return;
   }
+
+  dock_side_ = requested_side;
+  if (dock_requested) {
+    if (!is_docked) {
+      // Detach window from the external devtools browser. It will lead to
+      // the browser object's close and delete. Remove observer first.
+      TabStripModel* tab_strip_model = browser_->tab_strip_model();
+      tab_strip_model->DetachTabContentsAt(
+          tab_strip_model->GetIndexOfTabContents(tab_contents_));
+      browser_ = NULL;
+    }
+  } else if (is_docked) {
+    // Update inspected window to hide split and reset it.
+    BrowserWindow* inspected_window = GetInspectedBrowserWindow();
+    if (inspected_window)
+      inspected_window->UpdateDevTools();
+  }
+
+  profile_->GetPrefs()->SetString(prefs::kDevToolsDockSide, side);
+  Show(DEVTOOLS_TOGGLE_ACTION_SHOW);
 }
 
 void DevToolsWindow::OpenInNewTab(const std::string& url) {
@@ -787,8 +769,8 @@ void DevToolsWindow::WebContentsFocused(WebContents* contents) {
   Browser* inspected_browser = NULL;
   int inspected_tab_index = -1;
 
-  if (docked_ && FindInspectedBrowserAndTabIndex(&inspected_browser,
-                                                 &inspected_tab_index)) {
+  if (IsDocked() && FindInspectedBrowserAndTabIndex(&inspected_browser,
+                                                    &inspected_tab_index)) {
     inspected_browser->window()->WebContentsFocused(contents);
   }
 }
@@ -799,4 +781,43 @@ void DevToolsWindow::UpdateBrowserToolbar() {
   BrowserWindow* inspected_window = GetInspectedBrowserWindow();
   if (inspected_window)
     inspected_window->UpdateToolbar(inspected_tab_, false);
+}
+
+bool DevToolsWindow::IsDocked() {
+  return dock_side_ != DEVTOOLS_DOCK_SIDE_UNDOCKED;
+}
+
+// static
+std::string DevToolsWindow::GetOrMigrateDockSidePref(Profile* profile) {
+  std::string dock_side =
+      profile->GetPrefs()->GetString(prefs::kDevToolsDockSide);
+  if (dock_side == kOldPrefBottom || dock_side == kOldPrefRight) {
+    bool docked = profile->GetPrefs()->GetBoolean(prefs::kDevToolsOpenDocked);
+    if (dock_side == kOldPrefBottom)
+      return docked ? kDockSideBottom : kDockSideUndocked;
+    else
+      return docked ? kDockSideRight : kDockSideUndocked;
+  }
+  return dock_side;
+}
+
+// static
+std::string DevToolsWindow::SideToString(DevToolsDockSide dock_side) {
+  std::string dock_side_string;
+  switch (dock_side) {
+    case DEVTOOLS_DOCK_SIDE_UNDOCKED: return kDockSideUndocked;
+    case DEVTOOLS_DOCK_SIDE_RIGHT: return kDockSideRight;
+    case DEVTOOLS_DOCK_SIDE_BOTTOM: return kDockSideBottom;
+  }
+  return kDockSideUndocked;
+}
+
+// static
+DevToolsDockSide DevToolsWindow::SideFromString(
+    const std::string& dock_side) {
+  if (dock_side == kDockSideRight)
+    return DEVTOOLS_DOCK_SIDE_RIGHT;
+  if (dock_side == kDockSideBottom)
+    return DEVTOOLS_DOCK_SIDE_BOTTOM;
+  return DEVTOOLS_DOCK_SIDE_UNDOCKED;
 }

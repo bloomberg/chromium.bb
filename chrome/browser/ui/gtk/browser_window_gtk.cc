@@ -27,7 +27,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
@@ -744,8 +743,7 @@ void BrowserWindowGtk::SetDevToolsDockSide(DevToolsDockSide side) {
 
   if (devtools_container_->tab()) {
     HideDevToolsContainer();
-    devtools_dock_side_ = side;
-    ShowDevToolsContainer();
+    ShowDevToolsContainer(side);
   } else {
     devtools_dock_side_ = side;
   }
@@ -1320,10 +1318,17 @@ extensions::ActiveTabPermissionGranter*
 void BrowserWindowGtk::UpdateDevToolsForContents(WebContents* contents) {
   TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::UpdateDevToolsForContents");
   TabContents* old_devtools = devtools_container_->tab();
-  TabContents* devtools_contents = contents ?
-      DevToolsWindow::GetDevToolsContents(contents) : NULL;
-  if (old_devtools == devtools_contents)
+  DevToolsWindow* devtools_window = contents ?
+      DevToolsWindow::GetDockedInstanceForInspectedTab(contents) : NULL;
+  TabContents* devtools_contents =
+      devtools_window ? devtools_window->tab_contents() : NULL;
+
+  if (old_devtools == devtools_contents) {
+    if (devtools_contents &&
+        devtools_window->dock_side() != devtools_dock_side_)
+      SetDevToolsDockSide(devtools_window->dock_side());
     return;
+  }
 
   if (old_devtools)
     devtools_container_->DetachTab(old_devtools);
@@ -1341,13 +1346,14 @@ void BrowserWindowGtk::UpdateDevToolsForContents(WebContents* contents) {
   bool should_hide = old_devtools != NULL && devtools_contents == NULL;
 
   if (should_show)
-    ShowDevToolsContainer();
+    ShowDevToolsContainer(devtools_window->dock_side());
   else if (should_hide)
     HideDevToolsContainer();
 }
 
-void BrowserWindowGtk::ShowDevToolsContainer() {
-  bool dock_to_right = devtools_dock_side_ == DEVTOOLS_DOCK_SIDE_RIGHT;
+void BrowserWindowGtk::ShowDevToolsContainer(DevToolsDockSide dock_side) {
+  devtools_dock_side_ = dock_side;
+  bool dock_to_right = dock_side == DEVTOOLS_DOCK_SIDE_RIGHT;
 
   GtkAllocation contents_rect;
   gtk_widget_get_allocation(contents_vsplit_, &contents_rect);

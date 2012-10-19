@@ -70,9 +70,6 @@ bool DevToolsFrontendHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_ActivateWindow, OnActivateWindow)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_CloseWindow, OnCloseWindow)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_MoveWindow, OnMoveWindow)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_RequestDockWindow, OnRequestDockWindow)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_RequestUndockWindow,
-                        OnRequestUndockWindow)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_RequestSetDockSide,
                         OnRequestSetDockSide)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_OpenInNewTab, OnOpenInNewTab)
@@ -116,14 +113,6 @@ void DevToolsFrontendHost::OnAppend(
     const std::string& url,
     const std::string& content) {
   delegate_->AppendToFile(url, content);
-}
-
-void DevToolsFrontendHost::OnRequestDockWindow() {
-  delegate_->DockWindow();
-}
-
-void DevToolsFrontendHost::OnRequestUndockWindow() {
-  delegate_->UndockWindow();
 }
 
 void DevToolsFrontendHost::OnRequestSetDockSide(const std::string& side) {

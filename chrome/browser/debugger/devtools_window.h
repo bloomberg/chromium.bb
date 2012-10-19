@@ -40,6 +40,12 @@ class RenderViewHost;
 class WebContents;
 }
 
+enum DevToolsDockSide {
+  DEVTOOLS_DOCK_SIDE_UNDOCKED = 0,
+  DEVTOOLS_DOCK_SIDE_BOTTOM,
+  DEVTOOLS_DOCK_SIDE_RIGHT
+};
+
 class DevToolsWindow : private content::NotificationObserver,
                        private content::WebContentsDelegate,
                        private content::DevToolsFrontendHostDelegate,
@@ -47,7 +53,8 @@ class DevToolsWindow : private content::NotificationObserver,
  public:
   static const char kDevToolsApp[];
   static void RegisterUserPrefs(PrefService* prefs);
-  static TabContents* GetDevToolsContents(content::WebContents* inspected_tab);
+  static DevToolsWindow* GetDockedInstanceForInspectedTab(
+      content::WebContents* inspected_tab);
   static bool IsDevToolsWindow(content::RenderViewHost* window_rvh);
 
   static DevToolsWindow* OpenDevToolsWindowForWorker(
@@ -79,7 +86,7 @@ class DevToolsWindow : private content::NotificationObserver,
 
   TabContents* tab_contents() { return tab_contents_; }
   Browser* browser() { return browser_; }  // For tests.
-  bool is_docked() { return docked_; }
+  DevToolsDockSide dock_side() { return dock_side_; }
   content::DevToolsClientHost* devtools_client_host() {
     return frontend_host_;
   }
@@ -87,15 +94,18 @@ class DevToolsWindow : private content::NotificationObserver,
  private:
   static DevToolsWindow* Create(Profile* profile,
                                 content::RenderViewHost* inspected_rvh,
-                                bool docked, bool shared_worker_frontend);
-  DevToolsWindow(TabContents* tab_contents, Profile* profile,
-                 content::RenderViewHost* inspected_rvh, bool docked);
+                                DevToolsDockSide dock_side,
+                                bool shared_worker_frontend);
+  DevToolsWindow(TabContents* tab_contents,
+                 Profile* profile,
+                 content::RenderViewHost* inspected_rvh,
+                 DevToolsDockSide dock_side);
 
   void CreateDevToolsBrowser();
   bool FindInspectedBrowserAndTabIndex(Browser**, int* tab);
   BrowserWindow* GetInspectedBrowserWindow();
   bool IsInspectedBrowserPopupOrPanel();
-  void UpdateFrontendAttachedState();
+  void UpdateFrontendDockSide();
 
   // Overridden from content::NotificationObserver.
   virtual void Observe(int type,
@@ -104,7 +114,8 @@ class DevToolsWindow : private content::NotificationObserver,
 
   void ScheduleAction(DevToolsToggleAction action);
   void DoAction();
-  static GURL GetDevToolsUrl(Profile* profile, bool docked,
+  static GURL GetDevToolsUrl(Profile* profile,
+                             DevToolsDockSide dock_side,
                              bool shared_worker_frontend);
   void UpdateTheme();
   void AddDevToolsExtensionsToClient();
@@ -144,8 +155,6 @@ class DevToolsWindow : private content::NotificationObserver,
   virtual void ActivateWindow() OVERRIDE;
   virtual void CloseWindow() OVERRIDE;
   virtual void MoveWindow(int x, int y) OVERRIDE;
-  virtual void DockWindow() OVERRIDE;
-  virtual void UndockWindow() OVERRIDE;
   virtual void SetDockSide(const std::string& side) OVERRIDE;
   virtual void OpenInNewTab(const std::string& url) OVERRIDE;
   virtual void SaveToFile(const std::string& url,
@@ -158,15 +167,17 @@ class DevToolsWindow : private content::NotificationObserver,
   virtual void FileSavedAs(const std::string& url)  OVERRIDE;
   virtual void AppendedTo(const std::string& url)  OVERRIDE;
 
-  void RequestSetDocked(bool docked);
-
   void UpdateBrowserToolbar();
+  bool IsDocked();
+  static std::string GetOrMigrateDockSidePref(Profile* profile);
+  static std::string SideToString(DevToolsDockSide dock_side);
+  static DevToolsDockSide SideFromString(const std::string& dock_side);
 
   Profile* profile_;
   TabContents* inspected_tab_;
   TabContents* tab_contents_;
   Browser* browser_;
-  bool docked_;
+  DevToolsDockSide dock_side_;
   bool is_loaded_;
   DevToolsToggleAction action_on_load_;
   content::NotificationRegistrar registrar_;

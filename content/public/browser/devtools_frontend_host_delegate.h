@@ -25,13 +25,6 @@ class DevToolsFrontendHostDelegate {
   // Moves DevTols front-end windo.
   virtual void MoveWindow(int x, int y) = 0;
 
-  // Attaches DevTools front-end to the inspected page.
-  virtual void DockWindow() = 0;
-
-  // Detaches DevTools front-end from the inspected page and places it in its
-  // own window.
-  virtual void UndockWindow() = 0;
-
   // Specifies side for devtools to dock to.
   virtual void SetDockSide(const std::string& side) = 0;
 

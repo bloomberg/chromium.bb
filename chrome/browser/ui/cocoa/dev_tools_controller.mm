@@ -9,7 +9,6 @@
 #include <Cocoa/Cocoa.h>
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -43,10 +42,12 @@ const int kMinContentsSize = 50;
 
 
 @interface DevToolsController (Private)
-- (void)showDevToolsContents:(WebContents*)devToolsContents
-                 withProfile:(Profile*)profile;
-- (void)showDevToolsContainer:(NSView*)container profile:(Profile*)profile;
+- (void)showDevToolsContainer:(NSView*)container
+                     dockSide:(DevToolsDockSide)dockSide
+                      profile:(Profile*)profile;
 - (void)hideDevToolsContainer:(Profile*)profile;
+- (void)setDockToRight:(BOOL)dock_to_right
+           withProfile:(Profile*)profile;
 - (void)resizeDevTools:(CGFloat)size;
 @end
 
@@ -61,7 +62,7 @@ const int kMinContentsSize = 50;
     [splitView_ setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
     [splitView_ setDelegate:self];
 
-    dockToRight_ = NO;
+    dockSide_ = DEVTOOLS_DOCK_SIDE_BOTTOM;
   }
   return self;
 }
@@ -82,33 +83,17 @@ const int kMinContentsSize = 50;
 - (void)updateDevToolsForWebContents:(WebContents*)contents
                          withProfile:(Profile*)profile {
   // Get current devtools content.
-  TabContents* devToolsTab = contents ?
-      DevToolsWindow::GetDevToolsContents(contents) : NULL;
-  WebContents* devToolsContents = devToolsTab ?
-      devToolsTab->web_contents() : NULL;
+  DevToolsWindow* devToolsWindow = contents ?
+      DevToolsWindow::GetDockedInstanceForInspectedTab(contents) : NULL;
+  WebContents* devToolsContents = devToolsWindow ?
+      devToolsWindow->tab_contents()->web_contents() : NULL;
 
-  [self showDevToolsContents:devToolsContents withProfile:profile];
-}
-
-- (void)setDockToRight:(BOOL)dockToRight
-           withProfile:(Profile*)profile {
-  if (dockToRight_ == dockToRight)
+  if (devToolsContents && devToolsContents->GetNativeView() &&
+      [devToolsContents->GetNativeView() superview] == splitView_.get()) {
+    [self setDockSide:devToolsWindow->dock_side() withProfile:profile];
     return;
-
-  NSArray* subviews = [splitView_ subviews];
-  if ([subviews count] == 2) {
-    scoped_nsobject<NSView> devToolsContentsView(
-        [[subviews objectAtIndex:1] retain]);
-    [self hideDevToolsContainer:profile];
-    dockToRight_ = dockToRight;
-    [self showDevToolsContainer:devToolsContentsView profile:profile];
-  } else {
-    dockToRight_ = dockToRight;
   }
-}
 
-- (void)showDevToolsContents:(WebContents*)devToolsContents
-                 withProfile:(Profile*)profile {
   NSArray* subviews = [splitView_ subviews];
   if (devToolsContents) {
     // |devToolsView| is a TabContentsViewCocoa object, whose ViewID was
@@ -116,29 +101,51 @@ const int kMinContentsSize = 50;
     // VIEW_ID_DEV_TOOLS_DOCKED here.
     NSView* devToolsView = devToolsContents->GetNativeView();
     view_id_util::SetID(devToolsView, VIEW_ID_DEV_TOOLS_DOCKED);
-    [self showDevToolsContainer:devToolsView profile:profile];
-  } else {
-    if ([subviews count] > 1) {
-      [self hideDevToolsContainer:profile];
-    }
+    [self showDevToolsContainer:devToolsView
+                       dockSide:devToolsWindow->dock_side()
+                        profile:profile];
+  } else if ([subviews count] > 1) {
+    [self hideDevToolsContainer:profile];
   }
 }
 
-- (void)showDevToolsContainer:(NSView*)container profile:(Profile*)profile {
+- (void)setDockSide:(DevToolsDockSide)dockSide
+        withProfile:(Profile*)profile {
+  if (dockSide_ == dockSide)
+    return;
+
+  NSArray* subviews = [splitView_ subviews];
+  if ([subviews count] == 2) {
+    scoped_nsobject<NSView> devToolsContentsView(
+        [[subviews objectAtIndex:1] retain]);
+    [self hideDevToolsContainer:profile];
+    dockSide_ = dockSide;
+    [self showDevToolsContainer:devToolsContentsView
+                       dockSide:dockSide
+                        profile:profile];
+  } else {
+    dockSide_ = dockSide;
+  }
+}
+
+- (void)showDevToolsContainer:(NSView*)container
+                     dockSide:(BOOL)dockSide
+                      profile:(Profile*)profile {
   NSArray* subviews = [splitView_ subviews];
   DCHECK_GE([subviews count], 1u);
 
   CGFloat splitOffset = 0;
 
+  BOOL dockToRight = dockSide_ == DEVTOOLS_DOCK_SIDE_RIGHT;
   CGFloat contentSize =
-      dockToRight_ ? NSWidth([splitView_ frame])
-                   : NSHeight([splitView_ frame]);
+      dockToRight ? NSWidth([splitView_ frame])
+                  : NSHeight([splitView_ frame]);
 
   if ([subviews count] == 1) {
     // Load the default split offset.
     splitOffset = profile->GetPrefs()->
-        GetInteger(dockToRight_ ? prefs::kDevToolsVSplitLocation :
-                                  prefs::kDevToolsHSplitLocation);
+        GetInteger(dockToRight ? prefs::kDevToolsVSplitLocation :
+                                 prefs::kDevToolsHSplitLocation);
 
     if (splitOffset < 0)
       splitOffset = contentSize * 1 / 3;
@@ -147,14 +154,14 @@ const int kMinContentsSize = 50;
   } else {
     DCHECK_EQ([subviews count], 2u);
     // If devtools are already visible, keep the current size.
-    splitOffset = dockToRight_ ? NSWidth([[subviews objectAtIndex:1] frame])
-                               : NSHeight([[subviews objectAtIndex:1] frame]);
+    splitOffset = dockToRight ? NSWidth([[subviews objectAtIndex:1] frame])
+                              : NSHeight([[subviews objectAtIndex:1] frame]);
     [splitView_ replaceSubview:[subviews objectAtIndex:1]
                           with:container];
   }
 
   // Make sure |splitOffset| isn't too large or too small.
-  CGFloat minSize = dockToRight_ ? kMinDevToolsWidth: kMinDevToolsHeight;
+  CGFloat minSize = dockToRight ? kMinDevToolsWidth: kMinDevToolsHeight;
   splitOffset = std::max(minSize, splitOffset);
   splitOffset = std::min(static_cast<CGFloat>(contentSize - kMinContentsSize),
                          splitOffset);
@@ -165,7 +172,7 @@ const int kMinContentsSize = 50;
   DCHECK_GE(splitOffset, 0) << "kMinWebHeight needs to be smaller than "
                             << "smallest available tab contents space.";
 
-  [splitView_ setVertical: dockToRight_];
+  [splitView_ setVertical: dockToRight];
   [self resizeDevTools:splitOffset];
 }
 
@@ -173,12 +180,13 @@ const int kMinContentsSize = 50;
   NSArray* subviews = [splitView_ subviews];
   NSView* oldDevToolsContentsView = [subviews objectAtIndex:1];
 
+  BOOL dockToRight = dockSide_ == DEVTOOLS_DOCK_SIDE_RIGHT;
   // Store split offset when hiding devtools window only.
-  int splitOffset = dockToRight_ ? NSWidth([oldDevToolsContentsView frame])
-                                 : NSHeight([oldDevToolsContentsView frame]);
+  int splitOffset = dockToRight ? NSWidth([oldDevToolsContentsView frame])
+                                : NSHeight([oldDevToolsContentsView frame]);
   profile->GetPrefs()->SetInteger(
-      dockToRight_ ? prefs::kDevToolsVSplitLocation :
-                     prefs::kDevToolsHSplitLocation,
+      dockToRight ? prefs::kDevToolsVSplitLocation :
+                    prefs::kDevToolsHSplitLocation,
       splitOffset);
 
   [oldDevToolsContentsView removeFromSuperview];
@@ -197,12 +205,13 @@ const int kMinContentsSize = 50;
   NSView* devToolsView = [subviews objectAtIndex:1];
   NSRect devToolsFrame = [devToolsView frame];
 
-  if (dockToRight_)
+  BOOL dockToRight = dockSide_ == DEVTOOLS_DOCK_SIDE_RIGHT;
+  if (dockToRight)
     devToolsFrame.size.width = size;
   else
     devToolsFrame.size.height = size;
 
-  if (dockToRight_) {
+  if (dockToRight) {
     webFrame.size.width =
         NSWidth([splitView_ frame]) - ([splitView_ dividerThickness] + size);
   } else {

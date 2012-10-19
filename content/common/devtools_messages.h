@@ -118,12 +118,6 @@ IPC_MESSAGE_ROUTED2(DevToolsHostMsg_MoveWindow,
                     int /* x */,
                     int /* y */)
 
-// Attaches dev tools window that is inspecting current render_view_host.
-IPC_MESSAGE_ROUTED0(DevToolsHostMsg_RequestDockWindow)
-
-// Detaches dev tools window that is inspecting current render_view_host.
-IPC_MESSAGE_ROUTED0(DevToolsHostMsg_RequestUndockWindow)
-
 // Specifies side for devtools to dock to.
 IPC_MESSAGE_ROUTED1(DevToolsHostMsg_RequestSetDockSide,
                     std::string /* side */)
