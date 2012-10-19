@@ -514,7 +514,7 @@ void Layer::paintContents(WebKit::WebCanvas* web_canvas,
 
 unsigned Layer::prepareTexture(WebKit::WebTextureUpdater& /* updater */) {
   DCHECK(layer_updated_externally_);
-  return texture_->texture_id();
+  return texture_->PrepareTexture();
 }
 
 WebKit::WebGraphicsContext3D* Layer::context() {

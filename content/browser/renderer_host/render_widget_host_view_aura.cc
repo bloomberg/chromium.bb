@@ -674,7 +674,7 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
   src_subrect_in_gl.set_y(GetViewBounds().height() - src_subrect.bottom());
 
   gfx::Rect src_subrect_in_pixel = ConvertRectToPixel(this, src_subrect_in_gl);
-  gl_helper->CopyTextureTo(container->texture_id(),
+  gl_helper->CopyTextureTo(container->PrepareTexture(),
                            container->size(),
                            src_subrect_in_pixel,
                            dst_size_in_pixel,
@@ -1409,7 +1409,7 @@ scoped_refptr<ui::Texture> RenderWidgetHostViewAura::CopyTexture() {
   ui::Texture* container = it->second;
   DCHECK(container);
   WebKit::WebGLId texture_id =
-      gl_helper->CopyTexture(container->texture_id(), container->size());
+      gl_helper->CopyTexture(container->PrepareTexture(), container->size());
   if (!texture_id)
     return scoped_refptr<ui::Texture>();
 

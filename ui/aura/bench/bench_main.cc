@@ -136,9 +136,9 @@ class WebGLTexture : public ui::Texture {
  public:
   WebGLTexture(WebGraphicsContext3D* context, const gfx::Size& size)
       : ui::Texture(false, size, 1.0f),
-        context_(context) {
-    set_texture_id(context_->createTexture());
-    context_->bindTexture(GL_TEXTURE_2D, texture_id());
+        context_(context),
+        texture_id_(context_->createTexture()) {
+    context_->bindTexture(GL_TEXTURE_2D, texture_id_);
     context_->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     context_->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     context_->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -148,16 +148,21 @@ class WebGLTexture : public ui::Texture {
                          GL_RGBA, GL_UNSIGNED_BYTE, NULL);
   }
 
+  virtual unsigned PrepareTexture() OVERRIDE {
+    return texture_id_;
+  }
+
   virtual WebGraphicsContext3D* HostContext3D() OVERRIDE {
     return context_;
   }
 
  private:
   virtual ~WebGLTexture() {
-    context_->deleteTexture(texture_id());
+    context_->deleteTexture(texture_id_);
   }
 
   WebGraphicsContext3D* context_;
+  unsigned texture_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WebGLTexture);
 };
@@ -205,7 +210,7 @@ class WebGLBench : public BenchCompositorObserver {
     context_->bindFramebuffer(GL_FRAMEBUFFER, fbo_);
     context_->framebufferTexture2D(
         GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-        GL_TEXTURE_2D, texture_->texture_id(), 0);
+        GL_TEXTURE_2D, texture_->PrepareTexture(), 0);
     context_->clearColor(0.f, 1.f, 0.f, 1.f);
     context_->clear(GL_COLOR_BUFFER_BIT);
     context_->flush();
