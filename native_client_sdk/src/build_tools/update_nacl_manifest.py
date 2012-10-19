@@ -216,8 +216,7 @@ class RealDelegate(Delegate):
       self.Trace("Skipping upload: %s -> %s" % (src, dest))
       return
 
-    # -p ensures we keep permissions when copying "in-the-cloud".
-    return self._RunGsUtil(stdin, 'cp', '-p', '-a', 'public-read', src, dest)
+    return self._RunGsUtil(stdin, 'cp', '-a', 'public-read', src, dest)
 
   def Print(self, *args):
     sys.stdout.write(' '.join(map(str, args)) + '\n')
