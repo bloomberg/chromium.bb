@@ -191,7 +191,7 @@ FloatSize CCLayerImpl::scrollBy(const FloatSize& scroll)
     return unscrolled;
 }
 
-CCInputHandlerClient::ScrollStatus CCLayerImpl::tryScroll(const IntPoint& viewportPoint, CCInputHandlerClient::ScrollInputType type) const
+CCInputHandlerClient::ScrollStatus CCLayerImpl::tryScroll(const IntPoint& screenSpacePoint, CCInputHandlerClient::ScrollInputType type) const
 {
     if (shouldScrollOnMainThread()) {
         TRACE_EVENT0("cc", "CCLayerImpl::tryScroll: Failed shouldScrollOnMainThread");
@@ -205,7 +205,7 @@ CCInputHandlerClient::ScrollStatus CCLayerImpl::tryScroll(const IntPoint& viewpo
 
     if (!nonFastScrollableRegion().isEmpty()) {
         bool clipped = false;
-        FloatPoint hitTestPointInLocalSpace = CCMathUtil::projectPoint(screenSpaceTransform().inverse(), FloatPoint(viewportPoint), clipped);
+        FloatPoint hitTestPointInLocalSpace = CCMathUtil::projectPoint(screenSpaceTransform().inverse(), FloatPoint(screenSpacePoint), clipped);
         if (!clipped && nonFastScrollableRegion().contains(flooredIntPoint(hitTestPointInLocalSpace))) {
             TRACE_EVENT0("cc", "CCLayerImpl::tryScroll: Failed nonFastScrollableRegion");
             return CCInputHandlerClient::ScrollOnMainThread;

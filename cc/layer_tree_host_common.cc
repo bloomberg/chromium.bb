@@ -790,7 +790,7 @@ void CCLayerTreeHostCommon::calculateDrawTransforms(CCLayerImpl* rootLayer, cons
                                                                                                                 rootLayer->renderSurface()->layerList(), layerSorter, maxTextureSize, deviceScaleFactor, totalDrawableContentRect);
 }
 
-static bool pointHitsRect(const IntPoint& viewportPoint, const WebTransformationMatrix& localSpaceToScreenSpaceTransform, FloatRect localSpaceRect)
+static bool pointHitsRect(const IntPoint& screenSpacePoint, const WebTransformationMatrix& localSpaceToScreenSpaceTransform, FloatRect localSpaceRect)
 {
     // If the transform is not invertible, then assume that this point doesn't hit this rect.
     if (!localSpaceToScreenSpaceTransform.isInvertible())
@@ -798,7 +798,7 @@ static bool pointHitsRect(const IntPoint& viewportPoint, const WebTransformation
 
     // Transform the hit test point from screen space to the local space of the given rect.
     bool clipped = false;
-    FloatPoint hitTestPointInLocalSpace = CCMathUtil::projectPoint(localSpaceToScreenSpaceTransform.inverse(), FloatPoint(viewportPoint), clipped);
+    FloatPoint hitTestPointInLocalSpace = CCMathUtil::projectPoint(localSpaceToScreenSpaceTransform.inverse(), FloatPoint(screenSpacePoint), clipped);
 
     // If projectPoint could not project to a valid value, then we assume that this point doesn't hit this rect.
     if (clipped)
@@ -807,19 +807,19 @@ static bool pointHitsRect(const IntPoint& viewportPoint, const WebTransformation
     return localSpaceRect.contains(hitTestPointInLocalSpace);
 }
 
-static bool pointIsClippedBySurfaceOrClipRect(const IntPoint& viewportPoint, CCLayerImpl* layer)
+static bool pointIsClippedBySurfaceOrClipRect(const IntPoint& screenSpacePoint, CCLayerImpl* layer)
 {
     CCLayerImpl* currentLayer = layer;
 
     // Walk up the layer tree and hit-test any renderSurfaces and any layer clipRects that are active.
     while (currentLayer) {
-        if (currentLayer->renderSurface() && !pointHitsRect(viewportPoint, currentLayer->renderSurface()->screenSpaceTransform(), currentLayer->renderSurface()->contentRect()))
+        if (currentLayer->renderSurface() && !pointHitsRect(screenSpacePoint, currentLayer->renderSurface()->screenSpaceTransform(), currentLayer->renderSurface()->contentRect()))
             return true;
 
         // Note that drawableContentRects are actually in targetSurface space, so the transform we
         // have to provide is the target surface's screenSpaceTransform.
         CCLayerImpl* renderTarget = currentLayer->renderTarget();
-        if (layerClipsSubtree(currentLayer) && !pointHitsRect(viewportPoint, renderTarget->renderSurface()->screenSpaceTransform(), currentLayer->drawableContentRect()))
+        if (layerClipsSubtree(currentLayer) && !pointHitsRect(screenSpacePoint, renderTarget->renderSurface()->screenSpaceTransform(), currentLayer->drawableContentRect()))
             return true;
 
         currentLayer = currentLayer->parent();
@@ -829,7 +829,7 @@ static bool pointIsClippedBySurfaceOrClipRect(const IntPoint& viewportPoint, CCL
     return false;
 }
 
-CCLayerImpl* CCLayerTreeHostCommon::findLayerThatIsHitByPoint(const IntPoint& viewportPoint, std::vector<CCLayerImpl*>& renderSurfaceLayerList)
+CCLayerImpl* CCLayerTreeHostCommon::findLayerThatIsHitByPoint(const IntPoint& screenSpacePoint, std::vector<CCLayerImpl*>& renderSurfaceLayerList)
 {
     CCLayerImpl* foundLayer = 0;
 
@@ -844,20 +844,20 @@ CCLayerImpl* CCLayerTreeHostCommon::findLayerThatIsHitByPoint(const IntPoint& vi
         CCLayerImpl* currentLayer = (*it);
 
         FloatRect contentRect(FloatPoint::zero(), currentLayer->contentBounds());
-        if (!pointHitsRect(viewportPoint, currentLayer->screenSpaceTransform(), contentRect))
+        if (!pointHitsRect(screenSpacePoint, currentLayer->screenSpaceTransform(), contentRect))
             continue;
 
         // At this point, we think the point does hit the layer, but we need to walk up
         // the parents to ensure that the layer was not clipped in such a way that the
         // hit point actually should not hit the layer.
-        if (pointIsClippedBySurfaceOrClipRect(viewportPoint, currentLayer))
+        if (pointIsClippedBySurfaceOrClipRect(screenSpacePoint, currentLayer))
             continue;
 
         foundLayer = currentLayer;
         break;
     }
 
-    // This can potentially return 0, which means the viewportPoint did not successfully hit test any layers, not even the root layer.
+    // This can potentially return 0, which means the screenSpacePoint did not successfully hit test any layers, not even the root layer.
     return foundLayer;
 }
 

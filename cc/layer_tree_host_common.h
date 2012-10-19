@@ -26,7 +26,7 @@ public:
     static void calculateDrawTransforms(CCLayerImpl* rootLayer, const IntSize& deviceViewportSize, float deviceScaleFactor, CCLayerSorter*, int maxTextureSize, std::vector<CCLayerImpl*>& renderSurfaceLayerList);
 
     // Performs hit testing for a given renderSurfaceLayerList.
-    static CCLayerImpl* findLayerThatIsHitByPoint(const IntPoint& viewportPoint, std::vector<CCLayerImpl*>& renderSurfaceLayerList);
+    static CCLayerImpl* findLayerThatIsHitByPoint(const IntPoint& screenSpacePoint, std::vector<CCLayerImpl*>& renderSurfaceLayerList);
 
     template<typename LayerType> static bool renderSurfaceContributesToTarget(LayerType*, int targetSurfaceLayerID);
 
