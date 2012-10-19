@@ -118,6 +118,8 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
   if (!node.isNull() && node.isElementNode()) {
     child.location = gfx::Rect(
         const_cast<WebNode&>(node).to<WebElement>().boundsInViewportSpace());
+  } else if (render_view_->HasIMETextFocus()) {
+    child.location = notification.acc_tree.location;
   } else {
     child.location = gfx::Rect();
   }
