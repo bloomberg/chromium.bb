@@ -1,1 +1,5 @@
-*
+darin@chromium.org
+ben@chromium.org
+per-file DEPS=*
+per-file AUTHORS=*
+per-file WATCHLISTS=*
