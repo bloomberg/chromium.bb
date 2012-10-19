@@ -144,8 +144,7 @@ class MockLauncherDelegate : public ash::LauncherDelegate {
   virtual ~MockLauncherDelegate() {}
 
   // LauncherDelegate overrides:
-  virtual void CreateNewTab() OVERRIDE {}
-  virtual void CreateNewWindow() OVERRIDE {}
+  virtual void OnBrowserShortcutClicked(int event_flags) OVERRIDE {}
   virtual void ItemClicked(const ash::LauncherItem& item,
                            int event_flags) OVERRIDE {}
   virtual int GetBrowserShortcutResourceId() OVERRIDE {

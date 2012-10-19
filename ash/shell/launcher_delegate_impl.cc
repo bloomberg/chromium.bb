@@ -22,11 +22,7 @@ LauncherDelegateImpl::~LauncherDelegateImpl() {
 }
 
 // In the shell we'll create a window all the time.
-void LauncherDelegateImpl::CreateNewTab() {
-  CreateNewWindow();
-}
-
-void LauncherDelegateImpl::CreateNewWindow() {
+void LauncherDelegateImpl::OnBrowserShortcutClicked(int event_flags) {
   ash::shell::ToplevelWindow::CreateParams create_params;
   create_params.can_resize = true;
   create_params.can_maximize = true;

@@ -59,10 +59,7 @@ void TestLauncherDelegate::OnWillRemoveWindow(aura::Window* window) {
   }
 }
 
-void TestLauncherDelegate::CreateNewTab() {
-}
-
-void TestLauncherDelegate::CreateNewWindow() {
+void TestLauncherDelegate::OnBrowserShortcutClicked(int event_flags) {
 }
 
 void TestLauncherDelegate::ItemClicked(const ash::LauncherItem& item,

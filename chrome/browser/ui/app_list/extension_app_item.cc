@@ -39,6 +39,8 @@ enum CommandId {
   OPTIONS,
   UNINSTALL,
   DETAILS,
+  MENU_NEW_WINDOW,
+  MENU_NEW_INCOGNITO_WINDOW,
   // Order matters in LAUNCHER_TYPE_xxxx and must match LaunchType.
   LAUNCH_TYPE_START = 200,
   LAUNCH_TYPE_PINNED_TAB = LAUNCH_TYPE_START,
@@ -325,6 +327,10 @@ void ExtensionAppItem::ExecuteCommand(int command_id) {
              command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
     extension_menu_items_->ExecuteCommand(command_id, NULL,
                                           content::ContextMenuParams());
+  } else if (command_id == MENU_NEW_WINDOW) {
+    controller_->CreateNewWindow(false);
+  } else if (command_id == MENU_NEW_INCOGNITO_WINDOW) {
+    controller_->CreateNewWindow(true);
   }
 }
 
@@ -341,12 +347,26 @@ ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
   if (!extension)
     return NULL;
 
-  // No context menu for Chrome app.
-  if (extension_id_ == extension_misc::kChromeAppId)
-    return NULL;
+  if (context_menu_model_.get())
+    return context_menu_model_.get();
 
-  if (!context_menu_model_.get()) {
-    context_menu_model_.reset(new ui::SimpleMenuModel(this));
+  context_menu_model_.reset(new ui::SimpleMenuModel(this));
+
+  if (extension_id_ == extension_misc::kChromeAppId) {
+    // Special context menu for Chrome app.
+#if defined(OS_CHROMEOS)
+    context_menu_model_->AddItemWithStringId(
+        MENU_NEW_WINDOW,
+        IDS_LAUNCHER_NEW_WINDOW);
+    if (!profile_->IsOffTheRecord()) {
+      context_menu_model_->AddItemWithStringId(
+          MENU_NEW_INCOGNITO_WINDOW,
+          IDS_LAUNCHER_NEW_INCOGNITO_WINDOW);
+    }
+#else
+    NOTREACHED();
+#endif
+  } else {
     extension_menu_items_.reset(new extensions::ContextMenuMatcher(
         profile_, this, context_menu_model_.get(),
         base::Bind(MenuItemHasLauncherContext)));

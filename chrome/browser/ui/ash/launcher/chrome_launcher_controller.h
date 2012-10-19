@@ -194,6 +194,10 @@ class ChromeLauncherController
   // Returns true if the user is currently logged in as a guest.
   bool IsLoggedInAsGuest();
 
+  // Invoked when user clicks on button in the launcher and there is no last
+  // used window (or CTRL is held with the click).
+  void CreateNewWindow();
+
   // Invoked when the user clicks on button in the launcher to create a new
   // incognito window.
   void CreateNewIncognitoWindow();
@@ -227,8 +231,7 @@ class ChromeLauncherController
   const extensions::Extension* GetExtensionForAppID(const std::string& app_id);
 
   // ash::LauncherDelegate overrides:
-  virtual void CreateNewTab() OVERRIDE;
-  virtual void CreateNewWindow() OVERRIDE;
+  virtual void OnBrowserShortcutClicked(int event_flags) OVERRIDE;
   virtual void ItemClicked(const ash::LauncherItem& item,
                            int event_flags) OVERRIDE;
   virtual int GetBrowserShortcutResourceId() OVERRIDE;
@@ -321,8 +324,6 @@ class ChromeLauncherController
 
   void StartLoadingAnimation();
   void StopLoadingAnimation();
-
-  bool IsActiveBrowserShowingNTP(Browser* browser);
 
   static ChromeLauncherController* instance_;
 

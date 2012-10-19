@@ -1022,10 +1022,7 @@ void LauncherView::ButtonPressed(views::Button* sender,
       Shell::GetInstance()->delegate()->RecordUserMetricsAction(
           UMA_LAUNCHER_CLICK_ON_APP);
 
-      if (event.flags() & ui::EF_CONTROL_DOWN)
-        delegate_->CreateNewWindow();
-      else
-        delegate_->CreateNewTab();
+      delegate_->OnBrowserShortcutClicked(event.flags());
       break;
   }
   if (event.IsShiftDown())

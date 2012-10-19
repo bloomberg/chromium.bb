@@ -35,8 +35,7 @@ class TestLauncherDelegate : public LauncherDelegate,
   virtual void OnWillRemoveWindow(aura::Window* window) OVERRIDE;
 
   // LauncherDelegate implementation.
-  virtual void CreateNewTab() OVERRIDE;
-  virtual void CreateNewWindow() OVERRIDE;
+  virtual void OnBrowserShortcutClicked(int event_flags) OVERRIDE;
   virtual void ItemClicked(const LauncherItem& item,
                            int event_flags) OVERRIDE;
   virtual int GetBrowserShortcutResourceId() OVERRIDE;
@@ -68,4 +67,4 @@ class TestLauncherDelegate : public LauncherDelegate,
 }  // namespace test
 }  // namespace ash
 
-#endif  // ASH_TEST_TEST_LAUNCHER_DELEGATE
+#endif  // ASH_TEST_TEST_LAUNCHER_DELEGATE_H_

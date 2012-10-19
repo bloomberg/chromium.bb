@@ -38,9 +38,16 @@ bool AppListControllerDelegateAsh::CanShowCreateShortcutsDialog() {
   return false;
 }
 
+void AppListControllerDelegateAsh::CreateNewWindow(bool incognito) {
+  if (incognito)
+    ChromeLauncherController::instance()->CreateNewIncognitoWindow();
+  else
+    ChromeLauncherController::instance()->CreateNewWindow();
+}
+
 void AppListControllerDelegateAsh::ActivateApp(Profile* profile,
-                                       const std::string& extension_id,
-                                       int event_flags) {
+                                               const std::string& extension_id,
+                                               int event_flags) {
   ChromeLauncherController::instance()->OpenAppID(extension_id,
                                                   event_flags);
 }

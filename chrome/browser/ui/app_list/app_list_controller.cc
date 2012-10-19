@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/app_list_controller.h"
 
+#include "base/logging.h"
 #include "build/build_config.h"
 
 AppListControllerDelegate::~AppListControllerDelegate() {}
@@ -23,6 +24,10 @@ void AppListControllerDelegate::UnpinApp(const std::string& extension_id) {}
 void AppListControllerDelegate::ShowCreateShortcutsDialog(
     Profile* profile,
     const std::string& extension_id) {}
+
+void AppListControllerDelegate::CreateNewWindow(bool incognito) {
+  NOTREACHED();
+}
 
 namespace app_list_controller {
 

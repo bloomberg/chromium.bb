@@ -67,7 +67,7 @@ class AppShortcutLauncherItemController : public LauncherItemController {
                                     ChromeLauncherController* controller)
       : LauncherItemController(TYPE_SHORTCUT, app_id, controller) {
     // Google Drive should just refocus to it's main app UI.
-    // TODO[davemoore] Generalize this for other applications.
+    // TODO(davemoore): Generalize this for other applications.
     if (app_id == "apdfllckaahabafndbhieahigkjlhalf") {
       const Extension* extension =
           launcher_controller()->GetExtensionForAppID(app_id);
@@ -351,6 +351,11 @@ void ChromeLauncherController::Open(ash::LauncherID id, int event_flags) {
 
 void ChromeLauncherController::OpenAppID(const std::string& app_id,
                                          int event_flags) {
+  if (app_id == extension_misc::kChromeAppId) {
+    OnBrowserShortcutClicked(event_flags);
+    return;
+  }
+
   // If there is an existing non-shortcut controller for this app, open it.
   ash::LauncherID id = GetLauncherIDForAppID(app_id);
   URLPattern refocus_pattern(URLPattern::SCHEME_ALL);
@@ -515,6 +520,10 @@ bool ChromeLauncherController::IsLoggedInAsGuest() {
   return ProfileManager::GetDefaultProfileOrOffTheRecord()->IsOffTheRecord();
 }
 
+void ChromeLauncherController::CreateNewWindow() {
+  chrome::NewEmptyWindow(GetProfileForNewWindows());
+}
+
 void ChromeLauncherController::CreateNewIncognitoWindow() {
   chrome::NewEmptyWindow(GetProfileForNewWindows()->GetOffTheRecordProfile());
 }
@@ -632,7 +641,12 @@ const Extension* ChromeLauncherController::GetExtensionForAppID(
   return profile_->GetExtensionService()->GetInstalledExtension(app_id);
 }
 
-void ChromeLauncherController::CreateNewTab() {
+void ChromeLauncherController::OnBrowserShortcutClicked(int event_flags) {
+  if (event_flags & ui::EF_CONTROL_DOWN) {
+    CreateNewWindow();
+    return;
+  }
+
   Browser* last_browser = browser::FindTabbedBrowser(
       GetProfileForNewWindows(), true, chrome::HOST_DESKTOP_TYPE_ASH);
 
@@ -641,16 +655,9 @@ void ChromeLauncherController::CreateNewTab() {
     return;
   }
 
-  if (!IsActiveBrowserShowingNTP(last_browser))
-    chrome::NewTab(last_browser);
-
   aura::Window* window = last_browser->window()->GetNativeWindow();
   window->Show();
   ash::wm::ActivateWindow(window);
-}
-
-void ChromeLauncherController::CreateNewWindow() {
-  chrome::NewEmptyWindow(GetProfileForNewWindows());
 }
 
 void ChromeLauncherController::ItemClicked(const ash::LauncherItem& item,
@@ -1054,16 +1061,3 @@ void ChromeLauncherController::StopLoadingAnimation() {
   observed_sync_service_->RemoveObserver(this);
   observed_sync_service_ = NULL;
 }
-
-bool ChromeLauncherController::IsActiveBrowserShowingNTP(Browser* browser) {
-  content::WebContents* current_tab = chrome::GetActiveWebContents(browser);
-  if (current_tab) {
-    content::NavigationEntry* active_entry =
-        current_tab->GetController().GetActiveEntry();
-    if (active_entry &&
-        active_entry->GetURL() == GURL(chrome::kChromeUINewTabURL))
-      return true;
-  }
-  return false;
-}
-

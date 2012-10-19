@@ -21,13 +21,10 @@ class ASH_EXPORT LauncherDelegate {
   // Launcher owns the delegate.
   virtual ~LauncherDelegate() {}
 
-  // Invoked when the user clicks on button in the launcher to create a new
-  // tab.
-  virtual void CreateNewTab() = 0;
-
-  // Invoked when the user clicks on button in the launcher to create a new
-  // window.
-  virtual void CreateNewWindow() = 0;
+  // Invoked when the user clicks on button in the launcher to open last used
+  // window (or create a new one if there is no last used window).
+  // |event_flags| is the flags of the click event.
+  virtual void OnBrowserShortcutClicked(int event_flags) = 0;
 
   // Invoked when the user clicks on a window entry in the launcher.
   // |event_flags| is the flags of the click event.
