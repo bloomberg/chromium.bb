@@ -376,6 +376,8 @@ void MoveMouseToCenterAndPress(
     views::View* view,
 #elif defined(TOOLKIT_GTK)
     GtkWidget* widget,
+#elif defined(OS_IOS)
+    UIView* view,
 #elif defined(OS_MACOSX)
     NSView* view,
 #endif
