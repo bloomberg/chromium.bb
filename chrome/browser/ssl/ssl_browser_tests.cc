@@ -9,6 +9,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -37,8 +38,15 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_renderer_host.h"
+#include "crypto/nss_util.h"
 #include "net/base/cert_status_flags.h"
+#include "net/base/crypto_module.h"
+#include "net/base/net_errors.h"
 #include "net/test/test_server.h"
+
+#if defined(USE_NSS)
+#include "net/base/nss_cert_database.h"
+#endif  // defined(USE_NSS)
 
 using content::InterstitialPage;
 using content::NavigationController;
@@ -614,6 +622,81 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCertAndGoForward) {
   const string16 result = watcher.WaitAndGetTitle();
   EXPECT_TRUE(LowerCaseEqualsASCII(result, "pass"));
 }
+
+#if defined(USE_NSS)
+// SSL client certificate tests are only enabled when using NSS for private key
+// storage, as only NSS can avoid modifying global machine state when testing.
+// See http://crbug.com/51132
+
+// Visit a HTTPS page which requires client cert authentication. The client
+// cert will be selected automatically, then a test which uses WebSocket runs.
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSClientCert) {
+  // Open a temporary NSS DB for testing.
+  crypto::ScopedTestNSSDB test_nssdb;
+  ASSERT_TRUE(test_nssdb.is_open());
+
+  // Import client cert for test. These interfaces require NSS.
+  net::NSSCertDatabase* cert_db = net::NSSCertDatabase::GetInstance();
+  scoped_refptr<net::CryptoModule> crypt_module = cert_db->GetPublicModule();
+  std::string pkcs12_data;
+  FilePath cert_path;
+  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &cert_path));
+  cert_path = cert_path.Append(
+      FILE_PATH_LITERAL("net/data/ssl/certificates/websocket_client_cert.p12"));
+  EXPECT_TRUE(file_util::ReadFileToString(cert_path, &pkcs12_data));
+  EXPECT_EQ(net::OK, cert_db->ImportFromPKCS12(crypt_module,
+                                               pkcs12_data,
+                                               string16(),
+                                               true,
+                                               NULL));
+
+  // Start WebSocket test server with TLS and client cert authentication.
+  net::TestServer::SSLOptions options(net::TestServer::SSLOptions::CERT_OK);
+  options.request_client_certificate = true;
+  FilePath ca_path;
+  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &ca_path));
+  ca_path = ca_path.Append(
+      FILE_PATH_LITERAL("net/data/ssl/certificates/websocket_cacert.pem"));
+  options.client_authorities.push_back(ca_path);
+  net::TestServer wss_server(net::TestServer::TYPE_WSS,
+                             options,
+                             FilePath(FILE_PATH_LITERAL(
+                                 "net/data/websocket")));
+  ASSERT_TRUE(wss_server.Start());
+  std::string scheme("https");
+  GURL::Replacements replacements;
+  replacements.SetSchemeStr(scheme);
+  GURL url =
+      wss_server.GetURL("connect_check.html").ReplaceComponents(replacements);
+
+  // Setup page title observer.
+  WebContents* tab = chrome::GetActiveWebContents(browser());
+  content::TitleWatcher watcher(tab, ASCIIToUTF16("PASS"));
+  watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
+
+  // Add an entry into AutoSelectCertificateForUrls policy for automatic client
+  // cert selection.
+  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
+  DCHECK(profile);
+  scoped_ptr<DictionaryValue> dict(new DictionaryValue());
+  dict->SetString("ISSUER.CN", "pywebsocket");
+  profile->GetHostContentSettingsMap()->SetWebsiteSetting(
+      ContentSettingsPattern::FromURL(url),
+      ContentSettingsPattern::FromURL(url),
+      CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
+      std::string(),
+      dict.release());
+
+  // Visit a HTTPS page which requires client certs.
+  ui_test_utils::NavigateToURL(browser(), url);
+  CheckAuthenticatedState(tab, false);
+
+  // Test page runs a WebSocket wss connection test. The result will be shown
+  // as page title.
+  const string16 result = watcher.WaitAndGetTitle();
+  EXPECT_TRUE(LowerCaseEqualsASCII(result, "pass"));
+}
+#endif  // defined(USE_NSS)
 
 // Flaky on CrOS http://crbug.com/92292
 #if defined(OS_CHROMEOS)
