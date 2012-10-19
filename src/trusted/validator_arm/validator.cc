@@ -56,7 +56,7 @@ void ProblemSink::ReportProblemInternal(uint32_t vaddr,
   for (size_t i = UserDataSize(method);
        i < kValidatorProblemUserDataSize; ++i) {
     user_data[i] = 0;
-  };
+  }
 }
 
 void ProblemSink::ReportProblemSafety(
@@ -67,7 +67,7 @@ void ProblemSink::ReportProblemSafety(
   NACL_COMPILE_TIME_ASSERT(NACL_ARRAY_SIZE(user_data) <=
                            kValidatorProblemUserDataSize);
   ReportProblemInternal(vaddr, kProblemUnsafe,
-                        kReportProblemSafety, user_data);;
+                        kReportProblemSafety, user_data);
 }
 
 void ProblemSink::ReportProblem(uint32_t vaddr, ValidatorProblem problem) {

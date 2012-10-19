@@ -38,6 +38,21 @@ uint32_t ARMExpandImm(uint32_t imm12) {
        (unrotated_value << (32 - ror_amount)));
 }
 
+TEST_F(ValidatorTests, SupervisorCall) {
+  arm_inst svc = 0xEF000000;  // SVC #0
+  for (Instruction::Condition cond = Instruction::EQ;
+       cond < Instruction::AL;
+       cond = Instruction::Next(cond)) {
+    svc = ChangeCond(svc, cond);
+    for (uint32_t imm = 0; imm <= 0x00FFFFFF; ++imm) {
+      ProblemSpy spy;
+      svc = (svc & 0xFF000000) | imm;
+      EXPECT_FALSE(validate(&svc, 1, kDefaultBaseAddr, &spy))
+          << "SVC should never be allowed";
+    }
+  }
+}
+
 TEST_F(ValidatorTests, WholeA32InstructionSpaceTesting) {
   // Go through all 2**32 ARM instruction encodings, and validate individual
   // instruction's properties.
