@@ -886,8 +886,11 @@ void LoginUtilsImpl::SetFirstLoginPrefs(PrefService* prefs) {
 scoped_refptr<Authenticator> LoginUtilsImpl::CreateAuthenticator(
     LoginStatusConsumer* consumer) {
   // Screen locker needs new Authenticator instance each time.
-  if (ScreenLocker::default_screen_locker())
+  if (ScreenLocker::default_screen_locker()) {
+    if (authenticator_)
+      authenticator_->ResetConsumer();
     authenticator_ = NULL;
+  }
 
   if (authenticator_ == NULL)
     authenticator_ = new ParallelAuthenticator(consumer);
