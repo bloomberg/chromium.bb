@@ -9,7 +9,7 @@
  * Decryption Modules, not normal plugins.
  */
 label Chrome {
-  M24 = 0.3
+  M24 = 0.4
 };
 
 /**
@@ -100,14 +100,36 @@ interface PPP_ContentDecryptor_Private {
       [in] PP_EncryptedBlockInfo encrypted_block_info);
 
  /**
+  * Initializes the audio decoder using codec and settings in
+  * <code>decoder_config</code>, and returns the result of the initialization
+  * request to the browser using the <code>DecoderInitializeDone()</code> method
+  * on the <code>PPB_ContentDecryptor_Private</code> interface.
+  *
+  * @param[in] decoder_config A <code>PP_AudioDecoderConfig</code> that
+  * contains audio decoder settings and a request ID. The request ID is passed
+  * to the <code>DecoderInitializeDone()</code> method on the
+  * <code>PPB_ContentDecryptor_Private</code> interface to allow clients to
+  * associate the result with a audio decoder initialization request.
+  *
+  * @param[in] codec_extra_data A <code>PP_Resource</code> corresponding to a
+  * <code>PPB_Buffer_Dev</code> resource containing codec setup data required
+  * by some codecs. It should be set to 0 when the codec being initialized
+  * does not require it.
+  */
+  void InitializeAudioDecoder(
+      [in] PP_Instance instance,
+      [in] PP_AudioDecoderConfig decoder_config,
+      [in] PP_Resource codec_extra_data);
+
+ /**
   * Initializes the video decoder using codec and settings in
   * <code>decoder_config</code>, and returns the result of the initialization
-  * request to the browser using the <code>DecoderInitialized()</code> method
-  * on the <code>PPB_ContentDecryptor_Private</code> interface.
+  * request to the browser using the <code>DecoderInitializeDone()</code>
+  * method on the <code>PPB_ContentDecryptor_Private</code> interface.
   *
   * @param[in] decoder_config A <code>PP_VideoDecoderConfig</code> that
   * contains video decoder settings and a request ID. The request ID is passed
-  * to the <code>DecoderInitialized()</code> method on the
+  * to the <code>DecoderInitializeDone()</code> method on the
   * <code>PPB_ContentDecryptor_Private</code> interface to allow clients to
   * associate the result with a video decoder initialization request.
   *

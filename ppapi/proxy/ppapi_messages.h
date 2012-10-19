@@ -647,6 +647,11 @@ IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_Decrypt,
                     ppapi::proxy::PPPDecryptor_Buffer /* buffer */,
                     std::string /* serialized_block_info */)
 IPC_MESSAGE_ROUTED3(
+    PpapiMsg_PPPContentDecryptor_InitializeAudioDecoder,
+    PP_Instance /* instance */,
+    std::string /* serialized_decoder_config */,
+    ppapi::proxy::PPPDecryptor_Buffer /* extra_data_buffer */)
+IPC_MESSAGE_ROUTED3(
     PpapiMsg_PPPContentDecryptor_InitializeVideoDecoder,
     PP_Instance /* instance */,
     std::string /* serialized_decoder_config */,
@@ -1246,10 +1251,11 @@ IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_DeliverBlock,
                     PP_Instance /* instance */,
                     PP_Resource /* decrypted_block, PPB_Buffer_Dev */,
                     std::string /* serialized_block_info */)
-IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_DecoderInitialized,
+IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBInstance_DecoderInitializeDone,
                     PP_Instance /* instance */,
-                    PP_Bool /* success */,
-                    uint32_t /* request_id */)
+                    PP_DecryptorStreamType /* decoder_type */,
+                    uint32_t /* request_id */,
+                    PP_Bool /* success */)
 IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_DecoderDeinitializeDone,
                     PP_Instance /* instance */,
                     PP_DecryptorStreamType /* decoder_type */,
@@ -1264,7 +1270,7 @@ IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_DeliverFrame,
                     std::string /* serialized_block_info */)
 IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_DeliverSamples,
                     PP_Instance /* instance */,
-                    PP_Resource /* decrypted_samples, PPB_Buffer_Dev */,
+                    PP_Resource /* audio_frames, PPB_Buffer_Dev */,
                     std::string /* serialized_block_info */)
 #endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
 

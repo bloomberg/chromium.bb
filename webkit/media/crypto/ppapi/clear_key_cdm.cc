@@ -236,6 +236,12 @@ cdm::Status ClearKeyCdm::Decrypt(
   return cdm::kSuccess;
 }
 
+cdm::Status ClearKeyCdm::InitializeAudioDecoder(
+    const cdm::AudioDecoderConfig& audio_decoder_config) {
+  NOTIMPLEMENTED();
+  return cdm::kSessionError;
+}
+
 cdm::Status ClearKeyCdm::InitializeVideoDecoder(
     const cdm::VideoDecoderConfig& video_decoder_config) {
 #if !defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
@@ -329,5 +335,12 @@ void ClearKeyCdm::GenerateFakeVideoFrame(base::TimeDelta timestamp,
          color, frame_size);
 }
 #endif  // CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER
+
+cdm::Status ClearKeyCdm::DecryptAndDecodeSamples(
+    const cdm::InputBuffer& encrypted_buffer,
+    cdm::Buffer* sample_buffer) {
+  NOTIMPLEMENTED();
+  return cdm::kDecryptError;
+}
 
 }  // namespace webkit_media

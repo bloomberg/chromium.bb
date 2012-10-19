@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_content_decryptor_private.idl,
- *   modified Thu Oct 11 20:30:13 2012.
+ *   modified Fri Oct 19 10:45:02 2012.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -18,10 +18,10 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 
-#define PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_3 \
-    "PPB_ContentDecryptor_Private;0.3"
+#define PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_4 \
+    "PPB_ContentDecryptor_Private;0.4"
 #define PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE \
-    PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_3
+    PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_4
 
 /**
  * @file
@@ -42,7 +42,7 @@
  * browser side support for the Content Decryption Module (CDM) for v0.1 of the
  * proposed Encrypted Media Extensions: http://goo.gl/rbdnR
  */
-struct PPB_ContentDecryptor_Private_0_3 {
+struct PPB_ContentDecryptor_Private_0_4 {
   /**
    * The decryptor requires a key that has not been provided.
    *
@@ -169,14 +169,18 @@ struct PPB_ContentDecryptor_Private_0_3 {
    * <code>PP_TRUE</code> when the decoder initialization request associated
    * with <code>request_id</code> was successful.
    *
+   * @param[in] decoder_type A <code>PP_DecryptorStreamType</code> identifying
+   * the decoder type for which this initialization status response was sent.
+   *
    * @param[in] request_id The <code>request_id</code> value passed to
    * <code>InitializeAudioDecoder</code> or <code>InitializeVideoDecoder</code>
    * in <code>PP_AudioDecoderConfig</code> or
    * <code>PP_VideoDecoderConfig</code>.
    */
-  void (*DecoderInitialized)(PP_Instance instance,
-                             PP_Bool success,
-                             uint32_t request_id);
+  void (*DecoderInitializeDone)(PP_Instance instance,
+                                PP_DecryptorStreamType decoder_type,
+                                uint32_t request_id,
+                                PP_Bool success);
   /**
    * Called after the <code>DeinitializeDecoder()</code> method on the
    * <code>PPP_ContentDecryptor_Private</code> interface completes to report
@@ -227,7 +231,19 @@ struct PPB_ContentDecryptor_Private_0_3 {
    * deliver a buffer of decrypted and decoded audio samples to the browser for
    * rendering.
    *
-   * @param[in] decrypted_samples A <code>PP_Resource</code> corresponding to a
+   * <code>audio_frames</code> can contain multiple audio output buffers. Each
+   * buffer is serialized in this format:
+   *
+   * |<------------------- serialized audio buffer ------------------->|
+   * | int64_t timestamp | int64_t length | length bytes of audio data |
+   *
+   * For example, with three audio output buffers, |audio_frames| will look
+   * like this:
+   *
+   * |<---------------- audio_frames ------------------>|
+   * | audio buffer 0 | audio buffer 1 | audio buffer 2 |
+   *
+   * @param[in] audio_frames A <code>PP_Resource</code> corresponding to a
    * <code>PPB_Buffer_Dev</code> resource that contains a decrypted buffer
    * of decoded audio samples.
    *
@@ -237,11 +253,11 @@ struct PPB_ContentDecryptor_Private_0_3 {
    */
   void (*DeliverSamples)(
       PP_Instance instance,
-      PP_Resource decrypted_samples,
+      PP_Resource audio_frames,
       const struct PP_DecryptedBlockInfo* decrypted_block_info);
 };
 
-typedef struct PPB_ContentDecryptor_Private_0_3 PPB_ContentDecryptor_Private;
+typedef struct PPB_ContentDecryptor_Private_0_4 PPB_ContentDecryptor_Private;
 /**
  * @}
  */

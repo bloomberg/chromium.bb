@@ -105,6 +105,22 @@ void Decrypt(PP_Instance instance,
       *encrypted_block_info);
 }
 
+void InitializeAudioDecoder(
+    PP_Instance instance,
+    const PP_AudioDecoderConfig* decoder_config,
+    PP_Resource extra_data_resource) {
+  void* object =
+      Instance::GetPerInstanceObject(instance, kPPPContentDecryptorInterface);
+  if (!object)
+    return;
+
+  pp::Buffer_Dev extra_data_buffer(pp::PASS_REF, extra_data_resource);
+
+  static_cast<ContentDecryptor_Private*>(object)->InitializeAudioDecoder(
+      *decoder_config,
+      extra_data_buffer);
+}
+
 void InitializeVideoDecoder(
     PP_Instance instance,
     const PP_VideoDecoderConfig* decoder_config,
@@ -166,6 +182,7 @@ const PPP_ContentDecryptor_Private ppp_content_decryptor = {
   &AddKey,
   &CancelKeyRequest,
   &Decrypt,
+  &InitializeAudioDecoder,
   &InitializeVideoDecoder,
   &DeinitializeDecoder,
   &ResetDecoder,
@@ -263,14 +280,16 @@ void ContentDecryptor_Private::DeliverBlock(
   }
 }
 
-void ContentDecryptor_Private::DecoderInitialized(
-    bool success,
-    uint32_t request_id) {
+void ContentDecryptor_Private::DecoderInitializeDone(
+    PP_DecryptorStreamType decoder_type,
+    uint32_t request_id,
+    bool success) {
   if (has_interface<PPB_ContentDecryptor_Private>()) {
-    get_interface<PPB_ContentDecryptor_Private>()->DecoderInitialized(
+    get_interface<PPB_ContentDecryptor_Private>()->DecoderInitializeDone(
         associated_instance_.pp_instance(),
-        PP_FromBool(success),
-        request_id);
+        decoder_type,
+        request_id,
+        PP_FromBool(success));
   }
 }
 
@@ -308,12 +327,12 @@ void ContentDecryptor_Private::DeliverFrame(
 }
 
 void ContentDecryptor_Private::DeliverSamples(
-    pp::Buffer_Dev decrypted_samples,
+    pp::Buffer_Dev audio_frames,
     const PP_DecryptedBlockInfo& decrypted_block_info) {
   if (has_interface<PPB_ContentDecryptor_Private>()) {
     get_interface<PPB_ContentDecryptor_Private>()->DeliverSamples(
         associated_instance_.pp_instance(),
-        decrypted_samples.pp_resource(),
+        audio_frames.pp_resource(),
         &decrypted_block_info);
   }
 }

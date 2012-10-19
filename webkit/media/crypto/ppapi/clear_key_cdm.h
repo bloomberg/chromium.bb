@@ -46,6 +46,8 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
   virtual void TimerExpired(cdm::KeyMessage* msg, bool* populated) OVERRIDE;
   virtual cdm::Status Decrypt(const cdm::InputBuffer& encrypted_buffer,
                               cdm::DecryptedBlock* decrypted_block) OVERRIDE;
+  virtual cdm::Status InitializeAudioDecoder(
+      const cdm::AudioDecoderConfig& audio_decoder_config) OVERRIDE;
   virtual cdm::Status InitializeVideoDecoder(
       const cdm::VideoDecoderConfig& video_decoder_config) OVERRIDE;
   virtual void DeinitializeDecoder(cdm::StreamType decoder_type) OVERRIDE;
@@ -53,6 +55,9 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
   virtual cdm::Status DecryptAndDecodeFrame(
       const cdm::InputBuffer& encrypted_buffer,
       cdm::VideoFrame* video_frame) OVERRIDE;
+  virtual cdm::Status DecryptAndDecodeSamples(
+      const cdm::InputBuffer& encrypted_buffer,
+      cdm::Buffer* sample_buffer) OVERRIDE;
 
  private:
   class Client : public media::DecryptorClient {

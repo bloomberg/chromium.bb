@@ -211,6 +211,39 @@ void Decrypt(PP_Instance instance,
           serialized_block_info));
 }
 
+void InitializeAudioDecoder(
+    PP_Instance instance,
+    const PP_AudioDecoderConfig* decoder_config,
+    PP_Resource extra_data_buffer) {
+  HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
+  if (!dispatcher) {
+    NOTREACHED();
+    return;
+  }
+
+  std::string serialized_decoder_config;
+  if (!SerializeBlockInfo(*decoder_config, &serialized_decoder_config)) {
+    NOTREACHED();
+    return;
+  }
+
+  PPPDecryptor_Buffer buffer;
+  if (!InitializePppDecryptorBuffer(instance,
+                                    dispatcher,
+                                    extra_data_buffer,
+                                    &buffer)) {
+    NOTREACHED();
+    return;
+  }
+
+  dispatcher->Send(
+      new PpapiMsg_PPPContentDecryptor_InitializeAudioDecoder(
+          API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
+          instance,
+          serialized_decoder_config,
+          buffer));
+}
+
 void InitializeVideoDecoder(
     PP_Instance instance,
     const PP_VideoDecoderConfig* decoder_config,
@@ -318,6 +351,7 @@ static const PPP_ContentDecryptor_Private content_decryptor_interface = {
   &AddKey,
   &CancelKeyRequest,
   &Decrypt,
+  &InitializeAudioDecoder,
   &InitializeVideoDecoder,
   &DeinitializeDecoder,
   &ResetDecoder,
@@ -358,6 +392,8 @@ bool PPP_ContentDecryptor_Private_Proxy::OnMessageReceived(
                         OnMsgCancelKeyRequest)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_Decrypt,
                         OnMsgDecrypt)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_InitializeAudioDecoder,
+                        OnMsgInitializeAudioDecoder)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_InitializeVideoDecoder,
                         OnMsgInitializeVideoDecoder)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_DeinitializeDecoder,
@@ -424,6 +460,32 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgDecrypt(
                       instance,
                       plugin_resource,
                       const_cast<const PP_EncryptedBlockInfo*>(&block_info));
+  }
+}
+
+void PPP_ContentDecryptor_Private_Proxy::OnMsgInitializeAudioDecoder(
+    PP_Instance instance,
+    const std::string& serialized_decoder_config,
+    const PPPDecryptor_Buffer& extra_data_buffer) {
+
+  PP_AudioDecoderConfig decoder_config;
+  if (!DeserializeBlockInfo(serialized_decoder_config, &decoder_config))
+      return;
+
+  if (ppp_decryptor_impl_) {
+    PP_Resource plugin_resource = 0;
+    if (extra_data_buffer.size > 0) {
+      plugin_resource =
+          PPB_Buffer_Proxy::AddProxyResource(extra_data_buffer.resource,
+                                             extra_data_buffer.handle,
+                                             extra_data_buffer.size);
+    }
+
+    CallWhileUnlocked(
+        ppp_decryptor_impl_->InitializeAudioDecoder,
+        instance,
+        const_cast<const PP_AudioDecoderConfig*>(&decoder_config),
+        plugin_resource);
   }
 }
 

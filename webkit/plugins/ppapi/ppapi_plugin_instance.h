@@ -73,6 +73,7 @@ struct WebPrintParams;
 }
 
 namespace media {
+class AudioDecoderConfig;
 class DecoderBuffer;
 class DecryptorClient;
 class VideoDecoderConfig;
@@ -263,6 +264,9 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   bool CancelKeyRequest(const std::string& session_id);
   bool Decrypt(const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
                const media::Decryptor::DecryptCB& decrypt_cb);
+  bool InitializeAudioDecoder(
+      const media::AudioDecoderConfig& decoder_config,
+      const media::Decryptor::DecoderInitCB& decoder_init_cb);
   bool InitializeVideoDecoder(
       const media::VideoDecoderConfig& decoder_config,
       const media::Decryptor::DecoderInitCB& decoder_init_cb);
@@ -468,9 +472,10 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   virtual void DeliverBlock(PP_Instance instance,
                             PP_Resource decrypted_block,
                             const PP_DecryptedBlockInfo* block_info) OVERRIDE;
-  virtual void DecoderInitialized(PP_Instance instance,
-                                  PP_Bool success,
-                                  uint32_t request_id) OVERRIDE;
+  virtual void DecoderInitializeDone(PP_Instance instance,
+                                     PP_DecryptorStreamType decoder_type,
+                                     uint32_t request_id,
+                                     PP_Bool success) OVERRIDE;
   virtual void DecoderDeinitializeDone(PP_Instance instance,
                                        PP_DecryptorStreamType decoder_type,
                                        uint32_t request_id) OVERRIDE;
@@ -481,7 +486,7 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
                             PP_Resource decrypted_frame,
                             const PP_DecryptedFrameInfo* frame_info) OVERRIDE;
   virtual void DeliverSamples(PP_Instance instance,
-                              PP_Resource decrypted_samples,
+                              PP_Resource audio_frames,
                               const PP_DecryptedBlockInfo* block_info) OVERRIDE;
 
   // Reset this instance as proxied. Resets cached interfaces to point to the
@@ -791,6 +796,9 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // a map here.
   typedef std::map<uint32_t, media::Decryptor::DecryptCB> DecryptionCBMap;
   DecryptionCBMap pending_decryption_cbs_;
+
+  uint32_t pending_audio_decoder_init_request_id_;
+  media::Decryptor::DecoderInitCB pending_audio_decoder_init_cb_;
 
   uint32_t pending_video_decoder_init_request_id_;
   media::Decryptor::DecoderInitCB pending_video_decoder_init_cb_;

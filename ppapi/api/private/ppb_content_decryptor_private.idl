@@ -9,7 +9,7 @@
  * Decryption Modules, not normal plugins.
  */
 label Chrome {
-  M24 = 0.3
+  M24 = 0.4
 };
 
 /**
@@ -155,15 +155,19 @@ interface PPB_ContentDecryptor_Private {
    * <code>PP_TRUE</code> when the decoder initialization request associated
    * with <code>request_id</code> was successful.
    *
+   * @param[in] decoder_type A <code>PP_DecryptorStreamType</code> identifying
+   * the decoder type for which this initialization status response was sent.
+   *
    * @param[in] request_id The <code>request_id</code> value passed to
    * <code>InitializeAudioDecoder</code> or <code>InitializeVideoDecoder</code>
    * in <code>PP_AudioDecoderConfig</code> or
    * <code>PP_VideoDecoderConfig</code>.
    */
-  void DecoderInitialized(
+  void DecoderInitializeDone(
       [in] PP_Instance instance,
-      [in] PP_Bool success,
-      [in] uint32_t request_id);
+      [in] PP_DecryptorStreamType decoder_type,
+      [in] uint32_t request_id,
+      [in] PP_Bool success);
 
   /**
    * Called after the <code>DeinitializeDecoder()</code> method on the
@@ -220,7 +224,19 @@ interface PPB_ContentDecryptor_Private {
    * deliver a buffer of decrypted and decoded audio samples to the browser for
    * rendering.
    *
-   * @param[in] decrypted_samples A <code>PP_Resource</code> corresponding to a
+   * <code>audio_frames</code> can contain multiple audio output buffers. Each
+   * buffer is serialized in this format:
+   *
+   * |<------------------- serialized audio buffer ------------------->|
+   * | int64_t timestamp | int64_t length | length bytes of audio data |
+   *
+   * For example, with three audio output buffers, |audio_frames| will look
+   * like this:
+   *
+   * |<---------------- audio_frames ------------------>|
+   * | audio buffer 0 | audio buffer 1 | audio buffer 2 |
+   *
+   * @param[in] audio_frames A <code>PP_Resource</code> corresponding to a
    * <code>PPB_Buffer_Dev</code> resource that contains a decrypted buffer
    * of decoded audio samples.
    *
@@ -230,6 +246,6 @@ interface PPB_ContentDecryptor_Private {
    */
   void DeliverSamples(
       [in] PP_Instance instance,
-      [in] PP_Resource decrypted_samples,
+      [in] PP_Resource audio_frames,
       [in] PP_DecryptedBlockInfo decrypted_block_info);
 };

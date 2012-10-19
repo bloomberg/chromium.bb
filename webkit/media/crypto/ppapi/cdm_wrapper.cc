@@ -100,6 +100,14 @@ PP_DecryptedFrameFormat CdmVideoFormatToPpDecryptedFrameFormat(
   return PP_DECRYPTEDFRAMEFORMAT_UNKNOWN;
 }
 
+cdm::AudioDecoderConfig::AudioCodec PpAudioCodecToCdmAudioCodec(
+    PP_AudioCodec codec) {
+  if (codec == PP_AUDIOCODEC_VORBIS)
+    return cdm::AudioDecoderConfig::kCodecVorbis;
+
+  return cdm::AudioDecoderConfig::kUnknownAudioCodec;
+}
+
 cdm::VideoDecoderConfig::VideoCodec PpVideoCodecToCdmVideoCodec(
     PP_VideoCodec codec) {
   if (codec == PP_VIDEOCODEC_VP8)
@@ -420,6 +428,9 @@ class CdmWrapper : public pp::Instance,
   virtual void Decrypt(
       pp::Buffer_Dev encrypted_buffer,
       const PP_EncryptedBlockInfo& encrypted_block_info) OVERRIDE;
+  virtual void InitializeAudioDecoder(
+      const PP_AudioDecoderConfig& decoder_config,
+      pp::Buffer_Dev extra_data_buffer) OVERRIDE;
   virtual void InitializeVideoDecoder(
       const PP_VideoDecoderConfig& decoder_config,
       pp::Buffer_Dev extra_data_buffer) OVERRIDE;
@@ -451,9 +462,10 @@ class CdmWrapper : public pp::Instance,
                     const cdm::Status& status,
                     const LinkedDecryptedBlock& decrypted_block,
                     const PP_DecryptTrackingInfo& tracking_info);
-  void DecoderInitialized(int32_t result,
-                          bool success,
-                          uint32_t request_id);
+  void DecoderInitializeDone(int32_t result,
+                             PP_DecryptorStreamType decoder_type,
+                             uint32_t request_id,
+                             bool success);
   void DecoderDeinitializeDone(int32_t result,
                                PP_DecryptorStreamType decoder_type,
                                uint32_t request_id);
@@ -596,6 +608,28 @@ void CdmWrapper::Decrypt(pp::Buffer_Dev encrypted_buffer,
       encrypted_block_info.tracking_info));
 }
 
+void CdmWrapper::InitializeAudioDecoder(
+    const PP_AudioDecoderConfig& decoder_config,
+    pp::Buffer_Dev extra_data_buffer) {
+  PP_DCHECK(cdm_);
+  cdm::AudioDecoderConfig cdm_decoder_config;
+  cdm_decoder_config.codec = PpAudioCodecToCdmAudioCodec(decoder_config.codec);
+  cdm_decoder_config.channel_count = decoder_config.channel_count;
+  cdm_decoder_config.bits_per_channel = decoder_config.bits_per_channel;
+  cdm_decoder_config.samples_per_second = decoder_config.samples_per_second;
+  cdm_decoder_config.extra_data =
+      static_cast<uint8_t*>(extra_data_buffer.data());
+  cdm_decoder_config.extra_data_size =
+      static_cast<int32_t>(extra_data_buffer.size());
+  cdm::Status status = cdm_->InitializeAudioDecoder(cdm_decoder_config);
+
+  CallOnMain(callback_factory_.NewCallback(
+      &CdmWrapper::DecoderInitializeDone,
+      PP_DECRYPTORSTREAMTYPE_AUDIO,
+      decoder_config.request_id,
+      status == cdm::kSuccess));
+}
+
 void CdmWrapper::InitializeVideoDecoder(
     const PP_VideoDecoderConfig& decoder_config,
     pp::Buffer_Dev extra_data_buffer) {
@@ -615,10 +649,10 @@ void CdmWrapper::InitializeVideoDecoder(
   cdm::Status status = cdm_->InitializeVideoDecoder(cdm_decoder_config);
 
   CallOnMain(callback_factory_.NewCallback(
-      &CdmWrapper::DecoderInitialized,
-      status == cdm::kSuccess,
-      decoder_config.request_id));
-
+      &CdmWrapper::DecoderInitializeDone,
+      PP_DECRYPTORSTREAMTYPE_VIDEO,
+      decoder_config.request_id,
+      status == cdm::kSuccess));
 }
 
 void CdmWrapper::DeinitializeDecoder(PP_DecryptorStreamType decoder_type,
@@ -756,10 +790,14 @@ void CdmWrapper::DeliverBlock(int32_t result,
   pp::ContentDecryptor_Private::DeliverBlock(buffer, decrypted_block_info);
 }
 
-void CdmWrapper::DecoderInitialized(int32_t result,
-                                    bool success,
-                                    uint32_t request_id) {
-  pp::ContentDecryptor_Private::DecoderInitialized(success, request_id);
+void CdmWrapper::DecoderInitializeDone(int32_t result,
+                                       PP_DecryptorStreamType decoder_type,
+                                       uint32_t request_id,
+                                       bool success) {
+  PP_DCHECK(result == PP_OK);
+  pp::ContentDecryptor_Private::DecoderInitializeDone(decoder_type,
+                                                      request_id,
+                                                      success);
 }
 
 void CdmWrapper::DecoderDeinitializeDone(int32_t result,

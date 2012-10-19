@@ -16,6 +16,7 @@
 #include "base/utf_offset_string_conversions.h"
 #include "base/utf_string_conversions.h"
 // TODO(xhwang): Move media specific code out of this class.
+#include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decryptor_client.h"
 #include "media/base/video_decoder_config.h"
@@ -391,6 +392,13 @@ bool MakeEncryptedBlockInfo(
   return true;
 }
 
+PP_AudioCodec MediaAudioCodecToPpAudioCodec(media::AudioCodec codec) {
+  if (codec == media::kCodecVorbis)
+    return PP_AUDIOCODEC_VORBIS;
+
+  return PP_AUDIOCODEC_UNKNOWN;
+}
+
 PP_VideoCodec MediaVideoCodecToPpVideoCodec(media::VideoCodec codec) {
   if (codec == media::kCodecVP8)
     return PP_VIDEOCODEC_VP8;
@@ -492,6 +500,7 @@ PluginInstance::PluginInstance(
       flash_impl_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       decryptor_client_(NULL),
       next_decryption_request_id_(1),
+      pending_audio_decoder_init_request_id_(0),
       pending_video_decoder_init_request_id_(0),
       pending_video_decode_request_id_(0) {
   pp_instance_ = HostGlobals::Get()->AddInstance(this);
@@ -1587,6 +1596,33 @@ bool PluginInstance::Decrypt(
   return true;
 }
 
+bool PluginInstance::InitializeAudioDecoder(
+    const media::AudioDecoderConfig& decoder_config,
+    const media::Decryptor::DecoderInitCB& init_cb) {
+  PP_AudioDecoderConfig pp_decoder_config;
+  pp_decoder_config.channel_count =
+      media::ChannelLayoutToChannelCount(decoder_config.channel_layout());
+  pp_decoder_config.bits_per_channel = decoder_config.bits_per_channel();
+  pp_decoder_config.samples_per_second = decoder_config.samples_per_second();
+  pp_decoder_config.request_id = next_decryption_request_id_++;
+
+  ScopedPPResource extra_data_resource(
+      ScopedPPResource::PassRef(),
+      MakeBufferResource(pp_instance(),
+                         decoder_config.extra_data(),
+                         decoder_config.extra_data_size()));
+
+  DCHECK_EQ(pending_audio_decoder_init_request_id_, 0u);
+  DCHECK(pending_audio_decoder_init_cb_.is_null());
+  pending_audio_decoder_init_request_id_ = pp_decoder_config.request_id;
+  pending_audio_decoder_init_cb_ = init_cb;
+
+  plugin_decryption_interface_->InitializeAudioDecoder(pp_instance(),
+                                                       &pp_decoder_config,
+                                                       extra_data_resource);
+  return true;
+}
+
 bool PluginInstance::InitializeVideoDecoder(
     const media::VideoDecoderConfig& decoder_config,
     const media::Decryptor::DecoderInitCB& init_cb) {
@@ -2380,16 +2416,31 @@ void PluginInstance::KeyError(PP_Instance instance,
       system_code);
 }
 
-void PluginInstance::DecoderInitialized(PP_Instance instance,
-                                        PP_Bool success,
-                                        uint32_t request_id) {
-  // If the request ID is not valid or does not match what's saved, do nothing.
-  if (request_id == 0 || request_id != pending_video_decoder_init_request_id_)
-    return;
+void PluginInstance::DecoderInitializeDone(PP_Instance instance,
+                                           PP_DecryptorStreamType decoder_type,
+                                           uint32_t request_id,
+                                           PP_Bool success) {
+  if (decoder_type == PP_DECRYPTORSTREAMTYPE_AUDIO) {
+    // If the request ID is not valid or does not match what's saved, do
+    // nothing.
+    if (request_id == 0 ||
+        request_id != pending_audio_decoder_init_request_id_)
+      return;
 
-  DCHECK(!pending_video_decoder_init_cb_.is_null());
-  pending_video_decoder_init_request_id_ = 0;
-  base::ResetAndReturn(&pending_video_decoder_init_cb_).Run(PP_ToBool(success));
+      DCHECK(!pending_audio_decoder_init_cb_.is_null());
+      pending_audio_decoder_init_request_id_ = 0;
+      base::ResetAndReturn(
+          &pending_audio_decoder_init_cb_).Run(PP_ToBool(success));
+  } else {
+    if (request_id == 0 ||
+        request_id != pending_video_decoder_init_request_id_)
+      return;
+
+      DCHECK(!pending_video_decoder_init_cb_.is_null());
+      pending_video_decoder_init_request_id_ = 0;
+      base::ResetAndReturn(
+          &pending_video_decoder_init_cb_).Run(PP_ToBool(success));
+  }
 }
 
 void PluginInstance::DecoderDeinitializeDone(
@@ -2532,7 +2583,7 @@ void PluginInstance::DeliverFrame(PP_Instance instance,
 }
 
 void PluginInstance::DeliverSamples(PP_Instance instance,
-                                    PP_Resource decrypted_samples,
+                                    PP_Resource audio_frames,
                                     const PP_DecryptedBlockInfo* block_info) {
   DVLOG(2) << "DeliverSamples() - request_id: "
            << block_info->tracking_info.request_id;

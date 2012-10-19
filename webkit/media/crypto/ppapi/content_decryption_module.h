@@ -108,6 +108,31 @@ struct InputBuffer {
   int64_t timestamp;  // Presentation timestamp in microseconds.
 };
 
+struct AudioDecoderConfig {
+  enum AudioCodec {
+    kUnknownAudioCodec = 0,
+    kCodecVorbis
+  };
+
+  AudioDecoderConfig()
+      : codec(kUnknownAudioCodec),
+        channel_count(0),
+        bits_per_channel(0),
+        samples_per_second(0),
+        extra_data(NULL),
+        extra_data_size(0) {}
+
+  AudioCodec codec;
+  int32_t channel_count;
+  int32_t bits_per_channel;
+  int32_t samples_per_second;
+
+  // Optional byte data required to initialize audio decoders, such as the
+  // vorbis setup header.
+  uint8_t* extra_data;
+  int32_t extra_data_size;
+};
+
 // Surface formats based on FOURCC labels, see:
 // http://www.fourcc.org/yuv.php
 enum VideoFormat {
@@ -220,6 +245,19 @@ class ContentDecryptionModule {
   virtual Status Decrypt(const InputBuffer& encrypted_buffer,
                          DecryptedBlock* decrypted_buffer) = 0;
 
+  // Initializes the CDM audio decoder with |audio_decoder_config|. This
+  // function must be called before DecryptAndDecodeSamples() is called.
+  //
+  // Returns kSuccess if the |audio_decoder_config| is supported and the CDM
+  // audio decoder is successfully initialized.
+  // Returns kSessionError if |audio_decoder_config| is not supported. The CDM
+  // may still be able to do Decrypt().
+  //
+  // TODO(xhwang): Add stream ID here and in the following audio decoder
+  // functions when we need to support multiple audio streams in one CDM.
+  virtual Status InitializeAudioDecoder(
+      const AudioDecoderConfig& audio_decoder_config) = 0;
+
   // Initializes the CDM video decoder with |video_decoder_config|. This
   // function must be called before DecryptAndDecodeFrame() is called.
   //
@@ -227,9 +265,6 @@ class ContentDecryptionModule {
   // video decoder is successfully initialized.
   // Returns kSessionError if |video_decoder_config| is not supported. The CDM
   // may still be able to do Decrypt().
-  //
-  // TODO(tomfinegan): Determine the proper error to return here once there
-  // are callers for this method.
   //
   // TODO(xhwang): Add stream ID here and in the following video decoder
   // functions when we need to support multiple video streams in one CDM.
@@ -252,8 +287,8 @@ class ContentDecryptionModule {
   // |video_frame| (|format| == kEmptyVideoFrame) is produced.
   //
   // Returns kSuccess if decryption and decoding both succeeded, in which case
-  // the callee should have filled the |video_frame| and passed the ownership of
-  // |data| in |video_frame| to the caller.
+  // the callee will have filled the |video_frame| and passed the ownership of
+  // |frame_buffer| in |video_frame| to the caller.
   // Returns kNoKey if the CDM did not have the necessary decryption key
   // to decrypt.
   // Returns kNeedMoreData if more data was needed by the decoder to generate
@@ -264,6 +299,37 @@ class ContentDecryptionModule {
   // the caller.
   virtual Status DecryptAndDecodeFrame(const InputBuffer& encrypted_buffer,
                                        VideoFrame* video_frame) = 0;
+
+  // Decrypts the |encrypted_buffer| and decodes the decrypted buffer into
+  // |audio_frames|. Upon end-of-stream, the caller should call this function
+  // repeatedly with empty |encrypted_buffer| (|data| == NULL) until only empty
+  // |audio_frames| is produced.
+  //
+  // Returns kSuccess if decryption and decoding both succeeded, in which case
+  // the callee will have filled |audio_frames| and passed the ownership of
+  // |data| in |audio_frames| to the caller.
+  // Returns kNoKey if the CDM did not have the necessary decryption key
+  // to decrypt.
+  // Returns kNeedMoreData if more data was needed by the decoder to generate
+  // audio samples (e.g. during initialization).
+  // Returns kDecryptError if any decryption error happened.
+  // Returns kDecodeError if any decoding error happened.
+  // If the return value is not kSuccess, |sample_buffer| should be ignored by
+  // the caller.
+  //
+  // |audio_frames| can contain multiple audio output buffers. Each buffer must
+  // be serialized in this format:
+  //
+  // |<------------------- serialized audio buffer ------------------->|
+  // | int64_t timestamp | int64_t length | length bytes of audio data |
+  //
+  // For example, with three audio output buffers, |audio_frames| will look
+  // like this:
+  //
+  // |<---------------- audio_frames ------------------>|
+  // | audio buffer 0 | audio buffer 1 | audio buffer 2 |
+  virtual Status DecryptAndDecodeSamples(const InputBuffer& encrypted_buffer,
+                                         Buffer* audio_frames) = 0;
 
   virtual ~ContentDecryptionModule() {}
 };

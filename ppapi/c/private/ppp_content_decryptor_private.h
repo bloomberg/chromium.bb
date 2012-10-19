@@ -4,7 +4,7 @@
  */
 
 /* From private/ppp_content_decryptor_private.idl,
- *   modified Thu Oct 11 22:28:01 2012.
+ *   modified Fri Oct 19 10:45:02 2012.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPP_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -18,10 +18,10 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 
-#define PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_3 \
-    "PPP_ContentDecryptor_Private;0.3"
+#define PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_4 \
+    "PPP_ContentDecryptor_Private;0.4"
 #define PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE \
-    PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_3
+    PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_4
 
 /**
  * @file
@@ -42,7 +42,7 @@
  * Decryption Module (CDM) for v0.1 of the proposed Encrypted Media Extensions:
  * http://goo.gl/rbdnR
  */
-struct PPP_ContentDecryptor_Private_0_3 {
+struct PPP_ContentDecryptor_Private_0_4 {
   /**
    * Generates a key request. key_system specifies the key or licensing system
    * to use. init_data is a data buffer containing data for use in generating
@@ -114,14 +114,36 @@ struct PPP_ContentDecryptor_Private_0_3 {
                   PP_Resource encrypted_block,
                   const struct PP_EncryptedBlockInfo* encrypted_block_info);
   /**
+   * Initializes the audio decoder using codec and settings in
+   * <code>decoder_config</code>, and returns the result of the initialization
+   * request to the browser using the <code>DecoderInitializeDone(
+      )</code> method
+   * on the <code>PPB_ContentDecryptor_Private</code> interface.
+   *
+   * @param[in] decoder_config A <code>PP_AudioDecoderConfig</code> that
+   * contains audio decoder settings and a request ID. The request ID is passed
+   * to the <code>DecoderInitializeDone()</code> method on the
+   * <code>PPB_ContentDecryptor_Private</code> interface to allow clients to
+   * associate the result with a audio decoder initialization request.
+   *
+   * @param[in] codec_extra_data A <code>PP_Resource</code> corresponding to a
+   * <code>PPB_Buffer_Dev</code> resource containing codec setup data required
+   * by some codecs. It should be set to 0 when the codec being initialized
+   * does not require it.
+   */
+  void (*InitializeAudioDecoder)(
+      PP_Instance instance,
+      const struct PP_AudioDecoderConfig* decoder_config,
+      PP_Resource codec_extra_data);
+  /**
    * Initializes the video decoder using codec and settings in
    * <code>decoder_config</code>, and returns the result of the initialization
-   * request to the browser using the <code>DecoderInitialized()</code> method
-   * on the <code>PPB_ContentDecryptor_Private</code> interface.
+   * request to the browser using the <code>DecoderInitializeDone()</code>
+   * method on the <code>PPB_ContentDecryptor_Private</code> interface.
    *
    * @param[in] decoder_config A <code>PP_VideoDecoderConfig</code> that
    * contains video decoder settings and a request ID. The request ID is passed
-   * to the <code>DecoderInitialized()</code> method on the
+   * to the <code>DecoderInitializeDone()</code> method on the
    * <code>PPB_ContentDecryptor_Private</code> interface to allow clients to
    * associate the result with a video decoder initialization request.
    *
@@ -200,7 +222,7 @@ struct PPP_ContentDecryptor_Private_0_3 {
       const struct PP_EncryptedBlockInfo* encrypted_block_info);
 };
 
-typedef struct PPP_ContentDecryptor_Private_0_3 PPP_ContentDecryptor_Private;
+typedef struct PPP_ContentDecryptor_Private_0_4 PPP_ContentDecryptor_Private;
 /**
  * @}
  */

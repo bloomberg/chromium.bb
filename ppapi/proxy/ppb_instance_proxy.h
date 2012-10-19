@@ -137,9 +137,10 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual void DeliverBlock(PP_Instance instance,
                             PP_Resource decrypted_block,
                             const PP_DecryptedBlockInfo* block_info) OVERRIDE;
-  virtual void DecoderInitialized(PP_Instance instance,
-                                  PP_Bool success,
-                                  uint32_t request_id) OVERRIDE;
+  virtual void DecoderInitializeDone(PP_Instance instance,
+                                     PP_DecryptorStreamType decoder_type,
+                                     uint32_t request_id,
+                                     PP_Bool success) OVERRIDE;
   virtual void DecoderDeinitializeDone(PP_Instance instance,
                                        PP_DecryptorStreamType decoder_type,
                                        uint32_t request_id) OVERRIDE;
@@ -150,7 +151,7 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                             PP_Resource decrypted_frame,
                             const PP_DecryptedFrameInfo* frame_info) OVERRIDE;
   virtual void DeliverSamples(PP_Instance instance,
-                              PP_Resource decrypted_samples,
+                              PP_Resource audio_frames,
                               const PP_DecryptedBlockInfo* block_info) OVERRIDE;
 #endif  // !defined(OS_NACL)
 
@@ -240,9 +241,11 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                                  SerializedVarReceiveInput session_id,
                                  int32_t media_error,
                                  int32_t system_code);
-  virtual void OnHostMsgDecoderInitialized(PP_Instance instance,
-                                           PP_Bool success,
-                                           uint32_t request_id);
+  virtual void OnHostMsgDecoderInitializeDone(
+      PP_Instance instance,
+      PP_DecryptorStreamType decoder_type,
+      uint32_t request_id,
+      PP_Bool success);
   virtual void OnHostMsgDecoderDeinitializeDone(
       PP_Instance instance,
       PP_DecryptorStreamType decoder_type,
@@ -258,7 +261,7 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                                      const std::string& serialized_block_info);
   virtual void OnHostMsgDeliverSamples(
       PP_Instance instance,
-      PP_Resource decrypted_samples,
+      PP_Resource audio_frames,
       const std::string& serialized_block_info);
 #endif  // !defined(OS_NACL)
 

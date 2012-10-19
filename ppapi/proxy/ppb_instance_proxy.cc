@@ -167,8 +167,8 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgKeyError)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_DeliverBlock,
                         OnHostMsgDeliverBlock)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_DecoderInitialized,
-                        OnHostMsgDecoderInitialized)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_DecoderInitializeDone,
+                        OnHostMsgDecoderInitializeDone)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_DecoderDeinitializeDone,
                         OnHostMsgDecoderDeinitializeDone)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_DecoderResetDone,
@@ -544,15 +544,18 @@ void PPB_Instance_Proxy::DeliverBlock(PP_Instance instance,
           serialized_block_info));
 }
 
-void PPB_Instance_Proxy::DecoderInitialized(PP_Instance instance,
-                                            PP_Bool success,
-                                            uint32_t request_id) {
+void PPB_Instance_Proxy::DecoderInitializeDone(
+    PP_Instance instance,
+    PP_DecryptorStreamType decoder_type,
+    uint32_t request_id,
+    PP_Bool success) {
   dispatcher()->Send(
-      new PpapiHostMsg_PPBInstance_DecoderInitialized(
+      new PpapiHostMsg_PPBInstance_DecoderInitializeDone(
           API_ID_PPB_INSTANCE,
           instance,
-          success,
-          request_id));
+          decoder_type,
+          request_id,
+          success));
 }
 
 void PPB_Instance_Proxy::DecoderDeinitializeDone(
@@ -598,13 +601,13 @@ void PPB_Instance_Proxy::DeliverFrame(PP_Instance instance,
           serialized_block_info));
 }
 
-// TODO(tomfinegan): Handle null decrypted_samples after landing other patches.
+// TODO(tomfinegan): Handle null audio_frames after landing other patches.
 void PPB_Instance_Proxy::DeliverSamples(
     PP_Instance instance,
-    PP_Resource decrypted_samples,
+    PP_Resource audio_frames,
     const PP_DecryptedBlockInfo* block_info) {
   Resource* object =
-      PpapiGlobals::Get()->GetResourceTracker()->GetResource(decrypted_samples);
+      PpapiGlobals::Get()->GetResourceTracker()->GetResource(audio_frames);
   if (!object || object->pp_instance() != instance)
     return;
 
@@ -1001,13 +1004,18 @@ void PPB_Instance_Proxy::OnHostMsgDeliverBlock(
     enter.functions()->DeliverBlock(instance, decrypted_block, &block_info);
 }
 
-void PPB_Instance_Proxy::OnHostMsgDecoderInitialized(
+void PPB_Instance_Proxy::OnHostMsgDecoderInitializeDone(
     PP_Instance instance,
-    PP_Bool success,
-    uint32_t request_id) {
+    PP_DecryptorStreamType decoder_type,
+    uint32_t request_id,
+    PP_Bool success) {
   EnterInstanceNoLock enter(instance);
-  if (enter.succeeded())
-    enter.functions()->DecoderInitialized(instance, success, request_id);
+  if (enter.succeeded()) {
+    enter.functions()->DecoderInitializeDone(instance,
+                                             decoder_type,
+                                             request_id,
+                                             success);
+  }
 }
 
 void PPB_Instance_Proxy::OnHostMsgDecoderDeinitializeDone(
@@ -1045,7 +1053,7 @@ void PPB_Instance_Proxy::OnHostMsgDeliverFrame(
 
 void PPB_Instance_Proxy::OnHostMsgDeliverSamples(
     PP_Instance instance,
-    PP_Resource decrypted_samples,
+    PP_Resource audio_frames,
     const std::string& serialized_block_info) {
   PP_DecryptedBlockInfo block_info;
   if (!DeserializeBlockInfo(serialized_block_info, &block_info))
@@ -1053,7 +1061,7 @@ void PPB_Instance_Proxy::OnHostMsgDeliverSamples(
 
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
-    enter.functions()->DeliverSamples(instance, decrypted_samples, &block_info);
+    enter.functions()->DeliverSamples(instance, audio_frames, &block_info);
 }
 #endif  // !defined(OS_NACL)
 

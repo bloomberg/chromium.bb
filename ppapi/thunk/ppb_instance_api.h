@@ -165,9 +165,10 @@ class PPB_Instance_API {
   virtual void DeliverBlock(PP_Instance instance,
                             PP_Resource decrypted_block,
                             const PP_DecryptedBlockInfo* block_info) = 0;
-  virtual void DecoderInitialized(PP_Instance instance,
-                                  PP_Bool success,
-                                  uint32_t request_id) = 0;
+  virtual void DecoderInitializeDone(PP_Instance instance,
+                                     PP_DecryptorStreamType decoder_type,
+                                     uint32_t request_id,
+                                     PP_Bool success) = 0;
   virtual void DecoderDeinitializeDone(PP_Instance instance,
                                        PP_DecryptorStreamType decoder_type,
                                        uint32_t request_id) = 0;
@@ -178,7 +179,7 @@ class PPB_Instance_API {
                             PP_Resource decrypted_frame,
                             const PP_DecryptedFrameInfo* frame_info) = 0;
   virtual void DeliverSamples(PP_Instance instance,
-                              PP_Resource decrypted_samples,
+                              PP_Resource audio_frames,
                               const PP_DecryptedBlockInfo* block_info) = 0;
 
   // URLUtil.
