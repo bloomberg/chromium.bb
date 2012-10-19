@@ -18,6 +18,7 @@
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/protocol/device_info_specifics.pb.h"
 #include "sync/protocol/encryption.pb.h"
+#include "sync/protocol/experiments_specifics.pb.h"
 #include "sync/protocol/extension_setting_specifics.pb.h"
 #include "sync/protocol/extension_specifics.pb.h"
 #include "sync/protocol/nigori_specifics.pb.h"
@@ -48,7 +49,7 @@ TEST_F(ProtoValueConversionsTest, ProtoChangeCheck) {
   // If this number changes, that means we added or removed a data
   // type.  Don't forget to add a unit test for {New
   // type}SpecificsToValue below.
-  EXPECT_EQ(19, MODEL_TYPE_COUNT);
+  EXPECT_EQ(20, MODEL_TYPE_COUNT);
 
   // We'd also like to check if we changed any field in our messages.
   // However, that's hard to do: sizeof could work, but it's
@@ -132,6 +133,14 @@ TEST_F(ProtoValueConversionsTest, BookmarkSpecificsData) {
   EXPECT_EQ(base::Int64ToString(creation_time.ToInternalValue()), encoded_time);
 }
 
+TEST_F(ProtoValueConversionsTest, DeviceInfoSpecificsToValue) {
+  TestSpecificsToValue(DeviceInfoSpecificsToValue);
+}
+
+TEST_F(ProtoValueConversionsTest, ExperimentsSpecificsToValue) {
+  TestSpecificsToValue(ExperimentsSpecificsToValue);
+}
+
 TEST_F(ProtoValueConversionsTest, ExtensionSettingSpecificsToValue) {
   TestSpecificsToValue(ExtensionSettingSpecificsToValue);
 }
@@ -150,10 +159,6 @@ TEST_F(ProtoValueConversionsTest, NigoriSpecificsToValue) {
 
 TEST_F(ProtoValueConversionsTest, PasswordSpecificsToValue) {
   TestSpecificsToValue(PasswordSpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, DeviceInfoSpecificsToValue) {
-  TestSpecificsToValue(DeviceInfoSpecificsToValue);
 }
 
 TEST_F(ProtoValueConversionsTest, PreferenceSpecificsToValue) {
@@ -190,6 +195,7 @@ TEST_F(ProtoValueConversionsTest, EntitySpecificsToValue) {
   SET_FIELD(autofill);
   SET_FIELD(autofill_profile);
   SET_FIELD(bookmark);
+  SET_FIELD(experiments);
   SET_FIELD(extension);
   SET_FIELD(extension_setting);
   SET_FIELD(history_delete_directive);

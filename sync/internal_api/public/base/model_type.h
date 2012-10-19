@@ -88,9 +88,11 @@ enum ModelType {
   // An object representing a set of Nigori keys.
   NIGORI,
   FIRST_CONTROL_MODEL_TYPE = NIGORI,
-  // Client-specific metadata
+  // Client-specific metadata.
   DEVICE_INFO,
-  LAST_CONTROL_MODEL_TYPE = DEVICE_INFO,
+  // Flags to enable experimental features.
+  EXPERIMENTS,
+  LAST_CONTROL_MODEL_TYPE = EXPERIMENTS,
 
   LAST_REAL_MODEL_TYPE = LAST_CONTROL_MODEL_TYPE,
 

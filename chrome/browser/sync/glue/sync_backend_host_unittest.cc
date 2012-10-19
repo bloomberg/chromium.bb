@@ -147,10 +147,12 @@ class SyncBackendHostTest : public testing::Test {
     credentials_.email = "user@example.com";
     credentials_.sync_token = "sync_token";
 
+    // These types are always implicitly enabled.
+    enabled_types_.PutAll(syncer::ControlTypes());
+
     // NOTE: We can't include Passwords or Typed URLs due to the Sync Backend
     // Registrar removing them if it can't find their model workers.
     enabled_types_.Put(syncer::BOOKMARKS);
-    enabled_types_.Put(syncer::NIGORI);
     enabled_types_.Put(syncer::PREFERENCES);
     enabled_types_.Put(syncer::SESSIONS);
     enabled_types_.Put(syncer::SEARCH_ENGINES);

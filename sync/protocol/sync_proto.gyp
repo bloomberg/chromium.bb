@@ -20,6 +20,7 @@
         'client_debug_info.proto',
         'device_info_specifics.proto',
         'encryption.proto',
+        'experiments_specifics.proto',
         'extension_setting_specifics.proto',
         'extension_specifics.proto',
         'get_updates_caller_info.proto',

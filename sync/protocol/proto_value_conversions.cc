@@ -17,6 +17,7 @@
 #include "sync/protocol/autofill_specifics.pb.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/protocol/encryption.pb.h"
+#include "sync/protocol/experiments_specifics.pb.h"
 #include "sync/protocol/extension_setting_specifics.pb.h"
 #include "sync/protocol/extension_specifics.pb.h"
 #include "sync/protocol/history_delete_directive_specifics.pb.h"
@@ -196,14 +197,10 @@ DictionaryValue* PasswordSpecificsDataToValue(
   return value;
 }
 
-DictionaryValue* DeviceInfoSpecificsToValue(
-    const sync_pb::DeviceInfoSpecifics& proto) {
+DictionaryValue* KeystoreEncryptionFlagsToValue(
+    const sync_pb::KeystoreEncryptionFlags& proto) {
   DictionaryValue* value = new DictionaryValue();
-  SET_STR(cache_guid);
-  SET_STR(client_name);
-  SET_ENUM(device_type, GetDeviceTypeString);
-  SET_STR(sync_user_agent);
-  SET_STR(chrome_version);
+  SET_BOOL(enabled);
   return value;
 }
 
@@ -293,6 +290,24 @@ DictionaryValue* BookmarkSpecificsToValue(
   SET_BYTES(favicon);
   SET_STR(title);
   SET_INT64(creation_time_us);
+  return value;
+}
+
+DictionaryValue* DeviceInfoSpecificsToValue(
+    const sync_pb::DeviceInfoSpecifics& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET_STR(cache_guid);
+  SET_STR(client_name);
+  SET_ENUM(device_type, GetDeviceTypeString);
+  SET_STR(sync_user_agent);
+  SET_STR(chrome_version);
+  return value;
+}
+
+DictionaryValue* ExperimentsSpecificsToValue(
+    const sync_pb::ExperimentsSpecifics& proto) {
+  DictionaryValue* value = new DictionaryValue();
+  SET(keystore_encryption, KeystoreEncryptionFlagsToValue);
   return value;
 }
 
@@ -430,6 +445,7 @@ DictionaryValue* EntitySpecificsToValue(
   SET_FIELD(autofill_profile, AutofillProfileSpecificsToValue);
   SET_FIELD(bookmark, BookmarkSpecificsToValue);
   SET_FIELD(device_info, DeviceInfoSpecificsToValue);
+  SET_FIELD(experiments, ExperimentsSpecificsToValue);
   SET_FIELD(extension, ExtensionSpecificsToValue);
   SET_FIELD(extension_setting, ExtensionSettingSpecificsToValue);
   SET_FIELD(history_delete_directive, HistoryDeleteDirectiveSpecificsToValue);

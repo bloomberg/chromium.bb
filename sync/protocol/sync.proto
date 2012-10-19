@@ -23,6 +23,7 @@ import "client_commands.proto";
 import "client_debug_info.proto";
 import "device_info_specifics.proto";
 import "encryption.proto";
+import "experiments_specifics.proto";
 import "extension_setting_specifics.proto";
 import "extension_specifics.proto";
 import "get_updates_caller_info.proto";
@@ -101,6 +102,7 @@ message EntitySpecifics {
   optional AppSettingSpecifics app_setting = 103656;
   optional HistoryDeleteDirectiveSpecifics history_delete_directive = 150251;
   optional DeviceInfoSpecifics device_info = 154522;
+  optional ExperimentsSpecifics experiments = 161496;
 }
 
 message SyncEntity {

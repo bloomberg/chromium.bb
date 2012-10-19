@@ -79,6 +79,9 @@ void AddDefaultFieldValue(ModelType datatype,
     case DEVICE_INFO:
       specifics->mutable_device_info();
       break;
+    case EXPERIMENTS:
+      specifics->mutable_experiments();
+      break;
     default:
       NOTREACHED() << "No known extension for model type.";
   }
@@ -145,6 +148,9 @@ int GetSpecificsFieldNumberFromModelType(ModelType model_type) {
       return sync_pb::EntitySpecifics::kHistoryDeleteDirectiveFieldNumber;
     case DEVICE_INFO:
       return sync_pb::EntitySpecifics::kDeviceInfoFieldNumber;
+      break;
+    case EXPERIMENTS:
+      return sync_pb::EntitySpecifics::kExperimentsFieldNumber;
       break;
     default:
       NOTREACHED() << "No known extension for model type.";
@@ -244,6 +250,9 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   if (specifics.has_device_info())
     return DEVICE_INFO;
 
+  if (specifics.has_experiments())
+    return EXPERIMENTS;
+
   return UNSPECIFIED;
 }
 
@@ -274,6 +283,9 @@ ModelTypeSet ControlTypes() {
 
   // TODO(rlarocque): Re-enable this when the server supports it.
   set.Remove(DEVICE_INFO);
+
+  // TODO(rlarocque): Re-enable this when the server supports it.
+  set.Remove(EXPERIMENTS);
 
   return set;
 }
@@ -325,6 +337,8 @@ const char* ModelTypeToString(ModelType model_type) {
       return "History Delete Directives";
     case DEVICE_INFO:
       return "Device Info";
+    case EXPERIMENTS:
+      return "Experiments";
     default:
       break;
   }
@@ -394,6 +408,8 @@ ModelType ModelTypeFromString(const std::string& model_type_string) {
     return HISTORY_DELETE_DIRECTIVES;
   else if (model_type_string == "Device Info")
     return DEVICE_INFO;
+  else if (model_type_string == "Experiments")
+    return EXPERIMENTS;
   else
     NOTREACHED() << "No known model type corresponding to "
                  << model_type_string << ".";
@@ -466,6 +482,8 @@ std::string ModelTypeToRootTag(ModelType type) {
       return "google_chrome_history_delete_directives";
     case DEVICE_INFO:
       return "google_chrome_device_info";
+    case EXPERIMENTS:
+      return "google_chrome_experiments";
     default:
       break;
   }
@@ -494,6 +512,7 @@ const char kAppNotificationNotificationType[] = "APP_NOTIFICATION";
 const char kHistoryDeleteDirectiveNotificationType[] =
     "HISTORY_DELETE_DIRECTIVE";
 const char kDeviceInfoNotificationType[] = "DEVICE_INFO";
+const char kExperimentsNotificationType[] = "EXPERIMENTS";
 }  // namespace
 
 bool RealModelTypeToNotificationType(ModelType model_type,
@@ -548,6 +567,9 @@ bool RealModelTypeToNotificationType(ModelType model_type,
       *notification_type = kHistoryDeleteDirectiveNotificationType;
     case DEVICE_INFO:
       *notification_type = kDeviceInfoNotificationType;
+      return true;
+    case EXPERIMENTS:
+      *notification_type = kExperimentsNotificationType;
       return true;
     default:
       break;

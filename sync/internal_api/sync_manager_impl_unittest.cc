@@ -791,6 +791,7 @@ class SyncManagerTest : public testing::Test,
   void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
     (*out)[NIGORI] = GROUP_PASSIVE;
     (*out)[DEVICE_INFO] = GROUP_PASSIVE;
+    (*out)[EXPERIMENTS] = GROUP_PASSIVE;
     (*out)[BOOKMARKS] = GROUP_PASSIVE;
     (*out)[THEMES] = GROUP_PASSIVE;
     (*out)[SESSIONS] = GROUP_PASSIVE;
@@ -1184,7 +1185,7 @@ TEST_F(SyncManagerTest, GetChildNodeIds) {
   const ListValue* nodes = NULL;
   ASSERT_TRUE(return_args.Get().GetList(0, &nodes));
   ASSERT_TRUE(nodes);
-  EXPECT_EQ(7u, nodes->GetSize());
+  EXPECT_EQ(8u, nodes->GetSize());
 }
 
 TEST_F(SyncManagerTest, GetChildNodeIdsFailure) {

@@ -27,6 +27,7 @@ using syncer::UserShare;
 using syncer::syncable::Directory;
 using syncer::NIGORI;
 using syncer::DEVICE_INFO;
+using syncer::EXPERIMENTS;
 
 namespace browser_sync {
 
@@ -125,6 +126,10 @@ void SyncBackendHostForProfileSyncTest
 
         // A side effect of adding the NIGORI mode (normally done by the
         // syncer) is a decryption attempt, which will fail the first time.
+      }
+
+      if (!directory->initial_sync_ended_for_type(EXPERIMENTS)) {
+        syncer::TestUserShare::CreateRoot(EXPERIMENTS, user_share);
       }
 
       SetInitialSyncEndedForAllTypes();

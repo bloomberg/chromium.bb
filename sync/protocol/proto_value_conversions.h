@@ -26,10 +26,14 @@ class DeviceInformation;
 class EncryptedData;
 class EntitySpecifics;
 class EverythingDirective;
+class ExperimentsSpecifics;
 class ExtensionSettingSpecifics;
+class ExtensionSettingSpecifics;
+class ExtensionSpecifics;
 class ExtensionSpecifics;
 class GlobalIdDirective;
 class HistoryDeleteDirectiveSpecifics;
+class KeystoreEncryptionFlagsSpecifics;
 class NigoriSpecifics;
 class PasswordSpecifics;
 class PasswordSpecificsData;
@@ -99,6 +103,11 @@ base::DictionaryValue* GlobalIdDirectiveToValue(
 base::DictionaryValue* TimeRangeDirectiveToValue(
     const sync_pb::TimeRangeDirective& time_range_directive);
 
+// Sub-protocol of Experiments.
+
+base::DictionaryValue* KeystoreEncryptionToValue(
+    const sync_pb::KeystoreEncryptionFlagsSpecifics& proto);
+
 // Main *SpecificsToValue functions.
 
 base::DictionaryValue* AppNotificationToValue(
@@ -119,6 +128,12 @@ base::DictionaryValue* AutofillProfileSpecificsToValue(
 base::DictionaryValue* BookmarkSpecificsToValue(
     const sync_pb::BookmarkSpecifics& bookmark_specifics);
 
+base::DictionaryValue* DeviceInfoSpecificsToValue(
+    const sync_pb::DeviceInfoSpecifics& device_info_specifics);
+
+base::DictionaryValue* ExperimentsSpecificsToValue(
+    const sync_pb::ExperimentsSpecifics& proto);
+
 base::DictionaryValue* ExtensionSettingSpecificsToValue(
     const sync_pb::ExtensionSettingSpecifics& extension_setting_specifics);
 
@@ -134,9 +149,6 @@ base::DictionaryValue* NigoriSpecificsToValue(
 
 base::DictionaryValue* PasswordSpecificsToValue(
     const sync_pb::PasswordSpecifics& password_specifics);
-
-base::DictionaryValue* DeviceInfoSpecificsToValue(
-    const sync_pb::DeviceInfoSpecifics& device_info_specifics);
 
 base::DictionaryValue* PreferenceSpecificsToValue(
     const sync_pb::PreferenceSpecifics& password_specifics);

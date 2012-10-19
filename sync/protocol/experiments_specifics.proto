@@ -1,0 +1,24 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Sync protocol datatype extension for experimental feature flags.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+option retain_unknown_fields = true;
+
+package sync_pb;
+
+// A flag to enable support for keystore encryption.
+message KeystoreEncryptionFlags {
+  optional bool enabled = 1;
+}
+
+// Contains one flag or set of related flags.  Each node of the experiments type
+// will have a unique_client_tag identifying which flags it contains.  By
+// convention, the tag name should match the sub-message name.
+message ExperimentsSpecifics {
+  optional KeystoreEncryptionFlags keystore_encryption = 1;
+}
