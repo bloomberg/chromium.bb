@@ -1845,7 +1845,6 @@ frame_button_handler(struct widget *widget,
 		case THEME_LOCATION_TITLEBAR:
 			if (!window->shell_surface)
 				break;
-			input_set_pointer_image(input, CURSOR_DRAGGING);
 			input_ungrab(input);
 			wl_shell_surface_move(window->shell_surface,
 					      input_get_seat(input),
