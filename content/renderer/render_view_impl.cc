@@ -5600,25 +5600,6 @@ void RenderViewImpl::DidFlushPaint() {
   }
 }
 
-void RenderViewImpl::DidInvalidateRect(const WebRect& rect) {
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidInvalidateRect(rect));
-}
-
-void RenderViewImpl::DidScrollRect(int dx, int dy, const WebRect& rect) {
-  FOR_EACH_OBSERVER(
-      RenderViewObserver, observers_, DidScrollRect(dx, dy, rect));
-}
-
-void RenderViewImpl::DidRequestScheduleComposite() {
-  FOR_EACH_OBSERVER(
-      RenderViewObserver, observers_, DidRequestScheduleComposite());
-}
-
-void RenderViewImpl::DidRequestScheduleAnimation() {
-  FOR_EACH_OBSERVER(
-      RenderViewObserver, observers_, DidRequestScheduleAnimation());
-}
-
 void RenderViewImpl::OnViewContextSwapBuffersPosted() {
   RenderWidget::OnSwapBuffersPosted();
 }

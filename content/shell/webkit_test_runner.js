@@ -9,7 +9,6 @@ var eventSender = eventSender || {};
 var textInputController = textInputController || {};
 
 (function() {
-  native function Display();
   native function GetWorkerThreadCount();
   native function NotifyDone();
   native function OverridePreference();
@@ -53,7 +52,6 @@ var textInputController = textInputController || {};
         "setShouldStayOnPageAfterHandlingBeforeUnload",
         {value: SetShouldStayOnPageAfterHandlingBeforeUnload});
     Object.defineProperty(this, "waitUntilDone", {value: SetWaitUntilDone});
-    Object.defineProperty(this, "display", {value: Display});
   }
   TestRunner.prototype = DefaultHandler("testRunner");
   testRunner = new TestRunner();
