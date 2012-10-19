@@ -74,6 +74,12 @@ onload = function() {
           chrome.test.assertEq('function',
                                typeof browserTag[apiMethodsToCheck[i]]);
         }
+
+        // Check contentWindow.
+        chrome.test.assertEq('object', typeof browserTag.contentWindow);
+        chrome.test.assertEq('function',
+                             typeof browserTag.contentWindow.postMessage);
+
         chrome.test.succeed();
       }, 0);
     }

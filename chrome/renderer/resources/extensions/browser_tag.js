@@ -9,6 +9,8 @@
 
 var BROWSER_TAG_ATTRIBUTES = ['src', 'width', 'height'];
 
+var BROWSER_TAG_READONLY_ATTRIBUTES = ['contentWindow'];
+
 // All exposed api methods for <browser>, these are forwarded to the browser
 // plugin.
 var BROWSER_TAG_API_METHODS = [
@@ -94,6 +96,19 @@ function BrowserTag(node) {
       },
       enumerable: true
     });
+  }, this);
+
+  // We cannot use {writable: true} property descriptor because we want dynamic
+  // getter value.
+  BROWSER_TAG_READONLY_ATTRIBUTES.forEach(function(attributeName) {
+    Object.defineProperty(this.node_, attributeName, {
+      get: function() {
+        // Read these attributes from the plugin <object>.
+        return objectNode[attributeName];
+      },
+      // No setter.
+      enumerable: true
+    })
   }, this);
 };
 
