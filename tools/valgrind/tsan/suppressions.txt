@@ -661,13 +661,13 @@
   fun:webrtc::VoiceEngine::Delete
   fun:WebRTCAutoDelete::reset
   ...
-  fun:WebRTCAudioDeviceTest_Construct_Test::TestBody
+  fun:content::WebRTCAudioDeviceTest_Construct_Test::TestBody
 }
 {
   bug_103711e
   ThreadSanitizer:Race
   ...
-  fun:WebRTCAudioDeviceTest::OnMessageReceived
+  fun:content::WebRTCAudioDeviceTest::OnMessageReceived
   ...
   fun:IPC::*
   fun:IPC::Channel::ChannelImpl::OnFileCanReadWithoutBlocking
@@ -688,7 +688,7 @@
 {
   bug_103711g
   ThreadSanitizer:Race
-  fun:WebRTCAudioDeviceTest::SetUp
+  fun:content::WebRTCAudioDeviceTest::SetUp
 }
 {
   bug_103711h
@@ -702,7 +702,7 @@
   fun:webrtc::VoiceEngine::Delete
   fun:WebRTCAutoDelete::reset
   fun:WebRTCAutoDelete::~WebRTCAutoDelete
-  fun:WebRTCAudioDeviceTest_Construct_Test::TestBody
+  fun:content::WebRTCAudioDeviceTest_Construct_Test::TestBody
 }
 {
   bug_103711i
@@ -718,7 +718,7 @@
   fun:webrtc::ProcessThreadImpl::Stop
   fun:webrtc::VoEBaseImpl::TerminateInternal
   fun:webrtc::VoEBaseImpl::Terminate
-  fun:WebRTCAudioDeviceTest_PlayLocalFile_Test::TestBody
+  fun:content::WebRTCAudioDeviceTest_PlayLocalFile_Test::TestBody
 }
 {
    bug_104769
@@ -823,12 +823,12 @@
   bug_113717
   ThreadSanitizer:Race
   fun:std::swap
-  fun:RenderThreadImpl::Send
-  fun:RenderWidget::Send
-  fun:RenderViewImpl::Send
-  fun:RenderWidget::DoDeferredUpdate
-  fun:RenderWidget::DoDeferredUpdateAndSendInputAck
-  fun:RenderWidget::InvalidationCallback
+  fun:content::RenderThreadImpl::Send
+  fun:content::RenderWidget::Send
+  fun:content::RenderViewImpl::Send
+  fun:content::RenderWidget::DoDeferredUpdate
+  fun:content::RenderWidget::DoDeferredUpdateAndSendInputAck
+  fun:content::RenderWidget::InvalidationCallback
   fun:base::internal::RunnableAdapter::Run
 }
 {
