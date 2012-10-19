@@ -33,3 +33,16 @@ SafeBrowsingBlockingPageTest.*
 SafeBrowsingBlockingPageV2Test.*
 SSLUITest.*
 SSLUITestIgnoreCertErrors.*
+# DrM-i#1052-c#3
+CookiesViewWebUITest.*
+ContentSettingsExceptionAreaWebUITest.*
+GpuFeatureTest.*
+NTP4WebUITest.*
+NTP4LoggedInWebUITest.*
+NetInternalsTest.*
+OptionsWebUITest.*
+SearchEngineManagerWebUITest.*
+BrowserNavigatorTest.*
+WebIntentPickerControllerBrowserTest.*
+WebUIBidiCheckerBrowserTestLTR.*
+TabRestoreTest.*
