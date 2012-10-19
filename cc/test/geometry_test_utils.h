@@ -12,17 +12,33 @@ class WebTransformationMatrix;
 namespace WebKitTests {
 
 // These are macros instead of functions so that we get useful line numbers where a test failed.
-#define EXPECT_FLOAT_RECT_EQ(expected, actual)                          \
+#define EXPECT_FLOAT_RECT_EQ(expected, actual) \
+{ \
     EXPECT_FLOAT_EQ((expected).location().x(), (actual).location().x()); \
     EXPECT_FLOAT_EQ((expected).location().y(), (actual).location().y()); \
     EXPECT_FLOAT_EQ((expected).size().width(), (actual).size().width()); \
-    EXPECT_FLOAT_EQ((expected).size().height(), (actual).size().height())
+    EXPECT_FLOAT_EQ((expected).size().height(), (actual).size().height()); \
+}
 
-#define EXPECT_RECT_EQ(expected, actual)                            \
-    EXPECT_EQ((expected).location().x(), (actual).location().x());      \
-    EXPECT_EQ((expected).location().y(), (actual).location().y());      \
-    EXPECT_EQ((expected).size().width(), (actual).size().width());      \
-    EXPECT_EQ((expected).size().height(), (actual).size().height())
+#define EXPECT_RECT_EQ(expected, actual) \
+{ \
+    EXPECT_EQ((expected).location().x(), (actual).location().x()); \
+    EXPECT_EQ((expected).location().y(), (actual).location().y()); \
+    EXPECT_EQ((expected).size().width(), (actual).size().width()); \
+    EXPECT_EQ((expected).size().height(), (actual).size().height()); \
+}
+
+#define EXPECT_SIZE_EQ(expected, actual) \
+{ \
+    EXPECT_EQ((expected).width(), (actual).width()); \
+    EXPECT_EQ((expected).height(), (actual).height()); \
+}
+
+#define EXPECT_POINT_EQ(expected, actual) \
+{ \
+    EXPECT_EQ((expected).x(), (actual).x()); \
+    EXPECT_EQ((expected).y(), (actual).y()); \
+}
 
 // This is a function rather than a macro because when this is included as a macro
 // in bulk, it causes a significant slow-down in compilation time. This problem

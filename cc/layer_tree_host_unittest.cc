@@ -2214,18 +2214,26 @@ SINGLE_AND_MULTI_THREAD_TEST_F(CCLayerTreeHostTestLayerAddedWithAnimation)
 
 class CCLayerTreeHostTestScrollChildLayer : public CCLayerTreeHostTest, public WebLayerScrollClient {
 public:
-    CCLayerTreeHostTestScrollChildLayer()
-        : m_scrollAmount(2, 1)
+    CCLayerTreeHostTestScrollChildLayer(float deviceScaleFactor)
+        : m_deviceScaleFactor(deviceScaleFactor)
+        , m_initialScroll(IntPoint(10, 20))
+        , m_secondScroll(IntPoint(40, 5))
+        , m_scrollAmount(2, -1)
+        , m_rootScrolls(0)
     {
     }
 
     virtual void beginTest() OVERRIDE
     {
-        m_layerTreeHost->setViewportSize(IntSize(10, 10), IntSize(10, 10));
-        m_layerTreeHost->rootLayer()->setBounds(IntSize(10, 10));
-        
+        IntSize viewportSize(10, 10);
+        IntSize deviceViewportSize = viewportSize;
+        deviceViewportSize.scale(m_deviceScaleFactor, m_deviceScaleFactor);
+        m_layerTreeHost->setViewportSize(viewportSize, deviceViewportSize);
+
+        m_layerTreeHost->setDeviceScaleFactor(m_deviceScaleFactor);
+
         m_rootScrollLayer = ContentLayerChromium::create(&m_mockDelegate);
-        m_rootScrollLayer->setBounds(IntSize(10, 10));
+        m_rootScrollLayer->setBounds(IntSize(110, 110));
 
         m_rootScrollLayer->setPosition(FloatPoint(0, 0));
         m_rootScrollLayer->setAnchorPoint(FloatPoint(0, 0));
@@ -2234,17 +2242,23 @@ public:
         m_rootScrollLayer->setScrollable(true);
         m_rootScrollLayer->setMaxScrollPosition(IntSize(100, 100));
         m_layerTreeHost->rootLayer()->addChild(m_rootScrollLayer);
+
         m_childLayer = ContentLayerChromium::create(&m_mockDelegate);
         m_childLayer->setLayerScrollClient(this);
-        m_childLayer->setBounds(IntSize(50, 50));
+        m_childLayer->setBounds(IntSize(110, 110));
+
+        // The scrolls will happen at 5, 5. If they are treated like device pixels, then
+        // they will be at 2.5, 2.5 in logical pixels, and will miss this layer.
+        m_childLayer->setPosition(FloatPoint(5, 5));
+        m_childLayer->setAnchorPoint(FloatPoint(0, 0));
+
         m_childLayer->setIsDrawable(true);
         m_childLayer->setScrollable(true);
         m_childLayer->setMaxScrollPosition(IntSize(100, 100));
-
-        m_childLayer->setPosition(FloatPoint(0, 0));
-        m_childLayer->setAnchorPoint(FloatPoint(0, 0));
-
         m_rootScrollLayer->addChild(m_childLayer);
+
+        m_childLayer->setScrollPosition(m_initialScroll);
+
         postSetNeedsCommitToMainThread();
     }
 
@@ -2253,45 +2267,243 @@ public:
         m_finalScrollPosition = m_childLayer->scrollPosition();
     }
 
-    virtual void applyScrollAndScale(const IntSize& scrollDelta, float) OVERRIDE
+    virtual void applyScrollAndScale(const IntSize& scrollDelta, float scale) OVERRIDE
     {
         IntPoint position = m_rootScrollLayer->scrollPosition();
         m_rootScrollLayer->setScrollPosition(position + scrollDelta);
+        m_rootScrolls++;
     }
 
-    virtual void beginCommitOnCCThread(CCLayerTreeHostImpl* impl) OVERRIDE
+    virtual void layout() OVERRIDE
     {
-        EXPECT_EQ(m_rootScrollLayer->scrollPosition(), IntPoint());
-        if (!m_layerTreeHost->commitNumber())
-            EXPECT_EQ(m_childLayer->scrollPosition(), IntPoint());
-        else
-            EXPECT_EQ(m_childLayer->scrollPosition(), IntPoint() + m_scrollAmount);
+        EXPECT_EQ(IntPoint(), m_rootScrollLayer->scrollPosition());
+
+        switch (m_layerTreeHost->commitNumber()) {
+        case 0:
+            EXPECT_POINT_EQ(m_initialScroll, m_childLayer->scrollPosition());
+            break;
+        case 1:
+            EXPECT_POINT_EQ(m_initialScroll + m_scrollAmount, m_childLayer->scrollPosition());
+
+            // Pretend like Javascript updated the scroll position itself.
+            m_childLayer->setScrollPosition(m_secondScroll);
+            break;
+        case 2:
+            EXPECT_POINT_EQ(m_secondScroll + m_scrollAmount, m_childLayer->scrollPosition());
+            break;
+        }
     }
 
     virtual void drawLayersOnCCThread(CCLayerTreeHostImpl* impl) OVERRIDE
     {
-        if (impl->sourceAnimationFrameNumber() == 1) {
+        CCLayerImpl* root = impl->rootLayer();
+        CCLayerImpl* rootScrollLayer = root->children()[0];
+        CCLayerImpl* childLayer = rootScrollLayer->children()[0];
+
+        EXPECT_EQ(root->scrollDelta(), IntSize());
+        EXPECT_EQ(rootScrollLayer->scrollDelta(), IntSize());
+        EXPECT_EQ(rootScrollLayer->bounds().width() * m_deviceScaleFactor, rootScrollLayer->contentBounds().width());
+        EXPECT_EQ(rootScrollLayer->bounds().height() * m_deviceScaleFactor, rootScrollLayer->contentBounds().height());
+        EXPECT_EQ(childLayer->bounds().width() * m_deviceScaleFactor, childLayer->contentBounds().width());
+        EXPECT_EQ(childLayer->bounds().height() * m_deviceScaleFactor, childLayer->contentBounds().height());
+
+        switch (impl->sourceFrameNumber()) {
+        case 0:
+            // Gesture scroll on impl thread.
+            EXPECT_EQ(impl->scrollBegin(IntPoint(5, 5), CCInputHandlerClient::Gesture), CCInputHandlerClient::ScrollStarted);
+            impl->scrollBy(IntPoint(), m_scrollAmount);
+            impl->scrollEnd();
+
+            EXPECT_POINT_EQ(m_initialScroll, childLayer->scrollPosition());
+            EXPECT_SIZE_EQ(m_scrollAmount, childLayer->scrollDelta());
+            postSetNeedsCommitToMainThread();
+            break;
+        case 1:
+            // Wheel scroll on impl thread.
             EXPECT_EQ(impl->scrollBegin(IntPoint(5, 5), CCInputHandlerClient::Wheel), CCInputHandlerClient::ScrollStarted);
             impl->scrollBy(IntPoint(), m_scrollAmount);
             impl->scrollEnd();
-        } else if (impl->sourceAnimationFrameNumber() == 2)
+
+            EXPECT_POINT_EQ(m_secondScroll, childLayer->scrollPosition());
+            EXPECT_SIZE_EQ(m_scrollAmount, childLayer->scrollDelta());
+            break;
+        case 2:
+            EXPECT_POINT_EQ(m_secondScroll + m_scrollAmount, childLayer->scrollPosition());
+            EXPECT_SIZE_EQ(IntSize(0, 0), childLayer->scrollDelta());
+
             endTest();
+        }
     }
 
     virtual void afterTest() OVERRIDE
     {
-        EXPECT_EQ(IntPoint(m_scrollAmount), m_finalScrollPosition);
+        EXPECT_EQ(0, m_rootScrolls);
+        EXPECT_POINT_EQ(m_secondScroll + m_scrollAmount, m_finalScrollPosition);
     }
 
 private:
-    const IntSize m_scrollAmount;
+    float m_deviceScaleFactor;
+    IntPoint m_initialScroll;
+    IntPoint m_secondScroll;
+    IntSize m_scrollAmount;
+    int m_rootScrolls;
     IntPoint m_finalScrollPosition;
+
     MockContentLayerChromiumClient m_mockDelegate;
+    scoped_refptr<LayerChromium> m_rootScrollLayer;
     scoped_refptr<LayerChromium> m_childLayer;
+};
+
+class CCLayerTreeHostTestScrollChildLayerNormalDpi : public CCLayerTreeHostTestScrollChildLayer {
+public:
+    CCLayerTreeHostTestScrollChildLayerNormalDpi() : CCLayerTreeHostTestScrollChildLayer(1) { }
+};
+
+TEST_F(CCLayerTreeHostTestScrollChildLayerNormalDpi, runMultiThread)
+{
+    runTest(true);
+}
+
+class CCLayerTreeHostTestScrollChildLayerHighDpi : public CCLayerTreeHostTestScrollChildLayer {
+public:
+    CCLayerTreeHostTestScrollChildLayerHighDpi() : CCLayerTreeHostTestScrollChildLayer(2) { }
+};
+
+TEST_F(CCLayerTreeHostTestScrollChildLayerHighDpi, runMultiThread)
+{
+    runTest(true);
+}
+
+class CCLayerTreeHostTestScrollRootScrollLayer : public CCLayerTreeHostTest {
+public:
+    CCLayerTreeHostTestScrollRootScrollLayer(float deviceScaleFactor)
+        : m_deviceScaleFactor(deviceScaleFactor)
+        , m_initialScroll(IntPoint(10, 20))
+        , m_secondScroll(IntPoint(40, 5))
+        , m_scrollAmount(2, -1)
+        , m_rootScrolls(0)
+    {
+    }
+
+    virtual void beginTest() OVERRIDE
+    {
+        IntSize viewportSize(10, 10);
+        IntSize deviceViewportSize = viewportSize;
+        deviceViewportSize.scale(m_deviceScaleFactor, m_deviceScaleFactor);
+        m_layerTreeHost->setViewportSize(viewportSize, deviceViewportSize);
+
+        m_layerTreeHost->setDeviceScaleFactor(m_deviceScaleFactor);
+
+        m_rootScrollLayer = ContentLayerChromium::create(&m_mockDelegate);
+        m_rootScrollLayer->setBounds(IntSize(110, 110));
+
+        m_rootScrollLayer->setPosition(FloatPoint(0, 0));
+        m_rootScrollLayer->setAnchorPoint(FloatPoint(0, 0));
+
+        m_rootScrollLayer->setIsDrawable(true);
+        m_rootScrollLayer->setScrollable(true);
+        m_rootScrollLayer->setMaxScrollPosition(IntSize(100, 100));
+        m_layerTreeHost->rootLayer()->addChild(m_rootScrollLayer);
+
+        m_rootScrollLayer->setScrollPosition(m_initialScroll);
+
+        postSetNeedsCommitToMainThread();
+    }
+
+    virtual void applyScrollAndScale(const IntSize& scrollDelta, float scale) OVERRIDE
+    {
+        IntPoint position = m_rootScrollLayer->scrollPosition();
+        m_rootScrollLayer->setScrollPosition(position + scrollDelta);
+        m_rootScrolls++;
+    }
+
+    virtual void layout() OVERRIDE
+    {
+        switch (m_layerTreeHost->commitNumber()) {
+        case 0:
+            EXPECT_POINT_EQ(m_initialScroll, m_rootScrollLayer->scrollPosition());
+            break;
+        case 1:
+            EXPECT_POINT_EQ(m_initialScroll + m_scrollAmount, m_rootScrollLayer->scrollPosition());
+
+            // Pretend like Javascript updated the scroll position itself.
+            m_rootScrollLayer->setScrollPosition(m_secondScroll);
+            break;
+        case 2:
+            EXPECT_POINT_EQ(m_secondScroll + m_scrollAmount, m_rootScrollLayer->scrollPosition());
+            break;
+        }
+    }
+
+    virtual void drawLayersOnCCThread(CCLayerTreeHostImpl* impl) OVERRIDE
+    {
+        CCLayerImpl* root = impl->rootLayer();
+        CCLayerImpl* rootScrollLayer = root->children()[0];
+
+        EXPECT_EQ(root->scrollDelta(), IntSize());
+        EXPECT_EQ(rootScrollLayer->bounds().width() * m_deviceScaleFactor, rootScrollLayer->contentBounds().width());
+        EXPECT_EQ(rootScrollLayer->bounds().height() * m_deviceScaleFactor, rootScrollLayer->contentBounds().height());
+
+        switch (impl->sourceFrameNumber()) {
+        case 0:
+            // Gesture scroll on impl thread.
+            EXPECT_EQ(impl->scrollBegin(IntPoint(5, 5), CCInputHandlerClient::Gesture), CCInputHandlerClient::ScrollStarted);
+            impl->scrollBy(IntPoint(), m_scrollAmount);
+            impl->scrollEnd();
+
+            EXPECT_POINT_EQ(m_initialScroll, rootScrollLayer->scrollPosition());
+            EXPECT_SIZE_EQ(m_scrollAmount, rootScrollLayer->scrollDelta());
+            postSetNeedsCommitToMainThread();
+            break;
+        case 1:
+            // Wheel scroll on impl thread.
+            EXPECT_EQ(impl->scrollBegin(IntPoint(5, 5), CCInputHandlerClient::Wheel), CCInputHandlerClient::ScrollStarted);
+            impl->scrollBy(IntPoint(), m_scrollAmount);
+            impl->scrollEnd();
+
+            EXPECT_POINT_EQ(m_secondScroll, rootScrollLayer->scrollPosition());
+            EXPECT_SIZE_EQ(m_scrollAmount, rootScrollLayer->scrollDelta());
+            break;
+        case 2:
+            EXPECT_POINT_EQ(m_secondScroll + m_scrollAmount, rootScrollLayer->scrollPosition());
+            EXPECT_SIZE_EQ(IntSize(0, 0), rootScrollLayer->scrollDelta());
+
+            endTest();
+        }
+    }
+
+    virtual void afterTest() OVERRIDE
+    {
+        EXPECT_EQ(2, m_rootScrolls);
+    }
+
+private:
+    float m_deviceScaleFactor;
+    IntPoint m_initialScroll;
+    IntPoint m_secondScroll;
+    IntSize m_scrollAmount;
+    int m_rootScrolls;
+
+    MockContentLayerChromiumClient m_mockDelegate;
     scoped_refptr<LayerChromium> m_rootScrollLayer;
 };
 
-TEST_F(CCLayerTreeHostTestScrollChildLayer, runMultiThread)
+class CCLayerTreeHostTestScrollRootScrollLayerNormalDpi : public CCLayerTreeHostTestScrollRootScrollLayer {
+public:
+    CCLayerTreeHostTestScrollRootScrollLayerNormalDpi() : CCLayerTreeHostTestScrollRootScrollLayer(1) { }
+};
+
+TEST_F(CCLayerTreeHostTestScrollRootScrollLayerNormalDpi, runMultiThread)
+{
+    runTest(true);
+}
+
+class CCLayerTreeHostTestScrollRootScrollLayerHighDpi : public CCLayerTreeHostTestScrollRootScrollLayer {
+public:
+    CCLayerTreeHostTestScrollRootScrollLayerHighDpi() : CCLayerTreeHostTestScrollRootScrollLayer(2) { }
+};
+
+TEST_F(CCLayerTreeHostTestScrollRootScrollLayerHighDpi, runMultiThread)
 {
     runTest(true);
 }

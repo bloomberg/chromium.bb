@@ -25,17 +25,20 @@ public:
     enum ScrollStatus { ScrollOnMainThread, ScrollStarted, ScrollIgnored };
     enum ScrollInputType { Gesture, Wheel };
 
-    // Selects a layer to be scrolled at a given point in window coordinates.
-    // Returns ScrollStarted if the layer at the coordinates can be scrolled,
-    // ScrollOnMainThread if the scroll event should instead be delegated to the
-    // main thread, or ScrollIgnored if there is nothing to be scrolled at the
-    // given coordinates.
+    // Selects a layer to be scrolled at a given point in viewport (logical
+    // pixel) coordinates. Returns ScrollStarted if the layer at the coordinates
+    // can be scrolled, ScrollOnMainThread if the scroll event should instead be
+    // delegated to the main thread, or ScrollIgnored if there is nothing to be
+    // scrolled at the given coordinates.
     virtual ScrollStatus scrollBegin(const IntPoint&, ScrollInputType) = 0;
 
-    // Scroll the selected layer starting at the given window coordinate. If
-    // there is no room to move the layer in the requested direction, its first
-    // ancestor layer that can be scrolled will be moved instead. Should only be
-    // called if scrollBegin() returned ScrollStarted.
+    // Scroll the selected layer starting at the given position. If the scroll
+    // type given to scrollBegin was a gesture, then the scroll point and delta
+    // should be in viewport (logical pixel) coordinates. Otherwise they are in
+    // scrolling layer's (logical pixel) space. If there is no room to move the
+    // layer in the requested direction, its first ancestor layer that can be
+    // scrolled will be moved instead. Should only be called if scrollBegin()
+    // returned ScrollStarted.
     virtual void scrollBy(const IntPoint&, const IntSize&) = 0;
 
     // Stop scrolling the selected layer. Should only be called if scrollBegin()

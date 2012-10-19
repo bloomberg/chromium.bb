@@ -218,7 +218,7 @@ CCLayerTreeHostImpl::CCLayerTreeHostImpl(const CCLayerTreeSettings& settings, CC
     , m_currentlyScrollingLayerImpl(0)
     , m_hudLayerImpl(0)
     , m_scrollingLayerIdFromPreviousTree(-1)
-    , m_scrollDeltaIsInScreenSpace(false)
+    , m_scrollDeltaIsInViewportSpace(false)
     , m_settings(settings)
     , m_deviceScaleFactor(1)
     , m_visible(true)
@@ -1028,7 +1028,7 @@ CCInputHandlerClient::ScrollStatus CCLayerTreeHostImpl::scrollBegin(const IntPoi
 
     // First find out which layer was hit from the saved list of visible layers
     // in the most recent frame.
-    CCLayerImpl* layerImpl = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(viewportPoint, m_renderSurfaceLayerList);
+    CCLayerImpl* layerImpl = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(deviceViewportPoint, m_renderSurfaceLayerList);
 
     // Walk up the hierarchy and look for a scrollable layer.
     CCLayerImpl* potentiallyScrollingLayerImpl = 0;
@@ -1043,7 +1043,7 @@ CCInputHandlerClient::ScrollStatus CCLayerTreeHostImpl::scrollBegin(const IntPoi
         if (!scrollLayerImpl)
             continue;
 
-        ScrollStatus status = scrollLayerImpl->tryScroll(viewportPoint, type);
+        ScrollStatus status = scrollLayerImpl->tryScroll(deviceViewportPoint, type);
 
         // If any layer wants to divert the scroll event to the main thread, abort.
         if (status == ScrollOnMainThread) {
@@ -1057,22 +1057,28 @@ CCInputHandlerClient::ScrollStatus CCLayerTreeHostImpl::scrollBegin(const IntPoi
 
     if (potentiallyScrollingLayerImpl) {
         m_currentlyScrollingLayerImpl = potentiallyScrollingLayerImpl;
-        // Gesture events need to be transformed from screen coordinates to local layer coordinates
+        // Gesture events need to be transformed from viewport coordinates to local layer coordinates
         // so that the scrolling contents exactly follow the user's finger. In contrast, wheel
         // events are already in local layer coordinates so we can just apply them directly.
-        m_scrollDeltaIsInScreenSpace = (type == Gesture);
+        m_scrollDeltaIsInViewportSpace = (type == Gesture);
         m_numImplThreadScrolls++;
         return ScrollStarted;
     }
     return ScrollIgnored;
 }
 
-static FloatSize scrollLayerWithScreenSpaceDelta(CCPinchZoomViewport* viewport, CCLayerImpl& layerImpl, const FloatPoint& screenSpacePoint, const FloatSize& screenSpaceDelta)
+static FloatSize scrollLayerWithViewportSpaceDelta(CCPinchZoomViewport* viewport, CCLayerImpl& layerImpl, float scaleFromViewportToScreenSpace, const FloatPoint& viewportPoint, const FloatSize& viewportDelta)
 {
     // Layers with non-invertible screen space transforms should not have passed the scroll hit
     // test in the first place.
     DCHECK(layerImpl.screenSpaceTransform().isInvertible());
     WebTransformationMatrix inverseScreenSpaceTransform = layerImpl.screenSpaceTransform().inverse();
+
+    FloatPoint screenSpacePoint = viewportPoint;
+    screenSpacePoint.scale(scaleFromViewportToScreenSpace, scaleFromViewportToScreenSpace);
+
+    FloatSize screenSpaceDelta = viewportDelta;
+    screenSpaceDelta.scale(scaleFromViewportToScreenSpace, scaleFromViewportToScreenSpace);
 
     // First project the scroll start and end points to local layer space to find the scroll delta
     // in layer coordinates.
@@ -1087,6 +1093,16 @@ static FloatSize scrollLayerWithScreenSpaceDelta(CCPinchZoomViewport* viewport, 
     if (startClipped || endClipped)
         return FloatSize();
 
+    // localStartPoint and localEndPoint are in content space but we want to move them to layer space for scrolling.
+    float widthScale = 1;
+    float heightScale = 1;
+    if (!layerImpl.contentBounds().isEmpty() && !layerImpl.bounds().isEmpty()) {
+        widthScale = layerImpl.bounds().width() / static_cast<float>(layerImpl.contentBounds().width());
+        heightScale = layerImpl.bounds().height() / static_cast<float>(layerImpl.contentBounds().height());
+    }
+    localStartPoint.scale(widthScale, heightScale);
+    localEndPoint.scale(widthScale, heightScale);
+
     // Apply the scroll delta.
     FloatSize previousDelta(layerImpl.scrollDelta());
     FloatSize unscrolled = layerImpl.scrollBy(localEndPoint - localStartPoint);
@@ -1094,13 +1110,19 @@ static FloatSize scrollLayerWithScreenSpaceDelta(CCPinchZoomViewport* viewport, 
     if (viewport)
         viewport->applyScroll(unscrolled);
 
-    // Calculate the applied scroll delta in screen space coordinates.
+    // Get the end point in the layer's content space so we can apply its screenSpaceTransform.
     FloatPoint actualLocalEndPoint = localStartPoint + layerImpl.scrollDelta() - previousDelta;
-    FloatPoint actualScreenSpaceEndPoint = CCMathUtil::mapPoint(layerImpl.screenSpaceTransform(), actualLocalEndPoint, endClipped);
+    FloatPoint actualLocalContentEndPoint = actualLocalEndPoint;
+    actualLocalContentEndPoint.scale(1 / widthScale, 1 / heightScale);
+
+    // Calculate the applied scroll delta in viewport space coordinates.
+    FloatPoint actualScreenSpaceEndPoint = CCMathUtil::mapPoint(layerImpl.screenSpaceTransform(), actualLocalContentEndPoint, endClipped);
     DCHECK(!endClipped);
     if (endClipped)
         return FloatSize();
-    return actualScreenSpaceEndPoint - screenSpacePoint;
+    FloatPoint actualViewportEndPoint = actualScreenSpaceEndPoint;
+    actualViewportEndPoint.scale(1 / scaleFromViewportToScreenSpace, 1 / scaleFromViewportToScreenSpace);
+    return actualViewportEndPoint - viewportPoint;
 }
 
 static FloatSize scrollLayerWithLocalDelta(CCLayerImpl& layerImpl, const FloatSize& localDelta)
@@ -1118,17 +1140,16 @@ void CCLayerTreeHostImpl::scrollBy(const IntPoint& viewportPoint, const IntSize&
 
     FloatSize pendingDelta(scrollDelta);
 
-    pendingDelta.scale(m_deviceScaleFactor);
-
     for (CCLayerImpl* layerImpl = m_currentlyScrollingLayerImpl; layerImpl; layerImpl = layerImpl->parent()) {
         if (!layerImpl->scrollable())
             continue;
 
         CCPinchZoomViewport* viewport = layerImpl == m_rootScrollLayerImpl ? &m_pinchZoomViewport : 0;
         FloatSize appliedDelta;
-        if (m_scrollDeltaIsInScreenSpace)
-            appliedDelta = scrollLayerWithScreenSpaceDelta(viewport, *layerImpl, viewportPoint, pendingDelta);
-        else
+        if (m_scrollDeltaIsInViewportSpace) {
+            float scaleFromViewportToScreenSpace = m_deviceScaleFactor;
+            appliedDelta = scrollLayerWithViewportSpaceDelta(viewport, *layerImpl, scaleFromViewportToScreenSpace, viewportPoint, pendingDelta);
+        } else
             appliedDelta = scrollLayerWithLocalDelta(*layerImpl, pendingDelta);
 
         // If the layer wasn't able to move, try the next one in the hierarchy.

@@ -312,7 +312,7 @@ private:
     CCLayerImpl* m_currentlyScrollingLayerImpl;
     CCHeadsUpDisplayLayerImpl* m_hudLayerImpl;
     int m_scrollingLayerIdFromPreviousTree;
-    bool m_scrollDeltaIsInScreenSpace;
+    bool m_scrollDeltaIsInViewportSpace;
     CCLayerTreeSettings m_settings;
     IntSize m_layoutViewportSize;
     IntSize m_deviceViewportSize;
