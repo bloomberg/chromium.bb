@@ -360,6 +360,13 @@
             4996, 4018, 4090, 4305, 4133, 4146, 4554, 4028, 4334, 4101, 4102,
             4116, 4307
           ],
+          # This magical incantation is necessary because VC++ will compile all
+          # object files to same directory... even if they have the same name!
+          'msvs_settings': {
+            'VCCLCompilerTool': {
+              'ObjectFile': '$(IntDir)/%(RelativeDir)/',
+            }
+          },
           'actions': [
             {
               'action_name': 'generate_def',

@@ -85,7 +85,8 @@ def main():
 
   # Abort if any error occurred.
   if p.returncode != 0:
-    os.unlink(preprocessed_output_file)
+    if os.path.isfile(preprocessed_output_file):
+      os.unlink(preprocessed_output_file)
     sys.exit(p.returncode)
 
   # Run the converter command.  Note: the input file must have a '.c' extension
