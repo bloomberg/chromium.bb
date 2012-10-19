@@ -478,8 +478,8 @@ void ToolbarView::OnMenuButtonClicked(views::View* source,
   DCHECK_EQ(VIEW_ID_APP_MENU, source->id());
 
   wrench_menu_.reset(new WrenchMenu(browser_));
-  WrenchMenuModel model(this, browser_);
-  wrench_menu_->Init(&model);
+  wrench_menu_model_.reset(new WrenchMenuModel(this, browser_));
+  wrench_menu_->Init(wrench_menu_model_.get());
 
   FOR_EACH_OBSERVER(views::MenuListener, menu_listeners_, OnMenuOpened());
 

@@ -27,6 +27,7 @@ class BrowserActionsContainer;
 class Browser;
 class LocationBarContainer;
 class WrenchMenu;
+class WrenchMenuModel;
 
 namespace chrome {
 namespace search {
@@ -242,6 +243,7 @@ class ToolbarView : public views::AccessiblePaneView,
 
   // Wrench menu.
   scoped_ptr<WrenchMenu> wrench_menu_;
+  scoped_ptr<WrenchMenuModel> wrench_menu_model_;
 
   // A list of listeners to call when the menu opens.
   ObserverList<views::MenuListener> menu_listeners_;
