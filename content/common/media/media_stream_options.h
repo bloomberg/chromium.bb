@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "content/common/content_export.h"
 #include "content/public/common/media_stream_request.h"
 
@@ -19,6 +20,12 @@ CONTENT_EXPORT extern const char kMediaStreamSourceId[];
 CONTENT_EXPORT extern const char kMediaStreamSourceTab[];
 
 typedef content::MediaStreamDeviceType MediaStreamType;
+
+// Callback to deliver the result of a media request. |label| is the string
+// to identify the request,
+typedef base::Callback< void(const std::string&,
+                             const content::MediaStreamDevices&) >
+    MediaRequestResponseCallback;
 
 // StreamOptions is a Chromium representation of WebKit's
 // WebUserMediaRequest Options. It describes the components

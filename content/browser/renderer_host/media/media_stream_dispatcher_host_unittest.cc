@@ -251,7 +251,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateThreeStreams) {
   EXPECT_EQ(host_->video_devices_.size(), 1u);
   std::string label2 = host_->label_;
   std::string device_id2 = host_->video_devices_.front().device_id;
-  EXPECT_NE(device_id1, device_id2);
+  EXPECT_EQ(device_id1, device_id2);
   EXPECT_NE(label1, label2);
 
   // Check that we now have two opened streams.
@@ -273,7 +273,6 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateThreeStreams) {
   std::string label3 = host_->label_;
   std::string device_id3 = host_->video_devices_.front().device_id;
   EXPECT_EQ(device_id1, device_id3);
-  EXPECT_NE(device_id2, device_id3);
   EXPECT_NE(label1, label3);
   EXPECT_NE(label2, label3);
 

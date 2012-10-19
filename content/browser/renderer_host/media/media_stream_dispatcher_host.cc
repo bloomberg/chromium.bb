@@ -169,7 +169,7 @@ void MediaStreamDispatcherHost::OnCancelGenerateStream(int render_view_id,
   for (StreamMap::iterator it = streams_.begin(); it != streams_.end(); ++it) {
     if (it->second.render_view_id == render_view_id &&
         it->second.page_request_id == page_request_id) {
-      GetManager()->CancelGenerateStream(it->first);
+      GetManager()->CancelRequest(it->first);
     }
   }
 }
@@ -197,7 +197,7 @@ void MediaStreamDispatcherHost::OnEnumerateDevices(
 
   std::string label;
   GetManager()->EnumerateDevices(this, render_process_id_, render_view_id,
-                              type, security_origin, &label);
+                                 type, security_origin, &label);
   DCHECK(!label.empty());
   streams_[label] = StreamRequest(render_view_id, page_request_id);
 }
@@ -217,7 +217,7 @@ void MediaStreamDispatcherHost::OnOpenDevice(
 
   std::string label;
   GetManager()->OpenDevice(this, render_process_id_, render_view_id,
-                        device_id, type, security_origin, &label);
+                           device_id, type, security_origin, &label);
   DCHECK(!label.empty());
   streams_[label] = StreamRequest(render_view_id, page_request_id);
 }

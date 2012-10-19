@@ -81,7 +81,7 @@ class SpeechRecognitionManagerImpl::PermissionRequest
   void Abort() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     started_ = false;
-    BrowserMainLoop::GetMediaStreamManager()->CancelGenerateStream(label_);
+    BrowserMainLoop::GetMediaStreamManager()->CancelRequest(label_);
   }
 
   int Session() const { return session_id_; }
