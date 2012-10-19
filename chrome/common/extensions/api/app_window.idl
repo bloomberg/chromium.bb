@@ -80,6 +80,9 @@ namespace app.window {
     // Clear attention to the window.
     static void clearAttention();
 
+    // Close the window.
+    static void close();
+
     // The JavaScript 'window' object for the created child.
     [instanceOf=global] object contentWindow;
   };

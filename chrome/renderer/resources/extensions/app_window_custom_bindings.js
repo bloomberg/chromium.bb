@@ -64,6 +64,9 @@ chromeHidden.registerCustomHook('app.window', function(bindingsAPI) {
     AppWindow.prototype.resizeTo = window.resizeTo.bind(window);
     AppWindow.prototype.contentWindow = window;
     AppWindow.prototype.onClose = new chrome.Event;
+    AppWindow.prototype.close = function() {
+      this.contentWindow.close();
+    };
 
     Object.defineProperty(AppWindow.prototype, 'id', {get: function() {
       return chromeHidden.appWindowData.id;
