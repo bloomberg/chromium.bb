@@ -56,3 +56,14 @@ PrintPreviewTest.*
 MostVisitedWebUITest.*
 NewTabUIBrowserTest.*
 AutofillOptionsWebUITest.*
+# DrM-i#1052-c#5
+FontSettingsWebUITest.*
+DevToolsSanityTest.*
+DevToolsExtensionTest.*
+DevToolsExperimentalExtensionTest.*
+PolicyTest.*
+BrowserTest.*
+ChromeContentBrowserClientBrowserTest.*
+ThreadedCompositorTest.*
+WorkerDevToolsSanityTest.*
+PolicyPrefsSettingsBannerTestInstance*
