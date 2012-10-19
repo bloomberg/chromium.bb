@@ -226,7 +226,7 @@ are declared in build/common.gypi.
 
       <!-- Website Settings UI -->
       <message name="IDS_WEBSITE_SETTINGS_INFOBAR_TEXT" desc="The string shown in the infobar after the user has changed site permissions settings, reminding them to reload the page in order for the new settings to take effect.">
-        New site permissions settings will take effect after reloading the page. 
+        New site permissions settings will take effect after reloading the page.
       </message>
       <message name="IDS_WEBSITE_SETTINGS_INFOBAR_BUTTON" desc="The string used in the infobar button allowing the user to reload the page directly from the infobar.">
         Reload
@@ -5053,7 +5053,7 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       </message>
       <message name="IDS_EXTENSION_INSTALLED_MANAGE_SHORTCUTS" desc="Text for the link in the InfoBubble that opens the chrome://extensions page with the Configure Commands UI visible.">
         Manage shortcuts
-      </message>      
+      </message>
       <message name="IDS_ACCNAME_INFOBAR_CONTAINER" desc="The accessible name for the infobar container.">
         Infobar Container
       </message>
@@ -6741,11 +6741,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_3G_NOTIFICATION_MESSAGE" desc="Text of the 3G data notification telling that 3G data is enabled.">
           Google Chrome will use mobile data if you're not connected to another network.
         </message>
-        
+
         <!-- Natural scroll Notifications -->
         <message name="IDS_NATURAL_SCROLL_NOTIFICATION_MESSAGE" desc="Text of the natural scroll notification saying that natural scroll is now default.">
           Scrolling just changed directions! Simple scrolling lets you use your touchpad the same way you use a touch screen. Click here to change it back.
-        </message>        
+        </message>
 
         <!-- about:system strings -->
         <message name="IDS_ABOUT_SYS_TITLE" desc="about:system page title">
@@ -11684,7 +11684,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_SIZE_PB" desc="Peta bytes.">
         PB
       </message>
-      
+
       <message name="IDS_FILE_BROWSER_SHORTCUT_CTRL" desc="[Ctrl] key name to use in shortcuts descriptions. Shouldn't be translated in many languages actually.">
         Ctrl
       </message>
@@ -11703,7 +11703,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_SHORTCUT_ENTER" desc="[Enter] key name to use in shortcuts descriptions. Shouldn't be translated in many languages actually.">
         Enter
       </message>
-      
+
       <message name="IDS_FILE_BROWSER_TYPE_COLUMN_LABEL" desc="Type column label.">
         Type
       </message>
@@ -12031,7 +12031,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_CUT_BUTTON_LABEL" desc="Button Label.">
         Cut
       </message>
-      
+
       <message name="IDS_FILE_BROWSER_OPEN_WITH_BUTTON_LABEL" desc="Menu item label, showing dialog to choose application to open selected files">
         Open with...
       </message>
@@ -12946,6 +12946,29 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SYNC_PASSPHRASE_WARNING" desc="Warning message about using a passphrase for sync.">
         You are currently using a passphrase.  If you have forgotten your passphrase, you can reset sync to clear your data from Google's servers using the Google Dashboard.
       </message>
+      <message name="IDS_SYNC_ENCRYPTION_SECTION_TITLE" desc="Title of the section containing sync encryption preferences.">
+        Encryption options
+      </message>
+      <message name="IDS_SYNC_ENCRYPTION_SECTION_MESSAGE" desc="Message explaining that sync data can be encrypted.">
+        For added security, <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> will encrypt your data.
+      </message>
+      <message name="IDS_SYNC_BASIC_ENCRYPTION_DATA" desc="Text of the radio that when selected enables basic encryption.">
+        Encrypt passwords with my Google credentials
+      </message>
+      <message name="IDS_SYNC_FULL_ENCRYPTION_DATA" desc="Text of the radio that when selected enables full encryption.">
+        Encrypt all synced data with a custom passphrase
+      </message>
+      <message name="IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM" desc="Text of the radio that when selected enables full encryption.">
+        All data was encrypted with a custom passphrase
+      </message>
+      <message name="IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM_WITH_DATE" desc="Text of the radio that when selected enables full encryption.">
+        All data was encrypted with a custom passphrase on
+        <ph name="TIME">$1<ex>Sept 1, 2012</ex></ph>
+      </message>
+      <message name="IDS_SYNC_FULL_ENCRYPTION_BODY_GOOGLE_WITH_DATE" desc="Text of the radio that when selected enables full encryption.">
+        All data was encrypted with your Google password on
+        <ph name="TIME">$1<ex>Sept 1, 2012</ex></ph>
+      </message>
 
       <!-- Passphrase dialog strings -->
       <message name="IDS_SYNC_ENTER_PASSPHRASE_TITLE" desc="Title for the dialog where the user enters the passphrase.">
@@ -12956,6 +12979,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY" desc="Instructions for the dialog where the user needs to enter their previous google passphrase.">
         You already have data that is encrypted using a different version of your Google Account password. Please enter it below.
+      </message>
+      <message name="IDS_SYNC_ENTER_PASSPHRASE_BODY_WITH_DATE" desc="Instructions for the dialog where the user enters the passphrase.">
+        Your data was encrypted with a custom passphrase on <ph name="TIME">$1<ex>Sept 1, 2012</ex></ph>. Please enter it below.
+      </message>
+      <message name="IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY_WITH_DATE" desc="Instructions for the dialog where the user needs to enter their previous google passphrase.">
+        Your data was encrypted with your Google password on <ph name="TIME">$1<ex>Sept 1, 2012</ex></ph>. Please enter it below.
       </message>
       <message name="IDS_SYNC_PASSPHRASE_LABEL" desc="Label for the passphrase field.">
         Passphrase
@@ -14150,7 +14179,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       No
     </message>
     <message name="IDS_REGISTER_PROTOCOL_HANDLER_IGNORE" desc="Text to show for an ignore prompt for a register protocol handler registration request.">
-      Ignore 
+      Ignore
     </message>
     <message name="IDS_REGISTER_PROTOCOL_HANDLER_ALREADY_REGISTERED" desc="Text to show when the user tries to register a protocol handler that they have already registered.">
       <ph name="HANDLER_TITLE">$1<ex>Google Search</ex></ph> is already being used to handle <ph name="PROTOCOL">$2<ex>search</ex></ph>: links.
@@ -14203,7 +14232,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       Use another service
     </message>
     <message name="IDS_INTENT_PICKER_USE_ANOTHER_SERVICE" desc="Button text providing a way for the user to not use the web intents service they are on, and select a new one.">
-      Use another app 
+      Use another app
     </message>
     <message name="IDS_INTENT_PICKER_WAIT_FOR_CWS" desc="Prompt indicating to the user that Chrome is currently waiting for results from the Chrome Web Store">
       Waiting for Chrome Web Store
@@ -14410,7 +14439,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       Choose a picture and name
     </message>
     <message name="IDS_PROFILES_CREATE_CONFIRM" desc="Create button confirmation">
-      Create 
+      Create
     </message>
     <message name="IDS_PROFILES_CREATE_SHORTCUT_CHKBOX" desc="Create Shortcut Checkbox">
       Create desktop shortcut for this profile

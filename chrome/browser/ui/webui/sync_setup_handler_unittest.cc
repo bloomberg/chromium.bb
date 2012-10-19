@@ -363,6 +363,11 @@ class SyncSetupHandlerTest : public testing::Test {
             profile_.get(),
             ProfileSyncServiceMock::BuildMockProfileSyncService));
     mock_pss_->Initialize();
+
+    ON_CALL(*mock_pss_, GetPassphraseType()).WillByDefault(
+        Return(syncer::IMPLICIT_PASSPHRASE));
+    ON_CALL(*mock_pss_, GetPassphraseTime()).WillByDefault(
+        Return(base::Time()));
     mock_signin_ = static_cast<SigninManagerMock*>(
         SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), BuildSigninManagerMock));
@@ -1072,6 +1077,8 @@ TEST_F(SyncSetupHandlerTest, ShowSetupCustomPassphraseRequired) {
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_pss_, GetPassphraseType())
+      .WillRepeatedly(Return(syncer::CUSTOM_PASSPHRASE));
   SetupInitializedProfileSyncService();
   SetDefaultExpectationsForConfigPage();
 

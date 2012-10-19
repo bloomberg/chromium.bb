@@ -9,6 +9,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/i18n/time_formatting.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/utf_string_conversions.h"
@@ -176,6 +177,11 @@ bool AreUserNamesEqual(const string16& user1, const string16& user2) {
   return NormalizeUserName(user1) == NormalizeUserName(user2);
 }
 
+bool IsKeystoreEncryptionEnabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSyncKeystoreEncryption);
+}
+
 }  // namespace
 
 SyncSetupHandler::SyncSetupHandler(ProfileManager* profile_manager)
@@ -222,6 +228,9 @@ void SyncSetupHandler::GetStaticLocalizedValues(
   localized_strings->SetString(
       "passphraseEncryptionMessage",
       GetStringFUTF16(IDS_SYNC_PASSPHRASE_ENCRYPTION_MESSAGE, product_name));
+  localized_strings->SetString(
+      "encryptionSectionMessage",
+      GetStringFUTF16(IDS_SYNC_ENCRYPTION_SECTION_MESSAGE, product_name));
   localized_strings->SetString(
       "passphraseRecover",
       GetStringFUTF16(IDS_SYNC_PASSPHRASE_RECOVER,
@@ -345,6 +354,9 @@ void SyncSetupHandler::GetStaticLocalizedValues(
     { "promoAdvanced", IDS_SYNC_PROMO_ADVANCED },
     { "promoLearnMore", IDS_LEARN_MORE },
     { "promoTitleShort", IDS_SYNC_PROMO_MESSAGE_TITLE_SHORT },
+    { "encryptionSectionTitle", IDS_SYNC_ENCRYPTION_SECTION_TITLE },
+    { "basicEncryptionOption", IDS_SYNC_BASIC_ENCRYPTION_DATA },
+    { "fullEncryptionOption", IDS_SYNC_FULL_ENCRYPTION_DATA },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -404,11 +416,61 @@ void SyncSetupHandler::DisplayConfigureSync(bool show_advanced,
   args.SetBoolean("showSyncEverythingPage", !show_advanced);
   args.SetBoolean("syncAllDataTypes", sync_prefs.HasKeepEverythingSynced());
   args.SetBoolean("encryptAllData", service->EncryptEverythingEnabled());
-  args.SetBoolean("usePassphrase", service->IsUsingSecondaryPassphrase());
+
   // We call IsPassphraseRequired() here, instead of calling
   // IsPassphraseRequiredForDecryption(), because we want to show the passphrase
   // UI even if no encrypted data types are enabled.
   args.SetBoolean("showPassphrase", service->IsPassphraseRequired());
+  // Keystore encryption is behind a flag. Only show the new encryption settings
+  // if keystore encryption is enabled.
+  args.SetBoolean("keystoreEncryptionEnabled", IsKeystoreEncryptionEnabled());
+
+  // Set the proper encryption settings messages if keystore encryption is
+  // enabled.
+  if (IsKeystoreEncryptionEnabled()) {
+    // To distinguish between FROZEN_IMPLICIT_PASSPHRASE and CUSTOM_PASSPHRASE
+    // we only set usePassphrase for CUSTOM_PASSPHRASE.
+    args.SetBoolean("usePassphrase",
+                    service->GetPassphraseType() == syncer::CUSTOM_PASSPHRASE);
+    base::Time passphrase_time = service->GetExplicitPassphraseTime();
+    syncer::PassphraseType passphrase_type = service->GetPassphraseType();
+    if (!passphrase_time.is_null()) {
+      string16 passphrase_time_str = base::TimeFormatShortDate(passphrase_time);
+      args.SetString(
+          "enterPassphraseBody",
+          GetStringFUTF16(IDS_SYNC_ENTER_PASSPHRASE_BODY_WITH_DATE,
+                          passphrase_time_str));
+      args.SetString(
+          "enterGooglePassphraseBody",
+          GetStringFUTF16(IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY_WITH_DATE,
+                          passphrase_time_str));
+      switch (passphrase_type) {
+        case syncer::FROZEN_IMPLICIT_PASSPHRASE:
+          args.SetString(
+              "fullEncryptionBody",
+              GetStringFUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_GOOGLE_WITH_DATE,
+                              passphrase_time_str));
+          break;
+        case syncer::CUSTOM_PASSPHRASE:
+          args.SetString(
+              "fullEncryptionBody",
+              GetStringFUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM_WITH_DATE,
+                              passphrase_time_str));
+          break;
+        default:
+          args.SetString(
+              "fullEncryptionBody",
+              GetStringUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM));
+          break;
+      }
+    } else {
+      args.SetString(
+          "fullEncryptionBody",
+          GetStringUTF16(IDS_SYNC_FULL_ENCRYPTION_BODY_CUSTOM));
+    }
+  } else {
+    args.SetBoolean("usePassphrase", service->IsUsingSecondaryPassphrase());
+  }
 
   StringValue page("configure");
   web_ui()->CallJavascriptFunction(

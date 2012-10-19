@@ -265,26 +265,53 @@
                 </label>
               </div>
             </div>
+            <hr>
+            <h4 i18n-content="passphraseSectionTitle"></h4>
           </div>
-          <hr>
-          <h4 i18n-content="passphraseSectionTitle"></h4>
+          <div id="customize-sync-encryption-new">
+            <hr>
+            <h4 i18n-content="encryptionSectionTitle"></h4>
+            <div id="encryption-section-message"
+                i18n-content="encryptionSectionMessage"></div>
+            <div id="sync-new-encryption-section-container">
+              <div class="radio">
+                <label>
+                  <input id="basic-encryption-option" name="encrypt-new"
+                      type="radio" value="full">
+                  <span i18n-content="basicEncryptionOption"></span>
+                </label>
+              </div>
+              <div class="radio">
+                <label>
+                  <input id="full-encryption-option" name="encrypt-new"
+                      type="radio" value="full">
+                  <span id="full-encryption-body"
+                      i18n-content="fullEncryptionOption"></span>
+                </label>
+                <a i18n-values="href:encryptionHelpURL" target="_blank"
+                    i18n-content="learnMore"></a>
+              </div>
+            </div>
+          </div>
           <div id="sync-custom-passphrase-container"
               class="sync-customize-section-container">
-            <div class="radio">
-              <label>
-                <input id="google-option" name="option" type="radio"
-                    value="google">
-                <span i18n-content="googleOption"></span>
-              </label>
-            </div>
-            <div class="radio">
-              <label>
-                <input id="explicit-option" name="option" type="radio"
-                    value="explicit">
-                <span i18n-content="explicitOption"></span>
-              </label>
-              <a i18n-values="href:encryptionHelpURL" target="_blank"
-                  i18n-content="learnMore"></a>
+            <div id="sync-custom-passphrase-options">
+              <div class="radio">
+                <label>
+                  <input id="google-option" name="option" type="radio"
+                      value="google">
+                  <span i18n-content="googleOption"></span>
+                </label>
+              </div>
+              <div class="radio">
+                <label>
+                  <input id="explicit-option" name="option" type="radio"
+                      value="explicit">
+                  <span i18n-content="explicitOption"></span>
+                </label>
+                <a i18n-values="href:encryptionHelpURL" target="_blank"
+                    i18n-content="learnMore"></a>
+              </div>
             </div>
             <div id="sync-custom-passphrase"
                 class="reset-hidden" hidden>

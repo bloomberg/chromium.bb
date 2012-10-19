@@ -105,7 +105,8 @@
   margin: 0;
 }
 
-#passphrase-encryption-message {
+#passphrase-encryption-message,
+#encryption-section-message {
   color: gray;
   margin-bottom: 5px;
 }
