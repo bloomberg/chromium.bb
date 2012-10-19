@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCSolidColorDrawQuad.h"
+#include "cc/solid_color_draw_quad.h"
 
 #include "base/logging.h"
 

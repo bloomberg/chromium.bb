@@ -7,10 +7,10 @@
 #include "cc/image_layer.h"
 
 #include "CCLayerTreeHost.h"
-#include "CCTextureUpdateQueue.h"
 #include "base/compiler_specific.h"
 #include "cc/layer_texture_updater.h"
 #include "cc/platform_color.h"
+#include "cc/texture_update_queue.h"
 
 namespace cc {
 

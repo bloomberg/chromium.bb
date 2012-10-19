@@ -7,7 +7,7 @@
 #include "CCScopedTexture.h"
 
 #include "CCRenderer.h"
-#include "CCSingleThreadProxy.h" // For DebugScopedSetImplThread
+#include "cc/single_thread_proxy.h" // For DebugScopedSetImplThread
 #include "cc/test/fake_graphics_context.h"
 #include "cc/test/tiled_layer_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"

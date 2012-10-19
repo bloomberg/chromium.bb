@@ -10,7 +10,7 @@
 #include "CCLayerSorter.h"
 #include "CCLayerTreeHostCommon.h"
 #include "CCMathUtil.h"
-#include "CCSingleThreadProxy.h"
+#include "cc/single_thread_proxy.h"
 #include "cc/test/geometry_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebFilterOperation.h>

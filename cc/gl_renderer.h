@@ -2,22 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #ifndef CCRendererGL_h
 #define CCRendererGL_h
 
-#include "base/basictypes.h"
 #include "CCCheckerboardDrawQuad.h"
 #include "CCDebugBorderDrawQuad.h"
 #include "CCDirectRenderer.h"
 #include "CCIOSurfaceDrawQuad.h"
 #include "CCRenderPassDrawQuad.h"
 #include "CCRenderer.h"
-#include "CCSolidColorDrawQuad.h"
-#include "CCStreamVideoDrawQuad.h"
-#include "CCTextureDrawQuad.h"
 #include "CCTileDrawQuad.h"
 #include "CCYUVVideoDrawQuad.h"
+#include "cc/solid_color_draw_quad.h"
 
 namespace WebKit {
 class WebGraphicsContext3D;
@@ -26,6 +22,8 @@ class WebGraphicsContext3D;
 namespace cc {
 
 class CCScopedTexture;
+class CCStreamVideoDrawQuad;
+class CCTextureDrawQuad;
 class GeometryBinding;
 class ScopedEnsureFramebufferAllocation;
 

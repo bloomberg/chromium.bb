@@ -5,10 +5,9 @@
 #ifndef CCTexture_h
 #define CCTexture_h
 
-#include "third_party/khronos/GLES2/gl2.h"
 #include "CCResourceProvider.h"
-#include "CCTexture.h"
 #include "IntSize.h"
+#include "third_party/khronos/GLES2/gl2.h"
 
 namespace cc {
 

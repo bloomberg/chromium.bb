@@ -5,12 +5,12 @@
 #ifndef CCRenderSurface_h
 #define CCRenderSurface_h
 
-#include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
 #include "CCRenderPass.h"
-#include "CCSharedQuadState.h"
 #include "FloatRect.h"
 #include "IntRect.h"
+#include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
+#include "cc/shared_quad_state.h"
 #include <public/WebTransformationMatrix.h>
 
 namespace cc {

@@ -6,7 +6,7 @@
 
 #include "cc/solid_color_layer.h"
 
-#include "CCSolidColorLayerImpl.h"
+#include "cc/solid_color_layer_impl.h"
 
 namespace cc {
 

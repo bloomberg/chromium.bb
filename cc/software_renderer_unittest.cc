@@ -10,9 +10,9 @@
 #include "CCRenderPass.h"
 #include "CCRenderPassDrawQuad.h"
 #include "CCSettings.h"
-#include "CCSingleThreadProxy.h" // For DebugScopedSetImplThread
-#include "CCSolidColorDrawQuad.h"
 #include "CCTileDrawQuad.h"
+#include "cc/single_thread_proxy.h" // For DebugScopedSetImplThread
+#include "cc/solid_color_draw_quad.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_web_compositor_output_surface.h"
 #include "cc/test/fake_web_compositor_software_output_device.h"

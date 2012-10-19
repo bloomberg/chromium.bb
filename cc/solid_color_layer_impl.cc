@@ -4,10 +4,10 @@
 
 #include "config.h"
 
-#include "CCSolidColorLayerImpl.h"
+#include "cc/solid_color_layer_impl.h"
 
 #include "CCQuadSink.h"
-#include "CCSolidColorDrawQuad.h"
+#include "cc/solid_color_draw_quad.h"
 #include <wtf/MathExtras.h>
 
 using namespace std;

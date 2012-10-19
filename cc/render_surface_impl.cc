@@ -6,8 +6,6 @@
 
 #include "CCRenderSurface.h"
 
-#include "base/logging.h"
-#include "base/stringprintf.h"
 #include "CCDamageTracker.h"
 #include "CCDebugBorderDrawQuad.h"
 #include "CCDelegatedRendererLayerImpl.h"
@@ -17,7 +15,9 @@
 #include "CCRenderPass.h"
 #include "CCRenderPassDrawQuad.h"
 #include "CCRenderPassSink.h"
-#include "CCSharedQuadState.h"
+#include "base/logging.h"
+#include "base/stringprintf.h"
+#include "cc/shared_quad_state.h"
 #include <public/WebTransformationMatrix.h>
 
 using WebKit::WebTransformationMatrix;

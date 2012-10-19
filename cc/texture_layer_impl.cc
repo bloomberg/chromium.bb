@@ -4,12 +4,12 @@
 
 #include "config.h"
 
-#include "CCTextureLayerImpl.h"
+#include "cc/texture_layer_impl.h"
 
-#include "base/stringprintf.h"
 #include "CCQuadSink.h"
 #include "CCRenderer.h"
-#include "CCTextureDrawQuad.h"
+#include "base/stringprintf.h"
+#include "cc/texture_draw_quad.h"
 
 namespace cc {
 
