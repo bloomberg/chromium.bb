@@ -203,11 +203,11 @@ ShellWindowCocoa::ShellWindowCocoa(ShellWindow* shell_window,
   // If coordinates are < 0, center window on primary screen
   if (params.bounds.x() < 0) {
     cocoa_bounds.origin.x =
-        (NSWidth(main_screen_rect) - NSWidth(cocoa_bounds)) / 2;
+        floor((NSWidth(main_screen_rect) - NSWidth(cocoa_bounds)) / 2);
   }
   if (params.bounds.y() < 0) {
     cocoa_bounds.origin.y =
-        (NSHeight(main_screen_rect) - NSHeight(cocoa_bounds)) / 2;
+        floor((NSHeight(main_screen_rect) - NSHeight(cocoa_bounds)) / 2);
   }
 
   NSUInteger style_mask = NSTitledWindowMask | NSClosableWindowMask |
