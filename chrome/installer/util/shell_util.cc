@@ -1303,19 +1303,20 @@ bool ShellUtil::CreateOrUpdateChromeShortcut(
   if (chosen_path->empty())
     return true;
 
-  // Make sure the parent directories exist when creating the shortcut.
-  if (operation == SHORTCUT_CREATE_ALWAYS &&
-      !file_util::CreateDirectory(chosen_path->DirName())) {
-    NOTREACHED();
-    return false;
-  }
-
   base::win::ShortcutOperation shortcut_operation =
       (operation == SHORTCUT_UPDATE_EXISTING ?
            base::win::SHORTCUT_UPDATE_EXISTING :
            (operation == SHORTCUT_REPLACE_EXISTING ?
                 base::win::SHORTCUT_REPLACE_EXISTING :
                 base::win::SHORTCUT_CREATE_ALWAYS));
+
+  // Make sure the parent directories exist when creating the shortcut.
+  if (shortcut_operation == base::win::SHORTCUT_CREATE_ALWAYS &&
+      !file_util::CreateDirectory(chosen_path->DirName())) {
+    NOTREACHED();
+    return false;
+  }
+
   base::win::ShortcutProperties shortcut_properties(
       GetShortcutPropertiesFromChromeShortcutProperties(dist, properties,
                                                         shortcut_operation));
