@@ -93,6 +93,9 @@ void ClientSession::ControlAudio(const protocol::AudioControl& audio_control) {
   if (audio_control.has_enable()) {
     VLOG(1) << "Received AudioControl (enable="
             << audio_control.enable() << ")";
+    if (audio_scheduler_.get()) {
+      audio_scheduler_->SetEnabled(audio_control.enable());
+    }
   }
 }
 

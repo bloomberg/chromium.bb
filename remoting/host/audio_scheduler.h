@@ -46,6 +46,11 @@ class AudioScheduler : public base::RefCountedThreadSafe<AudioScheduler> {
   // Called when a client disconnects.
   void OnClientDisconnected();
 
+  // Enable or disable audio on a running session.
+  // This leaves the audio capturer running, and only affects whether or not the
+  // captured audio is encoded and sent on the wire.
+  void SetEnabled(bool enabled);
+
  private:
   friend class base::RefCountedThreadSafe<AudioScheduler>;
   virtual ~AudioScheduler();
@@ -73,6 +78,8 @@ class AudioScheduler : public base::RefCountedThreadSafe<AudioScheduler> {
   protocol::AudioStub* audio_stub_;
 
   bool network_stopped_;
+
+  bool enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioScheduler);
 };

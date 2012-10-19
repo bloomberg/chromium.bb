@@ -27,7 +27,8 @@ AudioScheduler::AudioScheduler(
       audio_capturer_(audio_capturer),
       audio_encoder_(audio_encoder.Pass()),
       audio_stub_(audio_stub),
-      network_stopped_(false) {
+      network_stopped_(false),
+      enabled_(true) {
   DCHECK(audio_task_runner_);
   DCHECK(network_task_runner_);
   DCHECK(audio_capturer_);
@@ -63,6 +64,10 @@ AudioScheduler::~AudioScheduler() {
 void AudioScheduler::NotifyAudioPacketCaptured(
     scoped_ptr<AudioPacket> packet) {
   DCHECK(packet.get());
+
+  if (!enabled_)
+    return;
+
   scoped_ptr<AudioPacket> encoded_packet =
       audio_encoder_->Encode(packet.Pass());
 
@@ -80,6 +85,16 @@ void AudioScheduler::DoStart() {
   // TODO(kxing): Do something with the return value.
   audio_capturer_->Start(
       base::Bind(&AudioScheduler::NotifyAudioPacketCaptured, this));
+}
+
+void AudioScheduler::SetEnabled(bool enabled) {
+  if (!audio_task_runner_->BelongsToCurrentThread()) {
+    audio_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&AudioScheduler::SetEnabled, this, enabled));
+    return;
+  }
+
+  enabled_ = enabled;
 }
 
 void AudioScheduler::DoSendAudioPacket(scoped_ptr<AudioPacket> packet) {
