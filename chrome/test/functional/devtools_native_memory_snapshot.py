@@ -49,9 +49,10 @@ class DevToolsNativeMemorySnapshotTest(devtools_test_base.DevToolsTestBase):
     if total == 0:
       logging.info('No total process memory size')
       return
-    unknown_percent = float(unknown) / total
+    unknown_percent = (float(unknown) / total) * 100
+    unknown_percent_string = '%.1f' % unknown_percent
     pyauto_utils.PrintPerfResult('Native Memory Unknown %', hostname,
-        unknown_percent, '%')
+        unknown_percent_string, '%')
 
 
 if __name__ == '__main__':
