@@ -5,9 +5,6 @@
 #ifndef CCPrioritizedTextureManager_h
 #define CCPrioritizedTextureManager_h
 
-#include <list>
-#include <vector>
-
 #include "CCPrioritizedTexture.h"
 #include "CCPriorityCalculator.h"
 #include "IntRect.h"
@@ -17,6 +14,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/texture.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include <wtf/Vector.h>
+#include <list>
 
 #if defined(COMPILER_GCC)
 namespace BASE_HASH_NAMESPACE {
@@ -152,7 +151,7 @@ private:
     int m_pool;
 
     typedef base::hash_set<CCPrioritizedTexture*> TextureSet;
-    typedef std::vector<CCPrioritizedTexture*> TextureVector;
+    typedef Vector<CCPrioritizedTexture*> TextureVector;
 
     TextureSet m_textures;
     // This list is always sorted in eviction order, with the exception the
