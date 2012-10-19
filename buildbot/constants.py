@@ -146,6 +146,7 @@ HWTEST_TRYBOT_NUM = 1
 HWTEST_MACH_POOL = 'bvt'
 HWTEST_PALADIN_POOL = 'cq-bvt'
 HWTEST_CHROME_PFQ_POOL = 'chromepfq'
+HWTEST_CHROME_PERF_POOL = 'chromeperf'
 HWTEST_TRYBOT_POOL = 'try-bot'
 
 # Defines VM Test types.

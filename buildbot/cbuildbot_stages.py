@@ -1227,6 +1227,17 @@ class HWTestStage(BoardSpecificBuilderStage, NonHaltingBuilderStage):
     # Bind this early so derived classes can override it.
     self._timeout = build_config['hw_tests_timeout']
 
+  def _SendPerfResults(self):
+    """Sends the perf results from the test to the perf dashboard."""
+    result_file_name = '%s.results' % self._suite
+    gs_results_file = '/'.join([self._archive_stage.GetGSUploadLocation(),
+                                result_file_name])
+    gs_context = gs.GSContext()
+    result = gs_context.Copy(gs_results_file, '-')
+    # Prints out the actual result from gs_context.Copy.
+    logging.info('Copy of %s completed. Printing below:', result_file_name)
+    print result.output
+
   # Disable use of calling parents HandleStageException class.
   # pylint: disable=W0212
   def _HandleStageException(self, exception):
@@ -1262,31 +1273,11 @@ class HWTestStage(BoardSpecificBuilderStage, NonHaltingBuilderStage):
                                 self._build_config['hw_tests_file_bugs'],
                                 debug)
 
+        if self._build_config['hw_copy_perf_results']:
+          self._SendPerfResults()
+
     except cros_build_lib.TimeoutError as exception:
       return self.DealWithTimeout(exception)
-
-
-class HWPerfStage(HWTestStage):
-  """Stage that runs hwtests and prints out their perf results to stdio."""
-
-  RESULT_FILE = 'pyauto_perf.results'
-
-  def __init__(self, options, build_config, board, archive_stage):
-    super(HWPerfStage, self).__init__(options, build_config, board,
-                                      archive_stage, 'pyauto_perf')
-
-  def DealWithTimeout(self, exception):
-    raise TestTimeoutException('HWPerfStage: %s.' % exception)
-
-  def _PerformStage(self):
-    super(HWPerfStage, self)._PerformStage()
-    gs_results_file = '/'.join([self._archive_stage.GetGSUploadLocation(),
-                                self.RESULT_FILE])
-    gs_context = gs.GSContext()
-    result = gs_context.Copy(gs_results_file, '-')
-    # Prints out the actual result from gs_context.Copy.
-    logging.info('Copy of %s completed. Printing below:', self.RESULT_FILE)
-    print result.output
 
 
 class ASyncHWTestStage(HWTestStage, BoardSpecificBuilderStage,
