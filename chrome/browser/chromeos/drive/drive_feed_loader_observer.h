@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_GDATA_WAPI_FEED_LOADER_OBSERVER_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_GDATA_WAPI_FEED_LOADER_OBSERVER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FEED_LOADER_OBSERVER_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FEED_LOADER_OBSERVER_H_
 
 #include <string>
 
@@ -11,9 +11,9 @@ class FilePath;
 
 namespace drive {
 
-// Interface for classes that need to observe events from GdataWapiFeedLoader.
+// Interface for classes that need to observe events from DriveFeedLoader.
 // All events are notified on UI thread.
-class GDataWapiFeedLoaderObserver {
+class DriveFeedLoaderObserver {
  public:
   // Triggered when a content of a directory has been changed.
   // |directory_path| is a virtual directory path representing the
@@ -31,9 +31,9 @@ class GDataWapiFeedLoaderObserver {
   }
 
  protected:
-  virtual ~GDataWapiFeedLoaderObserver() {}
+  virtual ~DriveFeedLoaderObserver() {}
 };
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_GDATA_WAPI_FEED_LOADER_OBSERVER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FEED_LOADER_OBSERVER_H_

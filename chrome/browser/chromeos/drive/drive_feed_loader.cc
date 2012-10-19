@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/gdata_wapi_feed_loader.h"
+#include "chrome/browser/chromeos/drive/drive_feed_loader.h"
 
 #include <set>
 
@@ -16,9 +16,9 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
+#include "chrome/browser/chromeos/drive/drive_feed_loader_observer.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
-#include "chrome/browser/chromeos/drive/gdata_wapi_feed_loader_observer.h"
 #include "chrome/browser/chromeos/drive/gdata_wapi_feed_processor.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
@@ -214,7 +214,7 @@ struct GetDocumentsUiState {
   base::WeakPtrFactory<GetDocumentsUiState> weak_ptr_factory;
 };
 
-GDataWapiFeedLoader::GDataWapiFeedLoader(
+DriveFeedLoader::DriveFeedLoader(
     DriveResourceMetadata* resource_metadata,
     DriveServiceInterface* drive_service,
     DriveWebAppsRegistryInterface* webapps_registry,
@@ -228,21 +228,20 @@ GDataWapiFeedLoader::GDataWapiFeedLoader(
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
-GDataWapiFeedLoader::~GDataWapiFeedLoader() {
+DriveFeedLoader::~DriveFeedLoader() {
 }
 
-void GDataWapiFeedLoader::AddObserver(GDataWapiFeedLoaderObserver* observer) {
+void DriveFeedLoader::AddObserver(DriveFeedLoaderObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.AddObserver(observer);
 }
 
-void GDataWapiFeedLoader::RemoveObserver(
-    GDataWapiFeedLoaderObserver* observer) {
+void DriveFeedLoader::RemoveObserver(DriveFeedLoaderObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.RemoveObserver(observer);
 }
 
-void GDataWapiFeedLoader::ReloadFromServerIfNeeded(
+void DriveFeedLoader::ReloadFromServerIfNeeded(
     ContentOrigin initial_origin,
     int64 local_changestamp,
     const FileOperationCallback& callback) {
@@ -255,7 +254,7 @@ void GDataWapiFeedLoader::ReloadFromServerIfNeeded(
   // there at all.
   if (gdata::util::IsDriveV2ApiEnabled()) {
     drive_service_->GetAccountMetadata(
-        base::Bind(&GDataWapiFeedLoader::OnGetAboutResource,
+        base::Bind(&DriveFeedLoader::OnGetAboutResource,
                    weak_ptr_factory_.GetWeakPtr(),
                    initial_origin,
                    local_changestamp,
@@ -264,20 +263,20 @@ void GDataWapiFeedLoader::ReloadFromServerIfNeeded(
     // TODO(kochi): Application list rarely changes and is not necessarily
     // refreshed as often as files.
     drive_service_->GetApplicationInfo(
-        base::Bind(&GDataWapiFeedLoader::OnGetApplicationList,
+        base::Bind(&DriveFeedLoader::OnGetApplicationList,
                    weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
   drive_service_->GetAccountMetadata(
-      base::Bind(&GDataWapiFeedLoader::OnGetAccountMetadata,
+      base::Bind(&DriveFeedLoader::OnGetAccountMetadata,
                  weak_ptr_factory_.GetWeakPtr(),
                  initial_origin,
                  local_changestamp,
                  callback));
 }
 
-void GDataWapiFeedLoader::OnGetAccountMetadata(
+void DriveFeedLoader::OnGetAccountMetadata(
     ContentOrigin initial_origin,
     int64 local_changestamp,
     const FileOperationCallback& callback,
@@ -287,7 +286,7 @@ void GDataWapiFeedLoader::OnGetAccountMetadata(
 
   scoped_ptr<LoadFeedParams> params(new LoadFeedParams(
       initial_origin,
-      base::Bind(&GDataWapiFeedLoader::OnFeedFromServerLoaded,
+      base::Bind(&DriveFeedLoader::OnFeedFromServerLoaded,
                  weak_ptr_factory_.GetWeakPtr())));
   params->start_changestamp = local_changestamp + 1;
   params->load_finished_callback = callback;
@@ -350,7 +349,7 @@ void GDataWapiFeedLoader::OnGetAccountMetadata(
   LoadFromServer(params.Pass());
 }
 
-void GDataWapiFeedLoader::OnGetAboutResource(
+void DriveFeedLoader::OnGetAboutResource(
     ContentOrigin initial_origin,
     int64 local_changestamp,
     const FileOperationCallback& callback,
@@ -360,7 +359,7 @@ void GDataWapiFeedLoader::OnGetAboutResource(
 
   scoped_ptr<LoadFeedParams> params(new LoadFeedParams(
       initial_origin,
-      base::Bind(&GDataWapiFeedLoader::OnFeedFromServerLoaded,
+      base::Bind(&DriveFeedLoader::OnFeedFromServerLoaded,
                  weak_ptr_factory_.GetWeakPtr())));
   params->load_finished_callback = callback;
 
@@ -411,9 +410,8 @@ void GDataWapiFeedLoader::OnGetAboutResource(
   LoadFromServer(params.Pass());
 }
 
-void GDataWapiFeedLoader::OnGetApplicationList(
-    gdata::GDataErrorCode status,
-    scoped_ptr<base::Value> json) {
+void DriveFeedLoader::OnGetApplicationList(gdata::GDataErrorCode status,
+                                           scoped_ptr<base::Value> json) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DriveFileError error = util::GDataToDriveFileError(status);
@@ -429,7 +427,7 @@ void GDataWapiFeedLoader::OnGetApplicationList(
   }
 }
 
-void GDataWapiFeedLoader::LoadFromServer(scoped_ptr<LoadFeedParams> params) {
+void DriveFeedLoader::LoadFromServer(scoped_ptr<LoadFeedParams> params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const base::TimeTicks start_time = base::TimeTicks::Now();
@@ -442,7 +440,7 @@ void GDataWapiFeedLoader::LoadFromServer(scoped_ptr<LoadFeedParams> params) {
         params_ptr->start_changestamp,
         std::string(),  // No search query.
         std::string(),  // No directory resource ID.
-        base::Bind(&GDataWapiFeedLoader::OnGetChangelist,
+        base::Bind(&DriveFeedLoader::OnGetChangelist,
                    weak_ptr_factory_.GetWeakPtr(),
                    base::Passed(&params),
                    start_time));
@@ -452,14 +450,14 @@ void GDataWapiFeedLoader::LoadFromServer(scoped_ptr<LoadFeedParams> params) {
         params_ptr->start_changestamp,
         params_ptr->search_query,
         params_ptr->directory_resource_id,
-        base::Bind(&GDataWapiFeedLoader::OnGetDocuments,
+        base::Bind(&DriveFeedLoader::OnGetDocuments,
                    weak_ptr_factory_.GetWeakPtr(),
                    base::Passed(&params),
                    start_time));
   }
 }
 
-void GDataWapiFeedLoader::LoadDirectoryFromServer(
+void DriveFeedLoader::LoadDirectoryFromServer(
     ContentOrigin initial_origin,
     const std::string& directory_resource_id,
     const LoadDocumentFeedCallback& feed_load_callback) {
@@ -469,7 +467,7 @@ void GDataWapiFeedLoader::LoadDirectoryFromServer(
   LoadFromServer(params.Pass());
 }
 
-void GDataWapiFeedLoader::SearchFromServer(
+void DriveFeedLoader::SearchFromServer(
     ContentOrigin initial_origin,
     const std::string& search_query,
     const GURL& next_feed,
@@ -483,9 +481,8 @@ void GDataWapiFeedLoader::SearchFromServer(
   LoadFromServer(params.Pass());
 }
 
-void GDataWapiFeedLoader::OnFeedFromServerLoaded(
-    scoped_ptr<LoadFeedParams> params,
-    DriveFileError error) {
+void DriveFeedLoader::OnFeedFromServerLoaded(scoped_ptr<LoadFeedParams> params,
+                                             DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != DRIVE_FILE_OK) {
@@ -511,16 +508,15 @@ void GDataWapiFeedLoader::OnFeedFromServerLoaded(
   if (!params->load_finished_callback.is_null())
     params->load_finished_callback.Run(DRIVE_FILE_OK);
 
-  FOR_EACH_OBSERVER(GDataWapiFeedLoaderObserver,
+  FOR_EACH_OBSERVER(DriveFeedLoaderObserver,
                     observers_,
                     OnFeedFromServerLoaded());
 }
 
-void GDataWapiFeedLoader::OnGetDocuments(
-    scoped_ptr<LoadFeedParams> params,
-    base::TimeTicks start_time,
-    gdata::GDataErrorCode status,
-    scoped_ptr<base::Value> data) {
+void DriveFeedLoader::OnGetDocuments(scoped_ptr<LoadFeedParams> params,
+                                     base::TimeTicks start_time,
+                                     gdata::GDataErrorCode status,
+                                     scoped_ptr<base::Value> data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (params->feed_list.empty()) {
@@ -548,14 +544,14 @@ void GDataWapiFeedLoader::OnGetDocuments(
       base::Bind(&ParseFeedOnBlockingPool,
                  base::Passed(&data),
                  current_feed),
-      base::Bind(&GDataWapiFeedLoader::OnParseFeed,
+      base::Bind(&DriveFeedLoader::OnParseFeed,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(&params),
                  start_time,
                  base::Owned(current_feed)));
 }
 
-void GDataWapiFeedLoader::OnParseFeed(
+void DriveFeedLoader::OnParseFeed(
     scoped_ptr<LoadFeedParams> params,
     base::TimeTicks start_time,
     scoped_ptr<gdata::DocumentFeed>* current_feed) {
@@ -594,7 +590,7 @@ void GDataWapiFeedLoader::OnParseFeed(
       // Currently the UI update is stopped. Start UI periodic callback.
       base::MessageLoopProxy::current()->PostTask(
           FROM_HERE,
-          base::Bind(&GDataWapiFeedLoader::OnNotifyDocumentFeedFetched,
+          base::Bind(&DriveFeedLoader::OnNotifyDocumentFeedFetched,
                      weak_ptr_factory_.GetWeakPtr(),
                      ui_state->weak_ptr_factory.GetWeakPtr()));
     }
@@ -610,7 +606,7 @@ void GDataWapiFeedLoader::OnParseFeed(
         params_ptr->start_changestamp,
         params_ptr->search_query,
         params_ptr->directory_resource_id,
-        base::Bind(&GDataWapiFeedLoader::OnGetDocuments,
+        base::Bind(&DriveFeedLoader::OnGetDocuments,
                    weak_ptr_factory_.GetWeakPtr(),
                    base::Passed(&params),
                    start_time));
@@ -618,7 +614,7 @@ void GDataWapiFeedLoader::OnParseFeed(
   }
 
   // Notify the observers that all document feeds are fetched.
-  FOR_EACH_OBSERVER(GDataWapiFeedLoaderObserver, observers_,
+  FOR_EACH_OBSERVER(DriveFeedLoaderObserver, observers_,
                     OnDocumentFeedFetched(num_accumulated_entries));
 
   UMA_HISTOGRAM_TIMES("Drive.EntireFeedLoadTime",
@@ -628,11 +624,10 @@ void GDataWapiFeedLoader::OnParseFeed(
   RunFeedLoadCallback(params.Pass(), DRIVE_FILE_OK);
 }
 
-void GDataWapiFeedLoader::OnGetChangelist(
-    scoped_ptr<LoadFeedParams> params,
-    base::TimeTicks start_time,
-    gdata::GDataErrorCode status,
-    scoped_ptr<base::Value> data) {
+void DriveFeedLoader::OnGetChangelist(scoped_ptr<LoadFeedParams> params,
+                                      base::TimeTicks start_time,
+                                      gdata::GDataErrorCode status,
+                                      scoped_ptr<base::Value> data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (params->feed_list.empty()) {
@@ -700,7 +695,7 @@ void GDataWapiFeedLoader::OnGetChangelist(
       // Currently the UI update is stopped. Start UI periodic callback.
       base::MessageLoopProxy::current()->PostTask(
           FROM_HERE,
-          base::Bind(&GDataWapiFeedLoader::OnNotifyDocumentFeedFetched,
+          base::Bind(&DriveFeedLoader::OnNotifyDocumentFeedFetched,
                      weak_ptr_factory_.GetWeakPtr(),
                      ui_state->weak_ptr_factory.GetWeakPtr()));
     }
@@ -715,7 +710,7 @@ void GDataWapiFeedLoader::OnGetChangelist(
         params_ptr->start_changestamp,
         std::string(),  // No search query.
         std::string(),  // No directory resource ID.
-        base::Bind(&GDataWapiFeedLoader::OnGetChangelist,
+        base::Bind(&DriveFeedLoader::OnGetChangelist,
                    weak_ptr_factory_.GetWeakPtr(),
                    base::Passed(&params),
                    start_time));
@@ -723,7 +718,7 @@ void GDataWapiFeedLoader::OnGetChangelist(
   }
 
   // Notify the observers that all document feeds are fetched.
-  FOR_EACH_OBSERVER(GDataWapiFeedLoaderObserver, observers_,
+  FOR_EACH_OBSERVER(DriveFeedLoaderObserver, observers_,
                     OnDocumentFeedFetched(num_accumulated_entries));
 
   UMA_HISTOGRAM_TIMES("Drive.EntireFeedLoadTime",
@@ -733,7 +728,7 @@ void GDataWapiFeedLoader::OnGetChangelist(
   RunFeedLoadCallback(params.Pass(), error);
 }
 
-void GDataWapiFeedLoader::OnNotifyDocumentFeedFetched(
+void DriveFeedLoader::OnNotifyDocumentFeedFetched(
     base::WeakPtr<GetDocumentsUiState> ui_state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -749,7 +744,7 @@ void GDataWapiFeedLoader::OnNotifyDocumentFeedFetched(
   if (ui_state->num_showing_documents + kFetchUiUpdateStep <=
       ui_state->num_fetched_documents) {
     ui_state->num_showing_documents += kFetchUiUpdateStep;
-    FOR_EACH_OBSERVER(GDataWapiFeedLoaderObserver, observers_,
+    FOR_EACH_OBSERVER(DriveFeedLoaderObserver, observers_,
                       OnDocumentFeedFetched(ui_state->num_showing_documents));
 
     int num_remaining_ui_updates =
@@ -769,7 +764,7 @@ void GDataWapiFeedLoader::OnNotifyDocumentFeedFetched(
 
       base::MessageLoopProxy::current()->PostDelayedTask(
           FROM_HERE,
-          base::Bind(&GDataWapiFeedLoader::OnNotifyDocumentFeedFetched,
+          base::Bind(&DriveFeedLoader::OnNotifyDocumentFeedFetched,
                      weak_ptr_factory_.GetWeakPtr(),
                      ui_state->weak_ptr_factory.GetWeakPtr()),
           interval);
@@ -777,9 +772,8 @@ void GDataWapiFeedLoader::OnNotifyDocumentFeedFetched(
   }
 }
 
-void GDataWapiFeedLoader::LoadFromCache(
-    bool should_load_from_server,
-    const FileOperationCallback& callback) {
+void DriveFeedLoader::LoadFromCache(bool should_load_from_server,
+                                    const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   LoadRootFeedParams* params = new LoadRootFeedParams(should_load_from_server,
@@ -789,20 +783,20 @@ void GDataWapiFeedLoader::LoadFromCache(
     path = path.Append(kResourceMetadataDBFile);
     resource_metadata_->InitFromDB(path, blocking_task_runner_,
         base::Bind(
-            &GDataWapiFeedLoader::ContinueWithInitializedDirectoryService,
+            &DriveFeedLoader::ContinueWithInitializedDirectoryService,
             weak_ptr_factory_.GetWeakPtr(),
             base::Owned(params)));
   } else {
     path = path.Append(kFilesystemProtoFile);
     BrowserThread::GetBlockingPool()->PostTaskAndReply(FROM_HERE,
         base::Bind(&LoadProtoOnBlockingPool, path, params),
-        base::Bind(&GDataWapiFeedLoader::OnProtoLoaded,
+        base::Bind(&DriveFeedLoader::OnProtoLoaded,
                    weak_ptr_factory_.GetWeakPtr(),
                    base::Owned(params)));
   }
 }
 
-void GDataWapiFeedLoader::OnProtoLoaded(LoadRootFeedParams* params) {
+void DriveFeedLoader::OnProtoLoaded(LoadRootFeedParams* params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // If we have already received updates from the server, bail out.
@@ -825,7 +819,7 @@ void GDataWapiFeedLoader::OnProtoLoaded(LoadRootFeedParams* params) {
   ContinueWithInitializedDirectoryService(params, params->load_error);
 }
 
-void GDataWapiFeedLoader::ContinueWithInitializedDirectoryService(
+void DriveFeedLoader::ContinueWithInitializedDirectoryService(
     LoadRootFeedParams* params,
     DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -869,7 +863,7 @@ void GDataWapiFeedLoader::ContinueWithInitializedDirectoryService(
                            callback);
 }
 
-void GDataWapiFeedLoader::SaveFileSystem() {
+void DriveFeedLoader::SaveFileSystem() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!ShouldSerializeFileSystemNow(resource_metadata_->serialized_size(),
@@ -895,7 +889,7 @@ void GDataWapiFeedLoader::SaveFileSystem() {
   }
 }
 
-DriveFileError GDataWapiFeedLoader::UpdateFromFeed(
+DriveFileError DriveFeedLoader::UpdateFromFeed(
     const ScopedVector<gdata::DocumentFeed>& feed_list,
     int64 start_changestamp,
     int64 root_feed_changestamp) {
@@ -917,7 +911,7 @@ DriveFileError GDataWapiFeedLoader::UpdateFromFeed(
   if (should_notify_directory_changed) {
     for (std::set<FilePath>::iterator dir_iter = changed_dirs.begin();
         dir_iter != changed_dirs.end(); ++dir_iter) {
-      FOR_EACH_OBSERVER(GDataWapiFeedLoaderObserver, observers_,
+      FOR_EACH_OBSERVER(DriveFeedLoaderObserver, observers_,
                         OnDirectoryChanged(*dir_iter));
     }
   }

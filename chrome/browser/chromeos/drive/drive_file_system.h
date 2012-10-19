@@ -13,10 +13,10 @@
 #include "base/observer_list.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
+#include "chrome/browser/chromeos/drive/drive_feed_loader_observer.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system/drive_operations.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
-#include "chrome/browser/chromeos/drive/gdata_wapi_feed_loader_observer.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "content/public/browser/notification_observer.h"
 
@@ -40,7 +40,7 @@ class DriveServiceInterface;
 class DriveScheduler;
 class DriveUploaderInterface;
 class DriveWebAppsRegistryInterface;
-class GDataWapiFeedLoader;
+class DriveFeedLoader;
 struct LoadFeedParams;
 
 namespace file_system {
@@ -51,7 +51,7 @@ class RemoveOperation;
 
 // The production implementation of DriveFileSystemInterface.
 class DriveFileSystem : public DriveFileSystemInterface,
-                        public GDataWapiFeedLoaderObserver,
+                        public DriveFeedLoaderObserver,
                         public file_system::OperationObserver,
                         public content::NotificationObserver {
  public:
@@ -150,8 +150,8 @@ class DriveFileSystem : public DriveFileSystemInterface,
   virtual void OnDirectoryChangedByOperation(
       const FilePath& directory_path) OVERRIDE;
 
-  // GDataWapiFeedLoader::Observer overrides.
-  // Used to propagate events from GDataWapiFeedLoader.
+  // DriveFeedLoader::Observer overrides.
+  // Used to propagate events from DriveFeedLoader.
   virtual void OnDirectoryChanged(const FilePath& directory_path) OVERRIDE;
   virtual void OnDocumentFeedFetched(int num_accumulated_entries) OVERRIDE;
   virtual void OnFeedFromServerLoaded() OVERRIDE;
@@ -160,7 +160,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void LoadRootFeedFromCacheForTesting();
 
   // Used in tests to update the file system from |feed_list|.
-  // See also the comment at GDataWapiFeedLoader::UpdateFromFeed().
+  // See also the comment at DriveFeedLoader::UpdateFromFeed().
   DriveFileError UpdateFromFeedForTesting(
       const ScopedVector<gdata::DocumentFeed>& feed_list,
       int64 start_changestamp,
@@ -728,7 +728,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   scoped_ptr<PrefChangeRegistrar> pref_registrar_;
 
   // The loader is used to load the feeds.
-  scoped_ptr<GDataWapiFeedLoader> feed_loader_;
+  scoped_ptr<DriveFeedLoader> feed_loader_;
 
   ObserverList<DriveFileSystemObserver> observers_;
 

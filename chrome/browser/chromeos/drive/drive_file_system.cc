@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/drive_feed_loader.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_files.h"
@@ -23,7 +24,6 @@
 #include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/move_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
-#include "chrome/browser/chromeos/drive/gdata_wapi_feed_loader.h"
 #include "chrome/browser/chromeos/drive/gdata_wapi_feed_processor.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
@@ -390,11 +390,11 @@ void DriveFileSystem::Initialize() {
   drive_service_->Initialize(profile_);
 
   resource_metadata_.reset(new DriveResourceMetadata);
-  feed_loader_.reset(new GDataWapiFeedLoader(resource_metadata_.get(),
-                                             drive_service_,
-                                             webapps_registry_,
-                                             cache_,
-                                             blocking_task_runner_));
+  feed_loader_.reset(new DriveFeedLoader(resource_metadata_.get(),
+                                         drive_service_,
+                                         webapps_registry_,
+                                         cache_,
+                                         blocking_task_runner_));
   feed_loader_->AddObserver(this);
 
   // Allocate the drive operation handlers.

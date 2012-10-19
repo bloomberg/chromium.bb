@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_GDATA_WAPI_FEED_LOADER_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_GDATA_WAPI_FEED_LOADER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FEED_LOADER_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FEED_LOADER_H_
 
 #include <string>
 #include <vector>
@@ -28,9 +28,9 @@ class DocumentFeed;
 namespace drive {
 
 class DriveCache;
+class DriveFeedLoaderObserver;
 class DriveServiceInterface;
 class DriveWebAppsRegistryInterface;
-class GDataWapiFeedLoaderObserver;
 struct GetDocumentsUiState;
 struct LoadFeedParams;
 
@@ -90,21 +90,21 @@ struct LoadRootFeedParams {
   const FileOperationCallback callback;
 };
 
-// GDataWapiFeedLoader is used to load feeds from WAPI (codename for
+// DriveFeedLoader is used to load feeds from WAPI (codename for
 // Documents List API) and load the cached proto file.
-class GDataWapiFeedLoader {
+class DriveFeedLoader {
  public:
-  GDataWapiFeedLoader(
+  DriveFeedLoader(
       DriveResourceMetadata* resource_metadata,
       DriveServiceInterface* drive_service,
       DriveWebAppsRegistryInterface* webapps_registry,
       DriveCache* cache,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_);
-  ~GDataWapiFeedLoader();
+  ~DriveFeedLoader();
 
   // Adds and removes the observer.
-  void AddObserver(GDataWapiFeedLoaderObserver* observer);
-  void RemoveObserver(GDataWapiFeedLoaderObserver* observer);
+  void AddObserver(DriveFeedLoaderObserver* observer);
+  void RemoveObserver(DriveFeedLoaderObserver* observer);
 
   // Starts root feed load from the cache. If successful, runs |callback| to
   // tell the caller that the loading was successful.
@@ -236,14 +236,14 @@ class GDataWapiFeedLoader {
   DriveWebAppsRegistryInterface* webapps_registry_;  // Not owned.
   DriveCache* cache_;  // Not owned.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  ObserverList<GDataWapiFeedLoaderObserver> observers_;
+  ObserverList<DriveFeedLoaderObserver> observers_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<GDataWapiFeedLoader> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(GDataWapiFeedLoader);
+  base::WeakPtrFactory<DriveFeedLoader> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(DriveFeedLoader);
 };
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_GDATA_WAPI_FEED_LOADER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FEED_LOADER_H_
