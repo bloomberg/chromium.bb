@@ -967,6 +967,65 @@ TEST_F(WorkspaceWindowResizerTest, SnapToEdge) {
   // No need to test dragging < 0 as we force that to 0.
 }
 
+// Verifies a resize snap when dragging TOPLEFT.
+TEST_F(WorkspaceWindowResizerTest, SnapToWorkArea_TOPLEFT) {
+  window_->SetBounds(gfx::Rect(100, 200, 20, 30));
+  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+      window_.get(), gfx::Point(), HTTOPLEFT, empty_windows()));
+  ASSERT_TRUE(resizer.get());
+  resizer->Drag(CalculateDragPoint(*resizer, -98, -199), 0);
+  EXPECT_EQ("0,0 120x230", window_->bounds().ToString());
+}
+
+// Verifies a resize snap when dragging TOPRIGHT.
+TEST_F(WorkspaceWindowResizerTest, SnapToWorkArea_TOPRIGHT) {
+  window_->SetBounds(gfx::Rect(100, 200, 20, 30));
+  gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(
+                          window_.get()));
+  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+      window_.get(), gfx::Point(), HTTOPRIGHT, empty_windows()));
+  ASSERT_TRUE(resizer.get());
+  resizer->Drag(
+      CalculateDragPoint(*resizer, work_area.right() - 120 - 1, -199), 0);
+  EXPECT_EQ(100, window_->bounds().x());
+  EXPECT_EQ(work_area.y(), window_->bounds().y());
+  EXPECT_EQ(work_area.right() - 100, window_->bounds().width());
+  EXPECT_EQ(230, window_->bounds().height());
+}
+
+// Verifies a resize snap when dragging BOTTOMRIGHT.
+TEST_F(WorkspaceWindowResizerTest, SnapToWorkArea_BOTTOMRIGHT) {
+  window_->SetBounds(gfx::Rect(100, 200, 20, 30));
+  gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(
+                          window_.get()));
+  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+      window_.get(), gfx::Point(), HTBOTTOMRIGHT, empty_windows()));
+  ASSERT_TRUE(resizer.get());
+  resizer->Drag(
+      CalculateDragPoint(*resizer, work_area.right() - 120 - 1,
+                         work_area.bottom() - 220 - 2), 0);
+  EXPECT_EQ(100, window_->bounds().x());
+  EXPECT_EQ(200, window_->bounds().y());
+  EXPECT_EQ(work_area.right() - 100, window_->bounds().width());
+  EXPECT_EQ(work_area.bottom() - 200, window_->bounds().height());
+}
+
+// Verifies a resize snap when dragging BOTTOMLEFT.
+TEST_F(WorkspaceWindowResizerTest, SnapToWorkArea_BOTTOMLEFT) {
+  window_->SetBounds(gfx::Rect(100, 200, 20, 30));
+  gfx::Rect work_area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(
+                          window_.get()));
+  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+      window_.get(), gfx::Point(), HTBOTTOMLEFT, empty_windows()));
+  ASSERT_TRUE(resizer.get());
+  resizer->Drag(
+      CalculateDragPoint(*resizer, -98, work_area.bottom() - 220 - 2), 0);
+  EXPECT_EQ(0, window_->bounds().x());
+  EXPECT_EQ(200, window_->bounds().y());
+  EXPECT_EQ(120, window_->bounds().width());
+  EXPECT_EQ(work_area.bottom() - 200, window_->bounds().height());
+}
+
 // Verifies a window taller than work area height doesn't snap above the top of
 // the work area.
 TEST_F(WorkspaceWindowResizerTest, TallWindow) {

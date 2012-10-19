@@ -571,6 +571,8 @@ void WorkspaceWindowResizer::AdjustBoundsForMainWindow(
     }
   } else if (snap_size > 0) {
     MagneticallySnapResizeToOtherWindows(bounds);
+    if (!magnetism_window_ && snap_size > 0)
+      SnapResizeToWorkAreaBounds(work_area, snap_size, bounds);
   }
 
   if (attached_windows_.empty())
@@ -590,10 +592,10 @@ void WorkspaceWindowResizer::SnapToWorkAreaEdges(
     const gfx::Rect& work_area,
     int snap_size,
     gfx::Rect* bounds) const {
-  int left_edge = work_area.x();
-  int right_edge = work_area.right();
-  int top_edge = work_area.y();
-  int bottom_edge = work_area.bottom();
+  const int left_edge = work_area.x();
+  const int right_edge = work_area.right();
+  const int top_edge = work_area.y();
+  const int bottom_edge = work_area.bottom();
   if (ShouldSnapToEdge(bounds->x() - left_edge, snap_size)) {
     bounds->set_x(left_edge);
   } else if (ShouldSnapToEdge(right_edge - bounds->right(),
@@ -611,13 +613,33 @@ void WorkspaceWindowResizer::SnapToWorkAreaEdges(
   }
 }
 
-bool WorkspaceWindowResizer::TouchesBottomOfScreen() const {
-  gfx::Rect work_area(
-      ScreenAsh::GetDisplayWorkAreaBoundsInParent(window()));
-  return (attached_windows_.empty() &&
-          window()->bounds().bottom() == work_area.bottom()) ||
-      (!attached_windows_.empty() &&
-       attached_windows_.back()->bounds().bottom() == work_area.bottom());
+void WorkspaceWindowResizer::SnapResizeToWorkAreaBounds(
+    const gfx::Rect& work_area,
+    int snap_size,
+    gfx::Rect* bounds) const {
+  const uint32 edges = WindowComponentToMagneticEdge(details_.window_component);
+  const int left_edge = work_area.x();
+  const int right_edge = work_area.right();
+  const int top_edge = work_area.y();
+  const int bottom_edge = work_area.bottom();
+  if (edges & MAGNETISM_EDGE_TOP &&
+      ShouldSnapToEdge(bounds->y() - top_edge, snap_size)) {
+    bounds->set_height(bounds->bottom() - top_edge);
+    bounds->set_y(top_edge);
+  }
+  if (edges & MAGNETISM_EDGE_LEFT &&
+      ShouldSnapToEdge(bounds->x() - left_edge, snap_size)) {
+    bounds->set_width(bounds->right() - left_edge);
+    bounds->set_x(left_edge);
+  }
+  if (edges & MAGNETISM_EDGE_BOTTOM &&
+      ShouldSnapToEdge(bottom_edge - bounds->bottom(), snap_size)) {
+    bounds->set_height(bottom_edge - bounds->y());
+  }
+  if (edges & MAGNETISM_EDGE_RIGHT &&
+      ShouldSnapToEdge(right_edge - bounds->right(), snap_size)) {
+    bounds->set_width(right_edge - bounds->x());
+  }
 }
 
 int WorkspaceWindowResizer::PrimaryAxisSize(const gfx::Size& size) const {

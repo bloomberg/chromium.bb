@@ -131,8 +131,10 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
       int snap_size,
       gfx::Rect* bounds) const;
 
-  // Returns true if the window touches the bottom edge of the work area.
-  bool TouchesBottomOfScreen() const;
+  // Snaps the window bounds to the work area during a resize.
+  void SnapResizeToWorkAreaBounds(const gfx::Rect& work_area,
+                                  int snap_size,
+                                  gfx::Rect* bounds) const;
 
   // Returns a coordinate along the primary axis. Used to share code for
   // left/right multi window resize and top/bottom resize.
