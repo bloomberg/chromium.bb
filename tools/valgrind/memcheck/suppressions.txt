@@ -6088,3 +6088,9 @@
   ...
   fun:_ZN11dom_storage47DomStorageContextTest_DeleteSessionStorage_Test8TestBodyEv
 }
+{
+  bug_156829
+  Memcheck:Leak
+  fun:_Znw*
+  fun:_ZN12media_stream23AudioInputDeviceManager23EnumerateOnDeviceThreadEv
+}
