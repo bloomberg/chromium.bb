@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/spellchecker/spelling_service_client.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_observer.h"
 #include "chrome/common/pref_names.h"
@@ -58,6 +59,11 @@ class MockRenderViewContextMenu : public RenderViewContextMenuProxy {
   virtual RenderViewHost* GetRenderViewHost() const OVERRIDE;
   virtual WebContents* GetWebContents() const OVERRIDE;
   virtual Profile* GetProfile() const OVERRIDE;
+
+  // Create a testing URL request context.
+  void CreateRequestContext() {
+    profile_->CreateRequestContext();
+  }
 
   // Attaches a RenderViewContextMenuObserver to be tested.
   void SetObserver(RenderViewContextMenuObserver* observer);
@@ -308,5 +314,49 @@ IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest, EnableSpellingService) {
   EXPECT_EQ(IDC_CONTENT_CONTEXT_SPELLING_TOGGLE, item.command_id);
   EXPECT_TRUE(item.enabled);
   EXPECT_TRUE(item.checked);
+  EXPECT_FALSE(item.hidden);
+}
+
+// Test that there will be a separator after "no suggestions" if
+// SpellingServiceClient::SUGGEST is on.
+IN_PROC_BROWSER_TEST_F(SpellingMenuObserverTest, SeparatorAfterSuggestions) {
+  scoped_ptr<MockRenderViewContextMenu> menu(new MockRenderViewContextMenu);
+  scoped_ptr<SpellingMenuObserver> observer(
+      new SpellingMenuObserver(menu.get()));
+  menu->SetObserver(observer.get());
+  menu->GetPrefs()->SetBoolean(prefs::kSpellCheckUseSpellingService, true);
+
+  // Make sure we can pretend to handle the JSON request.
+  menu->CreateRequestContext();
+
+  // Force a non-empty locale so SUGGEST is available.
+  menu->GetPrefs()->SetString(prefs::kSpellCheckDictionary, "en");
+  EXPECT_TRUE(SpellingServiceClient::IsAvailable(menu->GetProfile(),
+    SpellingServiceClient::SUGGEST));
+
+  content::ContextMenuParams params;
+  params.is_editable = true;
+  params.misspelled_word = ASCIIToUTF16("jhhj");
+  observer->InitMenu(params);
+
+  // The test should see "No spelling suggestions" (from system checker),
+  // "No more Google suggestions" (from SpellingService) and a separator
+  // as the first three items, then possibly more (not relevant here).
+  EXPECT_LT(3U, menu->GetMenuSize());
+
+  MockRenderViewContextMenu::MockMenuItem item;
+  menu->GetMenuItem(0, &item);
+  EXPECT_EQ(IDC_CONTENT_CONTEXT_SPELLING_SUGGESTION, item.command_id);
+  EXPECT_FALSE(item.enabled);
+  EXPECT_FALSE(item.hidden);
+
+  menu->GetMenuItem(1, &item);
+  EXPECT_EQ(IDC_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS, item.command_id);
+  EXPECT_FALSE(item.enabled);
+  EXPECT_FALSE(item.hidden);
+
+  menu->GetMenuItem(2, &item);
+  EXPECT_EQ(-1, item.command_id);
+  EXPECT_FALSE(item.enabled);
   EXPECT_FALSE(item.hidden);
 }

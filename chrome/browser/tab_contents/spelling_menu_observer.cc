@@ -60,8 +60,9 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
 
   // Append a placeholder item for the suggestion from the Spelling serivce and
   // send a request to the service if we can retrieve suggestions from it.
-  if (SpellingServiceClient::IsAvailable(profile,
-                                         SpellingServiceClient::SUGGEST)) {
+  bool useSuggestions = SpellingServiceClient::IsAvailable(
+      profile,SpellingServiceClient::SUGGEST);
+  if (useSuggestions) {
     // Retrieve the misspelled word to be sent to the Spelling service.
     string16 text = params.misspelled_word;
     if (!text.empty()) {
@@ -116,6 +117,8 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
       proxy_->AddMenuItem(IDC_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS,
           l10n_util::GetStringUTF16(
               IDS_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS));
+      if (useSuggestions)
+        proxy_->AddSeparator();
     }
     misspelled_word_ = params.misspelled_word;
     proxy_->AddMenuItem(IDC_SPELLCHECK_ADD_TO_DICTIONARY,
