@@ -100,6 +100,7 @@ WebPreferences::WebPreferences()
       allow_displaying_insecure_content(true),
       allow_running_insecure_content(false),
 #if defined(OS_ANDROID)
+      text_autosizing_enabled(true),
       font_scale_factor(1.0f),
       force_enable_zoom(false),
       user_gesture_required_for_media_playback(true),
@@ -409,6 +410,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setAllowDisplayOfInsecureContent(allow_displaying_insecure_content);
   settings->setAllowRunningOfInsecureContent(allow_running_insecure_content);
 #if defined(OS_ANDROID)
+  settings->setTextAutosizingEnabled(text_autosizing_enabled);
   settings->setTextAutosizingFontScaleFactor(font_scale_factor);
   web_view->setIgnoreViewportTagMaximumScale(force_enable_zoom);
   settings->setAutoZoomFocusedNodeToLegibleScale(true);

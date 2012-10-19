@@ -118,6 +118,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool allow_displaying_insecure_content;
   bool allow_running_insecure_content;
 #if defined(OS_ANDROID)
+  bool text_autosizing_enabled;
   float font_scale_factor;
   bool force_enable_zoom;
   bool user_gesture_required_for_media_playback;
