@@ -1583,3 +1583,9 @@
    fun:predictors::ResourcePrefetcher::TryToLaunchPrefetchRequests
    fun:predictors::ResourcePrefetcher::Start
 }
+{
+   bug_156784
+   Heapcheck:Leak
+   ...
+   fun:dom_storage::DomStorageContextTest_DeleteSessionStorage_Test::TestBody
+}
