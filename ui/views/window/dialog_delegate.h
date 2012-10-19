@@ -58,6 +58,10 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // Returns whether the specified dialog button is visible.
   virtual bool IsDialogButtonVisible(ui::DialogButton button) const;
 
+  // Returns whether to use chrome style for the button strip (like WebUI). If
+  // false, native style padding is used.
+  virtual bool UseChromeStyle() const;
+
   // Returns whether accelerators are enabled on the button. This is invoked
   // when an accelerator is pressed, not at construction time. This
   // returns true.

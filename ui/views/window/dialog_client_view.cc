@@ -37,6 +37,8 @@ const int kDialogMinButtonWidth = 75;
 const int kDialogButtonLabelSpacing = 16;
 const int kDialogButtonContentSpacing = 5;
 
+const int kChromeStyleDialogButtonLabelSpacing = 24;
+
 // The group used by the buttons.  This name is chosen voluntarily big not to
 // conflict with other groups that could be in the dialog content.
 const int kButtonGroup = 6666;
@@ -280,8 +282,7 @@ TextButton* DialogClientView::CreateNativeStyleDialogButton(
     ButtonListener* listener,
     Widget* owner,
     ui::DialogButton type,
-    const string16& title)
-{
+    const string16& title) {
   return new DialogButton<NativeTextButton>(listener, owner, type, title);
 }
 
@@ -290,12 +291,22 @@ TextButton* DialogClientView::CreateChromeStyleDialogButton(
     ButtonListener* listener,
     Widget* owner,
     ui::DialogButton type,
-    const string16& title)
-{
+    const string16& title) {
   DialogButton<TextButton>* button =
       new DialogButton<TextButton>(listener, owner, type, title);
   ApplyChromeStyle(button);
   return button;
+}
+
+// static
+DialogClientView::StyleParams DialogClientView::GetChromeStyleParams() {
+  StyleParams params;
+  params.button_vedge_margin = 0;
+  params.button_hedge_margin = 0;
+  params.button_label_spacing = kChromeStyleDialogButtonLabelSpacing;
+  params.text_button_factory = &CreateChromeStyleDialogButton;
+  params.button_content_spacing = 0;
+  return params;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

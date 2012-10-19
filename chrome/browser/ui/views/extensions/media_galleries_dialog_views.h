@@ -34,12 +34,15 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
                              bool permitted) OVERRIDE;
 
   // views::DialogDelegate implementation:
+  virtual string16 GetWindowTitle() const;
+  virtual bool ShouldShowWindowTitle() const;
   virtual void DeleteDelegate() OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
   virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
+  virtual bool UseChromeStyle() const OVERRIDE;
   virtual views::View* GetExtraView() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
@@ -79,6 +82,9 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
 
   // True if the user has pressed accept.
   bool accepted_;
+
+  // True if using the new "chrome style" constrained dialogs.
+  bool enable_chrome_style_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesDialogViews);
 };

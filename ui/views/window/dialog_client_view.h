@@ -86,6 +86,8 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
                                                    Widget* owner,
                                                    ui::DialogButton type,
                                                    const string16& title);
+  // Creates a StyleParams struct in Chrome style (default is native style).
+  static StyleParams GetChromeStyleParams();
 
   // Overridden from View:
   virtual void NativeViewHierarchyChanged(
