@@ -53,13 +53,13 @@ class DriveSystemService : public ProfileKeyedService  {
   // ProfileKeyedService override:
   virtual void Shutdown() OVERRIDE;
 
-  // Returns true if Drive is enabled.
-  // Must be called on UI thread.
-  bool IsDriveEnabled();
-
  private:
   explicit DriveSystemService(Profile* profile);
   virtual ~DriveSystemService();
+
+  // Returns true if Drive is enabled.
+  // Must be called on UI thread.
+  bool IsDriveEnabled();
 
   // Initializes the object. This function should be called before any
   // other functions.
@@ -115,9 +115,18 @@ class DriveSystemServiceFactory : public ProfileKeyedServiceFactory {
  public:
   // Returns the DriveSystemService for |profile|, creating it if it is not
   // yet created.
+  //
+  // This function starts returning NULL if Drive is disabled, even if this
+  // function previously returns a non-NULL object. In other words, clients
+  // can assume that Drive is enabled if this function returns a non-NULL
+  // object.
   static DriveSystemService* GetForProfile(Profile* profile);
+
   // Returns the DriveSystemService that is already associated with |profile|,
   // if it is not yet created it will return NULL.
+  //
+  // This function starts returning NULL if Drive is disabled. See also the
+  // comment at GetForProfile().
   static DriveSystemService* FindForProfile(Profile* profile);
 
   // Returns the DriveSystemServiceFactory instance.

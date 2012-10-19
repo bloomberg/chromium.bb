@@ -141,7 +141,7 @@ void FileBrowserEventRouter::ObserveFileSystemEvents() {
   DriveSystemService* system_service =
       DriveSystemServiceFactory::GetForProfile(profile_);
   if (!system_service) {
-    NOTREACHED();
+    // |system_service| is NULL if incognito window / guest login.
     return;
   }
   system_service->drive_service()->AddObserver(this);
