@@ -941,10 +941,13 @@ _release.add_config('kiev-release',
 
 _release.add_config('parrot-release',
   boards=['parrot'],
+  hw_tests=['bvt'],
 )
 
 _release.add_config('stout-release',
   boards=['stout'],
+  hw_tests=['bvt'],
+  hw_tests_num=3,
 )
 
 _release.add_config('butterfly-release',
