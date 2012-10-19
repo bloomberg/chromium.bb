@@ -34,8 +34,8 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
                              bool permitted) OVERRIDE;
 
   // views::DialogDelegate implementation:
-  virtual string16 GetWindowTitle() const;
-  virtual bool ShouldShowWindowTitle() const;
+  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual bool ShouldShowWindowTitle() const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
