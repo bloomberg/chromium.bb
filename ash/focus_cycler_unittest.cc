@@ -44,7 +44,10 @@ SystemTray* CreateSystemTray() {
 
 typedef AshTestBase FocusCyclerTest;
 
-TEST_F(FocusCyclerTest, CycleFocusBrowserOnly) {
+// FocusCyclerTest and FocusCyclerLauncherTest tests are disabled due to
+//  use-after-free bugs in them detectable by both AddressSanitizer and Valgrind.
+// TODO(glider): file a bug.
+TEST_F(FocusCyclerTest, DISABLED_CycleFocusBrowserOnly) {
   scoped_ptr<FocusCycler> focus_cycler(new FocusCycler());
 
   // Create a single test window.
@@ -57,7 +60,7 @@ TEST_F(FocusCyclerTest, CycleFocusBrowserOnly) {
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 }
 
-TEST_F(FocusCyclerTest, CycleFocusForward) {
+TEST_F(FocusCyclerTest, DISABLED_CycleFocusForward) {
   scoped_ptr<FocusCycler> focus_cycler(new FocusCycler());
 
   // Add the Status area
@@ -92,7 +95,7 @@ TEST_F(FocusCyclerTest, CycleFocusForward) {
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 }
 
-TEST_F(FocusCyclerTest, CycleFocusBackward) {
+TEST_F(FocusCyclerTest, DISABLED_CycleFocusBackward) {
   scoped_ptr<FocusCycler> focus_cycler(new FocusCycler());
 
   // Add the Status area
@@ -127,7 +130,7 @@ TEST_F(FocusCyclerTest, CycleFocusBackward) {
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 }
 
-TEST_F(FocusCyclerTest, CycleFocusForwardBackward) {
+TEST_F(FocusCyclerTest, DISABLED_CycleFocusForwardBackward) {
   scoped_ptr<FocusCycler> focus_cycler(new FocusCycler());
 
   // Add the Status area
@@ -174,7 +177,7 @@ TEST_F(FocusCyclerTest, CycleFocusForwardBackward) {
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 }
 
-TEST_F(FocusCyclerTest, CycleFocusNoBrowser) {
+TEST_F(FocusCyclerTest, DISABLED_CycleFocusNoBrowser) {
   scoped_ptr<FocusCycler> focus_cycler(new FocusCycler());
 
   // Add the Status area
@@ -244,7 +247,7 @@ class FocusCyclerLauncherTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(FocusCyclerLauncherTest);
 };
 
-TEST_F(FocusCyclerLauncherTest, CycleFocusForwardInvisible) {
+TEST_F(FocusCyclerLauncherTest, DISABLED_CycleFocusForwardInvisible) {
   scoped_ptr<FocusCycler> focus_cycler(new FocusCycler());
 
   // Add the Status area
@@ -275,7 +278,7 @@ TEST_F(FocusCyclerLauncherTest, CycleFocusForwardInvisible) {
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 }
 
-TEST_F(FocusCyclerLauncherTest, CycleFocusBackwardInvisible) {
+TEST_F(FocusCyclerLauncherTest, DISABLED_CycleFocusBackwardInvisible) {
   scoped_ptr<FocusCycler> focus_cycler(new FocusCycler());
 
   // Add the Status area
