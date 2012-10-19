@@ -140,6 +140,9 @@ class PPB_Instance_API {
   virtual void ZoomLimitsChanged(PP_Instance instance,
                                  double minimum_factor,
                                  double maximium_factor) = 0;
+  // Testing and URLUtil.
+  virtual PP_Var GetDocumentURL(PP_Instance instance,
+                                PP_URLComponents_Dev* components) = 0;
 #if !defined(OS_NACL)
   // Content Decryptor.
   virtual void NeedKey(PP_Instance instance,
@@ -186,8 +189,6 @@ class PPB_Instance_API {
   virtual PP_Bool DocumentCanRequest(PP_Instance instance, PP_Var url) = 0;
   virtual PP_Bool DocumentCanAccessDocument(PP_Instance instance,
                                             PP_Instance target) = 0;
-  virtual PP_Var GetDocumentURL(PP_Instance instance,
-                                PP_URLComponents_Dev* components) = 0;
   virtual PP_Var GetPluginInstanceURL(PP_Instance instance,
                                       PP_URLComponents_Dev* components) = 0;
 #endif  // !defined(OS_NACL)

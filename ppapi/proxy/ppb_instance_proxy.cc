@@ -145,6 +145,8 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgCancelCompositionText)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_UpdateSurroundingText,
                         OnHostMsgUpdateSurroundingText)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_GetDocumentURL,
+                        OnHostMsgGetDocumentURL)
 
 #if !defined(OS_NACL)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_ResolveRelativeToDocument,
@@ -153,8 +155,6 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgDocumentCanRequest)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_DocumentCanAccessDocument,
                         OnHostMsgDocumentCanAccessDocument)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_GetDocumentURL,
-                        OnHostMsgGetDocumentURL)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_GetPluginInstanceURL,
                         OnHostMsgGetPluginInstanceURL)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_NeedKey,
@@ -407,6 +407,17 @@ void PPB_Instance_Proxy::ZoomLimitsChanged(PP_Instance instance,
   NOTIMPLEMENTED();
 }
 
+PP_Var PPB_Instance_Proxy::GetDocumentURL(PP_Instance instance,
+                                          PP_URLComponents_Dev* components) {
+  ReceiveSerializedVarReturnValue result;
+  PP_URLComponents_Dev url_components;
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_GetDocumentURL(
+      API_ID_PPB_INSTANCE, instance, &url_components, &result));
+  if (components)
+    *components = url_components;
+  return result.Return(dispatcher());
+}
+
 #if !defined(OS_NACL)
 PP_Var PPB_Instance_Proxy::ResolveRelativeToDocument(
     PP_Instance instance,
@@ -438,16 +449,6 @@ PP_Bool PPB_Instance_Proxy::DocumentCanAccessDocument(PP_Instance instance,
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_DocumentCanAccessDocument(
       API_ID_PPB_INSTANCE, instance, target, &result));
   return result;
-}
-
-PP_Var PPB_Instance_Proxy::GetDocumentURL(PP_Instance instance,
-                                          PP_URLComponents_Dev* components) {
-  ReceiveSerializedVarReturnValue result;
-  dispatcher()->Send(new PpapiHostMsg_PPBInstance_GetDocumentURL(
-      API_ID_PPB_INSTANCE, instance, &result));
-  return PPB_URLUtil_Shared::ConvertComponentsAndReturnURL(
-      result.Return(dispatcher()),
-      components);
 }
 
 PP_Var PPB_Instance_Proxy::GetPluginInstanceURL(
@@ -618,7 +619,6 @@ void PPB_Instance_Proxy::DeliverSamples(
           object->host_resource().host_resource(),
           serialized_block_info));
 }
-
 #endif  // !defined(OS_NACL)
 
 void PPB_Instance_Proxy::PostMessage(PP_Instance instance,
@@ -877,6 +877,18 @@ void PPB_Instance_Proxy::OnHostMsgUnlockMouse(PP_Instance instance) {
     enter.functions()->UnlockMouse(instance);
 }
 
+void PPB_Instance_Proxy::OnHostMsgGetDocumentURL(
+    PP_Instance instance,
+    PP_URLComponents_Dev* components,
+    SerializedVarReturnValue result) {
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded()) {
+    PP_Var document_url = enter.functions()->GetDocumentURL(instance,
+                                                            components);
+    result.Return(dispatcher(), document_url);
+  }
+}
+
 #if !defined(OS_NACL)
 void PPB_Instance_Proxy::OnHostMsgResolveRelativeToDocument(
     PP_Instance instance,
@@ -907,16 +919,6 @@ void PPB_Instance_Proxy::OnHostMsgDocumentCanAccessDocument(PP_Instance active,
   EnterInstanceNoLock enter(active);
   if (enter.succeeded())
     *result = enter.functions()->DocumentCanAccessDocument(active, target);
-}
-
-void PPB_Instance_Proxy::OnHostMsgGetDocumentURL(
-    PP_Instance instance,
-    SerializedVarReturnValue result) {
-  EnterInstanceNoLock enter(instance);
-  if (enter.succeeded()) {
-    result.Return(dispatcher(),
-                  enter.functions()->GetDocumentURL(instance, NULL));
-  }
 }
 
 void PPB_Instance_Proxy::OnHostMsgGetPluginInstanceURL(
@@ -1053,7 +1055,6 @@ void PPB_Instance_Proxy::OnHostMsgDeliverSamples(
   if (enter.succeeded())
     enter.functions()->DeliverSamples(instance, decrypted_samples, &block_info);
 }
-
 #endif  // !defined(OS_NACL)
 
 void  PPB_Instance_Proxy::OnHostMsgSetCursor(

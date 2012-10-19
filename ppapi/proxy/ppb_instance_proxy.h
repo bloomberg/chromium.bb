@@ -104,7 +104,8 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                                      const char* text,
                                      uint32_t caret,
                                      uint32_t anchor) OVERRIDE;
-
+  virtual PP_Var GetDocumentURL(PP_Instance instance,
+                                PP_URLComponents_Dev* components) OVERRIDE;
 #if !defined(OS_NACL)
   virtual PP_Var ResolveRelativeToDocument(
       PP_Instance instance,
@@ -113,8 +114,6 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual PP_Bool DocumentCanRequest(PP_Instance instance, PP_Var url) OVERRIDE;
   virtual PP_Bool DocumentCanAccessDocument(PP_Instance instance,
                                             PP_Instance target) OVERRIDE;
-  virtual PP_Var GetDocumentURL(PP_Instance instance,
-                                PP_URLComponents_Dev* components) OVERRIDE;
   virtual PP_Var GetPluginInstanceURL(
       PP_Instance instance,
       PP_URLComponents_Dev* components) OVERRIDE;
@@ -208,6 +207,9 @@ class PPB_Instance_Proxy : public InterfaceProxy,
       const std::string& text,
       uint32_t caret,
       uint32_t anchor);
+  void OnHostMsgGetDocumentURL(PP_Instance instance,
+                               PP_URLComponents_Dev* components,
+                               SerializedVarReturnValue result);
 
 #if !defined(OS_NACL)
   void OnHostMsgResolveRelativeToDocument(PP_Instance instance,
@@ -219,8 +221,6 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   void OnHostMsgDocumentCanAccessDocument(PP_Instance active,
                                           PP_Instance target,
                                           PP_Bool* result);
-  void OnHostMsgGetDocumentURL(PP_Instance instance,
-                               SerializedVarReturnValue result);
   void OnHostMsgGetPluginInstanceURL(PP_Instance instance,
                                      SerializedVarReturnValue result);
   virtual void OnHostMsgNeedKey(PP_Instance instance,
