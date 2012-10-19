@@ -761,6 +761,14 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
          textfield_->GetCursorPosition() == textfield_->text().length());
   }
 
+  // Though the Textfield usually handles the right-arrow key, we need to
+  // handle it if we have gray text (Instant suggestion) that needs to be
+  // committed.
+  if (event.key_code() == ui::VKEY_RIGHT &&
+      textfield_->GetCursorPosition() == textfield_->text().length()) {
+    return model()->CommitSuggestedText(true);
+  }
+
   return false;
 }
 
