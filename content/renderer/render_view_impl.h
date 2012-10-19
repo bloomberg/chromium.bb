@@ -496,9 +496,11 @@ class RenderViewImpl : public RenderWidget,
   virtual void numberOfWheelEventHandlersChanged(unsigned num_handlers);
   virtual void hasTouchEventHandlers(bool has_handlers);
   virtual void didUpdateLayout();
+#if defined(OS_ANDROID)
   virtual bool didTapMultipleTargets(
       const WebKit::WebGestureEvent& event,
       const WebKit::WebVector<WebKit::WebRect>& target_rects);
+#endif
   virtual void navigateBackForwardSoon(int offset);
   virtual int historyBackListCount();
   virtual int historyForwardListCount();

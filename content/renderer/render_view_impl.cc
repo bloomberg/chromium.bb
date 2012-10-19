@@ -6391,6 +6391,7 @@ void RenderViewImpl::OnUpdatedFrameTree(
   updating_frame_tree_ = false;
 }
 
+#if defined(OS_ANDROID)
 bool RenderViewImpl::didTapMultipleTargets(
     const WebKit::WebGestureEvent& event,
     const WebVector<WebRect>& target_rects) {
@@ -6427,6 +6428,7 @@ bool RenderViewImpl::didTapMultipleTargets(
 
   return true;
 }
+#endif
 
 void RenderViewImpl::OnReleaseDisambiguationPopupDIB(
     TransportDIB::Handle dib_handle) {
