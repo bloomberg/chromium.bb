@@ -185,8 +185,14 @@ int ExternalInstallGlobalError::MenuItemIconResourceID() {
 }
 
 string16 ExternalInstallGlobalError::MenuItemLabel() {
-  return l10n_util::GetStringFUTF16(IDS_EXTENSION_EXTERNAL_INSTALL_ALERT,
-                                    UTF8ToUTF16(extension_->name()));
+  int id = -1;
+  if (extension_->is_app())
+    id = IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_APP;
+  else if (extension_->is_theme())
+    id = IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_THEME;
+  else
+    id = IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_EXTENSION;
+  return l10n_util::GetStringFUTF16(id, UTF8ToUTF16(extension_->name()));
 }
 
 void ExternalInstallGlobalError::ExecuteMenuItem(Browser* browser) {

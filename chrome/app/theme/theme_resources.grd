@@ -827,13 +827,13 @@
       <structure type="chrome_scaled_image" name="IDR_UPDATE_BADGE3" file="update_badge3.png" />
       <structure type="chrome_scaled_image" name="IDR_UPDATE_BADGE4" file="update_badge4.png" />
       <!-- TODO(mpcomplete): need icon for IDR_UPDATE_*_EXTENSION -->
-      <structure type="chrome_scaled_image" name="IDR_UPDATE_BADGE_EXTENSION" file="update_badge.png" />
+      <structure type="chrome_scaled_image" name="IDR_UPDATE_BADGE_EXTENSION" file="external_extension_install_badge.png" />
       <structure type="chrome_scaled_image" name="IDR_UPDATE_FAIL" file="update_fail.png" />
       <structure type="chrome_scaled_image" name="IDR_UPDATE_MENU" file="update_menu.png" />
       <structure type="chrome_scaled_image" name="IDR_UPDATE_MENU2" file="update_menu2.png" />
       <structure type="chrome_scaled_image" name="IDR_UPDATE_MENU3" file="update_menu3.png" />
       <structure type="chrome_scaled_image" name="IDR_UPDATE_MENU4" file="update_menu4.png" />
-      <structure type="chrome_scaled_image" name="IDR_UPDATE_MENU_EXTENSION" file="update_menu.png" />
+      <structure type="chrome_scaled_image" name="IDR_UPDATE_MENU_EXTENSION" file="external_extension_install_menu.png" />
       <structure type="chrome_scaled_image" name="IDR_UPDATE_UPTODATE" file="update_uptodate.png" />
       <if expr="pp_ifdef('chromeos')">
         <structure type="chrome_scaled_image" name="IDR_USER_IMAGE_CAPTURE" file="snapshot_wide.png" />

@@ -5324,19 +5324,37 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <!-- TODO(mpcomplete): We may need to change Chrome to
            PRODUCT_NAME. Leaving it as-is until we finalize
            these strings. -->
-      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_ALERT" desc="The wrench menu item indicating that a new external extension was installed.">
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_EXTENSION" desc="The wrench menu item indicating that a new external extension was installed.">
         New extension added (<ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>)
       </message>
-      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_TITLE" desc="">
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_APP" desc="The wrench menu item indicating that a new external extension was installed.">
+        New app added (<ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>)
+      </message>
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_THEME" desc="The wrench menu item indicating that a new external extension was installed.">
+        New theme added (<ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>)
+      </message>
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_TITLE" desc="Titlebar of the prompt window for an externally installed extension or app">
         "<ph name="EXTENSION_NAME">$1<ex>Babylon Toolbar</ex></ph>" added
       </message>
-      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_HEADING" desc="">
-        While you were out, another program on your computer added an extension to Chrome. This extension may change the way Chrome works.
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_HEADING_EXTENSION" desc="First bold line of the prompt window for an externally installed extension or app.">
+        Another program on your computer added an extension that may change the way Chrome works.
       </message>
-      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON" desc="">
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_HEADING_APP" desc="First bold line of the prompt window for an externally installed extension or app.">
+        Another program on your computer added an app that may change the way Chrome works.
+      </message>
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_HEADING_THEME" desc="First bold line of the prompt window for an externally installed extension or app.">
+        Another program on your computer added a theme that may change the way Chrome works.
+      </message>
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON_EXTENSION" desc="Button on the external install prompt to enable an extension installed by a third party.">
         Enable extension
       </message>
-      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ABORT_BUTTON" desc="">
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON_APP" desc="Button on the external install prompt to enable an extension installed by a third party.">
+        Enable app
+      </message>
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON_THEME" desc="Button on the external install prompt to enable an extension installed by a third party.">
+        Enable theme
+      </message>
+      <message name="IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ABORT_BUTTON" desc="Button on the external install prompt to remove an extension installed by a third party.">
         Remove from Chrome
       </message>
 

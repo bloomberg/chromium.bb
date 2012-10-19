@@ -60,7 +60,7 @@ static const int kHeadingIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   0,  // Heading for bundle installs depends on the bundle contents.
   IDS_EXTENSION_RE_ENABLE_PROMPT_HEADING,
   IDS_EXTENSION_PERMISSIONS_PROMPT_HEADING,
-  IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_HEADING,
+  0,  // External installs use different strings for extensions/apps.
 };
 static const int kAcceptButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_PROMPT_INSTALL_BUTTON,
@@ -68,7 +68,7 @@ static const int kAcceptButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   IDS_EXTENSION_PROMPT_INSTALL_BUTTON,
   IDS_EXTENSION_PROMPT_RE_ENABLE_BUTTON,
   IDS_EXTENSION_PROMPT_PERMISSIONS_BUTTON,
-  IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON,
+  0,  // External installs use different strings for extensions/apps.
 };
 static const int kAbortButtonIds[ExtensionInstallPrompt::NUM_PROMPT_TYPES] = {
   0,  // These all use the platform's default cancel label.
@@ -217,7 +217,14 @@ string16 ExtensionInstallPrompt::Prompt::GetHeading() const {
   } else if (type_ == BUNDLE_INSTALL_PROMPT) {
     return bundle_->GetHeadingTextFor(BundleInstaller::Item::STATE_PENDING);
   } else if (type_ == EXTERNAL_INSTALL_PROMPT) {
-    return l10n_util::GetStringUTF16(kHeadingIds[type_]);
+    int resource_id = -1;
+    if (extension_->is_app())
+      resource_id = IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_HEADING_APP;
+    else if (extension_->is_theme())
+      resource_id = IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_HEADING_THEME;
+    else
+      resource_id = IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_HEADING_EXTENSION;
+    return l10n_util::GetStringUTF16(resource_id);
   } else {
     return l10n_util::GetStringFUTF16(
         kHeadingIds[type_], UTF8ToUTF16(extension_->name()));
@@ -225,6 +232,16 @@ string16 ExtensionInstallPrompt::Prompt::GetHeading() const {
 }
 
 string16 ExtensionInstallPrompt::Prompt::GetAcceptButtonLabel() const {
+  if (type_ == EXTERNAL_INSTALL_PROMPT) {
+    int id = -1;
+    if (extension_->is_app())
+      id = IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON_APP;
+    else if (extension_->is_theme())
+      id = IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON_THEME;
+    else
+      id = IDS_EXTENSION_EXTERNAL_INSTALL_PROMPT_ACCEPT_BUTTON_EXTENSION;
+    return l10n_util::GetStringUTF16(id);
+  }
   return l10n_util::GetStringUTF16(kAcceptButtonIds[type_]);
 }
 

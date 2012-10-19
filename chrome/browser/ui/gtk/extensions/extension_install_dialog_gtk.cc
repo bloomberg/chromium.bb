@@ -28,6 +28,8 @@ using extensions::BundleInstaller;
 namespace {
 
 const int kLeftColumnMinWidth = 250;
+// External installs have more text, so use a wider dialog.
+const int kExternalInstallLeftColumnWidth = 350;
 const int kImageSize = 69;
 const int kDetailIndent = 20;
 
@@ -115,6 +117,8 @@ ExtensionInstallDialog::ExtensionInstallDialog(
       prompt.type() == ExtensionInstallPrompt::INLINE_INSTALL_PROMPT;
   bool is_bundle_install =
       prompt.type() == ExtensionInstallPrompt::BUNDLE_INSTALL_PROMPT;
+  bool is_external_install =
+      prompt.type() == ExtensionInstallPrompt::EXTERNAL_INSTALL_PROMPT;
 
   if (is_inline_install)
     extension_id_ = prompt.extension()->id();
@@ -151,10 +155,13 @@ ExtensionInstallDialog::ExtensionInstallDialog(
   GtkWidget* top_content_hbox = gtk_hbox_new(FALSE, ui::kContentAreaSpacing);
   gtk_box_pack_start(GTK_BOX(content_vbox), top_content_hbox, TRUE, TRUE, 0);
 
-  // We don't show the image for bunle installs, so let the left column take up
-  // that space.
-  const int left_column_min_width =
-      kLeftColumnMinWidth + (is_bundle_install ? kImageSize : 0);
+  // We don't show the image for bundle installs, so let the left column take
+  // up that space.
+  int left_column_min_width = kLeftColumnMinWidth;
+  if (is_bundle_install)
+    left_column_min_width += kImageSize;
+  if (is_external_install)
+    left_column_min_width = kExternalInstallLeftColumnWidth;
 
   // Create a new vbox for the left column.
   GtkWidget* left_column_area = gtk_vbox_new(FALSE, ui::kControlSpacing);

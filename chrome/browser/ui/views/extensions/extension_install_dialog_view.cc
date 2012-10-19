@@ -56,6 +56,10 @@ const int kNoPermissionsLeftColumnWidth = 200;
 // in this case, so make it wider than normal.
 const int kBundleLeftColumnWidth = 300;
 
+// Width of the left column for external install prompts. The text is long in
+// this case, so make it wider than normal.
+const int kExternalInstallLeftColumnWidth = 350;
+
 // Heading font size correction.
 const int kHeadingFontSizeDelta = 1;
 
@@ -104,12 +108,16 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   // views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
-  bool is_inline_install() {
+  bool is_inline_install() const {
     return prompt_.type() == ExtensionInstallPrompt::INLINE_INSTALL_PROMPT;
   }
 
-  bool is_bundle_install() {
+  bool is_bundle_install() const {
     return prompt_.type() == ExtensionInstallPrompt::BUNDLE_INSTALL_PROMPT;
+  }
+
+  bool is_external_install() const {
+    return prompt_.type() == ExtensionInstallPrompt::EXTERNAL_INSTALL_PROMPT;
   }
 
   content::PageNavigator* navigator_;
@@ -251,6 +259,8 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
           kPermissionsLeftColumnWidth : kNoPermissionsLeftColumnWidth;
   if (is_bundle_install())
     left_column_width = kBundleLeftColumnWidth;
+  if (is_external_install())
+    left_column_width = kExternalInstallLeftColumnWidth;
 
   column_set->AddColumn(views::GridLayout::LEADING,
                         views::GridLayout::FILL,
