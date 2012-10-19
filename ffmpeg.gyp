@@ -324,6 +324,9 @@
                 '<(platform_config_root)/libavutil/avconfig.h',
                 '<@(c_headers)',
               ],
+              # Argh!  Required so that the msvs generator will properly convert
+              # RULE_INPUT_DIRNAME to a relative path.
+              'msvs_external_rule': 1,
               'outputs': [
                 '<(shared_generated_dir)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).c',
               ],
@@ -563,82 +566,44 @@
     {
       'target_name': 'ffmpeg_yasm',
       'type': 'static_library',
+      # VS2010 does not correctly incrementally link obj files generated
+      # from asm files. This flag disables UseLibraryDependencyInputs to
+      # avoid this problem.
+      'msvs_2010_disable_uldi_when_referenced': 1,
       'includes': [
         'ffmpeg_generated.gypi',
+        '../yasm/yasm_compile.gypi',
       ],
       'sources': [
         '<@(asm_sources)',
       ],
-      'conditions': [
-        ['use_system_yasm == 0', {
-          'dependencies': [
-            '../yasm/yasm.gyp:yasm#host',
-          ],
-        }],
-      ],
       'variables': {
         # Path to platform configuration files.
         'platform_config_root': 'chromium/config/<(ffmpeg_branding)/<(os_config)/<(ffmpeg_config)',
-
-        'obj_format': 'elf',
-        'obj_extension': 'o',
-        'yasm_flags': ['-DPIC'],
         'conditions': [
-          ['use_system_yasm == 1', {
-            'yasm_path': '<!(which yasm)',
-          }, {
-            'yasm_path': '<(PRODUCT_DIR)/yasm',
-          }],
           ['target_arch == "ia32"', {
-            'yasm_flags': [
-              '-m', 'x86',
-              '-DARCH_X86_32'
+            'more_yasm_flags': [
+              '-DARCH_X86_32',
              ],
           }, {
-            'yasm_flags': [
-              '-m', 'amd64',
-              '-DARCH_X86_64'
+            'more_yasm_flags': [
+              '-DARCH_X86_64',
             ],
           }],
-          ['OS == "win" or OS == "mac"', {
-            # -DPREFIX is necessary to ensure symbols end up with a _ prefix.
-            'yasm_flags': ['-DPREFIX']
-          }],
-          ['OS == "win"', {
-            'obj_format': 'win32',
-            'obj_extension': 'obj',
-          }],
-          ['OS == "mac"', {
-            'obj_format': 'macho',
-          }],
         ],
+        'yasm_flags': [
+          '-DPIC',
+          '>(more_yasm_flags)',
+          '-I', '<(platform_config_root)',
+          '-I', 'libavcodec/x86/',
+          '-I', 'libavutil/x86/',
+          '-I', '.',
+          # Disable warnings, prevents log spam for things we won't fix.
+          '-w',
+          '-P', 'config.asm',
+        ],
+        'yasm_output_path': '<(shared_generated_dir)/yasm'
       },
-      'rules': [
-        {
-          'rule_name': 'assemble',
-          'extension': 'asm',
-          'inputs': ['<(yasm_path)'],
-          'outputs': [
-            '<(shared_generated_dir)/<(RULE_INPUT_ROOT).<(obj_extension)',
-          ],
-          'action': [
-            '<(yasm_path)',
-            '-f', '<(obj_format)',
-            '<@(yasm_flags)',
-            '-I', '<(platform_config_root)',
-            '-I', 'libavcodec/x86/',
-            '-I', 'libavutil/x86/',
-            '-I', '.',
-            # Disable warnings, prevents log spam for things we won't fix.
-            '-w',
-            '-Pconfig.asm',
-            '-o', '<(shared_generated_dir)/<(RULE_INPUT_ROOT).<(obj_extension)',
-            '<(RULE_INPUT_PATH)',
-          ],
-          'process_outputs_as_sources': 1,
-          'message': 'Build ffmpeg yasm artifacts <(RULE_INPUT_PATH).',
-        },
-      ],
     },
   ],  # targets
 }
