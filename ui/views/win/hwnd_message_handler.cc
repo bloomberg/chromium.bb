@@ -176,8 +176,8 @@ bool GetMonitorAndRects(const RECT& rect,
   MONITORINFO monitor_info = { 0 };
   monitor_info.cbSize = sizeof(monitor_info);
   GetMonitorInfo(*monitor, &monitor_info);
-  *monitor_rect = monitor_info.rcMonitor;
-  *work_area = monitor_info.rcWork;
+  *monitor_rect = gfx::Rect(monitor_info.rcMonitor);
+  *work_area = gfx::Rect(monitor_info.rcWork);
   return true;
 }
 

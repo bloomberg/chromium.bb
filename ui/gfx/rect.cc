@@ -48,41 +48,17 @@ Rect::Rect(const RECT& r)
   set_width(std::abs(r.right - r.left));
   set_height(std::abs(r.bottom - r.top));
 }
-
-Rect& Rect::operator=(const RECT& r) {
-  set_x(r.left);
-  set_y(r.top);
-  set_width(std::abs(r.right - r.left));
-  set_height(std::abs(r.bottom - r.top));
-  return *this;
-}
 #elif defined(OS_MACOSX)
 Rect::Rect(const CGRect& r)
     : RectBaseT(gfx::Point(r.origin.x, r.origin.y)) {
   set_width(r.size.width);
   set_height(r.size.height);
 }
-
-Rect& Rect::operator=(const CGRect& r) {
-  set_x(r.origin.x);
-  set_y(r.origin.y);
-  set_width(r.size.width);
-  set_height(r.size.height);
-  return *this;
-}
 #elif defined(TOOLKIT_GTK)
 Rect::Rect(const GdkRectangle& r)
     : RectBaseT(gfx::Point(r.x, r.y)) {
   set_width(r.width);
   set_height(r.height);
-}
-
-Rect& Rect::operator=(const GdkRectangle& r) {
-  set_x(r.x);
-  set_y(r.y);
-  set_width(r.width);
-  set_height(r.height);
-  return *this;
 }
 #endif
 

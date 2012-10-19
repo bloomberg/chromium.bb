@@ -901,7 +901,7 @@ bool Widget::ConvertRect(const Widget* source,
   if (::MapWindowPoints(source_hwnd, target_hwnd,
                         reinterpret_cast<LPPOINT>(&win_rect),
                         sizeof(RECT)/sizeof(POINT))) {
-    *rect = win_rect;
+    *rect = gfx::Rect(win_rect);
     return true;
   }
   return false;
