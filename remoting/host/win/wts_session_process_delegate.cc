@@ -488,7 +488,10 @@ WtsSessionProcessDelegate::WtsSessionProcessDelegate(
 }
 
 WtsSessionProcessDelegate::~WtsSessionProcessDelegate() {
-  core_->Stop();
+  if (core_) {
+    core_->Stop();
+    core_ = NULL;
+  }
 }
 
 bool WtsSessionProcessDelegate::Send(IPC::Message* message) {
@@ -496,23 +499,22 @@ bool WtsSessionProcessDelegate::Send(IPC::Message* message) {
 }
 
 DWORD WtsSessionProcessDelegate::GetProcessId() const {
-  if (core_)
+  if (!core_)
     return 0;
 
   return core_->GetProcessId();
 }
 
 bool WtsSessionProcessDelegate::IsPermanentError(int failure_count) const {
-  if (core_)
+  if (!core_)
     return false;
 
   return core_->IsPermanentError(failure_count);
 }
 
 void WtsSessionProcessDelegate::KillProcess(DWORD exit_code) {
-  if (core_) {
+  if (core_)
     core_->KillProcess(exit_code);
-  }
 }
 
 bool WtsSessionProcessDelegate::LaunchProcess(
