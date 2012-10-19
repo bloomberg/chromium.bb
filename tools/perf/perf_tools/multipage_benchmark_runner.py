@@ -72,4 +72,4 @@ Use --browser=list to figure out which are available.\n"""
   if len(results.page_failures):
     logging.warning('Failed pages: %s', '\n'.join(
         [failure['page'].url for failure in results.page_failures]))
-  return max(255, len(results.page_failures))
+  return min(255, len(results.page_failures))
