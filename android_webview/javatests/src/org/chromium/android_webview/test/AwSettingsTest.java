@@ -677,25 +677,15 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
 
         @Override
         protected void doEnsureSettingHasValue(Boolean value) throws Throwable {
-            // TODO(mnaganov): Remove after https://codereview.chromium.org/11030051 lands.
-            final String pseudo_error_page = "about:blank";
-            loadUrlSync(pseudo_error_page);
             // Use query parameters to avoid hitting a cached page.
             String fileUrl = UrlUtils.getTestFileUrl("webview/hello_world.html?id=" + mIndex);
             mIndex += 2;
-            // TODO(mnaganov): Remove after https://codereview.chromium.org/11030051 lands.
-            loadUrlSync(fileUrl);
-            assertEquals(value == ENABLED ? ACCESS_GRANTED_TITLE : pseudo_error_page,
-                    getTitleOnUiThread());
-            // TODO(mnaganov): Uncomment after https://codereview.chromium.org/11030051 lands.
-            /*
             if (value == ENABLED) {
                 loadUrlSync(fileUrl);
                 assertEquals(ACCESS_GRANTED_TITLE, getTitleOnUiThread());
             } else {
                 loadUrlSyncAndExpectError(fileUrl);
             }
-            */
         }
 
         private int mIndex;
