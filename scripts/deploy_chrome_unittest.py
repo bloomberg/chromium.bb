@@ -43,7 +43,7 @@ class InterfaceTest(cros_test_lib.OutputTestCase):
 
   def testLocalPathSpecified(self):
     """Test case of local path specified."""
-    argv =  list(_REGULAR_TO) + ['--local-path', '/path/to/chrome']
+    argv =  list(_REGULAR_TO) + ['--local-pkg-path', '/path/to/chrome']
     _ParseCommandLine(argv)
 
   def testNoTarget(self):
@@ -99,7 +99,8 @@ class DeployChromeTest(cros_test_lib.TempDirTestCase):
 
   def _GetDeployChrome(self):
     options, _ = _ParseCommandLine(list(_REGULAR_TO) + ['--gs-path', _GS_PATH])
-    return deploy_chrome.DeployChrome(options, self.tempdir)
+    return deploy_chrome.DeployChrome(
+        options, self.tempdir, os.path.join(self.tempdir, 'staging'))
 
   def setUp(self):
     self.deploy_mock = DeployChromeMock(self.tempdir)

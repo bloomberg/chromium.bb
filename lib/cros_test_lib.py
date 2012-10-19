@@ -7,6 +7,7 @@
 """Cros unit test library, with utility functions."""
 
 from __future__ import print_function
+import collections
 import cStringIO
 import exceptions
 import mox
@@ -18,6 +19,67 @@ import unittest
 import osutils
 import terminal
 import cros_build_lib
+
+
+Directory = collections.namedtuple('Directory', ['name', 'contents'])
+
+def _FlattenStructure(base_path, dir_struct):
+  """Converts a directory structure to a list of paths."""
+  flattened = []
+  for obj in dir_struct:
+    if isinstance(obj, Directory):
+      new_base = os.path.join(base_path, obj.name).rstrip(os.sep)
+      flattened.append(new_base + os.sep)
+      flattened.extend(_FlattenStructure(new_base, obj.contents))
+    else:
+      assert(isinstance(obj, basestring))
+      flattened.append(os.path.join(base_path, obj))
+  return flattened
+
+
+def CreateOnDiskHierarchy(base_path, dir_struct):
+  """Creates on-disk representation of an in-memory directory structure.
+
+  Arguments:
+    base_path: The absolute root of the directory structure.
+    dir_struct: A recursively defined data structure that represents a
+      directory tree.  The basic form is a list.  Elements can be file names or
+      cros_test_lib.Directory objects.  The 'contents' attribute of Directory
+      types is a directory structure representing the contents of the directory.
+      Examples:
+        - ['file1', 'file2']
+        - ['file1', Directory('directory', ['deepfile1', 'deepfile2']), 'file2']
+  """
+  flattened = _FlattenStructure(base_path, dir_struct)
+  for f in flattened:
+    f = os.path.join(base_path, f)
+    if f.endswith(os.sep):
+      os.mkdir(f)
+    else:
+      osutils.Touch(f)
+
+
+def VerifyOnDiskHierarchy(base_path, dir_struct):
+  """Verify that an ondisk directory tree exactly matches a given structure.
+
+  Arguments:
+    See arguments of CreateOnDiskHierarchy()
+
+  Raises:
+    AssertionError when there is any divergence between the on-disk
+    structure and the structure specified by 'dir_struct'.
+  """
+  expected = set(_FlattenStructure(base_path, dir_struct))
+  for root, dirs, files in os.walk(base_path):
+    for e in [d + os.sep for d in dirs] + files:
+      path = os.path.join(root, e)
+      if path not in expected:
+        raise AssertionError('%s not expected but found in %s.' % (e, root))
+      expected.remove(path)
+
+  if expected:
+    raise AssertionError('These files were expected but not found in %s:\n%s'
+                           % (base_path, '\n'.join(sorted(expected))))
 
 
 def _stacked_setUp(self):

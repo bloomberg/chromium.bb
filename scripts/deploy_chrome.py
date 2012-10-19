@@ -3,19 +3,37 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Script that resets your Chrome GIT checkout."""
+
+"""
+Script that deploys a Chrome build to a device.
+
+The script supports deploying Chrome from these sources:
+
+1. A local build output directory, such as chromium/src/out/[Debug|Release].
+2. A Chrome tarball uploaded by a trybot/official-builder to GoogleStorage.
+3. A Chrome tarball existing locally.
+
+The script copies the necessary contents of the source location (tarball or
+build directory) and rsyncs the contents of the staging directory onto your
+device's rootfs.
+"""
 
 import functools
 import logging
 import os
+import optparse
 import time
 
+
+from chromite.lib import chrome_util
 from chromite.lib import cros_build_lib
 from chromite.lib import commandline
 from chromite.lib import osutils
 from chromite.lib import remote_access as remote
 from chromite.lib import sudo
 
+
+_USAGE = "deploy_chrome [--]\n\n %s" % __doc__
 
 GS_HTTP = 'https://commondatastorage.googleapis.com'
 GSUTIL_URL = '%s/chromeos-public/gsutil.tar.gz' % GS_HTTP
@@ -73,7 +91,7 @@ def _ExtractChrome(src, dest):
 
 class DeployChrome(object):
   """Wraps the core deployment functionality."""
-  def __init__(self, options, tempdir):
+  def __init__(self, options, tempdir, staging_dir):
     """Initialize the class.
 
     Arguments:
@@ -83,47 +101,9 @@ class DeployChrome(object):
     """
     self.tempdir = tempdir
     self.options = options
-    self.chrome_dir = os.path.join(tempdir, 'chrome')
+    self.staging_dir = staging_dir
     self.host = remote.RemoteAccess(options.to, tempdir, port=options.port)
     self.start_ui_needed = False
-
-  def _FetchChrome(self):
-    """Get the chrome prebuilt tarball from GS.
-
-    Returns: Path to the fetched chrome tarball.
-    """
-    logging.info('Fetching gsutil.')
-    gsutil_tar = os.path.join(self.tempdir, 'gsutil.tar.gz')
-    cros_build_lib.RunCurl([GSUTIL_URL, '-o', gsutil_tar],
-                           debug_level=logging.DEBUG)
-    DebugRunCommand(['tar', '-xzf', gsutil_tar], cwd=self.tempdir)
-    gs_bin = os.path.join(self.tempdir, 'gsutil', 'gsutil')
-    _SetupBotoConfig(gs_bin)
-    cmd = [gs_bin, 'ls', self.options.gs_path]
-    files = DebugRunCommandCaptureOutput(cmd).output.splitlines()
-    files = [found for found in files if
-             _UrlBaseName(found).startswith('chromeos-chrome-')]
-    if not files:
-      raise Exception('No chrome package found at %s' % self.options.gs_path)
-    elif len(files) > 1:
-      # - Users should provide us with a direct link to either a stripped or
-      #   unstripped chrome package.
-      # - In the case of being provided with an archive directory, where both
-      #   stripped and unstripped chrome available, use the stripped chrome
-      #   package (comes on top after sort).
-      # - Stripped chrome pkg is chromeos-chrome-<version>.tar.gz
-      # - Unstripped chrome pkg is chromeos-chrome-<version>-unstripped.tar.gz.
-      files.sort()
-      cros_build_lib.logger.warning('Multiple chrome packages found.  Using %s',
-                                    files[0])
-
-    filename = _UrlBaseName(files[0])
-    logging.info('Fetching %s.', filename)
-    cros_build_lib.RunCommand([gs_bin, 'cp', files[0], self.tempdir],
-                              print_cmd=False)
-    chrome_path = os.path.join(self.tempdir, filename)
-    assert os.path.exists(chrome_path)
-    return chrome_path
 
   def _ChromeFileInUse(self):
     result = self.host.RemoteSh('lsof /opt/google/chrome/chrome',
@@ -215,8 +195,8 @@ class DeployChrome(object):
   def _Deploy(self):
     logging.info('Copying Chrome to device.')
     # Show the output (status) for this command.
-    self.host.Rsync('%s/' % os.path.abspath(self.chrome_dir), '/', inplace=True,
-                    debug_level=logging.INFO)
+    self.host.Rsync('%s/' % os.path.abspath(self.staging_dir), '/',
+                    inplace=True, debug_level=logging.INFO)
     if self.start_ui_needed:
       self.host.RemoteSh('start ui')
 
@@ -228,36 +208,67 @@ class DeployChrome(object):
       logging.error('Error connecting to the test device.')
       raise
 
-    pkg_path = self.options.local_path
-    if self.options.gs_path:
-      pkg_path = self._FetchChrome()
-
-    logging.info('Extracting %s.', pkg_path)
-    _ExtractChrome(pkg_path, self.chrome_dir)
-
     self._PrepareTarget()
     self._Deploy()
 
 
+def ValidateGypDefines(_option, _opt, value):
+  """Convert GYP_DEFINES-formatted string to dictionary."""
+  return chrome_util.ProcessGypDefines(value)
+
+
+class CustomOption(commandline.Option):
+  """Subclass Option class to implement path evaluation."""
+  TYPES = commandline.Option.TYPES + ('gyp_defines',)
+  TYPE_CHECKER = commandline.Option.TYPE_CHECKER.copy()
+  TYPE_CHECKER['gyp_defines'] = ValidateGypDefines
+
+
 def _CreateParser():
   """Create our custom parser."""
-  usage = 'usage: %prog [--]'
-  parser = commandline.OptionParser(usage=usage,)
+  parser = commandline.OptionParser(usage=_USAGE, option_class=CustomOption)
 
+  # TODO(rcui): Have this use the UI-V2 format of having source and target
+  # device be specified as positional arguments.
   parser.add_option('--force', action='store_true', default=False,
                     help=('Skip all prompts (i.e., for disabling of rootfs '
                           'verification).  This may result in the target '
                           'machine being rebooted.'))
+  parser.add_option('--build-dir', type='path',
+                    help=('The directory with Chrome build artifacts to deploy '
+                          'from.  Typically of format <chrome_root>/out/Debug. '
+                          'When this option is used, the GYP_DEFINES '
+                          'environment variable must be set.'))
   parser.add_option('-g', '--gs-path', type='gs_path',
                     help=('GS path that contains the chrome to deploy.'))
-  parser.add_option('-l', '--local-path', type='path',
-                    help='path to local chrome prebuilt package to deploy.')
   parser.add_option('-p', '--port', type=int, default=remote.DEFAULT_SSH_PORT,
                     help=('Port of the target device to connect to.'))
   parser.add_option('-t', '--to',
                     help=('The IP address of the CrOS device to deploy to.'))
   parser.add_option('-v', '--verbose', action='store_true', default=False,
                     help=('Show more debug output.'))
+
+  group = optparse.OptionGroup(parser, 'Advanced Options')
+  group.add_option('-l', '--local-pkg-path', type='path',
+                    help='path to local chrome prebuilt package to deploy.')
+  group.add_option('--staging-flags', default={}, type='gyp_defines',
+                    help=('Extra flags to control staging.  Valid flags '
+                          'are - %s' % ', '.join(chrome_util.STAGING_FLAGS)))
+  parser.add_option_group(group)
+
+  # Path of an empty directory to stage chrome artifacts to.  Defaults to a
+  # temporary directory that is removed when the script finishes. If the path
+  # is specified, then it will not be removed.
+  parser.add_option('--staging-dir', type='path', default=None,
+                    help=optparse.SUPPRESS_HELP)
+  # Only prepare the staging directory, and skip deploying to the device.
+  parser.add_option('--staging-only', action='store_true', default=False,
+                    help=optparse.SUPPRESS_HELP)
+  # GYP_DEFINES that Chrome was built with.  Influences which files are staged
+  # when --build-dir is set.  Defaults to reading from the GYP_DEFINES
+  # enviroment variable.
+  parser.add_option('--gyp-defines', default={}, type='gyp_defines',
+                    help=optparse.SUPPRESS_HELP)
   return parser
 
 
@@ -266,11 +277,15 @@ def _ParseCommandLine(argv):
   parser = _CreateParser()
   (options, args) = parser.parse_args(argv)
 
-  if not options.gs_path and not options.local_path:
-    parser.error('Need to specify either --gs-path or --local-path')
-  if options.gs_path and options.local_path:
-    parser.error('Cannot specify both --gs-path and --local-path')
-  if not options.to:
+  if not any([options.gs_path, options.local_pkg_path, options.build_dir]):
+    parser.error('Need to specify either --gs-path, --local-pkg-path, or '
+                 '--build_dir')
+  if options.build_dir and any([options.gs_path, options.local_pkg_path]):
+    parser.error('Cannot specify both --build_dir and '
+                 '--gs-path/--local-pkg-patch')
+  if options.gs_path and options.local_pkg_path:
+    parser.error('Cannot specify both --gs-path and --local-pkg-path')
+  if not (options.staging_only or options.to):
     parser.error('Need to specify --to')
 
   return options, args
@@ -282,8 +297,78 @@ def _PostParseCheck(options, _args):
   Args:
     options/args: The options/args object returned by optparse
   """
-  if options.local_path and not os.path.isfile(options.local_path):
-    cros_build_lib.Die('%s is not a file.', options.local_path)
+  if options.local_pkg_path and not os.path.isfile(options.local_pkg_path):
+    cros_build_lib.Die('%s is not a file.', options.local_pkg_path)
+
+  if options.build_dir and not options.gyp_defines:
+    gyp_env = os.getenv('GYP_DEFINES', None)
+    if gyp_env is not None:
+      options.gyp_defines = chrome_util.ProcessGypDefines(gyp_env)
+      logging.info('GYP_DEFINES taken from environment: %s',
+                   options.gyp_defines)
+    else:
+      cros_build_lib.Die('When --build-dir is set, the GYP_DEFINES environment '
+                         'variable must be set.')
+
+
+def _FetchChromePackage(tempdir, gs_path):
+  """Get the chrome prebuilt tarball from GS.
+
+  Returns: Path to the fetched chrome tarball.
+  """
+  logging.info('Fetching gsutil.')
+  gsutil_tar = os.path.join(tempdir, 'gsutil.tar.gz')
+  cros_build_lib.RunCurl([GSUTIL_URL, '-o', gsutil_tar],
+                         debug_level=logging.DEBUG)
+  DebugRunCommand(['tar', '-xzf', gsutil_tar], cwd=tempdir)
+  gs_bin = os.path.join(tempdir, 'gsutil', 'gsutil')
+  _SetupBotoConfig(gs_bin)
+  cmd = [gs_bin, 'ls', gs_path]
+  files = DebugRunCommandCaptureOutput(cmd).output.splitlines()
+  files = [found for found in files if
+           _UrlBaseName(found).startswith('chromeos-chrome-')]
+  if not files:
+    raise Exception('No chrome package found at %s' % gs_path)
+  elif len(files) > 1:
+    # - Users should provide us with a direct link to either a stripped or
+    #   unstripped chrome package.
+    # - In the case of being provided with an archive directory, where both
+    #   stripped and unstripped chrome available, use the stripped chrome
+    #   package.
+    # - Stripped chrome pkg is chromeos-chrome-<version>.tar.gz
+    # - Unstripped chrome pkg is chromeos-chrome-<version>-unstripped.tar.gz.
+    files = [f for f in files if not 'unstripped' in f]
+    assert len(files) == 1
+    logging.warning('Multiple chrome packages found.  Using %s', files[0])
+
+  filename = _UrlBaseName(files[0])
+  logging.info('Fetching %s.', filename)
+  cros_build_lib.RunCommand([gs_bin, 'cp', files[0], tempdir],
+                            print_cmd=False)
+  chrome_path = os.path.join(tempdir, filename)
+  assert os.path.exists(chrome_path)
+  return chrome_path
+
+
+def _PrepareStagingDir(options, tempdir, staging_dir):
+  """Place the necessary files in the staging directory.
+
+  The staging directory is the directory used to rsync the build artifacts over
+  to the device.  Only the necessary Chrome build artifacts are put into the
+  staging directory.
+  """
+  if options.build_dir:
+    chrome_util.StageChromeFromBuildDir(
+        staging_dir, options.build_dir, options.gyp_defines,
+        options.staging_flags)
+  else:
+    pkg_path = options.local_pkg_path
+    if options.gs_path:
+      pkg_path = _FetchChromePackage(tempdir, options.gs_path)
+
+    assert pkg_path
+    logging.info('Extracting %s.', pkg_path)
+    _ExtractChrome(pkg_path, staging_dir)
 
 
 def main(argv):
@@ -292,11 +377,19 @@ def main(argv):
 
   # Set cros_build_lib debug level to hide RunCommand spew.
   if options.verbose:
-    cros_build_lib.logger.setLevel(logging.DEBUG)
+    logging.getLogger().setLevel(logging.DEBUG)
   else:
-    cros_build_lib.logger.setLevel(logging.INFO)
+    logging.getLogger().setLevel(logging.WARNING)
 
   with sudo.SudoKeepAlive(ttyless_sudo=False):
     with osutils.TempDirContextManager(sudo_rm=True) as tempdir:
-      deploy = DeployChrome(options, tempdir)
+      staging_dir = options.staging_dir
+      if not staging_dir:
+        staging_dir = os.path.join(tempdir, 'chrome')
+      _PrepareStagingDir(options, tempdir, staging_dir)
+
+      if options.staging_only:
+        return 0
+
+      deploy = DeployChrome(options, tempdir, staging_dir)
       deploy.Perform()
