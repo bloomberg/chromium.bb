@@ -30,7 +30,15 @@ WebIntentsDispatcherImpl::WebIntentsDispatcherImpl(
     : content::WebContentsObserver(source_contents),
       intent_(intent),
       intent_id_(intent_id),
-      intent_injector_(NULL) {}
+      intent_injector_(NULL) {
+  // Ensure that WebIntentData sent from a renderer process
+  // carries the right payload type and no extraneous data.
+  intent_.blob_file = FilePath();
+  intent_.blob_length = 0;
+  intent_.root_name = "";
+  intent_.filesystem_id = "";
+  intent_.data_type = webkit_glue::WebIntentData::SERIALIZED;
+}
 
 WebIntentsDispatcherImpl::~WebIntentsDispatcherImpl() {}
 
