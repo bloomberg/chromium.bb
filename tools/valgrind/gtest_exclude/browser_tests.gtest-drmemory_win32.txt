@@ -46,3 +46,13 @@ BrowserNavigatorTest.*
 WebIntentPickerControllerBrowserTest.*
 WebUIBidiCheckerBrowserTestLTR.*
 TabRestoreTest.*
+# DrM-i#1052-c#4
+LanguagesOptionsWebUITest.*
+ContentOptionsWebUITest.*
+PasswordManagerWebUITest.*
+WebUIBidiCheckerBrowserTestRTL.*
+BookmarksTest.*
+PrintPreviewTest.*
+MostVisitedWebUITest.*
+NewTabUIBrowserTest.*
+AutofillOptionsWebUITest.*
