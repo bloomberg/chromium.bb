@@ -11,29 +11,27 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/push_messaging/obfuscated_gaia_id_fetcher.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_handler.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/token_service.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/extensions/api/experimental_push_messaging.h"
+#include "chrome/common/extensions/api/push_messaging.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/token_service.h"
-#include "chrome/browser/signin/token_service_factory.h"
-#include "chrome/common/extensions/api/experimental_push_messaging.h"
-#include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "googleurl/src/gurl.h"
-#include "chrome/browser/extensions/api/push_messaging/obfuscated_gaia_id_fetcher.h"
 
 using content::BrowserThread;
 
@@ -43,7 +41,7 @@ const char kChannelIdSeparator[] = "/";
 
 namespace extensions {
 
-namespace glue = api::experimental_push_messaging;
+namespace glue = api::push_messaging;
 
 PushMessagingEventRouter::PushMessagingEventRouter(Profile* profile)
     : profile_(profile) {

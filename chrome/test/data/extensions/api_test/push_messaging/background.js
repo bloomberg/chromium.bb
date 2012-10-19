@@ -8,7 +8,7 @@ function verifyDetails(details) {
 }
 
 function testEventDispatch() {
-  chrome.experimental.pushMessaging.onMessage.addListener(
+  chrome.pushMessaging.onMessage.addListener(
       chrome.test.callbackPass(verifyDetails));
   chrome.test.sendMessage('ready');
 }

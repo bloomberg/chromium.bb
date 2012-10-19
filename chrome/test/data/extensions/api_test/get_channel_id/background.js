@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 function testGetChannelId() {
-  chrome.experimental.pushMessaging.getChannelId(
+  chrome.pushMessaging.getChannelId(
       chrome.test.callbackFail('3'));
 }
 

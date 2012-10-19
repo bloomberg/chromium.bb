@@ -1164,16 +1164,16 @@ Review U...</td>
 <tr class="vc_row_even">
 <td colspan="2">
 
-<a name="experimental_push_messaging.idl" href="/viewvc/chrome/trunk/src/chrome/common/extensions/api/experimental_push_messaging.idl?view=log" title="View file revision log">
+<a name="push_messaging.idl" href="/viewvc/chrome/trunk/src/chrome/common/extensions/api/push_messaging.idl?view=log" title="View file revision log">
 
 <img src="/viewvc/*docroot*/images/text.png" alt="" width="16" height="16" />
-experimental_push_messaging.idl</a>
+push_messaging.idl</a>
 
 </td>
 
 
 
-<td>&nbsp;<a href="/viewvc/chrome/trunk/src/chrome/common/extensions/api/experimental_push_messaging.idl?revision=149536&amp;view=markup" title="View file contents"><strong>149536</strong></a></td>
+<td>&nbsp;<a href="/viewvc/chrome/trunk/src/chrome/common/extensions/api/push_messaging.idl?revision=149536&amp;view=markup" title="View file contents"><strong>149536</strong></a></td>
 
 <td>&nbsp;8 days</td>
 <td>&nbsp;dcheng@chromium.org</td>

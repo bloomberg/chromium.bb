@@ -44,7 +44,6 @@ class PushMessagingApiTest : public ExtensionApiTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
   }
 
   PushMessagingEventRouter* GetEventRouter() {
@@ -142,14 +141,12 @@ IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, Restart) {
 IN_PROC_BROWSER_TEST_F(PushMessagingApiTest, GetChannelId) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
-//  ExtensionTestMessageListener ready("ready", true);
 
   const extensions::Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("get_channel_id"));
   ASSERT_TRUE(extension);
   extensions::LaunchPlatformApp(
       browser()->profile(), extension, NULL, FilePath());
-//  EXPECT_TRUE(ready.WaitUntilSatisfied());
 
   // Just loading the page will cause a getChannelId call, so we check
   // for a callback.  It should fail because there is no auth token.

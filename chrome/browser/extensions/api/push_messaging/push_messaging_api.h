@@ -72,7 +72,7 @@ class PushMessagingGetChannelIdFunction
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.pushMessaging.getChannelId");
+  DECLARE_EXTENSION_FUNCTION_NAME("pushMessaging.getChannelId");
 
  private:
   void ReportResult(const std::string& gaia_id,

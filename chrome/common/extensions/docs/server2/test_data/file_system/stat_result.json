@@ -68,7 +68,7 @@
   "idle.json": "124878",
   "input_method_private.json": "136747",
   "experimental_accessibility.json": "136747",
-  "experimental_push_messaging.idl": "149536",
+  "push_messaging.idl": "149536",
   "webstore_private.json": "150455",
   "extension.json": "146855",
   "extension_api.cc": "149819",

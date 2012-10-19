@@ -7,5 +7,5 @@
     }
   },
   "description": "Tests push messaging API.",
-  "permissions": ["experimental", "pushMessaging"]
+  "permissions": ["pushMessaging"]
 }
