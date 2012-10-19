@@ -5,6 +5,8 @@
     "pref": "The pref that this policy maps to, if any.",
     "can_be_recommended": "Whether a recommended value may be set for the policy. Defaults to |false| if not specified.",
     "test_policy": "A policy dictionary that should trigger the managed banner in the settings UI. Usually just sets the current policy.",
+    "indicator_test_setup_js": "JavaScript code to execute before testing controlled setting indicators. This should be specified only if an explicit user action must be simulated (e.g. clicking a button).",
+    "indicator_selector": "A CSS selector that locates all controlled setting indicators for |pref|. This is appended to the selector 'span.controlled-setting-indicator' and if not specified, defaults to '[pref=(the value of |pref|)', e.g. '[pref=homepage]'.",
     "indicator_tests": [
       "A list of test cases verifying that the controlled setting indicators for |pref| correctly indicate whether its value is recommended or enforced by a corresponding policy. Each test case is a dictionary with the following format:",
       { "policy": "A policy dictionary that should affect |pref| when set as mandatory or recommended policy.",
@@ -105,6 +107,10 @@
   "JavascriptEnabled": {
     "pref": "profile.managed_default_content_settings.javascript",
     "test_policy": { "JavascriptEnabled": false },
+    "indicator_selector": "[content-setting=javascript]",
+    "indicator_tests": [
+      { "policy": { "JavascriptEnabled": false }, "value": "block"},
+      { "policy": { "JavascriptEnabled": true }}],
     "settings_pages": ["chrome://settings-frame/content"],
     "os": ["win", "linux", "mac", "chromeos"]
   },
@@ -310,8 +316,14 @@
   "ClearSiteDataOnExit": {
     "pref": "profile.managed_default_content_settings.cookies",
     "test_policy": { "ClearSiteDataOnExit": true },
+    "indicator_selector": "[content-setting=cookies]",
+    "indicator_tests": [
+      { "policy": { "ClearSiteDataOnExit": false }},
+      { "policy": { "ClearSiteDataOnExit": true }, "value": "session"}],
     "settings_pages": ["chrome://settings-frame/content"],
-    "os": ["win", "linux", "mac", "chromeos"]
+    "os": ["win", "linux", "mac", "chromeos"],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
 
   "ProxyMode": {
@@ -500,7 +512,10 @@
 
   "BlockThirdPartyCookies": {
     "pref": "profile.block_third_party_cookies",
+    "can_be_recommended": true,
     "test_policy": { "BlockThirdPartyCookies": true },
+    "indicator_tests": [
+      { "policy": { "BlockThirdPartyCookies": true }}],
     "settings_pages": ["chrome://settings-frame/content"],
     "os": ["win", "linux", "mac", "chromeos"],
 
@@ -577,155 +592,287 @@
   "DefaultCookiesSetting": {
     "pref": "profile.managed_default_content_settings.cookies",
     "test_policy": { "DefaultCookiesSetting": 2 },
+    "indicator_selector": "[content-setting=cookies]",
+    "indicator_tests": [
+      { "policy": { "DefaultCookiesSetting": 1 }, "value": "allow"},
+      { "policy": { "DefaultCookiesSetting": 2 }, "value": "block"},
+      { "policy": { "DefaultCookiesSetting": 4 }, "value": "session"}],
     "settings_pages": ["chrome://settings-frame/content"],
-    "os": ["win", "linux", "mac", "chromeos"]
+    "os": ["win", "linux", "mac", "chromeos"],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
 
   "DefaultImagesSetting": {
     "pref": "profile.managed_default_content_settings.images",
     "test_policy": { "DefaultImagesSetting": 2 },
+    "indicator_selector": "[content-setting=images]",
+    "indicator_tests": [
+      { "policy": { "DefaultImagesSetting": 1 }, "value": "allow"},
+      { "policy": { "DefaultImagesSetting": 2 }, "value": "block"}],
     "settings_pages": ["chrome://settings-frame/content"],
-    "os": ["win", "linux", "mac", "chromeos"]
+    "os": ["win", "linux", "mac", "chromeos"],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
 
   "DefaultJavaScriptSetting": {
     "pref": "profile.managed_default_content_settings.javascript",
     "test_policy": { "DefaultJavaScriptSetting": 2 },
+    "indicator_selector": "[content-setting=javascript]",
+    "indicator_tests": [
+      { "policy": { "DefaultJavaScriptSetting": 1 }, "value": "allow"},
+      { "policy": { "DefaultJavaScriptSetting": 2 }, "value": "block"}],
     "settings_pages": ["chrome://settings-frame/content"],
-    "os": ["win", "linux", "mac", "chromeos"]
+    "os": ["win", "linux", "mac", "chromeos"],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
 
   "DefaultPluginsSetting": {
     "pref": "profile.managed_default_content_settings.plugins",
     "test_policy": { "DefaultPluginsSetting": 2 },
+    "indicator_selector": "[content-setting=plugins]",
+    "indicator_tests": [
+      { "policy": { "DefaultPluginsSetting": 1 }, "value": "allow"},
+      { "policy": { "DefaultPluginsSetting": 2 }, "value": "block"},
+      { "policy": { "DefaultPluginsSetting": 3 }, "value": "ask"}],
     "settings_pages": ["chrome://settings-frame/content"],
-    "os": ["win", "linux", "mac", "chromeos"]
+    "os": ["win", "linux", "mac", "chromeos"],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
 
   "DefaultPopupsSetting": {
     "pref": "profile.managed_default_content_settings.popups",
     "test_policy": { "DefaultPopupsSetting": 2 },
+    "indicator_selector": "[content-setting=popups]",
+    "indicator_tests": [
+      { "policy": { "DefaultPopupsSetting": 1 }, "value": "allow"},
+      { "policy": { "DefaultPopupsSetting": 2 }, "value": "block"}],
     "settings_pages": ["chrome://settings-frame/content"],
-    "os": ["win", "linux", "mac", "chromeos"]
+    "os": ["win", "linux", "mac", "chromeos"],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
 
   "DefaultNotificationsSetting": {
     "pref": "profile.managed_default_content_settings.notifications",
     "test_policy": { "DefaultNotificationsSetting": 2 },
+    "indicator_selector": "[content-setting=notifications]",
+    "indicator_tests": [
+      { "policy": { "DefaultNotificationsSetting": 1 }, "value": "allow"},
+      { "policy": { "DefaultNotificationsSetting": 2 }, "value": "block"},
+      { "policy": { "DefaultNotificationsSetting": 3 }, "value": "ask"}],
     "settings_pages": ["chrome://settings-frame/content"],
-    "os": ["win", "linux", "mac", "chromeos"]
+    "os": ["win", "linux", "mac", "chromeos"],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
 
   "DefaultGeolocationSetting": {
     "pref": "profile.managed_default_content_settings.geolocation",
     "test_policy": { "DefaultGeolocationSetting": 2 },
+    "indicator_selector": "[content-setting=location]",
+    "indicator_tests": [
+      { "policy": { "DefaultGeolocationSetting": 1 }, "value": "allow"},
+      { "policy": { "DefaultGeolocationSetting": 2 }, "value": "block"},
+      { "policy": { "DefaultGeolocationSetting": 3 }, "value": "ask"}],
     "settings_pages": ["chrome://settings-frame/content"],
-    "os": ["win", "linux", "mac", "chromeos"]
+    "os": ["win", "linux", "mac", "chromeos"],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
 
   "DefaultMediaStreamSetting": {
     "pref": "profile.managed_default_content_settings.media_stream",
     "test_policy": { "DefaultMediaStreamSetting": 2 },
+    "indicator_selector": "[content-setting=media-stream]",
+    "indicator_tests": [
+      { "policy": { "DefaultMediaStreamSetting": 2 }, "value": "block"},
+      { "policy": { "DefaultMediaStreamSetting": 3 }, "value": "ask"}],
     "settings_pages": ["chrome://settings-frame/content"],
-    "os": ["win", "linux", "mac", "chromeos"]
+    "os": ["win", "linux", "mac", "chromeos"],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
 
   "AutoSelectCertificateForUrls": {
     "pref": "profile.managed_auto_select_certificate_for_urls",
     "test_policy": { "AutoSelectCertificateForUrls": ["{'pattern':'https://example.com','filter':{'ISSUER':{'CN': 'issuer-name'}}}"] },
     "settings_pages": [],
-    "os": ["win", "linux", "mac", "chromeos"]
+    "os": ["win", "linux", "mac", "chromeos"],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
 
   "CookiesAllowedForUrls": {
     "pref": "profile.managed_cookies_allowed_for_urls",
     "test_policy": { "CookiesAllowedForUrls": ["[*.]google.com"] },
+    "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=cookies]').click();",
+    "indicator_selector": "[content-exception=cookies]",
+    "indicator_tests": [
+      { "policy": { "CookiesAllowedForUrls": ["[*.]google.com"] }}],
     "settings_pages": [],
-    "os": ["win", "linux", "mac", "chromeos"]
+    "os": ["win", "linux", "mac", "chromeos"],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
 
   "CookiesBlockedForUrls": {
     "pref": "profile.managed_cookies_blocked_for_urls",
     "test_policy": { "CookiesBlockedForUrls": ["[*.]google.com"] },
+    "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=cookies]').click();",
+    "indicator_selector": "[content-exception=cookies]",
+    "indicator_tests": [
+      { "policy": { "CookiesBlockedForUrls": ["[*.]google.com"] }}],
     "settings_pages": [],
-    "os": ["win", "linux", "mac", "chromeos"]
+    "os": ["win", "linux", "mac", "chromeos"],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
 
   "CookiesSessionOnlyForUrls": {
     "pref": "profile.managed_cookies_sessiononly_for_urls",
     "test_policy": { "CookiesSessionOnlyForUrls": ["[*.]google.com"] },
+    "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=cookies]').click();",
+    "indicator_selector": "[content-exception=cookies]",
+    "indicator_tests": [
+      { "policy": { "CookiesSessionOnlyForUrls": ["[*.]google.com"] }}],
     "settings_pages": [],
-    "os": ["win", "linux", "mac", "chromeos"]
+    "os": ["win", "linux", "mac", "chromeos"],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
 
   "ImagesAllowedForUrls": {
     "pref": "profile.managed_images_allowed_for_urls",
     "test_policy": { "ImagesAllowedForUrls": ["[*.]google.com"] },
+    "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=images]').click();",
+    "indicator_selector": "[content-exception=images]",
+    "indicator_tests": [
+      { "policy": { "ImagesAllowedForUrls": ["[*.]google.com"] }}],
     "settings_pages": [],
-    "os": ["win", "linux", "mac", "chromeos"]
+    "os": ["win", "linux", "mac", "chromeos"],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
 
   "ImagesBlockedForUrls": {
     "pref": "profile.managed_images_blocked_for_urls",
     "test_policy": { "ImagesBlockedForUrls": ["[*.]google.com"] },
+    "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=images]').click();",
+    "indicator_selector": "[content-exception=images]",
+    "indicator_tests": [
+      { "policy": { "ImagesBlockedForUrls": ["[*.]google.com"] }}],
     "settings_pages": [],
-    "os": ["win", "linux", "mac", "chromeos"]
+    "os": ["win", "linux", "mac", "chromeos"],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
 
   "JavaScriptAllowedForUrls": {
     "pref": "profile.managed_javascript_allowed_for_urls",
     "test_policy": { "JavaScriptAllowedForUrls": ["[*.]google.com"] },
+    "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=javascript]').click();",
+    "indicator_selector": "[content-exception=javascript]",
+    "indicator_tests": [
+      { "policy": { "JavaScriptAllowedForUrls": ["[*.]google.com"] }}],
     "settings_pages": [],
-    "os": ["win", "linux", "mac", "chromeos"]
+    "os": ["win", "linux", "mac", "chromeos"],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
 
   "JavaScriptBlockedForUrls": {
     "pref": "profile.managed_javascript_blocked_for_urls",
     "test_policy": { "JavaScriptBlockedForUrls": ["[*.]google.com"] },
+    "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=javascript]').click();",
+    "indicator_selector": "[content-exception=javascript]",
+    "indicator_tests": [
+      { "policy": { "JavaScriptBlockedForUrls": ["[*.]google.com"] }}],
     "settings_pages": [],
-    "os": ["win", "linux", "mac", "chromeos"]
+    "os": ["win", "linux", "mac", "chromeos"],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
 
   "PluginsAllowedForUrls": {
     "pref": "profile.managed_plugins_allowed_for_urls",
     "test_policy": { "PluginsAllowedForUrls": ["[*.]google.com"] },
+    "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=plugins]').click();",
+    "indicator_selector": "[content-exception=plugins]",
+    "indicator_tests": [
+      { "policy": { "PluginsAllowedForUrls": ["[*.]google.com"] }}],
     "settings_pages": [],
-    "os": ["win", "linux", "mac", "chromeos"]
+    "os": ["win", "linux", "mac", "chromeos"],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
 
   "PluginsBlockedForUrls": {
     "pref": "profile.managed_plugins_blocked_for_urls",
     "test_policy": { "PluginsBlockedForUrls": ["[*.]google.com"] },
+    "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=plugins]').click();",
+    "indicator_selector": "[content-exception=plugins]",
+    "indicator_tests": [
+      { "policy": { "PluginsBlockedForUrls": ["[*.]google.com"] }}],
     "settings_pages": [],
-    "os": ["win", "linux", "mac", "chromeos"]
+    "os": ["win", "linux", "mac", "chromeos"],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
 
   "PopupsAllowedForUrls": {
     "pref": "profile.managed_popups_allowed_for_urls",
     "test_policy": { "PopupsAllowedForUrls": ["[*.]google.com"] },
+    "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=popups]').click();",
+    "indicator_selector": "[content-exception=popups]",
+    "indicator_tests": [
+      { "policy": { "PopupsAllowedForUrls": ["[*.]google.com"] }}],
     "settings_pages": [],
-    "os": ["win", "linux", "mac", "chromeos"]
+    "os": ["win", "linux", "mac", "chromeos"],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
 
   "PopupsBlockedForUrls": {
     "pref": "profile.managed_popups_blocked_for_urls",
     "test_policy": { "PopupsBlockedForUrls": ["[*.]google.com"] },
+    "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=popups]').click();",
+    "indicator_selector": "[content-exception=popups]",
+    "indicator_tests": [
+      { "policy": { "PopupsBlockedForUrls": ["[*.]google.com"] }}],
     "settings_pages": [],
-    "os": ["win", "linux", "mac", "chromeos"]
+    "os": ["win", "linux", "mac", "chromeos"],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
 
   "NotificationsAllowedForUrls": {
     "pref": "profile.managed_notifications_allowed_for_urls",
     "test_policy": { "NotificationsAllowedForUrls": ["[*.]google.com"] },
+    "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=notifications]').click();",
+    "indicator_selector": "[content-exception=notifications]",
+    "indicator_tests": [
+      { "policy": { "NotificationsAllowedForUrls": ["[*.]google.com"] }}],
     "settings_pages": [],
-    "os": ["win", "linux", "mac", "chromeos"]
+    "os": ["win", "linux", "mac", "chromeos"],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
 
   "NotificationsBlockedForUrls": {
     "pref": "profile.managed_notifications_blocked_for_urls",
     "test_policy": { "NotificationsBlockedForUrls": ["[*.]google.com"] },
+    "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=notifications]').click();",
+    "indicator_selector": "[content-exception=notifications]",
+    "indicator_tests": [
+      { "policy": { "NotificationsBlockedForUrls": ["[*.]google.com"] }}],
     "settings_pages": [],
-    "os": ["win", "linux", "mac", "chromeos"]
+    "os": ["win", "linux", "mac", "chromeos"],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
 
   "Disable3DAPIs": {

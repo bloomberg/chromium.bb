@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 #content-settings-page {
-  min-width: 600px;
+  min-width: 620px;
 }
 
 #content-settings-exceptions-area {
@@ -58,29 +58,17 @@ select.exception-setting {
   padding: 7px 0;
 }
 
-div[role='listitem'][managedby] {
+div[role='listitem'][controlled-by] {
   color: #666;
   font-style: italic;
   position: relative;
 }
 
-.settings-list div[role='listitem'][managedby='policy'],
-.settings-list div[role='listitem'][managedby='extension'] {
-  background: -webkit-linear-gradient(rgb(250, 230, 146), rgb(250, 230, 146));
+.settings-list div[role='listitem'][controlled-by='policy'],
+.settings-list div[role='listitem'][controlled-by='extension'] {
+  background: rgb(250, 230, 146);
   border-bottom: 1px solid rgb(201, 189, 141);
   border-top: 0;
-}
-
-list div[role='listitem'][managedby='policy'] .close-button {
-  background-image: url('chrome://theme/IDR_MANAGED');
-  background-size: 16px;
-  opacity: 1;
-}
-
-list div[role='listitem'][managedby='extension'] .close-button {
-  background-image: url('chrome://theme/IDR_EXTENSIONS_SECTION_SMALL');
-  background-size: 16px;
-  opacity: 1;
 }
 
 .sublabel {

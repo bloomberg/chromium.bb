@@ -332,15 +332,11 @@
       'caption': '''Enable JavaScript''',
       'desc': '''This policy is deprecated, please use DefaultJavaScriptSetting instead.
 
-      Enables JavaScript in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
+      Can be used to disabled JavaScript in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      If this setting is enabled or not configured, web pages can use JavaScript.
+      If this setting is disabled, web pages cannot use JavaScript and the user cannot change that setting.
 
-      If this setting is disabled, web pages cannot use JavaScript.
-
-      If this policy is left not set the default value will be used which is enabled and the user will be able to change it.
-
-      If this policy is left not set, this will be enabled but the user will be able to change it.''',
+      If this setting is enabled or not set, web pages can use JavaScript but the user can change that setting.''',
     },
     {
       'name': 'IncognitoEnabled',

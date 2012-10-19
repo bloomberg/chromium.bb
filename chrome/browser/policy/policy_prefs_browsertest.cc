@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -102,6 +103,18 @@ class PolicyTestCase {
     test_policy_.CopyFrom(policy);
   }
 
+  const std::wstring& indicator_test_setup_js() const {
+    return indicator_test_setup_js_;
+  }
+  void set_indicator_test_setup_js(const std::string& indicator_test_setup_js) {
+    indicator_test_setup_js_ = ASCIIToWide(indicator_test_setup_js);
+  }
+
+  const std::string& indicator_selector() const { return indicator_selector_; }
+  void set_indicator_selector(const std::string& indicator_selector) {
+    indicator_selector_ = indicator_selector;
+  }
+
   const ScopedVector<IndicatorTestCase>& indicator_test_cases() const {
     return indicator_test_cases_;
   }
@@ -149,6 +162,8 @@ class PolicyTestCase {
   std::string pref_;
   bool can_be_recommended_;
   PolicyMap test_policy_;
+  std::wstring indicator_test_setup_js_;
+  std::string indicator_selector_;
   ScopedVector<IndicatorTestCase> indicator_test_cases_;
   std::vector<GURL> settings_pages_;
   std::vector<std::string> supported_os_;
@@ -226,6 +241,12 @@ class TestCases {
       policies.LoadFrom(policy_dict, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
       test_case->set_test_policy(policies);
     }
+    std::string indicator_test_setup_js;
+    if (dict->GetString("indicator_test_setup_js", &indicator_test_setup_js))
+      test_case->set_indicator_test_setup_js(indicator_test_setup_js);
+    std::string indicator_selector;
+    if (dict->GetString("indicator_selector", &indicator_selector))
+      test_case->set_indicator_selector(indicator_selector);
     const base::ListValue* indicator_tests = NULL;
     if (dict->GetList("indicator_tests", &indicator_tests)) {
       for (size_t i = 0; i < indicator_tests->GetSize(); ++i) {
@@ -291,14 +312,14 @@ bool IsBannerVisible(Browser* browser) {
 }
 
 void VerifyControlledSettingIndicators(Browser* browser,
-                                       const std::string& pref,
+                                       const std::string& selector,
                                        const std::string& value,
                                        const std::string& controlled_by,
                                        bool readonly) {
   std::wstringstream javascript;
   javascript << "var nodes = document.querySelectorAll("
-             << "    'span.controlled-setting-indicator["
-             << "        pref=\"" << pref.c_str() << "\"]');"
+             << "    'span.controlled-setting-indicator"
+             <<          selector.c_str() << "');"
              << "var indicators = [];"
              << "for (var i = 0; i < nodes.length; i++) {"
              << "  var node = nodes[i];"
@@ -313,7 +334,8 @@ void VerifyControlledSettingIndicators(Browser* browser,
              << "domAutomationController.send(JSON.stringify(indicators));";
   content::WebContents* contents = chrome::GetActiveWebContents(browser);
   std::string json;
-  // Retrieve the state of all controlled setting indicators for |pref| as JSON.
+  // Retrieve the state of all controlled setting indicators matching the
+  // |selector| as JSON.
   ASSERT_TRUE(content::ExecuteJavaScriptAndExtractString(
       contents->GetRenderViewHost(), L"", javascript.str(), &json));
   scoped_ptr<base::Value> value_ptr(base::JSONReader::Read(json));
@@ -323,6 +345,10 @@ void VerifyControlledSettingIndicators(Browser* browser,
   // Verify that controlled setting indicators representing |value| are visible
   // and have the correct state while those not representing |value| are
   // invisible.
+  if (!controlled_by.empty()) {
+    EXPECT_GT(indicators->GetSize(), 0u)
+        << "Expected to find at least one controlled setting indicator.";
+  }
   for (base::ListValue::const_iterator indicator = indicators->begin();
        indicator != indicators->end(); ++indicator) {
     const base::DictionaryValue* properties = NULL;
@@ -492,8 +518,17 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefsTest, CheckPolicyIndicators) {
   const PrefService::Preference* pref =
       prefs->FindPreference(policy_test_case->pref_name());
   ASSERT_TRUE(pref);
-  ui_test_utils::NavigateToURL(browser(), GURL(kSettingsPages[0]));
 
+  ui_test_utils::NavigateToURL(browser(), GURL(kSettingsPages[0]));
+  if (!policy_test_case->indicator_test_setup_js().empty()) {
+    ASSERT_TRUE(content::ExecuteJavaScript(
+        chrome::GetActiveWebContents(browser())->GetRenderViewHost(), L"",
+        policy_test_case->indicator_test_setup_js()));
+  }
+
+  std::string indicator_selector = policy_test_case->indicator_selector();
+  if (indicator_selector.empty())
+    indicator_selector = "[pref=\"" + policy_test_case->pref() + "\"]";
   for (ScopedVector<IndicatorTestCase>::const_iterator
            indicator_test_case = indicator_test_cases.begin();
        indicator_test_case != indicator_test_cases.end();
@@ -502,26 +537,26 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefsTest, CheckPolicyIndicators) {
     // set by policy.
     PolicyMap policies;
     provider_.UpdateChromePolicy(policies);
-    VerifyControlledSettingIndicators(browser(), policy_test_case->pref(),
+    VerifyControlledSettingIndicators(browser(), indicator_selector,
                                       "", "", false);
     // Check that the appropriate controlled setting indicator is shown when a
     // value is enforced by policy.
     policies.LoadFrom(&(*indicator_test_case)->policy(),
                       POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
     provider_.UpdateChromePolicy(policies);
-    VerifyControlledSettingIndicators(browser(), policy_test_case->pref(),
+    VerifyControlledSettingIndicators(browser(), indicator_selector,
                                       (*indicator_test_case)->value(),
                                       "policy",
                                       (*indicator_test_case)->readonly());
     if (!policy_test_case->can_be_recommended())
-      return;
+      continue;
     // Check that the appropriate controlled setting indicator is shown when a
     // value is recommended by policy and the user has not overridden the
     // recommendation.
     policies.LoadFrom(&(*indicator_test_case)->policy(),
                       POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER);
     provider_.UpdateChromePolicy(policies);
-    VerifyControlledSettingIndicators(browser(), policy_test_case->pref(),
+    VerifyControlledSettingIndicators(browser(), indicator_selector,
                                       (*indicator_test_case)->value(),
                                       "recommended",
                                       (*indicator_test_case)->readonly());
@@ -529,7 +564,7 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefsTest, CheckPolicyIndicators) {
     // value is recommended by policy and the user has overriddent the
     // recommendation.
     prefs->Set(policy_test_case->pref_name(), *pref->GetValue());
-    VerifyControlledSettingIndicators(browser(), policy_test_case->pref(),
+    VerifyControlledSettingIndicators(browser(), indicator_selector,
                                       (*indicator_test_case)->value(),
                                       "hasRecommendation",
                                       (*indicator_test_case)->readonly());

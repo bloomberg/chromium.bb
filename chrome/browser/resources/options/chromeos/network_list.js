@@ -1032,7 +1032,6 @@ cr.define('options.network', function() {
       this.controlledBy = 'policy';
       var policyLabel = loadTimeData.getString('managedNetwork');
       this.setAttribute('textPolicy', policyLabel);
-      this.className = 'controlled-setting-indicator';
       this.removeAttribute('tabindex');
     },
 

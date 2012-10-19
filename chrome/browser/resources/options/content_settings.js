@@ -100,15 +100,30 @@ cr.define('options', function() {
    */
   ContentSettings.setContentFilterSettingsValue = function(dict) {
     for (var group in dict) {
+      var managedBy = dict[group].managedBy;
+      var controlledBy = managedBy == 'policy' || managedBy == 'extension' ?
+          managedBy : null;
       document.querySelector('input[type=radio][name=' + group + '][value=' +
                              dict[group].value + ']').checked = true;
       var radios = document.querySelectorAll('input[type=radio][name=' +
                                              group + ']');
-      var managedBy = dict[group]['managedBy'];
       for (var i = 0, len = radios.length; i < len; i++) {
         radios[i].disabled = (managedBy != 'default');
-        radios[i].controlledBy = managedBy;
+        radios[i].controlledBy = controlledBy;
       }
+      var indicators = document.querySelectorAll(
+          'span.controlled-setting-indicator[content-setting=' + group + ']');
+      if (indicators.length == 0)
+        continue;
+      // Create a synthetic pref change event decorated as
+      // CoreOptionsHandler::CreateValueForPref() does.
+      var event = new cr.Event(group);
+      event.value = {
+        value: dict[group].value,
+        controlledBy: controlledBy,
+      };
+      for (var i = 0; i < indicators.length; i++)
+        indicators[i].handlePrefChange(event);
     }
     OptionsPage.updateManagedBannerVisibility();
   };

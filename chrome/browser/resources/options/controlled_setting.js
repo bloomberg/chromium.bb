@@ -31,6 +31,7 @@ cr.define('options', function() {
         this.resetHandler = this.clearAssociatedPref_;
       }
 
+      this.className = 'controlled-setting-indicator';
       this.tabIndex = 0;
       this.setAttribute('role', 'button');
       this.addEventListener('click', this);

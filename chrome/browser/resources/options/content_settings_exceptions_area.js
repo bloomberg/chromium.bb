@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('options.contentSettings', function() {
+  /** @const */ var ControlledSettingIndicator =
+                    options.ControlledSettingIndicator;
   /** @const */ var InlineEditableItemList = options.InlineEditableItemList;
   /** @const */ var InlineEditableItem = options.InlineEditableItem;
   /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
@@ -132,19 +134,34 @@ cr.define('options.contentSettings', function() {
         this.editable = false;
       }
 
-      // If the source of the content setting exception is not the user
-      // preference, then the content settings exception is managed and the user
-      // can't edit it.
-      if (this.dataItem.source &&
-          this.dataItem.source != 'preference') {
-        this.setAttribute('managedby', this.dataItem.source);
+      // If the source of the content setting exception is not a user
+      // preference, that source controls the exception and the user cannot edit
+      // or delete it.
+      var controlledBy =
+          this.dataItem.source && this.dataItem.source != 'preference' ?
+              this.dataItem.source : null;
+
+      if (controlledBy) {
+        this.setAttribute('controlled-by', controlledBy);
         this.deletable = false;
         this.editable = false;
       }
 
+      if (controlledBy == 'policy' || controlledBy == 'extension') {
+        this.querySelector('.row-delete-button').hidden = true;
+        var indicator = ControlledSettingIndicator();
+        indicator.setAttribute('content-exception', this.contentType);
+        // Create a synthetic pref change event decorated as
+        // CoreOptionsHandler::CreateValueForPref() does.
+        var event = new cr.Event(this.contentType);
+        event.value = { controlledBy: controlledBy };
+        indicator.handlePrefChange(event);
+        this.appendChild(indicator);
+      }
+
       // If the exception comes from a hosted app, display the name and the
       // icon of the app.
-      if (this.dataItem.source == 'HostedApp') {
+      if (controlledBy == 'HostedApp') {
         this.title =
             loadTimeData.getString('set_by') + ' ' + this.dataItem.appName;
         var button = this.querySelector('.row-delete-button');
