@@ -838,6 +838,24 @@ class TestManifestCheckout(cros_test_lib.TempDirTestCase):
     cros_build_lib.RunGitCommand(manifest, ['branch', '-d', 'default'])
     assertExcept("It should be checked out to 'default'")
 
+  def testGitMatchBranchName(self):
+    git_repo = os.path.join(self.tempdir, '.repo', 'manifests')
+
+    branches = cros_build_lib.GitMatchBranchName(git_repo, 'default',
+                                                 namespace='')
+    self.assertEqual(branches, ['refs/heads/default'])
+
+    branches = cros_build_lib.GitMatchBranchName(git_repo, 'default',
+                                                 namespace='refs/heads/')
+    self.assertEqual(branches, ['default'])
+
+    branches = cros_build_lib.GitMatchBranchName(git_repo, 'origin/f.*link',
+                                                 namespace='refs/remotes/')
+    self.assertTrue('firmware-link-' in branches[0])
+
+    branches = cros_build_lib.GitMatchBranchName(git_repo, 'r23')
+    self.assertEqual(branches, ['refs/remotes/origin/release-R23-2913.B'])
+
 
 if __name__ == '__main__':
   cros_test_lib.main()

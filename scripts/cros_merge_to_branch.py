@@ -120,11 +120,18 @@ def _SetupWorkDirectoryForPatch(work_dir, patch, branch, manifest, email):
   cros_build_lib.RunGitCommand(work_dir,
                                ['config', '--replace-all', 'user.email', email])
 
+  mbranch = cros_build_lib.GitMatchSingleBranchName(
+      work_dir, branch, namespace='refs/remotes/origin/')
+  logging.info('Auto resolved branch name "%s" to "%s"' % (branch, mbranch))
+  branch = mbranch
+
   # Finally, create a local branch for uploading changes to the given remote
   # branch.
   cros_build_lib.CreatePushBranch(
       constants.PATCH_BRANCH, work_dir, sync=False,
       remote_push_branch=('ignore', 'origin/%s' % branch))
+
+  return branch
 
 
 def _ManifestContainsAllPatches(manifest, patches):
@@ -184,8 +191,8 @@ def main(argv):
       # We only clone the project and set the committer the first time.
       work_dir = os.path.join(root_work_dir, patch.project)
       if not os.path.isdir(work_dir):
-        _SetupWorkDirectoryForPatch(work_dir, patch, branch, manifest,
-                                    options.email)
+        branch = _SetupWorkDirectoryForPatch(work_dir, patch, branch, manifest,
+                                             options.email)
 
       # Now that we have the project checked out, let's apply our change and
       # create a new change on Gerrit.
@@ -194,7 +201,8 @@ def main(argv):
                             options.dryrun)
       logging.info('Successfully uploaded %s to %s', change, branch)
 
-  except (cros_build_lib.RunCommandError, cros_patch.ApplyPatchException) as e:
+  except (cros_build_lib.RunCommandError, cros_patch.ApplyPatchException,
+          cros_build_lib.AmbiguousBranchName) as e:
     # Tell the user how far we got.
     good_changes = changes[:index]
     bad_changes = changes[index:]

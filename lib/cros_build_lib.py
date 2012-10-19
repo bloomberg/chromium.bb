@@ -1195,6 +1195,44 @@ def GetProjectUserEmail(git_repo):
   return m.group(1) if m else None
 
 
+def GitMatchBranchName(git_repo, pattern, namespace=''):
+  """Return branches who match the specified regular expression.
+
+  Args:
+    git_repo: The git repository to operate upon.
+    pattern: The regexp to search with.
+    namespace: The namespace to restrict search to (e.g. 'refs/heads/').
+  Returns:
+    List of matching branch names (with |namespace| trimmed).
+  """
+  match = re.compile(pattern, flags=re.I)
+  output = RunGitCommand(git_repo, ['ls-remote', git_repo,
+                                    namespace + '*']).output
+  branches = [x.split()[1] for x in output.splitlines()]
+  branches = [x[len(namespace):] for x in branches if x.startswith(namespace)]
+  return [x for x in branches if match.search(x)]
+
+
+class AmbiguousBranchName(Exception):
+  """Error if given branch name matches too many branches."""
+
+
+def GitMatchSingleBranchName(*args, **kwds):
+  """Match exactly one branch name, else throw an exception.
+
+  Args:
+    See GitMatchBranchName for more details; all args are passed on.
+  Returns:
+    The branch name.
+  Raises:
+    raise AmbiguousBranchName if we did not match exactly one branch.
+  """
+  ret = GitMatchBranchName(*args, **kwds)
+  if len(ret) != 1:
+    raise AmbiguousBranchName('Did not match exactly 1 branch: %r' % ret)
+  return ret[0]
+
+
 def GetTrackingBranchViaGitConfig(git_repo, branch, for_checkout=True,
                                   allow_broken_merge_settings=False,
                                   recurse=10):
