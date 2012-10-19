@@ -64,6 +64,7 @@
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/npapi/npapi.gyp:npapi',
         '../third_party/re2/re2.gyp:re2',
+        '../third_party/zlib/zlib.gyp:minizip',
         '../third_party/zlib/zlib.gyp:zlib',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
         '../ui/surface/surface.gyp:surface',
