@@ -61,7 +61,13 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DragInSameWindow) {
 }
 
 // Creates two browsers, drags from first into second.
-IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DragToSeparateWindow) {
+// This test often crashes on Vista <http://crbug.com/156787>
+#if defined(OS_WIN)
+#define MAYBE_DragToSeparateWindow DISABLED_DragToSeparateWindow
+#else
+#define MAYBE_DragToSeparateWindow DragToSeparateWindow
+#endif
+IN_PROC_BROWSER_TEST_F(TabDragControllerTest, MAYBE_DragToSeparateWindow) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
 
   // Add another tab to browser().
