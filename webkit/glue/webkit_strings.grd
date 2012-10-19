@@ -143,42 +143,60 @@ below:
   <translations>
     <file path="resources/webkit_strings_am.xtb" lang="am" />
     <file path="resources/webkit_strings_ar.xtb" lang="ar" />
-    <file path="../../third_party/launchpad_translations/webkit_strings_ast.xtb" lang="ast" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <file path="../../third_party/launchpad_translations/webkit_strings_ast.xtb" lang="ast" />
+    </if>
     <file path="resources/webkit_strings_bg.xtb" lang="bg" />
     <file path="resources/webkit_strings_bn.xtb" lang="bn" />
-    <file path="../../third_party/launchpad_translations/webkit_strings_bs.xtb" lang="bs" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <file path="../../third_party/launchpad_translations/webkit_strings_bs.xtb" lang="bs" />
+    </if>
     <file path="resources/webkit_strings_ca.xtb" lang="ca" />
-    <file path="../../third_party/launchpad_translations/webkit_strings_ca-valencia.xtb" lang="ca@valencia" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <file path="../../third_party/launchpad_translations/webkit_strings_ca-valencia.xtb" lang="ca@valencia" />
+    </if>
     <file path="resources/webkit_strings_cs.xtb" lang="cs" />
     <file path="resources/webkit_strings_da.xtb" lang="da" />
     <file path="resources/webkit_strings_de.xtb" lang="de" />
     <file path="resources/webkit_strings_el.xtb" lang="el" />
-    <file path="../../third_party/launchpad_translations/webkit_strings_en-AU.xtb" lang="en-AU" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <file path="../../third_party/launchpad_translations/webkit_strings_en-AU.xtb" lang="en-AU" />
+    </if>
     <file path="resources/webkit_strings_en-GB.xtb" lang="en-GB" />
     <file path="resources/webkit_strings_es.xtb" lang="es" />
     <file path="resources/webkit_strings_es-419.xtb" lang="es-419" />
     <file path="resources/webkit_strings_et.xtb" lang="et" />
-    <file path="../../third_party/launchpad_translations/webkit_strings_eu.xtb" lang="eu" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <file path="../../third_party/launchpad_translations/webkit_strings_eu.xtb" lang="eu" />
+    </if>
     <file path="resources/webkit_strings_fa.xtb" lang="fa" />
     <file path="resources/webkit_strings_fi.xtb" lang="fi" />
     <file path="resources/webkit_strings_fil.xtb" lang="fil" />
     <file path="resources/webkit_strings_fr.xtb" lang="fr" />
-    <file path="../../third_party/launchpad_translations/webkit_strings_gl.xtb" lang="gl" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <file path="../../third_party/launchpad_translations/webkit_strings_gl.xtb" lang="gl" />
+    </if>
     <file path="resources/webkit_strings_gu.xtb" lang="gu" />
     <file path="resources/webkit_strings_hi.xtb" lang="hi" />
     <file path="resources/webkit_strings_hr.xtb" lang="hr" />
     <file path="resources/webkit_strings_hu.xtb" lang="hu" />
-    <file path="../../third_party/launchpad_translations/webkit_strings_hy.xtb" lang="hy" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <file path="../../third_party/launchpad_translations/webkit_strings_hy.xtb" lang="hy" />
+    </if>
     <file path="resources/webkit_strings_id.xtb" lang="id" />
     <file path="resources/webkit_strings_it.xtb" lang="it" />
     <!-- The translation console uses 'iw' for Hebrew, but we use 'he'. -->
     <file path="resources/webkit_strings_iw.xtb" lang="he" />
     <file path="resources/webkit_strings_ja.xtb" lang="ja" />
-    <file path="../../third_party/launchpad_translations/webkit_strings_ka.xtb" lang="ka" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <file path="../../third_party/launchpad_translations/webkit_strings_ka.xtb" lang="ka" />
+    </if>
     <file path="resources/webkit_strings_kn.xtb" lang="kn" />
     <file path="resources/webkit_strings_ko.xtb" lang="ko" />
-    <file path="../../third_party/launchpad_translations/webkit_strings_ku.xtb" lang="ku" />
-    <file path="../../third_party/launchpad_translations/webkit_strings_kw.xtb" lang="kw" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <file path="../../third_party/launchpad_translations/webkit_strings_ku.xtb" lang="ku" />
+      <file path="../../third_party/launchpad_translations/webkit_strings_kw.xtb" lang="kw" />
+    </if>
     <file path="resources/webkit_strings_lt.xtb" lang="lt" />
     <file path="resources/webkit_strings_lv.xtb" lang="lv" />
     <file path="resources/webkit_strings_ml.xtb" lang="ml" />
@@ -200,7 +218,9 @@ below:
     <file path="resources/webkit_strings_te.xtb" lang="te" />
     <file path="resources/webkit_strings_th.xtb" lang="th" />
     <file path="resources/webkit_strings_tr.xtb" lang="tr" />
-    <file path="../../third_party/launchpad_translations/webkit_strings_ug.xtb" lang="ug" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <file path="../../third_party/launchpad_translations/webkit_strings_ug.xtb" lang="ug" />
+    </if>
     <file path="resources/webkit_strings_uk.xtb" lang="uk" />
     <file path="resources/webkit_strings_vi.xtb" lang="vi" />
     <file path="resources/webkit_strings_zh-CN.xtb" lang="zh-CN" />

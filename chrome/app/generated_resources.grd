@@ -108,44 +108,64 @@ are declared in build/common.gypi.
   <translations>
     <file path="resources/generated_resources_am.xtb" lang="am" />
     <file path="resources/generated_resources_ar.xtb" lang="ar" />
-    <file path="../../third_party/launchpad_translations/generated_resources_ast.xtb" lang="ast" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <file path="../../third_party/launchpad_translations/generated_resources_ast.xtb" lang="ast" />
+    </if>
     <file path="resources/generated_resources_bg.xtb" lang="bg" />
     <file path="resources/generated_resources_bn.xtb" lang="bn" />
-    <file path="../../third_party/launchpad_translations/generated_resources_bs.xtb" lang="bs" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <file path="../../third_party/launchpad_translations/generated_resources_bs.xtb" lang="bs" />
+    </if>
     <file path="resources/generated_resources_ca.xtb" lang="ca" />
-    <file path="../../third_party/launchpad_translations/generated_resources_ca-valencia.xtb" lang="ca@valencia" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <file path="../../third_party/launchpad_translations/generated_resources_ca-valencia.xtb" lang="ca@valencia" />
+    </if>
     <file path="resources/generated_resources_cs.xtb" lang="cs" />
     <file path="resources/generated_resources_da.xtb" lang="da" />
     <file path="resources/generated_resources_de.xtb" lang="de" />
     <file path="resources/generated_resources_el.xtb" lang="el" />
-    <file path="../../third_party/launchpad_translations/generated_resources_en-AU.xtb" lang="en-AU" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <file path="../../third_party/launchpad_translations/generated_resources_en-AU.xtb" lang="en-AU" />
+    </if>
     <file path="resources/generated_resources_en-GB.xtb" lang="en-GB" />
-    <file path="../../third_party/launchpad_translations/generated_resources_eo.xtb" lang="eo" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <file path="../../third_party/launchpad_translations/generated_resources_eo.xtb" lang="eo" />
+    </if>
     <file path="resources/generated_resources_es.xtb" lang="es" />
     <file path="resources/generated_resources_es-419.xtb" lang="es-419" />
     <file path="resources/generated_resources_et.xtb" lang="et" />
-    <file path="../../third_party/launchpad_translations/generated_resources_eu.xtb" lang="eu" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <file path="../../third_party/launchpad_translations/generated_resources_eu.xtb" lang="eu" />
+    </if>
     <file path="resources/generated_resources_fa.xtb" lang="fa" />
     <file path="resources/generated_resources_fi.xtb" lang="fi" />
     <file path="resources/generated_resources_fil.xtb" lang="fil" />
     <file path="resources/generated_resources_fr.xtb" lang="fr" />
-    <file path="../../third_party/launchpad_translations/generated_resources_gl.xtb" lang="gl" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <file path="../../third_party/launchpad_translations/generated_resources_gl.xtb" lang="gl" />
+    </if>
     <file path="resources/generated_resources_gu.xtb" lang="gu" />
     <file path="resources/generated_resources_hi.xtb" lang="hi" />
     <file path="resources/generated_resources_hr.xtb" lang="hr" />
     <file path="resources/generated_resources_hu.xtb" lang="hu" />
-    <file path="../../third_party/launchpad_translations/generated_resources_hy.xtb" lang="hy" />
-    <file path="../../third_party/launchpad_translations/generated_resources_ia.xtb" lang="ia" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <file path="../../third_party/launchpad_translations/generated_resources_hy.xtb" lang="hy" />
+      <file path="../../third_party/launchpad_translations/generated_resources_ia.xtb" lang="ia" />
+    </if>
     <file path="resources/generated_resources_id.xtb" lang="id" />
     <file path="resources/generated_resources_it.xtb" lang="it" />
     <!-- The translation console uses 'iw' for Hebrew, but we use 'he'. -->
     <file path="resources/generated_resources_iw.xtb" lang="he" />
     <file path="resources/generated_resources_ja.xtb" lang="ja" />
-    <file path="../../third_party/launchpad_translations/generated_resources_ka.xtb" lang="ka" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <file path="../../third_party/launchpad_translations/generated_resources_ka.xtb" lang="ka" />
+    </if>
     <file path="resources/generated_resources_kn.xtb" lang="kn" />
     <file path="resources/generated_resources_ko.xtb" lang="ko" />
-    <file path="../../third_party/launchpad_translations/generated_resources_ku.xtb" lang="ku" />
-    <file path="../../third_party/launchpad_translations/generated_resources_kw.xtb" lang="kw" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <file path="../../third_party/launchpad_translations/generated_resources_ku.xtb" lang="ku" />
+      <file path="../../third_party/launchpad_translations/generated_resources_kw.xtb" lang="kw" />
+    </if>
     <file path="resources/generated_resources_lt.xtb" lang="lt" />
     <file path="resources/generated_resources_lv.xtb" lang="lv" />
     <file path="resources/generated_resources_ml.xtb" lang="ml" />
@@ -167,7 +187,9 @@ are declared in build/common.gypi.
     <file path="resources/generated_resources_te.xtb" lang="te" />
     <file path="resources/generated_resources_th.xtb" lang="th" />
     <file path="resources/generated_resources_tr.xtb" lang="tr" />
-    <file path="../../third_party/launchpad_translations/generated_resources_ug.xtb" lang="ug" />
+    <if expr="pp_ifdef('use_third_party_translations')">
+      <file path="../../third_party/launchpad_translations/generated_resources_ug.xtb" lang="ug" />
+    </if>
     <file path="resources/generated_resources_uk.xtb" lang="uk" />
     <file path="resources/generated_resources_vi.xtb" lang="vi" />
     <file path="resources/generated_resources_zh-CN.xtb" lang="zh-CN" />
