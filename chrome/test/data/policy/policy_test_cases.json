@@ -429,7 +429,10 @@
         "indicator_tests": [
           { "policy": { "DownloadDirectory": "${user_home}/test-downloads" } }
         ]
-      },
+      }
+    ],
+
+    "TODO(bartfab): Two pref mappings for one policy trigger some kind of race on the bots. Investigate and re-enable the second half of this test.": [
       { "pref": "download.prompt_for_download",
         "indicator_tests": [
           { "policy": { "DownloadDirectory": "${user_home}/test-downloads" } }
