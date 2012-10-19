@@ -190,13 +190,13 @@ class IdRef(BitExpr):
     return self._value.to_bitfield(options)
 
   def to_bool(self, options={}):
-    self._value.to_bool(options)
+    return self._value.to_bool(options)
 
   def to_register(self, options={}):
-    self._value.to_register(options)
+    return self._value.to_register(options)
 
   def to_register_list(self, options={}):
-    self._value.to_register_list(options)
+    return self._value.to_register_list(options)
 
   def to_uint32(self, options={}):
     return self._value.to_uint32(options)
@@ -975,7 +975,8 @@ class SafetyAction(BitExpr):
   def __init__(self, test, action):
     # Note: The following list is from inst_classes.h, and should
     # be kept in sync with that file (see type SafetyLevel).
-    if action not in ['UNKNOWN', 'UNDEFINED', 'NOT_IMPLEMENTED',
+    if action not in ['UNINITIALIZED',
+                      'UNKNOWN', 'UNDEFINED', 'NOT_IMPLEMENTED',
                       'UNPREDICTABLE', 'DEPRECATED', 'FORBIDDEN',
                       'FORBIDDEN_OPERANDS', 'DECODER_ERROR', 'MAY_BE_SAFE']:
       raise Exception("Safety action %s => %s not understood" %

@@ -1251,6 +1251,154 @@ class UnpredictableUncondDecoder_Unpredictable
     : public UnpredictableUncondDecoder {
 };
 
+class Vector2RegisterMiscellaneous_CVT_F2I_VCVT
+    : public Vector2RegisterMiscellaneous_CVT_F2I {
+};
+
+class Vector2RegisterMiscellaneous_CVT_H2S_CVT_between_half_precision_and_single_precision
+    : public Vector2RegisterMiscellaneous_CVT_H2S {
+};
+
+class Vector2RegisterMiscellaneous_F32_VABS_A1
+    : public Vector2RegisterMiscellaneous_F32 {
+};
+
+class Vector2RegisterMiscellaneous_F32_VCEQ_immediate_0
+    : public Vector2RegisterMiscellaneous_F32 {
+};
+
+class Vector2RegisterMiscellaneous_F32_VCGE_immediate_0
+    : public Vector2RegisterMiscellaneous_F32 {
+};
+
+class Vector2RegisterMiscellaneous_F32_VCGT_immediate_0
+    : public Vector2RegisterMiscellaneous_F32 {
+};
+
+class Vector2RegisterMiscellaneous_F32_VCLE_immediate_0
+    : public Vector2RegisterMiscellaneous_F32 {
+};
+
+class Vector2RegisterMiscellaneous_F32_VCLT_immediate_0
+    : public Vector2RegisterMiscellaneous_F32 {
+};
+
+class Vector2RegisterMiscellaneous_F32_VNEG
+    : public Vector2RegisterMiscellaneous_F32 {
+};
+
+class Vector2RegisterMiscellaneous_F32_VRECPE
+    : public Vector2RegisterMiscellaneous_F32 {
+};
+
+class Vector2RegisterMiscellaneous_F32_VRSQRTE
+    : public Vector2RegisterMiscellaneous_F32 {
+};
+
+class Vector2RegisterMiscellaneous_I16_32_64N_VQMOVN
+    : public Vector2RegisterMiscellaneous_I16_32_64N {
+};
+
+class Vector2RegisterMiscellaneous_I16_32_64N_VQMOVUN
+    : public Vector2RegisterMiscellaneous_I16_32_64N {
+};
+
+class Vector2RegisterMiscellaneous_I8_16_32L_VSHLL_A2
+    : public Vector2RegisterMiscellaneous_I8_16_32L {
+};
+
+class Vector2RegisterMiscellaneous_RG_VREV16
+    : public Vector2RegisterMiscellaneous_RG {
+};
+
+class Vector2RegisterMiscellaneous_RG_VREV32
+    : public Vector2RegisterMiscellaneous_RG {
+};
+
+class Vector2RegisterMiscellaneous_RG_VREV64
+    : public Vector2RegisterMiscellaneous_RG {
+};
+
+class Vector2RegisterMiscellaneous_V16_32_64N_VMOVN
+    : public Vector2RegisterMiscellaneous_V16_32_64N {
+};
+
+class Vector2RegisterMiscellaneous_V8_VCNT
+    : public Vector2RegisterMiscellaneous_V8 {
+};
+
+class Vector2RegisterMiscellaneous_V8_VMVN_register
+    : public Vector2RegisterMiscellaneous_V8 {
+};
+
+class Vector2RegisterMiscellaneous_V8S_VSWP
+    : public Vector2RegisterMiscellaneous_V8S {
+};
+
+class Vector2RegisterMiscellaneous_V8_16_32_VABS_A1
+    : public Vector2RegisterMiscellaneous_V8_16_32 {
+};
+
+class Vector2RegisterMiscellaneous_V8_16_32_VCEQ_immediate_0
+    : public Vector2RegisterMiscellaneous_V8_16_32 {
+};
+
+class Vector2RegisterMiscellaneous_V8_16_32_VCGE_immediate_0
+    : public Vector2RegisterMiscellaneous_V8_16_32 {
+};
+
+class Vector2RegisterMiscellaneous_V8_16_32_VCGT_immediate_0
+    : public Vector2RegisterMiscellaneous_V8_16_32 {
+};
+
+class Vector2RegisterMiscellaneous_V8_16_32_VCLE_immediate_0
+    : public Vector2RegisterMiscellaneous_V8_16_32 {
+};
+
+class Vector2RegisterMiscellaneous_V8_16_32_VCLS
+    : public Vector2RegisterMiscellaneous_V8_16_32 {
+};
+
+class Vector2RegisterMiscellaneous_V8_16_32_VCLT_immediate_0
+    : public Vector2RegisterMiscellaneous_V8_16_32 {
+};
+
+class Vector2RegisterMiscellaneous_V8_16_32_VCLZ
+    : public Vector2RegisterMiscellaneous_V8_16_32 {
+};
+
+class Vector2RegisterMiscellaneous_V8_16_32_VNEG
+    : public Vector2RegisterMiscellaneous_V8_16_32 {
+};
+
+class Vector2RegisterMiscellaneous_V8_16_32_VPADAL
+    : public Vector2RegisterMiscellaneous_V8_16_32 {
+};
+
+class Vector2RegisterMiscellaneous_V8_16_32_VPADDL
+    : public Vector2RegisterMiscellaneous_V8_16_32 {
+};
+
+class Vector2RegisterMiscellaneous_V8_16_32_VQABS
+    : public Vector2RegisterMiscellaneous_V8_16_32 {
+};
+
+class Vector2RegisterMiscellaneous_V8_16_32_VQNEG
+    : public Vector2RegisterMiscellaneous_V8_16_32 {
+};
+
+class Vector2RegisterMiscellaneous_V8_16_32I_VUZP
+    : public Vector2RegisterMiscellaneous_V8_16_32I {
+};
+
+class Vector2RegisterMiscellaneous_V8_16_32I_VZIP
+    : public Vector2RegisterMiscellaneous_V8_16_32I {
+};
+
+class Vector2RegisterMiscellaneous_V8_16_32T_VTRN
+    : public Vector2RegisterMiscellaneous_V8_16_32T {
+};
+
 class VectorBinary2RegisterScalar_F32_VMLA_by_scalar_A1
     : public VectorBinary2RegisterScalar_F32 {
 };
@@ -6436,6 +6584,450 @@ class NamedUnpredictableUncondDecoder_Unpredictable
  private:
   nacl_arm_dec::UnpredictableUncondDecoder_Unpredictable decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedUnpredictableUncondDecoder_Unpredictable);
+};
+
+class NamedVector2RegisterMiscellaneous_CVT_F2I_VCVT
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_CVT_F2I_VCVT()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_CVT_F2I VCVT")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_CVT_F2I_VCVT decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_CVT_F2I_VCVT);
+};
+
+class NamedVector2RegisterMiscellaneous_CVT_H2S_CVT_between_half_precision_and_single_precision
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_CVT_H2S_CVT_between_half_precision_and_single_precision()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_CVT_H2S CVT_between_half_precision_and_single_precision")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_CVT_H2S_CVT_between_half_precision_and_single_precision decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_CVT_H2S_CVT_between_half_precision_and_single_precision);
+};
+
+class NamedVector2RegisterMiscellaneous_F32_VABS_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_F32_VABS_A1()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_F32 VABS_A1")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_F32_VABS_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_F32_VABS_A1);
+};
+
+class NamedVector2RegisterMiscellaneous_F32_VCEQ_immediate_0
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_F32_VCEQ_immediate_0()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_F32 VCEQ_immediate_0")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_F32_VCEQ_immediate_0 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_F32_VCEQ_immediate_0);
+};
+
+class NamedVector2RegisterMiscellaneous_F32_VCGE_immediate_0
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_F32_VCGE_immediate_0()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_F32 VCGE_immediate_0")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_F32_VCGE_immediate_0 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_F32_VCGE_immediate_0);
+};
+
+class NamedVector2RegisterMiscellaneous_F32_VCGT_immediate_0
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_F32_VCGT_immediate_0()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_F32 VCGT_immediate_0")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_F32_VCGT_immediate_0 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_F32_VCGT_immediate_0);
+};
+
+class NamedVector2RegisterMiscellaneous_F32_VCLE_immediate_0
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_F32_VCLE_immediate_0()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_F32 VCLE_immediate_0")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_F32_VCLE_immediate_0 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_F32_VCLE_immediate_0);
+};
+
+class NamedVector2RegisterMiscellaneous_F32_VCLT_immediate_0
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_F32_VCLT_immediate_0()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_F32 VCLT_immediate_0")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_F32_VCLT_immediate_0 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_F32_VCLT_immediate_0);
+};
+
+class NamedVector2RegisterMiscellaneous_F32_VNEG
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_F32_VNEG()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_F32 VNEG")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_F32_VNEG decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_F32_VNEG);
+};
+
+class NamedVector2RegisterMiscellaneous_F32_VRECPE
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_F32_VRECPE()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_F32 VRECPE")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_F32_VRECPE decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_F32_VRECPE);
+};
+
+class NamedVector2RegisterMiscellaneous_F32_VRSQRTE
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_F32_VRSQRTE()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_F32 VRSQRTE")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_F32_VRSQRTE decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_F32_VRSQRTE);
+};
+
+class NamedVector2RegisterMiscellaneous_I16_32_64N_VQMOVN
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_I16_32_64N_VQMOVN()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_I16_32_64N VQMOVN")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_I16_32_64N_VQMOVN decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_I16_32_64N_VQMOVN);
+};
+
+class NamedVector2RegisterMiscellaneous_I16_32_64N_VQMOVUN
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_I16_32_64N_VQMOVUN()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_I16_32_64N VQMOVUN")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_I16_32_64N_VQMOVUN decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_I16_32_64N_VQMOVUN);
+};
+
+class NamedVector2RegisterMiscellaneous_I8_16_32L_VSHLL_A2
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_I8_16_32L_VSHLL_A2()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_I8_16_32L VSHLL_A2")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_I8_16_32L_VSHLL_A2 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_I8_16_32L_VSHLL_A2);
+};
+
+class NamedVector2RegisterMiscellaneous_RG_VREV16
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_RG_VREV16()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_RG VREV16")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_RG_VREV16 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_RG_VREV16);
+};
+
+class NamedVector2RegisterMiscellaneous_RG_VREV32
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_RG_VREV32()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_RG VREV32")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_RG_VREV32 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_RG_VREV32);
+};
+
+class NamedVector2RegisterMiscellaneous_RG_VREV64
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_RG_VREV64()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_RG VREV64")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_RG_VREV64 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_RG_VREV64);
+};
+
+class NamedVector2RegisterMiscellaneous_V16_32_64N_VMOVN
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_V16_32_64N_VMOVN()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_V16_32_64N VMOVN")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_V16_32_64N_VMOVN decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_V16_32_64N_VMOVN);
+};
+
+class NamedVector2RegisterMiscellaneous_V8_VCNT
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_V8_VCNT()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_V8 VCNT")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_V8_VCNT decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_V8_VCNT);
+};
+
+class NamedVector2RegisterMiscellaneous_V8_VMVN_register
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_V8_VMVN_register()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_V8 VMVN_register")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_V8_VMVN_register decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_V8_VMVN_register);
+};
+
+class NamedVector2RegisterMiscellaneous_V8S_VSWP
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_V8S_VSWP()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_V8S VSWP")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_V8S_VSWP decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_V8S_VSWP);
+};
+
+class NamedVector2RegisterMiscellaneous_V8_16_32_VABS_A1
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_V8_16_32_VABS_A1()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_V8_16_32 VABS_A1")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_V8_16_32_VABS_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_V8_16_32_VABS_A1);
+};
+
+class NamedVector2RegisterMiscellaneous_V8_16_32_VCEQ_immediate_0
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_V8_16_32_VCEQ_immediate_0()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_V8_16_32 VCEQ_immediate_0")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_V8_16_32_VCEQ_immediate_0 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_V8_16_32_VCEQ_immediate_0);
+};
+
+class NamedVector2RegisterMiscellaneous_V8_16_32_VCGE_immediate_0
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_V8_16_32_VCGE_immediate_0()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_V8_16_32 VCGE_immediate_0")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_V8_16_32_VCGE_immediate_0 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_V8_16_32_VCGE_immediate_0);
+};
+
+class NamedVector2RegisterMiscellaneous_V8_16_32_VCGT_immediate_0
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_V8_16_32_VCGT_immediate_0()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_V8_16_32 VCGT_immediate_0")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_V8_16_32_VCGT_immediate_0 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_V8_16_32_VCGT_immediate_0);
+};
+
+class NamedVector2RegisterMiscellaneous_V8_16_32_VCLE_immediate_0
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_V8_16_32_VCLE_immediate_0()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_V8_16_32 VCLE_immediate_0")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_V8_16_32_VCLE_immediate_0 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_V8_16_32_VCLE_immediate_0);
+};
+
+class NamedVector2RegisterMiscellaneous_V8_16_32_VCLS
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_V8_16_32_VCLS()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_V8_16_32 VCLS")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_V8_16_32_VCLS decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_V8_16_32_VCLS);
+};
+
+class NamedVector2RegisterMiscellaneous_V8_16_32_VCLT_immediate_0
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_V8_16_32_VCLT_immediate_0()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_V8_16_32 VCLT_immediate_0")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_V8_16_32_VCLT_immediate_0 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_V8_16_32_VCLT_immediate_0);
+};
+
+class NamedVector2RegisterMiscellaneous_V8_16_32_VCLZ
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_V8_16_32_VCLZ()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_V8_16_32 VCLZ")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_V8_16_32_VCLZ decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_V8_16_32_VCLZ);
+};
+
+class NamedVector2RegisterMiscellaneous_V8_16_32_VNEG
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_V8_16_32_VNEG()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_V8_16_32 VNEG")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_V8_16_32_VNEG decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_V8_16_32_VNEG);
+};
+
+class NamedVector2RegisterMiscellaneous_V8_16_32_VPADAL
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_V8_16_32_VPADAL()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_V8_16_32 VPADAL")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_V8_16_32_VPADAL decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_V8_16_32_VPADAL);
+};
+
+class NamedVector2RegisterMiscellaneous_V8_16_32_VPADDL
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_V8_16_32_VPADDL()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_V8_16_32 VPADDL")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_V8_16_32_VPADDL decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_V8_16_32_VPADDL);
+};
+
+class NamedVector2RegisterMiscellaneous_V8_16_32_VQABS
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_V8_16_32_VQABS()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_V8_16_32 VQABS")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_V8_16_32_VQABS decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_V8_16_32_VQABS);
+};
+
+class NamedVector2RegisterMiscellaneous_V8_16_32_VQNEG
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_V8_16_32_VQNEG()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_V8_16_32 VQNEG")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_V8_16_32_VQNEG decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_V8_16_32_VQNEG);
+};
+
+class NamedVector2RegisterMiscellaneous_V8_16_32I_VUZP
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_V8_16_32I_VUZP()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_V8_16_32I VUZP")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_V8_16_32I_VUZP decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_V8_16_32I_VUZP);
+};
+
+class NamedVector2RegisterMiscellaneous_V8_16_32I_VZIP
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_V8_16_32I_VZIP()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_V8_16_32I VZIP")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_V8_16_32I_VZIP decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_V8_16_32I_VZIP);
+};
+
+class NamedVector2RegisterMiscellaneous_V8_16_32T_VTRN
+    : public NamedClassDecoder {
+ public:
+  NamedVector2RegisterMiscellaneous_V8_16_32T_VTRN()
+    : NamedClassDecoder(decoder_, "Vector2RegisterMiscellaneous_V8_16_32T VTRN")
+  {}
+
+ private:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_V8_16_32T_VTRN decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedVector2RegisterMiscellaneous_V8_16_32T_VTRN);
 };
 
 class NamedVectorBinary2RegisterScalar_F32_VMLA_by_scalar_A1

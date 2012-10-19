@@ -71,6 +71,18 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Unary1RegisterUse_instance_()
   , Undefined_instance_()
   , Unpredictable_instance_()
+  , Vector2RegisterMiscellaneous_CVT_F2I_instance_()
+  , Vector2RegisterMiscellaneous_CVT_H2S_instance_()
+  , Vector2RegisterMiscellaneous_F32_instance_()
+  , Vector2RegisterMiscellaneous_I16_32_64N_instance_()
+  , Vector2RegisterMiscellaneous_I8_16_32L_instance_()
+  , Vector2RegisterMiscellaneous_RG_instance_()
+  , Vector2RegisterMiscellaneous_V16_32_64N_instance_()
+  , Vector2RegisterMiscellaneous_V8_instance_()
+  , Vector2RegisterMiscellaneous_V8S_instance_()
+  , Vector2RegisterMiscellaneous_V8_16_32_instance_()
+  , Vector2RegisterMiscellaneous_V8_16_32I_instance_()
+  , Vector2RegisterMiscellaneous_V8_16_32T_instance_()
   , VectorBinary2RegisterScalar_F32_instance_()
   , VectorBinary2RegisterScalar_I16_32_instance_()
   , VectorBinary2RegisterScalar_I16_32L_instance_()
@@ -223,7 +235,7 @@ const ClassDecoder& Arm32DecoderState::decode_advanced_simd_data_processing_inst
       (inst.Bits() & 0x00B00000) == 0x00B00000 /* A(23:19)=1x11x */ &&
       (inst.Bits() & 0x00000800) == 0x00000000 /* B(11:8)=0xxx */ &&
       (inst.Bits() & 0x00000010) == 0x00000000 /* C(7:4)=xxx0 */) {
-    return NotImplemented_instance_;
+    return decode_simd_dp_2misc(inst);
   }
 
   if (true) {
@@ -1516,6 +1528,126 @@ const ClassDecoder& Arm32DecoderState::decode_signed_multiply_signed_and_unsigne
       (inst.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5)=000 */ &&
       (inst.Bits() & 0x0000F000) == 0x0000F000 /* $pattern(31:0)=xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx */) {
     return Defs16To19CondsDontCareRdRmRnNotPc_instance_;
+  }
+
+  if (true) {
+    return Undefined_instance_;
+  }
+
+  // Catch any attempt to fall though ...
+  return not_implemented_;
+}
+
+// Implementation of table: simd_dp_2misc.
+// Specified by: See Section A7.4.5
+const ClassDecoder& Arm32DecoderState::decode_simd_dp_2misc(
+     const Instruction inst) const
+{
+  UNREFERENCED_PARAMETER(inst);
+  if ((inst.Bits() & 0x00030000) == 0x00000000 /* A(17:16)=00 */ &&
+      (inst.Bits() & 0x00000780) == 0x00000100 /* B(10:6)=0010x */) {
+    return Vector2RegisterMiscellaneous_RG_instance_;
+  }
+
+  if ((inst.Bits() & 0x00030000) == 0x00000000 /* A(17:16)=00 */ &&
+      (inst.Bits() & 0x00000700) == 0x00000000 /* B(10:6)=000xx */) {
+    return Vector2RegisterMiscellaneous_RG_instance_;
+  }
+
+  if ((inst.Bits() & 0x00030000) == 0x00000000 /* A(17:16)=00 */ &&
+      (inst.Bits() & 0x00000700) == 0x00000400 /* B(10:6)=100xx */) {
+    return Vector2RegisterMiscellaneous_V8_16_32_instance_;
+  }
+
+  if ((inst.Bits() & 0x00030000) == 0x00000000 /* A(17:16)=00 */ &&
+      (inst.Bits() & 0x00000700) == 0x00000500 /* B(10:6)=101xx */) {
+    return Vector2RegisterMiscellaneous_V8_instance_;
+  }
+
+  if ((inst.Bits() & 0x00030000) == 0x00000000 /* A(17:16)=00 */ &&
+      (inst.Bits() & 0x00000700) == 0x00000700 /* B(10:6)=111xx */) {
+    return Vector2RegisterMiscellaneous_V8_16_32_instance_;
+  }
+
+  if ((inst.Bits() & 0x00030000) == 0x00000000 /* A(17:16)=00 */ &&
+      (inst.Bits() & 0x00000300) == 0x00000200 /* B(10:6)=x10xx */ &&
+      (inst.Bits() & 0x00000040) == 0x00000040 /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxx1xxxxxx */) {
+    return Vector2RegisterMiscellaneous_V8_16_32_instance_;
+  }
+
+  if ((inst.Bits() & 0x00030000) == 0x00010000 /* A(17:16)=01 */ &&
+      (inst.Bits() & 0x00000780) == 0x00000380 /* B(10:6)=0111x */) {
+    return Vector2RegisterMiscellaneous_V8_16_32_instance_;
+  }
+
+  if ((inst.Bits() & 0x00030000) == 0x00010000 /* A(17:16)=01 */ &&
+      (inst.Bits() & 0x00000780) == 0x00000780 /* B(10:6)=1111x */) {
+    return Vector2RegisterMiscellaneous_F32_instance_;
+  }
+
+  if ((inst.Bits() & 0x00030000) == 0x00010000 /* A(17:16)=01 */ &&
+      (inst.Bits() & 0x00000680) == 0x00000200 /* B(10:6)=01x0x */) {
+    return Vector2RegisterMiscellaneous_V8_16_32_instance_;
+  }
+
+  if ((inst.Bits() & 0x00030000) == 0x00010000 /* A(17:16)=01 */ &&
+      (inst.Bits() & 0x00000680) == 0x00000600 /* B(10:6)=11x0x */) {
+    return Vector2RegisterMiscellaneous_F32_instance_;
+  }
+
+  if ((inst.Bits() & 0x00030000) == 0x00010000 /* A(17:16)=01 */ &&
+      (inst.Bits() & 0x00000600) == 0x00000000 /* B(10:6)=00xxx */) {
+    return Vector2RegisterMiscellaneous_V8_16_32_instance_;
+  }
+
+  if ((inst.Bits() & 0x00030000) == 0x00020000 /* A(17:16)=10 */ &&
+      (inst.Bits() & 0x000007C0) == 0x00000200 /* B(10:6)=01000 */) {
+    return Vector2RegisterMiscellaneous_V16_32_64N_instance_;
+  }
+
+  if ((inst.Bits() & 0x00030000) == 0x00020000 /* A(17:16)=10 */ &&
+      (inst.Bits() & 0x000007C0) == 0x00000240 /* B(10:6)=01001 */) {
+    return Vector2RegisterMiscellaneous_I16_32_64N_instance_;
+  }
+
+  if ((inst.Bits() & 0x00030000) == 0x00020000 /* A(17:16)=10 */ &&
+      (inst.Bits() & 0x000007C0) == 0x00000300 /* B(10:6)=01100 */) {
+    return Vector2RegisterMiscellaneous_I8_16_32L_instance_;
+  }
+
+  if ((inst.Bits() & 0x00030000) == 0x00020000 /* A(17:16)=10 */ &&
+      (inst.Bits() & 0x000006C0) == 0x00000600 /* B(10:6)=11x00 */) {
+    return Vector2RegisterMiscellaneous_CVT_H2S_instance_;
+  }
+
+  if ((inst.Bits() & 0x00030000) == 0x00020000 /* A(17:16)=10 */ &&
+      (inst.Bits() & 0x00000780) == 0x00000000 /* B(10:6)=0000x */) {
+    return Vector2RegisterMiscellaneous_V8S_instance_;
+  }
+
+  if ((inst.Bits() & 0x00030000) == 0x00020000 /* A(17:16)=10 */ &&
+      (inst.Bits() & 0x00000780) == 0x00000080 /* B(10:6)=0001x */) {
+    return Vector2RegisterMiscellaneous_V8_16_32T_instance_;
+  }
+
+  if ((inst.Bits() & 0x00030000) == 0x00020000 /* A(17:16)=10 */ &&
+      (inst.Bits() & 0x00000780) == 0x00000280 /* B(10:6)=0101x */) {
+    return Vector2RegisterMiscellaneous_I16_32_64N_instance_;
+  }
+
+  if ((inst.Bits() & 0x00030000) == 0x00020000 /* A(17:16)=10 */ &&
+      (inst.Bits() & 0x00000700) == 0x00000100 /* B(10:6)=001xx */) {
+    return Vector2RegisterMiscellaneous_V8_16_32I_instance_;
+  }
+
+  if ((inst.Bits() & 0x00030000) == 0x00030000 /* A(17:16)=11 */ &&
+      (inst.Bits() & 0x00000600) == 0x00000600 /* B(10:6)=11xxx */) {
+    return Vector2RegisterMiscellaneous_CVT_F2I_instance_;
+  }
+
+  if ((inst.Bits() & 0x00010000) == 0x00010000 /* A(17:16)=x1 */ &&
+      (inst.Bits() & 0x00000600) == 0x00000400 /* B(10:6)=10xxx */) {
+    return Vector2RegisterMiscellaneous_F32_instance_;
   }
 
   if (true) {

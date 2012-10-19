@@ -50,7 +50,7 @@ class UnsafeUncondDecoderTester : public UncondDecoderTester {
  public:
   explicit UnsafeUncondDecoderTester(const NamedClassDecoder& decoder)
       : UncondDecoderTester(decoder),
-        expected_decoder_(nacl_arm_dec::UNKNOWN) {}
+        expected_decoder_(nacl_arm_dec::UNINITIALIZED) {}
   virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
                                  const NamedClassDecoder& decoder);
 
@@ -90,7 +90,7 @@ class UnsafeCondDecoderTester : public CondDecoderTester {
  public:
   explicit UnsafeCondDecoderTester(const NamedClassDecoder& decoder)
       : CondDecoderTester(decoder),
-        expected_decoder_(nacl_arm_dec::UNKNOWN) {}
+        expected_decoder_(nacl_arm_dec::UNINITIALIZED) {}
   virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
                                  const NamedClassDecoder& decoder);
 
@@ -1835,6 +1835,101 @@ class VectorUnary2RegisterOpBaseTester : public UncondDecoderTester {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(VectorUnary2RegisterOpBaseTester);
+};
+
+// Implements a decoder tester for Vector2RegisterMiscellaneous
+// Vector 2 register SIMD miscellaneous operation.
+//
+// +--------+------+--+----+----+----+--------+--+--+--+----+--+--+--+--------+
+// |31302928|27..23|22|2120|1918|1716|15141312|11|10| 9| 8 7| 6| 5| 4| 3 2 1 0|
+// +--------+------+--+----+----+----+--------+--+--+--+----+--+--+--+--------+
+// |  cond  |      | D|    |size|    |   Vd   |  | F|  | op | Q| M|  |   Vm   |
+// +--------+- ----+--+----+----+----+--------+--+--+--+----+--+--+--+--------+
+// Rd - The destination register.
+// Rm - The operand.
+//
+// d = D:Vd, m = M:Vm
+class Vector2RegisterMiscellaneousTester
+    : public VectorUnary2RegisterOpBaseTester {
+ public:
+  explicit Vector2RegisterMiscellaneousTester(const NamedClassDecoder& decoder)
+      : VectorUnary2RegisterOpBaseTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::Vector2RegisterMiscellaneous expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Vector2RegisterMiscellaneousTester);
+};
+
+// Implements a decoder tester for Vector2RegisterMiscellaneous_I16_32_64N.
+// Vector 2 register SIMD miscellaneous operation that narrows 16,
+// 32 or 64-bit signed/unsigned values.
+//
+// +--------+------+--+----+----+----+--------+--------+----+--+--+--------+
+// |31302928|27..23|22|2120|1918|1716|15141312|1110 9 8| 7 6| 5| 4| 3 2 1 0|
+// +--------+------+--+----+----+----+--------+--------+----+--+--+--------+
+// |  cond  |      | D|    |size|    |   Vd   |        | op | M|  |   Vm   |
+// +--------+- ----+--+----+----+----+--------+--------+----+--+--+--------+
+// Rd - The destination register.
+// Rm - The operand.
+//
+// d = D:Vd, m = M:Vm
+// safety := op=00 => DECODER_ERROR &
+//           size=11 | Vm(0)=1 => UNDEFINED;
+class Vector2RegisterMiscellaneous_I16_32_64NTester
+    : public VectorUnary2RegisterOpBaseTester {
+ public:
+  explicit Vector2RegisterMiscellaneous_I16_32_64NTester(
+      const NamedClassDecoder& decoder)
+      : VectorUnary2RegisterOpBaseTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_I16_32_64N expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Vector2RegisterMiscellaneous_I16_32_64NTester);
+};
+
+// Implements a decoder tester for Vector2RegisterMiscellaneous_CVT_H2S.
+// Vector 2 register SIMD miscellaneous operation that coverts between
+// half-precision and single-precision.
+//
+// +--------+------+--+----+----+----+--------+------+--+----+--+--+--------+
+// |31302928|27..23|22|2120|1918|1716|15141312|1110 9| 8| 7 6| 5| 4| 3 2 1 0|
+// +--------+------+--+----+----+----+--------+------+--+----+--+--+--------+
+// |  cond  |      | D|    |size|    |   Vd   |      |op|    | M|  |   Vm   |
+// +--------+- ----+--+----+----+----+--------+------+--+----+--+--+--------+
+// Rd - The destination register.
+// Rm - The operand.
+//
+// d = D:Vd, m = M:Vm
+// half_to_single := op=1;
+// safety := size=~01 => UNDEFINED &
+//           half_to_single & Vd(0)=1 => UNDEFINED &
+//           not half_to_single & Vm(0)=1 => UNDEFINED;
+class Vector2RegisterMiscellaneous_CVT_H2STester
+    : public VectorUnary2RegisterOpBaseTester {
+ public:
+  explicit Vector2RegisterMiscellaneous_CVT_H2STester(
+      const NamedClassDecoder& decoder)
+      : VectorUnary2RegisterOpBaseTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::Vector2RegisterMiscellaneous_CVT_H2S expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Vector2RegisterMiscellaneous_CVT_H2STester);
 };
 
 // Implements a decoder tester for VectorUnary2RegisterDup

@@ -1899,11 +1899,11 @@ class Binary3RegisterShiftedTest : public ClassDecoder {
 
 // Vector unary operator base class.
 // Op<c> Rd, Rm, ...
-// +--------+----------+--+----+--------+--------+------------+--+--+--------+
-// |31302928|2726252423|22|2120|19181716|15141312|1110 9 8 7 6| 5| 4| 3 2 1 0|
-// +--------+----------+--+----+--------+--------+------------+--+--+--------+
-// |  cond  |          | D|    |        |   Vd   |            | M|  |   Vm   |
-// +--------+----------+--+----+--------+--------+----+-------+--+--+--------+
+// +--------+----------+--+------------+--------+------------+--+--+--------+
+// |31302928|2726252423|22|212019181716|15141312|1110 9 8 7 6| 5| 4| 3 2 1 0|
+// +--------+----------+--+------------+--------+------------+--+--+--------+
+// |  cond  |          | D|            |   Vd   |            | M|  |   Vm   |
+// +--------+----------+--+------------+--------+----+-------+--+--+--------+
 // Rd - The destination register.
 // Rm - The operand.
 //
@@ -1930,6 +1930,231 @@ class VectorUnary2RegisterOpBase : public UncondDecoder {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(VectorUnary2RegisterOpBase);
+};
+
+// Vector 2 register SIMD miscellaneous operation.
+//
+// +--------+------+--+----+----+----+--------+--+--+--+----+--+--+--+--------+
+// |31302928|27..23|22|2120|1918|1716|15141312|11|10| 9| 8 7| 6| 5| 4| 3 2 1 0|
+// +--------+------+--+----+----+----+--------+--+--+--+----+--+--+--+--------+
+// |  cond  |      | D|    |size|    |   Vd   |  | F|  | op | Q| M|  |   Vm   |
+// +--------+- ----+--+----+----+----+--------+--+--+--+----+--+--+--+--------+
+// Rd - The destination register.
+// Rm - The operand.
+//
+// d = D:Vd, m = M:Vm
+//
+// Note: The vector registers are not tracked by the validator, and hence,
+// are not modeled, other than their index.
+class Vector2RegisterMiscellaneous : public VectorUnary2RegisterOpBase {
+ public:
+  static const FlagBit6Interface q;
+  static const Imm2Bits7To8Interface op;
+  static const FlagBit10Interface f;
+  static const Imm2Bits18To19Interface size;
+
+  Vector2RegisterMiscellaneous() {}
+};
+
+// Defines a Vector2RegisterMiscellaneous which reverses a group of values.
+//   safety := op + size >= 3 => UNDEFINED &
+//             Q=1 & (Vd(0)=1 | Vm(0)=1) => UNDEFINED;
+class Vector2RegisterMiscellaneous_RG : public Vector2RegisterMiscellaneous {
+ public:
+  Vector2RegisterMiscellaneous_RG() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Vector2RegisterMiscellaneous_RG);
+};
+
+// Defines a Vector2RegisterMiscellaneous that operates on 8, 16, and 32-bit
+// values.
+//   safety := size=11 => UNDEFINED &
+//             Q=1 & (Vd(0)=1 | Vm(0)=1) => UNDEFINED;
+class Vector2RegisterMiscellaneous_V8_16_32
+    : public Vector2RegisterMiscellaneous {
+ public:
+  Vector2RegisterMiscellaneous_V8_16_32() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Vector2RegisterMiscellaneous_V8_16_32);
+};
+
+// Defines a Vector2RegisterMiscellaneous that operates on 8-bit values.
+//   safety := size=~00 => UNDEFINED &
+//             Q=1 & (Vd(0)=1 | Vm(0)=1) => UNDEFINED;
+class Vector2RegisterMiscellaneous_V8
+    : public Vector2RegisterMiscellaneous {
+ public:
+  Vector2RegisterMiscellaneous_V8() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Vector2RegisterMiscellaneous_V8);
+};
+
+// Defines a Vector2RegisterMiscellaneous that operates on 32-bit floating-point
+// values.
+//   safety := Q=1 & (Vd(0)=1 | Vm(0)=1) => UNDEFINED &
+//             size=~10 => UNDEFINED;
+class Vector2RegisterMiscellaneous_F32
+    : public Vector2RegisterMiscellaneous {
+ public:
+  Vector2RegisterMiscellaneous_F32() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Vector2RegisterMiscellaneous_F32);
+};
+
+// Defines a Vector2RegisterMiscellaneous that swaps vectors of 8-bit values.
+//   safety := d == m => UNKNOWN &
+//             size=~00 => UNDEFINED &
+//             Q=1 & (Vd(0)=1 | Vm(0)=1) => UNDEFINED;
+class Vector2RegisterMiscellaneous_V8S
+    : public Vector2RegisterMiscellaneous {
+ public:
+  Vector2RegisterMiscellaneous_V8S() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Vector2RegisterMiscellaneous_V8S);
+};
+
+// Defines a Vector2RegisterMiscellaneous that transposes vectors of 8,
+// 16, and 32-bit values.
+//   safety := d == m => UNKNOWN &
+//             size=11 => UNDEFINED &
+//             Q=1 & (Vd(0)=1 | Vm(0)=1) => UNDEFINED;
+class Vector2RegisterMiscellaneous_V8_16_32T
+    : public Vector2RegisterMiscellaneous {
+ public:
+  Vector2RegisterMiscellaneous_V8_16_32T() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Vector2RegisterMiscellaneous_V8_16_32T);
+};
+
+// Defines a Vector2RegisterMiscellaneous that interleaves vectors of 8,
+// 16, and 32-bit values.
+//   safety := d == m => UNKNOWN &
+//             size=11 | (Q=0 & size=10) => UNDEFINED &
+//             Q=1 & (Vd(0)=1 | Vm(0)=1) => UNDEFINED;
+class Vector2RegisterMiscellaneous_V8_16_32I
+    : public Vector2RegisterMiscellaneous {
+ public:
+  Vector2RegisterMiscellaneous_V8_16_32I() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Vector2RegisterMiscellaneous_V8_16_32I);
+};
+
+// Defines a Vector2RegisterMiscellaneous that narrows 16, 32, and 64-bit
+// values.
+//   safety := size=11 => UNDEFINED &
+//             Vm(0)=1 => UNDEFINED;
+class Vector2RegisterMiscellaneous_V16_32_64N
+    : public Vector2RegisterMiscellaneous {
+ public:
+  Vector2RegisterMiscellaneous_V16_32_64N() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Vector2RegisterMiscellaneous_V16_32_64N);
+};
+
+// Defines a Vector2RegisterMiscellaneous that applies an immediate shift
+// value to 8, 16, or 32-bit values, expanding the result to twice the
+// length of the argument.
+//   safety := size=11 | Vd(0)=1 => UNDEFINED;
+class Vector2RegisterMiscellaneous_I8_16_32L
+    : public Vector2RegisterMiscellaneous {
+ public:
+  Vector2RegisterMiscellaneous_I8_16_32L() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Vector2RegisterMiscellaneous_I8_16_32L);
+};
+
+// Defines a Vector2RegisterMiscellaneous that converts between floating-point
+// and integer.
+//   safety := Q=1 & (Vd(0)=1 | Vm(0)=1) => UNDEFINED &
+//             size=~10 => UNDEFINED;
+class Vector2RegisterMiscellaneous_CVT_F2I
+    : public Vector2RegisterMiscellaneous {
+ public:
+  Vector2RegisterMiscellaneous_CVT_F2I() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Vector2RegisterMiscellaneous_CVT_F2I);
+};
+
+// Vector 2 register SIMD miscellaneous operation that narrows 16,
+// 32 or 64-bit signed/unsigned values.
+//
+// +--------+------+--+----+----+----+--------+--------+----+--+--+--------+
+// |31302928|27..23|22|2120|1918|1716|15141312|1110 9 8| 7 6| 5| 4| 3 2 1 0|
+// +--------+------+--+----+----+----+--------+--------+----+--+--+--------+
+// |  cond  |      | D|    |size|    |   Vd   |        | op | M|  |   Vm   |
+// +--------+- ----+--+----+----+----+--------+--------+----+--+--+--------+
+// Rd - The destination register.
+// Rm - The operand.
+//
+// d = D:Vd, m = M:Vm
+// safety := op=00 => DECODER_ERROR &
+//           size=11 | Vm(0)=1 => UNDEFINED;
+//
+// Note: The vector registers are not tracked by the validator, and hence,
+// are not modeled, other than their index.
+class Vector2RegisterMiscellaneous_I16_32_64N
+    : public VectorUnary2RegisterOpBase {
+ public:
+  static const FlagBit6Interface q;
+  static const Imm2Bits6To7Interface op;
+  static const Imm2Bits18To19Interface size;
+
+  Vector2RegisterMiscellaneous_I16_32_64N() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Vector2RegisterMiscellaneous_I16_32_64N);
+};
+
+// Vector 2 register SIMD miscellaneous operation that coverts between
+// half-precision and single-precision.
+//
+// +--------+------+--+----+----+----+--------+------+--+----+--+--+--------+
+// |31302928|27..23|22|2120|1918|1716|15141312|1110 9| 8| 7 6| 5| 4| 3 2 1 0|
+// +--------+------+--+----+----+----+--------+------+--+----+--+--+--------+
+// |  cond  |      | D|    |size|    |   Vd   |      |op|    | M|  |   Vm   |
+// +--------+- ----+--+----+----+----+--------+------+--+----+--+--+--------+
+// Rd - The destination register.
+// Rm - The operand.
+//
+// d = D:Vd, m = M:Vm
+// half_to_single := op=1;
+// safety := size=~01 => UNDEFINED &
+//           half_to_single & Vd(0)=1 => UNDEFINED &
+//           not half_to_single & Vm(0)=1 => UNDEFINED;
+//
+// Note: The vector registers are not tracked by the validator, and hence,
+// are not modeled, other than their index.
+class Vector2RegisterMiscellaneous_CVT_H2S : public VectorUnary2RegisterOpBase {
+ public:
+  static const FlagBit8Interface op;
+  static const Imm2Bits18To19Interface size;
+
+  Vector2RegisterMiscellaneous_CVT_H2S() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Vector2RegisterMiscellaneous_CVT_H2S);
 };
 
 // Vector duplication (scalar)

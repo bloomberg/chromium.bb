@@ -16,6 +16,8 @@ namespace nacl_arm_dec {
 
 SafetyLevel Int2SafetyLevel(uint32_t i) {
   switch (i) {
+    case UNINITIALIZED:
+      return UNINITIALIZED;
     case UNKNOWN:
       return UNKNOWN;
     default:

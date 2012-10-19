@@ -109,6 +109,9 @@ class Arm32DecoderState : DecoderState {
   inline const ClassDecoder& decode_signed_multiply_signed_and_unsigned_divide(
       const Instruction inst) const;
 
+  inline const ClassDecoder& decode_simd_dp_2misc(
+      const Instruction inst) const;
+
   inline const ClassDecoder& decode_simd_dp_2scalar(
       const Instruction inst) const;
 
@@ -197,6 +200,18 @@ class Arm32DecoderState : DecoderState {
   const Unary1RegisterUse Unary1RegisterUse_instance_;
   const Undefined Undefined_instance_;
   const Unpredictable Unpredictable_instance_;
+  const Vector2RegisterMiscellaneous_CVT_F2I Vector2RegisterMiscellaneous_CVT_F2I_instance_;
+  const Vector2RegisterMiscellaneous_CVT_H2S Vector2RegisterMiscellaneous_CVT_H2S_instance_;
+  const Vector2RegisterMiscellaneous_F32 Vector2RegisterMiscellaneous_F32_instance_;
+  const Vector2RegisterMiscellaneous_I16_32_64N Vector2RegisterMiscellaneous_I16_32_64N_instance_;
+  const Vector2RegisterMiscellaneous_I8_16_32L Vector2RegisterMiscellaneous_I8_16_32L_instance_;
+  const Vector2RegisterMiscellaneous_RG Vector2RegisterMiscellaneous_RG_instance_;
+  const Vector2RegisterMiscellaneous_V16_32_64N Vector2RegisterMiscellaneous_V16_32_64N_instance_;
+  const Vector2RegisterMiscellaneous_V8 Vector2RegisterMiscellaneous_V8_instance_;
+  const Vector2RegisterMiscellaneous_V8S Vector2RegisterMiscellaneous_V8S_instance_;
+  const Vector2RegisterMiscellaneous_V8_16_32 Vector2RegisterMiscellaneous_V8_16_32_instance_;
+  const Vector2RegisterMiscellaneous_V8_16_32I Vector2RegisterMiscellaneous_V8_16_32I_instance_;
+  const Vector2RegisterMiscellaneous_V8_16_32T Vector2RegisterMiscellaneous_V8_16_32T_instance_;
   const VectorBinary2RegisterScalar_F32 VectorBinary2RegisterScalar_F32_instance_;
   const VectorBinary2RegisterScalar_I16_32 VectorBinary2RegisterScalar_I16_32_instance_;
   const VectorBinary2RegisterScalar_I16_32L VectorBinary2RegisterScalar_I16_32L_instance_;

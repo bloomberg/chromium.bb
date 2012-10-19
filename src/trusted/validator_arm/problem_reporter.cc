@@ -137,9 +137,12 @@ void ProblemReporter::ExtractProblemRegisterListInstructionPair(
 // Defines the error messages to print for each possible unsafe safety
 // value.
 static const char* SafetyLevelFormatDirective[nacl_arm_dec::MAY_BE_SAFE] = {
-  // UNKNOWN - The initial value of uninitialized SafetyLevels.  treat
+  // UNINITIALIZED - The initial value of uninitialized SafetyLevels.  treat
   // as unsafe.
   "Unknown error occurred decoding this instruction.",
+  // UNKNOWN - The initial value of uninitialized SafetyLevels.  treat
+  // as unsafe.
+  "The value assigned to registers by this instruction is unknown.",
   // UNDEFINED - This instruction is left undefined by the ARMv7 ISA
   // spec.
   "Instruction is undefined according to the ARMv7 ISA specifications.",
@@ -401,9 +404,9 @@ void ProblemReporter::Render(char** buffer,
                    SafetyLevelFormatDirective[safety],
                    problem, method, user_data);
           } else {
-            // Act like safety is UNKNOWN.
+            // Act like safety is UNINITIALIZED
             Render(buffer, buffer_size,
-                   SafetyLevelFormatDirective[nacl_arm_dec::UNKNOWN],
+                   SafetyLevelFormatDirective[nacl_arm_dec::UNINITIALIZED],
                    problem, method, user_data);
           }
           break;

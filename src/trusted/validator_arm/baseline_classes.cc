@@ -1070,6 +1070,106 @@ RegisterList Binary3RegisterShiftedTest::defs(const Instruction i) const {
   return RegisterList(conditions.conds_if_updated(i));
 }
 
+// Vector2RegisterMiscellaneous_RG
+SafetyLevel Vector2RegisterMiscellaneous_RG::safety(Instruction i) const {
+  if (op.value(i) + size.value(i) >= 3) return UNDEFINED;
+  if (q.IsDefined(i) && (!vd.IsEven(i) || !vm.IsEven(i))) return UNDEFINED;
+  return Vector2RegisterMiscellaneous::safety(i);
+}
+
+// Vector2RegisterMiscellaneous_V8_16_32
+SafetyLevel Vector2RegisterMiscellaneous_V8_16_32::safety(Instruction i) const {
+  if (size.value(i) == 3) return UNDEFINED;
+  if (q.IsDefined(i) && (!vd.IsEven(i) || !vm.IsEven(i))) return UNDEFINED;
+  return Vector2RegisterMiscellaneous::safety(i);
+}
+
+// Vector2RegisterMiscellaneous_V8
+SafetyLevel Vector2RegisterMiscellaneous_V8::safety(Instruction i) const {
+  if (size.value(i) != 0) return UNDEFINED;
+  if (q.IsDefined(i) && (!vd.IsEven(i) || !vm.IsEven(i))) return UNDEFINED;
+  return Vector2RegisterMiscellaneous::safety(i);
+}
+
+// Vector2RegisterMiscellaneous_F32
+SafetyLevel Vector2RegisterMiscellaneous_F32::safety(Instruction i) const {
+  if (q.IsDefined(i) && (!vd.IsEven(i) || !vm.IsEven(i))) return UNDEFINED;
+  if (size.value(i) != 2) return UNDEFINED;
+  return Vector2RegisterMiscellaneous::safety(i);
+}
+
+// Vector2RegisterMiscellaneous_V8S
+SafetyLevel Vector2RegisterMiscellaneous_V8S::safety(Instruction i) const {
+  if ((m.value(i) == d.value(i)) && (vm.reg(i).Equals(vd.reg(i))))
+    return UNKNOWN;
+  if (size.value(i) != 0) return UNDEFINED;
+  if (q.IsDefined(i) && (!vd.IsEven(i) || !vm.IsEven(i))) return UNDEFINED;
+  return Vector2RegisterMiscellaneous::safety(i);
+}
+
+// Vector2RegisterMiscellaneous_V8_16_32T
+SafetyLevel Vector2RegisterMiscellaneous_V8_16_32T::
+safety(Instruction i) const {
+  if ((m.value(i) == d.value(i)) && (vm.reg(i).Equals(vd.reg(i))))
+    return UNKNOWN;
+  if (size.value(i) == 3) return UNDEFINED;
+  if (q.IsDefined(i) && (!vd.IsEven(i) || !vm.IsEven(i))) return UNDEFINED;
+  return Vector2RegisterMiscellaneous::safety(i);
+}
+
+// Vector2RegisterMiscellaneous_V8_16_32I
+SafetyLevel Vector2RegisterMiscellaneous_V8_16_32I::
+safety(Instruction i) const {
+  if ((m.value(i) == d.value(i)) && (vm.reg(i).Equals(vd.reg(i))))
+    return UNKNOWN;
+  if (size.value(i) == 3) return UNDEFINED;
+  if (!q.IsDefined(i) && (size.value(i) == 2)) return UNDEFINED;
+  if (q.IsDefined(i) && (!vd.IsEven(i) || !vm.IsEven(i))) return UNDEFINED;
+  return Vector2RegisterMiscellaneous::safety(i);
+}
+
+// Vector2RegisterMiscellaneous_V16_32_64N
+SafetyLevel Vector2RegisterMiscellaneous_V16_32_64N::
+safety(Instruction i) const {
+  if (size.value(i) == 3) return UNDEFINED;
+  if (!vm.IsEven(i)) return UNDEFINED;
+  return Vector2RegisterMiscellaneous::safety(i);
+}
+
+// Vector2RegisterMiscellaneous_I8_16_32L
+SafetyLevel Vector2RegisterMiscellaneous_I8_16_32L::
+safety(Instruction i) const {
+  if (size.value(i) == 3) return UNDEFINED;
+  if (!vd.IsEven(i)) return UNDEFINED;
+  return Vector2RegisterMiscellaneous::safety(i);
+}
+
+// Vector2RegisterMiscellaneous_CVT_F2I
+SafetyLevel Vector2RegisterMiscellaneous_CVT_F2I::
+safety(Instruction i) const {
+  if (q.IsDefined(i) && (!vd.IsEven(i) || !vm.IsEven(i))) return UNDEFINED;
+  if (size.value(i) != 2) return UNDEFINED;
+  return Vector2RegisterMiscellaneous::safety(i);
+}
+
+// Vector2RegisterMiscellaneous_I16_32_64N
+SafetyLevel Vector2RegisterMiscellaneous_I16_32_64N::
+safety(Instruction i) const {
+  if (op.value(i) == 0) return DECODER_ERROR;
+  if (size.value(i) == 3) return UNDEFINED;
+  if (!vm.IsEven(i)) return UNDEFINED;
+  return VectorUnary2RegisterOpBase::safety(i);
+}
+
+// Vector2RegisterMiscellaneous_CVT_H2S
+SafetyLevel Vector2RegisterMiscellaneous_CVT_H2S::
+safety(Instruction i) const {
+  if (size.value(i) != 1) return UNDEFINED;
+  if (op.IsDefined(i) && !vd.IsEven(i)) return UNDEFINED;
+  if (!op.IsDefined(i) && !vm.IsEven(i)) return UNDEFINED;
+  return VectorUnary2RegisterOpBase::safety(i);
+}
+
 // VectorUnary2RegisterDup
 SafetyLevel VectorUnary2RegisterDup::safety(Instruction i) const {
   if (q.IsDefined(i) && !vd.IsEven(i))

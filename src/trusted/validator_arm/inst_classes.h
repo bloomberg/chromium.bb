@@ -27,8 +27,12 @@ namespace nacl_arm_dec {
 // in inst_classes.cc.
 enum SafetyLevel {
   // The initial value of uninitialized SafetyLevels -- treat as unsafe.
-  UNKNOWN = 0,
+  UNINITIALIZED = 0,
 
+  // Values put into one (or more) registers is not known, as specified
+  // by the ARMv7 ISA spec.
+  // See instructions VSWP, VTRN, VUZP, and VZIP for examples of this.
+  UNKNOWN,
   // This instruction is left undefined by the ARMv7 ISA spec.
   UNDEFINED,
   // This instruction is not recognized by the decoder functions.
@@ -53,8 +57,8 @@ enum SafetyLevel {
   MAY_BE_SAFE
 };
 
-// Returns the safety level associated with i (or UNKNOWN if no such safety
-// level exists).
+// Returns the safety level associated with i (or UNINITIALIZED if no such
+// safety level exists).
 SafetyLevel Int2SafetyLevel(uint32_t i);
 
 // ------------------------------------------------------------------
@@ -282,6 +286,28 @@ class Imm24AddressBits0To23Interface {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Imm24AddressBits0To23Interface);
+};
+
+// Interface class to pull out value i in bits 6 and 7.
+class Imm2Bits6To7Interface {
+ public:
+  static uint32_t value(const Instruction& i) {
+    return i.Bits(7, 6);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Imm2Bits6To7Interface);
+};
+
+// Interface class to pull out value i bits 7 and 8.
+class Imm2Bits7To8Interface {
+ public:
+  static uint32_t value(const Instruction& i) {
+    return i.Bits(8, 7);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Imm2Bits7To8Interface);
 };
 
 // Interface class to pull out value in bits 8 and 9.

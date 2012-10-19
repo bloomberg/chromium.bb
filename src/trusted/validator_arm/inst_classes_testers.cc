@@ -2157,6 +2157,50 @@ ApplySanityChecks(Instruction inst,
   return true;
 }
 
+// Vector2RegisterMiscellaneousTester
+bool Vector2RegisterMiscellaneousTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  NC_PRECOND(VectorUnary2RegisterOpBaseTester
+             ::ApplySanityChecks(inst, decoder));
+
+  // Check fields.
+  EXPECT_EQ(expected_decoder_.q.IsDefined(inst), inst.Bit(6));
+  EXPECT_EQ(expected_decoder_.op.value(inst), inst.Bits(8, 7));
+  EXPECT_EQ(expected_decoder_.f.IsDefined(inst), inst.Bit(10));
+  EXPECT_EQ(expected_decoder_.size.value(inst), inst.Bits(19, 18));
+  return true;
+}
+
+// Vector2RegisterMiscellaneous_I16_32_64NTester
+bool Vector2RegisterMiscellaneous_I16_32_64NTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  NC_PRECOND(VectorUnary2RegisterOpBaseTester
+             ::ApplySanityChecks(inst, decoder));
+
+  // Check fields.
+  EXPECT_EQ(expected_decoder_.q.IsDefined(inst), inst.Bit(6));
+  EXPECT_EQ(expected_decoder_.op.value(inst), inst.Bits(7, 6));
+  EXPECT_EQ(expected_decoder_.size.value(inst), inst.Bits(19, 18));
+
+  return true;
+}
+
+// Vector2RegisterMiscellaneous_CVT_H2STester
+bool Vector2RegisterMiscellaneous_CVT_H2STester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  NC_PRECOND(VectorUnary2RegisterOpBaseTester
+             ::ApplySanityChecks(inst, decoder));
+
+  // Check fields.
+  EXPECT_EQ(expected_decoder_.op.IsDefined(inst), inst.Bit(8));
+  EXPECT_EQ(expected_decoder_.size.value(inst), inst.Bits(19, 18));
+
+  return true;
+}
+
 // VectorUnary2RegisterDupTester
 bool VectorUnary2RegisterDupTester::
 ApplySanityChecks(Instruction inst,
