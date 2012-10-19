@@ -1023,6 +1023,8 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_MediaNotification, OnMediaNotification)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewHostMsg_StartContentIntent, OnStartContentIntent)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeBodyBackgroundColor,
+                        OnMsgDidChangeBodyBackgroundColor)
 #endif
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_RequestPermission,
                         OnRequestDesktopNotificationPermission)
@@ -1931,6 +1933,11 @@ void RenderViewHostImpl::OnMediaNotification(int64 player_cookie,
 }
 
 #if defined(OS_ANDROID)
+void RenderViewHostImpl::OnMsgDidChangeBodyBackgroundColor(SkColor color) {
+  if (GetView())
+    GetView()->SetCachedBackgroundColor(color);
+}
+
 void RenderViewHostImpl::OnStartContentIntent(const GURL& content_url) {
   if (GetView())
     GetView()->StartContentIntent(content_url);

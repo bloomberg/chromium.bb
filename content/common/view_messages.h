@@ -1409,6 +1409,9 @@ IPC_MESSAGE_ROUTED2(ViewMsg_SelectPopupMenuItems,
 // ViewMsg_ScrollFocusedEditableNodeIntoView was called.
 IPC_MESSAGE_ROUTED0(ViewMsg_UndoScrollFocusedEditableNodeIntoView)
 
+// Message sent when the renderer changed the background color for the view.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_DidChangeBodyBackgroundColor,
+                    uint32  /* bg_color */)
 #elif defined(OS_MACOSX)
 // Let the RenderView know its window has changed visibility.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetWindowVisibility,

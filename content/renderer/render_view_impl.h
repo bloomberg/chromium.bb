@@ -637,6 +637,9 @@ class RenderViewImpl : public RenderWidget,
                                         v8::Handle<v8::Context>,
                                         int world_id);
   virtual void didChangeScrollOffset(WebKit::WebFrame* frame);
+#if defined(OS_ANDROID)
+  virtual void didFirstVisuallyNonEmptyLayout(WebKit::WebFrame*) OVERRIDE;
+#endif
   virtual void didChangeContentsSize(WebKit::WebFrame* frame,
                                      const WebKit::WebSize& size);
   virtual void reportFindInPageMatchCount(int request_id,
@@ -1424,6 +1427,11 @@ class RenderViewImpl : public RenderWidget,
 
 #if defined(OS_ANDROID)
   // Android Specific ---------------------------------------------------------
+
+  // The background color of the document body element. This is used as the
+  // default background color for filling the screen areas for which we don't
+  // have the actual content.
+  SkColor body_background_color_;
 
   // Expected id of the next content intent launched. Used to prevent scheduled
   // intents to be launched if aborted.

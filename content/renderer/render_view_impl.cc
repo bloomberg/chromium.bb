@@ -616,6 +616,7 @@ RenderViewImpl::RenderViewImpl(
       java_bridge_dispatcher_(NULL),
       mouse_lock_dispatcher_(NULL),
 #if defined(OS_ANDROID)
+      body_background_color_(SK_ColorWHITE),
       expected_content_intent_id_(0),
       media_player_proxy_(NULL),
       synchronous_find_active_match_ordinal_(-1),
@@ -4002,6 +4003,26 @@ void RenderViewImpl::didChangeScrollOffset(WebFrame* frame) {
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_, DidChangeScrollOffset(frame));
 }
+
+#if defined(OS_ANDROID)
+void RenderViewImpl::didFirstVisuallyNonEmptyLayout(WebFrame* frame) {
+  if (frame != webview()->mainFrame())
+    return;
+
+  // Update body background color if necessary.
+  SkColor bg_color = webwidget_->backgroundColor();
+
+  // If not initialized, default to white. Note that 0 is different from black
+  // as black still has alpha 0xFF.
+  if (!bg_color)
+    bg_color = SK_ColorWHITE;
+
+  if (bg_color != body_background_color_) {
+    body_background_color_ = bg_color;
+    Send(new ViewHostMsg_DidChangeBodyBackgroundColor(routing_id_, bg_color));
+  }
+}
+#endif
 
 void RenderViewImpl::SendFindReply(int request_id,
                                    int match_count,
