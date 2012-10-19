@@ -6,6 +6,7 @@
 #include "cc/texture_uploader.h"
 
 #include "CCPrioritizedTexture.h"
+#include "base/debug/alias.h"
 #include "base/debug/trace_event.h"
 #include "base/metrics/histogram.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -155,6 +156,8 @@ void TextureUploader::upload(const uint8_t* image,
                              GLenum format,
                              IntSize size)
 {
+    CHECK(image_rect.contains(source_rect));
+
     bool isFullUpload = dest_offset.isZero() && source_rect.size() == size;
 
     if (isFullUpload)
@@ -178,6 +181,28 @@ void TextureUploader::uploadWithTexSubImage(const uint8_t* image,
                                             const IntSize& dest_offset,
                                             GLenum format)
 {
+    // Instrumentation to debug issue 156107
+    int source_rect_x = source_rect.x();
+    int source_rect_y = source_rect.y();
+    int source_rect_width = source_rect.width();
+    int source_rect_height = source_rect.height();
+    int image_rect_x = image_rect.x();
+    int image_rect_y = image_rect.y();
+    int image_rect_width = image_rect.width();
+    int image_rect_height = image_rect.height();
+    int dest_offset_width = dest_offset.width();
+    int dest_offset_height = dest_offset.height();
+    base::debug::Alias(&image);
+    base::debug::Alias(&source_rect_x);
+    base::debug::Alias(&source_rect_y);
+    base::debug::Alias(&source_rect_width);
+    base::debug::Alias(&source_rect_height);
+    base::debug::Alias(&image_rect_x);
+    base::debug::Alias(&image_rect_y);
+    base::debug::Alias(&image_rect_width);
+    base::debug::Alias(&image_rect_height);
+    base::debug::Alias(&dest_offset_width);
+    base::debug::Alias(&dest_offset_height);
     TRACE_EVENT0("cc", "TextureUploader::uploadWithTexSubImage");
 
     // Offset from image-rect to source-rect.
@@ -221,6 +246,29 @@ void TextureUploader::uploadWithMapTexSubImage(const uint8_t* image,
                                                const IntSize& dest_offset,
                                                GLenum format)
 {
+    // Instrumentation to debug issue 156107
+    int source_rect_x = source_rect.x();
+    int source_rect_y = source_rect.y();
+    int source_rect_width = source_rect.width();
+    int source_rect_height = source_rect.height();
+    int image_rect_x = image_rect.x();
+    int image_rect_y = image_rect.y();
+    int image_rect_width = image_rect.width();
+    int image_rect_height = image_rect.height();
+    int dest_offset_width = dest_offset.width();
+    int dest_offset_height = dest_offset.height();
+    base::debug::Alias(&image);
+    base::debug::Alias(&source_rect_x);
+    base::debug::Alias(&source_rect_y);
+    base::debug::Alias(&source_rect_width);
+    base::debug::Alias(&source_rect_height);
+    base::debug::Alias(&image_rect_x);
+    base::debug::Alias(&image_rect_y);
+    base::debug::Alias(&image_rect_width);
+    base::debug::Alias(&image_rect_height);
+    base::debug::Alias(&dest_offset_width);
+    base::debug::Alias(&dest_offset_height);
+
     TRACE_EVENT0("cc", "TextureUploader::uploadWithMapTexSubImage");
 
     // Offset from image-rect to source-rect.

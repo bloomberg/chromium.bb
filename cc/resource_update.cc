@@ -6,6 +6,8 @@
 
 #include "cc/resource_update.h"
 
+#include "base/logging.h"
+
 namespace cc {
 
 ResourceUpdate ResourceUpdate::Create(CCPrioritizedTexture* texture,
@@ -13,6 +15,7 @@ ResourceUpdate ResourceUpdate::Create(CCPrioritizedTexture* texture,
                                       IntRect content_rect,
                                       IntRect source_rect,
                                       IntSize dest_offset) {
+    CHECK(content_rect.contains(source_rect));
     ResourceUpdate update;
     update.texture = texture;
     update.bitmap = bitmap;
@@ -27,6 +30,7 @@ ResourceUpdate ResourceUpdate::CreateFromPicture(CCPrioritizedTexture* texture,
                                                  IntRect content_rect,
                                                  IntRect source_rect,
                                                  IntSize dest_offset) {
+    CHECK(content_rect.contains(source_rect));
     ResourceUpdate update;
     update.texture = texture;
     update.picture = picture;

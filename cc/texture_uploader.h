@@ -30,6 +30,11 @@ public:
     size_t numBlockingUploads();
     void markPendingUploadsAsNonBlocking();
     double estimatedTexturesPerSecond();
+
+    // Let imageRect be a rectangle, and let sourceRect be a sub-rectangle of
+    // imageRect, expressed in the same coordinate system as imageRect. Let 
+    // image be a buffer for imageRect. This function will copy the region
+    // corresponding to sourceRect to destOffset in this sub-image.
     void upload(const uint8_t* image,
                 const IntRect& content_rect,
                 const IntRect& source_rect,
