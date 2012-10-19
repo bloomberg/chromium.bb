@@ -14,6 +14,7 @@
 
 namespace ui {
 
+class KeyEvent;
 class TextInputClient;
 
 // A mock ui::InputMethod implementation for minimum input support.
@@ -30,6 +31,7 @@ class UI_EXPORT MockInputMethod : NON_EXPORTED_BASE(public InputMethod) {
   virtual void SetFocusedTextInputClient(TextInputClient* client) OVERRIDE;
   virtual TextInputClient* GetTextInputClient() const OVERRIDE;
   virtual void DispatchKeyEvent(const base::NativeEvent& native_event) OVERRIDE;
+  virtual void DispatchFabricatedKeyEvent(const ui::KeyEvent& event) OVERRIDE;
   virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE;
   virtual void OnCaretBoundsChanged(const TextInputClient* client) OVERRIDE;
   virtual void CancelComposition(const TextInputClient* client) OVERRIDE;

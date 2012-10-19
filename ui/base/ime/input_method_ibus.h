@@ -40,6 +40,7 @@ class UI_EXPORT InputMethodIBus : public InputMethodBase {
   virtual void Init(bool focused) OVERRIDE;
   virtual void DispatchKeyEvent(
       const base::NativeEvent& native_key_event) OVERRIDE;
+  virtual void DispatchFabricatedKeyEvent(const ui::KeyEvent& event) OVERRIDE;
   virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE;
   virtual void OnCaretBoundsChanged(const TextInputClient* client) OVERRIDE;
   virtual void CancelComposition(const TextInputClient* client) OVERRIDE;

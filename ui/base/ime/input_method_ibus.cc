@@ -197,6 +197,9 @@ void InputMethodIBus::DispatchKeyEvent(const base::NativeEvent& native_event) {
   suppress_next_result_ = false;
 }
 
+void InputMethodIBus::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
+}
+
 void InputMethodIBus::OnTextInputTypeChanged(const TextInputClient* client) {
   if (IsContextReady() && IsTextInputClientFocused(client)) {
     ResetContext();

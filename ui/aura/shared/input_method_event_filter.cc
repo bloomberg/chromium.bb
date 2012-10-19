@@ -51,7 +51,10 @@ bool InputMethodEventFilter::PreHandleKeyEvent(aura::Window* target,
     // discarded so it's safe to update the target_root_window_ here.
     target_root_window_ = target->GetRootWindow();
     DCHECK(target_root_window_);
-    input_method_->DispatchKeyEvent(event->native_event());
+    if (event->HasNativeEvent())
+      input_method_->DispatchKeyEvent(event->native_event());
+    else
+      input_method_->DispatchFabricatedKeyEvent(*event);
     return true;
   }
 }

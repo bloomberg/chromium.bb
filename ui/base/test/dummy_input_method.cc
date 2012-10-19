@@ -32,8 +32,10 @@ TextInputClient* DummyInputMethod::GetTextInputClient() const {
   return NULL;
 }
 
-void DummyInputMethod::DispatchKeyEvent(
-    const base::NativeEvent& native_key_event) {
+void DummyInputMethod::DispatchKeyEvent(const base::NativeEvent& event) {
+}
+
+void DummyInputMethod::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
 }
 
 void DummyInputMethod::OnTextInputTypeChanged(const TextInputClient* client) {
@@ -46,7 +48,7 @@ void DummyInputMethod::CancelComposition(const TextInputClient* client) {
 }
 
 std::string DummyInputMethod::GetInputLocale() {
-  return "";
+  return std::string();
 }
 
 base::i18n::TextDirection DummyInputMethod::GetInputTextDirection() {
