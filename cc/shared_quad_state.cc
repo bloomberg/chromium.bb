@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "cc/shared_quad_state.h"
+#include "CCSharedQuadState.h"
 
 #include "FloatQuad.h"
 

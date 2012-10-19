@@ -9,6 +9,7 @@
 #include "CCLayerImpl.h"
 #include "CCLayerTreeHost.h"
 #include "CCOverdrawMetrics.h"
+#include "CCTextureUpdateQueue.h"
 #include "CCTiledLayerImpl.h"
 #include "Region.h"
 #include "base/basictypes.h"

@@ -8,7 +8,7 @@
 
 #include "CCLayerImpl.h"
 #include "CCMathUtil.h"
-#include "cc/single_thread_proxy.h"
+#include "CCSingleThreadProxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>
 

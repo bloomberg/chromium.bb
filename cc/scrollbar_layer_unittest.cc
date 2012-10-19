@@ -8,7 +8,7 @@
 
 #include "CCScrollbarAnimationController.h"
 #include "CCScrollbarLayerImpl.h"
-#include "cc/single_thread_proxy.h"
+#include "CCSingleThreadProxy.h"
 #include "cc/test/fake_web_scrollbar_theme_geometry.h"
 #include "cc/tree_synchronizer.h"
 #include "testing/gtest/include/gtest/gtest.h"

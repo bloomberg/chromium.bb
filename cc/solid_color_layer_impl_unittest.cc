@@ -4,11 +4,11 @@
 
 #include "config.h"
 
-#include "cc/solid_color_layer_impl.h"
+#include "CCSolidColorLayerImpl.h"
 
 #include "CCAppendQuadsData.h"
-#include "cc/single_thread_proxy.h"
-#include "cc/solid_color_draw_quad.h"
+#include "CCSingleThreadProxy.h"
+#include "CCSolidColorDrawQuad.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/mock_quad_culler.h"
 #include "testing/gmock/include/gmock/gmock.h"

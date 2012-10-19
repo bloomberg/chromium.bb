@@ -6,10 +6,10 @@
 
 #include "cc/bitmap_canvas_layer_texture_updater.h"
 
+#include "CCTextureUpdateQueue.h"
 #include "cc/layer_painter.h"
 #include "cc/platform_color.h"
 #include "cc/resource_update.h"
-#include "cc/texture_update_queue.h"
 #include "skia/ext/platform_canvas.h"
 
 namespace cc {

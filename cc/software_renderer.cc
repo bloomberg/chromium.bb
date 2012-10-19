@@ -7,10 +7,10 @@
 #include "CCRendererSoftware.h"
 
 #include "CCDebugBorderDrawQuad.h"
-#include "CCRenderPassDrawQuad.h"
+#include "CCSolidColorDrawQuad.h"
+#include "CCTextureDrawQuad.h"
 #include "CCTileDrawQuad.h"
-#include "cc/solid_color_draw_quad.h"
-#include "cc/texture_draw_quad.h"
+#include "CCRenderPassDrawQuad.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkMatrix.h"

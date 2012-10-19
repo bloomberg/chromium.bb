@@ -5,13 +5,13 @@
 #ifndef CCRenderPass_h
 #define CCRenderPass_h
 
-#include "CCDrawQuad.h"
-#include "FloatRect.h"
 #include "base/basictypes.h"
 #include "cc/hash_pair.h"
 #include "cc/scoped_ptr_hash_map.h"
 #include "cc/scoped_ptr_vector.h"
-#include "cc/shared_quad_state.h"
+#include "CCDrawQuad.h"
+#include "CCSharedQuadState.h"
+#include "FloatRect.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include <public/WebFilterOperations.h>
 #include <public/WebTransformationMatrix.h>

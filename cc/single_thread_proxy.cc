@@ -4,14 +4,14 @@
 
 #include "config.h"
 
-#include "cc/single_thread_proxy.h"
+#include "CCSingleThreadProxy.h"
 
 #include "CCDrawQuad.h"
 #include "CCGraphicsContext.h"
 #include "CCLayerTreeHost.h"
+#include "CCTextureUpdateController.h"
 #include "CCTimer.h"
 #include "base/debug/trace_event.h"
-#include "cc/texture_update_controller.h"
 #include <wtf/CurrentTime.h>
 
 namespace cc {

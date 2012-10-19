@@ -5,7 +5,7 @@
 #ifndef CCDrawQuad_h
 #define CCDrawQuad_h
 
-#include "cc/shared_quad_state.h"
+#include "CCSharedQuadState.h"
 
 namespace cc {
 

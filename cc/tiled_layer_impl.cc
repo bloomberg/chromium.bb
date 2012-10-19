@@ -12,11 +12,11 @@
 #include "CCLayerTilingData.h"
 #include "CCMathUtil.h"
 #include "CCQuadSink.h"
+#include "CCSolidColorDrawQuad.h"
 #include "CCTileDrawQuad.h"
 #include "FloatQuad.h"
 #include "base/basictypes.h"
 #include "base/stringprintf.h"
-#include "cc/solid_color_draw_quad.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkColor.h"
 

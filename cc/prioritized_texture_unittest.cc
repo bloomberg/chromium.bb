@@ -7,11 +7,11 @@
 #include "CCPrioritizedTexture.h"
 
 #include "CCPrioritizedTextureManager.h"
-#include "cc/single_thread_proxy.h" // For DebugScopedSetImplThread
+#include "CCSingleThreadProxy.h" // For DebugScopedSetImplThread
+#include "CCTexture.h"
 #include "cc/test/fake_graphics_context.h"
 #include "cc/test/tiled_layer_test_common.h"
 #include "cc/test/web_compositor_initializer.h"
-#include "cc/texture.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using namespace cc;

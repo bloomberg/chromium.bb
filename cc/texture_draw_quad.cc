@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "cc/texture_draw_quad.h"
+#include "CCTextureDrawQuad.h"
 
 #include "base/logging.h"
 

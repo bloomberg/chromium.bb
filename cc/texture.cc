@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "cc/texture.h"
+#include "CCTexture.h"
 
 namespace cc {
 

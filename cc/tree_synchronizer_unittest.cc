@@ -9,9 +9,9 @@
 #include "CCLayerAnimationController.h"
 #include "CCLayerImpl.h"
 #include "CCProxy.h"
+#include "CCSingleThreadProxy.h"
 #include "Region.h"
 #include "cc/layer.h"
-#include "cc/single_thread_proxy.h"
 #include "cc/test/animation_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

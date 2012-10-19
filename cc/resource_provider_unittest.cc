@@ -7,10 +7,10 @@
 #include "CCResourceProvider.h"
 
 #include "CCGraphicsContext.h"
+#include "CCSingleThreadProxy.h" // For DebugScopedSetImplThread
 #include "base/logging.h"
 #include "cc/scoped_ptr_deque.h"
 #include "cc/scoped_ptr_hash_map.h"
-#include "cc/single_thread_proxy.h" // For DebugScopedSetImplThread
 #include "cc/test/compositor_fake_web_graphics_context_3d.h"
 #include "cc/test/fake_web_compositor_output_surface.h"
 #include "testing/gtest/include/gtest/gtest.h"

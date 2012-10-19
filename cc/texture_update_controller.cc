@@ -4,18 +4,18 @@
 
 #include "config.h"
 
-#include "cc/texture_update_controller.h"
+#include "CCTextureUpdateController.h"
 
+#include "third_party/khronos/GLES2/gl2.h"
 #include "CCResourceProvider.h"
 #include "base/debug/trace_event.h"
 #include "cc/prioritized_texture.h"
 #include "cc/proxy.h"
 #include "cc/texture_copier.h"
-#include "third_party/khronos/GLES2/gl2.h"
-#include "third_party/skia/include/gpu/SkGpuDevice.h"
 #include <limits>
 #include <public/WebGraphicsContext3D.h>
 #include <public/WebSharedGraphicsContext3D.h>
+#include "third_party/skia/include/gpu/SkGpuDevice.h"
 #include <wtf/CurrentTime.h>
 
 using WebKit::WebGraphicsContext3D;

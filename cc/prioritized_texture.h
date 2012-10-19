@@ -7,12 +7,12 @@
 
 #include "CCPriorityCalculator.h"
 #include "CCResourceProvider.h"
+#include "CCTexture.h"
 #include "IntRect.h"
 #include "IntSize.h"
 #include "base/basictypes.h"
-#include "base/logging.h"
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "cc/texture.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
 namespace cc {

@@ -10,7 +10,7 @@
 #include "CCLayerTreeHostImpl.h"
 #include "CCProxy.h"
 #include "CCScheduler.h"
-#include "cc/texture_update_controller.h"
+#include "CCTextureUpdateController.h"
 #include <base/time.h>
 
 namespace cc {
