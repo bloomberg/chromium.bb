@@ -109,12 +109,10 @@ void ChromeToMobileBubbleGtk::SnapshotGenerated(const FilePath& path,
                                                 int64 bytes) {
   snapshot_path_ = path;
   if (bytes > 0) {
-    service_->LogMetric(ChromeToMobileService::SNAPSHOT_GENERATED);
     gtk_button_set_label(GTK_BUTTON(send_copy_), l10n_util::GetStringFUTF8(
         IDS_CHROME_TO_MOBILE_BUBBLE_SEND_COPY, ui::FormatBytes(bytes)).c_str());
     gtk_widget_set_sensitive(send_copy_, TRUE);
   } else {
-    service_->LogMetric(ChromeToMobileService::SNAPSHOT_ERROR);
     gtk_button_set_label(GTK_BUTTON(send_copy_), l10n_util::GetStringUTF8(
         IDS_CHROME_TO_MOBILE_BUBBLE_SEND_COPY_FAILED).c_str());
   }
@@ -151,7 +149,6 @@ ChromeToMobileBubbleGtk::ChromeToMobileBubbleGtk(GtkWidget* anchor_widget,
       error_(NULL),
       bubble_(NULL) {
   DCHECK(service_->HasMobiles());
-  service_->LogMetric(ChromeToMobileService::BUBBLE_SHOWN);
 
   // Generate the MHTML snapshot now to report its size in the bubble.
   service_->GenerateSnapshot(browser_, weak_ptr_factory_.GetWeakPtr());

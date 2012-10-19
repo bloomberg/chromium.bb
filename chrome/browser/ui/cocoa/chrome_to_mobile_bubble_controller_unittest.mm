@@ -26,7 +26,6 @@ class MockChromeToMobileService : public ChromeToMobileService {
                                   Browser* browser,
                                   base::WeakPtr<Observer> observer));
   MOCK_METHOD1(DeleteSnapshot, void(const FilePath& snapshot));
-  MOCK_CONST_METHOD1(LogMetric, void(ChromeToMobileService::Metric));
 
   // A set of mock mobile devices, kept in lieu of the list in profile prefs.
   base::ListValue mobiles_;
@@ -120,7 +119,6 @@ TEST_F(ChromeToMobileBubbleControllerTest, OneDevice) {
   EXPECT_CALL(service_, SendToMobile(testing::_, testing::_,
                                      testing::_, testing::_)).Times(0);
   EXPECT_CALL(service_, DeleteSnapshot(testing::_));
-  EXPECT_CALL(service_, LogMetric(ChromeToMobileService::BUBBLE_SHOWN));
 
   service_.AddDevices(1);
   CreateBubble();
@@ -132,7 +130,6 @@ TEST_F(ChromeToMobileBubbleControllerTest, TwoDevices) {
   EXPECT_CALL(service_, SendToMobile(testing::_, testing::_,
                                      testing::_, testing::_)).Times(0);
   EXPECT_CALL(service_, DeleteSnapshot(testing::_));
-  EXPECT_CALL(service_, LogMetric(ChromeToMobileService::BUBBLE_SHOWN));
 
   service_.AddDevices(2);
   CreateBubble();
@@ -144,7 +141,6 @@ TEST_F(ChromeToMobileBubbleControllerTest, ThreeDevices) {
   EXPECT_CALL(service_, SendToMobile(testing::_, testing::_,
                                      testing::_, testing::_)).Times(0);
   EXPECT_CALL(service_, DeleteSnapshot(testing::_));
-  EXPECT_CALL(service_, LogMetric(ChromeToMobileService::BUBBLE_SHOWN));
 
   service_.AddDevices(3);
   CreateBubble();
@@ -156,7 +152,6 @@ TEST_F(ChromeToMobileBubbleControllerTest, SendWithoutSnapshot) {
   EXPECT_CALL(service_, GenerateSnapshot(NULL, testing::_));
   EXPECT_CALL(service_, SendToMobile(testing::_, path, NULL, testing::_));
   EXPECT_CALL(service_, DeleteSnapshot(testing::_));
-  EXPECT_CALL(service_, LogMetric(ChromeToMobileService::BUBBLE_SHOWN));
 
   service_.AddDevices(1);
   CreateBubble();
@@ -168,8 +163,6 @@ TEST_F(ChromeToMobileBubbleControllerTest, SendWithSnapshot) {
   EXPECT_CALL(service_, GenerateSnapshot(NULL, testing::_));
   EXPECT_CALL(service_, SendToMobile(testing::_, path, NULL, testing::_));
   EXPECT_CALL(service_, DeleteSnapshot(testing::_));
-  EXPECT_CALL(service_, LogMetric(ChromeToMobileService::BUBBLE_SHOWN));
-  EXPECT_CALL(service_, LogMetric(ChromeToMobileService::SNAPSHOT_GENERATED));
 
   service_.AddDevices(1);
   CreateBubble();

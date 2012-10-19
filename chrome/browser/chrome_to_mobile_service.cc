@@ -50,6 +50,30 @@
 
 namespace {
 
+enum Metric {
+  DEVICES_REQUESTED = 0,  // Cloud print was contacted to list devices.
+  DEVICES_AVAILABLE,      // Cloud print returned 1+ compatible devices.
+  BUBBLE_SHOWN,           // The page action bubble was shown.
+  SNAPSHOT_GENERATED,     // A snapshot was successfully generated.
+  SNAPSHOT_ERROR,         // An error occurred during snapshot generation.
+  SENDING_URL,            // Send was invoked (with or without a snapshot).
+  SENDING_SNAPSHOT,       // A snapshot was sent along with the page URL.
+  SEND_SUCCESS,           // Cloud print responded with success on send.
+  SEND_ERROR,             // Cloud print responded with failure on send.
+  LEARN_MORE_CLICKED,     // The "Learn more" help article link was clicked.
+  BAD_TOKEN,              // The cloud print access token could not be minted.
+  BAD_SEARCH_AUTH,        // The cloud print search request failed (auth).
+  BAD_SEARCH_OTHER,       // The cloud print search request failed (other).
+  BAD_SEND_407,           // The cloud print send response was errorCode==407.
+                          // "Print job added but failed to notify printer..."
+  BAD_SEND_ERROR,         // The cloud print send response was errorCode!=407.
+  BAD_SEND_AUTH,          // The cloud print send request failed (auth).
+  BAD_SEND_OTHER,         // The cloud print send request failed (other).
+  SEARCH_SUCCESS,         // Cloud print responded with success on search.
+  SEARCH_ERROR,           // Cloud print responded with failure on search.
+  NUM_METRICS,
+};
+
 // The maximum number of retries for the URLFetcher requests.
 const size_t kMaxRetries = 5;
 
@@ -67,9 +91,8 @@ const char kTypeAndroid[] = "ANDROID_CHROME_SNAPSHOT";
 const char kTypeIOS[] = "IOS_CHROME_SNAPSHOT";
 
 // Log a metric for the "ChromeToMobile.Service" histogram.
-void LogServiceMetric(ChromeToMobileService::Metric metric) {
-  UMA_HISTOGRAM_ENUMERATION("ChromeToMobile.Service", metric,
-                            ChromeToMobileService::NUM_METRICS);
+void LogMetric(Metric metric) {
+  UMA_HISTOGRAM_ENUMERATION("ChromeToMobile.Service", metric, NUM_METRICS);
 }
 
 // Get the job type string for a cloud print job submission.
@@ -151,7 +174,7 @@ void CreateSnapshotFile(CreateSnapshotFileCallback callback) {
     file.clear();
   if (!content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                         base::Bind(callback, file))) {
-    LogServiceMetric(ChromeToMobileService::SNAPSHOT_ERROR);
+    LogMetric(SNAPSHOT_ERROR);
     NOTREACHED();
   }
 }
@@ -169,7 +192,7 @@ void ReadSnapshotFile(scoped_ptr<ChromeToMobileService::JobData> data,
     data->snapshot_content.clear();
   if (!content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
           base::Bind(callback, base::Passed(&data)))) {
-    LogServiceMetric(ChromeToMobileService::SNAPSHOT_ERROR);
+    LogMetric(SNAPSHOT_ERROR);
     NOTREACHED();
   }
 }
@@ -183,6 +206,10 @@ void DeleteSnapshotFile(const FilePath& snapshot) {
 }
 
 }  // namespace
+
+ChromeToMobileService::Observer::Observer() {
+  LogMetric(BUBBLE_SHOWN);
+}
 
 ChromeToMobileService::Observer::~Observer() {}
 
@@ -313,10 +340,6 @@ void ChromeToMobileService::DeleteSnapshot(const FilePath& snapshot) {
     }
     snapshots_.erase(snapshot);
   }
-}
-
-void ChromeToMobileService::LogMetric(Metric metric) const {
-  LogServiceMetric(metric);
 }
 
 void ChromeToMobileService::LearnMore(Browser* browser) const {
@@ -463,17 +486,23 @@ void ChromeToMobileService::SnapshotFileCreated(
   // Track the set of temporary files to be deleted later.
   snapshots_.insert(path);
 
+  // Generate the snapshot and callback SnapshotGenerated, or signal failure.
   Browser* browser = browser::FindBrowserWithID(browser_id);
   if (!path.empty() && browser && chrome::GetActiveWebContents(browser)) {
-    // Generate the snapshot and have the observer be called back on completion.
     chrome::GetActiveWebContents(browser)->GenerateMHTML(path,
-        base::Bind(&Observer::SnapshotGenerated, observer));
+        base::Bind(&ChromeToMobileService::SnapshotGenerated,
+                   weak_ptr_factory_.GetWeakPtr(), observer));
   } else {
-    LogMetric(SNAPSHOT_ERROR);
-    // Signal snapshot generation failure.
-    if (observer.get())
-      observer->SnapshotGenerated(FilePath(), 0);
+    SnapshotGenerated(observer, FilePath(), 0);
   }
+}
+
+void ChromeToMobileService::SnapshotGenerated(base::WeakPtr<Observer> observer,
+                                              const FilePath& path,
+                                              int64 bytes) {
+  LogMetric(bytes > 0 ? SNAPSHOT_GENERATED : SNAPSHOT_ERROR);
+  if (observer.get())
+    observer->SnapshotGenerated(path, bytes);
 }
 
 void ChromeToMobileService::SnapshotFileRead(base::WeakPtr<Observer> observer,

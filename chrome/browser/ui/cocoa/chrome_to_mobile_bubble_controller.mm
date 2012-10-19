@@ -108,7 +108,6 @@ void ChromeToMobileBubbleNotificationBridge::OnSendComplete(bool success) {
 // Override -[BaseBubbleController showWindow:] to set up UI elements.
 - (void)showWindow:(id)sender {
   DCHECK(service_->HasMobiles());
-  service_->LogMetric(ChromeToMobileService::BUBBLE_SHOWN);
 
   // Force load the NIB.
   NSWindow* window = [self window];
@@ -228,12 +227,10 @@ void ChromeToMobileBubbleNotificationBridge::OnSendComplete(bool success) {
   snapshotPath_ = path;
   NSString* text = nil;
   if (bytes > 0) {
-    service_->LogMetric(ChromeToMobileService::SNAPSHOT_GENERATED);
     [sendCopy_ setEnabled:YES];
     text = l10n_util::GetNSStringF(IDS_CHROME_TO_MOBILE_BUBBLE_SEND_COPY,
                                    ui::FormatBytes(bytes));
   } else {
-    service_->LogMetric(ChromeToMobileService::SNAPSHOT_ERROR);
     text = l10n_util::GetNSString(IDS_CHROME_TO_MOBILE_BUBBLE_SEND_COPY_FAILED);
   }
   [sendCopy_ setTitle:text];

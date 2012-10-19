@@ -179,12 +179,10 @@ void ChromeToMobileBubbleView::SnapshotGenerated(const FilePath& path,
                                                  int64 bytes) {
   snapshot_path_ = path;
   if (bytes > 0) {
-    service_->LogMetric(ChromeToMobileService::SNAPSHOT_GENERATED);
     send_copy_->SetText(l10n_util::GetStringFUTF16(
         IDS_CHROME_TO_MOBILE_BUBBLE_SEND_COPY, ui::FormatBytes(bytes)));
     send_copy_->SetEnabled(true);
   } else {
-    service_->LogMetric(ChromeToMobileService::SNAPSHOT_ERROR);
     send_copy_->SetText(l10n_util::GetStringUTF16(
         IDS_CHROME_TO_MOBILE_BUBBLE_SEND_COPY_FAILED));
   }
@@ -218,7 +216,6 @@ void ChromeToMobileBubbleView::OnSendComplete(bool success) {
 
 void ChromeToMobileBubbleView::Init() {
   DCHECK(service_->HasMobiles());
-  service_->LogMetric(ChromeToMobileService::BUBBLE_SHOWN);
 
   GridLayout* layout = new GridLayout(this);
   SetLayoutManager(layout);
