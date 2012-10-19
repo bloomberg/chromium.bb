@@ -245,16 +245,15 @@ void TabHelper::OnDidGetApplicationInfo(int32 page_id,
   if (!entry || (entry->GetPageID() != page_id))
     return;
 
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
   switch (pending_web_app_action_) {
     case CREATE_SHORTCUT: {
       chrome::ShowCreateWebAppShortcutsDialog(
           web_contents()->GetView()->GetTopLevelNativeWindow(),
-          tab_contents);
+          web_contents());
       break;
     }
     case UPDATE_SHORTCUT: {
-      web_app::UpdateShortcutForTabContents(tab_contents);
+      web_app::UpdateShortcutForTabContents(web_contents());
       break;
     }
     default:

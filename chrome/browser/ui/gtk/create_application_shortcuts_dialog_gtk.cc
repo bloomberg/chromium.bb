@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -51,8 +50,8 @@ const int kDescriptionLabelHeightLines = 3;
 namespace chrome {
 
 void ShowCreateWebAppShortcutsDialog(gfx::NativeWindow parent_window,
-                                     TabContents* tab_contents) {
-  new CreateWebApplicationShortcutsDialogGtk(parent_window, tab_contents);
+                                     content::WebContents* web_contents) {
+  new CreateWebApplicationShortcutsDialogGtk(parent_window, web_contents);
 }
 
 }  // namespace chrome
@@ -293,22 +292,21 @@ void CreateApplicationShortcutsDialogGtk::OnToggleCheckbox(GtkWidget* sender) {
 
 CreateWebApplicationShortcutsDialogGtk::CreateWebApplicationShortcutsDialogGtk(
     GtkWindow* parent,
-    TabContents* tab_contents)
+    content::WebContents* web_contents)
   : CreateApplicationShortcutsDialogGtk(parent),
-    tab_contents_(tab_contents) {
+    web_contents_(web_contents) {
 
   // Get shortcut information now, it's needed for our UI.
-  web_app::GetShortcutInfoForTab(tab_contents_, &shortcut_info_);
+  web_app::GetShortcutInfoForTab(web_contents, &shortcut_info_);
   CreateIconPixBuf(shortcut_info_.favicon);
 
   CreateDialogBox(parent);
 }
 
 void CreateWebApplicationShortcutsDialogGtk::OnCreatedShortcut() {
-  Browser* browser =
-      browser::FindBrowserWithWebContents(tab_contents_->web_contents());
+  Browser* browser = browser::FindBrowserWithWebContents(web_contents_);
   if (browser)
-    chrome::ConvertTabToAppWindow(browser, tab_contents_->web_contents());
+    chrome::ConvertTabToAppWindow(browser, web_contents_);
 }
 
 CreateChromeApplicationShortcutsDialogGtk::

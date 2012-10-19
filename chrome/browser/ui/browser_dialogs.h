@@ -67,7 +67,7 @@ void HideHungRendererDialog(content::WebContents* contents);
 #if !defined(OS_MACOSX)
 // Shows the create web app shortcut dialog box.
 void ShowCreateWebAppShortcutsDialog(gfx::NativeWindow parent_window,
-                                     TabContents* tab_contents);
+                                     content::WebContents* tab_contents);
 #endif
 
 }  // namespace chrome

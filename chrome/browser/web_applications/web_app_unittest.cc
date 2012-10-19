@@ -7,10 +7,11 @@
 #include "base/file_path.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
+#include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,12 +19,18 @@
 using content::BrowserThread;
 using content::RenderViewHostTester;
 
-class WebApplicationTest : public TabContentsTestHarness {
+class WebApplicationTest : public ChromeRenderViewHostTestHarness {
  public:
   WebApplicationTest() : ui_thread_(BrowserThread::UI, &message_loop_) {
   }
 
  private:
+  virtual void SetUp() OVERRIDE {
+    ChromeRenderViewHostTestHarness::SetUp();
+    extensions::TabHelper::CreateForWebContents(web_contents());
+    FaviconTabHelper::CreateForWebContents(web_contents());
+  }
+
   content::TestBrowserThread ui_thread_;
 };
 
@@ -45,7 +52,7 @@ TEST_F(WebApplicationTest, MAYBE_GetShortcutInfoForTab) {
       rvh(),
       ExtensionHostMsg_DidGetApplicationInfo(0, 0, web_app_info));
   ShellIntegration::ShortcutInfo info;
-  web_app::GetShortcutInfoForTab(tab_contents(), &info);
+  web_app::GetShortcutInfoForTab(web_contents(), &info);
 
   EXPECT_EQ(title, info.title);
   EXPECT_EQ(description, info.description);

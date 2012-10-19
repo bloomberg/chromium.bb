@@ -22,9 +22,12 @@ typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkWindow GtkWindow;
 
 class Profile;
-class TabContents;
 
-namespace extensions{
+namespace content {
+class WebContents;
+}
+
+namespace extensions {
 class Extension;
 }
 
@@ -82,11 +85,11 @@ class CreateApplicationShortcutsDialogGtk
 class CreateWebApplicationShortcutsDialogGtk
     : public CreateApplicationShortcutsDialogGtk {
  public:
-  // Displays the dialog box to create application shortcuts for |tab_contents|.
-  static void Show(GtkWindow* parent, TabContents* tab_contents);
+  // Displays the dialog box to create application shortcuts for |web_contents|.
+  static void Show(GtkWindow* parent, content::WebContents* web_contents);
 
   CreateWebApplicationShortcutsDialogGtk(GtkWindow* parent,
-                                         TabContents* tab_contents);
+                                         content::WebContents* web_contents);
 
   virtual void OnCreatedShortcut(void) OVERRIDE;
 
@@ -94,8 +97,8 @@ class CreateWebApplicationShortcutsDialogGtk
   virtual ~CreateWebApplicationShortcutsDialogGtk() {}
 
  private:
-  // TabContents for which the shortcut will be created.
-  TabContents* tab_contents_;
+  // WebContents for which the shortcut will be created.
+  content::WebContents* web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(CreateWebApplicationShortcutsDialogGtk);
 };

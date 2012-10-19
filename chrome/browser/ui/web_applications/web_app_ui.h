@@ -9,20 +9,22 @@
 
 #include "chrome/browser/shell_integration.h"
 
-class TabContents;
+namespace content {
+class WebContents;
+}
 
 namespace web_app {
 
-// Extracts shortcut info of given TabContents.
-void GetShortcutInfoForTab(TabContents* tab_contents,
+// Extracts shortcut info of the given WebContents.
+void GetShortcutInfoForTab(content::WebContents* web_contents,
                            ShellIntegration::ShortcutInfo* info);
 
-// Updates web app shortcut of the TabContents. This function checks and
+// Updates web app shortcut of the WebContents. This function checks and
 // updates web app icon and shortcuts if needed. For icon, the check is based
 // on MD5 hash of icon image. For shortcuts, it checks the desktop, start menu
 // and quick launch (as well as pinned shortcut) for shortcut and only
 // updates (recreates) them if they exits.
-void UpdateShortcutForTabContents(TabContents* tab_contents);
+void UpdateShortcutForTabContents(content::WebContents* web_contents);
 
 }  // namespace web_app
 

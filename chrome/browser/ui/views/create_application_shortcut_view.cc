@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_constants.h"
@@ -203,9 +202,9 @@ void AppInfoView::OnPaint(gfx::Canvas* canvas) {
 namespace chrome {
 
 void ShowCreateWebAppShortcutsDialog(gfx::NativeWindow parent_window,
-                                     TabContents* tab_contents) {
+                                     content::WebContents* web_contents) {
   views::Widget::CreateWindowWithParent(
-      new CreateUrlApplicationShortcutView(tab_contents),
+      new CreateUrlApplicationShortcutView(web_contents),
       parent_window)->Show();
 }
 
@@ -419,15 +418,15 @@ void CreateApplicationShortcutView::ButtonPressed(views::Button* sender,
 }
 
 CreateUrlApplicationShortcutView::CreateUrlApplicationShortcutView(
-    TabContents* tab_contents)
-    : CreateApplicationShortcutView(tab_contents->profile()),
-      tab_contents_(tab_contents),
+    content::WebContents* web_contents)
+    : CreateApplicationShortcutView(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext())),
+      web_contents_(web_contents),
       pending_download_(NULL)  {
 
-  web_app::GetShortcutInfoForTab(tab_contents_, &shortcut_info_);
+  web_app::GetShortcutInfoForTab(web_contents_, &shortcut_info_);
   const WebApplicationInfo& app_info =
-      extensions::TabHelper::FromWebContents(tab_contents_->web_contents())->
-          web_app_info();
+      extensions::TabHelper::FromWebContents(web_contents_)->web_app_info();
   if (!app_info.icons.empty()) {
     web_app::GetIconsInfo(app_info, &unprocessed_icons_);
     FetchIcon();
@@ -445,14 +444,13 @@ bool CreateUrlApplicationShortcutView::Accept() {
   if (!CreateApplicationShortcutView::Accept())
     return false;
 
-  extensions::TabHelper::FromWebContents(tab_contents_->web_contents())->
+  extensions::TabHelper::FromWebContents(web_contents_)->
       SetAppIcon(shortcut_info_.favicon.IsEmpty()
           ? SkBitmap()
           : *shortcut_info_.favicon.ToSkBitmap());
-  Browser* browser =
-      browser::FindBrowserWithWebContents(tab_contents_->web_contents());
+  Browser* browser = browser::FindBrowserWithWebContents(web_contents_);
   if (browser)
-    chrome::ConvertTabToAppWindow(browser, tab_contents_->web_contents());
+    chrome::ConvertTabToAppWindow(browser, web_contents_);
   return true;
 }
 
@@ -466,7 +464,7 @@ void CreateUrlApplicationShortcutView::FetchIcon() {
   pending_download_ = new IconDownloadCallbackFunctor(this);
   DCHECK(pending_download_);
 
-  FaviconTabHelper::FromWebContents(tab_contents_->web_contents())->
+  FaviconTabHelper::FromWebContents(web_contents_)->
       DownloadImage(unprocessed_icons_.back().url,
                     std::max(unprocessed_icons_.back().width,
                              unprocessed_icons_.back().height),

@@ -15,8 +15,11 @@
 #include "ui/views/window/dialog_delegate.h"
 
 class Profile;
-class TabContents;
 class SkBitmap;
+
+namespace content {
+class WebContents;
+}
 
 namespace extensions {
 class Extension;
@@ -81,7 +84,7 @@ class CreateApplicationShortcutView : public views::DialogDelegateView,
 // Create an application shortcut pointing to a URL.
 class CreateUrlApplicationShortcutView : public CreateApplicationShortcutView {
  public:
-  explicit CreateUrlApplicationShortcutView(TabContents* tab_contents);
+  explicit CreateUrlApplicationShortcutView(content::WebContents* web_contents);
   virtual ~CreateUrlApplicationShortcutView();
 
   virtual bool Accept() OVERRIDE;
@@ -95,7 +98,7 @@ class CreateUrlApplicationShortcutView : public CreateApplicationShortcutView {
   void OnIconDownloaded(bool errored, const SkBitmap& image);
 
   // The tab whose URL is being turned into an app.
-  TabContents* tab_contents_;
+  content::WebContents* web_contents_;
 
   // Pending app icon download tracked by us.
   class IconDownloadCallbackFunctor;
