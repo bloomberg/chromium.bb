@@ -13,7 +13,6 @@ import tempfile
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
 from chromite.scripts import upload_prebuilts as prebuilt
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import binpkg
 from chromite.lib import osutils
@@ -122,63 +121,6 @@ class TestPrebuilt(cros_test_lib.MoxTestCase):
     expected_path = os.path.join(prebuilt._PREBUILT_MAKE_CONF['amd64'])
     self.assertEqual(prebuilt.DeterminePrebuiltConfFile('fake_path', 'amd64'),
                      expected_path)
-
-  def testDeterminePrebuiltConf(self):
-    """Test the different known variants of boards for proper path discovery."""
-    fake_path = '/b/cbuild'
-    script_path = os.path.join(fake_path, 'src/platform/dev/host')
-    public_overlay_path = os.path.join(fake_path, 'src/overlays')
-    private_overlay_path = os.path.join(fake_path,
-                                        prebuilt._PRIVATE_OVERLAY_DIR)
-    path_dict = {'private_overlay_path': private_overlay_path,
-                 'public_overlay_path': public_overlay_path}
-    # format for targets
-    # board target key in dictionar
-    # Tuple containing cmd run, expected results as cmd obj, and expected output
-
-    # Mock output from cros_overlay_list
-    x86_out = ('%(private_overlay_path)s/chromeos-overlay\n'
-               '%(public_overlay_path)s/overlay-x86-generic\n' % path_dict)
-
-    x86_cmd = './cros_overlay_list --board x86-generic'
-    x86_expected_path = os.path.join(public_overlay_path, 'overlay-x86-generic',
-                                     'prebuilt.conf')
-    # Mock output from cros_overlay_list
-    tegra2_out = ('%(private_overlay_path)s/chromeos-overlay\n'
-                  '%(public_overlay_path)s/overlay-tegra2\n'
-                  '%(public_overlay_path)s/overlay-variant-tegra2-seaboard\n'
-                  '%(private_overlay_path)s/overlay-tegra2-private\n'
-                  '%(private_overlay_path)s/'
-                  'overlay-variant-tegra2-seaboard-private\n' % path_dict)
-    tegra2_cmd = './cros_overlay_list --board tegra2 --variant seaboard'
-    tegra2_expected_path = os.path.join(
-        private_overlay_path, 'overlay-variant-tegra2-seaboard-private',
-        'prebuilt.conf')
-
-
-    targets = {'x86-generic': {'cmd': x86_cmd,
-                               'output': x86_out,
-                               'result': x86_expected_path},
-              'tegra2_seaboard': {'cmd': tegra2_cmd,
-                                  'output': tegra2_out,
-                                  'result': tegra2_expected_path}
-              }
-
-    self.mox.StubOutWithMock(prebuilt.cros_build_lib, 'RunCommand')
-    for target, expected_results in targets.iteritems():
-      # create command object for output
-      cmd_result_obj = cros_build_lib.CommandResult()
-      cmd_result_obj.output = expected_results['output']
-      prebuilt.cros_build_lib.RunCommand(
-        expected_results['cmd'].split(), redirect_stdout=True,
-        cwd=script_path).AndReturn(cmd_result_obj)
-
-    self.mox.ReplayAll()
-    for target, expected_results in targets.iteritems():
-      target = prebuilt.BuildTarget(target)
-      self.assertEqual(
-        prebuilt.DeterminePrebuiltConfFile(fake_path, target),
-        expected_results['result'])
 
 
 class TestPackagesFileFiltering(cros_test_lib.TestCase):
@@ -435,9 +377,9 @@ class TestMain(cros_test_lib.MoxTestCase):
     self.mox.StubOutWithMock(binpkg, 'GrabRemotePackageIndex')
     binpkg.GrabRemotePackageIndex(old_binhost).AndReturn(True)
     self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, '__init__')
-    self.mox.StubOutWithMock(prebuilt, 'GetBoardPathFromCrosOverlayList')
+    self.mox.StubOutWithMock(prebuilt, 'GetBoardOverlay')
     fake_overlay_path = '/fake_path'
-    prebuilt.GetBoardPathFromCrosOverlayList(
+    prebuilt.GetBoardOverlay(
         options.build_path, options.board).AndReturn(fake_overlay_path)
     expected_gs_acl_path = os.path.join(fake_overlay_path,
                                         prebuilt._GOOGLESTORAGE_ACL_FILE)

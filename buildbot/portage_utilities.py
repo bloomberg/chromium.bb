@@ -18,9 +18,13 @@ from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import gerrit
 
-_CACHE_OVERLAY = '%(build_root)s/src/third_party/portage-stable'
-_PUBLIC_OVERLAY = '%(build_root)s/src/third_party/chromiumos-overlay'
-_OVERLAY_LIST_CMD = '%(build_root)s/src/platform/dev/host/cros_overlay_list'
+_PRIVATE_PREFIX = '%(buildroot)s/src/private-overlays'
+_GLOBAL_OVERLAYS = [
+  '%s/chromeos-overlay' % _PRIVATE_PREFIX,
+  '%s/chromeos-partner-overlay' % _PRIVATE_PREFIX,
+  '%(buildroot)s/src/third_party/chromiumos-overlay',
+  '%(buildroot)s/src/third_party/portage-stable',
+]
 
 # Takes two strings, package_name and commit_id.
 _GIT_COMMIT_MESSAGE = 'Marking 9999 ebuild for %s with commit(s) %s as stable.'
@@ -35,46 +39,85 @@ _ver = '(?P<version>' + \
 _pvr_re = re.compile('^%s-%s$' % (_pkg, _ver), re.VERBOSE)
 
 
-def FindOverlays(srcroot, overlay_type, board=None):
+def _ListOverlays(board=None, buildroot=constants.SOURCE_ROOT):
+  """Return the list of overlays to use for a given buildbot.
+
+  Always returns all overlays, and does not perform any filtering.
+
+  Args:
+    board: Board to look at.
+    buildroot: Source root to find overlays.
+  """
+  overlays, patterns = [], []
+  if board is None:
+    patterns += ['overlay*']
+  else:
+    board_no_variant, _, variant = board.partition('_')
+    patterns += ['overlay-%s' % board_no_variant]
+    if variant:
+      patterns += ['overlay-variant-%s' % board.replace('_', '-')]
+
+  for d in _GLOBAL_OVERLAYS:
+    d %= dict(buildroot=buildroot)
+    if os.path.isdir(d):
+      overlays.append(d)
+
+  for p in patterns:
+    overlays += glob.glob('%s/src/overlays/%s' % (buildroot, p))
+    overlays += glob.glob('%s/src/private-overlays/%s-private' % (buildroot, p))
+
+  return overlays
+
+
+def FindOverlays(overlay_type, board=None, buildroot=constants.SOURCE_ROOT):
   """Return the list of overlays to use for a given buildbot.
 
   Args:
-    overlay_type: A string describing which overlays you want.
-              'private': Just the private overlay.
-              'public': Just the public overlay.
-              'both': Both the public and private overlays.
     board: Board to look at.
+    buildroot: Source root to find overlays.
+    overlay_type: A string describing which overlays you want.
+      'private': Just the private overlays.
+      'public': Just the public overlays.
+      'both': Both the public and private overlays.
   """
-  # we use a dictionary to allow tests to override _OVERLAY_LIST_CMD;
-  # see the cbuildbot_stages and portage_utilities unit tests.
-  format_args = { 'build_root' : srcroot }
-  cmd = _OVERLAY_LIST_CMD % format_args
-  # Check in case we haven't checked out the source yet.
-  if not os.path.exists(cmd):
-    return []
-
-  cmd_argv = [cmd]
+  overlays = _ListOverlays(board=board, buildroot=buildroot)
+  private_prefix = _PRIVATE_PREFIX % dict(buildroot=buildroot)
   if overlay_type == constants.PRIVATE_OVERLAYS:
-    cmd_argv.append('--nopublic')
+    return [x for x in overlays if x.startswith(private_prefix)]
   elif overlay_type == constants.PUBLIC_OVERLAYS:
-    cmd_argv.append('--noprivate')
-  elif overlay_type != constants.BOTH_OVERLAYS:
+    return [x for x in overlays if not x.startswith(private_prefix)]
+  elif overlay_type == constants.BOTH_OVERLAYS:
+    return overlays
+  else:
+    assert overlay_type is None
     return []
 
-  if board:
-    board_no_variant, _, variant = board.partition('_')
-    cmd_argv.extend(['--board', board_no_variant, '--variant', variant])
-  else:
-    cmd_argv.append('--all_boards')
 
-  overlays = cros_build_lib.RunCommand(
-      cmd_argv, redirect_stdout=True, print_cmd=False).output.split()
-  if overlay_type != constants.PRIVATE_OVERLAYS:
-    # TODO(davidjames): cros_overlay_list should include chromiumos-overlay in
-    #                   its list of public overlays. But it doesn't yet...
-    overlays.append(_PUBLIC_OVERLAY % format_args)
-    overlays.append(_CACHE_OVERLAY % format_args)
-  return overlays
+class MissingOverlayException(Exception):
+  """This exception indicates that a needed overlay is missing."""
+
+
+def FindPrimaryOverlay(overlay_type, board, buildroot=constants.SOURCE_ROOT):
+  """Return the primary overlay to use for a given buildbot.
+
+  An overlay is only considered a primary overlay if it has a make.conf and a
+  toolchain.conf. If multiple primary overlays are found, the first primary
+  overlay is returned.
+
+  Args:
+    overlay_type: A string describing which overlays you want.
+      'private': Just the private overlays.
+      'public': Just the public overlays.
+      'both': Both the public and private overlays.
+    board: Board to look at.
+  Raises:
+    MissingOverlayException: No primary overlay found.
+  """
+  for overlay in FindOverlays(overlay_type, board, buildroot):
+    if (os.path.exists(os.path.join(overlay, 'make.conf')) and
+        os.path.exists(os.path.join(overlay, 'toolchain.conf'))):
+      return overlay
+  raise MissingOverlayException('No primary overlay found for board=%r' % board)
 
 
 def GetOverlayName(overlay):
@@ -494,7 +537,7 @@ class EBuild(object):
   @classmethod
   def UpdateCommitHashesForChanges(cls, changes, buildroot):
     """Updates the commit hashes for the EBuilds uprevved in changes."""
-    overlay_list = FindOverlays(buildroot, 'both')
+    overlay_list = FindOverlays(constants.BOTH_OVERLAYS, buildroot=buildroot)
     directory_src = os.path.join(buildroot, 'src')
     overlay_dict = dict((o, []) for o in overlay_list)
     BuildEBuildDictionary(overlay_dict, True, None)
@@ -759,8 +802,8 @@ def FindWorkonProjects(packages):
     The set of projects associated with the specified cros_workon packages.
   """
   all_projects = set()
-  root, both = constants.SOURCE_ROOT, constants.BOTH_OVERLAYS
-  for overlay in FindOverlays(root, both):
+  buildroot, both = constants.SOURCE_ROOT, constants.BOTH_OVERLAYS
+  for overlay in FindOverlays(both, buildroot=buildroot):
     for _, projects in GetWorkonProjectMap(overlay, packages):
       all_projects.update(projects)
   return all_projects

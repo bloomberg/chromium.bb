@@ -75,9 +75,9 @@ class BuilderStage(object):
   def _ExtractOverlays(self):
     """Extracts list of overlays into class."""
     overlays = portage_utilities.FindOverlays(
-        self._build_root, self._build_config['overlays'])
+        self._build_config['overlays'], buildroot=self._build_root)
     push_overlays = portage_utilities.FindOverlays(
-        self._build_root, self._build_config['push_overlays'])
+        self._build_config['push_overlays'], buildroot=self._build_root)
 
     # Sanity checks.
     # We cannot push to overlays that we don't rev.

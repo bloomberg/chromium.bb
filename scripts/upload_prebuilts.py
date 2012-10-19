@@ -27,6 +27,7 @@ import sys
 
 from chromite.buildbot import cbuildbot_background as bg
 from chromite.buildbot import constants
+from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
 from chromite.lib import osutils
@@ -231,24 +232,19 @@ def GenerateUploadDict(base_local_path, base_remote_path, pkgs):
 
   return upload_files
 
-def GetBoardPathFromCrosOverlayList(build_path, target):
-  """Use the cros_overlay_list to determine the path to the board overlay
+def GetBoardOverlay(build_path, target):
+  """Get the path to the board variant.
    Args:
      build_path: The path to the root of the build directory
-     target: The target that we are looking for, could consist of board and
-       board_variant, we handle that properly
+     target: The target board as a BuildTarget object.
    Returns:
-     The last line from cros_overlay_list as a string
+     The last overlay configured for the given board as a string.
   """
-  script_dir = os.path.join(build_path, 'src/platform/dev/host')
-  cmd = ['./cros_overlay_list', '--board', target.board]
-  if target.variant:
-    cmd += ['--variant', target.variant]
-
-  cmd_output = cros_build_lib.RunCommand(cmd, redirect_stdout=True,
-                                         cwd=script_dir)
-  # We only care about the last entry
-  return cmd_output.output.splitlines().pop()
+  board = target.board_variant
+  overlays = portage_utilities.FindOverlays(constants.BOTH_OVERLAYS, board,
+                                            buildroot=build_path)
+  # We only care about the last entry.
+  return overlays[-1]
 
 
 def DeterminePrebuiltConfFile(build_path, target):
@@ -270,7 +266,7 @@ def DeterminePrebuiltConfFile(build_path, target):
     make_path = _PREBUILT_MAKE_CONF[target]
   else:
     # We are a board
-    board = GetBoardPathFromCrosOverlayList(build_path, target)
+    board = GetBoardOverlay(build_path, target)
     make_path = os.path.join(board, 'prebuilt.conf')
 
   return make_path
@@ -717,8 +713,7 @@ def main(_argv):
 
   if target and options.private:
     binhost_base_url = options.upload
-    board_path = GetBoardPathFromCrosOverlayList(options.build_path,
-                                                 target)
+    board_path = GetBoardOverlay(options.build_path, target)
     acl = os.path.join(board_path, _GOOGLESTORAGE_ACL_FILE)
 
   uploader = PrebuiltUploader(options.upload, acl, binhost_base_url,

@@ -7,13 +7,13 @@
 """
 
 import copy
-import errno
 import json
 import optparse
 import os
 import sys
 
 from chromite.buildbot import constants
+from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 
@@ -27,8 +27,6 @@ import portage
 
 
 EMERGE_CMD = os.path.join(constants.CHROMITE_BIN_DIR, 'parallel_emerge')
-CROS_OVERLAY_LIST_CMD = os.path.join(
-    constants.SOURCE_ROOT, 'src/platform/dev/host/cros_overlay_list')
 PACKAGE_STABLE = '[stable]'
 PACKAGE_NONE = '[none]'
 SRC_ROOT = os.path.realpath(constants.SOURCE_ROOT)
@@ -227,21 +225,8 @@ def GetToolchainsForBoard(board):
 
   returns the list of toolchain tuples for the given board
   """
-  cmd = [CROS_OVERLAY_LIST_CMD]
-  if board == 'all' or board == 'sdk':
-    cmd.append('--all_boards')
-  else:
-    # TODO(vapier):
-    # Some tools will give us the base board name ('tegra2') while others will
-    # give us the board+variant ('tegra2_kaen').  The cros_overlay_list does
-    # not like getting variant names, so strip that off.  Not entirely clear
-    # if this is what we want to do, or if the cros_overlay_list should give
-    # us back the overlays (including variants).  I'm inclined to go with the
-    # latter, but that requires more testing to prevent fallout.
-    cmd.append('--board=' + board.split('_')[0])
-  overlays = cros_build_lib.RunCommand(
-      cmd, print_cmd=False, redirect_stdout=True).output.splitlines()
-
+  overlays = portage_utilities.FindOverlays(
+      constants.BOTH_OVERLAYS, None if board in ('all', 'sdk') else board)
   toolchains = GetTuplesForOverlays(overlays)
   if board == 'sdk':
     toolchains = FilterToolchains(toolchains, 'sdk', True)

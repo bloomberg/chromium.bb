@@ -70,10 +70,6 @@ class AbstractStageTest(cros_test_lib.MoxTestCase):
     self.options.prebuilts = False
     self.options.clobber = False
     self.options.buildnumber = 1234
-    self.overlay = os.path.join(self.build_root,
-                                'src/third_party/chromiumos-overlay')
-    self.portage_overlay = os.path.join(self.build_root,
-                                        'src/third_party/portage-stable')
 
     bs.BuilderStage.SetManifestBranch(self.TARGET_MANIFEST_BRANCH)
     portage_utilities._OVERLAY_LIST_CMD = '/bin/true'
@@ -860,10 +856,7 @@ class UprevStageTest(AbstractStageTest):
     """Uprevving the build without uprevving chrome."""
     self.build_config['uprev'] = True
 
-    commands.UprevPackages(
-        self.build_root,
-        self._boards,
-        [self.overlay, self.portage_overlay])
+    commands.UprevPackages(self.build_root, self._boards, [])
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -891,10 +884,7 @@ class UprevStageTest(AbstractStageTest):
         chrome_root=None,
         chrome_version=None).AndReturn(None)
 
-    commands.UprevPackages(
-        self.build_root,
-        self._boards,
-        [self.overlay, self.portage_overlay])
+    commands.UprevPackages(self.build_root, self._boards, [])
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -1296,11 +1286,6 @@ class PublishUprevChangesStageTest(AbstractStageTest):
     """Test values for PublishUprevChanges."""
     self.build_config['push_overlays'] = constants.PUBLIC_OVERLAYS
     self.build_config['master'] = True
-
-    commands.UprevPush(
-        self.build_root,
-        [self.overlay, self.portage_overlay],
-        self.options.debug)
 
     self.mox.ReplayAll()
     self.RunStage()

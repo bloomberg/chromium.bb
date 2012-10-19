@@ -380,7 +380,8 @@ class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
 
     build_root = 'fakebuildroot'
     overlays = ['public_overlay']
-    portage_utilities.FindOverlays(build_root, 'both').AndReturn(overlays)
+    portage_utilities.FindOverlays(
+        constants.BOTH_OVERLAYS, buildroot=build_root).AndReturn(overlays)
     overlay_dict = dict(public_overlay=[])
     portage_utilities.BuildEBuildDictionary(overlay_dict,
                                             True, None).WithSideEffects(
@@ -423,50 +424,89 @@ class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
 
 
 class FindOverlaysTest(cros_test_lib.MoxTestCase):
+  FAKE, MARIO = 'fake-board', 'x86-mario'
+  PRIVATE = constants.PRIVATE_OVERLAYS
+  PUBLIC = constants.PUBLIC_OVERLAYS
+  BOTH = constants.BOTH_OVERLAYS
 
   def setUp(self):
-    self.build_root = '/fake_root'
-    self.overlay = os.path.join(self.build_root,
-                                'src/third_party/chromiumos-overlay')
-    self.portage_overlay = os.path.join(self.build_root,
-                                        'src/third_party/portage-stable')
+    """Fetch all overlays."""
+    self.overlays = {}
+    for b in (None, self.FAKE, self.MARIO):
+      self.overlays[b] = d = {}
+      for o in (self.PRIVATE, self.PUBLIC, self.BOTH, None):
+        d[o] = portage_utilities.FindOverlays(o, b, constants.SOURCE_ROOT)
 
-  def testFindOverlays(self):
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-    stub_list_cmd = '/bin/true'
-    public_output = 'public1\npublic2\n'
-    private_output = 'private1\nprivate2\n'
+  def testMissingPrimaryOverlay(self):
+    """Test what happens when a primary overlay is missing.
 
-    output_obj = cros_build_lib.CommandResult()
-    output_obj.output = public_output
-    cros_build_lib.RunCommand(
-        [stub_list_cmd, '--noprivate', '--all_boards'],
-        print_cmd=False, redirect_stdout=True).AndReturn(output_obj)
+    If the overlay doesn't exist, FindOverlays should throw a
+    MissingOverlayException.
+    """
+    self.assertRaises(portage_utilities.MissingOverlayException,
+                      portage_utilities.FindPrimaryOverlay, self.BOTH,
+                      self.FAKE, constants.SOURCE_ROOT)
 
-    output_obj = cros_build_lib.CommandResult()
-    output_obj.output = private_output
-    cros_build_lib.RunCommand(
-        [stub_list_cmd, '--nopublic', '--all_boards'],
-        print_cmd=False, redirect_stdout=True).AndReturn(output_obj)
+  def testDuplicates(self):
+    """Verify that no duplicate overlays are returned."""
+    for d in self.overlays.itervalues():
+      for overlays in d.itervalues():
+        self.assertEqual(len(overlays), len(set(overlays)))
 
-    output_obj = cros_build_lib.CommandResult()
-    output_obj.output = private_output + public_output
-    cros_build_lib.RunCommand(
-        [stub_list_cmd, '--all_boards'],
-        print_cmd=False, redirect_stdout=True).AndReturn(output_obj)
+  def testOverlaysExist(self):
+    """Verify that all overlays returned actually exist on disk."""
+    for d in self.overlays.itervalues():
+      for overlays in d.itervalues():
+        self.assertTrue(all(os.path.isdir(x) for x in overlays))
 
-    self.mox.ReplayAll()
-    portage_utilities._OVERLAY_LIST_CMD = stub_list_cmd
-    public_overlays = ['public1', 'public2', self.overlay, self.portage_overlay]
-    private_overlays = ['private1', 'private2']
+  def testPrivatePublicOverlayTypes(self):
+    """Verify public/private filtering.
 
-    self.assertEqual(portage_utilities.FindOverlays(self.build_root, 'public'),
-                     public_overlays)
-    self.assertEqual(portage_utilities.FindOverlays(self.build_root, 'private'),
-                     private_overlays)
-    self.assertEqual(portage_utilities.FindOverlays(self.build_root, 'both'),
-                     private_overlays + public_overlays)
-    self.mox.VerifyAll()
+    If we ask for results from 'both overlays', we should
+    find all public and all private overlays.
+
+    There should always be at least one public overlay. (Note:
+    there may not be any private overlays, e.g. if the user has
+    a public checkout.)
+    """
+    for d in self.overlays.itervalues():
+      self.assertTrue(set(d[self.BOTH]) >= set(d[self.PUBLIC]))
+      self.assertTrue(set(d[self.BOTH]) > set(d[self.PRIVATE]))
+      self.assertTrue(set(d[self.PUBLIC]).isdisjoint(d[self.PRIVATE]))
+
+  def testNoOverlayType(self):
+    """If we specify overlay_type=None, no results should be returned."""
+    self.assertTrue(all(d[None] == [] for d in self.overlays.itervalues()))
+
+  def testNonExistentBoard(self):
+    """Test what happens when a non-existent board is supplied.
+
+    If we specify a non-existent board to FindOverlays, only generic
+    overlays should be returned.
+    """
+    for o in (self.PUBLIC, self.BOTH):
+      self.assertTrue(set(self.overlays[self.FAKE][o]) <
+                      set(self.overlays[self.MARIO][o]))
+
+  def testAllBoards(self):
+    """If we specify board=None, all overlays should be returned."""
+    for o in (self.PUBLIC, self.BOTH):
+      for b in (self.FAKE, self.MARIO):
+        self.assertTrue(set(self.overlays[b][o]) < set(self.overlays[None][o]))
+
+  def testMarioPrimaryOverlay(self):
+    """Verify that mario has a primary overlay.
+
+    Further, the only difference between the public overlays for mario and a
+    fake board is the primary overlay, which is listed last.
+    """
+    mario_primary = portage_utilities.FindPrimaryOverlay(self.BOTH, self.MARIO,
+                                                         constants.SOURCE_ROOT)
+    self.assertTrue(mario_primary in self.overlays[self.MARIO][self.BOTH])
+    self.assertTrue(mario_primary not in self.overlays[self.FAKE][self.BOTH])
+    self.assertEqual(mario_primary, self.overlays[self.MARIO][self.PUBLIC][-1])
+    self.assertEqual(self.overlays[self.MARIO][self.PUBLIC][:-1],
+                     self.overlays[self.FAKE][self.PUBLIC])
 
 
 class BuildEBuildDictionaryTest(cros_test_lib.MoxTestCase):
