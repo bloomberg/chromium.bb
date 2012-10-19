@@ -22,11 +22,11 @@ void* return_address = 0;
 /* STACK_REMAINDER is to compensate for the
  *  return address slot which is still on the stack on x86.
  */
-#if TARGET_FULLARCH == arm
+#if defined(__arm__)
   #define STACK_REMAINDER 0L
-#elif defined(__i386__) || TARGET_FULLARCH == x86-32
+#elif defined(__i386__)
   #define STACK_REMAINDER -4L
-#elif defined(__x86_64__) || TARGET_FULLARCH == x86-64
+#elif defined(__x86_64__)
   #define STACK_REMAINDER -8L
 #else
 #error "unknown arch"

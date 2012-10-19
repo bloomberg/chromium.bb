@@ -39,11 +39,11 @@ void DumpMemory(const unsigned char* cp, int n) {
 void* GetReturnAddress(void* frame_end) {
 #if defined(__native_client__)
 
-#if TARGET_FULLARCH == arm
+#if defined(__arm__)
   return ((void**)frame_end)[-1];
-#elif TARGET_FULLARCH == x86-32
+#elif defined(__i386__)
   return ((void**)frame_end)[-1];
-#elif TARGET_FULLARCH == x86-64
+#elif defined(__x86_64__)
   /* NOTE: a call pushes 64 bits but we only care about the first 32 */
   return ((void**)frame_end)[-2];
 #else

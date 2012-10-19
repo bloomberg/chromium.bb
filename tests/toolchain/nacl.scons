@@ -152,13 +152,9 @@ env.AddNodeToTestSuite(node,
 # NOTE: we assume that the incoming env contains '-O2', '-fomit-frame-pointer'
 def MakeEnv(use_opts, use_frames):
   new_env = env.Clone()
-  # NOTE: this effectively introduces a light-weight version of AddBiasForPNaCl.
-  #       To be systematic we should not do this but it is only used
-  #       for stack_frame.cc and eh_return.c and other solutions
-  #       aren't pretty either.
-  new_env.Append(CPPDEFINES=['TARGET_FULLARCH=${TARGET_FULLARCH}'])
-  # TODO(mseaborn): Fix this test to build OK with -Wundef.
-  new_env.FilterOut(CCFLAGS=['-Wundef'])
+  # AddBiasForPNaCl() is only needed for stack_frame.cc and eh_return.c.
+  if new_env.Bit('bitcode'):
+    new_env.AddBiasForPNaCl()
   new_env.FilterOut(CFLAGS=['-pedantic'])
   new_env.FilterOut(CCFLAGS=['-pedantic'])
   if use_frames:
