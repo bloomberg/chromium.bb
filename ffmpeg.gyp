@@ -470,6 +470,10 @@
             '<(output_root)',
             '../..',  # The chromium 'src' directory.
           ],
+          'dependencies': [
+            # Required for the logging done in the stubs generator.
+            '../../base/base.gyp:base',
+          ],
           'direct_dependent_settings': {
             'defines': [
               '__STDC_CONSTANT_MACROS',  # FFmpeg uses INT64_C.
@@ -559,6 +563,9 @@
     {
       'target_name': 'ffmpeg_yasm',
       'type': 'static_library',
+      'includes': [
+        'ffmpeg_generated.gypi',
+      ],
       'sources': [
         '<@(asm_sources)',
       ],
