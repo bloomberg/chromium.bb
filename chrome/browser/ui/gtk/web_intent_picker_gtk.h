@@ -21,6 +21,10 @@
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 
+namespace ui {
+class GtkSignalRegistrar;
+}
+
 class CustomDrawButton;
 class GURL;
 class TabContentsContainerGtk;
@@ -46,6 +50,7 @@ class WebIntentPickerGtk : public WebIntentPicker,
   virtual void OnExtensionInstallSuccess(const std::string& id) OVERRIDE;
   virtual void OnExtensionInstallFailure(const std::string& id) OVERRIDE;
   virtual void OnInlineDispositionAutoResize(const gfx::Size& size) OVERRIDE;
+  virtual gfx::Size GetMaxInlineDispositionSize() OVERRIDE;
 
   // WebIntentPickerModelObserver implementation.
   virtual void OnModelChanged(WebIntentPickerModel* model) OVERRIDE;
@@ -86,6 +91,9 @@ class WebIntentPickerGtk : public WebIntentPicker,
   CHROMEGTK_CALLBACK_0(WebIntentPickerGtk, void, OnMoreSuggestionsLinkClick);
   // Callback when "or choose another service" link is clicked.
   CHROMEGTK_CALLBACK_0(WebIntentPickerGtk, void, OnChooseAnotherServiceClick);
+  // Callback when the host tab contents size changes.
+  CHROMEGTK_CALLBACK_1(WebIntentPickerGtk, void, OnHostContentsSizeAllocate,
+                       GdkRectangle*);
 
   // Initialize the contents of the picker. After this call, contents_ will be
   // non-NULL.
@@ -158,6 +166,9 @@ class WebIntentPickerGtk : public WebIntentPicker,
   // A weak pointer to the suggested extensions vbox.
   GtkWidget* extensions_vbox_;
 
+  // This widget holds the header when showing an inline intent handler.
+  GtkWidget* service_hbox_;
+
   // A button to close the picker.
   scoped_ptr<CustomDrawButton> close_button_;
 
@@ -179,6 +190,10 @@ class WebIntentPickerGtk : public WebIntentPicker,
   scoped_ptr<WebIntentInlineDispositionDelegate> inline_disposition_delegate_;
 
   content::NotificationRegistrar registrar_;
+
+  // Used to connect to signals fired on the host tab contents (only used while
+  // showing an inline intent handler).
+  scoped_ptr<ui::GtkSignalRegistrar> host_signals_;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentPickerGtk);
 };

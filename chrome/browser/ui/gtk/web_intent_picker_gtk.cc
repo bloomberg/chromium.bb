@@ -39,6 +39,7 @@
 #include "grit/google_chrome_strings.h"
 #include "grit/theme_resources.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
+#include "ui/base/gtk/gtk_signal_registrar.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
@@ -212,6 +213,7 @@ WebIntentPickerGtk::WebIntentPickerGtk(TabContents* tab_contents,
       button_vbox_(NULL),
       cws_label_(NULL),
       extensions_vbox_(NULL),
+      service_hbox_(NULL),
       window_(NULL) {
   DCHECK(delegate_ != NULL);
 
@@ -266,11 +268,6 @@ void WebIntentPickerGtk::OnExtensionInstallFailure(const std::string& id) {
   SetWidgetsEnabled(true);
 }
 
-void WebIntentPickerGtk::OnInlineDispositionAutoResize(const gfx::Size& size) {
-  gtk_widget_set_size_request(tab_contents_container_->widget(),
-                              size.width(), size.height());
-}
-
 void WebIntentPickerGtk::OnModelChanged(WebIntentPickerModel* model) {
   if (waiting_dialog_.get() && !model->IsWaitingForSuggestions()) {
     waiting_dialog_.reset();
@@ -321,7 +318,7 @@ void WebIntentPickerGtk::OnInlineDisposition(const string16&,
   GtkWidget* vbox = gtk_vbox_new(FALSE, 0);
   GtkThemeService* theme_service = GetThemeService(tab_contents_);
 
-  GtkWidget* service_hbox = gtk_hbox_new(FALSE, ui::kControlSpacing);
+  service_hbox_ = gtk_hbox_new(FALSE, ui::kControlSpacing);
   // TODO(gbillock): Eventually get the service icon button here.
 
   // Intent action label.
@@ -336,7 +333,9 @@ void WebIntentPickerGtk::OnInlineDisposition(const string16&,
   gtk_container_add(GTK_CONTAINER(label_alignment), action_label);
   GtkWidget* indent_label = gtk_util::IndentWidget(label_alignment);
 
-  gtk_box_pack_start(GTK_BOX(service_hbox), indent_label, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(service_hbox_), indent_label, FALSE, TRUE, 0);
+  g_signal_connect(service_hbox_, "destroy", G_CALLBACK(gtk_widget_destroyed),
+                   &service_hbox_);
 
   // Add link for "choose another service" if other suggestions are available
   // or if more than one (the current) service is installed.
@@ -356,12 +355,12 @@ void WebIntentPickerGtk::OnInlineDisposition(const string16&,
                      G_CALLBACK(OnChooseAnotherServiceClickThunk), this);
     GtkWidget* link_alignment = gtk_alignment_new(0, 0.5f, 0, 0);
     gtk_container_add(GTK_CONTAINER(link_alignment), use_alternate_link);
-    gtk_box_pack_start(GTK_BOX(service_hbox), link_alignment, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(service_hbox_), link_alignment, TRUE, TRUE, 0);
   }
-  AddCloseButton(service_hbox);
+  AddCloseButton(service_hbox_);
 
   // The header box
-  gtk_container_add(GTK_CONTAINER(vbox), service_hbox);
+  gtk_container_add(GTK_CONTAINER(vbox), service_hbox_);
 
   // hbox for the web contents, so we can have spacing on the borders.
   GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
@@ -377,6 +376,31 @@ void WebIntentPickerGtk::OnInlineDisposition(const string16&,
   gtk_widget_set_size_request(tab_contents_container_->widget(),
                               size.width(), size.height());
   gtk_widget_show_all(contents_);
+
+  inline_disposition_delegate_->SetRenderViewSizeLimits();
+  host_signals_.reset(new ui::GtkSignalRegistrar());
+  host_signals_->Connect(
+      tab_contents_->web_contents()->GetRenderViewHost()->GetView()->
+          GetNativeView(),
+      "size-allocate",
+      G_CALLBACK(OnHostContentsSizeAllocateThunk), this);
+}
+
+void WebIntentPickerGtk::OnInlineDispositionAutoResize(const gfx::Size& size) {
+  gtk_widget_set_size_request(tab_contents_container_->widget(),
+                              size.width(), size.height());
+}
+
+gfx::Size WebIntentPickerGtk::GetMaxInlineDispositionSize() {
+  gfx::Rect tab_bounds(tab_contents_->web_contents()->GetRenderViewHost()->
+      GetView()->GetNativeView()->allocation);
+  GtkRequisition req = {};
+  if (service_hbox_)
+    gtk_widget_size_request(service_hbox_, &req);
+
+  tab_bounds.Inset(2 * ui::kContentAreaBorder,
+                   2 * ui::kContentAreaBorder + req.height);
+  return tab_bounds.size();
 }
 
 void WebIntentPickerGtk::OnPendingAsyncCompleted() {
@@ -531,6 +555,13 @@ void WebIntentPickerGtk::OnChooseAnotherServiceClick(GtkWidget* link) {
   DCHECK(delegate_);
   delegate_->OnChooseAnotherService();
   ResetContents();
+}
+
+void WebIntentPickerGtk::OnHostContentsSizeAllocate(GtkWidget* widget,
+                                                    GdkRectangle* rectangle) {
+  if (!inline_disposition_delegate_.get())
+    return;
+  inline_disposition_delegate_->SetRenderViewSizeLimits();
 }
 
 void WebIntentPickerGtk::OnServiceButtonClick(GtkWidget* button) {

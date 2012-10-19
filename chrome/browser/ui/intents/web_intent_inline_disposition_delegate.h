@@ -62,6 +62,10 @@ class WebIntentInlineDispositionDelegate
 
   // Message handlers.
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
+
+  // Updates the inline render view with a new max and min size.
+  void SetRenderViewSizeLimits();
+
  private:
   // Picker to notify when loading state changes. Weak pointer.
   WebIntentPicker* picker_;
