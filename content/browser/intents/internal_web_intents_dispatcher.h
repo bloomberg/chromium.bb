@@ -25,8 +25,8 @@ class CONTENT_EXPORT InternalWebIntentsDispatcher
  public:
   // This callback will be called during, and receives the same args as,
   // |SendReplyMessage|.
-  typedef base::Callback<void(webkit_glue::WebIntentReplyType,
-                              const string16&)> ReplyCallback;
+  typedef base::Callback<void(const webkit_glue::WebIntentReply&)>
+      ReplyCallback;
 
   // |intent| is the intent payload to be dispatched.
   explicit InternalWebIntentsDispatcher(
@@ -47,6 +47,7 @@ class CONTENT_EXPORT InternalWebIntentsDispatcher
   virtual void ResetDispatch() OVERRIDE;
   virtual void SendReplyMessage(webkit_glue::WebIntentReplyType reply_type,
                                 const string16& data) OVERRIDE;
+  virtual void SendReply(const webkit_glue::WebIntentReply& reply) OVERRIDE;
   virtual void RegisterReplyNotification(
       const content::WebIntentsDispatcher::ReplyNotification& closure) OVERRIDE;
 

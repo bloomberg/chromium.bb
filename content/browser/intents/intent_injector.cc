@@ -120,13 +120,12 @@ bool IntentInjector::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void IntentInjector::OnReply(webkit_glue::WebIntentReplyType reply_type,
-                             const string16& data) {
+void IntentInjector::OnReply(const webkit_glue::WebIntentReply& reply) {
   if (!intents_dispatcher_)
     return;
 
   // Ensure SendReplyMessage is only called once.
   WebIntentsDispatcher* intents_dispatcher = intents_dispatcher_;
   intents_dispatcher_ = NULL;
-  intents_dispatcher->SendReplyMessage(reply_type, data);
+  intents_dispatcher->SendReply(reply);
 }

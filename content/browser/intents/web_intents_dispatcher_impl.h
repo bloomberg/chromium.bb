@@ -11,6 +11,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_intents_dispatcher.h"
 #include "webkit/glue/web_intent_data.h"
+#include "webkit/glue/web_intent_reply_data.h"
 
 class IntentInjector;
 
@@ -36,8 +37,11 @@ class WebIntentsDispatcherImpl : public content::WebIntentsDispatcher,
   virtual void DispatchIntent(
       content::WebContents* destination_contents) OVERRIDE;
   virtual void ResetDispatch() OVERRIDE;
+  // Deprecated. Use SendReply.
+  // TODO(smckay): Eliminate use of SendReplyMessage in followup CL.
   virtual void SendReplyMessage(webkit_glue::WebIntentReplyType reply_type,
                                 const string16& data) OVERRIDE;
+  virtual void SendReply(const webkit_glue::WebIntentReply& reply) OVERRIDE;
   virtual void RegisterReplyNotification(
       const content::WebIntentsDispatcher::ReplyNotification& closure) OVERRIDE;
 

@@ -99,7 +99,8 @@ TEST_F(IntentInjectorTest, AbandonDeletes) {
 
   // Sending a message will both auto-delete |dispatcher_| to clean up and
   // verify that messages don't get sent to the (now deleted) |injector|.
-  dispatcher_->SendReplyMessage(
-      webkit_glue::WEB_INTENT_SERVICE_CONTENTS_CLOSED, string16());
-
+  dispatcher_->SendReply(
+      webkit_glue::WebIntentReply(
+          webkit_glue::WEB_INTENT_SERVICE_CONTENTS_CLOSED,
+          string16()));
 }

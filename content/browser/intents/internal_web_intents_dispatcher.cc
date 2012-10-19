@@ -46,16 +46,21 @@ void InternalWebIntentsDispatcher::ResetDispatch() {
 void InternalWebIntentsDispatcher::SendReplyMessage(
     webkit_glue::WebIntentReplyType reply_type,
     const string16& data) {
+  SendReply(webkit_glue::WebIntentReply(reply_type, data));
+}
+
+void InternalWebIntentsDispatcher::SendReply(
+    const webkit_glue::WebIntentReply& reply) {
   intent_injector_ = NULL;
 
   for (size_t i = 0; i < reply_notifiers_.size(); ++i) {
     if (!reply_notifiers_[i].is_null())
-      reply_notifiers_[i].Run(reply_type);
+      reply_notifiers_[i].Run(reply.type);
   }
 
   // Notify the callback of the reply.
   if (!reply_callback_.is_null())
-    reply_callback_.Run(reply_type, data);
+    reply_callback_.Run(reply);
 
   delete this;
 }

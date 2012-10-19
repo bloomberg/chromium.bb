@@ -2171,6 +2171,7 @@
         '../ui/views/test/test_views_delegate.h',
         '../ui/views/test/views_test_base.cc',
         '../ui/views/test/views_test_base.h',
+        '../webkit/glue/web_intent_reply_data_unittest.cc',
         '../webkit/glue/web_intent_service_data_unittest.cc',
         '../webkit/quota/mock_storage_client.cc',
         '../webkit/quota/mock_storage_client.h',

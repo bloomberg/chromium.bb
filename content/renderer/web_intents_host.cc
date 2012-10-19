@@ -38,6 +38,32 @@ using WebKit::WebString;
 using WebKit::WebSerializedScriptValue;
 using WebKit::WebVector;
 
+namespace {
+
+// Reads reply value, either from the data field, or the data_file field.
+WebSerializedScriptValue GetReplyValue(
+    const webkit_glue::WebIntentReply& reply) {
+  if (reply.data_file_size > -1) {
+    // TODO(smckay): seralize the blob value in the web intent script
+    // context. We simply don't know how to do this at this time.
+    // The following code kills the renderer when we call toV8Value.
+    //    v8::HandleScope scope;
+    //    v8::Local<v8::Context> ctx = ....which context?
+    //    v8::Context::Scope cscope(ctx);
+    //    WebKit::WebBlob blob = WebBlob::createFromFile(
+    //        WebString::fromUTF8(reply.data_file.AsUTF8Unsafe()),
+    //        reply.data_file_size);
+    //    v8::Handle<v8::Value> value = blob.toV8Value();
+    //    return WebSerializedScriptValue::serialize(value);
+    return WebSerializedScriptValue::fromString(
+        ASCIIToUTF16(reply.data_file.AsUTF8Unsafe()));
+  } else {
+    return WebSerializedScriptValue::fromString(reply.data);
+  }
+}
+
+} // namespace
+
 class DeliveredIntentClientImpl : public WebDeliveredIntentClient {
  public:
   explicit DeliveredIntentClientImpl(WebIntentsHost* host) : host_(host) {}
@@ -88,8 +114,7 @@ void WebIntentsHost::OnSetIntent(const webkit_glue::WebIntentData& intent) {
 }
 
 void WebIntentsHost::OnWebIntentReply(
-    webkit_glue::WebIntentReplyType reply_type,
-    const WebKit::WebString& data,
+    const webkit_glue::WebIntentReply& reply,
     int intent_id) {
   std::map<int, WebIntentRequest>::iterator request =
       intent_requests_.find(intent_id);
@@ -97,24 +122,25 @@ void WebIntentsHost::OnWebIntentReply(
     return;
   WebIntentRequest intent_request = request->second;
   intent_requests_.erase(request);
-  WebSerializedScriptValue value =
-      WebSerializedScriptValue::fromString(data);
 
-  if (reply_type == webkit_glue::WEB_INTENT_REPLY_SUCCESS) {
-    intent_request.postResult(value);
+  if (reply.type == webkit_glue::WEB_INTENT_REPLY_SUCCESS) {
+    intent_request.postResult(GetReplyValue(reply));
   } else {
-    intent_request.postFailure(value);
+    intent_request.postFailure(
+        WebSerializedScriptValue::fromString(reply.data));
   }
 }
 
 void WebIntentsHost::OnResult(const WebKit::WebString& data) {
-  Send(new IntentsHostMsg_WebIntentReply(
-      routing_id(), webkit_glue::WEB_INTENT_REPLY_SUCCESS, data));
+  const webkit_glue::WebIntentReply reply(
+      webkit_glue::WEB_INTENT_REPLY_SUCCESS, data);
+  Send(new IntentsHostMsg_WebIntentReply(routing_id(), reply));
 }
 
 void WebIntentsHost::OnFailure(const WebKit::WebString& data) {
-  Send(new IntentsHostMsg_WebIntentReply(
-      routing_id(), webkit_glue::WEB_INTENT_REPLY_FAILURE, data));
+  const webkit_glue::WebIntentReply reply(
+      webkit_glue::WEB_INTENT_REPLY_FAILURE, data);
+  Send(new IntentsHostMsg_WebIntentReply(routing_id(), reply));
 }
 
 // We set the intent payload into all top-level frame window objects. This

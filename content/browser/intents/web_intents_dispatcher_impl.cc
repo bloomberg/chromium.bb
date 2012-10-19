@@ -55,16 +55,24 @@ void WebIntentsDispatcherImpl::ResetDispatch() {
 void WebIntentsDispatcherImpl::SendReplyMessage(
     webkit_glue::WebIntentReplyType reply_type,
     const string16& data) {
+  SendReply(webkit_glue::WebIntentReply(reply_type, data));
+}
+
+void WebIntentsDispatcherImpl::SendReply(
+    const webkit_glue::WebIntentReply& reply) {
   intent_injector_ = NULL;
 
+  // If this intent is attached to a WebContents, we dispatch the request back
+  // to the renderer. Browser process initiated intents are not
+  // associated with a WebContents.
   if (web_contents()) {
     Send(new IntentsMsg_WebIntentReply(
-        routing_id(), reply_type, data, intent_id_));
+        routing_id(), reply, intent_id_));
   }
 
   for (size_t i = 0; i < reply_notifiers_.size(); ++i) {
     if (!reply_notifiers_[i].is_null())
-      reply_notifiers_[i].Run(reply_type);
+      reply_notifiers_[i].Run(reply.type);
   }
 
   delete this;

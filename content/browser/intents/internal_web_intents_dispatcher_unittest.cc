@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/intents/intent_injector.h"
 #include "content/browser/intents/internal_web_intents_dispatcher.h"
@@ -14,26 +15,21 @@
 class InternalWebIntentsDispatcherTest
     : public content::RenderViewHostTestHarness {
  public:
-  InternalWebIntentsDispatcherTest()
-      : replied_(0),
-        notified_reply_type_(webkit_glue::WEB_INTENT_REPLY_INVALID) {
+  InternalWebIntentsDispatcherTest() : reply_count_(0) {
   }
 
   ~InternalWebIntentsDispatcherTest() {}
 
-  void NotifyReply(webkit_glue::WebIntentReplyType reply_type,
-                   const string16& data) {
-    notified_reply_type_ = reply_type;
-    notified_data_ = data;
+  void NotifyReply(const webkit_glue::WebIntentReply& reply) {
+    reply_.reset(new webkit_glue::WebIntentReply(reply));
   }
 
   void ReplySent(webkit_glue::WebIntentReplyType reply_type) {
-    replied_++;
+    reply_count_++;
   }
 
-  int replied_;
-  string16 notified_data_;
-  webkit_glue::WebIntentReplyType notified_reply_type_;
+  int reply_count_;
+  scoped_ptr<const webkit_glue::WebIntentReply> reply_;
 };
 
 // Tests that the internal dispatcher correctly notifies
@@ -51,12 +47,13 @@ TEST_F(InternalWebIntentsDispatcherTest, NotifiesOnReply) {
 
   dispatcher->DispatchIntent(web_contents());
 
-  dispatcher->SendReplyMessage(webkit_glue::WEB_INTENT_REPLY_SUCCESS,
-                              ASCIIToUTF16("success"));
+  webkit_glue::WebIntentReply reply(
+        webkit_glue::WEB_INTENT_REPLY_SUCCESS, ASCIIToUTF16("success"));
+  dispatcher->SendReply(reply);
 
-  EXPECT_EQ(ASCIIToUTF16("success"), notified_data_);
-  EXPECT_EQ(1, replied_);
-  EXPECT_EQ(webkit_glue::WEB_INTENT_REPLY_SUCCESS, notified_reply_type_);
+  ASSERT_TRUE(1 == reply_count_);
+  ASSERT_TRUE(reply_);
+  EXPECT_EQ(*reply_.get(), reply);
 }
 
 TEST_F(InternalWebIntentsDispatcherTest, CancelAbandonsInjector) {

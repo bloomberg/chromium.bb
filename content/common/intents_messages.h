@@ -36,6 +36,13 @@ IPC_STRUCT_TRAITS_BEGIN(webkit_glue::WebIntentData)
   IPC_STRUCT_TRAITS_MEMBER(data_type)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(webkit_glue::WebIntentReply)
+  IPC_STRUCT_TRAITS_MEMBER(type)
+  IPC_STRUCT_TRAITS_MEMBER(data)
+  IPC_STRUCT_TRAITS_MEMBER(data_file)
+  IPC_STRUCT_TRAITS_MEMBER(data_file_size)
+  IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(webkit_glue::WebIntentServiceData)
   IPC_STRUCT_TRAITS_MEMBER(action)
   IPC_STRUCT_TRAITS_MEMBER(type)
@@ -50,15 +57,13 @@ IPC_MESSAGE_ROUTED1(IntentsMsg_SetWebIntentData,
                     webkit_glue::WebIntentData)
 
 // Send the service's reply to the client page.
-IPC_MESSAGE_ROUTED3(IntentsMsg_WebIntentReply,
-                    webkit_glue::WebIntentReplyType /* reply type */,
-                    string16 /* payload data */,
+IPC_MESSAGE_ROUTED2(IntentsMsg_WebIntentReply,
+                    webkit_glue::WebIntentReply, /* reply */
                     int /* intent ID */)
 
 // Notify the container that the service has replied to the client page.
-IPC_MESSAGE_ROUTED2(IntentsHostMsg_WebIntentReply,
-                    webkit_glue::WebIntentReplyType /* reply type */,
-                    string16 /* payload data */)
+IPC_MESSAGE_ROUTED1(IntentsHostMsg_WebIntentReply,
+                    webkit_glue::WebIntentReply /* reply */)
 
 // Route the startActivity Intents call from a page to the service picker.
 IPC_MESSAGE_ROUTED2(IntentsHostMsg_WebIntentDispatch,

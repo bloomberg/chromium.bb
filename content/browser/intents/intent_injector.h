@@ -67,8 +67,7 @@ class CONTENT_EXPORT IntentInjector : public content::WebContentsObserver {
   virtual ~IntentInjector();
 
   // Handles receiving a reply from the intent delivery page.
-  void OnReply(webkit_glue::WebIntentReplyType reply_type,
-               const string16& data);
+  void OnReply(const webkit_glue::WebIntentReply& reply);
 
   // Gets notification that someone else has replied to the intent call.
   void OnSendReturnMessage(webkit_glue::WebIntentReplyType reply_type);

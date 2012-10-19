@@ -5,7 +5,9 @@
 #ifndef WEBKIT_GLUE_WEB_INTENT_REPLY_DATA_H_
 #define WEBKIT_GLUE_WEB_INTENT_REPLY_DATA_H_
 
+#include "base/file_path.h"
 #include "base/string16.h"
+#include "webkit/glue/webkit_glue_export.h"
 
 namespace webkit_glue {
 
@@ -26,6 +28,29 @@ enum WebIntentReplyType {
 
   // Sent if the service contents is closed without any response being sent.
   WEB_INTENT_SERVICE_CONTENTS_CLOSED,
+};
+
+struct WEBKIT_GLUE_EXPORT WebIntentReply {
+  WebIntentReply();
+  WebIntentReply(WebIntentReplyType type, string16 data);
+  WebIntentReply(
+      WebIntentReplyType type,
+      FilePath data_file,
+      int64 data_file_size);
+
+  bool operator==(const WebIntentReply& other) const;
+
+  // Response type. Default value is WEB_INTENT_REPLY_INVALID.
+  WebIntentReplyType type;
+
+  // Serialized data. Default value is empty.
+  string16 data;
+
+  // FilePath to the data to be delivered. Default value is empty.
+  FilePath data_file;
+
+  // Length of data_path.
+  int64 data_file_size;
 };
 
 }  // namespace webkit_glue

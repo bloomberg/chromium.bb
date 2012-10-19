@@ -200,6 +200,10 @@ class IntentsDispatcherMock : public content::WebIntentsDispatcher {
     replied_ = true;
   }
 
+  virtual void SendReply(const webkit_glue::WebIntentReply& reply) OVERRIDE {
+    replied_ = true;
+  }
+
   virtual void RegisterReplyNotification(
       const base::Callback<void(webkit_glue::WebIntentReplyType)>&) OVERRIDE {
   }

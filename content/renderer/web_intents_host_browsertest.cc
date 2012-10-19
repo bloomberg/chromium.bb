@@ -27,7 +27,7 @@ class WebIntentsHostTest : public content::RenderViewTest {
     IntentsHostMsg_WebIntentReply::Param reply_params;
     IntentsHostMsg_WebIntentReply::Read(reply_msg, &reply_params);
     WebKit::WebSerializedScriptValue serialized_data =
-        WebKit::WebSerializedScriptValue::fromString(reply_params.b);
+        WebKit::WebSerializedScriptValue::fromString(reply_params.a.data);
 
     v8::HandleScope scope;
     v8::Local<v8::Context> ctx = GetMainFrame()->mainWorldScriptContext();

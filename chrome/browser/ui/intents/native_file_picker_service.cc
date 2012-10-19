@@ -5,13 +5,18 @@
 #include <vector>
 
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/logging.h"
+#include "base/platform_file.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/intents/intent_service_host.h"
 #include "chrome/browser/intents/native_services.h"
 #include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/platform_util.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_intents_dispatcher.h"
 #include "googleurl/src/gurl.h"
@@ -25,6 +30,8 @@
 
 namespace web_intents {
 namespace {
+
+const int kInvalidFileSize = -1;
 
 void AddTypeInfo(
     const std::string& mime_type,
@@ -57,6 +64,11 @@ class NativeFilePickerService
   explicit NativeFilePickerService(content::WebContents* web_contents);
   virtual ~NativeFilePickerService();
   virtual void HandleIntent(content::WebIntentsDispatcher* dispatcher) OVERRIDE;
+  // Reads the length of the file on the FILE thread, then returns
+  // the file and the length to the UI thread.
+  virtual void ReadFileLength(const FilePath& path);
+  // Handles sending of data back to dispatcher
+  virtual void PostDataFileReply(const FilePath& path, int64 length);
 
   // SelectFileDialog::Listener
   virtual void FileSelected(
@@ -115,18 +127,60 @@ void NativeFilePickerService::HandleIntent(
       NULL);
 }
 
+void NativeFilePickerService::ReadFileLength(const FilePath& path) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+
+  int64 file_size;
+  if (!file_util::GetFileSize(path, &file_size))
+    file_size = kInvalidFileSize;
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(
+          &NativeFilePickerService::PostDataFileReply,
+          base::Unretained(this), path, file_size));
+}
+
+void NativeFilePickerService::PostDataFileReply(
+    const FilePath& path, int64 length) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  if (length == kInvalidFileSize) {
+    DLOG(WARNING) << "Unable to determine file size.";
+    dispatcher_->SendReply(
+        webkit_glue::WebIntentReply(
+            webkit_glue::WEB_INTENT_REPLY_FAILURE, string16()));
+    return;
+  }
+
+  content::ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(
+      web_contents_->GetRenderProcessHost()->GetID(),
+      path);
+
+  dispatcher_->SendReply(
+      webkit_glue::WebIntentReply(
+          webkit_glue::WEB_INTENT_REPLY_SUCCESS,
+          path,
+          length));
+}
+
 void NativeFilePickerService::FileSelected(
     const FilePath& path, int index, void* params) {
   DCHECK(dispatcher_);
-  // TODO(smckay): once we've worked out the RPCs, we'll return the FilePath.
-  string16 url = path.LossyDisplayName();
-  dispatcher_->SendReplyMessage(webkit_glue::WEB_INTENT_REPLY_SUCCESS, url);
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(
+          &NativeFilePickerService::ReadFileLength,
+          base::Unretained(this), path));
 }
 
 void NativeFilePickerService::FileSelectionCanceled(void* params) {
   DCHECK(dispatcher_);
-  dispatcher_->SendReplyMessage(
-      webkit_glue::WEB_INTENT_REPLY_FAILURE, string16());
+  dispatcher_->SendReply(
+      webkit_glue::WebIntentReply(
+          webkit_glue::WEB_INTENT_REPLY_FAILURE, string16()));
 }
 
 // static

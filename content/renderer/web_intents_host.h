@@ -68,10 +68,9 @@ class WebIntentsHost : public content::RenderViewObserver {
   CONTENT_EXPORT void OnSetIntent(const webkit_glue::WebIntentData& intent);
 
   // On the client page, handler method for the IntentsMsg_WebIntentReply
-  // message. Forwards the reply |data| to the registered WebIntentRequest
+  // message. Forwards |reply| to the registered WebIntentRequest
   // (found by |intent_id|), where it is dispatched to the client JS callback.
-  void OnWebIntentReply(webkit_glue::WebIntentReplyType reply_type,
-                        const WebKit::WebString& data,
+  void OnWebIntentReply(const webkit_glue::WebIntentReply& reply,
                         int intent_id);
 
   friend class WebIntentsHostTest;
