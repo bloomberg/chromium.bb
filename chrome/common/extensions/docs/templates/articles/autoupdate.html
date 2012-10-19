@@ -1,24 +1,24 @@
 <h1>Autoupdating</h1>
 
 
-<p>We want extensions to be autoupdated for some of the same reasons as Google Chrome itself: to incorporate bug and security fixes, add new features or performance enhancements, and improve user interfaces.</p>
+<p>We want extensions and apps to be autoupdated for some of the same reasons as Google Chrome itself: to incorporate bug and security fixes, add new features or performance enhancements, and improve user interfaces.</p>
 
-<p>If you publish your extension using the <a href="https://chrome.google.com/webstore/developer/dashboard">Chrome Developer Dashboard</a>, you can <em>ignore this page</em>. You can use the dashboard to release updated versions of your extension to users, as well as to the Chrome Web Store.</p>
+<p>If you publish using the <a href="https://chrome.google.com/webstore/developer/dashboard">Chrome Developer Dashboard</a>, you can <em>ignore this page</em>. You can use the dashboard to release updated versions to users, as well as to the Chrome Web Store.</p>
 
-<p>If you want to host your extension somewhere other than the store, keep reading.
+<p>If you want to host somewhere other than the store, keep reading.
 You should also read <a href="hosting.html">Hosting</a> and
 <a href="packaging.html">Packaging</a>.</p>
 
 
 <h2 id="overview">Overview</h2>
-<ul><li>An extension manifest may contain an "update_url" field, pointing to a location for doing update checks.</li>
+<ul><li>A manifest may contain an "update_url" field, pointing to a location for doing update checks.</li>
 <li>The content returned by an update check is an <em>update manifest</em> XML document listing the latest version of an extension.</li></ul>
 
-<p>Every few hours, the browser checks whether any installed extensions have an update URL. For each one, it makes a request to that URL looking for an update manifest XML file. If the update manifest mentions a version of an extension that is more recent than what's installed, the browser downloads and installs the new version. As with manual updates, the new <code>.crx</code> file must be signed with the same private key as the currently installed version.</p>
+<p>Every few hours, the browser checks whether any installed extensions or apps have an update URL. For each one, it makes a request to that URL looking for an update manifest XML file. If the update manifest mentions a version that is more recent than what's installed, the browser downloads and installs the new version. As with manual updates, the new <code>.crx</code> file must be signed with the same private key as the currently installed version.</p>
 
 
 <h2 id="update_url">Update URL</h2>
-<p>If you're hosting your own extension, you need to add the "update_url" field to your <a href="manifest.html"><code>manifest.json</code></a> file,
+<p>If you're hosting your own extension or app, you need to add the "update_url" field to your <a href="manifest.html"><code>manifest.json</code></a> file,
 like this:</p>
 
 <pre>{
@@ -48,14 +48,18 @@ and <strong>&lt;updatecheck></strong> elements of the update manifest:
 </p>
 
 <p><b>appid</b><br>
-The extension ID, generated based on a hash of the extension's public key,
+The extension or app ID, generated based on a hash of the public key,
 as described in <a href="packaging.html">Packaging</a>. You can find the
 ID of an extension or packaged app by going to the Extensions page (<b>chrome://extensions</b>).
-
+</p>
+{{?is_apps}}
+<p>
 Hosted apps, however, are not listed on the Extensions page.  You can find the ID of any
 app using the following steps:
 </p>
+{{/is_apps}}
 
+{{?is_apps}}
 <ul>
   <li> Open the app. You can do this by clicking its icon on the New Tab page.</li>
   <li> Open the JavaScript console.  You can do this by clicking the wrench icon
@@ -64,9 +68,10 @@ app using the following steps:
       <p>The console shows the app's ID as a quoted string.</p>
   </li>
 </ul>
+{{/is_apps}}
 
 <p><b>codebase</b><br>
-A URL to the extension's <code>.crx</code> file.</p>
+A URL to the <code>.crx</code> file.</p>
 
 <p><b>version</b><br>
 Used by the client to determine whether it should download the <code>.crx</code> file specified by <code>codebase</code>. It should match the value of "version" in the <code>.crx</code> file's <code>manifest.json</code> file.</p>
@@ -84,7 +89,7 @@ Another option is to use the --extensions-update-frequency command-line flag to 
 <pre>
 chrome.exe <b>--extensions-update-frequency=45</b></pre>
 
-<p>Note that this affects checks for all installed extensions, so consider the bandwidth and server load implications of this. You may want to temporarily uninstall all but the one extension you are testing with, and should not run with this option turned on during normal browser usage.</p>
+<p>Note that this affects checks for all installed extensions and apps, so consider the bandwidth and server load implications of this. You may want to temporarily uninstall all but the one you are testing with, and should not run with this option turned on during normal browser usage.</p>
 
 
 <h2 id="request_parameters">Advanced usage: request parameters</h2>
@@ -137,7 +142,7 @@ with the request parameters in the POST body.
 </p>
 
 <h2 id="minimum_browser_version">Advanced usage: minimum browser version</h2>
-<p>As we add more APIs to the extensions system, it's possible you will want to release an updated version of an extension that will work only with newer versions of the browser. While Google Chrome itself is autoupdated, it can take a few days before the majority of the user base has updated to any given new release. To ensure that a given extension update will apply only to Google Chrome versions at or higher than a specific version, you add the "prodversionmin" attribute to the &lt;app&gt; element in your update manifest. For example:</p>
+<p>As we add more APIs to the extensions system, it's possible you will want to release an updated version of an extension or app that will work only with newer versions of the browser. While Google Chrome itself is autoupdated, it can take a few days before the majority of the user base has updated to any given new release. To ensure that a given update will apply only to Google Chrome versions at or higher than a specific version, you add the "prodversionmin" attribute to the &lt;app&gt; element in your update manifest. For example:</p>
 
 <pre>&lt;?xml version='1.0' encoding='UTF-8'?&gt;
 &lt;gupdate xmlns='http://www.google.com/update2/response' protocol='2.0'&gt;
@@ -147,4 +152,4 @@ with the request parameters in the POST body.
 &lt;/gupdate&gt;
 </pre>
 
-<p>This would ensure that users of this extension would autoupdate to version 2 only if they are running Google Chrome 3.0.193.0 or greater.</p>
+<p>This would ensure that users would autoupdate to version 2 only if they are running Google Chrome 3.0.193.0 or greater.</p>

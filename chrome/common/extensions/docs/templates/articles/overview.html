@@ -5,14 +5,7 @@
 Once you've finished this page
 and the
 <a href="getstarted.html">Getting Started</a> tutorial,
-you'll be all set to start writing extensions and packaged apps.
-</p>
-
-<p class="caution">
-<strong>Note:</strong>
-<em>Packaged apps</em> are implemented as extensions,
-so unless otherwise stated,
-everything in this page applies to packaged apps.
+you'll be all set to start writing extensions.
 </p>
 
 <h2 id="what">The basics</h2>
@@ -101,25 +94,6 @@ See the <a href="devguide.html">Developer's Guide</a>
 for a complete list of extension features,
 with links to implementation details
 for each one.
-</p>
-
-
-<h3 id="packagedapp-ui">Packaged app UIs</h3>
-
-<p>
-A packaged app usually presents its main functionality using
-an HTML page that's bundled into the app.
-For example, the following packaged app
-displays a Flash file within an HTML page.
-</p>
-
-<img src="{{static}}/images/overview/flash-app.png"
-  width="372" height="300"
-  alt="screenshot" />
-
-<p>
-For more information,
-see <a href="apps.html">Packaged Apps</a>.
 </p>
 
 <h2 id="files">Files</h2>
@@ -289,8 +263,7 @@ an event page.
 </p>
 
 <!-- PENDING: Perhaps show a picture of many background page processes.
-  This could build on a figure that shows the process architecture,
-  and perhaps the differences between packaged apps and extensions. -->
+  This could build on a figure that shows the process architecture. -->
 
 <p>
 See <a href="event_pages.html">Event Pages</a>
@@ -562,9 +535,6 @@ the first page can invoke functions on the other pages,
 and it can manipulate their DOMs.
 </p>
 
-
-
-
 <h2 id="incognito"> Saving data and incognito mode </h2>
 
 <p>
@@ -575,10 +545,9 @@ or by making server requests that result in saving data.
 Whenever you want to save something,
 first consider whether it's
 from a window that's in incognito mode.
-By default, extensions don't run in incognito windows,
-and packaged apps <em>do</em>.
+By default, extensions don't run in incognito windows.
 You need to consider what a user expects
-from your extension or packaged app
+from your extension
 when the browser is incognito.
 </p>
 
