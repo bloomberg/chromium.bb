@@ -781,7 +781,7 @@ void BrowserOptionsHandler::OnTemplateURLServiceChanged() {
   const TemplateURL* default_url =
       template_url_service_->GetDefaultSearchProvider();
 
-  int default_index = 0;
+  int default_index = -1;
   ListValue search_engines;
   TemplateURLService::TemplateURLVector model_urls(
       template_url_service_->GetTemplateURLs());

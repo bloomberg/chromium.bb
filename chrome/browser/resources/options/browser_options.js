@@ -819,6 +819,8 @@ cr.define('options', function() {
       this.clearSearchEngines_();
       engineSelect = $('default-search-engine');
       engineSelect.disabled = defaultManaged;
+      if (defaultManaged && defaultValue == -1)
+        return;
       engineCount = engines.length;
       var defaultIndex = -1;
       for (var i = 0; i < engineCount; i++) {

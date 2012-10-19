@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('options.search_engines', function() {
+  /** @const */ var ControlledSettingIndicator =
+                    options.ControlledSettingIndicator;
   /** @const */ var InlineEditableItemList = options.InlineEditableItemList;
   /** @const */ var InlineEditableItem = options.InlineEditableItem;
   /** @const */ var ListSelectionController = cr.ui.ListSelectionController;
@@ -168,6 +170,15 @@ cr.define('options.search_engines', function() {
         this.addEventListener('commitedit', this.onEditCommitted_.bind(this));
       } else {
         this.editable = false;
+        this.querySelector('.row-delete-button').hidden = true;
+        var indicator = ControlledSettingIndicator();
+        indicator.setAttribute('setting', 'search-engine');
+        // Create a synthetic pref change event decorated as
+        // CoreOptionsHandler::CreateValueForPref() does.
+        var event = new cr.Event(this.contentType);
+        event.value = { controlledBy: 'policy' };
+        indicator.handlePrefChange(event);
+        this.appendChild(indicator);
       }
     },
 

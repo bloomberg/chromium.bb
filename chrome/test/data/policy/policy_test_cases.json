@@ -762,7 +762,12 @@
     "test_policy": { "DefaultSearchProviderEnabled": false },
     "settings_pages": [],
     "pref_mappings": [
-      { "pref": "default_search_provider.enabled" }
+      { "pref": "default_search_provider.enabled",
+        "indicator_tests": [
+          { "policy": { "DefaultSearchProviderEnabled": false } },
+          { "policy": { "DefaultSearchProviderEnabled": true, "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}" } }
+        ]
+      }
     ],
 
     "note": "TODO(joaodasilva): Should be chrome://settings-frame. http://crbug.com/97749"
@@ -791,7 +796,12 @@
     "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}" },
     "settings_pages": [],
     "pref_mappings": [
-      { "pref": "default_search_provider.search_url" }
+      { "pref": "default_search_provider.search_url",
+        "indicator_selector": "[setting=search-engine]",
+        "indicator_tests": [
+          { "policy": { "DefaultSearchProviderEnabled": true, "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}" } }
+        ]
+      }
     ],
 
     "note": "TODO(joaodasilva): Should be chrome://settings-frame. http://crbug.com/97749"
