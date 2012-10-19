@@ -258,6 +258,18 @@ installer::InstallStatus InstallNewVersion(
   return installer::INSTALL_FAILED;
 }
 
+void CleanupLegacyShortcuts(const InstallerState& installer_state,
+                            BrowserDistribution* dist) {
+  ShellUtil::ShellChange shortcut_level = installer_state.system_install() ?
+      ShellUtil::SYSTEM_LEVEL : ShellUtil::CURRENT_USER;
+  FilePath uninstall_shortcut_path;
+  ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_START_MENU, dist,
+                             shortcut_level, &uninstall_shortcut_path);
+  uninstall_shortcut_path = uninstall_shortcut_path.Append(
+      dist->GetUninstallLinkName() + installer::kLnkExt);
+  file_util::Delete(uninstall_shortcut_path, false);
+}
+
 }  // end namespace
 
 namespace installer {
@@ -397,39 +409,6 @@ void CreateOrUpdateShortcuts(const InstallerState& installer_state,
   ExecuteAndLogShortcutOperation(
       ShellUtil::SHORTCUT_START_MENU, dist, start_menu_properties,
       shortcut_operation);
-
-  // Create/update uninstall link in the Start menu if we are not an MSI
-  // install. MSI installations are, for the time being, managed only through
-  // the Add/Remove Programs dialog.
-  // TODO(robertshield): We could add a shortcut to msiexec /X {GUID} here.
-  if (!installer_state.is_msi()) {
-    FilePath shortcut_path;
-    if (!ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_START_MENU, dist,
-                                    install_level, &shortcut_path)) {
-      NOTREACHED();
-      return;
-    }
-    shortcut_path = shortcut_path.Append(dist->GetUninstallLinkName() +
-                                         kLnkExt);
-    CommandLine arguments(CommandLine::NO_PROGRAM);
-    AppendUninstallCommandLineFlags(installer_state, product, &arguments);
-
-    base::win::ShortcutProperties uninstall_properties;
-    uninstall_properties.set_target(setup_exe);
-    uninstall_properties.set_arguments(arguments.GetCommandLineString());
-    base::win::ShortcutOperation uninstall_operation =
-        (shortcut_operation == ShellUtil::SHORTCUT_CREATE_ALWAYS ?
-             base::win::SHORTCUT_CREATE_ALWAYS :
-             base::win::SHORTCUT_REPLACE_EXISTING);
-    const char* operation_str =
-        (uninstall_operation == base::win::SHORTCUT_CREATE_ALWAYS ?
-             "Creating" : "Updating");
-    VLOG(1) << operation_str << " uninstall link at " << shortcut_path.value();
-    if (!base::win::CreateOrUpdateShortcutLink(
-            shortcut_path, uninstall_properties, uninstall_operation)) {
-      LOG(WARNING) << operation_str << " uninstall link failed.";
-    }
-  }
 }
 
 void RegisterChromeOnMachine(const InstallerState& installer_state,
@@ -522,6 +501,9 @@ InstallStatus InstallOrUpdateProduct(
         installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER);
     if (chrome_install) {
       installer_state.UpdateStage(installer::CREATING_SHORTCUTS);
+
+      BrowserDistribution* dist = chrome_install->distribution();
+      CleanupLegacyShortcuts(installer_state, dist);
 
       bool create_all_shortcuts = false;
       prefs.GetBool(master_preferences::kCreateAllShortcuts,

@@ -65,16 +65,13 @@ class CreateVisualElementsManifestTest : public testing::Test {
 class InstallShortcutTest : public testing::Test {
  protected:
   // A mock installer state on which .system_install() will return
-  // |system_install|, .target_path() will return |target_path|, and .is_msi()
-  // will return |is_msi|.
+  // |system_install| and .target_path() will return |target_path|.
   class MockInstallerState : public installer::InstallerState {
    public:
     MockInstallerState(const FilePath& target_path,
-                       bool system_install,
-                       bool is_msi) : InstallerState() {
+                       bool system_install) : InstallerState() {
       target_path_ = target_path;
       set_level(system_install ? SYSTEM_LEVEL : USER_LEVEL);
-      msi_ = is_msi;
     }
   };
 
@@ -92,9 +89,9 @@ class InstallShortcutTest : public testing::Test {
     EXPECT_EQ(0, file_util::WriteFile(setup_exe_, "", 0));
 
     mock_user_installer_state_.reset(
-        new MockInstallerState(chrome_exe_.DirName(), false, false));
+        new MockInstallerState(chrome_exe_.DirName(), false));
     mock_system_installer_state_.reset(
-        new MockInstallerState(chrome_exe_.DirName(), true, false));
+        new MockInstallerState(chrome_exe_.DirName(), true));
 
     expected_properties_.set_target(chrome_exe_);
     expected_properties_.set_dual_mode(true);
@@ -125,8 +122,6 @@ class InstallShortcutTest : public testing::Test {
                                      fake_common_start_menu_.path()));
 
     string16 shortcut_name(dist->GetAppShortCutName() + installer::kLnkExt);
-    string16 uninstall_shorcut_name(
-        dist->GetUninstallLinkName() + installer::kLnkExt);
     string16 alternate_shortcut_name(
         dist->GetAlternateApplicationName() + installer::kLnkExt);
 
@@ -137,9 +132,6 @@ class InstallShortcutTest : public testing::Test {
     user_start_menu_shortcut_ =
         fake_start_menu_.path().Append(dist->GetAppShortCutName())
         .Append(shortcut_name);
-    user_uninstall_shortcut_ =
-        fake_start_menu_.path().Append(dist->GetAppShortCutName())
-        .Append(uninstall_shorcut_name);
     system_desktop_shortcut_ =
         fake_common_desktop_.path().Append(shortcut_name);
     system_quick_launch_shortcut_ =
@@ -147,9 +139,6 @@ class InstallShortcutTest : public testing::Test {
     system_start_menu_shortcut_ =
         fake_common_start_menu_.path().Append(dist->GetAppShortCutName())
         .Append(shortcut_name);
-    system_uninstall_shortcut_ =
-        fake_common_start_menu_.path().Append(dist->GetAppShortCutName())
-        .Append(uninstall_shorcut_name);
     user_alternate_desktop_shortcut_ =
         fake_user_desktop_.path().Append(alternate_shortcut_name);
   }
@@ -162,19 +151,6 @@ class InstallShortcutTest : public testing::Test {
     base::win::TaskbarUnpinShortcutLink(
         system_start_menu_shortcut_.value().c_str());
     CoUninitialize();
-  }
-
-  base::win::ShortcutProperties GetExpectedUninstallShortcutProperties(
-      bool system_level) {
-    CommandLine arguments(CommandLine::NO_PROGRAM);
-    const installer::InstallerState& installer_state = system_level ?
-        *mock_system_installer_state_ : *mock_user_installer_state_;
-    AppendUninstallCommandLineFlags(installer_state, *product_, &arguments);
-
-    base::win::ShortcutProperties properties;
-    properties.set_target(setup_exe_);
-    properties.set_arguments(arguments.GetCommandLineString());
-    return properties;
   }
 
   base::win::ShortcutProperties expected_properties_;
@@ -202,11 +178,9 @@ class InstallShortcutTest : public testing::Test {
   FilePath user_desktop_shortcut_;
   FilePath user_quick_launch_shortcut_;
   FilePath user_start_menu_shortcut_;
-  FilePath user_uninstall_shortcut_;
   FilePath system_desktop_shortcut_;
   FilePath system_quick_launch_shortcut_;
   FilePath system_start_menu_shortcut_;
-  FilePath system_uninstall_shortcut_;
   FilePath user_alternate_desktop_shortcut_;
 };
 
@@ -256,10 +230,6 @@ TEST_F(InstallShortcutTest, CreateAllShortcuts) {
   base::win::ValidateShortcut(user_quick_launch_shortcut_,
                               expected_properties_);
   base::win::ValidateShortcut(user_start_menu_shortcut_, expected_properties_);
-  base::win::ShortcutProperties expected_uninstall_properties(
-      GetExpectedUninstallShortcutProperties(false));
-  base::win::ValidateShortcut(user_uninstall_shortcut_,
-                              expected_uninstall_properties);
 }
 
 TEST_F(InstallShortcutTest, CreateAllShortcutsSystemLevel) {
@@ -270,10 +240,6 @@ TEST_F(InstallShortcutTest, CreateAllShortcutsSystemLevel) {
                               expected_properties_);
   base::win::ValidateShortcut(system_start_menu_shortcut_,
                               expected_properties_);
-  base::win::ShortcutProperties expected_uninstall_properties(
-      GetExpectedUninstallShortcutProperties(true));
-  base::win::ValidateShortcut(system_uninstall_shortcut_,
-                              expected_uninstall_properties);
   // On system-level installs, the quick launch shortcut for the current user
   // should also be installed.
   base::win::ValidateShortcut(user_quick_launch_shortcut_,
@@ -289,10 +255,6 @@ TEST_F(InstallShortcutTest, CreateAllShortcutsAlternateDesktopName) {
                               expected_properties_);
   base::win::ValidateShortcut(user_start_menu_shortcut_,
                               expected_properties_);
-  base::win::ShortcutProperties expected_uninstall_properties(
-      GetExpectedUninstallShortcutProperties(false));
-  base::win::ValidateShortcut(user_uninstall_shortcut_,
-                              expected_uninstall_properties);
 }
 
 TEST_F(InstallShortcutTest, CreateMandatoryShortcuts) {
@@ -301,10 +263,6 @@ TEST_F(InstallShortcutTest, CreateMandatoryShortcuts) {
   ASSERT_FALSE(file_util::PathExists(user_desktop_shortcut_));
   ASSERT_FALSE(file_util::PathExists(user_quick_launch_shortcut_));
   base::win::ValidateShortcut(user_start_menu_shortcut_, expected_properties_);
-  base::win::ShortcutProperties expected_uninstall_properties(
-      GetExpectedUninstallShortcutProperties(false));
-  base::win::ValidateShortcut(user_uninstall_shortcut_,
-                              expected_uninstall_properties);
 }
 
 TEST_F(InstallShortcutTest, ReplaceAll) {
@@ -327,9 +285,6 @@ TEST_F(InstallShortcutTest, ReplaceAll) {
   ASSERT_TRUE(base::win::CreateOrUpdateShortcutLink(
                   user_start_menu_shortcut_, dummy_properties,
                   base::win::SHORTCUT_CREATE_ALWAYS));
-  ASSERT_TRUE(base::win::CreateOrUpdateShortcutLink(
-                  user_uninstall_shortcut_, dummy_properties,
-                  base::win::SHORTCUT_CREATE_ALWAYS));
 
   CreateOrUpdateShortcuts(*mock_user_installer_state_, setup_exe_, *product_,
                           installer::INSTALL_SHORTCUT_REPLACE_EXISTING, false);
@@ -338,10 +293,6 @@ TEST_F(InstallShortcutTest, ReplaceAll) {
                               expected_properties_);
   base::win::ValidateShortcut(user_start_menu_shortcut_,
                               expected_properties_);
-  base::win::ShortcutProperties expected_uninstall_properties(
-      GetExpectedUninstallShortcutProperties(false));
-  base::win::ValidateShortcut(user_uninstall_shortcut_,
-                              expected_uninstall_properties);
 }
 
 TEST_F(InstallShortcutTest, ReplaceExisting) {
@@ -358,30 +309,12 @@ TEST_F(InstallShortcutTest, ReplaceExisting) {
                   user_desktop_shortcut_, dummy_properties,
                   base::win::SHORTCUT_CREATE_ALWAYS));
   ASSERT_TRUE(file_util::CreateDirectory(user_start_menu_shortcut_.DirName()));
-  ASSERT_TRUE(base::win::CreateOrUpdateShortcutLink(
-                  user_uninstall_shortcut_, dummy_properties,
-                  base::win::SHORTCUT_CREATE_ALWAYS));
 
   CreateOrUpdateShortcuts(*mock_user_installer_state_, setup_exe_, *product_,
                           installer::INSTALL_SHORTCUT_REPLACE_EXISTING, false);
   base::win::ValidateShortcut(user_desktop_shortcut_, expected_properties_);
-  base::win::ShortcutProperties expected_uninstall_properties(
-      GetExpectedUninstallShortcutProperties(false));
-  base::win::ValidateShortcut(user_uninstall_shortcut_,
-                              expected_uninstall_properties);
   ASSERT_FALSE(file_util::PathExists(user_quick_launch_shortcut_));
   ASSERT_FALSE(file_util::PathExists(user_start_menu_shortcut_));
-}
-
-TEST_F(InstallShortcutTest, NoUninstallLinkForMSIInstalls) {
-  MockInstallerState no_msi_installer_state(chrome_exe_.DirName(), false, true);
-  CreateOrUpdateShortcuts(no_msi_installer_state, setup_exe_, *product_,
-                          installer::INSTALL_SHORTCUT_CREATE_ALL, false);
-  base::win::ValidateShortcut(user_desktop_shortcut_, expected_properties_);
-  base::win::ValidateShortcut(user_quick_launch_shortcut_,
-                              expected_properties_);
-  base::win::ValidateShortcut(user_start_menu_shortcut_, expected_properties_);
-  ASSERT_FALSE(file_util::PathExists(user_uninstall_shortcut_));
 }
 
 TEST(EscapeXmlAttributeValueTest, EscapeCrazyValue) {

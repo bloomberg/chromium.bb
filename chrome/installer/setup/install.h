@@ -26,7 +26,7 @@ class InstallerState;
 class MasterPreferences;
 
 enum InstallShortcutOperation {
-  // Create mandatory shortcuts (Start menu, taskbar, and uninstall).
+  // Create mandatory shortcuts (Start menu and taskbar pin).
   INSTALL_SHORTCUT_CREATE_MANDATORY = 0,
   // Create mandatory shortcuts and desktop + quick launch shortcuts.
   INSTALL_SHORTCUT_CREATE_ALL,
