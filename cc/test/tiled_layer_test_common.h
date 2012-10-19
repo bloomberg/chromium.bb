@@ -124,19 +124,5 @@ protected:
     cc::IntSize m_forcedContentBounds;
 };
 
-
-class FakeTextureUploader : public cc::TextureUploader {
-public:
-    virtual size_t numBlockingUploads() OVERRIDE;
-    virtual void markPendingUploadsAsNonBlocking() OVERRIDE;
-    virtual double estimatedTexturesPerSecond() OVERRIDE;
-    virtual void uploadTexture(cc::CCResourceProvider*,
-                               cc::CCPrioritizedTexture*,
-                               const SkBitmap*,
-                               cc::IntRect content_rect,
-                               cc::IntRect source_rect,
-                               cc::IntSize dest_offset) OVERRIDE;
-};
-
 }
 #endif // CCTiledLayerTestCommon_h

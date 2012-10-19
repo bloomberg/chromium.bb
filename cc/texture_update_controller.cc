@@ -12,7 +12,6 @@
 #include "cc/prioritized_texture.h"
 #include "cc/proxy.h"
 #include "cc/texture_copier.h"
-#include "cc/texture_uploader.h"
 #include <limits>
 #include <public/WebGraphicsContext3D.h>
 #include <public/WebSharedGraphicsContext3D.h>
@@ -63,20 +62,20 @@ size_t CCTextureUpdateController::maxPartialTextureUpdates()
     return partialTextureUpdatesMax;
 }
 
-size_t CCTextureUpdateController::maxFullUpdatesPerTick(TextureUploader* uploader)
+size_t CCTextureUpdateController::maxFullUpdatesPerTick(
+    CCResourceProvider* resourceProvider)
 {
-    double texturesPerSecond = uploader->estimatedTexturesPerSecond();
+    double texturesPerSecond = resourceProvider->estimatedUploadsPerSecond();
     size_t texturesPerTick = floor(textureUpdateTickRate * texturesPerSecond);
     return texturesPerTick ? texturesPerTick : 1;
 }
 
-CCTextureUpdateController::CCTextureUpdateController(CCTextureUpdateControllerClient* client, CCThread* thread, scoped_ptr<CCTextureUpdateQueue> queue, CCResourceProvider* resourceProvider, TextureUploader* uploader)
+CCTextureUpdateController::CCTextureUpdateController(CCTextureUpdateControllerClient* client, CCThread* thread, scoped_ptr<CCTextureUpdateQueue> queue, CCResourceProvider* resourceProvider)
     : m_client(client)
     , m_timer(new CCTimer(thread, this))
     , m_queue(queue.Pass())
     , m_resourceProvider(resourceProvider)
-    , m_uploader(uploader)
-    , m_textureUpdatesPerTick(maxFullUpdatesPerTick(uploader))
+    , m_textureUpdatesPerTick(maxFullUpdatesPerTick(resourceProvider))
     , m_firstUpdateAttempt(true)
 {
 }
@@ -176,12 +175,14 @@ void CCTextureUpdateController::updateTexture(ResourceUpdate update)
     }
 
     if (update.bitmap) {
-        m_uploader->uploadTexture(m_resourceProvider,
-                                  update.texture,
-                                  update.bitmap,
-                                  update.content_rect,
-                                  update.source_rect,
-                                  update.dest_offset);
+        update.bitmap->lockPixels();
+        update.texture->upload(
+            m_resourceProvider,
+            static_cast<const uint8_t*>(update.bitmap->getPixels()),
+            update.content_rect,
+            update.source_rect,
+            update.dest_offset);
+        update.bitmap->unlockPixels();
     }
 }
 
@@ -251,7 +252,7 @@ bool CCTextureUpdateController::updateMoreTexturesIfEnoughTimeRemaining()
     // Blocking uploads will increase when we're too aggressive in our upload
     // time estimate. We use a different timeout here to prevent unnecessary
     // amounts of idle time when blocking uploads have reached the max.
-    if (m_uploader->numBlockingUploads() >= maxBlockingUpdates()) {
+    if (m_resourceProvider->numBlockingUploads() >= maxBlockingUpdates()) {
         m_timer->startOneShot(uploaderBusyTickRate);
         return true;
     }

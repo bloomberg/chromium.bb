@@ -16,11 +16,10 @@
 #include "base/stl_util.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
-#include "cc/layer_texture_sub_image.h"
-#include "cc/throttled_texture_uploader.h"
-#include "cc/unthrottled_texture_uploader.h"
+#include "cc/texture_uploader.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
+
 #include <public/WebGraphicsContext3D.h>
 
 using WebKit::WebGraphicsContext3D;
@@ -270,9 +269,14 @@ void CCResourceProvider::upload(ResourceId id, const uint8_t* image, const IntRe
     if (resource->glId) {
         WebGraphicsContext3D* context3d = m_context->context3D();
         DCHECK(context3d);
-        DCHECK(m_texSubImage.get());
+        DCHECK(m_textureUploader.get());
         context3d->bindTexture(GL_TEXTURE_2D, resource->glId);
-        m_texSubImage->upload(image, imageRect, sourceRect, destOffset, resource->format, context3d);
+        m_textureUploader->upload(image,
+                                  imageRect,
+                                  sourceRect,
+                                  destOffset,
+                                  resource->format,
+                                  resource->size);
     }
 
     if (resource->pixels) {
@@ -288,6 +292,30 @@ void CCResourceProvider::upload(ResourceId id, const uint8_t* image, const IntRe
         SkCanvas* dest = lock.skCanvas();
         dest->writePixels(srcSubset, destOffset.width(), destOffset.height());
     }
+}
+
+size_t CCResourceProvider::numBlockingUploads()
+{
+    if (!m_textureUploader)
+        return 0;
+
+    return m_textureUploader->numBlockingUploads();
+}
+
+void CCResourceProvider::markPendingUploadsAsNonBlocking()
+{
+    if (!m_textureUploader)
+        return;
+
+    m_textureUploader->markPendingUploadsAsNonBlocking();
+}
+
+double CCResourceProvider::estimatedUploadsPerSecond()
+{
+    if (!m_textureUploader)
+        return 0.0;
+
+    return m_textureUploader->estimatedTexturesPerSecond();
 }
 
 void CCResourceProvider::flush()
@@ -436,7 +464,6 @@ bool CCResourceProvider::initialize()
     WebGraphicsContext3D* context3d = m_context->context3D();
     if (!context3d) {
         m_maxTextureSize = INT_MAX / 2;
-        m_textureUploader = UnthrottledTextureUploader::create();
         return true;
     }
     if (!context3d->makeContextCurrent())
@@ -460,10 +487,9 @@ bool CCResourceProvider::initialize()
             useBindUniform = true;
     }
 
-    m_texSubImage.reset(new LayerTextureSubImage(useMapSub));
     m_textureCopier = AcceleratedTextureCopier::create(context3d, useBindUniform);
 
-    m_textureUploader = ThrottledTextureUploader::create(context3d);
+    m_textureUploader = TextureUploader::create(context3d, useMapSub);
     GLC(context3d, context3d->getIntegerv(GL_MAX_TEXTURE_SIZE, &m_maxTextureSize));
     return true;
 }

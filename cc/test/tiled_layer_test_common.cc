@@ -144,28 +144,4 @@ cc::IntSize FakeTiledLayerWithScaledBounds::contentBounds() const
     return m_forcedContentBounds;
 }
 
-size_t FakeTextureUploader::numBlockingUploads()
-{
-    return 0;
-}
-
-void FakeTextureUploader::markPendingUploadsAsNonBlocking()
-{
-}
-
-void FakeTextureUploader::uploadTexture(CCResourceProvider* resourceProvider,
-                                        CCPrioritizedTexture* texture,
-                                        const SkBitmap*,
-                                        IntRect,
-                                        IntRect,
-                                        IntSize)
-{
-    texture->acquireBackingTexture(resourceProvider);
-}
-
-double FakeTextureUploader::estimatedTexturesPerSecond()
-{
-    return std::numeric_limits<double>::max();
-}
-
 } // namespace

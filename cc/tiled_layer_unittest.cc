@@ -106,8 +106,7 @@ public:
                 NULL,
                 CCProxy::implThread(),
                 m_queue.Pass(),
-                m_resourceProvider.get(),
-                &m_uploader);
+                m_resourceProvider.get());
         updateController->finalize();
         m_queue = make_scoped_ptr(new CCTextureUpdateQueue);
     }
@@ -163,7 +162,6 @@ public:
     scoped_ptr<CCResourceProvider> m_resourceProvider;
     scoped_ptr<CCTextureUpdateQueue> m_queue;
     CCRenderingStats m_stats;
-    FakeTextureUploader m_uploader;
     CCPriorityCalculator m_priorityCalculator;
     scoped_ptr<CCPrioritizedTextureManager> m_textureManager;
     TestCCOcclusionTracker* m_occlusion;

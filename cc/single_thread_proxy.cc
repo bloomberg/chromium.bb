@@ -195,8 +195,7 @@ void CCSingleThreadProxy::doCommit(scoped_ptr<CCTextureUpdateQueue> queue)
                 NULL,
                 CCProxy::mainThread(),
                 queue.Pass(),
-                m_layerTreeHostImpl->resourceProvider(),
-                m_layerTreeHostImpl->resourceProvider()->textureUploader());
+                m_layerTreeHostImpl->resourceProvider());
         updateController->finalize();
 
         m_layerTreeHost->finishCommitOnImplThread(m_layerTreeHostImpl.get());

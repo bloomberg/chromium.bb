@@ -2,36 +2,96 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TextureUploader_h
-#define TextureUploader_h
+#ifndef CC_TEXTURE_UPLOADER_H_
+#define CC_TEXTURE_UPLOADER_H_
 
 #include "IntRect.h"
+#include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
+#include "cc/scoped_ptr_deque.h"
+#include <deque>
+#include "third_party/khronos/GLES2/gl2.h"
 
-class SkBitmap;
-class SkPicture;
+namespace WebKit {
+class WebGraphicsContext3D;
+}
 
 namespace cc {
 
-class CCPrioritizedTexture;
-class CCResourceProvider;
-
 class TextureUploader {
 public:
-    virtual ~TextureUploader() { }
+    static scoped_ptr<TextureUploader> create(
+        WebKit::WebGraphicsContext3D* context, bool useMapTexSubImage)
+    {
+        return make_scoped_ptr(new TextureUploader(context, useMapTexSubImage));
+    }
+    ~TextureUploader();
 
-    virtual size_t numBlockingUploads() = 0;
-    virtual void markPendingUploadsAsNonBlocking() = 0;
+    size_t numBlockingUploads();
+    void markPendingUploadsAsNonBlocking();
+    double estimatedTexturesPerSecond();
+    void upload(const uint8_t* image,
+                const IntRect& content_rect,
+                const IntRect& source_rect,
+                const IntSize& dest_offset,
+                GLenum format,
+                IntSize size);
 
-    // Returns our throughput on the GPU process
-    virtual double estimatedTexturesPerSecond() = 0;
-    virtual void uploadTexture(CCResourceProvider*,
-                               CCPrioritizedTexture*,
-                               const SkBitmap*,
-                               IntRect content_rect,
-                               IntRect source_rect,
-                               IntSize dest_offset) = 0;
+private:
+    class Query {
+    public:
+        static scoped_ptr<Query> create(WebKit::WebGraphicsContext3D* context) { return make_scoped_ptr(new Query(context)); }
+
+        virtual ~Query();
+
+        void begin();
+        void end();
+        bool isPending();
+        unsigned value();
+        size_t texturesUploaded();
+        void markAsNonBlocking();
+        bool isNonBlocking();
+
+    private:
+        explicit Query(WebKit::WebGraphicsContext3D*);
+
+        WebKit::WebGraphicsContext3D* m_context;
+        unsigned m_queryId;
+        unsigned m_value;
+        bool m_hasValue;
+        bool m_isNonBlocking;
+    };
+
+    TextureUploader(WebKit::WebGraphicsContext3D*, bool useMapTexSubImage);
+
+    void beginQuery();
+    void endQuery();
+    void processQueries();
+
+    void uploadWithTexSubImage(const uint8_t* image,
+                               const IntRect& image_rect,
+                               const IntRect& source_rect,
+                               const IntSize& dest_offset,
+                               GLenum format);
+    void uploadWithMapTexSubImage(const uint8_t* image,
+                                  const IntRect& image_rect,
+                                  const IntRect& source_rect,
+                                  const IntSize& dest_offset,
+                                  GLenum format);
+
+    WebKit::WebGraphicsContext3D* m_context;
+    ScopedPtrDeque<Query> m_pendingQueries;
+    ScopedPtrDeque<Query> m_availableQueries;
+    std::deque<double> m_texturesPerSecondHistory;
+    size_t m_numBlockingTextureUploads;
+
+    bool m_useMapTexSubImage;
+    size_t m_subImageSize;
+    scoped_array<uint8_t> m_subImage;
+
+    DISALLOW_COPY_AND_ASSIGN(TextureUploader);
 };
 
-}
+}  // namespace cc
 
-#endif
+#endif  // CC_TEXTURE_UPLOADER_H_

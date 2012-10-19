@@ -51,7 +51,7 @@
       'scrollbar_layer_unittest.cc',
       'texture_copier_unittest.cc',
       'texture_layer_unittest.cc',
-      'throttled_texture_uploader_unittest.cc',
+      'texture_uploader_unittest.cc',
       'tiled_layer_unittest.cc',
       'tree_synchronizer_unittest.cc',
     ],

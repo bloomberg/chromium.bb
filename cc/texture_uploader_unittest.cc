@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "cc/throttled_texture_uploader.h"
+#include "cc/texture_uploader.h"
 
 #include "CCPrioritizedTexture.h"
 #include "cc/test/fake_web_graphics_context_3d.h"
@@ -42,61 +42,57 @@ private:
     unsigned m_resultAvailable;
 };
 
-void uploadTexture(
-    ThrottledTextureUploader* uploader, CCPrioritizedTexture* texture)
+void uploadTexture(TextureUploader* uploader)
 {
-    uploader->uploadTexture(NULL,
-                            texture,
-                            NULL,
-                            IntRect(IntPoint(0,0), texture->size()),
-                            IntRect(IntPoint(0,0), texture->size()),
-                            IntSize());
+    IntSize size(256, 256);
+    uploader->upload(NULL,
+                     IntRect(IntPoint(0, 0), size),
+                     IntRect(IntPoint(0, 0), size),
+                     IntSize(),
+                     GL_RGBA,
+                     size);
 }
 
-TEST(ThrottledTextureUploaderTest, NumBlockingUploads)
+TEST(TextureUploaderTest, NumBlockingUploads)
 {
     scoped_ptr<FakeWebGraphicsContext3DWithQueryTesting> fakeContext(new FakeWebGraphicsContext3DWithQueryTesting);
-    scoped_ptr<ThrottledTextureUploader> uploader = ThrottledTextureUploader::create(fakeContext.get());
-    scoped_ptr<CCPrioritizedTexture> texture =
-        CCPrioritizedTexture::create(NULL, IntSize(256, 256), GL_RGBA);
+    scoped_ptr<TextureUploader> uploader = TextureUploader::create(fakeContext.get(), false);
 
     fakeContext->setResultAvailable(0);
     EXPECT_EQ(0, uploader->numBlockingUploads());
-    uploadTexture(uploader.get(), texture.get());
+    uploadTexture(uploader.get());
     EXPECT_EQ(1, uploader->numBlockingUploads());
-    uploadTexture(uploader.get(), texture.get());
+    uploadTexture(uploader.get());
     EXPECT_EQ(2, uploader->numBlockingUploads());
 
     fakeContext->setResultAvailable(1);
     EXPECT_EQ(0, uploader->numBlockingUploads());
-    uploadTexture(uploader.get(), texture.get());
+    uploadTexture(uploader.get());
     EXPECT_EQ(0, uploader->numBlockingUploads());
-    uploadTexture(uploader.get(), texture.get());
-    uploadTexture(uploader.get(), texture.get());
+    uploadTexture(uploader.get());
+    uploadTexture(uploader.get());
     EXPECT_EQ(0, uploader->numBlockingUploads());
 }
 
-TEST(ThrottledTextureUploaderTest, MarkPendingUploadsAsNonBlocking)
+TEST(TextureUploaderTest, MarkPendingUploadsAsNonBlocking)
 {
     scoped_ptr<FakeWebGraphicsContext3DWithQueryTesting> fakeContext(new FakeWebGraphicsContext3DWithQueryTesting);
-    scoped_ptr<ThrottledTextureUploader> uploader = ThrottledTextureUploader::create(fakeContext.get());
-    scoped_ptr<CCPrioritizedTexture> texture =
-        CCPrioritizedTexture::create(NULL, IntSize(256, 256), GL_RGBA);
+    scoped_ptr<TextureUploader> uploader = TextureUploader::create(fakeContext.get(), false);
 
     fakeContext->setResultAvailable(0);
     EXPECT_EQ(0, uploader->numBlockingUploads());
-    uploadTexture(uploader.get(), texture.get());
-    uploadTexture(uploader.get(), texture.get());
+    uploadTexture(uploader.get());
+    uploadTexture(uploader.get());
     EXPECT_EQ(2, uploader->numBlockingUploads());
 
     uploader->markPendingUploadsAsNonBlocking();
     EXPECT_EQ(0, uploader->numBlockingUploads());
-    uploadTexture(uploader.get(), texture.get());
+    uploadTexture(uploader.get());
     EXPECT_EQ(1, uploader->numBlockingUploads());
 
     fakeContext->setResultAvailable(1);
     EXPECT_EQ(0, uploader->numBlockingUploads());
-    uploadTexture(uploader.get(), texture.get());
+    uploadTexture(uploader.get());
     uploader->markPendingUploadsAsNonBlocking();
     EXPECT_EQ(0, uploader->numBlockingUploads());
 }

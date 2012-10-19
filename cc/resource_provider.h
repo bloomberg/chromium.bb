@@ -63,7 +63,6 @@ public:
     virtual ~CCResourceProvider();
 
     WebKit::WebGraphicsContext3D* graphicsContext3D();
-    TextureUploader* textureUploader() const { return m_textureUploader.get(); }
     TextureCopier* textureCopier() const { return m_textureCopier.get(); }
     int maxTextureSize() const { return m_maxTextureSize; }
     unsigned numResources() const { return m_resources.size(); }
@@ -94,6 +93,11 @@ public:
 
     // Upload data from image, copying sourceRect (in image) into destRect (in the resource).
     void upload(ResourceId, const uint8_t* image, const IntRect& imageRect, const IntRect& sourceRect, const IntSize& destOffset);
+
+    // Check upload status.
+    size_t numBlockingUploads();
+    void markPendingUploadsAsNonBlocking();
+    double estimatedUploadsPerSecond();
 
     // Flush all context operations, kicking uploads and ensuring ordering with
     // respect to other contexts.
@@ -261,7 +265,6 @@ private:
     bool m_useTextureStorageExt;
     bool m_useTextureUsageHint;
     bool m_useShallowFlush;
-    scoped_ptr<LayerTextureSubImage> m_texSubImage;
     scoped_ptr<TextureUploader> m_textureUploader;
     scoped_ptr<AcceleratedTextureCopier> m_textureCopier;
     int m_maxTextureSize;

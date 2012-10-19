@@ -14,7 +14,6 @@
 namespace cc {
 
 class CCResourceProvider;
-class TextureUploader;
 
 class CCTextureUpdateControllerClient {
 public:
@@ -26,9 +25,9 @@ protected:
 
 class CCTextureUpdateController : public CCTimerClient {
 public:
-    static scoped_ptr<CCTextureUpdateController> create(CCTextureUpdateControllerClient* client, CCThread* thread, scoped_ptr<CCTextureUpdateQueue> queue, CCResourceProvider* resourceProvider, TextureUploader* uploader)
+    static scoped_ptr<CCTextureUpdateController> create(CCTextureUpdateControllerClient* client, CCThread* thread, scoped_ptr<CCTextureUpdateQueue> queue, CCResourceProvider* resourceProvider)
     {
-        return make_scoped_ptr(new CCTextureUpdateController(client, thread, queue.Pass(), resourceProvider, uploader));
+        return make_scoped_ptr(new CCTextureUpdateController(client, thread, queue.Pass(), resourceProvider));
     }
     static size_t maxPartialTextureUpdates();
 
@@ -49,9 +48,9 @@ public:
     virtual size_t updateMoreTexturesSize() const;
 
 protected:
-    CCTextureUpdateController(CCTextureUpdateControllerClient*, CCThread*, scoped_ptr<CCTextureUpdateQueue>, CCResourceProvider*, TextureUploader*);
+    CCTextureUpdateController(CCTextureUpdateControllerClient*, CCThread*, scoped_ptr<CCTextureUpdateQueue>, CCResourceProvider*);
 
-    static size_t maxFullUpdatesPerTick(TextureUploader*);
+    static size_t maxFullUpdatesPerTick(CCResourceProvider*);
 
     size_t maxBlockingUpdates() const;
 
@@ -66,7 +65,6 @@ protected:
     scoped_ptr<CCTextureUpdateQueue> m_queue;
     bool m_contentsTexturesPurged;
     CCResourceProvider* m_resourceProvider;
-    TextureUploader* m_uploader;
     base::TimeTicks m_timeLimit;
     size_t m_textureUpdatesPerTick;
     bool m_firstUpdateAttempt;

@@ -698,7 +698,7 @@ void CCLayerTreeHostImpl::didDrawAllLayers(const FrameData& frame)
 
     // Once all layers have been drawn, pending texture uploads should no
     // longer block future uploads.
-    m_resourceProvider->textureUploader()->markPendingUploadsAsNonBlocking();
+    m_resourceProvider->markPendingUploadsAsNonBlocking();
 }
 
 void CCLayerTreeHostImpl::finishAllRendering()
