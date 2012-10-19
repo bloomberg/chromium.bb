@@ -138,13 +138,21 @@ cr.define('options', function() {
         var self = this;
 
         // Construct the bubble text.
-        defaultStrings = {
-          'policy': loadTimeData.getString('controlledSettingPolicy'),
-          'extension': loadTimeData.getString('controlledSettingExtension'),
-          'recommended': loadTimeData.getString('controlledSettingRecommended'),
-          'hasRecommendation':
-              loadTimeData.getString('controlledSettingHasRecommendation'),
-        };
+        if (this.hasAttribute('plural')) {
+          var defaultStrings = {
+            'policy': loadTimeData.getString('controlledSettingsPolicy'),
+            'extension': loadTimeData.getString('controlledSettingsExtension'),
+          };
+        } else {
+          var defaultStrings = {
+            'policy': loadTimeData.getString('controlledSettingPolicy'),
+            'extension': loadTimeData.getString('controlledSettingExtension'),
+            'recommended':
+                loadTimeData.getString('controlledSettingRecommended'),
+            'hasRecommendation':
+                loadTimeData.getString('controlledSettingHasRecommendation'),
+          };
+        }
 
         // No controller, no bubble.
         if (!this.controlledBy || !(this.controlledBy in defaultStrings))

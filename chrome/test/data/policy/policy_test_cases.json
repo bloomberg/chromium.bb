@@ -462,7 +462,11 @@
     "test_policy": { "ProxyMode": "direct" },
     "settings_pages": [],
     "pref_mappings": [
-      { "pref": "proxy" }
+      { "pref": "proxy",
+        "indicator_tests": [
+          { "policy": { "ProxyMode": "direct" } }
+        ]
+      }
     ],
 
     "note": "TODO(joaodasilva): Should be chrome://settings-frame. http://crbug.com/97749"
@@ -473,7 +477,11 @@
     "test_policy": { "ProxyServerMode": 0 },
     "settings_pages": [],
     "pref_mappings": [
-      { "pref": "proxy" }
+      { "pref": "proxy",
+        "indicator_tests": [
+          { "policy": { "ProxyServerMode": 0 } }
+        ]
+      }
     ],
 
     "note": "TODO(joaodasilva): Should be chrome://settings-frame. http://crbug.com/97749"
@@ -484,7 +492,11 @@
     "test_policy": { "ProxyMode": "fixed_servers", "ProxyServer": "http://localhost:8080" },
     "settings_pages": [],
     "pref_mappings": [
-      { "pref": "proxy" }
+      { "pref": "proxy",
+        "indicator_tests": [
+          { "policy": { "ProxyMode": "fixed_servers", "ProxyServer": "http://localhost:8080" } }
+        ]
+      }
     ]
   },
 
@@ -493,7 +505,11 @@
     "test_policy": { "ProxyMode": "pac_script", "ProxyPacUrl": "http://localhost:8080/proxy.pac" },
     "settings_pages": [],
     "pref_mappings": [
-      { "pref": "proxy" }
+      { "pref": "proxy",
+        "indicator_tests": [
+          { "policy": { "ProxyMode": "pac_script", "ProxyPacUrl": "http://localhost:8080/proxy.pac" } }
+        ]
+      }
     ]
   },
 
@@ -502,7 +518,11 @@
     "test_policy": { "ProxyMode": "fixed_servers", "ProxyServer": "http://localhost:8080", "ProxyBypassList": "localhost" },
     "settings_pages": [],
     "pref_mappings": [
-      { "pref": "proxy" }
+      { "pref": "proxy",
+        "indicator_tests": [
+          { "policy": { "ProxyMode": "fixed_servers", "ProxyServer": "http://localhost:8080", "ProxyBypassList": "localhost" } }
+        ]
+      }
     ]
   },
 
@@ -511,7 +531,11 @@
     "test_policy": { "ProxySettings": { "ProxyMode": "direct" } },
     "settings_pages": [],
     "pref_mappings": [
-      { "pref": "proxy" }
+      { "pref": "proxy",
+        "indicator_tests": [
+          { "policy": { "ProxySettings": { "ProxyMode": "direct" } } }
+        ]
+      }
     ]
   },
 
