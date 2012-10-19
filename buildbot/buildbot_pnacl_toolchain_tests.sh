@@ -297,6 +297,14 @@ tc-test-bot() {
   local archset="$1"
   clobber
 
+  # Only build MIPS stuff on mips bots
+  if [[ ${archset} == "mips" ]]; then
+    export PNACL_BUILD_MIPS=true
+    # Don't run any of the tests yet
+    echo "MIPS bot: Only running build, and not tests"
+    archset=
+  fi
+
   echo "@@@BUILD_STEP show-config@@@"
   ${PNACL_BUILD} show-config
 
