@@ -381,8 +381,15 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
   std::vector<std::pair<std::string, std::string> >::const_iterator i;
   for (i = sorted_ids.begin();
        i != sorted_ids.end(); ++i) {
-    extension_items_.AppendExtensionItems(i->second, PrintableSelectionText(),
-                                       &index);
+    string16 printable_selection_text = PrintableSelectionText();
+    // Escape "&" as "&&".
+    for (size_t position = printable_selection_text.find('&');
+         position != string16::npos;
+         position = printable_selection_text.find('&', position + 2))
+      printable_selection_text.insert(position, 1, '&');
+
+    extension_items_.AppendExtensionItems(i->second, printable_selection_text,
+                                          &index);
   }
   UMA_HISTOGRAM_TIMES("Extensions.ContextMenus_BuildTime",
                       base::TimeTicks::Now() - begin);
