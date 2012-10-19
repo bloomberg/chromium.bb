@@ -2524,10 +2524,13 @@ void BrowserView::ProcessTabSelected(TabContents* new_contents) {
     search_view_controller_->SetTabContents(new_contents);
 #endif
 
+  // Layout for DevTools _before_ setting the main WebContents to avoid
+  // toggling the size of the main WebContents.
+  UpdateDevToolsForContents(new_contents);
+
   if (change_tab_contents)
     contents_container_->SetWebContents(new_contents->web_contents());
 
-  UpdateDevToolsForContents(new_contents);
   if (!browser_->tab_strip_model()->closing_all() && GetWidget()->IsActive() &&
       GetWidget()->IsVisible()) {
     // We only restore focus if our window is visible, to avoid invoking blur
