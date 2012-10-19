@@ -382,6 +382,7 @@ void VerifyControlledSettingIndicators(Browser* browser,
     EXPECT_GT(indicators->GetSize(), 0u)
         << "Expected to find at least one controlled setting indicator.";
   }
+  bool have_visible_indicators = false;
   for (base::ListValue::const_iterator indicator = indicators->begin();
        indicator != indicators->end(); ++indicator) {
     const base::DictionaryValue* properties = NULL;
@@ -399,9 +400,15 @@ void VerifyControlledSettingIndicators(Browser* browser,
       EXPECT_EQ(controlled_by, indicator_controlled_by);
       EXPECT_EQ(readonly, indicator_readonly);
       EXPECT_TRUE(indicator_visible);
+      have_visible_indicators = true;
     } else {
       EXPECT_FALSE(indicator_visible);
     }
+  }
+  if (!controlled_by.empty()) {
+    EXPECT_TRUE(have_visible_indicators)
+        << "Expected to find at least one visible controlled setting "
+        << "indicator.";
   }
 }
 

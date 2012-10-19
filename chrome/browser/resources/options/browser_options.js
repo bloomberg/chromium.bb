@@ -110,7 +110,12 @@ cr.define('options', function() {
 
       // On Startup section.
       Preferences.getInstance().addEventListener('session.restore_on_startup',
-         this.onRestoreOnStartupChanged_.bind(this));
+          this.onRestoreOnStartupChanged_.bind(this));
+      Preferences.getInstance().addEventListener(
+          'session.urls_to_restore_on_startup',
+          function(event) {
+            $('startup-set-pages').disabled = event.value.disabled;
+          });
 
       $('startup-set-pages').onclick = function() {
         OptionsPage.navigateToPage('startup');
@@ -467,11 +472,7 @@ cr.define('options', function() {
      * @private
      */
     onRestoreOnStartupChanged_: function(event) {
-      /** @const */ var showPagesValue = Number($('startup-show-pages').value);
       /** @const */ var showHomePageValue = 0;
-
-      $('startup-set-pages').disabled = event.value.disabled &&
-                                        event.value.value != showPagesValue;
 
       if (event.value.value == showHomePageValue) {
         // If the user previously selected "Show the homepage", the

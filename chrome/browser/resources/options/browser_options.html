@@ -46,11 +46,20 @@
       <button id="themes-reset" i18n-content="themesReset"></button>
 </if>
     </div>
-    <div class="checkbox" guest-visibility="disabled"><label>
-      <input id="show-home-button" type="checkbox"
-          pref="browser.show_home_button" metric="Options_Homepage_HomeButton">
-      <span i18n-content="homePageShowHomeButton"></span>
-    </label></div>
+    <div class="checkbox" guest-visibility="disabled">
+      <span class="controlled-setting-with-label">
+        <input id="show-home-button" type="checkbox"
+            pref="browser.show_home_button"
+            metric="Options_Homepage_HomeButton">
+        <span>
+          <label for="show-home-button" i18n-content="homePageShowHomeButton">
+          </label>
+          <span class="controlled-setting-indicator"
+              pref="browser.show_home_button">
+          </span>
+        </span>
+      </span>
+    </div>
     <div id="change-home-page-section" hidden>
       <div id="change-home-page-section-container" guest-visibility="disabled">
         <span id="home-page-ntp" class="home-page-label"

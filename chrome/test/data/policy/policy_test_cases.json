@@ -155,8 +155,7 @@
         "indicator_selector": "[content-setting=javascript]",
         "indicator_tests": [
           { "policy": { "JavascriptEnabled": false },
-            "value": "block"},
-          { "policy": { "JavascriptEnabled": true } }
+            "value": "block"}
         ]
       }
     ]
@@ -447,7 +446,6 @@
       { "pref": "profile.managed_default_content_settings.cookies",
         "indicator_selector": "[content-setting=cookies]",
         "indicator_tests": [
-          { "policy": { "ClearSiteDataOnExit": false } },
           { "policy": { "ClearSiteDataOnExit": true },
             "value": "session"}
         ]
@@ -687,10 +685,15 @@
 
   "ShowHomeButton": {
     "os": ["win", "linux", "mac", "chromeos"],
+    "can_be_recommended": true,
     "test_policy": { "ShowHomeButton": true },
     "settings_pages": ["chrome://settings-frame"],
     "pref_mappings": [
-      { "pref": "browser.show_home_button" }
+      { "pref": "browser.show_home_button",
+        "indicator_tests": [
+          { "policy": { "ShowHomeButton": true } }
+        ]
+      }
     ]
   },
 
@@ -705,19 +708,34 @@
 
   "RestoreOnStartup": {
     "os": ["win", "linux", "mac", "chromeos"],
+    "can_be_recommended": true,
     "test_policy": { "RestoreOnStartup": 4 },
     "settings_pages": ["chrome://settings-frame"],
     "pref_mappings": [
-      { "pref": "session.restore_on_startup" }
+      { "pref": "session.restore_on_startup",
+        "indicator_tests": [
+          { "policy": { "RestoreOnStartup": 1 },
+            "value": "1"},
+          { "policy": { "RestoreOnStartup": 4 },
+            "value": "4"},
+          { "policy": { "RestoreOnStartup": 5 },
+            "value": "5"}
+        ]
+      }
     ]
   },
 
   "RestoreOnStartupURLs": {
     "os": ["win", "linux", "mac", "chromeos"],
+    "can_be_recommended": true,
     "test_policy": { "RestoreOnStartupURLs": ["chromium.org"] },
     "settings_pages": [],
     "pref_mappings": [
-      { "pref": "session.urls_to_restore_on_startup" }
+      { "pref": "session.urls_to_restore_on_startup",
+        "indicator_tests": [
+          { "policy": { "RestoreOnStartupURLs": ["chromium.org"] } }
+        ]
+      }
     ],
 
     "note": "TODO(joaodasilva): Should be chrome://settings-frame. http://crbug.com/97749"
