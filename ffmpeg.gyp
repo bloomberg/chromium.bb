@@ -348,7 +348,7 @@
           ],
           'sources': [
             '<(platform_config_root)/config.h',
-            '<(platform_config_root)/ibavutil/avconfig.h',
+            '<(platform_config_root)/libavutil/avconfig.h',
             '<@(converter_outputs)',
             '<(shared_generated_dir)/ffmpegsumo.def',
           ],
