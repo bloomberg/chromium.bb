@@ -75,7 +75,7 @@ class SyncInvalidationListener
           create_invalidation_client_callback,
       const std::string& client_id, const std::string& client_info,
       const std::string& invalidation_bootstrap_data,
-      const InvalidationVersionMap& initial_max_invalidation_versions,
+      const InvalidationStateMap& initial_invalidation_state_map,
       const WeakHandle<InvalidationStateTracker>& invalidation_state_tracker,
       Delegate* delegate);
 
@@ -142,7 +142,7 @@ class SyncInvalidationListener
   // Owned by |sync_system_resources_|.
   notifier::PushClient* const push_client_;
   SyncSystemResources sync_system_resources_;
-  InvalidationVersionMap max_invalidation_versions_;
+  InvalidationStateMap invalidation_state_map_;
   WeakHandle<InvalidationStateTracker> invalidation_state_tracker_;
   Delegate* delegate_;
   scoped_ptr<invalidation::InvalidationClient> invalidation_client_;

@@ -17,7 +17,7 @@ namespace {
 
 Invalidator* CreateDefaultInvalidator(
     const notifier::NotifierOptions& notifier_options,
-    const InvalidationVersionMap& initial_max_invalidation_versions,
+    const InvalidationStateMap& initial_invalidation_state_map,
     const std::string& invalidation_bootstrap_data,
     const WeakHandle<InvalidationStateTracker>& invalidation_state_tracker,
     const std::string& client_info) {
@@ -32,7 +32,7 @@ Invalidator* CreateDefaultInvalidator(
   }
 
   return new NonBlockingInvalidator(
-      notifier_options, initial_max_invalidation_versions,
+      notifier_options, initial_invalidation_state_map,
       invalidation_bootstrap_data, invalidation_state_tracker, client_info);
 }
 
@@ -46,10 +46,10 @@ InvalidatorFactory::InvalidatorFactory(
         invalidation_state_tracker)
     : notifier_options_(notifier_options),
       client_info_(client_info),
-      initial_max_invalidation_versions_(
+      initial_invalidation_state_map_(
           invalidation_state_tracker.get() ?
-          invalidation_state_tracker->GetAllMaxVersions() :
-          InvalidationVersionMap()),
+          invalidation_state_tracker->GetAllInvalidationStates() :
+          InvalidationStateMap()),
       invalidation_bootstrap_data_(
           invalidation_state_tracker.get() ?
           invalidation_state_tracker->GetBootstrapData() :
@@ -66,7 +66,7 @@ Invalidator* InvalidatorFactory::CreateInvalidator() {
   return NULL;
 #else
   return CreateDefaultInvalidator(notifier_options_,
-                                  initial_max_invalidation_versions_,
+                                  initial_invalidation_state_map_,
                                   invalidation_bootstrap_data_,
                                   invalidation_state_tracker_,
                                   client_info_);

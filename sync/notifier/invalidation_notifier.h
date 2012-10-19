@@ -41,7 +41,7 @@ class InvalidationNotifier
   // |invalidation_state_tracker| must be initialized.
   InvalidationNotifier(
       scoped_ptr<notifier::PushClient> push_client,
-      const InvalidationVersionMap& initial_max_invalidation_versions,
+      const InvalidationStateMap& initial_invalidation_state_map,
       const std::string& invalidation_bootstrap_data,
       const WeakHandle<InvalidationStateTracker>&
           invalidation_state_tracker,
@@ -82,7 +82,7 @@ class InvalidationNotifier
   InvalidatorRegistrar registrar_;
 
   // Passed to |invalidation_listener_|.
-  const InvalidationVersionMap initial_max_invalidation_versions_;
+  const InvalidationStateMap initial_invalidation_state_map_;
 
   // Passed to |invalidation_listener_|.
   const WeakHandle<InvalidationStateTracker>

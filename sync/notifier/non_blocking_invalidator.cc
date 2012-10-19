@@ -30,7 +30,7 @@ class NonBlockingInvalidator::Core
   // Helpers called on I/O thread.
   void Initialize(
       const notifier::NotifierOptions& notifier_options,
-      const InvalidationVersionMap& initial_max_invalidation_versions,
+      const InvalidationStateMap& initial_invalidation_state_map,
       const std::string& invalidation_bootstrap_data,
       const WeakHandle<InvalidationStateTracker>& invalidation_state_tracker,
       const std::string& client_info);
@@ -72,7 +72,7 @@ NonBlockingInvalidator::Core::~Core() {
 
 void NonBlockingInvalidator::Core::Initialize(
     const notifier::NotifierOptions& notifier_options,
-    const InvalidationVersionMap& initial_max_invalidation_versions,
+    const InvalidationStateMap& initial_invalidation_state_map,
     const std::string& invalidation_bootstrap_data,
     const WeakHandle<InvalidationStateTracker>& invalidation_state_tracker,
     const std::string& client_info) {
@@ -85,7 +85,7 @@ void NonBlockingInvalidator::Core::Initialize(
   invalidation_notifier_.reset(
       new InvalidationNotifier(
           notifier::PushClient::CreateDefaultOnIOThread(notifier_options),
-          initial_max_invalidation_versions,
+          initial_invalidation_state_map,
           invalidation_bootstrap_data,
           invalidation_state_tracker,
           client_info));
@@ -140,7 +140,7 @@ void NonBlockingInvalidator::Core::OnIncomingInvalidation(
 
 NonBlockingInvalidator::NonBlockingInvalidator(
     const notifier::NotifierOptions& notifier_options,
-    const InvalidationVersionMap& initial_max_invalidation_versions,
+    const InvalidationStateMap& initial_max_invalidation_versions,
     const std::string& invalidation_bootstrap_data,
     const WeakHandle<InvalidationStateTracker>&
         invalidation_state_tracker,

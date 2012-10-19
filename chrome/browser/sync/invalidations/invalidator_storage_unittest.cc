@@ -13,7 +13,15 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using syncer::InvalidationVersionMap;
+using syncer::InvalidationStateMap;
+
+namespace syncer {
+
+bool operator==(const InvalidationState& lhs, const InvalidationState& rhs) {
+  return lhs.version == rhs.version;
+}
+
+}  // namespace syncer
 
 namespace browser_sync {
 
@@ -52,69 +60,69 @@ class InvalidatorStorageTest : public testing::Test {
 TEST_F(InvalidatorStorageTest, MaxInvalidationVersions) {
   InvalidatorStorage storage(&pref_service_);
 
-  InvalidationVersionMap expected_max_versions;
-  EXPECT_EQ(expected_max_versions, storage.GetAllMaxVersions());
+  InvalidationStateMap expected_max_versions;
+  EXPECT_EQ(expected_max_versions, storage.GetAllInvalidationStates());
 
-  expected_max_versions[kBookmarksId_] = 2;
+  expected_max_versions[kBookmarksId_].version = 2;
   storage.SetMaxVersion(kBookmarksId_, 2);
-  EXPECT_EQ(expected_max_versions, storage.GetAllMaxVersions());
+  EXPECT_EQ(expected_max_versions, storage.GetAllInvalidationStates());
 
-  expected_max_versions[kPreferencesId_] = 5;
+  expected_max_versions[kPreferencesId_].version = 5;
   storage.SetMaxVersion(kPreferencesId_, 5);
-  EXPECT_EQ(expected_max_versions, storage.GetAllMaxVersions());
+  EXPECT_EQ(expected_max_versions, storage.GetAllInvalidationStates());
 
-  expected_max_versions[kAppNotificationsId_] = 3;
+  expected_max_versions[kAppNotificationsId_].version = 3;
   storage.SetMaxVersion(kAppNotificationsId_, 3);
-  EXPECT_EQ(expected_max_versions, storage.GetAllMaxVersions());
+  EXPECT_EQ(expected_max_versions, storage.GetAllInvalidationStates());
 
-  expected_max_versions[kAppNotificationsId_] = 4;
+  expected_max_versions[kAppNotificationsId_].version = 4;
   storage.SetMaxVersion(kAppNotificationsId_, 4);
-  EXPECT_EQ(expected_max_versions, storage.GetAllMaxVersions());
+  EXPECT_EQ(expected_max_versions, storage.GetAllInvalidationStates());
 }
 
 // Forgetting an entry should cause that entry to be deleted.
 TEST_F(InvalidatorStorageTest, Forget) {
   InvalidatorStorage storage(&pref_service_);
-  EXPECT_TRUE(storage.GetAllMaxVersions().empty());
+  EXPECT_TRUE(storage.GetAllInvalidationStates().empty());
 
-  InvalidationVersionMap expected_max_versions;
-  expected_max_versions[kBookmarksId_] = 2;
-  expected_max_versions[kPreferencesId_] = 5;
+  InvalidationStateMap expected_max_versions;
+  expected_max_versions[kBookmarksId_].version = 2;
+  expected_max_versions[kPreferencesId_].version = 5;
   storage.SetMaxVersion(kBookmarksId_, 2);
   storage.SetMaxVersion(kPreferencesId_, 5);
-  EXPECT_EQ(expected_max_versions, storage.GetAllMaxVersions());
+  EXPECT_EQ(expected_max_versions, storage.GetAllInvalidationStates());
 
   expected_max_versions.erase(kPreferencesId_);
   syncer::ObjectIdSet to_forget;
   to_forget.insert(kPreferencesId_);
   storage.Forget(to_forget);
-  EXPECT_EQ(expected_max_versions, storage.GetAllMaxVersions());
+  EXPECT_EQ(expected_max_versions, storage.GetAllInvalidationStates());
 }
 
 // Clearing the storage should erase all version map entries and the bootstrap
 // data.
 TEST_F(InvalidatorStorageTest, Clear) {
   InvalidatorStorage storage(&pref_service_);
-  EXPECT_TRUE(storage.GetAllMaxVersions().empty());
+  EXPECT_TRUE(storage.GetAllInvalidationStates().empty());
   EXPECT_TRUE(storage.GetBootstrapData().empty());
 
   storage.SetBootstrapData("test");
   EXPECT_EQ("test", storage.GetBootstrapData());
   {
-    InvalidationVersionMap expected_max_versions;
-    expected_max_versions[kAppNotificationsId_] = 3;
+    InvalidationStateMap expected_max_versions;
+    expected_max_versions[kAppNotificationsId_].version = 3;
     storage.SetMaxVersion(kAppNotificationsId_, 3);
-    EXPECT_EQ(expected_max_versions, storage.GetAllMaxVersions());
+    EXPECT_EQ(expected_max_versions, storage.GetAllInvalidationStates());
   }
 
   storage.Clear();
 
-  EXPECT_TRUE(storage.GetAllMaxVersions().empty());
+  EXPECT_TRUE(storage.GetAllInvalidationStates().empty());
   EXPECT_TRUE(storage.GetBootstrapData().empty());
 }
 
 TEST_F(InvalidatorStorageTest, SerializeEmptyMap) {
-  InvalidationVersionMap empty_map;
+  InvalidationStateMap empty_map;
   base::ListValue list;
   InvalidatorStorage::SerializeToList(empty_map, &list);
   EXPECT_TRUE(list.empty());
@@ -122,7 +130,7 @@ TEST_F(InvalidatorStorageTest, SerializeEmptyMap) {
 
 // Make sure we don't choke on a variety of malformed input.
 TEST_F(InvalidatorStorageTest, DeserializeFromListInvalidFormat) {
-  InvalidationVersionMap map;
+  InvalidationStateMap map;
   base::ListValue list_with_invalid_format;
   DictionaryValue* value;
 
@@ -188,13 +196,13 @@ TEST_F(InvalidatorStorageTest, DeserializeFromListInvalidFormat) {
   InvalidatorStorage::DeserializeFromList(list_with_invalid_format, &map);
 
   EXPECT_EQ(1U, map.size());
-  EXPECT_EQ(20, map[valid_id]);
+  EXPECT_EQ(20, map[valid_id].version);
 }
 
 // Tests behavior when there are duplicate entries for a single key. The value
 // of the last entry with that key should be used in the version map.
 TEST_F(InvalidatorStorageTest, DeserializeFromListWithDuplicates) {
-  InvalidationVersionMap map;
+  InvalidationStateMap map;
   base::ListValue list;
   DictionaryValue* value;
 
@@ -216,12 +224,12 @@ TEST_F(InvalidatorStorageTest, DeserializeFromListWithDuplicates) {
 
   InvalidatorStorage::DeserializeFromList(list, &map);
   EXPECT_EQ(2U, map.size());
-  EXPECT_EQ(10, map[kAutofillId_]);
-  EXPECT_EQ(15, map[kBookmarksId_]);
+  EXPECT_EQ(10, map[kAutofillId_].version);
+  EXPECT_EQ(15, map[kBookmarksId_].version);
 }
 
 TEST_F(InvalidatorStorageTest, DeserializeFromEmptyList) {
-  InvalidationVersionMap map;
+  InvalidationStateMap map;
   base::ListValue list;
   InvalidatorStorage::DeserializeFromList(list, &map);
   EXPECT_TRUE(map.empty());
@@ -230,7 +238,7 @@ TEST_F(InvalidatorStorageTest, DeserializeFromEmptyList) {
 // Tests that deserializing a well-formed value results in the expected version
 // map.
 TEST_F(InvalidatorStorageTest, DeserializeFromListBasic) {
-  InvalidationVersionMap map;
+  InvalidationStateMap map;
   base::ListValue list;
   DictionaryValue* value;
 
@@ -247,13 +255,13 @@ TEST_F(InvalidatorStorageTest, DeserializeFromListBasic) {
 
   InvalidatorStorage::DeserializeFromList(list, &map);
   EXPECT_EQ(2U, map.size());
-  EXPECT_EQ(10, map[kAutofillId_]);
-  EXPECT_EQ(15, map[kBookmarksId_]);
+  EXPECT_EQ(10, map[kAutofillId_].version);
+  EXPECT_EQ(15, map[kBookmarksId_].version);
 }
 
 // Tests for legacy deserialization code.
 TEST_F(InvalidatorStorageTest, DeserializeMapOutOfRange) {
-  InvalidationVersionMap map;
+  InvalidationStateMap map;
   base::DictionaryValue dict_with_out_of_range_type;
 
   dict_with_out_of_range_type.SetString(
@@ -264,11 +272,11 @@ TEST_F(InvalidatorStorageTest, DeserializeMapOutOfRange) {
   InvalidatorStorage::DeserializeMap(&dict_with_out_of_range_type, &map);
 
   EXPECT_EQ(1U, map.size());
-  EXPECT_EQ(5, map[kBookmarksId_]);
+  EXPECT_EQ(5, map[kBookmarksId_].version);
 }
 
 TEST_F(InvalidatorStorageTest, DeserializeMapInvalidFormat) {
-  InvalidationVersionMap map;
+  InvalidationStateMap map;
   base::DictionaryValue dict_with_invalid_format;
 
   dict_with_invalid_format.SetString("whoops", "5");
@@ -281,18 +289,18 @@ TEST_F(InvalidatorStorageTest, DeserializeMapInvalidFormat) {
   InvalidatorStorage::DeserializeMap(&dict_with_invalid_format, &map);
 
   EXPECT_EQ(1U, map.size());
-  EXPECT_EQ(10, map[kAutofillId_]);
+  EXPECT_EQ(10, map[kAutofillId_].version);
 }
 
 TEST_F(InvalidatorStorageTest, DeserializeMapEmptyDictionary) {
-  InvalidationVersionMap map;
+  InvalidationStateMap map;
   base::DictionaryValue dict;
   InvalidatorStorage::DeserializeMap(&dict, &map);
   EXPECT_TRUE(map.empty());
 }
 
 TEST_F(InvalidatorStorageTest, DeserializeMapBasic) {
-  InvalidationVersionMap map;
+  InvalidationStateMap map;
   base::DictionaryValue dict;
 
   dict.SetString(base::IntToString(syncer::AUTOFILL), "10");
@@ -300,8 +308,8 @@ TEST_F(InvalidatorStorageTest, DeserializeMapBasic) {
 
   InvalidatorStorage::DeserializeMap(&dict, &map);
   EXPECT_EQ(2U, map.size());
-  EXPECT_EQ(10, map[kAutofillId_]);
-  EXPECT_EQ(15, map[kBookmarksId_]);
+  EXPECT_EQ(10, map[kAutofillId_].version);
+  EXPECT_EQ(15, map[kBookmarksId_].version);
 }
 
 // Test that the migration code for the legacy preference works as expected.
@@ -320,15 +328,15 @@ TEST_F(InvalidatorStorageTest, MigrateLegacyPreferences) {
   EXPECT_TRUE(dict->empty());
 
   // Validate the new pref is set correctly.
-  InvalidationVersionMap map;
+  InvalidationStateMap map;
   const base::ListValue* list =
       pref_service_.GetList(prefs::kInvalidatorMaxInvalidationVersions);
   InvalidatorStorage::DeserializeFromList(*list, &map);
 
   EXPECT_EQ(3U, map.size());
-  EXPECT_EQ(10, map[kAutofillId_]);
-  EXPECT_EQ(32, map[kBookmarksId_]);
-  EXPECT_EQ(54, map[kPreferencesId_]);
+  EXPECT_EQ(10, map[kAutofillId_].version);
+  EXPECT_EQ(32, map[kBookmarksId_].version);
+  EXPECT_EQ(54, map[kPreferencesId_].version);
 }
 
 TEST_F(InvalidatorStorageTest, SetGetBootstrapData) {

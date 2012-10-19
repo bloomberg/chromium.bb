@@ -52,7 +52,7 @@ void SyncInvalidationListener::Start(
         create_invalidation_client_callback,
     const std::string& client_id, const std::string& client_info,
     const std::string& invalidation_bootstrap_data,
-    const InvalidationVersionMap& initial_max_invalidation_versions,
+    const InvalidationStateMap& initial_invalidation_state_map,
     const WeakHandle<InvalidationStateTracker>& invalidation_state_tracker,
     Delegate* delegate) {
   DCHECK(CalledOnValidThread());
@@ -67,16 +67,16 @@ void SyncInvalidationListener::Start(
   sync_system_resources_.storage()->SetInitialState(
       invalidation_bootstrap_data);
 
-  max_invalidation_versions_ = initial_max_invalidation_versions;
-  if (max_invalidation_versions_.empty()) {
+  invalidation_state_map_ = initial_invalidation_state_map;
+  if (invalidation_state_map_.empty()) {
     DVLOG(2) << "No initial max invalidation versions for any id";
   } else {
-    for (InvalidationVersionMap::const_iterator it =
-             max_invalidation_versions_.begin();
-         it != max_invalidation_versions_.end(); ++it) {
+    for (InvalidationStateMap::const_iterator it =
+             invalidation_state_map_.begin();
+         it != invalidation_state_map_.end(); ++it) {
       DVLOG(2) << "Initial max invalidation version for "
                << ObjectIdToString(it->first) << " is "
-               << it->second;
+               << it->second.version;
     }
   }
   invalidation_state_tracker_ = invalidation_state_tracker;
@@ -141,17 +141,16 @@ void SyncInvalidationListener::Invalidate(
   // should drop invalidations for unregistered ids.  We may also
   // have to filter it at a higher level, as invalidations for
   // newly-unregistered ids may already be in flight.
-  InvalidationVersionMap::const_iterator it =
-      max_invalidation_versions_.find(id);
-  if ((it != max_invalidation_versions_.end()) &&
-      (invalidation.version() <= it->second)) {
+  InvalidationStateMap::const_iterator it = invalidation_state_map_.find(id);
+  if ((it != invalidation_state_map_.end()) &&
+      (invalidation.version() <= it->second.version)) {
     // Drop redundant invalidations.
     client->Acknowledge(ack_handle);
     return;
   }
   DVLOG(2) << "Setting max invalidation version for " << ObjectIdToString(id)
            << " to " << invalidation.version();
-  max_invalidation_versions_[id] = invalidation.version();
+  invalidation_state_map_[id].version = invalidation.version();
   invalidation_state_tracker_.Call(
       FROM_HERE,
       &InvalidationStateTracker::SetMaxVersion,
@@ -313,7 +312,7 @@ void SyncInvalidationListener::Stop() {
   delegate_ = NULL;
 
   invalidation_state_tracker_.Reset();
-  max_invalidation_versions_.clear();
+  invalidation_state_map_.clear();
   ticl_state_ = DEFAULT_INVALIDATION_ERROR;
   push_client_state_ = DEFAULT_INVALIDATION_ERROR;
 }

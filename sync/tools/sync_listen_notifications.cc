@@ -85,8 +85,8 @@ class NullInvalidationStateTracker
   NullInvalidationStateTracker() {}
   virtual ~NullInvalidationStateTracker() {}
 
-  virtual InvalidationVersionMap GetAllMaxVersions() const OVERRIDE {
-    return InvalidationVersionMap();
+  virtual InvalidationStateMap GetAllInvalidationStates() const OVERRIDE {
+    return InvalidationStateMap();
   }
 
   virtual void SetMaxVersion(

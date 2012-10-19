@@ -41,7 +41,7 @@ class InvalidatorStorage : public base::SupportsWeakPtr<InvalidatorStorage>,
   void Clear();
 
   // InvalidationStateTracker implementation.
-  virtual syncer::InvalidationVersionMap GetAllMaxVersions() const
+  virtual syncer::InvalidationStateMap GetAllInvalidationStates() const
       OVERRIDE;
   virtual void SetMaxVersion(const invalidation::ObjectId& id,
                              int64 max_version) OVERRIDE;
@@ -70,19 +70,19 @@ class InvalidatorStorage : public base::SupportsWeakPtr<InvalidatorStorage>,
 
   base::ThreadChecker thread_checker_;
 
-  // Helpers to convert between InvalidationVersionMap <--> ListValue.
+  // Helpers to convert between InvalidationStateMap <--> ListValue.
   static void DeserializeFromList(
-      const base::ListValue& max_versions_list,
-      syncer::InvalidationVersionMap* max_versions_map);
+      const base::ListValue& state_map_list,
+      syncer::InvalidationStateMap* state_map);
   static void SerializeToList(
-      const syncer::InvalidationVersionMap& max_versions_map,
-      base::ListValue* max_versions_list);
+      const syncer::InvalidationStateMap& state_map,
+      base::ListValue* state_map_list);
 
   // Code for migrating from old MaxInvalidationVersions pref, which was a map
   // from sync types to max invalidation versions.
   void MigrateMaxInvalidationVersionsPref();
   static void DeserializeMap(const base::DictionaryValue* max_versions_dict,
-                             syncer::InvalidationVersionMap* map);
+                             syncer::InvalidationStateMap* map);
 
   // May be NULL.
   PrefService* const pref_service_;

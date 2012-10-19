@@ -16,28 +16,28 @@ FakeInvalidationStateTracker::~FakeInvalidationStateTracker() {}
 
 int64 FakeInvalidationStateTracker::GetMaxVersion(
     const invalidation::ObjectId& id) const {
-  InvalidationVersionMap::const_iterator it = versions_.find(id);
-  return (it == versions_.end()) ? kMinVersion : it->second;
+  InvalidationStateMap::const_iterator it = state_map_.find(id);
+  return (it == state_map_.end()) ? kMinVersion : it->second.version;
 }
 
-InvalidationVersionMap
-FakeInvalidationStateTracker::GetAllMaxVersions() const {
-  return versions_;
+InvalidationStateMap
+FakeInvalidationStateTracker::GetAllInvalidationStates() const {
+  return state_map_;
 }
 
 void FakeInvalidationStateTracker::SetMaxVersion(
     const invalidation::ObjectId& id, int64 max_version) {
-  InvalidationVersionMap::const_iterator it = versions_.find(id);
-  if ((it != versions_.end()) && (max_version <= it->second)) {
+  InvalidationStateMap::const_iterator it = state_map_.find(id);
+  if ((it != state_map_.end()) && (max_version <= it->second.version)) {
     ADD_FAILURE();
     return;
   }
-  versions_[id] = max_version;
+  state_map_[id].version = max_version;
 }
 
 void FakeInvalidationStateTracker::Forget(const ObjectIdSet& ids) {
   for (ObjectIdSet::const_iterator it = ids.begin(); it != ids.end(); ++it) {
-    versions_.erase(*it);
+    state_map_.erase(*it);
   }
 }
 

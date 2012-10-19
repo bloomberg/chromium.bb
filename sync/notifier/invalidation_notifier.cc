@@ -19,12 +19,12 @@ namespace syncer {
 
 InvalidationNotifier::InvalidationNotifier(
     scoped_ptr<notifier::PushClient> push_client,
-    const InvalidationVersionMap& initial_max_invalidation_versions,
+    const InvalidationStateMap& initial_invalidation_state_map,
     const std::string& invalidation_bootstrap_data,
     const WeakHandle<InvalidationStateTracker>& invalidation_state_tracker,
     const std::string& client_info)
     : state_(STOPPED),
-      initial_max_invalidation_versions_(initial_max_invalidation_versions),
+      initial_invalidation_state_map_(initial_invalidation_state_map),
       invalidation_state_tracker_(invalidation_state_tracker),
       client_info_(client_info),
       invalidation_bootstrap_data_(invalidation_bootstrap_data),
@@ -90,7 +90,7 @@ void InvalidationNotifier::UpdateCredentials(
     invalidation_listener_.Start(
         base::Bind(&invalidation::CreateInvalidationClient),
         client_id_, client_info_, invalidation_bootstrap_data_,
-        initial_max_invalidation_versions_,
+        initial_invalidation_state_map_,
         invalidation_state_tracker_,
         this);
     invalidation_bootstrap_data_.clear();

@@ -16,14 +16,18 @@
 
 namespace syncer {
 
-typedef std::map<invalidation::ObjectId, int64, ObjectIdLessThan>
-    InvalidationVersionMap;
+struct InvalidationState {
+  int64 version;
+};
+
+typedef std::map<invalidation::ObjectId, InvalidationState, ObjectIdLessThan>
+    InvalidationStateMap;
 
 class InvalidationStateTracker {
  public:
   InvalidationStateTracker() {}
 
-  virtual InvalidationVersionMap GetAllMaxVersions() const = 0;
+  virtual InvalidationStateMap GetAllInvalidationStates() const = 0;
 
   // |max_version| should be strictly greater than any existing max
   // version for |model_type|.

@@ -37,7 +37,7 @@ class NonBlockingInvalidator
   // |invalidation_state_tracker| must be initialized.
   NonBlockingInvalidator(
       const notifier::NotifierOptions& notifier_options,
-      const InvalidationVersionMap& initial_max_invalidation_versions,
+      const InvalidationStateMap& initial_invalidation_state_map,
       const std::string& invalidation_bootstrap_data,
       const WeakHandle<InvalidationStateTracker>&
           invalidation_state_tracker,

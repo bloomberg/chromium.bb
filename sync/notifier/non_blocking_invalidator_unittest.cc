@@ -49,7 +49,7 @@ class NonBlockingInvalidatorTestDelegate {
     invalidator_.reset(
         new NonBlockingInvalidator(
             invalidator_options,
-            InvalidationVersionMap(),
+            InvalidationStateMap(),
             initial_state,
             MakeWeakHandle(invalidation_state_tracker),
             "fake_client_info"));

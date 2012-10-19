@@ -13,7 +13,7 @@
 #include "chrome/common/pref_names.h"
 #include "sync/internal_api/public/base/model_type.h"
 
-using syncer::InvalidationVersionMap;
+using syncer::InvalidationStateMap;
 
 namespace browser_sync {
 
@@ -23,9 +23,9 @@ const char kSourceKey[] = "source";
 const char kNameKey[] = "name";
 const char kMaxVersionKey[] = "max-version";
 
-bool ValueToObjectIdAndVersion(const DictionaryValue& value,
-                               invalidation::ObjectId* id,
-                               int64* max_version) {
+bool ValueToObjectIdAndState(const DictionaryValue& value,
+                             invalidation::ObjectId* id,
+                             syncer::InvalidationState* state) {
   std::string source_str;
   int source = 0;
   std::string name;
@@ -46,7 +46,7 @@ bool ValueToObjectIdAndVersion(const DictionaryValue& value,
     DLOG(WARNING) << "Invalid source: " << source_str;
     return false;
   }
-  if (!base::StringToInt64(max_version_str, max_version)) {
+  if (!base::StringToInt64(max_version_str, &state->version)) {
     DLOG(WARNING) << "Invalid max invalidation version: " << max_version_str;
     return false;
   }
@@ -55,12 +55,12 @@ bool ValueToObjectIdAndVersion(const DictionaryValue& value,
 }
 
 // The caller owns the returned value.
-DictionaryValue* ObjectIdAndVersionToValue(const invalidation::ObjectId& id,
-                                           int64 max_version) {
+DictionaryValue* ObjectIdAndStateToValue(
+    const invalidation::ObjectId& id, const syncer::InvalidationState& state) {
   DictionaryValue* value = new DictionaryValue;
   value->SetString(kSourceKey, base::IntToString(id.source()));
   value->SetString(kNameKey, id.name());
-  value->SetString(kMaxVersionKey, base::Int64ToString(max_version));
+  value->SetString(kMaxVersionKey, base::Int64ToString(state.version));
   return value;
 }
 
@@ -85,80 +85,80 @@ InvalidatorStorage::InvalidatorStorage(PrefService* pref_service)
 InvalidatorStorage::~InvalidatorStorage() {
 }
 
-InvalidationVersionMap InvalidatorStorage::GetAllMaxVersions() const {
+InvalidationStateMap InvalidatorStorage::GetAllInvalidationStates() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  InvalidationVersionMap max_versions;
+  InvalidationStateMap state_map;
   if (!pref_service_) {
-    return max_versions;
+    return state_map;
   }
-  const base::ListValue* max_versions_list =
+  const base::ListValue* state_map_list =
       pref_service_->GetList(prefs::kInvalidatorMaxInvalidationVersions);
-  CHECK(max_versions_list);
-  DeserializeFromList(*max_versions_list, &max_versions);
-  return max_versions;
+  CHECK(state_map_list);
+  DeserializeFromList(*state_map_list, &state_map);
+  return state_map;
 }
 
 void InvalidatorStorage::SetMaxVersion(const invalidation::ObjectId& id,
                                        int64 max_version) {
   DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(pref_service_);
-  InvalidationVersionMap max_versions = GetAllMaxVersions();
-  InvalidationVersionMap::iterator it = max_versions.find(id);
-  if ((it != max_versions.end()) && (max_version <= it->second)) {
+  InvalidationStateMap state_map = GetAllInvalidationStates();
+  InvalidationStateMap::iterator it = state_map.find(id);
+  if ((it != state_map.end()) && (max_version <= it->second.version)) {
     NOTREACHED();
     return;
   }
-  max_versions[id] = max_version;
+  state_map[id].version = max_version;
 
-  base::ListValue max_versions_list;
-  SerializeToList(max_versions, &max_versions_list);
+  base::ListValue state_map_list;
+  SerializeToList(state_map, &state_map_list);
   pref_service_->Set(prefs::kInvalidatorMaxInvalidationVersions,
-                     max_versions_list);
+                     state_map_list);
 }
 
 void InvalidatorStorage::Forget(const syncer::ObjectIdSet& ids) {
   DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(pref_service_);
-  InvalidationVersionMap max_versions = GetAllMaxVersions();
+  InvalidationStateMap state_map = GetAllInvalidationStates();
   for (syncer::ObjectIdSet::const_iterator it = ids.begin(); it != ids.end();
        ++it) {
-    max_versions.erase(*it);
+    state_map.erase(*it);
   }
 
-  base::ListValue max_versions_list;
-  SerializeToList(max_versions, &max_versions_list);
+  base::ListValue state_map_list;
+  SerializeToList(state_map, &state_map_list);
   pref_service_->Set(prefs::kInvalidatorMaxInvalidationVersions,
-                     max_versions_list);
+                     state_map_list);
 }
 
 // static
 void InvalidatorStorage::DeserializeFromList(
-    const base::ListValue& max_versions_list,
-    InvalidationVersionMap* max_versions_map) {
-  max_versions_map->clear();
-  for (size_t i = 0; i < max_versions_list.GetSize(); ++i) {
+    const base::ListValue& state_map_list,
+    InvalidationStateMap* state_map) {
+  state_map->clear();
+  for (size_t i = 0; i < state_map_list.GetSize(); ++i) {
     const DictionaryValue* value = NULL;
-    if (!max_versions_list.GetDictionary(i, &value)) {
+    if (!state_map_list.GetDictionary(i, &value)) {
       DLOG(WARNING) << "Unable to deserialize entry " << i;
       continue;
     }
     invalidation::ObjectId id;
-    int64 max_version = 0;
-    if (!ValueToObjectIdAndVersion(*value, &id, &max_version)) {
+    syncer::InvalidationState state;
+    if (!ValueToObjectIdAndState(*value, &id, &state)) {
       DLOG(WARNING) << "Error while deserializing entry " << i;
       continue;
     }
-    (*max_versions_map)[id] = max_version;
+    (*state_map)[id] = state;
   }
 }
 
 // static
 void InvalidatorStorage::SerializeToList(
-    const InvalidationVersionMap& max_versions_map,
-    base::ListValue* max_versions_list) {
-  for (InvalidationVersionMap::const_iterator it = max_versions_map.begin();
-       it != max_versions_map.end(); ++it) {
-    max_versions_list->Append(ObjectIdAndVersionToValue(it->first, it->second));
+    const InvalidationStateMap& state_map,
+    base::ListValue* state_map_list) {
+  for (InvalidationStateMap::const_iterator it = state_map.begin();
+       it != state_map.end(); ++it) {
+    state_map_list->Append(ObjectIdAndStateToValue(it->first, it->second));
   }
 }
 
@@ -170,12 +170,12 @@ void InvalidatorStorage::MigrateMaxInvalidationVersionsPref() {
       pref_service_->GetDictionary(prefs::kSyncMaxInvalidationVersions);
   CHECK(max_versions_dict);
   if (!max_versions_dict->empty()) {
-    InvalidationVersionMap max_versions;
-    DeserializeMap(max_versions_dict, &max_versions);
-    base::ListValue max_versions_list;
-    SerializeToList(max_versions, &max_versions_list);
+    InvalidationStateMap state_map;
+    DeserializeMap(max_versions_dict, &state_map);
+    base::ListValue state_map_list;
+    SerializeToList(state_map, &state_map_list);
     pref_service_->Set(prefs::kInvalidatorMaxInvalidationVersions,
-                       max_versions_list);
+                       state_map_list);
     UMA_HISTOGRAM_BOOLEAN("InvalidatorStorage.MigrateInvalidationVersionsPref",
                           true);
   } else {
@@ -189,7 +189,7 @@ void InvalidatorStorage::MigrateMaxInvalidationVersionsPref() {
 // static
 void InvalidatorStorage::DeserializeMap(
     const base::DictionaryValue* max_versions_dict,
-    InvalidationVersionMap* map) {
+    InvalidationStateMap* map) {
   map->clear();
   // Convert from a string -> string DictionaryValue to a
   // ModelType -> int64 map.
@@ -222,7 +222,7 @@ void InvalidatorStorage::DeserializeMap(
       DLOG(WARNING) << "Invalid model type: " << model_type;
       continue;
     }
-    (*map)[id] = max_version;
+    (*map)[id].version = max_version;
   }
 }
 

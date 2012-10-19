@@ -22,7 +22,7 @@ class FakeInvalidationStateTracker
   int64 GetMaxVersion(const invalidation::ObjectId& id) const;
 
   // InvalidationStateTracker implementation.
-  virtual InvalidationVersionMap GetAllMaxVersions() const OVERRIDE;
+  virtual InvalidationStateMap GetAllInvalidationStates() const OVERRIDE;
   virtual void SetMaxVersion(const invalidation::ObjectId& id,
                              int64 max_version) OVERRIDE;
   virtual void Forget(const ObjectIdSet& ids) OVERRIDE;
@@ -32,7 +32,7 @@ class FakeInvalidationStateTracker
   static const int64 kMinVersion;
 
  private:
-  InvalidationVersionMap versions_;
+  InvalidationStateMap state_map_;
   std::string bootstrap_data_;
 };
 
