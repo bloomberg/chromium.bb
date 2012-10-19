@@ -25,6 +25,8 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -58,6 +60,14 @@ bool IsDriveEnabledForProfile(Profile* profile) {
   return true;
 }
 
+// The sync invalidation object source ID for Google Drive.
+// TODO(kochi): Remove this constant once this is upstreamed in
+// google-invalidation-api.
+const int kCosmoChangelog = 1014;
+
+// The sync invalidation object ID for Google Drive.
+const char kDriveInvalidationObjectId[] = "CHANGELOG";
+
 }  // namespace
 
 DriveSystemService::DriveSystemService(Profile* profile)
@@ -69,6 +79,17 @@ DriveSystemService::DriveSystemService(Profile* profile)
   base::SequencedWorkerPool* blocking_pool = BrowserThread::GetBlockingPool();
   blocking_task_runner_ = blocking_pool->GetSequencedTaskRunner(
       blocking_pool->GetSequenceToken());
+
+  ProfileSyncService* profile_sync_service =
+      profile_ ? ProfileSyncServiceFactory::GetForProfile(profile_) : NULL;
+  if (profile_sync_service) {
+    // Register for Google Drive invalidation notifications.
+    profile_sync_service->RegisterInvalidationHandler(this);
+    syncer::ObjectIdSet ids;
+    ids.insert(invalidation::ObjectId(kCosmoChangelog,
+                                      kDriveInvalidationObjectId));
+    profile_sync_service->UpdateRegisteredInvalidationIds(this, ids);
+  }
 }
 
 DriveSystemService::~DriveSystemService() {
@@ -112,6 +133,20 @@ void DriveSystemService::Initialize(
 
 void DriveSystemService::Shutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  ProfileSyncService* profile_sync_service =
+      profile_ ? ProfileSyncServiceFactory::GetForProfile(profile_) : NULL;
+  if (profile_sync_service) {
+    // TODO(kochi): Once DriveSystemService gets started / stopped at runtime,
+    // this ID needs to be unregistered *before* the handler is unregistered
+    // as ID persists across browser restarts.
+    if (!IsDriveEnabledForProfile(profile_)) {
+      profile_sync_service->UpdateRegisteredInvalidationIds(
+          this, syncer::ObjectIdSet());
+    }
+    profile_sync_service->UnregisterInvalidationHandler(this);
+  }
+
   RemoveDriveMountPoint();
 
   // Shut down the member objects in the reverse order of creation.
@@ -138,6 +173,21 @@ bool DriveSystemService::IsDriveEnabled() {
     return false;
 
   return true;
+}
+
+void DriveSystemService::OnInvalidatorStateChange(
+    syncer::InvalidatorState state) {
+  // Do nothing.
+}
+
+void DriveSystemService::OnIncomingInvalidation(
+    const syncer::ObjectIdInvalidationMap& invalidation_map,
+    syncer::IncomingInvalidationSource source) {
+  DCHECK_EQ(1U, invalidation_map.size());
+  const invalidation::ObjectId oid(kCosmoChangelog, kDriveInvalidationObjectId);
+  DCHECK_EQ(1U, invalidation_map.count(oid));
+
+  file_system_->CheckForUpdates();
 }
 
 void DriveSystemService::ClearCacheAndRemountFileSystem(
@@ -264,6 +314,7 @@ DriveSystemServiceFactory* DriveSystemServiceFactory::GetInstance() {
 DriveSystemServiceFactory::DriveSystemServiceFactory()
     : ProfileKeyedServiceFactory("DriveSystemService",
                                  ProfileDependencyManager::GetInstance()) {
+  DependsOn(ProfileSyncServiceFactory::GetInstance());
   DependsOn(DownloadServiceFactory::GetInstance());
 }
 

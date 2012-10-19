@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
+#include "sync/notifier/invalidation_handler.h"
 
 class FilePath;
 
@@ -36,7 +37,8 @@ class StaleCacheFilesRemover;
 // The class is essentially a container that manages lifetime of the objects
 // that are used to run the Drive system. The DriveSystemService object is
 // created per-profile.
-class DriveSystemService : public ProfileKeyedService  {
+class DriveSystemService : public ProfileKeyedService,
+                           public syncer::InvalidationHandler {
  public:
   DriveServiceInterface* drive_service() { return drive_service_.get(); }
   DriveCache* cache() { return cache_; }
@@ -52,6 +54,13 @@ class DriveSystemService : public ProfileKeyedService  {
 
   // ProfileKeyedService override:
   virtual void Shutdown() OVERRIDE;
+
+  // syncer::InvalidationHandler implementation.
+  virtual void OnInvalidatorStateChange(
+      syncer::InvalidatorState state) OVERRIDE;
+  virtual void OnIncomingInvalidation(
+      const syncer::ObjectIdInvalidationMap& invalidation_map,
+      syncer::IncomingInvalidationSource source) OVERRIDE;
 
  private:
   explicit DriveSystemService(Profile* profile);
