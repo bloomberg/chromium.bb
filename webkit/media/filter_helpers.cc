@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "media/base/filter_collection.h"
 #include "media/base/message_loop_factory.h"
+#include "media/filters/decrypting_audio_decoder.h"
 #include "media/filters/decrypting_video_decoder.h"
 #include "media/filters/chunk_demuxer.h"
 #include "media/filters/dummy_demuxer.h"
@@ -36,6 +37,17 @@ static void AddDefaultDecodersToCollection(
                      base::Unretained(message_loop_factory),
                      media::MessageLoopFactory::kDecoder));
 
+  scoped_refptr<media::DecryptingAudioDecoder> decrypting_audio_decoder =
+      new media::DecryptingAudioDecoder(
+          base::Bind(&media::MessageLoopFactory::GetMessageLoop,
+                     base::Unretained(message_loop_factory),
+                     media::MessageLoopFactory::kDecoder),
+          base::Bind(&ProxyDecryptor::RequestDecryptorNotification,
+                     base::Unretained(proxy_decryptor)));
+
+  filter_collection->GetAudioDecoders()->push_back(ffmpeg_audio_decoder);
+  filter_collection->GetAudioDecoders()->push_back(decrypting_audio_decoder);
+
   scoped_refptr<media::DecryptingVideoDecoder> decrypting_video_decoder =
       new media::DecryptingVideoDecoder(
           base::Bind(&media::MessageLoopFactory::GetMessageLoop,
@@ -51,7 +63,12 @@ static void AddDefaultDecodersToCollection(
                      media::MessageLoopFactory::kDecoder),
           proxy_decryptor);
 
-  filter_collection->GetAudioDecoders()->push_back(ffmpeg_audio_decoder);
+  // TODO(xhwang): Ideally we should have decrypting video decoder after
+  // regular video decoder since in the real world most videos are not
+  // encrypted. For now FFmpegVideoDecoder can also do decryption
+  // (decrypt-only), and we perfer DecryptingVideoDecoder (decrypt-and-decode)
+  // to FFmpegVideoDecoder. Fix this order when we move decryption out of
+  // FFmpegVideoDecoder.
   filter_collection->GetVideoDecoders()->push_back(decrypting_video_decoder);
   filter_collection->GetVideoDecoders()->push_back(ffmpeg_video_decoder);
 }
