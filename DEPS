@@ -318,6 +318,9 @@ deps = {
 
   "src/third_party/pywebsocket/src":
     (Var("googlecode_url") % "pywebsocket") + "/trunk/src@662",
+
+  "src/third_party/opus/src":
+    "/trunk/deps/third_party/opus@162558",
 }
 
 
