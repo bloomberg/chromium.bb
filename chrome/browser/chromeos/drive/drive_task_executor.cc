@@ -91,6 +91,13 @@ void DriveTaskExecutor::OnFileEntryFetched(
     return;
   }
 
+  // The edit URL can be empty for non-editable files (such as files shared with
+  // read-only privilege).
+  if (entry_proto->edit_url().empty()) {
+    Done(false);
+    return;
+  }
+
   DriveServiceInterface* drive_service =
       system_service->drive_service();
 

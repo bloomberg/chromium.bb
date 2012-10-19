@@ -164,6 +164,13 @@ void MoveOperation::RenameAfterGetEntryInfo(
     }
   }
 
+  // The edit URL can be empty for non-editable files (such as files shared with
+  // read-only privilege).
+  if (entry_proto->edit_url().empty()) {
+    callback.Run(DRIVE_FILE_ERROR_ACCESS_DENIED, file_path);
+    return;
+  }
+
   drive_service_->RenameResource(
       GURL(entry_proto->edit_url()),
       file_name,
