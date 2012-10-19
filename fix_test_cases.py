@@ -21,6 +21,8 @@ import tempfile
 
 import run_test_cases
 
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 def load_run_test_cases_results(run_test_cases_file):
   """Loads a .run_test_cases result file.
@@ -51,7 +53,7 @@ def load_run_test_cases_results(run_test_cases_file):
 def run_all(isolated, run_test_cases_file):
   """Runs the test cases in an isolated environment."""
   cmd = [
-    sys.executable, 'isolate.py',
+    sys.executable, os.path.join(ROOT_DIR, 'isolate.py'),
     'run',
     '-r', isolated,
     '--',
@@ -69,7 +71,7 @@ def trace_all(isolated, test_cases):
   os.close(handle)
   try:
     cmd = [
-      sys.executable, 'isolate_test_cases.py',
+      sys.executable, os.path.join(ROOT_DIR, 'isolate_test_cases.py'),
       '-r', isolated,
       '--test-case-file', test_cases_file,
       '-v',
