@@ -201,7 +201,7 @@ void AddDriveMountPoint(
   // Grant R/W permission for tmp and pinned cache folder.
   drive::DriveSystemService* system_service =
       drive::DriveSystemServiceFactory::GetForProfile(profile);
-  // |system_service| is NULL if incognito window / guest login.
+  // |system_service| is NULL if Drive is disabled.
   if (!system_service || !system_service->file_system())
     return;
   drive::DriveCache* cache = system_service->cache();
@@ -763,9 +763,9 @@ bool GetFileTasksFileBrowserFunction::FindDriveAppTasks(
 
   drive::DriveSystemService* system_service =
       drive::DriveSystemServiceFactory::GetForProfile(profile_);
-  // |system_service| is NULL if incognito window / guest login. We return true
-  // in this case because there might be other extension tasks, even if we don't
-  // have any to add.
+  // |system_service| is NULL if Drive is disabled. We return true in this
+  // case because there might be other extension tasks, even if we don't have
+  // any to add.
   if (!system_service || !system_service->webapps_registry())
     return true;
 
@@ -1520,6 +1520,13 @@ void GetSizeStatsFunction::GetLocalPathsResponseOnUIThread(
   if (files[0].file_path == drive::util::GetDriveMountPointPath()) {
     drive::DriveSystemService* system_service =
         drive::DriveSystemServiceFactory::GetForProfile(profile_);
+    // |system_service| is NULL if Drive is disabled.
+    if (!system_service) {
+      // If stats couldn't be gotten for drive, result should be left
+      // undefined. See comments in GetDriveAvailableSpaceCallback().
+      SendResponse(true);
+      return;
+    }
 
     drive::DriveFileSystemInterface* file_system =
         system_service->file_system();
@@ -2105,6 +2112,15 @@ void GetDriveFilePropertiesFunction::GetNextFileProperties() {
   // Start getting the file info.
   drive::DriveSystemService* system_service =
       drive::DriveSystemServiceFactory::GetForProfile(profile_);
+  // |system_service| is NULL if Drive is disabled.
+  if (!system_service) {
+    OnOperationComplete(file_path,
+                        property_dict,
+                        drive::DRIVE_FILE_ERROR_FAILED,
+                        scoped_ptr<drive::DriveEntryProto>());
+    return;
+  }
+
   system_service->file_system()->GetEntryInfoByPath(
       file_path,
       base::Bind(&GetDriveFilePropertiesFunction::OnGetFileInfo,
@@ -2170,6 +2186,12 @@ void GetDriveFilePropertiesFunction::OnOperationComplete(
 
   drive::DriveSystemService* system_service =
       drive::DriveSystemServiceFactory::GetForProfile(profile_);
+  // |system_service| is NULL if Drive is disabled.
+  if (!system_service) {
+    property_dict->SetInteger("errorCode", error);
+    CompleteGetFileProperties();
+    return;
+  }
 
   // Get drive WebApps that can accept this file.
   ScopedVector<drive::DriveWebAppInfo> web_apps;
@@ -2262,6 +2284,15 @@ void PinDriveFileFunction::DoOperation(
 
   drive::DriveSystemService* system_service =
       drive::DriveSystemServiceFactory::GetForProfile(profile_);
+  // |system_service| is NULL if Drive is disabled.
+  if (!system_service) {
+    OnOperationComplete(file_path,
+                        properties,
+                        drive::DRIVE_FILE_ERROR_FAILED,
+                        entry_proto.Pass());
+    return;
+  }
+
   // This is subtle but we should take references of resource_id and md5
   // before |file_info| is passed to |callback| by base::Passed(). Otherwise,
   // file_info->whatever() crashes.
@@ -2386,12 +2417,20 @@ void GetDriveFilesFunction::GetFileOrSendResponse() {
     return;
   }
 
-  drive::DriveSystemService* system_service =
-      drive::DriveSystemServiceFactory::GetForProfile(profile_);
-  DCHECK(system_service);
-
   // Get the file on the top of the queue.
   FilePath drive_path = remaining_drive_paths_.front();
+
+  drive::DriveSystemService* system_service =
+      drive::DriveSystemServiceFactory::GetForProfile(profile_);
+  // |system_service| is NULL if Drive is disabled.
+  if (!system_service) {
+    OnFileReady(drive::DRIVE_FILE_ERROR_FAILED,
+                drive_path,
+                "",  // mime_type
+                drive::REGULAR_FILE);
+    return;
+  }
+
   system_service->file_system()->GetFileByPath(
       drive_path,
       base::Bind(&GetDriveFilesFunction::OnFileReady, this),
@@ -2434,6 +2473,7 @@ GetFileTransfersFunction::~GetFileTransfersFunction() {}
 ListValue* GetFileTransfersFunction::GetFileTransfersList() {
   drive::DriveSystemService* system_service =
       drive::DriveSystemServiceFactory::GetForProfile(profile_);
+  // |system_service| is NULL if Drive is disabled.
   if (!system_service)
     return NULL;
 
@@ -2488,6 +2528,7 @@ void CancelFileTransfersFunction::GetLocalPathsResponseOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   drive::DriveSystemService* system_service =
       drive::DriveSystemServiceFactory::GetForProfile(profile_);
+  // |system_service| is NULL if Drive is disabled.
   if (!system_service) {
     SendResponse(false);
     return;
@@ -2548,6 +2589,7 @@ void TransferFileFunction::GetLocalPathsResponseOnUIThread(
 
   drive::DriveSystemService* system_service =
       drive::DriveSystemServiceFactory::GetForProfile(profile_);
+  // |system_service| is NULL if Drive is disabled.
   if (!system_service) {
     SendResponse(false);
     return;
@@ -2676,6 +2718,7 @@ void SearchDriveFunction::OnFileSystemOpened(
 
   drive::DriveSystemService* system_service =
       drive::DriveSystemServiceFactory::GetForProfile(profile_);
+  // |system_service| is NULL if Drive is disabled.
   if (!system_service || !system_service->file_system()) {
     SendResponse(false);
     return;
@@ -2720,7 +2763,7 @@ void SearchDriveFunction::OnSearch(
 bool ClearDriveCacheFunction::RunImpl() {
   drive::DriveSystemService* system_service =
       drive::DriveSystemServiceFactory::GetForProfile(profile_);
-  // |system_service| is NULL if incognito window / guest login.
+  // |system_service| is NULL if Drive is disabled.
   if (!system_service || !system_service->file_system())
     return false;
 
@@ -2764,6 +2807,7 @@ bool RequestDirectoryRefreshFunction::RunImpl() {
 
   drive::DriveSystemService* system_service =
       drive::DriveSystemServiceFactory::GetForProfile(profile_);
+  // |system_service| is NULL if Drive is disabled.
   if (!system_service || !system_service->file_system())
     return false;
 

@@ -273,7 +273,9 @@ void FileBrowserEventRouter::HandleRemoteUpdateRequestOnUIThread(bool start) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   drive::DriveFileSystemInterface* file_system = GetRemoteFileSystem();
-  DCHECK(file_system);
+  // |file_system| is NULL if Drive is disabled.
+  if (!file_system)
+    return;
 
   if (start) {
     file_system->CheckForUpdates();
