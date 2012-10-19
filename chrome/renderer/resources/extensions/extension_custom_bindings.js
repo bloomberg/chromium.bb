@@ -12,6 +12,8 @@ var OpenChannelToNativeApp = extensionNatives.OpenChannelToNativeApp;
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 
 var inIncognitoContext = requireNative('process').InIncognitoContext();
+var sendRequestIsDisabled = requireNative('process').IsSendRequestDisabled();
+var contextType = requireNative('process').GetContextType();
 
 chrome.extension = chrome.extension || {};
 
@@ -99,10 +101,23 @@ chromeHidden.registerCustomHook('extension',
 
   apiFunctions.setHandleRequest('sendRequest',
                                 function(targetId, request, responseCallback) {
+    if (sendRequestIsDisabled)
+      throw new Error(sendRequestIsDisabled);
     var port = chrome.extension.connect(targetId || extensionId,
                                         {name: chromeHidden.kRequestChannel});
     chromeHidden.Port.sendMessageImpl(port, request, responseCallback);
   });
+
+  if (sendRequestIsDisabled) {
+    chrome.extension.onRequest.addListener = function() {
+      throw new Error(sendRequestIsDisabled);
+    }
+    if (contextType == 'BLESSED_EXTENSION') {
+      chrome.extension.onRequestExternal.addListener = function() {
+        throw new Error(sendRequestIsDisabled);
+      }
+    }
+  }
 
   apiFunctions.setHandleRequest('sendMessage',
                                 function(targetId, message, responseCallback) {

@@ -6,6 +6,7 @@
 
 var tabsNatives = requireNative('tabs');
 var OpenChannelToTab = tabsNatives.OpenChannelToTab;
+var sendRequestIsDisabled = requireNative('process').IsSendRequestDisabled();
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
 
@@ -23,6 +24,8 @@ chromeHidden.registerCustomHook('tabs', function(bindingsAPI, extensionId) {
 
   apiFunctions.setHandleRequest('sendRequest',
                                 function(tabId, request, responseCallback) {
+    if (sendRequestIsDisabled)
+      throw new Error(sendRequestIsDisabled);
     var port = chrome.tabs.connect(tabId, {name: chromeHidden.kRequestChannel});
     chromeHidden.Port.sendMessageImpl(port, request, responseCallback);
   });

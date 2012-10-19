@@ -367,7 +367,7 @@
         "name": "onMessageExternal",
         "type": "function",
         "anonymous": true,
-        "description": "Fired when a message is sent from another extension.",
+        "description": "Fired when a message is sent from another extension. Cannot be used in a content script.",
         "parameters": [
           {"name": "message", "type": "any", "description": "The message sent by the calling script."},
           {"name": "sender", "$ref": "MessageSender" },

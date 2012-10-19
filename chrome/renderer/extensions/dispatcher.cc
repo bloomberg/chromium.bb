@@ -177,12 +177,14 @@ class ProcessInfoNativeHandler : public ChromeV8Extension {
       const std::string& extension_id,
       const std::string& context_type,
       bool is_incognito_context,
-      int manifest_version)
+      int manifest_version,
+      bool send_request_disabled)
       : ChromeV8Extension(dispatcher),
         extension_id_(extension_id),
         context_type_(context_type),
         is_incognito_context_(is_incognito_context),
-        manifest_version_(manifest_version) {
+        manifest_version_(manifest_version),
+        send_request_disabled_(send_request_disabled) {
     RouteFunction("GetExtensionId",
         base::Bind(&ProcessInfoNativeHandler::GetExtensionId,
                    base::Unretained(this)));
@@ -194,6 +196,9 @@ class ProcessInfoNativeHandler : public ChromeV8Extension {
                    base::Unretained(this)));
     RouteFunction("GetManifestVersion",
         base::Bind(&ProcessInfoNativeHandler::GetManifestVersion,
+                   base::Unretained(this)));
+    RouteFunction("IsSendRequestDisabled",
+        base::Bind(&ProcessInfoNativeHandler::IsSendRequestDisabled,
                    base::Unretained(this)));
   }
 
@@ -213,11 +218,21 @@ class ProcessInfoNativeHandler : public ChromeV8Extension {
     return v8::Integer::New(manifest_version_);
   }
 
+  v8::Handle<v8::Value> IsSendRequestDisabled(const v8::Arguments& args) {
+    if (send_request_disabled_) {
+      return v8::String::New(
+          "sendRequest and onRequest are obsolete."
+          " Please use sendMessage and onMessage instead.");
+    }
+    return v8::Undefined();
+  }
+
  private:
   std::string extension_id_;
   std::string context_type_;
   bool is_incognito_context_;
   int manifest_version_;
+  bool send_request_disabled_;
 };
 
 class LoggingNativeHandler : public NativeHandler {
@@ -747,12 +762,15 @@ void Dispatcher::DidCreateScriptContext(
       scoped_ptr<NativeHandler>(new LoggingNativeHandler()));
 
   int manifest_version = extension ? extension->manifest_version() : 1;
+  bool send_request_disabled =
+      (extension && extension->location() == Extension::LOAD &&
+       extension->has_lazy_background_page());
   module_system->RegisterNativeHandler("process",
       scoped_ptr<NativeHandler>(new ProcessInfoNativeHandler(
           this, context->GetExtensionID(),
           context->GetContextTypeDescription(),
           ChromeRenderProcessObserver::is_incognito_process(),
-          manifest_version)));
+          manifest_version, send_request_disabled)));
 
   GetOrCreateChrome(v8_context);
 

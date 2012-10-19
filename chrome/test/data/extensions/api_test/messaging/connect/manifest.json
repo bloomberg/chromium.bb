@@ -5,7 +5,8 @@
   "description": "Tests connect from a content script.",
   "permissions": ["tabs"],
   "background": {
-    "page": "test.html"
+    "persistent": false,
+    "scripts": ["test.js"]
   },
   "content_scripts": [
     {
