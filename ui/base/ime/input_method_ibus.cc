@@ -76,77 +76,6 @@ chromeos::IBusInputContextClient* GetInputContextClient() {
 
 namespace ui {
 
-// A class to hold all data related to a key event being processed by the input
-// method but still has no result back yet.
-class InputMethodIBus::PendingKeyEvent {
- public:
-  PendingKeyEvent(InputMethodIBus* input_method,
-                  const base::NativeEvent& native_event,
-                  uint32 ibus_keyval);
-  virtual ~PendingKeyEvent();
-
-  // Process this pending key event after we receive its result from the input
-  // method. It just call through InputMethodIBus::ProcessKeyEventPostIME().
-  void ProcessPostIME(bool handled);
-
-  // Abandon this pending key event. Its result will just be discarded.
-  void Abandon() { input_method_ = NULL; }
-
-  InputMethodIBus* input_method() const { return input_method_; }
-
- private:
-  InputMethodIBus* input_method_;
-
-  // TODO(yusukes): To support a fabricated key event (which is typically from
-  // a virtual keyboard), we might have to copy event type, event flags, key
-  // code, 'character_', and 'unmodified_character_'. See views::InputMethodIBus
-  // for details.
-
-  // corresponding XEvent data of a key event. It's a plain struct so we can do
-  // bitwise copy.
-  // Since |x_event_| might be treated as XEvent whose size is bigger than
-  // XKeyEvent e.g. in CopyNativeEvent() in ui/base/events/event.cc, allocating
-  // |x_event_| as XKeyEvent and casting it to XEvent is unsafe.
-  // crbug.com/151884
-  XEvent x_event_;
-
-  const uint32 ibus_keyval_;
-
-  DISALLOW_COPY_AND_ASSIGN(PendingKeyEvent);
-};
-
-InputMethodIBus::PendingKeyEvent::PendingKeyEvent(
-    InputMethodIBus* input_method,
-    const base::NativeEvent& native_event,
-    uint32 ibus_keyval)
-    : input_method_(input_method),
-      ibus_keyval_(ibus_keyval) {
-  DCHECK(input_method_);
-
-  // TODO(yusukes): Support non-native event (from e.g. a virtual keyboard).
-  DCHECK(native_event);
-  x_event_ = *native_event;
-}
-
-InputMethodIBus::PendingKeyEvent::~PendingKeyEvent() {
-  if (input_method_)
-    input_method_->FinishPendingKeyEvent(this);
-}
-
-void InputMethodIBus::PendingKeyEvent::ProcessPostIME(bool handled) {
-  if (!input_method_)
-    return;
-
-  if (x_event_.type == KeyPress || x_event_.type == KeyRelease) {
-    input_method_->ProcessKeyEventPostIME(&x_event_, ibus_keyval_, handled);
-    return;
-  }
-
-  // TODO(yusukes): Support non-native event (from e.g. a virtual keyboard).
-  // See views::InputMethodIBus for details. Never forget to set 'character_'
-  // and 'unmodified_character_' to support i18n VKs like a French VK!
-}
-
 // InputMethodIBus implementation -----------------------------------------
 InputMethodIBus::InputMethodIBus(
     internal::InputMethodDelegate* delegate)
@@ -157,6 +86,7 @@ InputMethodIBus::InputMethodIBus(
       composing_text_(false),
       composition_changed_(false),
       suppress_next_result_(false),
+      current_keyevent_id_(0),
       weak_ptr_factory_(this) {
   SetDelegate(delegate);
 }
@@ -199,19 +129,19 @@ void InputMethodIBus::Init(bool focused) {
   InputMethodBase::Init(focused);
 }
 
-// static
-void InputMethodIBus::ProcessKeyEventDone(
-    PendingKeyEvent* pending_key_event, bool is_handled) {
-  DCHECK(pending_key_event);
-  pending_key_event->ProcessPostIME(is_handled);
-  delete pending_key_event;
-}
+void InputMethodIBus::ProcessKeyEventDone(uint32 id,
+                                          XEvent* event,
+                                          uint32 keyval,
+                                          bool is_handled) {
+  DCHECK(event);
+  std::set<uint32>::iterator it = pending_key_events_.find(id);
 
-// static
-void InputMethodIBus::ProcessKeyEventFail(PendingKeyEvent* pending_key_event) {
-  DCHECK(pending_key_event);
-  pending_key_event->ProcessPostIME(false);
-  delete pending_key_event;
+  if (it == pending_key_events_.end())
+    return;  // Abandoned key event.
+  if (event->type == KeyPress || event->type == KeyRelease)
+    ProcessKeyEventPostIME(event, keyval, is_handled);
+
+  pending_key_events_.erase(it);
 }
 
 void InputMethodIBus::DispatchKeyEvent(const base::NativeEvent& native_event) {
@@ -241,18 +171,26 @@ void InputMethodIBus::DispatchKeyEvent(const base::NativeEvent& native_event) {
     return;
   }
 
-  PendingKeyEvent* pending_key =
-      new PendingKeyEvent(this, native_event, ibus_keyval);
-  pending_key_events_.insert(pending_key);
+  pending_key_events_.insert(current_keyevent_id_);
 
-  GetInputContextClient()->ProcessKeyEvent(
-      ibus_keyval,
-      ibus_keycode,
-      ibus_state,
+  // Since |native_event| might be treated as XEvent whose size is bigger than
+  // XKeyEvent e.g. in CopyNativeEvent() in ui/base/events/event.cc, allocating
+  // |event| as XKeyEvent and casting it to XEvent is unsafe. crbug.com/151884
+  XEvent* event = new XEvent;
+  *event = *native_event;
+  const chromeos::IBusInputContextClient::ProcessKeyEventCallback callback =
       base::Bind(&InputMethodIBus::ProcessKeyEventDone,
-                 base::Unretained(pending_key)),
-      base::Bind(&InputMethodIBus::ProcessKeyEventFail,
-                 base::Unretained(pending_key)));
+                 weak_ptr_factory_.GetWeakPtr(),
+                 current_keyevent_id_,
+                 base::Owned(event),  // Pass the ownership of |event|.
+                 ibus_keyval);
+
+  GetInputContextClient()->ProcessKeyEvent(ibus_keyval,
+                                           ibus_keycode,
+                                           ibus_state,
+                                           callback,
+                                           base::Bind(callback, false));
+  ++current_keyevent_id_;
 
   // We don't want to suppress the result generated by this key event, but it
   // may cause problem. See comment in ResetContext() method.
@@ -710,19 +648,7 @@ void InputMethodIBus::SendFakeProcessKeyEvent(bool pressed) const {
                                     0);
 }
 
-void InputMethodIBus::FinishPendingKeyEvent(PendingKeyEvent* pending_key) {
-  DCHECK(pending_key_events_.count(pending_key));
-
-  // |pending_key| will be deleted in ProcessKeyEventDone().
-  pending_key_events_.erase(pending_key);
-}
-
 void InputMethodIBus::AbandonAllPendingKeyEvents() {
-  std::set<PendingKeyEvent*>::iterator i;
-  for (i = pending_key_events_.begin(); i != pending_key_events_.end(); ++i) {
-    // The object will be deleted in ProcessKeyEventDone().
-    (*i)->Abandon();
-  }
   pending_key_events_.clear();
 }
 

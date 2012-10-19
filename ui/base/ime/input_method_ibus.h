@@ -148,10 +148,6 @@ class UI_EXPORT InputMethodIBus : public InputMethodBase {
   // the focused View.
   void SendFakeProcessKeyEvent(bool pressed) const;
 
-  // Called when a pending key event has finished. The event will be removed
-  // from |pending_key_events_|.
-  void FinishPendingKeyEvent(PendingKeyEvent* pending_key);
-
   // Abandons all pending key events. It usually happends when we lose keyboard
   // focus, the text input type is changed or we are destroyed.
   void AbandonAllPendingKeyEvents();
@@ -177,16 +173,15 @@ class UI_EXPORT InputMethodIBus : public InputMethodBase {
 
   void CreateInputContextDone(const dbus::ObjectPath& object_path);
   void CreateInputContextFail();
-  static void ProcessKeyEventDone(PendingKeyEvent* pending_key_event,
-                                  bool is_handled);
-  static void ProcessKeyEventFail(PendingKeyEvent* pending_key_event);
+  void ProcessKeyEventDone(uint32 id, XEvent* xevent, uint32 keyval,
+                           bool is_handled);
 
   scoped_ptr<internal::IBusClient> ibus_client_;
 
   // All pending key events. Note: we do not own these object, we just save
   // pointers to these object so that we can abandon them when necessary.
   // They will be deleted in ProcessKeyEventDone().
-  std::set<PendingKeyEvent*> pending_key_events_;
+  std::set<uint32> pending_key_events_;
 
   // Represents input context's state.
   InputContextState input_context_state_;
@@ -218,6 +213,9 @@ class UI_EXPORT InputMethodIBus : public InputMethodBase {
   // If it's true then all input method result received before the next key
   // event will be discarded.
   bool suppress_next_result_;
+
+  // The latest id of key event.
+  uint32 current_keyevent_id_;
 
   // An object to compose a character from a sequence of key presses
   // including dead key etc.
