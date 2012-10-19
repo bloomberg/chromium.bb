@@ -107,6 +107,10 @@ void ResourceLoader::CancelAndIgnore() {
   CancelRequest(false);
 }
 
+void ResourceLoader::CancelWithError(int error_code) {
+  CancelRequestInternal(error_code, false);
+}
+
 void ResourceLoader::ReportUploadProgress() {
   ResourceRequestInfoImpl* info = GetRequestInfo();
 

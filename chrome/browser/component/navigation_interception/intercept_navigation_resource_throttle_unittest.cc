@@ -75,6 +75,9 @@ class MockResourceController
     status_ = CANCELLED;
     ContinueTestCase();
   }
+  virtual void CancelWithError(int error_code) {
+    NOTREACHED();
+  }
   virtual void Resume() {
     DCHECK(status_ == UNKNOWN);
     status_ = RESUMED;

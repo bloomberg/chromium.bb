@@ -221,6 +221,10 @@ void BufferedResourceHandler::CancelAndIgnore() {
   controller()->CancelAndIgnore();
 }
 
+void BufferedResourceHandler::CancelWithError(int error_code) {
+  controller()->CancelWithError(error_code);
+}
+
 bool BufferedResourceHandler::ProcessResponse(bool* defer) {
   DCHECK_EQ(STATE_PROCESSING, state_);
 

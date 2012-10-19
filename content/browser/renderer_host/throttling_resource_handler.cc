@@ -111,6 +111,11 @@ void ThrottlingResourceHandler::CancelAndIgnore() {
   controller()->CancelAndIgnore();
 }
 
+void ThrottlingResourceHandler::CancelWithError(int error_code) {
+  cancelled_by_resource_throttle_ = true;
+  controller()->CancelWithError(error_code);
+}
+
 void ThrottlingResourceHandler::Resume() {
   DCHECK(!cancelled_by_resource_throttle_);
 

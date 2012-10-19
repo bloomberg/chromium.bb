@@ -53,6 +53,7 @@ class BufferedResourceHandler
   virtual void Resume() OVERRIDE;
   virtual void Cancel() OVERRIDE;
   virtual void CancelAndIgnore() OVERRIDE;
+  virtual void CancelWithError(int error_code) OVERRIDE;
 
   bool ProcessResponse(bool* defer);
 

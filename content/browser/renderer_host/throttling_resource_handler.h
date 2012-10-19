@@ -40,6 +40,7 @@ class ThrottlingResourceHandler : public LayeredResourceHandler,
   // ResourceThrottleController implementation:
   virtual void Cancel() OVERRIDE;
   virtual void CancelAndIgnore() OVERRIDE;
+  virtual void CancelWithError(int error_code) OVERRIDE;
   virtual void Resume() OVERRIDE;
 
  private:

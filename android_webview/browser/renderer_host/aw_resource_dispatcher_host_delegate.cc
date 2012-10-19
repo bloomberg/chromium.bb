@@ -32,7 +32,7 @@ class CancelResourceThrottle : public content::ResourceThrottle {
 };
 
 void CancelResourceThrottle::WillStartRequest(bool* defer) {
-  controller()->Cancel();
+  controller()->CancelWithError(net::ERR_ACCESS_DENIED);
 }
 
 }  // namespace

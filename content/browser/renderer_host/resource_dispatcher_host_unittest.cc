@@ -397,8 +397,14 @@ enum GenericResourceThrottleFlags {
 // can throttle any request at a time.
 class GenericResourceThrottle : public ResourceThrottle {
  public:
-  explicit GenericResourceThrottle(int flags)
-      : flags_(flags) {
+  // The value is used to indicate that the throttle should not provide
+  // a error code when cancelling a request. net::OK is used, because this
+  // is not an error code.
+  static const int USE_DEFAULT_CANCEL_ERROR_CODE = net::OK;
+
+  GenericResourceThrottle(int flags, int code)
+      : flags_(flags),
+        error_code_for_cancellation_(code) {
   }
 
   virtual ~GenericResourceThrottle() {
@@ -415,7 +421,11 @@ class GenericResourceThrottle : public ResourceThrottle {
     }
 
     if (flags_ & CANCEL_BEFORE_START) {
-      controller()->Cancel();
+      if (error_code_for_cancellation_ == USE_DEFAULT_CANCEL_ERROR_CODE) {
+        controller()->Cancel();
+      } else {
+        controller()->CancelWithError(error_code_for_cancellation_);
+      }
     }
   }
 
@@ -439,6 +449,7 @@ class GenericResourceThrottle : public ResourceThrottle {
 
  private:
   int flags_;  // bit-wise union of GenericResourceThrottleFlags.
+  int error_code_for_cancellation_;
 
   // The currently active throttle, if any.
   static GenericResourceThrottle* active_throttle_;
@@ -451,7 +462,9 @@ class TestResourceDispatcherHostDelegate
  public:
   TestResourceDispatcherHostDelegate()
       : create_two_throttles_(false),
-        flags_(NONE) {
+        flags_(NONE),
+        error_code_for_cancellation_(
+            GenericResourceThrottle::USE_DEFAULT_CANCEL_ERROR_CODE) {
   }
 
   void set_url_request_user_data(base::SupportsUserData::Data* user_data) {
@@ -460,6 +473,10 @@ class TestResourceDispatcherHostDelegate
 
   void set_flags(int value) {
     flags_ = value;
+  }
+
+  void set_error_code_for_cancellation(int code) {
+    error_code_for_cancellation_ = code;
   }
 
   void set_create_two_throttles(bool create_two_throttles) {
@@ -483,15 +500,18 @@ class TestResourceDispatcherHostDelegate
     }
 
     if (flags_ != NONE) {
-      throttles->push_back(new GenericResourceThrottle(flags_));
+      throttles->push_back(new GenericResourceThrottle(
+          flags_, error_code_for_cancellation_));
       if (create_two_throttles_)
-        throttles->push_back(new GenericResourceThrottle(flags_));
+        throttles->push_back(new GenericResourceThrottle(
+            flags_, error_code_for_cancellation_));
     }
   }
 
  private:
   bool create_two_throttles_;
   int flags_;
+  int error_code_for_cancellation_;
   scoped_ptr<base::SupportsUserData::Data> user_data_;
 };
 
@@ -967,6 +987,43 @@ TEST_F(ResourceDispatcherHostTest, ThrottleAndResumeTwice) {
   accum_.GetClassifiedMessages(&msgs);
   ASSERT_EQ(1U, msgs.size());
   CheckSuccessfulRequest(msgs[0], net::URLRequestTestJob::test_data_1());
+}
+
+
+// Tests that the delegate can cancel a request and provide a error code.
+TEST_F(ResourceDispatcherHostTest, CancelInDelegate) {
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
+
+  TestResourceDispatcherHostDelegate delegate;
+  delegate.set_flags(CANCEL_BEFORE_START);
+  delegate.set_error_code_for_cancellation(net::ERR_ACCESS_DENIED);
+  host_.SetDelegate(&delegate);
+
+  MakeTestRequest(0, 1, net::URLRequestTestJob::test_url_1());
+  // The request will get cancelled by the throttle.
+
+  // flush all the pending requests
+  while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
+  MessageLoop::current()->RunAllPending();
+
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
+
+  ResourceIPCAccumulator::ClassifiedMessages msgs;
+  accum_.GetClassifiedMessages(&msgs);
+
+  // Check the cancellation
+  ASSERT_EQ(1U, msgs.size());
+  ASSERT_EQ(1U, msgs[0].size());
+  ASSERT_EQ(ResourceMsg_RequestComplete::ID, msgs[0][0].type());
+
+  int request_id;
+  int error_code;
+
+  PickleIterator iter(msgs[0][0]);
+  ASSERT_TRUE(IPC::ReadParam(&msgs[0][0], &iter, &request_id));
+  ASSERT_TRUE(IPC::ReadParam(&msgs[0][0], &iter, &error_code));
+
+  EXPECT_EQ(net::ERR_ACCESS_DENIED, error_code);
 }
 
 // The host delegate acts as a second one so we can have some requests
