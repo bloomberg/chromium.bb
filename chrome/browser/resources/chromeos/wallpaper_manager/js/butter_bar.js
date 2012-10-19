@@ -258,7 +258,6 @@ ButterBar.prototype.onDownloadAbort_ = function(e) {
  * @param {Event} e A load ProgressEvent from XMLHttpRequest.
  */
 ButterBar.prototype.onDownloadComplete_ = function(e) {
-   this.hide_();
    this.xhr_ = null;
 };
 

@@ -199,7 +199,8 @@ function WallpaperManager(dialogDom) {
           var image = self.wallpaperRequest_.response;
           chrome.wallpaperPrivate.setWallpaper(image,
                                                selectedItem.layout,
-                                               wallpaperURL);
+                                               wallpaperURL,
+                                               self.onFinished_.bind(self));
           self.currentWallpaper_ = wallpaperURL;
         } else {
           self.butterBar_.showError_(str('downloadFailed'));
@@ -321,8 +322,19 @@ function WallpaperManager(dialogDom) {
     var layout =
         setWallpaperLayout.options[setWallpaperLayout.selectedIndex].value;
     chrome.wallpaperPrivate.setCustomWallpaper(customWallpaper,
-                                               layout);
+                                               layout,
+                                               this.onFinished_.bind(this));
     this.currentWallpaper_ = 'CUSTOM';
+  };
+
+  /**
+   * Sets wallpaper finished. Displays error message in butter bar if any.
+   */
+  WallpaperManager.prototype.onFinished_ = function() {
+    if (chrome.runtime.lastError != undefined)
+      this.butterBar_.showError_(chrome.runtime.lastError.message);
+    else
+      this.butterBar_.hide_();
   };
 
   /**

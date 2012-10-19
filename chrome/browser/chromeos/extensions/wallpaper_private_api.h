@@ -37,9 +37,11 @@ class WallpaperFunctionBase : public AsyncExtensionFunction {
   // Holds an instance of WallpaperDecoder.
   static WallpaperDecoder* wallpaper_decoder_;
 
+  // Handles failure or cancel cases. Passes error message to Javascript side.
+  void OnFailureOrCancel(const std::string& error);
+
  private:
   virtual void OnWallpaperDecoded(const gfx::ImageSkia& wallpaper) = 0;
-  virtual void OnFailureOrCancel() = 0;
 };
 
 class WallpaperSetWallpaperFunction : public WallpaperFunctionBase {
@@ -56,7 +58,6 @@ class WallpaperSetWallpaperFunction : public WallpaperFunctionBase {
 
  private:
   virtual void OnWallpaperDecoded(const gfx::ImageSkia& wallpaper) OVERRIDE;
-  virtual void OnFailureOrCancel() OVERRIDE;
 
   // Saves the image data to a file.
   void SaveToFile();
@@ -94,7 +95,6 @@ class WallpaperSetCustomWallpaperFunction : public WallpaperFunctionBase {
 
  private:
   virtual void OnWallpaperDecoded(const gfx::ImageSkia& wallpaper) OVERRIDE;
-  virtual void OnFailureOrCancel() OVERRIDE;
 
   // Layout of the downloaded wallpaper.
   ash::WallpaperLayout layout_;

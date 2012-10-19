@@ -101,7 +101,7 @@ class WallpaperFunctionBase::WallpaperDecoder : public ImageDecoder::Delegate {
     gfx::ImageSkia final_image(decoded_image);
     final_image.MakeThreadSafe();
     if (cancel_flag_.IsSet()) {
-      function_->OnFailureOrCancel();
+      function_->OnFailureOrCancel("");
       delete this;
       return;
     }
@@ -110,8 +110,8 @@ class WallpaperFunctionBase::WallpaperDecoder : public ImageDecoder::Delegate {
   }
 
   virtual void OnDecodeImageFailed(const ImageDecoder* decoder) OVERRIDE {
-    function_->OnFailureOrCancel();
-    // TODO(bshe): Dispatches an encoding error event.
+    function_->OnFailureOrCancel(
+        l10n_util::GetStringUTF8(IDS_WALLPAPER_MANAGER_INVALID_WALLPAPER));
     delete this;
   }
 
@@ -130,6 +130,13 @@ WallpaperFunctionBase::WallpaperFunctionBase() {
 }
 
 WallpaperFunctionBase::~WallpaperFunctionBase() {
+}
+
+void WallpaperFunctionBase::OnFailureOrCancel(const std::string& error) {
+  wallpaper_decoder_ = NULL;
+  if (!error.empty())
+    SetError(error);
+  SendResponse(false);
 }
 
 WallpaperSetWallpaperFunction::WallpaperSetWallpaperFunction() {
@@ -174,11 +181,6 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
                  this));
 }
 
-void WallpaperSetWallpaperFunction::OnFailureOrCancel() {
-  wallpaper_decoder_ = NULL;
-  SendResponse(false);
-}
-
 void WallpaperSetWallpaperFunction::SaveToFile() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   FilePath wallpaper_dir;
@@ -188,7 +190,8 @@ void WallpaperSetWallpaperFunction::SaveToFile() {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&WallpaperSetWallpaperFunction::OnFailureOrCancel,
-                   this));
+                   this, ""));
+    LOG(ERROR) << "Failed to create wallpaper directory.";
     return;
   }
   std::string file_name = GURL(url_).ExtractFileName();
@@ -214,7 +217,8 @@ void WallpaperSetWallpaperFunction::SaveToFile() {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&WallpaperSetWallpaperFunction::OnFailureOrCancel,
-                   this));
+                   this, ""));
+    LOG(ERROR) << "Failed to save downloaded wallpaper.";
   }
 }
 
@@ -275,9 +279,4 @@ void WallpaperSetCustomWallpaperFunction::OnWallpaperDecoded(
       base::WeakPtr<chromeos::WallpaperDelegate>(), image);
   wallpaper_decoder_ = NULL;
   SendResponse(true);
-}
-
-void WallpaperSetCustomWallpaperFunction::OnFailureOrCancel() {
-  wallpaper_decoder_ = NULL;
-  SendResponse(false);
 }

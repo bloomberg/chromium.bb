@@ -44,6 +44,11 @@
           {
             "type": "string",
             "name": "url"
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": []
           }
         ]
       },
@@ -61,6 +66,11 @@
             "type": "string",
             "name": "layout",
             "enum": [ "STRETCH", "CENTER", "CENTER_CROPPED"]
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": []
           }
         ]
       }
