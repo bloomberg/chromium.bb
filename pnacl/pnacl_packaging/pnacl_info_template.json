@@ -1,4 +1,0 @@
-{
-  "abi-version": "%(abi-version)s",
-  "pnacl-arch": "%(arch)s"
-}
