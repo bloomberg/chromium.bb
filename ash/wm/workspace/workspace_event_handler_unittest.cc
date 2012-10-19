@@ -8,8 +8,9 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace_controller_test_helper.h"
 #include "ash/wm/workspace_controller.h"
+#include "ash/wm/workspace_controller_test_helper.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
@@ -101,6 +102,7 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisResizeEdge) {
 TEST_F(WorkspaceEventHandlerTest, DoubleClickCaptionTogglesMaximize) {
   aura::test::TestWindowDelegate wd;
   scoped_ptr<aura::Window> window(CreateTestWindow(&wd, gfx::Rect(1, 2, 3, 4)));
+  window->SetProperty(aura::client::kCanMaximizeKey, true);
   wd.set_window_component(HTCAPTION);
   EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
@@ -119,6 +121,7 @@ TEST_F(WorkspaceEventHandlerTest, DoubleTapCaptionTogglesMaximize) {
   aura::test::TestWindowDelegate wd;
   gfx::Rect bounds(10, 20, 30, 40);
   scoped_ptr<aura::Window> window(CreateTestWindow(&wd, bounds));
+  window->SetProperty(aura::client::kCanMaximizeKey, true);
   wd.set_window_component(HTCAPTION);
   EXPECT_FALSE(wm::IsWindowMaximized(window.get()));
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),

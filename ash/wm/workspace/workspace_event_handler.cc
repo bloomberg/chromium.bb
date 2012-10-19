@@ -48,7 +48,7 @@ void ToggleMaximizedState(aura::Window* window) {
     } else {
       window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
     }
-  } else {
+  } else if (wm::CanMaximizeWindow(window)) {
     window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   }
 }
