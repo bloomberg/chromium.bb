@@ -10,11 +10,11 @@
 #include "FloatRect.h"
 #include "SkiaUtils.h"
 #include "base/debug/trace_event.h"
+#include "base/time.h"
 #include "cc/layer_painter.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkRect.h"
-#include <wtf/CurrentTime.h>
 
 namespace cc {
 
@@ -51,9 +51,9 @@ void CanvasLayerTextureUpdater::paintContents(SkCanvas* canvas, const IntRect& c
     canvas->clipRect(layerSkRect);
 
     FloatRect opaqueLayerRect;
-    double paintBeginTime = monotonicallyIncreasingTime();
+    base::TimeTicks paintBeginTime = base::TimeTicks::Now();
     m_painter->paint(canvas, layerRect, opaqueLayerRect);
-    stats.totalPaintTimeInSeconds += monotonicallyIncreasingTime() - paintBeginTime;
+    stats.totalPaintTimeInSeconds += (base::TimeTicks::Now() - paintBeginTime).InSecondsF();
     canvas->restore();
 
     FloatRect opaqueContentRect = opaqueLayerRect;

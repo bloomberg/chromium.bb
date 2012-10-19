@@ -8,11 +8,11 @@
 
 #include "CCRenderingStats.h"
 #include "CCTextureUpdateQueue.h"
+#include "base/time.h"
 #include "cc/layer_painter.h"
 #include "cc/platform_color.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
-#include <wtf/CurrentTime.h>
 
 namespace cc {
 
@@ -29,9 +29,9 @@ void BitmapSkPictureCanvasLayerTextureUpdater::Texture::update(CCTextureUpdateQu
     m_bitmap.setIsOpaque(m_textureUpdater->layerIsOpaque());
     SkDevice device(m_bitmap);
     SkCanvas canvas(&device);
-    double paintBeginTime = monotonicallyIncreasingTime();
+    base::TimeTicks paintBeginTime = base::TimeTicks::Now();
     textureUpdater()->paintContentsRect(&canvas, sourceRect, stats);
-    stats.totalPaintTimeInSeconds += monotonicallyIncreasingTime() - paintBeginTime;
+    stats.totalPaintTimeInSeconds += (base::TimeTicks::Now() - paintBeginTime).InSecondsF();
 
     ResourceUpdate upload = ResourceUpdate::Create(
         texture(), &m_bitmap, sourceRect, sourceRect, destOffset);
@@ -72,9 +72,9 @@ void BitmapSkPictureCanvasLayerTextureUpdater::paintContentsRect(SkCanvas* canva
     // Translate the origin of contentRect to that of sourceRect.
     canvas->translate(contentRect().x() - sourceRect.x(),
                       contentRect().y() - sourceRect.y());
-    double rasterizeBeginTime = monotonicallyIncreasingTime();
+    base::TimeTicks rasterizeBeginTime = base::TimeTicks::Now();
     drawPicture(canvas);
-    stats.totalRasterizeTimeInSeconds += monotonicallyIncreasingTime() - rasterizeBeginTime;
+    stats.totalRasterizeTimeInSeconds += (base::TimeTicks::Now() - rasterizeBeginTime).InSecondsF();
 }
 
 } // namespace cc

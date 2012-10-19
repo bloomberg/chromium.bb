@@ -7,7 +7,7 @@
 #include "CCScrollbarAnimationController.h"
 
 #include "CCScrollbarLayerImpl.h"
-#include <wtf/CurrentTime.h>
+#include "base/time.h"
 
 #if OS(ANDROID)
 #include "CCScrollbarAnimationControllerLinearFade.h"
@@ -47,22 +47,22 @@ bool CCScrollbarAnimationController::animate(double)
 
 void CCScrollbarAnimationController::didPinchGestureBegin()
 {
-    didPinchGestureBeginAtTime(monotonicallyIncreasingTime());
+    didPinchGestureBeginAtTime((base::TimeTicks::Now() - base::TimeTicks()).InSecondsF());
 }
 
 void CCScrollbarAnimationController::didPinchGestureUpdate()
 {
-    didPinchGestureUpdateAtTime(monotonicallyIncreasingTime());
+    didPinchGestureUpdateAtTime((base::TimeTicks::Now() - base::TimeTicks()).InSecondsF());
 }
 
 void CCScrollbarAnimationController::didPinchGestureEnd()
 {
-    didPinchGestureEndAtTime(monotonicallyIncreasingTime());
+    didPinchGestureEndAtTime((base::TimeTicks::Now() - base::TimeTicks()).InSecondsF());
 }
 
 void CCScrollbarAnimationController::updateScrollOffset(CCLayerImpl* scrollLayer)
 {
-    updateScrollOffsetAtTime(scrollLayer, monotonicallyIncreasingTime());
+    updateScrollOffsetAtTime(scrollLayer, (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF());
 }
 
 IntSize CCScrollbarAnimationController::getScrollLayerBounds(const CCLayerImpl* scrollLayer)
