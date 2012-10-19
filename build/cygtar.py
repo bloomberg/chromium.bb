@@ -9,6 +9,7 @@ import optparse
 import os
 import shutil
 import subprocess
+import stat
 import sys
 import tarfile
 
@@ -195,6 +196,13 @@ class CygTar(object):
     # At this point tarinfo.name will contain a POSIX style path regardless
     # of the original filepath.
     tarinfo = self.tar.gettarinfo(filepath)
+    if sys.platform == 'win32':
+      # On win32 os.stat() always claims that files are world writable
+      # which means that unless we remove this bit here we end up with
+      # world writables files in the archive, which is almost certainly
+      # not indented.
+      tarinfo.mode &= ~stat.S_IWOTH
+      tarinfo.mode &= ~stat.S_IWGRP
 
     # If this a symlink or hardlink, add it
     if tarinfo.issym() or tarinfo.islnk():
