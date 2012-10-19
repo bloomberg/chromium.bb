@@ -71,10 +71,8 @@ extern const bool kAlwaysOpenIncognitoWindow;
 // Should the close button be shown in the Task Manager dialog?
 extern const bool kShowCancelButtonInTaskManager;
 
-// Preferred height of the bookmarks bar when shown on every page and
-// when shown only on the new tab page.
+// Preferred height of the bookmarks bar when shown on every page.
 extern const int kBookmarkBarHeight;
-extern const int kNewtabBookmarkBarHeight;
 
 // ChromiumOS network menu font
 extern const ui::ResourceBundle::FontStyle kAssociatedNetworkFontStyle;

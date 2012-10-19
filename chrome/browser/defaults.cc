@@ -96,7 +96,6 @@ const bool kBrowserAliveWithNoWindows = false;
 #endif
 
 const int kBookmarkBarHeight = 28;
-const int kNewtabBookmarkBarHeight = 57;
 
 const ui::ResourceBundle::FontStyle kAssociatedNetworkFontStyle =
     ui::ResourceBundle::BoldFont;
