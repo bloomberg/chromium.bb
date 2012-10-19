@@ -14,11 +14,11 @@ namespace content {
 class GamepadService;
 class RenderProcessHost;
 
-class GamepadBrowserMessageFilter : public content::BrowserMessageFilter {
+class GamepadBrowserMessageFilter : public BrowserMessageFilter {
  public:
   GamepadBrowserMessageFilter();
 
-  // content::BrowserMessageFilter implementation.
+  // BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 

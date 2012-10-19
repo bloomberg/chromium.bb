@@ -8,7 +8,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/common/file_utilities_messages.h"
 
-using content::BrowserThread;
+namespace content {
 
 FileUtilitiesMessageFilter::FileUtilitiesMessageFilter(int process_id)
     : process_id_(process_id) {
@@ -89,3 +89,5 @@ void FileUtilitiesMessageFilter::OnOpenFile(
   *result = base::FileDescriptor(file_handle, true);
 #endif
 }
+
+}  // namespace content

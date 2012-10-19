@@ -20,7 +20,7 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/size.h"
 
-using content::BrowserThread;
+namespace content {
 
 #if defined(OS_WIN)
 
@@ -247,3 +247,5 @@ ui::Clipboard* ClipboardMessageFilter::GetClipboard() {
   static ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   return clipboard;
 }
+
+}  // namespace content

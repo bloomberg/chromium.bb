@@ -12,11 +12,12 @@
 #include "net/base/net_util.h"
 #include "webkit/quota/quota_manager.h"
 
-using content::QuotaPermissionContext;
 using quota::QuotaClient;
 using quota::QuotaManager;
 using quota::QuotaStatusCode;
 using quota::StorageType;
+
+namespace content {
 
 // Created one per request to carry the request's request_id around.
 // Dispatches requests from renderer/worker to the QuotaManager and
@@ -248,3 +249,5 @@ void QuotaDispatcherHost::OnRequestStorageQuota(
       this, request_id, origin, type, requested_size, render_view_id);
   dispatcher->Start();
 }
+
+}  // namespace content

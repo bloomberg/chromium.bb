@@ -25,9 +25,6 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
-using content::BrowserMessageFilter;
-using content::BrowserThread;
-using content::UserMetricsAction;
 using quota::QuotaManager;
 using quota::QuotaManagerProxy;
 using quota::QuotaStatusCode;
@@ -36,6 +33,7 @@ using webkit_database::DatabaseTracker;
 using webkit_database::DatabaseUtil;
 using webkit_database::VfsBackend;
 
+namespace content {
 namespace {
 
 const int kNumDeleteRetries = 2;
@@ -300,7 +298,7 @@ void DatabaseMessageFilter::OnDatabaseModified(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (!database_connections_.IsDatabaseOpened(
           origin_identifier, database_name)) {
-    content::RecordAction(UserMetricsAction("BadMessageTerminate_DBMF"));
+    RecordAction(UserMetricsAction("BadMessageTerminate_DBMF"));
     BadMessageReceived();
     return;
   }
@@ -313,7 +311,7 @@ void DatabaseMessageFilter::OnDatabaseClosed(const string16& origin_identifier,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (!database_connections_.IsDatabaseOpened(
           origin_identifier, database_name)) {
-    content::RecordAction(UserMetricsAction("BadMessageTerminate_DBMF"));
+    RecordAction(UserMetricsAction("BadMessageTerminate_DBMF"));
     BadMessageReceived();
     return;
   }
@@ -347,3 +345,5 @@ void DatabaseMessageFilter::OnDatabaseScheduledForDeletion(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   Send(new DatabaseMsg_CloseImmediately(origin_identifier, database_name));
 }
+
+}  // namespace content

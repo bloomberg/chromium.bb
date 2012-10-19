@@ -8,7 +8,10 @@
 #include "content/common/socket_stream.h"
 #include "net/socket_stream/socket_stream_job.h"
 
-static const char* kSocketIdKey = "socketId";
+namespace content {
+namespace {
+
+const char* kSocketIdKey = "socketId";
 
 class SocketStreamId : public net::SocketStream::UserData {
  public:
@@ -20,6 +23,8 @@ class SocketStreamId : public net::SocketStream::UserData {
   int socket_id_;
 };
 
+}  // namespace
+
 SocketStreamHost::SocketStreamHost(
     net::SocketStream::Delegate* delegate,
     int render_view_id,
@@ -27,7 +32,7 @@ SocketStreamHost::SocketStreamHost(
     : delegate_(delegate),
       render_view_id_(render_view_id),
       socket_id_(socket_id) {
-  DCHECK_NE(socket_id_, content::kNoSocketId);
+  DCHECK_NE(socket_id_, kNoSocketId);
   VLOG(1) << "SocketStreamHost: render_view_id=" << render_view_id
           << " socket_id=" << socket_id_;
 }
@@ -39,7 +44,7 @@ int SocketStreamHost::SocketIdFromSocketStream(net::SocketStream* socket) {
     SocketStreamId* socket_stream_id = static_cast<SocketStreamId*>(d);
     return socket_stream_id->socket_id();
   }
-  return content::kNoSocketId;
+  return kNoSocketId;
 }
 
 SocketStreamHost::~SocketStreamHost() {
@@ -90,3 +95,5 @@ void SocketStreamHost::ContinueDespiteError() {
     return;
   socket_->ContinueDespiteError();
 }
+
+}  // namespace content

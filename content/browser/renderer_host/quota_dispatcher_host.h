@@ -12,10 +12,6 @@
 
 class GURL;
 
-namespace content {
-class QuotaPermissionContext;
-}
-
 namespace IPC {
 class Message;
 }
@@ -24,13 +20,16 @@ namespace quota {
 class QuotaManager;
 }
 
-class QuotaDispatcherHost : public content::BrowserMessageFilter {
+namespace content {
+class QuotaPermissionContext;
+
+class QuotaDispatcherHost : public BrowserMessageFilter {
  public:
   QuotaDispatcherHost(int process_id,
                       quota::QuotaManager* quota_manager,
-                      content::QuotaPermissionContext* permission_context);
+                      QuotaPermissionContext* permission_context);
 
-  // content::BrowserMessageFilter:
+  // BrowserMessageFilter:
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
@@ -57,11 +56,13 @@ class QuotaDispatcherHost : public content::BrowserMessageFilter {
   int process_id_;
 
   quota::QuotaManager* quota_manager_;
-  scoped_refptr<content::QuotaPermissionContext> permission_context_;
+  scoped_refptr<QuotaPermissionContext> permission_context_;
 
   IDMap<RequestDispatcher, IDMapOwnPointer> outstanding_requests_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(QuotaDispatcherHost);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_QUOTA_DISPATCHER_HOST_H_

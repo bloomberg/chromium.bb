@@ -7,8 +7,6 @@
 #include "content/browser/gamepad/gamepad_service.h"
 #include "content/common/gamepad_messages.h"
 
-using content::BrowserMessageFilter;
-
 namespace content {
 
 GamepadBrowserMessageFilter::GamepadBrowserMessageFilter()

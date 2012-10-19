@@ -13,8 +13,7 @@
 #include "content/public/browser/browser_thread.h"
 #import "ui/base/cocoa/find_pasteboard.h"
 
-using content::BrowserThread;
-
+namespace content {
 namespace {
 
 // The number of utf16 code units that will be written to the find pasteboard,
@@ -52,3 +51,5 @@ void ClipboardMessageFilter::OnFindPboardWriteString(const string16& text) {
     }
   }
 }
+
+}  // namespace content

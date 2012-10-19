@@ -13,15 +13,14 @@
 #include "ui/gfx/size.h"
 #include "ui/gfx/size_conversions.h"
 
+namespace content {
 namespace {
 
-float GetScaleForView(const content::RenderWidgetHostView* view) {
-  return ui::GetScaleFactorScale(content::GetScaleFactorForView(view));
+float GetScaleForView(const RenderWidgetHostView* view) {
+  return ui::GetScaleFactorScale(GetScaleFactorForView(view));
 }
 
 }  // namespace
-
-namespace content {
 
 ui::ScaleFactor GetScaleFactorForView(const RenderWidgetHostView* view) {
   return ui::GetScaleFactorForNativeView(view ? view->GetNativeView() : NULL);

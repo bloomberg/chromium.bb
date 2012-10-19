@@ -12,17 +12,19 @@
 #include "webkit/database/database_tracker.h"
 #include "webkit/quota/quota_types.h"
 
+namespace content {
+
 class DatabaseMessageFilter
-    : public content::BrowserMessageFilter,
+    : public BrowserMessageFilter,
       public webkit_database::DatabaseTracker::Observer {
  public:
   explicit DatabaseMessageFilter(webkit_database::DatabaseTracker* db_tracker);
 
-  // content::BrowserMessageFilter implementation.
+  // BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,
-      content::BrowserThread::ID* thread) OVERRIDE;
+      BrowserThread::ID* thread) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
@@ -94,5 +96,7 @@ class DatabaseMessageFilter
   // Keeps track of all DB connections opened by this renderer
   webkit_database::DatabaseConnections database_connections_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_DATABASE_MESSAGE_FILTER_H_

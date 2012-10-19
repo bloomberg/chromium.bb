@@ -18,13 +18,13 @@ class URLRequestContext;
 class SSLInfo;
 }  // namespace net
 
-// Host of SocketStreamHandle.
-// Each SocketStreamHandle will have an unique socket_id assigned by
-// SocketStreamHost constructor. If socket id is content::kNoSocketId,
-// there is no SocketStreamHost.
-// Each SocketStreamHost has SocketStream to manage bi-directional
-// communication over socket stream.
-// The lifetime of an instance of this class is completely controlled by the
+namespace content {
+
+// Host of SocketStreamHandle.  Each SocketStreamHandle will have an unique
+// socket_id assigned by SocketStreamHost constructor.  If socket id is
+// kNoSocketId, there is no SocketStreamHost.  Each SocketStreamHost has
+// SocketStream to manage bi-directional communication over socket stream.  The
+// lifetime of an instance of this class is completely controlled by the
 // SocketStreamDispatcherHost.
 class SocketStreamHost {
  public:
@@ -73,5 +73,7 @@ class SocketStreamHost {
 
   DISALLOW_COPY_AND_ASSIGN(SocketStreamHost);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_SOCKET_STREAM_HOST_H_

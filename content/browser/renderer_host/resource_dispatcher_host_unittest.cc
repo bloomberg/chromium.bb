@@ -47,7 +47,7 @@ namespace {
 
 // Returns the resource response header structure for this request.
 void GetResponseHead(const std::vector<IPC::Message>& messages,
-                     content::ResourceResponseHead* response_head) {
+                     ResourceResponseHead* response_head) {
   ASSERT_GE(messages.size(), 2U);
 
   // The first messages should be received response.
@@ -103,7 +103,7 @@ static ResourceHostMsg_Request CreateResourceRequest(
   request.frame_id = 0;
   request.parent_is_main_frame = false;
   request.parent_frame_id = -1;
-  request.transition_type = content::PAGE_TRANSITION_LINK;
+  request.transition_type = PAGE_TRANSITION_LINK;
   request.allow_download = true;
   return request;
 }
@@ -179,10 +179,10 @@ class MockURLRequestContextSelector
 class ForwardingFilter : public ResourceMessageFilter {
  public:
   explicit ForwardingFilter(IPC::Sender* dest,
-                            content::ResourceContext* resource_context)
+                            ResourceContext* resource_context)
     : ResourceMessageFilter(
         ChildProcessHostImpl::GenerateChildProcessUniqueId(),
-        content::PROCESS_TYPE_RENDERER,
+        PROCESS_TYPE_RENDERER,
         resource_context, NULL, NULL,
         new MockURLRequestContextSelector(
             resource_context->GetRequestContext())),
@@ -395,7 +395,7 @@ enum GenericResourceThrottleFlags {
 
 // Throttle that tracks the current throttle blocking a request.  Only one
 // can throttle any request at a time.
-class GenericResourceThrottle : public content::ResourceThrottle {
+class GenericResourceThrottle : public ResourceThrottle {
  public:
   explicit GenericResourceThrottle(int flags)
       : flags_(flags) {
@@ -406,7 +406,7 @@ class GenericResourceThrottle : public content::ResourceThrottle {
       active_throttle_ = NULL;
   }
 
-  // content::ResourceThrottle implementation:
+  // ResourceThrottle implementation:
   virtual void WillStartRequest(bool* defer) OVERRIDE {
     ASSERT_EQ(NULL, active_throttle_);
     if (flags_ & DEFER_STARTING_REQUEST) {
@@ -447,7 +447,7 @@ class GenericResourceThrottle : public content::ResourceThrottle {
 GenericResourceThrottle* GenericResourceThrottle::active_throttle_ = NULL;
 
 class TestResourceDispatcherHostDelegate
-    : public content::ResourceDispatcherHostDelegate {
+    : public ResourceDispatcherHostDelegate {
  public:
   TestResourceDispatcherHostDelegate()
       : create_two_throttles_(false),
@@ -470,13 +470,13 @@ class TestResourceDispatcherHostDelegate
 
   virtual void RequestBeginning(
       net::URLRequest* request,
-      content::ResourceContext* resource_context,
+      ResourceContext* resource_context,
       appcache::AppCacheService* appcache_service,
       ResourceType::Type resource_type,
       int child_id,
       int route_id,
       bool is_continuation_of_transferred_request,
-      ScopedVector<content::ResourceThrottle>* throttles) OVERRIDE {
+      ScopedVector<ResourceThrottle>* throttles) OVERRIDE {
     if (user_data_.get()) {
       const void* key = user_data_.get();
       request->SetUserData(key, user_data_.release());
@@ -506,7 +506,7 @@ class ResourceDispatcherHostTest : public testing::Test,
         old_factory_(NULL),
         resource_type_(ResourceType::SUB_RESOURCE),
         send_data_received_acks_(false) {
-    browser_context_.reset(new content::TestBrowserContext());
+    browser_context_.reset(new TestBrowserContext());
     BrowserContext::EnsureResourceContextInitialized(browser_context_.get());
     message_loop_.RunAllPending();
     filter_ = new ForwardingFilter(
@@ -684,7 +684,7 @@ class ResourceDispatcherHostTest : public testing::Test,
   BrowserThreadImpl file_thread_;
   BrowserThreadImpl cache_thread_;
   BrowserThreadImpl io_thread_;
-  scoped_ptr<content::TestBrowserContext> browser_context_;
+  scoped_ptr<TestBrowserContext> browser_context_;
   scoped_refptr<ForwardingFilter> filter_;
   ResourceDispatcherHostImpl host_;
   ResourceIPCAccumulator accum_;
@@ -973,7 +973,7 @@ TEST_F(ResourceDispatcherHostTest, ThrottleAndResumeTwice) {
 // pending and some canceled.
 class TestFilter : public ForwardingFilter {
  public:
-  explicit TestFilter(content::ResourceContext* resource_context)
+  explicit TestFilter(ResourceContext* resource_context)
       : ForwardingFilter(NULL, resource_context),
         has_canceled_(false),
         received_after_canceled_(0) {
@@ -1383,7 +1383,7 @@ TEST_F(ResourceDispatcherHostTest, MimeSniffed) {
   accum_.GetClassifiedMessages(&msgs);
   ASSERT_EQ(1U, msgs.size());
 
-  content::ResourceResponseHead response_head;
+  ResourceResponseHead response_head;
   GetResponseHead(msgs[0], &response_head);
   ASSERT_EQ("text/html", response_head.mime_type);
 }
@@ -1410,7 +1410,7 @@ TEST_F(ResourceDispatcherHostTest, MimeNotSniffed) {
   accum_.GetClassifiedMessages(&msgs);
   ASSERT_EQ(1U, msgs.size());
 
-  content::ResourceResponseHead response_head;
+  ResourceResponseHead response_head;
   GetResponseHead(msgs[0], &response_head);
   ASSERT_EQ("image/jpeg", response_head.mime_type);
 }
@@ -1435,7 +1435,7 @@ TEST_F(ResourceDispatcherHostTest, MimeNotSniffed2) {
   accum_.GetClassifiedMessages(&msgs);
   ASSERT_EQ(1U, msgs.size());
 
-  content::ResourceResponseHead response_head;
+  ResourceResponseHead response_head;
   GetResponseHead(msgs[0], &response_head);
   ASSERT_EQ("", response_head.mime_type);
 }
@@ -1458,7 +1458,7 @@ TEST_F(ResourceDispatcherHostTest, MimeSniff204) {
   accum_.GetClassifiedMessages(&msgs);
   ASSERT_EQ(1U, msgs.size());
 
-  content::ResourceResponseHead response_head;
+  ResourceResponseHead response_head;
   GetResponseHead(msgs[0], &response_head);
   ASSERT_EQ("text/plain", response_head.mime_type);
 }
@@ -1481,7 +1481,7 @@ TEST_F(ResourceDispatcherHostTest, MimeSniffEmpty) {
   accum_.GetClassifiedMessages(&msgs);
   ASSERT_EQ(1U, msgs.size());
 
-  content::ResourceResponseHead response_head;
+  ResourceResponseHead response_head;
   GetResponseHead(msgs[0], &response_head);
   ASSERT_EQ("text/plain", response_head.mime_type);
 }

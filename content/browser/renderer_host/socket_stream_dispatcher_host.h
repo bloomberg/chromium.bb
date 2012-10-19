@@ -15,7 +15,6 @@
 #include "net/socket_stream/socket_stream.h"
 
 class GURL;
-class SocketStreamHost;
 
 namespace net {
 class SSLInfo;
@@ -23,6 +22,7 @@ class SSLInfo;
 
 namespace content {
 class ResourceContext;
+class SocketStreamHost;
 
 // Dispatches ViewHostMsg_SocketStream_* messages sent from renderer.
 // It also acts as SocketStream::Delegate so that it sends
