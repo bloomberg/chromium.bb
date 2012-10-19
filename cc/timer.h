@@ -7,20 +7,20 @@
 
 namespace cc {
 
-class Thread;
-class TimerTask;
+class CCThread;
+class CCTimerTask;
 
-class TimerClient {
+class CCTimerClient {
 public:
-    virtual ~TimerClient() { }
+    virtual ~CCTimerClient() { }
 
     virtual void onTimerFired() = 0;
 };
 
-class Timer {
+class CCTimer {
 public:
-    Timer(Thread*, TimerClient*);
-    ~Timer();
+    CCTimer(CCThread*, CCTimerClient*);
+    ~CCTimer();
 
     // If a previous task is pending, it will be replaced with the new one.
     void startOneShot(double intervalSeconds);
@@ -29,11 +29,11 @@ public:
     bool isActive() const { return m_task; }
 
 private:
-    friend class TimerTask;
+    friend class CCTimerTask;
 
-    TimerClient* m_client;
-    Thread* m_thread;
-    TimerTask* m_task; // weak pointer
+    CCTimerClient* m_client;
+    CCThread* m_thread;
+    CCTimerTask* m_task; // weak pointer
 };
 
 }  // namespace cc

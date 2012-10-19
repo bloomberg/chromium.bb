@@ -13,16 +13,16 @@ namespace cc {
 
 #pragma pack(push, 4)
 
-class StreamVideoDrawQuad : public DrawQuad {
+class CCStreamVideoDrawQuad : public CCDrawQuad {
 public:
-    static scoped_ptr<StreamVideoDrawQuad> create(const SharedQuadState*, const IntRect&, unsigned textureId, const WebKit::WebTransformationMatrix&);
+    static scoped_ptr<CCStreamVideoDrawQuad> create(const CCSharedQuadState*, const IntRect&, unsigned textureId, const WebKit::WebTransformationMatrix&);
 
     unsigned textureId() const { return m_textureId; }
     const WebKit::WebTransformationMatrix& matrix() const { return m_matrix; }
 
-    static const StreamVideoDrawQuad* materialCast(const DrawQuad*);
+    static const CCStreamVideoDrawQuad* materialCast(const CCDrawQuad*);
 private:
-    StreamVideoDrawQuad(const SharedQuadState*, const IntRect&, unsigned textureId, const WebKit::WebTransformationMatrix&);
+    CCStreamVideoDrawQuad(const CCSharedQuadState*, const IntRect&, unsigned textureId, const WebKit::WebTransformationMatrix&);
 
     unsigned m_textureId;
     WebKit::WebTransformationMatrix m_matrix;

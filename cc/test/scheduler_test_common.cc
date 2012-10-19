@@ -10,26 +10,26 @@
 
 namespace WebKitTests {
 
-void FakeTimeSourceClient::onTimerTick()
+void FakeCCTimeSourceClient::onTimerTick()
 {
     m_tickCalled = true;
 }
 
-FakeThread::FakeThread()
+FakeCCThread::FakeCCThread()
 {
     reset();
 }
 
-FakeThread::~FakeThread()
+FakeCCThread::~FakeCCThread()
 {
 }
 
-void FakeThread::postTask(PassOwnPtr<Task>)
+void FakeCCThread::postTask(PassOwnPtr<Task>)
 {
     NOTREACHED();
 }
 
-void FakeThread::postDelayedTask(PassOwnPtr<Task> task, long long delay)
+void FakeCCThread::postDelayedTask(PassOwnPtr<Task> task, long long delay)
 {
     if (m_runPendingTaskOnOverwrite && hasPendingTask())
         runPendingTask();
@@ -39,37 +39,37 @@ void FakeThread::postDelayedTask(PassOwnPtr<Task> task, long long delay)
     m_pendingTaskDelay = delay;
 }
 
-base::PlatformThreadId FakeThread::threadID() const
+base::PlatformThreadId FakeCCThread::threadID() const
 {
     return 0;
 }
 
-void FakeTimeSource::setClient(cc::TimeSourceClient* client)
+void FakeCCTimeSource::setClient(cc::CCTimeSourceClient* client)
 {
     m_client = client;
 }
 
-void FakeTimeSource::setActive(bool b)
+void FakeCCTimeSource::setActive(bool b)
 {
     m_active = b;
 }
 
-bool FakeTimeSource::active() const
+bool FakeCCTimeSource::active() const
 {
     return m_active;
 }
 
-base::TimeTicks FakeTimeSource::lastTickTime()
+base::TimeTicks FakeCCTimeSource::lastTickTime()
 {
     return base::TimeTicks();
 }
 
-base::TimeTicks FakeTimeSource::nextTickTime()
+base::TimeTicks FakeCCTimeSource::nextTickTime()
 {
     return base::TimeTicks();
 }
 
-base::TimeTicks FakeDelayBasedTimeSource::now() const
+base::TimeTicks FakeCCDelayBasedTimeSource::now() const
 {
     return m_now;
 }

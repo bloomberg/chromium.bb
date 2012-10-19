@@ -10,36 +10,36 @@
 
 namespace cc {
 
-TextureUpdateQueue::TextureUpdateQueue()
+CCTextureUpdateQueue::CCTextureUpdateQueue()
 {
 }
 
-TextureUpdateQueue::~TextureUpdateQueue()
+CCTextureUpdateQueue::~CCTextureUpdateQueue()
 {
 }
 
-void TextureUpdateQueue::appendFullUpload(const ResourceUpdate& upload)
+void CCTextureUpdateQueue::appendFullUpload(const ResourceUpdate& upload)
 {
     m_fullEntries.push_back(upload);
 }
 
-void TextureUpdateQueue::appendPartialUpload(const ResourceUpdate& upload)
+void CCTextureUpdateQueue::appendPartialUpload(const ResourceUpdate& upload)
 {
     m_partialEntries.push_back(upload);
 }
 
-void TextureUpdateQueue::appendCopy(TextureCopier::Parameters copy)
+void CCTextureUpdateQueue::appendCopy(TextureCopier::Parameters copy)
 {
     m_copyEntries.push_back(copy);
 }
 
-void TextureUpdateQueue::clearUploadsToEvictedResources()
+void CCTextureUpdateQueue::clearUploadsToEvictedResources()
 {
     clearUploadsToEvictedResources(m_fullEntries);
     clearUploadsToEvictedResources(m_partialEntries);
 }
 
-void TextureUpdateQueue::clearUploadsToEvictedResources(std::deque<ResourceUpdate>& entryQueue)
+void CCTextureUpdateQueue::clearUploadsToEvictedResources(std::deque<ResourceUpdate>& entryQueue)
 {
     std::deque<ResourceUpdate> temp;
     entryQueue.swap(temp);
@@ -51,28 +51,28 @@ void TextureUpdateQueue::clearUploadsToEvictedResources(std::deque<ResourceUpdat
     }
 }
 
-ResourceUpdate TextureUpdateQueue::takeFirstFullUpload()
+ResourceUpdate CCTextureUpdateQueue::takeFirstFullUpload()
 {
     ResourceUpdate first = m_fullEntries.front();
     m_fullEntries.pop_front();
     return first;
 }
 
-ResourceUpdate TextureUpdateQueue::takeFirstPartialUpload()
+ResourceUpdate CCTextureUpdateQueue::takeFirstPartialUpload()
 {
     ResourceUpdate first = m_partialEntries.front();
     m_partialEntries.pop_front();
     return first;
 }
 
-TextureCopier::Parameters TextureUpdateQueue::takeFirstCopy()
+TextureCopier::Parameters CCTextureUpdateQueue::takeFirstCopy()
 {
     TextureCopier::Parameters first = m_copyEntries.front();
     m_copyEntries.pop_front();
     return first;
 }
 
-bool TextureUpdateQueue::hasMoreUpdates() const
+bool CCTextureUpdateQueue::hasMoreUpdates() const
 {
     return m_fullEntries.size() || m_partialEntries.size() || m_copyEntries.size();
 }

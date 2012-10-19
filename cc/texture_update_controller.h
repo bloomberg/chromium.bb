@@ -13,25 +13,25 @@
 
 namespace cc {
 
-class ResourceProvider;
+class CCResourceProvider;
 
-class TextureUpdateControllerClient {
+class CCTextureUpdateControllerClient {
 public:
     virtual void readyToFinalizeTextureUpdates() = 0;
 
 protected:
-    virtual ~TextureUpdateControllerClient() { }
+    virtual ~CCTextureUpdateControllerClient() { }
 };
 
-class TextureUpdateController : public TimerClient {
+class CCTextureUpdateController : public CCTimerClient {
 public:
-    static scoped_ptr<TextureUpdateController> create(TextureUpdateControllerClient* client, Thread* thread, scoped_ptr<TextureUpdateQueue> queue, ResourceProvider* resourceProvider)
+    static scoped_ptr<CCTextureUpdateController> create(CCTextureUpdateControllerClient* client, CCThread* thread, scoped_ptr<CCTextureUpdateQueue> queue, CCResourceProvider* resourceProvider)
     {
-        return make_scoped_ptr(new TextureUpdateController(client, thread, queue.Pass(), resourceProvider));
+        return make_scoped_ptr(new CCTextureUpdateController(client, thread, queue.Pass(), resourceProvider));
     }
     static size_t maxPartialTextureUpdates();
 
-    virtual ~TextureUpdateController();
+    virtual ~CCTextureUpdateController();
 
     // Discard uploads to textures that were evicted on the impl thread.
     void discardUploadsToEvictedResources();
@@ -39,7 +39,7 @@ public:
     void performMoreUpdates(base::TimeTicks timeLimit);
     void finalize();
 
-    // TimerClient implementation.
+    // CCTimerClient implementation.
     virtual void onTimerFired() OVERRIDE;
 
     // Virtual for testing.
@@ -48,9 +48,9 @@ public:
     virtual size_t updateMoreTexturesSize() const;
 
 protected:
-    TextureUpdateController(TextureUpdateControllerClient*, Thread*, scoped_ptr<TextureUpdateQueue>, ResourceProvider*);
+    CCTextureUpdateController(CCTextureUpdateControllerClient*, CCThread*, scoped_ptr<CCTextureUpdateQueue>, CCResourceProvider*);
 
-    static size_t maxFullUpdatesPerTick(ResourceProvider*);
+    static size_t maxFullUpdatesPerTick(CCResourceProvider*);
 
     size_t maxBlockingUpdates() const;
 
@@ -60,17 +60,17 @@ protected:
     bool updateMoreTexturesIfEnoughTimeRemaining();
     void updateMoreTexturesNow();
 
-    TextureUpdateControllerClient* m_client;
-    scoped_ptr<Timer> m_timer;
-    scoped_ptr<TextureUpdateQueue> m_queue;
+    CCTextureUpdateControllerClient* m_client;
+    scoped_ptr<CCTimer> m_timer;
+    scoped_ptr<CCTextureUpdateQueue> m_queue;
     bool m_contentsTexturesPurged;
-    ResourceProvider* m_resourceProvider;
+    CCResourceProvider* m_resourceProvider;
     base::TimeTicks m_timeLimit;
     size_t m_textureUpdatesPerTick;
     bool m_firstUpdateAttempt;
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(TextureUpdateController);
+    DISALLOW_COPY_AND_ASSIGN(CCTextureUpdateController);
 };
 
 }  // namespace cc

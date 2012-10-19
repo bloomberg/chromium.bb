@@ -19,19 +19,19 @@ using namespace WebKitTests;
 
 namespace cc {
 
-class PrioritizedTextureTest : public testing::Test {
+class CCPrioritizedTextureTest : public testing::Test {
 public:
-    PrioritizedTextureTest()
+    CCPrioritizedTextureTest()
         : m_textureSize(256, 256)
         , m_textureFormat(GL_RGBA)
         , m_compositorInitializer(0)
-        , m_context(WebKit::createFakeGraphicsContext())
+        , m_context(WebKit::createFakeCCGraphicsContext())
     {
         DebugScopedSetImplThread implThread;
-        m_resourceProvider = ResourceProvider::create(m_context.get());
+        m_resourceProvider = CCResourceProvider::create(m_context.get());
     }
 
-    virtual ~PrioritizedTextureTest()
+    virtual ~CCPrioritizedTextureTest()
     {
         DebugScopedSetImplThread implThread;
         m_resourceProvider.reset();
@@ -39,15 +39,15 @@ public:
 
     size_t texturesMemorySize(size_t textureCount)
     {
-        return Texture::memorySizeBytes(m_textureSize, m_textureFormat) * textureCount;
+        return CCTexture::memorySizeBytes(m_textureSize, m_textureFormat) * textureCount;
     }
 
-    scoped_ptr<PrioritizedTextureManager> createManager(size_t maxTextures)
+    scoped_ptr<CCPrioritizedTextureManager> createManager(size_t maxTextures)
     {
-        return PrioritizedTextureManager::create(texturesMemorySize(maxTextures), 1024, 0);
+        return CCPrioritizedTextureManager::create(texturesMemorySize(maxTextures), 1024, 0);
     }
 
-    bool validateTexture(scoped_ptr<PrioritizedTexture>& texture, bool requestLate)
+    bool validateTexture(scoped_ptr<CCPrioritizedTexture>& texture, bool requestLate)
     {
         textureManagerAssertInvariants(texture->textureManager());
         if (requestLate)
@@ -60,24 +60,24 @@ public:
         return success;
     }
 
-    void prioritizeTexturesAndBackings(PrioritizedTextureManager* textureManager)
+    void prioritizeTexturesAndBackings(CCPrioritizedTextureManager* textureManager)
     {
         textureManager->prioritizeTextures();
         textureManagerUpdateBackingsPriorities(textureManager);
     }
 
-    void textureManagerUpdateBackingsPriorities(PrioritizedTextureManager* textureManager)
+    void textureManagerUpdateBackingsPriorities(CCPrioritizedTextureManager* textureManager)
     {
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
         textureManager->pushTexturePrioritiesToBackings();
     }
 
-    ResourceProvider* resourceProvider()
+    CCResourceProvider* resourceProvider()
     {
        return m_resourceProvider.get();
     }
 
-    void textureManagerAssertInvariants(PrioritizedTextureManager* textureManager)
+    void textureManagerAssertInvariants(CCPrioritizedTextureManager* textureManager)
     {
 #ifndef NDEBUG
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
@@ -85,7 +85,7 @@ public:
 #endif
     }
 
-    bool textureBackingIsAbovePriorityCutoff(PrioritizedTexture* texture)
+    bool textureBackingIsAbovePriorityCutoff(CCPrioritizedTexture* texture)
     {
         return texture->m_backing->wasAbovePriorityCutoffAtLastPriorityUpdate();
     }
@@ -94,21 +94,21 @@ protected:
     const IntSize m_textureSize;
     const GLenum m_textureFormat;
     WebCompositorInitializer m_compositorInitializer;
-    scoped_ptr<GraphicsContext> m_context;
-    scoped_ptr<ResourceProvider> m_resourceProvider;
+    scoped_ptr<CCGraphicsContext> m_context;
+    scoped_ptr<CCResourceProvider> m_resourceProvider;
 };
 
 }
 
 namespace {
 
-TEST_F(PrioritizedTextureTest, requestTextureExceedingMaxLimit)
+TEST_F(CCPrioritizedTextureTest, requestTextureExceedingMaxLimit)
 {
     const size_t maxTextures = 8;
-    scoped_ptr<PrioritizedTextureManager> textureManager = createManager(maxTextures);
+    scoped_ptr<CCPrioritizedTextureManager> textureManager = createManager(maxTextures);
 
     // Create textures for double our memory limit.
-    scoped_ptr<PrioritizedTexture> textures[maxTextures*2];
+    scoped_ptr<CCPrioritizedTexture> textures[maxTextures*2];
 
     for (size_t i = 0; i < maxTextures*2; ++i)
         textures[i] = textureManager->createTexture(m_textureSize, m_textureFormat);
@@ -142,11 +142,11 @@ TEST_F(PrioritizedTextureTest, requestTextureExceedingMaxLimit)
     textureManager->clearAllMemory(resourceProvider());
 }
 
-TEST_F(PrioritizedTextureTest, changeMemoryLimits)
+TEST_F(CCPrioritizedTextureTest, changeMemoryLimits)
 {
     const size_t maxTextures = 8;
-    scoped_ptr<PrioritizedTextureManager> textureManager = createManager(maxTextures);
-    scoped_ptr<PrioritizedTexture> textures[maxTextures];
+    scoped_ptr<CCPrioritizedTextureManager> textureManager = createManager(maxTextures);
+    scoped_ptr<CCPrioritizedTexture> textures[maxTextures];
 
     for (size_t i = 0; i < maxTextures; ++i)
         textures[i] = textureManager->createTexture(m_textureSize, m_textureFormat);
@@ -196,13 +196,13 @@ TEST_F(PrioritizedTextureTest, changeMemoryLimits)
     textureManager->clearAllMemory(resourceProvider());
 }
 
-TEST_F(PrioritizedTextureTest, textureManagerPartialUpdateTextures)
+TEST_F(CCPrioritizedTextureTest, textureManagerPartialUpdateTextures)
 {
     const size_t maxTextures = 4;
     const size_t numTextures = 4;
-    scoped_ptr<PrioritizedTextureManager> textureManager = createManager(maxTextures);
-    scoped_ptr<PrioritizedTexture> textures[numTextures];
-    scoped_ptr<PrioritizedTexture> moreTextures[numTextures];
+    scoped_ptr<CCPrioritizedTextureManager> textureManager = createManager(maxTextures);
+    scoped_ptr<CCPrioritizedTexture> textures[numTextures];
+    scoped_ptr<CCPrioritizedTexture> moreTextures[numTextures];
 
     for (size_t i = 0; i < numTextures; ++i) {
         textures[i] = textureManager->createTexture(m_textureSize, m_textureFormat);
@@ -256,11 +256,11 @@ TEST_F(PrioritizedTextureTest, textureManagerPartialUpdateTextures)
     textureManager->clearAllMemory(resourceProvider());
 }
 
-TEST_F(PrioritizedTextureTest, textureManagerPrioritiesAreEqual)
+TEST_F(CCPrioritizedTextureTest, textureManagerPrioritiesAreEqual)
 {
     const size_t maxTextures = 16;
-    scoped_ptr<PrioritizedTextureManager> textureManager = createManager(maxTextures);
-    scoped_ptr<PrioritizedTexture> textures[maxTextures];
+    scoped_ptr<CCPrioritizedTextureManager> textureManager = createManager(maxTextures);
+    scoped_ptr<CCPrioritizedTexture> textures[maxTextures];
 
     for (size_t i = 0; i < maxTextures; ++i)
         textures[i] = textureManager->createTexture(m_textureSize, m_textureFormat);
@@ -296,10 +296,10 @@ TEST_F(PrioritizedTextureTest, textureManagerPrioritiesAreEqual)
     textureManager->clearAllMemory(resourceProvider());
 }
 
-TEST_F(PrioritizedTextureTest, textureManagerDestroyedFirst)
+TEST_F(CCPrioritizedTextureTest, textureManagerDestroyedFirst)
 {
-    scoped_ptr<PrioritizedTextureManager> textureManager = createManager(1);
-    scoped_ptr<PrioritizedTexture> texture = textureManager->createTexture(m_textureSize, m_textureFormat);
+    scoped_ptr<CCPrioritizedTextureManager> textureManager = createManager(1);
+    scoped_ptr<CCPrioritizedTexture> texture = textureManager->createTexture(m_textureSize, m_textureFormat);
 
     // Texture is initially invalid, but it will become available.
     EXPECT_FALSE(texture->haveBackingTexture());
@@ -321,11 +321,11 @@ TEST_F(PrioritizedTextureTest, textureManagerDestroyedFirst)
     EXPECT_FALSE(texture->haveBackingTexture());
 }
 
-TEST_F(PrioritizedTextureTest, textureMovedToNewManager)
+TEST_F(CCPrioritizedTextureTest, textureMovedToNewManager)
 {
-    scoped_ptr<PrioritizedTextureManager> textureManagerOne = createManager(1);
-    scoped_ptr<PrioritizedTextureManager> textureManagerTwo = createManager(1);
-    scoped_ptr<PrioritizedTexture> texture = textureManagerOne->createTexture(m_textureSize, m_textureFormat);
+    scoped_ptr<CCPrioritizedTextureManager> textureManagerOne = createManager(1);
+    scoped_ptr<CCPrioritizedTextureManager> textureManagerTwo = createManager(1);
+    scoped_ptr<CCPrioritizedTexture> texture = textureManagerOne->createTexture(m_textureSize, m_textureFormat);
 
     // Texture is initially invalid, but it will become available.
     EXPECT_FALSE(texture->haveBackingTexture());
@@ -360,18 +360,18 @@ TEST_F(PrioritizedTextureTest, textureMovedToNewManager)
     textureManagerTwo->clearAllMemory(resourceProvider());
 }
 
-TEST_F(PrioritizedTextureTest, renderSurfacesReduceMemoryAvailableOutsideRootSurface)
+TEST_F(CCPrioritizedTextureTest, renderSurfacesReduceMemoryAvailableOutsideRootSurface)
 {
     const size_t maxTextures = 8;
-    scoped_ptr<PrioritizedTextureManager> textureManager = createManager(maxTextures);
+    scoped_ptr<CCPrioritizedTextureManager> textureManager = createManager(maxTextures);
 
     // Half of the memory is taken by surfaces (with high priority place-holder)
-    scoped_ptr<PrioritizedTexture> renderSurfacePlaceHolder = textureManager->createTexture(m_textureSize, m_textureFormat);
+    scoped_ptr<CCPrioritizedTexture> renderSurfacePlaceHolder = textureManager->createTexture(m_textureSize, m_textureFormat);
     renderSurfacePlaceHolder->setToSelfManagedMemoryPlaceholder(texturesMemorySize(4));
-    renderSurfacePlaceHolder->setRequestPriority(PriorityCalculator::renderSurfacePriority());
+    renderSurfacePlaceHolder->setRequestPriority(CCPriorityCalculator::renderSurfacePriority());
 
     // Create textures to fill our memory limit.
-    scoped_ptr<PrioritizedTexture> textures[maxTextures];
+    scoped_ptr<CCPrioritizedTexture> textures[maxTextures];
 
     for (size_t i = 0; i < maxTextures; ++i)
         textures[i] = textureManager->createTexture(m_textureSize, m_textureFormat);
@@ -406,18 +406,18 @@ TEST_F(PrioritizedTextureTest, renderSurfacesReduceMemoryAvailableOutsideRootSur
     textureManager->clearAllMemory(resourceProvider());
 }
 
-TEST_F(PrioritizedTextureTest, renderSurfacesReduceMemoryAvailableForRequestLate)
+TEST_F(CCPrioritizedTextureTest, renderSurfacesReduceMemoryAvailableForRequestLate)
 {
     const size_t maxTextures = 8;
-    scoped_ptr<PrioritizedTextureManager> textureManager = createManager(maxTextures);
+    scoped_ptr<CCPrioritizedTextureManager> textureManager = createManager(maxTextures);
 
     // Half of the memory is taken by surfaces (with high priority place-holder)
-    scoped_ptr<PrioritizedTexture> renderSurfacePlaceHolder = textureManager->createTexture(m_textureSize, m_textureFormat);
+    scoped_ptr<CCPrioritizedTexture> renderSurfacePlaceHolder = textureManager->createTexture(m_textureSize, m_textureFormat);
     renderSurfacePlaceHolder->setToSelfManagedMemoryPlaceholder(texturesMemorySize(4));
-    renderSurfacePlaceHolder->setRequestPriority(PriorityCalculator::renderSurfacePriority());
+    renderSurfacePlaceHolder->setRequestPriority(CCPriorityCalculator::renderSurfacePriority());
 
     // Create textures to fill our memory limit.
-    scoped_ptr<PrioritizedTexture> textures[maxTextures];
+    scoped_ptr<CCPrioritizedTexture> textures[maxTextures];
 
     for (size_t i = 0; i < maxTextures; ++i)
         textures[i] = textureManager->createTexture(m_textureSize, m_textureFormat);
@@ -443,27 +443,27 @@ TEST_F(PrioritizedTextureTest, renderSurfacesReduceMemoryAvailableForRequestLate
     textureManager->clearAllMemory(resourceProvider());
 }
 
-TEST_F(PrioritizedTextureTest, whenRenderSurfaceNotAvailableTexturesAlsoNotAvailable)
+TEST_F(CCPrioritizedTextureTest, whenRenderSurfaceNotAvailableTexturesAlsoNotAvailable)
 {
     const size_t maxTextures = 8;
-    scoped_ptr<PrioritizedTextureManager> textureManager = createManager(maxTextures);
+    scoped_ptr<CCPrioritizedTextureManager> textureManager = createManager(maxTextures);
 
     // Half of the memory is taken by surfaces (with high priority place-holder)
-    scoped_ptr<PrioritizedTexture> renderSurfacePlaceHolder = textureManager->createTexture(m_textureSize, m_textureFormat);
+    scoped_ptr<CCPrioritizedTexture> renderSurfacePlaceHolder = textureManager->createTexture(m_textureSize, m_textureFormat);
     renderSurfacePlaceHolder->setToSelfManagedMemoryPlaceholder(texturesMemorySize(4));
-    renderSurfacePlaceHolder->setRequestPriority(PriorityCalculator::renderSurfacePriority());
+    renderSurfacePlaceHolder->setRequestPriority(CCPriorityCalculator::renderSurfacePriority());
 
     // Create textures to fill our memory limit.
-    scoped_ptr<PrioritizedTexture> textures[maxTextures];
+    scoped_ptr<CCPrioritizedTexture> textures[maxTextures];
 
     for (size_t i = 0; i < maxTextures; ++i)
         textures[i] = textureManager->createTexture(m_textureSize, m_textureFormat);
 
     // Set 6 visible textures in the root surface, and 2 in a child surface.
     for (size_t i = 0; i < 6; ++i)
-        textures[i]->setRequestPriority(PriorityCalculator::visiblePriority(true));
+        textures[i]->setRequestPriority(CCPriorityCalculator::visiblePriority(true));
     for (size_t i = 6; i < 8; ++i)
-        textures[i]->setRequestPriority(PriorityCalculator::visiblePriority(false));
+        textures[i]->setRequestPriority(CCPriorityCalculator::visiblePriority(false));
 
     prioritizeTexturesAndBackings(textureManager.get());
 
@@ -483,14 +483,14 @@ TEST_F(PrioritizedTextureTest, whenRenderSurfaceNotAvailableTexturesAlsoNotAvail
     textureManager->clearAllMemory(resourceProvider());
 }
 
-TEST_F(PrioritizedTextureTest, requestLateBackingsSorting)
+TEST_F(CCPrioritizedTextureTest, requestLateBackingsSorting)
 {
     const size_t maxTextures = 8;
-    scoped_ptr<PrioritizedTextureManager> textureManager = createManager(maxTextures);
+    scoped_ptr<CCPrioritizedTextureManager> textureManager = createManager(maxTextures);
     textureManager->setMaxMemoryLimitBytes(texturesMemorySize(maxTextures));
 
     // Create textures to fill our memory limit.
-    scoped_ptr<PrioritizedTexture> textures[maxTextures];
+    scoped_ptr<CCPrioritizedTexture> textures[maxTextures];
     for (size_t i = 0; i < maxTextures; ++i)
         textures[i] = textureManager->createTexture(m_textureSize, m_textureFormat);
 
@@ -531,15 +531,15 @@ TEST_F(PrioritizedTextureTest, requestLateBackingsSorting)
     textureManager->clearAllMemory(resourceProvider());
 }
 
-TEST_F(PrioritizedTextureTest, clearUploadsToEvictedResources)
+TEST_F(CCPrioritizedTextureTest, clearUploadsToEvictedResources)
 {
     const size_t maxTextures = 4;
-    scoped_ptr<PrioritizedTextureManager> textureManager =
+    scoped_ptr<CCPrioritizedTextureManager> textureManager =
         createManager(maxTextures);
     textureManager->setMaxMemoryLimitBytes(texturesMemorySize(maxTextures));
 
     // Create textures to fill our memory limit.
-    scoped_ptr<PrioritizedTexture> textures[maxTextures];
+    scoped_ptr<CCPrioritizedTexture> textures[maxTextures];
 
     for (size_t i = 0; i < maxTextures; ++i)
         textures[i] = textureManager->createTexture(m_textureSize, m_textureFormat);
@@ -551,7 +551,7 @@ TEST_F(PrioritizedTextureTest, clearUploadsToEvictedResources)
     for (unsigned i = 0; i < maxTextures; ++i)
         EXPECT_TRUE(validateTexture(textures[i], false));
 
-    TextureUpdateQueue queue;
+    CCTextureUpdateQueue queue;
     DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
     for (size_t i = 0; i < maxTextures; ++i) {
         const ResourceUpdate upload = ResourceUpdate::Create(

@@ -9,7 +9,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebAnimation.h"
 
 namespace cc {
-class ActiveAnimation;
+class CCActiveAnimation;
 }
 
 namespace WebKit {
@@ -31,10 +31,10 @@ public:
     virtual bool alternatesDirection() const OVERRIDE;
     virtual void setAlternatesDirection(bool) OVERRIDE;
 
-    scoped_ptr<cc::ActiveAnimation> cloneToAnimation();
+    scoped_ptr<cc::CCActiveAnimation> cloneToCCAnimation();
 
 private:
-    scoped_ptr<cc::ActiveAnimation> m_animation;
+    scoped_ptr<cc::CCActiveAnimation> m_animation;
 };
 
 }

@@ -53,8 +53,8 @@ static bool edgeEdgeTest(const FloatPoint& a, const FloatPoint& b, const FloatPo
     return true;
 }
 
-GraphNode::GraphNode(LayerImpl* layerImpl)
-    : layer(layerImpl)
+GraphNode::GraphNode(CCLayerImpl* cclayer)
+    : layer(cclayer)
     , incomingEdgeWeight(0)
 {
 }
@@ -63,19 +63,19 @@ GraphNode::~GraphNode()
 {
 }
 
-LayerSorter::LayerSorter()
+CCLayerSorter::CCLayerSorter()
     : m_zRange(0)
 {
 }
 
-LayerSorter::~LayerSorter()
+CCLayerSorter::~CCLayerSorter()
 {
 }
 
 // Checks whether layer "a" draws on top of layer "b". The weight value returned is an indication of
 // the maximum z-depth difference between the layers or zero if the layers are found to be intesecting
 // (some features are in front and some are behind).
-LayerSorter::ABCompareResult LayerSorter::checkOverlap(LayerShape* a, LayerShape* b, float zThreshold, float& weight)
+CCLayerSorter::ABCompareResult CCLayerSorter::checkOverlap(LayerShape* a, LayerShape* b, float zThreshold, float& weight)
 {
     weight = 0;
 
@@ -154,14 +154,14 @@ LayerShape::LayerShape(float width, float height, const WebTransformationMatrix&
 
     FloatPoint clippedQuad[8];
     int numVerticesInClippedQuad;
-    MathUtil::mapClippedQuad(drawTransform, layerQuad, clippedQuad, numVerticesInClippedQuad);
+    CCMathUtil::mapClippedQuad(drawTransform, layerQuad, clippedQuad, numVerticesInClippedQuad);
 
     if (numVerticesInClippedQuad < 3) {
         projectedBounds = FloatRect();
         return;
     }
 
-    projectedBounds = MathUtil::computeEnclosingRectOfVertices(clippedQuad, numVerticesInClippedQuad);
+    projectedBounds = CCMathUtil::computeEnclosingRectOfVertices(clippedQuad, numVerticesInClippedQuad);
 
     // NOTE: it will require very significant refactoring and overhead to deal with
     // generalized polygons or multiple quads per layer here. For the sake of layer
@@ -178,9 +178,9 @@ LayerShape::LayerShape(float width, float height, const WebTransformationMatrix&
 
     // Compute the normal of the layer's plane.
     bool clipped = false;
-    FloatPoint3D c1 = MathUtil::mapPoint(drawTransform, FloatPoint3D(0, 0, 0), clipped);
-    FloatPoint3D c2 = MathUtil::mapPoint(drawTransform, FloatPoint3D(0, 1, 0), clipped);
-    FloatPoint3D c3 = MathUtil::mapPoint(drawTransform, FloatPoint3D(1, 0, 0), clipped);
+    FloatPoint3D c1 = CCMathUtil::mapPoint(drawTransform, FloatPoint3D(0, 0, 0), clipped);
+    FloatPoint3D c2 = CCMathUtil::mapPoint(drawTransform, FloatPoint3D(0, 1, 0), clipped);
+    FloatPoint3D c3 = CCMathUtil::mapPoint(drawTransform, FloatPoint3D(1, 0, 0), clipped);
     // FIXME: Deal with clipping.
     FloatPoint3D c12 = c2 - c1;
     FloatPoint3D c13 = c3 - c1;
@@ -212,7 +212,7 @@ float LayerShape::layerZFromProjectedPoint(const FloatPoint& p) const
     return n / d;
 }
 
-void LayerSorter::createGraphNodes(LayerList::iterator first, LayerList::iterator last)
+void CCLayerSorter::createGraphNodes(LayerList::iterator first, LayerList::iterator last)
 {
     DVLOG(2) << "Creating graph nodes:";
     float minZ = FLT_MAX;
@@ -220,7 +220,7 @@ void LayerSorter::createGraphNodes(LayerList::iterator first, LayerList::iterato
     for (LayerList::const_iterator it = first; it < last; it++) {
         m_nodes.push_back(GraphNode(*it));
         GraphNode& node = m_nodes.at(m_nodes.size() - 1);
-        RenderSurfaceImpl* renderSurface = node.layer->renderSurface();
+        CCRenderSurface* renderSurface = node.layer->renderSurface();
         if (!node.layer->drawsContent() && !renderSurface)
             continue;
 
@@ -247,7 +247,7 @@ void LayerSorter::createGraphNodes(LayerList::iterator first, LayerList::iterato
     m_zRange = fabsf(maxZ - minZ);
 }
 
-void LayerSorter::createGraphEdges()
+void CCLayerSorter::createGraphEdges()
 {
     DVLOG(2) << "Edges:";
     // Fraction of the total zRange below which z differences
@@ -293,7 +293,7 @@ void LayerSorter::createGraphEdges()
 
 // Finds and removes an edge from the list by doing a swap with the
 // last element of the list.
-void LayerSorter::removeEdgeFromList(GraphEdge* edge, std::vector<GraphEdge*>& list)
+void CCLayerSorter::removeEdgeFromList(GraphEdge* edge, std::vector<GraphEdge*>& list)
 {
     std::vector<GraphEdge*>::iterator iter = std::find(list.begin(), list.end(), edge);
     DCHECK(iter != list.end());
@@ -319,7 +319,7 @@ void LayerSorter::removeEdgeFromList(GraphEdge* edge, std::vector<GraphEdge*>& l
 // of the original list of layers, since that list should already have proper z-index
 // ordering of layers.
 //
-void LayerSorter::sort(LayerList::iterator first, LayerList::iterator last)
+void CCLayerSorter::sort(LayerList::iterator first, LayerList::iterator last)
 {
     DVLOG(2) << "Sorting start ----";
     createGraphNodes(first, last);

@@ -9,13 +9,13 @@
 
 namespace WebKitTests {
 
-class TestRenderPass : public cc::RenderPass {
+class CCTestRenderPass : public cc::CCRenderPass {
 public:
-    cc::QuadList& quadList() { return m_quadList; }
-    cc::SharedQuadStateList& sharedQuadStateList() { return m_sharedQuadStateList; }
+    cc::CCQuadList& quadList() { return m_quadList; }
+    cc::CCSharedQuadStateList& sharedQuadStateList() { return m_sharedQuadStateList; }
 
-    void appendQuad(scoped_ptr<cc::DrawQuad> quad) { m_quadList.append(quad.Pass()); }
-    void appendSharedQuadState(scoped_ptr<cc::SharedQuadState> state) { m_sharedQuadStateList.append(state.Pass()); }
+    void appendQuad(scoped_ptr<cc::CCDrawQuad> quad) { m_quadList.append(quad.Pass()); }
+    void appendSharedQuadState(scoped_ptr<cc::CCSharedQuadState> state) { m_sharedQuadStateList.append(state.Pass()); }
 };
 
 } //namespace WebKitTests

@@ -12,25 +12,25 @@
 
 namespace cc {
 
-class HeadsUpDisplayLayer : public Layer {
+class HeadsUpDisplayLayerChromium : public LayerChromium {
 public:
-    static scoped_refptr<HeadsUpDisplayLayer> create();
+    static scoped_refptr<HeadsUpDisplayLayerChromium> create();
 
-    virtual void update(TextureUpdateQueue&, const OcclusionTracker*, RenderingStats&) OVERRIDE;
+    virtual void update(CCTextureUpdateQueue&, const CCOcclusionTracker*, CCRenderingStats&) OVERRIDE;
     virtual bool drawsContent() const OVERRIDE;
 
-    void setFontAtlas(scoped_ptr<FontAtlas>);
+    void setFontAtlas(scoped_ptr<CCFontAtlas>);
 
-    virtual scoped_ptr<LayerImpl> createLayerImpl() OVERRIDE;
-    virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
+    virtual scoped_ptr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
+    virtual void pushPropertiesTo(CCLayerImpl*) OVERRIDE;
 
 protected:
-    HeadsUpDisplayLayer();
+    HeadsUpDisplayLayerChromium();
 
 private:
-    virtual ~HeadsUpDisplayLayer();
+    virtual ~HeadsUpDisplayLayerChromium();
 
-    scoped_ptr<FontAtlas> m_fontAtlas;
+    scoped_ptr<CCFontAtlas> m_fontAtlas;
 };
 
 }  // namespace cc

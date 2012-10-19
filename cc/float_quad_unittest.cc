@@ -30,7 +30,7 @@ TEST(FloatQuadTest, IsRectilinearTest)
 
     for (int i = 0; i < numRectilinear; ++i) {
         bool clipped = false;
-        FloatQuad quad = MathUtil::mapQuad(rectilinearTrans[i], FloatRect(0.01010101f, 0.01010101f, 100.01010101f, 100.01010101f), clipped);
+        FloatQuad quad = CCMathUtil::mapQuad(rectilinearTrans[i], FloatRect(0.01010101f, 0.01010101f, 100.01010101f, 100.01010101f), clipped);
         ASSERT_TRUE(!clipped);
         EXPECT_TRUE(quad.isRectilinear());
     }
@@ -50,7 +50,7 @@ TEST(FloatQuadTest, IsRectilinearTest)
 
     for (int i = 0; i < numNonRectilinear; ++i) {
         bool clipped = false;
-        FloatQuad quad = MathUtil::mapQuad(nonRectilinearTrans[i], FloatRect(0.01010101f, 0.01010101f, 100.01010101f, 100.01010101f), clipped);
+        FloatQuad quad = CCMathUtil::mapQuad(nonRectilinearTrans[i], FloatRect(0.01010101f, 0.01010101f, 100.01010101f, 100.01010101f), clipped);
         ASSERT_TRUE(!clipped);
         EXPECT_FALSE(quad.isRectilinear());
     }

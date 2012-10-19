@@ -14,19 +14,19 @@
 namespace cc {
 
 // static
-scoped_ptr<DebugRectHistory> DebugRectHistory::create() {
-  return make_scoped_ptr(new DebugRectHistory());
+scoped_ptr<CCDebugRectHistory> CCDebugRectHistory::create() {
+  return make_scoped_ptr(new CCDebugRectHistory());
 }
 
-DebugRectHistory::DebugRectHistory()
+CCDebugRectHistory::CCDebugRectHistory()
 {
 }
 
-DebugRectHistory::~DebugRectHistory()
+CCDebugRectHistory::~CCDebugRectHistory()
 {
 }
 
-void DebugRectHistory::saveDebugRectsForCurrentFrame(LayerImpl* rootLayer, const std::vector<LayerImpl*>& renderSurfaceLayerList, const Vector<IntRect>& occludingScreenSpaceRects, const LayerTreeSettings& settings)
+void CCDebugRectHistory::saveDebugRectsForCurrentFrame(CCLayerImpl* rootLayer, const std::vector<CCLayerImpl*>& renderSurfaceLayerList, const Vector<IntRect>& occludingScreenSpaceRects, const CCLayerTreeSettings& settings)
 {
     // For now, clear all rects from previous frames. In the future we may want to store
     // all debug rects for a history of many frames.
@@ -49,7 +49,7 @@ void DebugRectHistory::saveDebugRectsForCurrentFrame(LayerImpl* rootLayer, const
 }
 
 
-void DebugRectHistory::savePaintRects(LayerImpl* layer)
+void CCDebugRectHistory::savePaintRects(CCLayerImpl* layer)
 {
     // We would like to visualize where any layer's paint rect (update rect) has changed,
     // regardless of whether this layer is skipped for actual drawing or not. Therefore
@@ -58,65 +58,65 @@ void DebugRectHistory::savePaintRects(LayerImpl* layer)
     if (!layer->updateRect().isEmpty() && layer->drawsContent()) {
         FloatRect updateContentRect = layer->updateRect();
         updateContentRect.scale(layer->contentBounds().width() / static_cast<float>(layer->bounds().width()), layer->contentBounds().height() / static_cast<float>(layer->bounds().height()));
-        m_debugRects.append(DebugRect(PaintRectType, MathUtil::mapClippedRect(layer->screenSpaceTransform(), updateContentRect)));
+        m_debugRects.append(CCDebugRect(PaintRectType, CCMathUtil::mapClippedRect(layer->screenSpaceTransform(), updateContentRect)));
     }
 
     for (unsigned i = 0; i < layer->children().size(); ++i)
         savePaintRects(layer->children()[i]);
 }
 
-void DebugRectHistory::savePropertyChangedRects(const std::vector<LayerImpl*>& renderSurfaceLayerList)
+void CCDebugRectHistory::savePropertyChangedRects(const std::vector<CCLayerImpl*>& renderSurfaceLayerList)
 {
     for (int surfaceIndex = renderSurfaceLayerList.size() - 1; surfaceIndex >= 0 ; --surfaceIndex) {
-        LayerImpl* renderSurfaceLayer = renderSurfaceLayerList[surfaceIndex];
-        RenderSurfaceImpl* renderSurface = renderSurfaceLayer->renderSurface();
+        CCLayerImpl* renderSurfaceLayer = renderSurfaceLayerList[surfaceIndex];
+        CCRenderSurface* renderSurface = renderSurfaceLayer->renderSurface();
         DCHECK(renderSurface);
 
-        const std::vector<LayerImpl*>& layerList = renderSurface->layerList();
+        const std::vector<CCLayerImpl*>& layerList = renderSurface->layerList();
         for (unsigned layerIndex = 0; layerIndex < layerList.size(); ++layerIndex) {
-            LayerImpl* layer = layerList[layerIndex];
+            CCLayerImpl* layer = layerList[layerIndex];
 
-            if (LayerTreeHostCommon::renderSurfaceContributesToTarget<LayerImpl>(layer, renderSurfaceLayer->id()))
+            if (CCLayerTreeHostCommon::renderSurfaceContributesToTarget<CCLayerImpl>(layer, renderSurfaceLayer->id()))
                 continue;
 
             if (layer->layerIsAlwaysDamaged())
                 continue;
 
             if (layer->layerPropertyChanged() || layer->layerSurfacePropertyChanged())
-                m_debugRects.append(DebugRect(PropertyChangedRectType, MathUtil::mapClippedRect(layer->screenSpaceTransform(), FloatRect(FloatPoint::zero(), layer->contentBounds()))));
+                m_debugRects.append(CCDebugRect(PropertyChangedRectType, CCMathUtil::mapClippedRect(layer->screenSpaceTransform(), FloatRect(FloatPoint::zero(), layer->contentBounds()))));
         }
     }
 }
 
-void DebugRectHistory::saveSurfaceDamageRects(const std::vector<LayerImpl* >& renderSurfaceLayerList)
+void CCDebugRectHistory::saveSurfaceDamageRects(const std::vector<CCLayerImpl* >& renderSurfaceLayerList)
 {
     for (int surfaceIndex = renderSurfaceLayerList.size() - 1; surfaceIndex >= 0 ; --surfaceIndex) {
-        LayerImpl* renderSurfaceLayer = renderSurfaceLayerList[surfaceIndex];
-        RenderSurfaceImpl* renderSurface = renderSurfaceLayer->renderSurface();
+        CCLayerImpl* renderSurfaceLayer = renderSurfaceLayerList[surfaceIndex];
+        CCRenderSurface* renderSurface = renderSurfaceLayer->renderSurface();
         DCHECK(renderSurface);
 
-        m_debugRects.append(DebugRect(SurfaceDamageRectType, MathUtil::mapClippedRect(renderSurface->screenSpaceTransform(), renderSurface->damageTracker()->currentDamageRect())));
+        m_debugRects.append(CCDebugRect(SurfaceDamageRectType, CCMathUtil::mapClippedRect(renderSurface->screenSpaceTransform(), renderSurface->damageTracker()->currentDamageRect())));
     }
 }
 
-void DebugRectHistory::saveScreenSpaceRects(const std::vector<LayerImpl* >& renderSurfaceLayerList)
+void CCDebugRectHistory::saveScreenSpaceRects(const std::vector<CCLayerImpl* >& renderSurfaceLayerList)
 {
     for (int surfaceIndex = renderSurfaceLayerList.size() - 1; surfaceIndex >= 0 ; --surfaceIndex) {
-        LayerImpl* renderSurfaceLayer = renderSurfaceLayerList[surfaceIndex];
-        RenderSurfaceImpl* renderSurface = renderSurfaceLayer->renderSurface();
+        CCLayerImpl* renderSurfaceLayer = renderSurfaceLayerList[surfaceIndex];
+        CCRenderSurface* renderSurface = renderSurfaceLayer->renderSurface();
         DCHECK(renderSurface);
 
-        m_debugRects.append(DebugRect(ScreenSpaceRectType, MathUtil::mapClippedRect(renderSurface->screenSpaceTransform(), renderSurface->contentRect())));
+        m_debugRects.append(CCDebugRect(ScreenSpaceRectType, CCMathUtil::mapClippedRect(renderSurface->screenSpaceTransform(), renderSurface->contentRect())));
 
         if (renderSurfaceLayer->replicaLayer())
-            m_debugRects.append(DebugRect(ReplicaScreenSpaceRectType, MathUtil::mapClippedRect(renderSurface->replicaScreenSpaceTransform(), renderSurface->contentRect())));
+            m_debugRects.append(CCDebugRect(ReplicaScreenSpaceRectType, CCMathUtil::mapClippedRect(renderSurface->replicaScreenSpaceTransform(), renderSurface->contentRect())));
     }
 }
 
-void DebugRectHistory::saveOccludingRects(const Vector<IntRect>& occludingRects)
+void CCDebugRectHistory::saveOccludingRects(const Vector<IntRect>& occludingRects)
 {
     for (size_t i = 0; i < occludingRects.size(); ++i)
-        m_debugRects.append(DebugRect(OccludingRectType, occludingRects[i]));
+        m_debugRects.append(CCDebugRect(OccludingRectType, occludingRects[i]));
 }
 
 }  // namespace cc

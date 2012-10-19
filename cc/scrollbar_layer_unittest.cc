@@ -43,7 +43,7 @@ public:
     virtual Orientation orientation() const OVERRIDE { return WebScrollbar::Horizontal; }
 };
 
-TEST(ScrollbarLayerTest, resolveScrollLayerPointer)
+TEST(ScrollbarLayerChromiumTest, resolveScrollLayerPointer)
 {
     DebugScopedSetImplThread impl;
 
@@ -51,16 +51,16 @@ TEST(ScrollbarLayerTest, resolveScrollLayerPointer)
 
     {
         scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::create());
-        scoped_refptr<Layer> layerTreeRoot = Layer::create();
-        scoped_refptr<Layer> child1 = Layer::create();
-        scoped_refptr<Layer> child2 = ScrollbarLayer::create(scrollbar.Pass(), painter, WebKit::FakeWebScrollbarThemeGeometry::create(), child1->id());
+        scoped_refptr<LayerChromium> layerTreeRoot = LayerChromium::create();
+        scoped_refptr<LayerChromium> child1 = LayerChromium::create();
+        scoped_refptr<LayerChromium> child2 = ScrollbarLayerChromium::create(scrollbar.Pass(), painter, WebKit::FakeWebScrollbarThemeGeometry::create(), child1->id());
         layerTreeRoot->addChild(child1);
         layerTreeRoot->addChild(child2);
 
-        scoped_ptr<LayerImpl> layerImplTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<LayerImpl>(), 0);
+        scoped_ptr<CCLayerImpl> ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<CCLayerImpl>(), 0);
 
-        LayerImpl* ccChild1 = layerImplTreeRoot->children()[0];
-        ScrollbarLayerImpl* ccChild2 = static_cast<ScrollbarLayerImpl*>(layerImplTreeRoot->children()[1]);
+        CCLayerImpl* ccChild1 = ccLayerTreeRoot->children()[0];
+        CCScrollbarLayerImpl* ccChild2 = static_cast<CCScrollbarLayerImpl*>(ccLayerTreeRoot->children()[1]);
 
         EXPECT_TRUE(ccChild1->scrollbarAnimationController());
         EXPECT_EQ(ccChild1->horizontalScrollbarLayer(), ccChild2);
@@ -68,32 +68,32 @@ TEST(ScrollbarLayerTest, resolveScrollLayerPointer)
 
     { // another traverse order
         scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::create());
-        scoped_refptr<Layer> layerTreeRoot = Layer::create();
-        scoped_refptr<Layer> child2 = Layer::create();
-        scoped_refptr<Layer> child1 = ScrollbarLayer::create(scrollbar.Pass(), painter, WebKit::FakeWebScrollbarThemeGeometry::create(), child2->id());
+        scoped_refptr<LayerChromium> layerTreeRoot = LayerChromium::create();
+        scoped_refptr<LayerChromium> child2 = LayerChromium::create();
+        scoped_refptr<LayerChromium> child1 = ScrollbarLayerChromium::create(scrollbar.Pass(), painter, WebKit::FakeWebScrollbarThemeGeometry::create(), child2->id());
         layerTreeRoot->addChild(child1);
         layerTreeRoot->addChild(child2);
 
-        scoped_ptr<LayerImpl> layerImplTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<LayerImpl>(), 0);
+        scoped_ptr<CCLayerImpl> ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<CCLayerImpl>(), 0);
 
-        ScrollbarLayerImpl* ccChild1 = static_cast<ScrollbarLayerImpl*>(layerImplTreeRoot->children()[0]);
-        LayerImpl* ccChild2 = layerImplTreeRoot->children()[1];
+        CCScrollbarLayerImpl* ccChild1 = static_cast<CCScrollbarLayerImpl*>(ccLayerTreeRoot->children()[0]);
+        CCLayerImpl* ccChild2 = ccLayerTreeRoot->children()[1];
 
         EXPECT_TRUE(ccChild2->scrollbarAnimationController());
         EXPECT_EQ(ccChild2->horizontalScrollbarLayer(), ccChild1);
     }
 }
 
-TEST(ScrollbarLayerTest, scrollOffsetSynchronization)
+TEST(ScrollbarLayerChromiumTest, scrollOffsetSynchronization)
 {
     DebugScopedSetImplThread impl;
 
     WebKit::WebScrollbarThemePainter painter;
 
     scoped_ptr<WebKit::WebScrollbar> scrollbar(FakeWebScrollbar::create());
-    scoped_refptr<Layer> layerTreeRoot = Layer::create();
-    scoped_refptr<Layer> contentLayer = Layer::create();
-    scoped_refptr<Layer> scrollbarLayer = ScrollbarLayer::create(scrollbar.Pass(), painter, WebKit::FakeWebScrollbarThemeGeometry::create(), layerTreeRoot->id());
+    scoped_refptr<LayerChromium> layerTreeRoot = LayerChromium::create();
+    scoped_refptr<LayerChromium> contentLayer = LayerChromium::create();
+    scoped_refptr<LayerChromium> scrollbarLayer = ScrollbarLayerChromium::create(scrollbar.Pass(), painter, WebKit::FakeWebScrollbarThemeGeometry::create(), layerTreeRoot->id());
     layerTreeRoot->addChild(contentLayer);
     layerTreeRoot->addChild(scrollbarLayer);
 
@@ -101,9 +101,9 @@ TEST(ScrollbarLayerTest, scrollOffsetSynchronization)
     layerTreeRoot->setMaxScrollPosition(IntSize(30, 50));
     contentLayer->setBounds(IntSize(100, 200));
 
-    scoped_ptr<LayerImpl> layerImplTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<LayerImpl>(), 0);
+    scoped_ptr<CCLayerImpl> ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), scoped_ptr<CCLayerImpl>(), 0);
 
-    ScrollbarLayerImpl* ccScrollbarLayer = static_cast<ScrollbarLayerImpl*>(layerImplTreeRoot->children()[1]);
+    CCScrollbarLayerImpl* ccScrollbarLayer = static_cast<CCScrollbarLayerImpl*>(ccLayerTreeRoot->children()[1]);
 
     EXPECT_EQ(10, ccScrollbarLayer->currentPos());
     EXPECT_EQ(100, ccScrollbarLayer->totalSize());
@@ -113,15 +113,15 @@ TEST(ScrollbarLayerTest, scrollOffsetSynchronization)
     layerTreeRoot->setMaxScrollPosition(IntSize(300, 500));
     contentLayer->setBounds(IntSize(1000, 2000));
 
-    ScrollbarAnimationController* scrollbarController = layerImplTreeRoot->scrollbarAnimationController();
-    layerImplTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), layerImplTreeRoot.Pass(), 0);
-    EXPECT_EQ(scrollbarController, layerImplTreeRoot->scrollbarAnimationController());
+    CCScrollbarAnimationController* scrollbarController = ccLayerTreeRoot->scrollbarAnimationController();
+    ccLayerTreeRoot = TreeSynchronizer::synchronizeTrees(layerTreeRoot.get(), ccLayerTreeRoot.Pass(), 0);
+    EXPECT_EQ(scrollbarController, ccLayerTreeRoot->scrollbarAnimationController());
 
     EXPECT_EQ(100, ccScrollbarLayer->currentPos());
     EXPECT_EQ(1000, ccScrollbarLayer->totalSize());
     EXPECT_EQ(300, ccScrollbarLayer->maximum());
 
-    layerImplTreeRoot->scrollBy(FloatSize(12, 34));
+    ccLayerTreeRoot->scrollBy(FloatSize(12, 34));
 
     EXPECT_EQ(112, ccScrollbarLayer->currentPos());
     EXPECT_EQ(1000, ccScrollbarLayer->totalSize());

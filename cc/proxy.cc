@@ -16,36 +16,36 @@ bool implThreadIsOverridden = false;
 bool s_isMainThreadBlocked = false;
 base::PlatformThreadId threadIDOverridenToBeImplThread;
 #endif
-Thread* s_mainThread = 0;
-Thread* s_implThread = 0;
+CCThread* s_mainThread = 0;
+CCThread* s_implThread = 0;
 }
 
-void Proxy::setMainThread(Thread* thread)
+void CCProxy::setMainThread(CCThread* thread)
 {
     s_mainThread = thread;
 }
 
-Thread* Proxy::mainThread()
+CCThread* CCProxy::mainThread()
 {
     return s_mainThread;
 }
 
-bool Proxy::hasImplThread()
+bool CCProxy::hasImplThread()
 {
     return s_implThread;
 }
 
-void Proxy::setImplThread(Thread* thread)
+void CCProxy::setImplThread(CCThread* thread)
 {
     s_implThread = thread;
 }
 
-Thread* Proxy::implThread()
+CCThread* CCProxy::implThread()
 {
     return s_implThread;
 }
 
-Thread* Proxy::currentThread()
+CCThread* CCProxy::currentThread()
 {
     base::PlatformThreadId currentThreadIdentifier = base::PlatformThread::CurrentId();
     if (s_mainThread && s_mainThread->threadID() == currentThreadIdentifier)
@@ -55,7 +55,7 @@ Thread* Proxy::currentThread()
     return 0;
 }
 
-bool Proxy::isMainThread()
+bool CCProxy::isMainThread()
 {
 #ifndef NDEBUG
     DCHECK(s_mainThread);
@@ -67,7 +67,7 @@ bool Proxy::isMainThread()
 #endif
 }
 
-bool Proxy::isImplThread()
+bool CCProxy::isImplThread()
 {
 #ifndef NDEBUG
     base::PlatformThreadId implThreadID = s_implThread ? s_implThread->threadID() : 0;
@@ -80,7 +80,7 @@ bool Proxy::isImplThread()
 }
 
 #ifndef NDEBUG
-void Proxy::setCurrentThreadIsImplThread(bool isImplThread)
+void CCProxy::setCurrentThreadIsImplThread(bool isImplThread)
 {
     implThreadIsOverridden = isImplThread;
     if (isImplThread)
@@ -88,7 +88,7 @@ void Proxy::setCurrentThreadIsImplThread(bool isImplThread)
 }
 #endif
 
-bool Proxy::isMainThreadBlocked()
+bool CCProxy::isMainThreadBlocked()
 {
 #ifndef NDEBUG
     return s_isMainThreadBlocked;
@@ -98,18 +98,18 @@ bool Proxy::isMainThreadBlocked()
 }
 
 #ifndef NDEBUG
-void Proxy::setMainThreadBlocked(bool isMainThreadBlocked)
+void CCProxy::setMainThreadBlocked(bool isMainThreadBlocked)
 {
     s_isMainThreadBlocked = isMainThreadBlocked;
 }
 #endif
 
-Proxy::Proxy()
+CCProxy::CCProxy()
 {
     DCHECK(isMainThread());
 }
 
-Proxy::~Proxy()
+CCProxy::~CCProxy()
 {
     DCHECK(isMainThread());
 }

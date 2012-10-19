@@ -29,25 +29,25 @@ static const int lingeringBasePriority = 2000000;
 static const int lingeringLimitPriority = 2900000;
 
 // static
-int PriorityCalculator::uiPriority(bool drawsToRootSurface)
+int CCPriorityCalculator::uiPriority(bool drawsToRootSurface)
 {
     return drawsToRootSurface ? uiDrawsToRootSurfacePriority : uiDoesNotDrawToRootSurfacePriority;
 }
 
 // static
-int PriorityCalculator::visiblePriority(bool drawsToRootSurface)
+int CCPriorityCalculator::visiblePriority(bool drawsToRootSurface)
 {
     return drawsToRootSurface ? visibleDrawsToRootSurfacePriority : visibleDoesNotDrawToRootSurfacePriority;
 }
 
 // static
-int PriorityCalculator::renderSurfacePriority()
+int CCPriorityCalculator::renderSurfacePriority()
 {
     return renderSurfacesPriority;
 }
 
 // static
-int PriorityCalculator::lingeringPriority(int previousPriority)
+int CCPriorityCalculator::lingeringPriority(int previousPriority)
 {
     // FIXME: We should remove this once we have priorities for all
     //        textures (we can't currently calculate distances for
@@ -67,7 +67,7 @@ int manhattanDistance(const IntRect& a, const IntRect& b)
 }
 
 // static
-int PriorityCalculator::priorityFromDistance(const IntRect& visibleRect, const IntRect& textureRect, bool drawsToRootSurface)
+int CCPriorityCalculator::priorityFromDistance(const IntRect& visibleRect, const IntRect& textureRect, bool drawsToRootSurface)
 {
     int distance = manhattanDistance(visibleRect, textureRect);
     if (!distance)
@@ -76,7 +76,7 @@ int PriorityCalculator::priorityFromDistance(const IntRect& visibleRect, const I
 }
 
 // static
-int PriorityCalculator::smallAnimatedLayerMinPriority()
+int CCPriorityCalculator::smallAnimatedLayerMinPriority()
 {
     return smallAnimatedLayerPriority;
 }

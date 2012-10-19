@@ -9,17 +9,17 @@
 
 namespace cc {
 
-class DelegatedRendererLayer : public Layer {
+class DelegatedRendererLayerChromium : public LayerChromium {
 public:
-    static scoped_refptr<DelegatedRendererLayer> create();
+    static scoped_refptr<DelegatedRendererLayerChromium> create();
 
-    virtual scoped_ptr<LayerImpl> createLayerImpl() OVERRIDE;
+    virtual scoped_ptr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
 
 protected:
-    DelegatedRendererLayer();
+    DelegatedRendererLayerChromium();
 
 private:
-    virtual ~DelegatedRendererLayer();
+    virtual ~DelegatedRendererLayerChromium();
 };
 
 }

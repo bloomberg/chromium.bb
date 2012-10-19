@@ -15,19 +15,19 @@ using WebKit::WebTransformationMatrix;
 
 namespace cc {
 
-SolidColorLayerImpl::SolidColorLayerImpl(int id)
-    : LayerImpl(id)
+CCSolidColorLayerImpl::CCSolidColorLayerImpl(int id)
+    : CCLayerImpl(id)
     , m_tileSize(256)
 {
 }
 
-SolidColorLayerImpl::~SolidColorLayerImpl()
+CCSolidColorLayerImpl::~CCSolidColorLayerImpl()
 {
 }
 
-void SolidColorLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData)
+void CCSolidColorLayerImpl::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& appendQuadsData)
 {
-    SharedQuadState* sharedQuadState = quadSink.useSharedQuadState(createSharedQuadState());
+    CCSharedQuadState* sharedQuadState = quadSink.useSharedQuadState(createSharedQuadState());
     appendDebugBorderQuad(quadSink, sharedQuadState, appendQuadsData);
 
     // We create a series of smaller quads instead of just one large one so that the
@@ -37,12 +37,12 @@ void SolidColorLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appen
     for (int x = 0; x < width; x += m_tileSize) {
         for (int y = 0; y < height; y += m_tileSize) {
             IntRect solidTileRect(x, y, min(width - x, m_tileSize), min(height - y, m_tileSize));
-            quadSink.append(SolidColorDrawQuad::create(sharedQuadState, solidTileRect, backgroundColor()).PassAs<DrawQuad>(), appendQuadsData);
+            quadSink.append(CCSolidColorDrawQuad::create(sharedQuadState, solidTileRect, backgroundColor()).PassAs<CCDrawQuad>(), appendQuadsData);
         }
     }
 }
 
-const char* SolidColorLayerImpl::layerTypeAsString() const
+const char* CCSolidColorLayerImpl::layerTypeAsString() const
 {
     return "SolidColorLayer";
 }

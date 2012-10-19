@@ -13,7 +13,7 @@
 
 namespace cc {
 
-class RateLimiter::Task : public Thread::Task {
+class RateLimiter::Task : public CCThread::Task {
 public:
     static PassOwnPtr<Task> create(RateLimiter* rateLimiter)
     {
@@ -23,7 +23,7 @@ public:
 
 private:
     explicit Task(RateLimiter* rateLimiter)
-        : Thread::Task(this)
+        : CCThread::Task(this)
         , m_rateLimiter(rateLimiter)
     {
     }
@@ -60,7 +60,7 @@ void RateLimiter::start()
 
     TRACE_EVENT0("cc", "RateLimiter::start");
     m_active = true;
-    Proxy::mainThread()->postTask(RateLimiter::Task::create(this));
+    CCProxy::mainThread()->postTask(RateLimiter::Task::create(this));
 }
 
 void RateLimiter::stop()

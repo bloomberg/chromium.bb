@@ -50,7 +50,7 @@ namespace {
     EXPECT_FALSE(grandChild->layerPropertyChanged());                   \
     EXPECT_TRUE(root->layerSurfacePropertyChanged())
 
-TEST(LayerImplTest, verifyLayerChangesAreTrackedProperly)
+TEST(CCLayerImplTest, verifyLayerChangesAreTrackedProperly)
 {
     //
     // This test checks that layerPropertyChanged() has the correct behavior.
@@ -59,12 +59,12 @@ TEST(LayerImplTest, verifyLayerChangesAreTrackedProperly)
     // The constructor on this will fake that we are on the correct thread.
     DebugScopedSetImplThread setImplThread;
 
-    // Create a simple LayerImpl tree:
-    scoped_ptr<LayerImpl> root = LayerImpl::create(1);
-    root->addChild(LayerImpl::create(2));
-    LayerImpl* child = root->children()[0];
-    child->addChild(LayerImpl::create(3));
-    LayerImpl* grandChild = child->children()[0];
+    // Create a simple CCLayerImpl tree:
+    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(1);
+    root->addChild(CCLayerImpl::create(2));
+    CCLayerImpl* child = root->children()[0];
+    child->addChild(CCLayerImpl::create(3));
+    CCLayerImpl* grandChild = child->children()[0];
 
     // Adding children is an internal operation and should not mark layers as changed.
     EXPECT_FALSE(root->layerPropertyChanged());
@@ -98,10 +98,10 @@ TEST(LayerImplTest, verifyLayerChangesAreTrackedProperly)
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setAnchorPoint(arbitraryFloatPoint));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setAnchorPointZ(arbitraryNumber));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setFilters(arbitraryFilters));
-    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setMaskLayer(LayerImpl::create(4)));
+    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setMaskLayer(CCLayerImpl::create(4)));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setMasksToBounds(true));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setContentsOpaque(true));
-    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setReplicaLayer(LayerImpl::create(5)));
+    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setReplicaLayer(CCLayerImpl::create(5)));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setPosition(arbitraryFloatPoint));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setPreserves3D(true));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setDoubleSided(false)); // constructor initializes it to "true".

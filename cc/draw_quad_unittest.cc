@@ -25,7 +25,7 @@ using namespace cc;
 
 namespace {
 
-TEST(DrawQuadTest, copySharedQuadState)
+TEST(CCDrawQuadTest, copySharedQuadState)
 {
     WebTransformationMatrix quadTransform(1, 0.5, 0, 1, 0.5, 0);
     IntRect visibleContentRect(10, 12, 14, 16);
@@ -34,10 +34,10 @@ TEST(DrawQuadTest, copySharedQuadState)
     bool opaque = true;
     int id = 3;
 
-    scoped_ptr<SharedQuadState> state(SharedQuadState::create(quadTransform, visibleContentRect, clippedRectInTarget, opacity, opaque));
+    scoped_ptr<CCSharedQuadState> state(CCSharedQuadState::create(quadTransform, visibleContentRect, clippedRectInTarget, opacity, opaque));
     state->id = id;
 
-    scoped_ptr<SharedQuadState> copy(state->copy());
+    scoped_ptr<CCSharedQuadState> copy(state->copy());
     EXPECT_EQ(id, copy->id);
     EXPECT_EQ(quadTransform, copy->quadTransform);
     EXPECT_RECT_EQ(visibleContentRect, copy->visibleContentRect);
@@ -46,7 +46,7 @@ TEST(DrawQuadTest, copySharedQuadState)
     EXPECT_EQ(opaque, copy->opaque);
 }
 
-scoped_ptr<SharedQuadState> createSharedQuadState()
+scoped_ptr<CCSharedQuadState> createSharedQuadState()
 {
     WebTransformationMatrix quadTransform(1, 0.5, 0, 1, 0.5, 0);
     IntRect visibleContentRect(10, 12, 14, 16);
@@ -55,12 +55,12 @@ scoped_ptr<SharedQuadState> createSharedQuadState()
     bool opaque = false;
     int id = 3;
 
-    scoped_ptr<SharedQuadState> state(SharedQuadState::create(quadTransform, visibleContentRect, clippedRectInTarget, opacity, opaque));
+    scoped_ptr<CCSharedQuadState> state(CCSharedQuadState::create(quadTransform, visibleContentRect, clippedRectInTarget, opacity, opaque));
     state->id = id;
     return state.Pass();
 }
 
-void compareDrawQuad(DrawQuad* quad, DrawQuad* copy, SharedQuadState* copySharedState)
+void compareDrawQuad(CCDrawQuad* quad, CCDrawQuad* copy, CCSharedQuadState* copySharedState)
 {
     EXPECT_EQ(quad->size(), copy->size());
     EXPECT_EQ(quad->material(), copy->material());
@@ -78,8 +78,8 @@ void compareDrawQuad(DrawQuad* quad, DrawQuad* copy, SharedQuadState* copyShared
 }
 
 #define CREATE_SHARED_STATE() \
-    scoped_ptr<SharedQuadState> sharedState(createSharedQuadState()); \
-    scoped_ptr<SharedQuadState> copySharedState(sharedState->copy()); \
+    scoped_ptr<CCSharedQuadState> sharedState(createSharedQuadState()); \
+    scoped_ptr<CCSharedQuadState> copySharedState(sharedState->copy()); \
     copySharedState->id = 5;
 
 #define QUAD_DATA \
@@ -88,13 +88,13 @@ void compareDrawQuad(DrawQuad* quad, DrawQuad* copy, SharedQuadState* copyShared
 
 #define SETUP_AND_COPY_QUAD(Type, quad) \
     quad->setQuadVisibleRect(quadVisibleRect); \
-    scoped_ptr<DrawQuad> copy(quad->copy(copySharedState.get())); \
+    scoped_ptr<CCDrawQuad> copy(quad->copy(copySharedState.get())); \
     compareDrawQuad(quad.get(), copy.get(), copySharedState.get()); \
     const Type* copyQuad = Type::materialCast(copy.get());
 
 #define SETUP_AND_COPY_QUAD_1(Type, quad, a) \
     quad->setQuadVisibleRect(quadVisibleRect); \
-    scoped_ptr<DrawQuad> copy(quad->copy(copySharedState.get(), a));    \
+    scoped_ptr<CCDrawQuad> copy(quad->copy(copySharedState.get(), a));    \
     compareDrawQuad(quad.get(), copy.get(), copySharedState.get()); \
     const Type* copyQuad = Type::materialCast(copy.get());
 
@@ -159,52 +159,52 @@ void compareDrawQuad(DrawQuad* quad, DrawQuad* copy, SharedQuadState* copyShared
     scoped_ptr<Type> quad(Type::create(sharedState.get(), quadRect, a, b, c, d, e, f, g, h, i, j)); \
     SETUP_AND_COPY_QUAD(Type, quad);
 
-TEST(DrawQuadTest, copyCheckerboardDrawQuad)
+TEST(CCDrawQuadTest, copyCheckerboardDrawQuad)
 {
     SkColor color = 0xfabb0011;
     CREATE_SHARED_STATE();
-    CREATE_QUAD_1(CheckerboardDrawQuad, color);
+    CREATE_QUAD_1(CCCheckerboardDrawQuad, color);
     EXPECT_EQ(color, copyQuad->color());
 }
 
-TEST(DrawQuadTest, copyDebugBorderDrawQuad)
+TEST(CCDrawQuadTest, copyDebugBorderDrawQuad)
 {
     SkColor color = 0xfabb0011;
     int width = 99;
     CREATE_SHARED_STATE();
-    CREATE_QUAD_2(DebugBorderDrawQuad, color, width);
+    CREATE_QUAD_2(CCDebugBorderDrawQuad, color, width);
     EXPECT_EQ(color, copyQuad->color());
     EXPECT_EQ(width, copyQuad->width());
 }
 
-TEST(DrawQuadTest, copyIOSurfaceDrawQuad)
+TEST(CCDrawQuadTest, copyIOSurfaceDrawQuad)
 {
     IntSize size(58, 95);
     unsigned textureId = 72;
-    IOSurfaceDrawQuad::Orientation orientation = IOSurfaceDrawQuad::Unflipped;
+    CCIOSurfaceDrawQuad::Orientation orientation = CCIOSurfaceDrawQuad::Unflipped;
 
     CREATE_SHARED_STATE();
-    CREATE_QUAD_3(IOSurfaceDrawQuad, size, textureId, orientation);
+    CREATE_QUAD_3(CCIOSurfaceDrawQuad, size, textureId, orientation);
     EXPECT_EQ(size, copyQuad->ioSurfaceSize());
     EXPECT_EQ(textureId, copyQuad->ioSurfaceTextureId());
     EXPECT_EQ(orientation, copyQuad->orientation());
 }
 
-TEST(DrawQuadTest, copyRenderPassDrawQuad)
+TEST(CCDrawQuadTest, copyRenderPassDrawQuad)
 {
-    RenderPass::Id renderPassId(22, 64);
+    CCRenderPass::Id renderPassId(22, 64);
     bool isReplica = true;
-    ResourceProvider::ResourceId maskResourceId = 78;
+    CCResourceProvider::ResourceId maskResourceId = 78;
     IntRect contentsChangedSinceLastFrame(42, 11, 74, 24);
     float maskTexCoordScaleX = 33;
     float maskTexCoordScaleY = 19;
     float maskTexCoordOffsetX = -45;
     float maskTexCoordOffsetY = -21;
 
-    RenderPass::Id copiedRenderPassId(235, 11);
+    CCRenderPass::Id copiedRenderPassId(235, 11);
 
     CREATE_SHARED_STATE();
-    CREATE_QUAD_8_1(RenderPassDrawQuad, renderPassId, isReplica, maskResourceId, contentsChangedSinceLastFrame, maskTexCoordScaleX, maskTexCoordScaleY, maskTexCoordOffsetX, maskTexCoordOffsetY, copiedRenderPassId);
+    CREATE_QUAD_8_1(CCRenderPassDrawQuad, renderPassId, isReplica, maskResourceId, contentsChangedSinceLastFrame, maskTexCoordScaleX, maskTexCoordScaleY, maskTexCoordOffsetX, maskTexCoordOffsetY, copiedRenderPassId);
     EXPECT_EQ(copiedRenderPassId, copyQuad->renderPassId());
     EXPECT_EQ(isReplica, copyQuad->isReplica());
     EXPECT_EQ(maskResourceId, copyQuad->maskResourceId());
@@ -215,27 +215,27 @@ TEST(DrawQuadTest, copyRenderPassDrawQuad)
     EXPECT_EQ(maskTexCoordOffsetY, copyQuad->maskTexCoordOffsetY());
 }
 
-TEST(DrawQuadTest, copySolidColorDrawQuad)
+TEST(CCDrawQuadTest, copySolidColorDrawQuad)
 {
     SkColor color = 0x49494949;
 
     CREATE_SHARED_STATE();
-    CREATE_QUAD_1(SolidColorDrawQuad, color);
+    CREATE_QUAD_1(CCSolidColorDrawQuad, color);
     EXPECT_EQ(color, copyQuad->color());
 }
 
-TEST(DrawQuadTest, copyStreamVideoDrawQuad)
+TEST(CCDrawQuadTest, copyStreamVideoDrawQuad)
 {
     unsigned textureId = 64;
     WebTransformationMatrix matrix(0.5, 1, 0.25, 0.75, 0, 1);
 
     CREATE_SHARED_STATE();
-    CREATE_QUAD_2(StreamVideoDrawQuad, textureId, matrix);
+    CREATE_QUAD_2(CCStreamVideoDrawQuad, textureId, matrix);
     EXPECT_EQ(textureId, copyQuad->textureId());
     EXPECT_EQ(matrix, copyQuad->matrix());
 }
 
-TEST(DrawQuadTest, copyTextureDrawQuad)
+TEST(CCDrawQuadTest, copyTextureDrawQuad)
 {
     unsigned resourceId = 82;
     bool premultipliedAlpha = true;
@@ -243,14 +243,14 @@ TEST(DrawQuadTest, copyTextureDrawQuad)
     bool flipped = true;
 
     CREATE_SHARED_STATE();
-    CREATE_QUAD_4(TextureDrawQuad, resourceId, premultipliedAlpha, uvRect, flipped);
+    CREATE_QUAD_4(CCTextureDrawQuad, resourceId, premultipliedAlpha, uvRect, flipped);
     EXPECT_EQ(resourceId, copyQuad->resourceId());
     EXPECT_EQ(premultipliedAlpha, copyQuad->premultipliedAlpha());
     EXPECT_EQ(uvRect, copyQuad->uvRect());
     EXPECT_EQ(flipped, copyQuad->flipped());
 }
 
-TEST(DrawQuadTest, copyTileDrawQuad)
+TEST(CCDrawQuadTest, copyTileDrawQuad)
 {
     IntRect opaqueRect(33, 44, 22, 33);
     unsigned resourceId = 104;
@@ -264,7 +264,7 @@ TEST(DrawQuadTest, copyTileDrawQuad)
     bool bottomEdgeAA = true;
 
     CREATE_SHARED_STATE();
-    CREATE_QUAD_10(TileDrawQuad, opaqueRect, resourceId, textureOffset, textureSize, textureFilter, swizzleContents, leftEdgeAA, topEdgeAA, rightEdgeAA, bottomEdgeAA);
+    CREATE_QUAD_10(CCTileDrawQuad, opaqueRect, resourceId, textureOffset, textureSize, textureFilter, swizzleContents, leftEdgeAA, topEdgeAA, rightEdgeAA, bottomEdgeAA);
     EXPECT_RECT_EQ(opaqueRect, copyQuad->opaqueRect());
     EXPECT_EQ(resourceId, copyQuad->resourceId());
     EXPECT_EQ(textureOffset, copyQuad->textureOffset());
@@ -277,26 +277,26 @@ TEST(DrawQuadTest, copyTileDrawQuad)
     EXPECT_EQ(bottomEdgeAA, copyQuad->bottomEdgeAA());
 }
 
-TEST(DrawQuadTest, copyYUVVideoDrawQuad)
+TEST(CCDrawQuadTest, copyYUVVideoDrawQuad)
 {
-    VideoLayerImpl::FramePlane yPlane;
+    CCVideoLayerImpl::FramePlane yPlane;
     yPlane.resourceId = 45;
     yPlane.size = IntSize(34, 23);
     yPlane.format = 8;
     yPlane.visibleSize = IntSize(623, 235);
-    VideoLayerImpl::FramePlane uPlane;
+    CCVideoLayerImpl::FramePlane uPlane;
     uPlane.resourceId = 532;
     uPlane.size = IntSize(134, 16);
     uPlane.format = 2;
     uPlane.visibleSize = IntSize(126, 27);
-    VideoLayerImpl::FramePlane vPlane;
+    CCVideoLayerImpl::FramePlane vPlane;
     vPlane.resourceId = 4;
     vPlane.size = IntSize(456, 486);
     vPlane.format = 46;
     vPlane.visibleSize = IntSize(19, 45);
 
     CREATE_SHARED_STATE();
-    CREATE_QUAD_3(YUVVideoDrawQuad, yPlane, uPlane, vPlane);
+    CREATE_QUAD_3(CCYUVVideoDrawQuad, yPlane, uPlane, vPlane);
     EXPECT_EQ(yPlane.resourceId, copyQuad->yPlane().resourceId);
     EXPECT_EQ(yPlane.size, copyQuad->yPlane().size);
     EXPECT_EQ(yPlane.format, copyQuad->yPlane().format);

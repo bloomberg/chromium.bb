@@ -12,10 +12,10 @@ class WebCompositorOutputSurface;
 }
 
 namespace cc {
-class InputHandler;
+class CCInputHandler;
 class IntSize;
 
-class LayerTreeHostClient {
+class CCLayerTreeHostClient {
 public:
     virtual void willBeginFrame() = 0;
     // Marks finishing compositing-related tasks on the main thread. In threaded mode, this corresponds to didCommit().
@@ -25,7 +25,7 @@ public:
     virtual void applyScrollAndScale(const IntSize& scrollDelta, float pageScale) = 0;
     virtual scoped_ptr<WebKit::WebCompositorOutputSurface> createOutputSurface() = 0;
     virtual void didRecreateOutputSurface(bool success) = 0;
-    virtual scoped_ptr<InputHandler> createInputHandler() = 0;
+    virtual scoped_ptr<CCInputHandler> createInputHandler() = 0;
     virtual void willCommit() = 0;
     virtual void didCommit() = 0;
     virtual void didCommitAndDrawFrame() = 0;
@@ -35,7 +35,7 @@ public:
     virtual void scheduleComposite() = 0;
 
 protected:
-    virtual ~LayerTreeHostClient() { }
+    virtual ~CCLayerTreeHostClient() { }
 };
 
 }

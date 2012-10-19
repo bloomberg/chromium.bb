@@ -11,12 +11,12 @@ namespace cc {
 class FloatRect;
 class IntRect;
 
-class ContentLayerClient {
+class ContentLayerChromiumClient {
 public:
     virtual void paintContents(SkCanvas*, const IntRect& clip, FloatRect& opaque) = 0;
 
 protected:
-    virtual ~ContentLayerClient() { }
+    virtual ~ContentLayerChromiumClient() { }
 };
 
 }

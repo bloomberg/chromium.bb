@@ -84,7 +84,7 @@ CompositorFakeWebGraphicsContext3DWithTextureTracking::~CompositorFakeWebGraphic
 {
 }
 
-bool TestHooks::prepareToDrawOnThread(cc::LayerTreeHostImpl*)
+bool TestHooks::prepareToDrawOnCCThread(cc::CCLayerTreeHostImpl*)
 {
     return true;
 }
@@ -94,41 +94,41 @@ scoped_ptr<WebCompositorOutputSurface> TestHooks::createOutputSurface()
     return FakeWebCompositorOutputSurface::create(CompositorFakeWebGraphicsContext3DWithTextureTracking::create(WebGraphicsContext3D::Attributes()).PassAs<WebKit::WebGraphicsContext3D>()).PassAs<WebKit::WebCompositorOutputSurface>();
 }
 
-scoped_ptr<MockLayerTreeHostImpl> MockLayerTreeHostImpl::create(TestHooks* testHooks, const LayerTreeSettings& settings, LayerTreeHostImplClient* client)
+scoped_ptr<MockLayerTreeHostImpl> MockLayerTreeHostImpl::create(TestHooks* testHooks, const CCLayerTreeSettings& settings, CCLayerTreeHostImplClient* client)
 {
     return make_scoped_ptr(new MockLayerTreeHostImpl(testHooks, settings, client));
 }
 
 void MockLayerTreeHostImpl::beginCommit()
 {
-    LayerTreeHostImpl::beginCommit();
-    m_testHooks->beginCommitOnThread(this);
+    CCLayerTreeHostImpl::beginCommit();
+    m_testHooks->beginCommitOnCCThread(this);
 }
 
 void MockLayerTreeHostImpl::commitComplete()
 {
-    LayerTreeHostImpl::commitComplete();
-    m_testHooks->commitCompleteOnThread(this);
+    CCLayerTreeHostImpl::commitComplete();
+    m_testHooks->commitCompleteOnCCThread(this);
 }
 
 bool MockLayerTreeHostImpl::prepareToDraw(FrameData& frame)
 {
-    bool result = LayerTreeHostImpl::prepareToDraw(frame);
-    if (!m_testHooks->prepareToDrawOnThread(this))
+    bool result = CCLayerTreeHostImpl::prepareToDraw(frame);
+    if (!m_testHooks->prepareToDrawOnCCThread(this))
         result = false;
     return result;
 }
 
 void MockLayerTreeHostImpl::drawLayers(const FrameData& frame)
 {
-    LayerTreeHostImpl::drawLayers(frame);
-    m_testHooks->drawLayersOnThread(this);
+    CCLayerTreeHostImpl::drawLayers(frame);
+    m_testHooks->drawLayersOnCCThread(this);
 }
 
 void MockLayerTreeHostImpl::animateLayers(double monotonicTime, double wallClockTime)
 {
     m_testHooks->willAnimateLayers(this, monotonicTime);
-    LayerTreeHostImpl::animateLayers(monotonicTime, wallClockTime);
+    CCLayerTreeHostImpl::animateLayers(monotonicTime, wallClockTime);
     m_testHooks->animateLayers(this, monotonicTime);
 }
 
@@ -137,16 +137,16 @@ base::TimeDelta MockLayerTreeHostImpl::lowFrequencyAnimationInterval() const
     return base::TimeDelta::FromMilliseconds(16);
 }
 
-MockLayerTreeHostImpl::MockLayerTreeHostImpl(TestHooks* testHooks, const LayerTreeSettings& settings, LayerTreeHostImplClient* client)
-    : LayerTreeHostImpl(settings, client)
+MockLayerTreeHostImpl::MockLayerTreeHostImpl(TestHooks* testHooks, const CCLayerTreeSettings& settings, CCLayerTreeHostImplClient* client)
+    : CCLayerTreeHostImpl(settings, client)
     , m_testHooks(testHooks)
 {
 }
 
-// Adapts LayerTreeHost for test. Injects MockLayerTreeHostImpl.
-class MockLayerTreeHost : public cc::LayerTreeHost {
+// Adapts CCLayerTreeHost for test. Injects MockLayerTreeHostImpl.
+class MockLayerTreeHost : public cc::CCLayerTreeHost {
 public:
-    static scoped_ptr<MockLayerTreeHost> create(TestHooks* testHooks, cc::LayerTreeHostClient* client, scoped_refptr<cc::Layer> rootLayer, const cc::LayerTreeSettings& settings)
+    static scoped_ptr<MockLayerTreeHost> create(TestHooks* testHooks, cc::CCLayerTreeHostClient* client, scoped_refptr<cc::LayerChromium> rootLayer, const cc::CCLayerTreeSettings& settings)
     {
         scoped_ptr<MockLayerTreeHost> layerTreeHost(new MockLayerTreeHost(testHooks, client, settings));
         bool success = layerTreeHost->initialize();
@@ -161,20 +161,20 @@ public:
         return layerTreeHost.Pass();
     }
 
-    virtual scoped_ptr<cc::LayerTreeHostImpl> createLayerTreeHostImpl(cc::LayerTreeHostImplClient* client)
+    virtual scoped_ptr<cc::CCLayerTreeHostImpl> createLayerTreeHostImpl(cc::CCLayerTreeHostImplClient* client)
     {
-        return MockLayerTreeHostImpl::create(m_testHooks, settings(), client).PassAs<cc::LayerTreeHostImpl>();
+        return MockLayerTreeHostImpl::create(m_testHooks, settings(), client).PassAs<cc::CCLayerTreeHostImpl>();
     }
 
     virtual void didAddAnimation() OVERRIDE
     {
-        LayerTreeHost::didAddAnimation();
+        CCLayerTreeHost::didAddAnimation();
         m_testHooks->didAddAnimation();
     }
 
 private:
-    MockLayerTreeHost(TestHooks* testHooks, cc::LayerTreeHostClient* client, const cc::LayerTreeSettings& settings)
-        : LayerTreeHost(client, settings)
+    MockLayerTreeHost(TestHooks* testHooks, cc::CCLayerTreeHostClient* client, const cc::CCLayerTreeSettings& settings)
+        : CCLayerTreeHost(client, settings)
         , m_testHooks(testHooks)
     {
     }
@@ -182,12 +182,12 @@ private:
     TestHooks* m_testHooks;
 };
 
-// Implementation of LayerTreeHost callback interface.
-class ThreadedMockLayerTreeHostClient : public MockLayerImplTreeHostClient {
+// Implementation of CCLayerTreeHost callback interface.
+class MockLayerTreeHostClient : public MockCCLayerTreeHostClient {
 public:
-    static scoped_ptr<ThreadedMockLayerTreeHostClient> create(TestHooks* testHooks)
+    static scoped_ptr<MockLayerTreeHostClient> create(TestHooks* testHooks)
     {
-        return make_scoped_ptr(new ThreadedMockLayerTreeHostClient(testHooks));
+        return make_scoped_ptr(new MockLayerTreeHostClient(testHooks));
     }
 
     virtual void willBeginFrame() OVERRIDE
@@ -223,9 +223,9 @@ public:
         m_testHooks->didRecreateOutputSurface(succeeded);
     }
 
-    virtual scoped_ptr<InputHandler> createInputHandler() OVERRIDE
+    virtual scoped_ptr<CCInputHandler> createInputHandler() OVERRIDE
     {
-        return scoped_ptr<InputHandler>();
+        return scoped_ptr<CCInputHandler>();
     }
 
     virtual void willCommit() OVERRIDE
@@ -252,14 +252,14 @@ public:
     }
 
 private:
-    explicit ThreadedMockLayerTreeHostClient(TestHooks* testHooks) : m_testHooks(testHooks) { }
+    explicit MockLayerTreeHostClient(TestHooks* testHooks) : m_testHooks(testHooks) { }
 
     TestHooks* m_testHooks;
 };
 
 class TimeoutTask : public WebThread::Task {
 public:
-    explicit TimeoutTask(ThreadedTest* test)
+    explicit TimeoutTask(CCThreadedTest* test)
         : m_test(test)
     {
     }
@@ -282,12 +282,12 @@ public:
     }
 
 private:
-    ThreadedTest* m_test;
+    CCThreadedTest* m_test;
 };
 
 class BeginTask : public WebThread::Task {
 public:
-    explicit BeginTask(ThreadedTest* test)
+    explicit BeginTask(CCThreadedTest* test)
         : m_test(test)
     {
     }
@@ -298,10 +298,10 @@ public:
         m_test->doBeginTest();
     }
 private:
-    ThreadedTest* m_test;
+    CCThreadedTest* m_test;
 };
 
-ThreadedTest::ThreadedTest()
+CCThreadedTest::CCThreadedTest()
     : m_beginning(false)
     , m_endWhenBeginReturns(false)
     , m_timedOut(false)
@@ -311,11 +311,11 @@ ThreadedTest::ThreadedTest()
 {
 }
 
-ThreadedTest::~ThreadedTest()
+CCThreadedTest::~CCThreadedTest()
 {
 }
 
-void ThreadedTest::endTest()
+void CCThreadedTest::endTest()
 {
     m_finished = true;
 
@@ -324,65 +324,65 @@ void ThreadedTest::endTest()
     if (m_beginning)
         m_endWhenBeginReturns = true;
     else
-        m_mainThreadProxy->postTask(createThreadTask(this, &ThreadedTest::realEndTest));
+        m_mainThreadProxy->postTask(createCCThreadTask(this, &CCThreadedTest::realEndTest));
 }
 
-void ThreadedTest::endTestAfterDelay(int delayMilliseconds)
+void CCThreadedTest::endTestAfterDelay(int delayMilliseconds)
 {
-    m_mainThreadProxy->postTask(createThreadTask(this, &ThreadedTest::endTest));
+    m_mainThreadProxy->postTask(createCCThreadTask(this, &CCThreadedTest::endTest));
 }
 
-void ThreadedTest::postSetNeedsAnimateToMainThread()
+void CCThreadedTest::postSetNeedsAnimateToMainThread()
 {
-    m_mainThreadProxy->postTask(createThreadTask(this, &ThreadedTest::dispatchSetNeedsAnimate));
+    m_mainThreadProxy->postTask(createCCThreadTask(this, &CCThreadedTest::dispatchSetNeedsAnimate));
 }
 
-void ThreadedTest::postAddAnimationToMainThread()
+void CCThreadedTest::postAddAnimationToMainThread()
 {
-    m_mainThreadProxy->postTask(createThreadTask(this, &ThreadedTest::dispatchAddAnimation));
+    m_mainThreadProxy->postTask(createCCThreadTask(this, &CCThreadedTest::dispatchAddAnimation));
 }
 
-void ThreadedTest::postAddInstantAnimationToMainThread()
+void CCThreadedTest::postAddInstantAnimationToMainThread()
 {
-    m_mainThreadProxy->postTask(createThreadTask(this, &ThreadedTest::dispatchAddInstantAnimation));
+    m_mainThreadProxy->postTask(createCCThreadTask(this, &CCThreadedTest::dispatchAddInstantAnimation));
 }
 
-void ThreadedTest::postSetNeedsCommitToMainThread()
+void CCThreadedTest::postSetNeedsCommitToMainThread()
 {
-    m_mainThreadProxy->postTask(createThreadTask(this, &ThreadedTest::dispatchSetNeedsCommit));
+    m_mainThreadProxy->postTask(createCCThreadTask(this, &CCThreadedTest::dispatchSetNeedsCommit));
 }
 
-void ThreadedTest::postAcquireLayerTextures()
+void CCThreadedTest::postAcquireLayerTextures()
 {
-    m_mainThreadProxy->postTask(createThreadTask(this, &ThreadedTest::dispatchAcquireLayerTextures));
+    m_mainThreadProxy->postTask(createCCThreadTask(this, &CCThreadedTest::dispatchAcquireLayerTextures));
 }
 
-void ThreadedTest::postSetNeedsRedrawToMainThread()
+void CCThreadedTest::postSetNeedsRedrawToMainThread()
 {
-    m_mainThreadProxy->postTask(createThreadTask(this, &ThreadedTest::dispatchSetNeedsRedraw));
+    m_mainThreadProxy->postTask(createCCThreadTask(this, &CCThreadedTest::dispatchSetNeedsRedraw));
 }
 
-void ThreadedTest::postSetNeedsAnimateAndCommitToMainThread()
+void CCThreadedTest::postSetNeedsAnimateAndCommitToMainThread()
 {
-    m_mainThreadProxy->postTask(createThreadTask(this, &ThreadedTest::dispatchSetNeedsAnimateAndCommit));
+    m_mainThreadProxy->postTask(createCCThreadTask(this, &CCThreadedTest::dispatchSetNeedsAnimateAndCommit));
 }
 
-void ThreadedTest::postSetVisibleToMainThread(bool visible)
+void CCThreadedTest::postSetVisibleToMainThread(bool visible)
 {
-    m_mainThreadProxy->postTask(createThreadTask(this, &ThreadedTest::dispatchSetVisible, visible));
+    m_mainThreadProxy->postTask(createCCThreadTask(this, &CCThreadedTest::dispatchSetVisible, visible));
 }
 
-void ThreadedTest::postDidAddAnimationToMainThread()
+void CCThreadedTest::postDidAddAnimationToMainThread()
 {
-    m_mainThreadProxy->postTask(createThreadTask(this, &ThreadedTest::dispatchDidAddAnimation));
+    m_mainThreadProxy->postTask(createCCThreadTask(this, &CCThreadedTest::dispatchDidAddAnimation));
 }
 
-void ThreadedTest::doBeginTest()
+void CCThreadedTest::doBeginTest()
 {
-    DCHECK(Proxy::isMainThread());
-    m_client = ThreadedMockLayerTreeHostClient::create(this);
+    DCHECK(CCProxy::isMainThread());
+    m_client = MockLayerTreeHostClient::create(this);
 
-    scoped_refptr<Layer> rootLayer = Layer::create();
+    scoped_refptr<LayerChromium> rootLayer = LayerChromium::create();
     m_layerTreeHost = MockLayerTreeHost::create(this, m_client.get(), rootLayer, m_settings);
     ASSERT_TRUE(m_layerTreeHost.get());
     rootLayer->setLayerTreeHost(m_layerTreeHost.get());
@@ -396,29 +396,29 @@ void ThreadedTest::doBeginTest()
         realEndTest();
 }
 
-void ThreadedTest::timeout()
+void CCThreadedTest::timeout()
 {
     m_timedOut = true;
     endTest();
 }
 
-void ThreadedTest::scheduleComposite()
+void CCThreadedTest::scheduleComposite()
 {
     if (!m_started || m_scheduled || m_finished)
         return;
     m_scheduled = true;
-    m_mainThreadProxy->postTask(createThreadTask(this, &ThreadedTest::dispatchComposite));
+    m_mainThreadProxy->postTask(createCCThreadTask(this, &CCThreadedTest::dispatchComposite));
 }
 
-void ThreadedTest::realEndTest()
+void CCThreadedTest::realEndTest()
 {
-    DCHECK(Proxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
     WebKit::Platform::current()->currentThread()->exitRunLoop();
 }
 
-void ThreadedTest::dispatchSetNeedsAnimate()
+void CCThreadedTest::dispatchSetNeedsAnimate()
 {
-    DCHECK(Proxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
 
     if (m_finished)
         return;
@@ -427,9 +427,9 @@ void ThreadedTest::dispatchSetNeedsAnimate()
         m_layerTreeHost->setNeedsAnimate();
 }
 
-void ThreadedTest::dispatchAddInstantAnimation()
+void CCThreadedTest::dispatchAddInstantAnimation()
 {
-    DCHECK(Proxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
 
     if (m_finished)
         return;
@@ -438,9 +438,9 @@ void ThreadedTest::dispatchAddInstantAnimation()
         addOpacityTransitionToLayer(*m_layerTreeHost->rootLayer(), 0, 0, 0.5, false);
 }
 
-void ThreadedTest::dispatchAddAnimation()
+void CCThreadedTest::dispatchAddAnimation()
 {
-    DCHECK(Proxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
 
     if (m_finished)
         return;
@@ -449,9 +449,9 @@ void ThreadedTest::dispatchAddAnimation()
         addOpacityTransitionToLayer(*m_layerTreeHost->rootLayer(), 10, 0, 0.5, true);
 }
 
-void ThreadedTest::dispatchSetNeedsAnimateAndCommit()
+void CCThreadedTest::dispatchSetNeedsAnimateAndCommit()
 {
-    DCHECK(Proxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
 
     if (m_finished)
         return;
@@ -462,9 +462,9 @@ void ThreadedTest::dispatchSetNeedsAnimateAndCommit()
     }
 }
 
-void ThreadedTest::dispatchSetNeedsCommit()
+void CCThreadedTest::dispatchSetNeedsCommit()
 {
-    DCHECK(Proxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
 
     if (m_finished)
         return;
@@ -473,9 +473,9 @@ void ThreadedTest::dispatchSetNeedsCommit()
         m_layerTreeHost->setNeedsCommit();
 }
 
-void ThreadedTest::dispatchAcquireLayerTextures()
+void CCThreadedTest::dispatchAcquireLayerTextures()
 {
-    DCHECK(Proxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
 
     if (m_finished)
         return;
@@ -484,9 +484,9 @@ void ThreadedTest::dispatchAcquireLayerTextures()
         m_layerTreeHost->acquireLayerTextures();
 }
 
-void ThreadedTest::dispatchSetNeedsRedraw()
+void CCThreadedTest::dispatchSetNeedsRedraw()
 {
-    DCHECK(Proxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
 
     if (m_finished)
         return;
@@ -495,9 +495,9 @@ void ThreadedTest::dispatchSetNeedsRedraw()
         m_layerTreeHost->setNeedsRedraw();
 }
 
-void ThreadedTest::dispatchSetVisible(bool visible)
+void CCThreadedTest::dispatchSetVisible(bool visible)
 {
-    DCHECK(Proxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
 
     if (m_finished)
         return;
@@ -506,16 +506,16 @@ void ThreadedTest::dispatchSetVisible(bool visible)
         m_layerTreeHost->setVisible(visible);
 }
 
-void ThreadedTest::dispatchComposite()
+void CCThreadedTest::dispatchComposite()
 {
     m_scheduled = false;
     if (m_layerTreeHost.get() && !m_finished)
         m_layerTreeHost->composite();
 }
 
-void ThreadedTest::dispatchDidAddAnimation()
+void CCThreadedTest::dispatchDidAddAnimation()
 {
-    DCHECK(Proxy::isMainThread());
+    DCHECK(CCProxy::isMainThread());
 
     if (m_finished)
         return;
@@ -524,20 +524,20 @@ void ThreadedTest::dispatchDidAddAnimation()
         m_layerTreeHost->didAddAnimation();
 }
 
-void ThreadedTest::runTest(bool threaded)
+void CCThreadedTest::runTest(bool threaded)
 {
     // For these tests, we will enable threaded animations.
-    ScopedSettings scopedSettings;
+    CCScopedSettings scopedSettings;
     Settings::setAcceleratedAnimationEnabled(true);
 
     if (threaded) {
-        m_webThread.reset(WebKit::Platform::current()->createThread("ThreadedTest"));
+        m_webThread.reset(WebKit::Platform::current()->createThread("CCThreadedTest"));
         Platform::current()->compositorSupport()->initialize(m_webThread.get());
     } else
         Platform::current()->compositorSupport()->initialize(0);
 
-    DCHECK(Proxy::isMainThread());
-    m_mainThreadProxy = ScopedThreadProxy::create(Proxy::mainThread());
+    DCHECK(CCProxy::isMainThread());
+    m_mainThreadProxy = CCScopedThreadProxy::create(CCProxy::mainThread());
 
     initializeSettings(m_settings);
 

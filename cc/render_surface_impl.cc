@@ -33,7 +33,7 @@ static const int debugReplicaBorderColorRed = 160;
 static const int debugReplicaBorderColorGreen = 0;
 static const int debugReplicaBorderColorBlue = 255;
 
-RenderSurfaceImpl::RenderSurfaceImpl(LayerImpl* owningLayer)
+CCRenderSurface::CCRenderSurface(CCLayerImpl* owningLayer)
     : m_owningLayer(owningLayer)
     , m_surfacePropertyChanged(false)
     , m_drawOpacity(1)
@@ -44,25 +44,25 @@ RenderSurfaceImpl::RenderSurfaceImpl(LayerImpl* owningLayer)
     , m_targetRenderSurfaceLayerIndexHistory(0)
     , m_currentLayerIndexHistory(0)
 {
-    m_damageTracker = DamageTracker::create();
+    m_damageTracker = CCDamageTracker::create();
 }
 
-RenderSurfaceImpl::~RenderSurfaceImpl()
+CCRenderSurface::~CCRenderSurface()
 {
 }
 
-FloatRect RenderSurfaceImpl::drawableContentRect() const
+FloatRect CCRenderSurface::drawableContentRect() const
 {
-    FloatRect drawableContentRect = MathUtil::mapClippedRect(m_drawTransform, m_contentRect);
+    FloatRect drawableContentRect = CCMathUtil::mapClippedRect(m_drawTransform, m_contentRect);
     if (m_owningLayer->hasReplica())
-        drawableContentRect.unite(MathUtil::mapClippedRect(m_replicaDrawTransform, m_contentRect));
+        drawableContentRect.unite(CCMathUtil::mapClippedRect(m_replicaDrawTransform, m_contentRect));
 
     return drawableContentRect;
 }
 
-std::string RenderSurfaceImpl::name() const
+std::string CCRenderSurface::name() const
 {
-    return base::StringPrintf("RenderSurfaceImpl(id=%i,owner=%s)", m_owningLayer->id(), m_owningLayer->debugName().data());
+    return base::StringPrintf("RenderSurface(id=%i,owner=%s)", m_owningLayer->id(), m_owningLayer->debugName().data());
 }
 
 static std::string indentString(int indent)
@@ -73,7 +73,7 @@ static std::string indentString(int indent)
     return str;
 }
 
-void RenderSurfaceImpl::dumpSurface(std::string* str, int indent) const
+void CCRenderSurface::dumpSurface(std::string* str, int indent) const
 {
     std::string indentStr = indentString(indent);
     str->append(indentStr);
@@ -96,13 +96,13 @@ void RenderSurfaceImpl::dumpSurface(std::string* str, int indent) const
         m_damageTracker->currentDamageRect().width(), m_damageTracker->currentDamageRect().height());
 }
 
-int RenderSurfaceImpl::owningLayerId() const
+int CCRenderSurface::owningLayerId() const
 {
     return m_owningLayer ? m_owningLayer->id() : 0;
 }
 
 
-void RenderSurfaceImpl::setClipRect(const IntRect& clipRect)
+void CCRenderSurface::setClipRect(const IntRect& clipRect)
 {
     if (m_clipRect == clipRect)
         return;
@@ -111,12 +111,12 @@ void RenderSurfaceImpl::setClipRect(const IntRect& clipRect)
     m_clipRect = clipRect;
 }
 
-bool RenderSurfaceImpl::contentsChanged() const
+bool CCRenderSurface::contentsChanged() const
 {
     return !m_damageTracker->currentDamageRect().isEmpty();
 }
 
-void RenderSurfaceImpl::setContentRect(const IntRect& contentRect)
+void CCRenderSurface::setContentRect(const IntRect& contentRect)
 {
     if (m_contentRect == contentRect)
         return;
@@ -125,7 +125,7 @@ void RenderSurfaceImpl::setContentRect(const IntRect& contentRect)
     m_contentRect = contentRect;
 }
 
-bool RenderSurfaceImpl::surfacePropertyChanged() const
+bool CCRenderSurface::surfacePropertyChanged() const
 {
     // Surface property changes are tracked as follows:
     //
@@ -139,30 +139,30 @@ bool RenderSurfaceImpl::surfacePropertyChanged() const
     return m_surfacePropertyChanged || m_owningLayer->layerPropertyChanged();
 }
 
-bool RenderSurfaceImpl::surfacePropertyChangedOnlyFromDescendant() const
+bool CCRenderSurface::surfacePropertyChangedOnlyFromDescendant() const
 {
     return m_surfacePropertyChanged && !m_owningLayer->layerPropertyChanged();
 }
 
-void RenderSurfaceImpl::addContributingDelegatedRenderPassLayer(LayerImpl* layer)
+void CCRenderSurface::addContributingDelegatedRenderPassLayer(CCLayerImpl* layer)
 {
     DCHECK(std::find(m_layerList.begin(), m_layerList.end(), layer) != m_layerList.end());
-    DelegatedRendererLayerImpl* delegatedRendererLayer = static_cast<DelegatedRendererLayerImpl*>(layer);
+    CCDelegatedRendererLayerImpl* delegatedRendererLayer = static_cast<CCDelegatedRendererLayerImpl*>(layer);
     m_contributingDelegatedRenderPassLayerList.push_back(delegatedRendererLayer);
 }
 
-void RenderSurfaceImpl::clearLayerLists()
+void CCRenderSurface::clearLayerLists()
 {
     m_layerList.clear();
     m_contributingDelegatedRenderPassLayerList.clear();
 }
 
-static inline IntRect computeClippedRectInTarget(const LayerImpl* owningLayer)
+static inline IntRect computeClippedRectInTarget(const CCLayerImpl* owningLayer)
 {
     DCHECK(owningLayer->parent());
 
-    const LayerImpl* renderTarget = owningLayer->parent()->renderTarget();
-    const RenderSurfaceImpl* self = owningLayer->renderSurface();
+    const CCLayerImpl* renderTarget = owningLayer->parent()->renderTarget();
+    const CCRenderSurface* self = owningLayer->renderSurface();
 
     IntRect clippedRectInTarget = self->clipRect();
     if (owningLayer->backgroundFilters().hasFilterThatMovesPixels()) {
@@ -177,50 +177,50 @@ static inline IntRect computeClippedRectInTarget(const LayerImpl* owningLayer)
     return clippedRectInTarget;
 }
 
-RenderPass::Id RenderSurfaceImpl::renderPassId()
+CCRenderPass::Id CCRenderSurface::renderPassId()
 {
     int layerId = m_owningLayer->id();
     int subId = 0;
     DCHECK(layerId > 0);
-    return RenderPass::Id(layerId, subId);
+    return CCRenderPass::Id(layerId, subId);
 }
 
-void RenderSurfaceImpl::appendRenderPasses(RenderPassSink& passSink)
+void CCRenderSurface::appendRenderPasses(CCRenderPassSink& passSink)
 {
     for (size_t i = 0; i < m_contributingDelegatedRenderPassLayerList.size(); ++i)
         m_contributingDelegatedRenderPassLayerList[i]->appendContributingRenderPasses(passSink);
 
-    scoped_ptr<RenderPass> pass = RenderPass::create(renderPassId(), m_contentRect, m_screenSpaceTransform);
+    scoped_ptr<CCRenderPass> pass = CCRenderPass::create(renderPassId(), m_contentRect, m_screenSpaceTransform);
     pass->setDamageRect(m_damageTracker->currentDamageRect());
     pass->setFilters(m_owningLayer->filters());
     pass->setBackgroundFilters(m_owningLayer->backgroundFilters());
     passSink.appendRenderPass(pass.Pass());
 }
 
-void RenderSurfaceImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData, bool forReplica, RenderPass::Id renderPassId)
+void CCRenderSurface::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& appendQuadsData, bool forReplica, CCRenderPass::Id renderPassId)
 {
     DCHECK(!forReplica || m_owningLayer->hasReplica());
 
     IntRect clippedRectInTarget = computeClippedRectInTarget(m_owningLayer);
     bool isOpaque = false;
     const WebTransformationMatrix& drawTransform = forReplica ? m_replicaDrawTransform : m_drawTransform;
-    SharedQuadState* sharedQuadState = quadSink.useSharedQuadState(SharedQuadState::create(drawTransform, m_contentRect, clippedRectInTarget, m_drawOpacity, isOpaque).Pass());
+    CCSharedQuadState* sharedQuadState = quadSink.useSharedQuadState(CCSharedQuadState::create(drawTransform, m_contentRect, clippedRectInTarget, m_drawOpacity, isOpaque).Pass());
 
     if (m_owningLayer->hasDebugBorders()) {
         int red = forReplica ? debugReplicaBorderColorRed : debugSurfaceBorderColorRed;
         int green = forReplica ?  debugReplicaBorderColorGreen : debugSurfaceBorderColorGreen;
         int blue = forReplica ? debugReplicaBorderColorBlue : debugSurfaceBorderColorBlue;
         SkColor color = SkColorSetARGB(debugSurfaceBorderAlpha, red, green, blue);
-        quadSink.append(DebugBorderDrawQuad::create(sharedQuadState, contentRect(), color, debugSurfaceBorderWidth).PassAs<DrawQuad>(), appendQuadsData);
+        quadSink.append(CCDebugBorderDrawQuad::create(sharedQuadState, contentRect(), color, debugSurfaceBorderWidth).PassAs<CCDrawQuad>(), appendQuadsData);
     }
 
-    // FIXME: By using the same RenderSurfaceImpl for both the content and its reflection,
+    // FIXME: By using the same RenderSurface for both the content and its reflection,
     // it's currently not possible to apply a separate mask to the reflection layer
     // or correctly handle opacity in reflections (opacity must be applied after drawing
-    // both the layer and its reflection). The solution is to introduce yet another RenderSurfaceImpl
+    // both the layer and its reflection). The solution is to introduce yet another RenderSurface
     // to draw the layer and its reflection in. For now we only apply a separate reflection
     // mask if the contents don't have a mask of their own.
-    LayerImpl* maskLayer = m_owningLayer->maskLayer();
+    CCLayerImpl* maskLayer = m_owningLayer->maskLayer();
     if (maskLayer && (!maskLayer->drawsContent() || maskLayer->bounds().isEmpty()))
         maskLayer = 0;
 
@@ -241,11 +241,11 @@ void RenderSurfaceImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQ
         maskTexCoordOffsetY = static_cast<float>(contentRect().y()) / contentRect().height() * maskTexCoordScaleY;
     }
 
-    ResourceProvider::ResourceId maskResourceId = maskLayer ? maskLayer->contentsResourceId() : 0;
+    CCResourceProvider::ResourceId maskResourceId = maskLayer ? maskLayer->contentsResourceId() : 0;
     IntRect contentsChangedSinceLastFrame = contentsChanged() ? m_contentRect : IntRect();
 
-    quadSink.append(RenderPassDrawQuad::create(sharedQuadState, contentRect(), renderPassId, forReplica, maskResourceId, contentsChangedSinceLastFrame,
-                                                 maskTexCoordScaleX, maskTexCoordScaleY, maskTexCoordOffsetX, maskTexCoordOffsetY).PassAs<DrawQuad>(), appendQuadsData);
+    quadSink.append(CCRenderPassDrawQuad::create(sharedQuadState, contentRect(), renderPassId, forReplica, maskResourceId, contentsChangedSinceLastFrame,
+                                                 maskTexCoordScaleX, maskTexCoordScaleY, maskTexCoordOffsetX, maskTexCoordOffsetY).PassAs<CCDrawQuad>(), appendQuadsData);
 }
 
 }

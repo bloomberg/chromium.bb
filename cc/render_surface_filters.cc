@@ -313,7 +313,7 @@ private:
 
 namespace cc {
 
-WebKit::WebFilterOperations RenderSurfaceFilters::optimize(const WebKit::WebFilterOperations& filters)
+WebKit::WebFilterOperations CCRenderSurfaceFilters::optimize(const WebKit::WebFilterOperations& filters)
 {
     WebKit::WebFilterOperations newList;
 
@@ -368,7 +368,7 @@ WebKit::WebFilterOperations RenderSurfaceFilters::optimize(const WebKit::WebFilt
     return newList;
 }
 
-SkBitmap RenderSurfaceFilters::apply(const WebKit::WebFilterOperations& filters, unsigned textureId, const FloatSize& size, WebKit::WebGraphicsContext3D* context3D, GrContext* grContext)
+SkBitmap CCRenderSurfaceFilters::apply(const WebKit::WebFilterOperations& filters, unsigned textureId, const FloatSize& size, WebKit::WebGraphicsContext3D* context3D, GrContext* grContext)
 {
     if (!context3D || !grContext)
         return SkBitmap();

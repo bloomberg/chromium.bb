@@ -14,8 +14,8 @@
 
 namespace cc {
 
-class LayerImpl;
-struct LayerTreeSettings;
+class CCLayerImpl;
+struct CCLayerTreeSettings;
 
 // There are currently six types of debug rects:
 //
@@ -38,8 +38,8 @@ struct LayerTreeSettings;
 //
 enum DebugRectType { PaintRectType, PropertyChangedRectType, SurfaceDamageRectType, ScreenSpaceRectType, ReplicaScreenSpaceRectType, OccludingRectType };
 
-struct DebugRect {
-    DebugRect(DebugRectType newType, FloatRect newRect)
+struct CCDebugRect {
+    CCDebugRect(DebugRectType newType, FloatRect newRect)
             : type(newType)
             , rect(newRect) { }
 
@@ -49,30 +49,30 @@ struct DebugRect {
 
 // This class maintains a history of rects of various types that can be used
 // for debugging purposes. The overhead of collecting rects is performed only if
-// the appropriate LayerTreeSettings are enabled.
-class DebugRectHistory {
+// the appropriate CCLayerTreeSettings are enabled.
+class CCDebugRectHistory {
 public:
-    static scoped_ptr<DebugRectHistory> create();
+    static scoped_ptr<CCDebugRectHistory> create();
 
-    ~DebugRectHistory();
+    ~CCDebugRectHistory();
 
     // Note: Saving debug rects must happen before layers' change tracking is reset.
-    void saveDebugRectsForCurrentFrame(LayerImpl* rootLayer, const std::vector<LayerImpl*>& renderSurfaceLayerList, const Vector<IntRect>& occludingScreenSpaceRects, const LayerTreeSettings&);
+    void saveDebugRectsForCurrentFrame(CCLayerImpl* rootLayer, const std::vector<CCLayerImpl*>& renderSurfaceLayerList, const Vector<IntRect>& occludingScreenSpaceRects, const CCLayerTreeSettings&);
 
-    const Vector<DebugRect>& debugRects() { return m_debugRects; }
+    const Vector<CCDebugRect>& debugRects() { return m_debugRects; }
 
 private:
-    DebugRectHistory();
+    CCDebugRectHistory();
 
-    void savePaintRects(LayerImpl*);
-    void savePropertyChangedRects(const std::vector<LayerImpl*>& renderSurfaceLayerList);
-    void saveSurfaceDamageRects(const std::vector<LayerImpl* >& renderSurfaceLayerList);
-    void saveScreenSpaceRects(const std::vector<LayerImpl* >& renderSurfaceLayerList);
+    void savePaintRects(CCLayerImpl*);
+    void savePropertyChangedRects(const std::vector<CCLayerImpl*>& renderSurfaceLayerList);
+    void saveSurfaceDamageRects(const std::vector<CCLayerImpl* >& renderSurfaceLayerList);
+    void saveScreenSpaceRects(const std::vector<CCLayerImpl* >& renderSurfaceLayerList);
     void saveOccludingRects(const Vector<IntRect>& occludingScreenSpaceRects);
 
-    Vector<DebugRect> m_debugRects;
+    Vector<CCDebugRect> m_debugRects;
 
-    DISALLOW_COPY_AND_ASSIGN(DebugRectHistory);
+    DISALLOW_COPY_AND_ASSIGN(CCDebugRectHistory);
 };
 
 }  // namespace cc

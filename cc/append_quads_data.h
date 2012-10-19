@@ -9,15 +9,15 @@
 
 namespace cc {
 
-struct AppendQuadsData {
-    AppendQuadsData()
+struct CCAppendQuadsData {
+    CCAppendQuadsData()
         : hadOcclusionFromOutsideTargetSurface(false)
         , hadMissingTiles(false)
         , renderPassId(0, 0)
     {
     }
 
-    explicit AppendQuadsData(RenderPass::Id renderPassId)
+    explicit CCAppendQuadsData(CCRenderPass::Id renderPassId)
         : hadOcclusionFromOutsideTargetSurface(false)
         , hadMissingTiles(false)
         , renderPassId(renderPassId)
@@ -29,7 +29,7 @@ struct AppendQuadsData {
     // Set by the layer appending quads.
     bool hadMissingTiles;
     // Given to the layer appending quads.
-    const RenderPass::Id renderPassId;
+    const CCRenderPass::Id renderPassId;
 };
 
 }

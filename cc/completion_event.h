@@ -15,9 +15,9 @@ namespace cc {
 // absolutely certain that doing-so will not lead to a deadlock.
 //
 // It is safe to destroy this object as soon as wait() returns.
-class CompletionEvent {
+class CCCompletionEvent {
 public:
-    CompletionEvent()
+    CCCompletionEvent()
         : m_event(false /* manual_reset */, false /* initially_signaled */)
     {
 #ifndef NDEBUG
@@ -26,7 +26,7 @@ public:
 #endif
     }
 
-    ~CompletionEvent()
+    ~CCCompletionEvent()
     {
 #ifndef NDEBUG
         DCHECK(m_waited);

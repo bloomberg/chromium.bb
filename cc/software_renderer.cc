@@ -64,18 +64,18 @@ bool isScaleAndTranslate(const SkMatrix& matrix)
 
 } // anonymous namespace
 
-scoped_ptr<SoftwareRenderer> SoftwareRenderer::create(RendererClient* client, ResourceProvider* resourceProvider, WebCompositorSoftwareOutputDevice* outputDevice)
+scoped_ptr<CCRendererSoftware> CCRendererSoftware::create(CCRendererClient* client, CCResourceProvider* resourceProvider, WebCompositorSoftwareOutputDevice* outputDevice)
 {
-    return make_scoped_ptr(new SoftwareRenderer(client, resourceProvider, outputDevice));
+    return make_scoped_ptr(new CCRendererSoftware(client, resourceProvider, outputDevice));
 }
 
-SoftwareRenderer::SoftwareRenderer(RendererClient* client, ResourceProvider* resourceProvider, WebCompositorSoftwareOutputDevice* outputDevice)
-    : DirectRenderer(client, resourceProvider)
+CCRendererSoftware::CCRendererSoftware(CCRendererClient* client, CCResourceProvider* resourceProvider, WebCompositorSoftwareOutputDevice* outputDevice)
+    : CCDirectRenderer(client, resourceProvider)
     , m_visible(true)
     , m_outputDevice(outputDevice)
     , m_skCurrentCanvas(0)
 {
-    m_resourceProvider->setDefaultResourceType(ResourceProvider::Bitmap);
+    m_resourceProvider->setDefaultResourceType(CCResourceProvider::Bitmap);
 
     m_capabilities.maxTextureSize = INT_MAX;
     m_capabilities.bestTextureFormat = GL_RGBA;
@@ -85,26 +85,26 @@ SoftwareRenderer::SoftwareRenderer(RendererClient* client, ResourceProvider* res
     viewportChanged();
 }
 
-SoftwareRenderer::~SoftwareRenderer()
+CCRendererSoftware::~CCRendererSoftware()
 {
 }
 
-const RendererCapabilities& SoftwareRenderer::capabilities() const
+const RendererCapabilities& CCRendererSoftware::capabilities() const
 {
     return m_capabilities;
 }
 
-void SoftwareRenderer::viewportChanged()
+void CCRendererSoftware::viewportChanged()
 {
     m_outputDevice->didChangeViewportSize(WebSize(viewportSize().width(), viewportSize().height()));
 }
 
-void SoftwareRenderer::beginDrawingFrame(DrawingFrame& frame)
+void CCRendererSoftware::beginDrawingFrame(DrawingFrame& frame)
 {
     m_skRootCanvas = make_scoped_ptr(new SkCanvas(m_outputDevice->lock(true)->getSkBitmap()));
 }
 
-void SoftwareRenderer::finishDrawingFrame(DrawingFrame& frame)
+void CCRendererSoftware::finishDrawingFrame(DrawingFrame& frame)
 {
     m_currentFramebufferLock.reset();
     m_skCurrentCanvas = 0;
@@ -112,24 +112,24 @@ void SoftwareRenderer::finishDrawingFrame(DrawingFrame& frame)
     m_outputDevice->unlock();
 }
 
-bool SoftwareRenderer::flippedFramebuffer() const
+bool CCRendererSoftware::flippedFramebuffer() const
 {
     return false;
 }
 
-void SoftwareRenderer::finish()
+void CCRendererSoftware::finish()
 {
 }
 
-void SoftwareRenderer::bindFramebufferToOutputSurface(DrawingFrame& frame)
+void CCRendererSoftware::bindFramebufferToOutputSurface(DrawingFrame& frame)
 {
     m_currentFramebufferLock.reset();
     m_skCurrentCanvas = m_skRootCanvas.get();
 }
 
-bool SoftwareRenderer::bindFramebufferToTexture(DrawingFrame& frame, const ScopedTexture* texture, const IntRect& framebufferRect)
+bool CCRendererSoftware::bindFramebufferToTexture(DrawingFrame& frame, const CCScopedTexture* texture, const IntRect& framebufferRect)
 {
-    m_currentFramebufferLock = make_scoped_ptr(new ResourceProvider::ScopedWriteLockSoftware(m_resourceProvider, texture->id()));
+    m_currentFramebufferLock = make_scoped_ptr(new CCResourceProvider::ScopedWriteLockSoftware(m_resourceProvider, texture->id()));
     m_skCurrentCanvas = m_currentFramebufferLock->skCanvas();
     initializeMatrices(frame, framebufferRect, false);
     setDrawViewportSize(framebufferRect.size());
@@ -137,18 +137,18 @@ bool SoftwareRenderer::bindFramebufferToTexture(DrawingFrame& frame, const Scope
     return true;
 }
 
-void SoftwareRenderer::enableScissorTestRect(const IntRect& scissorRect)
+void CCRendererSoftware::enableScissorTestRect(const IntRect& scissorRect)
 {
     m_skCurrentCanvas->clipRect(toSkRect(scissorRect), SkRegion::kReplace_Op);
 }
 
-void SoftwareRenderer::disableScissorTest()
+void CCRendererSoftware::disableScissorTest()
 {
     IntRect canvasRect(IntPoint(), viewportSize());
     m_skCurrentCanvas->clipRect(toSkRect(canvasRect), SkRegion::kReplace_Op);
 }
 
-void SoftwareRenderer::clearFramebuffer(DrawingFrame& frame)
+void CCRendererSoftware::clearFramebuffer(DrawingFrame& frame)
 {
     if (frame.currentRenderPass->hasTransparentBackground()) {
         m_skCurrentCanvas->clear(SkColorSetARGB(0, 0, 0, 0));
@@ -160,16 +160,16 @@ void SoftwareRenderer::clearFramebuffer(DrawingFrame& frame)
     }
 }
 
-void SoftwareRenderer::setDrawViewportSize(const IntSize& viewportSize)
+void CCRendererSoftware::setDrawViewportSize(const IntSize& viewportSize)
 {
 }
 
-bool SoftwareRenderer::isSoftwareResource(ResourceProvider::ResourceId id) const
+bool CCRendererSoftware::isSoftwareResource(CCResourceProvider::ResourceId id) const
 {
     switch (m_resourceProvider->resourceType(id)) {
-    case ResourceProvider::GLTexture:
+    case CCResourceProvider::GLTexture:
         return false;
-    case ResourceProvider::Bitmap:
+    case CCResourceProvider::Bitmap:
         return true;
     }
 
@@ -177,7 +177,7 @@ bool SoftwareRenderer::isSoftwareResource(ResourceProvider::ResourceId id) const
     return false;
 }
 
-void SoftwareRenderer::drawQuad(DrawingFrame& frame, const DrawQuad* quad)
+void CCRendererSoftware::drawQuad(DrawingFrame& frame, const CCDrawQuad* quad)
 {
     WebTransformationMatrix quadRectMatrix;
     quadRectTransform(&quadRectMatrix, quad->quadTransform(), quad->quadRect());
@@ -199,20 +199,20 @@ void SoftwareRenderer::drawQuad(DrawingFrame& frame, const DrawQuad* quad)
     }
 
     switch (quad->material()) {
-    case DrawQuad::DebugBorder:
-        drawDebugBorderQuad(frame, DebugBorderDrawQuad::materialCast(quad));
+    case CCDrawQuad::DebugBorder:
+        drawDebugBorderQuad(frame, CCDebugBorderDrawQuad::materialCast(quad));
         break;
-    case DrawQuad::SolidColor:
-        drawSolidColorQuad(frame, SolidColorDrawQuad::materialCast(quad));
+    case CCDrawQuad::SolidColor:
+        drawSolidColorQuad(frame, CCSolidColorDrawQuad::materialCast(quad));
         break;
-    case DrawQuad::TextureContent:
-        drawTextureQuad(frame, TextureDrawQuad::materialCast(quad));
+    case CCDrawQuad::TextureContent:
+        drawTextureQuad(frame, CCTextureDrawQuad::materialCast(quad));
         break;
-    case DrawQuad::TiledContent:
-        drawTileQuad(frame, TileDrawQuad::materialCast(quad));
+    case CCDrawQuad::TiledContent:
+        drawTileQuad(frame, CCTileDrawQuad::materialCast(quad));
         break;
-    case DrawQuad::RenderPass:
-        drawRenderPassQuad(frame, RenderPassDrawQuad::materialCast(quad));
+    case CCDrawQuad::RenderPass:
+        drawRenderPassQuad(frame, CCRenderPassDrawQuad::materialCast(quad));
         break;
     default:
         drawUnsupportedQuad(frame, quad);
@@ -222,7 +222,7 @@ void SoftwareRenderer::drawQuad(DrawingFrame& frame, const DrawQuad* quad)
     m_skCurrentCanvas->resetMatrix();
 }
 
-void SoftwareRenderer::drawDebugBorderQuad(const DrawingFrame& frame, const DebugBorderDrawQuad* quad)
+void CCRendererSoftware::drawDebugBorderQuad(const DrawingFrame& frame, const CCDebugBorderDrawQuad* quad)
 {
     // We need to apply the matrix manually to have pixel-sized stroke width.
     SkPoint vertices[4];
@@ -238,14 +238,14 @@ void SoftwareRenderer::drawDebugBorderQuad(const DrawingFrame& frame, const Debu
     m_skCurrentCanvas->drawPoints(SkCanvas::kPolygon_PointMode, 4, transformedVertices, m_skCurrentPaint);
 }
 
-void SoftwareRenderer::drawSolidColorQuad(const DrawingFrame& frame, const SolidColorDrawQuad* quad)
+void CCRendererSoftware::drawSolidColorQuad(const DrawingFrame& frame, const CCSolidColorDrawQuad* quad)
 {
     m_skCurrentPaint.setColor(quad->color());
     m_skCurrentPaint.setAlpha(quad->opacity() * SkColorGetA(quad->color()));
     m_skCurrentCanvas->drawRect(toSkRect(quadVertexRect()), m_skCurrentPaint);
 }
 
-void SoftwareRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureDrawQuad* quad)
+void CCRendererSoftware::drawTextureQuad(const DrawingFrame& frame, const CCTextureDrawQuad* quad)
 {
     if (!isSoftwareResource(quad->resourceId())) {
         drawUnsupportedQuad(frame, quad);
@@ -253,7 +253,7 @@ void SoftwareRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureD
     }
 
     // FIXME: Add support for non-premultiplied alpha.
-    ResourceProvider::ScopedReadLockSoftware quadResourceLock(m_resourceProvider, quad->resourceId());
+    CCResourceProvider::ScopedReadLockSoftware quadResourceLock(m_resourceProvider, quad->resourceId());
     FloatRect uvRect = quad->uvRect();
     uvRect.scale(quad->quadRect().width(), quad->quadRect().height());
     SkIRect skUvRect = toSkIRect(enclosingIntRect(uvRect));
@@ -262,23 +262,23 @@ void SoftwareRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureD
     m_skCurrentCanvas->drawBitmapRect(*quadResourceLock.skBitmap(), &skUvRect, toSkRect(quadVertexRect()), &m_skCurrentPaint);
 }
 
-void SoftwareRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* quad)
+void CCRendererSoftware::drawTileQuad(const DrawingFrame& frame, const CCTileDrawQuad* quad)
 {
     DCHECK(isSoftwareResource(quad->resourceId()));
-    ResourceProvider::ScopedReadLockSoftware quadResourceLock(m_resourceProvider, quad->resourceId());
+    CCResourceProvider::ScopedReadLockSoftware quadResourceLock(m_resourceProvider, quad->resourceId());
 
     SkIRect uvRect = toSkIRect(IntRect(quad->textureOffset(), quad->quadRect().size()));
     m_skCurrentCanvas->drawBitmapRect(*quadResourceLock.skBitmap(), &uvRect, toSkRect(quadVertexRect()), &m_skCurrentPaint);
 }
 
-void SoftwareRenderer::drawRenderPassQuad(const DrawingFrame& frame, const RenderPassDrawQuad* quad)
+void CCRendererSoftware::drawRenderPassQuad(const DrawingFrame& frame, const CCRenderPassDrawQuad* quad)
 {
     CachedTexture* contentsTexture = m_renderPassTextures.get(quad->renderPassId());
     if (!contentsTexture || !contentsTexture->id())
         return;
 
     DCHECK(isSoftwareResource(contentsTexture->id()));
-    ResourceProvider::ScopedReadLockSoftware contentsTextureLock(m_resourceProvider, contentsTexture->id());
+    CCResourceProvider::ScopedReadLockSoftware contentsTextureLock(m_resourceProvider, contentsTexture->id());
 
     const SkBitmap* bitmap = contentsTextureLock.skBitmap();
 
@@ -297,7 +297,7 @@ void SoftwareRenderer::drawRenderPassQuad(const DrawingFrame& frame, const Rende
     m_skCurrentPaint.setShader(shader);
 
     if (quad->maskResourceId()) {
-        ResourceProvider::ScopedReadLockSoftware maskResourceLock(m_resourceProvider, quad->maskResourceId());
+        CCResourceProvider::ScopedReadLockSoftware maskResourceLock(m_resourceProvider, quad->maskResourceId());
         const SkBitmap* maskBitmap = maskResourceLock.skBitmap();
 
         SkMatrix maskMat;
@@ -323,21 +323,21 @@ void SoftwareRenderer::drawRenderPassQuad(const DrawingFrame& frame, const Rende
     }
 }
 
-void SoftwareRenderer::drawUnsupportedQuad(const DrawingFrame& frame, const DrawQuad* quad)
+void CCRendererSoftware::drawUnsupportedQuad(const DrawingFrame& frame, const CCDrawQuad* quad)
 {
     m_skCurrentPaint.setColor(SK_ColorMAGENTA);
     m_skCurrentPaint.setAlpha(quad->opacity() * 255);
     m_skCurrentCanvas->drawRect(toSkRect(quadVertexRect()), m_skCurrentPaint);
 }
 
-bool SoftwareRenderer::swapBuffers()
+bool CCRendererSoftware::swapBuffers()
 {
-    if (Proxy::hasImplThread())
+    if (CCProxy::hasImplThread())
         m_client->onSwapBuffersComplete();
     return true;
 }
 
-void SoftwareRenderer::getFramebufferPixels(void *pixels, const IntRect& rect)
+void CCRendererSoftware::getFramebufferPixels(void *pixels, const IntRect& rect)
 {
     SkBitmap fullBitmap = m_outputDevice->lock(false)->getSkBitmap();
     SkBitmap subsetBitmap;
@@ -347,7 +347,7 @@ void SoftwareRenderer::getFramebufferPixels(void *pixels, const IntRect& rect)
     m_outputDevice->unlock();
 }
 
-void SoftwareRenderer::setVisible(bool visible)
+void CCRendererSoftware::setVisible(bool visible)
 {
     if (m_visible == visible)
         return;

@@ -16,19 +16,19 @@ using WebKit::WebTransformationMatrix;
 
 namespace cc {
 
-scoped_ptr<DamageTracker> DamageTracker::create()
+scoped_ptr<CCDamageTracker> CCDamageTracker::create()
 {
-    return make_scoped_ptr(new DamageTracker());
+    return make_scoped_ptr(new CCDamageTracker());
 }
 
-DamageTracker::DamageTracker()
+CCDamageTracker::CCDamageTracker()
     : m_forceFullDamageNextUpdate(false),
       m_currentRectHistory(new RectMap),
       m_nextRectHistory(new RectMap)
 {
 }
 
-DamageTracker::~DamageTracker()
+CCDamageTracker::~CCDamageTracker()
 {
 }
 
@@ -51,7 +51,7 @@ static inline void expandDamageRectInsideRectWithFilters(FloatRect& damageRect, 
     damageRect.unite(expandedDamageRect);
 }
 
-void DamageTracker::updateDamageTrackingState(const std::vector<LayerImpl*>& layerList, int targetSurfaceLayerID, bool targetSurfacePropertyChangedOnlyFromDescendant, const IntRect& targetSurfaceContentRect, LayerImpl* targetSurfaceMaskLayer, const WebKit::WebFilterOperations& filters)
+void CCDamageTracker::updateDamageTrackingState(const std::vector<CCLayerImpl*>& layerList, int targetSurfaceLayerID, bool targetSurfacePropertyChangedOnlyFromDescendant, const IntRect& targetSurfaceContentRect, CCLayerImpl* targetSurfaceMaskLayer, const WebKit::WebFilterOperations& filters)
 {
     //
     // This function computes the "damage rect" of a target surface, and updates the state
@@ -147,7 +147,7 @@ void DamageTracker::updateDamageTrackingState(const std::vector<LayerImpl*>& lay
     swap(m_currentRectHistory, m_nextRectHistory);
 }
 
-FloatRect DamageTracker::removeRectFromCurrentFrame(int layerID, bool& layerIsNew)
+FloatRect CCDamageTracker::removeRectFromCurrentFrame(int layerID, bool& layerIsNew)
 {
     RectMap::iterator iter = m_currentRectHistory->find(layerID);
     layerIsNew = iter == m_currentRectHistory->end();
@@ -159,7 +159,7 @@ FloatRect DamageTracker::removeRectFromCurrentFrame(int layerID, bool& layerIsNe
     return ret;
 }
 
-void DamageTracker::saveRectForNextFrame(int layerID, const FloatRect& targetSpaceRect)
+void CCDamageTracker::saveRectForNextFrame(int layerID, const FloatRect& targetSpaceRect)
 {
     // This layer should not yet exist in next frame's history.
     DCHECK(layerID > 0);
@@ -167,15 +167,15 @@ void DamageTracker::saveRectForNextFrame(int layerID, const FloatRect& targetSpa
     (*m_nextRectHistory)[layerID] = targetSpaceRect;
 }
 
-FloatRect DamageTracker::trackDamageFromActiveLayers(const std::vector<LayerImpl*>& layerList, int targetSurfaceLayerID)
+FloatRect CCDamageTracker::trackDamageFromActiveLayers(const std::vector<CCLayerImpl*>& layerList, int targetSurfaceLayerID)
 {
     FloatRect damageRect = FloatRect();
 
     for (unsigned layerIndex = 0; layerIndex < layerList.size(); ++layerIndex) {
         // Visit layers in back-to-front order.
-        LayerImpl* layer = layerList[layerIndex];
+        CCLayerImpl* layer = layerList[layerIndex];
 
-        if (LayerTreeHostCommon::renderSurfaceContributesToTarget<LayerImpl>(layer, targetSurfaceLayerID))
+        if (CCLayerTreeHostCommon::renderSurfaceContributesToTarget<CCLayerImpl>(layer, targetSurfaceLayerID))
             extendDamageForRenderSurface(layer, damageRect);
         else
             extendDamageForLayer(layer, damageRect);
@@ -184,7 +184,7 @@ FloatRect DamageTracker::trackDamageFromActiveLayers(const std::vector<LayerImpl
     return damageRect;
 }
 
-FloatRect DamageTracker::trackDamageFromSurfaceMask(LayerImpl* targetSurfaceMaskLayer)
+FloatRect CCDamageTracker::trackDamageFromSurfaceMask(CCLayerImpl* targetSurfaceMaskLayer)
 {
     FloatRect damageRect = FloatRect();
 
@@ -200,7 +200,7 @@ FloatRect DamageTracker::trackDamageFromSurfaceMask(LayerImpl* targetSurfaceMask
     return damageRect;
 }
 
-FloatRect DamageTracker::trackDamageFromLeftoverRects()
+FloatRect CCDamageTracker::trackDamageFromLeftoverRects()
 {
     // After computing damage for all active layers, any leftover items in the current
     // rect history correspond to layers/surfaces that no longer exist. So, these regions
@@ -216,7 +216,7 @@ FloatRect DamageTracker::trackDamageFromLeftoverRects()
     return damageRect;
 }
 
-static bool layerNeedsToRedrawOntoItsTargetSurface(LayerImpl* layer)
+static bool layerNeedsToRedrawOntoItsTargetSurface(CCLayerImpl* layer)
 {
     // If the layer does NOT own a surface but has SurfacePropertyChanged,
     // this means that its target surface is affected and needs to be redrawn.
@@ -228,7 +228,7 @@ static bool layerNeedsToRedrawOntoItsTargetSurface(LayerImpl* layer)
     return layer->layerPropertyChanged() || layer->layerSurfacePropertyChanged();
 }
 
-void DamageTracker::extendDamageForLayer(LayerImpl* layer, FloatRect& targetDamageRect)
+void CCDamageTracker::extendDamageForLayer(CCLayerImpl* layer, FloatRect& targetDamageRect)
 {
     // There are two ways that a layer can damage a region of the target surface:
     //   1. Property change (e.g. opacity, position, transforms):
@@ -249,7 +249,7 @@ void DamageTracker::extendDamageForLayer(LayerImpl* layer, FloatRect& targetDama
     bool layerIsNew = false;
     FloatRect oldRectInTargetSpace = removeRectFromCurrentFrame(layer->id(), layerIsNew);
 
-    FloatRect rectInTargetSpace = MathUtil::mapClippedRect(layer->drawTransform(), FloatRect(FloatPoint::zero(), layer->contentBounds()));
+    FloatRect rectInTargetSpace = CCMathUtil::mapClippedRect(layer->drawTransform(), FloatRect(FloatPoint::zero(), layer->contentBounds()));
     saveRectForNextFrame(layer->id(), rectInTargetSpace);
 
     if (layerIsNew || layerNeedsToRedrawOntoItsTargetSurface(layer)) {
@@ -267,12 +267,12 @@ void DamageTracker::extendDamageForLayer(LayerImpl* layer, FloatRect& targetDama
         float heightScale = layer->contentBounds().height() / static_cast<float>(layer->bounds().height());
         updateContentRect.scale(widthScale, heightScale);
 
-        FloatRect updateRectInTargetSpace = MathUtil::mapClippedRect(layer->drawTransform(), updateContentRect);
+        FloatRect updateRectInTargetSpace = CCMathUtil::mapClippedRect(layer->drawTransform(), updateContentRect);
         targetDamageRect.uniteIfNonZero(updateRectInTargetSpace);
     }
 }
 
-void DamageTracker::extendDamageForRenderSurface(LayerImpl* layer, FloatRect& targetDamageRect)
+void CCDamageTracker::extendDamageForRenderSurface(CCLayerImpl* layer, FloatRect& targetDamageRect)
 {
     // There are two ways a "descendant surface" can damage regions of the "target surface":
     //   1. Property change:
@@ -286,7 +286,7 @@ void DamageTracker::extendDamageForRenderSurface(LayerImpl* layer, FloatRect& ta
     //      should propagate to the target surface.
     //
 
-    RenderSurfaceImpl* renderSurface = layer->renderSurface();
+    CCRenderSurface* renderSurface = layer->renderSurface();
 
     bool surfaceIsNew = false;
     FloatRect oldSurfaceRect = removeRectFromCurrentFrame(layer->id(), surfaceIsNew);
@@ -309,24 +309,24 @@ void DamageTracker::extendDamageForRenderSurface(LayerImpl* layer, FloatRect& ta
     // If there was damage, transform it to target space, and possibly contribute its reflection if needed.
     if (!damageRectInLocalSpace.isEmpty()) {
         const WebTransformationMatrix& drawTransform = renderSurface->drawTransform();
-        FloatRect damageRectInTargetSpace = MathUtil::mapClippedRect(drawTransform, damageRectInLocalSpace);
+        FloatRect damageRectInTargetSpace = CCMathUtil::mapClippedRect(drawTransform, damageRectInLocalSpace);
         targetDamageRect.uniteIfNonZero(damageRectInTargetSpace);
 
         if (layer->replicaLayer()) {
             const WebTransformationMatrix& replicaDrawTransform = renderSurface->replicaDrawTransform();
-            targetDamageRect.uniteIfNonZero(MathUtil::mapClippedRect(replicaDrawTransform, damageRectInLocalSpace));
+            targetDamageRect.uniteIfNonZero(CCMathUtil::mapClippedRect(replicaDrawTransform, damageRectInLocalSpace));
         }
     }
 
     // If there was damage on the replica's mask, then the target surface receives that damage as well.
     if (layer->replicaLayer() && layer->replicaLayer()->maskLayer()) {
-        LayerImpl* replicaMaskLayer = layer->replicaLayer()->maskLayer();
+        CCLayerImpl* replicaMaskLayer = layer->replicaLayer()->maskLayer();
 
         bool replicaIsNew = false;
         removeRectFromCurrentFrame(replicaMaskLayer->id(), replicaIsNew);
 
         const WebTransformationMatrix& replicaDrawTransform = renderSurface->replicaDrawTransform();
-        FloatRect replicaMaskLayerRect = MathUtil::mapClippedRect(replicaDrawTransform, FloatRect(FloatPoint::zero(), FloatSize(replicaMaskLayer->bounds().width(), replicaMaskLayer->bounds().height())));
+        FloatRect replicaMaskLayerRect = CCMathUtil::mapClippedRect(replicaDrawTransform, FloatRect(FloatPoint::zero(), FloatSize(replicaMaskLayer->bounds().width(), replicaMaskLayer->bounds().height())));
         saveRectForNextFrame(replicaMaskLayer->id(), replicaMaskLayerRect);
 
         // In the current implementation, a change in the replica mask damages the entire replica region.

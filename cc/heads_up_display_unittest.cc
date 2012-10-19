@@ -14,32 +14,32 @@ using namespace WebKitTests;
 
 namespace {
 
-class HeadsUpDisplayTest : public ThreadedTest {
+class CCHeadsUpDisplayTest : public CCThreadedTest {
 protected:
-    virtual void initializeSettings(LayerTreeSettings& settings) OVERRIDE
+    virtual void initializeSettings(CCLayerTreeSettings& settings) OVERRIDE
     {
         // Enable the HUD without requiring text.
         settings.showPropertyChangedRects = true;
     }
 };
 
-class DrawsContentLayer : public Layer {
+class DrawsContentLayerChromium : public LayerChromium {
 public:
-    static scoped_refptr<DrawsContentLayer> create() { return make_scoped_refptr(new DrawsContentLayer()); }
+    static scoped_refptr<DrawsContentLayerChromium> create() { return make_scoped_refptr(new DrawsContentLayerChromium()); }
     virtual bool drawsContent() const OVERRIDE { return true; }
 
 private:
-    DrawsContentLayer() : Layer() { }
-    virtual ~DrawsContentLayer()
+    DrawsContentLayerChromium() : LayerChromium() { }
+    virtual ~DrawsContentLayerChromium()
     {
     }
 };
 
-class HudWithRootLayerChange : public HeadsUpDisplayTest {
+class CCHudWithRootLayerChange : public CCHeadsUpDisplayTest {
 public:
-    HudWithRootLayerChange()
-        : m_rootLayer1(DrawsContentLayer::create())
-        , m_rootLayer2(DrawsContentLayer::create())
+    CCHudWithRootLayerChange()
+        : m_rootLayer1(DrawsContentLayerChromium::create())
+        , m_rootLayer2(DrawsContentLayerChromium::create())
         , m_numCommits(0)
     {
     }
@@ -100,12 +100,12 @@ public:
     }
 
 private:
-    scoped_refptr<DrawsContentLayer> m_rootLayer1;
-    scoped_refptr<DrawsContentLayer> m_rootLayer2;
+    scoped_refptr<DrawsContentLayerChromium> m_rootLayer1;
+    scoped_refptr<DrawsContentLayerChromium> m_rootLayer2;
     int m_numCommits;
 };
 
-TEST_F(HudWithRootLayerChange, runMultiThread)
+TEST_F(CCHudWithRootLayerChange, runMultiThread)
 {
     runTest(true);
 }

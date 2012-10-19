@@ -20,7 +20,7 @@
 
 namespace cc {
 
-DrawQuad::DrawQuad(const SharedQuadState* sharedQuadState, Material material, const IntRect& quadRect)
+CCDrawQuad::CCDrawQuad(const CCSharedQuadState* sharedQuadState, Material material, const IntRect& quadRect)
     : m_sharedQuadState(sharedQuadState)
     , m_sharedQuadStateId(sharedQuadState->id)
     , m_material(material)
@@ -33,7 +33,7 @@ DrawQuad::DrawQuad(const SharedQuadState* sharedQuadState, Material material, co
     DCHECK(m_material != Invalid);
 }
 
-IntRect DrawQuad::opaqueRect() const
+IntRect CCDrawQuad::opaqueRect() const
 {
     if (opacity() != 1)
         return IntRect();
@@ -42,43 +42,43 @@ IntRect DrawQuad::opaqueRect() const
     return m_opaqueRect;
 }
 
-void DrawQuad::setQuadVisibleRect(const IntRect& quadVisibleRect)
+void CCDrawQuad::setQuadVisibleRect(const IntRect& quadVisibleRect)
 {
     IntRect intersection = quadVisibleRect;
     intersection.intersect(m_quadRect);
     m_quadVisibleRect = intersection;
 }
 
-unsigned DrawQuad::size() const
+unsigned CCDrawQuad::size() const
 {
     switch (material()) {
     case Checkerboard:
-        return sizeof(CheckerboardDrawQuad);
+        return sizeof(CCCheckerboardDrawQuad);
     case DebugBorder:
-        return sizeof(DebugBorderDrawQuad);
+        return sizeof(CCDebugBorderDrawQuad);
     case IOSurfaceContent:
-        return sizeof(IOSurfaceDrawQuad);
+        return sizeof(CCIOSurfaceDrawQuad);
     case TextureContent:
-        return sizeof(TextureDrawQuad);
+        return sizeof(CCTextureDrawQuad);
     case SolidColor:
-        return sizeof(SolidColorDrawQuad);
+        return sizeof(CCSolidColorDrawQuad);
     case TiledContent:
-        return sizeof(TileDrawQuad);
+        return sizeof(CCTileDrawQuad);
     case StreamVideoContent:
-        return sizeof(StreamVideoDrawQuad);
+        return sizeof(CCStreamVideoDrawQuad);
     case RenderPass:
-        return sizeof(RenderPassDrawQuad);
+        return sizeof(CCRenderPassDrawQuad);
     case YUVVideoContent:
-        return sizeof(YUVVideoDrawQuad);
+        return sizeof(CCYUVVideoDrawQuad);
     case Invalid:
         break;
     }
 
     CRASH();
-    return sizeof(DrawQuad);
+    return sizeof(CCDrawQuad);
 }
 
-scoped_ptr<DrawQuad> DrawQuad::copy(const SharedQuadState* copiedSharedQuadState) const
+scoped_ptr<CCDrawQuad> CCDrawQuad::copy(const CCSharedQuadState* copiedSharedQuadState) const
 {
     // RenderPass quads have their own copy() method.
     DCHECK(material() != RenderPass);
@@ -86,14 +86,14 @@ scoped_ptr<DrawQuad> DrawQuad::copy(const SharedQuadState* copiedSharedQuadState
     unsigned bytes = size();
     DCHECK(bytes > 0);
 
-    scoped_ptr<DrawQuad> copyQuad(reinterpret_cast<DrawQuad*>(new char[bytes]));
+    scoped_ptr<CCDrawQuad> copyQuad(reinterpret_cast<CCDrawQuad*>(new char[bytes]));
     memcpy(copyQuad.get(), this, bytes);
     copyQuad->setSharedQuadState(copiedSharedQuadState);
 
     return copyQuad.Pass();
 }
 
-void DrawQuad::setSharedQuadState(const SharedQuadState* sharedQuadState)
+void CCDrawQuad::setSharedQuadState(const CCSharedQuadState* sharedQuadState)
 {
     m_sharedQuadState = sharedQuadState;
     m_sharedQuadStateId = sharedQuadState->id;

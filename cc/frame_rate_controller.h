@@ -12,28 +12,28 @@
 
 namespace cc {
 
-class Thread;
-class TimeSource;
+class CCThread;
+class CCTimeSource;
 
-class FrameRateControllerClient {
+class CCFrameRateControllerClient {
 public:
     // Throttled is true when we have a maximum number of frames pending.
     virtual void vsyncTick(bool throttled) = 0;
 
 protected:
-    virtual ~FrameRateControllerClient() {}
+    virtual ~CCFrameRateControllerClient() {}
 };
 
-class FrameRateControllerTimeSourceAdapter;
+class CCFrameRateControllerTimeSourceAdapter;
 
-class FrameRateController : public TimerClient {
+class CCFrameRateController : public CCTimerClient {
 public:
-    explicit FrameRateController(scoped_refptr<TimeSource>);
-    // Alternate form of FrameRateController with unthrottled frame-rate.
-    explicit FrameRateController(Thread*);
-    virtual ~FrameRateController();
+    explicit CCFrameRateController(scoped_refptr<CCTimeSource>);
+    // Alternate form of CCFrameRateController with unthrottled frame-rate.
+    explicit CCFrameRateController(CCThread*);
+    virtual ~CCFrameRateController();
 
-    void setClient(FrameRateControllerClient* client) { m_client = client; }
+    void setClient(CCFrameRateControllerClient* client) { m_client = client; }
 
     void setActive(bool);
 
@@ -55,25 +55,25 @@ public:
     void setSwapBuffersCompleteSupported(bool);
 
 protected:
-    friend class FrameRateControllerTimeSourceAdapter;
+    friend class CCFrameRateControllerTimeSourceAdapter;
     void onTimerTick();
 
     void postManualTick();
 
-    // TimerClient implementation (used for unthrottled frame-rate).
+    // CCTimerClient implementation (used for unthrottled frame-rate).
     virtual void onTimerFired() OVERRIDE;
 
-    FrameRateControllerClient* m_client;
+    CCFrameRateControllerClient* m_client;
     int m_numFramesPending;
     int m_maxFramesPending;
-    scoped_refptr<TimeSource> m_timeSource;
-    scoped_ptr<FrameRateControllerTimeSourceAdapter> m_timeSourceClientAdapter;
+    scoped_refptr<CCTimeSource> m_timeSource;
+    scoped_ptr<CCFrameRateControllerTimeSourceAdapter> m_timeSourceClientAdapter;
     bool m_active;
     bool m_swapBuffersCompleteSupported;
 
     // Members for unthrottled frame-rate.
     bool m_isTimeSourceThrottling;
-    scoped_ptr<Timer> m_manualTicker;
+    scoped_ptr<CCTimer> m_manualTicker;
 };
 
 }  // namespace cc

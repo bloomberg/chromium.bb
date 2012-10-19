@@ -30,7 +30,7 @@ class TextureUploader;
 
 // Thread-safety notes: this class is not thread-safe and can only be called
 // from the thread it was created on (in practice, the compositor thread).
-class ResourceProvider {
+class CCResourceProvider {
 public:
     typedef unsigned ResourceId;
     typedef std::vector<ResourceId> ResourceIdArray;
@@ -58,9 +58,9 @@ public:
         unsigned syncPoint;
     };
 
-    static scoped_ptr<ResourceProvider> create(GraphicsContext*);
+    static scoped_ptr<CCResourceProvider> create(CCGraphicsContext*);
 
-    virtual ~ResourceProvider();
+    virtual ~CCResourceProvider();
 
     WebKit::WebGraphicsContext3D* graphicsContext3D();
     TextureCopier* textureCopier() const { return m_textureCopier.get(); }
@@ -119,13 +119,13 @@ public:
 
     // Prepares resources to be transfered to the parent, moving them to
     // mailboxes and serializing meta-data into TransferableResources.
-    // Resources are not removed from the ResourceProvider, but are markes as
+    // Resources are not removed from the CCResourceProvider, but are markes as
     // "in use".
     TransferableResourceList prepareSendToParent(const ResourceIdArray&);
 
     // Prepares resources to be transfered back to the child, moving them to
     // mailboxes and serializing meta-data into TransferableResources.
-    // Resources are removed from the ResourceProvider. Note: the resource IDs
+    // Resources are removed from the CCResourceProvider. Note: the resource IDs
     // passed are in the parent namespace and will be translated to the child
     // namespace when returned.
     TransferableResourceList prepareSendToChild(int child, const ResourceIdArray&);
@@ -146,20 +146,20 @@ public:
     // Only for testing
     size_t mailboxCount() const { return m_mailboxes.size(); }
 
-    // The following lock classes are part of the ResourceProvider API and are
+    // The following lock classes are part of the CCResourceProvider API and are
     // needed to read and write the resource contents. The user must ensure
     // that they only use GL locks on GL resources, etc, and this is enforced
     // by assertions.
     class ScopedReadLockGL {
     public:
-        ScopedReadLockGL(ResourceProvider*, ResourceProvider::ResourceId);
+        ScopedReadLockGL(CCResourceProvider*, CCResourceProvider::ResourceId);
         ~ScopedReadLockGL();
 
         unsigned textureId() const { return m_textureId; }
 
     private:
-        ResourceProvider* m_resourceProvider;
-        ResourceProvider::ResourceId m_resourceId;
+        CCResourceProvider* m_resourceProvider;
+        CCResourceProvider::ResourceId m_resourceId;
         unsigned m_textureId;
 
         DISALLOW_COPY_AND_ASSIGN(ScopedReadLockGL);
@@ -167,14 +167,14 @@ public:
 
     class ScopedWriteLockGL {
     public:
-        ScopedWriteLockGL(ResourceProvider*, ResourceProvider::ResourceId);
+        ScopedWriteLockGL(CCResourceProvider*, CCResourceProvider::ResourceId);
         ~ScopedWriteLockGL();
 
         unsigned textureId() const { return m_textureId; }
 
     private:
-        ResourceProvider* m_resourceProvider;
-        ResourceProvider::ResourceId m_resourceId;
+        CCResourceProvider* m_resourceProvider;
+        CCResourceProvider::ResourceId m_resourceId;
         unsigned m_textureId;
 
         DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGL);
@@ -182,14 +182,14 @@ public:
 
     class ScopedReadLockSoftware {
     public:
-        ScopedReadLockSoftware(ResourceProvider*, ResourceProvider::ResourceId);
+        ScopedReadLockSoftware(CCResourceProvider*, CCResourceProvider::ResourceId);
         ~ScopedReadLockSoftware();
 
         const SkBitmap* skBitmap() const { return &m_skBitmap; }
 
     private:
-        ResourceProvider* m_resourceProvider;
-        ResourceProvider::ResourceId m_resourceId;
+        CCResourceProvider* m_resourceProvider;
+        CCResourceProvider::ResourceId m_resourceId;
         SkBitmap m_skBitmap;
 
         DISALLOW_COPY_AND_ASSIGN(ScopedReadLockSoftware);
@@ -197,14 +197,14 @@ public:
 
     class ScopedWriteLockSoftware {
     public:
-        ScopedWriteLockSoftware(ResourceProvider*, ResourceProvider::ResourceId);
+        ScopedWriteLockSoftware(CCResourceProvider*, CCResourceProvider::ResourceId);
         ~ScopedWriteLockSoftware();
 
         SkCanvas* skCanvas() { return m_skCanvas.get(); }
 
     private:
-        ResourceProvider* m_resourceProvider;
-        ResourceProvider::ResourceId m_resourceId;
+        CCResourceProvider* m_resourceProvider;
+        CCResourceProvider::ResourceId m_resourceId;
         SkBitmap m_skBitmap;
         scoped_ptr<SkCanvas> m_skCanvas;
 
@@ -240,7 +240,7 @@ private:
     };
     typedef base::hash_map<int, Child> ChildMap;
 
-    explicit ResourceProvider(GraphicsContext*);
+    explicit CCResourceProvider(CCGraphicsContext*);
     bool initialize();
 
     const Resource* lockForRead(ResourceId);
@@ -253,7 +253,7 @@ private:
     void trimMailboxDeque();
     void deleteResourceInternal(ResourceMap::iterator it);
 
-    GraphicsContext* m_context;
+    CCGraphicsContext* m_context;
     ResourceId m_nextId;
     ResourceMap m_resources;
     int m_nextChild;
@@ -269,7 +269,7 @@ private:
     scoped_ptr<AcceleratedTextureCopier> m_textureCopier;
     int m_maxTextureSize;
 
-    DISALLOW_COPY_AND_ASSIGN(ResourceProvider);
+    DISALLOW_COPY_AND_ASSIGN(CCResourceProvider);
 };
 
 }

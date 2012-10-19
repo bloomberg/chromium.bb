@@ -44,7 +44,7 @@ WebLayerTreeViewImpl::~WebLayerTreeViewImpl()
 
 bool WebLayerTreeViewImpl::initialize(const WebLayerTreeView::Settings& webSettings)
 {
-    LayerTreeSettings settings;
+    CCLayerTreeSettings settings;
     settings.acceleratePainting = webSettings.acceleratePainting;
     settings.showFPSCounter = webSettings.showFPSCounter;
     settings.showPlatformLayerTree = webSettings.showPlatformLayerTree;
@@ -53,7 +53,7 @@ bool WebLayerTreeViewImpl::initialize(const WebLayerTreeView::Settings& webSetti
     settings.refreshRate = webSettings.refreshRate;
     settings.defaultTileSize = convert(webSettings.defaultTileSize);
     settings.maxUntiledLayerSize = convert(webSettings.maxUntiledLayerSize);
-    m_layerTreeHost = LayerTreeHost::create(this, settings);
+    m_layerTreeHost = CCLayerTreeHost::create(this, settings);
     if (!m_layerTreeHost.get())
         return false;
     return true;
@@ -71,7 +71,7 @@ void WebLayerTreeViewImpl::setRootLayer(const WebLayer& root)
 
 void WebLayerTreeViewImpl::clearRootLayer()
 {
-    m_layerTreeHost->setRootLayer(scoped_refptr<Layer>());
+    m_layerTreeHost->setRootLayer(scoped_refptr<LayerChromium>());
 }
 
 void WebLayerTreeViewImpl::setViewportSize(const WebSize& layoutViewportSize, const WebSize& deviceViewportSize)
@@ -144,7 +144,7 @@ bool WebLayerTreeViewImpl::commitRequested() const
 
 void WebLayerTreeViewImpl::composite()
 {
-    if (Proxy::hasImplThread())
+    if (CCProxy::hasImplThread())
         m_layerTreeHost->setNeedsCommit();
     else
         m_layerTreeHost->composite();
@@ -167,7 +167,7 @@ void WebLayerTreeViewImpl::finishAllRendering()
 
 void WebLayerTreeViewImpl::renderingStats(WebRenderingStats& stats) const
 {
-    RenderingStats ccStats;
+    CCRenderingStats ccStats;
     m_layerTreeHost->renderingStats(&ccStats);
 
     stats.numAnimationFrames = ccStats.numAnimationFrames;
@@ -186,7 +186,7 @@ void WebLayerTreeViewImpl::setFontAtlas(SkBitmap bitmap, WebRect asciiToWebRectT
     IntRect asciiToRectTable[128];
     for (int i = 0; i < 128; ++i)
         asciiToRectTable[i] = convert(asciiToWebRectTable[i]);
-    scoped_ptr<FontAtlas> fontAtlas = FontAtlas::create(bitmap, asciiToRectTable, fontHeight);
+    scoped_ptr<CCFontAtlas> fontAtlas = CCFontAtlas::create(bitmap, asciiToRectTable, fontHeight);
     m_layerTreeHost->setFontAtlas(fontAtlas.Pass());
 }
 
@@ -230,9 +230,9 @@ void WebLayerTreeViewImpl::didRecreateOutputSurface(bool success)
     m_client->didRecreateOutputSurface(success);
 }
 
-scoped_ptr<InputHandler> WebLayerTreeViewImpl::createInputHandler()
+scoped_ptr<CCInputHandler> WebLayerTreeViewImpl::createInputHandler()
 {
-    scoped_ptr<InputHandler> ret;
+    scoped_ptr<CCInputHandler> ret;
     scoped_ptr<WebInputHandler> handler(m_client->createInputHandler());
     if (handler)
         ret = WebToCCInputHandlerAdapter::create(handler.Pass());

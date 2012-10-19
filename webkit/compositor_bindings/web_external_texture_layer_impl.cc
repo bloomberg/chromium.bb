@@ -25,18 +25,18 @@ WebExternalTextureLayer* WebExternalTextureLayer::create(WebExternalTextureLayer
 WebExternalTextureLayerImpl::WebExternalTextureLayerImpl(WebExternalTextureLayerClient* client)
     : m_client(client)
 {
-    scoped_refptr<TextureLayer> layer;
+    scoped_refptr<TextureLayerChromium> layer;
     if (m_client)
-        layer = TextureLayer::create(this);
+        layer = TextureLayerChromium::create(this);
     else
-        layer = TextureLayer::create(0);
+        layer = TextureLayerChromium::create(0);
     layer->setIsDrawable(true);
     m_layer.reset(new WebLayerImpl(layer));
 }
 
 WebExternalTextureLayerImpl::~WebExternalTextureLayerImpl()
 {
-    static_cast<TextureLayer*>(m_layer->layer())->clearClient();
+    static_cast<TextureLayerChromium*>(m_layer->layer())->clearClient();
 }
 
 WebLayer* WebExternalTextureLayerImpl::layer()
@@ -46,42 +46,42 @@ WebLayer* WebExternalTextureLayerImpl::layer()
 
 void WebExternalTextureLayerImpl::setTextureId(unsigned id)
 {
-    static_cast<TextureLayer*>(m_layer->layer())->setTextureId(id);
+    static_cast<TextureLayerChromium*>(m_layer->layer())->setTextureId(id);
 }
 
 void WebExternalTextureLayerImpl::setFlipped(bool flipped)
 {
-    static_cast<TextureLayer*>(m_layer->layer())->setFlipped(flipped);
+    static_cast<TextureLayerChromium*>(m_layer->layer())->setFlipped(flipped);
 }
 
 void WebExternalTextureLayerImpl::setUVRect(const WebFloatRect& rect)
 {
-    static_cast<TextureLayer*>(m_layer->layer())->setUVRect(convert(rect));
+    static_cast<TextureLayerChromium*>(m_layer->layer())->setUVRect(convert(rect));
 }
 
 void WebExternalTextureLayerImpl::setOpaque(bool opaque)
 {
-    static_cast<TextureLayer*>(m_layer->layer())->setContentsOpaque(opaque);
+    static_cast<TextureLayerChromium*>(m_layer->layer())->setContentsOpaque(opaque);
 }
 
 void WebExternalTextureLayerImpl::setPremultipliedAlpha(bool premultipliedAlpha)
 {
-    static_cast<TextureLayer*>(m_layer->layer())->setPremultipliedAlpha(premultipliedAlpha);
+    static_cast<TextureLayerChromium*>(m_layer->layer())->setPremultipliedAlpha(premultipliedAlpha);
 }
 
 void WebExternalTextureLayerImpl::willModifyTexture()
 {
-    static_cast<TextureLayer*>(m_layer->layer())->willModifyTexture();
+    static_cast<TextureLayerChromium*>(m_layer->layer())->willModifyTexture();
 }
 
 void WebExternalTextureLayerImpl::setRateLimitContext(bool rateLimit)
 {
-    static_cast<TextureLayer*>(m_layer->layer())->setRateLimitContext(rateLimit);
+    static_cast<TextureLayerChromium*>(m_layer->layer())->setRateLimitContext(rateLimit);
 }
 
 class WebTextureUpdaterImpl : public WebTextureUpdater {
 public:
-    explicit WebTextureUpdaterImpl(TextureUpdateQueue& queue)
+    explicit WebTextureUpdaterImpl(CCTextureUpdateQueue& queue)
         : m_queue(queue)
     {
     }
@@ -93,10 +93,10 @@ public:
     }
 
 private:
-    TextureUpdateQueue& m_queue;
+    CCTextureUpdateQueue& m_queue;
 };
 
-unsigned WebExternalTextureLayerImpl::prepareTexture(TextureUpdateQueue& queue)
+unsigned WebExternalTextureLayerImpl::prepareTexture(CCTextureUpdateQueue& queue)
 {
     ASSERT(m_client);
     WebTextureUpdaterImpl updaterImpl(queue);

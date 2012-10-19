@@ -23,18 +23,18 @@ namespace cc {
 
 static int s_nextLayerId = 1;
 
-scoped_refptr<Layer> Layer::create()
+scoped_refptr<LayerChromium> LayerChromium::create()
 {
-    return make_scoped_refptr(new Layer());
+    return make_scoped_refptr(new LayerChromium());
 }
 
-Layer::Layer()
+LayerChromium::LayerChromium()
     : m_needsDisplay(false)
     , m_stackingOrderChanged(false)
     , m_layerId(s_nextLayerId++)
     , m_parent(0)
     , m_layerTreeHost(0)
-    , m_layerAnimationController(LayerAnimationController::create(this))
+    , m_layerAnimationController(CCLayerAnimationController::create(this))
     , m_scrollable(false)
     , m_shouldScrollOnMainThread(false)
     , m_haveWheelEventHandlers(false)
@@ -73,7 +73,7 @@ Layer::Layer()
     }
 }
 
-Layer::~Layer()
+LayerChromium::~LayerChromium()
 {
     // Our parent should be holding a reference to us so there should be no
     // way for us to be destroyed while we still have a parent.
@@ -83,12 +83,12 @@ Layer::~Layer()
     removeAllChildren();
 }
 
-void Layer::setUseLCDText(bool useLCDText)
+void LayerChromium::setUseLCDText(bool useLCDText)
 {
     m_useLCDText = useLCDText;
 }
 
-void Layer::setLayerTreeHost(LayerTreeHost* host)
+void LayerChromium::setLayerTreeHost(CCLayerTreeHost* host)
 {
     if (m_layerTreeHost == host)
         return;
@@ -108,13 +108,13 @@ void Layer::setLayerTreeHost(LayerTreeHost* host)
         host->didAddAnimation();
 }
 
-void Layer::setNeedsCommit()
+void LayerChromium::setNeedsCommit()
 {
     if (m_layerTreeHost)
         m_layerTreeHost->setNeedsCommit();
 }
 
-IntRect Layer::layerRectToContentRect(const WebKit::WebRect& layerRect)
+IntRect LayerChromium::layerRectToContentRect(const WebKit::WebRect& layerRect)
 {
     float widthScale = static_cast<float>(contentBounds().width()) / bounds().width();
     float heightScale = static_cast<float>(contentBounds().height()) / bounds().height();
@@ -123,28 +123,28 @@ IntRect Layer::layerRectToContentRect(const WebKit::WebRect& layerRect)
     return enclosingIntRect(contentRect);
 }
 
-void Layer::setParent(Layer* layer)
+void LayerChromium::setParent(LayerChromium* layer)
 {
     DCHECK(!layer || !layer->hasAncestor(this));
     m_parent = layer;
     setLayerTreeHost(m_parent ? m_parent->layerTreeHost() : 0);
 }
 
-bool Layer::hasAncestor(Layer* ancestor) const
+bool LayerChromium::hasAncestor(LayerChromium* ancestor) const
 {
-    for (Layer* layer = parent(); layer; layer = layer->parent()) {
+    for (LayerChromium* layer = parent(); layer; layer = layer->parent()) {
         if (layer == ancestor)
             return true;
     }
     return false;
 }
 
-void Layer::addChild(scoped_refptr<Layer> child)
+void LayerChromium::addChild(scoped_refptr<LayerChromium> child)
 {
     insertChild(child, numChildren());
 }
 
-void Layer::insertChild(scoped_refptr<Layer> child, size_t index)
+void LayerChromium::insertChild(scoped_refptr<LayerChromium> child, size_t index)
 {
     index = min(index, m_children.size());
     child->removeFromParent();
@@ -156,13 +156,13 @@ void Layer::insertChild(scoped_refptr<Layer> child, size_t index)
     setNeedsCommit();
 }
 
-void Layer::removeFromParent()
+void LayerChromium::removeFromParent()
 {
     if (m_parent)
         m_parent->removeChild(this);
 }
 
-void Layer::removeChild(Layer* child)
+void LayerChromium::removeChild(LayerChromium* child)
 {
     for (LayerList::iterator iter = m_children.begin(); iter != m_children.end(); ++iter)
     {
@@ -176,7 +176,7 @@ void Layer::removeChild(Layer* child)
     }
 }
 
-void Layer::replaceChild(Layer* reference, scoped_refptr<Layer> newLayer)
+void LayerChromium::replaceChild(LayerChromium* reference, scoped_refptr<LayerChromium> newLayer)
 {
     ASSERT_ARG(reference, reference);
     ASSERT_ARG(reference, reference->parent() == this);
@@ -198,7 +198,7 @@ void Layer::replaceChild(Layer* reference, scoped_refptr<Layer> newLayer)
     }
 }
 
-int Layer::indexOfChild(const Layer* reference)
+int LayerChromium::indexOfChild(const LayerChromium* reference)
 {
     for (size_t i = 0; i < m_children.size(); i++) {
         if (m_children[i] == reference)
@@ -207,7 +207,7 @@ int Layer::indexOfChild(const Layer* reference)
     return -1;
 }
 
-void Layer::setBounds(const IntSize& size)
+void LayerChromium::setBounds(const IntSize& size)
 {
     if (bounds() == size)
         return;
@@ -222,24 +222,24 @@ void Layer::setBounds(const IntSize& size)
         setNeedsCommit();
 }
 
-Layer* Layer::rootLayer()
+LayerChromium* LayerChromium::rootLayer()
 {
-    Layer* layer = this;
+    LayerChromium* layer = this;
     while (layer->parent())
         layer = layer->parent();
     return layer;
 }
 
-void Layer::removeAllChildren()
+void LayerChromium::removeAllChildren()
 {
     while (m_children.size()) {
-        Layer* layer = m_children[0].get();
+        LayerChromium* layer = m_children[0].get();
         DCHECK(layer->parent());
         layer->removeFromParent();
     }
 }
 
-void Layer::setChildren(const LayerList& children)
+void LayerChromium::setChildren(const LayerList& children)
 {
     if (children == m_children)
         return;
@@ -250,7 +250,7 @@ void Layer::setChildren(const LayerList& children)
         addChild(children[i]);
 }
 
-void Layer::setAnchorPoint(const FloatPoint& anchorPoint)
+void LayerChromium::setAnchorPoint(const FloatPoint& anchorPoint)
 {
     if (m_anchorPoint == anchorPoint)
         return;
@@ -258,7 +258,7 @@ void Layer::setAnchorPoint(const FloatPoint& anchorPoint)
     setNeedsCommit();
 }
 
-void Layer::setAnchorPointZ(float anchorPointZ)
+void LayerChromium::setAnchorPointZ(float anchorPointZ)
 {
     if (m_anchorPointZ == anchorPointZ)
         return;
@@ -266,7 +266,7 @@ void Layer::setAnchorPointZ(float anchorPointZ)
     setNeedsCommit();
 }
 
-void Layer::setBackgroundColor(SkColor backgroundColor)
+void LayerChromium::setBackgroundColor(SkColor backgroundColor)
 {
     if (m_backgroundColor == backgroundColor)
         return;
@@ -274,12 +274,12 @@ void Layer::setBackgroundColor(SkColor backgroundColor)
     setNeedsCommit();
 }
 
-IntSize Layer::contentBounds() const
+IntSize LayerChromium::contentBounds() const
 {
     return bounds();
 }
 
-void Layer::setMasksToBounds(bool masksToBounds)
+void LayerChromium::setMasksToBounds(bool masksToBounds)
 {
     if (m_masksToBounds == masksToBounds)
         return;
@@ -287,7 +287,7 @@ void Layer::setMasksToBounds(bool masksToBounds)
     setNeedsCommit();
 }
 
-void Layer::setMaskLayer(Layer* maskLayer)
+void LayerChromium::setMaskLayer(LayerChromium* maskLayer)
 {
     if (m_maskLayer == maskLayer)
         return;
@@ -301,7 +301,7 @@ void Layer::setMaskLayer(Layer* maskLayer)
     setNeedsCommit();
 }
 
-void Layer::setReplicaLayer(Layer* layer)
+void LayerChromium::setReplicaLayer(LayerChromium* layer)
 {
     if (m_replicaLayer == layer)
         return;
@@ -313,32 +313,32 @@ void Layer::setReplicaLayer(Layer* layer)
     setNeedsCommit();
 }
 
-void Layer::setFilters(const WebKit::WebFilterOperations& filters)
+void LayerChromium::setFilters(const WebKit::WebFilterOperations& filters)
 {
     if (m_filters == filters)
         return;
     m_filters = filters;
     setNeedsCommit();
     if (!filters.isEmpty())
-        LayerTreeHost::setNeedsFilterContext(true);
+        CCLayerTreeHost::setNeedsFilterContext(true);
 }
 
-void Layer::setBackgroundFilters(const WebKit::WebFilterOperations& backgroundFilters)
+void LayerChromium::setBackgroundFilters(const WebKit::WebFilterOperations& backgroundFilters)
 {
     if (m_backgroundFilters == backgroundFilters)
         return;
     m_backgroundFilters = backgroundFilters;
     setNeedsCommit();
     if (!backgroundFilters.isEmpty())
-        LayerTreeHost::setNeedsFilterContext(true);
+        CCLayerTreeHost::setNeedsFilterContext(true);
 }
 
-bool Layer::needsDisplay() const
+bool LayerChromium::needsDisplay() const
 {
     return m_needsDisplay;
 }
 
-void Layer::setOpacity(float opacity)
+void LayerChromium::setOpacity(float opacity)
 {
     if (m_opacity == opacity)
         return;
@@ -346,12 +346,12 @@ void Layer::setOpacity(float opacity)
     setNeedsCommit();
 }
 
-bool Layer::opacityIsAnimating() const
+bool LayerChromium::opacityIsAnimating() const
 {
-    return m_layerAnimationController->isAnimatingProperty(ActiveAnimation::Opacity);
+    return m_layerAnimationController->isAnimatingProperty(CCActiveAnimation::Opacity);
 }
 
-void Layer::setContentsOpaque(bool opaque)
+void LayerChromium::setContentsOpaque(bool opaque)
 {
     if (m_contentsOpaque == opaque)
         return;
@@ -359,7 +359,7 @@ void Layer::setContentsOpaque(bool opaque)
     setNeedsDisplay();
 }
 
-void Layer::setPosition(const FloatPoint& position)
+void LayerChromium::setPosition(const FloatPoint& position)
 {
     if (m_position == position)
         return;
@@ -367,7 +367,7 @@ void Layer::setPosition(const FloatPoint& position)
     setNeedsCommit();
 }
 
-void Layer::setSublayerTransform(const WebTransformationMatrix& sublayerTransform)
+void LayerChromium::setSublayerTransform(const WebTransformationMatrix& sublayerTransform)
 {
     if (m_sublayerTransform == sublayerTransform)
         return;
@@ -375,7 +375,7 @@ void Layer::setSublayerTransform(const WebTransformationMatrix& sublayerTransfor
     setNeedsCommit();
 }
 
-void Layer::setTransform(const WebTransformationMatrix& transform)
+void LayerChromium::setTransform(const WebTransformationMatrix& transform)
 {
     if (m_transform == transform)
         return;
@@ -383,12 +383,12 @@ void Layer::setTransform(const WebTransformationMatrix& transform)
     setNeedsCommit();
 }
 
-bool Layer::transformIsAnimating() const
+bool LayerChromium::transformIsAnimating() const
 {
-    return m_layerAnimationController->isAnimatingProperty(ActiveAnimation::Transform);
+    return m_layerAnimationController->isAnimatingProperty(CCActiveAnimation::Transform);
 }
 
-void Layer::setScrollPosition(const IntPoint& scrollPosition)
+void LayerChromium::setScrollPosition(const IntPoint& scrollPosition)
 {
     if (m_scrollPosition == scrollPosition)
         return;
@@ -398,7 +398,7 @@ void Layer::setScrollPosition(const IntPoint& scrollPosition)
     setNeedsCommit();
 }
 
-void Layer::setMaxScrollPosition(const IntSize& maxScrollPosition)
+void LayerChromium::setMaxScrollPosition(const IntSize& maxScrollPosition)
 {
     if (m_maxScrollPosition == maxScrollPosition)
         return;
@@ -406,7 +406,7 @@ void Layer::setMaxScrollPosition(const IntSize& maxScrollPosition)
     setNeedsCommit();
 }
 
-void Layer::setScrollable(bool scrollable)
+void LayerChromium::setScrollable(bool scrollable)
 {
     if (m_scrollable == scrollable)
         return;
@@ -414,7 +414,7 @@ void Layer::setScrollable(bool scrollable)
     setNeedsCommit();
 }
 
-void Layer::setShouldScrollOnMainThread(bool shouldScrollOnMainThread)
+void LayerChromium::setShouldScrollOnMainThread(bool shouldScrollOnMainThread)
 {
     if (m_shouldScrollOnMainThread == shouldScrollOnMainThread)
         return;
@@ -422,7 +422,7 @@ void Layer::setShouldScrollOnMainThread(bool shouldScrollOnMainThread)
     setNeedsCommit();
 }
 
-void Layer::setHaveWheelEventHandlers(bool haveWheelEventHandlers)
+void LayerChromium::setHaveWheelEventHandlers(bool haveWheelEventHandlers)
 {
     if (m_haveWheelEventHandlers == haveWheelEventHandlers)
         return;
@@ -430,7 +430,7 @@ void Layer::setHaveWheelEventHandlers(bool haveWheelEventHandlers)
     setNeedsCommit();
 }
 
-void Layer::setNonFastScrollableRegion(const Region& region)
+void LayerChromium::setNonFastScrollableRegion(const Region& region)
 {
     if (m_nonFastScrollableRegion == region)
         return;
@@ -439,7 +439,7 @@ void Layer::setNonFastScrollableRegion(const Region& region)
     setNeedsCommit();
 }
 
-void Layer::setDrawCheckerboardForMissingTiles(bool checkerboard)
+void LayerChromium::setDrawCheckerboardForMissingTiles(bool checkerboard)
 {
     if (m_drawCheckerboardForMissingTiles == checkerboard)
         return;
@@ -447,7 +447,7 @@ void Layer::setDrawCheckerboardForMissingTiles(bool checkerboard)
     setNeedsCommit();
 }
 
-void Layer::setForceRenderSurface(bool force)
+void LayerChromium::setForceRenderSurface(bool force)
 {
     if (m_forceRenderSurface == force)
         return;
@@ -455,7 +455,7 @@ void Layer::setForceRenderSurface(bool force)
     setNeedsCommit();
 }
 
-void Layer::setImplTransform(const WebTransformationMatrix& transform)
+void LayerChromium::setImplTransform(const WebTransformationMatrix& transform)
 {
     if (m_implTransform == transform)
         return;
@@ -463,7 +463,7 @@ void Layer::setImplTransform(const WebTransformationMatrix& transform)
     setNeedsCommit();
 }
 
-void Layer::setDoubleSided(bool doubleSided)
+void LayerChromium::setDoubleSided(bool doubleSided)
 {
     if (m_doubleSided == doubleSided)
         return;
@@ -471,7 +471,7 @@ void Layer::setDoubleSided(bool doubleSided)
     setNeedsCommit();
 }
 
-void Layer::setIsDrawable(bool isDrawable)
+void LayerChromium::setIsDrawable(bool isDrawable)
 {
     if (m_isDrawable == isDrawable)
         return;
@@ -480,12 +480,12 @@ void Layer::setIsDrawable(bool isDrawable)
     setNeedsCommit();
 }
 
-Layer* Layer::parent() const
+LayerChromium* LayerChromium::parent() const
 {
     return m_parent;
 }
 
-void Layer::setNeedsDisplayRect(const FloatRect& dirtyRect)
+void LayerChromium::setNeedsDisplayRect(const FloatRect& dirtyRect)
 {
     m_updateRect.unite(dirtyRect);
 
@@ -498,7 +498,7 @@ void Layer::setNeedsDisplayRect(const FloatRect& dirtyRect)
     setNeedsCommit();
 }
 
-bool Layer::descendantIsFixedToContainerLayer() const
+bool LayerChromium::descendantIsFixedToContainerLayer() const
 {
     for (size_t i = 0; i < m_children.size(); ++i) {
         if (m_children[i]->fixedToContainerLayer() || m_children[i]->descendantIsFixedToContainerLayer())
@@ -507,7 +507,7 @@ bool Layer::descendantIsFixedToContainerLayer() const
     return false;
 }
 
-void Layer::setIsContainerForFixedPositionLayers(bool isContainerForFixedPositionLayers)
+void LayerChromium::setIsContainerForFixedPositionLayers(bool isContainerForFixedPositionLayers)
 {
     if (m_isContainerForFixedPositionLayers == isContainerForFixedPositionLayers)
         return;
@@ -521,7 +521,7 @@ void Layer::setIsContainerForFixedPositionLayers(bool isContainerForFixedPositio
         setNeedsCommit();
 }
 
-void Layer::setFixedToContainerLayer(bool fixedToContainerLayer)
+void LayerChromium::setFixedToContainerLayer(bool fixedToContainerLayer)
 {
     if (m_fixedToContainerLayer == fixedToContainerLayer)
         return;
@@ -529,7 +529,7 @@ void Layer::setFixedToContainerLayer(bool fixedToContainerLayer)
     setNeedsCommit();
 }
 
-void Layer::pushPropertiesTo(LayerImpl* layer)
+void LayerChromium::pushPropertiesTo(CCLayerImpl* layer)
 {
     layer->setAnchorPoint(m_anchorPoint);
     layer->setAnchorPointZ(m_anchorPointZ);
@@ -571,7 +571,7 @@ void Layer::pushPropertiesTo(LayerImpl* layer)
         layer->setTransform(m_transform);
 
     // If the main thread commits multiple times before the impl thread actually draws, then damage tracking
-    // will become incorrect if we simply clobber the updateRect here. The LayerImpl's updateRect needs to
+    // will become incorrect if we simply clobber the updateRect here. The CCLayerImpl's updateRect needs to
     // accumulate (i.e. union) any update changes that have occurred on the main thread.
     m_updateRect.uniteIfNonZero(layer->updateRect());
     layer->setUpdateRect(m_updateRect);
@@ -593,45 +593,45 @@ void Layer::pushPropertiesTo(LayerImpl* layer)
     m_updateRect = FloatRect();
 }
 
-scoped_ptr<LayerImpl> Layer::createLayerImpl()
+scoped_ptr<CCLayerImpl> LayerChromium::createCCLayerImpl()
 {
-    return LayerImpl::create(m_layerId);
+    return CCLayerImpl::create(m_layerId);
 }
 
-bool Layer::drawsContent() const
+bool LayerChromium::drawsContent() const
 {
     return m_isDrawable;
 }
 
-bool Layer::needMoreUpdates()
+bool LayerChromium::needMoreUpdates()
 {
     return false;
 }
 
-bool Layer::needsContentsScale() const
+bool LayerChromium::needsContentsScale() const
 {
     return false;
 }
 
-void Layer::setDebugBorderColor(SkColor color)
+void LayerChromium::setDebugBorderColor(SkColor color)
 {
     m_debugBorderColor = color;
     setNeedsCommit();
 }
 
-void Layer::setDebugBorderWidth(float width)
+void LayerChromium::setDebugBorderWidth(float width)
 {
     m_debugBorderWidth = width;
     setNeedsCommit();
 }
 
-void Layer::setDebugName(const std::string& debugName)
+void LayerChromium::setDebugName(const std::string& debugName)
 {
     m_debugName = debugName;
     setNeedsCommit();
 }
 
-void Layer::setContentsScale(float contentsScale)
+void LayerChromium::setContentsScale(float contentsScale)
 {
     if (!needsContentsScale() || m_contentsScale == contentsScale)
         return;
@@ -640,7 +640,7 @@ void Layer::setContentsScale(float contentsScale)
     setNeedsDisplay();
 }
 
-void Layer::setBoundsContainPageScale(bool boundsContainPageScale)
+void LayerChromium::setBoundsContainPageScale(bool boundsContainPageScale)
 {
     for (size_t i = 0; i < m_children.size(); ++i)
         m_children[i]->setBoundsContainPageScale(boundsContainPageScale);
@@ -652,14 +652,14 @@ void Layer::setBoundsContainPageScale(bool boundsContainPageScale)
     setNeedsDisplay();
 }
 
-void Layer::createRenderSurface()
+void LayerChromium::createRenderSurface()
 {
     DCHECK(!m_renderSurface);
-    m_renderSurface = make_scoped_ptr(new RenderSurface(this));
+    m_renderSurface = make_scoped_ptr(new RenderSurfaceChromium(this));
     setRenderTarget(this);
 }
 
-bool Layer::descendantDrawsContent()
+bool LayerChromium::descendantDrawsContent()
 {
     for (size_t i = 0; i < m_children.size(); ++i) {
         if (m_children[i]->drawsContent() || m_children[i]->descendantDrawsContent())
@@ -668,17 +668,17 @@ bool Layer::descendantDrawsContent()
     return false;
 }
 
-int Layer::id() const
+int LayerChromium::id() const
 {
     return m_layerId;
 }
 
-float Layer::opacity() const
+float LayerChromium::opacity() const
 {
     return m_opacity;
 }
 
-void Layer::setOpacityFromAnimation(float opacity)
+void LayerChromium::setOpacityFromAnimation(float opacity)
 {
     // This is called due to an ongoing accelerated animation. Since this animation is
     // also being run on the impl thread, there is no need to request a commit to push
@@ -686,12 +686,12 @@ void Layer::setOpacityFromAnimation(float opacity)
     m_opacity = opacity;
 }
 
-const WebKit::WebTransformationMatrix& Layer::transform() const
+const WebKit::WebTransformationMatrix& LayerChromium::transform() const
 {
     return m_transform;
 }
 
-void Layer::setTransformFromAnimation(const WebTransformationMatrix& transform)
+void LayerChromium::setTransformFromAnimation(const WebTransformationMatrix& transform)
 {
     // This is called due to an ongoing accelerated animation. Since this animation is
     // also being run on the impl thread, there is no need to request a commit to push
@@ -699,7 +699,7 @@ void Layer::setTransformFromAnimation(const WebTransformationMatrix& transform)
     m_transform = transform;
 }
 
-bool Layer::addAnimation(scoped_ptr <ActiveAnimation> animation)
+bool LayerChromium::addAnimation(scoped_ptr <CCActiveAnimation> animation)
 {
     // WebCore currently assumes that accelerated animations will start soon
     // after the animation is added. However we cannot guarantee that if we do
@@ -718,31 +718,31 @@ bool Layer::addAnimation(scoped_ptr <ActiveAnimation> animation)
     return true;
 }
 
-void Layer::pauseAnimation(int animationId, double timeOffset)
+void LayerChromium::pauseAnimation(int animationId, double timeOffset)
 {
     m_layerAnimationController->pauseAnimation(animationId, timeOffset);
     setNeedsCommit();
 }
 
-void Layer::removeAnimation(int animationId)
+void LayerChromium::removeAnimation(int animationId)
 {
     m_layerAnimationController->removeAnimation(animationId);
     setNeedsCommit();
 }
 
-void Layer::suspendAnimations(double monotonicTime)
+void LayerChromium::suspendAnimations(double monotonicTime)
 {
     m_layerAnimationController->suspendAnimations(monotonicTime);
     setNeedsCommit();
 }
 
-void Layer::resumeAnimations(double monotonicTime)
+void LayerChromium::resumeAnimations(double monotonicTime)
 {
     m_layerAnimationController->resumeAnimations(monotonicTime);
     setNeedsCommit();
 }
 
-void Layer::setLayerAnimationController(scoped_ptr<LayerAnimationController> layerAnimationController)
+void LayerChromium::setLayerAnimationController(scoped_ptr<CCLayerAnimationController> layerAnimationController)
 {
     m_layerAnimationController = layerAnimationController.Pass();
     if (m_layerAnimationController) {
@@ -752,46 +752,46 @@ void Layer::setLayerAnimationController(scoped_ptr<LayerAnimationController> lay
     setNeedsCommit();
 }
 
-scoped_ptr<LayerAnimationController> Layer::releaseLayerAnimationController()
+scoped_ptr<CCLayerAnimationController> LayerChromium::releaseLayerAnimationController()
 {
-    scoped_ptr<LayerAnimationController> toReturn = m_layerAnimationController.Pass();
-    m_layerAnimationController = LayerAnimationController::create(this);
+    scoped_ptr<CCLayerAnimationController> toReturn = m_layerAnimationController.Pass();
+    m_layerAnimationController = CCLayerAnimationController::create(this);
     return toReturn.Pass();
 }
 
-bool Layer::hasActiveAnimation() const
+bool LayerChromium::hasActiveAnimation() const
 {
     return m_layerAnimationController->hasActiveAnimation();
 }
 
-void Layer::notifyAnimationStarted(const AnimationEvent& event, double wallClockTime)
+void LayerChromium::notifyAnimationStarted(const CCAnimationEvent& event, double wallClockTime)
 {
     m_layerAnimationController->notifyAnimationStarted(event);
     if (m_layerAnimationDelegate)
         m_layerAnimationDelegate->notifyAnimationStarted(wallClockTime);
 }
 
-void Layer::notifyAnimationFinished(double wallClockTime)
+void LayerChromium::notifyAnimationFinished(double wallClockTime)
 {
     if (m_layerAnimationDelegate)
         m_layerAnimationDelegate->notifyAnimationFinished(wallClockTime);
 }
 
-Region Layer::visibleContentOpaqueRegion() const
+Region LayerChromium::visibleContentOpaqueRegion() const
 {
     if (contentsOpaque())
         return visibleContentRect();
     return Region();
 }
 
-ScrollbarLayer* Layer::toScrollbarLayer()
+ScrollbarLayerChromium* LayerChromium::toScrollbarLayerChromium()
 {
     return 0;
 }
 
-void sortLayers(std::vector<scoped_refptr<Layer> >::iterator, std::vector<scoped_refptr<Layer> >::iterator, void*)
+void sortLayers(std::vector<scoped_refptr<LayerChromium> >::iterator, std::vector<scoped_refptr<LayerChromium> >::iterator, void*)
 {
-    // Currently we don't use z-order to decide what to paint, so there's no need to actually sort Layers.
+    // Currently we don't use z-order to decide what to paint, so there's no need to actually sort LayerChromiums.
 }
 
 }

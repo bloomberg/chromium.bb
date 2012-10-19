@@ -11,22 +11,22 @@ class SkCanvas;
 
 namespace cc {
 
-class LayerPainter;
+class LayerPainterChromium;
 
 // Base class for BitmapCanvasLayerTextureUpdater and
 // SkPictureCanvasLayerTextureUpdater that reduces code duplication between
 // their respective paintContents implementations.
 class CanvasLayerTextureUpdater : public LayerTextureUpdater {
 protected:
-    explicit CanvasLayerTextureUpdater(scoped_ptr<LayerPainter>);
+    explicit CanvasLayerTextureUpdater(scoped_ptr<LayerPainterChromium>);
     virtual ~CanvasLayerTextureUpdater();
 
-    void paintContents(SkCanvas*, const IntRect& contentRect, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, RenderingStats&);
+    void paintContents(SkCanvas*, const IntRect& contentRect, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, CCRenderingStats&);
     const IntRect& contentRect() const { return m_contentRect; }
 
 private:
     IntRect m_contentRect;
-    scoped_ptr<LayerPainter> m_painter;
+    scoped_ptr<LayerPainterChromium> m_painter;
 };
 
 }  // namespace cc

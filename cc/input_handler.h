@@ -12,15 +12,15 @@ namespace cc {
 class IntPoint;
 class IntSize;
 
-// The InputHandler is a way for the embedders to interact with
+// The CCInputHandler is a way for the embedders to interact with
 // the impl thread side of the compositor implementation.
 //
-// There is one InputHandler for every LayerTreeHost. It is
+// There is one CCInputHandler for every CCLayerTreeHost. It is
 // created on the main thread and used only on the impl thread.
 //
-// The InputHandler is constructed with a InputHandlerClient, which is the
+// The CCInputHandler is constructed with a CCInputHandlerClient, which is the
 // interface by which the handler can manipulate the LayerTree.
-class InputHandlerClient {
+class CCInputHandlerClient {
 public:
     enum ScrollStatus { ScrollOnMainThread, ScrollStarted, ScrollIgnored };
     enum ScrollInputType { Gesture, Wheel };
@@ -55,29 +55,29 @@ public:
                                          double startTime,
                                          double duration) = 0;
 
-    // Request another callback to InputHandler::animate().
+    // Request another callback to CCInputHandler::animate().
     virtual void scheduleAnimation() = 0;
 
 protected:
-    InputHandlerClient() { }
-    virtual ~InputHandlerClient() { }
+    CCInputHandlerClient() { }
+    virtual ~CCInputHandlerClient() { }
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(InputHandlerClient);
+    DISALLOW_COPY_AND_ASSIGN(CCInputHandlerClient);
 };
 
-class InputHandler {
+class CCInputHandler {
 public:
-    virtual ~InputHandler() { }
+    virtual ~CCInputHandler() { }
 
-    virtual void bindToClient(InputHandlerClient*) = 0;
+    virtual void bindToClient(CCInputHandlerClient*) = 0;
     virtual void animate(double monotonicTime) = 0;
 
 protected:
-    InputHandler() { }
+    CCInputHandler() { }
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(InputHandler);
+    DISALLOW_COPY_AND_ASSIGN(CCInputHandler);
 };
 
 }

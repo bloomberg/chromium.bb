@@ -24,26 +24,26 @@
 
 namespace cc {
 
-class LayerSorter;
-class LayerTreeHostImpl;
-class QuadSink;
-class Renderer;
-class ScrollbarAnimationController;
-class ScrollbarLayerImpl;
-class Layer;
+class CCLayerSorter;
+class CCLayerTreeHostImpl;
+class CCQuadSink;
+class CCRenderer;
+class CCScrollbarAnimationController;
+class CCScrollbarLayerImpl;
+class LayerChromium;
 
-struct AppendQuadsData;
+struct CCAppendQuadsData;
 
-class LayerImpl : public LayerAnimationControllerClient {
+class CCLayerImpl : public CCLayerAnimationControllerClient {
 public:
-    static scoped_ptr<LayerImpl> create(int id)
+    static scoped_ptr<CCLayerImpl> create(int id)
     {
-        return make_scoped_ptr(new LayerImpl(id));
+        return make_scoped_ptr(new CCLayerImpl(id));
     }
 
-    virtual ~LayerImpl();
+    virtual ~CCLayerImpl();
 
-    // LayerAnimationControllerClient implementation.
+    // CCLayerAnimationControllerClient implementation.
     virtual int id() const OVERRIDE;
     virtual void setOpacityFromAnimation(float) OVERRIDE;
     virtual float opacity() const OVERRIDE;
@@ -51,39 +51,39 @@ public:
     virtual const WebKit::WebTransformationMatrix& transform() const OVERRIDE;
 
     // Tree structure.
-    LayerImpl* parent() const { return m_parent; }
-    const ScopedPtrVector<LayerImpl>& children() const { return m_children; }
-    void addChild(scoped_ptr<LayerImpl>);
+    CCLayerImpl* parent() const { return m_parent; }
+    const ScopedPtrVector<CCLayerImpl>& children() const { return m_children; }
+    void addChild(scoped_ptr<CCLayerImpl>);
     void removeFromParent();
     void removeAllChildren();
 
-    void setMaskLayer(scoped_ptr<LayerImpl>);
-    LayerImpl* maskLayer() const { return m_maskLayer.get(); }
+    void setMaskLayer(scoped_ptr<CCLayerImpl>);
+    CCLayerImpl* maskLayer() const { return m_maskLayer.get(); }
 
-    void setReplicaLayer(scoped_ptr<LayerImpl>);
-    LayerImpl* replicaLayer() const { return m_replicaLayer.get(); }
+    void setReplicaLayer(scoped_ptr<CCLayerImpl>);
+    CCLayerImpl* replicaLayer() const { return m_replicaLayer.get(); }
 
     bool hasMask() const { return m_maskLayer; }
     bool hasReplica() const { return m_replicaLayer; }
     bool replicaHasMask() const { return m_replicaLayer && (m_maskLayer || m_replicaLayer->m_maskLayer); }
 
-    LayerTreeHostImpl* layerTreeHostImpl() const { return m_layerTreeHostImpl; }
-    void setLayerTreeHostImpl(LayerTreeHostImpl* hostImpl) { m_layerTreeHostImpl = hostImpl; }
+    CCLayerTreeHostImpl* layerTreeHostImpl() const { return m_layerTreeHostImpl; }
+    void setLayerTreeHostImpl(CCLayerTreeHostImpl* hostImpl) { m_layerTreeHostImpl = hostImpl; }
 
-    scoped_ptr<SharedQuadState> createSharedQuadState() const;
+    scoped_ptr<CCSharedQuadState> createSharedQuadState() const;
     // willDraw must be called before appendQuads. If willDraw is called,
     // didDraw is guaranteed to be called before another willDraw or before
     // the layer is destroyed. To enforce this, any class that overrides
     // willDraw/didDraw must call the base class version.
-    virtual void willDraw(ResourceProvider*);
-    virtual void appendQuads(QuadSink&, AppendQuadsData&) { }
-    virtual void didDraw(ResourceProvider*);
+    virtual void willDraw(CCResourceProvider*);
+    virtual void appendQuads(CCQuadSink&, CCAppendQuadsData&) { }
+    virtual void didDraw(CCResourceProvider*);
 
-    virtual ResourceProvider::ResourceId contentsResourceId() const;
+    virtual CCResourceProvider::ResourceId contentsResourceId() const;
 
     virtual bool hasContributingDelegatedRenderPasses() const;
-    virtual RenderPass::Id firstContributingRenderPassId() const;
-    virtual RenderPass::Id nextContributingRenderPassId(RenderPass::Id) const;
+    virtual CCRenderPass::Id firstContributingRenderPassId() const;
+    virtual CCRenderPass::Id nextContributingRenderPassId(CCRenderPass::Id) const;
 
     // Returns true if this layer has content to draw.
     void setDrawsContent(bool);
@@ -151,7 +151,7 @@ public:
     void setDebugName(const std::string& debugName) { m_debugName = debugName; }
     std::string debugName() const { return m_debugName; }
 
-    RenderSurfaceImpl* renderSurface() const { return m_renderSurface.get(); }
+    CCRenderSurface* renderSurface() const { return m_renderSurface.get(); }
     void createRenderSurface();
     void clearRenderSurface() { m_renderSurface.reset(); }
 
@@ -161,8 +161,8 @@ public:
     bool drawOpacityIsAnimating() const { return m_drawOpacityIsAnimating; }
     void setDrawOpacityIsAnimating(bool drawOpacityIsAnimating) { m_drawOpacityIsAnimating = drawOpacityIsAnimating; }
 
-    LayerImpl* renderTarget() const { DCHECK(!m_renderTarget || m_renderTarget->renderSurface()); return m_renderTarget; }
-    void setRenderTarget(LayerImpl* target) { m_renderTarget = target; }
+    CCLayerImpl* renderTarget() const { DCHECK(!m_renderTarget || m_renderTarget->renderSurface()); return m_renderTarget; }
+    void setRenderTarget(CCLayerImpl* target) { m_renderTarget = target; }
 
     void setBounds(const IntSize&);
     const IntSize& bounds() const { return m_bounds; }
@@ -203,7 +203,7 @@ public:
     void setDrawCheckerboardForMissingTiles(bool checkerboard) { m_drawCheckerboardForMissingTiles = checkerboard; }
     bool drawCheckerboardForMissingTiles() const;
 
-    InputHandlerClient::ScrollStatus tryScroll(const IntPoint& viewportPoint, InputHandlerClient::ScrollInputType) const;
+    CCInputHandlerClient::ScrollStatus tryScroll(const IntPoint& viewportPoint, CCInputHandlerClient::ScrollInputType) const;
 
     const IntRect& visibleContentRect() const { return m_visibleContentRect; }
     void setVisibleContentRect(const IntRect& visibleContentRect) { m_visibleContentRect = visibleContentRect; }
@@ -240,7 +240,7 @@ public:
 
     virtual bool layerIsAlwaysDamaged() const;
 
-    LayerAnimationController* layerAnimationController() { return m_layerAnimationController.get(); }
+    CCLayerAnimationController* layerAnimationController() { return m_layerAnimationController.get(); }
 
     virtual Region visibleContentOpaqueRegion() const;
 
@@ -249,18 +249,18 @@ public:
     // until the new context has been created successfully.
     virtual void didLoseContext();
 
-    ScrollbarAnimationController* scrollbarAnimationController() const { return m_scrollbarAnimationController.get(); }
+    CCScrollbarAnimationController* scrollbarAnimationController() const { return m_scrollbarAnimationController.get(); }
 
-    ScrollbarLayerImpl* horizontalScrollbarLayer() const;
-    void setHorizontalScrollbarLayer(ScrollbarLayerImpl*);
+    CCScrollbarLayerImpl* horizontalScrollbarLayer() const;
+    void setHorizontalScrollbarLayer(CCScrollbarLayerImpl*);
 
-    ScrollbarLayerImpl* verticalScrollbarLayer() const;
-    void setVerticalScrollbarLayer(ScrollbarLayerImpl*);
+    CCScrollbarLayerImpl* verticalScrollbarLayer() const;
+    void setVerticalScrollbarLayer(CCScrollbarLayerImpl*);
 
 protected:
-    explicit LayerImpl(int);
+    explicit CCLayerImpl(int);
 
-    void appendDebugBorderQuad(QuadSink&, const SharedQuadState*, AppendQuadsData&) const;
+    void appendDebugBorderQuad(CCQuadSink&, const CCSharedQuadState*, CCAppendQuadsData&) const;
 
     IntRect layerRectToContentRect(const WebKit::WebRect& layerRect);
 
@@ -268,7 +268,7 @@ protected:
     static std::string indentString(int indent);
 
 private:
-    void setParent(LayerImpl* parent) { m_parent = parent; }
+    void setParent(CCLayerImpl* parent) { m_parent = parent; }
     friend class TreeSynchronizer;
     void clearChildList(); // Warning: This does not preserve tree structure invariants and so is only exposed to the tree synchronizer.
 
@@ -281,18 +281,18 @@ private:
 
     void dumpLayer(std::string*, int indent) const;
 
-    // Properties internal to LayerImpl
-    LayerImpl* m_parent;
-    ScopedPtrVector<LayerImpl> m_children;
+    // Properties internal to CCLayerImpl
+    CCLayerImpl* m_parent;
+    ScopedPtrVector<CCLayerImpl> m_children;
     // m_maskLayer can be temporarily stolen during tree sync, we need this ID to confirm newly assigned layer is still the previous one
     int m_maskLayerId;
-    scoped_ptr<LayerImpl> m_maskLayer;
+    scoped_ptr<CCLayerImpl> m_maskLayer;
     int m_replicaLayerId; // ditto
-    scoped_ptr<LayerImpl> m_replicaLayer;
+    scoped_ptr<CCLayerImpl> m_replicaLayer;
     int m_layerId;
-    LayerTreeHostImpl* m_layerTreeHostImpl;
+    CCLayerTreeHostImpl* m_layerTreeHostImpl;
 
-    // Properties synchronized from the associated Layer.
+    // Properties synchronized from the associated LayerChromium.
     FloatPoint m_anchorPoint;
     float m_anchorPointZ;
     IntSize m_bounds;
@@ -345,7 +345,7 @@ private:
     // The layer whose coordinate space this layer draws into. This can be
     // either the same layer (m_renderTarget == this) or an ancestor of this
     // layer.
-    LayerImpl* m_renderTarget;
+    CCLayerImpl* m_renderTarget;
 
     // The global depth value of the center of the layer. This value is used
     // to sort layers from back to front.
@@ -374,7 +374,7 @@ private:
 
     // Render surface associated with this layer. The layer and its descendants
     // will render to this surface.
-    scoped_ptr<RenderSurfaceImpl> m_renderSurface;
+    scoped_ptr<CCRenderSurface> m_renderSurface;
 
     // Hierarchical bounding rect containing the layer and its descendants.
     // Uses target surface's space.
@@ -386,13 +386,13 @@ private:
     FloatRect m_updateRect;
 
     // Manages animations for this layer.
-    scoped_ptr<LayerAnimationController> m_layerAnimationController;
+    scoped_ptr<CCLayerAnimationController> m_layerAnimationController;
 
     // Manages scrollbars for this layer
-    scoped_ptr<ScrollbarAnimationController> m_scrollbarAnimationController;
+    scoped_ptr<CCScrollbarAnimationController> m_scrollbarAnimationController;
 };
 
-void sortLayers(std::vector<LayerImpl*>::iterator first, std::vector<LayerImpl*>::iterator end, LayerSorter*);
+void sortLayers(std::vector<CCLayerImpl*>::iterator first, std::vector<CCLayerImpl*>::iterator end, CCLayerSorter*);
 
 }
 

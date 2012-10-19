@@ -28,23 +28,23 @@ using namespace WebKitTests;
 
 namespace {
 
-class SoftwareRendererTest : public testing::Test, public RendererClient {
+class CCRendererSoftwareTest : public testing::Test, public CCRendererClient {
 public:
     void initializeRenderer() {
         m_outputSurface = FakeWebCompositorOutputSurface::createSoftware(scoped_ptr<WebKit::WebCompositorSoftwareOutputDevice>(new FakeWebCompositorSoftwareOutputDevice));
-        m_resourceProvider = ResourceProvider::create(m_outputSurface.get());
-        m_renderer = SoftwareRenderer::create(this, resourceProvider(), softwareDevice());
+        m_resourceProvider = CCResourceProvider::create(m_outputSurface.get());
+        m_renderer = CCRendererSoftware::create(this, resourceProvider(), softwareDevice());
     }
 
     WebCompositorSoftwareOutputDevice* softwareDevice() const { return m_outputSurface->softwareDevice(); }
     FakeWebCompositorOutputSurface* outputSurface() const { return m_outputSurface.get(); }
-    ResourceProvider* resourceProvider() const { return m_resourceProvider.get(); }
-    SoftwareRenderer* renderer() const { return m_renderer.get(); }
+    CCResourceProvider* resourceProvider() const { return m_resourceProvider.get(); }
+    CCRendererSoftware* renderer() const { return m_renderer.get(); }
     void setViewportSize(IntSize viewportSize) { m_viewportSize = viewportSize; }
 
-    // RendererClient implementation.
+    // CCRendererClient implementation.
     virtual const IntSize& deviceViewportSize() const OVERRIDE { return m_viewportSize; }
-    virtual const LayerTreeSettings& settings() const OVERRIDE { return m_settings; }
+    virtual const CCLayerTreeSettings& settings() const OVERRIDE { return m_settings; }
     virtual void didLoseContext() OVERRIDE { }
     virtual void onSwapBuffersComplete() OVERRIDE { }
     virtual void setFullRootLayerDamage() OVERRIDE { }
@@ -54,13 +54,13 @@ protected:
     DebugScopedSetImplThread m_alwaysImplThread;
 
     scoped_ptr<FakeWebCompositorOutputSurface> m_outputSurface;
-    scoped_ptr<ResourceProvider> m_resourceProvider;
-    scoped_ptr<SoftwareRenderer> m_renderer;
+    scoped_ptr<CCResourceProvider> m_resourceProvider;
+    scoped_ptr<CCRendererSoftware> m_renderer;
     IntSize m_viewportSize;
-    LayerTreeSettings m_settings;
+    CCLayerTreeSettings m_settings;
 };
 
-TEST_F(SoftwareRendererTest, solidColorQuad)
+TEST_F(CCRendererSoftwareTest, solidColorQuad)
 {
     IntSize outerSize(100, 100);
     int outerPixels = outerSize.width() * outerSize.height();
@@ -71,17 +71,17 @@ TEST_F(SoftwareRendererTest, solidColorQuad)
 
     initializeRenderer();
 
-    scoped_ptr<SharedQuadState> sharedQuadState = SharedQuadState::create(WebTransformationMatrix(), outerRect, outerRect, 1.0, true);
-    RenderPass::Id rootRenderPassId = RenderPass::Id(1, 1);
-    scoped_ptr<RenderPass> rootRenderPass = TestRenderPass::create(rootRenderPassId, outerRect, WebTransformationMatrix());
-    TestRenderPass* testRenderPass = static_cast<TestRenderPass*>(rootRenderPass.get());
-    scoped_ptr<DrawQuad> outerQuad = SolidColorDrawQuad::create(sharedQuadState.get(), outerRect, SK_ColorYELLOW).PassAs<DrawQuad>();
-    scoped_ptr<DrawQuad> innerQuad = SolidColorDrawQuad::create(sharedQuadState.get(), innerRect, SK_ColorCYAN).PassAs<DrawQuad>();
+    scoped_ptr<CCSharedQuadState> sharedQuadState = CCSharedQuadState::create(WebTransformationMatrix(), outerRect, outerRect, 1.0, true);
+    CCRenderPass::Id rootRenderPassId = CCRenderPass::Id(1, 1);
+    scoped_ptr<CCRenderPass> rootRenderPass = CCTestRenderPass::create(rootRenderPassId, outerRect, WebTransformationMatrix());
+    CCTestRenderPass* testRenderPass = static_cast<CCTestRenderPass*>(rootRenderPass.get());
+    scoped_ptr<CCDrawQuad> outerQuad = CCSolidColorDrawQuad::create(sharedQuadState.get(), outerRect, SK_ColorYELLOW).PassAs<CCDrawQuad>();
+    scoped_ptr<CCDrawQuad> innerQuad = CCSolidColorDrawQuad::create(sharedQuadState.get(), innerRect, SK_ColorCYAN).PassAs<CCDrawQuad>();
     testRenderPass->appendQuad(innerQuad.Pass());
     testRenderPass->appendQuad(outerQuad.Pass());
 
-    RenderPassList list;
-    RenderPassIdHashMap hashmap;
+    CCRenderPassList list;
+    CCRenderPassIdHashMap hashmap;
     list.push_back(rootRenderPass.get());
     hashmap.add(rootRenderPassId, rootRenderPass.Pass());
     renderer()->drawFrame(list, hashmap);
@@ -101,7 +101,7 @@ TEST_F(SoftwareRendererTest, solidColorQuad)
 #endif
 }
 
-TEST_F(SoftwareRendererTest, tileQuad)
+TEST_F(CCRendererSoftwareTest, tileQuad)
 {
     IntSize outerSize(100, 100);
     int outerPixels = outerSize.width() * outerSize.height();
@@ -112,8 +112,8 @@ TEST_F(SoftwareRendererTest, tileQuad)
     setViewportSize(outerSize);
     initializeRenderer();
 
-    ResourceProvider::ResourceId resourceYellow = resourceProvider()->createResource(1, outerSize, GL_RGBA, ResourceProvider::TextureUsageAny);
-    ResourceProvider::ResourceId resourceCyan = resourceProvider()->createResource(1, innerSize, GL_RGBA, ResourceProvider::TextureUsageAny);
+    CCResourceProvider::ResourceId resourceYellow = resourceProvider()->createResource(1, outerSize, GL_RGBA, CCResourceProvider::TextureUsageAny);
+    CCResourceProvider::ResourceId resourceCyan = resourceProvider()->createResource(1, innerSize, GL_RGBA, CCResourceProvider::TextureUsageAny);
 
     SkColor yellow = SK_ColorYELLOW;
     SkColor cyan = SK_ColorCYAN;
@@ -129,17 +129,17 @@ TEST_F(SoftwareRendererTest, tileQuad)
 
     IntRect rect = IntRect(IntPoint(), deviceViewportSize());
 
-    scoped_ptr<SharedQuadState> sharedQuadState = SharedQuadState::create(WebTransformationMatrix(), outerRect, outerRect, 1.0, true);
-    RenderPass::Id rootRenderPassId = RenderPass::Id(1, 1);
-    scoped_ptr<RenderPass> rootRenderPass = TestRenderPass::create(rootRenderPassId, IntRect(IntPoint(), deviceViewportSize()), WebTransformationMatrix());
-    TestRenderPass* testRenderPass = static_cast<TestRenderPass*>(rootRenderPass.get());
-    scoped_ptr<DrawQuad> outerQuad = TileDrawQuad::create(sharedQuadState.get(), outerRect, outerRect, resourceYellow, IntPoint(), outerSize, 0, false, false, false, false, false).PassAs<DrawQuad>();
-    scoped_ptr<DrawQuad> innerQuad = TileDrawQuad::create(sharedQuadState.get(), innerRect, innerRect, resourceCyan, IntPoint(), innerSize, 0, false, false, false, false, false).PassAs<DrawQuad>();
+    scoped_ptr<CCSharedQuadState> sharedQuadState = CCSharedQuadState::create(WebTransformationMatrix(), outerRect, outerRect, 1.0, true);
+    CCRenderPass::Id rootRenderPassId = CCRenderPass::Id(1, 1);
+    scoped_ptr<CCRenderPass> rootRenderPass = CCTestRenderPass::create(rootRenderPassId, IntRect(IntPoint(), deviceViewportSize()), WebTransformationMatrix());
+    CCTestRenderPass* testRenderPass = static_cast<CCTestRenderPass*>(rootRenderPass.get());
+    scoped_ptr<CCDrawQuad> outerQuad = CCTileDrawQuad::create(sharedQuadState.get(), outerRect, outerRect, resourceYellow, IntPoint(), outerSize, 0, false, false, false, false, false).PassAs<CCDrawQuad>();
+    scoped_ptr<CCDrawQuad> innerQuad = CCTileDrawQuad::create(sharedQuadState.get(), innerRect, innerRect, resourceCyan, IntPoint(), innerSize, 0, false, false, false, false, false).PassAs<CCDrawQuad>();
     testRenderPass->appendQuad(innerQuad.Pass());
     testRenderPass->appendQuad(outerQuad.Pass());
 
-    RenderPassList list;
-    RenderPassIdHashMap hashmap;
+    CCRenderPassList list;
+    CCRenderPassIdHashMap hashmap;
     list.push_back(rootRenderPass.get());
     hashmap.add(rootRenderPassId, rootRenderPass.Pass());
     renderer()->drawFrame(list, hashmap);

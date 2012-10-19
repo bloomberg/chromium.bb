@@ -15,8 +15,8 @@ namespace cc {
 class IntRect;
 class IntSize;
 class TextureManager;
-struct RenderingStats;
-class TextureUpdateQueue;
+struct CCRenderingStats;
+class CCTextureUpdateQueue;
 
 class LayerTextureUpdater : public base::RefCounted<LayerTextureUpdater> {
 public:
@@ -25,16 +25,16 @@ public:
     public:
         virtual ~Texture();
 
-        PrioritizedTexture* texture() { return m_texture.get(); }
-        void swapTextureWith(scoped_ptr<PrioritizedTexture>& texture) { m_texture.swap(texture); }
+        CCPrioritizedTexture* texture() { return m_texture.get(); }
+        void swapTextureWith(scoped_ptr<CCPrioritizedTexture>& texture) { m_texture.swap(texture); }
         // TODO(reveman): partialUpdate should be a property of this class
         // instead of an argument passed to update().
-        virtual void update(TextureUpdateQueue&, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&) = 0;
+        virtual void update(CCTextureUpdateQueue&, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, CCRenderingStats&) = 0;
     protected:
-        explicit Texture(scoped_ptr<PrioritizedTexture> texture);
+        explicit Texture(scoped_ptr<CCPrioritizedTexture> texture);
 
     private:
-        scoped_ptr<PrioritizedTexture> m_texture;
+        scoped_ptr<CCPrioritizedTexture> m_texture;
     };
 
     LayerTextureUpdater() { }
@@ -44,7 +44,7 @@ public:
         SampledTexelFormatBGRA,
         SampledTexelFormatInvalid,
     };
-    virtual scoped_ptr<Texture> createTexture(PrioritizedTextureManager*) = 0;
+    virtual scoped_ptr<Texture> createTexture(CCPrioritizedTextureManager*) = 0;
     // Returns the format of the texel uploaded by this interface.
     // This format should not be confused by texture internal format.
     // This format specifies the component order in the sampled texel.
@@ -52,7 +52,7 @@ public:
     virtual SampledTexelFormat sampledTexelFormat(GLenum textureFormat) = 0;
     // The |resultingOpaqueRect| gives back a region of the layer that was painted opaque. If the layer is marked opaque in the updater,
     // then this region should be ignored in preference for the entire layer's area.
-    virtual void prepareToUpdate(const IntRect& contentRect, const IntSize& tileSize, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, RenderingStats&) { }
+    virtual void prepareToUpdate(const IntRect& contentRect, const IntSize& tileSize, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, CCRenderingStats&) { }
 
     // Set true by the layer when it is known that the entire output is going to be opaque.
     virtual void setOpaque(bool) { }

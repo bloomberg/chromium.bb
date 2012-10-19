@@ -15,14 +15,14 @@
 
 namespace cc {
 
-class Layer;
+class LayerChromium;
 
-class RenderSurface {
+class RenderSurfaceChromium {
 public:
-    explicit RenderSurface(Layer*);
-    ~RenderSurface();
+    explicit RenderSurfaceChromium(LayerChromium*);
+    ~RenderSurfaceChromium();
 
-    // Returns the rect that encloses the RenderSurfaceImpl including any reflection.
+    // Returns the rect that encloses the RenderSurface including any reflection.
     FloatRect drawableContentRect() const;
 
     const IntRect& contentRect() const { return m_contentRect; }
@@ -56,20 +56,20 @@ public:
     const IntRect& clipRect() const { return m_clipRect; }
     void setClipRect(const IntRect& clipRect) { m_clipRect = clipRect; }
 
-    typedef std::vector<scoped_refptr<Layer> > LayerList;
+    typedef std::vector<scoped_refptr<LayerChromium> > LayerList;
     LayerList& layerList() { return m_layerList; }
     // A no-op since DelegatedRendererLayers on the main thread don't have any
     // RenderPasses so they can't contribute to a surface.
-    void addContributingDelegatedRenderPassLayer(Layer*) { }
+    void addContributingDelegatedRenderPassLayer(LayerChromium*) { }
     void clearLayerLists() { m_layerList.clear(); }
 
-    void setNearestAncestorThatMovesPixels(RenderSurface* surface) { m_nearestAncestorThatMovesPixels = surface; }
-    const RenderSurface* nearestAncestorThatMovesPixels() const { return m_nearestAncestorThatMovesPixels; }
+    void setNearestAncestorThatMovesPixels(RenderSurfaceChromium* surface) { m_nearestAncestorThatMovesPixels = surface; }
+    const RenderSurfaceChromium* nearestAncestorThatMovesPixels() const { return m_nearestAncestorThatMovesPixels; }
 
 private:
-    friend struct LayerIteratorActions;
+    friend struct CCLayerIteratorActions;
 
-    Layer* m_owningLayer;
+    LayerChromium* m_owningLayer;
 
     // Uses this surface's space.
     IntRect m_contentRect;
@@ -90,13 +90,13 @@ private:
 
     // The nearest ancestor target surface that will contain the contents of this surface, and that is going
     // to move pixels within the surface (such as with a blur). This can point to itself.
-    RenderSurface* m_nearestAncestorThatMovesPixels;
+    RenderSurfaceChromium* m_nearestAncestorThatMovesPixels;
 
-    // For LayerIteratorActions
+    // For CCLayerIteratorActions
     int m_targetRenderSurfaceLayerIndexHistory;
     int m_currentLayerIndexHistory;
 
-    DISALLOW_COPY_AND_ASSIGN(RenderSurface);
+    DISALLOW_COPY_AND_ASSIGN(RenderSurfaceChromium);
 };
 
 }

@@ -7,7 +7,7 @@
 
 namespace cc {
 
-struct RenderingStats {
+struct CCRenderingStats {
     // FIXME: Rename these to animationFrameCount and screenFrameCount, crbug.com/138641.
     int numAnimationFrames;
     int numFramesSentToScreen;
@@ -19,7 +19,7 @@ struct RenderingStats {
     size_t numImplThreadScrolls;
     size_t numMainThreadScrolls;
 
-    RenderingStats()
+    CCRenderingStats()
         : numAnimationFrames(0)
         , numFramesSentToScreen(0)
         , droppedFrameCount(0)

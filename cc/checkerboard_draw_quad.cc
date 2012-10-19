@@ -10,21 +10,21 @@
 
 namespace cc {
 
-scoped_ptr<CheckerboardDrawQuad> CheckerboardDrawQuad::create(const SharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color)
+scoped_ptr<CCCheckerboardDrawQuad> CCCheckerboardDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color)
 {
-    return make_scoped_ptr(new CheckerboardDrawQuad(sharedQuadState, quadRect, color));
+    return make_scoped_ptr(new CCCheckerboardDrawQuad(sharedQuadState, quadRect, color));
 }
 
-CheckerboardDrawQuad::CheckerboardDrawQuad(const SharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color)
-    : DrawQuad(sharedQuadState, DrawQuad::Checkerboard, quadRect)
+CCCheckerboardDrawQuad::CCCheckerboardDrawQuad(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color)
+    : CCDrawQuad(sharedQuadState, CCDrawQuad::Checkerboard, quadRect)
     , m_color(color)
 {
 }
 
-const CheckerboardDrawQuad* CheckerboardDrawQuad::materialCast(const DrawQuad* quad)
+const CCCheckerboardDrawQuad* CCCheckerboardDrawQuad::materialCast(const CCDrawQuad* quad)
 {
-    DCHECK(quad->material() == DrawQuad::Checkerboard);
-    return static_cast<const CheckerboardDrawQuad*>(quad);
+    DCHECK(quad->material() == CCDrawQuad::Checkerboard);
+    return static_cast<const CCCheckerboardDrawQuad*>(quad);
 }
 
 }  // namespace cc

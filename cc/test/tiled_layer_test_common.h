@@ -20,16 +20,16 @@
 
 namespace WebKitTests {
 
-class FakeTiledLayer;
+class FakeTiledLayerChromium;
 
 class FakeLayerTextureUpdater : public cc::LayerTextureUpdater {
 public:
     class Texture : public cc::LayerTextureUpdater::Texture {
     public:
-        Texture(FakeLayerTextureUpdater*, scoped_ptr<cc::PrioritizedTexture>);
+        Texture(FakeLayerTextureUpdater*, scoped_ptr<cc::CCPrioritizedTexture>);
         virtual ~Texture();
 
-        virtual void update(cc::TextureUpdateQueue&, const cc::IntRect&, const cc::IntSize&, bool, cc::RenderingStats&) OVERRIDE;
+        virtual void update(cc::CCTextureUpdateQueue&, const cc::IntRect&, const cc::IntSize&, bool, cc::CCRenderingStats&) OVERRIDE;
 
     private:
         FakeLayerTextureUpdater* m_layer;
@@ -38,13 +38,13 @@ public:
 
     FakeLayerTextureUpdater();
 
-    virtual scoped_ptr<cc::LayerTextureUpdater::Texture> createTexture(cc::PrioritizedTextureManager*) OVERRIDE;
+    virtual scoped_ptr<cc::LayerTextureUpdater::Texture> createTexture(cc::CCPrioritizedTextureManager*) OVERRIDE;
     virtual SampledTexelFormat sampledTexelFormat(GLenum) OVERRIDE;
 
-    virtual void prepareToUpdate(const cc::IntRect& contentRect, const cc::IntSize&, float, float, cc::IntRect& resultingOpaqueRect, cc::RenderingStats&) OVERRIDE;
+    virtual void prepareToUpdate(const cc::IntRect& contentRect, const cc::IntSize&, float, float, cc::IntRect& resultingOpaqueRect, cc::CCRenderingStats&) OVERRIDE;
     // Sets the rect to invalidate during the next call to prepareToUpdate(). After the next
     // call to prepareToUpdate() the rect is reset.
-    void setRectToInvalidate(const cc::IntRect&, FakeTiledLayer*);
+    void setRectToInvalidate(const cc::IntRect&, FakeTiledLayerChromium*);
     // Last rect passed to prepareToUpdate().
     const cc::IntRect& lastUpdateRect()  const { return m_lastUpdateRect; }
 
@@ -68,53 +68,53 @@ private:
     cc::IntRect m_rectToInvalidate;
     cc::IntRect m_lastUpdateRect;
     cc::IntRect m_opaquePaintRect;
-    scoped_refptr<FakeTiledLayer> m_layer;
+    scoped_refptr<FakeTiledLayerChromium> m_layer;
 };
 
-class FakeTiledLayerImpl : public cc::TiledLayerImpl {
+class FakeCCTiledLayerImpl : public cc::CCTiledLayerImpl {
 public:
-    explicit FakeTiledLayerImpl(int id);
-    virtual ~FakeTiledLayerImpl();
+    explicit FakeCCTiledLayerImpl(int id);
+    virtual ~FakeCCTiledLayerImpl();
 
-    using cc::TiledLayerImpl::hasTileAt;
-    using cc::TiledLayerImpl::hasResourceIdForTileAt;
+    using cc::CCTiledLayerImpl::hasTileAt;
+    using cc::CCTiledLayerImpl::hasResourceIdForTileAt;
 };
 
-class FakeTiledLayer : public cc::TiledLayer {
+class FakeTiledLayerChromium : public cc::TiledLayerChromium {
 public:
-    explicit FakeTiledLayer(cc::PrioritizedTextureManager*);
+    explicit FakeTiledLayerChromium(cc::CCPrioritizedTextureManager*);
 
     static cc::IntSize tileSize() { return cc::IntSize(100, 100); }
 
-    using cc::TiledLayer::invalidateContentRect;
-    using cc::TiledLayer::needsIdlePaint;
-    using cc::TiledLayer::skipsDraw;
-    using cc::TiledLayer::numPaintedTiles;
-    using cc::TiledLayer::idlePaintRect;
+    using cc::TiledLayerChromium::invalidateContentRect;
+    using cc::TiledLayerChromium::needsIdlePaint;
+    using cc::TiledLayerChromium::skipsDraw;
+    using cc::TiledLayerChromium::numPaintedTiles;
+    using cc::TiledLayerChromium::idlePaintRect;
 
     virtual void setNeedsDisplayRect(const cc::FloatRect&) OVERRIDE;
     const cc::FloatRect& lastNeedsDisplayRect() const { return m_lastNeedsDisplayRect; }
 
-    virtual void setTexturePriorities(const cc::PriorityCalculator&) OVERRIDE;
+    virtual void setTexturePriorities(const cc::CCPriorityCalculator&) OVERRIDE;
 
-    virtual cc::PrioritizedTextureManager* textureManager() const OVERRIDE;
+    virtual cc::CCPrioritizedTextureManager* textureManager() const OVERRIDE;
     FakeLayerTextureUpdater* fakeLayerTextureUpdater() { return m_fakeTextureUpdater.get(); }
     cc::FloatRect updateRect() { return m_updateRect; }
 
 protected:
     virtual cc::LayerTextureUpdater* textureUpdater() const OVERRIDE;
     virtual void createTextureUpdaterIfNeeded() OVERRIDE { }
-    virtual ~FakeTiledLayer();
+    virtual ~FakeTiledLayerChromium();
 
 private:
     scoped_refptr<FakeLayerTextureUpdater> m_fakeTextureUpdater;
-    cc::PrioritizedTextureManager* m_textureManager;
+    cc::CCPrioritizedTextureManager* m_textureManager;
     cc::FloatRect m_lastNeedsDisplayRect;
 };
 
-class FakeTiledLayerWithScaledBounds : public FakeTiledLayer {
+class FakeTiledLayerWithScaledBounds : public FakeTiledLayerChromium {
 public:
-    explicit FakeTiledLayerWithScaledBounds(cc::PrioritizedTextureManager*);
+    explicit FakeTiledLayerWithScaledBounds(cc::CCPrioritizedTextureManager*);
 
     void setContentBounds(const cc::IntSize& contentBounds) { m_forcedContentBounds = contentBounds; }
     virtual cc::IntSize contentBounds() const OVERRIDE;

@@ -13,9 +13,9 @@ namespace cc {
 
 #pragma pack(push, 4)
 
-class TextureDrawQuad : public DrawQuad {
+class CCTextureDrawQuad : public CCDrawQuad {
 public:
-    static scoped_ptr<TextureDrawQuad> create(const SharedQuadState*, const IntRect&, unsigned resourceId, bool premultipliedAlpha, const FloatRect& uvRect, bool flipped);
+    static scoped_ptr<CCTextureDrawQuad> create(const CCSharedQuadState*, const IntRect&, unsigned resourceId, bool premultipliedAlpha, const FloatRect& uvRect, bool flipped);
     FloatRect uvRect() const { return m_uvRect; }
 
     unsigned resourceId() const { return m_resourceId; }
@@ -24,9 +24,9 @@ public:
 
     void setNeedsBlending();
 
-    static const TextureDrawQuad* materialCast(const DrawQuad*);
+    static const CCTextureDrawQuad* materialCast(const CCDrawQuad*);
 private:
-    TextureDrawQuad(const SharedQuadState*, const IntRect&, unsigned resourceId, bool premultipliedAlpha, const FloatRect& uvRect, bool flipped);
+    CCTextureDrawQuad(const CCSharedQuadState*, const IntRect&, unsigned resourceId, bool premultipliedAlpha, const FloatRect& uvRect, bool flipped);
 
     unsigned m_resourceId;
     bool m_premultipliedAlpha;

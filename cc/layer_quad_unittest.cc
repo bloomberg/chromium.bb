@@ -12,7 +12,7 @@ using namespace cc;
 
 namespace {
 
-TEST(LayerQuadTest, FloatQuadConversion)
+TEST(CCLayerQuadTest, FloatQuadConversion)
 {
     FloatPoint p1(-0.5, -0.5);
     FloatPoint p2( 0.5, -0.5);
@@ -20,15 +20,15 @@ TEST(LayerQuadTest, FloatQuadConversion)
     FloatPoint p4(-0.5,  0.5);
 
     FloatQuad quadCW(p1, p2, p3, p4);
-    LayerQuad layerQuadCW(quadCW);
+    CCLayerQuad layerQuadCW(quadCW);
     EXPECT_TRUE(layerQuadCW.floatQuad() == quadCW);
 
     FloatQuad quadCCW(p1, p4, p3, p2);
-    LayerQuad layerQuadCCW(quadCCW);
+    CCLayerQuad layerQuadCCW(quadCCW);
     EXPECT_TRUE(layerQuadCCW.floatQuad() == quadCCW);
 }
 
-TEST(LayerQuadTest, Inflate)
+TEST(CCLayerQuadTest, Inflate)
 {
     FloatPoint p1(-0.5, -0.5);
     FloatPoint p2( 0.5, -0.5);
@@ -36,7 +36,7 @@ TEST(LayerQuadTest, Inflate)
     FloatPoint p4(-0.5,  0.5);
 
     FloatQuad quad(p1, p2, p3, p4);
-    LayerQuad layerQuad(quad);
+    CCLayerQuad layerQuad(quad);
     quad.scale(2, 2);
     layerQuad.inflate(0.5);
     EXPECT_TRUE(layerQuad.floatQuad() == quad);

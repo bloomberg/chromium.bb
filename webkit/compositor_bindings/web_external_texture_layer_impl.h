@@ -14,7 +14,7 @@ namespace WebKit {
 class WebLayerImpl;
 
 class WebExternalTextureLayerImpl : public WebExternalTextureLayer,
-                                    public cc::TextureLayerClient {
+                                    public cc::TextureLayerChromiumClient {
 public:
     explicit WebExternalTextureLayerImpl(WebExternalTextureLayerClient*);
     virtual ~WebExternalTextureLayerImpl();
@@ -29,8 +29,8 @@ public:
     virtual void willModifyTexture() OVERRIDE;
     virtual void setRateLimitContext(bool) OVERRIDE;
 
-    // TextureLayerClient implementation.
-    virtual unsigned prepareTexture(cc::TextureUpdateQueue&) OVERRIDE;
+    // TextureLayerChromiumClient implementation.
+    virtual unsigned prepareTexture(cc::CCTextureUpdateQueue&) OVERRIDE;
     virtual WebGraphicsContext3D* context() OVERRIDE;
 
 private:

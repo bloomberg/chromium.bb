@@ -8,12 +8,12 @@
 
 namespace cc {
 
-bool Renderer::haveCachedResourcesForRenderPassId(RenderPass::Id) const
+bool CCRenderer::haveCachedResourcesForRenderPassId(CCRenderPass::Id) const
 {
     return false;
 }
 
-bool Renderer::isContextLost()
+bool CCRenderer::isContextLost()
 {
     return false;
 }

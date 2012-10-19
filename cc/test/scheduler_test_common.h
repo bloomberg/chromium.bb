@@ -14,9 +14,9 @@
 
 namespace WebKitTests {
 
-class FakeTimeSourceClient : public cc::TimeSourceClient {
+class FakeCCTimeSourceClient : public cc::CCTimeSourceClient {
 public:
-    FakeTimeSourceClient() { reset(); }
+    FakeCCTimeSourceClient() { reset(); }
     void reset() { m_tickCalled = false; }
     bool tickCalled() const { return m_tickCalled; }
 
@@ -26,10 +26,10 @@ protected:
     bool m_tickCalled;
 };
 
-class FakeThread : public cc::Thread {
+class FakeCCThread : public cc::CCThread {
 public:
-    FakeThread();
-    virtual ~FakeThread();
+    FakeCCThread();
+    virtual ~FakeCCThread();
 
     void reset()
     {
@@ -67,15 +67,15 @@ protected:
     bool m_runPendingTaskOnOverwrite;
 };
 
-class FakeTimeSource : public cc::TimeSource {
+class FakeCCTimeSource : public cc::CCTimeSource {
 public:
-    FakeTimeSource()
+    FakeCCTimeSource()
         : m_active(false)
         , m_client(0)
     {
     }
 
-    virtual void setClient(cc::TimeSourceClient* client) OVERRIDE;
+    virtual void setClient(cc::CCTimeSourceClient* client) OVERRIDE;
     virtual void setActive(bool b) OVERRIDE;
     virtual bool active() const OVERRIDE;
     virtual void setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval) OVERRIDE { }
@@ -92,36 +92,36 @@ public:
     void setNextTickTime(base::TimeTicks nextTickTime) { m_nextTickTime = nextTickTime; }
 
 protected:
-    virtual ~FakeTimeSource() { }
+    virtual ~FakeCCTimeSource() { }
 
     bool m_active;
     base::TimeTicks m_nextTickTime;
-    cc::TimeSourceClient* m_client;
+    cc::CCTimeSourceClient* m_client;
 };
 
-class FakeDelayBasedTimeSource : public cc::DelayBasedTimeSource {
+class FakeCCDelayBasedTimeSource : public cc::CCDelayBasedTimeSource {
 public:
-    static scoped_refptr<FakeDelayBasedTimeSource> create(base::TimeDelta interval, cc::Thread* thread)
+    static scoped_refptr<FakeCCDelayBasedTimeSource> create(base::TimeDelta interval, cc::CCThread* thread)
     {
-        return make_scoped_refptr(new FakeDelayBasedTimeSource(interval, thread));
+        return make_scoped_refptr(new FakeCCDelayBasedTimeSource(interval, thread));
     }
 
     void setNow(base::TimeTicks time) { m_now = time; }
     virtual base::TimeTicks now() const OVERRIDE;
 
 protected:
-    FakeDelayBasedTimeSource(base::TimeDelta interval, cc::Thread* thread)
-        : DelayBasedTimeSource(interval, thread)
+    FakeCCDelayBasedTimeSource(base::TimeDelta interval, cc::CCThread* thread)
+        : CCDelayBasedTimeSource(interval, thread)
     {
     }
-    virtual ~FakeDelayBasedTimeSource() { }
+    virtual ~FakeCCDelayBasedTimeSource() { }
 
     base::TimeTicks m_now;
 };
 
-class FakeFrameRateController : public cc::FrameRateController {
+class FakeCCFrameRateController : public cc::CCFrameRateController {
 public:
-    FakeFrameRateController(scoped_refptr<cc::TimeSource> timer) : cc::FrameRateController(timer) { }
+    FakeCCFrameRateController(scoped_refptr<cc::CCTimeSource> timer) : cc::CCFrameRateController(timer) { }
 
     int numFramesPending() const { return m_numFramesPending; }
 };

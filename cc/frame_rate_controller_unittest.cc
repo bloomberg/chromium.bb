@@ -14,9 +14,9 @@ using namespace WebKitTests;
 
 namespace {
 
-class FakeFrameRateControllerClient : public cc::FrameRateControllerClient {
+class FakeCCFrameRateControllerClient : public cc::CCFrameRateControllerClient {
 public:
-    FakeFrameRateControllerClient() { reset(); }
+    FakeCCFrameRateControllerClient() { reset(); }
 
     void reset() { m_vsyncTicked = false; }
     bool vsyncTicked() const { return m_vsyncTicked; }
@@ -28,13 +28,13 @@ protected:
 };
 
 
-TEST(FrameRateControllerTest, TestFrameThrottling_ImmediateAck)
+TEST(CCFrameRateControllerTest, TestFrameThrottling_ImmediateAck)
 {
-    FakeThread thread;
-    FakeFrameRateControllerClient client;
+    FakeCCThread thread;
+    FakeCCFrameRateControllerClient client;
     base::TimeDelta interval = base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond / 60);
-    scoped_refptr<FakeDelayBasedTimeSource> timeSource = FakeDelayBasedTimeSource::create(interval, &thread);
-    FrameRateController controller(timeSource);
+    scoped_refptr<FakeCCDelayBasedTimeSource> timeSource = FakeCCDelayBasedTimeSource::create(interval, &thread);
+    CCFrameRateController controller(timeSource);
 
     controller.setClient(&client);
     controller.setActive(true);
@@ -63,13 +63,13 @@ TEST(FrameRateControllerTest, TestFrameThrottling_ImmediateAck)
     EXPECT_TRUE(client.vsyncTicked());
 }
 
-TEST(FrameRateControllerTest, TestFrameThrottling_TwoFramesInFlight)
+TEST(CCFrameRateControllerTest, TestFrameThrottling_TwoFramesInFlight)
 {
-    FakeThread thread;
-    FakeFrameRateControllerClient client;
+    FakeCCThread thread;
+    FakeCCFrameRateControllerClient client;
     base::TimeDelta interval = base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond / 60);
-    scoped_refptr<FakeDelayBasedTimeSource> timeSource = FakeDelayBasedTimeSource::create(interval, &thread);
-    FrameRateController controller(timeSource);
+    scoped_refptr<FakeCCDelayBasedTimeSource> timeSource = FakeCCDelayBasedTimeSource::create(interval, &thread);
+    CCFrameRateController controller(timeSource);
 
     controller.setClient(&client);
     controller.setActive(true);
@@ -120,11 +120,11 @@ TEST(FrameRateControllerTest, TestFrameThrottling_TwoFramesInFlight)
     EXPECT_TRUE(client.vsyncTicked());
 }
 
-TEST(FrameRateControllerTest, TestFrameThrottling_Unthrottled)
+TEST(CCFrameRateControllerTest, TestFrameThrottling_Unthrottled)
 {
-    FakeThread thread;
-    FakeFrameRateControllerClient client;
-    FrameRateController controller(&thread);
+    FakeCCThread thread;
+    FakeCCFrameRateControllerClient client;
+    CCFrameRateController controller(&thread);
 
     controller.setClient(&client);
     controller.setMaxFramesPending(2);
@@ -135,7 +135,7 @@ TEST(FrameRateControllerTest, TestFrameThrottling_Unthrottled)
     EXPECT_TRUE(client.vsyncTicked());
     client.reset();
 
-    // Even if we don't call didBeginFrame, FrameRateController should
+    // Even if we don't call didBeginFrame, CCFrameRateController should
     // still attempt to vsync tick multiple times until it does result in
     // a didBeginFrame.
     thread.runPendingTask();

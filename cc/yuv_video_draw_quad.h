@@ -12,23 +12,23 @@
 
 namespace cc {
 
-class YUVVideoDrawQuad : public DrawQuad {
+class CCYUVVideoDrawQuad : public CCDrawQuad {
 public:
-    static scoped_ptr<YUVVideoDrawQuad> create(const SharedQuadState*, const IntRect&, const VideoLayerImpl::FramePlane& yPlane, const VideoLayerImpl::FramePlane& uPlane, const VideoLayerImpl::FramePlane& vPlane);
+    static scoped_ptr<CCYUVVideoDrawQuad> create(const CCSharedQuadState*, const IntRect&, const CCVideoLayerImpl::FramePlane& yPlane, const CCVideoLayerImpl::FramePlane& uPlane, const CCVideoLayerImpl::FramePlane& vPlane);
 
-    const VideoLayerImpl::FramePlane& yPlane() const { return m_yPlane; }
-    const VideoLayerImpl::FramePlane& uPlane() const { return m_uPlane; }
-    const VideoLayerImpl::FramePlane& vPlane() const { return m_vPlane; }
+    const CCVideoLayerImpl::FramePlane& yPlane() const { return m_yPlane; }
+    const CCVideoLayerImpl::FramePlane& uPlane() const { return m_uPlane; }
+    const CCVideoLayerImpl::FramePlane& vPlane() const { return m_vPlane; }
 
-    static const YUVVideoDrawQuad* materialCast(const DrawQuad*);
+    static const CCYUVVideoDrawQuad* materialCast(const CCDrawQuad*);
 private:
-    YUVVideoDrawQuad(const SharedQuadState*, const IntRect&, const VideoLayerImpl::FramePlane& yPlane, const VideoLayerImpl::FramePlane& uPlane, const VideoLayerImpl::FramePlane& vPlane);
+    CCYUVVideoDrawQuad(const CCSharedQuadState*, const IntRect&, const CCVideoLayerImpl::FramePlane& yPlane, const CCVideoLayerImpl::FramePlane& uPlane, const CCVideoLayerImpl::FramePlane& vPlane);
 
-    VideoLayerImpl::FramePlane m_yPlane;
-    VideoLayerImpl::FramePlane m_uPlane;
-    VideoLayerImpl::FramePlane m_vPlane;
+    CCVideoLayerImpl::FramePlane m_yPlane;
+    CCVideoLayerImpl::FramePlane m_uPlane;
+    CCVideoLayerImpl::FramePlane m_vPlane;
 
-    DISALLOW_COPY_AND_ASSIGN(YUVVideoDrawQuad);
+    DISALLOW_COPY_AND_ASSIGN(CCYUVVideoDrawQuad);
 };
 
 }

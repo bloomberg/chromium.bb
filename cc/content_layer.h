@@ -13,48 +13,48 @@ class SkCanvas;
 
 namespace cc {
 
-class ContentLayerClient;
+class ContentLayerChromiumClient;
 class FloatRect;
 class IntRect;
 class LayerTextureUpdater;
 
-class ContentLayerPainter : public LayerPainter {
+class ContentLayerPainter : public LayerPainterChromium {
 public:
-    static scoped_ptr<ContentLayerPainter> create(ContentLayerClient*);
+    static scoped_ptr<ContentLayerPainter> create(ContentLayerChromiumClient*);
 
     virtual void paint(SkCanvas*, const IntRect& contentRect, FloatRect& opaque) OVERRIDE;
 
 private:
-    explicit ContentLayerPainter(ContentLayerClient*);
+    explicit ContentLayerPainter(ContentLayerChromiumClient*);
 
-    ContentLayerClient* m_client;
+    ContentLayerChromiumClient* m_client;
 
     DISALLOW_COPY_AND_ASSIGN(ContentLayerPainter);
 };
 
 // A layer that renders its contents into an SkCanvas.
-class ContentLayer : public TiledLayer {
+class ContentLayerChromium : public TiledLayerChromium {
 public:
-    static scoped_refptr<ContentLayer> create(ContentLayerClient*);
+    static scoped_refptr<ContentLayerChromium> create(ContentLayerChromiumClient*);
 
     void clearClient() { m_client = 0; }
 
     virtual bool drawsContent() const OVERRIDE;
-    virtual void setTexturePriorities(const PriorityCalculator&) OVERRIDE;
-    virtual void update(TextureUpdateQueue&, const OcclusionTracker*, RenderingStats&) OVERRIDE;
+    virtual void setTexturePriorities(const CCPriorityCalculator&) OVERRIDE;
+    virtual void update(CCTextureUpdateQueue&, const CCOcclusionTracker*, CCRenderingStats&) OVERRIDE;
     virtual bool needMoreUpdates() OVERRIDE;
 
     virtual void setContentsOpaque(bool) OVERRIDE;
 
 protected:
-    explicit ContentLayer(ContentLayerClient*);
-    virtual ~ContentLayer();
+    explicit ContentLayerChromium(ContentLayerChromiumClient*);
+    virtual ~ContentLayerChromium();
 
 private:
     virtual LayerTextureUpdater* textureUpdater() const OVERRIDE;
     virtual void createTextureUpdaterIfNeeded() OVERRIDE;
 
-    ContentLayerClient* m_client;
+    ContentLayerChromiumClient* m_client;
     scoped_refptr<LayerTextureUpdater> m_textureUpdater;
 };
 

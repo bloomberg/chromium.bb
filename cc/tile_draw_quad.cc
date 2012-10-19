@@ -11,13 +11,13 @@
 
 namespace cc {
 
-scoped_ptr<TileDrawQuad> TileDrawQuad::create(const SharedQuadState* sharedQuadState, const IntRect& quadRect, const IntRect& opaqueRect, unsigned resourceId, const IntPoint& textureOffset, const IntSize& textureSize, GLint textureFilter, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA)
+scoped_ptr<CCTileDrawQuad> CCTileDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, const IntRect& opaqueRect, unsigned resourceId, const IntPoint& textureOffset, const IntSize& textureSize, GLint textureFilter, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA)
 {
-    return make_scoped_ptr(new TileDrawQuad(sharedQuadState, quadRect, opaqueRect, resourceId, textureOffset, textureSize, textureFilter, swizzleContents, leftEdgeAA, topEdgeAA, rightEdgeAA, bottomEdgeAA));
+    return make_scoped_ptr(new CCTileDrawQuad(sharedQuadState, quadRect, opaqueRect, resourceId, textureOffset, textureSize, textureFilter, swizzleContents, leftEdgeAA, topEdgeAA, rightEdgeAA, bottomEdgeAA));
 }
 
-TileDrawQuad::TileDrawQuad(const SharedQuadState* sharedQuadState, const IntRect& quadRect, const IntRect& opaqueRect, unsigned resourceId, const IntPoint& textureOffset, const IntSize& textureSize, GLint textureFilter, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA)
-    : DrawQuad(sharedQuadState, DrawQuad::TiledContent, quadRect)
+CCTileDrawQuad::CCTileDrawQuad(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, const IntRect& opaqueRect, unsigned resourceId, const IntPoint& textureOffset, const IntSize& textureSize, GLint textureFilter, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA)
+    : CCDrawQuad(sharedQuadState, CCDrawQuad::TiledContent, quadRect)
     , m_resourceId(resourceId)
     , m_textureOffset(textureOffset)
     , m_textureSize(textureSize)
@@ -33,10 +33,10 @@ TileDrawQuad::TileDrawQuad(const SharedQuadState* sharedQuadState, const IntRect
     m_opaqueRect = opaqueRect;
 }
 
-const TileDrawQuad* TileDrawQuad::materialCast(const DrawQuad* quad)
+const CCTileDrawQuad* CCTileDrawQuad::materialCast(const CCDrawQuad* quad)
 {
-    DCHECK(quad->material() == DrawQuad::TiledContent);
-    return static_cast<const TileDrawQuad*>(quad);
+    DCHECK(quad->material() == CCDrawQuad::TiledContent);
+    return static_cast<const CCTileDrawQuad*>(quad);
 }
 
 }

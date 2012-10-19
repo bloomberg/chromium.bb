@@ -8,7 +8,7 @@
 #include "cc/solid_color_layer.h"
 #include "web_layer_impl.h"
 
-using cc::SolidColorLayer;
+using cc::SolidColorLayerChromium;
 
 namespace WebKit {
 
@@ -18,7 +18,7 @@ WebSolidColorLayer* WebSolidColorLayer::create()
 }
 
 WebSolidColorLayerImpl::WebSolidColorLayerImpl()
-    : m_layer(new WebLayerImpl(SolidColorLayer::create()))
+    : m_layer(new WebLayerImpl(SolidColorLayerChromium::create()))
 {
     m_layer->layer()->setIsDrawable(true);
 }

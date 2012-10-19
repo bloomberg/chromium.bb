@@ -17,12 +17,12 @@ using WebKit::WebTransformationMatrix;
 
 namespace cc {
 
-scoped_ptr<RenderPass> RenderPass::create(Id id, IntRect outputRect, const WebKit::WebTransformationMatrix& transformToRootTarget)
+scoped_ptr<CCRenderPass> CCRenderPass::create(Id id, IntRect outputRect, const WebKit::WebTransformationMatrix& transformToRootTarget)
 {
-    return make_scoped_ptr(new RenderPass(id, outputRect, transformToRootTarget));
+    return make_scoped_ptr(new CCRenderPass(id, outputRect, transformToRootTarget));
 }
 
-RenderPass::RenderPass(Id id, IntRect outputRect, const WebKit::WebTransformationMatrix& transformToRootTarget)
+CCRenderPass::CCRenderPass(Id id, IntRect outputRect, const WebKit::WebTransformationMatrix& transformToRootTarget)
     : m_id(id)
     , m_transformToRootTarget(transformToRootTarget)
     , m_outputRect(outputRect)
@@ -33,15 +33,15 @@ RenderPass::RenderPass(Id id, IntRect outputRect, const WebKit::WebTransformatio
     DCHECK(id.index >= 0);
 }
 
-RenderPass::~RenderPass()
+CCRenderPass::~CCRenderPass()
 {
 }
 
-scoped_ptr<RenderPass> RenderPass::copy(Id newId) const
+scoped_ptr<CCRenderPass> CCRenderPass::copy(Id newId) const
 {
     DCHECK(newId != m_id);
 
-    scoped_ptr<RenderPass> copyPass(create(newId, m_outputRect, m_transformToRootTarget));
+    scoped_ptr<CCRenderPass> copyPass(create(newId, m_outputRect, m_transformToRootTarget));
     copyPass->setDamageRect(m_damageRect);
     copyPass->setHasTransparentBackground(m_hasTransparentBackground);
     copyPass->setHasOcclusionFromOutsideTargetSurface(m_hasOcclusionFromOutsideTargetSurface);
@@ -50,18 +50,18 @@ scoped_ptr<RenderPass> RenderPass::copy(Id newId) const
     return copyPass.Pass();
 }
 
-void RenderPass::appendQuadsForLayer(LayerImpl* layer, OcclusionTrackerImpl* occlusionTracker, AppendQuadsData& appendQuadsData)
+void CCRenderPass::appendQuadsForLayer(CCLayerImpl* layer, CCOcclusionTrackerImpl* occlusionTracker, CCAppendQuadsData& appendQuadsData)
 {
     const bool forSurface = false;
-    QuadCuller quadCuller(m_quadList, m_sharedQuadStateList, layer, occlusionTracker, layer->hasDebugBorders(), forSurface);
+    CCQuadCuller quadCuller(m_quadList, m_sharedQuadStateList, layer, occlusionTracker, layer->hasDebugBorders(), forSurface);
 
     layer->appendQuads(quadCuller, appendQuadsData);
 }
 
-void RenderPass::appendQuadsForRenderSurfaceLayer(LayerImpl* layer, const RenderPass* contributingRenderPass, OcclusionTrackerImpl* occlusionTracker, AppendQuadsData& appendQuadsData)
+void CCRenderPass::appendQuadsForRenderSurfaceLayer(CCLayerImpl* layer, const CCRenderPass* contributingRenderPass, CCOcclusionTrackerImpl* occlusionTracker, CCAppendQuadsData& appendQuadsData)
 {
     const bool forSurface = true;
-    QuadCuller quadCuller(m_quadList, m_sharedQuadStateList, layer, occlusionTracker, layer->hasDebugBorders(), forSurface);
+    CCQuadCuller quadCuller(m_quadList, m_sharedQuadStateList, layer, occlusionTracker, layer->hasDebugBorders(), forSurface);
 
     bool isReplica = false;
     layer->renderSurface()->appendQuads(quadCuller, appendQuadsData, isReplica, contributingRenderPass->id());
@@ -73,7 +73,7 @@ void RenderPass::appendQuadsForRenderSurfaceLayer(LayerImpl* layer, const Render
     }
 }
 
-void RenderPass::appendQuadsToFillScreen(LayerImpl* rootLayer, SkColor screenBackgroundColor, const OcclusionTrackerImpl& occlusionTracker)
+void CCRenderPass::appendQuadsToFillScreen(CCLayerImpl* rootLayer, SkColor screenBackgroundColor, const CCOcclusionTrackerImpl& occlusionTracker)
 {
     if (!rootLayer || !screenBackgroundColor)
         return;
@@ -83,7 +83,7 @@ void RenderPass::appendQuadsToFillScreen(LayerImpl* rootLayer, SkColor screenBac
         return;
 
     bool forSurface = false;
-    QuadCuller quadCuller(m_quadList, m_sharedQuadStateList, rootLayer, &occlusionTracker, rootLayer->hasDebugBorders(), forSurface);
+    CCQuadCuller quadCuller(m_quadList, m_sharedQuadStateList, rootLayer, &occlusionTracker, rootLayer->hasDebugBorders(), forSurface);
 
     // Manually create the quad state for the gutter quads, as the root layer
     // doesn't have any bounds and so can't generate this itself.
@@ -91,15 +91,15 @@ void RenderPass::appendQuadsToFillScreen(LayerImpl* rootLayer, SkColor screenBac
     IntRect rootTargetRect = rootLayer->renderSurface()->contentRect();
     float opacity = 1;
     bool opaque = true;
-    SharedQuadState* sharedQuadState = quadCuller.useSharedQuadState(SharedQuadState::create(rootLayer->drawTransform(), rootTargetRect, rootTargetRect, opacity, opaque));
+    CCSharedQuadState* sharedQuadState = quadCuller.useSharedQuadState(CCSharedQuadState::create(rootLayer->drawTransform(), rootTargetRect, rootTargetRect, opacity, opaque));
     DCHECK(rootLayer->screenSpaceTransform().isInvertible());
     WebTransformationMatrix transformToLayerSpace = rootLayer->screenSpaceTransform().inverse();
     Vector<WebCore::IntRect> fillRects = fillRegion.rects();
     for (size_t i = 0; i < fillRects.size(); ++i) {
         // The root layer transform is composed of translations and scales only, no perspective, so mapping is sufficient.
-        IntRect layerRect = MathUtil::mapClippedRect(transformToLayerSpace, cc::IntRect(fillRects[i]));
+        IntRect layerRect = CCMathUtil::mapClippedRect(transformToLayerSpace, cc::IntRect(fillRects[i]));
         // Skip the quad culler and just append the quads directly to avoid occlusion checks.
-        m_quadList.append(SolidColorDrawQuad::create(sharedQuadState, layerRect, screenBackgroundColor).PassAs<DrawQuad>());
+        m_quadList.append(CCSolidColorDrawQuad::create(sharedQuadState, layerRect, screenBackgroundColor).PassAs<CCDrawQuad>());
     }
 }
 

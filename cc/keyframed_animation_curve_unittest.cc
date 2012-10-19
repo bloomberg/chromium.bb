@@ -22,10 +22,10 @@ void expectTranslateX(double translateX, const WebTransformationMatrix& matrix)
 }
 
 // Tests that a float animation with one keyframe works as expected.
-TEST(KeyframedAnimationCurveTest, OneFloatKeyframe)
+TEST(CCKeyframedAnimationCurveTest, OneFloatKeyframe)
 {
-    scoped_ptr<KeyframedFloatAnimationCurve> curve(KeyframedFloatAnimationCurve::create());
-    curve->addKeyframe(FloatKeyframe::create(0, 2, scoped_ptr<TimingFunction>()));
+    scoped_ptr<CCKeyframedFloatAnimationCurve> curve(CCKeyframedFloatAnimationCurve::create());
+    curve->addKeyframe(CCFloatKeyframe::create(0, 2, scoped_ptr<CCTimingFunction>()));
     EXPECT_FLOAT_EQ(2, curve->getValue(-1));
     EXPECT_FLOAT_EQ(2, curve->getValue(0));
     EXPECT_FLOAT_EQ(2, curve->getValue(0.5));
@@ -34,11 +34,11 @@ TEST(KeyframedAnimationCurveTest, OneFloatKeyframe)
 }
 
 // Tests that a float animation with two keyframes works as expected.
-TEST(KeyframedAnimationCurveTest, TwoFloatKeyframe)
+TEST(CCKeyframedAnimationCurveTest, TwoFloatKeyframe)
 {
-    scoped_ptr<KeyframedFloatAnimationCurve> curve(KeyframedFloatAnimationCurve::create());
-    curve->addKeyframe(FloatKeyframe::create(0, 2, scoped_ptr<TimingFunction>()));
-    curve->addKeyframe(FloatKeyframe::create(1, 4, scoped_ptr<TimingFunction>()));
+    scoped_ptr<CCKeyframedFloatAnimationCurve> curve(CCKeyframedFloatAnimationCurve::create());
+    curve->addKeyframe(CCFloatKeyframe::create(0, 2, scoped_ptr<CCTimingFunction>()));
+    curve->addKeyframe(CCFloatKeyframe::create(1, 4, scoped_ptr<CCTimingFunction>()));
     EXPECT_FLOAT_EQ(2, curve->getValue(-1));
     EXPECT_FLOAT_EQ(2, curve->getValue(0));
     EXPECT_FLOAT_EQ(3, curve->getValue(0.5));
@@ -47,12 +47,12 @@ TEST(KeyframedAnimationCurveTest, TwoFloatKeyframe)
 }
 
 // Tests that a float animation with three keyframes works as expected.
-TEST(KeyframedAnimationCurveTest, ThreeFloatKeyframe)
+TEST(CCKeyframedAnimationCurveTest, ThreeFloatKeyframe)
 {
-    scoped_ptr<KeyframedFloatAnimationCurve> curve(KeyframedFloatAnimationCurve::create());
-    curve->addKeyframe(FloatKeyframe::create(0, 2, scoped_ptr<TimingFunction>()));
-    curve->addKeyframe(FloatKeyframe::create(1, 4, scoped_ptr<TimingFunction>()));
-    curve->addKeyframe(FloatKeyframe::create(2, 8, scoped_ptr<TimingFunction>()));
+    scoped_ptr<CCKeyframedFloatAnimationCurve> curve(CCKeyframedFloatAnimationCurve::create());
+    curve->addKeyframe(CCFloatKeyframe::create(0, 2, scoped_ptr<CCTimingFunction>()));
+    curve->addKeyframe(CCFloatKeyframe::create(1, 4, scoped_ptr<CCTimingFunction>()));
+    curve->addKeyframe(CCFloatKeyframe::create(2, 8, scoped_ptr<CCTimingFunction>()));
     EXPECT_FLOAT_EQ(2, curve->getValue(-1));
     EXPECT_FLOAT_EQ(2, curve->getValue(0));
     EXPECT_FLOAT_EQ(3, curve->getValue(0.5));
@@ -63,13 +63,13 @@ TEST(KeyframedAnimationCurveTest, ThreeFloatKeyframe)
 }
 
 // Tests that a float animation with multiple keys at a given time works sanely.
-TEST(KeyframedAnimationCurveTest, RepeatedFloatKeyTimes)
+TEST(CCKeyframedAnimationCurveTest, RepeatedFloatKeyTimes)
 {
-    scoped_ptr<KeyframedFloatAnimationCurve> curve(KeyframedFloatAnimationCurve::create());
-    curve->addKeyframe(FloatKeyframe::create(0, 4, scoped_ptr<TimingFunction>()));
-    curve->addKeyframe(FloatKeyframe::create(1, 4, scoped_ptr<TimingFunction>()));
-    curve->addKeyframe(FloatKeyframe::create(1, 6, scoped_ptr<TimingFunction>()));
-    curve->addKeyframe(FloatKeyframe::create(2, 6, scoped_ptr<TimingFunction>()));
+    scoped_ptr<CCKeyframedFloatAnimationCurve> curve(CCKeyframedFloatAnimationCurve::create());
+    curve->addKeyframe(CCFloatKeyframe::create(0, 4, scoped_ptr<CCTimingFunction>()));
+    curve->addKeyframe(CCFloatKeyframe::create(1, 4, scoped_ptr<CCTimingFunction>()));
+    curve->addKeyframe(CCFloatKeyframe::create(1, 6, scoped_ptr<CCTimingFunction>()));
+    curve->addKeyframe(CCFloatKeyframe::create(2, 6, scoped_ptr<CCTimingFunction>()));
 
     EXPECT_FLOAT_EQ(4, curve->getValue(-1));
     EXPECT_FLOAT_EQ(4, curve->getValue(0));
@@ -86,12 +86,12 @@ TEST(KeyframedAnimationCurveTest, RepeatedFloatKeyTimes)
 
 
 // Tests that a transform animation with one keyframe works as expected.
-TEST(KeyframedAnimationCurveTest, OneTransformKeyframe)
+TEST(CCKeyframedAnimationCurveTest, OneTransformKeyframe)
 {
-    scoped_ptr<KeyframedTransformAnimationCurve> curve(KeyframedTransformAnimationCurve::create());
+    scoped_ptr<CCKeyframedTransformAnimationCurve> curve(CCKeyframedTransformAnimationCurve::create());
     WebKit::WebTransformOperations operations;
     operations.appendTranslate(2, 0, 0);
-    curve->addKeyframe(TransformKeyframe::create(0, operations, scoped_ptr<TimingFunction>()));
+    curve->addKeyframe(CCTransformKeyframe::create(0, operations, scoped_ptr<CCTimingFunction>()));
 
     expectTranslateX(2, curve->getValue(-1));
     expectTranslateX(2, curve->getValue(0));
@@ -101,16 +101,16 @@ TEST(KeyframedAnimationCurveTest, OneTransformKeyframe)
 }
 
 // Tests that a transform animation with two keyframes works as expected.
-TEST(KeyframedAnimationCurveTest, TwoTransformKeyframe)
+TEST(CCKeyframedAnimationCurveTest, TwoTransformKeyframe)
 {
-    scoped_ptr<KeyframedTransformAnimationCurve> curve(KeyframedTransformAnimationCurve::create());
+    scoped_ptr<CCKeyframedTransformAnimationCurve> curve(CCKeyframedTransformAnimationCurve::create());
     WebKit::WebTransformOperations operations1;
     operations1.appendTranslate(2, 0, 0);
     WebKit::WebTransformOperations operations2;
     operations2.appendTranslate(4, 0, 0);
 
-    curve->addKeyframe(TransformKeyframe::create(0, operations1, scoped_ptr<TimingFunction>()));
-    curve->addKeyframe(TransformKeyframe::create(1, operations2, scoped_ptr<TimingFunction>()));
+    curve->addKeyframe(CCTransformKeyframe::create(0, operations1, scoped_ptr<CCTimingFunction>()));
+    curve->addKeyframe(CCTransformKeyframe::create(1, operations2, scoped_ptr<CCTimingFunction>()));
     expectTranslateX(2, curve->getValue(-1));
     expectTranslateX(2, curve->getValue(0));
     expectTranslateX(3, curve->getValue(0.5));
@@ -119,18 +119,18 @@ TEST(KeyframedAnimationCurveTest, TwoTransformKeyframe)
 }
 
 // Tests that a transform animation with three keyframes works as expected.
-TEST(KeyframedAnimationCurveTest, ThreeTransformKeyframe)
+TEST(CCKeyframedAnimationCurveTest, ThreeTransformKeyframe)
 {
-    scoped_ptr<KeyframedTransformAnimationCurve> curve(KeyframedTransformAnimationCurve::create());
+    scoped_ptr<CCKeyframedTransformAnimationCurve> curve(CCKeyframedTransformAnimationCurve::create());
     WebKit::WebTransformOperations operations1;
     operations1.appendTranslate(2, 0, 0);
     WebKit::WebTransformOperations operations2;
     operations2.appendTranslate(4, 0, 0);
     WebKit::WebTransformOperations operations3;
     operations3.appendTranslate(8, 0, 0);
-    curve->addKeyframe(TransformKeyframe::create(0, operations1, scoped_ptr<TimingFunction>()));
-    curve->addKeyframe(TransformKeyframe::create(1, operations2, scoped_ptr<TimingFunction>()));
-    curve->addKeyframe(TransformKeyframe::create(2, operations3, scoped_ptr<TimingFunction>()));
+    curve->addKeyframe(CCTransformKeyframe::create(0, operations1, scoped_ptr<CCTimingFunction>()));
+    curve->addKeyframe(CCTransformKeyframe::create(1, operations2, scoped_ptr<CCTimingFunction>()));
+    curve->addKeyframe(CCTransformKeyframe::create(2, operations3, scoped_ptr<CCTimingFunction>()));
     expectTranslateX(2, curve->getValue(-1));
     expectTranslateX(2, curve->getValue(0));
     expectTranslateX(3, curve->getValue(0.5));
@@ -141,9 +141,9 @@ TEST(KeyframedAnimationCurveTest, ThreeTransformKeyframe)
 }
 
 // Tests that a transform animation with multiple keys at a given time works sanely.
-TEST(KeyframedAnimationCurveTest, RepeatedTransformKeyTimes)
+TEST(CCKeyframedAnimationCurveTest, RepeatedTransformKeyTimes)
 {
-    scoped_ptr<KeyframedTransformAnimationCurve> curve(KeyframedTransformAnimationCurve::create());
+    scoped_ptr<CCKeyframedTransformAnimationCurve> curve(CCKeyframedTransformAnimationCurve::create());
     // A step function.
     WebKit::WebTransformOperations operations1;
     operations1.appendTranslate(4, 0, 0);
@@ -153,10 +153,10 @@ TEST(KeyframedAnimationCurveTest, RepeatedTransformKeyTimes)
     operations3.appendTranslate(6, 0, 0);
     WebKit::WebTransformOperations operations4;
     operations4.appendTranslate(6, 0, 0);
-    curve->addKeyframe(TransformKeyframe::create(0, operations1, scoped_ptr<TimingFunction>()));
-    curve->addKeyframe(TransformKeyframe::create(1, operations2, scoped_ptr<TimingFunction>()));
-    curve->addKeyframe(TransformKeyframe::create(1, operations3, scoped_ptr<TimingFunction>()));
-    curve->addKeyframe(TransformKeyframe::create(2, operations4, scoped_ptr<TimingFunction>()));
+    curve->addKeyframe(CCTransformKeyframe::create(0, operations1, scoped_ptr<CCTimingFunction>()));
+    curve->addKeyframe(CCTransformKeyframe::create(1, operations2, scoped_ptr<CCTimingFunction>()));
+    curve->addKeyframe(CCTransformKeyframe::create(1, operations3, scoped_ptr<CCTimingFunction>()));
+    curve->addKeyframe(CCTransformKeyframe::create(2, operations4, scoped_ptr<CCTimingFunction>()));
 
     expectTranslateX(4, curve->getValue(-1));
     expectTranslateX(4, curve->getValue(0));
@@ -172,12 +172,12 @@ TEST(KeyframedAnimationCurveTest, RepeatedTransformKeyTimes)
 }
 
 // Tests that the keyframes may be added out of order.
-TEST(KeyframedAnimationCurveTest, UnsortedKeyframes)
+TEST(CCKeyframedAnimationCurveTest, UnsortedKeyframes)
 {
-    scoped_ptr<KeyframedFloatAnimationCurve> curve(KeyframedFloatAnimationCurve::create());
-    curve->addKeyframe(FloatKeyframe::create(2, 8, scoped_ptr<TimingFunction>()));
-    curve->addKeyframe(FloatKeyframe::create(0, 2, scoped_ptr<TimingFunction>()));
-    curve->addKeyframe(FloatKeyframe::create(1, 4, scoped_ptr<TimingFunction>()));
+    scoped_ptr<CCKeyframedFloatAnimationCurve> curve(CCKeyframedFloatAnimationCurve::create());
+    curve->addKeyframe(CCFloatKeyframe::create(2, 8, scoped_ptr<CCTimingFunction>()));
+    curve->addKeyframe(CCFloatKeyframe::create(0, 2, scoped_ptr<CCTimingFunction>()));
+    curve->addKeyframe(CCFloatKeyframe::create(1, 4, scoped_ptr<CCTimingFunction>()));
     EXPECT_FLOAT_EQ(2, curve->getValue(-1));
     EXPECT_FLOAT_EQ(2, curve->getValue(0));
     EXPECT_FLOAT_EQ(3, curve->getValue(0.5));
@@ -188,11 +188,11 @@ TEST(KeyframedAnimationCurveTest, UnsortedKeyframes)
 }
 
 // Tests that a cubic bezier timing function works as expected.
-TEST(KeyframedAnimationCurveTest, CubicBezierTimingFunction)
+TEST(CCKeyframedAnimationCurveTest, CubicBezierTimingFunction)
 {
-    scoped_ptr<KeyframedFloatAnimationCurve> curve(KeyframedFloatAnimationCurve::create());
-    curve->addKeyframe(FloatKeyframe::create(0, 0, CubicBezierTimingFunction::create(0.25, 0, 0.75, 1).PassAs<TimingFunction>()));
-    curve->addKeyframe(FloatKeyframe::create(1, 1, scoped_ptr<TimingFunction>()));
+    scoped_ptr<CCKeyframedFloatAnimationCurve> curve(CCKeyframedFloatAnimationCurve::create());
+    curve->addKeyframe(CCFloatKeyframe::create(0, 0, CCCubicBezierTimingFunction::create(0.25, 0, 0.75, 1).PassAs<CCTimingFunction>()));
+    curve->addKeyframe(CCFloatKeyframe::create(1, 1, scoped_ptr<CCTimingFunction>()));
 
     EXPECT_FLOAT_EQ(0, curve->getValue(0));
     EXPECT_LT(0, curve->getValue(0.25));

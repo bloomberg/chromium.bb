@@ -24,26 +24,26 @@ class WebLayerScrollClient;
 
 namespace cc {
 
-class ActiveAnimation;
-struct AnimationEvent;
-class LayerAnimationDelegate;
-class LayerImpl;
-class LayerTreeHost;
-class PriorityCalculator;
-class TextureUpdateQueue;
-class ScrollbarLayer;
-struct AnimationEvent;
-struct RenderingStats;
+class CCActiveAnimation;
+struct CCAnimationEvent;
+class CCLayerAnimationDelegate;
+class CCLayerImpl;
+class CCLayerTreeHost;
+class CCPriorityCalculator;
+class CCTextureUpdateQueue;
+class ScrollbarLayerChromium;
+struct CCAnimationEvent;
+struct CCRenderingStats;
 
 // Base class for composited layers. Special layer types are derived from
 // this class.
-class Layer : public base::RefCounted<Layer>, public LayerAnimationControllerClient {
+class LayerChromium : public base::RefCounted<LayerChromium>, public CCLayerAnimationControllerClient {
 public:
-    typedef std::vector<scoped_refptr<Layer> > LayerList;
+    typedef std::vector<scoped_refptr<LayerChromium> > LayerList;
 
-    static scoped_refptr<Layer> create();
+    static scoped_refptr<LayerChromium> create();
 
-    // LayerAnimationControllerClient implementation
+    // CCLayerAnimationControllerClient implementation
     virtual int id() const OVERRIDE;
     virtual void setOpacityFromAnimation(float) OVERRIDE;
     virtual float opacity() const OVERRIDE;
@@ -53,11 +53,11 @@ public:
     // The root layer is a special case -- it operates in physical pixels.
     virtual const WebKit::WebTransformationMatrix& transform() const OVERRIDE;
 
-    Layer* rootLayer();
-    Layer* parent() const;
-    void addChild(scoped_refptr<Layer>);
-    void insertChild(scoped_refptr<Layer>, size_t index);
-    void replaceChild(Layer* reference, scoped_refptr<Layer> newLayer);
+    LayerChromium* rootLayer();
+    LayerChromium* parent() const;
+    void addChild(scoped_refptr<LayerChromium>);
+    void insertChild(scoped_refptr<LayerChromium>, size_t index);
+    void replaceChild(LayerChromium* reference, scoped_refptr<LayerChromium> newLayer);
     void removeFromParent();
     void removeAllChildren();
     void setChildren(const LayerList&);
@@ -82,8 +82,8 @@ public:
     void setMasksToBounds(bool);
     bool masksToBounds() const { return m_masksToBounds; }
 
-    void setMaskLayer(Layer*);
-    Layer* maskLayer() const { return m_maskLayer.get(); }
+    void setMaskLayer(LayerChromium*);
+    LayerChromium* maskLayer() const { return m_maskLayer.get(); }
 
     virtual void setNeedsDisplayRect(const FloatRect& dirtyRect);
     void setNeedsDisplay() { setNeedsDisplayRect(FloatRect(FloatPoint(), bounds())); }
@@ -165,14 +165,14 @@ public:
     virtual void setUseLCDText(bool);
     bool useLCDText() const { return m_useLCDText; }
 
-    virtual void setLayerTreeHost(LayerTreeHost*);
+    virtual void setLayerTreeHost(CCLayerTreeHost*);
 
     bool hasContributingDelegatedRenderPasses() const { return false; }
 
     void setIsDrawable(bool);
 
-    void setReplicaLayer(Layer*);
-    Layer* replicaLayer() const { return m_replicaLayer.get(); }
+    void setReplicaLayer(LayerChromium*);
+    LayerChromium* replicaLayer() const { return m_replicaLayer.get(); }
 
     bool hasMask() const { return m_maskLayer; }
     bool hasReplica() const { return m_replicaLayer; }
@@ -180,7 +180,7 @@ public:
 
     // These methods typically need to be overwritten by derived classes.
     virtual bool drawsContent() const;
-    virtual void update(TextureUpdateQueue&, const OcclusionTracker*, RenderingStats&) { }
+    virtual void update(CCTextureUpdateQueue&, const CCOcclusionTracker*, CCRenderingStats&) { }
     virtual bool needMoreUpdates();
     virtual void setIsMask(bool) { }
     virtual void bindContentsTexture() { }
@@ -190,10 +190,10 @@ public:
     void setDebugBorderWidth(float);
     void setDebugName(const std::string&);
 
-    virtual void pushPropertiesTo(LayerImpl*);
+    virtual void pushPropertiesTo(CCLayerImpl*);
 
     void clearRenderSurface() { m_renderSurface.reset(); }
-    RenderSurface* renderSurface() const { return m_renderSurface.get(); }
+    RenderSurfaceChromium* renderSurface() const { return m_renderSurface.get(); }
     void createRenderSurface();
 
     float drawOpacity() const { return m_drawOpacity; }
@@ -202,8 +202,8 @@ public:
     bool drawOpacityIsAnimating() const { return m_drawOpacityIsAnimating; }
     void setDrawOpacityIsAnimating(bool drawOpacityIsAnimating) { m_drawOpacityIsAnimating = drawOpacityIsAnimating; }
 
-    Layer* renderTarget() const { DCHECK(!m_renderTarget || m_renderTarget->renderSurface()); return m_renderTarget; }
-    void setRenderTarget(Layer* target) { m_renderTarget = target; }
+    LayerChromium* renderTarget() const { DCHECK(!m_renderTarget || m_renderTarget->renderSurface()); return m_renderTarget; }
+    void setRenderTarget(LayerChromium* target) { m_renderTarget = target; }
 
     bool drawTransformIsAnimating() const { return m_drawTransformIsAnimating; }
     void setDrawTransformIsAnimating(bool animating) { m_drawTransformIsAnimating = animating; }
@@ -234,39 +234,39 @@ public:
     // Returns true if any of the layer's descendants has content to draw.
     bool descendantDrawsContent();
 
-    LayerTreeHost* layerTreeHost() const { return m_layerTreeHost; }
+    CCLayerTreeHost* layerTreeHost() const { return m_layerTreeHost; }
 
     // Set the priority of all desired textures in this layer.
-    virtual void setTexturePriorities(const PriorityCalculator&) { }
+    virtual void setTexturePriorities(const CCPriorityCalculator&) { }
 
-    bool addAnimation(scoped_ptr<ActiveAnimation>);
+    bool addAnimation(scoped_ptr<CCActiveAnimation>);
     void pauseAnimation(int animationId, double timeOffset);
     void removeAnimation(int animationId);
 
     void suspendAnimations(double monotonicTime);
     void resumeAnimations(double monotonicTime);
 
-    LayerAnimationController* layerAnimationController() { return m_layerAnimationController.get(); }
-    void setLayerAnimationController(scoped_ptr<LayerAnimationController>);
-    scoped_ptr<LayerAnimationController> releaseLayerAnimationController();
+    CCLayerAnimationController* layerAnimationController() { return m_layerAnimationController.get(); }
+    void setLayerAnimationController(scoped_ptr<CCLayerAnimationController>);
+    scoped_ptr<CCLayerAnimationController> releaseLayerAnimationController();
 
     void setLayerAnimationDelegate(WebKit::WebAnimationDelegate* layerAnimationDelegate) { m_layerAnimationDelegate = layerAnimationDelegate; }
 
     bool hasActiveAnimation() const;
 
-    virtual void notifyAnimationStarted(const AnimationEvent&, double wallClockTime);
+    virtual void notifyAnimationStarted(const CCAnimationEvent&, double wallClockTime);
     virtual void notifyAnimationFinished(double wallClockTime);
 
     virtual Region visibleContentOpaqueRegion() const;
 
-    virtual ScrollbarLayer* toScrollbarLayer();
+    virtual ScrollbarLayerChromium* toScrollbarLayerChromium();
 
 protected:
-    friend class LayerImpl;
+    friend class CCLayerImpl;
     friend class TreeSynchronizer;
-    virtual ~Layer();
+    virtual ~LayerChromium();
 
-    Layer();
+    LayerChromium();
 
     void setNeedsCommit();
 
@@ -284,36 +284,36 @@ protected:
     // Note this rect is in layer space (not content space).
     FloatRect m_updateRect;
 
-    scoped_refptr<Layer> m_maskLayer;
+    scoped_refptr<LayerChromium> m_maskLayer;
 
-    // Constructs a LayerImpl of the correct runtime type for this Layer type.
-    virtual scoped_ptr<LayerImpl> createLayerImpl();
+    // Constructs a CCLayerImpl of the correct runtime type for this LayerChromium type.
+    virtual scoped_ptr<CCLayerImpl> createCCLayerImpl();
     int m_layerId;
 
 private:
-    friend class base::RefCounted<Layer>;
+    friend class base::RefCounted<LayerChromium>;
 
-    void setParent(Layer*);
-    bool hasAncestor(Layer*) const;
+    void setParent(LayerChromium*);
+    bool hasAncestor(LayerChromium*) const;
     bool descendantIsFixedToContainerLayer() const;
 
     size_t numChildren() const { return m_children.size(); }
 
     // Returns the index of the child or -1 if not found.
-    int indexOfChild(const Layer*);
+    int indexOfChild(const LayerChromium*);
 
     // This should only be called from removeFromParent.
-    void removeChild(Layer*);
+    void removeChild(LayerChromium*);
 
     LayerList m_children;
-    Layer* m_parent;
+    LayerChromium* m_parent;
 
-    // Layer instances have a weak pointer to their LayerTreeHost.
-    // This pointer value is nil when a Layer is not in a tree and is
+    // LayerChromium instances have a weak pointer to their CCLayerTreeHost.
+    // This pointer value is nil when a LayerChromium is not in a tree and is
     // updated via setLayerTreeHost() if a layer moves between trees.
-    LayerTreeHost* m_layerTreeHost;
+    CCLayerTreeHost* m_layerTreeHost;
 
-    scoped_ptr<LayerAnimationController> m_layerAnimationController;
+    scoped_ptr<CCLayerAnimationController> m_layerAnimationController;
 
     // Layer properties.
     IntSize m_bounds;
@@ -354,14 +354,14 @@ private:
     WebKit::WebTransformationMatrix m_sublayerTransform;
 
     // Replica layer used for reflections.
-    scoped_refptr<Layer> m_replicaLayer;
+    scoped_refptr<LayerChromium> m_replicaLayer;
 
     // Transient properties.
-    scoped_ptr<RenderSurface> m_renderSurface;
+    scoped_ptr<RenderSurfaceChromium> m_renderSurface;
     float m_drawOpacity;
     bool m_drawOpacityIsAnimating;
 
-    Layer* m_renderTarget;
+    LayerChromium* m_renderTarget;
 
     WebKit::WebTransformationMatrix m_drawTransform;
     WebKit::WebTransformationMatrix m_screenSpaceTransform;
@@ -379,7 +379,7 @@ private:
     WebKit::WebLayerScrollClient* m_layerScrollClient;
 };
 
-void sortLayers(std::vector<scoped_refptr<Layer> >::iterator, std::vector<scoped_refptr<Layer> >::iterator, void*);
+void sortLayers(std::vector<scoped_refptr<LayerChromium> >::iterator, std::vector<scoped_refptr<LayerChromium> >::iterator, void*);
 
 }  // namespace cc
 

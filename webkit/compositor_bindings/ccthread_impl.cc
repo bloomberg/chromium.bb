@@ -9,8 +9,8 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebThread.h"
 
-using cc::Thread;
-using cc::CompletionEvent;
+using cc::CCThread;
+using cc::CCCompletionEvent;
 
 namespace WebKit {
 
@@ -22,7 +22,7 @@ namespace WebKit {
 // PassOwnPtrs.
 class GetThreadIDTask : public WebThread::Task {
 public:
-    GetThreadIDTask(base::PlatformThreadId* result, CompletionEvent* completion)
+    GetThreadIDTask(base::PlatformThreadId* result, CCCompletionEvent* completion)
          : m_completion(completion)
          , m_result(result) { }
 
@@ -35,16 +35,16 @@ public:
     }
 
 private:
-    CompletionEvent* m_completion;
+    CCCompletionEvent* m_completion;
     base::PlatformThreadId* m_result;
 };
 
-// General adapter from a Thread::Task to a WebThread::Task.
-class ThreadTaskAdapter : public WebThread::Task {
+// General adapter from a CCThread::Task to a WebThread::Task.
+class CCThreadTaskAdapter : public WebThread::Task {
 public:
-    explicit ThreadTaskAdapter(PassOwnPtr<Thread::Task> task) : m_task(task) { }
+    explicit CCThreadTaskAdapter(PassOwnPtr<CCThread::Task> task) : m_task(task) { }
 
-    virtual ~ThreadTaskAdapter() { }
+    virtual ~CCThreadTaskAdapter() { }
 
     virtual void run()
     {
@@ -52,31 +52,31 @@ public:
     }
 
 private:
-    OwnPtr<Thread::Task> m_task;
+    OwnPtr<CCThread::Task> m_task;
 };
 
-scoped_ptr<Thread> CCThreadImpl::createForCurrentThread()
+scoped_ptr<CCThread> CCThreadImpl::createForCurrentThread()
 {
-    return scoped_ptr<Thread>(new CCThreadImpl(Platform::current()->currentThread(), true)).Pass();
+    return scoped_ptr<CCThread>(new CCThreadImpl(Platform::current()->currentThread(), true)).Pass();
 }
 
-scoped_ptr<Thread> CCThreadImpl::createForDifferentThread(WebThread* thread)
+scoped_ptr<CCThread> CCThreadImpl::createForDifferentThread(WebThread* thread)
 {
-    return scoped_ptr<Thread>(new CCThreadImpl(thread, false)).Pass();
+    return scoped_ptr<CCThread>(new CCThreadImpl(thread, false)).Pass();
 }
 
 CCThreadImpl::~CCThreadImpl()
 {
 }
 
-void CCThreadImpl::postTask(PassOwnPtr<Thread::Task> task)
+void CCThreadImpl::postTask(PassOwnPtr<CCThread::Task> task)
 {
-    m_thread->postTask(new ThreadTaskAdapter(task));
+    m_thread->postTask(new CCThreadTaskAdapter(task));
 }
 
-void CCThreadImpl::postDelayedTask(PassOwnPtr<Thread::Task> task, long long delayMs)
+void CCThreadImpl::postDelayedTask(PassOwnPtr<CCThread::Task> task, long long delayMs)
 {
-    m_thread->postDelayedTask(new ThreadTaskAdapter(task), delayMs);
+    m_thread->postDelayedTask(new CCThreadTaskAdapter(task), delayMs);
 }
 
 base::PlatformThreadId CCThreadImpl::threadID() const
@@ -94,7 +94,7 @@ CCThreadImpl::CCThreadImpl(WebThread* thread, bool currentThread)
 
     // Get the threadId for the newly-created thread by running a task
     // on that thread, blocking on the result.
-    CompletionEvent completion;
+    CCCompletionEvent completion;
     m_thread->postTask(new GetThreadIDTask(&m_threadID, &completion));
     completion.wait();
 }

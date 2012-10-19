@@ -12,10 +12,10 @@
 
 namespace cc {
 
-class TextureUpdateQueue {
+class CCTextureUpdateQueue {
 public:
-    TextureUpdateQueue();
-    virtual ~TextureUpdateQueue();
+    CCTextureUpdateQueue();
+    virtual ~CCTextureUpdateQueue();
 
     void appendFullUpload(const ResourceUpdate&);
     void appendPartialUpload(const ResourceUpdate&);
@@ -39,7 +39,7 @@ private:
     std::deque<ResourceUpdate> m_partialEntries;
     std::deque<TextureCopier::Parameters> m_copyEntries;
 
-    DISALLOW_COPY_AND_ASSIGN(TextureUpdateQueue);
+    DISALLOW_COPY_AND_ASSIGN(CCTextureUpdateQueue);
 };
 
 }

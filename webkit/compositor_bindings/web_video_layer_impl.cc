@@ -16,7 +16,7 @@ WebVideoLayer* WebVideoLayer::create(WebVideoFrameProvider* provider)
 }
 
 WebVideoLayerImpl::WebVideoLayerImpl(WebVideoFrameProvider* provider)
-    : m_layer(new WebLayerImpl(cc::VideoLayer::create(provider)))
+    : m_layer(new WebLayerImpl(cc::VideoLayerChromium::create(provider)))
 {
 }
 

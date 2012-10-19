@@ -8,13 +8,13 @@
 
 namespace cc {
 
-void Texture::setDimensions(const IntSize& size, GLenum format)
+void CCTexture::setDimensions(const IntSize& size, GLenum format)
 {
     m_size = size;
     m_format = format;
 }
 
-size_t Texture::bytes() const
+size_t CCTexture::bytes() const
 {
     if (m_size.isEmpty())
         return 0u;
@@ -22,7 +22,7 @@ size_t Texture::bytes() const
     return memorySizeBytes(m_size, m_format);
 }
 
-size_t Texture::memorySizeBytes(const IntSize& size, GLenum format)
+size_t CCTexture::memorySizeBytes(const IntSize& size, GLenum format)
 {
     unsigned int componentsPerPixel = 4;
     unsigned int bytesPerComponent = 1;

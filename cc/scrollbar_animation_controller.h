@@ -11,28 +11,28 @@
 
 namespace cc {
 
-class LayerImpl;
-class ScrollbarLayerImpl;
+class CCLayerImpl;
+class CCScrollbarLayerImpl;
 
 // This abstract class represents the compositor-side analogy of ScrollbarAnimator.
 // Individual platforms should subclass it to provide specialized implementation.
-class ScrollbarAnimationController {
+class CCScrollbarAnimationController {
 public:
-    static scoped_ptr<ScrollbarAnimationController> create(LayerImpl* scrollLayer);
+    static scoped_ptr<CCScrollbarAnimationController> create(CCLayerImpl* scrollLayer);
 
-    virtual ~ScrollbarAnimationController();
+    virtual ~CCScrollbarAnimationController();
 
     virtual bool animate(double monotonicTime);
     void didPinchGestureBegin();
     void didPinchGestureUpdate();
     void didPinchGestureEnd();
-    void updateScrollOffset(LayerImpl* scrollLayer);
+    void updateScrollOffset(CCLayerImpl* scrollLayer);
 
-    void setHorizontalScrollbarLayer(ScrollbarLayerImpl* layer) { m_horizontalScrollbarLayer = layer; }
-    ScrollbarLayerImpl* horizontalScrollbarLayer() const { return m_horizontalScrollbarLayer; }
+    void setHorizontalScrollbarLayer(CCScrollbarLayerImpl* layer) { m_horizontalScrollbarLayer = layer; }
+    CCScrollbarLayerImpl* horizontalScrollbarLayer() const { return m_horizontalScrollbarLayer; }
 
-    void setVerticalScrollbarLayer(ScrollbarLayerImpl* layer) { m_verticalScrollbarLayer = layer; }
-    ScrollbarLayerImpl* verticalScrollbarLayer() const { return m_verticalScrollbarLayer; }
+    void setVerticalScrollbarLayer(CCScrollbarLayerImpl* layer) { m_verticalScrollbarLayer = layer; }
+    CCScrollbarLayerImpl* verticalScrollbarLayer() const { return m_verticalScrollbarLayer; }
 
     FloatPoint currentPos() const { return m_currentPos; }
     IntSize totalSize() const { return m_totalSize; }
@@ -41,17 +41,17 @@ public:
     virtual void didPinchGestureBeginAtTime(double monotonicTime) { }
     virtual void didPinchGestureUpdateAtTime(double monotonicTime) { }
     virtual void didPinchGestureEndAtTime(double monotonicTime) { }
-    virtual void updateScrollOffsetAtTime(LayerImpl* scrollLayer, double monotonicTime);
+    virtual void updateScrollOffsetAtTime(CCLayerImpl* scrollLayer, double monotonicTime);
 
 protected:
-    explicit ScrollbarAnimationController(LayerImpl* scrollLayer);
+    explicit CCScrollbarAnimationController(CCLayerImpl* scrollLayer);
 
 private:
-    static IntSize getScrollLayerBounds(const LayerImpl*);
+    static IntSize getScrollLayerBounds(const CCLayerImpl*);
 
     // Beware of dangling pointer. Always update these during tree synchronization.
-    ScrollbarLayerImpl* m_horizontalScrollbarLayer;
-    ScrollbarLayerImpl* m_verticalScrollbarLayer;
+    CCScrollbarLayerImpl* m_horizontalScrollbarLayer;
+    CCScrollbarLayerImpl* m_verticalScrollbarLayer;
 
     FloatPoint m_currentPos;
     IntSize m_totalSize;

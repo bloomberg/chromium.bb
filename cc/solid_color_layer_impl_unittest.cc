@@ -15,42 +15,42 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using namespace cc;
-using namespace LayerTestCommon;
+using namespace CCLayerTestCommon;
 
 namespace {
 
-TEST(SolidColorLayerImplTest, verifyTilingCompleteAndNoOverlap)
+TEST(CCSolidColorLayerImplTest, verifyTilingCompleteAndNoOverlap)
 {
     DebugScopedSetImplThread scopedImplThread;
 
-    MockQuadCuller quadCuller;
+    MockCCQuadCuller quadCuller;
     IntSize layerSize = IntSize(800, 600);
     IntRect visibleContentRect = IntRect(IntPoint(), layerSize);
 
-    scoped_ptr<SolidColorLayerImpl> layer = SolidColorLayerImpl::create(1);
+    scoped_ptr<CCSolidColorLayerImpl> layer = CCSolidColorLayerImpl::create(1);
     layer->setVisibleContentRect(visibleContentRect);
     layer->setBounds(layerSize);
     layer->setContentBounds(layerSize);
     layer->createRenderSurface();
     layer->setRenderTarget(layer.get());
 
-    AppendQuadsData data;
+    CCAppendQuadsData data;
     layer->appendQuads(quadCuller, data);
 
     verifyQuadsExactlyCoverRect(quadCuller.quadList(), visibleContentRect);
 }
 
-TEST(SolidColorLayerImplTest, verifyCorrectBackgroundColorInQuad)
+TEST(CCSolidColorLayerImplTest, verifyCorrectBackgroundColorInQuad)
 {
     DebugScopedSetImplThread scopedImplThread;
 
     SkColor testColor = 0xFFA55AFF;
 
-    MockQuadCuller quadCuller;
+    MockCCQuadCuller quadCuller;
     IntSize layerSize = IntSize(100, 100);
     IntRect visibleContentRect = IntRect(IntPoint(), layerSize);
 
-    scoped_ptr<SolidColorLayerImpl> layer = SolidColorLayerImpl::create(1);
+    scoped_ptr<CCSolidColorLayerImpl> layer = CCSolidColorLayerImpl::create(1);
     layer->setVisibleContentRect(visibleContentRect);
     layer->setBounds(layerSize);
     layer->setContentBounds(layerSize);
@@ -58,24 +58,24 @@ TEST(SolidColorLayerImplTest, verifyCorrectBackgroundColorInQuad)
     layer->createRenderSurface();
     layer->setRenderTarget(layer.get());
 
-    AppendQuadsData data;
+    CCAppendQuadsData data;
     layer->appendQuads(quadCuller, data);
 
     ASSERT_EQ(quadCuller.quadList().size(), 1U);
-    EXPECT_EQ(SolidColorDrawQuad::materialCast(quadCuller.quadList()[0])->color(), testColor);
+    EXPECT_EQ(CCSolidColorDrawQuad::materialCast(quadCuller.quadList()[0])->color(), testColor);
 }
 
-TEST(SolidColorLayerImplTest, verifyCorrectOpacityInQuad)
+TEST(CCSolidColorLayerImplTest, verifyCorrectOpacityInQuad)
 {
     DebugScopedSetImplThread scopedImplThread;
 
     const float opacity = 0.5f;
 
-    MockQuadCuller quadCuller;
+    MockCCQuadCuller quadCuller;
     IntSize layerSize = IntSize(100, 100);
     IntRect visibleContentRect = IntRect(IntPoint(), layerSize);
 
-    scoped_ptr<SolidColorLayerImpl> layer = SolidColorLayerImpl::create(1);
+    scoped_ptr<CCSolidColorLayerImpl> layer = CCSolidColorLayerImpl::create(1);
     layer->setVisibleContentRect(visibleContentRect);
     layer->setBounds(layerSize);
     layer->setContentBounds(layerSize);
@@ -83,11 +83,11 @@ TEST(SolidColorLayerImplTest, verifyCorrectOpacityInQuad)
     layer->createRenderSurface();
     layer->setRenderTarget(layer.get());
 
-    AppendQuadsData data;
+    CCAppendQuadsData data;
     layer->appendQuads(quadCuller, data);
 
     ASSERT_EQ(quadCuller.quadList().size(), 1U);
-    EXPECT_EQ(opacity, SolidColorDrawQuad::materialCast(quadCuller.quadList()[0])->opacity());
+    EXPECT_EQ(opacity, CCSolidColorDrawQuad::materialCast(quadCuller.quadList()[0])->opacity());
 }
 
 } // namespace

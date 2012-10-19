@@ -21,21 +21,21 @@ class WebGraphicsContext3D;
 
 namespace cc {
 
-class ScopedTexture;
-class StreamVideoDrawQuad;
-class TextureDrawQuad;
+class CCScopedTexture;
+class CCStreamVideoDrawQuad;
+class CCTextureDrawQuad;
 class GeometryBinding;
 class ScopedEnsureFramebufferAllocation;
 
 // Class that handles drawing of composited render layers using GL.
-class GLRenderer : public DirectRenderer,
+class CCRendererGL : public CCDirectRenderer,
                      public WebKit::WebGraphicsContext3D::WebGraphicsSwapBuffersCompleteCallbackCHROMIUM,
                      public WebKit::WebGraphicsContext3D::WebGraphicsMemoryAllocationChangedCallbackCHROMIUM ,
                      public WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback {
 public:
-    static scoped_ptr<GLRenderer> create(RendererClient*, ResourceProvider*);
+    static scoped_ptr<CCRendererGL> create(CCRendererClient*, CCResourceProvider*);
 
-    virtual ~GLRenderer();
+    virtual ~CCRendererGL();
 
     virtual const RendererCapabilities& capabilities() const OVERRIDE;
 
@@ -57,14 +57,14 @@ public:
     const GeometryBinding* sharedGeometry() const { return m_sharedGeometry.get(); }
 
     virtual void getFramebufferPixels(void *pixels, const IntRect&) OVERRIDE;
-    bool getFramebufferTexture(ScopedTexture*, const IntRect& deviceRect);
+    bool getFramebufferTexture(CCScopedTexture*, const IntRect& deviceRect);
 
     virtual bool isContextLost() OVERRIDE;
 
     virtual void setVisible(bool) OVERRIDE;
 
 protected:
-    GLRenderer(RendererClient*, ResourceProvider*);
+    CCRendererGL(CCRendererClient*, CCResourceProvider*);
 
     bool isFramebufferDiscarded() const { return m_isFramebufferDiscarded; }
     bool initialize();
@@ -72,12 +72,12 @@ protected:
     void releaseRenderPassTextures();
 
     virtual void bindFramebufferToOutputSurface(DrawingFrame&) OVERRIDE;
-    virtual bool bindFramebufferToTexture(DrawingFrame&, const ScopedTexture*, const IntRect& framebufferRect) OVERRIDE;
+    virtual bool bindFramebufferToTexture(DrawingFrame&, const CCScopedTexture*, const IntRect& framebufferRect) OVERRIDE;
     virtual void setDrawViewportSize(const IntSize&) OVERRIDE;
     virtual void enableScissorTestRect(const IntRect& scissorRect) OVERRIDE;
     virtual void disableScissorTest() OVERRIDE;
     virtual void clearFramebuffer(DrawingFrame&) OVERRIDE;
-    virtual void drawQuad(DrawingFrame&, const DrawQuad*) OVERRIDE;
+    virtual void drawQuad(DrawingFrame&, const CCDrawQuad*) OVERRIDE;
     virtual void beginDrawingFrame(DrawingFrame&) OVERRIDE;
     virtual void finishDrawingFrame(DrawingFrame&) OVERRIDE;
     virtual bool flippedFramebuffer() const OVERRIDE;
@@ -85,16 +85,16 @@ protected:
 private:
     static void toGLMatrix(float*, const WebKit::WebTransformationMatrix&);
 
-    void drawCheckerboardQuad(const DrawingFrame&, const CheckerboardDrawQuad*);
-    void drawDebugBorderQuad(const DrawingFrame&, const DebugBorderDrawQuad*);
-    scoped_ptr<ScopedTexture> drawBackgroundFilters(DrawingFrame&, const RenderPassDrawQuad*, const WebKit::WebFilterOperations&, const WebKit::WebTransformationMatrix& deviceTransform);
-    void drawRenderPassQuad(DrawingFrame&, const RenderPassDrawQuad*);
-    void drawSolidColorQuad(const DrawingFrame&, const SolidColorDrawQuad*);
-    void drawStreamVideoQuad(const DrawingFrame&, const StreamVideoDrawQuad*);
-    void drawTextureQuad(const DrawingFrame&, const TextureDrawQuad*);
-    void drawIOSurfaceQuad(const DrawingFrame&, const IOSurfaceDrawQuad*);
-    void drawTileQuad(const DrawingFrame&, const TileDrawQuad*);
-    void drawYUVVideoQuad(const DrawingFrame&, const YUVVideoDrawQuad*);
+    void drawCheckerboardQuad(const DrawingFrame&, const CCCheckerboardDrawQuad*);
+    void drawDebugBorderQuad(const DrawingFrame&, const CCDebugBorderDrawQuad*);
+    scoped_ptr<CCScopedTexture> drawBackgroundFilters(DrawingFrame&, const CCRenderPassDrawQuad*, const WebKit::WebFilterOperations&, const WebKit::WebTransformationMatrix& deviceTransform);
+    void drawRenderPassQuad(DrawingFrame&, const CCRenderPassDrawQuad*);
+    void drawSolidColorQuad(const DrawingFrame&, const CCSolidColorDrawQuad*);
+    void drawStreamVideoQuad(const DrawingFrame&, const CCStreamVideoDrawQuad*);
+    void drawTextureQuad(const DrawingFrame&, const CCTextureDrawQuad*);
+    void drawIOSurfaceQuad(const DrawingFrame&, const CCIOSurfaceDrawQuad*);
+    void drawTileQuad(const DrawingFrame&, const CCTileDrawQuad*);
+    void drawYUVVideoQuad(const DrawingFrame&, const CCYUVVideoDrawQuad*);
 
     void setShaderOpacity(float opacity, int alphaLocation);
     void setShaderFloatQuad(const FloatQuad&, int quadLocation);
@@ -102,7 +102,7 @@ private:
 
     void copyTextureToFramebuffer(const DrawingFrame&, int textureId, const IntRect&, const WebKit::WebTransformationMatrix& drawMatrix);
 
-    bool useScopedTexture(DrawingFrame&, const ScopedTexture*, const IntRect& viewportRect);
+    bool useScopedTexture(DrawingFrame&, const CCScopedTexture*, const IntRect& viewportRect);
 
     bool makeContextCurrent();
 
@@ -211,9 +211,9 @@ private:
     bool m_isUsingBindUniform;
     bool m_visible;
 
-    scoped_ptr<ResourceProvider::ScopedWriteLockGL> m_currentFramebufferLock;
+    scoped_ptr<CCResourceProvider::ScopedWriteLockGL> m_currentFramebufferLock;
 
-    DISALLOW_COPY_AND_ASSIGN(GLRenderer);
+    DISALLOW_COPY_AND_ASSIGN(CCRendererGL);
 };
 
 
@@ -223,7 +223,7 @@ private:
 #define DEBUG_GL_CALLS 0
 
 #if DEBUG_GL_CALLS && !defined(NDEBUG)
-#define GLC(context, x) (x, GLRenderer::debugGLCall(&*context, #x, __FILE__, __LINE__))
+#define GLC(context, x) (x, CCRendererGL::debugGLCall(&*context, #x, __FILE__, __LINE__))
 #else
 #define GLC(context, x) (x)
 #endif

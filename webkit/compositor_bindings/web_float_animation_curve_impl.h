@@ -9,8 +9,8 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatAnimationCurve.h"
 
 namespace cc {
-class AnimationCurve;
-class KeyframedFloatAnimationCurve;
+class CCAnimationCurve;
+class CCKeyframedFloatAnimationCurve;
 }
 
 namespace WebKit {
@@ -30,10 +30,10 @@ public:
 
     virtual float getValue(double time) const OVERRIDE;
 
-    scoped_ptr<cc::AnimationCurve> cloneToAnimationCurve() const;
+    scoped_ptr<cc::CCAnimationCurve> cloneToCCAnimationCurve() const;
 
 private:
-    scoped_ptr<cc::KeyframedFloatAnimationCurve> m_curve;
+    scoped_ptr<cc::CCKeyframedFloatAnimationCurve> m_curve;
 };
 
 }

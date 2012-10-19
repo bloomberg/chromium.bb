@@ -12,7 +12,7 @@ using namespace cc;
 namespace WebKit {
 
 WebDelegatedRendererLayerImpl::WebDelegatedRendererLayerImpl()
-    : m_layer(new WebLayerImpl(DelegatedRendererLayer::create()))
+    : m_layer(new WebLayerImpl(DelegatedRendererLayerChromium::create()))
 {
 }
 

@@ -13,9 +13,9 @@ namespace cc {
 class FloatRect;
 class IntRect;
 
-class LayerPainter {
+class LayerPainterChromium {
 public:
-    virtual ~LayerPainter() { }
+    virtual ~LayerPainterChromium() { }
     virtual void paint(SkCanvas*, const IntRect& contentRect, FloatRect& opaque) = 0;
 };
 

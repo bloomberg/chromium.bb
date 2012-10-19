@@ -20,10 +20,10 @@ using ::testing::AnyNumber;
 
 namespace {
 
-class MockLayerImplTreeHost : public LayerTreeHost {
+class MockCCLayerTreeHost : public CCLayerTreeHost {
 public:
-    MockLayerImplTreeHost()
-        : LayerTreeHost(&m_fakeClient, LayerTreeSettings())
+    MockCCLayerTreeHost()
+        : CCLayerTreeHost(&m_fakeClient, CCLayerTreeSettings())
     {
         initialize();
     }
@@ -31,13 +31,13 @@ public:
     MOCK_METHOD0(acquireLayerTextures, void());
 
 private:
-    FakeLayerImplTreeHostClient m_fakeClient;
+    FakeCCLayerTreeHostClient m_fakeClient;
 };
 
 
-class TextureLayerTest : public testing::Test {
+class TextureLayerChromiumTest : public testing::Test {
 public:
-    TextureLayerTest()
+    TextureLayerChromiumTest()
         : m_compositorInitializer(0)
     {
     }
@@ -45,7 +45,7 @@ public:
 protected:
     virtual void SetUp()
     {
-        m_layerTreeHost.reset(new MockLayerImplTreeHost);
+        m_layerTreeHost.reset(new MockCCLayerTreeHost);
     }
 
     virtual void TearDown()
@@ -57,14 +57,14 @@ protected:
         m_layerTreeHost.reset();
     }
 
-    scoped_ptr<MockLayerImplTreeHost> m_layerTreeHost;
+    scoped_ptr<MockCCLayerTreeHost> m_layerTreeHost;
 private:
     WebKitTests::WebCompositorInitializer m_compositorInitializer;
 };
 
-TEST_F(TextureLayerTest, syncImplWhenChangingTextureId)
+TEST_F(TextureLayerChromiumTest, syncImplWhenChangingTextureId)
 {
-    scoped_refptr<TextureLayer> testLayer = TextureLayer::create(0);
+    scoped_refptr<TextureLayerChromium> testLayer = TextureLayerChromium::create(0);
     ASSERT_TRUE(testLayer);
 
     EXPECT_CALL(*m_layerTreeHost, acquireLayerTextures()).Times(AnyNumber());
@@ -85,14 +85,14 @@ TEST_F(TextureLayerTest, syncImplWhenChangingTextureId)
     Mock::VerifyAndClearExpectations(m_layerTreeHost.get());
 }
 
-TEST_F(TextureLayerTest, syncImplWhenRemovingFromTree)
+TEST_F(TextureLayerChromiumTest, syncImplWhenRemovingFromTree)
 {
-    scoped_refptr<Layer> rootLayer = Layer::create();
+    scoped_refptr<LayerChromium> rootLayer = LayerChromium::create();
     ASSERT_TRUE(rootLayer);
-    scoped_refptr<Layer> childLayer = Layer::create();
+    scoped_refptr<LayerChromium> childLayer = LayerChromium::create();
     ASSERT_TRUE(childLayer);
     rootLayer->addChild(childLayer);
-    scoped_refptr<TextureLayer> testLayer = TextureLayer::create(0);
+    scoped_refptr<TextureLayerChromium> testLayer = TextureLayerChromium::create(0);
     ASSERT_TRUE(testLayer);
     testLayer->setTextureId(0);
     childLayer->addChild(testLayer);

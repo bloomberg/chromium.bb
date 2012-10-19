@@ -11,27 +11,27 @@
 
 namespace cc {
 
-class Thread;
+class CCThread;
 class IntRect;
 class IntSize;
-struct RenderingStats;
+struct CCRenderingStats;
 struct RendererCapabilities;
 
 // Abstract class responsible for proxying commands from the main-thread side of
 // the compositor over to the compositor implementation.
-class Proxy {
+class CCProxy {
 public:
-    static void setMainThread(Thread*);
-    static Thread* mainThread();
+    static void setMainThread(CCThread*);
+    static CCThread* mainThread();
 
     static bool hasImplThread();
-    static void setImplThread(Thread*);
-    static Thread* implThread();
+    static void setImplThread(CCThread*);
+    static CCThread* implThread();
 
     // Returns 0 if the current thread is neither the main thread nor the impl thread.
-    static Thread* currentThread();
+    static CCThread* currentThread();
 
-    virtual ~Proxy();
+    virtual ~CCProxy();
 
     virtual bool compositeAndReadback(void *pixels, const IntRect&) = 0;
 
@@ -57,7 +57,7 @@ public:
     // reinitialized.
     virtual bool recreateContext() = 0;
 
-    virtual void renderingStats(RenderingStats*) = 0;
+    virtual void renderingStats(CCRenderingStats*) = 0;
 
     virtual const RendererCapabilities& rendererCapabilities() const = 0;
 
@@ -97,12 +97,12 @@ public:
 #endif
 
 protected:
-    Proxy();
+    CCProxy();
     friend class DebugScopedSetImplThread;
     friend class DebugScopedSetMainThreadBlocked;
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(Proxy);
+    DISALLOW_COPY_AND_ASSIGN(CCProxy);
 };
 
 class DebugScopedSetMainThreadBlocked {
@@ -110,15 +110,15 @@ public:
     DebugScopedSetMainThreadBlocked()
     {
 #ifndef NDEBUG
-        DCHECK(!Proxy::isMainThreadBlocked());
-        Proxy::setMainThreadBlocked(true);
+        DCHECK(!CCProxy::isMainThreadBlocked());
+        CCProxy::setMainThreadBlocked(true);
 #endif
     }
     ~DebugScopedSetMainThreadBlocked()
     {
 #ifndef NDEBUG
-        DCHECK(Proxy::isMainThreadBlocked());
-        Proxy::setMainThreadBlocked(false);
+        DCHECK(CCProxy::isMainThreadBlocked());
+        CCProxy::setMainThreadBlocked(false);
 #endif
     }
 };

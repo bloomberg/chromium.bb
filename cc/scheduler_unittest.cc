@@ -16,9 +16,9 @@ using namespace WebKitTests;
 
 namespace {
 
-class FakeSchedulerClient : public SchedulerClient {
+class FakeCCSchedulerClient : public CCSchedulerClient {
 public:
-    FakeSchedulerClient() { reset(); }
+    FakeCCSchedulerClient() { reset(); }
     void reset()
     {
         m_actions.clear();
@@ -40,17 +40,17 @@ public:
     }
 
     virtual void scheduledActionBeginFrame() OVERRIDE { m_actions.push_back("scheduledActionBeginFrame"); }
-    virtual ScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapIfPossible() OVERRIDE
+    virtual CCScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapIfPossible() OVERRIDE
     {
         m_actions.push_back("scheduledActionDrawAndSwapIfPossible");
         m_numDraws++;
-        return ScheduledActionDrawAndSwapResult(m_drawWillHappen, m_drawWillHappen && m_swapWillHappenIfDrawHappens);
+        return CCScheduledActionDrawAndSwapResult(m_drawWillHappen, m_drawWillHappen && m_swapWillHappenIfDrawHappens);
     }
 
-    virtual ScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapForced() OVERRIDE
+    virtual CCScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapForced() OVERRIDE
     {
         m_actions.push_back("scheduledActionDrawAndSwapForced");
-        return ScheduledActionDrawAndSwapResult(true, m_swapWillHappenIfDrawHappens);
+        return CCScheduledActionDrawAndSwapResult(true, m_swapWillHappenIfDrawHappens);
     }
 
     virtual void scheduledActionCommit() OVERRIDE { m_actions.push_back("scheduledActionCommit"); }
@@ -68,11 +68,11 @@ protected:
     std::vector<const char*> m_actions;
 };
 
-TEST(SchedulerTest, RequestCommit)
+TEST(CCSchedulerTest, RequestCommit)
 {
-    FakeSchedulerClient client;
-    scoped_refptr<FakeTimeSource> timeSource(new FakeTimeSource());
-    scoped_ptr<Scheduler> scheduler = Scheduler::create(&client, make_scoped_ptr(new FrameRateController(timeSource)));
+    FakeCCSchedulerClient client;
+    scoped_refptr<FakeCCTimeSource> timeSource(new FakeCCTimeSource());
+    scoped_ptr<CCScheduler> scheduler = CCScheduler::create(&client, make_scoped_ptr(new CCFrameRateController(timeSource)));
     scheduler->setCanBeginFrame(true);
     scheduler->setVisible(true);
     scheduler->setCanDraw(true);
@@ -102,11 +102,11 @@ TEST(SchedulerTest, RequestCommit)
     EXPECT_FALSE(timeSource->active());
 }
 
-TEST(SchedulerTest, RequestCommitAfterBeginFrame)
+TEST(CCSchedulerTest, RequestCommitAfterBeginFrame)
 {
-    FakeSchedulerClient client;
-    scoped_refptr<FakeTimeSource> timeSource(new FakeTimeSource());
-    scoped_ptr<Scheduler> scheduler = Scheduler::create(&client, make_scoped_ptr(new FrameRateController(timeSource)));
+    FakeCCSchedulerClient client;
+    scoped_refptr<FakeCCTimeSource> timeSource(new FakeCCTimeSource());
+    scoped_ptr<CCScheduler> scheduler = CCScheduler::create(&client, make_scoped_ptr(new CCFrameRateController(timeSource)));
     scheduler->setCanBeginFrame(true);
     scheduler->setVisible(true);
     scheduler->setCanDraw(true);
@@ -136,11 +136,11 @@ TEST(SchedulerTest, RequestCommitAfterBeginFrame)
     client.reset();
 }
 
-TEST(SchedulerTest, TextureAcquisitionCollision)
+TEST(CCSchedulerTest, TextureAcquisitionCollision)
 {
-    FakeSchedulerClient client;
-    scoped_refptr<FakeTimeSource> timeSource(new FakeTimeSource());
-    scoped_ptr<Scheduler> scheduler = Scheduler::create(&client, make_scoped_ptr(new FrameRateController(timeSource)));
+    FakeCCSchedulerClient client;
+    scoped_refptr<FakeCCTimeSource> timeSource(new FakeCCTimeSource());
+    scoped_ptr<CCScheduler> scheduler = CCScheduler::create(&client, make_scoped_ptr(new CCFrameRateController(timeSource)));
     scheduler->setCanBeginFrame(true);
     scheduler->setVisible(true);
     scheduler->setCanDraw(true);
@@ -175,11 +175,11 @@ TEST(SchedulerTest, TextureAcquisitionCollision)
     client.reset();
 }
 
-TEST(SchedulerTest, VisibilitySwitchWithTextureAcquisition)
+TEST(CCSchedulerTest, VisibilitySwitchWithTextureAcquisition)
 {
-    FakeSchedulerClient client;
-    scoped_refptr<FakeTimeSource> timeSource(new FakeTimeSource());
-    scoped_ptr<Scheduler> scheduler = Scheduler::create(&client, make_scoped_ptr(new FrameRateController(timeSource)));
+    FakeCCSchedulerClient client;
+    scoped_refptr<FakeCCTimeSource> timeSource(new FakeCCTimeSource());
+    scoped_ptr<CCScheduler> scheduler = CCScheduler::create(&client, make_scoped_ptr(new CCFrameRateController(timeSource)));
     scheduler->setCanBeginFrame(true);
     scheduler->setVisible(true);
     scheduler->setCanDraw(true);
@@ -204,26 +204,26 @@ TEST(SchedulerTest, VisibilitySwitchWithTextureAcquisition)
     client.reset();
 }
 
-class SchedulerClientThatSetNeedsDrawInsideDraw : public FakeSchedulerClient {
+class SchedulerClientThatSetNeedsDrawInsideDraw : public FakeCCSchedulerClient {
 public:
     SchedulerClientThatSetNeedsDrawInsideDraw()
         : m_scheduler(0) { }
 
-    void setScheduler(Scheduler* scheduler) { m_scheduler = scheduler; }
+    void setScheduler(CCScheduler* scheduler) { m_scheduler = scheduler; }
 
     virtual void scheduledActionBeginFrame() OVERRIDE { }
-    virtual ScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapIfPossible() OVERRIDE
+    virtual CCScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapIfPossible() OVERRIDE
     {
         // Only setNeedsRedraw the first time this is called
         if (!m_numDraws)
             m_scheduler->setNeedsRedraw();
-        return FakeSchedulerClient::scheduledActionDrawAndSwapIfPossible();
+        return FakeCCSchedulerClient::scheduledActionDrawAndSwapIfPossible();
     }
 
-    virtual ScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapForced() OVERRIDE
+    virtual CCScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapForced() OVERRIDE
     {
         NOTREACHED();
-        return ScheduledActionDrawAndSwapResult(true, true);
+        return CCScheduledActionDrawAndSwapResult(true, true);
     }
 
     virtual void scheduledActionCommit() OVERRIDE { }
@@ -231,18 +231,18 @@ public:
     virtual void didAnticipatedDrawTimeChange(base::TimeTicks) OVERRIDE { }
 
 protected:
-    Scheduler* m_scheduler;
+    CCScheduler* m_scheduler;
 };
 
 // Tests for two different situations:
 // 1. the scheduler dropping setNeedsRedraw requests that happen inside
 //    a scheduledActionDrawAndSwap
 // 2. the scheduler drawing twice inside a single tick
-TEST(SchedulerTest, RequestRedrawInsideDraw)
+TEST(CCSchedulerTest, RequestRedrawInsideDraw)
 {
     SchedulerClientThatSetNeedsDrawInsideDraw client;
-    scoped_refptr<FakeTimeSource> timeSource(new FakeTimeSource());
-    scoped_ptr<Scheduler> scheduler = Scheduler::create(&client, make_scoped_ptr(new FrameRateController(timeSource)));
+    scoped_refptr<FakeCCTimeSource> timeSource(new FakeCCTimeSource());
+    scoped_ptr<CCScheduler> scheduler = CCScheduler::create(&client, make_scoped_ptr(new CCFrameRateController(timeSource)));
     client.setScheduler(scheduler.get());
     scheduler->setCanBeginFrame(true);
     scheduler->setVisible(true);
@@ -265,11 +265,11 @@ TEST(SchedulerTest, RequestRedrawInsideDraw)
 }
 
 // Test that requesting redraw inside a failed draw doesn't lose the request.
-TEST(SchedulerTest, RequestRedrawInsideFailedDraw)
+TEST(CCSchedulerTest, RequestRedrawInsideFailedDraw)
 {
     SchedulerClientThatSetNeedsDrawInsideDraw client;
-    scoped_refptr<FakeTimeSource> timeSource(new FakeTimeSource());
-    scoped_ptr<Scheduler> scheduler = Scheduler::create(&client, make_scoped_ptr(new FrameRateController(timeSource)));
+    scoped_refptr<FakeCCTimeSource> timeSource(new FakeCCTimeSource());
+    scoped_ptr<CCScheduler> scheduler = CCScheduler::create(&client, make_scoped_ptr(new CCFrameRateController(timeSource)));
     client.setScheduler(scheduler.get());
     scheduler->setCanBeginFrame(true);
     scheduler->setVisible(true);
@@ -306,26 +306,26 @@ TEST(SchedulerTest, RequestRedrawInsideFailedDraw)
     EXPECT_FALSE(timeSource->active());
 }
 
-class SchedulerClientThatSetNeedsCommitInsideDraw : public FakeSchedulerClient {
+class SchedulerClientThatSetNeedsCommitInsideDraw : public FakeCCSchedulerClient {
 public:
     SchedulerClientThatSetNeedsCommitInsideDraw()
         : m_scheduler(0) { }
 
-    void setScheduler(Scheduler* scheduler) { m_scheduler = scheduler; }
+    void setScheduler(CCScheduler* scheduler) { m_scheduler = scheduler; }
 
     virtual void scheduledActionBeginFrame() OVERRIDE { }
-    virtual ScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapIfPossible() OVERRIDE
+    virtual CCScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapIfPossible() OVERRIDE
     {
         // Only setNeedsCommit the first time this is called
         if (!m_numDraws)
             m_scheduler->setNeedsCommit();
-        return FakeSchedulerClient::scheduledActionDrawAndSwapIfPossible();
+        return FakeCCSchedulerClient::scheduledActionDrawAndSwapIfPossible();
     }
 
-    virtual ScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapForced() OVERRIDE
+    virtual CCScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapForced() OVERRIDE
     {
         NOTREACHED();
-        return ScheduledActionDrawAndSwapResult(true, true);
+        return CCScheduledActionDrawAndSwapResult(true, true);
     }
 
     virtual void scheduledActionCommit() OVERRIDE { }
@@ -333,16 +333,16 @@ public:
     virtual void didAnticipatedDrawTimeChange(base::TimeTicks) OVERRIDE { }
 
 protected:
-    Scheduler* m_scheduler;
+    CCScheduler* m_scheduler;
 };
 
 // Tests for the scheduler infinite-looping on setNeedsCommit requests that
 // happen inside a scheduledActionDrawAndSwap
-TEST(SchedulerTest, RequestCommitInsideDraw)
+TEST(CCSchedulerTest, RequestCommitInsideDraw)
 {
     SchedulerClientThatSetNeedsCommitInsideDraw client;
-    scoped_refptr<FakeTimeSource> timeSource(new FakeTimeSource());
-    scoped_ptr<Scheduler> scheduler = Scheduler::create(&client, make_scoped_ptr(new FrameRateController(timeSource)));
+    scoped_refptr<FakeCCTimeSource> timeSource(new FakeCCTimeSource());
+    scoped_ptr<CCScheduler> scheduler = CCScheduler::create(&client, make_scoped_ptr(new CCFrameRateController(timeSource)));
     client.setScheduler(scheduler.get());
     scheduler->setCanBeginFrame(true);
     scheduler->setVisible(true);
@@ -366,11 +366,11 @@ TEST(SchedulerTest, RequestCommitInsideDraw)
 }
 
 // Tests that when a draw fails then the pending commit should not be dropped.
-TEST(SchedulerTest, RequestCommitInsideFailedDraw)
+TEST(CCSchedulerTest, RequestCommitInsideFailedDraw)
 {
     SchedulerClientThatSetNeedsDrawInsideDraw client;
-    scoped_refptr<FakeTimeSource> timeSource(new FakeTimeSource());
-    scoped_ptr<Scheduler> scheduler = Scheduler::create(&client, make_scoped_ptr(new FrameRateController(timeSource)));
+    scoped_refptr<FakeCCTimeSource> timeSource(new FakeCCTimeSource());
+    scoped_ptr<CCScheduler> scheduler = CCScheduler::create(&client, make_scoped_ptr(new CCFrameRateController(timeSource)));
     client.setScheduler(scheduler.get());
     scheduler->setCanBeginFrame(true);
     scheduler->setVisible(true);
@@ -407,13 +407,13 @@ TEST(SchedulerTest, RequestCommitInsideFailedDraw)
     EXPECT_FALSE(timeSource->active());
 }
 
-TEST(SchedulerTest, NoBeginFrameWhenDrawFails)
+TEST(CCSchedulerTest, NoBeginFrameWhenDrawFails)
 {
-    scoped_refptr<FakeTimeSource> timeSource(new FakeTimeSource());
+    scoped_refptr<FakeCCTimeSource> timeSource(new FakeCCTimeSource());
     SchedulerClientThatSetNeedsCommitInsideDraw client;
-    scoped_ptr<FakeFrameRateController> controller(new FakeFrameRateController(timeSource));
-    FakeFrameRateController* controllerPtr = controller.get();
-    scoped_ptr<Scheduler> scheduler = Scheduler::create(&client, controller.PassAs<FrameRateController>());
+    scoped_ptr<FakeCCFrameRateController> controller(new FakeCCFrameRateController(timeSource));
+    FakeCCFrameRateController* controllerPtr = controller.get();
+    scoped_ptr<CCScheduler> scheduler = CCScheduler::create(&client, controller.PassAs<CCFrameRateController>());
     client.setScheduler(scheduler.get());
     scheduler->setCanBeginFrame(true);
     scheduler->setVisible(true);
@@ -444,13 +444,13 @@ TEST(SchedulerTest, NoBeginFrameWhenDrawFails)
     EXPECT_EQ(0, controllerPtr->numFramesPending());
 }
 
-TEST(SchedulerTest, NoBeginFrameWhenSwapFailsDuringForcedCommit)
+TEST(CCSchedulerTest, NoBeginFrameWhenSwapFailsDuringForcedCommit)
 {
-    scoped_refptr<FakeTimeSource> timeSource(new FakeTimeSource());
-    FakeSchedulerClient client;
-    scoped_ptr<FakeFrameRateController> controller(new FakeFrameRateController(timeSource));
-    FakeFrameRateController* controllerPtr = controller.get();
-    scoped_ptr<Scheduler> scheduler = Scheduler::create(&client, controller.PassAs<FrameRateController>());
+    scoped_refptr<FakeCCTimeSource> timeSource(new FakeCCTimeSource());
+    FakeCCSchedulerClient client;
+    scoped_ptr<FakeCCFrameRateController> controller(new FakeCCFrameRateController(timeSource));
+    FakeCCFrameRateController* controllerPtr = controller.get();
+    scoped_ptr<CCScheduler> scheduler = CCScheduler::create(&client, controller.PassAs<CCFrameRateController>());
 
     EXPECT_EQ(0, controllerPtr->numFramesPending());
 

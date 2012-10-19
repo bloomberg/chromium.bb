@@ -17,13 +17,13 @@ class WebGraphicsContext3D;
 namespace cc {
 class FloatSize;
 
-class RenderSurfaceFilters {
+class CCRenderSurfaceFilters {
 public:
     static SkBitmap apply(const WebKit::WebFilterOperations& filters, unsigned textureId, const FloatSize&, WebKit::WebGraphicsContext3D*, GrContext*);
     static WebKit::WebFilterOperations optimize(const WebKit::WebFilterOperations& filters);
 
 private:
-    RenderSurfaceFilters();
+    CCRenderSurfaceFilters();
 };
 
 }

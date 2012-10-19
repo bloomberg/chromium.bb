@@ -27,10 +27,10 @@ using WebKit::WebTransformationMatrix;
 
 namespace {
 
-class TestOcclusionTracker : public OcclusionTracker {
+class TestCCOcclusionTracker : public CCOcclusionTracker {
 public:
-    TestOcclusionTracker()
-        : OcclusionTracker(IntRect(0, 0, 1000, 1000), true)
+    TestCCOcclusionTracker()
+        : CCOcclusionTracker(IntRect(0, 0, 1000, 1000), true)
         , m_layerClipRectInTarget(IntRect(0, 0, 1000, 1000))
     {
         // Pretend we have visited a render surface.
@@ -40,26 +40,26 @@ public:
     void setOcclusion(const Region& occlusion) { m_stack.last().occlusionInScreen = occlusion; }
 
 protected:
-    virtual IntRect layerClipRectInTarget(const Layer* layer) const OVERRIDE { return m_layerClipRectInTarget; }
+    virtual IntRect layerClipRectInTarget(const LayerChromium* layer) const OVERRIDE { return m_layerClipRectInTarget; }
 
 private:
     IntRect m_layerClipRectInTarget;
 };
 
-class TiledLayerTest : public testing::Test {
+class TiledLayerChromiumTest : public testing::Test {
 public:
-    TiledLayerTest()
+    TiledLayerChromiumTest()
         : m_compositorInitializer(0)
-        , m_context(WebKit::createFakeGraphicsContext())
-        , m_queue(make_scoped_ptr(new TextureUpdateQueue))
-        , m_textureManager(PrioritizedTextureManager::create(60*1024*1024, 1024, Renderer::ContentPool))
+        , m_context(WebKit::createFakeCCGraphicsContext())
+        , m_queue(make_scoped_ptr(new CCTextureUpdateQueue))
+        , m_textureManager(CCPrioritizedTextureManager::create(60*1024*1024, 1024, CCRenderer::ContentPool))
         , m_occlusion(0)
     {
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
-        m_resourceProvider = ResourceProvider::create(m_context.get());
+        m_resourceProvider = CCResourceProvider::create(m_context.get());
     }
 
-    virtual ~TiledLayerTest()
+    virtual ~TiledLayerChromiumTest()
     {
         textureManagerClearAllMemory(m_textureManager.get(), m_resourceProvider.get());
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
@@ -68,30 +68,30 @@ public:
 
     // Helper classes and functions that set the current thread to be the impl thread
     // before doing the action that they wrap.
-    class ScopedFakeTiledLayerImpl {
+    class ScopedFakeCCTiledLayerImpl {
     public:
-        ScopedFakeTiledLayerImpl(int id)
+        ScopedFakeCCTiledLayerImpl(int id)
         {
             DebugScopedSetImplThread implThread;
-            m_layerImpl = new FakeTiledLayerImpl(id);
+            m_layerImpl = new FakeCCTiledLayerImpl(id);
         }
-        ~ScopedFakeTiledLayerImpl()
+        ~ScopedFakeCCTiledLayerImpl()
         {
             DebugScopedSetImplThread implThread;
             delete m_layerImpl;
         }
-        FakeTiledLayerImpl* get()
+        FakeCCTiledLayerImpl* get()
         {
             return m_layerImpl;
         }
-        FakeTiledLayerImpl* operator->()
+        FakeCCTiledLayerImpl* operator->()
         {
             return m_layerImpl;
         }
     private:
-        FakeTiledLayerImpl* m_layerImpl;
+        FakeCCTiledLayerImpl* m_layerImpl;
     };
-    void textureManagerClearAllMemory(PrioritizedTextureManager* textureManager, ResourceProvider* resourceProvider)
+    void textureManagerClearAllMemory(CCPrioritizedTextureManager* textureManager, CCResourceProvider* resourceProvider)
     {
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
         textureManager->clearAllMemory(resourceProvider);
@@ -101,30 +101,30 @@ public:
     {
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
         DCHECK(m_queue);
-        scoped_ptr<TextureUpdateController> updateController =
-            TextureUpdateController::create(
+        scoped_ptr<CCTextureUpdateController> updateController =
+            CCTextureUpdateController::create(
                 NULL,
-                Proxy::implThread(),
+                CCProxy::implThread(),
                 m_queue.Pass(),
                 m_resourceProvider.get());
         updateController->finalize();
-        m_queue = make_scoped_ptr(new TextureUpdateQueue);
+        m_queue = make_scoped_ptr(new CCTextureUpdateQueue);
     }
-    void layerPushPropertiesTo(FakeTiledLayer* layer, FakeTiledLayerImpl* layerImpl)
+    void layerPushPropertiesTo(FakeTiledLayerChromium* layer, FakeCCTiledLayerImpl* layerImpl)
     {
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
         layer->pushPropertiesTo(layerImpl);
     }
-    void layerUpdate(FakeTiledLayer* layer, TestOcclusionTracker* occluded)
+    void layerUpdate(FakeTiledLayerChromium* layer, TestCCOcclusionTracker* occluded)
     {
         DebugScopedSetMainThread mainThread;
         layer->update(*m_queue.get(), occluded, m_stats);
     }
 
-    bool updateAndPush(FakeTiledLayer* layer1,
-                       FakeTiledLayerImpl* layerImpl1,
-                       FakeTiledLayer* layer2 = 0,
-                       FakeTiledLayerImpl* layerImpl2 = 0)
+    bool updateAndPush(FakeTiledLayerChromium* layer1,
+                       FakeCCTiledLayerImpl* layerImpl1,
+                       FakeTiledLayerChromium* layer2 = 0,
+                       FakeCCTiledLayerImpl* layerImpl2 = 0)
     {
         // Get textures
         m_textureManager->clearPriorities();
@@ -158,19 +158,19 @@ public:
 
 public:
     WebKitTests::WebCompositorInitializer m_compositorInitializer;
-    scoped_ptr<GraphicsContext> m_context;
-    scoped_ptr<ResourceProvider> m_resourceProvider;
-    scoped_ptr<TextureUpdateQueue> m_queue;
-    RenderingStats m_stats;
-    PriorityCalculator m_priorityCalculator;
-    scoped_ptr<PrioritizedTextureManager> m_textureManager;
-    TestOcclusionTracker* m_occlusion;
+    scoped_ptr<CCGraphicsContext> m_context;
+    scoped_ptr<CCResourceProvider> m_resourceProvider;
+    scoped_ptr<CCTextureUpdateQueue> m_queue;
+    CCRenderingStats m_stats;
+    CCPriorityCalculator m_priorityCalculator;
+    scoped_ptr<CCPrioritizedTextureManager> m_textureManager;
+    TestCCOcclusionTracker* m_occlusion;
 };
 
-TEST_F(TiledLayerTest, pushDirtyTiles)
+TEST_F(TiledLayerChromiumTest, pushDirtyTiles)
 {
-    scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
-    ScopedFakeTiledLayerImpl layerImpl(1);
+    scoped_refptr<FakeTiledLayerChromium> layer = make_scoped_refptr(new FakeTiledLayerChromium(m_textureManager.get()));
+    ScopedFakeCCTiledLayerImpl layerImpl(1);
 
     // The tile size is 100x100, so this invalidates and then paints two tiles.
     layer->setBounds(IntSize(100, 200));
@@ -193,11 +193,11 @@ TEST_F(TiledLayerTest, pushDirtyTiles)
     EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(0, 1));
 }
 
-TEST_F(TiledLayerTest, pushOccludedDirtyTiles)
+TEST_F(TiledLayerChromiumTest, pushOccludedDirtyTiles)
 {
-    scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
-    ScopedFakeTiledLayerImpl layerImpl(1);
-    TestOcclusionTracker occluded;
+    scoped_refptr<FakeTiledLayerChromium> layer = make_scoped_refptr(new FakeTiledLayerChromium(m_textureManager.get()));
+    ScopedFakeCCTiledLayerImpl layerImpl(1);
+    TestCCOcclusionTracker occluded;
     m_occlusion = &occluded;
 
     // The tile size is 100x100, so this invalidates and then paints two tiles.
@@ -229,10 +229,10 @@ TEST_F(TiledLayerTest, pushOccludedDirtyTiles)
     EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 1));
 }
 
-TEST_F(TiledLayerTest, pushDeletedTiles)
+TEST_F(TiledLayerChromiumTest, pushDeletedTiles)
 {
-    scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
-    ScopedFakeTiledLayerImpl layerImpl(1);
+    scoped_refptr<FakeTiledLayerChromium> layer = make_scoped_refptr(new FakeTiledLayerChromium(m_textureManager.get()));
+    ScopedFakeCCTiledLayerImpl layerImpl(1);
 
     // The tile size is 100x100, so this invalidates and then paints two tiles.
     layer->setBounds(IntSize(100, 200));
@@ -264,10 +264,10 @@ TEST_F(TiledLayerTest, pushDeletedTiles)
     EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(0, 1));
 }
 
-TEST_F(TiledLayerTest, pushIdlePaintTiles)
+TEST_F(TiledLayerChromiumTest, pushIdlePaintTiles)
 {
-    scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
-    ScopedFakeTiledLayerImpl layerImpl(1);
+    scoped_refptr<FakeTiledLayerChromium> layer = make_scoped_refptr(new FakeTiledLayerChromium(m_textureManager.get()));
+    ScopedFakeCCTiledLayerImpl layerImpl(1);
 
     // The tile size is 100x100. Setup 5x5 tiles with one visible tile in the center.
     // This paints 1 visible of the 25 invalid tiles.
@@ -300,14 +300,14 @@ TEST_F(TiledLayerTest, pushIdlePaintTiles)
     EXPECT_FALSE(needsUpdate);
 }
 
-TEST_F(TiledLayerTest, pushTilesAfterIdlePaintFailed)
+TEST_F(TiledLayerChromiumTest, pushTilesAfterIdlePaintFailed)
 {
     // Start with 2mb of memory, but the test is going to try to use just more than 1mb, so we reduce to 1mb later.
     m_textureManager->setMaxMemoryLimitBytes(2 * 1024 * 1024);
-    scoped_refptr<FakeTiledLayer> layer1 = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
-    ScopedFakeTiledLayerImpl layerImpl1(1);
-    scoped_refptr<FakeTiledLayer> layer2 = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
-    ScopedFakeTiledLayerImpl layerImpl2(2);
+    scoped_refptr<FakeTiledLayerChromium> layer1 = make_scoped_refptr(new FakeTiledLayerChromium(m_textureManager.get()));
+    ScopedFakeCCTiledLayerImpl layerImpl1(1);
+    scoped_refptr<FakeTiledLayerChromium> layer2 = make_scoped_refptr(new FakeTiledLayerChromium(m_textureManager.get()));
+    ScopedFakeCCTiledLayerImpl layerImpl2(2);
 
     // For this test we have two layers. layer1 exhausts most texture memory, leaving room for 2 more tiles from
     // layer2, but not all three tiles. First we paint layer1, and one tile from layer2. Then when we idle paint
@@ -354,11 +354,11 @@ TEST_F(TiledLayerTest, pushTilesAfterIdlePaintFailed)
     EXPECT_FALSE(layerImpl2->hasResourceIdForTileAt(0, 2));
 }
 
-TEST_F(TiledLayerTest, pushIdlePaintedOccludedTiles)
+TEST_F(TiledLayerChromiumTest, pushIdlePaintedOccludedTiles)
 {
-    scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
-    ScopedFakeTiledLayerImpl layerImpl(1);
-    TestOcclusionTracker occluded;
+    scoped_refptr<FakeTiledLayerChromium> layer = make_scoped_refptr(new FakeTiledLayerChromium(m_textureManager.get()));
+    ScopedFakeCCTiledLayerImpl layerImpl(1);
+    TestCCOcclusionTracker occluded;
     m_occlusion = &occluded;
     
     // The tile size is 100x100, so this invalidates one occluded tile, culls it during paint, but prepaints it.
@@ -373,10 +373,10 @@ TEST_F(TiledLayerTest, pushIdlePaintedOccludedTiles)
     EXPECT_EQ(1, occluded.overdrawMetrics().tilesCulledForUpload());
 }
 
-TEST_F(TiledLayerTest, pushTilesMarkedDirtyDuringPaint)
+TEST_F(TiledLayerChromiumTest, pushTilesMarkedDirtyDuringPaint)
 {
-    scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
-    ScopedFakeTiledLayerImpl layerImpl(1);
+    scoped_refptr<FakeTiledLayerChromium> layer = make_scoped_refptr(new FakeTiledLayerChromium(m_textureManager.get()));
+    ScopedFakeCCTiledLayerImpl layerImpl(1);
 
     // The tile size is 100x100, so this invalidates and then paints two tiles.
     // However, during the paint, we invalidate one of the tiles. This should
@@ -391,12 +391,12 @@ TEST_F(TiledLayerTest, pushTilesMarkedDirtyDuringPaint)
     EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(0, 1));
 }
 
-TEST_F(TiledLayerTest, pushTilesLayerMarkedDirtyDuringPaintOnNextLayer)
+TEST_F(TiledLayerChromiumTest, pushTilesLayerMarkedDirtyDuringPaintOnNextLayer)
 {
-    scoped_refptr<FakeTiledLayer> layer1 = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
-    scoped_refptr<FakeTiledLayer> layer2 = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
-    ScopedFakeTiledLayerImpl layer1Impl(1);
-    ScopedFakeTiledLayerImpl layer2Impl(2);
+    scoped_refptr<FakeTiledLayerChromium> layer1 = make_scoped_refptr(new FakeTiledLayerChromium(m_textureManager.get()));
+    scoped_refptr<FakeTiledLayerChromium> layer2 = make_scoped_refptr(new FakeTiledLayerChromium(m_textureManager.get()));
+    ScopedFakeCCTiledLayerImpl layer1Impl(1);
+    ScopedFakeCCTiledLayerImpl layer2Impl(2);
 
     // Invalidate a tile on layer1, during update of layer 2.
     layer2->fakeLayerTextureUpdater()->setRectToInvalidate(IntRect(0, 50, 100, 50), layer1.get());
@@ -414,12 +414,12 @@ TEST_F(TiledLayerTest, pushTilesLayerMarkedDirtyDuringPaintOnNextLayer)
     EXPECT_TRUE(layer2Impl->hasResourceIdForTileAt(0, 1));
 }
 
-TEST_F(TiledLayerTest, pushTilesLayerMarkedDirtyDuringPaintOnPreviousLayer)
+TEST_F(TiledLayerChromiumTest, pushTilesLayerMarkedDirtyDuringPaintOnPreviousLayer)
 {
-    scoped_refptr<FakeTiledLayer> layer1 = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
-    scoped_refptr<FakeTiledLayer> layer2 = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
-    ScopedFakeTiledLayerImpl layer1Impl(1);
-    ScopedFakeTiledLayerImpl layer2Impl(2);
+    scoped_refptr<FakeTiledLayerChromium> layer1 = make_scoped_refptr(new FakeTiledLayerChromium(m_textureManager.get()));
+    scoped_refptr<FakeTiledLayerChromium> layer2 = make_scoped_refptr(new FakeTiledLayerChromium(m_textureManager.get()));
+    ScopedFakeCCTiledLayerImpl layer1Impl(1);
+    ScopedFakeCCTiledLayerImpl layer2Impl(2);
 
     layer1->fakeLayerTextureUpdater()->setRectToInvalidate(IntRect(0, 50, 100, 50), layer2.get());
     layer1->setBounds(IntSize(100, 200));
@@ -436,21 +436,21 @@ TEST_F(TiledLayerTest, pushTilesLayerMarkedDirtyDuringPaintOnPreviousLayer)
     EXPECT_TRUE(layer2Impl->hasResourceIdForTileAt(0, 1));
 }
 
-TEST_F(TiledLayerTest, paintSmallAnimatedLayersImmediately)
+TEST_F(TiledLayerChromiumTest, paintSmallAnimatedLayersImmediately)
 {
-    // Create a LayerTreeHost that has the right viewportsize,
+    // Create a CCLayerTreeHost that has the right viewportsize,
     // so the layer is considered small enough.
-    FakeLayerImplTreeHostClient fakeLayerImplTreeHostClient;
-    scoped_ptr<LayerTreeHost> layerTreeHost = LayerTreeHost::create(&fakeLayerImplTreeHostClient, LayerTreeSettings());
+    FakeCCLayerTreeHostClient fakeCCLayerTreeHostClient;
+    scoped_ptr<CCLayerTreeHost> ccLayerTreeHost = CCLayerTreeHost::create(&fakeCCLayerTreeHostClient, CCLayerTreeSettings());
 
     bool runOutOfMemory[2] = {false, true};
     for (int i = 0; i < 2; i++) {
         // Create a layer with 4x4 tiles.
-        int layerWidth  = 4 * FakeTiledLayer::tileSize().width();
-        int layerHeight = 4 * FakeTiledLayer::tileSize().height();
+        int layerWidth  = 4 * FakeTiledLayerChromium::tileSize().width();
+        int layerHeight = 4 * FakeTiledLayerChromium::tileSize().height();
         int memoryForLayer = layerWidth * layerHeight * 4;
         IntSize viewportSize = IntSize(layerWidth, layerHeight);
-        layerTreeHost->setViewportSize(viewportSize, viewportSize);
+        ccLayerTreeHost->setViewportSize(viewportSize, viewportSize);
 
         // Use 8x4 tiles to run out of memory.
         if (runOutOfMemory[i])
@@ -458,8 +458,8 @@ TEST_F(TiledLayerTest, paintSmallAnimatedLayersImmediately)
 
         m_textureManager->setMaxMemoryLimitBytes(memoryForLayer);
 
-        scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
-        ScopedFakeTiledLayerImpl layerImpl(1);
+        scoped_refptr<FakeTiledLayerChromium> layer = make_scoped_refptr(new FakeTiledLayerChromium(m_textureManager.get()));
+        ScopedFakeCCTiledLayerImpl layerImpl(1);
 
         // Full size layer with half being visible.
         IntSize contentBounds(layerWidth, layerHeight);
@@ -471,7 +471,7 @@ TEST_F(TiledLayerTest, paintSmallAnimatedLayersImmediately)
         layer->setBounds(contentBounds);
         layer->setVisibleContentRect(visibleRect);
         layer->invalidateContentRect(contentRect);
-        layer->setLayerTreeHost(layerTreeHost.get());
+        layer->setLayerTreeHost(ccLayerTreeHost.get());
 
         // The layer should paint it's entire contents on the first paint
         // if it is close to the viewport size and has the available memory.
@@ -498,10 +498,10 @@ TEST_F(TiledLayerTest, paintSmallAnimatedLayersImmediately)
     }
 }
 
-TEST_F(TiledLayerTest, idlePaintOutOfMemory)
+TEST_F(TiledLayerChromiumTest, idlePaintOutOfMemory)
 {
-    scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
-    ScopedFakeTiledLayerImpl layerImpl(1);
+    scoped_refptr<FakeTiledLayerChromium> layer = make_scoped_refptr(new FakeTiledLayerChromium(m_textureManager.get()));
+    ScopedFakeCCTiledLayerImpl layerImpl(1);
 
     // We have enough memory for only the visible rect, so we will run out of memory in first idle paint.
     int memoryLimit = 4 * 100 * 100; // 1 tiles, 4 bytes per pixel.
@@ -521,10 +521,10 @@ TEST_F(TiledLayerTest, idlePaintOutOfMemory)
     EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(1, 1));
 }
 
-TEST_F(TiledLayerTest, idlePaintZeroSizedLayer)
+TEST_F(TiledLayerChromiumTest, idlePaintZeroSizedLayer)
 {
-    scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
-    ScopedFakeTiledLayerImpl layerImpl(1);
+    scoped_refptr<FakeTiledLayerChromium> layer = make_scoped_refptr(new FakeTiledLayerChromium(m_textureManager.get()));
+    ScopedFakeCCTiledLayerImpl layerImpl(1);
 
     bool animating[2] = {false, true};
     for (int i = 0; i < 2; i++) {
@@ -548,10 +548,10 @@ TEST_F(TiledLayerTest, idlePaintZeroSizedLayer)
     }
 }
 
-TEST_F(TiledLayerTest, idlePaintNonVisibleLayers)
+TEST_F(TiledLayerChromiumTest, idlePaintNonVisibleLayers)
 {
-    scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
-    ScopedFakeTiledLayerImpl layerImpl(1);
+    scoped_refptr<FakeTiledLayerChromium> layer = make_scoped_refptr(new FakeTiledLayerChromium(m_textureManager.get()));
+    ScopedFakeCCTiledLayerImpl layerImpl(1);
 
     // Alternate between not visible and visible.
     IntRect v(0, 0, 100, 100);
@@ -578,10 +578,10 @@ TEST_F(TiledLayerTest, idlePaintNonVisibleLayers)
     }
 }
 
-TEST_F(TiledLayerTest, invalidateFromPrepare)
+TEST_F(TiledLayerChromiumTest, invalidateFromPrepare)
 {
-    scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
-    ScopedFakeTiledLayerImpl layerImpl(1);
+    scoped_refptr<FakeTiledLayerChromium> layer = make_scoped_refptr(new FakeTiledLayerChromium(m_textureManager.get()));
+    ScopedFakeCCTiledLayerImpl layerImpl(1);
 
     // The tile size is 100x100, so this invalidates and then paints two tiles.
     layer->setBounds(IntSize(100, 200));
@@ -611,7 +611,7 @@ TEST_F(TiledLayerTest, invalidateFromPrepare)
     EXPECT_EQ(1, layer->fakeLayerTextureUpdater()->prepareCount());
 }
 
-TEST_F(TiledLayerTest, verifyUpdateRectWhenContentBoundsAreScaled)
+TEST_F(TiledLayerChromiumTest, verifyUpdateRectWhenContentBoundsAreScaled)
 {
     // The updateRect (that indicates what was actually painted) should be in
     // layer space, not the content space.
@@ -651,10 +651,10 @@ TEST_F(TiledLayerTest, verifyUpdateRectWhenContentBoundsAreScaled)
     EXPECT_FLOAT_RECT_EQ(FloatRect(45, 80, 15, 8), layer->updateRect());
 }
 
-TEST_F(TiledLayerTest, verifyInvalidationWhenContentsScaleChanges)
+TEST_F(TiledLayerChromiumTest, verifyInvalidationWhenContentsScaleChanges)
 {
-    scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
-    ScopedFakeTiledLayerImpl layerImpl(1);
+    scoped_refptr<FakeTiledLayerChromium> layer = make_scoped_refptr(new FakeTiledLayerChromium(m_textureManager.get()));
+    ScopedFakeCCTiledLayerImpl layerImpl(1);
 
     // Create a layer with one tile.
     layer->setBounds(IntSize(100, 100));
@@ -705,11 +705,11 @@ TEST_F(TiledLayerTest, verifyInvalidationWhenContentsScaleChanges)
     EXPECT_FALSE(layerImpl->hasResourceIdForTileAt(1, 1));
 }
 
-TEST_F(TiledLayerTest, skipsDrawGetsReset)
+TEST_F(TiledLayerChromiumTest, skipsDrawGetsReset)
 {
-    FakeLayerImplTreeHostClient fakeLayerImplTreeHostClient;
-    scoped_ptr<LayerTreeHost> layerTreeHost = LayerTreeHost::create(&fakeLayerImplTreeHostClient, LayerTreeSettings());
-    ASSERT_TRUE(layerTreeHost->initializeRendererIfNeeded());
+    FakeCCLayerTreeHostClient fakeCCLayerTreeHostClient;
+    scoped_ptr<CCLayerTreeHost> ccLayerTreeHost = CCLayerTreeHost::create(&fakeCCLayerTreeHostClient, CCLayerTreeSettings());
+    ASSERT_TRUE(ccLayerTreeHost->initializeRendererIfNeeded());
 
     // Create two 300 x 300 tiled layers.
     IntSize contentBounds(300, 300);
@@ -718,8 +718,8 @@ TEST_F(TiledLayerTest, skipsDrawGetsReset)
     // We have enough memory for only one of the two layers.
     int memoryLimit = 4 * 300 * 300; // 4 bytes per pixel.
 
-    scoped_refptr<FakeTiledLayer> rootLayer = make_scoped_refptr(new FakeTiledLayer(layerTreeHost->contentsTextureManager()));
-    scoped_refptr<FakeTiledLayer> childLayer = make_scoped_refptr(new FakeTiledLayer(layerTreeHost->contentsTextureManager()));
+    scoped_refptr<FakeTiledLayerChromium> rootLayer = make_scoped_refptr(new FakeTiledLayerChromium(ccLayerTreeHost->contentsTextureManager()));
+    scoped_refptr<FakeTiledLayerChromium> childLayer = make_scoped_refptr(new FakeTiledLayerChromium(ccLayerTreeHost->contentsTextureManager()));
     rootLayer->addChild(childLayer);
 
     rootLayer->setBounds(contentBounds);
@@ -731,30 +731,30 @@ TEST_F(TiledLayerTest, skipsDrawGetsReset)
     rootLayer->invalidateContentRect(contentRect);
     childLayer->invalidateContentRect(contentRect);
 
-    layerTreeHost->setRootLayer(rootLayer);
-    layerTreeHost->setViewportSize(IntSize(300, 300), IntSize(300, 300));
+    ccLayerTreeHost->setRootLayer(rootLayer);
+    ccLayerTreeHost->setViewportSize(IntSize(300, 300), IntSize(300, 300));
 
-    layerTreeHost->updateLayers(*m_queue.get(), memoryLimit);
+    ccLayerTreeHost->updateLayers(*m_queue.get(), memoryLimit);
 
     // We'll skip the root layer.
     EXPECT_TRUE(rootLayer->skipsDraw());
     EXPECT_FALSE(childLayer->skipsDraw());
 
-    layerTreeHost->commitComplete();
+    ccLayerTreeHost->commitComplete();
 
     // Remove the child layer.
     rootLayer->removeAllChildren();
 
-    layerTreeHost->updateLayers(*m_queue.get(), memoryLimit);
+    ccLayerTreeHost->updateLayers(*m_queue.get(), memoryLimit);
     EXPECT_FALSE(rootLayer->skipsDraw());
 
-    textureManagerClearAllMemory(layerTreeHost->contentsTextureManager(), m_resourceProvider.get());
-    layerTreeHost->setRootLayer(0);
+    textureManagerClearAllMemory(ccLayerTreeHost->contentsTextureManager(), m_resourceProvider.get());
+    ccLayerTreeHost->setRootLayer(0);
 }
 
-TEST_F(TiledLayerTest, resizeToSmaller)
+TEST_F(TiledLayerChromiumTest, resizeToSmaller)
 {
-    scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
+    scoped_refptr<FakeTiledLayerChromium> layer = make_scoped_refptr(new FakeTiledLayerChromium(m_textureManager.get()));
 
     layer->setBounds(IntSize(700, 700));
     layer->setVisibleContentRect(IntRect(0, 0, 700, 700));
@@ -768,9 +768,9 @@ TEST_F(TiledLayerTest, resizeToSmaller)
     layer->invalidateContentRect(IntRect(0, 0, 200, 200));
 }
 
-TEST_F(TiledLayerTest, hugeLayerUpdateCrash)
+TEST_F(TiledLayerChromiumTest, hugeLayerUpdateCrash)
 {
-    scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
+    scoped_refptr<FakeTiledLayerChromium> layer = make_scoped_refptr(new FakeTiledLayerChromium(m_textureManager.get()));
 
     int size = 1 << 30;
     layer->setBounds(IntSize(size, size));
@@ -783,33 +783,33 @@ TEST_F(TiledLayerTest, hugeLayerUpdateCrash)
     layer->update(*m_queue.get(), 0, m_stats);
 }
 
-TEST_F(TiledLayerTest, partialUpdates)
+TEST_F(TiledLayerChromiumTest, partialUpdates)
 {
-    LayerTreeSettings settings;
+    CCLayerTreeSettings settings;
     settings.maxPartialTextureUpdates = 4;
 
-    FakeLayerImplTreeHostClient fakeLayerImplTreeHostClient;
-    scoped_ptr<LayerTreeHost> layerTreeHost = LayerTreeHost::create(&fakeLayerImplTreeHostClient, settings);
-    ASSERT_TRUE(layerTreeHost->initializeRendererIfNeeded());
+    FakeCCLayerTreeHostClient fakeCCLayerTreeHostClient;
+    scoped_ptr<CCLayerTreeHost> ccLayerTreeHost = CCLayerTreeHost::create(&fakeCCLayerTreeHostClient, settings);
+    ASSERT_TRUE(ccLayerTreeHost->initializeRendererIfNeeded());
 
     // Create one 300 x 200 tiled layer with 3 x 2 tiles.
     IntSize contentBounds(300, 200);
     IntRect contentRect(IntPoint::zero(), contentBounds);
 
-    scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(layerTreeHost->contentsTextureManager()));
+    scoped_refptr<FakeTiledLayerChromium> layer = make_scoped_refptr(new FakeTiledLayerChromium(ccLayerTreeHost->contentsTextureManager()));
     layer->setBounds(contentBounds);
     layer->setPosition(FloatPoint(0, 0));
     layer->setVisibleContentRect(contentRect);
     layer->invalidateContentRect(contentRect);
 
-    layerTreeHost->setRootLayer(layer);
-    layerTreeHost->setViewportSize(IntSize(300, 200), IntSize(300, 200));
+    ccLayerTreeHost->setRootLayer(layer);
+    ccLayerTreeHost->setViewportSize(IntSize(300, 200), IntSize(300, 200));
 
     // Full update of all 6 tiles.
-    layerTreeHost->updateLayers(
+    ccLayerTreeHost->updateLayers(
         *m_queue.get(), std::numeric_limits<size_t>::max());
     {
-        ScopedFakeTiledLayerImpl layerImpl(1);
+        ScopedFakeCCTiledLayerImpl layerImpl(1);
         EXPECT_EQ(6, m_queue->fullUploadSize());
         EXPECT_EQ(0, m_queue->partialUploadSize());
         updateTextures();
@@ -818,13 +818,13 @@ TEST_F(TiledLayerTest, partialUpdates)
         layer->fakeLayerTextureUpdater()->clearUpdateCount();
         layerPushPropertiesTo(layer.get(), layerImpl.get());
     }
-    layerTreeHost->commitComplete();
+    ccLayerTreeHost->commitComplete();
 
     // Full update of 3 tiles and partial update of 3 tiles.
     layer->invalidateContentRect(IntRect(0, 0, 300, 150));
-    layerTreeHost->updateLayers(*m_queue.get(), std::numeric_limits<size_t>::max());
+    ccLayerTreeHost->updateLayers(*m_queue.get(), std::numeric_limits<size_t>::max());
     {
-        ScopedFakeTiledLayerImpl layerImpl(1);
+        ScopedFakeCCTiledLayerImpl layerImpl(1);
         EXPECT_EQ(3, m_queue->fullUploadSize());
         EXPECT_EQ(3, m_queue->partialUploadSize());
         updateTextures();
@@ -833,13 +833,13 @@ TEST_F(TiledLayerTest, partialUpdates)
         layer->fakeLayerTextureUpdater()->clearUpdateCount();
         layerPushPropertiesTo(layer.get(), layerImpl.get());
     }
-    layerTreeHost->commitComplete();
+    ccLayerTreeHost->commitComplete();
 
     // Partial update of 6 tiles.
     layer->invalidateContentRect(IntRect(50, 50, 200, 100));
     {
-        ScopedFakeTiledLayerImpl layerImpl(1);
-        layerTreeHost->updateLayers(*m_queue.get(), std::numeric_limits<size_t>::max());
+        ScopedFakeCCTiledLayerImpl layerImpl(1);
+        ccLayerTreeHost->updateLayers(*m_queue.get(), std::numeric_limits<size_t>::max());
         EXPECT_EQ(2, m_queue->fullUploadSize());
         EXPECT_EQ(4, m_queue->partialUploadSize());
         updateTextures();
@@ -848,21 +848,21 @@ TEST_F(TiledLayerTest, partialUpdates)
         layer->fakeLayerTextureUpdater()->clearUpdateCount();
         layerPushPropertiesTo(layer.get(), layerImpl.get());
     }
-    layerTreeHost->commitComplete();
+    ccLayerTreeHost->commitComplete();
 
     // Checkerboard all tiles.
     layer->invalidateContentRect(IntRect(0, 0, 300, 200));
     {
-        ScopedFakeTiledLayerImpl layerImpl(1);
+        ScopedFakeCCTiledLayerImpl layerImpl(1);
         layerPushPropertiesTo(layer.get(), layerImpl.get());
     }
-    layerTreeHost->commitComplete();
+    ccLayerTreeHost->commitComplete();
 
     // Partial update of 6 checkerboard tiles.
     layer->invalidateContentRect(IntRect(50, 50, 200, 100));
     {
-        ScopedFakeTiledLayerImpl layerImpl(1);
-        layerTreeHost->updateLayers(*m_queue.get(), std::numeric_limits<size_t>::max());
+        ScopedFakeCCTiledLayerImpl layerImpl(1);
+        ccLayerTreeHost->updateLayers(*m_queue.get(), std::numeric_limits<size_t>::max());
         EXPECT_EQ(6, m_queue->fullUploadSize());
         EXPECT_EQ(0, m_queue->partialUploadSize());
         updateTextures();
@@ -871,13 +871,13 @@ TEST_F(TiledLayerTest, partialUpdates)
         layer->fakeLayerTextureUpdater()->clearUpdateCount();
         layerPushPropertiesTo(layer.get(), layerImpl.get());
     }
-    layerTreeHost->commitComplete();
+    ccLayerTreeHost->commitComplete();
 
     // Partial update of 4 tiles.
     layer->invalidateContentRect(IntRect(50, 50, 100, 100));
     {
-        ScopedFakeTiledLayerImpl layerImpl(1);
-        layerTreeHost->updateLayers(*m_queue.get(), std::numeric_limits<size_t>::max());
+        ScopedFakeCCTiledLayerImpl layerImpl(1);
+        ccLayerTreeHost->updateLayers(*m_queue.get(), std::numeric_limits<size_t>::max());
         EXPECT_EQ(0, m_queue->fullUploadSize());
         EXPECT_EQ(4, m_queue->partialUploadSize());
         updateTextures();
@@ -886,15 +886,15 @@ TEST_F(TiledLayerTest, partialUpdates)
         layer->fakeLayerTextureUpdater()->clearUpdateCount();
         layerPushPropertiesTo(layer.get(), layerImpl.get());
     }
-    layerTreeHost->commitComplete();
+    ccLayerTreeHost->commitComplete();
 
-    textureManagerClearAllMemory(layerTreeHost->contentsTextureManager(), m_resourceProvider.get());
-    layerTreeHost->setRootLayer(0);
+    textureManagerClearAllMemory(ccLayerTreeHost->contentsTextureManager(), m_resourceProvider.get());
+    ccLayerTreeHost->setRootLayer(0);
 }
 
-TEST_F(TiledLayerTest, tilesPaintedWithoutOcclusion)
+TEST_F(TiledLayerChromiumTest, tilesPaintedWithoutOcclusion)
 {
-    scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
+    scoped_refptr<FakeTiledLayerChromium> layer = make_scoped_refptr(new FakeTiledLayerChromium(m_textureManager.get()));
 
     // The tile size is 100x100, so this invalidates and then paints two tiles.
     layer->setBounds(IntSize(100, 200));
@@ -908,10 +908,10 @@ TEST_F(TiledLayerTest, tilesPaintedWithoutOcclusion)
     EXPECT_EQ(2, layer->fakeLayerTextureUpdater()->updateCount());
 }
 
-TEST_F(TiledLayerTest, tilesPaintedWithOcclusion)
+TEST_F(TiledLayerChromiumTest, tilesPaintedWithOcclusion)
 {
-    scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
-    TestOcclusionTracker occluded;
+    scoped_refptr<FakeTiledLayerChromium> layer = make_scoped_refptr(new FakeTiledLayerChromium(m_textureManager.get()));
+    TestCCOcclusionTracker occluded;
 
     // The tile size is 100x100.
 
@@ -958,10 +958,10 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusion)
     EXPECT_EQ(3 + 2, occluded.overdrawMetrics().tilesCulledForUpload());
 }
 
-TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndVisiblityConstraints)
+TEST_F(TiledLayerChromiumTest, tilesPaintedWithOcclusionAndVisiblityConstraints)
 {
-    scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
-    TestOcclusionTracker occluded;
+    scoped_refptr<FakeTiledLayerChromium> layer = make_scoped_refptr(new FakeTiledLayerChromium(m_textureManager.get()));
+    TestCCOcclusionTracker occluded;
 
     // The tile size is 100x100.
 
@@ -1016,10 +1016,10 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndVisiblityConstraints)
 
 }
 
-TEST_F(TiledLayerTest, tilesNotPaintedWithoutInvalidation)
+TEST_F(TiledLayerChromiumTest, tilesNotPaintedWithoutInvalidation)
 {
-    scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
-    TestOcclusionTracker occluded;
+    scoped_refptr<FakeTiledLayerChromium> layer = make_scoped_refptr(new FakeTiledLayerChromium(m_textureManager.get()));
+    TestCCOcclusionTracker occluded;
 
     // The tile size is 100x100.
 
@@ -1054,10 +1054,10 @@ TEST_F(TiledLayerTest, tilesNotPaintedWithoutInvalidation)
     EXPECT_EQ(6, occluded.overdrawMetrics().tilesCulledForUpload());
 }
 
-TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndTransforms)
+TEST_F(TiledLayerChromiumTest, tilesPaintedWithOcclusionAndTransforms)
 {
-    scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
-    TestOcclusionTracker occluded;
+    scoped_refptr<FakeTiledLayerChromium> layer = make_scoped_refptr(new FakeTiledLayerChromium(m_textureManager.get()));
+    TestCCOcclusionTracker occluded;
 
     // The tile size is 100x100.
 
@@ -1083,10 +1083,10 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndTransforms)
     EXPECT_EQ(3, occluded.overdrawMetrics().tilesCulledForUpload());
 }
 
-TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndScaling)
+TEST_F(TiledLayerChromiumTest, tilesPaintedWithOcclusionAndScaling)
 {
-    scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
-    TestOcclusionTracker occluded;
+    scoped_refptr<FakeTiledLayerChromium> layer = make_scoped_refptr(new FakeTiledLayerChromium(m_textureManager.get()));
+    TestCCOcclusionTracker occluded;
 
     // The tile size is 100x100.
 
@@ -1156,10 +1156,10 @@ TEST_F(TiledLayerTest, tilesPaintedWithOcclusionAndScaling)
     EXPECT_EQ(1 + 1, occluded.overdrawMetrics().tilesCulledForUpload());
 }
 
-TEST_F(TiledLayerTest, visibleContentOpaqueRegion)
+TEST_F(TiledLayerChromiumTest, visibleContentOpaqueRegion)
 {
-    scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
-    TestOcclusionTracker occluded;
+    scoped_refptr<FakeTiledLayerChromium> layer = make_scoped_refptr(new FakeTiledLayerChromium(m_textureManager.get()));
+    TestCCOcclusionTracker occluded;
 
     // The tile size is 100x100, so this invalidates and then paints two tiles in various ways.
 
@@ -1248,10 +1248,10 @@ TEST_F(TiledLayerTest, visibleContentOpaqueRegion)
     EXPECT_EQ(0, occluded.overdrawMetrics().tilesCulledForUpload());
 }
 
-TEST_F(TiledLayerTest, pixelsPaintedMetrics)
+TEST_F(TiledLayerChromiumTest, pixelsPaintedMetrics)
 {
-    scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
-    TestOcclusionTracker occluded;
+    scoped_refptr<FakeTiledLayerChromium> layer = make_scoped_refptr(new FakeTiledLayerChromium(m_textureManager.get()));
+    TestCCOcclusionTracker occluded;
 
     // The tile size is 100x100, so this invalidates and then paints two tiles in various ways.
 
@@ -1300,22 +1300,22 @@ TEST_F(TiledLayerTest, pixelsPaintedMetrics)
     EXPECT_EQ(0, occluded.overdrawMetrics().tilesCulledForUpload());
 }
 
-TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
+TEST_F(TiledLayerChromiumTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
 {
     // Tile size is 100x100.
     IntRect rootRect(0, 0, 300, 200);
     IntRect childRect(0, 0, 300, 100);
     IntRect child2Rect(0, 100, 300, 100);
 
-    LayerTreeSettings settings;
-    FakeLayerImplTreeHostClient fakeLayerImplTreeHostClient;
-    scoped_ptr<LayerTreeHost> layerTreeHost = LayerTreeHost::create(&fakeLayerImplTreeHostClient, settings);
-    ASSERT_TRUE(layerTreeHost->initializeRendererIfNeeded());
+    CCLayerTreeSettings settings;
+    FakeCCLayerTreeHostClient fakeCCLayerTreeHostClient;
+    scoped_ptr<CCLayerTreeHost> ccLayerTreeHost = CCLayerTreeHost::create(&fakeCCLayerTreeHostClient, settings);
+    ASSERT_TRUE(ccLayerTreeHost->initializeRendererIfNeeded());
 
-    scoped_refptr<FakeTiledLayer> root = make_scoped_refptr(new FakeTiledLayer(layerTreeHost->contentsTextureManager()));
-    scoped_refptr<Layer> surface = Layer::create();
-    scoped_refptr<FakeTiledLayer> child = make_scoped_refptr(new FakeTiledLayer(layerTreeHost->contentsTextureManager()));
-    scoped_refptr<FakeTiledLayer> child2 = make_scoped_refptr(new FakeTiledLayer(layerTreeHost->contentsTextureManager()));
+    scoped_refptr<FakeTiledLayerChromium> root = make_scoped_refptr(new FakeTiledLayerChromium(ccLayerTreeHost->contentsTextureManager()));
+    scoped_refptr<LayerChromium> surface = LayerChromium::create();
+    scoped_refptr<FakeTiledLayerChromium> child = make_scoped_refptr(new FakeTiledLayerChromium(ccLayerTreeHost->contentsTextureManager()));
+    scoped_refptr<FakeTiledLayerChromium> child2 = make_scoped_refptr(new FakeTiledLayerChromium(ccLayerTreeHost->contentsTextureManager()));
 
     root->setBounds(rootRect.size());
     root->setAnchorPoint(FloatPoint());
@@ -1341,14 +1341,14 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
     child2->setVisibleContentRect(child2Rect);
     child2->setDrawableContentRect(rootRect);
 
-    layerTreeHost->setRootLayer(root);
-    layerTreeHost->setViewportSize(rootRect.size(), rootRect.size());
+    ccLayerTreeHost->setRootLayer(root);
+    ccLayerTreeHost->setViewportSize(rootRect.size(), rootRect.size());
 
     // With a huge memory limit, all layers should update and push their textures.
     root->invalidateContentRect(rootRect);
     child->invalidateContentRect(childRect);
     child2->invalidateContentRect(child2Rect);
-    layerTreeHost->updateLayers(
+    ccLayerTreeHost->updateLayers(
         *m_queue.get(), std::numeric_limits<size_t>::max());
     {
         updateTextures();
@@ -1361,9 +1361,9 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
         child->fakeLayerTextureUpdater()->clearUpdateCount();
         child2->fakeLayerTextureUpdater()->clearUpdateCount();
 
-        ScopedFakeTiledLayerImpl rootImpl(root->id());
-        ScopedFakeTiledLayerImpl childImpl(child->id());
-        ScopedFakeTiledLayerImpl child2Impl(child2->id());
+        ScopedFakeCCTiledLayerImpl rootImpl(root->id());
+        ScopedFakeCCTiledLayerImpl childImpl(child->id());
+        ScopedFakeCCTiledLayerImpl child2Impl(child2->id());
         layerPushPropertiesTo(root.get(), rootImpl.get());
         layerPushPropertiesTo(child.get(), childImpl.get());
         layerPushPropertiesTo(child2.get(), child2Impl.get());
@@ -1375,7 +1375,7 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
             EXPECT_TRUE(child2Impl->hasResourceIdForTileAt(i, 0));
         }
     }
-    layerTreeHost->commitComplete();
+    ccLayerTreeHost->commitComplete();
 
     // With a memory limit that includes only the root layer (3x2 tiles) and half the surface that
     // the child layers draw into, the child layers will not be allocated. If the surface isn't
@@ -1383,7 +1383,7 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
     root->invalidateContentRect(rootRect);
     child->invalidateContentRect(childRect);
     child2->invalidateContentRect(child2Rect);
-    layerTreeHost->updateLayers(
+    ccLayerTreeHost->updateLayers(
         *m_queue.get(), (3 * 2 + 3 * 1) * (100 * 100) * 4);
     {
         updateTextures();
@@ -1396,9 +1396,9 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
         child->fakeLayerTextureUpdater()->clearUpdateCount();
         child2->fakeLayerTextureUpdater()->clearUpdateCount();
 
-        ScopedFakeTiledLayerImpl rootImpl(root->id());
-        ScopedFakeTiledLayerImpl childImpl(child->id());
-        ScopedFakeTiledLayerImpl child2Impl(child2->id());
+        ScopedFakeCCTiledLayerImpl rootImpl(root->id());
+        ScopedFakeCCTiledLayerImpl childImpl(child->id());
+        ScopedFakeCCTiledLayerImpl child2Impl(child2->id());
         layerPushPropertiesTo(root.get(), rootImpl.get());
         layerPushPropertiesTo(child.get(), childImpl.get());
         layerPushPropertiesTo(child2.get(), child2Impl.get());
@@ -1410,7 +1410,7 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
             EXPECT_FALSE(child2Impl->hasResourceIdForTileAt(i, 0));
         }
     }
-    layerTreeHost->commitComplete();
+    ccLayerTreeHost->commitComplete();
 
     // With a memory limit that includes only half the root layer, no contents will be
     // allocated. If render surface memory wasn't accounted for, there is enough space
@@ -1419,7 +1419,7 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
     root->invalidateContentRect(rootRect);
     child->invalidateContentRect(childRect);
     child2->invalidateContentRect(child2Rect);
-    layerTreeHost->updateLayers(
+    ccLayerTreeHost->updateLayers(
         *m_queue.get(), (3 * 1) * (100 * 100) * 4);
     {
         updateTextures();
@@ -1432,9 +1432,9 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
         child->fakeLayerTextureUpdater()->clearUpdateCount();
         child2->fakeLayerTextureUpdater()->clearUpdateCount();
 
-        ScopedFakeTiledLayerImpl rootImpl(root->id());
-        ScopedFakeTiledLayerImpl childImpl(child->id());
-        ScopedFakeTiledLayerImpl child2Impl(child2->id());
+        ScopedFakeCCTiledLayerImpl rootImpl(root->id());
+        ScopedFakeCCTiledLayerImpl childImpl(child->id());
+        ScopedFakeCCTiledLayerImpl child2Impl(child2->id());
         layerPushPropertiesTo(root.get(), rootImpl.get());
         layerPushPropertiesTo(child.get(), childImpl.get());
         layerPushPropertiesTo(child2.get(), child2Impl.get());
@@ -1446,13 +1446,13 @@ TEST_F(TiledLayerTest, dontAllocateContentsWhenTargetSurfaceCantBeAllocated)
             EXPECT_FALSE(child2Impl->hasResourceIdForTileAt(i, 0));
         }
     }
-    layerTreeHost->commitComplete();
+    ccLayerTreeHost->commitComplete();
 
-    textureManagerClearAllMemory(layerTreeHost->contentsTextureManager(), m_resourceProvider.get());
-    layerTreeHost->setRootLayer(0);
+    textureManagerClearAllMemory(ccLayerTreeHost->contentsTextureManager(), m_resourceProvider.get());
+    ccLayerTreeHost->setRootLayer(0);
 }
 
-class TrackingLayerPainter : public LayerPainter {
+class TrackingLayerPainter : public LayerPainterChromium {
 public:
     static scoped_ptr<TrackingLayerPainter> create() { return make_scoped_ptr(new TrackingLayerPainter()); }
 
@@ -1470,20 +1470,20 @@ private:
     IntRect m_paintedRect;
 };
 
-class UpdateTrackingTiledLayer : public FakeTiledLayer {
+class UpdateTrackingTiledLayerChromium : public FakeTiledLayerChromium {
 public:
-    explicit UpdateTrackingTiledLayer(PrioritizedTextureManager* manager)
-        : FakeTiledLayer(manager)
+    explicit UpdateTrackingTiledLayerChromium(CCPrioritizedTextureManager* manager)
+        : FakeTiledLayerChromium(manager)
     {
         scoped_ptr<TrackingLayerPainter> trackingLayerPainter(TrackingLayerPainter::create());
         m_trackingLayerPainter = trackingLayerPainter.get();
-        m_layerTextureUpdater = BitmapCanvasLayerTextureUpdater::create(trackingLayerPainter.PassAs<LayerPainter>());
+        m_layerTextureUpdater = BitmapCanvasLayerTextureUpdater::create(trackingLayerPainter.PassAs<LayerPainterChromium>());
     }
 
     TrackingLayerPainter* trackingLayerPainter() const { return m_trackingLayerPainter; }
 
 protected:
-    virtual ~UpdateTrackingTiledLayer() { }
+    virtual ~UpdateTrackingTiledLayerChromium() { }
 
     virtual LayerTextureUpdater* textureUpdater() const OVERRIDE { return m_layerTextureUpdater.get(); }
 
@@ -1492,9 +1492,9 @@ private:
     scoped_refptr<BitmapCanvasLayerTextureUpdater> m_layerTextureUpdater;
 };
 
-TEST_F(TiledLayerTest, nonIntegerContentsScaleIsNotDistortedDuringPaint)
+TEST_F(TiledLayerChromiumTest, nonIntegerContentsScaleIsNotDistortedDuringPaint)
 {
-    scoped_refptr<UpdateTrackingTiledLayer> layer = make_scoped_refptr(new UpdateTrackingTiledLayer(m_textureManager.get()));
+    scoped_refptr<UpdateTrackingTiledLayerChromium> layer = make_scoped_refptr(new UpdateTrackingTiledLayerChromium(m_textureManager.get()));
 
     IntRect layerRect(0, 0, 30, 31);
     layer->setPosition(layerRect.location());
@@ -1523,9 +1523,9 @@ TEST_F(TiledLayerTest, nonIntegerContentsScaleIsNotDistortedDuringPaint)
     EXPECT_RECT_EQ(layerRect, layer->trackingLayerPainter()->paintedRect());
 }
 
-TEST_F(TiledLayerTest, nonIntegerContentsScaleIsNotDistortedDuringInvalidation)
+TEST_F(TiledLayerChromiumTest, nonIntegerContentsScaleIsNotDistortedDuringInvalidation)
 {
-    scoped_refptr<UpdateTrackingTiledLayer> layer = make_scoped_refptr(new UpdateTrackingTiledLayer(m_textureManager.get()));
+    scoped_refptr<UpdateTrackingTiledLayerChromium> layer = make_scoped_refptr(new UpdateTrackingTiledLayerChromium(m_textureManager.get()));
 
     IntRect layerRect(0, 0, 30, 31);
     layer->setPosition(layerRect.location());

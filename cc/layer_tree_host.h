@@ -36,19 +36,19 @@ struct hash<WebKit::WebGraphicsContext3D*> {
 
 namespace cc {
 
-class FontAtlas;
-class Layer;
-class LayerTreeHostImpl;
-class LayerTreeHostImplClient;
-class PrioritizedTextureManager;
-class TextureUpdateQueue;
-class HeadsUpDisplayLayer;
+class CCFontAtlas;
+class CCLayerChromium;
+class CCLayerTreeHostImpl;
+class CCLayerTreeHostImplClient;
+class CCPrioritizedTextureManager;
+class CCTextureUpdateQueue;
+class HeadsUpDisplayLayerChromium;
 class Region;
-struct ScrollAndScaleSet;
+struct CCScrollAndScaleSet;
 
-struct LayerTreeSettings {
-    LayerTreeSettings();
-    ~LayerTreeSettings();
+struct CCLayerTreeSettings {
+    CCLayerTreeSettings();
+    ~CCLayerTreeSettings();
 
     bool acceleratePainting;
     bool showFPSCounter;
@@ -70,7 +70,7 @@ struct LayerTreeSettings {
     bool showDebugRects() const { return showPaintRects || showPropertyChangedRects || showSurfaceDamageRects || showScreenSpaceRects || showReplicaScreenSpaceRects || showOccludingRects; }
 };
 
-// Provides information on an Impl's rendering capabilities back to the LayerTreeHost
+// Provides information on an Impl's rendering capabilities back to the CCLayerTreeHost
 struct RendererCapabilities {
     RendererCapabilities();
     ~RendererCapabilities();
@@ -87,32 +87,32 @@ struct RendererCapabilities {
     int maxTextureSize;
 };
 
-class LayerTreeHost : public RateLimiterClient {
+class CCLayerTreeHost : public RateLimiterClient {
 public:
-    static scoped_ptr<LayerTreeHost> create(LayerTreeHostClient*, const LayerTreeSettings&);
-    virtual ~LayerTreeHost();
+    static scoped_ptr<CCLayerTreeHost> create(CCLayerTreeHostClient*, const CCLayerTreeSettings&);
+    virtual ~CCLayerTreeHost();
 
     void setSurfaceReady();
 
-    // Returns true if any LayerTreeHost is alive.
+    // Returns true if any CCLayerTreeHost is alive.
     static bool anyLayerTreeHostInstanceExists();
 
     static bool needsFilterContext() { return s_needsFilterContext; }
     static void setNeedsFilterContext(bool needsFilterContext) { s_needsFilterContext = needsFilterContext; }
     bool needsSharedContext() const { return needsFilterContext() || settings().acceleratePainting; }
 
-    // LayerTreeHost interface to Proxy.
+    // CCLayerTreeHost interface to CCProxy.
     void willBeginFrame() { m_client->willBeginFrame(); }
     void didBeginFrame() { m_client->didBeginFrame(); }
     void updateAnimations(double monotonicFrameBeginTime);
     void layout();
-    void beginCommitOnImplThread(LayerTreeHostImpl*);
-    void finishCommitOnImplThread(LayerTreeHostImpl*);
+    void beginCommitOnImplThread(CCLayerTreeHostImpl*);
+    void finishCommitOnImplThread(CCLayerTreeHostImpl*);
     void willCommit();
     void commitComplete();
-    scoped_ptr<GraphicsContext> createContext();
-    scoped_ptr<InputHandler> createInputHandler();
-    virtual scoped_ptr<LayerTreeHostImpl> createLayerTreeHostImpl(LayerTreeHostImplClient*);
+    scoped_ptr<CCGraphicsContext> createContext();
+    scoped_ptr<CCInputHandler> createInputHandler();
+    virtual scoped_ptr<CCLayerTreeHostImpl> createLayerTreeHostImpl(CCLayerTreeHostImplClient*);
     void didLoseContext();
     enum RecreateResult {
         RecreateSucceeded,
@@ -122,13 +122,13 @@ public:
     RecreateResult recreateContext();
     void didCommitAndDrawFrame() { m_client->didCommitAndDrawFrame(); }
     void didCompleteSwapBuffers() { m_client->didCompleteSwapBuffers(); }
-    void deleteContentsTexturesOnImplThread(ResourceProvider*);
+    void deleteContentsTexturesOnImplThread(CCResourceProvider*);
     virtual void acquireLayerTextures();
     // Returns false if we should abort this frame due to initialization failure.
     bool initializeRendererIfNeeded();
-    void updateLayers(TextureUpdateQueue&, size_t contentsMemoryLimitBytes);
+    void updateLayers(CCTextureUpdateQueue&, size_t contentsMemoryLimitBytes);
 
-    LayerTreeHostClient* client() { return m_client; }
+    CCLayerTreeHostClient* client() { return m_client; }
 
     // Only used when compositing on the main thread.
     void composite();
@@ -143,7 +143,7 @@ public:
 
     int commitNumber() const { return m_commitNumber; }
 
-    void renderingStats(RenderingStats*) const;
+    void renderingStats(CCRenderingStats*) const;
 
     const RendererCapabilities& rendererCapabilities() const;
 
@@ -156,14 +156,14 @@ public:
     void setNeedsRedraw();
     bool commitRequested() const;
 
-    void setAnimationEvents(scoped_ptr<AnimationEventsVector>, double wallClockTime);
+    void setAnimationEvents(scoped_ptr<CCAnimationEventsVector>, double wallClockTime);
     virtual void didAddAnimation();
 
-    Layer* rootLayer() { return m_rootLayer.get(); }
-    const Layer* rootLayer() const { return m_rootLayer.get(); }
-    void setRootLayer(scoped_refptr<Layer>);
+    LayerChromium* rootLayer() { return m_rootLayer.get(); }
+    const LayerChromium* rootLayer() const { return m_rootLayer.get(); }
+    void setRootLayer(scoped_refptr<LayerChromium>);
 
-    const LayerTreeSettings& settings() const { return m_settings; }
+    const CCLayerTreeSettings& settings() const { return m_settings; }
 
     void setViewportSize(const IntSize& layoutViewportSize, const IntSize& deviceViewportSize);
 
@@ -176,14 +176,14 @@ public:
 
     void setHasTransparentBackground(bool transparent) { m_hasTransparentBackground = transparent; }
 
-    PrioritizedTextureManager* contentsTextureManager() const;
+    CCPrioritizedTextureManager* contentsTextureManager() const;
 
     bool visible() const { return m_visible; }
     void setVisible(bool);
 
     void startPageScaleAnimation(const IntSize& targetPosition, bool useAnchor, float scale, double durationSec);
 
-    void applyScrollAndScale(const ScrollAndScaleSet&);
+    void applyScrollAndScale(const CCScrollAndScaleSet&);
     void setImplTransform(const WebKit::WebTransformationMatrix&);
 
     void startRateLimiter(WebKit::WebGraphicsContext3D*);
@@ -194,61 +194,61 @@ public:
 
     bool bufferedUpdates();
     bool requestPartialTextureUpdate();
-    void deleteTextureAfterCommit(scoped_ptr<PrioritizedTexture>);
+    void deleteTextureAfterCommit(scoped_ptr<CCPrioritizedTexture>);
 
     void setDeviceScaleFactor(float);
     float deviceScaleFactor() const { return m_deviceScaleFactor; }
 
-    void setFontAtlas(scoped_ptr<FontAtlas>);
+    void setFontAtlas(scoped_ptr<CCFontAtlas>);
 
-    HeadsUpDisplayLayer* hudLayer() const { return m_hudLayer.get(); }
+    HeadsUpDisplayLayerChromium* hudLayer() const { return m_hudLayer.get(); }
 
 protected:
-    LayerTreeHost(LayerTreeHostClient*, const LayerTreeSettings&);
+    CCLayerTreeHost(CCLayerTreeHostClient*, const CCLayerTreeSettings&);
     bool initialize();
 
 private:
-    typedef std::vector<scoped_refptr<Layer> > LayerList;
+    typedef std::vector<scoped_refptr<LayerChromium> > LayerList;
 
     void initializeRenderer();
 
-    void update(Layer*, TextureUpdateQueue&, const OcclusionTracker*);
-    bool paintLayerContents(const LayerList&, TextureUpdateQueue&);
-    bool paintMasksForRenderSurface(Layer*, TextureUpdateQueue&);
+    void update(LayerChromium*, CCTextureUpdateQueue&, const CCOcclusionTracker*);
+    bool paintLayerContents(const LayerList&, CCTextureUpdateQueue&);
+    bool paintMasksForRenderSurface(LayerChromium*, CCTextureUpdateQueue&);
 
-    void updateLayers(Layer*, TextureUpdateQueue&);
+    void updateLayers(LayerChromium*, CCTextureUpdateQueue&);
 
-    void prioritizeTextures(const LayerList&, OverdrawMetrics&); 
+    void prioritizeTextures(const LayerList&, CCOverdrawMetrics&); 
     void setPrioritiesForSurfaces(size_t surfaceMemoryBytes);
     void setPrioritiesForLayers(const LayerList&);
     size_t calculateMemoryForRenderSurfaces(const LayerList& updateList);
 
     void animateLayers(double monotonicTime);
-    bool animateLayersRecursive(Layer* current, double monotonicTime);
-    void setAnimationEventsRecursive(const AnimationEventsVector&, Layer*, double wallClockTime);
+    bool animateLayersRecursive(LayerChromium* current, double monotonicTime);
+    void setAnimationEventsRecursive(const CCAnimationEventsVector&, LayerChromium*, double wallClockTime);
 
     bool m_animating;
     bool m_needsAnimateLayers;
 
-    LayerTreeHostClient* m_client;
+    CCLayerTreeHostClient* m_client;
 
     int m_commitNumber;
-    RenderingStats m_renderingStats;
+    CCRenderingStats m_renderingStats;
 
-    scoped_ptr<Proxy> m_proxy;
+    scoped_ptr<CCProxy> m_proxy;
     bool m_rendererInitialized;
     bool m_contextLost;
     int m_numTimesRecreateShouldFail;
     int m_numFailedRecreateAttempts;
 
-    scoped_refptr<Layer> m_rootLayer;
-    scoped_refptr<HeadsUpDisplayLayer> m_hudLayer;
-    scoped_ptr<FontAtlas> m_fontAtlas;
+    scoped_refptr<LayerChromium> m_rootLayer;
+    scoped_refptr<HeadsUpDisplayLayerChromium> m_hudLayer;
+    scoped_ptr<CCFontAtlas> m_fontAtlas;
 
-    scoped_ptr<PrioritizedTextureManager> m_contentsTextureManager;
-    scoped_ptr<PrioritizedTexture> m_surfaceMemoryPlaceholder;
+    scoped_ptr<CCPrioritizedTextureManager> m_contentsTextureManager;
+    scoped_ptr<CCPrioritizedTexture> m_surfaceMemoryPlaceholder;
 
-    LayerTreeSettings m_settings;
+    CCLayerTreeSettings m_settings;
 
     IntSize m_layoutViewportSize;
     IntSize m_deviceViewportSize;
@@ -267,13 +267,13 @@ private:
     SkColor m_backgroundColor;
     bool m_hasTransparentBackground;
 
-    typedef ScopedPtrVector<PrioritizedTexture> TextureList;
+    typedef ScopedPtrVector<CCPrioritizedTexture> TextureList;
     TextureList m_deleteTextureAfterCommitList;
     size_t m_partialTextureUpdateRequests;
 
     static bool s_needsFilterContext;
 
-    DISALLOW_COPY_AND_ASSIGN(LayerTreeHost);
+    DISALLOW_COPY_AND_ASSIGN(CCLayerTreeHost);
 };
 
 }  // namespace cc

@@ -10,7 +10,7 @@
 
 namespace cc {
 
-SchedulerStateMachine::SchedulerStateMachine()
+CCSchedulerStateMachine::CCSchedulerStateMachine()
     : m_commitState(COMMIT_STATE_IDLE)
     , m_currentFrameNumber(0)
     , m_lastFrameNumberWhereDrawWasCalled(-1)
@@ -32,7 +32,7 @@ SchedulerStateMachine::SchedulerStateMachine()
 {
 }
 
-std::string SchedulerStateMachine::toString()
+std::string CCSchedulerStateMachine::toString()
 {
     std::string str;
     base::StringAppendF(&str, "m_commitState = %d; ", m_commitState);
@@ -56,12 +56,12 @@ std::string SchedulerStateMachine::toString()
     return str;
 }
 
-bool SchedulerStateMachine::hasDrawnThisFrame() const
+bool CCSchedulerStateMachine::hasDrawnThisFrame() const
 {
     return m_currentFrameNumber == m_lastFrameNumberWhereDrawWasCalled;
 }
 
-bool SchedulerStateMachine::drawSuspendedUntilCommit() const
+bool CCSchedulerStateMachine::drawSuspendedUntilCommit() const
 {
     if (!m_canDraw)
         return true;
@@ -72,7 +72,7 @@ bool SchedulerStateMachine::drawSuspendedUntilCommit() const
     return false;
 }
 
-bool SchedulerStateMachine::scheduledToDraw() const
+bool CCSchedulerStateMachine::scheduledToDraw() const
 {
     if (!m_needsRedraw)
         return false;
@@ -81,7 +81,7 @@ bool SchedulerStateMachine::scheduledToDraw() const
     return true;
 }
 
-bool SchedulerStateMachine::shouldDraw() const
+bool CCSchedulerStateMachine::shouldDraw() const
 {
     if (m_needsForcedRedraw)
         return true;
@@ -97,7 +97,7 @@ bool SchedulerStateMachine::shouldDraw() const
     return true;
 }
 
-bool SchedulerStateMachine::shouldAcquireLayerTexturesForMainThread() const
+bool CCSchedulerStateMachine::shouldAcquireLayerTexturesForMainThread() const
 {
     if (!m_mainThreadNeedsLayerTextures)
         return false;
@@ -113,7 +113,7 @@ bool SchedulerStateMachine::shouldAcquireLayerTexturesForMainThread() const
     return false;
 }
 
-SchedulerStateMachine::Action SchedulerStateMachine::nextAction() const
+CCSchedulerStateMachine::Action CCSchedulerStateMachine::nextAction() const
 {
     if (shouldAcquireLayerTexturesForMainThread())
         return ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD;
@@ -155,7 +155,7 @@ SchedulerStateMachine::Action SchedulerStateMachine::nextAction() const
     return ACTION_NONE;
 }
 
-void SchedulerStateMachine::updateState(Action action)
+void CCSchedulerStateMachine::updateState(Action action)
 {
     switch (action) {
     case ACTION_NONE:
@@ -210,14 +210,14 @@ void SchedulerStateMachine::updateState(Action action)
     }
 }
 
-void SchedulerStateMachine::setMainThreadNeedsLayerTextures()
+void CCSchedulerStateMachine::setMainThreadNeedsLayerTextures()
 {
     DCHECK(!m_mainThreadNeedsLayerTextures);
     DCHECK(m_textureState != LAYER_TEXTURE_STATE_ACQUIRED_BY_MAIN_THREAD);
     m_mainThreadNeedsLayerTextures = true;
 }
 
-bool SchedulerStateMachine::vsyncCallbackNeeded() const
+bool CCSchedulerStateMachine::vsyncCallbackNeeded() const
 {
     // If we can't draw, don't tick until we are notified that we can draw again.
     if (!m_canDraw)
@@ -229,33 +229,33 @@ bool SchedulerStateMachine::vsyncCallbackNeeded() const
     return m_needsRedraw && m_visible && m_contextState == CONTEXT_ACTIVE;
 }
 
-void SchedulerStateMachine::didEnterVSync()
+void CCSchedulerStateMachine::didEnterVSync()
 {
     m_insideVSync = true;
 }
 
-void SchedulerStateMachine::didLeaveVSync()
+void CCSchedulerStateMachine::didLeaveVSync()
 {
     m_currentFrameNumber++;
     m_insideVSync = false;
 }
 
-void SchedulerStateMachine::setVisible(bool visible)
+void CCSchedulerStateMachine::setVisible(bool visible)
 {
     m_visible = visible;
 }
 
-void SchedulerStateMachine::setNeedsRedraw()
+void CCSchedulerStateMachine::setNeedsRedraw()
 {
     m_needsRedraw = true;
 }
 
-void SchedulerStateMachine::setNeedsForcedRedraw()
+void CCSchedulerStateMachine::setNeedsForcedRedraw()
 {
     m_needsForcedRedraw = true;
 }
 
-void SchedulerStateMachine::didDrawIfPossibleCompleted(bool success)
+void CCSchedulerStateMachine::didDrawIfPossibleCompleted(bool success)
 {
     m_drawIfPossibleFailed = !success;
     if (m_drawIfPossibleFailed) {
@@ -272,44 +272,44 @@ void SchedulerStateMachine::didDrawIfPossibleCompleted(bool success)
       m_consecutiveFailedDraws = 0;
 }
 
-void SchedulerStateMachine::setNeedsCommit()
+void CCSchedulerStateMachine::setNeedsCommit()
 {
     m_needsCommit = true;
 }
 
-void SchedulerStateMachine::setNeedsForcedCommit()
+void CCSchedulerStateMachine::setNeedsForcedCommit()
 {
     m_needsForcedCommit = true;
 }
 
-void SchedulerStateMachine::beginFrameComplete()
+void CCSchedulerStateMachine::beginFrameComplete()
 {
     DCHECK(m_commitState == COMMIT_STATE_FRAME_IN_PROGRESS);
     m_commitState = COMMIT_STATE_READY_TO_COMMIT;
 }
 
-void SchedulerStateMachine::beginFrameAborted()
+void CCSchedulerStateMachine::beginFrameAborted()
 {
     DCHECK(m_commitState == COMMIT_STATE_FRAME_IN_PROGRESS);
     m_commitState = COMMIT_STATE_IDLE;
     setNeedsCommit();
 }
 
-void SchedulerStateMachine::didLoseContext()
+void CCSchedulerStateMachine::didLoseContext()
 {
     if (m_contextState == CONTEXT_LOST || m_contextState == CONTEXT_RECREATING)
         return;
     m_contextState = CONTEXT_LOST;
 }
 
-void SchedulerStateMachine::didRecreateContext()
+void CCSchedulerStateMachine::didRecreateContext()
 {
     DCHECK(m_contextState == CONTEXT_RECREATING);
     m_contextState = CONTEXT_ACTIVE;
     setNeedsCommit();
 }
 
-void SchedulerStateMachine::setMaximumNumberOfFailedDrawsBeforeDrawIsForced(int numDraws)
+void CCSchedulerStateMachine::setMaximumNumberOfFailedDrawsBeforeDrawIsForced(int numDraws)
 {
     m_maximumNumberOfFailedDrawsBeforeDrawIsForced = numDraws;
 }

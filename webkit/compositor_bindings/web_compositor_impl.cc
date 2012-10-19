@@ -22,8 +22,8 @@ using namespace cc;
 namespace WebKit {
 
 bool WebCompositorImpl::s_initialized = false;
-Thread* WebCompositorImpl::s_mainThread = 0;
-Thread* WebCompositorImpl::s_implThread = 0;
+CCThread* WebCompositorImpl::s_mainThread = 0;
+CCThread* WebCompositorImpl::s_implThread = 0;
 
 void WebCompositor::initialize(WebThread* implThread)
 {
@@ -46,12 +46,12 @@ void WebCompositorImpl::initialize(WebThread* implThread)
     s_initialized = true;
 
     s_mainThread = CCThreadImpl::createForCurrentThread().release();
-    Proxy::setMainThread(s_mainThread);
+    CCProxy::setMainThread(s_mainThread);
     if (implThread) {
         s_implThread = CCThreadImpl::createForDifferentThread(implThread).release();
-        Proxy::setImplThread(s_implThread);
+        CCProxy::setImplThread(s_implThread);
     } else
-        Proxy::setImplThread(0);
+        CCProxy::setImplThread(0);
 }
 
 bool WebCompositorImpl::isThreadingEnabled()
@@ -67,7 +67,7 @@ bool WebCompositorImpl::initialized()
 void WebCompositorImpl::shutdown()
 {
     ASSERT(s_initialized);
-    ASSERT(!LayerTreeHost::anyLayerTreeHostInstanceExists());
+    ASSERT(!CCLayerTreeHost::anyLayerTreeHostInstanceExists());
 
     if (s_implThread) {
         delete s_implThread;
@@ -75,8 +75,8 @@ void WebCompositorImpl::shutdown()
     }
     delete s_mainThread;
     s_mainThread = 0;
-    Proxy::setImplThread(0);
-    Proxy::setMainThread(0);
+    CCProxy::setImplThread(0);
+    CCProxy::setMainThread(0);
     s_initialized = false;
 }
 

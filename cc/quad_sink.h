@@ -9,21 +9,21 @@
 
 namespace cc {
 
-class DrawQuad;
+class CCDrawQuad;
 
-struct AppendQuadsData;
-struct SharedQuadState;
+struct CCAppendQuadsData;
+struct CCSharedQuadState;
 
-class QuadSink {
+class CCQuadSink {
 public:
-    virtual ~QuadSink() { }
+    virtual ~CCQuadSink() { }
 
     // Call this to add a SharedQuadState before appending quads that refer to it. Returns a pointer
     // to the given SharedQuadState for convenience, that can be set on the quads to append.
-    virtual SharedQuadState* useSharedQuadState(scoped_ptr<SharedQuadState>) = 0;
+    virtual CCSharedQuadState* useSharedQuadState(scoped_ptr<CCSharedQuadState>) = 0;
 
     // Returns true if the quad is added to the list, and false if the quad is entirely culled.
-    virtual bool append(scoped_ptr<DrawQuad> passDrawQuad, AppendQuadsData&) = 0;
+    virtual bool append(scoped_ptr<CCDrawQuad> passDrawQuad, CCAppendQuadsData&) = 0;
 };
 
 }

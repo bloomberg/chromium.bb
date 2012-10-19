@@ -11,19 +11,19 @@
 namespace cc {
 
 template<typename T>
-class ThreadTask0 : public Thread::Task {
+class CCThreadTask0 : public CCThread::Task {
 public:
     typedef void (T::*Method)();
-    typedef ThreadTask0<T> ThreadTaskImpl;
+    typedef CCThreadTask0<T> CCThreadTaskImpl;
 
-    static PassOwnPtr<ThreadTaskImpl> create(T* instance, Method method)
+    static PassOwnPtr<CCThreadTaskImpl> create(T* instance, Method method)
     {
-        return adoptPtr(new ThreadTaskImpl(instance, method));
+        return adoptPtr(new CCThreadTaskImpl(instance, method));
     }
 
 private:
-    ThreadTask0(T* instance, Method method)
-        : Thread::Task(instance)
+    CCThreadTask0(T* instance, Method method)
+        : CCThread::Task(instance)
         , m_method(method)
     {
     }
@@ -38,19 +38,19 @@ private:
 };
 
 template<typename T, typename P1, typename MP1>
-class ThreadTask1 : public Thread::Task {
+class CCThreadTask1 : public CCThread::Task {
 public:
     typedef void (T::*Method)(MP1);
-    typedef ThreadTask1<T, P1, MP1> ThreadTaskImpl;
+    typedef CCThreadTask1<T, P1, MP1> CCThreadTaskImpl;
 
-    static PassOwnPtr<ThreadTaskImpl> create(T* instance, Method method, P1 parameter1)
+    static PassOwnPtr<CCThreadTaskImpl> create(T* instance, Method method, P1 parameter1)
     {
-        return adoptPtr(new ThreadTaskImpl(instance, method, parameter1));
+        return adoptPtr(new CCThreadTaskImpl(instance, method, parameter1));
     }
 
 private:
-    ThreadTask1(T* instance, Method method, P1 parameter1)
-        : Thread::Task(instance)
+    CCThreadTask1(T* instance, Method method, P1 parameter1)
+        : CCThread::Task(instance)
         , m_method(method)
         , m_parameter1(parameter1)
     {
@@ -67,19 +67,19 @@ private:
 };
 
 template<typename T, typename P1, typename MP1, typename P2, typename MP2>
-class ThreadTask2 : public Thread::Task {
+class CCThreadTask2 : public CCThread::Task {
 public:
     typedef void (T::*Method)(MP1, MP2);
-    typedef ThreadTask2<T, P1, MP1, P2, MP2> ThreadTaskImpl;
+    typedef CCThreadTask2<T, P1, MP1, P2, MP2> CCThreadTaskImpl;
 
-    static PassOwnPtr<ThreadTaskImpl> create(T* instance, Method method, P1 parameter1, P2 parameter2)
+    static PassOwnPtr<CCThreadTaskImpl> create(T* instance, Method method, P1 parameter1, P2 parameter2)
     {
-        return adoptPtr(new ThreadTaskImpl(instance, method, parameter1, parameter2));
+        return adoptPtr(new CCThreadTaskImpl(instance, method, parameter1, parameter2));
     }
 
 private:
-    ThreadTask2(T* instance, Method method, P1 parameter1, P2 parameter2)
-        : Thread::Task(instance)
+    CCThreadTask2(T* instance, Method method, P1 parameter1, P2 parameter2)
+        : CCThread::Task(instance)
         , m_method(method)
         , m_parameter1(parameter1)
         , m_parameter2(parameter2)
@@ -98,19 +98,19 @@ private:
 };
 
 template<typename T, typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3>
-class ThreadTask3 : public Thread::Task {
+class CCThreadTask3 : public CCThread::Task {
 public:
     typedef void (T::*Method)(MP1, MP2, MP3);
-    typedef ThreadTask3<T, P1, MP1, P2, MP2, P3, MP3> ThreadTaskImpl;
+    typedef CCThreadTask3<T, P1, MP1, P2, MP2, P3, MP3> CCThreadTaskImpl;
 
-    static PassOwnPtr<ThreadTaskImpl> create(T* instance, Method method, P1 parameter1, P2 parameter2, P3 parameter3)
+    static PassOwnPtr<CCThreadTaskImpl> create(T* instance, Method method, P1 parameter1, P2 parameter2, P3 parameter3)
     {
-        return adoptPtr(new ThreadTaskImpl(instance, method, parameter1, parameter2, parameter3));
+        return adoptPtr(new CCThreadTaskImpl(instance, method, parameter1, parameter2, parameter3));
     }
 
 private:
-    ThreadTask3(T* instance, Method method, P1 parameter1, P2 parameter2, P3 parameter3)
-        : Thread::Task(instance)
+    CCThreadTask3(T* instance, Method method, P1 parameter1, P2 parameter2, P3 parameter3)
+        : CCThread::Task(instance)
         , m_method(method)
         , m_parameter1(parameter1)
         , m_parameter2(parameter2)
@@ -132,19 +132,19 @@ private:
 
 
 template<typename T, typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4>
-class ThreadTask4 : public Thread::Task {
+class CCThreadTask4 : public CCThread::Task {
 public:
     typedef void (T::*Method)(MP1, MP2, MP3, MP4);
-    typedef ThreadTask4<T, P1, MP1, P2, MP2, P3, MP3, P4, MP4> ThreadTaskImpl;
+    typedef CCThreadTask4<T, P1, MP1, P2, MP2, P3, MP3, P4, MP4> CCThreadTaskImpl;
 
-    static PassOwnPtr<ThreadTaskImpl> create(T* instance, Method method, P1 parameter1, P2 parameter2, P3 parameter3, P4 parameter4)
+    static PassOwnPtr<CCThreadTaskImpl> create(T* instance, Method method, P1 parameter1, P2 parameter2, P3 parameter3, P4 parameter4)
     {
-        return adoptPtr(new ThreadTaskImpl(instance, method, parameter1, parameter2, parameter3, parameter4));
+        return adoptPtr(new CCThreadTaskImpl(instance, method, parameter1, parameter2, parameter3, parameter4));
     }
 
 private:
-    ThreadTask4(T* instance, Method method, P1 parameter1, P2 parameter2, P3 parameter3, P4 parameter4)
-        : Thread::Task(instance)
+    CCThreadTask4(T* instance, Method method, P1 parameter1, P2 parameter2, P3 parameter3, P4 parameter4)
+        : CCThread::Task(instance)
         , m_method(method)
         , m_parameter1(parameter1)
         , m_parameter2(parameter2)
@@ -167,19 +167,19 @@ private:
 };
 
 template<typename T, typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5>
-class ThreadTask5 : public Thread::Task {
+class CCThreadTask5 : public CCThread::Task {
 public:
     typedef void (T::*Method)(MP1, MP2, MP3, MP4, MP5);
-    typedef ThreadTask5<T, P1, MP1, P2, MP2, P3, MP3, P4, MP4, P5, MP5> ThreadTaskImpl;
+    typedef CCThreadTask5<T, P1, MP1, P2, MP2, P3, MP3, P4, MP4, P5, MP5> CCThreadTaskImpl;
 
-    static PassOwnPtr<ThreadTaskImpl> create(T* instance, Method method, P1 parameter1, P2 parameter2, P3 parameter3, P4 parameter4, P5 parameter5)
+    static PassOwnPtr<CCThreadTaskImpl> create(T* instance, Method method, P1 parameter1, P2 parameter2, P3 parameter3, P4 parameter4, P5 parameter5)
     {
-        return adoptPtr(new ThreadTaskImpl(instance, method, parameter1, parameter2, parameter3, parameter4, parameter5));
+        return adoptPtr(new CCThreadTaskImpl(instance, method, parameter1, parameter2, parameter3, parameter4, parameter5));
     }
 
 private:
-    ThreadTask5(T* instance, Method method, P1 parameter1, P2 parameter2, P3 parameter3, P4 parameter4, P5 parameter5)
-        : Thread::Task(instance)
+    CCThreadTask5(T* instance, Method method, P1 parameter1, P2 parameter2, P3 parameter3, P4 parameter4, P5 parameter5)
+        : CCThread::Task(instance)
         , m_method(method)
         , m_parameter1(parameter1)
         , m_parameter2(parameter2)
@@ -204,40 +204,40 @@ private:
 };
 
 template<typename T>
-PassOwnPtr<Thread::Task> createThreadTask(
+PassOwnPtr<CCThread::Task> createCCThreadTask(
     T* const callee,
     void (T::*method)());
 
 template<typename T>
-PassOwnPtr<Thread::Task> createThreadTask(
+PassOwnPtr<CCThread::Task> createCCThreadTask(
     T* const callee,
     void (T::*method)())
 {
-    return ThreadTask0<T>::create(
+    return CCThreadTask0<T>::create(
         callee,
         method);
 }
 
 template<typename T, typename P1, typename MP1>
-PassOwnPtr<Thread::Task> createThreadTask(
+PassOwnPtr<CCThread::Task> createCCThreadTask(
     T* const callee,
     void (T::*method)(MP1),
     const P1& parameter1)
 {
-    return ThreadTask1<T, P1, MP1>::create(
+    return CCThreadTask1<T, P1, MP1>::create(
         callee,
         method,
         parameter1);
 }
 
 template<typename T, typename P1, typename MP1, typename P2, typename MP2>
-PassOwnPtr<Thread::Task> createThreadTask(
+PassOwnPtr<CCThread::Task> createCCThreadTask(
     T* const callee,
     void (T::*method)(MP1, MP2),
     const P1& parameter1,
     const P2& parameter2)
 {
-    return ThreadTask2<T, P1, MP1, P2, MP2>::create(
+    return CCThreadTask2<T, P1, MP1, P2, MP2>::create(
         callee,
         method,
         parameter1,
@@ -245,14 +245,14 @@ PassOwnPtr<Thread::Task> createThreadTask(
 }
 
 template<typename T, typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3>
-PassOwnPtr<Thread::Task> createThreadTask(
+PassOwnPtr<CCThread::Task> createCCThreadTask(
     T* const callee,
     void (T::*method)(MP1, MP2, MP3),
     const P1& parameter1,
     const P2& parameter2,
     const P3& parameter3)
 {
-    return ThreadTask3<T, P1, MP1, P2, MP2, P3, MP3>::create(
+    return CCThreadTask3<T, P1, MP1, P2, MP2, P3, MP3>::create(
         callee,
         method,
         parameter1,
@@ -261,7 +261,7 @@ PassOwnPtr<Thread::Task> createThreadTask(
 }
 
 template<typename T, typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4>
-PassOwnPtr<Thread::Task> createThreadTask(
+PassOwnPtr<CCThread::Task> createCCThreadTask(
     T* const callee,
     void (T::*method)(MP1, MP2, MP3, MP4),
     const P1& parameter1,
@@ -269,7 +269,7 @@ PassOwnPtr<Thread::Task> createThreadTask(
     const P3& parameter3,
     const P4& parameter4)
 {
-    return ThreadTask4<T, P1, MP1, P2, MP2, P3, MP3, P4, MP4>::create(
+    return CCThreadTask4<T, P1, MP1, P2, MP2, P3, MP3, P4, MP4>::create(
         callee,
         method,
         parameter1,
@@ -280,7 +280,7 @@ PassOwnPtr<Thread::Task> createThreadTask(
 }
 
 template<typename T, typename P1, typename MP1, typename P2, typename MP2, typename P3, typename MP3, typename P4, typename MP4, typename P5, typename MP5>
-PassOwnPtr<Thread::Task> createThreadTask(
+PassOwnPtr<CCThread::Task> createCCThreadTask(
     T* const callee,
     void (T::*method)(MP1, MP2, MP3, MP4, MP5),
     const P1& parameter1,
@@ -289,7 +289,7 @@ PassOwnPtr<Thread::Task> createThreadTask(
     const P4& parameter4,
     const P5& parameter5)
 {
-    return ThreadTask5<T, P1, MP1, P2, MP2, P3, MP3, P4, MP4, P5, MP5>::create(
+    return CCThreadTask5<T, P1, MP1, P2, MP2, P3, MP3, P4, MP4, P5, MP5>::create(
         callee,
         method,
         parameter1,

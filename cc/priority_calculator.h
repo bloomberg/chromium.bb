@@ -10,7 +10,7 @@
 
 namespace cc {
 
-class PriorityCalculator {
+class CCPriorityCalculator {
 public:
     static int uiPriority(bool drawsToRootSurface);
     static int visiblePriority(bool drawsToRootSurface);

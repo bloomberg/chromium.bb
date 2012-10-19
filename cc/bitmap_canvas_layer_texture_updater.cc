@@ -14,7 +14,7 @@
 
 namespace cc {
 
-BitmapCanvasLayerTextureUpdater::Texture::Texture(BitmapCanvasLayerTextureUpdater* textureUpdater, scoped_ptr<PrioritizedTexture> texture)
+BitmapCanvasLayerTextureUpdater::Texture::Texture(BitmapCanvasLayerTextureUpdater* textureUpdater, scoped_ptr<CCPrioritizedTexture> texture)
     : LayerTextureUpdater::Texture(texture.Pass())
     , m_textureUpdater(textureUpdater)
 {
@@ -24,17 +24,17 @@ BitmapCanvasLayerTextureUpdater::Texture::~Texture()
 {
 }
 
-void BitmapCanvasLayerTextureUpdater::Texture::update(TextureUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&)
+void BitmapCanvasLayerTextureUpdater::Texture::update(CCTextureUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, CCRenderingStats&)
 {
     textureUpdater()->updateTexture(queue, texture(), sourceRect, destOffset, partialUpdate);
 }
 
-scoped_refptr<BitmapCanvasLayerTextureUpdater> BitmapCanvasLayerTextureUpdater::create(scoped_ptr<LayerPainter> painter)
+scoped_refptr<BitmapCanvasLayerTextureUpdater> BitmapCanvasLayerTextureUpdater::create(scoped_ptr<LayerPainterChromium> painter)
 {
     return make_scoped_refptr(new BitmapCanvasLayerTextureUpdater(painter.Pass()));
 }
 
-BitmapCanvasLayerTextureUpdater::BitmapCanvasLayerTextureUpdater(scoped_ptr<LayerPainter> painter)
+BitmapCanvasLayerTextureUpdater::BitmapCanvasLayerTextureUpdater(scoped_ptr<LayerPainterChromium> painter)
     : CanvasLayerTextureUpdater(painter.Pass())
     , m_opaque(false)
 {
@@ -44,9 +44,9 @@ BitmapCanvasLayerTextureUpdater::~BitmapCanvasLayerTextureUpdater()
 {
 }
 
-scoped_ptr<LayerTextureUpdater::Texture> BitmapCanvasLayerTextureUpdater::createTexture(PrioritizedTextureManager* manager)
+scoped_ptr<LayerTextureUpdater::Texture> BitmapCanvasLayerTextureUpdater::createTexture(CCPrioritizedTextureManager* manager)
 {
-    return scoped_ptr<LayerTextureUpdater::Texture>(new Texture(this, PrioritizedTexture::create(manager)));
+    return scoped_ptr<LayerTextureUpdater::Texture>(new Texture(this, CCPrioritizedTexture::create(manager)));
 }
 
 LayerTextureUpdater::SampledTexelFormat BitmapCanvasLayerTextureUpdater::sampledTexelFormat(GLenum textureFormat)
@@ -56,7 +56,7 @@ LayerTextureUpdater::SampledTexelFormat BitmapCanvasLayerTextureUpdater::sampled
             LayerTextureUpdater::SampledTexelFormatRGBA : LayerTextureUpdater::SampledTexelFormatBGRA;
 }
 
-void BitmapCanvasLayerTextureUpdater::prepareToUpdate(const IntRect& contentRect, const IntSize& tileSize, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, RenderingStats& stats)
+void BitmapCanvasLayerTextureUpdater::prepareToUpdate(const IntRect& contentRect, const IntSize& tileSize, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, CCRenderingStats& stats)
 {
     if (m_canvasSize != contentRect.size()) {
         m_canvasSize = contentRect.size();
@@ -66,7 +66,7 @@ void BitmapCanvasLayerTextureUpdater::prepareToUpdate(const IntRect& contentRect
     paintContents(m_canvas.get(), contentRect, contentsWidthScale, contentsHeightScale, resultingOpaqueRect, stats);
 }
 
-void BitmapCanvasLayerTextureUpdater::updateTexture(TextureUpdateQueue& queue, PrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate)
+void BitmapCanvasLayerTextureUpdater::updateTexture(CCTextureUpdateQueue& queue, CCPrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate)
 {
     ResourceUpdate upload = ResourceUpdate::Create(
         texture,

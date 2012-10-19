@@ -14,10 +14,10 @@ namespace cc {
 // it always returns a fixed thumb length. This allows a page to zoom (changing
 // the total size of the scrollable area, changing the thumb length) while not
 // requiring the thumb resource to be repainted.
-class ScrollbarGeometryFixedThumb : public ScrollbarGeometryStub {
+class CCScrollbarGeometryFixedThumb : public CCScrollbarGeometryStub {
 public:
-    static scoped_ptr<ScrollbarGeometryFixedThumb> create(scoped_ptr<WebKit::WebScrollbarThemeGeometry>);
-    virtual ~ScrollbarGeometryFixedThumb();
+    static scoped_ptr<CCScrollbarGeometryFixedThumb> create(scoped_ptr<WebKit::WebScrollbarThemeGeometry>);
+    virtual ~CCScrollbarGeometryFixedThumb();
 
     // Update thumb length from scrollbar
     void update(WebKit::WebScrollbar*);
@@ -29,7 +29,7 @@ public:
     virtual void splitTrack(WebKit::WebScrollbar*, const WebKit::WebRect& track, WebKit::WebRect& startTrack, WebKit::WebRect& thumb, WebKit::WebRect& endTrack) OVERRIDE;
 
 private:
-    explicit ScrollbarGeometryFixedThumb(scoped_ptr<WebKit::WebScrollbarThemeGeometry>);
+    explicit CCScrollbarGeometryFixedThumb(scoped_ptr<WebKit::WebScrollbarThemeGeometry>);
 
     IntSize m_thumbSize;
 };

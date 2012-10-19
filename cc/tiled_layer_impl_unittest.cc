@@ -16,16 +16,16 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using namespace cc;
-using namespace LayerTestCommon;
+using namespace CCLayerTestCommon;
 
 namespace {
 
 // Create a default tiled layer with textures for all tiles and a default
 // visibility of the entire layer size.
-static scoped_ptr<TiledLayerImpl> createLayer(const IntSize& tileSize, const IntSize& layerSize, LayerTilingData::BorderTexelOption borderTexels)
+static scoped_ptr<CCTiledLayerImpl> createLayer(const IntSize& tileSize, const IntSize& layerSize, CCLayerTilingData::BorderTexelOption borderTexels)
 {
-    scoped_ptr<TiledLayerImpl> layer = TiledLayerImpl::create(1);
-    scoped_ptr<LayerTilingData> tiler = LayerTilingData::create(tileSize, borderTexels);
+    scoped_ptr<CCTiledLayerImpl> layer = CCTiledLayerImpl::create(1);
+    scoped_ptr<CCLayerTilingData> tiler = CCLayerTilingData::create(tileSize, borderTexels);
     tiler->setBounds(layerSize);
     layer->setTilingData(*tiler);
     layer->setSkipsDraw(false);
@@ -36,7 +36,7 @@ static scoped_ptr<TiledLayerImpl> createLayer(const IntSize& tileSize, const Int
     layer->createRenderSurface();
     layer->setRenderTarget(layer.get());
 
-    ResourceProvider::ResourceId resourceId = 1;
+    CCResourceProvider::ResourceId resourceId = 1;
     for (int i = 0; i < tiler->numTilesX(); ++i)
         for (int j = 0; j < tiler->numTilesY(); ++j)
             layer->pushTileProperties(i, j, resourceId++, IntRect(0, 0, 1, 1));
@@ -44,7 +44,7 @@ static scoped_ptr<TiledLayerImpl> createLayer(const IntSize& tileSize, const Int
     return layer.Pass();
 }
 
-TEST(TiledLayerImplTest, emptyQuadList)
+TEST(CCTiledLayerImplTest, emptyQuadList)
 {
     DebugScopedSetImplThread scopedImplThread;
 
@@ -55,9 +55,9 @@ TEST(TiledLayerImplTest, emptyQuadList)
 
     // Verify default layer does creates quads
     {
-        scoped_ptr<TiledLayerImpl> layer = createLayer(tileSize, layerSize, LayerTilingData::NoBorderTexels);
-        MockQuadCuller quadCuller;
-        AppendQuadsData data;
+        scoped_ptr<CCTiledLayerImpl> layer = createLayer(tileSize, layerSize, CCLayerTilingData::NoBorderTexels);
+        MockCCQuadCuller quadCuller;
+        CCAppendQuadsData data;
         layer->appendQuads(quadCuller, data);
         const unsigned numTiles = numTilesX * numTilesY;
         EXPECT_EQ(quadCuller.quadList().size(), numTiles);
@@ -65,41 +65,41 @@ TEST(TiledLayerImplTest, emptyQuadList)
 
     // Layer with empty visible layer rect produces no quads
     {
-        scoped_ptr<TiledLayerImpl> layer = createLayer(tileSize, layerSize, LayerTilingData::NoBorderTexels);
+        scoped_ptr<CCTiledLayerImpl> layer = createLayer(tileSize, layerSize, CCLayerTilingData::NoBorderTexels);
         layer->setVisibleContentRect(IntRect());
 
-        MockQuadCuller quadCuller;
-        AppendQuadsData data;
+        MockCCQuadCuller quadCuller;
+        CCAppendQuadsData data;
         layer->appendQuads(quadCuller, data);
         EXPECT_EQ(quadCuller.quadList().size(), 0u);
     }
 
     // Layer with non-intersecting visible layer rect produces no quads
     {
-        scoped_ptr<TiledLayerImpl> layer = createLayer(tileSize, layerSize, LayerTilingData::NoBorderTexels);
+        scoped_ptr<CCTiledLayerImpl> layer = createLayer(tileSize, layerSize, CCLayerTilingData::NoBorderTexels);
 
         IntRect outsideBounds(IntPoint(-100, -100), IntSize(50, 50));
         layer->setVisibleContentRect(outsideBounds);
 
-        MockQuadCuller quadCuller;
-        AppendQuadsData data;
+        MockCCQuadCuller quadCuller;
+        CCAppendQuadsData data;
         layer->appendQuads(quadCuller, data);
         EXPECT_EQ(quadCuller.quadList().size(), 0u);
     }
 
     // Layer with skips draw produces no quads
     {
-        scoped_ptr<TiledLayerImpl> layer = createLayer(tileSize, layerSize, LayerTilingData::NoBorderTexels);
+        scoped_ptr<CCTiledLayerImpl> layer = createLayer(tileSize, layerSize, CCLayerTilingData::NoBorderTexels);
         layer->setSkipsDraw(true);
 
-        MockQuadCuller quadCuller;
-        AppendQuadsData data;
+        MockCCQuadCuller quadCuller;
+        CCAppendQuadsData data;
         layer->appendQuads(quadCuller, data);
         EXPECT_EQ(quadCuller.quadList().size(), 0u);
     }
 }
 
-TEST(TiledLayerImplTest, checkerboarding)
+TEST(CCTiledLayerImplTest, checkerboarding)
 {
     DebugScopedSetImplThread scopedImplThread;
 
@@ -108,18 +108,18 @@ TEST(TiledLayerImplTest, checkerboarding)
     const int numTilesY = 2;
     const IntSize layerSize(tileSize.width() * numTilesX, tileSize.height() * numTilesY);
 
-    scoped_ptr<TiledLayerImpl> layer = createLayer(tileSize, layerSize, LayerTilingData::NoBorderTexels);
+    scoped_ptr<CCTiledLayerImpl> layer = createLayer(tileSize, layerSize, CCLayerTilingData::NoBorderTexels);
 
     // No checkerboarding
     {
-        MockQuadCuller quadCuller;
-        AppendQuadsData data;
+        MockCCQuadCuller quadCuller;
+        CCAppendQuadsData data;
         layer->appendQuads(quadCuller, data);
         EXPECT_EQ(quadCuller.quadList().size(), 4u);
         EXPECT_FALSE(data.hadMissingTiles);
 
         for (size_t i = 0; i < quadCuller.quadList().size(); ++i)
-            EXPECT_EQ(quadCuller.quadList()[i]->material(), DrawQuad::TiledContent);
+            EXPECT_EQ(quadCuller.quadList()[i]->material(), CCDrawQuad::TiledContent);
     }
 
     for (int i = 0; i < numTilesX; ++i)
@@ -128,51 +128,51 @@ TEST(TiledLayerImplTest, checkerboarding)
 
     // All checkerboarding
     {
-        MockQuadCuller quadCuller;
-        AppendQuadsData data;
+        MockCCQuadCuller quadCuller;
+        CCAppendQuadsData data;
         layer->appendQuads(quadCuller, data);
         EXPECT_TRUE(data.hadMissingTiles);
         EXPECT_EQ(quadCuller.quadList().size(), 4u);
         for (size_t i = 0; i < quadCuller.quadList().size(); ++i)
-            EXPECT_NE(quadCuller.quadList()[i]->material(), DrawQuad::TiledContent);
+            EXPECT_NE(quadCuller.quadList()[i]->material(), CCDrawQuad::TiledContent);
     }
 }
 
-static void getQuads(QuadList& quads, SharedQuadStateList& sharedStates, IntSize tileSize, const IntSize& layerSize, LayerTilingData::BorderTexelOption borderTexelOption, const IntRect& visibleContentRect)
+static void getQuads(CCQuadList& quads, CCSharedQuadStateList& sharedStates, IntSize tileSize, const IntSize& layerSize, CCLayerTilingData::BorderTexelOption borderTexelOption, const IntRect& visibleContentRect)
 {
-    scoped_ptr<TiledLayerImpl> layer = createLayer(tileSize, layerSize, borderTexelOption);
+    scoped_ptr<CCTiledLayerImpl> layer = createLayer(tileSize, layerSize, borderTexelOption);
     layer->setVisibleContentRect(visibleContentRect);
     layer->setBounds(layerSize);
 
-    MockQuadCuller quadCuller(quads, sharedStates);
-    AppendQuadsData data;
+    MockCCQuadCuller quadCuller(quads, sharedStates);
+    CCAppendQuadsData data;
     layer->appendQuads(quadCuller, data);
 }
 
 // Test with both border texels and without.
 #define WITH_AND_WITHOUT_BORDER_TEST(testFixtureName)       \
-    TEST(TiledLayerImplTest, testFixtureName##NoBorders)  \
+    TEST(CCTiledLayerImplTest, testFixtureName##NoBorders)  \
     {                                                       \
-        testFixtureName(LayerTilingData::NoBorderTexels); \
+        testFixtureName(CCLayerTilingData::NoBorderTexels); \
     }                                                       \
-    TEST(TiledLayerImplTest, testFixtureName##HasBorders) \
+    TEST(CCTiledLayerImplTest, testFixtureName##HasBorders) \
     {                                                       \
-        testFixtureName(LayerTilingData::HasBorderTexels);\
+        testFixtureName(CCLayerTilingData::HasBorderTexels);\
     }
 
-static void coverageVisibleRectOnTileBoundaries(LayerTilingData::BorderTexelOption borders)
+static void coverageVisibleRectOnTileBoundaries(CCLayerTilingData::BorderTexelOption borders)
 {
     DebugScopedSetImplThread scopedImplThread;
 
     IntSize layerSize(1000, 1000);
-    QuadList quads;
-    SharedQuadStateList sharedStates;
+    CCQuadList quads;
+    CCSharedQuadStateList sharedStates;
     getQuads(quads, sharedStates, IntSize(100, 100), layerSize, borders, IntRect(IntPoint(), layerSize));
     verifyQuadsExactlyCoverRect(quads, IntRect(IntPoint(), layerSize));
 }
 WITH_AND_WITHOUT_BORDER_TEST(coverageVisibleRectOnTileBoundaries);
 
-static void coverageVisibleRectIntersectsTiles(LayerTilingData::BorderTexelOption borders)
+static void coverageVisibleRectIntersectsTiles(CCLayerTilingData::BorderTexelOption borders)
 {
     DebugScopedSetImplThread scopedImplThread;
 
@@ -182,39 +182,39 @@ static void coverageVisibleRectIntersectsTiles(LayerTilingData::BorderTexelOptio
     IntRect visibleContentRect(topLeft, bottomRight - topLeft);
 
     IntSize layerSize(250, 250);
-    QuadList quads;
-    SharedQuadStateList sharedStates;
-    getQuads(quads, sharedStates, IntSize(50, 50), IntSize(250, 250), LayerTilingData::NoBorderTexels, visibleContentRect);
+    CCQuadList quads;
+    CCSharedQuadStateList sharedStates;
+    getQuads(quads, sharedStates, IntSize(50, 50), IntSize(250, 250), CCLayerTilingData::NoBorderTexels, visibleContentRect);
     verifyQuadsExactlyCoverRect(quads, visibleContentRect);
 }
 WITH_AND_WITHOUT_BORDER_TEST(coverageVisibleRectIntersectsTiles);
 
-static void coverageVisibleRectIntersectsBounds(LayerTilingData::BorderTexelOption borders)
+static void coverageVisibleRectIntersectsBounds(CCLayerTilingData::BorderTexelOption borders)
 {
     DebugScopedSetImplThread scopedImplThread;
 
     IntSize layerSize(220, 210);
     IntRect visibleContentRect(IntPoint(), layerSize);
-    QuadList quads;
-    SharedQuadStateList sharedStates;
-    getQuads(quads, sharedStates, IntSize(100, 100), layerSize, LayerTilingData::NoBorderTexels, visibleContentRect);
+    CCQuadList quads;
+    CCSharedQuadStateList sharedStates;
+    getQuads(quads, sharedStates, IntSize(100, 100), layerSize, CCLayerTilingData::NoBorderTexels, visibleContentRect);
     verifyQuadsExactlyCoverRect(quads, visibleContentRect);
 }
 WITH_AND_WITHOUT_BORDER_TEST(coverageVisibleRectIntersectsBounds);
 
-TEST(TiledLayerImplTest, textureInfoForLayerNoBorders)
+TEST(CCTiledLayerImplTest, textureInfoForLayerNoBorders)
 {
     DebugScopedSetImplThread scopedImplThread;
 
     IntSize tileSize(50, 50);
     IntSize layerSize(250, 250);
-    QuadList quads;
-    SharedQuadStateList sharedStates;
-    getQuads(quads, sharedStates, tileSize, layerSize, LayerTilingData::NoBorderTexels, IntRect(IntPoint(), layerSize));
+    CCQuadList quads;
+    CCSharedQuadStateList sharedStates;
+    getQuads(quads, sharedStates, tileSize, layerSize, CCLayerTilingData::NoBorderTexels, IntRect(IntPoint(), layerSize));
 
     for (size_t i = 0; i < quads.size(); ++i) {
-        ASSERT_EQ(quads[i]->material(), DrawQuad::TiledContent) << quadString << i;
-        TileDrawQuad* quad = static_cast<TileDrawQuad*>(quads[i]);
+        ASSERT_EQ(quads[i]->material(), CCDrawQuad::TiledContent) << quadString << i;
+        CCTileDrawQuad* quad = static_cast<CCTileDrawQuad*>(quads[i]);
 
         EXPECT_NE(quad->resourceId(), 0u) << quadString << i;
         EXPECT_EQ(quad->textureOffset(), IntPoint()) << quadString << i;
@@ -223,19 +223,19 @@ TEST(TiledLayerImplTest, textureInfoForLayerNoBorders)
     }
 }
 
-TEST(TiledLayerImplTest, tileOpaqueRectForLayerNoBorders)
+TEST(CCTiledLayerImplTest, tileOpaqueRectForLayerNoBorders)
 {
     DebugScopedSetImplThread scopedImplThread;
 
     IntSize tileSize(50, 50);
     IntSize layerSize(250, 250);
-    QuadList quads;
-    SharedQuadStateList sharedStates;
-    getQuads(quads, sharedStates, tileSize, layerSize, LayerTilingData::NoBorderTexels, IntRect(IntPoint(), layerSize));
+    CCQuadList quads;
+    CCSharedQuadStateList sharedStates;
+    getQuads(quads, sharedStates, tileSize, layerSize, CCLayerTilingData::NoBorderTexels, IntRect(IntPoint(), layerSize));
 
     for (size_t i = 0; i < quads.size(); ++i) {
-        ASSERT_EQ(quads[i]->material(), DrawQuad::TiledContent) << quadString << i;
-        TileDrawQuad* quad = static_cast<TileDrawQuad*>(quads[i]);
+        ASSERT_EQ(quads[i]->material(), CCDrawQuad::TiledContent) << quadString << i;
+        CCTileDrawQuad* quad = static_cast<CCTileDrawQuad*>(quads[i]);
 
         EXPECT_EQ(IntRect(0, 0, 1, 1), quad->opaqueRect()) << quadString << i;
     }

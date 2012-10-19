@@ -9,7 +9,7 @@
 #include "webcore_convert.h"
 #include "web_layer_impl.h"
 
-using cc::IOSurfaceLayer;
+using cc::IOSurfaceLayerChromium;
 
 namespace WebKit {
 
@@ -19,7 +19,7 @@ WebIOSurfaceLayer* WebIOSurfaceLayer::create()
 }
 
 WebIOSurfaceLayerImpl::WebIOSurfaceLayerImpl()
-    : m_layer(new WebLayerImpl(IOSurfaceLayer::create()))
+    : m_layer(new WebLayerImpl(IOSurfaceLayerChromium::create()))
 {
     m_layer->layer()->setIsDrawable(true);
 }
@@ -30,7 +30,7 @@ WebIOSurfaceLayerImpl::~WebIOSurfaceLayerImpl()
 
 void WebIOSurfaceLayerImpl::setIOSurfaceProperties(unsigned ioSurfaceId, WebSize size)
 {
-    static_cast<IOSurfaceLayer*>(m_layer->layer())->setIOSurfaceProperties(ioSurfaceId, convert(size));
+    static_cast<IOSurfaceLayerChromium*>(m_layer->layer())->setIOSurfaceProperties(ioSurfaceId, convert(size));
 }
 
 WebLayer* WebIOSurfaceLayerImpl::layer()

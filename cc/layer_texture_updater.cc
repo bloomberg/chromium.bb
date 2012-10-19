@@ -8,7 +8,7 @@
 
 namespace cc {
 
-LayerTextureUpdater::Texture::Texture(scoped_ptr<PrioritizedTexture> texture)
+LayerTextureUpdater::Texture::Texture(scoped_ptr<CCPrioritizedTexture> texture)
     : m_texture(texture.Pass())
 {
 }

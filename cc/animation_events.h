@@ -11,10 +11,10 @@
 
 namespace cc {
 
-struct AnimationEvent {
+struct CCAnimationEvent {
     enum Type { Started, Finished };
 
-    AnimationEvent(Type type, int layerId, int groupId, ActiveAnimation::TargetProperty targetProperty, double monotonicTime)
+    CCAnimationEvent(Type type, int layerId, int groupId, CCActiveAnimation::TargetProperty targetProperty, double monotonicTime)
         : type(type)
         , layerId(layerId)
         , groupId(groupId)
@@ -26,11 +26,11 @@ struct AnimationEvent {
     Type type;
     int layerId;
     int groupId;
-    ActiveAnimation::TargetProperty targetProperty;
+    CCActiveAnimation::TargetProperty targetProperty;
     double monotonicTime;
 };
 
-typedef std::vector<AnimationEvent> AnimationEventsVector;
+typedef std::vector<CCAnimationEvent> CCAnimationEventsVector;
 
 }  // namespace cc
 

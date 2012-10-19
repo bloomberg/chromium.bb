@@ -12,25 +12,25 @@
 
 namespace cc {
 
-scoped_refptr<HeadsUpDisplayLayer> HeadsUpDisplayLayer::create()
+scoped_refptr<HeadsUpDisplayLayerChromium> HeadsUpDisplayLayerChromium::create()
 {
-    return make_scoped_refptr(new HeadsUpDisplayLayer());
+    return make_scoped_refptr(new HeadsUpDisplayLayerChromium());
 }
 
-HeadsUpDisplayLayer::HeadsUpDisplayLayer()
-    : Layer()
+HeadsUpDisplayLayerChromium::HeadsUpDisplayLayerChromium()
+    : LayerChromium()
 {
 
     setBounds(IntSize(512, 128));
 }
 
-HeadsUpDisplayLayer::~HeadsUpDisplayLayer()
+HeadsUpDisplayLayerChromium::~HeadsUpDisplayLayerChromium()
 {
 }
 
-void HeadsUpDisplayLayer::update(TextureUpdateQueue&, const OcclusionTracker*, RenderingStats&)
+void HeadsUpDisplayLayerChromium::update(CCTextureUpdateQueue&, const CCOcclusionTracker*, CCRenderingStats&)
 {
-    const LayerTreeSettings& settings = layerTreeHost()->settings();
+    const CCLayerTreeSettings& settings = layerTreeHost()->settings();
     int maxTextureSize = layerTreeHost()->rendererCapabilities().maxTextureSize;
 
     IntSize bounds;
@@ -45,30 +45,30 @@ void HeadsUpDisplayLayer::update(TextureUpdateQueue&, const OcclusionTracker*, R
     setBounds(bounds);
 }
 
-bool HeadsUpDisplayLayer::drawsContent() const
+bool HeadsUpDisplayLayerChromium::drawsContent() const
 {
     return true;
 }
 
-void HeadsUpDisplayLayer::setFontAtlas(scoped_ptr<FontAtlas> fontAtlas)
+void HeadsUpDisplayLayerChromium::setFontAtlas(scoped_ptr<CCFontAtlas> fontAtlas)
 {
     m_fontAtlas = fontAtlas.Pass();
     setNeedsCommit();
 }
 
-scoped_ptr<LayerImpl> HeadsUpDisplayLayer::createLayerImpl()
+scoped_ptr<CCLayerImpl> HeadsUpDisplayLayerChromium::createCCLayerImpl()
 {
-    return HeadsUpDisplayLayerImpl::create(m_layerId).PassAs<LayerImpl>();
+    return CCHeadsUpDisplayLayerImpl::create(m_layerId).PassAs<CCLayerImpl>();
 }
 
-void HeadsUpDisplayLayer::pushPropertiesTo(LayerImpl* layerImpl)
+void HeadsUpDisplayLayerChromium::pushPropertiesTo(CCLayerImpl* layerImpl)
 {
-    Layer::pushPropertiesTo(layerImpl);
+    LayerChromium::pushPropertiesTo(layerImpl);
 
     if (!m_fontAtlas.get())
         return;
 
-    HeadsUpDisplayLayerImpl* hudLayerImpl = static_cast<HeadsUpDisplayLayerImpl*>(layerImpl);
+    CCHeadsUpDisplayLayerImpl* hudLayerImpl = static_cast<CCHeadsUpDisplayLayerImpl*>(layerImpl);
     hudLayerImpl->setFontAtlas(m_fontAtlas.Pass());
 }
 

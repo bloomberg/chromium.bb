@@ -15,9 +15,9 @@ namespace cc {
 
 #pragma pack(push, 4)
 
-class TileDrawQuad : public DrawQuad {
+class CCTileDrawQuad : public CCDrawQuad {
 public:
-    static scoped_ptr<TileDrawQuad> create(const SharedQuadState*, const IntRect& quadRect, const IntRect& opaqueRect, unsigned resourceId, const IntPoint& textureOffset, const IntSize& textureSize, GLint textureFilter, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA);
+    static scoped_ptr<CCTileDrawQuad> create(const CCSharedQuadState*, const IntRect& quadRect, const IntRect& opaqueRect, unsigned resourceId, const IntPoint& textureOffset, const IntSize& textureSize, GLint textureFilter, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA);
 
     unsigned resourceId() const { return m_resourceId; }
     IntPoint textureOffset() const { return m_textureOffset; }
@@ -32,9 +32,9 @@ public:
 
     bool isAntialiased() const { return leftEdgeAA() || topEdgeAA() || rightEdgeAA() || bottomEdgeAA(); }
 
-    static const TileDrawQuad* materialCast(const DrawQuad*);
+    static const CCTileDrawQuad* materialCast(const CCDrawQuad*);
 private:
-     TileDrawQuad(const SharedQuadState*, const IntRect& quadRect, const IntRect& opaqueRect, unsigned resourceId, const IntPoint& textureOffset, const IntSize& textureSize, GLint textureFilter, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA);
+     CCTileDrawQuad(const CCSharedQuadState*, const IntRect& quadRect, const IntRect& opaqueRect, unsigned resourceId, const IntPoint& textureOffset, const IntSize& textureSize, GLint textureFilter, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA);
 
     unsigned m_resourceId;
     IntPoint m_textureOffset;

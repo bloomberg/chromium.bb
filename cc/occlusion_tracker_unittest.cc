@@ -29,10 +29,10 @@ using namespace WebKitTests;
 
 namespace {
 
-class TestContentLayer : public Layer {
+class TestContentLayerChromium : public LayerChromium {
 public:
-    TestContentLayer()
-        : Layer()
+    TestContentLayerChromium()
+        : LayerChromium()
         , m_overrideOpaqueContentsRect(false)
     {
     }
@@ -42,7 +42,7 @@ public:
     {
         if (m_overrideOpaqueContentsRect)
             return intersection(m_opaqueContentsRect, visibleContentRect());
-        return Layer::visibleContentOpaqueRegion();
+        return LayerChromium::visibleContentOpaqueRegion();
     }
     void setOpaqueContentsRect(const IntRect& opaqueContentsRect)
     {
@@ -51,7 +51,7 @@ public:
     }
 
 private:
-    virtual ~TestContentLayer()
+    virtual ~TestContentLayerChromium()
     {
     }
 
@@ -59,10 +59,10 @@ private:
     IntRect m_opaqueContentsRect;
 };
 
-class TestContentLayerImpl : public LayerImpl {
+class TestContentLayerImpl : public CCLayerImpl {
 public:
     TestContentLayerImpl(int id)
-        : LayerImpl(id)
+        : CCLayerImpl(id)
         , m_overrideOpaqueContentsRect(false)
     {
         setDrawsContent(true);
@@ -72,7 +72,7 @@ public:
     {
         if (m_overrideOpaqueContentsRect)
             return intersection(m_opaqueContentsRect, visibleContentRect());
-        return LayerImpl::visibleContentOpaqueRegion();
+        return CCLayerImpl::visibleContentOpaqueRegion();
     }
     void setOpaqueContentsRect(const IntRect& opaqueContentsRect)
     {
@@ -86,10 +86,10 @@ private:
 };
 
 template<typename LayerType, typename RenderSurfaceType>
-class TestOcclusionTrackerWithClip : public TestOcclusionTrackerBase<LayerType, RenderSurfaceType> {
+class TestCCOcclusionTrackerWithClip : public TestCCOcclusionTrackerBase<LayerType, RenderSurfaceType> {
 public:
-    TestOcclusionTrackerWithClip(IntRect viewportRect, bool recordMetricsForFrame = false)
-        : TestOcclusionTrackerBase<LayerType, RenderSurfaceType>(viewportRect, recordMetricsForFrame)
+    TestCCOcclusionTrackerWithClip(IntRect viewportRect, bool recordMetricsForFrame = false)
+        : TestCCOcclusionTrackerBase<LayerType, RenderSurfaceType>(viewportRect, recordMetricsForFrame)
         , m_overrideLayerClipRect(false)
     {
     }
@@ -98,25 +98,25 @@ public:
     void useDefaultLayerClipRect() { m_overrideLayerClipRect = false; }
 
 protected:
-    virtual IntRect layerClipRectInTarget(const LayerType* layer) const { return m_overrideLayerClipRect ? m_layerClipRect : OcclusionTrackerBase<LayerType, RenderSurfaceType>::layerClipRectInTarget(layer); }
+    virtual IntRect layerClipRectInTarget(const LayerType* layer) const { return m_overrideLayerClipRect ? m_layerClipRect : CCOcclusionTrackerBase<LayerType, RenderSurfaceType>::layerClipRectInTarget(layer); }
 
 private:
     bool m_overrideLayerClipRect;
     IntRect m_layerClipRect;
 };
 
-struct OcclusionTrackerTestMainThreadTypes {
-    typedef Layer LayerType;
-    typedef RenderSurface RenderSurfaceType;
-    typedef TestContentLayer ContentLayerType;
-    typedef scoped_refptr<Layer> LayerPtrType;
+struct CCOcclusionTrackerTestMainThreadTypes {
+    typedef LayerChromium LayerType;
+    typedef RenderSurfaceChromium RenderSurfaceType;
+    typedef TestContentLayerChromium ContentLayerType;
+    typedef scoped_refptr<LayerChromium> LayerPtrType;
     typedef scoped_refptr<ContentLayerType> ContentLayerPtrType;
-    typedef LayerIterator<Layer, std::vector<scoped_refptr<Layer> >, RenderSurface, LayerIteratorActions::FrontToBack> LayerIterator;
-    typedef OcclusionTracker OcclusionTrackerType;
+    typedef CCLayerIterator<LayerChromium, std::vector<scoped_refptr<LayerChromium> >, RenderSurfaceChromium, CCLayerIteratorActions::FrontToBack> LayerIterator;
+    typedef CCOcclusionTracker OcclusionTrackerType;
 
     static LayerPtrType createLayer()
     {
-        return Layer::create();
+        return LayerChromium::create();
     }
     static ContentLayerPtrType createContentLayer() { return make_scoped_refptr(new ContentLayerType()); }
 
@@ -136,18 +136,18 @@ struct OcclusionTrackerTestMainThreadTypes {
     }
 };
 
-struct OcclusionTrackerTestImplThreadTypes {
-    typedef LayerImpl LayerType;
-    typedef RenderSurfaceImpl RenderSurfaceType;
+struct CCOcclusionTrackerTestImplThreadTypes {
+    typedef CCLayerImpl LayerType;
+    typedef CCRenderSurface RenderSurfaceType;
     typedef TestContentLayerImpl ContentLayerType;
-    typedef scoped_ptr<LayerImpl> LayerPtrType;
+    typedef scoped_ptr<CCLayerImpl> LayerPtrType;
     typedef scoped_ptr<ContentLayerType> ContentLayerPtrType;
-    typedef LayerIterator<LayerImpl, std::vector<LayerImpl*>, RenderSurfaceImpl, LayerIteratorActions::FrontToBack> LayerIterator;
-    typedef OcclusionTrackerImpl OcclusionTrackerType;
+    typedef CCLayerIterator<CCLayerImpl, std::vector<CCLayerImpl*>, CCRenderSurface, CCLayerIteratorActions::FrontToBack> LayerIterator;
+    typedef CCOcclusionTrackerImpl OcclusionTrackerType;
 
-    static LayerPtrType createLayer() { return LayerImpl::create(nextLayerImplId++); }
-    static ContentLayerPtrType createContentLayer() { return make_scoped_ptr(new ContentLayerType(nextLayerImplId++)); }
-    static int nextLayerImplId;
+    static LayerPtrType createLayer() { return CCLayerImpl::create(nextCCLayerImplId++); }
+    static ContentLayerPtrType createContentLayer() { return make_scoped_ptr(new ContentLayerType(nextCCLayerImplId++)); }
+    static int nextCCLayerImplId;
 
     static LayerPtrType passLayerPtr(LayerPtrType& layer)
     {
@@ -165,12 +165,12 @@ struct OcclusionTrackerTestImplThreadTypes {
     }
 };
 
-int OcclusionTrackerTestImplThreadTypes::nextLayerImplId = 1;
+int CCOcclusionTrackerTestImplThreadTypes::nextCCLayerImplId = 1;
 
 template<typename Types>
-class OcclusionTrackerTest : public testing::Test {
+class CCOcclusionTrackerTest : public testing::Test {
 protected:
-    OcclusionTrackerTest(bool opaqueLayers)
+    CCOcclusionTrackerTest(bool opaqueLayers)
         : m_opaqueLayers(opaqueLayers)
     { }
 
@@ -179,11 +179,11 @@ protected:
     virtual void TearDown()
     {
         Types::destroyLayer(m_root);
-        m_renderSurfaceLayerList.clear();
+        m_renderSurfaceLayerListChromium.clear();
         m_renderSurfaceLayerListImpl.clear();
         m_replicaLayers.clear();
         m_maskLayers.clear();
-        LayerTreeHost::setNeedsFilterContext(false);
+        CCLayerTreeHost::setNeedsFilterContext(false);
     }
 
     typename Types::ContentLayerType* createRoot(const WebTransformationMatrix& transform, const FloatPoint& position, const IntSize& bounds)
@@ -266,25 +266,25 @@ protected:
     {
         DCHECK(root == m_root.get());
         int dummyMaxTextureSize = 512;
-        LayerSorter layerSorter;
+        CCLayerSorter layerSorter;
 
         DCHECK(!root->renderSurface());
 
-        LayerTreeHostCommon::calculateDrawTransforms(root, root->bounds(), 1, &layerSorter, dummyMaxTextureSize, m_renderSurfaceLayerListImpl);
+        CCLayerTreeHostCommon::calculateDrawTransforms(root, root->bounds(), 1, &layerSorter, dummyMaxTextureSize, m_renderSurfaceLayerListImpl);
 
         m_layerIterator = m_layerIteratorBegin = Types::LayerIterator::begin(&m_renderSurfaceLayerListImpl);
     }
 
-    void calcDrawEtc(TestContentLayer* root)
+    void calcDrawEtc(TestContentLayerChromium* root)
     {
         DCHECK(root == m_root.get());
         int dummyMaxTextureSize = 512;
 
         DCHECK(!root->renderSurface());
 
-        LayerTreeHostCommon::calculateDrawTransforms(root, root->bounds(), 1, dummyMaxTextureSize, m_renderSurfaceLayerList);
+        CCLayerTreeHostCommon::calculateDrawTransforms(root, root->bounds(), 1, dummyMaxTextureSize, m_renderSurfaceLayerListChromium);
 
-        m_layerIterator = m_layerIteratorBegin = Types::LayerIterator::begin(&m_renderSurfaceLayerList);
+        m_layerIterator = m_layerIteratorBegin = Types::LayerIterator::begin(&m_renderSurfaceLayerListChromium);
     }
 
     void enterLayer(typename Types::LayerType* layer, typename Types::OcclusionTrackerType& occlusion)
@@ -350,36 +350,36 @@ private:
         layer->setBounds(bounds);
     }
 
-    void setProperties(Layer* layer, const WebTransformationMatrix& transform, const FloatPoint& position, const IntSize& bounds)
+    void setProperties(LayerChromium* layer, const WebTransformationMatrix& transform, const FloatPoint& position, const IntSize& bounds)
     {
         setBaseProperties(layer, transform, position, bounds);
     }
 
-    void setProperties(LayerImpl* layer, const WebTransformationMatrix& transform, const FloatPoint& position, const IntSize& bounds)
+    void setProperties(CCLayerImpl* layer, const WebTransformationMatrix& transform, const FloatPoint& position, const IntSize& bounds)
     {
         setBaseProperties(layer, transform, position, bounds);
 
         layer->setContentBounds(layer->bounds());
     }
 
-    void setReplica(Layer* owningLayer, scoped_refptr<Layer> layer)
+    void setReplica(LayerChromium* owningLayer, scoped_refptr<LayerChromium> layer)
     {
         owningLayer->setReplicaLayer(layer.get());
         m_replicaLayers.push_back(layer);
     }
 
-    void setReplica(LayerImpl* owningLayer, scoped_ptr<LayerImpl> layer)
+    void setReplica(CCLayerImpl* owningLayer, scoped_ptr<CCLayerImpl> layer)
     {
         owningLayer->setReplicaLayer(layer.Pass());
     }
 
-    void setMask(Layer* owningLayer, scoped_refptr<Layer> layer)
+    void setMask(LayerChromium* owningLayer, scoped_refptr<LayerChromium> layer)
     {
         owningLayer->setMaskLayer(layer.get());
         m_maskLayers.push_back(layer);
     }
 
-    void setMask(LayerImpl* owningLayer, scoped_ptr<LayerImpl> layer)
+    void setMask(CCLayerImpl* owningLayer, scoped_ptr<CCLayerImpl> layer)
     {
         owningLayer->setMaskLayer(layer.Pass());
     }
@@ -387,44 +387,44 @@ private:
     bool m_opaqueLayers;
     // These hold ownership of the layers for the duration of the test.
     typename Types::LayerPtrType m_root;
-    std::vector<scoped_refptr<Layer> > m_renderSurfaceLayerList;
-    std::vector<LayerImpl*> m_renderSurfaceLayerListImpl;
+    std::vector<scoped_refptr<LayerChromium> > m_renderSurfaceLayerListChromium;
+    std::vector<CCLayerImpl*> m_renderSurfaceLayerListImpl;
     typename Types::LayerIterator m_layerIteratorBegin;
     typename Types::LayerIterator m_layerIterator;
     typename Types::LayerType* m_lastLayerVisited;
-    std::vector<scoped_refptr<Layer> > m_replicaLayers;
-    std::vector<scoped_refptr<Layer> > m_maskLayers;
+    std::vector<scoped_refptr<LayerChromium> > m_replicaLayers;
+    std::vector<scoped_refptr<LayerChromium> > m_maskLayers;
 };
 
 #define RUN_TEST_MAIN_THREAD_OPAQUE_LAYERS(ClassName) \
-    class ClassName##MainThreadOpaqueLayers : public ClassName<OcclusionTrackerTestMainThreadTypes> { \
+    class ClassName##MainThreadOpaqueLayers : public ClassName<CCOcclusionTrackerTestMainThreadTypes> { \
     public: \
-        ClassName##MainThreadOpaqueLayers() : ClassName<OcclusionTrackerTestMainThreadTypes>(true) { } \
+        ClassName##MainThreadOpaqueLayers() : ClassName<CCOcclusionTrackerTestMainThreadTypes>(true) { } \
     }; \
     TEST_F(ClassName##MainThreadOpaqueLayers, runTest) { runMyTest(); }
 #define RUN_TEST_MAIN_THREAD_OPAQUE_PAINTS(ClassName) \
-    class ClassName##MainThreadOpaquePaints : public ClassName<OcclusionTrackerTestMainThreadTypes> { \
+    class ClassName##MainThreadOpaquePaints : public ClassName<CCOcclusionTrackerTestMainThreadTypes> { \
     public: \
-        ClassName##MainThreadOpaquePaints() : ClassName<OcclusionTrackerTestMainThreadTypes>(false) { } \
+        ClassName##MainThreadOpaquePaints() : ClassName<CCOcclusionTrackerTestMainThreadTypes>(false) { } \
     }; \
     TEST_F(ClassName##MainThreadOpaquePaints, runTest) { runMyTest(); }
 
 #define RUN_TEST_IMPL_THREAD_OPAQUE_LAYERS(ClassName) \
-    class ClassName##ImplThreadOpaqueLayers : public ClassName<OcclusionTrackerTestImplThreadTypes> { \
+    class ClassName##ImplThreadOpaqueLayers : public ClassName<CCOcclusionTrackerTestImplThreadTypes> { \
         DebugScopedSetImplThread impl; \
     public: \
-        ClassName##ImplThreadOpaqueLayers() : ClassName<OcclusionTrackerTestImplThreadTypes>(true) { } \
+        ClassName##ImplThreadOpaqueLayers() : ClassName<CCOcclusionTrackerTestImplThreadTypes>(true) { } \
     }; \
     TEST_F(ClassName##ImplThreadOpaqueLayers, runTest) { runMyTest(); }
 #define RUN_TEST_IMPL_THREAD_OPAQUE_PAINTS(ClassName) \
-    class ClassName##ImplThreadOpaquePaints : public ClassName<OcclusionTrackerTestImplThreadTypes> { \
+    class ClassName##ImplThreadOpaquePaints : public ClassName<CCOcclusionTrackerTestImplThreadTypes> { \
         DebugScopedSetImplThread impl; \
     public: \
-        ClassName##ImplThreadOpaquePaints() : ClassName<OcclusionTrackerTestImplThreadTypes>(false) { } \
+        ClassName##ImplThreadOpaquePaints() : ClassName<CCOcclusionTrackerTestImplThreadTypes>(false) { } \
     }; \
     TEST_F(ClassName##ImplThreadOpaquePaints, runTest) { runMyTest(); }
 
-#define ALL_OCCLUSIONTRACKER_TEST(ClassName) \
+#define ALL_CCOCCLUSIONTRACKER_TEST(ClassName) \
     RUN_TEST_MAIN_THREAD_OPAQUE_LAYERS(ClassName) \
     RUN_TEST_MAIN_THREAD_OPAQUE_PAINTS(ClassName) \
     RUN_TEST_IMPL_THREAD_OPAQUE_LAYERS(ClassName) \
@@ -441,9 +441,9 @@ private:
     RUN_TEST_IMPL_THREAD_OPAQUE_LAYERS(ClassName)
 
 template<class Types>
-class OcclusionTrackerTestIdentityTransforms : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestIdentityTransforms : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestIdentityTransforms(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestIdentityTransforms(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
 
     void runMyTest()
     {
@@ -451,7 +451,7 @@ protected:
         typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(30, 30), IntSize(500, 500), true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
         this->visitLayer(layer, occlusion);
@@ -488,12 +488,12 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestIdentityTransforms);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestIdentityTransforms);
 
 template<class Types>
-class OcclusionTrackerTestRotatedChild : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestRotatedChild : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestRotatedChild(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestRotatedChild(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         WebTransformationMatrix layerTransform;
@@ -505,7 +505,7 @@ protected:
         typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, layerTransform, FloatPoint(30, 30), IntSize(500, 500), true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
         this->visitLayer(layer, occlusion);
@@ -542,12 +542,12 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestRotatedChild);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestRotatedChild);
 
 template<class Types>
-class OcclusionTrackerTestTranslatedChild : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestTranslatedChild : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestTranslatedChild(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestTranslatedChild(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         WebTransformationMatrix layerTransform;
@@ -557,7 +557,7 @@ protected:
         typename Types::ContentLayerType* layer = this->createDrawingLayer(parent, layerTransform, FloatPoint(30, 30), IntSize(500, 500), true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
         this->visitLayer(layer, occlusion);
@@ -606,12 +606,12 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestTranslatedChild);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestTranslatedChild);
 
 template<class Types>
-class OcclusionTrackerTestChildInRotatedChild : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestChildInRotatedChild : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestChildInRotatedChild(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestChildInRotatedChild(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         WebTransformationMatrix childTransform;
@@ -626,7 +626,7 @@ protected:
         typename Types::ContentLayerType* layer = this->createDrawingLayer(child, this->identityMatrix, FloatPoint(10, 10), IntSize(500, 500), true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
         this->visitLayer(layer, occlusion);
@@ -687,12 +687,12 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestChildInRotatedChild);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestChildInRotatedChild);
 
 template<class Types>
-class OcclusionTrackerTestVisitTargetTwoTimes : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestVisitTargetTwoTimes : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestVisitTargetTwoTimes(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestVisitTargetTwoTimes(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         WebTransformationMatrix childTransform;
@@ -705,12 +705,12 @@ protected:
         typename Types::LayerType* child = this->createLayer(parent, childTransform, FloatPoint(30, 30), IntSize(500, 500));
         child->setMasksToBounds(true);
         typename Types::ContentLayerType* layer = this->createDrawingLayer(child, this->identityMatrix, FloatPoint(10, 10), IntSize(500, 500), true);
-        // |child2| makes |parent|'s surface get considered by OcclusionTracker first, instead of |child|'s. This exercises different code in
+        // |child2| makes |parent|'s surface get considered by CCOcclusionTracker first, instead of |child|'s. This exercises different code in
         // leaveToTargetRenderSurface, as the target surface has already been seen.
         typename Types::ContentLayerType* child2 = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(30, 30), IntSize(60, 20), true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(IntRect(-10, -10, 1000, 1000));
 
         this->visitLayer(child2, occlusion);
@@ -800,12 +800,12 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestVisitTargetTwoTimes);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestVisitTargetTwoTimes);
 
 template<class Types>
-class OcclusionTrackerTestSurfaceRotatedOffAxis : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestSurfaceRotatedOffAxis : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestSurfaceRotatedOffAxis(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestSurfaceRotatedOffAxis(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         WebTransformationMatrix childTransform;
@@ -822,10 +822,10 @@ protected:
         typename Types::ContentLayerType* layer = this->createDrawingLayer(child, layerTransform, FloatPoint(0, 0), IntSize(500, 500), true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
-        IntRect clippedLayerInChild = MathUtil::mapClippedRect(layerTransform, layer->visibleContentRect());
+        IntRect clippedLayerInChild = CCMathUtil::mapClippedRect(layerTransform, layer->visibleContentRect());
 
         this->visitLayer(layer, occlusion);
         this->enterContributingSurface(child, occlusion);
@@ -867,12 +867,12 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestSurfaceRotatedOffAxis);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestSurfaceRotatedOffAxis);
 
 template<class Types>
-class OcclusionTrackerTestSurfaceWithTwoOpaqueChildren : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestSurfaceWithTwoOpaqueChildren : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestSurfaceWithTwoOpaqueChildren(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestSurfaceWithTwoOpaqueChildren(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         WebTransformationMatrix childTransform;
@@ -888,7 +888,7 @@ protected:
         typename Types::ContentLayerType* layer2 = this->createDrawingLayer(child, this->identityMatrix, FloatPoint(10, 450), IntSize(500, 60), true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
         this->visitLayer(layer2, occlusion);
@@ -957,12 +957,12 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestSurfaceWithTwoOpaqueChildren);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestSurfaceWithTwoOpaqueChildren);
 
 template<class Types>
-class OcclusionTrackerTestOverlappingSurfaceSiblings : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestOverlappingSurfaceSiblings : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestOverlappingSurfaceSiblings(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestOverlappingSurfaceSiblings(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         WebTransformationMatrix childTransform;
@@ -978,7 +978,7 @@ protected:
         typename Types::ContentLayerType* layer2 = this->createDrawingLayer(child2, this->identityMatrix, FloatPoint(-10, -10), IntSize(510, 510), true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(IntRect(-20, -20, 1000, 1000));
 
         this->visitLayer(layer2, occlusion);
@@ -1068,12 +1068,12 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestOverlappingSurfaceSiblings);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestOverlappingSurfaceSiblings);
 
 template<class Types>
-class OcclusionTrackerTestOverlappingSurfaceSiblingsWithTwoTransforms : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestOverlappingSurfaceSiblingsWithTwoTransforms : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestOverlappingSurfaceSiblingsWithTwoTransforms(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestOverlappingSurfaceSiblingsWithTwoTransforms(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         WebTransformationMatrix child1Transform;
@@ -1094,7 +1094,7 @@ protected:
         typename Types::ContentLayerType* layer2 = this->createDrawingLayer(child2, this->identityMatrix, FloatPoint(-10, -10), IntSize(510, 510), true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(IntRect(-30, -30, 1000, 1000));
 
         this->visitLayer(layer2, occlusion);
@@ -1177,12 +1177,12 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestOverlappingSurfaceSiblingsWithTwoTransforms);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestOverlappingSurfaceSiblingsWithTwoTransforms);
 
 template<class Types>
-class OcclusionTrackerTestFilters : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestFilters : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestFilters(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestFilters(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         WebTransformationMatrix layerTransform;
@@ -1210,7 +1210,7 @@ protected:
 
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
         // Opacity layer won't contribute to occlusion.
@@ -1262,12 +1262,12 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestFilters);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestFilters);
 
 template<class Types>
-class OcclusionTrackerTestReplicaDoesOcclude : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestReplicaDoesOcclude : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestReplicaDoesOcclude(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestReplicaDoesOcclude(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(100, 200));
@@ -1275,7 +1275,7 @@ protected:
         this->createReplicaLayer(surface, this->identityMatrix, FloatPoint(50, 50), IntSize());
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
         this->visitLayer(surface, occlusion);
@@ -1294,12 +1294,12 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestReplicaDoesOcclude);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestReplicaDoesOcclude);
 
 template<class Types>
-class OcclusionTrackerTestReplicaWithClipping : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestReplicaWithClipping : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestReplicaWithClipping(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestReplicaWithClipping(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(100, 170));
@@ -1308,7 +1308,7 @@ protected:
         this->createReplicaLayer(surface, this->identityMatrix, FloatPoint(50, 50), IntSize());
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
         this->visitLayer(surface, occlusion);
@@ -1327,12 +1327,12 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestReplicaWithClipping);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestReplicaWithClipping);
 
 template<class Types>
-class OcclusionTrackerTestReplicaWithMask : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestReplicaWithMask : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestReplicaWithMask(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestReplicaWithMask(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(100, 200));
@@ -1341,7 +1341,7 @@ protected:
         this->createMaskLayer(replica, IntSize(10, 10));
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
         this->visitLayer(surface, occlusion);
@@ -1360,19 +1360,19 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestReplicaWithMask);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestReplicaWithMask);
 
 template<class Types>
-class OcclusionTrackerTestLayerClipRectOutsideChild : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestLayerClipRectOutsideChild : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestLayerClipRectOutsideChild(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestLayerClipRectOutsideChild(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
         typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(200, 200), true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(IntRect(200, 100, 100, 100));
 
         this->enterLayer(layer, occlusion);
@@ -1405,19 +1405,19 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestLayerClipRectOutsideChild);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestLayerClipRectOutsideChild);
 
 template<class Types>
-class OcclusionTrackerTestViewportRectOutsideChild : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestViewportRectOutsideChild : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestViewportRectOutsideChild(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestViewportRectOutsideChild(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
         typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(200, 200), true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(200, 100, 100, 100));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(200, 100, 100, 100));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
         this->enterLayer(layer, occlusion);
@@ -1450,19 +1450,19 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestViewportRectOutsideChild);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestViewportRectOutsideChild);
 
 template<class Types>
-class OcclusionTrackerTestLayerClipRectOverChild : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestLayerClipRectOverChild : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestLayerClipRectOverChild(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestLayerClipRectOverChild(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
         typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(200, 200), true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(IntRect(100, 100, 100, 100));
 
         this->enterLayer(layer, occlusion);
@@ -1490,19 +1490,19 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestLayerClipRectOverChild);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestLayerClipRectOverChild);
 
 template<class Types>
-class OcclusionTrackerTestViewportRectOverChild : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestViewportRectOverChild : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestViewportRectOverChild(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestViewportRectOverChild(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
         typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(200, 200), true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(100, 100, 100, 100));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(100, 100, 100, 100));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
         this->enterLayer(layer, occlusion);
@@ -1530,19 +1530,19 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestViewportRectOverChild);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestViewportRectOverChild);
 
 template<class Types>
-class OcclusionTrackerTestLayerClipRectPartlyOverChild : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestLayerClipRectPartlyOverChild : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestLayerClipRectPartlyOverChild(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestLayerClipRectPartlyOverChild(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
         typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(200, 200), true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(IntRect(50, 50, 200, 200));
 
         this->enterLayer(layer, occlusion);
@@ -1574,19 +1574,19 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestLayerClipRectPartlyOverChild);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestLayerClipRectPartlyOverChild);
 
 template<class Types>
-class OcclusionTrackerTestViewportRectPartlyOverChild : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestViewportRectPartlyOverChild : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestViewportRectPartlyOverChild(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestViewportRectPartlyOverChild(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
         typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(200, 200), true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(50, 50, 200, 200));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(50, 50, 200, 200));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
         this->enterLayer(layer, occlusion);
@@ -1618,19 +1618,19 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestViewportRectPartlyOverChild);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestViewportRectPartlyOverChild);
 
 template<class Types>
-class OcclusionTrackerTestLayerClipRectOverNothing : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestLayerClipRectOverNothing : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestLayerClipRectOverNothing(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestLayerClipRectOverNothing(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
         typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(200, 200), true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(IntRect(500, 500, 100, 100));
 
         this->enterLayer(layer, occlusion);
@@ -1662,19 +1662,19 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestLayerClipRectOverNothing);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestLayerClipRectOverNothing);
 
 template<class Types>
-class OcclusionTrackerTestViewportRectOverNothing : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestViewportRectOverNothing : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestViewportRectOverNothing(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestViewportRectOverNothing(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
         typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(200, 200), true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(500, 500, 100, 100));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(500, 500, 100, 100));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
         this->enterLayer(layer, occlusion);
@@ -1706,19 +1706,19 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestViewportRectOverNothing);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestViewportRectOverNothing);
 
 template<class Types>
-class OcclusionTrackerTestLayerClipRectForLayerOffOrigin : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestLayerClipRectForLayerOffOrigin : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestLayerClipRectForLayerOffOrigin(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestLayerClipRectForLayerOffOrigin(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
         typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(200, 200), true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         this->enterLayer(layer, occlusion);
 
         // This layer is translated when drawn into its target. So if the clip rect given from the target surface
@@ -1731,19 +1731,19 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestLayerClipRectForLayerOffOrigin);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestLayerClipRectForLayerOffOrigin);
 
 template<class Types>
-class OcclusionTrackerTestOpaqueContentsRegionEmpty : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestOpaqueContentsRegionEmpty : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestOpaqueContentsRegionEmpty(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestOpaqueContentsRegionEmpty(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
         typename Types::ContentLayerType* layer = this->createDrawingSurface(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(200, 200), false);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         this->enterLayer(layer, occlusion);
 
         EXPECT_FALSE(occlusion.occluded(layer, IntRect(0, 0, 100, 100)));
@@ -1768,12 +1768,12 @@ protected:
     }
 };
 
-MAIN_AND_IMPL_THREAD_TEST(OcclusionTrackerTestOpaqueContentsRegionEmpty);
+MAIN_AND_IMPL_THREAD_TEST(CCOcclusionTrackerTestOpaqueContentsRegionEmpty);
 
 template<class Types>
-class OcclusionTrackerTestOpaqueContentsRegionNonEmpty : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestOpaqueContentsRegionNonEmpty : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestOpaqueContentsRegionNonEmpty(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestOpaqueContentsRegionNonEmpty(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
@@ -1781,7 +1781,7 @@ protected:
         this->calcDrawEtc(parent);
 
         {
-            TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+            TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
             layer->setOpaqueContentsRect(IntRect(0, 0, 100, 100));
 
             this->resetLayerIterator();
@@ -1797,7 +1797,7 @@ protected:
         }
 
         {
-            TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+            TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
             layer->setOpaqueContentsRect(IntRect(20, 20, 180, 180));
 
             this->resetLayerIterator();
@@ -1813,7 +1813,7 @@ protected:
         }
 
         {
-            TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+            TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
             layer->setOpaqueContentsRect(IntRect(150, 150, 100, 100));
 
             this->resetLayerIterator();
@@ -1830,12 +1830,12 @@ protected:
     }
 };
 
-MAIN_AND_IMPL_THREAD_TEST(OcclusionTrackerTestOpaqueContentsRegionNonEmpty);
+MAIN_AND_IMPL_THREAD_TEST(CCOcclusionTrackerTestOpaqueContentsRegionNonEmpty);
 
 template<class Types>
-class OcclusionTrackerTest3dTransform : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTest3dTransform : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTest3dTransform(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTest3dTransform(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         WebTransformationMatrix transform;
@@ -1846,7 +1846,7 @@ protected:
         typename Types::ContentLayerType* layer = this->createDrawingLayer(container, transform, FloatPoint(100, 100), IntSize(200, 200), true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         this->enterLayer(layer, occlusion);
 
         // The layer is rotated in 3d but without preserving 3d, so it only gets resized.
@@ -1854,12 +1854,12 @@ protected:
     }
 };
 
-MAIN_AND_IMPL_THREAD_TEST(OcclusionTrackerTest3dTransform);
+MAIN_AND_IMPL_THREAD_TEST(CCOcclusionTrackerTest3dTransform);
 
 template<class Types>
-class OcclusionTrackerTestUnsorted3dLayers : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestUnsorted3dLayers : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestUnsorted3dLayers(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestUnsorted3dLayers(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         // Currently, the main thread layer iterator does not iterate over 3d items in
@@ -1881,7 +1881,7 @@ protected:
 
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         this->visitLayer(child2, occlusion);
         EXPECT_TRUE(occlusion.occlusionInScreenSpace().isEmpty());
         EXPECT_TRUE(occlusion.occlusionInTargetSurface().isEmpty());
@@ -1893,12 +1893,12 @@ protected:
 };
 
 // This test will have different layer ordering on the impl thread; the test will only work on the main thread.
-MAIN_THREAD_TEST(OcclusionTrackerTestUnsorted3dLayers);
+MAIN_THREAD_TEST(CCOcclusionTrackerTestUnsorted3dLayers);
 
 template<class Types>
-class OcclusionTrackerTestPerspectiveTransform : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestPerspectiveTransform : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestPerspectiveTransform(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestPerspectiveTransform(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         WebTransformationMatrix transform;
@@ -1914,7 +1914,7 @@ protected:
         layer->setPreserves3D(true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         this->enterLayer(layer, occlusion);
 
         EXPECT_RECT_EQ(IntRect(0, 0, 200, 200), occlusion.unoccludedContentRect(layer, IntRect(0, 0, 200, 200)));
@@ -1922,12 +1922,12 @@ protected:
 };
 
 // This test requires accumulating occlusion of 3d layers, which are skipped by the occlusion tracker on the main thread. So this test should run on the impl thread.
-IMPL_THREAD_TEST(OcclusionTrackerTestPerspectiveTransform);
+IMPL_THREAD_TEST(CCOcclusionTrackerTestPerspectiveTransform);
 
 template<class Types>
-class OcclusionTrackerTestPerspectiveTransformBehindCamera : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestPerspectiveTransformBehindCamera : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestPerspectiveTransformBehindCamera(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestPerspectiveTransformBehindCamera(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         // This test is based on the platform/chromium/compositing/3d-corners.html layout test.
@@ -1946,7 +1946,7 @@ protected:
         layer->setPreserves3D(true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         this->enterLayer(layer, occlusion);
 
         // The bottom 11 pixel rows of this layer remain visible inside the container, after translation to the target surface. When translated back,
@@ -1956,12 +1956,12 @@ protected:
 };
 
 // This test requires accumulating occlusion of 3d layers, which are skipped by the occlusion tracker on the main thread. So this test should run on the impl thread.
-IMPL_THREAD_TEST(OcclusionTrackerTestPerspectiveTransformBehindCamera);
+IMPL_THREAD_TEST(CCOcclusionTrackerTestPerspectiveTransformBehindCamera);
 
 template<class Types>
-class OcclusionTrackerTestLayerBehindCameraDoesNotOcclude : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestLayerBehindCameraDoesNotOcclude : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestLayerBehindCameraDoesNotOcclude(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestLayerBehindCameraDoesNotOcclude(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         WebTransformationMatrix transform;
@@ -1976,7 +1976,7 @@ protected:
         layer->setPreserves3D(true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
 
         // The |layer| is entirely behind the camera and should not occlude.
         this->visitLayer(layer, occlusion);
@@ -1987,12 +1987,12 @@ protected:
 };
 
 // This test requires accumulating occlusion of 3d layers, which are skipped by the occlusion tracker on the main thread. So this test should run on the impl thread.
-IMPL_THREAD_TEST(OcclusionTrackerTestLayerBehindCameraDoesNotOcclude);
+IMPL_THREAD_TEST(CCOcclusionTrackerTestLayerBehindCameraDoesNotOcclude);
 
 template<class Types>
-class OcclusionTrackerTestLargePixelsOccludeInsideClipRect : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestLargePixelsOccludeInsideClipRect : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestLargePixelsOccludeInsideClipRect(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestLargePixelsOccludeInsideClipRect(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         WebTransformationMatrix transform;
@@ -2008,7 +2008,7 @@ protected:
         layer->setPreserves3D(true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
 
         // This is very close to the camera, so pixels in its visibleContentRect will actually go outside of the layer's clipRect.
         // Ensure that those pixels don't occlude things outside the clipRect.
@@ -2022,12 +2022,12 @@ protected:
 };
 
 // This test requires accumulating occlusion of 3d layers, which are skipped by the occlusion tracker on the main thread. So this test should run on the impl thread.
-IMPL_THREAD_TEST(OcclusionTrackerTestLargePixelsOccludeInsideClipRect);
+IMPL_THREAD_TEST(CCOcclusionTrackerTestLargePixelsOccludeInsideClipRect);
 
 template<class Types>
-class OcclusionTrackerTestAnimationOpacity1OnMainThread : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestAnimationOpacity1OnMainThread : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestAnimationOpacity1OnMainThread(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestAnimationOpacity1OnMainThread(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
@@ -2046,7 +2046,7 @@ protected:
         EXPECT_FALSE(surface->drawOpacityIsAnimating());
         EXPECT_TRUE(surface->renderSurface()->drawOpacityIsAnimating());
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
 
         this->visitLayer(topmost, occlusion);
         this->enterLayer(parent2, occlusion);
@@ -2075,12 +2075,12 @@ protected:
     }
 };
 
-MAIN_THREAD_TEST(OcclusionTrackerTestAnimationOpacity1OnMainThread);
+MAIN_THREAD_TEST(CCOcclusionTrackerTestAnimationOpacity1OnMainThread);
 
 template<class Types>
-class OcclusionTrackerTestAnimationOpacity0OnMainThread : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestAnimationOpacity0OnMainThread : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestAnimationOpacity0OnMainThread(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestAnimationOpacity0OnMainThread(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
@@ -2099,7 +2099,7 @@ protected:
         EXPECT_FALSE(surface->drawOpacityIsAnimating());
         EXPECT_TRUE(surface->renderSurface()->drawOpacityIsAnimating());
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
 
         this->visitLayer(topmost, occlusion);
         this->enterLayer(parent2, occlusion);
@@ -2128,12 +2128,12 @@ protected:
     }
 };
 
-MAIN_THREAD_TEST(OcclusionTrackerTestAnimationOpacity0OnMainThread);
+MAIN_THREAD_TEST(CCOcclusionTrackerTestAnimationOpacity0OnMainThread);
 
 template<class Types>
-class OcclusionTrackerTestAnimationTranslateOnMainThread : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestAnimationTranslateOnMainThread : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestAnimationTranslateOnMainThread(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestAnimationTranslateOnMainThread(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
@@ -2158,7 +2158,7 @@ protected:
         EXPECT_TRUE(surfaceChild->drawTransformIsAnimating());
         EXPECT_TRUE(surfaceChild->screenSpaceTransformIsAnimating());
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
 
         this->visitLayer(surface2, occlusion);
         this->enterContributingSurface(surface2, occlusion);
@@ -2221,12 +2221,12 @@ protected:
     }
 };
 
-MAIN_THREAD_TEST(OcclusionTrackerTestAnimationTranslateOnMainThread);
+MAIN_THREAD_TEST(CCOcclusionTrackerTestAnimationTranslateOnMainThread);
 
 template<class Types>
-class OcclusionTrackerTestSurfaceOcclusionTranslatesToParent : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestSurfaceOcclusionTranslatesToParent : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestSurfaceOcclusionTranslatesToParent(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestSurfaceOcclusionTranslatesToParent(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         WebTransformationMatrix surfaceTransform;
@@ -2241,7 +2241,7 @@ protected:
         surface2->setOpaqueContentsRect(IntRect(0, 0, 200, 200));
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
 
         this->visitLayer(surface2, occlusion);
         this->visitContributingSurface(surface2, occlusion);
@@ -2265,12 +2265,12 @@ protected:
     }
 };
 
-MAIN_AND_IMPL_THREAD_TEST(OcclusionTrackerTestSurfaceOcclusionTranslatesToParent);
+MAIN_AND_IMPL_THREAD_TEST(CCOcclusionTrackerTestSurfaceOcclusionTranslatesToParent);
 
 template<class Types>
-class OcclusionTrackerTestSurfaceOcclusionTranslatesWithClipping : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestSurfaceOcclusionTranslatesWithClipping : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestSurfaceOcclusionTranslatesWithClipping(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestSurfaceOcclusionTranslatesWithClipping(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(300, 300));
@@ -2279,7 +2279,7 @@ protected:
         surface->setOpaqueContentsRect(IntRect(0, 0, 400, 200));
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
 
         this->visitLayer(surface, occlusion);
         this->visitContributingSurface(surface, occlusion);
@@ -2291,12 +2291,12 @@ protected:
     }
 };
 
-MAIN_AND_IMPL_THREAD_TEST(OcclusionTrackerTestSurfaceOcclusionTranslatesWithClipping);
+MAIN_AND_IMPL_THREAD_TEST(CCOcclusionTrackerTestSurfaceOcclusionTranslatesWithClipping);
 
 template<class Types>
-class OcclusionTrackerTestReplicaOccluded : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestReplicaOccluded : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestReplicaOccluded(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestReplicaOccluded(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(100, 200));
@@ -2305,7 +2305,7 @@ protected:
         typename Types::LayerType* topmost = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 100), IntSize(100, 100), true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
         // |topmost| occludes the replica, but not the surface itself.
@@ -2330,12 +2330,12 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestReplicaOccluded);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestReplicaOccluded);
 
 template<class Types>
-class OcclusionTrackerTestSurfaceWithReplicaUnoccluded : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestSurfaceWithReplicaUnoccluded : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestSurfaceWithReplicaUnoccluded(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestSurfaceWithReplicaUnoccluded(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(100, 200));
@@ -2344,7 +2344,7 @@ protected:
         typename Types::LayerType* topmost = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(100, 110), true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
         // |topmost| occludes the surface, but not the entire surface's replica.
@@ -2370,12 +2370,12 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestSurfaceWithReplicaUnoccluded);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestSurfaceWithReplicaUnoccluded);
 
 template<class Types>
-class OcclusionTrackerTestSurfaceAndReplicaOccludedDifferently : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestSurfaceAndReplicaOccludedDifferently : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestSurfaceAndReplicaOccludedDifferently(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestSurfaceAndReplicaOccludedDifferently(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         typename Types::ContentLayerType* parent = this->createRoot(this->identityMatrix, FloatPoint(0, 0), IntSize(100, 200));
@@ -2385,7 +2385,7 @@ protected:
         typename Types::LayerType* overReplica = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 100), IntSize(50, 100), true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
         // These occlude the surface and replica differently, so we can test each one.
@@ -2412,12 +2412,12 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestSurfaceAndReplicaOccludedDifferently);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestSurfaceAndReplicaOccludedDifferently);
 
 template<class Types>
-class OcclusionTrackerTestSurfaceChildOfSurface : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestSurfaceChildOfSurface : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestSurfaceChildOfSurface(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestSurfaceChildOfSurface(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         // This test verifies that the surface cliprect does not end up empty and clip away the entire unoccluded rect.
@@ -2428,7 +2428,7 @@ protected:
         typename Types::LayerType* topmost = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(100, 50), true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(-100, -100, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(-100, -100, 1000, 1000));
 
         // |topmost| occludes everything partially so we know occlusion is happening at all.
         this->visitLayer(topmost, occlusion);
@@ -2471,12 +2471,12 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestSurfaceChildOfSurface);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestSurfaceChildOfSurface);
 
 template<class Types>
-class OcclusionTrackerTestTopmostSurfaceIsClippedToViewport : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestTopmostSurfaceIsClippedToViewport : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestTopmostSurfaceIsClippedToViewport(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestTopmostSurfaceIsClippedToViewport(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         // This test verifies that the top-most surface is considered occluded outside of its target's clipRect and outside the viewport rect.
@@ -2487,7 +2487,7 @@ protected:
 
         {
             // Make a viewport rect that is larger than the root layer.
-            TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+            TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
 
             this->visitLayer(surface, occlusion);
 
@@ -2499,7 +2499,7 @@ protected:
         this->resetLayerIterator();
         {
             // Make a viewport rect that is smaller than the root layer.
-            TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 100, 100));
+            TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 100, 100));
 
             this->visitLayer(surface, occlusion);
 
@@ -2511,12 +2511,12 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestTopmostSurfaceIsClippedToViewport);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestTopmostSurfaceIsClippedToViewport);
 
 template<class Types>
-class OcclusionTrackerTestSurfaceChildOfClippingSurface : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestSurfaceChildOfClippingSurface : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestSurfaceChildOfClippingSurface(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestSurfaceChildOfClippingSurface(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         // This test verifies that the surface cliprect does not end up empty and clip away the entire unoccluded rect.
@@ -2528,7 +2528,7 @@ protected:
         typename Types::LayerType* topmost = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 0), IntSize(100, 50), true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
         // |topmost| occludes everything partially so we know occlusion is happening at all.
@@ -2563,12 +2563,12 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestSurfaceChildOfClippingSurface);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestSurfaceChildOfClippingSurface);
 
 template<class Types>
-class OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         WebTransformationMatrix scaleByHalf;
@@ -2597,7 +2597,7 @@ protected:
 
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
         // These layers occlude pixels directly beside the filteredSurface. Because filtered surface blends pixels in a radius, it will
@@ -2689,12 +2689,12 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilter);
 
 template<class Types>
-class OcclusionTrackerTestTwoBackgroundFiltersReduceOcclusionTwice : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestTwoBackgroundFiltersReduceOcclusionTwice : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestTwoBackgroundFiltersReduceOcclusionTwice(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestTwoBackgroundFiltersReduceOcclusionTwice(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         WebTransformationMatrix scaleByHalf;
@@ -2720,7 +2720,7 @@ protected:
 
         this->calcDrawEtc(root);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
         this->visitLayer(occludingLayerAbove, occlusion);
@@ -2752,12 +2752,12 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestTwoBackgroundFiltersReduceOcclusionTwice);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestTwoBackgroundFiltersReduceOcclusionTwice);
 
 template<class Types>
-class OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilterWithClip : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilterWithClip : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilterWithClip(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilterWithClip(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         // Make a surface and its replica, each 50x50, that are completely surrounded by opaque layers which are above them in the z-order.
@@ -2785,7 +2785,7 @@ protected:
 
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
         // These layers occlude pixels directly beside the filteredSurface. Because filtered surface blends pixels in a radius, it will
@@ -2878,12 +2878,12 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilterWithClip);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestDontOccludePixelsNeededForBackgroundFilterWithClip);
 
 template<class Types>
-class OcclusionTrackerTestDontReduceOcclusionBelowBackgroundFilter : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestDontReduceOcclusionBelowBackgroundFilter : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestDontReduceOcclusionBelowBackgroundFilter(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestDontReduceOcclusionBelowBackgroundFilter(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         WebTransformationMatrix scaleByHalf;
@@ -2905,7 +2905,7 @@ protected:
 
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
         // The surface has a background blur, so it blurs non-opaque pixels below it.
@@ -2928,12 +2928,12 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestDontReduceOcclusionBelowBackgroundFilter);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestDontReduceOcclusionBelowBackgroundFilter);
 
 template<class Types>
-class OcclusionTrackerTestDontReduceOcclusionIfBackgroundFilterIsOccluded : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestDontReduceOcclusionIfBackgroundFilterIsOccluded : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestDontReduceOcclusionIfBackgroundFilterIsOccluded(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestDontReduceOcclusionIfBackgroundFilterIsOccluded(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         WebTransformationMatrix scaleByHalf;
@@ -2955,7 +2955,7 @@ protected:
 
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
         this->visitLayer(aboveReplicaLayer, occlusion);
@@ -2977,12 +2977,12 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestDontReduceOcclusionIfBackgroundFilterIsOccluded);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestDontReduceOcclusionIfBackgroundFilterIsOccluded);
 
 template<class Types>
-class OcclusionTrackerTestReduceOcclusionWhenBackgroundFilterIsPartiallyOccluded : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestReduceOcclusionWhenBackgroundFilterIsPartiallyOccluded : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestReduceOcclusionWhenBackgroundFilterIsPartiallyOccluded(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestReduceOcclusionWhenBackgroundFilterIsPartiallyOccluded(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         WebTransformationMatrix scaleByHalf;
@@ -3010,7 +3010,7 @@ protected:
 
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
 
         this->visitLayer(besideReplicaLayer, occlusion);
@@ -3050,12 +3050,12 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestReduceOcclusionWhenBackgroundFilterIsPartiallyOccluded);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestReduceOcclusionWhenBackgroundFilterIsPartiallyOccluded);
 
 template<class Types>
-class OcclusionTrackerTestMinimumTrackingSize : public OcclusionTrackerTest<Types> {
+class CCOcclusionTrackerTestMinimumTrackingSize : public CCOcclusionTrackerTest<Types> {
 protected:
-    OcclusionTrackerTestMinimumTrackingSize(bool opaqueLayers) : OcclusionTrackerTest<Types>(opaqueLayers) {}
+    CCOcclusionTrackerTestMinimumTrackingSize(bool opaqueLayers) : CCOcclusionTrackerTest<Types>(opaqueLayers) {}
     void runMyTest()
     {
         IntSize trackingSize(100, 100);
@@ -3066,7 +3066,7 @@ protected:
         typename Types::LayerType* small = this->createDrawingLayer(parent, this->identityMatrix, FloatPoint(0, 0), belowTrackingSize, true);
         this->calcDrawEtc(parent);
 
-        TestOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
+        TestCCOcclusionTrackerWithClip<typename Types::LayerType, typename Types::RenderSurfaceType> occlusion(IntRect(0, 0, 1000, 1000));
         occlusion.setLayerClipRect(IntRect(0, 0, 1000, 1000));
         occlusion.setMinimumTrackingSize(trackingSize);
 
@@ -3088,6 +3088,6 @@ protected:
     }
 };
 
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestMinimumTrackingSize);
+ALL_CCOCCLUSIONTRACKER_TEST(CCOcclusionTrackerTestMinimumTrackingSize);
 
 } // namespace

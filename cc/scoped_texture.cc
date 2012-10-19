@@ -8,18 +8,18 @@
 
 namespace cc {
 
-ScopedTexture::ScopedTexture(ResourceProvider* resourceProvider)
+CCScopedTexture::CCScopedTexture(CCResourceProvider* resourceProvider)
     : m_resourceProvider(resourceProvider)
 {
     DCHECK(m_resourceProvider);
 }
 
-ScopedTexture::~ScopedTexture()
+CCScopedTexture::~CCScopedTexture()
 {
     free();
 }
 
-bool ScopedTexture::allocate(int pool, const IntSize& size, GLenum format, ResourceProvider::TextureUsageHint hint)
+bool CCScopedTexture::allocate(int pool, const IntSize& size, GLenum format, CCResourceProvider::TextureUsageHint hint)
 {
     DCHECK(!id());
     DCHECK(!size.isEmpty());
@@ -34,7 +34,7 @@ bool ScopedTexture::allocate(int pool, const IntSize& size, GLenum format, Resou
     return id();
 }
 
-void ScopedTexture::free()
+void CCScopedTexture::free()
 {
     if (id()) {
 #ifndef NDEBUG
@@ -45,7 +45,7 @@ void ScopedTexture::free()
     setId(0);
 }
 
-void ScopedTexture::leak()
+void CCScopedTexture::leak()
 {
     setId(0);
 }

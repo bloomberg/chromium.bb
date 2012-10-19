@@ -9,26 +9,26 @@
 #include "CCRenderPass.h"
 
 namespace cc {
-class LayerImpl;
-class RenderSurfaceImpl;
+class CCLayerImpl;
+class CCRenderSurface;
 template<typename LayerType, typename SurfaceType>
-class OcclusionTrackerBase;
+class CCOcclusionTrackerBase;
 
-class QuadCuller : public QuadSink {
+class CCQuadCuller : public CCQuadSink {
 public:
-    QuadCuller(QuadList&, SharedQuadStateList&, LayerImpl*, const OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>*, bool showCullingWithDebugBorderQuads, bool forSurface);
-    virtual ~QuadCuller() { }
+    CCQuadCuller(CCQuadList&, CCSharedQuadStateList&, CCLayerImpl*, const CCOcclusionTrackerBase<CCLayerImpl, CCRenderSurface>*, bool showCullingWithDebugBorderQuads, bool forSurface);
+    virtual ~CCQuadCuller() { }
 
-    // QuadSink implementation.
-    virtual SharedQuadState* useSharedQuadState(scoped_ptr<SharedQuadState>) OVERRIDE;
-    virtual bool append(scoped_ptr<DrawQuad>, AppendQuadsData&) OVERRIDE;
+    // CCQuadSink implementation.
+    virtual CCSharedQuadState* useSharedQuadState(scoped_ptr<CCSharedQuadState>) OVERRIDE;
+    virtual bool append(scoped_ptr<CCDrawQuad>, CCAppendQuadsData&) OVERRIDE;
 
 private:
-    QuadList& m_quadList;
-    SharedQuadStateList& m_sharedQuadStateList;
-    SharedQuadState* m_currentSharedQuadState;
-    LayerImpl* m_layer;
-    const OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl>* m_occlusionTracker;
+    CCQuadList& m_quadList;
+    CCSharedQuadStateList& m_sharedQuadStateList;
+    CCSharedQuadState* m_currentSharedQuadState;
+    CCLayerImpl* m_layer;
+    const CCOcclusionTrackerBase<CCLayerImpl, CCRenderSurface>* m_occlusionTracker;
     bool m_showCullingWithDebugBorderQuads;
     bool m_forSurface;
 };

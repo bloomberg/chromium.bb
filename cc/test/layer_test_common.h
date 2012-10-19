@@ -9,11 +9,11 @@
 #include "IntRect.h"
 #include "Region.h"
 
-namespace LayerTestCommon {
+namespace CCLayerTestCommon {
 
 extern const char* quadString;
 
-void verifyQuadsExactlyCoverRect(const cc::QuadList&, const cc::IntRect&);
+void verifyQuadsExactlyCoverRect(const cc::CCQuadList&, const cc::IntRect&);
 
-} // namespace LayerTestCommon
+} // namespace CCLayerTestCommon
 #endif // CCLayerTestCommon_h

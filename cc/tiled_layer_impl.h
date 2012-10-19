@@ -10,26 +10,26 @@
 
 namespace cc {
 
-class LayerTilingData;
+class CCLayerTilingData;
 class DrawableTile;
 
-class TiledLayerImpl : public LayerImpl {
+class CCTiledLayerImpl : public CCLayerImpl {
 public:
-    static scoped_ptr<TiledLayerImpl> create(int id)
+    static scoped_ptr<CCTiledLayerImpl> create(int id)
     {
-        return make_scoped_ptr(new TiledLayerImpl(id));
+        return make_scoped_ptr(new CCTiledLayerImpl(id));
     }
-    virtual ~TiledLayerImpl();
+    virtual ~CCTiledLayerImpl();
 
-    virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
+    virtual void appendQuads(CCQuadSink&, CCAppendQuadsData&) OVERRIDE;
 
-    virtual ResourceProvider::ResourceId contentsResourceId() const OVERRIDE;
+    virtual CCResourceProvider::ResourceId contentsResourceId() const OVERRIDE;
 
     virtual void dumpLayerProperties(std::string*, int indent) const OVERRIDE;
 
     void setSkipsDraw(bool skipsDraw) { m_skipsDraw = skipsDraw; }
-    void setTilingData(const LayerTilingData& tiler);
-    void pushTileProperties(int, int, ResourceProvider::ResourceId, const IntRect& opaqueRect);
+    void setTilingData(const CCLayerTilingData& tiler);
+    void pushTileProperties(int, int, CCResourceProvider::ResourceId, const IntRect& opaqueRect);
     void pushInvalidTile(int, int);
 
     void setContentsSwizzled(bool contentsSwizzled) { m_contentsSwizzled = contentsSwizzled; }
@@ -39,7 +39,7 @@ public:
     virtual void didLoseContext() OVERRIDE;
 
 protected:
-    explicit TiledLayerImpl(int id);
+    explicit CCTiledLayerImpl(int id);
     // Exposed for testing.
     bool hasTileAt(int, int) const;
     bool hasResourceIdForTileAt(int, int) const;
@@ -54,7 +54,7 @@ private:
     bool m_skipsDraw;
     bool m_contentsSwizzled;
 
-    scoped_ptr<LayerTilingData> m_tiler;
+    scoped_ptr<CCLayerTilingData> m_tiler;
 };
 
 }

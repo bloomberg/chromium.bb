@@ -18,17 +18,17 @@ using WebKit::WebRect;
 
 namespace cc {
 
-scoped_ptr<LayerImpl> ScrollbarLayer::createLayerImpl()
+scoped_ptr<CCLayerImpl> ScrollbarLayerChromium::createCCLayerImpl()
 {
-    return ScrollbarLayerImpl::create(id()).PassAs<LayerImpl>();
+    return CCScrollbarLayerImpl::create(id()).PassAs<CCLayerImpl>();
 }
 
-scoped_refptr<ScrollbarLayer> ScrollbarLayer::create(scoped_ptr<WebKit::WebScrollbar> scrollbar, WebKit::WebScrollbarThemePainter painter, scoped_ptr<WebKit::WebScrollbarThemeGeometry> geometry, int scrollLayerId)
+scoped_refptr<ScrollbarLayerChromium> ScrollbarLayerChromium::create(scoped_ptr<WebKit::WebScrollbar> scrollbar, WebKit::WebScrollbarThemePainter painter, scoped_ptr<WebKit::WebScrollbarThemeGeometry> geometry, int scrollLayerId)
 {
-    return make_scoped_refptr(new ScrollbarLayer(scrollbar.Pass(), painter, geometry.Pass(), scrollLayerId));
+    return make_scoped_refptr(new ScrollbarLayerChromium(scrollbar.Pass(), painter, geometry.Pass(), scrollLayerId));
 }
 
-ScrollbarLayer::ScrollbarLayer(scoped_ptr<WebKit::WebScrollbar> scrollbar, WebKit::WebScrollbarThemePainter painter, scoped_ptr<WebKit::WebScrollbarThemeGeometry> geometry, int scrollLayerId)
+ScrollbarLayerChromium::ScrollbarLayerChromium(scoped_ptr<WebKit::WebScrollbar> scrollbar, WebKit::WebScrollbarThemePainter painter, scoped_ptr<WebKit::WebScrollbarThemeGeometry> geometry, int scrollLayerId)
     : m_scrollbar(scrollbar.Pass())
     , m_painter(painter)
     , m_geometry(geometry.Pass())
@@ -37,18 +37,18 @@ ScrollbarLayer::ScrollbarLayer(scoped_ptr<WebKit::WebScrollbar> scrollbar, WebKi
 {
 }
 
-ScrollbarLayer::~ScrollbarLayer()
+ScrollbarLayerChromium::~ScrollbarLayerChromium()
 {
 }
 
-void ScrollbarLayer::pushPropertiesTo(LayerImpl* layer)
+void ScrollbarLayerChromium::pushPropertiesTo(CCLayerImpl* layer)
 {
-    Layer::pushPropertiesTo(layer);
+    LayerChromium::pushPropertiesTo(layer);
 
-    ScrollbarLayerImpl* scrollbarLayer = static_cast<ScrollbarLayerImpl*>(layer);
+    CCScrollbarLayerImpl* scrollbarLayer = static_cast<CCScrollbarLayerImpl*>(layer);
 
     if (!scrollbarLayer->scrollbarGeometry())
-        scrollbarLayer->setScrollbarGeometry(ScrollbarGeometryFixedThumb::create(make_scoped_ptr(m_geometry->clone())));
+        scrollbarLayer->setScrollbarGeometry(CCScrollbarGeometryFixedThumb::create(make_scoped_ptr(m_geometry->clone())));
 
     scrollbarLayer->setScrollbarData(m_scrollbar.get());
 
@@ -68,12 +68,12 @@ void ScrollbarLayer::pushPropertiesTo(LayerImpl* layer)
         scrollbarLayer->setThumbResourceId(0);
 }
 
-ScrollbarLayer* ScrollbarLayer::toScrollbarLayer()
+ScrollbarLayerChromium* ScrollbarLayerChromium::toScrollbarLayerChromium()
 {
     return this;
 }
 
-class ScrollbarBackgroundPainter : public LayerPainter {
+class ScrollbarBackgroundPainter : public LayerPainterChromium {
 public:
     static scoped_ptr<ScrollbarBackgroundPainter> create(WebKit::WebScrollbar* scrollbar, WebKit::WebScrollbarThemePainter painter, WebKit::WebScrollbarThemeGeometry* geometry, WebKit::WebScrollbar::ScrollbarPart trackPart)
     {
@@ -131,17 +131,17 @@ private:
     DISALLOW_COPY_AND_ASSIGN(ScrollbarBackgroundPainter);
 };
 
-bool ScrollbarLayer::needsContentsScale() const
+bool ScrollbarLayerChromium::needsContentsScale() const
 {
     return true;
 }
 
-IntSize ScrollbarLayer::contentBounds() const
+IntSize ScrollbarLayerChromium::contentBounds() const
 {
     return IntSize(lroundf(bounds().width() * contentsScale()), lroundf(bounds().height() * contentsScale()));
 }
 
-class ScrollbarThumbPainter : public LayerPainter {
+class ScrollbarThumbPainter : public LayerPainterChromium {
 public:
     static scoped_ptr<ScrollbarThumbPainter> create(WebKit::WebScrollbar* scrollbar, WebKit::WebScrollbarThemePainter painter, WebKit::WebScrollbarThemeGeometry* geometry)
     {
@@ -174,7 +174,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(ScrollbarThumbPainter);
 };
 
-void ScrollbarLayer::setLayerTreeHost(LayerTreeHost* host)
+void ScrollbarLayerChromium::setLayerTreeHost(CCLayerTreeHost* host)
 {
     if (!host || host != layerTreeHost()) {
         m_backTrackUpdater = NULL;
@@ -183,33 +183,33 @@ void ScrollbarLayer::setLayerTreeHost(LayerTreeHost* host)
         m_thumb.reset();
     }
 
-    Layer::setLayerTreeHost(host);
+    LayerChromium::setLayerTreeHost(host);
 }
 
-void ScrollbarLayer::createTextureUpdaterIfNeeded()
+void ScrollbarLayerChromium::createTextureUpdaterIfNeeded()
 {
     m_textureFormat = layerTreeHost()->rendererCapabilities().bestTextureFormat;
 
     if (!m_backTrackUpdater)
-        m_backTrackUpdater = CachingBitmapCanvasLayerTextureUpdater::Create(ScrollbarBackgroundPainter::create(m_scrollbar.get(), m_painter, m_geometry.get(), WebKit::WebScrollbar::BackTrackPart).PassAs<LayerPainter>());
+        m_backTrackUpdater = CachingBitmapCanvasLayerTextureUpdater::Create(ScrollbarBackgroundPainter::create(m_scrollbar.get(), m_painter, m_geometry.get(), WebKit::WebScrollbar::BackTrackPart).PassAs<LayerPainterChromium>());
     if (!m_backTrack)
         m_backTrack = m_backTrackUpdater->createTexture(layerTreeHost()->contentsTextureManager());
 
     // Only create two-part track if we think the two parts could be different in appearance.
     if (m_scrollbar->isCustomScrollbar()) {
         if (!m_foreTrackUpdater)
-            m_foreTrackUpdater = CachingBitmapCanvasLayerTextureUpdater::Create(ScrollbarBackgroundPainter::create(m_scrollbar.get(), m_painter, m_geometry.get(), WebKit::WebScrollbar::ForwardTrackPart).PassAs<LayerPainter>());
+            m_foreTrackUpdater = CachingBitmapCanvasLayerTextureUpdater::Create(ScrollbarBackgroundPainter::create(m_scrollbar.get(), m_painter, m_geometry.get(), WebKit::WebScrollbar::ForwardTrackPart).PassAs<LayerPainterChromium>());
         if (!m_foreTrack)
             m_foreTrack = m_foreTrackUpdater->createTexture(layerTreeHost()->contentsTextureManager());
     }
 
     if (!m_thumbUpdater)
-        m_thumbUpdater = CachingBitmapCanvasLayerTextureUpdater::Create(ScrollbarThumbPainter::create(m_scrollbar.get(), m_painter, m_geometry.get()).PassAs<LayerPainter>());
+        m_thumbUpdater = CachingBitmapCanvasLayerTextureUpdater::Create(ScrollbarThumbPainter::create(m_scrollbar.get(), m_painter, m_geometry.get()).PassAs<LayerPainterChromium>());
     if (!m_thumb)
         m_thumb = m_thumbUpdater->createTexture(layerTreeHost()->contentsTextureManager());
 }
 
-void ScrollbarLayer::updatePart(CachingBitmapCanvasLayerTextureUpdater* painter, LayerTextureUpdater::Texture* texture, const IntRect& rect, TextureUpdateQueue& queue, RenderingStats& stats)
+void ScrollbarLayerChromium::updatePart(CachingBitmapCanvasLayerTextureUpdater* painter, LayerTextureUpdater::Texture* texture, const IntRect& rect, CCTextureUpdateQueue& queue, CCRenderingStats& stats)
 {
     // Skip painting and uploading if there are no invalidations and
     // we already have valid texture data.
@@ -229,7 +229,7 @@ void ScrollbarLayer::updatePart(CachingBitmapCanvasLayerTextureUpdater* painter,
     IntRect paintedOpaqueRect;
     painter->prepareToUpdate(rect, rect.size(), widthScale, heightScale, paintedOpaqueRect, stats);
     if (!painter->pixelsDidChange() && texture->texture()->haveBackingTexture()) {
-        TRACE_EVENT_INSTANT0("cc","ScrollbarLayer::updatePart no texture upload needed");
+        TRACE_EVENT_INSTANT0("cc","ScrollbarLayerChromium::updatePart no texture upload needed");
         return;
     }
 
@@ -238,7 +238,7 @@ void ScrollbarLayer::updatePart(CachingBitmapCanvasLayerTextureUpdater* painter,
 }
 
 
-void ScrollbarLayer::setTexturePriorities(const PriorityCalculator&)
+void ScrollbarLayerChromium::setTexturePriorities(const CCPriorityCalculator&)
 {
     if (contentBounds().isEmpty())
         return;
@@ -248,20 +248,20 @@ void ScrollbarLayer::setTexturePriorities(const PriorityCalculator&)
     bool drawsToRoot = !renderTarget()->parent();
     if (m_backTrack) {
         m_backTrack->texture()->setDimensions(contentBounds(), m_textureFormat);
-        m_backTrack->texture()->setRequestPriority(PriorityCalculator::uiPriority(drawsToRoot));
+        m_backTrack->texture()->setRequestPriority(CCPriorityCalculator::uiPriority(drawsToRoot));
     }
     if (m_foreTrack) {
         m_foreTrack->texture()->setDimensions(contentBounds(), m_textureFormat);
-        m_foreTrack->texture()->setRequestPriority(PriorityCalculator::uiPriority(drawsToRoot));
+        m_foreTrack->texture()->setRequestPriority(CCPriorityCalculator::uiPriority(drawsToRoot));
     }
     if (m_thumb) {
         IntSize thumbSize = layerRectToContentRect(m_geometry->thumbRect(m_scrollbar.get())).size();
         m_thumb->texture()->setDimensions(thumbSize, m_textureFormat);
-        m_thumb->texture()->setRequestPriority(PriorityCalculator::uiPriority(drawsToRoot));
+        m_thumb->texture()->setRequestPriority(CCPriorityCalculator::uiPriority(drawsToRoot));
     }
 }
 
-void ScrollbarLayer::update(TextureUpdateQueue& queue, const OcclusionTracker*, RenderingStats& stats)
+void ScrollbarLayerChromium::update(CCTextureUpdateQueue& queue, const CCOcclusionTracker*, CCRenderingStats& stats)
 {
     if (contentBounds().isEmpty())
         return;

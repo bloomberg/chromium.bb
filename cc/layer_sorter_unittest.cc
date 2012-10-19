@@ -21,9 +21,9 @@ namespace {
 // meaning that layers with smaller z values (more negative) are further from the camera
 // and therefore must be drawn before layers with higher z values.
 
-TEST(LayerSorterTest, BasicOverlap)
+TEST(CCLayerSorterTest, BasicOverlap)
 {
-    LayerSorter::ABCompareResult overlapResult;
+    CCLayerSorter::ABCompareResult overlapResult;
     const float zThreshold = 0.1f;
     float weight = 0;
 
@@ -36,29 +36,29 @@ TEST(LayerSorterTest, BasicOverlap)
     neg5Translate.translate3d(0, 0, -5);
     LayerShape back(2, 2, neg5Translate);
 
-    overlapResult = LayerSorter::checkOverlap(&front, &back, zThreshold, weight);
-    EXPECT_EQ(LayerSorter::BBeforeA, overlapResult);
+    overlapResult = CCLayerSorter::checkOverlap(&front, &back, zThreshold, weight);
+    EXPECT_EQ(CCLayerSorter::BBeforeA, overlapResult);
     EXPECT_EQ(1, weight);
 
-    overlapResult = LayerSorter::checkOverlap(&back, &front, zThreshold, weight);
-    EXPECT_EQ(LayerSorter::ABeforeB, overlapResult);
+    overlapResult = CCLayerSorter::checkOverlap(&back, &front, zThreshold, weight);
+    EXPECT_EQ(CCLayerSorter::ABeforeB, overlapResult);
     EXPECT_EQ(1, weight);
 
     // One layer translated off to the right. No overlap should be detected.
     WebTransformationMatrix rightTranslate;
     rightTranslate.translate3d(10, 0, -5);
     LayerShape backRight(2, 2, rightTranslate);
-    overlapResult = LayerSorter::checkOverlap(&front, &backRight, zThreshold, weight);
-    EXPECT_EQ(LayerSorter::None, overlapResult);
+    overlapResult = CCLayerSorter::checkOverlap(&front, &backRight, zThreshold, weight);
+    EXPECT_EQ(CCLayerSorter::None, overlapResult);
 
     // When comparing a layer with itself, z difference is always 0.
-    overlapResult = LayerSorter::checkOverlap(&front, &front, zThreshold, weight);
+    overlapResult = CCLayerSorter::checkOverlap(&front, &front, zThreshold, weight);
     EXPECT_EQ(0, weight);
 }
 
-TEST(LayerSorterTest, RightAngleOverlap)
+TEST(CCLayerSorterTest, RightAngleOverlap)
 {
-    LayerSorter::ABCompareResult overlapResult;
+    CCLayerSorter::ABCompareResult overlapResult;
     const float zThreshold = 0.1f;
     float weight = 0;
 
@@ -76,13 +76,13 @@ TEST(LayerSorterTest, RightAngleOverlap)
     frontFaceMatrix.translate(-1, -1);
     LayerShape frontFace(2, 2, perspectiveMatrix * frontFaceMatrix);
 
-    overlapResult = LayerSorter::checkOverlap(&frontFace, &leftFace, zThreshold, weight);
-    EXPECT_EQ(LayerSorter::BBeforeA, overlapResult);
+    overlapResult = CCLayerSorter::checkOverlap(&frontFace, &leftFace, zThreshold, weight);
+    EXPECT_EQ(CCLayerSorter::BBeforeA, overlapResult);
 }
 
-TEST(LayerSorterTest, IntersectingLayerOverlap)
+TEST(CCLayerSorterTest, IntersectingLayerOverlap)
 {
-    LayerSorter::ABCompareResult overlapResult;
+    CCLayerSorter::ABCompareResult overlapResult;
     const float zThreshold = 0.1f;
     float weight = 0;
 
@@ -101,14 +101,14 @@ TEST(LayerSorterTest, IntersectingLayerOverlap)
     throughMatrix.translateRight3d(0, 0, -4);
     throughMatrix.translate(-1, -1);
     LayerShape rotatedFace(2, 2, perspectiveMatrix * throughMatrix);
-    overlapResult = LayerSorter::checkOverlap(&frontFace, &rotatedFace, zThreshold, weight);
-    EXPECT_NE(LayerSorter::None, overlapResult);
+    overlapResult = CCLayerSorter::checkOverlap(&frontFace, &rotatedFace, zThreshold, weight);
+    EXPECT_NE(CCLayerSorter::None, overlapResult);
     EXPECT_EQ(0, weight);
 }
 
-TEST(LayerSorterTest, LayersAtAngleOverlap)
+TEST(CCLayerSorterTest, LayersAtAngleOverlap)
 {
-    LayerSorter::ABCompareResult overlapResult;
+    CCLayerSorter::ABCompareResult overlapResult;
     const float zThreshold = 0.1f;
     float weight = 0;
 
@@ -139,17 +139,17 @@ TEST(LayerSorterTest, LayersAtAngleOverlap)
     transformC.translate(-4, -10);
     LayerShape layerC(8, 20, transformC);
 
-    overlapResult = LayerSorter::checkOverlap(&layerA, &layerC, zThreshold, weight);
-    EXPECT_EQ(LayerSorter::ABeforeB, overlapResult);
-    overlapResult = LayerSorter::checkOverlap(&layerC, &layerB, zThreshold, weight);
-    EXPECT_EQ(LayerSorter::ABeforeB, overlapResult);
-    overlapResult = LayerSorter::checkOverlap(&layerA, &layerB, zThreshold, weight);
-    EXPECT_EQ(LayerSorter::None, overlapResult);
+    overlapResult = CCLayerSorter::checkOverlap(&layerA, &layerC, zThreshold, weight);
+    EXPECT_EQ(CCLayerSorter::ABeforeB, overlapResult);
+    overlapResult = CCLayerSorter::checkOverlap(&layerC, &layerB, zThreshold, weight);
+    EXPECT_EQ(CCLayerSorter::ABeforeB, overlapResult);
+    overlapResult = CCLayerSorter::checkOverlap(&layerA, &layerB, zThreshold, weight);
+    EXPECT_EQ(CCLayerSorter::None, overlapResult);
 }
 
-TEST(LayerSorterTest, LayersUnderPathologicalPerspectiveTransform)
+TEST(CCLayerSorterTest, LayersUnderPathologicalPerspectiveTransform)
 {
-    LayerSorter::ABCompareResult overlapResult;
+    CCLayerSorter::ABCompareResult overlapResult;
     const float zThreshold = 0.1f;
     float weight = 0;
 
@@ -180,14 +180,14 @@ TEST(LayerSorterTest, LayersUnderPathologicalPerspectiveTransform)
     // of layer B go behind the w = 0 plane.
     FloatQuad testQuad = FloatQuad(FloatRect(FloatPoint(-0.5, -0.5), FloatSize(1, 1)));
     bool clipped = false;
-    MathUtil::mapQuad(perspectiveMatrix * transformB, testQuad, clipped);
+    CCMathUtil::mapQuad(perspectiveMatrix * transformB, testQuad, clipped);
     ASSERT_TRUE(clipped);
 
-    overlapResult = LayerSorter::checkOverlap(&layerA, &layerB, zThreshold, weight);
-    EXPECT_EQ(LayerSorter::ABeforeB, overlapResult);
+    overlapResult = CCLayerSorter::checkOverlap(&layerA, &layerB, zThreshold, weight);
+    EXPECT_EQ(CCLayerSorter::ABeforeB, overlapResult);
 }
 
-TEST(LayerSorterTest, verifyExistingOrderingPreservedWhenNoZDiff)
+TEST(CCLayerSorterTest, verifyExistingOrderingPreservedWhenNoZDiff)
 {
     DebugScopedSetImplThread thisScopeIsOnImplThread;
 
@@ -195,7 +195,7 @@ TEST(LayerSorterTest, verifyExistingOrderingPreservedWhenNoZDiff)
     // existing ordering provided on input should be retained. This test covers the fix in
     // https://bugs.webkit.org/show_bug.cgi?id=75046. Before this fix, ordering was
     // accidentally reversed, causing bugs in z-index ordering on websites when
-    // preserves3D triggered the LayerSorter.
+    // preserves3D triggered the CCLayerSorter.
 
     // Input list of layers: [1, 2, 3, 4, 5].
     // Expected output: [3, 4, 1, 2, 5].
@@ -203,11 +203,11 @@ TEST(LayerSorterTest, verifyExistingOrderingPreservedWhenNoZDiff)
     //    - 3 and 4 do not have a 3d z difference, and therefore their relative ordering should be retained.
     //    - 3 and 4 should be re-sorted so they are in front of 1, 2, and 5.
 
-    scoped_ptr<LayerImpl> layer1 = LayerImpl::create(1);
-    scoped_ptr<LayerImpl> layer2 = LayerImpl::create(2);
-    scoped_ptr<LayerImpl> layer3 = LayerImpl::create(3);
-    scoped_ptr<LayerImpl> layer4 = LayerImpl::create(4);
-    scoped_ptr<LayerImpl> layer5 = LayerImpl::create(5);
+    scoped_ptr<CCLayerImpl> layer1 = CCLayerImpl::create(1);
+    scoped_ptr<CCLayerImpl> layer2 = CCLayerImpl::create(2);
+    scoped_ptr<CCLayerImpl> layer3 = CCLayerImpl::create(3);
+    scoped_ptr<CCLayerImpl> layer4 = CCLayerImpl::create(4);
+    scoped_ptr<CCLayerImpl> layer5 = CCLayerImpl::create(5);
 
     WebTransformationMatrix BehindMatrix;
     BehindMatrix.translate3d(0, 0, 2);
@@ -239,7 +239,7 @@ TEST(LayerSorterTest, verifyExistingOrderingPreservedWhenNoZDiff)
     layer5->setDrawTransform(BehindMatrix);
     layer5->setDrawsContent(true);
 
-    std::vector<LayerImpl*> layerList;
+    std::vector<CCLayerImpl*> layerList;
     layerList.push_back(layer1.get());
     layerList.push_back(layer2.get());
     layerList.push_back(layer3.get());
@@ -253,7 +253,7 @@ TEST(LayerSorterTest, verifyExistingOrderingPreservedWhenNoZDiff)
     EXPECT_EQ(4, layerList[3]->id());
     EXPECT_EQ(5, layerList[4]->id());
 
-    LayerSorter layerSorter;
+    CCLayerSorter layerSorter;
     layerSorter.sort(layerList.begin(), layerList.end());
 
     ASSERT_EQ(static_cast<size_t>(5), layerList.size());

@@ -24,22 +24,22 @@ namespace cc {
 // Implementation note: Unlike ScopedRunnableMethodFactory in Chromium, pending tasks are not cancelled by actually
 // destroying the proxy. Instead each pending task holds a reference to the proxy to avoid maintaining an explicit
 // list of outstanding tasks.
-class ScopedThreadProxy : public ThreadSafeRefCounted<ScopedThreadProxy> {
+class CCScopedThreadProxy : public ThreadSafeRefCounted<CCScopedThreadProxy> {
 public:
-    static PassRefPtr<ScopedThreadProxy> create(Thread* targetThread)
+    static PassRefPtr<CCScopedThreadProxy> create(CCThread* targetThread)
     {
         DCHECK(base::PlatformThread::CurrentId() == targetThread->threadID());
-        return adoptRef(new ScopedThreadProxy(targetThread));
+        return adoptRef(new CCScopedThreadProxy(targetThread));
     }
 
-    ~ScopedThreadProxy();
+    ~CCScopedThreadProxy();
 
     // Can be called from any thread. Posts a task to the target thread that runs unless
     // shutdown() is called before it runs.
-    void postTask(PassOwnPtr<Thread::Task> task)
+    void postTask(PassOwnPtr<CCThread::Task> task)
     {
         ref();
-        m_targetThread->postTask(createThreadTask(this, &ScopedThreadProxy::runTaskIfNotShutdown, task));
+        m_targetThread->postTask(createCCThreadTask(this, &CCScopedThreadProxy::runTaskIfNotShutdown, task));
     }
 
     void shutdown()
@@ -50,11 +50,11 @@ public:
     }
 
 private:
-    explicit ScopedThreadProxy(Thread* targetThread);
+    explicit CCScopedThreadProxy(CCThread* targetThread);
 
-    void runTaskIfNotShutdown(PassOwnPtr<Thread::Task> popTask)
+    void runTaskIfNotShutdown(PassOwnPtr<CCThread::Task> popTask)
     {
-        OwnPtr<Thread::Task> task = popTask;
+        OwnPtr<CCThread::Task> task = popTask;
         // If our shutdown flag is set, it's possible that m_targetThread has already been destroyed so don't
         // touch it.
         if (m_shutdown) {
@@ -66,7 +66,7 @@ private:
         deref();
     }
 
-    Thread* m_targetThread;
+    CCThread* m_targetThread;
     bool m_shutdown; // Only accessed on the target thread
 };
 

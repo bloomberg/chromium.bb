@@ -14,11 +14,11 @@
 #define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, cc_name) \
     COMPILE_ASSERT(int(WebKit::webkit_name) == int(cc::cc_name), mismatching_enums)
 
-COMPILE_ASSERT_MATCHING_ENUM(WebInputHandlerClient::ScrollStatusOnMainThread, InputHandlerClient::ScrollOnMainThread);
-COMPILE_ASSERT_MATCHING_ENUM(WebInputHandlerClient::ScrollStatusStarted, InputHandlerClient::ScrollStarted);
-COMPILE_ASSERT_MATCHING_ENUM(WebInputHandlerClient::ScrollStatusIgnored, InputHandlerClient::ScrollIgnored);
-COMPILE_ASSERT_MATCHING_ENUM(WebInputHandlerClient::ScrollInputTypeGesture, InputHandlerClient::Gesture);
-COMPILE_ASSERT_MATCHING_ENUM(WebInputHandlerClient::ScrollInputTypeWheel, InputHandlerClient::Wheel);
+COMPILE_ASSERT_MATCHING_ENUM(WebInputHandlerClient::ScrollStatusOnMainThread, CCInputHandlerClient::ScrollOnMainThread);
+COMPILE_ASSERT_MATCHING_ENUM(WebInputHandlerClient::ScrollStatusStarted, CCInputHandlerClient::ScrollStarted);
+COMPILE_ASSERT_MATCHING_ENUM(WebInputHandlerClient::ScrollStatusIgnored, CCInputHandlerClient::ScrollIgnored);
+COMPILE_ASSERT_MATCHING_ENUM(WebInputHandlerClient::ScrollInputTypeGesture, CCInputHandlerClient::Gesture);
+COMPILE_ASSERT_MATCHING_ENUM(WebInputHandlerClient::ScrollInputTypeWheel, CCInputHandlerClient::Wheel);
 
 namespace WebKit {
 
@@ -38,7 +38,7 @@ WebToCCInputHandlerAdapter::~WebToCCInputHandlerAdapter()
 
 class WebToCCInputHandlerAdapter::ClientAdapter : public WebInputHandlerClient {
 public:
-    ClientAdapter(cc::InputHandlerClient* client)
+    ClientAdapter(cc::CCInputHandlerClient* client)
         : m_client(client)
     {
     }
@@ -49,7 +49,7 @@ public:
 
     virtual ScrollStatus scrollBegin(WebPoint point, ScrollInputType type) OVERRIDE
     {
-        return static_cast<WebInputHandlerClient::ScrollStatus>(m_client->scrollBegin(convert(point), static_cast<cc::InputHandlerClient::ScrollInputType>(type)));
+        return static_cast<WebInputHandlerClient::ScrollStatus>(m_client->scrollBegin(convert(point), static_cast<cc::CCInputHandlerClient::ScrollInputType>(type)));
     }
 
     virtual void scrollBy(WebPoint point, WebSize offset) OVERRIDE
@@ -92,11 +92,11 @@ public:
     }
 
 private:
-    cc::InputHandlerClient* m_client;
+    cc::CCInputHandlerClient* m_client;
 };
 
 
-void WebToCCInputHandlerAdapter::bindToClient(cc::InputHandlerClient* client)
+void WebToCCInputHandlerAdapter::bindToClient(cc::CCInputHandlerClient* client)
 {
     m_clientAdapter.reset(new ClientAdapter(client));
     m_handler->bindToClient(m_clientAdapter.get());

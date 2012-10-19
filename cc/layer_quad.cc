@@ -11,7 +11,7 @@
 
 namespace cc {
 
-LayerQuad::Edge::Edge(const FloatPoint& p, const FloatPoint& q)
+CCLayerQuad::Edge::Edge(const FloatPoint& p, const FloatPoint& q)
 {
     DCHECK(p != q);
 
@@ -22,7 +22,7 @@ LayerQuad::Edge::Edge(const FloatPoint& p, const FloatPoint& q)
     scale(1.0f / tangent.length());
 }
 
-LayerQuad::LayerQuad(const FloatQuad& quad)
+CCLayerQuad::CCLayerQuad(const FloatQuad& quad)
 {
     // Create edges.
     m_left = Edge(quad.p4(), quad.p1());
@@ -37,7 +37,7 @@ LayerQuad::LayerQuad(const FloatQuad& quad)
     m_bottom.scale(sign);
 }
 
-LayerQuad::LayerQuad(const Edge& left, const Edge& top, const Edge& right, const Edge& bottom)
+CCLayerQuad::CCLayerQuad(const Edge& left, const Edge& top, const Edge& right, const Edge& bottom)
     : m_left(left)
     , m_top(top)
     , m_right(right)
@@ -45,7 +45,7 @@ LayerQuad::LayerQuad(const Edge& left, const Edge& top, const Edge& right, const
 {
 }
 
-FloatQuad LayerQuad::floatQuad() const
+FloatQuad CCLayerQuad::floatQuad() const
 {
     return FloatQuad(m_left.intersect(m_top),
                      m_top.intersect(m_right),
@@ -53,7 +53,7 @@ FloatQuad LayerQuad::floatQuad() const
                      m_bottom.intersect(m_left));
 }
 
-void LayerQuad::toFloatArray(float flattened[12]) const
+void CCLayerQuad::toFloatArray(float flattened[12]) const
 {
     flattened[0] = m_left.x();
     flattened[1] = m_left.y();

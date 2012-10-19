@@ -50,7 +50,7 @@ static WebTransformationMatrix windowMatrix(int x, int y, int width, int height)
 
 namespace cc {
 
-DirectRenderer::DrawingFrame::DrawingFrame()
+CCDirectRenderer::DrawingFrame::DrawingFrame()
     : rootRenderPass(0)
     , currentRenderPass(0)
     , currentTexture(0)
@@ -58,19 +58,19 @@ DirectRenderer::DrawingFrame::DrawingFrame()
 {
 }
 
-DirectRenderer::DrawingFrame::~DrawingFrame()
+CCDirectRenderer::DrawingFrame::~DrawingFrame()
 {
 }
 
 //
 // static
-FloatRect DirectRenderer::quadVertexRect()
+FloatRect CCDirectRenderer::quadVertexRect()
 {
     return FloatRect(-0.5, -0.5, 1, 1);
 }
 
 // static
-void DirectRenderer::quadRectTransform(WebKit::WebTransformationMatrix* quadRectTransform, const WebKit::WebTransformationMatrix& quadTransform, const FloatRect& quadRect)
+void CCDirectRenderer::quadRectTransform(WebKit::WebTransformationMatrix* quadRectTransform, const WebKit::WebTransformationMatrix& quadTransform, const FloatRect& quadRect)
 {
     *quadRectTransform = quadTransform;
     quadRectTransform->translate(0.5 * quadRect.width() + quadRect.x(), 0.5 * quadRect.height() + quadRect.y());
@@ -78,7 +78,7 @@ void DirectRenderer::quadRectTransform(WebKit::WebTransformationMatrix* quadRect
 }
 
 // static
-void DirectRenderer::initializeMatrices(DrawingFrame& frame, const IntRect& drawRect, bool flipY)
+void CCDirectRenderer::initializeMatrices(DrawingFrame& frame, const IntRect& drawRect, bool flipY)
 {
     if (flipY)
         frame.projectionMatrix = orthoProjectionMatrix(drawRect.x(), drawRect.maxX(), drawRect.maxY(), drawRect.y());
@@ -89,7 +89,7 @@ void DirectRenderer::initializeMatrices(DrawingFrame& frame, const IntRect& draw
 }
 
 // static
-IntRect DirectRenderer::moveScissorToWindowSpace(const DrawingFrame& frame, FloatRect scissorRect)
+IntRect CCDirectRenderer::moveScissorToWindowSpace(const DrawingFrame& frame, FloatRect scissorRect)
 {
     IntRect scissorRectInCanvasSpace = enclosingIntRect(scissorRect);
     // The scissor coordinates must be supplied in viewport space so we need to offset
@@ -103,32 +103,32 @@ IntRect DirectRenderer::moveScissorToWindowSpace(const DrawingFrame& frame, Floa
     return scissorRectInCanvasSpace;
 }
 
-DirectRenderer::DirectRenderer(RendererClient* client, ResourceProvider* resourceProvider)
-    : Renderer(client)
+CCDirectRenderer::CCDirectRenderer(CCRendererClient* client, CCResourceProvider* resourceProvider)
+    : CCRenderer(client)
     , m_resourceProvider(resourceProvider)
 {
 }
 
-DirectRenderer::~DirectRenderer()
+CCDirectRenderer::~CCDirectRenderer()
 {
 }
 
-void DirectRenderer::decideRenderPassAllocationsForFrame(const RenderPassList& renderPassesInDrawOrder)
+void CCDirectRenderer::decideRenderPassAllocationsForFrame(const CCRenderPassList& renderPassesInDrawOrder)
 {
-    base::hash_map<RenderPass::Id, const RenderPass*> renderPassesInFrame;
+    base::hash_map<CCRenderPass::Id, const CCRenderPass*> renderPassesInFrame;
     for (size_t i = 0; i < renderPassesInDrawOrder.size(); ++i)
-        renderPassesInFrame.insert(std::pair<RenderPass::Id, const RenderPass*>(renderPassesInDrawOrder[i]->id(), renderPassesInDrawOrder[i]));
+        renderPassesInFrame.insert(std::pair<CCRenderPass::Id, const CCRenderPass*>(renderPassesInDrawOrder[i]->id(), renderPassesInDrawOrder[i]));
 
-    std::vector<RenderPass::Id> passesToDelete;
-    ScopedPtrHashMap<RenderPass::Id, CachedTexture>::const_iterator passIterator;
+    std::vector<CCRenderPass::Id> passesToDelete;
+    ScopedPtrHashMap<CCRenderPass::Id, CachedTexture>::const_iterator passIterator;
     for (passIterator = m_renderPassTextures.begin(); passIterator != m_renderPassTextures.end(); ++passIterator) {
-        base::hash_map<RenderPass::Id, const RenderPass*>::const_iterator it = renderPassesInFrame.find(passIterator->first);
+        base::hash_map<CCRenderPass::Id, const CCRenderPass*>::const_iterator it = renderPassesInFrame.find(passIterator->first);
         if (it == renderPassesInFrame.end()) {
             passesToDelete.push_back(passIterator->first);
             continue;
         }
 
-        const RenderPass* renderPassInFrame = it->second;
+        const CCRenderPass* renderPassInFrame = it->second;
         const IntSize& requiredSize = renderPassTextureSize(renderPassInFrame);
         GLenum requiredFormat = renderPassTextureFormat(renderPassInFrame);
         CachedTexture* texture = passIterator->second;
@@ -150,9 +150,9 @@ void DirectRenderer::decideRenderPassAllocationsForFrame(const RenderPassList& r
     }
 }
 
-void DirectRenderer::drawFrame(const RenderPassList& renderPassesInDrawOrder, const RenderPassIdHashMap& renderPassesById)
+void CCDirectRenderer::drawFrame(const CCRenderPassList& renderPassesInDrawOrder, const CCRenderPassIdHashMap& renderPassesById)
 {
-    const RenderPass* rootRenderPass = renderPassesInDrawOrder.back();
+    const CCRenderPass* rootRenderPass = renderPassesInDrawOrder.back();
     DCHECK(rootRenderPass);
 
     DrawingFrame frame;
@@ -167,7 +167,7 @@ void DirectRenderer::drawFrame(const RenderPassList& renderPassesInDrawOrder, co
     finishDrawingFrame(frame);
 }
 
-void DirectRenderer::drawRenderPass(DrawingFrame& frame, const RenderPass* renderPass)
+void CCDirectRenderer::drawRenderPass(DrawingFrame& frame, const CCRenderPass* renderPass)
 {
     if (!useRenderPass(frame, renderPass))
         return;
@@ -175,14 +175,14 @@ void DirectRenderer::drawRenderPass(DrawingFrame& frame, const RenderPass* rende
     frame.scissorRectInRenderPassSpace = frame.currentRenderPass->outputRect();
     if (frame.rootDamageRect != frame.rootRenderPass->outputRect()) {
         WebTransformationMatrix inverseTransformToRoot = frame.currentRenderPass->transformToRootTarget().inverse();
-        frame.scissorRectInRenderPassSpace.intersect(MathUtil::projectClippedRect(inverseTransformToRoot, frame.rootDamageRect));
+        frame.scissorRectInRenderPassSpace.intersect(CCMathUtil::projectClippedRect(inverseTransformToRoot, frame.rootDamageRect));
     }
 
     enableScissorTestRect(moveScissorToWindowSpace(frame, frame.scissorRectInRenderPassSpace));
     clearFramebuffer(frame);
 
-    const QuadList& quadList = renderPass->quadList();
-    for (QuadList::constBackToFrontIterator it = quadList.backToFrontBegin(); it != quadList.backToFrontEnd(); ++it) {
+    const CCQuadList& quadList = renderPass->quadList();
+    for (CCQuadList::constBackToFrontIterator it = quadList.backToFrontBegin(); it != quadList.backToFrontEnd(); ++it) {
         FloatRect quadScissorRect = frame.scissorRectInRenderPassSpace;
         quadScissorRect.intersect((*it)->clippedRectInTarget());
         if (!quadScissorRect.isEmpty()) {
@@ -196,7 +196,7 @@ void DirectRenderer::drawRenderPass(DrawingFrame& frame, const RenderPass* rende
         texture->setIsComplete(!renderPass->hasOcclusionFromOutsideTargetSurface());
 }
 
-bool DirectRenderer::useRenderPass(DrawingFrame& frame, const RenderPass* renderPass)
+bool CCDirectRenderer::useRenderPass(DrawingFrame& frame, const CCRenderPass* renderPass)
 {
     frame.currentRenderPass = renderPass;
     frame.currentTexture = 0;
@@ -210,26 +210,26 @@ bool DirectRenderer::useRenderPass(DrawingFrame& frame, const RenderPass* render
 
     CachedTexture* texture = m_renderPassTextures.get(renderPass->id());
     DCHECK(texture);
-    if (!texture->id() && !texture->allocate(Renderer::ImplPool, renderPassTextureSize(renderPass), renderPassTextureFormat(renderPass), ResourceProvider::TextureUsageFramebuffer))
+    if (!texture->id() && !texture->allocate(CCRenderer::ImplPool, renderPassTextureSize(renderPass), renderPassTextureFormat(renderPass), CCResourceProvider::TextureUsageFramebuffer))
         return false;
 
     return bindFramebufferToTexture(frame, texture, renderPass->outputRect());
 }
 
-bool DirectRenderer::haveCachedResourcesForRenderPassId(RenderPass::Id id) const
+bool CCDirectRenderer::haveCachedResourcesForRenderPassId(CCRenderPass::Id id) const
 {
     CachedTexture* texture = m_renderPassTextures.get(id);
     return texture && texture->id() && texture->isComplete();
 }
 
 // static
-IntSize DirectRenderer::renderPassTextureSize(const RenderPass* pass)
+IntSize CCDirectRenderer::renderPassTextureSize(const CCRenderPass* pass)
 {
     return pass->outputRect().size();
 }
 
 // static
-GLenum DirectRenderer::renderPassTextureFormat(const RenderPass*)
+GLenum CCDirectRenderer::renderPassTextureFormat(const CCRenderPass*)
 {
     return GL_RGBA;
 }

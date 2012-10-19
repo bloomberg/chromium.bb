@@ -39,41 +39,41 @@ void setLayerPropertiesForTesting(LayerType* layer, const WebTransformationMatri
     layer->setPreserves3D(preserves3D);
 }
 
-void setLayerPropertiesForTesting(Layer* layer, const WebTransformationMatrix& transform, const WebTransformationMatrix& sublayerTransform, const FloatPoint& anchor, const FloatPoint& position, const IntSize& bounds, bool preserves3D)
+void setLayerPropertiesForTesting(LayerChromium* layer, const WebTransformationMatrix& transform, const WebTransformationMatrix& sublayerTransform, const FloatPoint& anchor, const FloatPoint& position, const IntSize& bounds, bool preserves3D)
 {
-    setLayerPropertiesForTesting<Layer>(layer, transform, sublayerTransform, anchor, position, bounds, preserves3D);
+    setLayerPropertiesForTesting<LayerChromium>(layer, transform, sublayerTransform, anchor, position, bounds, preserves3D);
 }
 
-void setLayerPropertiesForTesting(LayerImpl* layer, const WebTransformationMatrix& transform, const WebTransformationMatrix& sublayerTransform, const FloatPoint& anchor, const FloatPoint& position, const IntSize& bounds, bool preserves3D)
+void setLayerPropertiesForTesting(CCLayerImpl* layer, const WebTransformationMatrix& transform, const WebTransformationMatrix& sublayerTransform, const FloatPoint& anchor, const FloatPoint& position, const IntSize& bounds, bool preserves3D)
 {
-    setLayerPropertiesForTesting<LayerImpl>(layer, transform, sublayerTransform, anchor, position, bounds, preserves3D);
+    setLayerPropertiesForTesting<CCLayerImpl>(layer, transform, sublayerTransform, anchor, position, bounds, preserves3D);
     layer->setContentBounds(bounds);
 }
 
-void executeCalculateDrawTransformsAndVisibility(Layer* rootLayer, float deviceScaleFactor = 1)
+void executeCalculateDrawTransformsAndVisibility(LayerChromium* rootLayer, float deviceScaleFactor = 1)
 {
     WebTransformationMatrix identityMatrix;
-    std::vector<scoped_refptr<Layer> > dummyRenderSurfaceLayerList;
+    std::vector<scoped_refptr<LayerChromium> > dummyRenderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
     IntSize deviceViewportSize = IntSize(rootLayer->bounds().width() * deviceScaleFactor, rootLayer->bounds().height() * deviceScaleFactor);
 
     // We are probably not testing what is intended if the rootLayer bounds are empty.
     DCHECK(!rootLayer->bounds().isEmpty());
-    LayerTreeHostCommon::calculateDrawTransforms(rootLayer, deviceViewportSize, deviceScaleFactor, dummyMaxTextureSize, dummyRenderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(rootLayer, deviceViewportSize, deviceScaleFactor, dummyMaxTextureSize, dummyRenderSurfaceLayerList);
 }
 
-void executeCalculateDrawTransformsAndVisibility(LayerImpl* rootLayer, float deviceScaleFactor = 1)
+void executeCalculateDrawTransformsAndVisibility(CCLayerImpl* rootLayer, float deviceScaleFactor = 1)
 {
     // Note: this version skips layer sorting.
 
     WebTransformationMatrix identityMatrix;
-    std::vector<LayerImpl*> dummyRenderSurfaceLayerList;
+    std::vector<CCLayerImpl*> dummyRenderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
     IntSize deviceViewportSize = IntSize(rootLayer->bounds().width() * deviceScaleFactor, rootLayer->bounds().height() * deviceScaleFactor);
 
     // We are probably not testing what is intended if the rootLayer bounds are empty.
     DCHECK(!rootLayer->bounds().isEmpty());
-    LayerTreeHostCommon::calculateDrawTransforms(rootLayer, deviceViewportSize, deviceScaleFactor, 0, dummyMaxTextureSize, dummyRenderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(rootLayer, deviceViewportSize, deviceScaleFactor, 0, dummyMaxTextureSize, dummyRenderSurfaceLayerList);
 }
 
 WebTransformationMatrix remove3DComponentOfMatrix(const WebTransformationMatrix& mat)
@@ -89,12 +89,12 @@ WebTransformationMatrix remove3DComponentOfMatrix(const WebTransformationMatrix&
     return ret;
 }
 
-scoped_ptr<LayerImpl> createTreeForFixedPositionTests()
+scoped_ptr<CCLayerImpl> createTreeForFixedPositionTests()
 {
-    scoped_ptr<LayerImpl> root = LayerImpl::create(1);
-    scoped_ptr<LayerImpl> child = LayerImpl::create(2);
-    scoped_ptr<LayerImpl> grandChild = LayerImpl::create(3);
-    scoped_ptr<LayerImpl> greatGrandChild = LayerImpl::create(4);
+    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(1);
+    scoped_ptr<CCLayerImpl> child = CCLayerImpl::create(2);
+    scoped_ptr<CCLayerImpl> grandChild = CCLayerImpl::create(3);
+    scoped_ptr<CCLayerImpl> greatGrandChild = CCLayerImpl::create(4);
 
     WebTransformationMatrix IdentityMatrix;
     FloatPoint anchor(0, 0);
@@ -112,45 +112,45 @@ scoped_ptr<LayerImpl> createTreeForFixedPositionTests()
     return root.Pass();
 }
 
-class LayerWithForcedDrawsContent : public Layer {
+class LayerChromiumWithForcedDrawsContent : public LayerChromium {
 public:
-    LayerWithForcedDrawsContent()
-        : Layer()
+    LayerChromiumWithForcedDrawsContent()
+        : LayerChromium()
     {
     }
 
     virtual bool drawsContent() const OVERRIDE { return true; }
 
 private:
-    virtual ~LayerWithForcedDrawsContent()
+    virtual ~LayerChromiumWithForcedDrawsContent()
     {
     }
 };
 
-class MockContentLayerClient : public ContentLayerClient {
+class MockContentLayerChromiumClient : public ContentLayerChromiumClient {
 public:
-    MockContentLayerClient() { }
-    virtual ~MockContentLayerClient() { }
+    MockContentLayerChromiumClient() { }
+    virtual ~MockContentLayerChromiumClient() { }
     virtual void paintContents(SkCanvas*, const IntRect& clip, FloatRect& opaque) OVERRIDE { }
 };
 
-scoped_refptr<ContentLayer> createDrawableContentLayer(ContentLayerClient* delegate)
+scoped_refptr<ContentLayerChromium> createDrawableContentLayerChromium(ContentLayerChromiumClient* delegate)
 {
-    scoped_refptr<ContentLayer> toReturn = ContentLayer::create(delegate);
+    scoped_refptr<ContentLayerChromium> toReturn = ContentLayerChromium::create(delegate);
     toReturn->setIsDrawable(true);
     return toReturn;
 }
 
-TEST(LayerTreeHostCommonTest, verifyTransformsForNoOpLayer)
+TEST(CCLayerTreeHostCommonTest, verifyTransformsForNoOpLayer)
 {
     // Sanity check: For layers positioned at zero, with zero size,
     // and with identity transforms, then the drawTransform,
     // screenSpaceTransform, and the hierarchy passed on to children
     // layers should also be identity transforms.
 
-    scoped_refptr<Layer> parent = Layer::create();
-    scoped_refptr<Layer> child = Layer::create();
-    scoped_refptr<Layer> grandChild = Layer::create();
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromium> child = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChild = LayerChromium::create();
     parent->addChild(child);
     child->addChild(grandChild);
 
@@ -167,10 +167,10 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForNoOpLayer)
     EXPECT_TRANSFORMATION_MATRIX_EQ(identityMatrix, grandChild->screenSpaceTransform());
 }
 
-TEST(LayerTreeHostCommonTest, verifyTransformsForSingleLayer)
+TEST(CCLayerTreeHostCommonTest, verifyTransformsForSingleLayer)
 {
     WebTransformationMatrix identityMatrix;
-    scoped_refptr<Layer> layer = Layer::create();
+    scoped_refptr<LayerChromium> layer = LayerChromium::create();
 
     // Case 1: setting the sublayer transform should not affect this layer's draw transform or screen-space transform.
     WebTransformationMatrix arbitraryTranslation;
@@ -231,12 +231,12 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForSingleLayer)
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedResult, layer->screenSpaceTransform());
 }
 
-TEST(LayerTreeHostCommonTest, verifyTransformsForSimpleHierarchy)
+TEST(CCLayerTreeHostCommonTest, verifyTransformsForSimpleHierarchy)
 {
     WebTransformationMatrix identityMatrix;
-    scoped_refptr<Layer> parent = Layer::create();
-    scoped_refptr<Layer> child = Layer::create();
-    scoped_refptr<Layer> grandChild = Layer::create();
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromium> child = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChild = LayerChromium::create();
     parent->addChild(child);
     child->addChild(grandChild);
 
@@ -310,11 +310,11 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForSimpleHierarchy)
     EXPECT_TRANSFORMATION_MATRIX_EQ(parentCompositeTransform, grandChild->screenSpaceTransform());
 }
 
-TEST(LayerTreeHostCommonTest, verifyTransformsForSingleRenderSurface)
+TEST(CCLayerTreeHostCommonTest, verifyTransformsForSingleRenderSurface)
 {
-    scoped_refptr<Layer> parent = Layer::create();
-    scoped_refptr<Layer> child = Layer::create();
-    scoped_refptr<LayerWithForcedDrawsContent> grandChild = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromium> child = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> grandChild = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
     parent->addChild(child);
     child->addChild(grandChild);
 
@@ -357,12 +357,12 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForSingleRenderSurface)
     EXPECT_TRANSFORMATION_MATRIX_EQ(parentCompositeTransform, child->renderTarget()->renderSurface()->screenSpaceTransform());
 }
 
-TEST(LayerTreeHostCommonTest, verifyTransformsForReplica)
+TEST(CCLayerTreeHostCommonTest, verifyTransformsForReplica)
 {
-    scoped_refptr<Layer> parent = Layer::create();
-    scoped_refptr<Layer> child = Layer::create();
-    scoped_refptr<Layer> childReplica = Layer::create();
-    scoped_refptr<LayerWithForcedDrawsContent> grandChild = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromium> child = LayerChromium::create();
+    scoped_refptr<LayerChromium> childReplica = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> grandChild = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
     parent->addChild(child);
     child->addChild(grandChild);
     child->setReplicaLayer(childReplica.get());
@@ -404,7 +404,7 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForReplica)
     EXPECT_TRANSFORMATION_MATRIX_EQ(replicaCompositeTransform, child->renderTarget()->renderSurface()->replicaScreenSpaceTransform());
 }
 
-TEST(LayerTreeHostCommonTest, verifyTransformsForRenderSurfaceHierarchy)
+TEST(CCLayerTreeHostCommonTest, verifyTransformsForRenderSurfaceHierarchy)
 {
     // This test creates a more complex tree and verifies it all at once. This covers the following cases:
     //   - layers that are described w.r.t. a render surface: should have draw transforms described w.r.t. that surface
@@ -413,17 +413,17 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForRenderSurfaceHierarchy)
     //   - Sanity check on recursion: verify transforms of layers described w.r.t. a render surface that is described w.r.t. an ancestor render surface.
     //   - verifying that each layer has a reference to the correct renderSurface and renderTarget values.
 
-    scoped_refptr<Layer> parent = Layer::create();
-    scoped_refptr<Layer> renderSurface1 = Layer::create();
-    scoped_refptr<Layer> renderSurface2 = Layer::create();
-    scoped_refptr<Layer> childOfRoot = Layer::create();
-    scoped_refptr<Layer> childOfRS1 = Layer::create();
-    scoped_refptr<Layer> childOfRS2 = Layer::create();
-    scoped_refptr<Layer> replicaOfRS1 = Layer::create();
-    scoped_refptr<Layer> replicaOfRS2 = Layer::create();
-    scoped_refptr<Layer> grandChildOfRoot = Layer::create();
-    scoped_refptr<LayerWithForcedDrawsContent> grandChildOfRS1 = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> grandChildOfRS2 = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromium> renderSurface1 = LayerChromium::create();
+    scoped_refptr<LayerChromium> renderSurface2 = LayerChromium::create();
+    scoped_refptr<LayerChromium> childOfRoot = LayerChromium::create();
+    scoped_refptr<LayerChromium> childOfRS1 = LayerChromium::create();
+    scoped_refptr<LayerChromium> childOfRS2 = LayerChromium::create();
+    scoped_refptr<LayerChromium> replicaOfRS1 = LayerChromium::create();
+    scoped_refptr<LayerChromium> replicaOfRS2 = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChildOfRoot = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> grandChildOfRS1 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> grandChildOfRS2 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
     parent->addChild(renderSurface1);
     parent->addChild(childOfRoot);
     renderSurface1->addChild(childOfRS1);
@@ -563,16 +563,16 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForRenderSurfaceHierarchy)
     EXPECT_FLOAT_EQ(5, grandChildOfRS2->screenSpaceTransform().m42());
 }
 
-TEST(LayerTreeHostCommonTest, verifyTransformsForFlatteningLayer)
+TEST(CCLayerTreeHostCommonTest, verifyTransformsForFlatteningLayer)
 {
     // For layers that flatten their subtree, there should be an orthographic projection
     // (for x and y values) in the middle of the transform sequence. Note that the way the
     // code is currently implemented, it is not expected to use a canonical orthographic
     // projection.
 
-    scoped_refptr<Layer> root = Layer::create();
-    scoped_refptr<Layer> child = Layer::create();
-    scoped_refptr<LayerWithForcedDrawsContent> grandChild = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> root = LayerChromium::create();
+    scoped_refptr<LayerChromium> child = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> grandChild = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
 
     WebTransformationMatrix rotationAboutYAxis;
     rotationAboutYAxis.rotate3d(0, 30, 0);
@@ -608,7 +608,7 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForFlatteningLayer)
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildScreenSpaceTransform, grandChild->screenSpaceTransform());
 }
 
-TEST(LayerTreeHostCommonTest, verifyTransformsForDegenerateIntermediateLayer)
+TEST(CCLayerTreeHostCommonTest, verifyTransformsForDegenerateIntermediateLayer)
 {
     // A layer that is empty in one axis, but not the other, was accidentally skipping a necessary translation.
     // Without that translation, the coordinate space of the layer's drawTransform is incorrect.
@@ -616,9 +616,9 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForDegenerateIntermediateLayer)
     // Normally this isn't a problem, because the layer wouldn't be drawn anyway, but if that layer becomes a renderSurface, then
     // its drawTransform is implicitly inherited by the rest of the subtree, which then is positioned incorrectly as a result.
 
-    scoped_refptr<Layer> root = Layer::create();
-    scoped_refptr<Layer> child = Layer::create();
-    scoped_refptr<LayerWithForcedDrawsContent> grandChild = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> root = LayerChromium::create();
+    scoped_refptr<LayerChromium> child = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> grandChild = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
 
     // The child height is zero, but has non-zero width that should be accounted for while computing drawTransforms.
     const WebTransformationMatrix identityMatrix;
@@ -638,11 +638,11 @@ TEST(LayerTreeHostCommonTest, verifyTransformsForDegenerateIntermediateLayer)
     EXPECT_TRANSFORMATION_MATRIX_EQ(identityMatrix, grandChild->drawTransform());
 }
 
-TEST(LayerTreeHostCommonTest, verifyRenderSurfaceListForRenderSurfaceWithClippedLayer)
+TEST(CCLayerTreeHostCommonTest, verifyRenderSurfaceListForRenderSurfaceWithClippedLayer)
 {
-    scoped_refptr<Layer> parent = Layer::create();
-    scoped_refptr<Layer> renderSurface1 = Layer::create();
-    scoped_refptr<LayerWithForcedDrawsContent> child = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromium> renderSurface1 = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
 
     const WebTransformationMatrix identityMatrix;
     setLayerPropertiesForTesting(parent.get(), identityMatrix, identityMatrix, FloatPoint::zero(), FloatPoint::zero(), IntSize(10, 10), false);
@@ -654,9 +654,9 @@ TEST(LayerTreeHostCommonTest, verifyRenderSurfaceListForRenderSurfaceWithClipped
     renderSurface1->addChild(child);
     renderSurface1->setForceRenderSurface(true);
 
-    std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
+    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
 
     // The child layer's content is entirely outside the parent's clip rect, so the intermediate
     // render surface should not be listed here, even if it was forced to be created. Render surfaces without children or visible
@@ -666,11 +666,11 @@ TEST(LayerTreeHostCommonTest, verifyRenderSurfaceListForRenderSurfaceWithClipped
     EXPECT_EQ(1U, renderSurfaceLayerList.size());
 }
 
-TEST(LayerTreeHostCommonTest, verifyRenderSurfaceListForTransparentChild)
+TEST(CCLayerTreeHostCommonTest, verifyRenderSurfaceListForTransparentChild)
 {
-    scoped_refptr<Layer> parent = Layer::create();
-    scoped_refptr<Layer> renderSurface1 = Layer::create();
-    scoped_refptr<LayerWithForcedDrawsContent> child = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromium> renderSurface1 = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
 
     const WebTransformationMatrix identityMatrix;
     setLayerPropertiesForTesting(renderSurface1.get(), identityMatrix, identityMatrix, FloatPoint::zero(), FloatPoint::zero(), IntSize(10, 10), false);
@@ -681,9 +681,9 @@ TEST(LayerTreeHostCommonTest, verifyRenderSurfaceListForTransparentChild)
     renderSurface1->setForceRenderSurface(true);
     renderSurface1->setOpacity(0);
 
-    std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
+    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
 
     // Since the layer is transparent, renderSurface1->renderSurface() should not have gotten added anywhere.
     // Also, the drawable content rect should not have been extended by the children.
@@ -694,11 +694,11 @@ TEST(LayerTreeHostCommonTest, verifyRenderSurfaceListForTransparentChild)
     EXPECT_EQ(IntRect(), parent->drawableContentRect());
 }
 
-TEST(LayerTreeHostCommonTest, verifyForceRenderSurface)
+TEST(CCLayerTreeHostCommonTest, verifyForceRenderSurface)
 {
-    scoped_refptr<Layer> parent = Layer::create();
-    scoped_refptr<Layer> renderSurface1 = Layer::create();
-    scoped_refptr<LayerWithForcedDrawsContent> child = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromium> renderSurface1 = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
     renderSurface1->setForceRenderSurface(true);
 
     const WebTransformationMatrix identityMatrix;
@@ -713,9 +713,9 @@ TEST(LayerTreeHostCommonTest, verifyForceRenderSurface)
     EXPECT_FALSE(parent->renderSurface());
     EXPECT_FALSE(renderSurface1->renderSurface());
 
-    std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
+    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
 
     // The root layer always creates a renderSurface
     EXPECT_TRUE(parent->renderSurface());
@@ -724,21 +724,21 @@ TEST(LayerTreeHostCommonTest, verifyForceRenderSurface)
 
     renderSurfaceLayerList.clear();
     renderSurface1->setForceRenderSurface(false);
-    LayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
     EXPECT_TRUE(parent->renderSurface());
     EXPECT_FALSE(renderSurface1->renderSurface());
     EXPECT_EQ(1U, renderSurfaceLayerList.size());
 }
 
-TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithDirectContainer)
+TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithDirectContainer)
 {
     // This test checks for correct scroll compensation when the fixed-position container
     // is the direct parent of the fixed-position layer.
 
     DebugScopedSetImplThread scopedImplThread;
-    scoped_ptr<LayerImpl> root = createTreeForFixedPositionTests();
-    LayerImpl* child = root->children()[0];
-    LayerImpl* grandChild = child->children()[0];
+    scoped_ptr<CCLayerImpl> root = createTreeForFixedPositionTests();
+    CCLayerImpl* child = root->children()[0];
+    CCLayerImpl* grandChild = child->children()[0];
 
     child->setIsContainerForFixedPositionLayers(true);
     grandChild->setFixedToContainerLayer(true);
@@ -765,7 +765,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithD
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildTransform, grandChild->drawTransform());
 }
 
-TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithTransformedDirectContainer)
+TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithTransformedDirectContainer)
 {
     // This test checks for correct scroll compensation when the fixed-position container
     // is the direct parent of the fixed-position layer, but that container is transformed.
@@ -777,9 +777,9 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithT
     // order.
 
     DebugScopedSetImplThread scopedImplThread;
-    scoped_ptr<LayerImpl> root = createTreeForFixedPositionTests();
-    LayerImpl* child = root->children()[0];
-    LayerImpl* grandChild = child->children()[0];
+    scoped_ptr<CCLayerImpl> root = createTreeForFixedPositionTests();
+    CCLayerImpl* child = root->children()[0];
+    CCLayerImpl* grandChild = child->children()[0];
 
     // This scale will cause child and grandChild to be effectively 200 x 800 with respect to the renderTarget.
     WebTransformationMatrix nonUniformScale;
@@ -814,16 +814,16 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithT
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildTransform, grandChild->drawTransform());
 }
 
-TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithDistantContainer)
+TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithDistantContainer)
 {
     // This test checks for correct scroll compensation when the fixed-position container
     // is NOT the direct parent of the fixed-position layer.
     DebugScopedSetImplThread scopedImplThread;
 
-    scoped_ptr<LayerImpl> root = createTreeForFixedPositionTests();
-    LayerImpl* child = root->children()[0];
-    LayerImpl* grandChild = child->children()[0];
-    LayerImpl* greatGrandChild = grandChild->children()[0];
+    scoped_ptr<CCLayerImpl> root = createTreeForFixedPositionTests();
+    CCLayerImpl* child = root->children()[0];
+    CCLayerImpl* grandChild = child->children()[0];
+    CCLayerImpl* greatGrandChild = grandChild->children()[0];
 
     child->setIsContainerForFixedPositionLayers(true);
     grandChild->setPosition(FloatPoint(8, 6));
@@ -857,17 +857,17 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithD
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGreatGrandChildTransform, greatGrandChild->drawTransform());
 }
 
-TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithDistantContainerAndTransforms)
+TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithDistantContainerAndTransforms)
 {
     // This test checks for correct scroll compensation when the fixed-position container
     // is NOT the direct parent of the fixed-position layer, and the hierarchy has various
     // transforms that have to be processed in the correct order.
     DebugScopedSetImplThread scopedImplThread;
 
-    scoped_ptr<LayerImpl> root = createTreeForFixedPositionTests();
-    LayerImpl* child = root->children()[0];
-    LayerImpl* grandChild = child->children()[0];
-    LayerImpl* greatGrandChild = grandChild->children()[0];
+    scoped_ptr<CCLayerImpl> root = createTreeForFixedPositionTests();
+    CCLayerImpl* child = root->children()[0];
+    CCLayerImpl* grandChild = child->children()[0];
+    CCLayerImpl* greatGrandChild = grandChild->children()[0];
 
     WebTransformationMatrix rotationAboutZ;
     rotationAboutZ.rotate3d(0, 0, 90);
@@ -916,7 +916,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithD
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGreatGrandChildTransform, greatGrandChild->drawTransform());
 }
 
-TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithMultipleScrollDeltas)
+TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithMultipleScrollDeltas)
 {
     // This test checks for correct scroll compensation when the fixed-position container
     // has multiple ancestors that have nonzero scrollDelta before reaching the space where the layer is fixed.
@@ -926,10 +926,10 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithM
     // transforms that have to be processed in the correct order.
     DebugScopedSetImplThread scopedImplThread;
 
-    scoped_ptr<LayerImpl> root = createTreeForFixedPositionTests();
-    LayerImpl* child = root->children()[0];
-    LayerImpl* grandChild = child->children()[0];
-    LayerImpl* greatGrandChild = grandChild->children()[0];
+    scoped_ptr<CCLayerImpl> root = createTreeForFixedPositionTests();
+    CCLayerImpl* child = root->children()[0];
+    CCLayerImpl* grandChild = child->children()[0];
+    CCLayerImpl* greatGrandChild = grandChild->children()[0];
 
     WebTransformationMatrix rotationAboutZ;
     rotationAboutZ.rotate3d(0, 0, 90);
@@ -980,7 +980,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithM
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGreatGrandChildTransform, greatGrandChild->drawTransform());
 }
 
-TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithIntermediateSurfaceAndTransforms)
+TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithIntermediateSurfaceAndTransforms)
 {
     // This test checks for correct scroll compensation when the fixed-position container
     // contributes to a different renderSurface than the fixed-position layer. In this
@@ -988,10 +988,10 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithI
     // scrollDelta.
     DebugScopedSetImplThread scopedImplThread;
 
-    scoped_ptr<LayerImpl> root = createTreeForFixedPositionTests();
-    LayerImpl* child = root->children()[0];
-    LayerImpl* grandChild = child->children()[0];
-    LayerImpl* greatGrandChild = grandChild->children()[0];
+    scoped_ptr<CCLayerImpl> root = createTreeForFixedPositionTests();
+    CCLayerImpl* child = root->children()[0];
+    CCLayerImpl* grandChild = child->children()[0];
+    CCLayerImpl* greatGrandChild = grandChild->children()[0];
 
     child->setIsContainerForFixedPositionLayers(true);
     grandChild->setPosition(FloatPoint(8, 6));
@@ -1053,7 +1053,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithI
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGreatGrandChildTransform, greatGrandChild->drawTransform());
 }
 
-TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithMultipleIntermediateSurfaces)
+TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithMultipleIntermediateSurfaces)
 {
     // This test checks for correct scroll compensation when the fixed-position container
     // contributes to a different renderSurface than the fixed-position layer, with
@@ -1061,19 +1061,19 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithM
     // surfaces is accumulated properly in the final matrix transform.
     DebugScopedSetImplThread scopedImplThread;
 
-    scoped_ptr<LayerImpl> root = createTreeForFixedPositionTests();
-    LayerImpl* child = root->children()[0];
-    LayerImpl* grandChild = child->children()[0];
-    LayerImpl* greatGrandChild = grandChild->children()[0];
+    scoped_ptr<CCLayerImpl> root = createTreeForFixedPositionTests();
+    CCLayerImpl* child = root->children()[0];
+    CCLayerImpl* grandChild = child->children()[0];
+    CCLayerImpl* greatGrandChild = grandChild->children()[0];
 
     // Add one more layer to the test tree for this scenario.
     {
         WebTransformationMatrix identity;
-        scoped_ptr<LayerImpl> fixedPositionChild = LayerImpl::create(5);
+        scoped_ptr<CCLayerImpl> fixedPositionChild = CCLayerImpl::create(5);
         setLayerPropertiesForTesting(fixedPositionChild.get(), identity, identity, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(100, 100), false);
         greatGrandChild->addChild(fixedPositionChild.Pass());
     }
-    LayerImpl* fixedPositionChild = greatGrandChild->children()[0];
+    CCLayerImpl* fixedPositionChild = greatGrandChild->children()[0];
 
     // Actually set up the scenario here.
     child->setIsContainerForFixedPositionLayers(true);
@@ -1164,7 +1164,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithM
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedFixedPositionChildTransform, fixedPositionChild->drawTransform());
 }
 
-TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithContainerLayerThatHasSurface)
+TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithContainerLayerThatHasSurface)
 {
     // This test checks for correct scroll compensation when the fixed-position container
     // itself has a renderSurface. In this case, the container layer should be treated
@@ -1172,9 +1172,9 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithC
     // is completely irrelevant; it should not affect the scroll compensation.
     DebugScopedSetImplThread scopedImplThread;
 
-    scoped_ptr<LayerImpl> root = createTreeForFixedPositionTests();
-    LayerImpl* child = root->children()[0];
-    LayerImpl* grandChild = child->children()[0];
+    scoped_ptr<CCLayerImpl> root = createTreeForFixedPositionTests();
+    CCLayerImpl* child = root->children()[0];
+    CCLayerImpl* grandChild = child->children()[0];
 
     child->setIsContainerForFixedPositionLayers(true);
     child->setForceRenderSurface(true);
@@ -1212,16 +1212,16 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerWithC
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildTransform, grandChild->drawTransform());
 }
 
-TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerThatIsAlsoFixedPositionContainer)
+TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerThatIsAlsoFixedPositionContainer)
 {
     // This test checks the scenario where a fixed-position layer also happens to be a
     // container itself for a descendant fixed position layer. In particular, the layer
     // should not accidentally be fixed to itself.
     DebugScopedSetImplThread scopedImplThread;
 
-    scoped_ptr<LayerImpl> root = createTreeForFixedPositionTests();
-    LayerImpl* child = root->children()[0];
-    LayerImpl* grandChild = child->children()[0];
+    scoped_ptr<CCLayerImpl> root = createTreeForFixedPositionTests();
+    CCLayerImpl* child = root->children()[0];
+    CCLayerImpl* grandChild = child->children()[0];
 
     child->setIsContainerForFixedPositionLayers(true);
     grandChild->setFixedToContainerLayer(true);
@@ -1249,16 +1249,16 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerThatI
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildTransform, grandChild->drawTransform());
 }
 
-TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerThatHasNoContainer)
+TEST(CCLayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerThatHasNoContainer)
 {
     // This test checks scroll compensation when a fixed-position layer does not find any
     // ancestor that is a "containerForFixedPositionLayers". In this situation, the layer should
     // be fixed to the viewport -- not the rootLayer, which may have transforms of its own.
     DebugScopedSetImplThread scopedImplThread;
 
-    scoped_ptr<LayerImpl> root = createTreeForFixedPositionTests();
-    LayerImpl* child = root->children()[0];
-    LayerImpl* grandChild = child->children()[0];
+    scoped_ptr<CCLayerImpl> root = createTreeForFixedPositionTests();
+    CCLayerImpl* child = root->children()[0];
+    CCLayerImpl* grandChild = child->children()[0];
 
     WebTransformationMatrix rotationByZ;
     rotationByZ.rotate3d(0, 0, 90);
@@ -1292,7 +1292,7 @@ TEST(LayerTreeHostCommonTest, verifyScrollCompensationForFixedPositionLayerThatH
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedGrandChildTransform, grandChild->drawTransform());
 }
 
-TEST(LayerTreeHostCommonTest, verifyClipRectCullsRenderSurfaces)
+TEST(CCLayerTreeHostCommonTest, verifyClipRectCullsRenderSurfaces)
 {
     // The entire subtree of layers that are outside the clipRect should be culled away,
     // and should not affect the renderSurfaceLayerList.
@@ -1309,12 +1309,12 @@ TEST(LayerTreeHostCommonTest, verifyClipRectCullsRenderSurfaces)
     //
 
     const WebTransformationMatrix identityMatrix;
-    scoped_refptr<Layer> parent = Layer::create();
-    scoped_refptr<Layer> child = Layer::create();
-    scoped_refptr<Layer> grandChild = Layer::create();
-    scoped_refptr<Layer> greatGrandChild = Layer::create();
-    scoped_refptr<LayerWithForcedDrawsContent> leafNode1 = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> leafNode2 = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromium> child = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChild = LayerChromium::create();
+    scoped_refptr<LayerChromium> greatGrandChild = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> leafNode1 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> leafNode2 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
     parent->addChild(child);
     child->addChild(grandChild);
     grandChild->addChild(greatGrandChild);
@@ -1336,16 +1336,16 @@ TEST(LayerTreeHostCommonTest, verifyClipRectCullsRenderSurfaces)
     grandChild->setOpacity(0.5);
     greatGrandChild->setOpacity(0.4f);
 
-    std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
+    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
 
     ASSERT_EQ(2U, renderSurfaceLayerList.size());
     EXPECT_EQ(parent->id(), renderSurfaceLayerList[0]->id());
     EXPECT_EQ(child->id(), renderSurfaceLayerList[1]->id());
 }
 
-TEST(LayerTreeHostCommonTest, verifyClipRectCullsSurfaceWithoutVisibleContent)
+TEST(CCLayerTreeHostCommonTest, verifyClipRectCullsSurfaceWithoutVisibleContent)
 {
     // When a renderSurface has a clipRect, it is used to clip the contentRect
     // of the surface. When the renderSurface is animating its transforms, then
@@ -1364,10 +1364,10 @@ TEST(LayerTreeHostCommonTest, verifyClipRectCullsSurfaceWithoutVisibleContent)
     // in the renderSurfaceLayerList.
 
     const WebTransformationMatrix identityMatrix;
-    scoped_refptr<Layer> parent = Layer::create();
-    scoped_refptr<Layer> child = Layer::create();
-    scoped_refptr<Layer> grandChild = Layer::create();
-    scoped_refptr<LayerWithForcedDrawsContent> leafNode = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromium> child = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChild = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> leafNode = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
     parent->addChild(child);
     child->addChild(grandChild);
     grandChild->addChild(leafNode);
@@ -1381,9 +1381,9 @@ TEST(LayerTreeHostCommonTest, verifyClipRectCullsSurfaceWithoutVisibleContent)
     child->setOpacity(0.4f);
     grandChild->setOpacity(0.4f);
 
-    std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
+    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
 
     // Without an animation, we should cull child and grandChild from the renderSurfaceLayerList.
     ASSERT_EQ(1U, renderSurfaceLayerList.size());
@@ -1397,7 +1397,7 @@ TEST(LayerTreeHostCommonTest, verifyClipRectCullsSurfaceWithoutVisibleContent)
     grandChild->clearRenderSurface();
     renderSurfaceLayerList.clear();
 
-    LayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
 
     // With an animating transform, we should keep child and grandChild in the renderSurfaceLayerList.
     ASSERT_EQ(3U, renderSurfaceLayerList.size());
@@ -1406,7 +1406,7 @@ TEST(LayerTreeHostCommonTest, verifyClipRectCullsSurfaceWithoutVisibleContent)
     EXPECT_EQ(grandChild->id(), renderSurfaceLayerList[2]->id());
 }
 
-TEST(LayerTreeHostCommonTest, verifyDrawableContentRectForLayers)
+TEST(CCLayerTreeHostCommonTest, verifyDrawableContentRectForLayers)
 {
     // Verify that layers get the appropriate drawableContentRect when their parent masksToBounds is true.
     //
@@ -1417,12 +1417,12 @@ TEST(LayerTreeHostCommonTest, verifyDrawableContentRectForLayers)
     //
 
     const WebTransformationMatrix identityMatrix;
-    scoped_refptr<Layer> parent = Layer::create();
-    scoped_refptr<Layer> child = Layer::create();
-    scoped_refptr<Layer> grandChild1 = Layer::create();
-    scoped_refptr<Layer> grandChild2 = Layer::create();
-    scoped_refptr<Layer> grandChild3 = Layer::create();
-    scoped_refptr<Layer> grandChild4 = Layer::create();
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromium> child = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChild1 = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChild2 = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChild3 = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChild4 = LayerChromium::create();
 
     parent->addChild(child);
     child->addChild(grandChild1);
@@ -1447,9 +1447,9 @@ TEST(LayerTreeHostCommonTest, verifyDrawableContentRectForLayers)
     grandChild3->setOpacity(0.5);
     grandChild4->setOpacity(0.5);
 
-    std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
+    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
 
     EXPECT_RECT_EQ(IntRect(IntPoint(5, 5), IntSize(10, 10)), grandChild1->drawableContentRect());
     EXPECT_RECT_EQ(IntRect(IntPoint(15, 15), IntSize(5, 5)), grandChild3->drawableContentRect());
@@ -1457,7 +1457,7 @@ TEST(LayerTreeHostCommonTest, verifyDrawableContentRectForLayers)
     EXPECT_TRUE(grandChild4->drawableContentRect().isEmpty());
 }
 
-TEST(LayerTreeHostCommonTest, verifyClipRectIsPropagatedCorrectlyToSurfaces)
+TEST(CCLayerTreeHostCommonTest, verifyClipRectIsPropagatedCorrectlyToSurfaces)
 {
     // Verify that renderSurfaces (and their layers) get the appropriate clipRects when their parent masksToBounds is true.
     //
@@ -1467,16 +1467,16 @@ TEST(LayerTreeHostCommonTest, verifyClipRectIsPropagatedCorrectlyToSurfaces)
     //
 
     const WebTransformationMatrix identityMatrix;
-    scoped_refptr<Layer> parent = Layer::create();
-    scoped_refptr<Layer> child = Layer::create();
-    scoped_refptr<Layer> grandChild1 = Layer::create();
-    scoped_refptr<Layer> grandChild2 = Layer::create();
-    scoped_refptr<Layer> grandChild3 = Layer::create();
-    scoped_refptr<Layer> grandChild4 = Layer::create();
-    scoped_refptr<LayerWithForcedDrawsContent> leafNode1 = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> leafNode2 = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> leafNode3 = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> leafNode4 = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromium> child = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChild1 = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChild2 = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChild3 = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChild4 = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> leafNode1 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> leafNode2 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> leafNode3 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> leafNode4 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
 
     parent->addChild(child);
     child->addChild(grandChild1);
@@ -1512,9 +1512,9 @@ TEST(LayerTreeHostCommonTest, verifyClipRectIsPropagatedCorrectlyToSurfaces)
     grandChild3->setOpacity(0.5);
     grandChild4->setOpacity(0.5);
 
-    std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
+    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
 
     ASSERT_TRUE(grandChild1->renderSurface());
     ASSERT_TRUE(grandChild2->renderSurface());
@@ -1527,17 +1527,17 @@ TEST(LayerTreeHostCommonTest, verifyClipRectIsPropagatedCorrectlyToSurfaces)
     EXPECT_RECT_EQ(IntRect(IntPoint(0, 0), IntSize(20, 20)), grandChild3->renderSurface()->clipRect());
 }
 
-TEST(LayerTreeHostCommonTest, verifyAnimationsForRenderSurfaceHierarchy)
+TEST(CCLayerTreeHostCommonTest, verifyAnimationsForRenderSurfaceHierarchy)
 {
-    scoped_refptr<Layer> parent = Layer::create();
-    scoped_refptr<Layer> renderSurface1 = Layer::create();
-    scoped_refptr<Layer> renderSurface2 = Layer::create();
-    scoped_refptr<Layer> childOfRoot = Layer::create();
-    scoped_refptr<Layer> childOfRS1 = Layer::create();
-    scoped_refptr<Layer> childOfRS2 = Layer::create();
-    scoped_refptr<Layer> grandChildOfRoot = Layer::create();
-    scoped_refptr<LayerWithForcedDrawsContent> grandChildOfRS1 = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> grandChildOfRS2 = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromium> renderSurface1 = LayerChromium::create();
+    scoped_refptr<LayerChromium> renderSurface2 = LayerChromium::create();
+    scoped_refptr<LayerChromium> childOfRoot = LayerChromium::create();
+    scoped_refptr<LayerChromium> childOfRS1 = LayerChromium::create();
+    scoped_refptr<LayerChromium> childOfRS2 = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChildOfRoot = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> grandChildOfRS1 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> grandChildOfRS2 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
     parent->addChild(renderSurface1);
     parent->addChild(childOfRoot);
     renderSurface1->addChild(childOfRS1);
@@ -1668,7 +1668,7 @@ TEST(LayerTreeHostCommonTest, verifyAnimationsForRenderSurfaceHierarchy)
     EXPECT_FLOAT_EQ(5, grandChildOfRS2->screenSpaceTransform().m42());
 }
 
-TEST(LayerTreeHostCommonTest, verifyVisibleRectForIdentityTransform)
+TEST(CCLayerTreeHostCommonTest, verifyVisibleRectForIdentityTransform)
 {
     // Test the calculateVisibleRect() function works correctly for identity transforms.
 
@@ -1678,22 +1678,22 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectForIdentityTransform)
     // Case 1: Layer is contained within the surface.
     IntRect layerContentRect = IntRect(IntPoint(10, 10), IntSize(30, 30));
     IntRect expected = IntRect(IntPoint(10, 10), IntSize(30, 30));
-    IntRect actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
+    IntRect actual = CCLayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_RECT_EQ(expected, actual);
 
     // Case 2: Layer is outside the surface rect.
     layerContentRect = IntRect(IntPoint(120, 120), IntSize(30, 30));
-    actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
+    actual = CCLayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_TRUE(actual.isEmpty());
 
     // Case 3: Layer is partially overlapping the surface rect.
     layerContentRect = IntRect(IntPoint(80, 80), IntSize(30, 30));
     expected = IntRect(IntPoint(80, 80), IntSize(20, 20));
-    actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
+    actual = CCLayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_RECT_EQ(expected, actual);
 }
 
-TEST(LayerTreeHostCommonTest, verifyVisibleRectForTranslations)
+TEST(CCLayerTreeHostCommonTest, verifyVisibleRectForTranslations)
 {
     // Test the calculateVisibleRect() function works correctly for scaling transforms.
 
@@ -1705,24 +1705,24 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectForTranslations)
     layerToSurfaceTransform.makeIdentity();
     layerToSurfaceTransform.translate(10, 10);
     IntRect expected = IntRect(IntPoint(0, 0), IntSize(30, 30));
-    IntRect actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
+    IntRect actual = CCLayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_RECT_EQ(expected, actual);
 
     // Case 2: Layer is outside the surface rect.
     layerToSurfaceTransform.makeIdentity();
     layerToSurfaceTransform.translate(120, 120);
-    actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
+    actual = CCLayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_TRUE(actual.isEmpty());
 
     // Case 3: Layer is partially overlapping the surface rect.
     layerToSurfaceTransform.makeIdentity();
     layerToSurfaceTransform.translate(80, 80);
     expected = IntRect(IntPoint(0, 0), IntSize(20, 20));
-    actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
+    actual = CCLayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_RECT_EQ(expected, actual);
 }
 
-TEST(LayerTreeHostCommonTest, verifyVisibleRectFor2DRotations)
+TEST(CCLayerTreeHostCommonTest, verifyVisibleRectFor2DRotations)
 {
     // Test the calculateVisibleRect() function works correctly for rotations about z-axis (i.e. 2D rotations).
     // Remember that calculateVisibleRect() should return the visible rect in the layer's space.
@@ -1736,14 +1736,14 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectFor2DRotations)
     layerToSurfaceTransform.translate(50, 50);
     layerToSurfaceTransform.rotate(45);
     IntRect expected = IntRect(IntPoint(0, 0), IntSize(30, 30));
-    IntRect actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
+    IntRect actual = CCLayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_RECT_EQ(expected, actual);
 
     // Case 2: Layer is outside the surface rect.
     layerToSurfaceTransform.makeIdentity();
     layerToSurfaceTransform.translate(-50, 0);
     layerToSurfaceTransform.rotate(45);
-    actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
+    actual = CCLayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_TRUE(actual.isEmpty());
 
     // Case 3: The layer is rotated about its top-left corner. In surface space, the layer
@@ -1754,7 +1754,7 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectFor2DRotations)
     layerToSurfaceTransform.makeIdentity();
     layerToSurfaceTransform.rotate(45);
     expected = IntRect(IntPoint(0, 0), IntSize(30, 30));
-    actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
+    actual = CCLayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_RECT_EQ(expected, actual);
 
     // Case 4: The layer is rotated about its top-left corner, and translated upwards. In
@@ -1766,11 +1766,11 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectFor2DRotations)
     layerToSurfaceTransform.translate(0, -sqrt(2.0) * 15);
     layerToSurfaceTransform.rotate(45);
     expected = IntRect(IntPoint(15, 0), IntSize(15, 30)); // right half of layer bounds.
-    actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
+    actual = CCLayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_RECT_EQ(expected, actual);
 }
 
-TEST(LayerTreeHostCommonTest, verifyVisibleRectFor3dOrthographicTransform)
+TEST(CCLayerTreeHostCommonTest, verifyVisibleRectFor3dOrthographicTransform)
 {
     // Test that the calculateVisibleRect() function works correctly for 3d transforms.
 
@@ -1782,7 +1782,7 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectFor3dOrthographicTransform)
     layerToSurfaceTransform.makeIdentity();
     layerToSurfaceTransform.rotate3d(0, 45, 0);
     IntRect expected = IntRect(IntPoint(0, 0), IntSize(100, 100));
-    IntRect actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
+    IntRect actual = CCLayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_RECT_EQ(expected, actual);
 
     // Case 2: Orthographic projection of a layer rotated about y-axis by 45 degrees, but
@@ -1793,11 +1793,11 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectFor3dOrthographicTransform)
     layerToSurfaceTransform.translate(-halfWidthOfRotatedLayer, 0);
     layerToSurfaceTransform.rotate3d(0, 45, 0); // rotates about the left edge of the layer
     expected = IntRect(IntPoint(50, 0), IntSize(50, 100)); // right half of the layer.
-    actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
+    actual = CCLayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_RECT_EQ(expected, actual);
 }
 
-TEST(LayerTreeHostCommonTest, verifyVisibleRectFor3dPerspectiveTransform)
+TEST(CCLayerTreeHostCommonTest, verifyVisibleRectFor3dPerspectiveTransform)
 {
     // Test the calculateVisibleRect() function works correctly when the layer has a
     // perspective projection onto the target surface.
@@ -1820,7 +1820,7 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectFor3dPerspectiveTransform)
     layerToSurfaceTransform.translate3d(0, 0, -27);
 
     IntRect expected = IntRect(IntPoint(-50, -50), IntSize(200, 200));
-    IntRect actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
+    IntRect actual = CCLayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_RECT_EQ(expected, actual);
 
     // Case 2: same projection as before, except that the layer is also translated to the
@@ -1833,11 +1833,11 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectFor3dPerspectiveTransform)
     //
     layerToSurfaceTransform.translate3d(-200, 0, 0);
     expected = IntRect(IntPoint(50, -50), IntSize(100, 200)); // The right half of the layer's bounding rect.
-    actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
+    actual = CCLayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_RECT_EQ(expected, actual);
 }
 
-TEST(LayerTreeHostCommonTest, verifyVisibleRectFor3dOrthographicIsNotClippedBehindSurface)
+TEST(CCLayerTreeHostCommonTest, verifyVisibleRectFor3dOrthographicIsNotClippedBehindSurface)
 {
     // There is currently no explicit concept of an orthographic projection plane in our
     // code (nor in the CSS spec to my knowledge). Therefore, layers that are technically
@@ -1856,11 +1856,11 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectFor3dOrthographicIsNotClippedBehi
     layerToSurfaceTransform.translate(-50, 0);
 
     IntRect expected = IntRect(IntPoint(0, 0), IntSize(100, 100));
-    IntRect actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
+    IntRect actual = CCLayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_RECT_EQ(expected, actual);
 }
 
-TEST(LayerTreeHostCommonTest, verifyVisibleRectFor3dPerspectiveWhenClippedByW)
+TEST(CCLayerTreeHostCommonTest, verifyVisibleRectFor3dPerspectiveWhenClippedByW)
 {
     // Test the calculateVisibleRect() function works correctly when projecting a surface
     // onto a layer, but the layer is partially behind the camera (not just behind the
@@ -1884,17 +1884,17 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectFor3dPerspectiveWhenClippedByW)
     // Sanity check that this transform does indeed cause w < 0 when applying the
     // transform, otherwise this code is not testing the intended scenario.
     bool clipped = false;
-    MathUtil::mapQuad(layerToSurfaceTransform, FloatQuad(FloatRect(layerContentRect)), clipped);
+    CCMathUtil::mapQuad(layerToSurfaceTransform, FloatQuad(FloatRect(layerContentRect)), clipped);
     ASSERT_TRUE(clipped);
 
     int expectedXPosition = 0;
     int expectedWidth = 10;
-    IntRect actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
+    IntRect actual = CCLayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_EQ(expectedXPosition, actual.x());
     EXPECT_EQ(expectedWidth, actual.width());
 }
 
-TEST(LayerTreeHostCommonTest, verifyVisibleRectForPerspectiveUnprojection)
+TEST(CCLayerTreeHostCommonTest, verifyVisibleRectForPerspectiveUnprojection)
 {
     // To determine visibleRect in layer space, there needs to be an un-projection from
     // surface space to layer space. When the original transform was a perspective
@@ -1914,24 +1914,24 @@ TEST(LayerTreeHostCommonTest, verifyVisibleRectForPerspectiveUnprojection)
     // Sanity check that un-projection does indeed cause w < 0, otherwise this code is not
     // testing the intended scenario.
     bool clipped = false;
-    FloatRect clippedRect = MathUtil::mapClippedRect(layerToSurfaceTransform, layerContentRect);
-    MathUtil::projectQuad(layerToSurfaceTransform.inverse(), FloatQuad(clippedRect), clipped);
+    FloatRect clippedRect = CCMathUtil::mapClippedRect(layerToSurfaceTransform, layerContentRect);
+    CCMathUtil::projectQuad(layerToSurfaceTransform.inverse(), FloatQuad(clippedRect), clipped);
     ASSERT_TRUE(clipped);
 
     // Only the corner of the layer is not visible on the surface because of being
     // clipped. But, the net result of rounding visible region to an axis-aligned rect is
     // that the entire layer should still be considered visible.
     IntRect expected = IntRect(IntPoint(-10, -10), IntSize(20, 20));
-    IntRect actual = LayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
+    IntRect actual = CCLayerTreeHostCommon::calculateVisibleRect(targetSurfaceRect, layerContentRect, layerToSurfaceTransform);
     EXPECT_RECT_EQ(expected, actual);
 }
 
-TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForSimpleLayers)
+TEST(CCLayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForSimpleLayers)
 {
-    scoped_refptr<Layer> root = Layer::create();
-    scoped_refptr<LayerWithForcedDrawsContent> child1 = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> child2 = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> child3 = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> root = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child1 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child2 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child3 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
     root->addChild(child1);
     root->addChild(child2);
     root->addChild(child3);
@@ -1961,13 +1961,13 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForSimpleLayer
     EXPECT_RECT_EQ(IntRect(125, 125, 50, 50), child3->drawableContentRect());
 }
 
-TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForLayersClippedByLayer)
+TEST(CCLayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForLayersClippedByLayer)
 {
-    scoped_refptr<Layer> root = Layer::create();
-    scoped_refptr<Layer> child = Layer::create();
-    scoped_refptr<LayerWithForcedDrawsContent> grandChild1 = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> grandChild2 = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> grandChild3 = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> root = LayerChromium::create();
+    scoped_refptr<LayerChromium> child = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> grandChild1 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> grandChild2 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> grandChild3 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
     root->addChild(child);
     child->addChild(grandChild1);
     child->addChild(grandChild2);
@@ -2003,13 +2003,13 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForLayersClipp
     EXPECT_TRUE(grandChild3->drawableContentRect().isEmpty());
 }
 
-TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForLayersInUnclippedRenderSurface)
+TEST(CCLayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForLayersInUnclippedRenderSurface)
 {
-    scoped_refptr<Layer> root = Layer::create();
-    scoped_refptr<Layer> renderSurface1 = Layer::create();
-    scoped_refptr<LayerWithForcedDrawsContent> child1 = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> child2 = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> child3 = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> root = LayerChromium::create();
+    scoped_refptr<LayerChromium> renderSurface1 = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child1 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child2 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child3 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
     root->addChild(renderSurface1);
     renderSurface1->addChild(child1);
     renderSurface1->addChild(child2);
@@ -2047,13 +2047,13 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForLayersInUnc
     EXPECT_RECT_EQ(IntRect(125, 125, 50, 50), child3->drawableContentRect());
 }
 
-TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForLayersInClippedRenderSurface)
+TEST(CCLayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForLayersInClippedRenderSurface)
 {
-    scoped_refptr<Layer> root = Layer::create();
-    scoped_refptr<Layer> renderSurface1 = Layer::create();
-    scoped_refptr<LayerWithForcedDrawsContent> child1 = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> child2 = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> child3 = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> root = LayerChromium::create();
+    scoped_refptr<LayerChromium> renderSurface1 = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child1 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child2 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child3 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
     root->addChild(renderSurface1);
     renderSurface1->addChild(child1);
     renderSurface1->addChild(child2);
@@ -2094,15 +2094,15 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForLayersInCli
     EXPECT_RECT_EQ(IntRect(125, 125, 50, 50), child3->drawableContentRect());
 }
 
-TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForSurfaceHierarchy)
+TEST(CCLayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForSurfaceHierarchy)
 {
     // Check that clipping does not propagate down surfaces.
-    scoped_refptr<Layer> root = Layer::create();
-    scoped_refptr<Layer> renderSurface1 = Layer::create();
-    scoped_refptr<Layer> renderSurface2 = Layer::create();
-    scoped_refptr<LayerWithForcedDrawsContent> child1 = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> child2 = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> child3 = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> root = LayerChromium::create();
+    scoped_refptr<LayerChromium> renderSurface1 = LayerChromium::create();
+    scoped_refptr<LayerChromium> renderSurface2 = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child1 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child2 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child3 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
     root->addChild(renderSurface1);
     renderSurface1->addChild(renderSurface2);
     renderSurface2->addChild(child1);
@@ -2153,14 +2153,14 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsForSurfaceHier
     EXPECT_RECT_EQ(IntRect(125, 125, 50, 50), child3->drawableContentRect());
 }
 
-TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsWithTransformOnUnclippedSurface)
+TEST(CCLayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsWithTransformOnUnclippedSurface)
 {
     // Layers that have non-axis aligned bounds (due to transforms) have an expanded,
     // axis-aligned drawableContentRect and visibleContentRect.
 
-    scoped_refptr<Layer> root = Layer::create();
-    scoped_refptr<Layer> renderSurface1 = Layer::create();
-    scoped_refptr<LayerWithForcedDrawsContent> child1 = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> root = LayerChromium::create();
+    scoped_refptr<LayerChromium> renderSurface1 = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child1 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
     root->addChild(renderSurface1);
     renderSurface1->addChild(child1);
 
@@ -2193,14 +2193,14 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsWithTransformO
     EXPECT_RECT_EQ(expectedSurfaceDrawableContent, child1->drawableContentRect());
 }
 
-TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsWithTransformOnClippedSurface)
+TEST(CCLayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsWithTransformOnClippedSurface)
 {
     // Layers that have non-axis aligned bounds (due to transforms) have an expanded,
     // axis-aligned drawableContentRect and visibleContentRect.
 
-    scoped_refptr<Layer> root = Layer::create();
-    scoped_refptr<Layer> renderSurface1 = Layer::create();
-    scoped_refptr<LayerWithForcedDrawsContent> child1 = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> root = LayerChromium::create();
+    scoped_refptr<LayerChromium> renderSurface1 = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child1 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
     root->addChild(renderSurface1);
     renderSurface1->addChild(child1);
 
@@ -2232,16 +2232,16 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsWithTransformO
     EXPECT_RECT_EQ(unclippedSurfaceContent, child1->drawableContentRect());
 }
 
-TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsInHighDPI)
+TEST(CCLayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsInHighDPI)
 {
-    MockContentLayerClient client;
+    MockContentLayerChromiumClient client;
 
-    scoped_refptr<Layer> root = Layer::create();
-    scoped_refptr<ContentLayer> renderSurface1 = createDrawableContentLayer(&client);
-    scoped_refptr<ContentLayer> renderSurface2 = createDrawableContentLayer(&client);
-    scoped_refptr<ContentLayer> child1 = createDrawableContentLayer(&client);
-    scoped_refptr<ContentLayer> child2 = createDrawableContentLayer(&client);
-    scoped_refptr<ContentLayer> child3 = createDrawableContentLayer(&client);
+    scoped_refptr<LayerChromium> root = LayerChromium::create();
+    scoped_refptr<ContentLayerChromium> renderSurface1 = createDrawableContentLayerChromium(&client);
+    scoped_refptr<ContentLayerChromium> renderSurface2 = createDrawableContentLayerChromium(&client);
+    scoped_refptr<ContentLayerChromium> child1 = createDrawableContentLayerChromium(&client);
+    scoped_refptr<ContentLayerChromium> child2 = createDrawableContentLayerChromium(&client);
+    scoped_refptr<ContentLayerChromium> child3 = createDrawableContentLayerChromium(&client);
     root->addChild(renderSurface1);
     renderSurface1->addChild(renderSurface2);
     renderSurface2->addChild(child1);
@@ -2297,22 +2297,22 @@ TEST(LayerTreeHostCommonTest, verifyDrawableAndVisibleContentRectsInHighDPI)
     EXPECT_RECT_EQ(IntRect(0, 0, 100, 100), child3->visibleContentRect());
 }
 
-TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithoutPreserves3d)
+TEST(CCLayerTreeHostCommonTest, verifyBackFaceCullingWithoutPreserves3d)
 {
     // Verify the behavior of back-face culling when there are no preserve-3d layers. Note
     // that 3d transforms still apply in this case, but they are "flattened" to each
     // parent layer according to current W3C spec.
 
     const WebTransformationMatrix identityMatrix;
-    scoped_refptr<Layer> parent = Layer::create();
-    scoped_refptr<LayerWithForcedDrawsContent> frontFacingChild = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> backFacingChild = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> frontFacingSurface = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> backFacingSurface = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> frontFacingChildOfFrontFacingSurface = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> backFacingChildOfFrontFacingSurface = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> frontFacingChildOfBackFacingSurface = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> backFacingChildOfBackFacingSurface = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> frontFacingChild = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> backFacingChild = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> frontFacingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> backFacingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> frontFacingChildOfFrontFacingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> backFacingChildOfFrontFacingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> frontFacingChildOfBackFacingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> backFacingChildOfBackFacingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
 
     parent->addChild(frontFacingChild);
     parent->addChild(backFacingChild);
@@ -2354,9 +2354,9 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithoutPreserves3d)
     setLayerPropertiesForTesting(frontFacingChildOfBackFacingSurface.get(), identityMatrix, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(100, 100), false);
     setLayerPropertiesForTesting(backFacingChildOfBackFacingSurface.get(), backfaceMatrix, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(100, 100), false);
 
-    std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
+    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
 
     // Verify which renderSurfaces were created.
     EXPECT_FALSE(frontFacingChild->renderSurface());
@@ -2391,22 +2391,22 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithoutPreserves3d)
     EXPECT_EQ(frontFacingChildOfBackFacingSurface->id(), renderSurfaceLayerList[2]->renderSurface()->layerList()[0]->id());
 }
 
-TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithPreserves3d)
+TEST(CCLayerTreeHostCommonTest, verifyBackFaceCullingWithPreserves3d)
 {
     // Verify the behavior of back-face culling when preserves-3d transform style is used.
 
     const WebTransformationMatrix identityMatrix;
-    scoped_refptr<Layer> parent = Layer::create();
-    scoped_refptr<LayerWithForcedDrawsContent> frontFacingChild = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> backFacingChild = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> frontFacingSurface = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> backFacingSurface = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> frontFacingChildOfFrontFacingSurface = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> backFacingChildOfFrontFacingSurface = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> frontFacingChildOfBackFacingSurface = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> backFacingChildOfBackFacingSurface = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> dummyReplicaLayer1 = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> dummyReplicaLayer2 = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> frontFacingChild = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> backFacingChild = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> frontFacingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> backFacingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> frontFacingChildOfFrontFacingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> backFacingChildOfFrontFacingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> frontFacingChildOfBackFacingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> backFacingChildOfBackFacingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> dummyReplicaLayer1 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> dummyReplicaLayer2 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
 
     parent->addChild(frontFacingChild);
     parent->addChild(backFacingChild);
@@ -2453,9 +2453,9 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithPreserves3d)
     setLayerPropertiesForTesting(frontFacingChildOfBackFacingSurface.get(), identityMatrix, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(100, 100), false);
     setLayerPropertiesForTesting(backFacingChildOfBackFacingSurface.get(), backfaceMatrix, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(100, 100), false);
 
-    std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
+    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
 
     // Verify which renderSurfaces were created.
     EXPECT_FALSE(frontFacingChild->renderSurface());
@@ -2483,7 +2483,7 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithPreserves3d)
     EXPECT_EQ(frontFacingChildOfFrontFacingSurface->id(), renderSurfaceLayerList[1]->renderSurface()->layerList()[1]->id());
 }
 
-TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithAnimatingTransforms)
+TEST(CCLayerTreeHostCommonTest, verifyBackFaceCullingWithAnimatingTransforms)
 {
     // Verify that layers are appropriately culled when their back face is showing and
     // they are not double sided, while animations are going on.
@@ -2493,12 +2493,12 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithAnimatingTransforms)
     //
 
     const WebTransformationMatrix identityMatrix;
-    scoped_refptr<Layer> parent = Layer::create();
-    scoped_refptr<LayerWithForcedDrawsContent> child = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> animatingSurface = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> childOfAnimatingSurface = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> animatingChild = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> child2 = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> animatingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> childOfAnimatingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> animatingChild = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child2 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
 
     parent->addChild(child);
     parent->addChild(animatingSurface);
@@ -2533,9 +2533,9 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithAnimatingTransforms)
     setLayerPropertiesForTesting(animatingChild.get(), backfaceMatrix, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(100, 100), false);
     setLayerPropertiesForTesting(child2.get(), identityMatrix, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(100, 100), false);
 
-    std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
+    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
 
     EXPECT_FALSE(child->renderSurface());
     EXPECT_TRUE(animatingSurface->renderSurface());
@@ -2567,17 +2567,17 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithAnimatingTransforms)
     EXPECT_EQ(childOfAnimatingSurface->visibleContentRect(), IntRect(IntPoint(), childOfAnimatingSurface->contentBounds()));
 }
 
-TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithPreserves3dForFlatteningSurface)
+TEST(CCLayerTreeHostCommonTest, verifyBackFaceCullingWithPreserves3dForFlatteningSurface)
 {
     // Verify the behavior of back-face culling for a renderSurface that is created
     // when it flattens its subtree, and its parent has preserves-3d.
 
     const WebTransformationMatrix identityMatrix;
-    scoped_refptr<Layer> parent = Layer::create();
-    scoped_refptr<LayerWithForcedDrawsContent> frontFacingSurface = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> backFacingSurface = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> child1 = make_scoped_refptr(new LayerWithForcedDrawsContent());
-    scoped_refptr<LayerWithForcedDrawsContent> child2 = make_scoped_refptr(new LayerWithForcedDrawsContent());
+    scoped_refptr<LayerChromium> parent = LayerChromium::create();
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> frontFacingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> backFacingSurface = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child1 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
+    scoped_refptr<LayerChromiumWithForcedDrawsContent> child2 = make_scoped_refptr(new LayerChromiumWithForcedDrawsContent());
 
     parent->addChild(frontFacingSurface);
     parent->addChild(backFacingSurface);
@@ -2599,9 +2599,9 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithPreserves3dForFlatteningS
     setLayerPropertiesForTesting(child1.get(), identityMatrix, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(100, 100), false);
     setLayerPropertiesForTesting(child2.get(), identityMatrix, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(100, 100), false);
 
-    std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
+    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), 1, dummyMaxTextureSize, renderSurfaceLayerList);
 
     // Verify which renderSurfaces were created.
     EXPECT_TRUE(frontFacingSurface->renderSurface());
@@ -2624,27 +2624,27 @@ TEST(LayerTreeHostCommonTest, verifyBackFaceCullingWithPreserves3dForFlatteningS
     EXPECT_EQ(child1->id(), renderSurfaceLayerList[1]->renderSurface()->layerList()[1]->id());
 }
 
-TEST(LayerTreeHostCommonTest, verifyHitTestingForEmptyLayerList)
+TEST(CCLayerTreeHostCommonTest, verifyHitTestingForEmptyLayerList)
 {
     // Hit testing on an empty renderSurfaceLayerList should return a null pointer.
     DebugScopedSetImplThread thisScopeIsOnImplThread;
 
-    std::vector<LayerImpl*> renderSurfaceLayerList;
+    std::vector<CCLayerImpl*> renderSurfaceLayerList;
 
     IntPoint testPoint(0, 0);
-    LayerImpl* resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    CCLayerImpl* resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     EXPECT_FALSE(resultLayer);
 
     testPoint = IntPoint(10, 20);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     EXPECT_FALSE(resultLayer);
 }
 
-TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleLayer)
+TEST(CCLayerTreeHostCommonTest, verifyHitTestingForSingleLayer)
 {
     DebugScopedSetImplThread thisScopeIsOnImplThread;
 
-    scoped_ptr<LayerImpl> root = LayerImpl::create(12345);
+    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(12345);
 
     WebTransformationMatrix identityMatrix;
     FloatPoint anchor(0, 0);
@@ -2653,9 +2653,9 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleLayer)
     setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
     root->setDrawsContent(true);
 
-    std::vector<LayerImpl*> renderSurfaceLayerList;
+    std::vector<CCLayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -2663,30 +2663,30 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleLayer)
 
     // Hit testing for a point outside the layer should return a null pointer.
     IntPoint testPoint(101, 101);
-    LayerImpl* resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    CCLayerImpl* resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     EXPECT_FALSE(resultLayer);
 
     testPoint = IntPoint(-1, -1);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     EXPECT_FALSE(resultLayer);
 
     // Hit testing for a point inside should return the root layer.
     testPoint = IntPoint(1, 1);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(12345, resultLayer->id());
 
     testPoint = IntPoint(99, 99);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(12345, resultLayer->id());
 }
 
-TEST(LayerTreeHostCommonTest, verifyHitTestingForUninvertibleTransform)
+TEST(CCLayerTreeHostCommonTest, verifyHitTestingForUninvertibleTransform)
 {
     DebugScopedSetImplThread thisScopeIsOnImplThread;
 
-    scoped_ptr<LayerImpl> root = LayerImpl::create(12345);
+    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(12345);
 
     WebTransformationMatrix uninvertibleTransform;
     uninvertibleTransform.setM11(0);
@@ -2702,9 +2702,9 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForUninvertibleTransform)
     setLayerPropertiesForTesting(root.get(), uninvertibleTransform, identityMatrix, anchor, position, bounds, false);
     root->setDrawsContent(true);
 
-    std::vector<LayerImpl*> renderSurfaceLayerList;
+    std::vector<CCLayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -2715,39 +2715,39 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForUninvertibleTransform)
     // accidentally ignored and treated like an identity, then the hit testing will
     // incorrectly hit the layer when it shouldn't.
     IntPoint testPoint(1, 1);
-    LayerImpl* resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    CCLayerImpl* resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     EXPECT_FALSE(resultLayer);
 
     testPoint = IntPoint(10, 10);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     EXPECT_FALSE(resultLayer);
 
     testPoint = IntPoint(10, 30);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     EXPECT_FALSE(resultLayer);
 
     testPoint = IntPoint(50, 50);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     EXPECT_FALSE(resultLayer);
 
     testPoint = IntPoint(67, 48);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     EXPECT_FALSE(resultLayer);
 
     testPoint = IntPoint(99, 99);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     EXPECT_FALSE(resultLayer);
 
     testPoint = IntPoint(-1, -1);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     EXPECT_FALSE(resultLayer);
 }
 
-TEST(LayerTreeHostCommonTest, verifyHitTestingForSinglePositionedLayer)
+TEST(CCLayerTreeHostCommonTest, verifyHitTestingForSinglePositionedLayer)
 {
     DebugScopedSetImplThread thisScopeIsOnImplThread;
 
-    scoped_ptr<LayerImpl> root = LayerImpl::create(12345);
+    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(12345);
 
     WebTransformationMatrix identityMatrix;
     FloatPoint anchor(0, 0);
@@ -2756,9 +2756,9 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSinglePositionedLayer)
     setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
     root->setDrawsContent(true);
 
-    std::vector<LayerImpl*> renderSurfaceLayerList;
+    std::vector<CCLayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -2766,31 +2766,31 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSinglePositionedLayer)
 
     // Hit testing for a point outside the layer should return a null pointer.
     IntPoint testPoint(49, 49);
-    LayerImpl* resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    CCLayerImpl* resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     EXPECT_FALSE(resultLayer);
 
     // Even though the layer exists at (101, 101), it should not be visible there since the root renderSurface would clamp it.
     testPoint = IntPoint(101, 101);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     EXPECT_FALSE(resultLayer);
 
     // Hit testing for a point inside should return the root layer.
     testPoint = IntPoint(51, 51);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(12345, resultLayer->id());
 
     testPoint = IntPoint(99, 99);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(12345, resultLayer->id());
 }
 
-TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleRotatedLayer)
+TEST(CCLayerTreeHostCommonTest, verifyHitTestingForSingleRotatedLayer)
 {
     DebugScopedSetImplThread thisScopeIsOnImplThread;
 
-    scoped_ptr<LayerImpl> root = LayerImpl::create(12345);
+    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(12345);
 
     WebTransformationMatrix identityMatrix;
     WebTransformationMatrix rotation45DegreesAboutCenter;
@@ -2803,9 +2803,9 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleRotatedLayer)
     setLayerPropertiesForTesting(root.get(), rotation45DegreesAboutCenter, identityMatrix, anchor, position, bounds, false);
     root->setDrawsContent(true);
 
-    std::vector<LayerImpl*> renderSurfaceLayerList;
+    std::vector<CCLayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -2814,34 +2814,34 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleRotatedLayer)
     // Hit testing for points outside the layer.
     // These corners would have been inside the un-transformed layer, but they should not hit the correctly transformed layer.
     IntPoint testPoint(99, 99);
-    LayerImpl* resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    CCLayerImpl* resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     EXPECT_FALSE(resultLayer);
 
     testPoint = IntPoint(1, 1);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     EXPECT_FALSE(resultLayer);
 
     // Hit testing for a point inside should return the root layer.
     testPoint = IntPoint(1, 50);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(12345, resultLayer->id());
 
     // Hit testing the corners that would overlap the unclipped layer, but are outside the clipped region.
     testPoint = IntPoint(50, -1);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_FALSE(resultLayer);
 
     testPoint = IntPoint(-1, 50);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_FALSE(resultLayer);
 }
 
-TEST(LayerTreeHostCommonTest, verifyHitTestingForSinglePerspectiveLayer)
+TEST(CCLayerTreeHostCommonTest, verifyHitTestingForSinglePerspectiveLayer)
 {
     DebugScopedSetImplThread thisScopeIsOnImplThread;
 
-    scoped_ptr<LayerImpl> root = LayerImpl::create(12345);
+    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(12345);
 
     WebTransformationMatrix identityMatrix;
 
@@ -2859,9 +2859,9 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSinglePerspectiveLayer)
     setLayerPropertiesForTesting(root.get(), perspectiveProjectionAboutCenter * translationByZ, identityMatrix, anchor, position, bounds, false);
     root->setDrawsContent(true);
 
-    std::vector<LayerImpl*> renderSurfaceLayerList;
+    std::vector<CCLayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -2870,26 +2870,26 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSinglePerspectiveLayer)
     // Hit testing for points outside the layer.
     // These corners would have been inside the un-transformed layer, but they should not hit the correctly transformed layer.
     IntPoint testPoint(24, 24);
-    LayerImpl* resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    CCLayerImpl* resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     EXPECT_FALSE(resultLayer);
 
     testPoint = IntPoint(76, 76);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     EXPECT_FALSE(resultLayer);
 
     // Hit testing for a point inside should return the root layer.
     testPoint = IntPoint(26, 26);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(12345, resultLayer->id());
 
     testPoint = IntPoint(74, 74);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(12345, resultLayer->id());
 }
 
-TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleLayerWithScaledContents)
+TEST(CCLayerTreeHostCommonTest, verifyHitTestingForSingleLayerWithScaledContents)
 {
     // A layer's visibleContentRect is actually in the layer's content space. The
     // screenSpaceTransform converts from the layer's origin space to screen space. This
@@ -2903,7 +2903,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleLayerWithScaledContents)
     //
     DebugScopedSetImplThread thisScopeIsOnImplThread;
 
-    scoped_ptr<LayerImpl> root = LayerImpl::create(1);
+    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(1);
 
     WebTransformationMatrix identityMatrix;
     FloatPoint anchor(0, 0);
@@ -2913,7 +2913,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleLayerWithScaledContents)
     {
         FloatPoint position(25, 25);
         IntSize bounds(50, 50);
-        scoped_ptr<LayerImpl> testLayer = LayerImpl::create(12345);
+        scoped_ptr<CCLayerImpl> testLayer = CCLayerImpl::create(12345);
         setLayerPropertiesForTesting(testLayer.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
 
         // override contentBounds
@@ -2923,43 +2923,43 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSingleLayerWithScaledContents)
         root->addChild(testLayer.Pass());
     }
 
-    std::vector<LayerImpl*> renderSurfaceLayerList;
+    std::vector<CCLayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
 
     // Sanity check the scenario we just created.
     // The visibleContentRect for testLayer is actually 100x100, even though its layout size is 50x50, positioned at 25x25.
-    LayerImpl* testLayer = root->children()[0];
+    CCLayerImpl* testLayer = root->children()[0];
     EXPECT_RECT_EQ(IntRect(IntPoint::zero(), IntSize(100, 100)), testLayer->visibleContentRect());
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
     ASSERT_EQ(1u, root->renderSurface()->layerList().size());
 
     // Hit testing for a point outside the layer should return a null pointer (the root layer does not draw content, so it will not be hit tested either).
     IntPoint testPoint(101, 101);
-    LayerImpl* resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    CCLayerImpl* resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     EXPECT_FALSE(resultLayer);
 
     testPoint = IntPoint(24, 24);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     EXPECT_FALSE(resultLayer);
 
     testPoint = IntPoint(76, 76);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     EXPECT_FALSE(resultLayer);
 
     // Hit testing for a point inside should return the test layer.
     testPoint = IntPoint(26, 26);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(12345, resultLayer->id());
 
     testPoint = IntPoint(74, 74);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(12345, resultLayer->id());
 }
 
-TEST(LayerTreeHostCommonTest, verifyHitTestingForSimpleClippedLayer)
+TEST(CCLayerTreeHostCommonTest, verifyHitTestingForSimpleClippedLayer)
 {
     // Test that hit-testing will only work for the visible portion of a layer, and not
     // the entire layer bounds. Here we just test the simple axis-aligned case.
@@ -2968,17 +2968,17 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSimpleClippedLayer)
     WebTransformationMatrix identityMatrix;
     FloatPoint anchor(0, 0);
 
-    scoped_ptr<LayerImpl> root = LayerImpl::create(1);
+    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(1);
     setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, anchor, FloatPoint(0, 0), IntSize(100, 100), false);
 
     {
-        scoped_ptr<LayerImpl> clippingLayer = LayerImpl::create(123);
+        scoped_ptr<CCLayerImpl> clippingLayer = CCLayerImpl::create(123);
         FloatPoint position(25, 25); // this layer is positioned, and hit testing should correctly know where the layer is located.
         IntSize bounds(50, 50);
         setLayerPropertiesForTesting(clippingLayer.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
         clippingLayer->setMasksToBounds(true);
 
-        scoped_ptr<LayerImpl> child = LayerImpl::create(456);
+        scoped_ptr<CCLayerImpl> child = CCLayerImpl::create(456);
         position = FloatPoint(-50, -50);
         bounds = IntSize(300, 300);
         setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
@@ -2987,9 +2987,9 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSimpleClippedLayer)
         root->addChild(clippingLayer.Pass());
     }
 
-    std::vector<LayerImpl*> renderSurfaceLayerList;
+    std::vector<CCLayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -2999,27 +2999,27 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForSimpleClippedLayer)
     // Hit testing for a point outside the layer should return a null pointer.
     // Despite the child layer being very large, it should be clipped to the root layer's bounds.
     IntPoint testPoint(24, 24);
-    LayerImpl* resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    CCLayerImpl* resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     EXPECT_FALSE(resultLayer);
 
     // Even though the layer exists at (101, 101), it should not be visible there since the clippingLayer would clamp it.
     testPoint = IntPoint(76, 76);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     EXPECT_FALSE(resultLayer);
 
     // Hit testing for a point inside should return the child layer.
     testPoint = IntPoint(26, 26);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(456, resultLayer->id());
 
     testPoint = IntPoint(74, 74);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(456, resultLayer->id());
 }
 
-TEST(LayerTreeHostCommonTest, verifyHitTestingForMultiClippedRotatedLayer)
+TEST(CCLayerTreeHostCommonTest, verifyHitTestingForMultiClippedRotatedLayer)
 {
     // This test checks whether hit testing correctly avoids hit testing with multiple
     // ancestors that clip in non axis-aligned ways. To pass this test, the hit testing
@@ -3033,7 +3033,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultiClippedRotatedLayer)
     //
     DebugScopedSetImplThread thisScopeIsOnImplThread;
 
-    scoped_ptr<LayerImpl> root = LayerImpl::create(123);
+    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(123);
 
     WebTransformationMatrix identityMatrix;
     FloatPoint anchor(0, 0);
@@ -3043,9 +3043,9 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultiClippedRotatedLayer)
     root->setMasksToBounds(true);
 
     {
-        scoped_ptr<LayerImpl> child = LayerImpl::create(456);
-        scoped_ptr<LayerImpl> grandChild = LayerImpl::create(789);
-        scoped_ptr<LayerImpl> rotatedLeaf = LayerImpl::create(2468);
+        scoped_ptr<CCLayerImpl> child = CCLayerImpl::create(456);
+        scoped_ptr<CCLayerImpl> grandChild = CCLayerImpl::create(789);
+        scoped_ptr<CCLayerImpl> rotatedLeaf = CCLayerImpl::create(2468);
 
         position = FloatPoint(10, 10);
         bounds = IntSize(80, 80);
@@ -3077,9 +3077,9 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultiClippedRotatedLayer)
         root->addChild(child.Pass());
     }
 
-    std::vector<LayerImpl*> renderSurfaceLayerList;
+    std::vector<CCLayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
 
     // Sanity check the scenario we just created.
     // The grandChild is expected to create a renderSurface because it masksToBounds and is not axis aligned.
@@ -3091,12 +3091,12 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultiClippedRotatedLayer)
 
     // (11, 89) is close to the the bottom left corner within the clip, but it is not inside the layer.
     IntPoint testPoint(11, 89);
-    LayerImpl* resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    CCLayerImpl* resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     EXPECT_FALSE(resultLayer);
 
     // Closer inwards from the bottom left will overlap the layer.
     testPoint = IntPoint(25, 75);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(2468, resultLayer->id());
 
@@ -3105,29 +3105,29 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultiClippedRotatedLayer)
     // visibleContentRect without considering how parent may clip the layer, then hit
     // testing would accidentally think that the point successfully hits the layer.
     testPoint = IntPoint(4, 50);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     EXPECT_FALSE(resultLayer);
 
     // (11, 50) is inside the layer and within the clipped area.
     testPoint = IntPoint(11, 50);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(2468, resultLayer->id());
 
     // Around the middle, just to the right and up, would have hit the layer except that
     // that area should be clipped away by the parent.
     testPoint = IntPoint(51, 51);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     EXPECT_FALSE(resultLayer);
 
     // Around the middle, just to the left and down, should successfully hit the layer.
     testPoint = IntPoint(49, 51);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(2468, resultLayer->id());
 }
 
-TEST(LayerTreeHostCommonTest, verifyHitTestingForNonClippingIntermediateLayer)
+TEST(CCLayerTreeHostCommonTest, verifyHitTestingForNonClippingIntermediateLayer)
 {
     // This test checks that hit testing code does not accidentally clip to layer
     // bounds for a layer that actually does not clip.
@@ -3136,11 +3136,11 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForNonClippingIntermediateLayer)
     WebTransformationMatrix identityMatrix;
     FloatPoint anchor(0, 0);
 
-    scoped_ptr<LayerImpl> root = LayerImpl::create(1);
+    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(1);
     setLayerPropertiesForTesting(root.get(), identityMatrix, identityMatrix, anchor, FloatPoint(0, 0), IntSize(100, 100), false);
 
     {
-        scoped_ptr<LayerImpl> intermediateLayer = LayerImpl::create(123);
+        scoped_ptr<CCLayerImpl> intermediateLayer = CCLayerImpl::create(123);
         FloatPoint position(10, 10); // this layer is positioned, and hit testing should correctly know where the layer is located.
         IntSize bounds(50, 50);
         setLayerPropertiesForTesting(intermediateLayer.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
@@ -3150,7 +3150,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForNonClippingIntermediateLayer)
 
         // The child of the intermediateLayer is translated so that it does not overlap intermediateLayer at all.
         // If child is incorrectly clipped, we would not be able to hit it successfully.
-        scoped_ptr<LayerImpl> child = LayerImpl::create(456);
+        scoped_ptr<CCLayerImpl> child = CCLayerImpl::create(456);
         position = FloatPoint(60, 60); // 70, 70 in screen space
         bounds = IntSize(20, 20);
         setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, anchor, position, bounds, false);
@@ -3159,9 +3159,9 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForNonClippingIntermediateLayer)
         root->addChild(intermediateLayer.Pass());
     }
 
-    std::vector<LayerImpl*> renderSurfaceLayerList;
+    std::vector<CCLayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
 
     // Sanity check the scenario we just created.
     ASSERT_EQ(1u, renderSurfaceLayerList.size());
@@ -3170,31 +3170,31 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForNonClippingIntermediateLayer)
 
     // Hit testing for a point outside the layer should return a null pointer.
     IntPoint testPoint(69, 69);
-    LayerImpl* resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    CCLayerImpl* resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     EXPECT_FALSE(resultLayer);
 
     testPoint = IntPoint(91, 91);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     EXPECT_FALSE(resultLayer);
 
     // Hit testing for a point inside should return the child layer.
     testPoint = IntPoint(71, 71);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(456, resultLayer->id());
 
     testPoint = IntPoint(89, 89);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(456, resultLayer->id());
 }
 
 
-TEST(LayerTreeHostCommonTest, verifyHitTestingForMultipleLayers)
+TEST(CCLayerTreeHostCommonTest, verifyHitTestingForMultipleLayers)
 {
     DebugScopedSetImplThread thisScopeIsOnImplThread;
 
-    scoped_ptr<LayerImpl> root = LayerImpl::create(1);
+    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(1);
 
     WebTransformationMatrix identityMatrix;
     FloatPoint anchor(0, 0);
@@ -3209,9 +3209,9 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultipleLayers)
         // The expected stacking order is:
         //   (front) child2, (second) grandChild, (third) child1, and (back) the root layer behind all other layers.
 
-        scoped_ptr<LayerImpl> child1 = LayerImpl::create(2);
-        scoped_ptr<LayerImpl> child2 = LayerImpl::create(3);
-        scoped_ptr<LayerImpl> grandChild1 = LayerImpl::create(4);
+        scoped_ptr<CCLayerImpl> child1 = CCLayerImpl::create(2);
+        scoped_ptr<CCLayerImpl> child2 = CCLayerImpl::create(3);
+        scoped_ptr<CCLayerImpl> grandChild1 = CCLayerImpl::create(4);
 
         position = FloatPoint(10, 10);
         bounds = IntSize(50, 50);
@@ -3235,13 +3235,13 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultipleLayers)
         root->addChild(child2.Pass());
     }
 
-    LayerImpl* child1 = root->children()[0];
-    LayerImpl* child2 = root->children()[1];
-    LayerImpl* grandChild1 = child1->children()[0];
+    CCLayerImpl* child1 = root->children()[0];
+    CCLayerImpl* child2 = root->children()[1];
+    CCLayerImpl* grandChild1 = child1->children()[0];
 
-    std::vector<LayerImpl*> renderSurfaceLayerList;
+    std::vector<CCLayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
 
     // Sanity check the scenario we just created.
     ASSERT_TRUE(child1);
@@ -3256,42 +3256,42 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultipleLayers)
 
     // Nothing overlaps the rootLayer at (1, 1), so hit testing there should find the root layer.
     IntPoint testPoint = IntPoint(1, 1);
-    LayerImpl* resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    CCLayerImpl* resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(1, resultLayer->id());
 
     // At (15, 15), child1 and root are the only layers. child1 is expected to be on top.
     testPoint = IntPoint(15, 15);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(2, resultLayer->id());
 
     // At (51, 20), child1 and child2 overlap. child2 is expected to be on top.
     testPoint = IntPoint(51, 20);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(3, resultLayer->id());
 
     // At (80, 51), child2 and grandChild1 overlap. child2 is expected to be on top.
     testPoint = IntPoint(80, 51);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(3, resultLayer->id());
 
     // At (51, 51), all layers overlap each other. child2 is expected to be on top of all other layers.
     testPoint = IntPoint(51, 51);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(3, resultLayer->id());
 
     // At (20, 51), child1 and grandChild1 overlap. grandChild1 is expected to be on top.
     testPoint = IntPoint(20, 51);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(4, resultLayer->id());
 }
 
-TEST(LayerTreeHostCommonTest, verifyHitTestingForMultipleLayerLists)
+TEST(CCLayerTreeHostCommonTest, verifyHitTestingForMultipleLayerLists)
 {
     //
     // The geometry is set up similarly to the previous case, but
@@ -3299,7 +3299,7 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultipleLayerLists)
     //
     DebugScopedSetImplThread thisScopeIsOnImplThread;
 
-    scoped_ptr<LayerImpl> root = LayerImpl::create(1);
+    scoped_ptr<CCLayerImpl> root = CCLayerImpl::create(1);
 
     WebTransformationMatrix identityMatrix;
     FloatPoint anchor(0, 0);
@@ -3314,9 +3314,9 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultipleLayerLists)
         // The expected stacking order is:
         //   (front) child2, (second) grandChild, (third) child1, and (back) the root layer behind all other layers.
 
-        scoped_ptr<LayerImpl> child1 = LayerImpl::create(2);
-        scoped_ptr<LayerImpl> child2 = LayerImpl::create(3);
-        scoped_ptr<LayerImpl> grandChild1 = LayerImpl::create(4);
+        scoped_ptr<CCLayerImpl> child1 = CCLayerImpl::create(2);
+        scoped_ptr<CCLayerImpl> child2 = CCLayerImpl::create(3);
+        scoped_ptr<CCLayerImpl> grandChild1 = CCLayerImpl::create(4);
 
         position = FloatPoint(10, 10);
         bounds = IntSize(50, 50);
@@ -3343,13 +3343,13 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultipleLayerLists)
         root->addChild(child2.Pass());
     }
 
-    LayerImpl* child1 = root->children()[0];
-    LayerImpl* child2 = root->children()[1];
-    LayerImpl* grandChild1 = child1->children()[0];
+    CCLayerImpl* child1 = root->children()[0];
+    CCLayerImpl* child2 = root->children()[1];
+    CCLayerImpl* grandChild1 = child1->children()[0];
 
-    std::vector<LayerImpl*> renderSurfaceLayerList;
+    std::vector<CCLayerImpl*> renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
-    LayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(root.get(), root->bounds(), 1, 0, dummyMaxTextureSize, renderSurfaceLayerList);
 
     // Sanity check the scenario we just created.
     ASSERT_TRUE(child1);
@@ -3370,60 +3370,60 @@ TEST(LayerTreeHostCommonTest, verifyHitTestingForMultipleLayerLists)
 
     // Nothing overlaps the rootLayer at (1, 1), so hit testing there should find the root layer.
     IntPoint testPoint = IntPoint(1, 1);
-    LayerImpl* resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    CCLayerImpl* resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(1, resultLayer->id());
 
     // At (15, 15), child1 and root are the only layers. child1 is expected to be on top.
     testPoint = IntPoint(15, 15);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(2, resultLayer->id());
 
     // At (51, 20), child1 and child2 overlap. child2 is expected to be on top.
     testPoint = IntPoint(51, 20);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(3, resultLayer->id());
 
     // At (80, 51), child2 and grandChild1 overlap. child2 is expected to be on top.
     testPoint = IntPoint(80, 51);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(3, resultLayer->id());
 
     // At (51, 51), all layers overlap each other. child2 is expected to be on top of all other layers.
     testPoint = IntPoint(51, 51);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(3, resultLayer->id());
 
     // At (20, 51), child1 and grandChild1 overlap. grandChild1 is expected to be on top.
     testPoint = IntPoint(20, 51);
-    resultLayer = LayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
+    resultLayer = CCLayerTreeHostCommon::findLayerThatIsHitByPoint(testPoint, renderSurfaceLayerList);
     ASSERT_TRUE(resultLayer);
     EXPECT_EQ(4, resultLayer->id());
 }
 
-TEST(LayerTreeHostCommonTest, verifyLayerTransformsInHighDPI)
+TEST(CCLayerTreeHostCommonTest, verifyLayerTransformsInHighDPI)
 {
     // Verify draw and screen space transforms of layers not in a surface.
-    MockContentLayerClient delegate;
+    MockContentLayerChromiumClient delegate;
     WebTransformationMatrix identityMatrix;
 
-    scoped_refptr<ContentLayer> parent = createDrawableContentLayer(&delegate);
+    scoped_refptr<ContentLayerChromium> parent = createDrawableContentLayerChromium(&delegate);
     setLayerPropertiesForTesting(parent.get(), identityMatrix, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(100, 100), true);
 
-    scoped_refptr<ContentLayer> child = createDrawableContentLayer(&delegate);
+    scoped_refptr<ContentLayerChromium> child = createDrawableContentLayerChromium(&delegate);
     setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, FloatPoint(0, 0), FloatPoint(2, 2), IntSize(10, 10), true);
 
-    scoped_refptr<ContentLayer> childNoScale = createDrawableContentLayer(&delegate);
+    scoped_refptr<ContentLayerChromium> childNoScale = createDrawableContentLayerChromium(&delegate);
     setLayerPropertiesForTesting(childNoScale.get(), identityMatrix, identityMatrix, FloatPoint(0, 0), FloatPoint(2, 2), IntSize(10, 10), true);
 
     parent->addChild(child);
     parent->addChild(childNoScale);
 
-    std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
+    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
 
     const double deviceScaleFactor = 2.5;
@@ -3431,7 +3431,7 @@ TEST(LayerTreeHostCommonTest, verifyLayerTransformsInHighDPI)
     child->setContentsScale(deviceScaleFactor);
     EXPECT_EQ(childNoScale->contentsScale(), 1);
 
-    LayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), deviceScaleFactor, dummyMaxTextureSize, renderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), deviceScaleFactor, dummyMaxTextureSize, renderSurfaceLayerList);
 
     EXPECT_EQ(1u, renderSurfaceLayerList.size());
 
@@ -3443,8 +3443,8 @@ TEST(LayerTreeHostCommonTest, verifyLayerTransformsInHighDPI)
     // Verify results of transformed parent rects
     FloatRect parentContentBounds(FloatPoint(), FloatSize(parent->contentBounds()));
 
-    FloatRect parentDrawRect = MathUtil::mapClippedRect(parent->drawTransform(), parentContentBounds);
-    FloatRect parentScreenSpaceRect = MathUtil::mapClippedRect(parent->screenSpaceTransform(), parentContentBounds);
+    FloatRect parentDrawRect = CCMathUtil::mapClippedRect(parent->drawTransform(), parentContentBounds);
+    FloatRect parentScreenSpaceRect = CCMathUtil::mapClippedRect(parent->screenSpaceTransform(), parentContentBounds);
 
     FloatRect expectedParentDrawRect(FloatPoint(), parent->bounds());
     expectedParentDrawRect.scale(deviceScaleFactor);
@@ -3460,8 +3460,8 @@ TEST(LayerTreeHostCommonTest, verifyLayerTransformsInHighDPI)
     // Verify results of transformed child rects
     FloatRect childContentBounds(FloatPoint(), FloatSize(child->contentBounds()));
 
-    FloatRect childDrawRect = MathUtil::mapClippedRect(child->drawTransform(), childContentBounds);
-    FloatRect childScreenSpaceRect = MathUtil::mapClippedRect(child->screenSpaceTransform(), childContentBounds);
+    FloatRect childDrawRect = CCMathUtil::mapClippedRect(child->drawTransform(), childContentBounds);
+    FloatRect childScreenSpaceRect = CCMathUtil::mapClippedRect(child->screenSpaceTransform(), childContentBounds);
 
     FloatRect expectedChildDrawRect(FloatPoint(), child->bounds());
     expectedChildDrawRect.move(child->position().x(), child->position().y());
@@ -3478,32 +3478,32 @@ TEST(LayerTreeHostCommonTest, verifyLayerTransformsInHighDPI)
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedChildNoScaleTransform, childNoScale->screenSpaceTransform());
 }
 
-TEST(LayerTreeHostCommonTest, verifyRenderSurfaceTransformsInHighDPI)
+TEST(CCLayerTreeHostCommonTest, verifyRenderSurfaceTransformsInHighDPI)
 {
-    MockContentLayerClient delegate;
+    MockContentLayerChromiumClient delegate;
     WebTransformationMatrix identityMatrix;
 
-    scoped_refptr<ContentLayer> parent = createDrawableContentLayer(&delegate);
+    scoped_refptr<ContentLayerChromium> parent = createDrawableContentLayerChromium(&delegate);
     setLayerPropertiesForTesting(parent.get(), identityMatrix, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(30, 30), true);
 
-    scoped_refptr<ContentLayer> child = createDrawableContentLayer(&delegate);
+    scoped_refptr<ContentLayerChromium> child = createDrawableContentLayerChromium(&delegate);
     setLayerPropertiesForTesting(child.get(), identityMatrix, identityMatrix, FloatPoint(0, 0), FloatPoint(2, 2), IntSize(10, 10), true);
 
     WebTransformationMatrix replicaTransform;
     replicaTransform.scaleNonUniform(1, -1);
-    scoped_refptr<ContentLayer> replica = createDrawableContentLayer(&delegate);
+    scoped_refptr<ContentLayerChromium> replica = createDrawableContentLayerChromium(&delegate);
     setLayerPropertiesForTesting(replica.get(), replicaTransform, identityMatrix, FloatPoint(0, 0), FloatPoint(2, 2), IntSize(10, 10), true);
 
     // This layer should end up in the same surface as child, with the same draw
     // and screen space transforms.
-    scoped_refptr<ContentLayer> duplicateChildNonOwner = createDrawableContentLayer(&delegate);
+    scoped_refptr<ContentLayerChromium> duplicateChildNonOwner = createDrawableContentLayerChromium(&delegate);
     setLayerPropertiesForTesting(duplicateChildNonOwner.get(), identityMatrix, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(10, 10), true);
 
     parent->addChild(child);
     child->addChild(duplicateChildNonOwner);
     child->setReplicaLayer(replica.get());
 
-    std::vector<scoped_refptr<Layer> > renderSurfaceLayerList;
+    std::vector<scoped_refptr<LayerChromium> > renderSurfaceLayerList;
     int dummyMaxTextureSize = 512;
 
     const double deviceScaleFactor = 1.5;
@@ -3512,7 +3512,7 @@ TEST(LayerTreeHostCommonTest, verifyRenderSurfaceTransformsInHighDPI)
     duplicateChildNonOwner->setContentsScale(deviceScaleFactor);
     replica->setContentsScale(deviceScaleFactor);
 
-    LayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), deviceScaleFactor, dummyMaxTextureSize, renderSurfaceLayerList);
+    CCLayerTreeHostCommon::calculateDrawTransforms(parent.get(), parent->bounds(), deviceScaleFactor, dummyMaxTextureSize, renderSurfaceLayerList);
 
     // We should have two render surfaces. The root's render surface and child's
     // render surface (it needs one because it has a replica layer).
@@ -3560,13 +3560,13 @@ TEST(LayerTreeHostCommonTest, verifyRenderSurfaceTransformsInHighDPI)
     EXPECT_TRANSFORMATION_MATRIX_EQ(expectedReplicaScreenSpaceTransform, child->renderSurface()->replicaScreenSpaceTransform());
 }
 
-TEST(LayerTreeHostCommonTest, verifySubtreeSearch)
+TEST(CCLayerTreeHostCommonTest, verifySubtreeSearch)
 {
-    scoped_refptr<Layer> root = Layer::create();
-    scoped_refptr<Layer> child = Layer::create();
-    scoped_refptr<Layer> grandChild = Layer::create();
-    scoped_refptr<Layer> maskLayer = Layer::create();
-    scoped_refptr<Layer> replicaLayer = Layer::create();
+    scoped_refptr<LayerChromium> root = LayerChromium::create();
+    scoped_refptr<LayerChromium> child = LayerChromium::create();
+    scoped_refptr<LayerChromium> grandChild = LayerChromium::create();
+    scoped_refptr<LayerChromium> maskLayer = LayerChromium::create();
+    scoped_refptr<LayerChromium> replicaLayer = LayerChromium::create();
 
     grandChild->setReplicaLayer(replicaLayer.get());
     child->addChild(grandChild.get());
@@ -3574,12 +3574,12 @@ TEST(LayerTreeHostCommonTest, verifySubtreeSearch)
     root->addChild(child.get());
 
     int nonexistentId = -1;
-    EXPECT_EQ(root, LayerTreeHostCommon::findLayerInSubtree(root.get(), root->id()));
-    EXPECT_EQ(child, LayerTreeHostCommon::findLayerInSubtree(root.get(), child->id()));
-    EXPECT_EQ(grandChild, LayerTreeHostCommon::findLayerInSubtree(root.get(), grandChild->id()));
-    EXPECT_EQ(maskLayer, LayerTreeHostCommon::findLayerInSubtree(root.get(), maskLayer->id()));
-    EXPECT_EQ(replicaLayer, LayerTreeHostCommon::findLayerInSubtree(root.get(), replicaLayer->id()));
-    EXPECT_EQ(0, LayerTreeHostCommon::findLayerInSubtree(root.get(), nonexistentId));
+    EXPECT_EQ(root, CCLayerTreeHostCommon::findLayerInSubtree(root.get(), root->id()));
+    EXPECT_EQ(child, CCLayerTreeHostCommon::findLayerInSubtree(root.get(), child->id()));
+    EXPECT_EQ(grandChild, CCLayerTreeHostCommon::findLayerInSubtree(root.get(), grandChild->id()));
+    EXPECT_EQ(maskLayer, CCLayerTreeHostCommon::findLayerInSubtree(root.get(), maskLayer->id()));
+    EXPECT_EQ(replicaLayer, CCLayerTreeHostCommon::findLayerInSubtree(root.get(), replicaLayer->id()));
+    EXPECT_EQ(0, CCLayerTreeHostCommon::findLayerInSubtree(root.get(), nonexistentId));
 }
 
 } // namespace

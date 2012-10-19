@@ -13,7 +13,7 @@
 
 namespace cc {
 
-SkPictureCanvasLayerTextureUpdater::SkPictureCanvasLayerTextureUpdater(scoped_ptr<LayerPainter> painter)
+SkPictureCanvasLayerTextureUpdater::SkPictureCanvasLayerTextureUpdater(scoped_ptr<LayerPainterChromium> painter)
     : CanvasLayerTextureUpdater(painter.Pass())
     , m_layerIsOpaque(false)
 {
@@ -23,7 +23,7 @@ SkPictureCanvasLayerTextureUpdater::~SkPictureCanvasLayerTextureUpdater()
 {
 }
 
-void SkPictureCanvasLayerTextureUpdater::prepareToUpdate(const IntRect& contentRect, const IntSize&, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, RenderingStats& stats)
+void SkPictureCanvasLayerTextureUpdater::prepareToUpdate(const IntRect& contentRect, const IntSize&, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, CCRenderingStats& stats)
 {
     SkCanvas* canvas = m_picture.beginRecording(contentRect.width(), contentRect.height());
     paintContents(canvas, contentRect, contentsWidthScale, contentsHeightScale, resultingOpaqueRect, stats);
@@ -36,7 +36,7 @@ void SkPictureCanvasLayerTextureUpdater::drawPicture(SkCanvas* canvas)
     canvas->drawPicture(m_picture);
 }
 
-void SkPictureCanvasLayerTextureUpdater::updateTexture(TextureUpdateQueue& queue, PrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate)
+void SkPictureCanvasLayerTextureUpdater::updateTexture(CCTextureUpdateQueue& queue, CCPrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate)
 {
     ResourceUpdate upload = ResourceUpdate::CreateFromPicture(
         texture, &m_picture, contentRect(), sourceRect, destOffset);

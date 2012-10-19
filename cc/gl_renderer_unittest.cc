@@ -43,7 +43,7 @@ public:
     int frameCount() { return m_frame; }
     void setMemoryAllocation(WebGraphicsMemoryAllocation allocation)
     {
-        DCHECK(Proxy::isImplThread());
+        DCHECK(CCProxy::isImplThread());
         // In single threaded mode we expect this callback on main thread.
         DebugScopedSetMainThread main;
         m_memoryAllocationChangedCallback->onMemoryAllocationChanged(allocation);
@@ -54,23 +54,23 @@ private:
     WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* m_memoryAllocationChangedCallback;
 };
 
-class FakeRendererClient : public RendererClient {
+class FakeCCRendererClient : public CCRendererClient {
 public:
-    FakeRendererClient()
+    FakeCCRendererClient()
         : m_setFullRootLayerDamageCount(0)
-        , m_rootLayer(LayerImpl::create(1))
-        , m_memoryAllocationLimitBytes(PrioritizedTextureManager::defaultMemoryAllocationLimit())
+        , m_rootLayer(CCLayerImpl::create(1))
+        , m_memoryAllocationLimitBytes(CCPrioritizedTextureManager::defaultMemoryAllocationLimit())
     {
         m_rootLayer->createRenderSurface();
-        RenderPass::Id renderPassId = m_rootLayer->renderSurface()->renderPassId();
-        scoped_ptr<RenderPass> rootRenderPass = RenderPass::create(renderPassId, IntRect(), WebTransformationMatrix());
+        CCRenderPass::Id renderPassId = m_rootLayer->renderSurface()->renderPassId();
+        scoped_ptr<CCRenderPass> rootRenderPass = CCRenderPass::create(renderPassId, IntRect(), WebTransformationMatrix());
         m_renderPassesInDrawOrder.push_back(rootRenderPass.get());
         m_renderPasses.set(renderPassId, rootRenderPass.Pass());
     }
 
-    // RendererClient methods.
+    // CCRendererClient methods.
     virtual const IntSize& deviceViewportSize() const OVERRIDE { static IntSize fakeSize(1, 1); return fakeSize; }
-    virtual const LayerTreeSettings& settings() const OVERRIDE { static LayerTreeSettings fakeSettings; return fakeSettings; }
+    virtual const CCLayerTreeSettings& settings() const OVERRIDE { static CCLayerTreeSettings fakeSettings; return fakeSettings; }
     virtual void didLoseContext() OVERRIDE { }
     virtual void onSwapBuffersComplete() OVERRIDE { }
     virtual void setFullRootLayerDamage() OVERRIDE { m_setFullRootLayerDamageCount++; }
@@ -79,40 +79,40 @@ public:
     // Methods added for test.
     int setFullRootLayerDamageCount() const { return m_setFullRootLayerDamageCount; }
 
-    RenderPass* rootRenderPass() { return m_renderPassesInDrawOrder.back(); }
-    const RenderPassList& renderPassesInDrawOrder() const { return m_renderPassesInDrawOrder; }
-    const RenderPassIdHashMap& renderPasses() const { return m_renderPasses; }
+    CCRenderPass* rootRenderPass() { return m_renderPassesInDrawOrder.back(); }
+    const CCRenderPassList& renderPassesInDrawOrder() const { return m_renderPassesInDrawOrder; }
+    const CCRenderPassIdHashMap& renderPasses() const { return m_renderPasses; }
 
     size_t memoryAllocationLimitBytes() const { return m_memoryAllocationLimitBytes; }
 
 private:
     int m_setFullRootLayerDamageCount;
     DebugScopedSetImplThread m_implThread;
-    scoped_ptr<LayerImpl> m_rootLayer;
-    RenderPassList m_renderPassesInDrawOrder;
-    RenderPassIdHashMap m_renderPasses;
+    scoped_ptr<CCLayerImpl> m_rootLayer;
+    CCRenderPassList m_renderPassesInDrawOrder;
+    CCRenderPassIdHashMap m_renderPasses;
     size_t m_memoryAllocationLimitBytes;
 };
 
-class FakeRendererGL : public GLRenderer {
+class FakeCCRendererGL : public CCRendererGL {
 public:
-    FakeRendererGL(RendererClient* client, ResourceProvider* resourceProvider) : GLRenderer(client, resourceProvider) { }
+    FakeCCRendererGL(CCRendererClient* client, CCResourceProvider* resourceProvider) : CCRendererGL(client, resourceProvider) { }
 
-    // GLRenderer methods.
+    // CCRendererGL methods.
 
     // Changing visibility to public.
-    using GLRenderer::initialize;
-    using GLRenderer::isFramebufferDiscarded;
+    using CCRendererGL::initialize;
+    using CCRendererGL::isFramebufferDiscarded;
 };
 
-class GLRendererTest : public testing::Test {
+class CCRendererGLTest : public testing::Test {
 protected:
-    GLRendererTest()
+    CCRendererGLTest()
         : m_suggestHaveBackbufferYes(1, true)
         , m_suggestHaveBackbufferNo(1, false)
         , m_compositorInitializer(0)
         , m_context(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new FrameCountingMemoryAllocationSettingContext())))
-        , m_resourceProvider(ResourceProvider::create(m_context.get()))
+        , m_resourceProvider(CCResourceProvider::create(m_context.get()))
         , m_renderer(&m_mockClient, m_resourceProvider.get())
     {
     }
@@ -133,17 +133,17 @@ protected:
     WebGraphicsMemoryAllocation m_suggestHaveBackbufferNo;
 
     WebCompositorInitializer m_compositorInitializer;
-    scoped_ptr<GraphicsContext> m_context;
-    FakeRendererClient m_mockClient;
-    scoped_ptr<ResourceProvider> m_resourceProvider;
-    FakeRendererGL m_renderer;
-    ScopedSettings m_scopedSettings;
+    scoped_ptr<CCGraphicsContext> m_context;
+    FakeCCRendererClient m_mockClient;
+    scoped_ptr<CCResourceProvider> m_resourceProvider;
+    FakeCCRendererGL m_renderer;
+    CCScopedSettings m_scopedSettings;
 };
 
-// Test GLRenderer discardFramebuffer functionality:
+// Test CCRendererGL discardFramebuffer functionality:
 // Suggest recreating framebuffer when one already exists.
 // Expected: it does nothing.
-TEST_F(GLRendererTest, SuggestBackbufferYesWhenItAlreadyExistsShouldDoNothing)
+TEST_F(CCRendererGLTest, SuggestBackbufferYesWhenItAlreadyExistsShouldDoNothing)
 {
     context()->setMemoryAllocation(m_suggestHaveBackbufferYes);
     EXPECT_EQ(0, m_mockClient.setFullRootLayerDamageCount());
@@ -153,10 +153,10 @@ TEST_F(GLRendererTest, SuggestBackbufferYesWhenItAlreadyExistsShouldDoNothing)
     EXPECT_EQ(1, context()->frameCount());
 }
 
-// Test GLRenderer discardFramebuffer functionality:
+// Test CCRendererGL discardFramebuffer functionality:
 // Suggest discarding framebuffer when one exists and the renderer is not visible.
 // Expected: it is discarded and damage tracker is reset.
-TEST_F(GLRendererTest, SuggestBackbufferNoShouldDiscardBackbufferAndDamageRootLayerWhileNotVisible)
+TEST_F(CCRendererGLTest, SuggestBackbufferNoShouldDiscardBackbufferAndDamageRootLayerWhileNotVisible)
 {
     m_renderer.setVisible(false);
     context()->setMemoryAllocation(m_suggestHaveBackbufferNo);
@@ -164,10 +164,10 @@ TEST_F(GLRendererTest, SuggestBackbufferNoShouldDiscardBackbufferAndDamageRootLa
     EXPECT_TRUE(m_renderer.isFramebufferDiscarded());
 }
 
-// Test GLRenderer discardFramebuffer functionality:
+// Test CCRendererGL discardFramebuffer functionality:
 // Suggest discarding framebuffer when one exists and the renderer is visible.
 // Expected: the allocation is ignored.
-TEST_F(GLRendererTest, SuggestBackbufferNoDoNothingWhenVisible)
+TEST_F(CCRendererGLTest, SuggestBackbufferNoDoNothingWhenVisible)
 {
     m_renderer.setVisible(true);
     context()->setMemoryAllocation(m_suggestHaveBackbufferNo);
@@ -176,10 +176,10 @@ TEST_F(GLRendererTest, SuggestBackbufferNoDoNothingWhenVisible)
 }
 
 
-// Test GLRenderer discardFramebuffer functionality:
+// Test CCRendererGL discardFramebuffer functionality:
 // Suggest discarding framebuffer when one does not exist.
 // Expected: it does nothing.
-TEST_F(GLRendererTest, SuggestBackbufferNoWhenItDoesntExistShouldDoNothing)
+TEST_F(CCRendererGLTest, SuggestBackbufferNoWhenItDoesntExistShouldDoNothing)
 {
     m_renderer.setVisible(false);
     context()->setMemoryAllocation(m_suggestHaveBackbufferNo);
@@ -191,10 +191,10 @@ TEST_F(GLRendererTest, SuggestBackbufferNoWhenItDoesntExistShouldDoNothing)
     EXPECT_TRUE(m_renderer.isFramebufferDiscarded());
 }
 
-// Test GLRenderer discardFramebuffer functionality:
+// Test CCRendererGL discardFramebuffer functionality:
 // Begin drawing a frame while a framebuffer is discarded.
 // Expected: will recreate framebuffer.
-TEST_F(GLRendererTest, DiscardedBackbufferIsRecreatedForScopeDuration)
+TEST_F(CCRendererGLTest, DiscardedBackbufferIsRecreatedForScopeDuration)
 {
     m_renderer.setVisible(false);
     context()->setMemoryAllocation(m_suggestHaveBackbufferNo);
@@ -209,7 +209,7 @@ TEST_F(GLRendererTest, DiscardedBackbufferIsRecreatedForScopeDuration)
     EXPECT_EQ(1, context()->frameCount());
 }
 
-TEST_F(GLRendererTest, FramebufferDiscardedAfterReadbackWhenNotVisible)
+TEST_F(CCRendererGLTest, FramebufferDiscardedAfterReadbackWhenNotVisible)
 {
     m_renderer.setVisible(false);
     context()->setMemoryAllocation(m_suggestHaveBackbufferNo);
@@ -291,14 +291,14 @@ public:
     virtual WGC3Dsizeiptr getVertexAttribOffset(WGC3Duint index, WGC3Denum pname) { ADD_FAILURE(); return 0; }
 };
 
-// This test isn't using the same fixture as GLRendererTest, and you can't mix TEST() and TEST_F() with the same name, hence LRC2.
-TEST(GLRendererTest2, initializationDoesNotMakeSynchronousCalls)
+// This test isn't using the same fixture as CCRendererGLTest, and you can't mix TEST() and TEST_F() with the same name, hence LRC2.
+TEST(CCRendererGLTest2, initializationDoesNotMakeSynchronousCalls)
 {
-    ScopedSettings scopedSettings;
-    FakeRendererClient mockClient;
-    scoped_ptr<GraphicsContext> context(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new ForbidSynchronousCallContext)));
-    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(context.get()));
-    FakeRendererGL renderer(&mockClient, resourceProvider.get());
+    CCScopedSettings scopedSettings;
+    FakeCCRendererClient mockClient;
+    scoped_ptr<CCGraphicsContext> context(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new ForbidSynchronousCallContext)));
+    scoped_ptr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
+    FakeCCRendererGL renderer(&mockClient, resourceProvider.get());
 
     EXPECT_TRUE(renderer.initialize());
 }
@@ -336,13 +336,13 @@ private:
     bool m_contextLost;
 };
 
-TEST(GLRendererTest2, initializationWithQuicklyLostContextDoesNotAssert)
+TEST(CCRendererGLTest2, initializationWithQuicklyLostContextDoesNotAssert)
 {
-    ScopedSettings scopedSettings;
-    FakeRendererClient mockClient;
-    scoped_ptr<GraphicsContext> context(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new LoseContextOnFirstGetContext)));
-    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(context.get()));
-    FakeRendererGL renderer(&mockClient, resourceProvider.get());
+    CCScopedSettings scopedSettings;
+    FakeCCRendererClient mockClient;
+    scoped_ptr<CCGraphicsContext> context(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new LoseContextOnFirstGetContext)));
+    scoped_ptr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
+    FakeCCRendererGL renderer(&mockClient, resourceProvider.get());
 
     renderer.initialize();
 }
@@ -359,12 +359,12 @@ public:
     virtual WebString getString(WebKit::WGC3Denum name) { return WebString(); }
 };
 
-TEST(GLRendererTest2, initializationWithoutGpuMemoryManagerExtensionSupportShouldDefaultToNonZeroAllocation)
+TEST(CCRendererGLTest2, initializationWithoutGpuMemoryManagerExtensionSupportShouldDefaultToNonZeroAllocation)
 {
-    FakeRendererClient mockClient;
-    scoped_ptr<GraphicsContext> context(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new ContextThatDoesNotSupportMemoryManagmentExtensions)));
-    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(context.get()));
-    FakeRendererGL renderer(&mockClient, resourceProvider.get());
+    FakeCCRendererClient mockClient;
+    scoped_ptr<CCGraphicsContext> context(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new ContextThatDoesNotSupportMemoryManagmentExtensions)));
+    scoped_ptr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
+    FakeCCRendererGL renderer(&mockClient, resourceProvider.get());
 
     renderer.initialize();
 
@@ -386,13 +386,13 @@ private:
     int m_clear;
 };
 
-TEST(GLRendererTest2, opaqueBackground)
+TEST(CCRendererGLTest2, opaqueBackground)
 {
-    FakeRendererClient mockClient;
-    scoped_ptr<GraphicsContext> outputSurface(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new ClearCountingContext)));
-    ClearCountingContext* context = static_cast<ClearCountingContext*>(outputSurface->context3D());
-    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
-    FakeRendererGL renderer(&mockClient, resourceProvider.get());
+    FakeCCRendererClient mockClient;
+    scoped_ptr<CCGraphicsContext> ccContext(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new ClearCountingContext)));
+    ClearCountingContext* context = static_cast<ClearCountingContext*>(ccContext->context3D());
+    scoped_ptr<CCResourceProvider> resourceProvider(CCResourceProvider::create(ccContext.get()));
+    FakeCCRendererGL renderer(&mockClient, resourceProvider.get());
 
     mockClient.rootRenderPass()->setHasTransparentBackground(false);
 
@@ -409,13 +409,13 @@ TEST(GLRendererTest2, opaqueBackground)
 #endif
 }
 
-TEST(GLRendererTest2, transparentBackground)
+TEST(CCRendererGLTest2, transparentBackground)
 {
-    FakeRendererClient mockClient;
-    scoped_ptr<GraphicsContext> outputSurface(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new ClearCountingContext)));
-    ClearCountingContext* context = static_cast<ClearCountingContext*>(outputSurface->context3D());
-    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(outputSurface.get()));
-    FakeRendererGL renderer(&mockClient, resourceProvider.get());
+    FakeCCRendererClient mockClient;
+    scoped_ptr<CCGraphicsContext> ccContext(FakeWebCompositorOutputSurface::create(scoped_ptr<WebKit::WebGraphicsContext3D>(new ClearCountingContext)));
+    ClearCountingContext* context = static_cast<ClearCountingContext*>(ccContext->context3D());
+    scoped_ptr<CCResourceProvider> resourceProvider(CCResourceProvider::create(ccContext.get()));
+    FakeCCRendererGL renderer(&mockClient, resourceProvider.get());
 
     mockClient.rootRenderPass()->setHasTransparentBackground(true);
 

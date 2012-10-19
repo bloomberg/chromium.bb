@@ -9,25 +9,25 @@
 
 namespace cc {
 
-scoped_refptr<DelegatedRendererLayer> DelegatedRendererLayer::create()
+scoped_refptr<DelegatedRendererLayerChromium> DelegatedRendererLayerChromium::create()
 {
-    return scoped_refptr<DelegatedRendererLayer>(new DelegatedRendererLayer());
+    return scoped_refptr<DelegatedRendererLayerChromium>(new DelegatedRendererLayerChromium());
 }
 
-DelegatedRendererLayer::DelegatedRendererLayer()
-    : Layer()
+DelegatedRendererLayerChromium::DelegatedRendererLayerChromium()
+    : LayerChromium()
 {
     setIsDrawable(true);
     setMasksToBounds(true);
 }
 
-DelegatedRendererLayer::~DelegatedRendererLayer()
+DelegatedRendererLayerChromium::~DelegatedRendererLayerChromium()
 {
 }
 
-scoped_ptr<LayerImpl> DelegatedRendererLayer::createLayerImpl()
+scoped_ptr<CCLayerImpl> DelegatedRendererLayerChromium::createCCLayerImpl()
 {
-    return DelegatedRendererLayerImpl::create(m_layerId).PassAs<LayerImpl>();
+    return CCDelegatedRendererLayerImpl::create(m_layerId).PassAs<CCLayerImpl>();
 }
 
 }

@@ -19,16 +19,16 @@ namespace {
 template <class Target>
 void addOpacityTransition(Target& target, double duration, float startOpacity, float endOpacity, bool useTimingFunction)
 {
-    scoped_ptr<KeyframedFloatAnimationCurve> curve(KeyframedFloatAnimationCurve::create());
+    scoped_ptr<CCKeyframedFloatAnimationCurve> curve(CCKeyframedFloatAnimationCurve::create());
 
-    scoped_ptr<TimingFunction> func;
+    scoped_ptr<CCTimingFunction> func;
     if (!useTimingFunction)
-        func = EaseTimingFunction::create();
+        func = CCEaseTimingFunction::create();
     if (duration > 0)
-        curve->addKeyframe(FloatKeyframe::create(0, startOpacity, func.Pass()));
-    curve->addKeyframe(FloatKeyframe::create(duration, endOpacity, scoped_ptr<cc::TimingFunction>()));
+        curve->addKeyframe(CCFloatKeyframe::create(0, startOpacity, func.Pass()));
+    curve->addKeyframe(CCFloatKeyframe::create(duration, endOpacity, scoped_ptr<cc::CCTimingFunction>()));
 
-    scoped_ptr<ActiveAnimation> animation(ActiveAnimation::create(curve.PassAs<AnimationCurve>(), 0, 0, ActiveAnimation::Opacity));
+    scoped_ptr<CCActiveAnimation> animation(CCActiveAnimation::create(curve.PassAs<CCAnimationCurve>(), 0, 0, CCActiveAnimation::Opacity));
     animation->setNeedsSynchronizedStartTime(true);
 
     target.addAnimation(animation.Pass());
@@ -38,19 +38,19 @@ template <class Target>
 void addAnimatedTransform(Target& target, double duration, int deltaX, int deltaY)
 {
     static int id = 0;
-    scoped_ptr<KeyframedTransformAnimationCurve> curve(KeyframedTransformAnimationCurve::create());
+    scoped_ptr<CCKeyframedTransformAnimationCurve> curve(CCKeyframedTransformAnimationCurve::create());
 
     if (duration > 0) {
         WebKit::WebTransformOperations startOperations;
         startOperations.appendTranslate(deltaX, deltaY, 0);
-        curve->addKeyframe(TransformKeyframe::create(0, startOperations, scoped_ptr<cc::TimingFunction>()));
+        curve->addKeyframe(CCTransformKeyframe::create(0, startOperations, scoped_ptr<cc::CCTimingFunction>()));
     }
 
     WebKit::WebTransformOperations operations;
     operations.appendTranslate(deltaX, deltaY, 0);
-    curve->addKeyframe(TransformKeyframe::create(duration, operations, scoped_ptr<cc::TimingFunction>()));
+    curve->addKeyframe(CCTransformKeyframe::create(duration, operations, scoped_ptr<cc::CCTimingFunction>()));
 
-    scoped_ptr<ActiveAnimation> animation(ActiveAnimation::create(curve.PassAs<AnimationCurve>(), id++, 0, ActiveAnimation::Transform));
+    scoped_ptr<CCActiveAnimation> animation(CCActiveAnimation::create(curve.PassAs<CCAnimationCurve>(), id++, 0, CCActiveAnimation::Transform));
     animation->setNeedsSynchronizedStartTime(true);
 
     target.addAnimation(animation.Pass());
@@ -84,9 +84,9 @@ float FakeFloatAnimationCurve::getValue(double now) const
     return 0;
 }
 
-scoped_ptr<cc::AnimationCurve> FakeFloatAnimationCurve::clone() const
+scoped_ptr<cc::CCAnimationCurve> FakeFloatAnimationCurve::clone() const
 {
-    return make_scoped_ptr(new FakeFloatAnimationCurve).PassAs<cc::AnimationCurve>();
+    return make_scoped_ptr(new FakeFloatAnimationCurve).PassAs<cc::CCAnimationCurve>();
 }
 
 FakeTransformTransition::FakeTransformTransition(double duration)
@@ -108,9 +108,9 @@ WebKit::WebTransformationMatrix FakeTransformTransition::getValue(double time) c
     return WebKit::WebTransformationMatrix();
 }
 
-scoped_ptr<cc::AnimationCurve> FakeTransformTransition::clone() const
+scoped_ptr<cc::CCAnimationCurve> FakeTransformTransition::clone() const
 {
-    return make_scoped_ptr(new FakeTransformTransition(*this)).PassAs<cc::AnimationCurve>();
+    return make_scoped_ptr(new FakeTransformTransition(*this)).PassAs<cc::CCAnimationCurve>();
 }
 
 
@@ -172,37 +172,37 @@ const WebKit::WebTransformationMatrix& FakeLayerAnimationControllerClient::trans
     return m_transform;
 }
 
-scoped_ptr<cc::AnimationCurve> FakeFloatTransition::clone() const
+scoped_ptr<cc::CCAnimationCurve> FakeFloatTransition::clone() const
 {
-    return make_scoped_ptr(new FakeFloatTransition(*this)).PassAs<cc::AnimationCurve>();
+    return make_scoped_ptr(new FakeFloatTransition(*this)).PassAs<cc::CCAnimationCurve>();
 }
 
-void addOpacityTransitionToController(cc::LayerAnimationController& controller, double duration, float startOpacity, float endOpacity, bool useTimingFunction)
+void addOpacityTransitionToController(cc::CCLayerAnimationController& controller, double duration, float startOpacity, float endOpacity, bool useTimingFunction)
 {
     addOpacityTransition(controller, duration, startOpacity, endOpacity, useTimingFunction);
 }
 
-void addAnimatedTransformToController(cc::LayerAnimationController& controller, double duration, int deltaX, int deltaY)
+void addAnimatedTransformToController(cc::CCLayerAnimationController& controller, double duration, int deltaX, int deltaY)
 {
     addAnimatedTransform(controller, duration, deltaX, deltaY);
 }
 
-void addOpacityTransitionToLayer(cc::Layer& layer, double duration, float startOpacity, float endOpacity, bool useTimingFunction)
+void addOpacityTransitionToLayer(cc::LayerChromium& layer, double duration, float startOpacity, float endOpacity, bool useTimingFunction)
 {
     addOpacityTransition(layer, duration, startOpacity, endOpacity, useTimingFunction);
 }
 
-void addOpacityTransitionToLayer(cc::LayerImpl& layer, double duration, float startOpacity, float endOpacity, bool useTimingFunction)
+void addOpacityTransitionToLayer(cc::CCLayerImpl& layer, double duration, float startOpacity, float endOpacity, bool useTimingFunction)
 {
     addOpacityTransition(*layer.layerAnimationController(), duration, startOpacity, endOpacity, useTimingFunction);
 }
 
-void addAnimatedTransformToLayer(cc::Layer& layer, double duration, int deltaX, int deltaY)
+void addAnimatedTransformToLayer(cc::LayerChromium& layer, double duration, int deltaX, int deltaY)
 {
     addAnimatedTransform(layer, duration, deltaX, deltaY);
 }
 
-void addAnimatedTransformToLayer(cc::LayerImpl& layer, double duration, int deltaX, int deltaY)
+void addAnimatedTransformToLayer(cc::CCLayerImpl& layer, double duration, int deltaX, int deltaY)
 {
     addAnimatedTransform(*layer.layerAnimationController(), duration, deltaX, deltaY);
 }

@@ -12,17 +12,17 @@ namespace cc {
 
 // A Layer that renders a solid color. The color is specified by using
 // setBackgroundColor() on the base class.
-class SolidColorLayer : public Layer {
+class SolidColorLayerChromium : public LayerChromium {
 public:
-    static scoped_refptr<SolidColorLayer> create();
+    static scoped_refptr<SolidColorLayerChromium> create();
 
-    virtual scoped_ptr<LayerImpl> createLayerImpl() OVERRIDE;
+    virtual scoped_ptr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
 
 protected:
-    SolidColorLayer();
+    SolidColorLayerChromium();
 
 private:
-    virtual ~SolidColorLayer();
+    virtual ~SolidColorLayerChromium();
 };
 
 }

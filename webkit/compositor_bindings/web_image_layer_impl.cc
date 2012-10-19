@@ -8,7 +8,7 @@
 #include "cc/image_layer.h"
 #include "web_layer_impl.h"
 
-using cc::ImageLayer;
+using cc::ImageLayerChromium;
 
 namespace WebKit {
 
@@ -18,7 +18,7 @@ WebImageLayer* WebImageLayer::create()
 }
 
 WebImageLayerImpl::WebImageLayerImpl()
-    : m_layer(new WebLayerImpl(ImageLayer::create()))
+    : m_layer(new WebLayerImpl(ImageLayerChromium::create()))
 {
 }
 
@@ -33,7 +33,7 @@ WebLayer* WebImageLayerImpl::layer()
 
 void WebImageLayerImpl::setBitmap(SkBitmap bitmap)
 {
-    static_cast<ImageLayer*>(m_layer->layer())->setBitmap(bitmap);
+    static_cast<ImageLayerChromium*>(m_layer->layer())->setBitmap(bitmap);
 }
 
 } // namespace WebKit

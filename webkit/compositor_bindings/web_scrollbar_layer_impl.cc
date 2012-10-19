@@ -8,7 +8,7 @@
 #include "cc/scrollbar_layer.h"
 #include "web_layer_impl.h"
 
-using cc::ScrollbarLayer;
+using cc::ScrollbarLayerChromium;
 
 namespace WebKit {
 
@@ -19,7 +19,7 @@ WebScrollbarLayer* WebScrollbarLayer::create(WebScrollbar* scrollbar, WebScrollb
 
 
 WebScrollbarLayerImpl::WebScrollbarLayerImpl(WebScrollbar* scrollbar, WebScrollbarThemePainter painter, WebScrollbarThemeGeometry* geometry)
-    : m_layer(new WebLayerImpl(ScrollbarLayer::create(make_scoped_ptr(scrollbar), painter, make_scoped_ptr(geometry), 0)))
+    : m_layer(new WebLayerImpl(ScrollbarLayerChromium::create(make_scoped_ptr(scrollbar), painter, make_scoped_ptr(geometry), 0)))
 {
 }
 
@@ -35,7 +35,7 @@ WebLayer* WebScrollbarLayerImpl::layer()
 void WebScrollbarLayerImpl::setScrollLayer(WebLayer* layer)
 {
     int id = layer ? static_cast<WebLayerImpl*>(layer)->layer()->id() : 0;
-    static_cast<ScrollbarLayer*>(m_layer->layer())->setScrollLayerId(id);
+    static_cast<ScrollbarLayerChromium*>(m_layer->layer())->setScrollLayerId(id);
 }
 
 

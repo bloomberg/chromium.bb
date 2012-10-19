@@ -19,7 +19,7 @@ using WebKit::WebTransformationMatrix;
 
 namespace cc {
 
-OverdrawMetrics::OverdrawMetrics(bool recordMetricsForFrame)
+CCOverdrawMetrics::CCOverdrawMetrics(bool recordMetricsForFrame)
     : m_recordMetricsForFrame(recordMetricsForFrame)
     , m_pixelsPainted(0)
     , m_pixelsUploadedOpaque(0)
@@ -55,11 +55,11 @@ static inline float areaOfMappedQuad(const WebTransformationMatrix& transform, c
 {
     FloatPoint clippedQuad[8];
     int numVerticesInClippedQuad = 0;
-    MathUtil::mapClippedQuad(transform, quad, clippedQuad, numVerticesInClippedQuad);
+    CCMathUtil::mapClippedQuad(transform, quad, clippedQuad, numVerticesInClippedQuad);
     return polygonArea(clippedQuad, numVerticesInClippedQuad);
 }
 
-void OverdrawMetrics::didPaint(const IntRect& paintedRect)
+void CCOverdrawMetrics::didPaint(const IntRect& paintedRect)
 {
     if (!m_recordMetricsForFrame)
         return;
@@ -67,13 +67,13 @@ void OverdrawMetrics::didPaint(const IntRect& paintedRect)
     m_pixelsPainted += static_cast<float>(paintedRect.width()) * paintedRect.height();
 }
 
-void OverdrawMetrics::didCullTileForUpload()
+void CCOverdrawMetrics::didCullTileForUpload()
 {
     if (m_recordMetricsForFrame)
         ++m_tilesCulledForUpload;
 }
 
-void OverdrawMetrics::didUpload(const WebTransformationMatrix& transformToTarget, const IntRect& uploadRect, const IntRect& opaqueRect)
+void CCOverdrawMetrics::didUpload(const WebTransformationMatrix& transformToTarget, const IntRect& uploadRect, const IntRect& opaqueRect)
 {
     if (!m_recordMetricsForFrame)
         return;
@@ -85,7 +85,7 @@ void OverdrawMetrics::didUpload(const WebTransformationMatrix& transformToTarget
     m_pixelsUploadedTranslucent += uploadArea - uploadOpaqueArea;
 }
 
-void OverdrawMetrics::didUseContentsTextureMemoryBytes(size_t contentsTextureUseBytes)
+void CCOverdrawMetrics::didUseContentsTextureMemoryBytes(size_t contentsTextureUseBytes)
 {
     if (!m_recordMetricsForFrame)
         return;
@@ -93,7 +93,7 @@ void OverdrawMetrics::didUseContentsTextureMemoryBytes(size_t contentsTextureUse
     m_contentsTextureUseBytes += contentsTextureUseBytes;
 }
 
-void OverdrawMetrics::didUseRenderSurfaceTextureMemoryBytes(size_t renderSurfaceUseBytes)
+void CCOverdrawMetrics::didUseRenderSurfaceTextureMemoryBytes(size_t renderSurfaceUseBytes)
 {
     if (!m_recordMetricsForFrame)
         return;
@@ -101,7 +101,7 @@ void OverdrawMetrics::didUseRenderSurfaceTextureMemoryBytes(size_t renderSurface
     m_renderSurfaceTextureUseBytes += renderSurfaceUseBytes;
 }
 
-void OverdrawMetrics::didCullForDrawing(const WebTransformationMatrix& transformToTarget, const IntRect& beforeCullRect, const IntRect& afterCullRect)
+void CCOverdrawMetrics::didCullForDrawing(const WebTransformationMatrix& transformToTarget, const IntRect& beforeCullRect, const IntRect& afterCullRect)
 {
     if (!m_recordMetricsForFrame)
         return;
@@ -112,7 +112,7 @@ void OverdrawMetrics::didCullForDrawing(const WebTransformationMatrix& transform
     m_pixelsCulledForDrawing += beforeCullArea - afterCullArea;
 }
 
-void OverdrawMetrics::didDraw(const WebTransformationMatrix& transformToTarget, const IntRect& afterCullRect, const IntRect& opaqueRect)
+void CCOverdrawMetrics::didDraw(const WebTransformationMatrix& transformToTarget, const IntRect& afterCullRect, const IntRect& opaqueRect)
 {
     if (!m_recordMetricsForFrame)
         return;
@@ -124,20 +124,20 @@ void OverdrawMetrics::didDraw(const WebTransformationMatrix& transformToTarget, 
     m_pixelsDrawnTranslucent += afterCullArea - afterCullOpaqueArea;
 }
 
-void OverdrawMetrics::recordMetrics(const LayerTreeHost* layerTreeHost) const
+void CCOverdrawMetrics::recordMetrics(const CCLayerTreeHost* layerTreeHost) const
 {
     if (m_recordMetricsForFrame)
-        recordMetricsInternal<LayerTreeHost>(UpdateAndCommit, layerTreeHost);
+        recordMetricsInternal<CCLayerTreeHost>(UpdateAndCommit, layerTreeHost);
 }
 
-void OverdrawMetrics::recordMetrics(const LayerTreeHostImpl* layerTreeHost) const
+void CCOverdrawMetrics::recordMetrics(const CCLayerTreeHostImpl* layerTreeHost) const
 {
     if (m_recordMetricsForFrame)
-        recordMetricsInternal<LayerTreeHostImpl>(DrawingToScreen, layerTreeHost);
+        recordMetricsInternal<CCLayerTreeHostImpl>(DrawingToScreen, layerTreeHost);
 }
 
 template<typename LayerTreeHostType>
-void OverdrawMetrics::recordMetricsInternal(MetricsType metricsType, const LayerTreeHostType* layerTreeHost) const
+void CCOverdrawMetrics::recordMetricsInternal(MetricsType metricsType, const LayerTreeHostType* layerTreeHost) const
 {
     // This gives approximately 10x the percentage of pixels to fill the viewport once.
     float normalization = 1000.f / (layerTreeHost->deviceViewportSize().width() * layerTreeHost->deviceViewportSize().height());
@@ -153,7 +153,7 @@ void OverdrawMetrics::recordMetricsInternal(MetricsType metricsType, const Layer
         HISTOGRAM_CUSTOM_COUNTS("Renderer4.pixelCountCulled_Draw", static_cast<int>(normalization * m_pixelsCulledForDrawing), 100, 1000000, 50);
 
         TRACE_COUNTER_ID1("cc", "DrawPixelsCulled", layerTreeHost, m_pixelsCulledForDrawing);
-        TRACE_EVENT2("cc", "OverdrawMetrics", "PixelsDrawnOpaque", m_pixelsDrawnOpaque, "PixelsDrawnTranslucent", m_pixelsDrawnTranslucent);
+        TRACE_EVENT2("cc", "CCOverdrawMetrics", "PixelsDrawnOpaque", m_pixelsDrawnOpaque, "PixelsDrawnTranslucent", m_pixelsDrawnTranslucent);
         break;
     }
     case UpdateAndCommit: {
@@ -168,15 +168,15 @@ void OverdrawMetrics::recordMetricsInternal(MetricsType metricsType, const Layer
 
         {
             TRACE_COUNTER_ID1("cc", "UploadTilesCulled", layerTreeHost, m_tilesCulledForUpload);
-            TRACE_EVENT2("cc", "OverdrawMetrics", "PixelsUploadedOpaque", m_pixelsUploadedOpaque, "PixelsUploadedTranslucent", m_pixelsUploadedTranslucent);
+            TRACE_EVENT2("cc", "CCOverdrawMetrics", "PixelsUploadedOpaque", m_pixelsUploadedOpaque, "PixelsUploadedTranslucent", m_pixelsUploadedTranslucent);
         }
         {
             // This must be in a different scope than the TRACE_EVENT2 above.
-            TRACE_EVENT1("cc", "OverdrawPaintMetrics", "PixelsPainted", m_pixelsPainted);
+            TRACE_EVENT1("cc", "CCOverdrawPaintMetrics", "PixelsPainted", m_pixelsPainted);
         }
         {
             // This must be in a different scope than the TRACE_EVENTs above.
-            TRACE_EVENT2("cc", "OverdrawPaintMetrics", "ContentsTextureBytes", m_contentsTextureUseBytes, "RenderSurfaceTextureBytes", m_renderSurfaceTextureUseBytes);
+            TRACE_EVENT2("cc", "CCOverdrawPaintMetrics", "ContentsTextureBytes", m_contentsTextureUseBytes, "RenderSurfaceTextureBytes", m_renderSurfaceTextureUseBytes);
         }
         break;
     }

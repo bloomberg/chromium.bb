@@ -11,7 +11,7 @@
 
 namespace cc {
 
-// The SchedulerStateMachine decides how to coordinate main thread activites
+// The CCSchedulerStateMachine decides how to coordinate main thread activites
 // like painting/running javascript with rendering and input activities on the
 // impl thread.
 //
@@ -21,9 +21,9 @@ namespace cc {
 //
 // The scheduler seperates "what to do next" from the updating of its internal state to
 // make testing cleaner.
-class SchedulerStateMachine {
+class CCSchedulerStateMachine {
 public:
-    SchedulerStateMachine();
+    CCSchedulerStateMachine();
 
     enum CommitState {
         COMMIT_STATE_IDLE,
@@ -153,7 +153,7 @@ protected:
     TextureState m_textureState;
     ContextState m_contextState;
 
-    DISALLOW_COPY_AND_ASSIGN(SchedulerStateMachine);
+    DISALLOW_COPY_AND_ASSIGN(CCSchedulerStateMachine);
 };
 
 }

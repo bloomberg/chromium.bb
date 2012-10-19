@@ -14,32 +14,32 @@ using namespace cc;
 
 namespace {
 
-class ScrollbarAnimationControllerLinearFadeTest : public testing::Test {
+class CCScrollbarAnimationControllerLinearFadeTest : public testing::Test {
 protected:
     virtual void SetUp()
     {
-        m_scrollLayer = LayerImpl::create(1);
-        m_scrollLayer->addChild(LayerImpl::create(2));
+        m_scrollLayer = CCLayerImpl::create(1);
+        m_scrollLayer->addChild(CCLayerImpl::create(2));
         m_contentLayer = m_scrollLayer->children()[0];
-        m_scrollbarLayer = ScrollbarLayerImpl::create(3);
+        m_scrollbarLayer = CCScrollbarLayerImpl::create(3);
 
         m_scrollLayer->setMaxScrollPosition(IntSize(50, 50));
         m_contentLayer->setBounds(IntSize(50, 50));
 
-        m_scrollbarController = ScrollbarAnimationControllerLinearFade::create(m_scrollLayer.get(), 2, 3);
+        m_scrollbarController = CCScrollbarAnimationControllerLinearFade::create(m_scrollLayer.get(), 2, 3);
         m_scrollbarController->setHorizontalScrollbarLayer(m_scrollbarLayer.get());
     }
 
     DebugScopedSetImplThread implThread;
 
-    scoped_ptr<ScrollbarAnimationControllerLinearFade> m_scrollbarController;
-    scoped_ptr<LayerImpl> m_scrollLayer;
-    LayerImpl* m_contentLayer;
-    scoped_ptr<ScrollbarLayerImpl> m_scrollbarLayer;
+    scoped_ptr<CCScrollbarAnimationControllerLinearFade> m_scrollbarController;
+    scoped_ptr<CCLayerImpl> m_scrollLayer;
+    CCLayerImpl* m_contentLayer;
+    scoped_ptr<CCScrollbarLayerImpl> m_scrollbarLayer;
 
 };
 
-TEST_F(ScrollbarAnimationControllerLinearFadeTest, verifyHiddenInBegin)
+TEST_F(CCScrollbarAnimationControllerLinearFadeTest, verifyHiddenInBegin)
 {
     m_scrollbarController->animate(0);
     EXPECT_FLOAT_EQ(0, m_scrollbarLayer->opacity());
@@ -48,7 +48,7 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest, verifyHiddenInBegin)
     EXPECT_FLOAT_EQ(0, m_scrollbarLayer->opacity());
 }
 
-TEST_F(ScrollbarAnimationControllerLinearFadeTest, verifyAwakenByScroll)
+TEST_F(CCScrollbarAnimationControllerLinearFadeTest, verifyAwakenByScroll)
 {
     m_scrollLayer->setScrollDelta(IntSize(1, 1));
     m_scrollbarController->updateScrollOffsetAtTime(m_scrollLayer.get(), 0);
@@ -82,7 +82,7 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest, verifyAwakenByScroll)
     EXPECT_FLOAT_EQ(0, m_scrollbarLayer->opacity());
 }
 
-TEST_F(ScrollbarAnimationControllerLinearFadeTest, verifyForceAwakenByPinch)
+TEST_F(CCScrollbarAnimationControllerLinearFadeTest, verifyForceAwakenByPinch)
 {
     m_scrollbarController->didPinchGestureBeginAtTime(0);
     m_scrollbarController->didPinchGestureUpdateAtTime(0);

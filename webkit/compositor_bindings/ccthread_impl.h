@@ -15,18 +15,18 @@ namespace WebKit {
 
 class WebThread;
 
-// Implements Thread in terms of WebThread.
-class CCThreadImpl : public cc::Thread {
+// Implements CCThread in terms of WebThread.
+class CCThreadImpl : public cc::CCThread {
 public:
     // Creates a CCThreadImpl wrapping the current thread.
-    static scoped_ptr<cc::Thread> createForCurrentThread();
+    static scoped_ptr<cc::CCThread> createForCurrentThread();
 
-    // Creates a Thread wrapping a non-current WebThread.
-    static scoped_ptr<cc::Thread> createForDifferentThread(WebThread*);
+    // Creates a CCThread wrapping a non-current WebThread.
+    static scoped_ptr<cc::CCThread> createForDifferentThread(WebThread*);
 
     virtual ~CCThreadImpl();
-    virtual void postTask(PassOwnPtr<cc::Thread::Task>);
-    virtual void postDelayedTask(PassOwnPtr<cc::Thread::Task>, long long delayMs);
+    virtual void postTask(PassOwnPtr<cc::CCThread::Task>);
+    virtual void postDelayedTask(PassOwnPtr<cc::CCThread::Task>, long long delayMs);
     base::PlatformThreadId threadID() const;
 
 private:

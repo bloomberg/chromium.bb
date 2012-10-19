@@ -12,15 +12,15 @@ using namespace cc;
 
 namespace {
 
-const SchedulerStateMachine::CommitState allCommitStates[] = {
-    SchedulerStateMachine::COMMIT_STATE_IDLE,
-    SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS,
-    SchedulerStateMachine::COMMIT_STATE_READY_TO_COMMIT,
-    SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_DRAW
+const CCSchedulerStateMachine::CommitState allCommitStates[] = {
+    CCSchedulerStateMachine::COMMIT_STATE_IDLE,
+    CCSchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS,
+    CCSchedulerStateMachine::COMMIT_STATE_READY_TO_COMMIT,
+    CCSchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_DRAW
 };
 
-// Exposes the protected state fields of the SchedulerStateMachine for testing
-class StateMachine : public SchedulerStateMachine {
+// Exposes the protected state fields of the CCSchedulerStateMachine for testing
+class StateMachine : public CCSchedulerStateMachine {
 public:
     void setCommitState(CommitState cs) { m_commitState = cs; }
     CommitState commitState() const { return  m_commitState; }
@@ -42,12 +42,12 @@ public:
     bool visible() const { return m_visible; }
 };
 
-TEST(SchedulerStateMachineTest, TestNextActionBeginsFrameIfNeeded)
+TEST(CCSchedulerStateMachineTest, TestNextActionBeginsFrameIfNeeded)
 {
     // If no commit needed, do nothing
     {
         StateMachine state;
-        state.setCommitState(SchedulerStateMachine::COMMIT_STATE_IDLE);
+        state.setCommitState(CCSchedulerStateMachine::COMMIT_STATE_IDLE);
         state.setCanBeginFrame(true);
         state.setNeedsRedraw(false);
         state.setNeedsCommit(false);
@@ -56,16 +56,16 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsFrameIfNeeded)
         EXPECT_FALSE(state.vsyncCallbackNeeded());
 
         state.didLeaveVSync();
-        EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+        EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
         EXPECT_FALSE(state.vsyncCallbackNeeded());
         state.didEnterVSync();
-        EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+        EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
     }
 
     // If commit requested but canBeginFrame is still false, do nothing.
     {
         StateMachine state;
-        state.setCommitState(SchedulerStateMachine::COMMIT_STATE_IDLE);
+        state.setCommitState(CCSchedulerStateMachine::COMMIT_STATE_IDLE);
         state.setNeedsRedraw(false);
         state.setNeedsCommit(false);
         state.setVisible(true);
@@ -73,17 +73,17 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsFrameIfNeeded)
         EXPECT_FALSE(state.vsyncCallbackNeeded());
 
         state.didLeaveVSync();
-        EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+        EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
         EXPECT_FALSE(state.vsyncCallbackNeeded());
         state.didEnterVSync();
-        EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+        EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
     }
 
 
     // If commit requested, begin a frame
     {
         StateMachine state;
-        state.setCommitState(SchedulerStateMachine::COMMIT_STATE_IDLE);
+        state.setCommitState(CCSchedulerStateMachine::COMMIT_STATE_IDLE);
         state.setCanBeginFrame(true);
         state.setNeedsRedraw(false);
         state.setNeedsCommit(true);
@@ -96,25 +96,25 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsFrameIfNeeded)
         StateMachine state;
         state.setCanBeginFrame(true);
         state.setVisible(true);
-        state.updateState(SchedulerStateMachine::ACTION_BEGIN_FRAME);
-        EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS, state.commitState());
+        state.updateState(CCSchedulerStateMachine::ACTION_BEGIN_FRAME);
+        EXPECT_EQ(CCSchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS, state.commitState());
         EXPECT_FALSE(state.needsCommit());
         EXPECT_FALSE(state.vsyncCallbackNeeded());
     }
 }
 
-TEST(SchedulerStateMachineTest, TestSetForcedRedrawDoesNotSetsNormalRedraw)
+TEST(CCSchedulerStateMachineTest, TestSetForcedRedrawDoesNotSetsNormalRedraw)
 {
-    SchedulerStateMachine state;
+    CCSchedulerStateMachine state;
     state.setCanDraw(true);
     state.setNeedsForcedRedraw();
     EXPECT_FALSE(state.redrawPending());
     EXPECT_TRUE(state.vsyncCallbackNeeded());
 }
 
-TEST(SchedulerStateMachineTest, TestFailedDrawSetsNeedsCommitAndDoesNotDrawAgain)
+TEST(CCSchedulerStateMachineTest, TestFailedDrawSetsNeedsCommitAndDoesNotDrawAgain)
 {
-    SchedulerStateMachine state;
+    CCSchedulerStateMachine state;
     state.setCanBeginFrame(true);
     state.setVisible(true);
     state.setCanDraw(true);
@@ -124,23 +124,23 @@ TEST(SchedulerStateMachineTest, TestFailedDrawSetsNeedsCommitAndDoesNotDrawAgain
     state.didEnterVSync();
 
     // We're drawing now.
-    EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
-    state.updateState(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
-    EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
+    state.updateState(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
     EXPECT_FALSE(state.redrawPending());
     EXPECT_FALSE(state.commitPending());
 
     // Failing the draw makes us require a commit.
     state.didDrawIfPossibleCompleted(false);
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
-    state.updateState(SchedulerStateMachine::ACTION_BEGIN_FRAME);
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
+    state.updateState(CCSchedulerStateMachine::ACTION_BEGIN_FRAME);
     EXPECT_TRUE(state.redrawPending());
     EXPECT_TRUE(state.commitPending());
 }
 
-TEST(SchedulerStateMachineTest, TestSetNeedsRedrawDuringFailedDrawDoesNotRemoveNeedsRedraw)
+TEST(CCSchedulerStateMachineTest, TestSetNeedsRedrawDuringFailedDrawDoesNotRemoveNeedsRedraw)
 {
-    SchedulerStateMachine state;
+    CCSchedulerStateMachine state;
     state.setCanBeginFrame(true);
     state.setVisible(true);
     state.setCanDraw(true);
@@ -150,46 +150,46 @@ TEST(SchedulerStateMachineTest, TestSetNeedsRedrawDuringFailedDrawDoesNotRemoveN
     state.didEnterVSync();
 
     // We're drawing now.
-    EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
-    state.updateState(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
-    EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
+    state.updateState(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
     EXPECT_FALSE(state.redrawPending());
     EXPECT_FALSE(state.commitPending());
 
     // While still in the same vsync callback, set needs redraw again.
     // This should not redraw.
     state.setNeedsRedraw();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
 
     // Failing the draw makes us require a commit.
     state.didDrawIfPossibleCompleted(false);
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
     EXPECT_TRUE(state.redrawPending());
 }
 
-TEST(SchedulerStateMachineTest, TestCommitAfterFailedDrawAllowsDrawInSameFrame)
+TEST(CCSchedulerStateMachineTest, TestCommitAfterFailedDrawAllowsDrawInSameFrame)
 {
-    SchedulerStateMachine state;
+    CCSchedulerStateMachine state;
     state.setCanBeginFrame(true);
     state.setVisible(true);
     state.setCanDraw(true);
 
     // Start a commit.
     state.setNeedsCommit();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
-    state.updateState(SchedulerStateMachine::ACTION_BEGIN_FRAME);
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
+    state.updateState(CCSchedulerStateMachine::ACTION_BEGIN_FRAME);
     EXPECT_TRUE(state.commitPending());
 
     // Then initiate a draw.
     state.setNeedsRedraw();
     EXPECT_TRUE(state.vsyncCallbackNeeded());
     state.didEnterVSync();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
     EXPECT_TRUE(state.redrawPending());
 
     // Fail the draw.
-    state.updateState(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
-    EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+    state.updateState(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
     state.didDrawIfPossibleCompleted(false);
     EXPECT_TRUE(state.redrawPending());
     // But the commit is ongoing.
@@ -197,37 +197,37 @@ TEST(SchedulerStateMachineTest, TestCommitAfterFailedDrawAllowsDrawInSameFrame)
 
     // Finish the commit.
     state.beginFrameComplete();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.nextAction());
-    state.updateState(SchedulerStateMachine::ACTION_COMMIT);
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_COMMIT, state.nextAction());
+    state.updateState(CCSchedulerStateMachine::ACTION_COMMIT);
     EXPECT_TRUE(state.redrawPending());
 
     // And we should be allowed to draw again.
-    EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
 }
 
-TEST(SchedulerStateMachineTest, TestCommitAfterFailedAndSuccessfulDrawDoesNotAllowDrawInSameFrame)
+TEST(CCSchedulerStateMachineTest, TestCommitAfterFailedAndSuccessfulDrawDoesNotAllowDrawInSameFrame)
 {
-    SchedulerStateMachine state;
+    CCSchedulerStateMachine state;
     state.setCanBeginFrame(true);
     state.setVisible(true);
     state.setCanDraw(true);
 
     // Start a commit.
     state.setNeedsCommit();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
-    state.updateState(SchedulerStateMachine::ACTION_BEGIN_FRAME);
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
+    state.updateState(CCSchedulerStateMachine::ACTION_BEGIN_FRAME);
     EXPECT_TRUE(state.commitPending());
 
     // Then initiate a draw.
     state.setNeedsRedraw();
     EXPECT_TRUE(state.vsyncCallbackNeeded());
     state.didEnterVSync();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
     EXPECT_TRUE(state.redrawPending());
 
     // Fail the draw.
-    state.updateState(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
-    EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+    state.updateState(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
     state.didDrawIfPossibleCompleted(false);
     EXPECT_TRUE(state.redrawPending());
     // But the commit is ongoing.
@@ -235,28 +235,28 @@ TEST(SchedulerStateMachineTest, TestCommitAfterFailedAndSuccessfulDrawDoesNotAll
 
     // Force a draw.
     state.setNeedsForcedRedraw();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_FORCED, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_DRAW_FORCED, state.nextAction());
 
     // Do the forced draw.
-    state.updateState(SchedulerStateMachine::ACTION_DRAW_FORCED);
-    EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+    state.updateState(CCSchedulerStateMachine::ACTION_DRAW_FORCED);
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
     EXPECT_FALSE(state.redrawPending());
     // And the commit is still ongoing.
     EXPECT_TRUE(state.commitPending());
 
     // Finish the commit.
     state.beginFrameComplete();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.nextAction());
-    state.updateState(SchedulerStateMachine::ACTION_COMMIT);
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_COMMIT, state.nextAction());
+    state.updateState(CCSchedulerStateMachine::ACTION_COMMIT);
     EXPECT_TRUE(state.redrawPending());
 
     // And we should not be allowed to draw again in the same frame..
-    EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
 }
 
-TEST(SchedulerStateMachineTest, TestFailedDrawsWillEventuallyForceADrawAfterTheNextCommit)
+TEST(CCSchedulerStateMachineTest, TestFailedDrawsWillEventuallyForceADrawAfterTheNextCommit)
 {
-    SchedulerStateMachine state;
+    CCSchedulerStateMachine state;
     state.setCanBeginFrame(true);
     state.setVisible(true);
     state.setCanDraw(true);
@@ -264,20 +264,20 @@ TEST(SchedulerStateMachineTest, TestFailedDrawsWillEventuallyForceADrawAfterTheN
 
     // Start a commit.
     state.setNeedsCommit();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
-    state.updateState(SchedulerStateMachine::ACTION_BEGIN_FRAME);
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
+    state.updateState(CCSchedulerStateMachine::ACTION_BEGIN_FRAME);
     EXPECT_TRUE(state.commitPending());
 
     // Then initiate a draw.
     state.setNeedsRedraw();
     EXPECT_TRUE(state.vsyncCallbackNeeded());
     state.didEnterVSync();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
     EXPECT_TRUE(state.redrawPending());
 
     // Fail the draw.
-    state.updateState(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
-    EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+    state.updateState(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
     state.didDrawIfPossibleCompleted(false);
     EXPECT_TRUE(state.redrawPending());
     // But the commit is ongoing.
@@ -286,17 +286,17 @@ TEST(SchedulerStateMachineTest, TestFailedDrawsWillEventuallyForceADrawAfterTheN
     // Finish the commit. Note, we should not yet be forcing a draw, but should
     // continue the commit as usual.
     state.beginFrameComplete();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.nextAction());
-    state.updateState(SchedulerStateMachine::ACTION_COMMIT);
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_COMMIT, state.nextAction());
+    state.updateState(CCSchedulerStateMachine::ACTION_COMMIT);
     EXPECT_TRUE(state.redrawPending());
 
     // The redraw should be forced in this case.
-    EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_FORCED, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_DRAW_FORCED, state.nextAction());
 }
 
-TEST(SchedulerStateMachineTest, TestFailedDrawIsRetriedNextVSync)
+TEST(CCSchedulerStateMachineTest, TestFailedDrawIsRetriedNextVSync)
 {
-    SchedulerStateMachine state;
+    CCSchedulerStateMachine state;
     state.setCanBeginFrame(true);
     state.setVisible(true);
     state.setCanDraw(true);
@@ -305,41 +305,41 @@ TEST(SchedulerStateMachineTest, TestFailedDrawIsRetriedNextVSync)
     state.setNeedsRedraw();
     EXPECT_TRUE(state.vsyncCallbackNeeded());
     state.didEnterVSync();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
     EXPECT_TRUE(state.redrawPending());
 
     // Fail the draw.
-    state.updateState(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
-    EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+    state.updateState(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
     state.didDrawIfPossibleCompleted(false);
     EXPECT_TRUE(state.redrawPending());
 
     // We should not be trying to draw again now, but we have a commit pending.
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
 
     state.didLeaveVSync();
     EXPECT_TRUE(state.vsyncCallbackNeeded());
     state.didEnterVSync();
 
     // We should try draw again in the next vsync.
-    EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
 }
 
-TEST(SchedulerStateMachineTest, TestDoestDrawTwiceInSameFrame)
+TEST(CCSchedulerStateMachineTest, TestDoestDrawTwiceInSameFrame)
 {
-    SchedulerStateMachine state;
+    CCSchedulerStateMachine state;
     state.setVisible(true);
     state.setCanDraw(true);
     state.setNeedsRedraw();
     EXPECT_TRUE(state.vsyncCallbackNeeded());
     state.didEnterVSync();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
-    state.updateState(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
+    state.updateState(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
 
     // While still in the same vsync callback, set needs redraw again.
     // This should not redraw.
     state.setNeedsRedraw();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
 
     // Move to another frame. This should now draw.
     state.didDrawIfPossibleCompleted(true);
@@ -347,16 +347,16 @@ TEST(SchedulerStateMachineTest, TestDoestDrawTwiceInSameFrame)
     EXPECT_TRUE(state.vsyncCallbackNeeded());
     state.didEnterVSync();
 
-    EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
-    state.updateState(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
+    state.updateState(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
     state.didDrawIfPossibleCompleted(true);
     EXPECT_FALSE(state.vsyncCallbackNeeded());
 }
 
-TEST(SchedulerStateMachineTest, TestNextActionDrawsOnVSync)
+TEST(CCSchedulerStateMachineTest, TestNextActionDrawsOnVSync)
 {
     // When not on vsync, or on vsync but not visible, don't draw.
-    size_t numCommitStates = sizeof(allCommitStates) / sizeof(SchedulerStateMachine::CommitState);
+    size_t numCommitStates = sizeof(allCommitStates) / sizeof(CCSchedulerStateMachine::CommitState);
     for (size_t i = 0; i < numCommitStates; ++i) {
         for (unsigned j = 0; j < 2; ++j) {
             StateMachine state;
@@ -370,11 +370,11 @@ TEST(SchedulerStateMachineTest, TestNextActionDrawsOnVSync)
 
             // Case 1: needsCommit=false
             state.setNeedsCommit(false);
-            EXPECT_NE(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
+            EXPECT_NE(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
 
             // Case 2: needsCommit=true
             state.setNeedsCommit(true);
-            EXPECT_NE(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
+            EXPECT_NE(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
         }
     }
 
@@ -392,11 +392,11 @@ TEST(SchedulerStateMachineTest, TestNextActionDrawsOnVSync)
             } else
                 state.setNeedsForcedRedraw(true);
 
-            SchedulerStateMachine::Action expectedAction;
-            if (allCommitStates[i] != SchedulerStateMachine::COMMIT_STATE_READY_TO_COMMIT)
-                expectedAction = forcedDraw ? SchedulerStateMachine::ACTION_DRAW_FORCED : SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE;
+            CCSchedulerStateMachine::Action expectedAction;
+            if (allCommitStates[i] != CCSchedulerStateMachine::COMMIT_STATE_READY_TO_COMMIT)
+                expectedAction = forcedDraw ? CCSchedulerStateMachine::ACTION_DRAW_FORCED : CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE;
             else
-                expectedAction = SchedulerStateMachine::ACTION_COMMIT;
+                expectedAction = CCSchedulerStateMachine::ACTION_COMMIT;
 
             // Case 1: needsCommit=false.
             state.setNeedsCommit(false);
@@ -411,9 +411,9 @@ TEST(SchedulerStateMachineTest, TestNextActionDrawsOnVSync)
     }
 }
 
-TEST(SchedulerStateMachineTest, TestNoCommitStatesRedrawWhenInvisible)
+TEST(CCSchedulerStateMachineTest, TestNoCommitStatesRedrawWhenInvisible)
 {
-    size_t numCommitStates = sizeof(allCommitStates) / sizeof(SchedulerStateMachine::CommitState);
+    size_t numCommitStates = sizeof(allCommitStates) / sizeof(CCSchedulerStateMachine::CommitState);
     for (size_t i = 0; i < numCommitStates; ++i) {
         // There shouldn't be any drawing regardless of vsync.
         for (unsigned j = 0; j < 2; ++j) {
@@ -427,18 +427,18 @@ TEST(SchedulerStateMachineTest, TestNoCommitStatesRedrawWhenInvisible)
 
             // Case 1: needsCommit=false.
             state.setNeedsCommit(false);
-            EXPECT_NE(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
+            EXPECT_NE(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
 
             // Case 2: needsCommit=true.
             state.setNeedsCommit(true);
-            EXPECT_NE(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
+            EXPECT_NE(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
         }
     }
 }
 
-TEST(SchedulerStateMachineTest, TestCanRedraw_StopsDraw)
+TEST(CCSchedulerStateMachineTest, TestCanRedraw_StopsDraw)
 {
-    size_t numCommitStates = sizeof(allCommitStates) / sizeof(SchedulerStateMachine::CommitState);
+    size_t numCommitStates = sizeof(allCommitStates) / sizeof(CCSchedulerStateMachine::CommitState);
     for (size_t i = 0; i < numCommitStates; ++i) {
         // There shouldn't be any drawing regardless of vsync.
         for (unsigned j = 0; j < 2; ++j) {
@@ -451,24 +451,24 @@ TEST(SchedulerStateMachineTest, TestCanRedraw_StopsDraw)
                 state.didEnterVSync();
 
             state.setCanDraw(false);
-            EXPECT_NE(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
+            EXPECT_NE(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
         }
     }
 }
 
-TEST(SchedulerStateMachineTest, TestCanRedrawWithWaitingForFirstDrawMakesProgress)
+TEST(CCSchedulerStateMachineTest, TestCanRedrawWithWaitingForFirstDrawMakesProgress)
 {
     StateMachine state;
-    state.setCommitState(SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_DRAW);
+    state.setCommitState(CCSchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_DRAW);
     state.setCanBeginFrame(true);
     state.setNeedsCommit(true);
     state.setNeedsRedraw(true);
     state.setVisible(true);
     state.setCanDraw(false);
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
 }
 
-TEST(SchedulerStateMachineTest, TestSetNeedsCommitIsNotLost)
+TEST(CCSchedulerStateMachineTest, TestSetNeedsCommitIsNotLost)
 {
     StateMachine state;
     state.setCanBeginFrame(true);
@@ -477,9 +477,9 @@ TEST(SchedulerStateMachineTest, TestSetNeedsCommitIsNotLost)
     state.setCanDraw(true);
 
     // Begin the frame.
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
     state.updateState(state.nextAction());
-    EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS, state.commitState());
+    EXPECT_EQ(CCSchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS, state.commitState());
 
     // Now, while the frame is in progress, set another commit.
     state.setNeedsCommit(true);
@@ -487,27 +487,27 @@ TEST(SchedulerStateMachineTest, TestSetNeedsCommitIsNotLost)
 
     // Let the frame finish.
     state.beginFrameComplete();
-    EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_READY_TO_COMMIT, state.commitState());
+    EXPECT_EQ(CCSchedulerStateMachine::COMMIT_STATE_READY_TO_COMMIT, state.commitState());
 
     // Expect to commit regardless of vsync state.
     state.didLeaveVSync();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_COMMIT, state.nextAction());
     state.didEnterVSync();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_COMMIT, state.nextAction());
 
     // Commit and make sure we draw on next vsync
-    state.updateState(SchedulerStateMachine::ACTION_COMMIT);
-    EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
-    EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_DRAW, state.commitState());
-    state.updateState(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
+    state.updateState(CCSchedulerStateMachine::ACTION_COMMIT);
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_DRAW, state.commitState());
+    state.updateState(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
     state.didDrawIfPossibleCompleted(true);
 
     // Verify that another commit will begin.
     state.didLeaveVSync();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
 }
 
-TEST(SchedulerStateMachineTest, TestFullCycle)
+TEST(CCSchedulerStateMachineTest, TestFullCycle)
 {
     StateMachine state;
     state.setCanBeginFrame(true);
@@ -516,41 +516,41 @@ TEST(SchedulerStateMachineTest, TestFullCycle)
 
     // Start clean and set commit.
     state.setNeedsCommit(true);
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
 
     // Begin the frame.
-    state.updateState(SchedulerStateMachine::ACTION_BEGIN_FRAME);
-    EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS, state.commitState());
+    state.updateState(CCSchedulerStateMachine::ACTION_BEGIN_FRAME);
+    EXPECT_EQ(CCSchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS, state.commitState());
     EXPECT_FALSE(state.needsCommit());
-    EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
 
     // Tell the scheduler the frame finished.
     state.beginFrameComplete();
-    EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_READY_TO_COMMIT, state.commitState());
-    EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::COMMIT_STATE_READY_TO_COMMIT, state.commitState());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_COMMIT, state.nextAction());
 
     // Commit.
-    state.updateState(SchedulerStateMachine::ACTION_COMMIT);
-    EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_DRAW, state.commitState());
+    state.updateState(CCSchedulerStateMachine::ACTION_COMMIT);
+    EXPECT_EQ(CCSchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_DRAW, state.commitState());
     EXPECT_TRUE(state.needsRedraw());
 
     // Expect to do nothing until vsync.
-    EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
 
     // At vsync, draw.
     state.didEnterVSync();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
-    state.updateState(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
+    state.updateState(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
     state.didDrawIfPossibleCompleted(true);
     state.didLeaveVSync();
 
     // Should be synchronized, no draw needed, no action needed.
-    EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_IDLE, state.commitState());
+    EXPECT_EQ(CCSchedulerStateMachine::COMMIT_STATE_IDLE, state.commitState());
     EXPECT_FALSE(state.needsRedraw());
-    EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
 }
 
-TEST(SchedulerStateMachineTest, TestFullCycleWithCommitRequestInbetween)
+TEST(CCSchedulerStateMachineTest, TestFullCycleWithCommitRequestInbetween)
 {
     StateMachine state;
     state.setCanBeginFrame(true);
@@ -559,52 +559,52 @@ TEST(SchedulerStateMachineTest, TestFullCycleWithCommitRequestInbetween)
 
     // Start clean and set commit.
     state.setNeedsCommit(true);
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
 
     // Begin the frame.
-    state.updateState(SchedulerStateMachine::ACTION_BEGIN_FRAME);
-    EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS, state.commitState());
+    state.updateState(CCSchedulerStateMachine::ACTION_BEGIN_FRAME);
+    EXPECT_EQ(CCSchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS, state.commitState());
     EXPECT_FALSE(state.needsCommit());
-    EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
 
     // Request another commit while the commit is in flight.
     state.setNeedsCommit(true);
-    EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
 
     // Tell the scheduler the frame finished.
     state.beginFrameComplete();
-    EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_READY_TO_COMMIT, state.commitState());
-    EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::COMMIT_STATE_READY_TO_COMMIT, state.commitState());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_COMMIT, state.nextAction());
 
     // Commit.
-    state.updateState(SchedulerStateMachine::ACTION_COMMIT);
-    EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_DRAW, state.commitState());
+    state.updateState(CCSchedulerStateMachine::ACTION_COMMIT);
+    EXPECT_EQ(CCSchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_DRAW, state.commitState());
     EXPECT_TRUE(state.needsRedraw());
 
     // Expect to do nothing until vsync.
-    EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
 
     // At vsync, draw.
     state.didEnterVSync();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
-    state.updateState(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
+    state.updateState(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
     state.didDrawIfPossibleCompleted(true);
     state.didLeaveVSync();
 
     // Should be synchronized, no draw needed, no action needed.
-    EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_IDLE, state.commitState());
+    EXPECT_EQ(CCSchedulerStateMachine::COMMIT_STATE_IDLE, state.commitState());
     EXPECT_FALSE(state.needsRedraw());
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
 }
 
-TEST(SchedulerStateMachineTest, TestRequestCommitInvisible)
+TEST(CCSchedulerStateMachineTest, TestRequestCommitInvisible)
 {
     StateMachine state;
     state.setNeedsCommit(true);
-    EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
 }
 
-TEST(SchedulerStateMachineTest, TestGoesInvisibleBeforeBeginFrameCompletes)
+TEST(CCSchedulerStateMachineTest, TestGoesInvisibleBeforeBeginFrameCompletes)
 {
     StateMachine state;
     state.setCanBeginFrame(true);
@@ -613,37 +613,37 @@ TEST(SchedulerStateMachineTest, TestGoesInvisibleBeforeBeginFrameCompletes)
 
     // Start clean and set commit.
     state.setNeedsCommit(true);
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
 
     // Begin the frame while visible.
-    state.updateState(SchedulerStateMachine::ACTION_BEGIN_FRAME);
-    EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS, state.commitState());
+    state.updateState(CCSchedulerStateMachine::ACTION_BEGIN_FRAME);
+    EXPECT_EQ(CCSchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS, state.commitState());
     EXPECT_FALSE(state.needsCommit());
-    EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
 
     // Become invisible and abort the beginFrame.
     state.setVisible(false);
     state.beginFrameAborted();
 
     // We should now be back in the idle state as if we didn't start a frame at all.
-    EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_IDLE, state.commitState());
-    EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::COMMIT_STATE_IDLE, state.commitState());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
 
     // Become visible again
     state.setVisible(true);
 
     // We should be beginning a frame now
-    EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_IDLE, state.commitState());
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::COMMIT_STATE_IDLE, state.commitState());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
 
     // Begin the frame
     state.updateState(state.nextAction());
 
     // We should be starting the commit now
-    EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS, state.commitState());
+    EXPECT_EQ(CCSchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS, state.commitState());
 }
 
-TEST(SchedulerStateMachineTest, TestContextLostWhenCompletelyIdle)
+TEST(CCSchedulerStateMachineTest, TestContextLostWhenCompletelyIdle)
 {
     StateMachine state;
     state.setCanBeginFrame(true);
@@ -652,21 +652,21 @@ TEST(SchedulerStateMachineTest, TestContextLostWhenCompletelyIdle)
 
     state.didLoseContext();
 
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_CONTEXT_RECREATION, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_CONTEXT_RECREATION, state.nextAction());
     state.updateState(state.nextAction());
 
     // Once context recreation begins, nothing should happen.
-    EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
 
     // Recreate the context
     state.didRecreateContext();
 
     // When the context is recreated, we should begin a commit
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
     state.updateState(state.nextAction());
 }
 
-TEST(SchedulerStateMachineTest, TestContextLostWhenIdleAndCommitRequestedWhileRecreating)
+TEST(CCSchedulerStateMachineTest, TestContextLostWhenIdleAndCommitRequestedWhileRecreating)
 {
     StateMachine state;
     state.setCanBeginFrame(true);
@@ -675,35 +675,35 @@ TEST(SchedulerStateMachineTest, TestContextLostWhenIdleAndCommitRequestedWhileRe
 
     state.didLoseContext();
 
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_CONTEXT_RECREATION, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_CONTEXT_RECREATION, state.nextAction());
     state.updateState(state.nextAction());
 
     // Once context recreation begins, nothing should happen.
-    EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
 
     // While context is recreating, commits shouldn't begin.
     state.setNeedsCommit(true);
-    EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
 
     // Recreate the context
     state.didRecreateContext();
 
     // When the context is recreated, we should begin a commit
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
     state.updateState(state.nextAction());
 
     // Once the context is recreated, whether we draw should be based on
     // setCanDraw.
     state.setNeedsRedraw(true);
     state.didEnterVSync();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
     state.setCanDraw(false);
-    EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
     state.setCanDraw(true);
     state.didLeaveVSync();
 }
 
-TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress)
+TEST(CCSchedulerStateMachineTest, TestContextLostWhileCommitInProgress)
 {
     StateMachine state;
     state.setCanBeginFrame(true);
@@ -712,13 +712,13 @@ TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress)
 
     // Get a commit in flight.
     state.setNeedsCommit(true);
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
     state.updateState(state.nextAction());
 
     // Set damage and expect a draw.
     state.setNeedsRedraw(true);
     state.didEnterVSync();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
     state.updateState(state.nextAction());
     state.didLeaveVSync();
 
@@ -727,26 +727,26 @@ TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress)
 
     // Ask for another draw. Expect nothing happens.
     state.setNeedsRedraw(true);
-    EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
 
     // Finish the frame, and commit.
     state.beginFrameComplete();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_COMMIT, state.nextAction());
     state.updateState(state.nextAction());
 
-    EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_DRAW, state.commitState());
+    EXPECT_EQ(CCSchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_DRAW, state.commitState());
 
-    EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
     state.updateState(state.nextAction());
 
     // Expect to be told to begin context recreation, independent of vsync state
     state.didEnterVSync();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_CONTEXT_RECREATION, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_CONTEXT_RECREATION, state.nextAction());
     state.didLeaveVSync();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_CONTEXT_RECREATION, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_CONTEXT_RECREATION, state.nextAction());
 }
 
-TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgressAndAnotherCommitRequested)
+TEST(CCSchedulerStateMachineTest, TestContextLostWhileCommitInProgressAndAnotherCommitRequested)
 {
     StateMachine state;
     state.setCanBeginFrame(true);
@@ -755,13 +755,13 @@ TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgressAndAnotherCo
 
     // Get a commit in flight.
     state.setNeedsCommit(true);
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
     state.updateState(state.nextAction());
 
     // Set damage and expect a draw.
     state.setNeedsRedraw(true);
     state.didEnterVSync();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
     state.updateState(state.nextAction());
     state.didLeaveVSync();
 
@@ -771,27 +771,27 @@ TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgressAndAnotherCo
     // Ask for another draw and also set needs commit. Expect nothing happens.
     state.setNeedsRedraw(true);
     state.setNeedsCommit(true);
-    EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_NONE, state.nextAction());
 
     // Finish the frame, and commit.
     state.beginFrameComplete();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_COMMIT, state.nextAction());
     state.updateState(state.nextAction());
 
-    EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_DRAW, state.commitState());
+    EXPECT_EQ(CCSchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_DRAW, state.commitState());
 
-    EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE, state.nextAction());
     state.updateState(state.nextAction());
 
     // Expect to be told to begin context recreation, independent of vsync state
     state.didEnterVSync();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_CONTEXT_RECREATION, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_CONTEXT_RECREATION, state.nextAction());
     state.didLeaveVSync();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_CONTEXT_RECREATION, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_CONTEXT_RECREATION, state.nextAction());
 }
 
 
-TEST(SchedulerStateMachineTest, TestFinishAllRenderingWhileContextLost)
+TEST(CCSchedulerStateMachineTest, TestFinishAllRenderingWhileContextLost)
 {
     StateMachine state;
     state.setVisible(true);
@@ -803,62 +803,62 @@ TEST(SchedulerStateMachineTest, TestFinishAllRenderingWhileContextLost)
     // Ask a forced redraw and verify it ocurrs.
     state.setNeedsForcedRedraw(true);
     state.didEnterVSync();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_FORCED, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_DRAW_FORCED, state.nextAction());
     state.didLeaveVSync();
 
     // Clear the forced redraw bit.
     state.setNeedsForcedRedraw(false);
 
     // Expect to be told to begin context recreation, independent of vsync state
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_CONTEXT_RECREATION, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_CONTEXT_RECREATION, state.nextAction());
     state.updateState(state.nextAction());
 
     // Ask a forced redraw and verify it ocurrs.
     state.setNeedsForcedRedraw(true);
     state.didEnterVSync();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_FORCED, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_DRAW_FORCED, state.nextAction());
     state.didLeaveVSync();
 }
 
-TEST(SchedulerStateMachineTest, TestBeginFrameWhenInvisibleAndForceCommit)
+TEST(CCSchedulerStateMachineTest, TestBeginFrameWhenInvisibleAndForceCommit)
 {
     StateMachine state;
     state.setCanBeginFrame(true);
     state.setVisible(false);
     state.setNeedsCommit(true);
     state.setNeedsForcedCommit(true);
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
 }
 
-TEST(SchedulerStateMachineTest, TestBeginFrameWhenCanBeginFrameFalseAndForceCommit)
+TEST(CCSchedulerStateMachineTest, TestBeginFrameWhenCanBeginFrameFalseAndForceCommit)
 {
     StateMachine state;
     state.setVisible(true);
     state.setCanDraw(true);
     state.setNeedsCommit(true);
     state.setNeedsForcedCommit(true);
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
 }
 
-TEST(SchedulerStateMachineTest, TestBeginFrameWhenCommitInProgress)
+TEST(CCSchedulerStateMachineTest, TestBeginFrameWhenCommitInProgress)
 {
     StateMachine state;
     state.setCanBeginFrame(true);
     state.setVisible(false);
-    state.setCommitState(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS);
+    state.setCommitState(CCSchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS);
     state.setNeedsCommit(true);
     state.setNeedsForcedCommit(true);
 
     state.beginFrameComplete();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_COMMIT, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_COMMIT, state.nextAction());
     state.updateState(state.nextAction());
 
-    EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_DRAW, state.commitState());
+    EXPECT_EQ(CCSchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_DRAW, state.commitState());
 
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
 }
 
-TEST(SchedulerStateMachineTest, TestBeginFrameWhenContextLost)
+TEST(CCSchedulerStateMachineTest, TestBeginFrameWhenContextLost)
 {
     StateMachine state;
     state.setCanBeginFrame(true);
@@ -867,7 +867,7 @@ TEST(SchedulerStateMachineTest, TestBeginFrameWhenContextLost)
     state.setNeedsCommit(true);
     state.setNeedsForcedCommit(true);
     state.didLoseContext();
-    EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
+    EXPECT_EQ(CCSchedulerStateMachine::ACTION_BEGIN_FRAME, state.nextAction());
 }
 
 }

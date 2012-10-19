@@ -20,9 +20,9 @@ using namespace WebKit;
 
 namespace {
 
-class MockContentLayerClient : public ContentLayerClient {
+class MockContentLayerChromiumClient : public ContentLayerChromiumClient {
 public:
-    explicit MockContentLayerClient(IntRect opaqueLayerRect)
+    explicit MockContentLayerChromiumClient(IntRect opaqueLayerRect)
         : m_opaqueLayerRect(opaqueLayerRect)
     {
     }
@@ -36,18 +36,18 @@ private:
     IntRect m_opaqueLayerRect;
 };
 
-TEST(ContentLayerTest, ContentLayerPainterWithDeviceScale)
+TEST(ContentLayerChromiumTest, ContentLayerPainterWithDeviceScale)
 {
     float contentsScale = 2;
     IntRect contentRect(10, 10, 100, 100);
     IntRect opaqueRectInLayerSpace(5, 5, 20, 20);
     IntRect opaqueRectInContentSpace = opaqueRectInLayerSpace;
     opaqueRectInContentSpace.scale(contentsScale);
-    MockContentLayerClient client(opaqueRectInLayerSpace);
-    scoped_refptr<BitmapCanvasLayerTextureUpdater> updater = BitmapCanvasLayerTextureUpdater::create(ContentLayerPainter::create(&client).PassAs<LayerPainter>());
+    MockContentLayerChromiumClient client(opaqueRectInLayerSpace);
+    scoped_refptr<BitmapCanvasLayerTextureUpdater> updater = BitmapCanvasLayerTextureUpdater::create(ContentLayerPainter::create(&client).PassAs<LayerPainterChromium>());
 
     IntRect resultingOpaqueRect;
-    RenderingStats stats;
+    CCRenderingStats stats;
     updater->prepareToUpdate(contentRect, IntSize(256, 256), contentsScale, contentsScale, resultingOpaqueRect, stats);
 
     EXPECT_RECT_EQ(opaqueRectInContentSpace, resultingOpaqueRect);

@@ -15,32 +15,32 @@
 namespace {
 
 // This will be the maximum number of pending frames unless
-// FrameRateController::setMaxFramesPending is called.
+// CCFrameRateController::setMaxFramesPending is called.
 const int defaultMaxFramesPending = 2;
 
 }  // namespace
 
 namespace cc {
 
-class FrameRateControllerTimeSourceAdapter : public TimeSourceClient {
+class CCFrameRateControllerTimeSourceAdapter : public CCTimeSourceClient {
 public:
-    static scoped_ptr<FrameRateControllerTimeSourceAdapter> create(FrameRateController* frameRateController) {
-        return make_scoped_ptr(new FrameRateControllerTimeSourceAdapter(frameRateController));
+    static scoped_ptr<CCFrameRateControllerTimeSourceAdapter> create(CCFrameRateController* frameRateController) {
+        return make_scoped_ptr(new CCFrameRateControllerTimeSourceAdapter(frameRateController));
     }
-    virtual ~FrameRateControllerTimeSourceAdapter() {}
+    virtual ~CCFrameRateControllerTimeSourceAdapter() {}
 
     virtual void onTimerTick() OVERRIDE {
       m_frameRateController->onTimerTick();
     }
 
 private:
-    explicit FrameRateControllerTimeSourceAdapter(FrameRateController* frameRateController)
+    explicit CCFrameRateControllerTimeSourceAdapter(CCFrameRateController* frameRateController)
         : m_frameRateController(frameRateController) {}
 
-    FrameRateController* m_frameRateController;
+    CCFrameRateController* m_frameRateController;
 };
 
-FrameRateController::FrameRateController(scoped_refptr<TimeSource> timer)
+CCFrameRateController::CCFrameRateController(scoped_refptr<CCTimeSource> timer)
     : m_client(0)
     , m_numFramesPending(0)
     , m_maxFramesPending(defaultMaxFramesPending)
@@ -49,32 +49,32 @@ FrameRateController::FrameRateController(scoped_refptr<TimeSource> timer)
     , m_swapBuffersCompleteSupported(true)
     , m_isTimeSourceThrottling(true)
 {
-    m_timeSourceClientAdapter = FrameRateControllerTimeSourceAdapter::create(this);
+    m_timeSourceClientAdapter = CCFrameRateControllerTimeSourceAdapter::create(this);
     m_timeSource->setClient(m_timeSourceClientAdapter.get());
 }
 
-FrameRateController::FrameRateController(Thread* thread)
+CCFrameRateController::CCFrameRateController(CCThread* thread)
     : m_client(0)
     , m_numFramesPending(0)
     , m_maxFramesPending(defaultMaxFramesPending)
     , m_active(false)
     , m_swapBuffersCompleteSupported(true)
     , m_isTimeSourceThrottling(false)
-    , m_manualTicker(new Timer(thread, this))
+    , m_manualTicker(new CCTimer(thread, this))
 {
 }
 
-FrameRateController::~FrameRateController()
+CCFrameRateController::~CCFrameRateController()
 {
     if (m_isTimeSourceThrottling)
         m_timeSource->setActive(false);
 }
 
-void FrameRateController::setActive(bool active)
+void CCFrameRateController::setActive(bool active)
 {
     if (m_active == active)
         return;
-    TRACE_EVENT1("cc", "FrameRateController::setActive", "active", active);
+    TRACE_EVENT1("cc", "CCFrameRateController::setActive", "active", active);
     m_active = active;
 
     if (m_isTimeSourceThrottling)
@@ -87,24 +87,24 @@ void FrameRateController::setActive(bool active)
     }
 }
 
-void FrameRateController::setMaxFramesPending(int maxFramesPending)
+void CCFrameRateController::setMaxFramesPending(int maxFramesPending)
 {
     DCHECK(maxFramesPending > 0);
     m_maxFramesPending = maxFramesPending;
 }
 
-void FrameRateController::setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval)
+void CCFrameRateController::setTimebaseAndInterval(base::TimeTicks timebase, base::TimeDelta interval)
 {
     if (m_isTimeSourceThrottling)
         m_timeSource->setTimebaseAndInterval(timebase, interval);
 }
 
-void FrameRateController::setSwapBuffersCompleteSupported(bool supported)
+void CCFrameRateController::setSwapBuffersCompleteSupported(bool supported)
 {
     m_swapBuffersCompleteSupported = supported;
 }
 
-void FrameRateController::onTimerTick()
+void CCFrameRateController::onTimerTick()
 {
     DCHECK(m_active);
 
@@ -118,18 +118,18 @@ void FrameRateController::onTimerTick()
         postManualTick();
 }
 
-void FrameRateController::postManualTick()
+void CCFrameRateController::postManualTick()
 {
     if (m_active)
         m_manualTicker->startOneShot(0);
 }
 
-void FrameRateController::onTimerFired()
+void CCFrameRateController::onTimerFired()
 {
     onTimerTick();
 }
 
-void FrameRateController::didBeginFrame()
+void CCFrameRateController::didBeginFrame()
 {
     if (m_swapBuffersCompleteSupported)
         m_numFramesPending++;
@@ -137,7 +137,7 @@ void FrameRateController::didBeginFrame()
         postManualTick();
 }
 
-void FrameRateController::didFinishFrame()
+void CCFrameRateController::didFinishFrame()
 {
     DCHECK(m_swapBuffersCompleteSupported);
 
@@ -146,12 +146,12 @@ void FrameRateController::didFinishFrame()
         postManualTick();
 }
 
-void FrameRateController::didAbortAllPendingFrames()
+void CCFrameRateController::didAbortAllPendingFrames()
 {
     m_numFramesPending = 0;
 }
 
-base::TimeTicks FrameRateController::nextTickTime()
+base::TimeTicks CCFrameRateController::nextTickTime()
 {
     if (m_isTimeSourceThrottling)
         return m_timeSource->nextTickTime();

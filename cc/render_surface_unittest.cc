@@ -32,7 +32,7 @@ namespace {
     codeToTest;                                                         \
     EXPECT_FALSE(renderSurface->surfacePropertyChanged())
 
-TEST(RenderSurfaceTest, verifySurfaceChangesAreTrackedProperly)
+TEST(CCRenderSurfaceTest, verifySurfaceChangesAreTrackedProperly)
 {
     //
     // This test checks that surfacePropertyChanged() has the correct behavior.
@@ -41,10 +41,10 @@ TEST(RenderSurfaceTest, verifySurfaceChangesAreTrackedProperly)
     // This will fake that we are on the correct thread for testing purposes.
     DebugScopedSetImplThread setImplThread;
 
-    scoped_ptr<LayerImpl> owningLayer = LayerImpl::create(1);
+    scoped_ptr<CCLayerImpl> owningLayer = CCLayerImpl::create(1);
     owningLayer->createRenderSurface();
     ASSERT_TRUE(owningLayer->renderSurface());
-    RenderSurfaceImpl* renderSurface = owningLayer->renderSurface();
+    CCRenderSurface* renderSurface = owningLayer->renderSurface();
     IntRect testRect = IntRect(IntPoint(3, 4), IntSize(5, 6));
     owningLayer->resetAllChangeTrackingForSubtree();
 
@@ -61,7 +61,7 @@ TEST(RenderSurfaceTest, verifySurfaceChangesAreTrackedProperly)
     EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->setClipRect(testRect));
     EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->setContentRect(testRect));
 
-    scoped_ptr<LayerImpl> dummyMask = LayerImpl::create(1);
+    scoped_ptr<CCLayerImpl> dummyMask = CCLayerImpl::create(1);
     WebTransformationMatrix dummyMatrix;
     dummyMatrix.translate(1.0, 2.0);
 
@@ -73,18 +73,18 @@ TEST(RenderSurfaceTest, verifySurfaceChangesAreTrackedProperly)
     EXECUTE_AND_VERIFY_SURFACE_DID_NOT_CHANGE(renderSurface->clearLayerLists());
 }
 
-TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectSharedQuadState)
+TEST(CCRenderSurfaceTest, sanityCheckSurfaceCreatesCorrectSharedQuadState)
 {
     // This will fake that we are on the correct thread for testing purposes.
     DebugScopedSetImplThread setImplThread;
 
-    scoped_ptr<LayerImpl> rootLayer = LayerImpl::create(1);
+    scoped_ptr<CCLayerImpl> rootLayer = CCLayerImpl::create(1);
 
-    scoped_ptr<LayerImpl> owningLayer = LayerImpl::create(2);
+    scoped_ptr<CCLayerImpl> owningLayer = CCLayerImpl::create(2);
     owningLayer->createRenderSurface();
     ASSERT_TRUE(owningLayer->renderSurface());
     owningLayer->setRenderTarget(owningLayer.get());
-    RenderSurfaceImpl* renderSurface = owningLayer->renderSurface();
+    CCRenderSurface* renderSurface = owningLayer->renderSurface();
 
     rootLayer->addChild(owningLayer.Pass());
 
@@ -99,16 +99,16 @@ TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectSharedQuadState)
     renderSurface->setClipRect(clipRect);
     renderSurface->setDrawOpacity(1);
 
-    QuadList quadList;
-    SharedQuadStateList sharedStateList;
-    MockQuadCuller mockQuadCuller(quadList, sharedStateList);
-    AppendQuadsData appendQuadsData;
+    CCQuadList quadList;
+    CCSharedQuadStateList sharedStateList;
+    MockCCQuadCuller mockQuadCuller(quadList, sharedStateList);
+    CCAppendQuadsData appendQuadsData;
 
     bool forReplica = false;
-    renderSurface->appendQuads(mockQuadCuller, appendQuadsData, forReplica, RenderPass::Id(2, 0));
+    renderSurface->appendQuads(mockQuadCuller, appendQuadsData, forReplica, CCRenderPass::Id(2, 0));
 
     ASSERT_EQ(1u, sharedStateList.size());
-    SharedQuadState* sharedQuadState = sharedStateList[0];
+    CCSharedQuadState* sharedQuadState = sharedStateList[0];
 
     EXPECT_EQ(30, sharedQuadState->quadTransform.m41());
     EXPECT_EQ(40, sharedQuadState->quadTransform.m42());
@@ -117,28 +117,28 @@ TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectSharedQuadState)
     EXPECT_FALSE(sharedQuadState->opaque);
 }
 
-class TestRenderPassSink : public RenderPassSink {
+class TestCCRenderPassSink : public CCRenderPassSink {
 public:
-    virtual void appendRenderPass(scoped_ptr<RenderPass> renderPass) OVERRIDE { m_renderPasses.append(renderPass.Pass()); }
+    virtual void appendRenderPass(scoped_ptr<CCRenderPass> renderPass) OVERRIDE { m_renderPasses.append(renderPass.Pass()); }
 
-    const ScopedPtrVector<RenderPass>& renderPasses() const { return m_renderPasses; }
+    const ScopedPtrVector<CCRenderPass>& renderPasses() const { return m_renderPasses; }
 
 private:
-    ScopedPtrVector<RenderPass> m_renderPasses;
+    ScopedPtrVector<CCRenderPass> m_renderPasses;
 };
 
-TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectRenderPass)
+TEST(CCRenderSurfaceTest, sanityCheckSurfaceCreatesCorrectRenderPass)
 {
     // This will fake that we are on the correct thread for testing purposes.
     DebugScopedSetImplThread setImplThread;
 
-    scoped_ptr<LayerImpl> rootLayer = LayerImpl::create(1);
+    scoped_ptr<CCLayerImpl> rootLayer = CCLayerImpl::create(1);
 
-    scoped_ptr<LayerImpl> owningLayer = LayerImpl::create(2);
+    scoped_ptr<CCLayerImpl> owningLayer = CCLayerImpl::create(2);
     owningLayer->createRenderSurface();
     ASSERT_TRUE(owningLayer->renderSurface());
     owningLayer->setRenderTarget(owningLayer.get());
-    RenderSurfaceImpl* renderSurface = owningLayer->renderSurface();
+    CCRenderSurface* renderSurface = owningLayer->renderSurface();
 
     rootLayer->addChild(owningLayer.Pass());
 
@@ -149,14 +149,14 @@ TEST(RenderSurfaceTest, sanityCheckSurfaceCreatesCorrectRenderPass)
     renderSurface->setScreenSpaceTransform(origin);
     renderSurface->setContentRect(contentRect);
 
-    TestRenderPassSink passSink;
+    TestCCRenderPassSink passSink;
 
     renderSurface->appendRenderPasses(passSink);
 
     ASSERT_EQ(1u, passSink.renderPasses().size());
-    RenderPass* pass = passSink.renderPasses()[0];
+    CCRenderPass* pass = passSink.renderPasses()[0];
 
-    EXPECT_EQ(RenderPass::Id(2, 0), pass->id());
+    EXPECT_EQ(CCRenderPass::Id(2, 0), pass->id());
     EXPECT_EQ(contentRect, pass->outputRect());
     EXPECT_EQ(origin, pass->transformToRootTarget());
 }

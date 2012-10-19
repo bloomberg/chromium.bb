@@ -13,22 +13,22 @@ using namespace std;
 
 namespace cc {
 
-scoped_ptr<LayerTilingData> LayerTilingData::create(const IntSize& tileSize, BorderTexelOption border)
+scoped_ptr<CCLayerTilingData> CCLayerTilingData::create(const IntSize& tileSize, BorderTexelOption border)
 {
-    return make_scoped_ptr(new LayerTilingData(tileSize, border));
+    return make_scoped_ptr(new CCLayerTilingData(tileSize, border));
 }
 
-LayerTilingData::LayerTilingData(const IntSize& tileSize, BorderTexelOption border)
+CCLayerTilingData::CCLayerTilingData(const IntSize& tileSize, BorderTexelOption border)
     : m_tilingData(tileSize, IntSize(), border == HasBorderTexels)
 {
     setTileSize(tileSize);
 }
 
-LayerTilingData::~LayerTilingData()
+CCLayerTilingData::~CCLayerTilingData()
 {
 }
 
-void LayerTilingData::setTileSize(const IntSize& size)
+void CCLayerTilingData::setTileSize(const IntSize& size)
 {
     if (tileSize() == size)
         return;
@@ -38,12 +38,12 @@ void LayerTilingData::setTileSize(const IntSize& size)
     m_tilingData.setMaxTextureSize(size);
 }
 
-IntSize LayerTilingData::tileSize() const
+IntSize CCLayerTilingData::tileSize() const
 {
     return m_tilingData.maxTextureSize();
 }
 
-void LayerTilingData::setBorderTexelOption(BorderTexelOption borderTexelOption)
+void CCLayerTilingData::setBorderTexelOption(BorderTexelOption borderTexelOption)
 {
     bool borderTexels = borderTexelOption == HasBorderTexels;
     if (hasBorderTexels() == borderTexels)
@@ -53,36 +53,36 @@ void LayerTilingData::setBorderTexelOption(BorderTexelOption borderTexelOption)
     m_tilingData.setHasBorderTexels(borderTexels);
 }
 
-const LayerTilingData& LayerTilingData::operator=(const LayerTilingData& tiler)
+const CCLayerTilingData& CCLayerTilingData::operator=(const CCLayerTilingData& tiler)
 {
     m_tilingData = tiler.m_tilingData;
 
     return *this;
 }
 
-void LayerTilingData::addTile(scoped_ptr<Tile> tile, int i, int j)
+void CCLayerTilingData::addTile(scoped_ptr<Tile> tile, int i, int j)
 {
     DCHECK(!tileAt(i, j));
     tile->moveTo(i, j);
     m_tiles.add(make_pair(i, j), tile.Pass());
 }
 
-scoped_ptr<LayerTilingData::Tile> LayerTilingData::takeTile(int i, int j)
+scoped_ptr<CCLayerTilingData::Tile> CCLayerTilingData::takeTile(int i, int j)
 {
     return m_tiles.take_and_erase(make_pair(i, j));
 }
 
-LayerTilingData::Tile* LayerTilingData::tileAt(int i, int j) const
+CCLayerTilingData::Tile* CCLayerTilingData::tileAt(int i, int j) const
 {
     return m_tiles.get(make_pair(i, j));
 }
 
-void LayerTilingData::reset()
+void CCLayerTilingData::reset()
 {
     m_tiles.clear();
 }
 
-void LayerTilingData::contentRectToTileIndices(const IntRect& contentRect, int& left, int& top, int& right, int& bottom) const
+void CCLayerTilingData::contentRectToTileIndices(const IntRect& contentRect, int& left, int& top, int& right, int& bottom) const
 {
     // An empty rect doesn't result in an empty set of tiles, so don't pass an empty rect.
     // FIXME: Possibly we should fill a vector of tiles instead,
@@ -95,14 +95,14 @@ void LayerTilingData::contentRectToTileIndices(const IntRect& contentRect, int& 
     bottom = m_tilingData.tileYIndexFromSrcCoord(contentRect.maxY() - 1);
 }
 
-IntRect LayerTilingData::tileRect(const Tile* tile) const
+IntRect CCLayerTilingData::tileRect(const Tile* tile) const
 {
     IntRect tileRect = m_tilingData.tileBoundsWithBorder(tile->i(), tile->j());
     tileRect.setSize(tileSize());
     return tileRect;
 }
 
-Region LayerTilingData::opaqueRegionInContentRect(const IntRect& contentRect) const
+Region CCLayerTilingData::opaqueRegionInContentRect(const IntRect& contentRect) const
 {
     if (contentRect.isEmpty())
         return Region();
@@ -123,7 +123,7 @@ Region LayerTilingData::opaqueRegionInContentRect(const IntRect& contentRect) co
     return opaqueRegion;
 }
 
-void LayerTilingData::setBounds(const IntSize& size)
+void CCLayerTilingData::setBounds(const IntSize& size)
 {
     m_tilingData.setTotalSize(size);
     if (size.isEmpty()) {
@@ -143,7 +143,7 @@ void LayerTilingData::setBounds(const IntSize& size)
         m_tiles.erase(invalidTileKeys[i]);
 }
 
-IntSize LayerTilingData::bounds() const
+IntSize CCLayerTilingData::bounds() const
 {
     return m_tilingData.totalSize();
 }

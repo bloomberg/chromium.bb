@@ -9,17 +9,17 @@
 
 namespace cc {
 
-class TextureLayerImpl : public LayerImpl {
+class CCTextureLayerImpl : public CCLayerImpl {
 public:
-    static scoped_ptr<TextureLayerImpl> create(int id)
+    static scoped_ptr<CCTextureLayerImpl> create(int id)
     {
-        return make_scoped_ptr(new TextureLayerImpl(id));
+        return make_scoped_ptr(new CCTextureLayerImpl(id));
     }
-    virtual ~TextureLayerImpl();
+    virtual ~CCTextureLayerImpl();
 
-    virtual void willDraw(ResourceProvider*) OVERRIDE;
-    virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
-    virtual void didDraw(ResourceProvider*) OVERRIDE;
+    virtual void willDraw(CCResourceProvider*) OVERRIDE;
+    virtual void appendQuads(CCQuadSink&, CCAppendQuadsData&) OVERRIDE;
+    virtual void didDraw(CCResourceProvider*) OVERRIDE;
 
     virtual void didLoseContext() OVERRIDE;
 
@@ -32,12 +32,12 @@ public:
     void setUVRect(const FloatRect& rect) { m_uvRect = rect; }
 
 private:
-    explicit TextureLayerImpl(int);
+    explicit CCTextureLayerImpl(int);
 
     virtual const char* layerTypeAsString() const OVERRIDE;
 
     unsigned m_textureId;
-    ResourceProvider::ResourceId m_externalTextureResource;
+    CCResourceProvider::ResourceId m_externalTextureResource;
     bool m_premultipliedAlpha;
     bool m_flipped;
     FloatRect m_uvRect;

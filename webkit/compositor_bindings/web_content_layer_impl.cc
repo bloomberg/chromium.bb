@@ -26,7 +26,7 @@ WebContentLayer* WebContentLayer::create(WebContentLayerClient* client)
 }
 
 WebContentLayerImpl::WebContentLayerImpl(WebContentLayerClient* client)
-    : m_layer(new WebLayerImpl(ContentLayer::create(this)))
+    : m_layer(new WebLayerImpl(ContentLayerChromium::create(this)))
     , m_client(client)
 {
     m_layer->layer()->setIsDrawable(true);
@@ -34,7 +34,7 @@ WebContentLayerImpl::WebContentLayerImpl(WebContentLayerClient* client)
 
 WebContentLayerImpl::~WebContentLayerImpl()
 {
-    static_cast<ContentLayer*>(m_layer->layer())->clearClient();
+    static_cast<ContentLayerChromium*>(m_layer->layer())->clearClient();
 }
 
 WebLayer* WebContentLayerImpl::layer()

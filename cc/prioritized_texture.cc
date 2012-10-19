@@ -15,11 +15,11 @@ using namespace std;
 
 namespace cc {
 
-PrioritizedTexture::PrioritizedTexture(PrioritizedTextureManager* manager, IntSize size, GLenum format)
+CCPrioritizedTexture::CCPrioritizedTexture(CCPrioritizedTextureManager* manager, IntSize size, GLenum format)
     : m_size(size)
     , m_format(format)
     , m_bytes(0)
-    , m_priority(PriorityCalculator::lowestPriority())
+    , m_priority(CCPriorityCalculator::lowestPriority())
     , m_isAbovePriorityCutoff(false)
     , m_isSelfManaged(false)
     , m_backing(0)
@@ -28,18 +28,18 @@ PrioritizedTexture::PrioritizedTexture(PrioritizedTextureManager* manager, IntSi
     // m_manager is set in registerTexture() so validity can be checked.
     DCHECK(format || size.isEmpty());
     if (format)
-        m_bytes = Texture::memorySizeBytes(size, format);
+        m_bytes = CCTexture::memorySizeBytes(size, format);
     if (manager)
         manager->registerTexture(this);
 }
 
-PrioritizedTexture::~PrioritizedTexture()
+CCPrioritizedTexture::~CCPrioritizedTexture()
 {
     if (m_manager)
         m_manager->unregisterTexture(this);
 }
 
-void PrioritizedTexture::setTextureManager(PrioritizedTextureManager* manager)
+void CCPrioritizedTexture::setTextureManager(CCPrioritizedTextureManager* manager)
 {
     if (m_manager == manager)
         return;
@@ -49,46 +49,46 @@ void PrioritizedTexture::setTextureManager(PrioritizedTextureManager* manager)
         manager->registerTexture(this);
 }
 
-void PrioritizedTexture::setDimensions(IntSize size, GLenum format)
+void CCPrioritizedTexture::setDimensions(IntSize size, GLenum format)
 {
     if (m_format != format || m_size != size) {
         m_isAbovePriorityCutoff = false;
         m_format = format;
         m_size = size;
-        m_bytes = Texture::memorySizeBytes(size, format);
+        m_bytes = CCTexture::memorySizeBytes(size, format);
         DCHECK(m_manager || !m_backing);
         if (m_manager)
             m_manager->returnBackingTexture(this);
     }
 }
 
-bool PrioritizedTexture::requestLate()
+bool CCPrioritizedTexture::requestLate()
 {
     if (!m_manager)
         return false;
     return m_manager->requestLate(this);
 }
 
-bool PrioritizedTexture::backingResourceWasEvicted() const
+bool CCPrioritizedTexture::backingResourceWasEvicted() const
 {
     return m_backing ? m_backing->resourceHasBeenDeleted() : false;
 }
 
-void PrioritizedTexture::acquireBackingTexture(ResourceProvider* resourceProvider)
+void CCPrioritizedTexture::acquireBackingTexture(CCResourceProvider* resourceProvider)
 {
     DCHECK(m_isAbovePriorityCutoff);
     if (m_isAbovePriorityCutoff)
         m_manager->acquireBackingTextureIfNeeded(this, resourceProvider);
 }
 
-ResourceProvider::ResourceId PrioritizedTexture::resourceId() const
+CCResourceProvider::ResourceId CCPrioritizedTexture::resourceId() const
 {
     if (m_backing)
         return m_backing->id();
     return 0;
 }
 
-void PrioritizedTexture::upload(ResourceProvider* resourceProvider,
+void CCPrioritizedTexture::upload(CCResourceProvider* resourceProvider,
                                   const uint8_t* image, const IntRect& imageRect,
                                   const IntRect& sourceRect, const IntSize& destOffset)
 {
@@ -99,7 +99,7 @@ void PrioritizedTexture::upload(ResourceProvider* resourceProvider,
     resourceProvider->upload(resourceId(), image, imageRect, sourceRect, destOffset);
 }
 
-void PrioritizedTexture::link(Backing* backing)
+void CCPrioritizedTexture::link(Backing* backing)
 {
     DCHECK(backing);
     DCHECK(!backing->m_owner);
@@ -109,7 +109,7 @@ void PrioritizedTexture::link(Backing* backing)
     m_backing->m_owner = this;
 }
 
-void PrioritizedTexture::unlink()
+void CCPrioritizedTexture::unlink()
 {
     DCHECK(m_backing);
     DCHECK(m_backing->m_owner == this);
@@ -118,17 +118,17 @@ void PrioritizedTexture::unlink()
     m_backing = 0;
 }
 
-void PrioritizedTexture::setToSelfManagedMemoryPlaceholder(size_t bytes)
+void CCPrioritizedTexture::setToSelfManagedMemoryPlaceholder(size_t bytes)
 {
     setDimensions(IntSize(), GL_RGBA);
     setIsSelfManaged(true);
     m_bytes = bytes;
 }
 
-PrioritizedTexture::Backing::Backing(unsigned id, ResourceProvider* resourceProvider, IntSize size, GLenum format)
-    : Texture(id, size, format)
+CCPrioritizedTexture::Backing::Backing(unsigned id, CCResourceProvider* resourceProvider, IntSize size, GLenum format)
+    : CCTexture(id, size, format)
     , m_owner(0)
-    , m_priorityAtLastPriorityUpdate(PriorityCalculator::lowestPriority())
+    , m_priorityAtLastPriorityUpdate(CCPriorityCalculator::lowestPriority())
     , m_wasAbovePriorityCutoffAtLastPriorityUpdate(false)
     , m_inDrawingImplTree(false)
     , m_resourceHasBeenDeleted(false)
@@ -138,15 +138,15 @@ PrioritizedTexture::Backing::Backing(unsigned id, ResourceProvider* resourceProv
 {
 }
 
-PrioritizedTexture::Backing::~Backing()
+CCPrioritizedTexture::Backing::~Backing()
 {
     DCHECK(!m_owner);
     DCHECK(m_resourceHasBeenDeleted);
 }
 
-void PrioritizedTexture::Backing::deleteResource(ResourceProvider* resourceProvider)
+void CCPrioritizedTexture::Backing::deleteResource(CCResourceProvider* resourceProvider)
 {
-    DCHECK(Proxy::isImplThread());
+    DCHECK(CCProxy::isImplThread());
     DCHECK(!m_resourceHasBeenDeleted);
 #ifndef NDEBUG
     DCHECK(resourceProvider == m_resourceProvider);
@@ -157,36 +157,36 @@ void PrioritizedTexture::Backing::deleteResource(ResourceProvider* resourceProvi
     m_resourceHasBeenDeleted = true;
 }
 
-bool PrioritizedTexture::Backing::resourceHasBeenDeleted() const
+bool CCPrioritizedTexture::Backing::resourceHasBeenDeleted() const
 {
-    DCHECK(Proxy::isImplThread());
+    DCHECK(CCProxy::isImplThread());
     return m_resourceHasBeenDeleted;
 }
 
-bool PrioritizedTexture::Backing::canBeRecycled() const
+bool CCPrioritizedTexture::Backing::canBeRecycled() const
 {
-    DCHECK(Proxy::isImplThread());
+    DCHECK(CCProxy::isImplThread());
     return !m_wasAbovePriorityCutoffAtLastPriorityUpdate && !m_inDrawingImplTree;
 }
 
-void PrioritizedTexture::Backing::updatePriority()
+void CCPrioritizedTexture::Backing::updatePriority()
 {
-    DCHECK(Proxy::isImplThread() && Proxy::isMainThreadBlocked());
+    DCHECK(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
     if (m_owner) {
         m_priorityAtLastPriorityUpdate = m_owner->requestPriority();
         m_wasAbovePriorityCutoffAtLastPriorityUpdate = m_owner->isAbovePriorityCutoff();
     } else {
-        m_priorityAtLastPriorityUpdate = PriorityCalculator::lowestPriority();
+        m_priorityAtLastPriorityUpdate = CCPriorityCalculator::lowestPriority();
         m_wasAbovePriorityCutoffAtLastPriorityUpdate = false;
     }
 }
 
-void PrioritizedTexture::Backing::updateInDrawingImplTree()
+void CCPrioritizedTexture::Backing::updateInDrawingImplTree()
 {
-    DCHECK(Proxy::isImplThread() && Proxy::isMainThreadBlocked());
+    DCHECK(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
     m_inDrawingImplTree = !!owner();
     if (!m_inDrawingImplTree)
-        DCHECK(m_priorityAtLastPriorityUpdate == PriorityCalculator::lowestPriority());
+        DCHECK(m_priorityAtLastPriorityUpdate == CCPriorityCalculator::lowestPriority());
 }
 
 } // namespace cc

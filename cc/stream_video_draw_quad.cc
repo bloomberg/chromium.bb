@@ -10,22 +10,22 @@
 
 namespace cc {
 
-scoped_ptr<StreamVideoDrawQuad> StreamVideoDrawQuad::create(const SharedQuadState* sharedQuadState, const IntRect& quadRect, unsigned textureId, const WebKit::WebTransformationMatrix& matrix)
+scoped_ptr<CCStreamVideoDrawQuad> CCStreamVideoDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, unsigned textureId, const WebKit::WebTransformationMatrix& matrix)
 {
-    return make_scoped_ptr(new StreamVideoDrawQuad(sharedQuadState, quadRect, textureId, matrix));
+    return make_scoped_ptr(new CCStreamVideoDrawQuad(sharedQuadState, quadRect, textureId, matrix));
 }
 
-StreamVideoDrawQuad::StreamVideoDrawQuad(const SharedQuadState* sharedQuadState, const IntRect& quadRect, unsigned textureId, const WebKit::WebTransformationMatrix& matrix)
-    : DrawQuad(sharedQuadState, DrawQuad::StreamVideoContent, quadRect)
+CCStreamVideoDrawQuad::CCStreamVideoDrawQuad(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, unsigned textureId, const WebKit::WebTransformationMatrix& matrix)
+    : CCDrawQuad(sharedQuadState, CCDrawQuad::StreamVideoContent, quadRect)
     , m_textureId(textureId)
     , m_matrix(matrix)
 {
 }
 
-const StreamVideoDrawQuad* StreamVideoDrawQuad::materialCast(const DrawQuad* quad)
+const CCStreamVideoDrawQuad* CCStreamVideoDrawQuad::materialCast(const CCDrawQuad* quad)
 {
-    DCHECK(quad->material() == DrawQuad::StreamVideoContent);
-    return static_cast<const StreamVideoDrawQuad*>(quad);
+    DCHECK(quad->material() == CCDrawQuad::StreamVideoContent);
+    return static_cast<const CCStreamVideoDrawQuad*>(quad);
 }
 
 }  // namespace cc

@@ -10,44 +10,44 @@
 
 namespace cc {
 
-class FloatAnimationCurve;
-class TransformAnimationCurve;
+class CCFloatAnimationCurve;
+class CCTransformAnimationCurve;
 class IntSize;
 class TransformOperations;
 
 // An animation curve is a function that returns a value given a time.
 // There are currently only two types of curve, float and transform.
-class AnimationCurve {
+class CCAnimationCurve {
 public:
     enum Type { Float, Transform };
 
-    virtual ~AnimationCurve() { }
+    virtual ~CCAnimationCurve() { }
 
     virtual double duration() const = 0;
     virtual Type type() const = 0;
-    virtual scoped_ptr<AnimationCurve> clone() const = 0;
+    virtual scoped_ptr<CCAnimationCurve> clone() const = 0;
 
-    const FloatAnimationCurve* toFloatAnimationCurve() const;
-    const TransformAnimationCurve* toTransformAnimationCurve() const;
+    const CCFloatAnimationCurve* toFloatAnimationCurve() const;
+    const CCTransformAnimationCurve* toTransformAnimationCurve() const;
 };
 
-class FloatAnimationCurve : public AnimationCurve {
+class CCFloatAnimationCurve : public CCAnimationCurve {
 public:
-    virtual ~FloatAnimationCurve() { }
+    virtual ~CCFloatAnimationCurve() { }
 
     virtual float getValue(double t) const = 0;
 
-    // Partial Animation implementation.
+    // Partial CCAnimation implementation.
     virtual Type type() const OVERRIDE;
 };
 
-class TransformAnimationCurve : public AnimationCurve {
+class CCTransformAnimationCurve : public CCAnimationCurve {
 public:
-    virtual ~TransformAnimationCurve() { }
+    virtual ~CCTransformAnimationCurve() { }
 
     virtual WebKit::WebTransformationMatrix getValue(double t) const = 0;
 
-    // Partial Animation implementation.
+    // Partial CCAnimation implementation.
     virtual Type type() const OVERRIDE;
 };
 

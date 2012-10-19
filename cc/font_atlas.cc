@@ -17,7 +17,7 @@ namespace cc {
 
 using namespace std;
 
-FontAtlas::FontAtlas(SkBitmap bitmap, IntRect asciiToRectTable[128], int fontHeight)
+CCFontAtlas::CCFontAtlas(SkBitmap bitmap, IntRect asciiToRectTable[128], int fontHeight)
     : m_atlas(bitmap)
     , m_fontHeight(fontHeight)
 {
@@ -25,13 +25,13 @@ FontAtlas::FontAtlas(SkBitmap bitmap, IntRect asciiToRectTable[128], int fontHei
         m_asciiToRectTable[i] = asciiToRectTable[i];
 }
 
-FontAtlas::~FontAtlas()
+CCFontAtlas::~CCFontAtlas()
 {
 }
 
-void FontAtlas::drawText(SkCanvas* canvas, const SkPaint& paint, const std::string& text, const gfx::Point& destPosition, const IntSize& clip) const
+void CCFontAtlas::drawText(SkCanvas* canvas, const SkPaint& paint, const std::string& text, const gfx::Point& destPosition, const IntSize& clip) const
 {
-    DCHECK(Proxy::isImplThread());
+    DCHECK(CCProxy::isImplThread());
 
     std::vector<std::string> lines;
     base::SplitString(text, '\n', &lines);
@@ -45,9 +45,9 @@ void FontAtlas::drawText(SkCanvas* canvas, const SkPaint& paint, const std::stri
     }
 }
 
-void FontAtlas::drawOneLineOfTextInternal(SkCanvas* canvas, const SkPaint& paint, const std::string& textLine, const gfx::Point& destPosition) const
+void CCFontAtlas::drawOneLineOfTextInternal(SkCanvas* canvas, const SkPaint& paint, const std::string& textLine, const gfx::Point& destPosition) const
 {
-    DCHECK(Proxy::isImplThread());
+    DCHECK(CCProxy::isImplThread());
 
     gfx::Point position = destPosition;
     for (unsigned i = 0; i < textLine.length(); ++i) {
@@ -60,9 +60,9 @@ void FontAtlas::drawOneLineOfTextInternal(SkCanvas* canvas, const SkPaint& paint
     }
 }
 
-void FontAtlas::drawDebugAtlas(SkCanvas* canvas, const gfx::Point& destPosition) const
+void CCFontAtlas::drawDebugAtlas(SkCanvas* canvas, const gfx::Point& destPosition) const
 {
-    DCHECK(Proxy::isImplThread());
+    DCHECK(CCProxy::isImplThread());
 
     SkIRect source = SkIRect::MakeWH(m_atlas.width(), m_atlas.height());
     canvas->drawBitmapRect(m_atlas, &source, SkRect::MakeXYWH(destPosition.x(), destPosition.y(), m_atlas.width(), m_atlas.height()));

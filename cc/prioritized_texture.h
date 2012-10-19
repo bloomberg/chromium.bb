@@ -17,24 +17,24 @@
 
 namespace cc {
 
-class PrioritizedTextureManager;
+class CCPrioritizedTextureManager;
 
-class PrioritizedTexture {
+class CCPrioritizedTexture {
 public:
-    static scoped_ptr<PrioritizedTexture> create(PrioritizedTextureManager* manager, IntSize size, GLenum format)
+    static scoped_ptr<CCPrioritizedTexture> create(CCPrioritizedTextureManager* manager, IntSize size, GLenum format)
     {
-        return make_scoped_ptr(new PrioritizedTexture(manager, size, format));
+        return make_scoped_ptr(new CCPrioritizedTexture(manager, size, format));
     }
-    static scoped_ptr<PrioritizedTexture> create(PrioritizedTextureManager* manager)
+    static scoped_ptr<CCPrioritizedTexture> create(CCPrioritizedTextureManager* manager)
     {
-        return make_scoped_ptr(new PrioritizedTexture(manager, IntSize(), 0));
+        return make_scoped_ptr(new CCPrioritizedTexture(manager, IntSize(), 0));
     }
-    ~PrioritizedTexture();
+    ~CCPrioritizedTexture();
 
     // Texture properties. Changing these causes the backing texture to be lost.
     // Setting these to the same value is a no-op.
-    void setTextureManager(PrioritizedTextureManager*);
-    PrioritizedTextureManager* textureManager() { return m_manager; }
+    void setTextureManager(CCPrioritizedTextureManager*);
+    CCPrioritizedTextureManager* textureManager() { return m_manager; }
     void setDimensions(IntSize, GLenum format);
     GLenum format() const { return m_format; }
     IntSize size() const { return m_size; }
@@ -44,7 +44,7 @@ public:
     void setRequestPriority(int priority) { m_priority = priority; }
     int requestPriority() const { return m_priority; }
 
-    // After PrioritizedTexture::prioritizeTextures() is called, this returns
+    // After CCPrioritizedTexture::prioritizeTextures() is called, this returns
     // if the the request succeeded and this texture can be acquired for use.
     bool canAcquireBackingTexture() const { return m_isAbovePriorityCutoff; }
 
@@ -58,7 +58,7 @@ public:
 
     // If canAcquireBackingTexture() is true acquireBackingTexture() will acquire
     // a backing texture for use. Call this whenever the texture is actually needed.
-    void acquireBackingTexture(ResourceProvider*);
+    void acquireBackingTexture(CCResourceProvider*);
 
     // FIXME: Request late is really a hack for when we are totally out of memory
     //        (all textures are visible) but we can still squeeze into the limit
@@ -70,9 +70,9 @@ public:
     bool requestLate();
 
     // Uploads pixels into the backing resource. This functions will aquire the backing if needed.
-    void upload(ResourceProvider*, const uint8_t* image, const IntRect& imageRect, const IntRect& sourceRect, const IntSize& destOffset);
+    void upload(CCResourceProvider*, const uint8_t* image, const IntRect& imageRect, const IntRect& sourceRect, const IntSize& destOffset);
 
-    ResourceProvider::ResourceId resourceId() const;
+    CCResourceProvider::ResourceId resourceId() const;
 
     // Self-managed textures are accounted for when prioritizing other textures,
     // but they are not allocated/recycled/deleted, so this needs to be done
@@ -83,28 +83,28 @@ public:
     void setToSelfManagedMemoryPlaceholder(size_t bytes);
 
 private:
-    friend class PrioritizedTextureManager;
-    friend class PrioritizedTextureTest;
+    friend class CCPrioritizedTextureManager;
+    friend class CCPrioritizedTextureTest;
 
-    class Backing : public Texture {
+    class Backing : public CCTexture {
     public:
-        Backing(unsigned id, ResourceProvider*, IntSize, GLenum format);
+        Backing(unsigned id, CCResourceProvider*, IntSize, GLenum format);
         ~Backing();
         void updatePriority();
         void updateInDrawingImplTree();
 
-        PrioritizedTexture* owner() { return m_owner; }
+        CCPrioritizedTexture* owner() { return m_owner; }
         bool canBeRecycled() const;
         int requestPriorityAtLastPriorityUpdate() const { return m_priorityAtLastPriorityUpdate; }
         bool wasAbovePriorityCutoffAtLastPriorityUpdate() const { return m_wasAbovePriorityCutoffAtLastPriorityUpdate; }
         bool inDrawingImplTree() const { return m_inDrawingImplTree; }
 
-        void deleteResource(ResourceProvider*);
+        void deleteResource(CCResourceProvider*);
         bool resourceHasBeenDeleted() const;
 
     private:
-        friend class PrioritizedTexture;
-        PrioritizedTexture* m_owner;
+        friend class CCPrioritizedTexture;
+        CCPrioritizedTexture* m_owner;
         int m_priorityAtLastPriorityUpdate;
         bool m_wasAbovePriorityCutoffAtLastPriorityUpdate;
 
@@ -113,17 +113,17 @@ private:
 
         bool m_resourceHasBeenDeleted;
 #ifndef NDEBUG
-        ResourceProvider* m_resourceProvider;
+        CCResourceProvider* m_resourceProvider;
 #endif
 
         DISALLOW_COPY_AND_ASSIGN(Backing);
     };
 
-    PrioritizedTexture(PrioritizedTextureManager*, IntSize, GLenum format);
+    CCPrioritizedTexture(CCPrioritizedTextureManager*, IntSize, GLenum format);
 
     bool isAbovePriorityCutoff() { return m_isAbovePriorityCutoff; }
     void setAbovePriorityCutoff(bool isAbovePriorityCutoff) { m_isAbovePriorityCutoff = isAbovePriorityCutoff; }
-    void setManagerInternal(PrioritizedTextureManager* manager) { m_manager = manager; }
+    void setManagerInternal(CCPrioritizedTextureManager* manager) { m_manager = manager; }
 
     Backing* backing() const { return m_backing; }
     void link(Backing*);
@@ -138,9 +138,9 @@ private:
     bool m_isSelfManaged;
 
     Backing* m_backing;
-    PrioritizedTextureManager* m_manager;
+    CCPrioritizedTextureManager* m_manager;
 
-    DISALLOW_COPY_AND_ASSIGN(PrioritizedTexture);
+    DISALLOW_COPY_AND_ASSIGN(CCPrioritizedTexture);
 };
 
 }  // namespace cc

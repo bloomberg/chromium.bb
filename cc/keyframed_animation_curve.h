@@ -12,96 +12,96 @@
 
 namespace cc {
 
-class Keyframe {
+class CCKeyframe {
 public:
     double time() const;
-    const TimingFunction* timingFunction() const;
+    const CCTimingFunction* timingFunction() const;
 
 protected:
-    Keyframe(double time, scoped_ptr<TimingFunction>);
-    virtual ~Keyframe();
+    CCKeyframe(double time, scoped_ptr<CCTimingFunction>);
+    virtual ~CCKeyframe();
 
 private:
     double m_time;
-    scoped_ptr<TimingFunction> m_timingFunction;
+    scoped_ptr<CCTimingFunction> m_timingFunction;
 };
 
-class FloatKeyframe : public Keyframe {
+class CCFloatKeyframe : public CCKeyframe {
 public:
-    static scoped_ptr<FloatKeyframe> create(double time, float value, scoped_ptr<TimingFunction>);
-    virtual ~FloatKeyframe();
+    static scoped_ptr<CCFloatKeyframe> create(double time, float value, scoped_ptr<CCTimingFunction>);
+    virtual ~CCFloatKeyframe();
 
     float value() const;
 
-    scoped_ptr<FloatKeyframe> clone() const;
+    scoped_ptr<CCFloatKeyframe> clone() const;
 
 private:
-    FloatKeyframe(double time, float value, scoped_ptr<TimingFunction>);
+    CCFloatKeyframe(double time, float value, scoped_ptr<CCTimingFunction>);
 
     float m_value;
 };
 
-class TransformKeyframe : public Keyframe {
+class CCTransformKeyframe : public CCKeyframe {
 public:
-    static scoped_ptr<TransformKeyframe> create(double time, const WebKit::WebTransformOperations& value, scoped_ptr<TimingFunction>);
-    virtual ~TransformKeyframe();
+    static scoped_ptr<CCTransformKeyframe> create(double time, const WebKit::WebTransformOperations& value, scoped_ptr<CCTimingFunction>);
+    virtual ~CCTransformKeyframe();
 
     const WebKit::WebTransformOperations& value() const;
 
-    scoped_ptr<TransformKeyframe> clone() const;
+    scoped_ptr<CCTransformKeyframe> clone() const;
 
 private:
-    TransformKeyframe(double time, const WebKit::WebTransformOperations& value, scoped_ptr<TimingFunction>);
+    CCTransformKeyframe(double time, const WebKit::WebTransformOperations& value, scoped_ptr<CCTimingFunction>);
 
     WebKit::WebTransformOperations m_value;
 };
 
-class KeyframedFloatAnimationCurve : public FloatAnimationCurve {
+class CCKeyframedFloatAnimationCurve : public CCFloatAnimationCurve {
 public:
     // It is required that the keyframes be sorted by time.
-    static scoped_ptr<KeyframedFloatAnimationCurve> create();
+    static scoped_ptr<CCKeyframedFloatAnimationCurve> create();
 
-    virtual ~KeyframedFloatAnimationCurve();
+    virtual ~CCKeyframedFloatAnimationCurve();
 
-    void addKeyframe(scoped_ptr<FloatKeyframe>);
+    void addKeyframe(scoped_ptr<CCFloatKeyframe>);
 
-    // AnimationCurve implementation
+    // CCAnimationCurve implementation
     virtual double duration() const OVERRIDE;
-    virtual scoped_ptr<AnimationCurve> clone() const OVERRIDE;
+    virtual scoped_ptr<CCAnimationCurve> clone() const OVERRIDE;
 
-    // FloatAnimationCurve implementation
+    // CCFloatAnimationCurve implementation
     virtual float getValue(double t) const OVERRIDE;
 
 private:
-    KeyframedFloatAnimationCurve();
+    CCKeyframedFloatAnimationCurve();
 
     // Always sorted in order of increasing time. No two keyframes have the
     // same time.
-    ScopedPtrVector<FloatKeyframe> m_keyframes;
+    ScopedPtrVector<CCFloatKeyframe> m_keyframes;
 };
 
-class KeyframedTransformAnimationCurve : public TransformAnimationCurve {
+class CCKeyframedTransformAnimationCurve : public CCTransformAnimationCurve {
 public:
     // It is required that the keyframes be sorted by time.
-    static scoped_ptr<KeyframedTransformAnimationCurve> create();
+    static scoped_ptr<CCKeyframedTransformAnimationCurve> create();
 
-    virtual ~KeyframedTransformAnimationCurve();
+    virtual ~CCKeyframedTransformAnimationCurve();
 
-    void addKeyframe(scoped_ptr<TransformKeyframe>);
+    void addKeyframe(scoped_ptr<CCTransformKeyframe>);
 
-    // AnimationCurve implementation
+    // CCAnimationCurve implementation
     virtual double duration() const OVERRIDE;
-    virtual scoped_ptr<AnimationCurve> clone() const OVERRIDE;
+    virtual scoped_ptr<CCAnimationCurve> clone() const OVERRIDE;
 
-    // TransformAnimationCurve implementation
+    // CCTransformAnimationCurve implementation
     virtual WebKit::WebTransformationMatrix getValue(double t) const OVERRIDE;
 
 private:
-    KeyframedTransformAnimationCurve();
+    CCKeyframedTransformAnimationCurve();
 
     // Always sorted in order of increasing time. No two keyframes have the
     // same time.
-    ScopedPtrVector<TransformKeyframe> m_keyframes;
+    ScopedPtrVector<CCTransformKeyframe> m_keyframes;
 };
 
 } // namespace cc

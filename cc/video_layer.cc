@@ -10,25 +10,25 @@
 
 namespace cc {
 
-scoped_refptr<VideoLayer> VideoLayer::create(WebKit::WebVideoFrameProvider* provider)
+scoped_refptr<VideoLayerChromium> VideoLayerChromium::create(WebKit::WebVideoFrameProvider* provider)
 {
-    return make_scoped_refptr(new VideoLayer(provider));
+    return make_scoped_refptr(new VideoLayerChromium(provider));
 }
 
-VideoLayer::VideoLayer(WebKit::WebVideoFrameProvider* provider)
-    : Layer()
+VideoLayerChromium::VideoLayerChromium(WebKit::WebVideoFrameProvider* provider)
+    : LayerChromium()
     , m_provider(provider)
 {
     DCHECK(m_provider);
 }
 
-VideoLayer::~VideoLayer()
+VideoLayerChromium::~VideoLayerChromium()
 {
 }
 
-scoped_ptr<LayerImpl> VideoLayer::createLayerImpl()
+scoped_ptr<CCLayerImpl> VideoLayerChromium::createCCLayerImpl()
 {
-    return VideoLayerImpl::create(m_layerId, m_provider).PassAs<LayerImpl>();
+    return CCVideoLayerImpl::create(m_layerId, m_provider).PassAs<CCLayerImpl>();
 }
 
 } // namespace cc

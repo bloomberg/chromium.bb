@@ -9,11 +9,11 @@
 
 namespace cc {
 
-class RenderPass;
+class CCRenderPass;
 
-class RenderPassSink {
+class CCRenderPassSink {
 public:
-    virtual void appendRenderPass(scoped_ptr<RenderPass>) = 0;
+    virtual void appendRenderPass(scoped_ptr<CCRenderPass>) = 0;
 };
 
 }

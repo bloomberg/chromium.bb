@@ -20,7 +20,7 @@ using WebKit::WebTransformationMatrix;
 
 namespace cc {
 
-LayerImpl::LayerImpl(int id)
+CCLayerImpl::CCLayerImpl(int id)
     : m_parent(0)
     , m_maskLayerId(-1)
     , m_replicaLayerId(-1)
@@ -57,32 +57,32 @@ LayerImpl::LayerImpl(int id)
 #ifndef NDEBUG
     , m_betweenWillDrawAndDidDraw(false)
 #endif
-    , m_layerAnimationController(LayerAnimationController::create(this))
+    , m_layerAnimationController(CCLayerAnimationController::create(this))
 {
-    DCHECK(Proxy::isImplThread());
+    DCHECK(CCProxy::isImplThread());
     DCHECK(m_layerId > 0);
 }
 
-LayerImpl::~LayerImpl()
+CCLayerImpl::~CCLayerImpl()
 {
-    DCHECK(Proxy::isImplThread());
+    DCHECK(CCProxy::isImplThread());
 #ifndef NDEBUG
     DCHECK(!m_betweenWillDrawAndDidDraw);
 #endif
 }
 
-void LayerImpl::addChild(scoped_ptr<LayerImpl> child)
+void CCLayerImpl::addChild(scoped_ptr<CCLayerImpl> child)
 {
     child->setParent(this);
     m_children.append(child.Pass());
 }
 
-void LayerImpl::removeFromParent()
+void CCLayerImpl::removeFromParent()
 {
     if (!m_parent)
         return;
 
-    LayerImpl* parent = m_parent;
+    CCLayerImpl* parent = m_parent;
     m_parent = 0;
 
     for (size_t i = 0; i < parent->m_children.size(); ++i) {
@@ -93,25 +93,25 @@ void LayerImpl::removeFromParent()
     }
 }
 
-void LayerImpl::removeAllChildren()
+void CCLayerImpl::removeAllChildren()
 {
     while (m_children.size())
         m_children[0]->removeFromParent();
 }
 
-void LayerImpl::clearChildList()
+void CCLayerImpl::clearChildList()
 {
     m_children.clear();
 }
 
-void LayerImpl::createRenderSurface()
+void CCLayerImpl::createRenderSurface()
 {
     DCHECK(!m_renderSurface);
-    m_renderSurface = make_scoped_ptr(new RenderSurfaceImpl(this));
+    m_renderSurface = make_scoped_ptr(new CCRenderSurface(this));
     setRenderTarget(this);
 }
 
-bool LayerImpl::descendantDrawsContent()
+bool CCLayerImpl::descendantDrawsContent()
 {
     for (size_t i = 0; i < m_children.size(); ++i) {
         if (m_children[i]->drawsContent() || m_children[i]->descendantDrawsContent())
@@ -120,12 +120,12 @@ bool LayerImpl::descendantDrawsContent()
     return false;
 }
 
-scoped_ptr<SharedQuadState> LayerImpl::createSharedQuadState() const
+scoped_ptr<CCSharedQuadState> CCLayerImpl::createSharedQuadState() const
 {
-    return SharedQuadState::create(m_drawTransform, m_visibleContentRect, m_drawableContentRect, m_drawOpacity, m_contentsOpaque);
+    return CCSharedQuadState::create(m_drawTransform, m_visibleContentRect, m_drawableContentRect, m_drawOpacity, m_contentsOpaque);
 }
 
-void LayerImpl::willDraw(ResourceProvider*)
+void CCLayerImpl::willDraw(CCResourceProvider*)
 {
 #ifndef NDEBUG
     // willDraw/didDraw must be matched.
@@ -134,7 +134,7 @@ void LayerImpl::willDraw(ResourceProvider*)
 #endif
 }
 
-void LayerImpl::didDraw(ResourceProvider*)
+void CCLayerImpl::didDraw(CCResourceProvider*)
 {
 #ifndef NDEBUG
     DCHECK(m_betweenWillDrawAndDidDraw);
@@ -142,37 +142,37 @@ void LayerImpl::didDraw(ResourceProvider*)
 #endif
 }
 
-void LayerImpl::appendDebugBorderQuad(QuadSink& quadList, const SharedQuadState* sharedQuadState, AppendQuadsData& appendQuadsData) const
+void CCLayerImpl::appendDebugBorderQuad(CCQuadSink& quadList, const CCSharedQuadState* sharedQuadState, CCAppendQuadsData& appendQuadsData) const
 {
     if (!hasDebugBorders())
         return;
 
     IntRect contentRect(IntPoint(), contentBounds());
-    quadList.append(DebugBorderDrawQuad::create(sharedQuadState, contentRect, debugBorderColor(), debugBorderWidth()).PassAs<DrawQuad>(), appendQuadsData);
+    quadList.append(CCDebugBorderDrawQuad::create(sharedQuadState, contentRect, debugBorderColor(), debugBorderWidth()).PassAs<CCDrawQuad>(), appendQuadsData);
 }
 
-bool LayerImpl::hasContributingDelegatedRenderPasses() const
+bool CCLayerImpl::hasContributingDelegatedRenderPasses() const
 {
     return false;
 }
 
-RenderPass::Id LayerImpl::firstContributingRenderPassId() const
+CCRenderPass::Id CCLayerImpl::firstContributingRenderPassId() const
 {
-    return RenderPass::Id(0, 0);
+    return CCRenderPass::Id(0, 0);
 }
 
-RenderPass::Id LayerImpl::nextContributingRenderPassId(RenderPass::Id) const
+CCRenderPass::Id CCLayerImpl::nextContributingRenderPassId(CCRenderPass::Id) const
 {
-    return RenderPass::Id(0, 0);
+    return CCRenderPass::Id(0, 0);
 }
 
-ResourceProvider::ResourceId LayerImpl::contentsResourceId() const
+CCResourceProvider::ResourceId CCLayerImpl::contentsResourceId() const
 {
     NOTREACHED();
     return 0;
 }
 
-FloatSize LayerImpl::scrollBy(const FloatSize& scroll)
+FloatSize CCLayerImpl::scrollBy(const FloatSize& scroll)
 {
     IntSize minDelta = -toSize(m_scrollPosition);
     IntSize maxDelta = m_maxScrollPosition - toSize(m_scrollPosition);
@@ -191,46 +191,46 @@ FloatSize LayerImpl::scrollBy(const FloatSize& scroll)
     return unscrolled;
 }
 
-InputHandlerClient::ScrollStatus LayerImpl::tryScroll(const IntPoint& screenSpacePoint, InputHandlerClient::ScrollInputType type) const
+CCInputHandlerClient::ScrollStatus CCLayerImpl::tryScroll(const IntPoint& screenSpacePoint, CCInputHandlerClient::ScrollInputType type) const
 {
     if (shouldScrollOnMainThread()) {
-        TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed shouldScrollOnMainThread");
-        return InputHandlerClient::ScrollOnMainThread;
+        TRACE_EVENT0("cc", "CCLayerImpl::tryScroll: Failed shouldScrollOnMainThread");
+        return CCInputHandlerClient::ScrollOnMainThread;
     }
 
     if (!screenSpaceTransform().isInvertible()) {
-        TRACE_EVENT0("cc", "LayerImpl::tryScroll: Ignored nonInvertibleTransform");
-        return InputHandlerClient::ScrollIgnored;
+        TRACE_EVENT0("cc", "CCLayerImpl::tryScroll: Ignored nonInvertibleTransform");
+        return CCInputHandlerClient::ScrollIgnored;
     }
 
     if (!nonFastScrollableRegion().isEmpty()) {
         bool clipped = false;
-        FloatPoint hitTestPointInLocalSpace = MathUtil::projectPoint(screenSpaceTransform().inverse(), FloatPoint(screenSpacePoint), clipped);
+        FloatPoint hitTestPointInLocalSpace = CCMathUtil::projectPoint(screenSpaceTransform().inverse(), FloatPoint(screenSpacePoint), clipped);
         if (!clipped && nonFastScrollableRegion().contains(flooredIntPoint(hitTestPointInLocalSpace))) {
-            TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed nonFastScrollableRegion");
-            return InputHandlerClient::ScrollOnMainThread;
+            TRACE_EVENT0("cc", "CCLayerImpl::tryScroll: Failed nonFastScrollableRegion");
+            return CCInputHandlerClient::ScrollOnMainThread;
         }
     }
 
-    if (type == InputHandlerClient::Wheel && haveWheelEventHandlers()) {
-        TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed wheelEventHandlers");
-        return InputHandlerClient::ScrollOnMainThread;
+    if (type == CCInputHandlerClient::Wheel && haveWheelEventHandlers()) {
+        TRACE_EVENT0("cc", "CCLayerImpl::tryScroll: Failed wheelEventHandlers");
+        return CCInputHandlerClient::ScrollOnMainThread;
     }
 
     if (!scrollable()) {
-        TRACE_EVENT0("cc", "LayerImpl::tryScroll: Ignored not scrollable");
-        return InputHandlerClient::ScrollIgnored;
+        TRACE_EVENT0("cc", "CCLayerImpl::tryScroll: Ignored not scrollable");
+        return CCInputHandlerClient::ScrollIgnored;
     }
 
-    return InputHandlerClient::ScrollStarted;
+    return CCInputHandlerClient::ScrollStarted;
 }
 
-bool LayerImpl::drawCheckerboardForMissingTiles() const
+bool CCLayerImpl::drawCheckerboardForMissingTiles() const
 {
     return m_drawCheckerboardForMissingTiles && !Settings::backgroundColorInsteadOfCheckerboard();
 }
 
-IntRect LayerImpl::layerRectToContentRect(const WebKit::WebRect& layerRect)
+IntRect CCLayerImpl::layerRectToContentRect(const WebKit::WebRect& layerRect)
 {
     float widthScale = static_cast<float>(contentBounds().width()) / bounds().width();
     float heightScale = static_cast<float>(contentBounds().height()) / bounds().height();
@@ -239,7 +239,7 @@ IntRect LayerImpl::layerRectToContentRect(const WebKit::WebRect& layerRect)
     return enclosingIntRect(contentRect);
 }
 
-std::string LayerImpl::indentString(int indent)
+std::string CCLayerImpl::indentString(int indent)
 {
     std::string str;
     for (int i = 0; i != indent; ++i)
@@ -247,7 +247,7 @@ std::string LayerImpl::indentString(int indent)
     return str;
 }
 
-void LayerImpl::dumpLayerProperties(std::string* str, int indent) const
+void CCLayerImpl::dumpLayerProperties(std::string* str, int indent) const
 {
     std::string indentStr = indentString(indent);
     str->append(indentStr);
@@ -272,20 +272,20 @@ void LayerImpl::dumpLayerProperties(std::string* str, int indent) const
     base::StringAppendF(str, "drawsContent: %s\n", m_drawsContent ? "yes" : "no");
 }
 
-void sortLayers(std::vector<LayerImpl*>::iterator first, std::vector<LayerImpl*>::iterator end, LayerSorter* layerSorter)
+void sortLayers(std::vector<CCLayerImpl*>::iterator first, std::vector<CCLayerImpl*>::iterator end, CCLayerSorter* layerSorter)
 {
-    TRACE_EVENT0("cc", "LayerImpl::sortLayers");
+    TRACE_EVENT0("cc", "CCLayerImpl::sortLayers");
     layerSorter->sort(first, end);
 }
 
-std::string LayerImpl::layerTreeAsText() const
+std::string CCLayerImpl::layerTreeAsText() const
 {
     std::string str;
     dumpLayer(&str, 0);
     return str;
 }
 
-void LayerImpl::dumpLayer(std::string* str, int indent) const
+void CCLayerImpl::dumpLayer(std::string* str, int indent) const
 {
     str->append(indentString(indent));
     base::StringAppendF(str, "%s(%s)\n", layerTypeAsString(), m_debugName.data());
@@ -304,14 +304,14 @@ void LayerImpl::dumpLayer(std::string* str, int indent) const
         m_children[i]->dumpLayer(str, indent+1);
 }
 
-void LayerImpl::setStackingOrderChanged(bool stackingOrderChanged)
+void CCLayerImpl::setStackingOrderChanged(bool stackingOrderChanged)
 {
     // We don't need to store this flag; we only need to track that the change occurred.
     if (stackingOrderChanged)
         noteLayerPropertyChangedForSubtree();
 }
 
-bool LayerImpl::layerSurfacePropertyChanged() const
+bool CCLayerImpl::layerSurfacePropertyChanged() const
 {
     if (m_layerSurfacePropertyChanged)
         return true;
@@ -321,7 +321,7 @@ bool LayerImpl::layerSurfacePropertyChanged() const
     // case when such parent layer does not draw content, and therefore will
     // not be traversed by the damage tracker. We need to make sure that
     // property change on such layer will be caught by its descendants.
-    LayerImpl* current = this->m_parent;
+    CCLayerImpl* current = this->m_parent;
     while (current && !current->m_renderSurface) {
         if (current->m_layerSurfacePropertyChanged)
             return true;
@@ -331,24 +331,24 @@ bool LayerImpl::layerSurfacePropertyChanged() const
     return false;
 }
 
-void LayerImpl::noteLayerPropertyChangedForSubtree()
+void CCLayerImpl::noteLayerPropertyChangedForSubtree()
 {
     m_layerPropertyChanged = true;
     noteLayerPropertyChangedForDescendants();
 }
 
-void LayerImpl::noteLayerPropertyChangedForDescendants()
+void CCLayerImpl::noteLayerPropertyChangedForDescendants()
 {
     for (size_t i = 0; i < m_children.size(); ++i)
         m_children[i]->noteLayerPropertyChangedForSubtree();
 }
 
-const char* LayerImpl::layerTypeAsString() const
+const char* CCLayerImpl::layerTypeAsString() const
 {
-    return "Layer";
+    return "LayerChromium";
 }
 
-void LayerImpl::resetAllChangeTrackingForSubtree()
+void CCLayerImpl::resetAllChangeTrackingForSubtree()
 {
     m_layerPropertyChanged = false;
     m_layerSurfacePropertyChanged = false;
@@ -368,37 +368,37 @@ void LayerImpl::resetAllChangeTrackingForSubtree()
         m_children[i]->resetAllChangeTrackingForSubtree();
 }
 
-bool LayerImpl::layerIsAlwaysDamaged() const
+bool CCLayerImpl::layerIsAlwaysDamaged() const
 {
     return false;
 }
 
-int LayerImpl::id() const
+int CCLayerImpl::id() const
 {
      return m_layerId;
 }
 
-float LayerImpl::opacity() const
+float CCLayerImpl::opacity() const
 {
      return m_opacity;
 }
 
-void LayerImpl::setOpacityFromAnimation(float opacity)
+void CCLayerImpl::setOpacityFromAnimation(float opacity)
 {
     setOpacity(opacity);
 }
 
-const WebKit::WebTransformationMatrix& LayerImpl::transform() const
+const WebKit::WebTransformationMatrix& CCLayerImpl::transform() const
 {
      return m_transform;
 }
 
-void LayerImpl::setTransformFromAnimation(const WebTransformationMatrix& transform)
+void CCLayerImpl::setTransformFromAnimation(const WebTransformationMatrix& transform)
 {
     setTransform(transform);
 }
 
-void LayerImpl::setBounds(const IntSize& bounds)
+void CCLayerImpl::setBounds(const IntSize& bounds)
 {
     if (m_bounds == bounds)
         return;
@@ -411,7 +411,7 @@ void LayerImpl::setBounds(const IntSize& bounds)
         m_layerPropertyChanged = true;
 }
 
-void LayerImpl::setMaskLayer(scoped_ptr<LayerImpl> maskLayer)
+void CCLayerImpl::setMaskLayer(scoped_ptr<CCLayerImpl> maskLayer)
 {
     m_maskLayer = maskLayer.Pass();
 
@@ -423,7 +423,7 @@ void LayerImpl::setMaskLayer(scoped_ptr<LayerImpl> maskLayer)
     noteLayerPropertyChangedForSubtree();
 }
 
-void LayerImpl::setReplicaLayer(scoped_ptr<LayerImpl> replicaLayer)
+void CCLayerImpl::setReplicaLayer(scoped_ptr<CCLayerImpl> replicaLayer)
 {
     m_replicaLayer = replicaLayer.Pass();
 
@@ -435,7 +435,7 @@ void LayerImpl::setReplicaLayer(scoped_ptr<LayerImpl> replicaLayer)
     noteLayerPropertyChangedForSubtree();
 }
 
-void LayerImpl::setDrawsContent(bool drawsContent)
+void CCLayerImpl::setDrawsContent(bool drawsContent)
 {
     if (m_drawsContent == drawsContent)
         return;
@@ -444,7 +444,7 @@ void LayerImpl::setDrawsContent(bool drawsContent)
     m_layerPropertyChanged = true;
 }
 
-void LayerImpl::setAnchorPoint(const FloatPoint& anchorPoint)
+void CCLayerImpl::setAnchorPoint(const FloatPoint& anchorPoint)
 {
     if (m_anchorPoint == anchorPoint)
         return;
@@ -453,7 +453,7 @@ void LayerImpl::setAnchorPoint(const FloatPoint& anchorPoint)
     noteLayerPropertyChangedForSubtree();
 }
 
-void LayerImpl::setAnchorPointZ(float anchorPointZ)
+void CCLayerImpl::setAnchorPointZ(float anchorPointZ)
 {
     if (m_anchorPointZ == anchorPointZ)
         return;
@@ -462,7 +462,7 @@ void LayerImpl::setAnchorPointZ(float anchorPointZ)
     noteLayerPropertyChangedForSubtree();
 }
 
-void LayerImpl::setBackgroundColor(SkColor backgroundColor)
+void CCLayerImpl::setBackgroundColor(SkColor backgroundColor)
 {
     if (m_backgroundColor == backgroundColor)
         return;
@@ -471,7 +471,7 @@ void LayerImpl::setBackgroundColor(SkColor backgroundColor)
     m_layerPropertyChanged = true;
 }
 
-void LayerImpl::setFilters(const WebKit::WebFilterOperations& filters)
+void CCLayerImpl::setFilters(const WebKit::WebFilterOperations& filters)
 {
     if (m_filters == filters)
         return;
@@ -480,7 +480,7 @@ void LayerImpl::setFilters(const WebKit::WebFilterOperations& filters)
     noteLayerPropertyChangedForSubtree();
 }
 
-void LayerImpl::setBackgroundFilters(const WebKit::WebFilterOperations& backgroundFilters)
+void CCLayerImpl::setBackgroundFilters(const WebKit::WebFilterOperations& backgroundFilters)
 {
     if (m_backgroundFilters == backgroundFilters)
         return;
@@ -489,7 +489,7 @@ void LayerImpl::setBackgroundFilters(const WebKit::WebFilterOperations& backgrou
     m_layerPropertyChanged = true;
 }
 
-void LayerImpl::setMasksToBounds(bool masksToBounds)
+void CCLayerImpl::setMasksToBounds(bool masksToBounds)
 {
     if (m_masksToBounds == masksToBounds)
         return;
@@ -498,7 +498,7 @@ void LayerImpl::setMasksToBounds(bool masksToBounds)
     noteLayerPropertyChangedForSubtree();
 }
 
-void LayerImpl::setContentsOpaque(bool opaque)
+void CCLayerImpl::setContentsOpaque(bool opaque)
 {
     if (m_contentsOpaque == opaque)
         return;
@@ -507,7 +507,7 @@ void LayerImpl::setContentsOpaque(bool opaque)
     noteLayerPropertyChangedForSubtree();
 }
 
-void LayerImpl::setOpacity(float opacity)
+void CCLayerImpl::setOpacity(float opacity)
 {
     if (m_opacity == opacity)
         return;
@@ -516,12 +516,12 @@ void LayerImpl::setOpacity(float opacity)
     m_layerSurfacePropertyChanged = true;
 }
 
-bool LayerImpl::opacityIsAnimating() const
+bool CCLayerImpl::opacityIsAnimating() const
 {
-    return m_layerAnimationController->isAnimatingProperty(ActiveAnimation::Opacity);
+    return m_layerAnimationController->isAnimatingProperty(CCActiveAnimation::Opacity);
 }
 
-void LayerImpl::setPosition(const FloatPoint& position)
+void CCLayerImpl::setPosition(const FloatPoint& position)
 {
     if (m_position == position)
         return;
@@ -530,7 +530,7 @@ void LayerImpl::setPosition(const FloatPoint& position)
     noteLayerPropertyChangedForSubtree();
 }
 
-void LayerImpl::setPreserves3D(bool preserves3D)
+void CCLayerImpl::setPreserves3D(bool preserves3D)
 {
     if (m_preserves3D == preserves3D)
         return;
@@ -539,7 +539,7 @@ void LayerImpl::setPreserves3D(bool preserves3D)
     noteLayerPropertyChangedForSubtree();
 }
 
-void LayerImpl::setSublayerTransform(const WebTransformationMatrix& sublayerTransform)
+void CCLayerImpl::setSublayerTransform(const WebTransformationMatrix& sublayerTransform)
 {
     if (m_sublayerTransform == sublayerTransform)
         return;
@@ -549,7 +549,7 @@ void LayerImpl::setSublayerTransform(const WebTransformationMatrix& sublayerTran
     noteLayerPropertyChangedForDescendants();
 }
 
-void LayerImpl::setTransform(const WebTransformationMatrix& transform)
+void CCLayerImpl::setTransform(const WebTransformationMatrix& transform)
 {
     if (m_transform == transform)
         return;
@@ -558,12 +558,12 @@ void LayerImpl::setTransform(const WebTransformationMatrix& transform)
     m_layerSurfacePropertyChanged = true;
 }
 
-bool LayerImpl::transformIsAnimating() const
+bool CCLayerImpl::transformIsAnimating() const
 {
-    return m_layerAnimationController->isAnimatingProperty(ActiveAnimation::Transform);
+    return m_layerAnimationController->isAnimatingProperty(CCActiveAnimation::Transform);
 }
 
-void LayerImpl::setDebugBorderColor(SkColor debugBorderColor)
+void CCLayerImpl::setDebugBorderColor(SkColor debugBorderColor)
 {
     if (m_debugBorderColor == debugBorderColor)
         return;
@@ -572,7 +572,7 @@ void LayerImpl::setDebugBorderColor(SkColor debugBorderColor)
     m_layerPropertyChanged = true;
 }
 
-void LayerImpl::setDebugBorderWidth(float debugBorderWidth)
+void CCLayerImpl::setDebugBorderWidth(float debugBorderWidth)
 {
     if (m_debugBorderWidth == debugBorderWidth)
         return;
@@ -581,12 +581,12 @@ void LayerImpl::setDebugBorderWidth(float debugBorderWidth)
     m_layerPropertyChanged = true;
 }
 
-bool LayerImpl::hasDebugBorders() const
+bool CCLayerImpl::hasDebugBorders() const
 {
     return SkColorGetA(m_debugBorderColor) && debugBorderWidth() > 0;
 }
 
-void LayerImpl::setContentBounds(const IntSize& contentBounds)
+void CCLayerImpl::setContentBounds(const IntSize& contentBounds)
 {
     if (m_contentBounds == contentBounds)
         return;
@@ -595,7 +595,7 @@ void LayerImpl::setContentBounds(const IntSize& contentBounds)
     m_layerPropertyChanged = true;
 }
 
-void LayerImpl::setScrollPosition(const IntPoint& scrollPosition)
+void CCLayerImpl::setScrollPosition(const IntPoint& scrollPosition)
 {
     if (m_scrollPosition == scrollPosition)
         return;
@@ -604,7 +604,7 @@ void LayerImpl::setScrollPosition(const IntPoint& scrollPosition)
     noteLayerPropertyChangedForSubtree();
 }
 
-void LayerImpl::setScrollDelta(const FloatSize& scrollDelta)
+void CCLayerImpl::setScrollDelta(const FloatSize& scrollDelta)
 {
     if (m_scrollDelta == scrollDelta)
         return;
@@ -613,7 +613,7 @@ void LayerImpl::setScrollDelta(const FloatSize& scrollDelta)
     noteLayerPropertyChangedForSubtree();
 }
 
-void LayerImpl::setImplTransform(const WebKit::WebTransformationMatrix& transform)
+void CCLayerImpl::setImplTransform(const WebKit::WebTransformationMatrix& transform)
 {
     if (m_implTransform == transform)
         return;
@@ -622,7 +622,7 @@ void LayerImpl::setImplTransform(const WebKit::WebTransformationMatrix& transfor
     noteLayerPropertyChangedForSubtree();
 }
 
-void LayerImpl::setDoubleSided(bool doubleSided)
+void CCLayerImpl::setDoubleSided(bool doubleSided)
 {
     if (m_doubleSided == doubleSided)
         return;
@@ -631,18 +631,18 @@ void LayerImpl::setDoubleSided(bool doubleSided)
     noteLayerPropertyChangedForSubtree();
 }
 
-Region LayerImpl::visibleContentOpaqueRegion() const
+Region CCLayerImpl::visibleContentOpaqueRegion() const
 {
     if (contentsOpaque())
         return visibleContentRect();
     return Region();
 }
 
-void LayerImpl::didLoseContext()
+void CCLayerImpl::didLoseContext()
 {
 }
 
-void LayerImpl::setMaxScrollPosition(const IntSize& maxScrollPosition)
+void CCLayerImpl::setMaxScrollPosition(const IntSize& maxScrollPosition)
 {
     m_maxScrollPosition = maxScrollPosition;
 
@@ -651,28 +651,28 @@ void LayerImpl::setMaxScrollPosition(const IntSize& maxScrollPosition)
     m_scrollbarAnimationController->updateScrollOffset(this);
 }
 
-ScrollbarLayerImpl* LayerImpl::horizontalScrollbarLayer() const
+CCScrollbarLayerImpl* CCLayerImpl::horizontalScrollbarLayer() const
 {
     return m_scrollbarAnimationController ? m_scrollbarAnimationController->horizontalScrollbarLayer() : 0;
 }
 
-void LayerImpl::setHorizontalScrollbarLayer(ScrollbarLayerImpl* scrollbarLayer)
+void CCLayerImpl::setHorizontalScrollbarLayer(CCScrollbarLayerImpl* scrollbarLayer)
 {
     if (!m_scrollbarAnimationController)
-        m_scrollbarAnimationController = ScrollbarAnimationController::create(this);
+        m_scrollbarAnimationController = CCScrollbarAnimationController::create(this);
     m_scrollbarAnimationController->setHorizontalScrollbarLayer(scrollbarLayer);
     m_scrollbarAnimationController->updateScrollOffset(this);
 }
 
-ScrollbarLayerImpl* LayerImpl::verticalScrollbarLayer() const
+CCScrollbarLayerImpl* CCLayerImpl::verticalScrollbarLayer() const
 {
     return m_scrollbarAnimationController ? m_scrollbarAnimationController->verticalScrollbarLayer() : 0;
 }
 
-void LayerImpl::setVerticalScrollbarLayer(ScrollbarLayerImpl* scrollbarLayer)
+void CCLayerImpl::setVerticalScrollbarLayer(CCScrollbarLayerImpl* scrollbarLayer)
 {
     if (!m_scrollbarAnimationController)
-        m_scrollbarAnimationController = ScrollbarAnimationController::create(this);
+        m_scrollbarAnimationController = CCScrollbarAnimationController::create(this);
     m_scrollbarAnimationController->setVerticalScrollbarLayer(scrollbarLayer);
     m_scrollbarAnimationController->updateScrollOffset(this);
 }

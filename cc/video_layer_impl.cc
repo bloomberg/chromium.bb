@@ -21,8 +21,8 @@
 
 namespace cc {
 
-VideoLayerImpl::VideoLayerImpl(int id, WebKit::WebVideoFrameProvider* provider)
-    : LayerImpl(id)
+CCVideoLayerImpl::CCVideoLayerImpl(int id, WebKit::WebVideoFrameProvider* provider)
+    : CCLayerImpl(id)
     , m_provider(provider)
     , m_frame(0)
     , m_externalTextureResource(0)
@@ -38,14 +38,14 @@ VideoLayerImpl::VideoLayerImpl(int id, WebKit::WebVideoFrameProvider* provider)
     // thread is blocked. That makes this a thread-safe call to set the video
     // frame provider client that does not require a lock. The same is true of
     // the call in the destructor.
-    DCHECK(Proxy::isMainThreadBlocked());
+    DCHECK(CCProxy::isMainThreadBlocked());
     m_provider->setVideoFrameProviderClient(this);
 }
 
-VideoLayerImpl::~VideoLayerImpl()
+CCVideoLayerImpl::~CCVideoLayerImpl()
 {
     // See comment in constructor for why this doesn't need a lock.
-    DCHECK(Proxy::isMainThreadBlocked());
+    DCHECK(CCProxy::isMainThreadBlocked());
     if (m_provider) {
         m_provider->setVideoFrameProviderClient(0);
         m_provider = 0;
@@ -59,7 +59,7 @@ VideoLayerImpl::~VideoLayerImpl()
 #endif
 }
 
-void VideoLayerImpl::stopUsingProvider()
+void CCVideoLayerImpl::stopUsingProvider()
 {
     // Block the provider from shutting down until this client is done
     // using the frame.
@@ -86,10 +86,10 @@ static GLenum convertVFCFormatToGC3DFormat(const WebKit::WebVideoFrame& frame)
     return GL_INVALID_VALUE;
 }
 
-void VideoLayerImpl::willDraw(ResourceProvider* resourceProvider)
+void CCVideoLayerImpl::willDraw(CCResourceProvider* resourceProvider)
 {
-    DCHECK(Proxy::isImplThread());
-    LayerImpl::willDraw(resourceProvider);
+    DCHECK(CCProxy::isImplThread());
+    CCLayerImpl::willDraw(resourceProvider);
 
     // Explicitly acquire and release the provider mutex so it can be held from
     // willDraw to didDraw. Since the compositor thread is in the middle of
@@ -107,9 +107,9 @@ void VideoLayerImpl::willDraw(ResourceProvider* resourceProvider)
         m_providerLock.Release();
 }
 
-void VideoLayerImpl::willDrawInternal(ResourceProvider* resourceProvider)
+void CCVideoLayerImpl::willDrawInternal(CCResourceProvider* resourceProvider)
 {
-    DCHECK(Proxy::isImplThread());
+    DCHECK(CCProxy::isImplThread());
     DCHECK(!m_externalTextureResource);
 
     if (!m_provider) {
@@ -152,14 +152,14 @@ void VideoLayerImpl::willDrawInternal(ResourceProvider* resourceProvider)
         m_externalTextureResource = resourceProvider->createResourceFromExternalTexture(m_frame->textureId());
 }
 
-void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData)
+void CCVideoLayerImpl::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& appendQuadsData)
 {
-    DCHECK(Proxy::isImplThread());
+    DCHECK(CCProxy::isImplThread());
 
     if (!m_frame)
         return;
 
-    SharedQuadState* sharedQuadState = quadSink.useSharedQuadState(createSharedQuadState());
+    CCSharedQuadState* sharedQuadState = quadSink.useSharedQuadState(createSharedQuadState());
     appendDebugBorderQuad(quadSink, sharedQuadState, appendQuadsData);
 
     // FIXME: When we pass quads out of process, we need to double-buffer, or
@@ -173,8 +173,8 @@ void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
         const FramePlane& yPlane = m_framePlanes[WebKit::WebVideoFrame::yPlane];
         const FramePlane& uPlane = m_framePlanes[WebKit::WebVideoFrame::uPlane];
         const FramePlane& vPlane = m_framePlanes[WebKit::WebVideoFrame::vPlane];
-        scoped_ptr<YUVVideoDrawQuad> yuvVideoQuad = YUVVideoDrawQuad::create(sharedQuadState, quadRect, yPlane, uPlane, vPlane);
-        quadSink.append(yuvVideoQuad.PassAs<DrawQuad>(), appendQuadsData);
+        scoped_ptr<CCYUVVideoDrawQuad> yuvVideoQuad = CCYUVVideoDrawQuad::create(sharedQuadState, quadRect, yPlane, uPlane, vPlane);
+        quadSink.append(yuvVideoQuad.PassAs<CCDrawQuad>(), appendQuadsData);
         break;
     }
     case GL_RGBA: {
@@ -185,8 +185,8 @@ void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
         bool premultipliedAlpha = true;
         FloatRect uvRect(0, 0, widthScaleFactor, 1);
         bool flipped = false;
-        scoped_ptr<TextureDrawQuad> textureQuad = TextureDrawQuad::create(sharedQuadState, quadRect, plane.resourceId, premultipliedAlpha, uvRect, flipped);
-        quadSink.append(textureQuad.PassAs<DrawQuad>(), appendQuadsData);
+        scoped_ptr<CCTextureDrawQuad> textureQuad = CCTextureDrawQuad::create(sharedQuadState, quadRect, plane.resourceId, premultipliedAlpha, uvRect, flipped);
+        quadSink.append(textureQuad.PassAs<CCDrawQuad>(), appendQuadsData);
         break;
     }
     case GL_TEXTURE_2D: {
@@ -194,20 +194,20 @@ void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
         bool premultipliedAlpha = true;
         FloatRect uvRect(0, 0, 1, 1);
         bool flipped = false;
-        scoped_ptr<TextureDrawQuad> textureQuad = TextureDrawQuad::create(sharedQuadState, quadRect, m_externalTextureResource, premultipliedAlpha, uvRect, flipped);
-        quadSink.append(textureQuad.PassAs<DrawQuad>(), appendQuadsData);
+        scoped_ptr<CCTextureDrawQuad> textureQuad = CCTextureDrawQuad::create(sharedQuadState, quadRect, m_externalTextureResource, premultipliedAlpha, uvRect, flipped);
+        quadSink.append(textureQuad.PassAs<CCDrawQuad>(), appendQuadsData);
         break;
     }
     case GL_TEXTURE_RECTANGLE_ARB: {
         IntSize textureSize(m_frame->width(), m_frame->height()); 
-        scoped_ptr<IOSurfaceDrawQuad> ioSurfaceQuad = IOSurfaceDrawQuad::create(sharedQuadState, quadRect, textureSize, m_frame->textureId(), IOSurfaceDrawQuad::Unflipped);
-        quadSink.append(ioSurfaceQuad.PassAs<DrawQuad>(), appendQuadsData);
+        scoped_ptr<CCIOSurfaceDrawQuad> ioSurfaceQuad = CCIOSurfaceDrawQuad::create(sharedQuadState, quadRect, textureSize, m_frame->textureId(), CCIOSurfaceDrawQuad::Unflipped);
+        quadSink.append(ioSurfaceQuad.PassAs<CCDrawQuad>(), appendQuadsData);
         break;
     }
     case GL_TEXTURE_EXTERNAL_OES: {
         // StreamTexture hardware decoder.
-        scoped_ptr<StreamVideoDrawQuad> streamVideoQuad = StreamVideoDrawQuad::create(sharedQuadState, quadRect, m_frame->textureId(), m_streamTextureMatrix);
-        quadSink.append(streamVideoQuad.PassAs<DrawQuad>(), appendQuadsData);
+        scoped_ptr<CCStreamVideoDrawQuad> streamVideoQuad = CCStreamVideoDrawQuad::create(sharedQuadState, quadRect, m_frame->textureId(), m_streamTextureMatrix);
+        quadSink.append(streamVideoQuad.PassAs<CCDrawQuad>(), appendQuadsData);
         break;
     }
     default:
@@ -215,10 +215,10 @@ void VideoLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuad
     }
 }
 
-void VideoLayerImpl::didDraw(ResourceProvider* resourceProvider)
+void CCVideoLayerImpl::didDraw(CCResourceProvider* resourceProvider)
 {
-    DCHECK(Proxy::isImplThread());
-    LayerImpl::didDraw(resourceProvider);
+    DCHECK(CCProxy::isImplThread());
+    CCLayerImpl::didDraw(resourceProvider);
 
     if (!m_frame)
         return;
@@ -251,7 +251,7 @@ static bool hasPaddingBytes(const WebKit::WebVideoFrame& frame, unsigned plane)
     return frame.stride(plane) > videoFrameDimension(frame.width(), plane, frame.format());
 }
 
-IntSize VideoLayerImpl::computeVisibleSize(const WebKit::WebVideoFrame& frame, unsigned plane)
+IntSize CCVideoLayerImpl::computeVisibleSize(const WebKit::WebVideoFrame& frame, unsigned plane)
 {
     int visibleWidth = videoFrameDimension(frame.width(), plane, frame.format());
     int originalWidth = visibleWidth;
@@ -275,16 +275,16 @@ IntSize VideoLayerImpl::computeVisibleSize(const WebKit::WebVideoFrame& frame, u
     return IntSize(visibleWidth, visibleHeight);
 }
 
-bool VideoLayerImpl::FramePlane::allocateData(ResourceProvider* resourceProvider)
+bool CCVideoLayerImpl::FramePlane::allocateData(CCResourceProvider* resourceProvider)
 {
     if (resourceId)
         return true;
 
-    resourceId = resourceProvider->createResource(Renderer::ImplPool, size, format, ResourceProvider::TextureUsageAny);
+    resourceId = resourceProvider->createResource(CCRenderer::ImplPool, size, format, CCResourceProvider::TextureUsageAny);
     return resourceId;
 }
 
-void VideoLayerImpl::FramePlane::freeData(ResourceProvider* resourceProvider)
+void CCVideoLayerImpl::FramePlane::freeData(CCResourceProvider* resourceProvider)
 {
     if (!resourceId)
         return;
@@ -293,11 +293,11 @@ void VideoLayerImpl::FramePlane::freeData(ResourceProvider* resourceProvider)
     resourceId = 0;
 }
 
-bool VideoLayerImpl::allocatePlaneData(ResourceProvider* resourceProvider)
+bool CCVideoLayerImpl::allocatePlaneData(CCResourceProvider* resourceProvider)
 {
     int maxTextureSize = resourceProvider->maxTextureSize();
     for (unsigned planeIndex = 0; planeIndex < m_frame->planes(); ++planeIndex) {
-        VideoLayerImpl::FramePlane& plane = m_framePlanes[planeIndex];
+        CCVideoLayerImpl::FramePlane& plane = m_framePlanes[planeIndex];
 
         IntSize requiredTextureSize(m_frame->stride(planeIndex), videoFrameDimension(m_frame->height(), planeIndex, m_frame->format()));
         // FIXME: Remove the test against maxTextureSize when tiled layers are implemented.
@@ -319,14 +319,14 @@ bool VideoLayerImpl::allocatePlaneData(ResourceProvider* resourceProvider)
     return true;
 }
 
-bool VideoLayerImpl::copyPlaneData(ResourceProvider* resourceProvider)
+bool CCVideoLayerImpl::copyPlaneData(CCResourceProvider* resourceProvider)
 {
     size_t softwarePlaneCount = m_frame->planes();
     if (!softwarePlaneCount)
         return true;
 
     for (size_t softwarePlaneIndex = 0; softwarePlaneIndex < softwarePlaneCount; ++softwarePlaneIndex) {
-        VideoLayerImpl::FramePlane& plane = m_framePlanes[softwarePlaneIndex];
+        CCVideoLayerImpl::FramePlane& plane = m_framePlanes[softwarePlaneIndex];
         const uint8_t* softwarePlanePixels = static_cast<const uint8_t*>(m_frame->data(softwarePlaneIndex));
         IntRect planeRect(IntPoint(), plane.size);
         resourceProvider->upload(plane.resourceId, softwarePlanePixels, planeRect, planeRect, IntSize());
@@ -334,25 +334,25 @@ bool VideoLayerImpl::copyPlaneData(ResourceProvider* resourceProvider)
     return true;
 }
 
-void VideoLayerImpl::freePlaneData(ResourceProvider* resourceProvider)
+void CCVideoLayerImpl::freePlaneData(CCResourceProvider* resourceProvider)
 {
     for (unsigned i = 0; i < WebKit::WebVideoFrame::maxPlanes; ++i)
         m_framePlanes[i].freeData(resourceProvider);
 }
 
-void VideoLayerImpl::freeUnusedPlaneData(ResourceProvider* resourceProvider)
+void CCVideoLayerImpl::freeUnusedPlaneData(CCResourceProvider* resourceProvider)
 {
     unsigned firstUnusedPlane = m_frame ? m_frame->planes() : 0;
     for (unsigned i = firstUnusedPlane; i < WebKit::WebVideoFrame::maxPlanes; ++i)
         m_framePlanes[i].freeData(resourceProvider);
 }
 
-void VideoLayerImpl::didReceiveFrame()
+void CCVideoLayerImpl::didReceiveFrame()
 {
     setNeedsRedraw();
 }
 
-void VideoLayerImpl::didUpdateMatrix(const float matrix[16])
+void CCVideoLayerImpl::didUpdateMatrix(const float matrix[16])
 {
     m_streamTextureMatrix = WebKit::WebTransformationMatrix(
         matrix[0], matrix[1], matrix[2], matrix[3],
@@ -362,24 +362,24 @@ void VideoLayerImpl::didUpdateMatrix(const float matrix[16])
     setNeedsRedraw();
 }
 
-void VideoLayerImpl::didLoseContext()
+void CCVideoLayerImpl::didLoseContext()
 {
     freePlaneData(layerTreeHostImpl()->resourceProvider());
 }
 
-void VideoLayerImpl::setNeedsRedraw()
+void CCVideoLayerImpl::setNeedsRedraw()
 {
     layerTreeHostImpl()->setNeedsRedraw();
 }
 
-void VideoLayerImpl::dumpLayerProperties(std::string* str, int indent) const
+void CCVideoLayerImpl::dumpLayerProperties(std::string* str, int indent) const
 {
     str->append(indentString(indent));
     str->append("video layer\n");
-    LayerImpl::dumpLayerProperties(str, indent);
+    CCLayerImpl::dumpLayerProperties(str, indent);
 }
 
-const char* VideoLayerImpl::layerTypeAsString() const
+const char* CCVideoLayerImpl::layerTypeAsString() const
 {
     return "VideoLayer";
 }

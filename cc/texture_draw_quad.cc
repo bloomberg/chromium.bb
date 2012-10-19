@@ -10,13 +10,13 @@
 
 namespace cc {
 
-scoped_ptr<TextureDrawQuad> TextureDrawQuad::create(const SharedQuadState* sharedQuadState, const IntRect& quadRect, unsigned resourceId, bool premultipliedAlpha, const FloatRect& uvRect, bool flipped)
+scoped_ptr<CCTextureDrawQuad> CCTextureDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, unsigned resourceId, bool premultipliedAlpha, const FloatRect& uvRect, bool flipped)
 {
-    return make_scoped_ptr(new TextureDrawQuad(sharedQuadState, quadRect, resourceId, premultipliedAlpha, uvRect, flipped));
+    return make_scoped_ptr(new CCTextureDrawQuad(sharedQuadState, quadRect, resourceId, premultipliedAlpha, uvRect, flipped));
 }
 
-TextureDrawQuad::TextureDrawQuad(const SharedQuadState* sharedQuadState, const IntRect& quadRect, unsigned resourceId, bool premultipliedAlpha, const FloatRect& uvRect, bool flipped)
-    : DrawQuad(sharedQuadState, DrawQuad::TextureContent, quadRect)
+CCTextureDrawQuad::CCTextureDrawQuad(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, unsigned resourceId, bool premultipliedAlpha, const FloatRect& uvRect, bool flipped)
+    : CCDrawQuad(sharedQuadState, CCDrawQuad::TextureContent, quadRect)
     , m_resourceId(resourceId)
     , m_premultipliedAlpha(premultipliedAlpha)
     , m_uvRect(uvRect)
@@ -24,15 +24,15 @@ TextureDrawQuad::TextureDrawQuad(const SharedQuadState* sharedQuadState, const I
 {
 }
 
-void TextureDrawQuad::setNeedsBlending()
+void CCTextureDrawQuad::setNeedsBlending()
 {
     m_needsBlending = true;
 }
 
-const TextureDrawQuad* TextureDrawQuad::materialCast(const DrawQuad* quad)
+const CCTextureDrawQuad* CCTextureDrawQuad::materialCast(const CCDrawQuad* quad)
 {
-    DCHECK(quad->material() == DrawQuad::TextureContent);
-    return static_cast<const TextureDrawQuad*>(quad);
+    DCHECK(quad->material() == CCDrawQuad::TextureContent);
+    return static_cast<const CCTextureDrawQuad*>(quad);
 }
 
 }

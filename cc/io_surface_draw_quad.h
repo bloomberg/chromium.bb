@@ -13,22 +13,22 @@ namespace cc {
 
 #pragma pack(push, 4)
 
-class IOSurfaceDrawQuad : public DrawQuad {
+class CCIOSurfaceDrawQuad : public CCDrawQuad {
 public:
     enum Orientation {
       Flipped,
       Unflipped
     };
 
-    static scoped_ptr<IOSurfaceDrawQuad> create(const SharedQuadState*, const IntRect&, const IntSize& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation);
+    static scoped_ptr<CCIOSurfaceDrawQuad> create(const CCSharedQuadState*, const IntRect&, const IntSize& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation);
 
     IntSize ioSurfaceSize() const { return m_ioSurfaceSize; }
     unsigned ioSurfaceTextureId() const { return m_ioSurfaceTextureId; }
     Orientation orientation() const { return m_orientation; }
 
-    static const IOSurfaceDrawQuad* materialCast(const DrawQuad*);
+    static const CCIOSurfaceDrawQuad* materialCast(const CCDrawQuad*);
 private:
-    IOSurfaceDrawQuad(const SharedQuadState*, const IntRect&, const IntSize& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation);
+    CCIOSurfaceDrawQuad(const CCSharedQuadState*, const IntRect&, const IntSize& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation);
 
     IntSize m_ioSurfaceSize;
     unsigned m_ioSurfaceTextureId;

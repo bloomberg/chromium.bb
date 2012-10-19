@@ -9,17 +9,17 @@
 #include "CCDrawQuad.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace LayerTestCommon {
+namespace CCLayerTestCommon {
 
 // Align with expected and actual output
 const char* quadString = "    Quad: ";
 
-void verifyQuadsExactlyCoverRect(const cc::QuadList& quads,
+void verifyQuadsExactlyCoverRect(const cc::CCQuadList& quads,
                                  const cc::IntRect& rect) {
     cc::Region remaining(rect);
 
     for (size_t i = 0; i < quads.size(); ++i) {
-        cc::DrawQuad* quad = quads[i];
+        cc::CCDrawQuad* quad = quads[i];
         cc::IntRect quadRect = quad->quadRect();
 
         EXPECT_TRUE(rect.contains(quadRect)) << quadString << i;
@@ -30,4 +30,4 @@ void verifyQuadsExactlyCoverRect(const cc::QuadList& quads,
     EXPECT_TRUE(remaining.isEmpty());
 }
 
-}  // namespace LayerTestCommon
+}  // namespace CCLayerTestCommon

@@ -9,20 +9,20 @@
 
 namespace cc {
 
-class ScrollbarAnimationControllerLinearFade : public ScrollbarAnimationController {
+class CCScrollbarAnimationControllerLinearFade : public CCScrollbarAnimationController {
 public:
-    static scoped_ptr<ScrollbarAnimationControllerLinearFade> create(LayerImpl* scrollLayer, double fadeoutDelay, double fadeoutLength);
+    static scoped_ptr<CCScrollbarAnimationControllerLinearFade> create(CCLayerImpl* scrollLayer, double fadeoutDelay, double fadeoutLength);
 
-    virtual ~ScrollbarAnimationControllerLinearFade();
+    virtual ~CCScrollbarAnimationControllerLinearFade();
 
     virtual bool animate(double monotonicTime) OVERRIDE;
 
     virtual void didPinchGestureUpdateAtTime(double monotonicTime) OVERRIDE;
     virtual void didPinchGestureEndAtTime(double monotonicTime) OVERRIDE;
-    virtual void updateScrollOffsetAtTime(LayerImpl* scrollLayer, double monotonicTime) OVERRIDE;
+    virtual void updateScrollOffsetAtTime(CCLayerImpl* scrollLayer, double monotonicTime) OVERRIDE;
 
 protected:
-    ScrollbarAnimationControllerLinearFade(LayerImpl* scrollLayer, double fadeoutDelay, double fadeoutLength);
+    CCScrollbarAnimationControllerLinearFade(CCLayerImpl* scrollLayer, double fadeoutDelay, double fadeoutLength);
 
 private:
     float opacityAtTime(double monotonicTime);

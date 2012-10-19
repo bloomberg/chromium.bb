@@ -10,8 +10,8 @@
 
 namespace cc {
 
-// FIXME: rename fully to OutputSurface.
-typedef WebKit::WebCompositorOutputSurface GraphicsContext;
+// FIXME: rename fully to CCOutputSurface.
+typedef WebKit::WebCompositorOutputSurface CCGraphicsContext;
 
 }  // namespace cc
 

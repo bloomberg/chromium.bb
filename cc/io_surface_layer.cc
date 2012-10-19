@@ -10,43 +10,43 @@
 
 namespace cc {
 
-scoped_refptr<IOSurfaceLayer> IOSurfaceLayer::create()
+scoped_refptr<IOSurfaceLayerChromium> IOSurfaceLayerChromium::create()
 {
-    return make_scoped_refptr(new IOSurfaceLayer());
+    return make_scoped_refptr(new IOSurfaceLayerChromium());
 }
 
-IOSurfaceLayer::IOSurfaceLayer()
-    : Layer()
+IOSurfaceLayerChromium::IOSurfaceLayerChromium()
+    : LayerChromium()
     , m_ioSurfaceId(0)
 {
 }
 
-IOSurfaceLayer::~IOSurfaceLayer()
+IOSurfaceLayerChromium::~IOSurfaceLayerChromium()
 {
 }
 
-void IOSurfaceLayer::setIOSurfaceProperties(uint32_t ioSurfaceId, const IntSize& size)
+void IOSurfaceLayerChromium::setIOSurfaceProperties(uint32_t ioSurfaceId, const IntSize& size)
 {
     m_ioSurfaceId = ioSurfaceId;
     m_ioSurfaceSize = size;
     setNeedsCommit();
 }
 
-scoped_ptr<LayerImpl> IOSurfaceLayer::createLayerImpl()
+scoped_ptr<CCLayerImpl> IOSurfaceLayerChromium::createCCLayerImpl()
 {
-    return IOSurfaceLayerImpl::create(m_layerId).PassAs<LayerImpl>();
+    return CCIOSurfaceLayerImpl::create(m_layerId).PassAs<CCLayerImpl>();
 }
 
-bool IOSurfaceLayer::drawsContent() const
+bool IOSurfaceLayerChromium::drawsContent() const
 {
-    return m_ioSurfaceId && Layer::drawsContent();
+    return m_ioSurfaceId && LayerChromium::drawsContent();
 }
 
-void IOSurfaceLayer::pushPropertiesTo(LayerImpl* layer)
+void IOSurfaceLayerChromium::pushPropertiesTo(CCLayerImpl* layer)
 {
-    Layer::pushPropertiesTo(layer);
+    LayerChromium::pushPropertiesTo(layer);
 
-    IOSurfaceLayerImpl* textureLayer = static_cast<IOSurfaceLayerImpl*>(layer);
+    CCIOSurfaceLayerImpl* textureLayer = static_cast<CCIOSurfaceLayerImpl*>(layer);
     textureLayer->setIOSurfaceProperties(m_ioSurfaceId, m_ioSurfaceSize);
 }
 

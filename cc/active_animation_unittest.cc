@@ -15,47 +15,47 @@ using namespace cc;
 
 namespace {
 
-scoped_ptr<ActiveAnimation> createActiveAnimation(int iterations, double duration)
+scoped_ptr<CCActiveAnimation> createActiveAnimation(int iterations, double duration)
 {
-    scoped_ptr<ActiveAnimation> toReturn(ActiveAnimation::create(make_scoped_ptr(new FakeFloatAnimationCurve(duration)).PassAs<AnimationCurve>(), 0, 1, ActiveAnimation::Opacity));
+    scoped_ptr<CCActiveAnimation> toReturn(CCActiveAnimation::create(make_scoped_ptr(new FakeFloatAnimationCurve(duration)).PassAs<CCAnimationCurve>(), 0, 1, CCActiveAnimation::Opacity));
     toReturn->setIterations(iterations);
     return toReturn.Pass();
 }
 
-scoped_ptr<ActiveAnimation> createActiveAnimation(int iterations)
+scoped_ptr<CCActiveAnimation> createActiveAnimation(int iterations)
 {
     return createActiveAnimation(iterations, 1);
 }
 
-TEST(ActiveAnimationTest, TrimTimeZeroIterations)
+TEST(CCActiveAnimationTest, TrimTimeZeroIterations)
 {
-    scoped_ptr<ActiveAnimation> anim(createActiveAnimation(0));
+    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(0));
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(-1));
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(0));
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(1));
 }
 
-TEST(ActiveAnimationTest, TrimTimeOneIteration)
+TEST(CCActiveAnimationTest, TrimTimeOneIteration)
 {
-    scoped_ptr<ActiveAnimation> anim(createActiveAnimation(1));
+    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(1));
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(-1));
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(0));
     EXPECT_EQ(1, anim->trimTimeToCurrentIteration(1));
     EXPECT_EQ(1, anim->trimTimeToCurrentIteration(2));
 }
 
-TEST(ActiveAnimationTest, TrimTimeInfiniteIterations)
+TEST(CCActiveAnimationTest, TrimTimeInfiniteIterations)
 {
-    scoped_ptr<ActiveAnimation> anim(createActiveAnimation(-1));
+    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(-1));
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(0));
     EXPECT_EQ(0.5, anim->trimTimeToCurrentIteration(0.5));
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(1));
     EXPECT_EQ(0.5, anim->trimTimeToCurrentIteration(1.5));
 }
 
-TEST(ActiveAnimationTest, TrimTimeAlternating)
+TEST(CCActiveAnimationTest, TrimTimeAlternating)
 {
-    scoped_ptr<ActiveAnimation> anim(createActiveAnimation(-1));
+    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(-1));
     anim->setAlternatesDirection(true);
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(0));
     EXPECT_EQ(0.5, anim->trimTimeToCurrentIteration(0.5));
@@ -63,9 +63,9 @@ TEST(ActiveAnimationTest, TrimTimeAlternating)
     EXPECT_EQ(0.75, anim->trimTimeToCurrentIteration(1.25));
 }
 
-TEST(ActiveAnimationTest, TrimTimeStartTime)
+TEST(CCActiveAnimationTest, TrimTimeStartTime)
 {
-    scoped_ptr<ActiveAnimation> anim(createActiveAnimation(1));
+    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(1));
     anim->setStartTime(4);
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(0));
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(4));
@@ -74,9 +74,9 @@ TEST(ActiveAnimationTest, TrimTimeStartTime)
     EXPECT_EQ(1, anim->trimTimeToCurrentIteration(6));
 }
 
-TEST(ActiveAnimationTest, TrimTimeTimeOffset)
+TEST(CCActiveAnimationTest, TrimTimeTimeOffset)
 {
-    scoped_ptr<ActiveAnimation> anim(createActiveAnimation(1));
+    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(1));
     anim->setTimeOffset(4);
     anim->setStartTime(4);
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(0));
@@ -85,23 +85,23 @@ TEST(ActiveAnimationTest, TrimTimeTimeOffset)
     EXPECT_EQ(1, anim->trimTimeToCurrentIteration(1));
 }
 
-TEST(ActiveAnimationTest, TrimTimePauseResume)
+TEST(CCActiveAnimationTest, TrimTimePauseResume)
 {
-    scoped_ptr<ActiveAnimation> anim(createActiveAnimation(1));
-    anim->setRunState(ActiveAnimation::Running, 0);
+    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(1));
+    anim->setRunState(CCActiveAnimation::Running, 0);
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(0));
     EXPECT_EQ(0.5, anim->trimTimeToCurrentIteration(0.5));
-    anim->setRunState(ActiveAnimation::Paused, 0.5);
+    anim->setRunState(CCActiveAnimation::Paused, 0.5);
     EXPECT_EQ(0.5, anim->trimTimeToCurrentIteration(1024));
-    anim->setRunState(ActiveAnimation::Running, 1024);
+    anim->setRunState(CCActiveAnimation::Running, 1024);
     EXPECT_EQ(0.5, anim->trimTimeToCurrentIteration(1024));
     EXPECT_EQ(1, anim->trimTimeToCurrentIteration(1024.5));
 }
 
-TEST(ActiveAnimationTest, TrimTimeSuspendResume)
+TEST(CCActiveAnimationTest, TrimTimeSuspendResume)
 {
-    scoped_ptr<ActiveAnimation> anim(createActiveAnimation(1));
-    anim->setRunState(ActiveAnimation::Running, 0);
+    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(1));
+    anim->setRunState(CCActiveAnimation::Running, 0);
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(0));
     EXPECT_EQ(0.5, anim->trimTimeToCurrentIteration(0.5));
     anim->suspend(0.5);
@@ -111,111 +111,111 @@ TEST(ActiveAnimationTest, TrimTimeSuspendResume)
     EXPECT_EQ(1, anim->trimTimeToCurrentIteration(1024.5));
 }
 
-TEST(ActiveAnimationTest, TrimTimeZeroDuration)
+TEST(CCActiveAnimationTest, TrimTimeZeroDuration)
 {
-    scoped_ptr<ActiveAnimation> anim(createActiveAnimation(0, 0));
-    anim->setRunState(ActiveAnimation::Running, 0);
+    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(0, 0));
+    anim->setRunState(CCActiveAnimation::Running, 0);
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(-1));
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(0));
     EXPECT_EQ(0, anim->trimTimeToCurrentIteration(1));
 }
 
-TEST(ActiveAnimationTest, IsFinishedAtZeroIterations)
+TEST(CCActiveAnimationTest, IsFinishedAtZeroIterations)
 {
-    scoped_ptr<ActiveAnimation> anim(createActiveAnimation(0));
-    anim->setRunState(ActiveAnimation::Running, 0);
+    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(0));
+    anim->setRunState(CCActiveAnimation::Running, 0);
     EXPECT_FALSE(anim->isFinishedAt(-1));
     EXPECT_TRUE(anim->isFinishedAt(0));
     EXPECT_TRUE(anim->isFinishedAt(1));
 }
 
-TEST(ActiveAnimationTest, IsFinishedAtOneIteration)
+TEST(CCActiveAnimationTest, IsFinishedAtOneIteration)
 {
-    scoped_ptr<ActiveAnimation> anim(createActiveAnimation(1));
-    anim->setRunState(ActiveAnimation::Running, 0);
+    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(1));
+    anim->setRunState(CCActiveAnimation::Running, 0);
     EXPECT_FALSE(anim->isFinishedAt(-1));
     EXPECT_FALSE(anim->isFinishedAt(0));
     EXPECT_TRUE(anim->isFinishedAt(1));
     EXPECT_TRUE(anim->isFinishedAt(2));
 }
 
-TEST(ActiveAnimationTest, IsFinishedAtInfiniteIterations)
+TEST(CCActiveAnimationTest, IsFinishedAtInfiniteIterations)
 {
-    scoped_ptr<ActiveAnimation> anim(createActiveAnimation(-1));
-    anim->setRunState(ActiveAnimation::Running, 0);
+    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(-1));
+    anim->setRunState(CCActiveAnimation::Running, 0);
     EXPECT_FALSE(anim->isFinishedAt(0));
     EXPECT_FALSE(anim->isFinishedAt(0.5));
     EXPECT_FALSE(anim->isFinishedAt(1));
     EXPECT_FALSE(anim->isFinishedAt(1.5));
 }
 
-TEST(ActiveAnimationTest, IsFinishedAtNotRunning)
+TEST(CCActiveAnimationTest, IsFinishedAtNotRunning)
 {
-    scoped_ptr<ActiveAnimation> anim(createActiveAnimation(0));
-    anim->setRunState(ActiveAnimation::Running, 0);
+    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(0));
+    anim->setRunState(CCActiveAnimation::Running, 0);
     EXPECT_TRUE(anim->isFinishedAt(0));
-    anim->setRunState(ActiveAnimation::Paused, 0);
+    anim->setRunState(CCActiveAnimation::Paused, 0);
     EXPECT_FALSE(anim->isFinishedAt(0));
-    anim->setRunState(ActiveAnimation::WaitingForNextTick, 0);
+    anim->setRunState(CCActiveAnimation::WaitingForNextTick, 0);
     EXPECT_FALSE(anim->isFinishedAt(0));
-    anim->setRunState(ActiveAnimation::WaitingForTargetAvailability, 0);
+    anim->setRunState(CCActiveAnimation::WaitingForTargetAvailability, 0);
     EXPECT_FALSE(anim->isFinishedAt(0));
-    anim->setRunState(ActiveAnimation::WaitingForStartTime, 0);
+    anim->setRunState(CCActiveAnimation::WaitingForStartTime, 0);
     EXPECT_FALSE(anim->isFinishedAt(0));
-    anim->setRunState(ActiveAnimation::Finished, 0);
+    anim->setRunState(CCActiveAnimation::Finished, 0);
     EXPECT_TRUE(anim->isFinishedAt(0));
-    anim->setRunState(ActiveAnimation::Aborted, 0);
+    anim->setRunState(CCActiveAnimation::Aborted, 0);
     EXPECT_TRUE(anim->isFinishedAt(0));
 }
 
-TEST(ActiveAnimationTest, IsFinished)
+TEST(CCActiveAnimationTest, IsFinished)
 {
-    scoped_ptr<ActiveAnimation> anim(createActiveAnimation(1));
-    anim->setRunState(ActiveAnimation::Running, 0);
+    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(1));
+    anim->setRunState(CCActiveAnimation::Running, 0);
     EXPECT_FALSE(anim->isFinished());
-    anim->setRunState(ActiveAnimation::Paused, 0);
+    anim->setRunState(CCActiveAnimation::Paused, 0);
     EXPECT_FALSE(anim->isFinished());
-    anim->setRunState(ActiveAnimation::WaitingForNextTick, 0);
+    anim->setRunState(CCActiveAnimation::WaitingForNextTick, 0);
     EXPECT_FALSE(anim->isFinished());
-    anim->setRunState(ActiveAnimation::WaitingForTargetAvailability, 0);
+    anim->setRunState(CCActiveAnimation::WaitingForTargetAvailability, 0);
     EXPECT_FALSE(anim->isFinished());
-    anim->setRunState(ActiveAnimation::WaitingForStartTime, 0);
+    anim->setRunState(CCActiveAnimation::WaitingForStartTime, 0);
     EXPECT_FALSE(anim->isFinished());
-    anim->setRunState(ActiveAnimation::Finished, 0);
+    anim->setRunState(CCActiveAnimation::Finished, 0);
     EXPECT_TRUE(anim->isFinished());
-    anim->setRunState(ActiveAnimation::Aborted, 0);
+    anim->setRunState(CCActiveAnimation::Aborted, 0);
     EXPECT_TRUE(anim->isFinished());
 }
 
-TEST(ActiveAnimationTest, IsFinishedNeedsSynchronizedStartTime)
+TEST(CCActiveAnimationTest, IsFinishedNeedsSynchronizedStartTime)
 {
-    scoped_ptr<ActiveAnimation> anim(createActiveAnimation(1));
-    anim->setRunState(ActiveAnimation::Running, 2);
+    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(1));
+    anim->setRunState(CCActiveAnimation::Running, 2);
     EXPECT_FALSE(anim->isFinished());
-    anim->setRunState(ActiveAnimation::Paused, 2);
+    anim->setRunState(CCActiveAnimation::Paused, 2);
     EXPECT_FALSE(anim->isFinished());
-    anim->setRunState(ActiveAnimation::WaitingForNextTick, 2);
+    anim->setRunState(CCActiveAnimation::WaitingForNextTick, 2);
     EXPECT_FALSE(anim->isFinished());
-    anim->setRunState(ActiveAnimation::WaitingForTargetAvailability, 2);
+    anim->setRunState(CCActiveAnimation::WaitingForTargetAvailability, 2);
     EXPECT_FALSE(anim->isFinished());
-    anim->setRunState(ActiveAnimation::WaitingForStartTime, 2);
+    anim->setRunState(CCActiveAnimation::WaitingForStartTime, 2);
     EXPECT_FALSE(anim->isFinished());
-    anim->setRunState(ActiveAnimation::Finished, 0);
+    anim->setRunState(CCActiveAnimation::Finished, 0);
     EXPECT_TRUE(anim->isFinished());
-    anim->setRunState(ActiveAnimation::Aborted, 0);
+    anim->setRunState(CCActiveAnimation::Aborted, 0);
     EXPECT_TRUE(anim->isFinished());
 }
 
-TEST(ActiveAnimationTest, RunStateChangesIgnoredWhileSuspended)
+TEST(CCActiveAnimationTest, RunStateChangesIgnoredWhileSuspended)
 {
-    scoped_ptr<ActiveAnimation> anim(createActiveAnimation(1));
+    scoped_ptr<CCActiveAnimation> anim(createActiveAnimation(1));
     anim->suspend(0);
-    EXPECT_EQ(ActiveAnimation::Paused, anim->runState());
-    anim->setRunState(ActiveAnimation::Running, 0);
-    EXPECT_EQ(ActiveAnimation::Paused, anim->runState());
+    EXPECT_EQ(CCActiveAnimation::Paused, anim->runState());
+    anim->setRunState(CCActiveAnimation::Running, 0);
+    EXPECT_EQ(CCActiveAnimation::Paused, anim->runState());
     anim->resume(0);
-    anim->setRunState(ActiveAnimation::Running, 0);
-    EXPECT_EQ(ActiveAnimation::Running, anim->runState());
+    anim->setRunState(CCActiveAnimation::Running, 0);
+    EXPECT_EQ(CCActiveAnimation::Running, anim->runState());
 }
 
 } // namespace
