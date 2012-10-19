@@ -447,6 +447,14 @@ void HostNPScriptObject::It2MeImpl::OnClientAuthenticated(
     // Ignore the new connection if we are disconnecting.
     return;
   }
+  if (state_ == kConnected) {
+    // If we already connected another client then one of the connections may be
+    // an attacker, so both are suspect and we have to reject the second
+    // connection and shutdown the host.
+    host_->RejectAuthenticatingClient();
+    Disconnect();
+    return;
+  }
 
   std::string client_username = jid;
   size_t pos = client_username.find('/');

@@ -44,19 +44,6 @@ void It2MeHostUserInterface::Init() {
   continue_window_ = ContinueWindow::Create();
 }
 
-void It2MeHostUserInterface::OnClientAuthenticated(const std::string& jid) {
-  if (!get_authenticated_jid().empty()) {
-    // If we already authenticated another client then one of the
-    // connections may be an attacker, so both are suspect and we have
-    // to reject the second connection and shutdown the host.
-    get_host()->RejectAuthenticatingClient();
-    network_task_runner()->PostTask(FROM_HERE, base::Bind(
-        &ChromotingHost::Shutdown, get_host(), base::Closure()));
-  } else {
-    HostUserInterface::OnClientAuthenticated(jid);
-  }
-}
-
 void It2MeHostUserInterface::ProcessOnClientAuthenticated(
     const std::string& username) {
   DCHECK(ui_task_runner()->BelongsToCurrentThread());

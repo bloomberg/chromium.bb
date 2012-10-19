@@ -32,10 +32,6 @@ class It2MeHostUserInterface : public HostUserInterface {
   // HostUserInterface overrides.
   virtual void Init() OVERRIDE;
 
-  // HostStatusObserver implementation.  These methods will be called from the
-  // network thread.
-  virtual void OnClientAuthenticated(const std::string& jid) OVERRIDE;
-
  protected:
   virtual void ProcessOnClientAuthenticated(
       const std::string& username) OVERRIDE;
