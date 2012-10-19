@@ -773,6 +773,13 @@
    obj:/bin/grep
    obj:/bin/grep
 }
+{
+  intentional_see_bug_156466
+  Memcheck:Leak
+  fun:_Znw*
+  fun:_ZN3ash5ShellC1EPNS_13ShellDelegateE
+  fun:_ZN3ash5Shell14CreateInstanceEPNS_13ShellDelegateE
+}
 
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
