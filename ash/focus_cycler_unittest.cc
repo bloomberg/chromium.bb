@@ -46,7 +46,7 @@ typedef AshTestBase FocusCyclerTest;
 
 // FocusCyclerTest and FocusCyclerLauncherTest tests are disabled due to
 //  use-after-free bugs in them detectable by both AddressSanitizer and Valgrind.
-// TODO(glider): file a bug.
+// See also http://crbug.com/156827.
 TEST_F(FocusCyclerTest, DISABLED_CycleFocusBrowserOnly) {
   scoped_ptr<FocusCycler> focus_cycler(new FocusCycler());
 
