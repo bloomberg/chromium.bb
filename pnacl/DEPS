@@ -1,10 +1,10 @@
 vars = {
-  "pnacl_llvm_rev": "556121338c248ba1bb49b369388b697250e848c3",
+  "pnacl_llvm_rev": "d3923cb96e0567630fae041a438f6e26702638d9",
   "pnacl_gcc_rev": "a8b45d06c8fdf36cfdb7c996393940077097d988",
 
   "glibc_rev": "ef989bae60d93e2906847b367becbd0e7f27679f",
   "newlib_rev": "67e351079b71e78eaad782a19ffa9f3ff2c1d78d",
-  "pnacl_llvm_testsuite_rev": "a19bc6d81715ce18b34fad47bf4bad0e1bad2155",
+  "pnacl_llvm_testsuite_rev": "5fbda4d1852fccd580cddf7cca211e1546453748",
   "compiler_rt_rev": "cad11a9ea0008d18125e81beafc27271ee71926e",
   # clang_rev should be the first clang commit after the llvm commit from
   # which the local llvm is branched. Unfortunately because the llvm and
