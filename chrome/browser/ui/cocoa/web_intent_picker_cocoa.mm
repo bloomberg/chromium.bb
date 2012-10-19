@@ -120,7 +120,8 @@ void WebIntentPickerCocoa::OnSheetDidEnd(NSWindow* sheet) {
   [sheet orderOut:sheet_controller_];
   if (window_)
     window_->CloseConstrainedWindow();
-  delegate_->OnClosing();
+  if (delegate_)
+    delegate_->OnClosing();
 }
 
 void WebIntentPickerCocoa::Close() {
@@ -164,7 +165,7 @@ void WebIntentPickerCocoa::OnExtensionIconChanged(
 
 void WebIntentPickerCocoa::OnInlineDisposition(const string16& title,
                                                const GURL& url) {
-
+  DCHECK(delegate_);
   content::WebContents* web_contents =
       delegate_->CreateWebContentsForInlineDisposition(
           tab_contents_->profile(), url);
@@ -207,6 +208,7 @@ void WebIntentPickerCocoa::OnServiceChosen(size_t index) {
 
 void WebIntentPickerCocoa::OnExtensionInstallRequested(
     const std::string& extension_id) {
+  DCHECK(delegate_);
   delegate_->OnExtensionInstallRequested(extension_id);
 }
 
@@ -229,6 +231,10 @@ void WebIntentPickerCocoa::OnInlineDispositionAutoResize(
 }
 
 void WebIntentPickerCocoa::OnPendingAsyncCompleted() {
+}
+
+void WebIntentPickerCocoa::InvalidateDelegate() {
+  delegate_ = NULL;
 }
 
 void WebIntentPickerCocoa::OnExtensionLinkClicked(

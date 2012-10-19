@@ -21,7 +21,7 @@ class WebIntentPickerMock : public WebIntentPicker {
   virtual void OnExtensionInstallFailure(const std::string& id) OVERRIDE {}
   virtual void OnInlineDispositionAutoResize(const gfx::Size& size) OVERRIDE {}
   virtual void OnPendingAsyncCompleted() OVERRIDE {}
-
+  virtual void InvalidateDelegate() OVERRIDE {}
 };
 
 class WebIntentInlineDispositionBrowserTest

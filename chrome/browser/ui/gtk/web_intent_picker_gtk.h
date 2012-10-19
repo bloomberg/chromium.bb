@@ -57,6 +57,7 @@ class WebIntentPickerGtk : public WebIntentPicker,
                                    const GURL& url) OVERRIDE;
 
   virtual void OnPendingAsyncCompleted() OVERRIDE;
+  virtual void InvalidateDelegate() OVERRIDE;
 
   // ConstrainedWindowGtkDelegate implementation.
   virtual GtkWidget* GetWidgetRoot() OVERRIDE;

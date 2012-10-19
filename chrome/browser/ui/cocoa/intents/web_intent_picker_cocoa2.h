@@ -26,7 +26,11 @@ class WebIntentPickerCocoa2 : public WebIntentPicker,
                         WebIntentPickerModel* model);
   virtual ~WebIntentPickerCocoa2();
 
-  WebIntentPickerDelegate* delegate() const { return delegate_; }
+  WebIntentPickerDelegate* delegate() const {
+    DCHECK(delegate_);
+    return delegate_;
+  }
+
   WebIntentPickerModel* model() const { return model_; }
   content::WebContents* web_contents() const { return web_contents_; }
   ConstrainedWindowMac2* constrained_window() const {
@@ -50,6 +54,7 @@ class WebIntentPickerCocoa2 : public WebIntentPicker,
   virtual void OnInlineDispositionHandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void OnPendingAsyncCompleted() OVERRIDE;
+  virtual void InvalidateDelegate() OVERRIDE;
   virtual void OnInlineDispositionWebContentsLoaded(
       content::WebContents* web_contents) OVERRIDE;
   virtual gfx::Size GetMinInlineDispositionSize() OVERRIDE;
@@ -69,7 +74,7 @@ class WebIntentPickerCocoa2 : public WebIntentPicker,
 
  private:
   content::WebContents* const web_contents_;
-  WebIntentPickerDelegate* const delegate_;
+  WebIntentPickerDelegate* delegate_;
   WebIntentPickerModel* model_;
   scoped_nsobject<WebIntentPickerViewController> view_controller_;
   scoped_ptr<ConstrainedWindowMac2> constrained_window_;

@@ -103,6 +103,10 @@ class WebIntentPicker {
   // activities.
   virtual void OnPendingAsyncCompleted() = 0;
 
+  // Called once the delegate gets destroyed/invalid. This should only be
+  // called during a shut down sequence that will tear down the picker, too.
+  virtual void InvalidateDelegate() = 0;
+
   // Called when the inline disposition's web contents have been loaded.
   virtual void OnInlineDispositionWebContentsLoaded(
       content::WebContents* web_contents) {}

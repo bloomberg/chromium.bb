@@ -929,6 +929,7 @@ class WebIntentPickerViews : public views::ButtonListener,
   virtual void OnExtensionInstallFailure(const std::string& id) OVERRIDE;
   virtual void OnInlineDispositionAutoResize(const gfx::Size& size) OVERRIDE;
   virtual void OnPendingAsyncCompleted() OVERRIDE;
+  virtual void InvalidateDelegate() OVERRIDE;
   virtual void OnInlineDispositionWebContentsLoaded(
       content::WebContents* web_contents) OVERRIDE;
 
@@ -1108,11 +1109,13 @@ WebIntentPickerViews::~WebIntentPickerViews() {
 
 void WebIntentPickerViews::ButtonPressed(views::Button* sender,
                                          const ui::Event& event) {
+  DCHECK(delegate_);
   delegate_->OnUserCancelledPickerDialog();
 }
 
 void WebIntentPickerViews::WindowClosing() {
-  delegate_->OnClosing();
+  if (delegate_)
+    delegate_->OnClosing();
 }
 
 void WebIntentPickerViews::DeleteDelegate() {
@@ -1132,6 +1135,7 @@ views::View* WebIntentPickerViews::GetContentsView() {
 }
 
 void WebIntentPickerViews::LinkClicked(views::Link* source, int event_flags) {
+  DCHECK(delegate_);
   if (source == more_suggestions_link_) {
     delegate_->OnSuggestionsLinkClicked(
         chrome::DispositionFromEventFlags(event_flags));
@@ -1181,6 +1185,10 @@ void WebIntentPickerViews::OnInlineDispositionAutoResize(
 
 void WebIntentPickerViews::OnPendingAsyncCompleted() {
   UpdateContents();
+}
+
+void WebIntentPickerViews::InvalidateDelegate() {
+  delegate_ = NULL;
 }
 
 void WebIntentPickerViews::ShowNoServicesMessage() {
@@ -1367,11 +1375,13 @@ void WebIntentPickerViews::OnExtensionIconChanged(
 
 void WebIntentPickerViews::OnInlineDisposition(
     const string16&, const GURL& url) {
+  DCHECK(delegate_);
   if (!webview_)
     webview_ = new views::WebView(tab_contents_->profile());
 
   inline_web_contents_.reset(delegate_->CreateWebContentsForInlineDisposition(
       tab_contents_->profile(), url));
+
   // Does not take ownership, so we keep a scoped_ptr
   // for the WebContents locally.
   webview_->SetWebContents(inline_web_contents_.get());
@@ -1398,6 +1408,7 @@ void WebIntentPickerViews::OnInlineDisposition(
 
 void WebIntentPickerViews::OnExtensionInstallClicked(
     const std::string& extension_id) {
+  DCHECK(delegate_);
   can_close_ = false;
   extensions_->StartThrobber(extension_id);
   more_suggestions_link_->SetEnabled(false);
@@ -1408,11 +1419,13 @@ void WebIntentPickerViews::OnExtensionInstallClicked(
 void WebIntentPickerViews::OnExtensionLinkClicked(
     const std::string& extension_id,
     WindowOpenDisposition disposition) {
+  DCHECK(delegate_);
   delegate_->OnExtensionLinkClicked(extension_id, disposition);
 }
 
 void WebIntentPickerViews::OnActionButtonClicked(
     IntentRowView::ActionType type, size_t tag) {
+  DCHECK(delegate_);
   DCHECK_EQ(IntentRowView::ACTION_INVOKE, type);
   const WebIntentPickerModel::InstalledService& service =
       model_->GetInstalledServiceAt(tag);

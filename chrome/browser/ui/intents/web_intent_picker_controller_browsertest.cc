@@ -129,6 +129,9 @@ class WebIntentPickerMock : public WebIntentPicker,
   virtual void OnPendingAsyncCompleted() OVERRIDE {
     StopWaiting();
   }
+  virtual void InvalidateDelegate() OVERRIDE {
+    delegate_ = NULL;
+  }
 
   // WebIntentPickerModelObserver implementation.
   virtual void OnModelChanged(WebIntentPickerModel* model) OVERRIDE {

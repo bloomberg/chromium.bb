@@ -192,6 +192,8 @@ WebIntentPickerController::WebIntentPickerController(
 }
 
 WebIntentPickerController::~WebIntentPickerController() {
+  if (picker_)
+    picker_->InvalidateDelegate();
 }
 
 // TODO(gbillock): combine this with ShowDialog.

@@ -52,6 +52,7 @@ class WebIntentPickerCocoa : public WebIntentPicker,
   virtual void OnExtensionInstallFailure(const std::string& id) OVERRIDE;
   virtual void OnInlineDispositionAutoResize(const gfx::Size& size) OVERRIDE;
   virtual void OnPendingAsyncCompleted() OVERRIDE;
+  virtual void InvalidateDelegate() OVERRIDE;
 
   // WebIntentPickerModelObserver implementation.
   virtual void OnModelChanged(WebIntentPickerModel* model) OVERRIDE;

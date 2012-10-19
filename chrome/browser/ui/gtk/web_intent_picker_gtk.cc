@@ -295,6 +295,7 @@ void WebIntentPickerGtk::OnExtensionIconChanged(
 
 void WebIntentPickerGtk::OnInlineDisposition(const string16&,
                                              const GURL& url) {
+  DCHECK(delegate_);
   content::WebContents* web_contents =
       delegate_->CreateWebContentsForInlineDisposition(
           tab_contents_->profile(), url);
@@ -420,6 +421,10 @@ void WebIntentPickerGtk::OnPendingAsyncCompleted() {
   gtk_widget_show_all(contents_);
 }
 
+void WebIntentPickerGtk::InvalidateDelegate() {
+  delegate_ = NULL;
+}
+
 GtkWidget* WebIntentPickerGtk::GetWidgetRoot() {
   return contents_;
 }
@@ -431,7 +436,8 @@ GtkWidget* WebIntentPickerGtk::GetFocusWidget() {
 void WebIntentPickerGtk::DeleteDelegate() {
   // The delegate is deleted when the contents widget is destroyed. See
   // OnDestroy.
-  delegate_->OnClosing();
+  if (delegate_)
+    delegate_->OnClosing();
 }
 
 bool WebIntentPickerGtk::GetBackgroundColor(GdkColor* color) {
@@ -471,10 +477,12 @@ void WebIntentPickerGtk::OnDestroy(GtkWidget* button) {
 }
 
 void WebIntentPickerGtk::OnCloseButtonClick(GtkWidget* button) {
+  DCHECK(delegate_);
   delegate_->OnUserCancelledPickerDialog();
 }
 
 void WebIntentPickerGtk::OnExtensionLinkClick(GtkWidget* link) {
+  DCHECK(delegate_);
   size_t index = GetExtensionWidgetRow(link);
   const WebIntentPickerModel::SuggestedExtension& extension =
       model_->GetSuggestedExtensionAt(index);
@@ -483,6 +491,7 @@ void WebIntentPickerGtk::OnExtensionLinkClick(GtkWidget* link) {
 }
 
 void WebIntentPickerGtk::OnExtensionInstallButtonClick(GtkWidget* button) {
+  DCHECK(delegate_);
   size_t index = GetExtensionWidgetRow(button);
   const WebIntentPickerModel::SuggestedExtension& extension =
       model_->GetSuggestedExtensionAt(index);
@@ -513,18 +522,19 @@ void WebIntentPickerGtk::OnExtensionInstallButtonClick(GtkWidget* button) {
 }
 
 void WebIntentPickerGtk::OnMoreSuggestionsLinkClick(GtkWidget* link) {
-  // TODO(binji): This should link to a CWS search, based on the current
-  // action/type pair.
+  DCHECK(delegate_);
   delegate_->OnSuggestionsLinkClicked(
       event_utils::DispositionForCurrentButtonPressEvent());
 }
 
 void WebIntentPickerGtk::OnChooseAnotherServiceClick(GtkWidget* link) {
+  DCHECK(delegate_);
   delegate_->OnChooseAnotherService();
   ResetContents();
 }
 
 void WebIntentPickerGtk::OnServiceButtonClick(GtkWidget* button) {
+  DCHECK(delegate_);
   GList* button_list = gtk_container_get_children(GTK_CONTAINER(button_vbox_));
   gint index = g_list_index(button_list, button);
   DCHECK(index != -1);

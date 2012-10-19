@@ -44,7 +44,7 @@ void WebIntentPickerCocoa2::Close() {
 }
 
 void WebIntentPickerCocoa2::SetActionString(const string16& action) {
-  // Ignored. Action string it retrieved from the model.
+  // Ignored. Action string is retrieved from the model.
 }
 
 void WebIntentPickerCocoa2::OnExtensionInstallSuccess(const std::string& id) {
@@ -84,6 +84,10 @@ void WebIntentPickerCocoa2::OnPendingAsyncCompleted() {
   [view_controller_ update];
 }
 
+void WebIntentPickerCocoa2::InvalidateDelegate() {
+  delegate_ = NULL;
+}
+
 void WebIntentPickerCocoa2::OnInlineDispositionWebContentsLoaded(
     content::WebContents* web_contents) {
   [view_controller_ update];
@@ -119,6 +123,7 @@ void WebIntentPickerCocoa2::OnConstrainedWindowClosed(
   model_->set_observer(NULL);
   model_ = NULL;
 
-  delegate_->OnClosing();
+  if (delegate_)
+    delegate_->OnClosing();
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
