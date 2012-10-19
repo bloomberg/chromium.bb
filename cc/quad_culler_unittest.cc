@@ -11,9 +11,9 @@
 #include "CCMathUtil.h"
 #include "CCOcclusionTracker.h"
 #include "CCOverdrawMetrics.h"
-#include "CCSingleThreadProxy.h"
 #include "CCTileDrawQuad.h"
 #include "CCTiledLayerImpl.h"
+#include "cc/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>

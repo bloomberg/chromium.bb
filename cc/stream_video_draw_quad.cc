@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCStreamVideoDrawQuad.h"
+#include "cc/stream_video_draw_quad.h"
 
 #include "base/logging.h"
 

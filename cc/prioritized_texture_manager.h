@@ -5,15 +5,15 @@
 #ifndef CCPrioritizedTextureManager_h
 #define CCPrioritizedTextureManager_h
 
+#include "CCPrioritizedTexture.h"
+#include "CCPriorityCalculator.h"
+#include "IntRect.h"
+#include "IntSize.h"
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/texture.h"
 #include "third_party/khronos/GLES2/gl2.h"
-#include "CCPrioritizedTexture.h"
-#include "CCPriorityCalculator.h"
-#include "CCTexture.h"
-#include "IntRect.h"
-#include "IntSize.h"
 #include <wtf/Vector.h>
 #include <list>
 

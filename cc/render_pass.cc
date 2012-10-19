@@ -10,8 +10,8 @@
 #include "CCMathUtil.h"
 #include "CCOcclusionTracker.h"
 #include "CCQuadCuller.h"
-#include "CCSharedQuadState.h"
-#include "CCSolidColorDrawQuad.h"
+#include "cc/shared_quad_state.h"
+#include "cc/solid_color_draw_quad.h"
 
 using WebKit::WebTransformationMatrix;
 

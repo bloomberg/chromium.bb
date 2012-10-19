@@ -8,8 +8,8 @@
 
 #include "third_party/khronos/GLES2/gl2.h"
 #include "CCLayerTreeHost.h"
-#include "CCTextureLayerImpl.h"
 #include "cc/texture_layer_client.h"
+#include "cc/texture_layer_impl.h"
 
 namespace cc {
 

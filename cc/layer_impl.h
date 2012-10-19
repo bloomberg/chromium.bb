@@ -5,18 +5,18 @@
 #ifndef CCLayerImpl_h
 #define CCLayerImpl_h
 
-#include "base/memory/scoped_ptr.h"
-#include "base/logging.h"
-#include "cc/scoped_ptr_vector.h"
 #include "CCInputHandler.h"
 #include "CCLayerAnimationController.h"
 #include "CCRenderPass.h"
 #include "CCRenderSurface.h"
 #include "CCResourceProvider.h"
-#include "CCSharedQuadState.h"
 #include "FloatRect.h"
 #include "IntRect.h"
 #include "Region.h"
+#include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
+#include "cc/scoped_ptr_vector.h"
+#include "cc/shared_quad_state.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include <public/WebFilterOperations.h>
 #include <public/WebTransformationMatrix.h>

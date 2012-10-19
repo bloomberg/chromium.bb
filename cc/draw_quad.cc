@@ -3,19 +3,20 @@
 // found in the LICENSE file.
 
 #include "config.h"
+
 #include "CCDrawQuad.h"
 
-#include "base/logging.h"
 #include "CCCheckerboardDrawQuad.h"
 #include "CCDebugBorderDrawQuad.h"
 #include "CCIOSurfaceDrawQuad.h"
 #include "CCRenderPassDrawQuad.h"
-#include "CCSolidColorDrawQuad.h"
-#include "CCStreamVideoDrawQuad.h"
-#include "CCTextureDrawQuad.h"
 #include "CCTileDrawQuad.h"
 #include "CCYUVVideoDrawQuad.h"
 #include "IntRect.h"
+#include "base/logging.h"
+#include "cc/solid_color_draw_quad.h"
+#include "cc/stream_video_draw_quad.h"
+#include "cc/texture_draw_quad.h"
 
 namespace cc {
 

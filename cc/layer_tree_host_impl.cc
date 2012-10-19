@@ -27,9 +27,9 @@
 #include "CCScrollbarAnimationController.h"
 #include "CCScrollbarLayerImpl.h"
 #include "CCSettings.h"
-#include "CCSingleThreadProxy.h"
-#include "base/debug/trace_event.h"
 #include "base/basictypes.h"
+#include "base/debug/trace_event.h"
+#include "cc/single_thread_proxy.h"
 #include "cc/texture_uploader.h"
 #include <wtf/CurrentTime.h>
 #include <algorithm>

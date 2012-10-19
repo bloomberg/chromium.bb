@@ -8,7 +8,7 @@
 
 #include "CCQuadSink.h"
 #include "CCScrollbarAnimationController.h"
-#include "CCTextureDrawQuad.h"
+#include "cc/texture_draw_quad.h"
 
 using WebKit::WebRect;
 using WebKit::WebScrollbar;

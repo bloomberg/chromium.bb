@@ -13,10 +13,10 @@
 #include "CCProxy.h"
 #include "CCQuadSink.h"
 #include "CCResourceProvider.h"
-#include "CCStreamVideoDrawQuad.h"
-#include "CCTextureDrawQuad.h"
 #include "CCYUVVideoDrawQuad.h"
 #include "NotImplemented.h"
+#include "cc/stream_video_draw_quad.h"
+#include "cc/texture_draw_quad.h"
 #include <public/WebVideoFrame.h>
 
 namespace cc {

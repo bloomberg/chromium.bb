@@ -8,10 +8,10 @@
 
 #include "CCLayerTreeHost.h"
 #include "CCScrollbarLayerImpl.h"
-#include "CCTextureUpdateQueue.h"
 #include "base/basictypes.h"
 #include "base/debug/trace_event.h"
 #include "cc/layer_painter.h"
+#include "cc/texture_update_queue.h"
 #include <public/WebRect.h>
 
 using WebKit::WebRect;

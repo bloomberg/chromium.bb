@@ -6,9 +6,9 @@
 #define CCScopedTexture_h
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/logging.h"
-#include "CCTexture.h"
+#include "base/memory/scoped_ptr.h"
+#include "cc/texture.h"
 
 #ifndef NDEBUG
 #include "base/threading/platform_thread.h"
