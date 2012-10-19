@@ -7,6 +7,7 @@
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_paths.h"
@@ -21,21 +22,21 @@ using extensions::Extension;
 namespace chrome {
 
 MediaGalleriesDialogController::MediaGalleriesDialogController(
-    TabContents* tab_contents,
+    content::WebContents* web_contents,
     const Extension& extension,
     const base::Closure& on_finish)
-      : tab_contents_(tab_contents),
+      : web_contents_(web_contents),
         extension_(&extension),
         on_finish_(on_finish),
         preferences_(MediaGalleriesPreferencesFactory::GetForProfile(
-            tab_contents_->profile())) {
+            Profile::FromBrowserContext(web_contents->GetBrowserContext()))) {
   LookUpPermissions();
 
   dialog_.reset(MediaGalleriesDialog::Create(this));
 }
 
 MediaGalleriesDialogController::MediaGalleriesDialogController()
-    : tab_contents_(NULL),
+    : web_contents_(NULL),
       extension_(NULL),
       preferences_(NULL) {}
 
@@ -75,7 +76,7 @@ void MediaGalleriesDialogController::OnAddFolderClicked() {
       l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_DIALOG_ADD_GALLERY_TITLE),
       user_data_dir,
       NULL, 0, FILE_PATH_LITERAL(""),
-      tab_contents_->web_contents()->GetView()->GetTopLevelNativeWindow(),
+      web_contents_->GetView()->GetTopLevelNativeWindow(),
       NULL);
 }
 

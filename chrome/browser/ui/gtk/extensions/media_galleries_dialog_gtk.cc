@@ -29,10 +29,8 @@ MediaGalleriesDialogGtk::MediaGalleriesDialogGtk(
   InitWidgets();
 
   // May be NULL during tests.
-  if (controller->tab_contents()) {
-    window_ = new ConstrainedWindowGtk(
-        controller->tab_contents()->web_contents(), this);
-  }
+  if (controller->web_contents())
+    window_ = new ConstrainedWindowGtk(controller->web_contents(), this);
 }
 
 MediaGalleriesDialogGtk::~MediaGalleriesDialogGtk() {

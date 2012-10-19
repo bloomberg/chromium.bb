@@ -95,10 +95,8 @@ MediaGalleriesDialogCocoa::MediaGalleriesDialogCocoa(
 
   set_sheet(alert_);
   // May be NULL during tests.
-  if (controller->tab_contents()) {
-    window_ = new ConstrainedWindowMac(
-        controller->tab_contents()->web_contents(), this);
-  }
+  if (controller->web_contents())
+    window_ = new ConstrainedWindowMac(controller->web_contents(), this);
 }
 
 MediaGalleriesDialogCocoa::~MediaGalleriesDialogCocoa() {

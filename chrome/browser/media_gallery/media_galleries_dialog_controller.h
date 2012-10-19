@@ -15,11 +15,13 @@
 #include "ui/base/dialogs/select_file_dialog.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace content {
+class WebContents;
+}
+
 namespace extensions {
 class Extension;
 }
-
-class TabContents;
 
 namespace chrome {
 
@@ -61,7 +63,7 @@ class MediaGalleriesDialogController : public ui::SelectFileDialog::Listener {
       KnownGalleryPermissions;
 
   // The constructor creates a dialog controller which owns itself.
-  MediaGalleriesDialogController(TabContents* tab_contents,
+  MediaGalleriesDialogController(content::WebContents* web_contents,
                                  const extensions::Extension& extension,
                                  const base::Closure& on_finish);
 
@@ -79,8 +81,8 @@ class MediaGalleriesDialogController : public ui::SelectFileDialog::Listener {
   virtual void FileSelected(const FilePath& path,
                             int index,
                             void* params) OVERRIDE;
-  TabContents* tab_contents() const {
-    return tab_contents_;
+  content::WebContents* web_contents() const {
+    return web_contents_;
   }
 
  protected:
@@ -102,8 +104,8 @@ class MediaGalleriesDialogController : public ui::SelectFileDialog::Listener {
   // Saves state of |known_galleries_| and |new_galleries_| to model.
   void SavePermissions();
 
-  // The tab contents from which the request originated.
-  TabContents* tab_contents_;
+  // The web contents from which the request originated.
+  content::WebContents* web_contents_;
 
   // This is just a reference, but it's assumed that it won't become invalid
   // while the dialog is showing. Will be NULL only during tests.

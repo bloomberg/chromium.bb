@@ -18,8 +18,8 @@
 #include "chrome/browser/media_gallery/media_file_system_registry.h"
 #include "chrome/browser/media_gallery/media_galleries_dialog_controller.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/api/experimental_media_galleries.h"
 #include "chrome/common/extensions/api/media_galleries.h"
@@ -167,13 +167,16 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
 
 void MediaGalleriesGetMediaFileSystemsFunction::ShowDialog() {
   WebContents* contents = WebContents::FromRenderViewHost(render_view_host());
-  TabContents* tab_contents =
-      contents ? TabContents::FromWebContents(contents) : NULL;
-  if (!tab_contents) {
+  ConstrainedWindowTabHelper* constrained_window_tab_helper =
+      ConstrainedWindowTabHelper::FromWebContents(contents);
+  if (!constrained_window_tab_helper) {
+    // If there is no ConstrainedWindowTabHelper, then this contents is probably
+    // the background page for an app. Try to find a shell window to host the
+    // dialog.
     ShellWindow* window = ShellWindowRegistry::Get(profile())->
         GetCurrentShellWindowForApp(GetExtension()->id());
     if (window) {
-      tab_contents = window->tab_contents();
+      contents = window->web_contents();
     } else {
       // Abort showing the dialog. TODO(estade) Perhaps return an error instead.
       GetAndReturnGalleries();
@@ -184,7 +187,7 @@ void MediaGalleriesGetMediaFileSystemsFunction::ShowDialog() {
   // Controller will delete itself.
   base::Closure cb = base::Bind(
       &MediaGalleriesGetMediaFileSystemsFunction::GetAndReturnGalleries, this);
-  new chrome::MediaGalleriesDialogController(tab_contents, *GetExtension(), cb);
+  new chrome::MediaGalleriesDialogController(contents, *GetExtension(), cb);
 }
 
 // MediaGalleriesAssembleMediaFileFunction -------------------------------------
