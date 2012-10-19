@@ -203,6 +203,8 @@
       'cpp/dev/buffer_dev.h',
       'cpp/dev/crypto_dev.cc',
       'cpp/dev/crypto_dev.h',
+      'cpp/dev/cursor_control_dev.cc',
+      'cpp/dev/cursor_control_dev.h',
       'cpp/dev/device_ref_dev.cc',
       'cpp/dev/device_ref_dev.h',
       'cpp/dev/directory_entry_dev.cc',
