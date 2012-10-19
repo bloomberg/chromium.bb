@@ -84,7 +84,8 @@ class VersionInfoTest(cros_test_lib.MoxTempDirTestCase):
     osutils.WriteFile(version_file, FAKE_VERSION % info.__dict__)
 
   @classmethod
-  def CreateFakeVersionFile(cls, tmpdir, version=FAKE_VERSION_STRING):
+  def CreateFakeVersionFile(cls, tmpdir, version=FAKE_VERSION_STRING,
+                            filename=None):
     """Helper method to create a version file from specified version number."""
     version_file = tempfile.mktemp(dir=tmpdir)
     cls.WriteFakeVersionFile(version_file, version=version)
@@ -202,28 +203,26 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase):
 
   def testLatestSpecFromDir(self):
     """Tests whether we can get sorted specs correctly from a directory."""
+    self.mox.StubOutWithMock(manifest_version, '_RemoveDirs')
+    self.mox.StubOutWithMock(repository, 'CloneGitRepo')
+    info = manifest_version.VersionInfo(
+        '99.1.2', CHROME_BRANCH, incr_type='branch')
 
-    # Create fake buildspecs.
     specs_dir = os.path.join(self.manager.manifest_dir, 'buildspecs',
                              CHROME_BRANCH)
-    osutils.SafeMakedirs(specs_dir)
-    for m in ['100.0.0.xml', '99.3.3.xml', '99.1.10.xml', '99.1.5.xml',
-              '99.1.0.xml', '99.3.0.xml', '101.1.1.xml']:
-      osutils.Touch(os.path.join(specs_dir, m))
+    m1, m2, m3, m4 = [os.path.join(specs_dir, x)
+                      for x in ['100.0.0.xml', '99.3.3.xml', '99.1.10.xml',
+                                '99.1.5.xml']]
 
-    tests = {
-      '99.1.11': '99.1.10', # Latest 99.1.X  -> 99.1.10
-      '99.3.0': '99.3.0',   # Latest 99.X.0  -> 99.3.0
-      '99.4.1': None,       # Latest 99.4.X  -> None
-      '101.0.0': '100.0.0', # Latest X.0.0   -> 100.0.0
-      '101.1.0': None,      # Latest 101.X.0 -> None
-    }
-    for version, expected in tests.items():
-      incr_type = 'build' if version.endswith('.0.0') else 'branch'
-      info = manifest_version.VersionInfo(version, CHROME_BRANCH,
-                                          incr_type=incr_type)
-      spec = self.manager._LatestSpecFromDir(info, specs_dir)
-      self.assertEqual(spec, expected)
+    # Create fake buildspecs.
+    osutils.SafeMakedirs(specs_dir)
+    for m in [m1, m2, m3, m4]: osutils.Touch(m)
+
+    self.mox.ReplayAll()
+    spec = self.manager._LatestSpecFromDir(info, specs_dir)
+    self.mox.VerifyAll()
+    # Should be the latest on the 99.1 branch.
+    self.assertEqual(spec, '99.1.10')
 
   def testGetNextVersionNoIncrement(self):
     """Tests whether we can get the next version to be built correctly.
