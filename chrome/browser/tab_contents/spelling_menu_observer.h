@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/timer.h"
+#include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_observer.h"
 
 class RenderViewContextMenuProxy;
@@ -103,7 +104,7 @@ class SpellingMenuObserver : public RenderViewContextMenuObserver {
   // Flag indicating whether online spelling correction service is enabled. When
   // this variable is true and we right-click a misspelled word, we send a
   // JSON-RPC request to the service and retrieve suggestions.
-  bool integrate_spelling_service_;
+  BooleanPrefMember integrate_spelling_service_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellingMenuObserver);
 };

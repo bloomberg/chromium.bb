@@ -5,7 +5,6 @@
 #include "chrome/browser/api/prefs/pref_member.h"
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/value_conversions.h"
 #include "chrome/browser/api/prefs/pref_service_base.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -23,7 +22,6 @@ PrefMemberBase::PrefMemberBase()
 PrefMemberBase::~PrefMemberBase() {
   Destroy();
 }
-
 
 void PrefMemberBase::Init(const char* pref_name,
                           PrefServiceBase* prefs,
@@ -74,7 +72,9 @@ void PrefMemberBase::UpdateValueFromPref() const {
   DCHECK(pref);
   if (!internal())
     CreateInternal();
-  internal()->UpdateValue(pref->GetValue()->DeepCopy(), pref->IsManaged());
+  internal()->UpdateValue(pref->GetValue()->DeepCopy(),
+                          pref->IsManaged(),
+                          pref->IsUserModifiable());
 }
 
 void PrefMemberBase::VerifyPref() const {
@@ -96,17 +96,20 @@ bool PrefMemberBase::Internal::IsOnCorrectThread() const {
            !BrowserThread::IsMessageLoopValid(BrowserThread::UI)));
 }
 
-void PrefMemberBase::Internal::UpdateValue(Value* v, bool is_managed) const {
+void PrefMemberBase::Internal::UpdateValue(Value* v,
+                                           bool is_managed,
+                                           bool is_user_modifiable) const {
   scoped_ptr<Value> value(v);
   if (IsOnCorrectThread()) {
     bool rv = UpdateValueInternal(*value);
     DCHECK(rv);
     is_managed_ = is_managed;
+    is_user_modifiable_ = is_user_modifiable;
   } else {
     bool rv = BrowserThread::PostTask(
         thread_id_, FROM_HERE,
         base::Bind(&PrefMemberBase::Internal::UpdateValue, this,
-                   value.release(), is_managed));
+                   value.release(), is_managed, is_user_modifiable));
     DCHECK(rv);
   }
 }
