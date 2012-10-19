@@ -79,7 +79,7 @@ class SyncInternalsUITestWithService : public ChromeRenderViewHostTestHarness {
                                             MessageLoopForUI::current());
       // |sync_internals_ui_|'s constructor triggers all the
       // expectations above.
-      web_ui_.reset(new TestSyncWebUI(contents()));
+      web_ui_.reset(new TestSyncWebUI(web_contents()));
       sync_internals_ui_ = new SyncInternalsUI(web_ui_.get());
       web_ui_->SetController(sync_internals_ui_);
     }
@@ -159,7 +159,7 @@ class SyncInternalsUITestWithoutService
                                             MessageLoopForUI::current());
       // |sync_internals_ui_|'s constructor triggers all the
       // expectations above.
-      web_ui_.reset(new TestSyncWebUI(contents()));
+      web_ui_.reset(new TestSyncWebUI(web_contents()));
       sync_internals_ui_ = new SyncInternalsUI(web_ui_.get());
       web_ui_->SetController(sync_internals_ui_);
     }

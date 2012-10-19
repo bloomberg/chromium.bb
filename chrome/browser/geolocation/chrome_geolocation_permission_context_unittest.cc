@@ -104,12 +104,14 @@ class GeolocationPermissionContextTests
   virtual ~GeolocationPermissionContextTests();
 
   int process_id() {
-    return contents()->GetRenderProcessHost()->GetID();
+    return web_contents()->GetRenderProcessHost()->GetID();
   }
   int process_id_for_tab(int tab) {
     return extra_tabs_[tab]->GetRenderProcessHost()->GetID();
   }
-  int render_id() { return contents()->GetRenderViewHost()->GetRoutingID(); }
+  int render_id() {
+    return web_contents()->GetRenderViewHost()->GetRoutingID();
+  }
   int render_id_for_tab(int tab) {
     return extra_tabs_[tab]->GetRenderViewHost()->GetRoutingID();
   }
@@ -634,7 +636,7 @@ TEST_F(GeolocationPermissionContextTests, InfoBarUsesCommittedEntry) {
   EXPECT_EQ(0U, infobar_tab_helper()->GetInfoBarCount());
   // Go back: navigate to a pending entry before requesting geolocation
   // permission.
-  contents()->GetController().GoBack();
+  web_contents()->GetController().GoBack();
   // Request permission for the committed frame (not the pending one).
   RequestGeolocationPermission(
       process_id(), render_id(), bridge_id(), requesting_frame_1);
@@ -644,11 +646,11 @@ TEST_F(GeolocationPermissionContextTests, InfoBarUsesCommittedEntry) {
   ASSERT_TRUE(infobar_0);
   // Ensure the infobar is not yet expired.
   content::LoadCommittedDetails details;
-  details.entry = contents()->GetController().GetLastCommittedEntry();
+  details.entry = web_contents()->GetController().GetLastCommittedEntry();
   ASSERT_FALSE(infobar_0->ShouldExpire(details));
   // Commit the "GoBack()" above, and ensure the infobar is now expired.
-  WebContentsTester::For(contents())->CommitPendingNavigation();
-  details.entry = contents()->GetController().GetLastCommittedEntry();
+  WebContentsTester::For(web_contents())->CommitPendingNavigation();
+  details.entry = web_contents()->GetController().GetLastCommittedEntry();
   ASSERT_TRUE(infobar_0->ShouldExpire(details));
 
   // Delete the tab contents.

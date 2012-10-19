@@ -98,8 +98,8 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
                                      start_date,
                                      expiration_date);
 
-    TabSpecificContentSettings::CreateForWebContents(contents());
-    InfoBarTabHelper::CreateForWebContents(contents());
+    TabSpecificContentSettings::CreateForWebContents(web_contents());
+    InfoBarTabHelper::CreateForWebContents(web_contents());
 
     // Setup the mock cert store.
     EXPECT_CALL(cert_store_, RetrieveCert(cert_id_, _) )
@@ -131,10 +131,10 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
   MockWebsiteSettingsUI* mock_ui() { return mock_ui_.get(); }
   const SSLStatus& ssl() { return ssl_; }
   TabSpecificContentSettings* tab_specific_content_settings() {
-    return TabSpecificContentSettings::FromWebContents(contents());
+    return TabSpecificContentSettings::FromWebContents(web_contents());
   }
   InfoBarTabHelper* infobar_tab_helper() {
-    return InfoBarTabHelper::FromWebContents(contents());
+    return InfoBarTabHelper::FromWebContents(web_contents());
   }
 
   WebsiteSettings* website_settings() {

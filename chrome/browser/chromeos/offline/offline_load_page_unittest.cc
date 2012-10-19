@@ -72,19 +72,19 @@ class OfflineLoadPageTest : public ChromeRenderViewHostTestHarness {
   }
 
   void Navigate(const char* url, int page_id) {
-    WebContentsTester::For(contents())->TestDidNavigate(
-        contents()->GetRenderViewHost(), page_id, GURL(url),
+    WebContentsTester::For(web_contents())->TestDidNavigate(
+        web_contents()->GetRenderViewHost(), page_id, GURL(url),
         content::PAGE_TRANSITION_TYPED);
   }
 
   void ShowInterstitial(const char* url) {
-    (new TestOfflineLoadPage(contents(), GURL(url), this))->Show();
+    (new TestOfflineLoadPage(web_contents(), GURL(url), this))->Show();
   }
 
   // Returns the OfflineLoadPage currently showing or NULL if none is
   // showing.
   InterstitialPage* GetOfflineLoadPage() {
-    return InterstitialPage::GetInterstitialPage(contents());
+    return InterstitialPage::GetInterstitialPage(web_contents());
   }
 
   UserResponse user_response() const { return user_response_; }
@@ -126,7 +126,7 @@ TEST_F(OfflineLoadPageTest, OfflinePageProceed) {
   EXPECT_EQ(OK, user_response());
 
   // The URL remains to be URL2.
-  EXPECT_EQ(kURL2, contents()->GetURL().spec());
+  EXPECT_EQ(kURL2, web_contents()->GetURL().spec());
 
   // Commit navigation and the interstitial page is gone.
   Navigate(kURL2, 2);
@@ -155,7 +155,7 @@ TEST_F(OfflineLoadPageTest, OfflinePageDontProceed) {
   // We did not proceed, the pending entry should be gone.
   EXPECT_FALSE(controller().GetPendingEntry());
   // the URL is set back to kURL1.
-  EXPECT_EQ(kURL1, contents()->GetURL().spec());
+  EXPECT_EQ(kURL1, web_contents()->GetURL().spec());
 }
 
 }  // namespace chromeos

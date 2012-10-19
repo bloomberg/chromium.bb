@@ -45,7 +45,7 @@ TEST_F(ContentSettingImageModelTest, UpdateFromWebContents) {
 
   content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES,
                                      std::string());
-  content_setting_image_model->UpdateFromWebContents(contents());
+  content_setting_image_model->UpdateFromWebContents(web_contents());
 
   EXPECT_TRUE(content_setting_image_model->is_visible());
   EXPECT_NE(0, content_setting_image_model->get_icon());
@@ -56,7 +56,7 @@ TEST_F(ContentSettingImageModelTest, RPHUpdateFromWebContents) {
   scoped_ptr<ContentSettingImageModel> content_setting_image_model(
      ContentSettingImageModel::CreateContentSettingImageModel(
          CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS));
-  content_setting_image_model->UpdateFromWebContents(contents());
+  content_setting_image_model->UpdateFromWebContents(web_contents());
   EXPECT_FALSE(content_setting_image_model->is_visible());
 
   TabSpecificContentSettings* content_settings =
@@ -64,7 +64,7 @@ TEST_F(ContentSettingImageModelTest, RPHUpdateFromWebContents) {
   content_settings->set_pending_protocol_handler(
       ProtocolHandler::CreateProtocolHandler(
           "mailto", GURL("http://www.google.com/"), ASCIIToUTF16("Handler")));
-  content_setting_image_model->UpdateFromWebContents(contents());
+  content_setting_image_model->UpdateFromWebContents(web_contents());
   EXPECT_TRUE(content_setting_image_model->is_visible());
 }
 
@@ -86,7 +86,7 @@ TEST_F(ContentSettingImageModelTest, CookieAccessed) {
                                     "A=B",
                                     options,
                                     false);
-  content_setting_image_model->UpdateFromWebContents(contents());
+  content_setting_image_model->UpdateFromWebContents(web_contents());
   EXPECT_TRUE(content_setting_image_model->is_visible());
   EXPECT_NE(0, content_setting_image_model->get_icon());
   EXPECT_FALSE(content_setting_image_model->get_tooltip().empty());

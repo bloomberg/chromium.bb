@@ -138,9 +138,9 @@ TEST_F(ContentSettingBubbleModelTest, MultiplePlugins) {
 
   // Navigating to some sample url prevents the GetURL method from returning an
   // invalid empty URL.
-  WebContentsTester::For(
-      contents())->NavigateAndCommit(GURL("http://www.example.com"));
-  GURL url = contents()->GetURL();
+  WebContentsTester::For(web_contents())->
+      NavigateAndCommit(GURL("http://www.example.com"));
+  GURL url = web_contents()->GetURL();
   map->AddExceptionForURL(url,
                           url,
                           CONTENT_SETTINGS_TYPE_PLUGINS,

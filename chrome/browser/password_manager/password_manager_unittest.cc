@@ -62,7 +62,8 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
 
     EXPECT_CALL(delegate_, GetProfile()).WillRepeatedly(Return(profile()));
-    PasswordManager::CreateForWebContentsAndDelegate(contents(), &delegate_);
+    PasswordManager::CreateForWebContentsAndDelegate(
+        web_contents(), &delegate_);
     EXPECT_CALL(delegate_, DidLastPageLoadEncounterSSLErrors())
         .WillRepeatedly(Return(false));
   }
@@ -86,7 +87,7 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   PasswordManager* manager() {
-    return PasswordManager::FromWebContents(contents());
+    return PasswordManager::FromWebContents(web_contents());
   }
 
   // We create a UI thread to satisfy PasswordStore.

@@ -82,10 +82,10 @@ TEST_F(AutomationTabHelperTest, StartStopLoading) {
   testing::MockFunction<void()> check;
 
   testing::InSequence expect_in_sequence;
-  EXPECT_CALL(mock_observer_, OnFirstPendingLoad(contents()))
+  EXPECT_CALL(mock_observer_, OnFirstPendingLoad(web_contents()))
       .WillOnce(CheckHasPendingLoads(tab_helper(), true));
   EXPECT_CALL(check, Call());
-  EXPECT_CALL(mock_observer_, OnNoMorePendingLoads(contents()))
+  EXPECT_CALL(mock_observer_, OnNoMorePendingLoads(web_contents()))
       .WillOnce(CheckHasPendingLoads(tab_helper(), false));
 
   EXPECT_FALSE(tab_helper()->has_pending_loads());
@@ -98,8 +98,8 @@ TEST_F(AutomationTabHelperTest, StartStopLoading) {
 
 TEST_F(AutomationTabHelperTest, DuplicateLoads) {
   testing::InSequence expect_in_sequence;
-  EXPECT_CALL(mock_observer_, OnFirstPendingLoad(contents()));
-  EXPECT_CALL(mock_observer_, OnNoMorePendingLoads(contents()));
+  EXPECT_CALL(mock_observer_, OnFirstPendingLoad(web_contents()));
+  EXPECT_CALL(mock_observer_, OnNoMorePendingLoads(web_contents()));
 
   StartLoading();
   StartLoading();
@@ -111,10 +111,10 @@ TEST_F(AutomationTabHelperTest, ClientRedirect) {
   testing::MockFunction<void()> check;
 
   testing::InSequence expect_in_sequence;
-  EXPECT_CALL(mock_observer_, OnFirstPendingLoad(contents()))
+  EXPECT_CALL(mock_observer_, OnFirstPendingLoad(web_contents()))
       .WillOnce(CheckHasPendingLoads(tab_helper(), true));
   EXPECT_CALL(check, Call());
-  EXPECT_CALL(mock_observer_, OnNoMorePendingLoads(contents()))
+  EXPECT_CALL(mock_observer_, OnNoMorePendingLoads(web_contents()))
       .WillOnce(CheckHasPendingLoads(tab_helper(), false));
 
   WillPerformClientRedirect(1);
@@ -125,8 +125,8 @@ TEST_F(AutomationTabHelperTest, ClientRedirect) {
 }
 
 TEST_F(AutomationTabHelperTest, DiscardExtraClientRedirects) {
-  EXPECT_CALL(mock_observer_, OnFirstPendingLoad(contents()));
-  EXPECT_CALL(mock_observer_, OnNoMorePendingLoads(contents()));
+  EXPECT_CALL(mock_observer_, OnFirstPendingLoad(web_contents()));
+  EXPECT_CALL(mock_observer_, OnNoMorePendingLoads(web_contents()));
 
   WillPerformClientRedirect(1);
   WillPerformClientRedirect(1);
@@ -140,8 +140,8 @@ TEST_F(AutomationTabHelperTest, StartStopLoadingWithClientRedirect) {
   testing::MockFunction<void()> check;
 
   testing::InSequence expect_in_sequence;
-  EXPECT_CALL(mock_observer_, OnFirstPendingLoad(contents()));
-  EXPECT_CALL(mock_observer_, OnNoMorePendingLoads(contents()));
+  EXPECT_CALL(mock_observer_, OnFirstPendingLoad(web_contents()));
+  EXPECT_CALL(mock_observer_, OnNoMorePendingLoads(web_contents()));
 
   StartLoading();
   WillPerformClientRedirect(1);
@@ -153,9 +153,9 @@ TEST_F(AutomationTabHelperTest, ClientRedirectBeforeLoad) {
   testing::MockFunction<void()> check;
 
   testing::InSequence expect_in_sequence;
-  EXPECT_CALL(mock_observer_, OnFirstPendingLoad(contents()));
+  EXPECT_CALL(mock_observer_, OnFirstPendingLoad(web_contents()));
   EXPECT_CALL(check, Call());
-  EXPECT_CALL(mock_observer_, OnNoMorePendingLoads(contents()));
+  EXPECT_CALL(mock_observer_, OnNoMorePendingLoads(web_contents()));
 
   StartLoading();
   WillPerformClientRedirect(1);
@@ -169,9 +169,9 @@ TEST_F(AutomationTabHelperTest, ClientRedirectAfterLoad) {
   testing::MockFunction<void()> check;
 
   testing::InSequence expect_in_sequence;
-  EXPECT_CALL(mock_observer_, OnFirstPendingLoad(contents()));
+  EXPECT_CALL(mock_observer_, OnFirstPendingLoad(web_contents()));
   EXPECT_CALL(check, Call());
-  EXPECT_CALL(mock_observer_, OnNoMorePendingLoads(contents()));
+  EXPECT_CALL(mock_observer_, OnNoMorePendingLoads(web_contents()));
 
   StartLoading();
   WillPerformClientRedirect(1);
@@ -186,9 +186,9 @@ TEST_F(AutomationTabHelperTest, AllFramesMustFinishRedirects) {
   testing::MockFunction<void()> check;
 
   testing::InSequence expect_in_sequence;
-  EXPECT_CALL(mock_observer_, OnFirstPendingLoad(contents()));
+  EXPECT_CALL(mock_observer_, OnFirstPendingLoad(web_contents()));
   EXPECT_CALL(check, Call());
-  EXPECT_CALL(mock_observer_, OnNoMorePendingLoads(contents()));
+  EXPECT_CALL(mock_observer_, OnNoMorePendingLoads(web_contents()));
 
   WillPerformClientRedirect(1);
   WillPerformClientRedirect(2);
@@ -203,8 +203,8 @@ TEST_F(AutomationTabHelperTest, DestroyedTabStopsLoading) {
   testing::MockFunction<void()> check;
 
   testing::InSequence expect_in_sequence;
-  EXPECT_CALL(mock_observer_, OnFirstPendingLoad(contents()));
-  EXPECT_CALL(mock_observer_, OnNoMorePendingLoads(contents()));
+  EXPECT_CALL(mock_observer_, OnFirstPendingLoad(web_contents()));
+  EXPECT_CALL(mock_observer_, OnNoMorePendingLoads(web_contents()));
 
   StartLoading();
   WillPerformClientRedirect(1);

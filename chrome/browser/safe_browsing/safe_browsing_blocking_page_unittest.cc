@@ -118,21 +118,22 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
   }
 
   void Navigate(const char* url, int page_id) {
-    WebContentsTester::For(contents())->TestDidNavigate(
-        contents()->GetRenderViewHost(), page_id, GURL(url),
+    WebContentsTester::For(web_contents())->TestDidNavigate(
+        web_contents()->GetRenderViewHost(), page_id, GURL(url),
         content::PAGE_TRANSITION_TYPED);
   }
 
   void GoBack(bool is_cross_site) {
-    NavigationEntry* entry = contents()->GetController().GetEntryAtOffset(-1);
+    NavigationEntry* entry =
+        web_contents()->GetController().GetEntryAtOffset(-1);
     ASSERT_TRUE(entry);
-    contents()->GetController().GoBack();
+    web_contents()->GetController().GoBack();
 
     // The pending RVH should commit for cross-site navigations.
     content::RenderViewHost* rvh = is_cross_site ?
-        WebContentsTester::For(contents())->GetPendingRenderViewHost() :
-        contents()->GetRenderViewHost();
-    WebContentsTester::For(contents())->TestDidNavigate(
+        WebContentsTester::For(web_contents())->GetPendingRenderViewHost() :
+        web_contents()->GetRenderViewHost();
+    WebContentsTester::For(web_contents())->TestDidNavigate(
         rvh,
         entry->GetPageID(),
         GURL(entry->GetURL()),
@@ -149,7 +150,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
   // showing.
   SafeBrowsingBlockingPage* GetSafeBrowsingBlockingPage() {
     InterstitialPage* interstitial =
-        InterstitialPage::GetInterstitialPage(contents());
+        InterstitialPage::GetInterstitialPage(web_contents());
     if (!interstitial)
       return NULL;
     return  static_cast<SafeBrowsingBlockingPage*>(
@@ -194,9 +195,10 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
     resource->url = url;
     resource->is_subresource = is_subresource;
     resource->threat_type = SafeBrowsingService::URL_MALWARE;
-    resource->render_process_host_id = contents()->GetRenderProcessHost()->
-        GetID();
-    resource->render_view_id = contents()->GetRenderViewHost()->GetRoutingID();
+    resource->render_process_host_id =
+        web_contents()->GetRenderProcessHost()->GetID();
+    resource->render_view_id =
+        web_contents()->GetRenderViewHost()->GetRoutingID();
   }
 
   UserResponse user_response_;
@@ -210,7 +212,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
 TEST_F(SafeBrowsingBlockingPageTest, MalwarePageDontProceed) {
   // Enable malware details.
   Profile* profile = Profile::FromBrowserContext(
-      contents()->GetBrowserContext());
+      web_contents()->GetBrowserContext());
   profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
 
   // Start a load.
@@ -244,7 +246,7 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwarePageDontProceed) {
 TEST_F(SafeBrowsingBlockingPageTest, MalwarePageProceed) {
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
-      contents()->GetBrowserContext());
+      web_contents()->GetBrowserContext());
   profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
 
   // Start a load.
@@ -260,11 +262,11 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwarePageProceed) {
   ProceedThroughInterstitial(sb_interstitial);
 
   // The interstitial is shown until the navigation commits.
-  ASSERT_TRUE(InterstitialPage::GetInterstitialPage(contents()));
+  ASSERT_TRUE(InterstitialPage::GetInterstitialPage(web_contents()));
   // Commit the navigation.
   Navigate(kBadURL, 1);
   // The interstitial should be gone now.
-  ASSERT_FALSE(InterstitialPage::GetInterstitialPage(contents()));
+  ASSERT_FALSE(InterstitialPage::GetInterstitialPage(web_contents()));
 
   // A report should have been sent.
   EXPECT_EQ(1u, service_->GetDetails()->size());
@@ -276,7 +278,7 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwarePageProceed) {
 TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceDontProceed) {
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
-      contents()->GetBrowserContext());
+      web_contents()->GetBrowserContext());
   profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
 
   // Navigate somewhere.
@@ -311,7 +313,7 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceDontProceed) {
 TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceProceed) {
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
-      contents()->GetBrowserContext());
+      web_contents()->GetBrowserContext());
   profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
 
   // Navigate somewhere.
@@ -344,7 +346,7 @@ TEST_F(SafeBrowsingBlockingPageTest,
        PageWithMultipleMalwareResourceDontProceed) {
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
-      contents()->GetBrowserContext());
+      web_contents()->GetBrowserContext());
   profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
 
   // Navigate somewhere.
@@ -385,7 +387,7 @@ TEST_F(SafeBrowsingBlockingPageTest,
        PageWithMultipleMalwareResourceProceedThenDontProceed) {
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
-      contents()->GetBrowserContext());
+      web_contents()->GetBrowserContext());
   profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
 
   // Navigate somewhere.
@@ -441,7 +443,7 @@ TEST_F(SafeBrowsingBlockingPageTest,
 TEST_F(SafeBrowsingBlockingPageTest, PageWithMultipleMalwareResourceProceed) {
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
-      contents()->GetBrowserContext());
+      web_contents()->GetBrowserContext());
   profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
 
   // Navigate somewhere else.
@@ -492,7 +494,7 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMultipleMalwareResourceProceed) {
 TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
-      contents()->GetBrowserContext());
+      web_contents()->GetBrowserContext());
   profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
 
   // Navigate somewhere.
@@ -517,7 +519,7 @@ TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
   EXPECT_EQ(kGoodURL, controller().GetActiveEntry()->GetURL().spec());
 
   // Navigate forward to the malware URL.
-  contents()->GetController().GoForward();
+  web_contents()->GetController().GoForward();
   ShowInterstitial(false, kBadURL);
   sb_interstitial = GetSafeBrowsingBlockingPage();
   ASSERT_TRUE(sb_interstitial);
@@ -540,7 +542,7 @@ TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
 TEST_F(SafeBrowsingBlockingPageTest, ProceedThenDontProceed) {
   // Enable malware reports.
   Profile* profile = Profile::FromBrowserContext(
-      contents()->GetBrowserContext());
+      web_contents()->GetBrowserContext());
   profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, true);
 
   // Start a load.
@@ -575,7 +577,7 @@ TEST_F(SafeBrowsingBlockingPageTest, ProceedThenDontProceed) {
 TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsDisabled) {
   // Disable malware reports.
   Profile* profile = Profile::FromBrowserContext(
-      contents()->GetBrowserContext());
+      web_contents()->GetBrowserContext());
   profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, false);
 
   // Start a load.
@@ -608,7 +610,7 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsDisabled) {
 TEST_F(SafeBrowsingBlockingPageTest, MalwareReports) {
   // Disable malware reports.
   Profile* profile = Profile::FromBrowserContext(
-      contents()->GetBrowserContext());
+      web_contents()->GetBrowserContext());
   profile->GetPrefs()->SetBoolean(prefs::kSafeBrowsingReportingEnabled, false);
 
   // Start a load.

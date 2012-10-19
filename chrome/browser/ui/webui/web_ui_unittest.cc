@@ -135,9 +135,9 @@ TEST_F(WebUITest, WebUIToWebUI) {
 
   // The flags should be the same as the non-pending state.
   FaviconTabHelper* favicon_tab_helper =
-      FaviconTabHelper::FromWebContents(contents());
+      FaviconTabHelper::FromWebContents(web_contents());
   EXPECT_FALSE(favicon_tab_helper->ShouldDisplayFavicon());
-  EXPECT_TRUE(contents()->FocusLocationBarByDefault());
+  EXPECT_TRUE(web_contents()->FocusLocationBarByDefault());
 }
 
 TEST_F(WebUITest, StandardToWebUI) {
@@ -149,15 +149,15 @@ TEST_F(WebUITest, StandardToWebUI) {
                        std::string());
 
   FaviconTabHelper* favicon_tab_helper =
-      FaviconTabHelper::FromWebContents(contents());
+      FaviconTabHelper::FromWebContents(web_contents());
   // The state should now reflect the default.
   EXPECT_TRUE(favicon_tab_helper->ShouldDisplayFavicon());
-  EXPECT_FALSE(contents()->FocusLocationBarByDefault());
+  EXPECT_FALSE(web_contents()->FocusLocationBarByDefault());
 
   // Commit the load, the state should be the same.
   rvh_tester()->SendNavigate(1, std_url);
   EXPECT_TRUE(favicon_tab_helper->ShouldDisplayFavicon());
-  EXPECT_FALSE(contents()->FocusLocationBarByDefault());
+  EXPECT_FALSE(web_contents()->FocusLocationBarByDefault());
 
   // Start a pending load for a WebUI.
   GURL new_tab_url(chrome::kChromeUINewTabURL);
@@ -165,7 +165,7 @@ TEST_F(WebUITest, StandardToWebUI) {
                        content::PAGE_TRANSITION_LINK,
                        std::string());
   EXPECT_TRUE(favicon_tab_helper->ShouldDisplayFavicon());
-  EXPECT_TRUE(contents()->FocusLocationBarByDefault());
+  EXPECT_TRUE(web_contents()->FocusLocationBarByDefault());
 
   // Committing Web UI is tested above.
 }
@@ -174,8 +174,8 @@ TEST_F(WebUITest, FocusOnNavigate) {
   // Setup.  |wc| will be used to track when we try to focus the location bar.
   WebContents* wc =
       WebContentsTester::CreateTestWebContentsCountSetFocusToLocationBar(
-          contents()->GetBrowserContext(),
-          SiteInstance::Create(contents()->GetBrowserContext()));
+          web_contents()->GetBrowserContext(),
+          SiteInstance::Create(web_contents()->GetBrowserContext()));
   WebContentsTester* wct = WebContentsTester::For(wc);
   wc->GetController().CopyStateFrom(controller());
   SetContents(wc);

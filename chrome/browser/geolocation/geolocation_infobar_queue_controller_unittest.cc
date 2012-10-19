@@ -35,11 +35,11 @@ GeolocationInfoBarQueueControllerTests::GeolocationInfoBarQueueControllerTests()
 }
 
 int GeolocationInfoBarQueueControllerTests::ProcessId() {
-  return contents()->GetRenderProcessHost()->GetID();
+  return web_contents()->GetRenderProcessHost()->GetID();
 }
 
 int GeolocationInfoBarQueueControllerTests::RenderId() {
-  return contents()->GetRenderViewHost()->GetRoutingID();
+  return web_contents()->GetRenderViewHost()->GetRoutingID();
 }
 
 void GeolocationInfoBarQueueControllerTests::SetUp() {

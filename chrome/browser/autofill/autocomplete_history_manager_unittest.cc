@@ -46,7 +46,7 @@ class AutocompleteHistoryManagerTest : public ChromeRenderViewHostTestHarness {
     web_data_service_ = new MockWebDataService();
     autocomplete_manager_.reset(
         new AutocompleteHistoryManager(
-            contents(),
+            web_contents(),
             &profile_,
             scoped_ptr<AutofillWebDataService>(
                 new AutofillWebDataServiceImpl(web_data_service_))));
@@ -188,12 +188,12 @@ class AutocompleteHistoryManagerStubSend : public AutocompleteHistoryManager {
 TEST_F(AutocompleteHistoryManagerTest, ExternalDelegate) {
   // Local version with a stubbed out Send()
   AutocompleteHistoryManagerStubSend autocomplete_history_manager(
-      contents(),
+      web_contents(),
       &profile_,
       scoped_ptr<AutofillWebDataService>(
           new AutofillWebDataServiceImpl(web_data_service_)));
 
-  MockAutofillExternalDelegate external_delegate(contents());
+  MockAutofillExternalDelegate external_delegate(web_contents());
   EXPECT_CALL(external_delegate, OnSuggestionsReturned(_, _,  _,  _,  _));
   autocomplete_history_manager.SetExternalDelegate(&external_delegate);
 

@@ -43,7 +43,7 @@ class TabSpecificContentSettingsTest : public ChromeRenderViewHostTestHarness {
 
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
-    TabSpecificContentSettings::CreateForWebContents(contents());
+    TabSpecificContentSettings::CreateForWebContents(web_contents());
   }
 
  private:
@@ -54,7 +54,7 @@ class TabSpecificContentSettingsTest : public ChromeRenderViewHostTestHarness {
 
 TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(contents());
+      TabSpecificContentSettings::FromWebContents(web_contents());
   net::CookieOptions options;
 
   // Check that after initializing, nothing is blocked.
@@ -131,7 +131,7 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
 
 TEST_F(TabSpecificContentSettingsTest, BlockedFileSystems) {
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(contents());
+      TabSpecificContentSettings::FromWebContents(web_contents());
 
   // Access a file system.
   content_settings->OnFileSystemAccessed(GURL("http://google.com"), false);
@@ -146,7 +146,7 @@ TEST_F(TabSpecificContentSettingsTest, BlockedFileSystems) {
 
 TEST_F(TabSpecificContentSettingsTest, AllowedContent) {
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(contents());
+      TabSpecificContentSettings::FromWebContents(web_contents());
   net::CookieOptions options;
 
   ASSERT_FALSE(
@@ -177,7 +177,7 @@ TEST_F(TabSpecificContentSettingsTest, AllowedContent) {
 
 TEST_F(TabSpecificContentSettingsTest, EmptyCookieList) {
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(contents());
+      TabSpecificContentSettings::FromWebContents(web_contents());
 
   ASSERT_FALSE(
       content_settings->IsContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES));
@@ -195,7 +195,7 @@ TEST_F(TabSpecificContentSettingsTest, EmptyCookieList) {
 
 TEST_F(TabSpecificContentSettingsTest, SiteDataObserver) {
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(contents());
+      TabSpecificContentSettings::FromWebContents(web_contents());
   MockSiteDataObserver mock_observer(content_settings);
   EXPECT_CALL(mock_observer, OnSiteDataAccessed()).Times(6);
 

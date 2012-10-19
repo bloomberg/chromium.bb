@@ -57,7 +57,8 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
     profile()->CreateHistoryService(true /* delete_file */, false /* no_db */);
     service_.reset(new StrictMock<MockClientSideDetectionService>());
-    extractor_.reset(new BrowserFeatureExtractor(contents(), service_.get()));
+    extractor_.reset(
+        new BrowserFeatureExtractor(web_contents(), service_.get()));
     num_pending_ = 0;
     browse_info_.reset(new BrowseInfo);
   }
@@ -96,18 +97,18 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
   void NavigateAndCommit(const GURL& url,
                          const GURL& referrer,
                          content::PageTransition type) {
-    contents()->GetController().LoadURL(
+    web_contents()->GetController().LoadURL(
         url, content::Referrer(referrer, WebKit::WebReferrerPolicyDefault),
         type, std::string());
 
     static int page_id = 0;
     content::RenderViewHost* rvh =
-        WebContentsTester::For(contents())->GetPendingRenderViewHost();
+        WebContentsTester::For(web_contents())->GetPendingRenderViewHost();
     if (!rvh) {
-      rvh = contents()->GetRenderViewHost();
+      rvh = web_contents()->GetRenderViewHost();
     }
-    WebContentsTester::For(contents())->ProceedWithCrossSiteNavigation();
-    WebContentsTester::For(contents())->TestDidNavigateWithReferrer(
+    WebContentsTester::For(web_contents())->ProceedWithCrossSiteNavigation();
+    WebContentsTester::For(web_contents())->TestDidNavigateWithReferrer(
         rvh, ++page_id, url,
         content::Referrer(referrer, WebKit::WebReferrerPolicyDefault), type);
   }

@@ -94,7 +94,7 @@ class TabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
     // Navigate back. We have to do this song and dance as NavigationController
     // isn't happy if you navigate immediately while going back.
     controller().GoToIndex(index);
-    WebContentsTester::For(contents())->CommitPendingNavigation();
+    WebContentsTester::For(web_contents())->CommitPendingNavigation();
   }
 
   void RecreateService() {
@@ -155,7 +155,7 @@ TEST_F(TabRestoreServiceTest, Basic) {
   AddThreeNavigations();
 
   // Have the service record the tab.
-  service_->CreateHistoricalTab(contents(), -1);
+  service_->CreateHistoricalTab(web_contents(), -1);
 
   // Make sure an entry was created.
   ASSERT_EQ(1U, service_->entries().size());
@@ -178,8 +178,8 @@ TEST_F(TabRestoreServiceTest, Basic) {
   NavigateToIndex(1);
 
   // And check again, but set the user agent override this time.
-  contents()->SetUserAgentOverride(user_agent_override_);
-  service_->CreateHistoricalTab(contents(), -1);
+  web_contents()->SetUserAgentOverride(user_agent_override_);
+  service_->CreateHistoricalTab(web_contents(), -1);
 
   // There should be two entries now.
   ASSERT_EQ(2U, service_->entries().size());
@@ -202,7 +202,7 @@ TEST_F(TabRestoreServiceTest, Basic) {
 // Make sure TabRestoreService doesn't create an entry for a tab with no
 // navigations.
 TEST_F(TabRestoreServiceTest, DontCreateEmptyTab) {
-  service_->CreateHistoricalTab(contents(), -1);
+  service_->CreateHistoricalTab(web_contents(), -1);
   EXPECT_TRUE(service_->entries().empty());
 }
 
@@ -211,7 +211,7 @@ TEST_F(TabRestoreServiceTest, Restore) {
   AddThreeNavigations();
 
   // Have the service record the tab.
-  service_->CreateHistoricalTab(contents(), -1);
+  service_->CreateHistoricalTab(web_contents(), -1);
 
   // Recreate the service and have it load the tabs.
   RecreateService();
@@ -238,7 +238,7 @@ TEST_F(TabRestoreServiceTest, RestorePinnedAndApp) {
   AddThreeNavigations();
 
   // Have the service record the tab.
-  service_->CreateHistoricalTab(contents(), -1);
+  service_->CreateHistoricalTab(web_contents(), -1);
 
   // One entry should be created.
   ASSERT_EQ(1U, service_->entries().size());
@@ -308,7 +308,7 @@ TEST_F(TabRestoreServiceTest, DontPersistPostData) {
   controller().GetEntryAtIndex(2)->SetHasPostData(true);
 
   // Have the service record the tab.
-  service_->CreateHistoricalTab(contents(), -1);
+  service_->CreateHistoricalTab(web_contents(), -1);
   ASSERT_EQ(1U, service_->entries().size());
 
   // Recreate the service and have it load the tabs.
@@ -335,7 +335,7 @@ TEST_F(TabRestoreServiceTest, DontLoadTwice) {
   AddThreeNavigations();
 
   // Have the service record the tab.
-  service_->CreateHistoricalTab(contents(), -1);
+  service_->CreateHistoricalTab(web_contents(), -1);
   ASSERT_EQ(1U, service_->entries().size());
 
   // Recreate the service and have it load the tabs.
@@ -408,7 +408,7 @@ TEST_F(TabRestoreServiceTest, LoadPreviousSessionAndTabs) {
 
   AddThreeNavigations();
 
-  service_->CreateHistoricalTab(contents(), -1);
+  service_->CreateHistoricalTab(web_contents(), -1);
 
   RecreateService();
 
@@ -451,7 +451,7 @@ TEST_F(TabRestoreServiceTest, LoadPreviousSessionAndTabsPinned) {
 
   AddThreeNavigations();
 
-  service_->CreateHistoricalTab(contents(), -1);
+  service_->CreateHistoricalTab(web_contents(), -1);
 
   RecreateService();
 
@@ -495,7 +495,7 @@ TEST_F(TabRestoreServiceTest, ManyWindowsInSessionService) {
 
   AddThreeNavigations();
 
-  service_->CreateHistoricalTab(contents(), -1);
+  service_->CreateHistoricalTab(web_contents(), -1);
 
   RecreateService();
 
@@ -524,7 +524,7 @@ TEST_F(TabRestoreServiceTest, TimestampSurvivesRestore) {
   AddThreeNavigations();
 
   // Have the service record the tab.
-  service_->CreateHistoricalTab(contents(), -1);
+  service_->CreateHistoricalTab(web_contents(), -1);
 
   // Make sure an entry was created.
   ASSERT_EQ(1U, service_->entries().size());
@@ -669,7 +669,7 @@ TEST_F(TabRestoreServiceTest, PruneIsCalled) {
   const size_t max_entries = TabRestoreService::kMaxEntries;
   for (size_t i = 0; i < max_entries + 5; i++) {
     NavigateAndCommit(GURL(StringPrintf("http://%d", static_cast<int>(i))));
-    service_->CreateHistoricalTab(contents(), -1);
+    service_->CreateHistoricalTab(web_contents(), -1);
   }
 
   EXPECT_EQ(max_entries, service_->entries_.size());

@@ -103,7 +103,7 @@ class CaptivePortalTabReloaderTest : public ChromeRenderViewHostTestHarness {
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
     tab_reloader_.reset(new testing::StrictMock<TestCaptivePortalTabReloader>(
-        contents()));
+        web_contents()));
 
     // Most tests don't run the message loop, so don't use a timer for them.
     tab_reloader_->set_slow_ssl_load_time(base::TimeDelta());
@@ -541,7 +541,7 @@ TEST_F(CaptivePortalTabReloaderTest, SSLCertErrorLogin) {
             tab_reloader().state());
   EXPECT_FALSE(tab_reloader().TimerRunning());
   // The MockInterstitialPageDelegate will cleaned up by the WebContents.
-  new MockInterstitialPageDelegate(contents());
+  new MockInterstitialPageDelegate(web_contents());
 
   // Captive portal probe finds a captive portal.
   EXPECT_CALL(tab_reloader(), MaybeOpenCaptivePortalLoginTab()).Times(1);

@@ -305,7 +305,7 @@ void ChromeDownloadManagerDelegateTest::SetUp() {
   delegate_ = new TestChromeDownloadManagerDelegate(profile());
   delegate_->SetDownloadManager(download_manager_.get());
   pref_service_ = profile()->GetTestingPrefService();
-  contents()->SetDelegate(&web_contents_delegate_);
+  web_contents()->SetDelegate(&web_contents_delegate_);
 
   ASSERT_TRUE(test_download_dir_.CreateUniqueTempDir());
   SetDefaultDownloadPath(test_download_dir_.path());
@@ -344,7 +344,7 @@ content::MockDownloadItem*
   ON_CALL(*item, IsTemporary())
       .WillByDefault(Return(false));
   ON_CALL(*item, GetWebContents())
-      .WillByDefault(Return(contents()));
+      .WillByDefault(Return(web_contents()));
   EXPECT_CALL(*item, GetId())
       .WillRepeatedly(Return(id));
   EXPECT_CALL(*item, GetState())

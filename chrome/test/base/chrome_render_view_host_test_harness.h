@@ -24,7 +24,6 @@ class ChromeRenderViewHostTestHarness
 
   TestingProfile* profile();
 
-  content::WebContents* contents();
   content::RenderViewHostTester* rvh_tester();
 
  protected:
