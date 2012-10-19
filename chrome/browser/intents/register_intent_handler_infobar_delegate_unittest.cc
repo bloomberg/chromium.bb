@@ -8,8 +8,7 @@
 #include "chrome/browser/intents/register_intent_handler_infobar_delegate.h"
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -37,14 +36,15 @@ MockWebIntentsRegistry* BuildForProfile(Profile* profile) {
 }
 
 class RegisterIntentHandlerInfoBarDelegateTest
-    : public TabContentsTestHarness {
+    : public ChromeRenderViewHostTestHarness {
  protected:
   RegisterIntentHandlerInfoBarDelegateTest()
       : ui_thread_(BrowserThread::UI, MessageLoopForUI::current()),
         db_thread_(BrowserThread::DB, MessageLoopForUI::current()) {}
 
   virtual void SetUp() {
-    TabContentsTestHarness::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
+    InfoBarTabHelper::CreateForWebContents(web_contents());
 
     profile()->CreateWebDataService();
     web_intents_registry_ = BuildForProfile(profile());
@@ -53,7 +53,7 @@ class RegisterIntentHandlerInfoBarDelegateTest
   virtual void TearDown() {
     web_intents_registry_ = NULL;
 
-    TabContentsTestHarness::TearDown();
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
   MockWebIntentsRegistry* web_intents_registry_;
