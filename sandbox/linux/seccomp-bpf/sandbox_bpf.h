@@ -31,6 +31,7 @@
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <sys/wait.h>
+#include <time.h>
 #include <unistd.h>
 
 #include <algorithm>
@@ -184,6 +185,10 @@ struct arch_sigsys {
   unsigned int arch;
 };
 
+class CodeGen;
+class SandboxUnittestHelper;
+struct Instruction;
+
 class Sandbox {
  public:
   enum SandboxStatus {
@@ -271,9 +276,12 @@ class Sandbox {
 
  private:
   friend class ErrorCode;
+  friend class CodeGen;
+  friend class SandboxUnittestHelper;
   friend class Util;
   friend class Verifier;
 
+  typedef std::vector<struct sock_filter> Program;
 
   struct Range {
     Range(uint32_t f, uint32_t t, const ErrorCode& e) :
@@ -284,15 +292,7 @@ class Sandbox {
     uint32_t  from, to;
     ErrorCode err;
   };
-  struct FixUp {
-    FixUp(unsigned int a, bool j) :
-      jt(j), addr(a) { }
-    bool     jt:1;
-    unsigned addr:31;
-  };
   typedef std::vector<Range> Ranges;
-  typedef std::map<uint32_t, std::vector<FixUp> > RetInsns;
-  typedef std::vector<struct sock_filter> Program;
   typedef std::map<uint32_t, ErrorCode> ErrMap;
   typedef std::vector<ErrorCode> Traps;
   typedef std::map<std::pair<TrapFnc, const void *>, int> TrapIds;
@@ -316,10 +316,9 @@ class Sandbox {
                                       EvaluateArguments argumentEvaluator);
   static void      installFilter(bool quiet);
   static void      findRanges(Ranges *ranges);
-  static void      emitJumpStatements(Program *program, RetInsns *rets,
-                                      Ranges::const_iterator start,
-                                      Ranges::const_iterator stop);
-  static void      emitReturnStatements(Program *prog, const RetInsns& rets);
+  static Instruction *assembleJumpTable(CodeGen *gen,
+                                        Ranges::const_iterator start,
+                                        Ranges::const_iterator stop);
   static void      sigSys(int nr, siginfo_t *info, void *void_context);
   static intptr_t  bpfFailure(const struct arch_seccomp_data& data, void *aux);
   static int       getTrapId(TrapFnc fnc, const void *aux);

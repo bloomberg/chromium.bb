@@ -83,6 +83,7 @@ class ErrorCode {
   };
 
  private:
+  friend class CodeGen;
   friend class Sandbox;
   friend class Verifier;
 

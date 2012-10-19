@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <time.h>
-
+#include "sandbox/linux/seccomp-bpf/codegen.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/seccomp-bpf/syscall_iterator.h"
 #include "sandbox/linux/seccomp-bpf/verifier.h"
@@ -330,40 +329,41 @@ void Sandbox::installFilter(bool quiet) {
   }
 
   // Assemble the BPF filter program.
-  Program *program = new Program();
-  if (!program) {
+  CodeGen *gen = new CodeGen();
+  if (!gen) {
     SANDBOX_DIE("Out of memory");
   }
 
   // If the architecture doesn't match SECCOMP_ARCH, disallow the
   // system call.
-  program->push_back((struct sock_filter)
-    BPF_STMT(BPF_LD+BPF_W+BPF_ABS, offsetof(struct arch_seccomp_data, arch)));
-  program->push_back((struct sock_filter)
-    BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, SECCOMP_ARCH, 1, 0));
-
-  program->push_back((struct sock_filter)
-    BPF_STMT(BPF_RET+BPF_K,
-             Kill("Invalid audit architecture in BPF filter").err()));
-
-  // Grab the system call number, so that we can implement jump tables.
-  program->push_back((struct sock_filter)
-    BPF_STMT(BPF_LD+BPF_W+BPF_ABS, offsetof(struct arch_seccomp_data, nr)));
+  Instruction *tail;
+  Instruction *head =
+    gen->MakeInstruction(BPF_LD+BPF_W+BPF_ABS,
+                         offsetof(struct arch_seccomp_data, arch),
+    gen->MakeInstruction(BPF_JMP+BPF_JEQ+BPF_K, SECCOMP_ARCH,
+  tail =
+    // Grab the system call number, so that we can implement jump tables.
+    gen->MakeInstruction(BPF_LD+BPF_W+BPF_ABS,
+                         offsetof(struct arch_seccomp_data, nr)),
+    gen->MakeInstruction(BPF_RET+BPF_K,
+                         Kill(
+                           "Invalid audit architecture in BPF filter").err_)));
 
   // On Intel architectures, verify that system call numbers are in the
   // expected number range. The older i386 and x86-64 APIs clear bit 30
-  // on all system calls. The newer x86-32 API always sets bit 30.
+  // on all system calls. The newer x32 API always sets bit 30.
 #if defined(__i386__) || defined(__x86_64__)
+  Instruction *invalidX32 =
+    gen->MakeInstruction(BPF_RET+BPF_K,
+                         Kill("Illegal mixing of system call ABIs").err_);
+  Instruction *checkX32 =
 #if defined(__x86_64__) && defined(__ILP32__)
-  program->push_back((struct sock_filter)
-    BPF_JUMP(BPF_JMP+BPF_JSET+BPF_K, 0x40000000, 1, 0));
+    gen->MakeInstruction(BPF_JMP+BPF_JSET+BPF_K, 0x40000000, 0, invalidX32);
 #else
-  program->push_back((struct sock_filter)
-    BPF_JUMP(BPF_JMP+BPF_JSET+BPF_K, 0x40000000, 0, 1));
+    gen->MakeInstruction(BPF_JMP+BPF_JSET+BPF_K, 0x40000000, invalidX32, 0);
 #endif
-  program->push_back((struct sock_filter)
-    BPF_STMT(BPF_RET+BPF_K,
-             Kill("Illegal mixing of system call ABIs").err()));
+    gen->JoinInstructions(tail, checkX32);
+    tail = checkX32;
 #endif
 
 
@@ -373,18 +373,25 @@ void Sandbox::installFilter(bool quiet) {
     Ranges ranges;
     findRanges(&ranges);
 
-    // Compile the system call ranges to an optimized BPF program
-    RetInsns rets;
-    emitJumpStatements(program, &rets, ranges.begin(), ranges.end());
-    emitReturnStatements(program, rets);
+    // Compile the system call ranges to an optimized BPF jumptable
+    Instruction *jumptable =
+      assembleJumpTable(gen, ranges.begin(), ranges.end());
+
+    // Append jump table to our pre-amble
+    gen->JoinInstructions(tail, jumptable);
   }
+
+  // Turn the DAG into a vector of instructions.
+  Program *program = new Program();
+  gen->Compile(head, program);
+  delete gen;
 
   // Make sure compilation resulted in BPF program that executes
   // correctly. Otherwise, there is an internal error in our BPF compiler.
   // There is really nothing the caller can do until the bug is fixed.
 #ifndef NDEBUG
   const char *err = NULL;
-  if (!Verifier::verifyBPF(*program, evaluators_, &err)) {
+  if (!Verifier::VerifyBPF(*program, evaluators_, &err)) {
     SANDBOX_DIE(err);
   }
 #endif
@@ -458,15 +465,19 @@ void Sandbox::findRanges(Ranges *ranges) {
   }
 }
 
-void Sandbox::emitJumpStatements(Program *program, RetInsns *rets,
-                                 Ranges::const_iterator start,
-                                 Ranges::const_iterator stop) {
+Instruction *Sandbox::assembleJumpTable(CodeGen *gen,
+                                        Ranges::const_iterator start,
+                                        Ranges::const_iterator stop) {
   // We convert the list of system call ranges into jump table that performs
   // a binary search over the ranges.
-  // As a sanity check, we need to have at least two distinct ranges for us
+  // As a sanity check, we need to have at least one distinct ranges for us
   // to be able to build a jump table.
-  if (stop - start <= 1) {
+  if (stop - start <= 0) {
     SANDBOX_DIE("Invalid set of system call ranges");
+  } else if (stop - start == 1) {
+    // If we have narrowed things down to a single range object, we can
+    // return from the BPF filter program.
+    return gen->MakeInstruction(BPF_RET+BPF_K, start->err);
   }
 
   // Pick the range object that is located at the mid point of our list.
@@ -474,88 +485,11 @@ void Sandbox::emitJumpStatements(Program *program, RetInsns *rets,
   // number in this range object. If our number is lower, it is outside of
   // this range object. If it is greater or equal, it might be inside.
   Ranges::const_iterator mid = start + (stop - start)/2;
-  Program::size_type jmp = program->size();
-  if (jmp >= SECCOMP_MAX_PROGRAM_SIZE) {
-  compiler_err:
-    SANDBOX_DIE("Internal compiler error; failed to compile jump table");
-  }
-  program->push_back((struct sock_filter)
-    BPF_JUMP(BPF_JMP+BPF_JGE+BPF_K, mid->from,
-             // Jump targets are place-holders that will be fixed up later.
-             0, 0));
 
-  // The comparison turned out to be false; i.e. our system call number is
-  // less than the range object at the mid point of the list.
-  if (mid - start == 1) {
-    // If we have narrowed things down to a single range object, we can
-    // return from the BPF filter program.
-    // Instead of emitting a BPF_RET statement, we want to coalesce all
-    // identical BPF_RET statements into a single instance. This results in
-    // a more efficient BPF program that uses less CPU cache.
-    // Since all branches in BPF programs have to be forward branches, we
-    // keep track of our current instruction pointer and then fix up the
-    // branch when we emit the BPF_RET statement in emitReturnStatements().
-    (*rets)[start->err.err()].push_back(FixUp(jmp, false));
-  } else {
-    // Sub-divide the list of ranges and continue recursively.
-    emitJumpStatements(program, rets, start, mid);
-  }
-
-  // The comparison turned out to be true; i.e. our system call number is
-  // greater or equal to the range object at the mid point of the list.
-  if (stop - mid == 1) {
-    // We narrowed things down to a single range object. Remember instruction
-    // pointer and exit code, so that we can patch up the target of the jump
-    // instruction in emitReturnStatements().
-    (*rets)[mid->err.err()].push_back(FixUp(jmp, true));
-  } else {
-    // We now know where the block of instructions for the "true" comparison
-    // starts. Patch up the jump target of the BPF_JMP instruction that we
-    // emitted earlier.
-    int distance = program->size() - jmp - 1;
-    if (distance < 0 || distance > 255) {
-      goto compiler_err;
-    }
-    (*program)[jmp].jt = distance;
-
-    // Sub-divide the list of ranges and continue recursively.
-    emitJumpStatements(program, rets, mid, stop);
-  }
-}
-
-void Sandbox::emitReturnStatements(Program *program, const RetInsns& rets) {
-  // Iterate over the list of distinct exit codes from our BPF filter
-  // program and emit the BPF_RET statements.
-  for (RetInsns::const_iterator ret_iter = rets.begin();
-       ret_iter != rets.end();
-       ++ret_iter) {
-    Program::size_type ip = program->size();
-    if (ip >= SECCOMP_MAX_PROGRAM_SIZE) {
-      SANDBOX_DIE("Internal compiler error; failed to compile jump table");
-    }
-    program->push_back((struct sock_filter)
-      BPF_STMT(BPF_RET+BPF_K, ret_iter->first));
-
-    // Iterate over the instruction pointers for the BPF_JMP instructions
-    // that need to be patched up.
-    for (std::vector<FixUp>::const_iterator insn_iter=ret_iter->second.begin();
-         insn_iter != ret_iter->second.end();
-         ++insn_iter) {
-      // Jumps are always relative and they are always forward.
-      int distance = ip - insn_iter->addr - 1;
-      if (distance < 0 || distance > 255) {
-        SANDBOX_DIE("Internal compiler error; failed to compile jump table");
-      }
-
-      // Decide whether we need to patch up the "true" or the "false" jump
-      // target.
-      if (insn_iter->jt) {
-        (*program)[insn_iter->addr].jt = distance;
-      } else {
-        (*program)[insn_iter->addr].jf = distance;
-      }
-    }
-  }
+  // Sub-divide the list of ranges and continue recursively.
+  Instruction *jf = assembleJumpTable(gen, start, mid);
+  Instruction *jt = assembleJumpTable(gen, mid, stop);
+  return gen->MakeInstruction(BPF_JMP+BPF_JGE+BPF_K, mid->from, jt, jf);
 }
 
 void Sandbox::sigSys(int nr, siginfo_t *info, void *void_context) {

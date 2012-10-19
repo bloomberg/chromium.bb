@@ -157,10 +157,7 @@ ErrorCode SyntheticPolicy(int sysno) {
   }
 #endif
 
-  // TODO(markus): allow calls to write(). This should start working as soon
-  //   as we switch to the new code generator. Currently we are blowing up,
-  //   because our jumptable is getting too big.
-  if (sysno == __NR_exit_group /* || sysno == __NR_write */) {
+  if (sysno == __NR_exit_group || sysno == __NR_write) {
     // exit_group() is special, we really need it to work.
     // write() is needed for BPF_ASSERT() to report a useful error message.
     return ErrorCode(ErrorCode::ERR_ALLOWED);

@@ -55,6 +55,7 @@
           'sources': [
             'seccomp-bpf/bpf_tests.cc',
             'seccomp-bpf/bpf_tests.h',
+            'seccomp-bpf/codegen_unittest.cc',
             'seccomp-bpf/errorcode_unittest.cc',
             'seccomp-bpf/sandbox_bpf_unittest.cc',
             'seccomp-bpf/syscall_iterator_unittest.cc',
@@ -66,10 +67,15 @@
       'target_name': 'seccomp_bpf',
       'type': 'static_library',
       'sources': [
+        'seccomp-bpf/basicblock.cc',
+        'seccomp-bpf/basicblock.h',
+        'seccomp-bpf/codegen.cc',
+        'seccomp-bpf/codegen.h',
         'seccomp-bpf/die.cc',
         'seccomp-bpf/die.h',
         'seccomp-bpf/errorcode.cc',
         'seccomp-bpf/errorcode.h',
+        'seccomp-bpf/instruction.h',
         'seccomp-bpf/sandbox_bpf.cc',
         'seccomp-bpf/sandbox_bpf.h',
         'seccomp-bpf/syscall_iterator.cc',
