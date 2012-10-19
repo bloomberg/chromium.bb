@@ -824,6 +824,11 @@ err_unlock:
  * Dispatch all incoming events for objects assigned to the given
  * event queue. On failure -1 is returned and errno set appropriately.
  *
+ * This function blocks if there are no events to dispatch. If calling from
+ * the main thread, it will block reading data from the display fd. For other
+ * threads this will block until the main thread queues events on the queue
+ * passed as argument.
+ *
  * \memberof wl_display
  */
 WL_EXPORT int
@@ -833,14 +838,25 @@ wl_display_dispatch_queue(struct wl_display *display,
 	return dispatch_queue(display, queue, 1);
 }
 
-/** Dispatch a display's main event queue
+/** Process incoming events
  *
  * \param display The display context object
  * \return The number of dispatched events on success or -1 on failure
  *
  * Dispatch the display's main event queue.
  *
- * \sa wl_display_dispatch_queue()
+ * If the main event queue is empty, this function blocks until there are
+ * events to be read from the display fd. Events are read and queued on
+ * the appropriate event queues. Finally, events on the main event queue
+ * are dispatched.
+ *
+ * \note It is not possible to check if there are events on the main queue
+ * or not. For dispatching main queue events without blocking, see \ref
+ * wl_display_dispatch_pending().
+ *
+ * \note Calling this makes the current thread the main one.
+ *
+ * \sa wl_display_dispatch_pending(), wl_display_dispatch_queue()
  *
  * \memberof wl_display
  */
@@ -852,6 +868,44 @@ wl_display_dispatch(struct wl_display *display)
 	return dispatch_queue(display, &display->queue, 1);
 }
 
+/** Dispatch main queue events without reading from the display fd
+ *
+ * \param display The display context object
+ * \return The number of dispatched events or -1 on failure
+ *
+ * This function dispatches events on the main event queue. It does not
+ * attempt to read the display fd and simply returns zero if the main
+ * queue is empty, i.e., it doesn't block.
+ *
+ * This is necessary when a client's main loop wakes up on some fd other
+ * than the display fd (network socket, timer fd, etc) and calls \ref
+ * wl_display_dispatch_queue() from that callback. This may queue up
+ * events in the main queue while reading all data from the display fd.
+ * When the main thread returns to the main loop to block, the display fd
+ * no longer has data, causing a call to \em poll(2) (or similar
+ * functions) to block indefinitely, even though there are events ready
+ * to dispatch.
+ *
+ * To proper integrate the wayland display fd into a main loop, the
+ * client should always call \ref wl_display_dispatch_pending() and then
+ * \ref wl_display_flush() prior to going back to sleep. At that point,
+ * the fd typically doesn't have data so attempting I/O could block, but
+ * events queued up on the main queue should be dispatched.
+ *
+ * A real-world example is a main loop that wakes up on a timerfd (or a
+ * sound card fd becoming writable, for example in a video player), which
+ * then triggers GL rendering and eventually eglSwapBuffers().
+ * eglSwapBuffers() may call wl_display_dispatch_queue() if it didn't
+ * receive the frame event for the previous frame, and as such queue
+ * events in the main queue.
+ *
+ * \note Calling this makes the current thread the main one.
+ *
+ * \sa wl_display_dispatch(), wl_display_dispatch_queue(),
+ * wl_display_flush()
+ *
+ * \memberof wl_display
+ */
 WL_EXPORT int
 wl_display_dispatch_pending(struct wl_display *display)
 {
