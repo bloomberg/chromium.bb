@@ -216,8 +216,9 @@ def main(argv):
     else:
       logging.error('--nowipe not set thus deleting the work directory. If you '
                     'wish to debug this, re-run the script with change(s) '
-                    '%s and --nowipe by running: \n  %s %s --nowipe',
-                    ' '.join(bad_changes), sys.argv[0], ' '.join(bad_changes))
+                    '%s and --nowipe by running:\n  %s %s %s --nowipe',
+                    ' '.join(bad_changes), sys.argv[0], ' '.join(bad_changes),
+                    branch)
 
     # Suppress the stack trace if we're not debugging.
     if options.debug:
