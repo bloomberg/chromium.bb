@@ -932,6 +932,7 @@ DocumentEntry*
 DocumentEntry::CreateFromChangeResource(const ChangeResource& change) {
   DocumentEntry* entry = CreateFromFileResource(change.file());
 
+  entry->resource_id_ = change.file_id();
   // If |is_deleted()| returns true, the file is removed from Drive.
   entry->removed_ = change.is_deleted();
 
@@ -1021,9 +1022,9 @@ scoped_ptr<DocumentFeed> DocumentFeed::CreateFromChangeList(
   ScopedVector<ChangeResource>::const_iterator iter =
       changelist.items().begin();
   while (iter != changelist.items().end()) {
-    const FileResource& file = (*iter)->file();
-    largest_changestamp = std::max(largest_changestamp, (*iter)->change_id());
-    feed->entries_.push_back(DocumentEntry::CreateFromFileResource(file));
+    const ChangeResource& change = **iter;
+    largest_changestamp = std::max(largest_changestamp, change.change_id());
+    feed->entries_.push_back(DocumentEntry::CreateFromChangeResource(change));
     ++iter;
   }
   feed->largest_changestamp_ = largest_changestamp;

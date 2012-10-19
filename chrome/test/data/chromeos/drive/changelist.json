@@ -171,6 +171,13 @@
     "editable": true,
     "writersCanShare": true
    }
+  },
+  {
+    "kind": "drive#change",
+    "id": "8430",
+    "fileId": "ABCv7G8yEYAWHc3Y5X0hMSkJYXYZ",
+    "selfLink": "https://www.googleapis.com/drive/v2/changes/16429",
+    "deleted": true
   }
  ]
 }
