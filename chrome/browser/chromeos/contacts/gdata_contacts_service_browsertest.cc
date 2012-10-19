@@ -25,7 +25,7 @@
 
 using content::BrowserThread;
 
-namespace gdata {
+namespace contacts {
 namespace {
 
 // Path to the files that are served by the test server.
@@ -55,7 +55,7 @@ void InitContact(const std::string& contact_id,
   DCHECK(contact);
   contact->set_contact_id(contact_id);
   base::Time update_time;
-  CHECK(util::GetTimeFromString(rfc_3339_update_time, &update_time))
+  CHECK(gdata::util::GetTimeFromString(rfc_3339_update_time, &update_time))
       << "Unable to parse time \"" << rfc_3339_update_time << "\"";
   contact->set_update_time(update_time.ToInternalValue());
   contact->set_deleted(deleted);
@@ -307,4 +307,4 @@ IN_PROC_BROWSER_TEST_F(GDataContactsServiceTest, UnicodeStrings) {
             contacts::test::ContactsToString(*contacts));
 }
 
-}  // namespace gdata
+}  // namespace contacts

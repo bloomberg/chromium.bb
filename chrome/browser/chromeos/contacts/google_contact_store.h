@@ -24,14 +24,11 @@
 
 class Profile;
 
-namespace gdata {
-class GDataContactsServiceInterface;
-}
-
 namespace contacts {
 
 class Contact;
 class ContactDatabaseInterface;
+class GDataContactsServiceInterface;
 class UpdateMetadata;
 
 // A collection of contacts from a Google account.
@@ -57,7 +54,7 @@ class GoogleContactStore
 
     // Takes ownership of |service|. Must be called before Init(). The caller is
     // responsible for calling |service|'s Initialize() method.
-    void SetGDataService(gdata::GDataContactsServiceInterface* service);
+    void SetGDataService(GDataContactsServiceInterface* service);
 
     // Triggers an update, similar to what happens when the update timer fires.
     void DoUpdate();
@@ -145,7 +142,7 @@ class GoogleContactStore
   base::Time last_contact_update_time_;
 
   // Used to download contacts.
-  scoped_ptr<gdata::GDataContactsServiceInterface> gdata_service_;
+  scoped_ptr<GDataContactsServiceInterface> gdata_service_;
 
   // Used to save contacts to disk and load them at startup. Owns the object.
   ContactDatabaseInterface* db_;

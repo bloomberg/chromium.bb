@@ -13,7 +13,7 @@
 
 using content::BrowserThread;
 
-namespace gdata {
+namespace contacts {
 
 GDataContactsServiceStub::GDataContactsServiceStub()
     : num_download_requests_(0),
@@ -48,9 +48,9 @@ void GDataContactsServiceStub::DownloadContacts(
 
   if (min_update_time != expected_min_update_time_) {
     LOG(ERROR) << "Actual minimum update time ("
-               << util::FormatTimeAsString(min_update_time) << ") "
+               << gdata::util::FormatTimeAsString(min_update_time) << ") "
                << "differed from expected ("
-               << util::FormatTimeAsString(expected_min_update_time_)
+               << gdata::util::FormatTimeAsString(expected_min_update_time_)
                << "); not returning any contacts";
     num_download_requests_with_wrong_timestamps_++;
     failure_callback.Run();

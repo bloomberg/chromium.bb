@@ -13,9 +13,6 @@
 
 namespace contacts {
 typedef std::vector<const contacts::Contact*> ContactPointers;
-}
-
-namespace gdata {
 
 // "Stub" implementation of GDataContactsServiceInterface used for testing.
 // Returns a pre-set list of contacts in response to DownloadContacts() calls.
@@ -68,6 +65,6 @@ class GDataContactsServiceStub : public GDataContactsServiceInterface {
   DISALLOW_COPY_AND_ASSIGN(GDataContactsServiceStub);
 };
 
-}  // namespace gdata
+}  // namespace contacts
 
 #endif  // CHROME_BROWSER_CHROMEOS_CONTACTS_GDATA_CONTACTS_SERVICE_STUB_H_

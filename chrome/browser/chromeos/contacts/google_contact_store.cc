@@ -66,7 +66,7 @@ void GoogleContactStore::TestAPI::SetDatabase(ContactDatabaseInterface* db) {
 }
 
 void GoogleContactStore::TestAPI::SetGDataService(
-    gdata::GDataContactsServiceInterface* service) {
+    GDataContactsServiceInterface* service) {
   store_->gdata_service_.reset(service);
 }
 
@@ -116,7 +116,7 @@ void GoogleContactStore::Init() {
 
   // Create a GData service if one hasn't already been assigned for testing.
   if (!gdata_service_.get()) {
-    gdata_service_.reset(new gdata::GDataContactsService(profile_));
+    gdata_service_.reset(new GDataContactsService(profile_));
     gdata_service_->Initialize();
   }
 

@@ -69,7 +69,7 @@ class GoogleContactStoreTest : public testing::Test {
     db_ = new FakeContactDatabase;
     test_api_->SetDatabase(db_);
 
-    gdata_service_ = new gdata::GDataContactsServiceStub;
+    gdata_service_ = new GDataContactsServiceStub;
     test_api_->SetGDataService(gdata_service_);
   }
 
@@ -83,7 +83,7 @@ class GoogleContactStoreTest : public testing::Test {
   scoped_ptr<GoogleContactStore::TestAPI> test_api_;
 
   FakeContactDatabase* db_;  // not owned
-  gdata::GDataContactsServiceStub* gdata_service_;  // not owned
+  GDataContactsServiceStub* gdata_service_;  // not owned
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GoogleContactStoreTest);

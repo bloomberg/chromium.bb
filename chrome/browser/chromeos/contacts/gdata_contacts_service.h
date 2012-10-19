@@ -22,14 +22,14 @@ namespace base {
 class Value;
 }
 
-namespace contacts {
-class Contact;
-}
-
 namespace gdata {
-
 class AuthService;
 class OperationRunner;
+}
+
+namespace contacts {
+
+class Contact;
 
 // Interface for fetching a user's Google contacts via the Contacts API
 // (described at https://developers.google.com/google-apps/contacts/v3/).
@@ -65,7 +65,7 @@ class GDataContactsService : public GDataContactsServiceInterface {
   explicit GDataContactsService(Profile* profile);
   virtual ~GDataContactsService();
 
-  AuthService* auth_service_for_testing();
+  gdata::AuthService* auth_service_for_testing();
 
   const std::string& cached_my_contacts_group_id_for_testing() const {
     return cached_my_contacts_group_id_;
@@ -105,7 +105,7 @@ class GDataContactsService : public GDataContactsServiceInterface {
 
   Profile* profile_;  // not owned
 
-  scoped_ptr<OperationRunner> runner_;
+  scoped_ptr<gdata::OperationRunner> runner_;
 
   // Group ID for the "My Contacts" system contacts group.
   // Cached after a DownloadContactsRequest has completed.
@@ -135,6 +135,6 @@ class GDataContactsService : public GDataContactsServiceInterface {
   DISALLOW_COPY_AND_ASSIGN(GDataContactsService);
 };
 
-}  // namespace gdata
+}  // namespace contacts
 
 #endif  // CHROME_BROWSER_CHROMEOS_CONTACTS_GDATA_CONTACTS_SERVICE_H_
