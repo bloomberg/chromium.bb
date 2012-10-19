@@ -311,7 +311,7 @@ void SafeBrowsingService::ShutDown() {
   download_service_.reset();
 
   url_request_context_getter_ = NULL;
-  BrowserThread::PostTask(
+  BrowserThread::PostNonNestableTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&SafeBrowsingService::DestroyURLRequestContextOnIOThread,
                  this));
