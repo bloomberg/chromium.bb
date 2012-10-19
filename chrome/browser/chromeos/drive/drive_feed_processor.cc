@@ -5,9 +5,9 @@
 #include <utility>
 
 #include "base/metrics/histogram.h"
+#include "chrome/browser/chromeos/drive/drive_feed_processor.h"
 #include "chrome/browser/chromeos/drive/drive_files.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
-#include "chrome/browser/chromeos/drive/gdata_wapi_feed_processor.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -22,15 +22,15 @@ FeedToFileResourceMapUmaStats::FeedToFileResourceMapUmaStats()
 FeedToFileResourceMapUmaStats::~FeedToFileResourceMapUmaStats() {
 }
 
-GDataWapiFeedProcessor::GDataWapiFeedProcessor(
+DriveFeedProcessor::DriveFeedProcessor(
     DriveResourceMetadata* resource_metadata)
   : resource_metadata_(resource_metadata) {
 }
 
-GDataWapiFeedProcessor::~GDataWapiFeedProcessor() {
+DriveFeedProcessor::~DriveFeedProcessor() {
 }
 
-DriveFileError GDataWapiFeedProcessor::ApplyFeeds(
+DriveFileError DriveFeedProcessor::ApplyFeeds(
     const ScopedVector<gdata::DocumentFeed>& feed_list,
     int64 start_changestamp,
     int64 root_feed_changestamp,
@@ -62,7 +62,7 @@ DriveFileError GDataWapiFeedProcessor::ApplyFeeds(
   return DRIVE_FILE_OK;
 }
 
-void GDataWapiFeedProcessor::UpdateFileCountUmaHistograms(
+void DriveFeedProcessor::UpdateFileCountUmaHistograms(
     const FeedToFileResourceMapUmaStats& uma_stats) const {
   const int num_total_files =
       uma_stats.num_hosted_documents + uma_stats.num_regular_files;
@@ -73,11 +73,11 @@ void GDataWapiFeedProcessor::UpdateFileCountUmaHistograms(
   UMA_HISTOGRAM_COUNTS("Drive.NumberOfTotalFiles", num_total_files);
 }
 
-void GDataWapiFeedProcessor::ApplyFeedFromFileUrlMap(
+void DriveFeedProcessor::ApplyFeedFromFileUrlMap(
     bool is_delta_feed,
     int64 feed_changestamp,
     FileResourceIdMap* file_map,
-  std::set<FilePath>* changed_dirs) {
+    std::set<FilePath>* changed_dirs) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(changed_dirs);
 
@@ -170,7 +170,7 @@ void GDataWapiFeedProcessor::ApplyFeedFromFileUrlMap(
 }
 
 // static
-void GDataWapiFeedProcessor::AddEntryToDirectoryAndCollectChangedDirectories(
+void DriveFeedProcessor::AddEntryToDirectoryAndCollectChangedDirectories(
     DriveEntry* entry,
     DriveDirectory* directory,
     DriveResourceMetadata* orphaned_resources,
@@ -181,8 +181,7 @@ void GDataWapiFeedProcessor::AddEntryToDirectoryAndCollectChangedDirectories(
 }
 
 // static
-void GDataWapiFeedProcessor::
-RemoveEntryFromDirectoryAndCollectChangedDirectories(
+void DriveFeedProcessor::RemoveEntryFromDirectoryAndCollectChangedDirectories(
     DriveDirectory* directory,
     DriveEntry* entry,
     std::set<FilePath>* changed_dirs) {
@@ -194,7 +193,7 @@ RemoveEntryFromDirectoryAndCollectChangedDirectories(
   directory->RemoveEntry(entry);
 }
 
-DriveDirectory* GDataWapiFeedProcessor::FindDirectoryForNewEntry(
+DriveDirectory* DriveFeedProcessor::FindDirectoryForNewEntry(
     DriveEntry* new_entry,
     const FileResourceIdMap& file_map,
     DriveResourceMetadata* orphaned_resources) {
@@ -227,7 +226,7 @@ DriveDirectory* GDataWapiFeedProcessor::FindDirectoryForNewEntry(
   return dir;
 }
 
-DriveFileError GDataWapiFeedProcessor::FeedToFileResourceMap(
+DriveFileError DriveFeedProcessor::FeedToFileResourceMap(
     const ScopedVector<gdata::DocumentFeed>& feed_list,
     FileResourceIdMap* file_map,
     int64* feed_changestamp,

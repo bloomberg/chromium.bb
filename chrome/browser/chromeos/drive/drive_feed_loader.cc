@@ -17,9 +17,9 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_feed_loader_observer.h"
+#include "chrome/browser/chromeos/drive/drive_feed_processor.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
-#include "chrome/browser/chromeos/drive/gdata_wapi_feed_processor.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/gdata_util.h"
@@ -898,7 +898,7 @@ DriveFileError DriveFeedLoader::UpdateFromFeed(
 
   std::set<FilePath> changed_dirs;
 
-  GDataWapiFeedProcessor feed_processor(resource_metadata_);
+  DriveFeedProcessor feed_processor(resource_metadata_);
   const DriveFileError error = feed_processor.ApplyFeeds(
       feed_list,
       start_changestamp,

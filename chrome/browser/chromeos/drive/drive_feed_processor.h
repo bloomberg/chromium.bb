@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_GDATA_WAPI_FEED_PROCESSOR_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_GDATA_WAPI_FEED_PROCESSOR_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FEED_PROCESSOR_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FEED_PROCESSOR_H_
 
 #include <map>
 #include <set>
@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/file_path.h"
+#include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 
@@ -32,12 +33,12 @@ struct FeedToFileResourceMapUmaStats {
   int num_hosted_documents;
 };
 
-// GDataWapiFeedProcessor is used to process feeds from WAPI (codename for
+// DriveFeedProcessor is used to process feeds from WAPI (codename for
 // Documents List API).
-class GDataWapiFeedProcessor {
+class DriveFeedProcessor {
  public:
-  explicit GDataWapiFeedProcessor(DriveResourceMetadata* resource_metadata);
-  ~GDataWapiFeedProcessor();
+  explicit DriveFeedProcessor(DriveResourceMetadata* resource_metadata);
+  ~DriveFeedProcessor();
 
   // Applies the documents feeds to the file system using |resource_metadata_|.
   //
@@ -101,9 +102,9 @@ class GDataWapiFeedProcessor {
       DriveResourceMetadata* orphaned_ressources);
 
   DriveResourceMetadata* resource_metadata_;  // Not owned.
-  DISALLOW_COPY_AND_ASSIGN(GDataWapiFeedProcessor);
+  DISALLOW_COPY_AND_ASSIGN(DriveFeedProcessor);
 };
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_GDATA_WAPI_FEED_PROCESSOR_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FEED_PROCESSOR_H_

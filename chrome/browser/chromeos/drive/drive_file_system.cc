@@ -16,6 +16,7 @@
 #include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_feed_loader.h"
+#include "chrome/browser/chromeos/drive/drive_feed_processor.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_files.h"
@@ -24,7 +25,6 @@
 #include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/move_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
-#include "chrome/browser/chromeos/drive/gdata_wapi_feed_processor.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/gdata_util.h"
@@ -1307,7 +1307,7 @@ void DriveFileSystem::OnRequestDirectoryRefresh(
   int64 unused_delta_feed_changestamp = 0;
   FeedToFileResourceMapUmaStats unused_uma_stats;
   FileResourceIdMap file_map;
-  GDataWapiFeedProcessor feed_processor(resource_metadata_.get());
+  DriveFeedProcessor feed_processor(resource_metadata_.get());
   error = feed_processor.FeedToFileResourceMap(
       params->feed_list,
       &file_map,

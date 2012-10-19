@@ -148,7 +148,7 @@ class DriveFeedLoader {
   // On success, returns PLATFORM_FILE_OK. Record file statistics as UMA
   // histograms.
   //
-  // See comments at GDataWapiFeedProcessor::ApplyFeeds() for
+  // See comments at DriveFeedProcessor::ApplyFeeds() for
   // |start_changestamp| and |root_feed_changestamp|.
   DriveFileError UpdateFromFeed(
     const ScopedVector<gdata::DocumentFeed>& feed_list,
