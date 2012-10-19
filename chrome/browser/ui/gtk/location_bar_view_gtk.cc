@@ -306,7 +306,7 @@ void ContentSettingImageViewGtk::OnClick(
       sender, this,
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           parent_->browser()->content_setting_bubble_model_delegate(),
-          tab_contents,
+          tab_contents->web_contents(),
           profile,
           content_setting_image_model_->get_content_settings_type()),
       profile, tab_contents->web_contents());

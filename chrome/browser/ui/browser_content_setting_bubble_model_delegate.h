@@ -20,7 +20,8 @@ class BrowserContentSettingBubbleModelDelegate
   virtual ~BrowserContentSettingBubbleModelDelegate();
 
   // ContentSettingBubbleModelDelegate implementation:
-  virtual void ShowCollectedCookiesDialog(TabContents* contents) OVERRIDE;
+  virtual void ShowCollectedCookiesDialog(
+      content::WebContents* web_contents) OVERRIDE;
   virtual void ShowContentSettingsPage(ContentSettingsType type) OVERRIDE;
 
  private:

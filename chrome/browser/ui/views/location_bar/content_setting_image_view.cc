@@ -130,7 +130,7 @@ void ContentSettingImageView::OnClick(LocationBarView* parent) {
   ContentSettingBubbleContents* bubble = new ContentSettingBubbleContents(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           parent->delegate()->GetContentSettingBubbleModelDelegate(),
-          tab_contents,
+          tab_contents->web_contents(),
           profile,
           content_setting_image_model_->get_content_settings_type()),
       tab_contents->web_contents(),

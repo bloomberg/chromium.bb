@@ -726,7 +726,7 @@ void WebsiteSettingsPopupGtk::OnCookiesLinkClicked(GtkWidget* widget) {
       content::UserMetricsAction("WebsiteSettings_CookiesDialogOpened"));
 
   new CollectedCookiesGtk(GTK_WINDOW(parent_),
-                          tab_contents_);
+                          tab_contents_->web_contents());
   bubble_->Close();
 }
 

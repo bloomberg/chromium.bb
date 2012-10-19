@@ -495,7 +495,7 @@ NSColor* IdentityVerifiedTextColor() {
   DCHECK(tabContents_);
   content::RecordAction(
       content::UserMetricsAction("WebsiteSettings_CookiesDialogOpened"));
-  chrome::ShowCollectedCookiesDialog(tabContents_);
+  chrome::ShowCollectedCookiesDialog(tabContents_->web_contents());
 }
 
 // Handler for the link button to show certificate information.

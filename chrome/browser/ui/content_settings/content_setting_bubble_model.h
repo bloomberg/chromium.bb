@@ -20,7 +20,10 @@
 class ContentSettingBubbleModelDelegate;
 class Profile;
 class ProtocolHandlerRegistry;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 // This model provides data for ContentSettingBubble, and also controls
 // the action triggered when the allow / block radio buttons are triggered.
@@ -31,7 +34,7 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   struct PopupItem {
     gfx::Image image;
     std::string title;
-    TabContents* tab_contents;
+    content::WebContents* web_contents;
   };
   typedef std::vector<PopupItem> PopupItems;
 
@@ -74,7 +77,7 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
 
   static ContentSettingBubbleModel* CreateContentSettingBubbleModel(
       Delegate* delegate,
-      TabContents* tab_contents,
+      content::WebContents* web_contents,
       Profile* profile,
       ContentSettingsType content_type);
 
@@ -99,10 +102,12 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   virtual void OnDoneClicked() {}
 
  protected:
-  ContentSettingBubbleModel(TabContents* tab_contents, Profile* profile,
+  ContentSettingBubbleModel(
+      content::WebContents* web_contents,
+      Profile* profile,
       ContentSettingsType content_type);
 
-  TabContents* tab_contents() const { return tab_contents_; }
+  content::WebContents* web_contents() const { return web_contents_; }
   Profile* profile() const { return profile_; }
 
   void set_title(const std::string& title) { bubble_content_.title = title; }
@@ -130,11 +135,11 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   void AddBlockedResource(const std::string& resource_identifier);
 
  private:
-  TabContents* tab_contents_;
+  content::WebContents* web_contents_;
   Profile* profile_;
   ContentSettingsType content_type_;
   BubbleContent bubble_content_;
-  // A registrar for listening for TAB_CONTENTS_DESTROYED notifications.
+  // A registrar for listening for WEB_CONTENTS_DESTROYED notifications.
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingBubbleModel);
@@ -143,7 +148,7 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
 class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
  public:
   ContentSettingTitleAndLinkModel(Delegate* delegate,
-                                  TabContents* tab_contents,
+                                  content::WebContents* web_contents,
                                   Profile* profile,
                                   ContentSettingsType content_type);
   virtual ~ContentSettingTitleAndLinkModel() {}
@@ -161,7 +166,7 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
 class ContentSettingRPHBubbleModel : public ContentSettingTitleAndLinkModel {
  public:
   ContentSettingRPHBubbleModel(Delegate* delegate,
-                               TabContents* tab_contents,
+                               content::WebContents* web_contents,
                                Profile* profile,
                                ProtocolHandlerRegistry* registry,
                                ContentSettingsType content_type);

@@ -4,11 +4,12 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/memory/ref_counted.h"
-#include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/content_settings/collected_cookies_mac.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
-#include "chrome/test/base/testing_profile.h"
+
+#include "base/memory/ref_counted.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/test/test_browser_thread.h"
 
 using content::BrowserThread;
@@ -16,20 +17,25 @@ using content::BrowserThread;
 namespace {
 
 class CollectedCookiesWindowControllerTest
-    : public TabContentsTestHarness {
+    : public ChromeRenderViewHostTestHarness {
  public:
   CollectedCookiesWindowControllerTest()
       : ui_thread_(BrowserThread::UI, MessageLoopForUI::current()) {
   }
 
  private:
+  virtual void SetUp() OVERRIDE {
+    ChromeRenderViewHostTestHarness::SetUp();
+    TabSpecificContentSettings::CreateForWebContents(web_contents());
+  }
+
   content::TestBrowserThread ui_thread_;
 };
 
 TEST_F(CollectedCookiesWindowControllerTest, Construction) {
   CollectedCookiesWindowController* controller =
       [[CollectedCookiesWindowController alloc]
-          initWithTabContents:tab_contents()];
+          initWithWebContents:web_contents()];
 
   [controller release];
 }

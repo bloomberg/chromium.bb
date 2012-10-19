@@ -27,7 +27,6 @@
 #import "chrome/browser/ui/cocoa/content_settings/cookie_details_view_controller.h"
 #import "chrome/browser/ui/cocoa/vertical_gradient_view.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
@@ -63,11 +62,11 @@ enum TabViewItemIndices {
 namespace chrome {
 
 // Declared in browser_dialogs.h so others don't have to depend on our header.
-void ShowCollectedCookiesDialog(TabContents* tab_contents) {
+void ShowCollectedCookiesDialog(content::WebContents* web_contents) {
   // Deletes itself on close.
   new CollectedCookiesMac(
-      tab_contents->web_contents()->GetView()->GetTopLevelNativeWindow(),
-      tab_contents);
+      web_contents->GetView()->GetTopLevelNativeWindow(),
+      web_contents);
 }
 
 }  // namespace chrome
@@ -103,22 +102,22 @@ void ShowCollectedCookiesDialog(TabContents* tab_contents) {
 #pragma mark Constrained window delegate
 
 CollectedCookiesMac::CollectedCookiesMac(NSWindow* parent,
-                                         TabContents* tab_contents)
+                                         content::WebContents* web_contents)
     : ConstrainedWindowMacDelegateCustomSheet(
         [[[CollectedCookiesSheetBridge alloc]
             initWithCollectedCookiesMac:this] autorelease],
         @selector(sheetDidEnd:returnCode:contextInfo:)) {
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(tab_contents->web_contents());
+      TabSpecificContentSettings::FromWebContents(web_contents);
   registrar_.Add(this, chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN,
                  content::Source<TabSpecificContentSettings>(content_settings));
 
   sheet_controller_ = [[CollectedCookiesWindowController alloc]
-      initWithTabContents:tab_contents];
+      initWithWebContents:web_contents];
 
   set_sheet([sheet_controller_ window]);
 
-  window_ = new ConstrainedWindowMac(tab_contents->web_contents(), this);
+  window_ = new ConstrainedWindowMac(web_contents, this);
 }
 
 CollectedCookiesMac::~CollectedCookiesMac() {
@@ -165,15 +164,15 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
 @synthesize allowedTreeController = allowedTreeController_;
 @synthesize blockedTreeController = blockedTreeController_;
 
-- (id)initWithTabContents:(TabContents*)tab_contents {
-  DCHECK(tab_contents);
+- (id)initWithWebContents:(content::WebContents*)webContents {
+  DCHECK(webContents);
 
   NSString* nibpath =
       [base::mac::FrameworkBundle() pathForResource:@"CollectedCookies"
                                              ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
-    tab_contents_ = tab_contents;
-    [self loadTreeModelFromTabContents];
+    webContents_ = webContents;
+    [self loadTreeModelFromWebContents];
 
     animation_.reset([[NSViewAnimation alloc] init]);
     [animation_ setAnimationBlockingMode:NSAnimationNonblocking];
@@ -208,7 +207,8 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
   [infoBar_ setStrokeColor:bannerStrokeColor];
 
   // Change the label of the blocked cookies part if necessary.
-  Profile* profile = tab_contents_->profile();
+  Profile* profile =
+      Profile::FromBrowserContext(webContents_->GetBrowserContext());
   if (profile->GetPrefs()->GetBoolean(prefs::kBlockThirdPartyCookies)) {
     [blockedCookiesText_ setStringValue:l10n_util::GetNSString(
         IDS_COLLECTED_COOKIES_BLOCKED_THIRD_PARTY_BLOCKING_ENABLED)];
@@ -241,7 +241,7 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
 - (void)windowWillClose:(NSNotification*)notif {
   if (contentSettingsChanged_) {
     InfoBarTabHelper* infobarTabHelper =
-        InfoBarTabHelper::FromWebContents(tab_contents_->web_contents());
+        InfoBarTabHelper::FromWebContents(webContents_);
     infobarTabHelper->AddInfoBar(
         new CollectedCookiesInfoBarDelegate(infobarTabHelper));
   }
@@ -267,7 +267,8 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
         CookieTreeNode::DetailedInfo::TYPE_HOST) {
       continue;
     }
-    Profile* profile = tab_contents_->profile();
+    Profile* profile =
+        Profile::FromBrowserContext(webContents_->GetBrowserContext());
     CookieTreeHostNode* host_node =
         static_cast<CookieTreeHostNode*>(cookie);
     host_node->CreateContentException(
@@ -380,10 +381,9 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
 
 // Initializes the |allowedTreeModel_| and |blockedTreeModel_|, and builds
 // the |cocoaAllowedTreeModel_| and |cocoaBlockedTreeModel_|.
-- (void)loadTreeModelFromTabContents {
+- (void)loadTreeModelFromWebContents {
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(
-          tab_contents_->web_contents());
+      TabSpecificContentSettings::FromWebContents(webContents_);
 
   const LocalSharedObjectsContainer& allowed_data =
       content_settings->allowed_local_shared_objects();

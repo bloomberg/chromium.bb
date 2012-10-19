@@ -7,13 +7,16 @@
 
 #include "chrome/common/content_settings_types.h"
 
-class TabContents;
+namespace content {
+class WebContents;
+}
 
 // Delegate which is used by ContentSettingBubbleModel class.
 class ContentSettingBubbleModelDelegate {
  public:
-  // Shows the cookies collected in the tab contents.
-  virtual void ShowCollectedCookiesDialog(TabContents* contents) = 0;
+  // Shows the cookies collected in the web contents.
+  virtual void ShowCollectedCookiesDialog(
+      content::WebContents* web_contents) = 0;
 
   // Shows the Content Settings page for a given content type.
   virtual void ShowContentSettingsPage(ContentSettingsType type) = 0;

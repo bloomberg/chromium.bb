@@ -15,14 +15,17 @@
 @class CollectedCookiesWindowController;
 @class CookieDetailsViewController;
 @class VerticalGradientView;
-class TabContents;
+
+namespace content {
+class WebContents;
+}
 
 // The constrained window delegate reponsible for managing the collected
 // cookies dialog.
 class CollectedCookiesMac : public ConstrainedWindowMacDelegateCustomSheet,
                             public content::NotificationObserver {
  public:
-  CollectedCookiesMac(NSWindow* parent, TabContents* tab_contents);
+  CollectedCookiesMac(NSWindow* parent, content::WebContents* web_contents);
 
   void OnSheetDidEnd(NSWindow* sheet);
 
@@ -86,7 +89,7 @@ class CollectedCookiesMac : public ConstrainedWindowMacDelegateCustomSheet,
 
   scoped_nsobject<CookieDetailsViewController> detailsViewController_;
 
-  TabContents* tab_contents_;  // weak
+  content::WebContents* webContents_;  // weak
 
   BOOL infoBarVisible_;
 
@@ -98,10 +101,10 @@ class CollectedCookiesMac : public ConstrainedWindowMacDelegateCustomSheet,
 @property(assign, nonatomic) BOOL allowedCookiesButtonsEnabled;
 @property(assign, nonatomic) BOOL blockedCookiesButtonsEnabled;
 
-// Designated initializer. TabContents cannot be NULL.
-- (id)initWithTabContents:(TabContents*)tab_contents;
+// Designated initializer. The WebContents cannot be NULL.
+- (id)initWithWebContents:(content::WebContents*)webContents;
 
-// Closes the sheet and ends the modal loop. This will also cleanup the memory.
+// Closes the sheet and ends the modal loop. This will also clean up the memory.
 - (IBAction)closeSheet:(id)sender;
 
 - (IBAction)allowOrigin:(id)sender;
@@ -118,5 +121,5 @@ class CollectedCookiesMac : public ConstrainedWindowMacDelegateCustomSheet,
 - (CookiesTreeModel*)allowedTreeModel;
 - (CookiesTreeModel*)blockedTreeModel;
 
-- (void)loadTreeModelFromTabContents;
+- (void)loadTreeModelFromWebContents;
 @end

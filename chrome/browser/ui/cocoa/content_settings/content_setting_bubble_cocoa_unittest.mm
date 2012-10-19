@@ -23,10 +23,10 @@ namespace {
 
 class DummyContentSettingBubbleModel : public ContentSettingBubbleModel {
  public:
-  DummyContentSettingBubbleModel(TabContents* tab_contents,
+  DummyContentSettingBubbleModel(content::WebContents* web_contents,
                                  Profile* profile,
                                  ContentSettingsType content_type)
-      : ContentSettingBubbleModel(tab_contents, profile, content_type) {
+      : ContentSettingBubbleModel(web_contents, profile, content_type) {
     RadioGroup radio_group;
     radio_group.default_item = 0;
     radio_group.radio_items.resize(2);
@@ -35,7 +35,7 @@ class DummyContentSettingBubbleModel : public ContentSettingBubbleModel {
 };
 
 class ContentSettingBubbleControllerTest
-    : public TabContentsTestHarness {
+    : public ChromeRenderViewHostTestHarness {
  public:
   ContentSettingBubbleControllerTest();
   virtual ~ContentSettingBubbleControllerTest();
@@ -47,7 +47,7 @@ class ContentSettingBubbleControllerTest
 };
 
 ContentSettingBubbleControllerTest::ContentSettingBubbleControllerTest()
-    : TabContentsTestHarness(),
+    : ChromeRenderViewHostTestHarness(),
       browser_thread_(BrowserThread::UI, &message_loop_) {
 }
 
@@ -82,7 +82,7 @@ TEST_F(ContentSettingBubbleControllerTest, Init) {
       [parent.get() orderBack:nil];
 
     ContentSettingBubbleController* controller = [ContentSettingBubbleController
-        showForModel:new DummyContentSettingBubbleModel(tab_contents(),
+        showForModel:new DummyContentSettingBubbleModel(web_contents(),
                                                         profile(),
                                                         settingsType)
         parentWindow:parent

@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/pref_names.h"
@@ -59,10 +58,10 @@ int GetIdForContentType(const ContentSettingsTypeIdEntry* entries,
 
 ContentSettingTitleAndLinkModel::ContentSettingTitleAndLinkModel(
     Delegate* delegate,
-    TabContents* tab_contents,
+    WebContents* web_contents,
     Profile* profile,
     ContentSettingsType content_type)
-    : ContentSettingBubbleModel(tab_contents, profile, content_type),
+    : ContentSettingBubbleModel(web_contents, profile, content_type),
         delegate_(delegate) {
    // Notifications do not have a bubble.
    DCHECK_NE(content_type, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
@@ -73,8 +72,7 @@ ContentSettingTitleAndLinkModel::ContentSettingTitleAndLinkModel(
 
 void ContentSettingTitleAndLinkModel::SetBlockedResources() {
   TabSpecificContentSettings* settings =
-      TabSpecificContentSettings::FromWebContents(
-          tab_contents()->web_contents());
+      TabSpecificContentSettings::FromWebContents(web_contents());
   const std::set<std::string>& resources = settings->BlockedResourcesForType(
       content_type());
   for (std::set<std::string>::const_iterator it = resources.begin();
@@ -103,11 +101,11 @@ void ContentSettingTitleAndLinkModel::SetTitle() {
   };
   const ContentSettingsTypeIdEntry *title_ids = kBlockedTitleIDs;
   size_t num_title_ids = arraysize(kBlockedTitleIDs);
-  if (tab_contents() &&
+  if (web_contents() &&
       TabSpecificContentSettings::FromWebContents(
-          tab_contents()->web_contents())->IsContentAccessed(content_type()) &&
+          web_contents())->IsContentAccessed(content_type()) &&
       !TabSpecificContentSettings::FromWebContents(
-          tab_contents()->web_contents())->IsContentBlocked(content_type())) {
+          web_contents())->IsContentBlocked(content_type())) {
     title_ids = kAccessedTitleIDs;
     num_title_ids = arraysize(kAccessedTitleIDs);
   } else if (!bubble_content().resource_identifiers.empty()) {
@@ -144,7 +142,7 @@ class ContentSettingTitleLinkAndCustomModel
     : public ContentSettingTitleAndLinkModel {
  public:
   ContentSettingTitleLinkAndCustomModel(Delegate* delegate,
-                                        TabContents* tab_contents,
+                                        WebContents* web_contents,
                                         Profile* profile,
                                         ContentSettingsType content_type);
   virtual ~ContentSettingTitleLinkAndCustomModel() {}
@@ -156,11 +154,11 @@ class ContentSettingTitleLinkAndCustomModel
 
 ContentSettingTitleLinkAndCustomModel::ContentSettingTitleLinkAndCustomModel(
     Delegate* delegate,
-    TabContents* tab_contents,
+    WebContents* web_contents,
     Profile* profile,
     ContentSettingsType content_type)
     : ContentSettingTitleAndLinkModel(
-          delegate, tab_contents, profile, content_type) {
+          delegate, web_contents, profile, content_type) {
   SetCustomLink();
 }
 
@@ -180,7 +178,7 @@ class ContentSettingSingleRadioGroup
     : public ContentSettingTitleLinkAndCustomModel {
  public:
   ContentSettingSingleRadioGroup(Delegate* delegate,
-                                 TabContents* tab_contents,
+                                 WebContents* web_contents,
                                  Profile* profile,
                                  ContentSettingsType content_type);
   virtual ~ContentSettingSingleRadioGroup();
@@ -200,10 +198,10 @@ class ContentSettingSingleRadioGroup
 
 ContentSettingSingleRadioGroup::ContentSettingSingleRadioGroup(
     Delegate* delegate,
-    TabContents* tab_contents,
+    WebContents* web_contents,
     Profile* profile,
     ContentSettingsType content_type)
-    : ContentSettingTitleLinkAndCustomModel(delegate, tab_contents, profile,
+    : ContentSettingTitleLinkAndCustomModel(delegate, web_contents, profile,
                                             content_type),
       block_setting_(CONTENT_SETTING_BLOCK),
       selected_item_(0) {
@@ -234,7 +232,7 @@ bool ContentSettingSingleRadioGroup::settings_changed() const {
 // Initialize the radio group by setting the appropriate labels for the
 // content type and setting the default value based on the content setting.
 void ContentSettingSingleRadioGroup::SetRadioGroup() {
-  GURL url = tab_contents()->web_contents()->GetURL();
+  GURL url = web_contents()->GetURL();
   string16 display_host_utf16;
   net::AppendFormattedHost(
       url,
@@ -358,7 +356,7 @@ void ContentSettingSingleRadioGroup::OnRadioClicked(int radio_index) {
 class ContentSettingCookiesBubbleModel : public ContentSettingSingleRadioGroup {
  public:
   ContentSettingCookiesBubbleModel(Delegate* delegate,
-                                   TabContents* tab_contents,
+                                   WebContents* web_contents,
                                    Profile* profile,
                                    ContentSettingsType content_type);
 
@@ -370,11 +368,11 @@ class ContentSettingCookiesBubbleModel : public ContentSettingSingleRadioGroup {
 
 ContentSettingCookiesBubbleModel::ContentSettingCookiesBubbleModel(
     Delegate* delegate,
-    TabContents* tab_contents,
+    WebContents* web_contents,
     Profile* profile,
     ContentSettingsType content_type)
     : ContentSettingSingleRadioGroup(
-          delegate, tab_contents, profile, content_type) {
+          delegate, web_contents, profile, content_type) {
   DCHECK_EQ(CONTENT_SETTINGS_TYPE_COOKIES, content_type);
   set_custom_link_enabled(true);
 }
@@ -382,28 +380,27 @@ ContentSettingCookiesBubbleModel::ContentSettingCookiesBubbleModel(
 ContentSettingCookiesBubbleModel::~ContentSettingCookiesBubbleModel() {
   if (settings_changed()) {
     InfoBarTabHelper* infobar_helper =
-        InfoBarTabHelper::FromWebContents(tab_contents()->web_contents());
+        InfoBarTabHelper::FromWebContents(web_contents());
     infobar_helper->AddInfoBar(
         new CollectedCookiesInfoBarDelegate(infobar_helper));
   }
 }
 
 void ContentSettingCookiesBubbleModel::OnCustomLinkClicked() {
-  if (!tab_contents())
+  if (!web_contents())
     return;
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN,
       content::Source<TabSpecificContentSettings>(
-          TabSpecificContentSettings::FromWebContents(
-              tab_contents()->web_contents())),
+          TabSpecificContentSettings::FromWebContents(web_contents())),
       content::NotificationService::NoDetails());
-  delegate()->ShowCollectedCookiesDialog(tab_contents());
+  delegate()->ShowCollectedCookiesDialog(web_contents());
 }
 
 class ContentSettingPluginBubbleModel : public ContentSettingSingleRadioGroup {
  public:
   ContentSettingPluginBubbleModel(Delegate* delegate,
-                                  TabContents* tab_contents,
+                                  WebContents* web_contents,
                                   Profile* profile,
                                   ContentSettingsType content_type);
 
@@ -415,35 +412,33 @@ class ContentSettingPluginBubbleModel : public ContentSettingSingleRadioGroup {
 
 ContentSettingPluginBubbleModel::ContentSettingPluginBubbleModel(
     Delegate* delegate,
-    TabContents* tab_contents,
+    WebContents* web_contents,
     Profile* profile,
     ContentSettingsType content_type)
     : ContentSettingSingleRadioGroup(
-          delegate, tab_contents, profile, content_type) {
+          delegate, web_contents, profile, content_type) {
   DCHECK_EQ(content_type, CONTENT_SETTINGS_TYPE_PLUGINS);
-  set_custom_link_enabled(tab_contents &&
+  set_custom_link_enabled(web_contents &&
                           TabSpecificContentSettings::FromWebContents(
-                              tab_contents->web_contents())->
-                                  load_plugins_link_enabled());
+                              web_contents)->load_plugins_link_enabled());
 }
 
 void ContentSettingPluginBubbleModel::OnCustomLinkClicked() {
   content::RecordAction(UserMetricsAction("ClickToPlay_LoadAll_Bubble"));
-  DCHECK(tab_contents());
-  content::RenderViewHost* host =
-      tab_contents()->web_contents()->GetRenderViewHost();
+  DCHECK(web_contents());
+  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
   // TODO(bauerb): We should send the identifiers of blocked plug-ins here.
   host->Send(new ChromeViewMsg_LoadBlockedPlugins(host->GetRoutingID(),
                                                   std::string()));
   set_custom_link_enabled(false);
-  TabSpecificContentSettings::FromWebContents(tab_contents()->web_contents())->
+  TabSpecificContentSettings::FromWebContents(web_contents())->
       set_load_plugins_link_enabled(false);
 }
 
 class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup {
  public:
   ContentSettingPopupBubbleModel(Delegate* delegate,
-                                 TabContents* tab_contents,
+                                 WebContents* web_contents,
                                  Profile* profile,
                                  ContentSettingsType content_type);
   virtual ~ContentSettingPopupBubbleModel() {}
@@ -455,20 +450,20 @@ class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup {
 
 ContentSettingPopupBubbleModel::ContentSettingPopupBubbleModel(
     Delegate* delegate,
-    TabContents* tab_contents,
+    WebContents* web_contents,
     Profile* profile,
     ContentSettingsType content_type)
     : ContentSettingSingleRadioGroup(
-        delegate, tab_contents, profile, content_type) {
+        delegate, web_contents, profile, content_type) {
   SetPopups();
 }
 
 
 void ContentSettingPopupBubbleModel::SetPopups() {
-  std::vector<content::WebContents*> blocked_contents;
-  BlockedContentTabHelper::FromWebContents(tab_contents()->web_contents())->
+  std::vector<WebContents*> blocked_contents;
+  BlockedContentTabHelper::FromWebContents(web_contents())->
       GetBlockedContents(&blocked_contents);
-  for (std::vector<content::WebContents*>::const_iterator
+  for (std::vector<WebContents*>::const_iterator
        i = blocked_contents.begin(); i != blocked_contents.end(); ++i) {
     std::string title(UTF16ToUTF8((*i)->GetTitle()));
     // The popup may not have committed a load yet, in which case it won't
@@ -478,16 +473,15 @@ void ContentSettingPopupBubbleModel::SetPopups() {
     PopupItem popup_item;
     popup_item.title = title;
     popup_item.image = FaviconTabHelper::FromWebContents(*i)->GetFavicon();
-    popup_item.tab_contents = TabContents::FromWebContents(*i);
+    popup_item.web_contents = *i;
     add_popup(popup_item);
   }
 }
 
 void ContentSettingPopupBubbleModel::OnPopupClicked(int index) {
-  if (tab_contents()) {
-    BlockedContentTabHelper::FromWebContents(tab_contents()->web_contents())->
-        LaunchForContents(
-            bubble_content().popup_items[index].tab_contents->web_contents());
+  if (web_contents()) {
+    BlockedContentTabHelper::FromWebContents(web_contents())->
+        LaunchForContents(bubble_content().popup_items[index].web_contents);
   }
 }
 
@@ -495,7 +489,7 @@ class ContentSettingDomainListBubbleModel
     : public ContentSettingTitleAndLinkModel {
  public:
   ContentSettingDomainListBubbleModel(Delegate* delegate,
-                                      TabContents* tab_contents,
+                                      WebContents* web_contents,
                                       Profile* profile,
                                       ContentSettingsType content_type);
   virtual ~ContentSettingDomainListBubbleModel() {}
@@ -508,11 +502,11 @@ class ContentSettingDomainListBubbleModel
 
 ContentSettingDomainListBubbleModel::ContentSettingDomainListBubbleModel(
     Delegate* delegate,
-    TabContents* tab_contents,
+    WebContents* web_contents,
     Profile* profile,
     ContentSettingsType content_type)
     : ContentSettingTitleAndLinkModel(
-        delegate, tab_contents, profile, content_type) {
+        delegate, web_contents, profile, content_type) {
   DCHECK_EQ(CONTENT_SETTINGS_TYPE_GEOLOCATION, content_type) <<
       "SetDomains currently only supports geolocation content type";
   SetDomainsAndCustomLink();
@@ -530,8 +524,7 @@ void ContentSettingDomainListBubbleModel::MaybeAddDomainList(
 
 void ContentSettingDomainListBubbleModel::SetDomainsAndCustomLink() {
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(
-          tab_contents()->web_contents());
+      TabSpecificContentSettings::FromWebContents(web_contents());
   const GeolocationSettingsState& settings =
       content_settings->geolocation_settings_state();
   GeolocationSettingsState::FormattedHostsPerState formatted_hosts_per_state;
@@ -557,14 +550,13 @@ void ContentSettingDomainListBubbleModel::SetDomainsAndCustomLink() {
 }
 
 void ContentSettingDomainListBubbleModel::OnCustomLinkClicked() {
-  if (!tab_contents())
+  if (!web_contents())
     return;
   // Reset this embedder's entry to default for each of the requesting
   // origins currently on the page.
-  const GURL& embedder_url = tab_contents()->web_contents()->GetURL();
+  const GURL& embedder_url = web_contents()->GetURL();
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(
-          tab_contents()->web_contents());
+      TabSpecificContentSettings::FromWebContents(web_contents());
   const GeolocationSettingsState::StateMap& state_map =
       content_settings->geolocation_settings_state().state_map();
   HostContentSettingsMap* settings_map =
@@ -585,7 +577,7 @@ class ContentSettingMixedScriptBubbleModel
     : public ContentSettingTitleLinkAndCustomModel {
  public:
   ContentSettingMixedScriptBubbleModel(Delegate* delegate,
-                                       TabContents* tab_contents,
+                                       WebContents* web_contents,
                                        Profile* profile,
                                        ContentSettingsType content_type);
 
@@ -597,32 +589,31 @@ class ContentSettingMixedScriptBubbleModel
 
 ContentSettingMixedScriptBubbleModel::ContentSettingMixedScriptBubbleModel(
     Delegate* delegate,
-    TabContents* tab_contents,
+    WebContents* web_contents,
     Profile* profile,
     ContentSettingsType content_type)
     : ContentSettingTitleLinkAndCustomModel(
-        delegate, tab_contents, profile, content_type) {
+        delegate, web_contents, profile, content_type) {
   DCHECK_EQ(content_type, CONTENT_SETTINGS_TYPE_MIXEDSCRIPT);
   set_custom_link_enabled(true);
 }
 
 void ContentSettingMixedScriptBubbleModel::OnCustomLinkClicked() {
   content::RecordAction(UserMetricsAction("MixedScript_LoadAnyway_Bubble"));
-  DCHECK(tab_contents());
-  content::RenderViewHost* host =
-      tab_contents()->web_contents()->GetRenderViewHost();
+  DCHECK(web_contents());
+  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
   host->Send(new ChromeViewMsg_SetAllowRunningInsecureContent(
       host->GetRoutingID(), true));
 }
 
 ContentSettingRPHBubbleModel::ContentSettingRPHBubbleModel(
     Delegate* delegate,
-    TabContents* tab_contents,
+    WebContents* web_contents,
     Profile* profile,
     ProtocolHandlerRegistry* registry,
     ContentSettingsType content_type)
     : ContentSettingTitleAndLinkModel(
-          delegate, tab_contents, profile, content_type),
+          delegate, web_contents, profile, content_type),
       selected_item_(0),
       registry_(registry),
       pending_handler_(ProtocolHandler::EmptyProtocolHandler()),
@@ -631,7 +622,7 @@ ContentSettingRPHBubbleModel::ContentSettingRPHBubbleModel(
   DCHECK_EQ(CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS, content_type);
 
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(tab_contents->web_contents());
+      TabSpecificContentSettings::FromWebContents(web_contents);
   pending_handler_ = content_settings->pending_protocol_handler();
   previous_handler_ = content_settings->previous_protocol_handler();
 
@@ -666,7 +657,7 @@ ContentSettingRPHBubbleModel::ContentSettingRPHBubbleModel(
   std::string radio_ignore_label =
       l10n_util::GetStringUTF8(IDS_REGISTER_PROTOCOL_HANDLER_IGNORE);
 
-  GURL url = tab_contents->web_contents()->GetURL();
+  GURL url = web_contents->GetURL();
   RadioGroup radio_group;
   radio_group.url = url;
 
@@ -706,11 +697,11 @@ void ContentSettingRPHBubbleModel::OnRadioClicked(int radio_index) {
 void ContentSettingRPHBubbleModel::OnDoneClicked() {
   // The user has one chance to deal with the RPH content setting UI,
   // then we remove it.
-  TabSpecificContentSettings::FromWebContents(tab_contents()->web_contents())->
+  TabSpecificContentSettings::FromWebContents(web_contents())->
       ClearPendingProtocolHandler();
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
-      content::Source<WebContents>(tab_contents()->web_contents()),
+      content::Source<WebContents>(web_contents()),
       content::NotificationService::NoDetails());
 }
 
@@ -720,20 +711,20 @@ void ContentSettingRPHBubbleModel::RegisterProtocolHandler() {
   registry_->RemoveIgnoredHandler(pending_handler_);
 
   registry_->OnAcceptRegisterProtocolHandler(pending_handler_);
-  TabSpecificContentSettings::FromWebContents(tab_contents()->web_contents())->
+  TabSpecificContentSettings::FromWebContents(web_contents())->
       set_pending_protocol_handler_setting(CONTENT_SETTING_ALLOW);
 }
 
 void ContentSettingRPHBubbleModel::UnregisterProtocolHandler() {
   registry_->OnDenyRegisterProtocolHandler(pending_handler_);
-  TabSpecificContentSettings::FromWebContents(tab_contents()->web_contents())->
+  TabSpecificContentSettings::FromWebContents(web_contents())->
       set_pending_protocol_handler_setting(CONTENT_SETTING_BLOCK);
   ClearOrSetPreviousHandler();
 }
 
 void ContentSettingRPHBubbleModel::IgnoreProtocolHandler() {
   registry_->OnIgnoreRegisterProtocolHandler(pending_handler_);
-  TabSpecificContentSettings::FromWebContents(tab_contents()->web_contents())->
+  TabSpecificContentSettings::FromWebContents(web_contents())->
       set_pending_protocol_handler_setting(CONTENT_SETTING_DEFAULT);
   ClearOrSetPreviousHandler();
 }
@@ -750,48 +741,48 @@ void ContentSettingRPHBubbleModel::ClearOrSetPreviousHandler() {
 ContentSettingBubbleModel*
     ContentSettingBubbleModel::CreateContentSettingBubbleModel(
         Delegate* delegate,
-        TabContents* tab_contents,
+        WebContents* web_contents,
         Profile* profile,
         ContentSettingsType content_type) {
   if (content_type == CONTENT_SETTINGS_TYPE_COOKIES) {
-    return new ContentSettingCookiesBubbleModel(delegate, tab_contents, profile,
+    return new ContentSettingCookiesBubbleModel(delegate, web_contents, profile,
                                                 content_type);
   }
   if (content_type == CONTENT_SETTINGS_TYPE_POPUPS) {
-    return new ContentSettingPopupBubbleModel(delegate, tab_contents, profile,
+    return new ContentSettingPopupBubbleModel(delegate, web_contents, profile,
                                               content_type);
   }
   if (content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
-    return new ContentSettingDomainListBubbleModel(delegate, tab_contents,
+    return new ContentSettingDomainListBubbleModel(delegate, web_contents,
                                                    profile, content_type);
   }
   if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS) {
-    return new ContentSettingPluginBubbleModel(delegate, tab_contents, profile,
+    return new ContentSettingPluginBubbleModel(delegate, web_contents, profile,
                                                content_type);
   }
   if (content_type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT) {
-    return new ContentSettingMixedScriptBubbleModel(delegate, tab_contents,
+    return new ContentSettingMixedScriptBubbleModel(delegate, web_contents,
                                                     profile, content_type);
   }
   if (content_type == CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS) {
     ProtocolHandlerRegistry* registry =
         ProtocolHandlerRegistryFactory::GetForProfile(profile);
-    return new ContentSettingRPHBubbleModel(delegate, tab_contents, profile,
+    return new ContentSettingRPHBubbleModel(delegate, web_contents, profile,
                                             registry, content_type);
   }
-  return new ContentSettingSingleRadioGroup(delegate, tab_contents, profile,
+  return new ContentSettingSingleRadioGroup(delegate, web_contents, profile,
                                             content_type);
 }
 
 ContentSettingBubbleModel::ContentSettingBubbleModel(
-    TabContents* tab_contents,
+    WebContents* web_contents,
     Profile* profile,
     ContentSettingsType content_type)
-    : tab_contents_(tab_contents),
+    : web_contents_(web_contents),
       profile_(profile),
       content_type_(content_type) {
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                 content::Source<WebContents>(tab_contents->web_contents()));
+                 content::Source<WebContents>(web_contents));
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::Source<Profile>(profile_));
 }
@@ -825,9 +816,9 @@ void ContentSettingBubbleModel::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED) {
-    DCHECK_EQ(tab_contents_->web_contents(),
+    DCHECK_EQ(web_contents_,
               content::Source<WebContents>(source).ptr());
-    tab_contents_ = NULL;
+    web_contents_ = NULL;
   } else {
     DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
     DCHECK_EQ(profile_, content::Source<Profile>(source).ptr());

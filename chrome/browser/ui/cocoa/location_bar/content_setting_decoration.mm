@@ -280,7 +280,7 @@ bool ContentSettingDecoration::OnMousePressed(NSRect frame) {
   ContentSettingBubbleModel* model =
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           browser->content_setting_bubble_model_delegate(),
-          tabContents, profile_,
+          tabContents->web_contents(), profile_,
           content_setting_image_model_->get_content_settings_type());
   [ContentSettingBubbleController showForModel:model
                                   parentWindow:[field window]
