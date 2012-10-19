@@ -101,7 +101,6 @@ void RemoveUserInternal(const std::string& user_email,
 
 // static
 void UserManager::RegisterPrefs(PrefService* local_state) {
-  LOG(ERROR) << "UserManager::RegisterPrefs";
   local_state->RegisterListPref(kLoggedInUsers, PrefService::UNSYNCABLE_PREF);
   local_state->RegisterDictionaryPref(kUserOAuthTokenStatus,
                                       PrefService::UNSYNCABLE_PREF);
@@ -209,9 +208,6 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
     WallpaperManager::Get()->EnsureLoggedInUserWallpaperLoaded();
   }
 
-  // Make sure we persist new user data to Local State.
-  prefs->CommitPendingWrite();
-
   NotifyOnLogin();
 }
 
@@ -251,10 +247,6 @@ void UserManagerImpl::SessionStarted() {
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
-  if (is_current_user_new_) {
-    // Make sure we persist new user data to Local State.
-    g_browser_process->local_state()->CommitPendingWrite();
-  }
 }
 
 void UserManagerImpl::RemoveUser(const std::string& email,
