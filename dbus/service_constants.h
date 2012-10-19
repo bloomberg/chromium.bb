@@ -693,6 +693,23 @@ const char kVendorOUIListProperty[] = "OUIList";
 const char kCarrierGenericUMTS[] = "Generic UMTS";
 const char kCarrierSprint[] = "Sprint";
 const char kCarrierVerizon[] = "Verizon Wireless";
+
+// Geolocation property field names.
+// Reference:
+//    https://devsite.googleplex.com/maps/documentation/business/geolocation/
+// Cell tower object property names.
+const char kGeoCellIdProperty[] = "cellId";
+const char kGeoLocationAreaCodeProperty[] = "locationAreaCode";
+const char kGeoMobileCountryCodeProperty[] = "mobileCountryCode";
+const char kGeoMobileNetworkCodeProperty[] = "mobileNetworkCode";
+const char kGeoTimingAdvanceProperty[] = "timingAdvance";
+// WiFi access point property names.
+const char kGeoMacAddressProperty[] = "macAddress";
+const char kGeoChannelProperty[] = "channel";
+const char kGeoSignalToNoiseRatioProperty[] = "signalToNoiseRatio";
+// Common property names.
+const char kGeoAgeProperty[] = "age";
+const char kGeoSignalStrengthProperty[] = "signalStrength";
 }  // namespace shill
 
 namespace cashew {
