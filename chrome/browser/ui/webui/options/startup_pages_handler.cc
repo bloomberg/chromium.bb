@@ -201,6 +201,12 @@ void StartupPagesHandler::EditStartupPage(const ListValue* args) {
 void StartupPagesHandler::DragDropStartupPage(const ListValue* args) {
   CHECK_EQ(args->GetSize(), 2U);
 
+  // TODO(dcheng): Due to http://crbug.com/122102, we can receive drag and drop
+  // events even if there are no entries in the model. Remove this check once
+  // that bug is fixed.
+  if (startup_custom_pages_table_model_->RowCount() == 0)
+    return;
+
   std::string value;
   int to_index;
 
