@@ -4,7 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/path_service.h"
-#include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/panels/native_panel.h"
@@ -16,6 +16,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,24 +26,13 @@
 
 using extensions::Extension;
 
-namespace {
-// This test extension has icons specified.
-const FilePath::CharType* kPanelTestExtensionFilePath =
-    FILE_PATH_LITERAL("panels/test_extension");
-};
-
 class PanelExtensionBrowserTest : public ExtensionBrowserTest {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnablePanels);
-  }
-
-  const Extension* LoadTestExtension() {
-    FilePath manifest_path;
-    PathService::Get(chrome::DIR_TEST_DATA, &manifest_path);
-    manifest_path = manifest_path.Append(kPanelTestExtensionFilePath);
-    return LoadExtension(manifest_path);
+    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
+    test_data_dir_ = test_data_dir_.AppendASCII("panels");
   }
 
   Panel* CreatePanelFromExtension(const Extension* extension) const {
@@ -82,7 +72,8 @@ class PanelExtensionBrowserTest : public ExtensionBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, PanelAppIcon) {
-  const Extension* extension = LoadTestExtension();
+  const Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("test_extension"));
   Panel* panel = CreatePanelFromExtension(extension);
 
   // Wait for the app icon gets fully loaded.
@@ -105,9 +96,33 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, PanelAppIcon) {
 // (crbug.com/151484)
 IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest,
                        ClosePanelBeforeIconLoadingCompleted) {
-  const Extension* extension = LoadTestExtension();
+  const Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("test_extension"));
   Panel* panel = CreatePanelFromExtension(extension);
 
   // Close tha panel without waiting for the app icon loaded.
   panel->Close();
+}
+
+class PanelExtensionApiTest : public ExtensionApiTest {
+ protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kEnablePanels);
+  }
+};
+
+#if defined(OS_LINUX) || defined(USE_AURA)
+// Focus test fails if there is no window manager on Linux.
+// Aura panels have different behavior that do not apply to this test.
+#define MAYBE_FocusChangeEventOnMinimize DISABLED_FocusChangeEventOnMinimize
+#else
+#define MAYBE_FocusChangeEventOnMinimize FocusChangeEventOnMinimize
+#endif
+IN_PROC_BROWSER_TEST_F(PanelExtensionApiTest,
+                       MAYBE_FocusChangeEventOnMinimize) {
+  // This is needed so the subsequently created panels can be activated.
+  // On a Mac, it transforms background-only test process into foreground one.
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  ASSERT_TRUE(RunExtensionTest("panels/focus_change_on_minimize")) << message_;
 }

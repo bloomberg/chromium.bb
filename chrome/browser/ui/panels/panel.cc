@@ -676,14 +676,12 @@ void Panel::OnActiveStateChanged(bool active) {
   if (panel_strip_)
     panel_strip_->OnPanelActiveStateChanged(this);
 
-  // Send extension event about window becoming active.
-  if (active) {
-    ExtensionService* service =
-        extensions::ExtensionSystem::Get(profile())->extension_service();
-    if (service) {
-      service->window_event_router()->OnActiveWindowChanged(
-          extension_window_controller_.get());
-    }
+  // Send extension event about window changing active state.
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile())->extension_service();
+  if (service) {
+    service->window_event_router()->OnActiveWindowChanged(
+        active ? extension_window_controller_.get() : NULL);
   }
 
   content::NotificationService::current()->Notify(
