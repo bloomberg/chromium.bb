@@ -11,6 +11,7 @@
 #include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#import "base/mac/scoped_nsexception_enabler.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/stringprintf.h"
@@ -68,7 +69,13 @@ class AuxiliaryProfilesImpl {
 void AuxiliaryProfilesImpl::GetAddressBookMeCard() {
   profiles_.clear();
 
-  ABAddressBook* addressBook = [ABAddressBook sharedAddressBook];
+  // +[ABAddressBook sharedAddressBook] throws an exception internally in
+  // circumstances that aren't clear. The exceptions are only observed in crash
+  // reports, so it is unknown whether they would be caught by AppKit and nil
+  // returned, or if they would take down the app. In either case, avoid
+  // crashing. http://crbug.com/129022
+  ABAddressBook* addressBook = base::mac::PerformSelectorIgnoringExceptions(
+      NSClassFromString(@"ABAddressBook"), @selector(sharedAddressBook));
   ABPerson* me = [addressBook me];
   if (!me)
     return;
