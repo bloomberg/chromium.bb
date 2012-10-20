@@ -510,7 +510,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleOnNavigateBack) {
 
 // Tests that inspector will reattach to inspected page when it is reloaded
 // after a crash. See http://crbug.com/101952
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestReattachAfterCrash) {
+// DISABLED: crbug.com/156985
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestReattachAfterCrash) {
   OpenDevToolsWindow(kDebuggerTestPage);
 
   content::CrashTab(GetInspectedTab());
