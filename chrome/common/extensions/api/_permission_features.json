@@ -213,8 +213,16 @@
   },
   "metricsPrivate": {
     "channel": "stable",
-    "extension_types": ["extension", "packaged_app"],
-    "location": "component"
+    "extension_types": ["extension", "packaged_app", "platform_app"],
+    "whitelist": [
+      // The file manager is a component extension, and it can currently use
+      // whitelisted interfaces without being on the corresponding whitelist.
+      // Adding it to this whitelist documents its dependency, however, and also
+      // doesn't hurt anything.
+      "hhaomjibdihmijegdhdafkllkbggdgoj",  // File manager
+      "gbkeegbaiigmenfmjfclcdgdpimamgkj",  // Quickoffice
+      "ionpfmkccalenbmnddpbmocokhaknphg"   // Quickoffice dev
+    ]
   },
   "notifications": {
     "channel": "stable",
