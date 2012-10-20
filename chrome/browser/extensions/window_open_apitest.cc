@@ -370,7 +370,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenExtension) {
   GURL start_url(std::string("chrome-extension://") +
       last_loaded_extension_id_ + "/test.html");
   ui_test_utils::NavigateToURL(browser(), start_url);
-  WebContents* newtab;
+  WebContents* newtab = NULL;
   ASSERT_NO_FATAL_FAILURE(OpenWindow(chrome::GetActiveWebContents(browser()),
                           start_url.Resolve("newtab.html"), true, &newtab));
 
@@ -405,7 +405,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenNoPrivileges) {
       test_data_dir_.AppendASCII("uitest").AppendASCII("window_open")));
 
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  WebContents* newtab;
+  WebContents* newtab = NULL;
   ASSERT_NO_FATAL_FAILURE(OpenWindow(chrome::GetActiveWebContents(browser()),
       GURL(std::string("chrome-extension://") + last_loaded_extension_id_ +
           "/newtab.html"), false, &newtab));
