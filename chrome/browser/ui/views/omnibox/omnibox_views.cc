@@ -4,32 +4,24 @@
 
 #include "chrome/browser/ui/views/omnibox/omnibox_views.h"
 
-#include "base/command_line.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
-#include "ui/base/ui_base_switches.h"
+#include "ui/views/controls/textfield/textfield.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 #include "chrome/browser/ui/views/omnibox/omnibox_view_win.h"
 #endif
 
-bool UseOmniboxViews() {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  static bool kUseOmniboxViews = CommandLine::ForCurrentProcess()->
-                                     HasSwitch(switches::kEnableViewsTextfield);
-  return kUseOmniboxViews;
-#endif
-  return true;
-}
-
 OmniboxViewViews* GetOmniboxViewViews(OmniboxView* view) {
-  return UseOmniboxViews() ? static_cast<OmniboxViewViews*>(view) : NULL;
+  return views::Textfield::IsViewsTextfieldEnabled() ?
+      static_cast<OmniboxViewViews*>(view) : NULL;
 }
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 OmniboxViewWin* GetOmniboxViewWin(OmniboxView* view) {
-  return UseOmniboxViews() ? NULL : static_cast<OmniboxViewWin*>(view);
+  return views::Textfield::IsViewsTextfieldEnabled() ?
+      NULL : static_cast<OmniboxViewWin*>(view);
 }
 #endif
 
@@ -41,10 +33,9 @@ OmniboxView* CreateOmniboxView(OmniboxEditController* controller,
                                LocationBarView* location_bar,
                                views::View* popup_parent_view) {
 #if defined(OS_WIN) && !defined(USE_AURA)
-  if (!UseOmniboxViews())
+  if (!views::Textfield::IsViewsTextfieldEnabled())
     return new OmniboxViewWin(controller, toolbar_model, location_bar,
-                              command_updater, popup_window_mode, location_bar,
-                              popup_parent_view);
+        command_updater, popup_window_mode, location_bar, popup_parent_view);
 #endif
   OmniboxViewViews* omnibox = new OmniboxViewViews(controller, toolbar_model,
       profile, command_updater, popup_window_mode, location_bar);

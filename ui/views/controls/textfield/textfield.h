@@ -48,6 +48,9 @@ class VIEWS_EXPORT Textfield : public View {
     STYLE_LOWERCASE = 1 << 1
   };
 
+  // Returns true if the build or commandline dictates NativeTextfieldViews use.
+  static bool IsViewsTextfieldEnabled();
+
   Textfield();
   explicit Textfield(StyleFlags style);
   virtual ~Textfield();

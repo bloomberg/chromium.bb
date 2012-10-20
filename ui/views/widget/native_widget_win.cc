@@ -33,7 +33,7 @@
 #include "ui/gfx/screen.h"
 #include "ui/views/accessibility/native_view_accessibility_win.h"
 #include "ui/views/controls/native_control_win.h"
-#include "ui/views/controls/textfield/native_textfield_views.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/drag_utils.h"
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/focus/view_storage.h"
@@ -49,11 +49,6 @@
 #include "ui/views/win/fullscreen_handler.h"
 #include "ui/views/win/hwnd_message_handler.h"
 #include "ui/views/window/native_frame_view.h"
-
-#if !defined(USE_AURA)
-#include "base/command_line.h"
-#include "ui/base/ui_base_switches.h"
-#endif
 
 #pragma comment(lib, "dwmapi.lib")
 
@@ -250,12 +245,8 @@ bool NativeWidgetWin::HasCapture() const {
 }
 
 InputMethod* NativeWidgetWin::CreateInputMethod() {
-#if !defined(USE_AURA)
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kEnableViewsTextfield))
-    return NULL;
-#endif
-  return new InputMethodWin(GetMessageHandler(), GetMessageHandler()->hwnd());
+  return views::Textfield::IsViewsTextfieldEnabled() ?
+      new InputMethodWin(GetMessageHandler(), GetNativeWindow()) : NULL;
 }
 
 internal::InputMethodDelegate* NativeWidgetWin::GetInputMethodDelegate() {
