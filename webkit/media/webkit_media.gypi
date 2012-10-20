@@ -131,6 +131,8 @@
           # -gstabs, used in the official builds, causes an ICE. Simply remove
           # it.
           'cflags!': ['-gstabs'],
+          # Allow the plugin wrapper to find the CDM in the same directory.
+          'ldflags': ['-Wl,-rpath=\$$ORIGIN']
         }],
         ['OS=="win"', {
           'type': 'shared_library',
