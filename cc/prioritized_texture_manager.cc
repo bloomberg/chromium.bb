@@ -53,7 +53,7 @@ void CCPrioritizedTextureManager::prioritizeTextures()
 
     // Copy all textures into a vector and sort them.
     for (TextureSet::iterator it = m_textures.begin(); it != m_textures.end(); ++it)
-        sortedTextures.append(*it);
+        sortedTextures.push_back(*it);
     std::sort(sortedTextures.begin(), sortedTextures.end(), compareTextures);
 
     m_memoryAvailableBytes = m_maxMemoryLimitBytes;
