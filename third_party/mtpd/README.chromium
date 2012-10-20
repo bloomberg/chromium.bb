@@ -1,0 +1,14 @@
+Name: mtpd
+URL: http://www.chromium.org
+Version: None
+License: BSD
+License File: ../../LICENSE.chromium_os
+Date: 2012-10-17
+Security Critical: yes.
+
+Description:
+Mtpd is a daemon that lets programs talk to Media Transfer Protocol (MTP)
+devices over D-Bus.
+
+Local Modifications:
+None.

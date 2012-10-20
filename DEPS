@@ -529,6 +529,11 @@ deps_os = {
       "/trunk/deps/third_party/libmtp@163169",
 
     # Used on Linux only. CrOS already has a copy.
+    "src/third_party/mtpd/source":
+      Var("chromiumos_git") + "/platform/mtpd.git" +
+      "@47f8e78eefbeeda76ec43cac3d2bdc54a010115c",
+
+    # Used on Linux only. CrOS already has a copy.
     "src/third_party/cros_dbus_cplusplus/source":
       Var("chromiumos_git") + "/third_party/dbus-cplusplus.git" +
       "@5e8f6d9db5c2abfb91d91f751184f25bb5cd0900",
