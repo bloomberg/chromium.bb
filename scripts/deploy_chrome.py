@@ -13,6 +13,7 @@ import time
 import urlparse
 
 from chromite.lib import cros_build_lib
+from chromite.lib import commandline
 from chromite.lib import osutils
 from chromite.lib import remote_access as remote
 from chromite.lib import sudo
@@ -27,6 +28,7 @@ KERNEL_B_PARTITION = 4
 KILL_PROC_MAX_WAIT = 10
 POST_KILL_WAIT = 2
 
+MOUNT_RW_COMMAND = 'mount -o remount,rw /'
 
 # Convenience RunCommand methods
 DebugRunCommand = functools.partial(
@@ -73,11 +75,22 @@ def _ExtractChrome(src, dest):
 
 class DeployChrome(object):
   """Wraps the core deployment functionality."""
-  def __init__(self, options, tempdir):
+  def __init__(self, options, tempdir, remote_access=None):
+    """Initialize the class.
+
+    Arguments:
+      options: Optparse result structure.
+      tempdir: Scratch space for the class.  Caller has responsibility to clean
+        it up.
+      remote_access:  For test purposes.  Supply the RemoteAccess instance to
+        use.  Used for deploy_chrome_unittest.py to supply a mock.
+    """
     self.tempdir = tempdir
     self.options = options
     self.chrome_dir = os.path.join(tempdir, 'chrome')
-    self.host = remote.RemoteAccess(options.to, tempdir, port=options.port)
+    self.host = remote_access
+    if self.host is None:
+      self.host = remote.RemoteAccess(options.to, tempdir, port=options.port)
     self.start_ui_needed = False
 
   def _FetchChrome(self):
@@ -194,11 +207,11 @@ class DeployChrome(object):
     # Mount root partition as read/write
     if not self._CheckRootfsWriteable():
       logging.info('Mounting rootfs as writeable...')
-      result = self.host.RemoteSh('mount -o remount,rw /', error_code_ok=True)
+      result = self.host.RemoteSh(MOUNT_RW_COMMAND, error_code_ok=True)
       if result.returncode:
         self._DisableRootfsVerification()
         logging.info('Trying again to mount rootfs as writeable...')
-        self.host.RemoteSh('mount -o remount,rw /')
+        self.host.RemoteSh(MOUNT_RW_COMMAND)
 
       if not self._CheckRootfsWriteable():
         cros_build_lib.Die('Root partition still read-only')
@@ -234,11 +247,16 @@ class DeployChrome(object):
     self._Deploy()
 
 
-def check_gs_path(option, opt, value):
+def check_gs_path(_option, _opt, value):
   """Convert passed-in path to gs:// path."""
-  parsed = urlparse.urlparse(value.rstrip('/ '))
+  value = value.rstrip('/')
+  if value.startswith('gs://'):
+    return value
+
+  parsed = urlparse.urlparse(value)
   # pylint: disable=E1101
   path = parsed.path.lstrip('/')
+
   if parsed.hostname.startswith('sandbox.google.com'):
     # Sandbox paths are 'storage/<bucket>/<path_to_object>', so strip out the
     # first component.
@@ -248,23 +266,17 @@ def check_gs_path(option, opt, value):
   return 'gs://%s' % path
 
 
-def check_path(option, opt, value):
-  """Expand the local path"""
-  return osutils.ExpandPath(value)
-
-
-class CustomOption(optparse.Option):
+class CustomOption(commandline.Option):
   """Subclass Option class to implement path evaluation."""
-  TYPES = optparse.Option.TYPES + ('path', 'gs_path')
+  TYPES = optparse.Option.TYPES + ('gs_path',)
   TYPE_CHECKER = optparse.Option.TYPE_CHECKER.copy()
-  TYPE_CHECKER['path'] = check_path
   TYPE_CHECKER['gs_path'] = check_gs_path
 
 
-def _ParseCommandLine(argv):
-  """Create the parser, parse args, and run environment-independent checks."""
-  usage = 'usage: %prog [--] [command]'
-  parser = optparse.OptionParser(usage=usage, option_class=CustomOption)
+def _CreateParser():
+  """Create our custom parser."""
+  usage = 'usage: %prog [--]'
+  parser = commandline.OptionParser(usage=usage,)
 
   parser.add_option('--force', action='store_true', default=False,
                     help=('Skip all prompts (i.e., for disabling of rootfs '
@@ -280,7 +292,12 @@ def _ParseCommandLine(argv):
                     help=('The IP address of the CrOS device to deploy to.'))
   parser.add_option('-v', '--verbose', action='store_true', default=False,
                     help=('Show more debug output.'))
+  return parser
 
+
+def _ParseCommandLine(argv):
+  """Parse args, and run environment-independent checks."""
+  parser = _CreateParser()
   (options, args) = parser.parse_args(argv)
 
   if not options.gs_path and not options.local_path:
@@ -293,7 +310,7 @@ def _ParseCommandLine(argv):
   return options, args
 
 
-def _PostParseCheck(options, args):
+def _PostParseCheck(options, _args):
   """Perform some usage validation (after we've parsed the arguments
 
   Args:
