@@ -2456,10 +2456,10 @@
    bug_148865
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN16RenderThreadImpl4InitEv
-   fun:_ZN16RenderThreadImplC2ERKSs
-   fun:_ZN16RenderThreadImplC1ERKSs
-   fun:_ZN21WebRTCAudioDeviceTest5SetUpEv
+   fun:_ZN7content16RenderThreadImpl4InitEv
+   fun:_ZN7content16RenderThreadImplC2ERKSs
+   fun:_ZN7content16RenderThreadImplC1ERKSs
+   fun:_ZN7content21WebRTCAudioDeviceTest5SetUpEv
 }
 {
    bug_155053a
