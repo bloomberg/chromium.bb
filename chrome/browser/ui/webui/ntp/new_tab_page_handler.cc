@@ -23,8 +23,18 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-static const char kDefaultPageTypeHistogram[] =
-    "NewTabPage.DefaultPageType";
+namespace {
+
+const char kDefaultPageTypeHistogram[] = "NewTabPage.DefaultPageType";
+
+enum PromoAction {
+  PROMO_VIEWED = 0,
+  PROMO_CLOSED,
+  PROMO_LINK_CLICKED,
+  PROMO_ACTION_MAX,
+};
+
+}  // namespace
 
 NewTabPageHandler::NewTabPageHandler() : page_switch_count_(0) {
 }
@@ -57,6 +67,9 @@ void NewTabPageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("notificationPromoViewed",
       base::Bind(&NewTabPageHandler::HandleNotificationPromoViewed,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("notificationPromoLinkClicked",
+      base::Bind(&NewTabPageHandler::HandleNotificationPromoLinkClicked,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("bubblePromoClosed",
       base::Bind(&NewTabPageHandler::HandleBubblePromoClosed,
                  base::Unretained(this)));
@@ -75,29 +88,40 @@ void NewTabPageHandler::RegisterMessages() {
 }
 
 void NewTabPageHandler::HandleNotificationPromoClosed(const ListValue* args) {
-  UMA_HISTOGRAM_BOOLEAN("NewTabPage.Promo.Notification.Closed", true);
+  UMA_HISTOGRAM_ENUMERATION("NewTabPage.Promo.Notification",
+                            PROMO_CLOSED, PROMO_ACTION_MAX);
   NotificationPromo::HandleClosed(Profile::FromWebUI(web_ui()),
                                   NotificationPromo::NTP_NOTIFICATION_PROMO);
   Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED);
 }
 
 void NewTabPageHandler::HandleNotificationPromoViewed(const ListValue* args) {
-  UMA_HISTOGRAM_BOOLEAN("NewTabPage.Promo.Notification.Viewed", true);
+  UMA_HISTOGRAM_ENUMERATION("NewTabPage.Promo.Notification",
+                            PROMO_VIEWED, PROMO_ACTION_MAX);
   if (NotificationPromo::HandleViewed(Profile::FromWebUI(web_ui()),
           NotificationPromo::NTP_NOTIFICATION_PROMO)) {
     Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED);
   }
 }
 
+void NewTabPageHandler::HandleNotificationPromoLinkClicked(
+    const ListValue* args) {
+  DVLOG(1) << "HandleNotificationPromoLinkClicked";
+  UMA_HISTOGRAM_ENUMERATION("NewTabPage.Promo.Notification",
+                            PROMO_LINK_CLICKED, PROMO_ACTION_MAX);
+}
+
 void NewTabPageHandler::HandleBubblePromoClosed(const ListValue* args) {
-  UMA_HISTOGRAM_BOOLEAN("NewTabPage.Promo.Bubble.Closed", true);
+  UMA_HISTOGRAM_ENUMERATION("NewTabPage.Promo.Bubble",
+                            PROMO_CLOSED, PROMO_ACTION_MAX);
   NotificationPromo::HandleClosed(Profile::FromWebUI(web_ui()),
                                   NotificationPromo::NTP_BUBBLE_PROMO);
   Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED);
 }
 
 void NewTabPageHandler::HandleBubblePromoViewed(const ListValue* args) {
-  UMA_HISTOGRAM_BOOLEAN("NewTabPage.Promo.Bubble.Viewed", true);
+  UMA_HISTOGRAM_ENUMERATION("NewTabPage.Promo.Bubble",
+                            PROMO_VIEWED, PROMO_ACTION_MAX);
   if (NotificationPromo::HandleViewed(Profile::FromWebUI(web_ui()),
                                       NotificationPromo::NTP_BUBBLE_PROMO)) {
     Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED);
@@ -106,7 +130,8 @@ void NewTabPageHandler::HandleBubblePromoViewed(const ListValue* args) {
 
 void NewTabPageHandler::HandleBubblePromoLinkClicked(const ListValue* args) {
   DVLOG(1) << "HandleBubblePromoLinkClicked";
-  UMA_HISTOGRAM_BOOLEAN("NewTabPage.Promo.Bubble.LinkClicked", true);
+  UMA_HISTOGRAM_ENUMERATION("NewTabPage.Promo.Bubble",
+                            PROMO_LINK_CLICKED, PROMO_ACTION_MAX);
 }
 
 void NewTabPageHandler::HandlePageSelected(const ListValue* args) {

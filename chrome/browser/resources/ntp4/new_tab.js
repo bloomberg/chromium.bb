@@ -227,7 +227,7 @@ cr.define('ntp', function() {
           'selected');
 
       if (loadTimeData.valueExists('notificationPromoText')) {
-        var promo = loadTimeData.getString('notificationPromoText');
+        var promoText = loadTimeData.getString('notificationPromoText');
         var tags = ['IMG'];
         var attrs = {
           src: function(node, value) {
@@ -235,7 +235,16 @@ cr.define('ntp', function() {
                    /^data\:image\/(?:png|gif|jpe?g)/.test(value);
           },
         };
-        showNotification(parseHtmlSubset(promo, tags, attrs), [], function() {
+
+        var promo = parseHtmlSubset(promoText, tags, attrs);
+        var promoLink = promo.querySelector('a');
+        if (promoLink) {
+          promoLink.addEventListener('click', function(e) {
+            chrome.send('notificationPromoLinkClicked');
+          });
+        }
+
+        showNotification(promo, [], function() {
           chrome.send('notificationPromoClosed');
         }, 60000);
         chrome.send('notificationPromoViewed');
