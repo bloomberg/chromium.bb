@@ -6,6 +6,7 @@
 #define UI_VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_WRAPPER_H_
 
 #include "base/string16.h"
+#include "base/i18n/rtl.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
 
@@ -43,6 +44,9 @@ class VIEWS_EXPORT NativeTextfieldWrapper {
   // Adds the specified text to the text already displayed by the wrapped native
   // text field.
   virtual void AppendText(const string16& text) = 0;
+
+  // Returns the text direction.
+  virtual base::i18n::TextDirection GetTextDirection() const = 0;
 
   // Gets the text that is selected in the wrapped native text field.
   virtual string16 GetSelectedText() const = 0;

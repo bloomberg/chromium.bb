@@ -761,12 +761,17 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
          textfield_->GetCursorPosition() == textfield_->text().length());
   }
 
-  // Though the Textfield usually handles the right-arrow key, we need to
-  // handle it if we have gray text (Instant suggestion) that needs to be
-  // committed.
-  if (event.key_code() == ui::VKEY_RIGHT &&
-      textfield_->GetCursorPosition() == textfield_->text().length()) {
-    return model()->CommitSuggestedText(true);
+  // Though the Textfield usually handles the right-arrow key for LTR text or
+  // left-arrow key for RTL text, we need to handle it if we have gray text
+  // (Instant suggestion) that needs to be committed.
+  if (textfield_->GetCursorPosition() == textfield_->text().length()) {
+    base::i18n::TextDirection direction = textfield_->GetTextDirection();
+    if ((direction == base::i18n::LEFT_TO_RIGHT &&
+         event.key_code() == ui::VKEY_RIGHT) ||
+        (direction == base::i18n::RIGHT_TO_LEFT &&
+         event.key_code() == ui::VKEY_LEFT)) {
+      return model()->CommitSuggestedText(true);
+    }
   }
 
   return false;

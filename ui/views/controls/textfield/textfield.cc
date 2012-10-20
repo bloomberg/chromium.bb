@@ -160,6 +160,11 @@ void Textfield::AppendText(const string16& text) {
     native_wrapper_->AppendText(text);
 }
 
+base::i18n::TextDirection Textfield::GetTextDirection() const {
+  return native_wrapper_ ? native_wrapper_->GetTextDirection() :
+      base::i18n::UNKNOWN_DIRECTION;
+}
+
 void Textfield::SelectAll(bool reversed) {
   if (native_wrapper_)
     native_wrapper_->SelectAll(reversed);
