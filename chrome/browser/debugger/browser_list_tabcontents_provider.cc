@@ -86,13 +86,12 @@ std::string BrowserListTabContentsProvider::GetPageThumbnailData(
 }
 
 RenderViewHost* BrowserListTabContentsProvider::CreateNewTarget() {
-  for (BrowserList::const_iterator it = BrowserList::begin(),
-       end = BrowserList::end(); it != end; ++it) {
-    TabContents* tab_contents = chrome::AddSelectedTabWithURL(
-        *it,
-        GURL(chrome::kAboutBlankURL),
-        content::PAGE_TRANSITION_LINK);
-    return tab_contents->web_contents()->GetRenderViewHost();
-  }
-  return NULL;
+  if (BrowserList::empty())
+    return NULL;
+
+  TabContents* tab_contents = chrome::AddSelectedTabWithURL(
+      *BrowserList::begin(),
+      GURL(chrome::kAboutBlankURL),
+      content::PAGE_TRANSITION_LINK);
+  return tab_contents->web_contents()->GetRenderViewHost();
 }
