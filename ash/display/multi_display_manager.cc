@@ -317,7 +317,9 @@ const gfx::Display& MultiDisplayManager::GetDisplayNearestWindow(
     return DisplayController::GetPrimaryDisplay();
   const RootWindow* root = window->GetRootWindow();
   MultiDisplayManager* manager = const_cast<MultiDisplayManager*>(this);
-  return root ? manager->FindDisplayForRootWindow(root) : GetInvalidDisplay();
+  return root ?
+      manager->FindDisplayForRootWindow(root) :
+      *manager->GetDisplayAt(0);
 }
 
 const gfx::Display& MultiDisplayManager::GetDisplayNearestPoint(
