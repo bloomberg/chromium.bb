@@ -40,6 +40,15 @@ const char kClientName[] = "Chromium";
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
 const size_t kMaxFormCacheSize = 16;
+
+// Log the contents of the upload request
+static void LogUploadRequest(const GURL& url, const std::string& signature,
+                             const std::string& form_xml) {
+  VLOG(2) << url;
+  VLOG(2) << signature;
+  VLOG(2) << form_xml;
+}
+
 };
 
 struct AutofillDownloadManager::FormRequestData {
@@ -124,6 +133,8 @@ bool AutofillDownloadManager::StartUploadRequest(
   if (!form.EncodeUploadRequest(available_field_types, form_was_autofilled,
                                 &form_xml))
     return false;
+
+  LogUploadRequest(form.source_url(), form.FormSignature(), form_xml);
 
   FormRequestData request_data;
   request_data.form_signatures.push_back(form.FormSignature());
