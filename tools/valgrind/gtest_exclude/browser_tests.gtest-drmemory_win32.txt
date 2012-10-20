@@ -67,3 +67,7 @@ ChromeContentBrowserClientBrowserTest.*
 ThreadedCompositorTest.*
 WorkerDevToolsSanityTest.*
 PolicyPrefsSettingsBannerTestInstance*
+# DrM-i#1052-c#6
+PreferencesBrowserTest.*
+OptionsBrowserTest.*
+PolicyPrefsTestInstance*
