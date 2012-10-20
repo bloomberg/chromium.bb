@@ -130,7 +130,7 @@ class TestShellNetworkDelegate : public net::NetworkDelegate {
   virtual int OnHeadersReceived(
       net::URLRequest* request,
       const net::CompletionCallback& callback,
-      net::HttpResponseHeaders* original_response_headers,
+      const net::HttpResponseHeaders* original_response_headers,
       scoped_refptr<net::HttpResponseHeaders>*
           override_response_headers) OVERRIDE {
     return net::OK;

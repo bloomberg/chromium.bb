@@ -242,7 +242,7 @@ void ChromeNetworkDelegate::OnSendHeaders(
 int ChromeNetworkDelegate::OnHeadersReceived(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
-    net::HttpResponseHeaders* original_response_headers,
+    const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers) {
   return ExtensionWebRequestEventRouter::GetInstance()->OnHeadersReceived(
       profile_, extension_info_map_.get(), request, callback,

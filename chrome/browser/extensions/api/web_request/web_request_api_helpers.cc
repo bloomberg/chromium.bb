@@ -240,7 +240,7 @@ EventResponseDelta* CalculateOnHeadersReceivedDelta(
     const std::string& extension_id,
     const base::Time& extension_install_time,
     bool cancel,
-    net::HttpResponseHeaders* old_response_headers,
+    const net::HttpResponseHeaders* old_response_headers,
     ResponseHeaders* new_response_headers) {
   EventResponseDelta* result =
       new EventResponseDelta(extension_id, extension_install_time);

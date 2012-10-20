@@ -355,7 +355,7 @@ struct ExtensionWebRequestEventRouter::BlockedRequest {
 
   // The response headers that were received from the server. Only valid for
   // OnHeadersReceived.
-  scoped_refptr<net::HttpResponseHeaders> original_response_headers;
+  scoped_refptr<const net::HttpResponseHeaders> original_response_headers;
 
   // Location where to override response headers. Only valid for
   // OnHeadersReceived.
@@ -669,7 +669,7 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
     ExtensionInfoMap* extension_info_map,
     net::URLRequest* request,
     const net::CompletionCallback& callback,
-    net::HttpResponseHeaders* original_response_headers,
+    const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers) {
   // We hide events from the system context as well as sensitive requests.
   if (!profile ||
@@ -1295,7 +1295,7 @@ helpers::EventResponseDelta* CalculateDelta(
           response->cancel, old_headers, new_headers);
     }
     case ExtensionWebRequestEventRouter::kOnHeadersReceived: {
-      net::HttpResponseHeaders* old_headers =
+      const net::HttpResponseHeaders* old_headers =
           blocked_request->original_response_headers.get();
       helpers::ResponseHeaders* new_headers =
           response->response_headers.get();
@@ -1476,7 +1476,7 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
     const std::string& event_name,
     net::URLRequest* request,
     extensions::RequestStage request_stage,
-    net::HttpResponseHeaders* original_response_headers) {
+    const net::HttpResponseHeaders* original_response_headers) {
   // Rules of the current |profile| may apply but we need to check also whether
   // there are applicable rules from extensions whose background page
   // spans from regular to incognito mode.

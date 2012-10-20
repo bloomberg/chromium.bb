@@ -181,7 +181,7 @@ class ExtensionWebRequestEventRouter
       ExtensionInfoMap* extension_info_map,
       net::URLRequest* request,
       const net::CompletionCallback& callback,
-      net::HttpResponseHeaders* original_response_headers,
+      const net::HttpResponseHeaders* original_response_headers,
       scoped_refptr<net::HttpResponseHeaders>* override_response_headers);
 
   // Dispatches the OnAuthRequired event to any extensions whose filters match
@@ -346,7 +346,7 @@ class ExtensionWebRequestEventRouter
       const std::string& event_name,
       net::URLRequest* request,
       extensions::RequestStage request_stage,
-      net::HttpResponseHeaders* original_response_headers);
+      const net::HttpResponseHeaders* original_response_headers);
 
   // Called when the RulesRegistry is ready to unblock a request that was
   // waiting for said event.

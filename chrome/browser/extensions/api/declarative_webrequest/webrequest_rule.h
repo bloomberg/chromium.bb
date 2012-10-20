@@ -50,14 +50,14 @@ class WebRequestRule {
         : request(request), stage(stage),
           original_response_headers(NULL) {}
     RequestData(net::URLRequest* request, RequestStage stage,
-                net::HttpResponseHeaders* original_response_headers)
+                const net::HttpResponseHeaders* original_response_headers)
         : request(request), stage(stage),
           original_response_headers(original_response_headers) {}
     net::URLRequest* request;
     RequestStage stage;
     // Additional information about requests that is not
     // available in all request stages.
-    net::HttpResponseHeaders* original_response_headers;
+    const net::HttpResponseHeaders* original_response_headers;
   };
 
   WebRequestRule(const GlobalRuleId& id,

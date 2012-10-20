@@ -782,7 +782,7 @@ WebRequestAddResponseHeaderAction::CreateDelta(
     const std::string& extension_id,
     const base::Time& extension_install_time) const {
   CHECK(request_data.stage & GetStages());
-  net::HttpResponseHeaders* headers =
+  const net::HttpResponseHeaders* headers =
       request_data.original_response_headers;
   if (!headers)
     return LinkedPtrEventResponseDelta(NULL);
@@ -827,7 +827,7 @@ WebRequestRemoveResponseHeaderAction::CreateDelta(
     const std::string& extension_id,
     const base::Time& extension_install_time) const {
   CHECK(request_data.stage & GetStages());
-  net::HttpResponseHeaders* headers =
+  const net::HttpResponseHeaders* headers =
       request_data.original_response_headers;
   if (!headers)
     return LinkedPtrEventResponseDelta(NULL);
