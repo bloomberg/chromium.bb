@@ -10,18 +10,17 @@
 #include "CCDrawQuad.h"
 #include "CCRenderPass.h"
 #include "CCResourceProvider.h"
-#include "IntRect.h"
 
 namespace cc {
 
 class CCRenderPassDrawQuad : public CCDrawQuad {
 public:
-    static scoped_ptr<CCRenderPassDrawQuad> create(const CCSharedQuadState*, const IntRect&, CCRenderPass::Id renderPassId, bool isReplica, CCResourceProvider::ResourceId maskResourceId, const IntRect& contentsChangedSinceLastFrame, float maskTexCoordScaleX, float maskTexCoordScaleY, float maskTexCoordOffsetX, float maskTexCoordOffsetY);
+    static scoped_ptr<CCRenderPassDrawQuad> create(const CCSharedQuadState*, const gfx::Rect&, CCRenderPass::Id renderPassId, bool isReplica, CCResourceProvider::ResourceId maskResourceId, const gfx::Rect& contentsChangedSinceLastFrame, float maskTexCoordScaleX, float maskTexCoordScaleY, float maskTexCoordOffsetX, float maskTexCoordOffsetY);
 
     CCRenderPass::Id renderPassId() const { return m_renderPassId; }
     bool isReplica() const { return m_isReplica; }
     CCResourceProvider::ResourceId maskResourceId() const { return m_maskResourceId; }
-    const IntRect& contentsChangedSinceLastFrame() const { return m_contentsChangedSinceLastFrame; }
+    const gfx::Rect& contentsChangedSinceLastFrame() const { return m_contentsChangedSinceLastFrame; }
 
     static const CCRenderPassDrawQuad* materialCast(const CCDrawQuad*);
     float maskTexCoordScaleX() const { return m_maskTexCoordScaleX; }
@@ -32,12 +31,12 @@ public:
     scoped_ptr<CCRenderPassDrawQuad> copy(const CCSharedQuadState* copiedSharedQuadState, CCRenderPass::Id copiedRenderPassId) const;
 
 private:
-    CCRenderPassDrawQuad(const CCSharedQuadState*, const IntRect&, CCRenderPass::Id renderPassId, bool isReplica, CCResourceProvider::ResourceId maskResourceId, const IntRect& contentsChangedSinceLastFrame, float maskTexCoordScaleX, float maskTexCoordScaleY, float maskTexCoordOffsetX, float maskTexCoordOffsetY);
+    CCRenderPassDrawQuad(const CCSharedQuadState*, const gfx::Rect&, CCRenderPass::Id renderPassId, bool isReplica, CCResourceProvider::ResourceId maskResourceId, const gfx::Rect& contentsChangedSinceLastFrame, float maskTexCoordScaleX, float maskTexCoordScaleY, float maskTexCoordOffsetX, float maskTexCoordOffsetY);
 
     CCRenderPass::Id m_renderPassId;
     bool m_isReplica;
     CCResourceProvider::ResourceId m_maskResourceId;
-    IntRect m_contentsChangedSinceLastFrame;
+    gfx::Rect m_contentsChangedSinceLastFrame;
     float m_maskTexCoordScaleX;
     float m_maskTexCoordScaleY;
     float m_maskTexCoordOffsetX;

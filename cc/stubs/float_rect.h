@@ -13,6 +13,11 @@
 #else
 #include "third_party/WebKit/Source/WebCore/platform/graphics/FloatRect.h"
 #endif
+#include "ui/gfx/rect_f.h"
+
+#if defined(OS_MACOSX)
+#include <ApplicationServices/ApplicationServices.h>
+#endif
 
 namespace cc {
 
@@ -49,6 +54,18 @@ public:
         :WebCore::FloatRect(rect)
     {
     }
+
+    explicit FloatRect(gfx::RectF rect)
+        : WebCore::FloatRect(rect.x(), rect.y(), rect.width(), rect.height())
+    {
+    }
+
+    operator gfx::RectF() const { return gfx::RectF(x(), y(), width(), height()); }
+
+private:
+#if defined(OS_MACOSX)
+    operator CGRect() const;
+#endif
 };
 
 }

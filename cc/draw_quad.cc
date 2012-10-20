@@ -12,7 +12,6 @@
 #include "CCRenderPassDrawQuad.h"
 #include "CCTileDrawQuad.h"
 #include "CCYUVVideoDrawQuad.h"
-#include "IntRect.h"
 #include "base/logging.h"
 #include "cc/solid_color_draw_quad.h"
 #include "cc/stream_video_draw_quad.h"
@@ -20,7 +19,7 @@
 
 namespace cc {
 
-CCDrawQuad::CCDrawQuad(const CCSharedQuadState* sharedQuadState, Material material, const IntRect& quadRect)
+CCDrawQuad::CCDrawQuad(const CCSharedQuadState* sharedQuadState, Material material, const gfx::Rect& quadRect)
     : m_sharedQuadState(sharedQuadState)
     , m_sharedQuadStateId(sharedQuadState->id)
     , m_material(material)
@@ -33,20 +32,18 @@ CCDrawQuad::CCDrawQuad(const CCSharedQuadState* sharedQuadState, Material materi
     DCHECK(m_material != Invalid);
 }
 
-IntRect CCDrawQuad::opaqueRect() const
+gfx::Rect CCDrawQuad::opaqueRect() const
 {
     if (opacity() != 1)
-        return IntRect();
+        return gfx::Rect();
     if (m_sharedQuadState->opaque && m_quadOpaque)
         return m_quadRect;
     return m_opaqueRect;
 }
 
-void CCDrawQuad::setQuadVisibleRect(const IntRect& quadVisibleRect)
+void CCDrawQuad::setQuadVisibleRect(gfx::Rect quadVisibleRect)
 {
-    IntRect intersection = quadVisibleRect;
-    intersection.intersect(m_quadRect);
-    m_quadVisibleRect = intersection;
+    m_quadVisibleRect = quadVisibleRect.Intersect(m_quadRect);
 }
 
 unsigned CCDrawQuad::size() const

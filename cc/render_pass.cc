@@ -17,12 +17,12 @@ using WebKit::WebTransformationMatrix;
 
 namespace cc {
 
-scoped_ptr<CCRenderPass> CCRenderPass::create(Id id, IntRect outputRect, const WebKit::WebTransformationMatrix& transformToRootTarget)
+scoped_ptr<CCRenderPass> CCRenderPass::create(Id id, gfx::Rect outputRect, const WebKit::WebTransformationMatrix& transformToRootTarget)
 {
     return make_scoped_ptr(new CCRenderPass(id, outputRect, transformToRootTarget));
 }
 
-CCRenderPass::CCRenderPass(Id id, IntRect outputRect, const WebKit::WebTransformationMatrix& transformToRootTarget)
+CCRenderPass::CCRenderPass(Id id, gfx::Rect outputRect, const WebKit::WebTransformationMatrix& transformToRootTarget)
     : m_id(id)
     , m_transformToRootTarget(transformToRootTarget)
     , m_outputRect(outputRect)

@@ -32,8 +32,8 @@ struct CCRenderPassSize {
     CCQuadList m_quadList;
     CCSharedQuadStateList m_sharedQuadStateList;
     WebKit::WebTransformationMatrix m_transformToRootTarget;
-    IntRect m_outputRect;
-    FloatRect m_damageRect;
+    gfx::Rect m_outputRect;
+    gfx::RectF m_damageRect;
     bool m_hasTransparentBackground;
     bool m_hasOcclusionFromOutsideTargetSurface;
     WebKit::WebFilterOperations m_filters;
@@ -43,12 +43,12 @@ struct CCRenderPassSize {
 TEST(CCRenderPassTest, copyShouldBeIdenticalExceptIdAndQuads)
 {
     CCRenderPass::Id id(3, 2);
-    IntRect outputRect(45, 22, 120, 13);
+    gfx::Rect outputRect(45, 22, 120, 13);
     WebTransformationMatrix transformToRoot(1, 0.5, 0.5, -0.5, -1, 0);
 
     scoped_ptr<CCRenderPass> pass = CCRenderPass::create(id, outputRect, transformToRoot);
 
-    IntRect damageRect(56, 123, 19, 43);
+    gfx::Rect damageRect(56, 123, 19, 43);
     bool hasTransparentBackground = true;
     bool hasOcclusionFromOutsideTargetSurface = true;
     WebFilterOperations filters;
@@ -65,8 +65,8 @@ TEST(CCRenderPassTest, copyShouldBeIdenticalExceptIdAndQuads)
 
     // Stick a quad in the pass, this should not get copied.
     CCTestRenderPass* testPass = static_cast<CCTestRenderPass*>(pass.get());
-    testPass->sharedQuadStateList().append(CCSharedQuadState::create(WebTransformationMatrix(), IntRect(), IntRect(), 1, false));
-    testPass->quadList().append(CCCheckerboardDrawQuad::create(testPass->sharedQuadStateList().last(), IntRect(), SkColor()).PassAs<CCDrawQuad>());
+    testPass->sharedQuadStateList().append(CCSharedQuadState::create(WebTransformationMatrix(), gfx::Rect(), gfx::Rect(), 1, false));
+    testPass->quadList().append(CCCheckerboardDrawQuad::create(testPass->sharedQuadStateList().last(), gfx::Rect(), SkColor()).PassAs<CCDrawQuad>());
 
     CCRenderPass::Id newId(63, 4);
 

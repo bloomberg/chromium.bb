@@ -43,8 +43,6 @@ public:
 
     virtual void viewportChanged() OVERRIDE;
 
-    const FloatQuad& sharedGeometryQuad() const { return m_sharedGeometryQuad; }
-
     // waits for rendering to finish
     virtual void finish() OVERRIDE;
 
@@ -52,12 +50,7 @@ public:
     // puts backbuffer onscreen
     virtual bool swapBuffers() OVERRIDE;
 
-    static void debugGLCall(WebKit::WebGraphicsContext3D*, const char* command, const char* file, int line);
-
-    const GeometryBinding* sharedGeometry() const { return m_sharedGeometry.get(); }
-
     virtual void getFramebufferPixels(void *pixels, const IntRect&) OVERRIDE;
-    bool getFramebufferTexture(CCScopedTexture*, const IntRect& deviceRect);
 
     virtual bool isContextLost() OVERRIDE;
 
@@ -66,15 +59,21 @@ public:
 protected:
     CCRendererGL(CCRendererClient*, CCResourceProvider*);
 
+    static void debugGLCall(WebKit::WebGraphicsContext3D*, const char* command, const char* file, int line);
+
     bool isFramebufferDiscarded() const { return m_isFramebufferDiscarded; }
     bool initialize();
 
+    const FloatQuad& sharedGeometryQuad() const { return m_sharedGeometryQuad; }
+    const GeometryBinding* sharedGeometry() const { return m_sharedGeometry.get(); }
+
+    bool getFramebufferTexture(CCScopedTexture*, const IntRect& deviceRect);
     void releaseRenderPassTextures();
 
     virtual void bindFramebufferToOutputSurface(DrawingFrame&) OVERRIDE;
-    virtual bool bindFramebufferToTexture(DrawingFrame&, const CCScopedTexture*, const IntRect& framebufferRect) OVERRIDE;
-    virtual void setDrawViewportSize(const IntSize&) OVERRIDE;
-    virtual void enableScissorTestRect(const IntRect& scissorRect) OVERRIDE;
+    virtual bool bindFramebufferToTexture(DrawingFrame&, const CCScopedTexture*, const gfx::Rect& framebufferRect) OVERRIDE;
+    virtual void setDrawViewportSize(const gfx::Size&) OVERRIDE;
+    virtual void enableScissorTestRect(const gfx::Rect& scissorRect) OVERRIDE;
     virtual void disableScissorTest() OVERRIDE;
     virtual void clearFramebuffer(DrawingFrame&) OVERRIDE;
     virtual void drawQuad(DrawingFrame&, const CCDrawQuad*) OVERRIDE;
@@ -98,11 +97,11 @@ private:
 
     void setShaderOpacity(float opacity, int alphaLocation);
     void setShaderFloatQuad(const FloatQuad&, int quadLocation);
-    void drawQuadGeometry(const DrawingFrame&, const WebKit::WebTransformationMatrix& drawTransform, const FloatRect& quadRect, int matrixLocation);
+    void drawQuadGeometry(const DrawingFrame&, const WebKit::WebTransformationMatrix& drawTransform, const gfx::RectF& quadRect, int matrixLocation);
 
-    void copyTextureToFramebuffer(const DrawingFrame&, int textureId, const IntRect&, const WebKit::WebTransformationMatrix& drawMatrix);
+    void copyTextureToFramebuffer(const DrawingFrame&, int textureId, const gfx::Rect&, const WebKit::WebTransformationMatrix& drawMatrix);
 
-    bool useScopedTexture(DrawingFrame&, const CCScopedTexture*, const IntRect& viewportRect);
+    bool useScopedTexture(DrawingFrame&, const CCScopedTexture*, const gfx::Rect& viewportRect);
 
     bool makeContextCurrent();
 
@@ -204,7 +203,7 @@ private:
 
     WebKit::WebGraphicsContext3D* m_context;
 
-    IntRect m_swapBufferRect;
+    gfx::Rect m_swapBufferRect;
     bool m_isViewportChanged;
     bool m_isFramebufferDiscarded;
     bool m_discardFramebufferWhenNotVisible;

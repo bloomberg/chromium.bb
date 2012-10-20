@@ -20,7 +20,7 @@ void verifyQuadsExactlyCoverRect(const cc::CCQuadList& quads,
 
     for (size_t i = 0; i < quads.size(); ++i) {
         cc::CCDrawQuad* quad = quads[i];
-        cc::IntRect quadRect = quad->quadRect();
+        cc::IntRect quadRect = cc::IntRect(quad->quadRect());
 
         EXPECT_TRUE(rect.contains(quadRect)) << quadString << i;
         EXPECT_TRUE(remaining.contains(quadRect)) << quadString << i;

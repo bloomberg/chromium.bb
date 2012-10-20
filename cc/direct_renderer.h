@@ -39,12 +39,12 @@ protected:
         const CCRenderPass* currentRenderPass;
         const CCScopedTexture* currentTexture;
 
-        FloatRect rootDamageRect;
+        gfx::RectF rootDamageRect;
 
         WebKit::WebTransformationMatrix projectionMatrix;
         WebKit::WebTransformationMatrix windowMatrix;
         bool flippedY;
-        FloatRect scissorRectInRenderPassSpace;
+        gfx::RectF scissorRectInRenderPassSpace;
     };
 
     class CachedTexture : public CCScopedTexture {
@@ -71,9 +71,9 @@ protected:
     };
 
     static FloatRect quadVertexRect();
-    static void quadRectTransform(WebKit::WebTransformationMatrix* quadRectTransform, const WebKit::WebTransformationMatrix& quadTransform, const FloatRect& quadRect);
-    static void initializeMatrices(DrawingFrame&, const IntRect& drawRect, bool flipY);
-    static IntRect moveScissorToWindowSpace(const DrawingFrame&, FloatRect scissorRect);
+    static void quadRectTransform(WebKit::WebTransformationMatrix* quadRectTransform, const WebKit::WebTransformationMatrix& quadTransform, const gfx::RectF& quadRect);
+    static void initializeMatrices(DrawingFrame&, const gfx::Rect& drawRect, bool flipY);
+    static gfx::Rect moveScissorToWindowSpace(const DrawingFrame&, gfx::RectF scissorRect);
 
     bool haveCachedResources(CCRenderPass::Id) const;
     static IntSize renderPassTextureSize(const CCRenderPass*);
@@ -83,9 +83,9 @@ protected:
     bool useRenderPass(DrawingFrame&, const CCRenderPass*);
 
     virtual void bindFramebufferToOutputSurface(DrawingFrame&) = 0;
-    virtual bool bindFramebufferToTexture(DrawingFrame&, const CCScopedTexture*, const IntRect& framebufferRect) = 0;
-    virtual void setDrawViewportSize(const IntSize&) = 0;
-    virtual void enableScissorTestRect(const IntRect& scissorRect) = 0;
+    virtual bool bindFramebufferToTexture(DrawingFrame&, const CCScopedTexture*, const gfx::Rect& framebufferRect) = 0;
+    virtual void setDrawViewportSize(const gfx::Size&) = 0;
+    virtual void enableScissorTestRect(const gfx::Rect& scissorRect) = 0;
     virtual void disableScissorTest() = 0;
     virtual void clearFramebuffer(DrawingFrame&) = 0;
     virtual void drawQuad(DrawingFrame&, const CCDrawQuad*) = 0;

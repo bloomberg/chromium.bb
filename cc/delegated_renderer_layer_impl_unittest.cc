@@ -88,7 +88,7 @@ static void addRenderPassQuad(CCTestRenderPass* toPass, CCTestRenderPass* contri
 {
     MockCCQuadCuller quadSink(toPass->quadList(), toPass->sharedQuadStateList());
     CCAppendQuadsData data(toPass->id());
-    IntRect outputRect = contributingPass->outputRect();
+    gfx::Rect outputRect = contributingPass->outputRect();
     CCSharedQuadState* sharedState = quadSink.useSharedQuadState(CCSharedQuadState::create(WebTransformationMatrix(), outputRect, outputRect, 1, false));
     scoped_ptr<CCRenderPassDrawQuad> quad = CCRenderPassDrawQuad::create(sharedState, outputRect, contributingPass->id(), false, 0, outputRect, 0, 0, 0, 0);
     quadSink.append(quad.PassAs<CCDrawQuad>(), data);
@@ -302,8 +302,8 @@ TEST_F(CCDelegatedRendererLayerImplTestOwnSurface, AddsRenderPasses)
     EXPECT_EQ(0, frame.renderPasses[5]->id().index);
 
     // The DelegatedRendererLayer should have added its RenderPasses to the frame in order.
-    EXPECT_RECT_EQ(IntRect(6, 6, 6, 6), frame.renderPasses[1]->outputRect());
-    EXPECT_RECT_EQ(IntRect(7, 7, 7, 7), frame.renderPasses[2]->outputRect());
+    EXPECT_RECT_EQ(gfx::Rect(6, 6, 6, 6), frame.renderPasses[1]->outputRect());
+    EXPECT_RECT_EQ(gfx::Rect(7, 7, 7, 7), frame.renderPasses[2]->outputRect());
 }
 
 TEST_F(CCDelegatedRendererLayerImplTestOwnSurface, AddsQuadsToContributingRenderPasses)

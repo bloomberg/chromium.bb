@@ -15,14 +15,14 @@ namespace cc {
 
 class CCDebugBorderDrawQuad : public CCDrawQuad {
 public:
-    static scoped_ptr<CCDebugBorderDrawQuad> create(const CCSharedQuadState*, const IntRect&, SkColor, int width);
+    static scoped_ptr<CCDebugBorderDrawQuad> create(const CCSharedQuadState*, const gfx::Rect&, SkColor, int width);
 
     SkColor color() const { return m_color; };
     int width() const { return m_width; }
 
     static const CCDebugBorderDrawQuad* materialCast(const CCDrawQuad*);
 private:
-    CCDebugBorderDrawQuad(const CCSharedQuadState*, const IntRect&, SkColor, int width);
+    CCDebugBorderDrawQuad(const CCSharedQuadState*, const gfx::Rect&, SkColor, int width);
 
     SkColor m_color;
     int m_width;

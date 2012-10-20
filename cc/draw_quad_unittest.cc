@@ -28,8 +28,8 @@ namespace {
 TEST(CCDrawQuadTest, copySharedQuadState)
 {
     WebTransformationMatrix quadTransform(1, 0.5, 0, 1, 0.5, 0);
-    IntRect visibleContentRect(10, 12, 14, 16);
-    IntRect clippedRectInTarget(19, 21, 23, 25);
+    gfx::Rect visibleContentRect(10, 12, 14, 16);
+    gfx::Rect clippedRectInTarget(19, 21, 23, 25);
     float opacity = 0.25;
     bool opaque = true;
     int id = 3;
@@ -49,8 +49,8 @@ TEST(CCDrawQuadTest, copySharedQuadState)
 scoped_ptr<CCSharedQuadState> createSharedQuadState()
 {
     WebTransformationMatrix quadTransform(1, 0.5, 0, 1, 0.5, 0);
-    IntRect visibleContentRect(10, 12, 14, 16);
-    IntRect clippedRectInTarget(19, 21, 23, 25);
+    gfx::Rect visibleContentRect(10, 12, 14, 16);
+    gfx::Rect clippedRectInTarget(19, 21, 23, 25);
     float opacity = 1;
     bool opaque = false;
     int id = 3;
@@ -83,8 +83,8 @@ void compareDrawQuad(CCDrawQuad* quad, CCDrawQuad* copy, CCSharedQuadState* copy
     copySharedState->id = 5;
 
 #define QUAD_DATA \
-    IntRect quadRect(30, 40, 50, 60); \
-    IntRect quadVisibleRect(40, 50, 30, 20); \
+    gfx::Rect quadRect(30, 40, 50, 60); \
+    gfx::Rect quadVisibleRect(40, 50, 30, 20);
 
 #define SETUP_AND_COPY_QUAD(Type, quad) \
     quad->setQuadVisibleRect(quadVisibleRect); \
@@ -179,7 +179,7 @@ TEST(CCDrawQuadTest, copyDebugBorderDrawQuad)
 
 TEST(CCDrawQuadTest, copyIOSurfaceDrawQuad)
 {
-    IntSize size(58, 95);
+    gfx::Size size(58, 95);
     unsigned textureId = 72;
     CCIOSurfaceDrawQuad::Orientation orientation = CCIOSurfaceDrawQuad::Unflipped;
 
@@ -195,7 +195,7 @@ TEST(CCDrawQuadTest, copyRenderPassDrawQuad)
     CCRenderPass::Id renderPassId(22, 64);
     bool isReplica = true;
     CCResourceProvider::ResourceId maskResourceId = 78;
-    IntRect contentsChangedSinceLastFrame(42, 11, 74, 24);
+    gfx::Rect contentsChangedSinceLastFrame(42, 11, 74, 24);
     float maskTexCoordScaleX = 33;
     float maskTexCoordScaleY = 19;
     float maskTexCoordOffsetX = -45;
@@ -239,23 +239,23 @@ TEST(CCDrawQuadTest, copyTextureDrawQuad)
 {
     unsigned resourceId = 82;
     bool premultipliedAlpha = true;
-    FloatRect uvRect(0.5, 224, -51, 36);
+    gfx::RectF uvRect(0.5, 224, -51, 36);
     bool flipped = true;
 
     CREATE_SHARED_STATE();
     CREATE_QUAD_4(CCTextureDrawQuad, resourceId, premultipliedAlpha, uvRect, flipped);
     EXPECT_EQ(resourceId, copyQuad->resourceId());
     EXPECT_EQ(premultipliedAlpha, copyQuad->premultipliedAlpha());
-    EXPECT_EQ(uvRect, copyQuad->uvRect());
+    EXPECT_FLOAT_RECT_EQ(uvRect, copyQuad->uvRect());
     EXPECT_EQ(flipped, copyQuad->flipped());
 }
 
 TEST(CCDrawQuadTest, copyTileDrawQuad)
 {
-    IntRect opaqueRect(33, 44, 22, 33);
+    gfx::Rect opaqueRect(33, 44, 22, 33);
     unsigned resourceId = 104;
-    IntPoint textureOffset(-31, 47);
-    IntSize textureSize(85, 32);
+    gfx::Point textureOffset(-31, 47);
+    gfx::Size textureSize(85, 32);
     GLint textureFilter = 82;
     bool swizzleContents = true;
     bool leftEdgeAA = true;

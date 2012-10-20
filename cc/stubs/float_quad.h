@@ -5,6 +5,8 @@
 #ifndef CC_STUBS_FLOATQUAD_H_
 #define CC_STUBS_FLOATQUAD_H_
 
+#include "ui/gfx/rect.h"
+#include "ui/gfx/rect_f.h"
 #include "FloatPoint.h"
 #include "FloatRect.h"
 #if INSIDE_WEBKIT_BUILD
@@ -47,6 +49,16 @@ public:
 
     FloatQuad(const WebCore::FloatQuad& quad)
         : WebCore::FloatQuad(quad)
+    {
+    }
+
+    FloatQuad(const gfx::Rect& rect)
+        : WebCore::FloatQuad(WebCore::IntRect(rect.x(), rect.y(), rect.width(), rect.height()))
+    {
+    }
+
+    FloatQuad(const gfx::RectF& rect)
+        : WebCore::FloatQuad(WebCore::FloatRect(rect.x(), rect.y(), rect.width(), rect.height()))
     {
     }
 };

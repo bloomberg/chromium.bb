@@ -10,12 +10,12 @@
 
 namespace cc {
 
-scoped_ptr<CCTextureDrawQuad> CCTextureDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, unsigned resourceId, bool premultipliedAlpha, const FloatRect& uvRect, bool flipped)
+scoped_ptr<CCTextureDrawQuad> CCTextureDrawQuad::create(const CCSharedQuadState* sharedQuadState, const gfx::Rect& quadRect, unsigned resourceId, bool premultipliedAlpha, const gfx::RectF& uvRect, bool flipped)
 {
     return make_scoped_ptr(new CCTextureDrawQuad(sharedQuadState, quadRect, resourceId, premultipliedAlpha, uvRect, flipped));
 }
 
-CCTextureDrawQuad::CCTextureDrawQuad(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, unsigned resourceId, bool premultipliedAlpha, const FloatRect& uvRect, bool flipped)
+CCTextureDrawQuad::CCTextureDrawQuad(const CCSharedQuadState* sharedQuadState, const gfx::Rect& quadRect, unsigned resourceId, bool premultipliedAlpha, const gfx::RectF& uvRect, bool flipped)
     : CCDrawQuad(sharedQuadState, CCDrawQuad::TextureContent, quadRect)
     , m_resourceId(resourceId)
     , m_premultipliedAlpha(premultipliedAlpha)

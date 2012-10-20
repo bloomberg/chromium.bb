@@ -11,6 +11,7 @@
 #else
 #include "third_party/WebKit/Source/WebCore/platform/graphics/IntPoint.h"
 #endif
+#include "ui/gfx/point.h"
 
 namespace cc {
 
@@ -33,6 +34,8 @@ public:
     {
 
     }
+
+    operator gfx::Point() const { return gfx::Point(x(), y()); }
 };
 
 }

@@ -12,6 +12,7 @@
 #else
 #include "third_party/WebKit/Source/WebCore/platform/graphics/FloatPoint.h"
 #endif
+#include "ui/gfx/point_f.h"
 
 namespace cc {
 
@@ -44,6 +45,8 @@ public:
     {
 
     }
+
+    operator gfx::PointF() const { return gfx::PointF(x(), y()); }
 };
 
 }

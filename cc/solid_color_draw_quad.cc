@@ -10,12 +10,12 @@
 
 namespace cc {
 
-scoped_ptr<CCSolidColorDrawQuad> CCSolidColorDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color)
+scoped_ptr<CCSolidColorDrawQuad> CCSolidColorDrawQuad::create(const CCSharedQuadState* sharedQuadState, const gfx::Rect& quadRect, SkColor color)
 {
     return make_scoped_ptr(new CCSolidColorDrawQuad(sharedQuadState, quadRect, color));
 }
 
-CCSolidColorDrawQuad::CCSolidColorDrawQuad(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, SkColor color)
+CCSolidColorDrawQuad::CCSolidColorDrawQuad(const CCSharedQuadState* sharedQuadState, const gfx::Rect& quadRect, SkColor color)
     : CCDrawQuad(sharedQuadState, CCDrawQuad::SolidColor, quadRect)
     , m_color(color)
 {

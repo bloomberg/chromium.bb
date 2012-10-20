@@ -9,7 +9,6 @@
 #include "CCLayerTreeHost.h"
 #include "CCRenderPass.h"
 #include "FloatQuad.h"
-#include "IntRect.h"
 
 namespace cc {
 
@@ -42,7 +41,7 @@ public:
 
     const CCLayerTreeSettings& settings() const { return m_client->settings(); }
 
-    const IntSize& viewportSize() { return m_client->deviceViewportSize(); }
+    gfx::Size viewportSize() { return m_client->deviceViewportSize(); }
     int viewportWidth() { return viewportSize().width(); }
     int viewportHeight() { return viewportSize().height(); }
 

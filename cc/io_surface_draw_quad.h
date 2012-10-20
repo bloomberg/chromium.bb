@@ -6,8 +6,8 @@
 #define CCIOSurfaceDrawQuad_h
 
 #include "CCDrawQuad.h"
-#include "IntSize.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/gfx/size.h"
 
 namespace cc {
 
@@ -20,17 +20,17 @@ public:
       Unflipped
     };
 
-    static scoped_ptr<CCIOSurfaceDrawQuad> create(const CCSharedQuadState*, const IntRect&, const IntSize& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation);
+    static scoped_ptr<CCIOSurfaceDrawQuad> create(const CCSharedQuadState*, const gfx::Rect&, const gfx::Size& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation);
 
-    IntSize ioSurfaceSize() const { return m_ioSurfaceSize; }
+    gfx::Size ioSurfaceSize() const { return m_ioSurfaceSize; }
     unsigned ioSurfaceTextureId() const { return m_ioSurfaceTextureId; }
     Orientation orientation() const { return m_orientation; }
 
     static const CCIOSurfaceDrawQuad* materialCast(const CCDrawQuad*);
 private:
-    CCIOSurfaceDrawQuad(const CCSharedQuadState*, const IntRect&, const IntSize& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation);
+    CCIOSurfaceDrawQuad(const CCSharedQuadState*, const gfx::Rect&, const gfx::Size& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation);
 
-    IntSize m_ioSurfaceSize;
+    gfx::Size m_ioSurfaceSize;
     unsigned m_ioSurfaceTextureId;
     Orientation m_orientation;
 };

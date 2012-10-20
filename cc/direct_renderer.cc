@@ -7,6 +7,7 @@
 #include "CCDirectRenderer.h"
 
 #include "CCMathUtil.h"
+#include "ui/gfx/rect_conversions.h"
 #include <public/WebTransformationMatrix.h>
 #include <vector>
 
@@ -70,7 +71,7 @@ FloatRect CCDirectRenderer::quadVertexRect()
 }
 
 // static
-void CCDirectRenderer::quadRectTransform(WebKit::WebTransformationMatrix* quadRectTransform, const WebKit::WebTransformationMatrix& quadTransform, const FloatRect& quadRect)
+void CCDirectRenderer::quadRectTransform(WebKit::WebTransformationMatrix* quadRectTransform, const WebKit::WebTransformationMatrix& quadTransform, const gfx::RectF& quadRect)
 {
     *quadRectTransform = quadTransform;
     quadRectTransform->translate(0.5 * quadRect.width() + quadRect.x(), 0.5 * quadRect.height() + quadRect.y());
@@ -78,28 +79,28 @@ void CCDirectRenderer::quadRectTransform(WebKit::WebTransformationMatrix* quadRe
 }
 
 // static
-void CCDirectRenderer::initializeMatrices(DrawingFrame& frame, const IntRect& drawRect, bool flipY)
+void CCDirectRenderer::initializeMatrices(DrawingFrame& frame, const gfx::Rect& drawRect, bool flipY)
 {
     if (flipY)
-        frame.projectionMatrix = orthoProjectionMatrix(drawRect.x(), drawRect.maxX(), drawRect.maxY(), drawRect.y());
+        frame.projectionMatrix = orthoProjectionMatrix(drawRect.x(), drawRect.right(), drawRect.bottom(), drawRect.y());
     else
-        frame.projectionMatrix = orthoProjectionMatrix(drawRect.x(), drawRect.maxX(), drawRect.y(), drawRect.maxY());
+        frame.projectionMatrix = orthoProjectionMatrix(drawRect.x(), drawRect.right(), drawRect.y(), drawRect.bottom());
     frame.windowMatrix = windowMatrix(0, 0, drawRect.width(), drawRect.height());
     frame.flippedY = flipY;
 }
 
 // static
-IntRect CCDirectRenderer::moveScissorToWindowSpace(const DrawingFrame& frame, FloatRect scissorRect)
+gfx::Rect CCDirectRenderer::moveScissorToWindowSpace(const DrawingFrame& frame, gfx::RectF scissorRect)
 {
-    IntRect scissorRectInCanvasSpace = enclosingIntRect(scissorRect);
+    gfx::Rect scissorRectInCanvasSpace = gfx::ToEnclosingRect(scissorRect);
     // The scissor coordinates must be supplied in viewport space so we need to offset
     // by the relative position of the top left corner of the current render pass.
-    IntRect framebufferOutputRect = frame.currentRenderPass->outputRect();
-    scissorRectInCanvasSpace.setX(scissorRectInCanvasSpace.x() - framebufferOutputRect.x());
+    gfx::Rect framebufferOutputRect = frame.currentRenderPass->outputRect();
+    scissorRectInCanvasSpace.set_x(scissorRectInCanvasSpace.x() - framebufferOutputRect.x());
     if (frame.flippedY && !frame.currentTexture)
-        scissorRectInCanvasSpace.setY(framebufferOutputRect.height() - (scissorRectInCanvasSpace.maxY() - framebufferOutputRect.y()));
+        scissorRectInCanvasSpace.set_y(framebufferOutputRect.height() - (scissorRectInCanvasSpace.bottom() - framebufferOutputRect.y()));
     else
-        scissorRectInCanvasSpace.setY(scissorRectInCanvasSpace.y() - framebufferOutputRect.y());
+        scissorRectInCanvasSpace.set_y(scissorRectInCanvasSpace.y() - framebufferOutputRect.y());
     return scissorRectInCanvasSpace;
 }
 
@@ -159,7 +160,7 @@ void CCDirectRenderer::drawFrame(const CCRenderPassList& renderPassesInDrawOrder
     frame.renderPassesById = &renderPassesById;
     frame.rootRenderPass = rootRenderPass;
     frame.rootDamageRect = capabilities().usingPartialSwap ? rootRenderPass->damageRect() : rootRenderPass->outputRect();
-    frame.rootDamageRect.intersect(IntRect(IntPoint::zero(), viewportSize()));
+    frame.rootDamageRect = frame.rootDamageRect.Intersect(gfx::Rect(gfx::Point(), viewportSize()));
 
     beginDrawingFrame(frame);
     for (size_t i = 0; i < renderPassesInDrawOrder.size(); ++i)
@@ -175,7 +176,8 @@ void CCDirectRenderer::drawRenderPass(DrawingFrame& frame, const CCRenderPass* r
     frame.scissorRectInRenderPassSpace = frame.currentRenderPass->outputRect();
     if (frame.rootDamageRect != frame.rootRenderPass->outputRect()) {
         WebTransformationMatrix inverseTransformToRoot = frame.currentRenderPass->transformToRootTarget().inverse();
-        frame.scissorRectInRenderPassSpace.intersect(CCMathUtil::projectClippedRect(inverseTransformToRoot, frame.rootDamageRect));
+        gfx::RectF damageRectInRenderPassSpace = CCMathUtil::projectClippedRect(inverseTransformToRoot, cc::FloatRect(frame.rootDamageRect));
+        frame.scissorRectInRenderPassSpace = frame.scissorRectInRenderPassSpace.Intersect(damageRectInRenderPassSpace);
     }
 
     enableScissorTestRect(moveScissorToWindowSpace(frame, frame.scissorRectInRenderPassSpace));
@@ -183,9 +185,8 @@ void CCDirectRenderer::drawRenderPass(DrawingFrame& frame, const CCRenderPass* r
 
     const CCQuadList& quadList = renderPass->quadList();
     for (CCQuadList::constBackToFrontIterator it = quadList.backToFrontBegin(); it != quadList.backToFrontEnd(); ++it) {
-        FloatRect quadScissorRect = frame.scissorRectInRenderPassSpace;
-        quadScissorRect.intersect((*it)->clippedRectInTarget());
-        if (!quadScissorRect.isEmpty()) {
+        gfx::RectF quadScissorRect = frame.scissorRectInRenderPassSpace.Intersect((*it)->clippedRectInTarget());
+        if (!quadScissorRect.IsEmpty()) {
             enableScissorTestRect(moveScissorToWindowSpace(frame, quadScissorRect));
             drawQuad(frame, *it);
         }
@@ -225,7 +226,7 @@ bool CCDirectRenderer::haveCachedResourcesForRenderPassId(CCRenderPass::Id id) c
 // static
 IntSize CCDirectRenderer::renderPassTextureSize(const CCRenderPass* pass)
 {
-    return pass->outputRect().size();
+    return cc::IntSize(pass->outputRect().size());
 }
 
 // static

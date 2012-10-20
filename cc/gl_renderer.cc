@@ -31,6 +31,7 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/rect_conversions.h"
 #include <public/WebGraphicsContext3D.h>
 #include <public/WebSharedGraphicsContext3D.h>
 #include <public/WebVideoFrame.h>
@@ -209,7 +210,7 @@ void CCRendererGL::beginDrawingFrame(DrawingFrame& frame)
     // FIXME: Remove this once framebuffer is automatically recreated on first use
     ensureFramebuffer();
 
-    if (viewportSize().isEmpty())
+    if (viewportSize().IsEmpty())
         return;
 
     TRACE_EVENT0("cc", "CCRendererGL::drawLayers");
@@ -291,7 +292,7 @@ void CCRendererGL::drawCheckerboardQuad(const DrawingFrame& frame, const CCCheck
     const int checkerboardWidth = 16;
     float frequency = 1.0 / checkerboardWidth;
 
-    IntRect tileRect = quad->quadRect();
+    gfx::Rect tileRect = quad->quadRect();
     float texOffsetX = tileRect.x() % checkerboardWidth;
     float texOffsetY = tileRect.y() % checkerboardWidth;
     float texScaleX = tileRect.width();
@@ -312,7 +313,7 @@ void CCRendererGL::drawDebugBorderQuad(const DrawingFrame& frame, const CCDebugB
     GLC(context(), context()->useProgram(program->program()));
 
     // Use the full quadRect for debug quads to not move the edges based on partial swaps.
-    const IntRect& layerRect = quad->quadRect();
+    const gfx::Rect& layerRect = quad->quadRect();
     WebTransformationMatrix renderMatrix = quad->quadTransform();
     renderMatrix.translate(0.5 * layerRect.width() + layerRect.x(), 0.5 * layerRect.height() + layerRect.y());
     renderMatrix.scaleNonUniform(layerRect.width(), layerRect.height());
@@ -376,17 +377,16 @@ scoped_ptr<CCScopedTexture> CCRendererGL::drawBackgroundFilters(DrawingFrame& fr
     DCHECK(!frame.currentTexture);
 
     // FIXME: Do a single readback for both the surface and replica and cache the filtered results (once filter textures are not reused).
-    IntRect deviceRect = enclosingIntRect(CCMathUtil::mapClippedRect(contentsDeviceTransform, sharedGeometryQuad().boundingBox()));
+    gfx::Rect deviceRect = gfx::ToEnclosingRect(CCMathUtil::mapClippedRect(contentsDeviceTransform, sharedGeometryQuad().boundingBox()));
 
     int top, right, bottom, left;
     filters.getOutsets(top, right, bottom, left);
-    deviceRect.move(-left, -top);
-    deviceRect.expand(left + right, top + bottom);
+    deviceRect.Inset(-left, -top, -right, -bottom);
 
-    deviceRect.intersect(frame.currentRenderPass->outputRect());
+    deviceRect = deviceRect.Intersect(frame.currentRenderPass->outputRect());
 
     scoped_ptr<CCScopedTexture> deviceBackgroundTexture = CCScopedTexture::create(m_resourceProvider);
-    if (!getFramebufferTexture(deviceBackgroundTexture.get(), deviceRect))
+    if (!getFramebufferTexture(deviceBackgroundTexture.get(), cc::IntRect(deviceRect)))
         return scoped_ptr<CCScopedTexture>();
 
     SkBitmap filteredDeviceBackground = applyFilters(this, filters, deviceBackgroundTexture.get());
@@ -397,7 +397,7 @@ scoped_ptr<CCScopedTexture> CCRendererGL::drawBackgroundFilters(DrawingFrame& fr
     int filteredDeviceBackgroundTextureId = texture->getTextureHandle();
 
     scoped_ptr<CCScopedTexture> backgroundTexture = CCScopedTexture::create(m_resourceProvider);
-    if (!backgroundTexture->allocate(CCRenderer::ImplPool, quad->quadRect().size(), GL_RGBA, CCResourceProvider::TextureUsageFramebuffer))
+    if (!backgroundTexture->allocate(CCRenderer::ImplPool, cc::IntSize(quad->quadRect().size()), GL_RGBA, CCResourceProvider::TextureUsageFramebuffer))
         return scoped_ptr<CCScopedTexture>();
 
     const CCRenderPass* targetRenderPass = frame.currentRenderPass;
@@ -600,9 +600,9 @@ static void tileUniformLocation(T program, TileProgramUniforms& uniforms)
 
 void CCRendererGL::drawTileQuad(const DrawingFrame& frame, const CCTileDrawQuad* quad)
 {
-    IntRect tileRect = quad->quadVisibleRect();
+    gfx::Rect tileRect = quad->quadVisibleRect();
 
-    FloatRect clampRect(tileRect);
+    gfx::RectF clampRect(tileRect);
     // Clamp texture coordinates to avoid sampling outside the layer
     // by deflating the tile region half a texel or half a texel
     // minus epsilon for one pixel layers. The resulting clamp region
@@ -612,12 +612,11 @@ void CCRendererGL::drawTileQuad(const DrawingFrame& frame, const CCTileDrawQuad*
     const float epsilon = 1 / 1024.0f;
     float clampX = min(0.5, clampRect.width() / 2.0 - epsilon);
     float clampY = min(0.5, clampRect.height() / 2.0 - epsilon);
-    clampRect.inflateX(-clampX);
-    clampRect.inflateY(-clampY);
-    FloatSize clampOffset = clampRect.minXMinYCorner() - FloatRect(tileRect).minXMinYCorner();
+    clampRect.Inset(clampX, clampY, clampX, clampY);
+    gfx::PointF clampOffset = clampRect.origin() - tileRect.origin();
 
-    FloatPoint textureOffset = quad->textureOffset() + clampOffset +
-                               IntPoint(tileRect.location() - quad->quadRect().location());
+    gfx::PointF textureOffset = quad->textureOffset() + clampOffset +
+                                (tileRect.origin() - quad->quadRect().origin());
 
     // Map clamping rectangle to unit square.
     float vertexTexTranslateX = -clampRect.x() / clampRect.width();
@@ -626,7 +625,7 @@ void CCRendererGL::drawTileQuad(const DrawingFrame& frame, const CCTileDrawQuad*
     float vertexTexScaleY = tileRect.height() / clampRect.height();
 
     // Map to normalized texture coordinates.
-    const IntSize& textureSize = quad->textureSize();
+    const gfx::Size& textureSize = quad->textureSize();
     float fragmentTexTranslateX = textureOffset.x() / textureSize.width();
     float fragmentTexTranslateY = textureOffset.y() / textureSize.height();
     float fragmentTexScaleX = clampRect.width() / textureSize.width();
@@ -688,10 +687,10 @@ void CCRendererGL::drawTileQuad(const DrawingFrame& frame, const CCTileDrawQuad*
         GLC(context(), context()->uniform4f(uniforms.vertexTexTransformLocation, vertexTexTranslateX, vertexTexTranslateY, vertexTexScaleX, vertexTexScaleY));
         GLC(context(), context()->uniform4f(uniforms.fragmentTexTransformLocation, fragmentTexTranslateX, fragmentTexTranslateY, fragmentTexScaleX, fragmentTexScaleY));
 
-        FloatPoint bottomRight(tileRect.maxX(), tileRect.maxY());
-        FloatPoint bottomLeft(tileRect.x(), tileRect.maxY());
+        FloatPoint bottomRight(tileRect.right(), tileRect.bottom());
+        FloatPoint bottomLeft(tileRect.x(), tileRect.bottom());
         FloatPoint topLeft(tileRect.x(), tileRect.y());
-        FloatPoint topRight(tileRect.maxX(), tileRect.y());
+        FloatPoint topRight(tileRect.right(), tileRect.y());
 
         // Map points to device space.
         bottomRight = CCMathUtil::mapPoint(deviceTransform, bottomRight, clipped);
@@ -713,9 +712,9 @@ void CCRendererGL::drawTileQuad(const DrawingFrame& frame, const CCTileDrawQuad*
             topEdge = deviceLayerEdges.top();
         if (quad->leftEdgeAA() && tileRect.x() == quad->quadRect().x())
             leftEdge = deviceLayerEdges.left();
-        if (quad->rightEdgeAA() && tileRect.maxX() == quad->quadRect().maxX())
+        if (quad->rightEdgeAA() && tileRect.right() == quad->quadRect().right())
             rightEdge = deviceLayerEdges.right();
-        if (quad->bottomEdgeAA() && tileRect.maxY() == quad->quadRect().maxY())
+        if (quad->bottomEdgeAA() && tileRect.bottom() == quad->quadRect().bottom())
             bottomEdge = deviceLayerEdges.bottom();
 
         float sign = FloatQuad(tileRect).isCounterclockwise() ? -1 : 1;
@@ -761,7 +760,7 @@ void CCRendererGL::drawTileQuad(const DrawingFrame& frame, const CCTileDrawQuad*
     // un-antialiased quad should have and which vertex this is and the float
     // quad passed in via uniform is the actual geometry that gets used to draw
     // it. This is why this centered rect is used and not the original quadRect.
-    FloatRect centeredRect(FloatPoint(-0.5 * tileRect.width(), -0.5 * tileRect.height()), tileRect.size());
+    gfx::RectF centeredRect(gfx::PointF(-0.5 * tileRect.width(), -0.5 * tileRect.height()), tileRect.size());
     drawQuadGeometry(frame, quad->quadTransform(), centeredRect, uniforms.matrixLocation);
 }
 
@@ -881,7 +880,7 @@ void CCRendererGL::drawTextureQuad(const DrawingFrame& frame, const CCTextureDra
         binding.set(textureProgram());
     GLC(context(), context()->useProgram(binding.programId));
     GLC(context(), context()->uniform1i(binding.samplerLocation, 0));
-    const FloatRect& uvRect = quad->uvRect();
+    const gfx::RectF& uvRect = quad->uvRect();
     GLC(context(), context()->uniform4f(binding.texTransformLocation, uvRect.x(), uvRect.y(), uvRect.width(), uvRect.height()));
 
     GLC(context(), context()->activeTexture(GL_TEXTURE0));
@@ -939,7 +938,7 @@ void CCRendererGL::drawIOSurfaceQuad(const DrawingFrame& frame, const CCIOSurfac
 void CCRendererGL::finishDrawingFrame(DrawingFrame& frame)
 {
     m_currentFramebufferLock.reset();
-    m_swapBufferRect.unite(enclosingIntRect(frame.rootDamageRect));
+    m_swapBufferRect = m_swapBufferRect.Union(gfx::ToEnclosingRect(frame.rootDamageRect));
 
     GLC(m_context, m_context->disable(GL_SCISSOR_TEST));
     GLC(m_context, m_context->disable(GL_BLEND));
@@ -993,7 +992,7 @@ void CCRendererGL::setShaderOpacity(float opacity, int alphaLocation)
         GLC(m_context, m_context->uniform1f(alphaLocation, opacity));
 }
 
-void CCRendererGL::drawQuadGeometry(const DrawingFrame& frame, const WebKit::WebTransformationMatrix& drawTransform, const FloatRect& quadRect, int matrixLocation)
+void CCRendererGL::drawQuadGeometry(const DrawingFrame& frame, const WebKit::WebTransformationMatrix& drawTransform, const gfx::RectF& quadRect, int matrixLocation)
 {
     WebTransformationMatrix quadRectMatrix;
     quadRectTransform(&quadRectMatrix, drawTransform, quadRect);
@@ -1004,7 +1003,7 @@ void CCRendererGL::drawQuadGeometry(const DrawingFrame& frame, const WebKit::Web
     GLC(m_context, m_context->drawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0));
 }
 
-void CCRendererGL::copyTextureToFramebuffer(const DrawingFrame& frame, int textureId, const IntRect& rect, const WebTransformationMatrix& drawMatrix)
+void CCRendererGL::copyTextureToFramebuffer(const DrawingFrame& frame, int textureId, const gfx::Rect& rect, const WebTransformationMatrix& drawMatrix)
 {
     const RenderPassProgram* program = renderPassProgram();
 
@@ -1037,7 +1036,7 @@ bool CCRendererGL::swapBuffers()
 
     if (m_capabilities.usingPartialSwap) {
         // If supported, we can save significant bandwidth by only swapping the damaged/scissored region (clamped to the viewport)
-        m_swapBufferRect.intersect(IntRect(IntPoint(), viewportSize()));
+        m_swapBufferRect = m_swapBufferRect.Intersect(gfx::Rect(gfx::Point(), viewportSize()));
         int flippedYPosOfRectBottom = viewportHeight() - m_swapBufferRect.y() - m_swapBufferRect.height();
         m_context->postSubBufferCHROMIUM(m_swapBufferRect.x(), flippedYPosOfRectBottom, m_swapBufferRect.width(), m_swapBufferRect.height());
     } else {
@@ -1046,7 +1045,7 @@ bool CCRendererGL::swapBuffers()
         m_context->prepareTexture();
     }
 
-    m_swapBufferRect = IntRect();
+    m_swapBufferRect = gfx::Rect();
 
     return true;
 }
@@ -1197,7 +1196,7 @@ bool CCRendererGL::getFramebufferTexture(CCScopedTexture* texture, const IntRect
 {
     DCHECK(!texture->id() || (texture->size() == deviceRect.size() && texture->format() == GL_RGB));
 
-    if (!texture->id() && !texture->allocate(CCRenderer::ImplPool, deviceRect.size(), GL_RGB, CCResourceProvider::TextureUsageAny))
+    if (!texture->id() && !texture->allocate(CCRenderer::ImplPool, cc::IntSize(deviceRect.size()), GL_RGB, CCResourceProvider::TextureUsageAny))
         return false;
 
     CCResourceProvider::ScopedWriteLockGL lock(m_resourceProvider, texture->id());
@@ -1207,7 +1206,7 @@ bool CCRendererGL::getFramebufferTexture(CCScopedTexture* texture, const IntRect
     return true;
 }
 
-bool CCRendererGL::useScopedTexture(DrawingFrame& frame, const CCScopedTexture* texture, const IntRect& viewportRect)
+bool CCRendererGL::useScopedTexture(DrawingFrame& frame, const CCScopedTexture* texture, const gfx::Rect& viewportRect)
 {
     DCHECK(texture->id());
     frame.currentRenderPass = 0;
@@ -1222,7 +1221,7 @@ void CCRendererGL::bindFramebufferToOutputSurface(DrawingFrame& frame)
     GLC(m_context, m_context->bindFramebuffer(GL_FRAMEBUFFER, 0));
 }
 
-bool CCRendererGL::bindFramebufferToTexture(DrawingFrame& frame, const CCScopedTexture* texture, const IntRect& framebufferRect)
+bool CCRendererGL::bindFramebufferToTexture(DrawingFrame& frame, const CCScopedTexture* texture, const gfx::Rect& framebufferRect)
 {
     DCHECK(texture->id());
 
@@ -1239,7 +1238,7 @@ bool CCRendererGL::bindFramebufferToTexture(DrawingFrame& frame, const CCScopedT
     return true;
 }
 
-void CCRendererGL::enableScissorTestRect(const IntRect& scissorRect)
+void CCRendererGL::enableScissorTestRect(const gfx::Rect& scissorRect)
 {
     GLC(m_context, m_context->enable(GL_SCISSOR_TEST));
     GLC(m_context, m_context->scissor(scissorRect.x(), scissorRect.y(), scissorRect.width(), scissorRect.height()));
@@ -1250,7 +1249,7 @@ void CCRendererGL::disableScissorTest()
     GLC(m_context, m_context->disable(GL_SCISSOR_TEST));
 }
 
-void CCRendererGL::setDrawViewportSize(const IntSize& viewportSize)
+void CCRendererGL::setDrawViewportSize(const gfx::Size& viewportSize)
 {
     GLC(m_context, m_context->viewport(0, 0, viewportSize.width(), viewportSize.height()));
 }

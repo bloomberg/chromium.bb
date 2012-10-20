@@ -44,7 +44,7 @@ bool CCDelegatedRendererLayerImpl::hasContributingDelegatedRenderPasses() const
 
 void CCDelegatedRendererLayerImpl::setRenderPasses(ScopedPtrVector<CCRenderPass>& renderPassesInDrawOrder)
 {
-    FloatRect oldRootDamage;
+    gfx::RectF oldRootDamage;
     if (!m_renderPassesInDrawOrder.isEmpty())
         oldRootDamage = m_renderPassesInDrawOrder.last()->damageRect();
 
@@ -57,8 +57,8 @@ void CCDelegatedRendererLayerImpl::setRenderPasses(ScopedPtrVector<CCRenderPass>
     renderPassesInDrawOrder.clear();
 
     if (!m_renderPassesInDrawOrder.isEmpty()) {
-        FloatRect newRootDamage = m_renderPassesInDrawOrder.last()->damageRect();
-        m_renderPassesInDrawOrder.last()->setDamageRect(unionRect(oldRootDamage, newRootDamage));
+        gfx::RectF newRootDamage = m_renderPassesInDrawOrder.last()->damageRect();
+        m_renderPassesInDrawOrder.last()->setDamageRect(oldRootDamage.Union(newRootDamage));
     }
 }
 
@@ -154,7 +154,7 @@ void CCDelegatedRendererLayerImpl::appendRenderPassQuads(CCQuadSink& quadSink, C
               // This layer must be drawing to a renderTarget other than itself.
               DCHECK(renderTarget() != this);
 
-              copiedSharedQuadState->clippedRectInTarget = CCMathUtil::mapClippedRect(drawTransform(), copiedSharedQuadState->clippedRectInTarget);
+              copiedSharedQuadState->clippedRectInTarget = CCMathUtil::mapClippedRect(drawTransform(), cc::IntRect(copiedSharedQuadState->clippedRectInTarget));
               copiedSharedQuadState->quadTransform = copiedSharedQuadState->quadTransform * drawTransform();
               copiedSharedQuadState->opacity *= drawOpacity();
             }

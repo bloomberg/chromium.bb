@@ -10,6 +10,7 @@
 #else
 #include "third_party/WebKit/Source/WebCore/platform/graphics/IntSize.h"
 #endif
+#include "ui/gfx/size.h"
 
 namespace cc {
 
@@ -27,6 +28,13 @@ public:
     {
 
     }
+
+    explicit IntSize(gfx::Size size)
+        : WebCore::IntSize(size.width(), size.height())
+    {
+    }
+
+    operator gfx::Size() const { return gfx::Size(width(), height()); }
 };
 
 }

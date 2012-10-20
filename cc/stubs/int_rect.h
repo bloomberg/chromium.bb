@@ -12,6 +12,11 @@
 #else
 #include "third_party/WebKit/Source/WebCore/platform/graphics/IntRect.h"
 #endif
+#include "ui/gfx/rect.h"
+
+#if defined(OS_MACOSX)
+#include <ApplicationServices/ApplicationServices.h>
+#endif
 
 namespace cc {
 
@@ -34,6 +39,18 @@ public:
     {
 
     }
+
+    explicit IntRect(gfx::Rect rect)
+        : WebCore::IntRect(rect.x(), rect.y(), rect.width(), rect.height())
+    {
+    }
+
+    operator gfx::Rect() const { return gfx::Rect(x(), y(), width(), height()); }
+
+private:
+#if defined(OS_MACOSX)
+    operator CGRect() const;
+#endif
 };
 
 }

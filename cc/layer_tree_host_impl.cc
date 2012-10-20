@@ -551,7 +551,7 @@ static void removeRenderPassesRecursive(CCRenderPass::Id removeRenderPassId, CCL
 
 bool CCLayerTreeHostImpl::CullRenderPassesWithCachedTextures::shouldRemoveRenderPass(const CCRenderPassDrawQuad& quad, const FrameData&) const
 {
-    return quad.contentsChangedSinceLastFrame().isEmpty() && m_renderer.haveCachedResourcesForRenderPassId(quad.renderPassId());
+    return quad.contentsChangedSinceLastFrame().IsEmpty() && m_renderer.haveCachedResourcesForRenderPassId(quad.renderPassId());
 }
 
 bool CCLayerTreeHostImpl::CullRenderPassesWithNoQuads::shouldRemoveRenderPass(const CCRenderPassDrawQuad& quad, const FrameData& frame) const

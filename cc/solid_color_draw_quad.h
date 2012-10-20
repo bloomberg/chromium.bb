@@ -15,13 +15,13 @@ namespace cc {
 
 class CCSolidColorDrawQuad : public CCDrawQuad {
 public:
-    static scoped_ptr<CCSolidColorDrawQuad> create(const CCSharedQuadState*, const IntRect&, SkColor);
+    static scoped_ptr<CCSolidColorDrawQuad> create(const CCSharedQuadState*, const gfx::Rect&, SkColor);
 
     SkColor color() const { return m_color; };
 
     static const CCSolidColorDrawQuad* materialCast(const CCDrawQuad*);
 private:
-    CCSolidColorDrawQuad(const CCSharedQuadState*, const IntRect&, SkColor);
+    CCSolidColorDrawQuad(const CCSharedQuadState*, const gfx::Rect&, SkColor);
 
     SkColor m_color;
 };

@@ -38,19 +38,19 @@ public:
         StreamVideoContent,
     };
 
-    IntRect quadRect() const { return m_quadRect; }
+    gfx::Rect quadRect() const { return m_quadRect; }
     const WebKit::WebTransformationMatrix& quadTransform() const { return m_sharedQuadState->quadTransform; }
-    IntRect visibleContentRect() const { return m_sharedQuadState->visibleContentRect; }
-    IntRect clippedRectInTarget() const { return m_sharedQuadState->clippedRectInTarget; }
+    gfx::Rect visibleContentRect() const { return m_sharedQuadState->visibleContentRect; }
+    gfx::Rect clippedRectInTarget() const { return m_sharedQuadState->clippedRectInTarget; }
     float opacity() const { return m_sharedQuadState->opacity; }
     // For the purposes of blending, what part of the contents of this quad are opaque?
-    IntRect opaqueRect() const;
-    bool needsBlending() const { return m_needsBlending || !opaqueRect().contains(m_quadVisibleRect); }
+    gfx::Rect opaqueRect() const;
+    bool needsBlending() const { return m_needsBlending || !opaqueRect().Contains(m_quadVisibleRect); }
 
     // Allows changing the rect that gets drawn to make it smaller. Parameter passed
     // in will be clipped to quadRect().
-    void setQuadVisibleRect(const IntRect&);
-    IntRect quadVisibleRect() const { return m_quadVisibleRect; }
+    void setQuadVisibleRect(gfx::Rect);
+    gfx::Rect quadVisibleRect() const { return m_quadVisibleRect; }
     bool isDebugQuad() const { return m_material == DebugBorder; }
 
     Material material() const { return m_material; }
@@ -66,7 +66,7 @@ public:
     void setSharedQuadState(const CCSharedQuadState*);
 
 protected:
-    CCDrawQuad(const CCSharedQuadState*, Material, const IntRect&);
+    CCDrawQuad(const CCSharedQuadState*, Material, const gfx::Rect&);
 
     // Stores state common to a large bundle of quads; kept separate for memory
     // efficiency. There is special treatment to reconstruct these pointers
@@ -75,8 +75,8 @@ protected:
     int m_sharedQuadStateId;
 
     Material m_material;
-    IntRect m_quadRect;
-    IntRect m_quadVisibleRect;
+    gfx::Rect m_quadRect;
+    gfx::Rect m_quadVisibleRect;
 
     // By default, the shared quad state determines whether or not this quad is
     // opaque or needs blending. Derived classes can override with these
@@ -86,7 +86,7 @@ protected:
 
     // Be default, this rect is empty. It is used when the shared quad state and above
     // variables determine that the quad is not fully opaque but may be partially opaque.
-    IntRect m_opaqueRect;
+    gfx::Rect m_opaqueRect;
 };
 
 #pragma pack(pop)

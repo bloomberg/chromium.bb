@@ -16,6 +16,7 @@
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/effects/SkLayerRasterizer.h"
+#include "ui/gfx/rect_conversions.h"
 #include <public/WebImage.h>
 #include <public/WebSize.h>
 #include <public/WebTransformationMatrix.h>
@@ -29,12 +30,12 @@ namespace cc {
 
 namespace {
 
-SkRect toSkRect(const FloatRect& rect)
+SkRect toSkRect(const gfx::RectF& rect)
 {
     return SkRect::MakeXYWH(rect.x(), rect.y(), rect.width(), rect.height());
 }
 
-SkIRect toSkIRect(const IntRect& rect)
+SkIRect toSkIRect(const gfx::Rect& rect)
 {
     return SkIRect::MakeXYWH(rect.x(), rect.y(), rect.width(), rect.height());
 }
@@ -127,7 +128,7 @@ void CCRendererSoftware::bindFramebufferToOutputSurface(DrawingFrame& frame)
     m_skCurrentCanvas = m_skRootCanvas.get();
 }
 
-bool CCRendererSoftware::bindFramebufferToTexture(DrawingFrame& frame, const CCScopedTexture* texture, const IntRect& framebufferRect)
+bool CCRendererSoftware::bindFramebufferToTexture(DrawingFrame& frame, const CCScopedTexture* texture, const gfx::Rect& framebufferRect)
 {
     m_currentFramebufferLock = make_scoped_ptr(new CCResourceProvider::ScopedWriteLockSoftware(m_resourceProvider, texture->id()));
     m_skCurrentCanvas = m_currentFramebufferLock->skCanvas();
@@ -137,14 +138,14 @@ bool CCRendererSoftware::bindFramebufferToTexture(DrawingFrame& frame, const CCS
     return true;
 }
 
-void CCRendererSoftware::enableScissorTestRect(const IntRect& scissorRect)
+void CCRendererSoftware::enableScissorTestRect(const gfx::Rect& scissorRect)
 {
     m_skCurrentCanvas->clipRect(toSkRect(scissorRect), SkRegion::kReplace_Op);
 }
 
 void CCRendererSoftware::disableScissorTest()
 {
-    IntRect canvasRect(IntPoint(), viewportSize());
+    gfx::Rect canvasRect(gfx::Point(), viewportSize());
     m_skCurrentCanvas->clipRect(toSkRect(canvasRect), SkRegion::kReplace_Op);
 }
 
@@ -160,7 +161,7 @@ void CCRendererSoftware::clearFramebuffer(DrawingFrame& frame)
     }
 }
 
-void CCRendererSoftware::setDrawViewportSize(const IntSize& viewportSize)
+void CCRendererSoftware::setDrawViewportSize(const gfx::Size& viewportSize)
 {
 }
 
@@ -254,9 +255,8 @@ void CCRendererSoftware::drawTextureQuad(const DrawingFrame& frame, const CCText
 
     // FIXME: Add support for non-premultiplied alpha.
     CCResourceProvider::ScopedReadLockSoftware quadResourceLock(m_resourceProvider, quad->resourceId());
-    FloatRect uvRect = quad->uvRect();
-    uvRect.scale(quad->quadRect().width(), quad->quadRect().height());
-    SkIRect skUvRect = toSkIRect(enclosingIntRect(uvRect));
+    gfx::RectF uvRect = quad->uvRect().Scale(quad->quadRect().width(), quad->quadRect().height());
+    SkIRect skUvRect = toSkIRect(gfx::ToEnclosingRect(uvRect));
     if (quad->flipped())
         m_skCurrentCanvas->scale(1, -1);
     m_skCurrentCanvas->drawBitmapRect(*quadResourceLock.skBitmap(), &skUvRect, toSkRect(quadVertexRect()), &m_skCurrentPaint);
@@ -267,7 +267,7 @@ void CCRendererSoftware::drawTileQuad(const DrawingFrame& frame, const CCTileDra
     DCHECK(isSoftwareResource(quad->resourceId()));
     CCResourceProvider::ScopedReadLockSoftware quadResourceLock(m_resourceProvider, quad->resourceId());
 
-    SkIRect uvRect = toSkIRect(IntRect(quad->textureOffset(), quad->quadRect().size()));
+    SkIRect uvRect = toSkIRect(gfx::Rect(quad->textureOffset(), quad->quadRect().size()));
     m_skCurrentCanvas->drawBitmapRect(*quadResourceLock.skBitmap(), &uvRect, toSkRect(quadVertexRect()), &m_skCurrentPaint);
 }
 

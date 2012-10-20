@@ -6,8 +6,8 @@
 #define CCTextureDrawQuad_h
 
 #include "CCDrawQuad.h"
-#include "FloatRect.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/gfx/rect_f.h"
 
 namespace cc {
 
@@ -15,8 +15,8 @@ namespace cc {
 
 class CCTextureDrawQuad : public CCDrawQuad {
 public:
-    static scoped_ptr<CCTextureDrawQuad> create(const CCSharedQuadState*, const IntRect&, unsigned resourceId, bool premultipliedAlpha, const FloatRect& uvRect, bool flipped);
-    FloatRect uvRect() const { return m_uvRect; }
+    static scoped_ptr<CCTextureDrawQuad> create(const CCSharedQuadState*, const gfx::Rect&, unsigned resourceId, bool premultipliedAlpha, const gfx::RectF& uvRect, bool flipped);
+    gfx::RectF uvRect() const { return m_uvRect; }
 
     unsigned resourceId() const { return m_resourceId; }
     bool premultipliedAlpha() const { return  m_premultipliedAlpha; }
@@ -26,11 +26,11 @@ public:
 
     static const CCTextureDrawQuad* materialCast(const CCDrawQuad*);
 private:
-    CCTextureDrawQuad(const CCSharedQuadState*, const IntRect&, unsigned resourceId, bool premultipliedAlpha, const FloatRect& uvRect, bool flipped);
+    CCTextureDrawQuad(const CCSharedQuadState*, const gfx::Rect&, unsigned resourceId, bool premultipliedAlpha, const gfx::RectF& uvRect, bool flipped);
 
     unsigned m_resourceId;
     bool m_premultipliedAlpha;
-    FloatRect m_uvRect;
+    gfx::RectF m_uvRect;
     bool m_flipped;
 };
 

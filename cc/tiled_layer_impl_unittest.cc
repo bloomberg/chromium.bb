@@ -219,7 +219,7 @@ TEST(CCTiledLayerImplTest, textureInfoForLayerNoBorders)
         EXPECT_NE(quad->resourceId(), 0u) << quadString << i;
         EXPECT_EQ(quad->textureOffset(), IntPoint()) << quadString << i;
         EXPECT_EQ(quad->textureSize(), tileSize) << quadString << i;
-        EXPECT_EQ(IntRect(0, 0, 1, 1), quad->opaqueRect()) << quadString << i;
+        EXPECT_EQ(gfx::Rect(0, 0, 1, 1), quad->opaqueRect()) << quadString << i;
     }
 }
 
@@ -237,7 +237,7 @@ TEST(CCTiledLayerImplTest, tileOpaqueRectForLayerNoBorders)
         ASSERT_EQ(quads[i]->material(), CCDrawQuad::TiledContent) << quadString << i;
         CCTileDrawQuad* quad = static_cast<CCTileDrawQuad*>(quads[i]);
 
-        EXPECT_EQ(IntRect(0, 0, 1, 1), quad->opaqueRect()) << quadString << i;
+        EXPECT_EQ(gfx::Rect(0, 0, 1, 1), quad->opaqueRect()) << quadString << i;
     }
 }
 

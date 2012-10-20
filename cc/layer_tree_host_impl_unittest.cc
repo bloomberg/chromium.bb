@@ -3043,7 +3043,7 @@ TEST_P(CCLayerTreeHostImplTest, textureCachingWithClipping)
         ASSERT_EQ(1U, frame.renderPasses[1]->quadList().size());
 
         // Verify that the child layers are being clipped.
-        IntRect quadVisibleRect = frame.renderPasses[0]->quadList()[0]->quadVisibleRect();
+        gfx::Rect quadVisibleRect = frame.renderPasses[0]->quadList()[0]->quadVisibleRect();
         EXPECT_LT(quadVisibleRect.width(), 100);
 
         quadVisibleRect = frame.renderPasses[0]->quadList()[1]->quadVisibleRect();
@@ -3054,7 +3054,7 @@ TEST_P(CCLayerTreeHostImplTest, textureCachingWithClipping)
 
         EXPECT_EQ(CCDrawQuad::RenderPass, frame.renderPasses[1]->quadList()[0]->material());
         CCRenderPassDrawQuad* quad = static_cast<CCRenderPassDrawQuad*>(frame.renderPasses[1]->quadList()[0]);
-        EXPECT_FALSE(quad->contentsChangedSinceLastFrame().isEmpty());
+        EXPECT_FALSE(quad->contentsChangedSinceLastFrame().IsEmpty());
 
         myHostImpl->drawLayers(frame);
         myHostImpl->didDrawAllLayers(frame);
@@ -3725,7 +3725,7 @@ TEST_P(CCLayerTreeHostImplTest, surfaceTextureCaching)
         EXPECT_EQ(CCDrawQuad::RenderPass, frame.renderPasses[1]->quadList()[0]->material());
         CCRenderPassDrawQuad* quad = static_cast<CCRenderPassDrawQuad*>(frame.renderPasses[1]->quadList()[0]);
         CCRenderPass* targetPass = frame.renderPassesById.get(quad->renderPassId());
-        EXPECT_FALSE(targetPass->damageRect().isEmpty());
+        EXPECT_FALSE(targetPass->damageRect().IsEmpty());
 
         myHostImpl->drawLayers(frame);
         myHostImpl->didDrawAllLayers(frame);
@@ -3743,7 +3743,7 @@ TEST_P(CCLayerTreeHostImplTest, surfaceTextureCaching)
         EXPECT_EQ(CCDrawQuad::RenderPass, frame.renderPasses[0]->quadList()[0]->material());
         CCRenderPassDrawQuad* quad = static_cast<CCRenderPassDrawQuad*>(frame.renderPasses[0]->quadList()[0]);
         CCRenderPass* targetPass = frame.renderPassesById.get(quad->renderPassId());
-        EXPECT_TRUE(targetPass->damageRect().isEmpty());
+        EXPECT_TRUE(targetPass->damageRect().IsEmpty());
 
         myHostImpl->drawLayers(frame);
         myHostImpl->didDrawAllLayers(frame);
@@ -3762,7 +3762,7 @@ TEST_P(CCLayerTreeHostImplTest, surfaceTextureCaching)
         EXPECT_EQ(CCDrawQuad::RenderPass, frame.renderPasses[0]->quadList()[0]->material());
         CCRenderPassDrawQuad* quad = static_cast<CCRenderPassDrawQuad*>(frame.renderPasses[0]->quadList()[0]);
         CCRenderPass* targetPass = frame.renderPassesById.get(quad->renderPassId());
-        EXPECT_TRUE(targetPass->damageRect().isEmpty());
+        EXPECT_TRUE(targetPass->damageRect().IsEmpty());
 
         myHostImpl->drawLayers(frame);
         myHostImpl->didDrawAllLayers(frame);
@@ -3783,7 +3783,7 @@ TEST_P(CCLayerTreeHostImplTest, surfaceTextureCaching)
         EXPECT_EQ(CCDrawQuad::RenderPass, frame.renderPasses[1]->quadList()[0]->material());
         CCRenderPassDrawQuad* quad = static_cast<CCRenderPassDrawQuad*>(frame.renderPasses[1]->quadList()[0]);
         CCRenderPass* targetPass = frame.renderPassesById.get(quad->renderPassId());
-        EXPECT_FALSE(targetPass->damageRect().isEmpty());
+        EXPECT_FALSE(targetPass->damageRect().IsEmpty());
 
         myHostImpl->drawLayers(frame);
         myHostImpl->didDrawAllLayers(frame);
@@ -3810,7 +3810,7 @@ TEST_P(CCLayerTreeHostImplTest, surfaceTextureCaching)
         EXPECT_EQ(CCDrawQuad::RenderPass, frame.renderPasses[1]->quadList()[0]->material());
         CCRenderPassDrawQuad* quad = static_cast<CCRenderPassDrawQuad*>(frame.renderPasses[1]->quadList()[0]);
         CCRenderPass* targetPass = frame.renderPassesById.get(quad->renderPassId());
-        EXPECT_TRUE(targetPass->damageRect().isEmpty());
+        EXPECT_TRUE(targetPass->damageRect().IsEmpty());
 
         // Was our surface evicted?
         EXPECT_FALSE(myHostImpl->renderer()->haveCachedResourcesForRenderPassId(targetPass->id()));
@@ -3831,7 +3831,7 @@ TEST_P(CCLayerTreeHostImplTest, surfaceTextureCaching)
         EXPECT_EQ(CCDrawQuad::RenderPass, frame.renderPasses[0]->quadList()[0]->material());
         CCRenderPassDrawQuad* quad = static_cast<CCRenderPassDrawQuad*>(frame.renderPasses[0]->quadList()[0]);
         CCRenderPass* targetPass = frame.renderPassesById.get(quad->renderPassId());
-        EXPECT_TRUE(targetPass->damageRect().isEmpty());
+        EXPECT_TRUE(targetPass->damageRect().IsEmpty());
 
         myHostImpl->drawLayers(frame);
         myHostImpl->didDrawAllLayers(frame);
@@ -3852,7 +3852,7 @@ TEST_P(CCLayerTreeHostImplTest, surfaceTextureCaching)
         EXPECT_EQ(CCDrawQuad::RenderPass, frame.renderPasses[0]->quadList()[0]->material());
         CCRenderPassDrawQuad* quad = static_cast<CCRenderPassDrawQuad*>(frame.renderPasses[0]->quadList()[0]);
         CCRenderPass* targetPass = frame.renderPassesById.get(quad->renderPassId());
-        EXPECT_TRUE(targetPass->damageRect().isEmpty());
+        EXPECT_TRUE(targetPass->damageRect().IsEmpty());
 
         myHostImpl->drawLayers(frame);
         myHostImpl->didDrawAllLayers(frame);
@@ -3886,10 +3886,10 @@ TEST_P(CCLayerTreeHostImplTest, surfaceTextureCachingNoPartialSwap)
         EXPECT_EQ(CCDrawQuad::RenderPass, frame.renderPasses[1]->quadList()[0]->material());
         CCRenderPassDrawQuad* quad = static_cast<CCRenderPassDrawQuad*>(frame.renderPasses[1]->quadList()[0]);
         CCRenderPass* targetPass = frame.renderPassesById.get(quad->renderPassId());
-        EXPECT_FALSE(targetPass->damageRect().isEmpty());
+        EXPECT_FALSE(targetPass->damageRect().IsEmpty());
 
-        EXPECT_FALSE(frame.renderPasses[0]->damageRect().isEmpty());
-        EXPECT_FALSE(frame.renderPasses[1]->damageRect().isEmpty());
+        EXPECT_FALSE(frame.renderPasses[0]->damageRect().IsEmpty());
+        EXPECT_FALSE(frame.renderPasses[1]->damageRect().IsEmpty());
 
         EXPECT_FALSE(frame.renderPasses[0]->hasOcclusionFromOutsideTargetSurface());
         EXPECT_FALSE(frame.renderPasses[1]->hasOcclusionFromOutsideTargetSurface());
@@ -3909,7 +3909,7 @@ TEST_P(CCLayerTreeHostImplTest, surfaceTextureCachingNoPartialSwap)
         ASSERT_EQ(1U, frame.renderPasses.size());
         EXPECT_EQ(1U, frame.renderPasses[0]->quadList().size());
 
-        EXPECT_TRUE(frame.renderPasses[0]->damageRect().isEmpty());
+        EXPECT_TRUE(frame.renderPasses[0]->damageRect().IsEmpty());
 
         myHostImpl->drawLayers(frame);
         myHostImpl->didDrawAllLayers(frame);
@@ -3928,7 +3928,7 @@ TEST_P(CCLayerTreeHostImplTest, surfaceTextureCachingNoPartialSwap)
         EXPECT_EQ(CCDrawQuad::RenderPass, frame.renderPasses[0]->quadList()[0]->material());
         CCRenderPassDrawQuad* quad = static_cast<CCRenderPassDrawQuad*>(frame.renderPasses[0]->quadList()[0]);
         CCRenderPass* targetPass = frame.renderPassesById.get(quad->renderPassId());
-        EXPECT_TRUE(targetPass->damageRect().isEmpty());
+        EXPECT_TRUE(targetPass->damageRect().IsEmpty());
 
         myHostImpl->drawLayers(frame);
         myHostImpl->didDrawAllLayers(frame);
@@ -3949,7 +3949,7 @@ TEST_P(CCLayerTreeHostImplTest, surfaceTextureCachingNoPartialSwap)
         EXPECT_EQ(CCDrawQuad::RenderPass, frame.renderPasses[1]->quadList()[0]->material());
         CCRenderPassDrawQuad* quad = static_cast<CCRenderPassDrawQuad*>(frame.renderPasses[1]->quadList()[0]);
         CCRenderPass* targetPass = frame.renderPassesById.get(quad->renderPassId());
-        EXPECT_FALSE(targetPass->damageRect().isEmpty());
+        EXPECT_FALSE(targetPass->damageRect().IsEmpty());
 
         myHostImpl->drawLayers(frame);
         myHostImpl->didDrawAllLayers(frame);
@@ -3976,7 +3976,7 @@ TEST_P(CCLayerTreeHostImplTest, surfaceTextureCachingNoPartialSwap)
         EXPECT_EQ(CCDrawQuad::RenderPass, frame.renderPasses[1]->quadList()[0]->material());
         CCRenderPassDrawQuad* quad = static_cast<CCRenderPassDrawQuad*>(frame.renderPasses[1]->quadList()[0]);
         CCRenderPass* targetPass = frame.renderPassesById.get(quad->renderPassId());
-        EXPECT_TRUE(targetPass->damageRect().isEmpty());
+        EXPECT_TRUE(targetPass->damageRect().IsEmpty());
 
         // Was our surface evicted?
         EXPECT_FALSE(myHostImpl->renderer()->haveCachedResourcesForRenderPassId(targetPass->id()));
@@ -4015,7 +4015,7 @@ TEST_P(CCLayerTreeHostImplTest, surfaceTextureCachingNoPartialSwap)
         EXPECT_EQ(CCDrawQuad::RenderPass, frame.renderPasses[0]->quadList()[0]->material());
         CCRenderPassDrawQuad* quad = static_cast<CCRenderPassDrawQuad*>(frame.renderPasses[0]->quadList()[0]);
         CCRenderPass* targetPass = frame.renderPassesById.get(quad->renderPassId());
-        EXPECT_TRUE(targetPass->damageRect().isEmpty());
+        EXPECT_TRUE(targetPass->damageRect().IsEmpty());
 
         myHostImpl->drawLayers(frame);
         myHostImpl->didDrawAllLayers(frame);

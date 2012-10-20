@@ -26,7 +26,7 @@ MockCCQuadCuller::~MockCCQuadCuller()
 
 bool MockCCQuadCuller::append(scoped_ptr<CCDrawQuad> drawQuad, CCAppendQuadsData&)
 {
-    if (!drawQuad->quadRect().isEmpty()) {
+    if (!drawQuad->quadRect().IsEmpty()) {
         m_activeQuadList.append(drawQuad.Pass());
         return true;
     }

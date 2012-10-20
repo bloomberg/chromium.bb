@@ -10,12 +10,12 @@
 
 namespace cc {
 
-scoped_ptr<CCIOSurfaceDrawQuad> CCIOSurfaceDrawQuad::create(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, const IntSize& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation orientation)
+scoped_ptr<CCIOSurfaceDrawQuad> CCIOSurfaceDrawQuad::create(const CCSharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Size& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation orientation)
 {
     return make_scoped_ptr(new CCIOSurfaceDrawQuad(sharedQuadState, quadRect, ioSurfaceSize, ioSurfaceTextureId, orientation));
 }
 
-CCIOSurfaceDrawQuad::CCIOSurfaceDrawQuad(const CCSharedQuadState* sharedQuadState, const IntRect& quadRect, const IntSize& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation orientation)
+CCIOSurfaceDrawQuad::CCIOSurfaceDrawQuad(const CCSharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Size& ioSurfaceSize, unsigned ioSurfaceTextureId, Orientation orientation)
     : CCDrawQuad(sharedQuadState, CCDrawQuad::IOSurfaceContent, quadRect)
     , m_ioSurfaceSize(ioSurfaceSize)
     , m_ioSurfaceTextureId(ioSurfaceTextureId)

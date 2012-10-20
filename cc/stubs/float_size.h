@@ -11,6 +11,7 @@
 #else
 #include "third_party/WebKit/Source/WebCore/platform/graphics/FloatSize.h"
 #endif
+#include "ui/gfx/size_f.h"
 
 namespace cc {
 class FloatSize : public WebCore::FloatSize {
@@ -36,6 +37,8 @@ public:
         : WebCore::FloatSize(size.width(), size.height())
     {
     }
+
+    operator gfx::SizeF() const { return gfx::SizeF(width(), height()); }
 };
 
 }

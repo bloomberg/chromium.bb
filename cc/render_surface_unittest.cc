@@ -12,6 +12,7 @@
 #include "cc/scoped_ptr_vector.h"
 #include "cc/shared_quad_state.h"
 #include "cc/single_thread_proxy.h"
+#include "cc/test/geometry_test_utils.h"
 #include "cc/test/mock_quad_culler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -112,7 +113,7 @@ TEST(CCRenderSurfaceTest, sanityCheckSurfaceCreatesCorrectSharedQuadState)
 
     EXPECT_EQ(30, sharedQuadState->quadTransform.m41());
     EXPECT_EQ(40, sharedQuadState->quadTransform.m42());
-    EXPECT_EQ(contentRect, IntRect(sharedQuadState->visibleContentRect));
+    EXPECT_RECT_EQ(contentRect, IntRect(sharedQuadState->visibleContentRect));
     EXPECT_EQ(1, sharedQuadState->opacity);
     EXPECT_FALSE(sharedQuadState->opaque);
 }
@@ -157,7 +158,7 @@ TEST(CCRenderSurfaceTest, sanityCheckSurfaceCreatesCorrectRenderPass)
     CCRenderPass* pass = passSink.renderPasses()[0];
 
     EXPECT_EQ(CCRenderPass::Id(2, 0), pass->id());
-    EXPECT_EQ(contentRect, pass->outputRect());
+    EXPECT_RECT_EQ(contentRect, pass->outputRect());
     EXPECT_EQ(origin, pass->transformToRootTarget());
 }
 
