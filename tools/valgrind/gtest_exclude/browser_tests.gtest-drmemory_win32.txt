@@ -71,3 +71,8 @@ PolicyPrefsSettingsBannerTestInstance*
 PreferencesBrowserTest.*
 OptionsBrowserTest.*
 PolicyPrefsTestInstance*
+# DrM-i#1052-c#7
+BetterSessionRestoreTest.*
+ExtensionWebRequestApiTest.*
+PageCyclerCachedBrowserTest.*
+PolicyPrefsBannerTest.*
