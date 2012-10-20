@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/toolbar/action_box_button_controller.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -20,6 +21,7 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_intents_dispatcher.h"
 #include "grit/generated_resources.h"
@@ -27,6 +29,12 @@
 #include "webkit/glue/webkit_glue.h"
 
 namespace {
+
+// This indicates we need to send UMA data about the number of
+// "Share with X" commands shown in the menu after user tried to
+// find share extensions from web store or the first use of action
+// box after browser starts.
+static bool send_uma_share_command_count = true;
 
 // Share intents get command IDs that are beyond the maximal valid command ID
 // (0xDFFF) so that they are not confused with actual commands that appear in
@@ -45,6 +53,8 @@ const char kShareIntentAction[] = "http://webintents.org/share";
 const char kShareIntentMimeType[] = "text/uri-list";
 
 }  // namespace
+
+using content::UserMetricsAction;
 
 ActionBoxButtonController::ActionBoxButtonController(Browser* browser,
                                                      Delegate* delegate)
@@ -100,6 +110,14 @@ void ActionBoxButtonController::OnButtonClicked() {
     // Add link to the Web Store to find additional share intents.
     menu_model->AddItemWithStringId(CWS_FIND_SHARE_INTENTS_COMMAND,
         IDS_FIND_SHARE_INTENTS);
+
+    content::RecordAction(UserMetricsAction("ActionBox.ClickButton"));
+    if (send_uma_share_command_count) {
+      UMA_HISTOGRAM_ENUMERATION("ActionBox.ShareCommandCount",
+          next_share_intent_command_id - SHARE_COMMAND_FIRST,
+          kMaxShareItemsToShow + 1);
+      send_uma_share_command_count = false;
+    }
   }
 
   // Add Extensions.
@@ -225,4 +243,7 @@ void ActionBoxButtonController::NavigateToWebStoreShareIntentsList() {
                                 content::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
+
+  content::RecordAction(UserMetricsAction("ActionBox.FindShareHandlers"));
+  send_uma_share_command_count = true;
 }

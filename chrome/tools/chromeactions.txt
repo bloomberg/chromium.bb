@@ -75,6 +75,8 @@
 0x649461e26c8e5796	AcceptedGeneratedKeyword
 0x2b6ed5e3f78e1295	AcceptedKeyword
 0xaa16d48a61361aa6	AcceptedKeywordHint
+0x21cdf71f12d41976	ActionBox.ClickButton
+0xbd451ad0142aa0c0	ActionBox.FindShareHandlers
 0xfc0c75574fa0f498	AppList_ClickOnApp
 0x73d7010c18cf1912	AppList_ClickOnAppFromSearch
 0xdd57b39909cb275a	AppList_Search
