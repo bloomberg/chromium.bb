@@ -6090,12 +6090,6 @@
   fun:_ZN33GeolocationInfoBarQueueController17ShowQueuedInfoBarEiiP16InfoBarTabHelper
 }
 {
-  bug_156784
-  Memcheck:Leak
-  ...
-  fun:_ZN11dom_storage47DomStorageContextTest_DeleteSessionStorage_Test8TestBodyEv
-}
-{
   bug_156829
   Memcheck:Leak
   fun:_Znw*

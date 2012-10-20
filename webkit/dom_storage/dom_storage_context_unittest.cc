@@ -254,6 +254,9 @@ TEST_F(DomStorageContextTest, DeleteSessionStorage) {
   read_value = area->GetItem(kKey);
   EXPECT_TRUE(read_value.is_null());
   dom_namespace->CloseStorageArea(area);
+  context_->Shutdown();
+  context_ = NULL;
+  MessageLoop::current()->RunAllPending();
 }
 
 }  // namespace dom_storage
