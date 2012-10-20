@@ -884,10 +884,10 @@ Web Store: https://chrome.google.com/remotedesktop"""
   running, pid = g_pidfile.check()
 
   if running:
-    print "An instance of this script is already running."
-    print "Use the -k flag to terminate the running instance."
-    print "If this isn't the case, delete '%s' and try again." % pid_filename
-    return 1
+    # Debian policy requires that services should "start" cleanly and return 0
+    # if they are already running.
+    print "Service already running."
+    return 0
 
   g_pidfile.create()
 
