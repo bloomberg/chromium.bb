@@ -80,11 +80,6 @@ function getURLHttpXHRData() {
                       "b.com");
 }
 
-function getURLHttpSimpleOnB() {
-  return getServerURL("files/extensions/api_test/webrequest/simpleLoad/a.html",
-                      "b.com");
-}
-
 // Shared test sections.
 function cancelThirdPartyExpected() {
     return [
@@ -590,13 +585,14 @@ runTests([
     // Test that a redirect is ignored if the extension has no permission.
     // we load a.html from a.com and issue an XHR to b.com, which is not
     // contained in the extension's host permissions. Therefore, we cannot
-    // redirect it and the request succeeds.
+    // redirect the XHR from b.com to a.com, and the request returns the
+    // original file from b.com.
     ignoreUnexpected = true;
     expect();
     onRequest.addRules(
       [ {'conditions': [new RequestMatcher({'url': {'pathContains': ".json"}})],
          'actions': [
-             new RedirectRequest({'redirectUrl': getURLHttpSimpleOnB()})]}
+             new RedirectRequest({'redirectUrl': getURLHttpSimple()})]}
       ],
       function() {
         var callback = chrome.test.callbackAdded();
@@ -606,15 +602,16 @@ runTests([
           req.onreadystatechange = function() {
             if (this.readyState != this.DONE)
               return;
+            // "{}" is the contents of the file at getURLHttpXHRData().
             if (this.status == 200 && this.responseText == "{}\n") {
               callback();
             } else {
               chrome.test.fail("Redirect was not prevented. Status: " +
                   this.status + ", responseText: " + this.responseText);
             }
-          }
+          };
           req.open("GET", getURLHttpXHRData(), asynchronous);
-          req.send(null);
+          req.send();
         });
       }
     );

@@ -1,0 +1,10 @@
+{
+  "name": "declarativeWebRequest rules without host permissions",
+  "description": "Helper test extension for declarative webRequest; declare rules affecting hosts without having permissions on them.",
+  "version": "1",
+  "manifest_version": 2,
+  "permissions": ["declarativeWebRequest", "http://*.c.com/*"],
+  "background": {
+    "scripts": ["rules.js"]
+  }
+}

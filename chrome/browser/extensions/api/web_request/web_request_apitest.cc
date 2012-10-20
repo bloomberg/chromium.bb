@@ -145,6 +145,17 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestDeclarative) {
       message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+                       WebRequestDeclarativePermissions) {
+  ExtensionTestMessageListener listener("rules all registered", false);
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
+      "webrequest/permissionless")));
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+  ASSERT_TRUE(RunExtensionSubtest(
+      "webrequest", "test_declarative_permissions.html")) <<
+      message_;
+}
+
 void ExtensionWebRequestApiTest::RunPermissionTest(
     const char* extension_directory,
     bool load_extension_with_incognito_permission,

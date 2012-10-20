@@ -13,6 +13,7 @@ var tabIdMap;
 var frameIdMap;
 var testServerPort;
 var testServer = "www.a.com";
+var defaultScheme = "http";
 var eventsCaptured;
 
 // If true, don't bark on events that were not registered via expect().
@@ -38,11 +39,12 @@ function runTests(tests) {
 
 // Returns an URL from the test server, fixing up the port. Must be called
 // from within a test case passed to runTests.
-function getServerURL(path, opt_host) {
+function getServerURL(path, opt_host, opt_scheme) {
   if (!testServerPort)
     throw new Error("Called getServerURL outside of runTests.");
   var host = opt_host || testServer;
-  return "http://" + host + ":" + testServerPort + "/" + path;
+  var scheme = opt_scheme || defaultScheme;
+  return scheme + "://" + host + ":" + testServerPort + "/" + path;
 }
 
 // Helper to advance to the next test only when the tab has finished loading.
