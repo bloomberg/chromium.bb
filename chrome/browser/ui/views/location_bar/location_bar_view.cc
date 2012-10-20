@@ -991,12 +991,6 @@ void LocationBarView::Layout() {
 void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
 
-  // If Instant Extended API is enabled, paint the background color of NTP page
-  // first; otherwise, there will be a white outline around the location bar
-  // border.
-  if (instant_extended_api_enabled_)
-    canvas->DrawColor(chrome::search::GetNTPBackgroundColor(profile_));
-
   if (background_painter_.get()) {
     background_painter_->Paint(canvas, size());
   } else if (mode_ == POPUP) {

@@ -31,12 +31,6 @@ void LocationBarContainer::PlatformInit() {
   // off when done.
 }
 
-// static
-SkColor LocationBarContainer::GetBackgroundColor() {
-  return LocationBarView::GetColor(instant_extended_api_enabled_,
-      ToolbarModel::NONE, LocationBarView::BACKGROUND);
-}
-
 void LocationBarContainer::StackAtTop() {
   // TODO: this is hack. The problem is NativeViewHostAura does an AddChild(),
   // which places its layer at the top of the stack.

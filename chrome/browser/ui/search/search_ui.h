@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_UI_SEARCH_SEARCH_UI_H_
 #define CHROME_BROWSER_UI_SEARCH_SEARCH_UI_H_
 
+#include "chrome/browser/ui/search/search_types.h"
 #include "third_party/skia/include/core/SkColor.h"
+
+class Profile;
 
 namespace content {
 class BrowserContext;
@@ -13,6 +16,11 @@ class BrowserContext;
 
 namespace gfx {
 class Font;
+class ImageSkia;
+}
+
+namespace ui {
+class ThemeProvider;
 }
 
 namespace chrome {
@@ -62,6 +70,20 @@ int GetNTPOmniboxHeight(const gfx::Font& font);
 // Returns the NTP content area's background color.  May return white if
 // set in chrome://instant.
 SkColor GetNTPBackgroundColor(content::BrowserContext* browser_context);
+
+// Returns the background color to use for toolbar.
+SkColor GetToolbarBackgroundColor(Profile* profile,
+                                  chrome::search::Mode::Type mode);
+
+// Returns the background image to use for top chrome i.e. toolbar and tab.
+// |use_ntp_background_theme| indicates if IDR_THEME_NTP_BACKGROUND is being
+// used.
+gfx::ImageSkia* GetTopChromeBackgroundImage(
+    const ui::ThemeProvider* theme_provider,
+    bool instant_extended_api_enabled,
+    chrome::search::Mode::Type mode,
+    bool should_show_white_ntp,
+    bool* use_ntp_background_theme);
 
 }  // namespace search
 }  // namespace chrome

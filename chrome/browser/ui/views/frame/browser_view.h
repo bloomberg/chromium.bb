@@ -222,12 +222,6 @@ class BrowserView : public BrowserWindow,
   // animations.
   void ToolbarSizeChanged(bool is_animating);
 
-  // Returns the toolbar background color.
-  SkColor GetToolbarBackgroundColor(chrome::search::Mode::Type mode);
-
-  // Returns the toolbar background image.
-  gfx::ImageSkia* GetToolbarBackgroundImage(chrome::search::Mode::Type mode);
-
 #if defined(USE_ASH)
   // Test support.
   BrowserLauncherItemController* launcher_item_controller() const {

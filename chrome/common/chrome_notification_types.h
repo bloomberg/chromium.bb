@@ -1267,6 +1267,13 @@ enum NotificationType {
   // No details.
   NOTIFICATION_SEARCH_VIEW_CONTROLLER_ANIMATION_FINISHED,
 
+  // NTP for Instant Extended API.
+  // Sent when vertical offset of NTP background theme image in content view
+  // needs to be changed via |background_position| in new_tab_theme.css.
+  // The source is the Profile for the content view.
+  // Details is a the y-pos of |background_position| of new_tab_theme.css.
+  NOTIFICATION_NTP_BACKGROUND_THEME_Y_POS_CHANGED,
+
   // Note:-
   // Currently only Content and Chrome define and use notifications.
   // Custom notifications not belonging to Content and Chrome should start

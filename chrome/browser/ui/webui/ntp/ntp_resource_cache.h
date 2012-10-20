@@ -20,6 +20,10 @@ namespace base {
 class RefCountedMemory;
 }
 
+namespace ui {
+class ThemeProvider;
+}
+
 // This class keeps a cache of NTP resources (HTML and CSS) so we don't have to
 // regenerate them all the time.
 class NTPResourceCache : public content::NotificationObserver,
@@ -36,6 +40,11 @@ class NTPResourceCache : public content::NotificationObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Returns the CSS background-position-y style for new_tab_theme.css:
+  // - |y_pos| is the vertical offset of theme image in content view.
+  // - |alignment| is alignment of theme image.
+  static std::string GetNewTabBackgroundPositionY(int y_pos, int alignment);
+
  private:
   Profile* profile_;
 
@@ -46,6 +55,15 @@ class NTPResourceCache : public content::NotificationObserver,
   // This is called on every page load, and can be used to check values that
   // don't generate a notification when changed (e.g., system preferences).
   bool NewTabCacheNeedsRefresh();
+
+  // Get the CSS string for the background position on the new tab page for the
+  // states when the bar is attached or detached.
+  std::string GetNewTabBackgroundCSS(const ui::ThemeProvider* theme_provider,
+                                     bool bar_attached);
+
+  // Update the CSS style "background-position" in the current |new_tab_css_|
+  // and create a new |new_tab_css_|.
+  void UpdateNewTabCSSBackgroundPosition();
 
 #if !defined(OS_ANDROID)
   // Returns a message describing any newly-added sync types, or an empty
@@ -65,6 +83,11 @@ class NTPResourceCache : public content::NotificationObserver,
 #endif
 
   bool is_swipe_tracking_from_scroll_events_enabled_;
+
+  // Y-pos of |background_position| of new_tab_theme.css notified from
+  // |SearchViewController| via
+  // chrome::NOTIFICATION_NTP_BACKGROUND_THEME_Y_POS_CHANGED.
+  int css_background_y_pos_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPResourceCache);
 };

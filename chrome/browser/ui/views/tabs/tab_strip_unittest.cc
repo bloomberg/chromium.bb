@@ -8,13 +8,14 @@
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
+#include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class TabStripTest : public testing::Test {
  public:
   TabStripTest()
-      : controller_(new FakeBaseTabStripController),
-        tab_strip_(new TabStrip(controller_)) {
+      : controller_(new FakeBaseTabStripController) {
+    tab_strip_ = new TabStrip(controller_, &profile_);
     controller_->set_tab_strip(tab_strip_);
     // Do this to force TabStrip to create the buttons.
     parent_.AddChildView(tab_strip_);
@@ -22,6 +23,7 @@ class TabStripTest : public testing::Test {
 
  protected:
   MessageLoopForUI ui_loop_;
+  TestingProfile profile_;
   // Owned by TabStrip.
   FakeBaseTabStripController* controller_;
   // Owns |tab_strip_|.

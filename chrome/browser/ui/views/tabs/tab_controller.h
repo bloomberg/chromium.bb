@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_CONTROLLER_H_
 
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
+#include "ui/gfx/image/image_skia_rep.h"
 
 class BaseTab;
 class TabStripSelectionModel;
@@ -88,6 +89,11 @@ class TabController {
 
   // Returns true if Instant Extended is showing white NTP.
   virtual bool ShouldShowWhiteNTP() = 0;
+
+  // Returns the NTP background theme to use for the active tab when Instant
+  // Extended API is enabled and theme is used.
+  virtual const gfx::ImageSkiaRep& GetNTPBackgroundTheme(
+      ui::ScaleFactor scale_factor) = 0;
 
  protected:
   virtual ~TabController() {}

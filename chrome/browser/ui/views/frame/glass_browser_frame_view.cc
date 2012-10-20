@@ -9,13 +9,16 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_model.h"
+#include "chrome/browser/ui/search/search_ui.h"
 #include "chrome/browser/ui/views/avatar_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/webui/instant_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -300,10 +303,16 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   int left_x = x - kContentEdgeShadowThickness;
 
   // TODO(kuan): migrate background animation from cros to win by calling
-  // GetToolbarBackgound* with the correct mode, refer to
-  // BrowserNonClientFrameViewAsh.
-  gfx::ImageSkia* theme_toolbar = browser_view()->GetToolbarBackgroundImage(
-      browser_view()->browser()->search_model()->mode().mode);
+  // GetToolbarBackgroundColor and GetTopChromeBackgoundImage with the correct
+  // mode, refer to BrowserNonClientFrameViewAsh.
+  Browser* browser = browser_view()->browser();
+  bool is_instant_extended_api_enabled =
+      chrome::search::IsInstantExtendedAPIEnabled(browser->profile());
+  bool use_ntp_background_theme = false;
+  gfx::ImageSkia* theme_toolbar = chrome::search::GetTopChromeBackgroundImage(
+      tp, is_instant_extended_api_enabled, browser->search_model()->mode().mode,
+      InstantUI::ShouldShowWhiteNTP(browser->profile()),
+      &use_ntp_background_theme);
   gfx::ImageSkia* toolbar_left = tp->GetImageSkiaNamed(
       IDR_CONTENT_TOP_LEFT_CORNER);
   gfx::ImageSkia* toolbar_center = tp->GetImageSkiaNamed(
@@ -356,17 +365,14 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
 
   // Only draw the content/toolbar separator if Instant Extended API is disabled
   // or mode is DEFAULT.
-  Browser* browser = browser_view()->browser();
-  bool extended_instant_enabled = chrome::search::IsInstantExtendedAPIEnabled(
-      browser->profile());
-  if (!extended_instant_enabled ||
+  if (!is_instant_extended_api_enabled ||
       browser->search_model()->mode().is_default()) {
     canvas->FillRect(
         gfx::Rect(x + kClientEdgeThickness,
                   toolbar_bounds.bottom() - kClientEdgeThickness,
                   w - (2 * kClientEdgeThickness),
                   kClientEdgeThickness),
-        ThemeService::GetDefaultColor(extended_instant_enabled ?
+        ThemeService::GetDefaultColor(is_instant_extended_api_enabled ?
             ThemeService::COLOR_SEARCH_SEPARATOR_LINE :
                 ThemeService::COLOR_TOOLBAR_SEPARATOR));
   }
@@ -408,7 +414,8 @@ void GlassBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   // where not covered by the toolbar image.  NOTE: We do this after drawing the
   // images because the images are meant to alpha-blend atop the frame whereas
   // these rects are meant to be fully opaque, without anything overlaid.
-  SkColor toolbar_color = browser_view()->GetToolbarBackgroundColor(
+  SkColor toolbar_color = chrome::search::GetToolbarBackgroundColor(
+      browser_view()->browser()->profile(),
       browser_view()->browser()->search_model()->mode().mode);
   canvas->FillRect(gfx::Rect(client_area_bounds.x() - kClientEdgeThickness,
       client_area_top, kClientEdgeThickness,

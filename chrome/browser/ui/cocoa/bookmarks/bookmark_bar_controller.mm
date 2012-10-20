@@ -2346,6 +2346,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   return ThemeServiceFactory::GetForProfile(browser_->profile());
 }
 
+- (Profile*)profile {
+  return browser_->profile();
+}
+
 #pragma mark BookmarkButtonDelegate Protocol
 
 - (void)fillPasteboard:(NSPasteboard*)pboard

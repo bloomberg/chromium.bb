@@ -97,14 +97,13 @@ class Tab : public BaseTab {
   virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE;
 
   // Paint various portions of the Tab
-  gfx::ImageSkia* GetTabBackgroundImage(chrome::search::Mode::Type mode) const;
   void PaintTabBackground(gfx::Canvas* canvas);
   void PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas);
   void PaintInactiveTabBackground(gfx::Canvas* canvas);
   void PaintInactiveTabBackgroundUsingResourceId(gfx::Canvas* canvas,
                                                  int tab_id);
   void PaintActiveTabBackground(gfx::Canvas* canvas,
-                                gfx::ImageSkia* tab_background);
+                                chrome::search::Mode::Type mode);
 
   // Returns the number of favicon-size elements that can fit in the tab's
   // current size.

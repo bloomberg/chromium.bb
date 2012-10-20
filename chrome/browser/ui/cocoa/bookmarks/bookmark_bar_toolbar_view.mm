@@ -4,12 +4,12 @@
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_toolbar_view.h"
 
-#include "chrome/browser/ntp_background_util.h"
 #include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
+#include "chrome/browser/ui/ntp_background_util.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/rect.h"
@@ -75,8 +75,8 @@ const CGFloat kBorderRadius = 3.0;
     gfx::CanvasSkiaPaint canvas(bounds, true);
     gfx::Rect area(0, 0, NSWidth(bounds), NSHeight(bounds));
 
-    NtpBackgroundUtil::PaintBackgroundDetachedMode(themeProvider, &canvas,
-        area, [controller_ currentTabContentsHeight]);
+    NtpBackgroundUtil::PaintBackgroundDetachedMode([controller_ profile],
+        &canvas, area, [controller_ currentTabContentsHeight]);
   }
 
   // Draw our bookmark bar border on top of the background.

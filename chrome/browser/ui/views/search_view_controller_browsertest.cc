@@ -97,7 +97,11 @@ class SearchViewControllerTest : public InProcessBrowserTest,
   }
 
   bool controller_ntp_container_is_visible() const {
-    return controller()->ntp_container_->visible();
+#if defined(USE_AURA)
+    return controller()->ntp_container()->visible();
+#else
+    return false;
+#endif  // USE_AURA
   }
 
   bool controller_contents_has_overlay() const {

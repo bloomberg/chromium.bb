@@ -31,10 +31,6 @@ LocationBarContainer::LocationBarContainer(
   parent->AddChildView(this);
   animator_.set_tween_type(ui::Tween::EASE_IN_OUT);
   PlatformInit();
-  if (instant_extended_api_enabled) {
-    view_parent_->set_background(
-        views::Background::CreateSolidBackground(GetBackgroundColor()));
-  }
 }
 
 LocationBarContainer::~LocationBarContainer() {

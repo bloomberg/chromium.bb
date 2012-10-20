@@ -278,6 +278,7 @@
       <structure type="chrome_scaled_image" name="IDR_GEOLOCATION_DENIED_LOCATIONBAR_ICON" file="blocked_location.png" />
       <structure type="chrome_scaled_image" name="IDR_GEOLOCATION_INFOBAR_ICON" file="infobar_geolocation.png" />
       <structure type="chrome_scaled_image" name="IDR_GOOGLE_LOGO_LG" file="google_logo_lg.png" />
+      <structure type="chrome_scaled_image" name="IDR_GOOGLE_LOGO_WHITE" file="google_logo_white.png" />
       <if expr="pp_ifdef('chromeos')">
         <structure type="chrome_scaled_image" name="IDR_HELP_MENU" file="help_16.png" />
       </if>

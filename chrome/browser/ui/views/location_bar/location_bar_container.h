@@ -75,9 +75,6 @@ class LocationBarContainer : public views::View,
   // Sets up platform specific state.
   void PlatformInit();
 
-  // Returns the background color.
-  SkColor GetBackgroundColor();
-
   // Returns animation duration in milliseconds.
   static int GetAnimationDuration();
 

@@ -13,7 +13,10 @@
 #include "chrome/browser/ui/tabs/tab_strip_layout_type.h"
 #include "chrome/browser/ui/views/tabs/base_tab.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/base/animation/animation_container.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/animation/bounds_animator.h"
@@ -24,6 +27,7 @@
 
 class BaseTab;
 class NewTabButton;
+class Profile;
 class Tab;
 class TabDragController;
 class TabStripController;
@@ -50,11 +54,12 @@ class ImageView;
 class TabStrip : public views::View,
                  public views::ButtonListener,
                  public views::MouseWatcherListener,
-                 public TabController {
+                 public TabController,
+                 public content::NotificationObserver {
  public:
   static const char kViewClassName[];
 
-  explicit TabStrip(TabStripController* controller);
+  TabStrip(TabStripController* controller, Profile* profile);
   virtual ~TabStrip();
 
   // Sets the layout type. If |adjust_layout| is true the layout type changes
@@ -188,6 +193,8 @@ class TabStrip : public views::View,
   virtual bool ShouldPaintTab(const BaseTab* tab, gfx::Rect* clip) OVERRIDE;
   virtual bool IsInstantExtendedAPIEnabled() OVERRIDE;
   virtual bool ShouldShowWhiteNTP() OVERRIDE;
+  virtual const gfx::ImageSkiaRep& GetNTPBackgroundTheme(
+      ui::ScaleFactor scale_factor) OVERRIDE;
 
   // MouseWatcherListener overrides:
   virtual void MouseMovedOutOfHost() OVERRIDE;
@@ -266,6 +273,11 @@ class TabStrip : public views::View,
    private:
     DISALLOW_COPY_AND_ASSIGN(DropInfo);
   };
+
+  // content::NotificationObserver implementation
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   void Init();
 
@@ -499,6 +511,10 @@ class TabStrip : public views::View,
   // Should the layout dynamically adjust?
   bool GetAdjustLayout() const;
 
+  // Extracts the NTP background theme for the tabstrip area to use for the
+  // active tab when Instant Extended API is enabled and theme is used.
+  void ExtractNTPBackgroundTheme(ui::ScaleFactor scale_factor);
+
   // -- Member Variables ------------------------------------------------------
 
   // There is a one-to-one mapping between each of the tabs in the
@@ -512,6 +528,8 @@ class TabStrip : public views::View,
   TabsClosingMap tabs_closing_map_;
 
   scoped_ptr<TabStripController> controller_;
+
+  Profile* profile_;  // Weak.
 
   // The "New Tab" button.
   NewTabButton* newtab_button_;
@@ -585,6 +603,14 @@ class TabStrip : public views::View,
   // Timer used when a tab is closed and we need to relayout. Only used when a
   // tab close comes from a touch device.
   base::OneShotTimer<TabStrip> resize_layout_timer_;
+
+  // NTP background iamge extracted for use in active tab.
+  gfx::ImageSkia ntp_background_theme_;
+
+  // Size of |BrowserView| when NTP background image was extracted.
+  gfx::Size browser_view_size_;
+
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStrip);
 };

@@ -1154,8 +1154,6 @@
         'browser/notifications/notification_ui_manager_impl.h',
         'browser/notifications/notification_ui_manager_mac.mm',
         'browser/notifications/notification_ui_manager_mac.h',
-        'browser/ntp_background_util.cc',
-        'browser/ntp_background_util.h',
         'browser/omnibox_search_hint.cc',
         'browser/omnibox_search_hint.h',
         'browser/page_cycler/page_cycler.cc',

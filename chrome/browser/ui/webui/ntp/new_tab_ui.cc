@@ -26,6 +26,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/ntp/favicon_webui_handler.h"
@@ -172,6 +173,12 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(
                      ThemeServiceFactory::GetForProfile(GetProfile())));
+  if (chrome::search::IsInstantExtendedAPIEnabled(GetProfile())) {
+    registrar_.Add(
+        this,
+        chrome::NOTIFICATION_NTP_BACKGROUND_THEME_Y_POS_CHANGED,
+        content::Source<Profile>(GetProfile()));
+  }
 #endif
 }
 
@@ -256,6 +263,19 @@ void NewTabUI::Observe(int type,
           ThemeServiceFactory::GetForProfile(GetProfile())->HasCustomImage(
               IDR_THEME_NTP_ATTRIBUTION) ? "true" : "false");
       web_ui()->CallJavascriptFunction("ntp.themeChanged", attribution);
+      break;
+    }
+    case chrome::NOTIFICATION_NTP_BACKGROUND_THEME_Y_POS_CHANGED: {
+      int y_pos = *(content::Details<int>(details).ptr());
+      int alignment;
+      if (!ThemeServiceFactory::GetForProfile(GetProfile())->GetDisplayProperty(
+              ThemeService::NTP_BACKGROUND_ALIGNMENT, &alignment)) {
+        return;
+      }
+      StringValue background_pos_y(
+          NTPResourceCache::GetNewTabBackgroundPositionY(y_pos, alignment));
+      web_ui()->CallJavascriptFunction("ntp.setBackgroundPositionY",
+                                       background_pos_y);
       break;
     }
 #endif

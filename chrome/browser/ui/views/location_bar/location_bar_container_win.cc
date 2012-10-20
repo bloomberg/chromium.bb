@@ -48,11 +48,6 @@ void LocationBarContainer::PlatformInit() {
   */
 }
 
-// static
-SkColor LocationBarContainer::GetBackgroundColor() {
-  return color_utils::GetSysSkColor(COLOR_WINDOW);
-}
-
 void LocationBarContainer::StackAtTop() {
   // TODO: reenable when PlatformInit() code is reenabled.
   /*

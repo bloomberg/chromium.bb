@@ -763,6 +763,14 @@ cr.define('ntp', function() {
   }
 
   /**
+   * Sets the backgroundPositionY of html element; this overrides the css
+   * style of html element in new_tab_theme.css.
+   */
+  function setBackgroundPositionY(yPosition) {
+    document.documentElement.style.backgroundPositionY = yPosition;
+  }
+
+  /**
    * Attributes the attribution image at the bottom left.
    */
   function updateAttribution() {
@@ -966,6 +974,7 @@ cr.define('ntp', function() {
     ntp5: true,
     NtpFollowAction: NtpFollowAction,
     setAppToBeHighlighted: setAppToBeHighlighted,
+    setBackgroundPositionY: setBackgroundPositionY,
     setBookmarkBarAttached: setBookmarkBarAttached,
     setForeignSessions: setForeignSessions,
     setMostVisitedPages: setMostVisitedPages,

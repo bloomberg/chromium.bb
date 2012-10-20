@@ -21,7 +21,6 @@
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/managed_mode.h"
 #include "chrome/browser/native_window_notification_source.h"
-#include "chrome/browser/ntp_background_util.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
@@ -46,9 +45,11 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
+#include "chrome/browser/ui/ntp_background_util.h"
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_delegate.h"
 #include "chrome/browser/ui/search/search_model.h"
+#include "chrome/browser/ui/search/search_ui.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -240,9 +241,10 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
     if (contents && contents->GetView())
       height = contents->GetView()->GetContainerSize().height();
     NtpBackgroundUtil::PaintBackgroundDetachedMode(
-        host_view_->GetThemeProvider(), canvas,
+        browser_->profile(), canvas,
         gfx::Rect(0, toolbar_overlap, host_view_->width(),
-                  host_view_->height() - toolbar_overlap), height);
+                  host_view_->height() - toolbar_overlap),
+        height);
 
     // As 'hidden' according to the animation is the full in-tab state,
     // we invert the value - when current_state is at '0', we expect the
@@ -265,13 +267,19 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
     if (!toolbar_overlap)
       DetachableToolbarView::PaintHorizontalBorder(canvas, host_view_);
   } else {
+    Profile* profile = browser_view_->browser()->profile();
+    bool is_instant_extended_api_enabled =
+        chrome::search::IsInstantExtendedAPIEnabled(profile);
+    chrome::search::Mode::Type search_mode =
+        browser_view_->browser()->search_model()->mode().mode;
+    bool use_ntp_background_theme = false;
     DetachableToolbarView::PaintBackgroundAttachedMode(canvas, host_view_,
         browser_view_->OffsetPointForToolbarBackgroundImage(
-        gfx::Point(host_view_->GetMirroredX(), host_view_->y())),
-        browser_view_->GetToolbarBackgroundColor(
-            browser_view_->browser()->search_model()->mode().mode),
-        browser_view_->GetToolbarBackgroundImage(
-            browser_view_->browser()->search_model()->mode().mode));
+            gfx::Point(host_view_->GetMirroredX(), host_view_->y())),
+        chrome::search::GetToolbarBackgroundColor(profile, search_mode),
+        chrome::search::GetTopChromeBackgroundImage(tp,
+            is_instant_extended_api_enabled, search_mode,
+            InstantUI::ShouldShowWhiteNTP(profile), &use_ntp_background_theme));
     if (host_view_->height() >= toolbar_overlap)
       DetachableToolbarView::PaintHorizontalBorder(canvas, host_view_);
   }
@@ -879,54 +887,6 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
   if ((call_state == NORMAL) && !is_animating) {
     contents_container_->InvalidateLayout();
     contents_split_->Layout();
-  }
-}
-
-SkColor BrowserView::GetToolbarBackgroundColor(
-    chrome::search::Mode::Type mode) {
-  ui::ThemeProvider* theme_provider = GetThemeProvider();
-  DCHECK(theme_provider);
-
-  if (!chrome::search::IsInstantExtendedAPIEnabled(browser()->profile()))
-    return theme_provider->GetColor(ThemeService::COLOR_TOOLBAR);
-
-  switch (mode) {
-    case chrome::search::Mode::MODE_NTP_LOADING:
-    case chrome::search::Mode::MODE_NTP:
-      return theme_provider->GetColor(
-          ThemeService::COLOR_SEARCH_NTP_BACKGROUND);
-
-    case chrome::search::Mode::MODE_SEARCH_SUGGESTIONS:
-    case chrome::search::Mode::MODE_SEARCH_RESULTS:
-      return theme_provider->GetColor(
-          ThemeService::COLOR_SEARCH_SEARCH_BACKGROUND);
-
-    case chrome::search::Mode::MODE_DEFAULT:
-    default:
-      return theme_provider->GetColor(
-          ThemeService::COLOR_SEARCH_DEFAULT_BACKGROUND);
-  }
-}
-
-gfx::ImageSkia* BrowserView::GetToolbarBackgroundImage(
-      chrome::search::Mode::Type mode) {
-  ui::ThemeProvider* theme_provider = GetThemeProvider();
-  DCHECK(theme_provider);
-  if (!chrome::search::IsInstantExtendedAPIEnabled(browser()->profile()))
-    return theme_provider->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
-
-  switch (mode) {
-    case chrome::search::Mode::MODE_NTP_LOADING:
-    case chrome::search::Mode::MODE_NTP:
-      return InstantUI::ShouldShowWhiteNTP(browser()->profile()) ?
-          theme_provider->GetImageSkiaNamed(IDR_THEME_NTP_BACKGROUND_WHITE) :
-          theme_provider->GetImageSkiaNamed(IDR_THEME_NTP_BACKGROUND);
-
-    case chrome::search::Mode::MODE_SEARCH_SUGGESTIONS:
-    case chrome::search::Mode::MODE_SEARCH_RESULTS:
-    case chrome::search::Mode::MODE_DEFAULT:
-    default:
-      return theme_provider->GetImageSkiaNamed(IDR_THEME_TOOLBAR_SEARCH);
   }
 }
 
@@ -1946,7 +1906,7 @@ void BrowserView::Init() {
   BrowserTabStripController* tabstrip_controller =
       new BrowserTabStripController(browser_.get(),
                                     browser_->tab_strip_model());
-  tabstrip_ = new TabStrip(tabstrip_controller);
+  tabstrip_ = new TabStrip(tabstrip_controller, browser_->profile());
   AddChildView(tabstrip_);
   tabstrip_controller->InitFromModel(tabstrip_);
 
@@ -1966,7 +1926,7 @@ void BrowserView::Init() {
   Profile* profile = browser_->profile();
   if (chrome::search::IsInstantExtendedAPIEnabled(profile)) {
     search_view_controller_.reset(new SearchViewController(profile, contents_,
-        &browser()->search_delegate()->toolbar_search_animator(), toolbar_));
+        &browser()->search_delegate()->toolbar_search_animator(), this));
     omnibox_popup_parent =
         search_view_controller_->omnibox_popup_parent();
   }

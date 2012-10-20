@@ -9,13 +9,15 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/rect.h"
 
+class BrowserView;
 class ContentsContainer;
 class LocationBarContainer;
 class TabContents;
-class ToolbarView;
 
 namespace chrome {
 namespace search {
@@ -31,6 +33,7 @@ class WebContents;
 }
 
 namespace internal {
+class SearchNTPContainerView;
 class OmniboxPopupContainer;
 }
 
@@ -47,7 +50,8 @@ class WebView;
 // class when the active tab changes.
 class SearchViewController
     : public chrome::search::SearchModelObserver,
-      public ui::ImplicitAnimationObserver {
+      public ui::ImplicitAnimationObserver,
+      public content::NotificationObserver {
   friend class internal::OmniboxPopupContainer;
   friend class chrome::search::SearchViewControllerTest;
 
@@ -56,7 +60,7 @@ class SearchViewController
       content::BrowserContext* browser_context,
       ContentsContainer* contents_container,
       chrome::search::ToolbarSearchAnimator* toolbar_search_animator,
-      ToolbarView* toolbar_view);
+      BrowserView* browser_view);
   virtual ~SearchViewController();
 
   // Provides a host parent view for the omnibox popup.
@@ -111,6 +115,11 @@ class SearchViewController
   // Either NTP is loading or NTP is loaded.
   static bool is_ntp_state(State state);
 
+  // content::NotificationObserver implementation
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   // Invokes SetState() based on the search model and omnibox.
   void UpdateState();
 
@@ -148,6 +157,9 @@ class SearchViewController
   // Access active web contents.
   content::WebContents* web_contents();
 
+  // Test support.
+  views::View* ntp_container() const;
+
   // The profile.  Weak.
   content::BrowserContext* browser_context_;
 
@@ -157,8 +169,8 @@ class SearchViewController
   // Weak.
   chrome::search::ToolbarSearchAnimator* toolbar_search_animator_;
 
-  // The browser's toolbar view.  Weak.
-  ToolbarView* toolbar_view_;
+  // The browser's main view.  Weak.
+  BrowserView* browser_view_;
 
   // Weak.
   LocationBarContainer* location_bar_container_;
@@ -172,7 +184,7 @@ class SearchViewController
   // something like:
   //
   // |---SearchContainerView------------------------------|
-  // ||-----NTPView & OmniboxPopupViewParent-------------||
+  // ||---SearchNTPContainerView & OmniboxPopupViewParent||
   // ||                                                  ||
   // ||     |--Logo or Name------------------------|     ||
   // ||     |                                      |     ||
@@ -192,16 +204,17 @@ class SearchViewController
   // * - the LocationBarContainer gets positioned here, but it is not a child
   // of any of these views.
   //
-  // NTPView and OmniboxPopupViewParent are siblings. When on the NTP the
-  // OmniboxPopupViewParent is obscured by the NTPView. When on a search page
-  // the NTPView is hidden.
+  // SearchNTPContainerView and OmniboxPopupViewParent are siblings.
+  // When on the NTP the OmniboxPopupViewParent is obscured by the
+  // SearchNTPContainerView.
+  // When on a search page, the SearchNTPContainerView is hidden.
 
   // The outermost view.  Set as the overlay within |contents_container_| passed
   // in from owning |BrowserView|.
   views::View* search_container_;
 
   // A container view for the NTP component views.
-  views::View* ntp_container_;
+  internal::SearchNTPContainerView* ntp_container_;
 
   // The default provider's logo, may be NULL.  When NULL,
   // |default_provider_name_| is used.
@@ -218,6 +231,17 @@ class SearchViewController
 
   // Container provided to clients to host the omnibox popup view.
   internal::OmniboxPopupContainer* omnibox_popup_parent_;
+
+  // Set to true when theme changes to notify of CSS background y pos regardless
+  // if it has changed.
+  // Reset to false when this value has been set in |ntp_container_| which
+  // actually fires the notification.
+  // Theme change always happens in |DEFAULT| mode, when |ntp_container_| is
+  // not available, so |SearchViewController| has to listen for theme change,
+  // then passes it to |ntp_container_| after it's created for |NTP| mode.
+  bool notify_css_background_y_pos_;
+
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchViewController);
 };

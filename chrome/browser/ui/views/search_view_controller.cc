@@ -11,14 +11,18 @@
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/search/search_types.h"
 #include "chrome/browser/ui/search/search_ui.h"
 #include "chrome/browser/ui/search/toolbar_search_animator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/contents_container.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_container.h"
+#include "chrome/browser/ui/views/search/search_ntp_container_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/browser/ui/webui/instant_ui.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -82,85 +86,6 @@ class SearchContainerView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(SearchContainerView);
 };
 
-// NTPViewBackground -----------------------------------------------------------
-
-// Background for the NTP view.
-class NTPViewBackground : public views::Background {
- public:
-  explicit NTPViewBackground(content::BrowserContext* browser_context)
-      : browser_context_(browser_context) {
-  }
-  virtual ~NTPViewBackground() {}
-
-  // views::Background overrides:
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE {
-    canvas->DrawColor(chrome::search::GetNTPBackgroundColor(browser_context_));
-    // Have to use the height of the layer here since the layer is animated
-    // independent of the view.
-    int height = view->layer()->bounds().height();
-    if (height < chrome::search::kSearchResultsHeight)
-      return;
-    canvas->FillRect(gfx::Rect(0, height - 1, view->width(), 1),
-                     chrome::search::kResultsSeparatorColor);
-  }
-
- private:
-  // Weak.
-  content::BrowserContext* browser_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(NTPViewBackground);
-};
-
-// NTPViewLayoutManager --------------------------------------------------------
-
-// LayoutManager for the NTPView.
-class NTPViewLayoutManager : public views::LayoutManager {
- public:
-  NTPViewLayoutManager(views::View* logo_view, views::WebView* content_view)
-      : logo_view_(logo_view),
-        content_view_(content_view) {
-  }
-  virtual ~NTPViewLayoutManager() {}
-
-  // views::LayoutManager overrides:
-  virtual void Layout(views::View* host) OVERRIDE {
-    gfx::Size preferred_size = logo_view_->GetPreferredSize();
-    logo_view_->SetBounds(
-        (host->width() - preferred_size.width()) / 2,
-        chrome::search::kLogoYPosition,
-        preferred_size.width(),
-        preferred_size.height());
-
-    // Note: Next would be the Omnibox layout.  That is done in
-    // |ToolbarView::LayoutForSearch| however.
-
-    const int kContentTop = logo_view_->bounds().bottom() +
-        chrome::search::kLogoBottomGap +
-        chrome::search::kNTPOmniboxHeight +
-        chrome::search::kOmniboxBottomGap;
-    content_view_->SetBounds(0,
-                             kContentTop,
-                             host->width(),
-                             host->height() - kContentTop);
-
-    // This is a hack to patch up ordering of native layer.  Changes to the view
-    // hierarchy can |ReorderLayers| which messes with layer stacking.  Layout
-    // typically follows reorderings, so we patch things up here.
-    StackWebViewLayerAtTop(content_view_);
-  }
-
-  virtual gfx::Size GetPreferredSize(views::View* host) OVERRIDE {
-    // Preferred size doesn't matter for the NTPView.
-    return gfx::Size();
-  }
-
- private:
-  views::View* logo_view_;
-  views::WebView* content_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(NTPViewLayoutManager);
-};
-
 }  // namespace
 
 namespace internal {
@@ -216,19 +141,28 @@ SearchViewController::SearchViewController(
     content::BrowserContext* browser_context,
     ContentsContainer* contents_container,
     chrome::search::ToolbarSearchAnimator* toolbar_search_animator,
-    ToolbarView* toolbar_view)
+    BrowserView* browser_view)
     : browser_context_(browser_context),
       contents_container_(contents_container),
       toolbar_search_animator_(toolbar_search_animator),
-      toolbar_view_(toolbar_view),
+      browser_view_(browser_view),
       location_bar_container_(NULL),
       state_(STATE_NOT_VISIBLE),
       tab_contents_(NULL),
       search_container_(NULL),
       ntp_container_(NULL),
       content_view_(NULL),
-      omnibox_popup_parent_(NULL) {
+      omnibox_popup_parent_(NULL),
+      notify_css_background_y_pos_(false) {
   omnibox_popup_parent_ = new internal::OmniboxPopupContainer(this);
+
+#if defined(ENABLE_THEMES)
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
+                 content::Source<ThemeService>(
+                     ThemeServiceFactory::GetForProfile(
+                         Profile::FromBrowserContext(browser_context_))));
+#endif  // defined(ENABLE_THEMES)
 }
 
 SearchViewController::~SearchViewController() {
@@ -330,6 +264,19 @@ bool SearchViewController::is_ntp_state(State state) {
   return state == STATE_NTP || state == STATE_NTP_LOADING;
 }
 
+void SearchViewController::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+#if defined(ENABLE_THEMES)
+  DCHECK_EQ(chrome::NOTIFICATION_BROWSER_THEME_CHANGED, type);
+  if (ntp_container_)
+    ntp_container_->set_to_notify_css_background_y_pos();
+  else
+    notify_css_background_y_pos_ = true;
+#endif  // defined(ENABLE_THEMES)
+}
+
 void SearchViewController::UpdateState() {
   if (!search_model()) {
     DestroyViews();
@@ -399,12 +346,12 @@ void SearchViewController::SetState(State state) {
 
   // In |CreateViews|, the main web contents view was reparented, so for
   // |STATE_NTP| and |STATE_NTP_LOADING|, force a search re-layout by
-  // |toolbar_view_| to re-position the omnibox per the new bounds of web
+  // |ToolbarView| to re-position the omnibox per the new bounds of web
   // contents view.
   // Note: call |LayoutForSearch()| after |state_| has been updated, because
   // the former calls |GetNTPOmniboxBounds()| which accesses the latter.
   if (state_ == STATE_NTP_LOADING || state_ == STATE_NTP)
-    toolbar_view_->LayoutForSearch();
+    browser_view_->toolbar()->LayoutForSearch();
 }
 
 void SearchViewController::StartAnimation() {
@@ -459,14 +406,18 @@ void SearchViewController::StopAnimation() {
 void SearchViewController::CreateViews(State state) {
   DCHECK(!ntp_container_);
 
-  ntp_container_ = new views::View;
-  ntp_container_->set_background(new NTPViewBackground(browser_context_));
+  Profile* profile = Profile::FromBrowserContext(browser_context_);
+
+  ntp_container_ = new internal::SearchNTPContainerView(profile, browser_view_);
   ntp_container_->SetPaintToLayer(true);
   ntp_container_->layer()->SetMasksToBounds(true);
+  if (notify_css_background_y_pos_) {
+    ntp_container_->set_to_notify_css_background_y_pos();
+    notify_css_background_y_pos_ = false;
+  }
 
   const TemplateURL* default_provider =
-      TemplateURLServiceFactory::GetForProfile(
-          Profile::FromBrowserContext(browser_context_))->
+      TemplateURLServiceFactory::GetForProfile(profile)->
               GetDefaultSearchProvider();
 
   if (default_provider &&
@@ -475,8 +426,13 @@ void SearchViewController::CreateViews(State state) {
        SEARCH_ENGINE_GOOGLE)) {
     default_provider_logo_.reset(new views::ImageView());
     default_provider_logo_->set_owned_by_client();
+    ui::ThemeProvider* theme_provider = browser_view_->GetThemeProvider();
+    DCHECK(theme_provider);
+    // Use white logo if theme is used, else use regular (colored) logo.
     default_provider_logo_->SetImage(ui::ResourceBundle::GetSharedInstance().
-                                         GetImageSkiaNamed(IDR_GOOGLE_LOGO_LG));
+        GetImageSkiaNamed(
+            theme_provider->HasCustomImage(IDR_THEME_NTP_BACKGROUND) ?
+                IDR_GOOGLE_LOGO_WHITE : IDR_GOOGLE_LOGO_LG));
     default_provider_logo_->SetPaintToLayer(true);
     default_provider_logo_->SetFillsBoundsOpaquely(false);
   }
@@ -505,10 +461,8 @@ void SearchViewController::CreateViews(State state) {
 
   views::View* logo_view = GetLogoView();
   DCHECK(logo_view);
-  ntp_container_->SetLayoutManager(
-      new NTPViewLayoutManager(logo_view, content_view_));
-  ntp_container_->AddChildView(logo_view);
-  ntp_container_->AddChildView(content_view_);
+  ntp_container_->SetLogoView(logo_view);
+  ntp_container_->SetContentView(content_view_);
 
   search_container_ = new SearchContainerView(ntp_container_);
   search_container_->SetPaintToLayer(true);
@@ -550,13 +504,20 @@ void SearchViewController::DestroyViews() {
 
   // Restore control/parenting of the web_contents back to the
   // |main_contents_view_|.
-  ntp_container_->SetLayoutManager(NULL);
-  ntp_container_->RemoveChildView(content_view_);
+  ntp_container_->SetContentView(NULL);
   if (web_contents())
     web_contents()->GetNativeView()->layer()->SetOpacity(1.0f);
   content_view_->SetVisible(true);
   contents_container_->SetActive(content_view_);
   contents_container_->SetOverlay(NULL);
+  if (search_model()) {
+    if (notify_css_background_y_pos_) {
+      ntp_container_->set_to_notify_css_background_y_pos();
+      notify_css_background_y_pos_ = false;
+    }
+    ntp_container_->NotifyNTPBackgroundYPosIfChanged(
+        contents_container_->active(), search_model()->mode());
+  }
 
   delete search_container_;
   search_container_ = NULL;
@@ -587,4 +548,8 @@ chrome::search::SearchModel* SearchViewController::search_model() {
 
 content::WebContents* SearchViewController::web_contents() {
   return tab_contents_ ? tab_contents_->web_contents() : NULL;
+}
+
+views::View* SearchViewController::ntp_container() const {
+  return ntp_container_;
 }
