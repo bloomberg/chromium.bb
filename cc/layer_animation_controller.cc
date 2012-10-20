@@ -9,8 +9,6 @@
 #include "CCActiveAnimation.h"
 #include "CCKeyframedAnimationCurve.h"
 #include <public/WebTransformationMatrix.h>
-#include <wtf/CurrentTime.h>
-#include <wtf/HashMap.h>
 
 using WebKit::WebTransformationMatrix;
 
