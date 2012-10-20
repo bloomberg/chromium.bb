@@ -11,6 +11,7 @@
 #include "ui/app_list/apps_grid_view_delegate.h"
 #include "ui/app_list/page_switcher.h"
 #include "ui/app_list/pagination_model.h"
+#include "ui/base/animation/animation.h"
 #include "ui/base/events/event.h"
 #include "ui/views/border.h"
 #include "ui/views/view_model_utils.h"
@@ -34,6 +35,54 @@ const int kPageFlipZoneSize = 40;
 
 // Delay in milliseconds to do the page flip.
 const int kPageFlipDelayInMs = 1000;
+
+// RowMoveAnimationDelegate is used when moving an item into a different row.
+// Before running the animation, the item's layer is re-created and kept in
+// the original position, then the item is moved to just before its target
+// position and opacity set to 0. When the animation runs, this delegate moves
+// the layer and fades it out while fading in the item at the same time.
+class RowMoveAnimationDelegate
+    : public views::BoundsAnimator::OwnedAnimationDelegate {
+ public:
+  RowMoveAnimationDelegate(views::View* view,
+                            ui::Layer* layer,
+                            const gfx::Rect& layer_target)
+      : view_(view),
+        layer_(layer),
+        layer_start_(layer->bounds()),
+        layer_target_(layer_target) {
+  }
+  virtual ~RowMoveAnimationDelegate() {}
+
+  // ui::AnimationDelegate overrides:
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE {
+    view_->layer()->SetOpacity(animation->GetCurrentValue());
+    view_->layer()->ScheduleDraw();
+
+    layer_->SetOpacity(1 - animation->GetCurrentValue());
+    layer_->SetBounds(animation->CurrentValueBetween(layer_start_,
+                                                     layer_target_));
+    layer_->ScheduleDraw();
+  }
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE {
+    view_->layer()->SetOpacity(1.0f);
+    view_->layer()->ScheduleDraw();
+  }
+  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE {
+    view_->layer()->SetOpacity(1.0f);
+    view_->layer()->ScheduleDraw();
+  }
+
+ private:
+  // The view that needs to be wrapped. Owned by views hierarchy.
+  views::View* view_;
+
+  scoped_ptr<ui::Layer> layer_;
+  const gfx::Rect layer_start_;
+  const gfx::Rect layer_target_;
+
+  DISALLOW_COPY_AND_ASSIGN(RowMoveAnimationDelegate);
+};
 
 }  // namespace
 
@@ -410,14 +459,62 @@ void AppsGridView::CalculateIdealBounds() {
 }
 
 void AppsGridView::AnimateToIdealBounds() {
+  const gfx::Rect visible_bounds(GetVisibleBounds());
+
   CalculateIdealBounds();
   for (int i = 0; i < view_model_.view_size(); ++i) {
     views::View* view = view_model_.view_at(i);
-    if (view != drag_view_) {
-      bounds_animator_.AnimateViewTo(view,
-                                     view_model_.ideal_bounds(i));
+    if (view == drag_view_)
+      continue;
+
+    const gfx::Rect& target = view_model_.ideal_bounds(i);
+    if (bounds_animator_.GetTargetBounds(view) == target)
+      continue;
+
+    const gfx::Rect& current = view->bounds();
+    bool visible = visible_bounds.Contains(current) ||
+        visible_bounds.Contains(target);
+
+    int y_diff = target.y() - current.y();
+    if (visible && y_diff && y_diff % kPreferredTileHeight == 0) {
+      AnimationBetweenRows(view, current, target);
+    } else {
+      bounds_animator_.AnimateViewTo(view, target);
     }
   }
+}
+
+void AppsGridView::AnimationBetweenRows(views::View* view,
+                                        const gfx::Rect& current,
+                                        const gfx::Rect& target) {
+  const int y_diff = target.y() - current.y();
+  // It should be either wrap to next/prev row or next/prev page.
+  DCHECK(abs(y_diff) == kPreferredTileHeight ||
+         abs(y_diff) == (rows_per_page_ - 1) * kPreferredTileHeight);
+
+  int dir = y_diff == kPreferredTileHeight ||
+      y_diff == (1 - rows_per_page_) * kPreferredTileHeight ? 1 : -1;
+
+#if !defined(OS_WIN)
+  ui::Layer* layer = view->RecreateLayer();
+  layer->SuppressPaint();
+
+  view->SetFillsBoundsOpaquely(false);
+  view->layer()->SetOpacity(0.f);
+
+  gfx::Rect current_out(current);
+  current_out.Offset(dir * kPreferredTileWidth, 0);
+#endif
+
+  gfx::Rect target_in(target);
+  target_in.Offset(-dir * kPreferredTileWidth, 0);
+  view->SetBoundsRect(target_in);
+  bounds_animator_.AnimateViewTo(view, target);
+
+#if !defined(OS_WIN)
+  bounds_animator_.SetAnimationDelegate(
+      view, new RowMoveAnimationDelegate(view, layer, current_out), true);
+#endif
 }
 
 void AppsGridView::CalculateDropTarget(const gfx::Point& drag_point) {

@@ -62,7 +62,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   bool IsSelectedView(const views::View* view) const;
 
   // Ensures the view is visible. Note that if there is a running page
-  // transition, this does not thing.
+  // transition, this does nothing.
   void EnsureViewVisible(const views::View* view);
 
   void InitiateDrag(views::View* view,
@@ -122,6 +122,15 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   void CalculateIdealBounds();
   void AnimateToIdealBounds();
+
+  // Invoked when the given |view|'s current bounds and target bounds are on
+  // different rows. To avoid moving diagonally, |view| would be put into a
+  // slot prior |target| and fade in while moving to |target|. In the meanwhile,
+  // a layer copy of |view| would start at |current| and fade out while moving
+  // to succeeding slot of |current|.
+  void AnimationBetweenRows(views::View* view,
+                            const gfx::Rect& current,
+                            const gfx::Rect& target);
 
   // Calculates |drop_target_| based on |drag_point|. |drag_point| is in the
   // grid view's coordinates.
