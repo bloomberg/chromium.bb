@@ -39,6 +39,7 @@ if (!chrome.searchBox) {
     native function SetQuery();
     native function SetQueryFromAutocompleteResult();
     native function SetPreviewHeight();
+    native function Show();
 
     // Returns the |restrictedText| wrapped in a ShadowDOM.
     function SafeWrap(restrictedText) {
@@ -193,8 +194,12 @@ if (!chrome.searchBox) {
     this.setRestrictedValue = function(resultId, behavior) {
       SetQueryFromAutocompleteResult(resultId, behavior);
     };
+    // Deprecated. TODO(jered): Delete this once it is no longer called.
     this.setNonNativeDropdownHeight = function(height) {
       SetPreviewHeight(height);
+    };
+    this.show = function(reason, opt_height) {
+      Show(reason, opt_height);
     };
     this.markDuplicateSuggestions = function(clientSuggestions) {
       return DedupeClientSuggestions(clientSuggestions);

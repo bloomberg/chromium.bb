@@ -31,8 +31,10 @@ class SearchBox : public content::RenderViewObserver,
   // Sends ViewHostMsg_SetSuggestions to the browser.
   void SetSuggestions(const std::vector<InstantSuggestion>& suggestions);
 
-  // Sends ViewHostMsg_SetInstantPreviewHeight to the browser.
-  void SetInstantPreviewHeight(int height, InstantSizeUnits units);
+  // Sends ViewHostMsg_ShowInstantPreview to the browser.
+  void ShowInstantPreview(InstantShownReason reason,
+                          int height,
+                          InstantSizeUnits units);
 
   bool is_focused() const { return is_focused_; }
   const string16& query() const { return query_; }

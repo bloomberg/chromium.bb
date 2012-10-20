@@ -37,10 +37,12 @@ void SearchBox::SetSuggestions(
       render_view()->GetRoutingID(), render_view()->GetPageId(), suggestions));
 }
 
-void SearchBox::SetInstantPreviewHeight(int height, InstantSizeUnits units) {
-  render_view()->Send(new ChromeViewHostMsg_SetInstantPreviewHeight(
-      render_view()->GetRoutingID(), render_view()->GetPageId(), height,
-      units));
+void SearchBox::ShowInstantPreview(InstantShownReason reason,
+                                   int height,
+                                   InstantSizeUnits units) {
+  render_view()->Send(new ChromeViewHostMsg_ShowInstantPreview(
+      render_view()->GetRoutingID(), render_view()->GetPageId(), reason,
+      height, units));
 }
 
 gfx::Rect SearchBox::GetRect() {

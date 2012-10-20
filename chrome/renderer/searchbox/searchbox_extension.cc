@@ -26,6 +26,7 @@ namespace {
 // in |number|) and the rest (saved in |suffix|). Either piece may become empty,
 // depending on whether the input had no digits or only digits. Neither argument
 // may be NULL.
+// TODO(jered): Delete this when deleting SetPreviewHeight.
 void SplitLeadingNumberToken(std::string* number, std::string* suffix) {
   size_t i = 0;
   while (i < number->size() && isdigit((*number)[i]))
@@ -220,7 +221,12 @@ class SearchBoxExtensionWrapper : public v8::Extension {
       const v8::Arguments& args);
 
   // Resize the preview to the given height.
+  // Deprecated, use Show().
+  // TODO(jered): Delete this once it is no longer called.
   static v8::Handle<v8::Value> SetPreviewHeight(const v8::Arguments& args);
+
+  // Requests the preview be shown with the specified contents and height.
+  static v8::Handle<v8::Value> Show(const v8::Arguments& args);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SearchBoxExtensionWrapper);
@@ -270,6 +276,8 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(SetQueryFromAutocompleteResult);
   } else if (name->Equals(v8::String::New("SetPreviewHeight"))) {
     return v8::FunctionTemplate::New(SetPreviewHeight);
+  } else if (name->Equals(v8::String::New("Show"))) {
+    return v8::FunctionTemplate::New(Show);
   }
   return v8::Handle<v8::FunctionTemplate>();
 }
@@ -608,7 +616,43 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetPreviewHeight(
     }
     content::RenderView* render_view = GetRenderView();
     if (render_view && height >= 0)
-      SearchBox::Get(render_view)->SetInstantPreviewHeight(height, units);
+      SearchBox::Get(render_view)->ShowInstantPreview(
+          INSTANT_SHOWN_NOT_SPECIFIED, height, units);
+  }
+  return v8::Undefined();
+}
+
+// static
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::Show(
+    const v8::Arguments& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (render_view &&
+      ((args.Length() == 1 && args[0]->IsInt32()) ||
+       (args.Length() == 2 && args[0]->IsInt32() && args[1]->IsInt32()))) {
+    InstantShownReason reason = INSTANT_SHOWN_NOT_SPECIFIED;
+    switch (args[0]->Int32Value()) {
+      case 0:
+        reason = INSTANT_SHOWN_NOT_SPECIFIED;
+        break;
+      case 1:
+        reason = INSTANT_SHOWN_CUSTOM_NTP_CONTENT;
+        break;
+      case 2:
+        reason = INSTANT_SHOWN_QUERY_SUGGESTIONS;
+        break;
+      case 3:
+        reason = INSTANT_SHOWN_ZERO_SUGGESTIONS;
+        break;
+      default:
+        return v8::Undefined();
+    }
+    int height = 100;
+    InstantSizeUnits units = INSTANT_SIZE_PERCENT;
+    if (args.Length() == 2) {
+      height = args[1]->Int32Value();
+      units = INSTANT_SIZE_PIXELS;
+    }
+    SearchBox::Get(render_view)->ShowInstantPreview(reason, height, units);
   }
   return v8::Undefined();
 }

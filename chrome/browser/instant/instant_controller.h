@@ -159,9 +159,10 @@ class InstantController : public InstantLoaderDelegate {
       InstantLoader* loader,
       const std::vector<InstantSuggestion>& suggestions) OVERRIDE;
   virtual void CommitInstantLoader(InstantLoader* loader) OVERRIDE;
-  virtual void SetInstantPreviewHeight(InstantLoader* loader,
-                                       int height,
-                                       InstantSizeUnits units) OVERRIDE;
+  virtual void ShowInstantPreview(InstantLoader* loader,
+                                  InstantShownReason reason,
+                                  int height,
+                                  InstantSizeUnits units) OVERRIDE;
   virtual void InstantLoaderPreviewLoaded(InstantLoader* loader) OVERRIDE;
   virtual void InstantSupportDetermined(InstantLoader* loader,
                                         bool supports_instant) OVERRIDE;

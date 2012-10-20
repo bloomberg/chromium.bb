@@ -606,9 +606,10 @@ void InstantController::CommitInstantLoader(InstantLoader* loader) {
   CommitCurrentPreview(INSTANT_COMMIT_FOCUS_LOST);
 }
 
-void InstantController::SetInstantPreviewHeight(InstantLoader* loader,
-                                                int height,
-                                                InstantSizeUnits units) {
+void InstantController::ShowInstantPreview(InstantLoader* loader,
+                                           InstantShownReason reason,
+                                           int height,
+                                           InstantSizeUnits units) {
   // Show even if IsOutOfDate() on the extended mode NTP to enable a search
   // provider call SetInstantPreviewHeight() to show a custom logo, e.g. a
   // Google doodle, before the user interacts with the page.

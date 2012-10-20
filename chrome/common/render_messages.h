@@ -115,6 +115,7 @@ IPC_ENUM_TRAITS(ChromeViewHostMsg_GetPluginInfo_Status::Value)
 IPC_ENUM_TRAITS(InstantCompleteBehavior)
 IPC_ENUM_TRAITS(InstantSizeUnits)
 IPC_ENUM_TRAITS(InstantSuggestionType)
+IPC_ENUM_TRAITS(InstantShownReason)
 IPC_ENUM_TRAITS(search_provider::OSDDType)
 IPC_ENUM_TRAITS(search_provider::InstallState)
 IPC_ENUM_TRAITS(TranslateErrors::Type)
@@ -616,9 +617,10 @@ IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_InstantSupportDetermined,
                     int /* page_id */,
                     bool /* result */)
 
-// Sent by the Instant preview asking to resize itself to the given height.
-IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_SetInstantPreviewHeight,
+// Sent by the Instant preview asking to show itself with the given height.
+IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_ShowInstantPreview,
                     int /* page_id */,
+                    InstantShownReason /* reason */,
                     int /* height */,
                     InstantSizeUnits /* units */)
 
