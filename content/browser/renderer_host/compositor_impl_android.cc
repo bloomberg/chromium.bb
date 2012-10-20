@@ -144,7 +144,7 @@ void CompositorImpl::SetWindowSurface(ANativeWindow* window) {
     ANativeWindow_release(window_);
     window_ = NULL;
     surface_id_ = 0;
-    size_ = gfx::Size();
+    host_.reset();
   }
 
   if (window) {
@@ -155,6 +155,7 @@ void CompositorImpl::SetWindowSurface(ANativeWindow* window) {
         surface_id_,
         gfx::GLSurfaceHandle(gfx::kDummyPluginWindow, false));
 
+    DCHECK(!host_.get());
     WebKit::WebLayerTreeView::Settings settings;
     settings.refreshRate = 60.0;
     WebKit::WebCompositorSupport* compositor_support =
@@ -163,6 +164,7 @@ void CompositorImpl::SetWindowSurface(ANativeWindow* window) {
         compositor_support->createLayerTreeView(this, *root_layer_, settings));
     host_->setVisible(true);
     host_->setSurfaceReady();
+    host_->setViewportSize(size_);
   }
 }
 
@@ -244,6 +246,7 @@ void CompositorImpl::applyScrollAndScale(const WebKit::WebSize& scrollDelta,
 }
 
 WebKit::WebCompositorOutputSurface* CompositorImpl::createOutputSurface() {
+  DCHECK(window_ && surface_id_);
   WebKit::WebGraphicsContext3D::Attributes attrs;
   attrs.shareResources = true;
   attrs.noAutomaticFlushes = true;
