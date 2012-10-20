@@ -15,7 +15,7 @@
 int ConstrainedWindow::GetCloseButtonSize() {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   const SkBitmap* bitmap =
-      bundle.GetNativeImageNamed(IDR_TAB_CLOSE).ToSkBitmap();
+      bundle.GetNativeImageNamed(IDR_WEB_UI_CLOSE).ToSkBitmap();
   DCHECK_EQ(bitmap->width(), bitmap->height());
   return bitmap->width();
 }

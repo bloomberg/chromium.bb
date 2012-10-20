@@ -67,7 +67,8 @@
         [[FlippedView alloc] initWithFrame:ui::kWindowSizeDeterminedLater]);
     [self setView:view];
 
-    closeButton_.reset([[HoverCloseButton alloc] initWithFrame:NSZeroRect]);
+    closeButton_.reset(
+        [[WebUIHoverCloseButton alloc] initWithFrame:NSZeroRect]);
     [closeButton_ setTarget:self];
     [closeButton_ setAction:@selector(onCloseButton:)];
     [[closeButton_ cell] setKeyEquivalent:kKeyEquivalentEscape];

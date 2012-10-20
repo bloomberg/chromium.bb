@@ -16,3 +16,8 @@
 }
 
 @end
+
+// A version of HoverCloseButton with the "x" icon changed to match the WebUI
+// look.
+@interface WebUIHoverCloseButton : HoverCloseButton
+@end

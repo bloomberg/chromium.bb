@@ -49,7 +49,8 @@ const CGFloat kButtonGap = 6;
     messageTextField_.reset([constrained_window::CreateLabel() retain]);
     [contentView addSubview:messageTextField_];
 
-    closeButton_.reset([[HoverCloseButton alloc] initWithFrame:NSZeroRect]);
+    closeButton_.reset(
+        [[WebUIHoverCloseButton alloc] initWithFrame:NSZeroRect]);
     [contentView addSubview:closeButton_];
   }
   return self;
