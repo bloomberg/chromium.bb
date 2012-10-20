@@ -14,7 +14,7 @@ namespace ui {
 
 class UI_EXPORT CursorLoader {
  public:
-  CursorLoader() : device_scale_factor_(0.0f) {}
+  CursorLoader() : device_scale_factor_(1.0f) {}
   virtual ~CursorLoader() {}
 
   // Returns the device scale factor used by the loader.
