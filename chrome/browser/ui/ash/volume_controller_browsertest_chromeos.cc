@@ -90,8 +90,16 @@ class VolumeControllerTest : public InProcessBrowserTest {
   }
 
  protected:
+  void SetVolumePercent(double percent) {
+    volume_controller_.SetVolumePercent(percent);
+  }
+
   void VolumeMute() {
     volume_controller_.HandleVolumeMute(ui::Accelerator());
+  }
+
+  void VolumeUnmute() {
+    volume_controller_.SetAudioMuted(false);
   }
 
   void VolumeUp() {
@@ -135,6 +143,25 @@ IN_PROC_BROWSER_TEST_F(VolumeControllerTest, VolumeDownToZero) {
   EXPECT_DOUBLE_EQ(0.0, audio_mixer()->GetVolumePercent());
   VolumeUp();
   EXPECT_LT(0.0, audio_mixer()->GetVolumePercent());
+}
+
+IN_PROC_BROWSER_TEST_F(VolumeControllerTest, VolumeAutoMute) {
+  // Setting to very small
+
+  // kMuteThresholdPercent = 0.1 in audio_handler.cc.
+  SetVolumePercent(0.1);
+  EXPECT_EQ(0.0, audio_mixer()->GetVolumePercent());
+  EXPECT_TRUE(audio_mixer()->IsMuted());
+}
+
+IN_PROC_BROWSER_TEST_F(VolumeControllerTest, VolumeUnmuteFromZero) {
+  // Setting to 0%
+  audio_mixer()->SetVolumePercent(0.0);
+
+  VolumeUnmute();
+  EXPECT_EQ(4.0 /* kDefaultUnmuteVolumePercent in audio_handler.cc */,
+            audio_mixer()->GetVolumePercent());
+  EXPECT_FALSE(audio_mixer()->IsMuted());
 }
 
 IN_PROC_BROWSER_TEST_F(VolumeControllerTest, VolumeUpTo100) {
