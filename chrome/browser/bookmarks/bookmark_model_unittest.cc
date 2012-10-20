@@ -49,7 +49,7 @@ namespace {
 static struct {
   const std::string input_title;
   const std::string expected_title;
-} whitespace_test_cases[] = {
+} url_whitespace_test_cases[] = {
   {"foobar", "foobar"},
   // Newlines.
   {"foo\nbar", "foo bar"},
@@ -71,6 +71,35 @@ static struct {
   {"  foo\tbar\n", "foo bar"},
   {"\t foo \t  bar  \t", "foo bar"},
   {"\n foo\r\n\tbar\n \t", "foo bar"},
+};
+
+// Test cases used to test the removal of extra whitespace when adding
+// a new folder/bookmark or updating a title of a folder/bookmark.
+static struct {
+  const std::string input_title;
+  const std::string expected_title;
+} title_whitespace_test_cases[] = {
+  {"foobar", "foobar"},
+  // Newlines.
+  {"foo\nbar", "foo bar"},
+  {"foo\n\nbar", "foo  bar"},
+  {"foo\n\n\nbar", "foo   bar"},
+  {"foo\r\nbar", "foo  bar"},
+  {"foo\r\n\r\nbar", "foo    bar"},
+  {"\nfoo\nbar\n", " foo bar "},
+  // Spaces.
+  {"foo  bar", "foo  bar"},
+  {" foo bar ", " foo bar "},
+  {"  foo  bar  ", "  foo  bar  "},
+  // Tabs.
+  {"\tfoo\tbar\t", " foo bar "},
+  {"\tfoo bar\t", " foo bar "},
+  // Mixed cases.
+  {"\tfoo\nbar\t", " foo bar "},
+  {"\tfoo\r\nbar\t", " foo  bar "},
+  {"  foo\tbar\n", "  foo bar "},
+  {"\t foo \t  bar  \t", "  foo    bar   "},
+  {"\n foo\r\n\tbar\n \t", "  foo   bar   "},
 };
 
 // Helper to get a mutable bookmark node.
@@ -286,16 +315,17 @@ TEST_F(BookmarkModelTest, AddURLWithUnicodeTitle) {
 }
 
 TEST_F(BookmarkModelTest, AddURLWithWhitespaceTitle) {
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(whitespace_test_cases); ++i) {
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(url_whitespace_test_cases); ++i) {
     const BookmarkNode* root = model_.bookmark_bar_node();
-    const string16 title(ASCIIToUTF16(whitespace_test_cases[i].input_title));
+    const string16 title(
+        ASCIIToUTF16(url_whitespace_test_cases[i].input_title));
     const GURL url("http://foo.com");
 
     const BookmarkNode* new_node = model_.AddURL(root, i, title, url);
 
     int size = i + 1;
     EXPECT_EQ(size, root->child_count());
-    EXPECT_EQ(ASCIIToUTF16(whitespace_test_cases[i].expected_title),
+    EXPECT_EQ(ASCIIToUTF16(url_whitespace_test_cases[i].expected_title),
               new_node->GetTitle());
     EXPECT_EQ(BookmarkNode::URL, new_node->type());
   }
@@ -345,15 +375,16 @@ TEST_F(BookmarkModelTest, AddFolder) {
 }
 
 TEST_F(BookmarkModelTest, AddFolderWithWhitespaceTitle) {
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(whitespace_test_cases); ++i) {
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(title_whitespace_test_cases); ++i) {
     const BookmarkNode* root = model_.bookmark_bar_node();
-    const string16 title(ASCIIToUTF16(whitespace_test_cases[i].input_title));
+    const string16 title(
+        ASCIIToUTF16(title_whitespace_test_cases[i].input_title));
 
     const BookmarkNode* new_node = model_.AddFolder(root, i, title);
 
     int size = i + 1;
     EXPECT_EQ(size, root->child_count());
-    EXPECT_EQ(ASCIIToUTF16(whitespace_test_cases[i].expected_title),
+    EXPECT_EQ(ASCIIToUTF16(title_whitespace_test_cases[i].expected_title),
               new_node->GetTitle());
     EXPECT_EQ(BookmarkNode::FOLDER, new_node->type());
   }
@@ -414,15 +445,15 @@ TEST_F(BookmarkModelTest, SetTitle) {
 }
 
 TEST_F(BookmarkModelTest, SetTitleWithWhitespace) {
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(whitespace_test_cases); ++i) {
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(title_whitespace_test_cases); ++i) {
     const BookmarkNode* root = model_.bookmark_bar_node();
     string16 title(ASCIIToUTF16("dummy"));
     const GURL url("http://foo.com");
     const BookmarkNode* node = model_.AddURL(root, 0, title, url);
 
-    title = ASCIIToUTF16(whitespace_test_cases[i].input_title);
+    title = ASCIIToUTF16(title_whitespace_test_cases[i].input_title);
     model_.SetTitle(node, title);
-    EXPECT_EQ(ASCIIToUTF16(whitespace_test_cases[i].expected_title),
+    EXPECT_EQ(ASCIIToUTF16(title_whitespace_test_cases[i].expected_title),
               node->GetTitle());
   }
 }

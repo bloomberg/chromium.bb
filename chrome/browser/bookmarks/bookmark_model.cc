@@ -39,6 +39,14 @@ BookmarkNode* AsMutable(const BookmarkNode* node) {
   return const_cast<BookmarkNode*>(node);
 }
 
+// Whitespace characters to strip from bookmark titles.
+const char16 kInvalidChars[] = {
+  '\n', '\r', '\t',
+  0x2028,  // Line separator
+  0x2029,  // Paragraph separator
+  0
+};
+
 }  // namespace
 
 // BookmarkNode ---------------------------------------------------------------
@@ -57,8 +65,11 @@ BookmarkNode::~BookmarkNode() {
 }
 
 void BookmarkNode::SetTitle(const string16& title) {
-  // Remove extra whitespace from folder/bookmark names.
-  ui::TreeNode<BookmarkNode>::SetTitle(CollapseWhitespace(title, false));
+  // Replace newlines and other problematic whitespace characters in
+  // folder/bookmark names with spaces.
+  string16 trimmed_title;
+  ReplaceChars(title, kInvalidChars, ASCIIToUTF16(" "), &trimmed_title);
+  ui::TreeNode<BookmarkNode>::SetTitle(trimmed_title);
 }
 
 bool BookmarkNode::IsVisible() const {
