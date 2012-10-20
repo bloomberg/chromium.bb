@@ -6,10 +6,10 @@
 
 #include "CCFrameRateController.h"
 
-#include "base/logging.h"
 #include "CCDelayBasedTimeSource.h"
-#include "CCTimeSource.h"
 #include "base/debug/trace_event.h"
+#include "base/logging.h"
+#include "cc/time_source.h"
 #include <wtf/CurrentTime.h>
 
 namespace {

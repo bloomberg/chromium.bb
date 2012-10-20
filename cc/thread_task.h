@@ -4,7 +4,7 @@
 #ifndef CCThreadTask_h
 #define CCThreadTask_h
 
-#include "CCThread.h"
+#include "cc/thread.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>
 

@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCTileDrawQuad.h"
+#include "cc/tile_draw_quad.h"
 
 #include "base/logging.h"
 #include "third_party/khronos/GLES2/gl2.h"

@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCTimer.h"
+#include "cc/timer.h"
 
 #include "cc/test/scheduler_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"

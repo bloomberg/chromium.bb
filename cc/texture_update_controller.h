@@ -5,11 +5,11 @@
 #ifndef CCTextureUpdateController_h
 #define CCTextureUpdateController_h
 
-#include "CCTimer.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "cc/texture_update_queue.h"
+#include "cc/timer.h"
 
 namespace cc {
 

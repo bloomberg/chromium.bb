@@ -10,7 +10,6 @@
 #include "CCRenderPass.h"
 #include "CCRenderPassDrawQuad.h"
 #include "CCSettings.h"
-#include "CCTileDrawQuad.h"
 #include "cc/single_thread_proxy.h" // For DebugScopedSetImplThread
 #include "cc/solid_color_draw_quad.h"
 #include "cc/test/animation_test_common.h"
@@ -19,6 +18,7 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/render_pass_test_common.h"
 #include "cc/test/test_common.h"
+#include "cc/tile_draw_quad.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

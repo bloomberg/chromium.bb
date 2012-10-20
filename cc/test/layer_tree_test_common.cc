@@ -12,8 +12,6 @@
 #include "CCLayerImpl.h"
 #include "CCLayerTreeHostImpl.h"
 #include "CCScopedThreadProxy.h"
-#include "CCThreadTask.h"
-#include "CCTimingFunction.h"
 #include "base/stl_util.h"
 #include "cc/content_layer.h"
 #include "cc/layer.h"
@@ -25,6 +23,8 @@
 #include "cc/test/occlusion_tracker_test_common.h"
 #include "cc/test/test_common.h"
 #include "cc/test/tiled_layer_test_common.h"
+#include "cc/thread_task.h"
+#include "cc/timing_function.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include <public/Platform.h>
 #include <public/WebCompositorSupport.h>

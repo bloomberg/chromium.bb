@@ -7,8 +7,8 @@
 
 #include "CCDelayBasedTimeSource.h"
 #include "CCFrameRateController.h"
-#include "CCThread.h"
 #include "base/threading/platform_thread.h"
+#include "cc/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <wtf/OwnPtr.h>
 

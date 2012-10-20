@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include "CCTimer.h"
+#include "cc/timer.h"
 
 namespace cc {
 

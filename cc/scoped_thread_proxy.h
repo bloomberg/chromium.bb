@@ -5,9 +5,9 @@
 #ifndef CCScopedThreadProxy_h
 #define CCScopedThreadProxy_h
 
-#include "CCThreadTask.h"
 #include "base/logging.h"
 #include "base/threading/platform_thread.h"
+#include "cc/thread_task.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/ThreadSafeRefCounted.h>

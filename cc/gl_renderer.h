@@ -11,9 +11,9 @@
 #include "CCIOSurfaceDrawQuad.h"
 #include "CCRenderPassDrawQuad.h"
 #include "CCRenderer.h"
-#include "CCTileDrawQuad.h"
-#include "CCYUVVideoDrawQuad.h"
 #include "cc/solid_color_draw_quad.h"
+#include "cc/tile_draw_quad.h"
+#include "cc/yuv_video_draw_quad.h"
 
 namespace WebKit {
 class WebGraphicsContext3D;

@@ -4,19 +4,19 @@
 
 #include "config.h"
 
-#include "CCVideoLayerImpl.h"
+#include "cc/video_layer_impl.h"
 
-#include "third_party/khronos/GLES2/gl2ext.h"
-#include "third_party/khronos/GLES2/gl2.h"
 #include "CCIOSurfaceDrawQuad.h"
 #include "CCLayerTreeHostImpl.h"
 #include "CCProxy.h"
 #include "CCQuadSink.h"
 #include "CCResourceProvider.h"
-#include "CCYUVVideoDrawQuad.h"
 #include "NotImplemented.h"
 #include "cc/stream_video_draw_quad.h"
 #include "cc/texture_draw_quad.h"
+#include "cc/yuv_video_draw_quad.h"
+#include "third_party/khronos/GLES2/gl2.h"
+#include "third_party/khronos/GLES2/gl2ext.h"
 #include <public/WebVideoFrame.h>
 
 namespace cc {

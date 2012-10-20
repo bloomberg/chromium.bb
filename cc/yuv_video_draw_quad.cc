@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCYUVVideoDrawQuad.h"
+#include "cc/yuv_video_draw_quad.h"
 
 #include "base/logging.h"
 

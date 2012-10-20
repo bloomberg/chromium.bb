@@ -10,12 +10,12 @@
 #include "CCDebugBorderDrawQuad.h"
 #include "CCIOSurfaceDrawQuad.h"
 #include "CCRenderPassDrawQuad.h"
-#include "CCTileDrawQuad.h"
-#include "CCYUVVideoDrawQuad.h"
 #include "base/logging.h"
 #include "cc/solid_color_draw_quad.h"
 #include "cc/stream_video_draw_quad.h"
 #include "cc/texture_draw_quad.h"
+#include "cc/tile_draw_quad.h"
+#include "cc/yuv_video_draw_quad.h"
 
 namespace cc {
 

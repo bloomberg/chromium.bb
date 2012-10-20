@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCThreadTask.h"
+#include "cc/thread_task.h"
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -6,7 +6,7 @@
 
 #include "CCProxy.h"
 
-#include "CCThreadTask.h"
+#include "cc/thread_task.h"
 
 namespace cc {
 

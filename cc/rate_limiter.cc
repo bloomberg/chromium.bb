@@ -7,8 +7,8 @@
 #include "cc/rate_limiter.h"
 
 #include "CCProxy.h"
-#include "CCThread.h"
 #include "base/debug/trace_event.h"
+#include "cc/thread.h"
 #include <public/WebGraphicsContext3D.h>
 
 namespace cc {
