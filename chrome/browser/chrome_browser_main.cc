@@ -120,6 +120,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_handle.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "chrome/browser/first_run/upgrade_util_linux.h"
 #endif
@@ -535,6 +539,13 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
     MetricsLog::set_version_extension("-F");
 #elif defined(ARCH_CPU_64_BITS)
   MetricsLog::set_version_extension("-64");
+#elif defined(OS_ANDROID)
+  // Set version extension to identify Android releases.
+  // Example: 16.0.912.61-K88
+  std::string version_extension = "-K";
+  version_extension.append(
+      base::android::BuildInfo::GetInstance()->package_version_code());
+  MetricsLog::set_version_extension(version_extension);
 #endif  // defined(OS_WIN)
 
   // Initialize FieldTrialList to support FieldTrials that use one-time
@@ -638,11 +649,11 @@ DLLEXPORT void __cdecl RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
 
 void ChromeBrowserMainParts::PreEarlyInitialization() {
   // Single-process is an unsupported and not fully tested mode, so
-  // don't enable it for official Chrome builds (by not setting the client, the
-#if defined(GOOGLE_CHROME_BUILD)
+  // don't enable it for official Chrome builds (except on Android).
+#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_ANDROID)
   if (content::RenderProcessHost::run_renderer_in_process())
     content::RenderProcessHost::set_run_renderer_in_process(false);
-#endif  // GOOGLE_CHROME_BUILD
+#endif
 
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PreEarlyInitialization();

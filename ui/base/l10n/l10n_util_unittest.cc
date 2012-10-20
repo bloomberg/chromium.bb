@@ -67,15 +67,18 @@ TEST_F(L10nUtilTest, DISABLED_GetString) {
 }
 #endif  // defined(OS_WIN)
 
-#if !defined(OS_MACOSX)
-// We are disabling this test on MacOS because GetApplicationLocale() as an
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+// On Mac, we are disabling this test because GetApplicationLocale() as an
 // API isn't something that we'll easily be able to unit test in this manner.
 // The meaning of that API, on the Mac, is "the locale used by Cocoa's main
 // nib file", which clearly can't be stubbed by a test app that doesn't use
 // Cocoa.
 
+// On Android, we are disabling this test since GetApplicationLocale() just
+// returns the system's locale, which, similarly, is not easily unit tested.
+
 void SetDefaultLocaleForTest(const std::string& tag, base::Environment* env) {
-#if defined(OS_POSIX) && !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_CHROMEOS)
   env->SetVar("LANGUAGE", tag);
 #else
   base::i18n::SetICUDefaultLocale(tag);
@@ -115,7 +118,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   // Keep a copy of ICU's default locale before we overwrite it.
   icu::Locale locale = icu::Locale::getDefault();
 
-#if defined(OS_POSIX) && !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_CHROMEOS)
   env.reset(base::Environment::Create());
 
   // Test the support of LANGUAGE environment variable.
@@ -167,7 +170,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
 
   SetDefaultLocaleForTest("ca_ES.UTF8@valencia", env.get());
   EXPECT_EQ("ca@valencia", l10n_util::GetApplicationLocale(""));
-#endif  // defined(OS_POSIX) && !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#endif  // defined(OS_POSIX) && !defined(OS_CHROMEOS)
 
   SetDefaultLocaleForTest("en-US", env.get());
   EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(""));
@@ -175,10 +178,9 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   SetDefaultLocaleForTest("xx", env.get());
   EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(""));
 
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-  // ChromeOS and Android honor preferred locale first in
-  // GetApplicationLocale(), defaulting to en-US, while other
-  // targets first honor other signals.
+#if defined(OS_CHROMEOS)
+  // ChromeOS honors preferred locale first in GetApplicationLocale(),
+  // defaulting to en-US, while other targets first honor other signals.
   base::i18n::SetICUDefaultLocale("en-GB");
   EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(""));
 
@@ -196,7 +198,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
 
   base::i18n::SetICUDefaultLocale("en-US");
   EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale("en-ZA"));
-#else  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#else  // !defined(OS_CHROMEOS)
   SetDefaultLocaleForTest("en-GB", env.get());
   EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(""));
 
@@ -235,7 +237,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
 
   SetDefaultLocaleForTest("en-ZA", env.get());
   EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(""));
-#endif  // defined (OS_CHROMEOS) || defined(OS_ANDROID)
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
   // We don't allow user prefs for locale on linux/mac.

@@ -415,9 +415,8 @@ std::string GetApplicationLocale(const std::string& pref_locale) {
 
 #elif defined(OS_ANDROID)
 
-  // TODO(jcivelli): use the application locale preference for now.
-  if (!pref_locale.empty())
-    candidates.push_back(pref_locale);
+  // On Android, query java.util.Locale for the default locale.
+  candidates.push_back(base::android::GetDefaultLocale());
 
 #elif defined(OS_LINUX)
   // If we're on a different Linux system, we have glib.
