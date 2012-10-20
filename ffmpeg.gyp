@@ -607,7 +607,7 @@
         ],
         'yasm_flags': [
           '-DPIC',
-          '>(more_yasm_flags)',
+          '>@(more_yasm_flags)',
           '-I', '<(platform_config_root)',
           '-I', 'libavcodec/x86/',
           '-I', 'libavutil/x86/',
