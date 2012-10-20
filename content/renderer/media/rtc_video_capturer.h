@@ -16,7 +16,7 @@ class VideoCaptureImplManager;
 // RtcVideoCapturer implements a simple cricket::VideoCapturer that is used for
 // VideoCapturing in libJingle and especially in PeerConnections.
 // The class is created and destroyed on the main render thread.
-// PeerConnection access cricket::VideoCapturer from a libJingle thread.
+// PeerConnection access cricket::VideoCapturer from a libJingle worker thread.
 // The video frames are delivered in OnFrameCaptured on a thread owned by
 // Chrome's video capture implementation.
 class RtcVideoCapturer
@@ -28,7 +28,7 @@ class RtcVideoCapturer
   virtual ~RtcVideoCapturer();
 
   // cricket::VideoCapturer implementation.
-  // These methods are accessed from a libJingle thread.
+  // These methods are accessed from a libJingle worker thread.
   virtual cricket::CaptureState Start(
       const cricket::VideoFormat& capture_format) OVERRIDE;
   virtual void Stop() OVERRIDE;
@@ -42,6 +42,9 @@ class RtcVideoCapturer
   // Frame captured callback method.
   virtual void OnFrameCaptured(
       const media::VideoCapture::VideoFrameBuffer& frame);
+
+  // State change callback, must be called on same thread as Start is called.
+  void OnStateChange(RtcVideoCaptureDelegate::CaptureState state);
 
   const bool is_screencast_;
   scoped_refptr<RtcVideoCaptureDelegate> delegate_;

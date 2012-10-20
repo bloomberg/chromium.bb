@@ -20,14 +20,23 @@ class RtcVideoCaptureDelegate
     : public base::RefCountedThreadSafe<RtcVideoCaptureDelegate>,
       public media::VideoCapture::EventHandler {
  public:
+  enum CaptureState {
+    CAPTURE_STOPPED,  // The capturer has been stopped or hasn't started yet.
+    CAPTURE_RUNNING,  // The capturer has been started successfully and is now
+                      // capturing.
+    CAPTURE_FAILED,  // The capturer failed to start.
+  };
+
   typedef base::Callback<void(const media::VideoCapture::VideoFrameBuffer& buf)>
       FrameCapturedCallback;
+  typedef base::Callback<void(CaptureState state)> StateChangeCallback;
 
   RtcVideoCaptureDelegate(const media::VideoCaptureSessionId id,
                           VideoCaptureImplManager* vc_manager);
 
   void StartCapture(const media::VideoCaptureCapability& capability,
-                    const FrameCapturedCallback& callback);
+                    const FrameCapturedCallback& captured_callback,
+                    const StateChangeCallback& state_callback);
   void StopCapture();
 
   // media::VideoCapture::EventHandler implementation.
@@ -52,6 +61,7 @@ class RtcVideoCaptureDelegate
   void OnBufferReadyOnCaptureThread(
       media::VideoCapture* capture,
       scoped_refptr<media::VideoCapture::VideoFrameBuffer> buf);
+  void OnErrorOnCaptureThread(media::VideoCapture* capture, int error_code);
 
   // The id identifies which video capture device is used for this video
   // capture session.
@@ -59,9 +69,16 @@ class RtcVideoCaptureDelegate
   // The video capture manager handles open/close of video capture devices.
   scoped_refptr<VideoCaptureImplManager> vc_manager_;
   media::VideoCapture* capture_engine_;
+
+  // Accessed on the thread where StartCapture is called.
+  bool got_first_frame_;
+
   // |captured_callback_| is provided to this class in StartCapture and must be
   // valid until StopCapture is called.
   FrameCapturedCallback captured_callback_;
+  // |state_callback_| is provided to this class in StartCapture and must be
+  // valid until StopCapture is called.
+  StateChangeCallback state_callback_;
   // MessageLoop of the caller of StartCapture.
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
 };

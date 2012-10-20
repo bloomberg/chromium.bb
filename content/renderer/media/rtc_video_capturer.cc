@@ -36,9 +36,10 @@ cricket::CaptureState RtcVideoCapturer::Start(
 
   state_ = video_capture::kStarted;
   start_time_ = base::Time::Now();
-  delegate_->StartCapture(cap, base::Bind(&RtcVideoCapturer::OnFrameCaptured,
-                                          base::Unretained(this)));
-  return cricket::CS_RUNNING;
+  delegate_->StartCapture(cap,
+      base::Bind(&RtcVideoCapturer::OnFrameCaptured, base::Unretained(this)),
+      base::Bind(&RtcVideoCapturer::OnStateChange, base::Unretained(this)));
+  return cricket::CS_STARTING;
 }
 
 void RtcVideoCapturer::Stop() {
@@ -49,6 +50,7 @@ void RtcVideoCapturer::Stop() {
   }
   state_ = video_capture::kStopped;
   delegate_->StopCapture();
+  SignalStateChange(this, cricket::CS_STOPPED);
 }
 
 bool RtcVideoCapturer::IsRunning() {
@@ -100,4 +102,24 @@ void RtcVideoCapturer::OnFrameCaptured(
   // This signals to libJingle that a new VideoFrame is available.
   // libJingle have no assumptions on what thread this signal come from.
   SignalFrameCaptured(this, &frame);
+}
+
+void RtcVideoCapturer::OnStateChange(
+    RtcVideoCaptureDelegate::CaptureState state) {
+  cricket::CaptureState converted_state = cricket::CS_FAILED;
+  switch (state) {
+    case RtcVideoCaptureDelegate::CAPTURE_STOPPED:
+      converted_state = cricket::CS_STOPPED;
+      break;
+    case RtcVideoCaptureDelegate::CAPTURE_RUNNING:
+      converted_state = cricket::CS_RUNNING;
+      break;
+    case RtcVideoCaptureDelegate::CAPTURE_FAILED:
+      converted_state = cricket::CS_FAILED;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  SignalStateChange(this, converted_state);
 }
