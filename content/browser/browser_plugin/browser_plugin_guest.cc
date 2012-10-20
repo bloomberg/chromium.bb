@@ -451,7 +451,10 @@ void BrowserPluginGuest::RenderViewGone(base::TerminationStatus status) {
                                                             cursor_);
     SendMessageToEmbedder(reply_message);
   }
-  SendMessageToEmbedder(new BrowserPluginMsg_GuestCrashed(instance_id()));
+  int process_id = web_contents()->GetRenderProcessHost()->GetID();
+  SendMessageToEmbedder(new BrowserPluginMsg_GuestGone(instance_id(),
+                                                       process_id,
+                                                       status));
   IDMap<RenderViewHost>::const_iterator iter(&pending_updates_);
   while (!iter.IsAtEnd()) {
     pending_updates_.Remove(iter.GetCurrentKey());

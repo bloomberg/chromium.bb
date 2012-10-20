@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/process_util.h"
 #include "base/sequenced_task_runner_helpers.h"
 #if defined(OS_WIN)
 #include "base/shared_memory.h"
@@ -59,8 +60,8 @@ class CONTENT_EXPORT BrowserPlugin :
   // its damage buffer.
   void UpdateRect(int message_id,
                   const BrowserPluginMsg_UpdateRect_Params& params);
-  // Inform the BrowserPlugin that its guest has crashed.
-  void GuestCrashed();
+  // Inform the BrowserPlugin that its guest process is gone.
+  void GuestGone(int process_id, base::TerminationStatus status);
   // Inform the BrowserPlugin that the guest has navigated to a new URL.
   void LoadCommit(const BrowserPluginMsg_LoadCommit_Params& params);
   // Inform the BrowserPlugin that the guest has started loading a new page.

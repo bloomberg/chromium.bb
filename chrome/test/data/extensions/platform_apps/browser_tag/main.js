@@ -91,7 +91,7 @@ onload = function() {
       document.body.appendChild(browserTag);
 
       var validEvents = [
-        'crash',
+        'exit',
         'loadabort',
         'loadredirect',
         'loadstart',
@@ -134,8 +134,8 @@ onload = function() {
           browserTag.terminate();
         });
 
-        browserTag.addEventListener('crash', function(evt) {
-          chrome.test.assertEq('crash', evt.name);
+        browserTag.addEventListener('exit', function(evt) {
+          chrome.test.assertEq('exit', evt.name);
           chrome.test.succeed();
         });
 

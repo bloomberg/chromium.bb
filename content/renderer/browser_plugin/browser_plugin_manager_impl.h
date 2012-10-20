@@ -33,8 +33,7 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
   void OnUpdateRect(int instance_id,
                     int message_id,
                     const BrowserPluginMsg_UpdateRect_Params& params);
-  void OnGuestCrashed(int instance_id);
-
+  void OnGuestGone(int instance_id, int process_id, int status);
   void OnAdvanceFocus(int instance_id, bool reverse);
   void OnGuestContentWindowReady(int instance_id, int guest_routing_id);
   void OnShouldAcceptTouchEvents(int instance_id, bool accept);

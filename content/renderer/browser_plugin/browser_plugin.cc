@@ -42,7 +42,7 @@ using WebKit::WebVector;
 namespace content {
 
 namespace {
-const char kCrashEventName[] = "crash";
+const char kExitEventName[] = "exit";
 const char kIsTopLevel[] = "isTopLevel";
 const char kLoadAbortEventName[] = "loadabort";
 const char kLoadCommitEventName[] = "loadcommit";
@@ -53,9 +53,25 @@ const char kNewURL[] = "newUrl";
 const char kOldURL[] = "oldUrl";
 const char kPartitionAttribute[] = "partition";
 const char kPersistPrefix[] = "persist:";
+const char kProcessId[] = "processId";
 const char kSrcAttribute[] = "src";
 const char kType[] = "type";
 const char kURL[] = "url";
+
+static std::string TerminationStatusToString(base::TerminationStatus status) {
+  switch (status) {
+    case base::TERMINATION_STATUS_NORMAL_TERMINATION:
+      return "normal";
+    case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
+      return "abnormal";
+    case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
+      return "killed";
+    default:
+      // This should never happen.
+      DCHECK(false);
+      return "unknown";
+  }
+}
 }
 
 BrowserPlugin::BrowserPlugin(
@@ -226,7 +242,7 @@ float BrowserPlugin::GetDeviceScaleFactor() const {
 }
 
 void BrowserPlugin::InitializeEvents() {
-  event_listener_map_[kCrashEventName] = EventListeners();
+  event_listener_map_[kExitEventName] = EventListeners();
   event_listener_map_[kLoadAbortEventName] = EventListeners();
   event_listener_map_[kLoadCommitEventName] = EventListeners();
   event_listener_map_[kLoadRedirectEventName] = EventListeners();
@@ -359,7 +375,10 @@ void BrowserPlugin::UpdateRect(
                                         damage_buffer_);
   }
   // Invalidate the container.
-  container_->invalidate();
+  // If the BrowserPlugin is scheduled to be deleted, then container_ will be
+  // NULL so we shouldn't attempt to access it.
+  if (container_)
+    container_->invalidate();
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_UpdateRect_ACK(
       render_view_routing_id_,
       instance_id_,
@@ -367,23 +386,37 @@ void BrowserPlugin::UpdateRect(
       gfx::Size()));
 }
 
-void BrowserPlugin::GuestCrashed() {
+void BrowserPlugin::GuestGone(int process_id, base::TerminationStatus status) {
+  // We fire the event listeners before painting the sad graphic to give the
+  // developer an opportunity to display an alternative overlay image on crash.
+  if (HasListeners(kExitEventName)) {
+    WebKit::WebElement plugin = container()->element();
+    v8::HandleScope handle_scope;
+    v8::Context::Scope context_scope(
+        plugin.document().frame()->mainWorldScriptContext());
+
+    // Construct the exit event object.
+    v8::Local<v8::Object> event = v8::Object::New();
+    event->Set(v8::String::New(kProcessId, sizeof(kProcessId) - 1),
+               v8::Integer::New(process_id));
+    std::string termination_status = TerminationStatusToString(status);
+    event->Set(v8::String::New(kType, sizeof(kType) - 1),
+               v8::String::New(termination_status.data(),
+                               termination_status.size()));
+    // Event listeners may remove the BrowserPlugin from the document. If that
+    // happens, the BrowserPlugin will be scheduled for later deletion (see
+    // BrowserPlugin::destroy()). That will clear the container_ reference,
+    // but leave other member variables valid below.
+    TriggerEvent(kExitEventName, &event);
+  }
   guest_crashed_ = true;
-  container_->invalidate();
   // We won't paint the contents of the current backing store again so we might
   // as well toss it out and save memory.
   backing_store_.reset();
-
-  if (!HasListeners(kCrashEventName))
-    return;
-
-  WebKit::WebElement plugin = container()->element();
-  v8::HandleScope handle_scope;
-  v8::Context::Scope context_scope(
-      plugin.document().frame()->mainWorldScriptContext());
-
-  v8::Local<v8::Object> event = v8::Object::New();
-  TriggerEvent(kCrashEventName, &event);
+  // If the BrowserPlugin is scheduled to be deleted, then container_ will be
+  // NULL so we shouldn't attempt to access it.
+  if (container_)
+    container_->invalidate();
 }
 
 void BrowserPlugin::LoadStart(const GURL& url, bool is_top_level) {
@@ -555,6 +588,9 @@ bool BrowserPlugin::initialize(WebPluginContainer* container) {
 }
 
 void BrowserPlugin::destroy() {
+  // The BrowserPlugin's WebPluginContainer is deleted immediately after this
+  // call returns, so let's not keep a reference to it around.
+  container_ = NULL;
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 

@@ -273,19 +273,19 @@ TEST_F(BrowserPluginTest, GuestCrash) {
 
   const char* kAddEventListener =
     "var msg;"
-    "function crashListener() {"
-    "  msg = 'crashed';"
+    "function exitListener(e) {"
+    "  msg = e.type;"
     "}"
     "document.getElementById('browserplugin')."
-    "    addEventListener('crash', crashListener);";
+    "    addEventListener('exit', exitListener);";
 
   ExecuteJavaScript(kAddEventListener);
 
   // Pretend that the guest has crashed
-  browser_plugin->GuestCrashed();
+  browser_plugin->GuestGone(0, base::TERMINATION_STATUS_NORMAL_TERMINATION);
 
   // Verify that our event listener has fired.
-  EXPECT_EQ("crashed", ExecuteScriptAndReturnString("msg"));
+  EXPECT_EQ("normal", ExecuteScriptAndReturnString("msg"));
 
   // Send an event and verify that events are no longer deported.
   browser_plugin->handleInputEvent(WebKit::WebMouseEvent(),
@@ -490,6 +490,44 @@ TEST_F(BrowserPluginTest, ImmutableAttributesAfterNavigation) {
   partition_value = ExecuteScriptAndReturnString(
       "document.getElementById('browserplugin').partition");
   EXPECT_STREQ("storage", partition_value.c_str());
+}
+
+TEST_F(BrowserPluginTest, RemoveBrowserPluginOnExit) {
+  LoadHTML(GetHTMLForBrowserPluginObject().c_str());
+
+  // Grab the BrowserPlugin's instance ID from its resize message.
+  const IPC::Message* msg =
+      browser_plugin_manager()->sink().GetFirstMessageMatching(
+          BrowserPluginHostMsg_ResizeGuest::ID);
+  ASSERT_TRUE(msg);
+  PickleIterator iter = IPC::SyncMessage::GetDataIterator(msg);
+  BrowserPluginHostMsg_ResizeGuest::SendParam  resize_params;
+  ASSERT_TRUE(IPC::ReadParam(msg, &iter, &resize_params));
+  int instance_id = resize_params.a;
+
+  MockBrowserPlugin* browser_plugin =
+      static_cast<MockBrowserPlugin*>(
+          browser_plugin_manager()->GetBrowserPlugin(instance_id));
+  ASSERT_TRUE(browser_plugin);
+
+  const char* kAddEventListener =
+    "function exitListener(e) {"
+    "  if (e.type == 'killed') {"
+    "    var bp = document.getElementById('browserplugin');"
+    "    bp.parentNode.removeChild(bp);"
+    "  }"
+    "}"
+    "document.getElementById('browserplugin')."
+    "    addEventListener('exit', exitListener);";
+
+  ExecuteJavaScript(kAddEventListener);
+
+  // Pretend that the guest has crashed.
+  browser_plugin->GuestGone(0, base::TERMINATION_STATUS_PROCESS_WAS_KILLED);
+
+  ProcessPendingMessages();
+
+  EXPECT_EQ(NULL, browser_plugin_manager()->GetBrowserPlugin(instance_id));
 }
 
 }  // namespace content

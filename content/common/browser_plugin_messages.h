@@ -207,8 +207,10 @@ IPC_MESSAGE_CONTROL1(BrowserPluginMsg_LoadStop,
 
 // When the guest crashes, the browser process informs the embedder through this
 // message.
-IPC_MESSAGE_CONTROL1(BrowserPluginMsg_GuestCrashed,
-                     int /* instance_id */)
+IPC_MESSAGE_CONTROL3(BrowserPluginMsg_GuestGone,
+                     int /* instance_id */,
+                     int /* process_id */,
+                     int /* This is really base::TerminationStatus */)
 
 IPC_STRUCT_BEGIN(BrowserPluginMsg_UpdateRect_Params)
   // The position and size of the bitmap.
