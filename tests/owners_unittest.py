@@ -173,6 +173,20 @@ class OwnersDatabaseTest(unittest.TestCase):
                                     [tom],
                                     ['content/baz'])
 
+  def test_per_file_wildcard(self):
+    self.files['/OWNERS'] = 'per-file DEPS=*\n'
+    self.assert_dirs_not_covered_by(['DEPS'], [brett], [])
+
+  def test_mock_relpath(self):
+    # This test ensures the mock relpath has the arguments in the right
+    # order; this should probably live someplace else.
+    self.assertEquals(self.repo.relpath('foo/bar.c', 'foo/'), 'bar.c')
+    self.assertEquals(self.repo.relpath('/bar.c', '/'), 'bar.c')
+
+  def test_per_file_glob_across_dirs_not_allowed(self):
+    self.files['/OWNERS'] = 'per-file content/*=john@example.org\n'
+    self.assertRaises(owners.SyntaxErrorInOwnersFile,
+        self.db().directories_not_covered_by, ['DEPS'], [brett])
 
   def assert_reviewers_for(self, files, expected_reviewers):
     db = self.db()

@@ -316,8 +316,8 @@ def CheckLongLines(input_api, output_api, maxlen=80, source_file_filter=None):
   """Checks that there aren't any lines longer than maxlen characters in any of
   the text files to be submitted.
   """
-  maxlens = { 
-      'java': 100, 
+  maxlens = {
+      'java': 100,
       '': maxlen,
   }
   # Note: these are C++ specific but processed on all languages. :(

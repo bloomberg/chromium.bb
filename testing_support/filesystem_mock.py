@@ -79,7 +79,8 @@ class MockFileSystem(object):
     return self.files[path]
 
   @staticmethod
-  def relpath(base, path):
-    if path.startswith(base):
-      return path[len(base):]
-    return path
+  def relpath(path, base):
+    # This implementation is wrong in many ways; assert to check them for now.
+    assert path.startswith(base)
+    assert base.endswith('/')
+    return path[len(base):]
