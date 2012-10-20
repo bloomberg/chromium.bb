@@ -6,9 +6,9 @@
 
 #include "cc/shader.h"
 
+#include "base/basictypes.h"
 #include "base/logging.h"
 #include <public/WebGraphicsContext3D.h>
-#include <wtf/StdLibExtras.h>
 
 #define SHADER0(Src) #Src
 #define SHADER(Src) SHADER0(Src)
@@ -46,7 +46,7 @@ void VertexShaderPosTex::init(WebGraphicsContext3D* context, unsigned program, b
     };
     int locations[1];
 
-    getProgramUniformLocations(context, program, shaderUniforms, WTF_ARRAY_LENGTH(shaderUniforms), WTF_ARRAY_LENGTH(locations), locations, usingBindUniform, baseUniformIndex);
+    getProgramUniformLocations(context, program, shaderUniforms, arraysize(shaderUniforms), arraysize(locations), locations, usingBindUniform, baseUniformIndex);
 
     m_matrixLocation = locations[0];
     DCHECK(m_matrixLocation != -1);
@@ -83,7 +83,7 @@ void VertexShaderPosTexYUVStretch::init(WebGraphicsContext3D* context, unsigned 
     };
     int locations[3];
 
-    getProgramUniformLocations(context, program, shaderUniforms, WTF_ARRAY_LENGTH(shaderUniforms), WTF_ARRAY_LENGTH(locations), locations, usingBindUniform, baseUniformIndex);
+    getProgramUniformLocations(context, program, shaderUniforms, arraysize(shaderUniforms), arraysize(locations), locations, usingBindUniform, baseUniformIndex);
 
     m_matrixLocation = locations[0];
     m_yWidthScaleFactorLocation = locations[1];
@@ -123,7 +123,7 @@ void VertexShaderPos::init(WebGraphicsContext3D* context, unsigned program, bool
     };
     int locations[1];
 
-    getProgramUniformLocations(context, program, shaderUniforms, WTF_ARRAY_LENGTH(shaderUniforms), WTF_ARRAY_LENGTH(locations), locations, usingBindUniform, baseUniformIndex);
+    getProgramUniformLocations(context, program, shaderUniforms, arraysize(shaderUniforms), arraysize(locations), locations, usingBindUniform, baseUniformIndex);
 
     m_matrixLocation = locations[0];
     DCHECK(m_matrixLocation != -1);
@@ -155,7 +155,7 @@ void VertexShaderPosTexTransform::init(WebGraphicsContext3D* context, unsigned p
     };
     int locations[2];
 
-    getProgramUniformLocations(context, program, shaderUniforms, WTF_ARRAY_LENGTH(shaderUniforms), WTF_ARRAY_LENGTH(locations), locations, usingBindUniform, baseUniformIndex);
+    getProgramUniformLocations(context, program, shaderUniforms, arraysize(shaderUniforms), arraysize(locations), locations, usingBindUniform, baseUniformIndex);
 
     m_matrixLocation = locations[0];
     m_texTransformLocation = locations[1];
@@ -205,7 +205,7 @@ void VertexShaderQuad::init(WebGraphicsContext3D* context, unsigned program, boo
     };
     int locations[2];
 
-    getProgramUniformLocations(context, program, shaderUniforms, WTF_ARRAY_LENGTH(shaderUniforms), WTF_ARRAY_LENGTH(locations), locations, usingBindUniform, baseUniformIndex);
+    getProgramUniformLocations(context, program, shaderUniforms, arraysize(shaderUniforms), arraysize(locations), locations, usingBindUniform, baseUniformIndex);
 
     m_matrixLocation = locations[0];
     m_pointLocation = locations[1];
@@ -250,7 +250,7 @@ void VertexShaderTile::init(WebGraphicsContext3D* context, unsigned program, boo
     };
     int locations[3];
 
-    getProgramUniformLocations(context, program, shaderUniforms, WTF_ARRAY_LENGTH(shaderUniforms), WTF_ARRAY_LENGTH(locations), locations, usingBindUniform, baseUniformIndex);
+    getProgramUniformLocations(context, program, shaderUniforms, arraysize(shaderUniforms), arraysize(locations), locations, usingBindUniform, baseUniformIndex);
 
     m_matrixLocation = locations[0];
     m_pointLocation = locations[1];
@@ -295,7 +295,7 @@ bool VertexShaderVideoTransform::init(WebGraphicsContext3D* context, unsigned pr
     };
     int locations[2];
 
-    getProgramUniformLocations(context, program, shaderUniforms, WTF_ARRAY_LENGTH(shaderUniforms), WTF_ARRAY_LENGTH(locations), locations, usingBindUniform, baseUniformIndex);
+    getProgramUniformLocations(context, program, shaderUniforms, arraysize(shaderUniforms), arraysize(locations), locations, usingBindUniform, baseUniformIndex);
 
     m_matrixLocation = locations[0];
     m_texMatrixLocation = locations[1];
@@ -332,7 +332,7 @@ void FragmentTexAlphaBinding::init(WebGraphicsContext3D* context, unsigned progr
     };
     int locations[2];
 
-    getProgramUniformLocations(context, program, shaderUniforms, WTF_ARRAY_LENGTH(shaderUniforms), WTF_ARRAY_LENGTH(locations), locations, usingBindUniform, baseUniformIndex);
+    getProgramUniformLocations(context, program, shaderUniforms, arraysize(shaderUniforms), arraysize(locations), locations, usingBindUniform, baseUniformIndex);
 
     m_samplerLocation = locations[0];
     m_alphaLocation = locations[1];
@@ -351,7 +351,7 @@ void FragmentTexOpaqueBinding::init(WebGraphicsContext3D* context, unsigned prog
     };
     int locations[1];
 
-    getProgramUniformLocations(context, program, shaderUniforms, WTF_ARRAY_LENGTH(shaderUniforms), WTF_ARRAY_LENGTH(locations), locations, usingBindUniform, baseUniformIndex);
+    getProgramUniformLocations(context, program, shaderUniforms, arraysize(shaderUniforms), arraysize(locations), locations, usingBindUniform, baseUniformIndex);
 
     m_samplerLocation = locations[0];
     DCHECK(m_samplerLocation != -1);
@@ -379,7 +379,7 @@ bool FragmentShaderOESImageExternal::init(WebGraphicsContext3D* context, unsigne
     };
     int locations[1];
 
-    getProgramUniformLocations(context, program, shaderUniforms, WTF_ARRAY_LENGTH(shaderUniforms), WTF_ARRAY_LENGTH(locations), locations, usingBindUniform, baseUniformIndex);
+    getProgramUniformLocations(context, program, shaderUniforms, arraysize(shaderUniforms), arraysize(locations), locations, usingBindUniform, baseUniformIndex);
 
     m_samplerLocation = locations[0];
     return m_samplerLocation != -1;
@@ -517,7 +517,7 @@ void FragmentShaderRGBATexAlphaAA::init(WebGraphicsContext3D* context, unsigned 
     };
     int locations[3];
 
-    getProgramUniformLocations(context, program, shaderUniforms, WTF_ARRAY_LENGTH(shaderUniforms), WTF_ARRAY_LENGTH(locations), locations, usingBindUniform, baseUniformIndex);
+    getProgramUniformLocations(context, program, shaderUniforms, arraysize(shaderUniforms), arraysize(locations), locations, usingBindUniform, baseUniformIndex);
 
     m_samplerLocation = locations[0];
     m_alphaLocation = locations[1];
@@ -568,7 +568,7 @@ void FragmentTexClampAlphaAABinding::init(WebGraphicsContext3D* context, unsigne
     };
     int locations[4];
 
-    getProgramUniformLocations(context, program, shaderUniforms, WTF_ARRAY_LENGTH(shaderUniforms), WTF_ARRAY_LENGTH(locations), locations, usingBindUniform, baseUniformIndex);
+    getProgramUniformLocations(context, program, shaderUniforms, arraysize(shaderUniforms), arraysize(locations), locations, usingBindUniform, baseUniformIndex);
 
     m_samplerLocation = locations[0];
     m_alphaLocation = locations[1];
@@ -650,7 +650,7 @@ void FragmentShaderRGBATexAlphaMask::init(WebGraphicsContext3D* context, unsigne
     };
     int locations[5];
 
-    getProgramUniformLocations(context, program, shaderUniforms, WTF_ARRAY_LENGTH(shaderUniforms), WTF_ARRAY_LENGTH(locations), locations, usingBindUniform, baseUniformIndex);
+    getProgramUniformLocations(context, program, shaderUniforms, arraysize(shaderUniforms), arraysize(locations), locations, usingBindUniform, baseUniformIndex);
 
     m_samplerLocation = locations[0];
     m_maskSamplerLocation = locations[1];
@@ -701,7 +701,7 @@ void FragmentShaderRGBATexAlphaMaskAA::init(WebGraphicsContext3D* context, unsig
     };
     int locations[6];
 
-    getProgramUniformLocations(context, program, shaderUniforms, WTF_ARRAY_LENGTH(shaderUniforms), WTF_ARRAY_LENGTH(locations), locations, usingBindUniform, baseUniformIndex);
+    getProgramUniformLocations(context, program, shaderUniforms, arraysize(shaderUniforms), arraysize(locations), locations, usingBindUniform, baseUniformIndex);
 
     m_samplerLocation = locations[0];
     m_maskSamplerLocation = locations[1];
@@ -764,7 +764,7 @@ void FragmentShaderYUVVideo::init(WebGraphicsContext3D* context, unsigned progra
     };
     int locations[6];
 
-    getProgramUniformLocations(context, program, shaderUniforms, WTF_ARRAY_LENGTH(shaderUniforms), WTF_ARRAY_LENGTH(locations), locations, usingBindUniform, baseUniformIndex);
+    getProgramUniformLocations(context, program, shaderUniforms, arraysize(shaderUniforms), arraysize(locations), locations, usingBindUniform, baseUniformIndex);
 
     m_yTextureLocation = locations[0];
     m_uTextureLocation = locations[1];
@@ -814,7 +814,7 @@ void FragmentShaderColor::init(WebGraphicsContext3D* context, unsigned program, 
     };
     int locations[1];
 
-    getProgramUniformLocations(context, program, shaderUniforms, WTF_ARRAY_LENGTH(shaderUniforms), WTF_ARRAY_LENGTH(locations), locations, usingBindUniform, baseUniformIndex);
+    getProgramUniformLocations(context, program, shaderUniforms, arraysize(shaderUniforms), arraysize(locations), locations, usingBindUniform, baseUniformIndex);
 
     m_colorLocation = locations[0];
     DCHECK(m_colorLocation != -1);
@@ -849,7 +849,7 @@ void FragmentShaderCheckerboard::init(WebGraphicsContext3D* context, unsigned pr
     };
     int locations[4];
 
-    getProgramUniformLocations(context, program, shaderUniforms, WTF_ARRAY_LENGTH(shaderUniforms), WTF_ARRAY_LENGTH(locations), locations, usingBindUniform, baseUniformIndex);
+    getProgramUniformLocations(context, program, shaderUniforms, arraysize(shaderUniforms), arraysize(locations), locations, usingBindUniform, baseUniformIndex);
 
     m_alphaLocation = locations[0];
     m_texTransformLocation = locations[1];
