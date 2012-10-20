@@ -13,9 +13,9 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
-#include "ui/gfx/skbitmap_operations.h"
 
 using content::WebContents;
 
@@ -30,20 +30,20 @@ const int kRecognizingAnimationStepMs = 100;
 // recognition bubbles and safely destroy them on exit.
 class SpeechRecognitionBubbleImages {
  public:
-  const std::vector<SkBitmap>& spinner() { return spinner_; }
-  const std::vector<SkBitmap>& warm_up() { return warm_up_; }
-  gfx::ImageSkia* mic_full() { return mic_full_; }
-  gfx::ImageSkia* mic_empty() { return mic_empty_; }
-  gfx::ImageSkia* mic_noise() { return mic_noise_; }
-  gfx::ImageSkia* mic_mask() { return mic_mask_; }
+  const std::vector<gfx::ImageSkia>& spinner() const { return spinner_; }
+  const std::vector<gfx::ImageSkia>& warm_up() const { return warm_up_; }
+  gfx::ImageSkia* mic_full() const { return mic_full_; }
+  gfx::ImageSkia* mic_empty() const { return mic_empty_; }
+  gfx::ImageSkia* mic_noise() const { return mic_noise_; }
+  gfx::ImageSkia* mic_mask() const { return mic_mask_; }
 
  private:
   // Private constructor to enforce singleton.
   friend struct base::DefaultLazyInstanceTraits<SpeechRecognitionBubbleImages>;
   SpeechRecognitionBubbleImages();
 
-  std::vector<SkBitmap> spinner_;  // Frames for the progress spinner.
-  std::vector<SkBitmap> warm_up_;  // Frames for the warm up animation.
+  std::vector<gfx::ImageSkia> spinner_;  // Frames for the progress spinner.
+  std::vector<gfx::ImageSkia> warm_up_;  // Frames for the warm up animation.
 
   // These images are owned by ResourceBundle and need not be destroyed.
   gfx::ImageSkia* mic_full_;  // Mic image with full volume.
@@ -53,20 +53,20 @@ class SpeechRecognitionBubbleImages {
 };
 
 SpeechRecognitionBubbleImages::SpeechRecognitionBubbleImages() {
-  mic_empty_ = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+  mic_empty_ = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_SPEECH_INPUT_MIC_EMPTY);
-  mic_noise_ = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+  mic_noise_ = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_SPEECH_INPUT_MIC_NOISE);
-  mic_full_ = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+  mic_full_ = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_SPEECH_INPUT_MIC_FULL);
-  mic_mask_ = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+  mic_mask_ = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_SPEECH_INPUT_MIC_MASK);
 
   // The sprite image consists of all the animation frames put together in one
   // horizontal/wide image. Each animation frame is square in shape within the
   // sprite.
-  const SkBitmap* spinner_image = ResourceBundle::GetSharedInstance().
-      GetImageSkiaNamed(IDR_SPEECH_INPUT_SPINNER)->bitmap();
+  const gfx::ImageSkia* spinner_image = ui::ResourceBundle::GetSharedInstance().
+      GetImageSkiaNamed(IDR_SPEECH_INPUT_SPINNER);
   int frame_size = spinner_image->height();
 
   // When recording starts up, it may take a short while (few ms or even a
@@ -80,25 +80,34 @@ SpeechRecognitionBubbleImages::SpeechRecognitionBubbleImages() {
   empty_spinner.setConfig(SkBitmap::kARGB_8888_Config, frame_size, frame_size);
   empty_spinner.allocPixels();
   empty_spinner.eraseRGB(255, 255, 255);
-  warm_up_.push_back(empty_spinner);
+  // |empty_spinner| has solid color. Pixel doubling a solid color is ok.
+  warm_up_.push_back(gfx::ImageSkia(empty_spinner));
 
-  for (SkIRect src_rect(SkIRect::MakeWH(frame_size, frame_size));
-       src_rect.fLeft < spinner_image->width();
-       src_rect.offset(frame_size, 0)) {
-    SkBitmap frame;
-    spinner_image->extractSubset(&frame, src_rect);
+  for (gfx::Rect src_rect(frame_size, frame_size);
+       src_rect.x() < spinner_image->width();
+       src_rect.Offset(frame_size, 0)) {
+    gfx::ImageSkia frame = gfx::ImageSkiaOperations::ExtractSubset(
+        *spinner_image, src_rect);
 
-    // The image created by extractSubset just points to the same pixels as
+    // The image created by ExtractSubset just points to the same pixels as
     // the original and adjusts rowBytes accordingly. However that doesn't
     // render properly and gets vertically squished in Linux due to a bug in
     // Skia. Until that gets fixed we work around by taking a real copy of it
     // below as the copied image has the correct rowBytes and renders fine.
-    SkBitmap frame_copy;
-    frame.copyTo(&frame_copy, SkBitmap::kARGB_8888_Config);
+    frame.EnsureRepsForSupportedScaleFactors();
+    std::vector<gfx::ImageSkiaRep> image_reps = frame.image_reps();
+    gfx::ImageSkia frame_copy;
+    for (size_t i = 0; i < image_reps.size(); ++i) {
+      const SkBitmap& copy_src = image_reps[i].sk_bitmap();
+      SkBitmap copy_dst;
+      copy_src.copyTo(&copy_dst, SkBitmap::kARGB_8888_Config);
+      frame_copy.AddRepresentation(gfx::ImageSkiaRep(
+          copy_dst, image_reps[i].scale_factor()));
+    }
     spinner_.push_back(frame_copy);
 
     // The warm up spinner animation is a gray scale version of the real one.
-    warm_up_.push_back(SkBitmapOperations::CreateHSLShiftedBitmap(
+    warm_up_.push_back(gfx::ImageSkiaOperations::CreateHSLShiftedImage(
         frame_copy, kGrayscaleShift));
   }
 }
@@ -257,10 +266,10 @@ WebContents* SpeechRecognitionBubbleBase::GetWebContents() {
 }
 
 void SpeechRecognitionBubbleBase::SetImage(const gfx::ImageSkia& image) {
-  icon_image_.reset(new gfx::ImageSkia(image));
+  icon_image_ = image;
   UpdateImage();
 }
 
 gfx::ImageSkia SpeechRecognitionBubbleBase::icon_image() {
-  return (icon_image_ != NULL) ? *icon_image_ : gfx::ImageSkia();
+  return icon_image_;
 }

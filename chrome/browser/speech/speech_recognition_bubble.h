@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "ui/base/layout.h"
+#include "ui/gfx/image/image_skia.h"
 
 class SkBitmap;
 class SkCanvas;
@@ -21,7 +22,6 @@ class WebContents;
 
 namespace gfx {
 class Canvas;
-class ImageSkia;
 class Rect;
 }
 
@@ -182,7 +182,7 @@ class SpeechRecognitionBubbleBase : public SpeechRecognitionBubble {
   // WebContents in which this this bubble gets displayed.
   content::WebContents* web_contents_;
   // The current image displayed in the bubble's icon widget.
-  scoped_ptr<gfx::ImageSkia> icon_image_;
+  gfx::ImageSkia icon_image_;
   // The scale factor used for the web-contents.
   ui::ScaleFactor scale_factor_;
 
