@@ -10,6 +10,47 @@
 
 namespace performance_monitor {
 
+// Aggregation-Related
+string16 GetLocalizedStringFromAggregationStrategy(
+    const AggregationStrategy strategy) {
+  int string_id = 0;
+  switch (strategy) {
+    case AGGREGATION_STRATEGY_NONE:
+      string_id = IDS_PERFORMANCE_MONITOR_AGGREGATION_NONE_NAME;
+      break;
+    case AGGREGATION_STRATEGY_MEDIAN:
+      string_id = IDS_PERFORMANCE_MONITOR_AGGREGATION_MEDIAN_NAME;
+      break;
+    case AGGREGATION_STRATEGY_MEAN:
+      string_id = IDS_PERFORMANCE_MONITOR_AGGREGATION_MEAN_NAME;
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  return l10n_util::GetStringUTF16(string_id);
+}
+
+string16 GetLocalizedStringForAggregationStrategyDescription(
+    const AggregationStrategy strategy) {
+  int string_id = 0;
+  switch (strategy) {
+    case AGGREGATION_STRATEGY_NONE:
+      string_id = IDS_PERFORMANCE_MONITOR_AGGREGATION_NONE_DESCRIPTION;
+      break;
+    case AGGREGATION_STRATEGY_MEDIAN:
+      string_id = IDS_PERFORMANCE_MONITOR_AGGREGATION_MEDIAN_DESCRIPTION;
+      break;
+    case AGGREGATION_STRATEGY_MEAN:
+      string_id = IDS_PERFORMANCE_MONITOR_AGGREGATION_MEAN_DESCRIPTION;
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  return l10n_util::GetStringUTF16(string_id);
+}
+
 // Event-Related
 string16 GetLocalizedStringFromEventCategory(const EventCategory category) {
   if (category == EVENT_CATEGORY_CHROME) {

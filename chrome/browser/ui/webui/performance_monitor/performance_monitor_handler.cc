@@ -130,6 +130,20 @@ Unit GetUnitForMetricType(MetricType type) {
   return UNIT_UNDEFINED;
 }
 
+// Returns a dictionary for the aggregation strategy. Aggregation strategies
+// contain an id representing the strategy, and localized strings for the
+// strategy name and strategy description.
+scoped_ptr<DictionaryValue> GetAggregationStrategy(
+    AggregationStrategy strategy) {
+  scoped_ptr<DictionaryValue> value(new DictionaryValue());
+  value->SetInteger("id", strategy);
+  value->SetString("name", GetLocalizedStringFromAggregationStrategy(strategy));
+  value->SetString(
+      "description",
+      GetLocalizedStringForAggregationStrategyDescription(strategy));
+  return value.Pass();
+}
+
 // Returns a list of metric details, with one entry per metric. Metric details
 // are dictionaries which contain the id representing the metric and localized
 // strings for the metric name and metric description.
@@ -311,8 +325,10 @@ void ConvertUnitsAndPopulateMetricResults(
 // between |start| and |end| times and appends the results to |results|.
 void DoGetMetric(DictionaryValue* results,
                  MetricType metric_type,
-                 const base::Time& start, const base::Time& end,
-                 const base::TimeDelta& resolution) {
+                 const base::Time& start,
+                 const base::Time& end,
+                 const base::TimeDelta& resolution,
+                 AggregationStrategy aggregation_strategy) {
   Database* db = PerformanceMonitor::GetInstance()->database();
 
   Database::MetricVectorMap metric_vector_map =
@@ -328,7 +344,8 @@ void DoGetMetric(DictionaryValue* results,
       AggregateMetric(metric_type,
                       metric_vector.get(),
                       start,
-                      resolution).get());
+                      resolution,
+                      aggregation_strategy).get());
 }
 
 }  // namespace
@@ -346,6 +363,10 @@ void PerformanceMonitorHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getActiveIntervals",
       base::Bind(&PerformanceMonitorHandler::HandleGetActiveIntervals,
+                 AsWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "getAggregationTypes",
+      base::Bind(&PerformanceMonitorHandler::HandleGetAggregationTypes,
                  AsWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "getEventTypes",
@@ -390,6 +411,20 @@ void PerformanceMonitorHandler::HandleGetActiveIntervals(
                  base::Owned(results)));
 }
 
+void PerformanceMonitorHandler::HandleGetAggregationTypes(
+    const ListValue* args) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK_EQ(0u, args->GetSize());
+  ListValue results;
+  for (int i = 0; i < AGGREGATION_STRATEGY_NUMBER_OF_STRATEGIES; ++i) {
+    results.Append(
+        GetAggregationStrategy(static_cast<AggregationStrategy>(i)).release());
+  }
+
+  ReturnResults(
+      "PerformanceMonitor.getAggregationTypesCallback", &results);
+}
+
 void PerformanceMonitorHandler::HandleGetEventTypes(const ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK_EQ(0u, args->GetSize());
@@ -405,6 +440,7 @@ void PerformanceMonitorHandler::HandleGetEvents(const ListValue* args) {
   CHECK_EQ(3u, args->GetSize());
   double event = 0;
   CHECK(args->GetDouble(0, &event));
+  CHECK(event < EVENT_NUMBER_OF_EVENTS && event > EVENT_UNDEFINED);
   EventType event_type = static_cast<EventType>(static_cast<int>(event));
 
   double double_time = 0.0;
@@ -438,9 +474,10 @@ void PerformanceMonitorHandler::HandleGetMetricTypes(const ListValue* args) {
 
 void PerformanceMonitorHandler::HandleGetMetric(const ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  CHECK_EQ(4u, args->GetSize());
+  CHECK_EQ(5u, args->GetSize());
   double metric = 0;
   CHECK(args->GetDouble(0, &metric));
+  CHECK(metric < METRIC_NUMBER_OF_METRICS && metric > METRIC_UNDEFINED);
   MetricType metric_type = static_cast<MetricType>(static_cast<int>(metric));
 
   double double_time = 0.0;
@@ -454,11 +491,18 @@ void PerformanceMonitorHandler::HandleGetMetric(const ListValue* args) {
   base::TimeDelta resolution =
       base::TimeDelta::FromMilliseconds(resolution_in_milliseconds);
 
+  double aggregation;
+  CHECK(args->GetDouble(4, &aggregation));
+  CHECK(aggregation < AGGREGATION_STRATEGY_NUMBER_OF_STRATEGIES &&
+        aggregation >= 0);
+  AggregationStrategy aggregation_strategy =
+      static_cast<AggregationStrategy>(static_cast<int>(aggregation));
+
   DictionaryValue* results = new DictionaryValue();
   util::PostTaskToDatabaseThreadAndReply(
       FROM_HERE,
       base::Bind(&DoGetMetric, results, metric_type,
-                 start, end, resolution),
+                 start, end, resolution, aggregation_strategy),
       base::Bind(&PerformanceMonitorHandler::ReturnResults, AsWeakPtr(),
                  "PerformanceMonitor.getMetricCallback",
                  base::Owned(results)));

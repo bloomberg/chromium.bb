@@ -10,8 +10,15 @@
 #include "chrome/browser/performance_monitor/event.h"
 #include "chrome/browser/performance_monitor/metric.h"
 #include "chrome/browser/ui/webui/performance_monitor/performance_monitor_ui_constants.h"
+#include "chrome/browser/ui/webui/performance_monitor/performance_monitor_ui_util.h"
 
 namespace performance_monitor {
+
+// Aggregation-Related
+string16 GetLocalizedStringFromAggregationStrategy(
+    const AggregationStrategy strategy);
+string16 GetLocalizedStringForAggregationStrategyDescription(
+    const AggregationStrategy strategy);
 
 // Event-Related
 string16 GetLocalizedStringFromEventCategory(const EventCategory category);

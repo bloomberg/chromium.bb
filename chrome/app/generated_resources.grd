@@ -4340,6 +4340,25 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       </message>
 
       <!-- Performance Monitor page -->
+      <!-- Aggregation-Related -->
+      <message name="IDS_PERFORMANCE_MONITOR_AGGREGATION_NONE_NAME" desc="Text displayed for the None aggregation strategy title.">
+        None
+      </message>
+      <message name = "IDS_PERFORMANCE_MONITOR_AGGREGATION_NONE_DESCRIPTION" desc="Text displayed on mouseover of the None aggregation strategy title.">
+        Do not aggregate the data - this may be slow!
+      </message>
+      <message name="IDS_PERFORMANCE_MONITOR_AGGREGATION_MEDIAN_NAME" desc="Text displayed for the Median aggregation strategy title.">
+        Median
+      </message>
+      <message name="IDS_PERFORMANCE_MONITOR_AGGREGATION_MEDIAN_DESCRIPTION" desc="Text displayed on mouseover of the Median aggregation strategy title.">
+        Use medians, minimizing outlier effect in performance data
+      </message>
+      <message name="IDS_PERFORMANCE_MONITOR_AGGREGATION_MEAN_NAME" desc="Text displayed for the Mean aggregation strategy title.">
+        Mean
+      </message>
+      <message name="IDS_PERFORMANCE_MONITOR_AGGREGATION_MEAN_DESCRIPTION" desc="Text displayed on mouseover of the Mean aggregation strategy title.">
+        Weight all values equally in performance data
+      </message>
       <!-- Event-Related -->
       <message name="IDS_PERFORMANCE_MONITOR_EXTENSIONS_EVENT_CATEGORY" desc="Text displayed for the Extensions events category title.">
         Extensions

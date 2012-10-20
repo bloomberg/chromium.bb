@@ -6,53 +6,40 @@ cr.define('performance_monitor', function() {
   'use strict';
 
   /**
-   * Enum for time ranges, giving for each a descriptive name, time span in ms
-   * prior to |now|, data point resolution in ms, time-label frequency in data
-   * points per label, and format using Date.js standards, for each.
-   *
-   * The additional |element| field is added in setupTimeRangeTab_, giving
-   * the HTML input tag for the radio button selecting the given time range.
-   * @enum {{
-   *   value: number,
-   *   name: string,
-   *   timeSpan: number,
-   *   resolution: number,
-   *   labelEvery: number,
-   *   format: string,
-   *   element: HTMLElement
-   * }}
+   * Array of available time resolutions.
+   * @type {Array.<PerformanceMonitor.TimeResolution>}
    * @private
    */
-  var TimeRange_ = {
+  var TimeResolutions_ = {
     // Prior 15 min, resolution of 5s, at most 180 points.
     // Labels at 12 point (1 min) intervals.
-    minutes: {value: 0, name: 'Last 15 min', timeSpan: 900 * 1000,
-        resolution: 1000 * 5, labelEvery: 12, format: 'MM-dd'},
+    minutes: {id: 0, name: 'Last 15 min', timeSpan: 900 * 1000,
+        pointResolution: 1000 * 5, labelEvery: 12},
 
     // Prior hour, resolution of 20s, at most 180 points.
     // Labels at 15 point (5 min) intervals.
-    hour: {value: 1, name: 'Last Hour', timeSpan: 3600 * 1000,
-        resolution: 1000 * 20, labelEvery: 15, format: 'MM-dd'},
+    hour: {id: 1, name: 'Last Hour', timeSpan: 3600 * 1000,
+        pointResolution: 1000 * 20, labelEvery: 15},
 
     // Prior day, resolution of 5 min, at most 288 points.
     // Labels at 36 point (3 hour) intervals.
-    day: {value: 2, name: 'Last Day', timeSpan: 24 * 3600 * 1000,
-        resolution: 1000 * 60 * 5, labelEvery: 36, format: 'MM-dd'},
+    day: {id: 2, name: 'Last Day', timeSpan: 24 * 3600 * 1000,
+        pointResolution: 1000 * 60 * 5, labelEvery: 36},
 
     // Prior week, resolution of 1 hr -- at most 168 data points.
     // Labels at 24 point (daily) intervals.
-    week: {value: 3, name: 'Last Week', timeSpan: 7 * 24 * 3600 * 1000,
-        resolution: 1000 * 3600, labelEvery: 24, format: 'M/d'},
+    week: {id: 3, name: 'Last Week', timeSpan: 7 * 24 * 3600 * 1000,
+        pointResolution: 1000 * 3600, labelEvery: 24},
 
     // Prior month (30 days), resolution of 4 hr -- at most 180 data points.
     // Labels at 42 point (weekly) intervals.
-    month: {value: 4, name: 'Last Month', timeSpan: 30 * 24 * 3600 * 1000,
-        resolution: 1000 * 3600 * 4, labelEvery: 42, format: 'M/d'},
+    month: {id: 4, name: 'Last Month', timeSpan: 30 * 24 * 3600 * 1000,
+        pointResolution: 1000 * 3600 * 4, labelEvery: 42},
 
     // Prior quarter (90 days), resolution of 12 hr -- at most 180 data points.
     // Labels at 28 point (fortnightly) intervals.
-    quarter: {value: 5, name: 'Last Quarter', timeSpan: 90 * 24 * 3600 * 1000,
-        resolution: 1000 * 3600 * 12, labelEvery: 28, format: 'M/yy'},
+    quarter: {id: 5, name: 'Last Quarter', timeSpan: 90 * 24 * 3600 * 1000,
+        pointResolution: 1000 * 3600 * 12, labelEvery: 28},
   };
 
   /*
@@ -106,6 +93,20 @@ cr.define('performance_monitor', function() {
   function PerformanceMonitor() {
     this.__proto__ = PerformanceMonitor.prototype;
 
+    /** Information regarding a certain time resolution option, including an
+     *  enumerative id, a readable name, the timespan in milliseconds prior to
+     *  |now|, data point resolution in milliseconds, and time-label frequency
+     *  in data points per label.
+     *  @typedef {{
+     *    id: number,
+     *    name: string,
+     *    timeSpan: number,
+     *    pointResolution: number,
+     *    labelEvery: number,
+     *  }}
+     */
+    PerformanceMonitor.TimeResolution;
+
     /**
      * Detailed information on a metric in the UI. MetricId is a unique
      * identifying number for the metric, provided by the webui, and assumed
@@ -157,12 +158,53 @@ cr.define('performance_monitor', function() {
     PerformanceMonitor.EventDetails;
 
     /**
+     * The time range which we are currently viewing, with the start and end of
+     * the range, as well as the resolution.
+     * @type {{
+     *   start: number,
+     *   end: number,
+     *   resolution: PerformanceMonitor.TimeResolution
+     * }}
+     * @private
+     */
+    this.range_ = { 'start': 0, 'end': 0, 'resolution': undefined };
+
+    /**
+     * The map containing the available TimeResolutions and the radio button to
+     * which each corresponds. The key is the id field from the TimeResolution
+     * object.
+     * @type {Object.<string, {
+     *   option: PerformanceMonitor.TimeResolution,
+     *   element: HTMLElement
+     * }>}
+     * @private
+     */
+    this.timeResolutionRadioMap_ = {};
+
+    /**
+     * The map containing the available Aggregation Methods and the radio button
+     * to which each corresponds. The different methods are retrieved from the
+     * WebUI, and the information about the method is stored in the 'option'
+     * field. The key to the map is the id of the aggregation method.
+     * @type {Object.<string, {
+     *   option: {
+     *     id: number,
+     *     name: string,
+     *     description: string,
+     *   },
+     *   element: HTMLElement
+     * }>}
+     * @private
+     */
+    this.aggregationRadioMap_ = {};
+
+    /**
      * Metrics fall into categories that have common units and thus may
      * share a common graph, or share y-axes within a multi-y-axis graph.
      * Each category has one home chart in which metrics of that category
      * are displayed. Currently this is also the only chart in which such
      * metrics are displayed, but the design permits a metric to show in
-     * several charts if this is useful later on.
+     * several charts if this is useful later on. The key is metricCategoryId.
      * @type {Object.<string, {
      *   metricCategoryId: number,
      *   name: string,
@@ -177,7 +219,7 @@ cr.define('performance_monitor', function() {
 
     /**
      * Comprehensive map from metricId to MetricDetails.
-     * @type {Object.<number, {PerformanceMonitor.MetricDetails}>}
+     * @type {Object.<string, {PerformanceMonitor.MetricDetails}>}
      * @private
      */
     this.metricDetailsMap_ = {};
@@ -187,7 +229,7 @@ cr.define('performance_monitor', function() {
      * grouping is not as important as that for metrics, since events
      * needn't share maxima, y-axes, nor units, and since events appear on
      * all charts. But grouping of event categories in the event-selection
-     * UI is still useful.
+     * UI is still useful. The key is the id of the event category.
      * @type {Object.<string, {
      *   eventCategoryId: number,
      *   name: string,
@@ -200,7 +242,7 @@ cr.define('performance_monitor', function() {
 
     /**
      * Comprehensive map from eventId to EventDetails.
-     * @type {Object.<number, {PerformanceMonitor.EventDetails}>}
+     * @type {Object.<string, {PerformanceMonitor.EventDetails}>}
      * @private
      */
     this.eventDetailsMap_ = {};
@@ -236,17 +278,41 @@ cr.define('performance_monitor', function() {
      */
     this.charts_ = [];
 
-    this.setupTimeRangeTab_();
+    this.setupStaticControlPanelFeatures_();
+    chrome.send('getAggregationTypes');
     chrome.send('getEventTypes');
     chrome.send('getMetricTypes');
-    TimeRange_.day.element.click();
   }
 
   PerformanceMonitor.prototype = {
     /**
+     * Receive a list of all the aggregation methods. Populate
+     * |this.aggregationRadioMap_| to reflect said list. Create the section of
+     * radio buttons for the aggregation methods, and choose the first method
+     * by default.
+     * @param {Array<{
+     *   id: number,
+     *   name: string,
+     *   description: string
+     * }>} strategies All aggregation strategies needing radio buttons.
+     */
+    getAggregationTypesCallback: function(strategies) {
+      strategies.forEach(function(strategy) {
+        this.aggregationRadioMap_[strategy.id] = { 'option': strategy };
+      }, this);
+
+      this.setupRadioButtons_($('#choose-aggregation')[0],
+                              this.aggregationRadioMap_,
+                              this.setAggregationStrategy,
+                              0,  // Set the default option to the first.
+                              'aggregation-strategies');
+      this.setAggregationStrategy(0);
+    },
+
+    /**
      * Receive a list of all metric categories, each with its corresponding
      * list of metric details. Populate |this.metricCategoryMap_| and
-     * |this.metrictDetailsMap_| to reflect said list. Reconfigure the
+     * |this.metricDetailsMap_| to reflect said list. Reconfigure the
      * checkbox set for metric selection.
      * @param {Array.<{
      *   metricCategoryId: number,
@@ -258,7 +324,7 @@ cr.define('performance_monitor', function() {
      *     name: string,
      *     description: string
      *   }>
-     * }>} categories  All metric categories needing charts and checkboxes.
+     * }>} categories All metric categories needing charts and checkboxes.
      */
     getMetricTypesCallback: function(categories) {
       categories.forEach(function(category) {
@@ -293,7 +359,7 @@ cr.define('performance_monitor', function() {
      *     name: string,
      *     description: string
      *   }>
-     * }>} categories  All event categories needing charts checkboxes.
+     * }>} categories All event categories needing charts and checkboxes.
      */
     getEventTypesCallback: function(categories) {
       categories.forEach(function(category) {
@@ -312,37 +378,58 @@ cr.define('performance_monitor', function() {
     },
 
     /**
-     * Set up the radio button set to choose time range. Use div#radio-template
-     * as a template.
+     * Set up the aspects of the control panel which are not dependent upon the
+     * information retrieved from PerformanceMonitor's database; this includes
+     * the Time Resolutions and Aggregation Methods radio sections.
      * @private
      */
-    setupTimeRangeTab_: function() {
-      var timeDiv = $('#choose-time-range')[0];
-      var backButton = $('#back-time')[0];
-      var forwardButton = $('#forward-time')[0];
-      var radioTemplate = $('#radio-template')[0];
-
-      for (var time in TimeRange_) {
-        var timeRange = TimeRange_[time];
-        var radio = radioTemplate.cloneNode(true);
-        var input = radio.querySelector('input');
-
-        input.value = timeRange.value;
-        input.timeRange = timeRange;
-        radio.querySelector('span').innerText = timeRange.name;
-        timeDiv.appendChild(radio);
-        timeRange.element = input;
+    setupStaticControlPanelFeatures_: function() {
+      // Initialize the options in the |timeResolutionRadioMap_|.
+      for (var resolution in TimeResolutions_) {
+        this.timeResolutionRadioMap_[TimeResolutions_[resolution].id] =
+            { 'option': TimeResolutions_[resolution] };
       }
 
-      timeDiv.addEventListener('click', function(e) {
-        if (!e.target.webkitMatchesSelector('input[type="radio"]'))
-          return;
+      // Setup the Time Resolution radio buttons, and select the default option
+      // of minutes (finer resolution in order to ensure that the user sees
+      // something at startup).
+      this.setupRadioButtons_($('#choose-time-range')[0],
+                              this.timeResolutionRadioMap_,
+                              this.changeTimeResolution_,
+                              TimeResolutions_.minutes.id,
+                              'time-resolutions');
 
-        this.setTimeRange(e.target.timeRange, Date.now(), true);
-      }.bind(this));
+      // Set the default selection to 'Minutes' and set the time range.
+      this.setTimeRange(TimeResolutions_.minutes,
+                        Date.now(),
+                        true);  // Auto-refresh the chart.
 
+      var forwardButton = $('#forward-time')[0];
       forwardButton.addEventListener('click', this.forwardTime.bind(this));
+      var backButton = $('#back-time')[0];
       backButton.addEventListener('click', this.backTime.bind(this));
+    },
+
+    /**
+     * Change the current time resolution. The visible range will stay centered
+     * around the current center unless the latest edge crosses now(), in which
+     * case it will be pinned there and start auto-updating.
+     * @param {number} mapId the index into the |timeResolutionRadioMap_| of the
+     *     selected resolution.
+     */
+    changeTimeResolution_: function(mapId) {
+      var newEnd;
+      var now = Date.now();
+      var newResolution = this.timeResolutionRadioMap_[mapId].option;
+
+      // If we are updating the timer, then we know that we are already ending
+      // at the perceived current time (which may be different than the actual
+      // current time, since we don't update continuously).
+      newEnd = this.updateTimer_ ? now :
+          Math.min(now, this.range_.end + (newResolution.timeSpan -
+              this.range_.resolution.timeSpan) / 2);
+
+      this.setTimeRange(newResolution, newEnd, newEnd == now);
     },
 
     /**
@@ -357,15 +444,33 @@ cr.define('performance_monitor', function() {
      *   1: {
      *     name: 'CPU',
      *     details: [
-     *       {metricId: 1, name: 'CPU Usage', color: 'rgb(255, 128, 128)'}
+     *       {
+     *         metricId: 1,
+     *         name: 'CPU Usage',
+     *         description:
+     *             'The combined CPU usage of all processes related to Chrome',
+     *         color: 'rgb(255, 128, 128)'
+     *       }
      *     ],
      *   2: {
      *     name : 'Memory',
      *     details: [
-     *       {metricId: 2, name: 'Private Memory Usage',
-     *           color: 'rgb(128, 255, 128)'},
-     *       {metricId: 3, name: 'Shared Memory Usage',
-     *           color: 'rgb(128, 128, 255)'}
+     *       {
+     *         metricId: 2,
+     *         name: 'Private Memory Usage',
+     *         description:
+     *             'The combined private memory usage of all processes related
+     *             to Chrome',
+               color: 'rgb(128, 255, 128)'
+     *       },
+     *       {
+     *         metricId: 3,
+     *         name: 'Shared Memory Usage',
+     *         description:
+     *             'The combined shared memory usage of all processes related
+     *             to Chrome',
+               color: 'rgb(128, 128, 255)'
+     *       }
      *     ]
      *  }
      *
@@ -388,7 +493,10 @@ cr.define('performance_monitor', function() {
      *   <div id="detail-checkbox-template" class="detail-checkbox">
      *     <div class="horizontal-box">
      *       <input type="checkbox">
-     *       <div class="detail-label">CPU Usage</div>
+     *       <div class="detail-label" title=
+     *           "The combined CPU usage of all processes related to Chrome">
+     *         CPU Usage
+     *       </div>
      *       <div class="spacer"></div>
      *       <div class="color-icon"
      *           style="background-color: rgb(255, 128, 128);"></div>
@@ -400,7 +508,10 @@ cr.define('performance_monitor', function() {
      *   <div id="detail-checkbox-template" class="detail-checkbox">
      *     <div class="horizontal-box">
      *       <input type="checkbox">
-     *       <div class="detail-label">Private Memory Usage</div>
+     *       <div class="detail-label" title="The combined private memory \
+     *           usage of all processes related to Chrome">
+     *         Private Memory Usage
+     *       </div>
      *       <div class="spacer"></div>
      *       <div class="color-icon"
      *           style="background-color: rgb(128, 255, 128);"></div>
@@ -409,7 +520,10 @@ cr.define('performance_monitor', function() {
      *   </div><div id="detail-checkbox-template" class="detail-checkbox">
      *      <div class="horizontal-box">
      *        <input type="checkbox">
-     *        <div class="detail-label">Shared Memory Usage</div>
+     *        <div class="detail-label" title="The combined shared memory \
+     *            usage of all processes related to Chrome">
+     *          Shared Memory Usage
+     *        </div>
      *        <div class="spacer"></div>
      *        <div class="color-icon"
      *            style="background-color: rgb(128, 128, 255);"></div>
@@ -448,6 +562,7 @@ cr.define('performance_monitor', function() {
         var label = labelTemplate.cloneNode(true);
 
         label.innerText = category.name;
+        label.title = category.description;
         div.appendChild(label);
 
         category.details.forEach(function(details) {
@@ -465,6 +580,7 @@ cr.define('performance_monitor', function() {
           }.bind(this));
 
           label.innerText = details.name;
+          label.title = details.description;
 
           icon.style.backgroundColor = details.color;
 
@@ -474,9 +590,113 @@ cr.define('performance_monitor', function() {
     },
 
     /**
+     * Generalized function to create radio buttons in a collection of
+     * |collectionName|, given a |div| into which the radio buttons are placed
+     * and a |optionMap| describing the radio buttons' options.
+     *
+     * optionMaps have two guaranteed fields - 'option' and 'element'. The
+     * 'option' field corresponds to the item which the radio button will be
+     * representing (e.g., a particular aggregation strategy).
+     *   - Each 'option' is guaranteed to have a 'value', a 'name', and a
+     *     'description'. 'Value' holds the id of the option, while 'name' and
+     *     'description' are internationalized strings for the radio button's
+     *     content.
+     *   - 'Element' is the field devoted to the HTMLElement for the radio
+     *     button corresponding to that entry; this will be set in this
+     *     function.
+     *
+     * Assume that |optionMap| is |aggregationRadioMap_|, as follows:
+     * optionMap: {
+     *   0: {
+     *     option: {
+     *       id: 0
+     *       name: 'Median'
+     *       description: 'Aggregate using median calculations to reduce
+     *           noisiness in reporting'
+     *     },
+     *     element: null
+     *   },
+     *   1: {
+     *     option: {
+     *       id: 1
+     *       name: 'Mean'
+     *       description: 'Aggregate using mean calculations for the most
+     *           accurate average in reporting'
+     *     },
+     *     element: null
+     *   }
+     * }
+     *
+     * and we would call setupRadioButtons_ with:
+     * this.setupRadioButtons_(<parent_div>, this.aggregationRadioMap_,
+     *     this.setAggregationStrategy, 0, 'aggregation-strategies');
+     *
+     * The resultant HTML would be:
+     * <div id="radio-template" class="radio" title="Aggregate using median
+     *     calculations to reduce noisiness in reporting">
+     *   <div class="horizontal-box">
+     *     <input type="radio" name="aggregation-strategies" value=0>
+     *       <span>Median</span>
+     *     </input>
+     *   </div>
+     * </div>
+     * <div id="radio-template" class="radio" title="Aggregate using mean
+     *     calculations for the most accurate average in reporting">
+     *   <div class="horizontal-box">
+     *     <input type="radio" name="aggregation-strategies" value=1>
+     *       <span>Mean</span>
+     *     </input>
+     *   </div>
+     * </div>
+     *
+     * If a radio button is selected, |onSelect| is called with the radio
+     * button's value. The |defaultKey| is used to choose which radio button
+     * to select at startup; the |onSelect| method is not called on this
+     * selection.
+     *
+     * @param {!HTMLDivElement} div A <div> into which we place the radios.
+     * @param {!Object} optionMap A map containing the radio button information.
+     * @param {!function(this:Controller, Object)} onSelect
+     *     The function called when a radio is selected.
+     * @param {string} defaultKey The key to the radio which should be selected
+     *     initially.
+     * @param {string} collectionName The name of the radio button collection.
+     * @private
+     */
+    setupRadioButtons_: function(div,
+                                 optionMap,
+                                 onSelect,
+                                 defaultKey,
+                                 collectionName) {
+      var radioTemplate = $('#radio-template')[0];
+      for (var key in optionMap) {
+        var entry = optionMap[key];
+        var radio = radioTemplate.cloneNode(true);
+        var input = radio.querySelector('input');
+
+        input.name = collectionName;
+        input.enumerator = entry.option.id;
+        input.option = entry;
+        radio.querySelector('span').innerText = entry.option.name;
+        radio.title = entry.option.description;
+        div.appendChild(radio);
+        entry.element = input;
+      }
+
+      optionMap[defaultKey].element.click();
+
+      div.addEventListener('click', function(e) {
+        if (!e.target.webkitMatchesSelector('input[type="radio"]'))
+          return;
+
+        onSelect.call(this, e.target.enumerator);
+      }.bind(this));
+    },
+
+    /**
      * Add a new chart for |category|, making it initially hidden,
      * with no metrics displayed in it.
-     * @param {!Object} category  The metric category for which to create
+     * @param {!Object} category The metric category for which to create
      *     the chart. Category is a value from metricCategoryMap_.
      * @private
      */
@@ -497,7 +717,7 @@ cr.define('performance_monitor', function() {
       // pairs. As pos events arrive, check each hover to see if it should
       // be hidden or made visible.
       $(chart).bind('plothover', function(event, pos, item) {
-        var tolerance = this.range.resolution;
+        var tolerance = this.range_.resolution.pointResolution;
 
         chart.hovers.forEach(function(hover) {
           hover.div.hidden = hover.x < pos.x - tolerance ||
@@ -530,24 +750,33 @@ cr.define('performance_monitor', function() {
      * Set the time range for which to display metrics and events. For
      * now, the time range always ends at 'now', but future implementations
      * may allow time ranges not so anchored.
-     * @param {!{start: number, end: number, resolution: number}} range
-     *     The time range for which to get display data.
+     * @param {TimeResolution} resolution
+     *     The time resolution at which to display the data.
      * @param {number} end Ending time, in ms since epoch, to which to
      *     set the new time range.
-     * @param {boolean} startTimer Indicates whether we should restart the
+     * @param {boolean} autoRefresh Indicates whether we should restart the
      *     range-update timer.
      */
-    setTimeRange: function(range, end, startTimer) {
-      this.range = range;
-      if (this.updateTimer_ != null)
+    setTimeRange: function(resolution, end, autoRefresh) {
+      // If we have a timer and we are no longer updating, or if we need a timer
+      // for a different resolution, disable the current timer.
+      if (this.updateTimer_ &&
+              (this.range_.resolution != resolution || !autoRefresh)) {
         clearInterval(this.updateTimer_);
-      if (startTimer)
-        this.updateTimer_ = setInterval(this.forwardTime.bind(this),
-            intervalMultiple_ * range.resolution);
-      this.end = Math.floor(end / range.resolution) *
-          range.resolution;
+        this.updateTimer_ = null;
+      }
 
-      this.start = this.end - range.timeSpan;
+      if (autoRefresh && !this.updateTimer_) {
+        this.updateTimer_ = setInterval(
+            this.forwardTime.bind(this),
+            intervalMultiple_ * resolution.pointResolution);
+      }
+
+      this.range_.resolution = resolution;
+      this.range_.end = Math.floor(end / resolution.pointResolution) *
+          resolution.pointResolution;
+      this.range_.start = this.range_.end - resolution.timeSpan;
+
       this.requestIntervals();
     },
 
@@ -556,7 +785,9 @@ cr.define('performance_monitor', function() {
      * redraws.
      */
     backTime: function() {
-      this.setTimeRange(this.range, this.end - this.range.timeSpan / 2, false);
+      this.setTimeRange(this.range_.resolution,
+                        this.range_.end - this.range_.resolution.timeSpan / 2,
+                        false);
     },
 
     /**
@@ -565,16 +796,17 @@ cr.define('performance_monitor', function() {
      */
     forwardTime: function() {
       var now = Date.now();
-      var newEnd = Math.min(now, this.end + this.range.timeSpan / 2);
+      var newEnd =
+          Math.min(now, this.range_.end + this.range_.resolution.timeSpan / 2);
 
-      this.setTimeRange(this.range, newEnd, newEnd == now);
+      this.setTimeRange(this.range_.resolution, newEnd, newEnd == now);
     },
 
     /**
      * Request activity intervals in the current time range.
      */
     requestIntervals: function() {
-      chrome.send('getActiveIntervals', [this.start, this.end]);
+      chrome.send('getActiveIntervals', [this.range_.start, this.range_.end]);
     },
 
     /**
@@ -598,6 +830,15 @@ cr.define('performance_monitor', function() {
         if (eventValue.divs.length > 0)
           this.refreshEventType(eventValue.eventId);
       }
+    },
+
+    /**
+     * Set the aggregation strategy.
+     * @param {number} strategyId The id of the aggregation strategy.
+     */
+    setAggregationStrategy: function(strategyId) {
+      this.aggregationStrategy = strategyId;
+      this.requestIntervals();
     },
 
     /**
@@ -643,7 +884,9 @@ cr.define('performance_monitor', function() {
     refreshMetric: function(metricDetails) {
       metricDetails.data = null;  // Mark metric as awaiting response.
       chrome.send('getMetric', [metricDetails.metricId,
-          this.start, this.end, this.range.resolution]);
+          this.range_.start, this.range_.end,
+          this.range_.resolution.pointResolution,
+          this.aggregationStrategy]);
     },
 
     /**
@@ -724,7 +967,7 @@ cr.define('performance_monitor', function() {
       // Mark eventType as awaiting response.
       this.eventDetailsMap_[eventType].data = null;
 
-      chrome.send('getEvents', [eventType, this.start, this.end]);
+      chrome.send('getEvents', [eventType, this.range_.start, this.range_.end]);
     },
 
     /**
@@ -821,8 +1064,8 @@ cr.define('performance_monitor', function() {
 
       eventValues.forEach(function(eventValue) {
         eventValue.data.forEach(function(point) {
-          if (point.time >= this.start - timezoneOffset_ &&
-              point.time <= this.end - timezoneOffset_) {
+          if (point.time >= this.range_.start - timezoneOffset_ &&
+              point.time <= this.range_.end - timezoneOffset_) {
 
             // Date wants Zulu time.
             date = new Date(point.time + timezoneOffset_);
@@ -847,8 +1090,8 @@ cr.define('performance_monitor', function() {
               xaxis: {from: point.time, to: point.time}
             });
           } else {
-            console.log('Event out of time range ' + this.start + ' -> ' +
-                this.end + ' at: ' + point.time);
+            console.log('Event out of time range ' + this.range_.start +
+                ' -> ' + this.range_.end + ' at: ' + point.time);
           }
         }, this);
       }, this);
@@ -904,8 +1147,8 @@ cr.define('performance_monitor', function() {
         yaxes: yAxes,
         xaxis: {
           mode: 'time',
-          min: this.start - timezoneOffset_,
-          max: this.end - timezoneOffset_
+          min: this.range_.start - timezoneOffset_,
+          max: this.range_.end - timezoneOffset_
         },
         points: {show: true, radius: 1},
         lines: {show: true},

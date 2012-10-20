@@ -24,7 +24,17 @@ TEST(PerformanceMonitorUtilTest, AggregateMetricEmptyTest) {
   const base::Time results_time = base::Time::FromDoubleT(3);
   const base::TimeDelta resolution = base::TimeDelta::FromSeconds(1);
   scoped_ptr<Database::MetricVector> aggregated_metric =
-      AggregateMetric(METRIC_CPU_USAGE, &metric, results_time, resolution);
+      AggregateMetric(METRIC_CPU_USAGE,
+                      &metric,
+                      results_time,
+                      resolution,
+                      AGGREGATION_STRATEGY_MEAN);
+  ASSERT_EQ(0u, aggregated_metric->size());
+  aggregated_metric = AggregateMetric(METRIC_CPU_USAGE,
+                                      &metric,
+                                      results_time,
+                                      resolution,
+                                      AGGREGATION_STRATEGY_MEDIAN);
   ASSERT_EQ(0u, aggregated_metric->size());
 }
 
@@ -36,15 +46,25 @@ TEST(PerformanceMonitorUtilTest, AggregateMetricSimpleTest) {
   const double value = 3.14;
   Database::MetricVector metric;
   metric.push_back(Metric(METRIC_CPU_USAGE, data_time, value));
-  scoped_ptr<Database::MetricVector> aggregated_metric =
-      AggregateMetric(METRIC_CPU_USAGE,
-                      &metric,
-                      results_time,
-                      results_resolution);
+  Database::MetricVector aggregated_metric =
+      *AggregateMetric(METRIC_CPU_USAGE,
+                       &metric,
+                       results_time,
+                       results_resolution,
+                       AGGREGATION_STRATEGY_MEAN);
 
-  ASSERT_EQ(1u, aggregated_metric->size());
-  ASSERT_EQ(results_time + results_resolution, aggregated_metric->at(0).time);
-  ASSERT_EQ(value, aggregated_metric->at(0).value);
+  ASSERT_EQ(1u, aggregated_metric.size());
+  EXPECT_EQ(results_time + results_resolution, aggregated_metric[0].time);
+  EXPECT_EQ(value, aggregated_metric[0].value);
+
+  aggregated_metric = *AggregateMetric(METRIC_CPU_USAGE,
+                                       &metric,
+                                       results_time,
+                                       results_resolution,
+                                       AGGREGATION_STRATEGY_MEDIAN);
+  ASSERT_EQ(1u, aggregated_metric.size());
+  EXPECT_EQ(results_time + results_resolution, aggregated_metric[0].time);
+  EXPECT_EQ(value, aggregated_metric[0].value);
 }
 
 TEST(PerformanceMonitorUtilTest, AggregateMetricDenseTest) {
@@ -52,7 +72,7 @@ TEST(PerformanceMonitorUtilTest, AggregateMetricDenseTest) {
   const base::TimeDelta data_resolution = base::TimeDelta::FromSeconds(1);
   const base::Time results_time = base::Time::FromDoubleT(6);
   const base::TimeDelta results_resolution = base::TimeDelta::FromSeconds(4);
-  double current_value = 0;
+  double current_value = 1;
   int num_points = 12;
   Database::MetricVector metric;
 
@@ -60,20 +80,37 @@ TEST(PerformanceMonitorUtilTest, AggregateMetricDenseTest) {
     metric.push_back(Metric(METRIC_CPU_USAGE,
                             current_data_time,
                             current_value));
-    current_value += 1;
+    current_value *= 2;
     current_data_time += data_resolution;
   }
-  scoped_ptr<Database::MetricVector> aggregated_metric =
-      AggregateMetric(METRIC_CPU_USAGE,
-                      &metric,
-                      results_time,
-                      results_resolution);
+  Database::MetricVector aggregated_metric =
+      *AggregateMetric(METRIC_CPU_USAGE,
+                       &metric,
+                       results_time,
+                       results_resolution,
+                       AGGREGATION_STRATEGY_MEAN);
   // The first 4 points get ignored because they are before the start time.
   // The remaining 8 points are aggregated into two data points.
-  ASSERT_EQ(2u, aggregated_metric->size());
-  ASSERT_EQ(results_time + results_resolution, aggregated_metric->at(0).time);
-  ASSERT_EQ(results_time + (2 * results_resolution),
-            aggregated_metric->at(1).time);
+  ASSERT_EQ(2u, aggregated_metric.size());
+  EXPECT_EQ(results_time + results_resolution, aggregated_metric[0].time);
+  EXPECT_DOUBLE_EQ((32 + 64 + 128 + 256) / 4.0, aggregated_metric[0].value);
+  EXPECT_EQ(results_time + (2 * results_resolution),
+            aggregated_metric[1].time);
+  // Since we don't have data for the time of 14, we stretch out the 2048.
+  EXPECT_DOUBLE_EQ((512 + 1024 + 2048 + 2048) / 4.0,
+                   aggregated_metric[1].value);
+
+  aggregated_metric = *AggregateMetric(METRIC_CPU_USAGE,
+                                       &metric,
+                                       results_time,
+                                       results_resolution,
+                                       AGGREGATION_STRATEGY_MEDIAN);
+  ASSERT_EQ(2u, aggregated_metric.size());
+  EXPECT_EQ(results_time + results_resolution, aggregated_metric[0].time);
+  EXPECT_EQ(results_time + 2 * results_resolution,
+            aggregated_metric[1].time);
+  EXPECT_EQ(48, aggregated_metric[0].value);
+  EXPECT_EQ(768, aggregated_metric[1].value);
 }
 
 TEST(PerformanceMonitorUtilTest, AggregateMetricSparseTest) {
@@ -91,25 +128,44 @@ TEST(PerformanceMonitorUtilTest, AggregateMetricSparseTest) {
 
   const base::Time results_time = base::Time::FromDoubleT(19);
   const base::TimeDelta results_resolution = base::TimeDelta::FromSeconds(2);
-  scoped_ptr<Database::MetricVector> aggregated_metric =
-      AggregateMetric(METRIC_CPU_USAGE,
-                      &metric,
-                      results_time,
-                      results_resolution);
+  Database::MetricVector aggregated_metric =
+      *AggregateMetric(METRIC_CPU_USAGE,
+                       &metric,
+                       results_time,
+                       results_resolution,
+                       AGGREGATION_STRATEGY_MEAN);
 
   // The first aggregation point is split between the first value and the second
   // value. The second is split between the second and third. The third doesn't
   // have any data after it so the aggregation is the same value.
-  ASSERT_EQ(3u, aggregated_metric->size());
-  ASSERT_EQ(results_time + 1 * results_resolution,
-            aggregated_metric->at(0).time);
-  ASSERT_EQ((value1 + value2) / 2, aggregated_metric->at(0).value);
-  ASSERT_EQ(results_time + 11 * results_resolution,
-            aggregated_metric->at(1).time);
-  ASSERT_EQ((value2 + value3) / 2, aggregated_metric->at(1).value);
-  ASSERT_EQ(results_time + 21 * results_resolution,
-            aggregated_metric->at(2).time);
-  ASSERT_EQ(value3, aggregated_metric->at(2).value);
+  ASSERT_EQ(3u, aggregated_metric.size());
+  EXPECT_EQ(results_time + 1 * results_resolution,
+            aggregated_metric[0].time);
+  EXPECT_EQ((value1 + value2) / 2, aggregated_metric[0].value);
+  EXPECT_EQ(results_time + 11 * results_resolution,
+            aggregated_metric[1].time);
+  EXPECT_EQ((value2 + value3) / 2, aggregated_metric[1].value);
+  EXPECT_EQ(results_time + 21 * results_resolution,
+            aggregated_metric[2].time);
+  EXPECT_EQ(value3, aggregated_metric[2].value);
+
+  // For median values, we go from [start, end). Thus, since each of these are
+  // one window apart, each value will have it's own window.
+  aggregated_metric = *AggregateMetric(METRIC_CPU_USAGE,
+                                       &metric,
+                                       results_time,
+                                       results_resolution,
+                                       AGGREGATION_STRATEGY_MEDIAN);
+  ASSERT_EQ(3u, aggregated_metric.size());
+  EXPECT_EQ(results_time + 1 * results_resolution,
+            aggregated_metric[0].time);
+  EXPECT_EQ(value1, aggregated_metric[0].value);
+  EXPECT_EQ(results_time + 11 * results_resolution,
+            aggregated_metric[1].time);
+  EXPECT_EQ(value2, aggregated_metric[1].value);
+  EXPECT_EQ(results_time + 21 * results_resolution,
+            aggregated_metric[2].time);
+  EXPECT_EQ(value3, aggregated_metric[2].value);
 }
 
 }  // namespace performance_monitor

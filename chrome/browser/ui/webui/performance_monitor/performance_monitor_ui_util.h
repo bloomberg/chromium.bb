@@ -10,6 +10,14 @@
 
 namespace performance_monitor {
 
+// The different options for aggregation strategies.
+enum AggregationStrategy {
+  AGGREGATION_STRATEGY_MEDIAN,
+  AGGREGATION_STRATEGY_MEAN,
+  AGGREGATION_STRATEGY_NONE,
+  AGGREGATION_STRATEGY_NUMBER_OF_STRATEGIES
+};
+
 // Return the factor by which all metrics should be multiplied in order to be in
 // the preferred unit (e.g., memory usage is in bytes, but we display it in
 // megabytes, so we return 1/1024^2).
@@ -17,16 +25,26 @@ double GetConversionFactor(UnitDetails from, UnitDetails to);
 
 // Metric data can be either dense or sporadic, so AggregateMetric() normalizes
 // the metric data in time. |metrics| must be sorted in increasing time.
-// Put concisely, AggregateMetric() does sample rate conversion from irregular
-// metric data points to a sample period of |resolution| beginning at |start|.
-// Each sampling window starts and ends at an integer multiple away from
-// |start| and data points are omitted if there are no points to resample.
+// AggregateMetrics() will perform the aggregation according to the |strategy|
+// provided.
+//
+// Median: Use the median of sample values from the window, ignoring
+//         irregularity in sample timings.
+// Mean: Use the mean value within the window.
+// None: Return all samples from the window.
+//
+// In the methods which do aggregation, sampling windows start and end at an
+// integer multiple of |resolution| away from |start| and data points are
+// omitted if there are no points to resample. The time associated with each
+// slice is the time at the end of the slice.
+//
 // Returns a pointer to a new MetricVector, or NULL if |metrics| is empty.
 scoped_ptr<Database::MetricVector> AggregateMetric(
     MetricType type,
     const Database::MetricVector* metrics,
     const base::Time& start,
-    const base::TimeDelta& resolution);
+    const base::TimeDelta& resolution,
+    AggregationStrategy strategy);
 
 }  // namespace performance_monitor
 
