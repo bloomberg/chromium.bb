@@ -157,29 +157,11 @@
             'cacheinvalidation_unittests',
           ],
           'includes': [
+            '../../build/isolate.gypi',
             'cacheinvalidation_unittests.isolate',
           ],
-          'actions': [
-            {
-              'action_name': 'isolate',
-              'inputs': [
-                'cacheinvalidation_unittests.isolate',
-                '<@(isolate_dependency_tracked)',
-              ],
-              'outputs': [
-                '<(PRODUCT_DIR)/cacheinvalidation_unittests.isolated',
-              ],
-              'action': [
-                'python',
-                '../../tools/swarm_client/isolate.py',
-                '<(test_isolation_mode)',
-                '--outdir', '<(test_isolation_outdir)',
-                '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR)',
-                '--variable', 'OS', '<(OS)',
-                '--result', '<@(_outputs)',
-                '--isolate', 'cacheinvalidation_unittests.isolate',
-              ],
-            },
+          'sources': [
+            'cacheinvalidation_unittests.isolate',
           ],
         },
       ],

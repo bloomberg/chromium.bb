@@ -4835,28 +4835,11 @@
             'unit_tests',
           ],
           'includes': [
+            '../build/isolate.gypi',
             'unit_tests.isolate',
           ],
-          'actions': [
-            {
-              'action_name': 'isolate',
-              'inputs': [
-                '<@(isolate_dependency_tracked)',
-              ],
-              'outputs': [
-                '<(PRODUCT_DIR)/unit_tests.isolated',
-              ],
-              'action': [
-                'python',
-                '../tools/swarm_client/isolate.py',
-                '<(test_isolation_mode)',
-                '--outdir', '<(test_isolation_outdir)',
-                '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR)',
-                '--variable', 'OS', '<(OS)',
-                '--result', '<@(_outputs)',
-                '--isolate', 'unit_tests.isolate',
-              ],
-            },
+          'sources': [
+            'unit_tests.isolate',
           ],
         },
         {
@@ -4866,28 +4849,11 @@
             'browser_tests',
           ],
           'includes': [
+            '../build/isolate.gypi',
             'browser_tests.isolate',
           ],
-          'actions': [
-            {
-              'action_name': 'isolate',
-              'inputs': [
-                '<@(isolate_dependency_tracked)',
-              ],
-              'outputs': [
-                '<(PRODUCT_DIR)/browser_tests.isolated',
-              ],
-              'action': [
-                'python',
-                '../tools/swarm_client/isolate.py',
-                '<(test_isolation_mode)',
-                '--outdir', '<(test_isolation_outdir)',
-                '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR)',
-                '--variable', 'OS', '<(OS)',
-                '--result', '<@(_outputs)',
-                '--isolate', 'browser_tests.isolate',
-              ],
-            },
+          'sources': [
+            'browser_tests.isolate',
           ],
         },
         {
@@ -4904,28 +4870,11 @@
             }],
           ],
           'includes': [
+            '../build/isolate.gypi',
             'sync_integration_tests.isolate',
           ],
-          'actions': [
-            {
-              'action_name': 'isolate',
-              'inputs': [
-                '<@(isolate_dependency_tracked)',
-              ],
-              'outputs': [
-                '<(PRODUCT_DIR)/sync_integration_tests.isolated',
-              ],
-              'action': [
-                'python',
-                '../tools/swarm_client/isolate.py',
-                '<(test_isolation_mode)',
-                '--outdir', '<(test_isolation_outdir)',
-                '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR)',
-                '--variable', 'OS', '<(OS)',
-                '--result', '<@(_outputs)',
-                '--isolate', 'sync_integration_tests.isolate',
-              ],
-            },
+          'sources': [
+            'sync_integration_tests.isolate',
           ],
         },
       ],
