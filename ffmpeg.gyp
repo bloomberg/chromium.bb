@@ -597,6 +597,13 @@
               '-DARCH_X86_64',
             ],
           }],
+          ['OS == "mac"', {
+            'more_yasm_flags': [
+              # Necessary to ensure symbols end up with a _ prefix; added by
+              # yasm_compile.gypi for Windows, but not Mac.
+              '-DPREFIX',
+            ]
+          }],
         ],
         'yasm_flags': [
           '-DPIC',
