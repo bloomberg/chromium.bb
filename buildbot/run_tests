@@ -47,6 +47,7 @@ run_test() {
 
   if [[ "${special}" == "skip" ]]; then
     echo "Skipping unittest $1"
+    rm "${log_file}"
     return
   elif [[ "${special}" == "inside" ]]; then
     echo "Starting unittest $1 inside the chroot"
