@@ -47,8 +47,8 @@ class PointerDeviceObserver : public DeviceHierarchyObserver {
   void CheckMouseExists();
 
   // Callback for pointer device checks.
-  void OnTouchpadExists(bool* exists);
-  void OnMouseExists(bool* exists);
+  void OnTouchpadExists(bool exists);
+  void OnMouseExists(bool exists);
 
   ObserverList<Observer> observers_;
 

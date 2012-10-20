@@ -16,9 +16,8 @@
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/stringprintf.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace chromeos {
 namespace system {
@@ -28,12 +27,13 @@ const char kTpControl[] = "/opt/google/touchpad/tpcontrol";
 const char kMouseControl[] = "/opt/google/mouse/mousecontrol";
 
 bool ScriptExists(const std::string& script) {
+  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   return file_util::PathExists(FilePath(script));
 }
 
 // Executes the input control script asynchronously, if it exists.
 void ExecuteScriptOnFileThread(const std::vector<std::string>& argv) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   DCHECK(!argv.empty());
   const std::string& script(argv[0]);
 
@@ -49,7 +49,7 @@ void ExecuteScriptOnFileThread(const std::vector<std::string>& argv) {
 }
 
 void ExecuteScript(int argc, ...) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   std::vector<std::string> argv;
   va_list vl;
   va_start(vl, argc);
@@ -58,56 +58,68 @@ void ExecuteScript(int argc, ...) {
   }
   va_end(vl);
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+  content::BrowserThread::GetBlockingPool()->PostTask(FROM_HERE,
       base::Bind(&ExecuteScriptOnFileThread, argv));
 }
 
 void SetPointerSensitivity(const char* script, int value) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(value > 0 && value < 6);
   ExecuteScript(3, script, "sensitivity", StringPrintf("%d", value).c_str());
 }
 
-bool DeviceExists(const char* script) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+void DeviceExistsBlockingPool(const char* script, bool* exists) {
+  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  *exists = false;
   if (!ScriptExists(script))
-    return false;
+    return;
 
   std::vector<std::string> argv;
   argv.push_back(script);
   argv.push_back("status");
   std::string output;
   // Output is empty if the device is not found.
-  return base::GetAppOutput(CommandLine(argv), &output) && !output.empty();
+  *exists = base::GetAppOutput(CommandLine(argv), &output) && !output.empty();
+  DVLOG(1) << "DeviceExistsBlockingPool:" << script << "=" << *exists;
+}
+
+void RunCallbackUIThread(bool* exists, const DeviceExistsCallback& callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DVLOG(1) << "RunCallbackUIThread " << *exists;
+  callback.Run(*exists);
+}
+
+void DeviceExists(const char* script, const DeviceExistsCallback& callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  bool* exists = new bool(false);
+  content::BrowserThread::GetBlockingPool()->PostTaskAndReply(FROM_HERE,
+      base::Bind(&DeviceExistsBlockingPool, script, exists),
+      base::Bind(&RunCallbackUIThread, base::Owned(exists), callback));
 }
 
 }  // namespace
 
 namespace touchpad_settings {
 
-bool TouchpadExists() {
-  // We only need to do this check once, assuming no pluggable touchpad devices.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  static bool init = false;
-  static bool exists = false;
-
-  if (!init) {
-    init = true;
-    exists = DeviceExists(kTpControl);
-  }
-  return exists;
+void TouchpadExists(const DeviceExistsCallback& callback) {
+  DeviceExists(kTpControl, callback);
 }
 
 // Sets the touchpad sensitivity in the range [1, 5].
 void SetSensitivity(int value) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   SetPointerSensitivity(kTpControl, value);
 }
 
 void SetTapToClick(bool enabled) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   ExecuteScript(3, kTpControl, "taptoclick", enabled ? "on" : "off");
 }
 
 void SetThreeFingerClick(bool enabled) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
   ExecuteScript(3, kTpControl, "three_finger_click", enabled ? "on" : "off");
   // For Alex/ZGB.
   ExecuteScript(3, kTpControl, "t5r2_three_finger_click",
@@ -118,16 +130,19 @@ void SetThreeFingerClick(bool enabled) {
 
 namespace mouse_settings {
 
-bool MouseExists() {
-  return DeviceExists(kMouseControl);
+void MouseExists(const DeviceExistsCallback& callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DeviceExists(kMouseControl, callback);
 }
 
 // Sets the touchpad sensitivity in the range [1, 5].
 void SetSensitivity(int value) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   SetPointerSensitivity(kMouseControl, value);
 }
 
 void SetPrimaryButtonRight(bool right) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   ExecuteScript(3, kMouseControl, "swap_left_right", right ? "1" : "0");
 }
 

@@ -5,12 +5,17 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_INPUT_DEVICE_SETTINGS_H_
 #define CHROME_BROWSER_CHROMEOS_SYSTEM_INPUT_DEVICE_SETTINGS_H_
 
+#include "base/callback.h"
+
 namespace chromeos {
 namespace system {
 
+typedef base::Callback<void(bool)> DeviceExistsCallback;
+
 namespace touchpad_settings {
 
-bool TouchpadExists();
+// Calls |callback| asynchronously after determining if a touchpad is connected.
+void TouchpadExists(const DeviceExistsCallback& callback);
 
 // Sets the touchpad sensitivity in the range [1, 5].
 void SetSensitivity(int value);
@@ -25,11 +30,13 @@ void SetThreeFingerClick(bool enabled);
 
 namespace mouse_settings {
 
-bool MouseExists();
+// Calls |callback| asynchronously after determining if a mouse is connected.
+void MouseExists(const DeviceExistsCallback& callback);
 
 // Sets the mouse sensitivity in the range [1, 5].
 void SetSensitivity(int value);
 
+// Sets the primary mouse button to the right button if |right| is true.
 void SetPrimaryButtonRight(bool right);
 
 }  // namespace mouse_settings

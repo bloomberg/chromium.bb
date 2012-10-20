@@ -15,17 +15,6 @@ using content::BrowserThread;
 
 namespace chromeos {
 namespace system {
-namespace {
-
-void TouchpadExistsFileThread(bool* exists) {
-  *exists = touchpad_settings::TouchpadExists();
-}
-
-void MouseExistsFileThread(bool* exists) {
-  *exists = mouse_settings::MouseExists();
-}
-
-}  // namespace
 
 PointerDeviceObserver::PointerDeviceObserver()
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
@@ -59,29 +48,23 @@ void PointerDeviceObserver::DeviceHierarchyChanged() {
 }
 
 void PointerDeviceObserver::CheckTouchpadExists() {
-  bool* exists = new bool;
-  BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&TouchpadExistsFileThread, exists),
+  touchpad_settings::TouchpadExists(
       base::Bind(&PointerDeviceObserver::OnTouchpadExists,
-                 weak_factory_.GetWeakPtr(),
-                 base::Owned(exists)));
+                 weak_factory_.GetWeakPtr()));
 }
 
 void PointerDeviceObserver::CheckMouseExists() {
-  bool* exists = new bool;
-  BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&MouseExistsFileThread, exists),
+  mouse_settings::MouseExists(
       base::Bind(&PointerDeviceObserver::OnMouseExists,
-                 weak_factory_.GetWeakPtr(),
-                 base::Owned(exists)));
+                 weak_factory_.GetWeakPtr()));
 }
 
-void PointerDeviceObserver::OnTouchpadExists(bool* exists) {
-  FOR_EACH_OBSERVER(Observer, observers_, TouchpadExists(*exists));
+void PointerDeviceObserver::OnTouchpadExists(bool exists) {
+  FOR_EACH_OBSERVER(Observer, observers_, TouchpadExists(exists));
 }
 
-void PointerDeviceObserver::OnMouseExists(bool* exists) {
-  FOR_EACH_OBSERVER(Observer, observers_, MouseExists(*exists));
+void PointerDeviceObserver::OnMouseExists(bool exists) {
+  FOR_EACH_OBSERVER(Observer, observers_, MouseExists(exists));
 }
 
 PointerDeviceObserver::Observer::~Observer() {
