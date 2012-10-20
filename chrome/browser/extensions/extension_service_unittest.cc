@@ -5592,12 +5592,14 @@ TEST_F(ExtensionServiceTest, ExternalInstallGlobalError) {
   EXPECT_FALSE(extensions::HasExternalInstallError(service_));
 
   // A hosted app, installed externally.
-  // This should NOT trigger an alert.
+  // This SHOULD trigger an alert.
   provider->UpdateOrAddExtension(hosted_app, "1.0.0.0",
                                  data_dir_.AppendASCII("hosted_app.crx"));
 
   service_->CheckForExternalUpdates();
   loop_.RunAllPending();
+  EXPECT_TRUE(extensions::HasExternalInstallError(service_));
+  service_->EnableExtension(hosted_app);
   EXPECT_FALSE(extensions::HasExternalInstallError(service_));
 
   // Another normal extension, but installed externally.

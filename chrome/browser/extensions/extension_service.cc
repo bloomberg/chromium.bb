@@ -1830,11 +1830,9 @@ void ExtensionService::UpdateExternalExtensionAlert() {
        iter != disabled_extensions_.end(); ++iter) {
     const Extension* e = *iter;
     if (Extension::IsExternalLocation(e->location())) {
-      if (!e->is_hosted_app()) {
-        if (!extension_prefs_->IsExternalExtensionAcknowledged(e->id())) {
-          extension = e;
-          break;
-        }
+      if (!extension_prefs_->IsExternalExtensionAcknowledged(e->id())) {
+        extension = e;
+        break;
       }
     }
   }
