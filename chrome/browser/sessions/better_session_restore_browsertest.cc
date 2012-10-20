@@ -87,7 +87,8 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(BetterSessionRestoreTest);
 };
 
-IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, PRE_SessionCookies) {
+// crbug.com/156981
+IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, FLAKY_PRE_SessionCookies) {
   // Set the startup preference to "continue where I left off" and visit a page
   // which stores a session cookie.
   SessionStartupPref::SetStartupPref(
@@ -95,13 +96,15 @@ IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, PRE_SessionCookies) {
   StoreDataWithPage("session_cookies.html");
 }
 
-IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, SessionCookies) {
+// crbug.com/156981
+IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, FLAKY_SessionCookies) {
   // The browsing session will be continued; just wait for the page to reload
   // and check the stored data.
   CheckReloadedPage();
 }
 
-IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, PRE_SessionStorage) {
+// crbug.com/156981
+IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, FLAKY_PRE_SessionStorage) {
   // Write the data on disk less lazily.
   dom_storage::DomStorageArea::DisableCommitDelayForTesting();
   SessionStartupPref::SetStartupPref(
@@ -109,6 +112,7 @@ IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, PRE_SessionStorage) {
   StoreDataWithPage("session_storage.html");
 }
 
-IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, SessionStorage) {
+// crbug.com/156981
+IN_PROC_BROWSER_TEST_F(BetterSessionRestoreTest, FLAKY_SessionStorage) {
   CheckReloadedPage();
 }
