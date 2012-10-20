@@ -28,14 +28,6 @@ function onexit {
 
 logger Running Chrome Remote Desktop postflight script @@VERSION@@
 
-# Create auth file (with correct owner and permissions) if it doesn't already
-# exist.
-if [[ ! -f "$CONFIG_FILE" ]]; then
-  touch "$CONFIG_FILE"
-  chmod 600 "$CONFIG_FILE"
-  chmod +a "$USER:allow:read" "$CONFIG_FILE"
-fi
-
 # If there is a backup _enabled file, re-enable the service.
 if [[ -f "$ENABLED_FILE_BACKUP" ]]; then
   mv "$ENABLED_FILE_BACKUP" "$ENABLED_FILE"

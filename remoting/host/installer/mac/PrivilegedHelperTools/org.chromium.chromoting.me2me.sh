@@ -81,7 +81,12 @@ if [[ "$1" = "--disable" ]]; then
   rm -f "$ENABLED_FILE"
 elif [[ "$1" = "--enable" ]]; then
   echo $$
+  # Ensure the config file is private whilst being written.
+  rm -f "$CONFIG_FILE"
+  umask 0077
   cat > "$CONFIG_FILE"
+  # Ensure the config is readable by the user registering the host.
+  chmod +a "$USER:allow:read" "$CONFIG_FILE"
   touch "$ENABLED_FILE"
 elif [[ "$1" = "--save-config" ]]; then
   echo $$
