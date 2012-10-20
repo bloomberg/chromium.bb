@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/requirements_checker.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
+#include "content/public/browser/browser_thread.h"
 #include "sync/api/string_ordinal.h"
 
 using content::BrowserThread;

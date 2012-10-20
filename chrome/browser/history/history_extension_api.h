@@ -20,19 +20,12 @@ namespace base {
 class ListValue;
 }
 
-typedef std::vector<linked_ptr<
-    extensions::api::history::HistoryItem> > HistoryItemList;
-typedef std::vector<linked_ptr<
-    extensions::api::history::VisitItem> > VisitItemList;
-
 // Observes History service and routes the notifications as events to the
 // extension system.
 class HistoryExtensionEventRouter : public content::NotificationObserver {
  public:
-  explicit HistoryExtensionEventRouter();
+  explicit HistoryExtensionEventRouter(Profile* profile);
   virtual ~HistoryExtensionEventRouter();
-
-  void ObserveProfile(Profile* profile);
 
  private:
   // content::NotificationObserver::Observe.

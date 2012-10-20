@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -21,7 +22,7 @@ namespace {
 const char kHelpAppFormat[] =
     "chrome-extension://honijodknafkokifofgiaalefdiedpko/oobe.html?id=%d";
 
-}
+}  // namespace
 
 namespace chromeos {
 

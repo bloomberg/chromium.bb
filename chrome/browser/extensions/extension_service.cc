@@ -117,6 +117,7 @@
 #include "sync/api/sync_error_factory.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/database/database_util.h"
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
@@ -486,8 +487,7 @@ void ExtensionService::InitEventRouters() {
     return;
 
 #if defined(ENABLE_EXTENSIONS)
-  history_event_router_.reset(new HistoryExtensionEventRouter());
-  history_event_router_->ObserveProfile(profile_);
+  history_event_router_.reset(new HistoryExtensionEventRouter(profile_));
   browser_event_router_.reset(new extensions::BrowserEventRouter(profile_));
   browser_event_router_->Init();
   window_event_router_.reset(new extensions::WindowEventRouter(profile_));

@@ -29,6 +29,11 @@ using extensions::api::experimental_history::MostVisitedItem;
 using extensions::api::history::HistoryItem;
 using extensions::api::history::VisitItem;
 
+typedef std::vector<linked_ptr<extensions::api::history::HistoryItem> >
+    HistoryItemList;
+typedef std::vector<linked_ptr<extensions::api::history::VisitItem> >
+    VisitItemList;
+
 namespace AddUrl = extensions::api::history::AddUrl;
 namespace DeleteUrl = extensions::api::history::DeleteUrl;
 namespace DeleteRange = extensions::api::history::DeleteRange;
@@ -120,12 +125,7 @@ scoped_ptr<VisitItem> GetVisitItem(const history::VisitRow& row) {
 
 }  // namespace
 
-HistoryExtensionEventRouter::HistoryExtensionEventRouter() {}
-
-HistoryExtensionEventRouter::~HistoryExtensionEventRouter() {}
-
-void HistoryExtensionEventRouter::ObserveProfile(Profile* profile) {
-  CHECK(registrar_.IsEmpty());
+HistoryExtensionEventRouter::HistoryExtensionEventRouter(Profile* profile) {
   const content::Source<Profile> source = content::Source<Profile>(profile);
   registrar_.Add(this,
                  chrome::NOTIFICATION_HISTORY_URL_VISITED,
@@ -134,6 +134,8 @@ void HistoryExtensionEventRouter::ObserveProfile(Profile* profile) {
                  chrome::NOTIFICATION_HISTORY_URLS_DELETED,
                  source);
 }
+
+HistoryExtensionEventRouter::~HistoryExtensionEventRouter() {}
 
 void HistoryExtensionEventRouter::Observe(
     int type,

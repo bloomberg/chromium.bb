@@ -78,7 +78,7 @@ class ProcessesEventRouter : public TaskManagerModelObserver,
 
   // Determines whether there is a registered listener for the specified event.
   // It helps to avoid collecing data if no one is interested in it.
-  bool HasEventListeners(std::string& event_name);
+  bool HasEventListeners(const std::string& event_name);
 
   // Used for tracking registrations to process related notifications.
   content::NotificationRegistrar registrar_;

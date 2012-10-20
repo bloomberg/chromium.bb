@@ -14,11 +14,9 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
-#include "base/tuple.h"
 #include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "chrome/browser/extensions/app_shortcut_manager.h"
 #include "chrome/browser/extensions/app_sync_bundle.h"
@@ -36,7 +34,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "sync/api/string_ordinal.h"
@@ -46,7 +43,6 @@
 class BookmarkExtensionEventRouter;
 class CommandLine;
 class ExtensionErrorUI;
-class ExtensionFontSettingsEventRouter;
 class ExtensionManagementEventRouter;
 class ExtensionSyncData;
 class ExtensionToolbarModel;

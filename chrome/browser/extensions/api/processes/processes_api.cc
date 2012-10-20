@@ -210,7 +210,7 @@ void AddMemoryDetails(DictionaryValue* result,
 
 #endif  // defined(ENABLE_TASK_MANAGER)
 
-} // local namespace
+}  // namespace
 
 ProcessesEventRouter* ProcessesEventRouter::GetInstance() {
   return Singleton<ProcessesEventRouter>::get();
@@ -258,7 +258,7 @@ void ProcessesEventRouter::ListenerAdded() {
 }
 
 void ProcessesEventRouter::ListenerRemoved() {
-  DCHECK(listeners_ > 0);
+  DCHECK_GT(listeners_, 0);
   --listeners_;
 #if defined(ENABLE_TASK_MANAGER)
   // The task manager has its own ref count to balance other callers of
@@ -396,7 +396,7 @@ void ProcessesEventRouter::OnItemsChanged(int start, int length) {
 
 void ProcessesEventRouter::OnItemsToBeRemoved(int start, int length) {
 #if defined(ENABLE_TASK_MANAGER)
-  DCHECK(length == 1);
+  DCHECK_EQ(length, 1);
 
   // Process exit for renderer processes has the data about exit code and
   // termination status, therefore we will rely on notifications and not on
@@ -485,7 +485,7 @@ void ProcessesEventRouter::DispatchEvent(Profile* profile,
 void ProcessesEventRouter::NotifyProfiles(const char* event_name,
                                           scoped_ptr<ListValue> event_args) {
   for (ProfileSet::iterator it = profiles_.begin();
-       it != profiles_.end(); it++) {
+       it != profiles_.end(); ++it) {
     Profile* profile = *it;
     scoped_ptr<ListValue> event_args_copy(event_args->DeepCopy());
     DispatchEvent(profile, event_name, event_args_copy.Pass());
@@ -496,9 +496,9 @@ void ProcessesEventRouter::NotifyProfiles(const char* event_name,
 // interest, we need to ask each profile whether it has one registered.
 // We only need to look for the profiles that have registered with the
 // this extension API.
-bool ProcessesEventRouter::HasEventListeners(std::string& event_name) {
+bool ProcessesEventRouter::HasEventListeners(const std::string& event_name) {
   for (ProfileSet::iterator it = profiles_.begin();
-       it != profiles_.end(); it++) {
+       it != profiles_.end(); ++it) {
     Profile* profile = *it;
     extensions::EventRouter* router = profile->GetExtensionEventRouter();
     if (!router)
@@ -735,7 +735,7 @@ void GetProcessInfoFunction::GatherProcessInfo() {
         }
       }
     }
-    DCHECK(process_ids_.size() == 0);
+    DCHECK_EQ(process_ids_.size(), 0U);
   }
 
   SetResult(processes);
