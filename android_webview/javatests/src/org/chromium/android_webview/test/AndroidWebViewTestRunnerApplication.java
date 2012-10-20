@@ -33,7 +33,7 @@ public class AndroidWebViewTestRunnerApplication extends Application {
 
     /** Handles initializing the common application parameters. */
     private static void initializeApplicationParameters() {
-        CommandLine.initFromFile("/data/local/tmp/chrome-command-line");
+        CommandLine.initFromFile("/data/local/chrome-command-line");
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
         // We don't need to extract any paks because for WebView, they are
         // in the system image.
