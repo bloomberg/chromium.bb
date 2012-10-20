@@ -224,9 +224,10 @@ class Database(object):
         glob_string = m.group(1)
         directive = m.group(2)
         full_glob_string = self.os_path.join(self.root, dirpath, glob_string)
-        if self.os_path.sep in glob_string:
+        if '/' in glob_string or '\\' in glob_string:
           raise SyntaxErrorInOwnersFile(owners_path, lineno,
-              'per-file globs cannot span directories: "%s"' % line)
+              'per-file globs cannot span directories or use escapes: "%s"' %
+              line)
         baselines = self.glob(full_glob_string)
         for baseline in (self.os_path.relpath(b, self.root) for b in baselines):
           self._add_entry(baseline, directive, "per-file line",
