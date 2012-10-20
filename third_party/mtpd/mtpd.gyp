@@ -9,6 +9,7 @@
       'type': 'executable',
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../build/linux/system.gyp:glib',
         '../../build/linux/system.gyp:udev',
         '../../chrome/chrome.gyp:mtp_file_entry_proto',
         '../../chrome/chrome.gyp:mtp_storage_info_proto',
