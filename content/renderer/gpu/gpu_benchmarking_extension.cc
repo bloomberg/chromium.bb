@@ -103,33 +103,20 @@ class GpuBenchmarkingWrapper : public v8::Extension {
           "  native function PrintToSkPicture();"
           "  return PrintToSkPicture(dirname);"
           "};"
-          "chrome.gpuBenchmarking.beginSmoothScrollSupportsPositioning = true;"
-          "chrome.gpuBenchmarking.beginSmoothScrollDown = "
-          "    function(scroll_far, opt_callback, opt_mouse_event_x,"
+          "chrome.gpuBenchmarking.smoothScrollBy = "
+          "    function(pixels_to_scroll, opt_callback, opt_mouse_event_x,"
           "             opt_mouse_event_y) {"
-          "  scroll_far = scroll_far || false;"
+          "  pixels_to_scroll = pixels_to_scroll || 0;"
           "  callback = opt_callback || function() { };"
           "  native function BeginSmoothScroll();"
           "  if (typeof opt_mouse_event_x !== 'undefined' &&"
           "      typeof opt_mouse_event_y !== 'undefined') {"
-          "    return BeginSmoothScroll(true, scroll_far, callback,"
+          "    return BeginSmoothScroll(pixels_to_scroll >= 0, callback,"
+          "                             Math.abs(pixels_to_scroll),"
           "                             opt_mouse_event_x, opt_mouse_event_y);"
           "  } else {"
-          "    return BeginSmoothScroll(true, scroll_far, callback);"
-          "  }"
-          "};"
-          "chrome.gpuBenchmarking.beginSmoothScrollUp = "
-          "    function(scroll_far, opt_callback, opt_mouse_event_x,"
-          "             opt_mouse_event_y) {"
-          "  scroll_far = scroll_far || false;"
-          "  callback = opt_callback || function() { };"
-          "  native function BeginSmoothScroll();"
-          "  if (typeof opt_mouse_event_x !== 'undefined' &&"
-          "      typeof opt_mouse_event_y !== 'undefined') {"
-          "    return BeginSmoothScroll(false, scroll_far, callback,"
-          "                             opt_mouse_event_x, opt_mouse_event_y);"
-          "  } else {"
-          "    return BeginSmoothScroll(false, scroll_far, callback);"
+          "    return BeginSmoothScroll(pixels_to_scroll >= 0, callback,"
+          "                             Math.abs(pixels_to_scroll));"
           "  }"
           "};"
           "chrome.gpuBenchmarking.runRenderingBenchmarks = function(filter) {"
@@ -280,18 +267,19 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     int arglen = args.Length();
     if (arglen < 3 ||
         !args[0]->IsBoolean() ||
-        !args[1]->IsBoolean() ||
-        !args[2]->IsFunction())
+        !args[1]->IsFunction() ||
+        !args[2]->IsNumber())
       return v8::False();
 
     bool scroll_down = args[0]->BooleanValue();
-    bool scroll_far = args[1]->BooleanValue();
     v8::Local<v8::Function> callback_local =
-        v8::Local<v8::Function>(v8::Function::Cast(*args[2]));
+        v8::Local<v8::Function>(v8::Function::Cast(*args[1]));
     v8::Persistent<v8::Function> callback =
         v8::Persistent<v8::Function>::New(callback_local);
     v8::Persistent<v8::Context> context =
         v8::Persistent<v8::Context>::New(web_frame->mainWorldScriptContext());
+
+    int pixels_to_scroll = args[2]->IntegerValue();
 
     int mouse_event_x = 0;
     int mouse_event_y = 0;
@@ -302,9 +290,6 @@ class GpuBenchmarkingWrapper : public v8::Extension {
       mouse_event_y = rect.y + rect.height / 2;
     } else {
       if (arglen != 5 ||
-          !args[0]->IsBoolean() ||
-          !args[1]->IsBoolean() ||
-          !args[2]->IsFunction() ||
           !args[3]->IsNumber() ||
           !args[4]->IsNumber())
         return v8::False();
@@ -318,10 +303,10 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     // somehow.
     render_view_impl->BeginSmoothScroll(
         scroll_down,
-        scroll_far,
         base::Bind(&OnSmoothScrollCompleted,
                    callback,
                    context),
+        pixels_to_scroll,
         mouse_event_x,
         mouse_event_y);
 

@@ -1732,12 +1732,16 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_HandleInputEvent_ACK,
                     WebKit::WebInputEvent::Type,
                     bool /* processed */)
 
-IPC_MESSAGE_ROUTED5(ViewHostMsg_BeginSmoothScroll,
+IPC_STRUCT_BEGIN(ViewHostMsg_BeginSmoothScroll_Params)
+  IPC_STRUCT_MEMBER(bool, scroll_down)
+  IPC_STRUCT_MEMBER(int, pixels_to_scroll)
+  IPC_STRUCT_MEMBER(int, mouse_event_x)
+  IPC_STRUCT_MEMBER(int, mouse_event_y)
+IPC_STRUCT_END()
+
+IPC_MESSAGE_ROUTED2(ViewHostMsg_BeginSmoothScroll,
                     int /* gesture_id */,
-                    bool /* scroll_down */,
-                    bool /* scroll_far */,
-                    int /* mouse_event_x */,
-                    int /* mouse_event_y */)
+                    ViewHostMsg_BeginSmoothScroll_Params /* params */)
 
 IPC_MESSAGE_ROUTED0(ViewHostMsg_Focus)
 IPC_MESSAGE_ROUTED0(ViewHostMsg_Blur)

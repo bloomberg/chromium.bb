@@ -167,8 +167,8 @@ class CONTENT_EXPORT RenderWidget
   // performance characteristics as a user-initiated scroll. Returns an ID of
   // the scroll gesture.
   void BeginSmoothScroll(bool scroll_down,
-                         bool scroll_far,
                          const SmoothScrollCompletionCallback& callback,
+                         int pixels_to_scroll,
                          int mouse_event_x,
                          int mouse_event_y);
 

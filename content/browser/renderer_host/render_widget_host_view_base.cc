@@ -36,14 +36,6 @@
 
 namespace content {
 
-// How long a smooth scroll gesture should run when it is a near scroll.
-static const int64 kDurationOfNearScrollGestureMs = 150;
-
-// How long a smooth scroll gesture should run when it is a far scroll.
-static const int64 kDurationOfFarScrollGestureMs = 500;
-
-static const int64 kWheelTicksPerSecond = 1500;
-
 // static
 RenderWidgetHostViewPort* RenderWidgetHostViewPort::FromRWHV(
     RenderWidgetHostView* rwhv) {
@@ -418,43 +410,25 @@ void RenderWidgetHostViewBase::UpdateScreenInfo(gfx::NativeView view) {
 class BasicMouseWheelSmoothScrollGesture
     : public SmoothScrollGesture {
  public:
-  BasicMouseWheelSmoothScrollGesture(bool scroll_down, bool scroll_far,
+  BasicMouseWheelSmoothScrollGesture(bool scroll_down, int pixels_to_scroll,
                                      int mouse_event_x, int mouse_event_y)
-      : start_time_(base::TimeTicks::HighResNow()),
-        last_forward_time_(start_time_),
-        scroll_down_(scroll_down),
-        scroll_far_(scroll_far),
+      : scroll_down_(scroll_down),
+        pixels_scrolled_(0),
+        pixels_to_scroll_(pixels_to_scroll),
         mouse_event_x_(mouse_event_x),
         mouse_event_y_(mouse_event_y) { }
 
   virtual bool ForwardInputEvents(base::TimeTicks now,
                                   RenderWidgetHost* host) OVERRIDE {
-    int64 duration_in_ms;
-    if (scroll_far_)
-      duration_in_ms = kDurationOfFarScrollGestureMs;
-    else
-      duration_in_ms = kDurationOfNearScrollGestureMs;
 
-    if (now - start_time_ > base::TimeDelta::FromMilliseconds(duration_in_ms))
+    if (pixels_scrolled_ >= pixels_to_scroll_)
       return false;
-
-    // Figure out how many wheel ticks to send.
-    double seconds_since_last_tick = (now - last_forward_time_).InSecondsF();
-    int num_wheel_ticks = static_cast<int>(
-        seconds_since_last_tick * kWheelTicksPerSecond);
-    if (!num_wheel_ticks) {
-      TRACE_EVENT_INSTANT1("input", "NoMovement",
-                           "seconds_since_last_tick", seconds_since_last_tick);
-      return true;
-    }
-
-    last_forward_time_ = now;
 
     WebKit::WebMouseWheelEvent event;
     event.type = WebKit::WebInputEvent::MouseWheel;
     // TODO(nduca): Figure out plausible value.
     event.deltaY = scroll_down_ ? -10 : 10;
-    event.wheelTicksY = (scroll_down_ ? 1 : -1) * num_wheel_ticks;
+    event.wheelTicksY = (scroll_down_ ? 1 : -1);
     event.modifiers = 0;
 
     // TODO(nduca): Figure out plausible x and y values.
@@ -465,22 +439,25 @@ class BasicMouseWheelSmoothScrollGesture
     event.windowX = event.x;
     event.windowY = event.y;
     host->ForwardWheelEvent(event);
+
+    pixels_scrolled_ += abs(event.deltaY);
+
     return true;
   }
 
  private:
   virtual ~BasicMouseWheelSmoothScrollGesture() { }
-  base::TimeTicks start_time_;
-  base::TimeTicks last_forward_time_;
   bool scroll_down_;
-  bool scroll_far_;
+  int pixels_scrolled_;
+  int pixels_to_scroll_;
   int mouse_event_x_;
   int mouse_event_y_;
 };
 
 SmoothScrollGesture* RenderWidgetHostViewBase::CreateSmoothScrollGesture(
-    bool scroll_down, bool scroll_far, int mouse_event_x, int mouse_event_y) {
-  return new BasicMouseWheelSmoothScrollGesture(scroll_down, scroll_far,
+    bool scroll_down, int pixels_to_scroll, int mouse_event_x,
+    int mouse_event_y) {
+  return new BasicMouseWheelSmoothScrollGesture(scroll_down, pixels_to_scroll,
                                                 mouse_event_x, mouse_event_y);
 }
 

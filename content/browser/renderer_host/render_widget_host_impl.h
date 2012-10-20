@@ -31,6 +31,7 @@ class WebCursor;
 struct EditCommand;
 struct ViewHostMsg_UpdateRect_Params;
 struct ViewHostMsg_TextInputState_Params;
+struct ViewHostMsg_BeginSmoothScroll_Params;
 
 namespace base {
 class TimeTicks;
@@ -549,11 +550,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void OnMsgUpdateIsDelayed();
   void OnMsgInputEventAck(WebKit::WebInputEvent::Type event_type,
                           bool processed);
-  void OnMsgBeginSmoothScroll(int gesture_id,
-                              bool scroll_down,
-                              bool scroll_far,
-                              int mouse_event_x,
-                              int mouse_event_y);
+  void OnMsgBeginSmoothScroll(
+      int gesture_id,
+      const ViewHostMsg_BeginSmoothScroll_Params &params);
   void OnMsgSelectRangeAck();
   virtual void OnMsgFocus();
   virtual void OnMsgBlur();

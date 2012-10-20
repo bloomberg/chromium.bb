@@ -62,7 +62,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual void ProcessAckedTouchEvent(const WebKit::WebTouchEvent& touch,
                                       bool processed) OVERRIDE;
   virtual SmoothScrollGesture* CreateSmoothScrollGesture(
-      bool scroll_down, bool scroll_far, int mouse_event_x,
+      bool scroll_down, int pixels_to_scroll, int mouse_event_x,
       int mouse_event_y) OVERRIDE;
 
   void SetBrowserAccessibilityManager(BrowserAccessibilityManager* manager);

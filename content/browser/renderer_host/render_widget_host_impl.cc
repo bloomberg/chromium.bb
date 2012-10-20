@@ -1632,15 +1632,14 @@ void RenderWidgetHostImpl::OnMsgInputEventAck(WebInputEvent::Type event_type,
 }
 
 void RenderWidgetHostImpl::OnMsgBeginSmoothScroll(
-    int gesture_id, bool scroll_down, bool scroll_far, int mouse_event_x,
-    int mouse_event_y) {
+    int gesture_id, const ViewHostMsg_BeginSmoothScroll_Params &params) {
   if (!view_)
     return;
   active_smooth_scroll_gestures_.insert(
       std::make_pair(gesture_id,
                      view_->CreateSmoothScrollGesture(
-                         scroll_down, scroll_far, mouse_event_x,
-                         mouse_event_y)));
+                         params.scroll_down, params.pixels_to_scroll,
+                         params.mouse_event_x, params.mouse_event_y)));
 
   // If an input ack is pending, then hold off ticking the gesture
   // until we get an input ack.

@@ -1877,14 +1877,20 @@ bool RenderWidget::GetGpuRenderingStats(GpuRenderingStats* stats) const {
 
 void RenderWidget::BeginSmoothScroll(
     bool down,
-    bool scroll_far,
     const SmoothScrollCompletionCallback& callback,
+    int pixels_to_scroll,
     int mouse_event_x,
     int mouse_event_y) {
   DCHECK(!callback.is_null());
   int id = next_smooth_scroll_gesture_id_++;
-  Send(new ViewHostMsg_BeginSmoothScroll(routing_id_, id, down, scroll_far,
-                                         mouse_event_x, mouse_event_y));
+
+  ViewHostMsg_BeginSmoothScroll_Params params;
+  params.scroll_down = down;
+  params.pixels_to_scroll = pixels_to_scroll;
+  params.mouse_event_x = mouse_event_x;
+  params.mouse_event_y = mouse_event_y;
+
+  Send(new ViewHostMsg_BeginSmoothScroll(routing_id_, id, params));
   pending_smooth_scroll_gestures_.insert(std::make_pair(id, callback));
 }
 

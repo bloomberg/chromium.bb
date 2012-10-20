@@ -270,7 +270,7 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   // Asks the view to create a smooth scroll gesture that will be used to
   // simulate a user-initiated scroll.
   virtual SmoothScrollGesture* CreateSmoothScrollGesture(
-      bool scroll_down, bool scroll_far, int mouse_event_x,
+      bool scroll_down, int pixels_to_scroll, int mouse_event_x,
       int mouse_event_y) = 0;
 
   virtual void SetHasHorizontalScrollbar(bool has_horizontal_scrollbar) = 0;

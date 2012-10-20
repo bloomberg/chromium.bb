@@ -63,31 +63,17 @@
     return r;
   };
 
-  function rectsDoIntersect(r1, r2) {
-    return (r1.right >= r2.left &&
-            r1.left <= r2.right &&
-            r1.bottom >= r2.top &&
-            r1.top <= r2.bottom);
-  };
-
   SmoothScrollDownGesture.prototype.start = function(callback) {
     this.callback_ = callback;
     if (chrome &&
         chrome.gpuBenchmarking &&
-        chrome.gpuBenchmarking.beginSmoothScrollDown) {
+        chrome.gpuBenchmarking.smoothScrollBy) {
       rect = getBoundingVisibleRect(this.element_);
-      if (chrome.gpuBenchmarking.beginSmoothScrollSupportsPositioning ||
-         rectsDoIntersect(rect, {left: 0,
-                                 top: 0,
-                                 right: 1,
-                                 bottom: 1,
-                                 height: 1,
-                                 width: 1})) {
-        chrome.gpuBenchmarking.beginSmoothScrollDown(true, function() {
-          callback();
-        }, rect.left + rect.width / 2, rect.top + rect.height / 2);
-        return;
-      }
+      chrome.gpuBenchmarking.smoothScrollBy(
+          this.element_.scrollHeight, function() {
+        callback();
+      }, rect.left + rect.width / 2, rect.top + rect.height / 2);
+      return;
     }
 
     var SCROLL_DELTA = 100;
