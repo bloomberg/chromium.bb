@@ -25,6 +25,7 @@
 #include <unistd.h>
 #include <stdio.h>
 
+#include "wayland-private.h"
 #include "wayland-server.h"
 
 static void

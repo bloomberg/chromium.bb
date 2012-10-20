@@ -39,10 +39,6 @@ extern "C" {
 #define WL_EXPORT
 #endif
 
-#define container_of(ptr, type, member) ({				\
-	const __typeof__( ((type *)0)->member ) *__mptr = (ptr);	\
-	(type *)( (char *)__mptr - offsetof(type,member) );})
-
 struct wl_message {
 	const char *name;
 	const char *signature;

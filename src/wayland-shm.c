@@ -33,6 +33,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+#include "wayland-private.h"
 #include "wayland-server.h"
 
 struct wl_shm_pool {
