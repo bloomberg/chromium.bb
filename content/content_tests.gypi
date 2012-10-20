@@ -766,6 +766,9 @@
               'dependencies': [
                 'content_shell',  # Needed for Content Shell.app's Helper.
               ],
+              'sources': [
+                'renderer/external_popup_menu_browsertest.cc',
+              ],
             }],
             ['use_aura==1', {
               'sources!': [

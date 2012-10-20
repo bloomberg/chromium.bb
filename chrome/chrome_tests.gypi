@@ -289,10 +289,6 @@
         'test/logging/win/test_log_collector.h',
         'test/ppapi/ppapi_test.cc',
         'test/ppapi/ppapi_test.h',
-        # TODO:  these should live here but are currently used by
-        # production code code in libbrowser (in chrome.gyp).
-        #'../content/browser/net/url_request_mock_http_job.cc',
-        #'../content/browser/net/url_request_mock_http_job.h',
         '../ui/gfx/image/image_unittest_util.h',
         '../ui/gfx/image/image_unittest_util.cc',
         '../webkit/quota/mock_quota_manager.cc',
@@ -2663,15 +2659,6 @@
             ['exclude', '^browser/importer/'],
           ],
         }],
-        ['component=="shared_library" and incremental_chrome_dll!=1', {
-          # This is needed for tests that subclass
-          # RendererWebKitPlatformSupportImpl, which subclasses stuff in
-          # glue, which refers to symbols defined in these files.
-          # Hopefully this can be resolved with http://crbug.com/98755.
-          'sources': [
-            '../content/common/socket_stream_dispatcher.cc',
-          ]},
-        ],
         # TODO(joi): Remove from this file once separate
         # google_apis_unittests target is established.
         ['use_official_google_api_keys==1', {
@@ -3433,7 +3420,6 @@
           ],
           'sources': [
             'browser/spellchecker/spellcheck_message_filter_mac_browsertest.cc',
-            '../content/renderer/external_popup_menu_browsertest.cc',
           ],
           'sources!': [
             # TODO(hbono): This test depends on hunspell and we cannot run it on
@@ -3481,15 +3467,6 @@
             '../v8/tools/gyp/v8.gyp:v8_shell#host',
           ],
         }],
-        ['component=="shared_library" and incremental_chrome_dll!=1', {
-          # This is needed for tests that subclass
-          # RendererWebKitPlatformSupportImpl, which subclasses stuff in
-          # glue, which refers to symbols defined in these files.
-          # Hopefully this can be resolved with http://crbug.com/98755.
-          'sources': [
-            '../content/common/socket_stream_dispatcher.cc',
-          ]},
-        ],
         ['use_aura==0', {
           'sources!': [
             'browser/ui/views/frame/app_non_client_frame_view_aura_browsertest.cc',
