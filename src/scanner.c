@@ -393,6 +393,8 @@ start_element(void *data, const char *element_name, const char **atts)
 		case OBJECT:
 			if (interface_name)
 				arg->interface_name = strdup(interface_name);
+			else
+				arg->interface_name = NULL;
 			break;
 		default:
 			if (interface_name != NULL)
@@ -449,10 +451,7 @@ start_element(void *data, const char *element_name, const char **atts)
 			fail(ctx, "description without summary");
 
 		description = malloc(sizeof *description);
-		if (summary)
-			description->summary = strdup(summary);
-		else
-			description->summary = NULL;
+		description->summary = strdup(summary);
 
 		if (ctx->message)
 			ctx->message->description = description;
@@ -476,10 +475,9 @@ end_element(void *data, const XML_Char *name)
 			strndup(ctx->character_data,
 				ctx->character_data_length);
 	} else if (strcmp(name, "description") == 0) {
-		char *text = strndup(ctx->character_data,
-				     ctx->character_data_length);
-		if (text)
-			ctx->description->text = text;
+		ctx->description->text =
+			strndup(ctx->character_data,
+				ctx->character_data_length);
 		ctx->description = NULL;
 	} else if (strcmp(name, "request") == 0 ||
 		   strcmp(name, "event") == 0) {
@@ -1147,6 +1145,7 @@ int main(int argc, char *argv[])
 	protocol.type_index = 0;
 	protocol.null_run_length = 0;
 	protocol.copyright = NULL;
+	memset(&ctx, 0, sizeof ctx);
 	ctx.protocol = &protocol;
 
 	ctx.filename = "<stdin>";
