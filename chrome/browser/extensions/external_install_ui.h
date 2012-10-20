@@ -8,6 +8,14 @@
 class Browser;
 class ExtensionService;
 
+// Only enable the external install UI on Windows and Mac, because those
+// are the platforms where external installs are the biggest issue.
+#if defined(OS_WINDOWS) || defined(OS_MACOSX)
+#define ENABLE_EXTERNAL_INSTALL_UI 1
+#else
+#define ENABLE_EXTERNAL_INSTALL_UI 0
+#endif
+
 namespace extensions {
 
 class Extension;

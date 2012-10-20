@@ -1820,7 +1820,7 @@ void ExtensionService::HandleExtensionAlertDetails() {
 }
 
 void ExtensionService::UpdateExternalExtensionAlert() {
-#if !defined(OS_CHROMEOS)
+#if ENABLE_EXTERNAL_INSTALL_UI
   if (!extensions::FeatureSwitch::prompt_for_external_extensions()->
           IsEnabled())
     return;
@@ -2734,7 +2734,7 @@ bool ExtensionService::ShouldEnableOnInstall(const Extension* extension) {
   if (extension_prefs_->IsExtensionDisabled(extension->id()))
     return false;
 
-#if !defined(OS_CHROMEOS)
+#if ENABLE_EXTERNAL_INSTALL_UI
   if (extensions::FeatureSwitch::prompt_for_external_extensions()->
           IsEnabled()) {
     // External extensions are initially disabled. We prompt the user before
