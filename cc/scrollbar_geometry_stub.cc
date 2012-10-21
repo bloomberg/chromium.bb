@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCScrollbarGeometryStub.h"
+#include "cc/scrollbar_geometry_stub.h"
 
 using WebKit::WebRect;
 using WebKit::WebScrollbar;

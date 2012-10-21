@@ -5,11 +5,11 @@
 #ifndef CCRenderPassDrawQuad_h
 #define CCRenderPassDrawQuad_h
 
-#include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
 #include "CCDrawQuad.h"
 #include "CCRenderPass.h"
-#include "CCResourceProvider.h"
+#include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
+#include "cc/resource_provider.h"
 
 namespace cc {
 

@@ -6,10 +6,10 @@
 
 #include "cc/bitmap_skpicture_canvas_layer_texture_updater.h"
 
-#include "CCRenderingStats.h"
 #include "base/time.h"
 #include "cc/layer_painter.h"
 #include "cc/platform_color.h"
+#include "cc/rendering_stats.h"
 #include "cc/texture_update_queue.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"

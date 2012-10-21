@@ -7,10 +7,10 @@
 #include "cc/tree_synchronizer.h"
 
 #include "CCLayerImpl.h"
-#include "CCScrollbarAnimationController.h"
-#include "CCScrollbarLayerImpl.h"
 #include "cc/layer.h"
+#include "cc/scrollbar_animation_controller.h"
 #include "cc/scrollbar_layer.h"
+#include "cc/scrollbar_layer_impl.h"
 
 namespace cc {
 

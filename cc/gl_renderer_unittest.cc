@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "CCRendererGL.h"
+#include "cc/gl_renderer.h"
 
 #include "CCDrawQuad.h"
 #include "CCPrioritizedTextureManager.h"
-#include "CCResourceProvider.h"
-#include "CCSettings.h"
+#include "cc/resource_provider.h"
+#include "cc/settings.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/test/fake_web_compositor_output_surface.h"
 #include "cc/test/fake_web_graphics_context_3d.h"

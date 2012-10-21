@@ -12,9 +12,9 @@
 #include "CCGraphicsContext.h"
 #include "CCInputHandler.h"
 #include "CCLayerTreeHost.h"
-#include "CCScheduler.h"
-#include "CCScopedThreadProxy.h"
 #include "base/debug/trace_event.h"
+#include "cc/scheduler.h"
+#include "cc/scoped_thread_proxy.h"
 #include "cc/thread_task.h"
 #include <public/WebSharedGraphicsContext3D.h>
 #include <wtf/CurrentTime.h>

@@ -4,9 +4,9 @@
 
 #include "config.h"
 
-#include "CCScrollbarAnimationControllerLinearFade.h"
+#include "cc/scrollbar_animation_controller_linear_fade.h"
 
-#include "CCScrollbarLayerImpl.h"
+#include "cc/scrollbar_layer_impl.h"
 #include "cc/single_thread_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

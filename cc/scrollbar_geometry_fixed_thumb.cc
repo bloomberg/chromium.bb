@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCScrollbarGeometryFixedThumb.h"
+#include "cc/scrollbar_geometry_fixed_thumb.h"
 
 #include <cmath>
 #include <public/WebRect.h>

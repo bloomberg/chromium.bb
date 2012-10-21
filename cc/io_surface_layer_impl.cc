@@ -6,14 +6,14 @@
 
 #include "CCIOSurfaceLayerImpl.h"
 
-#include "base/stringprintf.h"
-#include "third_party/khronos/GLES2/gl2.h"
-#include "third_party/khronos/GLES2/gl2ext.h"
 #include "CCGraphicsContext.h"
 #include "CCIOSurfaceDrawQuad.h"
 #include "CCLayerTreeHostImpl.h"
 #include "CCQuadSink.h"
-#include "CCRendererGL.h" // For the GLC() macro.
+#include "base/stringprintf.h"
+#include "cc/gl_renderer.h" // For the GLC() macro.
+#include "third_party/khronos/GLES2/gl2.h"
+#include "third_party/khronos/GLES2/gl2ext.h"
 #include <public/WebGraphicsContext3D.h>
 
 namespace cc {

@@ -6,10 +6,10 @@
 
 #include "cc/texture_update_controller.h"
 
-#include "CCResourceProvider.h"
 #include "base/debug/trace_event.h"
 #include "cc/prioritized_texture.h"
 #include "cc/proxy.h"
+#include "cc/resource_provider.h"
 #include "cc/texture_copier.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/gpu/SkGpuDevice.h"

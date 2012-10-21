@@ -4,7 +4,8 @@
 
 #include "config.h"
 
-#include "CCSchedulerStateMachine.h"
+#include "cc/scheduler_state_machine.h"
+
 #include "base/logging.h"
 #include "base/stringprintf.h"
 

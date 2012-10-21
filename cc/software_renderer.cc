@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCRendererSoftware.h"
+#include "cc/software_renderer.h"
 
 #include "CCDebugBorderDrawQuad.h"
 #include "CCRenderPassDrawQuad.h"

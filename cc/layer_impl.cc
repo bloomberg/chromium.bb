@@ -6,15 +6,15 @@
 
 #include "CCLayerImpl.h"
 
-#include "base/debug/trace_event.h"
-#include "base/stringprintf.h"
 #include "CCDebugBorderDrawQuad.h"
 #include "CCLayerSorter.h"
 #include "CCMathUtil.h"
 #include "CCProxy.h"
 #include "CCQuadSink.h"
-#include "CCScrollbarAnimationController.h"
-#include "CCSettings.h"
+#include "base/debug/trace_event.h"
+#include "base/stringprintf.h"
+#include "cc/scrollbar_animation_controller.h"
+#include "cc/settings.h"
 
 using WebKit::WebTransformationMatrix;
 

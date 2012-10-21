@@ -5,10 +5,6 @@
 #ifndef CCLayerTreeHost_h
 #define CCLayerTreeHost_h
 
-#include "base/basictypes.h"
-#include "base/hash_tables.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "CCAnimationEvents.h"
 #include "CCGraphicsContext.h"
 #include "CCLayerTreeHostClient.h"
@@ -16,10 +12,14 @@
 #include "CCOcclusionTracker.h"
 #include "CCPrioritizedTextureManager.h"
 #include "CCProxy.h"
-#include "CCRenderingStats.h"
 #include "IntRect.h"
+#include "base/basictypes.h"
+#include "base/hash_tables.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "cc/rate_limiter.h"
-#include "scoped_ptr_vector.h"
+#include "cc/rendering_stats.h"
+#include "cc/scoped_ptr_vector.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include <limits>
 

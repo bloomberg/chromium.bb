@@ -5,10 +5,10 @@
 #ifndef CCHeadsUpDisplayLayerImpl_h
 #define CCHeadsUpDisplayLayerImpl_h
 
-#include "base/memory/scoped_ptr.h"
 #include "CCFontAtlas.h"
 #include "CCLayerImpl.h"
-#include "CCScopedTexture.h"
+#include "base/memory/scoped_ptr.h"
+#include "cc/scoped_texture.h"
 
 class SkCanvas;
 

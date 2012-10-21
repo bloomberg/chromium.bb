@@ -6,9 +6,9 @@
 
 #include "cc/program_binding.h"
 
-#include "CCRendererGL.h" // For the GLC() macro.
 #include "base/debug/trace_event.h"
 #include "cc/geometry_binding.h"
+#include "cc/gl_renderer.h" // For the GLC() macro.
 #include "third_party/khronos/GLES2/gl2.h"
 #include <public/WebGraphicsContext3D.h>
 

@@ -4,10 +4,10 @@
 
 #include "config.h"
 
-#include "CCScrollbarLayerImpl.h"
+#include "cc/scrollbar_layer_impl.h"
 
 #include "CCQuadSink.h"
-#include "CCScrollbarAnimationController.h"
+#include "cc/scrollbar_animation_controller.h"
 #include "cc/texture_draw_quad.h"
 
 using WebKit::WebRect;

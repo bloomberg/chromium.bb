@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCScheduler.h"
+#include "cc/scheduler.h"
 
 #include "base/auto_reset.h"
 #include "base/debug/trace_event.h"

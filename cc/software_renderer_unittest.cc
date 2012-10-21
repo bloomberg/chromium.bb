@@ -4,12 +4,12 @@
 
 #include "config.h"
 
-#include "CCRendererSoftware.h"
+#include "cc/software_renderer.h"
 
 #include "CCQuadSink.h"
 #include "CCRenderPass.h"
 #include "CCRenderPassDrawQuad.h"
-#include "CCSettings.h"
+#include "cc/settings.h"
 #include "cc/single_thread_proxy.h" // For DebugScopedSetImplThread
 #include "cc/solid_color_draw_quad.h"
 #include "cc/test/animation_test_common.h"

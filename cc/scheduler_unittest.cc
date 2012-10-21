@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCScheduler.h"
+#include "cc/scheduler.h"
 
 #include "base/logging.h"
 #include "cc/test/scheduler_test_common.h"

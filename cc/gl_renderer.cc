@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCRendererGL.h"
+#include "cc/gl_renderer.h"
 
 #include "CCDamageTracker.h"
 #include "CCLayerQuad.h"
@@ -12,8 +12,6 @@
 #include "CCProxy.h"
 #include "CCRenderPass.h"
 #include "CCRenderSurfaceFilters.h"
-#include "CCScopedTexture.h"
-#include "CCSettings.h"
 #include "FloatQuad.h"
 #include "GrTexture.h"
 #include "NotImplemented.h"
@@ -23,6 +21,8 @@
 #include "base/string_util.h"
 #include "cc/geometry_binding.h"
 #include "cc/platform_color.h"
+#include "cc/scoped_texture.h"
+#include "cc/settings.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/stream_video_draw_quad.h"
 #include "cc/texture_draw_quad.h"

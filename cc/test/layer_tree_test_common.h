@@ -7,8 +7,8 @@
 
 #include "CCLayerTreeHost.h"
 #include "CCLayerTreeHostImpl.h"
-#include "CCScopedThreadProxy.h"
 #include "base/hash_tables.h"
+#include "cc/scoped_thread_proxy.h"
 #include "cc/test/compositor_fake_web_graphics_context_3d.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebAnimationDelegate.h>

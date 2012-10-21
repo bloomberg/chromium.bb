@@ -5,15 +5,15 @@
 #ifndef CCLayerTreeHostImpl_h
 #define CCLayerTreeHostImpl_h
 
-#include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/time.h"
 #include "CCAnimationEvents.h"
 #include "CCInputHandler.h"
 #include "CCLayerSorter.h"
-#include "CCRenderer.h"
 #include "CCRenderPass.h"
 #include "CCRenderPassSink.h"
+#include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/time.h"
+#include "cc/renderer.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include <public/WebCompositorOutputSurfaceClient.h>
 

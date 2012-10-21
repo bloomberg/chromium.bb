@@ -10,7 +10,7 @@
 #include "CCDirectRenderer.h"
 #include "CCIOSurfaceDrawQuad.h"
 #include "CCRenderPassDrawQuad.h"
-#include "CCRenderer.h"
+#include "cc/renderer.h"
 #include "cc/solid_color_draw_quad.h"
 #include "cc/tile_draw_quad.h"
 #include "cc/yuv_video_draw_quad.h"

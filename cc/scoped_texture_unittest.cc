@@ -4,9 +4,9 @@
 
 #include "config.h"
 
-#include "CCScopedTexture.h"
+#include "cc/scoped_texture.h"
 
-#include "CCRenderer.h"
+#include "cc/renderer.h"
 #include "cc/single_thread_proxy.h" // For DebugScopedSetImplThread
 #include "cc/test/fake_graphics_context.h"
 #include "cc/test/tiled_layer_test_common.h"

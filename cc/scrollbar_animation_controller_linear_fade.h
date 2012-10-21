@@ -5,7 +5,7 @@
 #ifndef CCScrollbarAnimationControllerLinearFade_h
 #define CCScrollbarAnimationControllerLinearFade_h
 
-#include "CCScrollbarAnimationController.h"
+#include "cc/scrollbar_animation_controller.h"
 
 namespace cc {
 

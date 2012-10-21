@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCRenderer.h"
+#include "cc/renderer.h"
 
 namespace cc {
 

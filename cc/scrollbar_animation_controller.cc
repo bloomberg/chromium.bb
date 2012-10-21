@@ -4,13 +4,13 @@
 
 #include "config.h"
 
-#include "CCScrollbarAnimationController.h"
+#include "cc/scrollbar_animation_controller.h"
 
-#include "CCScrollbarLayerImpl.h"
+#include "cc/scrollbar_layer_impl.h"
 #include "base/time.h"
 
 #if OS(ANDROID)
-#include "CCScrollbarAnimationControllerLinearFade.h"
+#include "cc/scrollbar_animation_controller_linear_fade.h"
 #endif
 
 namespace cc {

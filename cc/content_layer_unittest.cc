@@ -6,9 +6,9 @@
 
 #include "cc/content_layer.h"
 
-#include "CCRenderingStats.h"
 #include "cc/bitmap_canvas_layer_texture_updater.h"
 #include "cc/content_layer_client.h"
+#include "cc/rendering_stats.h"
 #include "cc/test/geometry_test_utils.h"
 #include "skia/ext/platform_canvas.h"
 #include "testing/gtest/include/gtest/gtest.h"

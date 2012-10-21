@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCResourceProvider.h"
+#include "cc/resource_provider.h"
 
 #include "CCGraphicsContext.h"
 #include "base/logging.h"

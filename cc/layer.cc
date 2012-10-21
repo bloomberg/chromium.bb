@@ -11,7 +11,7 @@
 #include "CCLayerAnimationController.h"
 #include "CCLayerImpl.h"
 #include "CCLayerTreeHost.h"
-#include "CCSettings.h"
+#include "cc/settings.h"
 #include <public/WebAnimationDelegate.h>
 #include <public/WebLayerScrollClient.h>
 #include <public/WebSize.h>

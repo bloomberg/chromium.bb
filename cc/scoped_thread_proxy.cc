@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCScopedThreadProxy.h"
+#include "cc/scoped_thread_proxy.h"
 
 namespace cc {
 

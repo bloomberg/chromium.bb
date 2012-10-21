@@ -6,9 +6,9 @@
 
 #include "cc/texture_copier.h"
 
-#include "third_party/khronos/GLES2/gl2.h"
-#include "CCRendererGL.h" // For the GLC() macro.
 #include "base/debug/trace_event.h"
+#include "cc/gl_renderer.h" // For the GLC() macro.
+#include "third_party/khronos/GLES2/gl2.h"
 #include <public/WebGraphicsContext3D.h>
 
 namespace cc {

@@ -6,12 +6,12 @@
 
 #include "cc/canvas_layer_texture_updater.h"
 
-#include "CCRenderingStats.h"
 #include "FloatRect.h"
 #include "SkiaUtils.h"
 #include "base/debug/trace_event.h"
 #include "base/time.h"
 #include "cc/layer_painter.h"
+#include "cc/rendering_stats.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkRect.h"

@@ -5,8 +5,8 @@
 #ifndef CCScrollbarGeometryFixedThumb_h
 #define CCScrollbarGeometryFixedThumb_h
 
-#include "CCScrollbarGeometryStub.h"
 #include "IntSize.h"
+#include "cc/scrollbar_geometry_stub.h"
 
 namespace cc {
 
