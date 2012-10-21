@@ -152,6 +152,7 @@ void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
 // |product|: The product being installed. This method is a no-op if this is
 // anything other than system-level Chrome/Chromium.
 void AddActiveSetupWorkItems(const InstallerState& installer_state,
+                             const FilePath& setup_path,
                              const Version& new_version,
                              const Product& product,
                              WorkItemList* list);

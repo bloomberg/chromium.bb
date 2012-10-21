@@ -78,11 +78,13 @@ enum InstallStatus {
   APP_HOST_REQUIRES_BINARIES,  // 45. No Chrome binaries at either level.
   INSTALL_OF_GOOGLE_UPDATE_FAILED,  // 46. Failed to install Google Update.
   // Friendly reminder: note the COMPILE_ASSERT below.
+  INVALID_STATE_FOR_OPTION,  // 47. A non-install option was called with an
+                             // invalid installer state.
 };
 
 
 // Existing InstallStatus values must not change.  Always add to the end.
-COMPILE_ASSERT(installer::INSTALL_OF_GOOGLE_UPDATE_FAILED == 46,
+COMPILE_ASSERT(installer::INVALID_STATE_FOR_OPTION == 47,
                dont_change_enum);
 
 // The type of an update archive.

@@ -1071,6 +1071,10 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
                                     const CommandLine& cmd_line,
                                     InstallerState* installer_state,
                                     int* exit_code) {
+  // TODO(gab): Add a local |status| variable which each block below sets;
+  // only determine the |exit_code| from |status| at the end (this will allow
+  // this method to validate that
+  // (!handled || status != installer::UNKNOWN_STATUS)).
   bool handled = true;
   // TODO(tommi): Split these checks up into functions and use a data driven
   // map of switch->function.
@@ -1133,12 +1137,21 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
         ActivateMetroChrome();
     }
   } else if (cmd_line.HasSwitch(installer::switches::kConfigureUserSettings)) {
-    DCHECK(installer_state->system_install());
+    // NOTE: Should the work done here, on kConfigureUserSettings, change:
+    // kActiveSetupVersion in install_worker.cc needs to be increased for Active
+    // Setup to invoke this again for all users of this install.
     const Product* chrome_install =
         installer_state->FindProduct(BrowserDistribution::CHROME_BROWSER);
-    DCHECK(chrome_install);
-    // TODO(gab): Implement the new shortcut functionality here.
-    LOG(ERROR) << "--configure-user-settings is not implemented.";
+    installer::InstallStatus status = installer::INVALID_STATE_FOR_OPTION;
+    if (chrome_install && installer_state->system_install()) {
+      // TODO(gab): Implement the new shortcut functionality here.
+      LOG(ERROR) << "--configure-user-settings is not implemented.";
+      status = installer::INSTALL_REPAIRED;
+    } else {
+      LOG(DFATAL) << "chrome_install:" << chrome_install
+                  << ", system_install:" << installer_state->system_install();
+    }
+    *exit_code = InstallUtil::GetInstallReturnCode(status);
   } else if (cmd_line.HasSwitch(installer::switches::kRegisterChromeBrowser)) {
     installer::InstallStatus status = installer::UNKNOWN_STATUS;
     const Product* chrome_install =
@@ -1215,12 +1228,16 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
   } else if (cmd_line.HasSwitch(installer::switches::kOnOsUpgrade)) {
     const Product* chrome_install =
         installer_state->FindProduct(BrowserDistribution::CHROME_BROWSER);
+    installer::InstallStatus status = installer::INVALID_STATE_FOR_OPTION;
     if (chrome_install) {
       installer::HandleOsUpgradeForBrowser(*installer_state,
                                            *chrome_install,
                                            cmd_line.GetProgram());
+      status = installer::INSTALL_REPAIRED;
+    } else {
+      LOG(DFATAL) << "Chrome product not found.";
     }
-    *exit_code = InstallUtil::GetInstallReturnCode(installer::INSTALL_REPAIRED);
+    *exit_code = InstallUtil::GetInstallReturnCode(status);
   } else if (cmd_line.HasSwitch(installer::switches::kInactiveUserToast)) {
     // Launch the inactive user toast experiment.
     int flavor = -1;

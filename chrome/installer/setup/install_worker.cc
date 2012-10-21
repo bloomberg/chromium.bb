@@ -59,6 +59,12 @@ enum ElevationPolicyId {
   OLD_ELEVATION_POLICY,
 };
 
+// The version identifying the work done by setup.exe --configure-user-settings
+// on user login by way of Active Setup.  Increase this value if the work done
+// in setup_main.cc's handling of kConfigureUserSettings changes and should be
+// executed again for all users.
+const wchar_t kActiveSetupVersion[] = L"23,0,0,0";
+
 // Although the UUID of the ChromeFrame class is used for the "current" value,
 // this is done only as a convenience; there is no need for the GUID of the Low
 // Rights policies to match the ChromeFrame class's GUID.  Hence, it is safe to
@@ -1083,7 +1089,7 @@ void AddInstallWorkItems(const InstallationState& original_state,
 // TODO(gab): This is only disabled for M22 as the shortcut CL using Active
 // Setup will not make it in M22.
 #if 0
-    AddActiveSetupWorkItems(installer_state, new_version, *product,
+    AddActiveSetupWorkItems(installer_state, setup_path, new_version, *product,
                             install_list);
 #endif
   }
@@ -1362,6 +1368,7 @@ void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
 }
 
 void AddActiveSetupWorkItems(const InstallerState& installer_state,
+                             const FilePath& setup_path,
                              const Version& new_version,
                              const Product& product,
                              WorkItemList* list) {
@@ -1385,9 +1392,11 @@ void AddActiveSetupWorkItems(const InstallerState& installer_state,
                                distribution->GetAppShortCutName(), true);
 
   CommandLine cmd(installer_state.GetInstallerDirectory(new_version).
-      Append(installer::kSetupExe));
+      Append(setup_path.BaseName()));
   cmd.AppendSwitch(installer::switches::kConfigureUserSettings);
   cmd.AppendSwitch(installer::switches::kVerboseLogging);
+  cmd.AppendSwitch(installer::switches::kSystemLevel);
+  product.AppendProductFlags(&cmd);
   list->AddSetRegValueWorkItem(root, active_setup_path, L"StubPath",
                                cmd.GetCommandLineString(), true);
 
@@ -1399,10 +1408,8 @@ void AddActiveSetupWorkItems(const InstallerState& installer_state,
   list->AddSetRegValueWorkItem(root, active_setup_path, L"IsInstalled",
                                static_cast<DWORD>(1U), true);
 
-  string16 comma_separated_version(ASCIIToUTF16(new_version.GetString()));
-  ReplaceChars(comma_separated_version, L".", L",", &comma_separated_version);
   list->AddSetRegValueWorkItem(root, active_setup_path, L"Version",
-                               comma_separated_version, true);
+                               kActiveSetupVersion, true);
 }
 
 void AddDeleteOldIELowRightsPolicyWorkItems(
