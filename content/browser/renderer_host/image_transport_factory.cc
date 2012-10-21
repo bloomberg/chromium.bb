@@ -106,11 +106,12 @@ class ImageTransportClientTexture : public ui::Texture {
             texture_id_(surface_id) {
   }
 
-  virtual unsigned PrepareTexture() {
+  // ui::Texture overrides:
+  virtual unsigned int PrepareTexture() OVERRIDE {
     return texture_id_;
   }
 
-  virtual WebKit::WebGraphicsContext3D* HostContext3D() {
+  virtual WebKit::WebGraphicsContext3D* HostContext3D() OVERRIDE {
     return host_context_;
   }
 
@@ -140,7 +141,7 @@ class OwnedTexture : public ui::Texture, ImageTransportFactoryObserver {
   }
 
   // ui::Texture overrides:
-  virtual unsigned PrepareTexture() {
+  virtual unsigned int PrepareTexture() OVERRIDE {
     return texture_id_;
   }
 

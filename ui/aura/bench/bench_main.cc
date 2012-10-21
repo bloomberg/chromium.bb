@@ -148,7 +148,7 @@ class WebGLTexture : public ui::Texture {
                          GL_RGBA, GL_UNSIGNED_BYTE, NULL);
   }
 
-  virtual unsigned PrepareTexture() OVERRIDE {
+  virtual unsigned int PrepareTexture() OVERRIDE {
     return texture_id_;
   }
 
