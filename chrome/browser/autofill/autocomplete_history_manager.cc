@@ -23,8 +23,6 @@ using base::StringPiece16;
 using content::BrowserContext;
 using content::WebContents;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(AutocompleteHistoryManager)
-
 namespace {
 
 // Limit on the number of suggestions to appear in the pop-up menu under an

@@ -21,6 +21,7 @@
 #include "base/time.h"
 #include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "chrome/browser/api/sync/profile_sync_service_observer.h"
+#include "chrome/browser/autofill/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_download.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_structure.h"
@@ -77,13 +78,8 @@ class AutofillManager : public content::NotificationObserver,
   // Registers our Enable/Disable Autofill pref.
   static void RegisterUserPrefs(PrefServiceBase* prefs);
 
-  // Set our external delegate.
-  // TODO(jrg): consider passing delegate into the ctor.  That won't
-  // work if the delegate has a pointer to the AutofillManager, but
-  // future directions may not need such a pointer.
-  void SetExternalDelegate(AutofillExternalDelegate* delegate) {
-    external_delegate_ = delegate;
-  }
+  // Set an external delegate.
+  void SetExternalDelegate(AutofillExternalDelegate* delegate);
 
   // Used to say if this class has an external delegate that it is using.
   bool HasExternalDelegate();
@@ -104,6 +100,9 @@ class AutofillManager : public content::NotificationObserver,
   // Remove the credit card or Autofill profile that matches |unique_id|
   // from the database.
   void RemoveAutofillProfileOrCreditCard(int unique_id);
+
+  // Remove the specified Autocomplete entry.
+  void RemoveAutocompleteEntry(const string16& name, const string16& value);
 
  protected:
   // Only test code should subclass AutofillManager.
@@ -335,6 +334,7 @@ class AutofillManager : public content::NotificationObserver,
   PersonalDataManager* personal_data_;
 
   std::list<std::string> autofilled_form_signatures_;
+
   // Handles queries and uploads to Autofill servers.
   AutofillDownloadManager download_manager_;
 
@@ -343,6 +343,9 @@ class AutofillManager : public content::NotificationObserver,
   // default for the public constructor, and true by default for the test-only
   // constructors.
   bool disable_download_manager_requests_;
+
+  // Handles single-field autocomplete form data.
+  AutocompleteHistoryManager autocomplete_history_manager_;
 
   // For logging UMA metrics. Overridden by metrics tests.
   scoped_ptr<const AutofillMetrics> metric_logger_;

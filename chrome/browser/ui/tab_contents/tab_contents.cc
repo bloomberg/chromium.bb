@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "chrome/browser/autofill/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_external_delegate.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/automation/automation_tab_helper.h"
@@ -113,7 +112,6 @@ TabContents::TabContents(WebContents* contents)
   SessionTabHelper::CreateForWebContents(contents);
 
   AlternateErrorPageTabObserver::CreateForWebContents(contents);
-  AutocompleteHistoryManager::CreateForWebContents(contents);
   TabAutofillManagerDelegate::CreateForWebContents(contents);
   AutofillManager::CreateForWebContentsAndDelegate(
       contents, TabAutofillManagerDelegate::FromWebContents(contents));
@@ -122,8 +120,6 @@ TabContents::TabContents(WebContents* contents)
     AutofillExternalDelegate::CreateForWebContentsAndManager(
         contents, AutofillManager::FromWebContents(contents));
     AutofillManager::FromWebContents(contents)->SetExternalDelegate(
-        AutofillExternalDelegate::FromWebContents(contents));
-    AutocompleteHistoryManager::FromWebContents(contents)->SetExternalDelegate(
         AutofillExternalDelegate::FromWebContents(contents));
   }
   BlockedContentTabHelper::CreateForWebContents(contents);

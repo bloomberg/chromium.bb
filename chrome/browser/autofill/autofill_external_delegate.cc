@@ -155,8 +155,8 @@ void AutofillExternalDelegate::SetCurrentDataListValues(
 
 void AutofillExternalDelegate::RemoveAutocompleteEntry(const string16& value) {
   if (web_contents_) {
-    AutocompleteHistoryManager::FromWebContents(web_contents_)->
-        OnRemoveAutocompleteEntry(autofill_query_field_.name, value);
+    autofill_manager_->RemoveAutocompleteEntry(
+        autofill_query_field_.name, value);
   }
 }
 

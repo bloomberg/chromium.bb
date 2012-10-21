@@ -197,6 +197,7 @@ AutofillManager::AutofillManager(content::WebContents* web_contents,
       personal_data_(NULL),
       download_manager_(delegate->GetBrowserContext(), this),
       disable_download_manager_requests_(false),
+      autocomplete_history_manager_(web_contents),
       metric_logger_(new AutofillMetrics),
       has_logged_autofill_enabled_(false),
       has_logged_address_suggestions_count_(false),
@@ -316,6 +317,14 @@ void AutofillManager::DidNavigateMainFrame(
   Reset();
 }
 
+void AutofillManager::SetExternalDelegate(AutofillExternalDelegate* delegate) {
+  // TODO(jrg): consider passing delegate into the ctor.  That won't
+  // work if the delegate has a pointer to the AutofillManager, but
+  // future directions may not need such a pointer.
+  external_delegate_ = delegate;
+  autocomplete_history_manager_.SetExternalDelegate(delegate);
+}
+
 bool AutofillManager::HasExternalDelegate() {
   return external_delegate_ != NULL;
 }
@@ -366,8 +375,7 @@ void AutofillManager::WebContentsDestroyed(content::WebContents* web_contents) {
 bool AutofillManager::OnFormSubmitted(const FormData& form,
                                       const TimeTicks& timestamp) {
   // Let AutoComplete know as well.
-  AutocompleteHistoryManager::FromWebContents(web_contents())->
-      OnFormSubmitted(form);
+  autocomplete_history_manager_.OnFormSubmitted(form);
 
   if (!IsAutofillEnabled())
     return false;
@@ -569,9 +577,8 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
   // Add the results from AutoComplete.  They come back asynchronously, so we
   // hand off what we generated and they will send the results back to the
   // renderer.
-  AutocompleteHistoryManager::FromWebContents(web_contents())->
-      OnGetAutocompleteSuggestions(
-          query_id, field.name, field.value, values, labels, icons, unique_ids);
+  autocomplete_history_manager_.OnGetAutocompleteSuggestions(
+      query_id, field.name, field.value, values, labels, icons, unique_ids);
 }
 
 void AutofillManager::OnFillAutofillFormData(int query_id,
@@ -758,6 +765,11 @@ void AutofillManager::RemoveAutofillProfileOrCreditCard(int unique_id) {
     personal_data_->RemoveCreditCard(credit_card->guid());
 }
 
+void AutofillManager::RemoveAutocompleteEntry(const string16& name,
+                                              const string16& value) {
+  autocomplete_history_manager_.OnRemoveAutocompleteEntry(name, value);
+}
+
 void AutofillManager::OnAddPasswordFormMapping(
       const FormFieldData& form,
       const PasswordFormFillData& fill_data) {
@@ -903,6 +915,7 @@ AutofillManager::AutofillManager(content::WebContents* web_contents,
       personal_data_(personal_data),
       download_manager_(delegate->GetBrowserContext(), this),
       disable_download_manager_requests_(true),
+      autocomplete_history_manager_(web_contents),
       metric_logger_(new AutofillMetrics),
       has_logged_autofill_enabled_(false),
       has_logged_address_suggestions_count_(false),

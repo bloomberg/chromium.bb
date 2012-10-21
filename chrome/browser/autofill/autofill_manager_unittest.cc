@@ -591,9 +591,6 @@ class AutofillManagerTest : public TabContentsTestHarness {
   }
 
   virtual ~AutofillManagerTest() {
-    // Order of destruction is important as AutofillManager relies on
-    // PersonalDataManager to be around when it gets destroyed.
-    autofill_manager_ = NULL;
   }
 
   virtual void SetUp() OVERRIDE {
@@ -613,6 +610,11 @@ class AutofillManagerTest : public TabContentsTestHarness {
   }
 
   virtual void TearDown() OVERRIDE {
+    // Order of destruction is important as AutofillManager relies on
+    // PersonalDataManager to be around when it gets destroyed. Also, a real
+    // AutofillManager is tied to the lifetime of the WebContents, so it must
+    // be destroyed at the destruction of the WebContents.
+    autofill_manager_ = NULL;
     file_thread_.Stop();
     TabContentsTestHarness::TearDown();
   }
@@ -637,8 +639,7 @@ class AutofillManagerTest : public TabContentsTestHarness {
   }
 
   void AutocompleteSuggestionsReturned(const std::vector<string16>& result) {
-    AutocompleteHistoryManager::FromWebContents(web_contents())->
-        SendSuggestions(&result);
+    autofill_manager_->autocomplete_history_manager_.SendSuggestions(&result);
   }
 
   void FormsSeen(const std::vector<FormData>& forms) {
@@ -685,8 +686,7 @@ class AutofillManagerTest : public TabContentsTestHarness {
     if (unique_ids)
       *unique_ids = autofill_param.e;
 
-    AutocompleteHistoryManager::FromWebContents(web_contents())->
-        CancelPendingQuery();
+    autofill_manager_->autocomplete_history_manager_.CancelPendingQuery();
     process()->sink().ClearMessages();
     return true;
   }
@@ -3134,7 +3134,7 @@ TEST_F(AutofillManagerTest, TestTabContentsWithExternalDelegate) {
   EXPECT_TRUE(autofill_manager->external_delegate());
 
   AutocompleteHistoryManager* autocomplete_history_manager =
-      AutocompleteHistoryManager::FromWebContents(contents);
+      &autofill_manager->autocomplete_history_manager_;
   EXPECT_TRUE(autocomplete_history_manager->external_delegate());
 }
 

@@ -86,17 +86,6 @@ class AutofillExternalDelegateUnitTest : public TabContentsTestHarness {
       : ui_thread_(BrowserThread::UI, &message_loop_) {}
   virtual ~AutofillExternalDelegateUnitTest() {}
 
-  virtual void SetUp() OVERRIDE {
-    TabContentsTestHarness::SetUp();
-    TabAutofillManagerDelegate::CreateForWebContents(web_contents());
-    autofill_manager_ = new MockAutofillManager(
-        web_contents(),
-        TabAutofillManagerDelegate::FromWebContents(web_contents()));
-    external_delegate_.reset(new MockAutofillExternalDelegate(
-        web_contents(),
-        autofill_manager_));
-  }
-
  protected:
   // Set up the expectation for a platform specific OnQuery call and then
   // execute it with the given QueryId.
@@ -118,6 +107,26 @@ class AutofillExternalDelegateUnitTest : public TabContentsTestHarness {
   scoped_ptr<MockAutofillExternalDelegate> external_delegate_;
 
  private:
+  virtual void SetUp() OVERRIDE {
+    TabContentsTestHarness::SetUp();
+    TabAutofillManagerDelegate::CreateForWebContents(web_contents());
+    autofill_manager_ = new MockAutofillManager(
+        web_contents(),
+        TabAutofillManagerDelegate::FromWebContents(web_contents()));
+    external_delegate_.reset(new MockAutofillExternalDelegate(
+        web_contents(),
+        autofill_manager_));
+  }
+
+  virtual void TearDown() OVERRIDE {
+    // Order of destruction is important as AutofillManager relies on
+    // PersonalDataManager to be around when it gets destroyed. Also, a real
+    // AutofillManager is tied to the lifetime of the WebContents, so it must
+    // be destroyed at the destruction of the WebContents.
+    autofill_manager_ = NULL;
+    TabContentsTestHarness::TearDown();
+  }
+
   content::TestBrowserThread ui_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillExternalDelegateUnitTest);
