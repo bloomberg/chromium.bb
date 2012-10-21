@@ -3,7 +3,9 @@ Current Status as of Oct 2, 2012
 
 Upstream cherry-picks:
 3c2101f Shared library support for MSVC build.
-
+8993d03 mp3demux: Rewrite xing TOC based seeking
+a9dbb83 mp3dec: propagate error code correctly.
+67c5aee mpegaudiodec: Fix buffer handling on random access
 
 Current patches:
 
