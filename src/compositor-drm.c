@@ -1466,6 +1466,10 @@ create_output_for_connector(struct drm_compositor *ec,
 	output->cursor_bo[1] =
 		gbm_bo_create(ec->gbm, 64, 64, GBM_FORMAT_ARGB8888,
 			      GBM_BO_USE_CURSOR_64X64 | GBM_BO_USE_WRITE);
+	if (output->cursor_bo[0] == NULL || output->cursor_bo[1] == NULL) {
+		weston_log("cursor buffers unavailable, using gl cursors\n");
+		ec->cursors_are_broken = 1;
+	}
 
 	output->backlight = backlight_init(drm_device,
 					   connector->connector_type);
