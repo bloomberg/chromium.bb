@@ -583,6 +583,10 @@
       ],
       'sources': [
         '<@(asm_sources)',
+        # XCode doesn't want to link a pure assembly target and will fail
+        # to link when it creates an empty file list.  So add a dummy file
+        # keep the linker happy.  See http://crbug.com/157073
+        'xcode_hack.c',
       ],
       'variables': {
         # Path to platform configuration files.
@@ -598,12 +602,6 @@
             ],
           }],
           ['OS == "mac"', {
-            'sources': [
-              # XCode doesn't want to link a pure assembly target and will fail
-              # to link when it creates an empty file list.  So add a dummy file
-              # keep the linker happy.  See http://crbug.com/157073
-              'xcode_hack.c',
-            ],
             'more_yasm_flags': [
               # Necessary to ensure symbols end up with a _ prefix; added by
               # yasm_compile.gypi for Windows, but not Mac.
