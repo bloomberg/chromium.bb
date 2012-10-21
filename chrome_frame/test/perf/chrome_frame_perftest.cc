@@ -295,9 +295,7 @@ class ChromeFrameStartupTest : public ChromeFramePerfTestBase {
     chrome_exe_ = dir_app_.Append(chrome::kBrowserProcessExecutableName);
     chrome_frame_dll_ = dir_app_.Append(kChromeFrameDllName);
     icu_dll_ = dir_app_.Append(L"icudt.dll");
-    avcodec_dll_ = dir_app_.Append(L"avcodec-54.dll");
-    avformat_dll_ = dir_app_.Append(L"avformat-54.dll");
-    avutil_dll_ = dir_app_.Append(L"avutil-51.dll");
+    ffmpegsumo_dll_ = dir_app_.Append(L"ffmpegsumo.dll");
   }
 
   // TODO(iyengar)
@@ -355,9 +353,7 @@ class ChromeFrameStartupTest : public ChromeFramePerfTestBase {
   FilePath chrome_exe_;
   FilePath chrome_frame_dll_;
   FilePath icu_dll_;
-  FilePath avcodec_dll_;
-  FilePath avformat_dll_;
-  FilePath avutil_dll_;
+  FilePath ffmpegsumo_dll_;
 
  protected:
   // Individual startup tests should implement this function.
@@ -1062,8 +1058,7 @@ TEST_F(ChromeFrameBinariesLoadTest, PerfWarm) {
 TEST_F(ChromeFrameStartupTestActiveX, PerfCold) {
   SetConfigInt(L"PreRead", 0);
   FilePath binaries_to_evict[] = {
-    avcodec_dll_, avformat_dll_, avutil_dll_, chrome_exe_, chrome_dll_,
-    chrome_frame_dll_
+    ffmpegsumo_dll_, chrome_exe_, chrome_dll_, chrome_frame_dll_
   };
   RunStartupTest("cold", "t", "about:blank", true /* cold */,
                  arraysize(binaries_to_evict), binaries_to_evict,
@@ -1074,8 +1069,7 @@ TEST_F(ChromeFrameStartupTestActiveX, PerfCold) {
 TEST_F(ChromeFrameStartupTestActiveX, PerfColdPreRead) {
   SetConfigInt(L"PreRead", 1);
   FilePath binaries_to_evict[] = {
-    avcodec_dll_, avformat_dll_, avutil_dll_, chrome_exe_, chrome_dll_,
-    chrome_frame_dll_
+    ffmpegsumo_dll_, chrome_exe_, chrome_dll_, chrome_frame_dll_
   };
   RunStartupTest("cold_preread", "t", "about:blank", true /* cold */,
                  arraysize(binaries_to_evict), binaries_to_evict,

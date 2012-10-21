@@ -98,11 +98,6 @@ enum {
   FILE_GTALK_PLUGIN,            // Full path to the GTalk Pepper plugin file.
   FILE_WIDEVINE_CDM_PLUGIN,     // Full path to the Widevine CDM Pepper plugin
                                 // file.
-  FILE_LIBAVCODEC,              // Full path to libavcodec media decoding
-                                // library.
-  FILE_LIBAVFORMAT,             // Full path to libavformat media parsing
-                                // library.
-  FILE_LIBAVUTIL,               // Full path to libavutil media utility library.
   FILE_RESOURCES_PACK,          // Full path to the .pak file containing
                                 // binary data (e.g., html files and images
                                 // used by interal pages).
