@@ -41,8 +41,8 @@ void ExtensionInstallUI::DisableFailureUIForTests() {
 }
 
 // static
-ExtensionInstallPrompt* ExtensionInstallUI::CreateInstallPromptWithWebContents(
-    content::WebContents* web_contents) {
+ExtensionInstallPrompt* ExtensionInstallUI::CreateInstallPromptWithBrowser(
+    Browser* browser) {
   NOTIMPLEMENTED();
   return NULL;
 }

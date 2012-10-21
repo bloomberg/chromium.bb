@@ -15,6 +15,8 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
@@ -84,8 +86,7 @@ namespace chrome {
 // ExtensionInstallPrompt::Delegate instance.
 class ExtensionInstallDialog {
  public:
-  ExtensionInstallDialog(gfx::NativeWindow parent,
-                         content::PageNavigator* navigator,
+  ExtensionInstallDialog(content::WebContents* parent_web_contents,
                          ExtensionInstallPrompt::Delegate* delegate,
                          const ExtensionInstallPrompt::Prompt& prompt);
  private:
@@ -104,11 +105,10 @@ class ExtensionInstallDialog {
 };
 
 ExtensionInstallDialog::ExtensionInstallDialog(
-    gfx::NativeWindow parent,
-    content::PageNavigator* navigator,
+    content::WebContents* parent_web_contents,
     ExtensionInstallPrompt::Delegate *delegate,
     const ExtensionInstallPrompt::Prompt& prompt)
-    : navigator_(navigator),
+    : navigator_(parent_web_contents),
       delegate_(delegate),
       dialog_(NULL) {
   bool show_permissions = prompt.GetPermissionCount() > 0;
@@ -124,6 +124,9 @@ ExtensionInstallDialog::ExtensionInstallDialog(
     extension_id_ = prompt.extension()->id();
 
   // Build the dialog.
+  gfx::NativeWindow parent = NULL;
+  if (parent_web_contents)
+    parent = parent_web_contents->GetView()->GetTopLevelNativeWindow();
   dialog_ = gtk_dialog_new_with_buttons(
       UTF16ToUTF8(prompt.GetDialogTitle()).c_str(),
       parent,
@@ -393,11 +396,10 @@ GtkWidget* ExtensionInstallDialog::CreateWidgetForIssueAdvice(
 namespace {
 
 void ShowExtensionInstallDialogImpl(
-    gfx::NativeWindow parent,
-    content::PageNavigator* navigator,
+    content::WebContents* parent_web_content,
     ExtensionInstallPrompt::Delegate* delegate,
     const ExtensionInstallPrompt::Prompt& prompt) {
-  new chrome::ExtensionInstallDialog(parent, navigator, delegate, prompt);
+  new chrome::ExtensionInstallDialog(parent_web_content, delegate, prompt);
 }
 
 }  // namespace

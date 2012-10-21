@@ -3675,8 +3675,9 @@ void TestingAutomationProvider::InstallExtension(
   bool with_ui;
   bool from_webstore = false;
   Browser* browser;
+  content::WebContents* tab;
   std::string error_msg;
-  if (!GetBrowserFromJSONArgs(args, &browser, &error_msg)) {
+  if (!GetBrowserAndTabFromJSONArgs(args, &browser, &tab, &error_msg)) {
     AutomationJSONReply(this, reply_message).SendError(error_msg);
     return;
   }
@@ -3708,7 +3709,7 @@ void TestingAutomationProvider::InstallExtension(
     // and install it. Otherwise load it as an unpacked extension.
     if (extension_path.MatchesExtension(FILE_PATH_LITERAL(".crx"))) {
       ExtensionInstallPrompt* client = (with_ui ?
-          chrome::CreateExtensionInstallPromptWithBrowser(browser) :
+          new ExtensionInstallPrompt(tab) :
           NULL);
       scoped_refptr<extensions::CrxInstaller> installer(
           extensions::CrxInstaller::Create(service, client));

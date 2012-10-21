@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/notification_service.h"
@@ -31,19 +32,25 @@ ExtensionInstallPrompt* mock_install_prompt_for_testing = NULL;
 // Called to get an extension install UI object.  In tests, will return
 // a mock if the test calls download_util::SetMockInstallUIForTesting()
 // to set one.
-ExtensionInstallPrompt* CreateExtensionInstallPrompt(Profile* profile) {
+ExtensionInstallPrompt* CreateExtensionInstallPrompt(
+    Profile* profile,
+    const DownloadItem& download_item) {
   // Use a mock if one is present.  Otherwise, create a real extensions
   // install UI.
-  ExtensionInstallPrompt* result = NULL;
   if (mock_install_prompt_for_testing) {
-    result = mock_install_prompt_for_testing;
+    ExtensionInstallPrompt* result = mock_install_prompt_for_testing;
     mock_install_prompt_for_testing = NULL;
+    return result;
   } else {
-    Browser* browser = browser::FindLastActiveWithProfile(profile);
-    result = chrome::CreateExtensionInstallPromptWithBrowser(browser);
+    content::WebContents* web_contents = download_item.GetWebContents();
+    if (!web_contents) {
+      Browser* browser = browser::FindLastActiveWithProfile(profile);
+      if (!browser)
+        browser = new Browser(Browser::CreateParams(profile));
+      web_contents = browser->tab_strip_model()->GetActiveWebContents();
+    }
+    return new ExtensionInstallPrompt(web_contents);
   }
-
-  return result;
 }
 
 bool OffStoreInstallAllowedByPrefs(Profile* profile, const DownloadItem& item) {
@@ -79,7 +86,7 @@ scoped_refptr<extensions::CrxInstaller> OpenChromeExtension(
   scoped_refptr<extensions::CrxInstaller> installer(
       extensions::CrxInstaller::Create(
           service,
-          CreateExtensionInstallPrompt(profile),
+          CreateExtensionInstallPrompt(profile, download_item),
           WebstoreInstaller::GetAssociatedApproval(download_item)));
 
   installer->set_error_on_unsupported_requirements(true);

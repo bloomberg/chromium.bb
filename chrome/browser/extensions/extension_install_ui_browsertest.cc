@@ -154,9 +154,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
                        MAYBE_AppInstallConfirmation_Incognito) {
-  Profile* incognito_profile = browser()->profile()->GetOffTheRecordProfile();
-  Browser* incognito_browser =
-      new Browser(Browser::CreateParams(incognito_profile));
+  Browser* incognito_browser = CreateIncognitoBrowser();
 
   int num_incognito_tabs = incognito_browser->tab_count();
   int num_normal_tabs = browser()->tab_count();

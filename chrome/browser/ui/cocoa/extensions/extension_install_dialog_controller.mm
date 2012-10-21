@@ -11,25 +11,16 @@
 #import "chrome/browser/ui/cocoa/extensions/extension_install_view_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "content/public/browser/web_contents.h"
 
 namespace {
 
 void ShowExtensionInstallDialogImpl(
-    gfx::NativeWindow parent,
-    content::PageNavigator* navigator,
+    content::WebContents* parent_web_contents,
     ExtensionInstallPrompt::Delegate* delegate,
     const ExtensionInstallPrompt::Prompt& prompt) {
-  // TODO(sail) Update ShowExtensionInstallDialogImpl to take a web contents.
-  Browser* browser = browser::FindBrowserWithWindow(parent);
-  if (!browser)
-    return;
-  TabContents* tab = browser->tab_strip_model()->GetActiveTabContents();
-  if (!tab)
-    return;
-
   // This object will delete itself when the dialog closes.
-  new ExtensionInstallDialogController(tab->web_contents(),
-                                       navigator,
+  new ExtensionInstallDialogController(parent_web_contents,
                                        delegate,
                                        prompt);
 }
@@ -38,11 +29,10 @@ void ShowExtensionInstallDialogImpl(
 
 ExtensionInstallDialogController::ExtensionInstallDialogController(
     content::WebContents* web_contents,
-    content::PageNavigator* navigator,
     ExtensionInstallPrompt::Delegate* delegate,
     const ExtensionInstallPrompt::Prompt& prompt) : delegate_(delegate) {
   view_controller_.reset([[ExtensionInstallViewController alloc]
-      initWithNavigator:navigator
+      initWithNavigator:web_contents
                delegate:this
                  prompt:prompt]);
 

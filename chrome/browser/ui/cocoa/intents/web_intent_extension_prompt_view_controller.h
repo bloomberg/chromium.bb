@@ -12,6 +12,9 @@
 #import "chrome/browser/ui/cocoa/intents/web_intent_view_controller.h"
 
 @class ExtensionInstallViewController;
+namespace content {
+class PageNavigator;
+}
 
 // The message view shows an extension install prompt.
 @interface WebIntentExtensionPromptViewController :

@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -218,6 +219,20 @@ Browser* UIThreadExtensionFunction::GetCurrentBrowser() {
   // TODO(rafaelw): Delay creation of background_page until the browser
   // is available. http://code.google.com/p/chromium/issues/detail?id=13284
   return browser;
+}
+
+content::WebContents* UIThreadExtensionFunction::GetAssociatedWebContents() {
+  if (dispatcher()) {
+    content::WebContents* web_contents =
+        dispatcher()->delegate()->GetAssociatedWebContents();
+    if (web_contents)
+      return web_contents;
+  }
+
+  Browser* browser = GetCurrentBrowser();
+  if (!browser)
+    return NULL;
+  return browser->tab_strip_model()->GetActiveWebContents();
 }
 
 extensions::WindowController*

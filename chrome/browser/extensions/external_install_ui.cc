@@ -15,6 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
+#include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/profiles/profile.h"
@@ -73,7 +74,8 @@ ExternalInstallDialogDelegate::ExternalInstallDialogDelegate(
     : service_(service), extension_(extension) {
   AddRef();  // Balanced in Proceed or Abort.
 
-  install_ui_.reset(chrome::CreateExtensionInstallPromptWithBrowser(browser));
+  install_ui_.reset(
+      ExtensionInstallUI::CreateInstallPromptWithBrowser(browser));
   install_ui_->ConfirmExternalInstall(this, extension_);
 }
 

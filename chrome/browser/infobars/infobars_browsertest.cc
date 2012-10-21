@@ -40,7 +40,7 @@ class InfoBarsTest : public InProcessBrowserTest {
         content::NotificationService::AllSources());
 
     ExtensionInstallPrompt* client =
-        chrome::CreateExtensionInstallPromptWithBrowser(browser());
+        new ExtensionInstallPrompt(chrome::GetActiveWebContents(browser()));
     scoped_refptr<extensions::CrxInstaller> installer(
         extensions::CrxInstaller::Create(service, client));
     installer->set_install_cause(extension_misc::INSTALL_CAUSE_AUTOMATION);

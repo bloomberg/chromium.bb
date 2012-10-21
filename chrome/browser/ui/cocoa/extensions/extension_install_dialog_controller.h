@@ -25,7 +25,6 @@ class ExtensionInstallDialogController :
  public:
   ExtensionInstallDialogController(
       content::WebContents* web_contents,
-      content::PageNavigator* navigator,
       ExtensionInstallPrompt::Delegate* delegate,
       const ExtensionInstallPrompt::Prompt& prompt);
   virtual ~ExtensionInstallDialogController();

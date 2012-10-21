@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -266,15 +267,17 @@ void ExtensionInstallUI::DisableFailureUIForTests() {
 }
 
 // static
-ExtensionInstallPrompt* ExtensionInstallUI::CreateInstallPromptWithWebContents(
-    content::WebContents* web_contents) {
-  Browser* browser = browser::FindBrowserWithWebContents(web_contents);
-  return chrome::CreateExtensionInstallPromptWithBrowser(browser);
+ExtensionInstallPrompt* ExtensionInstallUI::CreateInstallPromptWithBrowser(
+    Browser* browser) {
+  content::WebContents* web_contents = NULL;
+  if (browser)
+    web_contents = browser->tab_strip_model()->GetActiveWebContents();
+  return new ExtensionInstallPrompt(web_contents);
 }
 
 // static
 ExtensionInstallPrompt* ExtensionInstallUI::CreateInstallPromptWithProfile(
     Profile* profile) {
   Browser* browser = browser::FindLastActiveWithProfile(profile);
-  return chrome::CreateExtensionInstallPromptWithBrowser(browser);
+  return CreateInstallPromptWithBrowser(browser);
 }

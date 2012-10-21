@@ -238,8 +238,7 @@ class WebIntentPickerController
 
   // Called to show a custom extension install dialog.
   void OnShowExtensionInstallDialog(
-      gfx::NativeWindow parent,
-      content::PageNavigator* navigator,
+      content::WebContents* parent_web_contents,
       ExtensionInstallPrompt::Delegate* delegate,
       const ExtensionInstallPrompt::Prompt& prompt);
 

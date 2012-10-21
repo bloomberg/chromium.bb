@@ -56,8 +56,7 @@ void WebIntentPickerCocoa2::OnExtensionInstallFailure(const std::string& id) {
 }
 
 void WebIntentPickerCocoa2::OnShowExtensionInstallDialog(
-      gfx::NativeWindow parent,
-      content::PageNavigator* navigator,
+      content::WebContents* parent_web_contents,
       ExtensionInstallPrompt::Delegate* delegate,
       const ExtensionInstallPrompt::Prompt& prompt) {
   [view_controller_ update];

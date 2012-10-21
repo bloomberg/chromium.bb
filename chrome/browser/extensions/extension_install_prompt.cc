@@ -32,7 +32,7 @@
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/pref_names.h"
-#include "content/public/browser/page_navigator.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -157,6 +157,12 @@ bool AutoConfirmPrompt(ExtensionInstallPrompt::Delegate* delegate) {
 
   NOTREACHED();
   return false;
+}
+
+Profile* ProfileForWebContents(content::WebContents* web_contents) {
+  if (!web_contents)
+    return NULL;
+  return Profile::FromBrowserContext(web_contents->GetBrowserContext());
 }
 
 }  // namespace
@@ -363,17 +369,14 @@ scoped_refptr<Extension>
 }
 
 ExtensionInstallPrompt::ExtensionInstallPrompt(
-    gfx::NativeWindow parent,
-    content::PageNavigator* navigator,
-    Profile* profile)
+    content::WebContents* contents)
     : record_oauth2_grant_(false),
-      parent_(parent),
-      navigator_(navigator),
+      parent_web_contents_(contents),
       ui_loop_(MessageLoop::current()),
       extension_(NULL),
-      install_ui_(ExtensionInstallUI::Create(profile)),
+      install_ui_(ExtensionInstallUI::Create(ProfileForWebContents(contents))),
       delegate_(NULL),
-      prompt_(profile, UNSET_PROMPT_TYPE),
+      prompt_(ProfileForWebContents(contents), UNSET_PROMPT_TYPE),
       prompt_type_(UNSET_PROMPT_TYPE),
       ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)) {
 }
@@ -630,22 +633,10 @@ void ExtensionInstallPrompt::ShowConfirmation() {
   if (AutoConfirmPrompt(delegate_))
     return;
 
-  if (show_dialog_callback_.is_null())
-    GetDefaultShowDialogCallback().Run(parent_, navigator_, delegate_, prompt_);
-  else
-    show_dialog_callback_.Run(parent_, navigator_, delegate_, prompt_);
+  if (show_dialog_callback_.is_null()) {
+    GetDefaultShowDialogCallback().Run(
+        parent_web_contents_, delegate_, prompt_);
+  } else {
+    show_dialog_callback_.Run(parent_web_contents_, delegate_, prompt_);
+  }
 }
-
-namespace chrome {
-
-ExtensionInstallPrompt* CreateExtensionInstallPromptWithBrowser(
-    Browser* browser) {
-  // |browser| can be NULL in unit tests.
-  if (!browser)
-    return new ExtensionInstallPrompt(NULL, NULL, NULL);
-  gfx::NativeWindow parent =
-      browser->window() ? browser->window()->GetNativeWindow() : NULL;
-  return new ExtensionInstallPrompt(parent, browser, browser->profile());
-}
-
-}  // namespace chrome

@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
@@ -32,10 +33,8 @@ namespace {
 
 class MockInstallPrompt : public ExtensionInstallPrompt {
  public:
-  explicit MockInstallPrompt(gfx::NativeWindow parent,
-                             content::PageNavigator* navigator,
-                             Profile* profile) :
-      ExtensionInstallPrompt(parent, navigator, profile),
+  explicit MockInstallPrompt(content::WebContents* web_contents) :
+      ExtensionInstallPrompt(web_contents),
       confirmation_requested_(false),
       extension_(NULL) {}
 
@@ -69,9 +68,8 @@ class MockInstallPrompt : public ExtensionInstallPrompt {
 };
 
 MockInstallPrompt* CreateMockInstallPromptForBrowser(Browser* browser) {
-  gfx::NativeWindow parent =
-      browser->window() ? browser->window()->GetNativeWindow() : NULL;
-  return new MockInstallPrompt(parent, browser, browser->profile());
+  return new MockInstallPrompt(
+      browser->tab_strip_model()->GetActiveWebContents());
 }
 
 }  // namespace

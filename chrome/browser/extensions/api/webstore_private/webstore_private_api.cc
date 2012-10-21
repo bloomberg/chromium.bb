@@ -322,8 +322,7 @@ void BeginInstallWithManifestFunction::OnWebstoreParseSuccess(
     return;
   }
 
-  install_prompt_.reset(
-      chrome::CreateExtensionInstallPromptWithBrowser(GetCurrentBrowser()));
+  install_prompt_.reset(new ExtensionInstallPrompt(GetAssociatedWebContents()));
   install_prompt_->ConfirmWebstoreInstall(
       this,
       dummy_extension_,

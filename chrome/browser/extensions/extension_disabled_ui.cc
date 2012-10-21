@@ -15,6 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
+#include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_details.h"
@@ -71,8 +73,8 @@ class ExtensionDisabledDialogDelegate
     : public ExtensionInstallPrompt::Delegate,
       public base::RefCountedThreadSafe<ExtensionDisabledDialogDelegate> {
  public:
-  ExtensionDisabledDialogDelegate(Browser* browser,
-                                  ExtensionService* service,
+  ExtensionDisabledDialogDelegate(ExtensionService* service,
+                                  scoped_ptr<ExtensionInstallPrompt> install_ui,
                                   const Extension* extension);
 
  private:
@@ -92,13 +94,13 @@ class ExtensionDisabledDialogDelegate
 };
 
 ExtensionDisabledDialogDelegate::ExtensionDisabledDialogDelegate(
-    Browser* browser,
     ExtensionService* service,
+    scoped_ptr<ExtensionInstallPrompt> install_ui,
     const Extension* extension)
-    : service_(service), extension_(extension) {
+    : install_ui_(install_ui.Pass()),
+      service_(service),
+      extension_(extension) {
   AddRef();  // Balanced in Proceed or Abort.
-
-  install_ui_.reset(chrome::CreateExtensionInstallPromptWithBrowser(browser));
   install_ui_->ConfirmReEnable(this, extension_);
 }
 
@@ -257,7 +259,9 @@ void ExtensionDisabledGlobalError::OnBubbleViewDidClose(Browser* browser) {
 
 void ExtensionDisabledGlobalError::BubbleViewAcceptButtonPressed(
     Browser* browser) {
-  new ExtensionDisabledDialogDelegate(browser, service_, extension_);
+  scoped_ptr<ExtensionInstallPrompt> install_ui(
+      ExtensionInstallUI::CreateInstallPromptWithBrowser(browser));
+  new ExtensionDisabledDialogDelegate(service_, install_ui.Pass(), extension_);
 }
 
 void ExtensionDisabledGlobalError::BubbleViewCancelButtonPressed(
@@ -318,10 +322,13 @@ void AddExtensionDisabledError(ExtensionService* service,
       AddGlobalError(new ExtensionDisabledGlobalError(service, extension));
 }
 
-void ShowExtensionDisabledDialog(ExtensionService* service, Browser* browser,
+void ShowExtensionDisabledDialog(ExtensionService* service,
+                                 content::WebContents* web_contents,
                                  const Extension* extension) {
+  scoped_ptr<ExtensionInstallPrompt> install_ui(
+      new ExtensionInstallPrompt(web_contents));
   // This object manages its own lifetime.
-  new ExtensionDisabledDialogDelegate(browser, service, extension);
+  new ExtensionDisabledDialogDelegate(service, install_ui.Pass(), extension);
 }
 
 }  // namespace extensions

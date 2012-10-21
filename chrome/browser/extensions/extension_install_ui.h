@@ -55,10 +55,10 @@ class ExtensionInstallUI {
   // in tests.
   static void DisableFailureUIForTests();
 
-  // Creates an ExtensionInstallPrompt from |web_contents|.
+  // Creates an ExtensionInstallPrompt from |browser|.
   // Caller assumes ownership.
-  static ExtensionInstallPrompt* CreateInstallPromptWithWebContents(
-      content::WebContents* web_contents);
+  static ExtensionInstallPrompt* CreateInstallPromptWithBrowser(
+      Browser* browser);
 
   // Creates an ExtensionInstallPrompt from |profile|.
   // Caller assumes ownership. This method is deperecated

@@ -38,6 +38,7 @@ class Value;
 
 namespace content {
 class RenderViewHost;
+class WebContents;
 }
 
 namespace extensions {
@@ -301,6 +302,10 @@ class UIThreadExtensionFunction : public ExtensionFunction {
   //
   // TODO(stevenjb): Replace this with GetExtensionWindowController().
   Browser* GetCurrentBrowser();
+
+  // Gets the "current" web contents if any. If there is no associated web
+  // contents then defaults to the foremost one.
+  content::WebContents* GetAssociatedWebContents();
 
   // Same as above but uses WindowControllerList instead of BrowserList.
   extensions::WindowController* GetExtensionWindowController();

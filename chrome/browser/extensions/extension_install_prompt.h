@@ -32,7 +32,7 @@ class DictionaryValue;
 }  // namespace base
 
 namespace content {
-class PageNavigator;
+class WebContents;
 }
 
 namespace extensions {
@@ -159,8 +159,7 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer,
     virtual ~Delegate() {}
   };
 
-  typedef base::Callback<void(gfx::NativeWindow,
-                              content::PageNavigator*,
+  typedef base::Callback<void(content::WebContents* parent_web_contents,
                               ExtensionInstallPrompt::Delegate*,
                               const ExtensionInstallPrompt::Prompt&)>
       ShowDialogCallback;
@@ -179,11 +178,8 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer,
       const std::string& localized_description,
       std::string* error);
 
-  // Creates a prompt with a parent window and a navigator that can be used to
-  // load pages.
-  ExtensionInstallPrompt(gfx::NativeWindow parent,
-                         content::PageNavigator* navigator,
-                         Profile* profile);
+  // Creates a prompt with a parent web content.
+  explicit ExtensionInstallPrompt(content::WebContents* contents);
   virtual ~ExtensionInstallPrompt();
 
   ExtensionInstallUI* install_ui() const { return install_ui_.get(); }
@@ -301,8 +297,7 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer,
   // Shows the actual UI (the icon should already be loaded).
   void ShowConfirmation();
 
-  gfx::NativeWindow parent_;
-  content::PageNavigator* navigator_;
+  content::WebContents* parent_web_contents_;
   MessageLoop* ui_loop_;
 
   // The extensions installation icon.
@@ -339,15 +334,5 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer,
   // Used to show the confirm dialog.
   ShowDialogCallback show_dialog_callback_;
 };
-
-namespace chrome {
-
-// Creates an ExtensionInstallPrompt from |browser|. Caller assumes ownership.
-// TODO(beng): remove this once various extensions types are weaned from
-//             Browser.
-ExtensionInstallPrompt* CreateExtensionInstallPromptWithBrowser(
-    Browser* browser);
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INSTALL_PROMPT_H_

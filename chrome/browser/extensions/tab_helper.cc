@@ -273,13 +273,8 @@ void TabHelper::OnInstallApplication(const WebApplicationInfo& info) {
     return;
 
   ExtensionInstallPrompt* prompt = NULL;
-  if (extension_service->show_extensions_prompts()) {
-    gfx::NativeWindow parent =
-        web_contents()->GetView()->GetTopLevelNativeWindow();
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-    prompt = new ExtensionInstallPrompt(parent, web_contents(), profile);
-  }
+  if (extension_service->show_extensions_prompts())
+    prompt = new ExtensionInstallPrompt(web_contents());
   scoped_refptr<CrxInstaller> installer(
       CrxInstaller::Create(extension_service, prompt));
   installer->InstallWebApp(info);

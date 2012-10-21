@@ -103,8 +103,7 @@ void IdentityGetAuthTokenFunction::OnIssueAdviceSuccess(
   // Existing grant was revoked and we used NO_FORCE, so we got info back
   // instead.
   if (interactive_) {
-    install_ui_.reset(
-        chrome::CreateExtensionInstallPromptWithBrowser(GetCurrentBrowser()));
+    install_ui_.reset(new ExtensionInstallPrompt(GetAssociatedWebContents()));
     ShowOAuthApprovalDialog(issue_advice);
   } else {
     error_ = identity_constants::kNoGrant;

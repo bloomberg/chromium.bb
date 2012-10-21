@@ -35,7 +35,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogControllerTest, BasicTest) {
 
   ExtensionInstallDialogController* controller =
       new ExtensionInstallDialogController(tab->web_contents(),
-                                           browser(),
                                            &delegate,
                                            prompt);
 

@@ -616,10 +616,8 @@ void ExtensionSettingsHandler::HandleEnableMessage(const ListValue* args) {
   if (enable_str == "true") {
     extensions::ExtensionPrefs* prefs = extension_service_->extension_prefs();
     if (prefs->DidExtensionEscalatePermissions(extension_id)) {
-      Browser* browser = browser::FindBrowserWithWebContents(
-          web_ui()->GetWebContents());
       extensions::ShowExtensionDisabledDialog(
-          extension_service_, browser, extension);
+          extension_service_, web_ui()->GetWebContents(), extension);
     } else if ((prefs->GetDisableReasons(extension_id) &
                    Extension::DISABLE_UNSUPPORTED_REQUIREMENT) &&
                !requirements_checker_.get()) {

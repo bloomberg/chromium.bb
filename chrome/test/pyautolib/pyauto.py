@@ -2779,7 +2779,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         self._GetResultFromJSONRequest(cmd_dict, windex=windex))
 
   def InstallExtension(self, extension_path, with_ui=False, from_webstore=None,
-                       windex=0):
+                       windex=0, tab_index=0):
     """Installs an extension from the given path.
 
     The path must be absolute and may be a crx file or an unpacked extension
@@ -2807,6 +2807,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         'path': extension_path,
         'with_ui': with_ui,
         'windex': windex,
+        'tab_index': tab_index,
     }
 
     if from_webstore:

@@ -357,7 +357,10 @@ TabContents* TabStripModel::GetActiveTabContents() const {
 }
 
 content::WebContents* TabStripModel::GetActiveWebContents() const {
-  return GetTabContentsAt(active_index())->web_contents();
+  TabContents* tab_contents = GetActiveTabContents();
+  if (!tab_contents)
+    return NULL;
+  return tab_contents->web_contents();
 }
 
 TabContents* TabStripModel::GetTabContentsAt(int index) const {

@@ -25,12 +25,11 @@ const int kMaxInlineDispositionHeight = 900;
 }  // namespace
 
 void WebIntentPicker::OnShowExtensionInstallDialog(
-    gfx::NativeWindow parent,
-    content::PageNavigator* navigator,
+    content::WebContents* parent_web_contents,
     ExtensionInstallPrompt::Delegate* delegate,
     const ExtensionInstallPrompt::Prompt& prompt) {
   ExtensionInstallPrompt::GetDefaultShowDialogCallback().Run(
-      parent, navigator, delegate, prompt);
+      parent_web_contents, delegate, prompt);
 }
 
 gfx::Size WebIntentPicker::GetMinInlineDispositionSize() {

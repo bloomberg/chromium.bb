@@ -74,8 +74,7 @@ void NavigationObserver::PromptToEnableExtensionIfNecessary(
     in_progress_prompt_navigation_controller_ = nav_controller;
 
     extension_install_prompt_.reset(
-        ExtensionInstallUI::CreateInstallPromptWithWebContents(
-            nav_controller->GetWebContents()));
+        new ExtensionInstallPrompt(nav_controller->GetWebContents()));
     extension_install_prompt_->ConfirmReEnable(this, extension);
   }
 }

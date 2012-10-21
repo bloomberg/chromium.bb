@@ -371,10 +371,7 @@ void WebstoreStandaloneInstaller::OnWebstoreParseSuccess(
     return;
   }
 
-  install_ui_.reset(new ExtensionInstallPrompt(
-      web_contents()->GetView()->GetTopLevelNativeWindow(),
-      web_contents(),
-      profile));
+  install_ui_.reset(new ExtensionInstallPrompt(web_contents()));
   install_ui_->ConfirmStandaloneInstall(this, dummy_extension_, &icon_, prompt);
   // Control flow finishes up in InstallUIProceed or InstallUIAbort.
 }

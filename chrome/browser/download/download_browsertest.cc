@@ -146,7 +146,7 @@ class DownloadsHistoryDataCollector {
 class MockAbortExtensionInstallPrompt : public ExtensionInstallPrompt {
  public:
   MockAbortExtensionInstallPrompt() :
-      ExtensionInstallPrompt(NULL, NULL, NULL) {
+      ExtensionInstallPrompt(NULL) {
   }
 
   // Simulate a user abort on an extension installation.
@@ -166,10 +166,8 @@ class MockAbortExtensionInstallPrompt : public ExtensionInstallPrompt {
 class MockAutoConfirmExtensionInstallPrompt : public ExtensionInstallPrompt {
  public:
   explicit MockAutoConfirmExtensionInstallPrompt(
-      gfx::NativeWindow parent,
-      content::PageNavigator* navigator,
-      Profile* profile)
-      : ExtensionInstallPrompt(parent, navigator, profile) {}
+      content::WebContents* web_contents)
+      : ExtensionInstallPrompt(web_contents) {}
 
   // Proceed without confirmation prompt.
   virtual void ConfirmInstall(Delegate* delegate,
@@ -830,12 +828,9 @@ class DownloadTest : public InProcessBrowserTest {
 
   // A mock install prompt that simulates the user allowing an install request.
   void SetAllowMockInstallPrompt() {
-    gfx::NativeWindow parent =
-        browser()->window() ? browser()->window()->GetNativeWindow() : NULL;
     download_crx_util::SetMockInstallPromptForTesting(
-        new MockAutoConfirmExtensionInstallPrompt(parent,
-                                                  browser(),
-                                                  browser()->profile()));
+        new MockAutoConfirmExtensionInstallPrompt(
+            chrome::GetActiveWebContents(browser())));
   }
 
  private:

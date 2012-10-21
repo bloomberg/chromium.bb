@@ -7,6 +7,9 @@
 
 class Browser;
 class ExtensionService;
+namespace content {
+class WebContents;
+}
 
 namespace extensions {
 
@@ -18,7 +21,8 @@ void AddExtensionDisabledError(ExtensionService* service,
                                const Extension* extension);
 
 // Shows the extension install dialog.
-void ShowExtensionDisabledDialog(ExtensionService* service, Browser* browser,
+void ShowExtensionDisabledDialog(ExtensionService* service,
+                                 content::WebContents* web_contents,
                                  const Extension* extension);
 
 }  // namespace extensions

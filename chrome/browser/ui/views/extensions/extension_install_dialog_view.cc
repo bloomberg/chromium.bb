@@ -14,6 +14,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/animation/animation_delegate.h"
@@ -181,12 +183,14 @@ class IssueAdviceView : public views::View,
 };
 
 void ShowExtensionInstallDialogImpl(
-    gfx::NativeWindow parent,
-    content::PageNavigator* navigator,
+    content::WebContents* parent_web_contents,
     ExtensionInstallPrompt::Delegate* delegate,
     const ExtensionInstallPrompt::Prompt& prompt) {
+  gfx::NativeWindow parent = NULL;
+  if (parent_web_contents)
+    parent = parent_web_contents->GetView()->GetTopLevelNativeWindow();
   views::Widget::CreateWindowWithParent(
-      new ExtensionInstallDialogView(navigator, delegate, prompt),
+      new ExtensionInstallDialogView(parent_web_contents, delegate, prompt),
       parent)->Show();
 }
 
