@@ -79,3 +79,15 @@ PolicyPrefsBannerTest.*
 # DrM-i#1052-c#8
 BrowserOptionsWebUITest.*
 ExtensionURLRewriteBrowserTest.*
+
+# Failed tests:
+# DrM-i#1052-c#9
+ExecuteScriptApiTest.*
+# DrM-i#1052-c#10
+PopupBlockerBrowserTest.*
+PreservedWindowPlacementIsMigrated.*
+BlockedAppApiTest.*
+# DrM-i#1052-c#11
+ExtensionApiTest.*
+# DrM-i#1052-c#13
+InProcessBrowserTest.*
