@@ -4,6 +4,7 @@ When a task is done and accepted, consider moving it into the NEWS
 file, with a bit of extra info.
 
 * 2.6
+** Investigate another crash/patch reported by brailcom: http://www.freelists.org/post/liblouis-liblouisxml/Another-crash-in-Python-hyphenation
 ** Document the changes to LOUIS_TABLEPATH
 ** Extend and document the scripting language
 http://www.freelists.org/post/liblouis-liblouisxml/Very-preliminary-documentation-of-scripting-language
@@ -13,12 +14,12 @@ Instead it is done with a try except in the python script. Need to be
 added to configure.ac so that debian packages can automatically pick
 up dependencies.
 
-* near term
-** (google issue 9) bindings should provide variable to pick up table location at runtime.
-
 ** Mapping between table filenames, human readable names, and translatable strings, needs to be accessible from bindings.
 Will remove the need of redefining translatable names for the tables
 in orca, nvda, blaster etc.
+
+* near term
+** (google issue 9) bindings should provide variable to pick up table location at runtime.
 
 ** Fix the problem that LOUIS_TABLEPATH always looks in the standard PATH
 even if that was not in the environment var
