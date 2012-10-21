@@ -76,3 +76,6 @@ BetterSessionRestoreTest.*
 ExtensionWebRequestApiTest.*
 PageCyclerCachedBrowserTest.*
 PolicyPrefsBannerTest.*
+# DrM-i#1052-c#8
+BrowserOptionsWebUITest.*
+ExtensionURLRewriteBrowserTest.*
