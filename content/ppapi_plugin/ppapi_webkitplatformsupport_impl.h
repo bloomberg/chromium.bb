@@ -9,8 +9,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/common/webkitplatformsupport_impl.h"
 
-class PpapiWebKitPlatformSupportImpl :
-    public content::WebKitPlatformSupportImpl {
+namespace content {
+
+class PpapiWebKitPlatformSupportImpl : public WebKitPlatformSupportImpl {
  public:
   PpapiWebKitPlatformSupportImpl();
   virtual ~PpapiWebKitPlatformSupportImpl();
@@ -54,5 +55,7 @@ class PpapiWebKitPlatformSupportImpl :
 
   DISALLOW_COPY_AND_ASSIGN(PpapiWebKitPlatformSupportImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_PPAPI_PLUGIN_PPAPI_WEBKITPLATFORMSUPPORT_IMPL_H_

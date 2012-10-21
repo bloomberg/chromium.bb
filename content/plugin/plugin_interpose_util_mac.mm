@@ -11,6 +11,8 @@
 #include "content/plugin/plugin_thread.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 
+using content::PluginThread;
+
 namespace mac_plugin_interposing {
 
 // TODO(stuartmorgan): Make this an IPC to order the plugin process above the

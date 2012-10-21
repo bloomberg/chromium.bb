@@ -13,8 +13,10 @@ class AppCacheDispatcher;
 class DBMessageFilter;
 class IndexedDBMessageFilter;
 class WebDatabaseObserverImpl;
-class WebSharedWorkerStub;
 struct WorkerProcessMsg_CreateWorker_Params;
+
+namespace content {
+class WebSharedWorkerStub;
 class WorkerWebKitPlatformSupportImpl;
 
 class WorkerThread : public ChildThread {
@@ -50,5 +52,7 @@ class WorkerThread : public ChildThread {
 
   DISALLOW_COPY_AND_ASSIGN(WorkerThread);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_WORKER_WORKER_THREAD_H_

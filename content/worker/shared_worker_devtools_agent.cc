@@ -13,6 +13,8 @@
 using WebKit::WebSharedWorker;
 using WebKit::WebString;
 
+namespace content {
+
 SharedWorkerDevToolsAgent::SharedWorkerDevToolsAgent(
     int route_id,
     WebSharedWorker* webworker)
@@ -82,3 +84,5 @@ void SharedWorkerDevToolsAgent::OnResumeWorkerContext() {
 bool SharedWorkerDevToolsAgent::Send(IPC::Message* message) {
   return WorkerThread::current()->Send(message);
 }
+
+}  // namespace content

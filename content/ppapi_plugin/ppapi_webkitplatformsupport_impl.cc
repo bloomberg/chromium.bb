@@ -34,6 +34,8 @@ using WebKit::WebUChar;
 
 typedef struct CGFont* CGFontRef;
 
+namespace content {
+
 class PpapiWebKitPlatformSupportImpl::SandboxSupport : public WebSandboxSupport {
  public:
   virtual ~SandboxSupport() {}
@@ -122,7 +124,7 @@ PpapiWebKitPlatformSupportImpl::SandboxSupport::getFontFamilyForCharacters(
     return;
   }
 
-  content::GetFontFamilyForCharacters(
+  GetFontFamilyForCharacters(
       characters,
       num_characters,
       preferred_locale,
@@ -132,7 +134,7 @@ PpapiWebKitPlatformSupportImpl::SandboxSupport::getFontFamilyForCharacters(
 
 void PpapiWebKitPlatformSupportImpl::SandboxSupport::getRenderStyleForStrike(
     const char* family, int sizeAndStyle, WebKit::WebFontRenderStyle* out) {
-  content::GetRenderStyleForStrike(family, sizeAndStyle, out);
+  GetRenderStyleForStrike(family, sizeAndStyle, out);
 }
 
 #endif
@@ -259,3 +261,5 @@ int PpapiWebKitPlatformSupportImpl::databaseDeleteFile(
   NOTREACHED();
   return 0;
 }
+
+}  // namespace content

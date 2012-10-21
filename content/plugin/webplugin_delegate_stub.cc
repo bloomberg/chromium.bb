@@ -29,6 +29,8 @@ using WebKit::WebCursorInfo;
 using webkit::npapi::WebPlugin;
 using webkit::npapi::WebPluginResourceClient;
 
+namespace content {
+
 static void DestroyWebPluginAndDelegate(
     base::WeakPtr<NPObjectStub> scriptable_object,
     webkit::npapi::WebPluginDelegateImpl* delegate,
@@ -57,7 +59,7 @@ WebPluginDelegateStub::WebPluginDelegateStub(
 
 WebPluginDelegateStub::~WebPluginDelegateStub() {
   in_destructor_ = true;
-  content::GetContentClient()->SetActiveURL(page_url_);
+  GetContentClient()->SetActiveURL(page_url_);
 
   if (channel_->in_send()) {
     // The delegate or an npobject is in the callstack, so don't delete it
@@ -73,7 +75,7 @@ WebPluginDelegateStub::~WebPluginDelegateStub() {
 }
 
 bool WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
-  content::GetContentClient()->SetActiveURL(page_url_);
+  GetContentClient()->SetActiveURL(page_url_);
 
   // A plugin can execute a script to delete itself in any of its NPP methods.
   // Hold an extra reference to ourself so that if this does occur and we're
@@ -149,7 +151,7 @@ bool WebPluginDelegateStub::Send(IPC::Message* msg) {
 void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
                                    bool* result) {
   page_url_ = params.page_url;
-  content::GetContentClient()->SetActiveURL(page_url_);
+  GetContentClient()->SetActiveURL(page_url_);
 
   *result = false;
   if (params.arg_names.size() != params.arg_values.size()) {
@@ -419,3 +421,5 @@ void WebPluginDelegateStub::OnSetFakeAcceleratedSurfaceWindowHandle(
   delegate_->set_windowed_handle(window);
 }
 #endif
+
+}  // namespace content

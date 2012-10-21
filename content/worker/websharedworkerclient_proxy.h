@@ -17,6 +17,8 @@ class WebApplicationCacheHostClient;
 class WebFrame;
 }
 
+namespace content {
+
 class SharedWorkerDevToolsAgent;
 class WebSharedWorkerStub;
 
@@ -97,5 +99,7 @@ class WebSharedWorkerClientProxy : public WebKit::WebSharedWorkerClient {
 
   DISALLOW_COPY_AND_ASSIGN(WebSharedWorkerClientProxy);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_WORKER_WEBWORKERCLIENT_PROXY_H_

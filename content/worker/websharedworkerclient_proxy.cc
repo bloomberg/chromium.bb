@@ -33,6 +33,8 @@ using WebKit::WebString;
 using WebKit::WebWorker;
 using WebKit::WebSharedWorkerClient;
 
+namespace content {
+
 // How long to wait for worker to finish after it's been told to terminate.
 #define kMaxTimeForRunawayWorkerSeconds 3
 
@@ -202,3 +204,5 @@ void WebSharedWorkerClientProxy::EnsureWorkerContextTerminates() {
           weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kMaxTimeForRunawayWorkerSeconds));
 }
+
+}  // namespace content

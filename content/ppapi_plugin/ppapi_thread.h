@@ -27,11 +27,14 @@
 
 class CommandLine;
 class FilePath;
-class PpapiWebKitPlatformSupportImpl;
 
 namespace IPC {
 struct ChannelHandle;
 }
+
+namespace content {
+
+class PpapiWebKitPlatformSupportImpl;
 
 class PpapiThread : public ChildThread,
                     public ppapi::proxy::PluginDispatcher::PluginDelegate,
@@ -127,5 +130,7 @@ class PpapiThread : public ChildThread,
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(PpapiThread);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_PPAPI_PLUGIN_PPAPI_THREAD_H_

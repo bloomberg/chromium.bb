@@ -11,6 +11,8 @@
 #include "content/plugin/plugin_interpose_util_mac.h"
 #include "content/public/common/content_client.h"
 
+namespace content {
+
 #if !defined(__LP64__)
 void TrimInterposeEnvironment() {
   scoped_ptr<base::Environment> env(base::Environment::Create());
@@ -28,7 +30,7 @@ void TrimInterposeEnvironment() {
   // 1) The whole string is "<kInterposeLibraryPath>", so just clear it, or
   // 2) ":<kInterposeLibraryPath>" is the end of the string, so trim and re-set.
   std::string interpose_library_path =
-      content::GetContentClient()->GetCarbonInterposePath();
+      GetContentClient()->GetCarbonInterposePath();
   DCHECK_GE(interpose_list.size(), interpose_library_path.size());
   size_t suffix_offset = interpose_list.size() - interpose_library_path.size();
   if (suffix_offset == 0 &&
@@ -49,3 +51,5 @@ void InitializeChromeApplication() {
   [NSApplication sharedApplication];
   mac_plugin_interposing::SetUpCocoaInterposing();
 }
+
+}  // namespace content

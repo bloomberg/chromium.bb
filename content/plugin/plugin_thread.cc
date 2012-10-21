@@ -39,6 +39,8 @@
 #include "ui/base/x/x11_util.h"
 #endif
 
+namespace content {
+
 namespace {
 
 class EnsureTerminateMessageFilter : public IPC::ChannelProxy::MessageFilter {
@@ -121,10 +123,10 @@ PluginThread::PluginThread()
     plugin->set_defer_unload(true);
   }
 
-  content::GetContentClient()->plugin()->PluginProcessStarted(
+  GetContentClient()->plugin()->PluginProcessStarted(
       plugin.get() ? plugin->plugin_info().name : string16());
 
-  content::GetContentClient()->AddNPAPIPlugins(
+  GetContentClient()->AddNPAPIPlugins(
       webkit::npapi::PluginList::Singleton());
 
   // Certain plugins, such as flash, steal the unhandled exception filter
@@ -183,3 +185,5 @@ void PluginThread::OnCreateChannel(int renderer_id,
 void PluginThread::OnNotifyRenderersOfPendingShutdown() {
   PluginChannel::NotifyRenderersOfPendingShutdown();
 }
+
+}  // namespace content

@@ -45,6 +45,8 @@ extern sandbox::TargetServices* g_target_services;
 extern void* g_target_services;
 #endif
 
+namespace content {
+
 typedef int32_t (*InitializeBrokerFunc)
     (PP_ConnectInstance_Func* connect_instance_func);
 
@@ -155,8 +157,8 @@ IPC::PlatformFileForTransit PpapiThread::ShareHandleWithRemote(
   }
 #endif
 
-  return content::BrokerGetFileHandleForProcess(handle, channel.peer_pid(),
-                                                should_close_source);
+  return BrokerGetFileHandleForProcess(handle, channel.peer_pid(),
+                                       should_close_source);
 }
 
 std::set<PP_Instance>* PpapiThread::GetGloballySeenInstanceIDSet() {
@@ -187,7 +189,7 @@ void PpapiThread::PreCacheFont(const void* logfontw) {
 }
 
 void PpapiThread::SetActiveURL(const std::string& url) {
-  content::GetContentClient()->SetActiveURL(GURL(url));
+  GetContentClient()->SetActiveURL(GURL(url));
 }
 
 uint32 PpapiThread::Register(ppapi::proxy::PluginDispatcher* plugin_dispatcher) {
@@ -276,7 +278,7 @@ void PpapiThread::OnMsgLoadPlugin(const FilePath& path,
     // We need to do this after getting |PPP_GetInterface()| (or presumably
     // doing something nontrivial with the library), else the sandbox
     // intercedes.
-    if (!content::InitializeSandbox()) {
+    if (!InitializeSandbox()) {
       LOG(WARNING) << "Failed to initialize sandbox";
     }
 #endif
@@ -399,8 +401,10 @@ void PpapiThread::SavePluginName(const FilePath& path) {
 
   // plugin() is NULL when in-process.  Which is fine, because this is
   // just a hook for setting the process name.
-  if (content::GetContentClient()->plugin()) {
-    content::GetContentClient()->plugin()->PluginProcessStarted(
+  if (GetContentClient()->plugin()) {
+    GetContentClient()->plugin()->PluginProcessStarted(
         path.BaseName().RemoveExtension().LossyDisplayName());
   }
 }
+
+}  // namespace content

@@ -16,6 +16,8 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
+namespace content {
+
 // The PluginThread class represents a background thread where plugin instances
 // live.  Communication occurs between WebPluginDelegateProxy in the renderer
 // process and WebPluginDelegateStub in this thread through IPC messages.
@@ -44,5 +46,7 @@ class PluginThread : public ChildThread {
 
   DISALLOW_COPY_AND_ASSIGN(PluginThread);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_PLUGIN_PLUGIN_THREAD_H_

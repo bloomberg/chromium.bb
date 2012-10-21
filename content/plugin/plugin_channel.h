@@ -17,6 +17,8 @@ namespace base {
 class WaitableEvent;
 }
 
+namespace content {
+
 // Encapsulates an IPC channel between the plugin process and one renderer
 // process.  On the renderer side there's a corresponding PluginChannelHost.
 class PluginChannel : public NPChannelBase {
@@ -93,5 +95,7 @@ class PluginChannel : public NPChannelBase {
 
   DISALLOW_COPY_AND_ASSIGN(PluginChannel);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_PLUGIN_PLUGIN_CHANNEL_H_

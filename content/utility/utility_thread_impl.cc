@@ -24,6 +24,8 @@
 #include "ui/gfx/gtk_util.h"
 #endif
 
+namespace content {
+
 namespace {
 
 template<typename SRC, typename DEST>
@@ -38,9 +40,9 @@ void ConvertVector(const SRC& src, DEST* dest) {
 UtilityThreadImpl::UtilityThreadImpl()
     : batch_mode_(false) {
   ChildProcess::current()->AddRefProcess();
-  webkit_platform_support_.reset(new content::WebKitPlatformSupportImpl);
+  webkit_platform_support_.reset(new WebKitPlatformSupportImpl);
   WebKit::initialize(webkit_platform_support_.get());
-  content::GetContentClient()->utility()->UtilityThreadStarted();
+  GetContentClient()->utility()->UtilityThreadStarted();
 }
 
 UtilityThreadImpl::~UtilityThreadImpl() {
@@ -70,7 +72,7 @@ void UtilityThreadImpl::ReleaseCachedFonts() {
 
 
 bool UtilityThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
-  if (content::GetContentClient()->utility()->OnMessageReceived(msg))
+  if (GetContentClient()->utility()->OnMessageReceived(msg))
     return true;
 
   bool handled = true;
@@ -128,3 +130,5 @@ void UtilityThreadImpl::OnLoadPlugins(
   ReleaseProcessIfNeeded();
 }
 #endif
+
+}  // namespace content

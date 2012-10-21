@@ -17,8 +17,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 
-class PluginChannel;
-class WebPluginProxy;
 struct PluginMsg_Init_Params;
 struct PluginMsg_DidReceiveResponseParams;
 struct PluginMsg_UpdateGeometry_Param;
@@ -33,6 +31,10 @@ namespace npapi {
 class WebPluginDelegateImpl;
 }
 }
+
+namespace content {
+class PluginChannel;
+class WebPluginProxy;
 
 // Converts the IPC messages from WebPluginDelegateProxy into calls to the
 // actual WebPluginDelegateImpl object.
@@ -133,5 +135,7 @@ class WebPluginDelegateStub : public IPC::Listener,
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebPluginDelegateStub);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_PLUGIN_WEBPLUGIN_DELEGATE_STUB_H_

@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "content/common/child_process.h"
 
+namespace content {
 namespace {
 
 // How long we wait before releasing the plugin process.
@@ -37,3 +38,5 @@ PluginProcessDispatcher::~PluginProcessDispatcher() {
                  base::Unretained(ChildProcess::current())),
       base::TimeDelta::FromSeconds(kPluginReleaseTimeSeconds));
 }
+
+}  // namespace content

@@ -92,13 +92,13 @@ int tc_set_new_mode(int mode);
 #endif
 
 extern int GpuMain(const content::MainFunctionParams&);
-extern int PluginMain(const content::MainFunctionParams&);
-extern int PpapiPluginMain(const content::MainFunctionParams&);
-extern int PpapiBrokerMain(const content::MainFunctionParams&);
-extern int WorkerMain(const content::MainFunctionParams&);
-extern int UtilityMain(const content::MainFunctionParams&);
 namespace content {
-extern int RendererMain(const MainFunctionParams&);
+extern int PluginMain(const content::MainFunctionParams&);
+extern int PpapiPluginMain(const MainFunctionParams&);
+extern int PpapiBrokerMain(const MainFunctionParams&);
+extern int RendererMain(const content::MainFunctionParams&);
+extern int UtilityMain(const MainFunctionParams&);
+extern int WorkerMain(const MainFunctionParams&);
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 extern int ZygoteMain(const MainFunctionParams&,
                       ZygoteForkDelegate* forkdelegate);

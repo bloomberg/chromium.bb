@@ -24,9 +24,10 @@
 
 using WebKit::WebRuntimeFeatures;
 
+namespace content {
+
 static base::LazyInstance<base::ThreadLocalPointer<WorkerThread> > lazy_tls =
     LAZY_INSTANCE_INITIALIZER;
-
 
 WorkerThread::WorkerThread() {
   lazy_tls.Pointer()->Set(this);
@@ -126,3 +127,5 @@ void WorkerThread::RemoveWorkerStub(WebSharedWorkerStub* stub) {
 void WorkerThread::AddWorkerStub(WebSharedWorkerStub* stub) {
   worker_stubs_.insert(stub);
 }
+
+}  // namespace content

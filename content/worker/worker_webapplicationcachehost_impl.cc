@@ -7,6 +7,8 @@
 #include "content/common/appcache/appcache_dispatcher.h"
 #include "content/worker/worker_thread.h"
 
+namespace content {
+
 WorkerWebApplicationCacheHostImpl::WorkerWebApplicationCacheHostImpl(
     const WorkerAppCacheInitInfo& init_info,
     WebKit::WebApplicationCacheHostClient* client)
@@ -39,3 +41,5 @@ bool WorkerWebApplicationCacheHostImpl::selectCacheWithManifest(
     const WebKit::WebURL&) {
   return true;
 }
+
+}  // namespace content

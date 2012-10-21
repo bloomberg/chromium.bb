@@ -38,6 +38,8 @@ using WebKit::WebStorageNamespace;
 using WebKit::WebString;
 using WebKit::WebURL;
 
+namespace content {
+
 // TODO(kinuko): Probably this could be consolidated into
 // RendererWebKitPlatformSupportImpl::FileUtilities.
 class WorkerWebKitPlatformSupportImpl::FileUtilities
@@ -284,3 +286,5 @@ WebBlobRegistry* WorkerWebKitPlatformSupportImpl::blobRegistry() {
     blob_registry_.reset(new WebBlobRegistryImpl(WorkerThread::current()));
   return blob_registry_.get();
 }
+
+}  // namespace content

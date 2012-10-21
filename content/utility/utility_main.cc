@@ -17,8 +17,10 @@
 #include "sandbox/win/src/sandbox.h"
 #endif
 
+namespace content {
+
 // Mainline routine for running as the utility process.
-int UtilityMain(const content::MainFunctionParams& parameters) {
+int UtilityMain(const MainFunctionParams& parameters) {
   // The main message loop of the utility process.
   MessageLoop main_message_loop;
   base::PlatformThread::SetName("CrUtilityMain");
@@ -28,7 +30,7 @@ int UtilityMain(const content::MainFunctionParams& parameters) {
 
 #if defined(OS_LINUX)
   // Initialize the sandbox before any thread is created.
-  content::InitializeSandbox();
+  InitializeSandbox();
 #endif
 
   ChildProcess utility_process;
@@ -49,3 +51,5 @@ int UtilityMain(const content::MainFunctionParams& parameters) {
 
   return 0;
 }
+
+}  // namespace content

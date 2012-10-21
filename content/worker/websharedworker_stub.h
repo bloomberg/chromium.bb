@@ -16,6 +16,8 @@ namespace WebKit {
 class WebSharedWorker;
 }
 
+namespace content {
+
 class SharedWorkerDevToolsAgent;
 
 // This class creates a WebSharedWorker, and translates incoming IPCs to the
@@ -76,5 +78,7 @@ class WebSharedWorkerStub : public IPC::Listener {
 
   DISALLOW_COPY_AND_ASSIGN(WebSharedWorkerStub);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_WORKER_WEBSHAREDWORKER_STUB_H_

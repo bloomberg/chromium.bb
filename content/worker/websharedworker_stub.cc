@@ -16,6 +16,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 
+namespace content {
+
 WebSharedWorkerStub::WebSharedWorkerStub(
     const string16& name, int route_id,
     const WorkerAppCacheInitInfo& appcache_init_info)
@@ -125,3 +127,5 @@ void WebSharedWorkerStub::OnTerminateWorkerContext() {
   EnsureWorkerContextTerminates();
   started_ = false;
 }
+
+}  // namespace content

@@ -319,7 +319,7 @@ static bool CreateInitProcessReaper() {
     (void) HANDLE_EINTR(close(sync_fds[0]));
     shutdown(sync_fds[1], SHUT_RD);
     // This "magic" socket must only appear in one process.
-    (void) HANDLE_EINTR(close(content::kZygoteIdFd));
+    (void) HANDLE_EINTR(close(kZygoteIdFd));
     // Tell the child to continue
     CHECK(HANDLE_EINTR(send(sync_fds[1], "C", 1, MSG_NOSIGNAL)) == 1);
     (void) HANDLE_EINTR(close(sync_fds[1]));

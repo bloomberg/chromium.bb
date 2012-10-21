@@ -46,6 +46,7 @@ using webkit::npapi::WebPluginResourceClient;
 using webkit::npapi::WebPluginAcceleratedSurface;
 #endif
 
+namespace content {
 
 WebPluginProxy::SharedTransportDIB::SharedTransportDIB(TransportDIB* dib)
     : dib_(dib) {
@@ -141,7 +142,7 @@ void WebPluginProxy::WillDestroyWindow(gfx::PluginWindowHandle window) {
 #if defined(OS_WIN)
 void WebPluginProxy::SetWindowlessPumpEvent(HANDLE pump_messages_event) {
   HANDLE pump_messages_event_for_renderer = NULL;
-  content::BrokerDuplicateHandle(pump_messages_event, channel_->peer_pid(),
+  BrokerDuplicateHandle(pump_messages_event, channel_->peer_pid(),
                                  &pump_messages_event_for_renderer,
                                  SYNCHRONIZE | EVENT_MODIFY_STATE, 0);
   DCHECK(pump_messages_event_for_renderer != NULL);
@@ -746,7 +747,7 @@ void WebPluginProxy::AcceleratedPluginSwappedIOSurface() {
 #endif
 
 void WebPluginProxy::OnPaint(const gfx::Rect& damaged_rect) {
-  content::GetContentClient()->SetActiveURL(page_url_);
+  GetContentClient()->SetActiveURL(page_url_);
 
   Paint(damaged_rect);
   Send(new PluginHostMsg_InvalidateRect(route_id_, damaged_rect));
@@ -786,3 +787,5 @@ void WebPluginProxy::UpdateIMEStatus() {
   Send(new PluginHostMsg_NotifyIMEStatus(route_id_, input_type, caret_rect));
 }
 #endif
+
+}  // namespace content

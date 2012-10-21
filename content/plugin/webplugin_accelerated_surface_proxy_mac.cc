@@ -14,6 +14,8 @@
 #include "ui/surface/io_surface_support_mac.h"
 #include "ui/surface/transport_dib.h"
 
+namespace content {
+
 WebPluginAcceleratedSurfaceProxy* WebPluginAcceleratedSurfaceProxy::Create(
     WebPluginProxy* plugin_proxy,
     gfx::GpuPreference gpu_preference) {
@@ -119,3 +121,5 @@ void WebPluginAcceleratedSurfaceProxy::EndDrawing() {
         window_handle_, surface_->GetSurfaceId());
   }
 }
+
+}  // namespace content

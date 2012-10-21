@@ -9,8 +9,10 @@
 #include "ui/gl/gpu_preference.h"
 #include "webkit/plugins/npapi/webplugin_accelerated_surface_mac.h"
 
-class WebPluginProxy;
 class AcceleratedSurface;
+
+namespace content {
+class WebPluginProxy;
 
 // Out-of-process implementation of WebPluginAcceleratedSurface that proxies
 // calls through a WebPluginProxy.
@@ -46,5 +48,7 @@ class WebPluginAcceleratedSurfaceProxy
 
   DISALLOW_COPY_AND_ASSIGN(WebPluginAcceleratedSurfaceProxy);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_PLUGIN_WEBPLUGIN_ACCELERATED_SURFACE_PROXY_H_

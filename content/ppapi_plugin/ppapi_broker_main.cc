@@ -10,8 +10,10 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 
+namespace content {
+
 // Main function for starting the PPAPI broker process.
-int PpapiBrokerMain(const content::MainFunctionParams& parameters) {
+int PpapiBrokerMain(const MainFunctionParams& parameters) {
   const CommandLine& command_line = parameters.command_line;
   if (command_line.HasSwitch(switches::kPpapiStartupDialog)) {
     ChildProcess::WaitForDebugger("PpapiBroker");
@@ -28,3 +30,5 @@ int PpapiBrokerMain(const content::MainFunctionParams& parameters) {
   DVLOG(1) << "PpapiBrokerMain exiting";
   return 0;
 }
+
+}  // namespace content

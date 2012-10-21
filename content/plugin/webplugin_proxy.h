@@ -27,8 +27,6 @@
 #include "ui/surface/transport_dib.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
-class PluginChannel;
-
 namespace skia {
 class PlatformCanvas;
 }
@@ -38,6 +36,9 @@ namespace npapi {
 class WebPluginDelegateImpl;
 }
 }
+
+namespace content {
+class PluginChannel;
 
 #if defined(OS_MACOSX)
 class WebPluginAcceleratedSurfaceProxy;
@@ -308,5 +309,7 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
 
   base::WeakPtrFactory<WebPluginProxy> weak_factory_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_PLUGIN_WEBPLUGIN_PROXY_H_

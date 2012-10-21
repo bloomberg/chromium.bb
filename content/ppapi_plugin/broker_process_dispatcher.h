@@ -11,6 +11,8 @@
 #include "ppapi/proxy/broker_dispatcher.h"
 #include "ppapi/shared_impl/ppp_flash_browser_operations_shared.h"
 
+namespace content {
+
 // Wrapper around a BrokerDispatcher that provides the necessary integration
 // for plugin process management. This class is to avoid direct dependencies
 // from the PPAPI proxy on the Chrome multiprocess infrastructure.
@@ -84,5 +86,7 @@ class BrokerProcessDispatcher
 
   DISALLOW_COPY_AND_ASSIGN(BrokerProcessDispatcher);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_PPAPI_PLUGIN_BROKER_PROCESS_DISPATCHER_H_

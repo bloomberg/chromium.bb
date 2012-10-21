@@ -24,6 +24,8 @@
 #include "ipc/ipc_channel_posix.h"
 #endif
 
+namespace content {
+
 namespace {
 
 void PluginReleaseCallback() {
@@ -316,3 +318,5 @@ void PluginChannel::OnClearSiteData(const std::string& site,
   }
   Send(new PluginHostMsg_ClearSiteDataResult(success));
 }
+
+}  // namespace content

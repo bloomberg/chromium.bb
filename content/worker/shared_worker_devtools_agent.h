@@ -18,6 +18,8 @@ class WebSharedWorker;
 class WebString;
 }
 
+namespace content {
+
 class SharedWorkerDevToolsAgent {
  public:
   SharedWorkerDevToolsAgent(int route_id, WebKit::WebSharedWorker*);
@@ -42,5 +44,7 @@ class SharedWorkerDevToolsAgent {
 
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerDevToolsAgent);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_WORKER_SHARED_WORKER_DEVTOOLS_AGENT_H_

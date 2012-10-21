@@ -29,6 +29,8 @@
 #include "ipc/ipc_descriptors.h"
 #endif
 
+namespace content {
+
 #if defined(OS_MACOSX)
 // Removes our Carbon library interposing from the environment so that it
 // doesn't carry into any processes that plugins might start.
@@ -42,7 +44,7 @@ void WorkaroundFlashLAHF();
 #endif
 
 // main() routine for running as the plugin process.
-int PluginMain(const content::MainFunctionParams& parameters) {
+int PluginMain(const MainFunctionParams& parameters) {
   // The main thread of the plugin services UI.
 #if defined(OS_MACOSX)
 #if !defined(__LP64__)
@@ -80,3 +82,5 @@ int PluginMain(const content::MainFunctionParams& parameters) {
 
   return 0;
 }
+
+}  // namespace content

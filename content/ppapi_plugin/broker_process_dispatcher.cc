@@ -13,6 +13,7 @@
 #include "ppapi/c/private/ppp_flash_browser_operations.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
+namespace content {
 namespace {
 
 // How long we wait before releasing the broker process.
@@ -328,3 +329,5 @@ bool BrokerProcessDispatcher::SetSitePermission(
 
   return false;
 }
+
+}  // namespace content

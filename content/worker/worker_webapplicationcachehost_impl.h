@@ -7,6 +7,8 @@
 
 #include "webkit/appcache/web_application_cache_host_impl.h"
 
+namespace content {
+
 // Information used to construct and initialize an appcache host
 // for a worker.
 struct WorkerAppCacheInitInfo {
@@ -47,5 +49,7 @@ class WorkerWebApplicationCacheHostImpl
   virtual void selectCacheWithoutManifest();
   virtual bool selectCacheWithManifest(const WebKit::WebURL& manifestURL);
 };
+
+}  // namespace content
 
 #endif  // CHROME_WORKER_WORKER_WEBAPPLICATIONCACHEHOST_IMPL_H_

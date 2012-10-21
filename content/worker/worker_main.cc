@@ -18,8 +18,10 @@
 #include "sandbox/win/src/sandbox.h"
 #endif
 
+namespace content {
+
 // Mainline routine for running as the worker process.
-int WorkerMain(const content::MainFunctionParams& parameters) {
+int WorkerMain(const MainFunctionParams& parameters) {
   // The main message loop of the worker process.
   MessageLoop main_message_loop;
   base::PlatformThread::SetName("CrWorkerMain");
@@ -46,7 +48,7 @@ int WorkerMain(const content::MainFunctionParams& parameters) {
 #endif
 
 #if defined(OS_LINUX)
-  content::InitializeSandbox();
+  InitializeSandbox();
 #endif
 
   const CommandLine& parsed_command_line = parameters.command_line;
@@ -60,3 +62,5 @@ int WorkerMain(const content::MainFunctionParams& parameters) {
 
   return 0;
 }
+
+}  // namespace content
