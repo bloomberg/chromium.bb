@@ -33,13 +33,14 @@ namespace {
 
 typedef std::map<std::string, PluginMetadata*> PluginMap;
 
+// Gets the full path of the plug-in file as the identifier.
+std::string GetLongIdentifier(const webkit::WebPluginInfo& plugin) {
+  return plugin.path.AsUTF8Unsafe();
+}
+
 // Gets the base name of the file path as the identifier.
-static std::string GetIdentifier(const webkit::WebPluginInfo& plugin) {
-#if defined(OS_POSIX)
-  return plugin.path.BaseName().value();
-#elif defined(OS_WIN)
-  return base::SysWideToUTF8(plugin.path.BaseName().value());
-#endif
+std::string GetIdentifier(const webkit::WebPluginInfo& plugin) {
+  return plugin.path.BaseName().AsUTF8Unsafe();
 }
 
 // Gets the plug-in group name as the plug-in name if it is not empty or
@@ -273,8 +274,16 @@ scoped_ptr<PluginMetadata> PluginFinder::GetPluginMetadata(
   PluginMetadata* metadata = new PluginMetadata(identifier,
                                                 GetGroupName(plugin),
                                                 false, GURL(), GURL(),
-                                                GetGroupName(plugin),
+                                                plugin.name,
                                                 "");
+  for (size_t i = 0; i < plugin.mime_types.size(); ++i)
+    metadata->AddMatchingMimeType(plugin.mime_types[i].mime_type);
+
+  DCHECK(metadata->MatchesPlugin(plugin));
+  if (identifier_plugin_.find(identifier) != identifier_plugin_.end())
+    identifier = GetLongIdentifier(plugin);
+
+  DCHECK(identifier_plugin_.find(identifier) == identifier_plugin_.end());
   identifier_plugin_[identifier] = metadata;
   return metadata->Clone();
 }

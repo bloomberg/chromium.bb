@@ -134,6 +134,8 @@ class GViewRequestInterceptorTest : public testing::Test {
   void RegisterPDFPlugin() {
     webkit::WebPluginInfo info;
     info.path = pdf_path_;
+    info.mime_types.push_back(webkit::WebPluginMimeType(
+        "application/pdf", ".test", "Test Plugin"));
     plugin_list_.AddPluginToLoad(info);
     plugin_list_.RefreshPlugins();
   }
