@@ -142,18 +142,25 @@ def username(email):
   return email and email.split('@', 1)[0]
 
 
+def datetime_to_midnight(date):
+  return date - timedelta(hours=date.hour, minutes=date.minute,
+                          seconds=date.second, microseconds=date.microsecond)
+
+
 def get_quarter_of(date):
-  begin = date - relativedelta(months=(date.month % 3) - 1, days=(date.day - 1))
+  begin = (datetime_to_midnight(date) -
+           relativedelta(months=(date.month % 3) - 1, days=(date.day - 1)))
   return begin, begin + relativedelta(months=3)
 
 
 def get_year_of(date):
-  begin = date - relativedelta(months=(date.month - 1), days=(date.day - 1))
+  begin = (datetime_to_midnight(date) -
+           relativedelta(months=(date.month - 1), days=(date.day - 1)))
   return begin, begin + relativedelta(years=1)
 
 
 def get_week_of(date):
-  begin = date - timedelta(days=date.weekday())
+  begin = (datetime_to_midnight(date) - timedelta(days=date.weekday()))
   return begin, begin + timedelta(days=7)
 
 
