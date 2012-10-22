@@ -52,6 +52,10 @@ merge-bot() {
   ${PNACL_BUILD} show-config
 
   echo "@@@BUILD_STEP sync-sources@@@"
+  # Sync the rest of pnacl sources before doing the merge, because it
+  # steps on the LLVM source
+  ${PNACL_BUILD} sync-sources
+  ${MERGE_TOOL} upstream-remote-setup
   ${MERGE_TOOL} pull-upstream
 
   # TODO(dschuff): figure out how the buildbot side will actually work
@@ -85,10 +89,6 @@ merge-bot() {
   fi
 
   local ret=0
-
-  # Sync the rest of pnacl sources before doing the merge, because it
-  # steps on the LLVM source
-  ${PNACL_BUILD} sync-sources
 
   # Merge LLVM
   ${MERGE_TOOL} clean
