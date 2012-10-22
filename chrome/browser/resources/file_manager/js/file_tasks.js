@@ -415,6 +415,7 @@ FileTasks.prototype.openGallery = function(urls) {
       metadataCache: fm.metadataCache_,
       pageState: this.params_,
       onClose: onClose,
+      allowMosaic: fm.isOnGData(),
       displayStringFunction: strf
     };
     galleryFrame.contentWindow.Gallery.open(context, allUrls, urls);

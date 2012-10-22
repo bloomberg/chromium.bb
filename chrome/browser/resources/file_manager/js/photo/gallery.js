@@ -51,11 +51,6 @@ function Gallery(context) {
 }
 
 /**
- * Flag to enable the mosaic view.
- */
-Gallery.ENABLE_MOSAIC = false;
-
-/**
  * Create and initialize a Gallery object based on a context.
  *
  * @param {Object} context Gallery context.
@@ -123,6 +118,7 @@ Gallery.openStandalone = function(path, pageState) {
         metadataCache: MetadataCache.createFull(),
         pageState: pageState,
         onClose: onClose,
+        allowMosaic: true, /* For debugging purposes */
         displayStringFunction: strf
       };
       Gallery.open(context, urls, selectedUrls);
@@ -206,7 +202,7 @@ Gallery.prototype.initDom_ = function() {
   this.prompt_ = new ImageEditor.Prompt(
       this.container_, this.displayStringFunction_);
 
-  if (Gallery.ENABLE_MOSAIC) {
+  if (this.context_.allowMosaic) {
     this.modeButton_ = util.createChild(this.toolbar_, 'button mode');
     this.modeButton_.addEventListener('click',
         this.toggleMode_.bind(this, null));

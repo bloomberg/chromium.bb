@@ -110,7 +110,9 @@ Mosaic.prototype.init = function() {
   if (this.tiles_)
     return; // Already initialized, nothing to do.
 
-  this.layoutModel_ = new Mosaic.Layout(this);
+  this.layoutModel_ = new Mosaic.Layout();
+  this.onResize_();
+
   this.selectionController_ =
       new Mosaic.SelectionController(this.selectionModel_, this.layoutModel_);
 
@@ -267,7 +269,8 @@ Mosaic.prototype.scheduleLayout = function(opt_delay) {
  * @private
  */
 Mosaic.prototype.onResize_ = function() {
-  this.layoutModel_.backtrack(0);  // Reset to tile 0.
+  this.layoutModel_.setViewportSize(this.clientWidth, this.clientHeight -
+      (Mosaic.Layout.PADDING_TOP + Mosaic.Layout.PADDING_BOTTOM));
   this.scheduleLayout();
 };
 
@@ -332,7 +335,7 @@ Mosaic.prototype.onLeadChange_ = function(event) {
  */
 Mosaic.prototype.onSplice_ = function(event) {
   var index = event.index;
-  this.layoutModel_.backtrack(index);
+  this.layoutModel_.invalidateFromTile_(index);
 
   if (event.removed.length) {
     for (var t = 0; t != event.removed.length; t++)
@@ -372,7 +375,7 @@ Mosaic.prototype.onContentChange_ = function(event) {
   if (index != this.selectionModel_.selectedIndex)
     console.error('Content changed for unselected item');
 
-  this.layoutModel_.backtrack(index);
+  this.layoutModel_.invalidateFromTile_(index);
   this.tiles_[index].load(
       event.metadata, this.scheduleLayout.bind(this, Mosaic.LAYOUT_DELAY));
 };
@@ -396,7 +399,7 @@ Mosaic.prototype.onKeyDown = function(event) {
  * TODO(kaznacheev): Consider unloading the images that are out of the viewport.
  */
 Mosaic.prototype.canZoom = function() {
-  return this.layoutModel_.getTileCount() < 100;
+  return this.tiles_.length < 100;
 };
 
 /**
@@ -498,14 +501,14 @@ Mosaic.SelectionController.prototype.getIndexAfter = function(index) {
 /**
  * Mosaic layout.
  *
- * @param {Element} container Container element.
+ * @param {string} opt_mode Layout mode.
+ * @param {Mosaic.Density} opt_maxDensity Layout density.
  * @constructor
  */
-Mosaic.Layout = function(container) {
-  this.container_ = container;
-  this.columns_ = [];
-  this.newColumn_ = null;
-  this.tilesPerRowLimit_ = 1;  // Try the least dense layout first.
+Mosaic.Layout = function(opt_mode, opt_maxDensity) {
+  this.mode_ = opt_mode || Mosaic.Layout.MODE_TENTATIVE;
+  this.maxDensity_ = opt_maxDensity || Mosaic.Density.createHighest();
+  this.reset_();
 };
 
 /**
@@ -525,6 +528,69 @@ Mosaic.Layout.PADDING_BOTTOM = 70;
  * with the style of .mosaic-item in gallery.css (= 2 * ( 4 + 1))
  */
 Mosaic.Layout.SPACING = 10;
+
+/**
+ * Layout mode: commit to DOM immediately.
+ */
+Mosaic.Layout.MODE_FINAL = 'final';
+
+/**
+ * Layout mode: do not commit layout to DOM until it is complete or the viewport
+ * overflows.
+ */
+Mosaic.Layout.MODE_TENTATIVE = 'tentative';
+
+/**
+ * Layout mode: never commit layout to DOM.
+ */
+Mosaic.Layout.MODE_DRY_RUN = 'dry_run';
+
+/**
+ * Reset the layout.
+ *
+ * @private
+ */
+Mosaic.Layout.prototype.reset_ = function() {
+  this.columns_ = [];
+  this.newColumn_ = null;
+  this.density_ = Mosaic.Density.createLowest();
+  if (this.mode_ != Mosaic.Layout.MODE_DRY_RUN)  // DRY_RUN is sticky.
+    this.mode_ = Mosaic.Layout.MODE_TENTATIVE;
+};
+
+/**
+ * @param {number} width Viewport width.
+ * @param {number} height Viewport height.
+ */
+Mosaic.Layout.prototype.setViewportSize = function(width, height) {
+  this.viewportWidth_ = width;
+  this.viewportHeight_ = height;
+  this.reset_();
+};
+
+/**
+ * @return {number} Total width of the layout.
+ */
+Mosaic.Layout.prototype.getWidth = function() {
+  var lastColumn = this.getLastColumn_();
+  return lastColumn ? lastColumn.getRight() : 0;
+};
+
+/**
+ * @return {number} Total height of the layout.
+ */
+Mosaic.Layout.prototype.getHeight = function() {
+  var firstColumn = this.columns_[0];
+  return firstColumn ? firstColumn.getHeight() : 0;
+};
+
+/**
+ * @return {Array.<Mosaic.Tile>} All tiles in the layout.
+ */
+Mosaic.Layout.prototype.getTiles = function() {
+  return Array.prototype.concat.apply([],
+      this.columns_.map(function(c) { return c.getTiles() }));
+};
 
 /**
  * @return {number} Total number of tiles added to the layout.
@@ -547,7 +613,7 @@ Mosaic.Layout.prototype.getLastColumn_ = function() {
  */
 Mosaic.Layout.prototype.getLaidOutTileCount = function() {
   var lastColumn = this.getLastColumn_();
-  return lastColumn ? lastColumn.getLastTileIndex() : 0;
+  return lastColumn ? lastColumn.getNextTileIndex() : 0;
 };
 
 /**
@@ -560,88 +626,160 @@ Mosaic.Layout.prototype.add = function(tile, isLast) {
   var layoutQueue = [tile];
 
   // There are two levels of backtracking in the layout algorithm.
-  // |this.tilesPerRowLimit_| property tracks the state of the 'global'
-  // backtracking which aims to use as much of the viewport space as possible.
+  // |Mosaic.Layout.density_| tracks the state of the 'global' backtracking
+  // which aims to use as much of the viewport space as possible.
+  // It starts with the lowest density and increases it until the layout
+  // fits into the viewport. If it does not fit even at the highest density,
+  // the layout continues with the highest density.
   //
-  // |tilesPerRow| variable tracks the state of the 'local' backtracking
-  // which aims to produce for each column a nice non-regular mix of large and
-  // small thumbnails.
-  var tilesPerRow = Mosaic.Row.TILES_PER_ROW;
-
-  var layoutHeight = this.container_.clientHeight -
-      (Mosaic.Layout.PADDING_TOP + Mosaic.Layout.PADDING_BOTTOM);
+  // |Mosaic.Column.density_| tracks the state of the 'local' backtracking
+  // which aims to avoid producing unnaturally looking columns.
+  // It starts with the current global density and decreases it until the column
+  // looks nice.
 
   while (layoutQueue.length) {
     if (!this.newColumn_) {
       var lastColumn = this.getLastColumn_();
       this.newColumn_ = new Mosaic.Column(
           this.columns_.length,
-          lastColumn ? lastColumn.getLastTileIndex() : 0,
-          lastColumn ? lastColumn.getRightEdge() : 0,
-          Mosaic.Layout.PADDING_TOP, layoutHeight,
-          Math.min(tilesPerRow, this.tilesPerRowLimit_));
-      tilesPerRow = Mosaic.Row.TILES_PER_ROW;  // Reset the default.
+          lastColumn ? lastColumn.getNextRowIndex() : 0,
+          lastColumn ? lastColumn.getNextTileIndex() : 0,
+          lastColumn ? lastColumn.getRight() : 0,
+          this.viewportHeight_,
+          this.density_.clone());
     }
 
     this.newColumn_.add(layoutQueue.shift());
 
     var isFinalColumn = isLast && !layoutQueue.length;
 
-    if (this.newColumn_.prepareLayout(isFinalColumn)) {
-      if (this.newColumn_.isSuboptimal()) {
-        // Rollback the new column and try again with less tiles per row.
-        layoutQueue = this.newColumn_.getTiles().concat(layoutQueue);
-        console.assert(tilesPerRow > 1, 'Inconsistent layout state');
-        tilesPerRow--;
-      } else {
-        this.columns_.push(this.newColumn_);
-        if (this.tilesPerRowLimit_ < Mosaic.Row.TILES_PER_ROW) {
-          // Doing tentative layout. Delay the actual layout until we are sure
-          // that the layout does not overflow the viewport.
-          if (this.newColumn_.getRightEdge() > this.container_.clientWidth) {
-            // The layout does not fit into the viewport. Rollback the
-            // uncommitted columns and start over with a denser layout.
-            while (this.columns_.length) {
-              var column = this.getLastColumn_();
-              if (column.isLayoutFinal())
-                break;
-              layoutQueue = column.getTiles().concat(layoutQueue);
-              this.columns_.pop();
-            }
-            this.tilesPerRowLimit_++;
-          } else if (isFinalColumn) {
-            // The layout fits into the viewport completely.
-            // Commit the tentative part layout.
-            for (var i = 0; i != this.columns_.length; i++) {
-              if (!this.columns_[i].isLayoutFinal())
-                this.columns_[i].layout();
-            }
-          }
-        } else {
-          // Layout normally.
-          this.newColumn_.layout();
-        }
+    if (!this.newColumn_.prepareLayout(isFinalColumn))
+      continue; // Column is incomplete.
+
+    if (this.newColumn_.isSuboptimal()) {
+      layoutQueue = this.newColumn_.getTiles().concat(layoutQueue);
+      this.newColumn_.retryWithLowerDensity();
+      continue;
+    }
+
+    this.columns_.push(this.newColumn_);
+    this.newColumn_ = null;
+
+    if (this.mode_ == Mosaic.Layout.MODE_FINAL) {
+      this.getLastColumn_().layout();
+      continue;
+    }
+
+    if (this.getWidth() > this.viewportWidth_) {
+      // Viewport completely filled.
+      if (this.density_.equals(this.maxDensity_)) {
+        // Max density reached, commit if tentative, just continue if dry run.
+        if (this.mode_ == Mosaic.Layout.MODE_TENTATIVE)
+          this.commit_();
+        continue;
       }
-      this.newColumn_ = null;
+
+      // Rollback the entire layout, retry with higher density.
+      layoutQueue = this.getTiles().concat(layoutQueue);
+      this.columns_ = [];
+      this.density_.increase();
+      continue;
+    }
+
+    if (isFinalColumn && this.mode_ == Mosaic.Layout.MODE_TENTATIVE) {
+      // The complete tentative layout fits into the viewport.
+      var stretched = this.findHorizontalLayout_();
+      if (stretched)
+        this.columns_ = stretched.columns_;
+      // Center the layout in the viewport and commit.
+      this.commit_((this.viewportWidth_ - this.getWidth()) / 2,
+                   (this.viewportHeight_ - this.getHeight()) / 2);
     }
   }
 };
 
 /**
- * Backtrack the layout to the beginning of the column containing a tile with
- * a given index.
+ * Commit the tentative layout.
+ *
+ * @param {number} opt_offsetX Horizontal offset.
+ * @param {number} opt_offsetY Vertical offset.
+ * @private
+ */
+Mosaic.Layout.prototype.commit_ = function(opt_offsetX, opt_offsetY) {
+  console.assert(this.mode_ != Mosaic.Layout.MODE_FINAL,
+      'Did not expect final layout');
+  for (var i = 0; i != this.columns_.length; i++) {
+    this.columns_[i].layout(opt_offsetX, opt_offsetY);
+  }
+  this.mode_ = Mosaic.Layout.MODE_FINAL;
+};
+
+/**
+ * Find the most horizontally stretched layout built from the same tiles.
+ *
+ * The main layout algorithm fills the entire available viewport height.
+ * If there is too few tiles this results in a layout that is unnaturally
+ * stretched in the vertical direction.
+ *
+ * This method tries a number of smaller heights and returns the most
+ * horizontally stretched layout that still fits into the viewport.
+ *
+ * @return {Mosaic.Layout} A horizontally stretched layout.
+ * @private
+ */
+Mosaic.Layout.prototype.findHorizontalLayout_ = function() {
+  // If the layout aspect ratio is not dramatically different from
+  // the viewport aspect ratio then there is no need to optimize.
+  if (this.getWidth() / this.getHeight() >
+      this.viewportWidth_ / this.viewportHeight_ * 0.9)
+    return null;
+
+  var tiles = this.getTiles();
+  if (tiles.length == 1)
+    return null;  // Single tile layout is always the same.
+
+  var tileHeights = tiles.map(function(t) { return t.getMaxContentHeight() });
+  var minTileHeight = Math.min.apply(null, tileHeights);
+
+  for (var h = minTileHeight; h < this.viewportHeight_; h += minTileHeight) {
+    var layout = new Mosaic.Layout(
+        Mosaic.Layout.MODE_DRY_RUN, this.density_.clone());
+    layout.setViewportSize(this.viewportWidth_, h);
+    for (var t = 0; t != tiles.length; t++)
+      layout.add(tiles[t], t + 1 == tiles.length);
+
+    if (layout.getWidth() <= this.viewportWidth_)
+      return layout;
+  }
+
+  return null;
+};
+
+/**
+ * Invalidate the layout after the given tile was modified (added, deleted or
+ * changed dimensions).
  *
  * @param {number} index Tile index.
+ * @private
  */
-Mosaic.Layout.prototype.backtrack = function(index) {
-  this.newColumn_ = null;
-  this.tilesPerRowLimit_ = 1; //  Try the least dense layout first.
-
+Mosaic.Layout.prototype.invalidateFromTile_ = function(index) {
   var columnIndex = this.getColumnIndexByTile_(index);
   if (columnIndex < 0)
-    return; // Index not in the layout, probably already backtracked.
+    return; // Index not in the layout, probably already invalidated.
 
-  this.columns_ = this.columns_.slice(0, columnIndex);
+  if (this.columns_[columnIndex].getLeft() >= this.viewportWidth_) {
+    // The columns to the right cover the entire viewport width, so there is no
+    // chance that the modified layout would fit into the viewport.
+    // No point in restarting the entire layout, keep the columns to the right.
+    console.assert(this.mode_ == Mosaic.Layout.MODE_FINAL,
+        'Expected FINAL layout mode');
+    this.columns_ = this.columns_.slice(0, columnIndex);
+    this.newColumn_ = null;
+  } else {
+    // There is a chance that the modified layout would fit into the viewport.
+    this.reset_();
+    this.mode_ = Mosaic.Layout.MODE_TENTATIVE;
+  }
 };
 
 /**
@@ -719,25 +857,133 @@ Mosaic.Layout.rescaleSizesToNewTotal = function(sizes, newTotal) {
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
+ * Representation of the layout density.
+ *
+ * @param {number} horizontal Horizontal density, number tiles per row.
+ * @param {number} vertical Vertical density, frequency of rows forced to
+ *   contain a single tile.
+ * @constructor
+ */
+Mosaic.Density = function(horizontal, vertical) {
+  this.horizontal = horizontal;
+  this.vertical = vertical;
+};
+
+/**
+ * Minimal horizontal density (tiles per row).
+ */
+Mosaic.Density.MIN_HORIZONTAL = 1;
+
+/**
+ * Minimal horizontal density (tiles per row).
+ */
+Mosaic.Density.MAX_HORIZONTAL = 3;
+
+/**
+ * Minimal vertical density: force 1 out of 2 rows to containt a single tile.
+ */
+Mosaic.Density.MIN_VERTICAL = 2;
+
+/**
+ * Maximal vertical density: force 1 out of 3 rows to containt a single tile.
+ */
+Mosaic.Density.MAX_VERTICAL = 3;
+
+/**
+ * @return {Mosaic.Density} Lowest density.
+ */
+Mosaic.Density.createLowest = function() {
+  return new Mosaic.Density(
+      Mosaic.Density.MIN_HORIZONTAL,
+      Mosaic.Density.MIN_VERTICAL /* ignored when horizontal is at min */);
+};
+
+/**
+ * @return {Mosaic.Density} Highest density.
+ */
+Mosaic.Density.createHighest = function() {
+  return new Mosaic.Density(
+      Mosaic.Density.MAX_HORIZONTAL,
+      Mosaic.Density.MAX_VERTICAL);
+};
+
+/**
+ * @return {Mosaic.Density} A clone of this density object.
+ */
+Mosaic.Density.prototype.clone = function() {
+  return new Mosaic.Density(this.horizontal, this.vertical);
+};
+
+/**
+ * @param {Mosaic.Density} that The other object.
+ * @return {boolean} True if equal.
+ */
+Mosaic.Density.prototype.equals = function(that) {
+  return this.horizontal == that.horizontal &&
+         this.vertical == that.vertical;
+};
+
+/**
+ * Increase the density to the next level.
+ */
+Mosaic.Density.prototype.increase = function() {
+  if (this.horizontal == Mosaic.Density.MIN_HORIZONTAL ||
+      this.vertical == Mosaic.Density.MAX_VERTICAL) {
+    console.assert(this.horizontal < Mosaic.Density.MAX_HORIZONTAL);
+    this.horizontal++;
+    this.vertical = Mosaic.Density.MIN_VERTICAL;
+  } else {
+    this.vertical++;
+  }
+};
+
+/**
+ * Decrease horizontal density.
+ */
+Mosaic.Density.prototype.decreaseHorizontal = function() {
+  console.assert(this.horizontal > Mosaic.Density.MIN_HORIZONTAL);
+  this.horizontal--;
+};
+
+/**
+ * @param {number} tileCount Number of tiles in the row.
+ * @param {number} rowIndex Global row index.
+ * @return {boolean} True if the row is complete.
+ */
+Mosaic.Density.prototype.isRowComplete = function(tileCount, rowIndex) {
+  return (tileCount == this.horizontal) || (rowIndex % this.vertical) == 0;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
  * A column in a mosaic layout. Contains rows.
  *
  * @param {number} index Column index.
+ * @param {number} firstRowIndex Global row index.
  * @param {number} firstTileIndex Index of the first tile in the column.
  * @param {number} left Left edge coordinate.
- * @param {number} top Top edge coordinate.
  * @param {number} maxHeight Maximum height.
- * @param {number} maxTilesPerRow Maximum number of tiles per row.
+ * @param {Mosaic.Density} density Layout density.
  * @constructor
  */
-Mosaic.Column = function(index, firstTileIndex, left, top, maxHeight,
-                         maxTilesPerRow) {
+Mosaic.Column = function(index, firstRowIndex, firstTileIndex, left, maxHeight,
+                         density) {
   this.index_ = index;
+  this.firstRowIndex_ = firstRowIndex;
   this.firstTileIndex_ = firstTileIndex;
   this.left_ = left;
-  this.top_ = top;
   this.maxHeight_ = maxHeight;
-  this.maxTilesPerRow_ = maxTilesPerRow;
+  this.density_ = density;
 
+  this.reset_();
+};
+
+/**
+ * Reset the layout.
+ * @private
+ */
+Mosaic.Column.prototype.reset_ = function() {
   this.tiles_ = [];
   this.rows_ = [];
   this.newRow_ = null;
@@ -749,10 +995,17 @@ Mosaic.Column = function(index, firstTileIndex, left, top, maxHeight,
 Mosaic.Column.prototype.getTileCount = function() { return this.tiles_.length };
 
 /**
- * @return {number} Index of the last tile.
+ * @return {number} Index of the last tile + 1.
  */
-Mosaic.Column.prototype.getLastTileIndex = function() {
+Mosaic.Column.prototype.getNextTileIndex = function() {
   return this.firstTileIndex_ + this.getTileCount();
+};
+
+/**
+ * @return {number} Global index of the last row + 1.
+ */
+Mosaic.Column.prototype.getNextRowIndex = function() {
+  return this.firstRowIndex_ + this.rows_.length;
 };
 
 /**
@@ -802,21 +1055,15 @@ Mosaic.Column.prototype.getRowByTileIndex = function(index) {
  * @param {Mosaic.Tile} tile The tile to add.
  */
 Mosaic.Column.prototype.add = function(tile) {
-  if (!this.newRow_)
-     this.newRow_ =
-         new Mosaic.Row(this.firstTileIndex_ + this.getTileCount());
+  var rowIndex = this.getNextRowIndex();
 
+  if (!this.newRow_)
+     this.newRow_ = new Mosaic.Row(this.getNextTileIndex());
 
   this.tiles_.push(tile);
   this.newRow_.add(tile);
 
-  // Force some images to occupy the entire row.
-  // The empirical formula below creates fairly nice pattern.
-  var modulo = (this.maxHeight_ < 700) ? 3 : 4;
-  var forceFullRow =
-      (this.rows_.length % modulo) == ([0, 2, 1, 3][this.index_ % modulo]);
-
-  if (forceFullRow || (this.newRow_.getTileCount() == this.maxTilesPerRow_)) {
+  if (this.density_.isRowComplete(this.newRow_.getTileCount(), rowIndex)) {
     this.rows_.push(this.newRow_);
     this.newRow_ = null;
   }
@@ -841,22 +1088,23 @@ Mosaic.Column.prototype.prepareLayout = function(opt_force) {
   this.width_ = Math.min.apply(
       null, this.rows_.map(function(row) { return row.getMaxWidth() }));
 
-  var totalHeight = 0;
+  this.height_ = 0;
 
   this.rowHeights_ = [];
   for (var r = 0; r != this.rows_.length; r++) {
     var rowHeight = this.rows_[r].getHeightForWidth(this.width_);
-    totalHeight += rowHeight;
+    this.height_ += rowHeight;
     this.rowHeights_.push(rowHeight);
   }
 
-  var overflow = totalHeight / this.maxHeight_;
+  var overflow = this.height_ / this.maxHeight_;
   if (!opt_force && (overflow < 1))
     return false;
 
   if (overflow > 1) {
-    // Scale down the column width and every row height.
+    // Scale down the column width and height.
     this.width_ = Math.round(this.width_ / overflow);
+    this.height_ = this.maxHeight_;
     Mosaic.Layout.rescaleSizesToNewTotal(this.rowHeights_, this.maxHeight_);
   }
 
@@ -864,26 +1112,46 @@ Mosaic.Column.prototype.prepareLayout = function(opt_force) {
 };
 
 /**
+ * Retry the column layout with less tiles per row.
+ */
+Mosaic.Column.prototype.retryWithLowerDensity = function() {
+  this.density_.decreaseHorizontal();
+  this.reset_();
+};
+
+/**
+ * @return {number} Column left edge coordinate.
+ */
+Mosaic.Column.prototype.getLeft = function() { return this.left_ };
+
+/**
  * @return {number} Column right edge coordinate after the layout.
  */
-Mosaic.Column.prototype.getRightEdge = function() {
+Mosaic.Column.prototype.getRight = function() {
   return this.left_ + this.width_;
 };
 
 /**
- * @return {boolean} True if the column layout has been performed.
+ * @return {number} Column height after the layout.
  */
-Mosaic.Column.prototype.isLayoutFinal = function() { return this.final_ };
+Mosaic.Column.prototype.getHeight = function() { return this.height_ };
 
 /**
  * Perform the column layout.
+ * @param {number} opt_offsetX Horizontal offset.
+ * @param {number} opt_offsetY Vertical offset.
  */
-Mosaic.Column.prototype.layout = function() {
-  this.final_ = true;
-  var top = this.top_;
+Mosaic.Column.prototype.layout = function(opt_offsetX, opt_offsetY) {
+  opt_offsetX = opt_offsetX || 0;
+  opt_offsetY = opt_offsetY || 0;
+  var rowTop = Mosaic.Layout.PADDING_TOP;
   for (var r = 0; r != this.rows_.length; r++) {
-    this.rows_[r].layout(this.left_, top, this.width_, this.rowHeights_[r]);
-    top += this.rowHeights_[r];
+    this.rows_[r].layout(
+        opt_offsetX + this.left_,
+        opt_offsetY + rowTop,
+        this.width_,
+        this.rowHeights_[r]);
+    rowTop += this.rowHeights_[r];
   }
 };
 
@@ -893,22 +1161,29 @@ Mosaic.Column.prototype.layout = function() {
  * @return {boolean} True if the layout is suboptimal.
  */
 Mosaic.Column.prototype.isSuboptimal = function() {
-  var sizes =
-      this.tiles_.map(function(tile) { return tile.getMaxContentHeight() });
   var tileCounts =
       this.rows_.map(function(row) { return row.getTileCount() });
 
+  var maxTileCount = Math.max.apply(null, tileCounts);
+  if (maxTileCount == 1)
+    return false;  // Every row has exactly 1 tile, as optimal as it gets.
+
+  var sizes =
+      this.tiles_.map(function(tile) { return tile.getMaxContentHeight() });
+
   // Ugly layout #1: all images are small and some are one the same row.
   var allSmall = Math.max.apply(null, sizes) <= Mosaic.Tile.SMALL_IMAGE_SIZE;
-  var someCombined = Math.max.apply(null, tileCounts) != 1;
-  if (allSmall && someCombined)
+  if (allSmall)
     return true;
 
   // Ugly layout #2: all images are large and none occupies an entire row.
   var allLarge = Math.min.apply(null, sizes) > Mosaic.Tile.SMALL_IMAGE_SIZE;
   var allCombined = Math.min.apply(null, tileCounts) != 1;
-
   if (allLarge && allCombined)
+    return true;
+
+  // Ugly layout #3: some rows have too many tiles for the resulting width.
+  if (this.width_ / maxTileCount < 100)
     return true;
 
   return false;
@@ -928,19 +1203,10 @@ Mosaic.Row = function(firstTileIndex) {
 };
 
 /**
- * Default number of tiles per row.
- * TODO(kaznacheev): Increase to 3 if the thumbnails are large enough.
- * @type {Number}
- */
-Mosaic.Row.TILES_PER_ROW = 2;
-
-/**
  * @param {Mosaic.Tile} tile The tile to add.
  */
 Mosaic.Row.prototype.add = function(tile) {
-  if (this.isFull())
-    console.error('Inconsistent state');
-
+  console.assert(this.getTileCount() < Mosaic.Density.MAX_HORIZONTAL);
   this.tiles_.push(tile);
 };
 
@@ -949,13 +1215,6 @@ Mosaic.Row.prototype.add = function(tile) {
  * @return {number} Number of tiles in the row.
  */
 Mosaic.Row.prototype.getTileCount = function() { return this.tiles_.length };
-
-/**
- * @return {boolean} True if the row is full.
- */
-Mosaic.Row.prototype.isFull = function() {
-  return this.tiles_.length >= 2;
-};
 
 /**
  * @param {number} index Tile index.
