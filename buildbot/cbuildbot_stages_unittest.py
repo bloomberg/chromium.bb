@@ -33,7 +33,7 @@ from chromite.lib import osutils
 from chromite.scripts import cbuildbot
 
 
-# pylint: disable=E1120,W0212,R0904
+# pylint: disable=E1111,E1120,W0212,R0904
 class AbstractStageTest(cros_test_lib.MoxTestCase):
   """Base class for tests that test a particular build stage.
 
@@ -682,96 +682,84 @@ class HWTestStageTest(AbstractStageTest):
     self.suite = 'bvt'
     self.archive_stage_mock.WaitForHWTestUploads().AndReturn(True)
     self.archive_stage_mock.GetVersion().AndReturn('ver')
+    self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
+    self.mox.StubOutWithMock(cros_build_lib, 'PrintBuildbotStepWarnings')
+    self.mox.StubOutWithMock(cros_build_lib, 'PrintBuildbotStepFailure')
+    self.mox.StubOutWithMock(cros_build_lib, 'Warning')
+    self.mox.StubOutWithMock(cros_build_lib, 'Error')
 
   def ConstructStage(self):
     return stages.HWTestStage(self.options, self.build_config,
                               self._current_board, self.archive_stage_mock,
                               self.suite)
 
-  def testRemoteTrybotWithHWTest(self):
-    """Test remote trybot with hw test enabled"""
-    self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
-    argv = ['--remote-trybot', '--hwtest', '-r', self.build_root, self.bot_id]
+  def _RunHWTestSuite(self, debug=False, returncode=0, fails=False):
+    """Pretend to run the HWTest suite to assist with tests.
+
+    Args:
+      debug: Whether the HWTest suite should be run in debug mode.
+      returncode: The return value of the HWTest command.
+      fails: Whether the command as a whole should fail.
+    """
+    m = commands.RunHWTestSuite(mox.IgnoreArg(), self.suite,
+                                self._current_board, mox.IgnoreArg(),
+                                mox.IgnoreArg(), mox.IgnoreArg(), debug)
+
+    # Raise an exception if the user wanted the command to fail.
+    if returncode != 0:
+      result = cros_build_lib.CommandResult(cmd='run_hw_tests',
+                                            returncode=returncode)
+      m.AndRaise(cros_build_lib.RunCommandError('HWTests failed', result))
+
+      # Make sure failures are logged correctly.
+      if fails:
+        cros_build_lib.PrintBuildbotStepFailure()
+        cros_build_lib.Error(mox.IgnoreArg())
+      else:
+        cros_build_lib.PrintBuildbotStepWarnings()
+        cros_build_lib.Warning(mox.IgnoreArg())
+
+    self.mox.ReplayAll()
+    if fails:
+      self.assertRaises(results_lib.StepFailure, self.RunStage)
+    else:
+      self.RunStage()
+    self.mox.VerifyAll()
+
+  def _SetupRemoteTrybotConfig(self, args):
+    """Setup a remote trybot config with the specified arguments.
+
+    Args:
+      args: Command-line arguments to pass in to remote trybot.
+    """
+    argv = ['--remote-trybot', '-r', self.build_root, self.bot_id] + args
     parser = cbuildbot._CreateParser()
     (self.options, _args) = cbuildbot._ParseCommandLine(parser, argv)
     self.build_config = config.OverrideConfigForTrybot(self.build_config,
                                                        self.options.
                                                        remote_trybot)
 
-    build = 'trybot-%s/%s' % (self.bot_id, 'ver')
-    commands.RunHWTestSuite(build,
-                            self.suite,
-                            self._current_board,
-                            constants.HWTEST_TRYBOT_POOL,
-                            constants.HWTEST_TRYBOT_NUM,
-                            False,
-                            False)
-
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
+  def testRemoteTrybotWithHWTest(self):
+    """Test remote trybot with hw test enabled"""
+    self._SetupRemoteTrybotConfig(['--hwtest'])
+    self._RunHWTestSuite()
 
   def testRemoteTrybotNoHWTest(self):
     """Test remote trybot with no hw test"""
-    self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
-    argv = ['--remote-trybot', '-r', self.build_root, self.bot_id]
-    parser = cbuildbot._CreateParser()
-    (self.options, _args) = cbuildbot._ParseCommandLine(parser, argv)
-    self.build_config = config.OverrideConfigForTrybot(self.build_config,
-                                                       self.options.
-                                                       remote_trybot)
-
-    build = 'trybot-%s/%s' % (self.bot_id, 'ver')
-    commands.RunHWTestSuite(build,
-                            self.suite,
-                            self._current_board,
-                            constants.HWTEST_TRYBOT_POOL,
-                            constants.HWTEST_TRYBOT_NUM,
-                            False,
-                            True)
-
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
+    self._SetupRemoteTrybotConfig([])
+    self._RunHWTestSuite(debug=True)
 
   def testWithSuite(self):
     """Test if run correctly with a test suite."""
-    self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
-    build = '%s/%s' % (self.bot_id, 'ver')
-    commands.RunHWTestSuite(build,
-                            self.suite,
-                            self._current_board,
-                            constants.HWTEST_MACH_POOL,
-                            constants.HWTEST_DEFAULT_NUM,
-                            False,
-                            False)
-
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
+    self._RunHWTestSuite()
 
   def testWithSuiteWithInfrastructureFailure(self):
     """Tests that we warn correctly if we get a returncode of 2."""
-    self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
-    self.mox.StubOutWithMock(bs.BuilderStage, '_HandleExceptionAsWarning')
-    build = '%s/%s' % (self.bot_id, 'ver')
-    result = cros_build_lib.CommandResult(cmd='run_hw_tests', returncode=2)
-    error = cros_build_lib.RunCommandError('HWTests failed', result)
-    commands.RunHWTestSuite(build,
-                            self.suite,
-                            self._current_board,
-                            constants.HWTEST_MACH_POOL,
-                            constants.HWTEST_DEFAULT_NUM,
-                            False,
-                            False).AndRaise(error)
-    bs.BuilderStage._HandleExceptionAsWarning(mox.IgnoreArg())
-    self.mox.ReplayAll()
-    try:
-      self.RunStage()
-    except Exception:
-      pass
+    self._RunHWTestSuite(returncode=2)
 
-    self.mox.VerifyAll()
+  def testWithSuiteWithFatalFailure(self):
+    """Tests that we fail if we get a returncode of 1."""
+    self._RunHWTestSuite(returncode=1, fails=True)
 
   def testSendPerfResults(self):
     """Tests that we can send perf results back correctly."""
@@ -781,26 +769,13 @@ class HWTestStageTest(AbstractStageTest):
 
     gs_upload_location = 'gs://dontcare/builder/version'
     self.mox.StubOutWithMock(gs.GSContext, 'Copy')
-    self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
     result = self.mox.CreateMock(cros_build_lib.CommandResult)
-
-    build = '%s/%s' % (self.bot_id, 'ver')
-    commands.RunHWTestSuite(build,
-                            self.suite,
-                            self._current_board,
-                            self.build_config['hw_tests_pool'],
-                            self.build_config['hw_tests_num'],
-                            False,
-                            False)
 
     self.archive_stage_mock.GetGSUploadLocation().AndReturn(gs_upload_location)
     result.output = 'my perf results'
     gs.GSContext.Copy('%s/%s' % (
         gs_upload_location, 'pyauto_perf.results'), '-').AndReturn(result)
-
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
+    self._RunHWTestSuite()
 
 
 class UprevStageTest(AbstractStageTest):

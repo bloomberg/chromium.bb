@@ -51,7 +51,7 @@ class NonHaltingBuilderStage(bs.BuilderStage):
       cros_build_lib.Error('Ignoring StepFailure in %s', name)
 
 
-class ForgivingBuilderStage(NonHaltingBuilderStage):
+class ForgivingBuilderStage(bs.BuilderStage):
   """Build stage that turns a build step red but not a build."""
   def _HandleStageException(self, exception):
     """Override and don't set status to FAIL but FORGIVEN instead."""
@@ -1214,7 +1214,7 @@ class InvalidTestConditionException(Exception):
   pass
 
 
-class HWTestStage(BoardSpecificBuilderStage, NonHaltingBuilderStage):
+class HWTestStage(BoardSpecificBuilderStage):
   """Stage that runs tests in the Autotest lab."""
 
   option_name = 'tests'
@@ -2074,6 +2074,4 @@ class PublishUprevChangesStage(NonHaltingBuilderStage):
   def _PerformStage(self):
     _, push_overlays = self._ExtractOverlays()
     if push_overlays:
-      commands.UprevPush(self._build_root,
-                         push_overlays,
-                         self._options.debug)
+      commands.UprevPush(self._build_root, push_overlays, self._options.debug)
