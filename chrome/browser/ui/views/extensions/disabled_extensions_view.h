@@ -45,7 +45,7 @@ class DisabledExtensionsView : public views::BubbleDelegateView,
                              const ui::Event& event) OVERRIDE;
 
   // views::LinkListener implementation.
-  void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // views::View implementation.
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
