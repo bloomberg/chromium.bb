@@ -141,7 +141,9 @@ void InputMethodIBus::ProcessKeyEventDone(uint32 id,
   if (event->type == KeyPress || event->type == KeyRelease)
     ProcessKeyEventPostIME(event, keyval, is_handled);
 
-  pending_key_events_.erase(it);
+  // Do not use |it| for erasing, ProcessKeyEventPostIME may change the
+  // |pending_key_events_|.
+  pending_key_events_.erase(id);
 }
 
 void InputMethodIBus::DispatchKeyEvent(const base::NativeEvent& native_event) {
