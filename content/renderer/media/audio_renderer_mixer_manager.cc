@@ -47,6 +47,11 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
       media::AudioParameters::AUDIO_PCM_LOW_LATENCY, params.channel_layout(),
       hardware_sample_rate_, 16, hardware_buffer_size_);
 
+  // If we've created invalid output parameters, simply pass on the input params
+  // and let the browser side handle automatic fallback.
+  if (!output_params.IsValid())
+    output_params = params;
+
   media::AudioRendererMixer* mixer = new media::AudioRendererMixer(
       params, output_params, AudioDeviceFactory::NewOutputDevice());
 

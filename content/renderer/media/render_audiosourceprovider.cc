@@ -9,11 +9,11 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "content/public/common/content_switches.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/audio_renderer_mixer_input.h"
+#include "media/base/media_switches.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAudioSourceProviderClient.h"
 
 using std::vector;
@@ -33,7 +33,15 @@ RenderAudioSourceProvider::RenderAudioSourceProvider()
   // have the audio format information and call AudioRendererSink::Initialize()
   // to fully initialize it.
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kEnableRendererSideMixing)) {
+#if defined(OS_WIN) || defined(OS_MAC)
+  const bool use_mixing =
+      !cmd_line->HasSwitch(switches::kDisableRendererSideMixing);
+#else
+  const bool use_mixing =
+      cmd_line->HasSwitch(switches::kEnableRendererSideMixing);
+#endif
+
+  if (use_mixing) {
     default_sink_ = RenderThreadImpl::current()->
         GetAudioRendererMixerManager()->CreateInput();
   } else {
