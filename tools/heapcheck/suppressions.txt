@@ -266,6 +266,12 @@
    fun:crypto::::NSSInitSingleton::OpenTestNSSDB
    fun:*ScopedTestNSSDB
 }
+{
+   bug_156829
+   Heapcheck:Leak
+   ...
+   fun:media_stream::AudioInputDeviceManager::EnumerateOnDeviceThread
+}
 
 
 #-----------------------------------------------------------------------
