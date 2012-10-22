@@ -406,6 +406,8 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
 
 void CrxInstaller::CheckRequirements() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!frontend_weak_.get() || frontend_weak_->browser_terminating())
+    return;
   AddRef();  // Balanced in OnRequirementsChecked().
   requirements_checker_->Check(extension_,
                                base::Bind(&CrxInstaller::OnRequirementsChecked,
@@ -430,7 +432,7 @@ void CrxInstaller::OnRequirementsChecked(
 
 void CrxInstaller::ConfirmInstall() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!frontend_weak_.get())
+  if (!frontend_weak_.get() || frontend_weak_->browser_terminating())
     return;
 
   string16 error;
@@ -617,7 +619,7 @@ void CrxInstaller::ReportSuccessFromFileThread() {
 void CrxInstaller::ReportSuccessFromUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!frontend_weak_.get())
+  if (!frontend_weak_.get() || frontend_weak_->browser_terminating())
     return;
 
   // If there is a client, tell the client about installation.

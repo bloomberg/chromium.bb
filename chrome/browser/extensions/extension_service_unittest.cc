@@ -1497,6 +1497,23 @@ TEST_F(ExtensionServiceTest, InstallUserScript) {
   ExtensionErrorReporter::GetInstance()->ClearErrors();
 }
 
+// Extensions don't install during shutdown.
+TEST_F(ExtensionServiceTest, InstallExtensionDuringShutdown) {
+  InitializeEmptyExtensionService();
+
+  // Simulate shutdown.
+  service_->set_browser_terminating_for_test(true);
+
+  FilePath path = data_dir_.AppendASCII("good.crx");
+  scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(service_, NULL));
+  installer->set_allow_silent_install(true);
+  installer->InstallCrx(path);
+  loop_.RunAllPending();
+
+  EXPECT_FALSE(installed_) << "Extension installed during shutdown.";
+  ASSERT_EQ(0u, loaded_.size()) << "Extension loaded during shutdown.";
+}
+
 // This tests that the granted permissions preferences are correctly set when
 // installing an extension.
 TEST_F(ExtensionServiceTest, GrantedPermissions) {
@@ -2362,6 +2379,27 @@ TEST_F(ExtensionServiceTest, UpdateExtension) {
   ASSERT_EQ("1.0.0.1",
             service_->GetExtensionById(good_crx, false)->
             version()->GetString());
+}
+
+// Extensions should not be updated during browser shutdown.
+TEST_F(ExtensionServiceTest, UpdateExtensionDuringShutdown) {
+  InitializeEmptyExtensionService();
+
+  // Install an extension.
+  FilePath path = data_dir_.AppendASCII("good.crx");
+  const Extension* good = InstallCRX(path, INSTALL_NEW);
+  ASSERT_EQ(good_crx, good->id());
+
+  // Simulate shutdown.
+  service_->set_browser_terminating_for_test(true);
+
+  // Update should fail and extension should not be updated.
+  path = data_dir_.AppendASCII("good2.crx");
+  bool updated = service_->UpdateExtension(good_crx, path, GURL(), NULL);
+  ASSERT_FALSE(updated);
+  ASSERT_EQ("1.0.0.0",
+            service_->GetExtensionById(good_crx, false)->
+                version()->GetString());
 }
 
 // Test updating a not-already-installed extension - this should fail

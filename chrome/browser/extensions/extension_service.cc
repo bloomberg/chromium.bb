@@ -351,6 +351,7 @@ ExtensionService::ExtensionService(Profile* profile,
           new extensions::AppNotificationManager(profile)),
       event_routers_initialized_(false),
       update_once_all_providers_are_ready_(false),
+      browser_terminating_(false),
       app_sync_bundle_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       extension_sync_bundle_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       extension_warnings_(profile),
@@ -363,6 +364,8 @@ ExtensionService::ExtensionService(Profile* profile,
     extensions_enabled_ = false;
   }
 
+  registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
+                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
@@ -605,6 +608,13 @@ bool ExtensionService::UpdateExtension(const std::string& id,
                                        const GURL& download_url,
                                        CrxInstaller** out_crx_installer) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (browser_terminating_) {
+    LOG(WARNING) << "Skipping UpdateExtension due to browser shutdown";
+    // Leak the temp file at extension_path. We don't want to add to the disk
+    // I/O burden at shutdown, we can't rely on the I/O completing anyway, and
+    // the file is in the OS temp directory which should be cleaned up for us.
+    return false;
+  }
 
   const extensions::PendingExtensionInfo* pending_extension_info =
       pending_extension_manager()->GetById(id);
@@ -2493,6 +2503,12 @@ void ExtensionService::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
   switch (type) {
+    case chrome::NOTIFICATION_APP_TERMINATING:
+      // Shutdown has started. Don't start any more extension installs.
+      // (We cannot use ExtensionService::Shutdown() for this because it
+      // happens too late in browser teardown.)
+      browser_terminating_ = true;
+      break;
     case chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED: {
       if (profile_ !=
           content::Source<Profile>(source).ptr()->GetOriginalProfile()) {

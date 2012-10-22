@@ -50,6 +50,11 @@ class RequirementsChecker;
 // installer->set_foo();
 // installer->set_bar();
 // installer->InstallCrx(...);
+//
+// Installation is aborted if the extension service learns that Chrome is
+// terminating during the install. We can't listen for the app termination
+// notification here in this class because it can be destroyed on any thread
+// and won't safely be able to clean up UI thread notification listeners.
 class CrxInstaller
     : public SandboxedUnpackerClient,
       public ExtensionInstallPrompt::Delegate {
