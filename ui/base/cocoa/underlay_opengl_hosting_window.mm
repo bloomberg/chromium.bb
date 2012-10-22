@@ -120,7 +120,7 @@ void RootDidAddSubview(id self, SEL _cmd, NSView* subview) {
       // deeper level than the NSThemeFrame, so it is OK to have the opaques
       // go all the way to the bottom.
       const CGFloat kTopEdgeInset = 16;
-      const CGFloat kAlphaValueJustOpaqueEnough = 0.002;
+      const CGFloat kAlphaValueJustOpaqueEnough = 0.005;
 
       scoped_nsobject<NSView> leftOpaque([[OpaqueView alloc] initWithFrame:
           NSMakeRect(NSMinX(rootBounds), NSMinY(rootBounds),
