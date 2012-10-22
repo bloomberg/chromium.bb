@@ -11,7 +11,6 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -388,15 +387,6 @@ void InstantController::CommitCurrentPreview(InstantCommitType type) {
 
     // Update the page title.
     history_tab_helper->UpdateHistoryPageTitle(*entry);
-
-    // Update the favicon.
-    FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
-        preview->profile(), Profile::EXPLICIT_ACCESS);
-    if (favicon_service && entry->GetFavicon().valid &&
-        entry->GetFavicon().image.IsEmpty()) {
-      favicon_service->SetFavicons(entry->GetURL(), entry->GetFavicon().url,
-          history::FAVICON, entry->GetFavicon().image);
-    }
   }
 
   // Add a fake history entry with a non-Instant search URL, so that search
