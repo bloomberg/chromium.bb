@@ -40,11 +40,11 @@ def load_run_test_cases_results(run_test_cases_file):
                             (run_test_cases_file, str(e)))
       return None
   failure = [
-    test for test, runs in data.iteritems()
+    test for test, runs in data['test_cases'].iteritems()
     if not any(not run['returncode'] for run in runs)
   ]
   success = [
-    test for test, runs in data.iteritems()
+    test for test, runs in data['test_cases'].iteritems()
     if any(not run['returncode'] for run in runs)
   ]
   return success, failure
