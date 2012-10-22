@@ -76,6 +76,8 @@ DirectoryModel.prototype.__proto__ = cr.EventTarget.prototype;
 DirectoryModel.prototype.start = function() {
   var volumesChangeHandler = this.onMountChanged_.bind(this);
   this.volumeManager_.addEventListener('change', volumesChangeHandler);
+  this.volumeManager_.addEventListener('gdata-status-changed',
+      this.onGDataStatusChanged_.bind(this));
   this.updateRoots_();
 };
 
@@ -1083,7 +1085,7 @@ DirectoryModel.prototype.updateRootsListSelection_ = function() {
 };
 
 /**
- * @return {boolean} True if GDATA if fully mounted.
+ * @return {boolean} True if GDATA is fully mounted.
  * @private
  */
 DirectoryModel.prototype.isGDataMounted_ = function() {
@@ -1092,7 +1094,7 @@ DirectoryModel.prototype.isGDataMounted_ = function() {
 };
 
 /**
- * Handler for the VolumeManager's event.
+ * Handler for the VolumeManager's 'change' event.
  * @private
  */
 DirectoryModel.prototype.onMountChanged_ = function() {
@@ -1104,9 +1106,15 @@ DirectoryModel.prototype.onMountChanged_ = function() {
       !this.volumeManager_.isMounted(this.getCurrentRootPath())) {
     this.changeDirectory(this.getDefaultDirectory());
   }
+};
 
-  if (rootType != RootType.GDATA)
-    return;
+/**
+ * Handler for the VolumeManager's 'gdata-status-changed' event.
+ * @private
+ */
+DirectoryModel.prototype.onGDataStatusChanged_ = function() {
+  if (this.getCurrentRootType() != RootType.GDATA)
+     return;
 
   var mounted = this.isGDataMounted_();
   if (this.getCurrentDirEntry() == DirectoryModel.fakeGDataEntry_) {
