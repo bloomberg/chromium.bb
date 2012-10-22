@@ -1010,6 +1010,10 @@ void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
     return;
 
   aura::RootWindow* root = window_->GetRootWindow();
+  // |root| is NULL during tests.
+  if (!root)
+    return;
+
   ui::EventResult result = processed ? ui::ER_HANDLED : ui::ER_UNHANDLED;
   for (ScopedVector<ui::TouchEvent>::iterator iter = events.begin(),
       end = events.end(); iter != end; ++iter) {
@@ -1551,13 +1555,16 @@ ui::EventResult RenderWidgetHostViewAura::OnTouchEvent(ui::TouchEvent* event) {
 
   // Forward the touch event only if a touch point was updated, and there's a
   // touch-event handler in the page, and no other touch-event is in the queue.
-  if (point && host_->ShouldForwardTouchEvent()) {
-    host_->ForwardTouchEvent(touch_event_);
+  ui::EventResult result = ui::ER_UNHANDLED;
+  if (point) {
+    if (host_->ShouldForwardTouchEvent()) {
+      host_->ForwardTouchEvent(touch_event_);
+      result = ui::ER_CONSUMED;
+    }
     UpdateWebTouchEventAfterDispatch(&touch_event_, point);
-    return ui::ER_CONSUMED;
   }
 
-  return ui::ER_UNHANDLED;
+  return result;
 }
 
 ui::EventResult RenderWidgetHostViewAura::OnGestureEvent(

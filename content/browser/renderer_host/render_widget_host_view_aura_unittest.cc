@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/common/view_messages.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
@@ -18,6 +19,7 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/events/event.h"
 #include "ui/base/ui_base_types.h"
 
 namespace content {
@@ -141,6 +143,81 @@ TEST_F(RenderWidgetHostViewAuraTest, DestroyFullscreenOnBlur) {
 
   widget_host_ = NULL;
   view_ = NULL;
+}
+
+// Checks that touch-event state is maintained correctly.
+TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
+  view_->InitAsChild(NULL);
+  view_->Show();
+
+  // Start with no touch-event handler in the renderer.
+  widget_host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, false));
+  EXPECT_FALSE(widget_host_->ShouldForwardTouchEvent());
+
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30), 0,
+      base::Time::NowFromSystemTime() - base::Time());
+  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(20, 20), 0,
+      base::Time::NowFromSystemTime() - base::Time());
+  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(20, 20), 0,
+      base::Time::NowFromSystemTime() - base::Time());
+
+  EXPECT_EQ(ui::ER_UNHANDLED, view_->OnTouchEvent(&press));
+  EXPECT_EQ(WebKit::WebInputEvent::TouchStart, view_->touch_event_.type);
+  EXPECT_EQ(1U, view_->touch_event_.touchesLength);
+  EXPECT_EQ(WebKit::WebTouchPoint::StatePressed,
+            view_->touch_event_.touches[0].state);
+
+  EXPECT_EQ(ui::ER_UNHANDLED, view_->OnTouchEvent(&move));
+  EXPECT_EQ(WebKit::WebInputEvent::TouchMove, view_->touch_event_.type);
+  EXPECT_EQ(1U, view_->touch_event_.touchesLength);
+  EXPECT_EQ(WebKit::WebTouchPoint::StateMoved,
+            view_->touch_event_.touches[0].state);
+
+  EXPECT_EQ(ui::ER_UNHANDLED, view_->OnTouchEvent(&release));
+  EXPECT_EQ(WebKit::WebInputEvent::TouchEnd, view_->touch_event_.type);
+  EXPECT_EQ(0U, view_->touch_event_.touchesLength);
+
+  // Now install some touch-event handlers and do the same steps. The touch
+  // events should now be consumed. However, the touch-event state should be
+  // updated as before.
+  widget_host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
+  EXPECT_TRUE(widget_host_->ShouldForwardTouchEvent());
+
+  EXPECT_EQ(ui::ER_CONSUMED, view_->OnTouchEvent(&press));
+  EXPECT_EQ(WebKit::WebInputEvent::TouchStart, view_->touch_event_.type);
+  EXPECT_EQ(1U, view_->touch_event_.touchesLength);
+  EXPECT_EQ(WebKit::WebTouchPoint::StatePressed,
+            view_->touch_event_.touches[0].state);
+
+  EXPECT_EQ(ui::ER_CONSUMED, view_->OnTouchEvent(&move));
+  EXPECT_EQ(WebKit::WebInputEvent::TouchMove, view_->touch_event_.type);
+  EXPECT_EQ(1U, view_->touch_event_.touchesLength);
+  EXPECT_EQ(WebKit::WebTouchPoint::StateMoved,
+            view_->touch_event_.touches[0].state);
+
+  EXPECT_EQ(ui::ER_CONSUMED, view_->OnTouchEvent(&release));
+  EXPECT_EQ(WebKit::WebInputEvent::TouchEnd, view_->touch_event_.type);
+  EXPECT_EQ(0U, view_->touch_event_.touchesLength);
+
+  // Now start a touch event, and remove the event-handlers before the release.
+  EXPECT_EQ(ui::ER_CONSUMED, view_->OnTouchEvent(&press));
+  EXPECT_EQ(WebKit::WebInputEvent::TouchStart, view_->touch_event_.type);
+  EXPECT_EQ(1U, view_->touch_event_.touchesLength);
+  EXPECT_EQ(WebKit::WebTouchPoint::StatePressed,
+            view_->touch_event_.touches[0].state);
+
+  widget_host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, false));
+  EXPECT_FALSE(widget_host_->ShouldForwardTouchEvent());
+
+  EXPECT_EQ(ui::ER_UNHANDLED, view_->OnTouchEvent(&move));
+  EXPECT_EQ(WebKit::WebInputEvent::TouchMove, view_->touch_event_.type);
+  EXPECT_EQ(1U, view_->touch_event_.touchesLength);
+  EXPECT_EQ(WebKit::WebTouchPoint::StateMoved,
+            view_->touch_event_.touches[0].state);
+
+  EXPECT_EQ(ui::ER_UNHANDLED, view_->OnTouchEvent(&release));
+  EXPECT_EQ(WebKit::WebInputEvent::TouchEnd, view_->touch_event_.type);
+  EXPECT_EQ(0U, view_->touch_event_.touchesLength);
 }
 
 }  // namespace content

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -34,10 +35,6 @@ class Canvas;
 namespace ui {
 class InputMethod;
 class Texture;
-}
-
-namespace WebKit {
-class WebTouchEvent;
 }
 
 namespace content {
@@ -202,6 +199,8 @@ class RenderWidgetHostViewAura
   explicit RenderWidgetHostViewAura(RenderWidgetHost* host);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, TouchEventState);
+
   class WindowObserver;
   friend class WindowObserver;
 
