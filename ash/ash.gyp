@@ -235,6 +235,8 @@
         'system/user/tray_user.h',
         'system/user/update_observer.h',
         'system/user/user_observer.h',
+        'system/web_notification/message_center.cc',
+        'system/web_notification/message_center.h',
         'system/web_notification/message_center_bubble.cc',
         'system/web_notification/message_center_bubble.h',
         'system/web_notification/popup_bubble.cc',

@@ -7,14 +7,15 @@
 
 #include <set>
 
-#include "ash/system/web_notification/web_notification_tray.h"
+#include "ash/system/web_notification/message_center.h"
 #include "chrome/browser/chromeos/notifications/balloon_view_host_chromeos.h"  // MessageCallback
 #include "chrome/browser/notifications/balloon_collection_impl.h"
 
 // Wrapper on top of ::BalloonCollectionImpl to provide integration between
 // the Chrome notification UI and Ash notifications (ash::WebNotificationTray).
-class BalloonCollectionImplAsh : public BalloonCollectionImpl,
-                                 public ash::WebNotificationTray::Delegate {
+class BalloonCollectionImplAsh
+    : public BalloonCollectionImpl,
+      public message_center::MessageCenter::Delegate {
  public:
   BalloonCollectionImplAsh();
   virtual ~BalloonCollectionImplAsh();
@@ -24,7 +25,7 @@ class BalloonCollectionImplAsh : public BalloonCollectionImpl,
                    Profile* profile) OVERRIDE;
   virtual bool HasSpace() const OVERRIDE;
 
-  // Overridden from WebNotificationTray::Delegate.
+  // Overridden from MessageCenter::Delegate.
   virtual void NotificationRemoved(const std::string& notifcation_id) OVERRIDE;
   virtual void DisableExtension(const std::string& notifcation_id) OVERRIDE;
   virtual void DisableNotificationsFromSource(

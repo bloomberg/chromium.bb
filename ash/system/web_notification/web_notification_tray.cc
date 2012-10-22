@@ -14,7 +14,6 @@
 #include "ash/system/web_notification/popup_bubble.h"
 #include "ash/system/web_notification/web_notification.h"
 #include "ash/system/web_notification/web_notification_bubble.h"
-#include "ash/system/web_notification/web_notification_list.h"
 #include "ash/wm/shelf_layout_manager.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
@@ -35,12 +34,6 @@ const int kTrayContainerHorizontalPaddingVerticalAlignment = 0;
 const int kPaddingFromLeftEdgeOfSystemTrayBottomAlignment = 8;
 const int kPaddingFromTopEdgeOfSystemTrayVerticalAlignment = 10;
 
-std::string GetNotificationText(int notification_count) {
-  if (notification_count >= 100)
-    return "99+";
-  return base::StringPrintf("%d", notification_count);
-}
-
 }  // namespace
 
 using message_center::MessageCenterBubble;
@@ -48,7 +41,6 @@ using message_center::PopupBubble;
 using message_center::TrayBubbleView;
 using message_center::WebNotification;
 using message_center::WebNotificationBubble;
-using message_center::WebNotificationList;
 
 namespace ash {
 
@@ -95,65 +87,19 @@ WebNotificationTray::WebNotificationTray(
     internal::StatusAreaWidget* status_area_widget)
     : internal::TrayBackgroundView(status_area_widget),
       button_(NULL),
-      delegate_(NULL),
       show_message_center_on_unlock_(false) {
-  notification_list_.reset(new WebNotificationList(this));
-
+  message_center_.reset(new message_center::MessageCenter(this));
   button_ = new views::ImageButton(this);
   tray_container()->AddChildView(button_);
-
   UpdateTray();
 }
 
 WebNotificationTray::~WebNotificationTray() {
+  // message_center_ has a weak pointer to this; destroy it early.
+  message_center_.reset();
   // Release any child views that might have back pointers before ~View().
-  notification_list_.reset();
   message_center_bubble_.reset();
   popup_bubble_.reset();
-}
-
-void WebNotificationTray::SetDelegate(Delegate* delegate) {
-  DCHECK(!delegate_);
-  delegate_ = delegate;
-}
-
-// Add/Update/RemoveNotification are called by the client code, i.e the
-// Delegate implementation or its proxy.
-
-void WebNotificationTray::AddNotification(const std::string& id,
-                                          const string16& title,
-                                          const string16& message,
-                                          const string16& display_source,
-                                          const std::string& extension_id) {
-  notification_list_->AddNotification(
-      id, title, message, display_source, extension_id);
-  UpdateTrayAndBubble();
-  ShowPopupBubble();
-}
-
-void WebNotificationTray::UpdateNotification(const std::string& old_id,
-                                             const std::string& new_id,
-                                             const string16& title,
-                                             const string16& message) {
-  notification_list_->UpdateNotificationMessage(old_id, new_id, title, message);
-  UpdateTrayAndBubble();
-  ShowPopupBubble();
-}
-
-void WebNotificationTray::RemoveNotification(const std::string& id) {
-  if (!notification_list_->RemoveNotification(id))
-    return;
-  if (!notification_list_->HasPopupNotifications())
-    HidePopupBubble();
-  UpdateTrayAndBubble();
-}
-
-void WebNotificationTray::SetNotificationImage(const std::string& id,
-                                               const gfx::ImageSkia& image) {
-  if (!notification_list_->SetNotificationImage(id, image))
-    return;
-  UpdateTrayAndBubble();
-  ShowPopupBubble();
 }
 
 void WebNotificationTray::ShowMessageCenterBubble() {
@@ -164,10 +110,10 @@ void WebNotificationTray::ShowMessageCenterBubble() {
     return;
   }
   // Indicate that the message center is visible. Clears the unread count.
-  notification_list_->SetMessageCenterVisible(true);
+  message_center_->SetMessageCenterVisible(true);
   UpdateTray();
   HidePopupBubble();
-  MessageCenterBubble* bubble = new MessageCenterBubble(this);
+  MessageCenterBubble* bubble = new MessageCenterBubble(message_center_.get());
   message_center_bubble_.reset(
       new internal::WebNotificationBubbleWrapper(this, bubble));
 
@@ -180,7 +126,7 @@ void WebNotificationTray::HideMessageCenterBubble() {
     return;
   message_center_bubble_.reset();
   show_message_center_on_unlock_ = false;
-  notification_list_->SetMessageCenterVisible(false);
+  message_center_->SetMessageCenterVisible(false);
   UpdateTray();
   status_area_widget()->SetHideSystemNotifications(false);
   GetShelfLayoutManager()->UpdateAutoHideState();
@@ -203,10 +149,10 @@ void WebNotificationTray::ShowPopupBubble() {
   UpdateTray();
   if (popup_bubble()) {
     popup_bubble()->bubble()->ScheduleUpdate();
-  } else if (notification_list_->HasPopupNotifications()) {
+  } else if (message_center_->HasPopupNotifications()) {
     popup_bubble_.reset(
         new internal::WebNotificationBubbleWrapper(
-            this, new PopupBubble(this)));
+            this, new PopupBubble(message_center_.get())));
   }
 }
 
@@ -266,63 +212,6 @@ string16 WebNotificationTray::GetAccessibleNameForTray() {
       IDS_ASH_WEB_NOTIFICATION_TRAY_ACCESSIBLE_NAME);
 }
 
-void WebNotificationTray::SendRemoveNotification(const std::string& id) {
-  // If this is the only notification in the list, close the bubble.
-  if (notification_list_->notifications().size() == 1 &&
-      notification_list_->HasNotification(id)) {
-    HideMessageCenterBubble();
-  }
-  if (delegate_)
-    delegate_->NotificationRemoved(id);
-}
-
-void WebNotificationTray::SendRemoveAllNotifications() {
-  HideMessageCenterBubble();
-  if (delegate_) {
-    const WebNotificationList::Notifications& notifications =
-        notification_list_->notifications();
-    for (WebNotificationList::Notifications::const_iterator loopiter =
-             notifications.begin();
-         loopiter != notifications.end(); ) {
-      WebNotificationList::Notifications::const_iterator curiter = loopiter++;
-      std::string notification_id = curiter->id;
-      // May call RemoveNotification and erase curiter.
-      delegate_->NotificationRemoved(notification_id);
-    }
-  }
-}
-
-// When we disable notifications, we remove any existing matching
-// notifications to avoid adding complicated UI to re-enable the source.
-void WebNotificationTray::DisableNotificationByExtension(
-    const std::string& id) {
-  if (delegate_)
-    delegate_->DisableExtension(id);
-  // Will call SendRemoveNotification for each matching notification.
-  notification_list_->SendRemoveNotificationsByExtension(id);
-}
-
-void WebNotificationTray::DisableNotificationByUrl(const std::string& id) {
-  if (delegate_)
-    delegate_->DisableNotificationsFromSource(id);
-  // Will call SendRemoveNotification for each matching notification.
-  notification_list_->SendRemoveNotificationsBySource(id);
-}
-
-void WebNotificationTray::ShowNotificationSettings(const std::string& id) {
-  if (delegate_)
-    delegate_->ShowSettings(id);
-}
-
-void WebNotificationTray::OnNotificationClicked(const std::string& id) {
-  if (delegate_)
-    delegate_->OnClicked(id);
-}
-
-WebNotificationList* WebNotificationTray::GetNotificationList() {
-  return notification_list_.get();
-}
-
 void WebNotificationTray::HideBubbleWithView(
     const TrayBubbleView* bubble_view) {
   if (message_center_bubble() &&
@@ -369,6 +258,24 @@ void WebNotificationTray::HideBubble(const TrayBubbleView* bubble_view) {
   HideBubbleWithView(bubble_view);
 }
 
+void WebNotificationTray::MessageCenterChanged(bool new_notification) {
+  if (message_center_bubble()) {
+    if (message_center_->NotificationCount() == 0)
+      HideMessageCenterBubble();
+    else
+      message_center_bubble()->bubble()->ScheduleUpdate();
+  }
+  if (popup_bubble()) {
+    if (message_center_->NotificationCount() == 0)
+      HidePopupBubble();
+    else
+      popup_bubble()->bubble()->ScheduleUpdate();
+  }
+  UpdateTray();
+  if (new_notification)
+    ShowPopupBubble();
+}
+
 void WebNotificationTray::ButtonPressed(views::Button* sender,
                                         const ui::Event& event) {
   DCHECK(sender == button_);
@@ -387,7 +294,7 @@ void WebNotificationTray::ToggleMessageCenterBubble() {
 
 void WebNotificationTray::UpdateTray() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  if (notification_list()->unread_count() > 0) {
+  if (message_center_->UnreadNotificationCount() > 0) {
     button_->SetImage(views::CustomButton::BS_NORMAL, rb.GetImageSkiaNamed(
         IDR_AURA_UBER_TRAY_NOTIFY_BUTTON_ACTIVE_NORMAL));
     button_->SetImage(views::CustomButton::BS_HOT, rb.GetImageSkiaNamed(
@@ -409,26 +316,10 @@ void WebNotificationTray::UpdateTray() {
   bool is_visible =
       (status_area_widget()->login_status() != user::LOGGED_IN_NONE) &&
       (status_area_widget()->login_status() != user::LOGGED_IN_LOCKED) &&
-      (!notification_list()->notifications().empty());
+      (message_center_->NotificationCount() > 0);
   SetVisible(is_visible);
   Layout();
   SchedulePaint();
-}
-
-void WebNotificationTray::UpdateTrayAndBubble() {
-  if (message_center_bubble()) {
-    if (notification_list_->notifications().size() == 0)
-      HideMessageCenterBubble();
-    else
-      message_center_bubble()->bubble()->ScheduleUpdate();
-  }
-  if (popup_bubble()) {
-    if (notification_list_->notifications().size() == 0)
-      HidePopupBubble();
-    else
-      popup_bubble()->bubble()->ScheduleUpdate();
-  }
-  UpdateTray();
 }
 
 bool WebNotificationTray::ClickedOutsideBubble() {

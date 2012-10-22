@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/ash/balloon_view_ash.h"
 
 #include "ash/shell.h"
+#include "ash/system/web_notification/message_center.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "base/logging.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -28,8 +29,8 @@ namespace {
 
 const int kNotificationIconImageSize = 32;
 
-ash::WebNotificationTray* GetWebNotificationTray() {
-  return ash::Shell::GetInstance()->GetWebNotificationTray();
+message_center::MessageCenter* GetMessageCenter() {
+  return ash::Shell::GetInstance()->GetWebNotificationTray()->message_center();
 }
 
 }  // namespace
@@ -67,7 +68,7 @@ class BalloonViewAsh::IconFetcher : public content::WebContentsObserver {
                             const std::vector<SkBitmap>& bitmaps) {
     if (image_url != icon_url_ || id != request_id_ || bitmaps.empty())
       return;
-    GetWebNotificationTray()->SetNotificationImage(
+    GetMessageCenter()->SetNotificationImage(
         notification_id_, gfx::ImageSkia(bitmaps[0]));
   }
 
@@ -93,21 +94,21 @@ void BalloonViewAsh::Show(Balloon* balloon) {
   const Notification& notification = balloon_->notification();
   current_notification_id_ = notification.notification_id();
   std::string extension_id = GetExtensionId(balloon);
-  GetWebNotificationTray()->AddNotification(current_notification_id_,
-                                            notification.title(),
-                                            notification.body(),
-                                            notification.display_source(),
-                                            extension_id);
+  GetMessageCenter()->AddNotification(current_notification_id_,
+                                      notification.title(),
+                                      notification.body(),
+                                      notification.display_source(),
+                                      extension_id);
   FetchIcon(notification);
 }
 
 void BalloonViewAsh::Update() {
   const Notification& notification = balloon_->notification();
   std::string new_notification_id = notification.notification_id();
-  GetWebNotificationTray()->UpdateNotification(current_notification_id_,
-                                               new_notification_id,
-                                               notification.title(),
-                                               notification.body());
+  GetMessageCenter()->UpdateNotification(current_notification_id_,
+                                         new_notification_id,
+                                         notification.title(),
+                                         notification.body());
   current_notification_id_ = new_notification_id;
   FetchIcon(notification);
 }
@@ -119,7 +120,7 @@ void BalloonViewAsh::Close(bool by_user) {
   Notification notification(balloon_->notification());  // Copy notification
   collection_->OnBalloonClosed(balloon_);  // Deletes balloon.
   notification.Close(by_user);
-  GetWebNotificationTray()->RemoveNotification(notification.notification_id());
+  GetMessageCenter()->RemoveNotification(notification.notification_id());
 }
 
 gfx::Size BalloonViewAsh::GetSize() const {
@@ -132,7 +133,7 @@ BalloonHost* BalloonViewAsh::GetHost() const {
 
 void BalloonViewAsh::FetchIcon(const Notification& notification) {
   if (!notification.icon().isNull()) {
-    ash::Shell::GetInstance()->GetWebNotificationTray()->SetNotificationImage(
+    GetMessageCenter()->SetNotificationImage(
         notification.notification_id(), notification.icon());
     return;
   }

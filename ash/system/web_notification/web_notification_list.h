@@ -44,6 +44,7 @@ class ASH_EXPORT WebNotificationList {
   explicit WebNotificationList(Delegate* delegate);
   virtual ~WebNotificationList();
 
+  // Affects whether or not a message has been "read".
   void SetMessageCenterVisible(bool visible);
 
   void AddNotification(const std::string& id,
@@ -84,7 +85,7 @@ class ASH_EXPORT WebNotificationList {
   void MarkPopupsAsShown();
 
   const Notifications& notifications() const { return notifications_; }
-  int unread_count() const { return unread_count_; }
+  size_t unread_count() const { return unread_count_; }
 
   static const size_t kMaxVisiblePopupNotifications;
   static const size_t kMaxVisibleMessageCenterNotifications;
@@ -106,7 +107,7 @@ class ASH_EXPORT WebNotificationList {
   Delegate* delegate_;
   Notifications notifications_;
   bool message_center_visible_;
-  int unread_count_;
+  size_t unread_count_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationList);
 };

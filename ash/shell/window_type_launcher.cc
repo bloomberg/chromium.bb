@@ -329,7 +329,7 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
 
   } else if (sender == show_web_notification_) {
     ash::Shell::GetPrimaryRootWindowController()->status_area_widget()->
-        web_notification_tray()->AddNotification(
+        web_notification_tray()->message_center()->AddNotification(
             "id0",
             ASCIIToUTF16("Test Shell Web Notification"),
             ASCIIToUTF16("Notification message body."),

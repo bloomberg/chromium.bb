@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/ash/balloon_collection_impl_ash.h"
 
 #include "ash/shell.h"
+#include "ash/system/web_notification/web_notification_tray.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -18,7 +19,8 @@
 #include "chrome/browser/ui/views/notifications/balloon_view_views.h"
 
 BalloonCollectionImplAsh::BalloonCollectionImplAsh() {
-  ash::Shell::GetInstance()->GetWebNotificationTray()->SetDelegate(this);
+  ash::Shell::GetInstance()->GetWebNotificationTray()->message_center()->
+      SetDelegate(this);
 }
 
 BalloonCollectionImplAsh::~BalloonCollectionImplAsh() {
