@@ -9,12 +9,15 @@
  * @param {MetadataCache} metadataCache MetadataCache instance.
  * @param {cr.ui.ArrayDataModel} dataModel Data model.
  * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
+ * @param {function(string)} onThumbnailError Thumbnail load error handler.
  * @return {Element} Ribbon element.
  * @constructor
  */
-function Ribbon(document, metadataCache, dataModel, selectionModel) {
+function Ribbon(document, metadataCache, dataModel, selectionModel,
+                onThumbnailError) {
   var self = document.createElement('div');
-  Ribbon.decorate(self, metadataCache, dataModel, selectionModel);
+  Ribbon.decorate(self,
+      metadataCache, dataModel, selectionModel, onThumbnailError);
   return self;
 }
 
@@ -30,16 +33,17 @@ Ribbon.prototype.__proto__ = HTMLDivElement.prototype;
  * @param {MetadataCache} metadataCache MetadataCache instance.
  * @param {cr.ui.ArrayDataModel} dataModel Data model.
  * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
+ * @param {function(string)} onThumbnailError Thumbnail load error handler.
  */
-Ribbon.decorate = function(self, metadataCache, dataModel, selectionModel) {
+Ribbon.decorate = function(self, metadataCache, dataModel, selectionModel,
+                           onThumbnailError) {
   self.__proto__ = Ribbon.prototype;
   self.metadataCache_ = metadataCache;
   self.dataModel_ = dataModel;
   self.selectionModel_ = selectionModel;
+  self.onThumbnailError_ = onThumbnailError;
 
   self.className = 'ribbon';
-
-  self.renderCache_ = {};
 };
 
 /**
@@ -49,12 +53,25 @@ Ribbon.decorate = function(self, metadataCache, dataModel, selectionModel) {
 Ribbon.ITEMS_COUNT = 5;
 
 /**
+ * Force redraw the ribbon.
+ */
+Ribbon.prototype.redraw = function() {
+  this.onSelection_();
+};
+
+/**
+ * Clear all cached data to force full redraw on the next selection change.
+ */
+Ribbon.prototype.reset = function() {
+  this.renderCache_ = {};
+  this.firstVisibleIndex_ = 0;
+  this.lastVisibleIndex_ = -1;  // Zero thumbnails
+};
+
+/**
  * Enable the ribbon.
  */
 Ribbon.prototype.enable = function() {
-  this.firstVisibleIndex_ = 0;
-  this.lastVisibleIndex_ = -1;  // Zero thumbnails
-
   this.onContentBound_ = this.onContentChange_.bind(this);
   this.dataModel_.addEventListener('content', this.onContentBound_);
 
@@ -64,7 +81,8 @@ Ribbon.prototype.enable = function() {
   this.onSelectionBound_ = this.onSelection_.bind(this);
   this.selectionModel_.addEventListener('change', this.onSelectionBound_);
 
-  this.onSelection_();
+  this.reset();
+  this.redraw();
 };
 
 /**
@@ -313,7 +331,10 @@ Ribbon.prototype.renderThumbnail_ = function(index) {
  */
 Ribbon.prototype.setThumbnailImage_ = function(thumbnail, url, metadata) {
   new ThumbnailLoader(url, metadata).load(
-     thumbnail.querySelector('.image-wrapper'), true /* fill */);
+      thumbnail.querySelector('.image-wrapper'),
+      true /* fill */,
+      null /* success callback */,
+      this.onThumbnailError_.bind(null, url));
 };
 
 /**

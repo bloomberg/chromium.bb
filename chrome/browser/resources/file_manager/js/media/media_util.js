@@ -141,16 +141,18 @@ ThumbnailLoader.prototype.getHeight = function() {
 /**
  * Load an image but do not attach it.
  *
- * @param {function} callback Callback.
+ * @param {function(boolean)} callback Callback, parameter is true if the image
+ *   has loaded successfully or a stock icon has been used.
  */
 ThumbnailLoader.prototype.loadDetachedImage = function(callback) {
   if (!this.thumbnailUrl_) {
-    callback();
+    callback(true);
     return;
   }
 
   this.image_ = new Image();
-  this.image_.onload = this.image_.onerror = callback;
+  this.image_.onload = callback.bind(null, true);
+  this.image_.onerror = callback.bind(null, false);
   this.image_.src = this.thumbnailUrl_;
 };
 
@@ -160,7 +162,7 @@ ThumbnailLoader.prototype.loadDetachedImage = function(callback) {
  * @param {boolean} fill True for fill, false for fit.
  */
 ThumbnailLoader.prototype.attachImage = function(container, fill) {
-  if (!this.image_) {
+  if (!this.hasValidImage()) {
     container.setAttribute('generic-thumbnail', this.mediaType_);
     return;
   }

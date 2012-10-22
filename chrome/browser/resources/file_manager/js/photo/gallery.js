@@ -165,6 +165,16 @@ Gallery.prototype.initListeners_ = function() {
           Gallery.FADE_TIMEOUT);
   this.document_.body.addEventListener('touchend', initiateFading);
   this.document_.body.addEventListener('touchcancel', initiateFading);
+
+  var thumbnailObserverId = this.metadataCache_.addObserver(
+      this.context_.curDirEntry,
+      MetadataCache.CHILDREN,
+      'thumbnail',
+      this.updateThumbnails_.bind(this));
+
+  this.document_.defaultView.addEventListener('unload',
+      this.metadataCache_.removeObserver.bind(
+          this.metadataCache_, thumbnailObserverId));
 };
 
 /**
@@ -202,6 +212,8 @@ Gallery.prototype.initDom_ = function() {
   this.prompt_ = new ImageEditor.Prompt(
       this.container_, this.displayStringFunction_);
 
+  var onThumbnailError = this.context_.onThumbnailError || function() {};
+
   if (this.context_.allowMosaic) {
     this.modeButton_ = util.createChild(this.toolbar_, 'button mode');
     this.modeButton_.addEventListener('click',
@@ -209,13 +221,14 @@ Gallery.prototype.initDom_ = function() {
 
     this.mosaicMode_ = new MosaicMode(content,
         this.dataModel_, this.selectionModel_, this.metadataCache_,
-        this.toggleMode_.bind(this, null));
+        this.toggleMode_.bind(this, null), onThumbnailError);
   }
 
   this.slideMode_ = new SlideMode(this.container_, content,
       this.toolbar_, this.prompt_,
-      this.dataModel_, this.selectionModel_,
-      this.context_, this.toggleMode_.bind(this), this.displayStringFunction_);
+      this.dataModel_, this.selectionModel_, this.context_,
+      this.toggleMode_.bind(this), onThumbnailError,
+      this.displayStringFunction_);
 
   var deleteButton = this.document_.createElement('div');
   deleteButton.className = 'button delete';
@@ -786,4 +799,16 @@ Gallery.prototype.updateShareMenu_ = function() {
     ImageUtil.setAttribute(this.shareButton_, 'disabled', empty);
     this.shareMenu_.hidden = wasHidden || empty;
   }.bind(this));
+};
+
+/**
+ * Update thumbnails.
+ * @private
+ */
+Gallery.prototype.updateThumbnails_ = function() {
+  if (this.currentMode_ == this.slideMode_)
+    this.slideMode_.updateThumbnails();
+
+  if (this.mosaicMode_)
+    this.mosaicMode_.getMosaic().reload();
 };

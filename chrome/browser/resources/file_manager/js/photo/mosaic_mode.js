@@ -8,12 +8,13 @@
  * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
  * @param {MetadataCache} metadataCache Metadata cache.
  * @param {function} toggleMode Function to switch to the Slide mode.
+ * @param {function(string)} onThumbnailError Thumbnail load error handler.
  * @constructor
  */
 function MosaicMode(container, dataModel, selectionModel,
-                    metadataCache, toggleMode) {
+                    metadataCache, toggleMode, onThumbnailError) {
   this.mosaic_ = new Mosaic(container.ownerDocument,
-      dataModel, selectionModel, metadataCache);
+      dataModel, selectionModel, metadataCache, onThumbnailError);
   container.appendChild(this.mosaic_);
 
   this.toggleMode_ = toggleMode;
@@ -65,12 +66,15 @@ MosaicMode.prototype.onKeyDown = function(event) {
  * @param {cr.ui.ArrayDataModel} dataModel Data model.
  * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
  * @param {MetadataCache} metadataCache Metadata cache.
+ * @param {function(string)} onThumbnailError Thumbnail load error handler.
  * @return {Element} Mosaic element.
  * @constructor
  */
-function Mosaic(document, dataModel, selectionModel, metadataCache) {
+function Mosaic(document, dataModel, selectionModel, metadataCache,
+                onThumbnailError) {
   var self = document.createElement('div');
-  Mosaic.decorate(self, dataModel, selectionModel, metadataCache);
+  Mosaic.decorate(self,
+      dataModel, selectionModel, metadataCache, onThumbnailError);
   return self;
 }
 
@@ -91,14 +95,17 @@ Mosaic.LAYOUT_DELAY = 200;
  * @param {cr.ui.ArrayDataModel} dataModel Data model.
  * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
  * @param {MetadataCache} metadataCache Metadata cache.
+ * @param {function(string)} onThumbnailError Thumbnail load error handler.
  */
-Mosaic.decorate = function(self, dataModel, selectionModel, metadataCache) {
+Mosaic.decorate = function(self, dataModel, selectionModel, metadataCache,
+                           onThumbnailError) {
   self.__proto__ = Mosaic.prototype;
   self.className = 'mosaic';
 
   self.dataModel_ = dataModel;
   self.selectionModel_ = selectionModel;
   self.metadataCache_ = metadataCache;
+  self.onThumbnailError_ = onThumbnailError;
 
   // Initialization is completed lazily on the first call to |init|.
 };
@@ -219,12 +226,28 @@ Mosaic.prototype.loadTiles_ = function(tiles, opt_callback) {
  * Load a single tile.
  *
  * @param {Mosaic.Tile} tile Tile.
- * @param {function} opt_callback Completion callback.
+ * @param {function} callback Completion callback.
  * @private
  */
-Mosaic.prototype.loadTile_ = function(tile, opt_callback) {
-  this.metadataCache_.get(tile.getItem().getUrl(), Gallery.METADATA_TYPE,
-      function(metadata) { tile.load(metadata, opt_callback) });
+Mosaic.prototype.loadTile_ = function(tile, callback) {
+  var url = tile.getItem().getUrl();
+  var onImageLoaded = function(success) {
+    if (!success && this.onThumbnailError_) {
+      this.onThumbnailError_(url);
+    }
+    callback();
+  }.bind(this);
+  this.metadataCache_.get(url, Gallery.METADATA_TYPE,
+      function(metadata) { tile.load(metadata, onImageLoaded) });
+};
+
+/**
+ * Reload all tiles.
+ */
+Mosaic.prototype.reload = function() {
+  this.layoutModel_.reset_();
+  this.tiles_.forEach(function(t) { t.markUnloaded() });
+  this.loadTiles_(this.tiles_);
 };
 
 /**
@@ -1409,19 +1432,26 @@ Mosaic.Tile.prototype.getAspectRatio = function() { return this.aspectRatio_ };
 Mosaic.Tile.prototype.isLoaded = function() { return !!this.maxContentHeight_ };
 
 /**
+ * Mark the tile as not loaded to prevent it from participating in the layout.
+ */
+Mosaic.Tile.prototype.markUnloaded = function() {
+  this.maxContentHeight_ = 0;
+};
+
+/**
  * Load the thumbnail image into the tile.
  *
  * @param {object} metadata Metadata object.
- * @param {function} opt_callback Completion callback.
+ * @param {function} callback Completion callback.
  */
-Mosaic.Tile.prototype.load = function(metadata, opt_callback) {
-  this.maxContentHeight_ = 0;  // Prevent layout of this while loading.
+Mosaic.Tile.prototype.load = function(metadata, callback) {
+  this.markUnloaded();
   this.left_ = null;  // Mark as not laid out.
 
   this.thumbnailLoader_ =
       new ThumbnailLoader(this.getItem().getUrl(), metadata);
 
-  this.thumbnailLoader_.loadDetachedImage(function() {
+  this.thumbnailLoader_.loadDetachedImage(function(success) {
     if (this.thumbnailLoader_.hasValidImage()) {
       var width = this.thumbnailLoader_.getWidth();
       var height = this.thumbnailLoader_.getHeight();
@@ -1443,7 +1473,7 @@ Mosaic.Tile.prototype.load = function(metadata, opt_callback) {
       this.aspectRatio_ = 1;
     }
 
-    if (opt_callback) opt_callback();
+    callback(success);
   }.bind(this));
 };
 
