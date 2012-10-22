@@ -67,6 +67,7 @@ def main():
   if options.password == '-':
     options.password = sys.stdin.readline().strip()
 
+  print('Connecting to %s' % options.server)
   # Always try un-authenticated first.
   # TODO(maruel): Use OAuth2 properly so we don't hit rate-limiting on login
   # attempts.
