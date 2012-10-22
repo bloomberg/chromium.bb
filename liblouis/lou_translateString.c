@@ -241,6 +241,41 @@ lou_translate (const char *tableList, const widechar
   return goodTrans;
 }
 
+int EXPORT_CALL
+lou_translatePrehyphenated (const char* tableList,
+                            const widechar* inbufx, int* inlen,
+                            widechar* outbuf, int* outlen,
+                            char* typeform, char* spacing,
+                            int* outputPos, int* inputPos, int* cursorPos,
+                            char* inputHyphens, char* outputHyphens,
+                            int modex) {
+  int rv = 1;
+  int* alloc_inputPos = NULL;
+  if (inputHyphens != NULL) {
+      if (outputHyphens == NULL)
+        return 0;
+      if (inputPos == NULL) {
+        alloc_inputPos = malloc(*outlen * sizeof(int));
+        inputPos = alloc_inputPos; }}
+  if (lou_translate(tableList, inbufx, inlen, outbuf, outlen, typeform,
+                    spacing, outputPos, inputPos, cursorPos, modex)) {
+    if (inputHyphens != NULL) {
+      int inpos = 0;
+      for (int outpos = 0; outpos < *outlen; outpos++) {
+        int new_inpos = inputPos[outpos];
+        if (new_inpos < inpos) {
+          rv = 0;
+          break; }
+        if (new_inpos > inpos)
+          outputHyphens[outpos] = inputHyphens[new_inpos];
+        else
+          outputHyphens[outpos] = '0';
+        inpos = new_inpos; }}}
+  if (alloc_inputPos != NULL)
+    free(alloc_inputPos);
+  return rv;
+}
+
 static TranslationTableOpcode indicOpcode;
 static const TranslationTableRule *indicRule;
 static int dontContract = 0;
