@@ -33,7 +33,7 @@ class CommonSwitches {
             FeatureSwitch::DEFAULT_DISABLED),
         sideload_wipeout(
             switches::kSideloadWipeout,
-            FeatureSwitch::DEFAULT_ENABLED),
+            FeatureSwitch::DEFAULT_DISABLED),
         prompt_for_external_extensions(
             switches::kPromptForExternalExtensions,
             FeatureSwitch::DEFAULT_ENABLED)
