@@ -2,15 +2,31 @@
 <html>
   <head>
   <meta charset="utf-8">
-  <title>Font Settings Sample Extension</title>
+  <title>Advanced Font Settings</title>
+  <script src="js/cr.js"></script>
+  <script src="js/cr/event_target.js"></script>
+  <script src="js/cr/ui.js"></script>
+  <script src="js/cr/ui/overlay.js"></script>
+  <script src="js/cr/ui/array_data_model.js"></script>
+  <script src="js/cr/ui/list_item.js"></script>
+  <script src="js/cr/ui/list_selection_controller.js"></script>
+  <script src="js/cr/ui/list_selection_model.js"></script>
+  <script src="js/cr/ui/list_single_selection_model.js"></script>
+  <script src="js/event_tracker.js"></script>
+  <script src="js/cr/ui/touch_handler.js"></script>
+  <script src="js/cr/ui/list.js"></script>
+  <script src="js/util.js"></script>
   <script src="options.js"></script>
   <link rel="stylesheet" href="css/chrome_shared.css">
+  <link rel="stylesheet" href="css/overlay.css">
   <link rel="stylesheet" href="css/widgets.css">
   <link rel="stylesheet" href="css/uber_shared.css">
+  <link rel="stylesheet" href="css/list.css">
   <style>
     body.uber-frame {
       font-family: sans-serif;
       -webkit-margin-start: 30px;
+      -webkit-margin-end: 30px;
       font-size: 14px;
     }
 
@@ -18,137 +34,211 @@
       max-width: none;
     }
 
-    .font-setting-container {
-      display: -webkit-box;
+    body.uber-frame footer {
+      max-width: none;
+      min-width: 0;
+      border-top: 1px solid #DDD;
     }
 
     .font-input-div {
-      -webkit-margin-end: 3em;
-      min-width: 12em;
+      -webkit-margin-end: 1em;
+      width: 16em;
+    }
+
+    .preview-box {
+      background-color: white;
+      margin-top: 10px;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .bordered {
+      border: 1px solid #CCC;
+    }
+
+    input[type=range] {
+      width: 14em;
+    }
+
+    #right-pane {
+      -webkit-margin-start: 1em;
+      overflow-x: auto;
+      -webkit-box-flex: 1;
+    }
+
+    .font-setting-group {
+      display: -webkit-box;
+      -webkit-box-orient: horizontal;
+      margin: 2em;
+    }
+
+    .font-setting {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-box-flex: 1;
+      -webkit-margin-start: 1em;
+    }
+
+    .font-family-and-size {
+      display: -webkit-box;
+      -webkit-box-orient: horizontal;
+    }
+
+    .font-setting-label {
+      font-weight: bold;
+      width: 6em;
+      text-align: end;
+    }
+
+    .font-size-slider {
+      -webkit-margin-end: 1em;
+    }
+
+    .overlay {
+      z-index: 100;
     }
   </style>
 </head>
-<body class="uber-frame">
-  <div style="min-width: 600px;">
-    <h1>Font Settings Sample Extension</h1>
-    <section>
-    <h3>Script</h3>
-    <div>
-    <select id="scriptList">
-      <option value="Zyyy">Default</option>
-      <option value="Arab">Arabic</option>
-      <option value="Armn">Armenian</option>
-      <option value="Beng">Bengali</option>
-      <option value="Cher">Cherokee</option>
-      <option value="Cyrl">Cyrillic</option>
-      <option value="Deva">Devanagari</option>
-      <option value="Ethi">Ethiopic</option>
-      <option value="Geor">Georgian</option>
-      <option value="Grek">Greek</option>
-      <option value="Gujr">Gujarati</option>
-      <option value="Guru">Gurmukhi</option>
-      <option value="Hebr">Hebrew</option>
-      <option value="Jpan">Japanese</option>
-      <option value="Knda">Kannada</option>
-      <option value="Khmr">Khmer</option>
-      <option value="Hang">Korean</option>
-      <option value="Laoo">Lao</option>
-      <option value="Mlym">Malayalam</option>
-      <option value="Mong">Mongolian</option>
-      <option value="Mymr">Myanmar</option>
-      <option value="Orya">Oriya</option>
-      <option value="Hans">Simplified Chinese</option>
-      <option value="Sinh">Sinhala</option>
-      <option value="Taml">Tamil</option>
-      <option value="Telu">Telugu</option>
-      <option value="Thaa">Thaana</option>
-      <option value="Thai">Thai</option>
-      <option value="Tibt">Tibetan</option>
-      <option value="Hant">Traditional Chinese</option>
-      <option value="Cans">Unified Canadian Aboriginal Syllabics</option>
-      <option value="Yiii">Yi</option>
-    </select>
-    </div>
-    <div style="margin-left: 20px; overflow-x: auto;">
-      <section>
-      <h3>Standard</h3>
-      <div class="font-setting-container">
-        <div class="font-input-div">
-          <select id="standardFontList"></select>
+<body class="uber-frame" style="background-color: #f2f2f2">
+  <div id="overlay-container" class="overlay transparent" hidden>
+    <div id="reset-overlay" class="page">
+      <div class="close-button"></div>
+      <div id="reset-this-script-overlay-dialog" hidden>
+        <h1>Reset</h1>
+        <div id="reset-this-script-overlay-dialog-content" class="content-area">
         </div>
-        <div id="standardFontSample" style="font-family: standard;">
-          Lorem ipsum dolor sit amat.
+        <div class="action-area">
+          <div class="button-strip">
+            <button id="reset-this-script-cancel">Cancel</button>
+            <button id="reset-this-script-ok">Reset</button>
+          </div>
         </div>
       </div>
-      </section>
-      <section>
-      <h3>Serif</h3>
-      <div class="font-setting-container">
-        <div class="font-input-div">
-          <select id="serifFontList"></select>
+      <div id="reset-all-scripts-overlay-dialog" hidden>
+        <h1>Reset</h1>
+        <div class="content-area">
+          Are you sure you want to reset all settings?
         </div>
-        <div id="serifFontSample" style="font-family: serif;">
-          Lorem ipsum dolor sit amat.
+        <div class="action-area">
+          <div class="button-strip">
+            <button id="reset-all-cancel">Cancel</button>
+            <button id="reset-all-ok">Reset</button>
+          </div>
         </div>
-      </div>
-      </section>
-      <section>
-      <h3>Sans-Serif</h3>
-      <div class="font-setting-container">
-        <div class="font-input-div">
-          <select id="sansSerifFontList"></select>
-        </div>
-        <div id="sansSerifFontSample" style="font-family: sans-serif;">
-          Lorem ipsum dolor sit amat.
-        </div>
-      </div>
-      </section>
-      <section>
-      <h3>Fixed</h3>
-      <div class="font-setting-container">
-        <div class="font-input-div">
-          <select id="fixedFontList"></select>
-        </div>
-        <div id="fixedFontSample" style="font-family: monospace;">
-          Lorem ipsum dolor sit amat.
-        </div>
-      </div>
-      </section>
-    </div>
-    </section>
-    <section>
-    <h3>Default Font Size</h3>
-    <div class="font-setting-container">
-      <div class="font-input-div">
-        <input type="number" id="defaultFontSize" min="0" max="99">
       </div>
     </div>
-    </section>
-    <section>
-    <h3>Default Fixed Font Size</h3>
-    <div class="font-setting-container">
-      <div class="font-input-div">
-        <input type="number" id="defaultFixedFontSize" min="0" max="99">
-      </div>
-    </div>
-    </section>
-    <section>
-    <h3>Minimum Font Size</h3>
-    <div class="font-setting-container">
-      <div class="font-input-div">
-        <input type="number" id="minFontSize" min="0" max="99">
-      </div>
-      <div id="minFontSample" style="font-family: standard">
-        Lorem ipsum dolor sit amat.
-      </div>
-    </div>
-    </section>
-    <section>
-    <h3>
-      <button id="clearButton">Clear All Settings</button>
-    </h3>
-    </section>
   </div>
-</div>
+  <div style="display: -webkit-box; -webkit-box-orient: vertical;">
+    <h1>Advanced font settings</h1>
+    <div style="-webkit-box-flex: 1; display: -webkit-box; overflow: auto">
+      <div style="width: 20em; -webkit-box; -webkit-box-orient: vertical">
+        <h4>Script</h4>
+        <div class="bordered" style="-webkit-box-flex: 1;">
+          <list id="scriptList" style="background-color: white"></list>
+        </div>
+      </div>
+      <div id="right-pane">
+        <div class="font-setting-group">
+          <div class="font-setting-label">Standard</div>
+          <div class="font-setting">
+            <div class="font-family-and-size">
+              <div class="font-input-div">
+                <select id="standardFontList"></select>
+              </div>
+              <div class="font-size-slider">
+                <div>
+                  <span style="float: left">Tiny</span>
+                  <span style="float: right">Huge</span>
+                </div>
+                <input type="range" id="defaultFontSizeRange" min="0" max="36">
+              </div>
+              <input type="number" id="defaultFontSizeRocker" min="0" max="36">
+            </div>
+            <div id="standardFontSample" class="preview-box bordered"
+                style="font-family: standard;">
+            </div>
+          </div>
+        </div>
+        <div class="font-setting-group">
+          <div class="font-setting-label">Serif</div>
+          <div class="font-setting">
+            <div class="font-family-and-size">
+              <div class="font-input-div">
+                <select id="serifFontList"></select>
+              </div>
+            </div>
+            <div id="serifFontSample" class="preview-box bordered"
+                style="font-family: serif;">
+            </div>
+          </div>
+        </div>
+        <div class="font-setting-group">
+          <div class="font-setting-label">Sans-Serif</div>
+          <div class="font-setting">
+            <div class="font-family-and-size">
+              <div class="font-input-div">
+                <select id="sansSerifFontList"></select>
+              </div>
+            </div>
+            <div id="sansSerifFontSample" class="preview-box bordered"
+                 style="font-family: sans-serif;">
+            </div>
+          </div>
+        </div>
+        <div class="font-setting-group">
+          <div class="font-setting-label">Fixed</div>
+          <div class="font-setting">
+            <div class="font-family-and-size">
+              <div class="font-input-div">
+                <select id="fixedFontList"></select>
+              </div>
+              <div class="font-size-slider">
+                <div>
+                  <span style="float: left">Tiny</span>
+                  <span style="float: right">Huge</span>
+                </div>
+                <input type="range" id="defaultFixedFontSizeRange"
+                    min="0" max="36">
+              </div>
+              <input type="number" id="defaultFixedFontSizeRocker"
+                  min="0" max="36">
+            </div>
+            <div id="fixedFontSample" class="preview-box bordered"
+                style="font-family: monospace;">
+            </div>
+          </div>
+        </div>
+        <div class="font-setting-group">
+          <div class="font-setting-label"></div>
+          <div class="font-setting">
+            <div class="font-family-and-size">
+              <div class="font-input-div">Minimum font size</div>
+              <div class="font-size-slider">
+                <div>
+                  <span style="float: left">No minimum</span>
+                  <span style="float: right">Huge</span>
+                </div>
+                <input type="range" id="minFontSizeRange" min="0" max="36">
+              </div>
+              <input type="number" id="minFontSizeRocker" min="0" max="36">
+            </div>
+            <div id="minFontSample" class="preview-box bordered"
+                style="font-family: standard">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer>
+      <section>
+        <button id="reset-this-script-button" style="font-size: smaller;">
+          Reset settings for this script
+        </button>
+        <button id="reset-all-button" style="font-size: smaller;">
+          Reset all settings
+        </button>
+      </section>
+    </footer>
+  </div>
 </body>
 </html>
