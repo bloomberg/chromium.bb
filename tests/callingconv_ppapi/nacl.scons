@@ -8,11 +8,6 @@
 
 Import('env')
 
-# TODO(dschuff,robertm): re-enable this test when bitcode rewriting is fixed.
-# (marking it is_broken doesn't work because it fails to build and the bots
-# attempt to build all targets, not just those in test suites)
-Return()
-
 # This test does not make any sense for pure pnacl
 if not env.Bit('bitcode'):
   Return()
