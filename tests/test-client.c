@@ -355,7 +355,7 @@ send_button_state(int fd, struct display *display)
 	char buf[64];
 	int len;
 
-	wl_display_flush(display->display);
+	wl_display_roundtrip(display->display);
 
 	len = snprintf(buf, sizeof buf, "%u\n", display->input->button_mask);
 	assert(write(fd, buf, len) == len);
