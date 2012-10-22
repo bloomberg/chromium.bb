@@ -266,6 +266,7 @@ def _RetryUrlOpen(url, tries=3):
       return urllib2.urlopen(url)
     except urllib2.HTTPError as e:
       if i + 1 >= tries or e.code < 500:
+        e.msg += ('\nwhile processing %s' % url)
         raise
       else:
         print 'Cannot GET %s: %s' % (url, str(e))
