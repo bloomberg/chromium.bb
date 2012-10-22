@@ -649,7 +649,7 @@ void ProfileManager::OnImportFinished(Profile* profile) {
       content::NotificationService::NoDetails());
 }
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 ProfileManager::BrowserListObserver::BrowserListObserver(
     ProfileManager* manager)
     : profile_manager_(manager) {
@@ -685,7 +685,7 @@ void ProfileManager::BrowserListObserver::OnBrowserSetLastActive(
                            last_active->GetPath().BaseName().MaybeAsASCII());
   }
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 void ProfileManager::DoFinalInit(Profile* profile, bool go_off_the_record) {
   DoFinalInitForServices(profile, go_off_the_record);

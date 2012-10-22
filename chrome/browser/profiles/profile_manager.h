@@ -307,7 +307,7 @@ class ProfileManager : public base::NonThreadSafe,
   // Manages the process of creating, deleteing and updating Desktop shortcuts.
   scoped_ptr<ProfileShortcutManager> profile_shortcut_manager_;
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   class BrowserListObserver : public chrome::BrowserListObserver {
    public:
     explicit BrowserListObserver(ProfileManager* manager);
@@ -324,7 +324,7 @@ class ProfileManager : public base::NonThreadSafe,
   };
 
   BrowserListObserver browser_list_observer_;
-#endif  // !defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
   // For keeping track of the last active profiles.
   std::map<Profile*, int> browser_counts_;
