@@ -48,7 +48,11 @@ class MediaStreamDeviceUIControllerTest
   void CreateDummyRequest(const std::string& label, bool audio, bool video) {
     int dummy_render_process_id = 1;
     int dummy_render_view_id = 1;
-    media_stream::StreamOptions components(audio, video);
+    media_stream::StreamOptions components(
+        audio ? content::MEDIA_DEVICE_AUDIO_CAPTURE :
+                content::MEDIA_NO_SERVICE,
+        video ? content::MEDIA_DEVICE_VIDEO_CAPTURE :
+                content::MEDIA_NO_SERVICE);
     GURL security_origin;
     ui_controller_->MakeUIRequest(label,
                                   dummy_render_process_id,

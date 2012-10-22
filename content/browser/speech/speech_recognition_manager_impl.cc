@@ -73,7 +73,8 @@ class SpeechRecognitionManagerImpl::PermissionRequest
         this,
         render_process_id,
         render_view_id,
-        media_stream::StreamOptions(/*audio=*/true, /*video=*/false),
+        media_stream::StreamOptions(content::MEDIA_DEVICE_AUDIO_CAPTURE,
+                                    content::MEDIA_DEVICE_VIDEO_CAPTURE),
         origin,
         &label_);
   }

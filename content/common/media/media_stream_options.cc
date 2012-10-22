@@ -16,14 +16,6 @@ StreamOptions::StreamOptions()
     : audio_type(content::MEDIA_NO_SERVICE),
       video_type(content::MEDIA_NO_SERVICE) {}
 
-StreamOptions::StreamOptions(bool user_audio, bool user_video)
-    : audio_type(user_audio ?
-                     content::MEDIA_DEVICE_AUDIO_CAPTURE :
-                     content::MEDIA_NO_SERVICE),
-      video_type(user_video ?
-                     content::MEDIA_DEVICE_VIDEO_CAPTURE :
-                     content::MEDIA_NO_SERVICE) {}
-
 StreamOptions::StreamOptions(MediaStreamType audio_type,
                              MediaStreamType video_type)
     : audio_type(audio_type), video_type(video_type) {

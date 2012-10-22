@@ -104,7 +104,8 @@ class MediaStreamManagerTest : public ::testing::Test {
   void MakeMediaAccessRequest(std::string* label) {
     const int render_process_id = 1;
     const int render_view_id = 1;
-    media_stream::StreamOptions components(true, true);
+    media_stream::StreamOptions components(content::MEDIA_DEVICE_AUDIO_CAPTURE,
+                                           content::MEDIA_DEVICE_VIDEO_CAPTURE);
     const GURL security_origin;
     media_stream::MediaRequestResponseCallback callback =
         base::Bind(&MediaStreamManagerTest::ResponseCallback,
@@ -152,7 +153,8 @@ TEST_F(MediaStreamManagerTest, MakeMultipleRequests) {
   std::string label2;
   int render_process_id = 2;
   int render_view_id = 2;
-  media_stream::StreamOptions components(true, true);
+  media_stream::StreamOptions components(content::MEDIA_DEVICE_AUDIO_CAPTURE,
+                                         content::MEDIA_DEVICE_VIDEO_CAPTURE);
   GURL security_origin;
   media_stream::MediaRequestResponseCallback callback =
       base::Bind(&MediaStreamManagerTest::ResponseCallback,

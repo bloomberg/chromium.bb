@@ -32,8 +32,6 @@ typedef base::Callback< void(const std::string&,
 // in a request for a new media stream.
 struct CONTENT_EXPORT StreamOptions {
   StreamOptions();
-  // TODO(miu): Remove the 2-bools ctor in later clean-up CL.
-  StreamOptions(bool user_audio, bool user_video);
   StreamOptions(MediaStreamType audio_type, MediaStreamType video_type);
 
   // If not NO_SERVICE, the stream shall contain an audio input stream.

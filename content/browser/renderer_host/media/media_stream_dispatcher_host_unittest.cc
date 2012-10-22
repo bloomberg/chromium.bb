@@ -191,7 +191,8 @@ class MediaStreamDispatcherHostTest : public testing::Test {
 };
 
 TEST_F(MediaStreamDispatcherHostTest, GenerateStream) {
-  StreamOptions options(false, true);
+  StreamOptions options(content::MEDIA_NO_SERVICE,
+                        content::MEDIA_DEVICE_VIDEO_CAPTURE);
 
   EXPECT_CALL(*host_, GetMediaObserver())
       .WillRepeatedly(Return(media_observer_.get()));
@@ -217,7 +218,8 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateThreeStreams) {
   // This test opens three video capture devices. Two fake devices exists and it
   // is expected the last call to |Open()| will open the first device again, but
   // with a different label.
-  StreamOptions options(false, true);
+  StreamOptions options(content::MEDIA_NO_SERVICE,
+                        content::MEDIA_DEVICE_VIDEO_CAPTURE);
 
   // Generate first stream.
   EXPECT_CALL(*host_, GetMediaObserver())
@@ -286,7 +288,8 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateThreeStreams) {
 }
 
 TEST_F(MediaStreamDispatcherHostTest, FailOpenVideoDevice) {
-  StreamOptions options(false, true);
+  StreamOptions options(content::MEDIA_NO_SERVICE,
+                        content::MEDIA_DEVICE_VIDEO_CAPTURE);
 
   EXPECT_CALL(*host_, GetMediaObserver())
       .WillRepeatedly(Return(media_observer_.get()));
@@ -298,7 +301,8 @@ TEST_F(MediaStreamDispatcherHostTest, FailOpenVideoDevice) {
 }
 
 TEST_F(MediaStreamDispatcherHostTest, CancelPendingStreamsOnChannelClosing) {
-  StreamOptions options(false, true);
+  StreamOptions options(content::MEDIA_NO_SERVICE,
+                        content::MEDIA_DEVICE_VIDEO_CAPTURE);
 
   EXPECT_CALL(*host_, GetMediaObserver())
       .WillRepeatedly(Return(media_observer_.get()));
@@ -318,7 +322,8 @@ TEST_F(MediaStreamDispatcherHostTest, CancelPendingStreamsOnChannelClosing) {
 }
 
 TEST_F(MediaStreamDispatcherHostTest, StopGeneratedStreamsOnChannelClosing) {
-  StreamOptions options(false, true);
+  StreamOptions options(content::MEDIA_NO_SERVICE,
+                        content::MEDIA_DEVICE_VIDEO_CAPTURE);
 
   EXPECT_CALL(*host_, GetMediaObserver())
       .WillRepeatedly(Return(media_observer_.get()));

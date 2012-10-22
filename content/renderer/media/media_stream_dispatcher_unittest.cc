@@ -85,7 +85,7 @@ TEST(MediaStreamDispatcherTest, BasicStream) {
   scoped_ptr<MediaStreamDispatcher> dispatcher(new MediaStreamDispatcher(NULL));
   scoped_ptr<MockMediaStreamDispatcherEventHandler>
       handler(new MockMediaStreamDispatcherEventHandler);
-  media_stream::StreamOptions components(true, true);
+  media_stream::StreamOptions components(kAudioType, kVideoType);
   GURL security_origin;
 
   int ipc_request_id1 = dispatcher->next_ipc_id_;
@@ -319,7 +319,7 @@ TEST(MediaStreamDispatcherTest, TestFailure) {
   scoped_ptr<MediaStreamDispatcher> dispatcher(new MediaStreamDispatcher(NULL));
   scoped_ptr<MockMediaStreamDispatcherEventHandler>
       handler(new MockMediaStreamDispatcherEventHandler);
-  media_stream::StreamOptions components(true, true);
+  media_stream::StreamOptions components(kAudioType, kVideoType);
   GURL security_origin;
 
   // Test failure when creating a stream.
@@ -371,7 +371,7 @@ TEST(MediaStreamDispatcherTest, CancelGenerateStream) {
   scoped_ptr<MediaStreamDispatcher> dispatcher(new MediaStreamDispatcher(NULL));
   scoped_ptr<MockMediaStreamDispatcherEventHandler>
       handler(new MockMediaStreamDispatcherEventHandler);
-  media_stream::StreamOptions components(true, true);
+  media_stream::StreamOptions components(kAudioType, kVideoType);
   int ipc_request_id1 = dispatcher->next_ipc_id_;
 
   dispatcher->GenerateStream(kRequestId1, handler.get()->AsWeakPtr(),
