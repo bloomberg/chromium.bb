@@ -896,6 +896,7 @@
         ['include', '^browser/speech/'],
         ['exclude', '^browser/speech/input_tag_speech_dispatcher_host\\.cc$$'],
         ['include', '^browser/user_metrics\\.cc$'],
+        ['include', '^browser/web_contents/navigation_entry_impl\\.cc$'],
       ],
     }, {  # OS!="ios"
       'dependencies': [
