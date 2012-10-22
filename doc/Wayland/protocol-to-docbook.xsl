@@ -71,13 +71,13 @@
     </xsl:if>
     <xsl:if test="event">
       <section>
-        <title>Events provided by <xsl:value-of select="@name" /> events</title>
+        <title>Events provided by <xsl:value-of select="@name" /></title>
         <xsl:apply-templates select="event" />
       </section>
     </xsl:if>
     <xsl:if test="enum">
       <section>
-        <title>Enums provided by <xsl:value-of select="@name" /> enums</title>
+        <title>Enums provided by <xsl:value-of select="@name" /></title>
       <xsl:apply-templates select="enum" />
       </section>
     </xsl:if>
