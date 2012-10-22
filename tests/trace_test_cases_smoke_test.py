@@ -73,7 +73,6 @@ class TraceTestCases(unittest.TestCase):
         os.path.join(ROOT_DIR, 'trace_test_cases.py'),
         # Forces 4 parallel jobs.
         '--jobs', '4',
-        '--timeout', '0',
         '--out', self.temp_file,
     ]
     if VERBOSE:

@@ -1555,10 +1555,10 @@ def load_complete_state(options, subdir):
   Arguments:
     options: Options instance generated with OptionParserIsolate.
   """
-  if options.result:
+  if options.isolated:
     # Load the previous state if it was present. Namely, "foo.isolated" and
     # "foo.state".
-    complete_state = CompleteState.load_files(options.result)
+    complete_state = CompleteState.load_files(options.isolated)
   else:
     # Constructs a dummy object that cannot be saved. Useful for temporary
     # commands like 'run'.
@@ -1680,15 +1680,15 @@ def CMDhashtable(args):
 
       with open(complete_state.isolated_filepath, 'rb') as f:
         content = f.read()
-        manifest_hash = hashlib.sha1(content).hexdigest()
-      manifest_metadata = {
-        'sha-1': manifest_hash,
+        isolated_hash = hashlib.sha1(content).hexdigest()
+      isolated_metadata = {
+        'sha-1': isolated_hash,
         'size': len(content),
         'priority': '0'
       }
 
       infiles = complete_state.isolated.files
-      infiles[complete_state.isolated_filepath] = manifest_metadata
+      infiles[complete_state.isolated_filepath] = isolated_metadata
 
       if re.match(r'^https?://.+$', options.outdir):
         upload_sha1_tree(
@@ -1706,8 +1706,8 @@ def CMDhashtable(args):
     finally:
       # If the command failed, delete the .isolated file if it exists. This is
       # important so no stale swarm job is executed.
-      if not success and os.path.isfile(options.result):
-        os.remove(options.result)
+      if not success and os.path.isfile(options.isolated):
+        os.remove(options.isolated)
 
 
 def CMDmerge(args):
@@ -1715,7 +1715,7 @@ def CMDmerge(args):
 
   Ignores --outdir.
   """
-  parser = OptionParserIsolate(command='merge', require_result=False)
+  parser = OptionParserIsolate(command='merge', require_isolated=False)
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported argument: %s' % args)
@@ -1729,7 +1729,7 @@ def CMDread(args):
 
   Ignores --outdir.
   """
-  parser = OptionParserIsolate(command='read', require_result=False)
+  parser = OptionParserIsolate(command='read', require_isolated=False)
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported argument: %s' % args)
@@ -1745,7 +1745,7 @@ def CMDremap(args):
   Useful to test manually why a test is failing. The target executable is not
   run.
   """
-  parser = OptionParserIsolate(command='remap', require_result=False)
+  parser = OptionParserIsolate(command='remap', require_isolated=False)
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported argument: %s' % args)
@@ -1783,9 +1783,9 @@ def CMDrun(args):
 
   Argument processing stops at the first non-recognized argument and these
   arguments are appended to the command line of the target to run. For example,
-  use: isolate.py -r foo.isolated -- --gtest_filter=Foo.Bar
+  use: isolate.py --isolated foo.isolated -- --gtest_filter=Foo.Bar
   """
-  parser = OptionParserIsolate(command='run', require_result=False)
+  parser = OptionParserIsolate(command='run', require_isolated=False)
   parser.enable_interspersed_args()
   options, args = parser.parse_args(args)
   complete_state = load_complete_state(options, None)
@@ -1835,7 +1835,7 @@ def CMDtrace(args):
 
   Argument processing stops at the first non-recognized argument and these
   arguments are appended to the command line of the target to run. For example,
-  use: isolate.py -r foo.isolated -- --gtest_filter=Foo.Bar
+  use: isolate.py --isolated foo.isolated -- --gtest_filter=Foo.Bar
   """
   parser = OptionParserIsolate(command='trace')
   parser.enable_interspersed_args()
@@ -1877,11 +1877,16 @@ def CMDtrace(args):
 
 
 def add_variable_option(parser):
-  """Adds --result and --variable to an OptionParser."""
+  """Adds --isolated and --variable to an OptionParser."""
+  parser.add_option(
+      '-s', '--isolated',
+      metavar='FILE',
+      help='.isolated file to generate or read')
+  # Keep for compatibility. TODO(maruel): Remove once not used anymore.
   parser.add_option(
       '-r', '--result',
-      metavar='FILE',
-      help='.isolated file to store the json manifest')
+      dest='isolated',
+      help=optparse.SUPPRESS_HELP)
   default_variables = [('OS', get_flavor())]
   if sys.platform in ('win32', 'cygwin'):
     default_variables.append(('EXECUTABLE_SUFFIX', '.exe'))
@@ -1896,23 +1901,24 @@ def add_variable_option(parser):
       metavar='FOO BAR',
       help='Variables to process in the .isolate file, default: %default. '
             'Variables are persistent accross calls, they are saved inside '
-            '<results>.state')
+            '<.isolated>.state')
 
 
-def parse_variable_option(parser, options, require_result):
-  """Processes --result and --variable."""
-  if options.result:
-    options.result = os.path.abspath(options.result.replace('/', os.path.sep))
-  if require_result and not options.result:
-    parser.error('--result is required.')
-  if options.result and not options.result.endswith('.isolated'):
-    parser.error('--result value must end with \'.isolated\'')
+def parse_variable_option(parser, options, require_isolated):
+  """Processes --isolated and --variable."""
+  if options.isolated:
+    options.isolated = os.path.abspath(
+        options.isolated.replace('/', os.path.sep))
+  if require_isolated and not options.isolated:
+    parser.error('--isolated is required.')
+  if options.isolated and not options.isolated.endswith('.isolated'):
+    parser.error('--isolated value must end with \'.isolated\'')
   options.variables = dict(options.variables)
 
 
 class OptionParserIsolate(trace_inputs.OptionParserWithNiceDescription):
-  """Adds automatic --isolate, --result, --out and --variable handling."""
-  def __init__(self, require_result=True, **kwargs):
+  """Adds automatic --isolate, --isolated, --out and --variable handling."""
+  def __init__(self, require_isolated=True, **kwargs):
     trace_inputs.OptionParserWithNiceDescription.__init__(
         self,
         verbose=int(os.environ.get('ISOLATE_DEBUG', 0)),
@@ -1929,9 +1935,9 @@ class OptionParserIsolate(trace_inputs.OptionParserWithNiceDescription):
             'If the environment variable ISOLATE_HASH_TABLE_DIR exists, it '
             'will be used. Otherwise, for run and remap, uses a /tmp '
             'subdirectory. For the other modes, defaults to the directory '
-            'containing --result')
+            'containing --isolated')
     self.add_option_group(group)
-    self.require_result = require_result
+    self.require_isolated = require_isolated
 
   def parse_args(self, *args, **kwargs):
     """Makes sure the paths make sense.
@@ -1943,7 +1949,7 @@ class OptionParserIsolate(trace_inputs.OptionParserWithNiceDescription):
     if not self.allow_interspersed_args and args:
       self.error('Unsupported argument: %s' % args)
 
-    parse_variable_option(self, options, self.require_result)
+    parse_variable_option(self, options, self.require_isolated)
 
     if options.isolate:
       options.isolate = trace_inputs.get_native_path_case(

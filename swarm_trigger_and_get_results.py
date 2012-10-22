@@ -42,7 +42,7 @@ def doall(isolated, verbose):
       [
         'isolate.py',
         'hashtable',
-        '--result', isolated,
+        '--isolated', isolated,
         '--outdir', cad_server,
       ],
       verbose)

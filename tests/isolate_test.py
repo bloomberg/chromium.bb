@@ -43,7 +43,7 @@ class IsolateTest(unittest.TestCase):
     self.assertEqual([], touched)
     self.assertEqual(None, read_only)
 
-  def test_result_load_empty(self):
+  def test_isolated_load_empty(self):
     values = {
     }
     expected = {
@@ -53,7 +53,7 @@ class IsolateTest(unittest.TestCase):
     }
     self.assertEqual(expected, isolate.IsolatedFile.load(values).flatten())
 
-  def test_result_load(self):
+  def test_isolated_load(self):
     values = {
       'command': 'maybe',
       'files': {'foo': 42},
@@ -67,7 +67,7 @@ class IsolateTest(unittest.TestCase):
     }
     self.assertEqual(expected, isolate.IsolatedFile.load(values).flatten())
 
-  def test_result_load_unexpected(self):
+  def test_isolated_load_unexpected(self):
     values = {
       'foo': 'bar',
     }
@@ -774,7 +774,7 @@ class IsolateLoad(unittest.TestCase):
 
   def _get_option(self, isolate_file):
     class Options(object):
-      result = os.path.join(self.directory, 'result')
+      isolated = os.path.join(self.directory, 'isolated')
       outdir = os.path.join(self.directory, 'outdir')
       isolate = isolate_file
       variables = {'foo': 'bar'}
@@ -791,11 +791,11 @@ class IsolateLoad(unittest.TestCase):
       if 'timestamp' in item:
         self.assertTrue(item.pop('timestamp'))
 
-  def test_load_stale_result(self):
+  def test_load_stale_isolated(self):
     isolate_file = os.path.join(
         ROOT_DIR, 'tests', 'isolate', 'touch_root.isolate')
 
-    # Data to be loaded in the .result file. Do not create a .state file.
+    # Data to be loaded in the .isolated file. Do not create a .state file.
     input_data = {
       'command': ['python'],
       'files': {
@@ -814,11 +814,11 @@ class IsolateLoad(unittest.TestCase):
       },
     }
     options = self._get_option(isolate_file)
-    isolate.trace_inputs.write_json(options.result, input_data, False)
+    isolate.trace_inputs.write_json(options.isolated, input_data, False)
 
     # A CompleteState object contains two parts:
-    # - Result instance stored in complete_state.result, corresponding to the
-    #   .result file, is what is read by run_test_from_archive.py.
+    # - Result instance stored in complete_state.isolated, corresponding to the
+    #   .isolated file, is what is read by run_test_from_archive.py.
     # - SavedState instance stored in compelte_state.saved_state,
     #   corresponding to the .state file, which is simply to aid the developer
     #   when re-running the same command multiple times and contain

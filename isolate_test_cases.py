@@ -21,7 +21,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def isolate_test_cases(
-    cmd, test_cases, jobs, _timeout, isolated_file, isolate_file,
+    cmd, test_cases, jobs, isolated_file, isolate_file,
     root_dir, reldir, variables):
   assert os.path.isabs(root_dir) and os.path.isdir(root_dir), root_dir
 
@@ -107,16 +107,18 @@ def test_xvfb(command, rel_dir):
 def main():
   """CLI frontend to validate arguments."""
   parser = run_test_cases.OptionParserTestCases(
-      usage='%prog <options> -r <.isolated>')
+      usage='%prog <options> --isolated <.isolated>')
   parser.format_description = lambda *_: parser.description
   isolate.add_variable_option(parser)
+  # TODO(maruel): Add support for options.timeout.
+  parser.remove_option('--timeout')
   options, args = parser.parse_args()
   if args:
     parser.error('Unsupported arg: %s' % args)
   isolate.parse_variable_option(parser, options, True)
 
   try:
-    config = isolate.CompleteState.load_files(options.result)
+    config = isolate.CompleteState.load_files(options.isolated)
     reldir = os.path.join(config.root_dir, config.isolated.relative_cwd)
     command = run_test_cases.fix_python_path(config.isolated.command)
     test_xvfb(command, reldir)
@@ -130,7 +132,6 @@ def main():
         command,
         test_cases,
         options.jobs,
-        options.timeout,
         config.isolated_filepath,
         config.saved_state.isolate_file,
         config.root_dir,

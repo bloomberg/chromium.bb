@@ -133,7 +133,7 @@ class IsolateBase(unittest.TestCase):
     # The tests assume the current directory is the file's directory.
     os.chdir(ROOT_DIR)
     self.tempdir = tempfile.mkdtemp()
-    self.result = os.path.join(self.tempdir, 'isolate_smoke_test.isolated')
+    self.isolated = os.path.join(self.tempdir, 'isolate_smoke_test.isolated')
     self.outdir = os.path.join(self.tempdir, 'isolated')
 
   def tearDown(self):
@@ -223,7 +223,7 @@ class IsolateModeBase(IsolateBase):
     return files
 
   def _expected_result(self, args, read_only, empty_file):
-    """Verifies self.result contains the expected data."""
+    """Verifies self.isolated contains the expected data."""
     expected = {
       u'files': self._gen_files(read_only, empty_file),
       u'os': isolate.get_flavor(),
@@ -235,7 +235,7 @@ class IsolateModeBase(IsolateBase):
       expected[u'command'] = [u'python'] + [unicode(x) for x in args]
     else:
       expected[u'command'] = []
-    self.assertEquals(expected, json.load(open(self.result, 'r')))
+    self.assertEquals(expected, json.load(open(self.isolated, 'r')))
 
   def _expected_saved_state(self, extra_vars):
     flavor = isolate.get_flavor()
@@ -253,10 +253,10 @@ class IsolateModeBase(IsolateBase):
     self._expected_result(args, read_only, empty_file)
     self._expected_saved_state(extra_vars)
     # Also verifies run_isolated.py will be able to read it.
-    isolate.run_isolated.load_manifest(open(self.result, 'r').read())
+    isolate.run_isolated.load_isolated(open(self.isolated, 'r').read())
 
   def _expect_no_result(self):
-    self.assertFalse(os.path.exists(self.result))
+    self.assertFalse(os.path.exists(self.isolated))
 
   def _execute(self, mode, case, args, need_output):
     """Executes isolate.py."""
@@ -267,7 +267,7 @@ class IsolateModeBase(IsolateBase):
     cmd = [
       sys.executable, os.path.join(ROOT_DIR, 'isolate.py'),
       mode,
-      '--result', self.result,
+      '--isolated', self.isolated,
       '--outdir', self.outdir,
       '--isolate', self.filename(),
     ]
@@ -316,7 +316,7 @@ class IsolateModeBase(IsolateBase):
     return filename
 
   def saved_state(self):
-    return isolate.isolatedfile_to_state(self.result)
+    return isolate.isolatedfile_to_state(self.isolated)
 
 
 class Isolate(unittest.TestCase):
@@ -433,7 +433,7 @@ class Isolate_hashtable(IsolateModeBase):
     expected = [
       v['sha-1'] for v in self._gen_files(False, empty_file).itervalues()
     ]
-    expected.append(calc_sha1(self.result))
+    expected.append(calc_sha1(self.isolated))
     return expected
 
   def _expected_hash_tree(self, empty_file):
@@ -497,7 +497,7 @@ class Isolate_hashtable(IsolateModeBase):
         str(v['sha-1'])
         for v in self._gen_files(False, None).itervalues() if 'sha-1' in v
       ]
-      expected.append(calc_sha1(self.result))
+      expected.append(calc_sha1(self.isolated))
       self.assertEquals(sorted(expected), self._result_tree())
       self._expect_results(['symlink_full.py'], None, None, None)
 
@@ -508,7 +508,7 @@ class Isolate_hashtable(IsolateModeBase):
         str(v['sha-1'])
         for v in self._gen_files(False, None).itervalues() if 'sha-1' in v
       ]
-      expected.append(calc_sha1(self.result))
+      expected.append(calc_sha1(self.isolated))
       self.assertEquals(sorted(expected), self._result_tree())
       self._expect_results(['symlink_partial.py'], None, None, None)
 
@@ -848,7 +848,7 @@ class IsolateNoOutdir(IsolateBase):
     cmd = [
       sys.executable, os.path.join(ROOT_DIR, 'isolate.py'),
       mode,
-      '--result', self.result,
+      '--isolated', self.isolated,
     ]
     cmd.extend(args)
 
@@ -911,7 +911,7 @@ class IsolateNoOutdir(IsolateBase):
           'hashtable',
           calc_sha1(
               os.path.join(ROOT_DIR, 'tests', 'isolate', 'touch_root.py'))),
-      os.path.join('hashtable', calc_sha1(os.path.join(self.result))),
+      os.path.join('hashtable', calc_sha1(os.path.join(self.isolated))),
       'isolate_smoke_test.isolated',
       'isolate_smoke_test.isolated.state',
       os.path.join('root', 'tests', 'isolate', 'touch_root.isolate'),

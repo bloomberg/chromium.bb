@@ -55,7 +55,7 @@ def run_all(isolated, run_test_cases_file):
   cmd = [
     sys.executable, os.path.join(ROOT_DIR, 'isolate.py'),
     'run',
-    '-r', isolated,
+    '--isolated', isolated,
     '--',
     '--result', run_test_cases_file,
     '--run-all',
@@ -132,7 +132,7 @@ def main():
       usage='%prog <option>',
       description=sys.modules[__name__].__doc__)
   parser.add_option(
-      '-r', '--result',
+      '-s', '--isolated',
       help='The isolated file')
   parser.add_option(
       '-v', '--verbose', action='store_true',
@@ -143,11 +143,11 @@ def main():
       level=(logging.DEBUG if options.verbose else logging.ERROR))
   if args:
     parser.error('Unsupported arg: %s' % args)
-  if not options.result:
-    parser.error('--result is required')
-  if not options.result.endswith('.isolated'):
-    parser.error('--result argument must end with .isolated')
-  return not fix_all(options.result)
+  if not options.isolated:
+    parser.error('--isolated is required')
+  if not options.isolated.endswith('.isolated'):
+    parser.error('--isolated argument must end with .isolated')
+  return not fix_all(options.isolated)
 
 
 if __name__ == '__main__':

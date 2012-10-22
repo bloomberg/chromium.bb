@@ -49,7 +49,7 @@ def main():
           'isolate.py',
           'hashtable',
           '--isolate', os.path.join(ROOT_DIR, 'hello_world.isolate'),
-          '--result', isolated,
+          '--isolated', isolated,
           '--outdir', cad_server,
         ])
 

@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Reads a manifest, creates a tree of hardlinks and runs the test.
+"""Reads a .isolated, creates a tree of hardlinks and runs the test.
 
 Keeps a local cache.
 """
@@ -33,7 +33,7 @@ RE_IS_SHA1 = re.compile(r'^[a-fA-F0-9]{40}$')
 
 
 class ConfigError(ValueError):
-  """Generic failure to load a manifest."""
+  """Generic failure to load a .isolated file."""
   pass
 
 
@@ -186,8 +186,9 @@ def make_temp_dir(prefix, root_dir):
   return tempfile.mkdtemp(prefix=prefix, dir=base_temp_dir)
 
 
-def load_manifest(content):
-  """Verifies the manifest is valid and loads this object with the json data.
+def load_isolated(content):
+  """Verifies the .isolated file is valid and loads this object with the json
+  data.
   """
   try:
     data = json.loads(content)
@@ -670,50 +671,52 @@ class Cache(object):
 
 
 
-class Manifest(object):
-  """Represents a single parsed manifest, e.g. a .isolated file."""
+class IsolatedFile(object):
+  """Represents a single parsed .isolated file."""
   def __init__(self, obj_hash):
     """|obj_hash| is really the sha-1 of the file."""
-    logging.debug('Manifest(%s)' % obj_hash)
+    logging.debug('IsolatedFile(%s)' % obj_hash)
     self.obj_hash = obj_hash
     # Set once all the left-side of the tree is parsed. 'Tree' here means the
-    # manifest and all the manifest recursively included by it with 'includes'
-    # key. The order of each manifest sha-1 in 'includes' is important, as the
-    # later ones are not processed until the firsts are retrieved and read.
+    # .isolate and all the .isolated files recursively included by it with
+    # 'includes' key. The order of each sha-1 in 'includes', each representing a
+    # .isolated file in the hash table, is important, as the later ones are not
+    # processed until the firsts are retrieved and read.
     self.can_fetch = False
 
     # Raw data.
     self.data = {}
-    # A Manifest instance, one per object in self.includes.
+    # A IsolatedFile instance, one per object in self.includes.
     self.children = []
 
-    # Set once the manifest is loaded.
-    self._manifest_parsed = False
+    # Set once the .isolated file is loaded.
+    self._is_parsed = False
     # Set once the files are fetched.
     self.files_fetched = False
 
   def load(self, content):
-    """Verifies the manifest is valid and loads this object with the json data.
+    """Verifies the .isolated file is valid and loads this object with the json
+    data.
     """
-    logging.debug('Manifest.load(%s)' % self.obj_hash)
-    assert not self._manifest_parsed
-    self.data = load_manifest(content)
-    self.children = [Manifest(i) for i in self.data.get('includes', [])]
-    self._manifest_parsed = True
+    logging.debug('IsolatedFile.load(%s)' % self.obj_hash)
+    assert not self._is_parsed
+    self.data = load_isolated(content)
+    self.children = [IsolatedFile(i) for i in self.data.get('includes', [])]
+    self._is_parsed = True
 
   def fetch_files(self, cache, files):
-    """Adds files in this manifest not present in files dictionary.
+    """Adds files in this .isolated file not present in |files| dictionary.
 
     Preemptively request files.
 
     Note that |files| is modified by this function.
     """
     assert self.can_fetch
-    if not self._manifest_parsed or self.files_fetched:
+    if not self._is_parsed or self.files_fetched:
       return
     logging.debug('fetch_files(%s)' % self.obj_hash)
     for filepath, properties in self.data.get('files', {}).iteritems():
-      # Root manifest has priority on the files being mapped. In particular,
+      # Root isolated has priority on the files being mapped. In particular,
       # overriden files must not be fetched.
       if filepath not in files:
         files[filepath] = properties
@@ -725,39 +728,39 @@ class Manifest(object):
 
 
 class Settings(object):
-  """Results of a completely parsed manifest."""
+  """Results of a completely parsed .isolated file."""
   def __init__(self):
     self.command = []
     self.files = {}
     self.read_only = None
     self.relative_cwd = None
-    # The main manifest.
+    # The main .isolated file, a IsolatedFile instance.
     self.root = None
     logging.debug('Settings')
 
-  def load(self, cache, root_manifest_hash):
-    """Loads the manifest and all the included manifests asynchronously.
+  def load(self, cache, root_isolated_hash):
+    """Loads the .isolated and all the included .isolated asynchronously.
 
-    It enables support for included manifest. They are processed in strict order
-    but fetched asynchronously from the cache. This is important so that a file
-    in an included manifest that is overridden by an embedding manifest is not
-    fetched neededlessly. The includes are fetched in one pass and the files are
-    fetched as soon as all the manifests on the left-side of the tree were
-    fetched.
+    It enables support for "included" .isolated files. They are processed in
+    strict order but fetched asynchronously from the cache. This is important so
+    that a file in an included .isolated file that is overridden by an embedding
+    .isolated file is not fetched neededlessly. The includes are fetched in one
+    pass and the files are fetched as soon as all the ones on the left-side
+    of the tree were fetched.
 
-    The prioritization is very important here for nested manifests. 'includes'
-    have the highest priority and the algorithm is optimized for both deep and
-    wide manifests. A deep one is a long link of manifest referenced one at a
-    time by one item in 'includes'. A wide one has a large number of 'includes'
-    in a single manifest. 'left' is defined as an included manifest earlier in
-    the 'includes' list. So the order of the elements in 'includes' is
-    important.
+    The prioritization is very important here for nested .isolated files.
+    'includes' have the highest priority and the algorithm is optimized for both
+    deep and wide trees. A deep one is a long link of .isolated files referenced
+    one at a time by one item in 'includes'. A wide one has a large number of
+    'includes' in a single .isolated file. 'left' is defined as an included
+    .isolated file earlier in the 'includes' list. So the order of the elements
+    in 'includes' is important.
     """
-    self.root = Manifest(root_manifest_hash)
-    cache.retrieve(Remote.HIGH, root_manifest_hash)
-    pending = {root_manifest_hash: self.root}
+    self.root = IsolatedFile(root_isolated_hash)
+    cache.retrieve(Remote.HIGH, root_isolated_hash)
+    pending = {root_isolated_hash: self.root}
     # Keeps the list of retrieved items to refuse recursive includes.
-    retrieved = [root_manifest_hash]
+    retrieved = [root_isolated_hash]
 
     def update_self(node):
       node.fetch_files(cache, self.files)
@@ -788,14 +791,14 @@ class Settings(object):
       item_hash = cache.wait_for(pending)
       item = pending.pop(item_hash)
       item.load(open(cache.path(item_hash), 'r').read())
-      if item_hash == root_manifest_hash:
+      if item_hash == root_isolated_hash:
         # It's the root item.
         item.can_fetch = True
 
       for new_child in item.children:
         h = new_child.obj_hash
         if h in retrieved:
-          raise ConfigError('Manifest %s is retrieved recursively' % h)
+          raise ConfigError('IsolatedFile %s is retrieved recursively' % h)
         pending[h] = new_child
         cache.retrieve(Remote.HIGH, h)
 
@@ -808,7 +811,7 @@ class Settings(object):
     self.read_only = self.read_only or False
 
 
-def run_tha_test(manifest_hash, cache_dir, remote, policies):
+def run_tha_test(isolated_hash, cache_dir, remote, policies):
   """Downloads the dependencies in the cache, hardlinks them into a temporary
   directory and runs the executable.
   """
@@ -817,15 +820,15 @@ def run_tha_test(manifest_hash, cache_dir, remote, policies):
     outdir = make_temp_dir('run_tha_test', cache_dir)
     try:
       # Initiate all the files download.
-      with Profiler('GetManifests') as _prof:
+      with Profiler('GetIsolateds') as _prof:
         # Optionally support local files.
-        if not RE_IS_SHA1.match(manifest_hash):
+        if not RE_IS_SHA1.match(isolated_hash):
           # Adds it in the cache. While not strictly necessary, this simplifies
           # the rest.
-          h = hashlib.sha1(open(manifest_hash, 'r').read()).hexdigest()
-          cache.add(manifest_hash, h)
-          manifest_hash = h
-        settings.load(cache, manifest_hash)
+          h = hashlib.sha1(open(isolated_hash, 'r').read()).hexdigest()
+          cache.add(isolated_hash, h)
+          isolated_hash = h
+        settings.load(cache, isolated_hash)
 
       if not settings.command:
         print >> sys.stderr, 'No command to run'
@@ -903,12 +906,15 @@ def main():
 
   group = optparse.OptionGroup(parser, 'Data source')
   group.add_option(
-      '-m', '--manifest',
+      '-s', '--isolated',
       metavar='FILE',
       help='File/url describing what to map or run')
+  # TODO(maruel): Remove once not used anymore.
+  group.add_option(
+      '-m', '--manifest', dest='isolated', help=optparse.SUPPRESS_HELP)
   group.add_option(
       '-H', '--hash',
-      help='Hash of the manifest to grab from the hash table')
+      help='Hash of the .isolated to grab from the hash table')
   parser.add_option_group(group)
 
   group.add_option(
@@ -947,8 +953,8 @@ def main():
       level=level,
       format='%(levelname)5s %(module)15s(%(lineno)3d): %(message)s')
 
-  if bool(options.manifest) == bool(options.hash):
-    parser.error('One and only one of --manifest or --hash is required.')
+  if bool(options.isolated) == bool(options.hash):
+    parser.error('One and only one of --isolated or --hash is required.')
   if not options.remote:
     parser.error('--remote is required.')
   if args:
@@ -958,7 +964,7 @@ def main():
       options.max_cache_size, options.min_free_space, options.max_items)
   try:
     return run_tha_test(
-        options.manifest or options.hash,
+        options.isolated or options.hash,
         os.path.abspath(options.cache),
         options.remote,
         policies)

@@ -122,8 +122,7 @@ class IsolateTestCases(unittest.TestCase):
         os.path.join(ROOT_DIR, 'isolate_test_cases.py'),
         # Forces 4 parallel jobs.
         '--jobs', '4',
-        '--timeout', '0',
-        '--result', isolated,
+        '--isolated', isolated,
     ]
     if VERBOSE:
       cmd.extend(['-v'] * 3)

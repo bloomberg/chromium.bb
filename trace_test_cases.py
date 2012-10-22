@@ -139,6 +139,8 @@ def main():
   parser.add_option(
       '-r', '--root-dir',
       help='Root directory under which file access should be noted')
+  # TODO(maruel): Add support for options.timeout.
+  parser.remove_option('--timeout')
   options, args = parser.parse_args()
 
   if not args:
@@ -171,7 +173,6 @@ def main():
       os.getcwd(),
       test_cases,
       options.jobs,
-      # TODO(maruel): options.timeout,
       logname)
   print('Reading trace logs...')
   write_details(logname, options.out, options.root_dir, blacklist, results)

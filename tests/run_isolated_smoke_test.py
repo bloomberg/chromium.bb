@@ -122,15 +122,15 @@ class RunSwarmStep(unittest.TestCase):
     ]
 
   def test_result(self):
-    # Loads an arbitrary manifest on the file system.
-    manifest = os.path.join(self.data_dir, 'gtest_fake.isolated')
+    # Loads an arbitrary .isolated on the file system.
+    isolated = os.path.join(self.data_dir, 'gtest_fake.isolated')
     expected = [
       'state.json',
       self._store('gtest_fake.py'),
-      calc_sha1(manifest),
+      calc_sha1(isolated),
     ]
     args = [
-      '--manifest', manifest,
+      '--isolated', isolated,
       '--cache', self.cache,
       '--remote', self.table,
     ]
@@ -143,7 +143,7 @@ class RunSwarmStep(unittest.TestCase):
     self.assertEquals(sorted(expected), actual)
 
   def test_hash(self):
-    # Loads the manifest from the store as a hash.
+    # Loads the .isolated from the store as a hash.
     result_sha1 = self._store('gtest_fake.isolated')
     expected = [
       'state.json',
@@ -163,7 +163,7 @@ class RunSwarmStep(unittest.TestCase):
     actual = list_files_tree(self.cache)
     self.assertEquals(sorted(expected), actual)
 
-  def test_fail_empty_manifest(self):
+  def test_fail_empty_isolated(self):
     result_sha1 = self._store_result({})
     expected = [
       'state.json',
@@ -178,7 +178,7 @@ class RunSwarmStep(unittest.TestCase):
     self.assertEquals(sorted(expected), actual)
 
   def test_includes(self):
-    # Loads a manifest that includes another one.
+    # Loads an .isolated that includes another one.
 
     # References manifest1.isolated and gtest_fake.isolated. Maps file3.txt as
     # file2.txt.
@@ -205,7 +205,7 @@ class RunSwarmStep(unittest.TestCase):
     self.assertEquals(sorted(expected), actual)
 
   def test_link_all_hash_instances(self):
-    # Load a manifest file with the same file (same sha-1 hash), listed under
+    # Load an isolated file with the same file (same sha-1 hash), listed under
     # two different names and ensure both are created.
     result_sha1 = self._store('repeated_files.isolated')
     expected = [

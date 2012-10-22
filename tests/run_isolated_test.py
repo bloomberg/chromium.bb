@@ -28,11 +28,11 @@ class RemoteTest(run_isolated.Remote):
 
 
 class RunIsolatedTest(unittest.TestCase):
-  def test_load_manifest_empty(self):
-    m = run_isolated.load_manifest('{}')
+  def test_load_isolated_empty(self):
+    m = run_isolated.load_isolated('{}')
     self.assertEquals({}, m)
 
-  def test_load_manifest_good(self):
+  def test_load_isolated_good(self):
     data = {
       u'command': [u'foo', u'bar'],
       u'files': {
@@ -51,10 +51,10 @@ class RunIsolatedTest(unittest.TestCase):
       u'read_only': False,
       u'relative_cwd': u'somewhere_else'
     }
-    m = run_isolated.load_manifest(json.dumps(data))
+    m = run_isolated.load_isolated(json.dumps(data))
     self.assertEquals(data, m)
 
-  def test_load_manifest_bad(self):
+  def test_load_isolated_bad(self):
     data = {
       u'files': {
         u'a': {
@@ -64,24 +64,24 @@ class RunIsolatedTest(unittest.TestCase):
       },
     }
     try:
-      run_isolated.load_manifest(json.dumps(data))
+      run_isolated.load_isolated(json.dumps(data))
       self.fail()
     except run_isolated.ConfigError:
       pass
 
-  def test_load_manifest_os_only(self):
+  def test_load_isolated_os_only(self):
     data = {
       u'os': run_isolated.get_flavor(),
     }
-    m = run_isolated.load_manifest(json.dumps(data))
+    m = run_isolated.load_isolated(json.dumps(data))
     self.assertEquals(data, m)
 
-  def test_load_manifest_os_bad(self):
+  def test_load_isolated_os_bad(self):
     data = {
       u'os': 'foo',
     }
     try:
-      run_isolated.load_manifest(json.dumps(data))
+      run_isolated.load_isolated(json.dumps(data))
       self.fail()
     except run_isolated.ConfigError:
       pass
