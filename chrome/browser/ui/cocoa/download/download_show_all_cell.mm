@@ -113,6 +113,9 @@ const CGFloat kOuterStrokeWidth = 1;
   // the superclass into drawing what we want.
   ui::ThemeProvider* themeProvider =
       [[[self controlView] window] themeProvider];
+  if (!themeProvider)
+    return;
+
   bool isDefaultTheme =
       !themeProvider->HasCustomImage(IDR_THEME_BUTTON_BACKGROUND);
 
