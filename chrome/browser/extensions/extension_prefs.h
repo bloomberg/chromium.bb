@@ -383,6 +383,11 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   bool GetWebStoreLogin(std::string* result);
   void SetWebStoreLogin(const std::string& login);
 
+  // Returns true if the one-time Sideload Wipeout effort has been executed.
+  bool GetSideloadWipeoutDone() const;
+  // Mark the one-time Sideload Wipeout effort as finished.
+  void SetSideloadWipeoutDone();
+
   // Returns true if the user repositioned the app on the app launcher via drag
   // and drop.
   bool WasAppDraggedByUser(const std::string& extension_id);

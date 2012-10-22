@@ -31,6 +31,9 @@ class CommonSwitches {
         script_bubble(
             switches::kScriptBubble,
             FeatureSwitch::DEFAULT_DISABLED),
+        sideload_wipeout(
+            switches::kSideloadWipeout,
+            FeatureSwitch::DEFAULT_ENABLED),
         prompt_for_external_extensions(
             switches::kPromptForExternalExtensions,
             FeatureSwitch::DEFAULT_ENABLED)
@@ -52,6 +55,7 @@ class CommonSwitches {
   FeatureSwitch extensions_in_action_box;
   FeatureSwitch script_badges;
   FeatureSwitch script_bubble;
+  FeatureSwitch sideload_wipeout;
   FeatureSwitch prompt_for_external_extensions;
 };
 
@@ -75,6 +79,9 @@ FeatureSwitch* FeatureSwitch::script_badges() {
 }
 FeatureSwitch* FeatureSwitch::script_bubble() {
   return &g_common_switches.Get().script_bubble;
+}
+FeatureSwitch* FeatureSwitch::sideload_wipeout() {
+  return &g_common_switches.Get().sideload_wipeout;
 }
 FeatureSwitch* FeatureSwitch::prompt_for_external_extensions() {
   return &g_common_switches.Get().prompt_for_external_extensions;

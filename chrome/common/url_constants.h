@@ -386,6 +386,9 @@ extern const char kSyncCreateNewAccountURL[];
 // The URL for the "Learn more" link in the Chrome To Mobile bubble.
 extern const char kChromeToMobileLearnMoreURL[];
 
+// The URL for the help article explaining sideload wipeout in more details.
+extern const char kSideloadWipeoutHelpURL[];
+
 #if defined(OS_CHROMEOS)
 // The URL for the "Learn more" link for natural scrolling on ChromeOS.
 extern const char kNaturalScrollHelpURL[];

@@ -478,6 +478,9 @@ const char kSyncCreateNewAccountURL[] =
 const char kChromeToMobileLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ib_chrome_to_mobile";
 
+const char kSideloadWipeoutHelpURL[] =
+    "https://support.google.com/chrome/?p=ui_remove_non_cws_extensions";
+
 #if defined(OS_CHROMEOS)
 const char kNaturalScrollHelpURL[] =
     "https://support.google.com/chromeos/?p=simple_scrolling";

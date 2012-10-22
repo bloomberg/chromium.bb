@@ -116,7 +116,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     DISABLE_USER_ACTION = 1 << 0,
     DISABLE_PERMISSIONS_INCREASE = 1 << 1,
     DISABLE_RELOAD = 1 << 2,
-    DISABLE_UNSUPPORTED_REQUIREMENT = 1 << 3
+    DISABLE_UNSUPPORTED_REQUIREMENT = 1 << 3,
+    DISABLE_SIDELOAD_WIPEOUT = 1 << 4,
   };
 
   enum InstallType {

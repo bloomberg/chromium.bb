@@ -139,6 +139,7 @@ using extensions::CrxInstaller;
 using extensions::Extension;
 using extensions::ExtensionIdSet;
 using extensions::ExtensionInfo;
+using extensions::FeatureSwitch;
 using extensions::UnloadedExtensionInfo;
 using extensions::PermissionMessage;
 using extensions::PermissionMessages;
@@ -442,6 +443,17 @@ const ExtensionSet* ExtensionService::GenerateInstalledExtensionsSet() const {
   return installed_extensions;
 }
 
+const ExtensionSet* ExtensionService::GetWipedOutExtensions() const {
+  ExtensionSet* extension_set = new ExtensionSet();
+  for (ExtensionSet::const_iterator iter = disabled_extensions_.begin();
+       iter != disabled_extensions_.end(); ++iter) {
+    int disabled_reason = extension_prefs_->GetDisableReasons((*iter)->id());
+    if ((disabled_reason & Extension::DISABLE_SIDELOAD_WIPEOUT) != 0)
+      extension_set->Insert(*iter);
+  }
+  return extension_set;
+}
+
 extensions::PendingExtensionManager*
     ExtensionService::pending_extension_manager() {
   return &pending_extension_manager_;
@@ -561,6 +573,11 @@ void ExtensionService::Init() {
 
   component_loader_->LoadAll();
   extensions::InstalledLoader(this).LoadAllExtensions();
+
+  // The Sideload Wipeout effort takes place during load (see above), so once
+  // that is done the flag can be set so that we don't have to check again.
+  if (FeatureSwitch::sideload_wipeout()->IsEnabled())
+    extension_prefs_->SetSideloadWipeoutDone();
 
   // If we are running in the import process, don't bother initializing the
   // extension service since this can interfere with the main browser process
@@ -1997,6 +2014,10 @@ void ExtensionService::AddExtension(const Extension* extension) {
   // extension if necessary.
   InitializePermissions(extension);
 
+  // If this extension is a sideloaded extension and we've not performed a
+  // wipeout before, we might disable this extension here.
+  MaybeWipeout(extension);
+
   if (extension_prefs_->IsExtensionDisabled(extension->id())) {
     disabled_extensions_.Insert(scoped_extension);
     SyncExtensionChangeIfNeeded(*extension);
@@ -2158,6 +2179,29 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
     extension_prefs_->AddDisableReason(
         extension->id(),
         static_cast<Extension::DisableReason>(disable_reasons));
+  }
+}
+
+void ExtensionService::MaybeWipeout(
+    const extensions::Extension* extension) {
+  if (!FeatureSwitch::sideload_wipeout()->IsEnabled())
+    return;
+
+  bool done = extension_prefs_->GetSideloadWipeoutDone();
+  if (done)
+    return;
+
+  int disable_reasons = extension_prefs_->GetDisableReasons(extension->id());
+  if (disable_reasons == Extension::DISABLE_NONE) {
+    Extension::Location location = extension->location();
+    if (location == Extension::EXTERNAL_REGISTRY ||
+        (location == Extension::INTERNAL && !extension->from_webstore())) {
+      extension_prefs_->SetExtensionState(extension->id(), Extension::DISABLED);
+      extension_prefs_->AddDisableReason(
+          extension->id(),
+          static_cast<Extension::DisableReason>(
+          Extension::DISABLE_SIDELOAD_WIPEOUT));
+    }
   }
 }
 

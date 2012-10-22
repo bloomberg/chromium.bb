@@ -201,9 +201,13 @@ class ExtensionService
   virtual const ExtensionSet* disabled_extensions() const OVERRIDE;
   const ExtensionSet* terminated_extensions() const;
 
-  // Retuns a set of all installed, disabled, and terminated extensions and
+  // Returns a set of all installed, disabled, and terminated extensions and
   // transfers ownership to caller.
   const ExtensionSet* GenerateInstalledExtensionsSet() const;
+
+  // Returns a set of all extensions disabled by the sideload wipeout
+  // initiative.
+  const ExtensionSet* GetWipedOutExtensions() const;
 
   // Gets the object managing the set of pending extensions.
   virtual extensions::PendingExtensionManager*
@@ -415,6 +419,10 @@ class ExtensionService
   // Initializes the |extension|'s active permission set and disables the
   // extension if the privilege level has increased (e.g., due to an upgrade).
   void InitializePermissions(const extensions::Extension* extension);
+
+  // Check to see if this extension needs to be disabled, as per the sideload
+  // wipeout initiative.
+  void MaybeWipeout(const extensions::Extension* extension);
 
   // Go through each extensions in pref, unload blacklisted extensions
   // and update the blacklist state in pref.

@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/browser_actions_container.h"
+#include "chrome/browser/ui/views/extensions/disabled_extensions_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_container.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 #include "chrome/browser/ui/views/wrench_menu.h"
@@ -109,6 +110,9 @@ const int kBadgeTopMargin = 2;
 const int kSearchTopButtonSpacing = 3;
 const int kSearchTopLocationBarSpacing = 2;
 const int kSearchToolbarSpacing = 5;
+
+// How often to show the disabled extension (sideload wipeout) bubble.
+const int kShowSideloadWipeoutBubbleMax = 3;
 
 gfx::ImageSkia* kPopupBackgroundEdge = NULL;
 
@@ -294,9 +298,8 @@ void ToolbarView::Init(views::View* location_bar_parent,
   app_menu_->set_id(VIEW_ID_APP_MENU);
 
   // Add any necessary badges to the menu item based on the system state.
-  if (ShouldShowUpgradeRecommended() || ShouldShowIncompatibilityWarning()) {
+  if (ShouldShowUpgradeRecommended() || ShouldShowIncompatibilityWarning())
     UpdateAppMenuState();
-  }
   LoadImages();
 
   // Always add children in order from left to right, for accessibility.
@@ -310,6 +313,10 @@ void ToolbarView::Init(views::View* location_bar_parent,
   location_bar_->Init(popup_parent_view);
   show_home_button_.Init(prefs::kShowHomeButton,
                          browser_->profile()->GetPrefs(), this);
+  sideload_wipeout_bubble_shown_.Init(
+      prefs::kExtensionsSideloadWipeoutBubbleShown,
+      browser_->profile()->GetPrefs(), NULL);
+
   browser_actions_->Init();
 
   // Accessibility specific tooltip text.
@@ -319,6 +326,11 @@ void ToolbarView::Init(views::View* location_bar_parent,
     forward_->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_ACCNAME_TOOLTIP_FORWARD));
   }
+
+  int bubble_shown_count = sideload_wipeout_bubble_shown_.GetValue();
+  if (bubble_shown_count < kShowSideloadWipeoutBubbleMax &&
+      DisabledExtensionsView::MaybeShow(browser_, app_menu_))
+    sideload_wipeout_bubble_shown_.SetValue(++bubble_shown_count);
 }
 
 void ToolbarView::Update(WebContents* tab, bool should_restore_state) {

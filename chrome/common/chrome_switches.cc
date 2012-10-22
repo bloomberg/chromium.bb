@@ -625,8 +625,6 @@ const char kEnablePnacl[]                   = "enable-pnacl";
 // during chrome_browser_main.
 const char kEnableProfiling[]               = "enable-profiling";
 
-// Enables or disables extension scripts badges in the location bar.
-const char kScriptBadges[]                  = "script-badges";
 
 // Controls the support for SDCH filtering (dictionary based expansion of
 // content). By default SDCH filtering is enabled. To disable SDCH filtering,
@@ -1150,10 +1148,6 @@ const char kSavePageAsMHTML[]               = "save-page-as-mhtml";
 // malware.
 const char kSbURLPrefix[]                   = "safebrowsing-url-prefix";
 
-// Enable or diable the "script bubble" icon in the URL bar that tells you how
-// many extensions are running scripts on a page.
-const char kScriptBubble[]                  = "script-bubble";
-
 // If present, safebrowsing only performs update when
 // SafeBrowsingProtocolManager::ForceScheduleNextUpdate() is explicitly called.
 // This is used for testing only.
@@ -1166,6 +1160,13 @@ const char kSbDisableAutoUpdate[] = "safebrowsing-disable-auto-update";
 // content's hash to make sure the content are not malicious.
 const char kSbDisableDownloadProtection[] =
     "safebrowsing-disable-download-protection";
+
+// Enables or disables extension scripts badges in the location bar.
+const char kScriptBadges[]                  = "script-badges";
+
+// Enable or diable the "script bubble" icon in the URL bar that tells you how
+// many extensions are running scripts on a page.
+const char kScriptBubble[]                  = "script-bubble";
 
 // Enables the showing of an info-bar instructing user they can search directly
 // from the omnibox.
@@ -1189,6 +1190,9 @@ const char kShowIcons[]                     = "show-icons";
 
 // If true the alignment of the launcher can be changed.
 const char kShowLauncherAlignmentMenu[]     = "show-launcher-alignment-menu";
+
+// Enables or disables sideload wipeout extension effort.
+const char kSideloadWipeout[]               = "sideload-wipeout";
 
 // Changes the DCHECKS to dump memory and continue instead of displaying error
 // dialog. This is valid only in Release mode when --enable-dcheck is

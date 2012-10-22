@@ -252,6 +252,15 @@ cr.define('extensions', function() {
       $('toggle-dev-on').disabled = false;
     }
 
+    if (extensionsData.showDisabledExtensionsWarning) {
+      pageDiv.classList.add('showing-banner');
+      pageDiv.classList.add('sideload-wipeout');
+
+      // If we have two banners showing, make sure to have the room for both.
+      if (pageDiv.classList.contains('managed-mode'))
+        pageDiv.style.marginTop = '105px';
+    }
+
     if (extensionsData.developerMode && !extensionsData.managedMode) {
       pageDiv.classList.add('dev-mode');
       $('toggle-dev-on').checked = true;

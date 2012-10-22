@@ -130,6 +130,7 @@ html[dir='rtl'] .extension-list-item {
 
 .extension-description,
 .extension-list-item-wrapper.inactive-extension .extension-details,
+.location-text,
 .enable-checkbox input:disabled + .enable-checkbox-text {
   color: rgb(151, 156, 160);
 }
@@ -227,6 +228,21 @@ html[dir='rtl'] .extension-list-item {
 
 #dropTargetOverlay div {
   margin: 1em;
+}
+
+/* Disabled extensions banner and related elements. */
+
+.page:not(.sideload-wipeout) #sideload-wipeout-banner {
+  display: none;
+}
+
+.extension-disable-reason {
+  padding-left: 12px;
+}
+
+.location-text {
+  display: block;
+  width: 100px;
 }
 
 /* Trash */

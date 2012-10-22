@@ -152,8 +152,8 @@ body.uber-frame section > div:only-of-type {
                                       rgb(250, 230, 145));
   border: 1px solid rgb(201, 189, 141);
   border-radius: 3px;
-  height: 25px;
   margin: 9px 9px 0 9px;
+  min-height: 25px;
 }
 
 .page-banner .page-banner-gradient {
@@ -163,13 +163,15 @@ body.uber-frame section > div:only-of-type {
 }
 
 .page-banner-text {
+  -webkit-padding-end: 8px;
+  -webkit-padding-start: 26px;
   background-image: url('chrome://theme/IDR_MANAGED');
   background-position: 5px center;
   background-repeat: no-repeat;
   background-size: 16px;
   display: block;
-  line-height: 24px;
-  padding-left: 26px;
+  padding-bottom: 8px;
+  padding-top: 8px;
 }
 
 .page-banner.clickable:active .page-banner-text {

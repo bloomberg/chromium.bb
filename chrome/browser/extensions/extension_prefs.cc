@@ -222,6 +222,9 @@ const char kMediaGalleryHasPermissionKey[] = "has_permission";
 // Key for what version chrome was last time the extension prefs were loaded.
 const char kExtensionsLastChromeVersion[] = "extensions.last_chrome_version";
 
+// Key for whether the sideload wipeout effort is done.
+const char kSideloadWipeoutDone[] = "extensions.sideload_wipeout_done";
+
 // Provider of write access to a dictionary storing extension prefs.
 class ScopedExtensionPrefUpdate : public DictionaryPrefUpdate {
  public:
@@ -1806,6 +1809,14 @@ void ExtensionPrefs::SetWebStoreLogin(const std::string& login) {
   prefs_->SetString(kWebStoreLogin, login);
 }
 
+bool ExtensionPrefs::GetSideloadWipeoutDone() const {
+  return prefs_->GetBoolean(kSideloadWipeoutDone);
+}
+
+void ExtensionPrefs::SetSideloadWipeoutDone() {
+  return prefs_->SetBoolean(kSideloadWipeoutDone, true);
+}
+
 bool ExtensionPrefs::WasAppDraggedByUser(const std::string& extension_id) {
   return ReadExtensionPrefBoolean(extension_id, kPrefUserDraggedApp);
 }
@@ -2198,6 +2209,9 @@ void ExtensionPrefs::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(kExtensionsLastChromeVersion,
                             std::string(),  // default value
                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(kSideloadWipeoutDone,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
 }
 
 ExtensionIdList ExtensionPrefs::GetExtensionPrefAsVector(
