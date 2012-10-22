@@ -5,9 +5,7 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 
 #include "base/command_line.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
-#include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/platform_app_launcher.h"
@@ -167,15 +165,6 @@ WebContents* OpenApplicationTab(Profile* profile,
       extension_service->extension_prefs()->GetLaunchType(
           extension->id(), ExtensionPrefs::LAUNCH_DEFAULT);
   UMA_HISTOGRAM_ENUMERATION("Extensions.AppTabLaunchType", launch_type, 100);
-
-  static bool default_apps_trial_exists =
-      base::FieldTrialList::TrialExists(kDefaultAppsTrialName);
-  if (default_apps_trial_exists) {
-    UMA_HISTOGRAM_ENUMERATION(
-        base::FieldTrial::MakeName("Extensions.AppTabLaunchType",
-                                   kDefaultAppsTrialName),
-        launch_type, 100);
-  }
 
   int add_type = TabStripModel::ADD_ACTIVE;
   if (launch_type == ExtensionPrefs::LAUNCH_PINNED)

@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
@@ -49,7 +48,6 @@
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/data_deleter.h"
-#include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/extensions/extension_disabled_ui.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_error_ui.h"
@@ -841,15 +839,6 @@ bool ExtensionService::UninstallExtension(
 
   // Track the uninstallation.
   UMA_HISTOGRAM_ENUMERATION("Extensions.ExtensionUninstalled", 1, 2);
-
-  static bool default_apps_trial_exists =
-      base::FieldTrialList::TrialExists(kDefaultAppsTrialName);
-  if (default_apps_trial_exists) {
-    UMA_HISTOGRAM_ENUMERATION(
-        base::FieldTrial::MakeName("Extensions.ExtensionUninstalled",
-                                   kDefaultAppsTrialName),
-        1, 2);
-  }
 
   // Uninstalling one extension might have solved the problems of others.
   // Therefore, we clear warnings of this type for all extensions.

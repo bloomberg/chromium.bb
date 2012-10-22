@@ -5,12 +5,10 @@
 #include "chrome/browser/extensions/default_apps.h"
 
 #include "base/command_line.h"
-#include "base/metrics/field_trial.h"
 #include "chrome/browser/browser_process.h"
 #if !defined(OS_ANDROID)
 #include "chrome/browser/first_run/first_run.h"
 #endif
-#include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -59,8 +57,6 @@ bool Provider::ShouldInstallInProfile() {
   // We decide to install or not install default apps based on the following
   // criteria, from highest priority to lowest priority:
   //
-  // - If this instance of chrome is participating in the default apps
-  //   field trial, then install apps based on the group.
   // - The command line option.  Tests use this option to disable installation
   //   of default apps in some cases.
   // - If the locale is not compatible with the defaults, don't install them.
@@ -122,10 +118,6 @@ bool Provider::ShouldInstallInProfile() {
       switches::kDisableDefaultApps)) {
     install_apps = false;
   }
-
-  base::FieldTrial* trial = base::FieldTrialList::Find(kDefaultAppsTrialName);
-  if (trial)
-    install_apps = trial->group_name() != kDefaultAppsTrialNoAppsGroup;
 
   // Default apps are only installed on profile creation or a new chrome
   // download.

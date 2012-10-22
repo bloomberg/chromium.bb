@@ -384,8 +384,6 @@
         'browser/extensions/data_deleter.h',
         'browser/extensions/default_apps.cc',
         'browser/extensions/default_apps.h',
-        'browser/extensions/default_apps_trial.cc',
-        'browser/extensions/default_apps_trial.h',
         'browser/extensions/event_listener_map.cc',
         'browser/extensions/event_listener_map.h',
         'browser/extensions/event_names.cc',

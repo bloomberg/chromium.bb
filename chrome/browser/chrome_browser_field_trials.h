@@ -46,10 +46,6 @@ class ChromeBrowserFieldTrials {
   // latency of page loads.
   void PredictorFieldTrial();
 
-  // Field trial to see what effect installing defaults in the NTP apps pane
-  // has on retention and general apps/webstore usage.
-  void DefaultAppsFieldTrial();
-
   // A field trial to see what effects launching Chrome automatically on
   // computer startup has on retention and usage of Chrome.
   void AutoLaunchChromeFieldTrial();

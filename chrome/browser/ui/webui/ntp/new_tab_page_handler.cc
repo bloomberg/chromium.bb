@@ -7,10 +7,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -51,15 +49,6 @@ void NewTabPageHandler::RegisterMessages() {
       kPageIdOffset;
   UMA_HISTOGRAM_ENUMERATION(kDefaultPageTypeHistogram,
                             shown_page_type, kHistogramEnumerationMax);
-
-  static bool default_apps_trial_exists =
-      base::FieldTrialList::TrialExists(kDefaultAppsTrialName);
-  if (default_apps_trial_exists) {
-    UMA_HISTOGRAM_ENUMERATION(
-        base::FieldTrial::MakeName(kDefaultPageTypeHistogram,
-                                   kDefaultAppsTrialName),
-        shown_page_type, kHistogramEnumerationMax);
-  }
 
   web_ui()->RegisterMessageCallback("notificationPromoClosed",
       base::Bind(&NewTabPageHandler::HandleNotificationPromoClosed,
@@ -156,15 +145,6 @@ void NewTabPageHandler::HandlePageSelected(const ListValue* args) {
   int shown_page_type = page_id >> kPageIdOffset;
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.SelectedPageType",
                             shown_page_type, kHistogramEnumerationMax);
-
-  static bool default_apps_trial_exists =
-      base::FieldTrialList::TrialExists(kDefaultAppsTrialName);
-  if (default_apps_trial_exists) {
-    UMA_HISTOGRAM_ENUMERATION(
-        base::FieldTrial::MakeName("NewTabPage.SelectedPageType",
-                                   kDefaultAppsTrialName),
-        shown_page_type, kHistogramEnumerationMax);
-  }
 }
 
 void NewTabPageHandler::HandleLogTimeToClick(const ListValue* args) {

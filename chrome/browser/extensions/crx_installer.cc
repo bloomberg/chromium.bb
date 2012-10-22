@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
@@ -23,7 +22,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/convert_user_script.h"
 #include "chrome/browser/extensions/convert_web_app.h"
-#include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -597,18 +595,8 @@ void CrxInstaller::ReportSuccessFromFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // Tracking number of extensions installed by users
-  if (install_cause() == extension_misc::INSTALL_CAUSE_USER_DOWNLOAD) {
+  if (install_cause() == extension_misc::INSTALL_CAUSE_USER_DOWNLOAD)
     UMA_HISTOGRAM_ENUMERATION("Extensions.ExtensionInstalled", 1, 2);
-
-    static bool default_apps_trial_exists =
-        base::FieldTrialList::TrialExists(kDefaultAppsTrialName);
-    if (default_apps_trial_exists) {
-      UMA_HISTOGRAM_ENUMERATION(
-          base::FieldTrial::MakeName("Extensions.ExtensionInstalled",
-                                     kDefaultAppsTrialName),
-          1, 2);
-    }
-  }
 
   if (!BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
