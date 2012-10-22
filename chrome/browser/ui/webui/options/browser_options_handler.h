@@ -48,6 +48,7 @@ class BrowserOptionsHandler
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* values) OVERRIDE;
+  virtual void PageLoadStarted() OVERRIDE;
   virtual void InitializeHandler() OVERRIDE;
   virtual void InitializePage() OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
@@ -264,6 +265,8 @@ class BrowserOptionsHandler
   scoped_ptr<DictionaryValue> GetSyncStateDictionary();
 
   scoped_refptr<ShellIntegration::DefaultBrowserWorker> default_browser_worker_;
+
+  bool page_initialized_;
 
   StringPrefMember homepage_;
   BooleanPrefMember default_browser_policy_;

@@ -48,6 +48,8 @@ class OptionsPageUIHandler : public content::WebUIMessageHandler,
   // Collects localized strings for options page.
   virtual void GetLocalizedValues(base::DictionaryValue* localized_strings) = 0;
 
+  virtual void PageLoadStarted() {}
+
   // Will be called only once in the life time of the handler. Generally used to
   // add observers, initializes preferences, or start asynchronous calls from
   // various services.
@@ -120,6 +122,12 @@ class OptionsUI : public content::WebUIController,
 
   // Overridden from OptionsPageUIHandlerHost:
   virtual void InitializeHandlers() OVERRIDE;
+
+  // Overridden from content::WebUIController:
+  virtual void RenderViewCreated(content::RenderViewHost* render_view_host)
+      OVERRIDE;
+  virtual void RenderViewReused(content::RenderViewHost* render_view_host)
+      OVERRIDE;
 
  private:
   // Adds OptionsPageUiHandler to the handlers list if handler is enabled.

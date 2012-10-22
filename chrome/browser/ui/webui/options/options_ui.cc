@@ -380,6 +380,18 @@ void OptionsUI::InitializeHandlers() {
     handlers_[i]->InitializePage();
 }
 
+void OptionsUI::RenderViewCreated(content::RenderViewHost* render_view_host) {
+  content::WebUIController::RenderViewCreated(render_view_host);
+  for (size_t i = 0; i < handlers_.size(); ++i)
+    handlers_[i]->PageLoadStarted();
+}
+
+void OptionsUI::RenderViewReused(content::RenderViewHost* render_view_host) {
+  content::WebUIController::RenderViewReused(render_view_host);
+  for (size_t i = 0; i < handlers_.size(); ++i)
+    handlers_[i]->PageLoadStarted();
+}
+
 void OptionsUI::AddOptionsPageUIHandler(DictionaryValue* localized_strings,
                                         OptionsPageUIHandler* handler_raw) {
   scoped_ptr<OptionsPageUIHandler> handler(handler_raw);

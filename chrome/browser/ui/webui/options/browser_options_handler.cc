@@ -114,7 +114,8 @@ using content::UserMetricsAction;
 namespace options {
 
 BrowserOptionsHandler::BrowserOptionsHandler()
-    : template_url_service_(NULL),
+    : page_initialized_(false),
+      template_url_service_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_for_file_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_for_ui_(this)) {
   multiprofile_ = ProfileManager::IsMultipleProfilesEnabled();
@@ -552,6 +553,10 @@ void BrowserOptionsHandler::OnStateChanged() {
   SendProfilesInfo();
 }
 
+void BrowserOptionsHandler::PageLoadStarted() {
+  page_initialized_ = false;
+}
+
 void BrowserOptionsHandler::InitializeHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
   PrefService* prefs = profile->GetPrefs();
@@ -610,6 +615,7 @@ void BrowserOptionsHandler::InitializeHandler() {
 }
 
 void BrowserOptionsHandler::InitializePage() {
+  page_initialized_ = true;
   OnTemplateURLServiceChanged();
   ObserveThemeChanged();
   OnStateChanged();
@@ -844,6 +850,13 @@ void BrowserOptionsHandler::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  // Notifications are used to update the UI dynamically when settings change in
+  // the background. If the UI is currently being loaded, no dynamic updates are
+  // possible (as the DOM and JS are not fully loaded) or necessary (as
+  // InitializePage() will update the UI at the end of the load).
+  if (!page_initialized_)
+    return;
+
   if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED) {
     ObserveThemeChanged();
 #if defined(OS_CHROMEOS)
