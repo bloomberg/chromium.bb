@@ -21,7 +21,6 @@
 
 class GURL;
 class Profile;
-class TabContents;
 class NativeShellWindow;
 
 namespace content {
@@ -84,8 +83,7 @@ class ShellWindow : public content::NotificationObserver,
   const std::string& window_key() const { return window_key_; }
   const SessionID& session_id() const { return session_id_; }
   const extensions::Extension* extension() const { return extension_; }
-  TabContents* tab_contents() const { return contents_.get(); }
-  content::WebContents* web_contents() const { return web_contents_; }
+  content::WebContents* web_contents() const { return web_contents_.get(); }
   Profile* profile() const { return profile_; }
   const gfx::Image& app_icon() const { return app_icon_; }
 
@@ -197,9 +195,7 @@ class ShellWindow : public content::NotificationObserver,
   std::string window_key_;
 
   const SessionID session_id_;
-  scoped_ptr<TabContents> contents_;
-  // web_contents_ is owned by contents_.
-  content::WebContents* web_contents_;
+  scoped_ptr<content::WebContents> web_contents_;
   content::NotificationRegistrar registrar_;
   ExtensionFunctionDispatcher extension_function_dispatcher_;
 

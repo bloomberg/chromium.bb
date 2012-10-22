@@ -24,7 +24,6 @@ class InstantLoader;
 class OffscreenTabContentsCreator;
 class PanelHost;
 class Profile;
-class ShellWindow;
 class TabContentsTestHarness;
 class TabStripModel;
 class TabStripModelContentsCreator;
@@ -87,7 +86,6 @@ class TabContents : public content::WebContentsObserver {
     friend class OffscreenTabContentsCreator;
     friend class PanelHost;
     friend class prerender::PrerenderContents;
-    friend class ShellWindow;
     // See crbug.com/153587
     friend class TabAndroid;
     friend class TabContentsTestHarness;

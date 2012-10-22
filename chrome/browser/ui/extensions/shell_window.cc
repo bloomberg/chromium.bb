@@ -10,8 +10,8 @@
 #include "chrome/browser/extensions/shell_window_geometry_cache.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/file_select_helper.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/extensions/native_shell_window.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -98,13 +99,16 @@ ShellWindow::ShellWindow(Profile* profile,
 
 void ShellWindow::Init(const GURL& url,
                        const ShellWindow::CreateParams& params) {
-  web_contents_ = WebContents::Create(
+  web_contents_.reset(WebContents::Create(
       profile(), SiteInstance::CreateForURL(profile(), url), MSG_ROUTING_NONE,
-      NULL);
-  contents_.reset(TabContents::Factory::CreateTabContents(web_contents_));
-  content::WebContentsObserver::Observe(web_contents_);
+      NULL));
+  ConstrainedWindowTabHelper::CreateForWebContents(web_contents_.get());
+  FaviconTabHelper::CreateForWebContents(web_contents_.get());
+  WebIntentPickerController::CreateForWebContents(web_contents_.get());
+
+  content::WebContentsObserver::Observe(web_contents_.get());
   web_contents_->SetDelegate(this);
-  chrome::SetViewType(web_contents_, chrome::VIEW_TYPE_APP_SHELL);
+  chrome::SetViewType(web_contents_.get(), chrome::VIEW_TYPE_APP_SHELL);
   web_contents_->GetMutableRendererPrefs()->
       browser_handles_all_top_level_requests = true;
   web_contents_->GetRenderViewHost()->SyncRendererPrefs();
@@ -169,11 +173,6 @@ void ShellWindow::Init(const GURL& url,
   // apps are no longer tied to the browser process).
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
-
-  // Automatically dismiss all infobars.
-  InfoBarTabHelper* infobar_helper =
-      InfoBarTabHelper::FromWebContents(web_contents_);
-  infobar_helper->set_infobars_enabled(false);
 
   // Prevent the browser process from shutting down while this window is open.
   browser::StartKeepAlive();
@@ -369,7 +368,7 @@ void ShellWindow::WebIntentDispatch(
     return;
 
   WebIntentPickerController* web_intent_picker_controller =
-      WebIntentPickerController::FromWebContents(contents_->web_contents());
+      WebIntentPickerController::FromWebContents(web_contents_.get());
   web_intent_picker_controller->SetIntentsDispatcher(intents_dispatcher);
   web_intent_picker_controller->ShowDialog(
       intents_dispatcher->GetIntent().action,
@@ -382,18 +381,18 @@ void ShellWindow::RunFileChooser(WebContents* tab,
 }
 
 bool ShellWindow::IsPopupOrPanel(const WebContents* source) const {
-  DCHECK(source == web_contents_);
+  DCHECK(source == web_contents_.get());
   return true;
 }
 
 void ShellWindow::MoveContents(WebContents* source, const gfx::Rect& pos) {
-  DCHECK(source == web_contents_);
+  DCHECK(source == web_contents_.get());
   native_window_->SetBounds(pos);
 }
 
 void ShellWindow::NavigationStateChanged(
     const content::WebContents* source, unsigned changed_flags) {
-  DCHECK(source == web_contents_);
+  DCHECK(source == web_contents_.get());
   if (changed_flags & content::INVALIDATE_TYPE_TITLE)
     native_window_->UpdateWindowTitle();
   else if (changed_flags & content::INVALIDATE_TYPE_TAB)
@@ -402,13 +401,13 @@ void ShellWindow::NavigationStateChanged(
 
 void ShellWindow::ToggleFullscreenModeForTab(content::WebContents* source,
                                              bool enter_fullscreen) {
-  DCHECK(source == web_contents_);
+  DCHECK(source == web_contents_.get());
   native_window_->SetFullscreen(enter_fullscreen);
 }
 
 bool ShellWindow::IsFullscreenForTabOrPending(
     const content::WebContents* source) const {
-  DCHECK(source == web_contents_);
+  DCHECK(source == web_contents_.get());
   return native_window_->IsFullscreenOrPending();
 }
 

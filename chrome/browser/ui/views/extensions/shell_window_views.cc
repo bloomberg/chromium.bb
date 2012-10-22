@@ -7,7 +7,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/common/extensions/draggable_region.h"
 #include "chrome/common/extensions/extension.h"
@@ -595,10 +594,10 @@ gfx::ImageSkia ShellWindowViews::GetWindowAppIcon() {
 }
 
 gfx::ImageSkia ShellWindowViews::GetWindowIcon() {
-  TabContents* contents = shell_window_->tab_contents();
-  if (contents) {
+  content::WebContents* web_contents = shell_window_->web_contents();
+  if (web_contents) {
     FaviconTabHelper* favicon_tab_helper =
-        FaviconTabHelper::FromWebContents(contents->web_contents());
+        FaviconTabHelper::FromWebContents(web_contents);
     gfx::Image app_icon = favicon_tab_helper->GetFavicon();
     if (!app_icon.IsEmpty())
       return *app_icon.ToImageSkia();
