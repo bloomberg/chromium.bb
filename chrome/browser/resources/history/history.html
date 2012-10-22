@@ -42,9 +42,8 @@
 
   <div id="editing-controls">
     <button id="clear-browsing-data" i18n-content="clearallhistory"></button>
-    <button id="remove-selected"
-            disabled="disabled"
-            i18n-content="removeselected"></button>
+    <button id="remove-selected" disabled="disabled"
+        i18n-content="removeselected"></button>
   </div>
   <div id="results-display"></div>
   <div id="loading-spinner" hidden>
@@ -53,7 +52,14 @@
       <span i18n-content="loading"></span>
     </span>
   </div>
-  <div id="results-pagination"></div>
+  <div id="results-pagination">
+    <button id="newest-button" class="link-button" i18n-content="newest">
+    </button>
+    <button id="newer-button" class="link-button" i18n-content="newer">
+    </button>
+    <button id="older-button" class="link-button" i18n-content="older">
+    </button>
+  </div>
 </div>
 
 <menu id="action-menu">

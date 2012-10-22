@@ -26,11 +26,8 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
-  // Handler for the "getHistory" message.
-  void HandleGetHistory(const base::ListValue* args);
-
-  // Handler for the "searchHistory" message.
-  void HandleSearchHistory(const base::ListValue* args);
+  // Handler for the "queryHistory" message.
+  void HandleQueryHistory(const base::ListValue* args);
 
   // Handler for the "removeURLsOnOneDay" message.
   void HandleRemoveURLsOnOneDay(const base::ListValue* args);
@@ -47,25 +44,27 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
-  // Callback from the history system when the history list is available.
-  void QueryComplete(HistoryService::Handle request_handle,
+  void QueryHistory(string16 search_text, const history::QueryOptions& options);
+
+  // Callback from the history system when a history query has completed.
+  void QueryComplete(const string16& search_text,
+                     const history::QueryOptions& options,
+                     HistoryService::Handle request_handle,
                      history::QueryResults* results);
 
   // Callback from the history system when visits were deleted.
   void RemoveComplete();
 
-  // Extract the arguments from the call to HandleSearchHistory.
-  void ExtractSearchHistoryArguments(const base::ListValue* args,
-                                     int* month,
-                                     string16* query);
+  bool ExtractIntegerValueAtIndex(
+      const base::ListValue* value, int index, int* out_int);
 
-  // Figure out the query options for a month-wide query.
-  history::QueryOptions CreateMonthQueryOptions(int month);
+  // Set the query options for a month-wide query, |depth| months ago.
+  void SetQueryDepthInMonths(history::QueryOptions& options, int depth);
+
+  // Set the query options for a day-wide query, |depth| days ago.
+  void SetQueryDepthInDays(history::QueryOptions& options, int depth);
 
   content::NotificationRegistrar registrar_;
-
-  // Current search text.
-  string16 search_text_;
 
   // Our consumer for search requests to the history service.
   CancelableRequestConsumerT<int, 0> cancelable_search_consumer_;

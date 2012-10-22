@@ -57,9 +57,6 @@
 using content::UserMetricsAction;
 using content::WebContents;
 
-// Maximum number of search results to return in a given search. We should
-// eventually remove this.
-static const int kMaxSearchResults = 100;
 static const char kStringsJsFile[] = "strings.js";
 static const char kHistoryJsFile[] = "history.js";
 
@@ -154,9 +151,7 @@ std::string HistoryUIHTMLSource::GetMimeType(const std::string& path) const {
 // BrowsingHistoryHandler
 //
 ////////////////////////////////////////////////////////////////////////////////
-BrowsingHistoryHandler::BrowsingHistoryHandler()
-    : search_text_() {
-}
+BrowsingHistoryHandler::BrowsingHistoryHandler() {}
 
 BrowsingHistoryHandler::~BrowsingHistoryHandler() {
   cancelable_search_consumer_.CancelAllRequests();
@@ -173,11 +168,8 @@ void BrowsingHistoryHandler::RegisterMessages() {
   registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
       content::Source<Profile>(profile->GetOriginalProfile()));
 
-  web_ui()->RegisterMessageCallback("getHistory",
-      base::Bind(&BrowsingHistoryHandler::HandleGetHistory,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("searchHistory",
-      base::Bind(&BrowsingHistoryHandler::HandleSearchHistory,
+  web_ui()->RegisterMessageCallback("queryHistory",
+      base::Bind(&BrowsingHistoryHandler::HandleQueryHistory,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("removeURLsOnOneDay",
       base::Bind(&BrowsingHistoryHandler::HandleRemoveURLsOnOneDay,
@@ -190,58 +182,51 @@ void BrowsingHistoryHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void BrowsingHistoryHandler::HandleGetHistory(const ListValue* args) {
-  // Anything in-flight is invalid.
-  cancelable_search_consumer_.CancelAllRequests();
-
-  // Get arguments (if any).
-  int day = 0;
-  bool res = ExtractIntegerValue(args, &day);
-  DCHECK(res);
-
-  // Set our query options.
-  history::QueryOptions options;
-  options.begin_time = base::Time::Now().LocalMidnight();
-  options.begin_time -= base::TimeDelta::FromDays(day);
-  options.end_time = base::Time::Now().LocalMidnight();
-  options.end_time -= base::TimeDelta::FromDays(day - 1);
-
-  // Need to remember the query string for our results.
-  search_text_ = string16();
-
-  HistoryService* hs = HistoryServiceFactory::GetForProfile(
-      Profile::FromWebUI(web_ui()), Profile::EXPLICIT_ACCESS);
-  hs->QueryHistory(search_text_,
-      options,
-      &cancelable_search_consumer_,
-      base::Bind(&BrowsingHistoryHandler::QueryComplete,
-                 base::Unretained(this)));
+bool BrowsingHistoryHandler::ExtractIntegerValueAtIndex(const ListValue* value,
+                                                        int index,
+                                                        int* out_int) {
+  double double_value;
+  if (value->GetDouble(index, &double_value)) {
+    *out_int = static_cast<int>(double_value);
+    return true;
+  }
+  NOTREACHED();
+  return false;
 }
 
-void BrowsingHistoryHandler::HandleSearchHistory(const ListValue* args) {
+void BrowsingHistoryHandler::QueryHistory(
+    string16 search_text, const history::QueryOptions& options) {
   // Anything in-flight is invalid.
   cancelable_search_consumer_.CancelAllRequests();
 
-  // Get arguments (if any).
-  int month = 0;
-  string16 query;
-  ExtractSearchHistoryArguments(args, &month, &query);
-
-  // Set the query ranges for the given month.
-  history::QueryOptions options = CreateMonthQueryOptions(month);
-
-  // When searching, limit the number of results returned.
-  options.max_count = kMaxSearchResults;
-
-  // Need to remember the query string for our results.
-  search_text_ = query;
   HistoryService* hs = HistoryServiceFactory::GetForProfile(
       Profile::FromWebUI(web_ui()), Profile::EXPLICIT_ACCESS);
-  hs->QueryHistory(search_text_,
+  hs->QueryHistory(search_text,
       options,
       &cancelable_search_consumer_,
       base::Bind(&BrowsingHistoryHandler::QueryComplete,
-                 base::Unretained(this)));
+                 base::Unretained(this), search_text, options));
+}
+
+void BrowsingHistoryHandler::HandleQueryHistory(const ListValue* args) {
+  history::QueryOptions options;
+  int search_depth = 0;
+
+  // There are three required arguments: the text to search for (which may be
+  // empty), the requested depth (in months if searching, otherwise in days),
+  // and the max number of results to return.
+  string16 search_text = ExtractStringValue(args);
+  if (!ExtractIntegerValueAtIndex(args, 1, &search_depth))
+    return;
+  if (!ExtractIntegerValueAtIndex(args, 2, &options.max_count))
+    return;
+
+  if (search_text.empty())
+    SetQueryDepthInDays(options, search_depth);
+  else
+    SetQueryDepthInMonths(options, search_depth);
+
+  QueryHistory(search_text, options);
 }
 
 void BrowsingHistoryHandler::HandleRemoveURLsOnOneDay(const ListValue* args) {
@@ -251,15 +236,14 @@ void BrowsingHistoryHandler::HandleRemoveURLsOnOneDay(const ListValue* args) {
   }
 
   // Get day to delete data from.
-  int visit_time = 0;
-  if (!ExtractIntegerValue(args, &visit_time)) {
-    LOG(ERROR) << "Unable to extract integer argument.";
+  double visit_time = 0;
+  if (!ExtractDoubleValue(args, &visit_time)) {
+    LOG(ERROR) << "Unable to extract double argument.";
     web_ui()->CallJavascriptFunction("deleteFailed");
     return;
   }
   base::Time::Exploded exploded;
-  base::Time::FromTimeT(
-      static_cast<time_t>(visit_time)).LocalExplode(&exploded);
+  base::Time::FromJsTime(visit_time).LocalExplode(&exploded);
   exploded.hour = exploded.minute = exploded.second = exploded.millisecond = 0;
   base::Time begin_time = base::Time::FromLocalExploded(exploded);
   base::Time end_time = begin_time + base::TimeDelta::FromDays(1);
@@ -310,9 +294,10 @@ void BrowsingHistoryHandler::HandleRemoveBookmark(const ListValue* args) {
 }
 
 void BrowsingHistoryHandler::QueryComplete(
+    const string16& search_text,
+    const history::QueryOptions& options,
     HistoryService::Handle request_handle,
     history::QueryResults* results) {
-
   ListValue results_value;
   base::Time midnight_today = base::Time::Now().LocalMidnight();
 
@@ -322,8 +307,7 @@ void BrowsingHistoryHandler::QueryComplete(
     SetURLAndTitle(page_value, page.title(), page.url());
 
     // Need to pass the time in epoch time (fastest JS conversion).
-    page_value->SetInteger("time",
-        static_cast<int>(page.visit_time().ToTimeT()));
+    page_value->SetDouble("time", page.visit_time().ToJsTime());
 
     // Until we get some JS i18n infrastructure, we also need to
     // pass the dates in as strings. This could use some
@@ -331,7 +315,7 @@ void BrowsingHistoryHandler::QueryComplete(
 
     // Only pass in the strings we need (search results need a shortdate
     // and snippet, browse results need day and time information).
-    if (search_text_.empty()) {
+    if (search_text.empty()) {
       // Figure out the relative date string.
       string16 date_str = TimeFormat::RelativeDate(page.visit_time(),
                                                    &midnight_today);
@@ -359,7 +343,7 @@ void BrowsingHistoryHandler::QueryComplete(
   }
 
   DictionaryValue info_value;
-  info_value.SetString("term", search_text_);
+  info_value.SetString("term", search_text);
   info_value.SetBoolean("finished", results->reached_beginning());
 
   web_ui()->CallJavascriptFunction("historyResult", info_value, results_value);
@@ -372,45 +356,23 @@ void BrowsingHistoryHandler::RemoveComplete() {
   web_ui()->CallJavascriptFunction("deleteComplete");
 }
 
-void BrowsingHistoryHandler::ExtractSearchHistoryArguments(
-    const ListValue* args,
-    int* month,
-    string16* query) {
-  *month = 0;
-  const Value* list_member;
-
-  // Get search string.
-  if (args->Get(0, &list_member) &&
-      list_member->GetType() == Value::TYPE_STRING) {
-    const StringValue* string_value =
-      static_cast<const StringValue*>(list_member);
-    string_value->GetAsString(query);
-  }
-
-  // Get search month.
-  if (args->Get(1, &list_member) &&
-      list_member->GetType() == Value::TYPE_STRING) {
-    const StringValue* string_value =
-      static_cast<const StringValue*>(list_member);
-    string16 string16_value;
-    if (string_value->GetAsString(&string16_value)) {
-      bool converted = base::StringToInt(string16_value, month);
-      DCHECK(converted);
-    }
-  }
+void BrowsingHistoryHandler::SetQueryDepthInDays(
+      history::QueryOptions& options, int depth) {
+  options.end_time =
+      base::Time::Now().LocalMidnight() - base::TimeDelta::FromDays(depth - 1);
+  options.begin_time =
+      base::Time::Now().LocalMidnight() - base::TimeDelta::FromDays(depth);
 }
 
-history::QueryOptions BrowsingHistoryHandler::CreateMonthQueryOptions(
-    int month) {
-  history::QueryOptions options;
-
+void BrowsingHistoryHandler::SetQueryDepthInMonths(
+      history::QueryOptions& options, int depth) {
   // Configure the begin point of the search to the start of the
   // current month.
   base::Time::Exploded exploded;
   base::Time::Now().LocalMidnight().LocalExplode(&exploded);
   exploded.day_of_month = 1;
 
-  if (month == 0) {
+  if (depth == 0) {
     options.begin_time = base::Time::FromLocalExploded(exploded);
 
     // Set the end time of this first search to null (which will
@@ -422,7 +384,7 @@ history::QueryOptions BrowsingHistoryHandler::CreateMonthQueryOptions(
     // |depth| months before the search end point. The end time is not
     // inclusive, so we should feel free to set it to midnight on the
     // first day of the following month.
-    exploded.month -= month - 1;
+    exploded.month -= depth - 1;
     while (exploded.month < 1) {
       exploded.month += 12;
       exploded.year--;
@@ -439,8 +401,6 @@ history::QueryOptions BrowsingHistoryHandler::CreateMonthQueryOptions(
     }
     options.begin_time = base::Time::FromLocalExploded(exploded);
   }
-
-  return options;
 }
 
 // Helper function for Observe that determines if there are any differences

@@ -40,13 +40,23 @@ HistoryWebUITest.prototype = {
 
     // Stub out the calls to get history results from the backend.
 
-    this.makeAndRegisterMockHandler(['getHistory', 'searchHistory']);
-    this.mockHandler.stubs().getHistory(NOT_UNDEFINED).will(callFunction(
-      function(depthInDays) {
-        var results = history.slice(0, RESULT_SIZE);
-        history = history.slice(results.length);
-        historyResult({ term: '', finished: history.length == 0 }, results);
-      }));
+    // Mock4JS doesn't pass in the actual arguments to the stub, but it _will_
+    // pass the original args to the matcher object. SaveMockArguments acts as
+    // a proxy for another matcher, but keeps track of all the arguments it was
+    // asked to match.
+    var savedArgs = new SaveMockArguments();
+
+    function queryHistoryStub(args) {
+      var start = args[1] * RESULT_SIZE;
+      var results = history.slice(start, start + RESULT_SIZE);
+      historyResult(
+          { term: args[0], finished: start + RESULT_SIZE >= history.length, },
+          results);
+    }
+
+    this.makeAndRegisterMockHandler(['queryHistory']);
+    this.mockHandler.stubs().queryHistory(savedArgs.match(ANYTHING)).will(
+        callFunctionWithSavedArgs(savedArgs, queryHistoryStub));
   },
 
   /**
@@ -110,23 +120,29 @@ TEST_F('HistoryWebUITest', 'basicTest', function() {
     }
   }
 
-  // Ensure that there is a link to the next page of results.
-  var linkButtons = document.querySelectorAll('.link-button');
-  assertEquals(1, linkButtons.length)
+  // Check that there are 3 page navigation links and that only the "Older"
+  // link is visible.
+  expectEquals(3, document.querySelectorAll('.link-button').length)
+  expectTrue($('newest-button').hidden);
+  expectTrue($('newer-button').hidden);
+  expectFalse($('older-button').hidden);
 
   // Go to the next page.
-  linkButtons[0].click();
+  $('older-button').click();
   resultCount += document.querySelectorAll('.entry').length;
 
   // Check that the two pages include all of the entries.
   expectEquals(TOTAL_RESULT_COUNT, resultCount);
 
-  // There should now be two links: "newest", and "newer".
-  linkButtons = document.querySelectorAll('.link-button');
-  assertEquals(2, linkButtons.length);
+  // Check that the "Newest" and "Newer" links are now visible, but the "Older"
+  // link is hidden.
+  expectEquals(3, document.querySelectorAll('.link-button').length)
+  expectFalse($('newest-button').hidden);
+  expectFalse($('newer-button').hidden);
+  expectTrue($('older-button').hidden);
 
   // Go back to the first page, and check that the same day headers are there.
-  linkButtons[0].click();
+  $('newest-button').click();
   var newDayHeaders = document.querySelectorAll('.day');
   expectEquals(2, newDayHeaders.length);
   expectNotEquals(newDayHeaders[0].textContent, newDayHeaders[1].textContent);
