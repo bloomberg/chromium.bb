@@ -66,6 +66,9 @@
         'nacl_bootstrap.c',
       ],
       'cflags': [
+        # Prevent llvm-opt from replacing my_bzero with a call
+        # to memset.
+        '-fno-builtin',
         # The tiny standalone bootstrap program is incompatible with
         # -fstack-protector, which might be on by default.  That switch
         # requires using the standard libc startup code, which we do not.
@@ -95,11 +98,6 @@
       'conditions': [
         ['clang==1', {
           'cflags': [
-            # Prevent llvm-opt from replacing my_bzero with a call
-            # to memset
-            '-ffreestanding',
-            # But make its <limits.h> still work!
-            '-U__STDC_HOSTED__', '-D__STDC_HOSTED__=1',
             # TODO(bbudge) Remove this when Clang supports -fno-pic.
             '-Qunused-arguments',
           ],
