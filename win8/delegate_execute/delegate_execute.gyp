@@ -8,13 +8,6 @@
   'includes': [
     '../../build/win_precompile.gypi',
   ],
-  'target_defaults': {
-    'defines': [
-      # This define is required to pull in the new Win8 interfaces from system
-      # headers like ShObjIdl.h
-      'NTDDI_VERSION=0x06020000',
-    ],
-  },
   'targets': [
     {
       'target_name': 'delegate_execute',
