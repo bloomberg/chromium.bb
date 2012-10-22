@@ -47,16 +47,17 @@ class DriveFeedProcessor {
   //
   // In the case of processing the root feeds |root_feed_changestamp| is used
   // as its initial changestamp value. The value comes from
-  // gdata::AccountMetadataFeed.
-  DriveFileError ApplyFeeds(const ScopedVector<gdata::DocumentFeed>& feed_list,
-                            int64 start_changestamp,
-                            int64 root_feed_changestamp,
-                            std::set<FilePath>* changed_dirs);
+  // google_apis::AccountMetadataFeed.
+  DriveFileError ApplyFeeds(
+      const ScopedVector<google_apis::DocumentFeed>& feed_list,
+      int64 start_changestamp,
+      int64 root_feed_changestamp,
+      std::set<FilePath>* changed_dirs);
 
   // Converts list of document feeds from collected feeds into
   // FileResourceIdMap.
   DriveFileError FeedToFileResourceMap(
-    const ScopedVector<gdata::DocumentFeed>& feed_list,
+    const ScopedVector<google_apis::DocumentFeed>& feed_list,
     FileResourceIdMap* file_map,
     int64* feed_changestamp,
     FeedToFileResourceMapUmaStats* uma_stats);

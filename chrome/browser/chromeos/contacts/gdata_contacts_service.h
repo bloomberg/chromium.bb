@@ -22,7 +22,7 @@ namespace base {
 class Value;
 }
 
-namespace gdata {
+namespace google_apis {
 class AuthService;
 class OperationRunner;
 }
@@ -65,7 +65,7 @@ class GDataContactsService : public GDataContactsServiceInterface {
   explicit GDataContactsService(Profile* profile);
   virtual ~GDataContactsService();
 
-  gdata::AuthService* auth_service_for_testing();
+  google_apis::AuthService* auth_service_for_testing();
 
   const std::string& cached_my_contacts_group_id_for_testing() const {
     return cached_my_contacts_group_id_;
@@ -105,7 +105,7 @@ class GDataContactsService : public GDataContactsServiceInterface {
 
   Profile* profile_;  // not owned
 
-  scoped_ptr<gdata::OperationRunner> runner_;
+  scoped_ptr<google_apis::OperationRunner> runner_;
 
   // Group ID for the "My Contacts" system contacts group.
   // Cached after a DownloadContactsRequest has completed.

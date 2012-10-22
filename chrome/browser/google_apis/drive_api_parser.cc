@@ -140,14 +140,14 @@ const char kGoogleTableMimeType[] = "application/vnd.google-apps.table";
 
 // Maps category name to enum IconCategory.
 struct AppIconCategoryMap {
-  gdata::DriveAppIcon::IconCategory category;
+  google_apis::DriveAppIcon::IconCategory category;
   const char* category_name;
 };
 
 const AppIconCategoryMap kAppIconCategoryMap[] = {
-  { gdata::DriveAppIcon::DOCUMENT, "document" },
-  { gdata::DriveAppIcon::APPLICATION, "application" },
-  { gdata::DriveAppIcon::SHARED_DOCUMENT, "documentShared" },
+  { google_apis::DriveAppIcon::DOCUMENT, "document" },
+  { google_apis::DriveAppIcon::APPLICATION, "application" },
+  { google_apis::DriveAppIcon::SHARED_DOCUMENT, "documentShared" },
 };
 
 // Checks if the JSON is expected kind.  In Drive API, JSON data structure has
@@ -165,7 +165,7 @@ bool IsResourceKindExpected(const base::Value& value,
 }  // namespace
 
 // TODO(kochi): Rename to namespace drive. http://crbug.com/136371
-namespace gdata {
+namespace google_apis {
 
 ////////////////////////////////////////////////////////////////////////////////
 // AboutResource implementation
@@ -412,15 +412,15 @@ void FileResource::RegisterJSONConverter(
   converter->RegisterCustomField<base::Time>(
       kCreatedDate,
       &FileResource::created_date_,
-      &gdata::util::GetTimeFromString);
+      &google_apis::util::GetTimeFromString);
   converter->RegisterCustomField<base::Time>(
       kModifiedByMeDate,
       &FileResource::modified_by_me_date_,
-      &gdata::util::GetTimeFromString);
+      &google_apis::util::GetTimeFromString);
   converter->RegisterCustomField<base::Time>(
       kLastViewedByMeDate,
       &FileResource::last_viewed_by_me_date_,
-      &gdata::util::GetTimeFromString);
+      &google_apis::util::GetTimeFromString);
   converter->RegisterCustomField<GURL>(kDownloadUrl,
                                        &FileResource::download_url_,
                                        GetGURLFromString);
@@ -648,4 +648,4 @@ bool FileLabels::Parse(const base::Value& value) {
   return true;
 }
 
-}  // namespace gdata
+}  // namespace google_apis

@@ -91,7 +91,7 @@ bool ShouldBeOpenedWithPdfPlugin(Profile* profile, const char* file_extension);
 // Converts the vector of progress status to their JSON (Value) form.
 base::ListValue* ProgressStatusVectorToListValue(
     Profile* profile, const GURL& origin_url,
-    const gdata::OperationProgressStatusList& list);
+    const google_apis::OperationProgressStatusList& list);
 
 }  // namespace file_manager_util
 

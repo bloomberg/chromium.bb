@@ -50,10 +50,12 @@ class UploadingUserData : public DownloadCompletionBlocker {
   int upload_id() const { return upload_id_; }
   void set_virtual_dir_path(const FilePath& path) { virtual_dir_path_ = path; }
   const FilePath& virtual_dir_path() const { return virtual_dir_path_; }
-  void set_entry(scoped_ptr<gdata::DocumentEntry> entry) {
+  void set_entry(scoped_ptr<google_apis::DocumentEntry> entry) {
     entry_ = entry.Pass();
   }
-  scoped_ptr<gdata::DocumentEntry> entry_passed() { return entry_.Pass(); }
+  scoped_ptr<google_apis::DocumentEntry> entry_passed() {
+    return entry_.Pass();
+  }
   void set_overwrite(bool overwrite) { is_overwrite_ = overwrite; }
   bool is_overwrite() const { return is_overwrite_; }
   void set_resource_id(const std::string& resource_id) {
@@ -67,7 +69,7 @@ class UploadingUserData : public DownloadCompletionBlocker {
   DriveUploader* uploader_;
   int upload_id_;
   FilePath virtual_dir_path_;
-  scoped_ptr<gdata::DocumentEntry> entry_;
+  scoped_ptr<google_apis::DocumentEntry> entry_;
   bool is_overwrite_;
   std::string resource_id_;
   std::string md5_;
@@ -181,11 +183,11 @@ void OnEntryFound(Profile* profile,
 void OnAuthenticate(Profile* profile,
                     const FilePath& drive_path,
                     const base::Closure& substitute_callback,
-                    gdata::GDataErrorCode error,
+                    google_apis::GDataErrorCode error,
                     const std::string& token) {
   DVLOG(1) << "OnAuthenticate";
 
-  if (error == gdata::HTTP_SUCCESS) {
+  if (error == google_apis::HTTP_SUCCESS) {
     const FilePath drive_dir_path =
         util::ExtractDrivePath(drive_path.DirName());
     // Ensure the directory exists. This also forces DriveFileSystem to
@@ -666,7 +668,7 @@ void DriveDownloadObserver::OnUploadComplete(
     DriveFileError error,
     const FilePath& drive_path,
     const FilePath& file_path,
-    scoped_ptr<gdata::DocumentEntry> document_entry) {
+    scoped_ptr<google_apis::DocumentEntry> document_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(document_entry.get());
 
@@ -700,8 +702,8 @@ void DriveDownloadObserver::MoveFileToDriveCache(DownloadItem* download) {
     return;
   }
 
-  // Pass ownership of the gdata::DocumentEntry object.
-  scoped_ptr<gdata::DocumentEntry> entry = upload_data->entry_passed();
+  // Pass ownership of the google_apis::DocumentEntry object.
+  scoped_ptr<google_apis::DocumentEntry> entry = upload_data->entry_passed();
   if (!entry.get()) {
     NOTREACHED();
     return;
@@ -717,7 +719,7 @@ void DriveDownloadObserver::MoveFileToDriveCache(DownloadItem* download) {
     // Move downloaded file to drive cache. Note that |content_file_path| should
     // use the final target path (download->GetTargetFilePath()) when the
     // download item has transitioned to the DownloadItem::COMPLETE state.
-    file_system_->AddUploadedFile(gdata::UPLOAD_NEW_FILE,
+    file_system_->AddUploadedFile(google_apis::UPLOAD_NEW_FILE,
                                   upload_data->virtual_dir_path(),
                                   entry.Pass(),
                                   download->GetTargetFilePath(),

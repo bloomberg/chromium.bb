@@ -179,7 +179,7 @@ void DriveSyncClient::DoSyncLoop() {
         base::Bind(&DriveSyncClient::OnFetchFileComplete,
                    weak_ptr_factory_.GetWeakPtr(),
                    sync_task),
-        gdata::GetContentCallback());
+        google_apis::GetContentCallback());
   } else if (sync_task.sync_type == UPLOAD) {
     DVLOG(1) << "Uploading " << sync_task.resource_id;
     file_system_->UpdateFileByResourceId(

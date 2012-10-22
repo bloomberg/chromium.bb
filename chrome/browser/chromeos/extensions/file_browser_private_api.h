@@ -709,7 +709,7 @@ class SearchDriveFunction : public AsyncExtensionFunction {
   void OnFileSystemOpened(base::PlatformFileError result,
                           const std::string& file_system_name,
                           const GURL& file_system_url);
-  // Callback for gdata::SearchAsync called after file system is opened.
+  // Callback for google_apis::SearchAsync called after file system is opened.
   void OnSearch(drive::DriveFileError error,
                 const GURL& next_feed,
                 scoped_ptr<std::vector<drive::SearchResultInfo> > result_paths);

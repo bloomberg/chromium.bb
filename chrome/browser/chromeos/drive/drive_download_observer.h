@@ -17,7 +17,7 @@
 
 class Profile;
 
-namespace gdata {
+namespace google_apis {
 class DocumentEntry;
 }
 
@@ -194,7 +194,7 @@ class DriveDownloadObserver : public content::DownloadManager::Observer,
                         DriveFileError error,
                         const FilePath& drive_path,
                         const FilePath& file_path,
-                        scoped_ptr<gdata::DocumentEntry> document_entry);
+                        scoped_ptr<google_apis::DocumentEntry> document_entry);
 
   // Moves the downloaded file to drive cache.
   // Must be called after DriveDownloadObserver receives COMPLETE notification.

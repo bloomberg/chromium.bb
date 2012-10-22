@@ -22,7 +22,7 @@ const char kDriveV2FileURLFormat[] =
 }  // namespace
 
 // TODO(kochi): Rename to namespace drive. http://crbug.com/136371
-namespace gdata {
+namespace google_apis {
 
 //============================== GetAboutOperation =============================
 
@@ -110,4 +110,4 @@ GURL GetFileOperation::GetURL() const {
   return GURL(base::StringPrintf(kDriveV2FileURLFormat, file_id_.c_str()));
 }
 
-}  // namespace gdata
+}  // namespace google_apis

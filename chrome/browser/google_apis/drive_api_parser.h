@@ -30,7 +30,7 @@ class RepeatedMessageConverter;
 }  // namespace base
 
 // TODO(kochi): Rename to namespace drive. http://crbug.com/136371
-namespace gdata {
+namespace google_apis {
 
 // About resource represents the account information about the current user.
 // https://developers.google.com/drive/v2/reference/about
@@ -593,6 +593,6 @@ class ChangeList {
   DISALLOW_COPY_AND_ASSIGN(ChangeList);
 };
 
-}  // namespace gdata
+}  // namespace google_apis
 
 #endif  // CHROME_BROWSER_GOOGLE_APIS_DRIVE_API_PARSER_H_

@@ -40,7 +40,7 @@ class DriveTaskExecutor : public file_handler_util::FileTaskExecutor {
   void OnFileEntryFetched(DriveFileError error,
                           scoped_ptr<DriveEntryProto> entry_proto);
   void OnAppAuthorized(const std::string& resource_id,
-                       gdata::GDataErrorCode error,
+                       google_apis::GDataErrorCode error,
                        scoped_ptr<base::Value> feed_data);
 
   // Calls |done_| with |success| status.

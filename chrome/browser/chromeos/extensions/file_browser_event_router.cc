@@ -243,13 +243,14 @@ void FileBrowserEventRouter::MountDrive(
 
 void FileBrowserEventRouter::OnAuthenticated(
     const base::Closure& callback,
-    gdata::GDataErrorCode error,
+    google_apis::GDataErrorCode error,
     const std::string& token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   chromeos::MountError error_code;
   // For the file manager to work offline, GDATA_NO_CONNECTION is allowed.
-  if (error == gdata::HTTP_SUCCESS || error == gdata::GDATA_NO_CONNECTION)
+  if (error == google_apis::HTTP_SUCCESS ||
+      error == google_apis::GDATA_NO_CONNECTION)
     error_code = chromeos::MOUNT_ERROR_NONE;
   else
     error_code = chromeos::MOUNT_ERROR_NOT_AUTHENTICATED;
@@ -418,7 +419,7 @@ void FileBrowserEventRouter::Observe(
 }
 
 void FileBrowserEventRouter::OnProgressUpdate(
-    const gdata::OperationProgressStatusList& list) {
+    const google_apis::OperationProgressStatusList& list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   scoped_ptr<ListValue> event_list(
@@ -476,10 +477,10 @@ void FileBrowserEventRouter::OnFileSystemBeingUnmounted() {
 }
 
 void FileBrowserEventRouter::OnAuthenticationFailed(
-    gdata::GDataErrorCode error) {
+    google_apis::GDataErrorCode error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error == gdata::GDATA_NO_CONNECTION)
+  if (error == google_apis::GDATA_NO_CONNECTION)
     return;
 
   // Raise a MountCompleted event to notify the File Manager.

@@ -20,7 +20,7 @@
 
 class OAuth2AccessTokenFetcher;
 
-namespace gdata {
+namespace google_apis {
 
 //================================ AuthOperation ===============================
 
@@ -234,7 +234,7 @@ class GetDataOperation : public UrlFetchOperationBase {
 
  private:
   // Called when ParseJsonOnBlockingPool() is completed.
-  void OnDataParsed(gdata::GDataErrorCode fetch_error_code,
+  void OnDataParsed(google_apis::GDataErrorCode fetch_error_code,
                     scoped_ptr<base::Value>* value);
 
   GetDataCallback callback_;
@@ -245,6 +245,6 @@ class GetDataOperation : public UrlFetchOperationBase {
   DISALLOW_COPY_AND_ASSIGN(GetDataOperation);
 };
 
-}  // namespace gdata
+}  // namespace google_apis
 
 #endif  // CHROME_BROWSER_GOOGLE_APIS_OPERATIONS_BASE_H_

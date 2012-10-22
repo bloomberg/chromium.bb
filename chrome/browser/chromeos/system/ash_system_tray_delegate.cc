@@ -107,9 +107,10 @@ void ExtractIMEInfo(const input_method::InputMethodDescriptor& ime,
 }
 
 ash::DriveOperationStatusList GetDriveStatusList(
-    const gdata::OperationProgressStatusList& list) {
+    const google_apis::OperationProgressStatusList& list) {
   ash::DriveOperationStatusList results;
-  for (gdata::OperationProgressStatusList::const_iterator it = list.begin();
+  for (google_apis::OperationProgressStatusList::const_iterator it =
+           list.begin();
        it != list.end(); ++it) {
     ash::DriveOperationStatus status;
     status.file_path = it->file_path;
@@ -1096,9 +1097,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     NotifyRefreshIME(false);
   }
 
-  // gdata::DriveServiceObserver overrides.
+  // google_apis::DriveServiceObserver overrides.
   virtual void OnProgressUpdate(
-      const gdata::OperationProgressStatusList& list) OVERRIDE {
+      const google_apis::OperationProgressStatusList& list) OVERRIDE {
     std::vector<ash::DriveOperationStatus> ui_list = GetDriveStatusList(list);
     NotifyRefreshDrive(ui_list);
 
@@ -1107,11 +1108,12 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     // raise events that will let us properly clear the uber tray state.
     if (list.size() > 0) {
       bool has_in_progress_items = false;
-      for (gdata::OperationProgressStatusList::const_iterator it = list.begin();
-          it != list.end(); ++it) {
-        if (it->transfer_state == gdata::OPERATION_STARTED ||
-            it->transfer_state == gdata::OPERATION_IN_PROGRESS ||
-            it->transfer_state == gdata::OPERATION_SUSPENDED) {
+      for (google_apis::OperationProgressStatusList::const_iterator it =
+               list.begin();
+           it != list.end(); ++it) {
+        if (it->transfer_state == google_apis::OPERATION_STARTED ||
+            it->transfer_state == google_apis::OPERATION_IN_PROGRESS ||
+            it->transfer_state == google_apis::OPERATION_SUSPENDED) {
           has_in_progress_items = true;
           break;
         }

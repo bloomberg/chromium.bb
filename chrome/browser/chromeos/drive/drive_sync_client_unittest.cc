@@ -102,7 +102,7 @@ class DriveSyncClientTest : public testing::Test {
     // client registers itself as observer of NetworkLibrary.
     sync_client_.reset();
     cache_->DestroyOnUIThread();
-    gdata::test_util::RunBlockingPoolTask();
+    google_apis::test_util::RunBlockingPoolTask();
     mock_network_change_notifier_.reset();
   }
 
@@ -285,7 +285,7 @@ TEST_F(DriveSyncClientTest, StartInitialScan) {
   // Start processing the files in the backlog. This will collect the
   // resource IDs of these files.
   sync_client_->StartProcessingBacklog();
-  gdata::test_util::RunBlockingPoolTask();
+  google_apis::test_util::RunBlockingPoolTask();
   ASSERT_TRUE(success);
 
   // Check the contents of the queue for fetching.
@@ -545,7 +545,7 @@ TEST_F(DriveSyncClientTest, ExistingPinnedFiles) {
   // Start checking the existing pinned files. This will collect the resource
   // IDs of pinned files, with stale local cache files.
   sync_client_->StartCheckingExistingPinnedFiles();
-  gdata::test_util::RunBlockingPoolTask();
+  google_apis::test_util::RunBlockingPoolTask();
   ASSERT_TRUE(initialization_success);
 
   // Check the contents of the queue for fetching.

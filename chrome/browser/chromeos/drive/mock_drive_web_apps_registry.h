@@ -23,8 +23,9 @@ class MockDriveWebAppsRegistry : public DriveWebAppsRegistryInterface {
   MOCK_METHOD1(GetExtensionsForWebStoreApp,
                std::set<std::string>(const std::string& web_store_id));
   MOCK_METHOD1(UpdateFromFeed,
-               void(const gdata::AccountMetadataFeed& metadata));
-  MOCK_METHOD1(UpdateFromApplicationList, void(const gdata::AppList& applist));
+               void(const google_apis::AccountMetadataFeed& metadata));
+  MOCK_METHOD1(UpdateFromApplicationList,
+               void(const google_apis::AppList& applist));
 };
 
 }  // namespace drive

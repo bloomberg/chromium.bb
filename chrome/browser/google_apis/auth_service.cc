@@ -28,7 +28,7 @@
 
 using content::BrowserThread;
 
-namespace gdata {
+namespace google_apis {
 
 void AuthService::Initialize(Profile* profile) {
   profile_ = profile;
@@ -65,7 +65,7 @@ void AuthService::StartAuthentication(OperationRegistry* registry,
 
   if (HasAccessToken()) {
     relay_proxy->PostTask(FROM_HERE,
-         base::Bind(callback, gdata::HTTP_SUCCESS, access_token_));
+         base::Bind(callback, google_apis::HTTP_SUCCESS, access_token_));
   } else if (HasRefreshToken()) {
     BrowserThread::PostTask(
         BrowserThread::UI,
@@ -79,7 +79,7 @@ void AuthService::StartAuthentication(OperationRegistry* registry,
                                   callback))));
   } else {
     relay_proxy->PostTask(FROM_HERE,
-        base::Bind(callback, gdata::GDATA_NOT_READY, std::string()));
+        base::Bind(callback, google_apis::GDATA_NOT_READY, std::string()));
   }
 }
 
@@ -151,4 +151,4 @@ bool AuthService::CanAuthenticate(Profile* profile) {
   return true;
 }
 
-}  // namespace gdata
+}  // namespace google_apis

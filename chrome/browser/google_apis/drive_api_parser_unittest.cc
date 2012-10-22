@@ -22,7 +22,7 @@ using base::Value;
 using base::DictionaryValue;
 using base::ListValue;
 
-namespace gdata {
+namespace google_apis {
 
 // TODO(nhiroki): Make it possible to run these tests on any platforms after
 // moving json files to out of 'chromeos' directory (http://crbug.com/149788).
@@ -162,13 +162,13 @@ TEST(DriveAPIParserTest, FileListParser) {
   EXPECT_TRUE(file1.labels().is_viewed());
 
   base::Time created_time;
-  ASSERT_TRUE(gdata::util::GetTimeFromString("2012-07-24T08:51:16.570Z",
-                                             &created_time));
+  ASSERT_TRUE(google_apis::util::GetTimeFromString("2012-07-24T08:51:16.570Z",
+                                                   &created_time));
   EXPECT_EQ(created_time, file1.created_date());
 
   base::Time modified_time;
-  ASSERT_TRUE(gdata::util::GetTimeFromString("2012-07-27T05:43:20.269Z",
-                                             &modified_time));
+  ASSERT_TRUE(google_apis::util::GetTimeFromString("2012-07-27T05:43:20.269Z",
+                                                   &modified_time));
   EXPECT_EQ(modified_time, file1.modified_by_me_date());
 
   ASSERT_EQ(1U, file1.parents().size());
@@ -294,4 +294,4 @@ TEST(DriveAPIParserTest, ChangeListParser) {
 }
 #endif  // OS_CHROMEOS
 
-}  // namespace gdata
+}  // namespace google_apis

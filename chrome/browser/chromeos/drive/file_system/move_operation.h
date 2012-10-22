@@ -81,7 +81,7 @@ class MoveOperation {
   void RenameEntryLocally(const FilePath& file_path,
                           const FilePath::StringType& new_name,
                           const FileMoveCallback& callback,
-                          gdata::GDataErrorCode status,
+                          google_apis::GDataErrorCode status,
                           const GURL& document_url);
 
   // Removes a file or directory at |file_path| from the current directory if
@@ -123,7 +123,7 @@ class MoveOperation {
   void MoveEntryToDirectory(const FilePath& file_path,
                             const FilePath& directory_path,
                             const FileMoveCallback& callback,
-                            gdata::GDataErrorCode status,
+                            google_apis::GDataErrorCode status,
                             const GURL& document_url);
 
   // Callback when an entry is moved to another directory on the client side.

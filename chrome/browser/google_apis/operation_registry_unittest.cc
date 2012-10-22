@@ -14,7 +14,7 @@
 
 using testing::ElementsAre;
 
-namespace gdata {
+namespace google_apis {
 
 namespace {
 
@@ -254,4 +254,4 @@ TEST_F(OperationRegistryTest, RestartOperation) {
   EXPECT_EQ(NULL, op1.get());  // deleted
 }
 
-}  // namespace gdata
+}  // namespace google_apis

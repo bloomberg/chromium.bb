@@ -212,7 +212,7 @@ void GoogleContactStore::UpdateContacts() {
     VLOG(1) << "Downloading all contacts for " << profile_->GetProfileName();
   } else {
     VLOG(1) << "Downloading contacts updated since "
-            << gdata::util::FormatTimeAsString(min_update_time) << " for "
+            << google_apis::util::FormatTimeAsString(min_update_time) << " for "
             << profile_->GetProfileName();
   }
 
@@ -266,7 +266,7 @@ void GoogleContactStore::MergeContacts(
   VLOG(1) << "Last contact update time is "
           << (last_contact_update_time_.is_null() ?
               std::string("null") :
-              gdata::util::FormatTimeAsString(last_contact_update_time_));
+              google_apis::util::FormatTimeAsString(last_contact_update_time_));
 
   contacts_.Merge(updated_contacts.Pass(), ContactMap::DROP_DELETED_CONTACTS);
 }
@@ -400,7 +400,7 @@ bool GoogleContactStoreFactory::CanCreateContactStoreForProfile(
     Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile);
-  return gdata::AuthService::CanAuthenticate(profile);
+  return google_apis::AuthService::CanAuthenticate(profile);
 }
 
 ContactStore* GoogleContactStoreFactory::CreateContactStore(Profile* profile) {

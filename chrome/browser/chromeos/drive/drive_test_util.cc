@@ -108,13 +108,14 @@ void LoadChangeFeed(const std::string& relative_path,
                     int64 start_changestamp,
                     int64 root_feed_changestamp) {
   std::string error;
-  scoped_ptr<Value> document = gdata::test_util::LoadJSONFile(relative_path);
+  scoped_ptr<Value> document =
+      google_apis::test_util::LoadJSONFile(relative_path);
   ASSERT_TRUE(document.get());
   ASSERT_TRUE(document->GetType() == Value::TYPE_DICTIONARY);
-  scoped_ptr<gdata::DocumentFeed> document_feed(
-      gdata::DocumentFeed::ExtractAndParse(*document));
+  scoped_ptr<google_apis::DocumentFeed> document_feed(
+      google_apis::DocumentFeed::ExtractAndParse(*document));
   ASSERT_TRUE(document_feed.get());
-  ScopedVector<gdata::DocumentFeed> feed_list;
+  ScopedVector<google_apis::DocumentFeed> feed_list;
   feed_list.push_back(document_feed.release());
 
   GURL unused;

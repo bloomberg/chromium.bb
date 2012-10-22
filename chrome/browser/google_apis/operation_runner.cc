@@ -12,7 +12,7 @@
 
 using content::BrowserThread;
 
-namespace gdata {
+namespace google_apis {
 
 OperationRunner::OperationRunner(Profile* profile,
                                  const std::vector<std::string>& scopes)
@@ -98,4 +98,4 @@ void OperationRunner::RetryOperation(
   StartOperation(operation);
 }
 
-}  // namespace gdata
+}  // namespace google_apis

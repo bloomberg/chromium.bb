@@ -10,7 +10,7 @@
 #include "chrome/browser/google_apis/operations_base.h"
 
 // TODO(kochi): Rename to namespace drive. http://crbug.com/136371
-namespace gdata {
+namespace google_apis {
 
 //============================== GetAboutOperation =============================
 
@@ -115,6 +115,6 @@ class GetFileOperation : public GetDataOperation {
   DISALLOW_COPY_AND_ASSIGN(GetFileOperation);
 };
 
-}  // namespace gdata
+}  // namespace google_apis
 
 #endif  // CHROME_BROWSER_GOOGLE_APIS_DRIVE_API_OPERATIONS_H_

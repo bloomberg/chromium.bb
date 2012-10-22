@@ -77,7 +77,7 @@ void RemoveOperation::RemoveAfterGetEntryInfo(
 void RemoveOperation::RemoveResourceLocally(
     const FileOperationCallback& callback,
     const std::string& resource_id,
-    gdata::GDataErrorCode status,
+    google_apis::GDataErrorCode status,
     const GURL& /* document_url */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());

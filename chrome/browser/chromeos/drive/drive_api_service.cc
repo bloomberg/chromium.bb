@@ -51,7 +51,7 @@ void DriveAPIService::Initialize(Profile* profile) {
   std::vector<std::string> scopes;
   scopes.push_back(kDriveScope);
   scopes.push_back(kDriveAppsReadonlyScope);
-  runner_.reset(new gdata::OperationRunner(profile, scopes));
+  runner_.reset(new google_apis::OperationRunner(profile, scopes));
   runner_->Initialize();
 
   runner_->auth_service()->AddObserver(this);
@@ -82,22 +82,24 @@ bool DriveAPIService::CancelForFilePath(const FilePath& file_path) {
   return operation_registry()->CancelForFilePath(file_path);
 }
 
-gdata::OperationProgressStatusList
+google_apis::OperationProgressStatusList
 DriveAPIService::GetProgressStatusList() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return operation_registry()->GetProgressStatusList();
 }
 
-void DriveAPIService::Authenticate(const gdata::AuthStatusCallback& callback) {
+void DriveAPIService::Authenticate(
+    const google_apis::AuthStatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   runner_->Authenticate(callback);
 }
 
-void DriveAPIService::GetDocuments(const GURL& url,
-                                   int64 start_changestamp,
-                                   const std::string& search_query,
-                                   const std::string& directory_resource_id,
-                                   const gdata::GetDataCallback& callback) {
+void DriveAPIService::GetDocuments(
+    const GURL& url,
+    int64 start_changestamp,
+    const std::string& search_query,
+    const std::string& directory_resource_id,
+    const google_apis::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (search_query.empty())
@@ -110,54 +112,57 @@ void DriveAPIService::GetDocuments(const GURL& url,
   NOTREACHED();
 }
 
-void DriveAPIService::GetFilelist(const GURL& url,
-                                  const std::string& search_query,
-                                  const gdata::GetDataCallback& callback) {
+void DriveAPIService::GetFilelist(
+    const GURL& url,
+    const std::string& search_query,
+    const google_apis::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   runner_->StartOperationWithRetry(
-      new gdata::GetFilelistOperation(operation_registry(),
-                               url,
-                               search_query,
-                               callback));
+      new google_apis::GetFilelistOperation(operation_registry(),
+                                            url,
+                                            search_query,
+                                            callback));
 }
 
-void DriveAPIService::GetChangelist(const GURL& url,
-                                    int64 start_changestamp,
-                                    const gdata::GetDataCallback& callback) {
+void DriveAPIService::GetChangelist(
+    const GURL& url,
+    int64 start_changestamp,
+    const google_apis::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   runner_->StartOperationWithRetry(
-      new gdata::GetChangelistOperation(operation_registry(),
-                                 url,
-                                 start_changestamp,
-                                 callback));
+      new google_apis::GetChangelistOperation(operation_registry(),
+                                              url,
+                                              start_changestamp,
+                                              callback));
 }
 
-void DriveAPIService::GetDocumentEntry(const std::string& resource_id,
-                                       const gdata::GetDataCallback& callback) {
+void DriveAPIService::GetDocumentEntry(
+    const std::string& resource_id,
+    const google_apis::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  runner_->StartOperationWithRetry(new gdata::GetFileOperation(
+  runner_->StartOperationWithRetry(new google_apis::GetFileOperation(
       operation_registry(),
       resource_id,
       callback));
 }
 
 void DriveAPIService::GetAccountMetadata(
-    const gdata::GetDataCallback& callback) {
+    const google_apis::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   runner_->StartOperationWithRetry(
-      new gdata::GetAboutOperation(operation_registry(), callback));
+      new google_apis::GetAboutOperation(operation_registry(), callback));
 }
 
 void DriveAPIService::GetApplicationInfo(
-    const gdata::GetDataCallback& callback) {
+    const google_apis::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   runner_->StartOperationWithRetry(
-      new gdata::GetApplistOperation(operation_registry(), callback));
+      new google_apis::GetApplistOperation(operation_registry(), callback));
 }
 
 void DriveAPIService::DownloadDocument(
@@ -165,7 +170,7 @@ void DriveAPIService::DownloadDocument(
     const FilePath& local_cache_path,
     const GURL& document_url,
     DocumentExportFormat format,
-    const gdata::DownloadActionCallback& callback) {
+    const google_apis::DownloadActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(kochi): Implement this.
@@ -176,8 +181,8 @@ void DriveAPIService::DownloadFile(
       const FilePath& virtual_path,
       const FilePath& local_cache_path,
       const GURL& document_url,
-      const gdata::DownloadActionCallback& download_action_callback,
-      const gdata::GetContentCallback& get_content_callback) {
+      const google_apis::DownloadActionCallback& download_action_callback,
+      const google_apis::GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(kochi): Implement this.
@@ -186,7 +191,7 @@ void DriveAPIService::DownloadFile(
 
 void DriveAPIService::DeleteDocument(
     const GURL& document_url,
-    const gdata::EntryActionCallback& callback) {
+    const google_apis::EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(kochi): Implement this.
@@ -196,16 +201,17 @@ void DriveAPIService::DeleteDocument(
 void DriveAPIService::CreateDirectory(
     const GURL& parent_content_url,
     const FilePath::StringType& directory_name,
-    const gdata::GetDataCallback& callback) {
+    const google_apis::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(kochi): Implement this.
   NOTREACHED();
 }
 
-void DriveAPIService::CopyDocument(const std::string& resource_id,
-                                   const FilePath::StringType& new_name,
-                                   const gdata::GetDataCallback& callback) {
+void DriveAPIService::CopyDocument(
+    const std::string& resource_id,
+    const FilePath::StringType& new_name,
+    const google_apis::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(kochi): Implement this.
@@ -215,7 +221,7 @@ void DriveAPIService::CopyDocument(const std::string& resource_id,
 void DriveAPIService::RenameResource(
     const GURL& resource_url,
     const FilePath::StringType& new_name,
-    const gdata::EntryActionCallback& callback) {
+    const google_apis::EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(kochi): Implement this.
@@ -225,7 +231,7 @@ void DriveAPIService::RenameResource(
 void DriveAPIService::AddResourceToDirectory(
     const GURL& parent_content_url,
     const GURL& resource_url,
-    const gdata::EntryActionCallback& callback) {
+    const google_apis::EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(kochi): Implement this.
@@ -236,7 +242,7 @@ void DriveAPIService::RemoveResourceFromDirectory(
     const GURL& parent_content_url,
     const GURL& resource_url,
     const std::string& resource_id,
-    const gdata::EntryActionCallback& callback) {
+    const google_apis::EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(kochi): Implement this.
@@ -244,8 +250,8 @@ void DriveAPIService::RemoveResourceFromDirectory(
 }
 
 void DriveAPIService::InitiateUpload(
-    const gdata::InitiateUploadParams& params,
-    const gdata::InitiateUploadCallback& callback) {
+    const google_apis::InitiateUploadParams& params,
+    const google_apis::InitiateUploadCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(kochi): Implement this.
@@ -253,17 +259,18 @@ void DriveAPIService::InitiateUpload(
 }
 
 void DriveAPIService::ResumeUpload(
-    const gdata::ResumeUploadParams& params,
-    const gdata::ResumeUploadCallback& callback) {
+    const google_apis::ResumeUploadParams& params,
+    const google_apis::ResumeUploadCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(kochi): Implement this.
   NOTREACHED();
 }
 
-void DriveAPIService::AuthorizeApp(const GURL& resource_url,
-                                   const std::string& app_ids,
-                                   const gdata::GetDataCallback& callback) {
+void DriveAPIService::AuthorizeApp(
+    const GURL& resource_url,
+    const std::string& app_ids,
+    const google_apis::GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(kochi): Implement this.
@@ -282,7 +289,7 @@ bool DriveAPIService::HasRefreshToken() const {
   return runner_->auth_service()->HasRefreshToken();
 }
 
-gdata::OperationRegistry* DriveAPIService::operation_registry() const {
+google_apis::OperationRegistry* DriveAPIService::operation_registry() const {
   return runner_->operation_registry();
 }
 
@@ -295,13 +302,14 @@ void DriveAPIService::OnOAuth2RefreshTokenChanged() {
 }
 
 void DriveAPIService::OnProgressUpdate(
-    const gdata::OperationProgressStatusList& list) {
+    const google_apis::OperationProgressStatusList& list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FOR_EACH_OBSERVER(
       DriveServiceObserver, observers_, OnProgressUpdate(list));
 }
 
-void DriveAPIService::OnAuthenticationFailed(gdata::GDataErrorCode error) {
+void DriveAPIService::OnAuthenticationFailed(
+    google_apis::GDataErrorCode error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FOR_EACH_OBSERVER(
       DriveServiceObserver, observers_, OnAuthenticationFailed(error));

@@ -93,7 +93,7 @@ std::string GetDriveUserAgent() {
 
 }  // namespace
 
-namespace gdata {
+namespace google_apis {
 
 //================================ AuthOperation ===============================
 
@@ -439,13 +439,13 @@ void GetDataOperation::ParseResponse(GDataErrorCode fetch_error_code,
 }
 
 void GetDataOperation::OnDataParsed(
-    gdata::GDataErrorCode fetch_error_code,
+    google_apis::GDataErrorCode fetch_error_code,
     scoped_ptr<base::Value>* value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   bool success = true;
   if (!value->get()) {
-    fetch_error_code = gdata::GDATA_PARSE_ERROR;
+    fetch_error_code = google_apis::GDATA_PARSE_ERROR;
     success = false;
   }
 
@@ -466,4 +466,4 @@ void GetDataOperation::RunCallback(GDataErrorCode fetch_error_code,
     callback_.Run(fetch_error_code, value.Pass());
 }
 
-}  // namespace gdata
+}  // namespace google_apis

@@ -36,7 +36,7 @@ DriveDirectory* DriveEntry::AsDriveDirectory() {
   return NULL;
 }
 
-void DriveEntry::InitFromDocumentEntry(const gdata::DocumentEntry& doc) {
+void DriveEntry::InitFromDocumentEntry(const google_apis::DocumentEntry& doc) {
   // For regular files, the 'filename' and 'title' attribute in the metadata
   // may be different (e.g. due to rename). To be consistent with the web
   // interface and other client to use the 'title' attribute, instead of
@@ -56,11 +56,13 @@ void DriveEntry::InitFromDocumentEntry(const gdata::DocumentEntry& doc) {
   content_url_ = doc.content_url();
   deleted_ = doc.deleted();
 
-  const gdata::Link* edit_link = doc.GetLinkByType(gdata::Link::LINK_EDIT);
+  const google_apis::Link* edit_link =
+      doc.GetLinkByType(google_apis::Link::LINK_EDIT);
   if (edit_link)
     edit_url_ = edit_link->href();
 
-  const gdata::Link* parent_link = doc.GetLinkByType(gdata::Link::LINK_PARENT);
+  const google_apis::Link* parent_link =
+      doc.GetLinkByType(google_apis::Link::LINK_PARENT);
   if (parent_link)
     parent_resource_id_ = util::ExtractResourceIdFromUrl(parent_link->href());
 }
@@ -96,7 +98,7 @@ void DriveEntry::SetBaseNameFromTitle() {
 
 DriveFile::DriveFile(DriveResourceMetadata* resource_metadata)
     : DriveEntry(resource_metadata),
-      kind_(gdata::ENTRY_KIND_UNKNOWN),
+      kind_(google_apis::ENTRY_KIND_UNKNOWN),
       is_hosted_document_(false) {
   file_info_.is_directory = false;
 }
@@ -116,7 +118,7 @@ void DriveFile::SetBaseNameFromTitle() {
   }
 }
 
-void DriveFile::InitFromDocumentEntry(const gdata::DocumentEntry& doc) {
+void DriveFile::InitFromDocumentEntry(const google_apis::DocumentEntry& doc) {
   DriveEntry::InitFromDocumentEntry(doc);
 
   // Check if this entry is a true file, or...
@@ -126,8 +128,8 @@ void DriveFile::InitFromDocumentEntry(const gdata::DocumentEntry& doc) {
 
     // The resumable-edit-media link should only be present for regular
     // files as hosted documents are not uploadable.
-    const gdata::Link* upload_link =
-        doc.GetLinkByType(gdata::Link::LINK_RESUMABLE_EDIT_MEDIA);
+    const google_apis::Link* upload_link =
+        doc.GetLinkByType(google_apis::Link::LINK_RESUMABLE_EDIT_MEDIA);
     if (upload_link)
       upload_url_ = upload_link->href();
   } else {
@@ -148,13 +150,13 @@ void DriveFile::InitFromDocumentEntry(const gdata::DocumentEntry& doc) {
   // |is_hosted_document_| and |document_extension_| are set.
   SetBaseNameFromTitle();
 
-  const gdata::Link* thumbnail_link = doc.GetLinkByType(
-      gdata::Link::LINK_THUMBNAIL);
+  const google_apis::Link* thumbnail_link = doc.GetLinkByType(
+      google_apis::Link::LINK_THUMBNAIL);
   if (thumbnail_link)
     thumbnail_url_ = thumbnail_link->href();
 
-  const gdata::Link* alternate_link = doc.GetLinkByType(
-      gdata::Link::LINK_ALTERNATE);
+  const google_apis::Link* alternate_link = doc.GetLinkByType(
+      google_apis::Link::LINK_ALTERNATE);
   if (alternate_link)
     alternate_url_ = alternate_link->href();
 }
@@ -174,11 +176,12 @@ DriveDirectory* DriveDirectory::AsDriveDirectory() {
   return this;
 }
 
-void DriveDirectory::InitFromDocumentEntry(const gdata::DocumentEntry& doc) {
+void DriveDirectory::InitFromDocumentEntry(
+    const google_apis::DocumentEntry& doc) {
   DriveEntry::InitFromDocumentEntry(doc);
 
-  const gdata::Link* upload_link =
-      doc.GetLinkByType(gdata::Link::LINK_RESUMABLE_CREATE_MEDIA);
+  const google_apis::Link* upload_link =
+      doc.GetLinkByType(google_apis::Link::LINK_RESUMABLE_CREATE_MEDIA);
   if (upload_link)
     upload_url_ = upload_link->href();
 }

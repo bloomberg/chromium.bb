@@ -12,7 +12,7 @@
 #include "chrome/browser/google_apis/operations_base.h"
 #include "net/base/io_buffer.h"
 
-namespace gdata {
+namespace google_apis {
 
 class GDataEntry;
 class DocumentEntry;
@@ -424,7 +424,7 @@ struct ResumeUploadParams {
 // Callback type for DocumentServiceInterface::ResumeUpload.
 typedef base::Callback<void(
     const ResumeUploadResponse& response,
-    scoped_ptr<gdata::DocumentEntry> new_entry)> ResumeUploadCallback;
+    scoped_ptr<google_apis::DocumentEntry> new_entry)> ResumeUploadCallback;
 
 // This class performs the operation for resuming the upload of a file.
 class ResumeUploadOperation : public UrlFetchOperationBase {
@@ -545,6 +545,6 @@ class GetContactPhotoOperation : public UrlFetchOperationBase {
   DISALLOW_COPY_AND_ASSIGN(GetContactPhotoOperation);
 };
 
-}  // namespace gdata
+}  // namespace google_apis
 
 #endif  // CHROME_BROWSER_GOOGLE_APIS_GDATA_OPERATIONS_H_

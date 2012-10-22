@@ -9,7 +9,7 @@
 
 using content::BrowserThread;
 
-namespace gdata {
+namespace google_apis {
 
 void RunTaskOnThread(scoped_refptr<base::MessageLoopProxy> relay_proxy,
                      const base::Closure& task) {
@@ -26,4 +26,4 @@ void RunTaskOnUIThread(const base::Closure& task) {
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI), task);
 }
 
-}  // namespace gdata
+}  // namespace google_apis

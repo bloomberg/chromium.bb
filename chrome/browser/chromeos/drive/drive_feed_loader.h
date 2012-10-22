@@ -21,7 +21,7 @@ namespace base {
 class Value;
 }
 
-namespace gdata {
+namespace google_apis {
 class DocumentFeed;
 }
 
@@ -71,7 +71,7 @@ struct LoadFeedParams {
   GURL feed_to_load;
   const LoadDocumentFeedCallback feed_load_callback;
   FileOperationCallback load_finished_callback;
-  ScopedVector<gdata::DocumentFeed> feed_list;
+  ScopedVector<google_apis::DocumentFeed> feed_list;
   scoped_ptr<GetDocumentsUiState> ui_state;
 };
 
@@ -151,7 +151,7 @@ class DriveFeedLoader {
   // See comments at DriveFeedProcessor::ApplyFeeds() for
   // |start_changestamp| and |root_feed_changestamp|.
   DriveFileError UpdateFromFeed(
-    const ScopedVector<gdata::DocumentFeed>& feed_list,
+    const ScopedVector<google_apis::DocumentFeed>& feed_list,
     int64 start_changestamp,
     int64 root_feed_changestamp);
 
@@ -174,7 +174,7 @@ class DriveFeedLoader {
       ContentOrigin initial_origin,
       int64 local_changestamp,
       const FileOperationCallback& callback,
-      gdata::GDataErrorCode status,
+      google_apis::GDataErrorCode status,
       scoped_ptr<base::Value> feed_data);
 
   // Helper callback for handling results of account data retrieval initiated
@@ -185,13 +185,13 @@ class DriveFeedLoader {
       ContentOrigin initial_origin,
       int64 local_changestamp,
       const FileOperationCallback& callback,
-      gdata::GDataErrorCode status,
+      google_apis::GDataErrorCode status,
       scoped_ptr<base::Value> feed_data);
 
   // Callback for handling response from |DriveAPIService::GetApplicationInfo|.
   // If the application list is successfully parsed, passes the list to
   // Drive webapps registry.
-  void OnGetApplicationList(gdata::GDataErrorCode status,
+  void OnGetApplicationList(google_apis::GDataErrorCode status,
                             scoped_ptr<base::Value> json);
 
   // Callback for handling feed content fetching while searching for file info.
@@ -208,20 +208,20 @@ class DriveFeedLoader {
   void OnGetDocuments(
       scoped_ptr<LoadFeedParams> params,
       base::TimeTicks start_time,
-      gdata::GDataErrorCode status,
+      google_apis::GDataErrorCode status,
       scoped_ptr<base::Value> data);
 
   // Callback for handling results of feed parse.
   void OnParseFeed(scoped_ptr<LoadFeedParams> params,
                    base::TimeTicks start_time,
-                   scoped_ptr<gdata::DocumentFeed>* current_feed);
+                   scoped_ptr<google_apis::DocumentFeed>* current_feed);
 
   // Callback for handling response from |DriveAPIService::GetChanglist|.
   // Invokes |callback| when done.
   // |callback| must not be null.
   void OnGetChangelist(scoped_ptr<LoadFeedParams> params,
                        base::TimeTicks start_time,
-                       gdata::GDataErrorCode status,
+                       google_apis::GDataErrorCode status,
                        scoped_ptr<base::Value> data);
 
   // Save filesystem to disk.

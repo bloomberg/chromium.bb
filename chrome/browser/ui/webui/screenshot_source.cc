@@ -196,7 +196,7 @@ void ScreenshotSource::SendScreenshot(const std::string& screenshot_path,
           decoded_filename,
           base::Bind(&ScreenshotSource::GetSavedScreenshotCallback,
                      base::Unretained(this), screenshot_path, request_id),
-          gdata::GetContentCallback());
+          google_apis::GetContentCallback());
     } else {
       BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,

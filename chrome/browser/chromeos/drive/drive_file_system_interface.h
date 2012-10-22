@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
 #include "chrome/browser/google_apis/gdata_operations.h"
 
-namespace gdata {
+namespace google_apis {
 class DocumentEntry;
 }
 
@@ -257,7 +257,7 @@ class DriveFileSystemInterface {
   virtual void GetFileByPath(
       const FilePath& file_path,
       const GetFileCallback& get_file_callback,
-      const gdata::GetContentCallback& get_content_callback) = 0;
+      const google_apis::GetContentCallback& get_content_callback) = 0;
 
   // Gets a file by the given |resource_id| from the Drive server. Used for
   // fetching pinned-but-not-fetched files.
@@ -269,7 +269,7 @@ class DriveFileSystemInterface {
   virtual void GetFileByResourceId(
       const std::string& resource_id,
       const GetFileCallback& get_file_callback,
-      const gdata::GetContentCallback& get_content_callback) = 0;
+      const google_apis::GetContentCallback& get_content_callback) = 0;
 
   // Updates a file by the given |resource_id| on the Drive server by
   // uploading an updated version. Used for uploading dirty files. The file
@@ -342,9 +342,9 @@ class DriveFileSystemInterface {
   // and clears the dirty bit in the cache.
   //
   // |callback| will be called on the UI thread upon completion of operation.
-  virtual void AddUploadedFile(gdata::UploadMode upload_mode,
+  virtual void AddUploadedFile(google_apis::UploadMode upload_mode,
                                const FilePath& directory_path,
-                               scoped_ptr<gdata::DocumentEntry> doc_entry,
+                               scoped_ptr<google_apis::DocumentEntry> doc_entry,
                                const FilePath& file_content_path,
                                DriveCache::FileOperationType cache_operation,
                                const base::Closure& callback) = 0;
@@ -355,7 +355,7 @@ class DriveFileSystemInterface {
   // |callback| will be called on the UI thread upon completion of operation.
   virtual void UpdateEntryData(const std::string& resource_id,
                                const std::string& md5,
-                               scoped_ptr<gdata::DocumentEntry> entry,
+                               scoped_ptr<google_apis::DocumentEntry> entry,
                                const FilePath& file_content_path,
                                const base::Closure& callback) = 0;
 

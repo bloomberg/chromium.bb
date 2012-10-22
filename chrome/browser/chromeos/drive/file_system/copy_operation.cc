@@ -157,7 +157,7 @@ void CopyOperation::TransferFileFromRemoteToLocal(
                  weak_ptr_factory_.GetWeakPtr(),
                  local_dest_file_path,
                  callback),
-      gdata::GetContentCallback());
+      google_apis::GetContentCallback());
 }
 
 void CopyOperation::OnGetFileCompleteForTransferFile(
@@ -180,7 +180,7 @@ void CopyOperation::OnGetFileCompleteForTransferFile(
   // CopyLocalFileOnBlockingPool.
   DriveFileError* copy_file_error =
       new DriveFileError(DRIVE_FILE_OK);
-  gdata::util::PostBlockingPoolSequencedTaskAndReply(
+  google_apis::util::PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
       blocking_task_runner_,
       base::Bind(&CopyLocalFileOnBlockingPool,
@@ -221,7 +221,7 @@ void CopyOperation::TransferRegularFile(
       new DriveFileError(DRIVE_FILE_OK);
   int64* file_size = new int64;
   std::string* content_type = new std::string;
-  gdata::util::PostBlockingPoolSequencedTaskAndReply(
+  google_apis::util::PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
       blocking_task_runner_,
       base::Bind(&GetLocalFileInfoOnBlockingPool,
@@ -427,7 +427,7 @@ void CopyOperation::CopyAfterGetEntryInfoPair(
                  weak_ptr_factory_.GetWeakPtr(),
                  dest_file_path,
                  callback),
-      gdata::GetContentCallback());
+      google_apis::GetContentCallback());
 }
 
 void CopyOperation::OnGetFileCompleteForCopy(
@@ -521,7 +521,7 @@ void CopyOperation::OnTransferCompleted(
 
   if (error == DRIVE_FILE_OK && document_entry.get()) {
     drive_file_system_->AddUploadedFile(
-        gdata::UPLOAD_NEW_FILE,
+        google_apis::UPLOAD_NEW_FILE,
         drive_path.DirName(),
         document_entry.Pass(),
         file_path,
@@ -554,7 +554,7 @@ void CopyOperation::TransferFileFromLocalToRemoteAfterGetEntryInfo(
   }
 
   std::string* resource_id = new std::string;
-  gdata::util::PostBlockingPoolSequencedTaskAndReply(
+  google_apis::util::PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
       blocking_task_runner_,
       base::Bind(&GetDocumentResourceIdOnBlockingPool,

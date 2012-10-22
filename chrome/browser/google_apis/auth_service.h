@@ -17,7 +17,7 @@
 
 class Profile;
 
-namespace gdata {
+namespace google_apis {
 
 class OperationRegistry;
 class AuthServiceObserver;
@@ -99,6 +99,6 @@ class AuthService : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(AuthService);
 };
 
-}  // namespace gdata
+}  // namespace google_apis
 
 #endif  // CHROME_BROWSER_GOOGLE_APIS_AUTH_SERVICE_H_

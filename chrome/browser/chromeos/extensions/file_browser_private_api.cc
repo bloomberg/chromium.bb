@@ -80,7 +80,7 @@ using content::SiteInstance;
 using content::WebContents;
 using extensions::Extension;
 using file_handler_util::FileTaskExecutor;
-using gdata::InstalledApp;
+using google_apis::InstalledApp;
 
 namespace {
 
@@ -2434,7 +2434,7 @@ void GetDriveFilesFunction::GetFileOrSendResponse() {
   system_service->file_system()->GetFileByPath(
       drive_path,
       base::Bind(&GetDriveFilesFunction::OnFileReady, this),
-      gdata::GetContentCallback());
+      google_apis::GetContentCallback());
 }
 
 
@@ -2477,7 +2477,7 @@ ListValue* GetFileTransfersFunction::GetFileTransfersList() {
   if (!system_service)
     return NULL;
 
-  gdata::OperationProgressStatusList list =
+  google_apis::OperationProgressStatusList list =
       system_service->drive_service()->GetProgressStatusList();
   return file_manager_util::ProgressStatusVectorToListValue(
       profile_, source_url_.GetOrigin(), list);

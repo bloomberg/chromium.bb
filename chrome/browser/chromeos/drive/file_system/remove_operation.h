@@ -56,7 +56,7 @@ class RemoveOperation {
   void RemoveResourceLocally(
       const FileOperationCallback& callback,
       const std::string& resource_id,
-      gdata::GDataErrorCode status,
+      google_apis::GDataErrorCode status,
       const GURL& /* document_url */);
 
   // Sends notification for directory changes. Notifies of directory changes,

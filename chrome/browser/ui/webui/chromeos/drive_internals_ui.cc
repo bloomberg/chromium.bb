@@ -77,8 +77,9 @@ void GetGCacheContents(const FilePath& root_path,
     entry->SetDouble("size", size);
     entry->SetBoolean("is_directory", is_directory);
     entry->SetBoolean("is_symbolic_link", is_symbolic_link);
-    entry->SetString("last_modified",
-                     gdata::util::FormatTimeAsStringLocaltime(last_modified));
+    entry->SetString(
+        "last_modified",
+        google_apis::util::FormatTimeAsStringLocaltime(last_modified));
     files[current] = entry;
 
     total_size += size;
@@ -107,7 +108,7 @@ void GetFreeDiskSpace(const FilePath& home_path,
 std::string FormatEntry(const FilePath& path,
                         const drive::DriveEntryProto& entry) {
   using base::StringAppendF;
-  using gdata::util::FormatTimeAsString;
+  using google_apis::util::FormatTimeAsString;
 
   std::string out;
   StringAppendF(&out, "%s\n", path.AsUTF8Unsafe().c_str());
@@ -203,7 +204,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   void OnGetFreeDiskSpace(base::DictionaryValue* local_storage_summary);
 
   // Called when GetAccountMetadata() call to DriveService is complete.
-  void OnGetAccountMetadata(gdata::GDataErrorCode status,
+  void OnGetAccountMetadata(google_apis::GDataErrorCode status,
                             scoped_ptr<base::Value> data);
 
   // Called when the page requests periodic update.
@@ -220,8 +221,8 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
 };
 
 void DriveInternalsWebUIHandler::OnGetAccountMetadata(
-    gdata::GDataErrorCode status, scoped_ptr<base::Value> data) {
-  if (status != gdata::HTTP_SUCCESS) {
+    google_apis::GDataErrorCode status, scoped_ptr<base::Value> data) {
+  if (status != google_apis::HTTP_SUCCESS) {
     LOG(ERROR) << "Failed to get account metadata";
     return;
   }
@@ -229,9 +230,9 @@ void DriveInternalsWebUIHandler::OnGetAccountMetadata(
 
   base::DictionaryValue account_metadata;
 
-  if (gdata::util::IsDriveV2ApiEnabled()) {
-    scoped_ptr<gdata::AboutResource> about_resource;
-    about_resource = gdata::AboutResource::CreateFrom(*data);
+  if (google_apis::util::IsDriveV2ApiEnabled()) {
+    scoped_ptr<google_apis::AboutResource> about_resource;
+    about_resource = google_apis::AboutResource::CreateFrom(*data);
 
     account_metadata.SetDouble("account-quota-total",
                                about_resource->quota_bytes_total());
@@ -244,8 +245,8 @@ void DriveInternalsWebUIHandler::OnGetAccountMetadata(
     // http://crbug.com/154241
     return;
   } else {
-    scoped_ptr<gdata::AccountMetadataFeed> feed;
-    feed = gdata::AccountMetadataFeed::CreateFrom(*data);
+    scoped_ptr<google_apis::AccountMetadataFeed> feed;
+    feed = google_apis::AccountMetadataFeed::CreateFrom(*data);
 
     account_metadata.SetDouble("account-quota-total",
                                feed->quota_bytes_total());
@@ -255,7 +256,7 @@ void DriveInternalsWebUIHandler::OnGetAccountMetadata(
 
     base::ListValue* installed_apps = new base::ListValue();
     for (size_t i = 0; i < feed->installed_apps().size(); ++i) {
-      const gdata::InstalledApp* app = feed->installed_apps()[i];
+      const google_apis::InstalledApp* app = feed->installed_apps()[i];
       base::DictionaryValue* app_data = new base::DictionaryValue();
       app_data->SetString("app_name", app->app_name());
       app_data->SetString("app_id", app->app_id());
@@ -475,25 +476,26 @@ void DriveInternalsWebUIHandler::OnPeriodicUpdate(const base::ListValue* args) {
 
 void DriveInternalsWebUIHandler::UpdateInFlightOperations(
     const drive::DriveServiceInterface* drive_service) {
-  gdata::OperationProgressStatusList
+  google_apis::OperationProgressStatusList
       progress_status_list = drive_service->GetProgressStatusList();
 
   base::ListValue in_flight_operations;
   for (size_t i = 0; i < progress_status_list.size(); ++i) {
-    const gdata::OperationProgressStatus& status = progress_status_list[i];
+    const google_apis::OperationProgressStatus& status =
+        progress_status_list[i];
 
     base::DictionaryValue* dict = new DictionaryValue;
     dict->SetInteger("operation_id", status.operation_id);
     dict->SetString(
         "operation_type",
-        gdata::OperationTypeToString(status.operation_type));
+        google_apis::OperationTypeToString(status.operation_type));
     dict->SetString("file_path", status.file_path.AsUTF8Unsafe());
     dict->SetString(
         "transfer_state",
-        gdata::OperationTransferStateToString(status.transfer_state));
+        google_apis::OperationTransferStateToString(status.transfer_state));
     dict->SetString(
         "start_time",
-        gdata::util::FormatTimeAsStringLocaltime(status.start_time));
+        google_apis::util::FormatTimeAsStringLocaltime(status.start_time));
     dict->SetDouble("progress_current", status.progress_current);
     dict->SetDouble("progress_total", status.progress_total);
     in_flight_operations.Append(dict);

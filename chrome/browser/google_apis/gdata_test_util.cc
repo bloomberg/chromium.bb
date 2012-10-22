@@ -14,7 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 
-namespace gdata {
+namespace google_apis {
 namespace test_util {
 
 // This class is used to monitor if any task is posted to a message loop.
@@ -74,4 +74,4 @@ scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path) {
 }
 
 }  // namespace test_util
-}  // namespace gdata
+}  // namespace google_apis

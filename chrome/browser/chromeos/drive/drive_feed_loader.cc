@@ -148,13 +148,13 @@ void RunFeedLoadCallback(scoped_ptr<LoadFeedParams> params,
   feed_load_callback.Run(params.Pass(), error);
 }
 
-// Parses a gdata::DocumentFeed from |data|.
+// Parses a google_apis::DocumentFeed from |data|.
 void ParseFeedOnBlockingPool(
     scoped_ptr<base::Value> data,
-    scoped_ptr<gdata::DocumentFeed>* out_current_feed) {
+    scoped_ptr<google_apis::DocumentFeed>* out_current_feed) {
   DCHECK(out_current_feed);
   out_current_feed->reset(
-      gdata::DocumentFeed::ExtractAndParse(*data).release());
+      google_apis::DocumentFeed::ExtractAndParse(*data).release());
 }
 
 }  // namespace
@@ -252,7 +252,7 @@ void DriveFeedLoader::ReloadFromServerIfNeeded(
 
   // First fetch the latest changestamp to see if there were any new changes
   // there at all.
-  if (gdata::util::IsDriveV2ApiEnabled()) {
+  if (google_apis::util::IsDriveV2ApiEnabled()) {
     drive_service_->GetAccountMetadata(
         base::Bind(&DriveFeedLoader::OnGetAboutResource,
                    weak_ptr_factory_.GetWeakPtr(),
@@ -280,7 +280,7 @@ void DriveFeedLoader::OnGetAccountMetadata(
     ContentOrigin initial_origin,
     int64 local_changestamp,
     const FileOperationCallback& callback,
-    gdata::GDataErrorCode status,
+    google_apis::GDataErrorCode status,
     scoped_ptr<base::Value> feed_data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -298,15 +298,15 @@ void DriveFeedLoader::OnGetAccountMetadata(
     return;
   }
 
-  scoped_ptr<gdata::AccountMetadataFeed> account_metadata;
+  scoped_ptr<google_apis::AccountMetadataFeed> account_metadata;
   if (feed_data.get()) {
-    account_metadata = gdata::AccountMetadataFeed::CreateFrom(*feed_data);
+    account_metadata = google_apis::AccountMetadataFeed::CreateFrom(*feed_data);
 #ifndef NDEBUG
     // Save account metadata feed for analysis.
     const FilePath path =
         cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META).Append(
             kAccountMetadataFile);
-    gdata::util::PostBlockingPoolSequencedTask(
+    google_apis::util::PostBlockingPoolSequencedTask(
         FROM_HERE,
         blocking_task_runner_,
         base::Bind(&SaveFeedOnBlockingPoolForDebugging,
@@ -353,7 +353,7 @@ void DriveFeedLoader::OnGetAboutResource(
     ContentOrigin initial_origin,
     int64 local_changestamp,
     const FileOperationCallback& callback,
-    gdata::GDataErrorCode status,
+    google_apis::GDataErrorCode status,
     scoped_ptr<base::Value> feed_data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -370,9 +370,9 @@ void DriveFeedLoader::OnGetAboutResource(
     return;
   }
 
-  scoped_ptr<gdata::AboutResource> about_resource;
+  scoped_ptr<google_apis::AboutResource> about_resource;
   if (feed_data.get())
-    about_resource = gdata::AboutResource::CreateFrom(*feed_data);
+    about_resource = google_apis::AboutResource::CreateFrom(*feed_data);
 
   if (!about_resource.get()) {
     LoadFromServer(params.Pass());
@@ -410,7 +410,7 @@ void DriveFeedLoader::OnGetAboutResource(
   LoadFromServer(params.Pass());
 }
 
-void DriveFeedLoader::OnGetApplicationList(gdata::GDataErrorCode status,
+void DriveFeedLoader::OnGetApplicationList(google_apis::GDataErrorCode status,
                                            scoped_ptr<base::Value> json) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -419,7 +419,8 @@ void DriveFeedLoader::OnGetApplicationList(gdata::GDataErrorCode status,
     return;
 
   if (json.get()) {
-    scoped_ptr<gdata::AppList> applist(gdata::AppList::CreateFrom(*json));
+    scoped_ptr<google_apis::AppList> applist(
+        google_apis::AppList::CreateFrom(*json));
     if (applist.get()) {
       VLOG(1) << "applist get success";
       webapps_registry_->UpdateFromApplicationList(*applist.get());
@@ -434,7 +435,7 @@ void DriveFeedLoader::LoadFromServer(scoped_ptr<LoadFeedParams> params) {
 
   // base::Passed() may get evaluated first, so get a pointer to params.
   LoadFeedParams* params_ptr = params.get();
-  if (gdata::util::IsDriveV2ApiEnabled()) {
+  if (google_apis::util::IsDriveV2ApiEnabled()) {
     drive_service_->GetDocuments(
         params_ptr->feed_to_load,
         params_ptr->start_changestamp,
@@ -515,7 +516,7 @@ void DriveFeedLoader::OnFeedFromServerLoaded(scoped_ptr<LoadFeedParams> params,
 
 void DriveFeedLoader::OnGetDocuments(scoped_ptr<LoadFeedParams> params,
                                      base::TimeTicks start_time,
-                                     gdata::GDataErrorCode status,
+                                     google_apis::GDataErrorCode status,
                                      scoped_ptr<base::Value> data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -536,9 +537,9 @@ void DriveFeedLoader::OnGetDocuments(scoped_ptr<LoadFeedParams> params,
     return;
   }
 
-  scoped_ptr<gdata::DocumentFeed>* current_feed =
-      new scoped_ptr<gdata::DocumentFeed>;
-  gdata::util::PostBlockingPoolSequencedTaskAndReply(
+  scoped_ptr<google_apis::DocumentFeed>* current_feed =
+      new scoped_ptr<google_apis::DocumentFeed>;
+  google_apis::util::PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
       blocking_task_runner_,
       base::Bind(&ParseFeedOnBlockingPool,
@@ -554,7 +555,7 @@ void DriveFeedLoader::OnGetDocuments(scoped_ptr<LoadFeedParams> params,
 void DriveFeedLoader::OnParseFeed(
     scoped_ptr<LoadFeedParams> params,
     base::TimeTicks start_time,
-    scoped_ptr<gdata::DocumentFeed>* current_feed) {
+    scoped_ptr<google_apis::DocumentFeed>* current_feed) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(current_feed);
 
@@ -626,7 +627,7 @@ void DriveFeedLoader::OnParseFeed(
 
 void DriveFeedLoader::OnGetChangelist(scoped_ptr<LoadFeedParams> params,
                                       base::TimeTicks start_time,
-                                      gdata::GDataErrorCode status,
+                                      google_apis::GDataErrorCode status,
                                       scoped_ptr<base::Value> data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -648,8 +649,8 @@ void DriveFeedLoader::OnGetChangelist(scoped_ptr<LoadFeedParams> params,
   }
 
   GURL next_feed_url;
-  scoped_ptr<gdata::ChangeList> current_feed(
-      gdata::ChangeList::CreateFrom(*data));
+  scoped_ptr<google_apis::ChangeList> current_feed(
+      google_apis::ChangeList::CreateFrom(*data));
   if (!current_feed.get()) {
     RunFeedLoadCallback(params.Pass(), DRIVE_FILE_ERROR_FAILED);
     return;
@@ -661,7 +662,7 @@ void DriveFeedLoader::OnGetChangelist(scoped_ptr<LoadFeedParams> params,
   std::string file_name =
       base::StringPrintf("DEBUG_changelist_%" PRId64 ".json",
                          params->start_changestamp);
-  gdata::util::PostBlockingPoolSequencedTask(
+  google_apis::util::PostBlockingPoolSequencedTask(
       FROM_HERE,
       blocking_task_runner_,
       base::Bind(&SaveFeedOnBlockingPoolForDebugging,
@@ -671,8 +672,8 @@ void DriveFeedLoader::OnGetChangelist(scoped_ptr<LoadFeedParams> params,
 #endif
 
   // Add the current feed to the list of collected feeds for this directory.
-  scoped_ptr<gdata::DocumentFeed> feed =
-      gdata::DocumentFeed::CreateFromChangeList(*current_feed);
+  scoped_ptr<google_apis::DocumentFeed> feed =
+      google_apis::DocumentFeed::CreateFromChangeList(*current_feed);
   params->feed_list.push_back(feed.release());
 
   // Compute and notify the number of entries fetched so far.
@@ -881,7 +882,7 @@ void DriveFeedLoader::SaveFileSystem() {
     resource_metadata_->SerializeToString(serialized_proto.get());
     resource_metadata_->set_last_serialized(base::Time::Now());
     resource_metadata_->set_serialized_size(serialized_proto->size());
-    gdata::util::PostBlockingPoolSequencedTask(
+    google_apis::util::PostBlockingPoolSequencedTask(
         FROM_HERE,
         blocking_task_runner_,
         base::Bind(&SaveProtoOnBlockingPool, path,
@@ -890,7 +891,7 @@ void DriveFeedLoader::SaveFileSystem() {
 }
 
 DriveFileError DriveFeedLoader::UpdateFromFeed(
-    const ScopedVector<gdata::DocumentFeed>& feed_list,
+    const ScopedVector<google_apis::DocumentFeed>& feed_list,
     int64 start_changestamp,
     int64 root_feed_changestamp) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

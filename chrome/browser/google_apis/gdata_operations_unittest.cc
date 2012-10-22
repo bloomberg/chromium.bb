@@ -13,7 +13,7 @@
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace gdata {
+namespace google_apis {
 
 namespace {
 
@@ -82,9 +82,9 @@ class GDataOperationsTest : public testing::Test {
 TEST_F(GDataOperationsTest, GetDataOperationParseJson) {
   scoped_ptr<base::Value> value;
   GDataErrorCode error;
-  gdata::GetDataCallback cb = base::Bind(&GetDataOperationParseJsonCallback,
-                                         &error,
-                                         &value);
+  google_apis::GetDataCallback cb =
+      base::Bind(&GetDataOperationParseJsonCallback,
+                 &error, &value);
   JsonParseTestGetDataOperation* getData =
       new JsonParseTestGetDataOperation(runner_->operation_registry(), cb);
   getData->NotifyStart();
@@ -151,9 +151,9 @@ TEST_F(GDataOperationsTest, GetDataOperationParseJson) {
 TEST_F(GDataOperationsTest, GetDataOperationParseInvalidJson) {
   scoped_ptr<base::Value> value;
   GDataErrorCode error;
-  gdata::GetDataCallback cb = base::Bind(&GetDataOperationParseJsonCallback,
-                                         &error,
-                                         &value);
+  google_apis::GetDataCallback cb =
+      base::Bind(&GetDataOperationParseJsonCallback,
+                 &error, &value);
   JsonParseTestGetDataOperation* getData =
       new JsonParseTestGetDataOperation(runner_->operation_registry(), cb);
   getData->NotifyStart();
@@ -178,4 +178,4 @@ TEST_F(GDataOperationsTest, GetDataOperationParseInvalidJson) {
   }
 }
 
-}  // namespace gdata
+}  // namespace google_apis

@@ -108,8 +108,8 @@ class ContactDatabaseTest : public testing::Test {
   void OnDatabaseInitialized(bool success) {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     CHECK(success);
-    // TODO(derat): Move gdata::test::RunBlockingPoolTask() to a shared location
-    // and use it for these tests.
+    // TODO(derat): Move google_apis::test::RunBlockingPoolTask() to a shared
+    // location and use it for these tests.
     message_loop_.Quit();
   }
 

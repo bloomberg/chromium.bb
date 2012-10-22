@@ -163,7 +163,7 @@ class DriveCacheTest : public testing::Test {
     cache_->RequestInitializeOnUIThread(
         base::Bind(&test_util::CopyResultFromInitializeCacheCallback,
                    &initialization_success));
-    gdata::test_util::RunBlockingPoolTask();
+    google_apis::test_util::RunBlockingPoolTask();
     ASSERT_TRUE(initialization_success);
   }
 
@@ -171,7 +171,7 @@ class DriveCacheTest : public testing::Test {
     SetFreeDiskSpaceGetterForTesting(NULL);
     cache_->DestroyOnUIThread();
     // The cache destruction requires to post a task to the blocking pool.
-    gdata::test_util::RunBlockingPoolTask();
+    google_apis::test_util::RunBlockingPoolTask();
 
     profile_.reset(NULL);
   }
@@ -211,7 +211,7 @@ class DriveCacheTest : public testing::Test {
       // convention.
       if (test_util::ToCacheEntry(resource.cache_state).is_present()) {
         FilePath source_path =
-            gdata::test_util::GetTestFilePath(resource.source_file);
+            google_apis::test_util::GetTestFilePath(resource.source_file);
         ASSERT_TRUE(file_util::CopyFile(source_path, dest_path));
       } else {
         dest_path = FilePath(FILE_PATH_LITERAL(kSymLinkToDevNull));
@@ -242,7 +242,7 @@ class DriveCacheTest : public testing::Test {
 
     DVLOG(1) << "PrepareForInitCacheTest finished";
     cache_->ForceRescanOnUIThreadForTesting();
-    gdata::test_util::RunBlockingPoolTask();
+    google_apis::test_util::RunBlockingPoolTask();
   }
 
   void TestInitializeCache() {
@@ -290,7 +290,7 @@ class DriveCacheTest : public testing::Test {
                    resource_id,
                    md5));
 
-    gdata::test_util::RunBlockingPoolTask();
+    google_apis::test_util::RunBlockingPoolTask();
   }
 
   void TestStoreToCache(
@@ -310,7 +310,7 @@ class DriveCacheTest : public testing::Test {
         base::Bind(&DriveCacheTest::VerifyCacheFileState,
                    base::Unretained(this)));
 
-    gdata::test_util::RunBlockingPoolTask();
+    google_apis::test_util::RunBlockingPoolTask();
   }
 
   void VerifyGetFromCache(const std::string& resource_id,
@@ -344,7 +344,7 @@ class DriveCacheTest : public testing::Test {
         base::Bind(&DriveCacheTest::VerifyRemoveFromCache,
                    base::Unretained(this)));
 
-    gdata::test_util::RunBlockingPoolTask();
+    google_apis::test_util::RunBlockingPoolTask();
   }
 
   void VerifyRemoveFromCache(DriveFileError error,
@@ -457,7 +457,7 @@ class DriveCacheTest : public testing::Test {
         base::Bind(&DriveCacheTest::VerifyCacheFileState,
                    base::Unretained(this)));
 
-    gdata::test_util::RunBlockingPoolTask();
+    google_apis::test_util::RunBlockingPoolTask();
   }
 
   void TestUnpin(
@@ -475,7 +475,7 @@ class DriveCacheTest : public testing::Test {
         base::Bind(&DriveCacheTest::VerifyCacheFileState,
                    base::Unretained(this)));
 
-    gdata::test_util::RunBlockingPoolTask();
+    google_apis::test_util::RunBlockingPoolTask();
   }
 
   void TestMarkDirty(
@@ -497,7 +497,7 @@ class DriveCacheTest : public testing::Test {
                    resource_id,
                    md5));
 
-    gdata::test_util::RunBlockingPoolTask();
+    google_apis::test_util::RunBlockingPoolTask();
   }
 
   void VerifyMarkDirty(const std::string& resource_id,
@@ -534,7 +534,7 @@ class DriveCacheTest : public testing::Test {
         base::Bind(&DriveCacheTest::VerifyCacheFileState,
                    base::Unretained(this)));
 
-    gdata::test_util::RunBlockingPoolTask();
+    google_apis::test_util::RunBlockingPoolTask();
   }
 
   void TestClearDirty(
@@ -552,7 +552,7 @@ class DriveCacheTest : public testing::Test {
         base::Bind(&DriveCacheTest::VerifyCacheFileState,
                    base::Unretained(this)));
 
-    gdata::test_util::RunBlockingPoolTask();
+    google_apis::test_util::RunBlockingPoolTask();
   }
 
   void TestSetMountedState(
@@ -572,7 +572,7 @@ class DriveCacheTest : public testing::Test {
         base::Bind(&DriveCacheTest::VerifySetMountedState,
                    base::Unretained(this), resource_id, md5, to_mount));
 
-    gdata::test_util::RunBlockingPoolTask();
+    google_apis::test_util::RunBlockingPoolTask();
   }
 
   void VerifySetMountedState(const std::string& resource_id,
@@ -693,7 +693,7 @@ class DriveCacheTest : public testing::Test {
                    md5,
                    cache_entry,
                    &result));
-    gdata::test_util::RunBlockingPoolTask();
+    google_apis::test_util::RunBlockingPoolTask();
     return result;
   }
 
@@ -817,10 +817,11 @@ TEST_F(DriveCacheTest, StoreToCacheSimple) {
   std::string md5("abcdef0123456789");
 
   // Store an existing file.
-  TestStoreToCache(resource_id, md5,
-                   gdata::test_util::GetTestFilePath("gdata/root_feed.json"),
-                   DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
-                   DriveCache::CACHE_TYPE_TMP);
+  TestStoreToCache(
+      resource_id, md5,
+      google_apis::test_util::GetTestFilePath("gdata/root_feed.json"),
+      DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+      DriveCache::CACHE_TYPE_TMP);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Store a non-existent file to the same |resource_id| and |md5|.
@@ -835,10 +836,11 @@ TEST_F(DriveCacheTest, StoreToCacheSimple) {
   // |md5|.
   md5 = "new_md5";
   num_callback_invocations_ = 0;
-  TestStoreToCache(resource_id, md5,
-                   gdata::test_util::GetTestFilePath("gdata/subdir_feed.json"),
-                   DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
-                   DriveCache::CACHE_TYPE_TMP);
+  TestStoreToCache(
+      resource_id, md5,
+      google_apis::test_util::GetTestFilePath("gdata/subdir_feed.json"),
+      DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+      DriveCache::CACHE_TYPE_TMP);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Verify that there's only one file with name <resource_id>, i.e. previously
@@ -853,10 +855,11 @@ TEST_F(DriveCacheTest, GetFromCacheSimple) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   // First store a file to cache.
-  TestStoreToCache(resource_id, md5,
-                   gdata::test_util::GetTestFilePath("gdata/root_feed.json"),
-                   DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
-                   DriveCache::CACHE_TYPE_TMP);
+  TestStoreToCache(
+      resource_id, md5,
+      google_apis::test_util::GetTestFilePath("gdata/root_feed.json"),
+      DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+      DriveCache::CACHE_TYPE_TMP);
 
   // Then try to get the existing file from cache.
   num_callback_invocations_ = 0;
@@ -888,10 +891,11 @@ TEST_F(DriveCacheTest, RemoveFromCacheSimple) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   // First store a file to cache.
-  TestStoreToCache(resource_id, md5,
-                   gdata::test_util::GetTestFilePath("gdata/root_feed.json"),
-                   DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
-                   DriveCache::CACHE_TYPE_TMP);
+  TestStoreToCache(
+      resource_id, md5,
+      google_apis::test_util::GetTestFilePath("gdata/root_feed.json"),
+      DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+      DriveCache::CACHE_TYPE_TMP);
 
   // Then try to remove existing file from cache.
   num_callback_invocations_ = 0;
@@ -901,10 +905,11 @@ TEST_F(DriveCacheTest, RemoveFromCacheSimple) {
   // Repeat using non-alphanumeric characters for resource id, including '.'
   // which is an extension separator.
   resource_id = "pdf:`~!@#$%^&*()-_=+[{|]}\\;',<.>/?";
-  TestStoreToCache(resource_id, md5,
-                   gdata::test_util::GetTestFilePath("gdata/root_feed.json"),
-                   DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
-                   DriveCache::CACHE_TYPE_TMP);
+  TestStoreToCache(
+      resource_id, md5,
+      google_apis::test_util::GetTestFilePath("gdata/root_feed.json"),
+      DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+      DriveCache::CACHE_TYPE_TMP);
 
   num_callback_invocations_ = 0;
   TestRemoveFromCache(resource_id, DRIVE_FILE_OK);
@@ -922,10 +927,11 @@ TEST_F(DriveCacheTest, PinAndUnpin) {
       .Times(1);
 
   // First store a file to cache.
-  TestStoreToCache(resource_id, md5,
-                   gdata::test_util::GetTestFilePath("gdata/root_feed.json"),
-                   DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
-                   DriveCache::CACHE_TYPE_TMP);
+  TestStoreToCache(
+      resource_id, md5,
+      google_apis::test_util::GetTestFilePath("gdata/root_feed.json"),
+      DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+      DriveCache::CACHE_TYPE_TMP);
 
   // Pin the existing file in cache.
   num_callback_invocations_ = 0;
@@ -1000,13 +1006,14 @@ TEST_F(DriveCacheTest, StoreToCachePinned) {
 
   // Store an existing file to a previously pinned file.
   num_callback_invocations_ = 0;
-  TestStoreToCache(resource_id, md5,
-                   gdata::test_util::GetTestFilePath("gdata/root_feed.json"),
-                   DRIVE_FILE_OK,
-                   test_util::TEST_CACHE_STATE_PRESENT |
-                   test_util::TEST_CACHE_STATE_PINNED |
-                   test_util::TEST_CACHE_STATE_PERSISTENT,
-                   DriveCache::CACHE_TYPE_PERSISTENT);
+  TestStoreToCache(
+      resource_id, md5,
+      google_apis::test_util::GetTestFilePath("gdata/root_feed.json"),
+      DRIVE_FILE_OK,
+      test_util::TEST_CACHE_STATE_PRESENT |
+      test_util::TEST_CACHE_STATE_PINNED |
+      test_util::TEST_CACHE_STATE_PERSISTENT,
+      DriveCache::CACHE_TYPE_PERSISTENT);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Store a non-existent file to a previously pinned and stored file.
@@ -1040,13 +1047,14 @@ TEST_F(DriveCacheTest, GetFromCachePinned) {
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Store an existing file to the previously pinned non-existent file.
-  TestStoreToCache(resource_id, md5,
-                   gdata::test_util::GetTestFilePath("gdata/root_feed.json"),
-                   DRIVE_FILE_OK,
-                   test_util::TEST_CACHE_STATE_PRESENT |
-                   test_util::TEST_CACHE_STATE_PINNED |
-                   test_util::TEST_CACHE_STATE_PERSISTENT,
-                   DriveCache::CACHE_TYPE_PERSISTENT);
+  TestStoreToCache(
+      resource_id, md5,
+      google_apis::test_util::GetTestFilePath("gdata/root_feed.json"),
+      DRIVE_FILE_OK,
+      test_util::TEST_CACHE_STATE_PRESENT |
+      test_util::TEST_CACHE_STATE_PINNED |
+      test_util::TEST_CACHE_STATE_PERSISTENT,
+      DriveCache::CACHE_TYPE_PERSISTENT);
 
   // Get the previously pinned and stored file from cache.
   num_callback_invocations_ = 0;
@@ -1065,10 +1073,11 @@ TEST_F(DriveCacheTest, RemoveFromCachePinned) {
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
 
   // Store a file to cache, and pin it.
-  TestStoreToCache(resource_id, md5,
-                   gdata::test_util::GetTestFilePath("gdata/root_feed.json"),
-                   DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
-                   DriveCache::CACHE_TYPE_TMP);
+  TestStoreToCache(
+      resource_id, md5,
+      google_apis::test_util::GetTestFilePath("gdata/root_feed.json"),
+      DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+      DriveCache::CACHE_TYPE_TMP);
   TestPin(resource_id, md5, DRIVE_FILE_OK,
           test_util::TEST_CACHE_STATE_PRESENT |
           test_util::TEST_CACHE_STATE_PINNED |
@@ -1085,10 +1094,11 @@ TEST_F(DriveCacheTest, RemoveFromCachePinned) {
   resource_id = "pdf:`~!@#$%^&*()-_=+[{|]}\\;',<.>/?";
   EXPECT_CALL(*mock_cache_observer_, OnCachePinned(resource_id, md5)).Times(1);
 
-  TestStoreToCache(resource_id, md5,
-                   gdata::test_util::GetTestFilePath("gdata/root_feed.json"),
-                   DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
-                   DriveCache::CACHE_TYPE_TMP);
+  TestStoreToCache(
+      resource_id, md5,
+      google_apis::test_util::GetTestFilePath("gdata/root_feed.json"),
+      DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+      DriveCache::CACHE_TYPE_TMP);
   TestPin(resource_id, md5, DRIVE_FILE_OK,
           test_util::TEST_CACHE_STATE_PRESENT |
           test_util::TEST_CACHE_STATE_PINNED |
@@ -1109,10 +1119,11 @@ TEST_F(DriveCacheTest, DirtyCacheSimple) {
   EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(resource_id)).Times(1);
 
   // First store a file to cache.
-  TestStoreToCache(resource_id, md5,
-                   gdata::test_util::GetTestFilePath("gdata/root_feed.json"),
-                   DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
-                   DriveCache::CACHE_TYPE_TMP);
+  TestStoreToCache(
+      resource_id, md5,
+      google_apis::test_util::GetTestFilePath("gdata/root_feed.json"),
+      DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+      DriveCache::CACHE_TYPE_TMP);
 
   // Mark the file dirty.
   num_callback_invocations_ = 0;
@@ -1150,10 +1161,11 @@ TEST_F(DriveCacheTest, DirtyCachePinned) {
   EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(resource_id)).Times(1);
 
   // First store a file to cache and pin it.
-  TestStoreToCache(resource_id, md5,
-                   gdata::test_util::GetTestFilePath("gdata/root_feed.json"),
-                   DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
-                   DriveCache::CACHE_TYPE_TMP);
+  TestStoreToCache(
+      resource_id, md5,
+      google_apis::test_util::GetTestFilePath("gdata/root_feed.json"),
+      DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+      DriveCache::CACHE_TYPE_TMP);
   TestPin(resource_id, md5, DRIVE_FILE_OK,
           test_util::TEST_CACHE_STATE_PRESENT |
           test_util::TEST_CACHE_STATE_PINNED |
@@ -1202,10 +1214,11 @@ TEST_F(DriveCacheTest, PinAndUnpinDirtyCache) {
       .Times(1);
 
   // First store a file to cache and mark it as dirty.
-  TestStoreToCache(resource_id, md5,
-                   gdata::test_util::GetTestFilePath("gdata/root_feed.json"),
-                   DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
-                   DriveCache::CACHE_TYPE_TMP);
+  TestStoreToCache(
+      resource_id, md5,
+      google_apis::test_util::GetTestFilePath("gdata/root_feed.json"),
+      DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+      DriveCache::CACHE_TYPE_TMP);
   TestMarkDirty(resource_id, md5, DRIVE_FILE_OK,
                 test_util::TEST_CACHE_STATE_PRESENT |
                 test_util::TEST_CACHE_STATE_DIRTY |
@@ -1251,10 +1264,11 @@ TEST_F(DriveCacheTest, DirtyCacheRepetitive) {
   EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(resource_id)).Times(3);
 
   // First store a file to cache.
-  TestStoreToCache(resource_id, md5,
-                   gdata::test_util::GetTestFilePath("gdata/root_feed.json"),
-                   DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
-                   DriveCache::CACHE_TYPE_TMP);
+  TestStoreToCache(
+      resource_id, md5,
+      google_apis::test_util::GetTestFilePath("gdata/root_feed.json"),
+      DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+      DriveCache::CACHE_TYPE_TMP);
 
   // Mark the file dirty.
   num_callback_invocations_ = 0;
@@ -1355,10 +1369,11 @@ TEST_F(DriveCacheTest, DirtyCacheInvalid) {
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Store a file to cache.
-  TestStoreToCache(resource_id, md5,
-                   gdata::test_util::GetTestFilePath("gdata/root_feed.json"),
-                   DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
-                   DriveCache::CACHE_TYPE_TMP);
+  TestStoreToCache(
+      resource_id, md5,
+      google_apis::test_util::GetTestFilePath("gdata/root_feed.json"),
+      DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+      DriveCache::CACHE_TYPE_TMP);
 
   // Commit a non-dirty existing file dirty.
   num_callback_invocations_ = 0;
@@ -1383,13 +1398,14 @@ TEST_F(DriveCacheTest, DirtyCacheInvalid) {
                 DriveCache::CACHE_TYPE_PERSISTENT);
   num_callback_invocations_ = 0;
   md5 = "new_md5";
-  TestStoreToCache(resource_id, md5,
-                   gdata::test_util::GetTestFilePath("gdata/subdir_feed.json"),
-                   DRIVE_FILE_ERROR_IN_USE,
-                   test_util::TEST_CACHE_STATE_PRESENT |
-                   test_util::TEST_CACHE_STATE_DIRTY |
-                   test_util::TEST_CACHE_STATE_PERSISTENT,
-                   DriveCache::CACHE_TYPE_PERSISTENT);
+  TestStoreToCache(
+      resource_id, md5,
+      google_apis::test_util::GetTestFilePath("gdata/subdir_feed.json"),
+      DRIVE_FILE_ERROR_IN_USE,
+      test_util::TEST_CACHE_STATE_PRESENT |
+      test_util::TEST_CACHE_STATE_DIRTY |
+      test_util::TEST_CACHE_STATE_PERSISTENT,
+      DriveCache::CACHE_TYPE_PERSISTENT);
   EXPECT_EQ(1, num_callback_invocations_);
 }
 
@@ -1403,10 +1419,11 @@ TEST_F(DriveCacheTest, RemoveFromDirtyCache) {
   EXPECT_CALL(*mock_cache_observer_, OnCacheCommitted(resource_id)).Times(1);
 
   // Store a file to cache, pin it, mark it dirty and commit it.
-  TestStoreToCache(resource_id, md5,
-                   gdata::test_util::GetTestFilePath("gdata/root_feed.json"),
-                   DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
-                   DriveCache::CACHE_TYPE_TMP);
+  TestStoreToCache(
+      resource_id, md5,
+      google_apis::test_util::GetTestFilePath("gdata/root_feed.json"),
+      DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+      DriveCache::CACHE_TYPE_TMP);
   TestPin(resource_id, md5, DRIVE_FILE_OK,
           test_util::TEST_CACHE_STATE_PRESENT |
           test_util::TEST_CACHE_STATE_PINNED |
@@ -1441,10 +1458,11 @@ TEST_F(DriveCacheTest, MountUnmount) {
   std::string md5("abcdef0123456789");
 
   // First store a file to cache in the tmp subdir.
-  TestStoreToCache(resource_id, md5,
-                   gdata::test_util::GetTestFilePath("gdata/root_feed.json"),
-                   DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
-                   DriveCache::CACHE_TYPE_TMP);
+  TestStoreToCache(
+      resource_id, md5,
+      google_apis::test_util::GetTestFilePath("gdata/root_feed.json"),
+      DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+      DriveCache::CACHE_TYPE_TMP);
 
   // Mark the file mounted.
   num_callback_invocations_ = 0;
@@ -1486,7 +1504,7 @@ TEST_F(DriveCacheTest, GetResourceIdsOfBacklogOnUIThread) {
   std::vector<std::string> to_upload;
   cache_->GetResourceIdsOfBacklogOnUIThread(
       base::Bind(&OnGetResourceIdsOfBacklog, &to_fetch, &to_upload));
-  gdata::test_util::RunBlockingPoolTask();
+  google_apis::test_util::RunBlockingPoolTask();
 
   sort(to_fetch.begin(), to_fetch.end());
   ASSERT_EQ(1U, to_fetch.size());
@@ -1504,7 +1522,7 @@ TEST_F(DriveCacheTest, GetResourceIdsOfExistingPinnedFilesOnUIThread) {
   std::vector<std::string> resource_ids;
   cache_->GetResourceIdsOfExistingPinnedFilesOnUIThread(
       base::Bind(&OnGetResourceIds, &resource_ids));
-  gdata::test_util::RunBlockingPoolTask();
+  google_apis::test_util::RunBlockingPoolTask();
 
   sort(resource_ids.begin(), resource_ids.end());
   ASSERT_EQ(2U, resource_ids.size());
@@ -1518,7 +1536,7 @@ TEST_F(DriveCacheTest, GetResourceIdsOfAllFilesOnUIThread) {
   std::vector<std::string> resource_ids;
   cache_->GetResourceIdsOfAllFilesOnUIThread(
       base::Bind(&OnGetResourceIds, &resource_ids));
-  gdata::test_util::RunBlockingPoolTask();
+  google_apis::test_util::RunBlockingPoolTask();
 
   sort(resource_ids.begin(), resource_ids.end());
   ASSERT_EQ(6U, resource_ids.size());
@@ -1541,10 +1559,11 @@ TEST_F(DriveCacheTest, ClearAllOnUIThread) {
   std::string md5("abcdef0123456789");
 
   // Store an existing file.
-  TestStoreToCache(resource_id, md5,
-                   gdata::test_util::GetTestFilePath("gdata/root_feed.json"),
-                   DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
-                   DriveCache::CACHE_TYPE_TMP);
+  TestStoreToCache(
+      resource_id, md5,
+      google_apis::test_util::GetTestFilePath("gdata/root_feed.json"),
+      DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
+      DriveCache::CACHE_TYPE_TMP);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Verify that there's only one cached file.
@@ -1556,7 +1575,7 @@ TEST_F(DriveCacheTest, ClearAllOnUIThread) {
   cache_->ClearAllOnUIThread(base::Bind(&OnClearAll,
                                         &error,
                                         &file_path));
-  gdata::test_util::RunBlockingPoolTask();
+  google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_OK, error);
 
   // Verify that all the cache is removed.
@@ -1572,11 +1591,12 @@ TEST_F(DriveCacheTest, StoreToCacheNoSpace) {
   std::string md5("abcdef0123456789");
 
   // Try to store an existing file.
-  TestStoreToCache(resource_id, md5,
-                   gdata::test_util::GetTestFilePath("gdata/root_feed.json"),
-                   DRIVE_FILE_ERROR_NO_SPACE,
-                   test_util::TEST_CACHE_STATE_NONE,
-                   DriveCache::CACHE_TYPE_TMP);
+  TestStoreToCache(
+      resource_id, md5,
+      google_apis::test_util::GetTestFilePath("gdata/root_feed.json"),
+      DRIVE_FILE_ERROR_NO_SPACE,
+      test_util::TEST_CACHE_STATE_NONE,
+      DriveCache::CACHE_TYPE_TMP);
   EXPECT_EQ(1, num_callback_invocations_);
 
   // Verify that there's no files added.
@@ -1601,11 +1621,11 @@ TEST(DriveCacheExtraTest, InitializationFailure) {
   cache->RequestInitializeOnUIThread(
       base::Bind(&test_util::CopyResultFromInitializeCacheCallback,
                  &success));
-  gdata::test_util::RunBlockingPoolTask();
+  google_apis::test_util::RunBlockingPoolTask();
   EXPECT_FALSE(success);
 
   cache->DestroyOnUIThread();
-  gdata::test_util::RunBlockingPoolTask();
+  google_apis::test_util::RunBlockingPoolTask();
 }
 
 }   // namespace drive

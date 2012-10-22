@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_GOOGLE_APIS_DRIVE_ENTRY_KINDS_H_
 #define CHROME_BROWSER_GOOGLE_APIS_DRIVE_ENTRY_KINDS_H_
 
-namespace gdata {
+namespace google_apis {
 
 // DriveEntryKind specifies the kind of a Drive entry.
 //
@@ -34,6 +34,6 @@ enum DriveEntryKind {
   ENTRY_KIND_MAX_VALUE,
 };
 
-}  // namespace gdata
+}  // namespace google_apis
 
 #endif  // CHROME_BROWSER_GOOGLE_APIS_DRIVE_ENTRY_KINDS_H_

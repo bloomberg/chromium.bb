@@ -23,8 +23,8 @@ class DriveFileSystemInterface;
 class DriveServiceInterface;
 class DriveUploaderInterface;
 
-using gdata::DocumentEntry;
-using gdata::GDataErrorCode;
+using google_apis::DocumentEntry;
+using google_apis::GDataErrorCode;
 
 namespace file_system {
 

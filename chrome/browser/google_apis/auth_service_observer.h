@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_GOOGLE_APIS_AUTH_SERVICE_OBSERVER_H_
 #define CHROME_BROWSER_GOOGLE_APIS_AUTH_SERVICE_OBSERVER_H_
 
-namespace gdata {
+namespace google_apis {
 
 // Interface for classes that need to observe events from AuthService.
 // All events are notified on UI thread.
@@ -18,6 +18,6 @@ class AuthServiceObserver {
   virtual ~AuthServiceObserver() {}
 };
 
-}  // namespace gdata
+}  // namespace google_apis
 
 #endif  // CHROME_BROWSER_GOOGLE_APIS_AUTH_SERVICE_OBSERVER_H_

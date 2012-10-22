@@ -48,7 +48,7 @@ const std::string* g_test_cache_root = NULL;
 bool IsDriveEnabledForProfile(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!gdata::AuthService::CanAuthenticate(profile))
+  if (!google_apis::AuthService::CanAuthenticate(profile))
     return false;
 
   // Disable Drive if preference is set.  This can happen with commandline flag
@@ -355,7 +355,7 @@ ProfileKeyedService* DriveSystemServiceFactory::BuildServiceInstanceFor(
   DriveServiceInterface* drive_service = g_test_drive_service;
   g_test_drive_service = NULL;
   if (!drive_service) {
-    if (gdata::util::IsDriveV2ApiEnabled())
+    if (google_apis::util::IsDriveV2ApiEnabled())
       drive_service = new DriveAPIService();
     else
       drive_service = new GDataWapiService();

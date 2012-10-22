@@ -15,7 +15,7 @@
 #include "base/time.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
-namespace gdata {
+namespace google_apis {
 
 class OperationRegistryObserver;
 
@@ -184,6 +184,6 @@ class OperationRegistryObserver {
   virtual ~OperationRegistryObserver() {}
 };
 
-}  // namespace gdata
+}  // namespace google_apis
 
 #endif  // CHROME_BROWSER_GOOGLE_APIS_OPERATION_REGISTRY_H_

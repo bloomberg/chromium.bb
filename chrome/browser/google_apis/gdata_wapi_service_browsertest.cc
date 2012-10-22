@@ -51,9 +51,9 @@ class GDataTest : public InProcessBrowserTest {
 };
 
 // The test callback for GDataWapiService::DownloadFile().
-void TestDownloadCallback(gdata::GDataErrorCode* result,
+void TestDownloadCallback(google_apis::GDataErrorCode* result,
                           std::string* contents,
-                          gdata::GDataErrorCode error,
+                          google_apis::GDataErrorCode error,
                           const GURL& content_url,
                           const FilePath& temp_file) {
   *result = error;
@@ -63,9 +63,9 @@ void TestDownloadCallback(gdata::GDataErrorCode* result,
 }
 
 // The test callback for GDataWapiService::GetDocuments().
-void TestGetDocumentsCallback(gdata::GDataErrorCode* result_code,
+void TestGetDocumentsCallback(google_apis::GDataErrorCode* result_code,
                               base::Value** result_data,
-                              gdata::GDataErrorCode error,
+                              google_apis::GDataErrorCode error,
                               scoped_ptr<base::Value> feed_data) {
   *result_code = error;
   *result_data = feed_data.release();
@@ -75,7 +75,7 @@ void TestGetDocumentsCallback(gdata::GDataErrorCode* result_code,
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(GDataTest, Download) {
-  gdata::GDataErrorCode result = gdata::GDATA_OTHER_ERROR;
+  google_apis::GDataErrorCode result = google_apis::GDATA_OTHER_ERROR;
   std::string contents;
   service_->DownloadFile(
       FilePath(FILE_PATH_LITERAL("/dummy/gdata/testfile.txt")),
@@ -83,10 +83,10 @@ IN_PROC_BROWSER_TEST_F(GDataTest, Download) {
           FILE_PATH_LITERAL("cached_testfile.txt"))),
       gdata_test_server_.GetURL("files/chromeos/gdata/testfile.txt"),
       base::Bind(&TestDownloadCallback, &result, &contents),
-      gdata::GetContentCallback());
+      google_apis::GetContentCallback());
   content::RunMessageLoop();
 
-  EXPECT_EQ(gdata::HTTP_SUCCESS, result);
+  EXPECT_EQ(google_apis::HTTP_SUCCESS, result);
   FilePath expected_filepath = gdata_test_server_.document_root().Append(
       FilePath(FILE_PATH_LITERAL("chromeos/gdata/testfile.txt")));
   std::string expected_contents;
@@ -95,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(GDataTest, Download) {
 }
 
 IN_PROC_BROWSER_TEST_F(GDataTest, NonExistingDownload) {
-  gdata::GDataErrorCode result = gdata::GDATA_OTHER_ERROR;
+  google_apis::GDataErrorCode result = google_apis::GDATA_OTHER_ERROR;
   std::string dummy_contents;
   service_->DownloadFile(
       FilePath(FILE_PATH_LITERAL("/dummy/gdata/no-such-file.txt")),
@@ -103,15 +103,15 @@ IN_PROC_BROWSER_TEST_F(GDataTest, NonExistingDownload) {
           FILE_PATH_LITERAL("cache_no-such-file.txt"))),
       gdata_test_server_.GetURL("files/chromeos/gdata/no-such-file.txt"),
       base::Bind(&TestDownloadCallback, &result, &dummy_contents),
-      gdata::GetContentCallback());
+      google_apis::GetContentCallback());
   content::RunMessageLoop();
 
-  EXPECT_EQ(gdata::HTTP_NOT_FOUND, result);
+  EXPECT_EQ(google_apis::HTTP_NOT_FOUND, result);
   // Do not verify the not found message.
 }
 
 IN_PROC_BROWSER_TEST_F(GDataTest, GetDocuments) {
-  gdata::GDataErrorCode result = gdata::GDATA_OTHER_ERROR;
+  google_apis::GDataErrorCode result = google_apis::GDATA_OTHER_ERROR;
   base::Value* result_data = NULL;
   service_->GetDocuments(
       gdata_test_server_.GetURL("files/chromeos/gdata/root_feed.json"),
@@ -121,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(GDataTest, GetDocuments) {
       base::Bind(&TestGetDocumentsCallback, &result, &result_data));
   content::RunMessageLoop();
 
-  EXPECT_EQ(gdata::HTTP_SUCCESS, result);
+  EXPECT_EQ(google_apis::HTTP_SUCCESS, result);
   ASSERT_TRUE(result_data);
   FilePath expected_filepath = gdata_test_server_.document_root().Append(
       FilePath(FILE_PATH_LITERAL("chromeos/gdata/root_feed.json")));
@@ -136,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(GDataTest, GetDocuments) {
 IN_PROC_BROWSER_TEST_F(GDataTest, GetDocumentsFailure) {
   // testfile.txt exists but the response is not JSON, so it should
   // emit a parse error instead.
-  gdata::GDataErrorCode result = gdata::GDATA_OTHER_ERROR;
+  google_apis::GDataErrorCode result = google_apis::GDATA_OTHER_ERROR;
   base::Value* result_data = NULL;
   service_->GetDocuments(
       gdata_test_server_.GetURL("files/chromeos/gdata/testfile.txt"),
@@ -146,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(GDataTest, GetDocumentsFailure) {
       base::Bind(&TestGetDocumentsCallback, &result, &result_data));
   content::RunMessageLoop();
 
-  EXPECT_EQ(gdata::GDATA_PARSE_ERROR, result);
+  EXPECT_EQ(google_apis::GDATA_PARSE_ERROR, result);
   EXPECT_FALSE(result_data);
 }
 

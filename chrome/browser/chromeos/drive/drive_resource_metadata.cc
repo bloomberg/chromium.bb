@@ -186,7 +186,7 @@ DriveResourceMetadata::DriveResourceMetadata()
       origin_(UNINITIALIZED),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   root_ = CreateDriveDirectory().Pass();
-  if (!gdata::util::IsDriveV2ApiEnabled())
+  if (!google_apis::util::IsDriveV2ApiEnabled())
     InitializeRootEntry(kDriveRootDirectoryResourceId);
 }
 
@@ -200,7 +200,7 @@ DriveResourceMetadata::~DriveResourceMetadata() {
 }
 
 scoped_ptr<DriveEntry> DriveResourceMetadata::FromDocumentEntry(
-    const gdata::DocumentEntry& doc) {
+    const google_apis::DocumentEntry& doc) {
   scoped_ptr<DriveEntry> entry;
   if (doc.is_folder())
     entry = CreateDriveDirectory().Pass();
@@ -243,7 +243,7 @@ void DriveResourceMetadata::ClearRoot() {
 
 void DriveResourceMetadata::AddEntryToDirectory(
     const FilePath& directory_path,
-    scoped_ptr<gdata::DocumentEntry> doc_entry,
+    scoped_ptr<google_apis::DocumentEntry> doc_entry,
     const FileMoveCallback& callback) {
   DCHECK(!directory_path.empty());
   DCHECK(!callback.is_null());
@@ -513,7 +513,7 @@ void DriveResourceMetadata::GetEntryInfoPairByPaths(
 }
 
 void DriveResourceMetadata::RefreshFile(
-    scoped_ptr<gdata::DocumentEntry> doc_entry,
+    scoped_ptr<google_apis::DocumentEntry> doc_entry,
     const GetEntryInfoWithFilePathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());

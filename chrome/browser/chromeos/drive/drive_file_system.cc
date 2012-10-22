@@ -294,7 +294,7 @@ struct DriveFileSystem::GetFileFromCacheParams {
       const std::string& md5,
       const std::string& mime_type,
       const GetFileCallback& get_file_callback,
-      const gdata::GetContentCallback& get_content_callback)
+      const google_apis::GetContentCallback& get_content_callback)
       : virtual_file_path(virtual_file_path),
         local_tmp_path(local_tmp_path),
         content_url(content_url),
@@ -313,14 +313,14 @@ struct DriveFileSystem::GetFileFromCacheParams {
   std::string md5;
   std::string mime_type;
   GetFileCallback get_file_callback;
-  gdata::GetContentCallback get_content_callback;
+  google_apis::GetContentCallback get_content_callback;
 };
 
 // DriveFileSystem::AddUploadedFileParams implementation.
 struct DriveFileSystem::AddUploadedFileParams {
-  AddUploadedFileParams(gdata::UploadMode upload_mode,
+  AddUploadedFileParams(google_apis::UploadMode upload_mode,
                         const FilePath& directory_path,
-                        scoped_ptr<gdata::DocumentEntry> doc_entry,
+                        scoped_ptr<google_apis::DocumentEntry> doc_entry,
                         const FilePath& file_content_path,
                         DriveCache::FileOperationType cache_operation,
                         const base::Closure& callback)
@@ -332,9 +332,9 @@ struct DriveFileSystem::AddUploadedFileParams {
     callback(callback) {
   }
 
-  gdata::UploadMode upload_mode;
+  google_apis::UploadMode upload_mode;
   FilePath directory_path;
-  scoped_ptr<gdata::DocumentEntry> doc_entry;
+  scoped_ptr<google_apis::DocumentEntry> doc_entry;
   FilePath file_content_path;
   DriveCache::FileOperationType cache_operation;
   base::Closure callback;
@@ -510,11 +510,11 @@ void DriveFileSystem::GetEntryInfoByResourceId(
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!callback.is_null());
 
-  gdata::RunTaskOnUIThread(
+  google_apis::RunTaskOnUIThread(
       base::Bind(&DriveFileSystem::GetEntryInfoByResourceIdOnUIThread,
                  ui_weak_ptr_,
                  resource_id,
-                 gdata::CreateRelayCallback(callback)));
+                 google_apis::CreateRelayCallback(callback)));
 }
 
 void DriveFileSystem::GetEntryInfoByResourceIdOnUIThread(
@@ -609,11 +609,12 @@ void DriveFileSystem::Copy(const FilePath& src_file_path,
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!callback.is_null());
 
-  gdata::RunTaskOnUIThread(base::Bind(&DriveFileSystem::CopyOnUIThread,
-                                      ui_weak_ptr_,
-                                      src_file_path,
-                                      dest_file_path,
-                                      gdata::CreateRelayCallback(callback)));
+  google_apis::RunTaskOnUIThread(
+      base::Bind(&DriveFileSystem::CopyOnUIThread,
+                 ui_weak_ptr_,
+                 src_file_path,
+                 dest_file_path,
+                 google_apis::CreateRelayCallback(callback)));
 }
 
 void DriveFileSystem::CopyOnUIThread(const FilePath& src_file_path,
@@ -629,11 +630,12 @@ void DriveFileSystem::Move(const FilePath& src_file_path,
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!callback.is_null());
 
-  gdata::RunTaskOnUIThread(base::Bind(&DriveFileSystem::MoveOnUIThread,
-                                      ui_weak_ptr_,
-                                      src_file_path,
-                                      dest_file_path,
-                                      gdata::CreateRelayCallback(callback)));
+  google_apis::RunTaskOnUIThread(
+      base::Bind(&DriveFileSystem::MoveOnUIThread,
+                 ui_weak_ptr_,
+                 src_file_path,
+                 dest_file_path,
+                 google_apis::CreateRelayCallback(callback)));
 }
 
 void DriveFileSystem::MoveOnUIThread(const FilePath& src_file_path,
@@ -649,11 +651,12 @@ void DriveFileSystem::Remove(const FilePath& file_path,
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!callback.is_null());
 
-  gdata::RunTaskOnUIThread(base::Bind(&DriveFileSystem::RemoveOnUIThread,
-                                      ui_weak_ptr_,
-                                      file_path,
-                                      is_recursive,
-                                      gdata::CreateRelayCallback(callback)));
+  google_apis::RunTaskOnUIThread(
+      base::Bind(&DriveFileSystem::RemoveOnUIThread,
+                 ui_weak_ptr_,
+                 file_path,
+                 is_recursive,
+                 google_apis::CreateRelayCallback(callback)));
 }
 
 void DriveFileSystem::RemoveOnUIThread(
@@ -675,13 +678,13 @@ void DriveFileSystem::CreateDirectory(
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!callback.is_null());
 
-  gdata::RunTaskOnUIThread(
+  google_apis::RunTaskOnUIThread(
       base::Bind(&DriveFileSystem::CreateDirectoryOnUIThread,
                  ui_weak_ptr_,
                  directory_path,
                  is_exclusive,
                  is_recursive,
-                 gdata::CreateRelayCallback(callback)));
+                 google_apis::CreateRelayCallback(callback)));
 }
 
 void DriveFileSystem::CreateDirectoryOnUIThread(
@@ -758,11 +761,12 @@ void DriveFileSystem::CreateFile(const FilePath& file_path,
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!callback.is_null());
 
-  gdata::RunTaskOnUIThread(base::Bind(&DriveFileSystem::CreateFileOnUIThread,
-                                      ui_weak_ptr_,
-                                      file_path,
-                                      is_exclusive,
-                                      gdata::CreateRelayCallback(callback)));
+  google_apis::RunTaskOnUIThread(
+      base::Bind(&DriveFileSystem::CreateFileOnUIThread,
+                 ui_weak_ptr_,
+                 file_path,
+                 is_exclusive,
+                 google_apis::CreateRelayCallback(callback)));
 }
 
 void DriveFileSystem::CreateFileOnUIThread(
@@ -826,23 +830,23 @@ void DriveFileSystem::OnGetEntryInfoForCreateFile(
 void DriveFileSystem::GetFileByPath(
     const FilePath& file_path,
     const GetFileCallback& get_file_callback,
-    const gdata::GetContentCallback& get_content_callback) {
+    const google_apis::GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!get_file_callback.is_null());
 
-  gdata::RunTaskOnUIThread(
+  google_apis::RunTaskOnUIThread(
       base::Bind(&DriveFileSystem::GetFileByPathOnUIThread,
                  ui_weak_ptr_,
                  file_path,
-                 gdata::CreateRelayCallback(get_file_callback),
-                 gdata::CreateRelayCallback(get_content_callback)));
+                 google_apis::CreateRelayCallback(get_file_callback),
+                 google_apis::CreateRelayCallback(get_content_callback)));
 }
 
 void DriveFileSystem::GetFileByPathOnUIThread(
     const FilePath& file_path,
     const GetFileCallback& get_file_callback,
-    const gdata::GetContentCallback& get_content_callback) {
+    const google_apis::GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!get_file_callback.is_null());
 
@@ -851,14 +855,14 @@ void DriveFileSystem::GetFileByPathOnUIThread(
       base::Bind(&DriveFileSystem::OnGetEntryInfoCompleteForGetFileByPath,
                  ui_weak_ptr_,
                  file_path,
-                 gdata::CreateRelayCallback(get_file_callback),
-                 gdata::CreateRelayCallback(get_content_callback)));
+                 google_apis::CreateRelayCallback(get_file_callback),
+                 google_apis::CreateRelayCallback(get_content_callback)));
 }
 
 void DriveFileSystem::OnGetEntryInfoCompleteForGetFileByPath(
     const FilePath& file_path,
     const GetFileCallback& get_file_callback,
-    const gdata::GetContentCallback& get_content_callback,
+    const google_apis::GetContentCallback& get_content_callback,
     DriveFileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -879,7 +883,7 @@ void DriveFileSystem::OnGetEntryInfoCompleteForGetFileByPath(
 void DriveFileSystem::GetResolvedFileByPath(
     const FilePath& file_path,
     const GetFileCallback& get_file_callback,
-    const gdata::GetContentCallback& get_content_callback,
+    const google_apis::GetContentCallback& get_content_callback,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!get_file_callback.is_null());
@@ -903,7 +907,7 @@ void DriveFileSystem::GetResolvedFileByPath(
     FilePath* temp_file_path = new FilePath;
     std::string* mime_type = new std::string;
     DriveFileType* file_type = new DriveFileType(REGULAR_FILE);
-    gdata::util::PostBlockingPoolSequencedTaskAndReply(
+    google_apis::util::PostBlockingPoolSequencedTaskAndReply(
         FROM_HERE,
         blocking_task_runner_,
         base::Bind(&CreateDocumentJsonFileOnBlockingPool,
@@ -950,21 +954,21 @@ void DriveFileSystem::GetResolvedFileByPath(
 void DriveFileSystem::GetFileByResourceId(
     const std::string& resource_id,
     const GetFileCallback& get_file_callback,
-    const gdata::GetContentCallback& get_content_callback) {
+    const google_apis::GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
-  gdata::RunTaskOnUIThread(
+  google_apis::RunTaskOnUIThread(
       base::Bind(&DriveFileSystem::GetFileByResourceIdOnUIThread,
                  ui_weak_ptr_,
                  resource_id,
-                 gdata::CreateRelayCallback(get_file_callback),
-                 gdata::CreateRelayCallback(get_content_callback)));
+                 google_apis::CreateRelayCallback(get_file_callback),
+                 google_apis::CreateRelayCallback(get_content_callback)));
 }
 
 void DriveFileSystem::GetFileByResourceIdOnUIThread(
     const std::string& resource_id,
     const GetFileCallback& get_file_callback,
-    const gdata::GetContentCallback& get_content_callback) {
+    const google_apis::GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!get_file_callback.is_null());
 
@@ -978,7 +982,7 @@ void DriveFileSystem::GetFileByResourceIdOnUIThread(
 
 void DriveFileSystem::GetFileByResourceIdAfterGetEntry(
     const GetFileCallback& get_file_callback,
-    const gdata::GetContentCallback& get_content_callback,
+    const google_apis::GetContentCallback& get_content_callback,
     DriveFileError error,
     const FilePath& file_path,
     scoped_ptr<DriveEntryProto> entry_proto) {
@@ -1036,7 +1040,7 @@ void DriveFileSystem::OnGetFileFromCache(
 }
 
 void DriveFileSystem::OnGetDocumentEntry(const GetFileFromCacheParams& params,
-                                         gdata::GDataErrorCode status,
+                                         google_apis::GDataErrorCode status,
                                          scoped_ptr<base::Value> data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!params.get_file_callback.is_null());
@@ -1050,8 +1054,8 @@ void DriveFileSystem::OnGetDocumentEntry(const GetFileFromCacheParams& params,
     return;
   }
 
-  scoped_ptr<gdata::DocumentEntry> doc_entry(
-      gdata::DocumentEntry::ExtractAndParse(*data));
+  scoped_ptr<google_apis::DocumentEntry> doc_entry(
+      google_apis::DocumentEntry::ExtractAndParse(*data));
   GURL content_url = doc_entry->content_url();
   int64 file_size = doc_entry->file_size();
 
@@ -1085,7 +1089,7 @@ void DriveFileSystem::CheckForSpaceBeforeDownload(
   }
 
   bool* has_enough_space = new bool(false);
-  gdata::util::PostBlockingPoolSequencedTaskAndReply(
+  google_apis::util::PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
       blocking_task_runner_,
       base::Bind(&DriveCache::FreeDiskSpaceIfNeededFor,
@@ -1134,11 +1138,11 @@ void DriveFileSystem::GetEntryInfoByPath(const FilePath& file_path,
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!callback.is_null());
 
-  gdata::RunTaskOnUIThread(
+  google_apis::RunTaskOnUIThread(
       base::Bind(&DriveFileSystem::GetEntryInfoByPathOnUIThread,
                  ui_weak_ptr_,
                  file_path,
-                 gdata::CreateRelayCallback(callback)));
+                 google_apis::CreateRelayCallback(callback)));
 }
 
 void DriveFileSystem::GetEntryInfoByPathOnUIThread(
@@ -1196,11 +1200,11 @@ void DriveFileSystem::ReadDirectoryByPath(
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!callback.is_null());
 
-  gdata::RunTaskOnUIThread(
+  google_apis::RunTaskOnUIThread(
       base::Bind(&DriveFileSystem::ReadDirectoryByPathOnUIThread,
                  ui_weak_ptr_,
                  directory_path,
-                 gdata::CreateRelayCallback(callback)));
+                 google_apis::CreateRelayCallback(callback)));
 }
 
 void DriveFileSystem::ReadDirectoryByPathOnUIThread(
@@ -1258,7 +1262,7 @@ void DriveFileSystem::ReadDirectoryByPathOnUIThreadAfterRead(
 void DriveFileSystem::RequestDirectoryRefresh(const FilePath& directory_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
-  gdata::RunTaskOnUIThread(
+  google_apis::RunTaskOnUIThread(
       base::Bind(&DriveFileSystem::RequestDirectoryRefreshOnUIThread,
                  ui_weak_ptr_,
                  directory_path));
@@ -1340,11 +1344,11 @@ void DriveFileSystem::UpdateFileByResourceId(
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!callback.is_null());
 
-  gdata::RunTaskOnUIThread(
+  google_apis::RunTaskOnUIThread(
       base::Bind(&DriveFileSystem::UpdateFileByResourceIdOnUIThread,
                  ui_weak_ptr_,
                  resource_id,
-                 gdata::CreateRelayCallback(callback)));
+                 google_apis::CreateRelayCallback(callback)));
 }
 
 void DriveFileSystem::UpdateFileByResourceIdOnUIThread(
@@ -1411,7 +1415,7 @@ void DriveFileSystem::OnGetFileCompleteForUpdateFile(
   // file size information stored in DriveEntry is not correct.
   DriveFileError* get_size_error = new DriveFileError(DRIVE_FILE_ERROR_FAILED);
   int64* file_size = new int64(-1);
-  gdata::util::PostBlockingPoolSequencedTaskAndReply(
+  google_apis::util::PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
       blocking_task_runner_,
       base::Bind(&GetLocalFileSizeOnBlockingPool,
@@ -1463,7 +1467,7 @@ void DriveFileSystem::OnUpdatedFileUploaded(
     DriveFileError error,
     const FilePath& drive_path,
     const FilePath& file_path,
-    scoped_ptr<gdata::DocumentEntry> document_entry) {
+    scoped_ptr<google_apis::DocumentEntry> document_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != DRIVE_FILE_OK) {
@@ -1472,7 +1476,7 @@ void DriveFileSystem::OnUpdatedFileUploaded(
     return;
   }
 
-  AddUploadedFile(gdata::UPLOAD_EXISTING_FILE,
+  AddUploadedFile(google_apis::UPLOAD_EXISTING_FILE,
                   drive_path.DirName(),
                   document_entry.Pass(),
                   file_path,
@@ -1484,10 +1488,10 @@ void DriveFileSystem::GetAvailableSpace(
     const GetAvailableSpaceCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
-  gdata::RunTaskOnUIThread(
+  google_apis::RunTaskOnUIThread(
       base::Bind(&DriveFileSystem::GetAvailableSpaceOnUIThread,
                  ui_weak_ptr_,
-                 gdata::CreateRelayCallback(callback)));
+                 google_apis::CreateRelayCallback(callback)));
 }
 
 void DriveFileSystem::GetAvailableSpaceOnUIThread(
@@ -1496,7 +1500,7 @@ void DriveFileSystem::GetAvailableSpaceOnUIThread(
   DCHECK(!callback.is_null());
 
   drive_service_->GetAccountMetadata(
-      gdata::util::IsDriveV2ApiEnabled() ?
+      google_apis::util::IsDriveV2ApiEnabled() ?
       base::Bind(&DriveFileSystem::OnGetAboutResource,
                  ui_weak_ptr_,
                  callback) :
@@ -1507,7 +1511,7 @@ void DriveFileSystem::GetAvailableSpaceOnUIThread(
 
 void DriveFileSystem::OnGetAvailableSpace(
     const GetAvailableSpaceCallback& callback,
-    gdata::GDataErrorCode status,
+    google_apis::GDataErrorCode status,
     scoped_ptr<base::Value> data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -1518,9 +1522,9 @@ void DriveFileSystem::OnGetAvailableSpace(
     return;
   }
 
-  scoped_ptr<gdata::AccountMetadataFeed> feed;
+  scoped_ptr<google_apis::AccountMetadataFeed> feed;
   if (data.get())
-    feed = gdata::AccountMetadataFeed::CreateFrom(*data);
+    feed = google_apis::AccountMetadataFeed::CreateFrom(*data);
   if (!feed.get()) {
     callback.Run(DRIVE_FILE_ERROR_FAILED, -1, -1);
     return;
@@ -1533,7 +1537,7 @@ void DriveFileSystem::OnGetAvailableSpace(
 
 void DriveFileSystem::OnGetAboutResource(
     const GetAvailableSpaceCallback& callback,
-    gdata::GDataErrorCode status,
+    google_apis::GDataErrorCode status,
     scoped_ptr<base::Value> resource_json) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -1544,9 +1548,9 @@ void DriveFileSystem::OnGetAboutResource(
     return;
   }
 
-  scoped_ptr<gdata::AboutResource> about;
+  scoped_ptr<google_apis::AboutResource> about;
   if (resource_json.get())
-    about = gdata::AboutResource::CreateFrom(*resource_json);
+    about = google_apis::AboutResource::CreateFrom(*resource_json);
 
   if (!about.get()) {
     callback.Run(DRIVE_FILE_ERROR_FAILED, -1, -1);
@@ -1560,7 +1564,7 @@ void DriveFileSystem::OnGetAboutResource(
 
 void DriveFileSystem::AddNewDirectory(
     const CreateDirectoryParams& params,
-    gdata::GDataErrorCode status,
+    google_apis::GDataErrorCode status,
     scoped_ptr<base::Value> data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!params.callback.is_null());
@@ -1573,8 +1577,8 @@ void DriveFileSystem::AddNewDirectory(
 
   resource_metadata_->AddEntryToDirectory(
       params.created_directory_path.DirName(),
-      scoped_ptr<gdata::DocumentEntry>(
-          gdata::DocumentEntry::ExtractAndParse(*data)),
+      scoped_ptr<google_apis::DocumentEntry>(
+          google_apis::DocumentEntry::ExtractAndParse(*data)),
       base::Bind(&DriveFileSystem::ContinueCreateDirectory,
                  ui_weak_ptr_,
                  params));
@@ -1628,7 +1632,7 @@ void DriveFileSystem::OnSearch(const SearchCallback& search_callback,
   scoped_ptr<std::vector<SearchResultInfo> > result_vec(results);
 
   DCHECK_EQ(1u, params->feed_list.size());
-  gdata::DocumentFeed* feed = params->feed_list[0];
+  google_apis::DocumentFeed* feed = params->feed_list[0];
 
   // TODO(tbarzic): Limit total number of returned results for the query.
   GURL next_feed;
@@ -1637,7 +1641,7 @@ void DriveFileSystem::OnSearch(const SearchCallback& search_callback,
   const base::Closure callback = base::Bind(
       search_callback, DRIVE_FILE_OK, next_feed, base::Passed(&result_vec));
 
-  std::vector<gdata::DocumentEntry*> entries;
+  std::vector<google_apis::DocumentEntry*> entries;
   feed->ReleaseEntries(&entries);
   if (entries.empty()) {
     callback.Run();
@@ -1651,7 +1655,7 @@ void DriveFileSystem::OnSearch(const SearchCallback& search_callback,
     // Run the callback if this is the last iteration of the loop.
     const bool should_run_callback = (i+1 == entries.size());
     resource_metadata_->RefreshFile(
-        scoped_ptr<gdata::DocumentEntry>(entries[i]),
+        scoped_ptr<google_apis::DocumentEntry>(entries[i]),
         base::Bind(&DriveFileSystem::AddToSearchResults,
                    ui_weak_ptr_,
                    results,
@@ -1693,11 +1697,12 @@ void DriveFileSystem::Search(const std::string& search_query,
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!callback.is_null());
 
-  gdata::RunTaskOnUIThread(base::Bind(&DriveFileSystem::SearchAsyncOnUIThread,
-                                      ui_weak_ptr_,
-                                      search_query,
-                                      next_feed,
-                                      gdata::CreateRelayCallback(callback)));
+  google_apis::RunTaskOnUIThread(
+      base::Bind(&DriveFileSystem::SearchAsyncOnUIThread,
+                 ui_weak_ptr_,
+                 search_query,
+                 next_feed,
+                 google_apis::CreateRelayCallback(callback)));
 }
 
 void DriveFileSystem::SearchAsyncOnUIThread(
@@ -1749,7 +1754,7 @@ void DriveFileSystem::LoadRootFeedFromCacheForTesting() {
 }
 
 DriveFileError DriveFileSystem::UpdateFromFeedForTesting(
-    const ScopedVector<gdata::DocumentFeed>& feed_list,
+    const ScopedVector<google_apis::DocumentFeed>& feed_list,
     int64 start_changestamp,
     int64 root_feed_changestamp) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1761,7 +1766,7 @@ DriveFileError DriveFileSystem::UpdateFromFeedForTesting(
 
 void DriveFileSystem::OnFileDownloaded(
     const GetFileFromCacheParams& params,
-    gdata::GDataErrorCode status,
+    google_apis::GDataErrorCode status,
     const GURL& content_url,
     const FilePath& downloaded_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1769,7 +1774,7 @@ void DriveFileSystem::OnFileDownloaded(
 
   // If user cancels download of a pinned-but-not-fetched file, mark file as
   // unpinned so that we do not sync the file again.
-  if (status == gdata::GDATA_CANCELLED) {
+  if (status == google_apis::GDATA_CANCELLED) {
     cache_->GetCacheEntryOnUIThread(
         params.resource_id,
         params.md5,
@@ -1788,7 +1793,7 @@ void DriveFileSystem::OnFileDownloaded(
   // If we don't have enough space, we return PLATFORM_FILE_ERROR_NO_SPACE,
   // and try to free up space, even if the file was downloaded successfully.
   bool* has_enough_space = new bool(false);
-  gdata::util::PostBlockingPoolSequencedTaskAndReply(
+  google_apis::util::PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
       blocking_task_runner_,
       base::Bind(&DriveCache::FreeDiskSpaceIfNeededFor,
@@ -1818,7 +1823,7 @@ void DriveFileSystem::UnpinIfPinned(
 
 void DriveFileSystem::OnFileDownloadedAndSpaceChecked(
     const GetFileFromCacheParams& params,
-    gdata::GDataErrorCode status,
+    google_apis::GDataErrorCode status,
     const GURL& content_url,
     const FilePath& downloaded_file_path,
     bool* has_enough_space) {
@@ -1842,7 +1847,7 @@ void DriveFileSystem::OnFileDownloadedAndSpaceChecked(
     } else {
       // If we don't have enough space, remove the downloaded file, and
       // report "no space" error.
-      gdata::util::PostBlockingPoolSequencedTask(
+      google_apis::util::PostBlockingPoolSequencedTask(
           FROM_HERE,
           blocking_task_runner_,
           base::Bind(base::IgnoreResult(&file_util::Delete),
@@ -1985,9 +1990,9 @@ void DriveFileSystem::ContinueFindFirstMissingParentDirectory(
 }
 
 void DriveFileSystem::AddUploadedFile(
-    gdata::UploadMode upload_mode,
+    google_apis::UploadMode upload_mode,
     const FilePath& directory_path,
-    scoped_ptr<gdata::DocumentEntry> entry,
+    scoped_ptr<google_apis::DocumentEntry> entry,
     const FilePath& file_content_path,
     DriveCache::FileOperationType cache_operation,
     const base::Closure& callback) {
@@ -2008,9 +2013,9 @@ void DriveFileSystem::AddUploadedFile(
 }
 
 void DriveFileSystem::AddUploadedFileOnUIThread(
-    gdata::UploadMode upload_mode,
+    google_apis::UploadMode upload_mode,
     const FilePath& directory_path,
-    scoped_ptr<gdata::DocumentEntry> doc_entry,
+    scoped_ptr<google_apis::DocumentEntry> doc_entry,
     const FilePath& file_content_path,
     DriveCache::FileOperationType cache_operation,
     const base::Closure& callback) {
@@ -2030,7 +2035,7 @@ void DriveFileSystem::AddUploadedFileOnUIThread(
       base::Bind(&DriveFileSystem::ContinueAddUploadedFile,
                  ui_weak_ptr_, base::Passed(&params));
 
-  if (upload_mode == gdata::UPLOAD_EXISTING_FILE) {
+  if (upload_mode == google_apis::UPLOAD_EXISTING_FILE) {
     // Remove the existing entry.
     resource_metadata_->RemoveEntryFromParent(resource_id, file_move_callback);
   } else {
@@ -2053,7 +2058,7 @@ void DriveFileSystem::ContinueAddUploadedFile(
 
   // Get parameters before base::Passed() invalidates |params|.
   const FilePath& directory_path = params->directory_path;
-  scoped_ptr<gdata::DocumentEntry> doc_entry(params->doc_entry.Pass());
+  scoped_ptr<google_apis::DocumentEntry> doc_entry(params->doc_entry.Pass());
 
   resource_metadata_->AddEntryToDirectory(
       directory_path,
@@ -2080,7 +2085,7 @@ void DriveFileSystem::AddUploadedFileToCache(
 
   OnDirectoryChanged(file_path.DirName());
 
-  if (params->upload_mode == gdata::UPLOAD_NEW_FILE) {
+  if (params->upload_mode == google_apis::UPLOAD_NEW_FILE) {
     // Add the file to the cache if we have uploaded a new file.
     cache_->StoreOnUIThread(params->resource_id,
                             params->md5,
@@ -2088,7 +2093,7 @@ void DriveFileSystem::AddUploadedFileToCache(
                             params->cache_operation,
                             base::Bind(&OnCacheUpdatedForAddUploadedFile,
                                        params->callback));
-  } else if (params->upload_mode == gdata::UPLOAD_EXISTING_FILE) {
+  } else if (params->upload_mode == google_apis::UPLOAD_EXISTING_FILE) {
     // Clear the dirty bit if we have updated an existing file.
     cache_->ClearDirtyOnUIThread(params->resource_id,
                                  params->md5,
@@ -2103,11 +2108,12 @@ void DriveFileSystem::AddUploadedFileToCache(
   }
 }
 
-void DriveFileSystem::UpdateEntryData(const std::string& resource_id,
-                                      const std::string& md5,
-                                      scoped_ptr<gdata::DocumentEntry> entry,
-                                      const FilePath& file_content_path,
-                                      const base::Closure& callback) {
+void DriveFileSystem::UpdateEntryData(
+    const std::string& resource_id,
+    const std::string& md5,
+    scoped_ptr<google_apis::DocumentEntry> entry,
+    const FilePath& file_content_path,
+    const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Post a task to the same thread, rather than calling it here, as
@@ -2125,7 +2131,7 @@ void DriveFileSystem::UpdateEntryData(const std::string& resource_id,
 
 void DriveFileSystem::UpdateEntryDataOnUIThread(
     const UpdateEntryParams& params,
-    scoped_ptr<gdata::DocumentEntry> entry) {
+    scoped_ptr<google_apis::DocumentEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   resource_metadata_->RefreshFile(
@@ -2206,10 +2212,11 @@ void DriveFileSystem::OpenFile(const FilePath& file_path,
                                const OpenFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
-  gdata::RunTaskOnUIThread(base::Bind(&DriveFileSystem::OpenFileOnUIThread,
-                                      ui_weak_ptr_,
-                                      file_path,
-                                      gdata::CreateRelayCallback(callback)));
+  google_apis::RunTaskOnUIThread(
+      base::Bind(&DriveFileSystem::OpenFileOnUIThread,
+                 ui_weak_ptr_,
+                 file_path,
+                 google_apis::CreateRelayCallback(callback)));
 }
 
 void DriveFileSystem::OpenFileOnUIThread(const FilePath& file_path,
@@ -2276,7 +2283,7 @@ void DriveFileSystem::OnGetEntryInfoCompleteForOpenFile(
                  GetFileCompleteForOpenParams(
                      entry_proto_ptr->resource_id(),
                      entry_proto_ptr->file_specific_info().file_md5())),
-      gdata::GetContentCallback(),
+      google_apis::GetContentCallback(),
       entry_proto.Pass());
 }
 
@@ -2338,10 +2345,11 @@ void DriveFileSystem::CloseFile(const FilePath& file_path,
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!callback.is_null());
 
-  gdata::RunTaskOnUIThread(base::Bind(&DriveFileSystem::CloseFileOnUIThread,
-                                      ui_weak_ptr_,
-                                      file_path,
-                                      gdata::CreateRelayCallback(callback)));
+  google_apis::RunTaskOnUIThread(
+      base::Bind(&DriveFileSystem::CloseFileOnUIThread,
+                 ui_weak_ptr_,
+                 file_path,
+                 google_apis::CreateRelayCallback(callback)));
 }
 
 void DriveFileSystem::CloseFileOnUIThread(
@@ -2495,7 +2503,7 @@ void DriveFileSystem::CheckLocalModificationAndRunAfterGetCacheFile(
   // If the cache is dirty, obtain the file info from the cache file itself.
   base::PlatformFileInfo* file_info = new base::PlatformFileInfo;
   bool* get_file_info_result = new bool(false);
-  gdata::util::PostBlockingPoolSequencedTaskAndReply(
+  google_apis::util::PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
       blocking_task_runner_,
       base::Bind(&GetFileInfoOnBlockingPool,

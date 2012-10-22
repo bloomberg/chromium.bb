@@ -36,7 +36,7 @@ class RepeatedMessageConverter;
 
 // Defines data elements of Google Documents API as described in
 // http://code.google.com/apis/documents/.
-namespace gdata {
+namespace google_apis {
 
 // TODO(kochi): These forward declarations will be unnecessary once
 // http://crbug.com/142293 is resolved.
@@ -728,6 +728,6 @@ class AccountMetadataFeed {
 };
 
 
-}  // namespace gdata
+}  // namespace google_apis
 
 #endif  // CHROME_BROWSER_GOOGLE_APIS_GDATA_WAPI_PARSER_H_

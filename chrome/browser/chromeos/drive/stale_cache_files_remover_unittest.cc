@@ -113,7 +113,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
     stale_cache_files_remover_.reset(new StaleCacheFilesRemover(file_system_,
                                                                 cache_));
 
-    gdata::test_util::RunBlockingPoolTask();
+    google_apis::test_util::RunBlockingPoolTask();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -127,7 +127,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
     SetFreeDiskSpaceGetterForTesting(NULL);
     cache_->DestroyOnUIThread();
     // The cache destruction requires to post a task to the blocking pool.
-    gdata::test_util::RunBlockingPoolTask();
+    google_apis::test_util::RunBlockingPoolTask();
 
     profile_.reset(NULL);
   }
@@ -162,7 +162,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
 
 TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
   FilePath dummy_file =
-      gdata::test_util::GetTestFilePath("gdata/root_feed.json");
+      google_apis::test_util::GetTestFilePath("gdata/root_feed.json");
   std::string resource_id("pdf:1a2b3c");
   std::string md5("abcdef0123456789");
 
@@ -173,7 +173,7 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
   cache_->StoreOnUIThread(resource_id, md5, dummy_file,
                           DriveCache::FILE_OPERATION_COPY,
                           base::Bind(&VerifyCacheFileState));
-  gdata::test_util::RunBlockingPoolTask();
+  google_apis::test_util::RunBlockingPoolTask();
 
   // Verify that the cache file exists.
   FilePath path = cache_->GetCacheFilePath(resource_id,
@@ -197,7 +197,7 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
                  &error,
                  &unused,
                  &entry_proto));
-  gdata::test_util::RunBlockingPoolTask();
+  google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
 
   file_system_->GetEntryInfoByPath(
@@ -205,7 +205,7 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
       base::Bind(&test_util::CopyResultsFromGetEntryInfoCallback,
                  &error,
                  &entry_proto));
-  gdata::test_util::RunBlockingPoolTask();
+  google_apis::test_util::RunBlockingPoolTask();
   EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
   EXPECT_FALSE(entry_proto.get());
 
@@ -213,7 +213,7 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
   LoadRootFeedDocument("gdata/root_feed.json");
 
   // Wait for StaleCacheFilesRemover to finish cleaning up the stale file.
-  gdata::test_util::RunBlockingPoolTask();
+  google_apis::test_util::RunBlockingPoolTask();
 
   // Verify that the cache file is deleted.
   path = cache_->GetCacheFilePath(resource_id,

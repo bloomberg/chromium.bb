@@ -153,7 +153,7 @@ class DriveURLRequestJob : public net::URLRequestJob {
   // For detailed description of logic, refer to comments in definitions of
   // Start() and ReadRawData().
 
-  void OnUrlFetchDownloadData(gdata::GDataErrorCode error,
+  void OnUrlFetchDownloadData(google_apis::GDataErrorCode error,
                               scoped_ptr<std::string> download_data);
   // Called from ReadRawData, returns true if data is ready, false otherwise.
   bool ContinueReadFromDownloadData(int* bytes_read);
@@ -261,19 +261,20 @@ void DriveURLRequestJob::Start() {
   // 5) Find file from file system to get its mime type, drive file path and
   //    size of physical file.
   // 6) Get file from file system asynchronously with both GetFileCallback and
-  //    gdata::GetContentCallback - this would either get it from cache or
+  //    google_apis::GetContentCallback - this would either get it from cache or
   //    download it from Drive.
   // 7) If file is downloaded from Drive:
   //    7.1) Whenever net::URLFetcherCore::OnReadCompleted() receives a part
   //         of the response, it invokes
   //         net::URLFetcherDelegate::OnURLFetchDownloadData() if
   //         net::URLFetcherDelegate::ShouldSendDownloadData() is true.
-  //    7.2) gdata::DownloadFileOperation overrides the default implementations
-  //         of the following methods of net::URLFetcherDelegate:
+  //    7.2) google_apis::DownloadFileOperation overrides the default
+  //         implementations of the following methods of
+  //         net::URLFetcherDelegate:
   //         - ShouldSendDownloadData(): returns true for non-null
-  //                                     gdata::GetContentCallback.
+  //                                     google_apis::GetContentCallback.
   //         - OnURLFetchDownloadData(): invokes non-null
-  //                                     gdata::GetContentCallback
+  //                                     google_apis::GetContentCallback
   //    7.3) DriveProtolHandler::OnURLFetchDownloadData (i.e. this class)
   //         is at the end of the invocation chain and actually implements the
   //         method.
@@ -537,7 +538,7 @@ void DriveURLRequestJob::OnGetEntryInfoByResourceId(
 }
 
 void DriveURLRequestJob::OnUrlFetchDownloadData(
-    gdata::GDataErrorCode error,
+    google_apis::GDataErrorCode error,
     scoped_ptr<std::string> download_data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 

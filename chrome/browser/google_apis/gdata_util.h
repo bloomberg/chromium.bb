@@ -23,7 +23,7 @@ namespace tracked_objects {
 class Location;
 }  // tracked_objects
 
-namespace gdata {
+namespace google_apis {
 namespace util {
 
 // Returns true if Drive v2 API is enabled via commandline switch.
@@ -55,6 +55,6 @@ void PostBlockingPoolSequencedTaskAndReply(
     const base::Closure& reply_task);
 
 }  // namespace util
-}  // namespace gdata
+}  // namespace google_apis
 
 #endif  // CHROME_BROWSER_GOOGLE_APIS_GDATA_UTIL_H_

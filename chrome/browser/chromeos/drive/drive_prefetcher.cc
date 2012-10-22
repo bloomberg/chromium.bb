@@ -104,7 +104,7 @@ void DrivePrefetcher::DoPrefetch() {
       resource_id,
       base::Bind(&DrivePrefetcher::OnPrefetchFinished,
                  weak_ptr_factory_.GetWeakPtr()),
-      gdata::GetContentCallback());
+      google_apis::GetContentCallback());
 }
 
 void DrivePrefetcher::OnPrefetchFinished(DriveFileError error,

@@ -16,7 +16,7 @@
 
 class Profile;
 
-namespace gdata {
+namespace google_apis {
 
 class AuthenticatedOperationInterface;
 class AuthService;
@@ -77,6 +77,6 @@ class OperationRunner {
   DISALLOW_COPY_AND_ASSIGN(OperationRunner);
 };
 
-}  // namespace gdata
+}  // namespace google_apis
 
 #endif  // CHROME_BROWSER_GOOGLE_APIS_OPERATION_RUNNER_H_

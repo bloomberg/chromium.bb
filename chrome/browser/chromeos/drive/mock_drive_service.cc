@@ -24,7 +24,7 @@ namespace drive {
 
 MockDriveService::MockDriveService() {
   ON_CALL(*this, GetProgressStatusList())
-      .WillByDefault(Return(gdata::OperationProgressStatusList()));
+      .WillByDefault(Return(google_apis::OperationProgressStatusList()));
   ON_CALL(*this, Authenticate(_))
       .WillByDefault(Invoke(this, &MockDriveService::AuthenticateStub));
   ON_CALL(*this, GetDocuments(_, _, _, _, _))
@@ -53,24 +53,24 @@ MockDriveService::MockDriveService() {
 
   // Fill in the default values for mock feeds.
   account_metadata_ =
-      gdata::test_util::LoadJSONFile("gdata/account_metadata.json");
-  feed_data_ = gdata::test_util::LoadJSONFile("gdata/basic_feed.json");
+      google_apis::test_util::LoadJSONFile("gdata/account_metadata.json");
+  feed_data_ = google_apis::test_util::LoadJSONFile("gdata/basic_feed.json");
   directory_data_ =
-      gdata::test_util::LoadJSONFile("gdata/new_folder_entry.json");
+      google_apis::test_util::LoadJSONFile("gdata/new_folder_entry.json");
 }
 
 MockDriveService::~MockDriveService() {}
 
 void MockDriveService::set_search_result(
     const std::string& search_result_feed) {
-  search_result_ = gdata::test_util::LoadJSONFile(search_result_feed);
+  search_result_ = google_apis::test_util::LoadJSONFile(search_result_feed);
 }
 
 void MockDriveService::AuthenticateStub(
-    const gdata::AuthStatusCallback& callback) {
+    const google_apis::AuthStatusCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, gdata::HTTP_SUCCESS, "my_auth_token"));
+      base::Bind(callback, google_apis::HTTP_SUCCESS, "my_auth_token"));
 }
 
 void MockDriveService::GetDocumentsStub(
@@ -78,34 +78,34 @@ void MockDriveService::GetDocumentsStub(
     int64 start_changestamp,
     const std::string& search_string,
     const std::string& directory_resource_id,
-    const gdata::GetDataCallback& callback) {
+    const google_apis::GetDataCallback& callback) {
   if (search_string.empty()) {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
-        base::Bind(callback, gdata::HTTP_SUCCESS,
+        base::Bind(callback, google_apis::HTTP_SUCCESS,
                    base::Passed(&feed_data_)));
   } else {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
-        base::Bind(callback, gdata::HTTP_SUCCESS,
+        base::Bind(callback, google_apis::HTTP_SUCCESS,
                    base::Passed(&search_result_)));
   }
 }
 
 void MockDriveService::GetAccountMetadataStub(
-    const gdata::GetDataCallback& callback) {
+    const google_apis::GetDataCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, gdata::HTTP_SUCCESS,
+      base::Bind(callback, google_apis::HTTP_SUCCESS,
                  base::Passed(&account_metadata_)));
 }
 
 void MockDriveService::DeleteDocumentStub(
     const GURL& document_url,
-    const gdata::EntryActionCallback& callback) {
+    const google_apis::EntryActionCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, gdata::HTTP_SUCCESS, document_url));
+      base::Bind(callback, google_apis::HTTP_SUCCESS, document_url));
 }
 
 void MockDriveService::DownloadDocumentStub(
@@ -113,56 +113,58 @@ void MockDriveService::DownloadDocumentStub(
     const FilePath& local_tmp_path,
     const GURL& content_url,
     DocumentExportFormat format,
-    const gdata::DownloadActionCallback& callback) {
+    const google_apis::DownloadActionCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, gdata::HTTP_SUCCESS, content_url, local_tmp_path));
+      base::Bind(callback, google_apis::HTTP_SUCCESS,
+                 content_url, local_tmp_path));
 }
 
 void MockDriveService::CopyDocumentStub(
     const std::string& resource_id,
     const FilePath::StringType& new_name,
-    const gdata::GetDataCallback& callback) {
+    const google_apis::GetDataCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, gdata::HTTP_SUCCESS, base::Passed(&document_data_)));
+      base::Bind(callback, google_apis::HTTP_SUCCESS,
+                 base::Passed(&document_data_)));
 }
 
 void MockDriveService::RenameResourceStub(
     const GURL& resource_url,
     const FilePath::StringType& new_name,
-    const gdata::EntryActionCallback& callback) {
+    const google_apis::EntryActionCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, gdata::HTTP_SUCCESS, resource_url));
+      base::Bind(callback, google_apis::HTTP_SUCCESS, resource_url));
 }
 
 void MockDriveService::AddResourceToDirectoryStub(
     const GURL& parent_content_url,
     const GURL& resource_url,
-    const gdata::EntryActionCallback& callback) {
+    const google_apis::EntryActionCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, gdata::HTTP_SUCCESS, resource_url));
+      base::Bind(callback, google_apis::HTTP_SUCCESS, resource_url));
 }
 
 void MockDriveService::RemoveResourceFromDirectoryStub(
     const GURL& parent_content_url,
     const GURL& resource_url,
     const std::string& resource_id,
-    const gdata::EntryActionCallback& callback) {
+    const google_apis::EntryActionCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, gdata::HTTP_SUCCESS, resource_url));
+      base::Bind(callback, google_apis::HTTP_SUCCESS, resource_url));
 }
 
 void MockDriveService::CreateDirectoryStub(
     const GURL& parent_content_url,
     const FilePath::StringType& directory_name,
-    const gdata::GetDataCallback& callback) {
+    const google_apis::GetDataCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, gdata::HTTP_SUCCESS,
+      base::Bind(callback, google_apis::HTTP_SUCCESS,
                  base::Passed(&directory_data_)));
 }
 
@@ -170,9 +172,9 @@ void MockDriveService::DownloadFileStub(
     const FilePath& virtual_path,
     const FilePath& local_tmp_path,
     const GURL& content_url,
-    const gdata::DownloadActionCallback& download_action_callback,
-    const gdata::GetContentCallback& get_content_callback) {
-  gdata::GDataErrorCode error = gdata::HTTP_SUCCESS;
+    const google_apis::DownloadActionCallback& download_action_callback,
+    const google_apis::GetContentCallback& get_content_callback) {
+  google_apis::GDataErrorCode error = google_apis::HTTP_SUCCESS;
   if (file_data_.get()) {
     int file_data_size = static_cast<int>(file_data_->size());
     ASSERT_EQ(file_data_size,

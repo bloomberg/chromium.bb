@@ -11,7 +11,7 @@
 
 class GURL;
 
-namespace gdata {
+namespace google_apis {
 class DocumentEntry;
 }
 
@@ -19,9 +19,9 @@ namespace drive {
 
 class DriveEntryProto;
 
-// Converts a gdata::DocumentEntry into a DriveEntryProto.
+// Converts a google_apis::DocumentEntry into a DriveEntryProto.
 DriveEntryProto ConvertDocumentEntryToDriveEntryProto(
-    const gdata::DocumentEntry& document_entry);
+    const google_apis::DocumentEntry& document_entry);
 
 }  // namespace drive
 

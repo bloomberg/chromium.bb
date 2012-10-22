@@ -55,7 +55,8 @@ void InitContact(const std::string& contact_id,
   DCHECK(contact);
   contact->set_contact_id(contact_id);
   base::Time update_time;
-  CHECK(gdata::util::GetTimeFromString(rfc_3339_update_time, &update_time))
+  CHECK(google_apis::util::GetTimeFromString(
+      rfc_3339_update_time, &update_time))
       << "Unable to parse time \"" << rfc_3339_update_time << "\"";
   contact->set_update_time(update_time.ToInternalValue());
   contact->set_deleted(deleted);

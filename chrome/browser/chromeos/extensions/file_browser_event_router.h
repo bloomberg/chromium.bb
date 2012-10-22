@@ -86,8 +86,9 @@ class FileBrowserEventRouter
 
   // drive::DriveServiceObserver overrides.
   virtual void OnProgressUpdate(
-      const gdata::OperationProgressStatusList& list) OVERRIDE;
-  virtual void OnAuthenticationFailed(gdata::GDataErrorCode error) OVERRIDE;
+      const google_apis::OperationProgressStatusList& list) OVERRIDE;
+  virtual void OnAuthenticationFailed(
+      google_apis::GDataErrorCode error) OVERRIDE;
 
   // drive::DriveFileSystemInterface::Observer overrides.
   virtual void OnDirectoryChanged(const FilePath& directory_path) OVERRIDE;
@@ -200,7 +201,7 @@ class FileBrowserEventRouter
 
   // Used to implement MountDrive(). Called after the authentication.
   void OnAuthenticated(const base::Closure& callback,
-                       gdata::GDataErrorCode error,
+                       google_apis::GDataErrorCode error,
                        const std::string& tokeni);
 
   scoped_refptr<FileWatcherDelegate> delegate_;

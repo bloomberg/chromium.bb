@@ -17,7 +17,7 @@ namespace base {
 class Value;
 }
 
-namespace gdata {
+namespace google_apis {
 namespace test_util {
 
 // Runs a task posted to the blocking pool, including subsequent tasks posted
@@ -38,6 +38,6 @@ FilePath GetTestFilePath(const std::string& relative_path);
 scoped_ptr<base::Value> LoadJSONFile(const std::string& relative_path);
 
 }  // namespace test_util
-}  // namespace gdata
+}  // namespace google_apis
 
 #endif  // CHROME_BROWSER_GOOGLE_APIS_GDATA_TEST_UTIL_H_

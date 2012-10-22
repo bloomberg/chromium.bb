@@ -185,7 +185,7 @@ void MoveOperation::RenameEntryLocally(
     const FilePath& file_path,
     const FilePath::StringType& new_name,
     const FileMoveCallback& callback,
-    gdata::GDataErrorCode status,
+    google_apis::GDataErrorCode status,
     const GURL& /* document_url */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -337,7 +337,7 @@ void MoveOperation::MoveEntryToDirectory(
     const FilePath& file_path,
     const FilePath& directory_path,
     const FileMoveCallback& callback,
-    gdata::GDataErrorCode status,
+    google_apis::GDataErrorCode status,
     const GURL& /* document_url */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());

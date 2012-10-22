@@ -49,10 +49,10 @@ class DriveServiceObserver {
 
   // Called when an operation started, made some progress, or finished.
   virtual void OnProgressUpdate(
-      const gdata::OperationProgressStatusList& list) {}
+      const google_apis::OperationProgressStatusList& list) {}
 
   // Called when GData authentication failed.
-  virtual void OnAuthenticationFailed(gdata::GDataErrorCode error) {}
+  virtual void OnAuthenticationFailed(google_apis::GDataErrorCode error) {}
 
  protected:
   virtual ~DriveServiceObserver() {}
@@ -92,14 +92,16 @@ class DriveServiceInterface {
   virtual bool CancelForFilePath(const FilePath& file_path) = 0;
 
   // Obtains the list of currently active operations.
-  virtual gdata::OperationProgressStatusList GetProgressStatusList() const = 0;
+  virtual google_apis::OperationProgressStatusList GetProgressStatusList()
+      const = 0;
 
   // Authentication service:
 
   // Authenticates the user by fetching the auth token as
   // needed. |callback| will be run with the error code and the auth
   // token, on the thread this function is run.
-  virtual void Authenticate(const gdata::AuthStatusCallback& callback) = 0;
+  virtual void Authenticate(
+      const google_apis::AuthStatusCallback& callback) = 0;
 
   // True if OAuth2 access token is retrieved and believed to be fresh.
   virtual bool HasAccessToken() const = 0;
@@ -128,27 +130,31 @@ class DriveServiceInterface {
                             int64 start_changestamp,
                             const std::string& search_query,
                             const std::string& directory_resource_id,
-                            const gdata::GetDataCallback& callback) = 0;
+                            const google_apis::GetDataCallback& callback) = 0;
 
   // Fetches single entry metadata from server. The entry's resource id equals
   // |resource_id|.
   // Upon completion, invokes |callback| with results on the calling thread.
-  virtual void GetDocumentEntry(const std::string& resource_id,
-                                const gdata::GetDataCallback& callback) = 0;
+  virtual void GetDocumentEntry(
+      const std::string& resource_id,
+      const google_apis::GetDataCallback& callback) = 0;
 
   // Gets the account metadata from the server using the default account
   // metadata URL. Upon completion, invokes |callback| with results on the
   // calling thread.
-  virtual void GetAccountMetadata(const gdata::GetDataCallback& callback) = 0;
+  virtual void GetAccountMetadata(
+      const google_apis::GetDataCallback& callback) = 0;
 
   // Gets the application information from the server.
   // Upon completion, invokes |callback| with results on the calling thread.
-  virtual void GetApplicationInfo(const gdata::GetDataCallback& callback) = 0;
+  virtual void GetApplicationInfo(
+      const google_apis::GetDataCallback& callback) = 0;
 
   // Deletes a document identified by its 'self' |url| and |etag|.
   // Upon completion, invokes |callback| with results on the calling thread.
-  virtual void DeleteDocument(const GURL& document_url,
-                              const gdata::EntryActionCallback& callback) = 0;
+  virtual void DeleteDocument(
+      const GURL& document_url,
+      const google_apis::EntryActionCallback& callback) = 0;
 
   // Downloads a document identified by its |content_url| in a given |format|.
   // Upon completion, invokes |callback| with results on the calling thread.
@@ -157,7 +163,7 @@ class DriveServiceInterface {
       const FilePath& local_cache_path,
       const GURL& content_url,
       DocumentExportFormat format,
-      const gdata::DownloadActionCallback& callback) = 0;
+      const google_apis::DownloadActionCallback& callback) = 0;
 
   // Makes a copy of a document identified by its |resource_id|.
   // The copy is named as the UTF-8 encoded |new_name| and is not added to any
@@ -166,14 +172,15 @@ class DriveServiceInterface {
   // calling thread.
   virtual void CopyDocument(const std::string& resource_id,
                             const FilePath::StringType& new_name,
-                            const gdata::GetDataCallback& callback) = 0;
+                            const google_apis::GetDataCallback& callback) = 0;
 
   // Renames a document or collection identified by its 'self' link
   // |document_url| to the UTF-8 encoded |new_name|. Upon completion,
   // invokes |callback| with results on the calling thread.
-  virtual void RenameResource(const GURL& resource_url,
-                              const FilePath::StringType& new_name,
-                              const gdata::EntryActionCallback& callback) = 0;
+  virtual void RenameResource(
+      const GURL& resource_url,
+      const FilePath::StringType& new_name,
+      const google_apis::EntryActionCallback& callback) = 0;
 
   // Adds a resource (document, file, or collection) identified by its
   // 'self' link |resource_url| to a collection with a content link
@@ -182,7 +189,7 @@ class DriveServiceInterface {
   virtual void AddResourceToDirectory(
       const GURL& parent_content_url,
       const GURL& resource_url,
-      const gdata::EntryActionCallback& callback) = 0;
+      const google_apis::EntryActionCallback& callback) = 0;
 
   // Removes a resource (document, file, collection) identified by its
   // 'self' link |resource_url| from a collection with a content link
@@ -192,15 +199,16 @@ class DriveServiceInterface {
       const GURL& parent_content_url,
       const GURL& resource_url,
       const std::string& resource_id,
-      const gdata::EntryActionCallback& callback) = 0;
+      const google_apis::EntryActionCallback& callback) = 0;
 
   // Creates new collection with |directory_name| under parent directory
   // identified with |parent_content_url|. If |parent_content_url| is empty,
   // the new collection will be created in the root. Upon completion,
   // invokes |callback| and passes newly created entry on the calling thread.
-  virtual void CreateDirectory(const GURL& parent_content_url,
-                               const FilePath::StringType& directory_name,
-                               const gdata::GetDataCallback& callback) = 0;
+  virtual void CreateDirectory(
+      const GURL& parent_content_url,
+      const FilePath::StringType& directory_name,
+      const google_apis::GetDataCallback& callback) = 0;
 
   // Downloads a file identified by its |content_url|. The downloaded file will
   // be stored at |local_cache_path| location. Upon completion, invokes
@@ -212,23 +220,24 @@ class DriveServiceInterface {
       const FilePath& virtual_path,
       const FilePath& local_cache_path,
       const GURL& content_url,
-      const gdata::DownloadActionCallback& download_action_callback,
-      const gdata::GetContentCallback& get_content_callback) = 0;
+      const google_apis::DownloadActionCallback& download_action_callback,
+      const google_apis::GetContentCallback& get_content_callback) = 0;
 
   // Initiates uploading of a document/file.
   virtual void InitiateUpload(
-      const gdata::InitiateUploadParams& params,
-      const gdata::InitiateUploadCallback& callback) = 0;
+      const google_apis::InitiateUploadParams& params,
+      const google_apis::InitiateUploadCallback& callback) = 0;
 
   // Resumes uploading of a document/file on the calling thread.
-  virtual void ResumeUpload(const gdata::ResumeUploadParams& params,
-                            const gdata::ResumeUploadCallback& callback) = 0;
+  virtual void ResumeUpload(
+      const google_apis::ResumeUploadParams& params,
+      const google_apis::ResumeUploadCallback& callback) = 0;
 
   // Authorizes a Drive app with the id |app_id| to open the given document.
   // Upon completion, invokes |callback| with results on the calling thread.
   virtual void AuthorizeApp(const GURL& resource_url,
                             const std::string& app_id,
-                            const gdata::GetDataCallback& callback) = 0;
+                            const google_apis::GetDataCallback& callback) = 0;
 };
 
 }  // namespace drive

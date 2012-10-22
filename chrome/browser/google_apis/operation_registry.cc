@@ -15,7 +15,7 @@ const int64 kNotificationFrequencyInMilliseconds = 1000;
 
 }  // namespace
 
-namespace gdata {
+namespace google_apis {
 
 std::string OperationTypeToString(OperationType type) {
   switch (type) {
@@ -346,4 +346,4 @@ void OperationRegistry::NotifyStatusToObservers() {
                       OnProgressUpdate(list));
 }
 
-}  // namespace gdata
+}  // namespace google_apis

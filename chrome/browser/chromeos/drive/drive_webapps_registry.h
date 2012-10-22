@@ -15,7 +15,7 @@
 
 class FilePath;
 
-namespace gdata {
+namespace google_apis {
 class AppList;
 }
 
@@ -24,8 +24,8 @@ namespace drive {
 // Data structure that defines WebApp
 struct DriveWebAppInfo {
   DriveWebAppInfo(const std::string& app_id,
-                  const gdata::InstalledApp::IconList& app_icons,
-                  const gdata::InstalledApp::IconList& document_icons,
+                  const google_apis::InstalledApp::IconList& app_icons,
+                  const google_apis::InstalledApp::IconList& document_icons,
                   const std::string& web_store_id,
                   const string16& app_name,
                   const string16& object_type,
@@ -36,10 +36,10 @@ struct DriveWebAppInfo {
   std::string app_id;
   // Drive application icon URLs for this app, paired with their size (length of
   // a side in pixels).
-  gdata::InstalledApp::IconList app_icons;
+  google_apis::InstalledApp::IconList app_icons;
   // Drive document icon URLs for this app, paired with their size (length of
   // a side in pixels).
-  gdata::InstalledApp::IconList document_icons;
+  google_apis::InstalledApp::IconList document_icons;
   // Web store id/extension id;
   std::string web_store_id;
   // WebApp name.
@@ -68,11 +68,13 @@ class DriveWebAppsRegistryInterface {
 
   // Updates the list of drive-enabled WebApps with freshly fetched account
   // metadata feed.
-  virtual void UpdateFromFeed(const gdata::AccountMetadataFeed& metadata) = 0;
+  virtual void UpdateFromFeed(
+      const google_apis::AccountMetadataFeed& metadata) = 0;
 
   // Updates the list of drive-enabled WebApps with freshly fetched account
   // metadata feed.
-  virtual void UpdateFromApplicationList(const gdata::AppList& applist) = 0;
+  virtual void UpdateFromApplicationList(
+      const google_apis::AppList& applist) = 0;
 };
 
 // The production implementation of DriveWebAppsRegistryInterface.
@@ -89,29 +91,30 @@ class DriveWebAppsRegistry : public DriveWebAppsRegistryInterface {
   virtual std::set<std::string> GetExtensionsForWebStoreApp(
       const std::string& web_store_id) OVERRIDE;
   virtual void UpdateFromFeed(
-      const gdata::AccountMetadataFeed& metadata) OVERRIDE;
+      const google_apis::AccountMetadataFeed& metadata) OVERRIDE;
   virtual void UpdateFromApplicationList(
-      const gdata::AppList& applist) OVERRIDE;
+      const google_apis::AppList& applist) OVERRIDE;
 
  private:
   // Defines WebApp application details that are associated with a given
   // file extension or content mimetype.
   struct WebAppFileSelector {
-    WebAppFileSelector(const GURL& product_link,
-                       const gdata::InstalledApp::IconList& app_icons,
-                       const gdata::InstalledApp::IconList& document_icons,
-                       const string16& object_type,
-                       const std::string& app_id,
-                       bool is_primary_selector);
+    WebAppFileSelector(
+        const GURL& product_link,
+        const google_apis::InstalledApp::IconList& app_icons,
+        const google_apis::InstalledApp::IconList& document_icons,
+        const string16& object_type,
+        const std::string& app_id,
+        bool is_primary_selector);
     ~WebAppFileSelector();
     // WebApp product link.
     GURL product_link;
     // Drive application icon URLs for this app, paired with their size (length
     // of a side in pixels).
-    gdata::InstalledApp::IconList app_icons;
+    google_apis::InstalledApp::IconList app_icons;
     // Drive document icon URLs for this app, paired with their size (length of
     // a side in pixels).
-    gdata::InstalledApp::IconList document_icons;
+    google_apis::InstalledApp::IconList document_icons;
     // Object (file) type description.
     string16 object_type;
     // Drive app id
@@ -134,8 +137,8 @@ class DriveWebAppsRegistry : public DriveWebAppsRegistryInterface {
   // corresponding |map|.
   static void AddAppSelectorList(
       const GURL& product_link,
-      const gdata::InstalledApp::IconList& app_icons,
-      const gdata::InstalledApp::IconList& document_icons,
+      const google_apis::InstalledApp::IconList& app_icons,
+      const google_apis::InstalledApp::IconList& document_icons,
       const string16& object_type,
       const std::string& app_id,
       bool is_primary_selector,

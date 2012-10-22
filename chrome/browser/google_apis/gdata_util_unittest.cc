@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #endif  // OS_CHROMEOS
 
-namespace gdata {
+namespace google_apis {
 namespace util {
 #if defined(OS_CHROMEOS)
 // TODO(yoshiki): Find platform independent way to get/set local timezone.
@@ -100,4 +100,4 @@ TEST(GDataUtilTest, FormatTimeAsString) {
 }
 
 }  // namespace util
-}  // namespace gdata
+}  // namespace google_apis

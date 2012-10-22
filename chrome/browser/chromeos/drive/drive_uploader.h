@@ -24,7 +24,7 @@ namespace content {
 class DownloadItem;
 }
 
-namespace gdata {
+namespace google_apis {
 struct ResumeUploadResponse;
 }
 
@@ -34,10 +34,12 @@ class MockDriveUploader;
 class DriveServiceInterface;
 
 // Callback to be invoked once the upload has completed.
-typedef base::Callback<void(DriveFileError error,
+typedef base::Callback<void(
+    DriveFileError error,
     const FilePath& drive_path,
     const FilePath& file_path,
-    scoped_ptr<gdata::DocumentEntry> document_entry)> UploadCompletionCallback;
+    scoped_ptr<google_apis::DocumentEntry> document_entry)>
+    UploadCompletionCallback;
 
 // Callback to be invoked once the uploader is ready to upload.
 typedef base::Callback<void(int32 upload_id)> UploaderReadyCallback;
@@ -150,7 +152,7 @@ class DriveUploader : public DriveUploaderInterface {
     std::string content_type;  // Content-Type of file.
     int64 content_length;  // Header content-Length.
 
-    gdata::UploadMode upload_mode;
+    google_apis::UploadMode upload_mode;
 
     // Location URL used to get |upload_location| with InitiateUpload.
     GURL initial_upload_location;
@@ -187,7 +189,7 @@ class DriveUploader : public DriveUploaderInterface {
     int num_file_open_tries;  // Number of times we've tried to open this file.
 
     // Will be set once the upload is complete.
-    scoped_ptr<gdata::DocumentEntry> entry;
+    scoped_ptr<google_apis::DocumentEntry> entry;
 
     // Callback to be invoked once the uploader is ready to upload.
     UploaderReadyCallback ready_callback;
@@ -217,7 +219,7 @@ class DriveUploader : public DriveUploaderInterface {
 
   // DriveService callback for InitiateUpload.
   void OnUploadLocationReceived(int upload_id,
-                                gdata::GDataErrorCode code,
+                                google_apis::GDataErrorCode code,
                                 const GURL& upload_location);
 
   // Uploads the next chunk of data from the file.
@@ -234,8 +236,8 @@ class DriveUploader : public DriveUploaderInterface {
   // DriveService callback for ResumeUpload.
   void OnResumeUploadResponseReceived(
       int upload_id,
-      const gdata::ResumeUploadResponse& response,
-      scoped_ptr<gdata::DocumentEntry> entry);
+      const google_apis::ResumeUploadResponse& response,
+      scoped_ptr<google_apis::DocumentEntry> entry);
 
   // Initiate the upload.
   void InitiateUpload(UploadFileInfo* uploader_file_info);

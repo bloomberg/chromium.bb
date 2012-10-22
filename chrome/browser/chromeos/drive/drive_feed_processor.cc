@@ -31,7 +31,7 @@ DriveFeedProcessor::~DriveFeedProcessor() {
 }
 
 DriveFileError DriveFeedProcessor::ApplyFeeds(
-    const ScopedVector<gdata::DocumentFeed>& feed_list,
+    const ScopedVector<google_apis::DocumentFeed>& feed_list,
     int64 start_changestamp,
     int64 root_feed_changestamp,
     std::set<FilePath>* changed_dirs) {
@@ -227,7 +227,7 @@ DriveDirectory* DriveFeedProcessor::FindDirectoryForNewEntry(
 }
 
 DriveFileError DriveFeedProcessor::FeedToFileResourceMap(
-    const ScopedVector<gdata::DocumentFeed>& feed_list,
+    const ScopedVector<google_apis::DocumentFeed>& feed_list,
     FileResourceIdMap* file_map,
     int64* feed_changestamp,
     FeedToFileResourceMapUmaStats* uma_stats) {
@@ -238,13 +238,13 @@ DriveFileError DriveFeedProcessor::FeedToFileResourceMap(
   uma_stats->num_regular_files = 0;
   uma_stats->num_hosted_documents = 0;
   for (size_t i = 0; i < feed_list.size(); ++i) {
-    const gdata::DocumentFeed* feed = feed_list[i];
+    const google_apis::DocumentFeed* feed = feed_list[i];
 
     // Get upload url from the root feed. Links for all other collections will
     // be handled in GDatadirectory::FromDocumentEntry();
     if (i == 0) {
-      const gdata::Link* root_feed_upload_link =
-          feed->GetLinkByType(gdata::Link::LINK_RESUMABLE_CREATE_MEDIA);
+      const google_apis::Link* root_feed_upload_link =
+          feed->GetLinkByType(google_apis::Link::LINK_RESUMABLE_CREATE_MEDIA);
       if (root_feed_upload_link)
         resource_metadata_->root()->set_upload_url(
             root_feed_upload_link->href());
@@ -252,10 +252,10 @@ DriveFileError DriveFeedProcessor::FeedToFileResourceMap(
       DCHECK_GE(*feed_changestamp, 0);
     }
 
-    for (ScopedVector<gdata::DocumentEntry>::const_iterator iter =
+    for (ScopedVector<google_apis::DocumentEntry>::const_iterator iter =
              feed->entries().begin();
          iter != feed->entries().end(); ++iter) {
-      gdata::DocumentEntry* doc = *iter;
+      google_apis::DocumentEntry* doc = *iter;
       scoped_ptr<DriveEntry> entry =
           resource_metadata_->FromDocumentEntry(*doc);
       // Some document entries don't map into files (i.e. sites).

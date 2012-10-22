@@ -418,23 +418,23 @@ void EnsureDirectoryExists(Profile* profile,
   }
 }
 
-DriveFileError GDataToDriveFileError(gdata::GDataErrorCode status) {
+DriveFileError GDataToDriveFileError(google_apis::GDataErrorCode status) {
   switch (status) {
-    case gdata::HTTP_SUCCESS:
-    case gdata::HTTP_CREATED:
+    case google_apis::HTTP_SUCCESS:
+    case google_apis::HTTP_CREATED:
       return DRIVE_FILE_OK;
-    case gdata::HTTP_UNAUTHORIZED:
-    case gdata::HTTP_FORBIDDEN:
+    case google_apis::HTTP_UNAUTHORIZED:
+    case google_apis::HTTP_FORBIDDEN:
       return DRIVE_FILE_ERROR_ACCESS_DENIED;
-    case gdata::HTTP_NOT_FOUND:
+    case google_apis::HTTP_NOT_FOUND:
       return DRIVE_FILE_ERROR_NOT_FOUND;
-    case gdata::GDATA_PARSE_ERROR:
-    case gdata::GDATA_FILE_ERROR:
+    case google_apis::GDATA_PARSE_ERROR:
+    case google_apis::GDATA_FILE_ERROR:
       return DRIVE_FILE_ERROR_ABORT;
-    case gdata::GDATA_NO_CONNECTION:
+    case google_apis::GDATA_NO_CONNECTION:
       return DRIVE_FILE_ERROR_NO_CONNECTION;
-    case gdata::HTTP_SERVICE_UNAVAILABLE:
-    case gdata::HTTP_INTERNAL_SERVER_ERROR:
+    case google_apis::HTTP_SERVICE_UNAVAILABLE:
+    case google_apis::HTTP_INTERNAL_SERVER_ERROR:
       return DRIVE_FILE_ERROR_THROTTLED;
     default:
       return DRIVE_FILE_ERROR_FAILED;

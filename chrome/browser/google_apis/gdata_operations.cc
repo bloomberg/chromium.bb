@@ -157,7 +157,7 @@ GURL FormatDocumentListURL(const std::string& directory_resource_id) {
 
 }  // namespace
 
-namespace gdata {
+namespace google_apis {
 
 //============================ Structs ===========================
 
@@ -1014,4 +1014,4 @@ void GetContactPhotoOperation::RunCallbackOnPrematureFailure(
   callback_.Run(code, data.Pass());
 }
 
-}  // namespace gdata
+}  // namespace google_apis

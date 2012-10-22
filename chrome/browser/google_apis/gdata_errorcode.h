@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_GOOGLE_APIS_GDATA_ERRORCODE_H_
 #define CHROME_BROWSER_GOOGLE_APIS_GDATA_ERRORCODE_H_
 
-namespace gdata {
+namespace google_apis {
 
 // HTTP errors that can be returned by GData service.
 enum GDataErrorCode {
@@ -31,6 +31,6 @@ enum GDataErrorCode {
   GDATA_NOT_READY            = -105,
 };
 
-}  // namespace gdata
+}  // namespace google_apis
 
 #endif  // CHROME_BROWSER_GOOGLE_APIS_GDATA_ERRORCODE_H_

@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
 
-namespace gdata {
+namespace google_apis {
 
 // Runs task on the thread to which |relay_proxy| belongs.
 void RunTaskOnThread(scoped_refptr<base::MessageLoopProxy> relay_proxy,
@@ -116,6 +116,6 @@ CallbackType CreateRelayCallback(const CallbackType& callback) {
                     callback);
 }
 
-}  // namespace gdata
+}  // namespace google_apis
 
 #endif  // CHROME_BROWSER_GOOGLE_APIS_TASK_UTIL_H_

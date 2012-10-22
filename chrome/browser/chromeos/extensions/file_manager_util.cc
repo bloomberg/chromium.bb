@@ -185,7 +185,7 @@ std::string GetDialogTypeAsString(
 DictionaryValue* ProgessStatusToDictionaryValue(
     Profile* profile,
     const GURL& origin_url,
-    const gdata::OperationProgressStatus& status) {
+    const google_apis::OperationProgressStatus& status) {
   scoped_ptr<DictionaryValue> result(new DictionaryValue());
   GURL file_url;
   if (file_manager_util::ConvertFileToFileSystemUrl(profile,
@@ -754,7 +754,7 @@ bool ExecuteBuiltinHandler(Browser* browser, const FilePath& path,
       system_service->file_system()->GetFileByPath(
           drive::util::ExtractDrivePath(path),
           base::Bind(&OnCRXDownloadCallback, browser),
-          gdata::GetContentCallback());
+          google_apis::GetContentCallback());
     } else {
       InstallCRX(browser, path);
     }
@@ -809,9 +809,10 @@ bool ShouldBeOpenedWithPdfPlugin(Profile* profile, const char* file_extension) {
 
 ListValue* ProgressStatusVectorToListValue(
     Profile* profile, const GURL& origin_url,
-    const gdata::OperationProgressStatusList& list) {
+    const google_apis::OperationProgressStatusList& list) {
   scoped_ptr<ListValue> result_list(new ListValue());
-  for (gdata::OperationProgressStatusList::const_iterator iter = list.begin();
+  for (google_apis::OperationProgressStatusList::const_iterator iter =
+           list.begin();
        iter != list.end(); ++iter) {
     result_list->Append(
         ProgessStatusToDictionaryValue(profile, origin_url, *iter));

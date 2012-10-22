@@ -26,7 +26,7 @@
 
 using content::BrowserThread;
 
-namespace gdata {
+namespace google_apis {
 namespace util {
 
 namespace {
@@ -210,4 +210,4 @@ void PostBlockingPoolSequencedTaskAndReply(
 }
 
 }  // namespace util
-}  // namespace gdata
+}  // namespace google_apis

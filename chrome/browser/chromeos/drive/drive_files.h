@@ -40,8 +40,8 @@ class DriveEntry {
   virtual DriveFile* AsDriveFile();
   virtual DriveDirectory* AsDriveDirectory();
 
-  // Initializes from gdata::DocumentEntry.
-  virtual void InitFromDocumentEntry(const gdata::DocumentEntry& doc);
+  // Initializes from google_apis::DocumentEntry.
+  virtual void InitFromDocumentEntry(const google_apis::DocumentEntry& doc);
 
   // const versions of AsDriveFile and AsDriveDirectory.
   const DriveFile* AsDriveFileConst() const;
@@ -171,7 +171,7 @@ class DriveFile : public DriveEntry {
   void FromProto(const DriveEntryProto& proto);
   void ToProto(DriveEntryProto* proto) const;
 
-  gdata::DriveEntryKind kind() const { return kind_; }
+  google_apis::DriveEntryKind kind() const { return kind_; }
   const GURL& thumbnail_url() const { return thumbnail_url_; }
   const GURL& alternate_url() const { return alternate_url_; }
   const std::string& content_mime_type() const { return content_mime_type_; }
@@ -190,12 +190,13 @@ class DriveFile : public DriveEntry {
   friend class DriveResourceMetadata;  // For access to ctor.
 
   explicit DriveFile(DriveResourceMetadata* resource_metadata);
-  // Initializes from gdata::DocumentEntry.
-  virtual void InitFromDocumentEntry(const gdata::DocumentEntry& doc) OVERRIDE;
+  // Initializes from google_apis::DocumentEntry.
+  virtual void InitFromDocumentEntry(
+      const google_apis::DocumentEntry& doc) OVERRIDE;
 
   virtual DriveFile* AsDriveFile() OVERRIDE;
 
-  gdata::DriveEntryKind kind_;  // Not saved in proto.
+  google_apis::DriveEntryKind kind_;  // Not saved in proto.
   GURL thumbnail_url_;
   GURL alternate_url_;
   std::string content_mime_type_;
@@ -227,8 +228,9 @@ class DriveDirectory : public DriveEntry {
 
   explicit DriveDirectory(DriveResourceMetadata* resource_metadata);
 
-  // Initializes from gdata::DocumentEntry.
-  virtual void InitFromDocumentEntry(const gdata::DocumentEntry& doc) OVERRIDE;
+  // Initializes from google_apis::DocumentEntry.
+  virtual void InitFromDocumentEntry(
+      const google_apis::DocumentEntry& doc) OVERRIDE;
 
   virtual DriveDirectory* AsDriveDirectory() OVERRIDE;
 

@@ -114,7 +114,7 @@ void DriveTaskExecutor::OnFileEntryFetched(
 
 void DriveTaskExecutor::OnAppAuthorized(
     const std::string& resource_id,
-    gdata::GDataErrorCode error,
+    google_apis::GDataErrorCode error,
     scoped_ptr<base::Value> feed_data) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -125,7 +125,7 @@ void DriveTaskExecutor::OnAppAuthorized(
   DriveSystemService* system_service =
       DriveSystemServiceFactory::GetForProfile(profile());
 
-  if (!system_service || error != gdata::HTTP_SUCCESS) {
+  if (!system_service || error != google_apis::HTTP_SUCCESS) {
     Done(false);
     return;
   }

@@ -48,9 +48,10 @@ void GDataContactsServiceStub::DownloadContacts(
 
   if (min_update_time != expected_min_update_time_) {
     LOG(ERROR) << "Actual minimum update time ("
-               << gdata::util::FormatTimeAsString(min_update_time) << ") "
+               << google_apis::util::FormatTimeAsString(min_update_time) << ") "
                << "differed from expected ("
-               << gdata::util::FormatTimeAsString(expected_min_update_time_)
+               << google_apis::util::FormatTimeAsString(
+                   expected_min_update_time_)
                << "); not returning any contacts";
     num_download_requests_with_wrong_timestamps_++;
     failure_callback.Run();

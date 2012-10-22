@@ -40,8 +40,8 @@ std::string GetWebStoreIdFromUrl(const GURL& url) {
 }
 
 // TODO(kochi): This is duplicate from gdata_wapi_parser.cc.
-bool SortBySize(const gdata::InstalledApp::IconList::value_type& a,
-                const gdata::InstalledApp::IconList::value_type& b) {
+bool SortBySize(const google_apis::InstalledApp::IconList::value_type& a,
+                const google_apis::InstalledApp::IconList::value_type& b) {
   return a.first < b.first;
 }
 
@@ -51,8 +51,8 @@ bool SortBySize(const gdata::InstalledApp::IconList::value_type& a,
 
 DriveWebAppInfo::DriveWebAppInfo(
     const std::string& app_id,
-    const gdata::InstalledApp::IconList& app_icons,
-    const gdata::InstalledApp::IconList& document_icons,
+    const google_apis::InstalledApp::IconList& app_icons,
+    const google_apis::InstalledApp::IconList& document_icons,
     const std::string& web_store_id,
     const string16& app_name,
     const string16& object_type,
@@ -73,8 +73,8 @@ DriveWebAppInfo::~DriveWebAppInfo() {
 
 DriveWebAppsRegistry::WebAppFileSelector::WebAppFileSelector(
     const GURL& product_link,
-    const gdata::InstalledApp::IconList& app_icons,
-    const gdata::InstalledApp::IconList& document_icons,
+    const google_apis::InstalledApp::IconList& app_icons,
+    const google_apis::InstalledApp::IconList& document_icons,
     const string16& object_type,
     const std::string& app_id,
     bool is_primary_selector)
@@ -145,24 +145,24 @@ std::set<std::string> DriveWebAppsRegistry::GetExtensionsForWebStoreApp(
 }
 
 void DriveWebAppsRegistry::UpdateFromFeed(
-    const gdata::AccountMetadataFeed& metadata) {
+    const google_apis::AccountMetadataFeed& metadata) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   url_to_name_map_.clear();
   STLDeleteValues(&webapp_extension_map_);
   STLDeleteValues(&webapp_mimetypes_map_);
-  for (ScopedVector<gdata::InstalledApp>::const_iterator it =
+  for (ScopedVector<google_apis::InstalledApp>::const_iterator it =
            metadata.installed_apps().begin();
        it != metadata.installed_apps().end(); ++it) {
-    const gdata::InstalledApp& app = **it;
+    const google_apis::InstalledApp& app = **it;
     GURL product_url = app.GetProductUrl();
     if (product_url.is_empty())
       continue;
 
-    gdata::InstalledApp::IconList app_icons =
-        app.GetIconsForCategory(gdata::AppIcon::ICON_APPLICATION);
-    gdata::InstalledApp::IconList document_icons =
-        app.GetIconsForCategory(gdata::AppIcon::ICON_DOCUMENT);
+    google_apis::InstalledApp::IconList app_icons =
+        app.GetIconsForCategory(google_apis::AppIcon::ICON_APPLICATION);
+    google_apis::InstalledApp::IconList document_icons =
+        app.GetIconsForCategory(google_apis::AppIcon::ICON_DOCUMENT);
 
     if (VLOG_IS_ON(1)) {
       std::vector<std::string> mime_types;
@@ -219,27 +219,27 @@ void DriveWebAppsRegistry::UpdateFromFeed(
 }
 
 void DriveWebAppsRegistry::UpdateFromApplicationList(
-    const gdata::AppList& applist) {
+    const google_apis::AppList& applist) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   url_to_name_map_.clear();
   STLDeleteValues(&webapp_extension_map_);
   STLDeleteValues(&webapp_mimetypes_map_);
   for (size_t i = 0; i < applist.items().size(); ++i) {
-    const gdata::AppResource& app = *applist.items()[i];
+    const google_apis::AppResource& app = *applist.items()[i];
     if (app.product_url().is_empty())
       continue;
 
-    gdata::InstalledApp::IconList app_icons;
-    gdata::InstalledApp::IconList document_icons;
+    google_apis::InstalledApp::IconList app_icons;
+    google_apis::InstalledApp::IconList document_icons;
     for (size_t j = 0; j < app.icons().size(); ++j) {
-      const gdata::DriveAppIcon& icon = *app.icons()[j];
+      const google_apis::DriveAppIcon& icon = *app.icons()[j];
       if (icon.icon_url().is_empty())
         continue;
-      if (icon.category() == gdata::DriveAppIcon::APPLICATION)
+      if (icon.category() == google_apis::DriveAppIcon::APPLICATION)
         app_icons.push_back(std::make_pair(icon.icon_side_length(),
                                            icon.icon_url()));
-      if (icon.category() == gdata::DriveAppIcon::DOCUMENT)
+      if (icon.category() == google_apis::DriveAppIcon::DOCUMENT)
         document_icons.push_back(std::make_pair(icon.icon_side_length(),
                                                 icon.icon_url()));
     }
@@ -286,8 +286,8 @@ void DriveWebAppsRegistry::UpdateFromApplicationList(
 // static.
 void DriveWebAppsRegistry::AddAppSelectorList(
     const GURL& product_link,
-    const gdata::InstalledApp::IconList& app_icons,
-    const gdata::InstalledApp::IconList& document_icons,
+    const google_apis::InstalledApp::IconList& app_icons,
+    const google_apis::InstalledApp::IconList& document_icons,
     const string16& object_type,
     const std::string& app_id,
     bool is_primary_selector,
