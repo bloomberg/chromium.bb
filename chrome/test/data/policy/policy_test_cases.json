@@ -1512,15 +1512,15 @@
     "settings_pages": []
   },
 
-  "GDataDisabled": {
+  "DriveDisabled": {
     "os": ["chromeos"],
-    "test_policy": { "GDataDisabled": true },
+    "test_policy": { "DriveDisabled": true },
     "settings_pages": []
   },
 
-  "GDataDisabledOverCellular": {
+  "DriveDisabledOverCellular": {
     "os": ["chromeos"],
-    "test_policy": { "GDataDisabledOverCellular": true },
+    "test_policy": { "DriveDisabledOverCellular": true },
     "settings_pages": []
   },
 

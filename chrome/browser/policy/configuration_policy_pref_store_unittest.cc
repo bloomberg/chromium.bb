@@ -287,9 +287,9 @@ INSTANTIATE_TEST_CASE_P(
     testing::Values(
         PolicyAndPref(key::kChromeOsLockOnIdleSuspend,
                       prefs::kEnableScreenLock),
-        PolicyAndPref(key::kGDataDisabled,
+        PolicyAndPref(key::kDriveDisabled,
                       prefs::kDisableDrive),
-        PolicyAndPref(key::kGDataDisabledOverCellular,
+        PolicyAndPref(key::kDriveDisabledOverCellular,
                       prefs::kDisableDriveOverCellular),
         PolicyAndPref(key::kExternalStorageDisabled,
                       prefs::kExternalStorageDisabled),

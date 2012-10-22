@@ -3065,36 +3065,36 @@
       If this policy is left unset, background mode is initially disabled and can be controlled by the user in the browser settings.''',
     },
     {
-      'name': 'GData',
+      'name': 'Drive',
       'type': 'group',
-      'caption': '''Configure GData options''',
-      'desc': '''Configure GData in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.''',
+      'caption': '''Configure Google Drive options''',
+      'desc': '''Configure Google Drive in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.''',
       'policies': [
         {
-          'name': 'GDataDisabled',
+          'name': 'DriveDisabled',
           'type': 'main',
           'schema': { 'type': 'boolean' },
           'supported_on': ['chrome_os:19-'],
           'features': {'dynamic_refresh': True},
           'example_value': True,
           'id': 139,
-          'caption': '''Disables GData''',
-          'desc': '''Disables Google Docs syncing when set to True. In that case, no data is uploaded to Google Docs.
+          'caption': '''Disables Drive''',
+          'desc': '''Disables Google Drive syncing when set to True. In that case, no data is uploaded to Google Drive.
 
-          If not set or set to False, then users will be able to transfer files to Google Docs.''',
+          If not set or set to False, then users will be able to transfer files to Google Drive.''',
         },
         {
-          'name': 'GDataDisabledOverCellular',
+          'name': 'DriveDisabledOverCellular',
           'type': 'main',
           'schema': { 'type': 'boolean' },
           'supported_on': ['chrome_os:19-'],
           'features': {'dynamic_refresh': True},
           'example_value': True,
           'id': 140,
-          'caption': '''Disables GData over Cellular connections''',
-          'desc': '''Disables Google Docs syncing when using a cellular connection when set to True. In that case, data is only synced to Google Docs when connected via WiFi or Ethernet.
+          'caption': '''Disables Google Drive over Cellular connections''',
+          'desc': '''Disables Google Drive syncing when using a cellular connection when set to True. In that case, data is only synced to Google Drive when connected via WiFi or Ethernet.
 
-          If not set or set to False, then users will be able to transfer files to Google Docs via cellular connections.''',
+          If not set or set to False, then users will be able to transfer files to Google Drive via cellular connections.''',
         },
       ],
     },
