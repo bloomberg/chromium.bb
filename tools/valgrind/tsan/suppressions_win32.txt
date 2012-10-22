@@ -210,3 +210,31 @@
   ...
   fun:base::internal::RunnableAdapter::Run
 }
+
+{
+  bug_157076_a
+  ThreadSanitizer:Race
+  fun:win32thread_worker
+  fun:_callthreadstartex
+  fun:_threadstartex
+  fun:BaseThreadInitThunk
+}
+
+{
+  bug_157076_b
+  ThreadSanitizer:Race
+  fun:memset
+  fun:_free_dbg_nolock
+  fun:_free_dbg
+  fun:_aligned_free_dbg
+  fun:_aligned_free
+  fun:media::VideoFrame::~VideoFrame
+  fun:media::VideoFrame::`scalar deleting destructor'
+  fun:base::RefCountedThreadSafe::DeleteInternal
+  fun:base::RefCountedThreadSafe::Release
+  fun:base::RefCountedThreadSafe::Release
+  fun:scoped_refptr::operator=
+  fun:media::VideoRendererBase::AttemptFlush_Locked
+  fun:media::VideoRendererBase::OnDecoderFlushDone
+  fun:base::internal::RunnableAdapter::Run
+}
