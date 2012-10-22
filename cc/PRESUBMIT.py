@@ -22,7 +22,7 @@ def CheckAsserts(input_api, output_api, white_list=CC_SOURCE_FILES, black_list=N
   for f in input_api.AffectedSourceFiles(source_file_filter):
     contents = input_api.ReadFile(f, 'rb')
     # WebKit ASSERT() is not allowed.
-    if re.search(r"ASSERT\(", contents):
+    if re.search(r"\bASSERT\(", contents):
       assert_files.append(f.LocalPath())
     # WebKit ASSERT_NOT_REACHED() is not allowed.
     if re.search(r"ASSERT_NOT_REACHED\(", contents):
