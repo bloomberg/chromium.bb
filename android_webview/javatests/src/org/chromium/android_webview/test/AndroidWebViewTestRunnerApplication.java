@@ -16,7 +16,7 @@ public class AndroidWebViewTestRunnerApplication extends Application {
     /**
      * The name of the library to load.
      */
-    private static final String NATIVE_LIBRARY = "webview";
+    private static final String NATIVE_LIBRARY = "webviewchromium";
 
     /** The minimum set of .pak files Chrome needs. */
     private static final String[] CHROME_MANDATORY_PAKS = {

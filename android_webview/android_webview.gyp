@@ -7,7 +7,7 @@
   },
   'targets': [
     {
-      'target_name': 'libwebview',
+      'target_name': 'libwebviewchromium',
       'type': 'shared_library',
       'android_unmangled_name': 1,
       'dependencies': [
@@ -99,14 +99,14 @@
         '../media/media.gyp:media_java',
         '../net/net.gyp:net_java',
         '../ui/ui.gyp:ui_java',
-        'libwebview',
+        'libwebviewchromium',
       ],
       'variables': {
         'package_name': 'android_webview',
         'apk_name': 'AndroidWebView',
         'manifest_package_name': 'org.chromium.android_webview',
         'java_in_dir': '../android_webview/java',
-        'native_libs_paths': ['<(SHARED_LIB_DIR)/libwebview.so'],
+        'native_libs_paths': ['<(SHARED_LIB_DIR)/libwebviewchromium.so'],
         'input_pak_files': [
           '<(SHARED_INTERMEDIATE_DIR)/repack/chrome.pak',
           '<(SHARED_INTERMEDIATE_DIR)/repack/chrome_100_percent.pak',
@@ -145,7 +145,7 @@
         '../net/net.gyp:net_java',
         '../ui/ui.gyp:ui_java',
         'android_webview_java',
-        'libwebview',
+        'libwebviewchromium',
       ],
       'variables': {
         'package_name': 'android_webview_test',
