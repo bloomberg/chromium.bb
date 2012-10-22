@@ -121,13 +121,13 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kUse24HourClock,
                              base::GetHourClockType() == base::k24HourClock,
                              PrefService::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kDisableGData,
+  prefs->RegisterBooleanPref(prefs::kDisableDrive,
                              false,
                              PrefService::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kDisableGDataOverCellular,
+  prefs->RegisterBooleanPref(prefs::kDisableDriveOverCellular,
                              true,
                              PrefService::SYNCABLE_PREF);
-  prefs->RegisterBooleanPref(prefs::kDisableGDataHostedFiles,
+  prefs->RegisterBooleanPref(prefs::kDisableDriveHostedFiles,
                              false,
                              PrefService::SYNCABLE_PREF);
   // We don't sync prefs::kLanguageCurrentInputMethod and PreviousInputMethod
@@ -290,10 +290,10 @@ void Preferences::InitUserPrefs(PrefService* prefs) {
   mouse_sensitivity_.Init(prefs::kMouseSensitivity, prefs, this);
   touchpad_sensitivity_.Init(prefs::kTouchpadSensitivity, prefs, this);
   use_24hour_clock_.Init(prefs::kUse24HourClock, prefs, this);
-  disable_drive_.Init(prefs::kDisableGData, prefs, this);
-  disable_drive_over_cellular_.Init(prefs::kDisableGDataOverCellular,
+  disable_drive_.Init(prefs::kDisableDrive, prefs, this);
+  disable_drive_over_cellular_.Init(prefs::kDisableDriveOverCellular,
                                    prefs, this);
-  disable_drive_hosted_files_.Init(prefs::kDisableGDataHostedFiles,
+  disable_drive_hosted_files_.Init(prefs::kDisableDriveHostedFiles,
                                    prefs, this);
   download_default_directory_.Init(prefs::kDownloadDefaultDirectory,
                                    prefs, this);
@@ -627,9 +627,9 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     system::ToggleDrm(enable_drm_.GetValue());
   }
 
-  // Change the download directory to the default value if a GData directory is
-  // selected and GData is disabled.
-  if (!pref_name || *pref_name == prefs::kDisableGData) {
+  // Change the download directory to the default value if a Drive directory is
+  // selected and Drive is disabled.
+  if (!pref_name || *pref_name == prefs::kDisableDrive) {
     if (disable_drive_.GetValue()) {
       if (drive::util::IsUnderDriveMountPoint(
           download_default_directory_.GetValue())) {

@@ -54,7 +54,7 @@ bool IsDriveEnabledForProfile(Profile* profile) {
   // Disable Drive if preference is set.  This can happen with commandline flag
   // --disable-gdata or enterprise policy, or probably with user settings too
   // in the future.
-  if (profile->GetPrefs()->GetBoolean(prefs::kDisableGData))
+  if (profile->GetPrefs()->GetBoolean(prefs::kDisableDrive))
     return false;
 
   return true;

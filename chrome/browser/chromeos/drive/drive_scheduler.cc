@@ -156,7 +156,7 @@ void DriveScheduler::DoJobLoop() {
 bool DriveScheduler::ShouldStopJobLoop() {
   // Should stop if the gdata feature was disabled while running the fetch
   // loop.
-  if (profile_->GetPrefs()->GetBoolean(prefs::kDisableGData))
+  if (profile_->GetPrefs()->GetBoolean(prefs::kDisableDrive))
     return true;
 
   // Should stop if the network is not online.
@@ -165,7 +165,7 @@ bool DriveScheduler::ShouldStopJobLoop() {
 
   // Should stop if the current connection is on cellular network, and
   // fetching is disabled over cellular.
-  if (profile_->GetPrefs()->GetBoolean(prefs::kDisableGDataOverCellular) &&
+  if (profile_->GetPrefs()->GetBoolean(prefs::kDisableDriveOverCellular) &&
       util::IsConnectionTypeCellular())
     return true;
 

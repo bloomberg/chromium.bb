@@ -185,7 +185,7 @@ TEST_F(DriveSchedulerTest, QueueOperation_CelluarDisabled) {
 
 TEST_F(DriveSchedulerTest, QueueOperation_CelluarEnabled) {
   // Enable fetching over cellular network.
-  profile_->GetPrefs()->SetBoolean(prefs::kDisableGDataOverCellular, false);
+  profile_->GetPrefs()->SetBoolean(prefs::kDisableDriveOverCellular, false);
 
   ConnectToCellular();
 
@@ -219,7 +219,7 @@ TEST_F(DriveSchedulerTest, QueueOperation_WimaxDisabled) {
 
 TEST_F(DriveSchedulerTest, QueueOperation_CelluarEnabledWithWimax) {
   // Enable fetching over cellular network.
-  profile_->GetPrefs()->SetBoolean(prefs::kDisableGDataOverCellular, false);
+  profile_->GetPrefs()->SetBoolean(prefs::kDisableDriveOverCellular, false);
 
   ConnectToWimax();
 
@@ -237,7 +237,7 @@ TEST_F(DriveSchedulerTest, QueueOperation_CelluarEnabledWithWimax) {
 
 TEST_F(DriveSchedulerTest, QueueOperation_DriveDisabled) {
   // Disable the Drive feature.
-  profile_->GetPrefs()->SetBoolean(prefs::kDisableGData, true);
+  profile_->GetPrefs()->SetBoolean(prefs::kDisableDrive, true);
 
   // This file will not be removed, as the Drive feature is disabled.
   EXPECT_CALL(*mock_remove_operation_, Remove(_, _, _)).Times(0);

@@ -409,7 +409,7 @@ void DriveFileSystem::Initialize() {
                          this);  // OperationObserver
 
   PrefService* pref_service = profile_->GetPrefs();
-  hide_hosted_docs_ = pref_service->GetBoolean(prefs::kDisableGDataHostedFiles);
+  hide_hosted_docs_ = pref_service->GetBoolean(prefs::kDisableDriveHostedFiles);
 
   scheduler_->Initialize();
 
@@ -2169,9 +2169,9 @@ void DriveFileSystem::Observe(int type,
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     PrefService* pref_service = profile_->GetPrefs();
     std::string* pref_name = content::Details<std::string>(details).ptr();
-    if (*pref_name == prefs::kDisableGDataHostedFiles) {
+    if (*pref_name == prefs::kDisableDriveHostedFiles) {
       SetHideHostedDocuments(
-          pref_service->GetBoolean(prefs::kDisableGDataHostedFiles));
+          pref_service->GetBoolean(prefs::kDisableDriveHostedFiles));
     }
   } else {
     NOTREACHED();
@@ -2199,7 +2199,7 @@ void DriveFileSystem::InitializePreferenceObserver() {
 
   pref_registrar_.reset(new PrefChangeRegistrar());
   pref_registrar_->Init(profile_->GetPrefs());
-  pref_registrar_->Add(prefs::kDisableGDataHostedFiles, this);
+  pref_registrar_->Add(prefs::kDisableDriveHostedFiles, this);
 }
 
 void DriveFileSystem::OpenFile(const FilePath& file_path,

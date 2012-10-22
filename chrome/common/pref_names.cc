@@ -555,14 +555,17 @@ const char kTouchpadSensitivity[] = "settings.touchpad.sensitivity2";
 // A boolean pref set to true if time should be displayed in 24-hour clock.
 const char kUse24HourClock[] = "settings.clock.use_24hour_clock";
 
-// A boolean pref to disable gdata.
-const char kDisableGData[] = "gdata.disabled";
+// A boolean pref to disable Google Drive integration.
+// The pref prefix should remain as "gdata" for backward compatibility.
+const char kDisableDrive[] = "gdata.disabled";
 
-// A boolean pref to disable gdata over cellular connections.
-const char kDisableGDataOverCellular[] = "gdata.cellular.disabled";
+// A boolean pref to disable Drive over cellular connections.
+// The pref prefix should remain as "gdata" for backward compatibility.
+const char kDisableDriveOverCellular[] = "gdata.cellular.disabled";
 
-// A boolean pref to disable gdata hosted files.
-const char kDisableGDataHostedFiles[] = "gdata.hosted_files.disabled";
+// A boolean pref to disable hosted files on Drive.
+// The pref prefix should remain as "gdata" for backward compatibility.
+const char kDisableDriveHostedFiles[] = "gdata.hosted_files.disabled";
 
 // A string pref set to the current input method.
 const char kLanguageCurrentInputMethod[] =

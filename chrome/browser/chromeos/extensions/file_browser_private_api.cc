@@ -2652,10 +2652,10 @@ bool GetPreferencesFunction::RunImpl() {
   value->SetBoolean("driveEnabled", drive_enabled);
 
   value->SetBoolean("cellularDisabled",
-                    service->GetBoolean(prefs::kDisableGDataOverCellular));
+                    service->GetBoolean(prefs::kDisableDriveOverCellular));
 
   value->SetBoolean("hostedFilesDisabled",
-                    service->GetBoolean(prefs::kDisableGDataHostedFiles));
+                    service->GetBoolean(prefs::kDisableDriveHostedFiles));
 
   value->SetBoolean("use24hourClock",
                     service->GetBoolean(prefs::kUse24HourClock));
@@ -2675,13 +2675,11 @@ bool SetPreferencesFunction::RunImpl() {
 
   bool tmp;
 
-  if (value->GetBoolean("cellularDisabled", &tmp)) {
-    service->SetBoolean(prefs::kDisableGDataOverCellular, tmp);
-  }
+  if (value->GetBoolean("cellularDisabled", &tmp))
+    service->SetBoolean(prefs::kDisableDriveOverCellular, tmp);
 
-  if (value->GetBoolean("hostedFilesDisabled", &tmp)) {
-    service->SetBoolean(prefs::kDisableGDataHostedFiles, tmp);
-  }
+  if (value->GetBoolean("hostedFilesDisabled", &tmp))
+    service->SetBoolean(prefs::kDisableDriveHostedFiles, tmp);
 
   return true;
 }

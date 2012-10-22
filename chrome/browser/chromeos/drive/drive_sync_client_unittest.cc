@@ -389,7 +389,7 @@ TEST_F(DriveSyncClientTest, StartSyncLoop_CelluarEnabled) {
   ConnectToWifi();  // First connect to Wifi.
 
   // Enable fetching over cellular network.
-  profile_->GetPrefs()->SetBoolean(prefs::kDisableGDataOverCellular, false);
+  profile_->GetPrefs()->SetBoolean(prefs::kDisableDriveOverCellular, false);
 
   AddResourceIdToFetch("resource_id_not_fetched_foo");
   AddResourceIdToFetch("resource_id_not_fetched_bar");
@@ -428,7 +428,7 @@ TEST_F(DriveSyncClientTest, StartSyncLoop_CelluarEnabledWithWimax) {
   ConnectToWifi();  // First connect to Wifi.
 
   // Enable fetching over cellular network. This includes wimax.
-  profile_->GetPrefs()->SetBoolean(prefs::kDisableGDataOverCellular, false);
+  profile_->GetPrefs()->SetBoolean(prefs::kDisableDriveOverCellular, false);
 
   AddResourceIdToFetch("resource_id_not_fetched_foo");
   AddResourceIdToFetch("resource_id_not_fetched_bar");
@@ -451,7 +451,7 @@ TEST_F(DriveSyncClientTest, StartSyncLoop_DriveDisabled) {
   ConnectToWifi();
 
   // Disable the Drive feature.
-  profile_->GetPrefs()->SetBoolean(prefs::kDisableGData, true);
+  profile_->GetPrefs()->SetBoolean(prefs::kDisableDrive, true);
 
   AddResourceIdToFetch("resource_id_not_fetched_foo");
   AddResourceIdToFetch("resource_id_not_fetched_bar");

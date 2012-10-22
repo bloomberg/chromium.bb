@@ -153,9 +153,9 @@ void FileBrowserEventRouter::ObserveFileSystemEvents() {
      network_library->AddNetworkManagerObserver(this);
 
   pref_change_registrar_->Init(profile_->GetPrefs());
-  pref_change_registrar_->Add(prefs::kDisableGDataOverCellular, this);
-  pref_change_registrar_->Add(prefs::kDisableGDataHostedFiles, this);
-  pref_change_registrar_->Add(prefs::kDisableGData, this);
+  pref_change_registrar_->Add(prefs::kDisableDriveOverCellular, this);
+  pref_change_registrar_->Add(prefs::kDisableDriveHostedFiles, this);
+  pref_change_registrar_->Add(prefs::kDisableDrive, this);
   pref_change_registrar_->Add(prefs::kUse24HourClock, this);
   pref_change_registrar_->Add(prefs::kExternalStorageDisabled, this);
 }
@@ -406,9 +406,9 @@ void FileBrowserEventRouter::Observe(
                              chromeos::UNMOUNT_OPTIONS_NONE);
       }
       return;
-    } else if (*pref_name == prefs::kDisableGDataOverCellular ||
-        *pref_name == prefs::kDisableGDataHostedFiles ||
-        *pref_name == prefs::kDisableGData ||
+    } else if (*pref_name == prefs::kDisableDriveOverCellular ||
+        *pref_name == prefs::kDisableDriveHostedFiles ||
+        *pref_name == prefs::kDisableDrive ||
         *pref_name == prefs::kUse24HourClock) {
       profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
           extensions::event_names::kOnFileBrowserPreferencesChanged,

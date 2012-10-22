@@ -100,8 +100,8 @@ void DriveSyncClient::Initialize() {
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
 
   registrar_->Init(profile_->GetPrefs());
-  registrar_->Add(prefs::kDisableGData, this);
-  registrar_->Add(prefs::kDisableGDataOverCellular, this);
+  registrar_->Add(prefs::kDisableDrive, this);
+  registrar_->Add(prefs::kDisableDriveOverCellular, this);
 }
 
 void DriveSyncClient::StartProcessingBacklog() {
@@ -195,7 +195,7 @@ void DriveSyncClient::DoSyncLoop() {
 bool DriveSyncClient::ShouldStopSyncLoop() {
   // Should stop if the drive feature was disabled while running the fetch
   // loop.
-  if (profile_->GetPrefs()->GetBoolean(prefs::kDisableGData))
+  if (profile_->GetPrefs()->GetBoolean(prefs::kDisableDrive))
     return true;
 
   // Should stop if the network is not online.
@@ -204,7 +204,7 @@ bool DriveSyncClient::ShouldStopSyncLoop() {
 
   // Should stop if the current connection is on cellular network, and
   // fetching is disabled over cellular.
-  if (profile_->GetPrefs()->GetBoolean(prefs::kDisableGDataOverCellular) &&
+  if (profile_->GetPrefs()->GetBoolean(prefs::kDisableDriveOverCellular) &&
       util::IsConnectionTypeCellular())
     return true;
 
