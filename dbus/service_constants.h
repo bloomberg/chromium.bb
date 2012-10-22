@@ -1169,6 +1169,7 @@ const char kSystraceStop[] = "SystraceStop";
 const char kSystraceStatus[] = "SystraceStatus";
 const char kGetLog[] = "GetLog";
 const char kGetAllLogs[] = "GetAllLogs";
+const char kGetUserLogFiles[] = "GetUserLogFiles";
 const char kTestICMP[] = "TestICMP";
 }  // namespace debugd
 
