@@ -964,39 +964,27 @@ cr.define('options.network', function() {
       networkList.deleteItem('ethernet');
     }
 
-    if (data.wifiEnabled) {
+    if (data.wifiEnabled)
       loadData_('wifi', data.wirelessList, data.rememberedList);
-    } else {
-      var enableWifi = function() {
-        chrome.send('enableWifi');
-      };
-      networkList.update({key: 'wifi',
-                          subtitle: loadTimeData.getString('networkDisabled'),
-                          iconType: 'wifi',
-                          command: enableWifi});
-    }
+    else
+      addEnableNetworkButton_('wifi', 'enableWifi', 'wifi');
 
     // Only show cellular control if available and not in airplane mode.
     if (data.cellularAvailable && !data.airplaneMode) {
-      loadData_('cellular', data.wirelessList, data.rememberedList);
+      if (data.cellularEnabled)
+        loadData_('cellular', data.wirelessList, data.rememberedList);
+      else
+        addEnableNetworkButton_('cellular', 'enableCellular', 'cellular');
     } else {
       networkList.deleteItem('cellular');
     }
 
     // Only show cellular control if available and not in airplane mode.
     if (data.wimaxAvailable && !data.airplaneMode) {
-      if (data.wimaxEnabled) {
+      if (data.wimaxEnabled)
         loadData_('wimax', data.wirelessList, data.rememberedList);
-      } else {
-        var subtitle = loadTimeData.getString('networkDisabled');
-        var enableWimax = function() {
-          chrome.send('enableWimax');
-        };
-        networkList.update({key: 'wimax',
-                            subtitle: subtitle,
-                            iconType: 'cellular',
-                            command: enableWimax});
-      }
+      else
+        addEnableNetworkButton_('wimax', 'enableWimax', 'cellular');
     } else {
       networkList.deleteItem('wimax');
     }
@@ -1011,6 +999,25 @@ cr.define('options.network', function() {
     networkList.updateToggleControl('airplaneMode', data.airplaneMode);
     networkList.endBatchUpdates();
   };
+
+  /**
+   * Replaces a network menu with a button for reenabling the type of network.
+   * @param {string} name The type of network (wifi, cellular or wimax).
+   * @param {string} command The command for reenabling the network.
+   * @param {string} type of icon (wifi or cellular).
+   * @private
+   */
+  function addEnableNetworkButton_(name, command, icon) {
+    var subtitle = loadTimeData.getString('networkDisabled');
+    var enableNetwork = function() {
+      chrome.send(command);
+    };
+    var networkList = $('network-list');
+    networkList.update({key: name,
+                        subtitle: subtitle,
+                        iconType: icon,
+                        command: enableNetwork});
+  }
 
   /**
    * Element for indicating a policy managed network.
