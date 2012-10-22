@@ -436,7 +436,18 @@ class TestGitCl(TestCase):
   def _gerrit_upload_calls(description, reviewers):
     calls = [
         ((['git', 'log', '--pretty=format:%s\n\n%b', 'master..'],),
-         description),
+         description)
+        ]
+    if git_cl.CHANGE_ID not in description:
+      calls += [
+          ((['git', 'log', '--pretty=format:%s\n\n%b', 'master..'],),
+           description),
+          ((['git', 'commit', '--amend', '-m', description],),
+           ''),
+          ((['git', 'log', '--pretty=format:%s\n\n%b', 'master..'],),
+           description)
+          ]
+    calls += [
         ((['git', 'config', 'rietveld.cc'],), '')
         ]
     receive_pack = '--receive-pack=git receive-pack '
@@ -451,32 +462,39 @@ class TestGitCl(TestCase):
         ]
     return calls
 
-  def _run_gerrit_reviewer_test(
+  def _run_gerrit_upload_test(
       self,
       upload_args,
       description,
       reviewers):
-    """Generic gerrit reviewer test framework."""
+    """Generic gerrit upload test framework."""
     self.calls = self._gerrit_base_calls()
     self.calls += self._gerrit_upload_calls(description, reviewers)
     git_cl.main(['upload'] + upload_args)
 
-  def test_gerrit_no_reviewer(self):
-    self._run_gerrit_reviewer_test(
+  def test_gerrit_upload_without_change_id(self):
+    self._run_gerrit_upload_test(
         [],
         'desc\n\nBUG=\n',
         [])
 
+  def test_gerrit_no_reviewer(self):
+    self._run_gerrit_upload_test(
+        [],
+        'desc\n\nBUG=\nChange-Id:123456789\n',
+        [])
+
   def test_gerrit_reviewers_cmd_line(self):
-    self._run_gerrit_reviewer_test(
+    self._run_gerrit_upload_test(
         ['-r', 'foo@example.com'],
-        'desc\n\nBUG=\n',
+        'desc\n\nBUG=\nChange-Id:123456789',
         ['foo@example.com'])
 
   def test_gerrit_reviewer_multiple(self):
-    self._run_gerrit_reviewer_test(
+    self._run_gerrit_upload_test(
         [],
-        'desc\nTBR=reviewer@example.com\nBUG=\nR=another@example.com\n',
+        'desc\nTBR=reviewer@example.com\nBUG=\nR=another@example.com\n'
+        'Change-Id:123456789\n',
         ['reviewer@example.com', 'another@example.com'])
 
 

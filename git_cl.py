@@ -39,6 +39,7 @@ DEFAULT_SERVER = 'https://codereview.appspot.com'
 POSTUPSTREAM_HOOK_PATTERN = '.git/hooks/post-cl-%s'
 DESCRIPTION_BACKUP_FILE = '~/.git_cl_description_backup'
 GIT_INSTRUCTIONS_URL = 'http://code.google.com/p/chromium/wiki/UsingNewGit'
+CHANGE_ID = 'Change-Id:'
 
 
 # Initialized in main()
@@ -1017,6 +1018,20 @@ def CMDpresubmit(parser, args):
   return 0
 
 
+def AddChangeIdToCommitMessage(options, args):
+  """Re-commits using the current message, assumes the commit hook is in
+  place.
+  """
+  log_desc = options.message or CreateDescriptionFromLog(args)
+  git_command = ['commit', '--amend', '-m', log_desc]
+  RunGit(git_command)
+  new_log_desc = CreateDescriptionFromLog(args)
+  if CHANGE_ID in new_log_desc:
+    print 'git-cl: Added Change-Id to commit message.'
+  else:
+    print >> sys.stderr, 'ERROR: Gerrit commit-msg hook not available.'
+
+
 def GerritUpload(options, args, cl):
   """upload the current branch to gerrit."""
   # We assume the remote called "origin" is the one we want.
@@ -1027,6 +1042,8 @@ def GerritUpload(options, args, cl):
     branch = options.target_branch
 
   log_desc = options.message or CreateDescriptionFromLog(args)
+  if CHANGE_ID not in log_desc:
+    AddChangeIdToCommitMessage(options, args)
   if options.reviewers:
     log_desc += '\nR=' + options.reviewers
   change_desc = ChangeDescription(log_desc, options.reviewers)
