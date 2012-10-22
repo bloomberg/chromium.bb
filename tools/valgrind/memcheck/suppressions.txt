@@ -2536,8 +2536,8 @@
    bug_65940_d
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN11ChildThread4InitEv
-   fun:_ZN11ChildThreadC2ERKSs
+   fun:_ZN7content11ChildThread4InitEv
+   fun:_ZN7content11ChildThreadC2ERKSs
    fun:_ZN7content16RenderThreadImplC2ERKSs
    fun:_ZN7content16RenderThreadImplC1ERKSs
    fun:_ZN7content21WebRTCAudioDeviceTest5SetUpEv
