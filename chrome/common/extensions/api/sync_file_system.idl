@@ -3,9 +3,17 @@
 // found in the LICENSE file.
 
 namespace syncFileSystem {
+  dictionary StorageInfo {
+    long usage_bytes;
+    long quota_bytes;
+  };
+
   // [nodoc] A callback type for requestFileSystem.
   callback GetFileSystemCallback =
       void ([instanceOf=DOMFileSystem] object fileSystem);
+      
+  // [nodoc] A callback type for getUsageAndQuota.
+  callback QuotaAndUsageCallback = void (StorageInfo info);
 
   interface Functions {
     // Get a sync file system backed by |serviceName|.
@@ -13,6 +21,9 @@ namespace syncFileSystem {
     // will return the same handle to the same file system.
     static void requestFileSystem(DOMString serviceName,
                                   GetFileSystemCallback callback);
+                                  
+    // Get usage and quota in bytes for sync file system with |serviceName|.
+    static void getUsageAndQuota(DOMString serviceName,
+                                 QuotaAndUsageCallback callback);
   };
 };
-
