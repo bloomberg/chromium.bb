@@ -114,10 +114,10 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   }
   prefs->RegisterIntegerPref(prefs::kMouseSensitivity,
                              3,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefService::SYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kTouchpadSensitivity,
                              3,
-                             PrefService::UNSYNCABLE_PREF);
+                             PrefService::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kUse24HourClock,
                              base::GetHourClockType() == base::k24HourClock,
                              PrefService::SYNCABLE_PREF);
