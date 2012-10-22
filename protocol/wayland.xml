@@ -44,13 +44,23 @@
     </request>
 
     <request name="get_registry">
+      <description summary="get global registry object">
+	This request creates a registry object that allows the client
+	to list and bind the global objects available from the
+	compositor.
+      </description>
       <arg name="callback" type="new_id" interface="wl_registry"/>
     </request>
 
     <event name="error">
       <description summary="fatal error event">
 	The error event is sent out when a fatal (non-recoverable)
-	error has occurred.
+	error has occurred.  The @object_id argument is the object
+	where the error occurred, most often in response to a request
+	to that object.  The @code identifies the error and is defined
+	by the object interface.  As such, each interface defines its
+	own set of error codes.  The @message is an brief description
+	of the error, for (debugging) convenience.
       </description>
       <arg name="object_id" type="object"/>
       <arg name="code" type="uint"/>
@@ -72,13 +82,39 @@
 
     <event name="delete_id">
       <description summary="acknowledge object id deletion">
-	Server has deleted the id and client can now reuse it.
+	This event is used internally by the object ID management
+	logic.  When a client deletes an object, the server will send
+	this event to acknowledge that it has seen the delete request.
+	When the client receive this event, it will know that it can
+	safely reuse the object ID
       </description>
       <arg name="id" type="uint" />
     </event>
   </interface>
 
   <interface name="wl_registry" version="1">
+    <description summary="global registry object">
+      The global registry object.  The server has a number of global
+      objects that are available to all clients.  These objects
+      typically represent an actual object in the server (for example,
+      an input device) or they are singleton objects that provides
+      extension functionality.
+
+      When a client creates a registry object, the registry object
+      will emit a global event for each global currently in the
+      regitry.  Globals come and go as a result of device hotplugs,
+      reconfiguration or other events, and the registry will send out
+      @global and @global_remove events to keep the client up to date
+      with the changes.  To mark the end of the initial burst of
+      events, the client can use the wl_display.sync request
+      immediately after calling wl_display.get_registry.
+
+      A client can 'bind' to a global object by using the bind
+      request.  This creates a client side handle that lets the object
+      emit events to the client and lets the client invoke requests on
+      the object.
+    </description>
+
     <request name="bind">
       <description summary="bind an object to the display">
 	Binds a new, client-created object to the server using @name as
@@ -90,14 +126,7 @@
 
     <event name="global">
       <description summary="announce global object">
-	Notify the client of global objects.  These are objects that
-	are created by the server.  Globals are published on the
-	initial client connection sequence, upon device hotplugs,
-	device disconnects, reconfiguration or other events.  A client
-	can 'bind' to a global object by using the bind request.  This
-	creates a client side handle that lets the object emit events
-	to the client and lets the client invoke requests on the
-	object.
+	Notify the client of global objects.  
       </description>
       <arg name="name" type="uint"/>
       <arg name="interface" type="string"/>
@@ -106,7 +135,13 @@
 
     <event name="global_remove">
       <description summary="announce removal of global object">
-	Notify the client of removed global objects.
+	Notify the client of removed global objects.  This event
+	notifies the client that the global identifies by @name is no
+	longer available.  If the client bound to the global using the
+	'bind' request, the client should now destroy that object.
+	The object remains valid and requests to the object will be
+	ignored until the client destroys it, to avoid races between
+	the global going away and a client sending a request to it.
       </description>
       <arg name="name" type="uint"/>
     </event>
@@ -262,6 +297,15 @@
 
 
   <interface name="wl_data_offer" version="1">
+    <description summary="offer to transfer data">
+      A wl_data_offer represents a piece of data offered for transfer
+      by another client (the source client).  It is used by the
+      copy-and-paste and drag-and-drop mechanisms.  The offer
+      describes the different mime types that the data can be
+      converted to and provides the mechanism for transferring the
+      data directly from the source client.
+    </description>
+
     <request name="accept">
       <description summary="accept one of the offered mime-types">
 	Indicate that the client can accept the given mime-type, or
@@ -273,6 +317,16 @@
     </request>
 
     <request name="receive">
+      <description summary="request that the data is transferred">
+	To transfer the offered data, the client issues this request
+	and indicates the mime-type it wants to receive.  The transfer
+	happens through the passed fd (typically a pipe(7) file
+	descriptor).  The source client writes the data in the
+	mime-type representation requested and then closes the fd.
+	The receiving client reads from the read end of the pipe until
+	EOF and the closes its end, at which point the transfer is
+	complete.
+      </description>
       <arg name="mime_type" type="string"/>
       <arg name="fd" type="fd"/>
     </request>
@@ -290,6 +344,13 @@
   </interface>
 
   <interface name="wl_data_source" version="1">
+    <description summary="offer to transfer data">
+      The wl_data_source object is the source side of a wl_data_offer.
+      It is created by the source client in a data transfer and
+      provides a way to describe the offered data and a way to respond
+      to requests to transfer the data.
+    </description>
+
     <request name="offer">
       <description summary="add an offered mime type">
 	This request adds a mime-type to the set of mime-types
@@ -326,7 +387,8 @@
 
     <event name="cancelled">
       <description summary="selection was cancelled">
-	Another selection became active.
+	This data source has been replaced by another data source.
+	The client should clean up and destroy this data source.
       </description>
     </event>
 
@@ -387,6 +449,13 @@
     </event>
 
     <event name="enter">
+      <description summary="initiate drag and drop session">
+	This event is sent when an active drag-and-drop pointer enters
+	a surface owned by the client.  The position of the pointer at
+	enter time is provided by the @x an @y arguments, in surface
+	local coordinates.
+      </description>
+
       <arg name="serial" type="uint"/>
       <arg name="surface" type="object" interface="wl_surface"/>
       <arg name="x" type="fixed"/>
@@ -394,9 +463,21 @@
       <arg name="id" type="object" interface="wl_data_offer" allow-null="true"/>
     </event>
 
-    <event name="leave"/>
+    <event name="leave">
+      <description summary="end drag and drop session">
+	This event is sent when the drag-and-drop pointer leaves the
+	surface and the session ends.  The client must destroy the
+	wl_data_offer introduced at enter time at this point.
+      </description>
+    </event>
 
     <event name="motion">
+      <description summary="drag and drop session motion">
+	This event is sent when the drag-and-drop pointer moves within
+	the currently focused surface. The new position of the pointer
+	is provided by the @x an @y arguments, in surface local
+	coordinates.
+      </description>
       <arg name="time" type="uint"/>
       <arg name="x" type="fixed"/>
       <arg name="y" type="fixed"/>
