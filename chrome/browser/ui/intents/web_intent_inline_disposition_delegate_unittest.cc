@@ -6,7 +6,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/intents/web_intent_inline_disposition_delegate.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
@@ -30,16 +29,15 @@ class WebIntentInlineDispositionBrowserTest
   virtual void SetUp() {
     BrowserWithTestWindowTest::SetUp();
 
-    content::WebContents* contents = content::WebContents::Create(
-        browser()->profile(), NULL, MSG_ROUTING_NONE, NULL);
-    tab_contents_.reset(TabContents::Factory::CreateTabContents(contents));
+    web_contents_.reset(content::WebContents::Create(
+        browser()->profile(), NULL, MSG_ROUTING_NONE, NULL));
     delegate_.reset(new WebIntentInlineDispositionDelegate(
-        &mock_, contents, browser()));
+        &mock_, web_contents_.get(), browser()));
   }
 
  protected:
   TestingProfile profile_;
-  scoped_ptr<TabContents> tab_contents_;
+  scoped_ptr<content::WebContents> web_contents_;
   scoped_ptr<WebIntentInlineDispositionDelegate> delegate_;
   WebIntentPickerMock mock_;
 };
@@ -48,11 +46,14 @@ class WebIntentInlineDispositionBrowserTest
 // web intents picker.
 TEST_F(WebIntentInlineDispositionBrowserTest, OpenURLFromTabTest) {
   content::WebContents* source = delegate_->OpenURLFromTab(
-    tab_contents_->web_contents(),
-    content::OpenURLParams(GURL(chrome::kAboutBlankURL), content::Referrer(),
-    NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false));
+    web_contents_.get(),
+    content::OpenURLParams(GURL(chrome::kAboutBlankURL),
+    content::Referrer(),
+    NEW_FOREGROUND_TAB,
+    content::PAGE_TRANSITION_LINK,
+    false));
 
   // Ensure OpenURLFromTab loaded about::blank in |web_contents_|.
-  ASSERT_EQ(tab_contents_->web_contents(), source);
+  ASSERT_EQ(web_contents_.get(), source);
   EXPECT_EQ(GURL(chrome::kAboutBlankURL).spec(), source->GetURL().spec());
 }

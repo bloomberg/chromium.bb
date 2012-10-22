@@ -30,7 +30,6 @@ class TabStripModelContentsCreator;
 class TranslationInfoBarTestContentsCreator;
 class WebDialogGtk;
 class WebDialogWindowControllerTabContentsCreator;
-class WebIntentInlineDispositionBrowserTest;
 class WebIntentPickerCocoa;
 class WebIntentPickerGtk;
 
@@ -94,7 +93,6 @@ class TabContents : public content::WebContentsObserver {
     friend class TranslationInfoBarTestContentsCreator;
     friend class WebDialogGtk;
     friend class WebDialogWindowControllerTabContentsCreator;
-    friend class WebIntentInlineDispositionBrowserTest;
     friend class WebIntentPickerCocoa;
     friend class WebIntentPickerGtk;
     FRIEND_TEST_ALL_PREFIXES(SessionRestoreTest, SessionStorageAfterTabReplace);
