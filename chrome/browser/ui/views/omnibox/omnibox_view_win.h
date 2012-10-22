@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
+#include "ui/base/ime/win/tsf_event_router.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/win/extra_sdk_defines.h"
 #include "ui/gfx/font.h"
@@ -42,6 +43,7 @@ class OmniboxViewWin
                                     ES_NOHIDESEL> >,
       public CRichEditCommands<OmniboxViewWin>,
       public ui::SimpleMenuModel::Delegate,
+      public ui::TsfEventRouter::Observer,
       public OmniboxView {
  public:
   struct State {
@@ -329,6 +331,10 @@ class OmniboxViewWin
   // If a host name is found, it makes it visually stronger.
   virtual void EmphasizeURLComponents() OVERRIDE;
 
+  // TsfEventRouter::Observer
+  virtual void OnTextUpdated() OVERRIDE;
+  virtual void OnCandidateWindowCountChanged(size_t window_count) OVERRIDE;
+
   // Erases the portion of the selection in the font's y-adjustment area.  For
   // some reason the edit draws the selection rect here even though it's not
   // part of the font.
@@ -510,6 +516,9 @@ class OmniboxViewWin
 
   // The native view host.
   views::NativeViewHost* native_view_host_;
+
+  // TSF related event router.
+  scoped_refptr<ui::TsfEventRouter> tsf_event_router_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewWin);
 };

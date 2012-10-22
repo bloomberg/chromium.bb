@@ -23,29 +23,28 @@ namespace ui {
 // class anyway, this interface is derived from IUnknown.
 class TsfEventRouter : public IUnknown {
  public:
-  typedef base::Callback<void ()> TextUpdatedCallback;
-  typedef base::Callback<void (size_t window_count)>
-      CandidateWindowCountChangedCallback;
+  class Observer {
+   public:
+    virtual ~Observer() {}
+
+    // Called when the text contents are updated.
+    virtual void OnTextUpdated() = 0;
+
+    // Called when the number of currently opened candidate windows changes.
+    virtual void OnCandidateWindowCountChanged(size_t window_count) = 0;
+  };
 
   virtual ~TsfEventRouter();
 
-  // Sets |manager| to be monitored. |manager| can be NULL.
-  virtual void SetManager(ITfThreadMgr* manager) = 0;
+  // Sets |manager| to be monitored and |observer| to be notified. |manager| and
+  // |observer| can be NULL.
+  virtual void SetManager(ITfThreadMgr* manager,
+                          Observer* observer) = 0;
 
   // Returns true if the IME is composing texts.
   virtual bool IsImeComposing() = 0;
 
-  // Sets the callback function which is invoked when the text contents is
-  // updated.
-  virtual void SetTextUpdatedCallback(
-      const TextUpdatedCallback& callback) = 0;
-
-  // Sets the callback function which is invoked when the number of currently
-  // candidate window opened is changed.
-  virtual void SetCandidateWindowStatusChangedCallback(
-      const CandidateWindowCountChangedCallback& callback) = 0;
-
-  // Factory function, creates a new instance and retunrns ownership.
+  // Factory function, creates a new instance which the caller owns.
   static UI_EXPORT TsfEventRouter* Create();
 
  protected:

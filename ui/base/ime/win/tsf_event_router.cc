@@ -19,7 +19,8 @@ class TsfEventRouterImpl : public TsfEventRouter,
                            public ITfTextEditSink {
  public:
   TsfEventRouterImpl()
-      : context_source_cookie_(TF_INVALID_COOKIE),
+      : observer_(NULL),
+        context_source_cookie_(TF_INVALID_COOKIE),
         ui_source_cookie_(TF_INVALID_COOKIE),
         ref_count_(0) {}
 
@@ -62,7 +63,7 @@ class TsfEventRouterImpl : public TsfEventRouter,
                                  ITfEditRecord* edit_record) OVERRIDE {
     if (!edit_record || !context)
       return E_INVALIDARG;
-    if (text_updated_callback_.is_null())
+    if (!observer_)
       return S_OK;
 
     // |edit_record| can be used to obtain updated ranges in terms of text
@@ -85,7 +86,7 @@ class TsfEventRouterImpl : public TsfEventRouter,
     // |fetched_count| != 0 means there is at least one range that contains
     // updated texts.
     if (fetched_count != 0)
-      text_updated_callback_.Run();
+      observer_->OnTextUpdated();
     return S_OK;
   }
 
@@ -100,15 +101,14 @@ class TsfEventRouterImpl : public TsfEventRouter,
     std::pair<std::set<DWORD>::iterator, bool> insert_result =
         open_candidate_window_ids_.insert(element_id);
 
-    if (candidat_window_count_changed_callback_.is_null())
+    if (!observer_)
       return S_OK;
 
     // Don't call if |element_id| is already handled.
     if (!insert_result.second)
       return S_OK;
 
-    candidat_window_count_changed_callback_.Run(
-        open_candidate_window_ids_.size());
+    observer_->OnCandidateWindowCountChanged(open_candidate_window_ids_.size());
 
     return S_OK;
   }
@@ -123,20 +123,20 @@ class TsfEventRouterImpl : public TsfEventRouter,
     if (open_candidate_window_ids_.erase(element_id) == 0)
       return S_OK;
 
-    if (candidat_window_count_changed_callback_.is_null())
+    if (!observer_)
       return S_OK;
 
-    candidat_window_count_changed_callback_.Run(
-        open_candidate_window_ids_.size());
+    observer_->OnCandidateWindowCountChanged(open_candidate_window_ids_.size());
 
     return S_OK;
   }
 
   // TsfEventRouter override.
-  virtual void SetManager(ITfThreadMgr* manager) OVERRIDE {
+  virtual void SetManager(ITfThreadMgr* manager, Observer* observer) OVERRIDE {
     EnsureDeassociated();
-    if (manager)
-      Associate(manager);
+    if (manager && observer) {
+      Associate(manager, observer);
+    }
   }
 
   // TsfEventRouter override.
@@ -146,18 +146,6 @@ class TsfEventRouterImpl : public TsfEventRouter,
     if (!context_)
       return false;
     return IsImeComposingInternal(context_);
-  }
-
-  // TsfEventRouter override.
-  virtual void SetTextUpdatedCallback(
-    const TextUpdatedCallback& callback) OVERRIDE {
-    text_updated_callback_ = callback;
-  }
-
-  // TsfEventRouter override.
-  virtual void SetCandidateWindowStatusChangedCallback(
-    const CandidateWindowCountChangedCallback& callback) OVERRIDE {
-      candidat_window_count_changed_callback_ = callback;
   }
 
  private:
@@ -192,7 +180,7 @@ class TsfEventRouterImpl : public TsfEventRouter,
   }
 
   // Associates this class with specified |manager|.
-  void Associate(ITfThreadMgr* thread_manager) {
+  void Associate(ITfThreadMgr* thread_manager, Observer* observer) {
     DCHECK(base::win::IsTsfAwareRequired())
         << "Do not call without TSF environment.";
     DCHECK(thread_manager);
@@ -216,6 +204,7 @@ class TsfEventRouterImpl : public TsfEventRouter,
     ui_source_->AdviseSink(IID_ITfUIElementSink,
                            static_cast<ITfUIElementSink*>(this),
                            &ui_source_cookie_);
+    observer_ = observer;
   }
 
   // Resets the association, this function is safe to call if there is no
@@ -238,12 +227,11 @@ class TsfEventRouterImpl : public TsfEventRouter,
       ui_source_.Release();
     }
     ui_source_cookie_ = TF_INVALID_COOKIE;
+
+    observer_ = NULL;
   }
 
-  // Callback function fired when the text contents are updated.
-  TextUpdatedCallback text_updated_callback_;
-
-  CandidateWindowCountChangedCallback candidat_window_count_changed_callback_;
+  Observer* observer_;
 
   // A context associated with this class.
   base::win::ScopedComPtr<ITfContext> context_;
