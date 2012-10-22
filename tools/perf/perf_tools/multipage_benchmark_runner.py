@@ -36,11 +36,25 @@ def Main():
 
   If args is not specified, sys.argv[1:] is used.
   """
+
+  # Naively find the benchmark. If we use the browser options parser, we run
+  # the risk of failing to parse if we use a benchmark-specific parameter.
+  benchmark_name = None
+  for arg in sys.argv:
+    if arg in _BENCHMARKS:
+      benchmark_name = arg
+
   options = browser_options.BrowserOptions()
   parser = options.CreateParser('%prog [options] <benchmark> <page_set>')
+
+  benchmark = None
+  if benchmark_name is not None:
+    benchmark = _BENCHMARKS[benchmark_name]()
+    benchmark.AddOptions(parser)
+
   _, args = parser.parse_args()
 
-  if len(args) != 2 or args[0] not in _BENCHMARKS:
+  if benchmark is None or len(args) != 2:
     parser.print_usage()
     import page_sets # pylint: disable=F0401
     print >> sys.stderr, 'Available benchmarks:\n%s\n' % ',\n'.join(
@@ -49,11 +63,7 @@ def Main():
         [os.path.relpath(f) for f in page_sets.GetAllPageSetFilenames()])
     sys.exit(1)
 
-  benchmark = _BENCHMARKS[args[0]]()
   ps = page_set.PageSet.FromFile(args[1])
-
-  benchmark.AddOptions(parser)
-  _, args = parser.parse_args()
 
   benchmark.CustomizeBrowserOptions(options)
   possible_browser = browser_finder.FindBrowser(options)
