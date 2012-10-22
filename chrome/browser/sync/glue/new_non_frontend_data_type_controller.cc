@@ -211,7 +211,7 @@ void NewNonFrontendDataTypeController::
                                                     type());
   if (!local_service_.get()) {
     syncer::SyncError error(FROM_HERE, "Failed to connect to syncer.", type());
-    StartFailed(UNRECOVERABLE_ERROR, error);
+    StartFailed(ASSOCIATION_FAILED, error);
     return;
   }
 
