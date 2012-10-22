@@ -135,6 +135,8 @@ void NativeViewGLSurfaceOSMesa::Destroy() {
     XFreeGC(g_osmesa_display, window_graphics_context_);
     window_graphics_context_ = NULL;
   }
+
+  XSync(g_osmesa_display, False);
 }
 
 bool NativeViewGLSurfaceOSMesa::Resize(const gfx::Size& new_size) {
