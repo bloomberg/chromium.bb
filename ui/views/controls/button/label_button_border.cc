@@ -65,7 +65,7 @@ void LabelButtonBorder::Paint(const View& view, gfx::Canvas* canvas) const {
     PaintNativeTheme(view, canvas);
   } else if (native_theme_delegate_->GetThemeAnimation() &&
              native_theme_delegate_->GetThemeAnimation()->is_animating()) {
-    // TODO(pkasting|msw): Crossfade between button state image sets.
+    // TODO(msw): Crossfade between image sets; no-op for equivalent images.
     canvas->SaveLayerAlpha(static_cast<uint8>(native_theme_delegate_->
         GetThemeAnimation()->CurrentValueBetween(0, 255)));
     canvas->DrawColor(SkColorSetARGB(0x00, 0xFF, 0xFF, 0xFF),

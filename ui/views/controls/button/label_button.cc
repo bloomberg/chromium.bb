@@ -230,7 +230,7 @@ ui::NativeTheme::State LabelButton::GetThemeState(
 
 const ui::Animation* LabelButton::GetThemeAnimation() const {
 #if defined(OS_WIN) && !defined(USE_AURA)
-  if (!ui::NativeThemeWin::instance()->IsThemingActive())
+  if (native_theme() && !ui::NativeThemeWin::instance()->IsThemingActive())
     return NULL;
 #endif
   return hover_animation_.get();
