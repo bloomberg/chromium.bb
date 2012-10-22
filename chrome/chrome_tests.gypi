@@ -2069,6 +2069,7 @@
         'common/mac/cfbundle_blocker_unittest.mm',
         'common/mac/mock_launchd.cc',
         'common/mac/mock_launchd.h',
+        'common/mac/nscoder_util_unittest.mm',
         'common/mac/objc_method_swizzle_unittest.mm',
         'common/mac/objc_zombie_unittest.mm',
         'common/metrics/entropy_provider_unittest.cc',
@@ -2664,6 +2665,13 @@
         # google_apis_unittests target is established.
         ['use_official_google_api_keys==1', {
           'defines': ['USE_OFFICIAL_GOOGLE_API_KEYS=1'],
+        }],
+      ],
+      'target_conditions': [
+        ['OS == "ios"', {
+          'sources/': [
+            ['include', '^common/mac/nscoder_util_unittest\\.mm$'],
+          ],
         }],
       ],
     },
