@@ -387,7 +387,8 @@ include_rules = [
     '+googleurl',
     '+ipc',
     '+unicode',
-    '+testing'
+    '+testing',
+    '-base/prefs'
 ]
 
 skip_child_includes = [
