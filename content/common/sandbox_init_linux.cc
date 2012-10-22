@@ -33,6 +33,9 @@ bool InitializeSandbox() {
     return false;
   }
 
+  // Attempt to limit the future size of the address space of the process.
+  linux_sandbox->LimitAddressSpace(process_type);
+
   // First, try to enable seccomp-bpf.
   seccomp_bpf_started = linux_sandbox->StartSeccompBpf(process_type);
 

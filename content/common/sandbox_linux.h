@@ -73,6 +73,10 @@ class LinuxSandbox {
   // Check the policy and eventually start the seccomp-bpf sandbox.
   bool StartSeccompBpf(const std::string& process_type);
 
+  // Limit the address space of the current process (and its children).
+  // to make some vulnerabilities harder to exploit.
+  bool LimitAddressSpace(const std::string& process_type);
+
  private:
   friend struct DefaultSingletonTraits<LinuxSandbox>;
 

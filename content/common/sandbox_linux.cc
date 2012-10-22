@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include <fcntl.h>
+#include <sys/resource.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <sys/types.h>
 
 #include "base/command_line.h"
@@ -236,6 +238,30 @@ bool LinuxSandbox::seccomp_legacy_supported() const {
 bool LinuxSandbox::seccomp_bpf_supported() const {
   CHECK(pre_initialized_);
   return seccomp_bpf_supported_;
+}
+
+bool LinuxSandbox::LimitAddressSpace(const std::string& process_type) {
+  (void) process_type;
+#if defined(__x86_64__) && !defined(ADDRESS_SANITIZER)
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kNoSandbox)) {
+    return false;
+  }
+  // Limit the address space to 8GB.
+  const rlim_t kNewAddressSpaceMaxSize = 0x200000000L;
+  struct rlimit old_address_space_limit;
+  if (getrlimit(RLIMIT_AS, &old_address_space_limit))
+    return false;
+  // Make sure we don't raise the existing limit.
+  const struct rlimit new_address_space_limit = {
+      std::min(old_address_space_limit.rlim_cur, kNewAddressSpaceMaxSize),
+      std::min(old_address_space_limit.rlim_max, kNewAddressSpaceMaxSize)
+      };
+  int rc = setrlimit(RLIMIT_AS, &new_address_space_limit);
+  return (rc == 0);
+#else
+  return false;
+#endif  // __x86_64__ && !defined(ADDRESS_SANITIZER)
 }
 
 }  // namespace content
