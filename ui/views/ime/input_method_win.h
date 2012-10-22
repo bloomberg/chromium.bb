@@ -16,12 +16,18 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
+namespace ui {
+class InputMethod;
+}  // namespace ui
+
 namespace views {
 
 // An InputMethod implementation based on Windows IMM32 API.
 class InputMethodWin : public InputMethodBase {
  public:
-  InputMethodWin(internal::InputMethodDelegate* delegate, HWND hwnd);
+  InputMethodWin(internal::InputMethodDelegate* delegate,
+                 HWND hwnd,
+                 ui::InputMethod* host);
   virtual ~InputMethodWin();
 
   // Overridden from InputMethod:
@@ -35,6 +41,9 @@ class InputMethodWin : public InputMethodBase {
   virtual std::string GetInputLocale() OVERRIDE;
   virtual base::i18n::TextDirection GetInputTextDirection() OVERRIDE;
   virtual bool IsActive() OVERRIDE;
+
+  // Overridden from InputMethodBase.
+  virtual ui::TextInputClient* GetTextInputClient() const OVERRIDE;
 
   // Handles IME messages.
   LRESULT OnImeMessages(UINT message, WPARAM wparam, LPARAM lparam,
@@ -95,6 +104,8 @@ class InputMethodWin : public InputMethodBase {
   // Windows IMM32 wrapper.
   // (See "ui/base/win/ime_input.h" for its details.)
   ui::ImeInput ime_input_;
+
+  ui::InputMethod* const host_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodWin);
 };

@@ -6,6 +6,7 @@
 
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRegion.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/desktop/desktop_activation_client.h"
 #include "ui/aura/desktop/desktop_cursor_client.h"
 #include "ui/aura/desktop/desktop_dispatcher_client.h"
@@ -224,7 +225,17 @@ void DesktopRootWindowHostWin::SetAlwaysOnTop(bool always_on_top) {
 }
 
 InputMethod* DesktopRootWindowHostWin::CreateInputMethod() {
-  return new InputMethodWin(message_handler_.get(), message_handler_->hwnd());
+  // TODO(ime): This is wrong. We need to hook up the native win32 IME on the
+  // InputMethodEventFilter, and instead create an InputMethodBridge
+  // per-NativeWidget implementation. Once we achieve that we can get rid of
+  // this function on this object and DesktopRootWindowHostLinux and just
+  // create the InputMethodBridge directly in DesktopNativeWidgetAura. Also
+  // at that time DNWA can become the InputMethodDelegate.
+  ui::InputMethod* host =
+      root_window_->GetProperty(aura::client::kRootWindowInputMethodKey);
+  return new InputMethodWin(message_handler_.get(),
+                            message_handler_->hwnd(),
+                            host);
 }
 
 internal::InputMethodDelegate*

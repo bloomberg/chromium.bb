@@ -10,6 +10,7 @@
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/ime/composition_text.h"
+#include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
@@ -20,11 +21,13 @@ static const size_t kExtraNumberOfChars = 20;
 namespace views {
 
 InputMethodWin::InputMethodWin(internal::InputMethodDelegate* delegate,
-                               HWND hwnd)
+                               HWND hwnd,
+                               ui::InputMethod* host)
     : hwnd_(hwnd),
       active_(false),
       direction_(base::i18n::UNKNOWN_DIRECTION),
-      pending_requested_direction_(base::i18n::UNKNOWN_DIRECTION) {
+      pending_requested_direction_(base::i18n::UNKNOWN_DIRECTION),
+      host_(host) {
   set_delegate(delegate);
 }
 
@@ -107,6 +110,14 @@ base::i18n::TextDirection InputMethodWin::GetInputTextDirection() {
 bool InputMethodWin::IsActive() {
   return active_;
 }
+
+ui::TextInputClient* InputMethodWin::GetTextInputClient() const {
+  if (InputMethodBase::GetTextInputClient())
+    return InputMethodBase::GetTextInputClient();
+
+  return host_ ? host_->GetTextInputClient() : NULL;
+}
+
 
 LRESULT InputMethodWin::OnImeMessages(
     UINT message, WPARAM w_param, LPARAM l_param, BOOL* handled) {
@@ -273,6 +284,9 @@ LRESULT InputMethodWin::OnDeadChar(
   *handled = TRUE;
 
   if (IsTextInputTypeNone())
+    return 0;
+
+  if (!GetTextInputClient())
     return 0;
 
   // Shows the dead character as a composition text, so that the user can know
