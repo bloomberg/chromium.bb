@@ -69,9 +69,9 @@ bool Event::HasNativeEvent() const {
   return !!std::memcmp(&native_event_, &null_event, sizeof(null_event));
 }
 
-Event::Event(EventType type, int flags)
+Event::Event(EventType type, base::TimeDelta time_stamp, int flags)
     : type_(type),
-      time_stamp_(base::Time::NowFromSystemTime() - base::Time()),
+      time_stamp_(time_stamp),
       flags_(flags),
       delete_native_event_(false),
       target_(NULL),
@@ -135,8 +135,9 @@ LocatedEvent::LocatedEvent(const base::NativeEvent& native_event)
 LocatedEvent::LocatedEvent(EventType type,
                            const gfx::Point& location,
                            const gfx::Point& root_location,
+                           base::TimeDelta time_stamp,
                            int flags)
-    : Event(type, flags),
+    : Event(type, time_stamp, flags),
       location_(location),
       root_location_(root_location),
       valid_system_location_(false),
@@ -168,7 +169,8 @@ MouseEvent::MouseEvent(EventType type,
                        const gfx::Point& location,
                        const gfx::Point& root_location,
                        int flags)
-    : LocatedEvent(type, location, root_location, flags),
+    : LocatedEvent(type, location, root_location,
+                   base::Time::NowFromSystemTime() - base::Time(), flags),
       changed_button_flags_(0) {
 }
 
@@ -298,25 +300,24 @@ TouchEvent::TouchEvent(EventType type,
                        const gfx::Point& location,
                        int touch_id,
                        base::TimeDelta time_stamp)
-    : LocatedEvent(type, location, location, 0),
+    : LocatedEvent(type, location, location, time_stamp, 0),
       touch_id_(touch_id),
       radius_x_(0.0f),
       radius_y_(0.0f),
       rotation_angle_(0.0f),
       force_(0.0f) {
-  set_time_stamp(time_stamp);
 }
 
 TouchEvent::TouchEvent(EventType type,
                        const gfx::Point& location,
                        int flags,
                        int touch_id,
-                       base::TimeDelta timestamp,
+                       base::TimeDelta time_stamp,
                        float radius_x,
                        float radius_y,
                        float angle,
                        float force)
-    : LocatedEvent(type, location, location, flags),
+    : LocatedEvent(type, location, location, time_stamp, flags),
       touch_id_(touch_id),
       radius_x_(radius_x),
       radius_y_(radius_y),
@@ -361,7 +362,7 @@ KeyEvent::KeyEvent(const base::NativeEvent& native_event, bool is_char)
 KeyEvent::KeyEvent(EventType type,
                    KeyboardCode key_code,
                    int flags)
-    : Event(type, flags),
+    : Event(type, base::Time::NowFromSystemTime() - base::Time(), flags),
       key_code_(key_code),
       is_char_(false),
       character_(GetCharacterFromKeyCode(key_code, flags)),
@@ -478,6 +479,19 @@ void TranslatedKeyEvent::ConvertToKeyEvent() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// DropTargetEvent
+
+DropTargetEvent::DropTargetEvent(const OSExchangeData& data,
+                                 const gfx::Point& location,
+                                 const gfx::Point& root_location,
+                                 int source_operations)
+    : LocatedEvent(ET_DROP_TARGET_EVENT, location, root_location,
+                   base::Time::NowFromSystemTime() - base::Time(), 0),
+      data_(data),
+      source_operations_(source_operations) {
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // ScrollEvent
 
 ScrollEvent::ScrollEvent(const base::NativeEvent& native_event)
@@ -502,10 +516,9 @@ GestureEvent::GestureEvent(EventType type,
                            base::TimeDelta time_stamp,
                            const GestureEventDetails& details,
                            unsigned int touch_ids_bitfield)
-    : LocatedEvent(type, gfx::Point(x, y), gfx::Point(x, y), flags),
+    : LocatedEvent(type, gfx::Point(x, y), gfx::Point(x, y), time_stamp, flags),
       details_(details),
       touch_ids_bitfield_(touch_ids_bitfield) {
-  set_time_stamp(time_stamp);
 }
 
 GestureEvent::~GestureEvent() {

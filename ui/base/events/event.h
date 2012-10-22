@@ -159,7 +159,7 @@ class UI_EXPORT Event {
   bool HasNativeEvent() const;
 
  protected:
-  Event(EventType type, int flags);
+  Event(EventType type, base::TimeDelta time_stamp, int flags);
   Event(const base::NativeEvent& native_event, EventType type, int flags);
   Event(const Event& copy);
   void set_type(EventType type) { type_ = type; }
@@ -252,6 +252,7 @@ class UI_EXPORT LocatedEvent : public Event {
   LocatedEvent(EventType type,
                const gfx::Point& location,
                const gfx::Point& root_location,
+               base::TimeDelta time_stamp,
                int flags);
 
   gfx::Point location_;
@@ -552,11 +553,7 @@ class UI_EXPORT DropTargetEvent : public LocatedEvent {
   DropTargetEvent(const OSExchangeData& data,
                   const gfx::Point& location,
                   const gfx::Point& root_location,
-                  int source_operations)
-      : LocatedEvent(ET_DROP_TARGET_EVENT, location, root_location, 0),
-        data_(data),
-        source_operations_(source_operations) {
-  }
+                  int source_operations);
 
   const OSExchangeData& data() const { return data_; }
   int source_operations() const { return source_operations_; }
