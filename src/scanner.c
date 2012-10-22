@@ -177,7 +177,7 @@ desc_dump(char *desc, const char *fmt, ...)
 {
 	va_list ap;
 	char buf[128], hang;
-	int col, i, j, k, startcol;
+	int col, i, j, k, startcol, newlines;
 
 	va_start(ap, fmt);
 	vsnprintf(buf, sizeof buf, fmt, ap);
@@ -206,8 +206,12 @@ desc_dump(char *desc, const char *fmt, ...)
 
 	for (i = 0; desc[i]; ) {
 		k = i;
-		while (desc[i] && isspace(desc[i]))
+		newlines = 0;
+		while (desc[i] && isspace(desc[i])) {
+			if (desc[i] == '\n')
+				newlines++;
 			i++;
+		}
 		if (!desc[i])
 			break;
 
@@ -215,7 +219,9 @@ desc_dump(char *desc, const char *fmt, ...)
 		while (desc[i] && !isspace(desc[i]))
 			i++;
 
-		if (col + i - j > 72) {
+		if (newlines > 1)
+			printf("\n%s*", indent(startcol));
+		if (newlines > 1 || col + i - j > 72) {
 			printf("\n%s*%c", indent(startcol), hang);
 			col = startcol;
 		}
