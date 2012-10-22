@@ -136,7 +136,7 @@
 
 #if defined(USE_AURA)
 #include "chrome/browser/ui/views/accelerator_table.h"
-#include "chrome/browser/ui/views/search_view_controller.h"
+#include "chrome/browser/ui/views/search/search_view_controller.h"
 #include "chrome/browser/ui/webui/task_manager/task_manager_dialog.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/screen.h"

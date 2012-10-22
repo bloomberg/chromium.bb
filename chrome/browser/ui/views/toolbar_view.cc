@@ -71,7 +71,7 @@
 
 #if defined(USE_AURA)
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/search_view_controller.h"
+#include "chrome/browser/ui/views/search/search_view_controller.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #endif
