@@ -22,12 +22,14 @@ class ASH_EXPORT ImageCursors {
   ImageCursors();
   ~ImageCursors();
 
-  // Returns the device scale factor of cursors.
+  // Returns the device scale factor of cursors. The device scale factor must
+  // be set by SetDeviceScaleFactor at least once before using this.
   float GetDeviceScaleFactor() const;
 
   // Sets the device scale factor of the cursors with |device_scale_factor| and
-  // reloads the cursor images if necessary.
-  void SetDeviceScaleFactor(float device_scale_factor);
+  // reloads the cursor images if necessary. Returns true if the cursor image
+  // is reloaded.
+  bool SetDeviceScaleFactor(float device_scale_factor);
 
   // Sets the platform cursor based on the native type of |cursor|.
   void SetPlatformCursor(gfx::NativeCursor* cursor);

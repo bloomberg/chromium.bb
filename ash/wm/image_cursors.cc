@@ -82,20 +82,27 @@ const CursorData kAnimatedCursors[] = {
 
 namespace ash {
 
-ImageCursors::ImageCursors()
-    : cursor_loader_(ui::CursorLoader::Create()) {
+ImageCursors::ImageCursors() {
 }
 
 ImageCursors::~ImageCursors() {
 }
 
 float ImageCursors::GetDeviceScaleFactor() const {
+  if (!cursor_loader_.get()) {
+    NOTREACHED();
+    // Returning 1.0f on release build as it's not serious enough to crash
+    // even if this ever happens.
+    return 1.0f;
+  }
   return cursor_loader_->device_scale_factor();
 }
 
-void ImageCursors::SetDeviceScaleFactor(float device_scale_factor) {
-  if (GetDeviceScaleFactor() == device_scale_factor)
-    return;
+bool ImageCursors::SetDeviceScaleFactor(float device_scale_factor) {
+  if (!cursor_loader_.get())
+    cursor_loader_.reset(ui::CursorLoader::Create());
+  else if (GetDeviceScaleFactor() == device_scale_factor)
+    return false;
 
   cursor_loader_->UnloadAll();
   cursor_loader_->set_device_scale_factor(device_scale_factor);
@@ -115,6 +122,7 @@ void ImageCursors::SetDeviceScaleFactor(float device_scale_factor) {
                                        gfx::Point(hot.x, hot.y),
                                        kAnimatedCursorFrameDelayMs);
   }
+  return true;
 }
 
 void ImageCursors::SetPlatformCursor(gfx::NativeCursor* cursor) {

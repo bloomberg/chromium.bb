@@ -69,10 +69,8 @@ bool CursorManager::IsCursorVisible() const {
 }
 
 void CursorManager::SetDeviceScaleFactor(float device_scale_factor) {
-  if (image_cursors_->GetDeviceScaleFactor() == device_scale_factor)
-    return;
-  image_cursors_->SetDeviceScaleFactor(device_scale_factor);
-  SetCursorInternal(current_cursor_);
+  if (image_cursors_->SetDeviceScaleFactor(device_scale_factor))
+    SetCursorInternal(current_cursor_);
 }
 
 void CursorManager::LockCursor() {
