@@ -100,6 +100,9 @@ class DriveSystemService : public ProfileKeyedService,
   // True if Drive is disabled due to initialization errors.
   bool drive_disabled_;
 
+  // True once this is registered to listen to the Drive updates.
+  bool push_notification_registered_;
+
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   DriveCache* cache_;
   scoped_ptr<DriveServiceInterface> drive_service_;

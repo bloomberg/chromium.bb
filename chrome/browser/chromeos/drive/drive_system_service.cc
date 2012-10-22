@@ -73,23 +73,13 @@ const char kDriveInvalidationObjectId[] = "CHANGELOG";
 DriveSystemService::DriveSystemService(Profile* profile)
     : profile_(profile),
       drive_disabled_(false),
+      push_notification_registered_(false),
       cache_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::SequencedWorkerPool* blocking_pool = BrowserThread::GetBlockingPool();
   blocking_task_runner_ = blocking_pool->GetSequencedTaskRunner(
       blocking_pool->GetSequenceToken());
-
-  ProfileSyncService* profile_sync_service =
-      profile_ ? ProfileSyncServiceFactory::GetForProfile(profile_) : NULL;
-  if (profile_sync_service) {
-    // Register for Google Drive invalidation notifications.
-    profile_sync_service->RegisterInvalidationHandler(this);
-    syncer::ObjectIdSet ids;
-    ids.insert(invalidation::ObjectId(kCosmoChangelog,
-                                      kDriveInvalidationObjectId));
-    profile_sync_service->UpdateRegisteredInvalidationIds(this, ids);
-  }
 }
 
 DriveSystemService::~DriveSystemService() {
@@ -136,7 +126,7 @@ void DriveSystemService::Shutdown() {
 
   ProfileSyncService* profile_sync_service =
       profile_ ? ProfileSyncServiceFactory::GetForProfile(profile_) : NULL;
-  if (profile_sync_service) {
+  if (profile_sync_service && push_notification_registered_) {
     // TODO(kochi): Once DriveSystemService gets started / stopped at runtime,
     // this ID needs to be unregistered *before* the handler is unregistered
     // as ID persists across browser restarts.
@@ -145,6 +135,7 @@ void DriveSystemService::Shutdown() {
           this, syncer::ObjectIdSet());
     }
     profile_sync_service->UnregisterInvalidationHandler(this);
+    push_notification_registered_ = false;
   }
 
   RemoveDriveMountPoint();
@@ -177,7 +168,8 @@ bool DriveSystemService::IsDriveEnabled() {
 
 void DriveSystemService::OnInvalidatorStateChange(
     syncer::InvalidatorState state) {
-  // Do nothing.
+  file_system_->SetPushNotificationEnabled(
+      state == syncer::INVALIDATIONS_ENABLED);
 }
 
 void DriveSystemService::OnIncomingInvalidation(
@@ -261,6 +253,22 @@ void DriveSystemService::OnCacheInitialized(bool success) {
       download_manager,
       cache_->GetCacheDirectoryPath(
           DriveCache::CACHE_TYPE_TMP_DOWNLOADS));
+
+  // Register for Google Drive invalidation notifications.
+  ProfileSyncService* profile_sync_service =
+      profile_ ? ProfileSyncServiceFactory::GetForProfile(profile_) : NULL;
+  if (profile_sync_service) {
+    DCHECK(!push_notification_registered_);
+    profile_sync_service->RegisterInvalidationHandler(this);
+    syncer::ObjectIdSet ids;
+    ids.insert(invalidation::ObjectId(kCosmoChangelog,
+                                      kDriveInvalidationObjectId));
+    profile_sync_service->UpdateRegisteredInvalidationIds(this, ids);
+    push_notification_registered_ = true;
+    file_system_->SetPushNotificationEnabled(
+        profile_sync_service->GetInvalidatorState() ==
+        syncer::INVALIDATIONS_ENABLED);
+  }
 
   AddDriveMountPoint();
 

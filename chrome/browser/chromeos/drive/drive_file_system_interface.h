@@ -100,6 +100,9 @@ class DriveFileSystemInterface {
   virtual void StartPolling() = 0;
   virtual void StopPolling() = 0;
 
+  // Sets the availability of push notification when its status is changed.
+  virtual void SetPushNotificationEnabled(bool enabled) = 0;
+
   // Notifies the file system was just mounted.
   virtual void NotifyFileSystemMounted() = 0;
 

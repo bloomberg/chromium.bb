@@ -70,6 +70,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   virtual void StartInitialFeedFetch() OVERRIDE;
   virtual void StartPolling() OVERRIDE;
   virtual void StopPolling() OVERRIDE;
+  virtual void SetPushNotificationEnabled(bool enabled) OVERRIDE;
   virtual void NotifyFileSystemMounted() OVERRIDE;
   virtual void NotifyFileSystemToBeUnmounted() OVERRIDE;
   virtual void CheckForUpdates() OVERRIDE;
@@ -745,6 +746,9 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Unlike other classes, we need this as we need this to redirect a task
   // from IO thread to UI thread.
   base::WeakPtr<DriveFileSystem> ui_weak_ptr_;
+
+  // Polling interval for checking updates in seconds.
+  int polling_interval_sec_;
 };
 
 }  // namespace drive

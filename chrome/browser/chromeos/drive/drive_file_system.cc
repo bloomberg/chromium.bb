@@ -45,12 +45,13 @@ namespace {
 const char kMimeTypeJson[] = "application/json";
 const char kEmptyFilePath[] = "/dev/null";
 
-// Drive update check interval (in seconds).
-#ifndef NDEBUG
-const int kDriveUpdateCheckIntervalInSec = 5;
-#else
-const int kDriveUpdateCheckIntervalInSec = 60;
-#endif
+// Drive update polling interval for polling only mode (in seconds).
+const int kFastPollingIntervalInSec = 60;
+
+// Drive update polling interval when update notification is available (in
+// seconds). Ideally we don't need this, but we do polling in case update
+// notification doesn't work. http://crbug.com/157080
+const int kSlowPollingIntervalInSec = 300;
 
 //================================ Helper functions ============================
 
@@ -379,7 +380,8 @@ DriveFileSystem::DriveFileSystem(
       blocking_task_runner_(blocking_task_runner),
       scheduler_(new DriveScheduler(profile, &drive_operations_)),
       ALLOW_THIS_IN_INITIALIZER_LIST(ui_weak_ptr_factory_(this)),
-      ui_weak_ptr_(ui_weak_ptr_factory_.GetWeakPtr()) {
+      ui_weak_ptr_(ui_weak_ptr_factory_.GetWeakPtr()),
+      polling_interval_sec_(kFastPollingIntervalInSec) {
   // Should be created from the file browser extension API on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -478,10 +480,9 @@ void DriveFileSystem::StartPolling() {
 
   DCHECK(!update_timer_.IsRunning());
   update_timer_.Start(FROM_HERE,
-                      base::TimeDelta::FromSeconds(
-                          kDriveUpdateCheckIntervalInSec),
+                      base::TimeDelta::FromSeconds(polling_interval_sec_),
                       base::Bind(&DriveFileSystem::CheckForUpdates,
-                          ui_weak_ptr_));
+                                 ui_weak_ptr_));
 }
 
 void DriveFileSystem::StopPolling() {
@@ -495,6 +496,11 @@ void DriveFileSystem::StopPolling() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (update_timer_.IsRunning())
     update_timer_.Stop();
+}
+
+void DriveFileSystem::SetPushNotificationEnabled(bool enabled) {
+  polling_interval_sec_ = enabled ? kSlowPollingIntervalInSec :
+                          kFastPollingIntervalInSec;
 }
 
 void DriveFileSystem::GetEntryInfoByResourceId(
