@@ -602,14 +602,17 @@ void MenuItemView::UpdateMenuPartSizes() {
   if (has_icons_)
     icon_area_width_ = std::max(icon_area_width_, GetMaxIconViewWidth());
 
+  label_start_ = config.item_left_margin + icon_area_width_;
+  int padding = 0;
   if (config.always_use_icon_to_label_padding)
-    label_start_ = config.item_left_margin + icon_area_width_ +
-                   config.icon_to_label_padding;
+    padding = config.icon_to_label_padding;
+  else if (config.render_gutter)
+    padding = config.item_left_margin;
   else
     // If there are no icons don't pad by the icon to label padding. This
     // makes us look close to system menus.
-    label_start_ = config.item_left_margin + icon_area_width_ +
-                   (has_icons_ ? config.icon_to_label_padding : 0);
+    padding = has_icons_ ? config.icon_to_label_padding : 0;
+  label_start_ += padding;
 
   if (config.render_gutter)
     label_start_ += config.gutter_width + config.gutter_to_label;
