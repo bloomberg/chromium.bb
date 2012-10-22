@@ -18,6 +18,10 @@ class MessageLoopProxy;
 struct PlatformFileInfo;
 }
 
+namespace fileapi {
+class FileSystemContext;
+}
+
 namespace net {
 class DrainableIOBuffer;
 class IOBuffer;
@@ -25,7 +29,7 @@ class IOBuffer;
 
 namespace webkit_blob {
 
-class LocalFileStreamReader;
+class FileStreamReader;
 
 // A request job that handles reading blob URLs.
 class WEBKIT_STORAGE_EXPORT BlobURLRequestJob : public net::URLRequestJob {
@@ -33,6 +37,7 @@ class WEBKIT_STORAGE_EXPORT BlobURLRequestJob : public net::URLRequestJob {
   BlobURLRequestJob(net::URLRequest* request,
                     net::NetworkDelegate* network_delegate,
                     BlobData* blob_data,
+                    fileapi::FileSystemContext* file_system_context,
                     base::MessageLoopProxy* resolving_message_loop_proxy);
 
   // net::URLRequestJob methods.
@@ -51,7 +56,7 @@ class WEBKIT_STORAGE_EXPORT BlobURLRequestJob : public net::URLRequestJob {
   virtual ~BlobURLRequestJob();
 
  private:
-  typedef std::map<size_t, LocalFileStreamReader*> IndexToReaderMap;
+  typedef std::map<size_t, FileStreamReader*> IndexToReaderMap;
 
   // For preparing for read: get the size, apply the range and perform seek.
   void DidStart();
@@ -66,7 +71,7 @@ class WEBKIT_STORAGE_EXPORT BlobURLRequestJob : public net::URLRequestJob {
   void AdvanceItem();
   void AdvanceBytesRead(int result);
   bool ReadBytesItem(const BlobData::Item& item, int bytes_to_read);
-  bool ReadFileItem(LocalFileStreamReader* reader, int bytes_to_read);
+  bool ReadFileItem(FileStreamReader* reader, int bytes_to_read);
 
   void DidReadFile(int result);
   void DeleteCurrentFileReader();
@@ -78,15 +83,16 @@ class WEBKIT_STORAGE_EXPORT BlobURLRequestJob : public net::URLRequestJob {
   void NotifyFailure(int);
   void HeadersCompleted(int status_code, const std::string& status_txt);
 
-  // Returns a LocalFileStreamReader for a blob item at |index|.
-  // If the item at |index| is not of TYPE_FILE this returns NULL.
-  LocalFileStreamReader* GetFileStreamReader(size_t index);
+  // Returns a FileStreamReader for a blob item at |index|.
+  // If the item at |index| is not of file this returns NULL.
+  FileStreamReader* GetFileStreamReader(size_t index);
 
   // Creates a FileStreamReader for the item at |index| with additional_offset.
   void CreateFileStreamReader(size_t index, int64 additional_offset);
 
   base::WeakPtrFactory<BlobURLRequestJob> weak_factory_;
   scoped_refptr<BlobData> blob_data_;
+  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
   std::vector<int64> item_length_list_;
   int64 total_size_;

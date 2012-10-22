@@ -622,8 +622,10 @@ class ScopedItemVectorCanceller {
 class TestProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   explicit TestProtocolHandler(
-      webkit_blob::BlobStorageController* blob_storage_controller)
-      : blob_storage_controller_(blob_storage_controller) {}
+      webkit_blob::BlobStorageController* blob_storage_controller,
+      fileapi::FileSystemContext* file_system_context)
+      : blob_storage_controller_(blob_storage_controller),
+        file_system_context_(file_system_context) {}
 
   virtual ~TestProtocolHandler() {}
 
@@ -634,22 +636,26 @@ class TestProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
         request,
         network_delegate,
         blob_storage_controller_->GetBlobDataFromUrl(request->url()),
+        file_system_context_,
         base::MessageLoopProxy::current());
   }
 
  private:
   webkit_blob::BlobStorageController* const blob_storage_controller_;
+  fileapi::FileSystemContext* const file_system_context_;
 
   DISALLOW_COPY_AND_ASSIGN(TestProtocolHandler);
 };
 
 class TestURLRequestContext : public net::URLRequestContext {
  public:
-  TestURLRequestContext()
+  explicit TestURLRequestContext(
+      fileapi::FileSystemContext* file_system_context)
       : blob_storage_controller_(new webkit_blob::BlobStorageController) {
     // Job factory owns the protocol handler.
     job_factory_.SetProtocolHandler(
-        "blob", new TestProtocolHandler(blob_storage_controller_.get()));
+        "blob", new TestProtocolHandler(blob_storage_controller_.get(),
+                                        file_system_context));
     set_job_factory(&job_factory_);
   }
 
@@ -739,7 +745,7 @@ class HTML5FileWriter {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     CHECK_EQ(base::PLATFORM_FILE_OK, result);
     blob_data_->AppendData(payload_);
-    url_request_context_.reset(new TestURLRequestContext());
+    url_request_context_.reset(new TestURLRequestContext(fs_));
     url_request_context_->blob_storage_controller()->AddFinishedBlob(
         blob_url(), blob_data_);
     operation()->Write(

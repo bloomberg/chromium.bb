@@ -14,6 +14,10 @@ namespace base {
 class MessageLoopProxy;
 }  // namespace base
 
+namespace fileapi {
+class FileSystemContext;
+}  // namespace fileapi
+
 namespace net {
 class URLRequest;
 }  // namespace net
@@ -27,9 +31,9 @@ class WEBKIT_STORAGE_EXPORT BlobProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   // |controller|'s lifetime should exceed the lifetime of the ProtocolHandler.
-  explicit BlobProtocolHandler(
-      BlobStorageController* blob_storage_controller,
-      base::MessageLoopProxy* file_loop_proxy);
+  BlobProtocolHandler(BlobStorageController* blob_storage_controller,
+                      fileapi::FileSystemContext* file_system_context,
+                      base::MessageLoopProxy* file_loop_proxy);
   virtual ~BlobProtocolHandler();
 
   virtual net::URLRequestJob* MaybeCreateJob(
@@ -43,6 +47,7 @@ class WEBKIT_STORAGE_EXPORT BlobProtocolHandler
   // No scoped_refptr because |blob_storage_controller_| is owned by the
   // ProfileIOData, which also owns this ProtocolHandler.
   BlobStorageController* const blob_storage_controller_;
+  const scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   const scoped_refptr<base::MessageLoopProxy> file_loop_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(BlobProtocolHandler);

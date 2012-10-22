@@ -44,8 +44,10 @@ class BlobProtocolHandler : public webkit_blob::BlobProtocolHandler {
  public:
   BlobProtocolHandler(
       webkit_blob::BlobStorageController* blob_storage_controller,
+      fileapi::FileSystemContext* file_system_context,
       base::MessageLoopProxy* loop_proxy)
       : webkit_blob::BlobProtocolHandler(blob_storage_controller,
+                                         file_system_context,
                                          loop_proxy) {}
 
   virtual ~BlobProtocolHandler() {}
@@ -167,6 +169,7 @@ void InitializeURLRequestContext(
       chrome::kBlobScheme,
       new BlobProtocolHandler(
           blob_storage_context->controller(),
+          file_system_context,
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
   DCHECK(set_protocol);
   set_protocol = job_factory->SetProtocolHandler(

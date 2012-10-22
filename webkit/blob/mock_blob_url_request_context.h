@@ -9,13 +9,17 @@
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 
+namespace fileapi {
+class FileSystemContext;
+}
+
 namespace webkit_blob {
 
 class BlobStorageController;
 
 class MockBlobURLRequestContext : public net::URLRequestContext {
  public:
-  MockBlobURLRequestContext();
+  MockBlobURLRequestContext(fileapi::FileSystemContext* file_system_context);
   virtual ~MockBlobURLRequestContext();
 
   BlobStorageController* blob_storage_controller() const {

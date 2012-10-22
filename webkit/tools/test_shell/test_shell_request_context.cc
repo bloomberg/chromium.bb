@@ -125,6 +125,7 @@ void TestShellRequestContext::Init(
       "blob",
       new webkit_blob::BlobProtocolHandler(
           blob_storage_controller_.get(),
+          file_system_context_,
           SimpleResourceLoaderBridge::GetIoThread()));
   job_factory->SetProtocolHandler(
       "filesystem",

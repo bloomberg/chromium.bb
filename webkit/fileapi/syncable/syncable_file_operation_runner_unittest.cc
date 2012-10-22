@@ -46,6 +46,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
       write_status_(base::PLATFORM_FILE_ERROR_FAILED),
       write_bytes_(0),
       write_complete_(false),
+      url_request_context_(file_system_.file_system_context()),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
 
   virtual void SetUp() OVERRIDE {

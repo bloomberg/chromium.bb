@@ -179,7 +179,7 @@ TEST_F(LocalFileChangeTrackerTest, RestoreCreateAndModifyChanges) {
 
   const GURL blob_url("blob:test");
   const std::string kData("Lorem ipsum.");
-  MockBlobURLRequestContext url_request_context;
+  MockBlobURLRequestContext url_request_context(file_system_context());
   ScopedTextBlob blob(url_request_context, blob_url, kData);
 
   // Creates files and nested directories.

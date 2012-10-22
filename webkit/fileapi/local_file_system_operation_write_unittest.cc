@@ -80,7 +80,8 @@ class LocalFileSystemOperationWriteTest
         status_(base::PLATFORM_FILE_OK),
         cancel_status_(base::PLATFORM_FILE_ERROR_FAILED),
         bytes_written_(0),
-        complete_(false) {
+        complete_(false),
+        url_request_context_(test_helper_.file_system_context()) {
     change_observers_ = MockFileChangeObserver::CreateList(&change_observer_);
   }
 

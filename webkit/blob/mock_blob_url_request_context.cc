@@ -16,8 +16,10 @@ class MockBlobProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   explicit MockBlobProtocolHandler(
-      BlobStorageController* blob_storage_controller)
-      : blob_storage_controller_(blob_storage_controller) {}
+      BlobStorageController* blob_storage_controller,
+      fileapi::FileSystemContext* file_system_context)
+      : blob_storage_controller_(blob_storage_controller),
+        file_system_context_(file_system_context) {}
 
   virtual ~MockBlobProtocolHandler() {}
 
@@ -28,22 +30,26 @@ class MockBlobProtocolHandler
         request,
         network_delegate,
         blob_storage_controller_->GetBlobDataFromUrl(request->url()),
+        file_system_context_,
         base::MessageLoopProxy::current());
   }
 
  private:
   webkit_blob::BlobStorageController* const blob_storage_controller_;
+  fileapi::FileSystemContext* const file_system_context_;
 
   DISALLOW_COPY_AND_ASSIGN(MockBlobProtocolHandler);
 };
 
 }  // namespace
 
-MockBlobURLRequestContext::MockBlobURLRequestContext()
+MockBlobURLRequestContext::MockBlobURLRequestContext(
+    fileapi::FileSystemContext* file_system_context)
     : blob_storage_controller_(new BlobStorageController) {
   // Job factory owns the protocol handler.
   job_factory_.SetProtocolHandler(
-      "blob", new MockBlobProtocolHandler(blob_storage_controller_.get()));
+      "blob", new MockBlobProtocolHandler(blob_storage_controller_.get(),
+                                          file_system_context));
   set_job_factory(&job_factory_);
 }
 

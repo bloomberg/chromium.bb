@@ -11,15 +11,19 @@
 #include "net/url_request/url_request_job_factory.h"
 #include "webkit/blob/blob_storage_controller.h"
 #include "webkit/blob/blob_url_request_job.h"
+#include "webkit/fileapi/file_system_context.h"
 
 namespace webkit_blob {
 
 BlobProtocolHandler::BlobProtocolHandler(
     webkit_blob::BlobStorageController* blob_storage_controller,
+    fileapi::FileSystemContext* file_system_context,
     base::MessageLoopProxy* loop_proxy)
     : blob_storage_controller_(blob_storage_controller),
+      file_system_context_(file_system_context),
       file_loop_proxy_(loop_proxy) {
-  DCHECK(blob_storage_controller);
+  DCHECK(blob_storage_controller_);
+  DCHECK(file_system_context_);
   DCHECK(file_loop_proxy_);
 }
 
@@ -33,7 +37,7 @@ net::URLRequestJob* BlobProtocolHandler::MaybeCreateJob(
     data = blob_storage_controller_->GetBlobDataFromUrl(request->url());
   }
   return new webkit_blob::BlobURLRequestJob(
-      request, network_delegate, data, file_loop_proxy_);
+      request, network_delegate, data, file_system_context_, file_loop_proxy_);
 }
 
 scoped_refptr<webkit_blob::BlobData>
