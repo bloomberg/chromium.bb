@@ -56,51 +56,6 @@ const struct {
   { HKEY_CURRENT_USER,    POLICY_SCOPE_USER     },
 };
 
-// Determines the registry key with the highest priority that contains
-// the |key_path| key with a |value_name| value inside.
-// |key_path| is a suffix to the Chrome mandatory or recommended registry key,
-// and can be empty to lookup values directly at that key.
-// |value_name| is the name of a value that should exist at that path. If it
-// is empty, then only the existence of the path is verified.
-// Returns true if |key| was updated to point to a key with a |key_path| suffix
-// and optional |value_name| value inside. In that case, |level| and |scope|
-// will contain the appropriate values for the key found.
-// Returns false otherwise.
-bool LoadHighestPriorityKey(const string16& key_path,
-                            const string16& value_name,
-                            RegKey* key,
-                            PolicyLevel* level,
-                            PolicyScope* scope) {
-  // |kKeyPaths| is in decreasing order of priority.
-  static const struct {
-    const wchar_t* path;
-    PolicyLevel level;
-  } kKeyPaths[] = {
-    { kRegistryMandatorySubKey,   POLICY_LEVEL_MANDATORY    },
-    { kRegistryRecommendedSubKey, POLICY_LEVEL_RECOMMENDED  },
-  };
-
-  // Lookup at the mandatory path for both user and machine policies first, and
-  // then at the recommended path.
-  for (size_t k = 0; k < arraysize(kKeyPaths); ++k) {
-    for (size_t h = 0; h < arraysize(kHives); ++h) {
-      string16 path(kKeyPaths[k].path);
-      if (!key_path.empty())
-        path += kPathSep + key_path;
-      if (key->Open(kHives[h].hive, path.c_str(), KEY_READ) != ERROR_SUCCESS ||
-          !key->Valid()) {
-        continue;
-      }
-      if (value_name.empty() || key->HasValue(value_name.c_str())) {
-        *level = kKeyPaths[k].level;
-        *scope = kHives[h].scope;
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
 // Reads a REG_SZ string at |key| named |name| into |result|. Returns false if
 // the string could not be read.
 bool ReadRegistryString(RegKey* key,
@@ -136,91 +91,6 @@ bool ReadRegistryInteger(RegKey* key,
     return false;
   *result = dword;
   return true;
-}
-
-// Returns the Value for a Chrome string policy named |name|, or NULL if
-// it wasn't found. The caller owns the returned value.
-base::Value* ReadChromeStringValue(const string16& name,
-                                   PolicyLevel* level,
-                                   PolicyScope* scope) {
-  RegKey key;
-  if (!LoadHighestPriorityKey(string16(), name, &key, level, scope))
-    return NULL;
-  string16 value;
-  if (!ReadRegistryString(&key, name, &value))
-    return NULL;
-  return base::Value::CreateStringValue(value);
-}
-
-// Returns the Value for a Chrome string list policy named |name|,
-// or NULL if it wasn't found. The caller owns the returned value.
-base::Value* ReadChromeStringListValue(const string16& name,
-                                       PolicyLevel* level,
-                                       PolicyScope* scope) {
-  RegKey key;
-  if (!LoadHighestPriorityKey(name, string16(), &key, level, scope))
-    return NULL;
-  base::ListValue* result = new base::ListValue();
-  string16 value;
-  int index = 0;
-  while (ReadRegistryString(&key, base::IntToString16(++index), &value))
-    result->Append(base::Value::CreateStringValue(value));
-  return result;
-}
-
-// Returns the Value for a Chrome boolean policy named |name|,
-// or NULL if it wasn't found. The caller owns the returned value.
-base::Value* ReadChromeBooleanValue(const string16& name,
-                                    PolicyLevel* level,
-                                    PolicyScope* scope) {
-  RegKey key;
-  if (!LoadHighestPriorityKey(string16(), name, &key, level, scope))
-    return NULL;
-  uint32 value;
-  if (!ReadRegistryInteger(&key, name, &value))
-    return NULL;
-  return base::Value::CreateBooleanValue(value != 0u);
-}
-
-// Returns the Value for a Chrome integer policy named |name|,
-// or NULL if it wasn't found. The caller owns the returned value.
-base::Value* ReadChromeIntegerValue(const string16& name,
-                                    PolicyLevel* level,
-                                    PolicyScope* scope) {
-  RegKey key;
-  if (!LoadHighestPriorityKey(string16(), name, &key, level, scope))
-    return NULL;
-  uint32 value;
-  if (!ReadRegistryInteger(&key, name, &value))
-    return NULL;
-  return base::Value::CreateIntegerValue(value);
-}
-
-// Returns the Value for a Chrome dictionary policy named |name|,
-// or NULL if it wasn't found. The caller owns the returned value.
-base::Value* ReadChromeDictionaryValue(const string16& name,
-                                       PolicyLevel* level,
-                                       PolicyScope* scope) {
-  // Dictionaries are encoded as JSON strings on Windows.
-  //
-  // A dictionary could be stored as a subkey, with each of its entries
-  // within that subkey. However, it would be impossible to recover the
-  // type for some of those entries:
-  //  - Booleans are stored as DWORDS and are indistinguishable from
-  //    integers;
-  //  - Lists are stored as a subkey, with entries mapping 0 to N-1 to
-  //    their value. This is indistinguishable from a Dictionary with
-  //    integer keys.
-  //
-  // The GPO policy editor also has a limited data entry form that doesn't
-  // support dictionaries.
-  RegKey key;
-  if (!LoadHighestPriorityKey(string16(), name, &key, level, scope))
-    return NULL;
-  string16 value;
-  if (!ReadRegistryString(&key, name, &value))
-    return NULL;
-  return base::JSONReader::Read(UTF16ToUTF8(value));
 }
 
 // Returns the Value type described in |schema|, or |default_type| if not found.
@@ -263,7 +133,7 @@ base::Value::Type GetDefaultFor(DWORD reg_type) {
 
 // Returns the entry with key |name| in |dictionary| (can be NULL), or NULL.
 const base::DictionaryValue* GetEntry(const base::DictionaryValue* dictionary,
-                                const std::string& name) {
+                                      const std::string& name) {
   if (!dictionary)
     return NULL;
   const base::DictionaryValue* entry = NULL;
@@ -286,8 +156,7 @@ const base::DictionaryValue* GetSchemaFor(const base::DictionaryValue* schema,
 }
 
 // Converts string |value| to another |type|, if possible.
-base::Value* ConvertComponentStringValue(const string16& value,
-                                         base::Value::Type type) {
+base::Value* ConvertStringValue(const string16& value, base::Value::Type type) {
   switch (type) {
     case base::Value::TYPE_NULL:
       return base::Value::CreateNullValue();
@@ -330,8 +199,7 @@ base::Value* ConvertComponentStringValue(const string16& value,
 }
 
 // Converts an integer |value| to another |type|, if possible.
-base::Value* ConvertComponentIntegerValue(uint32 value,
-                                          base::Value::Type type) {
+base::Value* ConvertIntegerValue(uint32 value, base::Value::Type type) {
   switch (type) {
     case base::Value::TYPE_BOOLEAN:
       return base::Value::CreateBooleanValue(value != 0);
@@ -354,25 +222,25 @@ base::Value* ConvertComponentIntegerValue(uint32 value,
   return NULL;
 }
 
-// Reads a simple (non-Dictionary, non-Array) value from the registry |key|
-// named |name| with registry type |reg_type| as a value of type |type|.
+// Reads a value from the registry |key| named |name| with registry type
+// |registry_type| as a value of type |type|.
 // Returns NULL if the value could not be loaded or converted.
-base::Value* ReadComponentSimpleValue(RegKey* key,
-                                      const string16& name,
-                                      DWORD reg_type,
-                                      base::Value::Type type) {
-  switch (reg_type) {
+base::Value* ReadPolicyValue(RegKey* key,
+                             const string16& name,
+                             DWORD registry_type,
+                             base::Value::Type type) {
+  switch (registry_type) {
     case REG_SZ: {
       string16 value;
       if (ReadRegistryString(key, name, &value))
-        return ConvertComponentStringValue(value, type);
+        return ConvertStringValue(value, type);
       break;
     }
 
     case REG_DWORD: {
       uint32 value;
       if (ReadRegistryInteger(key, name, &value))
-        return ConvertComponentIntegerValue(value, type);
+        return ConvertIntegerValue(value, type);
       break;
     }
 
@@ -380,7 +248,6 @@ base::Value* ReadComponentSimpleValue(RegKey* key,
       DLOG(WARNING) << "Registry type not supported for key " << name;
       break;
   }
-  NOTREACHED();
   return NULL;
 }
 
@@ -420,7 +287,7 @@ base::ListValue* ReadComponentListValue(HKEY hive,
       DWORD reg_type;
       key.ReadValue(name.c_str(), NULL, NULL, &reg_type);
       if (reg_type != REG_NONE)
-        value = ReadComponentSimpleValue(&key, name, reg_type, type);
+        value = ReadPolicyValue(&key, name, reg_type, type);
     }
     if (value)
       list->Append(value);
@@ -457,8 +324,7 @@ base::DictionaryValue* ReadComponentDictionaryValue(
     std::string name(UTF16ToUTF8(name16));
     const base::DictionaryValue* sub_schema = GetSchemaFor(schema, name);
     base::Value::Type type = GetType(sub_schema, GetDefaultFor(it.Type()));
-    base::Value* value =
-        ReadComponentSimpleValue(&key, name16, it.Type(), type);
+    base::Value* value = ReadPolicyValue(&key, name16, it.Type(), type);
     if (value)
       dict->Set(name, value);
   }
@@ -561,40 +427,72 @@ void PolicyLoaderWin::LoadChromePolicy(PolicyMap* chrome_policies) {
   if (is_initialized_)
     SetupWatches();
 
-  const PolicyDefinitionList::Entry* current;
-  for (current = policy_list_->begin; current != policy_list_->end; ++current) {
-    const string16 name(ASCIIToUTF16(current->name));
-    PolicyLevel level = POLICY_LEVEL_MANDATORY;
-    PolicyScope scope = POLICY_SCOPE_MACHINE;
-    base::Value* value = NULL;
+  // |kKeyPaths| is in decreasing order of priority.
+  static const struct {
+    const wchar_t* path;
+    PolicyLevel level;
+  } kKeyPaths[] = {
+    { kRegistryMandatorySubKey,   POLICY_LEVEL_MANDATORY    },
+    { kRegistryRecommendedSubKey, POLICY_LEVEL_RECOMMENDED  },
+  };
 
-    switch (current->value_type) {
-      case base::Value::TYPE_STRING:
-        value = ReadChromeStringValue(name, &level, &scope);
-        break;
+  // Lookup at the mandatory path for both user and machine policies first, and
+  // then at the recommended path.
+  for (size_t k = 0; k < arraysize(kKeyPaths); ++k) {
+    for (size_t h = 0; h < arraysize(kHives); ++h) {
+      // Iterate over keys and values at this hive and path.
+      HKEY hive = kHives[h].hive;
+      string16 path(kKeyPaths[k].path);
+      RegKey key;
+      if (key.Open(hive, path.c_str(), KEY_READ) != ERROR_SUCCESS ||
+          !key.Valid()) {
+        continue;
+      }
 
-      case base::Value::TYPE_LIST:
-        value = ReadChromeStringListValue(name, &level, &scope);
-        break;
+      // Iterate over values for most policies.
+      for (RegistryValueIterator it(hive, path.c_str()); it.Valid(); ++it) {
+        std::string name(UTF16ToUTF8(it.Name()));
+        // Skip if a higher-priority policy value was already inserted, or
+        // if this is the default value (empty string).
+        if (chrome_policies->Get(name) || name.empty())
+          continue;
+        // Get the expected policy type, if this is a known policy.
+        base::Value::Type type = GetDefaultFor(it.Type());
+        for (const PolicyDefinitionList::Entry* e = policy_list_->begin;
+             e != policy_list_->end; ++e) {
+          if (name == e->name) {
+            type = e->value_type;
+            break;
+          }
+        }
+        base::Value* value = ReadPolicyValue(&key, it.Name(), it.Type(), type);
+        if (!value)
+          value = base::Value::CreateNullValue();
+        chrome_policies->Set(name, kKeyPaths[k].level, kHives[h].scope, value);
+      }
 
-      case base::Value::TYPE_BOOLEAN:
-        value = ReadChromeBooleanValue(name, &level, &scope);
-        break;
-
-      case base::Value::TYPE_INTEGER:
-        value = ReadChromeIntegerValue(name, &level, &scope);
-        break;
-
-      case base::Value::TYPE_DICTIONARY:
-        value = ReadChromeDictionaryValue(name, &level, &scope);
-        break;
-
-      default:
-        NOTREACHED();
+      // Iterate over keys for policies of type string-list.
+      for (RegistryKeyIterator it(hive, path.c_str()); it.Valid(); ++it) {
+        std::string name(UTF16ToUTF8(it.Name()));
+        // Skip if a higher-priority policy value was already inserted, or
+        // if this is the 3rd party policy subkey.
+        const string16 kThirdParty16(kThirdParty);
+        if (chrome_policies->Get(name) || it.Name() == kThirdParty16)
+          continue;
+        string16 list_path = path + kPathSep + it.Name();
+        RegKey key;
+        if (key.Open(hive, list_path.c_str(), KEY_READ) != ERROR_SUCCESS ||
+            !key.Valid()) {
+          continue;
+        }
+        base::ListValue* result = new base::ListValue();
+        string16 value;
+        int index = 0;
+        while (ReadRegistryString(&key, base::IntToString16(++index), &value))
+          result->Append(base::Value::CreateStringValue(value));
+        chrome_policies->Set(name, kKeyPaths[k].level, kHives[h].scope, result);
+      }
     }
-
-    if (value)
-      chrome_policies->Set(current->name, level, scope, value);
   }
 }
 
