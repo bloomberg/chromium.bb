@@ -768,9 +768,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
     // After the for loop, this contains the browser to activate, if one of the
     // windows has the same id as specified in active_window_id.
     Browser* browser_to_activate = NULL;
-#if defined(OS_WIN)
     int selected_tab_to_activate = -1;
-#endif
 
     // Determine if there is a visible window.
     bool has_visible_browser = false;
@@ -846,15 +844,14 @@ class SessionRestoreImpl : public content::NotificationObserver {
       ShowBrowser(browser, selected_tab_index);
       if ((*i)->window_id.id() == active_window_id) {
         browser_to_activate = browser;
-#if defined(OS_WIN)
         selected_tab_to_activate = selected_tab_index;
-#endif
       }
       if (clobber_existing_tab_ && i == windows->begin() &&
           (*i)->type == Browser::TYPE_TABBED && active_tab &&
           browser == browser_ && browser->tab_count() > initial_tab_count) {
         chrome::CloseWebContents(browser, active_tab);
         active_tab = NULL;
+        selected_tab_to_activate = -1;
       }
       tab_loader_->TabIsLoading(
           &chrome::GetActiveWebContents(browser)->GetController());
@@ -870,13 +867,19 @@ class SessionRestoreImpl : public content::NotificationObserver {
     chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
         "SessionRestore-CreatingTabs-End", false);
 #endif
-    if (browser_to_activate)
+    if (browser_to_activate) {
       browser_to_activate->window()->Activate();
+      // On Win8 Metro, we merge all browsers together, so if we need to
+      // activate one of the previously separated window, we need to activate
+      // the tab. But we don't keep this within IsMetro, so that other platforms
+      // don't complain about an unused variable. Also, selected_tab_to_activate
+      // can be -1 if we clobbered the tab that would have been activated.
+      // In that case we'll leave activation to last tab.
+      // The only current usage of clobber is for crash recovery, so it's fine.
+      if (selected_tab_to_activate != -1)
+        ShowBrowser(browser_to_activate, selected_tab_to_activate);
+    }
 
-#if defined(OS_WIN)
-    if (base::win::IsMetroProcess() && browser_to_activate)
-      ShowBrowser(browser_to_activate, selected_tab_to_activate);
-#endif
     // If last_browser is NULL and urls_to_open_ is non-empty,
     // FinishedTabCreation will create a new TabbedBrowser and add the urls to
     // it.
