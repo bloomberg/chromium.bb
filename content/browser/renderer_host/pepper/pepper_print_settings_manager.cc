@@ -48,15 +48,19 @@ PepperPrintSettingsManager::Result ComputeDefaultPrintSettings() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_ptr<printing::PrintingContext> context(
   printing::PrintingContext::Create(std::string()));
-  if (!context.get()) {
+  if (!context.get() ||
+      context->UseDefaultSettings() != printing::PrintingContext::OK) {
     return PepperPrintSettingsManager::Result(PP_PrintSettings_Dev(),
                                               PP_ERROR_FAILED);
   }
-  context->UseDefaultSettings();
   const printing::PrintSettings& print_settings = context->settings();
   const printing::PageSetup& page_setup =
        print_settings.page_setup_device_units();
   int device_units_per_inch = print_settings.device_units_per_inch();
+  if (device_units_per_inch <= 0) {
+    return PepperPrintSettingsManager::Result(PP_PrintSettings_Dev(),
+                                              PP_ERROR_FAILED);
+  }
   PP_PrintSettings_Dev settings;
   settings.printable_area = PrintAreaToPPPrintArea(
       page_setup.printable_area(), device_units_per_inch);
