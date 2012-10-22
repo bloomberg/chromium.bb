@@ -71,17 +71,20 @@ def FindAllAvailableBrowsers(options):
   else:
     raise Exception('Platform not recognized')
 
+  build_dirs = ['sconsbuild']
   if sys.platform.startswith('win'):
-    build_dir = 'build'
+    build_dirs.append('build')
   else:
-    build_dir = 'out'
+    build_dirs.append('out')
 
   # Add local builds
   def AddIfFound(browser_type, type_dir, app_name, content_shell):
-    app = os.path.join(chrome_root, build_dir, type_dir, app_name)
-    if os.path.exists(app):
-      browsers.append(PossibleDesktopBrowser(browser_type, options,
-                                             app, content_shell))
+    for build_dir in build_dirs:
+      app = os.path.join(chrome_root, build_dir, type_dir, app_name)
+      if os.path.exists(app):
+        browsers.append(PossibleDesktopBrowser(browser_type, options,
+                                               app, content_shell))
+        break
   AddIfFound('debug', 'Debug', chromium_app_name, False)
   AddIfFound('content-shell-debug', 'Debug', content_shell_app_name, True)
   AddIfFound('release', 'Release', chromium_app_name, False)
