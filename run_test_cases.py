@@ -689,12 +689,8 @@ def run_test_cases(cmd, test_cases, jobs, timeout, run_all, result_file):
       pool.add_task(function, test_case)
     results = pool.join(progress, 0.1)
     duration = time.time() - progress.start
+
   results = dict((item[0]['test_case'], item) for item in results if item)
-  LogResults(result_file, results)
-  sys.stdout.write('\n')
-  total = len(results)
-  if not total:
-    return 1
 
   # Classify the results
   success = []
@@ -713,6 +709,18 @@ def run_test_cases(cmd, test_cases, jobs, timeout, run_all, result_file):
     else:
       assert False, items
 
+  saved = {
+    'test_cases': results,
+    'success': success,
+    'flaky': flaky,
+    'fail': fail,
+    'duration': duration,
+  }
+  LogResults(result_file, saved)
+  sys.stdout.write('\n')
+  if not results:
+    return 1
+
   print('Summary:')
   for test_case in sorted(flaky):
     items = results[test_case]
@@ -721,6 +729,7 @@ def run_test_cases(cmd, test_cases, jobs, timeout, run_all, result_file):
   for test_case in sorted(fail):
     print('%s failed' % (test_case))
 
+  total = len(results)
   if decider.should_stop():
     print('** STOPPED EARLY due to high failure rate **')
   print('Success: %4d %5.2f%%' % (len(success), len(success) * 100. / total))

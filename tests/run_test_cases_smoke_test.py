@@ -44,7 +44,7 @@ class RunTestCases(unittest.TestCase):
     os.environ.pop('GTEST_SHARD_INDEX', '')
     os.environ.pop('GTEST_TOTAL_SHARDS', '')
 
-    self.filename = 'test.isolated'
+    self.filename = 'test.run_test_cases'
 
   def tearDown(self):
     if os.path.exists(self.filename):
@@ -61,16 +61,24 @@ class RunTestCases(unittest.TestCase):
     self.assertEqual([], lines)
     self.assertEqual('', err)
 
-  def _check_results_file(self, expected_file_contents_entries):
+  def _check_results_file(self, fail, flaky, success, test_cases):
     self.assertTrue(os.path.exists(self.filename))
 
     with open(self.filename) as f:
-      file_contents = json.load(f)
+      actual = json.load(f)
 
-    self.assertEqual(len(expected_file_contents_entries), len(file_contents))
-    for (entry_name, entry_count) in expected_file_contents_entries:
-      self.assertTrue(entry_name in file_contents)
-      self.assertEqual(entry_count, len(file_contents[entry_name]))
+    self.assertEqual(
+        [u'duration', u'fail', u'flaky', u'success', u'test_cases'],
+        sorted(actual))
+
+    self.assertTrue(actual['duration'] > 0.0000001)
+    self.assertEqual(fail, actual['fail'])
+    self.assertEqual(flaky, actual['flaky'])
+    self.assertEqual(success, actual['success'])
+    self.assertEqual(len(test_cases), len(actual['test_cases']))
+    for (entry_name, entry_count) in test_cases:
+      self.assertTrue(entry_name in actual['test_cases'])
+      self.assertEqual(entry_count, len(actual['test_cases'][entry_name]))
 
   def test_simple_pass(self):
     out, err, return_code = RunTest(
@@ -90,12 +98,16 @@ class RunTestCases(unittest.TestCase):
     ]
     self._check_results(expected_out_re, out, err)
 
-    expected_result_file_entries = [
+    test_cases = [
         ('Foo.Bar1', 1),
         ('Foo.Bar2', 1),
         ('Foo.Bar3', 1)
     ]
-    self._check_results_file(expected_result_file_entries)
+    self._check_results_file(
+        fail=[],
+        flaky=[],
+        success=[u'Foo.Bar1', u'Foo.Bar2', u'Foo.Bar3'],
+        test_cases=test_cases)
 
   def test_simple_fail(self):
     out, err, return_code = RunTest(
@@ -130,13 +142,17 @@ class RunTestCases(unittest.TestCase):
     ]
     self._check_results(expected_out_re, out, err)
 
-    expected_result_file_entries = [
+    test_cases = [
         ('Foo.Bar1', 1),
         ('Foo.Bar2', 1),
         ('Foo.Bar3', 1),
         ('Baz.Fail', 3)
     ]
-    self._check_results_file(expected_result_file_entries)
+    self._check_results_file(
+        fail=['Baz.Fail'],
+        flaky=[],
+        success=[u'Foo.Bar1', u'Foo.Bar2', u'Foo.Bar3'],
+        test_cases=test_cases)
 
   def test_simple_gtest_list_error(self):
     out, err, return_code = RunTest(
