@@ -7,7 +7,6 @@
 #include "cc/bitmap_canvas_layer_texture_updater.h"
 
 #include "cc/layer_painter.h"
-#include "cc/platform_color.h"
 #include "cc/resource_update.h"
 #include "cc/texture_update_queue.h"
 #include "skia/ext/platform_canvas.h"
@@ -47,13 +46,6 @@ BitmapCanvasLayerTextureUpdater::~BitmapCanvasLayerTextureUpdater()
 scoped_ptr<LayerTextureUpdater::Texture> BitmapCanvasLayerTextureUpdater::createTexture(CCPrioritizedTextureManager* manager)
 {
     return scoped_ptr<LayerTextureUpdater::Texture>(new Texture(this, CCPrioritizedTexture::create(manager)));
-}
-
-LayerTextureUpdater::SampledTexelFormat BitmapCanvasLayerTextureUpdater::sampledTexelFormat(GLenum textureFormat)
-{
-    // The component order may be bgra if we uploaded bgra pixels to rgba textures.
-    return PlatformColor::sameComponentOrder(textureFormat) ?
-            LayerTextureUpdater::SampledTexelFormatRGBA : LayerTextureUpdater::SampledTexelFormatBGRA;
 }
 
 void BitmapCanvasLayerTextureUpdater::prepareToUpdate(const IntRect& contentRect, const IntSize& tileSize, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, CCRenderingStats& stats)

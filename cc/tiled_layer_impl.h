@@ -29,11 +29,8 @@ public:
 
     void setSkipsDraw(bool skipsDraw) { m_skipsDraw = skipsDraw; }
     void setTilingData(const CCLayerTilingData& tiler);
-    void pushTileProperties(int, int, CCResourceProvider::ResourceId, const IntRect& opaqueRect);
+    void pushTileProperties(int, int, CCResourceProvider::ResourceId, const IntRect& opaqueRect, bool contentsSwizzled);
     void pushInvalidTile(int, int);
-
-    void setContentsSwizzled(bool contentsSwizzled) { m_contentsSwizzled = contentsSwizzled; }
-    bool contentsSwizzled() const { return m_contentsSwizzled; }
 
     virtual Region visibleContentOpaqueRegion() const OVERRIDE;
     virtual void didLoseContext() OVERRIDE;
@@ -52,7 +49,6 @@ private:
     DrawableTile* createTile(int, int);
 
     bool m_skipsDraw;
-    bool m_contentsSwizzled;
 
     scoped_ptr<CCLayerTilingData> m_tiler;
 };

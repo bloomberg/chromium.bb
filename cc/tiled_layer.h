@@ -48,7 +48,6 @@ protected:
     void setTileSize(const IntSize&);
     void setTextureFormat(GLenum textureFormat) { m_textureFormat = textureFormat; }
     void setBorderTexelOption(CCLayerTilingData::BorderTexelOption);
-    void setSampledTexelFormat(LayerTextureUpdater::SampledTexelFormat sampledTexelFormat) { m_sampledTexelFormat = sampledTexelFormat; }
     size_t numPaintedTiles() { return m_tiler->tiles().size(); }
 
     virtual LayerTextureUpdater* textureUpdater() const = 0;
@@ -91,7 +90,6 @@ private:
     GLenum m_textureFormat;
     bool m_skipsDraw;
     bool m_failedUpdate;
-    LayerTextureUpdater::SampledTexelFormat m_sampledTexelFormat;
 
     TilingOption m_tilingOption;
     scoped_ptr<CCLayerTilingData> m_tiler;

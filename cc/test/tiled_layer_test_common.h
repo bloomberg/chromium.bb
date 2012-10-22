@@ -39,7 +39,6 @@ public:
     FakeLayerTextureUpdater();
 
     virtual scoped_ptr<cc::LayerTextureUpdater::Texture> createTexture(cc::CCPrioritizedTextureManager*) OVERRIDE;
-    virtual SampledTexelFormat sampledTexelFormat(GLenum) OVERRIDE;
 
     virtual void prepareToUpdate(const cc::IntRect& contentRect, const cc::IntSize&, float, float, cc::IntRect& resultingOpaqueRect, cc::CCRenderingStats&) OVERRIDE;
     // Sets the rect to invalidate during the next call to prepareToUpdate(). After the next

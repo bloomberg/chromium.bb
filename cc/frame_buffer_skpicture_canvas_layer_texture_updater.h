@@ -31,7 +31,6 @@ public:
     static scoped_refptr<FrameBufferSkPictureCanvasLayerTextureUpdater> create(scoped_ptr<LayerPainterChromium>);
 
     virtual scoped_ptr<LayerTextureUpdater::Texture> createTexture(CCPrioritizedTextureManager*) OVERRIDE;
-    virtual SampledTexelFormat sampledTexelFormat(GLenum textureFormat) OVERRIDE;
 
 private:
     explicit FrameBufferSkPictureCanvasLayerTextureUpdater(scoped_ptr<LayerPainterChromium>);

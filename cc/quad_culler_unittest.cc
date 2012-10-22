@@ -59,7 +59,7 @@ static scoped_ptr<CCTiledLayerImpl> makeLayer(CCTiledLayerImpl* parent, const We
     for (int i = 0; i < tiler->numTilesX(); ++i)
         for (int j = 0; j < tiler->numTilesY(); ++j) {
             IntRect tileOpaqueRect = opaque ? tiler->tileBounds(i, j) : intersection(tiler->tileBounds(i, j), layerOpaqueRect);
-            layer->pushTileProperties(i, j, resourceId++, tileOpaqueRect);
+            layer->pushTileProperties(i, j, resourceId++, tileOpaqueRect, false);
         }
 
     IntRect rectInTarget = CCMathUtil::mapClippedRect(layer->drawTransform(), layer->visibleContentRect());

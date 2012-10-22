@@ -966,7 +966,7 @@ private:
         setSkipsDraw(skipsDraw);
         if (!tileMissing) {
             CCResourceProvider::ResourceId resource = resourceProvider->createResource(CCRenderer::ContentPool, IntSize(), GL_RGBA, CCResourceProvider::TextureUsageAny);
-            pushTileProperties(0, 0, resource, IntRect());
+            pushTileProperties(0, 0, resource, IntRect(), false);
         }
         if (animating)
             addAnimatedTransformToLayer(*this, 10, 3, 0);
@@ -2666,7 +2666,7 @@ TEST_P(CCLayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
     scoped_ptr<CCLayerTilingData> tilingData(CCLayerTilingData::create(IntSize(10, 10), CCLayerTilingData::NoBorderTexels));
     tilingData->setBounds(IntSize(10, 10));
     tileLayer->setTilingData(*tilingData);
-    tileLayer->pushTileProperties(0, 0, 1, IntRect(0, 0, 10, 10));
+    tileLayer->pushTileProperties(0, 0, 1, IntRect(0, 0, 10, 10), false);
     rootLayer->addChild(tileLayer.PassAs<CCLayerImpl>());
 
     scoped_ptr<CCTextureLayerImpl> textureLayer = CCTextureLayerImpl::create(layerId++);
@@ -2684,7 +2684,7 @@ TEST_P(CCLayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
     maskLayer->setDrawsContent(true);
     maskLayer->setSkipsDraw(false);
     maskLayer->setTilingData(*tilingData);
-    maskLayer->pushTileProperties(0, 0, 1, IntRect(0, 0, 10, 10));
+    maskLayer->pushTileProperties(0, 0, 1, IntRect(0, 0, 10, 10), false);
 
     scoped_ptr<CCTextureLayerImpl> textureLayerWithMask = CCTextureLayerImpl::create(layerId++);
     textureLayerWithMask->setBounds(IntSize(10, 10));
@@ -2851,7 +2851,7 @@ TEST_P(CCLayerTreeHostImplTest, layersFreeTextures)
     scoped_ptr<CCLayerTilingData> tilingData(CCLayerTilingData::create(IntSize(10, 10), CCLayerTilingData::NoBorderTexels));
     tilingData->setBounds(IntSize(10, 10));
     tileLayer->setTilingData(*tilingData);
-    tileLayer->pushTileProperties(0, 0, 1, IntRect(0, 0, 10, 10));
+    tileLayer->pushTileProperties(0, 0, 1, IntRect(0, 0, 10, 10), false);
     rootLayer->addChild(tileLayer.PassAs<CCLayerImpl>());
 
     scoped_ptr<CCTextureLayerImpl> textureLayer = CCTextureLayerImpl::create(3);

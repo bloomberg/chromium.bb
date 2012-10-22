@@ -80,7 +80,6 @@ TiledLayerChromium::TiledLayerChromium()
     , m_textureFormat(GL_INVALID_ENUM)
     , m_skipsDraw(false)
     , m_failedUpdate(false)
-    , m_sampledTexelFormat(LayerTextureUpdater::SampledTexelFormatInvalid)
     , m_tilingOption(AutoTile)
 {
     m_tiler = CCLayerTilingData::create(IntSize(), CCLayerTilingData::HasBorderTexels);
@@ -196,7 +195,6 @@ void TiledLayerChromium::pushPropertiesTo(CCLayerImpl* layer)
     CCTiledLayerImpl* tiledLayer = static_cast<CCTiledLayerImpl*>(layer);
 
     tiledLayer->setSkipsDraw(m_skipsDraw);
-    tiledLayer->setContentsSwizzled(m_sampledTexelFormat != LayerTextureUpdater::SampledTexelFormatRGBA);
     tiledLayer->setTilingData(*m_tiler);
     Vector<UpdatableTile*> invalidTiles;
 
@@ -222,7 +220,7 @@ void TiledLayerChromium::pushPropertiesTo(CCLayerImpl* layer)
             continue;
         }
 
-        tiledLayer->pushTileProperties(i, j, tile->managedTexture()->resourceId(), tile->opaqueRect());
+        tiledLayer->pushTileProperties(i, j, tile->managedTexture()->resourceId(), tile->opaqueRect(), tile->managedTexture()->contentsSwizzled());
         tile->isInUseOnImpl = true;
     }
     for (Vector<UpdatableTile*>::const_iterator iter = invalidTiles.begin(); iter != invalidTiles.end(); ++iter)

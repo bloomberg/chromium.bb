@@ -8,7 +8,6 @@
 
 #include "base/time.h"
 #include "cc/layer_painter.h"
-#include "cc/platform_color.h"
 #include "cc/rendering_stats.h"
 #include "cc/texture_update_queue.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -58,13 +57,6 @@ BitmapSkPictureCanvasLayerTextureUpdater::~BitmapSkPictureCanvasLayerTextureUpda
 scoped_ptr<LayerTextureUpdater::Texture> BitmapSkPictureCanvasLayerTextureUpdater::createTexture(CCPrioritizedTextureManager* manager)
 {
     return scoped_ptr<LayerTextureUpdater::Texture>(new Texture(this, CCPrioritizedTexture::create(manager)));
-}
-
-LayerTextureUpdater::SampledTexelFormat BitmapSkPictureCanvasLayerTextureUpdater::sampledTexelFormat(GLenum textureFormat)
-{
-    // The component order may be bgra if we uploaded bgra pixels to rgba textures.
-    return PlatformColor::sameComponentOrder(textureFormat) ?
-            LayerTextureUpdater::SampledTexelFormatRGBA : LayerTextureUpdater::SampledTexelFormatBGRA;
 }
 
 void BitmapSkPictureCanvasLayerTextureUpdater::paintContentsRect(SkCanvas* canvas, const IntRect& sourceRect, CCRenderingStats& stats)

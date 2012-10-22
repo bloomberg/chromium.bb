@@ -68,11 +68,6 @@ scoped_ptr<LayerTextureUpdater::Texture> FakeLayerTextureUpdater::createTexture(
     return scoped_ptr<LayerTextureUpdater::Texture>(new Texture(this, CCPrioritizedTexture::create(manager)));
 }
 
-LayerTextureUpdater::SampledTexelFormat FakeLayerTextureUpdater::sampledTexelFormat(GLenum)
-{
-    return SampledTexelFormatRGBA;
-}
-
 FakeCCTiledLayerImpl::FakeCCTiledLayerImpl(int id)
     : CCTiledLayerImpl(id)
 {

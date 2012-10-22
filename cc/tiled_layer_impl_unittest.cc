@@ -39,7 +39,7 @@ static scoped_ptr<CCTiledLayerImpl> createLayer(const IntSize& tileSize, const I
     CCResourceProvider::ResourceId resourceId = 1;
     for (int i = 0; i < tiler->numTilesX(); ++i)
         for (int j = 0; j < tiler->numTilesY(); ++j)
-            layer->pushTileProperties(i, j, resourceId++, IntRect(0, 0, 1, 1));
+            layer->pushTileProperties(i, j, resourceId++, IntRect(0, 0, 1, 1), false);
 
     return layer.Pass();
 }
@@ -124,7 +124,7 @@ TEST(CCTiledLayerImplTest, checkerboarding)
 
     for (int i = 0; i < numTilesX; ++i)
         for (int j = 0; j < numTilesY; ++j)
-            layer->pushTileProperties(i, j, 0, IntRect());
+            layer->pushTileProperties(i, j, 0, IntRect(), false);
 
     // All checkerboarding
     {

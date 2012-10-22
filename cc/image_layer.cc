@@ -9,7 +9,6 @@
 #include "CCLayerTreeHost.h"
 #include "base/compiler_specific.h"
 #include "cc/layer_texture_updater.h"
-#include "cc/platform_color.h"
 #include "cc/texture_update_queue.h"
 
 namespace cc {
@@ -44,12 +43,6 @@ public:
         CCPrioritizedTextureManager* manager) OVERRIDE
     {
         return scoped_ptr<LayerTextureUpdater::Texture>(new Texture(this, CCPrioritizedTexture::create(manager)));
-    }
-
-    virtual SampledTexelFormat sampledTexelFormat(GLenum textureFormat) OVERRIDE
-    {
-        return PlatformColor::sameComponentOrder(textureFormat) ?
-                LayerTextureUpdater::SampledTexelFormatRGBA : LayerTextureUpdater::SampledTexelFormatBGRA;
     }
 
     void updateTexture(CCTextureUpdateQueue& queue, CCPrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate)
@@ -140,7 +133,6 @@ void ImageLayerChromium::createTextureUpdaterIfNeeded()
     m_textureUpdater = ImageLayerTextureUpdater::create();
     GLenum textureFormat = layerTreeHost()->rendererCapabilities().bestTextureFormat;
     setTextureFormat(textureFormat);
-    setSampledTexelFormat(textureUpdater()->sampledTexelFormat(textureFormat));
 }
 
 LayerTextureUpdater* ImageLayerChromium::textureUpdater() const

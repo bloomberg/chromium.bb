@@ -50,11 +50,16 @@ public:
 
     CCResourceProvider::ResourceId resourceId() const { return m_resourceId; }
     void setResourceId(CCResourceProvider::ResourceId resourceId) { m_resourceId = resourceId; }
+    bool contentsSwizzled() { return m_contentsSwizzled; }
+    void setContentsSwizzled(bool contentsSwizzled) { m_contentsSwizzled = contentsSwizzled; }
 
 private:
-    DrawableTile() : m_resourceId(0) { }
+    DrawableTile()
+        : m_resourceId(0)
+        , m_contentsSwizzled(false) { }
 
     CCResourceProvider::ResourceId m_resourceId;
+    bool m_contentsSwizzled;
 
     DISALLOW_COPY_AND_ASSIGN(DrawableTile);
 };
@@ -62,7 +67,6 @@ private:
 CCTiledLayerImpl::CCTiledLayerImpl(int id)
     : CCLayerImpl(id)
     , m_skipsDraw(true)
-    , m_contentsSwizzled(false)
 {
 }
 
@@ -195,7 +199,7 @@ void CCTiledLayerImpl::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& appe
             bool bottomEdgeAA = j == m_tiler->numTilesY() - 1 && useAA;
 
             const GLint textureFilter = m_tiler->hasBorderTexels() ? GL_LINEAR : GL_NEAREST;
-            quadSink.append(CCTileDrawQuad::create(sharedQuadState, tileRect, tileOpaqueRect, tile->resourceId(), textureOffset, textureSize, textureFilter, contentsSwizzled(), leftEdgeAA, topEdgeAA, rightEdgeAA, bottomEdgeAA).PassAs<CCDrawQuad>(), appendQuadsData);
+            quadSink.append(CCTileDrawQuad::create(sharedQuadState, tileRect, tileOpaqueRect, tile->resourceId(), textureOffset, textureSize, textureFilter, tile->contentsSwizzled(), leftEdgeAA, topEdgeAA, rightEdgeAA, bottomEdgeAA).PassAs<CCDrawQuad>(), appendQuadsData);
         }
     }
 }
@@ -209,13 +213,14 @@ void CCTiledLayerImpl::setTilingData(const CCLayerTilingData& tiler)
     *m_tiler = tiler;
 }
 
-void CCTiledLayerImpl::pushTileProperties(int i, int j, CCResourceProvider::ResourceId resourceId, const IntRect& opaqueRect)
+void CCTiledLayerImpl::pushTileProperties(int i, int j, CCResourceProvider::ResourceId resourceId, const IntRect& opaqueRect, bool contentsSwizzled)
 {
     DrawableTile* tile = tileAt(i, j);
     if (!tile)
         tile = createTile(i, j);
     tile->setResourceId(resourceId);
     tile->setOpaqueRect(opaqueRect);
+    tile->setContentsSwizzled(contentsSwizzled);
 }
 
 void CCTiledLayerImpl::pushInvalidTile(int i, int j)
@@ -225,6 +230,7 @@ void CCTiledLayerImpl::pushInvalidTile(int i, int j)
         tile = createTile(i, j);
     tile->setResourceId(0);
     tile->setOpaqueRect(IntRect());
+    tile->setContentsSwizzled(false);
 }
 
 Region CCTiledLayerImpl::visibleContentOpaqueRegion() const

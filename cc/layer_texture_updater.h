@@ -38,17 +38,7 @@ public:
 
     LayerTextureUpdater() { }
 
-    enum SampledTexelFormat {
-        SampledTexelFormatRGBA,
-        SampledTexelFormatBGRA,
-        SampledTexelFormatInvalid,
-    };
     virtual scoped_ptr<Texture> createTexture(CCPrioritizedTextureManager*) = 0;
-    // Returns the format of the texel uploaded by this interface.
-    // This format should not be confused by texture internal format.
-    // This format specifies the component order in the sampled texel.
-    // If the format is TexelFormatBGRA, vec4.x is blue and vec4.z is red.
-    virtual SampledTexelFormat sampledTexelFormat(GLenum textureFormat) = 0;
     // The |resultingOpaqueRect| gives back a region of the layer that was painted opaque. If the layer is marked opaque in the updater,
     // then this region should be ignored in preference for the entire layer's area.
     virtual void prepareToUpdate(const IntRect& contentRect, const IntSize& tileSize, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, CCRenderingStats&) { }

@@ -6,6 +6,7 @@
 
 #include "cc/prioritized_texture.h"
 
+#include "cc/platform_color.h"
 #include "cc/prioritized_texture_manager.h"
 #include "cc/priority_calculator.h"
 #include "cc/proxy.h"
@@ -19,6 +20,7 @@ CCPrioritizedTexture::CCPrioritizedTexture(CCPrioritizedTextureManager* manager,
     : m_size(size)
     , m_format(format)
     , m_bytes(0)
+    , m_contentsSwizzled(false)
     , m_priority(CCPriorityCalculator::lowestPriority())
     , m_isAbovePriorityCutoff(false)
     , m_isSelfManaged(false)
@@ -97,6 +99,11 @@ void CCPrioritizedTexture::upload(CCResourceProvider* resourceProvider,
         acquireBackingTexture(resourceProvider);
     DCHECK(m_backing);
     resourceProvider->upload(resourceId(), image, imageRect, sourceRect, destOffset);
+
+    // The component order may be bgra if we uploaded bgra pixels to rgba
+    // texture. Mark contents as swizzled if image component order is
+    // different than texture format.
+    m_contentsSwizzled = !PlatformColor::sameComponentOrder(m_format);
 }
 
 void CCPrioritizedTexture::link(Backing* backing)

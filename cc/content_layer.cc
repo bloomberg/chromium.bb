@@ -98,7 +98,6 @@ void ContentLayerChromium::createTextureUpdaterIfNeeded()
 
     GLenum textureFormat = layerTreeHost()->rendererCapabilities().bestTextureFormat;
     setTextureFormat(textureFormat);
-    setSampledTexelFormat(textureUpdater()->sampledTexelFormat(textureFormat));
 }
 
 void ContentLayerChromium::setContentsOpaque(bool opaque)

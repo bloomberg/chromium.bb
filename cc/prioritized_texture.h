@@ -39,6 +39,7 @@ public:
     GLenum format() const { return m_format; }
     IntSize size() const { return m_size; }
     size_t bytes() const { return m_bytes; }
+    bool contentsSwizzled() const { return m_contentsSwizzled; }
 
     // Set priority for the requested texture. 
     void setRequestPriority(int priority) { m_priority = priority; }
@@ -132,6 +133,7 @@ private:
     IntSize m_size;
     GLenum m_format;
     size_t m_bytes;
+    bool m_contentsSwizzled;
 
     int m_priority;
     bool m_isAbovePriorityCutoff;
