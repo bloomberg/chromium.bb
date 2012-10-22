@@ -232,8 +232,6 @@
     'renderer/render_view_linux.cc',
     'renderer/render_view_mouse_lock_dispatcher.cc',
     'renderer/render_view_mouse_lock_dispatcher.h',
-    'renderer/render_view_selection.cc',
-    'renderer/render_view_selection.h',
     'renderer/render_widget.cc',
     'renderer/render_widget.h',
     'renderer/render_widget_fullscreen.cc',

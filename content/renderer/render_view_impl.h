@@ -28,7 +28,6 @@
 #include "content/public/common/stop_find_action.h"
 #include "content/public/renderer/render_view.h"
 #include "content/renderer/pepper/pepper_plugin_delegate_impl.h"
-#include "content/renderer/render_view_selection.h"
 #include "content/renderer/render_widget.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "ipc/ipc_platform_file.h"
