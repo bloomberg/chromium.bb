@@ -21,6 +21,8 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 
+namespace content {
+
 // Converter functions from  libjingle types to WebKit types.
 
 static WebKit::WebRTCPeerConnectionHandlerClient::ICEState
@@ -446,3 +448,5 @@ RTCPeerConnectionHandler::CreateNativeSessionDescription(
 
   return native_desc;
 }
+
+}  // namespace content

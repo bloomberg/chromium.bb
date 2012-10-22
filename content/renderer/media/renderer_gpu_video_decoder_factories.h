@@ -19,6 +19,8 @@ namespace base {
 class WaitableEvent;
 }
 
+namespace content {
+
 // Glue code to expose functionality needed by media::GpuVideoDecoder to
 // RenderViewImpl.  This class is entirely an implementation detail of
 // RenderViewImpl and only has its own header to allow extraction of its
@@ -89,5 +91,7 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
   base::WeakPtr<WebGraphicsContext3DCommandBufferImpl> context_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(RendererGpuVideoDecoderFactories);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_RENDERER_GPU_VIDEO_DECODER_FACTORIES_H_

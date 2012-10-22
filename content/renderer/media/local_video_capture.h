@@ -18,9 +18,8 @@ namespace media {
 class VideoCaptureHandlerProxy;
 }
 
-class VideoCaptureImplManager;
-
 namespace content {
+class VideoCaptureImplManager;
 
 // This class takes raw frames from video capture engine via VideoCaptureProxy
 // and passes them to media player as a video frame provider.

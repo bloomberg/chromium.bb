@@ -36,6 +36,7 @@ using media::PipelineStatistics;
 using media::PIPELINE_OK;
 using media::StatisticsCB;
 
+namespace content {
 namespace {
 
 class NullVideoFrame : public cricket::VideoFrame {
@@ -327,3 +328,5 @@ TEST_F(RTCVideoDecoderTest, ReadAndShutdown) {
   decoder_->Read(read_cb_);
   message_loop_.RunAllPending();
 }
+
+}  // namespace content

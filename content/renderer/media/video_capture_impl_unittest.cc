@@ -18,6 +18,8 @@ using ::testing::Return;
 #define CAPABILITY_LARGE {320, 240, 30, media::VideoCaptureCapability::kI420, \
     0, false }
 
+namespace content {
+
 class MockVideoCaptureMessageFilter : public VideoCaptureMessageFilter {
  public:
   MockVideoCaptureMessageFilter() : VideoCaptureMessageFilter() {}
@@ -296,3 +298,5 @@ TEST_F(VideoCaptureImplTest, TwoClientsWithSameSize) {
   video_capture_impl_->StopCapture(client2.get());
   message_loop_->RunAllPending();
 }
+
+}  // namespace content

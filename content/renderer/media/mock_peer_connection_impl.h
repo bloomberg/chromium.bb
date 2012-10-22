@@ -12,29 +12,29 @@
 #include "base/memory/scoped_ptr.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
 
+namespace content {
+
 class MockMediaStreamDependencyFactory;
-
-namespace webrtc {
-
 class MockStreamCollection;
 
-class MockPeerConnectionImpl : public PeerConnectionInterface {
+class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
  public:
   explicit MockPeerConnectionImpl(MockMediaStreamDependencyFactory* factory);
 
   // PeerConnectionInterface implementation.
-  virtual talk_base::scoped_refptr<StreamCollectionInterface>
+  virtual talk_base::scoped_refptr<webrtc::StreamCollectionInterface>
       local_streams() OVERRIDE;
-  virtual talk_base::scoped_refptr<StreamCollectionInterface>
+  virtual talk_base::scoped_refptr<webrtc::StreamCollectionInterface>
       remote_streams() OVERRIDE;
-  virtual void AddStream(LocalMediaStreamInterface* stream) OVERRIDE;
-  virtual bool AddStream(MediaStreamInterface* local_stream,
-                         const MediaConstraintsInterface* constraints) OVERRIDE;
+  virtual void AddStream(webrtc::LocalMediaStreamInterface* stream) OVERRIDE;
+  virtual bool AddStream(
+      webrtc::MediaStreamInterface* local_stream,
+      const webrtc::MediaConstraintsInterface* constraints) OVERRIDE;
   virtual bool CanSendDtmf(const webrtc::AudioTrackInterface* track) OVERRIDE;
   virtual bool SendDtmf(const webrtc::AudioTrackInterface* send_track,
                         const std::string& tones, int duration,
                         const webrtc::AudioTrackInterface* play_track) OVERRIDE;
-  virtual void RemoveStream(MediaStreamInterface* local_stream) OVERRIDE;
+  virtual void RemoveStream(webrtc::MediaStreamInterface* local_stream) OVERRIDE;
   virtual ReadyState ready_state() OVERRIDE;
   virtual bool StartIce(IceOptions options) OVERRIDE;
 
@@ -58,21 +58,25 @@ class MockPeerConnectionImpl : public PeerConnectionInterface {
 
   // JSEP01 APIs
   virtual void CreateOffer(
-      CreateSessionDescriptionObserver* observer,
-      const MediaConstraintsInterface* constraints) OVERRIDE;
+      webrtc::CreateSessionDescriptionObserver* observer,
+      const webrtc::MediaConstraintsInterface* constraints) OVERRIDE;
   virtual void CreateAnswer(
-      CreateSessionDescriptionObserver* observer,
-      const MediaConstraintsInterface* constraints) OVERRIDE;
-  virtual void SetLocalDescription(SetSessionDescriptionObserver* observer,
-                                   SessionDescriptionInterface* desc) OVERRIDE;
-  virtual void SetRemoteDescription(SetSessionDescriptionObserver* observer,
-                                    SessionDescriptionInterface* desc) OVERRIDE;
-  virtual bool UpdateIce(const IceServers& configuration,
-                         const MediaConstraintsInterface* constraints) OVERRIDE;
-  virtual bool AddIceCandidate(const IceCandidateInterface* candidate) OVERRIDE;
+      webrtc::CreateSessionDescriptionObserver* observer,
+      const webrtc::MediaConstraintsInterface* constraints) OVERRIDE;
+  virtual void SetLocalDescription(
+      webrtc::SetSessionDescriptionObserver* observer,
+      webrtc::SessionDescriptionInterface* desc) OVERRIDE;
+  virtual void SetRemoteDescription(
+      webrtc::SetSessionDescriptionObserver* observer,
+      webrtc::SessionDescriptionInterface* desc) OVERRIDE;
+  virtual bool UpdateIce(
+      const IceServers& configuration,
+      const webrtc::MediaConstraintsInterface* constraints) OVERRIDE;
+  virtual bool AddIceCandidate(
+      const webrtc::IceCandidateInterface* candidate) OVERRIDE;
   virtual IceState ice_state() OVERRIDE;
 
-  void AddRemoteStream(MediaStreamInterface* stream);
+  void AddRemoteStream(webrtc::MediaStreamInterface* stream);
   void SetReadyState(ReadyState state) { ready_state_ = state; }
   void SetIceState(IceState state) { ice_state_ = state; }
 
@@ -118,6 +122,6 @@ class MockPeerConnectionImpl : public PeerConnectionInterface {
   DISALLOW_COPY_AND_ASSIGN(MockPeerConnectionImpl);
 };
 
-}  // namespace webrtc
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_MOCK_PEER_CONNECTION_IMPL_H_

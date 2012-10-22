@@ -70,6 +70,8 @@
 
 */
 
+namespace content {
+
 // TODO(vibhor): Add another method-pair like sendLater() and sendNow()
 // sendLater() should keep building a json serializer
 // sendNow() should send the above serializer as a string.
@@ -124,5 +126,7 @@ class DomAutomationController : public webkit_glue::CppBoundClass {
   int routing_id_;  // routing id to be used by first channel.
   int automation_id_;  // routing id to be used by the next channel.
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_DOM_AUTOMATION_CONTROLLER_H_

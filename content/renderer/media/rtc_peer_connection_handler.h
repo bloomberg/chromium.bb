@@ -15,6 +15,8 @@ namespace WebKit {
 class WebFrame;
 }
 
+namespace content {
+
 // RTCPeerConnectionHandler is a delegate for the RTC PeerConnection API
 // messages going between WebKit and native PeerConnection in libjingle. It's
 // owned by WebKit.
@@ -95,5 +97,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
 
   DISALLOW_COPY_AND_ASSIGN(RTCPeerConnectionHandler);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_RTC_PEER_CONNECTION_HANDLER_H_

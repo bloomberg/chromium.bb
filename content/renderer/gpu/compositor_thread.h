@@ -17,9 +17,9 @@ namespace WebKit {
 class WebInputEvent;
 }
 
-class InputEventFilter;
-
 namespace content {
+
+class InputEventFilter;
 
 // The CompositorThread class manages the background thread for the compositor.
 // The CompositorThread instance can be assumed to outlive the background

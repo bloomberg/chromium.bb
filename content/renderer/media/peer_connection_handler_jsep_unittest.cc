@@ -21,6 +21,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSessionDescriptionDescriptor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
+namespace content {
+
 class PeerConnectionHandlerJsepUnderTest : public PeerConnectionHandlerJsep {
  public:
   PeerConnectionHandlerJsepUnderTest(
@@ -29,9 +31,8 @@ class PeerConnectionHandlerJsepUnderTest : public PeerConnectionHandlerJsep {
       : PeerConnectionHandlerJsep(client, dependency_factory) {
   }
 
-  webrtc::MockPeerConnectionImpl* native_peer_connection() {
-    return static_cast<webrtc::MockPeerConnectionImpl*>(
-        native_peer_connection_.get());
+  MockPeerConnectionImpl* native_peer_connection() {
+    return static_cast<MockPeerConnectionImpl*>(native_peer_connection_.get());
   }
 };
 
@@ -41,7 +42,7 @@ class PeerConnectionHandlerJsepTest : public ::testing::Test {
   }
 
   void SetUp() {
-    mock_client_.reset(new WebKit::MockWebPeerConnection00HandlerClient());
+    mock_client_.reset(new MockWebPeerConnection00HandlerClient());
     mock_dependency_factory_.reset(
         new MockMediaStreamDependencyFactory());
     mock_dependency_factory_->EnsurePeerConnectionFactory();
@@ -88,7 +89,7 @@ class PeerConnectionHandlerJsepTest : public ::testing::Test {
     WebKit::WebMediaStreamDescriptor local_stream;
     local_stream.initialize(UTF8ToUTF16(stream_label), audio_sources,
                             video_sources);
-    local_stream.setExtraData(new content::MediaStreamExtraData(native_stream));
+    local_stream.setExtraData(new MediaStreamExtraData(native_stream));
     return local_stream;
   }
 
@@ -118,12 +119,12 @@ class PeerConnectionHandlerJsepTest : public ::testing::Test {
     return stream;
   }
 
-  scoped_ptr<WebKit::MockWebPeerConnection00HandlerClient> mock_client_;
+  scoped_ptr<MockWebPeerConnection00HandlerClient> mock_client_;
   scoped_ptr<MockMediaStreamDependencyFactory> mock_dependency_factory_;
   scoped_ptr<PeerConnectionHandlerJsepUnderTest> pc_handler_;
 
   // Weak reference to the mocked native peer connection implementation.
-  webrtc::MockPeerConnectionImpl* mock_peer_connection_;
+  MockPeerConnectionImpl* mock_peer_connection_;
 };
 
 TEST_F(PeerConnectionHandlerJsepTest, Basic) {
@@ -304,3 +305,5 @@ TEST_F(PeerConnectionHandlerJsepTest, ReceiveMultipleRemoteStreams) {
   pc_handler_->OnAddStream(stream_2);
   EXPECT_EQ(stream_label_2, mock_client_->stream_label());
 }
+
+}  // namespace content

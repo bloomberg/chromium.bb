@@ -11,6 +11,8 @@
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "media/video/capture/video_capture.h"
 
+namespace content {
+
 // Implements a simple reference counted video capturer that guarantees that
 // methods in RtcVideoCaptureDelegateEventHandler is only called from when
 // StartCapture have been called until after StopCapture have been called.
@@ -82,5 +84,7 @@ class RtcVideoCaptureDelegate
   // MessageLoop of the caller of StartCapture.
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_RTC_VIDEO_CAPTURE_DELEGATE_H_

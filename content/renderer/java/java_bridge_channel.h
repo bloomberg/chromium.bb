@@ -8,6 +8,8 @@
 #include "content/common/np_channel_base.h"
 #include "ipc/ipc_channel_handle.h"
 
+namespace content {
+
 class JavaBridgeChannel : public NPChannelBase {
  public:
   static JavaBridgeChannel* GetJavaBridgeChannel(
@@ -29,5 +31,7 @@ class JavaBridgeChannel : public NPChannelBase {
 
   DISALLOW_COPY_AND_ASSIGN(JavaBridgeChannel);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_JAVA_JAVA_BRIDGE_CHANNEL_H_

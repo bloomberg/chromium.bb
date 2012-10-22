@@ -420,7 +420,7 @@ int32_t WebRtcAudioDeviceImpl::Init() {
 
   // Ask the browser for the default audio output hardware sample-rate.
   // This request is based on a synchronous IPC message.
-  int out_sample_rate = audio_hardware::GetOutputSampleRate();
+  int out_sample_rate = AudioHardware::GetOutputSampleRate();
   DVLOG(1) << "Audio output hardware sample rate: " << out_sample_rate;
   AddHistogramSampleRate(kAudioOutput, out_sample_rate);
 
@@ -436,7 +436,7 @@ int32_t WebRtcAudioDeviceImpl::Init() {
 
   // Ask the browser for the default audio input hardware sample-rate.
   // This request is based on a synchronous IPC message.
-  int in_sample_rate = audio_hardware::GetInputSampleRate();
+  int in_sample_rate = AudioHardware::GetInputSampleRate();
   DVLOG(1) << "Audio input hardware sample rate: " << in_sample_rate;
   AddHistogramSampleRate(kAudioInput, in_sample_rate);
 
@@ -452,7 +452,7 @@ int32_t WebRtcAudioDeviceImpl::Init() {
 
   // Ask the browser for the default number of audio input channels.
   // This request is based on a synchronous IPC message.
-  ChannelLayout in_channel_layout = audio_hardware::GetInputChannelLayout();
+  ChannelLayout in_channel_layout = AudioHardware::GetInputChannelLayout();
   DVLOG(1) << "Audio input hardware channels: " << in_channel_layout;
   ChannelLayout out_channel_layout = media::CHANNEL_LAYOUT_MONO;
 

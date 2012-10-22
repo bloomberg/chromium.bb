@@ -11,16 +11,17 @@
 #include "base/compiler_specific.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 
-namespace webrtc {
+namespace content {
 
-class MockLocalVideoTrack : public LocalVideoTrackInterface {
+class MockLocalVideoTrack : public webrtc::LocalVideoTrackInterface {
  public:
   explicit MockLocalVideoTrack(std::string label)
     : enabled_(false),
       label_(label) {
   }
-  virtual void AddRenderer(VideoRendererInterface* renderer) OVERRIDE;
-  virtual void RemoveRenderer(VideoRendererInterface* renderer) OVERRIDE;
+  virtual void AddRenderer(webrtc::VideoRendererInterface* renderer) OVERRIDE;
+  virtual void RemoveRenderer(
+      webrtc::VideoRendererInterface* renderer) OVERRIDE;
   virtual cricket::VideoRenderer* FrameInput() OVERRIDE;
   virtual std::string kind() const OVERRIDE;
   virtual std::string label() const OVERRIDE;
@@ -28,9 +29,9 @@ class MockLocalVideoTrack : public LocalVideoTrackInterface {
   virtual TrackState state() const OVERRIDE;
   virtual bool set_enabled(bool enable) OVERRIDE;
   virtual bool set_state(TrackState new_state) OVERRIDE;
-  virtual void RegisterObserver(ObserverInterface* observer) OVERRIDE;
-  virtual void UnregisterObserver(ObserverInterface* observer) OVERRIDE;
-  virtual VideoSourceInterface* GetSource() const OVERRIDE;
+  virtual void RegisterObserver(webrtc::ObserverInterface* observer) OVERRIDE;
+  virtual void UnregisterObserver(webrtc::ObserverInterface* observer) OVERRIDE;
+  virtual webrtc::VideoSourceInterface* GetSource() const OVERRIDE;
 
  protected:
   virtual ~MockLocalVideoTrack() {}
@@ -40,7 +41,7 @@ class MockLocalVideoTrack : public LocalVideoTrackInterface {
   std::string label_;
 };
 
-class MockLocalAudioTrack : public LocalAudioTrackInterface {
+class MockLocalAudioTrack : public webrtc::LocalAudioTrackInterface {
  public:
   explicit MockLocalAudioTrack(const std::string& label)
     : enabled_(false),
@@ -52,9 +53,9 @@ class MockLocalAudioTrack : public LocalAudioTrackInterface {
   virtual TrackState state() const OVERRIDE;
   virtual bool set_enabled(bool enable) OVERRIDE;
   virtual bool set_state(TrackState new_state) OVERRIDE;
-  virtual void RegisterObserver(ObserverInterface* observer) OVERRIDE;
-  virtual void UnregisterObserver(ObserverInterface* observer) OVERRIDE;
-  virtual AudioSourceInterface* GetSource() const OVERRIDE;
+  virtual void RegisterObserver(webrtc::ObserverInterface* observer) OVERRIDE;
+  virtual void UnregisterObserver(webrtc::ObserverInterface* observer) OVERRIDE;
+  virtual webrtc::AudioSourceInterface* GetSource() const OVERRIDE;
 
  protected:
   virtual ~MockLocalAudioTrack() {}
@@ -63,8 +64,6 @@ class MockLocalAudioTrack : public LocalAudioTrackInterface {
   bool enabled_;
   std::string label_;
 };
-
-}  //  namespace webrtc
 
 // A mock factory for creating different objects for
 // RTC MediaStreams and PeerConnections.
@@ -108,5 +107,7 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
 
   DISALLOW_COPY_AND_ASSIGN(MockMediaStreamDependencyFactory);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_MOCK_MEDIA_STREAM_DEPENDENCY_FACTORY_H_

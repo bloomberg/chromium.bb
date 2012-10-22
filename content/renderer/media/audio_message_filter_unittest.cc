@@ -8,6 +8,7 @@
 #include "media/audio/audio_output_ipc.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace content {
 namespace {
 
 class MockAudioDelegate : public media::AudioOutputIPCDelegate {
@@ -140,3 +141,5 @@ TEST(AudioMessageFilterTest, Delegates) {
   filter->RemoveDelegate(stream_id1);
   filter->RemoveDelegate(stream_id2);
 }
+
+}  // namespace content

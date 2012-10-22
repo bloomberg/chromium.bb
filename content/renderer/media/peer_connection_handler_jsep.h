@@ -14,6 +14,8 @@
 #include "content/renderer/media/peer_connection_handler_base.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnection00Handler.h"
 
+namespace content {
+
 // PeerConnectionHandlerJsep is a delegate for the JSEP PeerConnection API
 // messages going between WebKit and native PeerConnection in libjingle. It's
 // owned by WebKit.
@@ -76,5 +78,7 @@ class CONTENT_EXPORT PeerConnectionHandlerJsep
 
   DISALLOW_COPY_AND_ASSIGN(PeerConnectionHandlerJsep);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_PEER_CONNECTION_HANDLER_JSEP_H_

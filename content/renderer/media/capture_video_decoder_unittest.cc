@@ -24,6 +24,8 @@ static const int kHeight = 144;
 static const int kFPS = 30;
 static const media::VideoCaptureSessionId kVideoStreamId = 1;
 
+namespace content {
+
 ACTION(DeleteDataBuffer) {
   delete[] arg0->memory_pointer;
 }
@@ -227,3 +229,5 @@ TEST_F(CaptureVideoDecoderTest, ReadAndShutdown) {
   decoder_->Read(read_cb_);
   message_loop_->RunAllPending();
 }
+
+}  // namespace content

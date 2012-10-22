@@ -9,6 +9,8 @@
 #include "content/renderer/media/video_capture_impl.h"
 #include "content/renderer/media/video_capture_message_filter.h"
 
+namespace content {
+
 VideoCaptureImplManager::VideoCaptureImplManager()
     : thread_("VC manager") {
   thread_.Start();
@@ -76,3 +78,5 @@ VideoCaptureImplManager::Device::Device(
 }
 
 VideoCaptureImplManager::Device::~Device() {}
+
+}  // namespace content

@@ -9,7 +9,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamDescriptor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
-namespace WebKit {
+namespace content {
 
 MockWebPeerConnection00HandlerClient::
 MockWebPeerConnection00HandlerClient()
@@ -21,7 +21,7 @@ MockWebPeerConnection00HandlerClient::
 ~MockWebPeerConnection00HandlerClient() {}
 
 void MockWebPeerConnection00HandlerClient::didGenerateICECandidate(
-    const WebICECandidateDescriptor& candidate,
+    const WebKit::WebICECandidateDescriptor& candidate,
     bool more_to_follow) {
   if (candidate.isNull()) {
     candidate_label_.clear();
@@ -43,14 +43,14 @@ void MockWebPeerConnection00HandlerClient::didChangeICEState(ICEState state) {
 }
 
 void MockWebPeerConnection00HandlerClient::didAddRemoteStream(
-    const WebMediaStreamDescriptor& stream_descriptor) {
+    const WebKit::WebMediaStreamDescriptor& stream_descriptor) {
   stream_label_ = UTF16ToUTF8(stream_descriptor.label());
 }
 
 void MockWebPeerConnection00HandlerClient::didRemoveRemoteStream(
-    const WebMediaStreamDescriptor& stream_descriptor) {
+    const WebKit::WebMediaStreamDescriptor& stream_descriptor) {
   DCHECK(stream_label_ == UTF16ToUTF8(stream_descriptor.label()));
   stream_label_.clear();
 }
 
-}  // namespace WebKit
+}  // namespace content

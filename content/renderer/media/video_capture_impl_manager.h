@@ -19,6 +19,8 @@
 #include "content/common/content_export.h"
 #include "media/video/capture/video_capture.h"
 
+namespace content {
+
 class VideoCaptureImpl;
 class VideoCaptureMessageFilter;
 
@@ -70,5 +72,7 @@ class CONTENT_EXPORT VideoCaptureImplManager
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureImplManager);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_IMPL_MANAGER_H_

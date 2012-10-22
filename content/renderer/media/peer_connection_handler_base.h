@@ -15,6 +15,7 @@
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebMediaStreamDescriptor.h"
 
+namespace content {
 class MediaStreamDependencyFactory;
 
 // PeerConnectionHandlerBase is the base class of a delegate for the
@@ -54,5 +55,7 @@ class CONTENT_EXPORT PeerConnectionHandlerBase
 
   DISALLOW_COPY_AND_ASSIGN(PeerConnectionHandlerBase);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_PEER_CONNECTION_HANDLER_BASE_H_

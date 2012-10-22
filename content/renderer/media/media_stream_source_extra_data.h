@@ -10,6 +10,8 @@
 #include "content/common/media/media_stream_options.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamSource.h"
 
+namespace content {
+
 class CONTENT_EXPORT MediaStreamSourceExtraData
     : NON_EXPORTED_BASE(public WebKit::WebMediaStreamSource::ExtraData) {
  public:
@@ -28,5 +30,7 @@ class CONTENT_EXPORT MediaStreamSourceExtraData
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamSourceExtraData);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_MEDIA_STREAM_SOURCE_EXTRA_DATA_H_

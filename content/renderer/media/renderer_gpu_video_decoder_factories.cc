@@ -15,6 +15,8 @@
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/ipc/command_buffer_proxy.h"
 
+namespace content {
+
 RendererGpuVideoDecoderFactories::~RendererGpuVideoDecoderFactories() {}
 RendererGpuVideoDecoderFactories::RendererGpuVideoDecoderFactories(
     GpuChannelHost* gpu_channel_host,
@@ -217,3 +219,5 @@ void RendererGpuVideoDecoderFactories::AsyncCreateSharedMemory(
   *shm = ChildThread::current()->AllocateSharedMemory(size);
   waiter->Signal();
 }
+
+}  // namespace content

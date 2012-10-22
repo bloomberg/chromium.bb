@@ -23,6 +23,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSessionDescriptionDescriptor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 
+namespace content {
+
 PeerConnectionHandlerJsep::PeerConnectionHandlerJsep(
     WebKit::WebPeerConnection00HandlerClient* client,
     MediaStreamDependencyFactory* dependency_factory)
@@ -364,3 +366,5 @@ bool PeerConnectionHandlerJsep::GetNativeAction(
   }
   return true;
 }
+
+}  // namespace content

@@ -63,8 +63,6 @@
 #endif
 
 class CommandLine;
-class DomAutomationController;
-class JavaBridgeDispatcher;
 class PepperDeviceTest;
 class SkBitmap;
 class WebUIBindings;
@@ -143,9 +141,11 @@ namespace content {
 class DeviceOrientationDispatcher;
 class DevToolsAgent;
 class DocumentState;
+class DomAutomationController;
 class ExternalPopupMenu;
 class GeolocationDispatcher;
 class InputTagSpeechDispatcher;
+class JavaBridgeDispatcher;
 class LoadProgressTracker;
 class MediaStreamDispatcher;
 class MediaStreamImpl;

@@ -21,6 +21,8 @@ namespace cricket {
 class VideoFrame;
 }  // namespace cricket
 
+namespace content {
+
 // RTCVideoDecoder is a media::VideoDecoder designed for rendering
 // Video MediaStreamTracks,
 // http://dev.w3.org/2011/webrtc/editor/getusermedia.html#mediastreamtrack
@@ -90,5 +92,7 @@ class CONTENT_EXPORT RTCVideoDecoder
 
   DISALLOW_COPY_AND_ASSIGN(RTCVideoDecoder);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_RTC_VIDEO_DECODER_H_

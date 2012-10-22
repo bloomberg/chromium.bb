@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 
+namespace content {
+
 RtcVideoCapturer::RtcVideoCapturer(
     const media::VideoCaptureSessionId id,
     VideoCaptureImplManager* vc_manager,
@@ -123,3 +125,5 @@ void RtcVideoCapturer::OnStateChange(
   }
   SignalStateChange(this, converted_state);
 }
+
+}  // namespace content

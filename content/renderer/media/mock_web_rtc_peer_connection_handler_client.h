@@ -12,10 +12,10 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCICECandidate.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCPeerConnectionHandlerClient.h"
 
-namespace WebKit {
+namespace content {
 
 class MockWebRTCPeerConnectionHandlerClient
-    : public WebRTCPeerConnectionHandlerClient {
+    : public WebKit::WebRTCPeerConnectionHandlerClient {
  public:
   MockWebRTCPeerConnectionHandlerClient();
   virtual ~MockWebRTCPeerConnectionHandlerClient();
@@ -23,13 +23,13 @@ class MockWebRTCPeerConnectionHandlerClient
   // WebRTCPeerConnectionHandlerClient implementation.
   virtual void negotiationNeeded() OVERRIDE;
   virtual void didGenerateICECandidate(
-      const WebRTCICECandidate& candidate) OVERRIDE;
+      const WebKit::WebRTCICECandidate& candidate) OVERRIDE;
   virtual void didChangeReadyState(ReadyState) OVERRIDE;
   virtual void didChangeICEState(ICEState) OVERRIDE;
   virtual void didAddRemoteStream(
-      const WebMediaStreamDescriptor& stream_descriptor) OVERRIDE;
+      const WebKit::WebMediaStreamDescriptor& stream_descriptor) OVERRIDE;
   virtual void didRemoveRemoteStream(
-      const WebMediaStreamDescriptor& stream_descriptor) OVERRIDE;
+      const WebKit::WebMediaStreamDescriptor& stream_descriptor) OVERRIDE;
 
   bool renegotiate() const { return renegotiate_; }
 
@@ -54,6 +54,6 @@ class MockWebRTCPeerConnectionHandlerClient
   DISALLOW_COPY_AND_ASSIGN(MockWebRTCPeerConnectionHandlerClient);
 };
 
-}  // namespace WebKit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_MOCK_WEB_RTC_PEER_CONNECTION_HANDLER_CLIENT_H_

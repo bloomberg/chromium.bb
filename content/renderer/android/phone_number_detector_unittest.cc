@@ -7,7 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::PhoneNumberDetector;
+namespace content {
 
 class PhoneNumberDetectorTest : public testing::Test {
  public:
@@ -72,3 +72,5 @@ TEST_F(PhoneNumberDetectorTest, FindAndFormatNumber) {
             "\xE3\x83\xBC\xEF\xBC\x96\xEF\xBC\x90\xEF\xBC\x90"
             "\xEF\xBC\x90", "us"));
 }
+
+}  // namespace content

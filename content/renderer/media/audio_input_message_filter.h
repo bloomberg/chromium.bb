@@ -18,6 +18,8 @@
 #include "media/audio/audio_buffers_state.h"
 #include "media/audio/audio_input_ipc.h"
 
+namespace content {
+
 class CONTENT_EXPORT AudioInputMessageFilter
     : public IPC::ChannelProxy::MessageFilter,
       public NON_EXPORTED_BASE(media::AudioInputIPC) {
@@ -80,5 +82,7 @@ class CONTENT_EXPORT AudioInputMessageFilter
 
   DISALLOW_COPY_AND_ASSIGN(AudioInputMessageFilter);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_AUDIO_INPUT_MESSAGE_FILTER_H_

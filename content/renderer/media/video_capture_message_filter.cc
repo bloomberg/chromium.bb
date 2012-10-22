@@ -7,6 +7,8 @@
 #include "content/common/media/video_capture_messages.h"
 #include "content/common/view_messages.h"
 
+namespace content {
+
 VideoCaptureMessageFilter::VideoCaptureMessageFilter()
     : last_device_id_(0),
       channel_(NULL) {
@@ -159,3 +161,5 @@ void VideoCaptureMessageFilter::OnDeviceInfoReceived(
   }
   delegate->OnDeviceInfoReceived(params);
 }
+
+}  // namespace content

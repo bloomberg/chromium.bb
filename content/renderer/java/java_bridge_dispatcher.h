@@ -12,8 +12,10 @@
 #include "ipc/ipc_channel_handle.h"
 #include "third_party/npapi/bindings/npruntime.h"
 
-class JavaBridgeChannel;
 struct NPVariant_Param;
+
+namespace content {
+class JavaBridgeChannel;
 
 // This class handles injecting Java objects into the main frame of a
 // RenderView. The 'add' and 'remove' messages received from the browser
@@ -21,9 +23,9 @@ struct NPVariant_Param;
 // bound to the window object of the main frame when that window object is next
 // cleared. These objects remain bound until the window object is cleared
 // again.
-class JavaBridgeDispatcher : public content::RenderViewObserver {
+class JavaBridgeDispatcher : public RenderViewObserver {
  public:
-  JavaBridgeDispatcher(content::RenderView* render_view);
+  JavaBridgeDispatcher(RenderView* render_view);
   virtual ~JavaBridgeDispatcher();
 
  private:
@@ -44,5 +46,7 @@ class JavaBridgeDispatcher : public content::RenderViewObserver {
   ObjectMap objects_;
   scoped_refptr<JavaBridgeChannel> channel_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_JAVA_JAVA_BRIDGE_DISPATCHER_H_

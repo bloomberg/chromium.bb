@@ -19,6 +19,8 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "media/video/capture/video_capture.h"
 
+namespace content {
+
 class CONTENT_EXPORT VideoCaptureMessageFilter
     : public IPC::ChannelProxy::MessageFilter {
  public:
@@ -102,5 +104,7 @@ class CONTENT_EXPORT VideoCaptureMessageFilter
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureMessageFilter);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_MESSAGE_FILTER_H_

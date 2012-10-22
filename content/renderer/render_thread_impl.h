@@ -23,17 +23,13 @@
 #include "ui/gfx/native_widget_types.h"
 
 class AppCacheDispatcher;
-class AudioInputMessageFilter;
-class AudioMessageFilter;
 class DBMessageFilter;
 class GpuChannelHost;
 class IndexedDBDispatcher;
-class MediaStreamDependencyFactory;
 class SkBitmap;
-class VideoCaptureImplManager;
-struct ViewMsg_New_Params;
 class WebDatabaseObserverImpl;
 class WebGraphicsContext3DCommandBufferImpl;
+struct ViewMsg_New_Params;
 
 namespace WebKit {
 class WebMediaStreamCenter;
@@ -61,14 +57,18 @@ class Extension;
 
 namespace content {
 
+class AudioInputMessageFilter;
+class AudioMessageFilter;
 class AudioRendererMixerManager;
 class CompositorThread;
 class DevToolsAgentFilter;
 class DomStorageDispatcher;
 class MediaStreamCenter;
+class MediaStreamDependencyFactory;
 class P2PSocketDispatcher;
 class RendererWebKitPlatformSupportImpl;
 class RenderProcessObserver;
+class VideoCaptureImplManager;
 
 namespace old {
 class BrowserPluginChannelManager;

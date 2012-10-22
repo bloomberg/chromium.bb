@@ -23,7 +23,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 
-using content::AccessibilityNodeData;
 using WebKit::WebAccessibilityRole;
 using WebKit::WebAccessibilityObject;
 using WebKit::WebDocument;
@@ -32,6 +31,7 @@ using WebKit::WebElement;
 using WebKit::WebNode;
 using WebKit::WebVector;
 
+namespace content {
 namespace {
 
 // Returns true if |ancestor| is the first unignored parent of |child|,
@@ -343,8 +343,6 @@ uint32 ConvertState(const WebAccessibilityObject& o) {
 }
 
 }  // Anonymous namespace
-
-namespace content {
 
 void SerializeAccessibilityNode(
     const WebAccessibilityObject& src,

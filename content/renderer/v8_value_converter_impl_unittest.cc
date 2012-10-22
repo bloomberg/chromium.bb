@@ -10,7 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
 
-using content::V8ValueConverter;
+namespace content {
 
 namespace {
 
@@ -547,3 +547,5 @@ TEST_F(V8ValueConverterImplTest, UndefinedValueBehavior) {
   scoped_ptr<Value> actual_array(converter.FromV8Value(array, context_));
   EXPECT_TRUE(Value::Equals(&expected_array, actual_array.get()));
 }
+
+}  // namespace content

@@ -28,10 +28,12 @@
 #include "net/socket/nss_ssl_util.h"
 #endif
 
+namespace content{
+
 class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
  public:
   P2PPortAllocatorFactory(
-      content::P2PSocketDispatcher* socket_dispatcher,
+      P2PSocketDispatcher* socket_dispatcher,
       talk_base::NetworkManager* network_manager,
       talk_base::PacketSocketFactory* socket_factory,
       WebKit::WebFrame* web_frame)
@@ -45,7 +47,7 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
       const std::vector<StunConfiguration>& stun_servers,
       const std::vector<TurnConfiguration>& turn_configurations) OVERRIDE {
     CHECK(web_frame_);
-    content::P2PPortAllocator::Config config;
+    P2PPortAllocator::Config config;
     if (stun_servers.size() > 0) {
       config.stun_server = stun_servers[0].server.hostname();
       config.stun_server_port = stun_servers[0].server.port();
@@ -57,18 +59,18 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
       config.relay_password = turn_configurations[0].password;
     }
 
-    return new content::P2PPortAllocator(web_frame_,
-                                         socket_dispatcher_,
-                                         network_manager_,
-                                         socket_factory_,
-                                         config);
+    return new P2PPortAllocator(web_frame_,
+                                socket_dispatcher_,
+                                network_manager_,
+                                socket_factory_,
+                                config);
   }
 
  protected:
   virtual ~P2PPortAllocatorFactory() {}
 
  private:
-  scoped_refptr<content::P2PSocketDispatcher> socket_dispatcher_;
+  scoped_refptr<P2PSocketDispatcher> socket_dispatcher_;
   // |network_manager_| and |socket_factory_| are a weak references, owned by
   // MediaStreamDependencyFactory.
   talk_base::NetworkManager* network_manager_;
@@ -79,7 +81,7 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
 
 MediaStreamDependencyFactory::MediaStreamDependencyFactory(
     VideoCaptureImplManager* vc_manager,
-    content::P2PSocketDispatcher* p2p_socket_dispatcher)
+    P2PSocketDispatcher* p2p_socket_dispatcher)
     : network_manager_(NULL),
       vc_manager_(vc_manager),
       p2p_socket_dispatcher_(p2p_socket_dispatcher),
@@ -173,7 +175,7 @@ bool MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
       continue;
     }
     const bool is_screencast = (source_data->device_info().stream_type ==
-                                    content::MEDIA_TAB_VIDEO_CAPTURE);
+                                    MEDIA_TAB_VIDEO_CAPTURE);
     scoped_refptr<webrtc::LocalVideoTrackInterface> video_track(
         CreateLocalVideoTrack(UTF16ToUTF8(source.id()),
                               source_data->device_info().session_id,
@@ -182,18 +184,18 @@ bool MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
     video_track->set_enabled(video_components[i].isEnabled());
   }
 
-  description->setExtraData(new content::MediaStreamExtraData(native_stream));
+  description->setExtraData(new MediaStreamExtraData(native_stream));
   return true;
 }
 
 bool MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
     WebKit::WebMediaStreamDescriptor* description,
-    const content::MediaStreamExtraData::StreamStopCallback& stream_stop) {
+    const MediaStreamExtraData::StreamStopCallback& stream_stop) {
   if (!CreateNativeLocalMediaStream(description))
     return false;
 
-  content::MediaStreamExtraData* extra_data =
-      static_cast<content::MediaStreamExtraData*>(description->extraData());
+  MediaStreamExtraData* extra_data =
+      static_cast<MediaStreamExtraData*>(description->extraData());
   extra_data->SetLocalStreamStopCallback(stream_stop);
   return true;
 }
@@ -201,7 +203,7 @@ bool MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
 bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
   if (!pc_factory_.get()) {
     DCHECK(!audio_device_);
-    audio_device_ = new content::WebRtcAudioDeviceImpl();
+    audio_device_ = new WebRtcAudioDeviceImpl();
     scoped_refptr<webrtc::PeerConnectionFactoryInterface> factory(
         webrtc::CreatePeerConnectionFactory(worker_thread_,
                                             signaling_thread_,
@@ -306,7 +308,7 @@ void MediaStreamDependencyFactory::InitializeWorkerThread(
 void MediaStreamDependencyFactory::CreateIpcNetworkManagerOnWorkerThread(
     base::WaitableEvent* event) {
   DCHECK_EQ(MessageLoop::current(), chrome_worker_thread_.message_loop());
-  network_manager_ = new content::IpcNetworkManager(p2p_socket_dispatcher_);
+  network_manager_ = new IpcNetworkManager(p2p_socket_dispatcher_);
   event->Signal();
 }
 
@@ -357,7 +359,7 @@ bool MediaStreamDependencyFactory::EnsurePeerConnectionFactory() {
 
   if (!socket_factory_.get()) {
     socket_factory_.reset(
-        new content::IpcPacketSocketFactory(p2p_socket_dispatcher_));
+        new IpcPacketSocketFactory(p2p_socket_dispatcher_));
   }
 
 #if !defined(USE_OPENSSL)
@@ -390,3 +392,5 @@ void MediaStreamDependencyFactory::CleanupPeerConnectionFactory() {
     }
   }
 }
+
+}  // namespace content

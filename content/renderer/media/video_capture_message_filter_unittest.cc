@@ -8,6 +8,7 @@
 #include "content/renderer/media/video_capture_message_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace content {
 namespace {
 
 class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
@@ -215,3 +216,5 @@ TEST(VideoCaptureMessageFilterTest, Delegates) {
 
   message_loop.RunAllPending();
 }
+
+}  // namespace content

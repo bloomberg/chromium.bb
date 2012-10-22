@@ -18,6 +18,8 @@ class MessageLoopProxy;
 namespace media {
 class VideoFrame;
 }
+
+namespace content {
 class VideoCaptureImplManager;
 
 // A filter takes raw frames from video capture engine and passes them to media
@@ -104,5 +106,7 @@ class CONTENT_EXPORT CaptureVideoDecoder
 
   DISALLOW_COPY_AND_ASSIGN(CaptureVideoDecoder);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_CAPTURE_VIDEO_DECODER_H_

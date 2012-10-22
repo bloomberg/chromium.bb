@@ -60,6 +60,6 @@ class CONTENT_EXPORT PepperFileChooserHost
   DISALLOW_COPY_AND_ASSIGN(PepperFileChooserHost);
 };
 
-}  // namespace ppapi
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PEPPER_PEPPER_FILE_CHOOSER_HOST_H_

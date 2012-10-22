@@ -16,6 +16,7 @@
 using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;
 
+namespace content {
 namespace {
 
 const int kTestRoutingID = 13;
@@ -219,3 +220,5 @@ TEST(InputEventFilterTest, Basic) {
 
   filter->OnFilterRemoved();
 }
+
+}  // namespace content

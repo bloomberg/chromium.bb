@@ -13,9 +13,9 @@
 namespace content {
 
 WebMediaPlayerProxyImplAndroid::WebMediaPlayerProxyImplAndroid(
-    content::RenderView* render_view,
+    RenderView* render_view,
     webkit_media::WebMediaPlayerManagerAndroid* manager)
-    : content::RenderViewObserver(render_view),
+    : RenderViewObserver(render_view),
       manager_(manager) {
 }
 

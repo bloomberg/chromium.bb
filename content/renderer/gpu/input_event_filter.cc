@@ -11,6 +11,8 @@
 
 using WebKit::WebInputEvent;
 
+namespace content {
+
 InputEventFilter::InputEventFilter(IPC::Listener* main_listener,
                                    base::MessageLoopProxy* target_loop,
                                    const Handler& handler)
@@ -148,3 +150,5 @@ void InputEventFilter::SendACKOnIOThread(int routing_id,
   sender_->Send(
       new ViewHostMsg_HandleInputEvent_ACK(routing_id, event_type, processed));
 }
+
+}  // namespace content

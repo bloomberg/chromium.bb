@@ -875,11 +875,11 @@ void PepperPluginDelegateImpl::SelectedFindResultChanged(int identifier,
 }
 
 uint32_t PepperPluginDelegateImpl::GetAudioHardwareOutputSampleRate() {
-  return static_cast<uint32_t>(audio_hardware::GetOutputSampleRate());
+  return static_cast<uint32_t>(AudioHardware::GetOutputSampleRate());
 }
 
 uint32_t PepperPluginDelegateImpl::GetAudioHardwareOutputBufferSize() {
-  return static_cast<uint32_t>(audio_hardware::GetOutputBufferSize());
+  return static_cast<uint32_t>(AudioHardware::GetOutputBufferSize());
 }
 
 webkit::ppapi::PluginDelegate::PlatformAudioOutput*

@@ -17,6 +17,8 @@ using WebKit::WebImage;
 using WebKit::WebGraphicsContext3D;
 using WebKit::WebSize;
 
+namespace content {
+
 //------------------------------------------------------------------------------
 
 CompositorSoftwareOutputDeviceGLAdapter::
@@ -176,3 +178,5 @@ void CompositorSoftwareOutputDeviceGLAdapter::Draw(void* pixels) {
 
   context3d_->prepareTexture();
 }
+
+}  // namespace content

@@ -21,6 +21,9 @@
 // The user of this class provides an instance of InputEventFilter::Handler,
 // which will be passed WebInputEvents on the target thread.
 //
+
+namespace content {
+
 class CONTENT_EXPORT InputEventFilter
     : public IPC::ChannelProxy::MessageFilter {
  public:
@@ -89,5 +92,7 @@ class CONTENT_EXPORT InputEventFilter
   // Indicates the routing_ids for which input events should be filtered.
   std::set<int> routes_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_GPU_INPUT_EVENT_FILTER_H_

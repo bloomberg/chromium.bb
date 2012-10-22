@@ -11,6 +11,7 @@
 #include "content/renderer/media/rtc_video_capture_delegate.h"
 #include "third_party/libjingle/source/talk/media/base/videocapturer.h"
 
+namespace content {
 class VideoCaptureImplManager;
 
 // RtcVideoCapturer implements a simple cricket::VideoCapturer that is used for
@@ -53,5 +54,7 @@ class RtcVideoCapturer
 
   DISALLOW_COPY_AND_ASSIGN(RtcVideoCapturer);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_RTC_VIDEO_CAPTURER_H_

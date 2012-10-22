@@ -15,6 +15,8 @@ using media::CopyYPlane;
 using media::CopyUPlane;
 using media::CopyVPlane;
 
+namespace content {
+
 CaptureVideoDecoder::CaptureVideoDecoder(
     base::MessageLoopProxy* message_loop_proxy,
     media::VideoCaptureSessionId video_stream_id,
@@ -268,3 +270,5 @@ void CaptureVideoDecoder::DeliverFrame(
   // Reset the callback before running to protect against reentrancy.
   base::ResetAndReturn(&read_cb_).Run(kOk, video_frame);
 }
+
+}  // namespace content

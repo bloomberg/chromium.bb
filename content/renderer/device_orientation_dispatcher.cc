@@ -11,7 +11,6 @@
 
 namespace content {
 
-
 DeviceOrientationDispatcher::DeviceOrientationDispatcher(
     RenderViewImpl* render_view)
     : RenderViewObserver(render_view),

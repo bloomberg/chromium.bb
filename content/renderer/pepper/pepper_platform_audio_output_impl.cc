@@ -129,9 +129,9 @@ bool PepperPlatformAudioOutputImpl::Initialize(
     // Rely on AudioOutputResampler to handle any inconsistencies between the
     // hardware params required for low latency and the requested params.
     format = media::AudioParameters::AUDIO_PCM_LOW_LATENCY;
-  } else if (sample_rate == audio_hardware::GetOutputSampleRate() &&
+  } else if (sample_rate == AudioHardware::GetOutputSampleRate() &&
              frames_per_buffer <= kMaxFramesForLowLatency &&
-             frames_per_buffer % audio_hardware::GetOutputBufferSize() == 0) {
+             frames_per_buffer % AudioHardware::GetOutputBufferSize() == 0) {
     // Use the low latency back end if the client request is compatible, and
     // the sample count is low enough to justify using AUDIO_PCM_LOW_LATENCY.
     format = media::AudioParameters::AUDIO_PCM_LOW_LATENCY;

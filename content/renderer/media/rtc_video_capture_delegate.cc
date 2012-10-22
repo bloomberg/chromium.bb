@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 
+namespace content {
+
 RtcVideoCaptureDelegate::RtcVideoCaptureDelegate(
     const media::VideoCaptureSessionId id,
     VideoCaptureImplManager* vc_manager)
@@ -106,3 +108,5 @@ void RtcVideoCaptureDelegate::OnErrorOnCaptureThread(
   if (!state_callback_.is_null())
     state_callback_.Run(got_first_frame_ ? CAPTURE_STOPPED : CAPTURE_FAILED);
 }
+
+}  // namespace content

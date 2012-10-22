@@ -10,6 +10,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebAudioDevice.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 
+namespace content {
+
 class RendererWebAudioDeviceImpl
     : public WebKit::WebAudioDevice,
       public media::AudioRendererSink::RenderCallback {
@@ -42,5 +44,7 @@ class RendererWebAudioDeviceImpl
 
   DISALLOW_COPY_AND_ASSIGN(RendererWebAudioDeviceImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_MEDIA_RENDERER_WEBAUDIODEVICE_IMPL_H_

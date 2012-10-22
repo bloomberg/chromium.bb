@@ -12,6 +12,8 @@
 #include "content/renderer/render_thread_impl.h"
 #include "ipc/ipc_logging.h"
 
+namespace content {
+
 AudioMessageFilter* AudioMessageFilter::filter_ = NULL;
 
 // static
@@ -154,3 +156,5 @@ void AudioMessageFilter::OnStreamStateChanged(
   }
   delegate->OnStateChanged(state);
 }
+
+}  // namespace content

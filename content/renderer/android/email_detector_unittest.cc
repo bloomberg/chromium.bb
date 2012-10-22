@@ -7,7 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::EmailDetector;
+namespace content {
 
 class EmailDetectorTest : public testing::Test {
  public:
@@ -49,3 +49,5 @@ TEST_F(EmailDetectorTest, FindEmail) {
   FindAndCheckEmail("Just bob @google.com", "");
   FindAndCheckEmail("Why not call larry@google and ask him.", "");
 }
+
+}  // namespace content

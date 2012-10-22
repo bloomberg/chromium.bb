@@ -15,7 +15,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorSoftwareOutputDevice.h"
 
 namespace base {
-  class TaskRunner;
+class TaskRunner;
 }
 
 namespace IPC {

@@ -16,6 +16,8 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "ui/gfx/size.h"
 
+namespace content {
+
 // This class can be created only on the main thread, but then becomes pinned
 // to a fixed thread when bindToClient is called.
 class CompositorSoftwareOutputDeviceGLAdapter
@@ -50,5 +52,7 @@ private:
   WebKit::WebImage image_;
   bool locked_for_write_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_GPU_COMPOSITOR_SOFTWARE_OUTPUT_DEVICE_GL_ADAPTER_H_

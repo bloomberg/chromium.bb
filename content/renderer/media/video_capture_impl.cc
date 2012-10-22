@@ -9,6 +9,8 @@
 #include "content/common/child_process.h"
 #include "content/common/media/video_capture_messages.h"
 
+namespace content {
+
 struct VideoCaptureImpl::DIBBuffer {
  public:
   DIBBuffer(
@@ -434,3 +436,5 @@ bool VideoCaptureImpl::RemoveClient(
   }
   return found;
 }
+
+}  // namespace content

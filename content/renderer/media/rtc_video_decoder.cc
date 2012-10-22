@@ -26,6 +26,8 @@ using media::PipelineStatusCB;
 using media::StatisticsCB;
 using media::VideoDecoder;
 
+namespace content {
+
 RTCVideoDecoder::RTCVideoDecoder(base::TaskRunner* video_decoder_thread,
                                  base::TaskRunner* main_thread,
                                  webrtc::VideoTrackInterface* video_track)
@@ -192,3 +194,5 @@ void RTCVideoDecoder::DeregisterFromVideoTrack() {
 RTCVideoDecoder::~RTCVideoDecoder() {
   DCHECK_NE(kNormal, state_);
 }
+
+}  // namespace content

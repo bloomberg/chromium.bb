@@ -9,9 +9,10 @@
 #include "content/renderer/media/audio_device_factory.h"
 #include "media/base/media_switches.h"
 
-using content::AudioDeviceFactory;
 using WebKit::WebAudioDevice;
 using WebKit::WebVector;
+
+namespace content {
 
 RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
     const media::AudioParameters& params,
@@ -88,3 +89,5 @@ void RendererWebAudioDeviceImpl::RenderIO(media::AudioBus* source,
 void RendererWebAudioDeviceImpl::OnRenderError() {
   // TODO(crogers): implement error handling.
 }
+
+}  // namespace content

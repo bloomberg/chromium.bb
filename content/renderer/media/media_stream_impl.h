@@ -26,11 +26,10 @@ namespace WebKit {
 class WebMediaStreamDescriptor;
 }
 
-class MediaStreamDependencyFactory;
-class VideoCaptureImplManager;
-
 namespace content {
+class MediaStreamDependencyFactory;
 class MediaStreamDispatcher;
+class VideoCaptureImplManager;
 
 // MediaStreamImpl is a delegate for the Media Stream API messages used by
 // WebKit. It ties together WebKit, native PeerConnection in libjingle and

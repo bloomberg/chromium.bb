@@ -32,6 +32,8 @@ namespace base {
 class MessageLoopProxy;
 }
 
+namespace content {
+
 class CONTENT_EXPORT VideoCaptureImpl
     : public media::VideoCapture, public VideoCaptureMessageFilter::Delegate {
  public:
@@ -126,5 +128,7 @@ class CONTENT_EXPORT VideoCaptureImpl
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_VIDEO_CAPTURE_IMPL_H_

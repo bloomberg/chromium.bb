@@ -11,24 +11,24 @@
 #include "base/compiler_specific.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPeerConnection00HandlerClient.h"
 
-namespace WebKit {
+namespace content {
 
 class MockWebPeerConnection00HandlerClient
-    : public WebPeerConnection00HandlerClient {
+    : public WebKit::WebPeerConnection00HandlerClient {
  public:
       MockWebPeerConnection00HandlerClient();
   virtual ~MockWebPeerConnection00HandlerClient();
 
   // WebPeerConnection00HandlerClient implementation.
   virtual void didGenerateICECandidate(
-      const WebICECandidateDescriptor& candidate,
+      const WebKit::WebICECandidateDescriptor& candidate,
       bool more_to_follow) OVERRIDE;
   virtual void didChangeReadyState(ReadyState state) OVERRIDE;
   virtual void didChangeICEState(ICEState state) OVERRIDE;
   virtual void didAddRemoteStream(
-      const WebMediaStreamDescriptor& stream_descriptor) OVERRIDE;
+      const WebKit::WebMediaStreamDescriptor& stream_descriptor) OVERRIDE;
   virtual void didRemoveRemoteStream(
-      const WebMediaStreamDescriptor& stream_descriptor) OVERRIDE;
+      const WebKit::WebMediaStreamDescriptor& stream_descriptor) OVERRIDE;
 
   const std::string& stream_label() const { return stream_label_; }
   ReadyState ready_state() const { return ready_state_; }
@@ -46,6 +46,6 @@ class MockWebPeerConnection00HandlerClient
   DISALLOW_COPY_AND_ASSIGN(MockWebPeerConnection00HandlerClient);
 };
 
-}  // namespace WebKit
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_MOCK_WEB_JSEP_PEER_CONNECTION_HANDLER_CLIENT_H_

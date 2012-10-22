@@ -15,8 +15,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
-JavaBridgeDispatcher::JavaBridgeDispatcher(
-    content::RenderView* render_view)
+namespace content {
+
+JavaBridgeDispatcher::JavaBridgeDispatcher(RenderView* render_view)
     : RenderViewObserver(render_view) {
 }
 
@@ -99,3 +100,5 @@ void JavaBridgeDispatcher::OnRemoveNamedObject(const string16& name) {
   WebKit::WebBindings::releaseObject(NPVARIANT_TO_OBJECT(iter->second));
   objects_.erase(iter);
 }
+
+}  // namespace content

@@ -8,9 +8,9 @@
 #include "base/compiler_specific.h"
 #include "content/renderer/android/content_detector.h"
 
-class PhoneNumberDetectorTest;
-
 namespace content {
+
+class PhoneNumberDetectorTest;
 
 // Finds a telephone number in the given content text string.
 class PhoneNumberDetector : public ContentDetector {
@@ -20,7 +20,7 @@ class PhoneNumberDetector : public ContentDetector {
   virtual ~PhoneNumberDetector();
 
  private:
-  friend class ::PhoneNumberDetectorTest;
+  friend class PhoneNumberDetectorTest;
 
   // Implementation of ContentDetector.
   virtual bool FindContent(const string16::const_iterator& begin,

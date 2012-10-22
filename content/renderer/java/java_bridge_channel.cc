@@ -8,6 +8,8 @@
 #include "content/common/java_bridge_messages.h"
 #include "content/common/plugin_messages.h"
 
+namespace content {
+
 JavaBridgeChannel* JavaBridgeChannel::GetJavaBridgeChannel(
     const IPC::ChannelHandle& channel_handle,
     base::MessageLoopProxy* ipc_message_loop) {
@@ -50,3 +52,5 @@ bool JavaBridgeChannel::OnControlMessageReceived(const IPC::Message& msg) {
   }
   return NPChannelBase::OnControlMessageReceived(msg);
 }
+
+}  // namespace content

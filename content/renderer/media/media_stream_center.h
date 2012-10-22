@@ -14,9 +14,8 @@ namespace WebKit {
 class WebMediaStreamCenterClient;
 }
 
-class MediaStreamDependencyFactory;
-
 namespace content {
+class MediaStreamDependencyFactory;
 
 class CONTENT_EXPORT MediaStreamCenter
     : NON_EXPORTED_BASE(public WebKit::WebMediaStreamCenter) {

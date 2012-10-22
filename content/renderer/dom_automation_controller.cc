@@ -15,6 +15,8 @@
 using webkit_glue::CppArgumentList;
 using webkit_glue::CppVariant;
 
+namespace content {
+
 DomAutomationController::DomAutomationController()
     : sender_(NULL),
       routing_id_(MSG_ROUTING_NONE),
@@ -188,3 +190,5 @@ void DomAutomationController::GetHistogram(const CppArgumentList& args,
   }
   result->Set(output);
 }
+
+}  // namespace content

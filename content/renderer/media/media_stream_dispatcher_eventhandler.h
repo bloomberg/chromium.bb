@@ -10,6 +10,8 @@
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
 
+namespace content {
+
 class CONTENT_EXPORT MediaStreamDispatcherEventHandler {
  public:
   // A new media stream have been created.
@@ -43,5 +45,7 @@ class CONTENT_EXPORT MediaStreamDispatcherEventHandler {
  protected:
   virtual ~MediaStreamDispatcherEventHandler() {}
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_MEDIA_STREAM_DISPATCHER_EVENTHANDLER_H_

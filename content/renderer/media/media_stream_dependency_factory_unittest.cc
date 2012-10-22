@@ -18,6 +18,8 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCPeerConnectionHandler.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
 
+namespace content {
+
 class MediaStreamDependencyFactoryTest : public ::testing::Test {
  public:
   void SetUp() {
@@ -64,14 +66,14 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
 };
 
 TEST_F(MediaStreamDependencyFactoryTest, CreatePeerConnectionHandlerJsep) {
-  WebKit::MockWebPeerConnection00HandlerClient client_jsep;
+  MockWebPeerConnection00HandlerClient client_jsep;
   scoped_ptr<WebKit::WebPeerConnection00Handler> pc_handler_jsep(
       dependency_factory_->CreatePeerConnectionHandlerJsep(&client_jsep));
   EXPECT_TRUE(pc_handler_jsep.get() != NULL);
 }
 
 TEST_F(MediaStreamDependencyFactoryTest, CreateRTCPeerConnectionHandler) {
-  WebKit::MockWebRTCPeerConnectionHandlerClient client_jsep;
+  MockWebRTCPeerConnectionHandlerClient client_jsep;
   scoped_ptr<WebKit::WebRTCPeerConnectionHandler> pc_handler(
       dependency_factory_->CreateRTCPeerConnectionHandler(&client_jsep));
   EXPECT_TRUE(pc_handler.get() != NULL);
@@ -114,3 +116,5 @@ TEST_F(MediaStreamDependencyFactoryTest, CreateNativeMediaStreamWithoutSource) {
   EXPECT_EQ(0u, extra_data->local_stream()->video_tracks()->count());
   EXPECT_EQ(0u, extra_data->local_stream()->audio_tracks()->count());
 }
+
+}  // namespace content
