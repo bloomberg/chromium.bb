@@ -525,11 +525,11 @@ class RunSome(object):
     self._min_failures = min_failures
     self._max_failure_ratio = max_failure_ratio
 
-    self._min_failures_tolerated = self._min_failures * self._retries
+    self._min_failures_tolerated = self._min_failures * (self._retries + 1)
     # Pre-calculate the maximum number of allowable failures. Note that
     # _max_failures can be lower than _min_failures.
     self._max_failures_tolerated = round(
-        (expected_count * retries) * max_failure_ratio)
+        (expected_count * (retries + 1)) * max_failure_ratio)
 
     # Variables.
     self._lock = threading.Lock()
@@ -588,7 +588,7 @@ class Runner(object):
     cmd = self.cmd[:]
     cmd.append('--gtest_filter=%s' % test_case)
     out = []
-    for retry in range(self.retry_count):
+    for retry in range(self.retry_count + 1):
       if self.decider.should_stop():
         break
 
@@ -614,7 +614,7 @@ class Runner(object):
       out.append(data)
       if sys.platform == 'win32':
         output = output.replace('\r\n', '\n')
-      size = returncode and retry != self.retry_count - 1
+      size = returncode and retry != self.retry_count
       if retry:
         self.progress.update_item(
             '%s (%.2fs) - retry #%d' % (test_case, duration, retry),
@@ -672,12 +672,12 @@ def LogResults(result_file, results):
     json.dump(results, f, sort_keys=True, indent=2)
 
 
-def run_test_cases(cmd, test_cases, jobs, timeout, run_all, result_file):
+def run_test_cases(
+    cmd, test_cases, jobs, timeout, retries, run_all, result_file):
   """Traces test cases one by one."""
   if not test_cases:
     return 0
   progress = Progress(len(test_cases))
-  retries = 3
   if run_all:
     decider = RunAll()
   else:
@@ -887,6 +887,10 @@ def main(argv):
       action='store_true',
       help='Do not fail early when a large number of test cases fail')
   parser.add_option(
+      '--retries', type='int', default=2,
+      help='Number of times each test case should be retried in case of '
+           'failure.')
+  parser.add_option(
       '--no-dump',
       action='store_true',
       help='do not generate a .run_test_cases file')
@@ -928,6 +932,7 @@ def main(argv):
       test_cases,
       options.jobs,
       options.timeout,
+      options.retries,
       options.run_all,
       result_file)
 
