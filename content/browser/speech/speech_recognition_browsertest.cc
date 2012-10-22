@@ -276,13 +276,8 @@ IN_PROC_BROWSER_TEST_F(SpeechRecognitionBrowserTest, GrammarAttribute) {
             fake_speech_recognition_manager_.grammar());
 }
 
-// Flaky on Linux and Windows, http://crbug.com/140765.
-#if defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_TestCancelAll DISABLED_TestCancelAll
-#else
-#define MAYBE_TestCancelAll TestCancelAll
-#endif
-IN_PROC_BROWSER_TEST_F(SpeechRecognitionBrowserTest, MAYBE_TestCancelAll) {
+// Flaky on Linux, Windows and Mac http://crbug.com/140765.
+IN_PROC_BROWSER_TEST_F(SpeechRecognitionBrowserTest, DISABLED_TestCancelAll) {
   // The test checks that the cancel-all callback gets issued when a session
   // is pending, so don't send a fake response.
   // We are not expecting a navigation event being raised from the JS of the
