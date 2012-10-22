@@ -113,6 +113,17 @@ enum MkvId {
   kMkvCueTrack                = 0xF7,
   kMkvCueClusterPosition      = 0xF1,
   kMkvCueBlockNumber          = 0x5378,
+  //Chapters
+  kMkvChapters                = 0x1043A770,
+  kMkvEditionEntry            = 0x45B9,
+  kMkvChapterAtom             = 0xB6,
+  kMkvChapterUID              = 0x73C4,
+  kMkvChapterTimeStart        = 0x91,
+  kMkvChapterTimeEnd          = 0x92,
+  kMkvChapterDisplay          = 0x80,
+  kMkvChapString              = 0x85,
+  kMkvChapLanguage            = 0x437C,
+  kMkvChapCountry             = 0x437E
 };
 
 }  // end namespace mkvmuxer

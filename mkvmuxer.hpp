@@ -17,6 +17,7 @@
 namespace mkvmuxer {
 
 class MkvWriter;
+class Segment;
 
 ///////////////////////////////////////////////////////////////
 // Interface used by the mkvmuxer to write out the Mkv data.
@@ -266,7 +267,8 @@ class ContentEncoding {
 // Track element.
 class Track {
  public:
-  Track();
+  // The |seed| parameter is used to synthesize a UID for the track.
+  explicit Track(unsigned int* seed);
   virtual ~Track();
 
   // Adds a ContentEncoding element to the Track. Returns true on success.
@@ -308,9 +310,6 @@ class Track {
   }
 
  private:
-  // Returns a random number to be used for the Track UID.
-  static uint64 MakeUID();
-
   // Track element names
   char* codec_id_;
   uint8* codec_private_;
@@ -329,9 +328,6 @@ class Track {
   // Number of ContentEncoding elements added.
   uint32 content_encoding_entries_size_;
 
-  // Flag telling if the rand call was seeded.
-  static bool is_seeded_;
-
   LIBWEBM_DISALLOW_COPY_AND_ASSIGN(Track);
 };
 
@@ -348,7 +344,8 @@ class VideoTrack : public Track {
     kSideBySideRightIsFirst = 11
   };
 
-  VideoTrack();
+  // The |seed| parameter is used to synthesize a UID for the track.
+  explicit VideoTrack(unsigned int* seed);
   virtual ~VideoTrack();
 
   // Returns the size in bytes for the payload of the Track element plus the
@@ -392,7 +389,8 @@ class VideoTrack : public Track {
 // Track that has audio specific elements.
 class AudioTrack : public Track {
  public:
-  AudioTrack();
+  // The |seed| parameter is used to synthesize a UID for the track.
+  explicit AudioTrack(unsigned int* seed);
   virtual ~AudioTrack();
 
   // Returns the size in bytes for the payload of the Track element plus the
@@ -466,6 +464,170 @@ class Tracks {
   uint32 track_entries_size_;
 
   LIBWEBM_DISALLOW_COPY_AND_ASSIGN(Tracks);
+};
+
+///////////////////////////////////////////////////////////////
+// Chapter element
+//
+class Chapter {
+ public:
+  // Set the identifier for this chapter.  (This corresponds to the
+  // Cue Identifier line in WebVTT.)
+  // TODO(matthewjheaney): the actual serialization of this item in
+  // MKV is pending.
+  bool set_id(const char* id);
+
+  // Converts the nanosecond start and stop times of this chapter to
+  // their corresponding timecode values, and stores them that way.
+  void set_time(const Segment& segment,
+                uint64 start_time_ns,
+                uint64 end_time_ns);
+
+  // Add a title string to this chapter, per the semantics described
+  // here:
+  //  http://www.matroska.org/technical/specs/index.html
+  //
+  // The title ("chapter string") is a UTF-8 string.
+  //
+  // The language has ISO 639-2 representation, described here:
+  //  http://www.loc.gov/standards/iso639-2/englangn.html
+  //  http://www.loc.gov/standards/iso639-2/php/English_list.php
+  // If you specify NULL as the language value, this implies
+  // English ("eng").
+  //
+  // The country value corresponds to the codes listed here:
+  //  http://www.iana.org/domains/root/db/
+  //
+  // The function returns false if the string could not be allocated.
+  bool add_string(const char* title,
+                  const char* language,
+                  const char* country);
+
+ private:
+  friend class Chapters;
+
+  // For storage of chapter titles that differ by language.
+  class Display {
+   public:
+    // Establish representation invariant for new Display object.
+    void Init();
+
+    // Reclaim resources, in anticipation of destruction.
+    void Clear();
+
+    // Copies the title to the |title_| member.  Returns false on
+    // error.
+    bool set_title(const char* title);
+
+    // Copies the language to the |language_| member.  Returns false
+    // on error.
+    bool set_language(const char* language);
+
+    // Copies the country to the |country_| member.  Returns false on
+    // error.
+    bool set_country(const char* country);
+
+    // If |writer| is non-NULL, serialize the Display sub-element of
+    // the Atom into the stream.  Returns the Display element size on
+    // success, 0 if error.
+    uint64 WriteDisplay(IMkvWriter* writer) const;
+
+   private:
+    char* title_;
+    char* language_;
+    char* country_;
+  };
+
+  Chapter();
+  ~Chapter();
+
+  // Establish the representation invariant for a newly-created
+  // Chapter object.  The |seed| parameter is used to create the UID
+  // for this chapter atom.
+  void Init(unsigned int* seed);
+
+  // Copies this Chapter object to a different one.  This is used when
+  // expanding a plain array of Chapter objects (see Chapters).
+  void ShallowCopy(Chapter* dst) const;
+
+  // Reclaim resources used by this Chapter object, pending its
+  // destruction.
+  void Clear();
+
+  // If there is no storage remaining on the |displays_| array for a
+  // new display object, creates a new, longer array and copies the
+  // existing Display objects to the new array.  Returns false if the
+  // array cannot be expanded.
+  bool ExpandDisplaysArray();
+
+  // If |writer| is non-NULL, serialize the Atom sub-element into the
+  // stream.  Returns the total size of the element on success, 0 if
+  // error.
+  uint64 WriteAtom(IMkvWriter* writer) const;
+
+  // The string identifier for this chapter (corresponds to WebVTT cue
+  // identifier).
+  char* id_;
+
+  // Start timecode of the chapter.
+  uint64 start_timecode_;
+
+  // Stop timecode of the chapter.
+  uint64 end_timecode_;
+
+  // The binary identifier for this chapter.
+  uint64 uid_;
+
+  // The Atom element can contain multiple Display sub-elements, as
+  // the same logical title can be rendered in different languages.
+  Display* displays_;
+
+  // The physical length (total size) of the |displays_| array.
+  int displays_size_;
+
+  // The logical length (number of active elements) on the |displays_|
+  // array.
+  int displays_count_;
+
+  LIBWEBM_DISALLOW_COPY_AND_ASSIGN(Chapter);
+};
+
+///////////////////////////////////////////////////////////////
+// Chapters element
+//
+class Chapters {
+ public:
+  Chapters();
+  ~Chapters();
+
+  Chapter* AddChapter(unsigned int* seed);
+
+  // Returns the number of chapters that have been added.
+  int Count() const;
+
+  // Output the Chapters element to the writer. Returns true on success.
+  bool Write(IMkvWriter* writer) const;
+
+ private:
+  // Expands the chapters_ array if there is not enough space to contain
+  // another chapter object.  Returns true on success.
+  bool ExpandChaptersArray();
+
+  // If |writer| is non-NULL, serialize the Edition sub-element of the
+  // Chapters element into the stream.  Returns the Edition element
+  // size on success, 0 if error.
+  uint64 WriteEdition(IMkvWriter* writer) const;
+
+  // Total length of the chapters_ array.
+  int chapters_size_;
+
+  // Number of active chapters on the chapters_ array.
+  int chapters_count_;
+
+  // Array for storage of chapter objects.
+  Chapter* chapters_;
+
+  LIBWEBM_DISALLOW_COPY_AND_ASSIGN(Chapters);
 };
 
 ///////////////////////////////////////////////////////////////
@@ -606,7 +768,7 @@ class SeekHead {
 
  private:
    // We are going to put a cap on the number of Seek Entries.
-  const static int32 kSeekEntryCount = 4;
+  const static int32 kSeekEntryCount = 5;
 
   // Returns the maximum size in bytes of one seek entry.
   uint64 MaxEntrySize() const;
@@ -701,6 +863,11 @@ class Segment {
   // the track number.
   uint64 AddAudioTrack(int32 sample_rate, int32 channels, int32 number);
 
+  // Adds an empty chapter to the chapters of this segment.  Returns
+  // non-NULL on success.  After adding the chapter, the caller should
+  // populate its fields via the Chapter member functions.
+  Chapter* AddChapter();
+
   // Adds a cue point to the Cues element. |timestamp| is the time in
   // nanoseconds of the cue's time. |track| is the Track of the Cue. Returns
   // true on success.
@@ -760,6 +927,7 @@ class Segment {
   Cues* GetCues() { return &cues_; }
 
   // Returns the Segment Information object.
+  const SegmentInfo* GetSegmentInfo() const { return &segment_info_; }
   SegmentInfo* GetSegmentInfo() { return &segment_info_; }
 
   // Search the Tracks and return the track that matches |track_number|.
@@ -846,11 +1014,15 @@ class Segment {
   // was necessary but creation was not successful.
   bool DoNewClusterProcessing(uint64 track_num, uint64 timestamp_ns, bool key);
 
+  // Seeds the random number generator used to make UIDs.
+  unsigned int seed_;
+
   // WebM elements
   Cues cues_;
   SeekHead seek_head_;
   SegmentInfo segment_info_;
   Tracks tracks_;
+  Chapters chapters_;
 
   // Number of chunks written.
   int chunk_count_;
