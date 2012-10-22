@@ -118,9 +118,8 @@ View.prototype.updateEquation_ = function(equation, values) {
 
 /** @private */
 View.prototype.updateValue_ = function(element, value, zero) {
-  if (value !== undefined) {
+  if (value !== undefined)
     element.textContent = zero ? (value || '0') : (value || '');
-  }
 }
 
 /** @private */

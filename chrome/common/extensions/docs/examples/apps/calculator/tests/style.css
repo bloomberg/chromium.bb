@@ -1,0 +1,159 @@
+/**
+ * Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ **/
+
+body {
+  font-family: "Open Sans", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+  margin: 8px;
+}
+
+.bottom {
+  background: LightSteelBlue;
+  border-radius: 0 0 7px 7px;
+  height: 1.5em;
+}
+
+.browser {
+  background: SteelBlue;
+  cursor: default;
+  font-size: 80%;
+  font-weight: normal;
+  text-shadow: rgba(0, 0, 0, 0.5) 2px 2px 1px;
+  padding: 0.5em 0 0.5em 1.25em;
+}
+
+.details {
+  color: black;
+}
+
+.header {
+  border-radius: 7px 7px 7px 7px;
+  box-shadow: rgba(0, 0, 0, 0.5) 3px 3px 3px;
+  padding: 0;
+  color: GhostWhite;
+}
+
+.hidden {
+  visibility: hidden
+}
+
+li {
+  border-radius: 7px 7px 7px 7px;
+  box-shadow: rgba(0, 0, 0, 0.5) 3px 3px 3px;
+  margin: 0.5em 0;
+  padding: 0;
+  font-weight: bold;
+}
+
+li.failure {
+  background: Red;
+}
+
+li.success {
+  background: Chartreuse;
+}
+
+li li {
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0;
+  padding: 0;
+}
+
+li li p {
+  font-weight: normal;
+}
+
+li.failure li.success {
+  background: LightSalmon;
+}
+
+li p {
+  margin: 0;
+}
+
+ol {
+  list-style: decimal inside;
+  margin: 0;
+  padding: 0;
+}
+
+ol p {
+  font-style: italic;
+  padding: 1em 1em 0 1em;
+}
+
+ol ol {
+  list-style: lower-alpha inside;
+  padding: 0.5em 1em 0.5em;
+}
+
+ol ol p {
+  font-style: normal;
+  padding: 0;
+}
+
+.status {
+  height: 0.4em;
+  padding: 0;
+}
+
+.status.failure {
+  background: Red;
+}
+
+.status.success {
+  background: Chartreuse;
+}
+
+.summary {
+  background: WhiteSmoke;
+  color: Black;
+  cursor: default;
+  padding: 0.5em 0 0.5em 1em;
+  position: static;
+}
+
+.summary .instructions {
+  height: 0;
+  position: relative;
+  top: -2.8em;
+}
+
+.summary .results .failed {
+  color: Tomato;
+  text-shadow: rgba(0, 0, 0, 1) 1px 1px 1px;
+}
+
+.summary .results .failed.none {
+  color: Black;
+  text-shadow: none;
+}
+
+.summary .results .passed {
+  color: LawnGreen;
+  text-shadow: rgba(0, 0, 0, 1) 1px 1px 1px;
+}
+
+.summary .results .passed.none {
+  color: Black;
+  text-shadow: none;
+}
+
+.title {
+  background: rgb(34, 34, 85);
+  border-radius: 8px 8px 0 0;
+  font-size: 125%;
+  line-height: 1em;
+  margin: 0;
+  -webkit-user-select: none;
+  font-weight: lighter;
+  padding: 0.5em 0 0.5em 0.8em;
+}
+
+.title span:hover {
+  cursor: pointer;
+  text-shadow: rgb(34, 34, 85) 0 0 1px, White 0 0 4px;
+}

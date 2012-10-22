@@ -2929,6 +2929,7 @@
         'browser/extensions/convert_web_app_browsertest.cc',
         'browser/extensions/cross_origin_xhr_apitest.cc',
         'browser/extensions/crx_installer_browsertest.cc',
+        'browser/extensions/docs/examples/apps/calculator_browsertest.cc',
         'browser/extensions/events_apitest.cc',
         'browser/extensions/execute_script_apitest.cc',
         'browser/extensions/extension_apitest.cc',

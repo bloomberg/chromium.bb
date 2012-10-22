@@ -3,20 +3,34 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Calculator Chrome App</title>
-    <link rel="stylesheet" type="text/css"
-          href="http://code.jquery.com/qunit/git/qunit.css">
-    <script type="text/javascript"
-            src="http://code.jquery.com/qunit/git/qunit.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
     <script type="text/javascript" src="../app/model.js"></script>
     <script type="text/javascript" src="model_test_utilities.js"></script>
     <script type="text/javascript" src="model_tests.js"></script>
   </head>
   <body>
-    <h1 id="qunit-header">Model Tests</h1>
-    <h2 id="qunit-banner"></h2>
-    <div id="qunit-testrunner-toolbar"></div>
-    <h2 id="qunit-userAgent"></h2>
-    <ol id="qunit-tests"></ol>
+    <div class="header">
+      <div class="title">
+        <span onclick="runTestsAndDisplayResults()">Tests</button>
+      </div>
+      <div class="status success"></div>
+      <div class="summary">
+        <div class="execution hidden">
+          <span class="count"></span>&nbsp;tests run in&nbsp;
+          <span class="duration"></span>&nbsp;ms
+        </div>
+        <div class="results hidden">
+          <span class="passed"></span>&nbsp;passed
+          <span class="failed"></span>&nbsp;failed
+        </div>
+        <div class="instructions">Click the title above to run the tests</div>
+      </div>
+      <div class="browser"></div>
+      <div class="bottom"></div>
+    </div>
+    <div class="details">
+      <ol></ol>
+    </div>
   </body>
 </html>
 

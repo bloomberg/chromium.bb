@@ -58,6 +58,7 @@
       '../tools/swarm_client/run_test_cases.py',
       '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
       '<(PRODUCT_DIR)/resources.pak',
+      'common/extensions/docs/examples/apps/calculator/app/model.js',
       'test/data/extensions/api_test/tabs/basics/a.html',
       'test/data/extensions/api_test/tabs/basics/events.html',
       'test/data/extensions/api_test/tabs/basics/events.js',
@@ -75,6 +76,7 @@
     ],
     'isolate_dependency_untracked': [
       '<(PRODUCT_DIR)/test_data/chrome/',
+      'common/extensions/docs/examples/apps/calculator/tests/',
       'test/data/extensions/api_test/accessibility/',
     ],
   },
