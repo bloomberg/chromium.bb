@@ -58,6 +58,19 @@ lou_translate (const char *tableList, const widechar
 	       char *typeform, char *spacing, int *outputPos,
 	       int *inputPos, int *cursorPos, int modex)
 {
+  return trace_translate (tableList, inbufx, inlen, outbuf, outlen,
+		  typeform, spacing, outputPos, inputPos, cursorPos,
+		  NULL, NULL, modex);
+}
+
+int
+trace_translate (const char *tableList, const widechar* inbufx,
+                 int* inlen, widechar* outbuf, int* outlen,
+                 char* typeform, char* spacing, int* outputPos,
+                 int* inputPos, int* cursorPos,
+                 TranslationTableRule** rules, int* rulesLen,
+                 int modex)
+{
   int k;
   int goodTrans = 1;
   if (tableList == NULL || inbufx == NULL || inlen == NULL || outbuf ==
@@ -147,6 +160,14 @@ lou_translate (const char *tableList, const widechar
       else
 	memset (destSpacing, '*', destmax);
     }
+  appliedRulesCount = 0;
+  if (rules != NULL && rulesLen != NULL) {
+    appliedRules = rules;
+    maxAppliedRules = *rulesLen;
+  } else {
+    appliedRules = NULL;
+    maxAppliedRules = 0;
+  }
   currentPass = 0;
   if ((mode & pass1Only))
     {
@@ -238,6 +259,8 @@ lou_translate (const char *tableList, const widechar
     }
   if (cursorPos != NULL)
     *cursorPos = cursorPosition;
+  if (rulesLen != NULL)
+    *rulesLen = appliedRulesCount;
   return goodTrans;
 }
 
@@ -1765,6 +1788,8 @@ translateString (void)
       if (!insertIndicators ())
 	goto failure;
       for_selectRule ();
+      if (appliedRules != NULL && appliedRulesCount < maxAppliedRules)
+        appliedRules[appliedRulesCount++] = transRule;
       srcIncremented = 1;
       prevSrc = src;
       switch (transOpcode)	/*Rules that pre-empt context and swap */

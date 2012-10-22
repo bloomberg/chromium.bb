@@ -549,6 +549,13 @@ extern "C"
   int other_charToDots (const char *trantab, const widechar
 			* inbuf, widechar * outbuf, int length, int mode);
 
+  int trace_translate (const char* tableList, const widechar* inbuf,
+                       int* inlen, widechar* outbuf, int* outlen,
+                       char* typeform, char* spacing, int* outputPos,
+                       int* inputPos, int* cursorPos,
+                       TranslationTableRule** rules, int* rulesLen,
+                       int mode);
+
   char * getLastTableList();
   void debugHook ();
 /* Can be inserted in code to be ulsed as a breakpoint in gdb */

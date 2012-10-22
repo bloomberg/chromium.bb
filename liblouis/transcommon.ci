@@ -80,6 +80,9 @@ static int *outputPositions;
 static int *inputPositions;
 static int cursorPosition;
 static int cursorStatus;
+static TranslationTableRule** appliedRules;
+static int maxAppliedRules;
+static int appliedRulesCount;
 
 static TranslationTableCharacter *
 findCharOrDots (widechar c, int m)
@@ -245,6 +248,8 @@ makeCorrections (void)
 	  currentOutput[dest++] = currentInput[src++];
 	  break;
 	case CTO_Correct:
+          if (appliedRules != NULL && appliedRulesCount < maxAppliedRules)
+            appliedRules[appliedRulesCount++] = transRule;
 	  if (!passDoAction ())
 	    goto failure;
 	  if (endReplace == src)
@@ -1046,6 +1051,8 @@ translatePass (void)
 	case CTO_Pass2:
 	case CTO_Pass3:
 	case CTO_Pass4:
+          if (appliedRules != NULL && appliedRulesCount < maxAppliedRules)
+            appliedRules[appliedRulesCount++] = transRule;
 	  if (!passDoAction ())
 	    goto failure;
 	  if (endReplace == src)
