@@ -153,3 +153,27 @@ TEST_F(AutofillPopupViewUnitTest, RemoveLine) {
   autofill_popup_view_->SetSelectedLine(0);
   EXPECT_TRUE(autofill_popup_view_->RemoveSelectedLine());
 }
+
+TEST_F(AutofillPopupViewUnitTest, SkipSeparator) {
+  // Set up the popup.
+  std::vector<string16> autofill_values(3, string16());
+  std::vector<int> autofill_ids;
+  autofill_ids.push_back(1);
+  autofill_ids.push_back(WebAutofillClient::MenuItemIDSeparator);
+  autofill_ids.push_back(WebAutofillClient::MenuItemIDAutofillOptions);
+  autofill_popup_view_->Show(autofill_values, autofill_values, autofill_values,
+                             autofill_ids);
+
+  // To remove warnings.
+  EXPECT_CALL(*autofill_popup_view_, InvalidateRow(_)).Times(AtLeast(0));
+
+  autofill_popup_view_->SetSelectedLine(0);
+
+  // Make sure next skips the unselectable separator.
+  autofill_popup_view_->SelectNextLine();
+  EXPECT_EQ(2, autofill_popup_view_->selected_line());
+
+  // Make sure previous skips the unselectable separator.
+  autofill_popup_view_->SelectPreviousLine();
+  EXPECT_EQ(0, autofill_popup_view_->selected_line());
+}

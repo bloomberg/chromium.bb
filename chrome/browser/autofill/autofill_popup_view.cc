@@ -136,6 +136,12 @@ void AutofillPopupView::ClearSelectedLine() {
 void AutofillPopupView::SelectNextLine() {
   int new_selected_line = selected_line_ + 1;
 
+  // Skip over any lines that can't be selected.
+  while (static_cast<size_t>(new_selected_line) < autofill_values_.size() &&
+         !CanAccept(autofill_unique_ids()[new_selected_line])) {
+    ++new_selected_line;
+  }
+
   if (new_selected_line == static_cast<int>(autofill_values_.size()))
     new_selected_line = 0;
 
@@ -144,6 +150,12 @@ void AutofillPopupView::SelectNextLine() {
 
 void AutofillPopupView::SelectPreviousLine() {
   int new_selected_line = selected_line_ - 1;
+
+  // Skip over any lines that can't be selected.
+  while (new_selected_line > kNoSelection &&
+         !CanAccept(autofill_unique_ids()[new_selected_line])) {
+    --new_selected_line;
+  }
 
   if (new_selected_line <= kNoSelection)
     new_selected_line = autofill_values_.size() - 1;
