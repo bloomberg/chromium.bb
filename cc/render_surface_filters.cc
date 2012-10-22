@@ -4,10 +4,10 @@
 
 #include "config.h"
 
-#include "CCRenderSurfaceFilters.h"
+#include "cc/render_surface_filters.h"
 
-#include "base/logging.h"
 #include "FloatSize.h"
+#include "base/logging.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"

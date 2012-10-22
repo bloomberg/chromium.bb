@@ -7,9 +7,9 @@
 
 #include "CCAnimationEvents.h"
 #include "CCCompletionEvent.h"
-#include "CCLayerTreeHostImpl.h"
-#include "CCProxy.h"
 #include "base/time.h"
+#include "cc/layer_tree_host_impl.h"
+#include "cc/proxy.h"
 #include "cc/scheduler.h"
 #include "cc/texture_update_controller.h"
 

@@ -4,18 +4,18 @@
 
 #include "config.h"
 
-#include "CCLayerTreeHostImpl.h"
+#include "cc/layer_tree_host_impl.h"
 
 #include "CCDelegatedRendererLayerImpl.h"
 #include "CCHeadsUpDisplayLayerImpl.h"
 #include "CCIOSurfaceLayerImpl.h"
 #include "CCLayerImpl.h"
 #include "CCLayerTilingData.h"
-#include "CCQuadSink.h"
-#include "CCRenderPassDrawQuad.h"
 #include "base/command_line.h"
 #include "base/hash_tables.h"
 #include "cc/gl_renderer.h"
+#include "cc/quad_sink.h"
+#include "cc/render_pass_draw_quad.h"
 #include "cc/scrollbar_geometry_fixed_thumb.h"
 #include "cc/scrollbar_layer_impl.h"
 #include "cc/settings.h"

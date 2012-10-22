@@ -5,12 +5,12 @@
 #ifndef CCPrioritizedTexture_h
 #define CCPrioritizedTexture_h
 
-#include "CCPriorityCalculator.h"
 #include "IntRect.h"
 #include "IntSize.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/priority_calculator.h"
 #include "cc/resource_provider.h"
 #include "cc/texture.h"
 #include "third_party/khronos/GLES2/gl2.h"

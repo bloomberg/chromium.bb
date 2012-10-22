@@ -8,11 +8,11 @@
 
 #include "CCDebugBorderDrawQuad.h"
 #include "CCLayerSorter.h"
-#include "CCMathUtil.h"
-#include "CCProxy.h"
-#include "CCQuadSink.h"
 #include "base/debug/trace_event.h"
 #include "base/stringprintf.h"
+#include "cc/math_util.h"
+#include "cc/proxy.h"
+#include "cc/quad_sink.h"
 #include "cc/scrollbar_animation_controller.h"
 #include "cc/settings.h"
 

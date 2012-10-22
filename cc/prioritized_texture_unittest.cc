@@ -4,9 +4,9 @@
 
 #include "config.h"
 
-#include "CCPrioritizedTexture.h"
+#include "cc/prioritized_texture.h"
 
-#include "CCPrioritizedTextureManager.h"
+#include "cc/prioritized_texture_manager.h"
 #include "cc/single_thread_proxy.h" // For DebugScopedSetImplThread
 #include "cc/test/fake_graphics_context.h"
 #include "cc/test/tiled_layer_test_common.h"

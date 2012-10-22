@@ -6,12 +6,12 @@
 
 #include "CCLayerSorter.h"
 
-#include "CCMathUtil.h"
 #include "CCRenderSurface.h"
 #include "base/logging.h"
-#include <limits.h>
+#include "cc/math_util.h"
 #include <public/WebTransformationMatrix.h>
 #include <deque>
+#include <limits>
 #include <vector>
 
 using namespace std;

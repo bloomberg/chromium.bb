@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCPriorityCalculator.h"
+#include "cc/priority_calculator.h"
 
 using namespace std;
 

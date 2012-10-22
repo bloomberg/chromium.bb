@@ -5,7 +5,7 @@
 #ifndef CCAppendQuadsData_h
 #define CCAppendQuadsData_h
 
-#include "CCRenderPass.h"
+#include "cc/render_pass.h"
 
 namespace cc {
 

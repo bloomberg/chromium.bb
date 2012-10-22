@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCLayerTreeHostImpl.h"
+#include "cc/layer_tree_host_impl.h"
 
 #include "CCAppendQuadsData.h"
 #include "CCDamageTracker.h"
@@ -16,14 +16,14 @@
 #include "CCLayerIterator.h"
 #include "CCLayerTreeHost.h"
 #include "CCLayerTreeHostCommon.h"
-#include "CCMathUtil.h"
-#include "CCOverdrawMetrics.h"
-#include "CCPageScaleAnimation.h"
-#include "CCPrioritizedTextureManager.h"
-#include "CCRenderPassDrawQuad.h"
 #include "base/basictypes.h"
 #include "base/debug/trace_event.h"
 #include "cc/gl_renderer.h"
+#include "cc/math_util.h"
+#include "cc/overdraw_metrics.h"
+#include "cc/page_scale_animation.h"
+#include "cc/prioritized_texture_manager.h"
+#include "cc/render_pass_draw_quad.h"
 #include "cc/rendering_stats.h"
 #include "cc/scrollbar_animation_controller.h"
 #include "cc/scrollbar_layer_impl.h"

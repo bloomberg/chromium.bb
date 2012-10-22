@@ -8,7 +8,6 @@
 
 #include <limits.h>
 
-#include "CCProxy.h"
 #include "IntRect.h"
 #include "base/debug/alias.h"
 #include "base/hash_tables.h"
@@ -16,6 +15,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "cc/gl_renderer.h" // For the GLC() macro.
+#include "cc/proxy.h"
 #include "cc/texture_uploader.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"

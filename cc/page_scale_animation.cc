@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCPageScaleAnimation.h"
+#include "cc/page_scale_animation.h"
 
 #include "FloatRect.h"
 #include "FloatSize.h"

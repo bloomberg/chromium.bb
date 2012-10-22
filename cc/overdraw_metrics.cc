@@ -4,15 +4,15 @@
 
 #include "config.h"
 
-#include "CCOverdrawMetrics.h"
+#include "cc/overdraw_metrics.h"
 
 #include "CCLayerTreeHost.h"
-#include "CCLayerTreeHostImpl.h"
-#include "CCMathUtil.h"
 #include "FloatQuad.h"
 #include "IntRect.h"
 #include "base/debug/trace_event.h"
 #include "base/metrics/histogram.h"
+#include "cc/layer_tree_host_impl.h"
+#include "cc/math_util.h"
 #include <public/WebTransformationMatrix.h>
 
 using WebKit::WebTransformationMatrix;

@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/string_split.h"
-#include "ui/gfx/point.h"
-#include "CCProxy.h"
+#include "cc/proxy.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/gfx/point.h"
 
 namespace cc {
 

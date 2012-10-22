@@ -6,8 +6,8 @@
 
 #include "cc/texture_layer_impl.h"
 
-#include "CCQuadSink.h"
 #include "base/stringprintf.h"
+#include "cc/quad_sink.h"
 #include "cc/renderer.h"
 #include "cc/texture_draw_quad.h"
 

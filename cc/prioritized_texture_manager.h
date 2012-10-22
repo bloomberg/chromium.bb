@@ -8,13 +8,13 @@
 #include <list>
 #include <vector>
 
-#include "CCPrioritizedTexture.h"
-#include "CCPriorityCalculator.h"
 #include "IntRect.h"
 #include "IntSize.h"
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/prioritized_texture.h"
+#include "cc/priority_calculator.h"
 #include "cc/texture.h"
 #include "third_party/khronos/GLES2/gl2.h"
 

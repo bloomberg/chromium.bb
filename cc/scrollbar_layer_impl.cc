@@ -6,7 +6,7 @@
 
 #include "cc/scrollbar_layer_impl.h"
 
-#include "CCQuadSink.h"
+#include "cc/quad_sink.h"
 #include "cc/scrollbar_animation_controller.h"
 #include "cc/texture_draw_quad.h"
 

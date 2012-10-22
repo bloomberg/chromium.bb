@@ -6,8 +6,8 @@
 #define CC_TEST_LAYER_TREE_TEST_COMMON_H_
 
 #include "CCLayerTreeHost.h"
-#include "CCLayerTreeHostImpl.h"
 #include "base/hash_tables.h"
+#include "cc/layer_tree_host_impl.h"
 #include "cc/scoped_thread_proxy.h"
 #include "cc/test/compositor_fake_web_graphics_context_3d.h"
 #include "testing/gtest/include/gtest/gtest.h"

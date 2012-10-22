@@ -7,7 +7,7 @@
 #include "cc/software_renderer.h"
 
 #include "CCDebugBorderDrawQuad.h"
-#include "CCRenderPassDrawQuad.h"
+#include "cc/render_pass_draw_quad.h"
 #include "cc/solid_color_draw_quad.h"
 #include "cc/texture_draw_quad.h"
 #include "cc/tile_draw_quad.h"

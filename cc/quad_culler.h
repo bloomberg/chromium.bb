@@ -5,8 +5,8 @@
 #ifndef CCQuadCuller_h
 #define CCQuadCuller_h
 
-#include "CCQuadSink.h"
-#include "CCRenderPass.h"
+#include "cc/quad_sink.h"
+#include "cc/render_pass.h"
 
 namespace cc {
 class CCLayerImpl;

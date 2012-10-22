@@ -6,9 +6,9 @@
 
 #include "cc/software_renderer.h"
 
-#include "CCQuadSink.h"
-#include "CCRenderPass.h"
-#include "CCRenderPassDrawQuad.h"
+#include "cc/quad_sink.h"
+#include "cc/render_pass.h"
+#include "cc/render_pass_draw_quad.h"
 #include "cc/settings.h"
 #include "cc/single_thread_proxy.h" // For DebugScopedSetImplThread
 #include "cc/solid_color_draw_quad.h"

@@ -5,7 +5,7 @@
 #ifndef CCRenderPassTestCommon_h
 #define CCRenderPassTestCommon_h
 
-#include "CCRenderPass.h"
+#include "cc/render_pass.h"
 
 namespace WebKitTests {
 
@@ -18,6 +18,6 @@ public:
     void appendSharedQuadState(scoped_ptr<cc::CCSharedQuadState> state) { m_sharedQuadStateList.append(state.Pass()); }
 };
 
-} //namespace WebKitTests
+}  // namespace WebKitTests
 
 #endif // CCRenderPassTestCommon_h

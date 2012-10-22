@@ -7,9 +7,9 @@
 #include "CCDelegatedRendererLayerImpl.h"
 
 #include "CCAppendQuadsData.h"
-#include "CCLayerTreeHostImpl.h"
-#include "CCQuadSink.h"
-#include "CCRenderPassDrawQuad.h"
+#include "cc/layer_tree_host_impl.h"
+#include "cc/quad_sink.h"
+#include "cc/render_pass_draw_quad.h"
 #include "cc/scoped_ptr_vector.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/solid_color_draw_quad.h"

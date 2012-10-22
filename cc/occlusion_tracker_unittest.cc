@@ -4,15 +4,15 @@
 
 #include "config.h"
 
-#include "CCOcclusionTracker.h"
+#include "cc/occlusion_tracker.h"
 
 #include "CCLayerAnimationController.h"
 #include "CCLayerImpl.h"
 #include "CCLayerTreeHostCommon.h"
-#include "CCMathUtil.h"
-#include "CCOverdrawMetrics.h"
 #include "Region.h"
 #include "cc/layer.h"
+#include "cc/math_util.h"
+#include "cc/overdraw_metrics.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/geometry_test_utils.h"

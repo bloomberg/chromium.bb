@@ -6,10 +6,10 @@
 #define LayerChromium_h
 
 #include "CCLayerAnimationController.h"
-#include "CCOcclusionTracker.h"
 #include "FloatPoint.h"
 #include "Region.h"
 #include "base/memory/ref_counted.h"
+#include "cc/occlusion_tracker.h"
 #include "cc/render_surface.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include <public/WebFilterOperations.h>

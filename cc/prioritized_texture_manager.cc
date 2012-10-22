@@ -4,13 +4,13 @@
 
 #include "config.h"
 
-#include "CCPrioritizedTextureManager.h"
+#include "cc/prioritized_texture_manager.h"
 
 #include "base/debug/trace_event.h"
 #include "base/stl_util.h"
-#include "CCPrioritizedTexture.h"
-#include "CCPriorityCalculator.h"
-#include "CCProxy.h"
+#include "cc/prioritized_texture.h"
+#include "cc/priority_calculator.h"
+#include "cc/proxy.h"
 #include <algorithm>
 
 using namespace std;

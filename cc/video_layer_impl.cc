@@ -7,10 +7,10 @@
 #include "cc/video_layer_impl.h"
 
 #include "CCIOSurfaceDrawQuad.h"
-#include "CCLayerTreeHostImpl.h"
-#include "CCProxy.h"
-#include "CCQuadSink.h"
 #include "NotImplemented.h"
+#include "cc/layer_tree_host_impl.h"
+#include "cc/proxy.h"
+#include "cc/quad_sink.h"
 #include "cc/resource_provider.h"
 #include "cc/stream_video_draw_quad.h"
 #include "cc/texture_draw_quad.h"

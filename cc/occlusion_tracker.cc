@@ -4,12 +4,12 @@
 
 #include "config.h"
 
-#include "CCOcclusionTracker.h"
+#include "cc/occlusion_tracker.h"
 
 #include "CCLayerImpl.h"
-#include "CCMathUtil.h"
-#include "CCOverdrawMetrics.h"
 #include "cc/layer.h"
+#include "cc/math_util.h"
+#include "cc/overdraw_metrics.h"
 #include <algorithm>
 
 using namespace std;

@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCMathUtil.h"
+#include "cc/math_util.h"
 
 #include "FloatPoint.h"
 #include "FloatQuad.h"

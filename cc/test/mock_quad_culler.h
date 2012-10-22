@@ -6,10 +6,10 @@
 #define MockCCQuadCuller_h
 
 #include "CCDrawQuad.h"
-#include "CCQuadSink.h"
-#include "CCRenderPass.h"
 #include "IntRect.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/quad_sink.h"
+#include "cc/render_pass.h"
 
 namespace cc {
 
@@ -34,5 +34,6 @@ private:
     CCSharedQuadStateList m_sharedQuadStateStorage;
 };
 
-} // namespace cc
+}  // namespace cc
+
 #endif // MockCCQuadCuller_h

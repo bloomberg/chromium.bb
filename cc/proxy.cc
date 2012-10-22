@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCProxy.h"
+#include "cc/proxy.h"
 
 #include "cc/thread_task.h"
 

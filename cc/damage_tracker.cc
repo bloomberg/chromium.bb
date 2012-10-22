@@ -8,8 +8,8 @@
 
 #include "CCLayerImpl.h"
 #include "CCLayerTreeHostCommon.h"
-#include "CCMathUtil.h"
 #include "CCRenderSurface.h"
+#include "cc/math_util.h"
 #include <public/WebFilterOperations.h>
 
 using WebKit::WebTransformationMatrix;

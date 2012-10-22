@@ -10,13 +10,13 @@
 #include "CCDebugBorderDrawQuad.h"
 #include "CCDelegatedRendererLayerImpl.h"
 #include "CCLayerImpl.h"
-#include "CCMathUtil.h"
-#include "CCQuadSink.h"
-#include "CCRenderPass.h"
-#include "CCRenderPassDrawQuad.h"
-#include "CCRenderPassSink.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
+#include "cc/math_util.h"
+#include "cc/quad_sink.h"
+#include "cc/render_pass.h"
+#include "cc/render_pass_draw_quad.h"
+#include "cc/render_pass_sink.h"
 #include "cc/shared_quad_state.h"
 #include <public/WebTransformationMatrix.h>
 

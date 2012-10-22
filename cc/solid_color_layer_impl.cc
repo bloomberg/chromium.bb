@@ -6,7 +6,7 @@
 
 #include "cc/solid_color_layer_impl.h"
 
-#include "CCQuadSink.h"
+#include "cc/quad_sink.h"
 #include "cc/solid_color_draw_quad.h"
 #include <wtf/MathExtras.h>
 

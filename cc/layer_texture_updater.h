@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #ifndef LayerTextureUpdater_h
 #define LayerTextureUpdater_h
 
-#include "CCPrioritizedTexture.h"
 #include "base/memory/ref_counted.h"
+#include "cc/prioritized_texture.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
 namespace cc {
@@ -64,5 +63,6 @@ private:
     friend class base::RefCounted<LayerTextureUpdater>;
 };
 
-} // namespace cc
+}  // namespace cc
+
 #endif // LayerTextureUpdater_h

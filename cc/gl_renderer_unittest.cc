@@ -6,7 +6,7 @@
 #include "cc/gl_renderer.h"
 
 #include "CCDrawQuad.h"
-#include "CCPrioritizedTextureManager.h"
+#include "cc/prioritized_texture_manager.h"
 #include "cc/resource_provider.h"
 #include "cc/settings.h"
 #include "cc/single_thread_proxy.h"

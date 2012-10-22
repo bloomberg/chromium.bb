@@ -4,12 +4,12 @@
 
 #include "config.h"
 
-#include "CCRenderPass.h"
+#include "cc/render_pass.h"
 
 #include "CCLayerImpl.h"
-#include "CCMathUtil.h"
-#include "CCOcclusionTracker.h"
-#include "CCQuadCuller.h"
+#include "cc/math_util.h"
+#include "cc/occlusion_tracker.h"
+#include "cc/quad_culler.h"
 #include "cc/shared_quad_state.h"
 #include "cc/solid_color_draw_quad.h"
 

@@ -8,7 +8,7 @@
 
 #include "CCAppendQuadsData.h"
 #include "CCLayerImpl.h"
-#include "CCRenderPassSink.h"
+#include "cc/render_pass_sink.h"
 #include "cc/scoped_ptr_vector.h"
 #include "cc/shared_quad_state.h"
 #include "cc/single_thread_proxy.h"

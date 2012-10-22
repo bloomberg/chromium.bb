@@ -4,15 +4,15 @@
 
 #include "config.h"
 
-#include "CCQuadCuller.h"
+#include "cc/quad_culler.h"
 
 #include "CCAppendQuadsData.h"
 #include "CCDebugBorderDrawQuad.h"
 #include "CCLayerImpl.h"
-#include "CCOcclusionTracker.h"
-#include "CCOverdrawMetrics.h"
-#include "CCRenderPass.h"
 #include "Region.h"
+#include "cc/occlusion_tracker.h"
+#include "cc/overdraw_metrics.h"
+#include "cc/render_pass.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include <public/WebTransformationMatrix.h>
 

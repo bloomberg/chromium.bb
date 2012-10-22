@@ -8,11 +8,11 @@
 #include "CCAnimationEvents.h"
 #include "CCInputHandler.h"
 #include "CCLayerSorter.h"
-#include "CCRenderPass.h"
-#include "CCRenderPassSink.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
+#include "cc/render_pass.h"
+#include "cc/render_pass_sink.h"
 #include "cc/renderer.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include <public/WebCompositorOutputSurfaceClient.h>

@@ -5,9 +5,9 @@
 #ifndef CCLayerTestCommon_h
 #define CCLayerTestCommon_h
 
-#include "CCRenderPass.h"
 #include "IntRect.h"
 #include "Region.h"
+#include "cc/render_pass.h"
 
 namespace CCLayerTestCommon {
 

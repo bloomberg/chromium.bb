@@ -6,7 +6,7 @@
 
 #include "CCDirectRenderer.h"
 
-#include "CCMathUtil.h"
+#include "cc/math_util.h"
 #include "ui/gfx/rect_conversions.h"
 #include <public/WebTransformationMatrix.h>
 #include <vector>

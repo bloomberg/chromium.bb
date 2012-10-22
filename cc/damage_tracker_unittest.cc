@@ -9,7 +9,7 @@
 #include "CCLayerImpl.h"
 #include "CCLayerSorter.h"
 #include "CCLayerTreeHostCommon.h"
-#include "CCMathUtil.h"
+#include "cc/math_util.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/test/geometry_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"

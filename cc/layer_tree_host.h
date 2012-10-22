@@ -5,23 +5,24 @@
 #ifndef CCLayerTreeHost_h
 #define CCLayerTreeHost_h
 
+#include <limits>
+
 #include "CCAnimationEvents.h"
 #include "CCGraphicsContext.h"
 #include "CCLayerTreeHostClient.h"
 #include "CCLayerTreeHostCommon.h"
-#include "CCOcclusionTracker.h"
-#include "CCPrioritizedTextureManager.h"
-#include "CCProxy.h"
 #include "IntRect.h"
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/occlusion_tracker.h"
+#include "cc/prioritized_texture_manager.h"
+#include "cc/proxy.h"
 #include "cc/rate_limiter.h"
 #include "cc/rendering_stats.h"
 #include "cc/scoped_ptr_vector.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include <limits>
 
 #if defined(COMPILER_GCC)
 namespace BASE_HASH_NAMESPACE {

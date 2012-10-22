@@ -8,8 +8,8 @@
 
 #include <cmath>
 
-#include "CCProxy.h"
 #include "base/metrics/histogram.h"
+#include "cc/proxy.h"
 
 namespace cc {
 

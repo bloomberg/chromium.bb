@@ -8,9 +8,9 @@
 
 #include "CCLayerImpl.h"
 #include "CCLayerTreeHost.h"
-#include "CCOverdrawMetrics.h"
 #include "Region.h"
 #include "base/basictypes.h"
+#include "cc/overdraw_metrics.h"
 #include "cc/tiled_layer_impl.h"
 #include "third_party/khronos/GLES2/gl2.h"
 

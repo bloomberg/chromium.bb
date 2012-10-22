@@ -4,13 +4,13 @@
 
 #include "config.h"
 
-#include "CCQuadCuller.h"
+#include "cc/quad_culler.h"
 
 #include "CCAppendQuadsData.h"
 #include "CCLayerTilingData.h"
-#include "CCMathUtil.h"
-#include "CCOcclusionTracker.h"
-#include "CCOverdrawMetrics.h"
+#include "cc/math_util.h"
+#include "cc/occlusion_tracker.h"
+#include "cc/overdraw_metrics.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/tile_draw_quad.h"
 #include "cc/tiled_layer_impl.h"

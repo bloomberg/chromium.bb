@@ -3,17 +3,19 @@
 // found in the LICENSE file.
 
 #include "config.h"
+
 #include "cc/texture_uploader.h"
 
-#include "CCPrioritizedTexture.h"
+#include <algorithm>
+#include <vector>
+
 #include "base/debug/alias.h"
 #include "base/debug/trace_event.h"
 #include "base/metrics/histogram.h"
+#include "cc/prioritized_texture.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
-#include <algorithm>
 #include <public/WebGraphicsContext3D.h>
-#include <vector>
 
 namespace {
 

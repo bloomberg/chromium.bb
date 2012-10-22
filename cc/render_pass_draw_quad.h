@@ -6,9 +6,9 @@
 #define CCRenderPassDrawQuad_h
 
 #include "CCDrawQuad.h"
-#include "CCRenderPass.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/render_pass.h"
 #include "cc/resource_provider.h"
 
 namespace cc {

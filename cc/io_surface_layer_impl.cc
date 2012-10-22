@@ -8,10 +8,10 @@
 
 #include "CCGraphicsContext.h"
 #include "CCIOSurfaceDrawQuad.h"
-#include "CCLayerTreeHostImpl.h"
-#include "CCQuadSink.h"
 #include "base/stringprintf.h"
 #include "cc/gl_renderer.h" // For the GLC() macro.
+#include "cc/layer_tree_host_impl.h"
+#include "cc/quad_sink.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include <public/WebGraphicsContext3D.h>

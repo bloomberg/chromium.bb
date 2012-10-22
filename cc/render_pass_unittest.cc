@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCRenderPass.h"
+#include "cc/render_pass.h"
 
 #include "CCCheckerboardDrawQuad.h"
 #include "cc/test/geometry_test_utils.h"

@@ -6,11 +6,11 @@
 #define CCTiledLayerTestCommon_h
 
 #include "CCGraphicsContext.h"
-#include "CCPrioritizedTexture.h"
 #include "IntRect.h"
 #include "IntSize.h"
 #include "Region.h"
 #include "cc/layer_texture_updater.h"
+#include "cc/prioritized_texture.h"
 #include "cc/resource_provider.h"
 #include "cc/texture_copier.h"
 #include "cc/texture_update_queue.h"

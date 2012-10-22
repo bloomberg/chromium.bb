@@ -7,10 +7,10 @@
 #include "CCDelegatedRendererLayerImpl.h"
 
 #include "CCAppendQuadsData.h"
-#include "CCQuadSink.h"
-#include "CCMathUtil.h"
-#include "CCRenderPassDrawQuad.h"
-#include "CCRenderPassSink.h"
+#include "cc/math_util.h"
+#include "cc/quad_sink.h"
+#include "cc/render_pass_draw_quad.h"
+#include "cc/render_pass_sink.h"
 
 namespace cc {
 

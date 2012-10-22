@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCRenderPassDrawQuad.h"
+#include "cc/render_pass_draw_quad.h"
 
 namespace cc {
 

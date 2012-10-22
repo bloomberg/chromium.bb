@@ -5,11 +5,12 @@
 #ifndef CCSingleThreadProxy_h
 #define CCSingleThreadProxy_h
 
-#include "CCAnimationEvents.h"
-#include "CCLayerTreeHostImpl.h"
-#include "CCProxy.h"
-#include "base/time.h"
 #include <limits>
+
+#include "CCAnimationEvents.h"
+#include "base/time.h"
+#include "cc/layer_tree_host_impl.h"
+#include "cc/proxy.h"
 
 namespace cc {
 

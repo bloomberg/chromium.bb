@@ -9,7 +9,7 @@
 #include "CCDebugBorderDrawQuad.h"
 #include "CCDirectRenderer.h"
 #include "CCIOSurfaceDrawQuad.h"
-#include "CCRenderPassDrawQuad.h"
+#include "cc/render_pass_draw_quad.h"
 #include "cc/renderer.h"
 #include "cc/solid_color_draw_quad.h"
 #include "cc/tile_draw_quad.h"

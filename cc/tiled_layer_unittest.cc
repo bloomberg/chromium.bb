@@ -6,9 +6,9 @@
 
 #include "cc/tiled_layer.h"
 
-#include "CCOverdrawMetrics.h"
 #include "cc/bitmap_canvas_layer_texture_updater.h"
 #include "cc/layer_painter.h"
+#include "cc/overdraw_metrics.h"
 #include "cc/rendering_stats.h"
 #include "cc/single_thread_proxy.h" // For DebugScopedSetImplThread
 #include "cc/test/animation_test_common.h"

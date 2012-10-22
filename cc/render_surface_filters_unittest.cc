@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCRenderSurfaceFilters.h"
+#include "cc/render_surface_filters.h"
 
 #include "cc/test/compositor_fake_web_graphics_context_3d.h"
 #include "testing/gtest/include/gtest/gtest.h"
