@@ -256,7 +256,7 @@
    fun:sqlite3MemMalloc
    fun:crypto::::NSSInitSingleton::OpenUserDB
    fun:crypto::::NSSInitSingleton::OpenTestNSSDB
-   fun:crypto::ScopedTestNSSDB::ScopedTestNSSDB
+   fun:*ScopedTestNSSDB
 }
 {
    bug_156433_b
@@ -264,7 +264,7 @@
    fun:PORT_Alloc_Util
    fun:crypto::::NSSInitSingleton::OpenUserDB
    fun:crypto::::NSSInitSingleton::OpenTestNSSDB
-   fun:crypto::ScopedTestNSSDB::ScopedTestNSSDB
+   fun:*ScopedTestNSSDB
 }
 
 
