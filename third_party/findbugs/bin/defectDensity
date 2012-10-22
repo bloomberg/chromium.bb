@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 # Generate a defect density table from a bug collection
 

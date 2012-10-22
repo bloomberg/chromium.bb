@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 #
 # Simplified findbugs startup script.

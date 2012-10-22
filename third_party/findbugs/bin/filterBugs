@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 # General purpose utility for filtering/transforming
 # bug collection and/or historical bug collections

@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 # Launch FindBugs from the command line.
 

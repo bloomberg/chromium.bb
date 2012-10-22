@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 # A convenient way to call the main() method of a class
 # in findbugs.jar.
