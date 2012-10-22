@@ -88,9 +88,10 @@ class AbstractStageTest(cros_test_lib.MoxTestCase):
 
     # Stage construction is usually done as late as possible because the tests
     # set up the build configuration and options used in constructing the stage.
-
+    results_lib.Results.Clear()
     stage = self.ConstructStage()
     stage.Run()
+    self.assertTrue(results_lib.Results.BuildSucceededSoFar())
 
 
 class BuilderStageTest(AbstractStageTest):

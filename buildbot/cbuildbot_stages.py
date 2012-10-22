@@ -47,7 +47,8 @@ class NonHaltingBuilderStage(bs.BuilderStage):
     try:
       super(NonHaltingBuilderStage, self).Run()
     except results_lib.StepFailure:
-      pass
+      name = self.__class__.__name__
+      cros_build_lib.Error('Ignoring StepFailure in %s', name)
 
 
 class ForgivingBuilderStage(NonHaltingBuilderStage):
