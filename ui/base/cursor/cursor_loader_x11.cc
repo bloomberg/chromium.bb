@@ -76,6 +76,7 @@ int CursorShapeFromNative(gfx::NativeCursor native_cursor) {
     case ui::kCursorVerticalText:
     case ui::kCursorZoomIn:
     case ui::kCursorZoomOut:
+    case ui::kCursorHand:
       // In some environments, the image assets are not set (e.g. in
       // content-browsertests, content-shell etc.).
       return XC_left_ptr;
