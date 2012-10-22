@@ -141,10 +141,7 @@ int main(int argc, char** argv) {
   MessageLoop loop(MessageLoop::TYPE_IO);
 
   scoped_ptr<net::HostResolver> host_resolver(
-      net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
-                                    net::HostResolver::kDefaultRetryAttempts,
-                                    NULL));
-
+      net::HostResolver::CreateDefaultResolver(NULL));
   scoped_ptr<net::CertVerifier> cert_verifier(
       net::CertVerifier::CreateDefault());
   scoped_ptr<net::ProxyService> proxy_service(

@@ -110,10 +110,7 @@ ServiceURLRequestContext::ServiceURLRequestContext(
     net::ProxyConfigService* net_proxy_config_service)
     : user_agent_(user_agent),
       ALLOW_THIS_IN_INITIALIZER_LIST(storage_(this)) {
-  storage_.set_host_resolver(
-      net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
-                                    net::HostResolver::kDefaultRetryAttempts,
-                                    NULL));
+  storage_.set_host_resolver(net::HostResolver::CreateDefaultResolver(NULL));
   storage_.set_proxy_service(net::ProxyService::CreateUsingSystemProxyResolver(
       net_proxy_config_service, 0u, NULL));
   storage_.set_cert_verifier(net::CertVerifier::CreateDefault());

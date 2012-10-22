@@ -83,9 +83,7 @@ URLRequestContext::URLRequestContext(
     : ALLOW_THIS_IN_INITIALIZER_LIST(storage_(this)) {
   scoped_ptr<VlogNetLog> net_log(new VlogNetLog());
   storage_.set_host_resolver(
-      net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
-                                    net::HostResolver::kDefaultRetryAttempts,
-                                    net_log.get()));
+      net::HostResolver::CreateDefaultResolver(net_log.get()));
   storage_.set_proxy_service(net::ProxyService::CreateUsingSystemProxyResolver(
       proxy_config_service.release(), 0u, net_log.get()));
   storage_.set_cert_verifier(net::CertVerifier::CreateDefault());

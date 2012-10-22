@@ -73,7 +73,8 @@ class FakeDelegate : public SingleLoginAttempt::Delegate {
 class MyTestURLRequestContext : public TestURLRequestContext {
  public:
   MyTestURLRequestContext() : TestURLRequestContext(true) {
-    context_storage_.set_host_resolver(new net::HangingHostResolver());
+    context_storage_.set_host_resolver(
+        scoped_ptr<net::HostResolver>(new net::HangingHostResolver()));
     Init();
   }
   virtual ~MyTestURLRequestContext() {}

@@ -51,7 +51,6 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
   scoped_ptr<net::NetworkDelegate> network_delegate_;
   scoped_ptr<net::URLRequestContextStorage> storage_;
   scoped_ptr<net::URLRequestContext> url_request_context_;
-  scoped_ptr<net::MappedHostResolver> mapped_host_resolver_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellURLRequestContextGetter);
 };

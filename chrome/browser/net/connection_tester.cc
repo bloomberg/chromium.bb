@@ -94,7 +94,7 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
                             &host_resolver_tmp);
     if (rv != net::OK)
       return rv;  // Failure.
-    storage_.set_host_resolver(host_resolver_tmp.release());
+    storage_.set_host_resolver(host_resolver_tmp.Pass());
 
     // Create a custom ProxyService for this this experiment.
     scoped_ptr<net::ProxyService> experiment_proxy_service;
@@ -143,33 +143,36 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
     // Create a vanilla HostResolver that disables caching.
     const size_t kMaxJobs = 50u;
     const size_t kMaxRetryAttempts = 4u;
-    net::HostResolver* impl = net::CreateNonCachingSystemHostResolver(
-        kMaxJobs,
-        kMaxRetryAttempts,
-        NULL /* NetLog */);
-
-    host_resolver->reset(impl);
+    net::HostResolver::Options options;
+    options.max_concurrent_resolves = kMaxJobs;
+    options.max_retry_attempts = kMaxRetryAttempts;
+    options.enable_caching = false;
+    options.enable_async = false;
+    scoped_ptr<net::HostResolver> resolver(
+        net::HostResolver::CreateSystemResolver(options, NULL /* NetLog */));
 
     // Modify it slightly based on the experiment being run.
     switch (experiment) {
       case ConnectionTester::HOST_RESOLVER_EXPERIMENT_PLAIN:
-        return net::OK;
+        break;
       case ConnectionTester::HOST_RESOLVER_EXPERIMENT_DISABLE_IPV6:
-        impl->SetDefaultAddressFamily(net::ADDRESS_FAMILY_IPV4);
-        return net::OK;
+        resolver->SetDefaultAddressFamily(net::ADDRESS_FAMILY_IPV4);
+        break;
       case ConnectionTester::HOST_RESOLVER_EXPERIMENT_IPV6_PROBE: {
         // Note that we don't use impl->ProbeIPv6Support() since that finishes
         // asynchronously and may not take effect in time for the test.
         // So instead we will probe synchronously (might take 100-200 ms).
         net::AddressFamily family = net::TestIPv6Support().ipv6_supported ?
             net::ADDRESS_FAMILY_UNSPECIFIED : net::ADDRESS_FAMILY_IPV4;
-        impl->SetDefaultAddressFamily(family);
-        return net::OK;
+        resolver->SetDefaultAddressFamily(family);
+        break;
       }
       default:
         NOTREACHED();
         return net::ERR_UNEXPECTED;
     }
+    host_resolver->swap(resolver);
+    return net::OK;
   }
 
   // Creates a proxy service for |experiment|. On success returns net::OK
