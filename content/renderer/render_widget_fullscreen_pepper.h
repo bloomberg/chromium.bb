@@ -54,7 +54,6 @@ class RenderWidgetFullscreenPepper :
   virtual void DidChangeCursor(const WebKit::WebCursorInfo& cursor) OVERRIDE;
   virtual webkit::ppapi::PluginDelegate::PlatformContext3D*
       CreateContext3D() OVERRIDE;
-  virtual MouseLockDispatcher* GetMouseLockDispatcher() OVERRIDE;
   virtual void ReparentContext(
       webkit::ppapi::PluginDelegate::PlatformContext3D*) OVERRIDE;
 
@@ -67,6 +66,10 @@ class RenderWidgetFullscreenPepper :
 
   // Could be NULL when this widget is closing.
   webkit::ppapi::PluginInstance* plugin() const { return plugin_; }
+
+  MouseLockDispatcher* mouse_lock_dispatcher() const {
+    return mouse_lock_dispatcher_.get();
+  }
 
  protected:
   RenderWidgetFullscreenPepper(webkit::ppapi::PluginInstance* plugin,

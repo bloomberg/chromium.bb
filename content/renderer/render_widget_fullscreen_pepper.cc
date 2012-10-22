@@ -448,10 +448,6 @@ void RenderWidgetFullscreenPepper::ReparentContext(
   static_cast<PlatformContext3DImpl*>(context)->SetParentContext(this);
 }
 
-MouseLockDispatcher* RenderWidgetFullscreenPepper::GetMouseLockDispatcher() {
-  return mouse_lock_dispatcher_.get();
-}
-
 bool RenderWidgetFullscreenPepper::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetFullscreenPepper, msg)

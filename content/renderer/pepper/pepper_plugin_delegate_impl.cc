@@ -1884,10 +1884,14 @@ void PepperPluginDelegateImpl::UnSetAndDeleteLockTargetAdapter(
 
 MouseLockDispatcher* PepperPluginDelegateImpl::GetMouseLockDispatcher(
     webkit::ppapi::PluginInstance* instance) {
-  if (instance->flash_fullscreen())
-    return instance->fullscreen_container()->GetMouseLockDispatcher();
-  else
+  if (instance->flash_fullscreen()) {
+    RenderWidgetFullscreenPepper* container =
+        static_cast<RenderWidgetFullscreenPepper*>(
+            instance->fullscreen_container());
+    return container->mouse_lock_dispatcher();
+  } else {
     return render_view_->mouse_lock_dispatcher();
+  }
 }
 
 webkit_glue::ClipboardClient*

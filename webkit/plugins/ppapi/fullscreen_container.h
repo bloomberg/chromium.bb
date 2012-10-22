@@ -7,11 +7,6 @@
 
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
-// TODO(yzshen): this is a layering violation.  http://crbug.com/156865
-namespace content {
-class MouseLockDispatcher;
-}
-
 namespace WebKit {
 struct WebCursorInfo;
 struct WebRect;
@@ -43,9 +38,6 @@ class FullscreenContainer {
   virtual PluginDelegate::PlatformContext3D* CreateContext3D() = 0;
 
   virtual void ReparentContext(PluginDelegate::PlatformContext3D*) = 0;
-
-  // The returned object is owned by FullscreenContainer.
-  virtual content::MouseLockDispatcher* GetMouseLockDispatcher() = 0;
 
  protected:
   virtual ~FullscreenContainer() {}
