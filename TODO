@@ -1,23 +1,8 @@
 Core wayland protocol
 
- - Atomicity.  Currently a lot of the atomicity in Wayland relies on
-   how we batch up all requests in a protocol buffer and only flushes
-   in the "blockhandler" in the client.  Consensus was that we need
-   something more reliable and explicit.  The suggestion is that we
-   make surface.attach a synchronization point such that everything
-   before that is batched and applied atomically when the
-   surface.attach request comes in.  For cases where we need atomicity
-   beyond a surface.attach, we can add an atomic grouping mechanism,
-   that can group together multiple surface.attach requests into a
-   bigger atomic change.  To be researched a bit.
-
  - Maybe try to make remote wayland actually happen, to see if there
    is something in the protocol/architecture that makes it harder than
    it should be.
-
- - Add timestamp to touch_cancel, add touch id to touch_cancel (?)
-
- - The output protocol needs to send all the ugly timing details for the modes.
 
 ICCCM
 
@@ -53,8 +38,6 @@ EWMH
 
 EGL/gbm
 
- - Don't wl_display_iterate in eglSwapBuffer, send an eventfd fd?
-
  - Land Robert Braggs EGL extensions: frame age, swap with damage
 
  - Make it possible to share buffers from compositor to clients.
@@ -70,6 +53,7 @@ EGL/gbm
    client (if any) and when the client acks that we send a "try to
    allocate a scanout buffer now" event to the fullscreen-to-be
    client.
+
 
 Misc
 
@@ -101,6 +85,7 @@ Misc
    switching away from.  for minimized windows that we don't want live
    thumb nails for. etc.
 
+
 Clients and ports
 
  - port gtk+
@@ -119,8 +104,6 @@ Clients and ports
 
  - SDL port, bnf has work in progress here:
    http://cgit.freedesktop.org/~bnf/sdl-wayland/
-
- - libva + eglimage + kms integration
 
 
 Ideas
