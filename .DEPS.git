@@ -11,7 +11,7 @@ vars = {
     'git_url':
          'http://git.chromium.org',
     'webkit_rev':
-         '@2ba72d4f0dc031ab9afe73fe099d302b21e473d1'
+         '@1fffe381c15f82847e35a6ef991d3634ea2c5a69'
 }
 
 deps = {
@@ -214,9 +214,9 @@ deps_os = {
         'src/third_party/WebKit/Source':
             None,
         'src/third_party/WebKit/Source/Platform/chromium/public':
-            Var('git_url') + '/external/WebKit/Source/Platform/chromium/public.git@8cbeb065253b1d3aa5520a863c63b1034d467b41',
+            Var('git_url') + '/external/WebKit/Source/Platform/chromium/public.git@384343fcf848d5beee7442c62063c8cbb82e3da7',
         'src/third_party/WebKit/Source/WebKit/chromium/public':
-            Var('git_url') + '/external/WebKit/Source/WebKit/chromium/public.git@43bd3367e66978172557bec508fd276aed2a498d',
+            Var('git_url') + '/external/WebKit/Source/WebKit/chromium/public.git@8f76c992d82966ef7581223d7700f6cdb5161c4d',
         'src/third_party/WebKit/Tools/DumpRenderTree':
             None,
         'src/third_party/WebKit/Tools/Scripts':
@@ -387,8 +387,7 @@ include_rules = [
     '+googleurl',
     '+ipc',
     '+unicode',
-    '+testing',
-    '-base/prefs'
+    '+testing'
 ]
 
 skip_child_includes = [
