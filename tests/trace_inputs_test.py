@@ -419,6 +419,35 @@ if sys.platform != 'win32':
       }
       self.assertEquals(expected, self._load_context(lines, ROOT_DIR))
 
+    def test_futex_missing_in_partial_action(self):
+      # That's how futex() calls roll even more.
+      lines = [
+        (self._ROOT_PID,
+          'futex(0x7fff25718b14, FUTEX_CMP_REQUEUE_PRIVATE, 1, 2147483647, '
+          '0x7fff25718ae8, 2) = 1'),
+        (self._ROOT_PID, 'futex(0x7fff25718ae8, FUTEX_WAKE_PRIVATE, 1) = 0'),
+        (self._ROOT_PID, 'futex(0x697263c, FUTEX_WAIT_PRIVATE, 1, NULL) = 0'),
+        (self._ROOT_PID, 'futex(0x6972610, FUTEX_WAKE_PRIVATE, 1) = 0'),
+        (self._ROOT_PID, 'futex(0x697263c, FUTEX_WAIT_PRIVATE, 3, NULL) = 0'),
+        (self._ROOT_PID, 'futex(0x6972610, FUTEX_WAKE_PRIVATE, 1) = 0'),
+        (self._ROOT_PID, 'futex(0x697263c, FUTEX_WAIT_PRIVATE, 5, NULL) = 0'),
+        (self._ROOT_PID, 'futex(0x6972610, FUTEX_WAKE_PRIVATE, 1) = 0'),
+        (self._ROOT_PID, 'futex(0x697263c, FUTEX_WAIT_PRIVATE, 7, NULL) = 0'),
+        (self._ROOT_PID, 'futex(0x6972610, FUTEX_WAKE_PRIVATE, 1) = 0'),
+        (self._ROOT_PID, 'futex(0x697263c, FUTEX_WAIT_PRIVATE, 9, NULL'),
+      ]
+      expected = {
+        'root': {
+          'children': [],
+          'command': None,
+          'executable': None,
+          'files': [],
+          'initial_cwd': unicode(ROOT_DIR),
+          'pid': self._ROOT_PID,
+        },
+      }
+      self.assertEquals(expected, self._load_context(lines, ROOT_DIR))
+
     def test_open(self):
       lines = [
         (self._ROOT_PID,
