@@ -63,8 +63,8 @@ bool ParseTimezone(const base::StringPiece& timezone,
 }  // namespace
 
 bool IsDriveV2ApiEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableDriveV2Api);
+  // TODO(kochi): Re-enable this. crbug.com/152230
+  return false;
 }
 
 bool GetTimeFromString(const base::StringPiece& raw_value,
