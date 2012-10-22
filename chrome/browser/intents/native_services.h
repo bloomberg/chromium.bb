@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+#include "base/basictypes.h"
 #include "base/string16.h"
 
 class GURL;
@@ -17,8 +18,8 @@ class WebIntentsDispatcher;
 }
 
 namespace webkit_glue {
- struct WebIntentData;
- struct WebIntentServiceData;
+struct WebIntentData;
+struct WebIntentServiceData;
 }
 
 namespace web_intents {
@@ -31,17 +32,21 @@ extern const char kNativeFilePickerUrl[];
 typedef std::vector<webkit_glue::WebIntentServiceData> IntentServiceList;
 
 #if !defined(ANDROID)
-// Factory capable of producing a file picker NativeService.
+// Factory capable of producing a native file picker IntentServiceHost,
+// as well as producing registration information about the service.
 class FilePickerFactory {
  public:
   // Returns a localized title for the file picker.
   static string16 GetServiceTitle();
 
-  // Returns a new instance of FilePickerService.
+  // Returns a new IntentServiceHost. The instance is owned by the caller.
+  // |intent| is the intent data. |web_contents| is the context in which
+  // the intent was invoked.
   static IntentServiceHost* CreateServiceInstance(
       const webkit_glue::WebIntentData& intent,
       content::WebContents* web_contents);
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(FilePickerFactory);
 };
 #endif
@@ -49,29 +54,32 @@ class FilePickerFactory {
 class NativeServiceRegistry {
  public:
   NativeServiceRegistry();
-  // Populates |services| with all supported native services.
+  // Populates |services| with all supported IntentServiceHosts
+  // capable of handling |action|.
   void GetSupportedServices(
       const string16& action,
       IntentServiceList* services);
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(NativeServiceRegistry);
 };
 
 class NativeServiceFactory {
  public:
   NativeServiceFactory();
-  // Returns a NativeService instance suitable to handle |intent|.
-  // |url| identifies the service to be instantiated, and |web_contents|
-  // is the web_contents that may be be needed to serve as host environment
-  // to the service.
+  // Returns an IntentServiceHost instance suitable to handle |intent|.
+  // |url| identifies the service to be instantiated, |web_contents| is
+  // the web_contents of the client that invoked this intent. The
+  // IntentServiceHost is owned by the caller.
   IntentServiceHost* CreateServiceInstance(
       const GURL& url,
       const webkit_glue::WebIntentData& intent,
       content::WebContents* web_contents);
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(NativeServiceFactory);
 };
 
-}  // web_intents namespaces
+}  // namespace web_intents
 
 #endif  // CHROME_BROWSER_INTENTS_NATIVE_SERVICES_H_

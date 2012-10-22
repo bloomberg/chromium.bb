@@ -14,15 +14,15 @@ class WebIntentsDispatcher;
 namespace web_intents {
 
 // Interface allowing services to be implemented in various host environments.
-// Implementations should be owned by their creator.
 class IntentServiceHost {
  public:
   virtual ~IntentServiceHost() {}
 
-  // Handle all necessary service-side processing of an intent.
+  // Handle all necessary service-side processing of an intent. A service
+  // can reply to the intent via |dispatcher|.
   virtual void HandleIntent(content::WebIntentsDispatcher* dispatcher) = 0;
 };
 
-}  // web_intents namespaces
+}  // namespace web_intents
 
 #endif  // CHROME_BROWSER_INTENTS_INTENT_SERVICE_HOST_H_

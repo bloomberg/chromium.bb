@@ -86,7 +86,7 @@ class TestSelectFileDialog : public ui::SelectFileDialog {
     return new TestSelectFileDialog(listener, policy);
   }
 
-  // BaseShellDialog implementation.
+  // SelectFileDialog implementation.
   virtual bool IsRunning(gfx::NativeWindow parent_window) const OVERRIDE {
     return false;
   }
@@ -99,9 +99,7 @@ class TestSelectFileDialog : public ui::SelectFileDialog {
   TestSelectFileDialog(
       Listener* listener, ui::SelectFilePolicy* policy)
       : ui::SelectFileDialog(listener, policy),
-        listener_(listener),
-        policy_(policy) {
-
+        listener_(listener) {
     test_file_ = CreateTestFile();
   }
   virtual ~TestSelectFileDialog() {}
@@ -124,8 +122,8 @@ class TestSelectFileDialog : public ui::SelectFileDialog {
   }
 
  private:
+  // Weak pointer to handler for dialog events.
   Listener* listener_;
-  ui::SelectFilePolicy* policy_;
   FilePath test_file_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSelectFileDialog);
@@ -181,7 +179,6 @@ IN_PROC_BROWSER_TEST_F(NativeServicesBrowserTest, PickFileSelected) {
 
   // Reads of file size are done on the FILE thread, then posted
   // back to the UI thread.
-  // content::RunAllPendingInMessageLoop(BrowserThread::UI);
   content::RunAllPendingInMessageLoop(BrowserThread::FILE);
   content::RunAllPendingInMessageLoop(BrowserThread::UI);
 

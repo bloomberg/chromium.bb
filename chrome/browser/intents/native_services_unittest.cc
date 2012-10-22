@@ -23,7 +23,7 @@ TEST(NativeServiceRegistryTest, GetSupportedServices) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kWebIntentsNativeServicesEnabled);
 
-  std::vector<webkit_glue::WebIntentServiceData> services;
+  web_intents::IntentServiceList services;
   web_intents::NativeServiceRegistry registry;
 
   registry.GetSupportedServices(ASCIIToUTF16("dothedew"), &services);
@@ -43,7 +43,7 @@ TEST(NativeServiceRegistryTest, GetSupportedServices) {
 
 TEST(NativeServiceRegistryTest, GetSupportedServicesDisabled) {
 #if !defined(ANDROID)
-  std::vector<webkit_glue::WebIntentServiceData> services;
+  web_intents::IntentServiceList services;
   web_intents::NativeServiceRegistry registry;
 
   registry.GetSupportedServices(
@@ -53,5 +53,4 @@ TEST(NativeServiceRegistryTest, GetSupportedServicesDisabled) {
 #endif
 }
 
-
-} // namespace
+}  // namespace

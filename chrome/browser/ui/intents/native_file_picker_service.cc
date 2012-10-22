@@ -195,4 +195,4 @@ string16 FilePickerFactory::GetServiceTitle() {
   return l10n_util::GetStringUTF16(IDS_WEB_INTENTS_FILE_PICKER_SERVICE_TITLE);
 }
 
-}  // web_intents namespace
+}  // namespace web_intents

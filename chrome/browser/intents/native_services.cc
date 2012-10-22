@@ -7,10 +7,10 @@
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "googleurl/src/gurl.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/intents/native_services.h"
+#include "chrome/browser/intents/web_intents_util.h"
+#include "chrome/common/chrome_switches.h"
+#include "googleurl/src/gurl.h"
 #include "webkit/glue/web_intent_service_data.h"
 
 namespace web_intents {
@@ -61,4 +61,4 @@ IntentServiceHost* NativeServiceFactory::CreateServiceInstance(
   return NULL;  // couldn't create instance
 }
 
-}  // web_intents namespace
+}  // namespace web_intents
