@@ -1336,7 +1336,8 @@ def GetTranslatedNexe(env, pexe):
   env.Precious(pexe)
   node = env.Command(target=nexe_name, source=[pexe_name],
                      action=[Action('${TRANSLATECOM}', '${TRANSLATECOMSTR}')])
-  return node
+  assert len(node) == 1, node
+  return node[0]
 
 pre_base_env.AddMethod(GetTranslatedNexe)
 

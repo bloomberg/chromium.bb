@@ -668,6 +668,18 @@ def generate(env):
     # if bitcode=1 use pnacl toolchain
     if env.Bit('bitcode'):
       _SetEnvForPnacl(env, root)
+
+      # Get GDB from the nacl-gcc toolchain even when using PNaCl.
+      # TODO(mseaborn): We really want the nacl-gdb binary to be in a
+      # separate tarball from the nacl-gcc toolchain, then this step
+      # will not be necessary.
+      # See http://code.google.com/p/nativeclient/issues/detail?id=2773
+      if env.Bit('target_x86'):
+        temp_env = env.Clone()
+        temp_env.ClearBits('bitcode')
+        temp_root = _GetNaclSdkRoot(temp_env, sdk_mode, psdk_mode)
+        _SetEnvForNativeSdk(temp_env, temp_root)
+        env.Replace(GDB=temp_env['GDB'])
     else:
       _SetEnvForNativeSdk(env, root)
 

@@ -8,14 +8,18 @@ Import('env')
 if 'TRUSTED_ENV' not in env:
   Return()
 
-# PNaCl and ARM bots don't have GDB.
-# TODO(halyavin) : check debugger with PNaCl and enable test if possible.
-if env.Bit('bitcode') or env.Bit('target_arm'):
+# TODO(mseaborn): Enable this test on ARM.
+# See http://code.google.com/p/nativeclient/issues/detail?id=3092
+if env.Bit('target_arm'):
   Return()
 
 # We need -O0 to make stepping predictable and read local variables/function
 # arguments that may otherwise be optimized out.
 env.Append(CCFLAGS=['-O0', '-g', '-fno-omit-frame-pointer'])
+# We need to disable PNaCl's link time optimizations so that functions
+# do not get inlined, so that we can set breakpoints on these
+# functions.
+env.Append(LINKFLAGS=['-O0'])
 
 sel_ldr = env.GetSelLdr()
 
@@ -39,6 +43,8 @@ test_suites = ['medium_tests', 'gdb_tests']
 gdb_test_guest = env.ComponentProgram(
     'gdb_test_guest', 'gdb_test_guest.c',
     EXTRA_LIBS=['${NONIRT_LIBS}'])
+if env.ShouldTranslateToNexe(gdb_test_guest):
+  gdb_test_guest = env.GetTranslatedNexe(gdb_test_guest)
 
 node = env.CommandTest(
     'gdb_stepi_after_break.out',
@@ -91,7 +97,10 @@ node = env.CommandTest(
     osenv=env_vars + ['GDB_TEST_GUEST=%s' % gdb_test_guest.abspath],
     extra_deps = extra_deps + [gdb_test_guest])
 
-env.AddNodeToTestSuite(node, test_suites, 'run_gdb_change_variable_test')
+# This test does not pass with PNaCl yet.
+# TODO(mseaborn): Debug this and enable the test on PNaCl.
+env.AddNodeToTestSuite(node, test_suites, 'run_gdb_change_variable_test',
+                       is_broken=env.Bit('bitcode'))
 env.TestBindsFixedTcpPort(node)
 
 # GDB treats multithreaded programs specially. Provide distinct nexe for
@@ -99,6 +108,8 @@ env.TestBindsFixedTcpPort(node)
 gdb_test_guest_thread = env.ComponentProgram(
     'gdb_test_guest_thread', 'gdb_test_guest_thread.c',
     EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
+if env.ShouldTranslateToNexe(gdb_test_guest_thread):
+  gdb_test_guest_thread = env.GetTranslatedNexe(gdb_test_guest_thread)
 
 node = env.CommandTest(
     'gdb_break_continue_thread.out',
