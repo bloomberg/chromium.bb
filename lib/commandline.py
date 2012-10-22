@@ -260,6 +260,7 @@ class _ShutDownException(SystemExit):
     # Setup a usage message primarily for any code that may intercept it
     # while this exception is crashing back up the stack to us.
     SystemExit.__init__(self, message)
+    self.args = (sig_num, message)
 
 
 def _DefaultHandler(signum, _frame):
