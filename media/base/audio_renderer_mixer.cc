@@ -17,19 +17,23 @@ AudioRendererMixer::AudioRendererMixer(
     const AudioParameters& input_params, const AudioParameters& output_params,
     const scoped_refptr<AudioRendererSink>& sink)
     : audio_sink_(sink),
-      current_audio_delay_milliseconds_(0) {
-  // Sanity check sample rates.
-  DCHECK_LE(input_params.sample_rate(), limits::kMaxSampleRate);
-  DCHECK_GE(input_params.sample_rate(), limits::kMinSampleRate);
-  DCHECK_LE(output_params.sample_rate(), limits::kMaxSampleRate);
-  DCHECK_GE(output_params.sample_rate(), limits::kMinSampleRate);
+      current_audio_delay_milliseconds_(0),
+      io_ratio_(1),
+      input_ms_per_frame_(
+          static_cast<double>(base::Time::kMillisecondsPerSecond) /
+          input_params.sample_rate()) {
+  DCHECK(input_params.IsValid());
+  DCHECK(output_params.IsValid());
+
+  // Channel mixing is handled by the browser side currently.
+  DCHECK_EQ(input_params.channels(), output_params.channels());
 
   // Only resample if necessary since it's expensive.
   if (input_params.sample_rate() != output_params.sample_rate()) {
+    io_ratio_ = input_params.sample_rate() /
+        static_cast<double>(output_params.sample_rate());
     resampler_.reset(new MultiChannelResampler(
-        output_params.channels(),
-        input_params.sample_rate() / static_cast<double>(
-            output_params.sample_rate()),
+        output_params.channels(), io_ratio_,
         base::Bind(&AudioRendererMixer::ProvideInput, base::Unretained(this))));
   }
 
@@ -60,7 +64,7 @@ void AudioRendererMixer::RemoveMixerInput(
 
 int AudioRendererMixer::Render(AudioBus* audio_bus,
                                int audio_delay_milliseconds) {
-  current_audio_delay_milliseconds_ = audio_delay_milliseconds;
+  current_audio_delay_milliseconds_ = audio_delay_milliseconds / io_ratio_;
 
   if (resampler_.get())
     resampler_->Resample(audio_bus, audio_bus->frames());
@@ -117,6 +121,10 @@ void AudioRendererMixer::ProvideInput(AudioBus* audio_bus) {
           audio_bus->channel(i));
     }
   }
+
+  // Update the delay estimate.
+  current_audio_delay_milliseconds_ +=
+      audio_bus->frames() * input_ms_per_frame_;
 }
 
 void AudioRendererMixer::OnRenderError() {

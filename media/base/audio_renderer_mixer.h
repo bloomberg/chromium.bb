@@ -61,6 +61,10 @@ class MEDIA_EXPORT AudioRendererMixer
   // The audio delay in milliseconds received by the last Render() call.
   int current_audio_delay_milliseconds_;
 
+  // Ratio of input data to output data.  Used to scale audio delay information.
+  double io_ratio_;
+  double input_ms_per_frame_;
+
   DISALLOW_COPY_AND_ASSIGN(AudioRendererMixer);
 };
 
