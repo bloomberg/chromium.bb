@@ -3024,14 +3024,23 @@ LRESULT RenderWidgetHostViewWin::OnQueryCharPosition(
     IMECHARPOSITION* position) {
   DCHECK(position);
 
-  if (!ime_input_.is_composing() || composition_range_.is_empty() ||
-      position->dwSize < sizeof(IMECHARPOSITION) ||
-      position->dwCharPos >= composition_character_bounds_.size()) {
+  if (position->dwSize < sizeof(IMECHARPOSITION))
+    return 0;
+
+  RECT target_rect = {};
+  if (ime_input_.is_composing() && !composition_range_.is_empty() &&
+      position->dwCharPos < composition_character_bounds_.size()) {
+    target_rect =
+        composition_character_bounds_[position->dwCharPos].ToRECT();
+  } else if (position->dwCharPos == 0) {
+    // When there is no on-going composition but |position->dwCharPos| is 0,
+    // use the caret rect. This behavior is the same to RichEdit. In fact,
+    // CUAS (Cicero Unaware Application Support) relies on this behavior to
+    // implement ITfContextView::GetTextExt on top of IMM32-based applications.
+    target_rect = caret_rect_.ToRECT();
+  } else {
     return 0;
   }
-
-  RECT target_rect =
-      composition_character_bounds_[position->dwCharPos].ToRECT();
   ClientToScreen(&target_rect);
 
   RECT document_rect = GetViewBounds().ToRECT();
