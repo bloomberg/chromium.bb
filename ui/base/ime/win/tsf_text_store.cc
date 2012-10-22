@@ -155,12 +155,35 @@ STDMETHODIMP TsfTextStore::GetFormattedText(LONG acp_start, LONG acp_end,
 }
 
 STDMETHODIMP TsfTextStore::GetScreenExt(TsViewCookie view_cookie, RECT* rect) {
-  NOTIMPLEMENTED();
   if (view_cookie != kViewCookie)
     return E_INVALIDARG;
   if (!rect)
     return E_INVALIDARG;
+
+  // {0, 0, 0, 0} means that the document rect is not currently displayed.
   SetRect(rect, 0, 0, 0, 0);
+
+  if (!IsWindow(window_handle_))
+    return E_FAIL;
+
+  // Currently ui::TextInputClient does not expose the document rect. So use
+  // the Win32 client rectangle instead.
+  // TODO(yukawa): Upgrade TextInputClient so that the client can retrieve the
+  // document rectangle.
+  RECT client_rect = {};
+  if (!GetClientRect(window_handle_, &client_rect))
+    return E_FAIL;
+  POINT left_top = {client_rect.left, client_rect.top};
+  POINT right_bottom = {client_rect.right, client_rect.bottom};
+  if (!ClientToScreen(window_handle_, &left_top))
+    return E_FAIL;
+  if (!ClientToScreen(window_handle_, &right_bottom))
+    return E_FAIL;
+
+  rect->left = left_top.x;
+  rect->top = left_top.y;
+  rect->right = right_bottom.x;
+  rect->bottom = right_bottom.y;
   return S_OK;
 }
 
