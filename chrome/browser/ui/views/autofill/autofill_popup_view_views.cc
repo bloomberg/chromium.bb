@@ -10,6 +10,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "grit/ui_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
@@ -21,6 +22,7 @@ using WebKit::WebAutofillClient;
 
 namespace {
 const SkColor kBorderColor = SkColorSetARGB(0xFF, 0xC7, 0xCA, 0xCE);
+const SkColor kHoveredBackgroundColor = SkColorSetARGB(0xFF, 0xCD, 0xCD, 0xCD);
 const SkColor kLabelTextColor = SkColorSetARGB(0xFF, 0x7F, 0x7F, 0x7F);
 const SkColor kPopupBackground = SkColorSetARGB(0xFF, 0xFF, 0xFF, 0xFF);
 const SkColor kValueTextColor = SkColorSetARGB(0xFF, 0x00, 0x00, 0x00);
@@ -54,7 +56,29 @@ void AutofillPopupViewViews::OnPaint(gfx::Canvas* canvas) {
 }
 
 bool AutofillPopupViewViews::HandleKeyPressEvent(ui::KeyEvent* event) {
-  return false;
+  switch (event->key_code()) {
+    case ui::VKEY_UP:
+      SelectPreviousLine();
+      return true;
+    case ui::VKEY_DOWN:
+      SelectNextLine();
+      return true;
+    case ui::VKEY_PRIOR:
+      SetSelectedLine(0);
+      return true;
+    case ui::VKEY_NEXT:
+      SetSelectedLine(autofill_values().size() - 1);
+      return true;
+    case ui::VKEY_ESCAPE:
+      Hide();
+      return true;
+    case ui::VKEY_DELETE:
+      return event->IsShiftDown() && RemoveSelectedLine();
+    case ui::VKEY_RETURN:
+      return AcceptSelectedLine();
+    default:
+      return false;
+  }
 }
 
 void AutofillPopupViewViews::ShowInternal() {
@@ -91,7 +115,7 @@ void AutofillPopupViewViews::HideInternal() {
 }
 
 void AutofillPopupViewViews::InvalidateRow(size_t row) {
-  // TODO(csharp): invalidate this row.
+  SchedulePaintInRect(GetRectForRow(row, width()));
 }
 
 void AutofillPopupViewViews::ResizePopup() {
@@ -105,10 +129,12 @@ void AutofillPopupViewViews::ResizePopup() {
 }
 
 void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
-                                               size_t index,
+                                               int index,
                                                const gfx::Rect& entry_rect) {
-  // TODO(csharp): Highlight the selected line.
-  // TODO(csharp): support RTL
+    // TODO(csharp): support RTL
+
+  if (selected_line() == index)
+    canvas->FillRect(entry_rect, kHoveredBackgroundColor);
 
   canvas->DrawStringInt(
       autofill_values()[index],

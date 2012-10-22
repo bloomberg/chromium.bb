@@ -42,7 +42,7 @@ class AutofillPopupViewViews : public views::WidgetDelegateView,
 
   // Draw the given autofill entry in |entry_rect|.
   void DrawAutofillEntry(gfx::Canvas* canvas,
-                         size_t index,
+                         int index,
                          const gfx::Rect& entry_rect);
 
   AutofillExternalDelegateViews* external_delegate_;  // Weak reference.
