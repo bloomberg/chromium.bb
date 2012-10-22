@@ -39,6 +39,8 @@ const ContentSetting kSettingsForCommandIDs[] = {
 
 namespace internal {
 
+// TODO(markusheintz): Replace this model with the one in
+// chrome/browser/ui/website_settings.
 class PermissionMenuModel : public ui::SimpleMenuModel,
                             public ui::SimpleMenuModel::Delegate {
  public:
@@ -151,11 +153,13 @@ PermissionMenuModel::PermissionMenuModel(
   }
   AddCheckItem(COMMAND_SET_TO_DEFAULT, label);
 
-  label = l10n_util::GetStringUTF16(
-      IDS_WEBSITE_SETTINGS_MENU_ITEM_ALLOW);
-  AddCheckItem(COMMAND_SET_TO_ALLOW, label);
-
-  if (site_permission != CONTENT_SETTINGS_TYPE_FULLSCREEN) {
+  if (site_permission != CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
+    label = l10n_util::GetStringUTF16(
+        IDS_WEBSITE_SETTINGS_MENU_ITEM_ALLOW);
+    AddCheckItem(COMMAND_SET_TO_ALLOW, label);
+  }
+  if (site_permission != CONTENT_SETTINGS_TYPE_FULLSCREEN &&
+      site_permission != CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
     label = l10n_util::GetStringUTF16(
         IDS_WEBSITE_SETTINGS_MENU_ITEM_BLOCK);
     AddCheckItem(COMMAND_SET_TO_BLOCK, label);
