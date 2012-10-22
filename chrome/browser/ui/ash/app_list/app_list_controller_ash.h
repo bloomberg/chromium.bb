@@ -28,6 +28,9 @@ class AppListControllerDelegateAsh : public AppListControllerDelegate {
   virtual void ActivateApp(Profile* profile,
                            const std::string& extension_id,
                            int event_flags) OVERRIDE;
+  virtual void LaunchApp(Profile* profile,
+                         const std::string& extension_id,
+                         int event_flags) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(AppListControllerDelegateAsh);
 };

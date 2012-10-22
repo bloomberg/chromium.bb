@@ -48,6 +48,11 @@ void AppListControllerDelegateAsh::CreateNewWindow(bool incognito) {
 void AppListControllerDelegateAsh::ActivateApp(Profile* profile,
                                                const std::string& extension_id,
                                                int event_flags) {
-  ChromeLauncherController::instance()->OpenAppID(extension_id,
-                                                  event_flags);
+  ChromeLauncherController::instance()->ActivateApp(extension_id, event_flags);
+}
+
+void AppListControllerDelegateAsh::LaunchApp(Profile* profile,
+                                             const std::string& extension_id,
+                                             int event_flags) {
+  ChromeLauncherController::instance()->LaunchApp(extension_id, event_flags);
 }

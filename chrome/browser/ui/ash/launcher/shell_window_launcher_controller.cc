@@ -108,7 +108,12 @@ class ShellWindowLauncherController::AppLauncherItemController
     return !shell_windows_.empty();
   }
 
-  virtual void Open(int event_flags) OVERRIDE {
+  virtual void Launch(int event_flags) OVERRIDE {
+    launcher_controller()->LaunchApp(app_id(), ui::EF_NONE);
+  }
+
+  virtual void Activate() OVERRIDE {
+    DCHECK(!shell_windows_.empty());
     ShowAndActivate(shell_windows_.front());
   }
 

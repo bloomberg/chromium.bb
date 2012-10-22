@@ -38,6 +38,8 @@ LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
   if (is_valid_item()) {
     if (item_.type == ash::TYPE_APP_SHORTCUT) {
       DCHECK(controller->IsPinned(item_.id));
+      AddItem(MENU_OPEN_NEW, string16());
+      AddSeparator(ui::NORMAL_SEPARATOR);
       AddItem(
           MENU_PIN,
           l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_UNPIN));
@@ -70,7 +72,6 @@ LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
                 l10n_util::GetStringUTF16(IDS_LAUNCHER_NEW_INCOGNITO_WINDOW));
       }
     } else {
-      AddItem(MENU_OPEN, controller->GetTitle(item_));
       if (item_.type == ash::TYPE_PLATFORM_APP) {
         AddItem(
             MENU_PIN,
@@ -107,6 +108,29 @@ LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
 }
 
 LauncherContextMenu::~LauncherContextMenu() {
+}
+
+bool LauncherContextMenu::IsItemForCommandIdDynamic(int command_id) const {
+  return command_id == MENU_OPEN_NEW;
+}
+
+string16 LauncherContextMenu::GetLabelForCommandId(int command_id) const {
+  if (command_id == MENU_OPEN_NEW) {
+    if (item_.type == ash::TYPE_PLATFORM_APP) {
+      return l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_NEW_WINDOW);
+    }
+    switch (controller_->GetLaunchType(item_.id)) {
+      case extensions::ExtensionPrefs::LAUNCH_PINNED:
+      case extensions::ExtensionPrefs::LAUNCH_REGULAR:
+        return l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_NEW_TAB);
+      case extensions::ExtensionPrefs::LAUNCH_FULLSCREEN:
+      case extensions::ExtensionPrefs::LAUNCH_WINDOW:
+        return l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_NEW_WINDOW);
+    }
+  } else {
+    NOTREACHED();
+    return string16();
+  }
 }
 
 bool LauncherContextMenu::IsCommandIdChecked(int command_id) const {
@@ -151,8 +175,8 @@ bool LauncherContextMenu::GetAcceleratorForCommandId(
 
 void LauncherContextMenu::ExecuteCommand(int command_id) {
   switch (static_cast<MenuItem>(command_id)) {
-    case MENU_OPEN:
-      controller_->Open(item_.id, ui::EF_NONE);
+    case MENU_OPEN_NEW:
+      controller_->Launch(item_.id, ui::EF_NONE);
       break;
     case MENU_CLOSE:
       controller_->Close(item_.id);

@@ -21,7 +21,7 @@ class WebContents;
 }
 
 // LauncherItemController is used by ChromeLauncherController to track one
-// or more windows assoicated with a launcher item.
+// or more windows associated with a launcher item.
 class LauncherItemController {
  public:
   enum Type {
@@ -54,9 +54,12 @@ class LauncherItemController {
   // Returns true if this item is open.
   virtual bool IsOpen() const = 0;
 
-  // Shows and actives the appropriate window associated with this item.
-  // |event_flags| holds the flags of the event which triggered this command.
-  virtual void Open(int event_flags) = 0;
+  // Launches a new instance of the app associated with this item.
+  virtual void Launch(int event_flags) = 0;
+
+  // Shows and activates the most-recently-active window associated with the
+  // item, or launches the item if it is not currently open.
+  virtual void Activate() = 0;
 
   // Closes all windows associated with this item.
   virtual void Close() = 0;
@@ -65,7 +68,7 @@ class LauncherItemController {
   virtual void LauncherItemChanged(int model_index,
                                    const ash::LauncherItem& old_item) = 0;
 
-  // Called when the item is clicked. The bahavior varies by the number of
+  // Called when the item is clicked. The behavior varies by the number of
   // windows associated with the item:
   // * One window: toggles the minimize state.
   // * Multiple windows: cycles the active window.

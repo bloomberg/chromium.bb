@@ -37,13 +37,18 @@ class AppListControllerDelegate {
                                          const std::string& extension_id);
 
   // Handle the "create window" context menu items of Chrome App.
-  // |incoginito| is true to create an incognito window.
+  // |incognito| is true to create an incognito window.
   virtual void CreateNewWindow(bool incognito);
 
-  // App has been clicked on in the app list.
+  // Show the app's most recent window, or launch it if it is not running.
   virtual void ActivateApp(Profile* profile,
                            const std::string& extension_id,
                            int event_flags) = 0;
+
+  // Launch the app.
+  virtual void LaunchApp(Profile* profile,
+                         const std::string& extension_id,
+                         int event_flags) = 0;
 };
 
 namespace app_list_controller {

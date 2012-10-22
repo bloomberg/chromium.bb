@@ -38,6 +38,7 @@ BrowserLauncherItemController::BrowserLauncherItemController(
       tab_model_(tab_model),
       is_incognito_(tab_model->profile()->GetOriginalProfile() !=
                     tab_model->profile() && !Profile::IsGuestSession()) {
+  DCHECK(window_);
   window_->AddObserver(this);
 }
 
@@ -122,10 +123,15 @@ bool BrowserLauncherItemController::HasWindow(aura::Window* window) const {
 }
 
 bool BrowserLauncherItemController::IsOpen() const {
-  return window_ != NULL;
+  return true;
 }
 
-void BrowserLauncherItemController::Open(int event_flags) {
+void BrowserLauncherItemController::Launch(int event_flags) {
+  DCHECK(!app_id().empty());
+  launcher_controller()->LaunchApp(app_id(), event_flags);
+}
+
+void BrowserLauncherItemController::Activate() {
   window_->Show();
   ash::wm::ActivateWindow(window_);
 }
@@ -139,10 +145,11 @@ void BrowserLauncherItemController::Close() {
 void BrowserLauncherItemController::Clicked() {
   views::Widget* widget =
       views::Widget::GetWidgetForNativeView(window_);
-  if (widget && widget->IsActive())
+  if (widget && widget->IsActive()) {
     widget->Minimize();
-  else
-    Open(ui::EF_NONE);
+  } else {
+    Activate();
+  }
 }
 
 void BrowserLauncherItemController::OnRemoved() {
@@ -153,7 +160,7 @@ void BrowserLauncherItemController::LauncherItemChanged(
     const ash::LauncherItem& old_item) {
   if (launcher_model()->items()[index].status == ash::STATUS_ACTIVE &&
       old_item.status == ash::STATUS_RUNNING) {
-    Open(ui::EF_NONE);
+    Activate();
   }
 }
 

@@ -73,6 +73,9 @@ class ExtensionAppItem : public ChromeAppListItem,
   virtual void Activate(int event_flags) OVERRIDE;
   virtual ui::MenuModel* GetContextMenuModel() OVERRIDE;
 
+  // Private equivalent to Activate(), without refocus for already-running apps.
+  void Launch(int event_flags);
+
   Profile* profile_;
   const std::string extension_id_;
   AppListControllerDelegate* controller_;

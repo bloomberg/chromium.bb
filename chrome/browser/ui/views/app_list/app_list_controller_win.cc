@@ -58,6 +58,9 @@ class AppListControllerDelegateWin : public AppListControllerDelegate {
   virtual void ActivateApp(Profile* profile,
                            const std::string& extension_id,
                            int event_flags) OVERRIDE;
+  virtual void LaunchApp(Profile* profile,
+                         const std::string& extension_id,
+                         int event_flags) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(AppListControllerDelegateWin);
 };
@@ -151,6 +154,12 @@ void AppListControllerDelegateWin::ShowCreateShortcutsDialog(
 void AppListControllerDelegateWin::ActivateApp(Profile* profile,
                                                const std::string& extension_id,
                                                int event_flags) {
+  LaunchApp(profile, extension_id, event_flags);
+}
+
+void AppListControllerDelegateWin::LaunchApp(Profile* profile,
+                                             const std::string& extension_id,
+                                             int event_flags) {
   ExtensionService* service = profile->GetExtensionService();
   DCHECK(service);
   const extensions::Extension* extension = service->GetInstalledExtension(

@@ -104,7 +104,7 @@ class ChromeLauncherController
   // Initializes this ChromeLauncherController.
   void Init();
 
-  // Returns the single ChromeLauncherController instnace.
+  // Returns the single ChromeLauncherController instance.
   static ChromeLauncherController* instance() { return instance_; }
 
   // Creates a new tabbed item on the launcher for |controller|.
@@ -146,13 +146,10 @@ class ChromeLauncherController
   // be pinned.
   bool IsPinnable(ash::LauncherID id) const;
 
-  // Opens the specified item.  |event_flags| holds the flags of the
-  // event which triggered this command.
-  void Open(ash::LauncherID id, int event_flags);
-
-  // Opens the application identified by |app_id|. If already running
-  // reactivates the most recently used window or tab owned by the app.
-  void OpenAppID(const std::string& app_id, int event_flags);
+  // Requests that the launcher item controller specified by |id| open a new
+  // instance of the app.  |event_flags| holds the flags of the event which
+  // triggered this command.
+  void Launch(ash::LauncherID id, int event_flags);
 
   // Closes the specified item.
   void Close(ash::LauncherID id);
@@ -162,6 +159,15 @@ class ChromeLauncherController
 
   // Returns true if the specified item is for a platform app.
   bool IsPlatformApp(ash::LauncherID id);
+
+  // Opens a new instance of the application identified by |app_id|.
+  // Used by the app-list, and by pinned-app launcher items.
+  void LaunchApp(const std::string& app_id, int event_flags);
+
+  // If |app_id| is running, reactivates the app's most recently active window,
+  // otherwise launches and activates the app.
+  // Used by the app-list, and by pinned-app launcher items.
+  void ActivateApp(const std::string& app_id, int event_flags);
 
   // Returns the launch type of app for the specified id.
   extensions::ExtensionPrefs::LaunchType GetLaunchType(ash::LauncherID id);

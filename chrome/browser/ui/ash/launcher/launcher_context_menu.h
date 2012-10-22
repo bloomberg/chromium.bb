@@ -31,6 +31,8 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
   ash::LauncherID id() const { return item_.id; }
 
   // ui::SimpleMenuModel::Delegate overrides:
+  virtual bool IsItemForCommandIdDynamic(int command_id) const OVERRIDE;
+  virtual string16 GetLabelForCommandId(int command_id) const OVERRIDE;
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
   virtual bool GetAcceleratorForCommandId(
@@ -40,7 +42,7 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
 
  private:
   enum MenuItem {
-    MENU_OPEN,
+    MENU_OPEN_NEW,
     MENU_CLOSE,
     MENU_PIN,
     LAUNCH_TYPE_PINNED_TAB,

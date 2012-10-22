@@ -488,7 +488,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, LaunchInBackground) {
   LoadAndLaunchExtension("app1", extension_misc::LAUNCH_TAB,
                          NEW_BACKGROUND_TAB);
   EXPECT_EQ(++tab_count, tab_strip->count());
-  ChromeLauncherController::instance()->OpenAppID(last_loaded_extension_id_, 0);
+  ChromeLauncherController::instance()->LaunchApp(last_loaded_extension_id_, 0);
 }
 
 // Confirm that clicking a icon for an app running in one of 2 maxmized windows
@@ -520,17 +520,30 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, LaunchMaximized) {
   EXPECT_EQ(ash::STATUS_ACTIVE, (*model_->ItemByID(shortcut_id)).status);
 }
 
-// Launches app multiple times through the api that the applist uses.
-IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, OpenAppID) {
+// Activating the same app multiple times should launch only a single copy.
+IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, ActivateApp) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   int tab_count = tab_strip->count();
   const Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("app1"));
 
-  ChromeLauncherController::instance()->OpenAppID(extension->id(), 0);
+  ChromeLauncherController::instance()->ActivateApp(extension->id(), 0);
   EXPECT_EQ(++tab_count, tab_strip->count());
-  ChromeLauncherController::instance()->OpenAppID(extension->id(), 0);
+  ChromeLauncherController::instance()->ActivateApp(extension->id(), 0);
   EXPECT_EQ(tab_count, tab_strip->count());
+}
+
+// Launching the same app multiple times should launch a copy for each call.
+IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, LaunchApp) {
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  int tab_count = tab_strip->count();
+  const Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("app1"));
+
+  ChromeLauncherController::instance()->LaunchApp(extension->id(), 0);
+  EXPECT_EQ(++tab_count, tab_strip->count());
+  ChromeLauncherController::instance()->LaunchApp(extension->id(), 0);
+  EXPECT_EQ(++tab_count, tab_strip->count());
 }
 
 // Launch 2 apps and toggle which is active.

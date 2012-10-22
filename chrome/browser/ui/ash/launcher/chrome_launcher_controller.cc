@@ -90,10 +90,12 @@ class AppShortcutLauncherItemController : public LauncherItemController {
     return false;
   }
 
-  virtual void Open(int event_flags) OVERRIDE {
-    // This will open the app for app_id(), replacing this with an appropriate
-    // LauncherItemController.
-    launcher_controller()->OpenAppID(app_id(), event_flags);
+  virtual void Launch(int event_flags) OVERRIDE {
+    launcher_controller()->LaunchApp(app_id(), event_flags);
+  }
+
+  virtual void Activate() OVERRIDE {
+    launcher_controller()->ActivateApp(app_id(), ui::EF_NONE);
   }
 
   virtual void Close() OVERRIDE {
@@ -101,7 +103,7 @@ class AppShortcutLauncherItemController : public LauncherItemController {
   }
 
   virtual void Clicked() OVERRIDE {
-    Open(ui::EF_NONE);
+    Activate();
   }
 
   virtual void OnRemoved() OVERRIDE {
@@ -343,14 +345,44 @@ bool ChromeLauncherController::IsPinnable(ash::LauncherID id) const {
           CanPin());
 }
 
-void ChromeLauncherController::Open(ash::LauncherID id, int event_flags) {
+void ChromeLauncherController::Launch(ash::LauncherID id, int event_flags) {
   if (!HasItemController(id))
     return;  // In case invoked from menu and item closed while menu up.
-  id_to_item_controller_map_[id]->Open(event_flags);
+  id_to_item_controller_map_[id]->Launch(event_flags);
 }
 
-void ChromeLauncherController::OpenAppID(const std::string& app_id,
+void ChromeLauncherController::Close(ash::LauncherID id) {
+  if (!HasItemController(id))
+    return;  // May happen if menu closed.
+  id_to_item_controller_map_[id]->Close();
+}
+
+bool ChromeLauncherController::IsOpen(ash::LauncherID id) {
+  if (!HasItemController(id))
+    return false;
+  return id_to_item_controller_map_[id]->IsOpen();
+}
+
+bool ChromeLauncherController::IsPlatformApp(ash::LauncherID id) {
+  if (!HasItemController(id))
+    return false;
+
+  std::string app_id = GetAppIDForLauncherID(id);
+  const Extension* extension = GetExtensionForAppID(app_id);
+  DCHECK(extension);
+  return extension->is_platform_app();
+}
+
+void ChromeLauncherController::LaunchApp(const std::string& app_id,
                                          int event_flags) {
+  const Extension* extension = GetExtensionForAppID(app_id);
+  extension_utils::OpenExtension(GetProfileForNewWindows(),
+                                 extension,
+                                 event_flags);
+}
+
+void ChromeLauncherController::ActivateApp(const std::string& app_id,
+                                           int event_flags) {
   if (app_id == extension_misc::kChromeAppId) {
     OnBrowserShortcutClicked(event_flags);
     return;
@@ -364,7 +396,7 @@ void ChromeLauncherController::OpenAppID(const std::string& app_id,
   if (id > 0) {
     LauncherItemController* controller = id_to_item_controller_map_[id];
     if (controller->type() != LauncherItemController::TYPE_SHORTCUT) {
-      controller->Open(event_flags);
+      controller->Activate();
       return;
     }
 
@@ -399,32 +431,7 @@ void ChromeLauncherController::OpenAppID(const std::string& app_id,
     }
   }
 
-  const Extension* extension = GetExtensionForAppID(app_id);
-  extension_utils::OpenExtension(GetProfileForNewWindows(),
-                                 extension,
-                                 event_flags);
-}
-
-void ChromeLauncherController::Close(ash::LauncherID id) {
-  if (!HasItemController(id))
-    return;  // May happen if menu closed.
-  id_to_item_controller_map_[id]->Close();
-}
-
-bool ChromeLauncherController::IsOpen(ash::LauncherID id) {
-  if (!HasItemController(id))
-    return false;
-  return id_to_item_controller_map_[id]->IsOpen();
-}
-
-bool ChromeLauncherController::IsPlatformApp(ash::LauncherID id) {
-  if (!HasItemController(id))
-    return false;
-
-  std::string app_id = GetAppIDForLauncherID(id);
-  const Extension* extension = GetExtensionForAppID(app_id);
-  DCHECK(extension);
-  return extension->is_platform_app();
+  LaunchApp(app_id, event_flags);
 }
 
 extensions::ExtensionPrefs::LaunchType ChromeLauncherController::GetLaunchType(
