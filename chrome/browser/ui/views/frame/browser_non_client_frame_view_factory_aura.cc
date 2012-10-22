@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
-#include "ui/views/views_switches.h"
 
 #if defined(USE_ASH)
 #include "chrome/browser/ui/views/ash/browser_non_client_frame_view_ash.h"
@@ -21,13 +20,11 @@ namespace chrome {
 
 BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
     BrowserFrame* frame, BrowserView* browser_view) {
-#if defined(USE_AURA)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-        views::switches::kDesktopAura)) {
-#if defined(OS_WIN)
+#if defined(USE_AURA) && defined(OS_WIN)
+  if (chrome::GetHostDesktopTypeForBrowser(browser_view->browser()) ==
+      chrome::HOST_DESKTOP_TYPE_NATIVE) {
     if (frame->ShouldUseNativeFrame())
       return new GlassBrowserFrameView(frame, browser_view);
-#endif
     return new OpaqueBrowserFrameView(frame, browser_view);
   }
 #endif

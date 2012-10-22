@@ -30,6 +30,10 @@ class UI_EXPORT Screen {
   // ScreenType must be provided.
   static void SetScreenInstance(ScreenType type, Screen* instance);
 
+  // Returns the global screen for a particular type. Types other than _NATIVE
+  // may be NULL.
+  static Screen* GetScreenByType(ScreenType type);
+
   // Sets the global ScreenTypeDelegate. May be left unset if the platform
   // uses only the _NATIVE ScreenType.
   static void SetScreenTypeDelegate(ScreenTypeDelegate* delegate);

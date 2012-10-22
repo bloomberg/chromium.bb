@@ -190,7 +190,6 @@ Shell::Shell(ShellDelegate* delegate)
       browser_context_(NULL),
       simulate_modal_window_open_for_testing_(false) {
   ANNOTATE_LEAKING_OBJECT_PTR(screen_);  // see crbug.com/156466
-  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_);
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_ALTERNATE, screen_);
   ui_controls::InstallUIControlsAura(internal::CreateUIControls());
 #if defined(OS_CHROMEOS)
@@ -329,7 +328,7 @@ aura::RootWindow* Shell::GetActiveRootWindow() {
 
 // static
 gfx::Screen* Shell::GetScreen() {
-  return gfx::Screen::GetScreenFor(GetPrimaryRootWindow());
+  return gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_ALTERNATE);
 }
 
 // static

@@ -21,12 +21,14 @@ chrome::BrowserListImpl* GetNativeList() {
 
 // static
 void BrowserList::AddBrowser(Browser* browser) {
-  GetNativeList()->AddBrowser(browser);
+  chrome::BrowserListImpl::GetInstance(browser->host_desktop_type())->
+      AddBrowser(browser);
 }
 
 // static
 void BrowserList::RemoveBrowser(Browser* browser) {
-  GetNativeList()->RemoveBrowser(browser);
+  chrome::BrowserListImpl::GetInstance(browser->host_desktop_type())->
+      RemoveBrowser(browser);
 }
 
 // static

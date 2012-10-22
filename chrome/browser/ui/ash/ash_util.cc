@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "chrome/browser/ui/ash/ash_init.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "ui/aura/root_window.h"
 
 namespace chrome {
@@ -36,7 +37,7 @@ bool IsNativeWindowInAsh(gfx::NativeWindow native_window) {
 }
 
 void ToggleAshDesktop() {
-  // TODO(scottmg): Probably need to force Ash here. http://crbug.com/133312
+  ScopedForceDesktopType force(chrome::HOST_DESKTOP_TYPE_ASH);
   if (!ash::Shell::HasInstance())
     OpenAsh();
   else

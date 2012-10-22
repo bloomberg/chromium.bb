@@ -7,9 +7,9 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "content/public/test/web_contents_tester.h"
-#include "ui/views/views_switches.h"
 
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
+#include "ui/gfx/screen.h"
 #include "ui/views/widget/desktop_native_widget_aura.h"
 #endif
 
@@ -72,10 +72,6 @@ NativeWidget* TestViewsDelegate::CreateNativeWidget(
     Widget::InitParams::Type type,
     internal::NativeWidgetDelegate* delegate,
     gfx::NativeView parent) {
-#if defined(USE_AURA) && !defined(OS_CHROMEOS)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDesktopAura))
-    return new DesktopNativeWidgetAura(delegate);
-#endif
   return NULL;
 }
 
