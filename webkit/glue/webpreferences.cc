@@ -414,6 +414,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setTextAutosizingFontScaleFactor(font_scale_factor);
   web_view->setIgnoreViewportTagMaximumScale(force_enable_zoom);
   settings->setAutoZoomFocusedNodeToLegibleScale(true);
+  settings->setDoubleTapToZoomEnabled(true);
   settings->setMediaPlaybackRequiresUserGesture(
       user_gesture_required_for_media_playback);
 #endif
