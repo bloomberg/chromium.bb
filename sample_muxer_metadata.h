@@ -21,7 +21,8 @@ class SampleMuxerMetadata {
     kSubtitles,
     kCaptions,
     kDescriptions,
-    kMetadata
+    kMetadata,
+    kChapters
   };
 
   SampleMuxerMetadata();
@@ -31,9 +32,11 @@ class SampleMuxerMetadata {
   bool Init(mkvmuxer::Segment* segment);
 
   // Parse the WebVTT file |filename| having the indicated |kind|, and
-  // create a corresponding track in the segment.  Returns false on
-  // error.
+  // create a corresponding track (or chapters element) in the
+  // segment.  Returns false on error.
   bool Load(const char* filename, Kind kind);
+
+  bool AddChapters();
 
   // Write any WebVTT cues whose time is less or equal to |time_ns| as
   // a metadata block in its corresponding track.  If |time_ns| is
@@ -74,6 +77,21 @@ class SampleMuxerMetadata {
   };
 
   typedef std::multiset<SortableCue> cues_set_t;
+  typedef std::list<cue_t> cue_list_t;
+
+  // Parse the WebVTT cues in the named |file|, returning false on
+  // error.  We handle chapters as a special case, because they are
+  // stored in their own, dedicated level-1 element.
+  bool LoadChapters(const char* file);
+
+  // Parse the WebVTT chapters in |file| to populate |cues|.  Returns
+  // false on error.
+  static bool ParseChapters(const char* file,
+                            cue_list_t* cues);
+
+  // Adds WebVTT cue |chapter| to the chapters element of the output
+  // file's segment element.  Returns false on error.
+  bool AddChapter(const cue_t& chapter);
 
   // Add a metadata track to the segment having the indicated |kind|,
   // returning the |track_num| that has been chosen for this track.
@@ -104,6 +122,10 @@ class SampleMuxerMetadata {
 
   // Set of cues ordered by time and then by track number.
   cues_set_t cues_set_;
+
+  // The cues that will be used to populate the Chapters level-1
+  // element of the output file.
+  cue_list_t chapter_cues_;
 
   // Disable copy ctor and copy assign.
   SampleMuxerMetadata(const SampleMuxerMetadata&);

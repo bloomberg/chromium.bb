@@ -16,6 +16,9 @@ bool SampleMuxerMetadata::Init(mkvmuxer::Segment* segment) {
 }
 
 bool SampleMuxerMetadata::Load(const char* file, Kind kind) {
+  if (kind == kChapters)
+    return LoadChapters(file);
+
   mkvmuxer::uint64 track_num;
 
   if (!AddTrack(kind, &track_num)) {
@@ -24,6 +27,21 @@ bool SampleMuxerMetadata::Load(const char* file, Kind kind) {
   }
 
   return Parse(file, kind, track_num);
+}
+
+bool SampleMuxerMetadata::AddChapters() {
+  typedef cue_list_t::const_iterator iter_t;
+  iter_t i = chapter_cues_.begin();
+  const iter_t j = chapter_cues_.end();
+
+  while (i != j) {
+    const cue_t& chapter = *i++;
+
+    if (!AddChapter(chapter))
+      return false;
+  }
+
+  return true;
 }
 
 bool SampleMuxerMetadata::Write(mkvmuxer::int64 time_ns) {
@@ -44,6 +62,129 @@ bool SampleMuxerMetadata::Write(mkvmuxer::int64 time_ns) {
     }
 
     cues_set_.erase(i++);
+  }
+
+  return true;
+}
+
+bool SampleMuxerMetadata::LoadChapters(const char* file) {
+  if (!chapter_cues_.empty()) {
+    printf("Support for more than one chapters file is not yet implemented\n");
+    return false;
+  }
+
+  cue_list_t cues;
+
+  if (!ParseChapters(file, &cues))
+    return false;
+
+  // TODO(matthewjheaney): support more than one chapters file
+  chapter_cues_.swap(cues);
+
+  return true;
+}
+
+bool SampleMuxerMetadata::ParseChapters(
+    const char* file,
+    cue_list_t* cues_ptr) {
+  cue_list_t& cues = *cues_ptr;
+  cues.clear();
+
+  libwebvtt::VttReader r;
+  int e = r.Open(file);
+
+  if (e) {
+    printf("Unable to open WebVTT file: \"%s\"\n", file);
+    return false;
+  }
+
+  libwebvtt::Parser p(&r);
+  e = p.Init();
+
+  if (e < 0) {  // error
+    printf("Error parsing WebVTT file: \"%s\"\n", file);
+    return false;
+  }
+
+  libwebvtt::Time t;
+  t.hours = -1;
+
+  for (;;) {
+    cue_t c;
+    e = p.Parse(&c);
+
+    if (e < 0) {  // error
+      printf("Error parsing WebVTT file: \"%s\"\n", file);
+      return false;
+    }
+
+    if (e > 0)  // EOF
+      return true;
+
+    if (c.start_time < t) {
+      printf("bad WebVTT cue timestamp (out-of-order)\n");
+      return false;
+    }
+
+    if (c.stop_time < c.start_time) {
+      printf("bad WebVTT cue timestamp (stop < start)\n");
+      return false;
+    }
+
+    t = c.start_time;
+    cues.push_back(c);
+  }
+}
+
+bool SampleMuxerMetadata::AddChapter(const cue_t& cue) {
+  // TODO(matthewjheaney): support language and country
+
+  mkvmuxer::Chapter* const chapter = segment_->AddChapter();
+
+  if (chapter == NULL) {
+    printf("Unable to add chapter\n");
+    return false;
+  }
+
+  if (cue.identifier.empty()) {
+    chapter->set_id(NULL);
+  } else {
+    const char* const id = cue.identifier.c_str();
+    if (!chapter->set_id(id)) {
+      printf("Unable to set chapter id\n");
+      return false;
+    }
+  }
+
+  typedef libwebvtt::presentation_t time_ms_t;
+  const time_ms_t start_time_ms = cue.start_time.presentation();
+  const time_ms_t stop_time_ms = cue.stop_time.presentation();
+
+  enum { kNsPerMs = 1000000 };
+  const mkvmuxer::uint64 start_time_ns = start_time_ms * kNsPerMs;
+  const mkvmuxer::uint64 stop_time_ns = stop_time_ms * kNsPerMs;
+
+  chapter->set_time(*segment_, start_time_ns, stop_time_ns);
+
+  typedef libwebvtt::Cue::payload_t::const_iterator iter_t;
+  iter_t i = cue.payload.begin();
+  const iter_t j = cue.payload.end();
+
+  string title;
+
+  for (;;) {
+    title += *i++;
+
+    if (i == j)
+      break;
+
+    enum { kLF = '\x0A' };
+    title += kLF;
+  }
+
+  if (!chapter->add_string(title.c_str(), NULL, NULL)) {
+    printf("Unable to set chapter title\n");
+    return false;
   }
 
   return true;

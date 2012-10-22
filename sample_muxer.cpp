@@ -63,6 +63,8 @@ void Usage() {
          "add WebVTT descriptions as metadata track\n");
   printf("  -webvtt-metadata <vttfile>     "
          "add WebVTT subtitles as metadata track\n");
+  printf("  -webvtt-chapters <vttfile>     "
+         "add WebVTT chapters as MKV chapters element\n");
 }
 
 struct MetadataFile {
@@ -98,13 +100,14 @@ int ParseArgWebVTT(
     metadata_files_t* metadata_files) {
   int& i = *argv_index;
 
-  enum { kCount = 4 };
+  enum { kCount = 5 };
   struct Arg { const char* name; SampleMuxerMetadata::Kind kind; };
   const Arg args[kCount] = {
     { "-webvtt-subtitles", SampleMuxerMetadata::kSubtitles },
     { "-webvtt-captions", SampleMuxerMetadata::kCaptions },
     { "-webvtt-descriptions", SampleMuxerMetadata::kDescriptions },
-    { "-webvtt-metadata", SampleMuxerMetadata::kMetadata }
+    { "-webvtt-metadata", SampleMuxerMetadata::kMetadata },
+    { "-webvtt-chapters", SampleMuxerMetadata::kChapters }
   };
 
   for (int idx = 0; idx < kCount; ++idx) {
@@ -147,8 +150,8 @@ int main(int argc, char* argv[]) {
   uint64 max_cluster_duration = 0;
   uint64 max_cluster_size = 0;
   bool switch_tracks = false;
-  int audio_track_number = 0; // 0 tells muxer to decide.
-  int video_track_number = 0; // 0 tells muxer to decide.
+  int audio_track_number = 0;  // 0 tells muxer to decide.
+  int video_track_number = 0;  // 0 tells muxer to decide.
   bool chunking = false;
   const char* chunk_name = NULL;
 
@@ -291,8 +294,8 @@ int main(int argc, char* argv[]) {
   // Set Tracks element attributes
   const mkvparser::Tracks* const parser_tracks = parser_segment->GetTracks();
   unsigned long i = 0;
-  uint64 vid_track = 0; // no track added
-  uint64 aud_track = 0; // no track added
+  uint64 vid_track = 0;  // no track added
+  uint64 aud_track = 0;  // no track added
 
   using mkvparser::Track;
 
@@ -408,6 +411,9 @@ int main(int argc, char* argv[]) {
   if (!LoadMetadataFiles(metadata_files, &metadata))
     return EXIT_FAILURE;
 
+  if (!metadata.AddChapters())
+    return EXIT_FAILURE;
+
   // Set Cues element attributes
   mkvmuxer::Cues* const cues = muxer_segment.GetCues();
   cues->set_output_block_number(output_cues_block_number);
@@ -427,8 +433,7 @@ int main(int argc, char* argv[]) {
 
     long status = cluster->GetFirst(block_entry);
 
-    if (status)
-    {
+    if (status) {
         printf("\n Could not get first block of cluster.\n");
         return EXIT_FAILURE;
     }
@@ -483,8 +488,7 @@ int main(int argc, char* argv[]) {
 
       status = cluster->GetNext(block_entry, block_entry);
 
-      if (status)
-      {
+      if (status) {
           printf("\n Could not get next block of cluster.\n");
           return EXIT_FAILURE;
       }
@@ -498,7 +502,10 @@ int main(int argc, char* argv[]) {
   if (!metadata.Write(-1))
     return EXIT_FAILURE;
 
-  muxer_segment.Finalize();
+  if (!muxer_segment.Finalize()) {
+    printf("Finalization of segment failed.\n");
+    return EXIT_FAILURE;
+  }
 
   delete [] data;
   delete parser_segment;
