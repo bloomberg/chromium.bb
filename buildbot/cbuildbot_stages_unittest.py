@@ -1198,6 +1198,28 @@ class UploadPrebuiltsStageTest(AbstractStageTest):
       stages.UploadPrebuiltsStage._GetPortageEnvVar(stages._PORTAGE_BINHOST,
           board).AndReturn(binhost)
 
+  def _MockOutPrebuiltCall(self, extra_args):
+    """Common method to mock out UploadPrebuilts call."""
+    commands.UploadPrebuilts(
+        category=self.build_config['build_type'],
+        chrome_rev=self.options.chrome_rev,
+        private_bucket=False,
+        buildroot=self.build_root,
+        board=self._current_board,
+        extra_args=extra_args)
+
+  def testFullPrebuiltsUpload(self):
+    """Test uploading of full builder prebuilts."""
+    self.build_config['build_type'] = constants.BUILD_FROM_SOURCE_TYPE
+    self.build_config['manifest_version'] = False
+    self.build_config['git_sync'] = True
+    self._MockOutPrebuiltCall(mox.And(mox.IsA(list),
+                                      mox.In('--git-sync')))
+
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
   def testChromeUpload(self):
     """Test uploading of prebuilts for chrome build."""
     self.build_config['build_type'] = constants.CHROME_PFQ_TYPE
@@ -1205,17 +1227,8 @@ class UploadPrebuiltsStageTest(AbstractStageTest):
     self.archive_stage.GetVersion().AndReturn(chrome_version)
 
     self.ConstructBinhosts()
-    commands.UploadPrebuilts(
-        self.build_root, self._current_board,
-        False,
-        self.build_config['build_type'],
-        self.options.chrome_rev,
-        self.build_config['binhost_bucket'],
-        self.build_config['binhost_key'],
-        self.build_config['binhost_base_url'],
-        False,
-        self.build_config['git_sync'],
-        mox.IgnoreArg())
+    self._MockOutPrebuiltCall(mox.And(mox.IsA(list),
+                                      mox.In(chrome_version)))
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -1228,17 +1241,47 @@ class UploadPrebuiltsStageTest(AbstractStageTest):
     self.archive_stage.GetVersion().AndReturn(pfq_version)
 
     self.ConstructBinhosts()
-    commands.UploadPrebuilts(
-        self.build_root, self._current_board,
-        False,
-        self.build_config['build_type'],
-        self.options.chrome_rev,
-        self.build_config['binhost_bucket'],
-        self.build_config['binhost_key'],
-        self.build_config['binhost_base_url'],
-        False,
-        self.build_config['git_sync'],
-        mox.IgnoreArg())
+    self._MockOutPrebuiltCall(mox.And(mox.IsA(list),
+                                      mox.In(pfq_version),
+                                      mox.In('--sync-host')))
+
+    self.mox.ReplayAll()
+    self.RunStage()
+    self.mox.VerifyAll()
+
+
+class UploadDevInstallerPrebuiltsStageTest(AbstractStageTest):
+  def setUp(self):
+    self.options.chrome_rev = None
+    self.options.prebuilts = True
+    self.build_config['dev_installer_prebuilts'] = True
+    self.build_config['binhost_bucket'] = 'gs://testbucket'
+    self.build_config['binhost_key'] = 'dontcare'
+    self.build_config['binhost_base_url'] = 'https://dontcare/here'
+    self.mox.StubOutWithMock(stages.UploadPrebuiltsStage, '_GetPortageEnvVar')
+    self.mox.StubOutWithMock(commands, 'UploadDevInstallerPrebuilts')
+    self.archive_stage = self.mox.CreateMock(stages.ArchiveStage)
+
+  def ConstructStage(self):
+    self.mox.CreateMock(stages.ArchiveStage)
+    return stages.DevInstallerPrebuiltsStage(self.options,
+                                             self.build_config,
+                                             self._current_board,
+                                             self.archive_stage)
+
+  def testDevInstallerUpload(self):
+    """Basic sanity test testing uploads of dev installer prebuilts."""
+    version = 'awesome_canary_version'
+    self.archive_stage.GetVersion().AndReturn(version)
+
+    commands.UploadDevInstallerPrebuilts(
+        binhost_bucket=self.build_config['binhost_bucket'],
+        binhost_key=self.build_config['binhost_key'],
+        binhost_base_url=self.build_config['binhost_base_url'],
+        buildroot=self.build_root,
+        board=self._current_board,
+        extra_args=mox.And(mox.IsA(list),
+                           mox.In(version)))
 
     self.mox.ReplayAll()
     self.RunStage()

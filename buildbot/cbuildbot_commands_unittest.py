@@ -278,36 +278,77 @@ class CBuildBotTest(cros_test_lib.MoxTempDirTestCase):
     self.mox.VerifyAll()
 
   def testUploadPublicPrebuilts(self):
-    """Test _UploadPrebuilts with a public location."""
+    """Test UploadPrebuilts with a public location."""
     check = mox.And(mox.IsA(list),
                     mox.In('gs://chromeos-prebuilt'),
                     mox.In(constants.PFQ_TYPE))
     cros_build_lib.RunCommand(check, cwd=constants.CHROMITE_BIN_DIR)
     self.mox.ReplayAll()
-    commands.UploadPrebuilts(self._buildroot, self._test_board, False,
-                             constants.PFQ_TYPE, None)
+    commands.UploadPrebuilts(constants.PFQ_TYPE, None, False,
+                             buildroot=self._buildroot,
+                             board=self._test_board)
     self.mox.VerifyAll()
 
   def testUploadPrivatePrebuilts(self):
-    """Test _UploadPrebuilts with a private location."""
+    """Test UploadPrebuilts with a private location."""
     check = mox.And(mox.IsA(list),
                     mox.In('gs://chromeos-prebuilt'),
                     mox.In(constants.PFQ_TYPE))
+
     cros_build_lib.RunCommand(check, cwd=constants.CHROMITE_BIN_DIR)
     self.mox.ReplayAll()
-    commands.UploadPrebuilts(self._buildroot, self._test_board, True,
-                             constants.PFQ_TYPE, None)
+    commands.UploadPrebuilts(constants.PFQ_TYPE, None, True,
+                             buildroot=self._buildroot,
+                             board=self._test_board)
     self.mox.VerifyAll()
 
   def testChromePrebuilts(self):
-    """Test _UploadPrebuilts for Chrome prebuilts."""
+    """Test UploadPrebuilts for Chrome prebuilts."""
     check = mox.And(mox.IsA(list),
                     mox.In('gs://chromeos-prebuilt'),
                     mox.In(constants.CHROME_PFQ_TYPE))
     cros_build_lib.RunCommand(check, cwd=constants.CHROMITE_BIN_DIR)
     self.mox.ReplayAll()
-    commands.UploadPrebuilts(self._buildroot, self._test_board, False,
-                             constants.CHROME_PFQ_TYPE, 'tot')
+    commands.UploadPrebuilts(constants.CHROME_PFQ_TYPE, 'tot', False,
+                             buildroot=self._buildroot,
+                             board=self._test_board)
+    self.mox.VerifyAll()
+
+  def testDevInstallerPrebuilts(self):
+    """Test UploadDevInstallerPrebuilts."""
+    test_bucket = 'gs://dontcare'
+    test_key = 'some_path_to_key'
+    test_url = 'https://my_test/location'
+    package_list = ['package1', 'package2']
+    self.mox.StubOutWithMock(commands, 'AddPackagesForPrebuilt')
+    check = mox.And(mox.IsA(list),
+                    mox.In(test_bucket),
+                    mox.In(constants.CANARY_TYPE),
+                    mox.In(test_key),
+                    mox.In(test_url))
+    commands.AddPackagesForPrebuilt(mox.StrContains(
+        commands._BINHOST_PACKAGE_FILE)).AndReturn(package_list)
+    cros_build_lib.RunCommand(check, cwd=constants.CHROMITE_BIN_DIR)
+    self.mox.ReplayAll()
+    commands.UploadDevInstallerPrebuilts(test_bucket, test_key, test_url,
+                                         buildroot=self._buildroot,
+                                         board=self._test_board)
+    self.mox.VerifyAll()
+
+  def testMissingDevInstallerFile(self):
+    """Test that we raise an exception when the installer file is missing."""
+    test_bucket = 'gs://dontcare'
+    test_key = 'some_path_to_key'
+    test_url = 'https://my_test/location'
+    package_list = []
+    self.mox.StubOutWithMock(commands, 'AddPackagesForPrebuilt')
+    commands.AddPackagesForPrebuilt(mox.StrContains(
+        commands._BINHOST_PACKAGE_FILE)).AndReturn(package_list)
+    self.mox.ReplayAll()
+    self.assertRaises(commands.PackageFileMissing,
+                      commands.UploadDevInstallerPrebuilts,
+                      test_bucket, test_key, test_url,
+                      buildroot=self._buildroot, board=self._test_board)
     self.mox.VerifyAll()
 
 

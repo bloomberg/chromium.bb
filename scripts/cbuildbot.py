@@ -361,7 +361,8 @@ class SimpleBuilder(Builder):
                   [stages.ChromeTestStage, board, archive_stage],
                   [stages.SignerTestStage, board, archive_stage],
                   [stages.UnitTestStage, board],
-                  [stages.UploadPrebuiltsStage, board, archive_stage]]
+                  [stages.UploadPrebuiltsStage, board, archive_stage],
+                  [stages.DevInstallerPrebuiltsStage, board, archive_stage]]
 
     # We can not run hw tests without archiving the payloads.
     if self.options.archive:

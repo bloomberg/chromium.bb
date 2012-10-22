@@ -521,6 +521,7 @@ internal = _config(
 official = _config(
   useflags=['chrome_internal', 'chrome_pdf', '-highdpi'],
   chromeos_official=True,
+  prebuilts=False,
 )
 
 SDK_TEST_BOARDS = ['amd64-generic', 'daisy', 'x86-generic']
@@ -622,7 +623,6 @@ internal_chromium_pfq.add_config('amd64-generic-chromium-pfq',
 chrome_pfq = internal_chromium_pfq.derive(
   official,
   important=True,
-  prebuilts=False,
   overlays=constants.BOTH_OVERLAYS,
   description='Preflight Chrome build (internal)',
 )
@@ -639,7 +639,6 @@ chrome_pgo = chrome_pfq.derive(
   useflags=official['useflags'] + ['pgo_generate'],
   usepkg_build_packages=False,
   chroot_replace=True,
-  prebuilts=False,
 
   vm_tests=None,
   hw_tests=['PGO_record'],

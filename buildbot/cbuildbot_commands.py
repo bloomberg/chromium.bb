@@ -45,7 +45,6 @@ UPLOADED_LIST_FILENAME = 'UPLOADED'
 class TestFailure(results_lib.StepFailure):
   pass
 
-
 # =========================== Command Helpers =================================
 
 
@@ -721,90 +720,98 @@ def AddPackagesForPrebuilt(filename):
     return None
 
 
-def UploadPrebuilts(buildroot, board, private_bucket, category,
-                    chrome_rev,
-                    binhost_bucket=None,
-                    binhost_key=None,
-                    binhost_base_url=None,
-                    use_binhost_package_file=False,
-                    git_sync=False,
-                    extra_args=None):
-  """Upload prebuilts.
+def UploadPrebuilts(category, chrome_rev, private_bucket, buildroot, **kwargs):
+  """Upload Prebuilts for non-dev-installer use cases.
 
   Args:
-    buildroot: The root directory where the build occurs.
-    board: Board type that was built on this machine
-    private_bucket: True if we are uploading to a private bucket.
     category: Build type. Can be [binary|full|chrome].
     chrome_rev: Chrome_rev of type constants.VALID_CHROME_REVISIONS.
+    private_bucket: True if we are uploading to a private bucket.
+    buildroot: The root directory where the build occurs.
+    board: Board type that was built on this machine.
+    extra_args: Extra args to pass to prebuilts script.
+  """
+  extra_args = ['--prepend-version', category]
+  extra_args.extend(['--upload', 'gs://chromeos-prebuilt'])
+  if private_bucket:
+    extra_args.extend(['--private', '--binhost-conf-dir',
+                       _PRIVATE_BINHOST_CONF_DIR])
+
+  if category == constants.CHROOT_BUILDER_TYPE:
+    extra_args.extend(['--sync-host',
+                       '--upload-board-tarball'])
+    tarball_location = os.path.join(buildroot, 'built-sdk.tar.xz')
+    extra_args.extend(['--prepackaged-tarball', tarball_location])
+
+  if category == constants.CHROME_PFQ_TYPE:
+    assert chrome_rev
+    key = '%s_%s' % (chrome_rev, _CHROME_BINHOST)
+    extra_args.extend(['--key', key.upper()])
+  elif cbuildbot_config.IsPFQType(category):
+    extra_args.extend(['--key', _PREFLIGHT_BINHOST])
+  else:
+    assert category in (constants.BUILD_FROM_SOURCE_TYPE,
+                        constants.CHROOT_BUILDER_TYPE)
+    extra_args.extend(['--key', _FULL_BINHOST])
+
+  if category == constants.CHROME_PFQ_TYPE:
+    extra_args.extend(['--packages=chromeos-chrome'])
+
+  kwargs.setdefault('extra_args', []).extend(extra_args)
+  return _UploadPrebuilts(buildroot=buildroot, **kwargs)
+
+
+class PackageFileMissing(Exception):
+  """Raised when the dev installer package file is missing."""
+  pass
+
+
+def UploadDevInstallerPrebuilts(binhost_bucket, binhost_key, binhost_base_url,
+                                buildroot, board, **kwargs):
+  """Upload Prebuilts for dev-installer use case.
+
+  Args:
     binhost_bucket: bucket for uploading prebuilt packages. If it equals None
                     then the default bucket is used.
     binhost_key: key parameter to pass onto upload_prebuilts. If it equals
                  None, then chrome_rev is used to select a default key.
     binhost_base_url: base url for upload_prebuilts. If None the parameter
                       --binhost-base-url is absent.
-    git_sync: boolean that enables --git-sync upload_prebuilts parameter.
-    use_binhost_package_file: use the File that contains the packages to upload
-                              to the binhost. If it equals False then all
-                              packages are selected.
-    extra_args: Extra args to send to upload_prebuilts.
+    buildroot: The root directory where the build occurs.
+    board: Board type that was built on this machine.
+    extra_args: Extra args to pass to prebuilts script.
   """
-  if extra_args is None:
-    extra_args = []
+  extra_args = ['--prepend-version', constants.CANARY_TYPE]
+  extra_args.extend(['--binhost-base-url', binhost_base_url])
+  extra_args.extend(['--upload', binhost_bucket])
+  extra_args.extend(['--key', binhost_key])
 
+  filename = os.path.join(buildroot, 'chroot', 'build', board,
+                          _BINHOST_PACKAGE_FILE.lstrip('/'))
+  cmd_packages = AddPackagesForPrebuilt(filename)
+  if cmd_packages:
+    extra_args.extend(cmd_packages)
+  else:
+    raise PackageFileMissing()
+
+  kwargs.setdefault('extra_args', []).extend(extra_args)
+  return _UploadPrebuilts(buildroot=buildroot, board=board, **kwargs)
+
+
+def _UploadPrebuilts(buildroot, board, extra_args):
+  """Upload prebuilts.
+
+  Args:
+    buildroot: The root directory where the build occurs.
+    board: Board type that was built on this machine.
+    extra_args: Extra args to pass to prebuilts script.
+  """
   cwd = constants.CHROMITE_BIN_DIR
   cmd = ['./upload_prebuilts',
-         '--build-path', buildroot,
-         '--prepend-version', category]
-
-  if binhost_base_url is not None:
-    cmd.extend(['--binhost-base-url', binhost_base_url])
-
-  if binhost_bucket is not None:
-    cmd.extend(['--upload', binhost_bucket])
-  else:
-    cmd.extend(['--upload', 'gs://chromeos-prebuilt'])
-
-  if private_bucket:
-    cmd.extend(['--private', '--binhost-conf-dir', _PRIVATE_BINHOST_CONF_DIR])
+         '--build-path', buildroot]
 
   if board:
     cmd.extend(['--board', board])
-
-  if category == 'chroot':
-    cmd.extend(['--sync-host',
-                '--upload-board-tarball'])
-    tarball_location = os.path.join(buildroot, 'built-sdk.tar.xz')
-    cmd.extend(['--prepackaged-tarball', tarball_location])
-
-  if binhost_key is not None:
-    cmd.extend(['--key', binhost_key])
-  elif category == constants.CHROME_PFQ_TYPE:
-    assert chrome_rev
-    key = '%s_%s' % (chrome_rev, _CHROME_BINHOST)
-    cmd.extend(['--key', key.upper()])
-  elif cbuildbot_config.IsPFQType(category):
-    cmd.extend(['--key', _PREFLIGHT_BINHOST])
-  else:
-    assert category in (constants.BUILD_FROM_SOURCE_TYPE,
-                        constants.CHROOT_BUILDER_TYPE)
-    cmd.extend(['--key', _FULL_BINHOST])
-
-  if category == constants.CHROME_PFQ_TYPE:
-    cmd.extend(['--packages=chromeos-chrome'])
-
-  if use_binhost_package_file:
-    filename = os.path.join(buildroot, 'chroot', 'build', board,
-                            _BINHOST_PACKAGE_FILE.lstrip('/'))
-    cmd_packages = AddPackagesForPrebuilt(filename)
-    if cmd_packages:
-      cmd.extend(cmd_packages)
-    else:
-      # If there is any problem with the packages file do not upload anything.
-      return
-
-  if git_sync:
-    cmd.extend(['--git-sync'])
 
   cmd.extend(extra_args)
   _RunBuildScript(buildroot, cmd, cwd=cwd)
