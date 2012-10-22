@@ -5,6 +5,7 @@
 #include "chrome/browser/media_transfer_protocol/media_transfer_protocol_daemon_client.h"
 
 #include "base/bind.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/media_transfer_protocol/mtp_file_entry.pb.h"
 #include "chrome/browser/media_transfer_protocol/mtp_storage_info.pb.h"
 #include "dbus/bus.h"
@@ -381,8 +382,8 @@ class MediaTransferProtocolDaemonClientImpl
   // Handles the result of signal connection setup.
   void OnSignalConnected(const std::string& interface,
                          const std::string& signal,
-                         bool successed) {
-    LOG_IF(ERROR, !successed) << "Connect to " << interface << " "
+                         bool succeeded) {
+    LOG_IF(ERROR, !succeeded) << "Connect to " << interface << " "
                               << signal << " failed.";
   }
 

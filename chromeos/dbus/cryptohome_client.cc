@@ -289,8 +289,8 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  virtual bool InstallAttributesIsFirstInstall(bool* is_first_install) OVERRIDE
-  {
+  virtual bool InstallAttributesIsFirstInstall(
+      bool* is_first_install) OVERRIDE {
     INITIALIZE_METHOD_CALL(
         method_call, cryptohome::kCryptohomeInstallAttributesIsFirstInstall);
     return CallBoolMethodAndBlock(&method_call, is_first_install);
@@ -418,8 +418,8 @@ class CryptohomeClientImpl : public CryptohomeClient {
   // Handles the result of signal connection setup.
   void OnSignalConnected(const std::string& interface,
                          const std::string& signal,
-                         bool successed) {
-    LOG_IF(ERROR, !successed) << "Connect to " << interface << " " <<
+                         bool succeeded) {
+    LOG_IF(ERROR, !succeeded) << "Connect to " << interface << " " <<
         signal << " failed.";
   }
 
@@ -620,8 +620,8 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  virtual bool InstallAttributesIsFirstInstall(bool* is_first_install) OVERRIDE
-  {
+  virtual bool InstallAttributesIsFirstInstall(
+      bool* is_first_install) OVERRIDE {
     *is_first_install = !locked_;
     return true;
   }
@@ -660,7 +660,7 @@ class CryptohomeClientStubImpl : public CryptohomeClient {
   DISALLOW_COPY_AND_ASSIGN(CryptohomeClientStubImpl);
 };
 
-} // namespace
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // CryptohomeClient

@@ -116,8 +116,8 @@ class ModemMessagingProxy {
   // Handles the result of signal connection setup.
   void OnSignalConnected(const std::string& interface,
                          const std::string& signal,
-                         bool successed) {
-    LOG_IF(ERROR, !successed) << "Connect to " << interface << " "
+                         bool succeeded) {
+    LOG_IF(ERROR, !succeeded) << "Connect to " << interface << " "
                               << signal << " failed.";
   }
 
