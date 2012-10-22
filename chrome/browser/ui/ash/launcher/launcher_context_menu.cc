@@ -127,10 +127,9 @@ string16 LauncherContextMenu::GetLabelForCommandId(int command_id) const {
       case extensions::ExtensionPrefs::LAUNCH_WINDOW:
         return l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_NEW_WINDOW);
     }
-  } else {
-    NOTREACHED();
-    return string16();
   }
+  NOTREACHED();
+  return string16();
 }
 
 bool LauncherContextMenu::IsCommandIdChecked(int command_id) const {
