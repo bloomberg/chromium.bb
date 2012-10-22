@@ -603,6 +603,7 @@
           'test/data/page_cycler/basic_html.html',
           'test/data/page_cycler/basic_js.html',
           'test/data/performance_monitor/unclean_exit_prefs',
+          'test/data/policy/policy_test_cases.json',
           'test/data/popup_blocker/popup-blocked-to-post-blank.html',
           'test/data/popup_blocker/popup-many.html',
           'test/data/popup_blocker/popup-on-unload.html',
