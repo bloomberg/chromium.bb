@@ -221,21 +221,23 @@ bool PluginProcessHost::Init(const webkit::WebPluginInfo& info) {
 #if defined(OS_POSIX)
   base::EnvironmentVector env;
 #if defined(OS_MACOSX) && !defined(__LP64__)
-  std::string interpose_list =
-      content::GetContentClient()->GetCarbonInterposePath();
-  if (!interpose_list.empty()) {
-    // Add our interposing library for Carbon. This is stripped back out in
-    // plugin_main.cc, so changes here should be reflected there.
-    const char* existing_list =
-        getenv(plugin_interpose_strings::kDYLDInsertLibrariesKey);
-    if (existing_list) {
-      interpose_list.insert(0, ":");
-      interpose_list.insert(0, existing_list);
+  if (!browser_command_line.HasSwitch(switches::kDisableCarbonInterposing)) {
+    std::string interpose_list =
+        content::GetContentClient()->GetCarbonInterposePath();
+    if (!interpose_list.empty()) {
+      // Add our interposing library for Carbon. This is stripped back out in
+      // plugin_main.cc, so changes here should be reflected there.
+      const char* existing_list =
+          getenv(plugin_interpose_strings::kDYLDInsertLibrariesKey);
+      if (existing_list) {
+        interpose_list.insert(0, ":");
+        interpose_list.insert(0, existing_list);
+      }
     }
+    env.push_back(std::pair<std::string, std::string>(
+        plugin_interpose_strings::kDYLDInsertLibrariesKey,
+        interpose_list));
   }
-  env.push_back(std::pair<std::string, std::string>(
-      plugin_interpose_strings::kDYLDInsertLibrariesKey,
-      interpose_list));
 #endif
 #endif
 

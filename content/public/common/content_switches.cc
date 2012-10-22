@@ -714,6 +714,10 @@ const char kScrollPixels[]                  = "scroll-pixels";
 const char kUseSystemSSL[]                  = "use-system-ssl";
 #endif
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+const char kDisableCarbonInterposing[]      = "disable-carbon-interposing";
+#endif
+
 // Disables the use of a 3D software rasterizer.
 const char kDisableSoftwareRasterizer[]     = "disable-software-rasterizer";
 

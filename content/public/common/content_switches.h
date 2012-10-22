@@ -233,6 +233,10 @@ extern const char kScrollPixels[];
 extern const char kUseSystemSSL[];
 #endif
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+extern const char kDisableCarbonInterposing[];
+#endif
+
 #if defined(USE_AURA)
 CONTENT_EXPORT extern const char kFlingTapSuppressMaxDown[];
 CONTENT_EXPORT extern const char kFlingTapSuppressMaxGap[];
