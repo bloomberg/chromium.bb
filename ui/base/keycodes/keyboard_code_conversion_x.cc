@@ -336,6 +336,24 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
     case XK_KP_F4:
       return static_cast<KeyboardCode>(VKEY_F1 + (keysym - XK_KP_F1));
 
+    // When evdev is in use, /usr/share/X11/xkb/symbols/inet maps F13-18 keys
+    // to the special XF86XK symbols to support Microsoft Ergonomic keyboards:
+    // https://bugs.freedesktop.org/show_bug.cgi?id=5783
+    // In Chrome, we map these X key symbols back to F13-18 since we don't have
+    // VKEYs for these XF86XK symbols.
+    case XF86XK_Tools:
+      return VKEY_F13;
+    case XF86XK_Launch5:
+      return VKEY_F14;
+    case XF86XK_Launch6:
+      return VKEY_F15;
+    case XF86XK_Launch7:
+      return VKEY_F16;
+    case XF86XK_Launch8:
+      return VKEY_F17;
+    case XF86XK_Launch9:
+      return VKEY_F18;
+
 #if defined(TOOLKIT_GTK)
     case XF86XK_Refresh:
     case XF86XK_History:
