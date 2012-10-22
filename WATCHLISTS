@@ -117,6 +117,11 @@
                   'chrome/browser/ui/webui/chromeos/login/|'\
                   'chrome/browser/resources/chromeos/login/',
     },
+    'chromeos_net': {
+      'filepath': 'chromeos/network/|'\
+                  'chrome/browser/chromeos/cros/|'\
+                  'chrome/browser/chromeos/net/',
+    },
     'chromeos_webui': {
       'filepath': 'chrome/browser/ui/webui/chromeos/|'\
                   'chrome/browser/resources/chromeos/',
@@ -496,6 +501,9 @@
     'chromedriver': ['kkania@chromium.org'],
     'chromeos' : ['oshima+watch@chromium.org',
                   'stevenjb+watch@chromium.org'],
+    'chromeos_net' : ['gauravsh+watch@chromium.org',
+                      'gspencer+watch@chromium.org',
+                      'stevenjb+watch@chromium.org'],
     'chromeos_webui': ['nkostylev+watch@chromium.org'],
     'clang_update': ['fischman+watch@chromium.org', 'ukai+watch@chromium.org',
                      'glotov+watch@chromium.org'],
