@@ -95,6 +95,14 @@ FileListBannerController.prototype.showBanner_ = function(type, messageId) {
   if (container.firstElementChild)
     return;  // Do not re-create.
 
+  if (!this.document_.querySelector('link[gdrive-welcome-style]')) {
+    var style = this.document_.createElement('link');
+    style.rel = 'stylesheet';
+    style.href = 'css/gdrive_welcome.css';
+    style.setAttribute('gdrive-welcome-style', '');
+    this.document_.head.appendChild(style);
+  }
+
   var wrapper = util.createChild(container, 'gdrive-welcome-wrapper');
   util.createChild(wrapper, 'gdrive-welcome-icon');
 
@@ -151,19 +159,7 @@ FileListBannerController.prototype.maybeShowBanner_ = function() {
   if (this.getHeaderCounter_() >= WELCOME_HEADER_COUNTER_LIMIT)
     return;
 
-  if (!this.document_.querySelector('link[gdrive-welcome-style]')) {
-    var style = this.document_.createElement('link');
-    style.rel = 'stylesheet';
-    style.href = 'css/gdrive_welcome.css';
-    style.setAttribute('gdrive-welcome-style', '');
-    this.document_.head.appendChild(style);
-    var self = this;
-    style.onload = function() { self.maybeShowBanner_() };
-    return;
-  }
-
   var counter = this.getHeaderCounter_();
-
   if (this.directoryModel_.getFileList().length == 0 && counter == 0) {
     // Only show the full page banner if the header banner was never shown.
     // Do not increment the counter.
@@ -173,9 +169,10 @@ FileListBannerController.prototype.maybeShowBanner_ = function() {
     setTimeout(this.preparePromo_.bind(this, function() {
       var container = self.document_.querySelector('.dialog-container');
       if (self.isOnGData() &&
-          container.getAttribute('gdrive-welcome') != 'header')
-            self.showBanner_('page', 'GDATA_WELCOME_TEXT_LONG');
-        }, 2000));
+          self.getHeaderCounter_() == 0) {
+        self.showBanner_('page', 'GDATA_WELCOME_TEXT_LONG');
+      }
+    }, 2000));
   } else if (counter < WELCOME_HEADER_COUNTER_LIMIT) {
     // We do not want to increment the counter when the user navigates
     // between different directories on GDrive, but we increment the counter
@@ -495,6 +492,12 @@ FileListBannerController.prototype.updateGDataUnmountedPanel_ = function() {
     if (status == VolumeManager.GDataStatus.MOUNTING ||
         status == VolumeManager.GDataStatus.ERROR) {
       this.ensureGDataUnmountedPanelInitialized_();
+    }
+    if (status == VolumeManager.GDataStatus.MOUNTING &&
+        this.getHeaderCounter_() == 0) {
+      // Do not increment banner counter in order to not prevent the full
+      // page banner of being shown (otherwise it would never be shown).
+      this.showBanner_('header', 'GDATA_WELCOME_TEXT_SHORT');
     }
     if (status == VolumeManager.GDataStatus.ERROR)
       this.unmountedPanel_.classList.add('retry-enabled');

@@ -1621,3 +1621,8 @@ button:focus {
   min-width: 300px;
   width: auto;
 }
+
+.gdrive-welcome-wrapper {
+  /* gdrive_welcome.css will override it once loaded. */
+  display: none;
+}
