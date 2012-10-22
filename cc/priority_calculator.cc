@@ -10,11 +10,17 @@ using namespace std;
 
 namespace cc {
 
+static const int nothingPriorityCutoff = -3;
+
+static const int mostHighPriority = -2;
+
 static const int uiDrawsToRootSurfacePriority = -1;
 static const int visibleDrawsToRootSurfacePriority = 0;
 static const int renderSurfacesPriority = 1;
 static const int uiDoesNotDrawToRootSurfacePriority = 2;
 static const int visibleDoesNotDrawToRootSurfacePriority = 3;
+
+static const int visibleOnlyPriorityCutoff = 4;
 
 // The lower digits are how far from being visible the texture is,
 // in pixels.
@@ -27,6 +33,10 @@ static const int smallAnimatedLayerPriority = notVisibleBasePriority + 512;
 
 static const int lingeringBasePriority = 2000000;
 static const int lingeringLimitPriority = 2900000;
+
+static const int mostLowPriority = 3000000;
+
+static const int everythingPriorityCutoff = 3000001;
 
 // static
 int CCPriorityCalculator::uiPriority(bool drawsToRootSurface)
@@ -79,6 +89,36 @@ int CCPriorityCalculator::priorityFromDistance(const IntRect& visibleRect, const
 int CCPriorityCalculator::smallAnimatedLayerMinPriority()
 {
     return smallAnimatedLayerPriority;
+}
+
+// static 
+int CCPriorityCalculator::highestPriority()
+{
+    return mostHighPriority;
+}
+
+// static
+int CCPriorityCalculator::lowestPriority()
+{
+    return mostLowPriority;
+}
+
+// static
+int CCPriorityCalculator::allowNothingCutoff()
+{
+    return nothingPriorityCutoff;
+}
+
+// static
+int CCPriorityCalculator::allowVisibleOnlyCutoff()
+{
+    return visibleOnlyPriorityCutoff;
+}
+
+// static
+int CCPriorityCalculator::allowEverythingCutoff()
+{
+    return everythingPriorityCutoff;
 }
 
 } // cc

@@ -87,7 +87,7 @@ public:
     virtual void setNeedsRedrawOnImplThread() OVERRIDE { m_didRequestRedraw = true; }
     virtual void setNeedsCommitOnImplThread() OVERRIDE { m_didRequestCommit = true; }
     virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<CCAnimationEventsVector>, double wallClockTime) OVERRIDE { }
-    virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes) OVERRIDE { return m_reduceMemoryResult; }
+    virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff) OVERRIDE { return m_reduceMemoryResult; }
 
     void setReduceMemoryResult(bool reduceMemoryResult) { m_reduceMemoryResult = reduceMemoryResult; }
 
@@ -236,16 +236,16 @@ TEST_P(CCLayerTreeHostImplTest, notifyIfCanDrawChanged)
     // Toggle contents textures purged without causing any evictions,
     // and make sure that it does not change canDraw.
     setReduceMemoryResult(false);
-    m_hostImpl->setMemoryAllocationLimitBytes(
-        m_hostImpl->memoryAllocationLimitBytes() - 1);
+    m_hostImpl->setManagedMemoryPolicy(ManagedMemoryPolicy(
+        m_hostImpl->memoryAllocationLimitBytes() - 1));
     EXPECT_TRUE(m_hostImpl->canDraw());
     EXPECT_FALSE(m_onCanDrawStateChangedCalled);
     m_onCanDrawStateChangedCalled = false;
 
     // Toggle contents textures purged to make sure it toggles canDraw.
     setReduceMemoryResult(true);
-    m_hostImpl->setMemoryAllocationLimitBytes(
-        m_hostImpl->memoryAllocationLimitBytes() - 1);
+    m_hostImpl->setManagedMemoryPolicy(ManagedMemoryPolicy(
+        m_hostImpl->memoryAllocationLimitBytes() - 1));
     EXPECT_FALSE(m_hostImpl->canDraw());
     EXPECT_TRUE(m_onCanDrawStateChangedCalled);
     m_onCanDrawStateChangedCalled = false;
@@ -4030,23 +4030,23 @@ TEST_P(CCLayerTreeHostImplTest, releaseContentsTextureShouldTriggerCommit)
     // evicted, we need to re-commit because the new value may result in us
     // drawing something different than before.
     setReduceMemoryResult(false);
-    m_hostImpl->setMemoryAllocationLimitBytes(
-        m_hostImpl->memoryAllocationLimitBytes() - 1);
+    m_hostImpl->setManagedMemoryPolicy(ManagedMemoryPolicy(
+        m_hostImpl->memoryAllocationLimitBytes() - 1));
     EXPECT_TRUE(m_didRequestCommit);
     m_didRequestCommit = false;
 
     // Especially if changing the memory limit caused evictions, we need
     // to re-commit.
     setReduceMemoryResult(true);
-    m_hostImpl->setMemoryAllocationLimitBytes(
-        m_hostImpl->memoryAllocationLimitBytes() - 1);
+    m_hostImpl->setManagedMemoryPolicy(ManagedMemoryPolicy(
+        m_hostImpl->memoryAllocationLimitBytes() - 1));
     EXPECT_TRUE(m_didRequestCommit);
     m_didRequestCommit = false;
 
     // But if we set it to the same value that it was before, we shouldn't
     // re-commit.
-    m_hostImpl->setMemoryAllocationLimitBytes(
-        m_hostImpl->memoryAllocationLimitBytes());
+    m_hostImpl->setManagedMemoryPolicy(ManagedMemoryPolicy(
+        m_hostImpl->memoryAllocationLimitBytes()));
     EXPECT_FALSE(m_didRequestCommit);
 }
 
@@ -4077,7 +4077,8 @@ public:
     virtual void didLoseContext() OVERRIDE { }
     virtual void onSwapBuffersComplete() OVERRIDE { }
     virtual void setFullRootLayerDamage() OVERRIDE { }
-    virtual void setMemoryAllocationLimitBytes(size_t) OVERRIDE { }
+    virtual void setManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { }
+    virtual void enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { }
 
 protected:
     CCTestRenderer(CCResourceProvider* resourceProvider) : CCRendererGL(this, resourceProvider) { }

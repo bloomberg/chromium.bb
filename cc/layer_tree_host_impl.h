@@ -42,7 +42,7 @@ public:
     virtual void setNeedsCommitOnImplThread() = 0;
     virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<CCAnimationEventsVector>, double wallClockTime) = 0;
     // Returns true if resources were deleted by this call.
-    virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes) = 0;
+    virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff) = 0;
 };
 
 // CCPinchZoomViewport models the bounds and offset of the viewport that is used during a pinch-zoom operation.
@@ -150,7 +150,8 @@ public:
     virtual void didLoseContext() OVERRIDE;
     virtual void onSwapBuffersComplete() OVERRIDE;
     virtual void setFullRootLayerDamage() OVERRIDE;
-    virtual void setMemoryAllocationLimitBytes(size_t) OVERRIDE;
+    virtual void setManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE;
+    virtual void enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE;
 
     // WebCompositorOutputSurfaceClient implementation.
     virtual void onVSyncParametersChanged(double monotonicTimebase, double intervalInSeconds) OVERRIDE;
@@ -194,8 +195,7 @@ public:
     bool contentsTexturesPurged() const { return m_contentsTexturesPurged; }
     void setContentsTexturesPurged();
     void resetContentsTexturesPurged();
-    size_t memoryAllocationLimitBytes() const { return m_memoryAllocationLimitBytes; }
-    void reduceContentsTextureMemoryOnImplThread(size_t limitBytes);
+    size_t memoryAllocationLimitBytes() const { return m_managedMemoryPolicy.bytesLimitWhenVisible; }
 
     void setViewportSize(const IntSize& layoutViewportSize, const IntSize& deviceViewportSize);
     const IntSize& layoutViewportSize() const { return m_layoutViewportSize; }
@@ -319,7 +319,7 @@ private:
     float m_deviceScaleFactor;
     bool m_visible;
     bool m_contentsTexturesPurged;
-    size_t m_memoryAllocationLimitBytes;
+    ManagedMemoryPolicy m_managedMemoryPolicy;
 
     SkColor m_backgroundColor;
     bool m_hasTransparentBackground;

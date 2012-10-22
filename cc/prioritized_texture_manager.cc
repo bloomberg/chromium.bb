@@ -19,6 +19,7 @@ namespace cc {
 
 CCPrioritizedTextureManager::CCPrioritizedTextureManager(size_t maxMemoryLimitBytes, int, int pool)
     : m_maxMemoryLimitBytes(maxMemoryLimitBytes)
+    , m_externalPriorityCutoff(CCPriorityCalculator::allowEverythingCutoff())
     , m_memoryUseBytes(0)
     , m_memoryAboveCutoffBytes(0)
     , m_memoryAvailableBytes(0)
@@ -56,13 +57,11 @@ void CCPrioritizedTextureManager::prioritizeTextures()
         sortedTextures.push_back(*it);
     std::sort(sortedTextures.begin(), sortedTextures.end(), compareTextures);
 
+    // Compute a priority cutoff based on memory pressure
     m_memoryAvailableBytes = m_maxMemoryLimitBytes;
-    m_priorityCutoff = CCPriorityCalculator::lowestPriority();
+    m_priorityCutoff = m_externalPriorityCutoff;
     size_t memoryBytes = 0;
     for (TextureVector::iterator it = sortedTextures.begin(); it != sortedTextures.end(); ++it) {
-        if ((*it)->requestPriority() == CCPriorityCalculator::lowestPriority())
-            break;
-
         if ((*it)->isSelfManaged()) {
             // Account for self-managed memory immediately by reducing the memory
             // available (since it never gets acquired).
@@ -82,6 +81,16 @@ void CCPrioritizedTextureManager::prioritizeTextures()
             memoryBytes = newMemoryBytes;
         }
     }
+
+    // Disallow any textures with priority below the external cutoff to have backings.
+    size_t memoryLinkedTexturesBytes = 0;
+    for (TextureVector::iterator it = sortedTextures.begin(); it != sortedTextures.end(); ++it) {
+        CCPrioritizedTexture* texture = (*it);
+        if (!CCPriorityCalculator::priorityIsHigher(texture->requestPriority(), m_externalPriorityCutoff) &&
+            texture->haveBackingTexture())
+            texture->unlink();
+    }
+    DCHECK(memoryLinkedTexturesBytes <= m_memoryAvailableBytes);
 
     // Only allow textures if they are higher than the cutoff. All textures
     // of the same priority are accepted or rejected together, rather than
@@ -155,7 +164,12 @@ bool CCPrioritizedTextureManager::requestLate(CCPrioritizedTexture* texture)
     if (texture->isAbovePriorityCutoff())
         return true;
 
+    // Allow textures that have priority equal to the cutoff, but not strictly lower.
     if (CCPriorityCalculator::priorityIsLower(texture->requestPriority(), m_priorityCutoff))
+        return false;
+
+    // Disallow textures that do not have a priority strictly higher than the external cutoff.
+    if (!CCPriorityCalculator::priorityIsHigher(texture->requestPriority(), m_externalPriorityCutoff))
         return false;
 
     size_t newMemoryBytes = m_memoryAboveCutoffBytes + texture->bytes();
@@ -191,7 +205,7 @@ void CCPrioritizedTextureManager::acquireBackingTextureIfNeeded(CCPrioritizedTex
 
     // Otherwise reduce memory and just allocate a new backing texures.
     if (!backing) {
-        evictBackingsToReduceMemory(m_memoryAvailableBytes - texture->bytes(), RespectManagerPriorityCutoff, resourceProvider);
+        evictBackingsToReduceMemory(m_memoryAvailableBytes - texture->bytes(), CCPriorityCalculator::allowEverythingCutoff(), EvictOnlyRecyclable, resourceProvider);
         backing = createBacking(texture->size(), texture->format(), resourceProvider);
     }
 
@@ -207,19 +221,21 @@ void CCPrioritizedTextureManager::acquireBackingTextureIfNeeded(CCPrioritizedTex
     backing->updatePriority();
 }
 
-bool CCPrioritizedTextureManager::evictBackingsToReduceMemory(size_t limitBytes, EvictionPriorityPolicy evictionPolicy, CCResourceProvider* resourceProvider)
+bool CCPrioritizedTextureManager::evictBackingsToReduceMemory(size_t limitBytes, int priorityCutoff, EvictionPolicy evictionPolicy, CCResourceProvider* resourceProvider)
 {
     DCHECK(CCProxy::isImplThread());
-    if (memoryUseBytes() <= limitBytes)
+    if (memoryUseBytes() <= limitBytes && CCPriorityCalculator::allowEverythingCutoff() == priorityCutoff)
         return false;
 
     // Destroy backings until we are below the limit,
     // or until all backings remaining are above the cutoff.
-    while (memoryUseBytes() > limitBytes && m_backings.size() > 0) {
+    while (m_backings.size() > 0) {
         CCPrioritizedTexture::Backing* backing = m_backings.front();
-        if (evictionPolicy == RespectManagerPriorityCutoff)
-            if (backing->wasAbovePriorityCutoffAtLastPriorityUpdate())
-                break;
+        if (memoryUseBytes() <= limitBytes && 
+            CCPriorityCalculator::priorityIsHigher(backing->requestPriorityAtLastPriorityUpdate(), priorityCutoff))
+            break;
+        if (evictionPolicy == EvictOnlyRecyclable && !backing->canBeRecycled())
+            break;
         evictFirstBackingResource(resourceProvider);
     }
     return true;
@@ -229,7 +245,7 @@ void CCPrioritizedTextureManager::reduceMemory(CCResourceProvider* resourceProvi
 {
     DCHECK(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
 
-    evictBackingsToReduceMemory(m_memoryAvailableBytes, RespectManagerPriorityCutoff, resourceProvider);
+    evictBackingsToReduceMemory(m_memoryAvailableBytes, CCPriorityCalculator::allowEverythingCutoff(), EvictOnlyRecyclable, resourceProvider);
     DCHECK(memoryUseBytes() <= maxMemoryLimitBytes());
 
     // We currently collect backings from deleted textures for later recycling.
@@ -245,7 +261,7 @@ void CCPrioritizedTextureManager::reduceMemory(CCResourceProvider* resourceProvi
     }
     size_t tenPercentOfMemory = m_memoryAvailableBytes / 10;
     if (wastedMemory > tenPercentOfMemory)
-        evictBackingsToReduceMemory(memoryUseBytes() - (wastedMemory - tenPercentOfMemory), RespectManagerPriorityCutoff, resourceProvider);
+        evictBackingsToReduceMemory(memoryUseBytes() - (wastedMemory - tenPercentOfMemory), CCPriorityCalculator::allowEverythingCutoff(), EvictOnlyRecyclable, resourceProvider);
 
     // Unlink all evicted backings
     for (BackingList::const_iterator it = m_evictedBackings.begin(); it != m_evictedBackings.end(); ++it) {
@@ -261,10 +277,10 @@ void CCPrioritizedTextureManager::clearAllMemory(CCResourceProvider* resourcePro
 {
     DCHECK(CCProxy::isImplThread() && CCProxy::isMainThreadBlocked());
     DCHECK(resourceProvider);
-    evictBackingsToReduceMemory(0, DoNotRespectManagerPriorityCutoff, resourceProvider);
+    evictBackingsToReduceMemory(0, CCPriorityCalculator::allowEverythingCutoff(), EvictAnything, resourceProvider);
 }
 
-bool CCPrioritizedTextureManager::reduceMemoryOnImplThread(size_t limitBytes, CCResourceProvider* resourceProvider)
+bool CCPrioritizedTextureManager::reduceMemoryOnImplThread(size_t limitBytes, int priorityCutoff, CCResourceProvider* resourceProvider)
 {
     DCHECK(CCProxy::isImplThread());
     DCHECK(resourceProvider);
@@ -272,7 +288,7 @@ bool CCPrioritizedTextureManager::reduceMemoryOnImplThread(size_t limitBytes, CC
     // the list are not sorted by priority. Sort them before doing the eviction.
     if (m_backingsTailNotSorted)
         sortBackings();
-    return evictBackingsToReduceMemory(limitBytes, DoNotRespectManagerPriorityCutoff, resourceProvider);
+    return evictBackingsToReduceMemory(limitBytes, priorityCutoff, EvictAnything, resourceProvider);
 }
 
 void CCPrioritizedTextureManager::getEvictedBackings(BackingList& evictedBackings)

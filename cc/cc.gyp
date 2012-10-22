@@ -73,6 +73,8 @@
       'CCLayerTreeHostCommon.h',
       'layer_tree_host_impl.cc',
       'layer_tree_host_impl.h',
+      'managed_memory_policy.cc',
+      'managed_memory_policy.h',
       'math_util.cc',
       'math_util.h',
       'occlusion_tracker.cc',

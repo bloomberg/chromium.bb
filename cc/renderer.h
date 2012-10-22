@@ -6,6 +6,7 @@
 #define CCRenderer_h
 
 #include "CCLayerTreeHost.h"
+#include "managed_memory_policy.h"
 #include "FloatQuad.h"
 #include "base/basictypes.h"
 #include "cc/render_pass.h"
@@ -21,7 +22,8 @@ public:
     virtual void didLoseContext() = 0;
     virtual void onSwapBuffersComplete() = 0;
     virtual void setFullRootLayerDamage() = 0;
-    virtual void setMemoryAllocationLimitBytes(size_t) = 0;
+    virtual void setManagedMemoryPolicy(const ManagedMemoryPolicy& policy) = 0;
+    virtual void enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) = 0;
 protected:
     virtual ~CCRendererClient() { }
 };

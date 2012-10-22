@@ -1075,7 +1075,7 @@ void CCRendererGL::onMemoryAllocationChangedOnImplThread(WebKit::WebGraphicsMemo
     // bytes. This will happen when the memory manager thinks that the renderer
     // is not visible (which the renderer knows better).
     if (allocation.gpuResourceSizeInBytes)
-        m_client->setMemoryAllocationLimitBytes(allocation.gpuResourceSizeInBytes);
+        m_client->setManagedMemoryPolicy(ManagedMemoryPolicy(allocation.gpuResourceSizeInBytes));
     enforceMemoryPolicy();
 }
 

@@ -19,11 +19,15 @@ public:
     static int priorityFromDistance(const IntRect& visibleRect, const IntRect& textureRect, bool drawsToRootSurface);
     static int smallAnimatedLayerMinPriority();
 
-    static inline int highestPriority() { return std::numeric_limits<int>::min(); }
-    static inline int lowestPriority() { return std::numeric_limits<int>::max(); }
+    static int highestPriority();
+    static int lowestPriority();
     static inline bool priorityIsLower(int a, int b) { return a > b; }
     static inline bool priorityIsHigher(int a, int b) { return a < b; }
-    static inline bool maxPriority(int a, int b) { return priorityIsHigher(a, b) ? a : b; }
+    static inline int maxPriority(int a, int b) { return priorityIsHigher(a, b) ? a : b; }
+
+    static int allowNothingCutoff();
+    static int allowVisibleOnlyCutoff();
+    static int allowEverythingCutoff();
 };
 
 }

@@ -196,6 +196,71 @@ TEST_F(CCPrioritizedTextureTest, changeMemoryLimits)
     textureManager->clearAllMemory(resourceProvider());
 }
 
+TEST_F(CCPrioritizedTextureTest, changePriorityCutoff)
+{
+    const size_t maxTextures = 8;
+    scoped_ptr<CCPrioritizedTextureManager> textureManager = createManager(maxTextures);
+    scoped_ptr<CCPrioritizedTexture> textures[maxTextures];
+
+    for (size_t i = 0; i < maxTextures; ++i)
+        textures[i] = textureManager->createTexture(m_textureSize, m_textureFormat);
+    for (size_t i = 0; i < maxTextures; ++i)
+        textures[i]->setRequestPriority(100 + i);
+
+    // Set the cutoff to drop two textures. Try to requestLate on all textures, and
+    // make sure that requestLate doesn't work on a texture with equal priority to
+    // the cutoff.
+    textureManager->setMaxMemoryLimitBytes(texturesMemorySize(8));
+    textureManager->setExternalPriorityCutoff(106);
+    prioritizeTexturesAndBackings(textureManager.get());
+    for (size_t i = 0; i < maxTextures; ++i)
+        EXPECT_EQ(validateTexture(textures[i], true), i < 6);
+    {
+        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+        textureManager->reduceMemory(resourceProvider());
+    }
+    EXPECT_EQ(texturesMemorySize(6), textureManager->memoryAboveCutoffBytes());
+    EXPECT_LE(textureManager->memoryUseBytes(), textureManager->memoryAboveCutoffBytes());
+
+    // Set the cutoff to drop two more textures.
+    textureManager->setExternalPriorityCutoff(104);
+    prioritizeTexturesAndBackings(textureManager.get());
+    for (size_t i = 0; i < maxTextures; ++i)
+        EXPECT_EQ(validateTexture(textures[i], false), i < 4);
+    {
+        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+        textureManager->reduceMemory(resourceProvider());
+    }
+    EXPECT_EQ(texturesMemorySize(4), textureManager->memoryAboveCutoffBytes());
+
+    // Do a one-time eviction for one more texture based on priority cutoff
+    CCPrioritizedTextureManager::BackingList evictedBackings;
+    {
+        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+        textureManager->reduceMemoryOnImplThread(texturesMemorySize(8), 104, resourceProvider());
+        textureManager->getEvictedBackings(evictedBackings);
+        EXPECT_EQ(0, evictedBackings.size());
+        textureManager->reduceMemoryOnImplThread(texturesMemorySize(8), 103, resourceProvider());
+        textureManager->getEvictedBackings(evictedBackings);
+        EXPECT_EQ(1, evictedBackings.size());
+    }
+    textureManager->unlinkEvictedBackings(evictedBackings);
+    EXPECT_EQ(texturesMemorySize(3), textureManager->memoryUseBytes());
+
+    // Re-allocate the the texture after the one-time drop.
+    prioritizeTexturesAndBackings(textureManager.get());
+    for (size_t i = 0; i < maxTextures; ++i)
+        EXPECT_EQ(validateTexture(textures[i], false), i < 4);
+    {
+        DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+        textureManager->reduceMemory(resourceProvider());
+    }
+    EXPECT_EQ(texturesMemorySize(4), textureManager->memoryAboveCutoffBytes());
+
+    DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
+    textureManager->clearAllMemory(resourceProvider());
+}
+
 TEST_F(CCPrioritizedTextureTest, textureManagerPartialUpdateTextures)
 {
     const size_t maxTextures = 4;
@@ -567,11 +632,11 @@ TEST_F(CCPrioritizedTextureTest, clearUploadsToEvictedResources)
     EXPECT_EQ(4, queue.fullUploadSize());
 
     textureManager->reduceMemoryOnImplThread(
-        texturesMemorySize(1), resourceProvider());
+        texturesMemorySize(1), CCPriorityCalculator::allowEverythingCutoff(), resourceProvider());
     queue.clearUploadsToEvictedResources();
     EXPECT_EQ(1, queue.fullUploadSize());
 
-    textureManager->reduceMemoryOnImplThread(0, resourceProvider());
+    textureManager->reduceMemoryOnImplThread(0,  CCPriorityCalculator::allowEverythingCutoff(), resourceProvider());
     queue.clearUploadsToEvictedResources();
     EXPECT_EQ(0, queue.fullUploadSize());
 

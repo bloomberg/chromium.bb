@@ -48,7 +48,8 @@ public:
     virtual void didLoseContext() OVERRIDE { }
     virtual void onSwapBuffersComplete() OVERRIDE { }
     virtual void setFullRootLayerDamage() OVERRIDE { }
-    virtual void setMemoryAllocationLimitBytes(size_t) OVERRIDE { }
+    virtual void setManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { };
+    virtual void enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { };
 
 protected:
     DebugScopedSetImplThread m_alwaysImplThread;

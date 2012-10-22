@@ -223,7 +223,10 @@ CCLayerTreeHostImpl::CCLayerTreeHostImpl(const CCLayerTreeSettings& settings, CC
     , m_deviceScaleFactor(1)
     , m_visible(true)
     , m_contentsTexturesPurged(false)
-    , m_memoryAllocationLimitBytes(CCPrioritizedTextureManager::defaultMemoryAllocationLimit())
+    , m_managedMemoryPolicy(CCPrioritizedTextureManager::defaultMemoryAllocationLimit(), 
+                            CCPriorityCalculator::allowEverythingCutoff(),
+                            0,
+                            CCPriorityCalculator::allowNothingCutoff())
     , m_backgroundColor(0)
     , m_hasTransparentBackground(false)
     , m_needsAnimateLayers(false)
@@ -634,9 +637,11 @@ bool CCLayerTreeHostImpl::prepareToDraw(FrameData& frame)
     return true;
 }
 
-void CCLayerTreeHostImpl::reduceContentsTextureMemoryOnImplThread(size_t limitBytes)
+void CCLayerTreeHostImpl::enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy)
 {
-    bool evictedResources = m_client->reduceContentsTextureMemoryOnImplThread(limitBytes);
+    bool evictedResources = m_client->reduceContentsTextureMemoryOnImplThread(
+        m_visible ? policy.bytesLimitWhenVisible : policy.bytesLimitWhenNotVisible,
+        m_visible ? policy.priorityCutoffWhenVisible : policy.priorityCutoffWhenNotVisible);
     if (evictedResources) {
         setContentsTexturesPurged();
         m_client->setNeedsCommitOnImplThread();
@@ -644,13 +649,14 @@ void CCLayerTreeHostImpl::reduceContentsTextureMemoryOnImplThread(size_t limitBy
     }
 }
 
-void CCLayerTreeHostImpl::setMemoryAllocationLimitBytes(size_t bytes)
+void CCLayerTreeHostImpl::setManagedMemoryPolicy(const ManagedMemoryPolicy& policy)
 {
-    DCHECK(bytes);
-    if (m_memoryAllocationLimitBytes == bytes)
+    if (m_managedMemoryPolicy == policy)
         return;
-    m_memoryAllocationLimitBytes = bytes;
-    reduceContentsTextureMemoryOnImplThread(m_visible ? m_memoryAllocationLimitBytes : 0);
+    m_managedMemoryPolicy = policy;
+    enforceManagedMemoryPolicy(m_managedMemoryPolicy);
+    // We always need to commit after changing the memory policy because the new
+    // limit can result in more or less content having texture allocated for it.
     m_client->setNeedsCommitOnImplThread();
 }
 
@@ -817,7 +823,7 @@ void CCLayerTreeHostImpl::setVisible(bool visible)
         return;
     m_visible = visible;
     didVisibilityChange(this, m_visible);
-    reduceContentsTextureMemoryOnImplThread(m_visible ? m_memoryAllocationLimitBytes : 0);
+    enforceManagedMemoryPolicy(m_managedMemoryPolicy);
 
     if (!m_renderer)
         return;

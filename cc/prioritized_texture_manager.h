@@ -65,13 +65,17 @@ public:
     void setMaxMemoryLimitBytes(size_t bytes) { m_maxMemoryLimitBytes = bytes; }
     size_t maxMemoryLimitBytes() const { return m_maxMemoryLimitBytes; }
 
+    // Sepecify a external priority cutoff. Only textures that have a strictly higher priority
+    // than this cutoff will be allowed.
+    void setExternalPriorityCutoff(int priorityCutoff) { m_externalPriorityCutoff = priorityCutoff; }
+
     void prioritizeTextures();
     void clearPriorities();
 
     // Delete contents textures' backing resources until they use only bytesLimit bytes. This may
     // be called on the impl thread while the main thread is running. Returns true if resources are
     // indeed evicted as a result of this call.
-    bool reduceMemoryOnImplThread(size_t limitBytes, CCResourceProvider*);
+    bool reduceMemoryOnImplThread(size_t limitBytes, int priorityCutoff, CCResourceProvider*);
     // Returns true if there exist any textures that are linked to backings that have had their
     // resources evicted. Only when we commit a tree that has no textures linked to evicted backings
     // may we allow drawing.
@@ -103,9 +107,9 @@ public:
 private:
     friend class CCPrioritizedTextureTest;
 
-    enum EvictionPriorityPolicy {
-        RespectManagerPriorityCutoff,
-        DoNotRespectManagerPriorityCutoff,
+    enum EvictionPolicy {
+        EvictOnlyRecyclable,
+        EvictAnything,
     };
 
     // Compare textures. Highest priority first.
@@ -136,7 +140,7 @@ private:
 
     CCPrioritizedTextureManager(size_t maxMemoryLimitBytes, int maxTextureSize, int pool);
 
-    bool evictBackingsToReduceMemory(size_t limitBytes, EvictionPriorityPolicy, CCResourceProvider*);
+    bool evictBackingsToReduceMemory(size_t limitBytes, int priorityCutoff, EvictionPolicy, CCResourceProvider*);
     CCPrioritizedTexture::Backing* createBacking(IntSize, GLenum format, CCResourceProvider*);
     void evictFirstBackingResource(CCResourceProvider*);
     void deleteUnlinkedEvictedBackings();
@@ -145,7 +149,13 @@ private:
     void assertInvariants();
 
     size_t m_maxMemoryLimitBytes;
-    unsigned m_priorityCutoff;
+    // The priority cutoff based on memory pressure. This is not a strict
+    // cutoff -- requestLate allows textures with priority equal to this
+    // cutoff to be allowed.
+    int m_priorityCutoff;
+    // The priority cutoff based on external memory policy. This is a strict
+    // cutoff -- no textures with priority equal to this cutoff will be allowed.
+    int m_externalPriorityCutoff;
     size_t m_memoryUseBytes;
     size_t m_memoryAboveCutoffBytes;
     size_t m_memoryAvailableBytes;

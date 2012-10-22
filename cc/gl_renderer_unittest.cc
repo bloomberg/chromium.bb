@@ -74,7 +74,8 @@ public:
     virtual void didLoseContext() OVERRIDE { }
     virtual void onSwapBuffersComplete() OVERRIDE { }
     virtual void setFullRootLayerDamage() OVERRIDE { m_setFullRootLayerDamageCount++; }
-    virtual void setMemoryAllocationLimitBytes(size_t bytes) OVERRIDE { m_memoryAllocationLimitBytes = bytes; }
+    virtual void setManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { m_memoryAllocationLimitBytes = policy.bytesLimitWhenVisible; }
+    virtual void enforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy) OVERRIDE { }
 
     // Methods added for test.
     int setFullRootLayerDamageCount() const { return m_setFullRootLayerDamageCount; }

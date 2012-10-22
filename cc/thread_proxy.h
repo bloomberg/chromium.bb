@@ -61,7 +61,7 @@ public:
     virtual void setNeedsRedrawOnImplThread() OVERRIDE;
     virtual void setNeedsCommitOnImplThread() OVERRIDE;
     virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<CCAnimationEventsVector>, double wallClockTime) OVERRIDE;
-    virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes) OVERRIDE;
+    virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff) OVERRIDE;
 
     // CCSchedulerClient implementation
     virtual void scheduledActionBeginFrame() OVERRIDE;

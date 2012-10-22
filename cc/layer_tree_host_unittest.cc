@@ -2566,7 +2566,7 @@ public:
 
             // Reduce the memory limit to only fit the root layer and one render surface. This
             // prevents any contents drawing into surfaces from being allocated.
-            hostImpl->setMemoryAllocationLimitBytes(100 * 100 * 4 * 2);
+            hostImpl->setManagedMemoryPolicy(ManagedMemoryPolicy(100 * 100 * 4 * 2));
             break;
         case 1:
             EXPECT_FALSE(renderer->haveCachedResourcesForRenderPassId(surface1RenderPassId));
@@ -2716,7 +2716,7 @@ public:
         virtual void run() OVERRIDE
         {
             DCHECK(m_test->m_implForEvictTextures);
-            m_test->m_implForEvictTextures->reduceContentsTextureMemoryOnImplThread(0);
+            m_test->m_implForEvictTextures->enforceManagedMemoryPolicy(ManagedMemoryPolicy(0));
         }
 
     private:
@@ -2875,7 +2875,7 @@ public:
     void evictTexturesOnImplThread()
     {
         DCHECK(m_implForEvictTextures);
-        m_implForEvictTextures->reduceContentsTextureMemoryOnImplThread(0);
+        m_implForEvictTextures->enforceManagedMemoryPolicy(ManagedMemoryPolicy(0));
     }
 
     // Commit 1: Just commit and draw normally, then at the end, set ourselves
