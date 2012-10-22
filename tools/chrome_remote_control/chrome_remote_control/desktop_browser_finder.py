@@ -10,6 +10,7 @@ import sys
 
 from chrome_remote_control import browser
 from chrome_remote_control import desktop_browser_backend
+from chrome_remote_control import platform
 from chrome_remote_control import possible_browser
 
 ALL_BROWSER_TYPES = ','.join([
@@ -35,7 +36,7 @@ class PossibleDesktopBrowser(possible_browser.PossibleBrowser):
   def Create(self):
     backend = desktop_browser_backend.DesktopBrowserBackend(
         self._options, self._local_executable, self._is_content_shell)
-    return browser.Browser(backend)
+    return browser.Browser(backend, platform.Platform())
 
 def FindAllAvailableBrowsers(options):
   """Finds all the desktop browsers available on this machine."""

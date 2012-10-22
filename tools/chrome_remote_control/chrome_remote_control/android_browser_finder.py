@@ -10,6 +10,7 @@ import subprocess
 
 from chrome_remote_control import adb_commands
 from chrome_remote_control import android_browser_backend
+from chrome_remote_control import android_platform
 from chrome_remote_control import browser
 from chrome_remote_control import possible_browser
 
@@ -52,7 +53,10 @@ class PossibleAndroidBrowser(possible_browser.PossibleBrowser):
   def Create(self):
     backend = android_browser_backend.AndroidBrowserBackend(
         self._options, *self._args)
-    return browser.Browser(backend)
+    platform = android_platform.AndroidPlatform(
+        self._args[0].Adb(), self._args[1],
+        self._args[1] + self._args[4])
+    return browser.Browser(backend, platform)
 
 def FindAllAvailableBrowsers(options, logging=real_logging):
   """Finds all the desktop browsers available on this machine."""

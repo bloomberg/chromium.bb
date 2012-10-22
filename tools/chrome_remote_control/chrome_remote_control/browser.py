@@ -19,10 +19,11 @@ class Browser(object):
     with browser_to_create.Create() as browser:
       ... do all your operations on browser here
   """
-  def __init__(self, backend):
+  def __init__(self, backend, platform):
     self._backend = backend
     self._http_server = None
     self._wpr_server = None
+    self._platform = platform
     self.credentials = browser_credentials.BrowserCredentials()
 
   def __enter__(self):
@@ -39,6 +40,10 @@ class Browser(object):
   @property
   def num_tabs(self):
     return self._backend.num_tabs
+
+  @property
+  def platform(self):
+    return self._platform
 
   def GetNthTabUrl(self, index):
     return self._backend.GetNthTabUrl(index)

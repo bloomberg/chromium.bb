@@ -6,6 +6,7 @@
 import logging
 
 from chrome_remote_control import browser
+from chrome_remote_control import platform
 from chrome_remote_control import possible_browser
 from chrome_remote_control import cros_browser_backend
 from chrome_remote_control import cros_interface
@@ -27,7 +28,7 @@ class PossibleCrOSBrowser(possible_browser.PossibleBrowser):
   def Create(self):
     backend = cros_browser_backend.CrOSBrowserBackend(
         self.browser_type, self._options, *self._args)
-    return browser.Browser(backend)
+    return browser.Browser(backend, platform.Platform())
 
 def FindAllAvailableBrowsers(options):
   """Finds all the desktop browsers available on this machine."""
