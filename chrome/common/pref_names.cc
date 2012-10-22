@@ -478,26 +478,26 @@ const char kUrlBlacklist[] = "policy.url_blacklist";
 // Allows access to the listed host patterns, as exceptions to the blacklist.
 const char kUrlWhitelist[] = "policy.url_whitelist";
 
-// Double pref for a scaling factor used to slow down animations.
-const char kInstantAnimationScaleFactor[] =
-    "instant.animation_scale_factor";
-
 // Boolean pref indicating whether the instant confirm dialog has been shown.
 const char kInstantConfirmDialogShown[] = "instant.confirm_dialog_shown";
 
 // Boolean pref indicating if instant is enabled.
 const char kInstantEnabled[] = "instant.enabled";
 
-// Prefix URL for the (experimental) ZeroSuggest provider.
-const char kExperimentalZeroSuggestUrlPrefix[] =
-    "instant.experimental_zero_suggest_url_prefix";
+// Double pref for a scaling factor used to slow down animations.
+const char kInstantUIAnimationScaleFactor[] =
+    "instant_ui.animation_scale_factor";
 
-// Boolean pref indicating if instant search provider logo should be shown.
-const char kInstantShowSearchProviderLogo[] =
-    "instant.show_search_provider_logo";
+// Boolean pref indicating if Instant search provider logo should be shown.
+const char kInstantUIShowSearchProviderLogo[] =
+    "instant_ui.show_search_provider_logo";
 
 // Boolean pref indicating a white NTP background is desired.
-const char kInstantShowWhiteNTP[] = "instant.show_white_ntp";
+const char kInstantUIShowWhiteNTP[] = "instant_ui.show_white_ntp";
+
+// Prefix URL for the experimental Instant ZeroSuggest provider.
+const char kInstantUIZeroSuggestUrlPrefix[] =
+    "instant_ui.zero_suggest_url_prefix";
 
 // Used to migrate preferences from local state to user preferences to
 // enable multiple profiles.

@@ -117,12 +117,14 @@ void AddSessionStorageHistogram(InstantController::Mode mode,
 }
 
 InstantController::Mode GetModeForProfile(Profile* profile) {
+  if (chrome::search::IsInstantExtendedAPIEnabled(profile))
+    return InstantController::EXTENDED;
+
   if (!profile || profile->IsOffTheRecord() || !profile->GetPrefs() ||
       !profile->GetPrefs()->GetBoolean(prefs::kInstantEnabled))
     return InstantController::DISABLED;
 
-  return chrome::search::IsInstantExtendedAPIEnabled(profile) ?
-      InstantController::EXTENDED : InstantController::INSTANT;
+  return InstantController::INSTANT;
 }
 
 string16 Normalize(const string16& str) {
@@ -187,10 +189,6 @@ void InstantController::RegisterUserPrefs(PrefService* prefs) {
                              PrefService::SYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kInstantEnabled, false,
                              PrefService::SYNCABLE_PREF);
-
-  // TODO(jamescook): Move this to search controller.
-  prefs->RegisterDoublePref(prefs::kInstantAnimationScaleFactor, 1.0,
-                            PrefService::UNSYNCABLE_PREF);
 }
 
 bool InstantController::Update(const AutocompleteMatch& match,

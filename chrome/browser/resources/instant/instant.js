@@ -17,7 +17,7 @@ var instantConfig = (function() {
   /** List of fields used to dynamically build form. **/
   var FIELDS = [
     {
-      key: 'instant.animation_scale_factor',
+      key: 'instant_ui.animation_scale_factor',
       label: 'Slow down animations by a factor of ',
       type: 'number',
       units: 'no units, range 1 to 20',
@@ -27,24 +27,24 @@ var instantConfig = (function() {
       max: 20
     },
     {
-      key: 'instant.experimental_zero_suggest_url_prefix',
-      label: 'Prefix URL for the (experimental) ZeroSuggest provider',
+      key: 'instant_ui.zero_suggest_url_prefix',
+      label: 'Prefix URL for the experimental Instant ZeroSuggest provider',
       type: 'string',
       size: 40,
       units: '',
       default: ''
     },
     {
-      key: 'instant.show_search_provider_logo',
+      key: 'instant_ui.show_search_provider_logo',
       label: 'Show search provider logo',
       type: 'checkbox',
-      default: false
+      default: true
     },
     {
-      key: 'instant.show_white_ntp',
+      key: 'instant_ui.show_white_ntp',
       label: 'Show white NTP background',
       type: 'checkbox',
-      default: false
+      default: true
     }
   ];
 

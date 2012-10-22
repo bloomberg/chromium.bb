@@ -36,7 +36,7 @@ ZeroSuggestProvider* ZeroSuggestProvider::Create(
     Profile* profile) {
   if (profile && !profile->IsOffTheRecord() && profile->GetPrefs()) {
     std::string url_prefix = profile->GetPrefs()->GetString(
-        prefs::kExperimentalZeroSuggestUrlPrefix);
+        prefs::kInstantUIZeroSuggestUrlPrefix);
     if (!url_prefix.empty())
       return new ZeroSuggestProvider(listener, profile, url_prefix);
   }
