@@ -5,12 +5,9 @@
 /**
  * This object encapsulates everything related to tasks execution.
  * @param {FileManager} fileManager FileManager instance.
- * @param {Array.<string>} urls List of file urls.
- * @param {Array.<string>=} opt_mimeTypes List of MIME types for each
- *     of the files.
  * @param {object} opt_params File manager load parameters.
  */
-function FileTasks(fileManager, urls, opt_mimeTypes, opt_params) {
+function FileTasks(fileManager, opt_params) {
   this.fileManager_ = fileManager;
   this.params_ = opt_params;
   this.tasks_ = null;
@@ -20,11 +17,6 @@ function FileTasks(fileManager, urls, opt_mimeTypes, opt_params) {
    * List of invocations to be called once tasks are available.
    */
   this.pendingInvocations_ = [];
-
-  /* TODO(kaznacheev): Remove urls and opt_mimeTypes from parameters and
-     call init directly from the client code.
-   */
-  this.init(urls, opt_mimeTypes);
 }
 
 /**

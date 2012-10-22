@@ -22,22 +22,22 @@ function FileManager(dialogDom) {
   this.listType_ = null;
   this.showDelayTimeout_ = null;
 
-  this.selection = null;
-
   this.filesystemObserverId_ = null;
   this.gdataObserverId_ = null;
 
   this.document_ = dialogDom.ownerDocument;
-  this.dialogType_ = this.params_.type || FileManager.DialogType.FULL_PAGE;
+  this.dialogType = this.params_.type || DialogType.FULL_PAGE;
 
   // Optional list of file types.
   this.fileTypes_ = this.params_.typeList || [];
-  metrics.recordEnum('Create', this.dialogType_,
-      [FileManager.DialogType.SELECT_FOLDER,
-      FileManager.DialogType.SELECT_SAVEAS_FILE,
-      FileManager.DialogType.SELECT_OPEN_FILE,
-      FileManager.DialogType.SELECT_OPEN_MULTI_FILE,
-      FileManager.DialogType.FULL_PAGE]);
+  metrics.recordEnum('Create', this.dialogType,
+      [DialogType.SELECT_FOLDER,
+       DialogType.SELECT_SAVEAS_FILE,
+       DialogType.SELECT_OPEN_FILE,
+       DialogType.SELECT_OPEN_MULTI_FILE,
+       DialogType.FULL_PAGE]);
+
+  this.selectionHandler_ = null;
 
   this.initFileSystem_();
   this.volumeManager_ = VolumeManager.getInstance();
@@ -55,6 +55,33 @@ FileManager.THUMBNAIL_SHOW_DELAY = 100;
 
 FileManager.prototype = {
   __proto__: cr.EventTarget.prototype
+};
+
+/**
+ * List of dialog types.
+ *
+ * Keep this in sync with FileManagerDialog::GetDialogTypeAsString, except
+ * FULL_PAGE which is specific to this code.
+ *
+ * @enum {string}
+ */
+var DialogType = {
+  SELECT_FOLDER: 'folder',
+  SELECT_SAVEAS_FILE: 'saveas-file',
+  SELECT_OPEN_FILE: 'open-file',
+  SELECT_OPEN_MULTI_FILE: 'open-multi-file',
+  FULL_PAGE: 'full-page'
+};
+
+/**
+ * @param {string} type Dialog type.
+ * @return {boolean} Whether the type is modal.
+ */
+DialogType.isModal = function(type) {
+  return type == DialogType.SELECT_FOLDER ||
+      type == DialogType.SELECT_SAVEAS_FILE ||
+      type == DialogType.SELECT_OPEN_FILE ||
+      type == DialogType.SELECT_OPEN_MULTI_FILE;
 };
 
 // Anonymous "namespace".
@@ -78,17 +105,6 @@ FileManager.prototype = {
    * Location of Google Drive specific help.
    */
   FileManager.GOOGLE_DRIVE_ROOT = 'https://drive.google.com';
-
-  /**
-   * Maximum amount of thumbnails in the preview pane.
-   */
-  var MAX_PREVIEW_THUMBNAIL_COUNT = 4;
-
-  /**
-   * Maximum width or height of an image what pops up when the mouse hovers
-   * thumbnail in the bottom panel (in pixels).
-   */
-  var IMAGE_HOVER_PREVIEW_SIZE = 200;
 
   /**
    * Number of milliseconds in a day.
@@ -142,37 +158,7 @@ FileManager.prototype = {
     element.textContent = '';
   }
 
-  function setClassIf(element, className, condition) {
-    if (condition)
-      element.classList.add(className);
-    else
-      element.classList.remove(className);
-  }
-
   // Public statics.
-
-  /**
-   * List of dialog types.
-   *
-   * Keep this in sync with FileManagerDialog::GetDialogTypeAsString, except
-   * FULL_PAGE which is specific to this code.
-   *
-   * @enum {string}
-   */
-  FileManager.DialogType = {
-    SELECT_FOLDER: 'folder',
-    SELECT_SAVEAS_FILE: 'saveas-file',
-    SELECT_OPEN_FILE: 'open-file',
-    SELECT_OPEN_MULTI_FILE: 'open-multi-file',
-    FULL_PAGE: 'full-page'
-  };
-
-  FileManager.DialogType.isModal = function(type) {
-    return type == FileManager.DialogType.SELECT_FOLDER ||
-        type == FileManager.DialogType.SELECT_SAVEAS_FILE ||
-        type == FileManager.DialogType.SELECT_OPEN_FILE ||
-        type == FileManager.DialogType.SELECT_OPEN_MULTI_FILE;
-  };
 
   FileManager.ListType = {
     DETAIL: 'detail',
@@ -386,8 +372,8 @@ FileManager.prototype = {
     this.collator_ = v8Intl.Collator([], {numeric: true, sensitivity: 'base'});
 
     this.showCheckboxes_ =
-        (this.dialogType_ == FileManager.DialogType.FULL_PAGE ||
-         this.dialogType_ == FileManager.DialogType.SELECT_OPEN_MULTI_FILE);
+        (this.dialogType == DialogType.FULL_PAGE ||
+         this.dialogType == DialogType.SELECT_OPEN_MULTI_FILE);
 
     this.table_.startBatchUpdates();
     this.grid_.startBatchUpdates();
@@ -420,16 +406,14 @@ FileManager.prototype = {
                         this.refreshCurrentDirectoryMetadata_.bind(this));
     dm.addEventListener('rescan-completed',
                         this.refreshCurrentDirectoryMetadata_.bind(this));
-    this.addEventListener('selection-summarized',
-                          this.onSelectionSummarized_.bind(this));
 
-    this.summarizeSelection_();
+    this.selectionHandler_.onSelectionChanged();
 
     var sortField =
-        window.localStorage['sort-field-' + this.dialogType_] ||
+        window.localStorage['sort-field-' + this.dialogType] ||
         'modificationTime';
     var sortDirection =
-        window.localStorage['sort-direction-' + this.dialogType_] || 'desc';
+        window.localStorage['sort-direction-' + this.dialogType] || 'desc';
     this.directoryModel_.sortFileList(sortField, sortDirection);
 
     this.setupCurrentDirectory_(true /* page loading */);
@@ -444,7 +428,7 @@ FileManager.prototype = {
 
     this.refocus();
 
-    if (this.dialogType_ == FileManager.DialogType.FULL_PAGE)
+    if (this.dialogType == DialogType.FULL_PAGE)
       this.initDataTransferOperations_();
 
     this.table_.endBatchUpdates();
@@ -768,9 +752,9 @@ FileManager.prototype = {
     this.emptySelectionModel_ = new cr.ui.ListSelectionModel();
 
     var singleSelection =
-        this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FILE ||
-        this.dialogType_ == FileManager.DialogType.SELECT_FOLDER ||
-        this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE;
+        this.dialogType == DialogType.SELECT_OPEN_FILE ||
+        this.dialogType == DialogType.SELECT_FOLDER ||
+        this.dialogType == DialogType.SELECT_SAVEAS_FILE;
 
     this.directoryModel_ = new DirectoryModel(
         this.filesystem_.root,
@@ -780,6 +764,8 @@ FileManager.prototype = {
         this.isGDataEnabled());
 
     this.directoryModel_.start();
+
+    this.selectionHandler_ = new SelectionHandler(this);
 
     this.fileWatcher_ = new FileManager.MetadataFileWatcher(this);
     this.fileWatcher_.start();
@@ -803,16 +789,17 @@ FileManager.prototype = {
     dataModel.addEventListener('permuted',
                                this.onDataModelPermuted_.bind(this));
 
-    this.directoryModel_.getFileListSelection().addEventListener(
-        'change', this.onSelectionChanged_.bind(this));
+    this.directoryModel_.getFileListSelection().addEventListener('change',
+        this.selectionHandler_.onSelectionChanged.bind(
+            this.selectionHandler_));
 
     this.initTable_();
     this.initGrid_();
     this.initRootsList_();
 
     var listType = FileManager.ListType.DETAIL;
-    if (FileManager.DialogType.isModal(this.dialogType_))
-      listType = window.localStorage['listType-' + this.dialogType_] ||
+    if (DialogType.isModal(this.dialogType))
+      listType = window.localStorage['listType-' + this.dialogType] ||
           FileManager.ListType.DETAIL;
     this.setListType(listType);
 
@@ -851,15 +838,13 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.onDataModelSplice_ = function(event) {
-    var checkbox = this.document_.querySelector('#select-all-checkbox');
-    if (checkbox)
-      this.updateSelectAllCheckboxState_(checkbox);
+    this.selectionHandler_.updateSelectAllCheckboxState();
   };
 
   FileManager.prototype.onDataModelPermuted_ = function(event) {
     var sortStatus = this.directoryModel_.getFileList().sortStatus;
-    window.localStorage['sort-field-' + this.dialogType_] = sortStatus.field;
-    window.localStorage['sort-direction-' + this.dialogType_] =
+    window.localStorage['sort-field-' + this.dialogType] = sortStatus.field;
+    window.localStorage['sort-direction-' + this.dialogType] =
         sortStatus.direction;
   };
 
@@ -915,7 +900,7 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.refocus = function() {
-    if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE)
+    if (this.dialogType == DialogType.SELECT_SAVEAS_FILE)
       this.filenameInput_.focus();
     else
       this.currentList_.focus();
@@ -945,8 +930,8 @@ FileManager.prototype = {
     if (type && type == this.listType_)
       return;
 
-    if (FileManager.DialogType.isModal(this.dialogType_))
-      window.localStorage['listType-' + this.dialogType_] = type;
+    if (DialogType.isModal(this.dialogType))
+      window.localStorage['listType-' + this.dialogType] = type;
 
     this.table_.list.startBatchUpdates();
     this.grid_.startBatchUpdates();
@@ -1014,7 +999,7 @@ FileManager.prototype = {
       return item;
     }.bind(this));
 
-    var fullPage = (this.dialogType_ == FileManager.DialogType.FULL_PAGE);
+    var fullPage = (this.dialogType == DialogType.FULL_PAGE);
 
     var columns = [
         new cr.ui.table.TableColumn('name', str('NAME_COLUMN_LABEL'),
@@ -1274,7 +1259,7 @@ FileManager.prototype = {
     // to invoke a task after selecting it.
     // If the file path is in params_ we only want to select the file.
     var invokeHandlers = pageLoading && !this.params_.selectOnly &&
-        this.dialogType_ == FileManager.DialogType.FULL_PAGE &&
+        this.dialogType == DialogType.FULL_PAGE &&
         !!location.hash;
 
     if (PathUtil.getRootType(path) === RootType.GDATA) {
@@ -1334,57 +1319,54 @@ FileManager.prototype = {
       // node.  Note that onResolve is guaranteed to be called (exactly once)
       // before onLoadedActivateLeaf.
       var foundLeaf = true;
-      function onResolve(baseName, leafName, exists) {
+      var onResolve = function(baseName, leafName, exists) {
         if (!exists || leafName == '') {
           // Non-existent file or a directory.
           foundLeaf = false;
-          if (self.params_.gallery) {
+          if (this.params_.gallery) {
             // Reloading while the Gallery is open with empty or multiple
             // selection. Open the Gallery when the directory is scanned.
             var listener = function() {
-              self.directoryModel_.removeEventListener(
+              this.directoryModel_.removeEventListener(
                   'scan-completed', listener);
-              new FileTasks(self, [], null /* mime types */, self.params_).
-                  openGallery([]);
-            };
-            self.directoryModel_.addEventListener('scan-completed', listener);
+              new FileTasks(this, this.params_).openGallery([]);
+            }.bind(this);
+            this.directoryModel_.addEventListener('scan-completed', listener);
           } else {
-            self.show_();  // Remove the shade immediately.
+            this.show_();  // Remove the shade immediately.
           }
         }
-      }
+      }.bind(this);
 
       // TODO(dgozman): get rid of onLoadedActivate callback in setupPath.
-      var self = this;
-      function onLoadedActivateLeaf() {
-        if (foundLeaf) {
-          // TODO(kaznacheev): use |makeFIlesystemUrl| instead of
-          // self.selection.
-          var urls = [self.selection.urls[0]];
-          var tasks = new FileTasks(self, urls,
-              null /* mime types */, self.params_);
-          // There are 3 ways we can get here:
-          // 1. Invoked from file_manager_util::ViewFile. This can only
-          //    happen for 'gallery' and 'mount-archive' actions.
-          // 2. Reloading a Gallery page. Must be an image or a video file.
-          // 3. A user manually entered a URL pointing to a file.
-          // We call the appropriate methods of FileTasks directly as we do
-          // not need any of the preparations that |execute| method does.
-          if (FileType.isImageOrVideo(path)) {
-            tasks.openGallery(urls);
-          } else if (FileType.getMediaType(path) == 'archive') {
-            self.show_();
-            tasks.mountArchives_(urls);
-          } else {
-            self.show_();
-          }
+      var onLoadedActivateLeaf = function() {
+        if (!foundLeaf) return;
+        // TODO(kaznacheev): use |makeFIlesystemUrl| instead of
+        // this.getSelection().
+        var urls = [this.getSelection().urls[0]];
+        var tasks = new FileTasks(this, this.params_);
+        // There are 3 ways we can get here:
+        // 1. Invoked from file_manager_util::ViewFile. This can only
+        //    happen for 'gallery' and 'mount-archive' actions.
+        // 2. Reloading a Gallery page. Must be an image or a video file.
+        // 3. A user manually entered a URL pointing to a file.
+        // We call the appropriate methods of FileTasks directly as we do
+        // not need any of the preparations that |execute| method does.
+        if (FileType.isImageOrVideo(path)) {
+          tasks.openGallery(urls);
+        } else if (FileType.getMediaType(path) == 'archive') {
+          this.show_();
+          tasks.mountArchives_(urls);
+        } else {
+          this.show_();
         }
-      }
+      }.bind(this);
+
       this.directoryModel_.setupPath(path, onLoadedActivateLeaf, onResolve);
       return;
     }
 
-    if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
+    if (this.dialogType == DialogType.SELECT_SAVEAS_FILE) {
       this.directoryModel_.setupPath(path, undefined,
           function(basePath, leafName) {
             this.filenameInput_.value = leafName;
@@ -1405,29 +1387,29 @@ FileManager.prototype = {
     var defaultTitle;
     var okLabel = str('OPEN_LABEL');
 
-    switch (this.dialogType_) {
-      case FileManager.DialogType.SELECT_FOLDER:
+    switch (this.dialogType) {
+      case DialogType.SELECT_FOLDER:
         defaultTitle = str('SELECT_FOLDER_TITLE');
         break;
 
-      case FileManager.DialogType.SELECT_OPEN_FILE:
+      case DialogType.SELECT_OPEN_FILE:
         defaultTitle = str('SELECT_OPEN_FILE_TITLE');
         break;
 
-      case FileManager.DialogType.SELECT_OPEN_MULTI_FILE:
+      case DialogType.SELECT_OPEN_MULTI_FILE:
         defaultTitle = str('SELECT_OPEN_MULTI_FILE_TITLE');
         break;
 
-      case FileManager.DialogType.SELECT_SAVEAS_FILE:
+      case DialogType.SELECT_SAVEAS_FILE:
         defaultTitle = str('SELECT_SAVEAS_FILE_TITLE');
         okLabel = str('SAVE_LABEL');
         break;
 
-      case FileManager.DialogType.FULL_PAGE:
+      case DialogType.FULL_PAGE:
         break;
 
       default:
-        throw new Error('Unknown dialog type: ' + this.dialogType_);
+        throw new Error('Unknown dialog type: ' + this.dialogType);
     }
 
     this.okButton_.textContent = okLabel;
@@ -1435,7 +1417,7 @@ FileManager.prototype = {
     var dialogTitle = this.params_.title || defaultTitle;
     this.dialogDom_.querySelector('.dialog-title').textContent = dialogTitle;
 
-    this.dialogDom_.setAttribute('type', this.dialogType_);
+    this.dialogDom_.setAttribute('type', this.dialogType);
   };
 
   FileManager.prototype.renderCheckbox_ = function() {
@@ -1480,7 +1462,8 @@ FileManager.prototype = {
     input.addEventListener('touchstart',
                            function(e) { e.stopPropagation() });
 
-    if (this.selection && this.selection.entries.indexOf(entry) != -1) {
+    var selection = this.getSelection();
+    if (selection && selection.entries.indexOf(entry) != -1) {
       // Our DOM nodes get discarded as soon as we're scrolled out of view,
       // so we have to make sure the check state is correct when we're brought
       // back to life.
@@ -1496,7 +1479,7 @@ FileManager.prototype = {
     input.setAttribute('tabindex', -1);
     input.id = 'select-all-checkbox';
     input.className = 'common';
-    this.updateSelectAllCheckboxState_(input);
+    this.selectionHandler_.updateSelectAllCheckboxState(input);
 
     input.addEventListener('click', function(event) {
       if (input.checked)
@@ -1511,16 +1494,6 @@ FileManager.prototype = {
     fragment.appendChild(input);
     fragment.appendChild(this.document_.createTextNode(name));
     return fragment;
-  };
-
-  /**
-   * Update check and disable states of the 'Select all' checkbox.
-   */
-  FileManager.prototype.updateSelectAllCheckboxState_ = function(checkbox) {
-    var dm = this.directoryModel_.getFileList();
-    checkbox.checked = this.selection && dm.length > 0 &&
-                       dm.length == this.selection.totalCount;
-    checkbox.disabled = dm.length == 0;
   };
 
   /**
@@ -2008,380 +1981,6 @@ FileManager.prototype = {
     this.currentList_.restoreLeadItem(leadListItem);
   };
 
-  /**
-   * Compute summary information about the current selection.
-   *
-   * This method dispatches the 'selection-summarized' event when it completes.
-   * Depending on how many of the selected files already have known sizes, the
-   * dispatch may happen immediately, or after a number of async calls complete.
-   *
-   * TODO(olege): I believe we need a separate PreviewPanel controller class.
-   */
-  FileManager.prototype.summarizeSelection_ = function() {
-    if (this.selectionUpdateTimer_) {
-      clearTimeout(this.selectionUpdateTimer_);
-      this.selectionUpdateTimer_ = null;
-      // The selection is changing quicker than we can update the UI.
-      // Clear the preview thumbnails and hide the action picker.
-      removeChildren(this.previewThumbnails_);
-      this.taskItems_.hidden = true;
-    }
-
-    var selection = this.selection = {
-      entries: [],
-      urls: [],
-      totalCount: 0,
-      fileCount: 0,
-      directoryCount: 0,
-      bytes: 0,
-      showBytes: false,
-      allGDataFilesPresent: false,
-      iconType: null,
-      indexes: this.currentList_.selectionModel.selectedIndexes
-    };
-
-    if (!selection.indexes.length) {
-      this.updatePreviewPanelVisibility_();
-      cr.dispatchSimpleEvent(this, 'selection-summarized');
-      return;
-    }
-
-    this.previewSummary_.textContent = str('COMPUTING_SELECTION');
-
-    // Synchronously compute what we can.
-    for (var i = 0; i < selection.indexes.length; i++) {
-      var entry = this.directoryModel_.getFileList().item(selection.indexes[i]);
-      if (!entry)
-        continue;
-
-      selection.entries.push(entry);
-      selection.urls.push(entry.toURL());
-
-      if (selection.iconType == null) {
-        selection.iconType = FileType.getIcon(entry);
-      } else if (selection.iconType != 'unknown') {
-        var iconType = FileType.getIcon(entry);
-        if (selection.iconType != iconType)
-          selection.iconType = 'unknown';
-      }
-
-      if (entry.isFile) {
-        selection.fileCount += 1;
-        selection.showBytes |= !FileType.isHosted(entry);
-      } else {
-        selection.directoryCount += 1;
-      }
-      selection.totalCount++;
-    }
-
-    selection.tasks = new FileTasks(this, [] /* do not fetch the tasks yet */);
-
-    // The rest of the selection properties are computed via (sometimes lengthy)
-    // asynchronous calls. We initiate these calls after a timeout. If the
-    // selection is changing quickly we only do this once when it slows down.
-
-    var updateDelay = 200;
-    var now = Date.now();
-    if (now > (this.lastSelectionTime_ || 0) + updateDelay) {
-      // The previous selection change happened a while ago. Update the UI soon.
-      updateDelay = 0;
-    }
-    this.lastSelectionTime_ = now;
-
-    this.selectionUpdateTimer_ = setTimeout(function() {
-      this.selectionUpdateTimer_ = null;
-      if (this.selection == selection)
-        this.updateUIForSelection(selection);
-    }.bind(this), updateDelay);
-  };
-
-  FileManager.prototype.updateUIForSelection = function(selection) {
-    // Update the UI.
-    this.updatePreviewPanelVisibility_();
-    this.updateSearchBreadcrumbs_();
-    this.updateContextMenuActionItems(null, false);
-
-    var commands = this.dialogDom_.querySelectorAll('command');
-    for (var i = 0; i < commands.length; i++)
-      commands[i].canExecuteChange();
-
-    // Inform tests it's OK to click buttons now.
-    chrome.test.sendMessage('selection-change-complete');
-
-    // Create thumbnails.
-    var thumbnails = [];
-
-    var pendingFiles = [];
-    var thumbnailCount = 0;
-    var thumbnailLoaded = -1;
-    var forcedShowTimeout = null;
-    var thumbnailsHaveZoom = false;
-    var self = this;
-
-    function showThumbnails() {
-      // have-zoom class may be updated twice: then timeout exceeds and then
-      // then all images loaded.
-      if (self.selection == selection)
-        setClassIf(self.previewThumbnails_, 'has-zoom', thumbnailsHaveZoom);
-
-      if (forcedShowTimeout === null)
-        return;
-      clearTimeout(forcedShowTimeout);
-      forcedShowTimeout = null;
-
-      // Selection could change while images are loading.
-      if (self.selection == selection) {
-        removeChildren(self.previewThumbnails_);
-        for (var i = 0; i < thumbnails.length; i++)
-          self.previewThumbnails_.appendChild(thumbnails[i]);
-      }
-    }
-
-    function onThumbnailLoaded() {
-      thumbnailLoaded++;
-      if (thumbnailLoaded == thumbnailCount)
-        showThumbnails();
-    }
-
-    function thumbnailClickHandler() {
-      if (selection.tasks)
-        selection.tasks.executeDefault();
-    }
-
-    for (var i = 0; i < selection.entries.length; i++) {
-      var entry = selection.entries[i];
-
-      if (thumbnailCount < MAX_PREVIEW_THUMBNAIL_COUNT) {
-        var box = this.document_.createElement('div');
-        box.className = 'thumbnail';
-        if (thumbnailCount == 0) {
-          var zoomed = this.document_.createElement('div');
-          zoomed.hidden = true;
-          thumbnails.push(zoomed);
-          function onFirstThumbnailLoaded(img, transform) {
-            if (self.decorateThumbnailZoom_(zoomed, img, transform)) {
-              zoomed.hidden = false;
-              thumbnailsHaveZoom = true;
-            }
-            onThumbnailLoaded();
-          }
-          var thumbnail = this.renderThumbnailBox_(entry, true,
-                                                   onFirstThumbnailLoaded);
-          zoomed.addEventListener('click', thumbnailClickHandler);
-        } else {
-          var thumbnail = this.renderThumbnailBox_(entry, true,
-                                                   onThumbnailLoaded);
-        }
-        thumbnailCount++;
-        box.appendChild(thumbnail);
-        box.style.zIndex = MAX_PREVIEW_THUMBNAIL_COUNT + 1 - i;
-        box.addEventListener('click', thumbnailClickHandler);
-
-        thumbnails.push(box);
-      }
-    }
-
-    forcedShowTimeout = setTimeout(showThumbnails,
-        FileManager.THUMBNAIL_SHOW_DELAY);
-    onThumbnailLoaded();
-
-    this.createTasksForSelection_(selection);
-  }
-
-  FileManager.prototype.createTasksForSelection_ = function(selection) {
-    var self = this;
-    function getTasksAndFinish() {
-      if (self.selection != selection)
-        return;
-
-      if (self.dialogType_ == FileManager.DialogType.FULL_PAGE &&
-          selection.directoryCount == 0 && selection.fileCount > 0) {
-        selection.tasks.init(selection.urls, selection.mimeTypes);
-        selection.tasks.display(self.taskItems_);
-        selection.tasks.updateMenuItem();
-      } else {
-        self.taskItems_.hidden = true;
-      }
-
-      self.metadataCache_.get(selection.entries, 'filesystem', function(props) {
-        for (var index = 0; index < selection.entries.length; index++) {
-          var filesystem = props[index];
-          if (selection.entries[index].isFile) {
-            selection.bytes += filesystem.size;
-          }
-        }
-
-        self.dispatchEvent(new cr.Event('selection-summarized'));
-      });
-    }
-
-    if (this.isOnGData()) {
-      function predicate(p) {
-        return !(p && p.availableOffline);
-      }
-      this.metadataCache_.get(selection.urls, 'gdata', function(props) {
-        selection.allGDataFilesPresent =
-            props.filter(predicate).length == 0;
-        this.updateOkButton_();
-
-        // Collect all of the mime types and push that info into the selection.
-        selection.mimeTypes = props.map(function(value) {
-          return (value && value.contentMimeType) || '';
-        });
-
-        getTasksAndFinish();
-      }.bind(this));
-    } else {
-      getTasksAndFinish();
-    }
-  };
-
-  FileManager.prototype.updateSearchBreadcrumbs_ = function() {
-    var selectedIndexes = this.currentList_.selectionModel.selectedIndexes;
-    if (selectedIndexes.length !== 1 || !this.directoryModel_.isSearching()) {
-      this.searchBreadcrumbs_.hide();
-      return;
-    }
-
-    var entry = this.directoryModel_.getFileList().item(selectedIndexes[0]);
-    this.searchBreadcrumbs_.show(
-        PathUtil.getRootPath(entry.fullPath),
-        entry.fullPath);
-  };
-
-  /**
-    * Check if all the files in the current selection are available. The only
-    * case when files might be not available is when the selection contains
-    * uncached GData files and the browser is offline.
-    * @return {boolean} True if all files in the current selection are
-    *                   available.
-    */
-  FileManager.prototype.isSelectionAvailable = function() {
-    return !this.isOnGData() ||
-        !this.isOffline() ||
-        this.selection.allGDataFilesPresent;
-  };
-
-  /**
-   * Creates enlarged image for a bottom pannel thumbnail.
-   * Image's assumed to be just loaded and not inserted into the DOM.
-   *
-   * @param {HTMLElement} largeImageBox DIV element to decorate.
-   * @param {HTMLElement} img Loaded image.
-   * @param {Object} transform Image transformation description.
-   * @return {boolean} True if zoomed image is present.
-   */
-  FileManager.prototype.decorateThumbnailZoom_ = function(largeImageBox,
-                                                          img, transform) {
-    var width = img.width;
-    var height = img.height;
-    var THUMBNAIL_SIZE = 45;
-    if (width < THUMBNAIL_SIZE * 2 && height < THUMBNAIL_SIZE * 2)
-      return false;
-
-    var scale = Math.min(1,
-        IMAGE_HOVER_PREVIEW_SIZE / Math.max(width, height));
-
-    var imageWidth = Math.round(width * scale);
-    var imageHeight = Math.round(height * scale);
-
-    var largeImage = this.document_.createElement('img');
-    if (scale < 0.3) {
-      // Scaling large images kills animation. Downscale it in advance.
-
-      // Canvas scales images with liner interpolation. Make a larger
-      // image (but small enough to not kill animation) and let IMG
-      // scale it smoothly.
-      var INTERMEDIATE_SCALE = 3;
-      var canvas = this.document_.createElement('canvas');
-      canvas.width = imageWidth * INTERMEDIATE_SCALE;
-      canvas.height = imageHeight * INTERMEDIATE_SCALE;
-      var ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      // Using bigger than default compression reduces image size by
-      // several times. Quality degradation compensated by greater resolution.
-      largeImage.src = canvas.toDataURL('image/jpeg', 0.6);
-    } else {
-      largeImage.src = img.src;
-    }
-    largeImageBox.className = 'popup';
-
-    var boxWidth = Math.max(THUMBNAIL_SIZE, imageWidth);
-    var boxHeight = Math.max(THUMBNAIL_SIZE, imageHeight);
-
-    if (transform && transform.rotate90 % 2 == 1) {
-      var t = boxWidth;
-      boxWidth = boxHeight;
-      boxHeight = t;
-    }
-
-    var style = largeImageBox.style;
-    style.width = boxWidth + 'px';
-    style.height = boxHeight + 'px';
-    style.top = (-boxHeight + THUMBNAIL_SIZE) + 'px';
-
-    var style = largeImage.style;
-    style.width = imageWidth + 'px';
-    style.height = imageHeight + 'px';
-    style.left = (boxWidth - imageWidth) / 2 + 'px';
-    style.top = (boxHeight - imageHeight) / 2 + 'px';
-    style.position = 'relative';
-
-    util.applyTransform(largeImage, transform);
-
-    largeImageBox.appendChild(largeImage);
-    largeImageBox.style.zIndex = 1000;
-    return true;
-  };
-
-  FileManager.prototype.updatePreviewPanelVisibility_ = function() {
-    var panel = this.previewPanel_;
-    var state = panel.getAttribute('visibility');
-    var mustBeVisible = (this.selection.totalCount > 0);
-    var self = this;
-
-    switch (state) {
-      case 'visible':
-        if (!mustBeVisible)
-          startHiding();
-        break;
-
-      case 'hiding':
-        if (mustBeVisible)
-          stopHidingAndShow();
-        break;
-
-      case 'hidden':
-        if (mustBeVisible)
-          show();
-    }
-
-    function stopHidingAndShow() {
-      clearTimeout(self.hidingTimeout_);
-      self.hidingTimeout_ = 0;
-      setVisibility('visible');
-    }
-
-    function startHiding() {
-      setVisibility('hiding');
-      self.hidingTimeout_ = setTimeout(function() {
-          self.hidingTimeout_ = 0;
-          setVisibility('hidden');
-          self.onResize_();
-        }, 250);
-    }
-
-    function show() {
-      setVisibility('visible');
-      self.previewThumbnails_.textContent = '';
-      self.onResize_();
-    }
-
-    function setVisibility(visibility) {
-      panel.setAttribute('visibility', visibility);
-    }
-  };
-
   FileManager.prototype.isOnGData = function() {
     return this.directoryModel_.getCurrentRootType() === RootType.GDATA;
   };
@@ -2396,7 +1995,7 @@ FileManager.prototype = {
     if (event.target.tagName != 'A' || !event.target.href)
       return;
     chrome.tabs.create({url: event.target.href});
-    if (this.dialogType_ != FileManager.DialogType.FULL_PAGE) {
+    if (this.dialogType != DialogType.FULL_PAGE) {
       this.onCancel_();
     }
     event.preventDefault();
@@ -2408,16 +2007,17 @@ FileManager.prototype = {
    * @param {Object} event Event containing task which was clicked.
    */
   FileManager.prototype.onTaskItemClicked_ = function(event) {
-    if (!this.selection.tasks) return;
+    var selection = this.getSelection();
+    if (!selection.tasks) return;
 
     if (event.item.task) {
       // Task field doesn't exist on change-default dropdown item.
-      this.selection.tasks.execute(event.item.task.taskId);
+      selection.tasks.execute(event.item.task.taskId);
     } else {
       var extensions = [];
 
-      for (var i = 0; i < this.selection.urls.length; i++) {
-        var match = /\.(\w+)$/g.exec(this.selection.urls[i]);
+      for (var i = 0; i < selection.urls.length; i++) {
+        var match = /\.(\w+)$/g.exec(selection.urls[i]);
         if (match) {
           var ext = match[1].toUpperCase();
           if (extensions.indexOf(ext) == -1) {
@@ -2433,7 +2033,7 @@ FileManager.prototype = {
       }
 
       // Change default was clicked. We should open "change default" dialog.
-      this.selection.tasks.showTaskPicker(this.defaultTaskPicker,
+      selection.tasks.showTaskPicker(this.defaultTaskPicker,
           loadTimeData.getString('CHANGE_DEFAULT_MENU_ITEM'),
           strf('CHANGE_DEFAULT_CAPTION', format),
           this.onDefaultTaskDone_.bind(this));
@@ -2446,13 +2046,15 @@ FileManager.prototype = {
    * @param {Object} task Task to set as default.
    */
   FileManager.prototype.onDefaultTaskDone_ = function(task) {
+    // TODO(dgozman): move this method closer to tasks.
+    var selection = this.getSelection();
     chrome.fileBrowserPrivate.setDefaultTask(task.taskId,
-      this.selection.urls, this.selection.mimeTypes);
-    this.selection.tasks = new FileTasks(
-        this, this.selection.urls, this.selection.mimeTypes).
-            display(this.taskItems_);
+      selection.urls, selection.mimeTypes);
+    selection.tasks = new FileTasks(this);
+    selection.tasks.init(selection.urls, selection.mimeTypes);
+    selection.tasks.display(this.taskItems_);
     this.refreshCurrentDirectoryMetadata_();
-    this.updateUIForSelection(this.selection);
+    this.selectionHandler_.onSelectionChanged();
   };
 
   FileManager.prototype.updateNetworkStateAndPreferences_ = function(
@@ -2609,15 +2211,16 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.deleteSelection = function() {
-    this.butterBar_.initiateDelete(this.selection.entries);
+    this.butterBar_.initiateDelete(this.getSelection().entries);
   };
 
   FileManager.prototype.blinkSelection = function() {
-    if (!this.selection || this.selection.totalCount == 0)
+    var selection = this.getSelection();
+    if (!selection || selection.totalCount == 0)
       return;
 
-    for (var i = 0; i < this.selection.entries.length; i++) {
-      var selectedIndex = this.selection.indexes[i];
+    for (var i = 0; i < selection.entries.length; i++) {
+      var selectedIndex = selection.indexes[i];
       var listItem = this.currentList_.getListItemByIndex(selectedIndex);
       if (listItem)
         this.blinkListItem_(listItem);
@@ -2629,35 +2232,6 @@ FileManager.prototype = {
     setTimeout(function() {
       listItem.classList.remove('blink');
     }, 100);
-  };
-
-  /**
-   * Update the selection summary UI when the selection summarization completes.
-   */
-  FileManager.prototype.onSelectionSummarized_ = function() {
-    var selection = this.selection;
-    var bytes = util.bytesToSi(selection.bytes);
-    var text = '';
-    if (selection.totalCount == 0) {
-      // We dont want to change the string during preview panel animating away.
-      return;
-    } else if (selection.fileCount == 1 && selection.directoryCount == 0) {
-      text = selection.entries[0].name;
-      if (selection.showBytes) text += ', ' + bytes;
-    } else if (selection.fileCount == 0 && selection.directoryCount == 1) {
-      text = selection.entries[0].name;
-    } else if (selection.directoryCount == 0) {
-      text = strf('MANY_FILES_SELECTED', selection.fileCount, bytes);
-      // TODO(dgozman): change the string to not contain ", $2".
-      if (!selection.showBytes) text = text.substring(0, text.lastIndexOf(','));
-    } else if (selection.fileCount == 0) {
-      text = strf('MANY_DIRECTORIES_SELECTED', selection.directoryCount);
-    } else {
-      text = strf('MANY_ENTRIES_SELECTED', selection.totalCount, bytes);
-      // TODO(dgozman): change the string to not contain ", $2".
-      if (!selection.showBytes) text = text.substring(0, text.lastIndexOf(','));
-    }
-    this.previewSummary_.textContent = text;
   };
 
   FileManager.prototype.onCheckboxClick_ = function(event) {
@@ -2707,103 +2281,6 @@ FileManager.prototype = {
   };
 
   /**
-   * Update the UI when the selection model changes.
-   *
-   * @param {cr.Event} event The change event.
-   */
-  FileManager.prototype.onSelectionChanged_ = function(event) {
-    this.summarizeSelection_();
-
-    // Update the most visible parts of the UI immediately.
-    // The rest will be updated after a timeout.
-    if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
-      // If this is a save-as dialog, copy the selected file into the filename
-      // input text box.
-
-      if (this.selection &&
-          this.selection.totalCount == 1 &&
-          this.selection.entries[0].isFile &&
-          this.filenameInput_.value != this.selection.entries[0].name) {
-        this.filenameInput_.value = this.selection.entries[0].name;
-      }
-    }
-
-    this.updateOkButton_();
-
-    this.updateSelectionCheckboxes_(event);
-  };
-
-  /**
-   * Update the selection checkboxes.
-   */
-  FileManager.prototype.updateSelectionCheckboxes_ = function(event) {
-    if (!this.showCheckboxes_)
-      return;
-
-    for (var i = 0; i < event.changes.length; i++) {
-      // Turn off any checkboxes for items that are no longer selected.
-      var selectedIndex = event.changes[i].index;
-      var listItem = this.currentList_.getListItemByIndex(selectedIndex);
-      if (!listItem) {
-        // When changing directories, we get notified about list items
-        // that are no longer there.
-        continue;
-      }
-
-      if (!event.changes[i].selected) {
-        var checkbox = listItem.querySelector('input[type="checkbox"]');
-        checkbox.checked = false;
-      }
-    }
-
-    for (var i = 0; i < this.selection.entries.length; i++) {
-      var selectedIndex = this.selection.indexes[i];
-      var listItem = this.currentList_.getListItemByIndex(selectedIndex);
-      if (listItem)
-        listItem.querySelector('input[type="checkbox"]').checked = true;
-    }
-
-    var selectAllCheckbox =
-        this.document_.getElementById('select-all-checkbox');
-    if (selectAllCheckbox)
-      this.updateSelectAllCheckboxState_(selectAllCheckbox);
-  };
-
-  FileManager.prototype.updateOkButton_ = function(event) {
-    var selectable;
-
-    if (this.dialogType_ == FileManager.DialogType.SELECT_FOLDER) {
-      // In SELECT_FOLDER mode, we allow to select current directory
-      // when nothing is selected.
-      selectable = this.selection.directoryCount <= 1 &&
-          this.selection.fileCount == 0;
-    } else if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FILE) {
-      selectable = (this.isSelectionAvailable() &&
-                    this.selection.directoryCount == 0 &&
-                    this.selection.fileCount == 1);
-    } else if (this.dialogType_ ==
-               FileManager.DialogType.SELECT_OPEN_MULTI_FILE) {
-      selectable = (this.isSelectionAvailable() &&
-                    this.selection.directoryCount == 0 &&
-                    this.selection.fileCount >= 1);
-    } else if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
-      if (this.isOnReadonlyDirectory()) {
-        selectable = false;
-      } else {
-        selectable = !!this.filenameInput_.value;
-      }
-    } else if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
-      // No "select" buttons on the full page UI.
-      selectable = true;
-    } else {
-      throw new Error('Unknown dialog type');
-    }
-
-    this.okButton_.disabled = !selectable;
-    return selectable;
-  };
-
-  /**
    * Handles mouse click or tap.
    * @param {Event} event The click event.
    */
@@ -2814,8 +2291,8 @@ FileManager.prototype = {
     }
 
     var listItem = this.findListItemForEvent_(event);
-    if (!listItem || !listItem.selected || this.selection.totalCount != 1) {
-      // Ignore empty or multiple selection.
+    var selection = this.getSelection();
+    if (!listItem || !listItem.selected || selection.totalCount != 1) {
       return;
     }
 
@@ -2834,7 +2311,7 @@ FileManager.prototype = {
     if (event.detail != clickNumber)
       return;
 
-    var entry = this.selection.entries[0];
+    var entry = selection.entries[0];
     if (entry.isDirectory) {
       this.onDirectoryAction(entry);
     } else {
@@ -2843,9 +2320,9 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.dispatchSelectionAction_ = function() {
-    if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
-      if (this.selection.tasks)
-        this.selection.tasks.executeDefault();
+    if (this.dialogType == DialogType.FULL_PAGE) {
+      var tasks = this.getSelection().tasks;
+      if (tasks) tasks.executeDefault();
       return true;
     }
     if (!this.okButton_.disabled) {
@@ -2877,7 +2354,7 @@ FileManager.prototype = {
    * Update the tab title.
    */
   FileManager.prototype.updateTitle_ = function() {
-    if (this.dialogType_ != FileManager.DialogType.FULL_PAGE)
+    if (this.dialogType != DialogType.FULL_PAGE)
       return;
 
     var path = this.getCurrentDirectory();
@@ -2901,7 +2378,7 @@ FileManager.prototype = {
    * @param {cr.Event} event The directory-changed event.
    */
   FileManager.prototype.onDirectoryChanged_ = function(event) {
-    this.updateOkButton_();
+    this.selectionHandler_.onSelectionChanged();
     this.updateColumnModel_();
     this.updateSearchBoxOnDirChange_();
 
@@ -3064,7 +2541,7 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.onFilenameInputKeyDown_ = function(event) {
-    var enabled = this.updateOkButton_();
+    var enabled = this.selectionHandler_.updateOkButton();
     if (enabled &&
         (util.getKeyModifiers(event) + event.keyCode) == '13' /* Enter */)
       this.onOk_();
@@ -3225,7 +2702,7 @@ FileManager.prototype = {
           return;
         }
 
-        if (this.dialogType_ != FileManager.DialogType.FULL_PAGE) {
+        if (this.dialogType != DialogType.FULL_PAGE) {
           // If there is nothing else for ESC to do, then cancel the dialog.
           event.preventDefault();
           this.cancelButton_.click();
@@ -3270,11 +2747,13 @@ FileManager.prototype = {
         break;
 
       case '13':  // Enter => Change directory or perform default action.
-        if (this.selection.totalCount == 1 &&
-            this.selection.entries[0].isDirectory &&
-            this.dialogType_ != FileManager.SELECT_FOLDER) {
+        // TODO(dgozman): move directory action to dispatchSelectionAction.
+        var selection = this.getSelection();
+        if (selection.totalCount == 1 &&
+            selection.entries[0].isDirectory &&
+            this.dialogType != DialogType.SELECT_FOLDER) {
           event.preventDefault();
-          this.onDirectoryAction(this.selection.entries[0]);
+          this.onDirectoryAction(selection.entries[0]);
         } else if (this.dispatchSelectionAction_()) {
           event.preventDefault();
         }
@@ -3300,7 +2779,11 @@ FileManager.prototype = {
    * @param {boolean} on True to temporarity hide hover state.
    */
   FileManager.prototype.setNoHover_ = function(on) {
-    setClassIf(this.listContainer_, 'nohover', on);
+    if (on) {
+      this.listContainer_.classList.add('nohover');
+    } else {
+      this.listContainer_.classList.remove('nohover');
+    }
   };
 
   /**
@@ -3419,7 +2902,7 @@ FileManager.prototype = {
    */
   FileManager.prototype.selectFilesAndClose_ = function(selection) {
     if (!this.isOnGData() ||
-        this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
+        this.dialogType == DialogType.SELECT_SAVEAS_FILE) {
       setTimeout(this.callSelectFilesApiAndClose_.bind(this, selection), 0);
       return;
     }
@@ -3529,7 +3012,7 @@ FileManager.prototype = {
    */
   FileManager.prototype.onOk_ = function(event) {
     var self = this;
-    if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
+    if (this.dialogType == DialogType.SELECT_SAVEAS_FILE) {
       var currentDirUrl = this.getCurrentDirectoryURL();
 
       if (currentDirUrl.charAt(currentDirUrl.length - 1) != '/')
@@ -3576,7 +3059,7 @@ FileManager.prototype = {
     var files = [];
     var selectedIndexes = this.currentList_.selectionModel.selectedIndexes;
 
-    if (this.dialogType_ == FileManager.DialogType.SELECT_FOLDER &&
+    if (this.dialogType == DialogType.SELECT_FOLDER &&
         selectedIndexes.length == 0) {
       var url = this.getCurrentDirectoryURL();
       var singleSelection = {
@@ -3606,7 +3089,7 @@ FileManager.prototype = {
     }
 
     // Multi-file selection has no other restrictions.
-    if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_MULTI_FILE) {
+    if (this.dialogType == DialogType.SELECT_OPEN_MULTI_FILE) {
       var multipleSelection = {
         urls: files,
         multiple: true
@@ -3621,10 +3104,10 @@ FileManager.prototype = {
 
     var selectedEntry = dm.item(selectedIndexes[0]);
 
-    if (this.dialogType_ == FileManager.DialogType.SELECT_FOLDER) {
+    if (this.dialogType == DialogType.SELECT_FOLDER) {
       if (!selectedEntry.isDirectory)
         throw new Error('Selected entry is not a folder!');
-    } else if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FILE) {
+    } else if (this.dialogType == DialogType.SELECT_OPEN_FILE) {
       if (!selectedEntry.isFile)
         throw new Error('Selected entry is not a file!');
     }
@@ -3773,14 +3256,14 @@ FileManager.prototype = {
   };
 
   /**
-   * Updates default action menu item to match passed taskItem(icon,
+   * Updates default action menu item to match passed taskItem (icon,
    * label and action).
    *
    * @param {Object} defaultItem - taskItem to match.
    * @param {boolean} isMultiple - if multiple tasks available.
    */
   FileManager.prototype.updateContextMenuActionItems = function(defaultItem,
-                                                               isMultiple) {
+                                                                isMultiple) {
     if (defaultItem) {
       if (defaultItem.iconType) {
         this.defaultActionMenuItem_.style.backgroundImage = '';
@@ -3819,5 +3302,26 @@ FileManager.prototype = {
   FileManager.prototype.onBeforeUnload_ = function() {
     this.butterBar_.forceDeleteAndHide();
     return null;
+  };
+
+  /**
+   * @return {Selection} Selection object.
+   */
+  FileManager.prototype.getSelection = function() {
+    return this.selectionHandler_.selection;
+  };
+
+  /**
+   * @return {ArrayDataModel} File list.
+   */
+  FileManager.prototype.getFileList = function() {
+    return this.directoryModel_.getFileList();
+  };
+
+  /**
+   * @return {cr.ui.List} Current list object.
+   */
+  FileManager.prototype.getCurrentList = function() {
+    return this.currentList_;
   };
 })();

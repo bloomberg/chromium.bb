@@ -62,6 +62,7 @@
 //<include src="file_tasks.js"/>
 //<include src="file_transfer_controller.js"/>
 //<include src="file_type.js"/>
+//<include src="selection.js"/>
 //<include src="volume_manager.js"/>
 //<include src="media/media_util.js"/>
 //<include src="metadata/metadata_cache.js"/>

@@ -162,9 +162,10 @@ Commands.deleteFileCommand = {
     fileManager.deleteSelection();
   },
   canExecute: function(event, fileManager) {
+    var selection = fileManager.getSelection();
     event.canExecute = !fileManager.isOnReadonlyDirectory() &&
-        fileManager.selection &&
-        fileManager.selection.totalCount > 0;
+        selection &&
+        selection.totalCount > 0;
   }
 };
 
@@ -187,11 +188,12 @@ Commands.renameFileCommand = {
     fileManager.initiateRename();
   },
   canExecute: function(event, fileManager) {
+    var selection = fileManager.getSelection();
     event.canExecute =
         !fileManager.isRenamingInProgress() &&
         !fileManager.isOnReadonlyDirectory() &&
-        fileManager.selection &&
-        fileManager.selection.totalCount == 1;
+        selection &&
+        selection.totalCount == 1;
   }
 };
 
@@ -240,17 +242,18 @@ Commands.gdataGoToDriveCommand = {
  */
 Commands.openWithCommand = {
   execute: function(event, fileManager) {
-    if (fileManager.selection.tasks) {
-      fileManager.selection.tasks.showTaskPicker(fileManager.defaultTaskPicker,
+    var tasks = fileManager.getSelection().tasks;
+    if (tasks) {
+      tasks.showTaskPicker(fileManager.defaultTaskPicker,
           str('OPEN_WITH_BUTTON_LABEL'),
           null,
           function(task) {
-            this.selection.tasks.execute(task.taskId);
-          }.bind(fileManager));
+            tasks.execute(task.taskId);
+          });
     }
   },
   canExecute: function(event, fileManager) {
-    event.canExecute = fileManager.selection.tasks &&
-                       fileManager.selection.tasks.size() > 1;
+    var tasks = fileManager.getSelection().tasks;
+    event.canExecute = tasks && tasks.size() > 1;
   }
 };

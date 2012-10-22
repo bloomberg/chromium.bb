@@ -50,7 +50,7 @@ var pyautoAPI = {
    * @param {string} name Name given to item to be saved.
    */
   saveItemAs: function(name) {
-    if (fileManager.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
+    if (fileManager.dialogType == DialogType.SELECT_SAVEAS_FILE) {
       fileManager.filenameInput_.value = name;
       fileManager.onOk_();
     } else {
@@ -63,10 +63,10 @@ var pyautoAPI = {
    * Open selected item.
    */
   openItem: function() {
-    switch (fileManager.dialogType_) {
-      case FileManager.DialogType.SELECT_FOLDER:
-      case FileManager.DialogType.SELECT_OPEN_FILE:
-      case FileManager.DialogType.SELECT_OPEN_MULTI_FILE:
+    switch (fileManager.dialogType) {
+      case DialogType.SELECT_FOLDER:
+      case DialogType.SELECT_OPEN_FILE:
+      case DialogType.SELECT_OPEN_MULTI_FILE:
         fileManager.onOk_();
         break;
       default:
@@ -79,10 +79,10 @@ var pyautoAPI = {
    * Execute the default task for the selected item.
    */
   executeDefaultTask: function() {
-    switch (fileManager.dialogType_) {
-      case FileManager.DialogType.FULL_PAGE:
-        if (fileManager.selection.tasks)
-          fileManager.selection.tasks.executeDefault();
+    switch (fileManager.dialogType) {
+      case DialogType.FULL_PAGE:
+        if (fileManager.getSelection().tasks)
+          fileManager.getSelection().tasks.executeDefault();
         else
           throw new Error('Cannot execute a task on an empty selection.');
         break;
@@ -138,7 +138,7 @@ var pyautoAPI = {
    * @param {string} name New name of the item.
    */
   renameItem: function(name) {
-    var entry = fileManager.selection.entries[0];
+    var entry = fileManager.getSelection().entries[0];
     fileManager.directoryModel_.renameEntry(entry, name, this.sendDone_,
         this.sendDone_);
   },
@@ -203,7 +203,7 @@ var pyautoAPI = {
    * Get remaining and total size of selected directory.
    */
   getSelectedDirectorySizeStats: function() {
-    var directoryURL = fileManager.selection.entries[0].toURL();
+    var directoryURL = fileManager.getSelection().entries[0].toURL();
     chrome.fileBrowserPrivate.getSizeStats(directoryURL, function(stats) {
       this.sendJSONValue_(stats);
     }.bind(this));
