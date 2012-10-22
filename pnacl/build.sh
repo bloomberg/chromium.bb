@@ -2338,12 +2338,23 @@ translate-sb-tool() {
   local tarch
   for tarch in ${arches}; do
     local nexe="${toolname}.${tarch}.nexe"
+    # TODO(pdox): Get the SDK location based on libmode.
     StepBanner "TRANSLATE" \
                "Translating ${toolname}.pexe to ${tarch} (background)"
-    # TODO(pdox): Get the SDK location based on libmode.
     # NOTE: we are using --noirt to build without a segment gap
     # since we aren't loading the IRT for the translator nexes.
-    "${PNACL_TRANSLATE}" --noirt -arch ${tarch} "${pexe}" -o "${nexe}" &
+    #
+    # We are using -ffunction-sections, -fdata-sections, --gc-sections
+    # to reduce the size, because llc is built with --export-dynamic
+    # and that prevents the optimizer from GC'ing unused functions/data.
+    # http://code.google.com/p/nativeclient/issues/detail?id=3094
+    # In any case, it still helps a bit.
+    #
+    # If you want to use --gc-sections to test out:
+    # http://code.google.com/p/nativeclient/issues/detail?id=1591
+    # you will need to do a build without these flags.
+    "${PNACL_TRANSLATE}" -ffunction-sections -fdata-sections --gc-sections \
+      --noirt -arch ${tarch} "${pexe}" -o "${nexe}" &
     QueueLastProcess
   done
   StepBanner "TRANSLATE" "Waiting for translation processes to finish"
