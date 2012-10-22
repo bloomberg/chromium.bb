@@ -75,6 +75,13 @@ class AutofillPopupView : public content::NotificationObserver {
   const gfx::Font& value_font() const { return value_font_; }
 
   int selected_line() const { return selected_line_; }
+  bool delete_icon_selected() const { return delete_icon_selected_; }
+
+  // Change which line is selected by the user, based on coordinates.
+  void SetSelectedPosition(int x, int y);
+
+  // Select the value at the given position.
+  void AcceptSelectedPosition(int x, int y);
 
   // Change which line is currently selected by the user.
   void SetSelectedLine(int selected_line);
@@ -175,6 +182,9 @@ class AutofillPopupView : public content::NotificationObserver {
   // The line that is currently selected by the user.
   // |kNoSelection| indicates that no line is currently selected.
   int selected_line_;
+
+  // Used to indicate if the delete icon within a row is currently selected.
+  bool delete_icon_selected_;
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_AUTOFILL_POPUP_VIEW_H_

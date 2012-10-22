@@ -91,9 +91,6 @@ class AutofillPopupViewGtk : public AutofillPopupView,
 
   content::RenderViewHost* render_view_host_;  // Weak reference.
 
-  // Used to indicate if the delete icon within a row is currently selected.
-  bool delete_icon_selected_;
-
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupViewGtk);
 };
 

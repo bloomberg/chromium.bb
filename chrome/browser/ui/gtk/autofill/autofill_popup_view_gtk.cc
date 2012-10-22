@@ -48,8 +48,7 @@ AutofillPopupViewGtk::AutofillPopupViewGtk(
       parent_(parent),
       window_(gtk_window_new(GTK_WINDOW_POPUP)),
       theme_service_(theme_service),
-      render_view_host_(web_contents->GetRenderViewHost()),
-      delete_icon_selected_(false) {
+      render_view_host_(web_contents->GetRenderViewHost()) {
   CHECK(parent != NULL);
   gtk_window_set_resizable(GTK_WINDOW(window_), FALSE);
   gtk_widget_set_app_paintable(window_, TRUE);
@@ -118,13 +117,7 @@ gboolean AutofillPopupViewGtk::HandleButtonRelease(GtkWidget* widget,
   if (event->button != 1)
     return FALSE;
 
-  DCHECK_EQ(selected_line(), LineFromY(event->y));
-
-  if (DeleteIconIsSelected(event->x, event->y))
-    RemoveSelectedLine();
-  else
-    AcceptSelectedLine();
-
+  AcceptSelectedPosition(event->x, event->y);
   return TRUE;
 }
 
@@ -174,17 +167,7 @@ gboolean AutofillPopupViewGtk::HandleLeave(GtkWidget* widget,
 
 gboolean AutofillPopupViewGtk::HandleMotion(GtkWidget* widget,
                                             GdkEventMotion* event) {
-  // TODO(csharp): Only select a line if the motion is still inside the popup.
-  // http://www.crbug.com/129559
-  int line = LineFromY(event->y);
-
-  SetSelectedLine(line);
-
-  bool delete_icon_selected = DeleteIconIsSelected(event->x, event->y);
-  if (delete_icon_selected != delete_icon_selected_) {
-    delete_icon_selected_ = delete_icon_selected;
-    InvalidateRow(selected_line());
-  }
+  SetSelectedPosition(event->x, event->y);
 
   return TRUE;
 }
@@ -298,7 +281,7 @@ void AutofillPopupViewGtk::DrawAutofillEntry(cairo_t* cairo_context,
     x_align_left += is_rtl ? 0 : -kDeleteIconWidth;
 
     gfx::Image delete_icon;
-    if (static_cast<int>(index) == selected_line() && delete_icon_selected_)
+    if (static_cast<int>(index) == selected_line() && delete_icon_selected())
       delete_icon = theme_service_->GetImageNamed(IDR_CLOSE_BAR_H);
     else
       delete_icon = theme_service_->GetImageNamed(IDR_CLOSE_BAR);

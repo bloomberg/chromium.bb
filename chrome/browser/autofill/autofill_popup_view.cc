@@ -67,7 +67,8 @@ AutofillPopupView::AutofillPopupView(
     content::WebContents* web_contents,
     AutofillExternalDelegate* external_delegate)
     : external_delegate_(external_delegate),
-      selected_line_(kNoSelection) {
+      selected_line_(kNoSelection),
+      delete_icon_selected_(false) {
   if (!web_contents)
     return;
 
@@ -109,6 +110,27 @@ void AutofillPopupView::Show(const std::vector<string16>& autofill_values,
   }
 
   ShowInternal();
+}
+
+void AutofillPopupView::SetSelectedPosition(int x, int y) {
+  int line = LineFromY(y);
+
+  SetSelectedLine(line);
+
+  bool delete_icon_selected = DeleteIconIsSelected(x, y);
+  if (delete_icon_selected != delete_icon_selected_) {
+    delete_icon_selected_ = delete_icon_selected;
+    InvalidateRow(selected_line());
+  }
+}
+
+void AutofillPopupView::AcceptSelectedPosition(int x, int y) {
+  DCHECK_EQ(selected_line(), LineFromY(y));
+
+  if (DeleteIconIsSelected(x, y))
+    RemoveSelectedLine();
+  else
+    AcceptSelectedLine();
 }
 
 void AutofillPopupView::SetSelectedLine(int selected_line) {
