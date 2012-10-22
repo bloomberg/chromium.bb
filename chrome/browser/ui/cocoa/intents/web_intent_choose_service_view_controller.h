@@ -11,9 +11,7 @@
 #import "chrome/browser/ui/cocoa/intents/web_intent_view_controller.h"
 
 // The choose service view shows a list of installed and suggested services.
-@interface WebIntentChooseServiceViewController
-    : NSViewController
-     <WebIntentViewController> {
+@interface WebIntentChooseServiceViewController : WebIntentViewController {
  @private
   scoped_nsobject<NSTextField> titleTextField_;
   scoped_nsobject<NSTextField> messageTextField_;

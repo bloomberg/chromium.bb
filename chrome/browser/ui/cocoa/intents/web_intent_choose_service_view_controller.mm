@@ -112,7 +112,7 @@
             WebIntentPicker::kHeaderSeparatorPaddingBottom;
 
   CGFloat width = innerWidth;
-  for (NSViewController<WebIntentViewController>* row in rows_.get()) {
+  for (WebIntentViewController* row in rows_.get()) {
     NSSize size = [row minimumSizeForInnerWidth:innerWidth];
     height += WebIntentPicker::kServiceRowHeight;
     width = std::max(width, size.width);
@@ -153,7 +153,7 @@
   yPos = NSMaxY(separatorFrame) +
          WebIntentPicker::kHeaderSeparatorPaddingBottom;
 
-  for (NSViewController<WebIntentViewController>* row in rows_.get()) {
+  for (WebIntentViewController* row in rows_.get()) {
     NSRect rowRect = NSMakeRect(
         NSMinX(innerFrame),
         yPos,

@@ -19,9 +19,7 @@ class WebIntentInlineDispositionDelegate;
 class WebIntentPickerCocoa2;
 
 // The inline service view shows a web view for a given service.
-@interface WebIntentInlineServiceViewController
-    : NSViewController
-     <WebIntentViewController> {
+@interface WebIntentInlineServiceViewController : WebIntentViewController {
  @private
   WebIntentPickerCocoa2* picker_;  // weak
   scoped_nsobject<NSImageView> serviceIconImageView_;

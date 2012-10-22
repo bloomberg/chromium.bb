@@ -13,9 +13,7 @@
 
 // The service row view shows a single suggested or installed service. It
 // contains a button to select the service.
-@interface WebIntentServiceRowViewController
-    : NSViewController
-     <WebIntentViewController> {
+@interface WebIntentServiceRowViewController : WebIntentViewController {
  @private
   scoped_nsobject<NSTextField> titleTextField_;
   scoped_nsobject<NSButton> titleLinkButton_;

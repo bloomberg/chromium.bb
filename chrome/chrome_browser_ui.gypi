@@ -576,6 +576,7 @@
         'browser/ui/cocoa/intents/web_intent_service_row_view_controller.h',
         'browser/ui/cocoa/intents/web_intent_service_row_view_controller.mm',
         'browser/ui/cocoa/intents/web_intent_view_controller.h',
+        'browser/ui/cocoa/intents/web_intent_view_controller.mm',
         'browser/ui/cocoa/javascript_app_modal_dialog_cocoa.h',
         'browser/ui/cocoa/javascript_app_modal_dialog_cocoa.mm',
         'browser/ui/cocoa/key_equivalent_constants.h',

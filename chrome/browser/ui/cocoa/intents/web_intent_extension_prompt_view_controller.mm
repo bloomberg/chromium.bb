@@ -42,19 +42,15 @@
   return viewController_;
 }
 
-- (NSSize)minimumSizeForInnerWidth:(CGFloat)innerWidth {
-  if (!viewController_.get())
-    return NSZeroSize;
-  return [[viewController_ view] frame].size;
-}
+- (void)sizeToFitAndLayout {
+  if (!viewController_) {
+    [[self view] setFrameSize:NSZeroSize];
+    return;
+  }
 
-- (void)layoutSubviewsWithinFrame:(NSRect)innerFrame {
-  NSRect bounds = [[self view] bounds];
-  NSRect viewFrame;
-  viewFrame.size = [[viewController_ view] frame].size;
-  viewFrame.origin.x = roundf(NSMidX(bounds) - viewFrame.size.width / 2.0);
-  viewFrame.origin.y = roundf(NSMidY(bounds) - viewFrame.size.height / 2.0);
-  [[viewController_ view] setFrame:viewFrame];
+  NSSize size = [[viewController_ view] bounds].size;
+  [[self view] setFrameSize:size];
+  [[viewController_ view] setFrameOrigin:NSZeroPoint];
 }
 
 @end

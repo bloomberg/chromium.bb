@@ -11,8 +11,7 @@
 #import "chrome/browser/ui/cocoa/intents/web_intent_view_controller.h"
 
 // The message view simply shows a title and message.
-@interface WebIntentMessageViewController : NSViewController
-                                           <WebIntentViewController> {
+@interface WebIntentMessageViewController : WebIntentViewController {
  @private
   scoped_nsobject<NSTextField> titleTextField_;
   scoped_nsobject<NSTextField> messageTextField_;

@@ -28,10 +28,8 @@
 @interface WebIntentPickerViewController ()
 
 - (void)performLayout;
-// Gets the inner frame with a minimum window width and height.
-- (NSRect)minimumInnerFrame;
 // Gets the view controller currently being displayed.
-- (NSViewController<WebIntentViewController>*)currentViewController;
+- (WebIntentViewController*)currentViewController;
 - (WebIntentPickerState)newPickerState;
 
 // Update the various views to match changes to the picker model.
@@ -102,7 +100,7 @@
 
 - (gfx::Size)minimumInlineWebViewSize {
   NSSize size = [inlineServiceViewController_ minimumInlineWebViewSizeForFrame:
-      [self minimumInnerFrame]];
+      [WebIntentViewController minimumInnerFrame]];
   return gfx::Size(NSSizeToCGSize(size));
 }
 
@@ -177,33 +175,18 @@
 }
 
 - (void)performLayout {
-  NSRect innerFrame = [self minimumInnerFrame];
-  NSViewController<WebIntentViewController>* viewController =
-      [self currentViewController];
-  NSSize minSize =
-      [viewController minimumSizeForInnerWidth:NSWidth(innerFrame)];
-  innerFrame.size.width = std::max(minSize.width, NSWidth(innerFrame));
-  innerFrame.size.width = std::min(
-      static_cast<CGFloat>(WebIntentPicker::kWindowMaxWidth),
-      NSWidth(innerFrame));
-  innerFrame.size.height = std::max(minSize.height, NSHeight(innerFrame));
+  WebIntentViewController* viewController = [self currentViewController];
+  [viewController sizeToFitAndLayout];
+  [[viewController view] setFrameOrigin:NSZeroPoint];
 
-  NSRect bounds = NSInsetRect(innerFrame,
-                              -ConstrainedWindowConstants::kHorizontalPadding,
-                              0);
-  bounds.origin.y -= ConstrainedWindowConstants::kClientTopPadding;
-  bounds.size.height = NSHeight(innerFrame) +
-      ConstrainedWindowConstants::kClientTopPadding +
-      ConstrainedWindowConstants::kClientBottomPadding;
-
-  [[viewController view] setFrame:bounds];
-  [viewController layoutSubviewsWithinFrame:innerFrame];
+  NSRect bounds = [[viewController view] bounds];
 
   NSRect closeFrame;
   closeFrame.size.width = ConstrainedWindow::GetCloseButtonSize();
   closeFrame.size.height = ConstrainedWindow::GetCloseButtonSize();
-  closeFrame.origin.x = NSMaxX(innerFrame) - NSWidth(closeFrame);
-  closeFrame.origin.y = NSMinY(innerFrame);
+  closeFrame.origin.x = NSMaxX(bounds) - NSWidth(closeFrame) -
+      ConstrainedWindowConstants::kCloseButtonPadding;
+  closeFrame.origin.y = ConstrainedWindowConstants::kCloseButtonPadding;
   [closeButton_ setFrame:closeFrame];
 
   [[self view] setFrame:bounds];
@@ -212,20 +195,7 @@
   [window setFrame:[window frameRectForContentRect:bounds] display:YES];
 }
 
-- (NSRect)minimumInnerFrame {
-  NSRect bounds = NSMakeRect(0, 0, WebIntentPicker::kWindowMinWidth,
-                             WebIntentPicker::kWindowMinHeight);
-  bounds = NSInsetRect(bounds,
-                       ConstrainedWindowConstants::kHorizontalPadding,
-                       0);
-  bounds.origin.y += ConstrainedWindowConstants::kClientTopPadding;
-  bounds.size.height = bounds.size.height -
-      ConstrainedWindowConstants::kClientTopPadding -
-      ConstrainedWindowConstants::kClientBottomPadding;
-  return bounds;
-}
-
-- (NSViewController<WebIntentViewController>*)currentViewController {
+- (WebIntentViewController*)currentViewController {
   switch (state_) {
     case PICKER_STATE_WAITING:
       return progressViewController_;

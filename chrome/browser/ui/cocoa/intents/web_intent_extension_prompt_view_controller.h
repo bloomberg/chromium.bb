@@ -17,8 +17,7 @@ class PageNavigator;
 }
 
 // The message view shows an extension install prompt.
-@interface WebIntentExtensionPromptViewController :
-    NSViewController <WebIntentViewController> {
+@interface WebIntentExtensionPromptViewController : WebIntentViewController {
  @private
   scoped_nsobject<ExtensionInstallViewController> viewController_;
 }

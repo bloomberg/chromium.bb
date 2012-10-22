@@ -7,15 +7,26 @@
 
 #include <Cocoa/Cocoa.h>
 
-// This protocol declares methods that all web intent view controllers should
-// implement.
-@protocol WebIntentViewController
+// Abstract base class for all web intent view controllers.
+@interface WebIntentViewController : NSViewController
+
+// The minimum inner frame for a web intent view. This does not include the
+// space for padding around the edge of the view.
++ (NSRect)minimumInnerFrame;
+
+// Resizes the view to fit its contents and lays out subviews.
+// The default implementation resizes the view to fit
+// |-minimumSizeForInnerWidth:| and calls |-layoutSubviewsWithinFrame:| to
+// perform layout. Either this method must be overridden or the below two.
+- (void)sizeToFitAndLayout;
 
 // Gets the size of the view for the given width. |innerWidth| and the returned
-// size does not include space for padding around the edge of the window.
+// size does not include space for padding around the edge of the view.
+// This method must be overridden if |-sizeToFitAndLayout| is not.
 - (NSSize)minimumSizeForInnerWidth:(CGFloat)innerWidth;
 
 // Layout subviews in the given frame.
+// This method must be overridden if |-sizeToFitAndLayout| is not.
 - (void)layoutSubviewsWithinFrame:(NSRect)innerFrame;
 
 @end

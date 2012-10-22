@@ -14,8 +14,7 @@
 
 // The progress view shows a progress indicator and a label underneath it. The
 // label is made by joining the title and the message.
-@interface WebIntentProgressViewController : NSViewController
-                                            <WebIntentViewController> {
+@interface WebIntentProgressViewController : WebIntentViewController {
  @private
   scoped_nsobject<NSString> title_;
   scoped_nsobject<NSString> message_;
