@@ -5,6 +5,7 @@
 #include "ash/focus_cycler.h"
 
 #include "ash/launcher/launcher.h"
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
@@ -66,7 +67,10 @@ class FocusCyclerTest : public AshTestBase {
   bool CreateTray() {
     if (tray_.get())
       return false;
-    internal::StatusAreaWidget* widget = new internal::StatusAreaWidget;
+    aura::Window* parent = Shell::GetPrimaryRootWindowController()->
+        GetContainer(ash::internal::kShellWindowId_StatusContainer);
+
+    internal::StatusAreaWidget* widget = new internal::StatusAreaWidget(parent);
     widget->CreateTrayViews(NULL);
     widget->Show();
     tray_.reset(widget->system_tray());

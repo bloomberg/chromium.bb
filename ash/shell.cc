@@ -467,9 +467,6 @@ void Shell::Init() {
   if (!user_wallpaper_delegate_.get())
     user_wallpaper_delegate_.reset(new DummyUserWallpaperDelegate());
 
-  // Launcher must be created after secondary displays are initialized.
-  display_controller_->InitSecondaryDisplays();
-
   // StatusAreaWidget uses Shell's CapsLockDelegate.
   if (delegate_.get())
     caps_lock_delegate_.reset(delegate_->CreateCapsLockDelegate());
@@ -482,6 +479,8 @@ void Shell::Init() {
   }
 
   root_window_controller->InitForPrimaryDisplay();
+
+  display_controller_->InitSecondaryDisplays();
 
   // Force Layout
   root_window_controller->root_window_layout()->OnWindowResized();
@@ -585,12 +584,17 @@ void Shell::SetDisplayWorkAreaInsets(Window* contains,
 
 void Shell::OnLoginStateChanged(user::LoginStatus status) {
   FOR_EACH_OBSERVER(ShellObserver, observers_, OnLoginStateChanged(status));
-  ash::Shell::GetInstance()->UpdateShelfVisibility();
+  RootWindowControllerList controllers = GetAllRootWindowControllers();
+  for (RootWindowControllerList::iterator iter = controllers.begin();
+       iter != controllers.end(); ++iter)
+    (*iter)->OnLoginStateChanged(status);
 }
 
 void Shell::UpdateAfterLoginStatusChange(user::LoginStatus status) {
-  GetPrimaryRootWindowController()->status_area_widget()->
-      UpdateAfterLoginStatusChange(status);
+  RootWindowControllerList controllers = GetAllRootWindowControllers();
+  for (RootWindowControllerList::iterator iter = controllers.begin();
+       iter != controllers.end(); ++iter)
+    (*iter)->UpdateAfterLoginStatusChange(status);
 }
 
 void Shell::OnAppTerminating() {
@@ -699,6 +703,8 @@ void Shell::InitRootWindowForSecondaryDisplay(aura::RootWindow* root) {
       new internal::RootWindowController(root);
   controller->CreateContainers();
   InitRootWindowController(controller);
+  if (IsLauncherPerDisplayEnabled())
+    controller->InitForPrimaryDisplay();
   controller->root_window_layout()->OnWindowResized();
   desktop_background_controller_->OnRootWindowAdded(root);
   high_contrast_controller_->OnRootWindowAdded(root);

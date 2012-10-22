@@ -284,7 +284,7 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
 
 namespace internal {
 
-StatusAreaWidget::StatusAreaWidget()
+StatusAreaWidget::StatusAreaWidget(aura::Window* status_container)
     : status_area_widget_delegate_(new internal::StatusAreaWidgetDelegate),
       system_tray_(NULL),
       web_notification_tray_(NULL),
@@ -292,9 +292,7 @@ StatusAreaWidget::StatusAreaWidget()
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.delegate = status_area_widget_delegate_;
-  params.parent =
-      Shell::GetPrimaryRootWindowController()->GetContainer(
-          ash::internal::kShellWindowId_StatusContainer);
+  params.parent = status_container;
   params.transparent = true;
   Init(params);
   set_focus_on_creation(false);

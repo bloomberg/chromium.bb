@@ -6,6 +6,7 @@
 #define ASH_ROOT_WINDOW_CONTROLLER_H_
 
 #include "ash/ash_export.h"
+#include "ash/system/user/login_status.h"
 #include "ash/wm/shelf_types.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -100,6 +101,13 @@ class ASH_EXPORT RootWindowController {
 
   // Show launcher view if it was created hidden (before session has started).
   void ShowLauncher();
+
+  // Called when the user logs in.
+  void OnLoginStateChanged(user::LoginStatus status);
+
+  // Called when the login status changes after login (such as lock/unlock).
+  // TODO(oshima): Investigate if we can merge this and |OnLoginStateChanged|.
+  void UpdateAfterLoginStatusChange(user::LoginStatus status);
 
   // Updates |background_| to be black after the desktop background is visible.
   void HandleDesktopBackgroundVisible();

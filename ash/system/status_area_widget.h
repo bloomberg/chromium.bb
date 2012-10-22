@@ -24,7 +24,7 @@ class StatusAreaWidgetDelegate;
 
 class ASH_EXPORT StatusAreaWidget : public views::Widget {
  public:
-  StatusAreaWidget();
+  explicit StatusAreaWidget(aura::Window* status_container);
   virtual ~StatusAreaWidget();
 
   // Creates the SystemTray and the WebNotificationTray.

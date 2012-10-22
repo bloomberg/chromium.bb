@@ -241,9 +241,10 @@ void RootWindowController::InitLayoutManagers() {
 void RootWindowController::InitForPrimaryDisplay() {
   DCHECK(!status_area_widget_);
   ShellDelegate* delegate = Shell::GetInstance()->delegate();
-
+  aura::Window* status_container =
+      GetContainer(ash::internal::kShellWindowId_StatusContainer);
   // Initialize Primary RootWindow specific items.
-  status_area_widget_ = new internal::StatusAreaWidget();
+  status_area_widget_ = new internal::StatusAreaWidget(status_container);
   status_area_widget_->CreateTrayViews(delegate);
   // Login screen manages status area visibility by itself.
   if (delegate && delegate->IsSessionStarted())
@@ -323,6 +324,19 @@ void RootWindowController::ShowLauncher() {
   if (!launcher_.get())
     return;
   launcher_->SetVisible(true);
+}
+
+void RootWindowController::OnLoginStateChanged(user::LoginStatus status) {
+  // TODO(oshima): remove if when launcher per display is enabled by
+  // default.
+  if (shelf_)
+    shelf_->UpdateVisibilityState();
+}
+
+void RootWindowController::UpdateAfterLoginStatusChange(
+    user::LoginStatus status) {
+  if (status_area_widget_)
+    status_area_widget_->UpdateAfterLoginStatusChange(status);
 }
 
 void RootWindowController::HandleDesktopBackgroundVisible() {
