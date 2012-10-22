@@ -21,6 +21,8 @@ namespace {
 const char kSamplePacScript[] = "test";
 const char kSamplePacScriptAsDataUrl[] =
     "data:application/x-ns-proxy-autoconfig;base64,dGVzdA==";
+const char kSamplePacScriptAsDataUrl2[] =
+    "data:;base64,dGVzdA==";
 const char kSamplePacScriptUrl[] = "http://wpad/wpad.dat";
 
 // Helper function to create a ProxyServer dictionary as defined in the
@@ -55,7 +57,12 @@ TEST(ExtensionProxyApiHelpers, CreateDataURLFromPACScript) {
 
 TEST(ExtensionProxyApiHelpers, CreatePACScriptFromDataURL) {
   std::string out;
+  // Verify deserialization of a PAC data:// URL that we created ourselves.
   ASSERT_TRUE(CreatePACScriptFromDataURL(kSamplePacScriptAsDataUrl, &out));
+  EXPECT_EQ(kSamplePacScript, out);
+
+  // Check that we don't require a mime-type.
+  ASSERT_TRUE(CreatePACScriptFromDataURL(kSamplePacScriptAsDataUrl2, &out));
   EXPECT_EQ(kSamplePacScript, out);
 
   EXPECT_FALSE(CreatePACScriptFromDataURL("http://www.google.com", &out));

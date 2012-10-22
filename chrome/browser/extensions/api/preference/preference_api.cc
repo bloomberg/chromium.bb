@@ -47,6 +47,9 @@ struct PrefMappingEntry {
 };
 
 const char kOnPrefChangeFormat[] = "types.ChromeSetting.%s.onChange";
+const char kConversionErrorMessage[] =
+    "Internal error: Stored value for preference '*' cannot be converted "
+    "properly.";
 
 PrefMappingEntry kPrefMapping[] = {
 #if defined(OS_CHROMEOS)
@@ -282,8 +285,16 @@ void PreferenceEventRouter::OnPrefChanged(PrefService* pref_service,
   ExtensionService* extension_service = profile_->GetExtensionService();
   PrefTransformerInterface* transformer =
       PrefMapping::GetInstance()->FindTransformerForBrowserPref(browser_pref);
-  dict->Set(keys::kValue,
-            transformer->BrowserToExtensionPref(pref->GetValue()));
+  Value* transformed_value =
+      transformer->BrowserToExtensionPref(pref->GetValue());
+  if (!transformed_value) {
+    LOG(ERROR) <<
+        ExtensionErrorUtils::FormatErrorMessage(kConversionErrorMessage,
+                                                pref->name());
+    return;
+  }
+
+  dict->Set(keys::kValue, transformed_value);
   if (incognito) {
     extensions::ExtensionPrefs* ep = extension_service->extension_prefs();
     dict->SetBoolean(keys::kIncognitoSpecific,
@@ -355,8 +366,15 @@ bool GetPreferenceFunction::RunImpl() {
   // Retrieve pref value.
   PrefTransformerInterface* transformer =
       PrefMapping::GetInstance()->FindTransformerForBrowserPref(browser_pref);
-  result->Set(keys::kValue,
-              transformer->BrowserToExtensionPref(pref->GetValue()));
+  Value* transformed_value =
+      transformer->BrowserToExtensionPref(pref->GetValue());
+  if (!transformed_value) {
+    LOG(ERROR) <<
+        ExtensionErrorUtils::FormatErrorMessage(kConversionErrorMessage,
+                                                pref->name());
+    return false;
+  }
+  result->Set(keys::kValue, transformed_value);
 
   // Retrieve incognito status.
   if (incognito) {
@@ -432,18 +450,29 @@ bool SetPreferenceFunction::RunImpl() {
       PrefMapping::GetInstance()->FindTransformerForBrowserPref(browser_pref);
   std::string error;
   bool bad_message = false;
-  Value* browserPrefValue =
-      transformer->ExtensionToBrowserPref(value, &error, &bad_message);
-  if (!browserPrefValue) {
+  scoped_ptr<Value> browser_pref_value(
+      transformer->ExtensionToBrowserPref(value, &error, &bad_message));
+  if (!browser_pref_value) {
     error_ = error;
     bad_message_ = bad_message;
+    return false;
+  }
+
+  // Validate also that the stored value can be converted back by the
+  // transformer.
+  scoped_ptr<Value> extensionPrefValue(
+      transformer->BrowserToExtensionPref(browser_pref_value.get()));
+  if (!extensionPrefValue) {
+    error_ =  ExtensionErrorUtils::FormatErrorMessage(kConversionErrorMessage,
+                                                      pref->name());
+    bad_message_ = true;
     return false;
   }
 
   prefs->SetExtensionControlledPref(extension_id(),
                                     browser_pref,
                                     scope,
-                                    browserPrefValue);
+                                    browser_pref_value.release());
   return true;
 }
 

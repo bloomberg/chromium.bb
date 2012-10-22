@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/api/proxy/proxy_api_constants.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/common/extensions/extension_error_utils.h"
+#include "net/base/data_url.h"
 #include "net/proxy/proxy_config.h"
 
 namespace extensions {
@@ -46,15 +47,13 @@ bool CreateDataURLFromPACScript(const std::string& pac_script,
 bool CreatePACScriptFromDataURL(
     const std::string& pac_script_url_base64_encoded,
     std::string* pac_script) {
-  if (pac_script_url_base64_encoded.find(keys::kPACDataUrlPrefix) != 0)
+  GURL url(pac_script_url_base64_encoded);
+  if (!url.is_valid())
     return false;
 
-  // Strip constant data-url prefix.
-  std::string pac_script_base64_encoded =
-      pac_script_url_base64_encoded.substr(strlen(keys::kPACDataUrlPrefix));
-
-  // The rest is a base64 encoded PAC script.
-  return base::Base64Decode(pac_script_base64_encoded, pac_script);
+  std::string mime_type;
+  std::string charset;
+  return net::DataURL::Parse(url, &mime_type, &charset, pac_script);
 }
 
 // Extension Pref -> Browser Pref conversion.
@@ -466,7 +465,7 @@ DictionaryValue* CreatePacScriptDict(
   if (pac_url.find("data") == 0) {
     std::string pac_data;
     if (!CreatePACScriptFromDataURL(pac_url, &pac_data)) {
-      LOG(ERROR) << "Cannot decode base64-encoded PAC data URL.";
+      LOG(ERROR) << "Cannot decode base64-encoded PAC data URL: " << pac_url;
       return NULL;
     }
     pac_script_dict->SetString(keys::kProxyConfigPacScriptData, pac_data);
