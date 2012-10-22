@@ -14,17 +14,13 @@
 
 #ifdef ENABLE_GPU
 
+class CommandBufferProxy;
 namespace gpu {
-
 class CommandBuffer;
-
 }  // namespace gpu
 
-class CommandBufferProxy;
-class GpuChannelHost;
-class ContentGLContext;
-
 namespace content {
+class GpuChannelHost;
 
 class PepperParentContextProvider;
 

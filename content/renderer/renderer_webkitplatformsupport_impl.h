@@ -12,9 +12,6 @@
 #include "content/common/webkitplatformsupport_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebGraphicsContext3D.h"
 
-class WebSharedWorkerRepositoryImpl;
-class WebFileSystemImpl;
-
 namespace webkit_glue {
 class WebClipboardImpl;
 }
@@ -23,6 +20,8 @@ namespace content {
 class GamepadSharedMemoryReader;
 class Hyphenator;
 class RendererClipboardClient;
+class WebFileSystemImpl;
+class WebSharedWorkerRepositoryImpl;
 
 class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
     : public WebKitPlatformSupportImpl {

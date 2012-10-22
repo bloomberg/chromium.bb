@@ -23,13 +23,15 @@
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 #include "ipc/ipc_listener.h"
 
-class GpuChannelHost;
 struct GPUCommandBufferConsoleMessage;
-struct GpuMemoryAllocationForRenderer;
 
 namespace base {
 class SharedMemory;
 }
+
+namespace content {
+class GpuChannelHost;
+struct GpuMemoryAllocationForRenderer;
 
 // Client side proxy that forwards messages synchronously to a
 // CommandBufferStub.
@@ -168,6 +170,8 @@ class CommandBufferProxyImpl
 
   DISALLOW_COPY_AND_ASSIGN(CommandBufferProxyImpl);
 };
+
+}  // namespace content
 
 #endif  // ENABLE_GPU
 

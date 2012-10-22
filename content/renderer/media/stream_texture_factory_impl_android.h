@@ -9,13 +9,12 @@
 #include "content/renderer/gpu/stream_texture_host_android.h"
 #include "webkit/media/android/stream_texture_factory_android.h"
 
-class GpuChannelHost;
-
 namespace WebKit {
 class WebGraphicsContext3D;
 }
 
 namespace content {
+class GpuChannelHost;
 
 // The acutal implementation of StreamTextureFactory class.
 class StreamTextureFactoryImpl

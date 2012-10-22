@@ -7,11 +7,12 @@
 
 #include "ipc/ipc_channel_proxy.h"
 
-class IndexedDBDispatcher;
-
 namespace base {
 class MessageLoopProxy;
 }  // namespace base
+
+namespace content {
+class IndexedDBDispatcher;
 
 class IndexedDBMessageFilter : public IPC::ChannelProxy::MessageFilter {
  public:
@@ -29,5 +30,7 @@ class IndexedDBMessageFilter : public IPC::ChannelProxy::MessageFilter {
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBMessageFilter);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_INDEXED_DB_INDEXED_DB_DISPATCHER_H_

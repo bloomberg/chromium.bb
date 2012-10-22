@@ -8,6 +8,8 @@
 #include "content/common/view_messages.h"
 #include "content/renderer/websharedworker_proxy.h"
 
+namespace content {
+
 WebSharedWorkerRepositoryImpl::WebSharedWorkerRepositoryImpl() {}
 
 WebSharedWorkerRepositoryImpl::~WebSharedWorkerRepositoryImpl() {}
@@ -29,3 +31,5 @@ void WebSharedWorkerRepositoryImpl::documentDetached(DocumentID document) {
 bool WebSharedWorkerRepositoryImpl::hasSharedWorkers(DocumentID document) {
   return shared_worker_parents_.find(document) != shared_worker_parents_.end();
 }
+
+}  // namespace content

@@ -18,6 +18,8 @@ using WebKit::WebBlobData;
 using WebKit::WebString;
 using WebKit::WebURL;
 
+namespace content {
+
 WebBlobRegistryImpl::WebBlobRegistryImpl(ChildThread* child_thread)
     : child_thread_(child_thread) {
 }
@@ -112,3 +114,5 @@ void WebBlobRegistryImpl::registerBlobURL(
 void WebBlobRegistryImpl::unregisterBlobURL(const WebURL& url) {
   child_thread_->Send(new BlobHostMsg_RemoveBlob(url));
 }
+
+}  // namespace content

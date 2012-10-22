@@ -18,6 +18,7 @@ using WebKit::WebStorageQuotaCallbacks;
 using WebKit::WebStorageQuotaError;
 using WebKit::WebStorageQuotaType;
 
+namespace content {
 namespace {
 
 // QuotaDispatcher::Callback implementation for WebStorageQuotaCallbacks.
@@ -135,3 +136,5 @@ COMPILE_ASSERT(int(WebKit::WebStorageQuotaErrorNotSupported) == \
                int(quota::kQuotaErrorNotSupported), mismatching_enums);
 COMPILE_ASSERT(int(WebKit::WebStorageQuotaErrorAbort) == \
                int(quota::kQuotaErrorAbort), mismatching_enums);
+
+}  // namespace content

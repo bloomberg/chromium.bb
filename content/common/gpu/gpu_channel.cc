@@ -36,6 +36,7 @@
 #include "content/common/gpu/stream_texture_manager_android.h"
 #endif
 
+namespace content {
 namespace {
 // This filter does two things:
 // - it counts the number of messages coming in on the channel
@@ -170,7 +171,7 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
   disallowed_features_.multisampling =
       command_line->HasSwitch(switches::kDisableGLMultisampling);
 #if defined(OS_ANDROID)
-  stream_texture_manager_.reset(new content::StreamTextureManagerAndroid(this));
+  stream_texture_manager_.reset(new StreamTextureManagerAndroid(this));
 #endif
 }
 
@@ -571,7 +572,7 @@ void GpuChannel::OnRegisterStreamTextureProxy(
 }
 
 void GpuChannel::OnEstablishStreamTexture(
-    int32 stream_id, content::SurfaceTexturePeer::SurfaceTextureTarget type,
+    int32 stream_id, SurfaceTexturePeer::SurfaceTextureTarget type,
     int32 primary_id, int32 secondary_id) {
   stream_texture_manager_->EstablishStreamTexture(
       stream_id, type, primary_id, secondary_id);
@@ -580,7 +581,7 @@ void GpuChannel::OnEstablishStreamTexture(
 
 void GpuChannel::OnCollectRenderingStatsForSurface(
     int32 surface_id, IPC::Message* reply_message) {
-  content::GpuRenderingStats stats;
+  GpuRenderingStats stats;
 
   for (StubMap::Iterator<GpuCommandBufferStub> it(&stubs_);
        !it.IsAtEnd(); it.Advance()) {
@@ -607,3 +608,5 @@ void GpuChannel::OnCollectRenderingStatsForSurface(
       stats);
   Send(reply_message);
 }
+
+}  // namespace content

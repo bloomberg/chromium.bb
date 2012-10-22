@@ -18,9 +18,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 
-class MockRenderProcess;
-class RendererMainPlatformDelegate;
-
 namespace WebKit {
 class WebHistoryItem;
 class WebKitPlatformSupport;
@@ -32,7 +29,8 @@ class Rect;
 }
 
 namespace content {
-
+class MockRenderProcess;
+class RendererMainPlatformDelegate;
 class RendererWebKitPlatformSupportImplNoSandboxImpl;
 
 class RenderViewTest : public testing::Test {

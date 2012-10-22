@@ -17,6 +17,8 @@ using WebKit::WebIDBDatabaseCallbacks;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebString;
 
+namespace content {
+
 RendererWebIDBFactoryImpl::RendererWebIDBFactoryImpl() {
 }
 
@@ -64,3 +66,5 @@ void RendererWebIDBFactoryImpl::deleteDatabase(
   dispatcher->RequestIDBFactoryDeleteDatabase(
       name, callbacks, origin.databaseIdentifier(), web_frame);
 }
+
+}  // namespace content

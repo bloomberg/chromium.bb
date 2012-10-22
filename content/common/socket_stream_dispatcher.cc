@@ -19,6 +19,8 @@
 #include "webkit/glue/websocketstreamhandle_bridge.h"
 #include "webkit/glue/websocketstreamhandle_delegate.h"
 
+namespace content {
+
 // IPCWebSocketStreamHandleBridge is owned by each SocketStreamHandle.
 // It communicates with the main browser process via SocketStreamDispatcher.
 class IPCWebSocketStreamHandleBridge
@@ -231,3 +233,5 @@ void SocketStreamDispatcher::OnClosed(int socket_id) {
   else
     DLOG(ERROR) << "No SocketStreamHandleBridge for socket_id=" << socket_id;
 }
+
+}  // namespace content

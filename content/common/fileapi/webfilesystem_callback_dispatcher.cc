@@ -24,6 +24,8 @@ using WebKit::WebFileSystemEntry;
 using WebKit::WebString;
 using WebKit::WebVector;
 
+namespace content {
+
 WebFileSystemCallbackDispatcher::WebFileSystemCallbackDispatcher(
     WebFileSystemCallbacks* callbacks)
     : callbacks_(callbacks) {
@@ -67,3 +69,5 @@ void WebFileSystemCallbackDispatcher::DidFail(
 void WebFileSystemCallbackDispatcher::DidWrite(int64 bytes, bool complete) {
   NOTREACHED();
 }
+
+}  // namespace content

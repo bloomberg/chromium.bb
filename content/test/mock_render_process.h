@@ -7,6 +7,7 @@
 
 #include "content/renderer/render_process.h"
 
+namespace content {
 // This class is a mock of the child process singleton which we use during
 // running of the RenderView unit tests.
 class MockRenderProcess : public RenderProcess {
@@ -31,5 +32,7 @@ class MockRenderProcess : public RenderProcess {
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcess);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_TEST_MOCK_RENDER_PROCESS_H_

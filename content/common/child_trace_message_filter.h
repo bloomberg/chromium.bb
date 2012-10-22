@@ -11,6 +11,8 @@
 #include "base/process.h"
 #include "ipc/ipc_channel_proxy.h"
 
+namespace content {
+
 // This class sends and receives trace messages on child processes.
 class ChildTraceMessageFilter : public IPC::ChannelProxy::MessageFilter {
  public:
@@ -44,6 +46,6 @@ class ChildTraceMessageFilter : public IPC::ChannelProxy::MessageFilter {
   DISALLOW_COPY_AND_ASSIGN(ChildTraceMessageFilter);
 };
 
+}  // namespace content
 
 #endif  // CONTENT_COMMON_CHILD_TRACE_MESSAGE_FILTER_H_
-

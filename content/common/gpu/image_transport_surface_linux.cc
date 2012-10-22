@@ -6,6 +6,8 @@
 
 #include "content/common/gpu/texture_image_transport_surface.h"
 
+namespace content {
+
 // static
 scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     GpuChannelManager* manager,
@@ -31,3 +33,5 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
   else
     return NULL;
 }
+
+}  // namespace content

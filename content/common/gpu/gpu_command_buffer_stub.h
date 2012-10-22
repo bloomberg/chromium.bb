@@ -33,17 +33,19 @@
 #include "ui/surface/accelerated_surface_mac.h"
 #endif
 
-class GpuChannel;
-struct GpuMemoryAllocation;
-class GpuVideoDecodeAccelerator;
-class GpuWatchdog;
-
 namespace gpu {
 namespace gles2 {
 class ImageManager;
 class MailboxManager;
 }
 }
+
+namespace content {
+
+class GpuChannel;
+class GpuVideoDecodeAccelerator;
+class GpuWatchdog;
+struct GpuMemoryAllocation;
 
 // This Base class is used to expose methods of GpuCommandBufferStub used for
 // testability.
@@ -297,5 +299,7 @@ class GpuCommandBufferStub
 
   DISALLOW_COPY_AND_ASSIGN(GpuCommandBufferStub);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_GPU_GPU_COMMAND_BUFFER_STUB_H_

@@ -12,13 +12,13 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 
-using content::IndexedDBKeyPath;
-using content::IndexedDBKeyRange;
 using WebKit::WebExceptionCode;
 using WebKit::WebDOMStringList;
 using WebKit::WebIDBKeyPath;
 using WebKit::WebString;
 using WebKit::WebVector;
+
+namespace content {
 
 RendererWebIDBIndexImpl::RendererWebIDBIndexImpl(int32 idb_index_id)
     : idb_index_id_(idb_index_id) {
@@ -91,3 +91,5 @@ void RendererWebIDBIndexImpl::getKey(
       IndexedDBKeyRange(key_range), callbacks, idb_index_id_,
       transaction, &ec);
 }
+
+}  // namespace content

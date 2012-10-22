@@ -15,8 +15,10 @@
 #import "content/public/common/injection_test_mac.h"
 #include "content/common/sandbox_init_mac.h"
 
+namespace content {
+
 RendererMainPlatformDelegate::RendererMainPlatformDelegate(
-    const content::MainFunctionParams& parameters)
+    const MainFunctionParams& parameters)
         : parameters_(parameters) {
 }
 
@@ -72,7 +74,7 @@ bool RendererMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
 }
 
 bool RendererMainPlatformDelegate::EnableSandbox() {
-  return content::InitializeSandbox();
+  return InitializeSandbox();
 }
 
 void RendererMainPlatformDelegate::RunSandboxTests() {
@@ -85,3 +87,5 @@ void RendererMainPlatformDelegate::RunSandboxTests() {
     sandbox_tests_bundle_ = nil;
   }
 }
+
+}  // namespace content

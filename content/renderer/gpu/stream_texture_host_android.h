@@ -14,10 +14,10 @@ namespace gfx {
 class Size;
 }
 
-class GpuChannelHost;
 struct GpuStreamTextureMsg_MatrixChanged_Params;
 
 namespace content {
+class GpuChannelHost;
 
 // Class for handling all the IPC messages between the GPU process and
 // StreamTextureProxy.

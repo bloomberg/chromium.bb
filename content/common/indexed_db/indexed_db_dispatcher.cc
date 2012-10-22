@@ -21,10 +21,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyRange.h"
 
 using base::ThreadLocalPointer;
-using content::IndexedDBKey;
-using content::IndexedDBKeyPath;
-using content::IndexedDBKeyRange;
-using content::SerializedScriptValue;
 using WebKit::WebDOMStringList;
 using WebKit::WebExceptionCode;
 using WebKit::WebFrame;
@@ -37,6 +33,7 @@ using WebKit::WebIDBTransaction;
 using WebKit::WebIDBTransactionCallbacks;
 using webkit_glue::WorkerTaskRunner;
 
+namespace content {
 static base::LazyInstance<ThreadLocalPointer<IndexedDBDispatcher> >::Leaky
     g_idb_dispatcher_tls = LAZY_INSTANCE_INITIALIZER;
 
@@ -419,7 +416,7 @@ void IndexedDBDispatcher::RequestIDBObjectStorePut(
   for (size_t i = 0; i < index_keys.size(); ++i) {
       params.index_keys[i].resize(index_keys[i].size());
       for (size_t j = 0; j < index_keys[i].size(); ++j) {
-          params.index_keys[i][j] = content::IndexedDBKey(index_keys[i][j]);
+          params.index_keys[i][j] = IndexedDBKey(index_keys[i][j]);
       }
   }
   Send(new IndexedDBHostMsg_ObjectStorePut(params));
@@ -777,3 +774,5 @@ void IndexedDBDispatcher::ResetCursorPrefetchCaches(int32 exception_cursor_id) {
     i->second->ResetPrefetchCache();
   }
 }
+
+}  // namespace content

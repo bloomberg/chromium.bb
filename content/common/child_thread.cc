@@ -30,9 +30,9 @@
 #include "content/common/handle_enumerator_win.h"
 #endif
 
-using content::ResourceDispatcher;
 using tracked_objects::ThreadData;
 
+namespace content {
 namespace {
 
 // How long to wait for a connection to the browser process before giving up.
@@ -111,7 +111,7 @@ void ChildThread::Init() {
 
   sync_message_filter_ =
       new IPC::SyncMessageFilter(ChildProcess::current()->GetShutDownEvent());
-  histogram_message_filter_ = new content::ChildHistogramMessageFilter();
+  histogram_message_filter_ = new ChildHistogramMessageFilter();
 
   channel_->AddFilter(histogram_message_filter_.get());
   channel_->AddFilter(sync_message_filter_.get());
@@ -306,8 +306,8 @@ void ChildThread::OnGetChildProfilerData(int sequence_number) {
 
 void ChildThread::OnDumpHandles() {
 #if defined(OS_WIN)
-  scoped_refptr<content::HandleEnumerator> handle_enum(
-      new content::HandleEnumerator(
+  scoped_refptr<HandleEnumerator> handle_enum(
+      new HandleEnumerator(
           CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kAuditAllHandles)));
   handle_enum->EnumerateHandles();
@@ -356,3 +356,5 @@ void ChildThread::EnsureConnected() {
   LOG(INFO) << "ChildThread::EnsureConnected()";
   base::KillProcess(base::GetCurrentProcessHandle(), 0, false);
 }
+
+}  // namespace content

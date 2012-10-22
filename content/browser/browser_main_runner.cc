@@ -30,6 +30,8 @@
 
 bool g_exited_main_message_loop = false;
 
+using content::ChildProcess;
+
 namespace {
 
 class BrowserMainRunnerImpl : public content::BrowserMainRunner {

@@ -5,6 +5,8 @@
 #ifndef CONTENT_COMMON_GPU_GPU_WATCHDOG_H_
 #define CONTENT_COMMON_GPU_GPU_WATCHDOG_H_
 
+namespace content {
+
 // Interface for objects that monitor the a GPUProcessor's progress. The
 // GPUProcessor will regularly invoke CheckArmed.
 class GpuWatchdog {
@@ -18,5 +20,7 @@ class GpuWatchdog {
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuWatchdog);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_GPU_GPU_WATCHDOG_H_

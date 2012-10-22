@@ -8,9 +8,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/native_widget_types.h"
 
-class WebGraphicsContext3DCommandBufferImpl;
-
 namespace content {
+class WebGraphicsContext3DCommandBufferImpl;
 
 class ImageTransportFactoryAndroid {
  public:

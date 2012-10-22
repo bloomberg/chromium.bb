@@ -5,8 +5,10 @@
 #include "content/renderer/renderer_main_platform_delegate.h"
 #include "base/logging.h"
 
+namespace content {
+
 RendererMainPlatformDelegate::RendererMainPlatformDelegate(
-    const content::MainFunctionParams& parameters)
+    const MainFunctionParams& parameters)
     : parameters_(parameters) {
 }
 
@@ -29,3 +31,5 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
 
 void RendererMainPlatformDelegate::RunSandboxTests() {
 }
+
+}  // namespace content

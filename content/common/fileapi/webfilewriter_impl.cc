@@ -7,6 +7,7 @@
 #include "content/common/child_thread.h"
 #include "content/common/fileapi/file_system_dispatcher.h"
 
+namespace content {
 namespace {
 
 inline FileSystemDispatcher* GetFileSystemDispatcher() {
@@ -78,3 +79,5 @@ void WebFileWriterImpl::DoCancel() {
   GetFileSystemDispatcher()->Cancel(request_id_,
                                     new CallbackDispatcher(AsWeakPtr()));
 }
+
+}  // namespace content

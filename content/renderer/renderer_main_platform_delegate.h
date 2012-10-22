@@ -21,10 +21,12 @@
 class NSBundle;
 #endif  // __OBJC__
 
+namespace content {
+
 class CONTENT_EXPORT RendererMainPlatformDelegate {
  public:
   explicit RendererMainPlatformDelegate(
-      const content::MainFunctionParams& parameters);
+      const MainFunctionParams& parameters);
   ~RendererMainPlatformDelegate();
 
   // Called first thing and last thing in the process' lifecycle, i.e. before
@@ -43,7 +45,7 @@ class CONTENT_EXPORT RendererMainPlatformDelegate {
   void RunSandboxTests();
 
  private:
-  const content::MainFunctionParams& parameters_;
+  const MainFunctionParams& parameters_;
 #if defined(OS_WIN)
   HMODULE sandbox_test_module_;
 #elif defined(OS_MACOSX)
@@ -52,5 +54,7 @@ class CONTENT_EXPORT RendererMainPlatformDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(RendererMainPlatformDelegate);
 };
+
+}  // namespace content
 
 #endif  // CHROME_RENDERER_RENDERER_MAIN_PLATFORM_DELEGATE_H_

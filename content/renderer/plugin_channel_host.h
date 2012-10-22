@@ -9,8 +9,10 @@
 #include "content/common/np_channel_base.h"
 #include "ipc/ipc_channel_handle.h"
 
-class IsListeningFilter;
 class NPObjectBase;
+
+namespace content {
+class IsListeningFilter;
 
 // Encapsulates an IPC channel between the renderer and one plugin process.
 // On the plugin side there's a corresponding PluginChannel.
@@ -77,5 +79,7 @@ class PluginChannelHost : public NPChannelBase {
 
   DISALLOW_COPY_AND_ASSIGN(PluginChannelHost);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PLUGIN_CHANNEL_HOST_H_

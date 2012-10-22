@@ -20,6 +20,8 @@ class WebSocketStreamHandleBridge;
 class WebSocketStreamHandleDelegate;
 }
 
+namespace content {
+
 // Dispatches socket stream related messages sent to a child process from the
 // main browser process.  There is one instance per child process.  Messages
 // are dispatched on the main child thread.  The RenderThread class
@@ -44,5 +46,7 @@ class SocketStreamDispatcher : public IPC::Listener {
 
   DISALLOW_COPY_AND_ASSIGN(SocketStreamDispatcher);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_SOCKET_STREAM_DISPATCHER_H_

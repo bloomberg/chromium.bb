@@ -91,8 +91,8 @@ int tc_set_new_mode(int mode);
 }
 #endif
 
-extern int GpuMain(const content::MainFunctionParams&);
 namespace content {
+extern int GpuMain(const content::MainFunctionParams&);
 extern int PluginMain(const content::MainFunctionParams&);
 extern int PpapiPluginMain(const MainFunctionParams&);
 extern int PpapiBrokerMain(const MainFunctionParams&);

@@ -15,6 +15,8 @@
 #include "ipc/ipc_sender.h"
 #include "media/video/video_decode_accelerator.h"
 
+namespace content {
+
 class GpuVideoDecodeAccelerator
     : public IPC::Listener,
       public IPC::Sender,
@@ -93,5 +95,7 @@ class GpuVideoDecodeAccelerator
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(GpuVideoDecodeAccelerator);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_GPU_MEDIA_GPU_VIDEO_DECODE_ACCELERATOR_H_

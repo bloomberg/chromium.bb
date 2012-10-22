@@ -293,9 +293,9 @@ void RenderThreadImpl::Init() {
   idle_notifications_to_skip_ = 0;
   compositor_initialized_ = false;
 
-  appcache_dispatcher_.reset(new AppCacheDispatcher(Get()));
+  appcache_dispatcher_.reset(new content::AppCacheDispatcher(Get()));
   dom_storage_dispatcher_.reset(new DomStorageDispatcher());
-  main_thread_indexed_db_dispatcher_.reset(new IndexedDBDispatcher());
+  main_thread_indexed_db_dispatcher_.reset(new content::IndexedDBDispatcher());
 
   browser_plugin_registry_.reset(new old::BrowserPluginRegistry());
   browser_plugin_channel_manager_.reset(

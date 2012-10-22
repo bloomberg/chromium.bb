@@ -37,6 +37,7 @@
 #include "gpu/ipc/command_buffer_proxy.h"
 #include "webkit/glue/gl_bindings_skia_cmd_buffer.h"
 
+namespace content {
 static base::LazyInstance<base::Lock>::Leaky
     g_all_shared_contexts_lock = LAZY_INSTANCE_INITIALIZER;
 static base::LazyInstance<std::set<WebGraphicsContext3DCommandBufferImpl*> >
@@ -151,7 +152,7 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
       use_echo_for_swap_ack_(true) {
 #if defined(OS_MACOSX) || defined(OS_WIN)
   // Get ViewMsg_SwapBuffers_ACK from browser for single-threaded path.
-  use_echo_for_swap_ack_ = content::IsThreadedCompositingEnabled();
+  use_echo_for_swap_ack_ = IsThreadedCompositingEnabled();
 #endif
 }
 
@@ -181,7 +182,7 @@ void WebGraphicsContext3DCommandBufferImpl::InitializeWithCommandBuffer(
 bool WebGraphicsContext3DCommandBufferImpl::Initialize(
     const WebGraphicsContext3D::Attributes& attributes,
     bool bind_generates_resources,
-    content::CauseForGpuLaunch cause) {
+    CauseForGpuLaunch cause) {
   TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::initialize");
 
   attributes_ = attributes;
@@ -1453,7 +1454,7 @@ WebGraphicsContext3DCommandBufferImpl::CreateViewContext(
       const WebGraphicsContext3D::Attributes& attributes,
       bool bind_generates_resources,
       const GURL& active_url,
-      content::CauseForGpuLaunch cause) {
+      CauseForGpuLaunch cause) {
   WebGraphicsContext3DCommandBufferImpl* context =
       new WebGraphicsContext3DCommandBufferImpl(
           surface_id,
@@ -1480,8 +1481,8 @@ WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
       new WebGraphicsContext3DCommandBufferImpl(
           0, active_url, factory, null_client));
-  content::CauseForGpuLaunch cause =
-      content::CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
+  CauseForGpuLaunch cause =
+      CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
   if (context->Initialize(attributes, false, cause))
     return context.release();
   return NULL;
@@ -1603,3 +1604,5 @@ void WebGraphicsContext3DCommandBufferImpl::OnErrorMessage(
     error_message_callback_->onErrorMessage(str, id);
   }
 }
+
+}  // namespace content

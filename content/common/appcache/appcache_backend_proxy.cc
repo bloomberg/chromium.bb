@@ -6,6 +6,8 @@
 
 #include "content/common/appcache_messages.h"
 
+namespace content {
+
 void AppCacheBackendProxy::RegisterHost(int host_id) {
   sender_->Send(new AppCacheHostMsg_RegisterHost(host_id));
 }
@@ -74,3 +76,5 @@ void AppCacheBackendProxy::GetResourceList(
     int host_id, std::vector<appcache::AppCacheResourceInfo>* resource_infos) {
   sender_->Send(new AppCacheHostMsg_GetResourceList(host_id, resource_infos));
 }
+
+}  // namespace content

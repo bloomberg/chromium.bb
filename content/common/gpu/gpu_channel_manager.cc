@@ -18,6 +18,8 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_share_group.h"
 
+namespace content {
+
 GpuChannelManager::ImageOperation::ImageOperation(
     int32 sync_point, base::Closure callback)
     : sync_point(sync_point),
@@ -274,3 +276,5 @@ gfx::GLSurface* GpuChannelManager::GetDefaultOffscreenSurface() {
   }
   return default_offscreen_surface_.get();
 }
+
+}  // namespace content

@@ -11,6 +11,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "content/common/content_export.h"
 
+namespace content {
 class ChildThread;
 
 // Base class for child processes of the browser process (i.e. renderer and
@@ -75,5 +76,7 @@ class CONTENT_EXPORT ChildProcess {
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcess);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_CHILD_PROCESS_H_

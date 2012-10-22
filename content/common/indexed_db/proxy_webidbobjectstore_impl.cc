@@ -20,9 +20,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
-using content::IndexedDBKey;
-using content::IndexedDBKeyPath;
-using content::IndexedDBKeyRange;
 using content::SerializedScriptValue;
 using WebKit::WebDOMStringList;
 using WebKit::WebExceptionCode;
@@ -36,6 +33,8 @@ using WebKit::WebIDBTransaction;
 using WebKit::WebSerializedScriptValue;
 using WebKit::WebString;
 using WebKit::WebVector;
+
+namespace content {
 
 RendererWebIDBObjectStoreImpl::RendererWebIDBObjectStoreImpl(
     int32 idb_object_store_id)
@@ -214,3 +213,5 @@ void RendererWebIDBObjectStoreImpl::count(
       idb_key_range, callbacks,  idb_object_store_id_,
       transaction, &ec);
 }
+
+}  // namespace content

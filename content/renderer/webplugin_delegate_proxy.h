@@ -28,7 +28,6 @@
 
 struct NPObject;
 class NPObjectStub;
-class PluginChannelHost;
 struct PluginHostMsg_URLRequest_Params;
 class SkBitmap;
 
@@ -47,6 +46,7 @@ class WebPlugin;
 }
 
 namespace content {
+class PluginChannelHost;
 class RenderViewImpl;
 
 // An implementation of WebPluginDelegate that proxies all calls to

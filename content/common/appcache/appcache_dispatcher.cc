@@ -7,6 +7,8 @@
 #include "content/common/appcache_messages.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 
+namespace content {
+
 bool AppCacheDispatcher::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AppCacheDispatcher, msg)
@@ -59,3 +61,5 @@ void AppCacheDispatcher::OnContentBlocked(int host_id,
                                           const GURL& manifest_url) {
   frontend_impl_.OnContentBlocked(host_id, manifest_url);
 }
+
+}  // namespace content

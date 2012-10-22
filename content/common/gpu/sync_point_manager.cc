@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 
+namespace content {
+
 SyncPointManager::SyncPointManager()
     : next_sync_point_(1) {
 }
@@ -54,3 +56,5 @@ void SyncPointManager::AddSyncPointCallback(uint32 sync_point,
   }
   callback.Run();
 }
+
+}  // namespace content

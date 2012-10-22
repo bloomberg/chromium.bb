@@ -23,6 +23,7 @@
 
 const int kGpuTimeout = 10000;
 
+namespace content {
 namespace {
 
 bool GpuProcessLogMessageHandler(int severity,
@@ -48,8 +49,7 @@ bool GpuProcessLogMessageHandler(int severity,
 
 }  // namespace
 
-GpuChildThread::GpuChildThread(bool dead_on_arrival,
-                               const content::GPUInfo& gpu_info)
+GpuChildThread::GpuChildThread(bool dead_on_arrival, const GPUInfo& gpu_info)
     : dead_on_arrival_(dead_on_arrival),
       gpu_info_(gpu_info) {
 #if defined(OS_WIN)
@@ -189,7 +189,7 @@ void GpuChildThread::OnCollectGraphicsInfo() {
 
     if (!gpu_info_collector::CollectGraphicsInfo(&gpu_info_))
       VLOG(1) << "gpu_info_collector::CollectGraphicsInfo failed";
-    content::GetContentClient()->SetGpuInfo(gpu_info_);
+    GetContentClient()->SetGpuInfo(gpu_info_);
 
 #if defined(OS_WIN)
     if (!collecting_dx_diagnostics_) {
@@ -213,7 +213,7 @@ void GpuChildThread::OnCollectGraphicsInfo() {
 }
 
 void GpuChildThread::OnGetVideoMemoryUsageStats() {
-  content::GPUVideoMemoryUsageStats video_memory_usage_stats;
+  GPUVideoMemoryUsageStats video_memory_usage_stats;
   if (gpu_channel_manager_.get())
     gpu_channel_manager_->gpu_memory_manager()->GetVideoMemoryUsageStats(
         video_memory_usage_stats);
@@ -251,7 +251,7 @@ void GpuChildThread::OnHang() {
 // Runs on a worker thread. The GPU process never terminates voluntarily so
 // it is safe to assume that its message loop is valid.
 void GpuChildThread::CollectDxDiagnostics(GpuChildThread* thread) {
-  content::DxDiagNode node;
+  DxDiagNode node;
   gpu_info_collector::GetDxDiagnostics(&node);
 
   thread->message_loop()->PostTask(
@@ -260,7 +260,7 @@ void GpuChildThread::CollectDxDiagnostics(GpuChildThread* thread) {
 
 // Runs on the main thread.
 void GpuChildThread::SetDxDiagnostics(GpuChildThread* thread,
-                                      const content::DxDiagNode& node) {
+                                      const DxDiagNode& node) {
   thread->gpu_info_.dx_diagnostics = node;
   thread->gpu_info_.finalized = true;
   thread->collecting_dx_diagnostics_ = false;
@@ -268,3 +268,6 @@ void GpuChildThread::SetDxDiagnostics(GpuChildThread* thread,
 }
 
 #endif
+
+}  // namespace content
+

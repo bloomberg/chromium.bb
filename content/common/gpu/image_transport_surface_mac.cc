@@ -16,6 +16,7 @@
 #include "ui/gl/gl_surface_cgl.h"
 #include "ui/surface/io_surface_support_mac.h"
 
+namespace content {
 namespace {
 
 // IOSurface dimensions will be rounded up to a multiple of this value in order
@@ -437,5 +438,7 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
   else
     return NULL;
 }
+
+}  // namespace content
 
 #endif  // defined(USE_GPU)

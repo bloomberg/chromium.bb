@@ -9,13 +9,12 @@
 #include "content/common/webkitplatformsupport_impl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMimeRegistry.h"
 
-class WebFileSystemImpl;
-
 namespace WebKit {
 class WebFileUtilities;
 }
 
 namespace content {
+class WebFileSystemImpl;
 
 class WorkerWebKitPlatformSupportImpl : public WebKitPlatformSupportImpl,
                                         public WebKit::WebMimeRegistry {

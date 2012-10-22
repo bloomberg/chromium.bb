@@ -7,6 +7,8 @@
 
 #include "base/supports_user_data.h"
 
+namespace content {
+
 // Used to annotate all URLRequests for which the request can be associated
 // with a given render view.
 class URLRequestUserData : public base::SupportsUserData::Data {
@@ -23,5 +25,7 @@ class URLRequestUserData : public base::SupportsUserData::Data {
   int render_process_id_;
   int render_view_id_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_NET_URL_REQUEST_USER_DATA_H_

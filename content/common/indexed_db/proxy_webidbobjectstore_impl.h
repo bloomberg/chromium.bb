@@ -17,6 +17,8 @@ class WebIDBKeyRange;
 class WebString;
 }
 
+namespace content {
+
 class RendererWebIDBObjectStoreImpl : public WebKit::WebIDBObjectStore {
  public:
   explicit RendererWebIDBObjectStoreImpl(int32 idb_object_store_id);
@@ -85,5 +87,7 @@ class RendererWebIDBObjectStoreImpl : public WebKit::WebIDBObjectStore {
  private:
   int32 idb_object_store_id_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_INDEXED_DB_PROXY_WEBIDBOBJECTSTORE_IMPL_H_

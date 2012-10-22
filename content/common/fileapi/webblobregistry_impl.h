@@ -7,12 +7,13 @@
 
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebBlobRegistry.h"
 
-class ChildThread;
-
 namespace WebKit {
 class WebBlobData;
 class WebURL;
 }
+
+namespace content {
+class ChildThread;
 
 class WebBlobRegistryImpl : public WebKit::WebBlobRegistry {
  public:
@@ -29,5 +30,7 @@ class WebBlobRegistryImpl : public WebKit::WebBlobRegistry {
  private:
   ChildThread* child_thread_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_FILEAPI_WEBBLOBREGISTRY_IMPL_H_

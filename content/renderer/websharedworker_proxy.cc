@@ -10,6 +10,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorkerClient.h"
 
+namespace content {
+
 WebSharedWorkerProxy::WebSharedWorkerProxy(ChildThread* child_thread,
                                            unsigned long long document_id,
                                            bool exists,
@@ -180,3 +182,5 @@ void WebSharedWorkerProxy::OnWorkerCreated() {
     connect_listener_->connected();
   }
 }
+
+}  // namespace content

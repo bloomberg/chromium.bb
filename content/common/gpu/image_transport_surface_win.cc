@@ -24,6 +24,7 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
 
+namespace content {
 namespace {
 
 // We are backed by an Pbuffer offscreen surface through which ANGLE provides
@@ -284,5 +285,7 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
   else
     return NULL;
 }
+
+}  // namespace content
 
 #endif  // ENABLE_GPU

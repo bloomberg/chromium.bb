@@ -14,6 +14,8 @@ class WebIDBTransactionCallbacks;
 class WebString;
 }
 
+namespace content {
+
 class RendererWebIDBTransactionImpl : public WebKit::WebIDBTransaction {
  public:
   explicit RendererWebIDBTransactionImpl(int32 idb_transaction_id);
@@ -31,5 +33,7 @@ class RendererWebIDBTransactionImpl : public WebKit::WebIDBTransaction {
  private:
   int32 idb_transaction_id_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_INDEXED_DB_PROXY_WEBIDBTRANSACTION_IMPL_H_

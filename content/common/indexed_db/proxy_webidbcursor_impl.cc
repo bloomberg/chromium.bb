@@ -10,12 +10,12 @@
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "content/common/indexed_db/indexed_db_dispatcher.h"
 
-using content::IndexedDBKey;
-using content::SerializedScriptValue;
 using WebKit::WebExceptionCode;
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBKey;
 using WebKit::WebSerializedScriptValue;
+
+namespace content {
 
 RendererWebIDBCursorImpl::RendererWebIDBCursorImpl(int32 idb_cursor_id)
     : idb_cursor_id_(idb_cursor_id),
@@ -160,3 +160,5 @@ void RendererWebIDBCursorImpl::ResetPrefetchCache() {
 
   pending_onsuccess_callbacks_ = 0;
 }
+
+}  // namespace content

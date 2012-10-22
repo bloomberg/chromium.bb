@@ -8,6 +8,8 @@
 #include "ipc/ipc_sender.h"
 #include "webkit/appcache/appcache_interfaces.h"
 
+namespace content {
+
 // Sends appcache related messages to the main process.
 class AppCacheBackendProxy : public appcache::AppCacheBackend {
  public:
@@ -44,5 +46,7 @@ class AppCacheBackendProxy : public appcache::AppCacheBackend {
  private:
   IPC::Sender* sender_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_APPCACHE_APPCACHE_BACKEND_PROXY_H_

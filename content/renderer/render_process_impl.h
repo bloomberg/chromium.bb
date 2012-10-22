@@ -12,6 +12,8 @@ namespace skia {
 class PlatformCanvas;
 }
 
+namespace content {
+
 // Implementation of the RenderProcess interface for the regular browser.
 // See also MockRenderProcess which implements the active "RenderProcess" when
 // running under certain unit tests.
@@ -73,5 +75,7 @@ class RenderProcessImpl : public RenderProcess {
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_RENDER_PROCESS_IMPL_H_

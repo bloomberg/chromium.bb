@@ -12,6 +12,7 @@
 #include "ipc/ipc_listener.h"
 #include "media/video/video_decode_accelerator.h"
 
+namespace content {
 class GpuChannelHost;
 
 // This class is used to talk to VideoDecodeAccelerator in the Gpu process
@@ -70,5 +71,7 @@ class GpuVideoDecodeAcceleratorHost
 
   DISALLOW_COPY_AND_ASSIGN(GpuVideoDecodeAcceleratorHost);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_GPU_CLIENT_GPU_VIDEO_DECODE_ACCELERATOR_HOST_H_

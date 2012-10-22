@@ -22,9 +22,6 @@
 #include "ui/gl/gl_surface.h"
 #include "ui/surface/transport_dib.h"
 
-class GpuChannelManager;
-class GpuCommandBufferStub;
-
 struct GpuHostMsg_AcceleratedSurfaceNew_Params;
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
@@ -41,6 +38,10 @@ namespace gles2 {
 class GLES2Decoder;
 }
 }
+
+namespace content {
+class GpuChannelManager;
+class GpuCommandBufferStub;
 
 // The GPU process is agnostic as to how it displays results. On some platforms
 // it renders directly to window. On others it renders offscreen and transports
@@ -192,6 +193,8 @@ class PassThroughImageTransportSurface
 
   DISALLOW_COPY_AND_ASSIGN(PassThroughImageTransportSurface);
 };
+
+}  // namespace content
 
 #endif  // defined(ENABLE_GPU)
 

@@ -12,6 +12,8 @@
 #include "ipc/ipc_listener.h"
 #include "webkit/appcache/appcache_frontend_impl.h"
 
+namespace content {
+
 // Dispatches appcache related messages sent to a child process from the
 // main browser process. There is one instance per child process. Messages
 // are dispatched on the main child thread. The ChildThread base class
@@ -43,5 +45,7 @@ class AppCacheDispatcher : public IPC::Listener {
   AppCacheBackendProxy backend_proxy_;
   appcache::AppCacheFrontendImpl frontend_impl_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_APPCACHE_APPCACHE_DISPATCHER_H_

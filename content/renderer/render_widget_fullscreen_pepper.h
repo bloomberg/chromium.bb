@@ -15,8 +15,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWidget.h"
 #include "webkit/plugins/ppapi/fullscreen_container.h"
 
-class WebGraphicsContext3DCommandBufferImpl;
-
 namespace webkit {
 namespace ppapi {
 
@@ -26,6 +24,7 @@ class PluginInstance;
 }  // namespace webkit
 
 namespace content {
+class WebGraphicsContext3DCommandBufferImpl;
 
 // A RenderWidget that hosts a fullscreen pepper plugin. This provides a
 // FullscreenContainer that the plugin instance can callback into to e.g.

@@ -7,6 +7,8 @@
 
 #include "base/basictypes.h"
 
+namespace content {
+
 // These are per context memory allocation limits set by the GpuMemoryManager
 // and assigned to the browser and renderer context.
 // They will change over time, given memory availability, and browser state.
@@ -121,5 +123,7 @@ struct GpuMemoryAllocationRequest {
     return !(*this == other);
   }
 };
+
+}  // namespace content
 
 #endif // CONTENT_COMMON_GPU_GPU_MEMORY_ALLOCATION_H_

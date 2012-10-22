@@ -19,6 +19,7 @@
 #include "content/common/gpu/gpu_memory_tracking.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 
+namespace content {
 namespace {
 
 const int kDelayedScheduleManageTimeoutMs = 67;
@@ -203,7 +204,7 @@ void GpuMemoryManager::RemoveTrackingGroup(
 }
 
 void GpuMemoryManager::GetVideoMemoryUsageStats(
-    content::GPUVideoMemoryUsageStats& video_memory_usage_stats) const {
+    GPUVideoMemoryUsageStats& video_memory_usage_stats) const {
   // For each context group, assign its memory usage to its PID
   video_memory_usage_stats.process_map.clear();
   for (std::set<GpuMemoryTrackingGroup*>::const_iterator i =
@@ -405,5 +406,7 @@ void GpuMemoryManager::Manage() {
       GpuMemoryAllocation(0, GpuMemoryAllocation::kHasNoBuffers),
       false);
 }
+
+}  // namespace content
 
 #endif

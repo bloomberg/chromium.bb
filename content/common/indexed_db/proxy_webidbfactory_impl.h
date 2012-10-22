@@ -16,6 +16,8 @@ class WebSecurityOrigin;
 class WebString;
 }
 
+namespace content {
+
 class RendererWebIDBFactoryImpl : public WebKit::WebIDBFactory {
  public:
   RendererWebIDBFactoryImpl();
@@ -42,5 +44,7 @@ class RendererWebIDBFactoryImpl : public WebKit::WebIDBFactory {
       WebKit::WebFrame* web_frame,
       const WebKit::WebString& data_dir);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_INDEXED_DB_PROXY_WEBIDBFACTORY_IMPL_H_

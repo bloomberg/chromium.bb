@@ -13,6 +13,8 @@
 using WebKit::WebKitPlatformSupport;
 using WebKit::WebString;
 
+namespace content {
+
 WebKitPlatformSupport::FileHandle DatabaseUtil::DatabaseOpenFile(
     const WebString& vfs_file_name, int desired_flags) {
   IPC::PlatformFileForTransit file_handle =
@@ -60,3 +62,5 @@ long long DatabaseUtil::DatabaseGetSpaceAvailable(
   filter->Send(new DatabaseHostMsg_GetSpaceAvailable(origin_identifier, &rv));
   return rv;
 }
+
+}  // namespace content

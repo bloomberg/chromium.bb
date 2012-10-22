@@ -37,6 +37,7 @@
 #include "content/common/gpu/stream_texture_manager_android.h"
 #endif
 
+namespace content {
 namespace {
 
 // The GpuCommandBufferMemoryTracker class provides a bridge between the
@@ -75,7 +76,7 @@ void FastSetActiveURL(const GURL& url, size_t url_hash) {
   static size_t g_last_url_hash = 0;
   if (url_hash != g_last_url_hash) {
     g_last_url_hash = url_hash;
-    content::GetContentClient()->SetActiveURL(url);
+    GetContentClient()->SetActiveURL(url);
   }
 }
 
@@ -645,7 +646,7 @@ void GpuCommandBufferStub::OnGetTransferBuffer(
     if (buffer.shared_memory) {
 #if defined(OS_WIN)
       transfer_buffer = NULL;
-      content::BrokerDuplicateHandle(buffer.shared_memory->handle(),
+      BrokerDuplicateHandle(buffer.shared_memory->handle(),
           channel_->renderer_pid(), &transfer_buffer, FILE_MAP_READ |
           FILE_MAP_WRITE, 0);
       DCHECK(transfer_buffer != NULL);
@@ -843,5 +844,7 @@ void GpuCommandBufferStub::SetMemoryAllocation(
     return;
   surface_->SetFrontbufferAllocation(allocation.suggest_have_frontbuffer);
 }
+
+}  // namespace content
 
 #endif  // defined(ENABLE_GPU)

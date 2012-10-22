@@ -14,6 +14,8 @@
 #include "ipc/ipc_listener.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSharedWorker.h"
 
+namespace content {
+
 class ChildThread;
 
 // Implementation of the WebSharedWorker APIs. This object is intended to only
@@ -107,5 +109,7 @@ class WebSharedWorkerProxy : public WebKit::WebSharedWorker,
 
   DISALLOW_COPY_AND_ASSIGN(WebSharedWorkerProxy);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_WEBSHAREDWORKER_PROXY_H_

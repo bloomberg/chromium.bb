@@ -46,12 +46,13 @@
 #include "content/public/common/sandbox_init.h"
 #endif
 
+namespace content {
 namespace {
-void WarmUpSandbox(const content::GPUInfo&, bool);
+void WarmUpSandbox(const GPUInfo&, bool);
 }
 
 // Main function for starting the Gpu process.
-int GpuMain(const content::MainFunctionParams& parameters) {
+int GpuMain(const MainFunctionParams& parameters) {
   TRACE_EVENT0("gpu", "GpuMain");
 
   base::Time start_time = base::Time::Now();
@@ -95,7 +96,7 @@ int GpuMain(const content::MainFunctionParams& parameters) {
   // GpuMsg_Initialize message from the browser.
   bool dead_on_arrival = false;
 
-  content::GPUInfo gpu_info;
+  GPUInfo gpu_info;
   // Get vendor_id, device_id, driver_version from browser process through
   // commandline switches.
   DCHECK(command_line.HasSwitch(switches::kGpuVendorID) &&
@@ -113,7 +114,7 @@ int GpuMain(const content::MainFunctionParams& parameters) {
       command_line.GetSwitchValueASCII(switches::kGpuDriverVendor);
   gpu_info.driver_version =
       command_line.GetSwitchValueASCII(switches::kGpuDriverVersion);
-  content::GetContentClient()->SetGpuInfo(gpu_info);
+  GetContentClient()->SetGpuInfo(gpu_info);
 
   // We need to track that information for the WarmUpSandbox function.
   bool initialized_gl_context = false;
@@ -122,7 +123,7 @@ int GpuMain(const content::MainFunctionParams& parameters) {
     if (!command_line.HasSwitch(switches::kSkipGpuFullInfoCollection)) {
       if (!gpu_info_collector::CollectGraphicsInfo(&gpu_info))
         VLOG(1) << "gpu_info_collector::CollectGraphicsInfo failed";
-      content::GetContentClient()->SetGpuInfo(gpu_info);
+      GetContentClient()->SetGpuInfo(gpu_info);
 
       // We know that CollectGraphicsInfo will initialize a GLContext.
       initialized_gl_context = true;
@@ -165,7 +166,7 @@ int GpuMain(const content::MainFunctionParams& parameters) {
 #endif
 
     if (do_init_sandbox) {
-      gpu_info.sandboxed = content::InitializeSandbox();
+      gpu_info.sandboxed = InitializeSandbox();
     }
   }
 #endif
@@ -251,7 +252,7 @@ void CreateDummyGlContext() {
 }
 #endif
 
-void WarmUpSandbox(const content::GPUInfo& gpu_info,
+void WarmUpSandbox(const GPUInfo& gpu_info,
                    bool should_initialize_gl_context) {
   {
     TRACE_EVENT0("gpu", "Warm up rand");
@@ -308,3 +309,4 @@ void WarmUpSandbox(const content::GPUInfo& gpu_info,
 
 }  // namespace.
 
+}  // namespace content

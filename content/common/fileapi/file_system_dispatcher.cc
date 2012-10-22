@@ -9,6 +9,8 @@
 #include "content/common/child_thread.h"
 #include "content/common/fileapi/file_system_messages.h"
 
+namespace content {
+
 FileSystemDispatcher::FileSystemDispatcher() {
 }
 
@@ -329,3 +331,5 @@ void FileSystemDispatcher::OnDidOpenFile(
   dispatcher->DidOpenFile(IPC::PlatformFileForTransitToPlatformFile(file));
   dispatchers_.Remove(request_id);
 }
+
+}  // namespace content

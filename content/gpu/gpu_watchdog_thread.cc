@@ -18,6 +18,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 
+namespace content {
 namespace {
 const int64 kCheckPeriodMs = 2000;
 }  // namespace
@@ -205,7 +206,7 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
     *((volatile int*)0) = 0x1337;
   } else {
     base::Process current_process(base::GetCurrentProcessHandle());
-    current_process.Terminate(content::RESULT_CODE_HUNG);
+    current_process.Terminate(RESULT_CODE_HUNG);
   }
 
   terminated = true;
@@ -243,3 +244,5 @@ base::TimeDelta GpuWatchdogThread::GetWatchedThreadTime() {
       (user_time64.QuadPart + kernel_time64.QuadPart) / 10000));
 }
 #endif
+
+}  // namespace content

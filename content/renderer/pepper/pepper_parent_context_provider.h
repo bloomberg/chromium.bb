@@ -7,9 +7,8 @@
 
 #include "base/basictypes.h"
 
-class WebGraphicsContext3DCommandBufferImpl;
-
 namespace content {
+class WebGraphicsContext3DCommandBufferImpl;
 
 // Defines the mechanism by which a Pepper 3D context fetches its
 // parent context for display to the screen.

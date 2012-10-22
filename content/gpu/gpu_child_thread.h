@@ -25,6 +25,7 @@ namespace sandbox {
 class TargetServices;
 }
 
+namespace content {
 class GpuWatchdogThread;
 
 // The main thread of the GPU child process. There will only ever be one of
@@ -33,8 +34,7 @@ class GpuWatchdogThread;
 // commands to the GPU.
 class GpuChildThread : public ChildThread {
  public:
-  explicit GpuChildThread(bool dead_on_arrival,
-                          const content::GPUInfo& gpu_info);
+  explicit GpuChildThread(bool dead_on_arrival, const GPUInfo& gpu_info);
 
   // For single-process mode.
   explicit GpuChildThread(const std::string& channel_id);
@@ -66,7 +66,7 @@ class GpuChildThread : public ChildThread {
 #if defined(OS_WIN)
   static void CollectDxDiagnostics(GpuChildThread* thread);
   static void SetDxDiagnostics(GpuChildThread* thread,
-                               const content::DxDiagNode& node);
+                               const DxDiagNode& node);
 #endif
 
   // Set this flag to true if a fatal error occurred before we receive the
@@ -86,9 +86,11 @@ class GpuChildThread : public ChildThread {
   scoped_ptr<GpuChannelManager> gpu_channel_manager_;
 
   // Information about the GPU, such as device and vendor ID.
-  content::GPUInfo gpu_info_;
+  GPUInfo gpu_info_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChildThread);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_GPU_GPU_CHILD_THREAD_H_

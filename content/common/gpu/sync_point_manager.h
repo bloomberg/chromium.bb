@@ -13,6 +13,8 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 
+namespace content {
+
 // This class manages the sync points, which allow cross-channel
 // synchronization.
 class SyncPointManager : public base::RefCountedThreadSafe<SyncPointManager> {
@@ -50,5 +52,7 @@ class SyncPointManager : public base::RefCountedThreadSafe<SyncPointManager> {
 
   DISALLOW_COPY_AND_ASSIGN(SyncPointManager);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_GPU_SYNC_POINT_MANAGER_H_

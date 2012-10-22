@@ -39,10 +39,12 @@ namespace IPC {
 struct ChannelHandle;
 }
 
+struct GPUCreateCommandBufferConfig;
+
+namespace content {
 class ChildThread;
 class GpuChannel;
 class GpuWatchdog;
-struct GPUCreateCommandBufferConfig;
 class SyncPointManager;
 
 // A GpuChannelManager is a thread responsible for issuing rendering commands
@@ -148,5 +150,7 @@ class GpuChannelManager : public IPC::Listener,
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannelManager);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_GPU_GPU_CHANNEL_MANAGER_H_

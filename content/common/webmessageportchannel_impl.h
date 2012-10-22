@@ -15,6 +15,8 @@
 #include "ipc/ipc_listener.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMessagePortChannel.h"
 
+namespace content {
+
 // This is thread safe.
 class WebMessagePortChannelImpl
     : public WebKit::WebMessagePortChannel,
@@ -73,5 +75,7 @@ class WebMessagePortChannelImpl
 
   DISALLOW_COPY_AND_ASSIGN(WebMessagePortChannelImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_WEBMESSAGEPORTCHANNEL_IMPL_H_

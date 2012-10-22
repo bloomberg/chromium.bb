@@ -12,6 +12,7 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/gl_surface.h"
 
+namespace content {
 class GpuChannelManager;
 
 class TextureImageTransportSurface :
@@ -123,5 +124,7 @@ class TextureImageTransportSurface :
 
   DISALLOW_COPY_AND_ASSIGN(TextureImageTransportSurface);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_GPU_TEXTURE_IMAGE_TRANSPORT_SURFACE_H_

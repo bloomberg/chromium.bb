@@ -40,8 +40,8 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public CommandBufferProxy {
   virtual bool SignalSyncPoint(uint32 sync_point,
                                const base::Closure& callback) OVERRIDE;
   virtual void SetMemoryAllocationChangedCallback(
-      const base::Callback<void(const GpuMemoryAllocationForRenderer&)>&
-          callback) OVERRIDE;
+      const base::Callback<void(
+        const content::GpuMemoryAllocationForRenderer&)>& callback) OVERRIDE;
   virtual bool SetParent(CommandBufferProxy* parent_command_buffer,
                          uint32 parent_texture_id) OVERRIDE;
   virtual void SetChannelErrorCallback(const base::Closure& callback) OVERRIDE;

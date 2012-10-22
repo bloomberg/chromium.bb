@@ -36,6 +36,8 @@
 
 using gpu::gles2::TextureManager;
 
+namespace content {
+
 static bool MakeDecoderContextCurrent(
     const base::WeakPtr<GpuCommandBufferStub> stub) {
   if (!stub) {
@@ -304,3 +306,5 @@ bool GpuVideoDecodeAccelerator::Send(IPC::Message* message) {
   DCHECK(sender_);
   return sender_->Send(message);
 }
+
+}  // namespace content

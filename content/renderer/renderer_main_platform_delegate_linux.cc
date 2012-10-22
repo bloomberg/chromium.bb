@@ -8,8 +8,10 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"
 
+namespace content {
+
 RendererMainPlatformDelegate::RendererMainPlatformDelegate(
-    const content::MainFunctionParams& parameters)
+    const MainFunctionParams& parameters)
     : parameters_(parameters) {
 }
 
@@ -34,7 +36,7 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   //
   // The seccomp sandbox mode 1 (sandbox/linux/seccomp-legacy) and mode 2
   // (sandbox/linux/seccomp-bpf) are started in InitializeSandbox().
-  content::InitializeSandbox();
+  InitializeSandbox();
   return true;
 }
 
@@ -42,3 +44,5 @@ void RendererMainPlatformDelegate::RunSandboxTests() {
   // The sandbox is started in the zygote process: zygote_main_linux.cc
   // http://code.google.com/p/chromium/wiki/LinuxSUIDSandbox
 }
+
+}  // namespace content

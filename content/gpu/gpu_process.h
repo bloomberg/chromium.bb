@@ -7,6 +7,8 @@
 
 #include "content/common/child_process.h"
 
+namespace content {
+
 class GpuProcess : public ChildProcess {
  public:
   GpuProcess();
@@ -15,5 +17,7 @@ class GpuProcess : public ChildProcess {
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuProcess);
 };
+
+}
 
 #endif  // CONTENT_GPU_GPU_PROCESS_H_

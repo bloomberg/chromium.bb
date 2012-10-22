@@ -7,6 +7,8 @@
 #include "ui/gfx/rect.h"
 #include "ui/surface/transport_dib.h"
 
+namespace content {
+
 MockRenderProcess::MockRenderProcess()
     : transport_dib_next_sequence_number_(0),
       enabled_bindings_(0) {
@@ -54,3 +56,4 @@ void MockRenderProcess::FreeTransportDIB(TransportDIB* dib) {
   delete dib;
 }
 
+}  // namespace content

@@ -15,6 +15,8 @@ class WebFileWriter;
 class WebFileWriterClient;
 }
 
+namespace content {
+
 class WebFileSystemImpl : public WebKit::WebFileSystem {
  public:
   WebFileSystemImpl();
@@ -62,5 +64,7 @@ class WebFileSystemImpl : public WebKit::WebFileSystem {
       const WebKit::WebURL& path,
       WebKit::WebFileSystemCallbacks*) OVERRIDE;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_FILEAPI_WEBFILESYSTEM_IMPL_H_

@@ -34,6 +34,8 @@
 #include "base/mac/mac_util.h"
 #endif
 
+namespace content {
+
 RenderProcessImpl::RenderProcessImpl()
     : ALLOW_THIS_IN_INITIALIZER_LIST(shared_mem_cache_cleaner_(
           FROM_HERE, base::TimeDelta::FromSeconds(5),
@@ -246,3 +248,5 @@ void RenderProcessImpl::ClearTransportDIBCache() {
     }
   }
 }
+
+}  // namespace content

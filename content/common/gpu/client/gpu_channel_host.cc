@@ -17,6 +17,8 @@
 using base::AutoLock;
 using base::MessageLoopProxy;
 
+namespace content {
+
 GpuListenerInfo::GpuListenerInfo() {}
 
 GpuListenerInfo::~GpuListenerInfo() {}
@@ -57,7 +59,7 @@ void GpuChannelHost::Connect(
   state_ = kConnected;
 }
 
-void GpuChannelHost::set_gpu_info(const content::GPUInfo& gpu_info) {
+void GpuChannelHost::set_gpu_info(const GPUInfo& gpu_info) {
   gpu_info_ = gpu_info;
 }
 
@@ -65,7 +67,7 @@ void GpuChannelHost::SetStateLost() {
   state_ = kLost;
 }
 
-const content::GPUInfo& GpuChannelHost::gpu_info() const {
+const GPUInfo& GpuChannelHost::gpu_info() const {
   return gpu_info_;
 }
 
@@ -215,7 +217,7 @@ void GpuChannelHost::DestroyCommandBuffer(
 }
 
 bool GpuChannelHost::CollectRenderingStatsForSurface(
-    int surface_id, content::GpuRenderingStats* stats) {
+    int surface_id, GpuRenderingStats* stats) {
   TRACE_EVENT0("gpu", "GpuChannelHost::CollectRenderingStats");
 
   return Send(new GpuChannelMsg_CollectRenderingStatsForSurface(surface_id,
@@ -315,4 +317,4 @@ void GpuChannelHost::MessageFilter::OnChannelError() {
   listeners_.clear();
 }
 
-
+}  // namespace content

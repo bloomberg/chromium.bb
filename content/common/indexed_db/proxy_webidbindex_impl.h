@@ -9,6 +9,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBIndex.h"
 
+namespace content {
+
 class RendererWebIDBIndexImpl : public WebKit::WebIDBIndex {
  public:
   explicit RendererWebIDBIndexImpl(int32 idb_index_id);
@@ -42,4 +44,7 @@ class RendererWebIDBIndexImpl : public WebKit::WebIDBIndex {
   int32 idb_index_id_;
 };
 
+}  // namespace content
+
 #endif  // CONTENT_COMMON_INDEXED_DB_PROXY_WEBIDBINDEX_IMPL_H_
+

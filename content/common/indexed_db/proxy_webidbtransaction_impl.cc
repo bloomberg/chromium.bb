@@ -16,6 +16,8 @@ using WebKit::WebIDBObjectStore;
 using WebKit::WebIDBTransactionCallbacks;
 using WebKit::WebString;
 
+namespace content {
+
 RendererWebIDBTransactionImpl::RendererWebIDBTransactionImpl(
     int32 idb_transaction_id)
     : idb_transaction_id_(idb_transaction_id) {
@@ -65,3 +67,5 @@ void RendererWebIDBTransactionImpl::setCallbacks(
   dispatcher->RegisterWebIDBTransactionCallbacks(callbacks,
                                                  idb_transaction_id_);
 }
+
+}  // namespace content

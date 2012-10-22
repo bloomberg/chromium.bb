@@ -15,15 +15,7 @@
 #include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
 #include "webkit/glue/resource_loader_bridge.h"
 
-class FileSystemDispatcher;
 class MessageLoop;
-class QuotaDispatcher;
-class SocketStreamDispatcher;
-
-namespace content {
-class ChildHistogramMessageFilter;
-class ResourceDispatcher;
-}
 
 namespace IPC {
 class SyncChannel;
@@ -33,6 +25,13 @@ class SyncMessageFilter;
 namespace WebKit {
 class WebFrame;
 }
+
+namespace content {
+class ChildHistogramMessageFilter;
+class FileSystemDispatcher;
+class QuotaDispatcher;
+class ResourceDispatcher;
+class SocketStreamDispatcher;
 
 // The main thread of a child process derives from this class.
 class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
@@ -65,7 +64,7 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   // but on windows the child process directly allocates the block.
   base::SharedMemory* AllocateSharedMemory(size_t buf_size);
 
-  content::ResourceDispatcher* resource_dispatcher();
+  ResourceDispatcher* resource_dispatcher();
 
   SocketStreamDispatcher* socket_stream_dispatcher() {
     return socket_stream_dispatcher_.get();
@@ -83,7 +82,7 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   // lifetime is less than the main thread.
   IPC::SyncMessageFilter* sync_message_filter();
 
-  content::ChildHistogramMessageFilter* child_histogram_message_filter() const {
+  ChildHistogramMessageFilter* child_histogram_message_filter() const {
     return histogram_message_filter_.get();
   }
 
@@ -138,7 +137,7 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   MessageRouter router_;
 
   // Handles resource loads for this process.
-  scoped_ptr<content::ResourceDispatcher> resource_dispatcher_;
+  scoped_ptr<ResourceDispatcher> resource_dispatcher_;
 
   // Handles SocketStream for this process.
   scoped_ptr<SocketStreamDispatcher> socket_stream_dispatcher_;
@@ -153,11 +152,13 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
 
   scoped_ptr<QuotaDispatcher> quota_dispatcher_;
 
-  scoped_refptr<content::ChildHistogramMessageFilter> histogram_message_filter_;
+  scoped_refptr<ChildHistogramMessageFilter> histogram_message_filter_;
 
   base::WeakPtrFactory<ChildThread> channel_connected_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildThread);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_CHILD_THREAD_H_

@@ -16,6 +16,8 @@ using WebKit::WebMessagePortChannelArray;
 using WebKit::WebMessagePortChannelClient;
 using WebKit::WebString;
 
+namespace content {
+
 WebMessagePortChannelImpl::WebMessagePortChannelImpl()
     : client_(NULL),
       route_id_(MSG_ROUTING_NONE),
@@ -248,3 +250,5 @@ void WebMessagePortChannelImpl::OnMessagedQueued() {
 WebMessagePortChannelImpl::Message::Message() {}
 
 WebMessagePortChannelImpl::Message::~Message() {}
+
+}  // namespace content

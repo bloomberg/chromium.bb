@@ -12,6 +12,8 @@
 #include "base/time.h"
 #include "content/common/gpu/gpu_watchdog.h"
 
+namespace content {
+
 // A thread that intermitently sends tasks to a group of watched message loops
 // and deliberately crashes if one of them does not respond after a timeout.
 class GpuWatchdogThread : public base::Thread,
@@ -75,5 +77,7 @@ class GpuWatchdogThread : public base::Thread,
 
   DISALLOW_COPY_AND_ASSIGN(GpuWatchdogThread);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_GPU_GPU_WATCHDOG_THREAD_H_

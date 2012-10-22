@@ -4,6 +4,8 @@
 
 #include "content/common/net/url_request_user_data.h"
 
+namespace content {
+
 URLRequestUserData::URLRequestUserData(int render_process_id,
                                        int render_view_id)
     : render_process_id_(render_process_id),
@@ -14,3 +16,5 @@ URLRequestUserData::~URLRequestUserData() {}
 // static
 const void* URLRequestUserData::kUserDataKey =
     static_cast<const void*>(&URLRequestUserData::kUserDataKey);
+
+}  // namespace content

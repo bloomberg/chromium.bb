@@ -9,6 +9,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace content {
+
 class FakeCommandBufferStub : public GpuCommandBufferStubBase {
  public:
   MemoryManagerState memory_manager_state_;
@@ -682,3 +684,5 @@ TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
       stub3allocation3 != GetMaximumTabAllocation())
     EXPECT_GT(stub3allocation4, stub3allocation3);
 }
+
+}  // namespace content

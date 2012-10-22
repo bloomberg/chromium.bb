@@ -18,6 +18,8 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gl_implementation.h"
 
+namespace content {
+
 ImageTransportSurface::ImageTransportSurface() {}
 
 ImageTransportSurface::~ImageTransportSurface() {}
@@ -336,5 +338,7 @@ gfx::Size PassThroughImageTransportSurface::GetSize() {
 }
 
 PassThroughImageTransportSurface::~PassThroughImageTransportSurface() {}
+
+}  // namespace content
 
 #endif  // defined(ENABLE_GPU)

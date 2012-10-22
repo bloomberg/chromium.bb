@@ -23,6 +23,8 @@ namespace WebKit {
 class WebStorageQuotaCallbacks;
 }
 
+namespace content {
+
 // Dispatches and sends quota related messages sent to/from a child
 // process from/to the main browser process.  There is one instance
 // per child process.  Messages are dispatched on the main child thread.
@@ -68,5 +70,7 @@ class QuotaDispatcher : public IPC::Listener {
 
   DISALLOW_COPY_AND_ASSIGN(QuotaDispatcher);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_QUOTA_DISPATCHER_H_

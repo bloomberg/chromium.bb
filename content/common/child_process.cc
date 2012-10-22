@@ -24,6 +24,8 @@
 static void SigUSR1Handler(int signal) { }
 #endif
 
+namespace content {
+
 ChildProcess* ChildProcess::child_process_;
 
 ChildProcess::ChildProcess()
@@ -124,3 +126,5 @@ void ChildProcess::WaitForDebugger(const std::string& label) {
 #endif  // defined(OS_ANDROID)
 #endif  // defined(OS_POSIX)
 }
+
+}  // namespace content

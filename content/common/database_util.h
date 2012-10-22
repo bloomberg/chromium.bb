@@ -7,6 +7,7 @@
 
 #include "webkit/glue/webkitplatformsupport_impl.h"
 
+namespace content {
 // A class of utility functions used by RendererWebKitPlatformSupportImpl and
 // WorkerWebKitPlatformSupportImpl to handle database file accesses.
 class DatabaseUtil {
@@ -22,5 +23,7 @@ class DatabaseUtil {
   static long long DatabaseGetSpaceAvailable(
       const WebKit::WebString& origin_identifier);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_DATABASE_UTIL_H_

@@ -11,7 +11,10 @@
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 
+// TODO(fsamuel): this is a layering violation. http://crbug.com/157175
+namespace content {
 struct GpuMemoryAllocationForRenderer;
+}
 
 // Client side proxy that forwards messages synchronously to a
 // CommandBufferStub.
@@ -54,8 +57,8 @@ class GPU_EXPORT CommandBufferProxy : public gpu::CommandBuffer {
 
   // Register a callback to invoke whenever we recieve a new memory allocation.
   virtual void SetMemoryAllocationChangedCallback(
-      const base::Callback<void(const GpuMemoryAllocationForRenderer&)>&
-          callback) = 0;
+      const base::Callback<void(
+          const content::GpuMemoryAllocationForRenderer&)>& callback) = 0;
 
   // Reparent a command buffer. TODO(apatrick): going forward, the notion of
   // the parent / child relationship between command buffers is going away in

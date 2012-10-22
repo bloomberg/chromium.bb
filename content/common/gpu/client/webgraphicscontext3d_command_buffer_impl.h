@@ -24,11 +24,6 @@
 #endif
 
 class CommandBufferProxy;
-class GpuChannelHost;
-class GpuChannelHostFactory;
-struct GpuMemoryAllocationForRenderer;
-
-
 namespace gpu {
 
 class TransferBuffer;
@@ -53,6 +48,11 @@ using WebKit::WGC3Dfloat;
 using WebKit::WGC3Dclampf;
 using WebKit::WGC3Dintptr;
 using WebKit::WGC3Dsizeiptr;
+
+namespace content {
+class GpuChannelHost;
+class GpuChannelHostFactory;
+struct GpuMemoryAllocationForRenderer;
 
 // TODO(piman): move this logic to the compositor and remove it from the
 // context...
@@ -87,7 +87,7 @@ class WebGraphicsContext3DCommandBufferImpl
 
   bool Initialize(const Attributes& attributes,
                   bool bind_generates_resources,
-                  content::CauseForGpuLaunch cause);
+                  CauseForGpuLaunch cause);
 
   // The following 3 IDs let one uniquely identify this context.
   // Gets the GPU process ID for this context.
@@ -127,7 +127,7 @@ class WebGraphicsContext3DCommandBufferImpl
       const WebGraphicsContext3D::Attributes& attributes,
       bool bind_generates_resources,
       const GURL& active_url,
-      content::CauseForGpuLaunch cause);
+      CauseForGpuLaunch cause);
 
   // Create & initialize a WebGraphicsContext3DCommandBufferImpl.  Return NULL
   // on any failure.
@@ -728,5 +728,7 @@ class WebGraphicsContext3DCommandBufferImpl
   bool bind_generates_resources_;
   bool use_echo_for_swap_ack_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_GPU_CLIENT_WEBGRAPHICSCONTEXT3D_COMMAND_BUFFER_IMPL_H_

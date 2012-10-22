@@ -12,10 +12,10 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransaction.h"
 
-using content::IndexedDBKey;
-using content::SerializedScriptValue;
 using WebKit::WebVector;
 using WebKit::WebString;
+
+namespace content {
 
 class FakeWebIDBTransaction : public WebKit::WebIDBTransaction {
  public:
@@ -48,3 +48,5 @@ TEST(IndexedDBDispatcherTest, ValueSizeTest) {
     EXPECT_NE(ec, 0);
   }
 }
+
+}  // namespace content

@@ -13,6 +13,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "webkit/glue/webkit_glue.h"
 
+using content::GpuChannelHostFactory;
+
 BrowserWebKitPlatformSupportImpl::BrowserWebKitPlatformSupportImpl() {
   file_utilities_.set_sandbox_enabled(false);
 }

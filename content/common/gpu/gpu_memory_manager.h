@@ -19,19 +19,23 @@
 #include "content/public/common/gpu_memory_stats.h"
 #include "ui/gfx/size.h"
 
+namespace content {
 class GpuCommandBufferStubBase;
-class GpuMemoryTrackingGroup;
+}
 
 #if defined(COMPILER_GCC)
 namespace BASE_HASH_NAMESPACE {
 template<>
-struct hash<GpuCommandBufferStubBase*> {
-  size_t operator()(GpuCommandBufferStubBase* ptr) const {
+struct hash<content::GpuCommandBufferStubBase*> {
+  size_t operator()(content::GpuCommandBufferStubBase* ptr) const {
     return hash<size_t>()(reinterpret_cast<size_t>(ptr));
   }
 };
 } // namespace BASE_HASH_NAMESPACE
 #endif // COMPILER
+
+namespace content {
+class GpuMemoryTrackingGroup;
 
 class CONTENT_EXPORT GpuMemoryManagerClient {
 public:
@@ -175,6 +179,8 @@ size_t GetMaximumTabAllocation() const {
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryManager);
 };
+
+}  // namespace content
 
 #endif
 

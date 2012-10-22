@@ -13,6 +13,8 @@
 
 using webkit_glue::WorkerTaskRunner;
 
+namespace content {
+
 IndexedDBMessageFilter::IndexedDBMessageFilter() :
     main_thread_loop_proxy_(base::MessageLoopProxy::current()) {
 }
@@ -35,3 +37,5 @@ IndexedDBMessageFilter::~IndexedDBMessageFilter() {}
 void IndexedDBMessageFilter::DispatchMessage(const IPC::Message& msg) {
   IndexedDBDispatcher::ThreadSpecificInstance()->OnMessageReceived(msg);
 }
+
+}  // namespace content

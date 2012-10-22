@@ -18,6 +18,8 @@ namespace skia {
 class PlatformCanvas;
 }
 
+namespace content {
+
 // A abstract interface representing the renderer end of the browser<->renderer
 // connection. The opposite end is the RenderProcessHost. This is a singleton
 // object for each renderer.
@@ -69,5 +71,7 @@ class RenderProcess : public ChildProcess {
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderProcess);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_RENDER_PROCESS_H_

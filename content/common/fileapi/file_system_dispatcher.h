@@ -24,6 +24,8 @@ struct PlatformFileInfo;
 class FilePath;
 class GURL;
 
+namespace content {
+
 // Dispatches and sends file system related messages sent to/from a child
 // process from/to the main browser process.  There is one instance
 // per child process.  Messages are dispatched on the main child thread.
@@ -115,5 +117,7 @@ class FileSystemDispatcher : public IPC::Listener {
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemDispatcher);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_FILEAPI_FILE_SYSTEM_DISPATCHER_H_

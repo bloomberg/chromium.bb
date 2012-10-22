@@ -76,8 +76,8 @@ bool PpapiCommandBufferProxy::SignalSyncPoint(uint32 sync_point,
 }
 
 void PpapiCommandBufferProxy::SetMemoryAllocationChangedCallback(
-      const base::Callback<void(const GpuMemoryAllocationForRenderer&)>&
-          callback) {
+    const base::Callback<void(
+      const content::GpuMemoryAllocationForRenderer&)>& callback) {
   NOTIMPLEMENTED();
 }
 

@@ -12,6 +12,8 @@
 
 using base::debug::TraceLog;
 
+namespace content {
+
 ChildTraceMessageFilter::ChildTraceMessageFilter() : channel_(NULL) {}
 
 void ChildTraceMessageFilter::OnFilterAdded(IPC::Channel* channel) {
@@ -103,3 +105,5 @@ void ChildTraceMessageFilter::OnTraceNotification(int notification) {
 
   channel_->Send(new ChildProcessHostMsg_TraceNotification(notification));
 }
+
+}  // namespace content

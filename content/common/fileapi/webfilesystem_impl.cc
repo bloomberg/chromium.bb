@@ -21,6 +21,8 @@ using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebVector;
 
+namespace content {
+
 WebFileSystemImpl::WebFileSystemImpl() {
 }
 
@@ -127,3 +129,5 @@ void WebFileSystemImpl::createSnapshotFileAndReadMetadata(
       GURL(blobURL), GURL(path),
       new WebFileSystemCallbackDispatcher(callbacks));
 }
+
+}  // namespace content

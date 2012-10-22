@@ -48,6 +48,8 @@ bool remove_tracking = false;
 }  // namespace
 #endif
 
+namespace content {
+
 // A simple MessageFilter that will ignore all messages and respond to sync
 // messages with an error when is_listening_ is false.
 class IsListeningFilter : public IPC::ChannelProxy::MessageFilter {
@@ -226,3 +228,5 @@ void PluginChannelHost::OnChannelError() {
 
   proxies_.clear();
 }
+
+}  // namespace content

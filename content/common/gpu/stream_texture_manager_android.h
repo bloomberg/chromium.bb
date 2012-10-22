@@ -13,7 +13,6 @@
 #include "gpu/command_buffer/service/stream_texture.h"
 #include "gpu/command_buffer/service/stream_texture_manager.h"
 
-class GpuChannel;
 struct GpuStreamTextureMsg_MatrixChanged_Params;
 
 namespace gfx {
@@ -21,6 +20,7 @@ class Size;
 }
 
 namespace content {
+class GpuChannel;
 
 class SurfaceTextureBridge;
 

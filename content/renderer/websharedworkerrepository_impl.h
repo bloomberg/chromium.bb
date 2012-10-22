@@ -13,6 +13,8 @@ namespace WebKit {
 class WebSharedWorker;
 }
 
+namespace content {
+
 class WebSharedWorkerRepositoryImpl : public WebKit::WebSharedWorkerRepository {
  public:
   WebSharedWorkerRepositoryImpl();
@@ -30,5 +32,7 @@ class WebSharedWorkerRepositoryImpl : public WebKit::WebSharedWorkerRepository {
   typedef base::hash_set<DocumentID> DocumentSet;
   DocumentSet shared_worker_parents_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_WEBSHAREDWORKERREPOSITORY_IMPL_H_

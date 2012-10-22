@@ -15,6 +15,8 @@ namespace WebKit {
 class WebFileSystemCallbacks;
 }
 
+namespace content {
+
 class WebFileSystemCallbackDispatcher
     : public fileapi::FileSystemCallbackDispatcher {
  public:
@@ -37,5 +39,7 @@ class WebFileSystemCallbackDispatcher
  private:
   WebKit::WebFileSystemCallbacks* callbacks_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_FILEAPI_WEBFILESYSTEM_CALLBACK_DISPATCHER_H_

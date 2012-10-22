@@ -34,6 +34,9 @@
 
 using content::BrowserGpuChannelHostFactory;
 using content::GLHelper;
+using content::GpuChannelHostFactory;
+using content::WebGraphicsContext3DCommandBufferImpl;
+using content::WebGraphicsContext3DSwapBuffersClient;
 
 namespace {
 

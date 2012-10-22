@@ -10,9 +10,8 @@
 #include "ui/base/layout.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
 
-class GpuChannelHostFactory;
-
 namespace content {
+class GpuChannelHostFactory;
 
 // This is a specialization of WebKitPlatformSupportImpl that implements the
 // embedder functions in terms of ContentClient.

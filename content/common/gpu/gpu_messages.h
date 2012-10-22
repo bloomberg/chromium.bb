@@ -174,7 +174,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::GPUVideoMemoryUsageStats)
   IPC_STRUCT_TRAITS_MEMBER(process_map)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(GpuMemoryAllocationForRenderer)
+IPC_STRUCT_TRAITS_BEGIN(content::GpuMemoryAllocationForRenderer)
   IPC_STRUCT_TRAITS_MEMBER(gpu_resource_size_in_bytes)
   IPC_STRUCT_TRAITS_MEMBER(suggest_have_backbuffer)
 IPC_STRUCT_TRAITS_END()
@@ -554,7 +554,7 @@ IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_EnsureBackbuffer)
 
 // Sent to proxy when the gpu memory manager changes its memory allocation.
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SetMemoryAllocation,
-                    GpuMemoryAllocationForRenderer /* allocation */)
+                    content::GpuMemoryAllocationForRenderer /* allocation */)
 
 // Sent to stub when proxy is assigned a memory allocation changed callback.
 IPC_MESSAGE_ROUTED1(

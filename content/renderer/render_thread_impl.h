@@ -22,13 +22,9 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ui/gfx/native_widget_types.h"
 
-class AppCacheDispatcher;
 class DBMessageFilter;
-class GpuChannelHost;
-class IndexedDBDispatcher;
 class SkBitmap;
 class WebDatabaseObserverImpl;
-class WebGraphicsContext3DCommandBufferImpl;
 struct ViewMsg_New_Params;
 
 namespace WebKit {
@@ -57,18 +53,22 @@ class Extension;
 
 namespace content {
 
+class AppCacheDispatcher;
 class AudioInputMessageFilter;
 class AudioMessageFilter;
 class AudioRendererMixerManager;
 class CompositorThread;
 class DevToolsAgentFilter;
 class DomStorageDispatcher;
+class GpuChannelHost;
+class IndexedDBDispatcher;
 class MediaStreamCenter;
 class MediaStreamDependencyFactory;
 class P2PSocketDispatcher;
 class RendererWebKitPlatformSupportImpl;
 class RenderProcessObserver;
 class VideoCaptureImplManager;
+class WebGraphicsContext3DCommandBufferImpl;
 
 namespace old {
 class BrowserPluginChannelManager;

@@ -42,7 +42,7 @@ class BrowserWebKitPlatformSupportImpl :
                                  bool sync_dir);
 
  protected:
-  virtual GpuChannelHostFactory* GetGpuChannelHostFactory() OVERRIDE;
+  virtual content::GpuChannelHostFactory* GetGpuChannelHostFactory() OVERRIDE;
 
  private:
   webkit_glue::WebFileUtilitiesImpl file_utilities_;

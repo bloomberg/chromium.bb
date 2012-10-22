@@ -22,6 +22,8 @@ using gpu::gles2::ContextGroup;
 using gpu::gles2::TextureManager;
 typedef TextureManager::TextureInfo TextureInfo;
 
+namespace content {
+
 TextureImageTransportSurface::Texture::Texture()
     : client_id(0),
       sent_to_client(false) {
@@ -305,13 +307,13 @@ bool TextureImageTransportSurface::PostSubBuffer(
     std::vector<gfx::Rect> regions_to_copy;
     GetRegionsToCopy(previous_damage_rect_, new_damage_rect, &regions_to_copy);
 
-    content::ScopedFrameBufferBinder fbo_binder(fbo_id_);
+    ScopedFrameBufferBinder fbo_binder(fbo_id_);
     glFramebufferTexture2DEXT(GL_FRAMEBUFFER,
         GL_COLOR_ATTACHMENT0,
         GL_TEXTURE_2D,
         front_texture_service_id,
         0);
-    content::ScopedTextureBinder texture_binder(back_texture_service_id);
+    ScopedTextureBinder texture_binder(back_texture_service_id);
 
     for (size_t i = 0; i < regions_to_copy.size(); ++i) {
       const gfx::Rect& region_to_copy = regions_to_copy[i];
@@ -445,7 +447,7 @@ void TextureImageTransportSurface::ReleaseTexture(int id) {
   info->SetServiceId(0);
 
   {
-    content::ScopedFrameBufferBinder fbo_binder(fbo_id_);
+    ScopedFrameBufferBinder fbo_binder(fbo_id_);
     glDeleteTextures(1, &service_id);
   }
   glFlush();
@@ -488,7 +490,7 @@ void TextureImageTransportSurface::CreateBackTexture(const gfx::Size& size) {
   }
 
   {
-    content::ScopedTextureBinder texture_binder(service_id);
+    ScopedTextureBinder texture_binder(service_id);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -515,7 +517,7 @@ void TextureImageTransportSurface::AttachBackTextureToFBO() {
   TextureInfo* info = textures_[back()].info;
   DCHECK(info);
 
-  content::ScopedFrameBufferBinder fbo_binder(fbo_id_);
+  ScopedFrameBufferBinder fbo_binder(fbo_id_);
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER,
       GL_COLOR_ATTACHMENT0,
       GL_TEXTURE_2D,
@@ -546,3 +548,5 @@ void TextureImageTransportSurface::ReleaseParentStub() {
   }
   parent_stub_ = NULL;
 }
+
+}  // namespace content

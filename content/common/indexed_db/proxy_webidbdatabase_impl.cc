@@ -29,6 +29,8 @@ using WebKit::WebString;
 using WebKit::WebVector;
 using webkit_glue::WorkerTaskRunner;
 
+namespace content {
+
 RendererWebIDBDatabaseImpl::RendererWebIDBDatabaseImpl(int32 idb_database_id)
     : idb_database_id_(idb_database_id) {
 }
@@ -97,7 +99,7 @@ WebKit::WebIDBObjectStore* RendererWebIDBDatabaseImpl::createObjectStore(
   IndexedDBHostMsg_DatabaseCreateObjectStore_Params params;
   params.id = id;
   params.name = name;
-  params.key_path = content::IndexedDBKeyPath(key_path);
+  params.key_path = IndexedDBKeyPath(key_path);
   params.auto_increment = auto_increment;
   params.transaction_id = IndexedDBDispatcher::TransactionId(transaction);
   params.idb_database_id = idb_database_id_;
@@ -154,3 +156,5 @@ void RendererWebIDBDatabaseImpl::close() {
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBDatabaseClose(idb_database_id_);
 }
+
+}  // namespace content

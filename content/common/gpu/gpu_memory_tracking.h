@@ -10,6 +10,8 @@
 #include "base/basictypes.h"
 #include "content/common/gpu/gpu_memory_manager.h"
 
+namespace content {
+
 // All decoders in a context group point to a single GpuMemoryTrackingGroup,
 // which tracks GPU resource consumption for the entire context group.
 class GpuMemoryTrackingGroup {
@@ -47,6 +49,8 @@ class GpuMemoryTrackingGroup {
   size_t size_;
   GpuMemoryManager* memory_manager_;
 };
+
+}  // namespace content
 
 #endif
 
