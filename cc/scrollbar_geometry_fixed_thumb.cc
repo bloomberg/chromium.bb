@@ -16,18 +16,18 @@ using WebKit::WebScrollbarThemeGeometry;
 
 namespace cc {
 
-scoped_ptr<CCScrollbarGeometryFixedThumb> CCScrollbarGeometryFixedThumb::create(scoped_ptr<WebScrollbarThemeGeometry> geometry)
+scoped_ptr<ScrollbarGeometryFixedThumb> ScrollbarGeometryFixedThumb::create(scoped_ptr<WebScrollbarThemeGeometry> geometry)
 {
-    return make_scoped_ptr(new CCScrollbarGeometryFixedThumb(geometry.Pass()));
+    return make_scoped_ptr(new ScrollbarGeometryFixedThumb(geometry.Pass()));
 }
 
-CCScrollbarGeometryFixedThumb::~CCScrollbarGeometryFixedThumb()
+ScrollbarGeometryFixedThumb::~ScrollbarGeometryFixedThumb()
 {
 }
 
-void CCScrollbarGeometryFixedThumb::update(WebScrollbar* scrollbar)
+void ScrollbarGeometryFixedThumb::update(WebScrollbar* scrollbar)
 {
-    int length = CCScrollbarGeometryStub::thumbLength(scrollbar);
+    int length = ScrollbarGeometryStub::thumbLength(scrollbar);
 
     if (scrollbar->orientation() == WebScrollbar::Horizontal)
         m_thumbSize = IntSize(length, scrollbar->size().height);
@@ -35,21 +35,21 @@ void CCScrollbarGeometryFixedThumb::update(WebScrollbar* scrollbar)
         m_thumbSize = IntSize(scrollbar->size().width, length);
 }
 
-WebScrollbarThemeGeometry* CCScrollbarGeometryFixedThumb::clone() const
+WebScrollbarThemeGeometry* ScrollbarGeometryFixedThumb::clone() const
 {
-    CCScrollbarGeometryFixedThumb* geometry = new CCScrollbarGeometryFixedThumb(make_scoped_ptr(CCScrollbarGeometryStub::clone()));
+    ScrollbarGeometryFixedThumb* geometry = new ScrollbarGeometryFixedThumb(make_scoped_ptr(ScrollbarGeometryStub::clone()));
     geometry->m_thumbSize = m_thumbSize;
     return geometry;
 }
 
-int CCScrollbarGeometryFixedThumb::thumbLength(WebScrollbar* scrollbar)
+int ScrollbarGeometryFixedThumb::thumbLength(WebScrollbar* scrollbar)
 {
     if (scrollbar->orientation() == WebScrollbar::Horizontal)
         return m_thumbSize.width();
     return m_thumbSize.height();
 }
 
-int CCScrollbarGeometryFixedThumb::thumbPosition(WebScrollbar* scrollbar)
+int ScrollbarGeometryFixedThumb::thumbPosition(WebScrollbar* scrollbar)
 {
     if (scrollbar->enabled()) {
         float size = scrollbar->maximum();
@@ -61,7 +61,7 @@ int CCScrollbarGeometryFixedThumb::thumbPosition(WebScrollbar* scrollbar)
     }
     return 0;
 }
-void CCScrollbarGeometryFixedThumb::splitTrack(WebScrollbar* scrollbar, const WebRect& unconstrainedTrackRect, WebRect& beforeThumbRect, WebRect& thumbRect, WebRect& afterThumbRect)
+void ScrollbarGeometryFixedThumb::splitTrack(WebScrollbar* scrollbar, const WebRect& unconstrainedTrackRect, WebRect& beforeThumbRect, WebRect& thumbRect, WebRect& afterThumbRect)
 {
     // This is a reimplementation of ScrollbarThemeComposite::splitTrack.
     // Because the WebScrollbarThemeGeometry functions call down to native
@@ -86,8 +86,8 @@ void CCScrollbarGeometryFixedThumb::splitTrack(WebScrollbar* scrollbar, const We
     }
 }
 
-CCScrollbarGeometryFixedThumb::CCScrollbarGeometryFixedThumb(scoped_ptr<WebScrollbarThemeGeometry> geometry)
-    : CCScrollbarGeometryStub(geometry.Pass())
+ScrollbarGeometryFixedThumb::ScrollbarGeometryFixedThumb(scoped_ptr<WebScrollbarThemeGeometry> geometry)
+    : ScrollbarGeometryStub(geometry.Pass())
 {
 }
 

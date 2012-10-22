@@ -8,23 +8,23 @@
 
 namespace cc {
 
-MockCCQuadCuller::MockCCQuadCuller()
+MockQuadCuller::MockQuadCuller()
     : m_activeQuadList(m_quadListStorage)
     , m_activeSharedQuadStateList(m_sharedQuadStateStorage)
 {
 }
 
-MockCCQuadCuller::MockCCQuadCuller(CCQuadList& externalQuadList, CCSharedQuadStateList& externalSharedQuadStateList)
+MockQuadCuller::MockQuadCuller(QuadList& externalQuadList, SharedQuadStateList& externalSharedQuadStateList)
     : m_activeQuadList(externalQuadList)
     , m_activeSharedQuadStateList(externalSharedQuadStateList)
 {
 }
 
-MockCCQuadCuller::~MockCCQuadCuller()
+MockQuadCuller::~MockQuadCuller()
 {
 }
 
-bool MockCCQuadCuller::append(scoped_ptr<CCDrawQuad> drawQuad, CCAppendQuadsData&)
+bool MockQuadCuller::append(scoped_ptr<DrawQuad> drawQuad, AppendQuadsData&)
 {
     if (!drawQuad->quadRect().IsEmpty()) {
         m_activeQuadList.append(drawQuad.Pass());
@@ -33,11 +33,11 @@ bool MockCCQuadCuller::append(scoped_ptr<CCDrawQuad> drawQuad, CCAppendQuadsData
     return false;
 }
 
-CCSharedQuadState* MockCCQuadCuller::useSharedQuadState(scoped_ptr<CCSharedQuadState> sharedQuadState)
+SharedQuadState* MockQuadCuller::useSharedQuadState(scoped_ptr<SharedQuadState> sharedQuadState)
 {
     sharedQuadState->id = m_activeSharedQuadStateList.size();
 
-    CCSharedQuadState* rawPtr = sharedQuadState.get();
+    SharedQuadState* rawPtr = sharedQuadState.get();
     m_activeSharedQuadStateList.append(sharedQuadState.Pass());
     return rawPtr;
 }

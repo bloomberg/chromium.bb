@@ -10,7 +10,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
 
 namespace cc {
-class CCLayerTreeHost;
+class LayerTreeHost;
 }
 
 namespace WebKit {
@@ -18,7 +18,7 @@ class WebLayer;
 class WebLayerTreeViewClient;
 class WebLayerTreeViewClientAdapter;
 
-class WebLayerTreeViewImpl : public WebLayerTreeView, public cc::CCLayerTreeHostClient {
+class WebLayerTreeViewImpl : public WebLayerTreeView, public cc::LayerTreeHostClient {
 public:
     explicit WebLayerTreeViewImpl(WebLayerTreeViewClient*);
     virtual ~WebLayerTreeViewImpl();
@@ -50,7 +50,7 @@ public:
     virtual void setFontAtlas(SkBitmap, WebRect asciiToRectTable[128], int fontHeight) OVERRIDE;
     virtual void loseCompositorContext(int numTimes) OVERRIDE;
 
-    // cc::CCLayerTreeHostClient implementation.
+    // cc::LayerTreeHostClient implementation.
     virtual void willBeginFrame() OVERRIDE;
     virtual void didBeginFrame() OVERRIDE;
     virtual void animate(double monotonicFrameBeginTime) OVERRIDE;
@@ -58,7 +58,7 @@ public:
     virtual void applyScrollAndScale(const cc::IntSize& scrollDelta, float pageScale) OVERRIDE;
     virtual scoped_ptr<WebCompositorOutputSurface> createOutputSurface() OVERRIDE;
     virtual void didRecreateOutputSurface(bool success) OVERRIDE;
-    virtual scoped_ptr<cc::CCInputHandler> createInputHandler() OVERRIDE;
+    virtual scoped_ptr<cc::InputHandler> createInputHandler() OVERRIDE;
     virtual void willCommit() OVERRIDE;
     virtual void didCommit() OVERRIDE;
     virtual void didCommitAndDrawFrame() OVERRIDE;
@@ -67,7 +67,7 @@ public:
 
 private:
     WebLayerTreeViewClient* m_client;
-    scoped_ptr<cc::CCLayerTreeHost> m_layerTreeHost;
+    scoped_ptr<cc::LayerTreeHost> m_layerTreeHost;
 };
 
 } // namespace WebKit

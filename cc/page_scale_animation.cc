@@ -13,12 +13,12 @@
 
 namespace cc {
 
-scoped_ptr<CCPageScaleAnimation> CCPageScaleAnimation::create(const IntSize& scrollStart, float pageScaleStart, const IntSize& windowSize, const IntSize& contentSize, double startTime)
+scoped_ptr<PageScaleAnimation> PageScaleAnimation::create(const IntSize& scrollStart, float pageScaleStart, const IntSize& windowSize, const IntSize& contentSize, double startTime)
 {
-    return make_scoped_ptr(new CCPageScaleAnimation(scrollStart, pageScaleStart, windowSize, contentSize, startTime));
+    return make_scoped_ptr(new PageScaleAnimation(scrollStart, pageScaleStart, windowSize, contentSize, startTime));
 }
 
-CCPageScaleAnimation::CCPageScaleAnimation(const IntSize& scrollStart, float pageScaleStart, const IntSize& windowSize, const IntSize& contentSize, double startTime)
+PageScaleAnimation::PageScaleAnimation(const IntSize& scrollStart, float pageScaleStart, const IntSize& windowSize, const IntSize& contentSize, double startTime)
     : m_scrollStart(scrollStart)
     , m_pageScaleStart(pageScaleStart)
     , m_windowSize(windowSize)
@@ -31,7 +31,7 @@ CCPageScaleAnimation::CCPageScaleAnimation(const IntSize& scrollStart, float pag
 {
 }
 
-void CCPageScaleAnimation::zoomTo(const IntSize& finalScroll, float finalPageScale, double duration)
+void PageScaleAnimation::zoomTo(const IntSize& finalScroll, float finalPageScale, double duration)
 {
     if (m_pageScaleStart != finalPageScale) {
         // For uniform-looking zooming, infer the anchor (point that remains in
@@ -66,7 +66,7 @@ void CCPageScaleAnimation::zoomTo(const IntSize& finalScroll, float finalPageSca
     }
 }
 
-void CCPageScaleAnimation::zoomWithAnchor(const IntSize& anchor, float finalPageScale, double duration)
+void PageScaleAnimation::zoomWithAnchor(const IntSize& anchor, float finalPageScale, double duration)
 {
     m_scrollEnd = m_scrollStart + anchor;
     m_scrollEnd.scale(finalPageScale / m_pageScaleStart);
@@ -84,22 +84,22 @@ void CCPageScaleAnimation::zoomWithAnchor(const IntSize& anchor, float finalPage
     m_anchorMode = true;
 }
 
-IntSize CCPageScaleAnimation::scrollOffsetAtTime(double time) const
+IntSize PageScaleAnimation::scrollOffsetAtTime(double time) const
 {
     return scrollOffsetAtRatio(progressRatioForTime(time));
 }
 
-float CCPageScaleAnimation::pageScaleAtTime(double time) const
+float PageScaleAnimation::pageScaleAtTime(double time) const
 {
     return pageScaleAtRatio(progressRatioForTime(time));
 }
 
-bool CCPageScaleAnimation::isAnimationCompleteAtTime(double time) const
+bool PageScaleAnimation::isAnimationCompleteAtTime(double time) const
 {
     return time >= endTime();
 }
 
-float CCPageScaleAnimation::progressRatioForTime(double time) const
+float PageScaleAnimation::progressRatioForTime(double time) const
 {
     if (isAnimationCompleteAtTime(time))
         return 1;
@@ -107,7 +107,7 @@ float CCPageScaleAnimation::progressRatioForTime(double time) const
     return (time - m_startTime) / m_duration;
 }
 
-IntSize CCPageScaleAnimation::scrollOffsetAtRatio(float ratio) const
+IntSize PageScaleAnimation::scrollOffsetAtRatio(float ratio) const
 {
     if (ratio <= 0)
         return m_scrollStart;
@@ -137,7 +137,7 @@ IntSize CCPageScaleAnimation::scrollOffsetAtRatio(float ratio) const
     return currentScrollOffset;
 }
 
-float CCPageScaleAnimation::pageScaleAtRatio(float ratio) const
+float PageScaleAnimation::pageScaleAtRatio(float ratio) const
 {
     if (ratio <= 0)
         return m_pageScaleStart;

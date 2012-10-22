@@ -29,123 +29,123 @@ void insertKeyframe(scoped_ptr<Keyframe> keyframe, ScopedPtrVector<Keyframe>& ke
     keyframes.append(keyframe.Pass());
 }
 
-scoped_ptr<CCTimingFunction> cloneTimingFunction(const CCTimingFunction* timingFunction)
+scoped_ptr<TimingFunction> cloneTimingFunction(const TimingFunction* timingFunction)
 {
     DCHECK(timingFunction);
-    scoped_ptr<CCAnimationCurve> curve(timingFunction->clone());
-    return scoped_ptr<CCTimingFunction>(static_cast<CCTimingFunction*>(curve.release()));
+    scoped_ptr<AnimationCurve> curve(timingFunction->clone());
+    return scoped_ptr<TimingFunction>(static_cast<TimingFunction*>(curve.release()));
 }
 
 } // namespace
 
-CCKeyframe::CCKeyframe(double time, scoped_ptr<CCTimingFunction> timingFunction)
+Keyframe::Keyframe(double time, scoped_ptr<TimingFunction> timingFunction)
     : m_time(time)
     , m_timingFunction(timingFunction.Pass())
 {
 }
 
-CCKeyframe::~CCKeyframe()
+Keyframe::~Keyframe()
 {
 }
 
-double CCKeyframe::time() const
+double Keyframe::time() const
 {
     return m_time;
 }
 
-const CCTimingFunction* CCKeyframe::timingFunction() const
+const TimingFunction* Keyframe::timingFunction() const
 {
     return m_timingFunction.get();
 }
 
-scoped_ptr<CCFloatKeyframe> CCFloatKeyframe::create(double time, float value, scoped_ptr<CCTimingFunction> timingFunction)
+scoped_ptr<FloatKeyframe> FloatKeyframe::create(double time, float value, scoped_ptr<TimingFunction> timingFunction)
 {
-    return make_scoped_ptr(new CCFloatKeyframe(time, value, timingFunction.Pass()));
+    return make_scoped_ptr(new FloatKeyframe(time, value, timingFunction.Pass()));
 }
 
-CCFloatKeyframe::CCFloatKeyframe(double time, float value, scoped_ptr<CCTimingFunction> timingFunction)
-    : CCKeyframe(time, timingFunction.Pass())
+FloatKeyframe::FloatKeyframe(double time, float value, scoped_ptr<TimingFunction> timingFunction)
+    : Keyframe(time, timingFunction.Pass())
     , m_value(value)
 {
 }
 
-CCFloatKeyframe::~CCFloatKeyframe()
+FloatKeyframe::~FloatKeyframe()
 {
 }
 
-float CCFloatKeyframe::value() const
+float FloatKeyframe::value() const
 {
     return m_value;
 }
 
-scoped_ptr<CCFloatKeyframe> CCFloatKeyframe::clone() const
+scoped_ptr<FloatKeyframe> FloatKeyframe::clone() const
 {
-    scoped_ptr<CCTimingFunction> func;
+    scoped_ptr<TimingFunction> func;
     if (timingFunction())
         func = cloneTimingFunction(timingFunction());
-    return CCFloatKeyframe::create(time(), value(), func.Pass());
+    return FloatKeyframe::create(time(), value(), func.Pass());
 }
 
-scoped_ptr<CCTransformKeyframe> CCTransformKeyframe::create(double time, const WebKit::WebTransformOperations& value, scoped_ptr<CCTimingFunction> timingFunction)
+scoped_ptr<TransformKeyframe> TransformKeyframe::create(double time, const WebKit::WebTransformOperations& value, scoped_ptr<TimingFunction> timingFunction)
 {
-    return make_scoped_ptr(new CCTransformKeyframe(time, value, timingFunction.Pass()));
+    return make_scoped_ptr(new TransformKeyframe(time, value, timingFunction.Pass()));
 }
 
-CCTransformKeyframe::CCTransformKeyframe(double time, const WebKit::WebTransformOperations& value, scoped_ptr<CCTimingFunction> timingFunction)
-    : CCKeyframe(time, timingFunction.Pass())
+TransformKeyframe::TransformKeyframe(double time, const WebKit::WebTransformOperations& value, scoped_ptr<TimingFunction> timingFunction)
+    : Keyframe(time, timingFunction.Pass())
     , m_value(value)
 {
 }
 
-CCTransformKeyframe::~CCTransformKeyframe()
+TransformKeyframe::~TransformKeyframe()
 {
 }
 
-const WebKit::WebTransformOperations& CCTransformKeyframe::value() const
+const WebKit::WebTransformOperations& TransformKeyframe::value() const
 {
     return m_value;
 }
 
-scoped_ptr<CCTransformKeyframe> CCTransformKeyframe::clone() const
+scoped_ptr<TransformKeyframe> TransformKeyframe::clone() const
 {
-    scoped_ptr<CCTimingFunction> func;
+    scoped_ptr<TimingFunction> func;
     if (timingFunction())
         func = cloneTimingFunction(timingFunction());
-    return CCTransformKeyframe::create(time(), value(), func.Pass());
+    return TransformKeyframe::create(time(), value(), func.Pass());
 }
 
-scoped_ptr<CCKeyframedFloatAnimationCurve> CCKeyframedFloatAnimationCurve::create()
+scoped_ptr<KeyframedFloatAnimationCurve> KeyframedFloatAnimationCurve::create()
 {
-    return make_scoped_ptr(new CCKeyframedFloatAnimationCurve);
+    return make_scoped_ptr(new KeyframedFloatAnimationCurve);
 }
 
-CCKeyframedFloatAnimationCurve::CCKeyframedFloatAnimationCurve()
-{
-}
-
-CCKeyframedFloatAnimationCurve::~CCKeyframedFloatAnimationCurve()
+KeyframedFloatAnimationCurve::KeyframedFloatAnimationCurve()
 {
 }
 
-void CCKeyframedFloatAnimationCurve::addKeyframe(scoped_ptr<CCFloatKeyframe> keyframe)
+KeyframedFloatAnimationCurve::~KeyframedFloatAnimationCurve()
+{
+}
+
+void KeyframedFloatAnimationCurve::addKeyframe(scoped_ptr<FloatKeyframe> keyframe)
 {
     insertKeyframe(keyframe.Pass(), m_keyframes);
 }
 
-double CCKeyframedFloatAnimationCurve::duration() const
+double KeyframedFloatAnimationCurve::duration() const
 {
     return m_keyframes.last()->time() - m_keyframes.first()->time();
 }
 
-scoped_ptr<CCAnimationCurve> CCKeyframedFloatAnimationCurve::clone() const
+scoped_ptr<AnimationCurve> KeyframedFloatAnimationCurve::clone() const
 {
-    scoped_ptr<CCKeyframedFloatAnimationCurve> toReturn(CCKeyframedFloatAnimationCurve::create());
+    scoped_ptr<KeyframedFloatAnimationCurve> toReturn(KeyframedFloatAnimationCurve::create());
     for (size_t i = 0; i < m_keyframes.size(); ++i)
         toReturn->addKeyframe(m_keyframes[i]->clone());
-    return toReturn.PassAs<CCAnimationCurve>();
+    return toReturn.PassAs<AnimationCurve>();
 }
 
-float CCKeyframedFloatAnimationCurve::getValue(double t) const
+float KeyframedFloatAnimationCurve::getValue(double t) const
 {
     if (t <= m_keyframes.first()->time())
         return m_keyframes.first()->value();
@@ -167,38 +167,38 @@ float CCKeyframedFloatAnimationCurve::getValue(double t) const
     return m_keyframes[i]->value() + (m_keyframes[i+1]->value() - m_keyframes[i]->value()) * progress;
 }
 
-scoped_ptr<CCKeyframedTransformAnimationCurve> CCKeyframedTransformAnimationCurve::create()
+scoped_ptr<KeyframedTransformAnimationCurve> KeyframedTransformAnimationCurve::create()
 {
-    return make_scoped_ptr(new CCKeyframedTransformAnimationCurve);
+    return make_scoped_ptr(new KeyframedTransformAnimationCurve);
 }
 
-CCKeyframedTransformAnimationCurve::CCKeyframedTransformAnimationCurve()
-{
-}
-
-CCKeyframedTransformAnimationCurve::~CCKeyframedTransformAnimationCurve()
+KeyframedTransformAnimationCurve::KeyframedTransformAnimationCurve()
 {
 }
 
-void CCKeyframedTransformAnimationCurve::addKeyframe(scoped_ptr<CCTransformKeyframe> keyframe)
+KeyframedTransformAnimationCurve::~KeyframedTransformAnimationCurve()
+{
+}
+
+void KeyframedTransformAnimationCurve::addKeyframe(scoped_ptr<TransformKeyframe> keyframe)
 {
     insertKeyframe(keyframe.Pass(), m_keyframes);
 }
 
-double CCKeyframedTransformAnimationCurve::duration() const
+double KeyframedTransformAnimationCurve::duration() const
 {
     return m_keyframes.last()->time() - m_keyframes.first()->time();
 }
 
-scoped_ptr<CCAnimationCurve> CCKeyframedTransformAnimationCurve::clone() const
+scoped_ptr<AnimationCurve> KeyframedTransformAnimationCurve::clone() const
 {
-    scoped_ptr<CCKeyframedTransformAnimationCurve> toReturn(CCKeyframedTransformAnimationCurve::create());
+    scoped_ptr<KeyframedTransformAnimationCurve> toReturn(KeyframedTransformAnimationCurve::create());
     for (size_t i = 0; i < m_keyframes.size(); ++i)
         toReturn->addKeyframe(m_keyframes[i]->clone());
-    return toReturn.PassAs<CCAnimationCurve>();
+    return toReturn.PassAs<AnimationCurve>();
 }
 
-WebTransformationMatrix CCKeyframedTransformAnimationCurve::getValue(double t) const
+WebTransformationMatrix KeyframedTransformAnimationCurve::getValue(double t) const
 {
     if (t <= m_keyframes.first()->time())
         return m_keyframes.first()->value().apply();

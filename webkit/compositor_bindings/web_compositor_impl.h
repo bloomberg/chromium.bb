@@ -8,7 +8,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCompositor.h"
 
 namespace cc {
-class CCThread;
+class Thread;
 }
 
 namespace WebKit {
@@ -25,8 +25,8 @@ public:
 
 private:
     static bool s_initialized;
-    static cc::CCThread* s_mainThread;
-    static cc::CCThread* s_implThread;
+    static cc::Thread* s_mainThread;
+    static cc::Thread* s_implThread;
 };
 
 }

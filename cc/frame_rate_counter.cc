@@ -13,9 +13,9 @@
 
 namespace cc {
 
-const double CCFrameRateCounter::kFrameTooFast = 1.0 / 70.0; // measured in seconds
-const double CCFrameRateCounter::kFrameTooSlow = 1.0 / 12.0;
-const double CCFrameRateCounter::kDroppedFrameTime = 1.0 / 50.0;
+const double FrameRateCounter::kFrameTooFast = 1.0 / 70.0; // measured in seconds
+const double FrameRateCounter::kFrameTooSlow = 1.0 / 12.0;
+const double FrameRateCounter::kDroppedFrameTime = 1.0 / 50.0;
 
 // safeMod works on -1, returning m-1 in that case.
 static inline int safeMod(int number, int modulus)
@@ -24,22 +24,22 @@ static inline int safeMod(int number, int modulus)
 }
 
 // static
-scoped_ptr<CCFrameRateCounter> CCFrameRateCounter::create() {
-  return make_scoped_ptr(new CCFrameRateCounter());
+scoped_ptr<FrameRateCounter> FrameRateCounter::create() {
+  return make_scoped_ptr(new FrameRateCounter());
 }
 
-inline base::TimeDelta CCFrameRateCounter::frameInterval(int frameNumber) const
+inline base::TimeDelta FrameRateCounter::frameInterval(int frameNumber) const
 {
     return m_timeStampHistory[frameIndex(frameNumber)] -
         m_timeStampHistory[frameIndex(frameNumber - 1)];
 }
 
-inline int CCFrameRateCounter::frameIndex(int frameNumber) const
+inline int FrameRateCounter::frameIndex(int frameNumber) const
 {
     return safeMod(frameNumber, kTimeStampHistorySize);
 }
 
-CCFrameRateCounter::CCFrameRateCounter()
+FrameRateCounter::FrameRateCounter()
     : m_currentFrameNumber(1)
     , m_droppedFrameCount(0)
 {
@@ -49,12 +49,12 @@ CCFrameRateCounter::CCFrameRateCounter()
         m_timeStampHistory[i] = base::TimeTicks();
 }
 
-void CCFrameRateCounter::markBeginningOfFrame(base::TimeTicks timestamp)
+void FrameRateCounter::markBeginningOfFrame(base::TimeTicks timestamp)
 {
     m_timeStampHistory[frameIndex(m_currentFrameNumber)] = timestamp;
     base::TimeDelta frameIntervalSeconds = frameInterval(m_currentFrameNumber);
 
-    if (CCProxy::hasImplThread() && m_currentFrameNumber > 0) {
+    if (Proxy::hasImplThread() && m_currentFrameNumber > 0) {
         HISTOGRAM_CUSTOM_COUNTS("Renderer4.CompositorThreadImplDrawDelay", frameIntervalSeconds.InMilliseconds(), 1, 120, 60);
     }
 
@@ -63,25 +63,25 @@ void CCFrameRateCounter::markBeginningOfFrame(base::TimeTicks timestamp)
         ++m_droppedFrameCount;
 }
 
-void CCFrameRateCounter::markEndOfFrame()
+void FrameRateCounter::markEndOfFrame()
 {
     m_currentFrameNumber += 1;
 }
 
-bool CCFrameRateCounter::isBadFrameInterval(base::TimeDelta intervalBetweenConsecutiveFrames) const
+bool FrameRateCounter::isBadFrameInterval(base::TimeDelta intervalBetweenConsecutiveFrames) const
 {
-    bool schedulerAllowsDoubleFrames = !CCProxy::hasImplThread();
+    bool schedulerAllowsDoubleFrames = !Proxy::hasImplThread();
     bool intervalTooFast = schedulerAllowsDoubleFrames && intervalBetweenConsecutiveFrames.InSecondsF() < kFrameTooFast;
     bool intervalTooSlow = intervalBetweenConsecutiveFrames.InSecondsF() > kFrameTooSlow;
     return intervalTooFast || intervalTooSlow;
 }
 
-bool CCFrameRateCounter::isBadFrame(int frameNumber) const
+bool FrameRateCounter::isBadFrame(int frameNumber) const
 {
     return isBadFrameInterval(frameInterval(frameNumber));
 }
 
-void CCFrameRateCounter::getAverageFPSAndStandardDeviation(double& averageFPS, double& standardDeviation) const
+void FrameRateCounter::getAverageFPSAndStandardDeviation(double& averageFPS, double& standardDeviation) const
 {
     int frame = m_currentFrameNumber - 1;
     averageFPS = 0;
@@ -123,7 +123,7 @@ void CCFrameRateCounter::getAverageFPSAndStandardDeviation(double& averageFPS, d
     standardDeviation = sqrt(fpsVarianceNumerator / averageFPSCount);
 }
 
-base::TimeTicks CCFrameRateCounter::timeStampOfRecentFrame(int n)
+base::TimeTicks FrameRateCounter::timeStampOfRecentFrame(int n)
 {
     DCHECK(n >= 0);
     DCHECK(n < kTimeStampHistorySize);

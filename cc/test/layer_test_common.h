@@ -9,11 +9,11 @@
 #include "Region.h"
 #include "cc/render_pass.h"
 
-namespace CCLayerTestCommon {
+namespace LayerTestCommon {
 
 extern const char* quadString;
 
-void verifyQuadsExactlyCoverRect(const cc::CCQuadList&, const cc::IntRect&);
+void verifyQuadsExactlyCoverRect(const cc::QuadList&, const cc::IntRect&);
 
-} // namespace CCLayerTestCommon
+} // namespace LayerTestCommon
 #endif // CCLayerTestCommon_h

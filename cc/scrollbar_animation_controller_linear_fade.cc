@@ -10,13 +10,13 @@
 
 namespace cc {
 
-scoped_ptr<CCScrollbarAnimationControllerLinearFade> CCScrollbarAnimationControllerLinearFade::create(CCLayerImpl* scrollLayer, double fadeoutDelay, double fadeoutLength)
+scoped_ptr<ScrollbarAnimationControllerLinearFade> ScrollbarAnimationControllerLinearFade::create(LayerImpl* scrollLayer, double fadeoutDelay, double fadeoutLength)
 {
-    return make_scoped_ptr(new CCScrollbarAnimationControllerLinearFade(scrollLayer, fadeoutDelay, fadeoutLength));
+    return make_scoped_ptr(new ScrollbarAnimationControllerLinearFade(scrollLayer, fadeoutDelay, fadeoutLength));
 }
 
-CCScrollbarAnimationControllerLinearFade::CCScrollbarAnimationControllerLinearFade(CCLayerImpl* scrollLayer, double fadeoutDelay, double fadeoutLength)
-    : CCScrollbarAnimationController(scrollLayer)
+ScrollbarAnimationControllerLinearFade::ScrollbarAnimationControllerLinearFade(LayerImpl* scrollLayer, double fadeoutDelay, double fadeoutLength)
+    : ScrollbarAnimationController(scrollLayer)
     , m_lastAwakenTime(-100000000) // arbitrary invalid timestamp
     , m_pinchGestureInEffect(false)
     , m_fadeoutDelay(fadeoutDelay)
@@ -24,11 +24,11 @@ CCScrollbarAnimationControllerLinearFade::CCScrollbarAnimationControllerLinearFa
 {
 }
 
-CCScrollbarAnimationControllerLinearFade::~CCScrollbarAnimationControllerLinearFade()
+ScrollbarAnimationControllerLinearFade::~ScrollbarAnimationControllerLinearFade()
 {
 }
 
-bool CCScrollbarAnimationControllerLinearFade::animate(double monotonicTime)
+bool ScrollbarAnimationControllerLinearFade::animate(double monotonicTime)
 {
     float opacity = opacityAtTime(monotonicTime);
     if (horizontalScrollbarLayer())
@@ -38,21 +38,21 @@ bool CCScrollbarAnimationControllerLinearFade::animate(double monotonicTime)
     return opacity;
 }
 
-void CCScrollbarAnimationControllerLinearFade::didPinchGestureUpdateAtTime(double)
+void ScrollbarAnimationControllerLinearFade::didPinchGestureUpdateAtTime(double)
 {
     m_pinchGestureInEffect = true;
 }
 
-void CCScrollbarAnimationControllerLinearFade::didPinchGestureEndAtTime(double monotonicTime)
+void ScrollbarAnimationControllerLinearFade::didPinchGestureEndAtTime(double monotonicTime)
 {
     m_pinchGestureInEffect = false;
     m_lastAwakenTime = monotonicTime;
 }
 
-void CCScrollbarAnimationControllerLinearFade::updateScrollOffsetAtTime(CCLayerImpl* scrollLayer, double monotonicTime)
+void ScrollbarAnimationControllerLinearFade::updateScrollOffsetAtTime(LayerImpl* scrollLayer, double monotonicTime)
 {
     FloatPoint previousPos = currentPos();
-    CCScrollbarAnimationController::updateScrollOffsetAtTime(scrollLayer, monotonicTime);
+    ScrollbarAnimationController::updateScrollOffsetAtTime(scrollLayer, monotonicTime);
 
     if (previousPos == currentPos())
         return;
@@ -60,7 +60,7 @@ void CCScrollbarAnimationControllerLinearFade::updateScrollOffsetAtTime(CCLayerI
     m_lastAwakenTime = monotonicTime;
 }
 
-float CCScrollbarAnimationControllerLinearFade::opacityAtTime(double monotonicTime)
+float ScrollbarAnimationControllerLinearFade::opacityAtTime(double monotonicTime)
 {
     if (m_pinchGestureInEffect)
         return 1;

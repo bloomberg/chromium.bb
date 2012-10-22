@@ -19,12 +19,12 @@ using namespace WebKitTests;
 
 namespace {
 
-TEST(CCScopedTextureTest, NewScopedTexture)
+TEST(ScopedTextureTest, NewScopedTexture)
 {
-    scoped_ptr<CCGraphicsContext> context(createFakeCCGraphicsContext());
+    scoped_ptr<GraphicsContext> context(createFakeGraphicsContext());
     DebugScopedSetImplThread implThread;
-    scoped_ptr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
-    scoped_ptr<CCScopedTexture> texture = CCScopedTexture::create(resourceProvider.get());
+    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(context.get()));
+    scoped_ptr<ScopedTexture> texture = ScopedTexture::create(resourceProvider.get());
 
     // New scoped textures do not hold a texture yet.
     EXPECT_EQ(0u, texture->id());
@@ -34,13 +34,13 @@ TEST(CCScopedTextureTest, NewScopedTexture)
     EXPECT_EQ(0u, texture->bytes());
 }
 
-TEST(CCScopedTextureTest, CreateScopedTexture)
+TEST(ScopedTextureTest, CreateScopedTexture)
 {
-    scoped_ptr<CCGraphicsContext> context(createFakeCCGraphicsContext());
+    scoped_ptr<GraphicsContext> context(createFakeGraphicsContext());
     DebugScopedSetImplThread implThread;
-    scoped_ptr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
-    scoped_ptr<CCScopedTexture> texture = CCScopedTexture::create(resourceProvider.get());
-    texture->allocate(CCRenderer::ImplPool, IntSize(30, 30), GL_RGBA, CCResourceProvider::TextureUsageAny);
+    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(context.get()));
+    scoped_ptr<ScopedTexture> texture = ScopedTexture::create(resourceProvider.get());
+    texture->allocate(Renderer::ImplPool, IntSize(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
 
     // The texture has an allocated byte-size now.
     size_t expectedBytes = 30 * 30 * 4;
@@ -51,17 +51,17 @@ TEST(CCScopedTextureTest, CreateScopedTexture)
     EXPECT_EQ(IntSize(30, 30), texture->size());
 }
 
-TEST(CCScopedTextureTest, ScopedTextureIsDeleted)
+TEST(ScopedTextureTest, ScopedTextureIsDeleted)
 {
-    scoped_ptr<CCGraphicsContext> context(createFakeCCGraphicsContext());
+    scoped_ptr<GraphicsContext> context(createFakeGraphicsContext());
     DebugScopedSetImplThread implThread;
-    scoped_ptr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
+    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(context.get()));
 
     {
-        scoped_ptr<CCScopedTexture> texture = CCScopedTexture::create(resourceProvider.get());
+        scoped_ptr<ScopedTexture> texture = ScopedTexture::create(resourceProvider.get());
 
         EXPECT_EQ(0u, resourceProvider->numResources());
-        texture->allocate(CCRenderer::ImplPool, IntSize(30, 30), GL_RGBA, CCResourceProvider::TextureUsageAny);
+        texture->allocate(Renderer::ImplPool, IntSize(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
         EXPECT_LT(0u, texture->id());
         EXPECT_EQ(1u, resourceProvider->numResources());
     }
@@ -69,9 +69,9 @@ TEST(CCScopedTextureTest, ScopedTextureIsDeleted)
     EXPECT_EQ(0u, resourceProvider->numResources());
 
     {
-        scoped_ptr<CCScopedTexture> texture = CCScopedTexture::create(resourceProvider.get());
+        scoped_ptr<ScopedTexture> texture = ScopedTexture::create(resourceProvider.get());
         EXPECT_EQ(0u, resourceProvider->numResources());
-        texture->allocate(CCRenderer::ImplPool, IntSize(30, 30), GL_RGBA, CCResourceProvider::TextureUsageAny);
+        texture->allocate(Renderer::ImplPool, IntSize(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
         EXPECT_LT(0u, texture->id());
         EXPECT_EQ(1u, resourceProvider->numResources());
         texture->free();
@@ -79,17 +79,17 @@ TEST(CCScopedTextureTest, ScopedTextureIsDeleted)
     }
 }
 
-TEST(CCScopedTextureTest, LeakScopedTexture)
+TEST(ScopedTextureTest, LeakScopedTexture)
 {
-    scoped_ptr<CCGraphicsContext> context(createFakeCCGraphicsContext());
+    scoped_ptr<GraphicsContext> context(createFakeGraphicsContext());
     DebugScopedSetImplThread implThread;
-    scoped_ptr<CCResourceProvider> resourceProvider(CCResourceProvider::create(context.get()));
+    scoped_ptr<ResourceProvider> resourceProvider(ResourceProvider::create(context.get()));
 
     {
-        scoped_ptr<CCScopedTexture> texture = CCScopedTexture::create(resourceProvider.get());
+        scoped_ptr<ScopedTexture> texture = ScopedTexture::create(resourceProvider.get());
 
         EXPECT_EQ(0u, resourceProvider->numResources());
-        texture->allocate(CCRenderer::ImplPool, IntSize(30, 30), GL_RGBA, CCResourceProvider::TextureUsageAny);
+        texture->allocate(Renderer::ImplPool, IntSize(30, 30), GL_RGBA, ResourceProvider::TextureUsageAny);
         EXPECT_LT(0u, texture->id());
         EXPECT_EQ(1u, resourceProvider->numResources());
 

@@ -267,27 +267,27 @@ private:
     PendingProduceTextureList m_pendingProduceTextures;
 };
 
-class CCResourceProviderTest : public testing::TestWithParam<CCResourceProvider::ResourceType> {
+class ResourceProviderTest : public testing::TestWithParam<ResourceProvider::ResourceType> {
 public:
-    CCResourceProviderTest()
+    ResourceProviderTest()
         : m_sharedData(ContextSharedData::create())
         , m_context(FakeWebCompositorOutputSurface::create(ResourceProviderContext::create(m_sharedData.get()).PassAs<WebKit::WebGraphicsContext3D>().PassAs<WebKit::WebGraphicsContext3D>()))
-        , m_resourceProvider(CCResourceProvider::create(m_context.get()))
+        , m_resourceProvider(ResourceProvider::create(m_context.get()))
     {
         m_resourceProvider->setDefaultResourceType(GetParam());
     }
 
     ResourceProviderContext* context() { return static_cast<ResourceProviderContext*>(m_context->context3D()); }
 
-    void getResourcePixels(CCResourceProvider::ResourceId id, const IntSize& size, WGC3Denum format, uint8_t* pixels)
+    void getResourcePixels(ResourceProvider::ResourceId id, const IntSize& size, WGC3Denum format, uint8_t* pixels)
     {
-        if (GetParam() == CCResourceProvider::GLTexture) {
-            CCResourceProvider::ScopedReadLockGL lockGL(m_resourceProvider.get(), id);
+        if (GetParam() == ResourceProvider::GLTexture) {
+            ResourceProvider::ScopedReadLockGL lockGL(m_resourceProvider.get(), id);
             ASSERT_NE(0U, lockGL.textureId());
             context()->bindTexture(GL_TEXTURE_2D, lockGL.textureId());
             context()->getPixels(size, format, pixels);
-        } else if (GetParam() == CCResourceProvider::Bitmap) {
-            CCResourceProvider::ScopedReadLockSoftware lockSoftware(m_resourceProvider.get(), id);
+        } else if (GetParam() == ResourceProvider::Bitmap) {
+            ResourceProvider::ScopedReadLockSoftware lockSoftware(m_resourceProvider.get(), id);
             memcpy(pixels, lockSoftware.skBitmap()->getPixels(), lockSoftware.skBitmap()->getSize());
         }
     }
@@ -295,18 +295,18 @@ public:
     void expectNumResources(int count)
     {
         EXPECT_EQ(count, static_cast<int>(m_resourceProvider->numResources()));
-        if (GetParam() == CCResourceProvider::GLTexture)
+        if (GetParam() == ResourceProvider::GLTexture)
             EXPECT_EQ(count, context()->textureCount());
     }
 
 protected:
     DebugScopedSetImplThread implThread;
     scoped_ptr<ContextSharedData> m_sharedData;
-    scoped_ptr<CCGraphicsContext> m_context;
-    scoped_ptr<CCResourceProvider> m_resourceProvider;
+    scoped_ptr<GraphicsContext> m_context;
+    scoped_ptr<ResourceProvider> m_resourceProvider;
 };
 
-TEST_P(CCResourceProviderTest, Basic)
+TEST_P(ResourceProviderTest, Basic)
 {
     IntSize size(1, 1);
     WGC3Denum format = GL_RGBA;
@@ -314,7 +314,7 @@ TEST_P(CCResourceProviderTest, Basic)
     size_t pixelSize = textureSize(size, format);
     ASSERT_EQ(4U, pixelSize);
 
-    CCResourceProvider::ResourceId id = m_resourceProvider->createResource(pool, size, format, CCResourceProvider::TextureUsageAny);
+    ResourceProvider::ResourceId id = m_resourceProvider->createResource(pool, size, format, ResourceProvider::TextureUsageAny);
     expectNumResources(1);
 
     uint8_t data[4] = {1, 2, 3, 4};
@@ -329,7 +329,7 @@ TEST_P(CCResourceProviderTest, Basic)
     expectNumResources(0);
 }
 
-TEST_P(CCResourceProviderTest, DeleteOwnedResources)
+TEST_P(ResourceProviderTest, DeleteOwnedResources)
 {
     IntSize size(1, 1);
     WGC3Denum format = GL_RGBA;
@@ -337,7 +337,7 @@ TEST_P(CCResourceProviderTest, DeleteOwnedResources)
 
     const int count = 3;
     for (int i = 0; i < count; ++i)
-        m_resourceProvider->createResource(pool, size, format, CCResourceProvider::TextureUsageAny);
+        m_resourceProvider->createResource(pool, size, format, ResourceProvider::TextureUsageAny);
     expectNumResources(3);
 
     m_resourceProvider->deleteOwnedResources(pool+1);
@@ -347,7 +347,7 @@ TEST_P(CCResourceProviderTest, DeleteOwnedResources)
     expectNumResources(0);
 }
 
-TEST_P(CCResourceProviderTest, Upload)
+TEST_P(ResourceProviderTest, Upload)
 {
     IntSize size(2, 2);
     WGC3Denum format = GL_RGBA;
@@ -355,7 +355,7 @@ TEST_P(CCResourceProviderTest, Upload)
     size_t pixelSize = textureSize(size, format);
     ASSERT_EQ(16U, pixelSize);
 
-    CCResourceProvider::ResourceId id = m_resourceProvider->createResource(pool, size, format, CCResourceProvider::TextureUsageAny);
+    ResourceProvider::ResourceId id = m_resourceProvider->createResource(pool, size, format, ResourceProvider::TextureUsageAny);
 
     uint8_t image[16] = {0};
     IntRect imageRect(IntPoint(), size);
@@ -411,14 +411,14 @@ TEST_P(CCResourceProviderTest, Upload)
     m_resourceProvider->deleteResource(id);
 }
 
-TEST_P(CCResourceProviderTest, TransferResources)
+TEST_P(ResourceProviderTest, TransferResources)
 {
     // Resource transfer is only supported with GL textures for now.
-    if (GetParam() != CCResourceProvider::GLTexture)
+    if (GetParam() != ResourceProvider::GLTexture)
         return;
 
-    scoped_ptr<CCGraphicsContext> childContext(FakeWebCompositorOutputSurface::create(ResourceProviderContext::create(m_sharedData.get()).PassAs<WebKit::WebGraphicsContext3D>()));
-    scoped_ptr<CCResourceProvider> childResourceProvider(CCResourceProvider::create(childContext.get()));
+    scoped_ptr<GraphicsContext> childContext(FakeWebCompositorOutputSurface::create(ResourceProviderContext::create(m_sharedData.get()).PassAs<WebKit::WebGraphicsContext3D>()));
+    scoped_ptr<ResourceProvider> childResourceProvider(ResourceProvider::create(childContext.get()));
 
     IntSize size(1, 1);
     WGC3Denum format = GL_RGBA;
@@ -426,12 +426,12 @@ TEST_P(CCResourceProviderTest, TransferResources)
     size_t pixelSize = textureSize(size, format);
     ASSERT_EQ(4U, pixelSize);
 
-    CCResourceProvider::ResourceId id1 = childResourceProvider->createResource(pool, size, format, CCResourceProvider::TextureUsageAny);
+    ResourceProvider::ResourceId id1 = childResourceProvider->createResource(pool, size, format, ResourceProvider::TextureUsageAny);
     uint8_t data1[4] = {1, 2, 3, 4};
     IntRect rect(IntPoint(), size);
     childResourceProvider->upload(id1, data1, rect, rect, IntSize());
 
-    CCResourceProvider::ResourceId id2 = childResourceProvider->createResource(pool, size, format, CCResourceProvider::TextureUsageAny);
+    ResourceProvider::ResourceId id2 = childResourceProvider->createResource(pool, size, format, ResourceProvider::TextureUsageAny);
     uint8_t data2[4] = {5, 5, 5, 5};
     childResourceProvider->upload(id2, data2, rect, rect, IntSize());
 
@@ -440,10 +440,10 @@ TEST_P(CCResourceProviderTest, TransferResources)
 
     {
         // Transfer some resources to the parent.
-        CCResourceProvider::ResourceIdArray resourceIdsToTransfer;
+        ResourceProvider::ResourceIdArray resourceIdsToTransfer;
         resourceIdsToTransfer.push_back(id1);
         resourceIdsToTransfer.push_back(id2);
-        CCResourceProvider::TransferableResourceList list = childResourceProvider->prepareSendToParent(resourceIdsToTransfer);
+        ResourceProvider::TransferableResourceList list = childResourceProvider->prepareSendToParent(resourceIdsToTransfer);
         EXPECT_NE(0u, list.syncPoint);
         EXPECT_EQ(2u, list.resources.size());
         EXPECT_TRUE(childResourceProvider->inUseByConsumer(id1));
@@ -453,9 +453,9 @@ TEST_P(CCResourceProviderTest, TransferResources)
 
     EXPECT_EQ(2u, m_resourceProvider->numResources());
     EXPECT_EQ(2u, m_resourceProvider->mailboxCount());
-    CCResourceProvider::ResourceIdMap resourceMap = m_resourceProvider->getChildToParentMap(childId);
-    CCResourceProvider::ResourceId mappedId1 = resourceMap[id1];
-    CCResourceProvider::ResourceId mappedId2 = resourceMap[id2];
+    ResourceProvider::ResourceIdMap resourceMap = m_resourceProvider->getChildToParentMap(childId);
+    ResourceProvider::ResourceId mappedId1 = resourceMap[id1];
+    ResourceProvider::ResourceId mappedId2 = resourceMap[id2];
     EXPECT_NE(0u, mappedId1);
     EXPECT_NE(0u, mappedId2);
     EXPECT_FALSE(m_resourceProvider->inUseByConsumer(id1));
@@ -471,19 +471,19 @@ TEST_P(CCResourceProviderTest, TransferResources)
     {
         // Check that transfering again the same resource from the child to the
         // parent is a noop.
-        CCResourceProvider::ResourceIdArray resourceIdsToTransfer;
+        ResourceProvider::ResourceIdArray resourceIdsToTransfer;
         resourceIdsToTransfer.push_back(id1);
-        CCResourceProvider::TransferableResourceList list = childResourceProvider->prepareSendToParent(resourceIdsToTransfer);
+        ResourceProvider::TransferableResourceList list = childResourceProvider->prepareSendToParent(resourceIdsToTransfer);
         EXPECT_EQ(0u, list.syncPoint);
         EXPECT_EQ(0u, list.resources.size());
     }
 
     {
         // Transfer resources back from the parent to the child.
-        CCResourceProvider::ResourceIdArray resourceIdsToTransfer;
+        ResourceProvider::ResourceIdArray resourceIdsToTransfer;
         resourceIdsToTransfer.push_back(mappedId1);
         resourceIdsToTransfer.push_back(mappedId2);
-        CCResourceProvider::TransferableResourceList list = m_resourceProvider->prepareSendToChild(childId, resourceIdsToTransfer);
+        ResourceProvider::TransferableResourceList list = m_resourceProvider->prepareSendToChild(childId, resourceIdsToTransfer);
         EXPECT_NE(0u, list.syncPoint);
         EXPECT_EQ(2u, list.resources.size());
         childResourceProvider->receiveFromParent(list);
@@ -495,14 +495,14 @@ TEST_P(CCResourceProviderTest, TransferResources)
 
     ResourceProviderContext* childContext3D = static_cast<ResourceProviderContext*>(childContext->context3D());
     {
-        CCResourceProvider::ScopedReadLockGL lock(childResourceProvider.get(), id1);
+        ResourceProvider::ScopedReadLockGL lock(childResourceProvider.get(), id1);
         ASSERT_NE(0U, lock.textureId());
         childContext3D->bindTexture(GL_TEXTURE_2D, lock.textureId());
         childContext3D->getPixels(size, format, result);
         EXPECT_EQ(0, memcmp(data1, result, pixelSize));
     }
     {
-        CCResourceProvider::ScopedReadLockGL lock(childResourceProvider.get(), id2);
+        ResourceProvider::ScopedReadLockGL lock(childResourceProvider.get(), id2);
         ASSERT_NE(0U, lock.textureId());
         childContext3D->bindTexture(GL_TEXTURE_2D, lock.textureId());
         childContext3D->getPixels(size, format, result);
@@ -511,10 +511,10 @@ TEST_P(CCResourceProviderTest, TransferResources)
 
     {
         // Transfer resources to the parent again.
-        CCResourceProvider::ResourceIdArray resourceIdsToTransfer;
+        ResourceProvider::ResourceIdArray resourceIdsToTransfer;
         resourceIdsToTransfer.push_back(id1);
         resourceIdsToTransfer.push_back(id2);
-        CCResourceProvider::TransferableResourceList list = childResourceProvider->prepareSendToParent(resourceIdsToTransfer);
+        ResourceProvider::TransferableResourceList list = childResourceProvider->prepareSendToParent(resourceIdsToTransfer);
         EXPECT_NE(0u, list.syncPoint);
         EXPECT_EQ(2u, list.resources.size());
         EXPECT_TRUE(childResourceProvider->inUseByConsumer(id1));
@@ -528,14 +528,14 @@ TEST_P(CCResourceProviderTest, TransferResources)
     EXPECT_EQ(0u, m_resourceProvider->mailboxCount());
 }
 
-TEST_P(CCResourceProviderTest, DeleteTransferredResources)
+TEST_P(ResourceProviderTest, DeleteTransferredResources)
 {
     // Resource transfer is only supported with GL textures for now.
-    if (GetParam() != CCResourceProvider::GLTexture)
+    if (GetParam() != ResourceProvider::GLTexture)
         return;
 
-    scoped_ptr<CCGraphicsContext> childContext(FakeWebCompositorOutputSurface::create(ResourceProviderContext::create(m_sharedData.get()).PassAs<WebKit::WebGraphicsContext3D>()));
-    scoped_ptr<CCResourceProvider> childResourceProvider(CCResourceProvider::create(childContext.get()));
+    scoped_ptr<GraphicsContext> childContext(FakeWebCompositorOutputSurface::create(ResourceProviderContext::create(m_sharedData.get()).PassAs<WebKit::WebGraphicsContext3D>()));
+    scoped_ptr<ResourceProvider> childResourceProvider(ResourceProvider::create(childContext.get()));
 
     IntSize size(1, 1);
     WGC3Denum format = GL_RGBA;
@@ -543,7 +543,7 @@ TEST_P(CCResourceProviderTest, DeleteTransferredResources)
     size_t pixelSize = textureSize(size, format);
     ASSERT_EQ(4U, pixelSize);
 
-    CCResourceProvider::ResourceId id = childResourceProvider->createResource(pool, size, format, CCResourceProvider::TextureUsageAny);
+    ResourceProvider::ResourceId id = childResourceProvider->createResource(pool, size, format, ResourceProvider::TextureUsageAny);
     uint8_t data[4] = {1, 2, 3, 4};
     IntRect rect(IntPoint(), size);
     childResourceProvider->upload(id, data, rect, rect, IntSize());
@@ -553,9 +553,9 @@ TEST_P(CCResourceProviderTest, DeleteTransferredResources)
 
     {
         // Transfer some resource to the parent.
-        CCResourceProvider::ResourceIdArray resourceIdsToTransfer;
+        ResourceProvider::ResourceIdArray resourceIdsToTransfer;
         resourceIdsToTransfer.push_back(id);
-        CCResourceProvider::TransferableResourceList list = childResourceProvider->prepareSendToParent(resourceIdsToTransfer);
+        ResourceProvider::TransferableResourceList list = childResourceProvider->prepareSendToParent(resourceIdsToTransfer);
         EXPECT_NE(0u, list.syncPoint);
         EXPECT_EQ(1u, list.resources.size());
         EXPECT_TRUE(childResourceProvider->inUseByConsumer(id));
@@ -568,12 +568,12 @@ TEST_P(CCResourceProviderTest, DeleteTransferredResources)
 
     {
         // Transfer resources back from the parent to the child.
-        CCResourceProvider::ResourceIdMap resourceMap = m_resourceProvider->getChildToParentMap(childId);
-        CCResourceProvider::ResourceId mappedId = resourceMap[id];
+        ResourceProvider::ResourceIdMap resourceMap = m_resourceProvider->getChildToParentMap(childId);
+        ResourceProvider::ResourceId mappedId = resourceMap[id];
         EXPECT_NE(0u, mappedId);
-        CCResourceProvider::ResourceIdArray resourceIdsToTransfer;
+        ResourceProvider::ResourceIdArray resourceIdsToTransfer;
         resourceIdsToTransfer.push_back(mappedId);
-        CCResourceProvider::TransferableResourceList list = m_resourceProvider->prepareSendToChild(childId, resourceIdsToTransfer);
+        ResourceProvider::TransferableResourceList list = m_resourceProvider->prepareSendToChild(childId, resourceIdsToTransfer);
         EXPECT_NE(0u, list.syncPoint);
         EXPECT_EQ(1u, list.resources.size());
         childResourceProvider->receiveFromParent(list);
@@ -581,9 +581,9 @@ TEST_P(CCResourceProviderTest, DeleteTransferredResources)
     EXPECT_EQ(0u, childResourceProvider->numResources());
 }
 
-INSTANTIATE_TEST_CASE_P(CCResourceProviderTests,
-                        CCResourceProviderTest,
-                        ::testing::Values(CCResourceProvider::GLTexture,
-                                          CCResourceProvider::Bitmap));
+INSTANTIATE_TEST_CASE_P(ResourceProviderTests,
+                        ResourceProviderTest,
+                        ::testing::Values(ResourceProvider::GLTexture,
+                                          ResourceProvider::Bitmap));
 
 } // namespace

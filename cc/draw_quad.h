@@ -9,7 +9,7 @@
 
 namespace cc {
 
-// WARNING! All CCXYZDrawQuad classes must remain PODs (plain old data).
+// WARNING! All XYZDrawQuad classes must remain PODs (plain old data).
 // They are intended to be "serializable" by copying their raw bytes, so they
 // must not contain any non-bit-copyable member variables!
 //
@@ -19,11 +19,11 @@ namespace cc {
 // transferring these classes over the wire.
 #pragma pack(push, 4)
 
-// CCDrawQuad is a bag of data used for drawing a quad. Because different
+// DrawQuad is a bag of data used for drawing a quad. Because different
 // materials need different bits of per-quad data to render, classes that derive
-// from CCDrawQuad store additional data in their derived instance. The Material
+// from DrawQuad store additional data in their derived instance. The Material
 // enum is used to "safely" downcast to the derived class.
-class CCDrawQuad {
+class DrawQuad {
 public:
     enum Material {
         Invalid,
@@ -59,19 +59,19 @@ public:
     // looking at the material type).
     unsigned size() const;
 
-    scoped_ptr<CCDrawQuad> copy(const CCSharedQuadState* copiedSharedQuadState) const;
+    scoped_ptr<DrawQuad> copy(const SharedQuadState* copiedSharedQuadState) const;
 
-    const CCSharedQuadState* sharedQuadState() const { return m_sharedQuadState; }
+    const SharedQuadState* sharedQuadState() const { return m_sharedQuadState; }
     int sharedQuadStateId() const { return m_sharedQuadStateId; }
-    void setSharedQuadState(const CCSharedQuadState*);
+    void setSharedQuadState(const SharedQuadState*);
 
 protected:
-    CCDrawQuad(const CCSharedQuadState*, Material, const gfx::Rect&);
+    DrawQuad(const SharedQuadState*, Material, const gfx::Rect&);
 
     // Stores state common to a large bundle of quads; kept separate for memory
     // efficiency. There is special treatment to reconstruct these pointers
     // during serialization.
-    const CCSharedQuadState* m_sharedQuadState;
+    const SharedQuadState* m_sharedQuadState;
     int m_sharedQuadStateId;
 
     Material m_material;

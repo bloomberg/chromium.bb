@@ -10,21 +10,21 @@
 
 namespace WebKit {
 
-scoped_ptr<cc::CCTimingFunction> createTimingFunction(WebAnimationCurve::TimingFunctionType type)
+scoped_ptr<cc::TimingFunction> createTimingFunction(WebAnimationCurve::TimingFunctionType type)
 {
     switch (type) {
     case WebAnimationCurve::TimingFunctionTypeEase:
-        return cc::CCEaseTimingFunction::create();
+        return cc::EaseTimingFunction::create();
     case WebAnimationCurve::TimingFunctionTypeEaseIn:
-        return cc::CCEaseInTimingFunction::create();
+        return cc::EaseInTimingFunction::create();
     case WebAnimationCurve::TimingFunctionTypeEaseOut:
-        return cc::CCEaseOutTimingFunction::create();
+        return cc::EaseOutTimingFunction::create();
     case WebAnimationCurve::TimingFunctionTypeEaseInOut:
-        return cc::CCEaseInOutTimingFunction::create();
+        return cc::EaseInOutTimingFunction::create();
     case WebAnimationCurve::TimingFunctionTypeLinear:
-        return scoped_ptr<cc::CCTimingFunction>();
+        return scoped_ptr<cc::TimingFunction>();
     }
-    return scoped_ptr<cc::CCTimingFunction>();
+    return scoped_ptr<cc::TimingFunction>();
 }
 
 } // namespace WebKit

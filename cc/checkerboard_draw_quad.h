@@ -13,15 +13,15 @@ namespace cc {
 
 #pragma pack(push, 4)
 
-class CCCheckerboardDrawQuad : public CCDrawQuad {
+class CheckerboardDrawQuad : public DrawQuad {
 public:
-    static scoped_ptr<CCCheckerboardDrawQuad> create(const CCSharedQuadState*, const gfx::Rect&, SkColor);
+    static scoped_ptr<CheckerboardDrawQuad> create(const SharedQuadState*, const gfx::Rect&, SkColor);
 
     SkColor color() const { return m_color; };
 
-    static const CCCheckerboardDrawQuad* materialCast(const CCDrawQuad*);
+    static const CheckerboardDrawQuad* materialCast(const DrawQuad*);
 private:
-    CCCheckerboardDrawQuad(const CCSharedQuadState*, const gfx::Rect&, SkColor);
+    CheckerboardDrawQuad(const SharedQuadState*, const gfx::Rect&, SkColor);
 
     SkColor m_color;
 };

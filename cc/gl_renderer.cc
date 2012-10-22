@@ -61,18 +61,18 @@ bool needsIOSurfaceReadbackWorkaround()
 
 } // anonymous namespace
 
-scoped_ptr<CCRendererGL> CCRendererGL::create(CCRendererClient* client, CCResourceProvider* resourceProvider)
+scoped_ptr<GLRenderer> GLRenderer::create(RendererClient* client, ResourceProvider* resourceProvider)
 {
-    scoped_ptr<CCRendererGL> renderer(make_scoped_ptr(new CCRendererGL(client, resourceProvider)));
+    scoped_ptr<GLRenderer> renderer(make_scoped_ptr(new GLRenderer(client, resourceProvider)));
     if (!renderer->initialize())
-        return scoped_ptr<CCRendererGL>();
+        return scoped_ptr<GLRenderer>();
 
     return renderer.Pass();
 }
 
-CCRendererGL::CCRendererGL(CCRendererClient* client,
-                           CCResourceProvider* resourceProvider)
-    : CCDirectRenderer(client, resourceProvider)
+GLRenderer::GLRenderer(RendererClient* client,
+                           ResourceProvider* resourceProvider)
+    : DirectRenderer(client, resourceProvider)
     , m_offscreenFramebufferId(0)
     , m_sharedGeometryQuad(FloatRect(-0.5f, -0.5f, 1.0f, 1.0f))
     , m_context(resourceProvider->graphicsContext3D())
@@ -85,7 +85,7 @@ CCRendererGL::CCRendererGL(CCRendererClient* client,
     DCHECK(m_context);
 }
 
-bool CCRendererGL::initialize()
+bool GLRenderer::initialize()
 {
     if (!m_context->makeContextCurrent())
         return false;
@@ -110,7 +110,7 @@ bool CCRendererGL::initialize()
     m_capabilities.usingPartialSwap = Settings::partialSwapEnabled() && extensions.count("GL_CHROMIUM_post_sub_buffer");
 
     // Use the swapBuffers callback only with the threaded proxy.
-    if (CCProxy::hasImplThread())
+    if (Proxy::hasImplThread())
         m_capabilities.usingSwapCompleteCallback = extensions.count("GL_CHROMIUM_swapbuffers_complete_callback");
     if (m_capabilities.usingSwapCompleteCallback)
         m_context->setSwapBuffersCompleteCallbackCHROMIUM(this);
@@ -141,33 +141,33 @@ bool CCRendererGL::initialize()
     return true;
 }
 
-CCRendererGL::~CCRendererGL()
+GLRenderer::~GLRenderer()
 {
-    DCHECK(CCProxy::isImplThread());
+    DCHECK(Proxy::isImplThread());
     m_context->setSwapBuffersCompleteCallbackCHROMIUM(0);
     m_context->setMemoryAllocationChangedCallbackCHROMIUM(0);
     m_context->setContextLostCallback(0);
     cleanupSharedObjects();
 }
 
-const RendererCapabilities& CCRendererGL::capabilities() const
+const RendererCapabilities& GLRenderer::capabilities() const
 {
     return m_capabilities;
 }
 
-WebGraphicsContext3D* CCRendererGL::context()
+WebGraphicsContext3D* GLRenderer::context()
 {
     return m_context;
 }
 
-void CCRendererGL::debugGLCall(WebGraphicsContext3D* context, const char* command, const char* file, int line)
+void GLRenderer::debugGLCall(WebGraphicsContext3D* context, const char* command, const char* file, int line)
 {
     unsigned long error = context->getError();
     if (error != GL_NO_ERROR)
         LOG(ERROR) << "GL command failed: File: " << file << "\n\tLine " << line << "\n\tcommand: " << command << ", error " << static_cast<int>(error) << "\n";
 }
 
-void CCRendererGL::setVisible(bool visible)
+void GLRenderer::setVisible(bool visible)
 {
     if (m_visible == visible)
         return;
@@ -181,17 +181,17 @@ void CCRendererGL::setVisible(bool visible)
     enforceMemoryPolicy();
 }
 
-void CCRendererGL::releaseRenderPassTextures()
+void GLRenderer::releaseRenderPassTextures()
 {
     m_renderPassTextures.clear();
 }
 
-void CCRendererGL::viewportChanged()
+void GLRenderer::viewportChanged()
 {
     m_isViewportChanged = true;
 }
 
-void CCRendererGL::clearFramebuffer(DrawingFrame& frame)
+void GLRenderer::clearFramebuffer(DrawingFrame& frame)
 {
     // On DEBUG builds, opaque render passes are cleared to blue to easily see regions that were not drawn on the screen.
     if (frame.currentRenderPass->hasTransparentBackground())
@@ -205,7 +205,7 @@ void CCRendererGL::clearFramebuffer(DrawingFrame& frame)
         m_context->clear(GL_COLOR_BUFFER_BIT);
 }
 
-void CCRendererGL::beginDrawingFrame(DrawingFrame& frame)
+void GLRenderer::beginDrawingFrame(DrawingFrame& frame)
 {
     // FIXME: Remove this once framebuffer is automatically recreated on first use
     ensureFramebuffer();
@@ -213,7 +213,7 @@ void CCRendererGL::beginDrawingFrame(DrawingFrame& frame)
     if (viewportSize().IsEmpty())
         return;
 
-    TRACE_EVENT0("cc", "CCRendererGL::drawLayers");
+    TRACE_EVENT0("cc", "GLRenderer::drawLayers");
     if (m_isViewportChanged) {
         // Only reshape when we know we are going to draw. Otherwise, the reshape
         // can leave the window at the wrong size if we never draw and the proper
@@ -233,13 +233,13 @@ void CCRendererGL::beginDrawingFrame(DrawingFrame& frame)
     GLC(m_context, m_context->blendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
 }
 
-void CCRendererGL::doNoOp()
+void GLRenderer::doNoOp()
 {
     GLC(m_context, m_context->bindFramebuffer(GL_FRAMEBUFFER, 0));
     GLC(m_context, m_context->flush());
 }
 
-void CCRendererGL::drawQuad(DrawingFrame& frame, const CCDrawQuad* quad)
+void GLRenderer::drawQuad(DrawingFrame& frame, const DrawQuad* quad)
 {
     if (quad->needsBlending())
         GLC(m_context, m_context->enable(GL_BLEND));
@@ -247,40 +247,40 @@ void CCRendererGL::drawQuad(DrawingFrame& frame, const CCDrawQuad* quad)
         GLC(m_context, m_context->disable(GL_BLEND));
 
     switch (quad->material()) {
-    case CCDrawQuad::Invalid:
+    case DrawQuad::Invalid:
         NOTREACHED();
         break;
-    case CCDrawQuad::Checkerboard:
-        drawCheckerboardQuad(frame, CCCheckerboardDrawQuad::materialCast(quad));
+    case DrawQuad::Checkerboard:
+        drawCheckerboardQuad(frame, CheckerboardDrawQuad::materialCast(quad));
         break;
-    case CCDrawQuad::DebugBorder:
-        drawDebugBorderQuad(frame, CCDebugBorderDrawQuad::materialCast(quad));
+    case DrawQuad::DebugBorder:
+        drawDebugBorderQuad(frame, DebugBorderDrawQuad::materialCast(quad));
         break;
-    case CCDrawQuad::IOSurfaceContent:
-        drawIOSurfaceQuad(frame, CCIOSurfaceDrawQuad::materialCast(quad));
+    case DrawQuad::IOSurfaceContent:
+        drawIOSurfaceQuad(frame, IOSurfaceDrawQuad::materialCast(quad));
         break;
-    case CCDrawQuad::RenderPass:
-        drawRenderPassQuad(frame, CCRenderPassDrawQuad::materialCast(quad));
+    case DrawQuad::RenderPass:
+        drawRenderPassQuad(frame, RenderPassDrawQuad::materialCast(quad));
         break;
-    case CCDrawQuad::SolidColor:
-        drawSolidColorQuad(frame, CCSolidColorDrawQuad::materialCast(quad));
+    case DrawQuad::SolidColor:
+        drawSolidColorQuad(frame, SolidColorDrawQuad::materialCast(quad));
         break;
-    case CCDrawQuad::StreamVideoContent:
-        drawStreamVideoQuad(frame, CCStreamVideoDrawQuad::materialCast(quad));
+    case DrawQuad::StreamVideoContent:
+        drawStreamVideoQuad(frame, StreamVideoDrawQuad::materialCast(quad));
         break;
-    case CCDrawQuad::TextureContent:
-        drawTextureQuad(frame, CCTextureDrawQuad::materialCast(quad));
+    case DrawQuad::TextureContent:
+        drawTextureQuad(frame, TextureDrawQuad::materialCast(quad));
         break;
-    case CCDrawQuad::TiledContent:
-        drawTileQuad(frame, CCTileDrawQuad::materialCast(quad));
+    case DrawQuad::TiledContent:
+        drawTileQuad(frame, TileDrawQuad::materialCast(quad));
         break;
-    case CCDrawQuad::YUVVideoContent:
-        drawYUVVideoQuad(frame, CCYUVVideoDrawQuad::materialCast(quad));
+    case DrawQuad::YUVVideoContent:
+        drawYUVVideoQuad(frame, YUVVideoDrawQuad::materialCast(quad));
         break;
     }
 }
 
-void CCRendererGL::drawCheckerboardQuad(const DrawingFrame& frame, const CCCheckerboardDrawQuad* quad)
+void GLRenderer::drawCheckerboardQuad(const DrawingFrame& frame, const CheckerboardDrawQuad* quad)
 {
     const TileCheckerboardProgram* program = tileCheckerboardProgram();
     DCHECK(program && program->initialized());
@@ -305,7 +305,7 @@ void CCRendererGL::drawCheckerboardQuad(const DrawingFrame& frame, const CCCheck
     drawQuadGeometry(frame, quad->quadTransform(), quad->quadRect(), program->vertexShader().matrixLocation());
 }
 
-void CCRendererGL::drawDebugBorderQuad(const DrawingFrame& frame, const CCDebugBorderDrawQuad* quad)
+void GLRenderer::drawDebugBorderQuad(const DrawingFrame& frame, const DebugBorderDrawQuad* quad)
 {
     static float glMatrix[16];
     const SolidColorProgram* program = solidColorProgram();
@@ -317,7 +317,7 @@ void CCRendererGL::drawDebugBorderQuad(const DrawingFrame& frame, const CCDebugB
     WebTransformationMatrix renderMatrix = quad->quadTransform();
     renderMatrix.translate(0.5 * layerRect.width() + layerRect.x(), 0.5 * layerRect.height() + layerRect.y());
     renderMatrix.scaleNonUniform(layerRect.width(), layerRect.height());
-    CCRendererGL::toGLMatrix(&glMatrix[0], frame.projectionMatrix * renderMatrix);
+    GLRenderer::toGLMatrix(&glMatrix[0], frame.projectionMatrix * renderMatrix);
     GLC(context(), context()->uniformMatrix4fv(program->vertexShader().matrixLocation(), 1, false, &glMatrix[0]));
 
     SkColor color = quad->color();
@@ -331,25 +331,25 @@ void CCRendererGL::drawDebugBorderQuad(const DrawingFrame& frame, const CCDebugB
     GLC(context(), context()->drawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, 6 * sizeof(unsigned short)));
 }
 
-static inline SkBitmap applyFilters(CCRendererGL* renderer, const WebKit::WebFilterOperations& filters, CCScopedTexture* sourceTexture)
+static inline SkBitmap applyFilters(GLRenderer* renderer, const WebKit::WebFilterOperations& filters, ScopedTexture* sourceTexture)
 {
     if (filters.isEmpty())
         return SkBitmap();
 
-    WebGraphicsContext3D* filterContext = CCProxy::hasImplThread() ? WebSharedGraphicsContext3D::compositorThreadContext() : WebSharedGraphicsContext3D::mainThreadContext();
-    GrContext* filterGrContext = CCProxy::hasImplThread() ? WebSharedGraphicsContext3D::compositorThreadGrContext() : WebSharedGraphicsContext3D::mainThreadGrContext();
+    WebGraphicsContext3D* filterContext = Proxy::hasImplThread() ? WebSharedGraphicsContext3D::compositorThreadContext() : WebSharedGraphicsContext3D::mainThreadContext();
+    GrContext* filterGrContext = Proxy::hasImplThread() ? WebSharedGraphicsContext3D::compositorThreadGrContext() : WebSharedGraphicsContext3D::mainThreadGrContext();
 
     if (!filterContext || !filterGrContext)
         return SkBitmap();
 
     renderer->context()->flush();
 
-    CCResourceProvider::ScopedWriteLockGL lock(renderer->resourceProvider(), sourceTexture->id());
-    SkBitmap source = CCRenderSurfaceFilters::apply(filters, lock.textureId(), sourceTexture->size(), filterContext, filterGrContext);
+    ResourceProvider::ScopedWriteLockGL lock(renderer->resourceProvider(), sourceTexture->id());
+    SkBitmap source = RenderSurfaceFilters::apply(filters, lock.textureId(), sourceTexture->size(), filterContext, filterGrContext);
     return source;
 }
 
-scoped_ptr<CCScopedTexture> CCRendererGL::drawBackgroundFilters(DrawingFrame& frame, const CCRenderPassDrawQuad* quad, const WebKit::WebFilterOperations& filters, const WebTransformationMatrix& contentsDeviceTransform)
+scoped_ptr<ScopedTexture> GLRenderer::drawBackgroundFilters(DrawingFrame& frame, const RenderPassDrawQuad* quad, const WebKit::WebFilterOperations& filters, const WebTransformationMatrix& contentsDeviceTransform)
 {
     // This method draws a background filter, which applies a filter to any pixels behind the quad and seen through its background.
     // The algorithm works as follows:
@@ -365,19 +365,19 @@ scoped_ptr<CCScopedTexture> CCRendererGL::drawBackgroundFilters(DrawingFrame& fr
     //
     // Pixel copies in this algorithm occur at steps 2, 3, 4, and 5.
 
-    // FIXME: When this algorithm changes, update CCLayerTreeHost::prioritizeTextures() accordingly.
+    // FIXME: When this algorithm changes, update LayerTreeHost::prioritizeTextures() accordingly.
 
     if (filters.isEmpty())
-        return scoped_ptr<CCScopedTexture>();
+        return scoped_ptr<ScopedTexture>();
 
     // FIXME: We only allow background filters on an opaque render surface because other surfaces may contain
     // translucent pixels, and the contents behind those translucent pixels wouldn't have the filter applied.
     if (frame.currentRenderPass->hasTransparentBackground())
-        return scoped_ptr<CCScopedTexture>();
+        return scoped_ptr<ScopedTexture>();
     DCHECK(!frame.currentTexture);
 
     // FIXME: Do a single readback for both the surface and replica and cache the filtered results (once filter textures are not reused).
-    gfx::Rect deviceRect = gfx::ToEnclosingRect(CCMathUtil::mapClippedRect(contentsDeviceTransform, sharedGeometryQuad().boundingBox()));
+    gfx::Rect deviceRect = gfx::ToEnclosingRect(MathUtil::mapClippedRect(contentsDeviceTransform, sharedGeometryQuad().boundingBox()));
 
     int top, right, bottom, left;
     filters.getOutsets(top, right, bottom, left);
@@ -385,22 +385,22 @@ scoped_ptr<CCScopedTexture> CCRendererGL::drawBackgroundFilters(DrawingFrame& fr
 
     deviceRect = deviceRect.Intersect(frame.currentRenderPass->outputRect());
 
-    scoped_ptr<CCScopedTexture> deviceBackgroundTexture = CCScopedTexture::create(m_resourceProvider);
+    scoped_ptr<ScopedTexture> deviceBackgroundTexture = ScopedTexture::create(m_resourceProvider);
     if (!getFramebufferTexture(deviceBackgroundTexture.get(), cc::IntRect(deviceRect)))
-        return scoped_ptr<CCScopedTexture>();
+        return scoped_ptr<ScopedTexture>();
 
     SkBitmap filteredDeviceBackground = applyFilters(this, filters, deviceBackgroundTexture.get());
     if (!filteredDeviceBackground.getTexture())
-        return scoped_ptr<CCScopedTexture>();
+        return scoped_ptr<ScopedTexture>();
 
     GrTexture* texture = reinterpret_cast<GrTexture*>(filteredDeviceBackground.getTexture());
     int filteredDeviceBackgroundTextureId = texture->getTextureHandle();
 
-    scoped_ptr<CCScopedTexture> backgroundTexture = CCScopedTexture::create(m_resourceProvider);
-    if (!backgroundTexture->allocate(CCRenderer::ImplPool, cc::IntSize(quad->quadRect().size()), GL_RGBA, CCResourceProvider::TextureUsageFramebuffer))
-        return scoped_ptr<CCScopedTexture>();
+    scoped_ptr<ScopedTexture> backgroundTexture = ScopedTexture::create(m_resourceProvider);
+    if (!backgroundTexture->allocate(Renderer::ImplPool, cc::IntSize(quad->quadRect().size()), GL_RGBA, ResourceProvider::TextureUsageFramebuffer))
+        return scoped_ptr<ScopedTexture>();
 
-    const CCRenderPass* targetRenderPass = frame.currentRenderPass;
+    const RenderPass* targetRenderPass = frame.currentRenderPass;
     bool usingBackgroundTexture = useScopedTexture(frame, backgroundTexture.get(), quad->quadRect());
 
     if (usingBackgroundTexture) {
@@ -415,17 +415,17 @@ scoped_ptr<CCScopedTexture> CCRendererGL::drawBackgroundFilters(DrawingFrame& fr
     useRenderPass(frame, targetRenderPass);
 
     if (!usingBackgroundTexture)
-        return scoped_ptr<CCScopedTexture>();
+        return scoped_ptr<ScopedTexture>();
     return backgroundTexture.Pass();
 }
 
-void CCRendererGL::drawRenderPassQuad(DrawingFrame& frame, const CCRenderPassDrawQuad* quad)
+void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQuad* quad)
 {
     CachedTexture* contentsTexture = m_renderPassTextures.get(quad->renderPassId());
     if (!contentsTexture || !contentsTexture->id())
         return;
 
-    const CCRenderPass* renderPass = frame.renderPassesById->get(quad->renderPassId());
+    const RenderPass* renderPass = frame.renderPassesById->get(quad->renderPassId());
     DCHECK(renderPass);
     if (!renderPass)
         return;
@@ -438,33 +438,33 @@ void CCRendererGL::drawRenderPassQuad(DrawingFrame& frame, const CCRenderPassDra
     if (!contentsDeviceTransform.isInvertible())
         return;
 
-    scoped_ptr<CCScopedTexture> backgroundTexture = drawBackgroundFilters(frame, quad, renderPass->backgroundFilters(), contentsDeviceTransform);
+    scoped_ptr<ScopedTexture> backgroundTexture = drawBackgroundFilters(frame, quad, renderPass->backgroundFilters(), contentsDeviceTransform);
 
     // FIXME: Cache this value so that we don't have to do it for both the surface and its replica.
     // Apply filters to the contents texture.
     SkBitmap filterBitmap = applyFilters(this, renderPass->filters(), contentsTexture);
-    scoped_ptr<CCResourceProvider::ScopedReadLockGL> contentsResourceLock;
+    scoped_ptr<ResourceProvider::ScopedReadLockGL> contentsResourceLock;
     unsigned contentsTextureId = 0;
     if (filterBitmap.getTexture()) {
         GrTexture* texture = reinterpret_cast<GrTexture*>(filterBitmap.getTexture());
         contentsTextureId = texture->getTextureHandle();
     } else {
-        contentsResourceLock = make_scoped_ptr(new CCResourceProvider::ScopedReadLockGL(m_resourceProvider, contentsTexture->id()));
+        contentsResourceLock = make_scoped_ptr(new ResourceProvider::ScopedReadLockGL(m_resourceProvider, contentsTexture->id()));
         contentsTextureId = contentsResourceLock->textureId();
     }
 
     // Draw the background texture if there is one.
     if (backgroundTexture) {
         DCHECK(backgroundTexture->size() == quad->quadRect().size());
-        CCResourceProvider::ScopedReadLockGL lock(m_resourceProvider, backgroundTexture->id());
+        ResourceProvider::ScopedReadLockGL lock(m_resourceProvider, backgroundTexture->id());
         copyTextureToFramebuffer(frame, lock.textureId(), quad->quadRect(), quad->quadTransform());
     }
 
     bool clipped = false;
-    FloatQuad deviceQuad = CCMathUtil::mapQuad(contentsDeviceTransform, sharedGeometryQuad(), clipped);
+    FloatQuad deviceQuad = MathUtil::mapQuad(contentsDeviceTransform, sharedGeometryQuad(), clipped);
     DCHECK(!clipped);
-    CCLayerQuad deviceLayerBounds = CCLayerQuad(FloatQuad(deviceQuad.boundingBox()));
-    CCLayerQuad deviceLayerEdges = CCLayerQuad(deviceQuad);
+    LayerQuad deviceLayerBounds = LayerQuad(FloatQuad(deviceQuad.boundingBox()));
+    LayerQuad deviceLayerEdges = LayerQuad(deviceQuad);
 
     // Use anti-aliasing programs only when necessary.
     bool useAA = (!deviceQuad.isRectilinear() || !deviceQuad.boundingBox().isExpressibleAsIntRect());
@@ -473,10 +473,10 @@ void CCRendererGL::drawRenderPassQuad(DrawingFrame& frame, const CCRenderPassDra
         deviceLayerEdges.inflateAntiAliasingDistance();
     }
 
-    scoped_ptr<CCResourceProvider::ScopedReadLockGL> maskResourceLock;
+    scoped_ptr<ResourceProvider::ScopedReadLockGL> maskResourceLock;
     unsigned maskTextureId = 0;
     if (quad->maskResourceId()) {
-        maskResourceLock.reset(new CCResourceProvider::ScopedReadLockGL(m_resourceProvider, quad->maskResourceId()));
+        maskResourceLock.reset(new ResourceProvider::ScopedReadLockGL(m_resourceProvider, quad->maskResourceId()));
         maskTextureId = maskResourceLock->textureId();
     }
 
@@ -551,7 +551,7 @@ void CCRendererGL::drawRenderPassQuad(DrawingFrame& frame, const CCRenderPassDra
     }
 
     // Map device space quad to surface space. contentsDeviceTransform has no 3d component since it was generated with to2dTransform() so we don't need to project.
-    FloatQuad surfaceQuad = CCMathUtil::mapQuad(contentsDeviceTransform.inverse(), deviceLayerEdges.floatQuad(), clipped);
+    FloatQuad surfaceQuad = MathUtil::mapQuad(contentsDeviceTransform.inverse(), deviceLayerEdges.floatQuad(), clipped);
     DCHECK(!clipped);
 
     setShaderOpacity(quad->opacity(), shaderAlphaLocation);
@@ -559,7 +559,7 @@ void CCRendererGL::drawRenderPassQuad(DrawingFrame& frame, const CCRenderPassDra
     drawQuadGeometry(frame, quad->quadTransform(), quad->quadRect(), shaderMatrixLocation);
 }
 
-void CCRendererGL::drawSolidColorQuad(const DrawingFrame& frame, const CCSolidColorDrawQuad* quad)
+void GLRenderer::drawSolidColorQuad(const DrawingFrame& frame, const SolidColorDrawQuad* quad)
 {
     const SolidColorProgram* program = solidColorProgram();
     GLC(context(), context()->useProgram(program->program()));
@@ -598,7 +598,7 @@ static void tileUniformLocation(T program, TileProgramUniforms& uniforms)
     uniforms.edgeLocation = program->fragmentShader().edgeLocation();
 }
 
-void CCRendererGL::drawTileQuad(const DrawingFrame& frame, const CCTileDrawQuad* quad)
+void GLRenderer::drawTileQuad(const DrawingFrame& frame, const TileDrawQuad* quad)
 {
     gfx::Rect tileRect = quad->quadVisibleRect();
 
@@ -638,7 +638,7 @@ void CCRendererGL::drawTileQuad(const DrawingFrame& frame, const CCTileDrawQuad*
         return;
 
     bool clipped = false;
-    FloatQuad deviceLayerQuad = CCMathUtil::mapQuad(deviceTransform, FloatQuad(quad->visibleContentRect()), clipped);
+    FloatQuad deviceLayerQuad = MathUtil::mapQuad(deviceTransform, FloatQuad(quad->visibleContentRect()), clipped);
     DCHECK(!clipped);
 
     TileProgramUniforms uniforms;
@@ -666,17 +666,17 @@ void CCRendererGL::drawTileQuad(const DrawingFrame& frame, const CCTileDrawQuad*
     GLC(context(), context()->useProgram(uniforms.program));
     GLC(context(), context()->uniform1i(uniforms.samplerLocation, 0));
     GLC(context(), context()->activeTexture(GL_TEXTURE0));
-    CCResourceProvider::ScopedReadLockGL quadResourceLock(m_resourceProvider, quad->resourceId());
+    ResourceProvider::ScopedReadLockGL quadResourceLock(m_resourceProvider, quad->resourceId());
     GLC(context(), context()->bindTexture(GL_TEXTURE_2D, quadResourceLock.textureId()));
     GLC(context(), context()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, quad->textureFilter()));
     GLC(context(), context()->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, quad->textureFilter()));
 
     bool useAA = !clipped && quad->isAntialiased();
     if (useAA) {
-        CCLayerQuad deviceLayerBounds = CCLayerQuad(FloatQuad(deviceLayerQuad.boundingBox()));
+        LayerQuad deviceLayerBounds = LayerQuad(FloatQuad(deviceLayerQuad.boundingBox()));
         deviceLayerBounds.inflateAntiAliasingDistance();
 
-        CCLayerQuad deviceLayerEdges = CCLayerQuad(deviceLayerQuad);
+        LayerQuad deviceLayerEdges = LayerQuad(deviceLayerQuad);
         deviceLayerEdges.inflateAntiAliasingDistance();
 
         float edge[24];
@@ -693,19 +693,19 @@ void CCRendererGL::drawTileQuad(const DrawingFrame& frame, const CCTileDrawQuad*
         FloatPoint topRight(tileRect.right(), tileRect.y());
 
         // Map points to device space.
-        bottomRight = CCMathUtil::mapPoint(deviceTransform, bottomRight, clipped);
+        bottomRight = MathUtil::mapPoint(deviceTransform, bottomRight, clipped);
         DCHECK(!clipped);
-        bottomLeft = CCMathUtil::mapPoint(deviceTransform, bottomLeft, clipped);
+        bottomLeft = MathUtil::mapPoint(deviceTransform, bottomLeft, clipped);
         DCHECK(!clipped);
-        topLeft = CCMathUtil::mapPoint(deviceTransform, topLeft, clipped);
+        topLeft = MathUtil::mapPoint(deviceTransform, topLeft, clipped);
         DCHECK(!clipped);
-        topRight = CCMathUtil::mapPoint(deviceTransform, topRight, clipped);
+        topRight = MathUtil::mapPoint(deviceTransform, topRight, clipped);
         DCHECK(!clipped);
 
-        CCLayerQuad::Edge bottomEdge(bottomRight, bottomLeft);
-        CCLayerQuad::Edge leftEdge(bottomLeft, topLeft);
-        CCLayerQuad::Edge topEdge(topLeft, topRight);
-        CCLayerQuad::Edge rightEdge(topRight, bottomRight);
+        LayerQuad::Edge bottomEdge(bottomRight, bottomLeft);
+        LayerQuad::Edge leftEdge(bottomLeft, topLeft);
+        LayerQuad::Edge topEdge(topLeft, topRight);
+        LayerQuad::Edge rightEdge(topRight, bottomRight);
 
         // Only apply anti-aliasing to edges not clipped by culling or scissoring.
         if (quad->topEdgeAA() && tileRect.y() == quad->quadRect().y())
@@ -724,11 +724,11 @@ void CCRendererGL::drawTileQuad(const DrawingFrame& frame, const CCTileDrawQuad*
         rightEdge.scale(sign);
 
         // Create device space quad.
-        CCLayerQuad deviceQuad(leftEdge, topEdge, rightEdge, bottomEdge);
+        LayerQuad deviceQuad(leftEdge, topEdge, rightEdge, bottomEdge);
 
         // Map device space quad to local space. contentsDeviceTransform has no 3d component since it was generated with to2dTransform() so we don't need to project.
         WebTransformationMatrix inverseDeviceTransform = deviceTransform.inverse();
-        localQuad = CCMathUtil::mapQuad(inverseDeviceTransform, deviceQuad.floatQuad(), clipped);
+        localQuad = MathUtil::mapQuad(inverseDeviceTransform, deviceQuad.floatQuad(), clipped);
 
         // We should not DCHECK(!clipped) here, because anti-aliasing inflation may cause deviceQuad to become
         // clipped. To our knowledge this scenario does not need to be handled differently than the unclipped case.
@@ -764,18 +764,18 @@ void CCRendererGL::drawTileQuad(const DrawingFrame& frame, const CCTileDrawQuad*
     drawQuadGeometry(frame, quad->quadTransform(), centeredRect, uniforms.matrixLocation);
 }
 
-void CCRendererGL::drawYUVVideoQuad(const DrawingFrame& frame, const CCYUVVideoDrawQuad* quad)
+void GLRenderer::drawYUVVideoQuad(const DrawingFrame& frame, const YUVVideoDrawQuad* quad)
 {
     const VideoYUVProgram* program = videoYUVProgram();
     DCHECK(program && program->initialized());
 
-    const CCVideoLayerImpl::FramePlane& yPlane = quad->yPlane();
-    const CCVideoLayerImpl::FramePlane& uPlane = quad->uPlane();
-    const CCVideoLayerImpl::FramePlane& vPlane = quad->vPlane();
+    const VideoLayerImpl::FramePlane& yPlane = quad->yPlane();
+    const VideoLayerImpl::FramePlane& uPlane = quad->uPlane();
+    const VideoLayerImpl::FramePlane& vPlane = quad->vPlane();
 
-    CCResourceProvider::ScopedReadLockGL yPlaneLock(m_resourceProvider, yPlane.resourceId);
-    CCResourceProvider::ScopedReadLockGL uPlaneLock(m_resourceProvider, uPlane.resourceId);
-    CCResourceProvider::ScopedReadLockGL vPlaneLock(m_resourceProvider, vPlane.resourceId);
+    ResourceProvider::ScopedReadLockGL yPlaneLock(m_resourceProvider, yPlane.resourceId);
+    ResourceProvider::ScopedReadLockGL uPlaneLock(m_resourceProvider, uPlane.resourceId);
+    ResourceProvider::ScopedReadLockGL vPlaneLock(m_resourceProvider, vPlane.resourceId);
     GLC(context(), context()->activeTexture(GL_TEXTURE1));
     GLC(context(), context()->bindTexture(GL_TEXTURE_2D, yPlaneLock.textureId()));
     GLC(context(), context()->activeTexture(GL_TEXTURE2));
@@ -802,7 +802,7 @@ void CCRendererGL::drawYUVVideoQuad(const DrawingFrame& frame, const CCYUVVideoD
         0.f, -.391f, 2.018f,
         1.596f, -.813f, 0.f,
     };
-    GLC(context(), context()->uniformMatrix3fv(program->fragmentShader().ccMatrixLocation(), 1, 0, yuv2RGB));
+    GLC(context(), context()->uniformMatrix3fv(program->fragmentShader().matrixLocation(), 1, 0, yuv2RGB));
 
     // These values map to 16, 128, and 128 respectively, and are computed
     // as a fraction over 256 (e.g. 16 / 256 = 0.0625).
@@ -824,7 +824,7 @@ void CCRendererGL::drawYUVVideoQuad(const DrawingFrame& frame, const CCYUVVideoD
     GLC(context(), context()->activeTexture(GL_TEXTURE0));
 }
 
-void CCRendererGL::drawStreamVideoQuad(const DrawingFrame& frame, const CCStreamVideoDrawQuad* quad)
+void GLRenderer::drawStreamVideoQuad(const DrawingFrame& frame, const StreamVideoDrawQuad* quad)
 {
     static float glMatrix[16];
 
@@ -869,9 +869,9 @@ struct TexTransformTextureProgramBinding : TextureProgramBinding {
     int texTransformLocation;
 };
 
-void CCRendererGL::drawTextureQuad(const DrawingFrame& frame, const CCTextureDrawQuad* quad)
+void GLRenderer::drawTextureQuad(const DrawingFrame& frame, const TextureDrawQuad* quad)
 {
-    DCHECK(CCProxy::isImplThread());
+    DCHECK(Proxy::isImplThread());
 
     TexTransformTextureProgramBinding binding;
     if (quad->flipped())
@@ -884,7 +884,7 @@ void CCRendererGL::drawTextureQuad(const DrawingFrame& frame, const CCTextureDra
     GLC(context(), context()->uniform4f(binding.texTransformLocation, uvRect.x(), uvRect.y(), uvRect.width(), uvRect.height()));
 
     GLC(context(), context()->activeTexture(GL_TEXTURE0));
-    CCResourceProvider::ScopedReadLockGL quadResourceLock(m_resourceProvider, quad->resourceId());
+    ResourceProvider::ScopedReadLockGL quadResourceLock(m_resourceProvider, quad->resourceId());
     GLC(context(), context()->bindTexture(GL_TEXTURE_2D, quadResourceLock.textureId()));
 
     // FIXME: setting the texture parameters every time is redundant. Move this code somewhere
@@ -913,15 +913,15 @@ void CCRendererGL::drawTextureQuad(const DrawingFrame& frame, const CCTextureDra
         GLC(m_context, m_context->blendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
 }
 
-void CCRendererGL::drawIOSurfaceQuad(const DrawingFrame& frame, const CCIOSurfaceDrawQuad* quad)
+void GLRenderer::drawIOSurfaceQuad(const DrawingFrame& frame, const IOSurfaceDrawQuad* quad)
 {
-    DCHECK(CCProxy::isImplThread());
+    DCHECK(Proxy::isImplThread());
     TexTransformTextureProgramBinding binding;
     binding.set(textureIOSurfaceProgram());
 
     GLC(context(), context()->useProgram(binding.programId));
     GLC(context(), context()->uniform1i(binding.samplerLocation, 0));
-    if (quad->orientation() == CCIOSurfaceDrawQuad::Flipped)
+    if (quad->orientation() == IOSurfaceDrawQuad::Flipped)
         GLC(context(), context()->uniform4f(binding.texTransformLocation, 0, quad->ioSurfaceSize().height(), quad->ioSurfaceSize().width(), quad->ioSurfaceSize().height() * -1.0));
     else
         GLC(context(), context()->uniform4f(binding.texTransformLocation, 0, 0, quad->ioSurfaceSize().width(), quad->ioSurfaceSize().height()));
@@ -935,7 +935,7 @@ void CCRendererGL::drawIOSurfaceQuad(const DrawingFrame& frame, const CCIOSurfac
     GLC(context(), context()->bindTexture(GL_TEXTURE_RECTANGLE_ARB, 0));
 }
 
-void CCRendererGL::finishDrawingFrame(DrawingFrame& frame)
+void GLRenderer::finishDrawingFrame(DrawingFrame& frame)
 {
     m_currentFramebufferLock.reset();
     m_swapBufferRect = m_swapBufferRect.Union(gfx::ToEnclosingRect(frame.rootDamageRect));
@@ -944,12 +944,12 @@ void CCRendererGL::finishDrawingFrame(DrawingFrame& frame)
     GLC(m_context, m_context->disable(GL_BLEND));
 }
 
-bool CCRendererGL::flippedFramebuffer() const
+bool GLRenderer::flippedFramebuffer() const
 {
     return true;
 }
 
-void CCRendererGL::toGLMatrix(float* flattened, const WebTransformationMatrix& m)
+void GLRenderer::toGLMatrix(float* flattened, const WebTransformationMatrix& m)
 {
     flattened[0] = m.m11();
     flattened[1] = m.m12();
@@ -969,7 +969,7 @@ void CCRendererGL::toGLMatrix(float* flattened, const WebTransformationMatrix& m
     flattened[15] = m.m44();
 }
 
-void CCRendererGL::setShaderFloatQuad(const FloatQuad& quad, int quadLocation)
+void GLRenderer::setShaderFloatQuad(const FloatQuad& quad, int quadLocation)
 {
     if (quadLocation == -1)
         return;
@@ -986,13 +986,13 @@ void CCRendererGL::setShaderFloatQuad(const FloatQuad& quad, int quadLocation)
     GLC(m_context, m_context->uniform2fv(quadLocation, 4, point));
 }
 
-void CCRendererGL::setShaderOpacity(float opacity, int alphaLocation)
+void GLRenderer::setShaderOpacity(float opacity, int alphaLocation)
 {
     if (alphaLocation != -1)
         GLC(m_context, m_context->uniform1f(alphaLocation, opacity));
 }
 
-void CCRendererGL::drawQuadGeometry(const DrawingFrame& frame, const WebKit::WebTransformationMatrix& drawTransform, const gfx::RectF& quadRect, int matrixLocation)
+void GLRenderer::drawQuadGeometry(const DrawingFrame& frame, const WebKit::WebTransformationMatrix& drawTransform, const gfx::RectF& quadRect, int matrixLocation)
 {
     WebTransformationMatrix quadRectMatrix;
     quadRectTransform(&quadRectMatrix, drawTransform, quadRect);
@@ -1003,7 +1003,7 @@ void CCRendererGL::drawQuadGeometry(const DrawingFrame& frame, const WebKit::Web
     GLC(m_context, m_context->drawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0));
 }
 
-void CCRendererGL::copyTextureToFramebuffer(const DrawingFrame& frame, int textureId, const gfx::Rect& rect, const WebTransformationMatrix& drawMatrix)
+void GLRenderer::copyTextureToFramebuffer(const DrawingFrame& frame, int textureId, const gfx::Rect& rect, const WebTransformationMatrix& drawMatrix)
 {
     const RenderPassProgram* program = renderPassProgram();
 
@@ -1020,18 +1020,18 @@ void CCRendererGL::copyTextureToFramebuffer(const DrawingFrame& frame, int textu
     drawQuadGeometry(frame, drawMatrix, rect, program->vertexShader().matrixLocation());
 }
 
-void CCRendererGL::finish()
+void GLRenderer::finish()
 {
-    TRACE_EVENT0("cc", "CCRendererGL::finish");
+    TRACE_EVENT0("cc", "GLRenderer::finish");
     m_context->finish();
 }
 
-bool CCRendererGL::swapBuffers()
+bool GLRenderer::swapBuffers()
 {
     DCHECK(m_visible);
     DCHECK(!m_isFramebufferDiscarded);
 
-    TRACE_EVENT0("cc", "CCRendererGL::swapBuffers");
+    TRACE_EVENT0("cc", "GLRenderer::swapBuffers");
     // We're done! Time to swapbuffers!
 
     if (m_capabilities.usingPartialSwap) {
@@ -1050,25 +1050,25 @@ bool CCRendererGL::swapBuffers()
     return true;
 }
 
-void CCRendererGL::onSwapBuffersComplete()
+void GLRenderer::onSwapBuffersComplete()
 {
     m_client->onSwapBuffersComplete();
 }
 
-void CCRendererGL::onMemoryAllocationChanged(WebGraphicsMemoryAllocation allocation)
+void GLRenderer::onMemoryAllocationChanged(WebGraphicsMemoryAllocation allocation)
 {
     // FIXME: This is called on the main thread in single threaded mode, but we expect it on the impl thread.
-    if (!CCProxy::hasImplThread()) {
-      DCHECK(CCProxy::isMainThread());
+    if (!Proxy::hasImplThread()) {
+      DCHECK(Proxy::isMainThread());
       DebugScopedSetImplThread impl;
       onMemoryAllocationChangedOnImplThread(allocation);
     } else {
-      DCHECK(CCProxy::isImplThread());
+      DCHECK(Proxy::isImplThread());
       onMemoryAllocationChangedOnImplThread(allocation);
     }
 }
 
-void CCRendererGL::onMemoryAllocationChangedOnImplThread(WebKit::WebGraphicsMemoryAllocation allocation)
+void GLRenderer::onMemoryAllocationChangedOnImplThread(WebKit::WebGraphicsMemoryAllocation allocation)
 {
     m_discardFramebufferWhenNotVisible = !allocation.suggestHaveBackbuffer;
     // Just ignore the memory manager when it says to set the limit to zero
@@ -1079,10 +1079,10 @@ void CCRendererGL::onMemoryAllocationChangedOnImplThread(WebKit::WebGraphicsMemo
     enforceMemoryPolicy();
 }
 
-void CCRendererGL::enforceMemoryPolicy()
+void GLRenderer::enforceMemoryPolicy()
 {
     if (!m_visible) {
-        TRACE_EVENT0("cc", "CCRendererGL::enforceMemoryPolicy dropping resources");
+        TRACE_EVENT0("cc", "GLRenderer::enforceMemoryPolicy dropping resources");
         releaseRenderPassTextures();
         if (m_discardFramebufferWhenNotVisible)
             discardFramebuffer();
@@ -1090,7 +1090,7 @@ void CCRendererGL::enforceMemoryPolicy()
     }
 }
 
-void CCRendererGL::discardFramebuffer()
+void GLRenderer::discardFramebuffer()
 {
     if (m_isFramebufferDiscarded)
         return;
@@ -1106,7 +1106,7 @@ void CCRendererGL::discardFramebuffer()
     m_client->setFullRootLayerDamage();
 }
 
-void CCRendererGL::ensureFramebuffer()
+void GLRenderer::ensureFramebuffer()
 {
     if (!m_isFramebufferDiscarded)
         return;
@@ -1118,13 +1118,13 @@ void CCRendererGL::ensureFramebuffer()
     m_isFramebufferDiscarded = false;
 }
 
-void CCRendererGL::onContextLost()
+void GLRenderer::onContextLost()
 {
     m_client->didLoseContext();
 }
 
 
-void CCRendererGL::getFramebufferPixels(void *pixels, const IntRect& rect)
+void GLRenderer::getFramebufferPixels(void *pixels, const IntRect& rect)
 {
     DCHECK(rect.maxX() <= viewportWidth());
     DCHECK(rect.maxY() <= viewportHeight());
@@ -1192,21 +1192,21 @@ void CCRendererGL::getFramebufferPixels(void *pixels, const IntRect& rect)
     enforceMemoryPolicy();
 }
 
-bool CCRendererGL::getFramebufferTexture(CCScopedTexture* texture, const IntRect& deviceRect)
+bool GLRenderer::getFramebufferTexture(ScopedTexture* texture, const IntRect& deviceRect)
 {
     DCHECK(!texture->id() || (texture->size() == deviceRect.size() && texture->format() == GL_RGB));
 
-    if (!texture->id() && !texture->allocate(CCRenderer::ImplPool, cc::IntSize(deviceRect.size()), GL_RGB, CCResourceProvider::TextureUsageAny))
+    if (!texture->id() && !texture->allocate(Renderer::ImplPool, cc::IntSize(deviceRect.size()), GL_RGB, ResourceProvider::TextureUsageAny))
         return false;
 
-    CCResourceProvider::ScopedWriteLockGL lock(m_resourceProvider, texture->id());
+    ResourceProvider::ScopedWriteLockGL lock(m_resourceProvider, texture->id());
     GLC(m_context, m_context->bindTexture(GL_TEXTURE_2D, lock.textureId()));
     GLC(m_context, m_context->copyTexImage2D(GL_TEXTURE_2D, 0, texture->format(),
                                              deviceRect.x(), deviceRect.y(), deviceRect.width(), deviceRect.height(), 0));
     return true;
 }
 
-bool CCRendererGL::useScopedTexture(DrawingFrame& frame, const CCScopedTexture* texture, const gfx::Rect& viewportRect)
+bool GLRenderer::useScopedTexture(DrawingFrame& frame, const ScopedTexture* texture, const gfx::Rect& viewportRect)
 {
     DCHECK(texture->id());
     frame.currentRenderPass = 0;
@@ -1215,18 +1215,18 @@ bool CCRendererGL::useScopedTexture(DrawingFrame& frame, const CCScopedTexture* 
     return bindFramebufferToTexture(frame, texture, viewportRect);
 }
 
-void CCRendererGL::bindFramebufferToOutputSurface(DrawingFrame& frame)
+void GLRenderer::bindFramebufferToOutputSurface(DrawingFrame& frame)
 {
     m_currentFramebufferLock.reset();
     GLC(m_context, m_context->bindFramebuffer(GL_FRAMEBUFFER, 0));
 }
 
-bool CCRendererGL::bindFramebufferToTexture(DrawingFrame& frame, const CCScopedTexture* texture, const gfx::Rect& framebufferRect)
+bool GLRenderer::bindFramebufferToTexture(DrawingFrame& frame, const ScopedTexture* texture, const gfx::Rect& framebufferRect)
 {
     DCHECK(texture->id());
 
     GLC(m_context, m_context->bindFramebuffer(GL_FRAMEBUFFER, m_offscreenFramebufferId));
-    m_currentFramebufferLock = make_scoped_ptr(new CCResourceProvider::ScopedWriteLockGL(m_resourceProvider, texture->id()));
+    m_currentFramebufferLock = make_scoped_ptr(new ResourceProvider::ScopedWriteLockGL(m_resourceProvider, texture->id()));
     unsigned textureId = m_currentFramebufferLock->textureId();
     GLC(m_context, m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureId, 0));
 
@@ -1238,30 +1238,30 @@ bool CCRendererGL::bindFramebufferToTexture(DrawingFrame& frame, const CCScopedT
     return true;
 }
 
-void CCRendererGL::enableScissorTestRect(const gfx::Rect& scissorRect)
+void GLRenderer::enableScissorTestRect(const gfx::Rect& scissorRect)
 {
     GLC(m_context, m_context->enable(GL_SCISSOR_TEST));
     GLC(m_context, m_context->scissor(scissorRect.x(), scissorRect.y(), scissorRect.width(), scissorRect.height()));
 }
 
-void CCRendererGL::disableScissorTest()
+void GLRenderer::disableScissorTest()
 {
     GLC(m_context, m_context->disable(GL_SCISSOR_TEST));
 }
 
-void CCRendererGL::setDrawViewportSize(const gfx::Size& viewportSize)
+void GLRenderer::setDrawViewportSize(const gfx::Size& viewportSize)
 {
     GLC(m_context, m_context->viewport(0, 0, viewportSize.width(), viewportSize.height()));
 }
 
-bool CCRendererGL::makeContextCurrent()
+bool GLRenderer::makeContextCurrent()
 {
     return m_context->makeContextCurrent();
 }
 
-bool CCRendererGL::initializeSharedObjects()
+bool GLRenderer::initializeSharedObjects()
 {
-    TRACE_EVENT0("cc", "CCRendererGL::initializeSharedObjects");
+    TRACE_EVENT0("cc", "GLRenderer::initializeSharedObjects");
     makeContextCurrent();
 
     // Create an FBO for doing offscreen rendering.
@@ -1279,191 +1279,191 @@ bool CCRendererGL::initializeSharedObjects()
     return true;
 }
 
-const CCRendererGL::TileCheckerboardProgram* CCRendererGL::tileCheckerboardProgram()
+const GLRenderer::TileCheckerboardProgram* GLRenderer::tileCheckerboardProgram()
 {
     if (!m_tileCheckerboardProgram)
         m_tileCheckerboardProgram = make_scoped_ptr(new TileCheckerboardProgram(m_context));
     if (!m_tileCheckerboardProgram->initialized()) {
-        TRACE_EVENT0("cc", "CCRendererGL::checkerboardProgram::initalize");
+        TRACE_EVENT0("cc", "GLRenderer::checkerboardProgram::initalize");
         m_tileCheckerboardProgram->initialize(m_context, m_isUsingBindUniform);
     }
     return m_tileCheckerboardProgram.get();
 }
 
-const CCRendererGL::SolidColorProgram* CCRendererGL::solidColorProgram()
+const GLRenderer::SolidColorProgram* GLRenderer::solidColorProgram()
 {
     if (!m_solidColorProgram)
         m_solidColorProgram = make_scoped_ptr(new SolidColorProgram(m_context));
     if (!m_solidColorProgram->initialized()) {
-        TRACE_EVENT0("cc", "CCRendererGL::solidColorProgram::initialize");
+        TRACE_EVENT0("cc", "GLRenderer::solidColorProgram::initialize");
         m_solidColorProgram->initialize(m_context, m_isUsingBindUniform);
     }
     return m_solidColorProgram.get();
 }
 
-const CCRendererGL::RenderPassProgram* CCRendererGL::renderPassProgram()
+const GLRenderer::RenderPassProgram* GLRenderer::renderPassProgram()
 {
     DCHECK(m_renderPassProgram);
     if (!m_renderPassProgram->initialized()) {
-        TRACE_EVENT0("cc", "CCRendererGL::renderPassProgram::initialize");
+        TRACE_EVENT0("cc", "GLRenderer::renderPassProgram::initialize");
         m_renderPassProgram->initialize(m_context, m_isUsingBindUniform);
     }
     return m_renderPassProgram.get();
 }
 
-const CCRendererGL::RenderPassProgramAA* CCRendererGL::renderPassProgramAA()
+const GLRenderer::RenderPassProgramAA* GLRenderer::renderPassProgramAA()
 {
     if (!m_renderPassProgramAA)
         m_renderPassProgramAA = make_scoped_ptr(new RenderPassProgramAA(m_context));
     if (!m_renderPassProgramAA->initialized()) {
-        TRACE_EVENT0("cc", "CCRendererGL::renderPassProgramAA::initialize");
+        TRACE_EVENT0("cc", "GLRenderer::renderPassProgramAA::initialize");
         m_renderPassProgramAA->initialize(m_context, m_isUsingBindUniform);
     }
     return m_renderPassProgramAA.get();
 }
 
-const CCRendererGL::RenderPassMaskProgram* CCRendererGL::renderPassMaskProgram()
+const GLRenderer::RenderPassMaskProgram* GLRenderer::renderPassMaskProgram()
 {
     if (!m_renderPassMaskProgram)
         m_renderPassMaskProgram = make_scoped_ptr(new RenderPassMaskProgram(m_context));
     if (!m_renderPassMaskProgram->initialized()) {
-        TRACE_EVENT0("cc", "CCRendererGL::renderPassMaskProgram::initialize");
+        TRACE_EVENT0("cc", "GLRenderer::renderPassMaskProgram::initialize");
         m_renderPassMaskProgram->initialize(m_context, m_isUsingBindUniform);
     }
     return m_renderPassMaskProgram.get();
 }
 
-const CCRendererGL::RenderPassMaskProgramAA* CCRendererGL::renderPassMaskProgramAA()
+const GLRenderer::RenderPassMaskProgramAA* GLRenderer::renderPassMaskProgramAA()
 {
     if (!m_renderPassMaskProgramAA)
         m_renderPassMaskProgramAA = make_scoped_ptr(new RenderPassMaskProgramAA(m_context));
     if (!m_renderPassMaskProgramAA->initialized()) {
-        TRACE_EVENT0("cc", "CCRendererGL::renderPassMaskProgramAA::initialize");
+        TRACE_EVENT0("cc", "GLRenderer::renderPassMaskProgramAA::initialize");
         m_renderPassMaskProgramAA->initialize(m_context, m_isUsingBindUniform);
     }
     return m_renderPassMaskProgramAA.get();
 }
 
-const CCRendererGL::TileProgram* CCRendererGL::tileProgram()
+const GLRenderer::TileProgram* GLRenderer::tileProgram()
 {
     DCHECK(m_tileProgram);
     if (!m_tileProgram->initialized()) {
-        TRACE_EVENT0("cc", "CCRendererGL::tileProgram::initialize");
+        TRACE_EVENT0("cc", "GLRenderer::tileProgram::initialize");
         m_tileProgram->initialize(m_context, m_isUsingBindUniform);
     }
     return m_tileProgram.get();
 }
 
-const CCRendererGL::TileProgramOpaque* CCRendererGL::tileProgramOpaque()
+const GLRenderer::TileProgramOpaque* GLRenderer::tileProgramOpaque()
 {
     DCHECK(m_tileProgramOpaque);
     if (!m_tileProgramOpaque->initialized()) {
-        TRACE_EVENT0("cc", "CCRendererGL::tileProgramOpaque::initialize");
+        TRACE_EVENT0("cc", "GLRenderer::tileProgramOpaque::initialize");
         m_tileProgramOpaque->initialize(m_context, m_isUsingBindUniform);
     }
     return m_tileProgramOpaque.get();
 }
 
-const CCRendererGL::TileProgramAA* CCRendererGL::tileProgramAA()
+const GLRenderer::TileProgramAA* GLRenderer::tileProgramAA()
 {
     if (!m_tileProgramAA)
         m_tileProgramAA = make_scoped_ptr(new TileProgramAA(m_context));
     if (!m_tileProgramAA->initialized()) {
-        TRACE_EVENT0("cc", "CCRendererGL::tileProgramAA::initialize");
+        TRACE_EVENT0("cc", "GLRenderer::tileProgramAA::initialize");
         m_tileProgramAA->initialize(m_context, m_isUsingBindUniform);
     }
     return m_tileProgramAA.get();
 }
 
-const CCRendererGL::TileProgramSwizzle* CCRendererGL::tileProgramSwizzle()
+const GLRenderer::TileProgramSwizzle* GLRenderer::tileProgramSwizzle()
 {
     if (!m_tileProgramSwizzle)
         m_tileProgramSwizzle = make_scoped_ptr(new TileProgramSwizzle(m_context));
     if (!m_tileProgramSwizzle->initialized()) {
-        TRACE_EVENT0("cc", "CCRendererGL::tileProgramSwizzle::initialize");
+        TRACE_EVENT0("cc", "GLRenderer::tileProgramSwizzle::initialize");
         m_tileProgramSwizzle->initialize(m_context, m_isUsingBindUniform);
     }
     return m_tileProgramSwizzle.get();
 }
 
-const CCRendererGL::TileProgramSwizzleOpaque* CCRendererGL::tileProgramSwizzleOpaque()
+const GLRenderer::TileProgramSwizzleOpaque* GLRenderer::tileProgramSwizzleOpaque()
 {
     if (!m_tileProgramSwizzleOpaque)
         m_tileProgramSwizzleOpaque = make_scoped_ptr(new TileProgramSwizzleOpaque(m_context));
     if (!m_tileProgramSwizzleOpaque->initialized()) {
-        TRACE_EVENT0("cc", "CCRendererGL::tileProgramSwizzleOpaque::initialize");
+        TRACE_EVENT0("cc", "GLRenderer::tileProgramSwizzleOpaque::initialize");
         m_tileProgramSwizzleOpaque->initialize(m_context, m_isUsingBindUniform);
     }
     return m_tileProgramSwizzleOpaque.get();
 }
 
-const CCRendererGL::TileProgramSwizzleAA* CCRendererGL::tileProgramSwizzleAA()
+const GLRenderer::TileProgramSwizzleAA* GLRenderer::tileProgramSwizzleAA()
 {
     if (!m_tileProgramSwizzleAA)
         m_tileProgramSwizzleAA = make_scoped_ptr(new TileProgramSwizzleAA(m_context));
     if (!m_tileProgramSwizzleAA->initialized()) {
-        TRACE_EVENT0("cc", "CCRendererGL::tileProgramSwizzleAA::initialize");
+        TRACE_EVENT0("cc", "GLRenderer::tileProgramSwizzleAA::initialize");
         m_tileProgramSwizzleAA->initialize(m_context, m_isUsingBindUniform);
     }
     return m_tileProgramSwizzleAA.get();
 }
 
-const CCRendererGL::TextureProgram* CCRendererGL::textureProgram()
+const GLRenderer::TextureProgram* GLRenderer::textureProgram()
 {
     if (!m_textureProgram)
         m_textureProgram = make_scoped_ptr(new TextureProgram(m_context));
     if (!m_textureProgram->initialized()) {
-        TRACE_EVENT0("cc", "CCRendererGL::textureProgram::initialize");
+        TRACE_EVENT0("cc", "GLRenderer::textureProgram::initialize");
         m_textureProgram->initialize(m_context, m_isUsingBindUniform);
     }
     return m_textureProgram.get();
 }
 
-const CCRendererGL::TextureProgramFlip* CCRendererGL::textureProgramFlip()
+const GLRenderer::TextureProgramFlip* GLRenderer::textureProgramFlip()
 {
     if (!m_textureProgramFlip)
         m_textureProgramFlip = make_scoped_ptr(new TextureProgramFlip(m_context));
     if (!m_textureProgramFlip->initialized()) {
-        TRACE_EVENT0("cc", "CCRendererGL::textureProgramFlip::initialize");
+        TRACE_EVENT0("cc", "GLRenderer::textureProgramFlip::initialize");
         m_textureProgramFlip->initialize(m_context, m_isUsingBindUniform);
     }
     return m_textureProgramFlip.get();
 }
 
-const CCRendererGL::TextureIOSurfaceProgram* CCRendererGL::textureIOSurfaceProgram()
+const GLRenderer::TextureIOSurfaceProgram* GLRenderer::textureIOSurfaceProgram()
 {
     if (!m_textureIOSurfaceProgram)
         m_textureIOSurfaceProgram = make_scoped_ptr(new TextureIOSurfaceProgram(m_context));
     if (!m_textureIOSurfaceProgram->initialized()) {
-        TRACE_EVENT0("cc", "CCRendererGL::textureIOSurfaceProgram::initialize");
+        TRACE_EVENT0("cc", "GLRenderer::textureIOSurfaceProgram::initialize");
         m_textureIOSurfaceProgram->initialize(m_context, m_isUsingBindUniform);
     }
     return m_textureIOSurfaceProgram.get();
 }
 
-const CCRendererGL::VideoYUVProgram* CCRendererGL::videoYUVProgram()
+const GLRenderer::VideoYUVProgram* GLRenderer::videoYUVProgram()
 {
     if (!m_videoYUVProgram)
         m_videoYUVProgram = make_scoped_ptr(new VideoYUVProgram(m_context));
     if (!m_videoYUVProgram->initialized()) {
-        TRACE_EVENT0("cc", "CCRendererGL::videoYUVProgram::initialize");
+        TRACE_EVENT0("cc", "GLRenderer::videoYUVProgram::initialize");
         m_videoYUVProgram->initialize(m_context, m_isUsingBindUniform);
     }
     return m_videoYUVProgram.get();
 }
 
-const CCRendererGL::VideoStreamTextureProgram* CCRendererGL::videoStreamTextureProgram()
+const GLRenderer::VideoStreamTextureProgram* GLRenderer::videoStreamTextureProgram()
 {
     if (!m_videoStreamTextureProgram)
         m_videoStreamTextureProgram = make_scoped_ptr(new VideoStreamTextureProgram(m_context));
     if (!m_videoStreamTextureProgram->initialized()) {
-        TRACE_EVENT0("cc", "CCRendererGL::streamTextureProgram::initialize");
+        TRACE_EVENT0("cc", "GLRenderer::streamTextureProgram::initialize");
         m_videoStreamTextureProgram->initialize(m_context, m_isUsingBindUniform);
     }
     return m_videoStreamTextureProgram.get();
 }
 
-void CCRendererGL::cleanupSharedObjects()
+void GLRenderer::cleanupSharedObjects()
 {
     makeContextCurrent();
 
@@ -1514,7 +1514,7 @@ void CCRendererGL::cleanupSharedObjects()
     releaseRenderPassTextures();
 }
 
-bool CCRendererGL::isContextLost()
+bool GLRenderer::isContextLost()
 {
     return (m_context->getGraphicsResetStatusARB() != GL_NO_ERROR);
 }

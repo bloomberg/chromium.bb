@@ -13,9 +13,9 @@ namespace cc {
 // This subclass wraps an existing scrollbar geometry class so that
 // another class can derive from it and override specific functions, while
 // passing through the remaining ones.
-class CCScrollbarGeometryStub : public WebKit::WebScrollbarThemeGeometry {
+class ScrollbarGeometryStub : public WebKit::WebScrollbarThemeGeometry {
 public:
-    virtual ~CCScrollbarGeometryStub();
+    virtual ~ScrollbarGeometryStub();
 
     // Allow derived classes to update themselves from a scrollbar.
     void update(WebKit::WebScrollbar*) { }
@@ -40,7 +40,7 @@ public:
     virtual void splitTrack(WebKit::WebScrollbar*, const WebKit::WebRect& track, WebKit::WebRect& startTrack, WebKit::WebRect& thumb, WebKit::WebRect& endTrack) OVERRIDE;
 
 protected:
-    explicit CCScrollbarGeometryStub(scoped_ptr<WebKit::WebScrollbarThemeGeometry>);
+    explicit ScrollbarGeometryStub(scoped_ptr<WebKit::WebScrollbarThemeGeometry>);
 
 private:
     scoped_ptr<WebKit::WebScrollbarThemeGeometry> m_geometry;

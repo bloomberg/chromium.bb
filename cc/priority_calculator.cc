@@ -39,25 +39,25 @@ static const int mostLowPriority = 3000000;
 static const int everythingPriorityCutoff = 3000001;
 
 // static
-int CCPriorityCalculator::uiPriority(bool drawsToRootSurface)
+int PriorityCalculator::uiPriority(bool drawsToRootSurface)
 {
     return drawsToRootSurface ? uiDrawsToRootSurfacePriority : uiDoesNotDrawToRootSurfacePriority;
 }
 
 // static
-int CCPriorityCalculator::visiblePriority(bool drawsToRootSurface)
+int PriorityCalculator::visiblePriority(bool drawsToRootSurface)
 {
     return drawsToRootSurface ? visibleDrawsToRootSurfacePriority : visibleDoesNotDrawToRootSurfacePriority;
 }
 
 // static
-int CCPriorityCalculator::renderSurfacePriority()
+int PriorityCalculator::renderSurfacePriority()
 {
     return renderSurfacesPriority;
 }
 
 // static
-int CCPriorityCalculator::lingeringPriority(int previousPriority)
+int PriorityCalculator::lingeringPriority(int previousPriority)
 {
     // FIXME: We should remove this once we have priorities for all
     //        textures (we can't currently calculate distances for
@@ -77,7 +77,7 @@ int manhattanDistance(const IntRect& a, const IntRect& b)
 }
 
 // static
-int CCPriorityCalculator::priorityFromDistance(const IntRect& visibleRect, const IntRect& textureRect, bool drawsToRootSurface)
+int PriorityCalculator::priorityFromDistance(const IntRect& visibleRect, const IntRect& textureRect, bool drawsToRootSurface)
 {
     int distance = manhattanDistance(visibleRect, textureRect);
     if (!distance)
@@ -86,37 +86,37 @@ int CCPriorityCalculator::priorityFromDistance(const IntRect& visibleRect, const
 }
 
 // static
-int CCPriorityCalculator::smallAnimatedLayerMinPriority()
+int PriorityCalculator::smallAnimatedLayerMinPriority()
 {
     return smallAnimatedLayerPriority;
 }
 
 // static 
-int CCPriorityCalculator::highestPriority()
+int PriorityCalculator::highestPriority()
 {
     return mostHighPriority;
 }
 
 // static
-int CCPriorityCalculator::lowestPriority()
+int PriorityCalculator::lowestPriority()
 {
     return mostLowPriority;
 }
 
 // static
-int CCPriorityCalculator::allowNothingCutoff()
+int PriorityCalculator::allowNothingCutoff()
 {
     return nothingPriorityCutoff;
 }
 
 // static
-int CCPriorityCalculator::allowVisibleOnlyCutoff()
+int PriorityCalculator::allowVisibleOnlyCutoff()
 {
     return visibleOnlyPriorityCutoff;
 }
 
 // static
-int CCPriorityCalculator::allowEverythingCutoff()
+int PriorityCalculator::allowEverythingCutoff()
 {
     return everythingPriorityCutoff;
 }

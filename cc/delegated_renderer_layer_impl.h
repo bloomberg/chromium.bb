@@ -10,37 +10,37 @@
 
 namespace cc {
 
-class CCDelegatedRendererLayerImpl : public CCLayerImpl {
+class DelegatedRendererLayerImpl : public LayerImpl {
 public:
-    static scoped_ptr<CCDelegatedRendererLayerImpl> create(int id) { return make_scoped_ptr(new CCDelegatedRendererLayerImpl(id)); }
-    virtual ~CCDelegatedRendererLayerImpl();
+    static scoped_ptr<DelegatedRendererLayerImpl> create(int id) { return make_scoped_ptr(new DelegatedRendererLayerImpl(id)); }
+    virtual ~DelegatedRendererLayerImpl();
 
     virtual bool descendantDrawsContent() OVERRIDE;
     virtual bool hasContributingDelegatedRenderPasses() const OVERRIDE;
 
     // This gives ownership of the RenderPasses to the layer.
-    void setRenderPasses(ScopedPtrVector<CCRenderPass>&);
+    void setRenderPasses(ScopedPtrVector<RenderPass>&);
     void clearRenderPasses();
 
     virtual void didLoseContext() OVERRIDE;
 
-    virtual CCRenderPass::Id firstContributingRenderPassId() const OVERRIDE;
-    virtual CCRenderPass::Id nextContributingRenderPassId(CCRenderPass::Id) const OVERRIDE;
+    virtual RenderPass::Id firstContributingRenderPassId() const OVERRIDE;
+    virtual RenderPass::Id nextContributingRenderPassId(RenderPass::Id) const OVERRIDE;
 
-    void appendContributingRenderPasses(CCRenderPassSink&);
-    virtual void appendQuads(CCQuadSink&, CCAppendQuadsData&) OVERRIDE;
+    void appendContributingRenderPasses(RenderPassSink&);
+    virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
 
 private:
-    explicit CCDelegatedRendererLayerImpl(int);
+    explicit DelegatedRendererLayerImpl(int);
 
-    CCRenderPass::Id convertDelegatedRenderPassId(CCRenderPass::Id delegatedRenderPassId) const;
+    RenderPass::Id convertDelegatedRenderPassId(RenderPass::Id delegatedRenderPassId) const;
 
-    void appendRenderPassQuads(CCQuadSink&, CCAppendQuadsData&, CCRenderPass* fromDelegatedRenderPass) const;
+    void appendRenderPassQuads(QuadSink&, AppendQuadsData&, RenderPass* fromDelegatedRenderPass) const;
 
     virtual const char* layerTypeAsString() const OVERRIDE;
 
-    ScopedPtrVector<CCRenderPass> m_renderPassesInDrawOrder;
-    base::hash_map<CCRenderPass::Id, int> m_renderPassesIndexById;
+    ScopedPtrVector<RenderPass> m_renderPassesInDrawOrder;
+    base::hash_map<RenderPass::Id, int> m_renderPassesIndexById;
 };
 
 }

@@ -19,21 +19,21 @@ class WebVideoFrame;
 
 namespace cc {
 
-class CCLayerTreeHostImpl;
-class CCVideoLayerImpl;
+class LayerTreeHostImpl;
+class VideoLayerImpl;
 
-class CCVideoLayerImpl : public CCLayerImpl
+class VideoLayerImpl : public LayerImpl
                        , public WebKit::WebVideoFrameProvider::Client {
 public:
-    static scoped_ptr<CCVideoLayerImpl> create(int id, WebKit::WebVideoFrameProvider* provider)
+    static scoped_ptr<VideoLayerImpl> create(int id, WebKit::WebVideoFrameProvider* provider)
     {
-        return make_scoped_ptr(new CCVideoLayerImpl(id, provider));
+        return make_scoped_ptr(new VideoLayerImpl(id, provider));
     }
-    virtual ~CCVideoLayerImpl();
+    virtual ~VideoLayerImpl();
 
-    virtual void willDraw(CCResourceProvider*) OVERRIDE;
-    virtual void appendQuads(CCQuadSink&, CCAppendQuadsData&) OVERRIDE;
-    virtual void didDraw(CCResourceProvider*) OVERRIDE;
+    virtual void willDraw(ResourceProvider*) OVERRIDE;
+    virtual void appendQuads(QuadSink&, AppendQuadsData&) OVERRIDE;
+    virtual void didDraw(ResourceProvider*) OVERRIDE;
 
     virtual void dumpLayerProperties(std::string*, int indent) const OVERRIDE;
 
@@ -47,28 +47,28 @@ public:
     void setNeedsRedraw();
 
     struct FramePlane {
-        CCResourceProvider::ResourceId resourceId;
+        ResourceProvider::ResourceId resourceId;
         IntSize size;
         GLenum format;
         IntSize visibleSize;
 
         FramePlane() : resourceId(0) { }
 
-        bool allocateData(CCResourceProvider*);
-        void freeData(CCResourceProvider*);
+        bool allocateData(ResourceProvider*);
+        void freeData(ResourceProvider*);
     };
 
 private:
-    CCVideoLayerImpl(int, WebKit::WebVideoFrameProvider*);
+    VideoLayerImpl(int, WebKit::WebVideoFrameProvider*);
 
     static IntSize computeVisibleSize(const WebKit::WebVideoFrame&, unsigned plane);
     virtual const char* layerTypeAsString() const OVERRIDE;
 
-    void willDrawInternal(CCResourceProvider*);
-    bool allocatePlaneData(CCResourceProvider*);
-    bool copyPlaneData(CCResourceProvider*);
-    void freePlaneData(CCResourceProvider*);
-    void freeUnusedPlaneData(CCResourceProvider*);
+    void willDrawInternal(ResourceProvider*);
+    bool allocatePlaneData(ResourceProvider*);
+    bool copyPlaneData(ResourceProvider*);
+    void freePlaneData(ResourceProvider*);
+    void freeUnusedPlaneData(ResourceProvider*);
 
     // Guards the destruction of m_provider and the frame that it provides
     base::Lock m_providerLock;
@@ -78,7 +78,7 @@ private:
 
     WebKit::WebVideoFrame* m_frame;
     GLenum m_format;
-    CCResourceProvider::ResourceId m_externalTextureResource;
+    ResourceProvider::ResourceId m_externalTextureResource;
 
     // Each index in this array corresponds to a plane in WebKit::WebVideoFrame.
     FramePlane m_framePlanes[WebKit::WebVideoFrame::maxPlanes];

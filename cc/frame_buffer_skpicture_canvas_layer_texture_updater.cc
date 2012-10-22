@@ -10,7 +10,7 @@
 
 namespace cc {
 
-FrameBufferSkPictureCanvasLayerTextureUpdater::Texture::Texture(FrameBufferSkPictureCanvasLayerTextureUpdater* textureUpdater, scoped_ptr<CCPrioritizedTexture> texture)
+FrameBufferSkPictureCanvasLayerTextureUpdater::Texture::Texture(FrameBufferSkPictureCanvasLayerTextureUpdater* textureUpdater, scoped_ptr<PrioritizedTexture> texture)
   : LayerTextureUpdater::Texture(texture.Pass())
     , m_textureUpdater(textureUpdater)
 {
@@ -20,17 +20,17 @@ FrameBufferSkPictureCanvasLayerTextureUpdater::Texture::~Texture()
 {
 }
 
-void FrameBufferSkPictureCanvasLayerTextureUpdater::Texture::update(CCTextureUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, CCRenderingStats&)
+void FrameBufferSkPictureCanvasLayerTextureUpdater::Texture::update(TextureUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&)
 {
     textureUpdater()->updateTexture(queue, texture(), sourceRect, destOffset, partialUpdate);
 }
 
-scoped_refptr<FrameBufferSkPictureCanvasLayerTextureUpdater> FrameBufferSkPictureCanvasLayerTextureUpdater::create(scoped_ptr<LayerPainterChromium> painter)
+scoped_refptr<FrameBufferSkPictureCanvasLayerTextureUpdater> FrameBufferSkPictureCanvasLayerTextureUpdater::create(scoped_ptr<LayerPainter> painter)
 {
     return make_scoped_refptr(new FrameBufferSkPictureCanvasLayerTextureUpdater(painter.Pass()));
 }
 
-FrameBufferSkPictureCanvasLayerTextureUpdater::FrameBufferSkPictureCanvasLayerTextureUpdater(scoped_ptr<LayerPainterChromium> painter)
+FrameBufferSkPictureCanvasLayerTextureUpdater::FrameBufferSkPictureCanvasLayerTextureUpdater(scoped_ptr<LayerPainter> painter)
     : SkPictureCanvasLayerTextureUpdater(painter.Pass())
 {
 }
@@ -39,9 +39,9 @@ FrameBufferSkPictureCanvasLayerTextureUpdater::~FrameBufferSkPictureCanvasLayerT
 {
 }
 
-scoped_ptr<LayerTextureUpdater::Texture> FrameBufferSkPictureCanvasLayerTextureUpdater::createTexture(CCPrioritizedTextureManager* manager)
+scoped_ptr<LayerTextureUpdater::Texture> FrameBufferSkPictureCanvasLayerTextureUpdater::createTexture(PrioritizedTextureManager* manager)
 {
-    return scoped_ptr<LayerTextureUpdater::Texture>(new Texture(this, CCPrioritizedTexture::create(manager)));
+    return scoped_ptr<LayerTextureUpdater::Texture>(new Texture(this, PrioritizedTexture::create(manager)));
 }
 
 } // namespace cc

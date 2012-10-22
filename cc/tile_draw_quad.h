@@ -15,9 +15,9 @@ namespace cc {
 
 #pragma pack(push, 4)
 
-class CCTileDrawQuad : public CCDrawQuad {
+class TileDrawQuad : public DrawQuad {
 public:
-    static scoped_ptr<CCTileDrawQuad> create(const CCSharedQuadState*, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned resourceId, const gfx::Point& textureOffset, const gfx::Size& textureSize, GLint textureFilter, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA);
+    static scoped_ptr<TileDrawQuad> create(const SharedQuadState*, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned resourceId, const gfx::Point& textureOffset, const gfx::Size& textureSize, GLint textureFilter, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA);
 
     unsigned resourceId() const { return m_resourceId; }
     gfx::Point textureOffset() const { return m_textureOffset; }
@@ -32,9 +32,9 @@ public:
 
     bool isAntialiased() const { return leftEdgeAA() || topEdgeAA() || rightEdgeAA() || bottomEdgeAA(); }
 
-    static const CCTileDrawQuad* materialCast(const CCDrawQuad*);
+    static const TileDrawQuad* materialCast(const DrawQuad*);
 private:
-    CCTileDrawQuad(const CCSharedQuadState*, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned resourceId, const gfx::Point& textureOffset, const gfx::Size& textureSize, GLint textureFilter, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA);
+    TileDrawQuad(const SharedQuadState*, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned resourceId, const gfx::Point& textureOffset, const gfx::Size& textureSize, GLint textureFilter, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA);
 
     unsigned m_resourceId;
     gfx::Point m_textureOffset;

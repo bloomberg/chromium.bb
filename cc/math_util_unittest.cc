@@ -17,7 +17,7 @@ using WebKit::WebTransformationMatrix;
 
 namespace {
 
-TEST(CCMathUtilTest, verifyBackfaceVisibilityBasicCases)
+TEST(MathUtilTest, verifyBackfaceVisibilityBasicCases)
 {
     WebTransformationMatrix transform;
 
@@ -38,7 +38,7 @@ TEST(CCMathUtilTest, verifyBackfaceVisibilityBasicCases)
     EXPECT_FALSE(transform.isBackFaceVisible());
 }
 
-TEST(CCMathUtilTest, verifyBackfaceVisibilityForPerspective)
+TEST(MathUtilTest, verifyBackfaceVisibilityForPerspective)
 {
     WebTransformationMatrix layerSpaceToProjectionPlane;
 
@@ -81,7 +81,7 @@ TEST(CCMathUtilTest, verifyBackfaceVisibilityForPerspective)
     EXPECT_TRUE(layerSpaceToProjectionPlane.isBackFaceVisible());
 }
 
-TEST(CCMathUtilTest, verifyProjectionOfPerpendicularPlane)
+TEST(MathUtilTest, verifyProjectionOfPerpendicularPlane)
 {
     // In this case, the m33() element of the transform becomes zero, which could cause a
     // divide-by-zero when projecting points/quads.
@@ -91,14 +91,14 @@ TEST(CCMathUtilTest, verifyProjectionOfPerpendicularPlane)
     transform.setM33(0);
 
     FloatRect rect = FloatRect(0, 0, 1, 1);
-    FloatRect projectedRect = CCMathUtil::projectClippedRect(transform, rect);
+    FloatRect projectedRect = MathUtil::projectClippedRect(transform, rect);
 
     EXPECT_EQ(0, projectedRect.x());
     EXPECT_EQ(0, projectedRect.y());
     EXPECT_TRUE(projectedRect.isEmpty());
 }
 
-TEST(CCMathUtilTest, verifyEnclosingClippedRectUsesCorrectInitialBounds)
+TEST(MathUtilTest, verifyEnclosingClippedRectUsesCorrectInitialBounds)
 {
     HomogeneousCoordinate h1(-100, -100, 0, 1);
     HomogeneousCoordinate h2(-10, -10, 0, 1);
@@ -109,12 +109,12 @@ TEST(CCMathUtilTest, verifyEnclosingClippedRectUsesCorrectInitialBounds)
     // However, if there is a bug where the initial xmin/xmax/ymin/ymax are initialized to
     // numeric_limits<float>::min() (which is zero, not -flt_max) then the enclosing
     // clipped rect will be computed incorrectly.
-    FloatRect result = CCMathUtil::computeEnclosingClippedRect(h1, h2, h3, h4);
+    FloatRect result = MathUtil::computeEnclosingClippedRect(h1, h2, h3, h4);
 
     EXPECT_FLOAT_RECT_EQ(FloatRect(FloatPoint(-100, -100), FloatSize(90, 90)), result);
 }
 
-TEST(CCMathUtilTest, verifyEnclosingRectOfVerticesUsesCorrectInitialBounds)
+TEST(MathUtilTest, verifyEnclosingRectOfVerticesUsesCorrectInitialBounds)
 {
     FloatPoint vertices[3];
     int numVertices = 3;
@@ -127,54 +127,54 @@ TEST(CCMathUtilTest, verifyEnclosingRectOfVerticesUsesCorrectInitialBounds)
     // if there is a bug where the initial xmin/xmax/ymin/ymax are initialized to
     // numeric_limits<float>::min() (which is zero, not -flt_max) then the enclosing
     // clipped rect will be computed incorrectly.
-    FloatRect result = CCMathUtil::computeEnclosingRectOfVertices(vertices, numVertices);
+    FloatRect result = MathUtil::computeEnclosingRectOfVertices(vertices, numVertices);
 
     EXPECT_FLOAT_RECT_EQ(FloatRect(FloatPoint(-100, -100), FloatSize(90, 90)), result);
 }
 
-TEST(CCMathUtilTest, smallestAngleBetweenVectors)
+TEST(MathUtilTest, smallestAngleBetweenVectors)
 {
     FloatSize x(1, 0);
     FloatSize y(0, 1);
     FloatSize testVector(0.5, 0.5);
 
     // Orthogonal vectors are at an angle of 90 degress.
-    EXPECT_EQ(90, CCMathUtil::smallestAngleBetweenVectors(x, y));
+    EXPECT_EQ(90, MathUtil::smallestAngleBetweenVectors(x, y));
 
     // A vector makes a zero angle with itself.
-    EXPECT_EQ(0, CCMathUtil::smallestAngleBetweenVectors(x, x));
-    EXPECT_EQ(0, CCMathUtil::smallestAngleBetweenVectors(y, y));
-    EXPECT_EQ(0, CCMathUtil::smallestAngleBetweenVectors(testVector, testVector));
+    EXPECT_EQ(0, MathUtil::smallestAngleBetweenVectors(x, x));
+    EXPECT_EQ(0, MathUtil::smallestAngleBetweenVectors(y, y));
+    EXPECT_EQ(0, MathUtil::smallestAngleBetweenVectors(testVector, testVector));
 
     // Parallel but reversed vectors are at 180 degrees.
-    EXPECT_FLOAT_EQ(180, CCMathUtil::smallestAngleBetweenVectors(x, -x));
-    EXPECT_FLOAT_EQ(180, CCMathUtil::smallestAngleBetweenVectors(y, -y));
-    EXPECT_FLOAT_EQ(180, CCMathUtil::smallestAngleBetweenVectors(testVector, -testVector));
+    EXPECT_FLOAT_EQ(180, MathUtil::smallestAngleBetweenVectors(x, -x));
+    EXPECT_FLOAT_EQ(180, MathUtil::smallestAngleBetweenVectors(y, -y));
+    EXPECT_FLOAT_EQ(180, MathUtil::smallestAngleBetweenVectors(testVector, -testVector));
 
     // The test vector is at a known angle.
-    EXPECT_FLOAT_EQ(45, floor(CCMathUtil::smallestAngleBetweenVectors(testVector, x)));
-    EXPECT_FLOAT_EQ(45, floor(CCMathUtil::smallestAngleBetweenVectors(testVector, y)));
+    EXPECT_FLOAT_EQ(45, floor(MathUtil::smallestAngleBetweenVectors(testVector, x)));
+    EXPECT_FLOAT_EQ(45, floor(MathUtil::smallestAngleBetweenVectors(testVector, y)));
 }
 
-TEST(CCMathUtilTest, vectorProjection)
+TEST(MathUtilTest, vectorProjection)
 {
     FloatSize x(1, 0);
     FloatSize y(0, 1);
     FloatSize testVector(0.3f, 0.7f);
 
     // Orthogonal vectors project to a zero vector.
-    EXPECT_EQ(FloatSize(0, 0), CCMathUtil::projectVector(x, y));
-    EXPECT_EQ(FloatSize(0, 0), CCMathUtil::projectVector(y, x));
+    EXPECT_EQ(FloatSize(0, 0), MathUtil::projectVector(x, y));
+    EXPECT_EQ(FloatSize(0, 0), MathUtil::projectVector(y, x));
 
     // Projecting a vector onto the orthonormal basis gives the corresponding component of the
     // vector.
-    EXPECT_EQ(FloatSize(testVector.width(), 0), CCMathUtil::projectVector(testVector, x));
-    EXPECT_EQ(FloatSize(0, testVector.height()), CCMathUtil::projectVector(testVector, y));
+    EXPECT_EQ(FloatSize(testVector.width(), 0), MathUtil::projectVector(testVector, x));
+    EXPECT_EQ(FloatSize(0, testVector.height()), MathUtil::projectVector(testVector, y));
 
     // Finally check than an arbitrary vector projected to another one gives a vector parallel to
     // the second vector.
     FloatSize targetVector(0.5, 0.2f);
-    FloatSize projectedVector = CCMathUtil::projectVector(testVector, targetVector);
+    FloatSize projectedVector = MathUtil::projectVector(testVector, targetVector);
     EXPECT_EQ(projectedVector.width() / targetVector.width(),
               projectedVector.height() / targetVector.height());
 }

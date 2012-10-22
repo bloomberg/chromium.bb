@@ -10,7 +10,7 @@ using namespace cc;
 
 namespace WebKitTests {
 
-FakeLayerTextureUpdater::Texture::Texture(FakeLayerTextureUpdater* layer, scoped_ptr<CCPrioritizedTexture> texture)
+FakeLayerTextureUpdater::Texture::Texture(FakeLayerTextureUpdater* layer, scoped_ptr<PrioritizedTexture> texture)
     : LayerTextureUpdater::Texture(texture.Pass())
     , m_layer(layer)
 {
@@ -22,7 +22,7 @@ FakeLayerTextureUpdater::Texture::~Texture()
 {
 }
 
-void FakeLayerTextureUpdater::Texture::update(CCTextureUpdateQueue& queue, const IntRect&, const IntSize&, bool partialUpdate, CCRenderingStats&)
+void FakeLayerTextureUpdater::Texture::update(TextureUpdateQueue& queue, const IntRect&, const IntSize&, bool partialUpdate, RenderingStats&)
 {
     const IntRect rect(0, 0, 10, 10);
     ResourceUpdate upload = ResourceUpdate::Create(
@@ -45,7 +45,7 @@ FakeLayerTextureUpdater::~FakeLayerTextureUpdater()
 {
 }
 
-void FakeLayerTextureUpdater::prepareToUpdate(const IntRect& contentRect, const IntSize&, float, float, IntRect& resultingOpaqueRect, CCRenderingStats&)
+void FakeLayerTextureUpdater::prepareToUpdate(const IntRect& contentRect, const IntSize&, float, float, IntRect& resultingOpaqueRect, RenderingStats&)
 {
     m_prepareCount++;
     m_lastUpdateRect = contentRect;
@@ -57,39 +57,39 @@ void FakeLayerTextureUpdater::prepareToUpdate(const IntRect& contentRect, const 
     resultingOpaqueRect = m_opaquePaintRect;
 }
 
-void FakeLayerTextureUpdater::setRectToInvalidate(const IntRect& rect, FakeTiledLayerChromium* layer)
+void FakeLayerTextureUpdater::setRectToInvalidate(const IntRect& rect, FakeTiledLayer* layer)
 {
     m_rectToInvalidate = rect;
     m_layer = layer;
 }
 
-scoped_ptr<LayerTextureUpdater::Texture> FakeLayerTextureUpdater::createTexture(CCPrioritizedTextureManager* manager)
+scoped_ptr<LayerTextureUpdater::Texture> FakeLayerTextureUpdater::createTexture(PrioritizedTextureManager* manager)
 {
-    return scoped_ptr<LayerTextureUpdater::Texture>(new Texture(this, CCPrioritizedTexture::create(manager)));
+    return scoped_ptr<LayerTextureUpdater::Texture>(new Texture(this, PrioritizedTexture::create(manager)));
 }
 
-FakeCCTiledLayerImpl::FakeCCTiledLayerImpl(int id)
-    : CCTiledLayerImpl(id)
-{
-}
-
-FakeCCTiledLayerImpl::~FakeCCTiledLayerImpl()
+FakeTiledLayerImpl::FakeTiledLayerImpl(int id)
+    : TiledLayerImpl(id)
 {
 }
 
-FakeTiledLayerChromium::FakeTiledLayerChromium(CCPrioritizedTextureManager* textureManager)
-    : TiledLayerChromium()
+FakeTiledLayerImpl::~FakeTiledLayerImpl()
+{
+}
+
+FakeTiledLayer::FakeTiledLayer(PrioritizedTextureManager* textureManager)
+    : TiledLayer()
     , m_fakeTextureUpdater(make_scoped_refptr(new FakeLayerTextureUpdater))
     , m_textureManager(textureManager)
 {
     setTileSize(tileSize());
     setTextureFormat(GL_RGBA);
-    setBorderTexelOption(CCLayerTilingData::NoBorderTexels);
+    setBorderTexelOption(LayerTilingData::NoBorderTexels);
     setIsDrawable(true); // So that we don't get false positives if any of these tests expect to return false from drawsContent() for other reasons.
 }
 
-FakeTiledLayerWithScaledBounds::FakeTiledLayerWithScaledBounds(CCPrioritizedTextureManager* textureManager)
-    : FakeTiledLayerChromium(textureManager)
+FakeTiledLayerWithScaledBounds::FakeTiledLayerWithScaledBounds(PrioritizedTextureManager* textureManager)
+    : FakeTiledLayer(textureManager)
 {
 }
 
@@ -97,17 +97,17 @@ FakeTiledLayerWithScaledBounds::~FakeTiledLayerWithScaledBounds()
 {
 }
 
-FakeTiledLayerChromium::~FakeTiledLayerChromium()
+FakeTiledLayer::~FakeTiledLayer()
 {
 }
 
-void FakeTiledLayerChromium::setNeedsDisplayRect(const FloatRect& rect)
+void FakeTiledLayer::setNeedsDisplayRect(const FloatRect& rect)
 {
     m_lastNeedsDisplayRect = rect;
-    TiledLayerChromium::setNeedsDisplayRect(rect);
+    TiledLayer::setNeedsDisplayRect(rect);
 }
 
-void FakeTiledLayerChromium::setTexturePriorities(const CCPriorityCalculator& calculator)
+void FakeTiledLayer::setTexturePriorities(const PriorityCalculator& calculator)
 {
     // Ensure there is always a target render surface available. If none has been
     // set (the layer is an orphan for the test), then just set a surface on itself.
@@ -116,7 +116,7 @@ void FakeTiledLayerChromium::setTexturePriorities(const CCPriorityCalculator& ca
     if (missingTargetRenderSurface)
         createRenderSurface();
 
-    TiledLayerChromium::setTexturePriorities(calculator);
+    TiledLayer::setTexturePriorities(calculator);
 
     if (missingTargetRenderSurface) {
         clearRenderSurface();
@@ -124,12 +124,12 @@ void FakeTiledLayerChromium::setTexturePriorities(const CCPriorityCalculator& ca
     }
 }
 
-cc::CCPrioritizedTextureManager* FakeTiledLayerChromium::textureManager() const
+cc::PrioritizedTextureManager* FakeTiledLayer::textureManager() const
 {
     return m_textureManager;
 }
 
-cc::LayerTextureUpdater* FakeTiledLayerChromium::textureUpdater() const
+cc::LayerTextureUpdater* FakeTiledLayer::textureUpdater() const
 {
     return m_fakeTextureUpdater.get();
 }

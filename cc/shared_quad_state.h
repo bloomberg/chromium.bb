@@ -11,7 +11,7 @@
 
 namespace cc {
 
-struct CCSharedQuadState {
+struct SharedQuadState {
     int id;
 
     // Transforms from quad's original content space to its target content space.
@@ -22,10 +22,10 @@ struct CCSharedQuadState {
     float opacity;
     bool opaque;
 
-    static scoped_ptr<CCSharedQuadState> create(const WebKit::WebTransformationMatrix& quadTransform, const gfx::Rect& visibleContentRect, const gfx::Rect& clippedRectInTarget, float opacity, bool opaque);
-    CCSharedQuadState(const WebKit::WebTransformationMatrix& quadTransform, const gfx::Rect& visibleContentRect, const gfx::Rect& clippedRectInTarget, float opacity, bool opaque);
+    static scoped_ptr<SharedQuadState> create(const WebKit::WebTransformationMatrix& quadTransform, const gfx::Rect& visibleContentRect, const gfx::Rect& clippedRectInTarget, float opacity, bool opaque);
+    SharedQuadState(const WebKit::WebTransformationMatrix& quadTransform, const gfx::Rect& visibleContentRect, const gfx::Rect& clippedRectInTarget, float opacity, bool opaque);
 
-    scoped_ptr<CCSharedQuadState> copy() const;
+    scoped_ptr<SharedQuadState> copy() const;
 };
 
 }

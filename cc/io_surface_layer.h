@@ -9,21 +9,21 @@
 
 namespace cc {
 
-class IOSurfaceLayerChromium : public LayerChromium {
+class IOSurfaceLayer : public Layer {
 public:
-    static scoped_refptr<IOSurfaceLayerChromium> create();
+    static scoped_refptr<IOSurfaceLayer> create();
 
     void setIOSurfaceProperties(uint32_t ioSurfaceId, const IntSize&);
 
-    virtual scoped_ptr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
+    virtual scoped_ptr<LayerImpl> createLayerImpl() OVERRIDE;
     virtual bool drawsContent() const OVERRIDE;
-    virtual void pushPropertiesTo(CCLayerImpl*) OVERRIDE;
+    virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
 
 protected:
-    IOSurfaceLayerChromium();
+    IOSurfaceLayer();
 
 private:
-    virtual ~IOSurfaceLayerChromium();
+    virtual ~IOSurfaceLayer();
 
     uint32_t m_ioSurfaceId;
     IntSize m_ioSurfaceSize;

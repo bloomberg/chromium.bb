@@ -50,10 +50,10 @@ struct LayerShape {
 };
 
 struct GraphNode {
-    explicit GraphNode(CCLayerImpl* cclayer);
+    explicit GraphNode(LayerImpl* layerImpl);
     ~GraphNode();
 
-    CCLayerImpl* layer;
+    LayerImpl* layer;
     LayerShape shape;
     std::vector<GraphEdge*> incoming;
     std::vector<GraphEdge*> outgoing;
@@ -75,12 +75,12 @@ struct GraphEdge {
 
 
 
-class CCLayerSorter {
+class LayerSorter {
 public:
-    CCLayerSorter();
-    ~CCLayerSorter();
+    LayerSorter();
+    ~LayerSorter();
 
-    typedef std::vector<CCLayerImpl*> LayerList;
+    typedef std::vector<LayerImpl*> LayerList;
 
     void sort(LayerList::iterator first, LayerList::iterator last);
 
@@ -106,7 +106,7 @@ private:
     void createGraphEdges();
     void removeEdgeFromList(GraphEdge*, std::vector<GraphEdge*>&);
 
-    DISALLOW_COPY_AND_ASSIGN(CCLayerSorter);
+    DISALLOW_COPY_AND_ASSIGN(LayerSorter);
 };
 
 }

@@ -10,7 +10,7 @@
 namespace cc {
 
 // This file is for settings that apply to all compositors.  Add settings to
-// CCLayerTreeSettings if a ui and renderer compositor might not want the same
+// LayerTreeSettings if a ui and renderer compositor might not want the same
 // setting.
 
 class Settings {

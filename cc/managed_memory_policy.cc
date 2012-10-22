@@ -12,9 +12,9 @@ namespace cc {
 
 ManagedMemoryPolicy::ManagedMemoryPolicy(size_t bytesLimitWhenVisible)
     : bytesLimitWhenVisible(bytesLimitWhenVisible)
-    , priorityCutoffWhenVisible(CCPriorityCalculator::allowEverythingCutoff())
+    , priorityCutoffWhenVisible(PriorityCalculator::allowEverythingCutoff())
     , bytesLimitWhenNotVisible(0)
-    , priorityCutoffWhenNotVisible(CCPriorityCalculator::allowNothingCutoff())
+    , priorityCutoffWhenNotVisible(PriorityCalculator::allowNothingCutoff())
 {
 }
 

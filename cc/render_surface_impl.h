@@ -15,32 +15,32 @@
 
 namespace cc {
 
-class CCDamageTracker;
-class CCDelegatedRendererLayerImpl;
-class CCQuadSink;
-class CCRenderPassSink;
-class CCLayerImpl;
+class DamageTracker;
+class DelegatedRendererLayerImpl;
+class QuadSink;
+class RenderPassSink;
+class LayerImpl;
 
-struct CCAppendQuadsData;
+struct AppendQuadsData;
 
-class CCRenderSurface {
+class RenderSurfaceImpl {
 public:
-    explicit CCRenderSurface(CCLayerImpl*);
-    virtual ~CCRenderSurface();
+    explicit RenderSurfaceImpl(LayerImpl*);
+    virtual ~RenderSurfaceImpl();
 
     std::string name() const;
     void dumpSurface(std::string*, int indent) const;
 
     FloatPoint contentRectCenter() const { return FloatRect(m_contentRect).center(); }
 
-    // Returns the rect that encloses the RenderSurface including any reflection.
+    // Returns the rect that encloses the RenderSurfaceImpl including any reflection.
     FloatRect drawableContentRect() const;
 
     float drawOpacity() const { return m_drawOpacity; }
     void setDrawOpacity(float opacity) { m_drawOpacity = opacity; }
 
-    void setNearestAncestorThatMovesPixels(CCRenderSurface* surface) { m_nearestAncestorThatMovesPixels = surface; }
-    const CCRenderSurface* nearestAncestorThatMovesPixels() const { return m_nearestAncestorThatMovesPixels; }
+    void setNearestAncestorThatMovesPixels(RenderSurfaceImpl* surface) { m_nearestAncestorThatMovesPixels = surface; }
+    const RenderSurfaceImpl* nearestAncestorThatMovesPixels() const { return m_nearestAncestorThatMovesPixels; }
 
     bool drawOpacityIsAnimating() const { return m_drawOpacityIsAnimating; }
     void setDrawOpacityIsAnimating(bool drawOpacityIsAnimating) { m_drawOpacityIsAnimating = drawOpacityIsAnimating; }
@@ -70,8 +70,8 @@ public:
     void setContentRect(const IntRect&);
     const IntRect& contentRect() const { return m_contentRect; }
 
-    std::vector<CCLayerImpl*>& layerList() { return m_layerList; }
-    void addContributingDelegatedRenderPassLayer(CCLayerImpl*);
+    std::vector<LayerImpl*>& layerList() { return m_layerList; }
+    void addContributingDelegatedRenderPassLayer(LayerImpl*);
     void clearLayerLists();
 
     int owningLayerId() const;
@@ -80,15 +80,15 @@ public:
     bool surfacePropertyChanged() const;
     bool surfacePropertyChangedOnlyFromDescendant() const;
 
-    CCDamageTracker* damageTracker() const { return m_damageTracker.get(); }
+    DamageTracker* damageTracker() const { return m_damageTracker.get(); }
 
-    CCRenderPass::Id renderPassId();
+    RenderPass::Id renderPassId();
 
-    void appendRenderPasses(CCRenderPassSink&);
-    void appendQuads(CCQuadSink&, CCAppendQuadsData&, bool forReplica, CCRenderPass::Id renderPassId);
+    void appendRenderPasses(RenderPassSink&);
+    void appendQuads(QuadSink&, AppendQuadsData&, bool forReplica, RenderPass::Id renderPassId);
 
 private:
-    CCLayerImpl* m_owningLayer;
+    LayerImpl* m_owningLayer;
 
     // Uses this surface's space.
     IntRect m_contentRect;
@@ -106,22 +106,22 @@ private:
     // Uses the space of the surface's target surface.
     IntRect m_clipRect;
 
-    std::vector<CCLayerImpl*> m_layerList;
-    std::vector<CCDelegatedRendererLayerImpl*> m_contributingDelegatedRenderPassLayerList;
+    std::vector<LayerImpl*> m_layerList;
+    std::vector<DelegatedRendererLayerImpl*> m_contributingDelegatedRenderPassLayerList;
 
     // The nearest ancestor target surface that will contain the contents of this surface, and that is going
     // to move pixels within the surface (such as with a blur). This can point to itself.
-    CCRenderSurface* m_nearestAncestorThatMovesPixels;
+    RenderSurfaceImpl* m_nearestAncestorThatMovesPixels;
 
-    scoped_ptr<CCDamageTracker> m_damageTracker;
+    scoped_ptr<DamageTracker> m_damageTracker;
 
-    // For CCLayerIteratorActions
+    // For LayerIteratorActions
     int m_targetRenderSurfaceLayerIndexHistory;
     int m_currentLayerIndexHistory;
 
-    friend struct CCLayerIteratorActions;
+    friend struct LayerIteratorActions;
 
-    DISALLOW_COPY_AND_ASSIGN(CCRenderSurface);
+    DISALLOW_COPY_AND_ASSIGN(RenderSurfaceImpl);
 };
 
 }

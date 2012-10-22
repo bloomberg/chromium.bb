@@ -41,26 +41,26 @@ static inline SkPaint createPaint()
     return paint;
 }
 
-CCHeadsUpDisplayLayerImpl::CCHeadsUpDisplayLayerImpl(int id)
-    : CCLayerImpl(id)
+HeadsUpDisplayLayerImpl::HeadsUpDisplayLayerImpl(int id)
+    : LayerImpl(id)
 {
 }
 
-CCHeadsUpDisplayLayerImpl::~CCHeadsUpDisplayLayerImpl()
+HeadsUpDisplayLayerImpl::~HeadsUpDisplayLayerImpl()
 {
 }
 
-void CCHeadsUpDisplayLayerImpl::setFontAtlas(scoped_ptr<CCFontAtlas> fontAtlas)
+void HeadsUpDisplayLayerImpl::setFontAtlas(scoped_ptr<FontAtlas> fontAtlas)
 {
     m_fontAtlas = fontAtlas.Pass();
 }
 
-void CCHeadsUpDisplayLayerImpl::willDraw(CCResourceProvider* resourceProvider)
+void HeadsUpDisplayLayerImpl::willDraw(ResourceProvider* resourceProvider)
 {
-    CCLayerImpl::willDraw(resourceProvider);
+    LayerImpl::willDraw(resourceProvider);
 
     if (!m_hudTexture)
-        m_hudTexture = CCScopedTexture::create(resourceProvider);
+        m_hudTexture = ScopedTexture::create(resourceProvider);
 
     // FIXME: Scale the HUD by deviceScale to make it more friendly under high DPI.
 
@@ -68,24 +68,24 @@ void CCHeadsUpDisplayLayerImpl::willDraw(CCResourceProvider* resourceProvider)
         m_hudTexture->free();
 
     if (!m_hudTexture->id())
-        m_hudTexture->allocate(CCRenderer::ImplPool, bounds(), GL_RGBA, CCResourceProvider::TextureUsageAny);
+        m_hudTexture->allocate(Renderer::ImplPool, bounds(), GL_RGBA, ResourceProvider::TextureUsageAny);
 }
 
-void CCHeadsUpDisplayLayerImpl::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& appendQuadsData)
+void HeadsUpDisplayLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData)
 {
     if (!m_hudTexture->id())
         return;
 
-    CCSharedQuadState* sharedQuadState = quadSink.useSharedQuadState(createSharedQuadState());
+    SharedQuadState* sharedQuadState = quadSink.useSharedQuadState(createSharedQuadState());
 
     IntRect quadRect(IntPoint(), bounds());
     bool premultipliedAlpha = true;
     FloatRect uvRect(0, 0, 1, 1);
     bool flipped = false;
-    quadSink.append(CCTextureDrawQuad::create(sharedQuadState, quadRect, m_hudTexture->id(), premultipliedAlpha, uvRect, flipped).PassAs<CCDrawQuad>(), appendQuadsData);
+    quadSink.append(TextureDrawQuad::create(sharedQuadState, quadRect, m_hudTexture->id(), premultipliedAlpha, uvRect, flipped).PassAs<DrawQuad>(), appendQuadsData);
 }
 
-void CCHeadsUpDisplayLayerImpl::updateHudTexture(CCResourceProvider* resourceProvider)
+void HeadsUpDisplayLayerImpl::updateHudTexture(ResourceProvider* resourceProvider)
 {
     if (!m_hudTexture->id())
         return;
@@ -110,9 +110,9 @@ void CCHeadsUpDisplayLayerImpl::updateHudTexture(CCResourceProvider* resourcePro
     resourceProvider->upload(m_hudTexture->id(), static_cast<const uint8_t*>(bitmap->getPixels()), layerRect, layerRect, IntSize());
 }
 
-void CCHeadsUpDisplayLayerImpl::didDraw(CCResourceProvider* resourceProvider)
+void HeadsUpDisplayLayerImpl::didDraw(ResourceProvider* resourceProvider)
 {
-    CCLayerImpl::didDraw(resourceProvider);
+    LayerImpl::didDraw(resourceProvider);
 
     if (!m_hudTexture->id())
         return;
@@ -123,19 +123,19 @@ void CCHeadsUpDisplayLayerImpl::didDraw(CCResourceProvider* resourceProvider)
     DCHECK(!resourceProvider->inUseByConsumer(m_hudTexture->id()));
 }
 
-void CCHeadsUpDisplayLayerImpl::didLoseContext()
+void HeadsUpDisplayLayerImpl::didLoseContext()
 {
     m_hudTexture.reset();
 }
 
-bool CCHeadsUpDisplayLayerImpl::layerIsAlwaysDamaged() const
+bool HeadsUpDisplayLayerImpl::layerIsAlwaysDamaged() const
 {
     return true;
 }
 
-void CCHeadsUpDisplayLayerImpl::drawHudContents(SkCanvas* canvas)
+void HeadsUpDisplayLayerImpl::drawHudContents(SkCanvas* canvas)
 {
-    const CCLayerTreeSettings& settings = layerTreeHostImpl()->settings();
+    const LayerTreeSettings& settings = layerTreeHostImpl()->settings();
 
     if (settings.showPlatformLayerTree) {
         SkPaint paint = createPaint();
@@ -164,7 +164,7 @@ void CCHeadsUpDisplayLayerImpl::drawHudContents(SkCanvas* canvas)
         drawDebugRects(canvas, layerTreeHostImpl()->debugRectHistory());
 }
 
-void CCHeadsUpDisplayLayerImpl::drawFPSCounter(SkCanvas* canvas, CCFrameRateCounter* fpsCounter, int top, int height)
+void HeadsUpDisplayLayerImpl::drawFPSCounter(SkCanvas* canvas, FrameRateCounter* fpsCounter, int top, int height)
 {
     float textWidth = 170; // so text fits on linux.
     float graphWidth = fpsCounter->timeStampHistorySize();
@@ -220,7 +220,7 @@ void CCHeadsUpDisplayLayerImpl::drawFPSCounter(SkCanvas* canvas, CCFrameRateCoun
     canvas->drawPath(path, paint);
 }
 
-void CCHeadsUpDisplayLayerImpl::drawFPSCounterText(SkCanvas* canvas, CCFrameRateCounter* fpsCounter, int top, int width, int height)
+void HeadsUpDisplayLayerImpl::drawFPSCounterText(SkCanvas* canvas, FrameRateCounter* fpsCounter, int top, int width, int height)
 {
     double averageFPS, stdDeviation;
     fpsCounter->getAverageFPSAndStandardDeviation(averageFPS, stdDeviation);
@@ -235,9 +235,9 @@ void CCHeadsUpDisplayLayerImpl::drawFPSCounterText(SkCanvas* canvas, CCFrameRate
         m_fontAtlas->drawText(canvas, createPaint(), base::StringPrintf("FPS: %4.1f +/- %3.1f", averageFPS, stdDeviation), gfx::Point(10, height / 3), IntSize(width, height));
 }
 
-void CCHeadsUpDisplayLayerImpl::drawDebugRects(SkCanvas* canvas, CCDebugRectHistory* debugRectHistory)
+void HeadsUpDisplayLayerImpl::drawDebugRects(SkCanvas* canvas, DebugRectHistory* debugRectHistory)
 {
-    const Vector<CCDebugRect>& debugRects = debugRectHistory->debugRects();
+    const Vector<DebugRect>& debugRects = debugRectHistory->debugRects();
 
     for (size_t i = 0; i < debugRects.size(); ++i) {
         SkColor strokeColor = 0;
@@ -289,7 +289,7 @@ void CCHeadsUpDisplayLayerImpl::drawDebugRects(SkCanvas* canvas, CCDebugRectHist
     }
 }
 
-const char* CCHeadsUpDisplayLayerImpl::layerTypeAsString() const
+const char* HeadsUpDisplayLayerImpl::layerTypeAsString() const
 {
     return "HeadsUpDisplayLayer";
 }

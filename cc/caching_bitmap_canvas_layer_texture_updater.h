@@ -14,20 +14,20 @@ class CachingBitmapCanvasLayerTextureUpdater
     : public BitmapCanvasLayerTextureUpdater {
  public:
   static scoped_refptr<CachingBitmapCanvasLayerTextureUpdater> Create(
-      scoped_ptr<LayerPainterChromium>);
+      scoped_ptr<LayerPainter>);
 
   virtual void prepareToUpdate(const IntRect& content_rect,
                                const IntSize& tile_size,
                                float contents_width_scale,
                                float contents_height_scale,
                                IntRect& resulting_opaque_rect,
-                               CCRenderingStats&) OVERRIDE;
+                               RenderingStats&) OVERRIDE;
 
   bool pixelsDidChange() const;
 
  private:
   explicit CachingBitmapCanvasLayerTextureUpdater(
-      scoped_ptr<LayerPainterChromium> painter);
+      scoped_ptr<LayerPainter> painter);
   virtual ~CachingBitmapCanvasLayerTextureUpdater();
 
   bool pixels_did_change_;

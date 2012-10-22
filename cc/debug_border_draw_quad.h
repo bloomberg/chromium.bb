@@ -13,16 +13,16 @@ namespace cc {
 
 #pragma pack(push, 4)
 
-class CCDebugBorderDrawQuad : public CCDrawQuad {
+class DebugBorderDrawQuad : public DrawQuad {
 public:
-    static scoped_ptr<CCDebugBorderDrawQuad> create(const CCSharedQuadState*, const gfx::Rect&, SkColor, int width);
+    static scoped_ptr<DebugBorderDrawQuad> create(const SharedQuadState*, const gfx::Rect&, SkColor, int width);
 
     SkColor color() const { return m_color; };
     int width() const { return m_width; }
 
-    static const CCDebugBorderDrawQuad* materialCast(const CCDrawQuad*);
+    static const DebugBorderDrawQuad* materialCast(const DrawQuad*);
 private:
-    CCDebugBorderDrawQuad(const CCSharedQuadState*, const gfx::Rect&, SkColor, int width);
+    DebugBorderDrawQuad(const SharedQuadState*, const gfx::Rect&, SkColor, int width);
 
     SkColor m_color;
     int m_width;

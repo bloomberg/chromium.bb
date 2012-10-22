@@ -11,13 +11,13 @@
 
 namespace cc {
 
-scoped_ptr<CCTileDrawQuad> CCTileDrawQuad::create(const CCSharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned resourceId, const gfx::Point& textureOffset, const gfx::Size& textureSize, GLint textureFilter, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA)
+scoped_ptr<TileDrawQuad> TileDrawQuad::create(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned resourceId, const gfx::Point& textureOffset, const gfx::Size& textureSize, GLint textureFilter, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA)
 {
-    return make_scoped_ptr(new CCTileDrawQuad(sharedQuadState, quadRect, opaqueRect, resourceId, textureOffset, textureSize, textureFilter, swizzleContents, leftEdgeAA, topEdgeAA, rightEdgeAA, bottomEdgeAA));
+    return make_scoped_ptr(new TileDrawQuad(sharedQuadState, quadRect, opaqueRect, resourceId, textureOffset, textureSize, textureFilter, swizzleContents, leftEdgeAA, topEdgeAA, rightEdgeAA, bottomEdgeAA));
 }
 
-CCTileDrawQuad::CCTileDrawQuad(const CCSharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned resourceId, const gfx::Point& textureOffset, const gfx::Size& textureSize, GLint textureFilter, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA)
-    : CCDrawQuad(sharedQuadState, CCDrawQuad::TiledContent, quadRect)
+TileDrawQuad::TileDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, const gfx::Rect& opaqueRect, unsigned resourceId, const gfx::Point& textureOffset, const gfx::Size& textureSize, GLint textureFilter, bool swizzleContents, bool leftEdgeAA, bool topEdgeAA, bool rightEdgeAA, bool bottomEdgeAA)
+    : DrawQuad(sharedQuadState, DrawQuad::TiledContent, quadRect)
     , m_resourceId(resourceId)
     , m_textureOffset(textureOffset)
     , m_textureSize(textureSize)
@@ -33,10 +33,10 @@ CCTileDrawQuad::CCTileDrawQuad(const CCSharedQuadState* sharedQuadState, const g
     m_opaqueRect = opaqueRect;
 }
 
-const CCTileDrawQuad* CCTileDrawQuad::materialCast(const CCDrawQuad* quad)
+const TileDrawQuad* TileDrawQuad::materialCast(const DrawQuad* quad)
 {
-    DCHECK(quad->material() == CCDrawQuad::TiledContent);
-    return static_cast<const CCTileDrawQuad*>(quad);
+    DCHECK(quad->material() == DrawQuad::TiledContent);
+    return static_cast<const TileDrawQuad*>(quad);
 }
 
 }

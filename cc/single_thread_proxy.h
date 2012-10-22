@@ -14,14 +14,14 @@
 
 namespace cc {
 
-class CCLayerTreeHost;
+class LayerTreeHost;
 
-class CCSingleThreadProxy : public CCProxy, CCLayerTreeHostImplClient {
+class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
 public:
-    static scoped_ptr<CCProxy> create(CCLayerTreeHost*);
-    virtual ~CCSingleThreadProxy();
+    static scoped_ptr<Proxy> create(LayerTreeHost*);
+    virtual ~SingleThreadProxy();
 
-    // CCProxy implementation
+    // Proxy implementation
     virtual bool compositeAndReadback(void *pixels, const IntRect&) OVERRIDE;
     virtual void startPageScaleAnimation(const IntSize& targetPosition, bool useAnchor, float scale, double duration) OVERRIDE;
     virtual void finishAllRendering() OVERRIDE;
@@ -31,7 +31,7 @@ public:
     virtual void setVisible(bool) OVERRIDE;
     virtual bool initializeRenderer() OVERRIDE;
     virtual bool recreateContext() OVERRIDE;
-    virtual void renderingStats(CCRenderingStats*) OVERRIDE;
+    virtual void renderingStats(RenderingStats*) OVERRIDE;
     virtual const RendererCapabilities& rendererCapabilities() const OVERRIDE;
     virtual void loseContext() OVERRIDE;
     virtual void setNeedsAnimate() OVERRIDE;
@@ -45,37 +45,37 @@ public:
     virtual void acquireLayerTextures() OVERRIDE { }
     virtual void forceSerializeOnSwapBuffers() OVERRIDE;
 
-    // CCLayerTreeHostImplClient implementation
+    // LayerTreeHostImplClient implementation
     virtual void didLoseContextOnImplThread() OVERRIDE { }
     virtual void onSwapBuffersCompleteOnImplThread() OVERRIDE;
     virtual void onVSyncParametersChanged(double monotonicTimebase, double intervalInSeconds) OVERRIDE { }
     virtual void onCanDrawStateChanged(bool canDraw) OVERRIDE { }
     virtual void setNeedsRedrawOnImplThread() OVERRIDE;
     virtual void setNeedsCommitOnImplThread() OVERRIDE;
-    virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<CCAnimationEventsVector>, double wallClockTime) OVERRIDE;
+    virtual void postAnimationEventsToMainThreadOnImplThread(scoped_ptr<AnimationEventsVector>, double wallClockTime) OVERRIDE;
     virtual bool reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int priorityCutoff) OVERRIDE;
 
     // Called by the legacy path where RenderWidget does the scheduling.
     void compositeImmediately();
 
 private:
-    explicit CCSingleThreadProxy(CCLayerTreeHost*);
+    explicit SingleThreadProxy(LayerTreeHost*);
 
     bool commitAndComposite();
-    void doCommit(scoped_ptr<CCTextureUpdateQueue>);
+    void doCommit(scoped_ptr<TextureUpdateQueue>);
     bool doComposite();
     void didSwapFrame();
 
     // Accessed on main thread only.
-    CCLayerTreeHost* m_layerTreeHost;
+    LayerTreeHost* m_layerTreeHost;
     bool m_contextLost;
 
     // Holds on to the context between initializeContext() and initializeRenderer() calls. Shouldn't
     // be used for anything else.
-    scoped_ptr<CCGraphicsContext> m_contextBeforeInitialization;
+    scoped_ptr<GraphicsContext> m_contextBeforeInitialization;
 
-    // Used on the CCThread, but checked on main thread during initialization/shutdown.
-    scoped_ptr<CCLayerTreeHostImpl> m_layerTreeHostImpl;
+    // Used on the Thread, but checked on main thread during initialization/shutdown.
+    scoped_ptr<LayerTreeHostImpl> m_layerTreeHostImpl;
     bool m_rendererInitialized;
     RendererCapabilities m_RendererCapabilitiesForMainThread;
 
@@ -92,13 +92,13 @@ public:
     DebugScopedSetImplThread()
     {
 #ifndef NDEBUG
-        CCProxy::setCurrentThreadIsImplThread(true);
+        Proxy::setCurrentThreadIsImplThread(true);
 #endif
     }
     ~DebugScopedSetImplThread()
     {
 #ifndef NDEBUG
-        CCProxy::setCurrentThreadIsImplThread(false);
+        Proxy::setCurrentThreadIsImplThread(false);
 #endif
     }
 };
@@ -110,13 +110,13 @@ public:
     DebugScopedSetMainThread()
     {
 #ifndef NDEBUG
-        CCProxy::setCurrentThreadIsImplThread(false);
+        Proxy::setCurrentThreadIsImplThread(false);
 #endif
     }
     ~DebugScopedSetMainThread()
     {
 #ifndef NDEBUG
-        CCProxy::setCurrentThreadIsImplThread(true);
+        Proxy::setCurrentThreadIsImplThread(true);
 #endif
     }
 };

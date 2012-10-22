@@ -9,8 +9,8 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebTransformAnimationCurve.h"
 
 namespace cc {
-class CCAnimationCurve;
-class CCKeyframedTransformAnimationCurve;
+class AnimationCurve;
+class KeyframedTransformAnimationCurve;
 }
 
 namespace WebKit {
@@ -30,10 +30,10 @@ public:
 
     virtual WebTransformationMatrix getValue(double time) const OVERRIDE;
 
-    scoped_ptr<cc::CCAnimationCurve> cloneToCCAnimationCurve() const;
+    scoped_ptr<cc::AnimationCurve> cloneToAnimationCurve() const;
 
 private:
-    scoped_ptr<cc::CCKeyframedTransformAnimationCurve> m_curve;
+    scoped_ptr<cc::KeyframedTransformAnimationCurve> m_curve;
 };
 
 }

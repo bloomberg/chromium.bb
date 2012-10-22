@@ -24,7 +24,7 @@ namespace WebKit {
 class WebContentLayerClient;
 
 class WebContentLayerImpl : public WebContentLayer,
-                            public cc::ContentLayerChromiumClient {
+                            public cc::ContentLayerClient {
 public:
     explicit WebContentLayerImpl(WebContentLayerClient*);
 
@@ -39,7 +39,7 @@ public:
 protected:
     virtual ~WebContentLayerImpl();
 
-    // ContentLayerChromiumClient implementation.
+    // ContentLayerClient implementation.
     virtual void paintContents(SkCanvas*, const cc::IntRect& clip, cc::FloatRect& opaque) OVERRIDE;
 
     scoped_ptr<WebLayerImpl> m_layer;

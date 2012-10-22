@@ -13,15 +13,15 @@
 
 namespace cc {
 
-class CCThread;
+class Thread;
 
-struct CCScheduledActionDrawAndSwapResult {
-    CCScheduledActionDrawAndSwapResult()
+struct ScheduledActionDrawAndSwapResult {
+    ScheduledActionDrawAndSwapResult()
             : didDraw(false)
             , didSwap(false)
     {
     }
-    CCScheduledActionDrawAndSwapResult(bool didDraw, bool didSwap)
+    ScheduledActionDrawAndSwapResult(bool didDraw, bool didSwap)
             : didDraw(didDraw)
             , didSwap(didSwap)
     {
@@ -30,28 +30,28 @@ struct CCScheduledActionDrawAndSwapResult {
     bool didSwap;
 };
 
-class CCSchedulerClient {
+class SchedulerClient {
 public:
     virtual void scheduledActionBeginFrame() = 0;
-    virtual CCScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapIfPossible() = 0;
-    virtual CCScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapForced() = 0;
+    virtual ScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapIfPossible() = 0;
+    virtual ScheduledActionDrawAndSwapResult scheduledActionDrawAndSwapForced() = 0;
     virtual void scheduledActionCommit() = 0;
     virtual void scheduledActionBeginContextRecreation() = 0;
     virtual void scheduledActionAcquireLayerTexturesForMainThread() = 0;
     virtual void didAnticipatedDrawTimeChange(base::TimeTicks) = 0;
 
 protected:
-    virtual ~CCSchedulerClient() { }
+    virtual ~SchedulerClient() { }
 };
 
-class CCScheduler : CCFrameRateControllerClient {
+class Scheduler : FrameRateControllerClient {
 public:
-    static scoped_ptr<CCScheduler> create(CCSchedulerClient* client, scoped_ptr<CCFrameRateController> frameRateController)
+    static scoped_ptr<Scheduler> create(SchedulerClient* client, scoped_ptr<FrameRateController> frameRateController)
     {
-        return make_scoped_ptr(new CCScheduler(client, frameRateController.Pass()));
+        return make_scoped_ptr(new Scheduler(client, frameRateController.Pass()));
     }
 
-    virtual ~CCScheduler();
+    virtual ~Scheduler();
 
     void setCanBeginFrame(bool);
 
@@ -87,20 +87,20 @@ public:
 
     base::TimeTicks anticipatedDrawTime();
 
-    // CCFrameRateControllerClient implementation
+    // FrameRateControllerClient implementation
     virtual void vsyncTick(bool throttled) OVERRIDE;
 
 private:
-    CCScheduler(CCSchedulerClient*, scoped_ptr<CCFrameRateController>);
+    Scheduler(SchedulerClient*, scoped_ptr<FrameRateController>);
 
     void processScheduledActions();
 
-    CCSchedulerClient* m_client;
-    scoped_ptr<CCFrameRateController> m_frameRateController;
-    CCSchedulerStateMachine m_stateMachine;
+    SchedulerClient* m_client;
+    scoped_ptr<FrameRateController> m_frameRateController;
+    SchedulerStateMachine m_stateMachine;
     bool m_insideProcessScheduledActions;
 
-    DISALLOW_COPY_AND_ASSIGN(CCScheduler);
+    DISALLOW_COPY_AND_ASSIGN(Scheduler);
 };
 
 }  // namespace cc

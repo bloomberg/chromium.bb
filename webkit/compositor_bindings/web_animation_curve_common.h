@@ -9,11 +9,11 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebAnimationCurve.h"
 
 namespace cc {
-class CCTimingFunction;
+class TimingFunction;
 }
 
 namespace WebKit {
-scoped_ptr<cc::CCTimingFunction> createTimingFunction(WebAnimationCurve::TimingFunctionType);
+scoped_ptr<cc::TimingFunction> createTimingFunction(WebAnimationCurve::TimingFunctionType);
 }
 
 #endif // WebAnimationCurveCommon_h

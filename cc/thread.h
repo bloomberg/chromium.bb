@@ -11,11 +11,11 @@
 
 namespace cc {
 
-// CCThread provides basic infrastructure for messaging with the compositor in a
+// Thread provides basic infrastructure for messaging with the compositor in a
 // platform-neutral way.
-class CCThread {
+class Thread {
 public:
-    virtual ~CCThread() { }
+    virtual ~Thread() { }
 
     class Task {
     public:

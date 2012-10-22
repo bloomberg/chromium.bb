@@ -12,63 +12,63 @@ const double epsilon = 1e-6;
 
 namespace cc {
 
-CCTimingFunction::CCTimingFunction()
+TimingFunction::TimingFunction()
 {
 }
 
-CCTimingFunction::~CCTimingFunction()
+TimingFunction::~TimingFunction()
 {
 }
 
-double CCTimingFunction::duration() const
+double TimingFunction::duration() const
 {
     return 1.0;
 }
 
-scoped_ptr<CCCubicBezierTimingFunction> CCCubicBezierTimingFunction::create(double x1, double y1, double x2, double y2)
+scoped_ptr<CubicBezierTimingFunction> CubicBezierTimingFunction::create(double x1, double y1, double x2, double y2)
 {
-    return make_scoped_ptr(new CCCubicBezierTimingFunction(x1, y1, x2, y2));
+    return make_scoped_ptr(new CubicBezierTimingFunction(x1, y1, x2, y2));
 }
 
-CCCubicBezierTimingFunction::CCCubicBezierTimingFunction(double x1, double y1, double x2, double y2)
+CubicBezierTimingFunction::CubicBezierTimingFunction(double x1, double y1, double x2, double y2)
     : m_curve(x1, y1, x2, y2)
 {
 }
 
-CCCubicBezierTimingFunction::~CCCubicBezierTimingFunction()
+CubicBezierTimingFunction::~CubicBezierTimingFunction()
 {
 }
 
-float CCCubicBezierTimingFunction::getValue(double x) const
+float CubicBezierTimingFunction::getValue(double x) const
 {
     UnitBezier temp(m_curve);
     return static_cast<float>(temp.solve(x, epsilon));
 }
 
-scoped_ptr<CCAnimationCurve> CCCubicBezierTimingFunction::clone() const
+scoped_ptr<AnimationCurve> CubicBezierTimingFunction::clone() const
 {
-    return make_scoped_ptr(new CCCubicBezierTimingFunction(*this)).PassAs<CCAnimationCurve>();
+    return make_scoped_ptr(new CubicBezierTimingFunction(*this)).PassAs<AnimationCurve>();
 }
 
 // These numbers come from http://www.w3.org/TR/css3-transitions/#transition-timing-function_tag.
-scoped_ptr<CCTimingFunction> CCEaseTimingFunction::create()
+scoped_ptr<TimingFunction> EaseTimingFunction::create()
 {
-    return CCCubicBezierTimingFunction::create(0.25, 0.1, 0.25, 1).PassAs<CCTimingFunction>();
+    return CubicBezierTimingFunction::create(0.25, 0.1, 0.25, 1).PassAs<TimingFunction>();
 }
 
-scoped_ptr<CCTimingFunction> CCEaseInTimingFunction::create()
+scoped_ptr<TimingFunction> EaseInTimingFunction::create()
 {
-    return CCCubicBezierTimingFunction::create(0.42, 0, 1.0, 1).PassAs<CCTimingFunction>();
+    return CubicBezierTimingFunction::create(0.42, 0, 1.0, 1).PassAs<TimingFunction>();
 }
 
-scoped_ptr<CCTimingFunction> CCEaseOutTimingFunction::create()
+scoped_ptr<TimingFunction> EaseOutTimingFunction::create()
 {
-    return CCCubicBezierTimingFunction::create(0, 0, 0.58, 1).PassAs<CCTimingFunction>();
+    return CubicBezierTimingFunction::create(0, 0, 0.58, 1).PassAs<TimingFunction>();
 }
 
-scoped_ptr<CCTimingFunction> CCEaseInOutTimingFunction::create()
+scoped_ptr<TimingFunction> EaseInOutTimingFunction::create()
 {
-    return CCCubicBezierTimingFunction::create(0.42, 0, 0.58, 1).PassAs<CCTimingFunction>();
+    return CubicBezierTimingFunction::create(0.42, 0, 0.58, 1).PassAs<TimingFunction>();
 }
 
 } // namespace cc

@@ -13,9 +13,9 @@ namespace cc {
 
 // This class maintains a history of timestamps, and provides functionality to
 // intelligently compute average frames per second (and standard deviation).
-class CCFrameRateCounter {
+class FrameRateCounter {
 public:
-    static scoped_ptr<CCFrameRateCounter> create();
+    static scoped_ptr<FrameRateCounter> create();
 
     void markBeginningOfFrame(base::TimeTicks timestamp);
     void markEndOfFrame();
@@ -34,7 +34,7 @@ public:
     int droppedFrameCount() const { return m_droppedFrameCount; }
 
 private:
-    CCFrameRateCounter();
+    FrameRateCounter();
 
     base::TimeDelta frameInterval(int frameNumber) const;
     int frameIndex(int frameNumber) const;
@@ -58,7 +58,7 @@ private:
 
     int m_droppedFrameCount;
 
-    DISALLOW_COPY_AND_ASSIGN(CCFrameRateCounter);
+    DISALLOW_COPY_AND_ASSIGN(FrameRateCounter);
 };
 
 }  // namespace cc

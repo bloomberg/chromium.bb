@@ -9,7 +9,7 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayer.h"
 
 namespace cc {
-class LayerChromium;
+class Layer;
 }
 
 namespace WebKit {
@@ -17,7 +17,7 @@ namespace WebKit {
 class WebLayerImpl : public WebLayer {
 public:
     WebLayerImpl();
-    explicit WebLayerImpl(scoped_refptr<cc::LayerChromium>);
+    explicit WebLayerImpl(scoped_refptr<cc::Layer>);
     virtual ~WebLayerImpl();
 
     // WebLayer implementation.
@@ -90,10 +90,10 @@ public:
     virtual bool fixedToContainerLayer() const;
     virtual void setScrollClient(WebLayerScrollClient*) OVERRIDE;
 
-    cc::LayerChromium* layer() const;
+    cc::Layer* layer() const;
 
 protected:
-    scoped_refptr<cc::LayerChromium> m_layer;
+    scoped_refptr<cc::Layer> m_layer;
 };
 
 } // namespace WebKit

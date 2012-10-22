@@ -16,35 +16,35 @@ class WebFilterOperations;
 
 namespace cc {
 
-class CCLayerImpl;
-class CCRenderSurface;
+class LayerImpl;
+class RenderSurfaceImpl;
 
-// Computes the region where pixels have actually changed on a RenderSurface. This region is used
+// Computes the region where pixels have actually changed on a RenderSurfaceImpl. This region is used
 // to scissor what is actually drawn to the screen to save GPU computation and bandwidth.
-class CCDamageTracker {
+class DamageTracker {
 public:
-    static scoped_ptr<CCDamageTracker> create();
-    ~CCDamageTracker();
+    static scoped_ptr<DamageTracker> create();
+    ~DamageTracker();
 
     void didDrawDamagedArea() { m_currentDamageRect = FloatRect(); }
     void forceFullDamageNextUpdate() { m_forceFullDamageNextUpdate = true; }
-    void updateDamageTrackingState(const std::vector<CCLayerImpl*>& layerList, int targetSurfaceLayerID, bool targetSurfacePropertyChangedOnlyFromDescendant, const IntRect& targetSurfaceContentRect, CCLayerImpl* targetSurfaceMaskLayer, const WebKit::WebFilterOperations&);
+    void updateDamageTrackingState(const std::vector<LayerImpl*>& layerList, int targetSurfaceLayerID, bool targetSurfacePropertyChangedOnlyFromDescendant, const IntRect& targetSurfaceContentRect, LayerImpl* targetSurfaceMaskLayer, const WebKit::WebFilterOperations&);
 
     const FloatRect& currentDamageRect() { return m_currentDamageRect; }
 
 private:
-    CCDamageTracker();
+    DamageTracker();
 
-    FloatRect trackDamageFromActiveLayers(const std::vector<CCLayerImpl*>& layerList, int targetSurfaceLayerID);
-    FloatRect trackDamageFromSurfaceMask(CCLayerImpl* targetSurfaceMaskLayer);
+    FloatRect trackDamageFromActiveLayers(const std::vector<LayerImpl*>& layerList, int targetSurfaceLayerID);
+    FloatRect trackDamageFromSurfaceMask(LayerImpl* targetSurfaceMaskLayer);
     FloatRect trackDamageFromLeftoverRects();
 
     FloatRect removeRectFromCurrentFrame(int layerID, bool& layerIsNew);
     void saveRectForNextFrame(int layerID, const FloatRect& targetSpaceRect);
 
     // These helper functions are used only in trackDamageFromActiveLayers().
-    void extendDamageForLayer(CCLayerImpl*, FloatRect& targetDamageRect);
-    void extendDamageForRenderSurface(CCLayerImpl*, FloatRect& targetDamageRect);
+    void extendDamageForLayer(LayerImpl*, FloatRect& targetDamageRect);
+    void extendDamageForRenderSurface(LayerImpl*, FloatRect& targetDamageRect);
 
     // To correctly track exposed regions, two hashtables of rects are maintained.
     // The "current" map is used to compute exposed regions of the current frame, while

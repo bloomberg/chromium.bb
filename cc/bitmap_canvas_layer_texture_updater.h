@@ -12,7 +12,7 @@ class SkCanvas;
 
 namespace cc {
 
-class LayerPainterChromium;
+class LayerPainter;
 
 // This class rasterizes the contentRect into a skia bitmap canvas. It then updates
 // textures by copying from the canvas into the texture, using MapSubImage if
@@ -21,10 +21,10 @@ class BitmapCanvasLayerTextureUpdater : public CanvasLayerTextureUpdater {
 public:
     class Texture : public LayerTextureUpdater::Texture {
     public:
-        Texture(BitmapCanvasLayerTextureUpdater*, scoped_ptr<CCPrioritizedTexture>);
+        Texture(BitmapCanvasLayerTextureUpdater*, scoped_ptr<PrioritizedTexture>);
         virtual ~Texture();
 
-        virtual void update(CCTextureUpdateQueue&, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, CCRenderingStats&) OVERRIDE;
+        virtual void update(TextureUpdateQueue&, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&) OVERRIDE;
 
     private:
         BitmapCanvasLayerTextureUpdater* textureUpdater() { return m_textureUpdater; }
@@ -32,16 +32,16 @@ public:
         BitmapCanvasLayerTextureUpdater* m_textureUpdater;
     };
 
-    static scoped_refptr<BitmapCanvasLayerTextureUpdater> create(scoped_ptr<LayerPainterChromium>);
+    static scoped_refptr<BitmapCanvasLayerTextureUpdater> create(scoped_ptr<LayerPainter>);
 
-    virtual scoped_ptr<LayerTextureUpdater::Texture> createTexture(CCPrioritizedTextureManager*) OVERRIDE;
-    virtual void prepareToUpdate(const IntRect& contentRect, const IntSize& tileSize, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, CCRenderingStats&) OVERRIDE;
-    void updateTexture(CCTextureUpdateQueue&, CCPrioritizedTexture*, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate);
+    virtual scoped_ptr<LayerTextureUpdater::Texture> createTexture(PrioritizedTextureManager*) OVERRIDE;
+    virtual void prepareToUpdate(const IntRect& contentRect, const IntSize& tileSize, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, RenderingStats&) OVERRIDE;
+    void updateTexture(TextureUpdateQueue&, PrioritizedTexture*, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate);
 
     virtual void setOpaque(bool) OVERRIDE;
 
 protected:
-    explicit BitmapCanvasLayerTextureUpdater(scoped_ptr<LayerPainterChromium>);
+    explicit BitmapCanvasLayerTextureUpdater(scoped_ptr<LayerPainter>);
     virtual ~BitmapCanvasLayerTextureUpdater();
 
     scoped_ptr<SkCanvas> m_canvas;

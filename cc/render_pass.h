@@ -20,17 +20,17 @@
 
 namespace cc {
 
-class CCLayerImpl;
+class LayerImpl;
 template<typename LayerType, typename SurfaceType>
-class CCOcclusionTrackerBase;
-class CCRenderSurface;
+class OcclusionTrackerBase;
+class RenderSurfaceImpl;
 
-struct CCAppendQuadsData;
+struct AppendQuadsData;
 
-typedef CCOcclusionTrackerBase<CCLayerImpl, CCRenderSurface> CCOcclusionTrackerImpl;
+typedef OcclusionTrackerBase<LayerImpl, RenderSurfaceImpl> OcclusionTrackerImpl;
 
-// A list of CCDrawQuad objects, sorted internally in front-to-back order.
-class CCQuadList : public ScopedPtrVector<CCDrawQuad> {
+// A list of DrawQuad objects, sorted internally in front-to-back order.
+class QuadList : public ScopedPtrVector<DrawQuad> {
 public:
     typedef reverse_iterator backToFrontIterator;
     typedef const_reverse_iterator constBackToFrontIterator;
@@ -41,11 +41,11 @@ public:
     inline constBackToFrontIterator backToFrontEnd() const { return rend(); }
 };
 
-typedef ScopedPtrVector<CCSharedQuadState> CCSharedQuadStateList;
+typedef ScopedPtrVector<SharedQuadState> SharedQuadStateList;
 
-class CCRenderPass {
+class RenderPass {
 public:
-    ~CCRenderPass();
+    ~RenderPass();
 
     struct Id {
         int layerId;
@@ -62,16 +62,16 @@ public:
         bool operator<(const Id& other) const { return layerId < other.layerId || (layerId == other.layerId && index < other.index); }
     };
 
-    static scoped_ptr<CCRenderPass> create(Id, gfx::Rect outputRect, const WebKit::WebTransformationMatrix& transformToRootTarget);
+    static scoped_ptr<RenderPass> create(Id, gfx::Rect outputRect, const WebKit::WebTransformationMatrix& transformToRootTarget);
 
     // A shallow copy of the render pass, which does not include its quads.
-    scoped_ptr<CCRenderPass> copy(Id newId) const;
+    scoped_ptr<RenderPass> copy(Id newId) const;
 
-    void appendQuadsForLayer(CCLayerImpl*, CCOcclusionTrackerImpl*, CCAppendQuadsData&);
-    void appendQuadsForRenderSurfaceLayer(CCLayerImpl*, const CCRenderPass* contributingRenderPass, CCOcclusionTrackerImpl*, CCAppendQuadsData&);
-    void appendQuadsToFillScreen(CCLayerImpl* rootLayer, SkColor screenBackgroundColor, const CCOcclusionTrackerImpl&);
+    void appendQuadsForLayer(LayerImpl*, OcclusionTrackerImpl*, AppendQuadsData&);
+    void appendQuadsForRenderSurfaceLayer(LayerImpl*, const RenderPass* contributingRenderPass, OcclusionTrackerImpl*, AppendQuadsData&);
+    void appendQuadsToFillScreen(LayerImpl* rootLayer, SkColor screenBackgroundColor, const OcclusionTrackerImpl&);
 
-    const CCQuadList& quadList() const { return m_quadList; }
+    const QuadList& quadList() const { return m_quadList; }
 
     Id id() const { return m_id; }
 
@@ -97,11 +97,11 @@ public:
     bool hasOcclusionFromOutsideTargetSurface() const { return m_hasOcclusionFromOutsideTargetSurface; }
     void setHasOcclusionFromOutsideTargetSurface(bool hasOcclusionFromOutsideTargetSurface) { m_hasOcclusionFromOutsideTargetSurface = hasOcclusionFromOutsideTargetSurface; }
 protected:
-    CCRenderPass(Id, gfx::Rect outputRect, const WebKit::WebTransformationMatrix& transformToRootTarget);
+    RenderPass(Id, gfx::Rect outputRect, const WebKit::WebTransformationMatrix& transformToRootTarget);
 
     Id m_id;
-    CCQuadList m_quadList;
-    CCSharedQuadStateList m_sharedQuadStateList;
+    QuadList m_quadList;
+    SharedQuadStateList m_sharedQuadStateList;
     WebKit::WebTransformationMatrix m_transformToRootTarget;
     gfx::Rect m_outputRect;
     gfx::RectF m_damageRect;
@@ -110,7 +110,7 @@ protected:
     WebKit::WebFilterOperations m_filters;
     WebKit::WebFilterOperations m_backgroundFilters;
 
-    DISALLOW_COPY_AND_ASSIGN(CCRenderPass);
+    DISALLOW_COPY_AND_ASSIGN(RenderPass);
 };
 
 } // namespace cc
@@ -118,13 +118,13 @@ protected:
 namespace BASE_HASH_NAMESPACE {
 #if defined(COMPILER_MSVC)
 template<>
-inline size_t hash_value<cc::CCRenderPass::Id>(const cc::CCRenderPass::Id& key) {
+inline size_t hash_value<cc::RenderPass::Id>(const cc::RenderPass::Id& key) {
     return hash_value<std::pair<int, int> >(std::pair<int, int>(key.layerId, key.index));
 }
 #elif defined(COMPILER_GCC)
 template<>
-struct hash<cc::CCRenderPass::Id> {
-    size_t operator()(cc::CCRenderPass::Id key) const {
+struct hash<cc::RenderPass::Id> {
+    size_t operator()(cc::RenderPass::Id key) const {
         return hash<std::pair<int, int> >()(std::pair<int, int>(key.layerId, key.index));
     }
 };
@@ -134,8 +134,8 @@ struct hash<cc::CCRenderPass::Id> {
 }
 
 namespace cc {
-typedef std::vector<CCRenderPass*> CCRenderPassList;
-typedef ScopedPtrHashMap<CCRenderPass::Id, CCRenderPass> CCRenderPassIdHashMap;
+typedef std::vector<RenderPass*> RenderPassList;
+typedef ScopedPtrHashMap<RenderPass::Id, RenderPass> RenderPassIdHashMap;
 } // namespace cc
 
 #endif

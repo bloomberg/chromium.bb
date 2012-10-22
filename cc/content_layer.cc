@@ -18,12 +18,12 @@
 
 namespace cc {
 
-ContentLayerPainter::ContentLayerPainter(ContentLayerChromiumClient* client)
+ContentLayerPainter::ContentLayerPainter(ContentLayerClient* client)
     : m_client(client)
 {
 }
 
-scoped_ptr<ContentLayerPainter> ContentLayerPainter::create(ContentLayerChromiumClient* client)
+scoped_ptr<ContentLayerPainter> ContentLayerPainter::create(ContentLayerClient* client)
 {
     return make_scoped_ptr(new ContentLayerPainter(client));
 }
@@ -38,56 +38,56 @@ void ContentLayerPainter::paint(SkCanvas* canvas, const IntRect& contentRect, Fl
     HISTOGRAM_CUSTOM_COUNTS("Renderer4.AccelContentPaintMegapixPerSecond", pixelsPerSec / 1000000, 10, 210, 30);
 }
 
-scoped_refptr<ContentLayerChromium> ContentLayerChromium::create(ContentLayerChromiumClient* client)
+scoped_refptr<ContentLayer> ContentLayer::create(ContentLayerClient* client)
 {
-    return make_scoped_refptr(new ContentLayerChromium(client));
+    return make_scoped_refptr(new ContentLayer(client));
 }
 
-ContentLayerChromium::ContentLayerChromium(ContentLayerChromiumClient* client)
-    : TiledLayerChromium()
+ContentLayer::ContentLayer(ContentLayerClient* client)
+    : TiledLayer()
     , m_client(client)
 {
 }
 
-ContentLayerChromium::~ContentLayerChromium()
+ContentLayer::~ContentLayer()
 {
 }
 
-bool ContentLayerChromium::drawsContent() const
+bool ContentLayer::drawsContent() const
 {
-    return TiledLayerChromium::drawsContent() && m_client;
+    return TiledLayer::drawsContent() && m_client;
 }
 
-void ContentLayerChromium::setTexturePriorities(const CCPriorityCalculator& priorityCalc)
+void ContentLayer::setTexturePriorities(const PriorityCalculator& priorityCalc)
 {
     // Update the tile data before creating all the layer's tiles.
     updateTileSizeAndTilingOption();
 
-    TiledLayerChromium::setTexturePriorities(priorityCalc);
+    TiledLayer::setTexturePriorities(priorityCalc);
 }
 
-void ContentLayerChromium::update(CCTextureUpdateQueue& queue, const CCOcclusionTracker* occlusion, CCRenderingStats& stats)
+void ContentLayer::update(TextureUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats)
 {
     createTextureUpdaterIfNeeded();
-    TiledLayerChromium::update(queue, occlusion, stats);
+    TiledLayer::update(queue, occlusion, stats);
     m_needsDisplay = false;
 }
 
-bool ContentLayerChromium::needMoreUpdates()
+bool ContentLayer::needMoreUpdates()
 {
     return needsIdlePaint();
 }
 
-LayerTextureUpdater* ContentLayerChromium::textureUpdater() const
+LayerTextureUpdater* ContentLayer::textureUpdater() const
 {
     return m_textureUpdater.get();
 }
 
-void ContentLayerChromium::createTextureUpdaterIfNeeded()
+void ContentLayer::createTextureUpdaterIfNeeded()
 {
     if (m_textureUpdater)
         return;
-    scoped_ptr<LayerPainterChromium> painter = ContentLayerPainter::create(m_client).PassAs<LayerPainterChromium>();
+    scoped_ptr<LayerPainter> painter = ContentLayerPainter::create(m_client).PassAs<LayerPainter>();
     if (layerTreeHost()->settings().acceleratePainting)
         m_textureUpdater = FrameBufferSkPictureCanvasLayerTextureUpdater::create(painter.Pass());
     else if (Settings::perTilePaintingEnabled())
@@ -100,9 +100,9 @@ void ContentLayerChromium::createTextureUpdaterIfNeeded()
     setTextureFormat(textureFormat);
 }
 
-void ContentLayerChromium::setContentsOpaque(bool opaque)
+void ContentLayer::setContentsOpaque(bool opaque)
 {
-    LayerChromium::setContentsOpaque(opaque);
+    Layer::setContentsOpaque(opaque);
     if (m_textureUpdater)
         m_textureUpdater->setOpaque(opaque);
 }

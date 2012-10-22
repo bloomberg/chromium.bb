@@ -18,29 +18,29 @@
 
 namespace cc {
 
-CCIOSurfaceLayerImpl::CCIOSurfaceLayerImpl(int id)
-    : CCLayerImpl(id)
+IOSurfaceLayerImpl::IOSurfaceLayerImpl(int id)
+    : LayerImpl(id)
     , m_ioSurfaceId(0)
     , m_ioSurfaceChanged(false)
     , m_ioSurfaceTextureId(0)
 {
 }
 
-CCIOSurfaceLayerImpl::~CCIOSurfaceLayerImpl()
+IOSurfaceLayerImpl::~IOSurfaceLayerImpl()
 {
     if (!m_ioSurfaceTextureId)
         return;
 
-    CCGraphicsContext* context = layerTreeHostImpl()->context();
+    GraphicsContext* context = layerTreeHostImpl()->context();
     // FIXME: Implement this path for software compositing.
     WebKit::WebGraphicsContext3D* context3d = context->context3D();
     if (context3d)
         context3d->deleteTexture(m_ioSurfaceTextureId);
 }
 
-void CCIOSurfaceLayerImpl::willDraw(CCResourceProvider* resourceProvider)
+void IOSurfaceLayerImpl::willDraw(ResourceProvider* resourceProvider)
 {
-    CCLayerImpl::willDraw(resourceProvider);
+    LayerImpl::willDraw(resourceProvider);
 
     if (m_ioSurfaceChanged) {
         WebKit::WebGraphicsContext3D* context3d = resourceProvider->graphicsContext3D();
@@ -74,23 +74,23 @@ void CCIOSurfaceLayerImpl::willDraw(CCResourceProvider* resourceProvider)
     }
 }
 
-void CCIOSurfaceLayerImpl::appendQuads(CCQuadSink& quadSink, CCAppendQuadsData& appendQuadsData)
+void IOSurfaceLayerImpl::appendQuads(QuadSink& quadSink, AppendQuadsData& appendQuadsData)
 {
-    CCSharedQuadState* sharedQuadState = quadSink.useSharedQuadState(createSharedQuadState());
+    SharedQuadState* sharedQuadState = quadSink.useSharedQuadState(createSharedQuadState());
     appendDebugBorderQuad(quadSink, sharedQuadState, appendQuadsData);
 
     IntRect quadRect(IntPoint(), contentBounds());
-    quadSink.append(CCIOSurfaceDrawQuad::create(sharedQuadState, quadRect, m_ioSurfaceSize, m_ioSurfaceTextureId, CCIOSurfaceDrawQuad::Flipped).PassAs<CCDrawQuad>(), appendQuadsData);
+    quadSink.append(IOSurfaceDrawQuad::create(sharedQuadState, quadRect, m_ioSurfaceSize, m_ioSurfaceTextureId, IOSurfaceDrawQuad::Flipped).PassAs<DrawQuad>(), appendQuadsData);
 }
 
-void CCIOSurfaceLayerImpl::dumpLayerProperties(std::string* str, int indent) const
+void IOSurfaceLayerImpl::dumpLayerProperties(std::string* str, int indent) const
 {
     str->append(indentString(indent));
     base::StringAppendF(str, "iosurface id: %u texture id: %u\n", m_ioSurfaceId, m_ioSurfaceTextureId);
-    CCLayerImpl::dumpLayerProperties(str, indent);
+    LayerImpl::dumpLayerProperties(str, indent);
 }
 
-void CCIOSurfaceLayerImpl::didLoseContext()
+void IOSurfaceLayerImpl::didLoseContext()
 {
     // We don't have a valid texture ID in the new context; however,
     // the IOSurface is still valid.
@@ -98,7 +98,7 @@ void CCIOSurfaceLayerImpl::didLoseContext()
     m_ioSurfaceChanged = true;
 }
 
-void CCIOSurfaceLayerImpl::setIOSurfaceProperties(unsigned ioSurfaceId, const IntSize& size)
+void IOSurfaceLayerImpl::setIOSurfaceProperties(unsigned ioSurfaceId, const IntSize& size)
 {
     if (m_ioSurfaceId != ioSurfaceId)
         m_ioSurfaceChanged = true;
@@ -107,7 +107,7 @@ void CCIOSurfaceLayerImpl::setIOSurfaceProperties(unsigned ioSurfaceId, const In
     m_ioSurfaceSize = size;
 }
 
-const char* CCIOSurfaceLayerImpl::layerTypeAsString() const
+const char* IOSurfaceLayerImpl::layerTypeAsString() const
 {
     return "IOSurfaceLayer";
 }

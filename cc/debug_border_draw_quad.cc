@@ -10,13 +10,13 @@
 
 namespace cc {
 
-scoped_ptr<CCDebugBorderDrawQuad> CCDebugBorderDrawQuad::create(const CCSharedQuadState* sharedQuadState, const gfx::Rect& quadRect, SkColor color, int width)
+scoped_ptr<DebugBorderDrawQuad> DebugBorderDrawQuad::create(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, SkColor color, int width)
 {
-    return make_scoped_ptr(new CCDebugBorderDrawQuad(sharedQuadState, quadRect, color, width));
+    return make_scoped_ptr(new DebugBorderDrawQuad(sharedQuadState, quadRect, color, width));
 }
 
-CCDebugBorderDrawQuad::CCDebugBorderDrawQuad(const CCSharedQuadState* sharedQuadState, const gfx::Rect& quadRect, SkColor color, int width)
-    : CCDrawQuad(sharedQuadState, CCDrawQuad::DebugBorder, quadRect)
+DebugBorderDrawQuad::DebugBorderDrawQuad(const SharedQuadState* sharedQuadState, const gfx::Rect& quadRect, SkColor color, int width)
+    : DrawQuad(sharedQuadState, DrawQuad::DebugBorder, quadRect)
     , m_color(color)
     , m_width(width)
 {
@@ -25,10 +25,10 @@ CCDebugBorderDrawQuad::CCDebugBorderDrawQuad(const CCSharedQuadState* sharedQuad
         m_needsBlending = true;
 }
 
-const CCDebugBorderDrawQuad* CCDebugBorderDrawQuad::materialCast(const CCDrawQuad* quad)
+const DebugBorderDrawQuad* DebugBorderDrawQuad::materialCast(const DrawQuad* quad)
 {
-    DCHECK(quad->material() == CCDrawQuad::DebugBorder);
-    return static_cast<const CCDebugBorderDrawQuad*>(quad);
+    DCHECK(quad->material() == DrawQuad::DebugBorder);
+    return static_cast<const DebugBorderDrawQuad*>(quad);
 }
 
 }  // namespace cc

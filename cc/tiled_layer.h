@@ -12,13 +12,13 @@
 namespace cc {
 class UpdatableTile;
 
-class TiledLayerChromium : public LayerChromium {
+class TiledLayer : public Layer {
 public:
     enum TilingOption { AlwaysTile, NeverTile, AutoTile };
 
     virtual void setIsMask(bool) OVERRIDE;
 
-    virtual void pushPropertiesTo(CCLayerImpl*) OVERRIDE;
+    virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
 
     virtual bool drawsContent() const OVERRIDE;
     virtual bool needsContentsScale() const OVERRIDE;
@@ -29,17 +29,17 @@ public:
 
     virtual void setUseLCDText(bool) OVERRIDE;
 
-    virtual void setLayerTreeHost(CCLayerTreeHost*) OVERRIDE;
+    virtual void setLayerTreeHost(LayerTreeHost*) OVERRIDE;
 
-    virtual void setTexturePriorities(const CCPriorityCalculator&) OVERRIDE;
+    virtual void setTexturePriorities(const PriorityCalculator&) OVERRIDE;
 
     virtual Region visibleContentOpaqueRegion() const OVERRIDE;
 
-    virtual void update(CCTextureUpdateQueue&, const CCOcclusionTracker*, CCRenderingStats&) OVERRIDE;
+    virtual void update(TextureUpdateQueue&, const OcclusionTracker*, RenderingStats&) OVERRIDE;
 
 protected:
-    TiledLayerChromium();
-    virtual ~TiledLayerChromium();
+    TiledLayer();
+    virtual ~TiledLayer();
 
     void updateTileSizeAndTilingOption();
     void updateBounds();
@@ -47,7 +47,7 @@ protected:
     // Exposed to subclasses for testing.
     void setTileSize(const IntSize&);
     void setTextureFormat(GLenum textureFormat) { m_textureFormat = textureFormat; }
-    void setBorderTexelOption(CCLayerTilingData::BorderTexelOption);
+    void setBorderTexelOption(LayerTilingData::BorderTexelOption);
     size_t numPaintedTiles() { return m_tiler->tiles().size(); }
 
     virtual LayerTextureUpdater* textureUpdater() const = 0;
@@ -66,10 +66,10 @@ protected:
     bool skipsDraw() const { return m_skipsDraw; }
 
     // Virtual for testing
-    virtual CCPrioritizedTextureManager* textureManager() const;
+    virtual PrioritizedTextureManager* textureManager() const;
 
 private:
-    virtual scoped_ptr<CCLayerImpl> createCCLayerImpl() OVERRIDE;
+    virtual scoped_ptr<LayerImpl> createLayerImpl() OVERRIDE;
 
     void createTilerIfNeeded();
     void setTilingOption(TilingOption);
@@ -77,12 +77,12 @@ private:
     bool tileOnlyNeedsPartialUpdate(UpdatableTile*);
     bool tileNeedsBufferedUpdate(UpdatableTile*);
 
-    void markOcclusionsAndRequestTextures(int left, int top, int right, int bottom, const CCOcclusionTracker*);
+    void markOcclusionsAndRequestTextures(int left, int top, int right, int bottom, const OcclusionTracker*);
 
-    bool updateTiles(int left, int top, int right, int bottom, CCTextureUpdateQueue&, const CCOcclusionTracker*, CCRenderingStats&, bool& didPaint);
+    bool updateTiles(int left, int top, int right, int bottom, TextureUpdateQueue&, const OcclusionTracker*, RenderingStats&, bool& didPaint);
     bool haveTexturesForTiles(int left, int top, int right, int bottom, bool ignoreOcclusions);
     IntRect markTilesForUpdate(int left, int top, int right, int bottom, bool ignoreOcclusions);
-    void updateTileTextures(const IntRect& paintRect, int left, int top, int right, int bottom, CCTextureUpdateQueue&, const CCOcclusionTracker*, CCRenderingStats&);
+    void updateTileTextures(const IntRect& paintRect, int left, int top, int right, int bottom, TextureUpdateQueue&, const OcclusionTracker*, RenderingStats&);
 
     UpdatableTile* tileAt(int, int) const;
     UpdatableTile* createTile(int, int);
@@ -92,7 +92,7 @@ private:
     bool m_failedUpdate;
 
     TilingOption m_tilingOption;
-    scoped_ptr<CCLayerTilingData> m_tiler;
+    scoped_ptr<LayerTilingData> m_tiler;
 };
 
 }

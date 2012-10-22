@@ -14,33 +14,33 @@
 namespace cc {
 
 template <typename LayerType, typename LayerList, typename RenderSurfaceType, typename ActionType>
-void CCLayerIteratorActions::BackToFront::begin(CCLayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>& it)
+void LayerIteratorActions::BackToFront::begin(LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>& it)
 {
     it.m_targetRenderSurfaceLayerIndex = 0;
-    it.m_currentLayerIndex = CCLayerIteratorValue::LayerIndexRepresentingTargetRenderSurface;
+    it.m_currentLayerIndex = LayerIteratorValue::LayerIndexRepresentingTargetRenderSurface;
 
     m_highestTargetRenderSurfaceLayer = 0;
 }
 
 template <typename LayerType, typename LayerList, typename RenderSurfaceType, typename ActionType>
-void CCLayerIteratorActions::BackToFront::end(CCLayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>& it)
+void LayerIteratorActions::BackToFront::end(LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>& it)
 {
-    it.m_targetRenderSurfaceLayerIndex = CCLayerIteratorValue::InvalidTargetRenderSurfaceLayerIndex;
+    it.m_targetRenderSurfaceLayerIndex = LayerIteratorValue::InvalidTargetRenderSurfaceLayerIndex;
     it.m_currentLayerIndex = 0;
 }
 
 template <typename LayerType, typename LayerList, typename RenderSurfaceType, typename ActionType>
-void CCLayerIteratorActions::BackToFront::next(CCLayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>& it)
+void LayerIteratorActions::BackToFront::next(LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>& it)
 {
     // If the current layer has a RS, move to its layer list. Otherwise, visit the next layer in the current RS layer list.
     if (it.currentLayerRepresentsContributingRenderSurface()) {
-        // Save our position in the childLayer list for the RenderSurface, then jump to the next RenderSurface. Save where we
-        // came from in the next RenderSurface so we can get back to it.
+        // Save our position in the childLayer list for the RenderSurfaceImpl, then jump to the next RenderSurfaceImpl. Save where we
+        // came from in the next RenderSurfaceImpl so we can get back to it.
         it.targetRenderSurface()->m_currentLayerIndexHistory = it.m_currentLayerIndex;
         int previousTargetRenderSurfaceLayer = it.m_targetRenderSurfaceLayerIndex;
 
         it.m_targetRenderSurfaceLayerIndex = ++m_highestTargetRenderSurfaceLayer;
-        it.m_currentLayerIndex = CCLayerIteratorValue::LayerIndexRepresentingTargetRenderSurface;
+        it.m_currentLayerIndex = LayerIteratorValue::LayerIndexRepresentingTargetRenderSurface;
 
         it.targetRenderSurface()->m_targetRenderSurfaceLayerIndexHistory = previousTargetRenderSurfaceLayer;
     } else {
@@ -48,10 +48,10 @@ void CCLayerIteratorActions::BackToFront::next(CCLayerIterator<LayerType, LayerL
 
         int targetRenderSurfaceNumChildren = it.targetRenderSurfaceChildren().size();
         while (it.m_currentLayerIndex == targetRenderSurfaceNumChildren) {
-            // Jump back to the previous RenderSurface, and get back the position where we were in that list, and move to the next position there.
+            // Jump back to the previous RenderSurfaceImpl, and get back the position where we were in that list, and move to the next position there.
             if (!it.m_targetRenderSurfaceLayerIndex) {
                 // End of the list
-                it.m_targetRenderSurfaceLayerIndex = CCLayerIteratorValue::InvalidTargetRenderSurfaceLayerIndex;
+                it.m_targetRenderSurfaceLayerIndex = LayerIteratorValue::InvalidTargetRenderSurfaceLayerIndex;
                 it.m_currentLayerIndex = 0;
                 return;
             }
@@ -64,7 +64,7 @@ void CCLayerIteratorActions::BackToFront::next(CCLayerIterator<LayerType, LayerL
 }
 
 template <typename LayerType, typename LayerList, typename RenderSurfaceType, typename ActionType>
-void CCLayerIteratorActions::FrontToBack::begin(CCLayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>& it)
+void LayerIteratorActions::FrontToBack::begin(LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>& it)
 {
     it.m_targetRenderSurfaceLayerIndex = 0;
     it.m_currentLayerIndex = it.targetRenderSurfaceChildren().size() - 1;
@@ -72,14 +72,14 @@ void CCLayerIteratorActions::FrontToBack::begin(CCLayerIterator<LayerType, Layer
 }
 
 template <typename LayerType, typename LayerList, typename RenderSurfaceType, typename ActionType>
-void CCLayerIteratorActions::FrontToBack::end(CCLayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>& it)
+void LayerIteratorActions::FrontToBack::end(LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>& it)
 {
-    it.m_targetRenderSurfaceLayerIndex = CCLayerIteratorValue::InvalidTargetRenderSurfaceLayerIndex;
+    it.m_targetRenderSurfaceLayerIndex = LayerIteratorValue::InvalidTargetRenderSurfaceLayerIndex;
     it.m_currentLayerIndex = 0;
 }
 
 template <typename LayerType, typename LayerList, typename RenderSurfaceType, typename ActionType>
-void CCLayerIteratorActions::FrontToBack::next(CCLayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>& it)
+void LayerIteratorActions::FrontToBack::next(LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>& it)
 {
     // Moves to the previous layer in the current RS layer list. Then we check if the
     // new current layer has its own RS, in which case there are things in that RS layer list that are higher, so
@@ -96,7 +96,7 @@ void CCLayerIteratorActions::FrontToBack::next(CCLayerIterator<LayerType, LayerL
         while (it.currentLayerRepresentsTargetRenderSurface()) {
             if (!it.m_targetRenderSurfaceLayerIndex) {
                 // End of the list
-                it.m_targetRenderSurfaceLayerIndex = CCLayerIteratorValue::InvalidTargetRenderSurfaceLayerIndex;
+                it.m_targetRenderSurfaceLayerIndex = LayerIteratorValue::InvalidTargetRenderSurfaceLayerIndex;
                 it.m_currentLayerIndex = 0;
                 return;
             }
@@ -107,7 +107,7 @@ void CCLayerIteratorActions::FrontToBack::next(CCLayerIterator<LayerType, LayerL
 }
 
 template <typename LayerType, typename LayerList, typename RenderSurfaceType, typename ActionType>
-void CCLayerIteratorActions::FrontToBack::goToHighestInSubtree(CCLayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>& it)
+void LayerIteratorActions::FrontToBack::goToHighestInSubtree(LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>& it)
 {
     if (it.currentLayerRepresentsTargetRenderSurface())
         return;
@@ -124,26 +124,26 @@ void CCLayerIteratorActions::FrontToBack::goToHighestInSubtree(CCLayerIterator<L
     }
 }
 
-typedef std::vector<scoped_refptr<LayerChromium> > LayerChromiumList;
-typedef std::vector<CCLayerImpl*> CCLayerImplList;
+typedef std::vector<scoped_refptr<Layer> > LayerList;
+typedef std::vector<LayerImpl*> LayerImplList;
 
-// Declare each of the above functions for LayerChromium and CCLayerImpl classes so that they are linked.
-template void CCLayerIteratorActions::BackToFront::begin(CCLayerIterator<LayerChromium, LayerChromiumList, RenderSurfaceChromium, BackToFront> &);
-template void CCLayerIteratorActions::BackToFront::end(CCLayerIterator<LayerChromium, LayerChromiumList, RenderSurfaceChromium, BackToFront>&);
-template void CCLayerIteratorActions::BackToFront::next(CCLayerIterator<LayerChromium, LayerChromiumList, RenderSurfaceChromium, BackToFront>&);
+// Declare each of the above functions for Layer and LayerImpl classes so that they are linked.
+template void LayerIteratorActions::BackToFront::begin(LayerIterator<Layer, LayerList, RenderSurface, BackToFront> &);
+template void LayerIteratorActions::BackToFront::end(LayerIterator<Layer, LayerList, RenderSurface, BackToFront>&);
+template void LayerIteratorActions::BackToFront::next(LayerIterator<Layer, LayerList, RenderSurface, BackToFront>&);
 
-template void CCLayerIteratorActions::BackToFront::begin(CCLayerIterator<CCLayerImpl, CCLayerImplList, CCRenderSurface, BackToFront>&);
-template void CCLayerIteratorActions::BackToFront::end(CCLayerIterator<CCLayerImpl, CCLayerImplList, CCRenderSurface, BackToFront>&);
-template void CCLayerIteratorActions::BackToFront::next(CCLayerIterator<CCLayerImpl, CCLayerImplList, CCRenderSurface, BackToFront>&);
+template void LayerIteratorActions::BackToFront::begin(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, BackToFront>&);
+template void LayerIteratorActions::BackToFront::end(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, BackToFront>&);
+template void LayerIteratorActions::BackToFront::next(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, BackToFront>&);
 
-template void CCLayerIteratorActions::FrontToBack::next(CCLayerIterator<LayerChromium, LayerChromiumList, RenderSurfaceChromium, FrontToBack>&);
-template void CCLayerIteratorActions::FrontToBack::end(CCLayerIterator<LayerChromium, LayerChromiumList, RenderSurfaceChromium, FrontToBack>&);
-template void CCLayerIteratorActions::FrontToBack::begin(CCLayerIterator<LayerChromium, LayerChromiumList, RenderSurfaceChromium, FrontToBack>&);
-template void CCLayerIteratorActions::FrontToBack::goToHighestInSubtree(CCLayerIterator<LayerChromium, LayerChromiumList, RenderSurfaceChromium, FrontToBack>&);
+template void LayerIteratorActions::FrontToBack::next(LayerIterator<Layer, LayerList, RenderSurface, FrontToBack>&);
+template void LayerIteratorActions::FrontToBack::end(LayerIterator<Layer, LayerList, RenderSurface, FrontToBack>&);
+template void LayerIteratorActions::FrontToBack::begin(LayerIterator<Layer, LayerList, RenderSurface, FrontToBack>&);
+template void LayerIteratorActions::FrontToBack::goToHighestInSubtree(LayerIterator<Layer, LayerList, RenderSurface, FrontToBack>&);
 
-template void CCLayerIteratorActions::FrontToBack::next(CCLayerIterator<CCLayerImpl, CCLayerImplList, CCRenderSurface, FrontToBack>&);
-template void CCLayerIteratorActions::FrontToBack::end(CCLayerIterator<CCLayerImpl, CCLayerImplList, CCRenderSurface, FrontToBack>&);
-template void CCLayerIteratorActions::FrontToBack::begin(CCLayerIterator<CCLayerImpl, CCLayerImplList, CCRenderSurface, FrontToBack>&);
-template void CCLayerIteratorActions::FrontToBack::goToHighestInSubtree(CCLayerIterator<CCLayerImpl, CCLayerImplList, CCRenderSurface, FrontToBack>&);
+template void LayerIteratorActions::FrontToBack::next(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, FrontToBack>&);
+template void LayerIteratorActions::FrontToBack::end(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, FrontToBack>&);
+template void LayerIteratorActions::FrontToBack::begin(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, FrontToBack>&);
+template void LayerIteratorActions::FrontToBack::goToHighestInSubtree(LayerIterator<LayerImpl, LayerImplList, RenderSurfaceImpl, FrontToBack>&);
 
 } // namespace cc

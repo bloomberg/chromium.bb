@@ -13,7 +13,7 @@ static const float kAntiAliasingInflateDistance = 0.5f;
 
 namespace cc {
 
-class CCLayerQuad {
+class LayerQuad {
 public:
     class Edge {
     public:
@@ -73,8 +73,8 @@ public:
         float m_z;
     };
 
-    CCLayerQuad(const Edge& left, const Edge& top, const Edge& right, const Edge& bottom);
-    CCLayerQuad(const FloatQuad&);
+    LayerQuad(const Edge& left, const Edge& top, const Edge& right, const Edge& bottom);
+    LayerQuad(const FloatQuad&);
 
     Edge left() const { return m_left; }
     Edge top() const { return m_top; }

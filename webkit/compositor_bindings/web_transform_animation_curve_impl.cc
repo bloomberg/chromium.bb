@@ -18,7 +18,7 @@ WebTransformAnimationCurve* WebTransformAnimationCurve::create()
 }
 
 WebTransformAnimationCurveImpl::WebTransformAnimationCurveImpl()
-    : m_curve(cc::CCKeyframedTransformAnimationCurve::create())
+    : m_curve(cc::KeyframedTransformAnimationCurve::create())
 {
 }
 
@@ -38,12 +38,12 @@ void WebTransformAnimationCurveImpl::add(const WebTransformKeyframe& keyframe)
 
 void WebTransformAnimationCurveImpl::add(const WebTransformKeyframe& keyframe, TimingFunctionType type)
 {
-    m_curve->addKeyframe(cc::CCTransformKeyframe::create(keyframe.time, keyframe.value, createTimingFunction(type)));
+    m_curve->addKeyframe(cc::TransformKeyframe::create(keyframe.time, keyframe.value, createTimingFunction(type)));
 }
 
 void WebTransformAnimationCurveImpl::add(const WebTransformKeyframe& keyframe, double x1, double y1, double x2, double y2)
 {
-    m_curve->addKeyframe(cc::CCTransformKeyframe::create(keyframe.time, keyframe.value, cc::CCCubicBezierTimingFunction::create(x1, y1, x2, y2).PassAs<cc::CCTimingFunction>()));
+    m_curve->addKeyframe(cc::TransformKeyframe::create(keyframe.time, keyframe.value, cc::CubicBezierTimingFunction::create(x1, y1, x2, y2).PassAs<cc::TimingFunction>()));
 }
 
 WebTransformationMatrix WebTransformAnimationCurveImpl::getValue(double time) const
@@ -51,7 +51,7 @@ WebTransformationMatrix WebTransformAnimationCurveImpl::getValue(double time) co
     return m_curve->getValue(time);
 }
 
-scoped_ptr<cc::CCAnimationCurve> WebTransformAnimationCurveImpl::cloneToCCAnimationCurve() const
+scoped_ptr<cc::AnimationCurve> WebTransformAnimationCurveImpl::cloneToAnimationCurve() const
 {
     return m_curve->clone();
 }

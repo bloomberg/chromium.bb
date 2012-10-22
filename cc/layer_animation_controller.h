@@ -22,9 +22,9 @@ class Animation;
 class IntSize;
 class KeyframeValueList;
 
-class CCLayerAnimationControllerClient {
+class LayerAnimationControllerClient {
 public:
-    virtual ~CCLayerAnimationControllerClient() { }
+    virtual ~LayerAnimationControllerClient() { }
 
     virtual int id() const = 0;
     virtual void setOpacityFromAnimation(float) = 0;
@@ -33,67 +33,67 @@ public:
     virtual const WebKit::WebTransformationMatrix& transform() const = 0;
 };
 
-class CCLayerAnimationController {
+class LayerAnimationController {
 public:
-    static scoped_ptr<CCLayerAnimationController> create(CCLayerAnimationControllerClient*);
+    static scoped_ptr<LayerAnimationController> create(LayerAnimationControllerClient*);
 
-    virtual ~CCLayerAnimationController();
+    virtual ~LayerAnimationController();
 
     // These methods are virtual for testing.
-    virtual void addAnimation(scoped_ptr<CCActiveAnimation>);
+    virtual void addAnimation(scoped_ptr<ActiveAnimation>);
     virtual void pauseAnimation(int animationId, double timeOffset);
     virtual void removeAnimation(int animationId);
-    virtual void removeAnimation(int animationId, CCActiveAnimation::TargetProperty);
+    virtual void removeAnimation(int animationId, ActiveAnimation::TargetProperty);
     virtual void suspendAnimations(double monotonicTime);
     virtual void resumeAnimations(double monotonicTime);
 
     // Ensures that the list of active animations on the main thread and the impl thread
     // are kept in sync. This function does not take ownership of the impl thread controller.
-    virtual void pushAnimationUpdatesTo(CCLayerAnimationController*);
+    virtual void pushAnimationUpdatesTo(LayerAnimationController*);
 
-    void animate(double monotonicTime, CCAnimationEventsVector*);
+    void animate(double monotonicTime, AnimationEventsVector*);
 
     // Returns the active animation in the given group, animating the given property, if such an
     // animation exists.
-    CCActiveAnimation* getActiveAnimation(int groupId, CCActiveAnimation::TargetProperty) const;
+    ActiveAnimation* getActiveAnimation(int groupId, ActiveAnimation::TargetProperty) const;
 
     // Returns the active animation animating the given property that is either running, or is
     // next to run, if such an animation exists.
-    CCActiveAnimation* getActiveAnimation(CCActiveAnimation::TargetProperty) const;
+    ActiveAnimation* getActiveAnimation(ActiveAnimation::TargetProperty) const;
 
     // Returns true if there are any animations that have neither finished nor aborted.
     bool hasActiveAnimation() const;
 
     // Returns true if there is an animation currently animating the given property, or
     // if there is an animation scheduled to animate this property in the future.
-    bool isAnimatingProperty(CCActiveAnimation::TargetProperty) const;
+    bool isAnimatingProperty(ActiveAnimation::TargetProperty) const;
 
     // This is called in response to an animation being started on the impl thread. This
     // function updates the corresponding main thread animation's start time.
-    void notifyAnimationStarted(const CCAnimationEvent&);
+    void notifyAnimationStarted(const AnimationEvent&);
 
     // If a sync is forced, then the next time animation updates are pushed to the impl
     // thread, all animations will be transferred.
     void setForceSync() { m_forceSync = true; }
 
-    void setClient(CCLayerAnimationControllerClient*);
+    void setClient(LayerAnimationControllerClient*);
 
 protected:
-    explicit CCLayerAnimationController(CCLayerAnimationControllerClient*);
+    explicit LayerAnimationController(LayerAnimationControllerClient*);
 
 private:
     typedef base::hash_set<int> TargetProperties;
 
-    void pushNewAnimationsToImplThread(CCLayerAnimationController*) const;
-    void removeAnimationsCompletedOnMainThread(CCLayerAnimationController*) const;
-    void pushPropertiesToImplThread(CCLayerAnimationController*) const;
-    void replaceImplThreadAnimations(CCLayerAnimationController*) const;
+    void pushNewAnimationsToImplThread(LayerAnimationController*) const;
+    void removeAnimationsCompletedOnMainThread(LayerAnimationController*) const;
+    void pushPropertiesToImplThread(LayerAnimationController*) const;
+    void replaceImplThreadAnimations(LayerAnimationController*) const;
 
-    void startAnimationsWaitingForNextTick(double monotonicTime, CCAnimationEventsVector*);
-    void startAnimationsWaitingForStartTime(double monotonicTime, CCAnimationEventsVector*);
-    void startAnimationsWaitingForTargetAvailability(double monotonicTime, CCAnimationEventsVector*);
+    void startAnimationsWaitingForNextTick(double monotonicTime, AnimationEventsVector*);
+    void startAnimationsWaitingForStartTime(double monotonicTime, AnimationEventsVector*);
+    void startAnimationsWaitingForTargetAvailability(double monotonicTime, AnimationEventsVector*);
     void resolveConflicts(double monotonicTime);
-    void markAnimationsForDeletion(double monotonicTime, CCAnimationEventsVector*);
+    void markAnimationsForDeletion(double monotonicTime, AnimationEventsVector*);
     void purgeAnimationsMarkedForDeletion();
 
     void tickAnimations(double monotonicTime);
@@ -101,10 +101,10 @@ private:
     // If this is true, we force a sync to the impl thread.
     bool m_forceSync;
 
-    CCLayerAnimationControllerClient* m_client;
-    ScopedPtrVector<CCActiveAnimation> m_activeAnimations;
+    LayerAnimationControllerClient* m_client;
+    ScopedPtrVector<ActiveAnimation> m_activeAnimations;
 
-    DISALLOW_COPY_AND_ASSIGN(CCLayerAnimationController);
+    DISALLOW_COPY_AND_ASSIGN(LayerAnimationController);
 };
 
 } // namespace cc

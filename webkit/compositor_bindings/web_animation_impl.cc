@@ -13,7 +13,7 @@
 #include "web_float_animation_curve_impl.h"
 #include "web_transform_animation_curve_impl.h"
 
-using cc::CCActiveAnimation;
+using cc::ActiveAnimation;
 
 namespace WebKit {
 
@@ -32,20 +32,20 @@ WebAnimationImpl::WebAnimationImpl(const WebAnimationCurve& webCurve, TargetProp
         groupId = nextGroupId++;
 
     WebAnimationCurve::AnimationCurveType curveType = webCurve.type();
-    scoped_ptr<cc::CCAnimationCurve> curve;
+    scoped_ptr<cc::AnimationCurve> curve;
     switch (curveType) {
     case WebAnimationCurve::AnimationCurveTypeFloat: {
         const WebFloatAnimationCurveImpl* floatCurveImpl = static_cast<const WebFloatAnimationCurveImpl*>(&webCurve);
-        curve = floatCurveImpl->cloneToCCAnimationCurve();
+        curve = floatCurveImpl->cloneToAnimationCurve();
         break;
     }
     case WebAnimationCurve::AnimationCurveTypeTransform: {
         const WebTransformAnimationCurveImpl* transformCurveImpl = static_cast<const WebTransformAnimationCurveImpl*>(&webCurve);
-        curve = transformCurveImpl->cloneToCCAnimationCurve();
+        curve = transformCurveImpl->cloneToAnimationCurve();
         break;
     }
     }
-    m_animation = CCActiveAnimation::create(curve.Pass(), animationId, groupId, static_cast<cc::CCActiveAnimation::TargetProperty>(targetProperty));
+    m_animation = ActiveAnimation::create(curve.Pass(), animationId, groupId, static_cast<cc::ActiveAnimation::TargetProperty>(targetProperty));
 }
 
 WebAnimationImpl::~WebAnimationImpl()
@@ -102,9 +102,9 @@ void WebAnimationImpl::setAlternatesDirection(bool alternates)
     m_animation->setAlternatesDirection(alternates);
 }
 
-scoped_ptr<cc::CCActiveAnimation> WebAnimationImpl::cloneToCCAnimation()
+scoped_ptr<cc::ActiveAnimation> WebAnimationImpl::cloneToAnimation()
 {
-    scoped_ptr<cc::CCActiveAnimation> toReturn(m_animation->clone(cc::CCActiveAnimation::NonControllingInstance));
+    scoped_ptr<cc::ActiveAnimation> toReturn(m_animation->clone(cc::ActiveAnimation::NonControllingInstance));
     toReturn->setNeedsSynchronizedStartTime(true);
     return toReturn.Pass();
 }

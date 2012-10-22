@@ -15,22 +15,22 @@ namespace WebKitTests {
 
 // A subclass to expose the total current occlusion.
 template<typename LayerType, typename RenderSurfaceType>
-class TestCCOcclusionTrackerBase : public cc::CCOcclusionTrackerBase<LayerType, RenderSurfaceType> {
+class TestOcclusionTrackerBase : public cc::OcclusionTrackerBase<LayerType, RenderSurfaceType> {
 public:
-    TestCCOcclusionTrackerBase(cc::IntRect screenScissorRect, bool recordMetricsForFrame = false)
-        : cc::CCOcclusionTrackerBase<LayerType, RenderSurfaceType>(screenScissorRect, recordMetricsForFrame)
+    TestOcclusionTrackerBase(cc::IntRect screenScissorRect, bool recordMetricsForFrame = false)
+        : cc::OcclusionTrackerBase<LayerType, RenderSurfaceType>(screenScissorRect, recordMetricsForFrame)
     {
     }
 
-    cc::Region occlusionInScreenSpace() const { return cc::CCOcclusionTrackerBase<LayerType, RenderSurfaceType>::m_stack.last().occlusionInScreen; }
-    cc::Region occlusionInTargetSurface() const { return cc::CCOcclusionTrackerBase<LayerType, RenderSurfaceType>::m_stack.last().occlusionInTarget; }
+    cc::Region occlusionInScreenSpace() const { return cc::OcclusionTrackerBase<LayerType, RenderSurfaceType>::m_stack.last().occlusionInScreen; }
+    cc::Region occlusionInTargetSurface() const { return cc::OcclusionTrackerBase<LayerType, RenderSurfaceType>::m_stack.last().occlusionInTarget; }
 
-    void setOcclusionInScreenSpace(const cc::Region& region) { cc::CCOcclusionTrackerBase<LayerType, RenderSurfaceType>::m_stack.last().occlusionInScreen = region; }
-    void setOcclusionInTargetSurface(const cc::Region& region) { cc::CCOcclusionTrackerBase<LayerType, RenderSurfaceType>::m_stack.last().occlusionInTarget = region; }
+    void setOcclusionInScreenSpace(const cc::Region& region) { cc::OcclusionTrackerBase<LayerType, RenderSurfaceType>::m_stack.last().occlusionInScreen = region; }
+    void setOcclusionInTargetSurface(const cc::Region& region) { cc::OcclusionTrackerBase<LayerType, RenderSurfaceType>::m_stack.last().occlusionInTarget = region; }
 };
 
-typedef TestCCOcclusionTrackerBase<cc::LayerChromium, cc::RenderSurfaceChromium> TestCCOcclusionTracker;
-typedef TestCCOcclusionTrackerBase<cc::CCLayerImpl, cc::CCRenderSurface> TestCCOcclusionTrackerImpl;
+typedef TestOcclusionTrackerBase<cc::Layer, cc::RenderSurface> TestOcclusionTracker;
+typedef TestOcclusionTrackerBase<cc::LayerImpl, cc::RenderSurfaceImpl> TestOcclusionTrackerImpl;
 
 }
 
