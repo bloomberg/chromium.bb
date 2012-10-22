@@ -21,7 +21,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/system/pointer_device_observer.h"
 #else
-#include "chrome/browser/api/prefs/pref_change_registrar.h"
+#include "base/prefs/public/pref_change_registrar.h"
 #endif  // defined(OS_CHROMEOS)
 
 class AutocompleteController;

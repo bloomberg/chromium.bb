@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_PERSISTENT_PREF_STORE_H_
-#define CHROME_COMMON_PERSISTENT_PREF_STORE_H_
+#ifndef BASE_PREFS_PERSISTENT_PREF_STORE_H_
+#define BASE_PREFS_PERSISTENT_PREF_STORE_H_
 
 #include <string>
 
-#include "chrome/common/pref_store.h"
+#include "base/prefs/pref_store.h"
 
 // This interface is complementary to the PrefStore interface, declaring
 // additional functionality that adds support for setting values and persisting
@@ -91,4 +91,4 @@ class PersistentPrefStore : public PrefStore {
   virtual ~PersistentPrefStore() {}
 };
 
-#endif  // CHROME_COMMON_PERSISTENT_PREF_STORE_H_
+#endif  // BASE_PREFS_PERSISTENT_PREF_STORE_H_

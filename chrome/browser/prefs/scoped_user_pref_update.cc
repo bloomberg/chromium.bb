@@ -5,7 +5,7 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 
 #include "base/logging.h"
-#include "chrome/browser/prefs/pref_notifier.h"
+#include "base/prefs/pref_notifier.h"
 #include "chrome/browser/prefs/pref_service.h"
 
 namespace subtle {

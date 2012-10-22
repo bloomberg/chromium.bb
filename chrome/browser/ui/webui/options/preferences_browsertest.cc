@@ -10,8 +10,8 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/public/pref_service_base.h"
 #include "base/values.h"
-#include "chrome/browser/api/prefs/pref_service_base.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/profiles/profile.h"
@@ -31,9 +31,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/settings/cros_settings_names.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/proxy_cros_settings_parser.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #endif
 
 using testing::AllOf;

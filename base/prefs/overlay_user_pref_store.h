@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREFS_OVERLAY_USER_PREF_STORE_H_
-#define CHROME_BROWSER_PREFS_OVERLAY_USER_PREF_STORE_H_
+#ifndef BASE_PREFS_OVERLAY_USER_PREF_STORE_H_
+#define BASE_PREFS_OVERLAY_USER_PREF_STORE_H_
 
 #include <map>
 #include <string>
@@ -11,8 +11,8 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
-#include "chrome/browser/prefs/pref_value_map.h"
-#include "chrome/common/persistent_pref_store.h"
+#include "base/prefs/persistent_pref_store.h"
+#include "base/prefs/pref_value_map.h"
 
 // PersistentPrefStore that directs all write operations into an in-memory
 // PrefValueMap. Read operations are first answered by the PrefValueMap.
@@ -81,4 +81,4 @@ class OverlayUserPrefStore : public PersistentPrefStore,
   DISALLOW_COPY_AND_ASSIGN(OverlayUserPrefStore);
 };
 
-#endif  // CHROME_BROWSER_PREFS_OVERLAY_USER_PREF_STORE_H_
+#endif  // BASE_PREFS_OVERLAY_USER_PREF_STORE_H_

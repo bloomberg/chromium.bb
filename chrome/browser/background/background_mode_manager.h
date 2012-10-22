@@ -8,7 +8,7 @@
 #include <map>
 
 #include "base/gtest_prod_util.h"
-#include "chrome/browser/api/prefs/pref_change_registrar.h"
+#include "base/prefs/public/pref_change_registrar.h"
 #include "chrome/browser/background/background_application_list_model.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"

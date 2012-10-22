@@ -9,9 +9,9 @@
 #include <iterator>
 
 #include "base/logging.h"
+#include "base/prefs/public/pref_service_base.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/api/prefs/pref_service_base.h"
 #include "chrome/browser/api/sync/profile_sync_service_base.h"
 #include "chrome/browser/api/webdata/autofill_web_data_service.h"
 #include "chrome/browser/autofill/autofill-inl.h"

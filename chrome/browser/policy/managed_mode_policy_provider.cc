@@ -4,9 +4,9 @@
 
 #include "chrome/browser/policy/managed_mode_policy_provider.h"
 
+#include "base/prefs/json_pref_store.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/json_pref_store.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/public/browser/browser_thread.h"
 

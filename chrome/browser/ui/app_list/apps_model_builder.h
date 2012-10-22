@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "chrome/browser/api/prefs/pref_change_registrar.h"
+#include "base/prefs/public/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/app_list/app_list_model.h"

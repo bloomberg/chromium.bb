@@ -4,9 +4,9 @@
 
 #include "chrome/browser/policy/configuration_policy_handler_chromeos.h"
 
+#include "base/prefs/pref_value_map.h"
 #include "chrome/browser/policy/policy_error_map.h"
 #include "chrome/browser/policy/policy_map.h"
-#include "chrome/browser/prefs/pref_value_map.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "policy/policy_constants.h"

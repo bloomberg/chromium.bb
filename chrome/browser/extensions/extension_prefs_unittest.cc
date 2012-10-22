@@ -6,12 +6,12 @@
 
 #include "base/basictypes.h"
 #include "base/path_service.h"
+#include "base/prefs/public/pref_change_registrar.h"
 #include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"

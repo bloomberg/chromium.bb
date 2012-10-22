@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/browser/api/prefs/pref_change_registrar.h"
+#include "base/prefs/public/pref_change_registrar.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/public/browser/notification_observer.h"
 

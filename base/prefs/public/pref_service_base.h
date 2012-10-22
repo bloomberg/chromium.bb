@@ -13,8 +13,8 @@
 // information and MUST not be extracted, overwritten or modified except
 // through Chromium defined APIs.
 
-#ifndef CHROME_BROWSER_API_PREFS_PREF_SERVICE_BASE_H_
-#define CHROME_BROWSER_API_PREFS_PREF_SERVICE_BASE_H_
+#ifndef BASE_PREFS_PUBLIC_PREF_SERVICE_BASE_H_
+#define BASE_PREFS_PUBLIC_PREF_SERVICE_BASE_H_
 
 #include "base/values.h"
 
@@ -269,4 +269,4 @@ class PrefServiceBase {
                                   content::NotificationObserver* obs) = 0;
 };
 
-#endif  // CHROME_BROWSER_API_PREFS_PREF_SERVICE_BASE_H_
+#endif  // BASE_PREFS_PUBLIC_PREF_SERVICE_BASE_H_

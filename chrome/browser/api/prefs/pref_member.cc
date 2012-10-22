@@ -5,8 +5,8 @@
 #include "chrome/browser/api/prefs/pref_member.h"
 
 #include "base/bind.h"
+#include "base/prefs/public/pref_service_base.h"
 #include "base/value_conversions.h"
-#include "chrome/browser/api/prefs/pref_service_base.h"
 #include "chrome/common/chrome_notification_types.h"
 
 using content::BrowserThread;

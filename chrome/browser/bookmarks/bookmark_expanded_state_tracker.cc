@@ -4,9 +4,9 @@
 
 #include "chrome/browser/bookmarks/bookmark_expanded_state_tracker.h"
 
+#include "base/prefs/public/pref_service_base.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/api/prefs/pref_service_base.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/common/pref_names.h"

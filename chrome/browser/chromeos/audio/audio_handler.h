@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_CHROMEOS_AUDIO_AUDIO_HANDLER_H_
 
 #include "base/basictypes.h"
-#include "base/observer_list.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
+#include "base/prefs/public/pref_change_registrar.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

@@ -7,8 +7,8 @@
 
 #include <string>
 
+#include "base/prefs/pref_value_map.h"
 #include "chrome/browser/chromeos/settings/cros_settings_provider.h"
-#include "chrome/browser/prefs/pref_value_map.h"
 
 namespace chromeos {
 

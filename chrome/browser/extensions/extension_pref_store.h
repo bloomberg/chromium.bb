@@ -7,8 +7,8 @@
 
 #include <string>
 
+#include "base/prefs/value_map_pref_store.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
-#include "chrome/browser/prefs/value_map_pref_store.h"
 
 // A (non-persistent) PrefStore implementation that holds effective preferences
 // set by extensions. These preferences are managed by and fetched from an

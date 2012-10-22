@@ -220,8 +220,6 @@
         'common/important_file_writer.h',
         'common/instant_types.cc',
         'common/instant_types.h',
-        'common/json_pref_store.cc',
-        'common/json_pref_store.h',
         'common/json_schema_constants.cc',
         'common/json_schema_constants.h',
         'common/json_schema_validator.cc',
@@ -272,9 +270,6 @@
         'common/password_generation_util.h',
         'common/pepper_flash.cc',
         'common/pepper_flash.h',
-        'common/persistent_pref_store.h',
-        'common/pref_store.cc',
-        'common/pref_store.h',
         'common/print_messages.cc',
         'common/print_messages.h',
         'common/profiling.cc',
@@ -322,6 +317,14 @@
         'common/zip_internal.h',
         'common/zip_reader.cc',
         'common/zip_reader.h',
+
+        # TODO(joi): Move to 'base_prefs' target in base/base.gyp once
+        # Prefs move is complete and dependencies have been broken.
+        '../base/prefs/json_pref_store.cc',
+        '../base/prefs/json_pref_store.h',
+        '../base/prefs/persistent_pref_store.h',
+        '../base/prefs/pref_store.cc',
+        '../base/prefs/pref_store.h',
       ],
       'conditions': [
         ['OS != "ios"', {

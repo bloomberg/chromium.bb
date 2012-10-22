@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/api/prefs/pref_change_registrar.h"
+#include "base/prefs/public/pref_change_registrar.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "content/public/browser/notification_observer.h"
 #include "net/proxy/proxy_config.h"

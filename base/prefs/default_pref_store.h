@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PREFS_DEFAULT_PREF_STORE_H_
-#define CHROME_BROWSER_PREFS_DEFAULT_PREF_STORE_H_
+#ifndef BASE_PREFS_DEFAULT_PREF_STORE_H_
+#define BASE_PREFS_DEFAULT_PREF_STORE_H_
 
 #include <string>
 
+#include "base/prefs/value_map_pref_store.h"
 #include "base/values.h"
-#include "chrome/browser/prefs/value_map_pref_store.h"
 
 // This PrefStore keeps track of default preference values set when a
 // preference is registered with the PrefService.
@@ -33,4 +33,4 @@ class DefaultPrefStore : public ValueMapPrefStore {
   DISALLOW_COPY_AND_ASSIGN(DefaultPrefStore);
 };
 
-#endif  // CHROME_BROWSER_PREFS_DEFAULT_PREF_STORE_H_
+#endif  // BASE_PREFS_DEFAULT_PREF_STORE_H_

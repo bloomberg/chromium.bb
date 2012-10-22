@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_POLICY_MANAGED_MODE_POLICY_PROVIDER_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/prefs/persistent_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
-#include "chrome/common/persistent_pref_store.h"
 
 class Profile;
 

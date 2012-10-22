@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_PREF_STORE_H_
-#define CHROME_COMMON_PREF_STORE_H_
+#ifndef BASE_PREFS_PREF_STORE_H_
+#define BASE_PREFS_PREF_STORE_H_
 
 #include <string>
 
@@ -69,4 +69,4 @@ class PrefStore : public base::RefCounted<PrefStore> {
   DISALLOW_COPY_AND_ASSIGN(PrefStore);
 };
 
-#endif  // CHROME_COMMON_PREF_STORE_H_
+#endif  // BASE_PREFS_PREF_STORE_H_

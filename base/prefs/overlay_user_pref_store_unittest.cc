@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/prefs/overlay_user_pref_store.h"
+#include "base/prefs/pref_store_observer_mock.h"
+#include "base/prefs/testing_pref_store.h"
 #include "base/values.h"
-#include "chrome/browser/prefs/overlay_user_pref_store.h"
-#include "chrome/browser/prefs/testing_pref_store.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/pref_store_observer_mock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -10,10 +10,10 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/prefs/pref_store.h"
 #include "base/values.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_service.h"
-#include "chrome/common/pref_store.h"
 
 class PrefValueMap;
 

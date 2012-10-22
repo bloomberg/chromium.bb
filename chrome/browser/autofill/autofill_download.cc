@@ -9,13 +9,13 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/prefs/public/pref_service_base.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/autofill_xml_parser.h"
 #include "chrome/browser/autofill/form_structure.h"
-#include "chrome/browser/api/prefs/pref_service_base.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "googleurl/src/gurl.h"

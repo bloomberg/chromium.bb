@@ -9,8 +9,8 @@
 
 #include "base/hash_tables.h"
 #include "base/observer_list.h"
+#include "base/prefs/pref_notifier.h"
 #include "base/threading/non_thread_safe.h"
-#include "chrome/browser/prefs/pref_notifier.h"
 
 class PrefService;
 

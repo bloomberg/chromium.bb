@@ -5,8 +5,8 @@
 #include "chrome/browser/prefs/pref_value_store.h"
 
 #include "base/logging.h"
+#include "base/prefs/pref_notifier.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
-#include "chrome/browser/prefs/pref_notifier.h"
 
 PrefValueStore::PrefStoreKeeper::PrefStoreKeeper()
     : pref_value_store_(NULL),

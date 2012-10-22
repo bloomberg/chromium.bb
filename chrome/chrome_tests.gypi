@@ -166,8 +166,6 @@
         'browser/prefs/pref_observer_mock.h',
         'browser/prefs/pref_service_mock_builder.cc',
         'browser/prefs/pref_service_mock_builder.h',
-        'browser/prefs/testing_pref_store.cc',
-        'browser/prefs/testing_pref_store.h',
         'browser/protector/mock_protector_service.cc',
         'browser/protector/mock_protector_service.h',
         'browser/protector/mock_setting_change.cc',
@@ -209,8 +207,6 @@
         'common/extensions/extension_builder.h',
         'common/extensions/value_builder.cc',
         'common/extensions/value_builder.h',
-        'common/pref_store_observer_mock.cc',
-        'common/pref_store_observer_mock.h',
         'renderer/chrome_mock_render_thread.cc',
         'renderer/chrome_mock_render_thread.h',
         'renderer/mock_printer.cc',
@@ -289,6 +285,14 @@
         'test/logging/win/test_log_collector.h',
         'test/ppapi/ppapi_test.cc',
         'test/ppapi/ppapi_test.h',
+
+        # TODO(joi): Move to 'base_prefs' target in base/base.gyp once
+        # Prefs move is complete and dependencies have been broken.
+        '../base/prefs/testing_pref_store.cc',
+        '../base/prefs/testing_pref_store.h',
+        '../base/prefs/pref_store_observer_mock.cc',
+        '../base/prefs/pref_store_observer_mock.h',
+
         '../ui/gfx/image/image_unittest_util.h',
         '../ui/gfx/image/image_unittest_util.cc',
         '../webkit/quota/mock_quota_manager.cc',
@@ -1015,7 +1019,6 @@
         'app/chrome_dll.rc',
         # All unittests in browser, common, renderer and service.
         'browser/about_flags_unittest.cc',
-        'browser/api/prefs/pref_change_registrar_unittest.cc',
         'browser/api/prefs/pref_member_unittest.cc',
         'browser/app_controller_mac_unittest.mm',
         'browser/autocomplete/autocomplete_input_unittest.cc',
@@ -1519,11 +1522,9 @@
         'browser/preferences_mock_mac.h',
         'browser/prefs/command_line_pref_store_unittest.cc',
         'browser/prefs/incognito_mode_prefs_unittest.cc',
-        'browser/prefs/overlay_user_pref_store_unittest.cc',
         'browser/prefs/pref_model_associator_unittest.cc',
         'browser/prefs/pref_notifier_impl_unittest.cc',
         'browser/prefs/pref_service_unittest.cc',
-        'browser/prefs/pref_value_map_unittest.cc',
         'browser/prefs/pref_value_store_unittest.cc',
         'browser/prefs/proxy_config_dictionary_unittest.cc',
         'browser/prefs/proxy_policy_unittest.cc',
@@ -2061,7 +2062,6 @@
         'common/extensions/value_counter_unittest.cc',
         'common/extensions/api/extension_api_unittest.cc',
         'common/important_file_writer_unittest.cc',
-        'common/json_pref_store_unittest.cc',
         'common/json_schema_validator_unittest.cc',
         'common/json_schema_validator_unittest_base.cc',
         'common/json_schema_validator_unittest_base.h',
@@ -2130,6 +2130,14 @@
         '../ash/test/test_launcher_delegate.cc',
         '../ash/test/test_launcher_delegate.h',
         '../ash/test/test_shell_delegate.cc',
+
+        # TODO(joi): Move to 'base_prefs' target in base/base.gyp once
+        # Prefs move is complete and dependencies have been broken.
+        '../base/prefs/public/pref_change_registrar_unittest.cc',
+        '../base/prefs/overlay_user_pref_store_unittest.cc',
+        '../base/prefs/pref_value_map_unittest.cc',
+        '../base/prefs/json_pref_store_unittest.cc',
+
         # TODO(joi): Move the google_apis tests to a separate
         # google_apis_unittests executable.
         '../google_apis/google_api_keys_unittest.cc',

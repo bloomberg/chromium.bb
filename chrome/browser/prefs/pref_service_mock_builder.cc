@@ -5,14 +5,14 @@
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
 
 #include "base/message_loop_proxy.h"
+#include "base/prefs/default_pref_store.h"
+#include "base/prefs/json_pref_store.h"
+#include "base/prefs/testing_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
-#include "chrome/browser/prefs/default_pref_store.h"
 #include "chrome/browser/prefs/pref_notifier_impl.h"
-#include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/prefs/testing_pref_store.h"
-#include "chrome/common/json_pref_store.h"
+#include "chrome/browser/prefs/pref_value_store.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

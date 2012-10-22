@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/prefs/value_map_pref_store.h"
 #include "base/values.h"
-#include "chrome/browser/prefs/value_map_pref_store.h"
 
 // This PrefStore keeps track of preferences set by command-line switches,
 // such as proxy settings.

@@ -569,6 +569,10 @@ include_rules = [
   # this should probably change.
   "+unicode",
   "+testing",
+
+  # Until we finish breaking dependencies of base/prefs back to chrome/,
+  # don't try to use it (unless you're in chrome/).
+  "-base/prefs",
 ]
 
 

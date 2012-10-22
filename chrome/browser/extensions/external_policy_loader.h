@@ -8,7 +8,7 @@
 #include "chrome/browser/extensions/external_loader.h"
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/api/prefs/pref_change_registrar.h"
+#include "base/prefs/public/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 

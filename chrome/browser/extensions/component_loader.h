@@ -10,8 +10,8 @@
 
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/prefs/public/pref_change_registrar.h"
 #include "base/values.h"
-#include "chrome/browser/api/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
 
 class ExtensionServiceInterface;

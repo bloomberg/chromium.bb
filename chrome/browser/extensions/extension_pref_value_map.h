@@ -10,11 +10,11 @@
 #include <string>
 
 #include "base/observer_list.h"
+#include "base/prefs/pref_value_map.h"
 #include "base/time.h"
 #include "base/values.h"
-#include "chrome/browser/prefs/pref_value_map.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/extensions/extension_prefs_scope.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 
 // Non-persistent data container that is shared by ExtensionPrefStores. All
 // extension pref values (incognito and regular) are stored herein and

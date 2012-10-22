@@ -7,8 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/common/persistent_pref_store.h"
-#include "chrome/common/pref_store.h"
+#include "base/prefs/persistent_pref_store.h"
+#include "base/prefs/pref_store.h"
 
 class CommandLine;
 class FilePath;

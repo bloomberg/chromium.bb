@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_JSON_PREF_STORE_H_
-#define CHROME_COMMON_JSON_PREF_STORE_H_
+#ifndef BASE_PREFS_JSON_PREF_STORE_H_
+#define BASE_PREFS_JSON_PREF_STORE_H_
 
 #include <set>
 #include <string>
@@ -13,8 +13,8 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/prefs/persistent_pref_store.h"
 #include "chrome/common/important_file_writer.h"
-#include "chrome/common/persistent_pref_store.h"
 
 namespace base {
 class DictionaryValue;
@@ -90,4 +90,4 @@ class JsonPrefStore : public PersistentPrefStore,
   DISALLOW_COPY_AND_ASSIGN(JsonPrefStore);
 };
 
-#endif  // CHROME_COMMON_JSON_PREF_STORE_H_
+#endif  // BASE_PREFS_JSON_PREF_STORE_H_

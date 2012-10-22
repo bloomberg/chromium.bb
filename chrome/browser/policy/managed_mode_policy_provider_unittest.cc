@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/prefs/testing_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider_test.h"
 #include "chrome/browser/policy/managed_mode_policy_provider.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"
-#include "chrome/browser/prefs/testing_pref_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
