@@ -320,17 +320,14 @@ class ResizeSource : public ImageSkiaSource {
 
   // gfx::ImageSkiaSource overrides:
   virtual ImageSkiaRep GetImageForScale(ui::ScaleFactor scale_factor) OVERRIDE {
+    const ImageSkiaRep& image_rep = source_.GetRepresentation(scale_factor);
+    if (image_rep.GetWidth() == target_dip_size_.width() &&
+        image_rep.GetHeight() == target_dip_size_.height())
+      return image_rep;
+
     const float scale = ui::GetScaleFactorScale(scale_factor);
     const Size target_pixel_size = gfx::ToFlooredSize(
         target_dip_size_.Scale(scale));
-
-    const ImageSkiaRep& image_rep = source_.GetRepresentation(scale_factor);
-
-    if (image_rep.pixel_width() == target_pixel_size.width() &&
-        image_rep.pixel_height() == target_pixel_size.height()) {
-      return ImageSkiaRep(image_rep.sk_bitmap(), scale_factor);
-    }
-
     const SkBitmap resized = skia::ImageOperations::Resize(
         image_rep.sk_bitmap(),
         resize_method_,
@@ -449,14 +446,6 @@ ImageSkia ImageSkiaOperations::CreateResizedImage(
     const Size& target_dip_size) {
   return ImageSkia(new ResizeSource(source, method, target_dip_size),
                    target_dip_size);
-}
-
-// static
-ImageSkia ImageSkiaOperations::CreateImageWithCustomResizeMethod(
-      const ImageSkia& source,
-      skia::ImageOperations::ResizeMethod method) {
-  return ImageSkia(new ResizeSource(source, method, source.size()),
-                   source.size());
 }
 
 // static

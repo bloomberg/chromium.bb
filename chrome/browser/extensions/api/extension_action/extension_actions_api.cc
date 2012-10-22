@@ -27,7 +27,6 @@
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
-#include "ui/gfx/image/image_skia_operations.h"
 
 namespace {
 
@@ -131,13 +130,7 @@ void SetDefaultsFromValue(const base::DictionaryValue* dict,
         icon.AddRepresentation(gfx::ImageSkiaRep(bitmap, kIconSizes[i].scale));
       }
     }
-
-    if (!icon.isNull()) {
-      gfx::ImageSkia final_icon =
-          gfx::ImageSkiaOperations::CreateImageWithCustomResizeMethod(
-              icon, skia::ImageOperations::RESIZE_LANCZOS3);
-      action->SetIcon(kTabId, gfx::Image(final_icon));
-    }
+    action->SetIcon(kTabId, gfx::Image(icon));
   }
 }
 
@@ -162,9 +155,11 @@ scoped_ptr<base::DictionaryValue> DefaultsToValue(ExtensionAction* action) {
   if (!icon.isNull()) {
     base::DictionaryValue* icon_value = new base::DictionaryValue();
     for (size_t i = 0; i < arraysize(kIconSizes); i++) {
-      icon_value->SetString(
-          kIconSizes[i].size_string,
-          RepresentationToString(icon, kIconSizes[i].scale));
+      if (icon.HasRepresentation(kIconSizes[i].scale)) {
+        icon_value->SetString(
+            kIconSizes[i].size_string,
+            RepresentationToString(icon, kIconSizes[i].scale));
+      }
     }
     dict->Set(kIconStorageKey, icon_value);
   }
@@ -474,10 +469,7 @@ bool ExtensionActionSetIconFunction::RunExtensionAction() {
       }
     }
 
-    gfx::ImageSkia final_icon =
-        gfx::ImageSkiaOperations::CreateImageWithCustomResizeMethod(
-            icon, skia::ImageOperations::RESIZE_LANCZOS3);
-    extension_action_->SetIcon(tab_id_, gfx::Image(final_icon));
+    extension_action_->SetIcon(tab_id_, gfx::Image(icon));
   } else if (details_->GetInteger("iconIndex", &icon_index)) {
     // Obsolete argument: ignore it.
     return true;
