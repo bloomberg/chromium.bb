@@ -220,7 +220,13 @@ void TestWebSocket::RunTests(const std::string& filter) {
   RUN_TEST_WITH_REFERENCE_CHECK(BinarySendReceive, filter);
   RUN_TEST_WITH_REFERENCE_CHECK(StressedSendReceive, filter);
   RUN_TEST_WITH_REFERENCE_CHECK(BufferedAmount, filter);
-  RUN_TEST_WITH_REFERENCE_CHECK(AbortCalls, filter);
+  // PP_Resource for WebSocket may be released later because of an internal
+  // reference for asynchronous IPC handling. So, suppress reference check on
+  // the following AbortCallsWithCallback test.
+  RUN_TEST(AbortCallsWithCallback, filter);
+  RUN_TEST_WITH_REFERENCE_CHECK(AbortSendMessageCall, filter);
+  RUN_TEST_WITH_REFERENCE_CHECK(AbortCloseCall, filter);
+  RUN_TEST_WITH_REFERENCE_CHECK(AbortReceiveMessageCall, filter);
 
   RUN_TEST_WITH_REFERENCE_CHECK(CcInterfaces, filter);
 
@@ -888,40 +894,26 @@ std::string TestWebSocket::TestBufferedAmount() {
   PASS();
 }
 
-std::string TestWebSocket::TestAbortCalls() {
-  // Test abort behaviors where a WebSocket PP_Resource is released while
-  // each function is in-flight on the WebSocket PP_Resource.
-  std::vector<uint8_t> large_binary(65 * 1024);
-  PP_Var large_var = CreateVarBinary(large_binary);
-
-  // Firstly, test the behavior for SendMessage().
-  // This function doesn't require a callback, but operation will be done
-  // asynchronously in WebKit and browser process.
-  int32_t result;
-  std::string url = GetFullURL(kEchoServerURL);
-  PP_Resource ws = Connect(url, &result, "");
-  ASSERT_TRUE(ws);
-  ASSERT_EQ(PP_OK, result);
-  result = websocket_interface_->SendMessage(ws, large_var);
-  ASSERT_EQ(PP_OK, result);
-  core_interface_->ReleaseResource(ws);
-
+// Test abort behaviors where a WebSocket PP_Resource is released while each
+// function is in-flight on the WebSocket PP_Resource.
+std::string TestWebSocket::TestAbortCallsWithCallback() {
   // Following tests make sure the behavior for functions which require a
   // callback. The callback must get a PP_ERROR_ABORTED.
+
   // Test the behavior for Connect().
-  ws = websocket_interface_->Create(instance_->pp_instance());
+  PP_Resource ws = websocket_interface_->Create(instance_->pp_instance());
   ASSERT_TRUE(ws);
+  std::string url = GetFullURL(kEchoServerURL);
   PP_Var url_var = CreateVarString(url);
   TestCompletionCallback connect_callback(
       instance_->pp_instance(), callback_type());
-  result = websocket_interface_->Connect(
+  int32_t result = websocket_interface_->Connect(
       ws, url_var, NULL, 0,
       connect_callback.GetCallback().pp_completion_callback());
   ASSERT_EQ(PP_OK_COMPLETIONPENDING, result);
   core_interface_->ReleaseResource(ws);
   connect_callback.WaitForResult(result);
   ASSERT_EQ(PP_ERROR_ABORTED, connect_callback.result());
-  ReleaseVar(url_var);
 
   // Test the behavior for Close().
   ws = Connect(url, &result, "");
@@ -940,7 +932,7 @@ std::string TestWebSocket::TestAbortCalls() {
   ReleaseVar(reason_var);
 
   // Test the behavior for ReceiveMessage().
-  // Firstly, make sure the simplest case to wait for data which never arrives.
+  // Make sure the simplest case to wait for data which never arrives, here.
   ws = Connect(url, &result, "");
   ASSERT_TRUE(ws);
   ASSERT_EQ(PP_OK, result);
@@ -954,19 +946,6 @@ std::string TestWebSocket::TestAbortCalls() {
   core_interface_->ReleaseResource(ws);
   receive_callback.WaitForResult(result);
   ASSERT_EQ(PP_ERROR_ABORTED, receive_callback.result());
-
-  // Release the resource in the close completion callback.
-  ws = Connect(url, &result, "");
-  ASSERT_TRUE(ws);
-  ASSERT_EQ(PP_OK, result);
-  result = websocket_interface_->Close(
-      ws, PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, PP_MakeUndefined(),
-      close_callback.GetCallback().pp_completion_callback());
-  ReleaseResourceDelegate close_delegate(core_interface_, ws);
-  close_callback.SetDelegate(&close_delegate);
-  close_callback.WaitForResult(result);
-  CHECK_CALLBACK_BEHAVIOR(close_callback);
-  ASSERT_EQ(PP_OK, close_callback.result());
 
   // Release the resource in the aborting receive completion callback which is
   // introduced by calling Close().
@@ -990,9 +969,62 @@ std::string TestWebSocket::TestAbortCalls() {
   CHECK_CALLBACK_BEHAVIOR(close_callback);
   ASSERT_EQ(PP_ERROR_ABORTED, close_callback.result());
 
+  ReleaseVar(url_var);
+
+  PASS();
+}
+
+std::string TestWebSocket::TestAbortSendMessageCall() {
+  // Test the behavior for SendMessage().
+  // This function doesn't require a callback, but operation will be done
+  // asynchronously in WebKit and browser process.
+  std::vector<uint8_t> large_binary(65 * 1024);
+  PP_Var large_var = CreateVarBinary(large_binary);
+
+  int32_t result;
+  std::string url = GetFullURL(kEchoServerURL);
+  PP_Resource ws = Connect(url, &result, "");
+  ASSERT_TRUE(ws);
+  ASSERT_EQ(PP_OK, result);
+  result = websocket_interface_->SendMessage(ws, large_var);
+  ASSERT_EQ(PP_OK, result);
+  core_interface_->ReleaseResource(ws);
+  ReleaseVar(large_var);
+
+  PASS();
+}
+
+std::string TestWebSocket::TestAbortCloseCall() {
+  // Release the resource in the close completion callback.
+  int32_t result;
+  std::string url = GetFullURL(kEchoServerURL);
+  PP_Resource ws = Connect(url, &result, "");
+  ASSERT_TRUE(ws);
+  ASSERT_EQ(PP_OK, result);
+  TestCompletionCallback close_callback(
+      instance_->pp_instance(), callback_type());
+  result = websocket_interface_->Close(
+      ws, PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE, PP_MakeUndefined(),
+      close_callback.GetCallback().pp_completion_callback());
+  ReleaseResourceDelegate close_delegate(core_interface_, ws);
+  close_callback.SetDelegate(&close_delegate);
+  close_callback.WaitForResult(result);
+  CHECK_CALLBACK_BEHAVIOR(close_callback);
+  ASSERT_EQ(PP_OK, close_callback.result());
+
+  PASS();
+}
+
+std::string TestWebSocket::TestAbortReceiveMessageCall() {
   // Test the behavior where receive process might be in-flight.
+  std::vector<uint8_t> large_binary(65 * 1024);
+  PP_Var large_var = CreateVarBinary(large_binary);
   const char* text = "yukarin";
   PP_Var text_var = CreateVarString(text);
+
+  std::string url = GetFullURL(kEchoServerURL);
+  int32_t result;
+  PP_Resource ws;
 
   // Each trial sends 17 messages and receives just |trial| number of
   // message(s) before releasing the WebSocket. The WebSocket is released while

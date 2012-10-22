@@ -719,6 +719,15 @@ TEST_PPAPI_OUT_OF_PROCESS(Flash_GetSetting)
 // No in-process test for SetCrashData.
 TEST_PPAPI_OUT_OF_PROCESS(Flash_SetCrashData)
 
+// Flaky on Windows. http://crbug.com/156443
+#if defined(OS_WIN)
+#define MAYBE_WebSocket_AbortReceiveMessageCall \
+    FLAKY_WebSocket_AbortReceiveMessageCall
+#else
+#define MAYBE_WebSocket_AbortReceiveMessageCall \
+    WebSocket_AbortReceiveMessageCall
+#endif
+
 TEST_PPAPI_IN_PROCESS(WebSocket_IsWebSocket)
 TEST_PPAPI_IN_PROCESS(WebSocket_UninitializedPropertiesAccess)
 TEST_PPAPI_IN_PROCESS(WebSocket_InvalidConnect)
@@ -732,8 +741,10 @@ TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_TextSendReceive)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_BinarySendReceive)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_StressedSendReceive)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_BufferedAmount)
-// http://crbug.com/156443
-TEST_PPAPI_IN_PROCESS_WITH_WS(FLAKY_WebSocket_AbortCalls)
+TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_AbortCallsWithCallback)
+TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_AbortSendMessageCall)
+TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_AbortCloseCall)
+TEST_PPAPI_IN_PROCESS_WITH_WS(MAYBE_WebSocket_AbortReceiveMessageCall)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_CcInterfaces)
 TEST_PPAPI_IN_PROCESS(WebSocket_UtilityInvalidConnect)
 TEST_PPAPI_IN_PROCESS(WebSocket_UtilityProtocols)
@@ -758,8 +769,10 @@ TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_TextSendReceive)
 TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_BinarySendReceive)
 TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_StressedSendReceive)
 TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_BufferedAmount)
-// http://crbug.com/156443
-TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(FLAKY_WebSocket_AbortCalls)
+TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_AbortCallsWithCallback)
+TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_AbortSendMessageCall)
+TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_AbortCloseCall)
+TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(MAYBE_WebSocket_AbortReceiveMessageCall)
 TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(WebSocket_CcInterfaces)
 TEST_PPAPI_OUT_OF_PROCESS(WebSocket_UtilityInvalidConnect)
 TEST_PPAPI_OUT_OF_PROCESS(WebSocket_UtilityProtocols)
@@ -784,8 +797,10 @@ TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_TextSendReceive)
 TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_BinarySendReceive)
 TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_StressedSendReceive)
 TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_BufferedAmount)
-// http://crbug.com/156443
-TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(FLAKY_WebSocket_AbortCalls)
+TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_AbortCallsWithCallback)
+TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_AbortSendMessageCall)
+TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_AbortCloseCall)
+TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(MAYBE_WebSocket_AbortReceiveMessageCall)
 TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_CcInterfaces)
 TEST_PPAPI_NACL_VIA_HTTP(WebSocket_UtilityInvalidConnect)
 TEST_PPAPI_NACL_VIA_HTTP(WebSocket_UtilityProtocols)

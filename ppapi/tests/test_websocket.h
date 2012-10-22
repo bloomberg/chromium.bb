@@ -47,7 +47,10 @@ class TestWebSocket : public TestCase {
   std::string TestBinarySendReceive();
   std::string TestStressedSendReceive();
   std::string TestBufferedAmount();
-  std::string TestAbortCalls();
+  std::string TestAbortCallsWithCallback();
+  std::string TestAbortSendMessageCall();
+  std::string TestAbortCloseCall();
+  std::string TestAbortReceiveMessageCall();
 
   std::string TestCcInterfaces();
 
