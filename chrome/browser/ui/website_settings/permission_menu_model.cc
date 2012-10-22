@@ -33,6 +33,8 @@ PermissionMenuModel::PermissionMenuModel(
   }
   AddCheckItem(COMMAND_SET_TO_DEFAULT, label);
 
+  // TODO(xians): Remove this special case once allow exceptions are supported
+  // for CONTENT_SETTINGS_TYPE_MEDIASTREAM.
   if (type != CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
     label = l10n_util::GetStringUTF16(
         IDS_WEBSITE_SETTINGS_MENU_ITEM_ALLOW);
