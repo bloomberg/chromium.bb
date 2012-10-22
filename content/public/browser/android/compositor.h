@@ -29,6 +29,9 @@ class Compositor {
    public:
     // Tells the client that it should schedule a composite.
     virtual void ScheduleComposite() = 0;
+
+    // The compositor has completed swapping a frame.
+    virtual void OnSwapBuffersCompleted() {}
   };
 
   virtual ~Compositor() {}

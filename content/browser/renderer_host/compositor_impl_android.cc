@@ -280,6 +280,7 @@ void CompositorImpl::didCommitAndDrawFrame() {
 }
 
 void CompositorImpl::didCompleteSwapBuffers() {
+  client_->OnSwapBuffersCompleted();
 }
 
 void CompositorImpl::scheduleComposite() {
