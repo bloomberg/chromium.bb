@@ -254,6 +254,7 @@ extern const uint8_t kX86FlagBits[5];
     void callee_func(struct NaClSignalContext *regs); \
     __asm__( \
         ".pushsection .text, \"ax\", %progbits\n" \
+        ".p2align 4\n" \
         #def_func ":\n" \
         "push {r0}\n"  /* Leave space for cpsr */ \
         "push {r0}\n"  /* Leave space for prog_ctr */ \
