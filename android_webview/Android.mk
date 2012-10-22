@@ -40,3 +40,28 @@ LOCAL_SRC_FILES += \
 LOCAL_GENERATED_SOURCES := $(call intermediates-dir-for,GYP,shared)/net/template/NetError.java \
 
 include $(BUILD_STATIC_JAVA_LIBRARY)
+
+
+########################################################
+# These packages are the resource paks used by webview.
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := webviewchromium_res_chrome
+LOCAL_MODULE_STEM := chrome
+include $(LOCAL_PATH)/webview_pak.mk
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := webviewchromium_res_resources
+LOCAL_MODULE_STEM := resources
+include $(LOCAL_PATH)/webview_pak.mk
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := webviewchromium_res_chrome_100_percent
+LOCAL_MODULE_STEM := chrome_100_percent
+include $(LOCAL_PATH)/webview_pak.mk
+
+# TODO(torne): add other locales (filtered by PRODUCT_LOCALES?)
+include $(CLEAR_VARS)
+LOCAL_MODULE := webviewchromium_res_en-US
+LOCAL_MODULE_STEM := locales/en-US
+include $(LOCAL_PATH)/webview_pak.mk

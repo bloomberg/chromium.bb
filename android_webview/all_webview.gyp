@@ -13,6 +13,8 @@
       'type': 'none',
       'dependencies': [
         'android_webview.gyp:libwebview',
+        '../chrome/chrome_resources.gyp:packed_resources',
+        '../chrome/chrome_resources.gyp:packed_extra_resources',
         # Needed by android_webview_java
         '../net/net.gyp:net_errors_java',
       ],
