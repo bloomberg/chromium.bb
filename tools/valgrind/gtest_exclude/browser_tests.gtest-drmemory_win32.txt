@@ -79,6 +79,11 @@ PolicyPrefsBannerTest.*
 # DrM-i#1052-c#8
 BrowserOptionsWebUITest.*
 ExtensionURLRewriteBrowserTest.*
+# DrM-i#1052-c#14
+WebGLMultisamplingTest.*
+ExtensionBrowserTest.*
+ExtensionResourceRequestPolicyTest.*
+BrowserTagTest.*
 
 # Failed tests:
 # DrM-i#1052-c#9
