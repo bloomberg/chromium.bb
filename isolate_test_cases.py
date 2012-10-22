@@ -5,6 +5,11 @@
 
 """Traces each test cases of a google-test executable individually and generates
 or updates an .isolate file.
+
+If the trace hangs up, you can still take advantage of the traces up to the
+points it got to by Ctrl-C'ing out, then running isolate.py merge -r
+out/release/foo_test.isolated. the reason it works is because both isolate.py
+and isolate_test_cases.py uses the same filename for the trace by default.
 """
 
 import logging

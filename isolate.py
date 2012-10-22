@@ -1584,16 +1584,22 @@ def load_complete_state(options, subdir):
 
 
 def read_trace_as_isolate_dict(complete_state):
-  """Reads a trace and returns the .isolate dictionary."""
+  """Reads a trace and returns the .isolate dictionary.
+
+  Returns exceptions during the log parsing so it can be re-raised.
+  """
   api = trace_inputs.get_api()
   logfile = complete_state.isolated_filepath + '.log'
   if not os.path.isfile(logfile):
     raise ExecutionError(
         'No log file \'%s\' to read, did you forget to \'trace\'?' % logfile)
   try:
-    results = trace_inputs.load_trace(
-        logfile, complete_state.root_dir, api, default_blacklist)
-    tracked, touched = split_touched(results.existent)
+    data = api.parse_log(logfile, default_blacklist)
+    exceptions = [i['exception'] for i in data if 'exception' in i]
+    results = (i['results'] for i in data if 'results' in i)
+    results_stripped = (i.strip_root(complete_state.root_dir) for i in results)
+    files = set(sum((result.existent for result in results_stripped), []))
+    tracked, touched = split_touched(files)
     value = generate_isolate(
         tracked,
         [],
@@ -1601,7 +1607,7 @@ def read_trace_as_isolate_dict(complete_state):
         complete_state.root_dir,
         complete_state.saved_state.variables,
         complete_state.isolated.relative_cwd)
-    return value
+    return value, exceptions
   except trace_inputs.TracingFailure, e:
     raise ExecutionError(
         'Reading traces failed for: %s\n%s' %
@@ -1619,7 +1625,7 @@ def print_all(comment, data, stream):
 
 def merge(complete_state):
   """Reads a trace and merges it back into the source .isolate file."""
-  value = read_trace_as_isolate_dict(complete_state)
+  value, exceptions = read_trace_as_isolate_dict(complete_state)
 
   # Now take that data and union it into the original .isolate file.
   with open(complete_state.saved_state.isolate_file, 'r') as f:
@@ -1636,6 +1642,12 @@ def merge(complete_state):
   print('Updating %s' % complete_state.saved_state.isolate_file)
   with open(complete_state.saved_state.isolate_file, 'wb') as f:
     print_all(config.file_comment, data, f)
+  if exceptions:
+    # It got an exception, raise the first one.
+    raise \
+        exceptions[0][0], \
+        exceptions[0][1], \
+        exceptions[0][2]
 
 
 def CMDcheck(args):
@@ -1734,8 +1746,14 @@ def CMDread(args):
   if args:
     parser.error('Unsupported argument: %s' % args)
   complete_state = load_complete_state(options, None)
-  value = read_trace_as_isolate_dict(complete_state)
+  value, exceptions = read_trace_as_isolate_dict(complete_state)
   pretty_print(value, sys.stdout)
+  if exceptions:
+    # It got an exception, raise the first one.
+    raise \
+        exceptions[0][0], \
+        exceptions[0][1], \
+        exceptions[0][2]
   return 0
 
 

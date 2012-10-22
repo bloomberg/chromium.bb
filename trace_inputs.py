@@ -3058,30 +3058,6 @@ def trace(logfile, cmd, cwd, api, output):
     return tracer.trace(cmd, cwd, 'default', output)
 
 
-def load_trace(logfile, root_dir, api, blacklist):
-  """Loads a trace file and returns the Results instance.
-
-  Arguments:
-  - logfile: File to load.
-  - root_dir: Root directory to use to determine if a file is relevant to the
-              trace or not.
-  - api: A tracing api instance.
-  - blacklist: Optional blacklist function to filter out unimportant files.
-  """
-  data = api.parse_log(logfile, (blacklist or (lambda _: False)))
-  assert len(data) == 1, 'More than one trace was detected!'
-  if 'exception' in data[0]:
-    # It got an exception, raise it.
-    raise \
-        data[0]['exception'][0], \
-        data[0]['exception'][1], \
-        data[0]['exception'][2]
-  results = data[0]['results']
-  if root_dir:
-    results = results.strip_root(root_dir)
-  return results
-
-
 def CMDclean(args):
   """Cleans up traces."""
   parser = OptionParserTraceInputs(command='clean')

@@ -263,7 +263,10 @@ class TraceInputsImport(TraceInputsBase):
     #self.assertEquals('', output)
     def blacklist(f):
       return f.endswith(('.pyc', '.svn', 'do_not_care.txt'))
-    return self.trace_inputs.load_trace(self.log, ROOT_DIR, api, blacklist)
+    data = api.parse_log(self.log, blacklist)
+    self.assertEqual(1, len(data))
+    self.assertTrue('exception' not in data[0])
+    return data[0]['results'].strip_root(ROOT_DIR)
 
   def _gen_dict_wrong_path(self):
     """Returns the expected flattened Results when child1.py is called with the
