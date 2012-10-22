@@ -172,14 +172,25 @@ public:
         m_testHooks->didAddAnimation();
     }
 
+    virtual void setNeedsCommit() OVERRIDE
+    {
+        if (!m_testStarted)
+            return;
+        CCLayerTreeHost::setNeedsCommit();
+    }
+
+    void setTestStarted(bool started) { m_testStarted = started; }
+
 private:
     MockLayerTreeHost(TestHooks* testHooks, cc::CCLayerTreeHostClient* client, const cc::CCLayerTreeSettings& settings)
         : CCLayerTreeHost(client, settings)
         , m_testHooks(testHooks)
+        , m_testStarted(false)
     {
     }
 
     TestHooks* m_testHooks;
+    bool m_testStarted;
 };
 
 // Implementation of CCLayerTreeHost callback interface.
@@ -394,6 +405,11 @@ void CCThreadedTest::doBeginTest()
     m_beginning = false;
     if (m_endWhenBeginReturns)
         realEndTest();
+
+    // Allow commits to happen once beginTest() has had a chance to post tasks
+    // so that those tasks will happen before the first commit.
+    if (m_layerTreeHost)
+        static_cast<MockLayerTreeHost*>(m_layerTreeHost.get())->setTestStarted(true);
 }
 
 void CCThreadedTest::timeout()

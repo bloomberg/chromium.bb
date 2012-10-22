@@ -225,12 +225,7 @@ private:
     int m_numDraws;
 };
 
-#if OS(WINDOWS)
-// http://webkit.org/b/74623
-TEST_F(CCLayerTreeHostTestSetNeedsCommit2, FLAKY_runMultiThread)
-#else
 TEST_F(CCLayerTreeHostTestSetNeedsCommit2, runMultiThread)
-#endif
 {
     runTest(true);
 }
@@ -432,6 +427,7 @@ public:
 
     virtual void beginTest() OVERRIDE
     {
+        postSetNeedsCommitToMainThread();
     }
 
     virtual void didCommitAndDrawFrame() OVERRIDE
@@ -505,9 +501,7 @@ public:
 
     virtual void beginTest() OVERRIDE
     {
-        // The tests start up with a commit pending because we give them a root layer.
-        // We need to wait for the commit to happen before doing anything.
-        EXPECT_TRUE(m_layerTreeHost->commitRequested());
+        postSetNeedsCommitToMainThread();
     }
 
     virtual void animate(double monotonicTime) OVERRIDE
@@ -799,12 +793,7 @@ public:
     }
 };
 
-#if OS(WINDOWS)
-// http://webkit.org/b/74623
-TEST_F(CCLayerTreeHostTestDoNotSkipLayersWithAnimatedOpacity, FLAKY_runMultiThread)
-#else
 TEST_F(CCLayerTreeHostTestDoNotSkipLayersWithAnimatedOpacity, runMultiThread)
-#endif
 {
     runTest(true);
 }
@@ -1077,6 +1066,7 @@ public:
     {
         m_layerTreeHost->rootLayer()->setScrollable(true);
         m_layerTreeHost->rootLayer()->setScrollPosition(IntPoint());
+        postSetNeedsCommitToMainThread();
         postSetNeedsRedrawToMainThread();
     }
 
@@ -1139,6 +1129,7 @@ public:
 
     virtual void beginTest() OVERRIDE
     {
+        postSetNeedsCommitToMainThread();
         postSetVisibleToMainThread(false);
         postSetNeedsRedrawToMainThread(); // This is suppressed while we're invisible.
         postSetVisibleToMainThread(true); // Triggers the redraw.
@@ -2132,6 +2123,7 @@ public:
     virtual void beginTest() OVERRIDE
     {
         m_layerTreeHost->setNeedsRedraw();
+        postSetNeedsCommitToMainThread();
     }
 
     virtual void didCommitAndDrawFrame() OVERRIDE
@@ -2294,14 +2286,14 @@ public:
         }
     }
 
-    virtual void drawLayersOnCCThread(CCLayerTreeHostImpl* impl) OVERRIDE
+    virtual void commitCompleteOnCCThread(CCLayerTreeHostImpl* impl) OVERRIDE
     {
         CCLayerImpl* root = impl->rootLayer();
         CCLayerImpl* rootScrollLayer = root->children()[0];
         CCLayerImpl* childLayer = rootScrollLayer->children()[0];
 
-        EXPECT_EQ(root->scrollDelta(), IntSize());
-        EXPECT_EQ(rootScrollLayer->scrollDelta(), IntSize());
+        EXPECT_SIZE_EQ(root->scrollDelta(), IntSize());
+        EXPECT_SIZE_EQ(rootScrollLayer->scrollDelta(), IntSize());
         EXPECT_EQ(rootScrollLayer->bounds().width() * m_deviceScaleFactor, rootScrollLayer->contentBounds().width());
         EXPECT_EQ(rootScrollLayer->bounds().height() * m_deviceScaleFactor, rootScrollLayer->contentBounds().height());
         EXPECT_EQ(childLayer->bounds().width() * m_deviceScaleFactor, childLayer->contentBounds().width());
@@ -2316,7 +2308,6 @@ public:
 
             EXPECT_POINT_EQ(m_initialScroll, childLayer->scrollPosition());
             EXPECT_SIZE_EQ(m_scrollAmount, childLayer->scrollDelta());
-            postSetNeedsCommitToMainThread();
             break;
         case 1:
             // Wheel scroll on impl thread.
@@ -2435,12 +2426,12 @@ public:
         }
     }
 
-    virtual void drawLayersOnCCThread(CCLayerTreeHostImpl* impl) OVERRIDE
+    virtual void commitCompleteOnCCThread(CCLayerTreeHostImpl* impl) OVERRIDE
     {
         CCLayerImpl* root = impl->rootLayer();
         CCLayerImpl* rootScrollLayer = root->children()[0];
 
-        EXPECT_EQ(root->scrollDelta(), IntSize());
+        EXPECT_SIZE_EQ(root->scrollDelta(), IntSize());
         EXPECT_EQ(rootScrollLayer->bounds().width() * m_deviceScaleFactor, rootScrollLayer->contentBounds().width());
         EXPECT_EQ(rootScrollLayer->bounds().height() * m_deviceScaleFactor, rootScrollLayer->contentBounds().height());
 
@@ -2453,7 +2444,6 @@ public:
 
             EXPECT_POINT_EQ(m_initialScroll, rootScrollLayer->scrollPosition());
             EXPECT_SIZE_EQ(m_scrollAmount, rootScrollLayer->scrollDelta());
-            postSetNeedsCommitToMainThread();
             break;
         case 1:
             // Wheel scroll on impl thread.
@@ -2559,6 +2549,8 @@ public:
         m_rootLayer->addChild(m_surfaceLayer1);
         m_surfaceLayer1->addChild(m_surfaceLayer2);
         m_layerTreeHost->setRootLayer(m_rootLayer);
+
+        postSetNeedsCommitToMainThread();
     }
 
     virtual void drawLayersOnCCThread(CCLayerTreeHostImpl* hostImpl) OVERRIDE
@@ -2713,6 +2705,8 @@ public:
 
         WebTransformationMatrix identityMatrix;
         setLayerPropertiesForTesting(m_layer.get(), 0, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(10, 20), true);
+
+        postSetNeedsCommitToMainThread();
     }
 
     class EvictTexturesTask : public WebKit::WebThread::Task {
@@ -2851,6 +2845,8 @@ public:
 
         WebTransformationMatrix identityMatrix;
         setLayerPropertiesForTesting(m_layer.get(), 0, identityMatrix, FloatPoint(0, 0), FloatPoint(0, 0), IntSize(10, 20), true);
+
+        postSetNeedsCommitToMainThread();
     }
 
     class EvictTexturesTask : public WebKit::WebThread::Task {
