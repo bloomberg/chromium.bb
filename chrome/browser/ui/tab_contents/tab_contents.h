@@ -27,7 +27,6 @@ class Profile;
 class TabContentsTestHarness;
 class TabStripModel;
 class TabStripModelContentsCreator;
-class TranslationInfoBarTestContentsCreator;
 class WebDialogGtk;
 class WebDialogWindowControllerTabContentsCreator;
 class WebIntentPickerCocoa;
@@ -90,7 +89,6 @@ class TabContents : public content::WebContentsObserver {
     friend class TabContentsTestHarness;
     friend class TabStripModel;
     friend class TabStripModelContentsCreator;
-    friend class TranslationInfoBarTestContentsCreator;
     friend class WebDialogGtk;
     friend class WebDialogWindowControllerTabContentsCreator;
     friend class WebIntentPickerCocoa;

@@ -14,7 +14,6 @@
 #import "chrome/browser/ui/cocoa/infobars/before_translate_infobar_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar.h"
 #import "chrome/browser/ui/cocoa/infobars/translate_infobar_base.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #import "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
 #import "testing/gmock/include/gmock/gmock.h"
@@ -22,14 +21,6 @@
 #import "testing/platform_test.h"
 
 using content::WebContents;
-
-// TODO(avi): Kill this when TabContents goes away.
-class TranslationInfoBarTestContentsCreator {
- public:
-  static TabContents* CreateTabContents(content::WebContents* contents) {
-    return TabContents::Factory::CreateTabContents(contents);
-  }
-};
 
 namespace {
 
@@ -73,9 +64,9 @@ class TranslationInfoBarTest : public CocoaProfileTest {
   // the test.
   virtual void SetUp() {
     CocoaProfileTest::SetUp();
-    tab_contents_.reset(
-        TranslationInfoBarTestContentsCreator::CreateTabContents(
-            WebContents::Create(profile(), NULL, MSG_ROUTING_NONE, NULL)));
+    web_contents_.reset(
+        WebContents::Create(profile(), NULL, MSG_ROUTING_NONE, NULL));
+    InfoBarTabHelper::CreateForWebContents(web_contents_.get());
     CreateInfoBar();
   }
 
@@ -88,12 +79,14 @@ class TranslationInfoBarTest : public CocoaProfileTest {
     if (type == TranslateInfoBarDelegate::TRANSLATION_ERROR)
       error = TranslateErrors::NETWORK;
     InfoBarTabHelper* infobar_tab_helper =
-        InfoBarTabHelper::FromWebContents(tab_contents_->web_contents());
+        InfoBarTabHelper::FromWebContents(web_contents_.get());
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents_->GetBrowserContext());
     infobar_delegate_.reset(new MockTranslateInfoBarDelegate(
         type,
         error,
         infobar_tab_helper,
-        tab_contents_->profile()->GetPrefs()));
+        profile->GetPrefs()));
     [[infobar_controller_ view] removeFromSuperview];
     scoped_ptr<InfoBar> infobar(
         static_cast<InfoBarDelegate*>(infobar_delegate_.get())->
@@ -108,7 +101,7 @@ class TranslationInfoBarTest : public CocoaProfileTest {
     [[test_window() contentView] addSubview:[infobar_controller_ view]];
   }
 
-  scoped_ptr<TabContents> tab_contents_;
+  scoped_ptr<WebContents> web_contents_;
   scoped_ptr<MockTranslateInfoBarDelegate> infobar_delegate_;
   scoped_nsobject<TranslateInfoBarControllerBase> infobar_controller_;
 };
