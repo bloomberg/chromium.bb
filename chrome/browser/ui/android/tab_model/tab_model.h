@@ -16,7 +16,6 @@ class WebContents;
 }
 
 class Profile;
-class TabContents;
 
 // Abstract representation of a Tab Model for Android.  Since Android does
 // not use Browser/BrowserList, this is required to allow Chrome to interact
@@ -29,7 +28,7 @@ class TabModel {
   virtual SessionID::id_type GetSessionId() const = 0;
   virtual int GetTabCount() const = 0;
   virtual int GetActiveIndex() const = 0;
-  virtual TabContents* GetTabContentsAt(int index) const = 0;
+  virtual content::WebContents* GetWebContentsAt(int index) const = 0;
   virtual SessionID::id_type GetTabIdAt(int index) const = 0;
 
   // Used for restoring tabs from synced foreign sessions.

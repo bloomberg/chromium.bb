@@ -8,8 +8,8 @@
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/sessions/session_id.h"
+#include "content/public/browser/web_contents.h"
 
 namespace browser_sync {
 
@@ -77,9 +77,9 @@ bool SyncedWindowDelegateAndroid::IsTabPinned(
 }
 
 SyncedTabDelegate* SyncedWindowDelegateAndroid::GetTabAt(int index) const {
-  TabContents* tab_contents = tab_model_->GetTabContentsAt(index);
-  return tab_contents ? TabContentsSyncedTabDelegate::FromWebContents(
-                            tab_contents->web_contents()) : NULL;
+  content::WebContents* web_contents = tab_model_->GetWebContentsAt(index);
+  return web_contents ? TabContentsSyncedTabDelegate::FromWebContents(
+      web_contents) : NULL;
 }
 
 SessionID::id_type SyncedWindowDelegateAndroid::GetTabIdAt(int index) const {
