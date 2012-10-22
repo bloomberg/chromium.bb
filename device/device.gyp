@@ -47,7 +47,7 @@
           ]
         }, {  # chromeos==1
           'dependencies': [
-            '../build/linux/system.gyp:dbus-glib',
+            '../build/linux/system.gyp:dbus',
             '../chromeos/chromeos.gyp:chromeos',
             '../dbus/dbus.gyp:dbus',
           ]
@@ -100,7 +100,7 @@
           ]
         }, {  # chromeos==1
           'dependencies': [
-            '../build/linux/system.gyp:dbus-glib',
+            '../build/linux/system.gyp:dbus',
             '../chromeos/chromeos.gyp:chromeos_test_support',
             '../dbus/dbus.gyp:dbus',
           ]
