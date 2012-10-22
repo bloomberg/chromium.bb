@@ -11,6 +11,6 @@ LOCAL_MODULE_PATH := $(TARGET_OUT_JAVA_LIBRARIES)/webview/paks
 
 include $(BUILD_SYSTEM)/base_rules.mk
 
-built_by_gyp := $(call intermediates-dir-for,GYP,shared)/$(LOCAL_INSTALLED_MODULE_STEM)
+built_by_gyp := $(call intermediates-dir-for,GYP,shared)/$(LOCAL_BUILT_MODULE_STEM)
 
 $(eval $(call copy-one-file,$(built_by_gyp),$(LOCAL_BUILT_MODULE)))

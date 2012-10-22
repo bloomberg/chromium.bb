@@ -63,5 +63,6 @@ include $(LOCAL_PATH)/webview_pak.mk
 # TODO(torne): add other locales (filtered by PRODUCT_LOCALES?)
 include $(CLEAR_VARS)
 LOCAL_MODULE := webviewchromium_res_en-US
-LOCAL_MODULE_STEM := locales/en-US
+LOCAL_MODULE_STEM := en-US
+LOCAL_BUILT_MODULE_STEM := locales/en-US.pak
 include $(LOCAL_PATH)/webview_pak.mk
