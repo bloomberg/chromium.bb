@@ -971,6 +971,11 @@ public class ContentViewCore implements MotionEventDelegate {
                 x, y, computeHorizontalScrollOffset(), computeVerticalScrollOffset());
     }
 
+    @Override
+    public boolean hasFixedPageScale() {
+        return mNativeMinimumScale == mNativeMaximumScale;
+    }
+
     private void hidePopupDialog() {
         SelectPopupDialog.hide(this);
     }

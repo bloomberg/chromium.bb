@@ -117,6 +117,11 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         public void invokeZoomPicker() {
             // Not implemented.
         }
+
+        @Override
+        public boolean hasFixedPageScale() {
+            return false;
+        }
     }
 
     static class MockZoomManager extends ZoomManager {
@@ -268,6 +273,11 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         @Override
         public void invokeZoomPicker() {
             // Not implemented.
+        }
+
+        @Override
+        public boolean hasFixedPageScale() {
+            return false;
         }
 
         public GestureEvent getMostRecentGestureEvent() {

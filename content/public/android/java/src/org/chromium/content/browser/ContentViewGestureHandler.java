@@ -198,6 +198,11 @@ class ContentViewGestureHandler implements LongPressDelegate {
          * Show the zoom picker UI.
          */
         public void invokeZoomPicker();
+
+        /**
+         * @return Whether changing the page scale is not possible on the current page.
+         */
+        public boolean hasFixedPageScale();
     }
 
     ContentViewGestureHandler(
@@ -391,6 +396,18 @@ class ContentViewGestureHandler implements LongPressDelegate {
                             }
                             setClickXAndY((int) x, (int) y);
                             return true;
+                        } else if (mMotionEventDelegate.hasFixedPageScale()) {
+                            // If page is not user scalable, we don't need to wait
+                            // for double tap timeout.
+                            float x = e.getX();
+                            float y = e.getY();
+                            mExtraParamBundle.clear();
+                            mExtraParamBundle.putBoolean(SHOW_PRESS, mShowPressIsCalled);
+                            if (mMotionEventDelegate.sendGesture(GESTURE_SINGLE_TAP_CONFIRMED,
+                                    e.getEventTime(), (int) x, (int) y, mExtraParamBundle)) {
+                                mIgnoreSingleTap = true;
+                            }
+                            setClickXAndY((int) x, (int) y);
                         }
                         return false;
                     }
