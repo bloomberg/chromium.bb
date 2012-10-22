@@ -2155,6 +2155,9 @@ struct kernel_statfs {
         __asm__ __volatile__(/* if (fn == NULL || child_stack == NULL)
                               *   return -EINVAL;
                               */
+#ifdef __thumb2__			     
+			     "push  {r7}\n"
+#endif			     
                              "cmp   %2,#0\n"
                              "it    ne\n"
                              "cmpne %3,#0\n"
@@ -2210,12 +2213,19 @@ struct kernel_statfs {
                              "mov r7, %10\n"
                              "swi 0x0\n"
                            "1:\n"
+#ifdef __thumb2__
+			     "pop {r7}"
+#endif			     
                              : "=r" (__res)
                              : "i"(-EINVAL),
                                "r"(fn), "r"(__stack), "r"(__flags), "r"(arg),
                                "r"(__ptid), "r"(__tls), "r"(__ctid),
                                "i"(__NR_clone), "i"(__NR_exit)
+#ifdef __thumb2__
+			     : "cc", "lr", "memory");
+#else
                              : "cc", "r7", "lr", "memory");
+#endif
       }
       LSS_RETURN(int, __res);
     }
