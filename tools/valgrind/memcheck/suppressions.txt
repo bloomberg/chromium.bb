@@ -773,13 +773,6 @@
    obj:/bin/grep
    obj:/bin/grep
 }
-{
-  intentional_see_bug_156466
-  Memcheck:Leak
-  fun:_Znw*
-  fun:_ZN3ash5ShellC1EPNS_13ShellDelegateE
-  fun:_ZN3ash5Shell14CreateInstanceEPNS_13ShellDelegateE
-}
 
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
@@ -1133,6 +1126,13 @@
    fun:_ZN15TestingInstance12ExecuteTestsEi
    fun:_ZN2pp25CompletionCallbackFactoryI15TestingInstanceNS_22ThreadSafeThreadTraitsEE11Dispatcher0IMS1_FviEEclEPS1_i
    fun:_ZN2pp25CompletionCallbackFactoryI15TestingInstanceNS_22ThreadSafeThreadTraitsEE12CallbackDataINS3_11Dispatcher0IMS1_FviEEEE5ThunkEPvi
+}
+{
+  intentional_see_bug_156466
+  Memcheck:Leak
+  fun:_Znw*
+  fun:_ZN3ash5ShellC1EPNS_13ShellDelegateE
+  fun:_ZN3ash5Shell14CreateInstanceEPNS_13ShellDelegateE
 }
 
 #-----------------------------------------------------------------------
