@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -103,6 +104,11 @@ void UpgradeDetector::CheckIdle() {
 }
 
 void UpgradeDetector::IdleCallback(IdleState state) {
+  // Don't proceed while an incognito window is open. The timer will still
+  // keep firing, so this function will get a chance to re-evaluate this.
+  if (chrome::IsOffTheRecordSessionActive())
+    return;
+
   switch (state) {
     case IDLE_STATE_LOCKED:
       // Computer is locked, auto-restart.
