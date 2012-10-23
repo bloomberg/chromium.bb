@@ -200,8 +200,10 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
   if (event.mountType == 'gdata') {
     if (event.status == 'success') {
       if (event.eventType == 'mount') {
-        this.waitGDataLoaded_(event.mountPath,
-            this.setGDataStatus_.bind(this, VolumeManager.GDataStatus.MOUNTED));
+        this.waitGDataLoaded_(event.mountPath, function(success) {
+          this.setGDataStatus_(success ? VolumeManager.GDataStatus.MOUNTED :
+                                         VolumeManager.GDataStatus.ERROR);
+        }.bind(this));
       } else if (event.eventType == 'unmount') {
         this.setGDataStatus_(VolumeManager.GDataStatus.UNMOUNTED);
       }
@@ -215,12 +217,14 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
  * drive ready to operate.
  *
  * @param {string} mountPath GData mount path.
- * @param {function()} callback To be called when waiting finish.
+ * @param {function(boolean)} callback To be called when waiting finish.
  * @private
  */
 VolumeManager.prototype.waitGDataLoaded_ = function(mountPath, callback) {
   chrome.fileBrowserPrivate.requestLocalFileSystem(function(filesystem) {
-    filesystem.root.getDirectory(mountPath, {}, function() { callback(); });
+    filesystem.root.getDirectory(mountPath, {},
+        callback.bind(null, true),
+        callback.bind(null, false));
   });
 };
 
