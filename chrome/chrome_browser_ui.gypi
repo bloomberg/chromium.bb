@@ -159,8 +159,6 @@
         'browser/ui/ash/extension_utils.h',
         'browser/ui/ash/ime_controller_chromeos.cc',
         'browser/ui/ash/ime_controller_chromeos.h',
-        'browser/ui/ash/keyboard_brightness_controller_chromeos.cc',
-        'browser/ui/ash/keyboard_brightness_controller_chromeos.h',
         'browser/ui/ash/launcher/browser_launcher_item_controller.cc',
         'browser/ui/ash/launcher/browser_launcher_item_controller.h',
         'browser/ui/ash/launcher/chrome_launcher_controller.cc',

@@ -29,11 +29,9 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/ui/ash/brightness_controller_chromeos.h"
 #include "chrome/browser/ui/ash/ime_controller_chromeos.h"
-#include "chrome/browser/ui/ash/keyboard_brightness_controller_chromeos.h"
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
 #include "ui/base/x/x11_util.h"
 #endif
-
 
 namespace chrome {
 
@@ -83,9 +81,6 @@ void OpenAsh() {
           new BrightnessController).Pass());
   shell->accelerator_controller()->SetImeControlDelegate(
       scoped_ptr<ash::ImeControlDelegate>(new ImeController).Pass());
-  shell->accelerator_controller()->SetKeyboardBrightnessControlDelegate(
-      scoped_ptr<ash::KeyboardBrightnessControlDelegate>(
-          new KeyboardBrightnessController).Pass());
   ash::Shell::GetInstance()->high_contrast_controller()->SetEnabled(
       chromeos::accessibility::IsHighContrastEnabled());
 

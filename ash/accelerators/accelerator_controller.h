@@ -8,10 +8,11 @@
 #include <map>
 #include <set>
 
+#include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "ash/ash_export.h"
 #include "ui/base/accelerators/accelerator.h"
 
 namespace ui {
@@ -76,9 +77,6 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
       scoped_ptr<BrightnessControlDelegate> brightness_control_delegate);
   void SetImeControlDelegate(
       scoped_ptr<ImeControlDelegate> ime_control_delegate);
-  void SetKeyboardBrightnessControlDelegate(
-      scoped_ptr<KeyboardBrightnessControlDelegate>
-      keyboard_brightness_control_delegate);
   void SetScreenshotDelegate(
       scoped_ptr<ScreenshotDelegate> screenshot_delegate);
   BrightnessControlDelegate* brightness_control_delegate() const {
@@ -86,6 +84,8 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(AcceleratorControllerTest, GlobalAccelerators);
+
   // Initializes the accelerators this class handles as a target.
   void Init();
 
@@ -96,6 +96,10 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   // Registers the specified accelerators.
   void RegisterAccelerators(const AcceleratorData accelerators[],
                             size_t accelerators_length);
+
+  void SetKeyboardBrightnessControlDelegate(
+      scoped_ptr<KeyboardBrightnessControlDelegate>
+      keyboard_brightness_control_delegate);
 
   scoped_ptr<ui::AcceleratorManager> accelerator_manager_;
 

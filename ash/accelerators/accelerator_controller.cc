@@ -57,6 +57,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/display/output_configurator_animation.h"
+#include "ash/system/chromeos/keyboard_brightness_controller.h"
 #include "base/chromeos/chromeos_version.h"
 #include "base/time.h"
 #include "chromeos/display/output_configurator.h"
@@ -370,6 +371,11 @@ void AcceleratorController::Init() {
 
   if (DebugShortcutsEnabled())
     RegisterAccelerators(kDebugAcceleratorData, kDebugAcceleratorDataLength);
+
+#if defined(OS_CHROMEOS)
+  keyboard_brightness_control_delegate_.reset(
+      new KeyboardBrightnessController());
+#endif
 }
 
 void AcceleratorController::Register(const ui::Accelerator& accelerator,
@@ -827,13 +833,6 @@ void AcceleratorController::SetImeControlDelegate(
   ime_control_delegate_.swap(ime_control_delegate);
 }
 
-void AcceleratorController::SetKeyboardBrightnessControlDelegate(
-    scoped_ptr<KeyboardBrightnessControlDelegate>
-    keyboard_brightness_control_delegate) {
-  keyboard_brightness_control_delegate_.swap(
-      keyboard_brightness_control_delegate);
-}
-
 void AcceleratorController::SetScreenshotDelegate(
     scoped_ptr<ScreenshotDelegate> screenshot_delegate) {
   screenshot_delegate_.swap(screenshot_delegate);
@@ -890,6 +889,13 @@ void AcceleratorController::RegisterAccelerators(
     accelerators_.insert(
         std::make_pair(accelerator, accelerators[i].action));
   }
+}
+
+void AcceleratorController::SetKeyboardBrightnessControlDelegate(
+    scoped_ptr<KeyboardBrightnessControlDelegate>
+    keyboard_brightness_control_delegate) {
+  keyboard_brightness_control_delegate_ =
+      keyboard_brightness_control_delegate.Pass();
 }
 
 bool AcceleratorController::CanHandleAccelerators() const {

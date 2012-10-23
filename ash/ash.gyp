@@ -156,6 +156,8 @@
         'system/brightness/brightness_control_delegate.h',
         'system/brightness/tray_brightness.cc',
         'system/brightness/tray_brightness.h',
+        'system/chromeos/keyboard_brightness_controller.cc',
+        'system/chromeos/keyboard_brightness_controller.h',
         'system/chromeos/network/network_observer.h',
         'system/chromeos/network/tray_network.cc',
         'system/chromeos/network/tray_network.h',

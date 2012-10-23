@@ -30,7 +30,6 @@
 #endif
 
 namespace ash {
-namespace test {
 
 namespace {
 
@@ -308,7 +307,7 @@ bool TestTarget::CanHandleAccelerators() const {
 
 }  // namespace
 
-class AcceleratorControllerTest : public AshTestBase {
+class AcceleratorControllerTest : public test::AshTestBase {
  public:
   AcceleratorControllerTest() {};
   virtual ~AcceleratorControllerTest() {};
@@ -824,8 +823,8 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   const ui::Accelerator alt_f6(ui::VKEY_F6, ui::EF_ALT_DOWN);
   const ui::Accelerator alt_f7(ui::VKEY_F7, ui::EF_ALT_DOWN);
   {
-    EXPECT_FALSE(GetController()->Process(alt_f6));
-    EXPECT_FALSE(GetController()->Process(alt_f7));
+    EXPECT_TRUE(GetController()->Process(alt_f6));
+    EXPECT_TRUE(GetController()->Process(alt_f7));
     DummyKeyboardBrightnessControlDelegate* delegate =
         new DummyKeyboardBrightnessControlDelegate(false);
     GetController()->SetKeyboardBrightnessControlDelegate(
@@ -1177,5 +1176,4 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
 }
 #endif
 
-}  // namespace test
 }  // namespace ash
