@@ -15,7 +15,7 @@
 //
 // Each XXX_messages.h file must be registered with the IPC system.  This
 // requires adding two things:
-//   - An XXXMsgStart value to the IPCMessageStart enum in ipc_message_utils.h
+//   - An XXXMsgStart value to the IPCMessageStart enum in ipc_message_start.h
 //   - An inclusion of XXX_messages.h file in a message generator .h file
 //
 // The XXXMsgStart value is an enumeration that ensures uniqueness for

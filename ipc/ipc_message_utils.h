@@ -17,6 +17,7 @@
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/tuple.h"
+#include "ipc/ipc_message_start.h"
 #include "ipc/ipc_param_traits.h"
 #include "ipc/ipc_sync_message.h"
 
@@ -42,75 +43,6 @@
 #else
 #error "Please add the noinline property for your new compiler here."
 #endif
-
-// Used by IPC_BEGIN_MESSAGES so that each message class starts from a unique
-// base.  Messages have unique IDs across channels in order for the IPC logging
-// code to figure out the message class from its ID.
-enum IPCMessageStart {
-  AutomationMsgStart = 0,
-  ViewMsgStart,
-  PluginMsgStart,
-  ProfileImportMsgStart,
-  TestMsgStart,
-  DevToolsMsgStart,
-  WorkerMsgStart,
-  NaClMsgStart,
-  UtilityMsgStart,
-  GpuMsgStart,
-  ServiceMsgStart,
-  PpapiMsgStart,
-  FirefoxImporterUnittestMsgStart,
-  FileUtilitiesMsgStart,
-  MimeRegistryMsgStart,
-  DatabaseMsgStart,
-  DOMStorageMsgStart,
-  IndexedDBMsgStart,
-  PepperFileMsgStart,
-  SpeechRecognitionMsgStart,
-  PepperMsgStart,
-  AutofillMsgStart,
-  SafeBrowsingMsgStart,
-  P2PMsgStart,
-  SocketStreamMsgStart,
-  ResourceMsgStart,
-  FileSystemMsgStart,
-  ChildProcessMsgStart,
-  ClipboardMsgStart,
-  BlobMsgStart,
-  AppCacheMsgStart,
-  DeviceMotionMsgStart,
-  DeviceOrientationMsgStart,
-  DesktopNotificationMsgStart,
-  GeolocationMsgStart,
-  AudioMsgStart,
-  ChromeMsgStart,
-  DragMsgStart,
-  PrintMsgStart,
-  SpellCheckMsgStart,
-  ExtensionMsgStart,
-  VideoCaptureMsgStart,
-  QuotaMsgStart,
-  IconMsgStart,
-  TextInputClientMsgStart,
-  ChromeUtilityMsgStart,
-  MediaStreamMsgStart,
-  ChromeBenchmarkingMsgStart,
-  IntentsMsgStart,
-  JavaBridgeMsgStart,
-  GamepadMsgStart,
-  ShellMsgStart,
-  AccessibilityMsgStart,
-  PrerenderMsgStart,
-  ChromotingMsgStart,
-  OldBrowserPluginMsgStart,
-  BrowserPluginMsgStart,
-  HyphenatorMsgStart,
-  AndroidWebViewMsgStart,
-  MetroViewerMsgStart,
-  CCMsgStart,
-  MediaPlayerMsgStart,
-  LastIPCMsgStart      // Must come last.
-};
 
 class FilePath;
 class NullableString16;

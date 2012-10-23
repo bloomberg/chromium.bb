@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 // Multiply-included file, hence no include guard.
-// Inclusion of all message files present in chrome.  Keep this file
-// up-to-date when adding a new value to enum IPCMessageStart in
-// ipc/ipc_message_utils.h to include the corresponding message file.
-// Messages classes used exclusively outside of chrome should instead get an
-// exemption in chrome/tools/ipclist/ipclist.cc.
+// Inclusion of all message files present in chrome. Keep this file
+// up-to-date when adding a new value to the IPCMessageStart enum in
+// ipc/ipc_message_start.h to ensure the corresponding message file is
+// included here. Message classes used exclusively outside of chrome
+// should not be listed here and instead get an exemption in
+// chrome/tools/ipclist/ipclist.cc.
 #if !defined(OS_ANDROID)
 #include "chrome/browser/importer/profile_import_process_messages.h"
 #endif
