@@ -85,7 +85,8 @@ std::string MakeJSONFileSystemName(const string16& name,
   base::DictionaryValue dict_value;
   dict_value.SetWithoutPathExpansion(
       "name", Value::CreateStringValue(sanitized_name));
-  dict_value.SetWithoutPathExpansion("id", Value::CreateIntegerValue(pref_id));
+  dict_value.SetWithoutPathExpansion("galleryId",
+                                     Value::CreateIntegerValue(pref_id));
   // |device_id| can be empty, in which case, just omit it.
   if (!device_id.empty()) {
     dict_value.SetWithoutPathExpansion("deviceId",
