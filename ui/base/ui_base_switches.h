@@ -15,8 +15,6 @@ namespace switches {
 UI_EXPORT extern const char kEnableBezelTouch[];
 UI_EXPORT extern const char kDisableScalingInImageSkiaOperations[];
 UI_EXPORT extern const char kEnableBrowserTextSubpixelPositioning[];
-UI_EXPORT extern const char kEnableTouchCalibration[];
-UI_EXPORT extern const char kEnableTouchCalibrationX[];
 UI_EXPORT extern const char kEnableTouchEvents[];
 UI_EXPORT extern const char kEnableViewsTextfield[];
 UI_EXPORT extern const char kEnableWebkitTextSubpixelPositioning[];
@@ -30,6 +28,10 @@ UI_EXPORT extern const char kTouchOptimizedUI[];
 UI_EXPORT extern const char kTouchOptimizedUIAuto[];
 UI_EXPORT extern const char kTouchOptimizedUIDisabled[];
 UI_EXPORT extern const char kTouchOptimizedUIEnabled[];
+
+#if defined(USE_XI2_MT)
+UI_EXPORT extern const char kTouchCalibration[];
+#endif
 
 #if defined(OS_MACOSX)
 // TODO(kbr): remove this and the associated old code path:

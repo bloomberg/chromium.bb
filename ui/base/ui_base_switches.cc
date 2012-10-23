@@ -19,12 +19,6 @@ const char kDisableScalingInImageSkiaOperations[] =
 const char kEnableBrowserTextSubpixelPositioning[] =
     "enable-browser-text-subpixel-positioning";
 
-// Enable touch screen calibration.
-const char kEnableTouchCalibration[] = "enable-touch-calibration";
-
-// Enable support for touch event calibration in x direction.
-const char kEnableTouchCalibrationX[] = "enable-touch-calibration-x";
-
 // Enable support for touch events.
 const char kEnableTouchEvents[] = "enable-touch-events";
 
@@ -57,7 +51,7 @@ const char kLang[] = "lang";
 const char kLocalePak[] = "locale_pak";
 
 // Disables the new appearance for checkboxes and radio buttons.
-const char kOldCheckboxStyle[]           = "old-checkbox-style";
+const char kOldCheckboxStyle[] = "old-checkbox-style";
 
 // Disable ui::MessageBox. This is useful when running as part of scripts that
 // do not have a user interface.
@@ -66,7 +60,7 @@ const char kNoMessageBox[] = "no-message-box";
 // Enables UI changes that make it easier to use with a touchscreen.
 // WARNING: Do not check this flag directly when deciding what UI to draw,
 // instead you must call ui::GetDisplayLayout
-const char kTouchOptimizedUI[]              = "touch-optimized-ui";
+const char kTouchOptimizedUI[] = "touch-optimized-ui";
 
 // The values the kTouchOptimizedUI switch may have, as in
 // "--touch-optimized-ui=disabled".
@@ -76,6 +70,11 @@ const char kTouchOptimizedUIAuto[] = "auto";
 const char kTouchOptimizedUIEnabled[] = "enabled";
 //   disabled: never optimized for touch.
 const char kTouchOptimizedUIDisabled[] = "disabled";
+
+#if defined(USE_XI2_MT)
+// The calibration factors given as "<left>,<right>,<top>,<bottom>".
+const char kTouchCalibration[] = "touch-calibration";
+#endif
 
 #if defined(OS_MACOSX)
 const char kDisableCompositedCoreAnimationPlugins[] =

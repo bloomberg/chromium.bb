@@ -767,7 +767,6 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kEnableGestureTapHighlight,
       ::switches::kEnableSmoothScrolling,
       ::switches::kEnableThreadedCompositing,
-      ::switches::kEnableTouchCalibration,
       ::switches::kEnableViewport,
       ::switches::kEnableWebkitTextSubpixelPositioning,
       ::switches::kDisableThreadedCompositing,
@@ -784,6 +783,9 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kRendererStartupDialog,
       ::switches::kFlingTapSuppressMaxDown,
       ::switches::kFlingTapSuppressMaxGap,
+#if defined(USE_XI2_MT)
+      ::switches::kTouchCalibration,
+#endif
       ::switches::kTouchDevices,
       ::switches::kTouchOptimizedUI,
       ::switches::kOldCheckboxStyle,
