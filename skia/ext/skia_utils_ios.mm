@@ -67,6 +67,7 @@ SkBitmap UIImageToSkBitmap(UIImage* image, CGSize size, bool is_opaque) {
 }
 
 UIImage* SkBitmapToUIImageWithColorSpace(const SkBitmap& skia_bitmap,
+                                         CGFloat scale,
                                          CGColorSpaceRef color_space) {
   if (skia_bitmap.isNull())
     return nil;
@@ -76,8 +77,9 @@ UIImage* SkBitmapToUIImageWithColorSpace(const SkBitmap& skia_bitmap,
       SkCreateCGImageRefWithColorspace(skia_bitmap, color_space));
 
   // Now convert to UIImage.
-  // TODO(rohitrao): Gotta incorporate the scale factor somewhere!
-  return [UIImage imageWithCGImage:cg_image.get()];
+  return [UIImage imageWithCGImage:cg_image.get()
+                             scale:scale
+                       orientation:UIImageOrientationUp];
 }
 
 }  // namespace gfx

@@ -23,6 +23,7 @@ SK_API SkBitmap UIImageToSkBitmap(UIImage* image, CGSize size, bool is_opaque);
 
 // Given an SkBitmap and a color space, return an autoreleased UIImage.
 SK_API UIImage* SkBitmapToUIImageWithColorSpace(const SkBitmap& skia_bitmap,
+                                                CGFloat scale,
                                                 CGColorSpaceRef color_space);
 
 }  // namespace gfx

@@ -48,12 +48,15 @@ UIImage* UIImageFromImageSkia(const gfx::ImageSkia& image_skia) {
   if (supported_scale_factors.size() < 1)
     return nil;
 
+  ui::ScaleFactor scale_factor = supported_scale_factors[0];
+  float scale = ui::GetScaleFactorScale(scale_factor);
   image_skia.EnsureRepsForSupportedScaleFactors();
   const ImageSkiaRep& rep =
       image_skia.GetRepresentation(supported_scale_factors[0]);
   base::mac::ScopedCFTypeRef<CGColorSpaceRef> color_space(
       CGColorSpaceCreateDeviceRGB());
-  return gfx::SkBitmapToUIImageWithColorSpace(rep.sk_bitmap(), color_space);
+  return gfx::SkBitmapToUIImageWithColorSpace(rep.sk_bitmap(), scale,
+                                              color_space);
 }
 
 }  // namespace gfx
