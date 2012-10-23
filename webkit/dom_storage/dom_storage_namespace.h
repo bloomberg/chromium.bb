@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "webkit/dom_storage/dom_storage_export.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 class GURL;
 
@@ -22,7 +22,7 @@ class SessionStorageDatabase;
 
 // Container for the set of per-origin Areas.
 // See class comments for DomStorageContext for a larger overview.
-class DOM_STORAGE_EXPORT DomStorageNamespace
+class WEBKIT_STORAGE_EXPORT DomStorageNamespace
     : public base::RefCountedThreadSafe<DomStorageNamespace> {
  public:
   // Constructor for a LocalStorage namespace with id of 0

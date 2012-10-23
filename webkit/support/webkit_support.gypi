@@ -22,7 +22,6 @@
         '<(DEPTH)/third_party/hyphen/hyphen.gyp:hyphen',
         '<(DEPTH)/ui/ui.gyp:ui',
         'database',
-        'dom_storage',
         'glue',
         'user_agent',
         'webkit_base',

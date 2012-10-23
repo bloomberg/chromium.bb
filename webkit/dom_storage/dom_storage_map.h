@@ -10,15 +10,15 @@
 #include "base/memory/ref_counted.h"
 #include "base/nullable_string16.h"
 #include "base/string16.h"
-#include "webkit/dom_storage/dom_storage_export.h"
 #include "webkit/dom_storage/dom_storage_types.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace dom_storage {
 
 // A wrapper around a std::map that adds refcounting and
 // tracks the size in bytes of the keys/values, enforcing a quota.
 // See class comments for DomStorageContext for a larger overview.
-class DOM_STORAGE_EXPORT DomStorageMap
+class WEBKIT_STORAGE_EXPORT DomStorageMap
     : public base::RefCountedThreadSafe<DomStorageMap> {
  public:
   explicit DomStorageMap(size_t quota);

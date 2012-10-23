@@ -16,7 +16,6 @@
         '../appcache/webkit_appcache.gypi',
         '../base/webkit_base.gypi',
         '../database/webkit_database.gypi',
-        '../dom_storage/webkit_dom_storage.gypi',
         '../glue/webkit_glue.gypi',
         '../gpu/webkit_gpu.gypi',
         '../media/webkit_media.gypi',

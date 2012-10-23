@@ -49,7 +49,6 @@
         '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         '<(DEPTH)/webkit/support/webkit_support.gyp:database',
-        '<(DEPTH)/webkit/support/webkit_support.gyp:dom_storage',
         '<(DEPTH)/webkit/support/webkit_support.gyp:glue',
         '<(DEPTH)/webkit/support/webkit_support.gyp:quota',
         '<(DEPTH)/webkit/support/webkit_support.gyp:user_agent',

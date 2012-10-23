@@ -497,7 +497,6 @@
             '../ui/gl/gl.gyp:gl',
             '../v8/tools/gyp/v8.gyp:v8',
             '../webkit/support/webkit_support.gyp:database',
-            '../webkit/support/webkit_support.gyp:dom_storage',
             '../webkit/support/webkit_support.gyp:glue',
             '../webkit/support/webkit_support.gyp:quota',
             '../webkit/support/webkit_support.gyp:webkit_base',

@@ -15,6 +15,7 @@
   'includes': [
     '../appcache/webkit_appcache.gypi',
     '../blob/webkit_blob.gypi',
+    '../dom_storage/webkit_dom_storage.gypi',
     '../fileapi/webkit_fileapi.gypi',
   ],
   'targets': [
@@ -30,6 +31,8 @@
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/sql/sql.gyp:sql',
         '<(DEPTH)/third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
+        '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
+        '<(DEPTH)/webkit/support/webkit_support.gyp:database',
         '<(DEPTH)/webkit/support/webkit_support.gyp:quota',
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_base',
         '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
@@ -40,6 +43,7 @@
         '../storage/webkit_storage_export.h',
         '<@(webkit_appcache_sources)',
         '<@(webkit_blob_sources)',
+        '<@(webkit_dom_storage_sources)',
         '<@(webkit_fileapi_sources)',
       ],
       'conditions': [

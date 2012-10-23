@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/nullable_string16.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/dom_storage/dom_storage_export.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace dom_storage {
 
@@ -24,7 +24,7 @@ class DomStorageProxy;
 // first access and changes are written to the backend thru the |proxy|.
 // Mutations originating in other processes are applied to the cache via
 // the ApplyMutation method.
-class DOM_STORAGE_EXPORT DomStorageCachedArea :
+class WEBKIT_STORAGE_EXPORT DomStorageCachedArea :
       public base::RefCounted<DomStorageCachedArea> {
  public:
   DomStorageCachedArea(int64 namespace_id, const GURL& origin,
