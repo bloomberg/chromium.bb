@@ -15,6 +15,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
@@ -505,7 +506,7 @@ static void ConstructFrameTree(WebKit::WebFrame* frame,
   dict->SetInteger(kFrameTreeNodeIdKey, frame->identifier());
 
   WebFrame* child = frame->firstChild();
-  ListValue* children = new ListValue();
+  scoped_ptr<ListValue> children(new ListValue());
   for (; child; child = child->nextSibling()) {
     if (child == exclude_frame_subtree)
       continue;
@@ -515,7 +516,7 @@ static void ConstructFrameTree(WebKit::WebFrame* frame,
     children->Append(d);
   }
   if (children->GetSize() > 0)
-    dict->Set(kFrameTreeNodeSubtreeKey, children);
+    dict->Set(kFrameTreeNodeSubtreeKey, children.release());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
