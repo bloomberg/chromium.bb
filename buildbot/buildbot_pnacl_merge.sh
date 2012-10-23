@@ -50,6 +50,8 @@ merge-bot() {
 
   echo "@@@BUILD_STEP show-config@@@"
   ${PNACL_BUILD} show-config
+  git config --global user.email "buildbot@chromium.org"
+  git config --global user.name "Chrome Bot"
 
   echo "@@@BUILD_STEP sync-sources@@@"
   # Sync the rest of pnacl sources before doing the merge, because it
