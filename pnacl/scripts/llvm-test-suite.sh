@@ -74,10 +74,6 @@ testsuite-run() {
   if [ ! -f Makefile ]; then
     testsuite-configure
   fi
-  local OVERRIDE_TIMEOUT=""
-  if [[ "${arch}" == "arm" ]]; then
-    OVERRIDE_TIMEOUT="RUNTIMELIMIT=850"
-  fi
   make -j${PNACL_CONCURRENCY} \
     PNACL_BIN=${PNACL_BIN} \
     PNACL_RUN=${NACL_ROOT}/run.py \
@@ -85,7 +81,7 @@ testsuite-run() {
     ENABLE_PARALLEL_REPORT=true \
     DISABLE_CBE=true \
     DISABLE_JIT=true \
-    ${OVERRIDE_TIMEOUT} \
+    RUNTIMELIMIT=850 \
     TEST=pnacl \
     report.csv
   mv report.pnacl.csv report.pnacl.${arch}.csv
