@@ -28,6 +28,20 @@ hosts whose network requests you want to access.
   ...
 }</pre>
 
+<p>
+Note that certain types of non-sensitive requests do not require host
+permissions:
+<ul>
+  <li><code>CancelRequest</code>
+  <li><code>IgnoreRules</code>
+  <li><code>RedirectToEmptyDocument</code>
+  <li><code>RedirectToTransparentImage</code>
+  <li><code>RedirectByRegex</code> when the redirect destination has
+    the same domain as the original request
+  <li><code>RedirectRequest</code> when the redirect destination has
+    the same domain as the original request
+</ul>
+
 <h2 id="rules">Rules</h2>
 
 <p>
