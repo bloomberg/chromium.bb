@@ -552,13 +552,8 @@ void HWNDMessageHandler::StackAtTop() {
 }
 
 void HWNDMessageHandler::Show() {
-  // TODO(beng): Seems like this could just be rewritten as
-  //             ShowWindowWithState(SW_SHOWNOACTIVATE).
-  if (!IsWindow(hwnd()))
-    return;
-
-  ShowWindow(hwnd(), SW_SHOWNOACTIVATE);
-  SetInitialFocus();
+  if (IsWindow(hwnd()))
+    ShowWindowWithState(ui::SHOW_STATE_INACTIVE);
 }
 
 void HWNDMessageHandler::ShowWindowWithState(ui::WindowShowState show_state) {

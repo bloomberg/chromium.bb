@@ -222,8 +222,6 @@ void BubbleDelegateView::OnWidgetVisibilityChanged(Widget* widget,
       else
         border_widget_->ShowInactive();
     }
-    if (CanActivate())
-      GetFocusManager()->SetFocusedView(GetInitiallyFocusedView());
     if (anchor_widget() && anchor_widget()->GetTopLevelWidget())
       anchor_widget()->GetTopLevelWidget()->DisableInactiveRendering();
   } else {

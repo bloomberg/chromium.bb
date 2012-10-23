@@ -41,6 +41,28 @@ void TestWidgetObserver::OnWidgetClosing(Widget* widget) {
   widget_ = NULL;
 }
 
+class TestBubbleDelegateView : public BubbleDelegateView {
+ public:
+  TestBubbleDelegateView();
+  virtual ~TestBubbleDelegateView();
+
+  virtual View* GetInitiallyFocusedView() OVERRIDE;
+
+ private:
+  View* view_;
+};
+
+TestBubbleDelegateView::TestBubbleDelegateView() : view_(new View()) {
+  view_->set_focusable(true);
+  AddChildView(view_);
+}
+
+TestBubbleDelegateView::~TestBubbleDelegateView() {}
+
+View* TestBubbleDelegateView::GetInitiallyFocusedView() {
+  return view_;
+}
+
 }  // namespace
 
 typedef ViewsTestBase BubbleDelegateTest;
@@ -158,6 +180,22 @@ TEST_F(BubbleDelegateTest, ResetAnchorWidget) {
   parent_widget->CloseNow();
   RunPendingMessages();
   EXPECT_TRUE(bubble_observer.widget_closed());
+}
+
+TEST_F(BubbleDelegateTest, InitiallyFocusedView) {
+  TestBubbleDelegateView* bubble_delegate = new TestBubbleDelegateView();
+  Widget* bubble_widget = BubbleDelegateView::CreateBubble(bubble_delegate);
+  bubble_widget->Show();
+
+  View* expected_view = bubble_delegate->GetInitiallyFocusedView();
+  // TODO(ben|msw): The NativeWidgetWin::RestoreFocusOnActivate() workaround for
+  // http://crbug.com/125976 breaks this simple test by clearing proper focus.
+#if defined(OS_WIN) && !defined(USE_AURA)
+  expected_view = NULL;
+#endif
+
+  EXPECT_EQ(expected_view, bubble_widget->GetFocusManager()->GetFocusedView());
+  bubble_widget->CloseNow();
 }
 
 }  // namespace views
