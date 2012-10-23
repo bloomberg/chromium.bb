@@ -979,6 +979,7 @@ _release.add_config('stout-release',
 
 _release.add_config('butterfly-release',
   boards=['butterfly'],
+  useflags=official['useflags'] + ['oem_wallpaper'],
 )
 
 _arm_release = _release.derive(arm)
