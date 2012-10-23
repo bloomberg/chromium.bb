@@ -16,6 +16,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/hash_tables.h"
 #include "base/prefs/public/pref_service_base.h"
 #include "base/threading/non_thread_safe.h"
 
@@ -90,7 +91,6 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
     // Reference to the PrefService in which this pref was created.
     const PrefService* pref_service_;
 
-    DISALLOW_COPY_AND_ASSIGN(Preference);
   };
 
   // Factory method that creates a new instance of a PrefService with the
@@ -273,13 +273,11 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
   scoped_ptr<PrefNotifierImpl> pref_notifier_;
 
  private:
-  class PreferencePathComparator {
-   public:
-    bool operator() (Preference* lhs, Preference* rhs) const {
-      return lhs->name() < rhs->name();
-    }
-  };
-  typedef std::set<Preference*, PreferencePathComparator> PreferenceSet;
+  // Hash map expected to be fastest here since it minimises expensive
+  // string comparisons. Order is unimportant, and deletions are rare.
+  // Confirmed on Android where this speeded Chrome startup by roughly 50ms
+  // vs. std::map, and by roughly 180ms vs. std::set of Preference pointers.
+  typedef base::hash_map<std::string, Preference> PreferenceMap;
 
   friend class PrefServiceMockBuilder;
 
@@ -333,7 +331,7 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
   // Local cache of registered Preference objects. The default_store_
   // is authoritative with respect to what the types and default values
   // of registered preferences are.
-  mutable PreferenceSet prefs_;
+  mutable PreferenceMap prefs_map_;
 
   // The model associator that maintains the links with the sync db.
   scoped_ptr<PrefModelAssociator> pref_sync_associator_;

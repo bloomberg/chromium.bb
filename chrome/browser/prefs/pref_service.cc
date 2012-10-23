@@ -223,8 +223,6 @@ PrefService::PrefService(PrefNotifierImpl* pref_notifier,
 
 PrefService::~PrefService() {
   DCHECK(CalledOnValidThread());
-  STLDeleteContainerPointers(prefs_.begin(), prefs_.end());
-  prefs_.clear();
 
   // Reset pointers so accesses after destruction reliably crash.
   pref_value_store_.reset();
@@ -647,16 +645,15 @@ DictionaryValue* PrefService::GetPreferenceValues() const {
 const PrefService::Preference* PrefService::FindPreference(
     const char* pref_name) const {
   DCHECK(CalledOnValidThread());
-  Preference p(this, pref_name, Value::TYPE_NULL);
-  PreferenceSet::const_iterator it = prefs_.find(&p);
-  if (it != prefs_.end())
-    return *it;
+  PreferenceMap::iterator it = prefs_map_.find(pref_name);
+  if (it != prefs_map_.end())
+    return &(it->second);
   const base::Value::Type type = default_store_->GetType(pref_name);
   if (type == Value::TYPE_NULL)
     return NULL;
-  Preference* new_pref = new Preference(this, pref_name, type);
-  prefs_.insert(new_pref);
-  return new_pref;
+  it = prefs_map_.insert(
+      std::make_pair(pref_name, Preference(this, pref_name, type))).first;
+  return &(it->second);
 }
 
 bool PrefService::ReadOnly() const {
@@ -809,15 +806,13 @@ void PrefService::RegisterPreference(const char* path,
 void PrefService::UnregisterPreference(const char* path) {
   DCHECK(CalledOnValidThread());
 
-  Preference p(this, path, Value::TYPE_NULL);
-  PreferenceSet::iterator it = prefs_.find(&p);
-  if (it == prefs_.end()) {
+  PreferenceMap::iterator it = prefs_map_.find(path);
+  if (it == prefs_map_.end()) {
     NOTREACHED() << "Trying to unregister an unregistered pref: " << path;
     return;
   }
 
-  delete *it;
-  prefs_.erase(it);
+  prefs_map_.erase(it);
   default_store_->RemoveDefaultValue(path);
   if (pref_sync_associator_.get() &&
       pref_sync_associator_->IsPrefRegistered(path)) {
