@@ -620,9 +620,11 @@ def FindVisualStudioInstallation():
   search %PATH% and %PATHEXT% for a devenv.{exe,bat,...} executable.
   Failing that, we search for likely deployment paths.
   """
-  possible_roots = ['C:\\Program Files (x86)', 'C:\\Program Files',
-                    'E:\\Program Files (x86)', 'E:\\Program Files']
+  possible_roots = ['%s:\\Program Files%s' % (chr(drive), suffix)
+                    for drive in range(ord('C'), ord('Z') + 1)
+                    for suffix in ['', ' (x86)']]
   possible_paths = {
+      '2012': r'Microsoft Visual Studio 11.0\Common7\IDE\devenv.com',
       '2010': r'Microsoft Visual Studio 10.0\Common7\IDE\devenv.com',
       '2008': r'Microsoft Visual Studio 9.0\Common7\IDE\devenv.com',
       '2005': r'Microsoft Visual Studio 8\Common7\IDE\devenv.com'}

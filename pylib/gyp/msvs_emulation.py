@@ -302,6 +302,7 @@ class MsvsSettings(object):
     cl('RuntimeLibrary',
         map={'0': 'T', '1': 'Td', '2': 'D', '3': 'Dd'}, prefix='/M')
     cl('ExceptionHandling', map={'1': 'sc','2': 'a'}, prefix='/EH')
+    cl('EnablePREfast', map={'true': '/analyze'})
     cl('AdditionalOptions', prefix='')
     # ninja handles parallelism by itself, don't have the compiler do it too.
     cflags = filter(lambda x: not x.startswith('/MP'), cflags)
