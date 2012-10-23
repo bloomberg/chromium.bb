@@ -71,6 +71,7 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_views.h"
 #include "chrome/browser/ui/views/password_generation_bubble_view.h"
+#include "chrome/browser/ui/views/search/search_view_controller.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -136,7 +137,6 @@
 
 #if defined(USE_AURA)
 #include "chrome/browser/ui/views/accelerator_table.h"
-#include "chrome/browser/ui/views/search/search_view_controller.h"
 #include "chrome/browser/ui/webui/task_manager/task_manager_dialog.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/screen.h"
@@ -373,9 +373,7 @@ BrowserView::~BrowserView() {
 #endif
 
   // Destroy SearchViewController before the Browser.
-#if defined(USE_AURA)
   search_view_controller_.reset(NULL);
-#endif
 
   preview_controller_.reset(NULL);
 
@@ -1391,10 +1389,8 @@ void BrowserView::TabDetachedAt(TabContents* contents, int index) {
     contents_container_->SetWebContents(NULL);
     infobar_container_->ChangeTabContents(NULL);
     UpdateDevToolsForContents(NULL);
-#if defined(USE_AURA)
     if (search_view_controller_.get())
       search_view_controller_->SetTabContents(NULL);
-#endif
   }
 }
 
@@ -1421,10 +1417,8 @@ void BrowserView::TabReplacedAt(TabStripModel* tab_strip_model,
     return;
 
   if (contents_->preview_web_contents() == new_contents->web_contents()) {
-#if defined(USE_AURA)
     if (search_view_controller_.get())
       search_view_controller_->WillCommitInstant();
-#endif
     // If 'preview' is becoming active, swap the 'active' and 'preview' and
     // delete what was the active.
     contents_->MakePreviewContentsActiveContents();
@@ -1922,7 +1916,6 @@ void BrowserView::Init() {
 
   views::View* omnibox_popup_parent = NULL;
   // SearchViewController doesn't work on windows yet.
-#if defined(USE_AURA)
   Profile* profile = browser_->profile();
   if (chrome::search::IsInstantExtendedAPIEnabled(profile)) {
     search_view_controller_.reset(new SearchViewController(profile, contents_,
@@ -1930,16 +1923,13 @@ void BrowserView::Init() {
     omnibox_popup_parent =
         search_view_controller_->omnibox_popup_parent();
   }
-#endif
 
   toolbar_->Init(this, omnibox_popup_parent);
 
-#if defined(USE_AURA)
   if (search_view_controller_.get()) {
     search_view_controller_->set_location_bar_container(
         toolbar_->location_bar_container());
   }
-#endif
 
   preview_controller_.reset(
       new InstantPreviewControllerViews(browser(), this, contents_));
@@ -2477,12 +2467,10 @@ void BrowserView::ProcessTabSelected(TabContents* new_contents) {
   }
   UpdateUIForContents(new_contents);
 
-#if defined(USE_AURA)
   // |change_tab_contents| can mean same WebContents but different TabContents,
   // so let SearchViewController decide how it would handle |new_contents|.
   if (search_view_controller_.get())
     search_view_controller_->SetTabContents(new_contents);
-#endif
 
   // Layout for DevTools _before_ setting the main WebContents to avoid
   // toggling the size of the main WebContents.
@@ -2535,7 +2523,7 @@ void BrowserView::CreateLauncherIcon() {
     launcher_item_controller_.reset(
         BrowserLauncherItemController::Create(browser_.get()));
   }
-#endif  // defined(USE_AURA)
+#endif  // defined(USE_ASH)
 }
 
 // static
@@ -2599,19 +2587,22 @@ void BrowserView::ShowPasswordGenerationBubble(
 }
 
 void BrowserView::RestackLocationBarContainer() {
-#if defined(USE_AURA)
   if (search_view_controller_.get())
     search_view_controller_->StackAtTop();
   if (preview_controller_ && preview_controller_->preview_container() &&
       preview_controller_->preview_container()->web_contents()) {
+#if defined(USE_AURA)
     // Keep the preview on top so that a doodle can be shown on the NTP in
     // InstantExtended mode.
     ui::Layer* native_view_layer =
         preview_controller_->preview_container()->web_contents()->
             GetNativeView()->layer();
     native_view_layer->parent()->StackAtTop(native_view_layer);
-  }
+#else
+  // TODO(mad): http://crbug.com/156866 Properly stack views.
 #endif
+  }
+
   toolbar_->location_bar_container()->StackAtTop();
   infobar_container_->StackAtTop();
 }

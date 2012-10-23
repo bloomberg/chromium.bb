@@ -68,6 +68,7 @@
         '../third_party/re2/re2.gyp:re2',
         '../third_party/zlib/zlib.gyp:zlib',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
+        '../ui/compositor/compositor.gyp:compositor',
         '../ui/surface/surface.gyp:surface',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
@@ -2301,7 +2302,6 @@
             # aura uses some of ash resources.
             '../ash/ash.gyp:ash_resources',
             '../ui/aura/aura.gyp:aura',
-            '../ui/compositor/compositor.gyp:compositor',
           ],
           'conditions': [
             ['OS=="win"', {
@@ -2328,10 +2328,6 @@
             ['exclude', '^browser/ui/views/frame/browser_desktop_root_window_host_linux.h'],
             ['exclude', '^browser/ui/views/frame/browser_desktop_root_window_host_win.cc'],
             ['exclude', '^browser/ui/views/frame/browser_desktop_root_window_host_win.h'],
-            ['exclude', '^browser/ui/views/search/search_ntp_container_view.cc'],
-            ['exclude', '^browser/ui/views/search/search_ntp_container_view.h'],
-            ['exclude', '^browser/ui/views/search/search_view_controller.cc'],
-            ['exclude', '^browser/ui/views/search/search_view_controller.h'],
             ['exclude', '^browser/ui/webui/gesture_config_ui.cc'],
             ['exclude', '^browser/ui/webui/gesture_config_ui.h'],
             ['exclude', '^browser/ui/webui/task_manager/'],

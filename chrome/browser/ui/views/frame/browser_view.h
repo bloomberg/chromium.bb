@@ -49,6 +49,7 @@ class InfoBarContainerView;
 class InstantPreviewControllerViews;
 class LocationBarView;
 class StatusBubbleViews;
+class SearchViewController;
 class TabStrip;
 class TabStripModel;
 class ToolbarView;
@@ -59,7 +60,6 @@ class JumpList;
 
 #if defined(USE_AURA)
 class BrowserLauncherItemController;
-class SearchViewController;
 #endif
 
 namespace autofill {
@@ -229,12 +229,10 @@ class BrowserView : public BrowserWindow,
   }
 #endif
 
-#if defined(USE_AURA)
   // Test support.
   SearchViewController* search_view_controller() const {
     return search_view_controller_.get();
   }
-#endif
 
   // Overridden from BrowserWindow:
   virtual void Show() OVERRIDE;
@@ -722,9 +720,7 @@ class BrowserView : public BrowserWindow,
 
   gfx::ScopedSysColorChangeListener color_change_listener_;
 
-#if defined(USE_AURA)
   scoped_ptr<SearchViewController> search_view_controller_;
-#endif
 
   scoped_ptr<InstantPreviewControllerViews> preview_controller_;
 

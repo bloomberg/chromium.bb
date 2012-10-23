@@ -33,8 +33,10 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/browser_actions_container.h"
 #include "chrome/browser/ui/views/extensions/disabled_extensions_view.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_container.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
+#include "chrome/browser/ui/views/search/search_view_controller.h"
 #include "chrome/browser/ui/views/wrench_menu.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -71,8 +73,6 @@
 #endif
 
 #if defined(USE_AURA)
-#include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/search/search_view_controller.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #endif
@@ -422,7 +422,6 @@ void ToolbarView::LayoutForSearch() {
         browser_->search_model()->mode().is_ntp()))
     return;
 
-#if defined(USE_AURA)
   const BrowserView* browser_view =
       static_cast<BrowserView*>(browser_->window());
   if (!browser_view)
@@ -449,7 +448,6 @@ void ToolbarView::LayoutForSearch() {
   // If the two bounds don't intersect, set bounds of |location_bar_container_|
   // to 0.
   location_bar_container_->SetBoundsRect(intersect_rect);
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////

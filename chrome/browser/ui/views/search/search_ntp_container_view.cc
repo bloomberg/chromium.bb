@@ -129,7 +129,7 @@ void SearchNTPContainerView::Layout() {
   content_view_->SetBounds(0, kContentTop, width(), height() - kContentTop);
   NotifyNTPBackgroundYPosIfChanged(content_view_,
       chrome::search::Mode(chrome::search::Mode::MODE_NTP, false));
-
+#if defined(USE_AURA)
   // This is a hack to patch up ordering of native layer.  Changes to the view
   // hierarchy can |ReorderLayers| which messes with layer stacking.  Layout
   // typically follows reorderings, so we patch things up here.
@@ -138,6 +138,7 @@ void SearchNTPContainerView::Layout() {
         content_view_->web_contents()->GetNativeView()->layer();
     native_view_layer->parent()->StackAtTop(native_view_layer);
   }
+#endif  // USE_AURA
 }
 
 void SearchNTPContainerView::OnPaintBackground(gfx::Canvas* canvas) {
@@ -153,9 +154,14 @@ void SearchNTPContainerView::OnPaintBackground(gfx::Canvas* canvas) {
   NtpBackgroundUtil::PaintBackgroundForBrowserClientArea(profile_, canvas,
       paint_rect, browser_view_->size(), paint_rect_in_browser_view);
 
+#if defined(USE_AURA)
   // Have to use the height of the layer here since the layer is animated
   // independent of the view.
   int height = layer()->bounds().height();
+#else
+  // When we don't use Aura, we don't animate, so the height of the view is ok.
+  int height = bounds().height();
+#endif
   if (height < chrome::search::kSearchResultsHeight)
     return;
   canvas->FillRect(gfx::Rect(0, height - 1, width(), 1),

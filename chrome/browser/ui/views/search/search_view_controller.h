@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -242,6 +243,9 @@ class SearchViewController
   bool notify_css_background_y_pos_;
 
   content::NotificationRegistrar registrar_;
+
+  // To send ourselves async messages safely.
+  base::WeakPtrFactory<SearchViewController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchViewController);
 };

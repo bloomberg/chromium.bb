@@ -30,8 +30,6 @@
 #include "content/public/browser/notification_service.h"
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/compositor/layer.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -41,15 +39,21 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #endif
 
 namespace {
 
 // Stacks view's layer above all its sibling layers.
 void StackViewsLayerAtTop(views::View* view) {
+#if defined(USE_AURA)
   DCHECK(view->layer());
   DCHECK(view->layer()->parent());
   view->layer()->parent()->StackAtTop(view->layer());
+#else
+  // TODO(mad): http://crbug.com/156866 Properly stack views.
+#endif  // USE_AURA
 }
 
 // Stacks native view's layer above all its sibling layers.
@@ -57,8 +61,12 @@ void StackWebViewLayerAtTop(views::WebView* view) {
   if (!view->web_contents())
     return;
 
+#if defined(USE_AURA)
   ui::Layer* native_view_layer = view->web_contents()->GetNativeView()->layer();
   native_view_layer->parent()->StackAtTop(native_view_layer);
+#else
+  // TODO(mad): http://crbug.com/156866 Properly stack views
+#endif  // USE_AURA
 }
 
 // SearchContainerView ---------------------------------------------------------
@@ -153,7 +161,8 @@ SearchViewController::SearchViewController(
       ntp_container_(NULL),
       content_view_(NULL),
       omnibox_popup_parent_(NULL),
-      notify_css_background_y_pos_(false) {
+      notify_css_background_y_pos_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   omnibox_popup_parent_ = new internal::OmniboxPopupContainer(this);
 
 #if defined(ENABLE_THEMES)
@@ -193,7 +202,6 @@ void SearchViewController::SetTabContents(TabContents* tab_contents) {
 }
 
 void SearchViewController::StackAtTop() {
-#if defined(USE_AURA)
   if (search_container_) {
     StackViewsLayerAtTop(search_container_);
     StackViewsLayerAtTop(ntp_container_);
@@ -203,9 +211,6 @@ void SearchViewController::StackAtTop() {
     if (contents_container_->preview())
       StackWebViewLayerAtTop(contents_container_->preview());
   }
-#else
-  NOTIMPLEMENTED();
-#endif
   location_bar_container_->StackAtTop();
 }
 
@@ -355,6 +360,7 @@ void SearchViewController::SetState(State state) {
 }
 
 void SearchViewController::StartAnimation() {
+#if defined(USE_AURA)
   int factor = InstantUI::GetSlowAnimationScaleFactor();
   {
     ui::Layer* ntp_layer = ntp_container_->layer();
@@ -392,15 +398,25 @@ void SearchViewController::StartAnimation() {
     content_layer->SetBounds(bounds);
     content_layer->SetOpacity(0.0f);
   }
+#else
+  // The rest of the code is expecting animation to complete async.
+  MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&SearchViewController::OnImplicitAnimationsCompleted,
+                   weak_factory_.GetWeakPtr()));
+  // TODO(mad): http://crbug.com/156869 make sure to get the same end result.
+#endif  // !USE_AURA
 }
 
 void SearchViewController::StopAnimation() {
+#if defined(USE_AURA)
   ntp_container_->layer()->GetAnimator()->StopAnimating();
   GetLogoView()->layer()->GetAnimator()->StopAnimating();
   if (content_view_->web_contents()) {
     content_view_->web_contents()->GetNativeView()->layer()->GetAnimator()->
         StopAnimating();
   }
+#endif  // USE_AURA
 }
 
 void SearchViewController::CreateViews(State state) {
@@ -409,8 +425,10 @@ void SearchViewController::CreateViews(State state) {
   Profile* profile = Profile::FromBrowserContext(browser_context_);
 
   ntp_container_ = new internal::SearchNTPContainerView(profile, browser_view_);
+#if defined(USE_AURA)
   ntp_container_->SetPaintToLayer(true);
   ntp_container_->layer()->SetMasksToBounds(true);
+#endif
   if (notify_css_background_y_pos_) {
     ntp_container_->set_to_notify_css_background_y_pos();
     notify_css_background_y_pos_ = false;
@@ -433,8 +451,10 @@ void SearchViewController::CreateViews(State state) {
         GetImageSkiaNamed(
             theme_provider->HasCustomImage(IDR_THEME_NTP_BACKGROUND) ?
                 IDR_GOOGLE_LOGO_WHITE : IDR_GOOGLE_LOGO_LG));
+#if defined(USE_AURA)
     default_provider_logo_->SetPaintToLayer(true);
     default_provider_logo_->SetFillsBoundsOpaquely(false);
+#endif
   }
 
   if (!default_provider_logo_.get()) {
@@ -449,8 +469,10 @@ void SearchViewController::CreateViews(State state) {
     default_provider_name_->SetEnabledColor(SK_ColorRED);
     default_provider_name_->SetFont(
         default_provider_name_->font().DeriveFont(75, gfx::Font::BOLD));
+#if defined(USE_AURA)
     default_provider_name_->SetPaintToLayer(true);
     default_provider_name_->SetFillsBoundsOpaquely(false);
+#endif
   }
 
   // Reparent the main web contents view out of |contents_container_| and
@@ -465,10 +487,11 @@ void SearchViewController::CreateViews(State state) {
   ntp_container_->SetContentView(content_view_);
 
   search_container_ = new SearchContainerView(ntp_container_);
-  search_container_->SetPaintToLayer(true);
   search_container_->SetLayoutManager(new views::FillLayout);
+#if defined(USE_AURA)
+  search_container_->SetPaintToLayer(true);
   search_container_->layer()->SetMasksToBounds(true);
-
+#endif
   contents_container_->SetOverlay(search_container_);
 
   // When loading, the |content_view_| needs to be invisible, but the web
@@ -505,8 +528,10 @@ void SearchViewController::DestroyViews() {
   // Restore control/parenting of the web_contents back to the
   // |main_contents_view_|.
   ntp_container_->SetContentView(NULL);
+#if defined(USE_AURA)
   if (web_contents())
     web_contents()->GetNativeView()->layer()->SetOpacity(1.0f);
+#endif  // USE_AURA
   content_view_->SetVisible(true);
   contents_container_->SetActive(content_view_);
   contents_container_->SetOverlay(NULL);
