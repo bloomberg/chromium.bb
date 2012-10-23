@@ -28,7 +28,6 @@ public:
 
     size_t bytes() const;
 
-    static size_t bytesPerPixel(GLenum format);
     static size_t memorySizeBytes(const IntSize&, GLenum format);
 
 private:
