@@ -105,17 +105,13 @@ class InstallationValidator {
     virtual ~ProductRules() { }
     virtual BrowserDistribution::Type distribution_type() const = 0;
     virtual void AddUninstallSwitchExpectations(
-        const InstallationState& machine_state,
-        bool system_install,
-        const ProductState& product_state,
+        const ProductContext& ctx,
         SwitchExpectations* expectations) const = 0;
     virtual void AddRenameSwitchExpectations(
-        const InstallationState& machine_state,
-        bool system_install,
-        const ProductState& product_state,
+        const ProductContext& ctx,
         SwitchExpectations* expectations) const = 0;
     // Return true if the rules allow usagestats setting.
-    virtual bool UsageStatsAllowed(const ProductState& product_state) const = 0;
+    virtual bool UsageStatsAllowed(const ProductContext& ctx) const = 0;
   };
 
   // Validation rules for the Chrome browser.
@@ -123,17 +119,12 @@ class InstallationValidator {
    public:
     virtual BrowserDistribution::Type distribution_type() const OVERRIDE;
     virtual void AddUninstallSwitchExpectations(
-        const InstallationState& machine_state,
-        bool system_install,
-        const ProductState& product_state,
+        const ProductContext& ctx,
         SwitchExpectations* expectations) const OVERRIDE;
     virtual void AddRenameSwitchExpectations(
-        const InstallationState& machine_state,
-        bool system_install,
-        const ProductState& product_state,
+        const ProductContext& ctx,
         SwitchExpectations* expectations) const OVERRIDE;
-    virtual bool UsageStatsAllowed(
-        const ProductState& product_state) const OVERRIDE;
+    virtual bool UsageStatsAllowed(const ProductContext& ctx) const OVERRIDE;
   };
 
   // Validation rules for Chrome Frame.
@@ -141,17 +132,12 @@ class InstallationValidator {
    public:
     virtual BrowserDistribution::Type distribution_type() const OVERRIDE;
     virtual void AddUninstallSwitchExpectations(
-        const InstallationState& machine_state,
-        bool system_install,
-        const ProductState& product_state,
+        const ProductContext& ctx,
         SwitchExpectations* expectations) const OVERRIDE;
     virtual void AddRenameSwitchExpectations(
-        const InstallationState& machine_state,
-        bool system_install,
-        const ProductState& product_state,
+        const ProductContext& ctx,
         SwitchExpectations* expectations) const OVERRIDE;
-    virtual bool UsageStatsAllowed(
-        const ProductState& product_state) const OVERRIDE;
+    virtual bool UsageStatsAllowed(const ProductContext& ctx) const OVERRIDE;
   };
 
   // Validation rules for Chrome App Host.
@@ -159,17 +145,12 @@ class InstallationValidator {
    public:
     virtual BrowserDistribution::Type distribution_type() const OVERRIDE;
     virtual void AddUninstallSwitchExpectations(
-        const InstallationState& machine_state,
-        bool system_install,
-        const ProductState& product_state,
+        const ProductContext& ctx,
         SwitchExpectations* expectations) const OVERRIDE;
     virtual void AddRenameSwitchExpectations(
-        const InstallationState& machine_state,
-        bool system_install,
-        const ProductState& product_state,
+        const ProductContext& ctx,
         SwitchExpectations* expectations) const OVERRIDE;
-    virtual bool UsageStatsAllowed(
-        const ProductState& product_state) const OVERRIDE;
+    virtual bool UsageStatsAllowed(const ProductContext& ctx) const OVERRIDE;
   };
 
   // Validation rules for the multi-install Chrome binaries.
@@ -177,17 +158,12 @@ class InstallationValidator {
    public:
     virtual BrowserDistribution::Type distribution_type() const OVERRIDE;
     virtual void AddUninstallSwitchExpectations(
-        const InstallationState& machine_state,
-        bool system_install,
-        const ProductState& product_state,
+        const ProductContext& ctx,
         SwitchExpectations* expectations) const OVERRIDE;
     virtual void AddRenameSwitchExpectations(
-        const InstallationState& machine_state,
-        bool system_install,
-        const ProductState& product_state,
+        const ProductContext& ctx,
         SwitchExpectations* expectations) const OVERRIDE;
-    virtual bool UsageStatsAllowed(
-        const ProductState& product_state) const OVERRIDE;
+    virtual bool UsageStatsAllowed(const ProductContext& ctx) const OVERRIDE;
   };
 
   struct ProductContext {

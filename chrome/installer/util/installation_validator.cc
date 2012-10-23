@@ -25,12 +25,10 @@ BrowserDistribution::Type
 }
 
 void InstallationValidator::ChromeRules::AddUninstallSwitchExpectations(
-    const InstallationState& machine_state,
-    bool system_install,
-    const ProductState& product_state,
+    const ProductContext& ctx,
     SwitchExpectations* expectations) const {
   const bool is_multi_install =
-      product_state.uninstall_command().HasSwitch(switches::kMultiInstall);
+      ctx.state.uninstall_command().HasSwitch(switches::kMultiInstall);
 
   // --chrome should be present for uninstall iff --multi-install.  This wasn't
   // the case in Chrome 10 (between r68996 and r72497), though, so consider it
@@ -39,8 +37,8 @@ void InstallationValidator::ChromeRules::AddUninstallSwitchExpectations(
   // --chrome-frame --ready-mode should be present for uninstall iff CF in ready
   // mode.
   const ProductState* cf_state =
-      machine_state.GetProductState(system_install,
-                                    BrowserDistribution::CHROME_FRAME);
+      ctx.machine_state.GetProductState(ctx.system_install,
+                                        BrowserDistribution::CHROME_FRAME);
   const bool ready_mode =
       cf_state != NULL &&
       cf_state->uninstall_command().HasSwitch(switches::kChromeFrameReadyMode);
@@ -51,12 +49,10 @@ void InstallationValidator::ChromeRules::AddUninstallSwitchExpectations(
 }
 
 void InstallationValidator::ChromeRules::AddRenameSwitchExpectations(
-    const InstallationState& machine_state,
-    bool system_install,
-    const ProductState& product_state,
+    const ProductContext& ctx,
     SwitchExpectations* expectations) const {
   const bool is_multi_install =
-      product_state.uninstall_command().HasSwitch(switches::kMultiInstall);
+      ctx.state.uninstall_command().HasSwitch(switches::kMultiInstall);
 
   // --chrome should not be present for rename.  It was for a time, so we'll be
   // lenient so that mini_installer tests pass.
@@ -69,10 +65,10 @@ void InstallationValidator::ChromeRules::AddRenameSwitchExpectations(
 }
 
 bool InstallationValidator::ChromeRules::UsageStatsAllowed(
-    const ProductState& product_state) const {
+    const ProductContext& ctx) const {
   // Products must not have usagestats consent values when multi-install
   // (only the multi-install binaries may).
-  return !product_state.is_multi_install();
+  return !ctx.state.is_multi_install();
 }
 
 BrowserDistribution::Type
@@ -81,9 +77,7 @@ BrowserDistribution::Type
 }
 
 void InstallationValidator::ChromeFrameRules::AddUninstallSwitchExpectations(
-    const InstallationState& machine_state,
-    bool system_install,
-    const ProductState& product_state,
+    const ProductContext& ctx,
     SwitchExpectations* expectations) const {
   // --chrome-frame must be present.
   expectations->push_back(std::make_pair(std::string(switches::kChromeFrame),
@@ -94,23 +88,21 @@ void InstallationValidator::ChromeFrameRules::AddUninstallSwitchExpectations(
 }
 
 void InstallationValidator::ChromeFrameRules::AddRenameSwitchExpectations(
-    const InstallationState& machine_state,
-    bool system_install,
-    const ProductState& product_state,
+    const ProductContext& ctx,
     SwitchExpectations* expectations) const {
   // --chrome-frame must be present for SxS rename.
   expectations->push_back(std::make_pair(std::string(switches::kChromeFrame),
-                                         !product_state.is_multi_install()));
+                                         !ctx.state.is_multi_install()));
   // --chrome must not be present.
   expectations->push_back(std::make_pair(std::string(switches::kChrome),
                                          false));
 }
 
 bool InstallationValidator::ChromeFrameRules::UsageStatsAllowed(
-    const ProductState& product_state) const {
+    const ProductContext& ctx) const {
   // Products must not have usagestats consent values when multi-install
   // (only the multi-install binaries may).
-  return !product_state.is_multi_install();
+  return !ctx.state.is_multi_install();
 }
 
 BrowserDistribution::Type
@@ -119,11 +111,9 @@ BrowserDistribution::Type
 }
 
 void InstallationValidator::ChromeAppHostRules::AddUninstallSwitchExpectations(
-    const InstallationState& machine_state,
-    bool system_install,
-    const ProductState& product_state,
+    const ProductContext& ctx,
     SwitchExpectations* expectations) const {
-  DCHECK(!system_install);
+  DCHECK(!ctx.system_install);
 
   // --app-host must be present.
   expectations->push_back(std::make_pair(std::string(switches::kChromeAppHost),
@@ -138,15 +128,13 @@ void InstallationValidator::ChromeAppHostRules::AddUninstallSwitchExpectations(
 }
 
 void InstallationValidator::ChromeAppHostRules::AddRenameSwitchExpectations(
-    const InstallationState& machine_state,
-    bool system_install,
-    const ProductState& product_state,
+    const ProductContext& ctx,
     SwitchExpectations* expectations) const {
   // TODO(erikwright): I guess there will be none?
 }
 
 bool InstallationValidator::ChromeAppHostRules::UsageStatsAllowed(
-    const ProductState& product_state) const {
+    const ProductContext& ctx) const {
   // App Host doesn't manage usage stats. The Chrome Binaries will.
   return false;
 }
@@ -157,23 +145,19 @@ BrowserDistribution::Type
 }
 
 void InstallationValidator::ChromeBinariesRules::AddUninstallSwitchExpectations(
-    const InstallationState& machine_state,
-    bool system_install,
-    const ProductState& product_state,
+    const ProductContext& ctx,
     SwitchExpectations* expectations) const {
   NOTREACHED();
 }
 
 void InstallationValidator::ChromeBinariesRules::AddRenameSwitchExpectations(
-    const InstallationState& machine_state,
-    bool system_install,
-    const ProductState& product_state,
+    const ProductContext& ctx,
     SwitchExpectations* expectations) const {
   NOTREACHED();
 }
 
 bool InstallationValidator::ChromeBinariesRules::UsageStatsAllowed(
-    const ProductState& product_state) const {
+    const ProductContext& ctx) const {
   // UsageStats consent values are always allowed on the binaries.
   return true;
 }
@@ -219,7 +203,6 @@ void InstallationValidator::ValidateInstallAppCommand(
                << expected_path.value() << ": "
                << the_command.GetProgram().value();
   }
-
 
   SwitchExpectations expected;
 
@@ -606,10 +589,7 @@ void InstallationValidator::ValidateUninstallCommand(const ProductContext& ctx,
                                     ctx.system_install));
   expected.push_back(std::make_pair(std::string(switches::kMultiInstall),
                                     is_multi_install));
-  ctx.rules.AddUninstallSwitchExpectations(ctx.machine_state,
-                                         ctx.system_install,
-                                         ctx.state,
-                                         &expected);
+  ctx.rules.AddUninstallSwitchExpectations(ctx, &expected);
 
   ValidateCommandExpectations(ctx, command, expected, source, is_valid);
 }
@@ -632,10 +612,7 @@ void InstallationValidator::ValidateRenameCommand(const ProductContext& ctx,
                                     ctx.system_install));
   expected.push_back(std::make_pair(std::string(switches::kMultiInstall),
                                     ctx.state.is_multi_install()));
-  ctx.rules.AddRenameSwitchExpectations(ctx.machine_state,
-                                        ctx.system_install,
-                                        ctx.state,
-                                        &expected);
+  ctx.rules.AddRenameSwitchExpectations(ctx, &expected);
 
   ValidateCommandExpectations(ctx, command, expected, "in-use renamer",
                               is_valid);
@@ -740,7 +717,7 @@ void InstallationValidator::ValidateUsageStats(const ProductContext& ctx,
                                                bool* is_valid) {
   DWORD usagestats = 0;
   if (ctx.state.GetUsageStats(&usagestats)) {
-    if (!ctx.rules.UsageStatsAllowed(ctx.state)) {
+    if (!ctx.rules.UsageStatsAllowed(ctx)) {
       *is_valid = false;
       LOG(ERROR) << ctx.dist->GetAppShortCutName()
                  << " has a usagestats value (" << usagestats
