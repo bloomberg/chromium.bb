@@ -213,7 +213,6 @@ void ClientSession::Stop(const base::Closure& done_task) {
 
   done_task_ = done_task;
   if (audio_scheduler_.get()) {
-    audio_scheduler_->OnClientDisconnected();
     audio_scheduler_->Stop(base::Bind(&ClientSession::OnRecorderStopped, this));
     audio_scheduler_ = NULL;
   }
