@@ -334,8 +334,10 @@ DirectoryContentsBasic.prototype.getLastNonSearchDirectoryEntry = function() {
  * Start directory scan.
  */
 DirectoryContentsBasic.prototype.scan = function() {
-  if (this.entry_ === DirectoryModel.fakeGDataEntry_)
+  if (this.entry_ === DirectoryModel.fakeGDataEntry_) {
+    this.lastChunkReceived();
     return;
+  }
 
   metrics.startInterval('DirectoryScan');
   this.reader_ = this.entry_.createReader();

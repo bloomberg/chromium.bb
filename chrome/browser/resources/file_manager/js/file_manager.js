@@ -2570,6 +2570,7 @@ DialogType.isModal = function(type) {
         this.directoryModel_.getCurrentDirPath());
 
     this.cancelSpinnerTimeout_();
+    this.showSpinner_(false);
     this.showSpinnerTimeout_ =
         setTimeout(this.showSpinner_.bind(this, true), 500);
   };
@@ -2582,7 +2583,9 @@ DialogType.isModal = function(type) {
   };
 
   FileManager.prototype.hideSpinnerLater_ = function() {
-    setTimeout(this.showSpinner_.bind(this, false), 100);
+    this.cancelSpinnerTimeout_();
+    this.showSpinnerTimeout_ =
+        setTimeout(this.showSpinner_.bind(this, false), 100);
   };
 
   FileManager.prototype.showSpinner_ = function(on) {

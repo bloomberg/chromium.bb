@@ -401,7 +401,8 @@ DirectoryModel.prototype.rescan = function() {
  */
 DirectoryModel.prototype.clearAndScan_ = function(newDirContents,
                                                   opt_callback) {
-  this.currentDirContents_.cancelScan();
+  if (this.currentDirContents_.isScanning())
+    this.currentDirContents_.cancelScan();
   this.currentDirContents_ = newDirContents;
   this.clearRescanTimeout_();
 
@@ -774,8 +775,9 @@ DirectoryModel.prototype.changeDirectoryEntry_ = function(initial, dirEntry,
                                                           opt_callback) {
   if (dirEntry == DirectoryModel.fakeGDataEntry_ &&
       this.volumeManager_.getGDataStatus() ==
-          VolumeManager.GDataStatus.UNMOUNTED)
+          VolumeManager.GDataStatus.UNMOUNTED) {
     this.volumeManager_.mountGData(function() {}, function() {});
+  }
 
   this.clearSearch_();
   var previous = this.currentDirContents_.getDirectoryEntry();
