@@ -109,27 +109,35 @@ bool SpellingServiceClient::IsAvailable(Profile* profile, ServiceType type) {
       !pref->GetBoolean(prefs::kSpellCheckUseSpellingService))
     return false;
 
-  // The spellchecking service should be avilable only when asynchronous
-  // spellchecking is enabled because this service depends on it.
-
-  // Enable the suggest service only on languages not supported by the
-  // spellcheck service. When this client calls the spellcheck service, it
-  // returns not only spellcheck results but also spelling suggestions provided
-  // by the suggest service. That is, it is not useful to use the suggest
-  // service when this client can use the spellcheck service.
+  // If the locale for spelling has not been set, the user has not decided to
+  // use spellcheck so we don't do anything remote (suggest or spelling).
   std::string locale = pref->GetString(prefs::kSpellCheckDictionary);
+  if (locale.empty())
+    return false;
 
-  // This means we are in a test.
-  if (locale.empty()) return false;
+  // If we do not have grammar check enabled, then we are only available for
+  // SUGGEST.
+  // If we do not have asynchronous spelling turned on, then we are only
+  // available for SUGGEST. The SPELLCHECK option depends on asynchronous
+  // spelling.
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kUseSpellingService) ||
+      command_line->HasSwitch(switches::kForceSyncSpellCheck))
+    return type == SUGGEST;
 
-  // Otherwise only suggest is currently valid.
-  return type == SUGGEST;
-#if defined(OS_MACOSX)
-  bool spellcheck_available = locale.empty();
-#else
-  bool spellcheck_available = locale.empty() || !locale.compare(0, 2, "en");
-#endif
-  return type == SUGGEST ? !spellcheck_available : spellcheck_available;
+  // Finally, if all options are available, we only enable only SUGGEST
+  // if SPELLCHECK is not available for our language because SPELLCHECK results
+  // are a superset of SUGGEST results.
+  // TODO(rlp): Only available for English right now. Fix this line to include
+  // all languages SPELLCHECK covers.
+  bool language_available = !locale.compare(0, 2, "en");
+  if (language_available) {
+    // Either SUGGEST or SPELLCHECK are allowed.
+    return true;
+  } else {
+    // Only SUGGEST is allowed.
+    return type == SUGGEST;
+  }
 }
 
 void SpellingServiceClient::OnURLFetchComplete(

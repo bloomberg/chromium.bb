@@ -257,7 +257,7 @@ void SpellCheckProvider::requestCheckingOfText(
 
 WebString SpellCheckProvider::autoCorrectWord(const WebString& word) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kExperimentalSpellcheckerFeatures)) {
+  if (command_line.HasSwitch(switches::kEnableSpellingAutoCorrect)) {
     EnsureDocumentTag();
     // Will be NULL during unit tests.
     if (chrome_content_renderer_client_) {

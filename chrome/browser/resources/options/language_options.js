@@ -107,7 +107,7 @@ cr.define('options', function() {
             this.handleAddLanguageOkButtonClick_.bind(this));
 
         // Show experimental features if enabled.
-        if (loadTimeData.getBoolean('experimentalSpellCheckFeatures'))
+        if (loadTimeData.getBoolean('enableSpellingAutoCorrect'))
           $('auto-spell-correction-option').hidden = false;
 
         // Handle spell check enable/disable.

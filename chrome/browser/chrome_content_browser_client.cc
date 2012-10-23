@@ -903,7 +903,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kAppsGalleryURL,
       switches::kCloudPrintServiceURL,
       switches::kDebugPrint,
-      switches::kDisableAsynchronousSpellChecking,
       switches::kDisableBundledPpapiFlash,
       switches::kDisableExtensionsResourceWhitelist,
       switches::kDisableScriptedPrintThrottling,
@@ -919,7 +918,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnablePasswordGeneration,
       switches::kEnablePnacl,
       switches::kEnableWatchdog,
-      switches::kExperimentalSpellcheckerFeatures,
       switches::kMemoryProfiling,
       switches::kMessageLoopHistogrammer,
       switches::kNoJsRandomness,
@@ -1573,12 +1571,10 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       false;
 #else
       !CommandLine::ForCurrentProcess()->
-          HasSwitch(switches::kDisableAsynchronousSpellChecking);
+          HasSwitch(switches::kForceSyncSpellCheck);
 #endif
   web_prefs->unified_textchecker_enabled =
-      web_prefs->asynchronous_spell_checking_enabled ||
-          CommandLine::ForCurrentProcess()->
-              HasSwitch(switches::kExperimentalSpellcheckerFeatures);
+      web_prefs->asynchronous_spell_checking_enabled;
 
   web_prefs->uses_universal_detector =
       prefs->GetBoolean(prefs::kWebKitUsesUniversalDetector);

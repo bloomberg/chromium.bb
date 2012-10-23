@@ -98,10 +98,10 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
   localized_strings->Set("uiLanguageCodeSet", GetUILanguageCodeSet());
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  bool experimental_spell_check_features =
-      command_line.HasSwitch(switches::kExperimentalSpellcheckerFeatures);
-  localized_strings->SetBoolean("experimentalSpellCheckFeatures",
-                                experimental_spell_check_features);
+  bool enable_spelling_auto_correct =
+      command_line.HasSwitch(switches::kEnableSpellingAutoCorrect);
+  localized_strings->SetBoolean("enableSpellingAutoCorrect",
+      enable_spelling_auto_correct);
 }
 
 void LanguageOptionsHandlerCommon::RegisterMessages() {

@@ -704,15 +704,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableSuggestionsTabPage)
   },
-#if defined(GOOGLE_CHROME_BUILD)
   {
-    "disable-asynchronous-spellchecking",
-    IDS_FLAGS_DISABLE_ASYNCHRONOUS_SPELLCHECKING,
-    IDS_FLAGS_DISABLE_ASYNCHRONOUS_SPELLCHECKING_DESCRIPTION,
+    "force-sync-spellcheck",
+    IDS_FLAGS_FORCE_SYNC_SPELLCHECK,
+    IDS_FLAGS_FORCE_SYNC_SPELLCHECK_DESCRIPTION,
     kOsWin | kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kDisableAsynchronousSpellChecking)
+    SINGLE_VALUE_TYPE(switches::kForceSyncSpellCheck)
   },
-#endif
   {
     "touch-optimized-ui",
     IDS_FLAGS_TOUCH_OPTIMIZED_UI_NAME,

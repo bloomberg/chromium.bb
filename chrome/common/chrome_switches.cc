@@ -255,11 +255,6 @@ const char kDiagnostics[]                   = "diagnostics";
 // Disables the experimental asynchronous DNS client.
 const char kDisableAsyncDns[]               = "disable-async-dns";
 
-// Disables asynchronous spellchecking features for all time. Disabling this
-// feature also disables unified spellchecking.
-const char kDisableAsynchronousSpellChecking[] =
-    "disable-asynchronous-spellchecking";
-
 // Disables CNAME lookup of the host when generating the Kerberos SPN for a
 // Negotiate challenge. See HttpAuthHandlerNegotiate::CreateSPN for more
 // background.
@@ -641,6 +636,9 @@ const char kEnableSpdy3[]                   = "enable-spdy3";
 // Enable SPDY CREDENTIAL frame support.  This is a temporary testing flag.
 const char kEnableSpdyCredentialFrames[]    = "enable-spdy-credential-frames";
 
+// Enables auto correction for misspelled words.
+const char kEnableSpellingAutoCorrect[]    = "enable-spelling-auto-correct";
+
 // Enables the stacked tabstrip.
 const char kEnableStackedTabStrip[]         = "enable-stacked-tab-strip";
 
@@ -663,17 +661,6 @@ const char kEnableWatchdog[]                = "enable-watchdog";
 
 // Uses WebSocket over SPDY.
 const char kEnableWebSocketOverSpdy[]       = "enable-websocket-over-spdy";
-
-// Enables experimental features for Spellchecker. Right now, the first
-// experimental feature is auto spell correct, which corrects words which are
-// misspelled by typing the word with two consecutive letters swapped. The
-// features that will be added next are:
-//
-// 1 - Allow multiple spellcheckers to work simultaneously.
-// 2 - Allow automatic detection of spell check language.
-// TODO(sidchat): Implement the above features to work under this flag.
-const char kExperimentalSpellcheckerFeatures[] =
-    "experimental-spellchecker-features";
 
 // Explicitly allows additional ports using a comma-separated list of port
 // numbers.
@@ -713,6 +700,10 @@ const char kFileDescriptorLimit[]           = "file-descriptor-limit";
 // Displays the First Run experience when the browser is started, regardless of
 // whether or not it's actually the first run.
 const char kFirstRun[]                      = "first-run";
+
+// Force use of synchronous spell checking. If this is enabled, unified spell
+// checking will be disabled since it relies on asynchronous spellchecking.
+const char kForceSyncSpellCheck[]           = "force-sync-spellcheck";
 
 // Enables using GAIA information to populate profile name and icon.
 const char kGaiaProfileInfo[]               = "gaia-profile-info";
@@ -1317,6 +1308,10 @@ const char kUseGpuInTests[] = "use-gpu-in-tests";
 // Uses Spdy for the transport protocol instead of HTTP. This is a temporary
 // testing flag.
 const char kUseSpdy[]                       = "use-spdy";
+
+// Enables use of the spelling web service. This will only work if asynchronous
+// spell checking is not disabled.
+const char kUseSpellingService[]            = "use-spelling-service";
 
 // Sets the maximum SPDY sessions per domain.
 const char kMaxSpdySessionsPerDomain[]      = "max-spdy-sessions-per-domain";
