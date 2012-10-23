@@ -23,6 +23,10 @@
         '..',
         '../skia/config',
       ],
+      'ldflags': [
+        # fix linking to hidden symbols and re-enable this (crbug.com/157326)
+        '-Wl,--no-fatal-warnings'
+      ],
       'sources': [
         'common/android_webview_message_generator.cc',
         'common/android_webview_message_generator.h',
