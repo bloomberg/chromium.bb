@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/pp_content_decryptor.idl modified Tue Oct 16 23:14:26 2012. */
+/* From private/pp_content_decryptor.idl modified Sat Oct 20 00:59:20 2012. */
 
 #ifndef PPAPI_C_PRIVATE_PP_CONTENT_DECRYPTOR_H_
 #define PPAPI_C_PRIVATE_PP_CONTENT_DECRYPTOR_H_
@@ -133,9 +133,8 @@ PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_EncryptedBlockInfo, 240);
  */
 typedef enum {
   PP_DECRYPTEDFRAMEFORMAT_UNKNOWN = 0,
-  PP_DECRYPTEDFRAMEFORMAT_EMPTY = 1,
-  PP_DECRYPTEDFRAMEFORMAT_YV12 = 2,
-  PP_DECRYPTEDFRAMEFORMAT_I420 = 3
+  PP_DECRYPTEDFRAMEFORMAT_YV12 = 1,
+  PP_DECRYPTEDFRAMEFORMAT_I420 = 2
 } PP_DecryptedFrameFormat;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_DecryptedFrameFormat, 4);
 
@@ -148,10 +147,12 @@ typedef enum {
   PP_DECRYPTRESULT_SUCCESS = 0,
   /** The decryptor did not have the necessary decryption key. */
   PP_DECRYPTRESULT_DECRYPT_NOKEY = 1,
+  /** The input was accepted by the decoder but no frame(s) can be produced. */
+  PP_DECRYPTRESULT_NEEDMOREDATA = 2,
   /** An unexpected error happened during decryption. */
-  PP_DECRYPTRESULT_DECRYPT_ERROR = 2,
+  PP_DECRYPTRESULT_DECRYPT_ERROR = 3,
   /** An unexpected error happened during decoding. */
-  PP_DECRYPTRESULT_DECODE_ERROR = 3
+  PP_DECRYPTRESULT_DECODE_ERROR = 4
 } PP_DecryptResult;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_DecryptResult, 4);
 /**

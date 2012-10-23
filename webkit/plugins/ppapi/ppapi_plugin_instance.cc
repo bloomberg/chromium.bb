@@ -393,37 +393,62 @@ bool MakeEncryptedBlockInfo(
 }
 
 PP_AudioCodec MediaAudioCodecToPpAudioCodec(media::AudioCodec codec) {
-  if (codec == media::kCodecVorbis)
-    return PP_AUDIOCODEC_VORBIS;
-
-  return PP_AUDIOCODEC_UNKNOWN;
+  switch (codec) {
+    case media::kCodecVorbis:
+      return PP_AUDIOCODEC_VORBIS;
+    default:
+      return PP_AUDIOCODEC_UNKNOWN;
+  }
 }
 
 PP_VideoCodec MediaVideoCodecToPpVideoCodec(media::VideoCodec codec) {
-  if (codec == media::kCodecVP8)
-    return PP_VIDEOCODEC_VP8;
-
-  return PP_VIDEOCODEC_UNKNOWN;
+  switch (codec) {
+    case media::kCodecVP8:
+      return PP_VIDEOCODEC_VP8;
+    default:
+      return PP_VIDEOCODEC_UNKNOWN;
+  }
 }
 
 PP_VideoCodecProfile MediaVideoCodecProfileToPpVideoCodecProfile(
     media::VideoCodecProfile profile) {
-  if (profile == media::VP8PROFILE_MAIN)
-    return PP_VIDEOCODECPROFILE_VP8_MAIN;
-
-  return PP_VIDEOCODECPROFILE_UNKNOWN;
+  switch (profile) {
+    case media::VP8PROFILE_MAIN:
+      return PP_VIDEOCODECPROFILE_VP8_MAIN;
+    default:
+      return PP_VIDEOCODECPROFILE_UNKNOWN;
+  }
 }
 
 PP_DecryptedFrameFormat MediaVideoFormatToPpDecryptedFrameFormat(
     media::VideoFrame::Format format) {
-  if (format == media::VideoFrame::YV12)
-    return PP_DECRYPTEDFRAMEFORMAT_YV12;
-  else if (format == media::VideoFrame::I420)
-    return PP_DECRYPTEDFRAMEFORMAT_I420;
-  else if (format == media::VideoFrame::EMPTY)
-    return PP_DECRYPTEDFRAMEFORMAT_EMPTY;
+  switch (format) {
+    case media::VideoFrame::YV12:
+      return PP_DECRYPTEDFRAMEFORMAT_YV12;
+    case media::VideoFrame::I420:
+      return PP_DECRYPTEDFRAMEFORMAT_I420;
+    default:
+      return PP_DECRYPTEDFRAMEFORMAT_UNKNOWN;
+  }
+}
 
-  return PP_DECRYPTEDFRAMEFORMAT_UNKNOWN;
+media::Decryptor::Status PpDecryptResultToMediaDecryptorStatus(
+    PP_DecryptResult result) {
+  switch (result) {
+    case PP_DECRYPTRESULT_SUCCESS:
+      return media::Decryptor::kSuccess;
+    case PP_DECRYPTRESULT_DECRYPT_NOKEY:
+      return media::Decryptor::kNoKey;
+    case PP_DECRYPTRESULT_NEEDMOREDATA:
+      return media::Decryptor::kNeedMoreData;
+    case PP_DECRYPTRESULT_DECRYPT_ERROR:
+      return media::Decryptor::kError;
+    case PP_DECRYPTRESULT_DECODE_ERROR:
+      return media::Decryptor::kError;
+    default:
+      NOTREACHED();
+      return media::Decryptor::kError;
+  }
 }
 
 }  // namespace
@@ -2474,13 +2499,10 @@ void PluginInstance::DeliverBlock(PP_Instance instance,
   media::Decryptor::DecryptCB decrypt_cb = found->second;
   pending_decryption_cbs_.erase(found);
 
-  if (block_info->result == PP_DECRYPTRESULT_DECRYPT_NOKEY) {
-    decrypt_cb.Run(media::Decryptor::kNoKey, NULL);
-    return;
-  }
-
-  if (block_info->result != PP_DECRYPTRESULT_SUCCESS) {
-    decrypt_cb.Run(media::Decryptor::kError, NULL);
+  media::Decryptor::Status status =
+      PpDecryptResultToMediaDecryptorStatus(block_info->result);
+  if (status != media::Decryptor::kSuccess) {
+    decrypt_cb.Run(status, NULL);
     return;
   }
 
@@ -2525,19 +2547,10 @@ void PluginInstance::DeliverFrame(PP_Instance instance,
   media::Decryptor::VideoDecodeCB video_decode_cb =
       base::ResetAndReturn(&pending_video_decode_cb_);
 
-  if (frame_info->result == PP_DECRYPTRESULT_DECRYPT_NOKEY) {
-    video_decode_cb.Run(media::Decryptor::kNoKey, NULL);
-    return;
-  }
-
-  if (frame_info->result != PP_DECRYPTRESULT_SUCCESS) {
-    video_decode_cb.Run(media::Decryptor::kError, NULL);
-    return;
-  }
-
-  if (frame_info->format == PP_DECRYPTEDFRAMEFORMAT_EMPTY) {
-    video_decode_cb.Run(media::Decryptor::kSuccess,
-                        media::VideoFrame::CreateEmptyFrame());
+  media::Decryptor::Status status =
+      PpDecryptResultToMediaDecryptorStatus(frame_info->result);
+  if (status != media::Decryptor::kSuccess) {
+    video_decode_cb.Run(status, NULL);
     return;
   }
 

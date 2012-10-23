@@ -309,10 +309,9 @@ void ClearKeyCdm::DeinitializeDecoder(cdm::StreamType decoder_type) {
 cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
     const cdm::InputBuffer& encrypted_buffer,
     cdm::VideoFrame* decoded_frame) {
-  if (!encrypted_buffer.data) {
-    decoded_frame->set_format(cdm::kEmptyVideoFrame);
-    return cdm::kSuccess;
-  }
+  // TODO(xhwang): Need to flush the video decoder with empty buffer.
+  if (!encrypted_buffer.data)
+    return cdm::kNeedMoreData;
 
   scoped_refptr<media::DecoderBuffer> decoder_buffer =
       CopyDecoderBufferFrom(encrypted_buffer);

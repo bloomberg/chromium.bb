@@ -137,7 +137,6 @@ struct AudioDecoderConfig {
 // http://www.fourcc.org/yuv.php
 enum VideoFormat {
   kUnknownVideoFormat = 0,  // Unknown format value.  Used for error reporting.
-  kEmptyVideoFrame,  // An empty frame.
   kYv12,  // 12bpp YVU planar 1x1 Y, 2x2 VU samples.
   kI420  // 12bpp YVU planar 1x1 Y, 2x2 UV samples.
 };
@@ -292,7 +291,7 @@ class ContentDecryptionModule {
   // Returns kNoKey if the CDM did not have the necessary decryption key
   // to decrypt.
   // Returns kNeedMoreData if more data was needed by the decoder to generate
-  // a decoded frame (e.g. during initialization).
+  // a decoded frame (e.g. during initialization and end-of-stream).
   // Returns kDecryptError if any decryption error happened.
   // Returns kDecodeError if any decoding error happened.
   // If the return value is not kSuccess, |video_frame| should be ignored by
@@ -311,10 +310,10 @@ class ContentDecryptionModule {
   // Returns kNoKey if the CDM did not have the necessary decryption key
   // to decrypt.
   // Returns kNeedMoreData if more data was needed by the decoder to generate
-  // audio samples (e.g. during initialization).
+  // audio samples (e.g. during initialization and end-of-stream).
   // Returns kDecryptError if any decryption error happened.
   // Returns kDecodeError if any decoding error happened.
-  // If the return value is not kSuccess, |sample_buffer| should be ignored by
+  // If the return value is not kSuccess, |audio_frames| should be ignored by
   // the caller.
   //
   // |audio_frames| can contain multiple audio output buffers. Each buffer must

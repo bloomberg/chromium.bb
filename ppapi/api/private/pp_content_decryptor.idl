@@ -119,9 +119,8 @@ struct PP_EncryptedBlockInfo {
 [assert_size(4)]
 enum PP_DecryptedFrameFormat {
   PP_DECRYPTEDFRAMEFORMAT_UNKNOWN = 0,
-  PP_DECRYPTEDFRAMEFORMAT_EMPTY = 1,
-  PP_DECRYPTEDFRAMEFORMAT_YV12 = 2,
-  PP_DECRYPTEDFRAMEFORMAT_I420 = 3
+  PP_DECRYPTEDFRAMEFORMAT_YV12 = 1,
+  PP_DECRYPTEDFRAMEFORMAT_I420 = 2
 };
 
 /**
@@ -134,10 +133,12 @@ enum PP_DecryptResult {
   PP_DECRYPTRESULT_SUCCESS = 0,
   /** The decryptor did not have the necessary decryption key. */
   PP_DECRYPTRESULT_DECRYPT_NOKEY = 1,
+  /** The input was accepted by the decoder but no frame(s) can be produced. */
+  PP_DECRYPTRESULT_NEEDMOREDATA = 2,
   /** An unexpected error happened during decryption. */
-  PP_DECRYPTRESULT_DECRYPT_ERROR = 2,
+  PP_DECRYPTRESULT_DECRYPT_ERROR = 3,
   /** An unexpected error happened during decoding. */
-  PP_DECRYPTRESULT_DECODE_ERROR = 3
+  PP_DECRYPTRESULT_DECODE_ERROR = 4
 };
 
 /**

@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_content_decryptor_private.idl,
- *   modified Fri Oct 19 10:45:02 2012.
+ *   modified Mon Oct 22 19:48:14 2012.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -18,10 +18,10 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 
-#define PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_4 \
-    "PPB_ContentDecryptor_Private;0.4"
+#define PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_5 \
+    "PPB_ContentDecryptor_Private;0.5"
 #define PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE \
-    PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_4
+    PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_5
 
 /**
  * @file
@@ -42,7 +42,7 @@
  * browser side support for the Content Decryption Module (CDM) for v0.1 of the
  * proposed Encrypted Media Extensions: http://goo.gl/rbdnR
  */
-struct PPB_ContentDecryptor_Private_0_4 {
+struct PPB_ContentDecryptor_Private_0_5 {
   /**
    * The decryptor requires a key that has not been provided.
    *
@@ -257,7 +257,7 @@ struct PPB_ContentDecryptor_Private_0_4 {
       const struct PP_DecryptedBlockInfo* decrypted_block_info);
 };
 
-typedef struct PPB_ContentDecryptor_Private_0_4 PPB_ContentDecryptor_Private;
+typedef struct PPB_ContentDecryptor_Private_0_5 PPB_ContentDecryptor_Private;
 /**
  * @}
  */

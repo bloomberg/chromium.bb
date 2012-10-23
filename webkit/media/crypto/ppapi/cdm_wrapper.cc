@@ -88,52 +88,76 @@ void ConfigureInputBuffer(
   input_buffer->timestamp = encrypted_block_info.tracking_info.timestamp;
 }
 
+PP_DecryptResult CdmStatusToPpDecryptResult(cdm::Status status) {
+  switch (status) {
+    case cdm::kSuccess:
+      return PP_DECRYPTRESULT_SUCCESS;
+    case cdm::kNoKey:
+      return PP_DECRYPTRESULT_DECRYPT_NOKEY;
+    case cdm::kNeedMoreData:
+      return PP_DECRYPTRESULT_NEEDMOREDATA;
+    case cdm::kDecryptError:
+      return PP_DECRYPTRESULT_DECRYPT_ERROR;
+    case cdm::kDecodeError:
+      return PP_DECRYPTRESULT_DECODE_ERROR;
+    default:
+      PP_NOTREACHED();
+      return PP_DECRYPTRESULT_DECODE_ERROR;
+  }
+}
+
 PP_DecryptedFrameFormat CdmVideoFormatToPpDecryptedFrameFormat(
     cdm::VideoFormat format) {
-  if (format == cdm::kEmptyVideoFrame)
-    return PP_DECRYPTEDFRAMEFORMAT_EMPTY;
-  else if (format == cdm::kYv12)
-    return PP_DECRYPTEDFRAMEFORMAT_YV12;
-  else if (format == cdm::kI420)
-    return PP_DECRYPTEDFRAMEFORMAT_I420;
-
-  return PP_DECRYPTEDFRAMEFORMAT_UNKNOWN;
+  switch (format) {
+    case cdm::kYv12:
+      return PP_DECRYPTEDFRAMEFORMAT_YV12;
+    case cdm::kI420:
+      return PP_DECRYPTEDFRAMEFORMAT_I420;
+    default:
+      return PP_DECRYPTEDFRAMEFORMAT_UNKNOWN;
+  }
 }
 
 cdm::AudioDecoderConfig::AudioCodec PpAudioCodecToCdmAudioCodec(
     PP_AudioCodec codec) {
-  if (codec == PP_AUDIOCODEC_VORBIS)
-    return cdm::AudioDecoderConfig::kCodecVorbis;
-
-  return cdm::AudioDecoderConfig::kUnknownAudioCodec;
+  switch (codec) {
+    case PP_AUDIOCODEC_VORBIS:
+      return cdm::AudioDecoderConfig::kCodecVorbis;
+    default:
+      return cdm::AudioDecoderConfig::kUnknownAudioCodec;
+  }
 }
 
 cdm::VideoDecoderConfig::VideoCodec PpVideoCodecToCdmVideoCodec(
     PP_VideoCodec codec) {
-  if (codec == PP_VIDEOCODEC_VP8)
-    return cdm::VideoDecoderConfig::kCodecVP8;
-
-  return cdm::VideoDecoderConfig::kUnknownVideoCodec;
+  switch (codec) {
+    case PP_VIDEOCODEC_VP8:
+      return cdm::VideoDecoderConfig::kCodecVP8;
+    default:
+      return cdm::VideoDecoderConfig::kUnknownVideoCodec;
+  }
 }
 
 cdm::VideoDecoderConfig::VideoCodecProfile PpVCProfileToCdmVCProfile(
     PP_VideoCodecProfile profile) {
-  if (profile == PP_VIDEOCODECPROFILE_VP8_MAIN)
-    return cdm::VideoDecoderConfig::kVp8ProfileMain;
-
-  return cdm::VideoDecoderConfig::kUnknownVideoCodecProfile;
+  switch (profile) {
+    case PP_VIDEOCODECPROFILE_VP8_MAIN:
+      return cdm::VideoDecoderConfig::kVp8ProfileMain;
+    default:
+      return cdm::VideoDecoderConfig::kUnknownVideoCodecProfile;
+  }
 }
 
 cdm::VideoFormat PpDecryptedFrameFormatToCdmVideoFormat(
     PP_DecryptedFrameFormat format) {
-  if (format == PP_DECRYPTEDFRAMEFORMAT_YV12)
-    return cdm::kYv12;
-  else if (format == PP_DECRYPTEDFRAMEFORMAT_I420)
-    return cdm::kI420;
-  else if (format == PP_DECRYPTEDFRAMEFORMAT_EMPTY)
-    return cdm::kEmptyVideoFrame;
-
-  return cdm::kUnknownVideoFormat;
+  switch (format) {
+    case PP_DECRYPTEDFRAMEFORMAT_YV12:
+      return cdm::kYv12;
+    case PP_DECRYPTEDFRAMEFORMAT_I420:
+      return cdm::kI420;
+    default:
+      return cdm::kUnknownVideoFormat;
+  }
 }
 
 cdm::StreamType PpDecryptorStreamTypeToCdmStreamType(
@@ -777,27 +801,18 @@ void CdmWrapper::DeliverBlock(int32_t result,
   PP_DecryptedBlockInfo decrypted_block_info;
   decrypted_block_info.tracking_info = tracking_info;
   decrypted_block_info.tracking_info.timestamp = decrypted_block->timestamp();
+  decrypted_block_info.result = CdmStatusToPpDecryptResult(status);
 
-  switch (status) {
-    case cdm::kSuccess:
-      decrypted_block_info.result = PP_DECRYPTRESULT_SUCCESS;
-      PP_DCHECK(decrypted_block.get() && decrypted_block->buffer());
-      break;
-    case cdm::kNoKey:
-      decrypted_block_info.result = PP_DECRYPTRESULT_DECRYPT_NOKEY;
-      break;
-    case cdm::kDecryptError:
+  pp::Buffer_Dev buffer;
+
+  if (decrypted_block_info.result == PP_DECRYPTRESULT_SUCCESS) {
+    PP_DCHECK(decrypted_block.get() && decrypted_block->buffer());
+    if (!decrypted_block.get() || !decrypted_block->buffer()) {
       decrypted_block_info.result = PP_DECRYPTRESULT_DECRYPT_ERROR;
-      break;
-    default:
-      PP_DCHECK(false);
-      decrypted_block_info.result = PP_DECRYPTRESULT_DECRYPT_ERROR;
+    } else {
+      buffer = static_cast<PpbBuffer*>(decrypted_block->buffer())->buffer_dev();
+    }
   }
-
-  const pp::Buffer_Dev& buffer =
-      decrypted_block.get() && decrypted_block->buffer() ?
-      static_cast<PpbBuffer*>(decrypted_block->buffer())->buffer_dev() :
-          pp::Buffer_Dev();
 
   pp::ContentDecryptor_Private::DeliverBlock(buffer, decrypted_block_info);
 }
@@ -833,60 +848,42 @@ void CdmWrapper::DeliverFrame(
   PP_DCHECK(result == PP_OK);
   PP_DecryptedFrameInfo decrypted_frame_info;
   decrypted_frame_info.tracking_info = tracking_info;
+  decrypted_frame_info.result = CdmStatusToPpDecryptResult(status);
 
-  switch (status) {
-    case cdm::kSuccess:
-      PP_DCHECK(video_frame.get());
-      PP_DCHECK(video_frame->format() == cdm::kEmptyVideoFrame ||
-                video_frame->format() == cdm::kI420 ||
-                video_frame->format() == cdm::kYv12);
+  pp::Buffer_Dev buffer;
 
-      decrypted_frame_info.result = PP_DECRYPTRESULT_SUCCESS;
-      decrypted_frame_info.format =
-          CdmVideoFormatToPpDecryptedFrameFormat(video_frame->format());
+  if (decrypted_frame_info.result == PP_DECRYPTRESULT_SUCCESS) {
+    PP_DCHECK(video_frame.get() && video_frame->frame_buffer());
+    PP_DCHECK(video_frame->format() == cdm::kI420 ||
+              video_frame->format() == cdm::kYv12);
 
-      if (video_frame->format() == cdm::kEmptyVideoFrame)
-        break;
+    decrypted_frame_info.format =
+        CdmVideoFormatToPpDecryptedFrameFormat(video_frame->format());
 
-      PP_DCHECK(video_frame->frame_buffer());
+    if (!video_frame.get() ||
+        !video_frame->frame_buffer() ||
+        (decrypted_frame_info.format != PP_DECRYPTEDFRAMEFORMAT_YV12 &&
+         decrypted_frame_info.format != PP_DECRYPTEDFRAMEFORMAT_I420)) {
+      decrypted_frame_info.result = PP_DECRYPTRESULT_DECODE_ERROR;
+    } else {
+      buffer = static_cast<PpbBuffer*>(
+          video_frame->frame_buffer())->buffer_dev();
       decrypted_frame_info.width = video_frame->size().width;
       decrypted_frame_info.height = video_frame->size().height;
       decrypted_frame_info.plane_offsets[PP_DECRYPTEDFRAMEPLANES_Y] =
-        video_frame->plane_offset(cdm::VideoFrame::kYPlane);
+          video_frame->plane_offset(cdm::VideoFrame::kYPlane);
       decrypted_frame_info.plane_offsets[PP_DECRYPTEDFRAMEPLANES_U] =
-        video_frame->plane_offset(cdm::VideoFrame::kUPlane);
+          video_frame->plane_offset(cdm::VideoFrame::kUPlane);
       decrypted_frame_info.plane_offsets[PP_DECRYPTEDFRAMEPLANES_V] =
-        video_frame->plane_offset(cdm::VideoFrame::kVPlane);
+          video_frame->plane_offset(cdm::VideoFrame::kVPlane);
       decrypted_frame_info.strides[PP_DECRYPTEDFRAMEPLANES_Y] =
-        video_frame->stride(cdm::VideoFrame::kYPlane);
+          video_frame->stride(cdm::VideoFrame::kYPlane);
       decrypted_frame_info.strides[PP_DECRYPTEDFRAMEPLANES_U] =
-        video_frame->stride(cdm::VideoFrame::kUPlane);
+          video_frame->stride(cdm::VideoFrame::kUPlane);
       decrypted_frame_info.strides[PP_DECRYPTEDFRAMEPLANES_V] =
-        video_frame->stride(cdm::VideoFrame::kVPlane);
-      break;
-    case cdm::kNeedMoreData:
-      decrypted_frame_info.result = PP_DECRYPTRESULT_SUCCESS;
-      decrypted_frame_info.format = PP_DECRYPTEDFRAMEFORMAT_EMPTY;
-      break;
-    case cdm::kNoKey:
-      decrypted_frame_info.result = PP_DECRYPTRESULT_DECRYPT_NOKEY;
-      break;
-    case cdm::kDecryptError:
-      decrypted_frame_info.result = PP_DECRYPTRESULT_DECRYPT_ERROR;
-      break;
-    case cdm::kDecodeError:
-      decrypted_frame_info.result = PP_DECRYPTRESULT_DECODE_ERROR;
-      break;
-    case cdm::kSessionError:
-    default:
-      PP_DCHECK(false);
-      decrypted_frame_info.result = PP_DECRYPTRESULT_DECRYPT_ERROR;
+          video_frame->stride(cdm::VideoFrame::kVPlane);
+    }
   }
-
-  const pp::Buffer_Dev& buffer =
-      video_frame.get() && video_frame->frame_buffer() ?
-          static_cast<PpbBuffer*>(video_frame->frame_buffer())->buffer_dev() :
-          pp::Buffer_Dev();
 
   pp::ContentDecryptor_Private::DeliverFrame(buffer, decrypted_frame_info);
 }
