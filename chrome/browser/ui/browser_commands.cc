@@ -240,7 +240,7 @@ int GetContentRestrictions(const Browser* browser) {
   return content_restrictions;
 }
 
-void NewEmptyWindow(Profile* profile, HostDesktopType desktop_type) {
+void NewEmptyWindow(Profile* profile) {
   bool incognito = profile->IsOffTheRecord();
   PrefService* prefs = profile->GetPrefs();
   if (incognito) {
@@ -258,32 +258,23 @@ void NewEmptyWindow(Profile* profile, HostDesktopType desktop_type) {
 
   if (incognito) {
     content::RecordAction(UserMetricsAction("NewIncognitoWindow"));
-    OpenEmptyWindow(profile->GetOffTheRecordProfile(), desktop_type);
+    OpenEmptyWindow(profile->GetOffTheRecordProfile());
   } else {
     content::RecordAction(UserMetricsAction("NewWindow"));
     SessionService* session_service =
         SessionServiceFactory::GetForProfile(profile->GetOriginalProfile());
     if (!session_service ||
         !session_service->RestoreIfNecessary(std::vector<GURL>())) {
-      OpenEmptyWindow(profile->GetOriginalProfile(), desktop_type);
+      OpenEmptyWindow(profile->GetOriginalProfile());
     }
   }
 }
 
-void NewEmptyWindow(Profile* profile) {
-  NewEmptyWindow(profile, HOST_DESKTOP_TYPE_NATIVE);
-}
-
-Browser* OpenEmptyWindow(Profile* profile, HostDesktopType desktop_type) {
-  Browser* browser = new Browser(
-      Browser::CreateParams(Browser::TYPE_TABBED, profile, desktop_type));
+Browser* OpenEmptyWindow(Profile* profile) {
+  Browser* browser = new Browser(Browser::CreateParams(profile));
   AddBlankTab(browser, true);
   browser->window()->Show();
   return browser;
-}
-
-Browser* OpenEmptyWindow(Profile* profile) {
-  return OpenEmptyWindow(profile, HOST_DESKTOP_TYPE_NATIVE);
 }
 
 void OpenWindowWithRestoredTabs(Profile* profile) {

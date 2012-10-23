@@ -20,6 +20,7 @@
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/view.h"
+#include "ui/views/views_switches.h"
 
 #if defined(USE_ASH)
 #include "ash/wm/property_util.h"
@@ -207,8 +208,8 @@ NativeBrowserFrame* NativeBrowserFrame::CreateNativeBrowserFrame(
     BrowserFrame* browser_frame,
     BrowserView* browser_view) {
 #if !defined(OS_CHROMEOS)
-  if (chrome::GetHostDesktopTypeForBrowser(browser_view->browser()) ==
-      chrome::HOST_DESKTOP_TYPE_NATIVE)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+        views::switches::kDesktopAura))
     return new DesktopBrowserFrameAura(browser_frame, browser_view);
 #endif
   return new BrowserFrameAura(browser_frame, browser_view);

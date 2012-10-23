@@ -5,20 +5,14 @@
 #ifndef CHROME_BROWSER_UI_HOST_DESKTOP_H_
 #define CHROME_BROWSER_UI_HOST_DESKTOP_H_
 
-#include "ui/gfx/native_widget_types.h"
-
-class Browser;
-
 namespace chrome {
 
 // A value that specifies what desktop environment hosts a particular piece of
 // UI.
 // Note that HOST_DESKTOP_TYPE_ASH is always used on ChromeOS.
 enum HostDesktopType {
-  HOST_DESKTOP_TYPE_FIRST = 0,
-
   // The UI is hosted on the system native desktop.
-  HOST_DESKTOP_TYPE_NATIVE = HOST_DESKTOP_TYPE_FIRST,
+  HOST_DESKTOP_TYPE_NATIVE = 0,
 
   // The UI is hosted in the synthetic Ash desktop.
 #if defined(OS_CHROMEOS)
@@ -30,25 +24,13 @@ enum HostDesktopType {
   HOST_DESKTOP_TYPE_COUNT
 };
 
-// Used during initialization to override parenting.
-class ScopedForceDesktopType {
- public:
-  explicit ScopedForceDesktopType(HostDesktopType type);
-  ~ScopedForceDesktopType();
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedForceDesktopType);
-  HostDesktopType previous_type_;
-  bool previous_force_;
-};
-
-HostDesktopType GetHostDesktopTypeForNativeView(gfx::NativeView native_view);
-HostDesktopType GetHostDesktopTypeForNativeWindow(
-    gfx::NativeWindow native_window);
-HostDesktopType GetHostDesktopTypeForBrowser(const Browser* browser);
-
 /*
 TODO(beng): implement utilities as needed, e.g.:
 HostDesktopType GetActiveDesktop();
+HostDesktopType GetHostDesktopTypeForNativeView(gfx::NativeView native_view);
+HostDesktopType GetHostDesktopTypeForNativeWindow(
+    gfx::NativeWindow native_window);
+HostDesktopType GetHostDesktopTypeForBrowser(Browser* browser);
 */
 
 }  // namespace chrome

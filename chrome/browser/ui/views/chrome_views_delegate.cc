@@ -17,6 +17,7 @@
 #include "chrome/common/pref_names.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/views_switches.h"
 #include "ui/views/widget/native_widget.h"
 #include "ui/views/widget/widget.h"
 
@@ -145,14 +146,9 @@ views::NonClientFrameView* ChromeViewsDelegate::CreateDefaultNonClientFrameView(
 
 bool ChromeViewsDelegate::UseTransparentWindows() const {
 #if defined(USE_ASH)
-  // TODO(scottmg): http://crbug.com/133312. This needs context to determine
-  // if it's desktop or ash.
-#if defined(OS_CHROMEOS)
-  return true;
-#else
-  NOTIMPLEMENTED();
-  return false;
-#endif
+  // Ash uses transparent window frames above.
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      views::switches::kDesktopAura);
 #else
   return false;
 #endif
@@ -195,8 +191,8 @@ views::NativeWidget* ChromeViewsDelegate::CreateNativeWidget(
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
   if (parent && type != views::Widget::InitParams::TYPE_MENU)
     return new views::NativeWidgetAura(delegate);
-  if (parent && chrome::GetHostDesktopTypeForNativeView(parent) ==
-      chrome::HOST_DESKTOP_TYPE_NATIVE)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+        views::switches::kDesktopAura))
     return new views::DesktopNativeWidgetAura(delegate);
 #endif
   return NULL;

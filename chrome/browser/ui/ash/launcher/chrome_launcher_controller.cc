@@ -528,8 +528,7 @@ bool ChromeLauncherController::IsLoggedInAsGuest() {
 }
 
 void ChromeLauncherController::CreateNewWindow() {
-  chrome::NewEmptyWindow(
-      GetProfileForNewWindows(), chrome::HOST_DESKTOP_TYPE_ASH);
+  chrome::NewEmptyWindow(GetProfileForNewWindows());
 }
 
 void ChromeLauncherController::CreateNewIncognitoWindow() {

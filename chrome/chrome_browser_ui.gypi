@@ -1096,8 +1096,6 @@
         'browser/ui/gtk/website_settings/website_settings_popup_gtk.h',
         'browser/ui/gtk/zoom_bubble_gtk.cc',
         'browser/ui/gtk/zoom_bubble_gtk.h',
-        'browser/ui/host_desktop.cc',
-        'browser/ui/host_desktop.h',
         'browser/ui/hung_plugin_tab_helper.cc',
         'browser/ui/hung_plugin_tab_helper.h',
         'browser/ui/intents/web_intent_icon_loader.h',
