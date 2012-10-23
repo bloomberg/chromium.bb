@@ -659,7 +659,7 @@ chromium_info = chromium_pfq.derive(
 )
 
 chrome_info = chromium_info.derive(
-  official,
+  internal, official,
 )
 
 chrome_perf = chrome_info.derive(
