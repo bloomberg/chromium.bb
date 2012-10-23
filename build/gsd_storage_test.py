@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Tests of a network memoizer."""
+"""Tests of a Google Storage reader/writer."""
 
 import file_tools
 import gsd_storage
@@ -27,7 +27,9 @@ class TestGSDStorage(unittest.TestCase):
         write_bucket='mybucket',
         read_buckets=[],
         gsutil=['mygsutil'], call=call)
-    storage.PutData('foo', 'bar')
+    url = storage.PutData('foo', 'bar')
+    self.assertEquals('https://commondatastorage.googleapis.com/mybucket/bar',
+                      url)
 
   def test_PutFile(self):
     # As we control all the paths, check the full command line for PutFile.
@@ -41,13 +43,16 @@ class TestGSDStorage(unittest.TestCase):
         write_bucket='mybucket',
         read_buckets=[],
         gsutil=['mygsutil'], call=call)
-    storage.PutFile(path, 'bar')
+    url = storage.PutFile(path, 'bar')
+    self.assertEquals('https://commondatastorage.googleapis.com/mybucket/bar',
+                      url)
 
   def test_PutFails(self):
     def call(cmd):
       return 1
     # Mock out running gsutil, have it fail, and check that it does.
     storage = gsd_storage.GSDStorage(
+        gsutil=['mygsutil'],
         write_bucket='mybucket',
         read_buckets=[],
         call=call)
@@ -59,6 +64,7 @@ class TestGSDStorage(unittest.TestCase):
   def test_PutNoBucket(self):
     # Check that we raise when writing an no bucket is provided.
     storage = gsd_storage.GSDStorage(
+        gsutil=['mygsutil'],
         write_bucket=None,
         read_buckets=[])
     self.assertRaises(gsd_storage.GSDStorageError,
@@ -74,6 +80,7 @@ class TestGSDStorage(unittest.TestCase):
           'https://commondatastorage.googleapis.com/mybucket/bar', url)
     # Mock out download and confirm we download the expected URL.
     storage = gsd_storage.GSDStorage(
+        gsutil=['mygsutil'],
         write_bucket='mybucket',
         read_buckets=['mybucket'],
         download=download)
@@ -86,6 +93,7 @@ class TestGSDStorage(unittest.TestCase):
       file_tools.WriteFile('baz', target)
     # Mock out download and confirm we download the expected URL.
     storage = gsd_storage.GSDStorage(
+        gsutil=['mygsutil'],
         write_bucket='mybucket',
         read_buckets=['mybucket'],
         download=download)
@@ -96,6 +104,7 @@ class TestGSDStorage(unittest.TestCase):
       raise Exception('fail download %s to %s' % (url, target))
     # Make download raise and confirm this gets intercepted.
     storage = gsd_storage.GSDStorage(
+        gsutil=['mygsutil'],
         write_bucket='mybucket',
         read_buckets=['mybucket'],
         download=download)
@@ -110,6 +119,7 @@ class TestGSDStorage(unittest.TestCase):
       else:
         file_tools.WriteFile('bar', target)
     storage = gsd_storage.GSDStorage(
+        gsutil=['mygsutil'],
         write_bucket='mybucket',
         read_buckets=['badbucket', 'goodbucket'],
         download=download)

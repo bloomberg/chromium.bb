@@ -54,10 +54,11 @@ class TestDirectoryStorage(unittest.TestCase):
       self.assertEqual(url1, url2)
       self.assertIsNotNone(url1)
 
-  def test_BadRead(self):
+  def test_BadWrite(self):
     def call(cmd):
       return 1
     storage = gsd_storage.GSDStorage(
+        gsutil=['mygsutil'],
         write_bucket='mybucket',
         read_buckets=[],
         call=call)
@@ -67,7 +68,7 @@ class TestDirectoryStorage(unittest.TestCase):
       temp1 = os.path.join(work_dir, 'temp1')
       hashing_tools_test.GenerateTestTree('bad_write', temp1)
       self.assertRaises(gsd_storage.GSDStorageError,
-                        self._dir_storage.PutDirectory, temp1, 'bad')
+                        dir_storage.PutDirectory, temp1, 'bad')
 
   def test_BadRead(self):
     # Check that storage exceptions come thru on failure.

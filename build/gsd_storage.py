@@ -77,6 +77,8 @@ class GSDStorage(object):
       key: Key to store file under.
     Raises:
       GSDStorageError if the underlying storage fails.
+    Returns:
+      URL written to.
     """
     if self._write_bucket is None:
       raise GSDStorageError('no bucket when storing %s to %s' % (path, key))
@@ -96,12 +98,14 @@ class GSDStorage(object):
       key: Key to store file under.
     Raises:
       GSDStorageError if the underlying storage fails.
+    Returns:
+      URL written to.
     """
     handle, path = tempfile.mkstemp(prefix='gdstore', suffix='.tmp')
     try:
       os.close(handle)
       file_tools.WriteFile(data, path)
-      self.PutFile(path, key)
+      return self.PutFile(path, key)
     finally:
       os.remove(path)
 

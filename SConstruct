@@ -1888,6 +1888,7 @@ def MakeBaseTrustedEnv():
 
   base_env.Append(BUILD_SCONSCRIPTS = [
       # KEEP THIS SORTED PLEASE
+      'build/build.scons',
       'src/shared/gio/build.scons',
       'src/shared/imc/build.scons',
       'src/shared/ldr/build.scons',

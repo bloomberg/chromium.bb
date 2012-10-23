@@ -1,0 +1,11 @@
+# -*- python -*-
+# Copyright 2012 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+
+Import('env')
+
+node = env.Command('run_build_tests.out', 'run_build_tests.py',
+                   '${PYTHON} ${SOURCE}')
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_build_tests')
