@@ -511,9 +511,11 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenStatusOrLauncherFocused) {
 // state,and toggling app list won't change shelf visibility state.
 TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfVisibleState) {
   Shell* shell = Shell::GetInstance();
+  internal::RootWindowController* controller =
+      Shell::GetPrimaryRootWindowController();
   ShelfLayoutManager* shelf = shelf_layout_manager();
   shelf->LayoutShelf();
-  shell->SetShelfAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  controller->SetShelfAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
 
   // Create a normal unmaximized windowm shelf should be visible.
   aura::Window* window = CreateTestWindow();
@@ -539,8 +541,10 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfVisibleState) {
 TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfAutoHideState) {
   Shell* shell = Shell::GetInstance();
   ShelfLayoutManager* shelf = shelf_layout_manager();
+  internal::RootWindowController* controller =
+      Shell::GetPrimaryRootWindowController();
   shelf->LayoutShelf();
-  shell->SetShelfAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  controller->SetShelfAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
   // Create a window and show it in maximized state.
   aura::Window* window = CreateTestWindow();
@@ -660,7 +664,9 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
 
 TEST_F(ShelfLayoutManagerTest, GestureDrag) {
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  internal::RootWindowController* controller =
+      Shell::GetPrimaryRootWindowController();
+  controller->SetShelfAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   shelf->LayoutShelf();
 
   views::Widget* widget = new views::Widget;

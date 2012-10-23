@@ -13,6 +13,10 @@
 
 class ChromeLauncherController;
 
+namespace aura {
+class RootWindow;
+}
+
 namespace extensions {
 class ContextMenuMatcher;
 }
@@ -24,8 +28,14 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
   // |item| is NULL if the context menu is for the launcher (the user right
   // |clicked on an area with no icons).
   LauncherContextMenu(ChromeLauncherController* controller,
-                      const ash::LauncherItem* item);
+                      const ash::LauncherItem* item,
+                      aura::RootWindow* root_window);
+  // Creates a menu used as a desktop context menu on |root_window|.
+  LauncherContextMenu(ChromeLauncherController* controller,
+                      aura::RootWindow* root_window);
   virtual ~LauncherContextMenu();
+
+  void Init();
 
   // ID of the item we're showing the context menu for.
   ash::LauncherID id() const { return item_.id; }
@@ -64,9 +74,11 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
 
   ash::LauncherItem item_;
 
-  ash::LauncherAlignmentMenu alignment_menu_;
+  ash::LauncherAlignmentMenu launcher_alignment_menu_;
 
   scoped_ptr<extensions::ContextMenuMatcher> extension_items_;
+
+  aura::RootWindow* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherContextMenu);
 };

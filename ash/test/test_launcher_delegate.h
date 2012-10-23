@@ -40,8 +40,8 @@ class TestLauncherDelegate : public LauncherDelegate,
                            int event_flags) OVERRIDE;
   virtual int GetBrowserShortcutResourceId() OVERRIDE;
   virtual string16 GetTitle(const LauncherItem& item) OVERRIDE;
-  virtual ui::MenuModel* CreateContextMenu(const LauncherItem& item) OVERRIDE;
-  virtual ui::MenuModel* CreateContextMenuForLauncher() OVERRIDE;
+  virtual ui::MenuModel* CreateContextMenu(const LauncherItem& item,
+                                           aura::RootWindow* root) OVERRIDE;
   virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE;
   virtual bool IsDraggable(const ash::LauncherItem& item) OVERRIDE;
 

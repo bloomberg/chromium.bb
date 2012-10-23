@@ -221,7 +221,8 @@ class ChromeLauncherController
 
   Profile* profile() { return profile_; }
 
-  void SetAutoHideBehavior(ash::ShelfAutoHideBehavior behavior);
+  void SetAutoHideBehavior(ash::ShelfAutoHideBehavior behavior,
+                           aura::RootWindow* root_window);
 
   // The tab no longer represents its previously identified application.
   void RemoveTabFromRunningApp(TabContents* tab, const std::string& app_id);
@@ -243,8 +244,7 @@ class ChromeLauncherController
   virtual int GetBrowserShortcutResourceId() OVERRIDE;
   virtual string16 GetTitle(const ash::LauncherItem& item) OVERRIDE;
   virtual ui::MenuModel* CreateContextMenu(
-      const ash::LauncherItem& item) OVERRIDE;
-  virtual ui::MenuModel* CreateContextMenuForLauncher() OVERRIDE;
+      const ash::LauncherItem& item, aura::RootWindow* root) OVERRIDE;
   virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE;
   virtual bool IsDraggable(const ash::LauncherItem& item) OVERRIDE;
 

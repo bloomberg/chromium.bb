@@ -21,6 +21,8 @@ namespace views {
 class View;
 }
 
+class ChromeLauncherController;
+
 class ChromeShellDelegate : public ash::ShellDelegate,
                             public content::NotificationObserver {
  public:
@@ -71,6 +73,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   virtual string16 GetTimeRemainingString(base::TimeDelta delta) OVERRIDE;
   virtual void SaveScreenMagnifierScale(double scale) OVERRIDE;
   virtual double GetSavedScreenMagnifierScale() OVERRIDE;
+  virtual ui::MenuModel* CreateContextMenu(aura::RootWindow* root) OVERRIDE;
 
   // content::NotificationObserver override:
   virtual void Observe(int type,
@@ -85,6 +88,8 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   scoped_ptr<ash::WindowPositioner> window_positioner_;
 
   base::WeakPtrFactory<ChromeShellDelegate> weak_factory_;
+
+  ChromeLauncherController* launcher_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeShellDelegate);
 };

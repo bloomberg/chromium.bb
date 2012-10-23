@@ -4,7 +4,6 @@
 
 #include "ash/shell/launcher_delegate_impl.h"
 
-#include "ash/launcher/launcher_context_menu.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/shell/window_watcher.h"
 #include "ash/wm/window_util.h"
@@ -45,12 +44,9 @@ string16 LauncherDelegateImpl::GetTitle(const ash::LauncherItem& item) {
 }
 
 ui::MenuModel* LauncherDelegateImpl::CreateContextMenu(
-    const ash::LauncherItem& item) {
+    const ash::LauncherItem& item,
+    aura::RootWindow* root_window) {
   return NULL;
-}
-
-ui::MenuModel* LauncherDelegateImpl::CreateContextMenuForLauncher() {
-  return new LauncherContextMenu;
 }
 
 ash::LauncherID LauncherDelegateImpl::GetIDByWindow(aura::Window* window) {

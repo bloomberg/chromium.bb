@@ -543,8 +543,15 @@ bool ChromeLauncherController::CanPin() const {
 }
 
 void ChromeLauncherController::SetAutoHideBehavior(
-    ash::ShelfAutoHideBehavior behavior) {
-  ash::Shell::GetInstance()->SetShelfAutoHideBehavior(behavior);
+    ash::ShelfAutoHideBehavior behavior,
+    aura::RootWindow* root_window) {
+  ash::Shell::GetInstance()->SetShelfAutoHideBehavior(
+      behavior,
+      root_window);
+  // TODO(oshima): Support multiple launcher.
+  if (root_window != ash::Shell::GetPrimaryRootWindow())
+    return;
+
   const char* value = NULL;
   switch (behavior) {
     case ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS:
@@ -684,12 +691,9 @@ string16 ChromeLauncherController::GetTitle(const ash::LauncherItem& item) {
 }
 
 ui::MenuModel* ChromeLauncherController::CreateContextMenu(
-    const ash::LauncherItem& item) {
-  return new LauncherContextMenu(this, &item);
-}
-
-ui::MenuModel* ChromeLauncherController::CreateContextMenuForLauncher() {
-  return new LauncherContextMenu(this, NULL);
+    const ash::LauncherItem& item,
+    aura::RootWindow* root_window) {
+  return new LauncherContextMenu(this, &item, root_window);
 }
 
 ash::LauncherID ChromeLauncherController::GetIDByWindow(
@@ -771,7 +775,9 @@ void ChromeLauncherController::Observe(
 
 void ChromeLauncherController::OnShelfAlignmentChanged() {
   const char* pref_value = NULL;
-  switch (ash::Shell::GetInstance()->GetShelfAlignment()) {
+  // TODO(oshima): Support multiple displays.
+  switch (ash::Shell::GetInstance()->GetShelfAlignment(
+      ash::Shell::GetPrimaryRootWindow())) {
     case ash::SHELF_ALIGNMENT_BOTTOM:
       pref_value = ash::kShelfAlignmentBottom;
       break;
@@ -954,7 +960,9 @@ void ChromeLauncherController::SetShelfAutoHideBehaviorFromPrefs() {
       ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
   if (behavior_value == ash::kShelfAutoHideBehaviorAlways)
     behavior = ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
-  ash::Shell::GetInstance()->SetShelfAutoHideBehavior(behavior);
+  // TODO(oshima): Support multiple displays.
+  ash::Shell::GetInstance()->SetShelfAutoHideBehavior(
+      behavior, ash::Shell::GetPrimaryRootWindow());
 }
 
 void ChromeLauncherController::SetShelfAlignmentFromPrefs() {
@@ -969,7 +977,9 @@ void ChromeLauncherController::SetShelfAlignmentFromPrefs() {
     alignment = ash::SHELF_ALIGNMENT_LEFT;
   else if (alignment_value == ash::kShelfAlignmentRight)
     alignment = ash::SHELF_ALIGNMENT_RIGHT;
-  ash::Shell::GetInstance()->SetShelfAlignment(alignment);
+  // TODO(oshima): Support multiple displays.
+  ash::Shell::GetInstance()->SetShelfAlignment(
+      alignment, ash::Shell::GetPrimaryRootWindow());
 }
 
 TabContents* ChromeLauncherController::GetLastActiveTabContents(

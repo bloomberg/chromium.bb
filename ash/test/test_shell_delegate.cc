@@ -152,6 +152,10 @@ string16 TestShellDelegate::GetTimeRemainingString(base::TimeDelta delta) {
 void TestShellDelegate::SaveScreenMagnifierScale(double scale) {
 }
 
+ui::MenuModel* TestShellDelegate::CreateContextMenu(aura::RootWindow* root) {
+  return NULL;
+}
+
 double TestShellDelegate::GetSavedScreenMagnifierScale() {
   return std::numeric_limits<double>::min();
 }

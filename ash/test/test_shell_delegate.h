@@ -54,6 +54,7 @@ class TestShellDelegate : public ShellDelegate {
   virtual string16 GetTimeRemainingString(base::TimeDelta delta) OVERRIDE;
   virtual void SaveScreenMagnifierScale(double scale) OVERRIDE;
   virtual double GetSavedScreenMagnifierScale() OVERRIDE;
+  virtual ui::MenuModel* CreateContextMenu(aura::RootWindow* root) OVERRIDE;
 
   int num_exit_requests() const { return num_exit_requests_; }
  private:

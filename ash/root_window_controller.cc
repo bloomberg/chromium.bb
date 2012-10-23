@@ -40,8 +40,13 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/base/models/menu_model.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
+#include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/view_model.h"
+#include "ui/views/view_model_utils.h"
 
 namespace ash {
 namespace {
@@ -404,6 +409,28 @@ void RootWindowController::MoveWindowsTo(aura::RootWindow* dst) {
   }
 }
 
+void RootWindowController::ShowContextMenu(
+    const gfx::Point& location_in_screen) {
+  aura::RootWindow* target = Shell::IsLauncherPerDisplayEnabled() ?
+      root_window() : Shell::GetPrimaryRootWindow();
+  DCHECK(Shell::GetInstance()->delegate());
+  scoped_ptr<ui::MenuModel> menu_model(
+      Shell::GetInstance()->delegate()->CreateContextMenu(target));
+
+  views::MenuModelAdapter menu_model_adapter(menu_model.get());
+  views::MenuRunner menu_runner(menu_model_adapter.CreateMenu());
+  views::Widget* widget =
+      root_window_->GetProperty(kDesktopController)->widget();
+
+  if (menu_runner.RunMenuAt(
+          widget, NULL, gfx::Rect(location_in_screen, gfx::Size()),
+          views::MenuItemView::TOPLEFT, views::MenuRunner::CONTEXT_MENU) ==
+      views::MenuRunner::MENU_DELETED)
+    return;
+
+  Shell::GetInstance()->UpdateShelfVisibility();
+}
+
 void RootWindowController::UpdateShelfVisibility() {
   shelf_->UpdateVisibilityState();
 }
@@ -423,6 +450,17 @@ bool RootWindowController::SetShelfAlignment(ShelfAlignment alignment) {
 
 ShelfAlignment RootWindowController::GetShelfAlignment() {
   return shelf_->alignment();
+}
+
+bool RootWindowController::IsShelfAutoHideMenuHideChecked() {
+  return GetShelfAutoHideBehavior() == ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
+}
+
+ShelfAutoHideBehavior
+RootWindowController::GetToggledShelfAutoHideBehavior() {
+  return IsShelfAutoHideMenuHideChecked() ?
+      ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER :
+      ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

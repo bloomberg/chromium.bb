@@ -97,8 +97,9 @@ typedef test::AshTestBase RootWindowControllerTest;
 TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   UpdateDisplay("600x600,500x500");
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  ash::Shell::GetInstance()->SetShelfAutoHideBehavior(
-      ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  internal::RootWindowController* controller =
+      Shell::GetPrimaryRootWindowController();
+  controller->SetShelfAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
   views::Widget* normal = CreateTestWidget(gfx::Rect(650, 10, 100, 100));
   EXPECT_EQ(root_windows[1], normal->GetNativeView()->GetRootWindow());

@@ -13,6 +13,10 @@
 
 class SkBitmap;
 
+namespace gfx {
+class Point;
+}
+
 namespace aura {
 class EventFilter;
 class RootWindow;
@@ -72,6 +76,10 @@ class ASH_EXPORT RootWindowController {
   StatusAreaWidget* status_area_widget() const {
     return status_area_widget_;
   }
+
+  // Shows context menu at the |location_in_screen|. This uses
+  // |ShellDelegate::CreateContextMenu| to define the content of the menu.
+  void ShowContextMenu(const gfx::Point& location_in_screen);
 
   // Returns the layout-manager for the appropriate modal-container. If the
   // window is inside the lockscreen modal container, then the layout manager
@@ -135,7 +143,11 @@ class ASH_EXPORT RootWindowController {
   bool SetShelfAlignment(ShelfAlignment alignment);
   ShelfAlignment GetShelfAlignment();
 
-private:
+  // Get the shelf's auto hide status.
+  bool IsShelfAutoHideMenuHideChecked();
+  ShelfAutoHideBehavior GetToggledShelfAutoHideBehavior();
+
+ private:
   // Creates each of the special window containers that holds windows of various
   // types in the shell UI.
   void CreateContainersInRootWindow(aura::RootWindow* root_window);

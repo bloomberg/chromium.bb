@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/ash/app_list/app_list_controller_ash.h"
 #include "chrome/browser/ui/ash/caps_lock_handler.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/user_action_handler.h"
 #include "chrome/browser/ui/ash/window_positioner.h"
 #include "chrome/browser/ui/browser.h"
@@ -77,7 +78,8 @@ ChromeShellDelegate* ChromeShellDelegate::instance_ = NULL;
 
 ChromeShellDelegate::ChromeShellDelegate()
     : window_positioner_(new ash::WindowPositioner()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      launcher_delegate_(NULL) {
   instance_ = this;
 #if defined(OS_CHROMEOS)
   registrar_.Add(
@@ -330,10 +332,14 @@ app_list::AppListViewDelegate*
 
 ash::LauncherDelegate* ChromeShellDelegate::CreateLauncherDelegate(
     ash::LauncherModel* model) {
-  ChromeLauncherController* controller =
-      new ChromeLauncherController(NULL, model);
-  controller->Init();
-  return controller;
+  // TODO(oshima): This is currently broken with multiple launchers.
+  // Refactor so that there is just one launcher delegate in the
+  // shell.
+  if (!launcher_delegate_) {
+    launcher_delegate_ = new ChromeLauncherController(NULL, model);
+    launcher_delegate_->Init();
+  }
+  return launcher_delegate_;
 }
 
 ash::SystemTrayDelegate* ChromeShellDelegate::CreateSystemTrayDelegate(
@@ -448,6 +454,11 @@ double ChromeShellDelegate::GetSavedScreenMagnifierScale() {
     return profile->GetPrefs()->GetDouble(prefs::kScreenMagnifierScale);
 #endif
   return std::numeric_limits<double>::min();
+}
+
+ui::MenuModel* ChromeShellDelegate::CreateContextMenu(aura::RootWindow* root) {
+  DCHECK(launcher_delegate_);
+  return new LauncherContextMenu(launcher_delegate_, root);
 }
 
 void ChromeShellDelegate::Observe(int type,

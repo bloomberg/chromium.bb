@@ -44,9 +44,11 @@ ui::Layer* GetLayer(views::Widget* widget) {
 }
 
 // Gets arrow location based on shelf alignment.
-views::BubbleBorder::ArrowLocation GetBubbleArrowLocation() {
+views::BubbleBorder::ArrowLocation GetBubbleArrowLocation(
+    aura::Window* window) {
   DCHECK(Shell::HasInstance());
-  ShelfAlignment shelf_alignment = Shell::GetInstance()->GetShelfAlignment();
+  ShelfAlignment shelf_alignment = Shell::GetInstance()->GetShelfAlignment(
+      window->GetRootWindow());
   switch (shelf_alignment) {
     case ash::SHELF_ALIGNMENT_BOTTOM:
       return views::BubbleBorder::BOTTOM_CENTER;
@@ -61,9 +63,10 @@ views::BubbleBorder::ArrowLocation GetBubbleArrowLocation() {
 }
 
 // Offset given |rect| towards shelf.
-gfx::Rect OffsetTowardsShelf(const gfx::Rect& rect) {
+gfx::Rect OffsetTowardsShelf(const gfx::Rect& rect, views::Widget* widget) {
   DCHECK(Shell::HasInstance());
-  ShelfAlignment shelf_alignment = Shell::GetInstance()->GetShelfAlignment();
+  ShelfAlignment shelf_alignment = Shell::GetInstance()->GetShelfAlignment(
+      widget->GetNativeView()->GetRootWindow());
   gfx::Rect offseted(rect);
   switch (shelf_alignment) {
     case SHELF_ALIGNMENT_BOTTOM:
@@ -124,13 +127,16 @@ void AppListController::SetVisible(bool visible) {
     // will be released with AppListView on close.
     app_list::AppListView* view = new app_list::AppListView(
         Shell::GetInstance()->delegate()->CreateAppListViewDelegate());
+    // TODO(oshima): support multiple displays.
+    aura::Window* container = Shell::GetPrimaryRootWindowController()->
+        GetContainer(kShellWindowId_AppListContainer);
     view->InitAsBubble(
         Shell::GetPrimaryRootWindowController()->GetContainer(
             kShellWindowId_AppListContainer),
         pagination_model_.get(),
         Launcher::ForWindow(GetWindow())->GetAppListButtonView(),
         gfx::Point(),
-        GetBubbleArrowLocation());
+        GetBubbleArrowLocation(container));
     SetView(view);
   }
 }
@@ -191,9 +197,10 @@ void AppListController::ScheduleAnimation() {
   gfx::Rect target_bounds;
   if (is_visible_) {
     target_bounds = widget->GetWindowBoundsInScreen();
-    widget->SetBounds(OffsetTowardsShelf(target_bounds));
+    widget->SetBounds(OffsetTowardsShelf(target_bounds, widget));
   } else {
-    target_bounds = OffsetTowardsShelf(widget->GetWindowBoundsInScreen());
+    target_bounds = OffsetTowardsShelf(widget->GetWindowBoundsInScreen(),
+                                       widget);
   }
 
   ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
@@ -308,8 +315,10 @@ void AppListController::OnWidgetClosing(views::Widget* widget) {
 ////////////////////////////////////////////////////////////////////////////////
 // AppListController, ShellObserver implementation:
 void AppListController::OnShelfAlignmentChanged() {
-  if (view_)
-    view_->SetBubbleArrowLocation(GetBubbleArrowLocation());
+  if (view_) {
+    view_->SetBubbleArrowLocation(GetBubbleArrowLocation(
+        view_->GetWidget()->GetNativeView()));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

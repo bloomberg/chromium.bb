@@ -9,6 +9,10 @@
 #include "ash/launcher/launcher_types.h"
 #include "base/string16.h"
 
+namespace aura {
+class RootWindow;
+}
+
 namespace ui {
 class MenuModel;
 }
@@ -37,14 +41,11 @@ class ASH_EXPORT LauncherDelegate {
   // Returns the title to display for the specified launcher item.
   virtual string16 GetTitle(const LauncherItem& item) = 0;
 
-  // Returns the context menumodel for the specified item. Return NULL if there
-  // should be no context menu. The caller takes ownership of the returned
-  // model.
-  virtual ui::MenuModel* CreateContextMenu(const LauncherItem& item) = 0;
-
-  // Returns the context menumodel for the launcher. Return NULL if there should
-  // be no context menu. The caller takes ownership of the returned model.
-  virtual ui::MenuModel* CreateContextMenuForLauncher() = 0;
+  // Returns the context menumodel for the specified item on
+  // |root_window|.  Return NULL if there should be no context
+  // menu. The caller takes ownership of the returned model.
+  virtual ui::MenuModel* CreateContextMenu(const LauncherItem& item,
+                                           aura::RootWindow* root_window) = 0;
 
   // Returns the id of the item associated with the specified window, or 0 if
   // there isn't one.

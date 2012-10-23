@@ -16,6 +16,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/root_window_layout_manager.h"
 #include "ash/wm/shelf_layout_manager.h"
+#include "ash/wm/window_util.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
@@ -389,6 +390,41 @@ TEST_F(ShellTest, SystemBackgroundBehindDesktopBackground) {
   }
   EXPECT_TRUE(false) <<
       "system background and desktop background need to have a common parent";
+}
+
+// Various assertions around IsAutoHideMenuHideChecked() and
+// ToggleAutoHideMenu().
+TEST_F(ShellTest, ToggleAutoHide) {
+  scoped_ptr<aura::Window> window(new aura::Window(NULL));
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  window->SetType(aura::client::WINDOW_TYPE_NORMAL);
+  window->Init(ui::LAYER_TEXTURED);
+  window->SetParent(NULL);
+  window->Show();
+  wm::ActivateWindow(window.get());
+
+  internal::RootWindowController* controller =
+      Shell::GetPrimaryRootWindowController();
+  controller->SetShelfAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  EXPECT_EQ(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
+            controller->GetShelfAutoHideBehavior());
+  EXPECT_TRUE(controller->IsShelfAutoHideMenuHideChecked());
+  controller->SetShelfAutoHideBehavior(
+      controller->GetToggledShelfAutoHideBehavior());
+  EXPECT_EQ(ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
+            controller->GetShelfAutoHideBehavior());
+
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  EXPECT_FALSE(controller->IsShelfAutoHideMenuHideChecked());
+  controller->SetShelfAutoHideBehavior(
+      controller->GetToggledShelfAutoHideBehavior());
+  EXPECT_EQ(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
+            controller->GetShelfAutoHideBehavior());
+  EXPECT_TRUE(controller->IsShelfAutoHideMenuHideChecked());
+  controller->SetShelfAutoHideBehavior(
+      controller->GetToggledShelfAutoHideBehavior());
+  EXPECT_EQ(ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
+            controller->GetShelfAutoHideBehavior());
 }
 
 // This verifies WindowObservers are removed when a window is destroyed after

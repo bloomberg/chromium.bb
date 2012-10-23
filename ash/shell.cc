@@ -20,7 +20,6 @@
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/focus_cycler.h"
 #include "ash/high_contrast/high_contrast_controller.h"
-#include "ash/launcher/launcher.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
@@ -511,16 +510,17 @@ void Shell::RemoveEnvEventFilter(aura::EventFilter* filter) {
   aura::Env::GetInstance()->RemovePreTargetHandler(filter);
 }
 
-void Shell::ShowContextMenu(const gfx::Point& location) {
+void Shell::ShowContextMenu(const gfx::Point& location_in_screen) {
   // No context menus if user have not logged in.
   if (!delegate_.get() || !delegate_->IsUserLoggedIn())
     return;
   // No context menus when screen is locked.
   if (IsScreenLocked())
     return;
+
   aura::RootWindow* root =
-      wm::GetRootWindowMatching(gfx::Rect(location, gfx::Size()));
-  Launcher::ForWindow(root)->ShowContextMenu(location);
+      wm::GetRootWindowMatching(gfx::Rect(location_in_screen, gfx::Size()));
+  GetRootWindowController(root)->ShowContextMenu(location_in_screen);
 }
 
 void Shell::ToggleAppList() {
@@ -621,26 +621,42 @@ void Shell::RemoveShellObserver(ShellObserver* observer) {
 }
 
 void Shell::UpdateShelfVisibility() {
-  // TODO(oshima): Update all root windows.
-  GetPrimaryRootWindowController()->UpdateShelfVisibility();
+  RootWindowControllerList controllers = GetAllRootWindowControllers();
+  for (RootWindowControllerList::iterator iter = controllers.begin();
+       iter != controllers.end(); ++iter)
+    if ((*iter)->shelf())
+      (*iter)->UpdateShelfVisibility();
 }
 
-void Shell::SetShelfAutoHideBehavior(ShelfAutoHideBehavior behavior) {
-  GetPrimaryRootWindowController()->SetShelfAutoHideBehavior(behavior);
+void Shell::SetShelfAutoHideBehavior(ShelfAutoHideBehavior behavior,
+                                     aura::RootWindow* root_window) {
+  GetRootWindowController(root_window)->SetShelfAutoHideBehavior(behavior);
 }
 
-ShelfAutoHideBehavior Shell::GetShelfAutoHideBehavior() const {
-  return GetPrimaryRootWindowController()->GetShelfAutoHideBehavior();
+ShelfAutoHideBehavior Shell::GetShelfAutoHideBehavior(
+    aura::RootWindow* root_window) const {
+  return GetRootWindowController(root_window)->GetShelfAutoHideBehavior();
 }
 
-void Shell::SetShelfAlignment(ShelfAlignment alignment) {
-  if (GetPrimaryRootWindowController()->SetShelfAlignment(alignment)) {
+bool Shell::IsShelfAutoHideMenuHideChecked(aura::RootWindow* root_window) {
+  return GetRootWindowController(root_window)->GetShelfAutoHideBehavior() ==
+      ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
+}
+
+ShelfAutoHideBehavior Shell::GetToggledShelfAutoHideBehavior(
+    aura::RootWindow* root_window) {
+  return GetRootWindowController(root_window)->
+      GetToggledShelfAutoHideBehavior();
+}
+
+void Shell::SetShelfAlignment(ShelfAlignment alignment,
+                              aura::RootWindow* root_window) {
+  if (GetRootWindowController(root_window)->SetShelfAlignment(alignment))
     FOR_EACH_OBSERVER(ShellObserver, observers_, OnShelfAlignmentChanged());
-  }
 }
 
-ShelfAlignment Shell::GetShelfAlignment() {
-  return GetPrimaryRootWindowController()->GetShelfAlignment();
+ShelfAlignment Shell::GetShelfAlignment(aura::RootWindow* root_window) {
+  return GetRootWindowController(root_window)->GetShelfAlignment();
 }
 
 void Shell::SetDimming(bool should_dim) {

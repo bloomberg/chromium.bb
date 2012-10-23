@@ -2,32 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_LAUNCHER_LAUNCHER_CONTEXT_MENU_H_
-#define ASH_WM_LAUNCHER_LAUNCHER_CONTEXT_MENU_H_
+#ifndef ASH_WM_SHELL_CONTEXT_MENU_H_
+#define ASH_WM_SHELL_CONTEXT_MENU_H_
 
-#include "ash/ash_export.h"
 #include "ash/launcher/launcher_alignment_menu.h"
 #include "ash/wm/shelf_types.h"
 #include "base/basictypes.h"
 #include "ui/base/models/simple_menu_model.h"
 
+namespace aura {
+class RootWindow;
+}
+
 namespace ash {
+namespace shell {
 
-// Context menu for the launcher.
-class ASH_EXPORT LauncherContextMenu : public ui::SimpleMenuModel,
-                                       public ui::SimpleMenuModel::Delegate {
+// Context menu for the ash_shell.
+class ContextMenu : public ui::SimpleMenuModel,
+                    public ui::SimpleMenuModel::Delegate {
  public:
-  LauncherContextMenu();
-  virtual ~LauncherContextMenu();
-
-  // Returns true if the auto-hide menu item is checked.
-  static bool IsAutoHideMenuHideChecked();
-
-  // Returns the toggled state of the auto-hide behavior.
-  static ShelfAutoHideBehavior GetToggledAutoHideBehavior();
-
-  // Returns the resource id for the auto-hide menu.
-  static int GetAutoHideResourceStringId();
+  explicit ContextMenu(aura::RootWindow* root);
+  virtual ~ContextMenu();
 
   // ui::SimpleMenuModel::Delegate overrides:
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
@@ -43,11 +38,14 @@ class ASH_EXPORT LauncherContextMenu : public ui::SimpleMenuModel,
     MENU_ALIGNMENT_MENU,
   };
 
+  aura::RootWindow* root_window_;
+
   LauncherAlignmentMenu alignment_menu_;
 
-  DISALLOW_COPY_AND_ASSIGN(LauncherContextMenu);
+  DISALLOW_COPY_AND_ASSIGN(ContextMenu);
 };
 
+}  // namespace shell
 }  // namespace ash
 
-#endif  // ASH_WM_LAUNCHER_LAUNCHER_CONTEXT_MENU_H_
+#endif  // ASH_WM_SHELL_CONTEXT_MENU_H_

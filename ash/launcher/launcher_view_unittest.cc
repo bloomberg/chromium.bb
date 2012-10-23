@@ -154,10 +154,8 @@ class MockLauncherDelegate : public ash::LauncherDelegate {
     return string16();
   }
   virtual ui::MenuModel* CreateContextMenu(
-      const ash::LauncherItem& item) OVERRIDE {
-    return NULL;
-  }
-  virtual ui::MenuModel* CreateContextMenuForLauncher() OVERRIDE {
+      const ash::LauncherItem& item,
+      aura::RootWindow* root_window) OVERRIDE {
     return NULL;
   }
   virtual ash::LauncherID GetIDByWindow(aura::Window* window) OVERRIDE {

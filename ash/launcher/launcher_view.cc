@@ -21,6 +21,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "grit/ash_strings.h"
 #include "grit/ash_resources.h"
+#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -34,6 +35,7 @@
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"
+#include "ui/views/widget/widget.h"
 
 using ui::Animation;
 using views::View;
@@ -1040,10 +1042,13 @@ void LauncherView::ShowContextMenuForView(views::View* source,
     view_index = -1;
   }
 #if !defined(OS_MACOSX)
-  scoped_ptr<ui::MenuModel> menu_model(
-      view_index == -1 ?
-          delegate_->CreateContextMenuForLauncher() :
-          delegate_->CreateContextMenu(model_->items()[view_index]));
+  if (view_index == -1) {
+    Shell::GetInstance()->ShowContextMenu(point);
+    return;
+  }
+  scoped_ptr<ui::MenuModel> menu_model(delegate_->CreateContextMenu(
+      model_->items()[view_index],
+      source->GetWidget()->GetNativeView()->GetRootWindow()));
   if (!menu_model.get())
     return;
   AutoReset<LauncherID> reseter(

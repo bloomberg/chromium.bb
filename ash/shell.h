@@ -198,8 +198,8 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate{
   void RemoveEnvEventFilter(aura::EventFilter* filter);
 
   // Shows the context menu for the background and launcher at
-  // |location| (in screen coordinates).
-  void ShowContextMenu(const gfx::Point& location);
+  // |location_in_screen| (in screen coordinates).
+  void ShowContextMenu(const gfx::Point& location_in_screen);
 
   // Toggles app list.
   void ToggleAppList();
@@ -330,12 +330,23 @@ class ASH_EXPORT Shell : internal::SystemModalContainerEventFilterDelegate{
   // Force the shelf to query for it's current visibility state.
   void UpdateShelfVisibility();
 
-  // Sets/gets the shelf auto-hide behavior.
-  void SetShelfAutoHideBehavior(ShelfAutoHideBehavior behavior);
-  ShelfAutoHideBehavior GetShelfAutoHideBehavior() const;
+  // TODO(oshima): Define an interface to access shelf/launcher
+  // state, or just use Launcher.
 
-  void SetShelfAlignment(ShelfAlignment alignment);
-  ShelfAlignment GetShelfAlignment();
+  // Sets/gets the shelf auto-hide behavior on |root_window|.
+  void SetShelfAutoHideBehavior(ShelfAutoHideBehavior behavior,
+                                aura::RootWindow* root_window);
+  ShelfAutoHideBehavior GetShelfAutoHideBehavior(
+      aura::RootWindow* root_window) const;
+
+  bool IsShelfAutoHideMenuHideChecked(aura::RootWindow* root);
+  ShelfAutoHideBehavior GetToggledShelfAutoHideBehavior(
+      aura::RootWindow* root_window);
+
+  // Sets/gets shelf's alignment on |root_window|.
+  void SetShelfAlignment(ShelfAlignment alignment,
+                         aura::RootWindow* root_window);
+  ShelfAlignment GetShelfAlignment(aura::RootWindow* root_window);
 
   // Dims or undims the screen.
   void SetDimming(bool should_dim);

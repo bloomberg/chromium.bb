@@ -18,10 +18,15 @@ class AppListViewDelegate;
 }
 
 namespace aura {
+class RootWindow;
 class Window;
 namespace client {
 class UserActionClient;
 }
+}
+
+namespace ui {
+class MenuModel;
 }
 
 namespace views {
@@ -172,6 +177,9 @@ class ASH_EXPORT ShellDelegate {
   // Gets a saved value of the zoom scale of full screen magnifier. If a value
   // is not saved, return a negative value.
   virtual double GetSavedScreenMagnifierScale() = 0;
+
+  // Creates a menu model of the context for the |root_window|.
+  virtual ui::MenuModel* CreateContextMenu(aura::RootWindow* root_window) = 0;
 };
 
 }  // namespace ash

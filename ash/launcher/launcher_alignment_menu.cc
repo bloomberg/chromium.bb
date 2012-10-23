@@ -11,7 +11,11 @@
 
 namespace ash {
 
-LauncherAlignmentMenu::LauncherAlignmentMenu() : ui::SimpleMenuModel(NULL) {
+LauncherAlignmentMenu::LauncherAlignmentMenu(
+    aura::RootWindow* root)
+    : ui::SimpleMenuModel(NULL),
+      root_window_(root) {
+  DCHECK(root_window_);
   int align_group_id = 1;
   set_delegate(this);
   AddRadioItemWithStringId(MENU_ALIGN_LEFT,
@@ -31,13 +35,13 @@ LauncherAlignmentMenu::~LauncherAlignmentMenu() {
 bool LauncherAlignmentMenu::IsCommandIdChecked(int command_id) const {
   switch (command_id) {
     case MENU_ALIGN_LEFT:
-      return ash::Shell::GetInstance()->GetShelfAlignment() ==
+      return Shell::GetInstance()->GetShelfAlignment(root_window_) ==
           SHELF_ALIGNMENT_LEFT;
     case MENU_ALIGN_BOTTOM:
-      return ash::Shell::GetInstance()->GetShelfAlignment() ==
+      return Shell::GetInstance()->GetShelfAlignment(root_window_) ==
           SHELF_ALIGNMENT_BOTTOM;
     case MENU_ALIGN_RIGHT:
-      return ash::Shell::GetInstance()->GetShelfAlignment() ==
+      return Shell::GetInstance()->GetShelfAlignment(root_window_) ==
           SHELF_ALIGNMENT_RIGHT;
     default:
       return false;
@@ -57,13 +61,16 @@ bool LauncherAlignmentMenu::GetAcceleratorForCommandId(
 void LauncherAlignmentMenu::ExecuteCommand(int command_id) {
   switch (static_cast<MenuItem>(command_id)) {
     case MENU_ALIGN_LEFT:
-      ash::Shell::GetInstance()->SetShelfAlignment(SHELF_ALIGNMENT_LEFT);
+      Shell::GetInstance()->SetShelfAlignment(SHELF_ALIGNMENT_LEFT,
+                                              root_window_);
       break;
     case MENU_ALIGN_BOTTOM:
-      ash::Shell::GetInstance()->SetShelfAlignment(SHELF_ALIGNMENT_BOTTOM);
+      Shell::GetInstance()->SetShelfAlignment(SHELF_ALIGNMENT_BOTTOM,
+                                              root_window_);
       break;
     case MENU_ALIGN_RIGHT:
-      ash::Shell::GetInstance()->SetShelfAlignment(SHELF_ALIGNMENT_RIGHT);
+      Shell::GetInstance()->SetShelfAlignment(SHELF_ALIGNMENT_RIGHT,
+                                              root_window_);
       break;
   }
 }

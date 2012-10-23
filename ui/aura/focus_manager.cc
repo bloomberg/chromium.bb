@@ -8,6 +8,8 @@
 #include "ui/aura/focus_change_observer.h"
 #include "ui/aura/window_delegate.h"
 
+#include "base/debug/stack_trace.h"
+
 namespace aura {
 FocusManager::FocusManager() : focused_window_(NULL) {
 }
@@ -25,6 +27,8 @@ void FocusManager::RemoveObserver(FocusChangeObserver* observer) {
 
 void FocusManager::SetFocusedWindow(Window* focused_window,
                                     const ui::Event* event) {
+  LOG(ERROR) << "SetFocusedWnidow:" << focused_window;
+  base::debug::StackTrace().PrintBacktrace();
   if (focused_window == focused_window_)
     return;
   if (focused_window && !focused_window->CanFocus())
