@@ -532,8 +532,7 @@ void LocationBarViewMac::ZoomChangedForActiveTab(bool can_show_bubble) {
 }
 
 NSPoint LocationBarViewMac::GetActionBoxAnchorPoint() const {
-  NSPoint point = plus_decoration_->GetActionBoxAnchorPoint();
-  return [field_ convertPoint:point toView:nil];
+  return plus_decoration_->GetActionBoxAnchorPoint();
 }
 
 NSPoint LocationBarViewMac::GetBookmarkBubblePoint() const {

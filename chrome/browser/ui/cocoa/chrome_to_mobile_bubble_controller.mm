@@ -155,12 +155,9 @@ void ChromeToMobileBubbleNotificationBridge::OnSendComplete(bool success) {
     // Get the anchor point for the bubble in screen coordinates.
     NSPoint bubblePoint = locationBar->GetActionBoxAnchorPoint();
     bubblePoint = [self.parentWindow convertBaseToScreen:bubblePoint];
-    // Without an arrow, the anchor point of a bubble is the top left corner,
-    // but GetActionBoxAnchorPoint returns the top right corner.
-    bubblePoint.x -= self.bubble.frame.size.width;
     [self.bubble setArrowLocation:info_bubble::kNoArrow];
     [self.bubble setCornerFlags:info_bubble::kRoundedBottomCorners];
-    [self.bubble setAlignment:info_bubble::kAlignEdgeToAnchorEdge];
+    [self.bubble setAlignment:info_bubble::kAlignRightEdgeToAnchorEdge];
     [window setContentSize:self.bubble.frame.size];
     [window setContentView:self.bubble];
     [self setAnchorPoint:bubblePoint];
