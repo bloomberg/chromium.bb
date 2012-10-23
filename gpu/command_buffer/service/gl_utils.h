@@ -89,6 +89,9 @@
 /* GL_CHROMIUM_get_error_query */
 #define GL_GET_ERROR_QUERY_CHROMIUM            0x84F3
 
+/* GL_CHROMIUM_command_buffer_latency_query */
+#define GL_LATENCY_QUERY_CHROMIUM              0x84F4
+
 // GL_OES_texure_3D
 #define GL_SAMPLER_3D_OES                      0x8B5F
 

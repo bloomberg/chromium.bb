@@ -102,8 +102,7 @@ bool CommandsIssuedQuery::Begin() {
 bool CommandsIssuedQuery::End(uint32 submit_count) {
   base::TimeDelta elapsed = base::TimeTicks::HighResNow() - begin_time_;
   MarkAsPending(submit_count);
-  return MarkAsCompleted(
-      std::min(elapsed.InMicroseconds(), static_cast<int64>(0xFFFFFFFFL)));
+  return MarkAsCompleted(elapsed.InMicroseconds());
 }
 
 bool CommandsIssuedQuery::Process() {
@@ -118,6 +117,49 @@ void CommandsIssuedQuery::Destroy(bool /* have_context */) {
 }
 
 CommandsIssuedQuery::~CommandsIssuedQuery() {
+}
+
+class CommandLatencyQuery : public QueryManager::Query {
+ public:
+  CommandLatencyQuery(
+      QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset);
+
+  virtual bool Begin() OVERRIDE;
+  virtual bool End(uint32 submit_count) OVERRIDE;
+  virtual bool Process() OVERRIDE;
+  virtual void Destroy(bool have_context) OVERRIDE;
+
+ protected:
+  virtual ~CommandLatencyQuery();
+};
+
+CommandLatencyQuery::CommandLatencyQuery(
+      QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset)
+    : Query(manager, target, shm_id, shm_offset) {
+}
+
+bool CommandLatencyQuery::Begin() {
+    return true;
+}
+
+bool CommandLatencyQuery::End(uint32 submit_count) {
+    base::TimeDelta now = base::TimeTicks::HighResNow() - base::TimeTicks();
+    MarkAsPending(submit_count);
+    return MarkAsCompleted(now.InMicroseconds());
+}
+
+bool CommandLatencyQuery::Process() {
+  NOTREACHED();
+  return true;
+}
+
+void CommandLatencyQuery::Destroy(bool /* have_context */) {
+  if (!IsDeleted()) {
+    MarkAsDeleted();
+  }
+}
+
+CommandLatencyQuery::~CommandLatencyQuery() {
 }
 
 class GetErrorQuery : public QueryManager::Query {
@@ -202,6 +244,9 @@ QueryManager::Query* QueryManager::CreateQuery(
   switch (target) {
     case GL_COMMANDS_ISSUED_CHROMIUM:
       query = new CommandsIssuedQuery(this, target, shm_id, shm_offset);
+      break;
+    case GL_LATENCY_QUERY_CHROMIUM:
+      query = new CommandLatencyQuery(this, target, shm_id, shm_offset);
       break;
     case GL_GET_ERROR_QUERY_CHROMIUM:
       query = new GetErrorQuery(this, target, shm_id, shm_offset);
@@ -297,7 +342,7 @@ QueryManager::Query::~Query() {
   }
 }
 
-bool QueryManager::Query::MarkAsCompleted(GLuint result) {
+bool QueryManager::Query::MarkAsCompleted(uint64 result) {
   DCHECK(pending_);
   QuerySync* sync = manager_->decoder_->GetSharedMemoryAs<QuerySync*>(
       shm_id_, shm_offset_, sizeof(*sync));

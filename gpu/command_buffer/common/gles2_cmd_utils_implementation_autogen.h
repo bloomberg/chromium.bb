@@ -956,6 +956,7 @@ std::string GLES2Util::GetStringQueryTarget(uint32 value) {
     { GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT,
     "GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT" },
     { GL_COMMANDS_ISSUED_CHROMIUM, "GL_COMMANDS_ISSUED_CHROMIUM" },
+    { GL_LATENCY_QUERY_CHROMIUM, "GL_LATENCY_QUERY_CHROMIUM" },
   };
   return GLES2Util::GetQualifiedEnumString(
       string_table, arraysize(string_table), value);

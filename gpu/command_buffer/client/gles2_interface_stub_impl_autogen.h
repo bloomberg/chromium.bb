@@ -596,5 +596,11 @@ void GLES2InterfaceStub::ConsumeTextureCHROMIUM(
 void GLES2InterfaceStub::BindUniformLocationCHROMIUM(
     GLuint /* program */, GLint /* location */, const char* /* name */) {
 }
+void GLES2InterfaceStub::BindTexImage2DCHROMIUM(
+    GLenum /* target */, GLint /* imageId */) {
+}
+void GLES2InterfaceStub::ReleaseTexImage2DCHROMIUM(
+    GLenum /* target */, GLint /* imageId */) {
+}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_IMPL_AUTOGEN_H_
 

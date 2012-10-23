@@ -147,7 +147,7 @@ struct QuerySync {
   }
 
   uint32 process_count;
-  uint32 result;
+  uint64 result;
 };
 
 COMPILE_ASSERT(sizeof(ProgramInput) == 20, ProgramInput_size_not_20);

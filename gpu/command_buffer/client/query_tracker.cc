@@ -11,6 +11,7 @@
 #include "../client/gles2_cmd_helper.h"
 #include "../client/gles2_implementation.h"
 #include "../client/mapped_memory.h"
+#include "../common/time.h"
 
 namespace gpu {
 namespace gles2 {
@@ -64,6 +65,7 @@ QueryTracker::Query::Query(GLuint id, GLenum target,
       submit_count_(0),
       token_(0),
       flushed_(false),
+      client_begin_time_us_(0),
       result_(0) {
     }
 
@@ -75,6 +77,11 @@ void QueryTracker::Query::Begin(GLES2Implementation* gl) {
   switch (target()) {
     case GL_GET_ERROR_QUERY_CHROMIUM:
       // To nothing on begin for error queries.
+      break;
+    case GL_LATENCY_QUERY_CHROMIUM:
+      client_begin_time_us_ = MicrosecondsSinceOriginOfTime();
+      // tell service about id, shared memory and count
+      gl->helper()->BeginQueryEXT(target(), id(), shm_id(), shm_offset());
       break;
     default:
       // tell service about id, shared memory and count
@@ -114,7 +121,20 @@ bool QueryTracker::Query::CheckResultsAvailable(
       // Need a MemoryBarrier here so that sync->result read after
       // sync->process_count.
       gpu::MemoryBarrier();
-      result_ = info_.sync->result;
+      switch (target()) {
+        case GL_COMMANDS_ISSUED_CHROMIUM:
+          result_ = std::min(info_.sync->result,
+                             static_cast<uint64>(0xFFFFFFFFL));
+          break;
+        case GL_LATENCY_QUERY_CHROMIUM:
+          GPU_DCHECK(info_.sync->result >= client_begin_time_us_);
+          result_ = std::min(info_.sync->result - client_begin_time_us_,
+                             static_cast<uint64>(0xFFFFFFFFL));
+          break;
+        default:
+          result_ = info_.sync->result;
+          break;
+      }
       state_ = kComplete;
     } else {
       if (!flushed_) {

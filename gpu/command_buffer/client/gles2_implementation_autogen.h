@@ -498,17 +498,9 @@ virtual void ConsumeTextureCHROMIUM(
 virtual void BindUniformLocationCHROMIUM(
     GLuint program, GLint location, const char* name) OVERRIDE;
 
-void BindTexImage2DCHROMIUM(GLenum target, GLint imageId) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glBindTexImage2DCHROMIUM(" << GLES2Util::GetStringTextureBindTarget(target) << ", " << imageId << ")");  // NOLINT
-  helper_->BindTexImage2DCHROMIUM(target, imageId);
-}
+virtual void BindTexImage2DCHROMIUM(GLenum target, GLint imageId) OVERRIDE;
 
-void ReleaseTexImage2DCHROMIUM(GLenum target, GLint imageId) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glReleaseTexImage2DCHROMIUM(" << GLES2Util::GetStringTextureBindTarget(target) << ", " << imageId << ")");  // NOLINT
-  helper_->ReleaseTexImage2DCHROMIUM(target, imageId);
-}
+virtual void ReleaseTexImage2DCHROMIUM(GLenum target, GLint imageId) OVERRIDE;
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_
 

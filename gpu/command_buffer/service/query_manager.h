@@ -81,7 +81,7 @@ class GPU_EXPORT QueryManager {
     }
 
     // Returns false if shared memory for sync is invalid.
-    bool MarkAsCompleted(GLuint result);
+    bool MarkAsCompleted(uint64 result);
 
     void MarkAsPending(uint32 submit_count) {
       DCHECK(!pending_);

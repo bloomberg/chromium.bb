@@ -1500,5 +1500,19 @@ void GLES2Implementation::ConsumeTextureCHROMIUM(
   helper_->ConsumeTextureCHROMIUMImmediate(target, mailbox);
 }
 
+void GLES2Implementation::BindTexImage2DCHROMIUM(
+    GLenum target, GLint imageId) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glBindTexImage2DCHROMIUM(" << GLES2Util::GetStringTextureBindTarget(target) << ", " << imageId << ")");  // NOLINT
+  helper_->BindTexImage2DCHROMIUM(target, imageId);
+}
+
+void GLES2Implementation::ReleaseTexImage2DCHROMIUM(
+    GLenum target, GLint imageId) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glReleaseTexImage2DCHROMIUM(" << GLES2Util::GetStringTextureBindTarget(target) << ", " << imageId << ")");  // NOLINT
+  helper_->ReleaseTexImage2DCHROMIUM(target, imageId);
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_IMPL_AUTOGEN_H_
 

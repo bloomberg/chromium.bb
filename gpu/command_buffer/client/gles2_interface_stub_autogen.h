@@ -318,5 +318,7 @@ virtual void ConsumeTextureCHROMIUM(
     GLenum target, const GLbyte* mailbox) OVERRIDE;
 virtual void BindUniformLocationCHROMIUM(
     GLuint program, GLint location, const char* name) OVERRIDE;
+virtual void BindTexImage2DCHROMIUM(GLenum target, GLint imageId) OVERRIDE;
+virtual void ReleaseTexImage2DCHROMIUM(GLenum target, GLint imageId) OVERRIDE;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_AUTOGEN_H_
 

@@ -133,6 +133,7 @@ class GLES2_IMPL_EXPORT QueryTracker {
     uint32 submit_count_;
     int32 token_;
     bool flushed_;
+    uint64 client_begin_time_us_; // Only used for latency query target.
     uint32 result_;
   };
 

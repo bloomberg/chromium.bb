@@ -29,6 +29,7 @@
     'command_buffer/common/id_allocator.cc',
     'command_buffer/common/id_allocator.h',
     'command_buffer/common/thread_local.h',
+    'command_buffer/common/time.h',
     'command_buffer/common/types.h',
   ],
 }
