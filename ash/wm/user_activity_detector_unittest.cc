@@ -96,6 +96,13 @@ TEST_F(UserActivityDetectorTest, Basic) {
   EXPECT_EQ(1, observer_->num_invocations());
   observer_->reset_stats();
 
+  // Ignore one mouse event when all displays are turned off.
+  detector_->OnAllOutputsTurnedOff();
+  AdvanceTime(advance_delta);
+  EXPECT_FALSE(detector_->PreHandleMouseEvent(window.get(), &mouse_event));
+  EXPECT_EQ(0, observer_->num_invocations());
+  observer_->reset_stats();
+
   AdvanceTime(advance_delta);
   ui::TouchEvent touch_event(
       ui::ET_TOUCH_PRESSED, gfx::Point(), 0, base::TimeDelta());

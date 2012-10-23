@@ -12,7 +12,7 @@ namespace ash {
 
 const double UserActivityDetector::kNotifyIntervalMs = 200.0;
 
-UserActivityDetector::UserActivityDetector() {
+UserActivityDetector::UserActivityDetector() : ignore_next_mouse_event_(false) {
 }
 
 UserActivityDetector::~UserActivityDetector() {
@@ -30,6 +30,10 @@ void UserActivityDetector::RemoveObserver(UserActivityObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void UserActivityDetector::OnAllOutputsTurnedOff() {
+  ignore_next_mouse_event_ = true;
+}
+
 bool UserActivityDetector::PreHandleKeyEvent(aura::Window* target,
                                              ui::KeyEvent* event) {
   MaybeNotify();
@@ -38,8 +42,11 @@ bool UserActivityDetector::PreHandleKeyEvent(aura::Window* target,
 
 bool UserActivityDetector::PreHandleMouseEvent(aura::Window* target,
                                                ui::MouseEvent* event) {
-  if (!(event->flags() & ui::EF_IS_SYNTHESIZED))
+  VLOG_IF(1, ignore_next_mouse_event_) << "ignoring mouse event";
+  if (!(event->flags() & ui::EF_IS_SYNTHESIZED) &&
+      !ignore_next_mouse_event_)
     MaybeNotify();
+  ignore_next_mouse_event_ = false;
   return false;
 }
 
