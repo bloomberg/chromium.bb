@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/autofill/autofill_external_delegate_views.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/views/autofill/autofill_popup_view_views.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -17,7 +18,9 @@ namespace {
 class MockAutofillExternalDelegateViews : public AutofillExternalDelegateViews {
  public:
   explicit MockAutofillExternalDelegateViews(content::WebContents* web_contents)
-      : AutofillExternalDelegateViews(web_contents, NULL),
+      : AutofillExternalDelegateViews(
+            web_contents,
+            AutofillManager::FromWebContents(web_contents)),
         popup_hidden_(false) {}
   ~MockAutofillExternalDelegateViews() {}
 

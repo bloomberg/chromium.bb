@@ -24,7 +24,10 @@ specific_include_rules = {
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
   '.*_[a-z]*test\.cc': [
+    "!chrome/browser/infobars/infobar_tab_helper.h",
     "!chrome/browser/password_manager/encryptor.h",
+    "!chrome/browser/password_manager/password_manager.h",
+    "!chrome/browser/password_manager/password_manager_delegate_impl.h",
     "!chrome/browser/profiles/profile.h",
     "!chrome/browser/sync/profile_sync_service.h",
     "!chrome/browser/sync/profile_sync_service_factory.h",
@@ -37,9 +40,6 @@ specific_include_rules = {
     "!chrome/browser/ui/browser.h",
     "!chrome/browser/ui/browser_tabstrip.h",
     "!chrome/browser/ui/browser_window.h",
-    "!chrome/browser/ui/tab_contents/tab_autofill_manager_delegate.h",
-    "!chrome/browser/ui/tab_contents/tab_contents.h",
-    "!chrome/browser/ui/tab_contents/test_tab_contents.h",
   ],
 
   # TODO(joi): May be able to get rid of the need for this by moving

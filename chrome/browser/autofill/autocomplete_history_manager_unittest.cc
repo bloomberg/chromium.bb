@@ -9,7 +9,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/test_autofill_external_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/webdata/autofill_web_data_service_impl.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/form_data.h"

@@ -23,18 +23,19 @@
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/test_autofill_external_delegate.h"
+#include "chrome/browser/password_manager/password_manager.h"
+#include "chrome/browser/password_manager/password_manager_delegate_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/form_data.h"
 #include "chrome/common/form_field_data.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -580,12 +581,12 @@ class TestAutofillManager : public AutofillManager {
 
 }  // namespace
 
-class AutofillManagerTest : public TabContentsTestHarness {
+class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
  public:
   typedef AutofillManager::GUIDPair GUIDPair;
 
   AutofillManagerTest()
-      : TabContentsTestHarness(),
+      : ChromeRenderViewHostTestHarness(),
         ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE) {
   }
@@ -599,7 +600,7 @@ class AutofillManagerTest : public TabContentsTestHarness {
     PersonalDataManagerFactory::GetInstance()->SetTestingFactory(
         profile, TestPersonalDataManager::Build);
 
-    TabContentsTestHarness::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
     TabAutofillManagerDelegate::CreateForWebContents(web_contents());
     autofill_manager_ = new TestAutofillManager(
         web_contents(),
@@ -616,7 +617,7 @@ class AutofillManagerTest : public TabContentsTestHarness {
     // be destroyed at the destruction of the WebContents.
     autofill_manager_ = NULL;
     file_thread_.Stop();
-    TabContentsTestHarness::TearDown();
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
   void UpdatePasswordGenerationState(bool new_renderer) {
@@ -2918,6 +2919,11 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
 }
 
 TEST_F(AutofillManagerTest, UpdatePasswordSyncState) {
+  PasswordManagerDelegateImpl::CreateForWebContents(web_contents());
+  PasswordManager::CreateForWebContentsAndDelegate(
+      web_contents(),
+      PasswordManagerDelegateImpl::FromWebContents(web_contents()));
+
   PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile());
 
   // Allow this test to control what should get synced.
@@ -2976,6 +2982,11 @@ TEST_F(AutofillManagerTest, UpdatePasswordSyncState) {
 }
 
 TEST_F(AutofillManagerTest, UpdatePasswordGenerationState) {
+  PasswordManagerDelegateImpl::CreateForWebContents(web_contents());
+  PasswordManager::CreateForWebContentsAndDelegate(
+      web_contents(),
+      PasswordManagerDelegateImpl::FromWebContents(web_contents()));
+
   PrefServiceBase* prefs = PrefServiceBase::FromBrowserContext(profile());
 
   // Always set password sync enabled so we can test the behavior of password
@@ -3108,29 +3119,3 @@ TEST_F(AutofillManagerTest, TestExternalDelegate) {
 
   autofill_manager_->SetExternalDelegate(NULL);
 }
-
-#if defined(OS_ANDROID) || defined(TOOLKIT_GTK)
-// OS_ANDROID defines an external delegate, but prerequisites for
-// landing autofill_external_delegate_android.cc in the Chromium tree
-// have not themselves landed.
-
-// Turn on the external delegate.  Recreate a WebContents.  Make sure
-// an external delegate was set in the proper structures.
-TEST_F(AutofillManagerTest, TestTabContentsWithExternalDelegate) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kExternalAutofillPopup);
-
-  // Setting the contents creates a new TabContents.
-  WebContents* contents = CreateTestWebContents();
-  SetContents(contents);
-
-  AutofillManager* autofill_manager =
-      AutofillManager::FromWebContents(contents);
-  EXPECT_TRUE(autofill_manager->external_delegate());
-
-  AutocompleteHistoryManager* autocomplete_history_manager =
-      &autofill_manager->autocomplete_history_manager_;
-  EXPECT_TRUE(autocomplete_history_manager->external_delegate());
-}
-
-#endif  // OS_ANDROID

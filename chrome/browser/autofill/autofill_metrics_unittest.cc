@@ -16,12 +16,12 @@
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
-#include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/form_data.h"
 #include "chrome/common/form_field_data.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -255,7 +255,7 @@ class TestAutofillManager : public AutofillManager {
 
 }  // namespace
 
-class AutofillMetricsTest : public TabContentsTestHarness {
+class AutofillMetricsTest : public ChromeRenderViewHostTestHarness {
  public:
   AutofillMetricsTest();
   virtual ~AutofillMetricsTest();
@@ -278,7 +278,7 @@ class AutofillMetricsTest : public TabContentsTestHarness {
 };
 
 AutofillMetricsTest::AutofillMetricsTest()
-  : TabContentsTestHarness(),
+  : ChromeRenderViewHostTestHarness(),
     ui_thread_(BrowserThread::UI, &message_loop_),
     file_thread_(BrowserThread::FILE) {
 }
@@ -292,10 +292,9 @@ AutofillMetricsTest::~AutofillMetricsTest() {
 void AutofillMetricsTest::SetUp() {
   Profile* profile = new TestingProfile();
   browser_context_.reset(profile);
-  PersonalDataManagerFactory::GetInstance()->SetTestingFactory(
-      profile, NULL);
+  PersonalDataManagerFactory::GetInstance()->SetTestingFactory(profile, NULL);
 
-  TabContentsTestHarness::SetUp();
+  ChromeRenderViewHostTestHarness::SetUp();
   TabAutofillManagerDelegate::CreateForWebContents(web_contents());
   autofill_manager_ = new TestAutofillManager(
       web_contents(),
@@ -312,7 +311,7 @@ void AutofillMetricsTest::TearDown() {
   // be destroyed at the destruction of the WebContents.
   autofill_manager_ = NULL;
   file_thread_.Stop();
-  TabContentsTestHarness::TearDown();
+  ChromeRenderViewHostTestHarness::TearDown();
 }
 
 AutofillCCInfoBarDelegate* AutofillMetricsTest::CreateDelegate(
@@ -1044,6 +1043,8 @@ TEST_F(AutofillMetricsTest, AutofillIsEnabledAtPageLoad) {
 
 // Test that credit card infobar metrics are logged correctly.
 TEST_F(AutofillMetricsTest, CreditCardInfoBar) {
+  InfoBarTabHelper::CreateForWebContents(web_contents());
+
   MockAutofillMetrics metric_logger;
   ::testing::InSequence dummy;
 
