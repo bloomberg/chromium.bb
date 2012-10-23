@@ -246,7 +246,7 @@ void ThumbnailLoader::LoadThumbnail() {
           contents_->web_contents());
   content::WebContents* devToolsContents = devToolsWindow ?
       devToolsWindow->tab_contents()->web_contents() : NULL;
-  if (devToolsContents->GetRenderViewHost() &&
+  if (devToolsContents && devToolsContents->GetRenderViewHost() &&
       devToolsContents->GetRenderViewHost()->GetView()) {
     // The devtool's size might not be up-to-date, but since its height doesn't
     // change on window resize, and since most users don't use devtools, this is
