@@ -21,8 +21,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/accessibility/accessibility_events.h"
 #include "chrome/browser/alternate_nav_url_fetcher.h"
-#include "chrome/browser/chrome_to_mobile_service.h"
-#include "chrome/browser/chrome_to_mobile_service_factory.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/defaults.h"
@@ -730,7 +728,6 @@ GtkWidget* LocationBarViewGtk::GetPageActionWidget(
 void LocationBarViewGtk::Update(const WebContents* contents) {
   UpdateZoomIcon();
   UpdateStarIcon();
-  UpdateChromeToMobileState();
   UpdateSiteTypeArea();
   UpdateContentSettingsIcons();
   UpdatePageActions();
@@ -1621,14 +1618,6 @@ void LocationBarViewGtk::UpdateStarIcon() {
   } else {
     gtk_widget_hide_all(star_.get());
   }
-}
-
-void LocationBarViewGtk::UpdateChromeToMobileState() {
-  ChromeToMobileService* service =
-      ChromeToMobileServiceFactory::GetForProfile(browser()->profile());
-  command_updater_->UpdateCommandEnabled(IDC_CHROME_TO_MOBILE_PAGE,
-      !toolbar_model_->GetInputInProgress() &&
-      service && service->HasMobiles());
 }
 
 bool LocationBarViewGtk::ShouldOnlyShowLocation() {

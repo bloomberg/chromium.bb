@@ -285,12 +285,6 @@ void BrowserCommandController::LoadingStateChanged(bool is_loading,
   UpdateReloadStopState(is_loading, force);
 }
 
-void BrowserCommandController::SendToMobileStateChanged(
-    bool send_to_mobile_available) {
-  command_updater_.UpdateCommandEnabled(IDC_CHROME_TO_MOBILE_PAGE,
-                                        send_to_mobile_available);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserCommandController,
 //     CommandUpdater::CommandUpdaterDelegate implementation:

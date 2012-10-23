@@ -94,6 +94,7 @@ TEST_F(ActionBoxMenuModelTest, IncongnitoNoMobiles) {
 
   // Expect no c2m command in model.
   EXPECT_EQ(-1, model.GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
+  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_CHROME_TO_MOBILE_PAGE));
 
   NavigateToBookmarkablePage();
 
@@ -102,6 +103,7 @@ TEST_F(ActionBoxMenuModelTest, IncongnitoNoMobiles) {
 
   // Expect c2m command not in model.
   EXPECT_EQ(-1, model2.GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
+  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_CHROME_TO_MOBILE_PAGE));
 }
 
 // Tests that Chrome2Mobile is disabled on incognito profiles with devices.
@@ -116,6 +118,7 @@ TEST_F(ActionBoxMenuModelTest, IncongnitoHasMobiles) {
 
   // Expect no c2m command in model.
   EXPECT_EQ(-1, model.GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
+  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_CHROME_TO_MOBILE_PAGE));
 
   NavigateToBookmarkablePage();
 
@@ -124,6 +127,7 @@ TEST_F(ActionBoxMenuModelTest, IncongnitoHasMobiles) {
   ActionBoxMenuModel model2(browser(), this);
   // Expect c2m command not in model.
   EXPECT_EQ(-1, model2.GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
+  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_CHROME_TO_MOBILE_PAGE));
 }
 
 // Tests that Chrome2Mobile is disabled for signed-in profiles with no devices.
@@ -139,6 +143,7 @@ TEST_F(ActionBoxMenuModelTest, OnRecordNoMobiles) {
 
   // Expect no c2m command in model.
   EXPECT_EQ(-1, model.GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
+  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_CHROME_TO_MOBILE_PAGE));
 
   NavigateToBookmarkablePage();
 
@@ -147,6 +152,7 @@ TEST_F(ActionBoxMenuModelTest, OnRecordNoMobiles) {
 
   // Expect c2m command not in model.
   EXPECT_EQ(-1, model2.GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
+  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_CHROME_TO_MOBILE_PAGE));
 }
 
 // Tests that Chrome2Mobile is enabled for signed-in profiles with devices, and
@@ -163,6 +169,7 @@ TEST_F(ActionBoxMenuModelTest, HasMobilesOnRecordOrIncognito) {
 
   // Expect no c2m command in model.
   EXPECT_EQ(-1, model.GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
+  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_CHROME_TO_MOBILE_PAGE));
 
   NavigateToBookmarkablePage();
 
@@ -171,6 +178,7 @@ TEST_F(ActionBoxMenuModelTest, HasMobilesOnRecordOrIncognito) {
 
   // Expect c2m command in model.
   EXPECT_NE(-1, model2.GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
+  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_CHROME_TO_MOBILE_PAGE));
 
   // Incognito-ize profile.
   profile()->set_incognito(true);
@@ -180,6 +188,7 @@ TEST_F(ActionBoxMenuModelTest, HasMobilesOnRecordOrIncognito) {
 
   // Expect no c2m command in this model.
   EXPECT_EQ(-1, model3.GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE));
+  EXPECT_FALSE(chrome::IsCommandEnabled(browser(), IDC_CHROME_TO_MOBILE_PAGE));
 
   // Un-incognito-ize for shutdown.
   profile()->set_incognito(false);

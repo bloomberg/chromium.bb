@@ -210,9 +210,6 @@ class LocationBarViewMac : public LocationBar,
   // Checks if the bookmark star should be enabled or not.
   bool IsStarEnabled();
 
-  // Update the Chrome To Mobile page action command state.
-  void UpdateChromeToMobileEnabled();
-
   // Updates the zoom decoration in the omnibox with the current zoom level.
   void UpdateZoomDecoration();
 

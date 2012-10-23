@@ -92,6 +92,11 @@ class ChromeToMobileService : public ProfileKeyedService,
   // Returns whether Chrome To Mobile is enabled (gated on the Action Box UI).
   static bool IsChromeToMobileEnabled();
 
+  // Update and return the IDC_CHROME_TO_MOBILE_PAGE command enabled state; the
+  // state is derived from commandline, profile, and current page applicability.
+  // NOTE: Call this instead of IsCommandEnabled(IDC_CHROME_TO_MOBILE_PAGE).
+  static bool UpdateAndGetCommandState(Browser* browser);
+
   // Register the user prefs associated with this service.
   static void RegisterUserPrefs(PrefService* prefs);
 
@@ -156,10 +161,6 @@ class ChromeToMobileService : public ProfileKeyedService,
  private:
   friend class MockChromeToMobileService;
 
-  // Enable or disable Chrome To Mobile with the browsers' command controllers.
-  // The feature state is automatically derived from internal conditions.
-  void UpdateCommandState() const;
-
   // Handle the attempted creation of a temporary file for snapshot generation.
   void SnapshotFileCreated(base::WeakPtr<Observer> observer,
                            SessionID::id_type browser_id,
@@ -185,8 +186,7 @@ class ChromeToMobileService : public ProfileKeyedService,
   void ClearAccessToken();
 
   // Send the OAuth2AccessTokenFetcher request.
-  // Virtual for unit test mocking.
-  virtual void RequestAccessToken();
+  void RequestAccessToken();
 
   // Send the cloud print URLFetcher device search request.
   // Virtual for unit test mocking.

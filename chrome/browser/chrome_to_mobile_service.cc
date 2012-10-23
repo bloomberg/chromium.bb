@@ -13,6 +13,7 @@
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/chrome_to_mobile_service_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/profiles/profile.h"
@@ -23,7 +24,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -205,6 +205,13 @@ void DeleteSnapshotFile(const FilePath& snapshot) {
   DCHECK(success);
 }
 
+// Returns true if the url can be sent via Chrome To Mobile.
+bool CanSendURL(const GURL& url) {
+  return url.SchemeIs(chrome::kHttpScheme) ||
+         url.SchemeIs(chrome::kHttpsScheme) ||
+         url.SchemeIs(chrome::kFtpScheme);
+}
+
 }  // namespace
 
 ChromeToMobileService::Observer::Observer() {
@@ -221,6 +228,21 @@ ChromeToMobileService::JobData::~JobData() {}
 bool ChromeToMobileService::IsChromeToMobileEnabled() {
   // Chrome To Mobile is currently gated on the Action Box UI.
   return extensions::FeatureSwitch::action_box()->IsEnabled();
+}
+
+// static
+bool ChromeToMobileService::UpdateAndGetCommandState(Browser* browser) {
+  bool enabled = IsChromeToMobileEnabled();
+  if (enabled) {
+    const ChromeToMobileService* service =
+        ChromeToMobileServiceFactory::GetForProfile(browser->profile());
+    DCHECK(!browser->profile()->IsOffTheRecord() || !service);
+    enabled = service && service->HasMobiles() &&
+        CanSendURL(chrome::GetActiveWebContents(browser)->GetURL());
+  }
+  browser->command_controller()->command_updater()->
+      UpdateCommandEnabled(IDC_CHROME_TO_MOBILE_PAGE, enabled);
+  return enabled;
 }
 
 // static
@@ -305,6 +327,7 @@ void ChromeToMobileService::SendToMobile(const base::DictionaryValue* mobile,
   if (!mobile->GetString("id", &data->mobile_id))
     NOTREACHED();
   content::WebContents* web_contents = chrome::GetActiveWebContents(browser);
+  DCHECK(CanSendURL(web_contents->GetURL()));
   data->url = web_contents->GetURL();
   data->title = web_contents->GetTitle();
   data->snapshot = snapshot;
@@ -438,13 +461,11 @@ void ChromeToMobileService::OnGetTokenFailure(
   // Clear the mobile list, which may be (or become) out of date.
   ListValue empty;
   profile_->GetPrefs()->Set(prefs::kChromeToMobileDeviceList, empty);
-  UpdateCommandState();
 }
 
 void ChromeToMobileService::OnInvalidatorStateChange(
     syncer::InvalidatorState state) {
   sync_invalidation_enabled_ = (state == syncer::INVALIDATIONS_ENABLED);
-  UpdateCommandState();
 }
 
 void ChromeToMobileService::OnIncomingInvalidation(
@@ -464,18 +485,6 @@ const std::string& ChromeToMobileService::GetAccessTokenForTest() const {
 void ChromeToMobileService::SetAccessTokenForTest(
     const std::string& access_token) {
   access_token_ = access_token;
-}
-
-void ChromeToMobileService::UpdateCommandState() const {
-  // Ensure the feature is not disabled by commandline options.
-  DCHECK(IsChromeToMobileEnabled());
-  const bool has_mobiles = HasMobiles();
-  for (BrowserList::const_iterator i = BrowserList::begin();
-       i != BrowserList::end(); ++i) {
-    Browser* browser = *i;
-    if (browser->profile() == profile_)
-      browser->command_controller()->SendToMobileStateChanged(has_mobiles);
-  }
 }
 
 void ChromeToMobileService::SnapshotFileCreated(
@@ -681,8 +690,6 @@ void ChromeToMobileService::HandleSearchResponse(
   LogMetric(success ? SEARCH_SUCCESS : SEARCH_ERROR);
   VLOG_IF(0, !success) << "ChromeToMobile search failed (" <<
                           source->GetResponseCode() << "): " << data;
-
-  UpdateCommandState();
 }
 
 void ChromeToMobileService::HandleSubmitResponse(

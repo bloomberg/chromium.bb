@@ -168,7 +168,6 @@ class NotificationBridge : public content::NotificationObserver {
     commandObserver_->ObserveCommand(IDC_RELOAD);
     commandObserver_->ObserveCommand(IDC_HOME);
     commandObserver_->ObserveCommand(IDC_BOOKMARK_PAGE);
-    commandObserver_->ObserveCommand(IDC_CHROME_TO_MOBILE_PAGE);
   }
   return self;
 }

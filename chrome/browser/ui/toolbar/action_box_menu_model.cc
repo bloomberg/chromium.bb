@@ -9,7 +9,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_to_mobile_service.h"
 #include "chrome/browser/chrome_to_mobile_service_factory.h"
-#include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/url_constants.h"
@@ -32,21 +32,16 @@ ActionBoxMenuModel::ActionBoxMenuModel(Browser* browser,
     : ui::SimpleMenuModel(delegate),
       browser_(browser) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  content::WebContents* current_web_contents =
-      chrome::GetActiveWebContents(browser_);
-  if (!browser_->profile()->IsOffTheRecord() &&
-      !current_web_contents->GetURL().SchemeIs(chrome::kChromeUIScheme) &&
-      !current_web_contents->GetURL().SchemeIs(chrome::kFileScheme) &&
-      ChromeToMobileServiceFactory::GetForProfile(browser_->profile())->
-      HasMobiles()) {
+  // TODO(msw): Show the item as disabled for chrome: and file: scheme pages?
+  if (ChromeToMobileService::UpdateAndGetCommandState(browser_)) {
     AddItemWithStringId(IDC_CHROME_TO_MOBILE_PAGE,
                         IDS_CHROME_TO_MOBILE_BUBBLE_TOOLTIP);
     SetIcon(GetIndexOfCommandId(IDC_CHROME_TO_MOBILE_PAGE),
             rb.GetNativeImageNamed(IDR_MOBILE));
   }
 
-  BookmarkTabHelper* bookmark_tab_helper =
-      BookmarkTabHelper::FromWebContents(current_web_contents);
+  BookmarkTabHelper* bookmark_tab_helper = BookmarkTabHelper::FromWebContents(
+      chrome::GetActiveWebContents(browser_));
   bool starred = bookmark_tab_helper->is_starred();
   AddItemWithStringId(IDC_BOOKMARK_PAGE,
                       starred ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR);

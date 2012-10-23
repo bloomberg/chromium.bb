@@ -62,7 +62,6 @@ class BrowserCommandController : public CommandUpdater::CommandUpdaterDelegate,
   void FullscreenStateChanged();
   void PrintingStateChanged();
   void LoadingStateChanged(bool is_loading, bool force);
-  void SendToMobileStateChanged(bool send_to_mobile_available);
 
  private:
   enum FullScreenMode {

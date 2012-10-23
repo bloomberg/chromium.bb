@@ -12,8 +12,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/alternate_nav_url_fetcher.h"
-#include "chrome/browser/chrome_to_mobile_service.h"
-#include "chrome/browser/chrome_to_mobile_service_factory.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -466,12 +464,6 @@ void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
   command_updater_->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
   if (star_view_ && !extensions::FeatureSwitch::action_box()->IsEnabled())
     star_view_->SetVisible(star_enabled);
-
-  ChromeToMobileService* chrome_to_mobile_service =
-      ChromeToMobileServiceFactory::GetForProfile(profile_);
-  command_updater_->UpdateCommandEnabled(IDC_CHROME_TO_MOBILE_PAGE,
-      !model_->GetInputInProgress() && chrome_to_mobile_service &&
-          chrome_to_mobile_service->HasMobiles());
 
   // Don't Update in app launcher mode so that the location entry does not show
   // a URL or security background.
