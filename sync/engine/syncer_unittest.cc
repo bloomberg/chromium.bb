@@ -2864,6 +2864,9 @@ TEST_F(SyncerTest, DualDeletionWithNewItemNameClash) {
   saw_syncer_event_ = false;
 }
 
+// When we undelete an entity as a result of conflict resolution, we reuse the
+// existing server id and preserve the old version, simply updating the server
+// version with the new non-deleted entity.
 TEST_F(SyncerTest, ResolveWeWroteTheyDeleted) {
   int64 bob_metahandle;
 
@@ -2886,9 +2889,11 @@ TEST_F(SyncerTest, ResolveWeWroteTheyDeleted) {
     Entry bob(&trans, GET_BY_HANDLE, bob_metahandle);
     ASSERT_TRUE(bob.good());
     EXPECT_TRUE(bob.Get(IS_UNSYNCED));
-    EXPECT_FALSE(bob.Get(ID).ServerKnows());
+    EXPECT_TRUE(bob.Get(ID).ServerKnows());
     EXPECT_FALSE(bob.Get(IS_UNAPPLIED_UPDATE));
     EXPECT_FALSE(bob.Get(IS_DEL));
+    EXPECT_EQ(2, bob.Get(SERVER_VERSION));
+    EXPECT_EQ(2, bob.Get(BASE_VERSION));
   }
   saw_syncer_event_ = false;
 }

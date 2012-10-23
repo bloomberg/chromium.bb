@@ -244,36 +244,16 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
     }
 
     // The entry is deleted on the server but still exists locally.
-    if (!entry.Get(syncable::UNIQUE_CLIENT_TAG).empty()) {
-      // If we've got a client-unique tag, we can undelete while retaining
-      // our present ID.
-      DCHECK_EQ(entry.Get(syncable::SERVER_VERSION), 0) << "For the server to "
-          "know to re-create, client-tagged items should revert to version 0 "
-          "when server-deleted.";
-      OverwriteServerChanges(&entry);
-      status->increment_num_server_overwrites();
-      DVLOG(1) << "Resolving simple conflict, undeleting server entry: "
-               << entry;
-      UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
-                                OVERWRITE_SERVER,
-                                CONFLICT_RESOLUTION_SIZE);
-      // Clobber the versions, just in case the above DCHECK is violated.
-      entry.Put(syncable::SERVER_VERSION, 0);
-      entry.Put(syncable::BASE_VERSION, 0);
-    } else {
-      // Otherwise, we've got to undelete by creating a new locally
-      // uncommitted entry.
-      SplitServerInformationIntoNewEntry(trans, &entry);
+    // We undelete it by overwriting the server's tombstone with the local
+    // data.
+    OverwriteServerChanges(&entry);
+    status->increment_num_server_overwrites();
+    DVLOG(1) << "Resolving simple conflict, undeleting server entry: "
+             << entry;
+    UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
+                              UNDELETE,
+                              CONFLICT_RESOLUTION_SIZE);
 
-      MutableEntry server_update(trans, syncable::GET_BY_ID, id);
-      CHECK(server_update.good());
-      CHECK(server_update.Get(syncable::META_HANDLE) !=
-            entry.Get(syncable::META_HANDLE))
-          << server_update << entry;
-      UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
-                                UNDELETE,
-                                CONFLICT_RESOLUTION_SIZE);
-    }
     return SYNC_PROGRESS;
   }
 }
