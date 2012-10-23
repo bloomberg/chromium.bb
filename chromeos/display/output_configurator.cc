@@ -604,8 +604,25 @@ bool OutputConfigurator::ScreenPowerSet(bool power_on, bool all_displays) {
   OutputSnapshot outputs[2] = { {0}, {0} };
   connected_output_count_ =
       GetDualOutputs(display, screen, &outputs[0], &outputs[1]);
-  output_state_ =
-      InferCurrentState(display, screen, outputs, connected_output_count_);
+
+  if (all_displays && power_on) {
+    // Resume all displays using the current state.
+    if (EnterState(display,
+                   screen,
+                   window,
+                   output_state_,
+                   outputs,
+                   connected_output_count_)) {
+      // Force the DPMS on since the driver doesn't always detect that it should
+      // turn on.
+      CHECK(DPMSEnable(display));
+      CHECK(DPMSForceLevel(display, DPMSModeOn));
+
+      XRRFreeScreenResources(screen);
+      XUngrabServer(display);
+      return true;
+    }
+  }
 
   RRCrtc crtc = None;
   // Set the CRTCs based on whether we want to turn the power on or off and
@@ -620,7 +637,7 @@ bool OutputConfigurator::ScreenPowerSet(bool power_on, bool all_displays) {
         mode = (STATE_DUAL_MIRROR == output_state_) ?
             outputs[i].mirror_mode : outputs[i].native_mode;
       } else if (connected_output_count_ > 1 && !all_displays &&
-                 STATE_DUAL_MIRROR != output_state_ && outputs[i].is_internal) {
+                 outputs[i].is_internal) {
         // Workaround for crbug.com/148365: leave internal display in native
         // mode so user can move cursor (and hence windows) onto internal
         // display even when dimmed
@@ -628,8 +645,6 @@ bool OutputConfigurator::ScreenPowerSet(bool power_on, bool all_displays) {
       }
       crtc = GetNextCrtcAfter(display, screen, output, crtc);
 
-      // The values we are setting are already from the cache so no update
-      // required.
       ConfigureCrtc(display,
                     screen,
                     crtc,
