@@ -303,7 +303,7 @@ public:
     int uTextureLocation() const { return m_uTextureLocation; }
     int vTextureLocation() const { return m_vTextureLocation; }
     int alphaLocation() const { return m_alphaLocation; }
-    int matrixLocation() const { return m_ccMatrixLocation; }
+    int yuvMatrixLocation() const { return m_yuvMatrixLocation; }
     int yuvAdjLocation() const { return m_yuvAdjLocation; }
 
 private:
@@ -311,7 +311,7 @@ private:
     int m_uTextureLocation;
     int m_vTextureLocation;
     int m_alphaLocation;
-    int m_ccMatrixLocation;
+    int m_yuvMatrixLocation;
     int m_yuvAdjLocation;
 };
 

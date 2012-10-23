@@ -877,7 +877,7 @@ void GLRenderer::drawYUVVideoQuad(const DrawingFrame& frame, const YUVVideoDrawQ
         0.f, -.391f, 2.018f,
         1.596f, -.813f, 0.f,
     };
-    GLC(context(), context()->uniformMatrix3fv(program->fragmentShader().matrixLocation(), 1, 0, yuv2RGB));
+    GLC(context(), context()->uniformMatrix3fv(program->fragmentShader().yuvMatrixLocation(), 1, 0, yuv2RGB));
 
     // These values map to 16, 128, and 128 respectively, and are computed
     // as a fraction over 256 (e.g. 16 / 256 = 0.0625).

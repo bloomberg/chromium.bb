@@ -747,7 +747,7 @@ FragmentShaderYUVVideo::FragmentShaderYUVVideo()
     , m_uTextureLocation(-1)
     , m_vTextureLocation(-1)
     , m_alphaLocation(-1)
-    , m_ccMatrixLocation(-1)
+    , m_yuvMatrixLocation(-1)
     , m_yuvAdjLocation(-1)
 {
 }
@@ -759,7 +759,7 @@ void FragmentShaderYUVVideo::init(WebGraphicsContext3D* context, unsigned progra
         "u_texture",
         "v_texture",
         "alpha",
-        "matrix",
+        "yuv_matrix",
         "yuv_adj",
     };
     int locations[6];
@@ -770,11 +770,11 @@ void FragmentShaderYUVVideo::init(WebGraphicsContext3D* context, unsigned progra
     m_uTextureLocation = locations[1];
     m_vTextureLocation = locations[2];
     m_alphaLocation = locations[3];
-    m_ccMatrixLocation = locations[4];
+    m_yuvMatrixLocation = locations[4];
     m_yuvAdjLocation = locations[5];
 
     DCHECK(m_yTextureLocation != -1 && m_uTextureLocation != -1 && m_vTextureLocation != -1
-           && m_alphaLocation != -1 && m_ccMatrixLocation != -1 && m_yuvAdjLocation != -1);
+           && m_alphaLocation != -1 && m_yuvMatrixLocation != -1 && m_yuvAdjLocation != -1);
 }
 
 std::string FragmentShaderYUVVideo::getShaderString() const
@@ -789,14 +789,14 @@ std::string FragmentShaderYUVVideo::getShaderString() const
         uniform sampler2D v_texture;
         uniform float alpha;
         uniform vec3 yuv_adj;
-        uniform mat3 matrix;
+        uniform mat3 yuv_matrix;
         void main()
         {
             float y_raw = texture2D(y_texture, y_texCoord).x;
             float u_unsigned = texture2D(u_texture, uv_texCoord).x;
             float v_unsigned = texture2D(v_texture, uv_texCoord).x;
             vec3 yuv = vec3(y_raw, u_unsigned, v_unsigned) + yuv_adj;
-            vec3 rgb = matrix * yuv;
+            vec3 rgb = yuv_matrix * yuv;
             gl_FragColor = vec4(rgb, float(1)) * alpha;
         }
     );
