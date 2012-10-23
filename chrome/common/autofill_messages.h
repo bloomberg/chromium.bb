@@ -93,10 +93,6 @@ IPC_MESSAGE_ROUTED1(
     AutofillMsg_FieldTypePredictionsAvailable,
     std::vector<FormDataPredictions> /* forms */)
 
-// Select an Autofill item when using an external delegate.
-IPC_MESSAGE_ROUTED1(AutofillMsg_SelectAutofillSuggestionAtIndex,
-                    int /* listIndex */)
-
 // Tells the renderer that the next form will be filled for real.
 IPC_MESSAGE_ROUTED0(AutofillMsg_SetAutofillActionFill)
 

@@ -99,7 +99,6 @@ class AutofillAgent : public content::RenderViewObserver,
       const std::vector<FormDataPredictions>& forms);
 
   // For external Autofill selection.
-  void OnSelectAutofillSuggestionAtIndex(int listIndex);
   void OnSetAutofillActionFill();
   void OnClearForm();
   void OnSetAutofillActionPreview();
