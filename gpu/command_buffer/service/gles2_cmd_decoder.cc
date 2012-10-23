@@ -4747,7 +4747,12 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program) {
                  fragment_translator,
                  feature_info_)) {
     if (info == state_.current_program.get()) {
-      program_manager()->ClearUniforms(info);
+      if (!feature_info_->feature_flags().disable_workarounds) {
+        if (feature_info_->feature_flags().is_nvidia) {
+          glUseProgram(info->service_id());
+        }
+        program_manager()->ClearUniforms(info);
+      }
     }
   }
 };
