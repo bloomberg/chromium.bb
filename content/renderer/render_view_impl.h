@@ -277,9 +277,6 @@ class RenderViewImpl : public RenderWidget,
   bool ScheduleFileChooser(const FileChooserParams& params,
                            WebKit::WebFileChooserCompletion* completion);
 
-  // Sets whether  the renderer should report load progress to the browser.
-  void SetReportLoadProgressEnabled(bool enabled);
-
   old::GuestToEmbedderChannel* GetGuestToEmbedderChannel() const;
   void SetGuestToEmbedderChannel(old::GuestToEmbedderChannel* channel);
   PP_Instance guest_pp_instance() const { return guest_pp_instance_; }
@@ -1473,6 +1470,9 @@ class RenderViewImpl : public RenderWidget,
   std::map<int, WebKit::WebFileChooserCompletion*> enumeration_completions_;
   int enumeration_completion_id_;
 
+  // Reports load progress to the browser.
+  scoped_ptr<LoadProgressTracker> load_progress_tracker_;
+
   // The SessionStorage namespace that we're assigned to has an ID, and that ID
   // is passed to us upon creation.  WebKit asks for this ID upon first use and
   // uses it whenever asking the browser process to allocate new storage areas.
@@ -1501,9 +1501,6 @@ class RenderViewImpl : public RenderWidget,
 
   // The node that the context menu was pressed over.
   WebKit::WebNode context_menu_node_;
-
-  // Reports load progress to the browser.
-  scoped_ptr<LoadProgressTracker> load_progress_tracker_;
 
   // All the registered observers.  We expect this list to be small, so vector
   // is fine.

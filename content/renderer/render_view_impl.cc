@@ -623,6 +623,8 @@ RenderViewImpl::RenderViewImpl(
       expected_content_intent_id_(0),
       media_player_proxy_(NULL),
       synchronous_find_active_match_ordinal_(-1),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          load_progress_tracker_(new LoadProgressTracker(this))),
 #endif
       session_storage_namespace_id_(session_storage_namespace_id),
       handling_select_range_(false),
@@ -862,15 +864,6 @@ void RenderViewImpl::RemoveObserver(RenderViewObserver* observer) {
 
 WebKit::WebView* RenderViewImpl::webview() const {
   return static_cast<WebKit::WebView*>(webwidget());
-}
-
-void RenderViewImpl::SetReportLoadProgressEnabled(bool enabled) {
-  if (!enabled) {
-    load_progress_tracker_.reset(NULL);
-    return;
-  }
-  if (load_progress_tracker_ == NULL)
-    load_progress_tracker_.reset(new LoadProgressTracker(this));
 }
 
 old::GuestToEmbedderChannel* RenderViewImpl::GetGuestToEmbedderChannel() const {
