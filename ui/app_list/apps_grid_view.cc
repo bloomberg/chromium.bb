@@ -49,7 +49,7 @@ class RowMoveAnimationDelegate
                             const gfx::Rect& layer_target)
       : view_(view),
         layer_(layer),
-        layer_start_(layer->bounds()),
+        layer_start_(layer ? layer->bounds() : gfx::Rect()),
         layer_target_(layer_target) {
   }
   virtual ~RowMoveAnimationDelegate() {}
@@ -59,10 +59,12 @@ class RowMoveAnimationDelegate
     view_->layer()->SetOpacity(animation->GetCurrentValue());
     view_->layer()->ScheduleDraw();
 
-    layer_->SetOpacity(1 - animation->GetCurrentValue());
-    layer_->SetBounds(animation->CurrentValueBetween(layer_start_,
-                                                     layer_target_));
-    layer_->ScheduleDraw();
+    if (layer_) {
+      layer_->SetOpacity(1 - animation->GetCurrentValue());
+      layer_->SetBounds(animation->CurrentValueBetween(layer_start_,
+                                                       layer_target_));
+      layer_->ScheduleDraw();
+    }
   }
   virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE {
     view_->layer()->SetOpacity(1.0f);
@@ -472,12 +474,17 @@ void AppsGridView::AnimateToIdealBounds() {
       continue;
 
     const gfx::Rect& current = view->bounds();
-    bool visible = visible_bounds.Contains(current) ||
-        visible_bounds.Contains(target);
+    const bool current_visible = visible_bounds.Intersects(current);
+    const bool target_visible = visible_bounds.Intersects(target);
+    const bool visible = current_visible || target_visible;
 
-    int y_diff = target.y() - current.y();
+    const int y_diff = target.y() - current.y();
     if (visible && y_diff && y_diff % kPreferredTileHeight == 0) {
-      AnimationBetweenRows(view, current, target);
+      AnimationBetweenRows(view,
+                           current_visible,
+                           current,
+                           target_visible,
+                           target);
     } else {
       bounds_animator_.AnimateViewTo(view, target);
     }
@@ -485,35 +492,43 @@ void AppsGridView::AnimateToIdealBounds() {
 }
 
 void AppsGridView::AnimationBetweenRows(views::View* view,
+                                        bool animate_current,
                                         const gfx::Rect& current,
+                                        bool animate_target,
                                         const gfx::Rect& target) {
   const int y_diff = target.y() - current.y();
   // It should be either wrap to next/prev row or next/prev page.
   DCHECK(abs(y_diff) == kPreferredTileHeight ||
          abs(y_diff) == (rows_per_page_ - 1) * kPreferredTileHeight);
 
-  int dir = y_diff == kPreferredTileHeight ||
+  const int dir = y_diff == kPreferredTileHeight ||
       y_diff == (1 - rows_per_page_) * kPreferredTileHeight ? 1 : -1;
 
 #if !defined(OS_WIN)
-  ui::Layer* layer = view->RecreateLayer();
-  layer->SuppressPaint();
+  scoped_ptr<ui::Layer> layer;
+  if (animate_current) {
+    layer.reset(view->RecreateLayer());
+    layer->SuppressPaint();
 
-  view->SetFillsBoundsOpaquely(false);
-  view->layer()->SetOpacity(0.f);
+    view->SetFillsBoundsOpaquely(false);
+    view->layer()->SetOpacity(0.f);
+  }
 
   gfx::Rect current_out(current);
   current_out.Offset(dir * kPreferredTileWidth, 0);
 #endif
 
   gfx::Rect target_in(target);
-  target_in.Offset(-dir * kPreferredTileWidth, 0);
+  if (animate_target)
+    target_in.Offset(-dir * kPreferredTileWidth, 0);
   view->SetBoundsRect(target_in);
   bounds_animator_.AnimateViewTo(view, target);
 
 #if !defined(OS_WIN)
   bounds_animator_.SetAnimationDelegate(
-      view, new RowMoveAnimationDelegate(view, layer, current_out), true);
+      view,
+      new RowMoveAnimationDelegate(view, layer.release(), current_out),
+      true);
 #endif
 }
 
