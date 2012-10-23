@@ -175,8 +175,8 @@ IPC_STRUCT_TRAITS_BEGIN(content::GPUVideoMemoryUsageStats)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::GpuMemoryAllocationForRenderer)
-  IPC_STRUCT_TRAITS_MEMBER(gpu_resource_size_in_bytes)
-  IPC_STRUCT_TRAITS_MEMBER(suggest_have_backbuffer)
+  IPC_STRUCT_TRAITS_MEMBER(bytes_limit_when_visible)
+  IPC_STRUCT_TRAITS_MEMBER(have_backbuffer_when_not_visible)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(gfx::GLSurfaceHandle)

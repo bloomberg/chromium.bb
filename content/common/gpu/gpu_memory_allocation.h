@@ -15,29 +15,26 @@ namespace content {
 
 // Memory Allocation which will be assigned to the renderer context.
 struct GpuMemoryAllocationForRenderer {
-  enum {
-    INVALID_RESOURCE_SIZE = -1
-  };
-
   // Exceeding this limit for an unreasonable amount of time may cause context
   // to be lost.
-  size_t gpu_resource_size_in_bytes;
-  bool suggest_have_backbuffer;
+  size_t bytes_limit_when_visible;
+  bool have_backbuffer_when_not_visible;
 
   GpuMemoryAllocationForRenderer()
-      : gpu_resource_size_in_bytes(0),
-        suggest_have_backbuffer(false) {
+      : bytes_limit_when_visible(0),
+        have_backbuffer_when_not_visible(false) {
   }
 
-  GpuMemoryAllocationForRenderer(size_t gpu_resource_size_in_bytes,
-                                 bool suggest_have_backbuffer)
-      : gpu_resource_size_in_bytes(gpu_resource_size_in_bytes),
-        suggest_have_backbuffer(suggest_have_backbuffer) {
+  GpuMemoryAllocationForRenderer(size_t bytes_limit_when_visible,
+                                 bool have_backbuffer_when_not_visible)
+      : bytes_limit_when_visible(bytes_limit_when_visible),
+        have_backbuffer_when_not_visible(have_backbuffer_when_not_visible) {
   }
 
   bool operator==(const GpuMemoryAllocationForRenderer& other) const {
-    return gpu_resource_size_in_bytes == other.gpu_resource_size_in_bytes &&
-           suggest_have_backbuffer == other.suggest_have_backbuffer;
+    return bytes_limit_when_visible == other.bytes_limit_when_visible &&
+           have_backbuffer_when_not_visible ==
+               other.have_backbuffer_when_not_visible;
   }
   bool operator!=(const GpuMemoryAllocationForRenderer& other) const {
     return !(*this == other);
@@ -66,8 +63,10 @@ struct GpuMemoryAllocationForBrowser {
 
 // Combination of the above two Memory Allocations which will be created by the
 // GpuMemoryManager.
-struct GpuMemoryAllocation : public GpuMemoryAllocationForRenderer,
-                             public GpuMemoryAllocationForBrowser {
+struct GpuMemoryAllocation {
+  GpuMemoryAllocationForRenderer renderer_allocation;
+  GpuMemoryAllocationForBrowser browser_allocation;
+
   // Bitmap
   enum BufferAllocation {
     kHasNoBuffers = 0,
@@ -75,24 +74,20 @@ struct GpuMemoryAllocation : public GpuMemoryAllocationForRenderer,
     kHasBackbuffer = 2
   };
 
-  GpuMemoryAllocation()
-      : GpuMemoryAllocationForRenderer(),
-        GpuMemoryAllocationForBrowser() {
+  GpuMemoryAllocation() {
   }
 
   GpuMemoryAllocation(size_t gpu_resource_size_in_bytes,
                       int allocationBitmap)
-      : GpuMemoryAllocationForRenderer(gpu_resource_size_in_bytes,
+      : renderer_allocation(gpu_resource_size_in_bytes,
             (allocationBitmap & kHasBackbuffer) == kHasBackbuffer),
-        GpuMemoryAllocationForBrowser(
+        browser_allocation(
             (allocationBitmap & kHasFrontbuffer) == kHasFrontbuffer) {
   }
 
   bool operator==(const GpuMemoryAllocation& other) const {
-      return static_cast<const GpuMemoryAllocationForRenderer&>(*this) ==
-             static_cast<const GpuMemoryAllocationForRenderer&>(other) &&
-             static_cast<const GpuMemoryAllocationForBrowser&>(*this) ==
-             static_cast<const GpuMemoryAllocationForBrowser&>(other);
+      return renderer_allocation == other.renderer_allocation &&
+             browser_allocation == other.browser_allocation;
   }
   bool operator!=(const GpuMemoryAllocation& other) const {
     return !(*this == other);

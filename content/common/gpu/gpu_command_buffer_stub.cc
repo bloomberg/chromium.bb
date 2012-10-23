@@ -830,19 +830,20 @@ bool GpuCommandBufferStub::IsInSameContextShareGroup(
       static_cast<const GpuCommandBufferStub&>(other).context_group_;
 }
 
-
 const GpuCommandBufferStubBase::MemoryManagerState&
     GpuCommandBufferStub::memory_manager_state() const {
   return *memory_manager_state_.get();
 }
 void GpuCommandBufferStub::SetMemoryAllocation(
     const GpuMemoryAllocation& allocation) {
-  Send(new GpuCommandBufferMsg_SetMemoryAllocation(route_id_, allocation));
+  Send(new GpuCommandBufferMsg_SetMemoryAllocation(
+      route_id_, allocation.renderer_allocation));
   // This can be called outside of OnMessageReceived, so the context needs to be
   // made current before calling methods on the surface.
   if (!surface_ || !MakeCurrent())
     return;
-  surface_->SetFrontbufferAllocation(allocation.suggest_have_frontbuffer);
+  surface_->SetFrontbufferAllocation(
+      allocation.browser_allocation.suggest_have_frontbuffer);
 }
 
 }  // namespace content

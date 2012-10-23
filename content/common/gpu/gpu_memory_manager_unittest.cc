@@ -116,39 +116,42 @@ class GpuMemoryManagerTest : public testing::Test {
 
   bool IsAllocationForegroundForSurfaceYes(
       const GpuMemoryAllocation& alloc) {
-    return alloc.suggest_have_frontbuffer &&
-           alloc.suggest_have_backbuffer &&
-           alloc.gpu_resource_size_in_bytes >= GetMinimumTabAllocation();
+    return alloc.browser_allocation.suggest_have_frontbuffer &&
+           alloc.renderer_allocation.have_backbuffer_when_not_visible &&
+           alloc.renderer_allocation.bytes_limit_when_visible >=
+               GetMinimumTabAllocation();
   }
   bool IsAllocationBackgroundForSurfaceYes(
       const GpuMemoryAllocation& alloc) {
-    return alloc.suggest_have_frontbuffer &&
-           !alloc.suggest_have_backbuffer &&
-           alloc.gpu_resource_size_in_bytes == 0;
+    return alloc.browser_allocation.suggest_have_frontbuffer &&
+           !alloc.renderer_allocation.have_backbuffer_when_not_visible &&
+           alloc.renderer_allocation.bytes_limit_when_visible == 0;
   }
   bool IsAllocationHibernatedForSurfaceYes(
       const GpuMemoryAllocation& alloc) {
-    return !alloc.suggest_have_frontbuffer &&
-           !alloc.suggest_have_backbuffer &&
-           alloc.gpu_resource_size_in_bytes == 0;
+    return !alloc.browser_allocation.suggest_have_frontbuffer &&
+           !alloc.renderer_allocation.have_backbuffer_when_not_visible &&
+           alloc.renderer_allocation.bytes_limit_when_visible == 0;
   }
   bool IsAllocationForegroundForSurfaceNo(
       const GpuMemoryAllocation& alloc) {
-    return !alloc.suggest_have_frontbuffer &&
-           !alloc.suggest_have_backbuffer &&
-           alloc.gpu_resource_size_in_bytes == GetMinimumTabAllocation();
+    return !alloc.browser_allocation.suggest_have_frontbuffer &&
+           !alloc.renderer_allocation.have_backbuffer_when_not_visible &&
+           alloc.renderer_allocation.bytes_limit_when_visible ==
+               GetMinimumTabAllocation();
   }
   bool IsAllocationBackgroundForSurfaceNo(
       const GpuMemoryAllocation& alloc) {
-    return !alloc.suggest_have_frontbuffer &&
-           !alloc.suggest_have_backbuffer &&
-           alloc.gpu_resource_size_in_bytes == GetMinimumTabAllocation();
+    return !alloc.browser_allocation.suggest_have_frontbuffer &&
+           !alloc.renderer_allocation.have_backbuffer_when_not_visible &&
+           alloc.renderer_allocation.bytes_limit_when_visible ==
+               GetMinimumTabAllocation();
   }
   bool IsAllocationHibernatedForSurfaceNo(
       const GpuMemoryAllocation& alloc) {
-    return !alloc.suggest_have_frontbuffer &&
-           !alloc.suggest_have_backbuffer &&
-           alloc.gpu_resource_size_in_bytes == 0;
+    return !alloc.browser_allocation.suggest_have_frontbuffer &&
+           !alloc.renderer_allocation.have_backbuffer_when_not_visible &&
+           alloc.renderer_allocation.bytes_limit_when_visible == 0;
   }
 
   void Manage() {
@@ -231,8 +234,8 @@ TEST_F(GpuMemoryManagerTest, ComparatorTests) {
 }
 
 // Test GpuMemoryManager::Manage basic functionality.
-// Expect memory allocation to set suggest_have_frontbuffer/backbuffer according
-// to visibility and last used time for stubs with surface.
+// Expect memory allocation to set suggest_have_frontbuffer/backbuffer
+// according to visibility and last used time for stubs with surface.
 // Expect memory allocation to be shared according to share groups for stubs
 // without a surface.
 TEST_F(GpuMemoryManagerTest, TestManageBasicFunctionality) {
@@ -270,8 +273,8 @@ TEST_F(GpuMemoryManagerTest, TestManageBasicFunctionality) {
 }
 
 // Test GpuMemoryManager::Manage functionality: changing visibility.
-// Expect memory allocation to set suggest_have_frontbuffer/backbuffer according
-// to visibility and last used time for stubs with surface.
+// Expect memory allocation to set suggest_have_frontbuffer/backbuffer
+// according to visibility and last used time for stubs with surface.
 // Expect memory allocation to be shared according to share groups for stubs
 // without a surface.
 TEST_F(GpuMemoryManagerTest, TestManageChangingVisibility) {
@@ -508,8 +511,9 @@ TEST_F(GpuMemoryManagerTest, TestForegroundStubsGetBonusAllocation) {
   Manage();
   for (size_t i = 0; i < stubs.size(); ++i) {
     EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stubs[i].allocation_));
-    EXPECT_GT(stubs[i].allocation_.gpu_resource_size_in_bytes,
-              static_cast<size_t>(GetMinimumTabAllocation()));
+    EXPECT_GT(
+        stubs[i].allocation_.renderer_allocation.bytes_limit_when_visible,
+        static_cast<size_t>(GetMinimumTabAllocation()));
   }
 
   FakeCommandBufferStub extra_stub(GenerateUniqueSurfaceId(), true, older_);
@@ -518,8 +522,9 @@ TEST_F(GpuMemoryManagerTest, TestForegroundStubsGetBonusAllocation) {
   Manage();
   for (size_t i = 0; i < stubs.size(); ++i) {
     EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stubs[i].allocation_));
-    EXPECT_EQ(stubs[i].allocation_.gpu_resource_size_in_bytes,
-              GetMinimumTabAllocation());
+    EXPECT_EQ(
+        stubs[i].allocation_.renderer_allocation.bytes_limit_when_visible,
+        GetMinimumTabAllocation());
   }
 }
 #else
@@ -534,24 +539,25 @@ TEST_F(GpuMemoryManagerTest, TestForegroundStubsGetBonusAllocationAndroid) {
   stub.size_ = gfx::Size(1,1);
   Manage();
   EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stub.allocation_));
-  EXPECT_EQ(stub.allocation_.gpu_resource_size_in_bytes,
+  EXPECT_EQ(stub.allocation_.renderer_allocation.bytes_limit_when_visible,
             GetMinimumTabAllocation());
 
   // Keep increasing size, making sure allocation is always increasing
   // Until it finally reaches the maximum.
-  while (stub.allocation_.gpu_resource_size_in_bytes <
+  while (stub.allocation_.renderer_allocation.bytes_limit_when_visible <
       GetAvailableGpuMemory()) {
-    size_t previous_allocation = stub.allocation_.gpu_resource_size_in_bytes;
+    size_t previous_allocation =
+        stub.allocation_.renderer_allocation.bytes_limit_when_visible;
 
     stub.size_ = gfx::ToFlooredSize(stub.size_.Scale(1, 2));
 
     Manage();
     EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stub.allocation_));
-    EXPECT_GE(stub.allocation_.gpu_resource_size_in_bytes,
+    EXPECT_GE(stub.allocation_.renderer_allocation.bytes_limit_when_visible,
               GetMinimumTabAllocation());
-    EXPECT_LE(stub.allocation_.gpu_resource_size_in_bytes,
+    EXPECT_LE(stub.allocation_.renderer_allocation.bytes_limit_when_visible,
               GetAvailableGpuMemory());
-    EXPECT_GE(stub.allocation_.gpu_resource_size_in_bytes,
+    EXPECT_GE(stub.allocation_.renderer_allocation.bytes_limit_when_visible,
               previous_allocation);
   }
 
@@ -560,7 +566,7 @@ TEST_F(GpuMemoryManagerTest, TestForegroundStubsGetBonusAllocationAndroid) {
 
   Manage();
   EXPECT_TRUE(IsAllocationForegroundForSurfaceYes(stub.allocation_));
-  EXPECT_EQ(stub.allocation_.gpu_resource_size_in_bytes,
+  EXPECT_EQ(stub.allocation_.renderer_allocation.bytes_limit_when_visible,
             GetAvailableGpuMemory());
 }
 #endif
@@ -624,7 +630,8 @@ TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
   client_.stubs_.push_back(&stub1);
   Manage();
   stats = memory_manager_.stub_memory_stats_for_last_manage();
-  size_t stub1allocation1 = stats[&stub1].allocation.gpu_resource_size_in_bytes;
+  size_t stub1allocation1 =
+      stats[&stub1].allocation.renderer_allocation.bytes_limit_when_visible;
 
   EXPECT_EQ(stats.size(), 1ul);
   EXPECT_TRUE(stats[&stub1].visible);
@@ -635,8 +642,10 @@ TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
   stub2.share_group_.push_back(&stub1);
   Manage();
   stats = memory_manager_.stub_memory_stats_for_last_manage();
-  size_t stub1allocation2 = stats[&stub1].allocation.gpu_resource_size_in_bytes;
-  size_t stub2allocation2 = stats[&stub2].allocation.gpu_resource_size_in_bytes;
+  size_t stub1allocation2 =
+      stats[&stub1].allocation.renderer_allocation.bytes_limit_when_visible;
+  size_t stub2allocation2 =
+      stats[&stub2].allocation.renderer_allocation.bytes_limit_when_visible;
 
   EXPECT_EQ(stats.size(), 2ul);
   EXPECT_TRUE(stats[&stub1].visible);
@@ -651,9 +660,12 @@ TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
   client_.stubs_.push_back(&stub3);
   Manage();
   stats = memory_manager_.stub_memory_stats_for_last_manage();
-  size_t stub1allocation3 = stats[&stub1].allocation.gpu_resource_size_in_bytes;
-  size_t stub2allocation3 = stats[&stub2].allocation.gpu_resource_size_in_bytes;
-  size_t stub3allocation3 = stats[&stub3].allocation.gpu_resource_size_in_bytes;
+  size_t stub1allocation3 =
+      stats[&stub1].allocation.renderer_allocation.bytes_limit_when_visible;
+  size_t stub2allocation3 =
+      stats[&stub2].allocation.renderer_allocation.bytes_limit_when_visible;
+  size_t stub3allocation3 =
+      stats[&stub3].allocation.renderer_allocation.bytes_limit_when_visible;
 
   EXPECT_EQ(stats.size(), 3ul);
   EXPECT_TRUE(stats[&stub1].visible);
@@ -669,9 +681,12 @@ TEST_F(GpuMemoryManagerTest, StubMemoryStatsForLastManageTests) {
   stub1.memory_manager_state_.visible = false;
   Manage();
   stats = memory_manager_.stub_memory_stats_for_last_manage();
-  size_t stub1allocation4 = stats[&stub1].allocation.gpu_resource_size_in_bytes;
-  size_t stub2allocation4 = stats[&stub2].allocation.gpu_resource_size_in_bytes;
-  size_t stub3allocation4 = stats[&stub3].allocation.gpu_resource_size_in_bytes;
+  size_t stub1allocation4 =
+      stats[&stub1].allocation.renderer_allocation.bytes_limit_when_visible;
+  size_t stub2allocation4 =
+      stats[&stub2].allocation.renderer_allocation.bytes_limit_when_visible;
+  size_t stub3allocation4 =
+      stats[&stub3].allocation.renderer_allocation.bytes_limit_when_visible;
 
   EXPECT_EQ(stats.size(), 3ul);
   EXPECT_FALSE(stats[&stub1].visible);

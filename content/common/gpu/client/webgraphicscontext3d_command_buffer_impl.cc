@@ -1413,8 +1413,8 @@ void WebGraphicsContext3DCommandBufferImpl::OnMemoryAllocationChanged(
   if (memory_allocation_changed_callback_)
     memory_allocation_changed_callback_->onMemoryAllocationChanged(
         WebKit::WebGraphicsMemoryAllocation(
-            allocation.gpu_resource_size_in_bytes,
-            allocation.suggest_have_backbuffer));
+            allocation.bytes_limit_when_visible,
+            allocation.have_backbuffer_when_not_visible));
 }
 
 void WebGraphicsContext3DCommandBufferImpl::setErrorMessageCallback(
