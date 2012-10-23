@@ -93,10 +93,6 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   // default location.
   bool prompt_user_for_save_location;
 
-  // The charset of the referring page where the download request comes from.
-  // It's used to construct a suggested filename.
-  std::string referrer_charset;
-
   // The download file save info.
   scoped_ptr<content::DownloadSaveInfo> save_info;
 

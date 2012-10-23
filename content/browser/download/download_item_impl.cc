@@ -205,7 +205,6 @@ DownloadItemImpl::DownloadItemImpl(
       content_disposition_(info.content_disposition),
       mime_type_(info.mime_type),
       original_mime_type_(info.original_mime_type),
-      referrer_charset_(info.referrer_charset),
       remote_address_(info.remote_address),
       total_bytes_(info.total_bytes),
       received_bytes_(0),
@@ -552,10 +551,6 @@ std::string DownloadItemImpl::GetMimeType() const {
 
 std::string DownloadItemImpl::GetOriginalMimeType() const {
   return original_mime_type_;
-}
-
-std::string DownloadItemImpl::GetReferrerCharset() const {
-  return referrer_charset_;
 }
 
 std::string DownloadItemImpl::GetRemoteAddress() const {

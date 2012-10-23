@@ -400,7 +400,6 @@ void ChromeURLRequestContext::OnAcceptLanguageChange(
 void ChromeURLRequestContext::OnDefaultCharsetChange(
     const std::string& default_charset) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  set_referrer_charset(default_charset);
   set_accept_charset(
       net::HttpUtil::GenerateAcceptCharsetHeader(default_charset));
 }

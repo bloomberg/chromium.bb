@@ -186,7 +186,6 @@ class ProfileIOData {
     FilePath path;
     std::string accept_language;
     std::string accept_charset;
-    std::string referrer_charset;
     IOThread* io_thread;
     scoped_refptr<CookieSettings> cookie_settings;
     scoped_refptr<net::SSLConfigService> ssl_config_service;

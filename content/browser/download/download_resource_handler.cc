@@ -196,7 +196,6 @@ bool DownloadResourceHandler::OnResponseStarted(
 
   info->prompt_user_for_save_location =
       save_info_->prompt_for_save_location && save_info_->file_path.empty();
-  info->referrer_charset = request_->context()->referrer_charset();
   info->save_info = save_info_.Pass();
 
   BrowserThread::PostTask(

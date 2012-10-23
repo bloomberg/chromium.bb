@@ -194,7 +194,6 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   virtual std::string GetContentDisposition() const = 0;
   virtual std::string GetMimeType() const = 0;
   virtual std::string GetOriginalMimeType() const = 0;
-  virtual std::string GetReferrerCharset() const = 0;
   virtual std::string GetRemoteAddress() const = 0;
   virtual bool HasUserGesture() const = 0;
   virtual PageTransition GetTransitionType() const = 0;

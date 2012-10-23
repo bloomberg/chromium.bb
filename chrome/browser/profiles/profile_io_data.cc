@@ -151,20 +151,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->accept_charset =
       net::HttpUtil::GenerateAcceptCharsetHeader(default_charset);
 
-  // At this point, we don't know the charset of the referring page
-  // where a url request originates from. This is used to get a suggested
-  // filename from Content-Disposition header made of raw 8bit characters.
-  // Down the road, it can be overriden if it becomes known (for instance,
-  // when download request is made through the context menu in a web page).
-  // At the moment, it'll remain 'undeterministic' when a user
-  // types a URL in the omnibar or click on a download link in a page.
-  // For the latter, we need a change on the webkit-side.
-  // We initialize it to the default charset here and a user will
-  // have an *arguably* better default charset for interpreting a raw 8bit
-  // C-D header field.  It means the native OS codepage fallback in
-  // net_util::GetSuggestedFilename is unlikely to be taken.
-  params->referrer_charset = default_charset;
-
   params->io_thread = g_browser_process->io_thread();
 
   params->cookie_settings = CookieSettings::Factory::GetForProfile(profile);
@@ -594,7 +580,6 @@ void ProfileIOData::ApplyProfileParamsToContext(
   context->set_is_incognito(is_incognito());
   context->set_accept_language(profile_params_->accept_language);
   context->set_accept_charset(profile_params_->accept_charset);
-  context->set_referrer_charset(profile_params_->referrer_charset);
   context->set_ssl_config_service(profile_params_->ssl_config_service);
 }
 

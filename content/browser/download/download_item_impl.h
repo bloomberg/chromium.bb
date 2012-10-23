@@ -96,7 +96,6 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual std::string GetContentDisposition() const OVERRIDE;
   virtual std::string GetMimeType() const OVERRIDE;
   virtual std::string GetOriginalMimeType() const OVERRIDE;
-  virtual std::string GetReferrerCharset() const OVERRIDE;
   virtual std::string GetRemoteAddress() const OVERRIDE;
   virtual bool HasUserGesture() const OVERRIDE;
   virtual content::PageTransition GetTransitionType() const OVERRIDE;
@@ -383,10 +382,6 @@ class CONTENT_EXPORT DownloadItemImpl
   // may be different from |mime_type_|, which may be set based on heuristics
   // which may look at the file extension and first few bytes of the file.
   std::string original_mime_type_;
-
-  // The charset of the referring page where the download request comes from.
-  // It's used to construct a suggested filename.
-  std::string referrer_charset_;
 
   // The remote IP address where the download was fetched from.  Copied from
   // DownloadCreateInfo::remote_address.
