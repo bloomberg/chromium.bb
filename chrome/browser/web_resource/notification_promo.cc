@@ -11,6 +11,7 @@
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/sys_info.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -178,6 +179,12 @@ base::Value* DeepCopyAndResolveStrings(
       // For everything else, just make a copy.
       return node->DeepCopy();
   }
+}
+
+void AppendQueryParameter(GURL* url,
+                          const std::string& param,
+                          const std::string& value) {
+  *url = chrome_common_net::AppendQueryParameter(*url, param, value);
 }
 
 }  // namespace
@@ -432,12 +439,10 @@ bool NotificationPromo::IsGPlusRequired() const {
 // static
 GURL NotificationPromo::PromoServerURL() {
   GURL url(promo_server_url);
-  url = chrome_common_net::AppendQueryParameter(
-      url, "dist", ChannelString());
-  url = chrome_common_net::AppendQueryParameter(
-      url, "osname", PlatformString());
-  url = chrome_common_net::AppendQueryParameter(
-      url, "branding", chrome::VersionInfo().Version());
+  AppendQueryParameter(&url, "dist", ChannelString());
+  AppendQueryParameter(&url, "osname", PlatformString());
+  AppendQueryParameter(&url, "branding", chrome::VersionInfo().Version());
+  AppendQueryParameter(&url, "osver", base::SysInfo::OperatingSystemVersion());
   DVLOG(1) << "PromoServerURL=" << url.spec();
   // Note that locale param is added by WebResourceService.
   return url;
