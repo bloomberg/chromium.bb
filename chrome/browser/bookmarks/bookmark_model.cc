@@ -80,13 +80,13 @@ void BookmarkNode::Initialize(int64 id) {
   id_ = id;
   type_ = url_.is_empty() ? FOLDER : URL;
   date_added_ = Time::Now();
-  is_favicon_loaded_ = false;
+  favicon_state_ = INVALID_FAVICON;
   favicon_load_handle_ = 0;
 }
 
 void BookmarkNode::InvalidateFavicon() {
   favicon_ = gfx::Image();
-  is_favicon_loaded_ = false;
+  favicon_state_ = INVALID_FAVICON;
 }
 
 namespace {
@@ -303,9 +303,9 @@ void BookmarkModel::Copy(const BookmarkNode* node,
 
 const gfx::Image& BookmarkModel::GetFavicon(const BookmarkNode* node) {
   DCHECK(node);
-  if (!node->is_favicon_loaded()) {
+  if (node->favicon_state() == BookmarkNode::INVALID_FAVICON) {
     BookmarkNode* mutable_node = AsMutable(node);
-    mutable_node->set_is_favicon_loaded(true);
+    mutable_node->set_favicon_state(BookmarkNode::LOADING_FAVICON);
     LoadFavicon(mutable_node);
   }
   return node->favicon();
@@ -794,6 +794,7 @@ void BookmarkModel::OnFaviconDataAvailable(
               profile_, Profile::EXPLICIT_ACCESS), handle);
   DCHECK(node);
   node->set_favicon_load_handle(0);
+  node->set_favicon_state(BookmarkNode::LOADED_FAVICON);
   if (!image_result.image.IsEmpty()) {
     node->set_favicon(image_result.image);
     FaviconLoaded(node);

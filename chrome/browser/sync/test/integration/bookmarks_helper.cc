@@ -8,13 +8,16 @@
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
@@ -27,6 +30,27 @@
 using sync_datatype_helper::test;
 
 namespace {
+
+// History task which runs all pending tasks on the history thread and
+// signals when the tasks have completed.
+class HistoryEmptyTask : public HistoryDBTask {
+ public:
+  explicit HistoryEmptyTask(base::WaitableEvent* done) : done_(done) {}
+
+  virtual bool RunOnDBThread(history::HistoryBackend* backend,
+                             history::HistoryDatabase* db) {
+    content::RunAllPendingInMessageLoop();
+    done_->Signal();
+    return true;
+  }
+
+  virtual void DoneRunOnMainThread() {}
+
+ private:
+  virtual ~HistoryEmptyTask() {}
+
+  base::WaitableEvent* done_;
+};
 
 // Helper class used to wait for changes to take effect on the favicon of a
 // particular bookmark node in a particular bookmark model.
@@ -45,6 +69,7 @@ class FaviconChangeObserver : public BookmarkModelObserver {
     wait_for_load_ = true;
     content::RunMessageLoop();
     ASSERT_TRUE(node_->is_favicon_loaded());
+    ASSERT_FALSE(model_->GetFavicon(node_).IsEmpty());
   }
   void WaitForSetFavicon() {
     wait_for_load_ = false;
@@ -154,7 +179,60 @@ gfx::Image GetFavicon(BookmarkModel* model, const BookmarkNode* node) {
     observer.WaitForGetFavicon();
   }
   EXPECT_TRUE(node->is_favicon_loaded());
+  EXPECT_FALSE(model->GetFavicon(node).IsEmpty());
   return model->GetFavicon(node);
+}
+
+// Sets the favicon for |profile| and |node|. |profile| may be
+// |test()->verifier()|.
+void SetFaviconImpl(Profile* profile,
+                    const BookmarkNode* node,
+                    const gfx::Image& image) {
+    BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
+
+    FaviconChangeObserver observer(model, node);
+    FaviconService* favicon_service =
+        FaviconServiceFactory::GetForProfile(profile,
+                                             Profile::EXPLICIT_ACCESS);
+    favicon_service->SetFavicons(node->url(),
+                                 node->url(),
+                                 history::FAVICON,
+                                 image);
+
+    // Wait for the favicon for |node| to be invalidated.
+    observer.WaitForSetFavicon();
+    // Wait for the BookmarkModel to fetch the updated favicon and for the new
+    // favicon to be sent to BookmarkChangeProcessor.
+    GetFavicon(model, node);
+}
+
+// Wait for all currently scheduled tasks on the history thread for all
+// profiles to complete and any notifications sent to the UI thread to have
+// finished processing.
+void WaitForHistoryToProcessPendingTasks() {
+  // Skip waiting for history to complete for tests without favicons.
+  if (!urls_with_favicons_)
+    return;
+
+  std::vector<Profile*> profiles_which_need_to_wait;
+  if (test()->use_verifier())
+    profiles_which_need_to_wait.push_back(test()->verifier());
+  for (int i = 0; i < test()->num_clients(); ++i)
+    profiles_which_need_to_wait.push_back(test()->GetProfile(i));
+
+  for (size_t i = 0; i < profiles_which_need_to_wait.size(); ++i) {
+    Profile* profile = profiles_which_need_to_wait[i];
+    HistoryService* history_service =
+        HistoryServiceFactory::GetForProfileWithoutCreating(profile);
+    base::WaitableEvent done(false, false);
+    CancelableRequestConsumer request_consumer;
+    history_service->ScheduleDBTask(new HistoryEmptyTask(&done),
+        &request_consumer);
+    done.Wait();
+  }
+  // Wait such that any notifications broadcast from one of the history threads
+  // to the UI thread are processed.
+  content::RunAllPendingInMessageLoop();
 }
 
 // Checks if the favicon in |node_a| from |model_a| matches that of |node_b|
@@ -380,6 +458,9 @@ void SetTitle(int profile,
 void SetFavicon(int profile,
                 const BookmarkNode* node,
                 const std::vector<unsigned char>& icon_bytes_vector) {
+  scoped_refptr<base::RefCountedBytes> bitmap_data(
+      new base::RefCountedBytes(icon_bytes_vector));
+  gfx::Image image(bitmap_data->front(), bitmap_data->size());
   ASSERT_EQ(GetBookmarkModel(profile)->GetNodeByID(node->id()), node)
       << "Node " << node->GetTitle() << " does not belong to "
       << "Profile " << profile;
@@ -391,15 +472,9 @@ void SetFavicon(int profile,
   if (test()->use_verifier()) {
     const BookmarkNode* v_node = NULL;
     FindNodeInVerifier(GetBookmarkModel(profile), node, &v_node);
-    FaviconChangeObserver v_observer(GetVerifierBookmarkModel(), v_node);
-    browser_sync::BookmarkChangeProcessor::ApplyBookmarkFavicon(
-        v_node, test()->verifier(), icon_bytes_vector);
-    v_observer.WaitForSetFavicon();
+    SetFaviconImpl(test()->verifier(), v_node, image);
   }
-  FaviconChangeObserver observer(GetBookmarkModel(profile), node);
-  browser_sync::BookmarkChangeProcessor::ApplyBookmarkFavicon(
-      node, test()->GetProfile(profile), icon_bytes_vector);
-  observer.WaitForSetFavicon();
+  SetFaviconImpl(test()->GetProfile(profile), node, image);
 }
 
 const BookmarkNode* SetURL(int profile,
@@ -495,6 +570,11 @@ bool ModelMatchesVerifier(int profile) {
 }
 
 bool AllModelsMatchVerifier() {
+  // Ensure that all tasks have finished processing on the history thread
+  // and that any notifications the history thread may have sent have been
+  // processed before comparing models.
+  WaitForHistoryToProcessPendingTasks();
+
   for (int i = 0; i < test()->num_clients(); ++i) {
     if (!ModelMatchesVerifier(i)) {
       LOG(ERROR) << "Model " << i << " does not match the verifier.";
@@ -510,6 +590,11 @@ bool ModelsMatch(int profile_a, int profile_b) {
 }
 
 bool AllModelsMatch() {
+  // Ensure that all tasks have finished processing on the history thread
+  // and that any notifications the history thread may have sent have been
+  // processed before comparing models.
+  WaitForHistoryToProcessPendingTasks();
+
   for (int i = 1; i < test()->num_clients(); ++i) {
     if (!ModelsMatch(0, i)) {
       LOG(ERROR) << "Model " << i << " does not match Model 0.";

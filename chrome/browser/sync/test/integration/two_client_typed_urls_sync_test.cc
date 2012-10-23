@@ -444,16 +444,20 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, BookmarksWithTypedVisit) {
   GURL bookmark_url("http://www.bookmark.google.com/");
   ASSERT_TRUE(SetupClients());
-  // Create a bookmark - this should yield a row in the DB.
+  // Create a bookmark.
   const BookmarkNode* node = bookmarks_helper::AddURL(
       0, bookmarks_helper::IndexedURLTitle(0), bookmark_url);
   bookmarks_helper::SetFavicon(0, node, bookmarks_helper::CreateFavicon(254));
-  history::URLRow row;
-  ASSERT_TRUE(GetUrlFromClient(0, bookmark_url, &row));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  // Now, add a typed visit to the bookmark URL and sync it over - this should
-  // not cause a crash.
+  // A row in the DB for client 1 should have been created as a result of the
+  // sync.
+  history::URLRow row;
+  ASSERT_TRUE(GetUrlFromClient(1, bookmark_url, &row));
+
+  // Now, add a typed visit for client 0 to the bookmark URL and sync it over
+  // - this should not cause a crash.
   AddUrlToHistory(0, bookmark_url);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 

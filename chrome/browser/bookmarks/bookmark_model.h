@@ -52,6 +52,12 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
     MOBILE
   };
 
+  enum FaviconState {
+    INVALID_FAVICON,
+    LOADING_FAVICON,
+    LOADED_FAVICON,
+  };
+
   // Creates a new node with an id of 0 and |url|.
   explicit BookmarkNode(const GURL& url);
   // Creates a new node with |id| and |url|.
@@ -94,7 +100,7 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   bool is_folder() const { return type_ != URL; }
   bool is_url() const { return type_ == URL; }
 
-  bool is_favicon_loaded() const { return is_favicon_loaded_; }
+  bool is_favicon_loaded() const { return favicon_state_ == LOADED_FAVICON; }
 
   // Accessor method for controlling the visibility of a bookmark node/sub-tree.
   // Note that visibility is not propagated down the tree hierarchy so if a
@@ -118,7 +124,8 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   const gfx::Image& favicon() const { return favicon_; }
   void set_favicon(const gfx::Image& icon) { favicon_ = icon; }
 
-  void set_is_favicon_loaded(bool loaded) { is_favicon_loaded_ = loaded; }
+  FaviconState favicon_state() const { return favicon_state_; }
+  void set_favicon_state(FaviconState state) { favicon_state_ = state; }
 
   HistoryService::Handle favicon_load_handle() const {
     return favicon_load_handle_;
@@ -146,8 +153,8 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   // The favicon of this node.
   gfx::Image favicon_;
 
-  // Whether the favicon has been loaded.
-  bool is_favicon_loaded_;
+  // The loading state of the favicon.
+  FaviconState favicon_state_;
 
   // If non-zero, it indicates we're loading the favicon and this is the handle
   // from the HistoryService.
