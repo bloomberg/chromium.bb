@@ -698,6 +698,12 @@ const char kCarrierVerizon[] = "Verizon Wireless";
 // Geolocation property field names.
 // Reference:
 //    https://devsite.googleplex.com/maps/documentation/business/geolocation/
+// Top level properties for a Geolocation request.
+const char kGeoHomeMobileCountryCodeProperty[] = "homeMobileCountryCode";
+const char kGeoHomeMobileNetworkCodeProperty[] = "homeMobileNetworkCode";
+const char kGeoRadioTypePropertyProperty[] = "radioType";
+const char kGeoCellTowersProperty[] = "cellTowers";
+const char kGeoWifiAccessPointsProperty[] = "wifiAccessPoints";
 // Cell tower object property names.
 const char kGeoCellIdProperty[] = "cellId";
 const char kGeoLocationAreaCodeProperty[] = "locationAreaCode";
@@ -708,7 +714,7 @@ const char kGeoTimingAdvanceProperty[] = "timingAdvance";
 const char kGeoMacAddressProperty[] = "macAddress";
 const char kGeoChannelProperty[] = "channel";
 const char kGeoSignalToNoiseRatioProperty[] = "signalToNoiseRatio";
-// Common property names.
+// Common property names for geolocation objects.
 const char kGeoAgeProperty[] = "age";
 const char kGeoSignalStrengthProperty[] = "signalStrength";
 }  // namespace shill
