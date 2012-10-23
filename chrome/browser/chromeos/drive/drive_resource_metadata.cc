@@ -48,6 +48,18 @@ void PostGetEntryInfoWithFilePathCallbackError(
 
 }  // namespace
 
+std::string ContentOriginToString(ContentOrigin origin) {
+  switch (origin) {
+    case UNINITIALIZED: return "UNINITIALIZED";
+    case INITIALIZING: return "INITIALIZING";
+    case REFRESHING: return "REFRESHING";
+    case FROM_CACHE: return "FROM_CACHE";
+    case FROM_SERVER: return "FROM_SERVER";
+  };
+  NOTREACHED();
+  return "(unknown content origin)";
+}
+
 EntryInfoResult::EntryInfoResult() : error(DRIVE_FILE_ERROR_FAILED) {
 }
 

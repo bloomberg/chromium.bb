@@ -129,6 +129,8 @@ function updateAccountMetadata(accountMetadata) {
       accountMetadata['account-largest-changestamp-remote'];
   $('account-largest-changestamp-local').textContent =
       accountMetadata['account-largest-changestamp-local'];
+  $('account-metadata-origin').textContent =
+      accountMetadata['account-metadata-origin'];
 
   var installedAppContainer = $('account-installed-apps');
   for (var i = 0; i < accountMetadata['installed-apps'].length; i++) {

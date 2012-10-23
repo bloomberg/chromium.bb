@@ -40,10 +40,11 @@ struct SearchResultInfo {
 
 // Metadata of DriveFileSystem. Used by DriveFileSystem::GetMetadata().
 struct DriveFileSystemMetadata {
-  DriveFileSystemMetadata() : largest_changestamp(0) {}
+  DriveFileSystemMetadata() : largest_changestamp(0), origin("?") {}
   ~DriveFileSystemMetadata() {}
 
   int64 largest_changestamp;
+  std::string origin;
 };
 
 // Used to get files from the file system.

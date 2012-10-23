@@ -2174,6 +2174,7 @@ void DriveFileSystem::UpdateCacheEntryOnUIThread(
 DriveFileSystemMetadata DriveFileSystem::GetMetadata() const {
   DriveFileSystemMetadata metadata;
   metadata.largest_changestamp = resource_metadata_->largest_changestamp();
+  metadata.origin = ContentOriginToString(resource_metadata_->origin());
   return metadata;
 }
 

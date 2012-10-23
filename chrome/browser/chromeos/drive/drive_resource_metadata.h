@@ -55,6 +55,9 @@ enum ContentOrigin {
   FROM_SERVER,
 };
 
+// Converts a ContentOrigin constant to a string of its name.
+std::string ContentOriginToString(ContentOrigin origin);
+
 // The root directory name used for the Google Drive file system tree. The
 // name is used in URLs for the file manager, hence user-visible.
 const FilePath::CharType kDriveRootDirectory[] = FILE_PATH_LITERAL("drive");
