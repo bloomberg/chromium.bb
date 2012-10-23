@@ -180,6 +180,10 @@
                 '-march=armv7-a',
                 '-mtune=cortex-a8',
               ],
+              # On arm we use gcc to compile the assembly.
+              'sources': [
+                '<@(asm_sources)',
+              ],
               'conditions': [
                 ['arm_neon == 0', {
                   'cflags': [
