@@ -242,9 +242,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   RunPermissionTest("split", false, false, "redirected1", "");
 }
 
-// This test frequently times out and crashes on CrOS (dbg).
-// See http://crbug.com/152859
-#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && !defined(NDEBUG)
+// This test frequently times out and crashes in debug, see crbug.com/152859.
+#if !defined(NDEBUG)
 #define MAYBE_PostData DISABLED_PostData
 #else
 #define MAYBE_PostData PostData
