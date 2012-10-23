@@ -498,6 +498,8 @@ class ShellUtil {
                                         bool elevate_if_not_admin);
 
   // Removes installed Chrome shortcut at |location|.
+  // |chrome_exe|: The path to the chrome.exe being uninstalled; the shortcut
+  // will only be deleted if its target is also |chrome_exe|.
   // |level|: CURRENT_USER to remove the per-user shortcut and SYSTEM_LEVEL to
   // remove the all-users shortcut.
   // |shortcut_name|: If non-null, remove the shortcut named |shortcut_name| at
@@ -505,9 +507,11 @@ class ShellUtil {
   // If |location| is SHORTCUT_START_MENU the shortcut folder specific to |dist|
   // is deleted.
   // Also attempts to unpin the removed shortcut from the taskbar.
-  // Returns true on success or if no shortcut is found at |location|.
+  // Returns true if the shortcut was successfully deleted (or there is no
+  // shortcut at |location| pointing to |chrome_exe|).
   static bool RemoveChromeShortcut(ChromeShortcutLocation location,
                                    BrowserDistribution* dist,
+                                   const string16& chrome_exe,
                                    ShellChange level,
                                    const string16* shortcut_name);
 

@@ -263,18 +263,23 @@ void ProfileShortcutManagerWin::OnProfileWasRemoved(
     profile_name_updated = profile_name;
 
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-          base::Bind(&CallBoolFunction, base::Bind(
-              &ShellUtil::RemoveChromeShortcut, ShellUtil::SHORTCUT_DESKTOP,
-              dist, ShellUtil::CURRENT_USER,
-              &GetShortcutNameForProfile(profile_name_updated))));
+  FilePath chrome_exe;
+  if (PathService::Get(base::FILE_EXE, &chrome_exe)) {
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+            base::Bind(&CallBoolFunction, base::Bind(
+                &ShellUtil::RemoveChromeShortcut, ShellUtil::SHORTCUT_DESKTOP,
+                dist, chrome_exe.value(), ShellUtil::CURRENT_USER,
+                &GetShortcutNameForProfile(profile_name_updated))));
 
-  FilePath icon_path = profile_path.AppendASCII(kProfileIconFileName);
-  BrowserThread::PostTask(
+    FilePath icon_path = profile_path.AppendASCII(kProfileIconFileName);
+    BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
             base::Bind(&CallBoolFunction, base::Bind(
                 &file_util::Delete, icon_path, false)));
+  } else {
+    NOTREACHED();
+  }
 }
 
 void ProfileShortcutManagerWin::OnProfileNameChanged(

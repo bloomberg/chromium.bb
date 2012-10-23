@@ -1792,6 +1792,7 @@ bool ShellUtil::RegisterChromeForProtocol(BrowserDistribution* dist,
 bool ShellUtil::RemoveChromeShortcut(
     ChromeShortcutLocation location,
     BrowserDistribution* dist,
+    const string16& chrome_exe,
     ShellChange level,
     const string16* shortcut_name) {
   bool delete_folder = (location == SHORTCUT_START_MENU);
@@ -1808,15 +1809,38 @@ bool ShellUtil::RemoveChromeShortcut(
       installer::kLnkExt);
   FilePath shortcut_path(shortcut_folder.Append(shortcut_base_name));
 
-  // Unpin the shortcut if it was ever pinned by the user or the installer.
-  VLOG(1) << "Trying to unpin " << shortcut_path.value();
-  if (!base::win::TaskbarUnpinShortcutLink(shortcut_path.value().c_str()))
-    VLOG(1) << shortcut_path.value() << " wasn't pinned (or the unpin failed).";
+  if (!file_util::PathExists(shortcut_path))
+    return true;
 
-  if (delete_folder)
-    return file_util::Delete(shortcut_folder, true);
-  else
-    return file_util::Delete(shortcut_path, false);
+  base::win::ScopedComPtr<IShellLink> i_shell_link;
+  base::win::ScopedComPtr<IPersistFile> i_persist_file;
+  wchar_t read_target[MAX_PATH] = {};
+  if (FAILED(i_shell_link.CreateInstance(CLSID_ShellLink, NULL,
+                                         CLSCTX_INPROC_SERVER)) ||
+      FAILED(i_persist_file.QueryFrom(i_shell_link)) ||
+      FAILED(i_persist_file->Load(shortcut_path.value().c_str(), STGM_READ)) ||
+      FAILED(i_shell_link->GetPath(read_target, MAX_PATH, NULL,
+                                   SLGP_SHORTPATH))) {
+    NOTREACHED();
+    return false;
+  }
+
+  if (InstallUtil::ProgramCompare(FilePath(chrome_exe)).Evaluate(read_target)) {
+    // Unpin the shortcut if it was ever pinned by the user or the installer.
+    VLOG(1) << "Trying to unpin " << shortcut_path.value();
+    if (!base::win::TaskbarUnpinShortcutLink(shortcut_path.value().c_str())) {
+      VLOG(1) << shortcut_path.value()
+              << " wasn't pinned (or the unpin failed).";
+    }
+    if (delete_folder)
+      return file_util::Delete(shortcut_folder, true);
+    else
+      return file_util::Delete(shortcut_path, false);
+  }
+
+  // The shortcut at |shortcut_path| doesn't point to |chrome_exe|, act as if
+  // our shortcut had been deleted.
+  return true;
 }
 
 void ShellUtil::RemoveChromeStartScreenShortcuts(BrowserDistribution* dist,
