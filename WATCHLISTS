@@ -170,6 +170,10 @@
                   '|chrome/browser/ui/cocoa/download/' \
                   '|chrome/browser/ui/gtk/download/'
     },
+    'drive': {
+      'filepath': 'chrome/browser/chromeos/drive/' \
+                  '|chrome/browser/google_apis/'
+    },
     'extension': {
       'filepath': 'extension',
     },
@@ -187,9 +191,6 @@
     },
     'fullscreen_controller': {
       'filepath': 'fullscreen_controller',
-    },
-    'gdata': {
-      'filepath': 'gdata'
     },
     'gfx_image': {
       'filepath': 'ui/gfx/image/',
@@ -518,13 +519,13 @@
     'dns': ['mmenke@chromium.org'],
     'download': ['rdsmith+dwatch@chromium.org'],
     'downloads_ui': ['asanka@chromium.org', 'rdsmith@chromium.org'],
+    'drive': ['achuith+watch@chromium.org'],
     'extension': ['aa@chromium.org',
                   'chromium-apps-reviews@chromium.org'],
     'fileapi': ['kinuko+watch@chromium.org', 'tzik+watch@chromium.org'],
     'filebrowse': ['rginda+watch@chromium.org'],
     'ftp': ['phajdan.jr@chromium.org'],
     'fullscreen_controller': ['scheib+watch@chromium.org'],
-    'gdata': ['achuith+watch@chromium.org'],
     'gfx_geometry': ['cc-bugs@chromium.org'],
     'gfx_image': ['rsesek+watch@chromium.org'],
     'gpu': ['apatrick@chromium.org'],
