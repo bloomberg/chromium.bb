@@ -1756,6 +1756,7 @@ notify_pointer_focus(struct weston_seat *seat, struct weston_output *output,
 	struct wl_pointer *pointer = seat->seat.pointer;
 
 	if (output) {
+		clip_pointer_motion(seat, &x, &y);
 		weston_seat_update_drag_surface(seat,
 						x - pointer->x,
 						y - pointer->y);
