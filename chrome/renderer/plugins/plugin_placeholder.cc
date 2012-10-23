@@ -234,6 +234,9 @@ PluginPlaceholder::PluginPlaceholder(content::RenderView* render_view,
 
 PluginPlaceholder::~PluginPlaceholder() {
   RenderThread::Get()->RemoveObserver(this);
+  if (context_menu_request_id_)
+    render_view()->CancelContextMenu(context_menu_request_id_);
+
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   if (placeholder_routing_id_ == MSG_ROUTING_NONE)
     return;
@@ -244,8 +247,6 @@ PluginPlaceholder::~PluginPlaceholder() {
             routing_id(), placeholder_routing_id_));
   }
 #endif
-  if (context_menu_request_id_)
-    render_view()->CancelContextMenu(context_menu_request_id_);
 }
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
@@ -455,6 +456,7 @@ void PluginPlaceholder::PluginListChanged() {
 }
 
 void PluginPlaceholder::OnMenuAction(int request_id, unsigned action) {
+  DCHECK_EQ(context_menu_request_id_, request_id);
   if (g_last_active_menu != this)
     return;
   switch (action) {
@@ -474,7 +476,7 @@ void PluginPlaceholder::OnMenuAction(int request_id, unsigned action) {
 }
 
 void PluginPlaceholder::OnMenuClosed(int request_id) {
-  DCHECK(request_id == context_menu_request_id_);
+  DCHECK_EQ(context_menu_request_id_, request_id);
   context_menu_request_id_ = 0;
 }
 
