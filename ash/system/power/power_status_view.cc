@@ -122,7 +122,9 @@ void PowerStatusView::UpdateTextForDefaultView() {
     int hour = 0;
     int min = 0;
     base::TimeDelta time = base::TimeDelta::FromSeconds(
-        supply_status_.averaged_battery_time_to_empty);
+        supply_status_.line_power_on ?
+          supply_status_.averaged_battery_time_to_full :
+          supply_status_.averaged_battery_time_to_empty);
     hour = time.InHours();
     min = (time - base::TimeDelta::FromHours(hour)).InMinutes();
     if (hour || min) {
