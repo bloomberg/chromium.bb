@@ -191,9 +191,9 @@ TEST_F(MetricsLogTest, RecordProfilerData) {
 
     const ProfilerEventProto::TrackedObject* tracked_object =
         &log.uma_proto().profiler_event(0).tracked_object(0);
-    EXPECT_EQ(GG_UINT64_C(13962325592283560029),
-              tracked_object->source_file_name_hash());
     EXPECT_EQ(GG_UINT64_C(10123486280357988687),
+              tracked_object->source_file_name_hash());
+    EXPECT_EQ(GG_UINT64_C(13962325592283560029),
               tracked_object->source_function_name_hash());
     EXPECT_EQ(1337, tracked_object->source_line_number());
     EXPECT_EQ(GG_UINT64_C(3400908935414830400),
@@ -210,9 +210,9 @@ TEST_F(MetricsLogTest, RecordProfilerData) {
               tracked_object->process_type());
 
     tracked_object = &log.uma_proto().profiler_event(0).tracked_object(1);
-    EXPECT_EQ(GG_UINT64_C(55232426147951219),
-              tracked_object->source_file_name_hash());
     EXPECT_EQ(GG_UINT64_C(2025659946535236365),
+              tracked_object->source_file_name_hash());
+    EXPECT_EQ(GG_UINT64_C(55232426147951219),
               tracked_object->source_function_name_hash());
     EXPECT_EQ(1773, tracked_object->source_line_number());
     EXPECT_EQ(GG_UINT64_C(15727396632046120663),
@@ -256,9 +256,9 @@ TEST_F(MetricsLogTest, RecordProfilerData) {
 
     const ProfilerEventProto::TrackedObject* tracked_object =
         &log.uma_proto().profiler_event(0).tracked_object(2);
-    EXPECT_EQ(GG_UINT64_C(5081672290546182009),
-              tracked_object->source_file_name_hash());
     EXPECT_EQ(GG_UINT64_C(2686523203278102732),
+              tracked_object->source_file_name_hash());
+    EXPECT_EQ(GG_UINT64_C(5081672290546182009),
               tracked_object->source_function_name_hash());
     EXPECT_EQ(7331, tracked_object->source_line_number());
     EXPECT_EQ(GG_UINT64_C(8768512930949373716),

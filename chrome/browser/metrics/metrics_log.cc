@@ -225,9 +225,9 @@ void WriteProfilerData(const ProcessDataSnapshot& profiler_data,
                                  &ignored, &birth_thread_name_hash);
     MetricsLogBase::CreateHashes(it->death_thread_name,
                                  &ignored, &exec_thread_name_hash);
-    MetricsLogBase::CreateHashes(it->birth.location.function_name,
-                                 &ignored, &source_file_name_hash);
     MetricsLogBase::CreateHashes(it->birth.location.file_name,
+                                 &ignored, &source_file_name_hash);
+    MetricsLogBase::CreateHashes(it->birth.location.function_name,
                                  &ignored, &source_function_name_hash);
 
     const tracked_objects::DeathDataSnapshot& death_data = it->death_data;
