@@ -57,6 +57,16 @@ struct UI_EXPORT GestureEventDetails {
     return data.touch_id;
   }
 
+  float first_finger_width() const {
+    CHECK_EQ(ui::ET_GESTURE_TWO_FINGER_TAP, type_);
+    return data.first_finger_enclosing_rectangle.width;
+  }
+
+  float first_finger_height() const {
+    CHECK_EQ(ui::ET_GESTURE_TWO_FINGER_TAP, type_);
+    return data.first_finger_enclosing_rectangle.height;
+  }
+
   float scale() const {
     CHECK_EQ(ui::ET_GESTURE_PINCH_UPDATE, type_);
     return data.scale;
@@ -105,6 +115,12 @@ struct UI_EXPORT GestureEventDetails {
     } fling_velocity;
 
     int touch_id;  // LONG_PRESS touch-id.
+
+    // Dimensions of the first finger's enclosing rectangle for TWO_FINGER_TAP.
+    struct {
+      float width;
+      float height;
+    } first_finger_enclosing_rectangle;
 
     struct {  // SWIPE direction.
       bool left;

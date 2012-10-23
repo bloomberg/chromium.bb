@@ -349,6 +349,10 @@ WebKit::WebGestureEvent MakeWebGestureEventFromAuraEvent(
       break;
     case ui::ET_GESTURE_TWO_FINGER_TAP:
       gesture_event.type = WebKit::WebInputEvent::GestureTwoFingerTap;
+      gesture_event.data.twoFingerTap.firstFingerWidth =
+          event->details().first_finger_width();
+      gesture_event.data.twoFingerTap.firstFingerHeight =
+          event->details().first_finger_height();
       break;
     case ui::ET_GESTURE_BEGIN:
     case ui::ET_GESTURE_END:

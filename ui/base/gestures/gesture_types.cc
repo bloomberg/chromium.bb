@@ -27,6 +27,11 @@ GestureEventDetails::GestureEventDetails(ui::EventType type,
       CHECK_EQ(0.f, delta_y) << "Unknown data in delta_y for long press.";
       break;
 
+    case ui::ET_GESTURE_TWO_FINGER_TAP:
+      data.first_finger_enclosing_rectangle.width = delta_x;
+      data.first_finger_enclosing_rectangle.height = delta_y;
+      break;
+
     case ui::ET_GESTURE_PINCH_UPDATE:
       data.scale = delta_x;
       CHECK_EQ(0.f, delta_y) << "Unknown data in delta_y for pinch";

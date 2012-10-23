@@ -789,8 +789,11 @@ void GestureSequence::AppendSwipeGesture(const GesturePoint& point,
 
 void GestureSequence::AppendTwoFingerTapGestureEvent(Gestures* gestures) {
   const GesturePoint* point = GetPointByPointId(0);
+  const gfx::Rect rect = point->enclosing_rectangle();
   gestures->push_back(CreateGestureEvent(
-      GestureEventDetails(ui::ET_GESTURE_TWO_FINGER_TAP, 0, 0),
+      GestureEventDetails(ui::ET_GESTURE_TWO_FINGER_TAP,
+                          rect.width(),
+                          rect.height()),
       point->enclosing_rectangle().CenterPoint(),
       flags_,
       base::Time::FromDoubleT(point->last_touch_time()),
