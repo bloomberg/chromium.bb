@@ -10,6 +10,10 @@
 
 #include "content/public/browser/navigation_controller.h"
 
+namespace gfx {
+class Size;
+}
+
 namespace ui {
 class WindowAndroid;
 }
@@ -33,6 +37,7 @@ class ContentViewCore {
   virtual void OnWebPreferencesUpdated() = 0;
   virtual jint GetCurrentRenderProcessId(JNIEnv* env, jobject obj) = 0;
   virtual void ShowPastePopup(int x, int y) = 0;
+  virtual unsigned int GetScaledContentTexture(const gfx::Size& size) = 0;
 
  protected:
   virtual ~ContentViewCore() {};

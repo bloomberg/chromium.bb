@@ -710,11 +710,23 @@ public class ContentViewCore implements MotionEventDelegate {
     }
 
     public Bitmap getBitmap(int width, int height) {
-        return getBitmap(width, height, Bitmap.Config.ARGB_8888);
-    }
+        if (getWidth() == 0 || getHeight() == 0) return null;
 
-    public Bitmap getBitmap(int width, int height, Bitmap.Config config) {
-        // TODO(nileshagrawal): Implement this.
+        Bitmap b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+
+        if (mNativeContentViewCore != 0 &&
+                nativePopulateBitmapFromCompositor(mNativeContentViewCore, b)) {
+            // If we successfully grabbed a bitmap, check if we have to draw the Android overlay
+            // components as well.
+            if (mContainerView.getParent() != null &&
+                    mContainerView.getVisibility() == View.VISIBLE) {
+                Canvas c = new Canvas(b);
+                c.scale(width / (float) getWidth(), height / (float) getHeight());
+                mContainerView.draw(c);
+            }
+            return b;
+        }
+
         return null;
     }
 
@@ -2203,4 +2215,7 @@ public class ContentViewCore implements MotionEventDelegate {
 
     private native void nativeUpdateVSyncParameters(int nativeContentViewCoreImpl,
             long timebaseMicros, long intervalMicros);
+
+    private native boolean nativePopulateBitmapFromCompositor(int nativeContentViewCoreImpl,
+            Bitmap bitmap);
 }

@@ -7,7 +7,9 @@
 #include "base/memory/singleton.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
+#include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 
 using content::BrowserGpuChannelHostFactory;
 
@@ -73,9 +75,15 @@ uint32_t ImageTransportFactoryAndroid::InsertSyncPoint() {
   return context_->insertSyncPoint();
 }
 
-WebGraphicsContext3DCommandBufferImpl*
-ImageTransportFactoryAndroid::GetContext3D() {
+WebKit::WebGraphicsContext3D* ImageTransportFactoryAndroid::GetContext3D() {
   return context_.get();
+}
+
+GLHelper* ImageTransportFactoryAndroid::GetGLHelper() {
+  if (!gl_helper_.get())
+    gl_helper_.reset(new GLHelper(GetContext3D(), NULL));
+
+  return gl_helper_.get();
 }
 
 }  // namespace content

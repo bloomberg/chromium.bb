@@ -50,6 +50,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   virtual void OnWebPreferencesUpdated() OVERRIDE;
   virtual jint GetCurrentRenderProcessId(JNIEnv* env, jobject obj) OVERRIDE;
   virtual void ShowPastePopup(int x, int y) OVERRIDE;
+  virtual unsigned int GetScaledContentTexture(const gfx::Size& size) OVERRIDE;
 
   // --------------------------------------------------------------------------
   // Methods called from Java via JNI
@@ -173,6 +174,9 @@ class ContentViewCoreImpl : public ContentViewCore,
   int GetNavigationHistory(JNIEnv* env, jobject obj, jobject context);
   void UpdateVSyncParameters(JNIEnv* env, jobject obj, jlong timebase_micros,
                              jlong interval_micros);
+  jboolean PopulateBitmapFromCompositor(JNIEnv* env,
+                                        jobject obj,
+                                        jobject jbitmap);
 
   // --------------------------------------------------------------------------
   // Public methods that call to Java via JNI
@@ -238,6 +242,9 @@ class ContentViewCoreImpl : public ContentViewCore,
   float DpiScale() const;
   WebKit::WebGestureEvent MakeGestureEvent(WebKit::WebInputEvent::Type type,
                                            long time_ms, int x, int y) const;
+
+  void DeleteScaledSnapshotTexture();
+
   struct JavaObject;
   JavaObject* java_object_;
 

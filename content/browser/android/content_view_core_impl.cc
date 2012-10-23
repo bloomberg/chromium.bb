@@ -15,6 +15,7 @@
 #include "content/browser/android/touch_point.h"
 #include "content/browser/renderer_host/java/java_bound_object.h"
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
+#include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
@@ -441,6 +442,15 @@ void ContentViewCoreImpl::ShowPastePopup(int x, int y) {
     return;
   Java_ContentViewCore_showPastePopup(env, obj.obj(), static_cast<jint>(x),
                                       static_cast<jint>(y));
+}
+
+unsigned int ContentViewCoreImpl::GetScaledContentTexture(
+    const gfx::Size& size) {
+  RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
+  if (!view)
+    return 0;
+
+  return view->GetScaledContentTexture(size);
 }
 
 void ContentViewCoreImpl::StartContentIntent(const GURL& content_url) {
@@ -875,6 +885,16 @@ void ContentViewCoreImpl::UpdateVSyncParameters(JNIEnv* env, jobject /* obj */,
   host->UpdateVSyncParameters(
       base::TimeTicks::FromInternalValue(timebase_micros),
       base::TimeDelta::FromMicroseconds(interval_micros));
+}
+
+jboolean ContentViewCoreImpl::PopulateBitmapFromCompositor(JNIEnv* env,
+                                                           jobject obj,
+                                                           jobject jbitmap) {
+  RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
+  if (!view)
+    return false;
+
+  return view->PopulateBitmapWithContents(jbitmap);
 }
 
 void ContentViewCoreImpl::ScrollFocusedEditableNodeIntoView(JNIEnv* env,

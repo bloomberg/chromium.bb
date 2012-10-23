@@ -13,6 +13,7 @@
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/image_transport_factory_android.h"
+#include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
@@ -233,6 +234,14 @@ void CompositorImpl::DeleteTexture(WebKit::WebGLId texture_id) {
     return;
   context->deleteTexture(texture_id);
   DCHECK(context->getError() == GL_NO_ERROR);
+}
+
+void CompositorImpl::CopyTextureToBitmap(WebKit::WebGLId texture_id,
+                                         gfx::JavaBitmap& bitmap) {
+  GLHelper* helper = ImageTransportFactoryAndroid::GetInstance()->GetGLHelper();
+  helper->ReadbackTextureSync(texture_id,
+                              bitmap.size(),
+                              static_cast<unsigned char*> (bitmap.pixels()));
 }
 
 void CompositorImpl::updateAnimations(double frameBeginTime) {

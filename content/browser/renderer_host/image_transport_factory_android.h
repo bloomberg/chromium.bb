@@ -8,7 +8,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace WebKit {
+  class WebGraphicsContext3D;
+}
+
 namespace content {
+class GLHelper;
 class WebGraphicsContext3DCommandBufferImpl;
 
 class ImageTransportFactoryAndroid {
@@ -23,9 +28,12 @@ class ImageTransportFactoryAndroid {
 
   uint32_t InsertSyncPoint();
 
-  WebGraphicsContext3DCommandBufferImpl* GetContext3D();
+  WebKit::WebGraphicsContext3D* GetContext3D();
+  GLHelper* GetGLHelper();
+
  private:
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context_;
+  scoped_ptr<GLHelper> gl_helper_;
 };
 
 }  // namespace content

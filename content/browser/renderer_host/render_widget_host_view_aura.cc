@@ -675,12 +675,12 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
   src_subrect_in_gl.set_y(GetViewBounds().height() - src_subrect.bottom());
 
   gfx::Rect src_subrect_in_pixel = ConvertRectToPixel(this, src_subrect_in_gl);
-  gl_helper->CopyTextureTo(container->PrepareTexture(),
-                           container->size(),
-                           src_subrect_in_pixel,
-                           dst_size_in_pixel,
-                           addr,
-                           wrapper_callback);
+  gl_helper->CropScaleReadbackAndCleanTexture(container->PrepareTexture(),
+                                              container->size(),
+                                              src_subrect_in_pixel,
+                                              dst_size_in_pixel,
+                                              addr,
+                                              wrapper_callback);
 }
 
 void RenderWidgetHostViewAura::OnAcceleratedCompositingStateChange() {

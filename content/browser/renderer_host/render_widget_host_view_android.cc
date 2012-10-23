@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 
+#include <android/bitmap.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -15,11 +17,15 @@
 #include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/android/device_info.h"
+#include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
+#include "third_party/khronos/GLES2/gl2.h"
+#include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCompositorSupport.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
+#include "ui/gfx/android/java_bitmap.h"
 
 namespace content {
 
@@ -49,7 +55,8 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       is_hidden_(!content_view_core),
       content_view_core_(content_view_core),
       ime_adapter_android_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      texture_layer_(WebKit::WebExternalTextureLayer::create()) {
+      texture_layer_(WebKit::WebExternalTextureLayer::create()),
+      texture_id_in_layer_(0) {
   host_->SetView(this);
   // RenderWidgetHost is initialized as visible. If is_hidden_ is true, tell
   // RenderWidgetHost to hide.
@@ -122,6 +129,54 @@ void RenderWidgetHostViewAndroid::SetBounds(const gfx::Rect& rect) {
     VLOG(0) << "SetBounds not implemented for (x,y)!=(0,0)";
   }
   SetSize(rect.size());
+}
+
+WebKit::WebGLId RenderWidgetHostViewAndroid::GetScaledContentTexture(
+    const gfx::Size& size) {
+  if (!CompositorImpl::IsInitialized() || texture_id_in_layer_ == 0)
+    return 0;
+
+  GLHelper* helper = ImageTransportFactoryAndroid::GetInstance()->GetGLHelper();
+  return helper->CopyAndScaleTexture(texture_id_in_layer_,
+                                     requested_size_,
+                                     size);
+}
+
+bool RenderWidgetHostViewAndroid::PopulateBitmapWithContents(jobject jbitmap) {
+  if (!CompositorImpl::IsInitialized() || texture_id_in_layer_ == 0)
+    return false;
+
+  gfx::JavaBitmap bitmap(jbitmap);
+
+  // TODO(dtrainor): Eventually add support for multiple formats here.
+  DCHECK(bitmap.format() == ANDROID_BITMAP_FORMAT_RGBA_8888);
+
+  WebKit::WebGLId texture = texture_id_in_layer_;
+
+  GLHelper* helper = ImageTransportFactoryAndroid::GetInstance()->GetGLHelper();
+
+  // If we're trying to read to a bitmap of a different size, we need to copy
+  // and scale the texture before we can read it back.
+  if (bitmap.size() != requested_size_) {
+    texture = helper->CopyAndScaleTexture(texture_id_in_layer_,
+                                          requested_size_,
+                                          bitmap.size());
+    if (texture == 0)
+      return false;
+  }
+
+  helper->ReadbackTextureSync(texture,
+                              bitmap.size(),
+                              static_cast<unsigned char*> (bitmap.pixels()));
+
+  if (texture != texture_id_in_layer_) {
+    // We created a temporary texture.  We need to clean it up.
+    WebKit::WebGraphicsContext3D* context =
+        ImageTransportFactoryAndroid::GetInstance()->GetContext3D();
+    context->deleteTexture(texture);
+  }
+
+  return true;
 }
 
 gfx::NativeView RenderWidgetHostViewAndroid::GetNativeView() const {
@@ -310,6 +365,7 @@ void RenderWidgetHostViewAndroid::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {
   texture_layer_->setTextureId(params.surface_handle);
+  texture_id_in_layer_ = params.surface_handle;
   texture_layer_->layer()->invalidate();
   // TODO(sievers): The view and layer should get sized proactively.
   if (((gfx::Size)texture_layer_->layer()->bounds()).IsEmpty())

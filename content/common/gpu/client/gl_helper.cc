@@ -233,7 +233,8 @@ void SignalWaitableEvent(base::WaitableEvent* event) {
 
 namespace content {
 
-// Implements GLHelper::CopyTextureTo and encapsulates the data needed for it.
+// Implements GLHelper::CropScaleReadbackAndCleanTexture and encapsulates the
+// data needed for it.
 class GLHelper::CopyTextureToImpl {
  public:
   CopyTextureToImpl(WebGraphicsContext3D* context,
@@ -256,17 +257,24 @@ class GLHelper::CopyTextureToImpl {
   void InitBuffer();
   void InitProgram();
 
-  void CopyTextureTo(WebGLId src_texture,
-                     const gfx::Size& src_size,
-                     const gfx::Rect& src_subrect,
-                     const gfx::Size& dst_size,
-                     unsigned char* out,
-                     const base::Callback<void(bool)>& callback);
+  void CropScaleReadbackAndCleanTexture(
+      WebGLId src_texture,
+      const gfx::Size& src_size,
+      const gfx::Rect& src_subrect,
+      const gfx::Size& dst_size,
+      unsigned char* out,
+      const base::Callback<void(bool)>& callback);
 
-  WebKit::WebGLId CopyTexture(WebGLId src_texture, const gfx::Size& size);
+  void ReadbackTextureSync(WebGLId texture,
+                           const gfx::Size& size,
+                           unsigned char* out);
+
+  WebKit::WebGLId CopyAndScaleTexture(WebGLId texture,
+                                      const gfx::Size& src_size,
+                                      const gfx::Size& dst_size);
 
  private:
-  // A single request to CopyTextureTo.
+  // A single request to CropScaleReadbackAndCleanTexture.
   // Thread-safety notes: the main thread creates instances of this class. The
   // main thread can cancel the request, before it's handled by the helper
   // thread, by resetting the texture and pixels fields. Alternatively, the
@@ -324,7 +332,8 @@ class GLHelper::CopyTextureToImpl {
   // Interleaved array of 2-dimentional vertex positions (x, y) and
   // 2-dimentional texture coordinates (s, t).
   static const WebKit::WGC3Dfloat kVertexAttributes[];
-  // Shader sources used for GLHelper::CopyTextureTo
+  // Shader sources used for GLHelper::CropScaleReadbackAndCleanTexture and
+  // GLHelper::ReadbackTextureSync
   static const WebKit::WGC3Dchar kCopyVertexShader[];
   static const WebKit::WGC3Dchar kCopyFragmentShader[];
 
@@ -492,7 +501,7 @@ void GLHelper::CopyTextureToImpl::DeleteContextForThread() {
   context_for_thread_ = NULL;
 }
 
-void GLHelper::CopyTextureToImpl::CopyTextureTo(
+void GLHelper::CopyTextureToImpl::CropScaleReadbackAndCleanTexture(
     WebGLId src_texture,
     const gfx::Size& src_size,
     const gfx::Rect& src_subrect,
@@ -517,12 +526,32 @@ void GLHelper::CopyTextureToImpl::CopyTextureTo(
                  base::MessageLoopProxy::current()));
 }
 
-WebKit::WebGLId GLHelper::CopyTextureToImpl::CopyTexture(
+void GLHelper::CopyTextureToImpl::ReadbackTextureSync(WebGLId texture,
+                                                      const gfx::Size& size,
+                                                      unsigned char* out) {
+  ScopedFramebuffer dst_framebuffer(context_, context_->createFramebuffer());
+  ScopedFramebufferBinder<GL_FRAMEBUFFER> framebuffer_binder(
+      context_, dst_framebuffer);
+  ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(context_, texture);
+  context_->framebufferTexture2D(GL_FRAMEBUFFER,
+                                 GL_COLOR_ATTACHMENT0,
+                                 GL_TEXTURE_2D,
+                                 texture,
+                                 0);
+  context_->readPixels(0,
+                       0,
+                       size.width(),
+                       size.height(),
+                       GL_RGBA,
+                       GL_UNSIGNED_BYTE,
+                       out);
+}
+
+WebKit::WebGLId GLHelper::CopyTextureToImpl::CopyAndScaleTexture(
     WebGLId src_texture,
-    const gfx::Size& size) {
-  if (!context_for_thread_)
-    return 0;
-  return ScaleTexture(src_texture, size, gfx::Rect(size), size);
+    const gfx::Size& src_size,
+    const gfx::Size& dst_size) {
+  return ScaleTexture(src_texture, src_size, gfx::Rect(src_size), dst_size);
 }
 
 void GLHelper::CopyTextureToImpl::ReadBackFramebuffer(
@@ -658,25 +687,44 @@ WebGraphicsContext3D* GLHelper::context() const {
   return context_;
 }
 
-void GLHelper::CopyTextureTo(WebGLId src_texture,
-                             const gfx::Size& src_size,
-                             const gfx::Rect& src_subrect,
-                             const gfx::Size& dst_size,
-                             unsigned char* out,
-                             const base::Callback<void(bool)>& callback) {
+void GLHelper::CropScaleReadbackAndCleanTexture(
+    WebGLId src_texture,
+    const gfx::Size& src_size,
+    const gfx::Rect& src_subrect,
+    const gfx::Size& dst_size,
+    unsigned char* out,
+    const base::Callback<void(bool)>& callback) {
   InitCopyTextToImpl();
-  copy_texture_to_impl_->CopyTextureTo(src_texture,
-                                       src_size,
-                                       src_subrect,
-                                       dst_size,
-                                       out,
-                                       callback);
+  copy_texture_to_impl_->CropScaleReadbackAndCleanTexture(src_texture,
+                                                          src_size,
+                                                          src_subrect,
+                                                          dst_size,
+                                                          out,
+                                                          callback);
+}
+
+void GLHelper::ReadbackTextureSync(WebKit::WebGLId texture,
+                                   const gfx::Size& size,
+                                   unsigned char* out) {
+  InitCopyTextToImpl();
+  copy_texture_to_impl_->ReadbackTextureSync(texture,
+                                             size,
+                                             out);
 }
 
 WebKit::WebGLId GLHelper::CopyTexture(WebKit::WebGLId texture,
                                       const gfx::Size& size) {
   InitCopyTextToImpl();
-  return copy_texture_to_impl_->CopyTexture(texture, size);
+  return copy_texture_to_impl_->CopyAndScaleTexture(texture, size, size);
+}
+
+WebKit::WebGLId GLHelper::CopyAndScaleTexture(WebKit::WebGLId texture,
+                                              const gfx::Size& src_size,
+                                              const gfx::Size& dst_size) {
+  InitCopyTextToImpl();
+  return copy_texture_to_impl_->CopyAndScaleTexture(texture,
+                                                    src_size,
+                                                    dst_size);
 }
 
 WebGLId GLHelper::CompileShaderFromSource(

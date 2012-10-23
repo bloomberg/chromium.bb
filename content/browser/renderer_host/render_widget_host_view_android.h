@@ -13,6 +13,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebExternalTextureLayer.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "ui/gfx/size.h"
 
 struct ViewHostMsg_TextInputState_Params;
@@ -134,6 +135,9 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
 
   int GetNativeImeAdapter();
 
+  WebKit::WebGLId GetScaledContentTexture(const gfx::Size& size);
+  bool PopulateBitmapWithContents(jobject jbitmap);
+
   // Select all text between the given coordinates.
   void SelectRange(const gfx::Point& start, const gfx::Point& end);
 
@@ -158,6 +162,9 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase {
 
   // The texture layer for this view when using browser-side compositing.
   scoped_ptr<WebKit::WebExternalTextureLayer> texture_layer_;
+
+  // The most recent texture id that was pushed to the texture layer.
+  unsigned int texture_id_in_layer_;
 
   // The handle for the transport surface (between renderer and browser-side
   // compositor) for this view.

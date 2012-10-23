@@ -312,11 +312,7 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
     }
 
     public Bitmap getBitmap(int width, int height) {
-        return getBitmap(width, height, Bitmap.Config.ARGB_8888);
-    }
-
-    public Bitmap getBitmap(int width, int height, Bitmap.Config config) {
-        return mContentViewCore.getBitmap(width, height, config);
+        return mContentViewCore.getBitmap(width, height);
     }
 
     /**

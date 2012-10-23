@@ -73,6 +73,10 @@ class Compositor {
   // Deletes an OpenGL texture.
   virtual void DeleteTexture(WebKit::WebGLId texture_id) = 0;
 
+  // Grabs a copy of |texture_id| and saves it into |bitmap|.  No scaling is
+  // done.  It is assumed that the texture size matches that of the bitmap.
+  virtual void CopyTextureToBitmap(WebKit::WebGLId texture_id,
+                                   gfx::JavaBitmap& bitmap) = 0;
  protected:
   Compositor() {}
 };

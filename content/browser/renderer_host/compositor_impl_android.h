@@ -13,7 +13,6 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeView.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebLayerTreeViewClient.h"
 
-
 struct ANativeWindow;
 
 namespace content {
@@ -41,6 +40,8 @@ class CompositorImpl : public Compositor,
   virtual WebKit::WebGLId GenerateCompressedTexture(
       gfx::Size& size, int data_size, void* data) OVERRIDE;
   virtual void DeleteTexture(WebKit::WebGLId texture_id) OVERRIDE;
+  virtual void CopyTextureToBitmap(WebKit::WebGLId texture_id,
+                                   gfx::JavaBitmap& bitmap) OVERRIDE;
 
   // WebLayerTreeViewClient implementation.
   virtual void updateAnimations(double frameBeginTime) OVERRIDE;
