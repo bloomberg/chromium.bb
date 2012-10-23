@@ -158,7 +158,7 @@
         'system/brightness/tray_brightness.h',
         'system/chromeos/keyboard_brightness_controller.cc',
         'system/chromeos/keyboard_brightness_controller.h',
-        'system/chromeos/network/netowrk_detailed_view.h',
+        'system/chromeos/network/network_detailed_view.h',
         'system/chromeos/network/network_list_detailed_view_base.h',
         'system/chromeos/network/network_list_detailed_view_base.cc',
         'system/chromeos/network/network_observer.h',
