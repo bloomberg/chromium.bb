@@ -7,9 +7,9 @@
  * @extends {testing.Test}
  * @constructor
  */
-function SUIDSandboxUITest() {}
+function SandboxStatusUITest() {}
 
-SUIDSandboxUITest.prototype = {
+SandboxStatusUITest.prototype = {
   __proto__: testing.Test.prototype,
   /**
    * Browse to the options page & call our preLoad().
@@ -27,7 +27,7 @@ SUIDSandboxUITest.prototype = {
 // - PLEASE DO NOT DISABLE THIS TEST. If you can't figure out how to
 //   get the SUID sandbox installed, please mark the test FLAKY_ so we
 //   can get clear information on where the sandbox is and isn't installed.
-// Seccomp sandbox is currently incompatible with AddressSanitizer,
+// SUID sandbox is currently incompatible with AddressSanitizer,
 // see http://crbug.com/137653.
 GEN('#if defined(OS_LINUX) && !defined(ADDRESS_SANITIZER)');
 GEN('# define MAYBE_testSUIDSandboxEnabled \\');
@@ -44,13 +44,40 @@ GEN('#endif');
  * the SUID sandbox is enabled on the Chromium bots. In the mean time
  * this test will make it clear that the enabling steps are effective.
  */
-TEST_F('SUIDSandboxUITest', 'MAYBE_testSUIDSandboxEnabled', function() {
+TEST_F('SandboxStatusUITest', 'MAYBE_testSUIDSandboxEnabled', function() {
     var suidyesstring = 'SUID Sandbox\tYes';
     var suidnostring = 'SUID Sandbox\tNo';
     var suidyes = document.body.innerText.match(suidyesstring);
     var suidno = document.body.innerText.match(suidnostring);
 
     expectEquals(null, suidno);
-    expectFalse(suidyes == null);
+    expectFalse(suidyes === null);
     expectEquals(suidyesstring, suidyes[0]);
+});
+
+// The seccomp-bpf sandbox is also not compatible with ASAN.
+GEN('#if defined(OS_LINUX) && !defined(ADDRESS_SANITIZER)');
+GEN('# define MAYBE_testBPFSandboxEnabled \\');
+GEN('     FLAKY_testBPFSandboxEnabled');
+GEN('#else');
+GEN('# define MAYBE_testBPFSandboxEnabled \\');
+GEN('     DISABLED_testBPFSandboxEnabled');
+GEN('#endif');
+
+/**
+ * Test if the seccomp-bpf sandbox is enabled.
+ * We know that some machines lack kernel support for this. So we mark
+ * it as FLAKY_.
+ * It's very convenient to quickly be able to check whether tests ran with
+ * or without the Seccomp BPF sandbox through this mechanism.
+ */
+TEST_F('SandboxStatusUITest', 'MAYBE_testBPFSandboxEnabled', function() {
+    var bpfyesstring = 'Seccomp-BPF sandbox\tYes';
+    var bpfnostring = 'Seccomp-BPF sandbox\tNo';
+    var bpfyes = document.body.innerText.match(bpfyesstring);
+    var bpfno = document.body.innerText.match(bpfnostring);
+
+    expectEquals(null, bpfno);
+    expectFalse(bpfyes === null);
+    expectEquals(bpfyesstring, bpfyes[0]);
 });
