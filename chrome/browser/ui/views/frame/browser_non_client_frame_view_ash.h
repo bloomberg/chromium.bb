@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_ASH_BROWSER_NON_CLIENT_FRAME_VIEW_ASH_H_
-#define CHROME_BROWSER_UI_VIEWS_ASH_BROWSER_NON_CLIENT_FRAME_VIEW_ASH_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_ASH_H_
+#define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_ASH_H_
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -117,4 +117,4 @@ class BrowserNonClientFrameViewAsh
   DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewAsh);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_ASH_BROWSER_NON_CLIENT_FRAME_VIEW_ASH_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_ASH_H_

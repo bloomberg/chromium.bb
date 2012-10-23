@@ -8,8 +8,8 @@
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
 
 #if defined(USE_ASH)
-#include "chrome/browser/ui/views/ash/browser_non_client_frame_view_ash.h"
-#include "chrome/browser/ui/views/frame/app_non_client_frame_view_aura.h"
+#include "chrome/browser/ui/views/frame/app_non_client_frame_view_ash.h"
+#include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
 #endif
 
 #if defined(OS_WIN)
@@ -33,7 +33,7 @@ BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
   if (browser_view->browser()->is_app() &&
       browser_view->browser()->app_type() != Browser::APP_TYPE_CHILD &&
       browser_view->IsMaximized())
-    return new AppNonClientFrameViewAura(frame, browser_view);
+    return new AppNonClientFrameViewAsh(frame, browser_view);
 
   // Default is potentially translucent fancy frames.
   BrowserNonClientFrameViewAsh* frame_view =

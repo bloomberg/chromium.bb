@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/frame/app_non_client_frame_view_aura.h"
+#include "chrome/browser/ui/views/frame/app_non_client_frame_view_ash.h"
 
+#include "ash/wm/workspace/frame_maximize_button.h"
 #include "base/debug/stack_trace.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -24,10 +25,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
-#if defined(USE_ASH)
-#include "ash/wm/workspace/frame_maximize_button.h"
-#endif
-
 namespace {
 // The number of pixels within the shadow to draw the buttons.
 const int kShadowStart = 16;
@@ -39,17 +36,13 @@ const int kButtonOverlap = 1;
 const int kShadowHeightStretch = -1;
 }
 
-class AppNonClientFrameViewAura::ControlView
+class AppNonClientFrameViewAsh::ControlView
     : public views::View, public views::ButtonListener {
  public:
-  explicit ControlView(AppNonClientFrameViewAura* owner) :
+  explicit ControlView(AppNonClientFrameViewAsh* owner) :
       owner_(owner),
       close_button_(new views::ImageButton(this)),
-#if defined(USE_ASH)
       restore_button_(new ash::FrameMaximizeButton(this, owner_))
-#else
-      restore_button_(new views::ImageButton(this))
-#endif
   {
     close_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
@@ -134,7 +127,7 @@ class AppNonClientFrameViewAura::ControlView
                      theme_provider->GetImageSkiaNamed(pushed_image_id));
   }
 
-  AppNonClientFrameViewAura* owner_;
+  AppNonClientFrameViewAsh* owner_;
   views::ImageButton* close_button_;
   views::ImageButton* restore_button_;
   const gfx::ImageSkia* control_base_;
@@ -146,9 +139,9 @@ class AppNonClientFrameViewAura::ControlView
 // Observer to detect when the browser frame widget closes so we can clean
 // up our ControlView. Because we can be closed via a keyboard shortcut we
 // are not guaranteed to run AppNonClientFrameView's Close() or Restore().
-class AppNonClientFrameViewAura::FrameObserver : public views::WidgetObserver {
+class AppNonClientFrameViewAsh::FrameObserver : public views::WidgetObserver {
  public:
-  explicit FrameObserver(AppNonClientFrameViewAura* owner) : owner_(owner) {}
+  explicit FrameObserver(AppNonClientFrameViewAsh* owner) : owner_(owner) {}
   virtual ~FrameObserver() {}
 
   // views::WidgetObserver:
@@ -157,19 +150,19 @@ class AppNonClientFrameViewAura::FrameObserver : public views::WidgetObserver {
   }
 
  private:
-  AppNonClientFrameViewAura* owner_;
+  AppNonClientFrameViewAsh* owner_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameObserver);
 };
 
 // static
-const char AppNonClientFrameViewAura::kViewClassName[] =
-    "AppNonClientFrameViewAura";
+const char AppNonClientFrameViewAsh::kViewClassName[] =
+    "AppNonClientFrameViewAsh";
 // static
-const char AppNonClientFrameViewAura::kControlWindowName[] =
-    "AppNonClientFrameViewAuraControls";
+const char AppNonClientFrameViewAsh::kControlWindowName[] =
+    "AppNonClientFrameViewAshControls";
 
-AppNonClientFrameViewAura::AppNonClientFrameViewAura(
+AppNonClientFrameViewAsh::AppNonClientFrameViewAsh(
     BrowserFrame* frame, BrowserView* browser_view)
     : BrowserNonClientFrameView(frame, browser_view),
       control_view_(new ControlView(this)),
@@ -195,68 +188,68 @@ AppNonClientFrameViewAura::AppNonClientFrameViewAura(
   control_widget_->Show();
 }
 
-AppNonClientFrameViewAura::~AppNonClientFrameViewAura() {
+AppNonClientFrameViewAsh::~AppNonClientFrameViewAsh() {
   frame()->RemoveObserver(frame_observer_.get());
   // This frame view can be replaced (and deleted) if the window is restored
   // via a keyboard shortcut like Alt-[.  Ensure we close the control widget.
   CloseControlWidget();
 }
 
-gfx::Rect AppNonClientFrameViewAura::GetBoundsForClientView() const {
+gfx::Rect AppNonClientFrameViewAsh::GetBoundsForClientView() const {
   return GetLocalBounds();
 }
 
-gfx::Rect AppNonClientFrameViewAura::GetWindowBoundsForClientBounds(
+gfx::Rect AppNonClientFrameViewAsh::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
   return client_bounds;
 }
 
-int AppNonClientFrameViewAura::NonClientHitTest(
+int AppNonClientFrameViewAsh::NonClientHitTest(
     const gfx::Point& point) {
   return HTNOWHERE;
 }
 
-void AppNonClientFrameViewAura::GetWindowMask(const gfx::Size& size,
-                                              gfx::Path* window_mask) {
+void AppNonClientFrameViewAsh::GetWindowMask(const gfx::Size& size,
+                                             gfx::Path* window_mask) {
 }
 
-void AppNonClientFrameViewAura::ResetWindowControls() {
+void AppNonClientFrameViewAsh::ResetWindowControls() {
 }
 
-void AppNonClientFrameViewAura::UpdateWindowIcon() {
+void AppNonClientFrameViewAsh::UpdateWindowIcon() {
 }
 
-void AppNonClientFrameViewAura::UpdateWindowTitle() {
+void AppNonClientFrameViewAsh::UpdateWindowTitle() {
 }
 
-gfx::Rect AppNonClientFrameViewAura::GetBoundsForTabStrip(
+gfx::Rect AppNonClientFrameViewAsh::GetBoundsForTabStrip(
     views::View* tabstrip) const {
   return gfx::Rect();
 }
 
 BrowserNonClientFrameView::TabStripInsets
-AppNonClientFrameViewAura::GetTabStripInsets(bool restored) const {
+AppNonClientFrameViewAsh::GetTabStripInsets(bool restored) const {
   return TabStripInsets();
 }
 
-int AppNonClientFrameViewAura::GetThemeBackgroundXInset() const {
+int AppNonClientFrameViewAsh::GetThemeBackgroundXInset() const {
   return 0;
 }
 
-void AppNonClientFrameViewAura::UpdateThrobber(bool running) {
+void AppNonClientFrameViewAsh::UpdateThrobber(bool running) {
 }
 
-std::string AppNonClientFrameViewAura::GetClassName() const {
+std::string AppNonClientFrameViewAsh::GetClassName() const {
   return kViewClassName;
 }
 
-void AppNonClientFrameViewAura::OnBoundsChanged(
+void AppNonClientFrameViewAsh::OnBoundsChanged(
     const gfx::Rect& previous_bounds) {
   if (control_widget_)
     control_widget_->GetNativeView()->SetBounds(GetControlBounds());
 }
 
-gfx::Rect AppNonClientFrameViewAura::GetControlBounds() const {
+gfx::Rect AppNonClientFrameViewAsh::GetControlBounds() const {
   if (!control_view_)
     return gfx::Rect();
   gfx::Size preferred = control_view_->GetPreferredSize();
@@ -265,7 +258,7 @@ gfx::Rect AppNonClientFrameViewAura::GetControlBounds() const {
       preferred.width(), preferred.height());
 }
 
-void AppNonClientFrameViewAura::CloseControlWidget() {
+void AppNonClientFrameViewAsh::CloseControlWidget() {
   if (control_widget_) {
     control_widget_->Close();
     control_widget_ = NULL;

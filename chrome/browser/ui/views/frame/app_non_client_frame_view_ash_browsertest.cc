@@ -7,7 +7,8 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/views/frame/app_non_client_frame_view_aura.h"
+#include "chrome/browser/ui/views/frame/app_non_client_frame_view_ash.h"
+#include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -17,10 +18,6 @@
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/screen.h"
-
-#if defined(USE_ASH)
-#include "chrome/browser/ui/views/ash/browser_non_client_frame_view_ash.h"
-#endif
 
 using aura::Window;
 
@@ -53,11 +50,11 @@ void RestoreWindow(Window* window) {
 
 }  // namespace
 
-class AppNonClientFrameViewAuraTest : public InProcessBrowserTest {
+class AppNonClientFrameViewAshTest : public InProcessBrowserTest {
  public:
-  AppNonClientFrameViewAuraTest() : InProcessBrowserTest(), app_browser_(NULL) {
+  AppNonClientFrameViewAshTest() : InProcessBrowserTest(), app_browser_(NULL) {
   }
-  virtual ~AppNonClientFrameViewAuraTest() {}
+  virtual ~AppNonClientFrameViewAshTest() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
     Browser::CreateParams params = Browser::CreateParams::CreateForApp(
@@ -99,10 +96,10 @@ class AppNonClientFrameViewAuraTest : public InProcessBrowserTest {
 // Ensure that restoring the app window replaces the frame with a normal one,
 // and maximizing again brings back the app frame. This has been the source of
 // some crash bugs like crbug.com/155634
-IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAuraTest, SwitchFrames) {
+IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAshTest, SwitchFrames) {
   // Convert to std::string so Windows can match EXPECT_EQ.
   const std::string kAppFrameClassName =
-      AppNonClientFrameViewAura::kViewClassName;
+      AppNonClientFrameViewAsh::kViewClassName;
   const std::string kNormalFrameClassName =
       BrowserNonClientFrameViewAsh::kViewClassName;
 
@@ -138,7 +135,7 @@ IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAuraTest, SwitchFrames) {
 
 // Ensure that we can click the close button when the controls are shown.
 // In particular make sure that we can click it on the top pixel of the button.
-IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAuraTest, ClickClose) {
+IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAshTest, ClickClose) {
   aura::RootWindow* root_window = GetRootWindow();
   aura::test::EventGenerator eg(root_window, gfx::Point(0, 1));
 
@@ -155,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAuraTest, ClickClose) {
 
 // Ensure that closing a maximized app with Ctrl-W does not crash the
 // application.  crbug.com/147635
-IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAuraTest, KeyboardClose) {
+IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAshTest, KeyboardClose) {
   aura::RootWindow* root_window = GetRootWindow();
   aura::test::EventGenerator eg(root_window);
 
@@ -175,14 +172,14 @@ IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAuraTest, KeyboardClose) {
 }
 
 // Ensure that snapping left with Alt-[ closes the control window.
-IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAuraTest, SnapLeftClosesControls) {
+IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAshTest, SnapLeftClosesControls) {
   aura::RootWindow* root_window = GetRootWindow();
   aura::test::EventGenerator eg(root_window);
   aura::Window* native_window = app_browser()->window()->GetNativeWindow();
 
   // Control window exists.
   EXPECT_TRUE(HasChildWindowNamed(
-      native_window, AppNonClientFrameViewAura::kControlWindowName));
+      native_window, AppNonClientFrameViewAsh::kControlWindowName));
 
   // Send Alt-[
   eg.PressKey(ui::VKEY_OEM_4, ui::EF_ALT_DOWN);
@@ -191,11 +188,11 @@ IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAuraTest, SnapLeftClosesControls) {
 
   // Control window is gone.
   EXPECT_FALSE(HasChildWindowNamed(
-      native_window, AppNonClientFrameViewAura::kControlWindowName));
+      native_window, AppNonClientFrameViewAsh::kControlWindowName));
 }
 
 // Ensure that the controls are at the proper locations.
-IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAuraTest, ControlsAtRightSide) {
+IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAshTest, ControlsAtRightSide) {
   aura::RootWindow* root_window = GetRootWindow();
   aura::test::EventGenerator eg(root_window);
   aura::Window* native_window = app_browser()->window()->GetNativeWindow();
@@ -204,7 +201,7 @@ IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAuraTest, ControlsAtRightSide) {
 
   // Control window exists.
   aura::Window* window = GetChildWindowNamed(
-      native_window, AppNonClientFrameViewAura::kControlWindowName);
+      native_window, AppNonClientFrameViewAsh::kControlWindowName);
 
   ASSERT_TRUE(window);
   gfx::Rect rect = window->bounds();
@@ -214,14 +211,14 @@ IN_PROC_BROWSER_TEST_F(AppNonClientFrameViewAuraTest, ControlsAtRightSide) {
   MinimizeWindow(native_window);
   content::RunAllPendingInMessageLoop();
   window = GetChildWindowNamed(
-      native_window, AppNonClientFrameViewAura::kControlWindowName);
+      native_window, AppNonClientFrameViewAsh::kControlWindowName);
   EXPECT_FALSE(window);
   MaximizeWindow(native_window);
   content::RunAllPendingInMessageLoop();
 
   // Control window exists.
   aura::Window* window_after = GetChildWindowNamed(
-      native_window, AppNonClientFrameViewAura::kControlWindowName);
+      native_window, AppNonClientFrameViewAsh::kControlWindowName);
   ASSERT_TRUE(window_after);
   gfx::Rect rect_after = window_after->bounds();
   EXPECT_EQ(work_area.right(), rect_after.right());

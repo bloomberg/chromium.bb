@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_APP_NON_CLIENT_FRAME_VIEW_AURA_H_
-#define CHROME_BROWSER_UI_VIEWS_FRAME_APP_NON_CLIENT_FRAME_VIEW_AURA_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_APP_NON_CLIENT_FRAME_VIEW_ASH_H_
+#define CHROME_BROWSER_UI_VIEWS_FRAME_APP_NON_CLIENT_FRAME_VIEW_ASH_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
@@ -12,17 +12,15 @@ namespace aura {
 class Window;
 }
 
-// NonClientFrameViewAura implementation for apps.
-// TODO(jamescook): Rename this to AppNonClientFrameViewAsh. It is only used
-// with the Aura shell (Ash). crbug.com/156361
-class AppNonClientFrameViewAura : public BrowserNonClientFrameView {
+// NonClientFrameViewAsh implementation for maximized apps.
+class AppNonClientFrameViewAsh : public BrowserNonClientFrameView {
  public:
   static const char kViewClassName[];  // visible for test
   static const char kControlWindowName[];  // visible for test
 
-  AppNonClientFrameViewAura(
+  AppNonClientFrameViewAsh(
       BrowserFrame* frame, BrowserView* browser_view);
-  virtual ~AppNonClientFrameViewAura();
+  virtual ~AppNonClientFrameViewAsh();
 
   // NonClientFrameView:
   virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
@@ -63,7 +61,7 @@ class AppNonClientFrameViewAura : public BrowserNonClientFrameView {
   // Observer for browser frame close.
   scoped_ptr<FrameObserver> frame_observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(AppNonClientFrameViewAura);
+  DISALLOW_COPY_AND_ASSIGN(AppNonClientFrameViewAsh);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_APP_NON_CLIENT_FRAME_VIEW_AURA_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_APP_NON_CLIENT_FRAME_VIEW_ASH_H_

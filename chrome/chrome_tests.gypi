@@ -3111,12 +3111,12 @@
         'browser/ui/startup/startup_browser_creator_browsertest.cc',
         'browser/ui/tab_modal_confirm_dialog_browsertest.cc',
         'browser/ui/tab_modal_confirm_dialog_browsertest.h',
-        'browser/ui/views/ash/browser_non_client_frame_view_ash_browsertest.cc',
         'browser/ui/views/autofill/autofill_external_delegate_views_browsertest.cc',
         'browser/ui/views/browser_actions_container_browsertest.cc',
         'browser/ui/views/constrained_window_views_browsertest.cc',
         'browser/ui/views/find_bar_controller_browsertest.cc',
-        'browser/ui/views/frame/app_non_client_frame_view_aura_browsertest.cc',
+        'browser/ui/views/frame/app_non_client_frame_view_ash_browsertest.cc',
+        'browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc',
         'browser/ui/views/frame/browser_view_browsertest.cc',
         'browser/ui/views/panels/panel_view_browsertest.cc',
         'browser/ui/views/search/search_view_controller_browsertest.cc',
@@ -3485,11 +3485,6 @@
             # build time dependency.
             '../v8/tools/gyp/v8.gyp:v8_shell#host',
           ],
-        }],
-        ['use_aura==0', {
-          'sources!': [
-            'browser/ui/views/frame/app_non_client_frame_view_aura_browsertest.cc',
-        ],
         }],
       ],  # conditions
     },  # target browser_tests
