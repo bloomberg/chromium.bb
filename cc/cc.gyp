@@ -177,8 +177,6 @@
       'content_layer_client.h',
       'delegated_renderer_layer.cc',
       'delegated_renderer_layer.h',
-      'frame_buffer_skpicture_canvas_layer_texture_updater.cc',
-      'frame_buffer_skpicture_canvas_layer_texture_updater.h',
       'geometry_binding.cc',
       'geometry_binding.h',
       'heads_up_display_layer.cc',

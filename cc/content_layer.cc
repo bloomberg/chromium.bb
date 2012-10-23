@@ -11,7 +11,6 @@
 #include "cc/bitmap_canvas_layer_texture_updater.h"
 #include "cc/bitmap_skpicture_canvas_layer_texture_updater.h"
 #include "cc/content_layer_client.h"
-#include "cc/frame_buffer_skpicture_canvas_layer_texture_updater.h"
 #include "cc/layer_painter.h"
 #include "cc/layer_tree_host.h"
 #include "cc/settings.h"
@@ -89,7 +88,7 @@ void ContentLayer::createTextureUpdaterIfNeeded()
         return;
     scoped_ptr<LayerPainter> painter = ContentLayerPainter::create(m_client).PassAs<LayerPainter>();
     if (layerTreeHost()->settings().acceleratePainting)
-        m_textureUpdater = FrameBufferSkPictureCanvasLayerTextureUpdater::create(painter.Pass());
+        m_textureUpdater = SkPictureCanvasLayerTextureUpdater::create(painter.Pass());
     else if (Settings::perTilePaintingEnabled())
         m_textureUpdater = BitmapSkPictureCanvasLayerTextureUpdater::create(painter.Pass());
     else
