@@ -10,7 +10,6 @@
 #include "content/browser/web_contents/navigation_entry_impl.h"
 #include "content/browser/web_contents/render_view_host_manager.h"
 #include "content/browser/web_contents/test_web_contents.h"
-#include "content/common/test_url_constants.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -191,17 +190,17 @@ class RenderViewHostManagerTest
   content::ContentBrowserClient* old_browser_client_;
 };
 
-// Tests that when you navigate from the New TabPage to another page, and
+// Tests that when you navigate from a chrome:// url to another page, and
 // then do that same thing in another tab, that the two resulting pages have
 // different SiteInstances, BrowsingInstances, and RenderProcessHosts. This is
 // a regression test for bug 9364.
 TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   BrowserThreadImpl ui_thread(BrowserThread::UI, MessageLoop::current());
-  const GURL kNtpUrl(content::kTestNewTabURL);
+  const GURL kChromeUrl("chrome://foo");
   const GURL kDestUrl("http://www.google.com/");
 
-  // Navigate our first tab to the new tab page and then to the destination.
-  NavigateActiveAndCommit(kNtpUrl);
+  // Navigate our first tab to the chrome url and then to the destination.
+  NavigateActiveAndCommit(kChromeUrl);
   NavigateActiveAndCommit(kDestUrl);
 
   // Make a second tab.
@@ -212,12 +211,12 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   // a RVH that's not pending (since there is no cross-site transition), so
   // we use the committed one.
   contents2->GetController().LoadURL(
-      kNtpUrl, content::Referrer(), content::PAGE_TRANSITION_LINK,
+      kChromeUrl, content::Referrer(), content::PAGE_TRANSITION_LINK,
       std::string());
   TestRenderViewHost* ntp_rvh2 = static_cast<TestRenderViewHost*>(
       contents2->GetRenderManagerForTesting()->current_host());
   EXPECT_FALSE(contents2->cross_navigation_pending());
-  ntp_rvh2->SendNavigate(100, kNtpUrl);
+  ntp_rvh2->SendNavigate(100, kChromeUrl);
 
   // The second one is the opposite, creating a cross-site transition and
   // requiring a beforeunload ack.
@@ -240,14 +239,14 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
 
   // Navigate both to the new tab page, and verify that they share a
   // RenderProcessHost (not a SiteInstance).
-  NavigateActiveAndCommit(kNtpUrl);
+  NavigateActiveAndCommit(kChromeUrl);
 
   contents2->GetController().LoadURL(
-      kNtpUrl, content::Referrer(), content::PAGE_TRANSITION_LINK,
+      kChromeUrl, content::Referrer(), content::PAGE_TRANSITION_LINK,
       std::string());
   dest_rvh2->SendShouldCloseACK(true);
   static_cast<TestRenderViewHost*>(contents2->GetRenderManagerForTesting()->
-     pending_render_view_host())->SendNavigate(102, kNtpUrl);
+     pending_render_view_host())->SendNavigate(102, kChromeUrl);
   dest_rvh2->OnSwapOutACK(false);
 
   EXPECT_NE(active_rvh()->GetSiteInstance(),
@@ -263,11 +262,11 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
 // renderer in a stuck state.  See http://crbug.com/93427.
 TEST_F(RenderViewHostManagerTest, FilterMessagesWhileSwappedOut) {
   BrowserThreadImpl ui_thread(BrowserThread::UI, MessageLoop::current());
-  const GURL kNtpUrl(content::kTestNewTabURL);
+  const GURL kChromeURL("chrome://foo");
   const GURL kDestUrl("http://www.google.com/");
 
-  // Navigate our first tab to the new tab page and then to the destination.
-  NavigateActiveAndCommit(kNtpUrl);
+  // Navigate our first tab to a chrome url and then to the destination.
+  NavigateActiveAndCommit(kChromeURL);
   TestRenderViewHost* ntp_rvh = static_cast<TestRenderViewHost*>(
       contents()->GetRenderManagerForTesting()->current_host());
 
@@ -319,7 +318,7 @@ TEST_F(RenderViewHostManagerTest, FilterMessagesWhileSwappedOut) {
   bool result = false;
   string16 unused;
   ViewHostMsg_RunBeforeUnloadConfirm before_unload_msg(
-      rvh()->GetRoutingID(), kNtpUrl, msg, false, &result, &unused);
+      rvh()->GetRoutingID(), kChromeURL, msg, false, &result, &unused);
   // Enable pumping for check in BrowserMessageFilter::CheckCanDispatchOnUI.
   before_unload_msg.EnableMessagePumping();
   EXPECT_TRUE(ntp_rvh->OnMessageReceived(before_unload_msg));
@@ -328,7 +327,7 @@ TEST_F(RenderViewHostManagerTest, FilterMessagesWhileSwappedOut) {
   // Also test RunJavaScriptMessage.
   ntp_process_host->sink().ClearMessages();
   ViewHostMsg_RunJavaScriptMessage js_msg(
-      rvh()->GetRoutingID(), msg, msg, kNtpUrl,
+      rvh()->GetRoutingID(), msg, msg, kChromeURL,
       content::JAVASCRIPT_MESSAGE_TYPE_CONFIRM, &result, &unused);
   js_msg.EnableMessagePumping();
   EXPECT_TRUE(ntp_rvh->OnMessageReceived(js_msg));
@@ -341,7 +340,7 @@ TEST_F(RenderViewHostManagerTest, FilterMessagesWhileSwappedOut) {
 // RenderView is being newly created or reused.
 TEST_F(RenderViewHostManagerTest, AlwaysSendEnableViewSourceMode) {
   BrowserThreadImpl ui_thread(BrowserThread::UI, MessageLoop::current());
-  const GURL kNtpUrl(content::kTestNewTabURL);
+  const GURL kChromeUrl("chrome://foo");
   const GURL kUrl("view-source:http://foo");
 
   // We have to navigate to some page at first since without this, the first
@@ -350,7 +349,7 @@ TEST_F(RenderViewHostManagerTest, AlwaysSendEnableViewSourceMode) {
   // new_instance will be different, a new RenderViewHost will be created for
   // the second navigation. We have to avoid this in order to exercise the
   // target code patch.
-  NavigateActiveAndCommit(kNtpUrl);
+  NavigateActiveAndCommit(kChromeUrl);
 
   // Navigate.
   controller().LoadURL(
@@ -670,7 +669,7 @@ TEST_F(RenderViewHostManagerTest, WebUI) {
 
   manager.Init(browser_context(), instance, MSG_ROUTING_NONE);
 
-  const GURL kUrl(content::kTestNewTabURL);
+  const GURL kUrl("chrome://foo");
   NavigationEntryImpl entry(NULL /* instance */, -1 /* page_id */, kUrl,
                             content::Referrer(), string16() /* title */,
                             content::PAGE_TRANSITION_TYPED,
@@ -790,7 +789,7 @@ TEST_F(RenderViewHostManagerTest, NavigateAfterMissingSwapOutACK) {
 TEST_F(RenderViewHostManagerTest, CreateSwappedOutOpenerRVHs) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2("http://www.chromium.org/");
-  const GURL kNtpUrl(content::kTestNewTabURL);
+  const GURL kChromeUrl("chrome://foo");
 
   // Navigate to an initial URL.
   contents()->NavigateAndCommit(kUrl1);
@@ -837,7 +836,7 @@ TEST_F(RenderViewHostManagerTest, CreateSwappedOutOpenerRVHs) {
   EXPECT_TRUE(opener2_rvh->is_swapped_out());
 
   // Navigate to a cross-BrowsingInstance URL.
-  contents()->NavigateAndCommit(kNtpUrl);
+  contents()->NavigateAndCommit(kChromeUrl);
   TestRenderViewHost* rvh3 = test_rvh();
   EXPECT_NE(rvh1->GetSiteInstance(), rvh3->GetSiteInstance());
   EXPECT_FALSE(rvh1->GetSiteInstance()->IsRelatedSiteInstance(

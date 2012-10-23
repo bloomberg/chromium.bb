@@ -9,7 +9,6 @@
 #include "base/file_path.h"
 #include "base/platform_file.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/common/test_url_constants.h"
 #include "content/public/common/url_constants.h"
 #include "content/test/test_content_browser_client.h"
 #include "googleurl/src/gurl.h"
@@ -173,8 +172,9 @@ TEST_F(ChildProcessSecurityPolicyTest, AboutTest) {
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("about:crash")));
 
   // These requests for chrome:// pages should be granted.
-  p->GrantRequestURL(kRendererID, GURL(content::kTestNewTabURL));
-  EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL(content::kTestNewTabURL)));
+  GURL chrome_url("chrome://foo");
+  p->GrantRequestURL(kRendererID, chrome_url);
+  EXPECT_TRUE(p->CanRequestURL(kRendererID, chrome_url));
 
   p->Remove(kRendererID);
 }

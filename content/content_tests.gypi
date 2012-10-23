@@ -96,8 +96,6 @@
         'browser/renderer_host/test_render_view_host.h',
         'browser/web_contents/test_web_contents.cc',
         'browser/web_contents/test_web_contents.h',
-        'common/test_url_constants.cc',
-        'common/test_url_constants.h',
         'gpu/gpu_idirect3d9_mock_win.cc',
         'gpu/gpu_idirect3d9_mock_win.h',
         'test/content_test_suite.cc',
