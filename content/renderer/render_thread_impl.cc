@@ -856,8 +856,8 @@ RenderThreadImpl::GetGpuVDAContext3D() {
 AudioRendererMixerManager* RenderThreadImpl::GetAudioRendererMixerManager() {
   if (!audio_renderer_mixer_manager_.get()) {
     audio_renderer_mixer_manager_.reset(new AudioRendererMixerManager(
-        AudioHardware::GetOutputSampleRate(),
-        AudioHardware::GetOutputBufferSize()));
+        GetAudioOutputSampleRate(),
+        GetAudioOutputBufferSize()));
   }
 
   return audio_renderer_mixer_manager_.get();

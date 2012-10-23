@@ -92,8 +92,7 @@ bool HardwareSampleRatesAreValid() {
   int valid_output_rates[] = {44100, 48000, 96000};
 
   // Verify the input sample rate.
-  int input_sample_rate =
-      static_cast<int>(AudioHardware::GetInputSampleRate());
+  int input_sample_rate = GetAudioInputSampleRate();
 
   if (!FindElementInArray(valid_input_rates, arraysize(valid_input_rates),
                           input_sample_rate)) {
@@ -102,8 +101,7 @@ bool HardwareSampleRatesAreValid() {
   }
 
   // Given that the input rate was OK, verify the output rate as well.
-  int output_sample_rate =
-      static_cast<int>(AudioHardware::GetOutputSampleRate());
+  int output_sample_rate = GetAudioOutputSampleRate();
   if (!FindElementInArray(valid_output_rates, arraysize(valid_output_rates),
                           output_sample_rate)) {
     LOG(WARNING) << "Non-supported output sample rate detected.";

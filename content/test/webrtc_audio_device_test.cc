@@ -190,7 +190,7 @@ bool WebRTCAudioDeviceTest::Send(IPC::Message* message) {
 void WebRTCAudioDeviceTest::SetAudioUtilCallback(AudioUtilInterface* callback) {
   // Invalidate any potentially cached values since the new callback should
   // be used for those queries.
-  AudioHardware::ResetCache();
+  ResetAudioCache();
   audio_util_callback_ = callback;
 }
 

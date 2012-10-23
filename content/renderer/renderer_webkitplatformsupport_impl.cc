@@ -557,11 +557,11 @@ bool RendererWebKitPlatformSupportImpl::canAccelerate2dCanvas() {
 }
 
 double RendererWebKitPlatformSupportImpl::audioHardwareSampleRate() {
-  return AudioHardware::GetOutputSampleRate();
+  return GetAudioOutputSampleRate();
 }
 
 size_t RendererWebKitPlatformSupportImpl::audioHardwareBufferSize() {
-  return AudioHardware::GetOutputBufferSize();
+  return GetAudioOutputBufferSize();
 }
 
 WebAudioDevice*

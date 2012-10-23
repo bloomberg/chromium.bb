@@ -18,7 +18,7 @@ static ChannelLayout input_channel_layout = CHANNEL_LAYOUT_NONE;
 
 namespace content {
 
-int AudioHardware::GetOutputSampleRate() {
+int GetAudioOutputSampleRate() {
   DCHECK(RenderThreadImpl::current() != NULL);
 
   if (!output_sample_rate) {
@@ -28,7 +28,7 @@ int AudioHardware::GetOutputSampleRate() {
   return output_sample_rate;
 }
 
-int AudioHardware::GetInputSampleRate() {
+int GetAudioInputSampleRate() {
   DCHECK(RenderThreadImpl::current() != NULL);
 
   if (!input_sample_rate) {
@@ -38,7 +38,7 @@ int AudioHardware::GetInputSampleRate() {
   return input_sample_rate;
 }
 
-size_t AudioHardware::GetOutputBufferSize() {
+size_t GetAudioOutputBufferSize() {
   DCHECK(RenderThreadImpl::current() != NULL);
 
   if (!output_buffer_size) {
@@ -51,7 +51,7 @@ size_t AudioHardware::GetOutputBufferSize() {
   return output_buffer_size;
 }
 
-ChannelLayout AudioHardware::GetInputChannelLayout() {
+ChannelLayout GetAudioInputChannelLayout() {
   DCHECK(RenderThreadImpl::current() != NULL);
 
   if (input_channel_layout == CHANNEL_LAYOUT_NONE) {
@@ -64,7 +64,7 @@ ChannelLayout AudioHardware::GetInputChannelLayout() {
   return input_channel_layout;
 }
 
-void AudioHardware::ResetCache() {
+void ResetAudioCache() {
   DCHECK(RenderThreadImpl::current() != NULL);
 
   output_sample_rate = 0.0;
