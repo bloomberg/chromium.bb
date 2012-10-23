@@ -4,7 +4,6 @@
 
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/api/infobars/confirm_infobar_delegate.h"
-#include "chrome/browser/autofill/autofill_external_delegate.h"
 
 // This file contains temporary stubs to allow the libwebview target to compile.
 // They will be removed once real implementations are written/upstreamed, or
@@ -15,15 +14,6 @@ TabAndroid* TabAndroid::FromWebContents(content::WebContents* web_contents) {
   // We don't need to return a real TabAndroid object yet.
   // Eventually, WebView will need its own TabAndroid implementation.
   return NULL;
-}
-
-// static
-void AutofillExternalDelegate::CreateForWebContentsAndManager(
-    content::WebContents* web_contents,
-    AutofillManager* autofill_manager) {
-  // We don't need to return a real AutofillExternalDelegate yet.
-  // Eventually, WebView will need an implementation (probably shared with
-  // Chrome).
 }
 
 // static

@@ -60,6 +60,12 @@ public class AppResource {
     /** Drawable resource for the link preview popup overlay. */
     public static int DRAWABLE_LINK_PREVIEW_POPUP_OVERLAY;
 
+    /** Id of the autofill label. */
+    public static int ID_AUTOFILL_LABEL;
+
+    /** Id of the autofill name. */
+    public static int ID_AUTOFILL_NAME;
+
     /** Id of the date picker view. */
     public static int ID_DATE_PICKER;
 
@@ -92,6 +98,9 @@ public class AppResource {
 
     /** Id of the view containing the month and year pickers. */
     public static int ID_MONTH_YEAR_PICKERS_CONTAINER;
+
+    /** Layout of the autofill popup. */
+    public static int LAYOUT_AUTOFILL_TEXT;
 
     /** Layout of the date/time picker dialog. */
     public static int LAYOUT_DATE_TIME_PICKER_DIALOG;

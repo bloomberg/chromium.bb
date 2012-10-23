@@ -248,6 +248,14 @@ ScopedJavaLocalRef<jobject> ContentViewCoreImpl::GetJavaObject() {
   return java_ref_.get(env);
 }
 
+ScopedJavaLocalRef<jobject> ContentViewCoreImpl::GetContainerViewDelegate() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return ScopedJavaLocalRef<jobject>();
+  return Java_ContentViewCore_getContainerViewDelegate(env, obj.obj());
+}
+
 void ContentViewCoreImpl::OnWebPreferencesUpdated() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);

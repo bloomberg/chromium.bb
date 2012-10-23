@@ -13,12 +13,15 @@
 #include "chrome/browser/android/provider/chrome_browser_provider.h"
 #include "chrome/browser/component/web_contents_delegate_android/component_jni_registrar.h"
 #include "chrome/browser/history/android/sqlite_cursor.h"
+#include "chrome/browser/ui/android/autofill/autofill_external_delegate.h"
 #include "chrome/browser/ui/android/javascript_app_modal_dialog_android.h"
 
 namespace chrome {
 namespace android {
 
 static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
+  { "AutofillExternalDelegate",
+      AutofillExternalDelegateAndroid::RegisterAutofillExternalDelegate},
   { "ChromeBrowserProvider",
       ChromeBrowserProvider::RegisterChromeBrowserProvider },
   { "ChromeWebContentsDelegateAndroid",

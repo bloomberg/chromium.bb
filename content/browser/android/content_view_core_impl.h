@@ -44,6 +44,8 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   // ContentViewCore implementation.
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject() OVERRIDE;
+  virtual base::android::ScopedJavaLocalRef<jobject> GetContainerViewDelegate()
+      OVERRIDE;
   virtual WebContents* GetWebContents() const OVERRIDE;
   virtual ui::WindowAndroid* GetWindowAndroid() OVERRIDE;
   virtual void LoadUrl(NavigationController::LoadURLParams& params) OVERRIDE;

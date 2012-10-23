@@ -32,6 +32,8 @@ class ContentViewCore {
 
   virtual WebContents* GetWebContents() const = 0;
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject() = 0;
+  virtual base::android::ScopedJavaLocalRef<jobject> GetContainerViewDelegate()
+      = 0;
   virtual ui::WindowAndroid* GetWindowAndroid() = 0;
   virtual void LoadUrl(NavigationController::LoadURLParams& params) = 0;
   virtual void OnWebPreferencesUpdated() = 0;

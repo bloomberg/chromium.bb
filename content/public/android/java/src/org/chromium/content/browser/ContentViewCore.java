@@ -304,6 +304,32 @@ public class ContentViewCore implements MotionEventDelegate {
         return mContainerView;
     }
 
+    /**
+     * Returns a delegate that can be used to add and remove views from the ContainerView.
+     *
+     * NOTE: Use with care, as not all ContentViewCore users setup their ContainerView in the same
+     * way. In particular, the Android WebView has limitations on what implementation details can
+     * be provided via a child view, as they are visible in the API and could introduce
+     * compatibility breaks with existing applications. If in doubt, contact the
+     * android_webview/OWNERS
+     *
+     * @return A ContainerViewDelegate that can be used to add and remove views.
+     */
+    @CalledByNative
+    public ContainerViewDelegate getContainerViewDelegate() {
+        return new ContainerViewDelegate() {
+            @Override
+            public void addViewToContainerView(View view) {
+                mContainerView.addView(view);
+            }
+
+            @Override
+            public void removeViewFromContainerView(View view) {
+                mContainerView.removeView(view);
+            }
+        };
+    }
+
     private ImeAdapter createImeAdapter(Context context) {
         return new ImeAdapter(context, getSelectionHandleController(),
                 getInsertionHandleController(),

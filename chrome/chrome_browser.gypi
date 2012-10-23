@@ -2868,6 +2868,7 @@
           'target_name': 'chrome_browser_jni_headers',
           'type': 'none',
           'sources': [
+            'android/java/src/org/chromium/chrome/browser/autofill/AutofillExternalDelegate.java',
             'android/java/src/org/chromium/chrome/browser/ChromeBrowserProvider.java',
             'android/java/src/org/chromium/chrome/browser/ChromeHttpAuthHandler.java',
             'android/java/src/org/chromium/chrome/browser/ChromeWebContentsDelegateAndroid.java',
