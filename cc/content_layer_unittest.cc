@@ -6,7 +6,7 @@
 
 #include "cc/content_layer.h"
 
-#include "cc/bitmap_canvas_layer_texture_updater.h"
+#include "cc/bitmap_canvas_layer_updater.h"
 #include "cc/content_layer_client.h"
 #include "cc/rendering_stats.h"
 #include "cc/test/geometry_test_utils.h"
@@ -44,7 +44,7 @@ TEST(ContentLayerTest, ContentLayerPainterWithDeviceScale)
     IntRect opaqueRectInContentSpace = opaqueRectInLayerSpace;
     opaqueRectInContentSpace.scale(contentsScale);
     MockContentLayerClient client(opaqueRectInLayerSpace);
-    scoped_refptr<BitmapCanvasLayerTextureUpdater> updater = BitmapCanvasLayerTextureUpdater::create(ContentLayerPainter::create(&client).PassAs<LayerPainter>());
+    scoped_refptr<BitmapCanvasLayerUpdater> updater = BitmapCanvasLayerUpdater::create(ContentLayerPainter::create(&client).PassAs<LayerPainter>());
 
     IntRect resultingOpaqueRect;
     RenderingStats stats;

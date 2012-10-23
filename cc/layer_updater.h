@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LayerTextureUpdater_h
-#define LayerTextureUpdater_h
+#ifndef LayerUpdater_h
+#define LayerUpdater_h
 
 #include "base/memory/ref_counted.h"
 #include "cc/prioritized_texture.h"
@@ -17,7 +17,7 @@ class TextureManager;
 struct RenderingStats;
 class TextureUpdateQueue;
 
-class LayerTextureUpdater : public base::RefCounted<LayerTextureUpdater> {
+class LayerUpdater : public base::RefCounted<LayerUpdater> {
 public:
     // Allows texture uploaders to store per-tile resources.
     class Texture {
@@ -36,7 +36,7 @@ public:
         scoped_ptr<PrioritizedTexture> m_texture;
     };
 
-    LayerTextureUpdater() { }
+    LayerUpdater() { }
 
     virtual scoped_ptr<Texture> createTexture(PrioritizedTextureManager*) = 0;
     // The |resultingOpaqueRect| gives back a region of the layer that was painted opaque. If the layer is marked opaque in the updater,
@@ -47,12 +47,12 @@ public:
     virtual void setOpaque(bool) { }
 
 protected:
-    virtual ~LayerTextureUpdater() { }
+    virtual ~LayerUpdater() { }
 
 private:
-    friend class base::RefCounted<LayerTextureUpdater>;
+    friend class base::RefCounted<LayerUpdater>;
 };
 
 }  // namespace cc
 
-#endif // LayerTextureUpdater_h
+#endif // LayerUpdater_h

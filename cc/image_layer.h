@@ -10,7 +10,7 @@
 
 namespace cc {
 
-class ImageLayerTextureUpdater;
+class ImageLayerUpdater;
 
 // A Layer that contains only an Image element.
 class ImageLayer : public TiledLayer {
@@ -30,13 +30,13 @@ private:
 
     void setTilingOption(TilingOption);
 
-    virtual LayerTextureUpdater* textureUpdater() const OVERRIDE;
-    virtual void createTextureUpdaterIfNeeded() OVERRIDE;
+    virtual LayerUpdater* updater() const OVERRIDE;
+    virtual void createUpdaterIfNeeded() OVERRIDE;
     virtual IntSize contentBounds() const OVERRIDE;
 
     SkBitmap m_bitmap;
 
-    scoped_refptr<ImageLayerTextureUpdater> m_textureUpdater;
+    scoped_refptr<ImageLayerUpdater> m_updater;
 };
 
 }  // namespace cc

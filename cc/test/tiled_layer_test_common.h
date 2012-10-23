@@ -9,7 +9,7 @@
 #include "IntRect.h"
 #include "IntSize.h"
 #include "Region.h"
-#include "cc/layer_texture_updater.h"
+#include "cc/layer_updater.h"
 #include "cc/prioritized_texture.h"
 #include "cc/resource_provider.h"
 #include "cc/texture_copier.h"
@@ -22,23 +22,23 @@ namespace WebKitTests {
 
 class FakeTiledLayer;
 
-class FakeLayerTextureUpdater : public cc::LayerTextureUpdater {
+class FakeLayerUpdater : public cc::LayerUpdater {
 public:
-    class Texture : public cc::LayerTextureUpdater::Texture {
+    class Texture : public cc::LayerUpdater::Texture {
     public:
-        Texture(FakeLayerTextureUpdater*, scoped_ptr<cc::PrioritizedTexture>);
+        Texture(FakeLayerUpdater*, scoped_ptr<cc::PrioritizedTexture>);
         virtual ~Texture();
 
         virtual void update(cc::TextureUpdateQueue&, const cc::IntRect&, const cc::IntSize&, bool, cc::RenderingStats&) OVERRIDE;
 
     private:
-        FakeLayerTextureUpdater* m_layer;
+        FakeLayerUpdater* m_layer;
         SkBitmap m_bitmap;
     };
 
-    FakeLayerTextureUpdater();
+    FakeLayerUpdater();
 
-    virtual scoped_ptr<cc::LayerTextureUpdater::Texture> createTexture(cc::PrioritizedTextureManager*) OVERRIDE;
+    virtual scoped_ptr<cc::LayerUpdater::Texture> createTexture(cc::PrioritizedTextureManager*) OVERRIDE;
 
     virtual void prepareToUpdate(const cc::IntRect& contentRect, const cc::IntSize&, float, float, cc::IntRect& resultingOpaqueRect, cc::RenderingStats&) OVERRIDE;
     // Sets the rect to invalidate during the next call to prepareToUpdate(). After the next
@@ -59,7 +59,7 @@ public:
     void setOpaquePaintRect(const cc::IntRect& opaquePaintRect) { m_opaquePaintRect = opaquePaintRect; }
 
 protected:
-    virtual ~FakeLayerTextureUpdater();
+    virtual ~FakeLayerUpdater();
 
 private:
     int m_prepareCount;
@@ -97,16 +97,16 @@ public:
     virtual void setTexturePriorities(const cc::PriorityCalculator&) OVERRIDE;
 
     virtual cc::PrioritizedTextureManager* textureManager() const OVERRIDE;
-    FakeLayerTextureUpdater* fakeLayerTextureUpdater() { return m_fakeTextureUpdater.get(); }
+    FakeLayerUpdater* fakeLayerUpdater() { return m_fakeUpdater.get(); }
     cc::FloatRect updateRect() { return m_updateRect; }
 
 protected:
-    virtual cc::LayerTextureUpdater* textureUpdater() const OVERRIDE;
-    virtual void createTextureUpdaterIfNeeded() OVERRIDE { }
+    virtual cc::LayerUpdater* updater() const OVERRIDE;
+    virtual void createUpdaterIfNeeded() OVERRIDE { }
     virtual ~FakeTiledLayer();
 
 private:
-    scoped_refptr<FakeLayerTextureUpdater> m_fakeTextureUpdater;
+    scoped_refptr<FakeLayerUpdater> m_fakeUpdater;
     cc::PrioritizedTextureManager* m_textureManager;
     cc::FloatRect m_lastNeedsDisplayRect;
 };

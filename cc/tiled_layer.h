@@ -6,7 +6,7 @@
 #define TiledLayerChromium_h
 
 #include "cc/layer.h"
-#include "cc/layer_texture_updater.h"
+#include "cc/layer_updater.h"
 #include "cc/layer_tiling_data.h"
 
 namespace cc {
@@ -50,8 +50,8 @@ protected:
     void setBorderTexelOption(LayerTilingData::BorderTexelOption);
     size_t numPaintedTiles() { return m_tiler->tiles().size(); }
 
-    virtual LayerTextureUpdater* textureUpdater() const = 0;
-    virtual void createTextureUpdaterIfNeeded() = 0;
+    virtual LayerUpdater* updater() const = 0;
+    virtual void createUpdaterIfNeeded() = 0;
 
     // Set invalidations to be potentially repainted during update().
     void invalidateContentRect(const IntRect& contentRect);

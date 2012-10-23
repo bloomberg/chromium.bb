@@ -16,7 +16,7 @@ namespace cc {
 class ContentLayerClient;
 class FloatRect;
 class IntRect;
-class LayerTextureUpdater;
+class LayerUpdater;
 
 class ContentLayerPainter : public LayerPainter {
 public:
@@ -51,11 +51,11 @@ protected:
     virtual ~ContentLayer();
 
 private:
-    virtual LayerTextureUpdater* textureUpdater() const OVERRIDE;
-    virtual void createTextureUpdaterIfNeeded() OVERRIDE;
+    virtual LayerUpdater* updater() const OVERRIDE;
+    virtual void createUpdaterIfNeeded() OVERRIDE;
 
     ContentLayerClient* m_client;
-    scoped_refptr<LayerTextureUpdater> m_textureUpdater;
+    scoped_refptr<LayerUpdater> m_updater;
 };
 
 }

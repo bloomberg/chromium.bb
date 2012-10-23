@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CACHING_BITMAP_CANVAS_LAYER_TEXTURE_UPDATER_H_
-#define CACHING_BITMAP_CANVAS_LAYER_TEXTURE_UPDATER_H_
+#ifndef CACHING_BITMAP_CANVAS_LAYER_UPDATER_H_
+#define CACHING_BITMAP_CANVAS_LAYER_UPDATER_H_
 
 #include "base/compiler_specific.h"
-#include "cc/bitmap_canvas_layer_texture_updater.h"
+#include "cc/bitmap_canvas_layer_updater.h"
 
 namespace cc {
 
-class CachingBitmapCanvasLayerTextureUpdater
-    : public BitmapCanvasLayerTextureUpdater {
+class CachingBitmapCanvasLayerUpdater
+    : public BitmapCanvasLayerUpdater {
  public:
-  static scoped_refptr<CachingBitmapCanvasLayerTextureUpdater> Create(
+  static scoped_refptr<CachingBitmapCanvasLayerUpdater> Create(
       scoped_ptr<LayerPainter>);
 
   virtual void prepareToUpdate(const IntRect& content_rect,
@@ -26,9 +26,9 @@ class CachingBitmapCanvasLayerTextureUpdater
   bool pixelsDidChange() const;
 
  private:
-  explicit CachingBitmapCanvasLayerTextureUpdater(
+  explicit CachingBitmapCanvasLayerUpdater(
       scoped_ptr<LayerPainter> painter);
-  virtual ~CachingBitmapCanvasLayerTextureUpdater();
+  virtual ~CachingBitmapCanvasLayerUpdater();
 
   bool pixels_did_change_;
   SkBitmap cached_bitmap_;
@@ -36,4 +36,4 @@ class CachingBitmapCanvasLayerTextureUpdater
 
 }  // namespace cc
 
-#endif  // CACHING_BITMAP_CANVAS_LAYER_TEXTURE_UPDATER_H_
+#endif  // CACHING_BITMAP_CANVAS_LAYER_UPDATER_H_

@@ -4,16 +4,16 @@
 
 #include "config.h"
 
-#include "cc/layer_texture_updater.h"
+#include "cc/layer_updater.h"
 
 namespace cc {
 
-LayerTextureUpdater::Texture::Texture(scoped_ptr<PrioritizedTexture> texture)
+LayerUpdater::Texture::Texture(scoped_ptr<PrioritizedTexture> texture)
     : m_texture(texture.Pass())
 {
 }
 
-LayerTextureUpdater::Texture::~Texture()
+LayerUpdater::Texture::~Texture()
 {
 }
 

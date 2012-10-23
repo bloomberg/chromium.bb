@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 
-#ifndef BitmapCanvasLayerTextureUpdater_h
-#define BitmapCanvasLayerTextureUpdater_h
+#ifndef BitmapCanvasLayerUpdater_h
+#define BitmapCanvasLayerUpdater_h
 
-#include "cc/canvas_layer_texture_updater.h"
+#include "cc/canvas_layer_updater.h"
 
 class SkCanvas;
 
@@ -17,32 +17,32 @@ class LayerPainter;
 // This class rasterizes the contentRect into a skia bitmap canvas. It then updates
 // textures by copying from the canvas into the texture, using MapSubImage if
 // possible.
-class BitmapCanvasLayerTextureUpdater : public CanvasLayerTextureUpdater {
+class BitmapCanvasLayerUpdater : public CanvasLayerUpdater {
 public:
-    class Texture : public LayerTextureUpdater::Texture {
+    class Texture : public LayerUpdater::Texture {
     public:
-        Texture(BitmapCanvasLayerTextureUpdater*, scoped_ptr<PrioritizedTexture>);
+        Texture(BitmapCanvasLayerUpdater*, scoped_ptr<PrioritizedTexture>);
         virtual ~Texture();
 
         virtual void update(TextureUpdateQueue&, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&) OVERRIDE;
 
     private:
-        BitmapCanvasLayerTextureUpdater* textureUpdater() { return m_textureUpdater; }
+        BitmapCanvasLayerUpdater* updater() { return m_updater; }
 
-        BitmapCanvasLayerTextureUpdater* m_textureUpdater;
+        BitmapCanvasLayerUpdater* m_updater;
     };
 
-    static scoped_refptr<BitmapCanvasLayerTextureUpdater> create(scoped_ptr<LayerPainter>);
+    static scoped_refptr<BitmapCanvasLayerUpdater> create(scoped_ptr<LayerPainter>);
 
-    virtual scoped_ptr<LayerTextureUpdater::Texture> createTexture(PrioritizedTextureManager*) OVERRIDE;
+    virtual scoped_ptr<LayerUpdater::Texture> createTexture(PrioritizedTextureManager*) OVERRIDE;
     virtual void prepareToUpdate(const IntRect& contentRect, const IntSize& tileSize, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, RenderingStats&) OVERRIDE;
     void updateTexture(TextureUpdateQueue&, PrioritizedTexture*, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate);
 
     virtual void setOpaque(bool) OVERRIDE;
 
 protected:
-    explicit BitmapCanvasLayerTextureUpdater(scoped_ptr<LayerPainter>);
-    virtual ~BitmapCanvasLayerTextureUpdater();
+    explicit BitmapCanvasLayerUpdater(scoped_ptr<LayerPainter>);
+    virtual ~BitmapCanvasLayerUpdater();
 
     scoped_ptr<SkCanvas> m_canvas;
     IntSize m_canvasSize;
@@ -51,4 +51,4 @@ protected:
 
 }  // namespace cc
 
-#endif  // BitmapCanvasLayerTextureUpdater_h
+#endif  // BitmapCanvasLayerUpdater_h

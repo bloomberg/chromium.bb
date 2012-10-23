@@ -10,19 +10,19 @@ using namespace cc;
 
 namespace WebKitTests {
 
-FakeLayerTextureUpdater::Texture::Texture(FakeLayerTextureUpdater* layer, scoped_ptr<PrioritizedTexture> texture)
-    : LayerTextureUpdater::Texture(texture.Pass())
+FakeLayerUpdater::Texture::Texture(FakeLayerUpdater* layer, scoped_ptr<PrioritizedTexture> texture)
+    : LayerUpdater::Texture(texture.Pass())
     , m_layer(layer)
 {
     m_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
     m_bitmap.allocPixels();
 }
 
-FakeLayerTextureUpdater::Texture::~Texture()
+FakeLayerUpdater::Texture::~Texture()
 {
 }
 
-void FakeLayerTextureUpdater::Texture::update(TextureUpdateQueue& queue, const IntRect&, const IntSize&, bool partialUpdate, RenderingStats&)
+void FakeLayerUpdater::Texture::update(TextureUpdateQueue& queue, const IntRect&, const IntSize&, bool partialUpdate, RenderingStats&)
 {
     const IntRect rect(0, 0, 10, 10);
     ResourceUpdate upload = ResourceUpdate::Create(
@@ -35,17 +35,17 @@ void FakeLayerTextureUpdater::Texture::update(TextureUpdateQueue& queue, const I
     m_layer->update();
 }
 
-FakeLayerTextureUpdater::FakeLayerTextureUpdater()
+FakeLayerUpdater::FakeLayerUpdater()
     : m_prepareCount(0)
     , m_updateCount(0)
 {
 }
 
-FakeLayerTextureUpdater::~FakeLayerTextureUpdater()
+FakeLayerUpdater::~FakeLayerUpdater()
 {
 }
 
-void FakeLayerTextureUpdater::prepareToUpdate(const IntRect& contentRect, const IntSize&, float, float, IntRect& resultingOpaqueRect, RenderingStats&)
+void FakeLayerUpdater::prepareToUpdate(const IntRect& contentRect, const IntSize&, float, float, IntRect& resultingOpaqueRect, RenderingStats&)
 {
     m_prepareCount++;
     m_lastUpdateRect = contentRect;
@@ -57,15 +57,15 @@ void FakeLayerTextureUpdater::prepareToUpdate(const IntRect& contentRect, const 
     resultingOpaqueRect = m_opaquePaintRect;
 }
 
-void FakeLayerTextureUpdater::setRectToInvalidate(const IntRect& rect, FakeTiledLayer* layer)
+void FakeLayerUpdater::setRectToInvalidate(const IntRect& rect, FakeTiledLayer* layer)
 {
     m_rectToInvalidate = rect;
     m_layer = layer;
 }
 
-scoped_ptr<LayerTextureUpdater::Texture> FakeLayerTextureUpdater::createTexture(PrioritizedTextureManager* manager)
+scoped_ptr<LayerUpdater::Texture> FakeLayerUpdater::createTexture(PrioritizedTextureManager* manager)
 {
-    return scoped_ptr<LayerTextureUpdater::Texture>(new Texture(this, PrioritizedTexture::create(manager)));
+    return scoped_ptr<LayerUpdater::Texture>(new Texture(this, PrioritizedTexture::create(manager)));
 }
 
 FakeTiledLayerImpl::FakeTiledLayerImpl(int id)
@@ -79,7 +79,7 @@ FakeTiledLayerImpl::~FakeTiledLayerImpl()
 
 FakeTiledLayer::FakeTiledLayer(PrioritizedTextureManager* textureManager)
     : TiledLayer()
-    , m_fakeTextureUpdater(make_scoped_refptr(new FakeLayerTextureUpdater))
+    , m_fakeUpdater(make_scoped_refptr(new FakeLayerUpdater))
     , m_textureManager(textureManager)
 {
     setTileSize(tileSize());
@@ -129,9 +129,9 @@ cc::PrioritizedTextureManager* FakeTiledLayer::textureManager() const
     return m_textureManager;
 }
 
-cc::LayerTextureUpdater* FakeTiledLayer::textureUpdater() const
+cc::LayerUpdater* FakeTiledLayer::updater() const
 {
-    return m_fakeTextureUpdater.get();
+    return m_fakeUpdater.get();
 }
 
 cc::IntSize FakeTiledLayerWithScaledBounds::contentBounds() const

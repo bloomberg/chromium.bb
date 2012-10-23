@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 
-#ifndef SkPictureCanvasLayerTextureUpdater_h
-#define SkPictureCanvasLayerTextureUpdater_h
+#ifndef SkPictureCanvasLayerUpdater_h
+#define SkPictureCanvasLayerUpdater_h
 
-#include "cc/canvas_layer_texture_updater.h"
+#include "cc/canvas_layer_updater.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
 class SkCanvas;
@@ -17,32 +17,32 @@ class LayerPainter;
 
 // This class records the contentRect into an SkPicture. Subclasses, provide
 // different implementations of tile updating based on this recorded picture.
-// The BitmapSkPictureCanvasLayerTextureUpdater and
-// FrameBufferSkPictureCanvasLayerTextureUpdater are two examples of such
+// The BitmapSkPictureCanvasLayerUpdater and
+// FrameBufferSkPictureCanvasLayerUpdater are two examples of such
 // implementations.
-class SkPictureCanvasLayerTextureUpdater : public CanvasLayerTextureUpdater {
+class SkPictureCanvasLayerUpdater : public CanvasLayerUpdater {
 public:
-    class Texture : public LayerTextureUpdater::Texture {
+    class Texture : public LayerUpdater::Texture {
     public:
-        Texture(SkPictureCanvasLayerTextureUpdater*, scoped_ptr<PrioritizedTexture>);
+        Texture(SkPictureCanvasLayerUpdater*, scoped_ptr<PrioritizedTexture>);
         virtual ~Texture();
 
         virtual void update(TextureUpdateQueue&, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&) OVERRIDE;
 
     private:
-        SkPictureCanvasLayerTextureUpdater* textureUpdater() { return m_textureUpdater; }
+        SkPictureCanvasLayerUpdater* updater() { return m_updater; }
 
-        SkPictureCanvasLayerTextureUpdater* m_textureUpdater;
+        SkPictureCanvasLayerUpdater* m_updater;
     };
 
-    static scoped_refptr<SkPictureCanvasLayerTextureUpdater> create(scoped_ptr<LayerPainter>);
+    static scoped_refptr<SkPictureCanvasLayerUpdater> create(scoped_ptr<LayerPainter>);
 
-    virtual scoped_ptr<LayerTextureUpdater::Texture> createTexture(PrioritizedTextureManager*) OVERRIDE;
+    virtual scoped_ptr<LayerUpdater::Texture> createTexture(PrioritizedTextureManager*) OVERRIDE;
     virtual void setOpaque(bool) OVERRIDE;
 
 protected:
-    explicit SkPictureCanvasLayerTextureUpdater(scoped_ptr<LayerPainter>);
-    virtual ~SkPictureCanvasLayerTextureUpdater();
+    explicit SkPictureCanvasLayerUpdater(scoped_ptr<LayerPainter>);
+    virtual ~SkPictureCanvasLayerUpdater();
 
     virtual void prepareToUpdate(const IntRect& contentRect, const IntSize& tileSize, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, RenderingStats&) OVERRIDE;
     void drawPicture(SkCanvas*);
@@ -58,4 +58,4 @@ private:
 };
 
 } // namespace cc
-#endif // SkPictureCanvasLayerTextureUpdater_h
+#endif // SkPictureCanvasLayerUpdater_h

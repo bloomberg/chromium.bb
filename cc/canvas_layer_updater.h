@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CanvasLayerTextureUpdater_h
-#define CanvasLayerTextureUpdater_h
+#ifndef CanvasLayerUpdater_h
+#define CanvasLayerUpdater_h
 
-#include "cc/layer_texture_updater.h"
+#include "cc/layer_updater.h"
 
 class SkCanvas;
 
@@ -13,13 +13,13 @@ namespace cc {
 
 class LayerPainter;
 
-// Base class for BitmapCanvasLayerTextureUpdater and
-// SkPictureCanvasLayerTextureUpdater that reduces code duplication between
+// Base class for BitmapCanvasLayerUpdater and
+// SkPictureCanvasLayerUpdater that reduces code duplication between
 // their respective paintContents implementations.
-class CanvasLayerTextureUpdater : public LayerTextureUpdater {
+class CanvasLayerUpdater : public LayerUpdater {
 protected:
-    explicit CanvasLayerTextureUpdater(scoped_ptr<LayerPainter>);
-    virtual ~CanvasLayerTextureUpdater();
+    explicit CanvasLayerUpdater(scoped_ptr<LayerPainter>);
+    virtual ~CanvasLayerUpdater();
 
     void paintContents(SkCanvas*, const IntRect& contentRect, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, RenderingStats&);
     const IntRect& contentRect() const { return m_contentRect; }
@@ -31,4 +31,4 @@ private:
 
 }  // namespace cc
 
-#endif  // CanvasLayerTextureUpdater_h
+#endif  // CanvasLayerUpdater_h

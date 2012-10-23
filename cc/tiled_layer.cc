@@ -21,12 +21,12 @@ namespace cc {
 
 class UpdatableTile : public LayerTilingData::Tile {
 public:
-    static scoped_ptr<UpdatableTile> create(scoped_ptr<LayerTextureUpdater::Texture> texture)
+    static scoped_ptr<UpdatableTile> create(scoped_ptr<LayerUpdater::Texture> texture)
     {
         return make_scoped_ptr(new UpdatableTile(texture.Pass()));
     }
 
-    LayerTextureUpdater::Texture* texture() { return m_texture.get(); }
+    LayerUpdater::Texture* texture() { return m_texture.get(); }
     PrioritizedTexture* managedTexture() { return m_texture->texture(); }
 
     bool isDirty() const { return !dirtyRect.isEmpty(); }
@@ -61,7 +61,7 @@ public:
     bool isInUseOnImpl;
 
 private:
-    explicit UpdatableTile(scoped_ptr<LayerTextureUpdater::Texture> texture)
+    explicit UpdatableTile(scoped_ptr<LayerUpdater::Texture> texture)
         : partialUpdate(false)
         , validForFrame(false)
         , occluded(false)
@@ -70,7 +70,7 @@ private:
     {
     }
 
-    scoped_ptr<LayerTextureUpdater::Texture> m_texture;
+    scoped_ptr<LayerUpdater::Texture> m_texture;
 
     DISALLOW_COPY_AND_ASSIGN(UpdatableTile);
 };
@@ -255,9 +255,9 @@ UpdatableTile* TiledLayer::tileAt(int i, int j) const
 
 UpdatableTile* TiledLayer::createTile(int i, int j)
 {
-    createTextureUpdaterIfNeeded();
+    createUpdaterIfNeeded();
 
-    scoped_ptr<UpdatableTile> tile(UpdatableTile::create(textureUpdater()->createTexture(textureManager())));
+    scoped_ptr<UpdatableTile> tile(UpdatableTile::create(updater()->createTexture(textureManager())));
     tile->managedTexture()->setDimensions(m_tiler->tileSize(), m_textureFormat);
 
     UpdatableTile* addedTile = tile.get();
@@ -343,7 +343,7 @@ bool TiledLayer::tileNeedsBufferedUpdate(UpdatableTile* tile)
 bool TiledLayer::updateTiles(int left, int top, int right, int bottom, TextureUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats, bool& didPaint)
 {
     didPaint = false;
-    createTextureUpdaterIfNeeded();
+    createUpdaterIfNeeded();
 
     bool ignoreOcclusions = !occlusion;
     if (!haveTexturesForTiles(left, top, right, bottom, ignoreOcclusions)) {
@@ -457,9 +457,9 @@ void TiledLayer::updateTileTextures(const IntRect& paintRect, int left, int top,
     // effect of disabling compositing, which causes our reference to the texture updater to be deleted.
     // However, we can't free the memory backing the SkCanvas until the paint finishes,
     // so we grab a local reference here to hold the updater alive until the paint completes.
-    scoped_refptr<LayerTextureUpdater> protector(textureUpdater());
+    scoped_refptr<LayerUpdater> protector(updater());
     IntRect paintedOpaqueRect;
-    textureUpdater()->prepareToUpdate(paintRect, m_tiler->tileSize(), 1 / widthScale, 1 / heightScale, paintedOpaqueRect, stats);
+    updater()->prepareToUpdate(paintRect, m_tiler->tileSize(), 1 / widthScale, 1 / heightScale, paintedOpaqueRect, stats);
 
     for (int j = top; j <= bottom; ++j) {
         for (int i = left; i <= right; ++i) {
@@ -616,7 +616,7 @@ void TiledLayer::setTexturePriorities(const PriorityCalculator& priorityCalc)
 
                 IntRect tileRect = m_tiler->tileRect(tile);
                 tile->dirtyRect = tileRect;
-                LayerTextureUpdater::Texture* backBuffer = tile->texture();
+                LayerUpdater::Texture* backBuffer = tile->texture();
                 setPriorityForTexture(visibleContentRect(), tile->dirtyRect, drawsToRoot, smallAnimatedLayer, backBuffer->texture());
                 scoped_ptr<PrioritizedTexture> frontBuffer = PrioritizedTexture::create(backBuffer->texture()->textureManager(),
                                                                                         backBuffer->texture()->size(),

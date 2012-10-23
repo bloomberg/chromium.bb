@@ -186,30 +186,30 @@ void ScrollbarLayer::setLayerTreeHost(LayerTreeHost* host)
     Layer::setLayerTreeHost(host);
 }
 
-void ScrollbarLayer::createTextureUpdaterIfNeeded()
+void ScrollbarLayer::createUpdaterIfNeeded()
 {
     m_textureFormat = layerTreeHost()->rendererCapabilities().bestTextureFormat;
 
     if (!m_backTrackUpdater)
-        m_backTrackUpdater = CachingBitmapCanvasLayerTextureUpdater::Create(ScrollbarBackgroundPainter::create(m_scrollbar.get(), m_painter, m_geometry.get(), WebKit::WebScrollbar::BackTrackPart).PassAs<LayerPainter>());
+        m_backTrackUpdater = CachingBitmapCanvasLayerUpdater::Create(ScrollbarBackgroundPainter::create(m_scrollbar.get(), m_painter, m_geometry.get(), WebKit::WebScrollbar::BackTrackPart).PassAs<LayerPainter>());
     if (!m_backTrack)
         m_backTrack = m_backTrackUpdater->createTexture(layerTreeHost()->contentsTextureManager());
 
     // Only create two-part track if we think the two parts could be different in appearance.
     if (m_scrollbar->isCustomScrollbar()) {
         if (!m_foreTrackUpdater)
-            m_foreTrackUpdater = CachingBitmapCanvasLayerTextureUpdater::Create(ScrollbarBackgroundPainter::create(m_scrollbar.get(), m_painter, m_geometry.get(), WebKit::WebScrollbar::ForwardTrackPart).PassAs<LayerPainter>());
+            m_foreTrackUpdater = CachingBitmapCanvasLayerUpdater::Create(ScrollbarBackgroundPainter::create(m_scrollbar.get(), m_painter, m_geometry.get(), WebKit::WebScrollbar::ForwardTrackPart).PassAs<LayerPainter>());
         if (!m_foreTrack)
             m_foreTrack = m_foreTrackUpdater->createTexture(layerTreeHost()->contentsTextureManager());
     }
 
     if (!m_thumbUpdater)
-        m_thumbUpdater = CachingBitmapCanvasLayerTextureUpdater::Create(ScrollbarThumbPainter::create(m_scrollbar.get(), m_painter, m_geometry.get()).PassAs<LayerPainter>());
+        m_thumbUpdater = CachingBitmapCanvasLayerUpdater::Create(ScrollbarThumbPainter::create(m_scrollbar.get(), m_painter, m_geometry.get()).PassAs<LayerPainter>());
     if (!m_thumb)
         m_thumb = m_thumbUpdater->createTexture(layerTreeHost()->contentsTextureManager());
 }
 
-void ScrollbarLayer::updatePart(CachingBitmapCanvasLayerTextureUpdater* painter, LayerTextureUpdater::Texture* texture, const IntRect& rect, TextureUpdateQueue& queue, RenderingStats& stats)
+void ScrollbarLayer::updatePart(CachingBitmapCanvasLayerUpdater* painter, LayerUpdater::Texture* texture, const IntRect& rect, TextureUpdateQueue& queue, RenderingStats& stats)
 {
     // Skip painting and uploading if there are no invalidations and
     // we already have valid texture data.
@@ -243,7 +243,7 @@ void ScrollbarLayer::setTexturePriorities(const PriorityCalculator&)
     if (contentBounds().isEmpty())
         return;
 
-    createTextureUpdaterIfNeeded();
+    createUpdaterIfNeeded();
 
     bool drawsToRoot = !renderTarget()->parent();
     if (m_backTrack) {
@@ -266,7 +266,7 @@ void ScrollbarLayer::update(TextureUpdateQueue& queue, const OcclusionTracker*, 
     if (contentBounds().isEmpty())
         return;
 
-    createTextureUpdaterIfNeeded();
+    createUpdaterIfNeeded();
 
     IntPoint scrollbarOrigin(m_scrollbar->location().x, m_scrollbar->location().y);
     IntRect contentRect = layerRectToContentRect(WebKit::WebRect(scrollbarOrigin.x(), scrollbarOrigin.y(), bounds().width(), bounds().height()));

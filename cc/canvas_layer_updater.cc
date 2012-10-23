@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "cc/canvas_layer_texture_updater.h"
+#include "cc/canvas_layer_updater.h"
 
 #include "FloatRect.h"
 #include "SkiaUtils.h"
@@ -18,18 +18,18 @@
 
 namespace cc {
 
-CanvasLayerTextureUpdater::CanvasLayerTextureUpdater(scoped_ptr<LayerPainter> painter)
+CanvasLayerUpdater::CanvasLayerUpdater(scoped_ptr<LayerPainter> painter)
     : m_painter(painter.Pass())
 {
 }
 
-CanvasLayerTextureUpdater::~CanvasLayerTextureUpdater()
+CanvasLayerUpdater::~CanvasLayerUpdater()
 {
 }
 
-void CanvasLayerTextureUpdater::paintContents(SkCanvas* canvas, const IntRect& contentRect, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, RenderingStats& stats)
+void CanvasLayerUpdater::paintContents(SkCanvas* canvas, const IntRect& contentRect, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, RenderingStats& stats)
 {
-    TRACE_EVENT0("cc", "CanvasLayerTextureUpdater::paintContents");
+    TRACE_EVENT0("cc", "CanvasLayerUpdater::paintContents");
     canvas->save();
     canvas->translate(FloatToSkScalar(-contentRect.x()), FloatToSkScalar(-contentRect.y()));
 

@@ -6,7 +6,7 @@
 #ifndef ScrollbarLayerChromium_h
 #define ScrollbarLayerChromium_h
 
-#include "caching_bitmap_canvas_layer_texture_updater.h"
+#include "caching_bitmap_canvas_layer_updater.h"
 #include "cc/layer.h"
 #include <public/WebScrollbar.h>
 #include <public/WebScrollbarThemeGeometry.h>
@@ -42,8 +42,8 @@ protected:
     virtual ~ScrollbarLayer();
 
 private:
-    void updatePart(CachingBitmapCanvasLayerTextureUpdater*, LayerTextureUpdater::Texture*, const IntRect&, TextureUpdateQueue&, RenderingStats&);
-    void createTextureUpdaterIfNeeded();
+    void updatePart(CachingBitmapCanvasLayerUpdater*, LayerUpdater::Texture*, const IntRect&, TextureUpdateQueue&, RenderingStats&);
+    void createUpdaterIfNeeded();
 
     scoped_ptr<WebKit::WebScrollbar> m_scrollbar;
     WebKit::WebScrollbarThemePainter m_painter;
@@ -52,14 +52,14 @@ private:
 
     GLenum m_textureFormat;
 
-    scoped_refptr<CachingBitmapCanvasLayerTextureUpdater> m_backTrackUpdater;
-    scoped_refptr<CachingBitmapCanvasLayerTextureUpdater> m_foreTrackUpdater;
-    scoped_refptr<CachingBitmapCanvasLayerTextureUpdater> m_thumbUpdater;
+    scoped_refptr<CachingBitmapCanvasLayerUpdater> m_backTrackUpdater;
+    scoped_refptr<CachingBitmapCanvasLayerUpdater> m_foreTrackUpdater;
+    scoped_refptr<CachingBitmapCanvasLayerUpdater> m_thumbUpdater;
 
     // All the parts of the scrollbar except the thumb
-    scoped_ptr<LayerTextureUpdater::Texture> m_backTrack;
-    scoped_ptr<LayerTextureUpdater::Texture> m_foreTrack;
-    scoped_ptr<LayerTextureUpdater::Texture> m_thumb;
+    scoped_ptr<LayerUpdater::Texture> m_backTrack;
+    scoped_ptr<LayerUpdater::Texture> m_foreTrack;
+    scoped_ptr<LayerUpdater::Texture> m_thumb;
 };
 
 }

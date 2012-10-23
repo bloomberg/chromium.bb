@@ -8,8 +8,8 @@
 
 #include "base/metrics/histogram.h"
 #include "base/time.h"
-#include "cc/bitmap_canvas_layer_texture_updater.h"
-#include "cc/bitmap_skpicture_canvas_layer_texture_updater.h"
+#include "cc/bitmap_canvas_layer_updater.h"
+#include "cc/bitmap_skpicture_canvas_layer_updater.h"
 #include "cc/content_layer_client.h"
 #include "cc/layer_painter.h"
 #include "cc/layer_tree_host.h"
@@ -67,7 +67,7 @@ void ContentLayer::setTexturePriorities(const PriorityCalculator& priorityCalc)
 
 void ContentLayer::update(TextureUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats)
 {
-    createTextureUpdaterIfNeeded();
+    createUpdaterIfNeeded();
     TiledLayer::update(queue, occlusion, stats);
     m_needsDisplay = false;
 }
@@ -77,23 +77,23 @@ bool ContentLayer::needMoreUpdates()
     return needsIdlePaint();
 }
 
-LayerTextureUpdater* ContentLayer::textureUpdater() const
+LayerUpdater* ContentLayer::updater() const
 {
-    return m_textureUpdater.get();
+    return m_updater.get();
 }
 
-void ContentLayer::createTextureUpdaterIfNeeded()
+void ContentLayer::createUpdaterIfNeeded()
 {
-    if (m_textureUpdater)
+    if (m_updater)
         return;
     scoped_ptr<LayerPainter> painter = ContentLayerPainter::create(m_client).PassAs<LayerPainter>();
     if (layerTreeHost()->settings().acceleratePainting)
-        m_textureUpdater = SkPictureCanvasLayerTextureUpdater::create(painter.Pass());
+        m_updater = SkPictureCanvasLayerUpdater::create(painter.Pass());
     else if (Settings::perTilePaintingEnabled())
-        m_textureUpdater = BitmapSkPictureCanvasLayerTextureUpdater::create(painter.Pass());
+        m_updater = BitmapSkPictureCanvasLayerUpdater::create(painter.Pass());
     else
-        m_textureUpdater = BitmapCanvasLayerTextureUpdater::create(painter.Pass());
-    m_textureUpdater->setOpaque(contentsOpaque());
+        m_updater = BitmapCanvasLayerUpdater::create(painter.Pass());
+    m_updater->setOpaque(contentsOpaque());
 
     GLenum textureFormat = layerTreeHost()->rendererCapabilities().bestTextureFormat;
     setTextureFormat(textureFormat);
@@ -102,8 +102,8 @@ void ContentLayer::createTextureUpdaterIfNeeded()
 void ContentLayer::setContentsOpaque(bool opaque)
 {
     Layer::setContentsOpaque(opaque);
-    if (m_textureUpdater)
-        m_textureUpdater->setOpaque(opaque);
+    if (m_updater)
+        m_updater->setOpaque(opaque);
 }
 
 }

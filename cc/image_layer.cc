@@ -7,42 +7,42 @@
 #include "cc/image_layer.h"
 
 #include "base/compiler_specific.h"
-#include "cc/layer_texture_updater.h"
+#include "cc/layer_updater.h"
 #include "cc/layer_tree_host.h"
 #include "cc/texture_update_queue.h"
 
 namespace cc {
 
-class ImageLayerTextureUpdater : public LayerTextureUpdater {
+class ImageLayerUpdater : public LayerUpdater {
 public:
-    class Texture : public LayerTextureUpdater::Texture {
+    class Texture : public LayerUpdater::Texture {
     public:
-        Texture(ImageLayerTextureUpdater* textureUpdater, scoped_ptr<PrioritizedTexture> texture)
-            : LayerTextureUpdater::Texture(texture.Pass())
-            , m_textureUpdater(textureUpdater)
+        Texture(ImageLayerUpdater* updater, scoped_ptr<PrioritizedTexture> texture)
+            : LayerUpdater::Texture(texture.Pass())
+            , m_updater(updater)
         {
         }
 
         virtual void update(TextureUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&) OVERRIDE
         {
-            textureUpdater()->updateTexture(queue, texture(), sourceRect, destOffset, partialUpdate);
+            updater()->updateTexture(queue, texture(), sourceRect, destOffset, partialUpdate);
         }
 
     private:
-        ImageLayerTextureUpdater* textureUpdater() { return m_textureUpdater; }
+        ImageLayerUpdater* updater() { return m_updater; }
 
-        ImageLayerTextureUpdater* m_textureUpdater;
+        ImageLayerUpdater* m_updater;
     };
 
-    static scoped_refptr<ImageLayerTextureUpdater> create()
+    static scoped_refptr<ImageLayerUpdater> create()
     {
-        return make_scoped_refptr(new ImageLayerTextureUpdater());
+        return make_scoped_refptr(new ImageLayerUpdater());
     }
 
-    virtual scoped_ptr<LayerTextureUpdater::Texture> createTexture(
+    virtual scoped_ptr<LayerUpdater::Texture> createTexture(
         PrioritizedTextureManager* manager) OVERRIDE
     {
-        return scoped_ptr<LayerTextureUpdater::Texture>(new Texture(this, PrioritizedTexture::create(manager)));
+        return scoped_ptr<LayerUpdater::Texture>(new Texture(this, PrioritizedTexture::create(manager)));
     }
 
     void updateTexture(TextureUpdateQueue& queue, PrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate)
@@ -72,8 +72,8 @@ public:
     }
 
 private:
-    ImageLayerTextureUpdater() { }
-    virtual ~ImageLayerTextureUpdater() { }
+    ImageLayerUpdater() { }
+    virtual ~ImageLayerUpdater() { }
 
     SkBitmap m_bitmap;
 };
@@ -115,9 +115,9 @@ void ImageLayer::setTexturePriorities(const PriorityCalculator& priorityCalc)
 
 void ImageLayer::update(TextureUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats)
 {
-    createTextureUpdaterIfNeeded();
+    createUpdaterIfNeeded();
     if (m_needsDisplay) {
-        m_textureUpdater->setBitmap(m_bitmap);
+        m_updater->setBitmap(m_bitmap);
         updateTileSizeAndTilingOption();
         invalidateContentRect(IntRect(IntPoint(), contentBounds()));
         m_needsDisplay = false;
@@ -125,19 +125,19 @@ void ImageLayer::update(TextureUpdateQueue& queue, const OcclusionTracker* occlu
     TiledLayer::update(queue, occlusion, stats);
 }
 
-void ImageLayer::createTextureUpdaterIfNeeded()
+void ImageLayer::createUpdaterIfNeeded()
 {
-    if (m_textureUpdater)
+    if (m_updater)
         return;
 
-    m_textureUpdater = ImageLayerTextureUpdater::create();
+    m_updater = ImageLayerUpdater::create();
     GLenum textureFormat = layerTreeHost()->rendererCapabilities().bestTextureFormat;
     setTextureFormat(textureFormat);
 }
 
-LayerTextureUpdater* ImageLayer::textureUpdater() const
+LayerUpdater* ImageLayer::updater() const
 {
-    return m_textureUpdater.get();
+    return m_updater.get();
 }
 
 IntSize ImageLayer::contentBounds() const

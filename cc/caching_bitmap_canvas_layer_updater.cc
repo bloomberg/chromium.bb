@@ -4,39 +4,39 @@
 
 #include "config.h"
 
-#include "caching_bitmap_canvas_layer_texture_updater.h"
+#include "caching_bitmap_canvas_layer_updater.h"
 
 #include "cc/layer_painter.h"
 #include "skia/ext/platform_canvas.h"
 
 namespace cc {
 
-scoped_refptr<CachingBitmapCanvasLayerTextureUpdater>
-CachingBitmapCanvasLayerTextureUpdater::Create(
+scoped_refptr<CachingBitmapCanvasLayerUpdater>
+CachingBitmapCanvasLayerUpdater::Create(
     scoped_ptr<LayerPainter> painter) {
-  return make_scoped_refptr(new CachingBitmapCanvasLayerTextureUpdater(
+  return make_scoped_refptr(new CachingBitmapCanvasLayerUpdater(
       painter.Pass()));
 }
 
-CachingBitmapCanvasLayerTextureUpdater::CachingBitmapCanvasLayerTextureUpdater(
+CachingBitmapCanvasLayerUpdater::CachingBitmapCanvasLayerUpdater(
     scoped_ptr<LayerPainter> painter)
-    : BitmapCanvasLayerTextureUpdater(painter.Pass()),
+    : BitmapCanvasLayerUpdater(painter.Pass()),
       pixels_did_change_(false) {
 }
 
-CachingBitmapCanvasLayerTextureUpdater::
-  ~CachingBitmapCanvasLayerTextureUpdater()
+CachingBitmapCanvasLayerUpdater::
+  ~CachingBitmapCanvasLayerUpdater()
 {
 }
 
-void CachingBitmapCanvasLayerTextureUpdater::prepareToUpdate(
+void CachingBitmapCanvasLayerUpdater::prepareToUpdate(
     const IntRect& content_rect,
     const IntSize& tile_size,
     float contents_width_scale,
     float contents_height_scale,
     IntRect& resulting_opaque_rect,
     RenderingStats& stats) {
-  BitmapCanvasLayerTextureUpdater::prepareToUpdate(content_rect,
+  BitmapCanvasLayerUpdater::prepareToUpdate(content_rect,
                                                    tile_size,
                                                    contents_width_scale,
                                                    contents_height_scale,
@@ -57,7 +57,7 @@ void CachingBitmapCanvasLayerTextureUpdater::prepareToUpdate(
     new_bitmap.deepCopyTo(&cached_bitmap_, new_bitmap.config());
 }
 
-bool CachingBitmapCanvasLayerTextureUpdater::pixelsDidChange() const
+bool CachingBitmapCanvasLayerUpdater::pixelsDidChange() const
 {
   return pixels_did_change_;
 }
