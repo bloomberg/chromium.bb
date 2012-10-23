@@ -11,11 +11,11 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLResponse.h"
+#include "webkit/base/file_path_string_conversions.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_file_ref_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
-#include "webkit/glue/webkit_glue.h"
 
 using ppapi::StringVar;
 using ppapi::thunk::PPB_URLResponseInfo_API;
@@ -75,7 +75,7 @@ bool PPB_URLResponseInfo_Impl::Initialize(const WebURLResponse& response) {
   if (!file_path.isEmpty()) {
     body_ = PPB_FileRef_Impl::CreateExternal(
         pp_instance(),
-        webkit_glue::WebStringToFilePath(file_path),
+        webkit_base::WebStringToFilePath(file_path),
         std::string());
   }
   return true;
@@ -116,4 +116,3 @@ PP_Resource PPB_URLResponseInfo_Impl::GetBodyAsFileRef() {
 
 }  // namespace ppapi
 }  // namespace webkit
-

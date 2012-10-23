@@ -18,7 +18,7 @@
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/password_form.h"
 #include "content/public/test/mock_render_process_host.h"
-#include "webkit/glue/webkit_glue.h"
+#include "webkit/glue/glue_serialize.h"
 
 namespace content {
 

@@ -28,7 +28,7 @@
 #include "content/test/test_content_client.h"
 #include "googleurl/src/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/webkit_glue.h"
+#include "webkit/glue/glue_serialize.h"
 
 using content::BrowserContext;
 using content::BrowserThread;

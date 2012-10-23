@@ -16,9 +16,9 @@
         '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
         '<(DEPTH)/webkit/support/webkit_support.gyp:database',
         '<(DEPTH)/webkit/support/webkit_support.gyp:quota',
+        '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_base',
+        '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_storage',
         '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
-	'glue',
-        'webkit_storage',
       ],
       'sources': [
         'dom_storage_area.cc',

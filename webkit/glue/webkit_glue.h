@@ -14,14 +14,12 @@
 #include <string>
 #include <vector>
 
-#include "base/file_path.h"
 #include "base/platform_file.h"
 #include "base/string16.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCanvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebReferrerPolicy.h"
 #include "webkit/glue/webkit_glue_export.h"
 
-class GURL;
 class SkBitmap;
 
 namespace net {
@@ -35,7 +33,6 @@ class PlatformCanvas;
 namespace WebKit {
 struct WebFileInfo;
 class WebFrame;
-class WebString;
 }
 
 namespace webkit_glue {
@@ -76,24 +73,6 @@ WEBKIT_GLUE_EXPORT string16 DumpHistoryState(const std::string& history_state,
                                              int indent,
                                              bool is_current);
 
-// Creates serialized state for the specified URL. This is a variant of
-// HistoryItemToString (in glue_serialize) that is used during session restore
-// if the saved state is empty.
-WEBKIT_GLUE_EXPORT std::string CreateHistoryStateForURL(const GURL& url);
-
-// Removes any form data state from the history state string |content_state|.
-WEBKIT_GLUE_EXPORT std::string RemoveFormDataFromHistoryState(
-    const std::string& content_state);
-
-// Removes form data containing passwords from the history state string
-// |content_state|.
-WEBKIT_GLUE_EXPORT std::string RemovePasswordDataFromHistoryState(
-    const std::string& content_state);
-
-// Removes scroll offset from the history state string |content_state|.
-WEBKIT_GLUE_EXPORT std::string RemoveScrollOffsetFromHistoryState(
-    const std::string& content_state);
-
 #ifndef NDEBUG
 // Checks various important objects to see if there are any in memory, and
 // calls AppendToLog with any leaked objects. Designed to be called on
@@ -113,15 +92,6 @@ void SetForcefullyTerminatePluginProcess(bool value);
 // Returns true if the plugin thread should terminate the process forcefully
 // instead of exiting cleanly.
 WEBKIT_GLUE_EXPORT bool ShouldForcefullyTerminatePluginProcess();
-
-// File path string conversions.
-WEBKIT_GLUE_EXPORT FilePath::StringType WebStringToFilePathString(
-    const WebKit::WebString& str);
-WEBKIT_GLUE_EXPORT WebKit::WebString FilePathStringToWebString(
-    const FilePath::StringType& str);
-WEBKIT_GLUE_EXPORT FilePath WebStringToFilePath(const WebKit::WebString& str);
-WEBKIT_GLUE_EXPORT WebKit::WebString FilePathToWebString(
-    const FilePath& file_path);
 
 // File info conversion
 WEBKIT_GLUE_EXPORT void PlatformFileInfoToWebFileInfo(

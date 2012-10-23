@@ -10,8 +10,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebHTTPBody.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
+#include "webkit/base/file_path_string_conversions.h"
 #include "webkit/glue/glue_serialize.h"
-#include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/web_io_operators.h"
 
 using WebKit::WebData;
@@ -269,8 +269,8 @@ TEST_F(GlueSerializeTest, FilePathsFromHistoryState) {
   FilePath file_path2(FILE_PATH_LITERAL("another_file"));
   WebHTTPBody http_body;
   http_body.initialize();
-  http_body.appendFile(webkit_glue::FilePathToWebString(file_path1));
-  http_body.appendFile(webkit_glue::FilePathToWebString(file_path2));
+  http_body.appendFile(webkit_base::FilePathToWebString(file_path1));
+  http_body.appendFile(webkit_base::FilePathToWebString(file_path2));
   item.setHTTPBody(http_body);
 
   std::string serialized_item = webkit_glue::HistoryItemToString(item);

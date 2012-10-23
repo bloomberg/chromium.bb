@@ -17,7 +17,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
-#include "webkit/glue/webkit_glue.h"
+#include "webkit/base/file_path_string_conversions.h"
 
 using WebKit::WebData;
 using WebKit::WebHistoryItem;
@@ -492,7 +492,62 @@ WebHistoryItem HistoryItemFromString(
                       static_cast<int>(serialized_item.length()));
   return ReadHistoryItem(&obj, include_form_data, include_scroll_offset);
 }
+
 }  // namespace
+
+// Serialize a HistoryItem to a string, using our JSON Value serializer.
+std::string HistoryItemToString(const WebHistoryItem& item) {
+  if (item.isNull())
+    return std::string();
+
+  SerializeObject obj;
+  WriteHistoryItem(item, &obj);
+  return obj.GetAsString();
+}
+
+WebHistoryItem HistoryItemFromString(const std::string& serialized_item) {
+  return HistoryItemFromString(serialized_item, ALWAYS_INCLUDE_FORM_DATA, true);
+}
+
+std::vector<FilePath> FilePathsFromHistoryState(
+    const std::string& content_state) {
+  std::vector<FilePath> to_return;
+  // TODO(darin): We should avoid using the WebKit API here, so that we do not
+  // need to have WebKit initialized before calling this method.
+  const WebHistoryItem& item =
+      HistoryItemFromString(content_state, ALWAYS_INCLUDE_FORM_DATA, true);
+  if (item.isNull()) {
+    // Couldn't parse the string.
+    return to_return;
+  }
+  const WebVector<WebString> file_paths = item.getReferencedFilePaths();
+  for (size_t i = 0; i < file_paths.size(); ++i)
+    to_return.push_back(webkit_base::WebStringToFilePath(file_paths[i]));
+  return to_return;
+}
+
+// For testing purposes only.
+void HistoryItemToVersionedString(const WebHistoryItem& item, int version,
+                                  std::string* serialized_item) {
+  if (item.isNull()) {
+    serialized_item->clear();
+    return;
+  }
+
+  // Temporarily change the version.
+  int real_version = kVersion;
+  kVersion = version;
+
+  SerializeObject obj;
+  WriteHistoryItem(item, &obj);
+  *serialized_item = obj.GetAsString();
+
+  kVersion = real_version;
+}
+
+int HistoryItemCurrentVersion() {
+  return kVersion;
+}
 
 std::string RemoveFormDataFromHistoryState(const std::string& content_state) {
   // TODO(darin): We should avoid using the WebKit API here, so that we do not
@@ -546,60 +601,6 @@ std::string CreateHistoryStateForURL(const GURL& url) {
   WriteInteger(-1, &obj);
   WriteGURL(url, &obj);
   return obj.GetAsString();
-}
-
-// Serialize a HistoryItem to a string, using our JSON Value serializer.
-std::string HistoryItemToString(const WebHistoryItem& item) {
-  if (item.isNull())
-    return std::string();
-
-  SerializeObject obj;
-  WriteHistoryItem(item, &obj);
-  return obj.GetAsString();
-}
-
-WebHistoryItem HistoryItemFromString(const std::string& serialized_item) {
-  return HistoryItemFromString(serialized_item, ALWAYS_INCLUDE_FORM_DATA, true);
-}
-
-std::vector<FilePath> FilePathsFromHistoryState(
-    const std::string& content_state) {
-  std::vector<FilePath> to_return;
-  // TODO(darin): We should avoid using the WebKit API here, so that we do not
-  // need to have WebKit initialized before calling this method.
-  const WebHistoryItem& item =
-      HistoryItemFromString(content_state, ALWAYS_INCLUDE_FORM_DATA, true);
-  if (item.isNull()) {
-    // Couldn't parse the string.
-    return to_return;
-  }
-  const WebVector<WebString> file_paths = item.getReferencedFilePaths();
-  for (size_t i = 0; i < file_paths.size(); ++i)
-    to_return.push_back(WebStringToFilePath(file_paths[i]));
-  return to_return;
-}
-
-// For testing purposes only.
-void HistoryItemToVersionedString(const WebHistoryItem& item, int version,
-                                  std::string* serialized_item) {
-  if (item.isNull()) {
-    serialized_item->clear();
-    return;
-  }
-
-  // Temporarily change the version.
-  int real_version = kVersion;
-  kVersion = version;
-
-  SerializeObject obj;
-  WriteHistoryItem(item, &obj);
-  *serialized_item = obj.GetAsString();
-
-  kVersion = real_version;
-}
-
-int HistoryItemCurrentVersion() {
-  return kVersion;
 }
 
 }  // namespace webkit_glue

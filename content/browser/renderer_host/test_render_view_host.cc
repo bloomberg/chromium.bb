@@ -17,7 +17,7 @@
 #include "content/public/common/password_form.h"
 #include "ui/gfx/rect.h"
 #include "webkit/dom_storage/dom_storage_types.h"
-#include "webkit/glue/webkit_glue.h"
+#include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/webpreferences.h"
 
 namespace content {

@@ -18,6 +18,8 @@
       'sources': [
         'data_element.cc',
         'data_element.h',
+        'file_path_string_conversions.cc',
+        'file_path_string_conversions.h',
         'webkit_base_export.h',
       ],
       'conditions': [

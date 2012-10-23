@@ -183,6 +183,7 @@
 #include "ui/gfx/size_conversions.h"
 #include "v8/include/v8.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
+#include "webkit/base/file_path_string_conversions.h"
 #include "webkit/dom_storage/dom_storage_types.h"
 #include "webkit/glue/alt_error_page_resource_fetcher.h"
 #include "webkit/glue/dom_operations.h"
@@ -1976,7 +1977,7 @@ bool RenderViewImpl::enumerateChosenDirectory(
   return Send(new ViewHostMsg_EnumerateDirectory(
       routing_id_,
       id,
-      webkit_glue::WebStringToFilePath(path)));
+      webkit_base::WebStringToFilePath(path)));
 }
 
 void RenderViewImpl::initializeHelperPluginWebFrame(
@@ -2126,7 +2127,7 @@ bool RenderViewImpl::runFileChooser(
     ipc_params.mode = FileChooserParams::Open;
   ipc_params.title = params.title;
   ipc_params.default_file_name =
-      webkit_glue::WebStringToFilePath(params.initialValue);
+      webkit_base::WebStringToFilePath(params.initialValue);
   ipc_params.accept_types.reserve(params.acceptTypes.size());
   for (size_t i = 0; i < params.acceptTypes.size(); ++i)
     ipc_params.accept_types.push_back(params.acceptTypes[i]);
@@ -5210,7 +5211,7 @@ void RenderViewImpl::OnEnumerateDirectoryResponse(
 
   WebVector<WebString> ws_file_names(paths.size());
   for (size_t i = 0; i < paths.size(); ++i)
-    ws_file_names[i] = webkit_glue::FilePathToWebString(paths[i]);
+    ws_file_names[i] = webkit_base::FilePathToWebString(paths[i]);
 
   enumeration_completions_[id]->didChooseFile(ws_file_names);
   enumeration_completions_.erase(id);
@@ -5228,8 +5229,8 @@ void RenderViewImpl::OnFileChooserResponse(
       files.size());
   for (size_t i = 0; i < files.size(); ++i) {
     WebFileChooserCompletion::SelectedFileInfo selected_file;
-    selected_file.path = webkit_glue::FilePathToWebString(files[i].local_path);
-    selected_file.displayName = webkit_glue::FilePathStringToWebString(
+    selected_file.path = webkit_base::FilePathToWebString(files[i].local_path);
+    selected_file.displayName = webkit_base::FilePathStringToWebString(
         files[i].display_name);
     selected_files[i] = selected_file;
   }
@@ -5386,11 +5387,11 @@ void RenderViewImpl::OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(
   // Convert std::vector of std::strings to WebVector<WebString>
   WebVector<WebString> webstring_paths(local_paths.size());
   for (size_t i = 0; i < local_paths.size(); i++)
-    webstring_paths[i] = webkit_glue::FilePathToWebString(local_paths[i]);
+    webstring_paths[i] = webkit_base::FilePathToWebString(local_paths[i]);
 
   WebPageSerializer::serialize(webview()->mainFrame(), true, this, weburl_links,
                                webstring_paths,
-                               webkit_glue::FilePathToWebString(
+                               webkit_base::FilePathToWebString(
                                    local_directory_name));
 }
 

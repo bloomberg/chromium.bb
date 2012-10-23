@@ -37,7 +37,7 @@
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
-#include "webkit/glue/webkit_glue.h"
+#include "webkit/glue/glue_serialize.h"
 
 using content::BrowserContext;
 using content::DOMStorageContext;

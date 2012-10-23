@@ -40,8 +40,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "ui/base/layout.h"
+#include "webkit/base/file_path_string_conversions.h"
 #include "webkit/compositor_bindings/web_compositor_support_impl.h"
-#include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/websocketstreamhandle_impl.h"
 #include "webkit/glue/webthread_impl.h"
 #include "webkit/glue/weburlloader_impl.h"
@@ -307,7 +307,7 @@ void WebKitPlatformSupportImpl::getPluginList(bool refresh,
 
     builder->addPlugin(
         plugin.name, plugin.desc,
-        FilePathStringToWebString(plugin.path.BaseName().value()));
+        webkit_base::FilePathStringToWebString(plugin.path.BaseName().value()));
 
     for (size_t j = 0; j < plugin.mime_types.size(); ++j) {
       const webkit::WebPluginMimeType& mime_type = plugin.mime_types[j];

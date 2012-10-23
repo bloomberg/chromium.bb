@@ -15,6 +15,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFileSystem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "webkit/base/file_path_string_conversions.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -40,7 +41,7 @@ void WebFileSystemCallbackDispatcher::DidReadMetadata(
     const base::PlatformFileInfo& file_info, const FilePath& platform_path) {
   WebFileInfo web_file_info;
   webkit_glue::PlatformFileInfoToWebFileInfo(file_info, &web_file_info);
-  web_file_info.platformPath = webkit_glue::FilePathToWebString(platform_path);
+  web_file_info.platformPath = webkit_base::FilePathToWebString(platform_path);
   callbacks_->didReadMetadata(web_file_info);
 }
 
@@ -49,7 +50,7 @@ void WebFileSystemCallbackDispatcher::DidReadDirectory(
   WebVector<WebFileSystemEntry> file_system_entries(entries.size());
   for (size_t i = 0; i < entries.size(); i++) {
     file_system_entries[i].name =
-        webkit_glue::FilePathStringToWebString(entries[i].name);
+        webkit_base::FilePathStringToWebString(entries[i].name);
     file_system_entries[i].isDirectory = entries[i].is_directory;
   }
   callbacks_->didReadDirectory(file_system_entries, has_more);

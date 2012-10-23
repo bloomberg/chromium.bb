@@ -16,6 +16,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebHistoryItem.h"
 #include "webkit/glue/webkit_glue_export.h"
 
+class GURL;
+
 namespace webkit_glue {
 
 // HistoryItem serialization.
@@ -35,6 +37,24 @@ WEBKIT_GLUE_EXPORT void HistoryItemToVersionedString(
     int version,
     std::string* serialized_item);
 WEBKIT_GLUE_EXPORT int HistoryItemCurrentVersion();
+
+// Removes any form data state from the history state string |content_state|.
+WEBKIT_GLUE_EXPORT std::string RemoveFormDataFromHistoryState(
+    const std::string& content_state);
+
+// Removes form data containing passwords from the history state string
+// |content_state|.
+WEBKIT_GLUE_EXPORT std::string RemovePasswordDataFromHistoryState(
+    const std::string& content_state);
+
+// Removes scroll offset from the history state string |content_state|.
+WEBKIT_GLUE_EXPORT std::string RemoveScrollOffsetFromHistoryState(
+    const std::string& content_state);
+
+// Creates serialized state for the specified URL. This is a variant of
+// HistoryItemToString (in glue_serialize) that is used during session restore
+// if the saved state is empty.
+WEBKIT_GLUE_EXPORT std::string CreateHistoryStateForURL(const GURL& url);
 
 }  // namespace webkit_glue
 

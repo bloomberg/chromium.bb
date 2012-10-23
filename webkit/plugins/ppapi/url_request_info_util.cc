@@ -18,7 +18,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebHTTPBody.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
-#include "webkit/glue/webkit_glue.h"
+#include "webkit/base/file_path_string_conversions.h"
 #include "webkit/glue/weburlrequest_extradata_impl.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
@@ -80,7 +80,7 @@ bool AppendFileRefToBody(
       NOTREACHED();
   }
   http_body->appendFileRange(
-      webkit_glue::FilePathToWebString(platform_path),
+      webkit_base::FilePathToWebString(platform_path),
       start_offset,
       number_of_bytes,
       expected_last_modified_time);

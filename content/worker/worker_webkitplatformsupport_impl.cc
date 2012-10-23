@@ -21,6 +21,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebBlobRegistry.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
+#include "webkit/base/file_path_string_conversions.h"
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -64,7 +65,7 @@ bool WorkerWebKitPlatformSupportImpl::FileUtilities::getFileInfo(
   base::PlatformFileInfo file_info;
   base::PlatformFileError status;
   if (!SendSyncMessageFromAnyThread(new FileUtilitiesMsg_GetFileInfo(
-           webkit_glue::WebStringToFilePath(path), &file_info, &status)) ||
+           webkit_base::WebStringToFilePath(path), &file_info, &status)) ||
       status != base::PLATFORM_FILE_OK) {
     return false;
   }
@@ -251,7 +252,7 @@ WebString WorkerWebKitPlatformSupportImpl::mimeTypeForExtension(
     const WebString& file_extension) {
   std::string mime_type;
   SendSyncMessageFromAnyThread(new MimeRegistryMsg_GetMimeTypeFromExtension(
-      webkit_glue::WebStringToFilePathString(file_extension), &mime_type));
+      webkit_base::WebStringToFilePathString(file_extension), &mime_type));
   return ASCIIToUTF16(mime_type);
 }
 
@@ -259,7 +260,7 @@ WebString WorkerWebKitPlatformSupportImpl::wellKnownMimeTypeForExtension(
     const WebString& file_extension) {
   std::string mime_type;
   net::GetWellKnownMimeTypeFromExtension(
-      webkit_glue::WebStringToFilePathString(file_extension), &mime_type);
+      webkit_base::WebStringToFilePathString(file_extension), &mime_type);
   return ASCIIToUTF16(mime_type);
 }
 
@@ -267,7 +268,7 @@ WebString WorkerWebKitPlatformSupportImpl::mimeTypeFromFile(
     const WebString& file_path) {
   std::string mime_type;
   SendSyncMessageFromAnyThread(new MimeRegistryMsg_GetMimeTypeFromFile(
-      FilePath(webkit_glue::WebStringToFilePathString(file_path)),
+      FilePath(webkit_base::WebStringToFilePathString(file_path)),
       &mime_type));
   return ASCIIToUTF16(mime_type);
 }
@@ -278,7 +279,7 @@ WebString WorkerWebKitPlatformSupportImpl::preferredExtensionForMIMEType(
   SendSyncMessageFromAnyThread(
       new MimeRegistryMsg_GetPreferredExtensionForMimeType(
           UTF16ToASCII(mime_type), &file_extension));
-  return webkit_glue::FilePathStringToWebString(file_extension);
+  return webkit_base::FilePathStringToWebString(file_extension);
 }
 
 WebBlobRegistry* WorkerWebKitPlatformSupportImpl::blobRegistry() {

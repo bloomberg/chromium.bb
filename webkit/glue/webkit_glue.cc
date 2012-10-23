@@ -21,7 +21,6 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
-#include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request.h"
@@ -271,35 +270,6 @@ bool DecodeImage(const std::string& image_data, SkBitmap* image) {
   *image = web_image.getSkBitmap();
 #endif
   return true;
-}
-
-// NOTE: This pair of conversion functions are here instead of in glue_util.cc
-// since that file will eventually die.  This pair of functions will need to
-// remain as the concept of a file-path specific character encoding string type
-// will most likely not make its way into WebKit.
-
-FilePath::StringType WebStringToFilePathString(const WebString& str) {
-#if defined(OS_POSIX)
-  return base::SysWideToNativeMB(UTF16ToWideHack(str));
-#elif defined(OS_WIN)
-  return UTF16ToWideHack(str);
-#endif
-}
-
-WebString FilePathStringToWebString(const FilePath::StringType& str) {
-#if defined(OS_POSIX)
-  return WideToUTF16Hack(base::SysNativeMBToWide(str));
-#elif defined(OS_WIN)
-  return WideToUTF16Hack(str);
-#endif
-}
-
-FilePath WebStringToFilePath(const WebString& str) {
-  return FilePath(WebStringToFilePathString(str));
-}
-
-WebString FilePathToWebString(const FilePath& file_path) {
-  return FilePathStringToWebString(file_path.value());
 }
 
 void PlatformFileInfoToWebFileInfo(

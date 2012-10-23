@@ -30,8 +30,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBTransaction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
+#include "webkit/base/file_path_string_conversions.h"
 #include "webkit/database/database_util.h"
-#include "webkit/glue/webkit_glue.h"
 
 using content::BrowserMessageFilter;
 using content::BrowserThread;
@@ -219,7 +219,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
   Context()->GetIDBFactory()->getDatabaseNames(
       new IndexedDBCallbacks<WebDOMStringList>(this, params.thread_id,
       params.response_id), origin, NULL,
-      webkit_glue::FilePathToWebString(indexed_db_path));
+      webkit_base::FilePathToWebString(indexed_db_path));
 }
 
 void IndexedDBDispatcherHost::OnIDBFactoryOpen(
@@ -242,7 +242,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
                                      params.response_id, origin_url),
       new IndexedDBDatabaseCallbacks(this, params.thread_id,
                                      params.database_response_id),
-      origin, NULL, webkit_glue::FilePathToWebString(indexed_db_path));
+      origin, NULL, webkit_base::FilePathToWebString(indexed_db_path));
 }
 
 void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
@@ -256,7 +256,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
                                                        params.thread_id,
                                                        params.response_id),
       WebSecurityOrigin::createFromDatabaseIdentifier(params.origin), NULL,
-      webkit_glue::FilePathToWebString(indexed_db_path));
+      webkit_base::FilePathToWebString(indexed_db_path));
 }
 
 void IndexedDBDispatcherHost::TransactionComplete(int32 transaction_id) {

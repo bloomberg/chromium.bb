@@ -29,11 +29,11 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLResponse.h"
+#include "webkit/base/file_path_string_conversions.h"
 #include "webkit/glue/ftp_directory_listing_response_delegate.h"
 #include "webkit/glue/multipart_response_delegate.h"
 #include "webkit/glue/resource_loader_bridge.h"
 #include "webkit/glue/resource_request_body.h"
-#include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
 #include "webkit/glue/weburlrequest_extradata_impl.h"
 #include "webkit/glue/weburlresponse_extradata_impl.h"
@@ -174,7 +174,8 @@ void PopulateURLResponse(
   response->setRemotePort(info.socket_address.port());
   response->setConnectionID(info.connection_id);
   response->setConnectionReused(info.connection_reused);
-  response->setDownloadFilePath(FilePathToWebString(info.download_file_path));
+  response->setDownloadFilePath(
+      webkit_base::FilePathToWebString(info.download_file_path));
   response->setExtraData(new WebURLResponseExtraDataImpl(
       info.npn_negotiated_protocol));
 
@@ -459,11 +460,11 @@ void WebURLLoaderImpl::Context::Start(
         case WebHTTPBody::Element::TypeFile:
           if (element.fileLength == -1) {
             request_body->AppendFileRange(
-                WebStringToFilePath(element.filePath),
+                webkit_base::WebStringToFilePath(element.filePath),
                 0, kuint64max, base::Time());
           } else {
             request_body->AppendFileRange(
-                WebStringToFilePath(element.filePath),
+                webkit_base::WebStringToFilePath(element.filePath),
                 static_cast<uint64>(element.fileStart),
                 static_cast<uint64>(element.fileLength),
                 base::Time::FromDoubleT(element.modificationTime));

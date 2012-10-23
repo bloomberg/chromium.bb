@@ -24,8 +24,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "webkit/base/file_path_string_conversions.h"
 #include "webkit/glue/dom_operations.h"
-#include "webkit/glue/webkit_glue.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/tools/test_shell/test_shell_test.h"
 
@@ -175,7 +175,7 @@ class DomSerializerTests : public TestShellTest,
     // Add input file URl to links_.
     links_.assign(&page_url,1);
     // Add dummy file path to local_path_.
-    WebString file_path = webkit_glue::FilePathStringToWebString(
+    WebString file_path = webkit_base::FilePathStringToWebString(
         FILE_PATH_LITERAL("c:\\dummy.htm"));
     local_paths_.assign(&file_path, 1);
     // Start serializing DOM.
@@ -184,7 +184,7 @@ class DomSerializerTests : public TestShellTest,
        static_cast<WebPageSerializerClient*>(this),
        links_,
        local_paths_,
-       webkit_glue::FilePathToWebString(local_directory_name_));
+       webkit_base::FilePathToWebString(local_directory_name_));
     ASSERT_TRUE(result);
     ASSERT_TRUE(serialized_);
   }

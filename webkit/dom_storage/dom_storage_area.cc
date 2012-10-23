@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/time.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "webkit/base/file_path_string_conversions.h"
 #include "webkit/database/database_util.h"
 #include "webkit/dom_storage/dom_storage_map.h"
 #include "webkit/dom_storage/dom_storage_namespace.h"
@@ -18,7 +19,6 @@
 #include "webkit/dom_storage/session_storage_database.h"
 #include "webkit/dom_storage/session_storage_database_adapter.h"
 #include "webkit/fileapi/file_system_util.h"
-#include "webkit/glue/webkit_glue.h"
 
 using webkit_database::DatabaseUtil;
 
@@ -50,7 +50,7 @@ FilePath DomStorageArea::DatabaseFileNameFromOrigin(const GURL& origin) {
 // static
 GURL DomStorageArea::OriginFromDatabaseFileName(const FilePath& name) {
   DCHECK(name.MatchesExtension(kDatabaseFileExtension));
-  WebKit::WebString origin_id = webkit_glue::FilePathToWebString(
+  WebKit::WebString origin_id = webkit_base::FilePathToWebString(
       name.BaseName().RemoveExtension());
   return DatabaseUtil::GetOriginFromIdentifier(origin_id);
 }

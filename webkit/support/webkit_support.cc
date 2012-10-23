@@ -49,6 +49,7 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
+#include "webkit/base/file_path_string_conversions.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/glue/webkit_constants.h"
 #include "webkit/glue/webkit_glue.h"
@@ -841,7 +842,7 @@ WebKit::WebString RegisterIsolatedFileSystem(
     const WebKit::WebVector<WebKit::WebString>& filenames) {
   fileapi::IsolatedContext::FileInfoSet files;
   for (size_t i = 0; i < filenames.size(); ++i) {
-    FilePath path = webkit_glue::WebStringToFilePath(filenames[i]);
+    FilePath path = webkit_base::WebStringToFilePath(filenames[i]);
     files.AddPath(path, NULL);
   }
   std::string filesystemId =

@@ -11,8 +11,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebBlobData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
+#include "webkit/base/file_path_string_conversions.h"
 #include "webkit/blob/blob_data.h"
-#include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebBlobData;
 using WebKit::WebString;
@@ -70,7 +70,7 @@ void WebBlobRegistryImpl::registerBlobURL(
       case WebBlobData::Item::TypeFile:
         if (data_item.length) {
           item.SetToFilePathRange(
-              webkit_glue::WebStringToFilePath(data_item.filePath),
+              webkit_base::WebStringToFilePath(data_item.filePath),
               static_cast<uint64>(data_item.offset),
               static_cast<uint64>(data_item.length),
               base::Time::FromDoubleT(data_item.expectedModificationTime));
