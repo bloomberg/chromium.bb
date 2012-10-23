@@ -22,7 +22,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/scoped_bstr.h"
-#include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
 #include "remoting/base/scoped_sc_handle_win.h"
@@ -63,23 +62,6 @@ const int kPrivilegedTimeoutSec = 5 * 60;
 // the old binary still can be used. So dropping the references often makes sure
 // that the old binary will go away sooner.
 const int kUnprivilegedTimeoutSec = 60;
-
-// A base::Thread implementation that initializes COM on the new thread.
-class ComThread : public base::Thread {
- public:
-  explicit ComThread(const char* name);
-  virtual ~ComThread();
-
-  bool Start();
-
- private:
-  virtual void Init() OVERRIDE;
-  virtual void CleanUp() OVERRIDE;
-
-  scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ComThread);
-};
 
 class DaemonControllerWin : public remoting::DaemonController {
  public:
@@ -165,38 +147,18 @@ class DaemonControllerWin : public remoting::DaemonController {
   HWND window_handle_;
 
   // The worker thread used for servicing long running operations.
-  ComThread worker_thread_;
+  base::Thread worker_thread_;
 
   scoped_ptr<DaemonInstallerWin> installer_;
 
   DISALLOW_COPY_AND_ASSIGN(DaemonControllerWin);
 };
 
-ComThread::ComThread(const char* name) : base::Thread(name) {
-}
-
-ComThread::~ComThread() {
-  Stop();
-}
-
-bool ComThread::Start() {
-  // N.B. The single threaded COM apartment must be run on a UI message loop.
-  base::Thread::Options thread_options(MessageLoop::TYPE_UI, 0);
-  return StartWithOptions(thread_options);
-}
-
-void ComThread::Init() {
-  com_initializer_.reset(new base::win::ScopedCOMInitializer());
-}
-
-void ComThread::CleanUp() {
-  com_initializer_.reset();
-}
-
 DaemonControllerWin::DaemonControllerWin()
     : control_is_elevated_(false),
       window_handle_(NULL),
       worker_thread_(kDaemonControllerThreadName) {
+  worker_thread_.init_com_with_mta(false);
   if (!worker_thread_.Start()) {
     LOG(FATAL) << "Failed to start the Daemon Controller worker thread.";
   }

@@ -31,20 +31,15 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/system_monitor/system_monitor.h"
-#include "base/threading/thread.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/browser/renderer_host/media/media_stream_settings_requester.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 
-#if defined(OS_WIN)
 namespace base {
-namespace win {
-class ScopedCOMInitializer;
+class Thread;
 }
-}
-#endif
 
 namespace content {
 class MediaStreamUIController;
@@ -60,26 +55,6 @@ class AudioInputDeviceManager;
 class MediaStreamDeviceSettings;
 class MediaStreamRequester;
 class VideoCaptureManager;
-
-// Thread that enters MTA on Windows.
-#if defined(OS_WIN)
-class DeviceThread : public base::Thread {
- public:
-  explicit DeviceThread(const char* name);
-  virtual ~DeviceThread();
-
- protected:
-  virtual void Init() OVERRIDE;
-  virtual void CleanUp() OVERRIDE;
-
- private:
-  scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeviceThread);
-};
-#else
-typedef base::Thread DeviceThread;
-#endif
 
 // MediaStreamManager is used to generate and close new media devices, not to
 // start the media flow.
@@ -253,7 +228,7 @@ class CONTENT_EXPORT MediaStreamManager
   void StopMonitoring();
 
   // Device thread shared by VideoCaptureManager and AudioInputDeviceManager.
-  scoped_ptr<DeviceThread> device_thread_;
+  scoped_ptr<base::Thread> device_thread_;
 
   scoped_ptr<content::MediaStreamUIController> ui_controller_;
 

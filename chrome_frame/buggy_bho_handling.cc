@@ -4,10 +4,11 @@
 
 #include "chrome_frame/buggy_bho_handling.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/win/scoped_comptr.h"
-
 #include "chrome_frame/exception_barrier.h"
 #include "chrome_frame/function_stub.h"
 #include "chrome_frame/utils.h"

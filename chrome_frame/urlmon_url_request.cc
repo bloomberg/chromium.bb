@@ -15,6 +15,7 @@
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome_frame/bind_context_info.h"
@@ -1401,8 +1402,8 @@ UrlmonUrlRequestManager::UrlmonUrlRequestManager()
       privileged_mode_(false),
       container_(NULL),
       background_worker_thread_enabled_(true) {
-  background_thread_.reset(new ResourceFetcherThread(
-      "cf_iexplore_background_thread"));
+  background_thread_.reset(new base::Thread("cf_iexplore_background_thread"));
+  background_thread_->init_com_with_mta(false);
   background_worker_thread_enabled_ =
       GetConfigBool(true, kUseBackgroundThreadForSubResources);
   if (background_worker_thread_enabled_) {
@@ -1444,20 +1445,4 @@ void UrlmonUrlRequestManager::AddPrivacyDataForUrl(
     PostMessage(notification_window_, WM_FIRE_PRIVACY_CHANGE_NOTIFICATION, 1,
                 0);
   }
-}
-
-UrlmonUrlRequestManager::ResourceFetcherThread::ResourceFetcherThread(
-    const char* name) : base::Thread(name) {
-}
-
-UrlmonUrlRequestManager::ResourceFetcherThread::~ResourceFetcherThread() {
-  Stop();
-}
-
-void UrlmonUrlRequestManager::ResourceFetcherThread::Init() {
-  com_initializer_.reset(new base::win::ScopedCOMInitializer());
-}
-
-void UrlmonUrlRequestManager::ResourceFetcherThread::CleanUp() {
-  com_initializer_.reset();
 }

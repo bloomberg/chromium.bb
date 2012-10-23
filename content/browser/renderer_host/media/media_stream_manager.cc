@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "base/threading/thread.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/media_stream_requester.h"
 #include "content/browser/renderer_host/media/media_stream_ui_controller.h"
@@ -60,24 +61,6 @@ static bool Requested(const StreamOptions& options,
   return (options.audio_type == stream_type ||
           options.video_type == stream_type);
 }
-
-#if defined(OS_WIN)
-DeviceThread::DeviceThread(const char* name) : base::Thread(name) {
-}
-
-DeviceThread::~DeviceThread() {
-  Stop();
-}
-
-void DeviceThread::Init() {
-  com_initializer_.reset(new base::win::ScopedCOMInitializer(
-      base::win::ScopedCOMInitializer::kMTA));
-}
-
-void DeviceThread::CleanUp() {
-  com_initializer_.reset();
-}
-#endif
 
 // TODO(xians): Merge DeviceRequest with MediaStreamRequest.
 class MediaStreamManager::DeviceRequest {
@@ -588,7 +571,10 @@ void MediaStreamManager::EnsureDeviceManagersStarted() {
   if (device_thread_.get())
     return;
 
-  device_thread_.reset(new DeviceThread("MediaStreamDeviceThread"));
+  device_thread_.reset(new base::Thread("MediaStreamDeviceThread"));
+#if defined(OS_WIN)
+  device_thread_->init_com_with_mta(true);
+#endif
   CHECK(device_thread_->Start());
 
   audio_input_device_manager_ =

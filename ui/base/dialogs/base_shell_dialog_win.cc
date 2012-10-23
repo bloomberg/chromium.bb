@@ -9,38 +9,6 @@
 #include "base/threading/thread.h"
 #include "base/win/scoped_com_initializer.h"
 
-namespace {
-
-// Helpers to show certain types of Windows shell dialogs in a way that doesn't
-// block the UI of the entire app.
-class ShellDialogThread : public base::Thread {
- public:
-  ShellDialogThread() : base::Thread("Chrome_ShellDialogThread") { }
-  ~ShellDialogThread();
-
- private:
-   void Init();
-   void CleanUp();
-
-  scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShellDialogThread);
-};
-
-ShellDialogThread::~ShellDialogThread() {
-  Stop();
-}
-
-void ShellDialogThread::Init() {
-  com_initializer_.reset(new base::win::ScopedCOMInitializer());
-}
-
-void ShellDialogThread::CleanUp() {
-  com_initializer_.reset();
-}
-
-}  // namespace
-
 namespace ui {
 
 // static
@@ -95,7 +63,8 @@ void BaseShellDialogImpl::DisableOwner(HWND owner) {
 
 // static
 base::Thread* BaseShellDialogImpl::CreateDialogThread() {
-  base::Thread* thread = new ShellDialogThread;
+  base::Thread* thread = new base::Thread("Chrome_ShellDialogThread");
+  thread->init_com_with_mta(false);
   bool started = thread->Start();
   DCHECK(started);
   return thread;
