@@ -81,7 +81,7 @@ manual() {
 #@ upstream-remote-setup - Add the LLVM remote repo to a pnacl git checkout
 upstream-remote-setup() {
   pushd "${TC_SRC_LLVM}"
-  if ! $(git remote | grep ${UPSTREAM_REMOTE}); then
+  if ! git remote | grep ${UPSTREAM_REMOTE}; then
     git remote add ${UPSTREAM_REMOTE} ${UPSTREAM_URL}
     git fetch ${UPSTREAM_REMOTE}
     git branch ${UPSTREAM_BRANCH} ${UPSTREAM_REMOTE}/master
