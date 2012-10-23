@@ -6,6 +6,7 @@
 
 #include <Cocoa/Cocoa.h>
 
+#include "base/bind.h"
 #include "base/mac/foundation_util.h"
 #include "base/message_loop.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
@@ -20,7 +21,9 @@ WebIntentPickerCocoa2::WebIntentPickerCocoa2(content::WebContents* web_contents,
                                              WebIntentPickerModel* model)
     : web_contents_(web_contents),
       delegate_(delegate),
-      model_(model) {
+      model_(model),
+      update_pending_(false),
+      weak_ptr_factory_(this) {
   model_->set_observer(this);
 
   view_controller_.reset(
@@ -48,23 +51,23 @@ void WebIntentPickerCocoa2::SetActionString(const string16& action) {
 }
 
 void WebIntentPickerCocoa2::OnExtensionInstallSuccess(const std::string& id) {
-  [view_controller_ update];
+  ScheduleUpdate();
 }
 
 void WebIntentPickerCocoa2::OnExtensionInstallFailure(const std::string& id) {
-  [view_controller_ update];
+  ScheduleUpdate();
 }
 
 void WebIntentPickerCocoa2::OnShowExtensionInstallDialog(
       content::WebContents* parent_web_contents,
       ExtensionInstallPrompt::Delegate* delegate,
       const ExtensionInstallPrompt::Prompt& prompt) {
-  [view_controller_ update];
+  ScheduleUpdate();
 }
 
 void WebIntentPickerCocoa2::OnInlineDispositionAutoResize(
     const gfx::Size& size) {
-  [view_controller_ update];
+  ScheduleUpdate();
 }
 
 void WebIntentPickerCocoa2::OnInlineDispositionHandleKeyboardEvent(
@@ -80,7 +83,7 @@ void WebIntentPickerCocoa2::OnInlineDispositionHandleKeyboardEvent(
 }
 
 void WebIntentPickerCocoa2::OnPendingAsyncCompleted() {
-  [view_controller_ update];
+  ScheduleUpdate();
 }
 
 void WebIntentPickerCocoa2::InvalidateDelegate() {
@@ -89,7 +92,7 @@ void WebIntentPickerCocoa2::InvalidateDelegate() {
 
 void WebIntentPickerCocoa2::OnInlineDispositionWebContentsLoaded(
     content::WebContents* web_contents) {
-  [view_controller_ update];
+  ScheduleUpdate();
 }
 
 gfx::Size WebIntentPickerCocoa2::GetMinInlineDispositionSize() {
@@ -97,23 +100,23 @@ gfx::Size WebIntentPickerCocoa2::GetMinInlineDispositionSize() {
 }
 
 void WebIntentPickerCocoa2::OnModelChanged(WebIntentPickerModel* model) {
-  [view_controller_ update];
+  ScheduleUpdate();
 }
 
 void WebIntentPickerCocoa2::OnFaviconChanged(WebIntentPickerModel* model,
                                              size_t index) {
-  [view_controller_ update];
+  ScheduleUpdate();
 }
 
 void WebIntentPickerCocoa2::OnExtensionIconChanged(
     WebIntentPickerModel* model,
     const std::string& extension_id) {
-  [view_controller_ update];
+  ScheduleUpdate();
 }
 
 void WebIntentPickerCocoa2::OnInlineDisposition(const string16& title,
                                                 const GURL& url) {
-  [view_controller_ update];
+  ScheduleUpdate();
 }
 
 void WebIntentPickerCocoa2::OnConstrainedWindowClosed(
@@ -121,8 +124,24 @@ void WebIntentPickerCocoa2::OnConstrainedWindowClosed(
   // After the OnClosing call the model may be deleted so unset this reference.
   model_->set_observer(NULL);
   model_ = NULL;
+  weak_ptr_factory_.InvalidateWeakPtrs();
 
   if (delegate_)
     delegate_->OnClosing();
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+}
+
+void WebIntentPickerCocoa2::ScheduleUpdate() {
+  if (update_pending_)
+    return;
+  update_pending_ = true;
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&WebIntentPickerCocoa2::PerformUpdate,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void WebIntentPickerCocoa2::PerformUpdate() {
+  update_pending_ = false;
+  [view_controller_ update];
 }

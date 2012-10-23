@@ -28,9 +28,6 @@ class PageNavigator;
             delegate:(ExtensionInstallPrompt::Delegate*)delegate
               prompt:(const ExtensionInstallPrompt::Prompt&)prompt;
 
-// Removes the embedded extension install prompt.
-- (void)clear;
-
 - (ExtensionInstallViewController*)viewController;
 
 @end

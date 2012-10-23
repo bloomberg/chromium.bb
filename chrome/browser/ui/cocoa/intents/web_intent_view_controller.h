@@ -29,6 +29,10 @@
 // This method must be overridden if |-sizeToFitAndLayout| is not.
 - (void)layoutSubviewsWithinFrame:(NSRect)innerFrame;
 
+// Called after the view has been removed from the super view. Subclasses can
+// override this to clear and state.
+- (void)viewRemovedFromSuperview;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_INTENTS_WEB_INTENT_VIEW_CONTROLLER_H_

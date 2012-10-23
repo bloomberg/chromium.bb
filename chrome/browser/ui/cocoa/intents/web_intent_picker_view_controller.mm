@@ -27,7 +27,8 @@
 
 @interface WebIntentPickerViewController ()
 
-- (void)performLayout;
+- (void)performLayoutWithOldViewController:
+    (WebIntentViewController*)oldViewController;
 // Gets the view controller currently being displayed.
 - (WebIntentViewController*)currentViewController;
 - (WebIntentPickerState)newPickerState;
@@ -63,6 +64,7 @@
 
     scoped_nsobject<NSView> view(
         [[FlippedView alloc] initWithFrame:ui::kWindowSizeDeterminedLater]);
+    [view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
     [self setView:view];
 
     closeButton_.reset(
@@ -135,15 +137,10 @@
     return;
 
   WebIntentPickerState newState = [self newPickerState];
-  NSView* currentView = [[self currentViewController] view];
-  if (state_ != newState || ![currentView superview]) {
-    [currentView removeFromSuperview];
-    // Clear the inline webview.
-    [inlineServiceViewController_ setServiceURL:GURL::EmptyGURL()];
-    [extensionPromptViewController_ clear];
+  WebIntentViewController* oldViewController = [self currentViewController];
+  if (state_ != newState || ![[oldViewController view] superview]) {
     state_ = newState;
-    currentView = [[self currentViewController] view];
-    [[self view] addSubview:currentView];
+    [[self view] addSubview:[[self currentViewController] view]];
 
     // Ensure that the close button is topmost.
     [closeButton_ removeFromSuperview];
@@ -171,15 +168,18 @@
       break;
   }
 
-  [self performLayout];
+  [self performLayoutWithOldViewController:oldViewController];
 }
 
-- (void)performLayout {
+- (void)performLayoutWithOldViewController:
+    (WebIntentViewController*)oldViewController {
   WebIntentViewController* viewController = [self currentViewController];
   [viewController sizeToFitAndLayout];
   [[viewController view] setFrameOrigin:NSZeroPoint];
 
   NSRect bounds = [[viewController view] bounds];
+  NSWindow* window = [[self view] window];
+  NSRect windowFrame = [window frameRectForContentRect:bounds];
 
   NSRect closeFrame;
   closeFrame.size.width = ConstrainedWindow::GetCloseButtonSize();
@@ -187,12 +187,43 @@
   closeFrame.origin.x = NSMaxX(bounds) - NSWidth(closeFrame) -
       ConstrainedWindowConstants::kCloseButtonPadding;
   closeFrame.origin.y = ConstrainedWindowConstants::kCloseButtonPadding;
-  [closeButton_ setFrame:closeFrame];
 
-  [[self view] setFrame:bounds];
+  if (oldViewController) {
+    scoped_nsobject<NSMutableArray> array([[NSMutableArray alloc] init]);
+    if (oldViewController && ![oldViewController isEqual:viewController]) {
+      [array addObject:@{
+          NSViewAnimationTargetKey: [viewController view],
+          NSViewAnimationEffectKey: NSViewAnimationFadeInEffect
+      }];
+      [array addObject:@{
+          NSViewAnimationTargetKey: [oldViewController view],
+          NSViewAnimationEffectKey: NSViewAnimationFadeOutEffect
+      }];
+    }
+    [array addObject:@{
+        NSViewAnimationTargetKey:   window,
+        NSViewAnimationEndFrameKey: [NSValue valueWithRect:windowFrame]
+    }];
+    [array addObject:@{
+        NSViewAnimationTargetKey:   closeButton_,
+        NSViewAnimationEndFrameKey: [NSValue valueWithRect:closeFrame]
+    }];
 
-  NSWindow* window = [[self view] window];
-  [window setFrame:[window frameRectForContentRect:bounds] display:YES];
+    scoped_nsobject<NSViewAnimation> animation(
+        [[NSViewAnimation alloc] initWithViewAnimations:array]);
+    [animation setAnimationBlockingMode:NSAnimationBlocking];
+    [animation setDuration:0.2];
+    [animation startAnimation];
+  } else {
+    [window setFrame:windowFrame display:YES];
+    [[self view] setFrame:bounds];
+    [closeButton_ setFrame:closeFrame];
+  }
+
+  if (oldViewController && ![oldViewController isEqual:viewController]) {
+    [[oldViewController view] removeFromSuperview];
+    [oldViewController viewRemovedFromSuperview];
+  }
 }
 
 - (WebIntentViewController*)currentViewController {

@@ -33,11 +33,6 @@
   [[self view] addSubview:[viewController_ view]];
 }
 
-- (void)clear {
-  [[viewController_ view] removeFromSuperview];
-  viewController_.reset();
-}
-
 - (ExtensionInstallViewController*)viewController {
   return viewController_;
 }
@@ -51,6 +46,11 @@
   NSSize size = [[viewController_ view] bounds].size;
   [[self view] setFrameSize:size];
   [[viewController_ view] setFrameOrigin:NSZeroPoint];
+}
+
+- (void)viewRemovedFromSuperview {
+  [[viewController_ view] removeFromSuperview];
+  viewController_.reset();
 }
 
 @end

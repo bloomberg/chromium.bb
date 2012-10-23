@@ -53,4 +53,7 @@
   NOTREACHED();
 }
 
+- (void)viewRemovedFromSuperview {
+}
+
 @end

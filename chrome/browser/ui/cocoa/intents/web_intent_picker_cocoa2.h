@@ -72,11 +72,16 @@ class WebIntentPickerCocoa2 : public WebIntentPicker,
       ConstrainedWindowMac2* window) OVERRIDE;
 
  private:
+  void ScheduleUpdate();
+  void PerformUpdate();
+
   content::WebContents* const web_contents_;
   WebIntentPickerDelegate* delegate_;
   WebIntentPickerModel* model_;
   scoped_nsobject<WebIntentPickerViewController> view_controller_;
   scoped_ptr<ConstrainedWindowMac2> constrained_window_;
+  bool update_pending_;
+  base::WeakPtrFactory<WebIntentPickerCocoa2> weak_ptr_factory_;
 };
 
 #endif  // CHROME_BROWSER_UI_COCOA_INTENTS_WEB_INTENT_PICKER_COCOA2_H_

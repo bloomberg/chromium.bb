@@ -176,4 +176,8 @@
   }
 }
 
+- (void)viewRemovedFromSuperview {
+  [self setServiceURL:GURL::EmptyGURL()];
+}
+
 @end
