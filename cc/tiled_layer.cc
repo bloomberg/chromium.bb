@@ -19,6 +19,16 @@ using WebKit::WebTransformationMatrix;
 
 namespace cc {
 
+// Maximum predictive expansion of the visible area.
+static const int maxPredictiveTilesCount = 2;
+
+// Number of rows/columns of tiles to pre-paint.
+// We should increase these further as all textures are
+// prioritized and we insure performance doesn't suffer.
+static const int prepaintRows = 4;
+static const int prepaintColumns = 2;
+
+
 class UpdatableTile : public LayerTilingData::Tile {
 public:
     static scoped_ptr<UpdatableTile> create(scoped_ptr<LayerUpdater::Texture> texture)
@@ -566,6 +576,7 @@ void TiledLayer::setTexturePriorities(const PriorityCalculator& priorityCalc)
 {
     updateBounds();
     resetUpdateState();
+    updateScrollPrediction();
 
     if (m_tiler->hasEmptyBounds())
         return;
@@ -635,7 +646,7 @@ void TiledLayer::setTexturePriorities(const PriorityCalculator& priorityCalc)
         if (!tile)
             continue;
         IntRect tileRect = m_tiler->tileRect(tile);
-        setPriorityForTexture(visibleContentRect(), tileRect, drawsToRoot, smallAnimatedLayer, tile->managedTexture());
+        setPriorityForTexture(m_predictedVisibleRect, tileRect, drawsToRoot, smallAnimatedLayer, tile->managedTexture());
     }
 }
 
@@ -663,6 +674,46 @@ void TiledLayer::resetUpdateState()
     }
 }
 
+namespace {
+IntRect expandRectByDelta(IntRect rect, IntSize delta) {
+    int width  = rect.width() + abs(delta.width());
+    int height = rect.height() + abs(delta.height());
+    int x = rect.x() + ((delta.width() < 0)  ? delta.width()  : 0);
+    int y = rect.y() + ((delta.height() < 0) ? delta.height() : 0);
+    return IntRect(x, y, width, height);
+}
+}
+
+void TiledLayer::updateScrollPrediction()
+{
+    // This scroll prediction is very primitive and should be replaced by a
+    // a recursive calculation on all layers which uses actual scroll/animation
+    // velocities. To insure this doesn't miss-predict, we only use it to predict
+    // the visibleRect if:
+    // - contentBounds() hasn't changed.
+    // - visibleRect.size() hasn't changed.
+    // These two conditions prevent rotations, scales, pinch-zooms etc. where
+    // the prediction would be incorrect.
+    IntSize delta = visibleContentRect().center() - m_previousVisibleRect.center();
+    m_predictedScroll = -delta;
+    m_predictedVisibleRect = visibleContentRect();
+    if (m_previousContentBounds == contentBounds() && m_previousVisibleRect.size() == visibleContentRect().size()) {
+        // Only expand the visible rect in the major scroll direction, to prevent
+        // massive paints due to diagonal scrolls.
+        IntSize majorScrollDelta = (abs(delta.width()) > abs(delta.height())) ? IntSize(delta.width(), 0) : IntSize(0, delta.height());
+        m_predictedVisibleRect = expandRectByDelta(visibleContentRect(), majorScrollDelta);
+
+        // Bound the prediction to prevent unbounded paints, and clamp to content bounds.
+        IntRect bound = visibleContentRect();
+        bound.inflateX(m_tiler->tileSize().width() * maxPredictiveTilesCount);
+        bound.inflateY(m_tiler->tileSize().height() * maxPredictiveTilesCount);
+        bound.intersect(IntRect(IntPoint::zero(), contentBounds()));
+        m_predictedVisibleRect.intersect(bound);
+    }
+    m_previousContentBounds = contentBounds();
+    m_previousVisibleRect = visibleContentRect();
+}
+
 void TiledLayer::update(TextureUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats)
 {
     DCHECK(!m_skipsDraw && !m_failedUpdate); // Did resetUpdateState get skipped?
@@ -686,12 +737,12 @@ void TiledLayer::update(TextureUpdateQueue& queue, const OcclusionTracker* occlu
         m_failedUpdate = false;
     }
 
-    if (visibleContentRect().isEmpty())
+    if (m_predictedVisibleRect.isEmpty())
         return;
 
     // Visible painting. First occlude visible tiles and paint the non-occluded tiles.
     int left, top, right, bottom;
-    m_tiler->contentRectToTileIndices(visibleContentRect(), left, top, right, bottom);
+    m_tiler->contentRectToTileIndices(m_predictedVisibleRect, left, top, right, bottom);
     markOcclusionsAndRequestTextures(left, top, right, bottom, occlusion);
     m_skipsDraw = !updateTiles(left, top, right, bottom, queue, occlusion, stats, didPaint);
     if (m_skipsDraw)
@@ -711,27 +762,42 @@ void TiledLayer::update(TextureUpdateQueue& queue, const OcclusionTracker* occlu
     int prepaintLeft, prepaintTop, prepaintRight, prepaintBottom;
     m_tiler->contentRectToTileIndices(idlePaintContentRect, prepaintLeft, prepaintTop, prepaintRight, prepaintBottom);
 
-    // Then expand outwards from the visible area until we find a dirty row or column to update.
-    while (left > prepaintLeft || top > prepaintTop || right < prepaintRight || bottom < prepaintBottom) {
-        if (bottom < prepaintBottom) {
-            ++bottom;
-            if (!updateTiles(left, bottom, right, bottom, queue, 0, stats, didPaint) || didPaint)
-                return;
+    // Then expand outwards one row/column at a time until we find a dirty row/column
+    // to update. Increment along the major and minor scroll directions first.
+    IntSize delta = -m_predictedScroll;
+    delta = IntSize(delta.width() == 0 ? 1 : delta.width(),
+                    delta.height() == 0 ? 1 : delta.height());
+    IntSize majorDelta = (abs(delta.width()) >  abs(delta.height())) ? IntSize(delta.width(), 0) : IntSize(0, delta.height());
+    IntSize minorDelta = (abs(delta.width()) <= abs(delta.height())) ? IntSize(delta.width(), 0) : IntSize(0, delta.height());
+    IntSize deltas[4] = {majorDelta, minorDelta, -majorDelta, -minorDelta};
+    for(int i = 0; i < 4; i++) {
+        if (deltas[i].height() > 0) {
+            while (bottom < prepaintBottom) {
+                ++bottom;
+                if (!updateTiles(left, bottom, right, bottom, queue, 0, stats, didPaint) || didPaint)
+                    return;
+            }
         }
-        if (top > prepaintTop) {
-            --top;
-            if (!updateTiles(left, top, right, top, queue, 0, stats, didPaint) || didPaint)
-                return;
+        if (deltas[i].height() < 0) {
+            while (top > prepaintTop) {
+                --top;
+                if (!updateTiles(left, top, right, top, queue, 0, stats, didPaint) || didPaint)
+                    return;
+            }
         }
-        if (left > prepaintLeft) {
-            --left;
-            if (!updateTiles(left, top, left, bottom, queue, 0, stats, didPaint) || didPaint)
-                return;
+        if (deltas[i].width() < 0) {
+            while (left > prepaintLeft) {
+                --left;
+                if (!updateTiles(left, top, left, bottom, queue, 0, stats, didPaint) || didPaint)
+                    return;
+            }
         }
-        if (right < prepaintRight) {
-            ++right;
-            if (!updateTiles(right, top, right, bottom, queue, 0, stats, didPaint) || didPaint)
-                return;
+        if (deltas[i].width() > 0) {
+            while (right < prepaintRight) {
+                ++right;
+                if (!updateTiles(right, top, right, bottom, queue, 0, stats, didPaint) || didPaint)
+                    return;
+            }
         }
     }
 }
@@ -772,11 +838,9 @@ IntRect TiledLayer::idlePaintRect()
     if (visibleContentRect().isEmpty())
         return IntRect();
 
-    // FIXME: This can be made a lot larger now! We should increase
-    //        this slowly while insuring it doesn't cause any perf issues.
     IntRect prepaintRect = visibleContentRect();
-    prepaintRect.inflateX(m_tiler->tileSize().width());
-    prepaintRect.inflateY(m_tiler->tileSize().height() * 2);
+    prepaintRect.inflateX(m_tiler->tileSize().width() * prepaintColumns);
+    prepaintRect.inflateY(m_tiler->tileSize().height() * prepaintRows);
     IntRect contentRect(IntPoint::zero(), contentBounds());
     prepaintRect.intersect(contentRect);
 

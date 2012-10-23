@@ -83,6 +83,7 @@ private:
     bool haveTexturesForTiles(int left, int top, int right, int bottom, bool ignoreOcclusions);
     IntRect markTilesForUpdate(int left, int top, int right, int bottom, bool ignoreOcclusions);
     void updateTileTextures(const IntRect& paintRect, int left, int top, int right, int bottom, TextureUpdateQueue&, const OcclusionTracker*, RenderingStats&);
+    void updateScrollPrediction();
 
     UpdatableTile* tileAt(int, int) const;
     UpdatableTile* createTile(int, int);
@@ -90,6 +91,12 @@ private:
     GLenum m_textureFormat;
     bool m_skipsDraw;
     bool m_failedUpdate;
+
+    // Used for predictive painting.
+    IntSize m_predictedScroll;
+    IntRect m_predictedVisibleRect;
+    IntRect m_previousVisibleRect;
+    IntSize m_previousContentBounds;
 
     TilingOption m_tilingOption;
     scoped_ptr<LayerTilingData> m_tiler;

@@ -287,17 +287,89 @@ TEST_F(TiledLayerTest, pushIdlePaintTiles)
         EXPECT_TRUE(needsUpdate);
     }
 
-    // We should have one tile surrounding the visible tile on all sides, but no other tiles.
-    IntRect idlePaintTiles(1, 1, 3, 3);
-    for (int i = 0; i < 5; i++) {
-        for (int j = 0; j < 5; j++)
-            EXPECT_EQ(layerImpl->hasResourceIdForTileAt(i, j), idlePaintTiles.contains(i, j));
-    }
-
     // We should always finish painting eventually.
     for (int i = 0; i < 20; i++)
         needsUpdate = updateAndPush(layer.get(), layerImpl.get());
+
+    // We should have pre-painted all of the surrounding tiles.
+    for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 5; j++)
+            EXPECT_TRUE(layerImpl->hasResourceIdForTileAt(i, j));
+    }
+
     EXPECT_FALSE(needsUpdate);
+}
+
+TEST_F(TiledLayerTest, predictivePainting)
+{
+    scoped_refptr<FakeTiledLayer> layer = make_scoped_refptr(new FakeTiledLayer(m_textureManager.get()));
+    ScopedFakeTiledLayerImpl layerImpl(1);
+
+    // Prepainting should occur in the scroll direction first, and the
+    // visible rect should be extruded only along the dominant axis.
+    IntSize directions[6] = { IntSize(-10, 0),
+                              IntSize(10, 0),
+                              IntSize(0, -10),
+                              IntSize(0, 10),
+                              IntSize(10, 20),
+                              IntSize(-20, 10) };
+    // We should push all tiles that touch the extruded visible rect.
+    IntRect pushedVisibleTiles[6] = { IntRect(2, 2, 2, 1),
+                                      IntRect(1, 2, 2, 1),
+                                      IntRect(2, 2, 1, 2),
+                                      IntRect(2, 1, 1, 2),
+                                      IntRect(2, 1, 1, 2),
+                                      IntRect(2, 2, 2, 1) };
+    // The first pre-paint should also paint first in the scroll
+    // direction so we should find one additional tile in the scroll direction.
+    IntRect pushedPrepaintTiles[6] = { IntRect(2, 2, 3, 1),
+                                       IntRect(0, 2, 3, 1),
+                                       IntRect(2, 2, 1, 3),
+                                       IntRect(2, 0, 1, 3),
+                                       IntRect(2, 0, 1, 3),
+                                       IntRect(2, 2, 3, 1) };
+    for(int k = 0; k < 6; k++) {
+        // The tile size is 100x100. Setup 5x5 tiles with one visible tile
+        // in the center.
+        IntSize contentBounds = IntSize(500, 500);
+        IntRect contentRect = IntRect(0, 0, 500, 500);
+        IntRect visibleRect = IntRect(200, 200, 100, 100);
+        IntRect previousVisibleRect = IntRect(visibleRect.location() + directions[k], visibleRect.size());
+        IntRect nextVisibleRect = IntRect(visibleRect.location() - directions[k], visibleRect.size());
+
+        // Setup. Use the previousVisibleRect to setup the prediction for next frame.
+        layer->setBounds(contentBounds);
+        layer->setVisibleContentRect(previousVisibleRect);
+        layer->invalidateContentRect(contentRect);
+        bool needsUpdate = updateAndPush(layer.get(), layerImpl.get());
+
+        // Invalidate and move the visibleRect in the scroll direction.
+        // Check that the correct tiles have been painted in the visible pass.
+        layer->invalidateContentRect(contentRect);
+        layer->setVisibleContentRect(visibleRect);
+        needsUpdate = updateAndPush(layer.get(), layerImpl.get());
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++)
+                EXPECT_EQ(layerImpl->hasResourceIdForTileAt(i, j), pushedVisibleTiles[k].contains(i, j));
+        }
+
+        // Move the transform in the same direction without invalidating.
+        // Check that non-visible pre-painting occured in the correct direction.
+        // Ignore diagonal scrolls here (k > 3) as these have new visible content now.
+        if (k <= 3) {
+            layer->setVisibleContentRect(nextVisibleRect);
+            needsUpdate = updateAndPush(layer.get(), layerImpl.get());
+            for (int i = 0; i < 5; i++) {
+                for (int j = 0; j < 5; j++)
+                    EXPECT_EQ(layerImpl->hasResourceIdForTileAt(i, j), pushedPrepaintTiles[k].contains(i, j));
+            }
+        }
+
+        // We should always finish painting eventually.
+        for (int i = 0; i < 20; i++)
+            needsUpdate = updateAndPush(layer.get(), layerImpl.get());
+        EXPECT_FALSE(needsUpdate);
+    }
 }
 
 TEST_F(TiledLayerTest, pushTilesAfterIdlePaintFailed)
