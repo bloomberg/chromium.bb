@@ -23,7 +23,6 @@
 
 class FilePath;
 class GURL;
-class WebContentsImpl;
 
 namespace base {
 class ListValue;
@@ -36,6 +35,7 @@ class DownloadItem;
 class JavaScriptDialogCreator;
 class RenderViewHost;
 class WebContents;
+class WebContentsImpl;
 class WebIntentsDispatcher;
 struct ContextMenuParams;
 struct FileChooserParams;
@@ -434,7 +434,7 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual ~WebContentsDelegate();
 
  private:
-  friend class ::WebContentsImpl;
+  friend class WebContentsImpl;
 
   // Called when |this| becomes the WebContentsDelegate for |source|.
   void Attach(WebContents* source);

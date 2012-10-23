@@ -25,6 +25,7 @@
 
 using content::BrowserThread;
 using content::NavigationController;
+using content::NavigationControllerImpl;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::ResourceDispatcherHostImpl;

@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+namespace content {
+
 // Types related to sending edit commands to the renderer.
 struct EditCommand {
   EditCommand() { }
@@ -20,5 +22,7 @@ struct EditCommand {
 };
 
 typedef std::vector<EditCommand> EditCommands;
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_EDIT_COMMAND_H_

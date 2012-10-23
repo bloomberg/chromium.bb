@@ -8,10 +8,10 @@
 #include "base/string16.h"
 #include "webkit/glue/webdropdata.h"
 
-class WebContentsImpl;
 
 namespace content {
 class RenderViewHost;
+class WebContentsImpl;
 class WebDragDestDelegate;
 }
 
@@ -25,7 +25,7 @@ typedef content::RenderViewHost* RenderViewHostIdentifier;
 @interface WebDragDest : NSObject {
  @private
   // Our associated WebContentsImpl. Weak reference.
-  WebContentsImpl* webContents_;
+  content::WebContentsImpl* webContents_;
 
   // Delegate; weak.
   content::WebDragDestDelegate* delegate_;
@@ -45,7 +45,7 @@ typedef content::RenderViewHost* RenderViewHostIdentifier;
 // |contents| is the WebContentsImpl representing this tab, used to communicate
 // drag&drop messages to WebCore and handle navigation on a successful drop
 // (if necessary).
-- (id)initWithWebContentsImpl:(WebContentsImpl*)contents;
+- (id)initWithWebContentsImpl:(content::WebContentsImpl*)contents;
 
 - (WebDropData*)currentDropData;
 

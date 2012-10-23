@@ -33,6 +33,7 @@ using WebKit::WebMouseEvent;
 using content::BrowserPluginEmbedder;
 using content::BrowserPluginGuest;
 using content::BrowserPluginHostFactory;
+using content::WebContentsImpl;
 
 namespace {
 

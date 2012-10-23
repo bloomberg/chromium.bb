@@ -20,6 +20,7 @@
 using WebKit::WebDragOperationsMask;
 using content::OpenURLParams;
 using content::Referrer;
+using content::WebContentsImpl;
 
 int GetModifierFlags() {
   int modifier_state = 0;

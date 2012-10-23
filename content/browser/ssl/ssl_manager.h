@@ -20,11 +20,11 @@
 #include "net/base/cert_status_flags.h"
 #include "net/base/net_errors.h"
 
-class NavigationControllerImpl;
 class SSLPolicy;
 
 namespace content {
 class NavigationEntryImpl;
+class NavigationControllerImpl;
 struct LoadFromMemoryCacheDetails;
 struct ResourceRedirectDetails;
 struct ResourceRequestDetails;
@@ -63,11 +63,11 @@ class SSLManager : public content::NotificationObserver {
   // Called when SSL state for a host or tab changes.  Broadcasts the
   // SSL_INTERNAL_STATE_CHANGED notification.
   static void NotifySSLInternalStateChanged(
-      NavigationControllerImpl* controller);
+      content::NavigationControllerImpl* controller);
 
   // Construct an SSLManager for the specified tab.
   // If |delegate| is NULL, SSLPolicy::GetDefaultPolicy() is used.
-  explicit SSLManager(NavigationControllerImpl* controller);
+  explicit SSLManager(content::NavigationControllerImpl* controller);
   virtual ~SSLManager();
 
   SSLPolicy* policy() { return policy_.get(); }
@@ -75,7 +75,7 @@ class SSLManager : public content::NotificationObserver {
 
   // The navigation controller associated with this SSLManager.  The
   // NavigationController is guaranteed to outlive the SSLManager.
-  NavigationControllerImpl* controller() { return controller_; }
+  content::NavigationControllerImpl* controller() { return controller_; }
 
   // This entry point is called directly (instead of via the notification
   // service) because we need more precise control of the order in which folks
@@ -114,7 +114,7 @@ class SSLManager : public content::NotificationObserver {
 
   // The NavigationController that owns this SSLManager.  We are responsible
   // for the security UI of this tab.
-  NavigationControllerImpl* controller_;
+  content::NavigationControllerImpl* controller_;
 
   // Handles registering notifications with the NotificationService.
   content::NotificationRegistrar registrar_;

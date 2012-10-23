@@ -29,27 +29,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/glue_serialize.h"
 
-using content::BrowserContext;
-using content::BrowserThread;
-using content::BrowserThreadImpl;
-using content::MockRenderProcessHost;
-using content::NavigationController;
-using content::NavigationEntry;
-using content::NavigationEntryImpl;
-using content::RenderViewHost;
-using content::RenderViewHostImpl;
-using content::RenderViewHostImplTestHarness;
-using content::SiteInstance;
-using content::TestRenderViewHost;
-using content::TestWebContents;
-using content::WebContents;
-using content::WebUI;
-using content::WebUIController;
-
+namespace content {
 namespace {
 
 class RenderViewHostManagerTestWebUIControllerFactory
-    : public content::WebUIControllerFactory {
+    : public WebUIControllerFactory {
  public:
   RenderViewHostManagerTestWebUIControllerFactory()
     : should_create_webui_(false) {
@@ -63,8 +47,7 @@ class RenderViewHostManagerTestWebUIControllerFactory
   // WebUIFactory implementation.
   virtual WebUIController* CreateWebUIControllerForURL(
       WebUI* web_ui, const GURL& url) const OVERRIDE {
-    if (!(should_create_webui_ &&
-          content::GetContentClient()->HasWebUIScheme(url)))
+    if (!(should_create_webui_ && GetContentClient()->HasWebUIScheme(url)))
       return NULL;
     return new WebUIController(web_ui);
   }
@@ -76,19 +59,19 @@ class RenderViewHostManagerTestWebUIControllerFactory
 
   virtual bool UseWebUIForURL(BrowserContext* browser_context,
                               const GURL& url) const OVERRIDE {
-    return content::GetContentClient()->HasWebUIScheme(url);
+    return GetContentClient()->HasWebUIScheme(url);
   }
 
   virtual bool UseWebUIBindingsForURL(BrowserContext* browser_context,
                                       const GURL& url) const OVERRIDE {
-    return content::GetContentClient()->HasWebUIScheme(url);
+    return GetContentClient()->HasWebUIScheme(url);
   }
 
   virtual bool IsURLAcceptableForWebUI(
       BrowserContext* browser_context,
       const GURL& url,
       bool data_urls_allowed) const OVERRIDE {
-    return content::GetContentClient()->HasWebUIScheme(url);
+    return GetContentClient()->HasWebUIScheme(url);
   }
 
  private:
@@ -108,7 +91,7 @@ class RenderViewHostManagerTestClient : public TestContentClient {
 };
 
 class RenderViewHostManagerTestBrowserClient
-    : public content::TestContentBrowserClient {
+    : public TestContentBrowserClient {
  public:
   RenderViewHostManagerTestBrowserClient() {}
   virtual ~RenderViewHostManagerTestBrowserClient() {}
@@ -117,8 +100,8 @@ class RenderViewHostManagerTestBrowserClient
     factory_.set_should_create_webui(should_create_webui);
   }
 
-  // content::TestContentBrowserClient implementation.
-  virtual content::WebUIControllerFactory*
+  // TestContentBrowserClient implementation.
+  virtual WebUIControllerFactory*
       GetWebUIControllerFactory() OVERRIDE {
     return &factory_;
   }
@@ -136,17 +119,17 @@ class RenderViewHostManagerTest
  public:
   virtual void SetUp() OVERRIDE {
     RenderViewHostImplTestHarness::SetUp();
-    old_client_ = content::GetContentClient();
-    old_browser_client_ = content::GetContentClient()->browser();
-    content::SetContentClient(&client_);
-    content::GetContentClient()->set_browser_for_testing(&browser_client_);
+    old_client_ = GetContentClient();
+    old_browser_client_ = GetContentClient()->browser();
+    SetContentClient(&client_);
+    GetContentClient()->set_browser_for_testing(&browser_client_);
     url_util::AddStandardScheme(chrome::kChromeUIScheme);
   }
 
   virtual void TearDown() OVERRIDE {
     RenderViewHostImplTestHarness::TearDown();
-    content::GetContentClient()->set_browser_for_testing(old_browser_client_);
-    content::SetContentClient(old_client_);
+    GetContentClient()->set_browser_for_testing(old_browser_client_);
+    SetContentClient(old_client_);
   }
 
   void set_should_create_webui(bool should_create_webui) {
@@ -157,8 +140,7 @@ class RenderViewHostManagerTest
     // Note: we navigate the active RenderViewHost because previous navigations
     // won't have committed yet, so NavigateAndCommit does the wrong thing
     // for us.
-    controller().LoadURL(
-        url, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());
+    controller().LoadURL(url, Referrer(), PAGE_TRANSITION_LINK, std::string());
     TestRenderViewHost* old_rvh = test_rvh();
 
     // Simulate the ShouldClose_ACK that is received from the current renderer
@@ -186,8 +168,8 @@ class RenderViewHostManagerTest
  private:
   RenderViewHostManagerTestClient client_;
   RenderViewHostManagerTestBrowserClient browser_client_;
-  content::ContentClient* old_client_;
-  content::ContentBrowserClient* old_browser_client_;
+  ContentClient* old_client_;
+  ContentBrowserClient* old_browser_client_;
 };
 
 // Tests that when you navigate from a chrome:// url to another page, and
@@ -211,8 +193,7 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   // a RVH that's not pending (since there is no cross-site transition), so
   // we use the committed one.
   contents2->GetController().LoadURL(
-      kChromeUrl, content::Referrer(), content::PAGE_TRANSITION_LINK,
-      std::string());
+      kChromeUrl, Referrer(), PAGE_TRANSITION_LINK, std::string());
   TestRenderViewHost* ntp_rvh2 = static_cast<TestRenderViewHost*>(
       contents2->GetRenderManagerForTesting()->current_host());
   EXPECT_FALSE(contents2->cross_navigation_pending());
@@ -221,8 +202,7 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   // The second one is the opposite, creating a cross-site transition and
   // requiring a beforeunload ack.
   contents2->GetController().LoadURL(
-      kDestUrl, content::Referrer(), content::PAGE_TRANSITION_LINK,
-      std::string());
+      kDestUrl, Referrer(), PAGE_TRANSITION_LINK, std::string());
   EXPECT_TRUE(contents2->cross_navigation_pending());
   TestRenderViewHost* dest_rvh2 = static_cast<TestRenderViewHost*>(
       contents2->GetRenderManagerForTesting()->pending_render_view_host());
@@ -242,8 +222,7 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   NavigateActiveAndCommit(kChromeUrl);
 
   contents2->GetController().LoadURL(
-      kChromeUrl, content::Referrer(), content::PAGE_TRANSITION_LINK,
-      std::string());
+      kChromeUrl, Referrer(), PAGE_TRANSITION_LINK, std::string());
   dest_rvh2->SendShouldCloseACK(true);
   static_cast<TestRenderViewHost*>(contents2->GetRenderManagerForTesting()->
      pending_render_view_host())->SendNavigate(102, kChromeUrl);
@@ -279,8 +258,7 @@ TEST_F(RenderViewHostManagerTest, FilterMessagesWhileSwappedOut) {
 
   // Navigate to a cross-site URL.
   contents()->GetController().LoadURL(
-      kDestUrl, content::Referrer(), content::PAGE_TRANSITION_LINK,
-      std::string());
+      kDestUrl, Referrer(), PAGE_TRANSITION_LINK, std::string());
   EXPECT_TRUE(contents()->cross_navigation_pending());
   TestRenderViewHost* dest_rvh = static_cast<TestRenderViewHost*>(
       contents()->GetRenderManagerForTesting()->pending_render_view_host());
@@ -328,7 +306,7 @@ TEST_F(RenderViewHostManagerTest, FilterMessagesWhileSwappedOut) {
   ntp_process_host->sink().ClearMessages();
   ViewHostMsg_RunJavaScriptMessage js_msg(
       rvh()->GetRoutingID(), msg, msg, kChromeURL,
-      content::JAVASCRIPT_MESSAGE_TYPE_CONFIRM, &result, &unused);
+      JAVASCRIPT_MESSAGE_TYPE_CONFIRM, &result, &unused);
   js_msg.EnableMessagePumping();
   EXPECT_TRUE(ntp_rvh->OnMessageReceived(js_msg));
   EXPECT_TRUE(ntp_process_host->sink().GetUniqueMessageMatching(IPC_REPLY_ID));
@@ -353,7 +331,7 @@ TEST_F(RenderViewHostManagerTest, AlwaysSendEnableViewSourceMode) {
 
   // Navigate.
   controller().LoadURL(
-      kUrl, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
+      kUrl, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   // Simulate response from RenderView for FirePageBeforeUnload.
   test_rvh()->OnMessageReceived(ViewHostMsg_ShouldClose_ACK(
       rvh()->GetRoutingID(), true, base::TimeTicks(), base::TimeTicks()));
@@ -374,7 +352,7 @@ TEST_F(RenderViewHostManagerTest, AlwaysSendEnableViewSourceMode) {
   process()->sink().ClearMessages();
   // Navigate, again.
   controller().LoadURL(
-      kUrl, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
+      kUrl, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   // The same RenderViewHost should be reused.
   EXPECT_FALSE(pending_rvh());
   EXPECT_TRUE(last_rvh == rvh());
@@ -411,16 +389,15 @@ TEST_F(RenderViewHostManagerTest, Init) {
 // Tests the Navigate function. We navigate three sites consecutively and check
 // how the pending/committed RenderViewHost are modified.
 TEST_F(RenderViewHostManagerTest, Navigate) {
-  content::TestNotificationTracker notifications;
+  TestNotificationTracker notifications;
 
   SiteInstance* instance = SiteInstance::Create(browser_context());
 
   scoped_ptr<TestWebContents> web_contents(
       TestWebContents::Create(browser_context(), instance));
   notifications.ListenFor(
-      content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-      content::Source<NavigationController>(
-          &web_contents->GetController()));
+      NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
+      Source<NavigationController>(&web_contents->GetController()));
 
   // Create.
   RenderViewHostManager manager(web_contents.get(), web_contents.get(),
@@ -433,8 +410,8 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
   // 1) The first navigation. --------------------------
   const GURL kUrl1("http://www.google.com/");
   NavigationEntryImpl entry1(
-      NULL /* instance */, -1 /* page_id */, kUrl1, content::Referrer(),
-      string16() /* title */, content::PAGE_TRANSITION_TYPED,
+      NULL /* instance */, -1 /* page_id */, kUrl1, Referrer(),
+      string16() /* title */, PAGE_TRANSITION_TYPED,
       false /* is_renderer_init */);
   host = manager.Navigate(entry1);
 
@@ -455,8 +432,8 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
   const GURL kUrl2("http://www.google.com/foo");
   NavigationEntryImpl entry2(
       NULL /* instance */, -1 /* page_id */, kUrl2,
-      content::Referrer(kUrl1, WebKit::WebReferrerPolicyDefault),
-      string16() /* title */, content::PAGE_TRANSITION_LINK,
+      Referrer(kUrl1, WebKit::WebReferrerPolicyDefault),
+      string16() /* title */, PAGE_TRANSITION_LINK,
       true /* is_renderer_init */);
   host = manager.Navigate(entry2);
 
@@ -475,8 +452,8 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
   const GURL kUrl3("http://webkit.org/");
   NavigationEntryImpl entry3(
       NULL /* instance */, -1 /* page_id */, kUrl3,
-      content::Referrer(kUrl2, WebKit::WebReferrerPolicyDefault),
-      string16() /* title */, content::PAGE_TRANSITION_LINK,
+      Referrer(kUrl2, WebKit::WebReferrerPolicyDefault),
+      string16() /* title */, PAGE_TRANSITION_LINK,
       false /* is_renderer_init */);
   host = manager.Navigate(entry3);
 
@@ -497,7 +474,7 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
 
   // We should observe a notification.
   EXPECT_TRUE(notifications.Check1AndReset(
-      content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED));
+      NOTIFICATION_RENDER_VIEW_HOST_CHANGED));
 }
 
 // Tests the Navigate function. In this unit test we verify that the Navigate
@@ -505,16 +482,15 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
 // has been committed. This is also a regression test for
 // http://crbug.com/104600.
 TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
-  content::TestNotificationTracker notifications;
+  TestNotificationTracker notifications;
 
   SiteInstance* instance = SiteInstance::Create(browser_context());
 
   scoped_ptr<TestWebContents> web_contents(
       TestWebContents::Create(browser_context(), instance));
   notifications.ListenFor(
-      content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
-      content::Source<NavigationController>(
-          &web_contents->GetController()));
+      NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
+      Source<NavigationController>(&web_contents->GetController()));
 
   // Create.
   RenderViewHostManager manager(web_contents.get(), web_contents.get(),
@@ -525,8 +501,8 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
   // 1) The first navigation. --------------------------
   const GURL kUrl1("http://www.google.com/");
   NavigationEntryImpl entry1(NULL /* instance */, -1 /* page_id */, kUrl1,
-                             content::Referrer(), string16() /* title */,
-                             content::PAGE_TRANSITION_TYPED,
+                             Referrer(), string16() /* title */,
+                             PAGE_TRANSITION_TYPED,
                              false /* is_renderer_init */);
   RenderViewHost* host = manager.Navigate(entry1);
 
@@ -536,7 +512,7 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
 
   // We should observe a notification.
   EXPECT_TRUE(notifications.Check1AndReset(
-      content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED));
+      NOTIFICATION_RENDER_VIEW_HOST_CHANGED));
   notifications.Reset();
 
   // Commit.
@@ -552,8 +528,8 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
   // 2) Cross-site navigate to next site. -------------------------
   const GURL kUrl2("http://www.example.com");
   NavigationEntryImpl entry2(
-      NULL /* instance */, -1 /* page_id */, kUrl2, content::Referrer(),
-      string16() /* title */, content::PAGE_TRANSITION_TYPED,
+      NULL /* instance */, -1 /* page_id */, kUrl2, Referrer(),
+      string16() /* title */, PAGE_TRANSITION_TYPED,
       false /* is_renderer_init */);
   RenderViewHostImpl* host2 = static_cast<RenderViewHostImpl*>(
       manager.Navigate(entry2));
@@ -605,8 +581,8 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
   // 3) Cross-site navigate to next site before 2) has committed. --------------
   const GURL kUrl3("http://webkit.org/");
   NavigationEntryImpl entry3(NULL /* instance */, -1 /* page_id */, kUrl3,
-                             content::Referrer(), string16() /* title */,
-                             content::PAGE_TRANSITION_TYPED,
+                             Referrer(), string16() /* title */,
+                             PAGE_TRANSITION_TYPED,
                              false /* is_renderer_init */);
   test_process_host->sink().ClearMessages();
   RenderViewHost* host3 = manager.Navigate(entry3);
@@ -653,7 +629,7 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
 
   // We should observe a notification.
   EXPECT_TRUE(notifications.Check1AndReset(
-      content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED));
+      NOTIFICATION_RENDER_VIEW_HOST_CHANGED));
 }
 
 // Tests WebUI creation.
@@ -671,8 +647,8 @@ TEST_F(RenderViewHostManagerTest, WebUI) {
 
   const GURL kUrl("chrome://foo");
   NavigationEntryImpl entry(NULL /* instance */, -1 /* page_id */, kUrl,
-                            content::Referrer(), string16() /* title */,
-                            content::PAGE_TRANSITION_TYPED,
+                            Referrer(), string16() /* title */,
+                            PAGE_TRANSITION_TYPED,
                             false /* is_renderer_init */);
   RenderViewHost* host = manager.Navigate(entry);
 
@@ -695,7 +671,7 @@ TEST_F(RenderViewHostManagerTest, WebUI) {
 
   // Commit.
   manager.DidNavigateMainFrame(host);
-  EXPECT_TRUE(host->GetEnabledBindings() & content::BINDINGS_POLICY_WEB_UI);
+  EXPECT_TRUE(host->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 }
 
 // Tests that we don't end up in an inconsistent state if a page does a back and
@@ -724,7 +700,7 @@ TEST_F(RenderViewHostManagerTest, PageDoesBackAndReload) {
   ViewHostMsg_FrameNavigate_Params params;
   params.page_id = 1;
   params.url = kUrl2;
-  params.transition = content::PAGE_TRANSITION_CLIENT_REDIRECT;
+  params.transition = PAGE_TRANSITION_CLIENT_REDIRECT;
   params.should_update_history = false;
   params.gesture = NavigationGestureAuto;
   params.was_within_same_page = false;
@@ -863,7 +839,7 @@ TEST_F(RenderViewHostManagerTest, EnableWebUIWithSwappedOutOpener) {
 
   // Ensure the RVH has WebUI bindings.
   TestRenderViewHost* rvh1 = test_rvh();
-  EXPECT_TRUE(rvh1->GetEnabledBindings() & content::BINDINGS_POLICY_WEB_UI);
+  EXPECT_TRUE(rvh1->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 
   // Create a new tab and simulate it being the opener for the main
   // tab.  It should be in the same SiteInstance.
@@ -888,12 +864,12 @@ TEST_F(RenderViewHostManagerTest, EnableWebUIWithSwappedOutOpener) {
   EXPECT_TRUE(opener1_rvh->is_swapped_out());
 
   // Ensure the new RVH has WebUI bindings.
-  EXPECT_TRUE(rvh2->GetEnabledBindings() & content::BINDINGS_POLICY_WEB_UI);
+  EXPECT_TRUE(rvh2->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 }
 
 // Test that we reuse the same guest SiteInstance if we navigate across sites.
 TEST_F(RenderViewHostManagerTest, NoSwapOnGuestNavigations) {
-  content::TestNotificationTracker notifications;
+  TestNotificationTracker notifications;
 
   GURL guest_url("guest://abc123");
   SiteInstance* instance =
@@ -912,8 +888,8 @@ TEST_F(RenderViewHostManagerTest, NoSwapOnGuestNavigations) {
   // 1) The first navigation. --------------------------
   const GURL kUrl1("http://www.google.com/");
   NavigationEntryImpl entry1(
-      NULL /* instance */, -1 /* page_id */, kUrl1, content::Referrer(),
-      string16() /* title */, content::PAGE_TRANSITION_TYPED,
+      NULL /* instance */, -1 /* page_id */, kUrl1, Referrer(),
+      string16() /* title */, PAGE_TRANSITION_TYPED,
       false /* is_renderer_init */);
   host = manager.Navigate(entry1);
 
@@ -935,8 +911,8 @@ TEST_F(RenderViewHostManagerTest, NoSwapOnGuestNavigations) {
   const GURL kUrl2("http://www.chromium.org");
   NavigationEntryImpl entry2(
       NULL /* instance */, -1 /* page_id */, kUrl2,
-      content::Referrer(kUrl1, WebKit::WebReferrerPolicyDefault),
-      string16() /* title */, content::PAGE_TRANSITION_LINK,
+      Referrer(kUrl1, WebKit::WebReferrerPolicyDefault),
+      string16() /* title */, PAGE_TRANSITION_LINK,
       true /* is_renderer_init */);
   host = manager.Navigate(entry2);
 
@@ -950,5 +926,6 @@ TEST_F(RenderViewHostManagerTest, NoSwapOnGuestNavigations) {
   ASSERT_TRUE(host);
   EXPECT_EQ(static_cast<SiteInstanceImpl*>(host->GetSiteInstance()),
       instance);
-
 }
+
+}  // namespace content

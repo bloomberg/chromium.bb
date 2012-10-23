@@ -45,7 +45,7 @@ class CONTENT_EXPORT GtkKeyBindingsHandler {
   // returned if the key event doesn't correspond to a predefined key binding.
   // Edit commands matched with |wke| will be stored in |edit_commands|.
   bool Match(const content::NativeWebKeyboardEvent& wke,
-             EditCommands* edit_commands);
+             content::EditCommands* edit_commands);
 
  private:
   // Object structure of Handler class, which is derived from GtkTextView.
@@ -125,7 +125,7 @@ class CONTENT_EXPORT GtkKeyBindingsHandler {
   ui::OwnedWidgetGtk handler_;
 
   // Buffer to store the match results.
-  EditCommands edit_commands_;
+  content::EditCommands edit_commands_;
 };
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_GTK_KEY_BINDINGS_HANDLER_H_

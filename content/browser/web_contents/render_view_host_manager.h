@@ -15,16 +15,17 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class InterstitialPageImpl;
-class NavigationControllerImpl;
 class WebUIImpl;
 
 namespace content {
 class BrowserContext;
+class InterstitialPageImpl;
+class NavigationControllerImpl;
 class NavigationEntry;
 class NavigationEntryImpl;
 class RenderViewHost;
 class RenderViewHostImpl;
+class RenderViewHostManagerTest;
 class RenderWidgetHostDelegate;
 class RenderWidgetHostView;
 class TestWebContents;
@@ -65,7 +66,8 @@ class CONTENT_EXPORT RenderViewHostManager
         content::RenderViewHost* render_view_host) = 0;
     virtual void UpdateRenderViewSizeForRenderManager() = 0;
     virtual void NotifySwappedFromRenderManager() = 0;
-    virtual NavigationControllerImpl& GetControllerForRenderManager() = 0;
+    virtual content::NavigationControllerImpl&
+        GetControllerForRenderManager() = 0;
 
     // Create swapped out RenderViews in the given SiteInstance for each tab in
     // the opener chain of this tab, if any.  This allows the current tab to
@@ -186,7 +188,7 @@ class CONTENT_EXPORT RenderViewHostManager
   // |interstitial_page| should be non NULL (use the remove_interstitial_page
   // method to unset the interstitial) and no interstitial page should be set
   // when there is already a non NULL interstitial page set.
-  void set_interstitial_page(InterstitialPageImpl* interstitial_page) {
+  void set_interstitial_page(content::InterstitialPageImpl* interstitial_page) {
     DCHECK(!interstitial_page_ && interstitial_page);
     interstitial_page_ = interstitial_page;
   }
@@ -199,7 +201,7 @@ class CONTENT_EXPORT RenderViewHostManager
 
   // Returns the currently showing interstitial, NULL if no interstitial is
   // showing.
-  InterstitialPageImpl* interstitial_page() const {
+  content::InterstitialPageImpl* interstitial_page() const {
     return interstitial_page_;
   }
 
@@ -228,8 +230,8 @@ class CONTENT_EXPORT RenderViewHostManager
       content::SiteInstance* instance);
 
  private:
+  friend class content::RenderViewHostManagerTest;
   friend class content::TestWebContents;
-  friend class RenderViewHostManagerTest;
 
   // Returns whether this tab should transition to a new renderer for
   // cross-site URLs.  Enabled unless we see the --process-per-tab command line
@@ -320,7 +322,7 @@ class CONTENT_EXPORT RenderViewHostManager
 
   // The intersitial page currently shown if any, not own by this class
   // (the InterstitialPage is self-owned, it deletes itself when hidden).
-  InterstitialPageImpl* interstitial_page_;
+  content::InterstitialPageImpl* interstitial_page_;
 
   content::NotificationRegistrar registrar_;
 

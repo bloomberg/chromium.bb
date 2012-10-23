@@ -14,12 +14,11 @@
 #include "ipc/ipc_sender.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class WebContentsImpl;
-
 namespace content {
 
 class RenderViewHost;
 class WebContents;
+class WebContentsImpl;
 struct FrameNavigateParams;
 struct LoadCommittedDetails;
 struct Referrer;
@@ -175,7 +174,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   WebContents* web_contents() const;
 
  private:
-  friend class ::WebContentsImpl;
+  friend class WebContentsImpl;
 
   // Invoked from WebContentsImpl. Invokes WebContentsDestroyed and NULL out
   // |web_contents_|.

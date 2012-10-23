@@ -13,10 +13,10 @@
 class SSLCertErrorHandler;
 class SSLPolicyBackend;
 class SSLRequestInfo;
-class WebContentsImpl;
 
 namespace content {
 class NavigationEntryImpl;
+class WebContentsImpl;
 }
 
 // SSLPolicy
@@ -41,7 +41,7 @@ class SSLPolicy {
   // Update the SSL information in |entry| to match the current state.
   // |web_contents| is the WebContentsImpl associated with this entry.
   void UpdateEntry(content::NavigationEntryImpl* entry,
-                   WebContentsImpl* web_contents);
+                   content::WebContentsImpl* web_contents);
 
   SSLPolicyBackend* backend() const { return backend_; }
 

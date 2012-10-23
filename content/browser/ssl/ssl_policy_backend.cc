@@ -8,6 +8,8 @@
 #include "content/browser/web_contents/navigation_controller_impl.h"
 #include "content/public/browser/browser_context.h"
 
+using content::NavigationControllerImpl;
+
 SSLPolicyBackend::SSLPolicyBackend(NavigationControllerImpl* controller)
     : ssl_host_state_(SSLHostState::GetFor(controller->GetBrowserContext())),
       controller_(controller) {

@@ -15,8 +15,6 @@
 #include "ppapi/c/pp_instance.h"
 #include "ui/gfx/size.h"
 
-class WebContentsImpl;
-
 namespace IPC {
 struct ChannelHandle;
 }
@@ -24,6 +22,7 @@ struct ChannelHandle;
 namespace content {
 
 class RenderProcessHost;
+class WebContentsImpl;
 
 namespace old {
 

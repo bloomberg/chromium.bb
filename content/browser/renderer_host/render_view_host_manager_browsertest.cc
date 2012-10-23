@@ -29,6 +29,8 @@
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 
+using content::WebContentsImpl;
+
 namespace {
 
 bool CompareTrees(base::DictionaryValue* first, base::DictionaryValue* second) {

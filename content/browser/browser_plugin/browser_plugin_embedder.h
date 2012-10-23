@@ -31,7 +31,6 @@
 #include "ui/surface/transport_dib.h"
 #include "webkit/glue/webdropdata.h"
 
-class WebContentsImpl;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
 
 namespace WebKit {
@@ -48,6 +47,7 @@ namespace content {
 
 class BrowserPluginGuest;
 class BrowserPluginHostFactory;
+class WebContentsImpl;
 
 // A browser plugin embedder provides functionality for WebContents to operate
 // in the 'embedder' role. It manages list of guests inside the embedder.

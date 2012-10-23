@@ -44,21 +44,20 @@ WebContentsView* CreateWebContentsView(
   *render_view_host_delegate_view = rv;
   return rv;
 }
-}
 
 namespace {
 
 // Listens to all mouse drag events during a drag and drop and sends them to
 // the renderer.
 class WebDragSourceAura : public MessageLoopForUI::Observer,
-                          public content::NotificationObserver {
+                          public NotificationObserver {
  public:
   WebDragSourceAura(aura::Window* window, WebContentsImpl* contents)
       : window_(window),
         contents_(contents) {
     MessageLoopForUI::current()->AddObserver(this);
-    registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
-                   content::Source<content::WebContents>(contents));
+    registrar_.Add(this, NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
+                   Source<WebContents>(contents));
   }
 
   virtual ~WebDragSourceAura() {
@@ -74,13 +73,13 @@ class WebDragSourceAura : public MessageLoopForUI::Observer,
     if (!contents_)
       return;
     ui::EventType type = ui::EventTypeFromNative(event);
-    content::RenderViewHost* rvh = NULL;
+    RenderViewHost* rvh = NULL;
     switch (type) {
       case ui::ET_MOUSE_DRAGGED:
         rvh = contents_->GetRenderViewHost();
         if (rvh) {
           gfx::Point screen_loc_in_pixel = ui::EventLocationFromNative(event);
-          gfx::Point screen_loc = content::ConvertPointToDIP(rvh->GetView(),
+          gfx::Point screen_loc = ConvertPointToDIP(rvh->GetView(),
               screen_loc_in_pixel);
           gfx::Point client_loc = screen_loc;
           aura::Window* window = rvh->GetView()->GetNativeView();
@@ -96,9 +95,9 @@ class WebDragSourceAura : public MessageLoopForUI::Observer,
   }
 
   virtual void Observe(int type,
-      const content::NotificationSource& source,
-      const content::NotificationDetails& details) OVERRIDE {
-    if (type != content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED)
+      const NotificationSource& source,
+      const NotificationDetails& details) OVERRIDE {
+    if (type != NOTIFICATION_WEB_CONTENTS_DISCONNECTED)
       return;
 
     // Cancel the drag if it is still in progress.
@@ -116,7 +115,7 @@ class WebDragSourceAura : public MessageLoopForUI::Observer,
  private:
   aura::Window* window_;
   WebContentsImpl* contents_;
-  content::NotificationRegistrar registrar_;
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDragSourceAura);
 };
@@ -237,7 +236,7 @@ int ConvertAuraEventFlagsToWebInputEventModifiers(int aura_event_flags) {
 
 WebContentsViewAura::WebContentsViewAura(
     WebContentsImpl* web_contents,
-    content::WebContentsViewDelegate* delegate)
+    WebContentsViewDelegate* delegate)
     : web_contents_(web_contents),
       view_(NULL),
       delegate_(delegate),
@@ -258,7 +257,7 @@ WebContentsViewAura::~WebContentsViewAura() {
 void WebContentsViewAura::SizeChangedCommon(const gfx::Size& size) {
   if (web_contents_->GetInterstitialPage())
     web_contents_->GetInterstitialPage()->SetSize(size);
-  content::RenderWidgetHostView* rwhv =
+  RenderWidgetHostView* rwhv =
       web_contents_->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->SetSize(size);
@@ -269,7 +268,7 @@ void WebContentsViewAura::EndDrag(WebKit::WebDragOperationsMask ops) {
   gfx::Point screen_loc =
       gfx::Screen::GetScreenFor(GetNativeView())->GetCursorScreenPoint();
   gfx::Point client_loc = screen_loc;
-  content::RenderViewHost* rvh = web_contents_->GetRenderViewHost();
+  RenderViewHost* rvh = web_contents_->GetRenderViewHost();
   aura::Window* window = rvh->GetView()->GetNativeView();
   aura::Window::ConvertPointToTarget(root_window, window, &client_loc);
   rvh->DragSourceEndedAt(client_loc.x(), client_loc.y(), screen_loc.x(),
@@ -300,8 +299,8 @@ void WebContentsViewAura::CreateView(const gfx::Size& initial_size) {
     drag_dest_delegate_ = delegate_->GetDragDestDelegate();
 }
 
-content::RenderWidgetHostView* WebContentsViewAura::CreateViewForWidget(
-    content::RenderWidgetHost* render_widget_host) {
+RenderWidgetHostView* WebContentsViewAura::CreateViewForWidget(
+    RenderWidgetHost* render_widget_host) {
   if (render_widget_host->GetView()) {
     // During testing, the view will already be set up in most cases to the
     // test view, so we don't want to clobber it with a real one. To verify that
@@ -312,7 +311,7 @@ content::RenderWidgetHostView* WebContentsViewAura::CreateViewForWidget(
     return render_widget_host->GetView();
   }
 
-  view_ = content::RenderWidgetHostView::CreateViewForWidget(
+  view_ = RenderWidgetHostView::CreateViewForWidget(
       render_widget_host);
   view_->InitAsChild(NULL);
   GetNativeView()->AddChild(view_->GetNativeView());
@@ -364,7 +363,7 @@ void WebContentsViewAura::SizeContents(const gfx::Size& size) {
   }
 }
 
-void WebContentsViewAura::RenderViewCreated(content::RenderViewHost* host) {
+void WebContentsViewAura::RenderViewCreated(RenderViewHost* host) {
 }
 
 void WebContentsViewAura::Focus() {
@@ -376,8 +375,7 @@ void WebContentsViewAura::Focus() {
   if (delegate_.get() && delegate_->Focus())
     return;
 
-  content::RenderWidgetHostView* rwhv =
-      web_contents_->GetRenderWidgetHostView();
+  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->Focus();
 }
@@ -418,8 +416,8 @@ gfx::Rect WebContentsViewAura::GetViewBounds() const {
 // WebContentsViewAura, RenderViewHostDelegateView implementation:
 
 void WebContentsViewAura::ShowContextMenu(
-    const content::ContextMenuParams& params,
-    content::ContextMenuSourceType type) {
+    const ContextMenuParams& params,
+    ContextMenuSourceType type) {
   if (delegate_.get())
     delegate_->ShowContextMenu(params, type);
 }
@@ -689,3 +687,5 @@ int WebContentsViewAura::OnPerformDrop(const ui::DropTargetEvent& event) {
     drag_dest_delegate_->OnDrop();
   return current_drag_op_;
 }
+
+}  // namespace content

@@ -28,6 +28,7 @@
 #include "content/public/common/url_constants.h"
 
 using content::NavigationController;
+using content::NavigationControllerImpl;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::RenderProcessHost;

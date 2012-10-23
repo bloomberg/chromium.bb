@@ -12,11 +12,10 @@
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/render_view_host_observer.h"
 
-class WebContentsImpl;
-
 namespace content {
 
 class DevToolsFrontendHostDelegate;
+class WebContentsImpl;
 
 // This class handles messages from DevToolsClient and calls corresponding
 // methods on DevToolsFrontendHostDelegate which is implemented by the

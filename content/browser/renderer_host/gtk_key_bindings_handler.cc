@@ -12,6 +12,8 @@
 #include "base/string_util.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 
+using content::EditCommand;
+using content::EditCommands;
 using content::NativeWebKeyboardEvent;
 
 GtkKeyBindingsHandler::GtkKeyBindingsHandler(GtkWidget* parent_widget)

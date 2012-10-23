@@ -121,7 +121,7 @@ class RenderWidgetHostViewMacEditCommandHelper;
   // Contains edit commands received by the -doCommandBySelector: method when
   // handling a key down event, not including inserting commands, eg. insertTab,
   // etc.
-  EditCommands editCommands_;
+  content::EditCommands editCommands_;
 
   // The plugin that currently has focus (-1 if no plugin has focus).
   int focusedPluginIdentifier_;

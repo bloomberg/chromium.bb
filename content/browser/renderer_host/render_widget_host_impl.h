@@ -28,7 +28,6 @@
 
 class MockRenderWidgetHost;
 class WebCursor;
-struct EditCommand;
 struct ViewHostMsg_UpdateRect_Params;
 struct ViewHostMsg_TextInputState_Params;
 struct ViewHostMsg_BeginSmoothScroll_Params;
@@ -57,6 +56,7 @@ class WebLayer;
 
 namespace content {
 class BackingStore;
+struct EditCommand;
 class GestureEventFilter;
 class RenderWidgetHostDelegate;
 class RenderWidgetHostViewPort;

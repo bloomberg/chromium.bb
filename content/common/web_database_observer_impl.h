@@ -10,6 +10,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabaseObserver.h"
 #include "webkit/database/database_connections.h"
 
+namespace content {
+
 class WebDatabaseObserverImpl : public WebKit::WebDatabaseObserver {
  public:
   explicit WebDatabaseObserverImpl(IPC::SyncMessageFilter* sender);
@@ -45,5 +47,7 @@ class WebDatabaseObserverImpl : public WebKit::WebDatabaseObserver {
   scoped_refptr<IPC::SyncMessageFilter> sender_;
   scoped_refptr<webkit_database::DatabaseConnectionsWrapper> open_connections_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_WEB_DATABASE_OBSERVER_IMPL_H_

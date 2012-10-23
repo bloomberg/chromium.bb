@@ -19,12 +19,12 @@
 
 @class FocusTracker;
 class SkBitmap;
-class WebContentsImpl;
 class WebContentsViewMac;
 @class WebDragDest;
 @class WebDragSource;
 
 namespace content {
+class WebContentsImpl;
 class WebContentsViewDelegate;
 }
 
@@ -44,7 +44,7 @@ class Point;
 
 // Expose this, since sometimes one needs both the NSView and the
 // WebContentsImpl.
-- (WebContentsImpl*)webContents;
+- (content::WebContentsImpl*)webContents;
 @end
 
 // Mac-specific implementation of the WebContentsView. It owns an NSView that
@@ -56,7 +56,7 @@ class WebContentsViewMac
   // The corresponding WebContentsImpl is passed in the constructor, and manages
   // our lifetime. This doesn't need to be the case, but is this way currently
   // because that's what was easiest when they were split.
-  WebContentsViewMac(WebContentsImpl* web_contents,
+  WebContentsViewMac(content::WebContentsImpl* web_contents,
                      content::WebContentsViewDelegate* delegate);
   virtual ~WebContentsViewMac();
 
@@ -106,12 +106,12 @@ class WebContentsViewMac
   // CloseTabAfterEventTracking() implementation.
   void CloseTab();
 
-  WebContentsImpl* web_contents() { return web_contents_; }
+  content::WebContentsImpl* web_contents() { return web_contents_; }
   content::WebContentsViewDelegate* delegate() { return delegate_.get(); }
 
  private:
   // The WebContentsImpl whose contents we display.
-  WebContentsImpl* web_contents_;
+  content::WebContentsImpl* web_contents_;
 
   // The Cocoa NSView that lives in the view hierarchy.
   scoped_nsobject<WebContentsViewCocoa> cocoa_view_;

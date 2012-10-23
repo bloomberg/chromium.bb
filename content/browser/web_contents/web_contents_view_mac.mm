@@ -34,6 +34,7 @@ using content::PopupMenuHelper;
 using content::RenderWidgetHostView;
 using content::RenderWidgetHostViewMac;
 using content::WebContents;
+using content::WebContentsImpl;
 
 // Ensure that the WebKit::WebDragOperation enum values stay in sync with
 // NSDragOperation constants, since the code below static_casts between 'em.

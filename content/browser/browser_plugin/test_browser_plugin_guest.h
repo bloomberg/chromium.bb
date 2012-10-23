@@ -11,12 +11,11 @@
 #include "content/public/test/test_utils.h"
 #include "ui/gfx/size.h"
 
-class WebContentsImpl;
-
 namespace content {
 
 class RenderProcessHost;
 class RenderViewHost;
+class WebContentsImpl;
 
 // Test class for BrowserPluginGuest.
 //

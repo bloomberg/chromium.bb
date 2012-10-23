@@ -22,7 +22,6 @@
 
 class GURL;
 class SkBitmap;
-class WebContentsImpl;
 class WebKeyboardEvent;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
@@ -59,6 +58,7 @@ class RenderViewHost;
 class RenderViewHostDelegateView;
 class SessionStorageNamespace;
 class WebContents;
+class WebContentsImpl;
 struct ContextMenuParams;
 struct FileChooserParams;
 struct GlobalRequestID;

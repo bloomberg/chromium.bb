@@ -37,7 +37,6 @@
 
 class ResourceHandler;
 class SaveFileManager;
-class WebContentsImpl;
 struct ResourceHostMsg_Request;
 struct ViewMsg_SwapOut_Params;
 
@@ -54,6 +53,7 @@ class ResourceContext;
 class ResourceDispatcherHostDelegate;
 class ResourceMessageFilter;
 class ResourceRequestInfoImpl;
+class WebContentsImpl;
 struct DownloadSaveInfo;
 struct GlobalRequestID;
 struct Referrer;

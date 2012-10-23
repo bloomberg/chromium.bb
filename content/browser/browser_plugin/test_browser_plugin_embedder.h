@@ -9,12 +9,11 @@
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
 #include "content/public/test/test_utils.h"
 
-class WebContentsImpl;
-
 namespace content {
 
 class BrowserPluginGuest;
 class RenderViewHost;
+class WebContentsImpl;
 
 // Test class for BrowserPluginEmbedder.
 //

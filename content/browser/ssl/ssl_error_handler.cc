@@ -15,6 +15,7 @@
 #include "net/url_request/url_request.h"
 
 using content::BrowserThread;
+using content::NavigationControllerImpl;
 using content::RenderViewHostImpl;
 using content::WebContents;
 using net::SSLInfo;

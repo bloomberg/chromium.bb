@@ -13,6 +13,7 @@
 
 using WebKit::WebDatabase;
 
+namespace content {
 namespace {
 
 const int kResultHistogramSize = 50;
@@ -164,3 +165,5 @@ void WebDatabaseObserverImpl::HandleSqliteError(
         error));
   }
 }
+
+}  // namespace content

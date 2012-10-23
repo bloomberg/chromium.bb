@@ -13,25 +13,24 @@
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
+namespace content {
 
-class MockWebContentsDelegate : public content::WebContentsDelegate {
+class MockWebContentsDelegate : public WebContentsDelegate {
  public:
   virtual ~MockWebContentsDelegate() {}
 };
 
-class WebContentsDelegateTest :
-    public content::RenderViewHostImplTestHarness {
+class WebContentsDelegateTest : public RenderViewHostImplTestHarness {
  public:
   WebContentsDelegateTest()
       : file_user_blocking_thread_(
-            content::BrowserThread::FILE_USER_BLOCKING, &message_loop_),
-        io_thread_(content::BrowserThread::IO, &message_loop_) {
+            BrowserThread::FILE_USER_BLOCKING, &message_loop_),
+        io_thread_(BrowserThread::IO, &message_loop_) {
   }
 
  private:
-  content::TestBrowserThread file_user_blocking_thread_;
-  content::TestBrowserThread io_thread_;
+  TestBrowserThread file_user_blocking_thread_;
+  TestBrowserThread io_thread_;
 };
 
 TEST_F(WebContentsDelegateTest, UnregisterInDestructor) {
@@ -80,4 +79,4 @@ TEST_F(WebContentsDelegateTest, UnregisterInDestructor) {
   contents_b.reset();
 }
 
-}  // namespace
+}  // namespace content

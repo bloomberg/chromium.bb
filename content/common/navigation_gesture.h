@@ -5,6 +5,8 @@
 #ifndef CONTENT_COMMON_NAVIGATION_GESTURE_H_
 #define CONTENT_COMMON_NAVIGATION_GESTURE_H_
 
+namespace content {
+
 enum NavigationGesture {
   // User initiated navigation/load.
   NavigationGestureUser,
@@ -15,5 +17,7 @@ enum NavigationGesture {
   // Initial state.
   NavigationGestureUnknown,
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_NAVIGATION_GESTURE_H_

@@ -22,7 +22,6 @@
 #include "ui/gfx/native_widget_types.h"
 
 class SkBitmap;
-class WebDatabaseObserverImpl;
 struct ViewMsg_New_Params;
 
 namespace WebKit {
@@ -67,6 +66,7 @@ class P2PSocketDispatcher;
 class RendererWebKitPlatformSupportImpl;
 class RenderProcessObserver;
 class VideoCaptureImplManager;
+class WebDatabaseObserverImpl;
 class WebGraphicsContext3DCommandBufferImpl;
 
 namespace old {

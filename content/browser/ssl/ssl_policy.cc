@@ -26,6 +26,7 @@
 using content::NavigationEntryImpl;
 using content::SiteInstance;
 using content::SSLStatus;
+using content::WebContentsImpl;
 
 namespace {
 

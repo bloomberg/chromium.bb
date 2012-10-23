@@ -19,12 +19,6 @@
 #include "ui/base/win/hwnd_subclass.h"
 #include "ui/gfx/screen.h"
 
-using content::RenderViewHost;
-using content::RenderWidgetHostView;
-using content::RenderWidgetHostViewWin;
-using content::WebContents;
-using content::WebContentsViewDelegate;
-
 namespace content {
 WebContentsView* CreateWebContentsView(
     WebContentsImpl* web_contents,
@@ -33,7 +27,6 @@ WebContentsView* CreateWebContentsView(
   WebContentsViewWin* rv = new WebContentsViewWin(web_contents, delegate);
   *render_view_host_delegate_view = rv;
   return rv;
-}
 }
 
 namespace {
@@ -120,14 +113,14 @@ void WebContentsViewWin::CreateView(const gfx::Size& initial_size) {
   RevokeDragDrop(GetNativeView());
   drag_dest_ = new WebDragDest(hwnd(), web_contents_);
   if (delegate_.get()) {
-    content::WebDragDestDelegate* delegate = delegate_->GetDragDestDelegate();
+    WebDragDestDelegate* delegate = delegate_->GetDragDestDelegate();
     if (delegate)
       drag_dest_->set_delegate(delegate);
   }
 }
 
 RenderWidgetHostView* WebContentsViewWin::CreateViewForWidget(
-    content::RenderWidgetHost* render_widget_host)  {
+    RenderWidgetHost* render_widget_host)  {
   if (render_widget_host->GetView()) {
     // During testing, the view will already be set up in most cases to the
     // test view, so we don't want to clobber it with a real one. To verify that
@@ -250,8 +243,8 @@ gfx::Rect WebContentsViewWin::GetViewBounds() const {
 }
 
 void WebContentsViewWin::ShowContextMenu(
-    const content::ContextMenuParams& params,
-    content::ContextMenuSourceType type) {
+    const ContextMenuParams& params,
+    ContextMenuSourceType type) {
   if (delegate_.get())
     delegate_->ShowContextMenu(params, type);
 }
@@ -483,3 +476,5 @@ LRESULT WebContentsViewWin::OnSize(
 
   return 1;
 }
+
+}  // namespace content

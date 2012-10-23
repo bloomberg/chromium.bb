@@ -102,7 +102,7 @@ void PromiseWriterHelper(const WebDropData& drop_data,
 
 @implementation WebDragSource
 
-- (id)initWithContents:(WebContentsImpl*)contents
+- (id)initWithContents:(content::WebContentsImpl*)contents
                   view:(NSView*)contentsView
               dropData:(const WebDropData*)dropData
                  image:(NSImage*)image

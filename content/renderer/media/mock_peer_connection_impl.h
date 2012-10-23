@@ -34,7 +34,8 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
   virtual bool SendDtmf(const webrtc::AudioTrackInterface* send_track,
                         const std::string& tones, int duration,
                         const webrtc::AudioTrackInterface* play_track) OVERRIDE;
-  virtual void RemoveStream(webrtc::MediaStreamInterface* local_stream) OVERRIDE;
+  virtual void RemoveStream(
+      webrtc::MediaStreamInterface* local_stream) OVERRIDE;
   virtual ReadyState ready_state() OVERRIDE;
   virtual bool StartIce(IceOptions options) OVERRIDE;
 

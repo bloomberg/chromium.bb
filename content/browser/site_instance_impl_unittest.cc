@@ -36,6 +36,7 @@ using content::MockRenderProcessHostFactory;
 using content::NavigationEntry;
 using content::NavigationEntryImpl;
 using content::SiteInstance;
+using content::WebContentsImpl;
 using content::WebUI;
 using content::WebUIController;
 

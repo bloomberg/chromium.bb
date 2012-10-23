@@ -16,25 +16,24 @@
 
 class WebDragDest;
 class WebContentsDragWin;
-class WebContentsImpl;
-
-namespace content {
-class RenderWidgetHostViewWin;
-class WebContentsViewDelegate;
-}
 
 namespace ui {
 class HWNDMessageFilter;
 }
 
+namespace content {
+class RenderWidgetHostViewWin;
+class WebContentsViewDelegate;
+class WebContentsImpl;
+
 // An implementation of WebContentsView for Windows.
 class CONTENT_EXPORT WebContentsViewWin
-    : public content::WebContentsView,
-      public content::RenderViewHostDelegateView,
+    : public WebContentsView,
+      public RenderViewHostDelegateView,
       public ui::WindowImpl {
  public:
   WebContentsViewWin(WebContentsImpl* web_contents,
-                     content::WebContentsViewDelegate* delegate);
+                     WebContentsViewDelegate* delegate);
   virtual ~WebContentsViewWin();
 
   BEGIN_MSG_MAP_EX(WebContentsViewWin)
@@ -56,8 +55,8 @@ class CONTENT_EXPORT WebContentsViewWin
 
   // Overridden from WebContentsView:
   virtual void CreateView(const gfx::Size& initial_size) OVERRIDE;
-  virtual content::RenderWidgetHostView* CreateViewForWidget(
-      content::RenderWidgetHost* render_widget_host) OVERRIDE;
+  virtual RenderWidgetHostView* CreateViewForWidget(
+      RenderWidgetHost* render_widget_host) OVERRIDE;
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeView GetContentNativeView() const OVERRIDE;
   virtual gfx::NativeWindow GetTopLevelNativeWindow() const OVERRIDE;
@@ -66,7 +65,7 @@ class CONTENT_EXPORT WebContentsViewWin
   virtual void OnTabCrashed(base::TerminationStatus status,
                             int error_code) OVERRIDE;
   virtual void SizeContents(const gfx::Size& size) OVERRIDE;
-  virtual void RenderViewCreated(content::RenderViewHost* host) OVERRIDE;
+  virtual void RenderViewCreated(RenderViewHost* host) OVERRIDE;
   virtual void Focus() OVERRIDE;
   virtual void SetInitialFocus() OVERRIDE;
   virtual void StoreFocus() OVERRIDE;
@@ -78,8 +77,8 @@ class CONTENT_EXPORT WebContentsViewWin
 
   // Implementation of RenderViewHostDelegateView.
   virtual void ShowContextMenu(
-      const content::ContextMenuParams& params,
-      content::ContextMenuSourceType type) OVERRIDE;
+      const ContextMenuParams& params,
+      ContextMenuSourceType type) OVERRIDE;
   virtual void ShowPopupMenu(const gfx::Rect& bounds,
                              int item_height,
                              double item_font_size,
@@ -127,9 +126,9 @@ class CONTENT_EXPORT WebContentsViewWin
   // The WebContentsImpl whose contents we display.
   WebContentsImpl* web_contents_;
 
-  content::RenderWidgetHostViewWin* view_;
+  RenderWidgetHostViewWin* view_;
 
-  scoped_ptr<content::WebContentsViewDelegate> delegate_;
+  scoped_ptr<WebContentsViewDelegate> delegate_;
 
   // The helper object that handles drag destination related interactions with
   // Windows.
@@ -142,5 +141,7 @@ class CONTENT_EXPORT WebContentsViewWin
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewWin);
 };
+
+} // namespace content
 
 #endif  // CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_WIN_H_

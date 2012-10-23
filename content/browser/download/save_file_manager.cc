@@ -25,6 +25,7 @@
 using content::BrowserThread;
 using content::RenderViewHostImpl;
 using content::ResourceDispatcherHostImpl;
+using content::WebContentsImpl;
 
 SaveFileManager::SaveFileManager()
     : next_id_(0) {
