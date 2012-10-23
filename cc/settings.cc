@@ -24,7 +24,7 @@ void reset()
 
     s_perTilePaintingEnabled = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kEnablePerTilePainting);
     s_partialSwapEnabled = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kEnablePartialSwap);
-    s_acceleratedAnimationEnabled = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kDisableThreadedAnimation);
+    s_acceleratedAnimationEnabled = !CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kDisableThreadedAnimation);
     s_pageScalePinchZoomEnabled = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kEnablePinchInCompositor);
     s_jankInsteadOfCheckerboard = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kJankInsteadOfCheckerboard);
     s_backgroundColorInsteadOfCheckerboard = CommandLine::ForCurrentProcess()->HasSwitch(cc::switches::kBackgroundColorInsteadOfCheckerboard);
