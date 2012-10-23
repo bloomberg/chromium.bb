@@ -350,6 +350,7 @@ extern const char kUseSpellingService[];
 extern const char kMaxSpdySessionsPerDomain[];
 extern const char kMaxSpdyConcurrentStreams[];
 extern const char kUserDataDir[];
+extern const char kUseWebBasedSigninFlow[];
 extern const char kVariationsServerURL[];
 extern const char kVersion[];
 extern const char kVisitURLs[];

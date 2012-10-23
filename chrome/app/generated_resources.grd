@@ -14607,12 +14607,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
       Dark Theme
     </message>
 
-    <message name="IDS_FLAGS_ENABLE_CLIENT_OAUTH_SIGNIN_NAME" desc="Name of about:flag option to turn on ClientOAuth sign in">
-      Enable ClientOAuth signin
+    <message name="IDS_FLAGS_USE_WEB_BASED_SIGNIN_FLOW_NAME" desc="Name of about:flag option to turn on web-based sign in">
+      Enable GAIA web-based signin
     </message>
-    <message name="IDS_FLAGS_ENABLE_CLIENT_OAUTH_SIGNIN_DESCRIPTION" desc="Description of about:flag option to turn on ClientOAuth sign in">
-      When enabled, will use ClientOAuth to connect a profile to a Google account.  Otherwise ClientLogin is used.
-      ClientOAuth permits using verification codes instead of ASPs during authentication.
+    <message name="IDS_FLAGS_USE_WEB_BASED_SIGNIN_FLOW_DESCRIPTION" desc="Description of about:flag option to turn on web-based sign in">
+      When enabled, will use a GAIA web-based sign in flow to connect a profile to a Google account.  Otherwise ClientLogin is used.
+      The web-based flow permits using verification codes instead of ASPs during authentication.
     </message>
 
     <!-- Toast experiment. -->

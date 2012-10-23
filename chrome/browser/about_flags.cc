@@ -785,6 +785,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableTouchpadThreeFingerClick)
   },
 #endif
+  {
+    "use-web-based-signin-flow",
+    IDS_FLAGS_USE_WEB_BASED_SIGNIN_FLOW_NAME,
+    IDS_FLAGS_USE_WEB_BASED_SIGNIN_FLOW_DESCRIPTION,
+    kOsMac | kOsWin | kOsLinux,
+    SINGLE_VALUE_TYPE(switches::kUseWebBasedSigninFlow)
+  },
 #if defined(USE_ASH)
   {
     "show-launcher-alignment-menu",
