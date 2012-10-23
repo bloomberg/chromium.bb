@@ -170,6 +170,15 @@ class HostProcess
     return true;
   }
 
+  // Crashes the process in response to a daemon's request. The daemon passes
+  // the location of the code that detected the fatal error resulted in this
+  // request.
+  void OnCrash(const std::string& function_name,
+               const std::string& file_name,
+               const int& line_number) {
+    CHECK(false);
+  }
+
 #else  // !defined(REMOTING_MULTI_PROCESS)
 
   bool InitWithCommandLine(const CommandLine* cmd_line) {
@@ -296,6 +305,8 @@ class HostProcess
 #if defined(REMOTING_MULTI_PROCESS)
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(HostProcess, message)
+      IPC_MESSAGE_HANDLER(ChromotingDaemonNetworkMsg_Crash,
+                          OnCrash)
       IPC_MESSAGE_HANDLER(ChromotingDaemonNetworkMsg_Configuration,
                           OnConfigUpdated)
       IPC_MESSAGE_FORWARD(ChromotingDaemonNetworkMsg_TerminalDisconnected,

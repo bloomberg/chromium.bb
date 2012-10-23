@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "ipc/ipc_channel.h"
@@ -69,11 +70,14 @@ class DaemonProcess
                 scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
                 const base::Closure& stopped_callback);
 
-  // Reads the host configuration and launches the network process.
-  void Initialize();
-
   // Creates a desktop session and assigns a unique ID to it.
   void CreateDesktopSession(int terminal_id);
+
+  // Requests the network process to crash.
+  void CrashNetworkProcess(const tracked_objects::Location& location);
+
+  // Reads the host configuration and launches the network process.
+  void Initialize();
 
   // Returns true if |terminal_id| is considered to be known. I.e. it is
   // less or equal to the highest ID we have seen so far.
@@ -88,9 +92,6 @@ class DaemonProcess
 
   // Launches the network process and establishes an IPC channel with it.
   virtual void LaunchNetworkProcess() = 0;
-
-  // Restart the network process.
-  virtual void RestartNetworkProcess() = 0;
 
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner() {
     return caller_task_runner_;

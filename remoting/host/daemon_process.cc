@@ -78,7 +78,7 @@ void DaemonProcess::CloseDesktopSession(int terminal_id) {
   // a protocol error and the network process will be restarted.
   if (!IsTerminalIdKnown(terminal_id)) {
     LOG(ERROR) << "An invalid terminal ID. terminal_id=" << terminal_id;
-    RestartNetworkProcess();
+    CrashNetworkProcess(FROM_HERE);
     DeleteAllDesktopSessions();
     return;
   }
@@ -115,6 +115,35 @@ DaemonProcess::DaemonProcess(
   DCHECK(caller_task_runner->BelongsToCurrentThread());
 }
 
+bool DaemonProcess::IsTerminalIdKnown(int terminal_id) {
+  return terminal_id < next_terminal_id_;
+}
+
+void DaemonProcess::CreateDesktopSession(int terminal_id) {
+  DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  // Validate the supplied terminal ID. An attempt to create a desktop session
+  // with an ID that could possibly have been allocated already is considered
+  // a protocol error and the network process will be restarted.
+  if (IsTerminalIdKnown(terminal_id)) {
+    LOG(ERROR) << "An invalid terminal ID. terminal_id=" << terminal_id;
+    CrashNetworkProcess(FROM_HERE);
+    DeleteAllDesktopSessions();
+    return;
+  }
+
+  VLOG(1) << "Daemon: opened desktop session " << terminal_id;
+  desktop_sessions_.push_back(
+      DoCreateDesktopSession(terminal_id).release());
+  next_terminal_id_ = std::max(next_terminal_id_, terminal_id + 1);
+}
+
+void DaemonProcess::CrashNetworkProcess(
+    const tracked_objects::Location& location) {
+  SendToNetwork(new ChromotingDaemonNetworkMsg_Crash(
+      location.function_name(), location.file_name(), location.line_number()));
+}
+
 void DaemonProcess::Initialize() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
@@ -134,29 +163,6 @@ void DaemonProcess::Initialize() {
 
   // Launch the process.
   LaunchNetworkProcess();
-}
-
-bool DaemonProcess::IsTerminalIdKnown(int terminal_id) {
-  return terminal_id < next_terminal_id_;
-}
-
-void DaemonProcess::CreateDesktopSession(int terminal_id) {
-  DCHECK(caller_task_runner()->BelongsToCurrentThread());
-
-  // Validate the supplied terminal ID. An attempt to create a desktop session
-  // with an ID that could possibly have been allocated already is considered
-  // a protocol error and the network process will be restarted.
-  if (IsTerminalIdKnown(terminal_id)) {
-    LOG(ERROR) << "An invalid terminal ID. terminal_id=" << terminal_id;
-    RestartNetworkProcess();
-    DeleteAllDesktopSessions();
-    return;
-  }
-
-  VLOG(1) << "Daemon: opened desktop session " << terminal_id;
-  desktop_sessions_.push_back(
-      DoCreateDesktopSession(terminal_id).release());
-  next_terminal_id_ = std::max(next_terminal_id_, terminal_id + 1);
 }
 
 void DaemonProcess::DoStop() {

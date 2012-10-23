@@ -25,6 +25,7 @@ namespace remoting {
 namespace {
 
 enum Messages {
+  kMessageCrash = ChromotingDaemonNetworkMsg_Crash::ID,
   kMessageConfiguration = ChromotingDaemonNetworkMsg_Configuration::ID,
   kMessageConnectTerminal = ChromotingNetworkHostMsg_ConnectTerminal::ID,
   kMessageDisconnectTerminal = ChromotingNetworkHostMsg_DisconnectTerminal::ID,
@@ -61,7 +62,6 @@ class MockDaemonProcess : public DaemonProcess {
 
   MOCK_METHOD1(DoCreateDesktopSessionPtr, DesktopSession*(int));
   MOCK_METHOD0(LaunchNetworkProcess, void());
-  MOCK_METHOD0(RestartNetworkProcess, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDaemonProcess);
@@ -270,8 +270,9 @@ TEST_F(DaemonProcessTest, InvalidDisconnectTerminal) {
   InSequence s;
   EXPECT_CALL(*daemon_process_, Sent(Message(kMessageConfiguration)));
   EXPECT_CALL(*daemon_process_, Received(Message(kMessageDisconnectTerminal)));
-  EXPECT_CALL(*daemon_process_, RestartNetworkProcess())
-      .WillRepeatedly(Invoke(this, &DaemonProcessTest::LaunchNetworkProcess));
+  EXPECT_CALL(*daemon_process_, Sent(Message(kMessageCrash)))
+      .WillOnce(InvokeWithoutArgs(this,
+                                  &DaemonProcessTest::LaunchNetworkProcess));
   EXPECT_CALL(*daemon_process_, Sent(Message(kMessageConfiguration)));
 
   StartDaemonProcess();
@@ -291,8 +292,9 @@ TEST_F(DaemonProcessTest, InvalidConnectTerminal) {
   EXPECT_CALL(*daemon_process_, Sent(Message(kMessageConfiguration)));
   EXPECT_CALL(*daemon_process_, Received(Message(kMessageConnectTerminal)));
   EXPECT_CALL(*daemon_process_, Received(Message(kMessageConnectTerminal)));
-  EXPECT_CALL(*daemon_process_, RestartNetworkProcess())
-      .WillRepeatedly(Invoke(this, &DaemonProcessTest::LaunchNetworkProcess));
+  EXPECT_CALL(*daemon_process_, Sent(Message(kMessageCrash)))
+      .WillOnce(InvokeWithoutArgs(this,
+                                  &DaemonProcessTest::LaunchNetworkProcess));
   EXPECT_CALL(*daemon_process_, Sent(Message(kMessageConfiguration)));
 
   StartDaemonProcess();

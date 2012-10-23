@@ -53,7 +53,6 @@ class DaemonProcessWin : public DaemonProcess {
   virtual scoped_ptr<DesktopSession> DoCreateDesktopSession(
       int terminal_id) OVERRIDE;
   virtual void LaunchNetworkProcess() OVERRIDE;
-  virtual void RestartNetworkProcess() OVERRIDE;
 
  private:
   scoped_ptr<WorkerProcessLauncher> network_launcher_;
@@ -115,13 +114,6 @@ void DaemonProcessWin::LaunchNetworkProcess() {
                                       host_binary));
   network_launcher_.reset(new WorkerProcessLauncher(
       caller_task_runner(), delegate.Pass(), this));
-}
-
-void DaemonProcessWin::RestartNetworkProcess() {
-  DCHECK(caller_task_runner()->BelongsToCurrentThread());
-
-  network_launcher_.reset();
-  LaunchNetworkProcess();
 }
 
 scoped_ptr<DaemonProcess> DaemonProcess::Create(
