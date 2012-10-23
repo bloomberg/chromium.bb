@@ -137,8 +137,8 @@ void SessionStateController::StartLockAnimationAndLockImmediately() {
   OnLockTimeout();
 }
 
-void SessionStateController::StartLockAnimation() {
-  shutdown_after_lock_ = true;
+void SessionStateController::StartLockAnimation(bool shutdown_after_lock) {
+  shutdown_after_lock_ = shutdown_after_lock;
 
   animator_->ShowBlackLayer();
   animator_->StartAnimation(

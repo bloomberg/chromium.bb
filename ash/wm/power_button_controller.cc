@@ -62,7 +62,7 @@ void PowerButtonController::OnPowerButtonEvent(
         return;
 
       if (controller_->IsEligibleForLock())
-        controller_->StartLockAnimation();
+        controller_->StartLockAnimation(true);
       else
         controller_->StartShutdownAnimation();
     } else {  // Button is up.
@@ -92,7 +92,7 @@ void PowerButtonController::OnLockButtonEvent(
     return;
 
   if (down)
-    controller_->StartLockAnimation();
+    controller_->StartLockAnimation(false);
   else
     controller_->CancelLockWithOtherAnimation();
 }

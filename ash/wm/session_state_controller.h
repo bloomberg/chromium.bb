@@ -153,8 +153,9 @@ class ASH_EXPORT SessionStateController : public aura::RootWindowObserver,
 
   // Starts locking (with slow animation) that can be cancelled.
   // After locking and |kLockToShutdownTimeoutMs| StartShutdownAnimation()
-  // will be called unless CancelShutdown() is called.
-  virtual void StartLockAnimation();
+  // will be called unless CancelShutdown() is called, if |shutdown_after_lock|
+  // is true.
+  virtual void StartLockAnimation(bool shutdown_after_lock);
 
   // Starts shutting down (with slow animation) that can be cancelled.
   virtual void StartShutdownAnimation();
