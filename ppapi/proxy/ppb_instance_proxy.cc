@@ -585,10 +585,16 @@ void PPB_Instance_Proxy::DecoderResetDone(PP_Instance instance,
 void PPB_Instance_Proxy::DeliverFrame(PP_Instance instance,
                                       PP_Resource decrypted_frame,
                                       const PP_DecryptedFrameInfo* frame_info) {
-  Resource* object =
-      PpapiGlobals::Get()->GetResourceTracker()->GetResource(decrypted_frame);
-  if (!object || object->pp_instance() != instance)
-    return;
+  PP_Resource host_resource = 0;
+  if (decrypted_frame != 0) {
+    ResourceTracker* tracker = PpapiGlobals::Get()->GetResourceTracker();
+    Resource* object = tracker->GetResource(decrypted_frame);
+
+    if (!object || object->pp_instance() != instance)
+      return;
+
+    host_resource = object->host_resource().host_resource();
+  }
 
   std::string serialized_block_info;
   if (!SerializeBlockInfo(*frame_info, &serialized_block_info))
@@ -597,19 +603,25 @@ void PPB_Instance_Proxy::DeliverFrame(PP_Instance instance,
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_DeliverFrame(
           API_ID_PPB_INSTANCE,
           instance,
-          object->host_resource().host_resource(),
+          host_resource,
           serialized_block_info));
 }
 
 // TODO(tomfinegan): Handle null audio_frames after landing other patches.
 void PPB_Instance_Proxy::DeliverSamples(
     PP_Instance instance,
-    PP_Resource audio_frames,
+    PP_Resource decrypted_samples,
     const PP_DecryptedBlockInfo* block_info) {
-  Resource* object =
-      PpapiGlobals::Get()->GetResourceTracker()->GetResource(audio_frames);
-  if (!object || object->pp_instance() != instance)
-    return;
+  PP_Resource host_resource = 0;
+  if (decrypted_samples != 0) {
+    ResourceTracker* tracker = PpapiGlobals::Get()->GetResourceTracker();
+    Resource* object = tracker->GetResource(decrypted_samples);
+
+    if (!object || object->pp_instance() != instance)
+      return;
+
+    host_resource = object->host_resource().host_resource();
+  }
 
   std::string serialized_block_info;
   if (!SerializeBlockInfo(*block_info, &serialized_block_info))
@@ -619,7 +631,7 @@ void PPB_Instance_Proxy::DeliverSamples(
       new PpapiHostMsg_PPBInstance_DeliverSamples(
           API_ID_PPB_INSTANCE,
           instance,
-          object->host_resource().host_resource(),
+          host_resource,
           serialized_block_info));
 }
 #endif  // !defined(OS_NACL)

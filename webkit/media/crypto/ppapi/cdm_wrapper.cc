@@ -23,8 +23,8 @@
 #include "ppapi/cpp/dev/buffer_dev.h"
 #include "ppapi/cpp/private/content_decryptor_private.h"
 #include "ppapi/utility/completion_callback_factory.h"
-#include "webkit/media/crypto/ppapi/linked_ptr.h"
 #include "webkit/media/crypto/ppapi/content_decryption_module.h"
+#include "webkit/media/crypto/ppapi/linked_ptr.h"
 
 namespace {
 
@@ -134,6 +134,19 @@ cdm::VideoFormat PpDecryptedFrameFormatToCdmVideoFormat(
     return cdm::kEmptyVideoFrame;
 
   return cdm::kUnknownVideoFormat;
+}
+
+cdm::StreamType PpDecryptorStreamTypeToCdmStreamType(
+    PP_DecryptorStreamType stream_type) {
+  switch (stream_type) {
+    case PP_DECRYPTORSTREAMTYPE_AUDIO:
+      return cdm::kStreamTypeAudio;
+    case PP_DECRYPTORSTREAMTYPE_VIDEO:
+      return cdm::kStreamTypeVideo;
+  }
+
+  PP_NOTREACHED();
+  return cdm::kStreamTypeVideo;
 }
 
 }  // namespace
@@ -495,6 +508,7 @@ PpbBufferAllocator::~PpbBufferAllocator() {
 
 cdm::Buffer* PpbBufferAllocator::Allocate(int32_t size) {
   PP_DCHECK(size > 0);
+  PP_DCHECK(IsMainThread());
 
   pp::Buffer_Dev buffer(instance_, size);
   if (buffer.is_null())
@@ -657,8 +671,7 @@ void CdmWrapper::InitializeVideoDecoder(
 
 void CdmWrapper::DeinitializeDecoder(PP_DecryptorStreamType decoder_type,
                                      uint32_t request_id) {
-  // TODO(tomfinegan): Implement DeinitializeDecoder in clear key CDM, and call
-  // it here.
+  cdm_->DeinitializeDecoder(PpDecryptorStreamTypeToCdmStreamType(decoder_type));
   CallOnMain(callback_factory_.NewCallback(
       &CdmWrapper::DecoderDeinitializeDone,
       decoder_type,
@@ -667,8 +680,7 @@ void CdmWrapper::DeinitializeDecoder(PP_DecryptorStreamType decoder_type,
 
 void CdmWrapper::ResetDecoder(PP_DecryptorStreamType decoder_type,
                               uint32_t request_id) {
-  // TODO(tomfinegan): Implement ResetDecoder in clear key CDM, and call it
-  // here.
+  cdm_->ResetDecoder(PpDecryptorStreamTypeToCdmStreamType(decoder_type));
   CallOnMain(callback_factory_.NewCallback(&CdmWrapper::DecoderResetDone,
                                            decoder_type,
                                            request_id));
@@ -851,6 +863,10 @@ void CdmWrapper::DeliverFrame(
         video_frame->stride(cdm::VideoFrame::kUPlane);
       decrypted_frame_info.strides[PP_DECRYPTEDFRAMEPLANES_V] =
         video_frame->stride(cdm::VideoFrame::kVPlane);
+      break;
+    case cdm::kNeedMoreData:
+      decrypted_frame_info.result = PP_DECRYPTRESULT_SUCCESS;
+      decrypted_frame_info.format = PP_DECRYPTEDFRAMEFORMAT_EMPTY;
       break;
     case cdm::kNoKey:
       decrypted_frame_info.result = PP_DECRYPTRESULT_DECRYPT_NOKEY;

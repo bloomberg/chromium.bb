@@ -166,7 +166,7 @@ struct VideoDecoderConfig {
         profile(kUnknownVideoCodecProfile),
         format(kUnknownVideoFormat),
         extra_data(NULL),
-        extra_data_size() {}
+        extra_data_size(0) {}
 
   VideoCodec codec;
   VideoCodecProfile profile;

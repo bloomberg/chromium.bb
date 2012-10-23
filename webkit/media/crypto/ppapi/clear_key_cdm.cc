@@ -11,6 +11,34 @@
 #include "base/time.h"
 #include "media/base/decoder_buffer.h"
 
+#if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
+#include "base/at_exit.h"
+#include "base/file_path.h"
+#include "base/path_service.h"
+#include "media/base/media.h"
+#include "webkit/media/crypto/ppapi/ffmpeg_cdm_video_decoder.h"
+
+// TODO(tomfinegan): When COMPONENT_BUILD is not defined an AtExitManager must
+// exist before the call to InitializeFFmpegLibraries(). This should no longer
+// be required after http://crbug.com/91970 because we'll be able to get rid of
+// InitializeFFmpegLibraries().
+#if !defined COMPONENT_BUILD
+static base::AtExitManager g_at_exit_manager;
+#endif
+
+// TODO(tomfinegan): InitializeFFmpegLibraries() and |g_cdm_module_initialized|
+// are required for running in the sandbox, and should no longer be required
+// after http://crbug.com/91970 is fixed.
+static bool InitializeFFmpegLibraries() {
+  FilePath file_path;
+  CHECK(PathService::Get(base::DIR_EXE, &file_path));
+  CHECK(media::InitializeMediaLibrary(file_path));
+  return true;
+}
+
+static bool g_cdm_module_initialized = InitializeFFmpegLibraries();
+#endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
+
 static const char kClearKeyCdmVersion[] = "0.1.0.0";
 
 static scoped_refptr<media::DecoderBuffer> CopyDecoderBufferFrom(
@@ -65,10 +93,12 @@ static Type* AllocateAndCopy(const Type* data, int size) {
 
 cdm::ContentDecryptionModule* CreateCdmInstance(
     cdm::Allocator* allocator, cdm::CdmHost* host) {
+  DVLOG(1) << "CreateCdmInstance()";
   return new webkit_media::ClearKeyCdm(allocator, host);
 }
 
 void DestroyCdmInstance(cdm::ContentDecryptionModule* instance) {
+  DVLOG(1) << "DestroyCdmInstance()";
   delete instance;
 }
 
@@ -244,28 +274,43 @@ cdm::Status ClearKeyCdm::InitializeAudioDecoder(
 
 cdm::Status ClearKeyCdm::InitializeVideoDecoder(
     const cdm::VideoDecoderConfig& video_decoder_config) {
-#if !defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
-  NOTIMPLEMENTED();
-  return cdm::kSessionError;
-#else
+#if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
+  if (!video_decoder_)
+    video_decoder_.reset(new webkit_media::FFmpegCdmVideoDecoder(allocator_));
+
+  if (!video_decoder_->Initialize(video_decoder_config))
+    return cdm::kSessionError;
+
+  return cdm::kSuccess;
+#elif defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
   video_size_ = video_decoder_config.coded_size;
   return cdm::kSuccess;
-#endif  // CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER
+#else
+  NOTIMPLEMENTED();
+  return cdm::kSessionError;
+#endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
+
 }
 
-void ClearKeyCdm::ResetDecoder(cdm::StreamType) {
-  NOTIMPLEMENTED();
+void ClearKeyCdm::ResetDecoder(cdm::StreamType decoder_type) {
+#if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
+  DCHECK(decoder_type == cdm::kStreamTypeVideo);
+  video_decoder_->Reset();
+#endif
 }
 
-void ClearKeyCdm::DeinitializeDecoder(cdm::StreamType) {
-  NOTIMPLEMENTED();
+void ClearKeyCdm::DeinitializeDecoder(cdm::StreamType decoder_type) {
+#if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
+  DCHECK(decoder_type == cdm::kStreamTypeVideo);
+  video_decoder_->Deinitialize();
+#endif
 }
 
 cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
     const cdm::InputBuffer& encrypted_buffer,
-    cdm::VideoFrame* video_frame) {
+    cdm::VideoFrame* decoded_frame) {
   if (!encrypted_buffer.data) {
-    video_frame->set_format(cdm::kEmptyVideoFrame);
+    decoded_frame->set_format(cdm::kEmptyVideoFrame);
     return cdm::kSuccess;
   }
 
@@ -285,13 +330,20 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
   if (status == media::Decryptor::kNoKey)
     return cdm::kNoKey;
 
-#if !defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
+#if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
+  DCHECK(status == media::Decryptor::kSuccess);
+  DCHECK(buffer);
+  return video_decoder_->DecodeFrame(buffer.get()->GetData(),
+                                     buffer->GetDataSize(),
+                                     encrypted_buffer.timestamp,
+                                     decoded_frame);
+#elif defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
+  GenerateFakeVideoFrame(decoder_buffer->GetTimestamp(), decoded_frame);
+  return cdm::kSuccess;
+#else
   NOTIMPLEMENTED();
   return cdm::kDecodeError;
-#else
-  GenerateFakeVideoFrame(decoder_buffer->GetTimestamp(), video_frame);
-  return cdm::kSuccess;
-#endif  // CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER
+#endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
 }
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)

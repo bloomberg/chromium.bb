@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "media/base/decryptor_client.h"
 #include "media/crypto/aes_decryptor.h"
@@ -18,11 +19,17 @@
 // Enable this to use the fake decoder for testing.
 // #define CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER
 
+#if defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
+#undef CLEAR_KEY_CDM_USE_FFMPEG_DECODER
+#endif
+
 namespace media {
 class DecoderBuffer;
 }
 
 namespace webkit_media {
+
+class FFmpegCdmVideoDecoder;
 
 // Clear key implementation of the cdm::ContentDecryptionModule interface.
 class ClearKeyCdm : public cdm::ContentDecryptionModule {
@@ -119,6 +126,10 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
   base::Lock client_lock_;
 
   cdm::Allocator* const allocator_;
+
+#if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
+  scoped_ptr<FFmpegCdmVideoDecoder> video_decoder_;
+#endif
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
   cdm::Size video_size_;

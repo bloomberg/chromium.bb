@@ -3,6 +3,16 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'conditions': [
+      ['OS == "android" or OS == "ios"', {
+        # Android and iOS don't use ffmpeg.
+        'use_ffmpeg%': 0,
+      }, {  # 'OS != "android" and OS != "ios"'
+        'use_ffmpeg%': 1,
+      }],
+    ],
+  },
   'targets': [
     {
       'target_name': 'webkit_media',
@@ -102,10 +112,22 @@
     {
       'target_name': 'clearkeycdm',
       'type': 'shared_library',
+      'conditions': [
+        ['use_ffmpeg == 1' , {
+          'defines': ['CLEAR_KEY_CDM_USE_FFMPEG_DECODER'],
+          'dependencies': [
+            '<(DEPTH)/third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
+          ],
+          'sources': [
+            'crypto/ppapi/ffmpeg_cdm_video_decoder.cc',
+            'crypto/ppapi/ffmpeg_cdm_video_decoder.h',
+          ],
+        }],
+      ],
       'defines': ['CDM_IMPLEMENTATION'],
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/media/media.gyp:media'
+        '<(DEPTH)/media/media.gyp:media',
       ],
       'sources': [
         'crypto/ppapi/clear_key_cdm.cc',
