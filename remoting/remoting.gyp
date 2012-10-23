@@ -1715,25 +1715,6 @@
     },  # end of target 'remoting_client'
 
     {
-      'target_name': 'remoting_simple_host',
-      'type': 'executable',
-      'variables': { 'enable_wexit_time_destructors': 1, },
-      'dependencies': [
-        'remoting_base',
-        'remoting_host',
-        'remoting_host_logging',
-        'remoting_jingle_glue',
-        '../base/base.gyp:base',
-        '../base/base.gyp:base_i18n',
-        '../media/media.gyp:media',
-        '../net/net.gyp:net',
-      ],
-      'sources': [
-        'host/simple_host_process.cc',
-      ],
-    },  # end of target 'remoting_simple_host'
-
-    {
       'target_name': 'remoting_me2me_host',
       'type': 'executable',
       'variables': { 'enable_wexit_time_destructors': 1, },
