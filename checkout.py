@@ -76,7 +76,8 @@ class PatchApplicationFailed(Exception):
       out.append('Failed to apply patch for %s:' % self.filename)
     if self.status:
       out.append(self.status)
-    out.append('Patch: %s' % self.patch.dump())
+    if self.patch:
+      out.append('Patch: %s' % self.patch.dump())
     return '\n'.join(out)
 
 
