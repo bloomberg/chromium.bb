@@ -8,7 +8,7 @@
 
 #include "CCCheckerboardDrawQuad.h"
 #include "CCDebugBorderDrawQuad.h"
-#include "CCIOSurfaceDrawQuad.h"
+#include "cc/io_surface_draw_quad.h"
 #include "cc/render_pass_draw_quad.h"
 #include "cc/solid_color_draw_quad.h"
 #include "cc/stream_video_draw_quad.h"

@@ -4,10 +4,10 @@
 
 #include "config.h"
 
-#include "CCRenderSurface.h"
+#include "cc/render_surface_impl.h"
 
 #include "CCAppendQuadsData.h"
-#include "CCLayerImpl.h"
+#include "cc/layer_impl.h"
 #include "cc/render_pass_sink.h"
 #include "cc/scoped_ptr_vector.h"
 #include "cc/shared_quad_state.h"

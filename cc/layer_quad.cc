@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #include "config.h"
 
-#include "CCLayerQuad.h"
+#include "cc/layer_quad.h"
 
 #include "base/logging.h"
 
@@ -69,4 +68,4 @@ void LayerQuad::toFloatArray(float flattened[12]) const
     flattened[11] = m_bottom.z();
 }
 
-} // namespace cc
+}  // namespace cc

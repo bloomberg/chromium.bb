@@ -7,7 +7,7 @@
 #include "cc/quad_culler.h"
 
 #include "CCAppendQuadsData.h"
-#include "CCLayerTilingData.h"
+#include "cc/layer_tiling_data.h"
 #include "cc/math_util.h"
 #include "cc/occlusion_tracker.h"
 #include "cc/overdraw_metrics.h"

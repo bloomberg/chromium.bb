@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCLayerTreeHost.h"
+#include "cc/layer_tree_host.h"
 
 #include "CCGraphicsContext.h"
 #include "CCThreadedTest.h"

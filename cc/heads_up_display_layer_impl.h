@@ -6,8 +6,8 @@
 #define CCHeadsUpDisplayLayerImpl_h
 
 #include "CCFontAtlas.h"
-#include "CCLayerImpl.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/layer_impl.h"
 #include "cc/scoped_texture.h"
 
 class SkCanvas;

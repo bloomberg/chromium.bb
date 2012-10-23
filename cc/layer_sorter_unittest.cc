@@ -4,9 +4,9 @@
 
 #include "config.h"
 
-#include "CCLayerSorter.h"
+#include "cc/layer_sorter.h"
 
-#include "CCLayerImpl.h"
+#include "cc/layer_impl.h"
 #include "cc/math_util.h"
 #include "cc/single_thread_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"

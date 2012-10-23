@@ -5,7 +5,7 @@
 #ifndef CCScrollbarLayerImpl_h
 #define CCScrollbarLayerImpl_h
 
-#include "CCLayerImpl.h"
+#include "cc/layer_impl.h"
 #include "cc/scrollbar_geometry_fixed_thumb.h"
 #include <public/WebRect.h>
 #include <public/WebScrollbar.h>

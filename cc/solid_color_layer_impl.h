@@ -5,7 +5,7 @@
 #ifndef CCSolidColorLayerImpl_h
 #define CCSolidColorLayerImpl_h
 
-#include "CCLayerImpl.h"
+#include "cc/layer_impl.h"
 #include <public/WebTransformationMatrix.h>
 
 namespace cc {

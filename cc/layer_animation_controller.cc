@@ -4,10 +4,10 @@
 
 #include "config.h"
 
-#include "CCLayerAnimationController.h"
+#include "cc/layer_animation_controller.h"
 
 #include "CCActiveAnimation.h"
-#include "CCKeyframedAnimationCurve.h"
+#include "cc/keyframed_animation_curve.h"
 #include <public/WebTransformationMatrix.h>
 
 using WebKit::WebTransformationMatrix;

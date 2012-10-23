@@ -5,7 +5,7 @@
 #ifndef CCLayerIterator_h
 #define CCLayerIterator_h
 
-#include "CCLayerTreeHostCommon.h"
+#include "cc/layer_tree_host_common.h"
 
 #include "base/memory/ref_counted.h"
 

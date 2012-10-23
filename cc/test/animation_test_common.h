@@ -7,8 +7,8 @@
 
 #include "CCActiveAnimation.h"
 #include "CCAnimationCurve.h"
-#include "CCLayerAnimationController.h"
 #include "IntSize.h"
+#include "cc/layer_animation_controller.h"
 
 namespace cc {
 class LayerImpl;

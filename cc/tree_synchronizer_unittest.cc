@@ -6,10 +6,10 @@
 
 #include "cc/tree_synchronizer.h"
 
-#include "CCLayerAnimationController.h"
-#include "CCLayerImpl.h"
 #include "Region.h"
 #include "cc/layer.h"
+#include "cc/layer_animation_controller.h"
+#include "cc/layer_impl.h"
 #include "cc/proxy.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/test/animation_test_common.h"

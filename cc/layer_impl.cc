@@ -4,12 +4,12 @@
 
 #include "config.h"
 
-#include "CCLayerImpl.h"
+#include "cc/layer_impl.h"
 
 #include "CCDebugBorderDrawQuad.h"
-#include "CCLayerSorter.h"
 #include "base/debug/trace_event.h"
 #include "base/stringprintf.h"
+#include "cc/layer_sorter.h"
 #include "cc/math_util.h"
 #include "cc/proxy.h"
 #include "cc/quad_sink.h"

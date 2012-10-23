@@ -7,7 +7,7 @@
 #include "cc/tiled_layer_impl.h"
 
 #include "CCAppendQuadsData.h"
-#include "CCLayerTilingData.h"
+#include "cc/layer_tiling_data.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/mock_quad_culler.h"

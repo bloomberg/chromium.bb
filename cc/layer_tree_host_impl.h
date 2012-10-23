@@ -6,11 +6,11 @@
 #define CCLayerTreeHostImpl_h
 
 #include "CCAnimationEvents.h"
-#include "CCInputHandler.h"
-#include "CCLayerSorter.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
+#include "cc/input_handler.h"
+#include "cc/layer_sorter.h"
 #include "cc/render_pass.h"
 #include "cc/render_pass_sink.h"
 #include "cc/renderer.h"

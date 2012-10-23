@@ -6,8 +6,8 @@
 
 #include "cc/tree_synchronizer.h"
 
-#include "CCLayerImpl.h"
 #include "cc/layer.h"
+#include "cc/layer_impl.h"
 #include "cc/scrollbar_animation_controller.h"
 #include "cc/scrollbar_layer.h"
 #include "cc/scrollbar_layer_impl.h"

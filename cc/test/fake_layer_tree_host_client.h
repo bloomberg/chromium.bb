@@ -6,9 +6,9 @@
 
 #include "config.h"
 
-#include "CCInputHandler.h"
-#include "CCLayerTreeHost.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/input_handler.h"
+#include "cc/layer_tree_host.h"
 #include "cc/test/compositor_fake_web_graphics_context_3d.h"
 #include "cc/test/fake_web_compositor_output_surface.h"
 

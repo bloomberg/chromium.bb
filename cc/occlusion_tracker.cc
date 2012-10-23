@@ -6,11 +6,12 @@
 
 #include "cc/occlusion_tracker.h"
 
-#include "CCLayerImpl.h"
+#include <algorithm>
+
 #include "cc/layer.h"
+#include "cc/layer_impl.h"
 #include "cc/math_util.h"
 #include "cc/overdraw_metrics.h"
-#include <algorithm>
 
 using namespace std;
 using WebKit::WebTransformationMatrix;

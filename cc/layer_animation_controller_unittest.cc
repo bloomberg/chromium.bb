@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCLayerAnimationController.h"
+#include "cc/layer_animation_controller.h"
 
 #include "CCActiveAnimation.h"
 #include "CCAnimationCurve.h"

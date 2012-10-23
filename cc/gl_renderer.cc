@@ -7,7 +7,6 @@
 #include "cc/gl_renderer.h"
 
 #include "CCDamageTracker.h"
-#include "CCLayerQuad.h"
 #include "FloatQuad.h"
 #include "GrTexture.h"
 #include "NotImplemented.h"
@@ -16,6 +15,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "cc/geometry_binding.h"
+#include "cc/layer_quad.h"
 #include "cc/math_util.h"
 #include "cc/platform_color.h"
 #include "cc/proxy.h"

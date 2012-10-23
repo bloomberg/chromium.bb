@@ -4,12 +4,12 @@
 
 #include "config.h"
 
-#include "CCIOSurfaceLayerImpl.h"
+#include "cc/io_surface_layer_impl.h"
 
 #include "CCGraphicsContext.h"
-#include "CCIOSurfaceDrawQuad.h"
 #include "base/stringprintf.h"
 #include "cc/gl_renderer.h" // For the GLC() macro.
+#include "cc/io_surface_draw_quad.h"
 #include "cc/layer_tree_host_impl.h"
 #include "cc/quad_sink.h"
 #include "third_party/khronos/GLES2/gl2.h"

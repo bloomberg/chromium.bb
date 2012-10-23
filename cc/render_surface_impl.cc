@@ -4,14 +4,14 @@
 
 #include "config.h"
 
-#include "CCRenderSurface.h"
+#include "cc/render_surface_impl.h"
 
 #include "CCDamageTracker.h"
 #include "CCDebugBorderDrawQuad.h"
 #include "CCDelegatedRendererLayerImpl.h"
-#include "CCLayerImpl.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
+#include "cc/layer_impl.h"
 #include "cc/math_util.h"
 #include "cc/quad_sink.h"
 #include "cc/render_pass.h"

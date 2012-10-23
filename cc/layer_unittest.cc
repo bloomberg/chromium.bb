@@ -6,16 +6,16 @@
 
 #include "cc/layer.h"
 
-#include "CCKeyframedAnimationCurve.h"
-#include "CCLayerImpl.h"
-#include "CCLayerTreeHost.h"
+#include "cc/keyframed_animation_curve.h"
+#include "cc/layer_impl.h"
 #include "cc/layer_painter.h"
+#include "cc/layer_tree_host.h"
+#include "cc/settings.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/geometry_test_utils.h"
-#include "cc/test/web_compositor_initializer.h"
 #include "cc/test/test_common.h"
-#include "cc/settings.h"
+#include "cc/test/web_compositor_initializer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>

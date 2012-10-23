@@ -5,7 +5,7 @@
 
 #include "config.h"
 
-#include "CCLayerTilingData.h"
+#include "cc/layer_tiling_data.h"
 
 #include "base/logging.h"
 

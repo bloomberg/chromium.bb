@@ -6,9 +6,9 @@
 
 #include "cc/heads_up_display_layer.h"
 
-#include "CCHeadsUpDisplayLayerImpl.h"
-#include "CCLayerTreeHost.h"
 #include "base/debug/trace_event.h"
+#include "cc/heads_up_display_layer_impl.h"
+#include "cc/layer_tree_host.h"
 
 namespace cc {
 

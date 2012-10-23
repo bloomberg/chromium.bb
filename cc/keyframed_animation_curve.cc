@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCKeyframedAnimationCurve.h"
+#include "cc/keyframed_animation_curve.h"
 
 using WebKit::WebTransformationMatrix;
 

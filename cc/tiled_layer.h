@@ -5,9 +5,9 @@
 #ifndef TiledLayerChromium_h
 #define TiledLayerChromium_h
 
-#include "CCLayerTilingData.h"
 #include "cc/layer.h"
 #include "cc/layer_texture_updater.h"
+#include "cc/layer_tiling_data.h"
 
 namespace cc {
 class UpdatableTile;

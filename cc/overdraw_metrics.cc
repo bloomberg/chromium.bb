@@ -6,11 +6,11 @@
 
 #include "cc/overdraw_metrics.h"
 
-#include "CCLayerTreeHost.h"
 #include "FloatQuad.h"
 #include "IntRect.h"
 #include "base/debug/trace_event.h"
 #include "base/metrics/histogram.h"
+#include "cc/layer_tree_host.h"
 #include "cc/layer_tree_host_impl.h"
 #include "cc/math_util.h"
 #include <public/WebTransformationMatrix.h>

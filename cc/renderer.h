@@ -5,10 +5,10 @@
 #ifndef CCRenderer_h
 #define CCRenderer_h
 
-#include "CCLayerTreeHost.h"
-#include "managed_memory_policy.h"
 #include "FloatQuad.h"
 #include "base/basictypes.h"
+#include "cc/layer_tree_host.h"
+#include "cc/managed_memory_policy.h"
 #include "cc/render_pass.h"
 
 namespace cc {

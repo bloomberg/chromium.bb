@@ -8,9 +8,9 @@
 
 #include "CCActiveAnimation.h"
 #include "CCAnimationEvents.h"
-#include "CCLayerAnimationController.h"
-#include "CCLayerImpl.h"
-#include "CCLayerTreeHost.h"
+#include "cc/layer_animation_controller.h"
+#include "cc/layer_impl.h"
+#include "cc/layer_tree_host.h"
 #include "cc/settings.h"
 #include <public/WebAnimationDelegate.h>
 #include <public/WebLayerScrollClient.h>

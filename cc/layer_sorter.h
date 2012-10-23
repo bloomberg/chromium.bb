@@ -5,12 +5,12 @@
 #ifndef CCLayerSorter_h
 #define CCLayerSorter_h
 
-#include "base/basictypes.h"
-#include "base/hash_tables.h"
-#include "CCLayerImpl.h"
 #include "FloatPoint3D.h"
 #include "FloatQuad.h"
 #include "FloatRect.h"
+#include "base/basictypes.h"
+#include "base/hash_tables.h"
+#include "cc/layer_impl.h"
 
 #if defined(COMPILER_GCC)
 namespace cc

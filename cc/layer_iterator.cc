@@ -4,12 +4,12 @@
 
 #include "config.h"
 
-#include "CCLayerIterator.h"
+#include "cc/layer_iterator.h"
 
-#include "CCLayerImpl.h"
-#include "CCRenderSurface.h"
 #include "cc/layer.h"
+#include "cc/layer_impl.h"
 #include "cc/render_surface.h"
+#include "cc/render_surface_impl.h"
 
 namespace cc {
 

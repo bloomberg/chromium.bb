@@ -5,7 +5,7 @@
 #ifndef CCDelegatedRendererLayerImpl_h
 #define CCDelegatedRendererLayerImpl_h
 
-#include "CCLayerImpl.h"
+#include "cc/layer_impl.h"
 #include "cc/scoped_ptr_vector.h"
 
 namespace cc {

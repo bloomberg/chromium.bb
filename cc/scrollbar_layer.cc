@@ -6,10 +6,10 @@
 
 #include "cc/scrollbar_layer.h"
 
-#include "CCLayerTreeHost.h"
 #include "base/basictypes.h"
 #include "base/debug/trace_event.h"
 #include "cc/layer_painter.h"
+#include "cc/layer_tree_host.h"
 #include "cc/scrollbar_layer_impl.h"
 #include "cc/texture_update_queue.h"
 #include <public/WebRect.h>

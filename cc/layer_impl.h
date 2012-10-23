@@ -5,15 +5,15 @@
 #ifndef CCLayerImpl_h
 #define CCLayerImpl_h
 
-#include "CCInputHandler.h"
-#include "CCLayerAnimationController.h"
-#include "CCRenderSurface.h"
 #include "FloatRect.h"
 #include "IntRect.h"
 #include "Region.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/input_handler.h"
+#include "cc/layer_animation_controller.h"
 #include "cc/render_pass.h"
+#include "cc/render_surface_impl.h"
 #include "cc/resource_provider.h"
 #include "cc/scoped_ptr_vector.h"
 #include "cc/shared_quad_state.h"

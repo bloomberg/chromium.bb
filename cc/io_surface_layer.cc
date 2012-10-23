@@ -6,7 +6,7 @@
 
 #include "cc/io_surface_layer.h"
 
-#include "CCIOSurfaceLayerImpl.h"
+#include "cc/io_surface_layer_impl.h"
 
 namespace cc {
 

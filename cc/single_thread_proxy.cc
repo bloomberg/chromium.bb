@@ -8,8 +8,8 @@
 
 #include "CCDrawQuad.h"
 #include "CCGraphicsContext.h"
-#include "CCLayerTreeHost.h"
 #include "base/debug/trace_event.h"
+#include "cc/layer_tree_host.h"
 #include "cc/texture_update_controller.h"
 #include "cc/timer.h"
 #include <wtf/CurrentTime.h>

@@ -6,7 +6,7 @@
 
 #include "cc/texture_layer.h"
 
-#include "CCLayerTreeHost.h"
+#include "cc/layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/web_compositor_initializer.h"
 #include "testing/gmock/include/gmock/gmock.h"

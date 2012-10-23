@@ -4,10 +4,10 @@
 
 #include "config.h"
 
-#include "CCLayerTreeHost.h"
 #include "CCThreadedTest.h"
 #include "cc/heads_up_display_layer.h"
 #include "cc/layer.h"
+#include "cc/layer_tree_host.h"
 
 using namespace cc;
 using namespace WebKitTests;

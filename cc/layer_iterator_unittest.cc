@@ -4,10 +4,10 @@
 
 #include "config.h"
 
-#include "CCLayerIterator.h"
+#include "cc/layer_iterator.h"
 
-#include "CCLayerTreeHostCommon.h"
 #include "cc/layer.h"
+#include "cc/layer_tree_host_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>

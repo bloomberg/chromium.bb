@@ -4,15 +4,16 @@
 
 #include "config.h"
 
-#include "CCLayerSorter.h"
+#include "cc/layer_sorter.h"
 
-#include "CCRenderSurface.h"
-#include "base/logging.h"
-#include "cc/math_util.h"
-#include <public/WebTransformationMatrix.h>
 #include <deque>
 #include <limits>
 #include <vector>
+
+#include "base/logging.h"
+#include "cc/math_util.h"
+#include "cc/render_surface_impl.h"
+#include <public/WebTransformationMatrix.h>
 
 using namespace std;
 using WebKit::WebTransformationMatrix;

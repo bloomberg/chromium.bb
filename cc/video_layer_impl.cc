@@ -6,8 +6,8 @@
 
 #include "cc/video_layer_impl.h"
 
-#include "CCIOSurfaceDrawQuad.h"
 #include "NotImplemented.h"
+#include "cc/io_surface_draw_quad.h"
 #include "cc/layer_tree_host_impl.h"
 #include "cc/proxy.h"
 #include "cc/quad_sink.h"

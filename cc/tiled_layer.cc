@@ -6,10 +6,10 @@
 
 #include "cc/tiled_layer.h"
 
-#include "CCLayerImpl.h"
-#include "CCLayerTreeHost.h"
 #include "Region.h"
 #include "base/basictypes.h"
+#include "cc/layer_impl.h"
+#include "cc/layer_tree_host.h"
 #include "cc/overdraw_metrics.h"
 #include "cc/tiled_layer_impl.h"
 #include "third_party/khronos/GLES2/gl2.h"

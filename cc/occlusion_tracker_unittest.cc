@@ -6,11 +6,11 @@
 
 #include "cc/occlusion_tracker.h"
 
-#include "CCLayerAnimationController.h"
-#include "CCLayerImpl.h"
-#include "CCLayerTreeHostCommon.h"
 #include "Region.h"
 #include "cc/layer.h"
+#include "cc/layer_animation_controller.h"
+#include "cc/layer_impl.h"
+#include "cc/layer_tree_host_common.h"
 #include "cc/math_util.h"
 #include "cc/overdraw_metrics.h"
 #include "cc/single_thread_proxy.h"

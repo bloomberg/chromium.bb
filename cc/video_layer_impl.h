@@ -5,10 +5,10 @@
 #ifndef CCVideoLayerImpl_h
 #define CCVideoLayerImpl_h
 
-#include "base/synchronization/lock.h"
-#include "CCLayerImpl.h"
-#include "third_party/khronos/GLES2/gl2.h"
 #include "IntSize.h"
+#include "base/synchronization/lock.h"
+#include "cc/layer_impl.h"
+#include "third_party/khronos/GLES2/gl2.h"
 #include <public/WebTransformationMatrix.h>
 #include <public/WebVideoFrameProvider.h>
 #include <wtf/ThreadingPrimitives.h>

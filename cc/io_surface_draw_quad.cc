@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCIOSurfaceDrawQuad.h"
+#include "cc/io_surface_draw_quad.h"
 
 #include "base/logging.h"
 

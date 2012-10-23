@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCHeadsUpDisplayLayerImpl.h"
+#include "cc/heads_up_display_layer_impl.h"
 
 #include "CCDebugRectHistory.h"
 #include "CCFontAtlas.h"

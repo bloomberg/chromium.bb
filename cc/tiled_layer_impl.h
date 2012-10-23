@@ -5,7 +5,7 @@
 #ifndef CCTiledLayerImpl_h
 #define CCTiledLayerImpl_h
 
-#include "CCLayerImpl.h"
+#include "cc/layer_impl.h"
 #include <public/WebTransformationMatrix.h>
 
 namespace cc {

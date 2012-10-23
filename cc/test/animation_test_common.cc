@@ -6,10 +6,10 @@
 
 #include "cc/test/animation_test_common.h"
 
-#include "CCKeyframedAnimationCurve.h"
-#include "CCLayerAnimationController.h"
-#include "CCLayerImpl.h"
+#include "cc/keyframed_animation_curve.h"
 #include "cc/layer.h"
+#include "cc/layer_animation_controller.h"
+#include "cc/layer_impl.h"
 #include <public/WebTransformOperations.h>
 
 using namespace cc;

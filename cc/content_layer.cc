@@ -6,7 +6,6 @@
 
 #include "cc/content_layer.h"
 
-#include "CCLayerTreeHost.h"
 #include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "cc/bitmap_canvas_layer_texture_updater.h"
@@ -14,6 +13,7 @@
 #include "cc/content_layer_client.h"
 #include "cc/frame_buffer_skpicture_canvas_layer_texture_updater.h"
 #include "cc/layer_painter.h"
+#include "cc/layer_tree_host.h"
 #include "cc/settings.h"
 
 namespace cc {

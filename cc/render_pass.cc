@@ -6,7 +6,7 @@
 
 #include "cc/render_pass.h"
 
-#include "CCLayerImpl.h"
+#include "cc/layer_impl.h"
 #include "cc/math_util.h"
 #include "cc/occlusion_tracker.h"
 #include "cc/quad_culler.h"

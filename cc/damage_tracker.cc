@@ -6,10 +6,10 @@
 
 #include "CCDamageTracker.h"
 
-#include "CCLayerImpl.h"
-#include "CCLayerTreeHostCommon.h"
-#include "CCRenderSurface.h"
+#include "cc/layer_impl.h"
+#include "cc/layer_tree_host_common.h"
 #include "cc/math_util.h"
+#include "cc/render_surface_impl.h"
 #include <public/WebFilterOperations.h>
 
 using WebKit::WebTransformationMatrix;

@@ -5,7 +5,7 @@
 #ifndef CC_TEST_LAYER_TREE_TEST_COMMON_H_
 #define CC_TEST_LAYER_TREE_TEST_COMMON_H_
 
-#include "CCLayerTreeHost.h"
+#include "cc/layer_tree_host.h"
 #include "base/hash_tables.h"
 #include "cc/layer_tree_host_impl.h"
 #include "cc/scoped_thread_proxy.h"

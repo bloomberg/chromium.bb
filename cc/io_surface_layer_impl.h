@@ -5,8 +5,8 @@
 #ifndef CCIOSurfaceLayerImpl_h
 #define CCIOSurfaceLayerImpl_h
 
-#include "CCLayerImpl.h"
 #include "IntSize.h"
+#include "cc/layer_impl.h"
 
 namespace cc {
 

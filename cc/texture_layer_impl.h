@@ -5,7 +5,7 @@
 #ifndef CCTextureLayerImpl_h
 #define CCTextureLayerImpl_h
 
-#include "CCLayerImpl.h"
+#include "cc/layer_impl.h"
 
 namespace cc {
 

@@ -8,8 +8,8 @@
 
 #include "CCAppendQuadsData.h"
 #include "CCDebugBorderDrawQuad.h"
-#include "CCLayerImpl.h"
 #include "Region.h"
+#include "cc/layer_impl.h"
 #include "cc/occlusion_tracker.h"
 #include "cc/overdraw_metrics.h"
 #include "cc/render_pass.h"

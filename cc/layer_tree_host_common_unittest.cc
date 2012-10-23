@@ -4,14 +4,14 @@
 
 #include "config.h"
 
-#include "CCLayerTreeHostCommon.h"
+#include "cc/layer_tree_host_common.h"
 
-#include "CCLayerAnimationController.h"
-#include "CCLayerImpl.h"
-#include "CCLayerSorter.h"
 #include "cc/content_layer.h"
 #include "cc/content_layer_client.h"
 #include "cc/layer.h"
+#include "cc/layer_animation_controller.h"
+#include "cc/layer_impl.h"
+#include "cc/layer_sorter.h"
 #include "cc/math_util.h"
 #include "cc/proxy.h"
 #include "cc/single_thread_proxy.h"

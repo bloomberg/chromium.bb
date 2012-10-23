@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCLayerImpl.h"
+#include "cc/layer_impl.h"
 
 #include "cc/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"

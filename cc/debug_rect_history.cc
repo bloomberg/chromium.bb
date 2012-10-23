@@ -7,8 +7,8 @@
 #include "CCDebugRectHistory.h"
 
 #include "CCDamageTracker.h"
-#include "CCLayerImpl.h"
-#include "CCLayerTreeHost.h"
+#include "cc/layer_impl.h"
+#include "cc/layer_tree_host.h"
 #include "cc/math_util.h"
 
 namespace cc {

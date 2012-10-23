@@ -4,17 +4,17 @@
 
 #include "config.h"
 
-#include "CCLayerTreeHostCommon.h"
+#include "cc/layer_tree_host_common.h"
 
-#include "CCLayerImpl.h"
-#include "CCLayerIterator.h"
-#include "CCLayerSorter.h"
-#include "CCRenderSurface.h"
 #include "FloatQuad.h"
 #include "IntRect.h"
 #include "cc/layer.h"
+#include "cc/layer_impl.h"
+#include "cc/layer_iterator.h"
+#include "cc/layer_sorter.h"
 #include "cc/math_util.h"
 #include "cc/render_surface.h"
+#include "cc/render_surface_impl.h"
 #include <public/WebTransformationMatrix.h>
 
 using WebKit::WebTransformationMatrix;

@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCLayerQuad.h"
+#include "cc/layer_quad.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
