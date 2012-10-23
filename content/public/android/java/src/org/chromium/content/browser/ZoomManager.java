@@ -109,6 +109,13 @@ class ZoomManager {
         }
     }
 
+    void dismissZoomPicker() {
+        ZoomButtonsController zoomControls = getZoomControls();
+        if (zoomControls != null && zoomControls.isVisible()) {
+            zoomControls.setVisible(false);
+        }
+    }
+
     boolean isMultiTouchZoomSupported() {
         return !mMultiTouchListener.getPermanentlyIgnoreDetectorEvents();
     }

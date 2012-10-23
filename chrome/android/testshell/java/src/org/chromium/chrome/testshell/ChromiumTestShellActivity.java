@@ -118,10 +118,14 @@ public class ChromiumTestShellActivity extends Activity {
 
     private void initializeContentViewResources() {
         AppResource.DIMENSION_LINK_PREVIEW_OVERLAY_RADIUS = R.dimen.link_preview_overlay_radius;
+        AppResource.DRAWABLE_ICON_ACTION_BAR_SHARE = R.drawable.ic_menu_share_holo_light;
+        AppResource.DRAWABLE_ICON_ACTION_BAR_WEB_SEARCH = R.drawable.ic_menu_search_holo_light;
         AppResource.DRAWABLE_LINK_PREVIEW_POPUP_OVERLAY = R.drawable.popup_zoomer_overlay;
         AppResource.ID_AUTOFILL_LABEL = R.id.autofill_label;
         AppResource.ID_AUTOFILL_NAME = R.id.autofill_name;
         AppResource.LAYOUT_AUTOFILL_TEXT = R.layout.autofill_text;
+        AppResource.STRING_ACTION_BAR_SHARE = R.string.action_bar_share;
+        AppResource.STRING_ACTION_BAR_WEB_SEARCH = R.string.action_bar_search;
         AppResource.STRING_CONTENT_VIEW_CONTENT_DESCRIPTION = R.string.accessibility_content_view;
         AppResource.STRING_MEDIA_PLAYER_MESSAGE_PLAYBACK_ERROR =
                 R.string.media_player_error_text_invalid_progressive_playback;

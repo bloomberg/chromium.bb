@@ -105,7 +105,6 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
      * @param context Context used to obtain the application context.
      * @param maxRendererProcesses Same as ContentView.enableMultiProcess()
      * @return Whether the process actually needed to be initialized (false if already running).
-     * @hide Only used by the platform browser.
      */
     public static boolean initChromiumBrowserProcess(Context context, int maxRendererProcesses) {
         return ContentViewCore.initChromiumBrowserProcess(context, maxRendererProcesses);
@@ -695,6 +694,12 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         mContentViewCore.onDetachedFromWindow();
+    }
+
+    @Override
+    protected void onVisibilityChanged(View changedView, int visibility) {
+        super.onVisibilityChanged(changedView, visibility);
+        mContentViewCore.onVisibilityChanged(changedView, visibility);
     }
 
     void updateMultiTouchZoomSupport() {
