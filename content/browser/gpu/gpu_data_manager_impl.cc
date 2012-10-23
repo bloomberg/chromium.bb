@@ -505,12 +505,6 @@ void GpuDataManagerImpl::UpdateVideoMemoryUsageStats(
                          video_memory_usage_stats);
 }
 
-// Experiment to determine whether Stage3D should be blacklisted on XP.
-bool Stage3DBlacklisted() {
-  return base::FieldTrialList::FindFullName(content::kStage3DFieldTrialName) ==
-      content::kStage3DFieldTrialBlacklistedName;
-}
-
 void GpuDataManagerImpl::UpdateBlacklistedFeatures(
     GpuFeatureType features) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -525,9 +519,6 @@ void GpuDataManagerImpl::UpdateBlacklistedFeatures(
   if (card_blacklisted_ ||
       command_line->HasSwitch(switches::kBlacklistWebGL)) {
     flags |= content::GPU_FEATURE_TYPE_WEBGL;
-  }
-  if (Stage3DBlacklisted()) {
-    flags |= content::GPU_FEATURE_TYPE_FLASH_STAGE3D;
   }
   blacklisted_features_ = static_cast<GpuFeatureType>(flags);
 

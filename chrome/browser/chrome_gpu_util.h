@@ -15,9 +15,6 @@ void InstallBrowserMonitor();
 void UninstallBrowserMonitor();
 #endif // !defined(OS_ANDROID)
 
-// Sets up Stage3D on XP field trial
-void InitializeStage3DFieldTrial();
-
 // Sets up force-compositing-mode and threaded compositing field trials.
 void InitializeCompositingFieldTrial();
 
