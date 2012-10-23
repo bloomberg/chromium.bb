@@ -71,6 +71,9 @@ const char kPrefAppNotificationDisbaled[] = "app_notif_disabled";
 // extension.
 const char kPrefAcknowledgePromptCount[] = "ack_prompt_count";
 
+// If true, this extension should be excluded from the sideload wipeout UI.
+const char kPrefExcludeFromSideloadWipeout[] = "exclude_from_sideload_wipeout";
+
 // Indicates whether the user has acknowledged various types of extensions.
 const char kPrefExternalAcknowledged[] = "ack_external";
 const char kPrefBlacklistAcknowledged[] = "ack_blacklist";
@@ -591,6 +594,8 @@ void ExtensionPrefs::AcknowledgeExternalExtension(
     const std::string& extension_id) {
   DCHECK(Extension::IdIsValid(extension_id));
   UpdateExtensionPref(extension_id, kPrefExternalAcknowledged,
+                      Value::CreateBooleanValue(true));
+  UpdateExtensionPref(extension_id, kPrefExcludeFromSideloadWipeout,
                       Value::CreateBooleanValue(true));
   UpdateExtensionPref(extension_id, kPrefAcknowledgePromptCount, NULL);
 }
