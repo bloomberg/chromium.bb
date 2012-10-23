@@ -281,11 +281,17 @@ TEST_F(BrowserPluginTest, GuestCrash) {
 
   ExecuteJavaScript(kAddEventListener);
 
-  // Pretend that the guest has crashed
+  // Pretend that the guest has terminated normally.
   browser_plugin->GuestGone(0, base::TERMINATION_STATUS_NORMAL_TERMINATION);
 
   // Verify that our event listener has fired.
   EXPECT_EQ("normal", ExecuteScriptAndReturnString("msg"));
+
+  // Pretend that the guest has crashed.
+  browser_plugin->GuestGone(0, base::TERMINATION_STATUS_PROCESS_CRASHED);
+
+  // Verify that our event listener has fired.
+  EXPECT_EQ("crashed", ExecuteScriptAndReturnString("msg"));
 
   // Send an event and verify that events are no longer deported.
   browser_plugin->handleInputEvent(WebKit::WebMouseEvent(),

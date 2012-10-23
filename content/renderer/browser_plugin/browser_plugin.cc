@@ -66,6 +66,8 @@ static std::string TerminationStatusToString(base::TerminationStatus status) {
       return "abnormal";
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
       return "killed";
+    case base::TERMINATION_STATUS_PROCESS_CRASHED:
+      return "crashed";
     default:
       // This should never happen.
       DCHECK(false);
