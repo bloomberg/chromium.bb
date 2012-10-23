@@ -223,7 +223,8 @@ def SetUpArgumentBits(env):
     desc='The programs have already been built by another system')
 
   BitFromArgument(env, 'skip_trusted_tests', default=False,
-    desc='Only run untrusted tests - useful for translator testing')
+    desc='Only run untrusted tests - useful for translator testing'
+      ' (also skips tests of the IRT itself')
 
   BitFromArgument(env, 'nacl_pic', default=False,
     desc='generate position indepent code for (P)NaCl modules')
@@ -725,7 +726,9 @@ if ARGUMENTS.get('disable_tests', '') != '':
 
 
 def ShouldSkipTest(env, node_name):
-  if env.Bit('skip_trusted_tests') and env['NACL_BUILD_FAMILY'] == 'TRUSTED':
+  if (env.Bit('skip_trusted_tests')
+      and (env['NACL_BUILD_FAMILY'] == 'TRUSTED'
+           or env['NACL_BUILD_FAMILY'] == 'UNTRUSTED_IRT')):
     return True
 
   if env.Bit('do_not_run_tests'):

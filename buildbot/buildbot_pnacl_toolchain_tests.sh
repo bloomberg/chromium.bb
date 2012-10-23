@@ -170,8 +170,8 @@ archived-frontend-test() {
   # pexes with the archived toolchain.
   echo "@@@BUILD_STEP archived_frontend [${arch}]\
         rev ${ARCHIVED_TOOLCHAIN_REV} BUILD IRT@@@"
-  ${SCONS_COMMON} --mode=opt-host,nacl platform=${arch} bitcode=1 \
-    irt_core || handle-error
+  ${SCONS_COMMON} ${SCONS_PICK_TC} --mode=opt-host,nacl platform=${arch} \
+    bitcode=1 -j${PNACL_CONCURRENCY} irt_core || handle-error
 
 
   echo "@@@BUILD_STEP archived_frontend [${arch}]\
@@ -188,15 +188,28 @@ archived-frontend-test() {
   # download will be a no-op. Otherwise the downloader will fix it.
   download-old-tc toolchain/archived_tc
 
-  # Build the pexes with the old frontend
-  local old_frontend=toolchain/archived_tc/${PNACL_TOOLCHAIN_LABEL}
+  # Save the current toolchain.
+  mkdir -p toolchain/current_tc
+  rm -rf toolchain/current_tc/*
+  mv toolchain/${PNACL_TOOLCHAIN_LABEL} \
+    toolchain/current_tc/${PNACL_TOOLCHAIN_LABEL}
 
-  ${SCONS_COMMON} "pnaclsdk_mode=custom:${old_frontend}" \
+  # Link the old frontend into place. If we just use pnaclsdk_mode to select a
+  # different toolchain, SCons will attempt to rebuild the IRT.
+  ln -s archived_tc/${PNACL_TOOLCHAIN_LABEL} toolchain/${PNACL_TOOLCHAIN_LABEL}
+
+  # Build the pexes with the old frontend
+  ${SCONS_COMMON} ${SCONS_PICK_TC} \
     do_not_run_tests=1 ${flags} ${targets} || handle-error
   # The pexes for fast translation tests are identical but scons uses a
   # different directory.
   cp -a scons-out/nacl-${arch}-pnacl-pexe-clang \
     scons-out/nacl-${arch}-pnacl-fast-pexe-clang
+
+  # Put the current toolchain back in place.
+  rm toolchain/${PNACL_TOOLCHAIN_LABEL}
+  mv toolchain/current_tc/${PNACL_TOOLCHAIN_LABEL} \
+    toolchain/${PNACL_TOOLCHAIN_LABEL}
 
   # Translate them with the new translator, and run the tests
   echo "@@@BUILD_STEP archived_frontend [${arch}]\
