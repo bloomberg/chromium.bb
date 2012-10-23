@@ -37,6 +37,9 @@ bool IsNativeWindowInAsh(gfx::NativeWindow native_window) {
 }
 
 void ToggleAshDesktop() {
+  if (chrome::HOST_DESKTOP_TYPE_ASH == chrome::HOST_DESKTOP_TYPE_NATIVE)
+    return;
+
   ScopedForceDesktopType force(chrome::HOST_DESKTOP_TYPE_ASH);
   if (!ash::Shell::HasInstance())
     OpenAsh();

@@ -502,10 +502,11 @@ void WrenchMenuModel::Build() {
 #endif  // else of defined(OS_WIN)
 
 #if defined(USE_ASH)
-  if (!ash::Shell::HasInstance())
-    AddItemWithStringId(IDC_TOGGLE_ASH_DESKTOP, IDS_OPEN_ASH_DESKTOP);
-  else
-    AddItemWithStringId(IDC_TOGGLE_ASH_DESKTOP, IDS_CLOSE_ASH_DESKTOP);
+  if (chrome::HOST_DESKTOP_TYPE_NATIVE != chrome::HOST_DESKTOP_TYPE_ASH) {
+    AddItemWithStringId(IDC_TOGGLE_ASH_DESKTOP,
+                        ash::Shell::HasInstance() ? IDS_CLOSE_ASH_DESKTOP :
+                                                    IDS_OPEN_ASH_DESKTOP);
+  }
 #endif
 
   bookmark_sub_menu_model_.reset(new BookmarkSubMenuModel(this, browser_));
