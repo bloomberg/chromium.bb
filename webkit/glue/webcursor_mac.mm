@@ -5,7 +5,6 @@
 #include "webkit/glue/webcursor.h"
 
 #import <AppKit/AppKit.h>
-#include <Carbon/Carbon.h>
 
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
@@ -18,18 +17,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "ui/base/resource/resource_bundle.h"
 
-
-#if defined(MAC_OS_X_VERSION_10_7) && \
-    MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-// The 10.7 SDK no longer has QuickDraw headers.
-// http://developer.apple.com/legacy/mac/library/documentation/Carbon/reference/QuickDraw_Ref/QuickDraw_Ref.pdf
-typedef short Bits16[16];
-struct Cursor {
-  Bits16 data;
-  Bits16 mask;
-  Point hotSpot;
-};
-#endif  // 10.7+ SDK
 
 using WebKit::WebCursorInfo;
 using WebKit::WebImage;
@@ -349,122 +336,6 @@ gfx::NativeCursor WebCursor::GetNativeCursor() {
   }
   NOTREACHED();
   return nil;
-}
-
-void WebCursor::InitFromThemeCursor(ThemeCursor cursor) {
-  WebKit::WebCursorInfo cursor_info;
-
-  switch (cursor) {
-    case kThemeArrowCursor:
-      cursor_info.type = WebCursorInfo::TypePointer;
-      break;
-    case kThemeCopyArrowCursor:
-      cursor_info.type = WebCursorInfo::TypeCopy;
-      break;
-    case kThemeAliasArrowCursor:
-      cursor_info.type = WebCursorInfo::TypeAlias;
-      break;
-    case kThemeContextualMenuArrowCursor:
-      cursor_info.type = WebCursorInfo::TypeContextMenu;
-      break;
-    case kThemeIBeamCursor:
-      cursor_info.type = WebCursorInfo::TypeIBeam;
-      break;
-    case kThemeCrossCursor:
-    case kThemePlusCursor:
-      cursor_info.type = WebCursorInfo::TypeCross;
-      break;
-    case kThemeWatchCursor:
-    case kThemeSpinningCursor:
-      cursor_info.type = WebCursorInfo::TypeWait;
-      break;
-    case kThemeClosedHandCursor:
-      cursor_info.type = WebCursorInfo::TypeGrabbing;
-      break;
-    case kThemeOpenHandCursor:
-      cursor_info.type = WebCursorInfo::TypeGrab;
-      break;
-    case kThemePointingHandCursor:
-    case kThemeCountingUpHandCursor:
-    case kThemeCountingDownHandCursor:
-    case kThemeCountingUpAndDownHandCursor:
-      cursor_info.type = WebCursorInfo::TypeHand;
-      break;
-    case kThemeResizeLeftCursor:
-      cursor_info.type = WebCursorInfo::TypeWestResize;
-      break;
-    case kThemeResizeRightCursor:
-      cursor_info.type = WebCursorInfo::TypeEastResize;
-      break;
-    case kThemeResizeLeftRightCursor:
-      cursor_info.type = WebCursorInfo::TypeEastWestResize;
-      break;
-    case kThemeNotAllowedCursor:
-      cursor_info.type = WebCursorInfo::TypeNotAllowed;
-      break;
-    case kThemeResizeUpCursor:
-      cursor_info.type = WebCursorInfo::TypeNorthResize;
-      break;
-    case kThemeResizeDownCursor:
-      cursor_info.type = WebCursorInfo::TypeSouthResize;
-      break;
-    case kThemeResizeUpDownCursor:
-      cursor_info.type = WebCursorInfo::TypeNorthSouthResize;
-      break;
-    case kThemePoofCursor:  // *shrug*
-    default:
-      cursor_info.type = WebCursorInfo::TypePointer;
-      break;
-  }
-
-  InitFromCursorInfo(cursor_info);
-}
-
-void WebCursor::InitFromCursor(const Cursor* cursor) {
-  // This conversion isn't perfect (in particular, the inversion effect of
-  // data==1, mask==0 won't work). Not planning on fixing it.
-
-  gfx::Size custom_size(16, 16);
-  std::vector<char> raw_data;
-  for (int row = 0; row < 16; ++row) {
-    unsigned short data = cursor->data[row];
-    unsigned short mask = cursor->mask[row];
-
-    // The Core Endian flipper callback for 'CURS' doesn't flip Bits16 as if it
-    // were a short (which it is), so we flip it here.
-    data = ((data << 8) & 0xFF00) | ((data >> 8) & 0x00FF);
-    mask = ((mask << 8) & 0xFF00) | ((mask >> 8) & 0x00FF);
-
-    for (int bit = 0; bit < 16; ++bit) {
-      if (data & 0x8000) {
-        raw_data.push_back(0x00);
-        raw_data.push_back(0x00);
-        raw_data.push_back(0x00);
-      } else {
-        raw_data.push_back(0xFF);
-        raw_data.push_back(0xFF);
-        raw_data.push_back(0xFF);
-      }
-      if (mask & 0x8000)
-        raw_data.push_back(0xFF);
-      else
-        raw_data.push_back(0x00);
-      data <<= 1;
-      mask <<= 1;
-    }
-  }
-
-  base::mac::ScopedCFTypeRef<CGImageRef> cg_image(
-      CreateCGImageFromCustomData(raw_data, custom_size));
-
-  WebKit::WebCursorInfo cursor_info;
-  cursor_info.type = WebCursorInfo::TypeCustom;
-  cursor_info.hotSpot = WebKit::WebPoint(cursor->hotSpot.h, cursor->hotSpot.v);
-  // TODO(avi): build the cursor image in Skia directly rather than going via
-  // this roundabout path.
-  cursor_info.customImage = gfx::CGImageToSkBitmap(cg_image.get());
-
-  InitFromCursorInfo(cursor_info);
 }
 
 void WebCursor::InitFromNSCursor(NSCursor* cursor) {

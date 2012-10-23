@@ -9,8 +9,6 @@
 
 #import "base/basictypes.h"
 
-typedef struct Cursor Cursor;
-
 // This is really a WebPluginDelegateImpl, but that class is private to the
 // framework, and these functions are called from a dylib.
 typedef void* OpaquePluginRef;
@@ -41,14 +39,6 @@ void NotifyBrowserOfPluginShowWindow(uint32 window_id, CGRect bounds,
 // has been hidden, and switches focus back to the browser process if there are
 // no remaining plugin windows.
 void NotifyBrowserOfPluginHideWindow(uint32 window_id, CGRect bounds);
-
-// Sends a message to the plugin that a theme cursor was set.
-void NotifyPluginOfSetThemeCursor(OpaquePluginRef delegate,
-                                  ThemeCursor cursor);
-
-// Sends a message to the plugin that a cursor was set.
-void NotifyPluginOfSetCursor(OpaquePluginRef delegate,
-                             const Cursor* cursor);
 
 }  // namespace MacPluginInterpose
 

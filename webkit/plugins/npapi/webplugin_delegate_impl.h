@@ -180,12 +180,6 @@ class WEBKIT_PLUGINS_EXPORT WebPluginDelegateImpl : public WebPluginDelegate {
   // Informs the plugin that IME composition has completed.
   // If |text| is empty, IME was cancelled.
   void ImeCompositionCompleted(const string16& text);
-#ifndef NP_NO_CARBON
-  // Informs the delegate that the plugin set a Carbon ThemeCursor.
-  void SetThemeCursor(ThemeCursor cursor);
-  // Informs the delegate that the plugin set a Carbon Cursor.
-  void SetCarbonCursor(const Cursor* cursor);
-#endif
   // Informs the delegate that the plugin set a Cocoa NSCursor.
   void SetNSCursor(NSCursor* cursor);
 

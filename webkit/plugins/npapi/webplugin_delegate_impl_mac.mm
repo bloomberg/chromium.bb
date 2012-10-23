@@ -645,16 +645,6 @@ void WebPluginDelegateImpl::ImeCompositionCompleted(const string16& text) {
   }
 }
 
-#ifndef NP_NO_CARBON
-void WebPluginDelegateImpl::SetThemeCursor(ThemeCursor cursor) {
-  current_windowless_cursor_.InitFromThemeCursor(cursor);
-}
-
-void WebPluginDelegateImpl::SetCarbonCursor(const Cursor* cursor) {
-  current_windowless_cursor_.InitFromCursor(cursor);
-}
-#endif
-
 void WebPluginDelegateImpl::SetNSCursor(NSCursor* cursor) {
   current_windowless_cursor_.InitFromNSCursor(cursor);
 }

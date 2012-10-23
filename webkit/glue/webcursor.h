@@ -25,8 +25,6 @@ typedef struct _GdkCursor GdkCursor;
 #else
 class NSCursor;
 #endif
-typedef UInt32 ThemeCursor;
-typedef struct Cursor Cursor;
 #endif
 
 class Pickle;
@@ -99,12 +97,6 @@ class WEBKIT_GLUE_EXPORT WebCursor {
   // returns GDK_CURSOR_IS_PIXMAP.
   GdkCursor* GetCustomCursor();
 #elif defined(OS_MACOSX)
-  // Initialize this from the given Carbon ThemeCursor.
-  void InitFromThemeCursor(ThemeCursor cursor);
-
-  // Initialize this from the given Carbon Cursor.
-  void InitFromCursor(const Cursor* cursor);
-
   // Initialize this from the given Cocoa NSCursor.
   void InitFromNSCursor(NSCursor* cursor);
 #endif

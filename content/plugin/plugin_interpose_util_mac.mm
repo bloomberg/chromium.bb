@@ -71,20 +71,6 @@ void NotifyBrowserOfPluginHideWindow(uint32 window_id, CGRect bounds) {
   }
 }
 
-__attribute__((visibility("default")))
-void NotifyPluginOfSetThemeCursor(OpaquePluginRef delegate,
-                                  ThemeCursor cursor) {
-  static_cast<webkit::npapi::WebPluginDelegateImpl*>(delegate)->SetThemeCursor(
-      cursor);
-}
-
-__attribute__((visibility("default")))
-void NotifyPluginOfSetCursor(OpaquePluginRef delegate,
-                             const Cursor* cursor) {
-  static_cast<webkit::npapi::WebPluginDelegateImpl*>(delegate)->SetCarbonCursor(
-      cursor);
-}
-
 void NotifyPluginOfSetCursorVisibility(bool visibility) {
   PluginThread* plugin_thread = PluginThread::current();
   if (plugin_thread) {

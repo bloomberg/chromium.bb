@@ -11,16 +11,6 @@
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
-#if defined(MAC_OS_X_VERSION_10_7) && \
-    MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-// QuickdrawAPI.h is no longer included in the 10.7 SDK, but the symbols are
-// still exported by QD.framework (a subframework of ApplicationServices).
-// http://developer.apple.com/legacy/mac/library/documentation/Carbon/reference/QuickDraw_Ref/QuickDraw_Ref.pdf
-extern "C" {
-void SetCursor(const Cursor* crsr);
-}
-#endif  // 10.7+ SDK
-
 // Returns true if the given window is modal.
 static bool IsModalWindow(WindowRef window) {
   WindowModality modality = kWindowModalityNone;
@@ -113,24 +103,6 @@ static void ChromePluginDisposeDialog(DialogRef dialog) {
   OnPluginWindowClosed(window_info);
 }
 
-static OSStatus ChromePluginSetThemeCursor(ThemeCursor cursor) {
-  OpaquePluginRef delegate = mac_plugin_interposing::GetActiveDelegate();
-  if (delegate) {
-    mac_plugin_interposing::NotifyPluginOfSetThemeCursor(delegate, cursor);
-    return noErr;
-  }
-  return SetThemeCursor(cursor);
-}
-
-static void ChromePluginSetCursor(const Cursor* cursor) {
-  OpaquePluginRef delegate = mac_plugin_interposing::GetActiveDelegate();
-  if (delegate) {
-    mac_plugin_interposing::NotifyPluginOfSetCursor(delegate, cursor);
-    return;
-  }
-  return SetCursor(cursor);
-}
-
 #pragma mark -
 
 struct interpose_substitution {
@@ -151,8 +123,6 @@ __attribute__((used)) static const interpose_substitution substitutions[]
   INTERPOSE_FUNCTION(HideWindow),
   INTERPOSE_FUNCTION(ReleaseWindow),
   INTERPOSE_FUNCTION(DisposeDialog),
-  INTERPOSE_FUNCTION(SetThemeCursor),
-  INTERPOSE_FUNCTION(SetCursor),
 };
 
 #endif  // !__LP64__
