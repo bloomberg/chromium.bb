@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from gdb_test import AssertEquals
 import gdb_test
 import os
 
@@ -17,13 +18,13 @@ def CheckBacktrace(backtrace, functions):
 
 def test(gdb):
   gdb.Command('break inside_f3')
-  assert gdb.ResumeCommand('continue')['reason'] == 'breakpoint-hit'
+  AssertEquals(gdb.ResumeCommand('continue')['reason'], 'breakpoint-hit')
   # Check we stopped in inside_spin
   backtrace = gdb.Command('-stack-list-frames')
   CheckBacktrace(backtrace['stack'], ['inside_f3', 'f3'])
   # Check we have one more thread
   thread_info = gdb.Command('-thread-info')
-  assert len(thread_info['threads']) == 2
+  AssertEquals(len(thread_info['threads']), 2)
   # Select another thread
   syscall_thread_id = thread_info['threads'][0]['id']
   if syscall_thread_id == thread_info['current-thread-id']:

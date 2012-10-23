@@ -3,15 +3,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from gdb_test import AssertEquals
 import gdb_test
 import os
 
 
 def test(gdb):
   gdb.Command('break test_stepi_after_break')
-  assert gdb.ResumeCommand('continue')['reason'] == 'breakpoint-hit'
+  AssertEquals(gdb.ResumeCommand('continue')['reason'], 'breakpoint-hit')
   # From GDB/MI documentation, 'stepi' statement should be
-  #   assert gdb.ResumeCommand('stepi')['reason'] == 'end-stepping-range'
+  #   AssertEquals(gdb.ResumeCommand('stepi')['reason'], 'end-stepping-range')
   # but in reality 'stepi' stop reason is simply omitted.
   gdb.ResumeCommand('stepi')
   gdb.Quit()

@@ -11,6 +11,11 @@ import subprocess
 import sys
 
 
+def AssertEquals(x, y):
+  if x != y:
+    raise AssertionError('%r != %r' % (x, y))
+
+
 def FilenameToUnix(str):
   return str.replace('\\', '/')
 
@@ -168,7 +173,7 @@ class RecordParser(object):
     result = {}
     if self.Skip(','):
       result = self.ParseDictMembers()
-    assert self.pos == len(self.line)
+    AssertEquals(self.pos, len(self.line))
     return (status_match.group(0), result)
 
 
@@ -227,19 +232,19 @@ class Gdb(object):
 
   def Command(self, command):
     status, items = self._GetResultRecord(self._SendRequest(command))
-    assert status == '^done', status
+    AssertEquals(status, '^done')
     return items
 
   def ResumeCommand(self, command):
     status, items = self._GetResultRecord(self._SendRequest(command))
-    assert status == '^running', status
+    AssertEquals(status, '^running')
     status, items = self._GetLastExecAsyncRecord(self._GetResponse())
-    assert status == '*stopped', status
+    AssertEquals(status, '*stopped')
     return items
 
   def Quit(self):
     status, items = self._GetResultRecord(self._SendRequest('-gdb-exit'))
-    assert status == '^exit', status
+    AssertEquals(status, '^exit')
 
   def Eval(self, expression):
     return self.Command('-data-evaluate-expression ' + expression)['value']

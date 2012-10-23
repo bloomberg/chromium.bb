@@ -3,17 +3,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from gdb_test import AssertEquals
 import gdb_test
 import os
 
 
 def test(gdb):
   gdb.Command('break test_step_from_function_start')
-  assert gdb.ResumeCommand('continue')['reason'] == 'breakpoint-hit'
+  AssertEquals(gdb.ResumeCommand('continue')['reason'], 'breakpoint-hit')
   gdb.ResumeCommand('step')
   gdb.ResumeCommand('step')
   gdb.ResumeCommand('step')
-  assert gdb.Eval('global_var') == '1'
+  AssertEquals(gdb.Eval('global_var'), '1')
   gdb.Quit()
 
 

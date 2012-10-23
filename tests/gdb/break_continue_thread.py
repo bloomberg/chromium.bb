@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from gdb_test import AssertEquals
 import gdb_test
 import os
 
@@ -11,10 +12,10 @@ def test(gdb):
   gdb.Command('break foo')
   gdb.Command('break bar')
   # Program runs 2 threads, each calls foo and bar - expect 4 breakpoint hits.
-  assert gdb.ResumeCommand('continue')['reason'] == 'breakpoint-hit'
-  assert gdb.ResumeCommand('continue')['reason'] == 'breakpoint-hit'
-  assert gdb.ResumeCommand('continue')['reason'] == 'breakpoint-hit'
-  assert gdb.ResumeCommand('continue')['reason'] == 'breakpoint-hit'
+  AssertEquals(gdb.ResumeCommand('continue')['reason'], 'breakpoint-hit')
+  AssertEquals(gdb.ResumeCommand('continue')['reason'], 'breakpoint-hit')
+  AssertEquals(gdb.ResumeCommand('continue')['reason'], 'breakpoint-hit')
+  AssertEquals(gdb.ResumeCommand('continue')['reason'], 'breakpoint-hit')
   gdb.Quit()
 
 
