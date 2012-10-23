@@ -35,6 +35,7 @@ from idl_lexer import IDLLexer
 from idl_node import IDLAttribute, IDLFile, IDLNode
 from idl_option import GetOption, Option, ParseOptions
 from idl_lint import Lint
+from idl_visitor import IDLVisitor
 
 from ply import lex
 from ply import yacc
@@ -242,6 +243,7 @@ class IDLParser(IDLLexer):
                 | namespace top_list
                 | struct_block top_list
                 | typedef_decl top_list
+                | bad_decl top_list
                 | """
     if len(p) > 2:
       p[0] = ListFromConcat(p[1], p[2])
@@ -251,6 +253,11 @@ class IDLParser(IDLLexer):
   def p_top_error(self, p):
     """top_list : error top_list"""
     p[0] = p[2]
+
+  # Recover from error and continue parsing at the next top match.
+  def p_bad_decl(self, p):
+    """bad_decl : modifiers SYMBOL error '}' ';'"""
+    p[0] = []
 
 #
 # Modifier List
@@ -443,6 +450,11 @@ class IDLParser(IDLLexer):
     p[0] = self.BuildProduction('Describe', p, 2, children)
     if self.parse_debug: DumpReduction('describe_block', p)
 
+  # Recover from describe error and continue parsing at the next top match.
+  def p_describe_error(self, p):
+    """describe_list : error describe_list"""
+    p[0] = []
+
   def p_describe_list(self, p):
     """describe_list : modifiers SYMBOL ';' describe_list
                      | modifiers ENUM ';' describe_list
@@ -452,10 +464,6 @@ class IDLParser(IDLLexer):
     if len(p) > 1:
       Type = self.BuildNamed('Type', p, 2, p[1])
       p[0] = ListFromConcat(Type, p[4])
-
-  def p_describe_error(self, p):
-    """describe_list : error describe_list"""
-    p[0] = p[2]
 
 #
 # Constant Values (integer, value)
@@ -648,6 +656,15 @@ class IDLParser(IDLLexer):
     p[0] = self.BuildNamed('Enum', p, 3, ListFromConcat(p[1], p[5]))
     if self.parse_debug: DumpReduction('enum_block', p)
 
+  # Recover from enum error and continue parsing at the next top match.
+  def p_enum_errorA(self, p):
+    """enum_block : modifiers ENUM error '{' enum_list '}' ';'"""
+    p[0] = []
+
+  def p_enum_errorB(self, p):
+    """enum_block : modifiers ENUM error ';'"""
+    p[0] = []
+
   def p_enum_list(self, p):
     """enum_list : modifiers SYMBOL '=' expression enum_cont
                  | modifiers SYMBOL enum_cont"""
@@ -743,6 +760,10 @@ class IDLParser(IDLLexer):
     p[0] = self.BuildNamed('Interface', p, 3, ListFromConcat(p[1], p[5]))
     if self.parse_debug: DumpReduction('interface_block', p)
 
+  def p_interface_error(self, p):
+    """interface_block : modifiers INTERFACE error '{' interface_list '}' ';'"""
+    p[0] = []
+
   def p_interface_list(self, p):
     """interface_list : member_function ';' interface_list
                       | """
@@ -750,9 +771,6 @@ class IDLParser(IDLLexer):
       p[0] = ListFromConcat(p[1], p[3])
       if self.parse_debug: DumpReduction('interface_list', p)
 
-  def p_interface_error(self, p):
-    """interface_list : error interface_list"""
-    p[0] = p[2]
 
 #
 # Struct
@@ -766,15 +784,17 @@ class IDLParser(IDLLexer):
     p[0] = self.BuildNamed('Struct', p, 3, children)
     if self.parse_debug: DumpReduction('struct_block', p)
 
+  # Recover from struct error and continue parsing at the next top match.
+  def p_struct_error(self, p):
+    """enum_block : modifiers STRUCT error '{' struct_list '}' ';'"""
+    p[0] = []
+
   def p_struct_list(self, p):
     """struct_list : member_attribute ';' struct_list
                    | member_function ';' struct_list
                    |"""
     if len(p) > 1: p[0] = ListFromConcat(p[1], p[3])
 
-  def p_struct_error(self, p):
-    """struct_list : error struct_list"""
-    p[0] = p[2]
 
 #
 # Parser Errors
@@ -1103,6 +1123,60 @@ def TestNamespaceFiles(filter):
     InfoOut.Log("Passed namespace test.")
   return errs
 
+
+
+def FindVersionError(releases, node):
+  err_cnt = 0
+  if node.IsA('Interface', 'Struct'):
+    comment_list = []
+    comment = node.GetOneOf('Comment')
+    if comment:
+      print comment.GetName()
+    if comment and comment.GetName()[:4] == 'REL:':
+      comment_list = comment.GetName()[5:].strip().split(' ')
+      print comment_list
+
+    if len(comment_list) != len(releases):
+      node.Error("Mismatch size of releases: %s vs %s." % (
+          comment_list, releases))
+      err_cnt += 1
+    else:
+      first_list = [node.first_release[rel] for rel in releases]
+      if first_list != comment_list:
+        node.Error("Mismatch in releases: %s vs %s." % (
+            comment_list, first_list))
+        err_cnt += 1
+
+  for child in node.GetChildren():
+    err_cnt += FindVersionError(releases, child)
+  return err_cnt
+
+
+def TestVersionFiles(filter):
+  idldir = os.path.split(sys.argv[0])[0]
+  idldir = os.path.join(idldir, 'test_version', '*.idl')
+  filenames = glob.glob(idldir)
+  testnames = []
+
+  for filename in filenames:
+    if filter and filename not in filter: continue
+    testnames.append(filename)
+
+  # If we have no files to test, then skip this test
+  if not testnames:
+    InfoOut.Log('No files to test for version.')
+    return 0
+
+  ast = ParseFiles(testnames)
+  errs = FindVersionError(ast.releases, ast)
+
+  if errs:
+    ErrOut.Log("Failed version test.")
+  else:
+    InfoOut.Log("Passed version test.")
+  return errs
+
+
 default_dirs = ['.', 'trusted', 'dev', 'private']
 def ParseFiles(filenames):
   parser = IDLParser()
@@ -1140,6 +1214,7 @@ def Main(args):
   if GetOption('test'):
     errs = TestErrorFiles(filenames)
     errs = TestNamespaceFiles(filenames)
+    errs = TestVersionFiles(filenames)
     if errs:
       ErrOut.Log("Parser failed with %d errors." % errs)
       return  -1
@@ -1156,3 +1231,4 @@ def Main(args):
 
 if __name__ == '__main__':
   sys.exit(Main(sys.argv[1:]))
+

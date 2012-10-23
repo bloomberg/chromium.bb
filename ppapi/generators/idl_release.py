@@ -107,6 +107,24 @@ class IDLRelease(object):
       InfoOut.Log('%f to %f is in %s' % (rmin, rmax, self))
     return True
 
+  def GetMinMax(self, releases = None):
+    if not releases:
+      return self.rmin, self.rmax
+
+    if not self.rmin:
+      rmin = releases[0]
+    else:
+      rmin = str(self.rmin)
+    if not self.rmax:
+      rmax = releases[-1]
+    else:
+      rmax = str(self.rmax)
+    return (rmin, rmax)
+
+  def SetMin(self, release):
+    assert not self.rmin
+    self.rmin = release
+
   def Error(self, msg):
     ReportReleaseError(msg)
 
@@ -123,10 +141,13 @@ class IDLRelease(object):
 #
 class IDLReleaseList(object):
   def __init__(self):
-    self.nodes = []
+    self._nodes = []
+
+  def GetReleases(self):
+    return self._nodes
 
   def FindRelease(self, release):
-    for node in self.nodes:
+    for node in self._nodes:
       if node.IsRelease(release):
         return node
     return None
@@ -135,7 +156,7 @@ class IDLReleaseList(object):
     assert (rmin == None) or rmin != rmax
 
     out = []
-    for node in self.nodes:
+    for node in self._nodes:
       if node.InRange(rmin, rmax):
         out.append(node)
     return out
@@ -146,7 +167,7 @@ class IDLReleaseList(object):
     last = None
 
     # Check current releases in that namespace
-    for cver in self.nodes:
+    for cver in self._nodes:
       if GetOption('release_debug'): InfoOut.Log('  Checking %s' % cver)
 
       # We should only be missing a 'release' tag for the first item.
@@ -180,7 +201,7 @@ class IDLReleaseList(object):
     # and does not overlap with anything previously added, so
     # we can add it to the end of the list.
     if GetOption('release_debug'): InfoOut.Log('Done %s' % node)
-    self.nodes.append(node)
+    self._nodes.append(node)
     return True
 
 #
@@ -210,6 +231,12 @@ class IDLReleaseMap(object):
 
   def GetReleases(self):
     return self.releases
+
+  def GetReleaseRange(self):
+    return (self.releases[0], self.releases[-1])
+
+  def GetVersionRange(self):
+    return (self.versions[0], self.version[-1])
 
 #
 # Test Code
@@ -321,3 +348,4 @@ def Main(args):
 
 if __name__ == '__main__':
   sys.exit(Main(sys.argv[1:]))
+

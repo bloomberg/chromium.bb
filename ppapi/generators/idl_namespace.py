@@ -28,45 +28,46 @@ Option('namespace_debug', 'Use the specified release')
 # one or more IDLNodes based on a release or range of releases.
 #
 class IDLNamespace(object):
-  def __init__(self, parent):
-    self.namespace = {}
-    self.parent = parent
+  def __init__(self, parent, name):
+    self._name_to_releases = {}
+    self._parent = parent
+    self._name = name
 
   def Dump(self):
-    for name in self.namespace:
+    for name in self._name_to_releases:
       InfoOut.Log('NAME=%s' % name)
-      for cver in self.namespace[name].nodes:
+      for cver in self._name_to_releases[name].GetReleases():
         InfoOut.Log('  %s' % cver)
       InfoOut.Log('')
 
   def FindRelease(self, name, release):
-    verlist = self.namespace.get(name, None)
+    verlist = self._name_to_releases.get(name, None)
     if verlist == None:
-      if self.parent:
-        return self.parent.FindRelease(name, release)
+      if self._parent:
+        return self._parent.FindRelease(name, release)
       else:
         return None
     return verlist.FindRelease(release)
 
   def FindRange(self, name, rmin, rmax):
-    verlist = self.namespace.get(name, None)
+    verlist = self._name_to_releases.get(name, None)
     if verlist == None:
-      if self.parent:
-        return self.parent.FindRange(name, rmin, rmax)
+      if self._parent:
+        return self._parent.FindRange(name, rmin, rmax)
       else:
         return []
     return verlist.FindRange(rmin, rmax)
 
   def FindList(self, name):
-    verlist = self.namespace.get(name, None)
+    verlist = self._name_to_releases.get(name, None)
     if verlist == None:
-      if self.parent:
-        return self.parent.FindList(name)
+      if self._parent:
+        return self._parent.FindList(name)
     return verlist
 
   def AddNode(self, node):
     name = node.GetName()
-    verlist = self.namespace.setdefault(name,IDLReleaseList())
+    verlist = self._name_to_releases.setdefault(name,IDLReleaseList())
     if GetOption('namespace_debug'):
         print "Adding to namespace: %s" % node
     return verlist.AddNode(node)
@@ -247,3 +248,4 @@ def Main(args):
 
 if __name__ == '__main__':
   sys.exit(Main(sys.argv[1:]))
+

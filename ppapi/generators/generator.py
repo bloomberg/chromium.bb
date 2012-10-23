@@ -36,8 +36,12 @@ def Main():
 
   filenames = ParseOptions(args)
   ast = ParseFiles(filenames)
+  if ast.errors:
+    print 'Found %d errors.  Aborting build.\n' % ast.errors
+    return 1
   return Generator.Run(ast)
 
 
 if __name__ == '__main__':
   sys.exit(Main())
+

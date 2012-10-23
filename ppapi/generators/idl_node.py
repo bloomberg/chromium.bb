@@ -63,6 +63,7 @@ class IDLNode(IDLRelease):
     self.lineno = lineno
     self.pos = pos
     self.filename = filename
+    self.filenode = None
     self.hashes = {}
     self.deps = {}
     self.errors = 0
@@ -70,6 +71,13 @@ class IDLNode(IDLRelease):
     self.typelist = None
     self.parent = None
     self.property_node = IDLPropertyNode()
+
+    # A list of unique releases for this node
+    self.releases = None
+
+    # A map from any release, to the first unique release
+    self.first_release = None
+
     # self.children is a list of children ordered as defined
     self.children = []
     # Process the passed in list of children, placing ExtAttributes into the
@@ -104,7 +112,9 @@ class IDLNode(IDLRelease):
     self.errors += 1
     ErrOut.LogLine(self.filename, self.lineno, 0, ' %s %s' %
                    (str(self), msg))
-    if self.lineno == 46: raise Exception("huh?")
+    if self.filenode:
+      errcnt = self.filenode.GetProperty('ERRORS', 0)
+      self.filenode.SetProperty('ERRORS', errcnt + 1)
 
   # Log a warning for this object
   def Warning(self, msg):
@@ -130,13 +140,19 @@ class IDLNode(IDLRelease):
     if not comments and is_comment: return
 
     tab = ''.rjust(depth * 2)
-
     if is_comment:
       out.write('%sComment\n' % tab)
       for line in self.GetName().split('\n'):
         out.write('%s  "%s"\n' % (tab, line))
     else:
-      out.write('%s%s\n' % (tab, self))
+      ver = IDLRelease.__str__(self)
+      if self.releases:
+        release_list = ': ' + ' '.join(self.releases)
+      else:
+        release_list = ': undefined'
+      out.write('%s%s%s%s\n' % (tab, self, ver, release_list))
+    if self.typelist:
+      out.write('%s  Typelist: %s\n' % (tab, self.typelist.GetReleases()[0]))
     properties = self.property_node.GetPropertyList()
     if properties:
       out.write('%s  Properties\n' % tab)
@@ -151,7 +167,6 @@ class IDLNode(IDLRelease):
 #
 # Search related functions
 #
-
   # Check if node is of a given type
   def IsA(self, *typelist):
     if self.cls in typelist: return True
@@ -247,58 +262,102 @@ class IDLNode(IDLRelease):
       return None
     return filenode.release_map.GetVersion(release)
 
+  def GetUniqueReleases(self, releases):
+    my_min, my_max = self.GetMinMax(releases)
+    if my_min > releases[-1] or my_max < releases[0]:
+      return []
+
+    out = set()
+    for rel in releases:
+      remapped = self.first_release[rel]
+      if not remapped: continue
+      if remapped < releases[0]:
+        remapped = releases[0]
+      out |= set([remapped])
+    out = sorted(out)
+    return out
+
+
   def GetRelease(self, version):
     filenode = self.GetProperty('FILE')
     if not filenode:
       return None
     return filenode.release_map.GetRelease(version)
 
-  def GetUniqueReleases(self, releases):
-    # Given a list of global release, return a subset of releases
-    # for this object that change.
-    last_hash = None
-    builds = []
-    filenode = self.GetProperty('FILE')
-    file_releases = filenode.release_map.GetReleases()
+  def _GetReleases(self, releases):
+    if not self.releases:
+      my_min, my_max = self.GetMinMax(releases)
+      my_releases = [my_min]
+      if my_max != releases[-1]:
+        my_releases.append(my_max)
+      my_releases = set(my_releases)
+      for child in self.GetChildren():
+        if child.IsA('Copyright', 'Comment', 'Label'):
+          continue
+        my_releases |= child.GetReleases(releases)
+      self.releases = my_releases
+    return self.releases
 
-    # Generate a set of unique releases for this object based on versions
-    # available in this file's release labels.
-    for rel in file_releases:
-      # Check if this object is valid for the release in question.
-      if not self.IsRelease(rel): continue
-      # Only add it if the hash is different.
-      cur_hash = self.GetHash(rel)
-      if last_hash != cur_hash:
-        builds.append(rel)
-      last_hash = cur_hash
 
-    # Remap the requested releases to releases in the unique build set to
-    # use first available release names and remove duplicates.
-    # UNIQUE VERSION: 'M13', 'M14', 'M17'
-    # REQUESTED RANGE: 'M15', 'M16', 'M17', 'M18'
-    # REMAP RESULT:  'M14', 'M17'
-    out_list = []
-    build_len = len(builds)
-    build_index = 0
-    rel_len = len(releases)
-    rel_index = 0
+  def _GetReleaseList(self, releases):
+    if not self.releases:
+      # If we are unversionable, then return first available release
+      if self.IsA('Comment', 'Copyright', 'Label'):
+        self.releases = []
+        return self.releases
 
-    while build_index < build_len and rel_index < rel_len:
-      while rel_index < rel_len and releases[rel_index] < builds[build_index]:
-        rel_index = rel_index + 1
+      # Generate the first and if deprecated within this subset, the
+      # last release for this node
+      my_min, my_max = self.GetMinMax(releases)
 
-      # If we've reached the end of the request list, we must be done
-      if rel_index == rel_len:
-        break
+      if my_max != releases[-1]:
+        my_releases = set([my_min, my_max])
+      else:
+        my_releases = set([my_min])
 
-      # Check this current request
-      cur = releases[rel_index]
-      while build_index < build_len and cur >= builds[build_index]:
-        build_index = build_index + 1
+      # Files inherit all there releases from items in the file
+      if self.IsA('AST', 'File'):
+        my_releases = set()
 
-      out_list.append(builds[build_index - 1])
-      rel_index = rel_index + 1
-    return out_list
+      child_releases = set()
+      for child in self.children:
+        child_releases |= set(child._GetReleaseList(releases))
+
+      type_releases = set()
+      if self.typelist:
+        type_list = self.typelist.GetReleases()
+        for typenode in type_list:
+          type_releases |= set(typenode._GetReleaseList(releases))
+
+        type_release_list = sorted(type_releases)
+        if my_min < type_release_list[0]:
+          type_node = type_list[0]
+          self.Error('requires %s in %s which is undefined at %s.' % (
+              type_node, type_node.filename, my_min))
+
+      for rel in child_releases:
+        if rel >= my_min and rel <= my_max:
+          my_releases |= set([rel])
+
+      self.releases = sorted(my_releases)
+
+    return self.releases
+
+  def GetReleaseList(self):
+    return self.releases
+
+  def BuildReleaseMap(self, releases):
+    unique_list = self._GetReleaseList(releases)
+    my_min, my_max = self.GetMinMax(releases)
+
+    self.first_release = {}
+    last_rel = None
+    for rel in releases:
+      if rel in unique_list:
+        last_rel = rel
+      self.first_release[rel] = last_rel
+      if rel == my_max:
+        last_rel = None
 
   def SetProperty(self, name, val):
     self.property_node.SetProperty(name, val)
@@ -393,3 +452,4 @@ def Main():
 
 if __name__ == '__main__':
   sys.exit(Main())
+

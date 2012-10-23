@@ -110,8 +110,8 @@ class HGen(GeneratorByFile):
 
   def GenerateFile(self, filenode, releases, options):
     savename = GetOutFileName(filenode, GetOption('dstroot'))
-    unique_releases = filenode.GetUniqueReleases(releases)
-    if not unique_releases:
+    my_min, my_max = filenode.GetMinMax(releases)
+    if my_min > releases[-1] or my_max < releases[0]:
       if os.path.isfile(savename):
         print "Removing stale %s for this range." % filenode.GetName()
         os.remove(os.path.realpath(savename))

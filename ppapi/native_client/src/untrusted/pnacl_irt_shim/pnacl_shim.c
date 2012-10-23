@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* Last generated from IDL: Fri Oct 19 10:45:30 2012. */
+/* Last generated from IDL: Mon Oct 22 13:38:21 2012. */
 #include "ppapi/generators/pnacl_shim.h"
 
 #include "ppapi/c/ppb.h"

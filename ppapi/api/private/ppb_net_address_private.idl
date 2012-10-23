@@ -8,6 +8,7 @@
  */
 
 label Chrome {
+    M13 = 0.0,
     M17 = 0.1,
     M19_0 = 1.0,
     M19_1 = 1.1
@@ -43,7 +44,7 @@ struct PP_NetAddress_Private {
  * The <code>PPB_NetAddress_Private</code> interface provides operations on
  * network addresses.
  */
-interface PPB_NetAddress_Private {
+[version=0.1] interface PPB_NetAddress_Private {
   /**
    * Returns PP_TRUE if the two addresses are equal (host and port).
    */

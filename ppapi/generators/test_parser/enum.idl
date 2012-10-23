@@ -43,9 +43,8 @@ enum Es6 {
   E6 = 12
 }
 
-/* OK Enum(Es7) */
+/* Bad comment because of Es6 */
 enum Es7 {
-  /* OK EnumItem(E11) */
   E11 = 11
 };
 
@@ -55,6 +54,7 @@ enum Es8 {
   /* OK EnumItem(E12) */
   E12 = 12,
   /* OK EnumItem(E13) */
+  /* FAIL Unexpected value 13.0 after "=". */
   E13 = 13.0,
   /* FAIL Unexpected string "hello" after "=". */
   /* OK EnumItem(E14) */

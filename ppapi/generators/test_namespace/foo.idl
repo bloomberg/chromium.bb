@@ -15,6 +15,8 @@ struct PP_Size {
 
 /* PPAPI Enum */
 enum PP_Bool {
+  /* Decalare False */
   PP_FALSE = 0,
+  /* Decalare True */
   PP_TRUE  = 1
 };

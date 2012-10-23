@@ -19,28 +19,76 @@ BuiltIn = set(['int8_t', 'int16_t', 'int32_t', 'int64_t', 'uint8_t',
 
 
 #
-# IDLNamespaceLabelResolver
+# IDLLabelResolver
 #
-# Once the AST is build, we need to resolve the namespace and version
-# information.
+# A specialized visitor which traverses the AST, building a mapping of
+# Release names to Versions numbers and calculating a min version.
+# The mapping is applied to the File nodes within the AST.
 #
-class IDLNamespaceLabelResolver(IDLVisitor):
+class IDLLabelResolver(IDLVisitor):
+  def Arrive(self, node, ignore):
+    # If we are entering a File, clear the visitor local mapping
+    if node.IsA('File'):
+      self.release_map = None
+      self.filenode = node
+    # For any non AST node, the filenode is the last known file
+    if not node.IsA('AST'):
+      node.filenode = self.filenode
+    return ignore
+
+  def Depart(self, node, ignore, childdata):
+    # Build list of Release=Version
+    if node.IsA('LabelItem'):
+      return (node.GetName(), node.GetProperty('VALUE'))
+
+    # On completion of the Label, apply to the parent File if the
+    # name of the label matches the generation label.
+    if node.IsA('Label') and node.GetName() == GetOption('label'):
+      try:
+        self.release_map = IDLReleaseMap(childdata)
+        node.parent.release_map = self.release_map
+      except Exception as err:
+        node.Error('Unable to build release map: %s' % str(err))
+
+    # For File objects, set the minimum version
+    if node.IsA('File'):
+      file_min, file_max = node.release_map.GetReleaseRange()
+      node.SetMin(file_min)
+
+    return None
+
+
+#
+# IDLNamespaceVersionResolver
+#
+# A specialized visitor which traverses the AST, building a namespace tree
+# as it goes.  The namespace tree is mapping from a name to a version list.
+# Labels must already be resolved to use.
+#
+class IDLNamespaceVersionResolver(IDLVisitor):
   NamespaceSet = set(['AST', 'Callspec', 'Interface', 'Member', 'Struct'])
   #
   # When we arrive at a node we must assign it a namespace and if the
   # node is named, then place it in the appropriate namespace.
   #
   def Arrive(self, node, parent_namespace):
-    # If we are entering a parent, clear the local Label\
-    if node.IsA('File'): self.release_map = None
+    # If we are a File, grab the Min version and replease mapping
+    if node.IsA('File'):
+      self.rmin = node.GetMinMax()[0]
+      self.release_map = node.release_map
+
+    # Set the min version on any non Label within the File
+    if not node.IsA('AST', 'File', 'Label', 'LabelItem'):
+      my_min, my_max = node.GetMinMax()
+      if not my_min:
+        node.SetMin(self.rmin)
 
     # If this object is not a namespace aware object, use the parent's one
     if node.cls not in self.NamespaceSet:
       node.namespace = parent_namespace
     else:
     # otherwise create one.
-      node.namespace = IDLNamespace(parent_namespace)
-      node.namespace.name = node.GetName()
+      node.namespace = IDLNamespace(parent_namespace, node.GetName())
 
     # If this node is named, place it in its parent's namespace
     if parent_namespace and node.cls in IDLNode.NamedSet:
@@ -48,7 +96,11 @@ class IDLNamespaceLabelResolver(IDLVisitor):
       if self.release_map:
         vmin = node.GetProperty('version')
         vmax = node.GetProperty('deprecate')
-        rmin = self.release_map.GetRelease(vmin)
+        # If no min is available, the use the parent File's min
+        if vmin == None:
+          rmin = self.rmin
+        else:
+          rmin = self.release_map.GetRelease(vmin)
         rmax = self.release_map.GetRelease(vmax)
         node.SetReleaseRange(rmin, rmax)
       parent_namespace.AddNode(node)
@@ -56,24 +108,15 @@ class IDLNamespaceLabelResolver(IDLVisitor):
     # Pass this namespace to each child in case they inherit it
     return node.namespace
 
-  #
-  # As we return from a node, if the node is a LabelItem we pass back
-  # the key=value pair representing the mapping of release to version.
-  # If the node is a Label take the lists of mapping and generate a
-  # version map which is assigned to the Labels parent as a property.
-  #
-  def Depart(self, node, data, childdata):
-    if node.IsA('LabelItem'):
-      return (node.GetName(), node.GetProperty('VALUE'))
-    if node.IsA('Label') and node.GetName() == GetOption('label'):
-      try:
-        self.release_map = IDLReleaseMap(childdata)
-        node.parent.release_map = self.release_map
-      except Exception as err:
-        node.Error('Unable to build release map: %s' % str(err))
-    return None
 
-
+#
+# IDLFileTypeRessolver
+#
+# A specialized visitor which traverses the AST and sets a FILE property
+# on all file nodes.  In addition, searches the namespace resolving all
+# type references.  The namespace tree must already have been populated
+# before this visitor is used.
+#
 class IDLFileTypeResolver(IDLVisitor):
   def VisitFilter(self, node, data):
     return not node.IsA('Comment', 'Copyright')
@@ -82,6 +125,13 @@ class IDLFileTypeResolver(IDLVisitor):
     # Track the file node to update errors
     if node.IsA('File'):
       node.SetProperty('FILE', node)
+      filenode = node
+
+    if not node.IsA('AST'):
+      file_min, file_max = filenode.release_map.GetReleaseRange()
+      if not file_min:
+        print 'Resetting min on %s to %s' % (node, file_min)
+        node.SetMinRange(file_min)
 
     # If this node has a TYPEREF, resolve it to a version list
     typeref = node.property_node.GetPropertyLocal('TYPEREF')
@@ -93,13 +143,26 @@ class IDLFileTypeResolver(IDLVisitor):
       node.typelist = None
     return filenode
 
+#
+# IDLReleaseResolver
+#
+# A specialized visitor which will traverse the AST, and generate a mapping
+# from any release to the first release in which that version of the object
+# was generated.  Types must already be resolved to use.
+#
+class IDLReleaseResolver(IDLVisitor):
+  def Arrive(self, node, releases):
+    node.BuildReleaseMap(releases)
+    return releases
+
 
 #
 # IDLAst
 #
 # A specialized version of the IDLNode for containing the whole of the
-# AST.  The specialized BuildTree function pulls the per file namespaces
-# into the global AST namespace and checks for collisions.
+# AST.  Construction of the AST object will cause resolution of the
+# tree including versions, types, etc...  Errors counts will be collected
+# both per file, and on the AST itself.
 #
 class IDLAst(IDLNode):
   def __init__(self, children):
@@ -107,18 +170,25 @@ class IDLAst(IDLNode):
     self.Resolve()
 
   def Resolve(self):
-    self.namespace = IDLNamespace(None)
-    self.namespace.name = 'AST'
-    IDLNamespaceLabelResolver().Visit(self, self.namespace)
+    # Set the appropriate Release=Version mapping for each File
+    IDLLabelResolver().Visit(self, None)
+
+    # Generate the Namesapce Tree
+    self.namespace = IDLNamespace(None, 'AST')
+    IDLNamespaceVersionResolver().Visit(self, self.namespace)
+
+    # Using the namespace, resolve type references
     IDLFileTypeResolver().Visit(self, None)
 
     # Build an ordered list of all releases
-    self.releases = set()
+    releases = set()
     for filenode in self.GetListOf('File'):
-      self.releases |= set(filenode.release_map.GetReleases())
-    self.releases = sorted(self.releases)
+      releases |= set(filenode.release_map.GetReleases())
 
-  def SetTypeInfo(self, name, properties):
-    node = self.namespace[name]
-    for prop in properties:
-      node.properties[prop] = properties[prop]
+    # Generate a per node list of releases and release mapping
+    IDLReleaseResolver().Visit(self, sorted(releases))
+
+    for filenode in self.GetListOf('File'):
+      self.errors += int(filenode.GetProperty('ERRORS', 0))
+
+

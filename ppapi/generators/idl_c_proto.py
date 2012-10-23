@@ -95,6 +95,13 @@ class CGen(object):
       'store': '%s',
       'return': '%s'
     },
+    'Interface': {
+      'in': 'const %s*',
+      'inout': '%s*',
+      'out': '%s**',
+      'return': '%s*',
+      'store': '%s*'
+    },
     'Struct': {
       'in': 'const %s*',
       'inout': '%s*',
@@ -243,6 +250,7 @@ class CGen(object):
       typeref = node
 
     if typeref is None:
+      node.Error('No type at release %s.' % release)
       raise CGenError('No type for %s' % node)
 
     # If the type is a (BuiltIn) Type then return it's name
@@ -252,8 +260,13 @@ class CGen(object):
       if name is None: name = typeref.GetName()
       name = '%s%s' % (prefix, name)
 
+    # For Interfaces, use the name + version
+    elif typeref.IsA('Interface'):
+      rel = typeref.first_release[release]
+      name = 'struct %s%s' % (prefix, self.GetStructName(typeref, rel, True))
+
     # For structures, preceed with 'struct' or 'union' as appropriate
-    elif typeref.IsA('Interface', 'Struct'):
+    elif typeref.IsA('Struct'):
       if typeref.GetProperty('union'):
         name = 'union %s%s' % (prefix, typeref.GetName())
       else:
@@ -427,8 +440,14 @@ class CGen(object):
   # Define a Typedef.
   def DefineTypedef(self, node, releases, prefix='', comment=False):
     __pychecker__ = 'unusednames=comment'
-    release = releases[0]
-    out = 'typedef %s;\n' % self.GetSignature(node, release, 'return',
+    build_list = node.GetUniqueReleases(releases)
+
+    # TODO(noelallen) : Bug 157017 finish multiversion support
+    if len(build_list) != 1:
+      node.Error('Can not support multiple versions of node.')
+    assert len(build_list) == 1
+
+    out = 'typedef %s;\n' % self.GetSignature(node, build_list[0], 'return',
                                               prefix, True)
     self.Log('DefineTypedef: %s' % out)
     return out
@@ -440,6 +459,7 @@ class CGen(object):
     name = '%s%s' % (prefix, node.GetName())
     notypedef = node.GetProperty('notypedef')
     unnamed = node.GetProperty('unnamed')
+
     if unnamed:
       out = 'enum {'
     elif notypedef:
@@ -504,6 +524,13 @@ class CGen(object):
     self.LogEnter('DefineStruct %s' % node)
     out = ''
     build_list = node.GetUniqueReleases(releases)
+
+    # TODO(noelallen) : Bug 157017 finish multiversion support
+    if node.IsA('Struct'):
+      if len(build_list) != 1:
+        node.Error('Can not support multiple versions of node.')
+      assert len(build_list) == 1
+
 
     if node.IsA('Interface'):
       # Build the most recent one versioned, with comments
@@ -654,13 +681,13 @@ def Main(args):
   if GetOption('test'):
     return TestFiles(filenames)
   ast = ParseFiles(filenames)
+  cgen = CGen()
   for f in ast.GetListOf('File'):
     if f.GetProperty('ERRORS') > 0:
       print 'Skipping %s' % f.GetName()
       continue
-    print DefineDepends(node)
     for node in f.GetChildren()[2:]:
-      print Define(node, comment=True, prefix='tst_')
+      print cgen.Define(node, comment=True, prefix='tst_')
 
 
 if __name__ == '__main__':
