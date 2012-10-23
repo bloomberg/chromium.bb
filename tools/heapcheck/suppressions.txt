@@ -1589,3 +1589,38 @@
    fun:predictors::ResourcePrefetcher::TryToLaunchPrefetchRequests
    fun:predictors::ResourcePrefetcher::Start
 }
+{
+   bug_157141_a
+   Heapcheck:Leak
+   ...
+   fun:WebAuthFlowTest_UIClosedByUser_Test::TestBody
+}
+{
+   bug_157141_b
+   Heapcheck:Leak
+   ...
+   fun:WebContentsImpl::Init
+   ...
+   fun:WebAuthFlowTest::SetUp
+}
+{
+   bug_155530_a
+   Heapcheck:Leak
+   ...
+   fun:GeolocationInfoBarQueueControllerTests_OneObservationPerInfoBarCancelled_Test::TestBody
+}
+{
+   bug_155530_b
+   Heapcheck:Leak
+   ...
+   fun:::CreateLocaleDefaultValue
+   ...
+   fun:GeolocationInfoBarQueueControllerTests::SetUp
+}
+{
+   bug_122183
+   Heapcheck:Leak
+   ...
+   fun:BrowserWithTestWindowTest::AddTab
+   fun:::ChromeToMobileServiceTest_RequirementsToEnable_Test::TestBody
+}
