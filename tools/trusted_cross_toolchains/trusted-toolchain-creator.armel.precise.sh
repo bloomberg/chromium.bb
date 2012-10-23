@@ -13,11 +13,11 @@
 #@ So there is a one-time step required for all machines using this TC.
 #@ Which is especially true for build-bots:
 #@
-#@  tools/llvm/trusted-toolchain-creator.armel.precise.sh  InstallCrossArmBasePackages
+#@  tools/trusted_cross_toolchains/trusted-toolchain-creator.armel.precise.sh  InstallCrossArmBasePackages
 #@
 #@
 #@  Generally this script is invoked as:
-#@  tools/llvm/trusted-toolchain-creator.armel.precise.sh <mode> <args>*
+#@  tools/trusted_cross_toolchains/trusted-toolchain-creator.armel.precise.sh <mode> <args>*
 #@  Available modes are shown below.
 #@
 #@
