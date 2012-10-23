@@ -134,6 +134,7 @@ bool CurtainModeMac::RemoveEventHandler() {
   OSStatus result = noErr;
   if (event_handler_) {
     result = ::RemoveEventHandler(event_handler_);
+    event_handler_ = NULL;
   }
   return result == noErr;
 }
