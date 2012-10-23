@@ -22,6 +22,7 @@ TOOLCHAIN_LABEL="pnacl_linux_x86"
 GSBASE="gs://nativeclient-archive2/pnacl/between_bots/llvm"
 
 export PNACL_BUILDBOT=true
+export PNACL_VERBOSE=true
 
 GSUTIL=buildbot/gsutil.sh
 PNACL_BUILD=pnacl/build.sh
