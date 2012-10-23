@@ -16,22 +16,15 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/managed_mode.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_metrics.h"
-#include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -49,6 +42,16 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_job.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(OS_IOS)
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/startup/startup_browser_creator.h"
+#endif  // !defined (OS_IOS)
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"
@@ -506,6 +509,9 @@ void ProfileManager::FindOrCreateNewWindowForProfile(
     chrome::startup::IsFirstRun is_first_run,
     chrome::HostDesktopType desktop_type,
     bool always_create) {
+#if defined(OS_IOS)
+  NOTREACHED();
+#else
   DCHECK(profile);
 
   if (!always_create) {
@@ -522,6 +528,7 @@ void ProfileManager::FindOrCreateNewWindowForProfile(
   StartupBrowserCreator browser_creator;
   browser_creator.LaunchBrowser(command_line, profile, FilePath(),
                                 process_startup, is_first_run, &return_code);
+#endif  // defined(OS_IOS)
 }
 
 void ProfileManager::Observe(
