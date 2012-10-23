@@ -37,7 +37,7 @@
 
 #include <config.h>
 
-#include <stddef.h>   // for std::ptrdiff_t
+#include <stddef.h>   // for ptrdiff_t
 #include <limits>
 
 #include "base/logging.h"
@@ -59,7 +59,7 @@ template <typename T, class Alloc>
 class STL_Allocator {
  public:
   typedef size_t     size_type;
-  typedef std::ptrdiff_t  difference_type;
+  typedef ptrdiff_t  difference_type;
   typedef T*         pointer;
   typedef const T*   const_pointer;
   typedef T&         reference;

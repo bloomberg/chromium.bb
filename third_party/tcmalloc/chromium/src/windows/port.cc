@@ -61,7 +61,7 @@ int getpagesize() {
   return pagesize;
 }
 
-extern "C" PERFTOOLS_DLL_DECL void* __sbrk(std::ptrdiff_t increment) {
+extern "C" PERFTOOLS_DLL_DECL void* __sbrk(ptrdiff_t increment) {
   LOG(FATAL, "Windows doesn't implement sbrk!\n");
   return NULL;
 }

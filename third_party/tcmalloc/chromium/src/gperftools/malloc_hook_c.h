@@ -135,13 +135,13 @@ int MallocHook_AddMremapHook(MallocHook_MremapHook hook);
 PERFTOOLS_DLL_DECL
 int MallocHook_RemoveMremapHook(MallocHook_MremapHook hook);
 
-typedef void (*MallocHook_PreSbrkHook)(std::ptrdiff_t increment);
+typedef void (*MallocHook_PreSbrkHook)(ptrdiff_t increment);
 PERFTOOLS_DLL_DECL
 int MallocHook_AddPreSbrkHook(MallocHook_PreSbrkHook hook);
 PERFTOOLS_DLL_DECL
 int MallocHook_RemovePreSbrkHook(MallocHook_PreSbrkHook hook);
 
-typedef void (*MallocHook_SbrkHook)(const void* result, std::ptrdiff_t increment);
+typedef void (*MallocHook_SbrkHook)(const void* result, ptrdiff_t increment);
 PERFTOOLS_DLL_DECL
 int MallocHook_AddSbrkHook(MallocHook_SbrkHook hook);
 PERFTOOLS_DLL_DECL

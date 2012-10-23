@@ -328,7 +328,7 @@ class MemoryRegionMap {
   static void MremapHook(const void* result, const void* old_addr,
                          size_t old_size, size_t new_size, int flags,
                          const void* new_addr);
-  static void SbrkHook(const void* result, std::ptrdiff_t increment);
+  static void SbrkHook(const void* result, ptrdiff_t increment);
 
   // Log all memory regions; Useful for debugging only.
   // Assumes Lock() is held

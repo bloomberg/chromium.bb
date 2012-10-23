@@ -127,7 +127,7 @@ void InitialPreMMapHook(const void* start,
   MallocHook::InvokePreMmapHook(start, size, protection, flags, fd, offset);
 }
 
-void InitialPreSbrkHook(std::ptrdiff_t increment) {
+void InitialPreSbrkHook(ptrdiff_t increment) {
   perftools_pthread_once(&once, &RemoveInitialHooksAndCallInitializers);
   MallocHook::InvokePreSbrkHook(increment);
 }
@@ -581,11 +581,11 @@ void MallocHook::InvokeMremapHookSlow(const void* result,
                                            flags, new_addr));
 }
 
-void MallocHook::InvokePreSbrkHookSlow(std::ptrdiff_t increment) {
+void MallocHook::InvokePreSbrkHookSlow(ptrdiff_t increment) {
   INVOKE_HOOKS(PreSbrkHook, presbrk_hooks_, (increment));
 }
 
-void MallocHook::InvokeSbrkHookSlow(const void* result, std::ptrdiff_t increment) {
+void MallocHook::InvokeSbrkHookSlow(const void* result, ptrdiff_t increment) {
   INVOKE_HOOKS(SbrkHook, sbrk_hooks_, (result, increment));
 }
 

@@ -293,7 +293,7 @@ inline MallocHook::PreSbrkHook MallocHook::GetPreSbrkHook() {
   return base::internal::presbrk_hook_.Get();
 }
 
-inline void MallocHook::InvokePreSbrkHook(std::ptrdiff_t increment) {
+inline void MallocHook::InvokePreSbrkHook(ptrdiff_t increment) {
   if (!base::internal::presbrk_hooks_.empty() && increment != 0) {
     InvokePreSbrkHookSlow(increment);
   }
@@ -309,7 +309,7 @@ inline MallocHook::SbrkHook MallocHook::GetSbrkHook() {
 }
 
 inline void MallocHook::InvokeSbrkHook(const void* result,
-                                       std::ptrdiff_t increment) {
+                                       ptrdiff_t increment) {
   if (!base::internal::sbrk_hooks_.empty() && increment != 0) {
     InvokeSbrkHookSlow(result, increment);
   }
