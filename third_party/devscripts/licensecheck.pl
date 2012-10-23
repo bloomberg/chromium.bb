@@ -4,6 +4,7 @@
 #
 # This version is
 #   Copyright (C) 2007, 2008 Adam D. Barratt
+#   Copyright (C) 2012 Francesco Poli
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,7 +29,8 @@ B<licensecheck> B<--help>|B<--version>
 
 B<licensecheck> [B<--no-conf>] [B<--verbose>] [B<--copyright>]
 [B<-l>|B<--lines=>I<N>] [B<-i>|B<--ignore=>I<regex>] [B<-c>|B<--check=>I<regex>]
-[B<-r>|B<--recursive>] I<list of files and directories to check>
+[B<-m>|B<--machine>] [B<-r>|B<--recursive>]
+I<list of files and directories to check>
 
 =head1 DESCRIPTION
 
@@ -76,6 +78,13 @@ The default includes common source files.
 =item B<--copyright>
 
 Also display copyright text found within the file
+
+=item B<-m>, B<--machine>
+
+Display the information in a machine readable way, i.e. in the form
+<file><tab><license>[<tab><copyright>] so that it can be easily sorted
+and/or filtered, e.g. with the B<awk> and B<sort> commands.
+Note that using the B<--verbose> option will kill the readability.
 
 =item B<--no-conf>, B<--noconf>
 
@@ -155,7 +164,7 @@ my $default_ignore_regex = '
 $default_ignore_regex =~ s/^#.*$//mg;
 $default_ignore_regex =~ s/\n//sg;
 
-my $default_check_regex = '\.(c(c|pp|xx)?|h(h|pp|xx)?|f(77|90)?|p(l|m)|xs|sh|php|py|rb|java|vala|el|sc(i|e)|cs|pas|inc|dtd|xsl|mod)$';
+my $default_check_regex = '\.(c(c|pp|xx)?|h(h|pp|xx)?|f(77|90)?|p(l|m)|xs|sh|php|py(|x)|rb|java|vala|el|sc(i|e)|cs|pas|inc|dtd|xsl|mod|m|tex|mli?)$';
 
 my $modified_conf_msg;
 
@@ -163,6 +172,7 @@ my ($opt_verbose, $opt_lines, $opt_noconf, $opt_ignore_regex, $opt_check_regex)
   = ('', '', '', '', '');
 my $opt_recursive = 0;
 my $opt_copyright = 0;
+my $opt_machine = 0;
 my ($opt_help, $opt_version);
 my $def_lines = 60;
 
@@ -218,6 +228,7 @@ GetOptions("help|h" => \$opt_help,
 	   "recursive|r" => \$opt_recursive,
 	   "check|c=s" => \$opt_check_regex,
 	   "copyright" => \$opt_copyright,
+	   "machine|m" => \$opt_machine,
 	   "noconf" => \$opt_noconf,
 	   "no-conf" => \$opt_noconf,
 	   )
@@ -291,19 +302,27 @@ while (@files) {
     print qq(----- $file header -----\n$content----- end header -----\n\n)
 	if $opt_verbose;
 
+    # Remove Fortran comments
+    $content =~ s/^[cC] //gm;
     $content =~ tr/\t\r\n/ /;
     # Remove C / C++ comments
     $content =~ s#(\*/|/[/*])##g;
     $content =~ tr% A-Za-z.,@;0-9\(\)/-%%cd;
-    $content =~ s/ c //g; # Remove fortran comments
     $content =~ tr/ //s;
 
     $license = parselicense($content);
-    print "$file: ";
-    print $license . "\n";
-    print "  [Copyright: " . $copyright . "]\n"
-      if $copyright and $opt_copyright;
-    print "\n" if $opt_copyright;
+    if ($opt_machine) {
+	print "$file\t$license";
+	print "\t" . ($copyright or "*No copyright*") if $opt_copyright;
+	print "\n";
+    } else {
+	print "$file: ";
+	print "*No copyright* " unless $copyright;
+	print $license . "\n";
+	print "  [Copyright: " . $copyright . "]\n"
+	  if $copyright and $opt_copyright;
+	print "\n" if $opt_copyright;
+    }
 }
 
 sub parse_copyright($) {
@@ -357,9 +376,10 @@ Valid options are:
    --check, -c            Specify a pattern indicating which files should
                              be checked
                              (Default: '$default_check_regex')
+   --machine, -m          Display in a machine readable way (good for awk)
    --recursive, -r        Add the contents of directories recursively
    --copyright            Also display the file's copyright
-   --ignore, -i		  Specify that files / directories matching the
+   --ignore, -i           Specify that files / directories matching the
                             regular expression should be ignored when
                             checking files
                             (Default: '$default_ignore_regex')
@@ -389,11 +409,11 @@ sub parselicense($) {
     my $extrainfo = "";
     my $license = "";
 
-    if ($licensetext =~ /version ([^ ]+) (?:\(?only\)?.? )?(?:of the GNU (Affero )?General Public License )?as published by the Free Software Foundation/i or
-	$licensetext =~ /GNU (?:Affero )?General Public License as published by the Free Software Foundation; version ([^ ]+) /i) {
+    if ($licensetext =~ /version ([^, ]+?)[.,]? (?:\(?only\)?.? )?(?:of the GNU (Affero )?(Lesser |Library )?General Public License )?(as )?published by the Free Software Foundation/i or
+	$licensetext =~ /GNU (?:Affero )?(?:Lesser |Library )?General Public License (?:as )?published by the Free Software Foundation; version ([^, ]+?)[.,]? /i) {
 
 	$gplver = " (v$1)";
-    } elsif ($licensetext =~ /GNU (?:Affero ?)General Public License, version ([^ ]+?)[ .]/) {
+    } elsif ($licensetext =~ /GNU (?:Affero )?(?:Lesser |Library )?General Public License, version (\d+(?:\.\d+)?)[ \.]/) {
 	$gplver = " (v$1)";
     } elsif ($licensetext =~ /either version ([^ ]+)(?: of the License)?, or \(at your option\) any later version/) {
 	$gplver = " (v$1 or later)";
@@ -407,7 +427,7 @@ sub parselicense($) {
 	$license = "GENERATED FILE";
     }
 
-    if ($licensetext =~ /is free software.? you can redistribute it and\/or modify it under the terms of the (GNU (Library|Lesser) General Public License|LGPL)/i) {
+    if ($licensetext =~ /is (free software.? you can redistribute it and\/or modify it|licensed) under the terms of (version [^ ]+ of )?the (GNU (Library |Lesser )General Public License|LGPL)/i) {
 	$license = "LGPL$gplver$extrainfo $license";
     }
 
@@ -483,6 +503,10 @@ sub parselicense($) {
 	$license = "Apache (v$1) $license";
     }
 
+    if ($licensetext =~ /(THE BEER-WARE LICENSE)/i) {
+	$license = "Beerware $license";
+    }
+
     if ($licensetext =~ /This source file is subject to version ([^ ]+) of the PHP license/) {
 	$license = "PHP (v$1) $license";
     }
@@ -500,7 +524,7 @@ sub parselicense($) {
     }
 
     if ($licensetext =~ /in the public domain/i) {
-	$license = "Public domain";
+	$license = "Public domain $license";
     }
 
     if ($licensetext =~ /terms of the Common Development and Distribution License(, Version ([^(]+))? \(the License\)/) {
@@ -547,6 +571,9 @@ sub parselicense($) {
     }
 
     $license = "UNKNOWN" if (!length($license));
+
+    # Remove trailing spaces.
+    $license =~ s/\s+$//;
 
     return $license;
 }
