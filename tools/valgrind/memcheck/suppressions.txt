@@ -5110,15 +5110,6 @@
    fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
 }
 {
-   bug_123453
-   Memcheck:Unaddressable
-   fun:_ZN9GrTexture14asRenderTargetEv
-   fun:_ZN9GrContext12gaussianBlurEP9GrTextureP20GrAutoScratchTextureS3_RK6SkRectff
-   fun:_ZL14filter_textureP9GrContextP9GrTextureP13SkImageFilterRK6SkRect
-   fun:_ZN11SkGpuDevice10drawSpriteERK6SkDrawRK8SkBitmapiiRK7SkPaint
-   fun:_ZN8SkCanvas10drawSpriteERK8SkBitmapiiPK7SkPaint
-}
-{
    bug_124156
    Memcheck:Leak
    fun:_Znw*
