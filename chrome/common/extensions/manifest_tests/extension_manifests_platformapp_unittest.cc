@@ -17,16 +17,22 @@ TEST_F(ExtensionManifestTest, PlatformApps) {
   scoped_refptr<extensions::Extension> extension =
       LoadAndExpectSuccess("init_valid_platform_app.json");
   EXPECT_TRUE(extension->is_storage_isolated());
+  EXPECT_TRUE(extension->incognito_split_mode());
 
   extension =
       LoadAndExpectSuccess("init_valid_platform_app_no_manifest_version.json");
   EXPECT_EQ(2, extension->manifest_version());
+
+  extension = LoadAndExpectSuccess("incognito_valid_platform_app.json");
+  EXPECT_TRUE(extension->incognito_split_mode());
 
   Testcase error_testcases[] = {
     Testcase("init_invalid_platform_app_2.json",
         errors::kBackgroundRequiredForPlatformApps),
     Testcase("init_invalid_platform_app_3.json",
         errors::kPlatformAppNeedsManifestVersion2),
+    Testcase("incognito_invalid_platform_app.json",
+        errors::kInvalidIncognitoModeForPlatformApp),
   };
   RunTestcases(error_testcases, arraysize(error_testcases), EXPECT_TYPE_ERROR);
 
