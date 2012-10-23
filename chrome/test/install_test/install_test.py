@@ -32,9 +32,11 @@ sys.path.append(os.path.join(_DIRECTORY, os.path.pardir, os.path.pardir,
                              'pylib'))
 
 # This import should go after sys.path is set appropriately.
-import pyauto_utils
-import selenium.webdriver.chrome.service as service
 from selenium import webdriver
+import selenium.webdriver.chrome.service as service
+from selenium.webdriver.chrome.service import WebDriverException
+
+import pyauto_utils
 
 
 def MakeTempDir(parent_dir=None):
@@ -80,9 +82,10 @@ class InstallTest(unittest.TestCase):
   class SampleUpdater(InstallTest):
 
     def testCanOpenGoogle(self):
+      self.Install(self.GetUpdateBuilds()[0])
       self.StartChrome()
       self._driver.get('http://www.google.com/')
-      self.UpdateBuild()
+      self.Install(self.GetUpdateBuilds()[1])
       self.StartChrome()
       self._driver.get('http://www.google.org/')
 
@@ -94,28 +97,22 @@ class InstallTest(unittest.TestCase):
     Main()
 
   To fire off an updater test, use the command below.
-    python test_script.py --url=<URL> --builds=22.0.1230.0,22.0.1231.0
+    python test_script.py --url=<URL> --update-builds=24.0.1299.0,24.0.1300.0
   """
 
-  _DIR_PREFIX = '__CHRBLD__'
-  _INSTALLER_NAME = 'mini_installer.exe'
-  _installer_paths = []
+  _installer_paths = {}
   _chrome_driver = ''
   _installer_options = []
 
   def __init__(self, methodName='runTest'):
     unittest.TestCase.__init__(self, methodName)
-    self._counter = 0
+    self._driver = None
     current_version = chrome_installer_win.ChromeInstallation.GetCurrent()
     if current_version:
       current_version.Uninstall()
-    self._install_type = ('--system-level' in self._installer_options and
-                          chrome_installer_win.InstallationType.SYSTEM or
-                          chrome_installer_win.InstallationType.USER)
 
   def setUp(self):
     """Called before each unittest to prepare the test fixture."""
-    self._InstallNext()
     self._StartService()
 
   def tearDown(self):
@@ -133,24 +130,34 @@ class InstallTest(unittest.TestCase):
     """Creates a ChromeDriver instance.
 
     Args:
-      caps: A dictionary representing the capabilities that will be passed to
-          ChromeDriver.
+      caps: Capabilities that will be passed to ChromeDriver.
     """
     self._driver = webdriver.Remote(self._service.service_url, caps)
 
-  def _InstallNext(self):
-    """Helper method that installs Chrome."""
+  def Install(self, build):
+    """Helper method that installs the specified Chrome build."""
+    if self._driver:
+      try:
+        self._driver.quit()
+      except WebDriverException:
+        pass
+    options = []
+    options.extend(self._installer_options)
+    if self._install_type == chrome_installer_win.InstallationType.SYSTEM:
+      options.append('--system-level')
     self._installation = chrome_installer_win.Install(
-        self._installer_paths[self._counter],
+        self._installer_paths[build],
         self._install_type,
-        self._builds[self._counter],
-        self._installer_options)
-    self._counter += 1
+        build,
+        options)
 
-  def UpdateBuild(self):
-    """Updates Chrome by installing a newer version."""
-    self._driver.quit()
-    self._InstallNext()
+  def GetInstallBuild(self):
+    """Returns Chorme build to be used for install test scenarios."""
+    return self._install_build
+
+  def GetUpdateBuilds(self):
+    """Returns Chrome builds to be used for update test scenarios."""
+    return self._update_builds
 
   @staticmethod
   def _Download(url, path):
@@ -165,25 +172,51 @@ class InstallTest(unittest.TestCase):
     urllib.urlretrieve(url, path)
 
   @staticmethod
-  def InitTestFixture(builds, base_url, options):
+  def SetInstallType(install_type):
+    """Sets Chrome installation type.
+
+    Args:
+      install_type: Type of installation(i.e., user or system).
+    """
+    InstallTest._install_type = install_type
+
+  @staticmethod
+  def InitTestFixture(install_build, update_builds, base_url, options):
     """Static method for passing command options to InstallTest.
 
-    We do not instantiate InstallTest. Therefore, command arguments cannot
-    be passed to its constructor. Since InstallTest needs to use these options
+    We do not instantiate InstallTest. Therefore, command arguments cannot be
+    passed to its constructor. Since InstallTest needs to use these options,
     and using globals is not an option, this method can be used by the Main
     class to pass the arguments it parses onto InstallTest.
+
+    Args:
+      install_build: A string representing the Chrome build to be used for
+                     install testing. Pass this argument only if testing
+                     fresh install scenarios.
+      update_builds: A list that contains the Chrome builds to be used for
+                     testing update scenarios. Pass this argument only if
+                     testing upgrade scenarios.
+      base_url: Base url of the 'official chrome builds' page.
+      options: A list that contains options to be passed to Chrome installer.
     """
-    builds = builds.split(',') if builds else []
     system = ({'Windows': 'win',
                'Darwin': 'mac',
                'Linux': 'linux'}).get(platform.system())
-    InstallTest._installer_options = options.split(',') if options else []
-    InstallTest._builds = builds
+    InstallTest._install_build = install_build
+    InstallTest._update_builds = update_builds
+    InstallTest._installer_options = options
     tempdir = MakeTempDir()
+    builds = []
+    if InstallTest._install_build:
+      builds.append(InstallTest._install_build)
+    if InstallTest._update_builds:
+      builds.extend(InstallTest._update_builds)
+    # Remove any duplicate build numbers.
+    builds = list(frozenset(builds))
     for build in builds:
       url = '%s%s/%s/mini_installer.exe' % (base_url, build, system)
       installer_path = os.path.join(tempdir, 'mini_installer_%s.exe' % build)
-      InstallTest._installer_paths.append(installer_path)
+      InstallTest._installer_paths[build] = installer_path
       InstallTest._Download(url, installer_path)
     InstallTest._chrome_driver = os.path.join(tempdir, 'chromedriver.exe')
     url = '%s%s/%s/%s/chromedriver.exe' % (base_url, build, system,
@@ -203,32 +236,53 @@ class Main(object):
     """Parses command line arguments."""
     parser = optparse.OptionParser()
     parser.add_option(
-        '-b', '--builds', type='string', default='', dest='builds',
-        help='Specifies the two builds needed for testing.')
-    parser.add_option(
         '-u', '--url', type='string', default='', dest='url',
         help='Specifies the build url, without the build number.')
     parser.add_option(
         '-o', '--options', type='string', default='',
         help='Specifies any additional Chrome options (i.e. --system-level).')
-    opts, args = parser.parse_args()
-    self._ValidateArgs(opts)
-    InstallTest.InitTestFixture(opts.builds, opts.url, opts.options)
+    parser.add_option(
+        '--install-build', type='string', default='', dest='install_build',
+        help='Specifies the build to be used for fresh install testing.')
+    parser.add_option(
+        '--update-builds', type='string', default='', dest='update_builds',
+        help='Specifies the builds to be used for updater testing.')
+    parser.add_option(
+        '--install-type', type='string', default='user', dest='install_type',
+        help='Type of installation (i.e., user, system, or both)')
+    self._opts, self._args = parser.parse_args()
+    self._ValidateArgs()
+    if(self._opts.install_type == 'system' or
+       self._opts.install_type == 'user'):
+      install_type = ({
+          'system' : chrome_installer_win.InstallationType.SYSTEM,
+          'user' : chrome_installer_win.InstallationType.USER}).get(
+              self._opts.install_type)
+      InstallTest.SetInstallType(install_type)
+    update_builds = (self._opts.update_builds.split(',') if
+                     self._opts.update_builds else [])
+    options = self._opts.options.split(',') if self._opts.options else []
+    InstallTest.InitTestFixture(self._opts.install_build,
+                                update_builds,
+                                self._opts.url,
+                                options)
 
-  def _ValidateArgs(self, opts):
+  def _ValidateArgs(self):
     """Verifies the sanity of the command arguments.
 
     Confirms that all specified builds have a valid version number, and the
     build urls are valid.
-
-    Args:
-      opts: An object containing values for all command args.
     """
-    builds = opts.builds.split(',')
+    builds = []
+    if self._opts.install_build:
+      builds.append(self._opts.install_build)
+    if self._opts.update_builds:
+      builds.extend(self._opts.update_builds.split(','))
+    builds = list(frozenset(builds))
     for build in builds:
       if not re.match('\d+\.\d+\.\d+\.\d+', build):
         raise RuntimeError('Invalid build number: %s' % build)
-      if not pyauto_utils.DoesUrlExist('%s/%s/' % (opts.url, build)):
+      if not pyauto_utils.DoesUrlExist('%s/%s/' % (self._opts.url, build)):
         raise RuntimeError('Could not locate build no. %s' % build)
 
   def _SetLoggingConfiguration(self):
