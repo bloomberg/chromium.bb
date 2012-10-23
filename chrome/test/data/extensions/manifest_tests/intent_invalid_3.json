@@ -3,7 +3,7 @@
   "version": "1",
   "intents": {
     "http://webintents.org/intent/share" : {
-      "path" : { "shouldBeA" : "string" },
+      "href" : { "shouldBeA" : "string" },
       "type" : [ "*" ]
     }
   }

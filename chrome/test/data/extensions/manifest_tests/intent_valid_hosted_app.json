@@ -13,17 +13,17 @@
   "intents": {
     "http://webintents.org/edit" : {
       "type" : ["image/*"],
-      "path" : "http://www.cfp.com/intents/edit.html",
+      "href" : "http://www.cfp.com/intents/edit.html",
       "title" : "Edit file from CloudFilePicker.com"
     },
     "http://webintents.org/pick" : {
       "type" : ["image/*"],
-      "path" : "http://www.cloudfilepicker.com/",
+      "href" : "http://www.cloudfilepicker.com/",
       "title" : "Pick file from CloudFilePicker.com"
     },
     "http://webintents.org/share" : {
       "type" : ["image/*"],
-      "path" : "http://www.cloudfilepicker.com/intents/share.html",
+      "href" : "http://www.cloudfilepicker.com/intents/share.html",
       "title" : "Share file from CloudFilePicker.com"
     }
   }

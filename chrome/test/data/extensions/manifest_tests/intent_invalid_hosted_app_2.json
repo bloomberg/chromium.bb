@@ -14,7 +14,7 @@
   "intents": {
     "http://webintents.org/pick" : {
       "type" : ["image/*"],
-      "path" : "http://www.notcloudfilepicker.com/notintents",
+      "href" : "http://www.notcloudfilepicker.com/notintents",
       "title" : "Pick file from Google.com"
     }
   }

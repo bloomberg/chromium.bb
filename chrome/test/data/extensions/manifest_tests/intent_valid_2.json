@@ -4,7 +4,7 @@
   "intents": {
     "http://webintents.org/edit" : {
       "type" : [ "image/png" ],
-      "path" : "/services/edit",
+      "href" : "/services/edit",
       "title" : "Sample Editing Intent",
       "disposition" : "inline"
     }

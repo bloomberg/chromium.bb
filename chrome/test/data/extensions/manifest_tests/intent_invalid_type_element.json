@@ -4,7 +4,7 @@
   "intents": {
     "http://webintents.org/share" : {
       "type" : [ "image/png", ["image/jpeg"], "image/bmp" ],
-      "path" : "/services/share",
+      "href" : "/services/share",
       "title" : "Sample Sharing Intent",
       "disposition" : "inline"
     }
