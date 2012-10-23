@@ -157,5 +157,13 @@ Follow this checklist to convert your extension's
   <li>If you're using <a href="messaging.html">message passing</a>, be sure
   to close unused message ports. The event page will not shut down until all
   message ports are closed.
+
+  <li>If you're using the <a href="contextMenus.html">context menus</a> API,
+  pass a string <code>id</code> parameter to
+  <code><a href="contextMenus.html#method-create">chrome.contextMenus.create</a></code>,
+  and use the
+  <code><a href="contextMenus.html#event-onClicked">chrome.contextMenus.onClicked</a></code>
+  callback instead of an <code>onclick</code> parameter to
+  <code><a href="contextMenus.html#method-create">chrome.contextMenus.create</a></code>.
 </ol>
 </p>

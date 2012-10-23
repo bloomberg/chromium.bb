@@ -50,7 +50,7 @@ Editing docs
        extremely simple, essentially: write HTML.
        See third_party/handlebar/README.md.
 
-  2. Run './preview.py'
+  2. Run 'server2/preview.py'
 
   3. Check your work at http://localhost:8000/(apps|extensions)/<doc_name>
 
