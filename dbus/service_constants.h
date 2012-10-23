@@ -5,6 +5,8 @@
 #ifndef DBUS_SERVICE_CONSTANTS_H_
 #define DBUS_SERVICE_CONSTANTS_H_
 
+#include <stdint.h>  // for uint32_t
+
 namespace dbus {
 const char kDBusServiceName[] = "org.freedesktop.DBus";
 const char kDBusServicePath[] = "/org/freedesktop/DBus";
@@ -1127,7 +1129,7 @@ const char kMTPStorageAttached[] = "MTPStorageAttached";
 const char kMTPStorageDetached[] = "MTPStorageDetached";
 
 // For FileEntry struct:
-const uint32 kInvalidFileId = 0xffffffff;
+const uint32_t kInvalidFileId = 0xffffffff;
 
 // For OpenStorage method:
 const char kReadOnlyMode[] = "ro";
@@ -1135,7 +1137,7 @@ const char kReadOnlyMode[] = "ro";
 // For GetFileInfo() method:
 // The id of the root node in a storage, as defined by the PTP/MTP standards.
 // Use this when referring to the root node in the context of GetFileInfo().
-const uint32 kRootFileId = 0;
+const uint32_t kRootFileId = 0;
 }  // namespace mtpd
 
 namespace update_engine {
