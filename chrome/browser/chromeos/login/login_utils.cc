@@ -759,6 +759,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kDisableSeccompSandbox,
       ::switches::kEnableBrowserTextSubpixelPositioning,
       ::switches::kEnableCompositingForFixedPosition,
+      ::switches::kEnableEncryptedMedia,
       ::switches::kEnableGView,
       ::switches::kEnableLogging,
       ::switches::kEnableUIReleaseFrontSurface,
