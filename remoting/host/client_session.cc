@@ -8,7 +8,6 @@
 
 #include "base/message_loop_proxy.h"
 #include "remoting/codec/audio_encoder.h"
-#include "remoting/codec/audio_encoder_opus.h"
 #include "remoting/codec/audio_encoder_speex.h"
 #include "remoting/codec/audio_encoder_verbatim.h"
 #include "remoting/codec/video_encoder.h"
@@ -303,8 +302,6 @@ scoped_ptr<AudioEncoder> ClientSession::CreateAudioEncoder(
     return scoped_ptr<AudioEncoder>(new AudioEncoderVerbatim());
   } else if (audio_config.codec == protocol::ChannelConfig::CODEC_SPEEX) {
     return scoped_ptr<AudioEncoder>(new AudioEncoderSpeex());
-  } else if (audio_config.codec == protocol::ChannelConfig::CODEC_OPUS) {
-    return scoped_ptr<AudioEncoder>(new AudioEncoderOpus());
   }
 
   NOTIMPLEMENTED();

@@ -2,6 +2,5 @@ include_rules = [
   "+remoting/protocol",
 
   "+google/protobuf",
-  "+third_party/opus",
   "+third_party/speex",
 ]

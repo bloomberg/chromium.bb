@@ -198,10 +198,6 @@ scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateDefault() {
   result->mutable_audio_configs()->push_back(
       ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
                     kDefaultStreamVersion,
-                    ChannelConfig::CODEC_OPUS));
-  result->mutable_audio_configs()->push_back(
-      ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
-                    kDefaultStreamVersion,
                     ChannelConfig::CODEC_SPEEX));
   result->mutable_audio_configs()->push_back(
       ChannelConfig(ChannelConfig::TRANSPORT_STREAM,

@@ -5,7 +5,6 @@
 #include "remoting/codec/audio_decoder.h"
 
 #include "base/logging.h"
-#include "remoting/codec/audio_decoder_opus.h"
 #include "remoting/codec/audio_decoder_speex.h"
 #include "remoting/codec/audio_decoder_verbatim.h"
 #include "remoting/protocol/session_config.h"
@@ -18,8 +17,6 @@ scoped_ptr<AudioDecoder> AudioDecoder::CreateAudioDecoder(
 
   if (audio_config.codec == protocol::ChannelConfig::CODEC_VERBATIM) {
     return scoped_ptr<AudioDecoder>(new AudioDecoderVerbatim());
-  } else if (audio_config.codec == protocol::ChannelConfig::CODEC_OPUS) {
-    return scoped_ptr<AudioDecoder>(new AudioDecoderOpus());
   } else if (audio_config.codec == protocol::ChannelConfig::CODEC_SPEEX) {
     return scoped_ptr<AudioDecoder>(new AudioDecoderSpeex());
   }
