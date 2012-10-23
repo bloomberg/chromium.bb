@@ -55,7 +55,10 @@ bool CpuInfoProvider::QueryCpuTimePerProcessor(std::vector<CpuTime>* times) {
   results.reserve(returned_num_of_processors);
   for (int i = 0; i < returned_num_of_processors; ++i) {
     CpuTime time;
-    time.kernel = processor_info[i].KernelTime.QuadPart;
+    // KernelTime needs to be fixed-up, it includes both idle time and real
+    // kernel time.
+    time.kernel = processor_info[i].KernelTime.QuadPart -
+        processor_info[i].IdleTime.QuadPart;
     time.user = processor_info[i].UserTime.QuadPart;
     time.idle = processor_info[i].IdleTime.QuadPart;
     results.push_back(time);
