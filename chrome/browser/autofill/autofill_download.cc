@@ -112,6 +112,13 @@ bool AutofillDownloadManager::StartUploadRequest(
     const FormStructure& form,
     bool form_was_autofilled,
     const FieldTypeSet& available_field_types) {
+  std::string form_xml;
+  if (!form.EncodeUploadRequest(available_field_types, form_was_autofilled,
+                                &form_xml))
+    return false;
+
+  LogUploadRequest(form.source_url(), form.FormSignature(), form_xml);
+
   if (next_upload_request_ > base::Time::Now()) {
     // We are in back-off mode: do not do the request.
     DVLOG(1) << "AutofillDownloadManager: Upload request is throttled.";
@@ -128,13 +135,6 @@ bool AutofillDownloadManager::StartUploadRequest(
     // If we ever need notification that upload was skipped, add it here.
     return false;
   }
-
-  std::string form_xml;
-  if (!form.EncodeUploadRequest(available_field_types, form_was_autofilled,
-                                &form_xml))
-    return false;
-
-  LogUploadRequest(form.source_url(), form.FormSignature(), form_xml);
 
   FormRequestData request_data;
   request_data.form_signatures.push_back(form.FormSignature());
