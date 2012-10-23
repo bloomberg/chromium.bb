@@ -52,10 +52,13 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_provider.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/policy/app_pack_updater.h"
 #include "chrome/browser/policy/cros_user_policy_cache.h"
+#include "chrome/browser/policy/device_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/policy/device_policy_cache.h"
 #include "chrome/browser/policy/network_configuration_updater.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -82,34 +85,6 @@ const int64 kServiceInitializationStartupDelay = 5000;
 // The URL for the device management server.
 const char kDefaultDeviceManagementServerUrl[] =
     "https://m.google.com/devicemanagement/data/api";
-
-#if defined(OS_CHROMEOS)
-// MachineInfo key names.
-const char kMachineInfoSystemHwqual[] = "hardware_class";
-
-// These are the machine serial number keys that we check in order until we
-// find a non-empty serial number. The VPD spec says the serial number should be
-// in the "serial_number" key for v2+ VPDs. However, legacy devices used a
-// different keys to report their serial number, which we fall back to if
-// "serial_number" is not present.
-//
-// Product_S/N is still special-cased due to inconsistencies with serial
-// numbers on Lumpy devices: On these devices, serial_number is identical to
-// Product_S/N with an appended checksum. Unfortunately, the sticker on the
-// packaging doesn't include that checksum either (the sticker on the device
-// does though!). The former sticker is the source of the serial number used by
-// device management service, so we prefer Product_S/N over serial number to
-// match the server.
-//
-// TODO(mnissler): Move serial_number back to the top once the server side uses
-// the correct serial number.
-const char* kMachineInfoSerialNumberKeys[] = {
-  "Product_S/N",   // Lumpy/Alex devices
-  "serial_number", // VPD v2+ devices
-  "Product_SN",    // Mario
-  "sn",            // old ZGB devices (more recent ones use serial_number)
-};
-#endif
 
 // Used in BrowserPolicyConnector::SetPolicyProviderForTesting.
 ConfigurationPolicyProvider* g_testing_provider = NULL;
@@ -138,9 +113,23 @@ void BrowserPolicyConnector::Init() {
       new DeviceManagementService(GetDeviceManagementUrl()));
 
 #if defined(OS_CHROMEOS)
+  chromeos::CryptohomeLibrary* cryptohome =
+      chromeos::CrosLibrary::Get()->GetCryptohomeLibrary();
+  install_attributes_.reset(new EnterpriseInstallAttributes(cryptohome));
+
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kEnableCloudPolicyService))
+  if (command_line->HasSwitch(switches::kEnableCloudPolicyService)) {
+    scoped_ptr<DeviceCloudPolicyStoreChromeOS> device_cloud_policy_store(
+        new DeviceCloudPolicyStoreChromeOS(
+            chromeos::DeviceSettingsService::Get(),
+            install_attributes_.get()));
+    device_cloud_policy_manager_.reset(
+        new DeviceCloudPolicyManagerChromeOS(
+            device_cloud_policy_store.Pass(),
+            install_attributes_.get()));
+  } else {
     cloud_provider_.reset(new CloudPolicyProvider(this));
+  }
 
   InitializeDevicePolicy();
 #endif
@@ -166,6 +155,9 @@ void BrowserPolicyConnector::Shutdown() {
   app_pack_updater_.reset();
   device_cloud_policy_subsystem_.reset();
   device_data_store_.reset();
+
+  if (device_cloud_policy_manager_)
+    device_cloud_policy_manager_->Shutdown();
 #endif
 
   // Shutdown user cloud policy.
@@ -274,23 +266,6 @@ EnterpriseInstallAttributes::LockResult
 #endif
 
   return EnterpriseInstallAttributes::LOCK_BACKEND_ERROR;
-}
-
-// static
-std::string BrowserPolicyConnector::GetSerialNumber() {
-  std::string serial_number;
-#if defined(OS_CHROMEOS)
-  chromeos::system::StatisticsProvider* provider =
-      chromeos::system::StatisticsProvider::GetInstance();
-  for (size_t i = 0; i < arraysize(kMachineInfoSerialNumberKeys); i++) {
-    if (provider->GetMachineStatistic(kMachineInfoSerialNumberKeys[i],
-                                      &serial_number) &&
-        !serial_number.empty()) {
-      break;
-    }
-  }
-#endif
-  return serial_number;
 }
 
 std::string BrowserPolicyConnector::GetEnterpriseDomain() {
@@ -466,14 +441,10 @@ const ConfigurationPolicyHandlerList*
 UserAffiliation BrowserPolicyConnector::GetUserAffiliation(
     const std::string& user_name) {
 #if defined(OS_CHROMEOS)
-  if (install_attributes_.get()) {
-    std::string canonicalized_user_name(gaia::CanonicalizeEmail(user_name));
-    size_t pos = canonicalized_user_name.find('@');
-    if (pos != std::string::npos &&
-        canonicalized_user_name.substr(pos + 1) ==
-            install_attributes_->GetDomain()) {
-      return USER_AFFILIATION_MANAGED;
-    }
+  if (install_attributes_.get() &&
+      gaia::ExtractDomainName(gaia::CanonicalizeEmail(user_name)) ==
+          install_attributes_->GetDomain()) {
+    return USER_AFFILIATION_MANAGED;
   }
 #endif
 
@@ -554,14 +525,8 @@ void BrowserPolicyConnector::InitializeDevicePolicy() {
   device_data_store_.reset();
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableCloudPolicyService)) {
-    // TODO(mnissler): Initialize new-style device policy here once it's
-    // implemented.
-  } else {
+  if (!command_line->HasSwitch(switches::kEnableCloudPolicyService)) {
     device_data_store_.reset(CloudPolicyDataStore::CreateForDevicePolicies());
-    chromeos::CryptohomeLibrary* cryptohome =
-        chromeos::CrosLibrary::Get()->GetCryptohomeLibrary();
-    install_attributes_.reset(new EnterpriseInstallAttributes(cryptohome));
     DevicePolicyCache* device_policy_cache =
         new DevicePolicyCache(device_data_store_.get(),
                               install_attributes_.get());
@@ -598,21 +563,10 @@ void BrowserPolicyConnector::CompleteInitialization() {
     // for re-submission in case we're doing serial number recovery.
     if (device_data_store_->machine_id().empty() ||
         device_data_store_->machine_model().empty()) {
-      chromeos::system::StatisticsProvider* provider =
-          chromeos::system::StatisticsProvider::GetInstance();
-
-      std::string machine_model;
-      if (!provider->GetMachineStatistic(kMachineInfoSystemHwqual,
-                                         &machine_model)) {
-        LOG(ERROR) << "Failed to get machine model.";
-      }
-
-      std::string machine_id = GetSerialNumber();
-      if (machine_id.empty())
-        LOG(ERROR) << "Failed to get machine serial number.";
-
-      device_data_store_->set_machine_id(machine_id);
-      device_data_store_->set_machine_model(machine_model);
+      device_data_store_->set_machine_id(
+          DeviceCloudPolicyManagerChromeOS::GetMachineID());
+      device_data_store_->set_machine_model(
+          DeviceCloudPolicyManagerChromeOS::GetMachineModel());
     }
 
     device_cloud_policy_subsystem_->CompleteInitialization(
@@ -626,6 +580,13 @@ void BrowserPolicyConnector::CompleteInitialization() {
             g_browser_process->local_state(),
             chromeos::system::StatisticsProvider::GetInstance(),
             NULL));
+  }
+
+  if (device_cloud_policy_manager_.get()) {
+    device_cloud_policy_manager_->Init();
+    device_cloud_policy_manager_->Connect(
+        g_browser_process->local_state(),
+        device_management_service_.get());
   }
 
   SetTimezoneIfPolicyAvailable();
@@ -672,6 +633,12 @@ scoped_ptr<PolicyService>
     providers.push_back(platform_provider_.get());
   if (cloud_provider_)
     providers.push_back(cloud_provider_.get());
+
+#if defined(OS_CHROMEOS)
+  if (device_cloud_policy_manager_.get())
+    providers.push_back(device_cloud_policy_manager_.get());
+#endif
+
   if (user_cloud_policy_provider)
     providers.push_back(user_cloud_policy_provider);
   if (managed_mode_policy_provider)

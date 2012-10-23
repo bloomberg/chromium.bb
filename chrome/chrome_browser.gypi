@@ -1319,6 +1319,8 @@
         'browser/policy/delayed_work_scheduler.h',
         'browser/policy/device_management_service.cc',
         'browser/policy/device_management_service.h',
+        'browser/policy/device_cloud_policy_manager_chromeos.cc',
+        'browser/policy/device_cloud_policy_manager_chromeos.h',
         'browser/policy/device_cloud_policy_store_chromeos.cc',
         'browser/policy/device_cloud_policy_store_chromeos.h',
         'browser/policy/device_policy_cache.cc',

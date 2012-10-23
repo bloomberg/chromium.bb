@@ -14,6 +14,7 @@
 #include "base/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
@@ -133,12 +134,13 @@ AutoEnrollmentClient* AutoEnrollmentClient::Create(
     power_initial = power_limit;
   }
 
-  return new AutoEnrollmentClient(completion_callback,
-                                  service,
-                                  g_browser_process->local_state(),
-                                  BrowserPolicyConnector::GetSerialNumber(),
-                                  power_initial,
-                                  power_limit);
+  return new AutoEnrollmentClient(
+      completion_callback,
+      service,
+      g_browser_process->local_state(),
+      DeviceCloudPolicyManagerChromeOS::GetMachineID(),
+      power_initial,
+      power_limit);
 }
 
 // static
