@@ -71,11 +71,10 @@ def FindAllAvailableBrowsers(options):
   else:
     raise Exception('Platform not recognized')
 
-  build_dirs = ['sconsbuild']
-  if sys.platform.startswith('win'):
-    build_dirs.append('build')
-  else:
-    build_dirs.append('out')
+  build_dirs = ['build',
+                'out',
+                'sconsbuild',
+                'xcodebuild']
 
   # Add local builds
   def AddIfFound(browser_type, type_dir, app_name, content_shell):
