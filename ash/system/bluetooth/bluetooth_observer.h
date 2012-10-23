@@ -12,6 +12,7 @@ class BluetoothObserver {
   virtual ~BluetoothObserver() {}
 
   virtual void OnBluetoothRefresh() = 0;
+  virtual void OnBluetoothDiscoveringChanged() = 0;
 };
 
 }  // namespace ash

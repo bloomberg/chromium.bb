@@ -210,6 +210,10 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
     bluetooth_enabled_ = !bluetooth_enabled_;
   }
 
+  virtual bool IsBluetoothDiscovering() OVERRIDE {
+    return false;
+  }
+
   virtual void ShowOtherWifi() OVERRIDE {
   }
 

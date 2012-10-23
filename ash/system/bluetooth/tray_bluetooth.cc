@@ -115,13 +115,37 @@ class BluetoothDetailedView : public TrayDetailsView,
     CreateScrollableList();
 
     for (size_t i = 0; i < list.size(); i++) {
-      HoverHighlightView* container = new HoverHighlightView(this);
-      container->set_fixed_height(kTrayPopupItemHeight);
-      container->AddLabel(list[i].display_name,
-          list[i].connected ? gfx::Font::BOLD : gfx::Font::NORMAL);
-      scroll_content()->AddChildView(container);
+      HoverHighlightView* container =
+          AddScrollListItem(list[i].display_name,
+              list[i].connected ? gfx::Font::BOLD : gfx::Font::NORMAL);
       device_map_[container] = list[i].address;
     }
+
+    // Show user Bluetooth state if there is no bluetooth devices in list.
+    if (list.size() == 0) {
+      ash::SystemTrayDelegate* delegate =
+          ash::Shell::GetInstance()->tray_delegate();
+      int message_id;
+      if (delegate->GetBluetoothAvailable()) {
+        if (!delegate->GetBluetoothEnabled())
+          message_id = IDS_ASH_STATUS_TRAY_BLUETOOTH_TURNED_OFF;
+        else if (delegate->IsBluetoothDiscovering())
+          message_id = IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERING;
+        else
+          message_id = IDS_ASH_STATUS_TRAY_BLUETOOTH_NO_DEVICE;
+        AddScrollListItem(l10n_util::GetStringUTF16(message_id),
+                          gfx::Font::NORMAL);
+      }
+    }
+  }
+
+  HoverHighlightView* AddScrollListItem(const string16& text,
+                                        gfx::Font::FontStyle style) {
+    HoverHighlightView* container = new HoverHighlightView(this);
+    container->set_fixed_height(kTrayPopupItemHeight);
+    container->AddLabel(text, style);
+    scroll_content()->AddChildView(container);
+    return container;
   }
 
   // Add settings entries.
@@ -139,7 +163,7 @@ class BluetoothDetailedView : public TrayDetailsView,
     container->set_fixed_height(kTrayPopupItemHeight);
     container->AddLabel(rb.GetLocalizedString(
         IDS_ASH_STATUS_TRAY_BLUETOOTH_ADD_DEVICE), gfx::Font::NORMAL);
-    container->SetEnabled(delegate->GetBluetoothEnabled());
+    container->SetEnabled(delegate->GetBluetoothAvailable());
     AddChildView(container);
     add_device_ = container;
   }
@@ -151,6 +175,8 @@ class BluetoothDetailedView : public TrayDetailsView,
     if (sender == footer()->content()) {
       Shell::GetInstance()->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
     } else if (sender == add_device_) {
+      if (!delegate->GetBluetoothEnabled())
+        delegate->ToggleBluetooth();
       delegate->AddBluetoothDevice();
     } else {
       std::map<views::View*, std::string>::iterator find;
@@ -232,6 +258,14 @@ void TrayBluetooth::OnBluetoothRefresh() {
     default_->UpdateLabel();
   else if (detailed_)
     detailed_->Update(list);
+}
+
+void TrayBluetooth::OnBluetoothDiscoveringChanged() {
+  if (!detailed_)
+    return;
+  BluetoothDeviceList list;
+  Shell::GetInstance()->tray_delegate()->GetAvailableBluetoothDevices(&list);
+  detailed_->Update(list);
 }
 
 }  // namespace internal

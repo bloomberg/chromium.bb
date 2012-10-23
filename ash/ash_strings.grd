@@ -325,6 +325,15 @@ Press Ctrl+Alt+Z to cancel.
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_ADD_DEVICE" desc="The label used in the tray popup to add a bluetooth device.">
         Add device...
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_TURNED_OFF" desc="The label used in the tray popup to show bluetooth is turned off.">
+        Bluetooth is turned off.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_NO_DEVICE" desc="The label used in the tray popup to show bluetooth is turned off.">
+        No bluetooth devices available
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERING" desc="The label used in the tray popup to show bluetooth is discovering devices.">
+        Scanning for devices...
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING" desc="The label used in the tray to show that the current status is mirroring.">
 	Mirroring to <ph name="DISPLAY_NAME">$1</ph>
       </message>

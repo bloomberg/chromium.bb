@@ -393,6 +393,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     }
   }
 
+  virtual bool IsBluetoothDiscovering() OVERRIDE {
+    return bluetooth_adapter_->IsDiscovering();
+  }
+
   virtual void GetCurrentIME(ash::IMEInfo* info) OVERRIDE {
     input_method::InputMethodManager* manager =
         input_method::InputMethodManager::GetInstance();
@@ -785,6 +789,12 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       observer->OnBluetoothRefresh();
   }
 
+  void NotifyBluetoothDiscoveringChanged() {
+    ash::BluetoothObserver* observer = tray_->bluetooth_observer();
+    if (observer)
+      observer->OnBluetoothDiscoveringChanged();
+  }
+
   void NotifyRefreshIME(bool show_message) {
     ash::IMEObserver* observer = tray_->ime_observer();
     if (observer)
@@ -1166,8 +1176,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void AdapterDiscoveringChanged(device::BluetoothAdapter* adapter,
                                          bool discovering) OVERRIDE {
-    // TODO: Perhaps start/stop throbbing the icon, or some other visual
-    // effects?
+    NotifyBluetoothDiscoveringChanged();
   }
 
   virtual void DeviceAdded(device::BluetoothAdapter* adapter,

@@ -167,6 +167,9 @@ class SystemTrayDelegate {
   // Toggles connection to a specific bluetooth device.
   virtual void ToggleBluetoothConnection(const std::string& address) = 0;
 
+  // Returns true if bluetooth adapter is discovering bluetooth devices.
+  virtual bool IsBluetoothDiscovering() = 0;
+
   // Returns the currently selected IME.
   virtual void GetCurrentIME(IMEInfo* info) = 0;
 
