@@ -1032,7 +1032,7 @@
     }],
     ['chromeos==1', {
       'dependencies': [
-        '../build/linux/system.gyp:dbus-glib',
+        '../build/linux/system.gyp:dbus',
       ],
       'sources!': [
         'browser/power_save_blocker_linux.cc',

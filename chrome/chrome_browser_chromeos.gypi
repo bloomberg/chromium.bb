@@ -44,7 +44,7 @@
         'safe_browsing_proto',
         'safe_browsing_report_proto',
         'variations_seed_proto',
-        '../build/linux/system.gyp:dbus-glib',
+        '../build/linux/system.gyp:dbus',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../chromeos/chromeos.gyp:chromeos',
         '../content/content.gyp:content_browser',
