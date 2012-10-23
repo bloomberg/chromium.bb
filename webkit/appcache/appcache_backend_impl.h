@@ -6,14 +6,14 @@
 #define WEBKIT_APPCACHE_APPCACHE_BACKEND_IMPL_H_
 
 #include "base/hash_tables.h"
-#include "webkit/appcache/appcache_export.h"
 #include "webkit/appcache/appcache_host.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace appcache {
 
 class AppCacheService;
 
-class APPCACHE_EXPORT AppCacheBackendImpl {
+class WEBKIT_STORAGE_EXPORT AppCacheBackendImpl {
  public:
   AppCacheBackendImpl();
   ~AppCacheBackendImpl();

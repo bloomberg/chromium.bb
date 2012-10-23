@@ -8,9 +8,9 @@
 #include "base/compiler_specific.h"
 #include "base/supports_user_data.h"
 #include "webkit/appcache/appcache_entry.h"
-#include "webkit/appcache/appcache_export.h"
 #include "webkit/appcache/appcache_host.h"
 #include "webkit/glue/resource_type.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace net {
 class NetworkDelegate;
@@ -27,7 +27,7 @@ class AppCacheURLRequestJob;
 // given the opportunity to hijack the request along the way. Callers
 // should use AppCacheHost::CreateRequestHandler to manufacture instances
 // that can retrieve resources for a particular host.
-class APPCACHE_EXPORT AppCacheRequestHandler
+class WEBKIT_STORAGE_EXPORT AppCacheRequestHandler
     : public base::SupportsUserData::Data,
       public AppCacheHost::Observer,
       public AppCacheStorage::Delegate  {

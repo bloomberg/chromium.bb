@@ -416,7 +416,6 @@
         '../third_party/npapi/npapi.gyp:npapi',
         '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
         '../ui/gl/gl.gyp:gl',
-        '../webkit/support/webkit_support.gyp:appcache',
         '../webkit/support/webkit_support.gyp:database',
         '../webkit/support/webkit_support.gyp:webkit_base',
         '../webkit/support/webkit_support.gyp:webkit_storage',

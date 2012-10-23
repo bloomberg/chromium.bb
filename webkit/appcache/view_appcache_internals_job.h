@@ -6,7 +6,7 @@
 #define WEBKIT_APPCACHE_VIEW_APPCACHE_INTERNALS_JOB_H_
 
 #include "base/basictypes.h"
-#include "webkit/appcache/appcache_export.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace net {
 class NetworkDelegate;
@@ -18,7 +18,7 @@ namespace appcache {
 
 class AppCacheService;
 
-class APPCACHE_EXPORT ViewAppCacheInternalsJobFactory {
+class WEBKIT_STORAGE_EXPORT ViewAppCacheInternalsJobFactory {
  public:
   static net::URLRequestJob* CreateJobForRequest(
       net::URLRequest* request,

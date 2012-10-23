@@ -12,10 +12,10 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/appcache/appcache_group.h"
 #include "webkit/appcache/appcache_interfaces.h"
-#include "webkit/appcache/appcache_export.h"
 #include "webkit/appcache/appcache_service.h"
 #include "webkit/appcache/appcache_storage.h"
 #include "webkit/glue/resource_type.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace net {
 class URLRequest;
@@ -32,11 +32,12 @@ typedef base::Callback<void(bool, void*)> StartUpdateCallback;
 typedef base::Callback<void(bool, void*)> SwapCacheCallback;
 
 // Server-side representation of an application cache host.
-class APPCACHE_EXPORT AppCacheHost : public AppCacheStorage::Delegate,
-                                     public AppCacheGroup::UpdateObserver {
+class WEBKIT_STORAGE_EXPORT AppCacheHost
+    : public AppCacheStorage::Delegate,
+      public AppCacheGroup::UpdateObserver {
  public:
 
-  class APPCACHE_EXPORT Observer {
+  class WEBKIT_STORAGE_EXPORT Observer {
    public:
     // Called just after the cache selection algorithm completes.
     virtual void OnCacheSelectionComplete(AppCacheHost* host) = 0;

@@ -166,7 +166,7 @@
             '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
             '../ui/surface/surface.gyp:surface',
             '../webkit/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
-            '../webkit/support/webkit_support.gyp:appcache',
+            '../webkit/support/webkit_support.gyp:webkit_storage',
           ],
         }],
         ['OS == "win" or (toolkit_uses_gtk == 1 and selinux == 0)', {
@@ -496,7 +496,6 @@
             '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
             '../ui/gl/gl.gyp:gl',
             '../v8/tools/gyp/v8.gyp:v8',
-            '../webkit/support/webkit_support.gyp:appcache',
             '../webkit/support/webkit_support.gyp:database',
             '../webkit/support/webkit_support.gyp:dom_storage',
             '../webkit/support/webkit_support.gyp:glue',

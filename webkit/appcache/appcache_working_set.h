@@ -9,7 +9,7 @@
 
 #include "base/hash_tables.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/appcache/appcache_export.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace appcache {
 
@@ -19,7 +19,7 @@ class AppCacheResponseInfo;
 
 // Represents the working set of appcache object instances
 // currently in memory.
-class APPCACHE_EXPORT AppCacheWorkingSet {
+class WEBKIT_STORAGE_EXPORT AppCacheWorkingSet {
  public:
   typedef std::map<GURL, AppCacheGroup*> GroupMap;
 

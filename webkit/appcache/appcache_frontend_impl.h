@@ -7,12 +7,12 @@
 
 #include <string>
 #include <vector>
-#include "webkit/appcache/appcache_export.h"
 #include "webkit/appcache/appcache_interfaces.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace appcache {
 
-class APPCACHE_EXPORT AppCacheFrontendImpl : public AppCacheFrontend {
+class WEBKIT_STORAGE_EXPORT AppCacheFrontendImpl : public AppCacheFrontend {
  public:
   virtual void OnCacheSelected(
       int host_id, const appcache::AppCacheInfo& info) OVERRIDE;

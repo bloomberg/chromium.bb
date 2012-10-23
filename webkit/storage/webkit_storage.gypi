@@ -13,6 +13,7 @@
     ],
   },
   'includes': [
+    '../appcache/webkit_appcache.gypi',
     '../blob/webkit_blob.gypi',
     '../fileapi/webkit_fileapi.gypi',
   ],
@@ -27,6 +28,7 @@
         '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/net/net.gyp:net',
+        '<(DEPTH)/sql/sql.gyp:sql',
         '<(DEPTH)/third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '<(DEPTH)/webkit/support/webkit_support.gyp:quota',
         '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_base',
@@ -36,6 +38,7 @@
       'sources': [
         # TODO(hashimoto): Import all storage related modules. crbug.com/155242
         '../storage/webkit_storage_export.h',
+        '<@(webkit_appcache_sources)',
         '<@(webkit_blob_sources)',
         '<@(webkit_fileapi_sources)',
       ],

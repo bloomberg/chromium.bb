@@ -26,7 +26,7 @@ static const int kUnkownResponseDataSize = -1;
 
 // Response info for a particular response id. Instances are tracked in
 // the working set.
-class APPCACHE_EXPORT AppCacheResponseInfo
+class WEBKIT_STORAGE_EXPORT AppCacheResponseInfo
     : public base::RefCounted<AppCacheResponseInfo> {
  public:
   // AppCacheResponseInfo takes ownership of the http_info.
@@ -54,7 +54,7 @@ class APPCACHE_EXPORT AppCacheResponseInfo
 
 // A refcounted wrapper for HttpResponseInfo so we can apply the
 // refcounting semantics used with IOBuffer with these structures too.
-struct APPCACHE_EXPORT HttpResponseInfoIOBuffer
+struct WEBKIT_STORAGE_EXPORT HttpResponseInfoIOBuffer
     : public base::RefCountedThreadSafe<HttpResponseInfoIOBuffer> {
   scoped_ptr<net::HttpResponseInfo> http_info;
   int response_data_size;
@@ -68,7 +68,7 @@ struct APPCACHE_EXPORT HttpResponseInfoIOBuffer
 };
 
 // Low level storage API used by the response reader and writer.
-class APPCACHE_EXPORT AppCacheDiskCacheInterface {
+class WEBKIT_STORAGE_EXPORT AppCacheDiskCacheInterface {
  public:
   class Entry {
    public:
@@ -94,7 +94,7 @@ class APPCACHE_EXPORT AppCacheDiskCacheInterface {
 };
 
 // Common base class for response reader and writer.
-class APPCACHE_EXPORT AppCacheResponseIO {
+class WEBKIT_STORAGE_EXPORT AppCacheResponseIO {
  public:
   virtual ~AppCacheResponseIO();
   int64 response_id() const { return response_id_; }
@@ -130,7 +130,7 @@ class APPCACHE_EXPORT AppCacheResponseIO {
 // and there is a read in progress, the implementation will return
 // immediately but will take care of any side effect of cancelling the
 // operation.  In other words, instances are safe to delete at will.
-class APPCACHE_EXPORT AppCacheResponseReader : public AppCacheResponseIO {
+class WEBKIT_STORAGE_EXPORT AppCacheResponseReader : public AppCacheResponseIO {
  public:
   virtual ~AppCacheResponseReader();
 
@@ -192,7 +192,7 @@ class APPCACHE_EXPORT AppCacheResponseReader : public AppCacheResponseIO {
 // and there is a write in progress, the implementation will return
 // immediately but will take care of any side effect of cancelling the
 // operation. In other words, instances are safe to delete at will.
-class APPCACHE_EXPORT AppCacheResponseWriter : public AppCacheResponseIO {
+class WEBKIT_STORAGE_EXPORT AppCacheResponseWriter : public AppCacheResponseIO {
  public:
   virtual ~AppCacheResponseWriter();
 

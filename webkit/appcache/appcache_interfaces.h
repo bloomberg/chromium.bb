@@ -11,7 +11,7 @@
 #include "base/file_path.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/appcache/appcache_export.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace net {
 class URLRequest;
@@ -59,7 +59,7 @@ enum NamespaceType {
   INTERCEPT_NAMESPACE
 };
 
-struct APPCACHE_EXPORT AppCacheInfo {
+struct WEBKIT_STORAGE_EXPORT AppCacheInfo {
   AppCacheInfo();
   ~AppCacheInfo();
 
@@ -77,7 +77,7 @@ struct APPCACHE_EXPORT AppCacheInfo {
 typedef std::vector<AppCacheInfo> AppCacheInfoVector;
 
 // Type to hold information about a single appcache resource.
-struct APPCACHE_EXPORT AppCacheResourceInfo {
+struct WEBKIT_STORAGE_EXPORT AppCacheResourceInfo {
   AppCacheResourceInfo();
   ~AppCacheResourceInfo();
 
@@ -94,7 +94,7 @@ struct APPCACHE_EXPORT AppCacheResourceInfo {
 
 typedef std::vector<AppCacheResourceInfo> AppCacheResourceInfoVector;
 
-struct APPCACHE_EXPORT Namespace {
+struct WEBKIT_STORAGE_EXPORT Namespace {
   Namespace();  // Type is set to FALLBACK_NAMESPACE by default.
   Namespace(NamespaceType type, const GURL& url, const GURL& target);
   ~Namespace();
@@ -107,7 +107,7 @@ struct APPCACHE_EXPORT Namespace {
 typedef std::vector<Namespace> NamespaceVector;
 
 // Interface used by backend (browser-process) to talk to frontend (renderer).
-class APPCACHE_EXPORT AppCacheFrontend {
+class WEBKIT_STORAGE_EXPORT AppCacheFrontend {
  public:
   virtual void OnCacheSelected(
       int host_id, const appcache::AppCacheInfo& info) = 0;
@@ -128,7 +128,7 @@ class APPCACHE_EXPORT AppCacheFrontend {
 };
 
 // Interface used by frontend (renderer) to talk to backend (browser-process).
-class APPCACHE_EXPORT AppCacheBackend {
+class WEBKIT_STORAGE_EXPORT AppCacheBackend {
  public:
   virtual void RegisterHost(int host_id) = 0;
   virtual void UnregisterHost(int host_id) = 0;
@@ -169,7 +169,7 @@ bool IsSchemeSupported(const GURL& url);
 bool IsMethodSupported(const std::string& method);
 bool IsSchemeAndMethodSupported(const net::URLRequest* request);
 
-APPCACHE_EXPORT extern const FilePath::CharType kAppCacheDatabaseName[];
+WEBKIT_STORAGE_EXPORT extern const FilePath::CharType kAppCacheDatabaseName[];
 
 }  // namespace
 

@@ -13,11 +13,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
-#include "webkit/appcache/appcache_export.h"
 #include "webkit/appcache/appcache_storage.h"
 #include "webkit/quota/quota_client.h"
 #include "webkit/quota/quota_task.h"
 #include "webkit/quota/quota_types.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace appcache {
 
@@ -56,7 +56,7 @@ class AppCacheQuotaClient : public quota::QuotaClient {
   friend class AppCacheStorageImpl;  // for NotifyAppCacheIsReady
   friend class AppCacheQuotaClientTest;
 
-  APPCACHE_EXPORT explicit AppCacheQuotaClient(AppCacheService* service);
+  WEBKIT_STORAGE_EXPORT explicit AppCacheQuotaClient(AppCacheService* service);
 
   void DidDeleteAppCachesForOrigin(int rv);
   void GetOriginsHelper(quota::StorageType type,
@@ -68,8 +68,8 @@ class AppCacheQuotaClient : public quota::QuotaClient {
   net::CancelableCompletionCallback* GetServiceDeleteCallback();
 
   // For use by appcache internals during initialization and shutdown.
-  APPCACHE_EXPORT void NotifyAppCacheReady();
-  APPCACHE_EXPORT void NotifyAppCacheDestroyed();
+  WEBKIT_STORAGE_EXPORT void NotifyAppCacheReady();
+  WEBKIT_STORAGE_EXPORT void NotifyAppCacheDestroyed();
 
   // Prior to appcache service being ready, we have to queue
   // up reqeusts and defer acting on them until we're ready.

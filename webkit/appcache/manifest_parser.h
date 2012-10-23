@@ -36,14 +36,14 @@
 #include <vector>
 
 #include "base/hash_tables.h"
-#include "webkit/appcache/appcache_export.h"
 #include "webkit/appcache/appcache_interfaces.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 class GURL;
 
 namespace appcache {
 
-struct APPCACHE_EXPORT Manifest {
+struct WEBKIT_STORAGE_EXPORT Manifest {
   Manifest();
   ~Manifest();
 
@@ -54,10 +54,10 @@ struct APPCACHE_EXPORT Manifest {
   bool online_whitelist_all;
 };
 
-APPCACHE_EXPORT bool ParseManifest(const GURL& manifest_url,
-                                   const char* data,
-                                   int length,
-                                   Manifest& manifest);
+WEBKIT_STORAGE_EXPORT bool ParseManifest(const GURL& manifest_url,
+                                         const char* data,
+                                         int length,
+                                         Manifest& manifest);
 
 }  // namespace appcache
 
