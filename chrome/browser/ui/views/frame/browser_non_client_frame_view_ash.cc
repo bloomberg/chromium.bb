@@ -54,71 +54,16 @@ const int kTabstripLeftSpacing = 0;
 const int kTabstripRightSpacing = 10;
 // Height of the shadow of the content area, at the top of the toolbar.
 const int kContentShadowHeight = 1;
-
 // Space between top of window and top of tabstrip for tall headers, such as
 // for restored windows, apps, etc.
-int tabstrip_top_spacing_tall() {
-  static int value = -1;
-  if (value == -1) {
-    switch (ui::GetDisplayLayout()) {
-      case ui::LAYOUT_ASH:
-      case ui::LAYOUT_DESKTOP:
-        value = 7;
-        break;
-      case ui::LAYOUT_TOUCH:
-        value = 8;
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-  return value;
-}
-
+const int kTabstripTopSpacingTall = 7;
 // Space between top of window and top of tabstrip for short headers, such as
 // for maximized windows, pop-ups, etc.
-int tabstrip_top_spacing_short() {
-  static int value = -1;
-  if (value == -1) {
-    switch (ui::GetDisplayLayout()) {
-      case ui::LAYOUT_ASH:
-      case ui::LAYOUT_DESKTOP:
-        // Place them flush to the top to make them clickable when the cursor
-        // is at the screen edge.
-        value = 0;
-        break;
-      case ui::LAYOUT_TOUCH:
-        // Touch needs space for full-size window caption buttons (size, close)
-        // and Fitt's Law doesn't apply to fingers at the screen edge.
-        value = 8;
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-  return value;
-}
-
+const int kTabstripTopSpacingShort = 0;
 // Height of the shadow in the tab image, used to ensure clicks in the shadow
 // area still drag restored windows.  This keeps the clickable area large enough
 // to hit easily.
-int tab_shadow_height() {
-  static int value = -1;
-  if (value == -1) {
-    switch (ui::GetDisplayLayout()) {
-      case ui::LAYOUT_ASH:
-      case ui::LAYOUT_DESKTOP:
-        value = 4;
-        break;
-      case ui::LAYOUT_TOUCH:
-        value = 5;
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-  return value;
-}
+const int kTabShadowHeight = 4;
 
 }  // namespace
 
@@ -243,7 +188,7 @@ int BrowserNonClientFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
     View::ConvertPointToTarget(this, frame()->client_view(), &client_point);
     // Report hits in shadow at top of tabstrip as caption.
     gfx::Rect tabstrip_bounds(browser_view()->tabstrip()->bounds());
-    if (client_point.y() < tabstrip_bounds.y() + tab_shadow_height())
+    if (client_point.y() < tabstrip_bounds.y() + kTabShadowHeight)
       hit_test = HTCAPTION;
   }
   return hit_test;
@@ -437,14 +382,14 @@ void BrowserNonClientFrameViewAsh::OnToolbarSeparatorChanged() {
 int BrowserNonClientFrameViewAsh::NonClientTopBorderHeight(
     bool force_restored) const {
   if (force_restored)
-    return tabstrip_top_spacing_tall();
+    return kTabstripTopSpacingTall;
   if (frame()->IsFullscreen())
     return 0;
   // Windows with tab strips need a smaller non-client area.
   if (browser_view()->IsTabStripVisible()) {
     if (UseShortHeader())
-      return tabstrip_top_spacing_short();
-    return tabstrip_top_spacing_tall();
+      return kTabstripTopSpacingShort;
+    return kTabstripTopSpacingTall;
   }
   // For windows without a tab strip (popups, etc.) ensure we have enough space
   // to see the window caption buttons.

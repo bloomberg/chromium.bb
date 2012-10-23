@@ -26,7 +26,7 @@
 
 namespace {
 
-#if defined(OS_WIN) || defined(USE_ASH)
+#if defined(OS_WIN)
 // Helper function that determines whether we want to optimize the UI for touch.
 bool UseTouchOptimizedUI() {
   // If --touch-optimized-ui is specified and not set to "auto", then override
@@ -48,15 +48,10 @@ bool UseTouchOptimizedUI() {
     }
   }
 
-#if defined(OS_WIN)
-  // On Windows, we use the touch layout only when we are running in
-  // Metro mode.
+  // We use the touch layout only when we are running in Metro mode.
   return base::win::IsMetroProcess() && base::win::IsTouchEnabled();
-#else
-  return false;
-#endif
 }
-#endif  // defined(OS_WIN) || defined(USE_ASH)
+#endif  // defined(OS_WIN)
 
 const float kScaleFactorScales[] = {1.0f, 1.4f, 1.8f, 2.0f};
 COMPILE_ASSERT(ui::NUM_SCALE_FACTORS == arraysize(kScaleFactorScales),
@@ -92,11 +87,9 @@ namespace ui {
 
 // Note that this function should be extended to select
 // LAYOUT_TOUCH when appropriate on more platforms than just
-// Windows and Ash.
+// Windows.
 DisplayLayout GetDisplayLayout() {
 #if defined(USE_ASH)
-  if (UseTouchOptimizedUI())
-    return LAYOUT_TOUCH;
   return LAYOUT_ASH;
 #elif defined(OS_WIN)
   if (UseTouchOptimizedUI())
