@@ -1409,12 +1409,22 @@ TaskManager::Resource* TaskManagerExtensionProcessResourceProvider::GetResource(
     int origin_pid,
     int render_process_host_id,
     int routing_id) {
-  std::map<int, TaskManagerExtensionProcessResource*>::iterator iter =
-      pid_to_resources_.find(origin_pid);
-  if (iter != pid_to_resources_.end())
-    return iter->second;
-  else
+  // If an origin PID was specified, the request is from a plugin, not the
+  // render view host process
+  if (origin_pid)
     return NULL;
+
+  for (ExtensionRenderViewHostMap::iterator i = resources_.begin();
+       i != resources_.end(); i++) {
+    if (i->first->GetSiteInstance()->GetProcess()->GetID() ==
+            render_process_host_id &&
+        i->first->GetRoutingID() == routing_id)
+      return i->second;
+  }
+
+  // Can happen if the page went away while a network request was being
+  // performed.
+  return NULL;
 }
 
 void TaskManagerExtensionProcessResourceProvider::StartUpdating() {
@@ -1478,7 +1488,6 @@ void TaskManagerExtensionProcessResourceProvider::StopUpdating() {
   STLDeleteContainerPairSecondPointers(resources_.begin(), resources_.end());
 
   resources_.clear();
-  pid_to_resources_.clear();
 }
 
 void TaskManagerExtensionProcessResourceProvider::Observe(
@@ -1531,7 +1540,6 @@ void TaskManagerExtensionProcessResourceProvider::AddToTaskManager(
       new TaskManagerExtensionProcessResource(render_view_host);
   DCHECK(resources_.find(render_view_host) == resources_.end());
   resources_[render_view_host] = resource;
-  pid_to_resources_[resource->process_id()] = resource;
   task_manager_->AddResource(resource);
 }
 
@@ -1550,13 +1558,6 @@ void TaskManagerExtensionProcessResourceProvider::RemoveFromTaskManager(
 
   // Remove it from the provider.
   resources_.erase(iter);
-
-  // Remove it from our pid map.
-  std::map<int, TaskManagerExtensionProcessResource*>::iterator pid_iter =
-      pid_to_resources_.find(resource->process_id());
-  DCHECK(pid_iter != pid_to_resources_.end());
-  if (pid_iter != pid_to_resources_.end())
-    pid_to_resources_.erase(pid_iter);
 
   // Finally, delete the resource.
   delete resource;

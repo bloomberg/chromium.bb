@@ -479,12 +479,9 @@ class TaskManagerExtensionProcessResourceProvider
 
   // Maps the actual resources (content::RenderViewHost*) to the Task Manager
   // resources.
-  std::map<content::RenderViewHost*,
-           TaskManagerExtensionProcessResource*> resources_;
-
-  // Maps the pids to the resources (used for quick access to the resource on
-  // byte read notifications).
-  std::map<int, TaskManagerExtensionProcessResource*> pid_to_resources_;
+  typedef std::map<content::RenderViewHost*,
+      TaskManagerExtensionProcessResource*> ExtensionRenderViewHostMap;
+  ExtensionRenderViewHostMap resources_;
 
   // A scoped container for notification registries.
   content::NotificationRegistrar registrar_;
