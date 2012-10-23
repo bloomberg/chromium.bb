@@ -47,7 +47,8 @@ class ToolbarView : public views::AccessiblePaneView,
                     public chrome::search::SearchModelObserver,
                     public content::NotificationObserver,
                     public CommandObserver,
-                    public views::ButtonListener {
+                    public views::ButtonListener,
+                    public views::WidgetObserver {
  public:
   // The view class name.
   static const char kViewClassName[];
@@ -135,6 +136,10 @@ class ToolbarView : public views::AccessiblePaneView,
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
+
+  // Overridden from views::WidgetObserver:
+  virtual void OnWidgetVisibilityChanged(views::Widget* widget,
+                                         bool visible) OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,

@@ -111,6 +111,7 @@ using extensions::Extension;
 using extensions::ExtensionCreator;
 using extensions::ExtensionPrefs;
 using extensions::ExtensionSystem;
+using extensions::FeatureSwitch;
 using extensions::PermissionSet;
 
 namespace keys = extension_manifest_keys;
@@ -518,8 +519,9 @@ class ExtensionServiceTest
   ExtensionServiceTest()
       : installed_(NULL),
         override_external_install_prompt_(
-            extensions::FeatureSwitch::prompt_for_external_extensions(),
-            false) {
+            FeatureSwitch::prompt_for_external_extensions(), false),
+        override_sideload_wipeout_(
+            FeatureSwitch::sideload_wipeout(), false) {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                    content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -1007,7 +1009,8 @@ class ExtensionServiceTest
   extensions::ExtensionList loaded_;
   std::string unloaded_id_;
   const Extension* installed_;
-  extensions::FeatureSwitch::ScopedOverride override_external_install_prompt_;
+  FeatureSwitch::ScopedOverride override_external_install_prompt_;
+  FeatureSwitch::ScopedOverride override_sideload_wipeout_;
 
  private:
   content::NotificationRegistrar registrar_;
@@ -5606,8 +5609,8 @@ TEST_F(ExtensionSourcePriorityTest, InstallExternalBlocksSyncRequest) {
 #if ENABLE_EXTERNAL_INSTALL_UI
 // Test that installing an external extension displays a GlobalError.
 TEST_F(ExtensionServiceTest, ExternalInstallGlobalError) {
-  extensions::FeatureSwitch::ScopedOverride prompt(
-      extensions::FeatureSwitch::prompt_for_external_extensions(), true);
+  FeatureSwitch::ScopedOverride prompt(
+      FeatureSwitch::prompt_for_external_extensions(), true);
 
   InitializeEmptyExtensionService();
   MockExtensionProvider* provider =
@@ -5653,8 +5656,8 @@ TEST_F(ExtensionServiceTest, ExternalInstallGlobalError) {
 // Test that external extensions are initially disabled, and that enabling
 // them clears the prompt.
 TEST_F(ExtensionServiceTest, ExternalInstallInitiallyDisabled) {
-  extensions::FeatureSwitch::ScopedOverride prompt(
-      extensions::FeatureSwitch::prompt_for_external_extensions(), true);
+  FeatureSwitch::ScopedOverride prompt(
+      FeatureSwitch::prompt_for_external_extensions(), true);
 
   InitializeEmptyExtensionService();
   MockExtensionProvider* provider =
@@ -5681,8 +5684,8 @@ TEST_F(ExtensionServiceTest, ExternalInstallInitiallyDisabled) {
 
 // Test that installing multiple external extensions works.
 TEST_F(ExtensionServiceTest, ExternalInstallMultiple) {
-  extensions::FeatureSwitch::ScopedOverride prompt(
-      extensions::FeatureSwitch::prompt_for_external_extensions(), true);
+  FeatureSwitch::ScopedOverride prompt(
+      FeatureSwitch::prompt_for_external_extensions(), true);
 
   InitializeEmptyExtensionService();
   MockExtensionProvider* provider =
