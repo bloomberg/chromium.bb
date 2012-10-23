@@ -162,9 +162,9 @@ class DriveFeedLoader {
   // Callback for handling root directory refresh from the cache.
   void OnProtoLoaded(LoadRootFeedParams* params);
 
-  // Continues handling root directory refresh after the directory service
+  // Continues handling root directory refresh after the resource metadata
   // is fully loaded.
-  void ContinueWithInitializedDirectoryService(LoadRootFeedParams* params,
+  void ContinueWithInitializedResourceMetadata(LoadRootFeedParams* params,
                                                DriveFileError error);
 
   // Helper callback for handling results of metadata retrieval initiated from

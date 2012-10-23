@@ -784,7 +784,7 @@ void DriveFeedLoader::LoadFromCache(bool should_load_from_server,
     path = path.Append(kResourceMetadataDBFile);
     resource_metadata_->InitFromDB(path, blocking_task_runner_,
         base::Bind(
-            &DriveFeedLoader::ContinueWithInitializedDirectoryService,
+            &DriveFeedLoader::ContinueWithInitializedResourceMetadata,
             weak_ptr_factory_.GetWeakPtr(),
             base::Owned(params)));
   } else {
@@ -817,15 +817,15 @@ void DriveFeedLoader::OnProtoLoaded(LoadRootFeedParams* params) {
     }
   }
 
-  ContinueWithInitializedDirectoryService(params, params->load_error);
+  ContinueWithInitializedResourceMetadata(params, params->load_error);
 }
 
-void DriveFeedLoader::ContinueWithInitializedDirectoryService(
+void DriveFeedLoader::ContinueWithInitializedResourceMetadata(
     LoadRootFeedParams* params,
     DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DVLOG(1) << "Time elapsed to load directory service from disk="
+  DVLOG(1) << "Time elapsed to load resource metadata from disk="
            << (base::Time::Now() - params->load_start_time).InMilliseconds()
            << " milliseconds";
 
