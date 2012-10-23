@@ -747,6 +747,7 @@ void VideoFrameCapturerMac::ScreenConfigurationChanged() {
 
 void VideoFrameCapturerMac::ScreenRefresh(CGRectCount count,
                                           const CGRect* rect_array) {
+  DCHECK(!desktop_bounds_.isEmpty());
   SkIRect skirect_array[count];
   for (CGRectCount i = 0; i < count; ++i) {
     skirect_array[i] = CGRectToSkIRect(rect_array[i]);
@@ -796,6 +797,9 @@ void VideoFrameCapturerMac::ScreenRefreshCallback(CGRectCount count,
                                                   void* user_parameter) {
   VideoFrameCapturerMac* capturer = reinterpret_cast<VideoFrameCapturerMac*>(
       user_parameter);
+  if (capturer->desktop_bounds_.isEmpty()) {
+    capturer->ScreenConfigurationChanged();
+  }
   capturer->ScreenRefresh(count, rect_array);
 }
 
