@@ -136,7 +136,7 @@ namespace content {
 class RendererMainThread : public base::Thread {
  public:
   explicit RendererMainThread(const std::string& channel_id)
-      : base::Thread("Chrome_InProcRendererThread"),
+      : Thread("Chrome_InProcRendererThread"),
         channel_id_(channel_id) {
   }
 
@@ -145,11 +145,7 @@ class RendererMainThread : public base::Thread {
   }
 
  protected:
-  virtual void Init() {
-#if defined(OS_WIN)
-    com_initializer_.reset(new base::win::ScopedCOMInitializer());
-#endif
-
+  virtual void Init() OVERRIDE {
     render_process_.reset(new RenderProcessImpl());
     new RenderThreadImpl(channel_id_);
   }
@@ -157,9 +153,6 @@ class RendererMainThread : public base::Thread {
   virtual void CleanUp() {
     render_process_.reset();
 
-#if defined(OS_WIN)
-    com_initializer_.reset();
-#endif
     // It's a little lame to manually set this flag.  But the single process
     // RendererThread will receive the WM_QUIT.  We don't need to assert on
     // this thread, so just force the flag manually.
@@ -169,14 +162,11 @@ class RendererMainThread : public base::Thread {
     // other threads like WebThread which are created by this thread
     // which resets this flag. Please see Thread::StartWithOptions. Setting
     // this flag to true in Cleanup works around these problems.
-    base::Thread::SetThreadWasQuitProperly(true);
+    SetThreadWasQuitProperly(true);
   }
 
  private:
   std::string channel_id_;
-#if defined(OS_WIN)
-  scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_;
-#endif
   scoped_ptr<RenderProcess> render_process_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererMainThread);

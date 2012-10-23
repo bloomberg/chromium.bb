@@ -21,6 +21,10 @@ class AuraTestHelper;
 }
 }
 
+namespace ui {
+class ScopedOleInitializer;
+}
+
 namespace content {
 
 class BrowserContext;
@@ -171,6 +175,9 @@ class RenderViewHostTestHarness : public testing::Test {
   // web_contents() and SetContents() are virtual and may be
   // overridden by subclasses.
   scoped_ptr<WebContents> contents_;
+#if defined(OS_WIN)
+  scoped_ptr<ui::ScopedOleInitializer> ole_initializer_;
+#endif
 #if defined(USE_AURA)
   scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
 #endif

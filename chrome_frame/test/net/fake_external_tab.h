@@ -52,7 +52,7 @@ class FakeExternalTab {
 
   FakeBrowserProcessImpl* browser_process() const;
 
- protected:
+ private:
   scoped_ptr<FakeBrowserProcessImpl> browser_process_;
   FilePath overridden_user_dir_;
   FilePath user_data_dir_;

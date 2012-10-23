@@ -15,11 +15,17 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/test/test_render_view_host_factory.h"
 
+#if defined(OS_WIN)
+#include "ui/base/win/scoped_ole_initializer.h"
+#endif
+
 #if defined(USE_AURA)
 #include "ui/aura/test/aura_test_helper.h"
 #endif
 
 namespace content {
+
+// RenderViewHostTester -------------------------------------------------------
 
 // static
 RenderViewHostTester* RenderViewHostTester::For(RenderViewHost* host) {
@@ -51,6 +57,9 @@ bool RenderViewHostTester::HasTouchEventHandler(RenderViewHost* rvh) {
   return host_impl->has_touch_handler();
 }
 
+
+// RenderViewHostTestEnabler --------------------------------------------------
+
 RenderViewHostTestEnabler::RenderViewHostTestEnabler()
     : rph_factory_(new MockRenderProcessHostFactory()),
       rvh_factory_(new TestRenderViewHostFactory(rph_factory_.get())) {
@@ -59,8 +68,10 @@ RenderViewHostTestEnabler::RenderViewHostTestEnabler()
 RenderViewHostTestEnabler::~RenderViewHostTestEnabler() {
 }
 
-RenderViewHostTestHarness::RenderViewHostTestHarness()
-    : contents_(NULL) {
+
+// RenderViewHostTestHarness --------------------------------------------------
+
+RenderViewHostTestHarness::RenderViewHostTestHarness() : contents_(NULL) {
 }
 
 RenderViewHostTestHarness::~RenderViewHostTestHarness() {
@@ -104,6 +115,14 @@ void RenderViewHostTestHarness::SetContents(WebContents* contents) {
 }
 
 WebContents* RenderViewHostTestHarness::CreateTestWebContents() {
+  // Make sure we ran SetUp() already.
+#if defined(OS_WIN)
+  DCHECK(ole_initializer_ != NULL);
+#endif
+#if defined(USE_AURA)
+  DCHECK(aura_test_helper_ != NULL);
+#endif
+
   // See comment above browser_context_ decl for why we check for NULL here.
   if (!browser_context_.get())
     browser_context_.reset(new content::TestBrowserContext());
@@ -127,6 +146,9 @@ void RenderViewHostTestHarness::Reload() {
 }
 
 void RenderViewHostTestHarness::SetUp() {
+#if defined(OS_WIN)
+  ole_initializer_.reset(new ui::ScopedOleInitializer());
+#endif
 #if defined(USE_AURA)
   aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
   aura_test_helper_->SetUp();
@@ -150,6 +172,10 @@ void RenderViewHostTestHarness::TearDown() {
   // Release the browser context on the UI thread.
   message_loop_.DeleteSoon(FROM_HERE, browser_context_.release());
   message_loop_.RunAllPending();
+
+#if defined(OS_WIN)
+  ole_initializer_.reset();
+#endif
 }
 
 void RenderViewHostTestHarness::SetRenderProcessHostFactory(

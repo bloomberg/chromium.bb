@@ -25,14 +25,13 @@
 class ChromeFrameUnittestsModule
     : public CAtlExeModuleT<ChromeFrameUnittestsModule> {
  public:
-  static HRESULT InitializeCom() {
-    // Note that this only gets called in versions of ATL included in
-    // VS2008 and earlier. We still need it however since this gets called
-    // at static initialization time, before the ScopedCOMInitializer in main()
-    // and the default implementation of InitializeCom CoInitializes into the
-    // MTA.
-    return CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
-  }
+  // Called at static init time, for versions of ATL included in VS2008 and
+  // earlier only.  The default implementation initializes COM in MTA mode,
+  // which we don't want.  We could init STA mode here, but since we have to
+  // init in main() for VS2010 and above anyway, we simply do nothing, since
+  // nothing needs COM before main() runs.
+  static HRESULT InitializeCom() { return S_OK; }
+  static void UninitializeCom() {}
 };
 
 ChromeFrameUnittestsModule _AtlModule;
@@ -46,7 +45,10 @@ void PureCall() {
 }
 
 int main(int argc, char **argv) {
-  base::win::ScopedCOMInitializer com_initializer;
+  // For ATL in VS2010 and up, ChromeFrameUnittestsModule::InitializeCom() is
+  // not called, so we init COM here.
+  base::win::ScopedCOMInitializer com_initializer_;
+
   ScopedChromeFrameRegistrar::RegisterAndExitProcessIfDirected();
   base::EnableTerminationOnHeapCorruption();
   base::PlatformThread::SetName("ChromeFrame tests");

@@ -11,7 +11,7 @@
 #include <locationapi.h>
 #include <sensors.h>
 
-#include "base/win/scoped_com_initializer.h"
+#include "base/basictypes.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -51,8 +51,6 @@ class CONTENT_EXPORT Win7LocationApi {
   // location information.
   virtual bool GetPositionIfFixed(content::Geoposition* position);
 
-  // Ensure that COM has been initialized for this thread.
-  base::win::ScopedCOMInitializer com_initializer_;
   // ILocation object that lets us communicate with the Location and
   // Sensors platform.
   CComPtr<ILocation> locator_;

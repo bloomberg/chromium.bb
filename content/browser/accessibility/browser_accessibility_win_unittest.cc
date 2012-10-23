@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
-#include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
@@ -59,8 +58,6 @@ class BrowserAccessibilityTest : public testing::Test {
   virtual void SetUp() {
     ui::win::CreateATLModuleIfNeeded();
   }
-
-  base::win::ScopedCOMInitializer com_initializer_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityTest);
 };

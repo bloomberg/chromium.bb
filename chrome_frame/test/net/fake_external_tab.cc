@@ -26,7 +26,6 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
-#include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/app/chrome_main_delegate.h"
@@ -534,7 +533,6 @@ void CFUrlRequestUnittestRunner::StartChromeFrameInHostBrowser() {
   if (!launch_browser_)
     return;
 
-  base::win::ScopedCOMInitializer com;
   chrome_frame_test::CloseAllIEWindows();
 
   // Tweak IE settings to make it amenable to testing before launching it.
@@ -563,10 +561,8 @@ void CFUrlRequestUnittestRunner::StartChromeFrameInHostBrowser() {
 }
 
 void CFUrlRequestUnittestRunner::ShutDownHostBrowser() {
-  if (launch_browser_) {
-    base::win::ScopedCOMInitializer com;
+  if (launch_browser_)
     chrome_frame_test::CloseAllIEWindows();
-  }
 }
 
 void CFUrlRequestUnittestRunner::OnIEShutdownFailure() {
@@ -725,10 +721,8 @@ void CFUrlRequestUnittestRunner::OnInitializationTimeout() {
 
   StopFileLogger(true);
 
-  if (launch_browser_) {
-    base::win::ScopedCOMInitializer com;
+  if (launch_browser_)
     chrome_frame_test::CloseAllIEWindows();
-  }
 
   if (ie_configurator_.get() != NULL)
     ie_configurator_->RevertSettings();

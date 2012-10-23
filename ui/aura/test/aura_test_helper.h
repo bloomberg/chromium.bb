@@ -8,10 +8,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 
-#if defined(OS_WIN)
-#include "ui/base/win/scoped_ole_initializer.h"
-#endif
-
 class MessageLoopForUI;
 
 namespace ui {
@@ -61,10 +57,6 @@ class AuraTestHelper {
   scoped_ptr<ui::InputMethod> test_input_method_;
   scoped_ptr<FocusManager> focus_manager_;
   scoped_ptr<aura::TestScreen> test_screen_;
-
-#if defined(OS_WIN)
-  ui::ScopedOleInitializer ole_initializer_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(AuraTestHelper);
 };

@@ -24,7 +24,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_co_mem.h"
-#include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
@@ -414,9 +413,6 @@ void IEImporter::StartImport(const importer::SourceProfile& source_profile,
   source_path_ = source_profile.source_path;
 
   bridge_->NotifyStarted();
-
-  // Some IE settings (such as Protected Storage) are obtained via COM APIs.
-  base::win::ScopedCOMInitializer com_initializer;
 
   if ((items & importer::HOME_PAGE) && !cancelled())
     ImportHomepage();  // Doesn't have a UI item.

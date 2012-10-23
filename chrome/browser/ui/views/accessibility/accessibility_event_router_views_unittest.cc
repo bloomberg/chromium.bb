@@ -24,6 +24,10 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
+#if defined(OS_WIN)
+#include "ui/base/win/scoped_ole_initializer.h"
+#endif
+
 #if defined(USE_AURA)
 #include "ui/aura/test/aura_test_helper.h"
 #endif
@@ -89,6 +93,9 @@ class AccessibilityEventRouterViewsTest
   }
 
   virtual void SetUp() {
+#if defined(OS_WIN)
+    ole_initializer_.reset(new ui::ScopedOleInitializer());
+#endif
     views::ViewsDelegate::views_delegate = new AccessibilityViewsDelegate();
 #if defined(USE_AURA)
     aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
@@ -107,6 +114,10 @@ class AccessibilityEventRouterViewsTest
     // forces it to be deleted now, so we don't have any memory leaks
     // when this method exits.
     MessageLoop::current()->RunAllPending();
+
+#if defined(OS_WIN)
+    ole_initializer_.reset();
+#endif
   }
 
   views::Widget* CreateWindowWithContents(views::View* contents) {
@@ -133,6 +144,9 @@ class AccessibilityEventRouterViewsTest
   int focus_event_count_;
   std::string last_control_name_;
   std::string last_control_context_;
+#if defined(OS_WIN)
+  scoped_ptr<ui::ScopedOleInitializer> ole_initializer_;
+#endif
 #if defined(USE_AURA)
   scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
 #endif
