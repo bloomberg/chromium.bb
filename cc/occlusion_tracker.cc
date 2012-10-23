@@ -101,7 +101,9 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::finishedRenderTarget(co
     RenderSurfaceType* surface = finishedTarget->renderSurface();
 
     // If the occlusion within the surface can not be applied to things outside of the surface's subtree, then clear the occlusion here so it won't be used.
-    if (finishedTarget->maskLayer() || !surfaceOpacityKnown(surface) || surface->drawOpacity() < 1 || finishedTarget->filters().hasFilterThatAffectsOpacity()) {
+    // TODO(senorblanco):  Make this smarter for SkImageFilter case:  once
+    // SkImageFilters can report affectsOpacity(), call that.
+    if (finishedTarget->maskLayer() || !surfaceOpacityKnown(surface) || surface->drawOpacity() < 1 || finishedTarget->filters().hasFilterThatAffectsOpacity() || finishedTarget->filter()) {
         m_stack.last().occlusionInScreen = Region();
         m_stack.last().occlusionInTarget = Region();
     } else {

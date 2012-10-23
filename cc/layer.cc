@@ -12,6 +12,7 @@
 #include "cc/layer_impl.h"
 #include "cc/layer_tree_host.h"
 #include "cc/settings.h"
+#include "third_party/skia/include/core/SkImageFilter.h"
 #include <public/WebAnimationDelegate.h>
 #include <public/WebLayerScrollClient.h>
 #include <public/WebSize.h>
@@ -44,6 +45,7 @@ Layer::Layer()
     , m_debugBorderColor(0)
     , m_debugBorderWidth(0)
     , m_opacity(1.0)
+    , m_filter(0)
     , m_anchorPointZ(0)
     , m_isContainerForFixedPositionLayers(false)
     , m_fixedToContainerLayer(false)
@@ -81,6 +83,8 @@ Layer::~Layer()
 
     // Remove the parent reference from all children.
     removeAllChildren();
+
+    SkSafeUnref(m_filter);
 }
 
 void Layer::setUseLCDText(bool useLCDText)
@@ -315,11 +319,23 @@ void Layer::setReplicaLayer(Layer* layer)
 
 void Layer::setFilters(const WebKit::WebFilterOperations& filters)
 {
+    DCHECK(!m_filter);
     if (m_filters == filters)
         return;
     m_filters = filters;
     setNeedsCommit();
     if (!filters.isEmpty())
+        LayerTreeHost::setNeedsFilterContext(true);
+}
+
+void Layer::setFilter(SkImageFilter* filter)
+{
+    DCHECK(m_filters.isEmpty());
+    if (m_filter == filter)
+        return;
+    SkRefCnt_SafeAssign(m_filter, filter);
+    setNeedsCommit();
+    if (filter)
         LayerTreeHost::setNeedsFilterContext(true);
 }
 
@@ -544,6 +560,7 @@ void Layer::pushPropertiesTo(LayerImpl* layer)
     layer->setForceRenderSurface(m_forceRenderSurface);
     layer->setDrawsContent(drawsContent());
     layer->setFilters(filters());
+    layer->setFilter(filter());
     layer->setBackgroundFilters(backgroundFilters());
     layer->setUseLCDText(m_useLCDText);
     layer->setMasksToBounds(m_masksToBounds);

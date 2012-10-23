@@ -8,7 +8,6 @@
 
 #include "CCDamageTracker.h"
 #include "FloatQuad.h"
-#include "GrTexture.h"
 #include "NotImplemented.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
@@ -31,6 +30,10 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrTexture.h"
+#include "third_party/skia/include/gpu/SkGpuDevice.h"
+#include "third_party/skia/include/gpu/SkGrTexturePixelRef.h"
 #include "ui/gfx/rect_conversions.h"
 #include <public/WebGraphicsContext3D.h>
 #include <public/WebSharedGraphicsContext3D.h>
@@ -331,13 +334,29 @@ void GLRenderer::drawDebugBorderQuad(const DrawingFrame& frame, const DebugBorde
     GLC(context(), context()->drawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, 6 * sizeof(unsigned short)));
 }
 
+static WebGraphicsContext3D* getFilterContext()
+{
+    if (Proxy::hasImplThread())
+        return WebSharedGraphicsContext3D::compositorThreadContext();
+    else
+        return WebSharedGraphicsContext3D::mainThreadContext();
+}
+
+static GrContext* getFilterGrContext()
+{
+    if (Proxy::hasImplThread())
+        return WebSharedGraphicsContext3D::compositorThreadGrContext();
+    else
+        return WebSharedGraphicsContext3D::mainThreadGrContext();
+}
+
 static inline SkBitmap applyFilters(GLRenderer* renderer, const WebKit::WebFilterOperations& filters, ScopedTexture* sourceTexture)
 {
     if (filters.isEmpty())
         return SkBitmap();
 
-    WebGraphicsContext3D* filterContext = Proxy::hasImplThread() ? WebSharedGraphicsContext3D::compositorThreadContext() : WebSharedGraphicsContext3D::mainThreadContext();
-    GrContext* filterGrContext = Proxy::hasImplThread() ? WebSharedGraphicsContext3D::compositorThreadGrContext() : WebSharedGraphicsContext3D::mainThreadGrContext();
+    WebGraphicsContext3D* filterContext = getFilterContext();
+    GrContext* filterGrContext = getFilterGrContext();
 
     if (!filterContext || !filterGrContext)
         return SkBitmap();
@@ -347,6 +366,57 @@ static inline SkBitmap applyFilters(GLRenderer* renderer, const WebKit::WebFilte
     ResourceProvider::ScopedWriteLockGL lock(renderer->resourceProvider(), sourceTexture->id());
     SkBitmap source = RenderSurfaceFilters::apply(filters, lock.textureId(), sourceTexture->size(), filterContext, filterGrContext);
     return source;
+}
+
+static SkBitmap applyImageFilter(GLRenderer* renderer, SkImageFilter* filter, ScopedTexture* sourceTexture)
+{
+    if (!filter)
+        return SkBitmap();
+
+    WebGraphicsContext3D* context3d = getFilterContext();
+    GrContext* grContext = getFilterGrContext();
+
+    if (!context3d || !grContext)
+        return SkBitmap();
+
+    renderer->context()->flush();
+
+    ResourceProvider::ScopedWriteLockGL lock(renderer->resourceProvider(), sourceTexture->id());
+
+    // Wrap the source texture in a Ganesh platform texture.
+    GrPlatformTextureDesc platformTextureDescription;
+    platformTextureDescription.fWidth = sourceTexture->size().width();
+    platformTextureDescription.fHeight = sourceTexture->size().height();
+    platformTextureDescription.fConfig = kSkia8888_GrPixelConfig;
+    platformTextureDescription.fTextureHandle = lock.textureId();
+    SkAutoTUnref<GrTexture> texture(grContext->createPlatformTexture(platformTextureDescription));
+
+    // Place the platform texture inside an SkBitmap.
+    SkBitmap source;
+    source.setConfig(SkBitmap::kARGB_8888_Config, sourceTexture->size().width(), sourceTexture->size().height());
+    source.setPixelRef(new SkGrPixelRef(texture.get()))->unref();
+    
+    // Create a scratch texture for backing store.
+    GrTextureDesc desc;
+    desc.fFlags = kRenderTarget_GrTextureFlagBit | kNoStencil_GrTextureFlagBit;
+    desc.fSampleCnt = 0;
+    desc.fWidth = source.width();
+    desc.fHeight = source.height();
+    desc.fConfig = kSkia8888_GrPixelConfig;
+    GrAutoScratchTexture scratchTexture(grContext, desc, GrContext::kExact_ScratchTexMatch);
+
+    // Create a device and canvas using that backing store.
+    SkGpuDevice device(grContext, scratchTexture.detach());
+    SkCanvas canvas(&device);
+
+    // Draw the source bitmap through the filter to the canvas.
+    SkPaint paint;
+    paint.setImageFilter(filter);
+    canvas.clear(0x0);
+    canvas.drawSprite(source, 0, 0, &paint);
+    canvas.flush();
+    context3d->flush();
+    return device.accessBitmap(false);
 }
 
 scoped_ptr<ScopedTexture> GLRenderer::drawBackgroundFilters(DrawingFrame& frame, const RenderPassDrawQuad* quad, const WebKit::WebFilterOperations& filters, const WebTransformationMatrix& contentsDeviceTransform)
@@ -442,7 +512,12 @@ void GLRenderer::drawRenderPassQuad(DrawingFrame& frame, const RenderPassDrawQua
 
     // FIXME: Cache this value so that we don't have to do it for both the surface and its replica.
     // Apply filters to the contents texture.
-    SkBitmap filterBitmap = applyFilters(this, renderPass->filters(), contentsTexture);
+    SkBitmap filterBitmap;
+    if (renderPass->filter()) {
+        filterBitmap = applyImageFilter(this, renderPass->filter(), contentsTexture);
+    } else {
+        filterBitmap = applyFilters(this, renderPass->filters(), contentsTexture);
+    }
     scoped_ptr<ResourceProvider::ScopedReadLockGL> contentsResourceLock;
     unsigned contentsTextureId = 0;
     if (filterBitmap.getTexture()) {

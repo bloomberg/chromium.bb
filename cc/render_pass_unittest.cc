@@ -9,6 +9,7 @@
 #include "CCCheckerboardDrawQuad.h"
 #include "cc/test/geometry_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include <public/WebFilterOperations.h>
 #include <public/WebTransformationMatrix.h>
 
@@ -38,6 +39,7 @@ struct RenderPassSize {
     bool m_hasOcclusionFromOutsideTargetSurface;
     WebKit::WebFilterOperations m_filters;
     WebKit::WebFilterOperations m_backgroundFilters;
+    SkImageFilter* m_filter;
 };
 
 TEST(RenderPassTest, copyShouldBeIdenticalExceptIdAndQuads)
@@ -56,12 +58,14 @@ TEST(RenderPassTest, copyShouldBeIdenticalExceptIdAndQuads)
 
     filters.append(WebFilterOperation::createGrayscaleFilter(0.2f));
     backgroundFilters.append(WebFilterOperation::createInvertFilter(0.2f));
+    SkAutoTUnref<SkBlurImageFilter> filter(new SkBlurImageFilter(SK_Scalar1, SK_Scalar1));
 
     pass->setDamageRect(damageRect);
     pass->setHasTransparentBackground(hasTransparentBackground);
     pass->setHasOcclusionFromOutsideTargetSurface(hasOcclusionFromOutsideTargetSurface);
     pass->setFilters(filters);
     pass->setBackgroundFilters(backgroundFilters);
+    pass->setFilter(filter);
 
     // Stick a quad in the pass, this should not get copied.
     TestRenderPass* testPass = static_cast<TestRenderPass*>(pass.get());
@@ -79,6 +83,7 @@ TEST(RenderPassTest, copyShouldBeIdenticalExceptIdAndQuads)
     EXPECT_EQ(pass->hasOcclusionFromOutsideTargetSurface(), copy->hasOcclusionFromOutsideTargetSurface());
     EXPECT_EQ(pass->filters(), copy->filters());
     EXPECT_EQ(pass->backgroundFilters(), copy->backgroundFilters());
+    EXPECT_EQ(pass->filter(), copy->filter());
     EXPECT_EQ(0u, copy->quadList().size());
 
     EXPECT_EQ(sizeof(RenderPassSize), sizeof(RenderPass));

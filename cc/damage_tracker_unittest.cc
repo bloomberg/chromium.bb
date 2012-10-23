@@ -13,6 +13,7 @@
 #include "cc/single_thread_proxy.h"
 #include "cc/test/geometry_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include <public/WebFilterOperation.h>
 #include <public/WebFilterOperations.h>
 
@@ -59,7 +60,7 @@ void emulateDrawingOneFrame(LayerImpl* root)
     // Iterate back-to-front, so that damage correctly propagates from descendant surfaces to ancestors.
     for (int i = renderSurfaceLayerList.size() - 1; i >= 0; --i) {
         RenderSurfaceImpl* targetSurface = renderSurfaceLayerList[i]->renderSurface();
-        targetSurface->damageTracker()->updateDamageTrackingState(targetSurface->layerList(), targetSurface->owningLayerId(), targetSurface->surfacePropertyChangedOnlyFromDescendant(), targetSurface->contentRect(), renderSurfaceLayerList[i]->maskLayer(), renderSurfaceLayerList[i]->filters());
+        targetSurface->damageTracker()->updateDamageTrackingState(targetSurface->layerList(), targetSurface->owningLayerId(), targetSurface->surfacePropertyChangedOnlyFromDescendant(), targetSurface->contentRect(), renderSurfaceLayerList[i]->maskLayer(), renderSurfaceLayerList[i]->filters(), renderSurfaceLayerList[i]->filter());
     }
 
     root->resetAllChangeTrackingForSubtree();
@@ -390,6 +391,37 @@ TEST_F(DamageTrackerTest, verifyDamageForBlurredSurface)
     expectedDamageRect.move(-outsetLeft, -outsetTop);
     expectedDamageRect.expand(outsetLeft + outsetRight, outsetTop + outsetBottom);
     EXPECT_FLOAT_RECT_EQ(expectedDamageRect, rootDamageRect);
+}
+
+TEST_F(DamageTrackerTest, verifyDamageForImageFilter)
+{
+    scoped_ptr<LayerImpl> root = createAndSetUpTestTreeWithOneSurface();
+    LayerImpl* child = root->children()[0];
+    FloatRect rootDamageRect, childDamageRect;
+
+    // Allow us to set damage on child too.
+    child->setDrawsContent(true);
+
+    SkAutoTUnref<SkImageFilter> filter(new SkBlurImageFilter(SkIntToScalar(2),
+                                                             SkIntToScalar(2)));
+    // Setting the filter will damage the whole surface.
+    clearDamageForAllSurfaces(root.get());
+    child->setFilter(filter);
+    emulateDrawingOneFrame(root.get());
+    rootDamageRect = root->renderSurface()->damageTracker()->currentDamageRect();
+    childDamageRect = child->renderSurface()->damageTracker()->currentDamageRect();
+    EXPECT_FLOAT_RECT_EQ(FloatRect(100, 100, 30, 30), rootDamageRect);
+    EXPECT_FLOAT_RECT_EQ(FloatRect(0, 0, 30, 30), childDamageRect);
+
+    // CASE 1: Setting the update rect should damage the whole surface (for now)
+    clearDamageForAllSurfaces(root.get());
+    child->setUpdateRect(FloatRect(0, 0, 1, 1));
+    emulateDrawingOneFrame(root.get());
+
+    rootDamageRect = root->renderSurface()->damageTracker()->currentDamageRect();
+    childDamageRect = child->renderSurface()->damageTracker()->currentDamageRect();
+    EXPECT_FLOAT_RECT_EQ(FloatRect(100, 100, 30, 30), rootDamageRect);
+    EXPECT_FLOAT_RECT_EQ(FloatRect(0, 0, 30, 30), childDamageRect);
 }
 
 TEST_F(DamageTrackerTest, verifyDamageForBackgroundBlurredChild)
@@ -1095,7 +1127,7 @@ TEST_F(DamageTrackerTest, verifyDamageForEmptyLayerList)
     ASSERT_TRUE(root == root->renderTarget());
     RenderSurfaceImpl* targetSurface = root->renderSurface();
     targetSurface->clearLayerLists();
-    targetSurface->damageTracker()->updateDamageTrackingState(targetSurface->layerList(), targetSurface->owningLayerId(), false, IntRect(), 0, WebFilterOperations());
+    targetSurface->damageTracker()->updateDamageTrackingState(targetSurface->layerList(), targetSurface->owningLayerId(), false, IntRect(), 0, WebFilterOperations(), 0);
 
     FloatRect damageRect = targetSurface->damageTracker()->currentDamageRect();
     EXPECT_TRUE(damageRect.isEmpty());

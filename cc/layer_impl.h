@@ -110,6 +110,9 @@ public:
     void setBackgroundFilters(const WebKit::WebFilterOperations&);
     const WebKit::WebFilterOperations& backgroundFilters() const { return m_backgroundFilters; }
 
+    void setFilter(SkImageFilter*);
+    SkImageFilter* filter() const { return m_filter; }
+
     void setMasksToBounds(bool);
     bool masksToBounds() const { return m_masksToBounds; }
 
@@ -362,6 +365,7 @@ private:
 
     WebKit::WebFilterOperations m_filters;
     WebKit::WebFilterOperations m_backgroundFilters;
+    SkImageFilter* m_filter;
 
     WebKit::WebTransformationMatrix m_drawTransform;
     WebKit::WebTransformationMatrix m_screenSpaceTransform;

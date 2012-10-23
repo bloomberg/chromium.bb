@@ -242,7 +242,7 @@ static bool subtreeShouldRenderToSeparateSurface(LayerType* layer, bool axisAlig
         return true;
 
     // If the layer uses a CSS filter.
-    if (!layer->filters().isEmpty() || !layer->backgroundFilters().isEmpty())
+    if (!layer->filters().isEmpty() || !layer->backgroundFilters().isEmpty() || layer->filter())
         return true;
 
     // If the layer flattens its subtree (i.e. the layer doesn't preserve-3d), but it is
@@ -576,7 +576,9 @@ static void calculateDrawTransformsInternal(LayerType* layer, LayerType* rootLay
             layer->replicaLayer()->maskLayer()->setVisibleContentRect(IntRect(IntPoint(), layer->contentBounds()));
         }
 
-        if (layer->filters().hasFilterThatMovesPixels())
+        // FIXME:  make this smarter for the SkImageFilter case (check for
+        //         pixel-moving filters)
+        if (layer->filters().hasFilterThatMovesPixels() || layer->filter())
             nearestAncestorThatMovesPixels = renderSurface;
 
         // The render surface clipRect is expressed in the space where this surface draws, i.e. the same space as clipRectFromAncestor.

@@ -51,7 +51,7 @@ static inline void expandDamageRectInsideRectWithFilters(FloatRect& damageRect, 
     damageRect.unite(expandedDamageRect);
 }
 
-void DamageTracker::updateDamageTrackingState(const std::vector<LayerImpl*>& layerList, int targetSurfaceLayerID, bool targetSurfacePropertyChangedOnlyFromDescendant, const IntRect& targetSurfaceContentRect, LayerImpl* targetSurfaceMaskLayer, const WebKit::WebFilterOperations& filters)
+void DamageTracker::updateDamageTrackingState(const std::vector<LayerImpl*>& layerList, int targetSurfaceLayerID, bool targetSurfacePropertyChangedOnlyFromDescendant, const IntRect& targetSurfaceContentRect, LayerImpl* targetSurfaceMaskLayer, const WebKit::WebFilterOperations& filters, SkImageFilter* filter)
 {
     //
     // This function computes the "damage rect" of a target surface, and updates the state
@@ -134,8 +134,13 @@ void DamageTracker::updateDamageTrackingState(const std::vector<LayerImpl*>& lay
         damageRectForThisUpdate.uniteIfNonZero(damageFromSurfaceMask);
         damageRectForThisUpdate.uniteIfNonZero(damageFromLeftoverRects);
 
-        if (filters.hasFilterThatMovesPixels())
+        if (filters.hasFilterThatMovesPixels()) {
             expandRectWithFilters(damageRectForThisUpdate, filters);
+        } else if (filter) {
+            // TODO(senorblanco):  Once SkImageFilter reports its outsets, use
+            // those here to limit damage.
+            damageRectForThisUpdate = targetSurfaceContentRect;
+        }
     }
 
     // Damage accumulates until we are notified that we actually did draw on that frame.

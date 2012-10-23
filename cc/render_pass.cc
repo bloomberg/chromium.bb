@@ -12,6 +12,7 @@
 #include "cc/quad_culler.h"
 #include "cc/shared_quad_state.h"
 #include "cc/solid_color_draw_quad.h"
+#include "third_party/skia/include/core/SkImageFilter.h"
 
 using WebKit::WebTransformationMatrix;
 
@@ -28,6 +29,7 @@ RenderPass::RenderPass(Id id, gfx::Rect outputRect, const WebKit::WebTransformat
     , m_outputRect(outputRect)
     , m_hasTransparentBackground(true)
     , m_hasOcclusionFromOutsideTargetSurface(false)
+    , m_filter(0)
 {
     DCHECK(id.layerId > 0);
     DCHECK(id.index >= 0);
@@ -35,6 +37,7 @@ RenderPass::RenderPass(Id id, gfx::Rect outputRect, const WebKit::WebTransformat
 
 RenderPass::~RenderPass()
 {
+    SkSafeUnref(m_filter);
 }
 
 scoped_ptr<RenderPass> RenderPass::copy(Id newId) const
@@ -47,6 +50,7 @@ scoped_ptr<RenderPass> RenderPass::copy(Id newId) const
     copyPass->setHasOcclusionFromOutsideTargetSurface(m_hasOcclusionFromOutsideTargetSurface);
     copyPass->setFilters(m_filters);
     copyPass->setBackgroundFilters(m_backgroundFilters);
+    copyPass->setFilter(m_filter);
     return copyPass.Pass();
 }
 
@@ -101,6 +105,10 @@ void RenderPass::appendQuadsToFillScreen(LayerImpl* rootLayer, SkColor screenBac
         // Skip the quad culler and just append the quads directly to avoid occlusion checks.
         m_quadList.append(SolidColorDrawQuad::create(sharedQuadState, layerRect, screenBackgroundColor).PassAs<DrawQuad>());
     }
+}
+
+void RenderPass::setFilter(SkImageFilter* filter) {
+    SkRefCnt_SafeAssign(m_filter, filter);
 }
 
 }  // namespace cc

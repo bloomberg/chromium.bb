@@ -272,6 +272,11 @@ void WebLayerImpl::setBackgroundFilters(const WebFilterOperations& filters)
     m_layer->setBackgroundFilters(filters);
 }
 
+void WebLayerImpl::setFilter(SkImageFilter* filter)
+{
+    m_layer->setFilter(filter);
+}
+
 void WebLayerImpl::setDebugBorderColor(const WebColor& color)
 {
     m_layer->setDebugBorderColor(color);

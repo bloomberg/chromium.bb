@@ -9,6 +9,7 @@
 #include "cc/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include <public/WebFilterOperation.h>
 #include <public/WebFilterOperations.h>
 
@@ -82,6 +83,7 @@ TEST(LayerImplTest, verifyLayerChangesAreTrackedProperly)
     arbitraryTransform.scale3d(0.1, 0.2, 0.3);
     WebFilterOperations arbitraryFilters;
     arbitraryFilters.append(WebFilterOperation::createOpacityFilter(0.5));
+    SkAutoTUnref<SkImageFilter> arbitraryFilter(new SkBlurImageFilter(SK_Scalar1, SK_Scalar1));
 
     // These properties are internal, and should not be considered "change" when they are used.
     EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->setUseLCDText(true));
@@ -98,6 +100,8 @@ TEST(LayerImplTest, verifyLayerChangesAreTrackedProperly)
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setAnchorPoint(arbitraryFloatPoint));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setAnchorPointZ(arbitraryNumber));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setFilters(arbitraryFilters));
+    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setFilters(WebFilterOperations()));
+    EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setFilter(arbitraryFilter));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setMaskLayer(LayerImpl::create(4)));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setMasksToBounds(true));
     EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->setContentsOpaque(true));

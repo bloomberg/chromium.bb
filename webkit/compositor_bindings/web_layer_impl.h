@@ -12,6 +12,9 @@ namespace cc {
 class Layer;
 }
 
+// TODO(senorblanco):  Remove this once WebKit changes have landed.
+class SkImageFilter;
+
 namespace WebKit {
 
 class WebLayerImpl : public WebLayer {
@@ -57,6 +60,7 @@ public:
     virtual void setUseParentBackfaceVisibility(bool) OVERRIDE;
     virtual void setBackgroundColor(WebColor) OVERRIDE;
     virtual WebColor backgroundColor() const;
+    virtual void setFilter(SkImageFilter*);
     virtual void setFilters(const WebFilterOperations&) OVERRIDE;
     virtual void setBackgroundFilters(const WebFilterOperations&) OVERRIDE;
     virtual void setDebugBorderColor(const WebColor&) OVERRIDE;

@@ -18,6 +18,8 @@
 #include <public/WebTransformationMatrix.h>
 #include <vector>
 
+class SkImageFilter;
+
 namespace cc {
 
 class LayerImpl;
@@ -91,6 +93,9 @@ public:
     const WebKit::WebFilterOperations& backgroundFilters() const { return m_backgroundFilters; }
     void setBackgroundFilters(const WebKit::WebFilterOperations& filters) { m_backgroundFilters = filters; }
 
+    SkImageFilter* filter() const { return m_filter; }
+    void setFilter(SkImageFilter* filter);
+
     bool hasTransparentBackground() const { return m_hasTransparentBackground; }
     void setHasTransparentBackground(bool transparent) { m_hasTransparentBackground = transparent; }
 
@@ -109,6 +114,7 @@ protected:
     bool m_hasOcclusionFromOutsideTargetSurface;
     WebKit::WebFilterOperations m_filters;
     WebKit::WebFilterOperations m_backgroundFilters;
+    SkImageFilter* m_filter;
 
     DISALLOW_COPY_AND_ASSIGN(RenderPass);
 };

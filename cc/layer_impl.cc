@@ -15,6 +15,7 @@
 #include "cc/quad_sink.h"
 #include "cc/scrollbar_animation_controller.h"
 #include "cc/settings.h"
+#include "third_party/skia/include/core/SkImageFilter.h"
 
 using WebKit::WebTransformationMatrix;
 
@@ -52,6 +53,7 @@ LayerImpl::LayerImpl(int id)
     , m_drawOpacityIsAnimating(false)
     , m_debugBorderColor(0)
     , m_debugBorderWidth(0)
+    , m_filter(0)
     , m_drawTransformIsAnimating(false)
     , m_screenSpaceTransformIsAnimating(false)
 #ifndef NDEBUG
@@ -69,6 +71,7 @@ LayerImpl::~LayerImpl()
 #ifndef NDEBUG
     DCHECK(!m_betweenWillDrawAndDidDraw);
 #endif
+    SkSafeUnref(m_filter);
 }
 
 void LayerImpl::addChild(scoped_ptr<LayerImpl> child)
@@ -473,6 +476,7 @@ void LayerImpl::setBackgroundColor(SkColor backgroundColor)
 
 void LayerImpl::setFilters(const WebKit::WebFilterOperations& filters)
 {
+    DCHECK(!m_filter);
     if (m_filters == filters)
         return;
 
@@ -487,6 +491,16 @@ void LayerImpl::setBackgroundFilters(const WebKit::WebFilterOperations& backgrou
 
     m_backgroundFilters = backgroundFilters;
     m_layerPropertyChanged = true;
+}
+
+void LayerImpl::setFilter(SkImageFilter* filter)
+{
+    DCHECK(m_filters.isEmpty());
+    if (m_filter == filter)
+        return;
+
+    SkRefCnt_SafeAssign(m_filter, filter);
+    noteLayerPropertyChangedForSubtree();
 }
 
 void LayerImpl::setMasksToBounds(bool masksToBounds)

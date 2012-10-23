@@ -14,6 +14,8 @@ namespace WebKit {
 class WebFilterOperations;
 }
 
+class SkImageFilter;
+
 namespace cc {
 
 class LayerImpl;
@@ -28,7 +30,7 @@ public:
 
     void didDrawDamagedArea() { m_currentDamageRect = FloatRect(); }
     void forceFullDamageNextUpdate() { m_forceFullDamageNextUpdate = true; }
-    void updateDamageTrackingState(const std::vector<LayerImpl*>& layerList, int targetSurfaceLayerID, bool targetSurfacePropertyChangedOnlyFromDescendant, const IntRect& targetSurfaceContentRect, LayerImpl* targetSurfaceMaskLayer, const WebKit::WebFilterOperations&);
+    void updateDamageTrackingState(const std::vector<LayerImpl*>& layerList, int targetSurfaceLayerID, bool targetSurfacePropertyChangedOnlyFromDescendant, const IntRect& targetSurfaceContentRect, LayerImpl* targetSurfaceMaskLayer, const WebKit::WebFilterOperations&, SkImageFilter* filter);
 
     const FloatRect& currentDamageRect() { return m_currentDamageRect; }
 

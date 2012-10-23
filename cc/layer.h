@@ -22,6 +22,8 @@ class WebAnimationDelegate;
 class WebLayerScrollClient;
 }
 
+class SkImageFilter;
+
 namespace cc {
 
 class ActiveAnimation;
@@ -94,6 +96,9 @@ public:
 
     void setFilters(const WebKit::WebFilterOperations&);
     const WebKit::WebFilterOperations& filters() const { return m_filters; }
+
+    void setFilter(SkImageFilter* filter);
+    SkImageFilter* filter() const { return m_filter; }
 
     // Background filters are filters applied to what is behind this layer, when they are viewed through non-opaque
     // regions in this layer. They are used through the WebLayer interface, and are not exposed to HTML.
@@ -335,6 +340,7 @@ private:
     float m_debugBorderWidth;
     std::string m_debugName;
     float m_opacity;
+    SkImageFilter* m_filter;
     WebKit::WebFilterOperations m_filters;
     WebKit::WebFilterOperations m_backgroundFilters;
     float m_anchorPointZ;
