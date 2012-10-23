@@ -186,8 +186,10 @@ cr.define('cr.ui', function() {
         // Dispatch command event followed by executing the command object.
         if (cr.dispatchSimpleEvent(this, 'activate', true, true)) {
           var command = this.command;
-          if (command)
+          if (command) {
             command.execute(contextElement);
+            cr.ui.swallowDoubleClick(e);
+          }
         }
       }
     },
