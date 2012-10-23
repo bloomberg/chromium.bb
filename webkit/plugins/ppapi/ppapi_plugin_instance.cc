@@ -1600,6 +1600,8 @@ bool PluginInstance::InitializeAudioDecoder(
     const media::AudioDecoderConfig& decoder_config,
     const media::Decryptor::DecoderInitCB& init_cb) {
   PP_AudioDecoderConfig pp_decoder_config;
+  pp_decoder_config.codec =
+      MediaAudioCodecToPpAudioCodec(decoder_config.codec());
   pp_decoder_config.channel_count =
       media::ChannelLayoutToChannelCount(decoder_config.channel_layout());
   pp_decoder_config.bits_per_channel = decoder_config.bits_per_channel();

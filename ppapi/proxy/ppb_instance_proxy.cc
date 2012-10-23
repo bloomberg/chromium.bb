@@ -528,14 +528,18 @@ void PPB_Instance_Proxy::DeliverBlock(PP_Instance instance,
   if (decrypted_block) {
     Resource* object =
         PpapiGlobals::Get()->GetResourceTracker()->GetResource(decrypted_block);
-    if (!object || object->pp_instance() != instance)
+    if (!object || object->pp_instance() != instance) {
+      NOTREACHED();
       return;
+    }
     decrypted_block_host_resource = object->host_resource().host_resource();
   }
 
   std::string serialized_block_info;
-  if (!SerializeBlockInfo(*block_info, &serialized_block_info))
+  if (!SerializeBlockInfo(*block_info, &serialized_block_info)) {
+    NOTREACHED();
     return;
+  }
 
   dispatcher()->Send(
       new PpapiHostMsg_PPBInstance_DeliverBlock(API_ID_PPB_INSTANCE,
@@ -581,7 +585,6 @@ void PPB_Instance_Proxy::DecoderResetDone(PP_Instance instance,
           request_id));
 }
 
-// TODO(tomfinegan): Handle null decrypted_frame after landing other patches.
 void PPB_Instance_Proxy::DeliverFrame(PP_Instance instance,
                                       PP_Resource decrypted_frame,
                                       const PP_DecryptedFrameInfo* frame_info) {
@@ -590,24 +593,27 @@ void PPB_Instance_Proxy::DeliverFrame(PP_Instance instance,
     ResourceTracker* tracker = PpapiGlobals::Get()->GetResourceTracker();
     Resource* object = tracker->GetResource(decrypted_frame);
 
-    if (!object || object->pp_instance() != instance)
+    if (!object || object->pp_instance() != instance) {
+      NOTREACHED();
       return;
+    }
 
     host_resource = object->host_resource().host_resource();
   }
 
-  std::string serialized_block_info;
-  if (!SerializeBlockInfo(*frame_info, &serialized_block_info))
+  std::string serialized_frame_info;
+  if (!SerializeBlockInfo(*frame_info, &serialized_frame_info)) {
+    NOTREACHED();
     return;
+  }
 
-  dispatcher()->Send(new PpapiHostMsg_PPBInstance_DeliverFrame(
-          API_ID_PPB_INSTANCE,
-          instance,
-          host_resource,
-          serialized_block_info));
+  dispatcher()->Send(
+      new PpapiHostMsg_PPBInstance_DeliverFrame(API_ID_PPB_INSTANCE,
+                                                instance,
+                                                host_resource,
+                                                serialized_frame_info));
 }
 
-// TODO(tomfinegan): Handle null audio_frames after landing other patches.
 void PPB_Instance_Proxy::DeliverSamples(
     PP_Instance instance,
     PP_Resource decrypted_samples,
@@ -617,22 +623,25 @@ void PPB_Instance_Proxy::DeliverSamples(
     ResourceTracker* tracker = PpapiGlobals::Get()->GetResourceTracker();
     Resource* object = tracker->GetResource(decrypted_samples);
 
-    if (!object || object->pp_instance() != instance)
+    if (!object || object->pp_instance() != instance) {
+      NOTREACHED();
       return;
+    }
 
     host_resource = object->host_resource().host_resource();
   }
 
   std::string serialized_block_info;
-  if (!SerializeBlockInfo(*block_info, &serialized_block_info))
-      return;
+  if (!SerializeBlockInfo(*block_info, &serialized_block_info)) {
+    NOTREACHED();
+    return;
+  }
 
   dispatcher()->Send(
-      new PpapiHostMsg_PPBInstance_DeliverSamples(
-          API_ID_PPB_INSTANCE,
-          instance,
-          host_resource,
-          serialized_block_info));
+      new PpapiHostMsg_PPBInstance_DeliverSamples(API_ID_PPB_INSTANCE,
+                                                  instance,
+                                                  host_resource,
+                                                  serialized_block_info));
 }
 #endif  // !defined(OS_NACL)
 
