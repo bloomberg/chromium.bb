@@ -19,7 +19,6 @@ class ChromeWebContentsHandler;
 class ConstrainedWebDialogDelegateBase;
 class ExtensionTabUtil;
 class ExternalTabContainerWin;
-class InfoBarControllerContentsCreator;
 class InstantLoader;
 class OffscreenTabContentsCreator;
 class PanelHost;
@@ -79,7 +78,6 @@ class TabContents : public content::WebContentsObserver {
     friend class extensions::WebAuthFlow;
     friend class ExtensionTabUtil;
     friend class ExternalTabContainerWin;
-    friend class InfoBarControllerContentsCreator;
     friend class InstantLoader;
     friend class OffscreenTabContentsCreator;
     friend class PanelHost;
