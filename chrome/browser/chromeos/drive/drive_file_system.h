@@ -571,7 +571,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // |callback| must not be null.
   void OnUpdatedFileUploaded(
       const FileOperationCallback& callback,
-      DriveFileError error,
+      google_apis::DriveUploadError error,
       const FilePath& gdata_path,
       const FilePath& file_path,
       scoped_ptr<google_apis::DocumentEntry> document_entry);

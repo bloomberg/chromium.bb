@@ -11,8 +11,8 @@
 #include "chrome/browser/chromeos/drive/drive_file_system.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_files.h"
-#include "chrome/browser/chromeos/drive/drive_uploader.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
+#include "chrome/browser/google_apis/drive_upload_error.h"
 #include "chrome/browser/google_apis/gdata_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/mime_util.h"
@@ -511,22 +511,22 @@ void CopyOperation::StartFileUploadAfterGetEntryInfo(
 
 void CopyOperation::OnTransferCompleted(
     const FileOperationCallback& callback,
-    DriveFileError error,
+    google_apis::DriveUploadError error,
     const FilePath& drive_path,
     const FilePath& file_path,
     scoped_ptr<DocumentEntry> document_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error == DRIVE_FILE_OK && document_entry.get()) {
+  if (error == google_apis::DRIVE_UPLOAD_OK && document_entry.get()) {
     drive_file_system_->AddUploadedFile(
         google_apis::UPLOAD_NEW_FILE,
         drive_path.DirName(),
         document_entry.Pass(),
         file_path,
         DriveCache::FILE_OPERATION_COPY,
-        base::Bind(&OnAddUploadFileCompleted, callback, error));
+        base::Bind(&OnAddUploadFileCompleted, callback, DRIVE_FILE_OK));
   } else if (!callback.is_null()) {
-    callback.Run(error);
+    callback.Run(DriveUploadErrorToDriveFileError(error));
   }
 }
 

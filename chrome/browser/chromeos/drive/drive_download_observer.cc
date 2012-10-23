@@ -665,7 +665,7 @@ void DriveDownloadObserver::OnUploaderReady(int32 download_id,
 
 void DriveDownloadObserver::OnUploadComplete(
     int32 download_id,
-    DriveFileError error,
+    google_apis::DriveUploadError error,
     const FilePath& drive_path,
     const FilePath& file_path,
     scoped_ptr<google_apis::DocumentEntry> document_entry) {

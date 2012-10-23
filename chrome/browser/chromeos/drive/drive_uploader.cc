@@ -288,14 +288,14 @@ void DriveUploader::OpenCompletionCallback(FileOpenType open_type,
       upload_file_info->should_retry_file_open = !exceeded_max_attempts;
     }
     if (!upload_file_info->should_retry_file_open) {
-      UploadFailed(upload_file_info, DRIVE_FILE_ERROR_NOT_FOUND);
+      UploadFailed(upload_file_info, google_apis::DRIVE_UPLOAD_ERROR_NOT_FOUND);
       return;
     }
   } else {
     // Open succeeded, initiate the upload.
     upload_file_info->should_retry_file_open = false;
     if (upload_file_info->initial_upload_location.is_empty()) {
-      UploadFailed(upload_file_info, DRIVE_FILE_ERROR_ABORT);
+      UploadFailed(upload_file_info, google_apis::DRIVE_UPLOAD_ERROR_ABORT);
       return;
     }
     drive_service_->InitiateUpload(
@@ -342,7 +342,7 @@ void DriveUploader::OnUploadLocationReceived(
 
   if (code != google_apis::HTTP_SUCCESS) {
     // TODO(achuith): Handle error codes from Google Docs server.
-    UploadFailed(upload_file_info, DRIVE_FILE_ERROR_ABORT);
+    UploadFailed(upload_file_info, google_apis::DRIVE_UPLOAD_ERROR_ABORT);
     return;
   }
 
@@ -476,7 +476,7 @@ void DriveUploader::OnResumeUploadResponseReceived(
     upload_file_info->entry = entry.Pass();
     if (!upload_file_info->completion_callback.is_null()) {
       upload_file_info->completion_callback.Run(
-          DRIVE_FILE_OK,
+          google_apis::DRIVE_UPLOAD_OK,
           upload_file_info->drive_path,
           upload_file_info->file_path,
           upload_file_info->entry.Pass());
@@ -503,7 +503,8 @@ void DriveUploader::OnResumeUploadResponseReceived(
     UploadFailed(
         upload_file_info,
         response.code == google_apis::HTTP_FORBIDDEN ?
-            DRIVE_FILE_ERROR_NO_SPACE : DRIVE_FILE_ERROR_ABORT);
+        google_apis::DRIVE_UPLOAD_ERROR_NO_SPACE :
+        google_apis::DRIVE_UPLOAD_ERROR_ABORT);
     return;
   }
 
@@ -516,7 +517,7 @@ void DriveUploader::OnResumeUploadResponseReceived(
 }
 
 void DriveUploader::UploadFailed(UploadFileInfo* upload_file_info,
-                                 DriveFileError error) {
+                                 google_apis::DriveUploadError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   LOG(ERROR) << "Upload failed " << upload_file_info->DebugString();

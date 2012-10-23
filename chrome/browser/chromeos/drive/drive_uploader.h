@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/drive/drive_file_error.h"
+#include "chrome/browser/google_apis/drive_upload_error.h"
 #include "chrome/browser/google_apis/drive_upload_mode.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
@@ -35,7 +35,7 @@ class MockDriveUploader;
 
 // Callback to be invoked once the upload has completed.
 typedef base::Callback<void(
-    DriveFileError error,
+    google_apis::DriveUploadError error,
     const FilePath& drive_path,
     const FilePath& file_path,
     scoped_ptr<google_apis::DocumentEntry> document_entry)>
@@ -244,7 +244,7 @@ class DriveUploader : public DriveUploaderInterface {
 
   // Handle failed uploads.
   void UploadFailed(UploadFileInfo* upload_file_info,
-                    DriveFileError error);
+                    google_apis::DriveUploadError error);
 
   // Removes |upload_file_info| from UploadFileInfoMap |pending_uploads_|.
   // After its removal from the map, |upload_file_info| is deleted.

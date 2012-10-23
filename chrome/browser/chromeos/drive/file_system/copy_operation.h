@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
+#include "chrome/browser/chromeos/drive/drive_uploader.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class FilePath;
@@ -189,7 +190,7 @@ class CopyOperation {
   // Helper function that completes bookkeeping tasks related to
   // completed file transfer.
   void OnTransferCompleted(const FileOperationCallback& callback,
-                           DriveFileError error,
+                           google_apis::DriveUploadError error,
                            const FilePath& drive_path,
                            const FilePath& file_path,
                            scoped_ptr<DocumentEntry> document_entry);

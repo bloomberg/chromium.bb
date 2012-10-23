@@ -113,7 +113,7 @@ ACTION(MockUploadNewFile) {
 
   base::MessageLoopProxy::current()->PostTask(FROM_HERE,
       base::Bind(arg7,
-                 DRIVE_FILE_OK,
+                 google_apis::DRIVE_UPLOAD_OK,
                  arg1,
                  arg2,
                  base::Passed(&document_entry)));
@@ -2374,7 +2374,7 @@ TEST_F(DriveFileSystemTest, UpdateFileByResourceId_PersistentFile) {
       _,   // Completion callback.
       _))  // Ready callback.
       .WillOnce(MockUploadExistingFile(
-          DRIVE_FILE_OK,
+          google_apis::DRIVE_UPLOAD_OK,
           FilePath::FromUTF8Unsafe("drive/File1"),
           dirty_cache_file_path,
           document_entry));

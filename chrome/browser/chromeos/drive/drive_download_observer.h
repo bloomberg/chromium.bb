@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/chromeos/drive/drive_uploader.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "content/public/browser/download_item.h"
@@ -191,7 +192,7 @@ class DriveDownloadObserver : public content::DownloadManager::Observer,
   // for use by MoveFileToDriveCache(). It also invokes the
   // download callback method to allow it to complete.
   void OnUploadComplete(int32 download_id,
-                        DriveFileError error,
+                        google_apis::DriveUploadError error,
                         const FilePath& drive_path,
                         const FilePath& file_path,
                         scoped_ptr<google_apis::DocumentEntry> document_entry);

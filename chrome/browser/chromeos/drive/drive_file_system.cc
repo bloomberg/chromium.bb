@@ -1473,15 +1473,15 @@ void DriveFileSystem::OnGetFileSizeCompleteForUpdateFile(
 
 void DriveFileSystem::OnUpdatedFileUploaded(
     const FileOperationCallback& callback,
-    DriveFileError error,
+    google_apis::DriveUploadError error,
     const FilePath& drive_path,
     const FilePath& file_path,
     scoped_ptr<google_apis::DocumentEntry> document_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != DRIVE_FILE_OK) {
+  if (error != google_apis::DRIVE_UPLOAD_OK) {
     if (!callback.is_null())
-      callback.Run(error);
+      callback.Run(DriveUploadErrorToDriveFileError(error));
     return;
   }
 
@@ -1490,7 +1490,8 @@ void DriveFileSystem::OnUpdatedFileUploaded(
                   document_entry.Pass(),
                   file_path,
                   DriveCache::FILE_OPERATION_MOVE,
-                  base::Bind(&OnAddUploadFileCompleted, callback, error));
+                  base::Bind(&OnAddUploadFileCompleted, callback,
+                             DriveUploadErrorToDriveFileError(error)));
 }
 
 void DriveFileSystem::GetAvailableSpace(
