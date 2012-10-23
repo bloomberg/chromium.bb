@@ -1,0 +1,96 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+#ifndef ASH_SYSTEM_NETWORK_NETWORK_LIST_DETAILED_VIEW_BASE_H
+#define ASH_SYSTEM_NETWORK_NETWORK_LIST_DETAILED_VIEW_BASE_H
+
+#include "ash/system/chromeos/network/network_detailed_view.h"
+#include "ash/system/tray/tray_views.h"
+#include "ash/system/user/login_status.h"
+#include "base/memory/scoped_ptr.h"
+
+namespace views {
+class BubbleDelegateView;
+}
+
+namespace ash {
+
+struct NetworkIconInfo;
+
+namespace internal {
+namespace tray {
+
+// Base class for the NetworkListDetailedView and VpnListDetailedView.
+class NetworkListDetailedViewBase : public NetworkDetailedView,
+                                    public views::ButtonListener,
+                                    public ViewClickListener {
+ public:
+  NetworkListDetailedViewBase(user::LoginStatus login, int header_string_id);
+  virtual ~NetworkListDetailedViewBase();
+
+  // Overridden from NetworkDetailedView:
+  virtual void Init() OVERRIDE;
+  virtual NetworkDetailedView::DetailedViewType GetViewType() const OVERRIDE;
+  virtual void Update() OVERRIDE;
+
+ protected:
+  void AppendInfoButtonToHeader();
+  void UpdateSettingButton();
+  void ClearNetworkScrollWithEmptyNetworkList();
+  void RefreshNetworkScrollWithUpdatedNetworkData();
+  user::LoginStatus login() const { return login_; }
+  bool IsNetworkListEmpty() const;
+
+  // Overridden from ButtonListener.
+  virtual void ButtonPressed(views::Button* sender,
+                             const ui::Event& event) OVERRIDE;
+
+  // Overridden from ViewClickListener.
+  virtual void ClickedOn(views::View* sender) OVERRIDE;
+
+ private:
+  virtual void AppendHeaderButtons() = 0;
+  virtual void UpdateHeaderButtons() = 0;
+  virtual void AppendNetworkEntries() = 0;
+  virtual void GetAvailableNetworkList(std::vector<NetworkIconInfo>* list) = 0;
+  virtual void RefreshNetworkScrollWithEmptyNetworkList() = 0;
+  virtual void UpdateNetworkEntries() = 0;
+  virtual void AppendCustomButtonsToBottomRow(
+      TrayPopupTextButtonContainer* bottom_row) = 0;
+  virtual void UpdateNetworkExtra() = 0;
+  virtual void CustomButtonPressed(views::Button* sender,
+      const ui::Event& event) = 0;
+  // Returns true if custom link is clicked on.
+  virtual bool CustomLinkClickedOn(views::View* sender) = 0;
+
+  void CreateItems();
+  void UpdateAvailableNetworkList();
+  void AppendHeaderEntry(int header_string_id);
+  void AppendNetworkExtra();
+  void RefreshNetworkScrollWithUpdatedNetworkList();
+  // Adds a settings entry when logged in, and an entry for changing proxy
+  // settings otherwise.
+  void CreateSettingsEntry();
+  views::View* CreateNetworkInfoView();
+  void ToggleInfoBubble();
+  // Returns whether an existing info-bubble was closed.
+  bool ResetInfoBubble();
+
+  user::LoginStatus login_;
+  std::vector<NetworkIconInfo> network_list_;
+  int header_string_id_;
+  std::map<views::View*, std::string> network_map_;
+  std::map<std::string, HoverHighlightView*> service_path_map_;
+  TrayPopupHeaderButton* info_icon_;
+  TrayPopupTextButton* settings_;
+  TrayPopupTextButton* proxy_settings_;
+  views::BubbleDelegateView* info_bubble_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkListDetailedViewBase);
+};
+
+}  // namespace tray
+}  // namespace internal
+}  // namespace ash
+
+#endif  // #ifndef ASH_SYSTEM_NETWORK_NETWORK_LIST_DETAILED_VIEW_BASE_H

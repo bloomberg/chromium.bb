@@ -46,10 +46,10 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
-
 #if defined(OS_CHROMEOS)
 #include "ash/system/chromeos/network/tray_network.h"
 #include "ash/system/chromeos/network/tray_sms.h"
+#include "ash/system/chromeos/network/tray_vpn.h"
 #endif
 
 using message_center::TrayBubbleView;
@@ -111,6 +111,7 @@ SystemTray::SystemTray(internal::StatusAreaWidget* status_area_widget)
       locale_observer_(NULL),
 #if defined(OS_CHROMEOS)
       network_observer_(NULL),
+      vpn_observer_(NULL),
       sms_observer_(NULL),
 #endif
       update_observer_(NULL),
@@ -164,8 +165,10 @@ void SystemTray::CreateItems() {
 #if defined(OS_CHROMEOS)
   internal::TrayDisplay* tray_display = new internal::TrayDisplay;
   internal::TrayNetwork* tray_network = new internal::TrayNetwork;
+  internal::TrayVPN* tray_vpn = new internal::TrayVPN;
   internal::TraySms* tray_sms = new internal::TraySms();
   network_observer_ = tray_network;
+  vpn_observer_ = tray_vpn;
   sms_observer_ = tray_sms;
 #endif
 
@@ -173,6 +176,7 @@ void SystemTray::CreateItems() {
   AddTrayItem(tray_power);
 #if defined(OS_CHROMEOS)
   AddTrayItem(tray_network);
+  AddTrayItem(tray_vpn);
   AddTrayItem(tray_sms);
 #endif
   AddTrayItem(tray_bluetooth);

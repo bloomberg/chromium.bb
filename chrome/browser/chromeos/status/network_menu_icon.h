@@ -87,6 +87,9 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
   // Generates and returns the icon image. If |text| is not NULL, sets it to
   // the tooltip or display text to show, based on the value of mode_.
   const gfx::ImageSkia GetIconAndText(string16* text);
+  // Generates and returns the icon image for vpn network connection.
+  const gfx::ImageSkia GetVpnIconAndText(string16* text);
+
 
   // ui::AnimationDelegate implementation.
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
@@ -126,6 +129,9 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
   static const gfx::ImageSkia GetConnectedImage(ImageType type,
                                                 ResourceColorTheme color);
 
+  // Gets a network image for VPN.
+  static gfx::ImageSkia* GetVirtualNetworkImage();
+
   // Returns total number of images for given type.
   static int NumImages(ImageType type);
 
@@ -140,6 +146,8 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
   // Sets the icon based on the state of the network and the network library.
   // Sets text_ to the appropriate tooltip or display text.
   void SetIconAndText();
+  // Sets the icon and text for VPN connection.
+  void SetVpnIconAndText();
   // Set the icon and text to show a warning if unable to load the cros library.
   void SetWarningIconAndText();
   // Sets the icon and text when displaying a connecting state.

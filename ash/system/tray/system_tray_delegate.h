@@ -198,8 +198,13 @@ class SystemTrayDelegate {
   virtual void GetMostRelevantNetworkIcon(NetworkIconInfo* info,
                                           bool large) = 0;
 
+  virtual void GetVirtualNetworkIcon(ash::NetworkIconInfo* info) = 0;
+
   // Returns information about the available networks.
   virtual void GetAvailableNetworks(std::vector<NetworkIconInfo>* list) = 0;
+
+  // Returns the information about all virtual networks.
+  virtual void GetVirtualNetworks(std::vector<NetworkIconInfo>* list) = 0;
 
   // Connects to the network specified by the unique id.
   virtual void ConnectToNetwork(const std::string& network_id) = 0;
@@ -230,6 +235,9 @@ class SystemTrayDelegate {
 
   // Shows UI to connect to an unlisted wifi network.
   virtual void ShowOtherWifi() = 0;
+
+  // Shows UI to configure vpn.
+  virtual void ShowOtherVPN() = 0;
 
   // Shows UI to search for cellular networks.
   virtual void ShowOtherCellular() = 0;

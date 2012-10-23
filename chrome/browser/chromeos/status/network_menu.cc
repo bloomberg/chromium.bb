@@ -1112,6 +1112,10 @@ void NetworkMenu::ShowOtherWifi() {
   NetworkConfigView::ShowForType(TYPE_WIFI, delegate_->GetNativeWindow());
 }
 
+void NetworkMenu::ShowOtherVPN() {
+  NetworkConfigView::ShowForType(TYPE_VPN, delegate_->GetNativeWindow());
+}
+
 void NetworkMenu::ShowOtherCellular() {
   ChooseMobileNetworkDialog::ShowDialog(delegate_->GetNativeWindow());
 }

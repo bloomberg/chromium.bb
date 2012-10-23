@@ -235,6 +235,9 @@ Press Ctrl+Alt+Z to cancel.
       <message name="IDS_ASH_STATUS_TRAY_NETWORK" desc="The label used in the network dialog header.">
         Network
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_VPN" desc="The label used in the VPN detailed view header.">
+        Private Network
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS" desc="The label used in the settings entry in the network dialog.">
         Settings...
       </message>
@@ -247,7 +250,10 @@ Press Ctrl+Alt+Z to cancel.
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_WIFI_DISABLED" desc="The label used in the tray popup to notify that Wi-Fi is turned off.">
         Wi-Fi is turned off.
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_SMS" desc="The label used in the status tray for SMS.">
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_NO_VPN" desc="The label used in the tray popup to notify no vpn is configured.">
+        VPN is not configured.
+      </message>      
+      <message name="IDS_ASH_STATUS_TRAY_SMS" desc="The label used in the status tray for SMS.">      
         SMS
       </message>
       <message name="IDS_ASH_STATUS_TRAY_SMS_MESSAGES" desc="The label used in the default status tray view for SMS with the number of messages.">
@@ -269,6 +275,9 @@ Press Ctrl+Alt+Z to cancel.
         Disable Wi-Fi
       </message>
       <message name="IDS_ASH_STATUS_TRAY_OTHER_WIFI" desc="The label used for the item to display other Wi-Fi networks.">
+        Join other...
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_OTHER_VPN" desc="The label used for the item to configure other private networks.">
         Join other...
       </message>
       <message name="IDS_ASH_STATUS_TRAY_TURN_ON_WIFI" desc="The label used for the item to turn on Wi-Fi networks.">

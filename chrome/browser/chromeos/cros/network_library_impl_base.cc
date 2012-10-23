@@ -346,8 +346,6 @@ const Network* NetworkLibraryImplBase::active_network() const {
     result = highest_priority(result, active_cellular_);
   if (active_wimax_ && active_wimax_->is_active())
     result = highest_priority(result, active_wimax_);
-  if (active_virtual_ && active_virtual_->is_active())
-    result = highest_priority(result, active_virtual_);
   return result;
 }
 

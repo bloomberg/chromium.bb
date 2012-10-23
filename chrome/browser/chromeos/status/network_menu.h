@@ -97,6 +97,9 @@ class NetworkMenu {
   // Shows UI to user to connect to an unlisted wifi network.
   void ShowOtherWifi();
 
+  // Shows UI to user to configure vpn.
+  void ShowOtherVPN();
+
   // Shows UI to user to search for cellular networks.
   void ShowOtherCellular();
 

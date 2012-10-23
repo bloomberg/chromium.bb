@@ -145,6 +145,9 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView,
   NetworkObserver* network_observer() const {
     return network_observer_;
   }
+  NetworkObserver* vpn_observer() const {
+    return vpn_observer_;
+  }
   SmsObserver* sms_observer() const {
     return sms_observer_;
   }
@@ -240,6 +243,7 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView,
   LocaleObserver* locale_observer_;
 #if defined(OS_CHROMEOS)
   NetworkObserver* network_observer_;
+  NetworkObserver* vpn_observer_;
   SmsObserver* sms_observer_;
 #endif
   ObserverList<PowerStatusObserver> power_status_observers_;
