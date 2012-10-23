@@ -111,6 +111,7 @@ class ShellWindowViews : public NativeShellWindow,
       const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
   virtual void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
+  virtual void RenderViewHostChanged() OVERRIDE;
 
   void OnViewWasResized();
 

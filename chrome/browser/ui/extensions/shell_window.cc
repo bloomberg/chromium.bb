@@ -423,6 +423,10 @@ void ShellWindow::Observe(int type,
           host_details(details);
       if (host_details->first)
         SuspendRenderViewHost(host_details->second);
+      // TODO(jianli): once http://crbug.com/123007 is fixed, we'll no longer
+      // need to make the native window (ShellWindowViews specially) update
+      // the clickthrough region for the new RVH.
+      native_window_->RenderViewHostChanged();
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {

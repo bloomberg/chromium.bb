@@ -35,6 +35,10 @@ class NativeShellWindow : public BaseWindow {
   virtual void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) = 0;
 
+  // TODO(jianli): once http://crbug.com/123007 is fixed, we'll no longer need
+  // this.
+  virtual void RenderViewHostChanged() = 0;
+
   virtual ~NativeShellWindow() {}
 };
 

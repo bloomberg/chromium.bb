@@ -63,6 +63,7 @@ class ShellWindowGtk : public NativeShellWindow,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void UpdateDraggableRegions(
       const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
+  virtual void RenderViewHostChanged() OVERRIDE {}
 
   content::WebContents* web_contents() const {
     return shell_window_->web_contents();

@@ -639,6 +639,10 @@ void ShellWindowViews::HandleKeyboardEvent(
                                                         GetFocusManager());
 }
 
+void ShellWindowViews::RenderViewHostChanged() {
+  OnViewWasResized();
+}
+
 void ShellWindowViews::SaveWindowPlacement(const gfx::Rect& bounds,
                                            ui::WindowShowState show_state) {
   views::WidgetDelegate::SaveWindowPlacement(bounds, show_state);
