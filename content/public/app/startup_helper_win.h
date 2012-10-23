@@ -21,8 +21,7 @@ namespace content {
 // must be *statically* linked into the executable (along with the static
 // sandbox library); it will not work correctly if it is exported from a
 // DLL and linked in.
-void InitializeSandboxInfo(
-    sandbox::SandboxInterfaceInfo* sandbox_info);
+void InitializeSandboxInfo(sandbox::SandboxInterfaceInfo* sandbox_info);
 
 // Register the invalid param handler and pure call handler to be able to
 // notify breakpad when it happens.

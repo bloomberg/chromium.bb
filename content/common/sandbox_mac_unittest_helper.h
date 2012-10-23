@@ -8,7 +8,7 @@
 #include "base/test/multiprocess_test.h"
 #include "content/common/sandbox_mac.h"
 
-namespace sandboxtest {
+namespace content {
 
 // Helpers for writing unit tests that runs in the context of the Mac sandbox.
 //
@@ -22,8 +22,7 @@ namespace sandboxtest {
 // one of its helper functions to launch the test.
 //
 // Example:
-//  class TestCaseThatRunsInSandboxedSubprocess :
-//      public sandboxtest::MacSandboxTestCase {
+//  class TestCaseThatRunsInSandboxedSubprocess : public MacSandboxTestCase {
 //   public:
 //    virtual bool SandboxedTest() {
 //      .. test code that runs in sandbox goes here ..
@@ -110,12 +109,12 @@ template <class T> struct RegisterSandboxTest {
 
 #define REGISTER_SANDBOX_TEST_CASE(class_name) \
   namespace { \
-    sandboxtest::internal::RegisterSandboxTest<class_name> \
+    content::internal::RegisterSandboxTest<class_name> \
       register_test##class_name(#class_name); \
   }  // namespace
 
 }  // namespace internal
 
-}  // namespace sandboxtest
+}  // namespace content
 
 #endif  // CONTENT_COMMON_SANDBOX_MAC_UNITTEST_HELPER_H_

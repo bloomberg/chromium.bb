@@ -14,10 +14,10 @@ namespace content {
 
 bool InitializeSandbox(int sandbox_type, const FilePath& allowed_dir) {
   // Warm up APIs before turning on the sandbox.
-  sandbox::Sandbox::SandboxWarmup(sandbox_type);
+  Sandbox::SandboxWarmup(sandbox_type);
 
   // Actually sandbox the process.
-  return sandbox::Sandbox::EnableSandbox(sandbox_type, allowed_dir);
+  return Sandbox::EnableSandbox(sandbox_type, allowed_dir);
 }
 
 // Fill in |sandbox_type| and |allowed_dir| based on the command line,  returns

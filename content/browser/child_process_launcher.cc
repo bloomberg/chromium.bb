@@ -23,6 +23,7 @@
 #if defined(OS_WIN)
 #include "base/file_path.h"
 #include "content/common/sandbox_policy.h"
+#include "content/public/common/sandbox_init.h"
 #elif defined(OS_MACOSX)
 #include "content/browser/mach_broker_mac.h"
 #elif defined(OS_ANDROID)
@@ -161,7 +162,7 @@ class ChildProcessLauncher::Context
     scoped_ptr<CommandLine> cmd_line_deleter(cmd_line);
 
 #if defined(OS_WIN)
-    base::ProcessHandle handle = sandbox::StartProcessWithAccess(
+    base::ProcessHandle handle = content::StartProcessWithAccess(
         cmd_line, exposed_dir);
 #elif defined(OS_ANDROID)
     std::string process_type =

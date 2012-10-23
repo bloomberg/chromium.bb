@@ -40,7 +40,7 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
-namespace test_launcher {
+namespace content {
 
 namespace {
 
@@ -665,18 +665,17 @@ int RunContentMain(int argc, char** argv,
                    TestLauncherDelegate* launcher_delegate) {
 #if defined(OS_WIN)
   sandbox::SandboxInterfaceInfo sandbox_info = {0};
-  content::InitializeSandboxInfo(&sandbox_info);
-  scoped_ptr<content::ContentMainDelegate> chrome_main_delegate(
+  InitializeSandboxInfo(&sandbox_info);
+  scoped_ptr<ContentMainDelegate> chrome_main_delegate(
       launcher_delegate->CreateContentMainDelegate());
-  return content::ContentMain(GetModuleHandle(NULL),
-                              &sandbox_info,
-                              chrome_main_delegate.get());
+  return ContentMain(GetModuleHandle(NULL),
+                     &sandbox_info,
+                     chrome_main_delegate.get());
 #elif defined(OS_LINUX)
-  scoped_ptr<content::ContentMainDelegate> chrome_main_delegate(
+  scoped_ptr<ContentMainDelegate> chrome_main_delegate(
       launcher_delegate->CreateContentMainDelegate());
-  return content::ContentMain(argc,
-                              const_cast<const char**>(argv),
-                              chrome_main_delegate.get());
+  return ContentMain(argc, const_cast<const char**>(argv),
+                     chrome_main_delegate.get());
 #endif  // defined(OS_WIN)
   NOTREACHED();
   return 0;
@@ -704,8 +703,8 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
 #if defined(OS_WIN)
     if (command_line->HasSwitch(kSingleProcessTestsFlag)) {
       sandbox::SandboxInterfaceInfo sandbox_info;
-      content::InitializeSandboxInfo(&sandbox_info);
-      content::InitializeSandbox(&sandbox_info);
+      InitializeSandboxInfo(&sandbox_info);
+      InitializeSandbox(&sandbox_info);
     }
 #endif
     return launcher_delegate->RunTestSuite(argc, argv);
@@ -781,4 +780,4 @@ TestLauncherDelegate* GetCurrentTestLauncherDelegate() {
   return g_launcher_delegate;
 }
 
-}  // namespace test_launcher
+}  // namespace content

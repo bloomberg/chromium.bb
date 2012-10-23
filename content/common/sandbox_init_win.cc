@@ -13,8 +13,7 @@
 
 namespace content {
 
-bool InitializeSandbox(
-    sandbox::SandboxInterfaceInfo* sandbox_info) {
+bool InitializeSandbox(sandbox::SandboxInterfaceInfo* sandbox_info) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
@@ -22,7 +21,7 @@ bool InitializeSandbox(
   if (broker_services && (process_type.empty() ||
                           process_type == switches::kNaClBrokerProcess ||
                           process_type == switches::kServiceProcess)) {
-    if (!sandbox::InitBrokerServices(broker_services))
+    if (!InitBrokerServices(broker_services))
       return false;
   }
 
@@ -63,7 +62,7 @@ bool InitializeSandbox(
     if (!target_services)
       return true;
   }
-  return sandbox::InitTargetServices(target_services);
+  return InitTargetServices(target_services);
 }
 
 }  // namespace content

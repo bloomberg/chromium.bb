@@ -80,7 +80,7 @@ class ContentBrowserTestSuite : public ContentTestSuiteBase {
   DISALLOW_COPY_AND_ASSIGN(ContentBrowserTestSuite);
 };
 
-class ContentTestLauncherDelegate : public test_launcher::TestLauncherDelegate {
+class ContentTestLauncherDelegate : public TestLauncherDelegate {
  public:
   ContentTestLauncherDelegate() {}
   virtual ~ContentTestLauncherDelegate() {}
@@ -117,5 +117,5 @@ int main(int argc, char** argv) {
   media_stream::MediaStreamManager::AlwaysUseFakeDevice();
 
   content::ContentTestLauncherDelegate launcher_delegate;
-  return test_launcher::LaunchTests(&launcher_delegate, argc, argv);
+  return LaunchTests(&launcher_delegate, argc, argv);
 }

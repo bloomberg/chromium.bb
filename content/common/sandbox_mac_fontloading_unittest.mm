@@ -14,12 +14,9 @@
 #include "content/common/sandbox_mac_unittest_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
+namespace content {
 
-using sandboxtest::MacSandboxTest;
-using sandbox::Sandbox;
-
-class FontLoadingTestCase : public sandboxtest::MacSandboxTestCase {
+class FontLoadingTestCase : public MacSandboxTestCase {
  public:
   FontLoadingTestCase() : font_data_length_(-1) {}
   virtual bool BeforeSandboxInit();
@@ -121,10 +118,10 @@ TEST_F(MacSandboxTest, FontLoadingTest) {
       static_cast<const char *>(result.font_data.memory()),
       result.font_data_size);
 
-  ASSERT_TRUE(RunTestInSandbox(content::SANDBOX_TYPE_RENDERER,
+  ASSERT_TRUE(RunTestInSandbox(SANDBOX_TYPE_RENDERER,
                   "FontLoadingTestCase", temp_file_path.value().c_str()));
   temp_file_closer.reset();
   ASSERT_TRUE(file_util::Delete(temp_file_path, false));
 }
 
-}  // namespace
+}  // namespace content

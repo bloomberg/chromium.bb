@@ -25,9 +25,9 @@ static const char* kDeniedSuffix = "_denied";
 
 }  // namespace
 
-// Tests need to be in the same namespace as the sandbox::Sandbox class to be
-// useable with FRIEND_TEST() declaration.
-namespace sandbox {
+// Tests need to be in the same namespace as the Sandbox class to be useable
+// with FRIEND_TEST() declaration.
+namespace content {
 
 class MacDirAccessSandboxTest : public base::MultiProcessTest {
  public:
@@ -305,4 +305,4 @@ MULTIPROCESS_TEST_MAIN(mac_sandbox_path_access) {
   return 0;
 }
 
-}  // namespace sandbox
+}  // namespace content

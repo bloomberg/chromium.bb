@@ -5,26 +5,17 @@
 #ifndef CONTENT_COMMON_SANDBOX_POLICY_H_
 #define CONTENT_COMMON_SANDBOX_POLICY_H_
 
-#include "base/process.h"
-#include "content/common/content_export.h"
-
-class CommandLine;
-class FilePath;
-
 namespace sandbox {
-
 class BrokerServices;
 class TargetServices;
+}
+
+namespace content {
 
 bool InitBrokerServices(sandbox::BrokerServices* broker_services);
 
 bool InitTargetServices(sandbox::TargetServices* target_services);
 
-// Starts a sandboxed process with the given directory unsandboxed
-// and returns a handle to it.
-base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
-                                           const FilePath& exposed_dir);
-
-}  // namespace sandbox
+}  // namespace content
 
 #endif  // CONTENT_COMMON_SANDBOX_POLICY_H_

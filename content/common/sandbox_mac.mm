@@ -36,25 +36,26 @@ extern "C" {
 #include "ui/gl/gl_surface.h"
 #include "unicode/uchar.h"
 
+namespace content {
 namespace {
 
 struct SandboxTypeToResourceIDMapping {
-  content::SandboxType sandbox_type;
+  SandboxType sandbox_type;
   int sandbox_profile_resource_id;
 };
 
 // Mapping from sandbox process types to resource IDs containing the sandbox
 // profile for all process types known to content.
 SandboxTypeToResourceIDMapping kDefaultSandboxTypeToResourceIDMapping[] = {
-  { content::SANDBOX_TYPE_RENDERER, IDR_RENDERER_SANDBOX_PROFILE },
-  { content::SANDBOX_TYPE_WORKER,   IDR_WORKER_SANDBOX_PROFILE },
-  { content::SANDBOX_TYPE_UTILITY,  IDR_UTILITY_SANDBOX_PROFILE },
-  { content::SANDBOX_TYPE_GPU,      IDR_GPU_SANDBOX_PROFILE },
-  { content::SANDBOX_TYPE_PPAPI,    IDR_PPAPI_SANDBOX_PROFILE },
+  { SANDBOX_TYPE_RENDERER, IDR_RENDERER_SANDBOX_PROFILE },
+  { SANDBOX_TYPE_WORKER,   IDR_WORKER_SANDBOX_PROFILE },
+  { SANDBOX_TYPE_UTILITY,  IDR_UTILITY_SANDBOX_PROFILE },
+  { SANDBOX_TYPE_GPU,      IDR_GPU_SANDBOX_PROFILE },
+  { SANDBOX_TYPE_PPAPI,    IDR_PPAPI_SANDBOX_PROFILE },
 };
 
 COMPILE_ASSERT(arraysize(kDefaultSandboxTypeToResourceIDMapping) == \
-               size_t(content::SANDBOX_TYPE_AFTER_LAST_TYPE), \
+               size_t(SANDBOX_TYPE_AFTER_LAST_TYPE), \
                sandbox_type_to_resource_id_mapping_incorrect);
 
 // Try to escape |c| as a "SingleEscapeCharacter" (\n, etc).  If successful,
@@ -103,8 +104,6 @@ NOINLINE void FatalStringQuoteException(const std::string& str) {
 }
 
 }  // namespace
-
-namespace sandbox {
 
 // static
 NSString* Sandbox::AllowMetadataForPath(const FilePath& allowed_path) {
@@ -303,7 +302,7 @@ void Sandbox::SandboxWarmup(int sandbox_type) {
   }
 
   // Process-type dependent warm-up.
-  if (sandbox_type == content::SANDBOX_TYPE_GPU) {
+  if (sandbox_type == SANDBOX_TYPE_GPU) {
     // Preload either the desktop GL or the osmesa so, depending on the
     // --use-gl flag.
     gfx::GLSurface::InitializeOneOff();
@@ -366,13 +365,13 @@ NSString* LoadSandboxTemplate(int sandbox_type) {
   if (sandbox_profile_resource_id == -1) {
     // Check if the embedder knows about this sandbox process type.
     bool sandbox_type_found =
-        content::GetContentClient()->GetSandboxProfileForSandboxType(
+        GetContentClient()->GetSandboxProfileForSandboxType(
             sandbox_type, &sandbox_profile_resource_id);
     CHECK(sandbox_type_found) << "Unknown sandbox type " << sandbox_type;
   }
 
   base::StringPiece sandbox_definition =
-      content::GetContentClient()->GetDataResource(
+      GetContentClient()->GetDataResource(
           sandbox_profile_resource_id, ui::SCALE_FACTOR_NONE);
   if (sandbox_definition.empty()) {
     LOG(FATAL) << "Failed to load the sandbox profile (resource id "
@@ -381,7 +380,7 @@ NSString* LoadSandboxTemplate(int sandbox_type) {
   }
 
   base::StringPiece common_sandbox_definition =
-      content::GetContentClient()->GetDataResource(
+      GetContentClient()->GetDataResource(
           IDR_COMMON_SANDBOX_PROFILE, ui::SCALE_FACTOR_NONE);
   if (common_sandbox_definition.empty()) {
     LOG(FATAL) << "Failed to load the common sandbox profile";
@@ -478,8 +477,8 @@ bool Sandbox::EnableSandbox(int sandbox_type,
                             const FilePath& allowed_dir) {
   // Sanity - currently only SANDBOX_TYPE_UTILITY supports a directory being
   // passed in.
-  if (sandbox_type < content::SANDBOX_TYPE_AFTER_LAST_TYPE &&
-      sandbox_type != content::SANDBOX_TYPE_UTILITY) {
+  if (sandbox_type < SANDBOX_TYPE_AFTER_LAST_TYPE &&
+      sandbox_type != SANDBOX_TYPE_UTILITY) {
     DCHECK(allowed_dir.empty())
         << "Only SANDBOX_TYPE_UTILITY allows a custom directory parameter.";
   }
@@ -596,4 +595,4 @@ FilePath Sandbox::GetCanonicalSandboxPath(const FilePath& path) {
   return FilePath(canonical_path);
 }
 
-}  // namespace sandbox
+}  // namespace content

@@ -281,9 +281,9 @@ CommandLine InProcessBrowserTest::GetCommandLineForRelaunch() {
   CommandLine::SwitchMap switches =
       CommandLine::ForCurrentProcess()->GetSwitches();
   switches.erase(switches::kUserDataDir);
-  switches.erase(test_launcher::kSingleProcessTestsFlag);
-  switches.erase(test_launcher::kSingleProcessTestsAndChromeFlag);
-  new_command_line.AppendSwitch(test_launcher::kLaunchAsBrowser);
+  switches.erase(content::kSingleProcessTestsFlag);
+  switches.erase(content::kSingleProcessTestsAndChromeFlag);
+  new_command_line.AppendSwitch(content::kLaunchAsBrowser);
 
 #if defined(USE_AURA)
   // Copy what UITestBase::SetLaunchSwitches() does, and also what

@@ -23,7 +23,7 @@ class NSArray;
 class NSString;
 #endif
 
-namespace sandbox {
+namespace content {
 
 // Class representing a substring of the sandbox profile tagged with its type.
 class SandboxSubstring {
@@ -160,6 +160,6 @@ class CONTENT_EXPORT Sandbox {
   DISALLOW_IMPLICIT_CONSTRUCTORS(Sandbox);
 };
 
-}  // namespace sandbox
+}  // namespace content
 
 #endif  // CONTENT_COMMON_SANDBOX_MAC_H_

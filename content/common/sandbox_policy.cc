@@ -608,7 +608,7 @@ BOOL WINAPI DuplicateHandlePatch(HANDLE source_process_handle,
 
 }  // namespace
 
-namespace sandbox {
+namespace content {
 
 bool InitBrokerServices(sandbox::BrokerServices* broker_services) {
   // TODO(abarth): DCHECK(CalledOnValidThread());
@@ -641,7 +641,7 @@ bool InitBrokerServices(sandbox::BrokerServices* broker_services) {
   }
 #endif
 
-  return SBOX_ALL_OK == result;
+  return sandbox::SBOX_ALL_OK == result;
 }
 
 bool InitTargetServices(sandbox::TargetServices* target_services) {
@@ -649,32 +649,32 @@ bool InitTargetServices(sandbox::TargetServices* target_services) {
   DCHECK(!g_target_services);
   sandbox::ResultCode result = target_services->Init();
   g_target_services = target_services;
-  return SBOX_ALL_OK == result;
+  return sandbox::SBOX_ALL_OK == result;
 }
 
 base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
                                            const FilePath& exposed_dir) {
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  content::ProcessType type;
+  ProcessType type;
   std::string type_str = cmd_line->GetSwitchValueASCII(switches::kProcessType);
   if (type_str == switches::kRendererProcess) {
-    type = content::PROCESS_TYPE_RENDERER;
+    type = PROCESS_TYPE_RENDERER;
   } else if (type_str == switches::kPluginProcess) {
-    type = content::PROCESS_TYPE_PLUGIN;
+    type = PROCESS_TYPE_PLUGIN;
   } else if (type_str == switches::kWorkerProcess) {
-    type = content::PROCESS_TYPE_WORKER;
+    type = PROCESS_TYPE_WORKER;
   } else if (type_str == switches::kNaClLoaderProcess) {
-    type = content::PROCESS_TYPE_NACL_LOADER;
+    type = PROCESS_TYPE_NACL_LOADER;
   } else if (type_str == switches::kUtilityProcess) {
-    type = content::PROCESS_TYPE_UTILITY;
+    type = PROCESS_TYPE_UTILITY;
   } else if (type_str == switches::kNaClBrokerProcess) {
-    type = content::PROCESS_TYPE_NACL_BROKER;
+    type = PROCESS_TYPE_NACL_BROKER;
   } else if (type_str == switches::kGpuProcess) {
-    type = content::PROCESS_TYPE_GPU;
+    type = PROCESS_TYPE_GPU;
   } else if (type_str == switches::kPpapiPluginProcess) {
-    type = content::PROCESS_TYPE_PPAPI_PLUGIN;
+    type = PROCESS_TYPE_PPAPI_PLUGIN;
   } else if (type_str == switches::kPpapiBrokerProcess) {
-    type = content::PROCESS_TYPE_PPAPI_BROKER;
+    type = PROCESS_TYPE_PPAPI_BROKER;
   } else {
     NOTREACHED();
     return 0;
@@ -686,12 +686,12 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   // First case: all process types except the nacl broker, and the plugin
   // process are sandboxed by default.
   bool in_sandbox =
-      (type != content::PROCESS_TYPE_NACL_BROKER) &&
-      (type != content::PROCESS_TYPE_PLUGIN) &&
-      (type != content::PROCESS_TYPE_PPAPI_BROKER);
+      (type != PROCESS_TYPE_NACL_BROKER) &&
+      (type != PROCESS_TYPE_PLUGIN) &&
+      (type != PROCESS_TYPE_PPAPI_BROKER);
 
   // If it is the GPU process then it can be disabled by a command line flag.
-  if ((type == content::PROCESS_TYPE_GPU) &&
+  if ((type == PROCESS_TYPE_GPU) &&
       (cmd_line->HasSwitch(switches::kDisableGpuSandbox))) {
     in_sandbox = false;
     DVLOG(1) << "GPU sandbox is disabled";
@@ -748,35 +748,35 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   sandbox::TargetPolicy* policy = g_broker_services->CreatePolicy();
 
   // TODO(jschuh): Make NaCl work with DEP and SEHOP. crbug.com/147752
-  sandbox::MitigationFlags mitigations = MITIGATION_HEAP_TERMINATE |
-                                         MITIGATION_BOTTOM_UP_ASLR |
-                                         MITIGATION_HIGH_ENTROPY_ASLR;
+  sandbox::MitigationFlags mitigations = sandbox::MITIGATION_HEAP_TERMINATE |
+                                         sandbox::MITIGATION_BOTTOM_UP_ASLR |
+                                         sandbox::MITIGATION_HIGH_ENTROPY_ASLR;
 #if !defined(NACL_WIN64)
-  mitigations |= MITIGATION_DEP |
-                 MITIGATION_DEP_NO_ATL_THUNK |
-                 MITIGATION_SEHOP;
+  mitigations |= sandbox::MITIGATION_DEP |
+                 sandbox::MITIGATION_DEP_NO_ATL_THUNK |
+                 sandbox::MITIGATION_SEHOP;
 #if defined(NDEBUG)
-  mitigations |= MITIGATION_RELOCATE_IMAGE |
-                 MITIGATION_RELOCATE_IMAGE_REQUIRED;
+  mitigations |= sandbox::MITIGATION_RELOCATE_IMAGE |
+                 sandbox::MITIGATION_RELOCATE_IMAGE_REQUIRED;
 #endif
 #endif
 
   if (policy->SetProcessMitigations(mitigations) != sandbox::SBOX_ALL_OK)
     return 0;
 
-  mitigations = MITIGATION_STRICT_HANDLE_CHECKS |
-                MITIGATION_DLL_SEARCH_ORDER;
+  mitigations = sandbox::MITIGATION_STRICT_HANDLE_CHECKS |
+                sandbox::MITIGATION_DLL_SEARCH_ORDER;
 #if defined(NACL_WIN64)
-  mitigations |= MITIGATION_DEP |
-                 MITIGATION_DEP_NO_ATL_THUNK;
+  mitigations |= sandbox::MITIGATION_DEP |
+                 sandbox::MITIGATION_DEP_NO_ATL_THUNK;
 #endif
 
   if (policy->SetDelayedProcessMitigations(mitigations) != sandbox::SBOX_ALL_OK)
     return 0;
 
-  SetJobLevel(*cmd_line, JOB_LOCKDOWN, 0, policy);
+  SetJobLevel(*cmd_line, sandbox::JOB_LOCKDOWN, 0, policy);
 
-  if (type == content::PROCESS_TYPE_GPU) {
+  if (type == PROCESS_TYPE_GPU) {
     if (!AddPolicyForGPU(cmd_line, policy))
       return 0;
   } else {
@@ -784,14 +784,14 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
       return 0;
     // TODO(jschuh): Need get these restrictions applied to NaCl and Pepper.
     // Just have to figure out what needs to be warmed up first.
-    if (type == content::PROCESS_TYPE_RENDERER ||
-        type == content::PROCESS_TYPE_WORKER) {
+    if (type == PROCESS_TYPE_RENDERER ||
+        type == PROCESS_TYPE_WORKER) {
       AddBaseHandleClosePolicy(policy);
     }
 
     // Pepper uses the renderer's policy, whith some tweaks.
     if (cmd_line->HasSwitch(switches::kGuestRenderer) ||
-        type == content::PROCESS_TYPE_PPAPI_PLUGIN) {
+        type == PROCESS_TYPE_PPAPI_PLUGIN) {
       if (!AddPolicyForPepperPlugin(policy))
         return 0;
     }
@@ -848,7 +848,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   // scanning the address space using VirtualQuery.
   // TODO(bbudge) Handle the --no-sandbox case.
   // http://code.google.com/p/nativeclient/issues/detail?id=2131
-  if (type == content::PROCESS_TYPE_NACL_LOADER) {
+  if (type == PROCESS_TYPE_NACL_LOADER) {
     const SIZE_T kOneGigabyte = 1 << 30;
     void* nacl_mem = VirtualAllocEx(target.process_handle(),
                                     NULL,
@@ -870,10 +870,6 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
 
   return target.TakeProcessHandle();
 }
-
-}  // namespace sandbox
-
-namespace content {
 
 bool BrokerDuplicateHandle(HANDLE source_handle,
                            DWORD target_process_id,
@@ -911,12 +907,6 @@ bool BrokerDuplicateHandle(HANDLE source_handle,
 
 bool BrokerAddTargetPeer(HANDLE peer_process) {
   return g_broker_services->AddTargetPeer(peer_process) == sandbox::SBOX_ALL_OK;
-}
-
-base::ProcessHandle StartProcessWithAccess(
-    CommandLine* cmd_line,
-    const FilePath& exposed_dir) {
-  return sandbox::StartProcessWithAccess(cmd_line, exposed_dir);
 }
 
 }  // namespace content

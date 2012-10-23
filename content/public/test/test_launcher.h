@@ -19,9 +19,6 @@ class RunLoop;
 
 namespace content {
 class ContentMainDelegate;
-}
-
-namespace test_launcher {
 
 extern const char kEmptyTestName[];
 extern const char kGTestFilterFlag[];
@@ -47,7 +44,7 @@ class TestLauncherDelegate {
                                              const FilePath& temp_data_dir) = 0;
   virtual void PreRunMessageLoop(base::RunLoop* run_loop) {}
   virtual void PostRunMessageLoop() {}
-  virtual content::ContentMainDelegate* CreateContentMainDelegate() = 0;
+  virtual ContentMainDelegate* CreateContentMainDelegate() = 0;
 
  protected:
   virtual ~TestLauncherDelegate();
@@ -59,6 +56,6 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
 
 TestLauncherDelegate* GetCurrentTestLauncherDelegate();
 
-}  // namespace test_launcher
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_TEST_LAUNCHER_H_
