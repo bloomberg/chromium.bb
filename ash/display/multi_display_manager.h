@@ -78,6 +78,11 @@ class ASH_EXPORT MultiDisplayManager : public aura::DisplayManager,
   // display's bounds change.
   void SetOverscanInsets(int64 display_id, const gfx::Insets& insets_in_dip);
 
+  // Returns the current overscan insets for the specified |display_id|.
+  // Returns an empty insets (0, 0, 0, 0) if no insets are specified for
+  // the display.
+  gfx::Insets GetOverscanInsets(int64 display_id) const;
+
   // DisplayManager overrides:
   virtual void OnNativeDisplaysChanged(
       const std::vector<gfx::Display>& displays) OVERRIDE;

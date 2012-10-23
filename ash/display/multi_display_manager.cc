@@ -162,6 +162,12 @@ void MultiDisplayManager::SetOverscanInsets(int64 display_id,
   OnNativeDisplaysChanged(displays);
 }
 
+gfx::Insets MultiDisplayManager::GetOverscanInsets(int64 display_id) const {
+  std::map<int64, gfx::Insets>::const_iterator it =
+      overscan_mapping_.find(display_id);
+  return (it != overscan_mapping_.end()) ? it->second : gfx::Insets();
+}
+
 void MultiDisplayManager::OnNativeDisplaysChanged(
     const std::vector<gfx::Display>& updated_displays) {
   if (updated_displays.empty()) {

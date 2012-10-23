@@ -84,6 +84,11 @@ const gfx::Display& ScreenAsh::GetSecondaryDisplay() {
   return *(Shell::GetInstance()->display_controller()->GetSecondaryDisplay());
 }
 
+// static
+const gfx::Display& ScreenAsh::GetDisplayForId(int64 display_id) {
+  return GetDisplayManager()->GetDisplayForId(display_id);
+}
+
 bool ScreenAsh::IsDIPEnabled() {
   return true;
 }

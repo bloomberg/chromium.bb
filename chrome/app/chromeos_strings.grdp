@@ -769,6 +769,15 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_RESOLUTION" desc="Label to describe the resolution of the currently selected display.">
     Resolution:
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_START_CALIBRATING_OVERSCAN" desc="Label to start calibrating the overscan preference.">
+    Start overscan calibration
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_FINISH_CALIBRATING_OVERSCAN" desc="Label to finish calibrating the overscan preference.">
+    Finish calibration
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_CLEAR_CALIBRATING_OVERSCAN" desc="Label to clear the current overscan preference.">
+    Clear
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_KEYBOARD_LAYOUT_TEXT" desc="In the settings tab, the text of the keyboard layout label.">
     Keyboard layout:
   </message>

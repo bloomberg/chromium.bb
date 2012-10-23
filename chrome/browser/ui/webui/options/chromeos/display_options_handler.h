@@ -16,6 +16,8 @@ class ListValue;
 }
 
 namespace chromeos {
+class OverscanCalibrator;
+
 namespace options {
 
 // Display options overlay page UI handler.
@@ -60,6 +62,12 @@ class DisplayOptionsHandler : public ::options::OptionsPageUIHandler,
   void HandleMirroring(const base::ListValue* args);
   void HandleSetPrimary(const base::ListValue* args);
   void HandleDisplayLayout(const base::ListValue* args);
+  void HandleStartOverscanCalibration(const base::ListValue* args);
+  void HandleFinishOverscanCalibration(const base::ListValue* args);
+  void HandleClearOverscanCalibration(const base::ListValue* args);
+  void HandleUpdateOverscanCalibration(const base::ListValue* args);
+
+  scoped_ptr<OverscanCalibrator> overscan_calibrator_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayOptionsHandler);
 };

@@ -284,6 +284,10 @@ std::vector<aura::RootWindow*> DisplayController::GetAllRootWindows() {
   return windows;
 }
 
+gfx::Insets DisplayController::GetOverscanInsets(int64 display_id) const {
+  return GetDisplayManager()->GetOverscanInsets(display_id);
+}
+
 std::vector<internal::RootWindowController*>
 DisplayController::GetAllRootWindowControllers() {
   std::vector<internal::RootWindowController*> controllers;

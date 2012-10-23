@@ -11,12 +11,12 @@
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "base/bind.h"
-#include "base/json/json_value_converter.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
+#include "chrome/browser/chromeos/display/overscan_calibrator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/display/output_configurator.h"
@@ -55,6 +55,15 @@ void DisplayOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_APPLY_RESULT));
   localized_strings->SetString("resolution", l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_RESOLUTION));
+  localized_strings->SetString(
+      "startCalibratingOverscan", l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_START_CALIBRATING_OVERSCAN));
+  localized_strings->SetString(
+      "finishCalibratingOverscan", l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_FINISH_CALIBRATING_OVERSCAN));
+  localized_strings->SetString(
+      "clearCalibratingOverscan", l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_CLEAR_CALIBRATING_OVERSCAN));
 }
 
 void DisplayOptionsHandler::InitializePage() {
@@ -78,6 +87,22 @@ void DisplayOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "setDisplayLayout",
       base::Bind(&DisplayOptionsHandler::HandleDisplayLayout,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "startOverscanCalibration",
+      base::Bind(&DisplayOptionsHandler::HandleStartOverscanCalibration,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "finishOverscanCalibration",
+      base::Bind(&DisplayOptionsHandler::HandleFinishOverscanCalibration,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "clearOverscanCalibration",
+      base::Bind(&DisplayOptionsHandler::HandleClearOverscanCalibration,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "updateOverscanCalibration",
+      base::Bind(&DisplayOptionsHandler::HandleUpdateOverscanCalibration,
                  base::Unretained(this)));
 }
 
@@ -131,6 +156,14 @@ void DisplayOptionsHandler::SendDisplayInfo() {
     js_display->SetString("name",
                           display_manager->GetDisplayNameFor(*display));
     js_display->SetBoolean("isPrimary", display->id() == primary_id);
+    base::DictionaryValue* js_insets = new base::DictionaryValue();
+    const gfx::Insets& insets =
+        display_controller->GetOverscanInsets(display->id());
+    js_insets->SetInteger("top", insets.top());
+    js_insets->SetInteger("left", insets.left());
+    js_insets->SetInteger("bottom", insets.bottom());
+    js_insets->SetInteger("right", insets.right());
+    js_display->Set("overscan", js_insets);
     displays.Set(i, js_display);
   }
 
@@ -229,6 +262,58 @@ void DisplayOptionsHandler::HandleDisplayLayout(const base::ListValue* args) {
           base::Unretained(this),
           static_cast<int>(layout),
           static_cast<int>(offset)));
+}
+
+void DisplayOptionsHandler::HandleStartOverscanCalibration(
+    const base::ListValue* args) {
+  int64 display_id = gfx::Display::kInvalidDisplayID;
+  std::string id_value;
+  if (!args->GetString(0, &id_value)) {
+    LOG(ERROR) << "Can't find ID";
+    return;
+  }
+  if (!base::StringToInt64(id_value, &display_id) ||
+      display_id == gfx::Display::kInvalidDisplayID) {
+    LOG(ERROR) << "Invalid parameter: " << id_value;
+    return;
+  }
+
+  const gfx::Display& display = ash::ScreenAsh::GetDisplayForId(display_id);
+  DCHECK(display.is_valid());
+  ash::DisplayController* display_controller =
+      ash::Shell::GetInstance()->display_controller();
+  overscan_calibrator_.reset(new OverscanCalibrator(
+      display,
+      display_controller->GetOverscanInsets(display_id)));
+}
+
+void DisplayOptionsHandler::HandleFinishOverscanCalibration(
+    const base::ListValue* args) {
+  DCHECK(overscan_calibrator_.get());
+  overscan_calibrator_->Commit();
+  overscan_calibrator_.reset();
+  SendDisplayInfo();
+}
+
+void DisplayOptionsHandler::HandleClearOverscanCalibration(
+    const base::ListValue* args) {
+  DCHECK(overscan_calibrator_.get());
+  overscan_calibrator_->UpdateInsets(gfx::Insets());
+  overscan_calibrator_->Commit();
+  SendDisplayInfo();
+}
+
+void DisplayOptionsHandler::HandleUpdateOverscanCalibration(
+    const base::ListValue* args) {
+  DCHECK(overscan_calibrator_.get());
+  double top = 0, left = 0, bottom = 0, right = 0;
+  if (!args->GetDouble(0, &top) || !args->GetDouble(1, &left) ||
+      !args->GetDouble(2, &bottom) || !args->GetDouble(3, &right)) {
+    LOG(ERROR) << "Can't find overscan insets data.";
+    return;
+  }
+
+  overscan_calibrator_->UpdateInsets(gfx::Insets(top, left, bottom, right));
 }
 
 }  // namespace options

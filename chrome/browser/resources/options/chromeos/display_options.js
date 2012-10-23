@@ -11,6 +11,25 @@ cr.define('options', function() {
   // The number of pixels to share the edges between displays.
   /** @const */ var MIN_OFFSET_OVERLAP = 5;
 
+  // The border width of the display rectangles for the focused one.
+  /** @const */ var FOCUSED_BORDER_WIDTH_PX = 2;
+  // The border width of the display rectangles for the normal one.
+  /** @const */ var NORMAL_BORDER_WIDTH_PX = 1;
+
+  // The constant values for the overscan calibration settings.
+  // The height of an arrow.
+  /** @const */ var ARROW_SIZE_PX = 10;
+
+  // The gap from the boundary of the display rectangle and the arrow.
+  /** @const */ var ARROW_GAP_PX = 2;
+
+  // The margin size to handle events outside the target display.
+  /** @const */ var ARROW_CONTAINER_MARGIN_PX = ARROW_SIZE_PX * 3;
+
+  // The interval times to update the overscan while the user keeps pressing
+  // the mouse button or touching.
+  /** @const */ var OVERSCAN_TIC_INTERVAL_MS = 100;
+
   /**
    * Enumeration of secondary display layout.  The value has to be same as the
    * values in ash/display/display_controller.cc.
@@ -21,6 +40,334 @@ cr.define('options', function() {
     RIGHT: 1,
     BOTTOM: 2,
     LEFT: 3
+  };
+
+  /**
+   * Enumeration of the direction for the calibrating overscan settings.
+   * @enum {number}
+   */
+  var CalibrationDirection = {
+      INNER: 1,
+      OUTER: -1
+  };
+
+  /**
+   * Calculates the bounds of |element| relative to the page.
+   * @param {HTMLElement} element The element to be known.
+   * @return {Object} The object for the bounds, with x, y, width, and height.
+   */
+  function getBoundsInPage(element) {
+    var bounds = {
+      x: element.offsetLeft,
+      y: element.offsetTop,
+      width: element.offsetWidth,
+      height: element.offsetHeight
+    };
+    var parent = element.offsetParent;
+    while (parent && parent != document.body) {
+      bounds.x += parent.offsetLeft;
+      bounds.y += parent.offsetTop;
+      parent = parent.offsetParent;
+    }
+    return bounds;
+  }
+
+  /**
+   * Gets the position of |point| to |rect|, left, right, top, or bottom.
+   * @param {Object} rect The base rectangle with x, y, width, and height.
+   * @param {Object} point The point to check the position.
+   * @return {SecondaryDisplayLayout} The position of the calculated point.
+   */
+  function getPositionToRectangle(rect, point) {
+    // Separates the area into four (LEFT/RIGHT/TOP/BOTTOM) by the diagonals of
+    // the rect, and decides which area the display should reside.
+    var diagonalSlope = rect.height / rect.width;
+    var topDownIntercept = rect.y - rect.x * diagonalSlope;
+    var bottomUpIntercept = rect.y + rect.height + rect.x * diagonalSlope;
+
+    if (point.y > topDownIntercept + point.x * diagonalSlope) {
+      if (point.y > bottomUpIntercept - point.x * diagonalSlope)
+        return SecondaryDisplayLayout.BOTTOM;
+      else
+        return SecondaryDisplayLayout.LEFT;
+    } else {
+      if (point.y > bottomUpIntercept - point.x * diagonalSlope)
+        return SecondaryDisplayLayout.RIGHT;
+      else
+        return SecondaryDisplayLayout.TOP;
+    }
+  }
+
+  /**
+   * DisplayOverscanCalibrator shows the arrows to calibrate overscan settings
+   * and handles events of the actual user control.
+   * @param {Object} display The display object for the calibrating overscan.
+   * @constructor
+   */
+  function DisplayOverscanCalibrator(display) {
+    // Creates the calibration arrows over |display|.  To achieve the UI,
+    // a transparent container holds the arrows and handles events.
+    this.container_ = document.createElement('div');
+    this.container_.id = 'display-overscan-calibration-arrow-container';
+    var containerSize = {
+      width: display.div.offsetWidth + ARROW_CONTAINER_MARGIN_PX * 2,
+      height: display.div.offsetHeight + ARROW_CONTAINER_MARGIN_PX * 2
+    };
+    this.container_.style.width = containerSize.width + 'px';
+    this.container_.style.height = containerSize.height + 'px';
+    this.container_.style.left =
+        display.div.offsetLeft - ARROW_CONTAINER_MARGIN_PX + 'px';
+    this.container_.style.top =
+        display.div.offsetTop - ARROW_CONTAINER_MARGIN_PX + 'px';
+    this.container_.onmousedown = this.onMouseDown_.bind(this);
+    this.container_.onmouseup = this.onOperationEnd_.bind(this);
+    this.container_.ontouchstart = this.onTouchStart_.bind(this);
+    this.container_.ontouchend = this.onOperationEnd_.bind(this);
+
+    // Creates arrows for each direction.
+    var topArrow = this.createVerticalArrows_();
+    topArrow.style.left = containerSize.width / 2 - ARROW_SIZE_PX + 'px';
+    topArrow.style.top = ARROW_CONTAINER_MARGIN_PX -
+        ARROW_SIZE_PX - ARROW_GAP_PX + 'px';
+    this.container_.appendChild(topArrow);
+    var bottomArrow = this.createVerticalArrows_();
+    bottomArrow.style.left = containerSize.width / 2 - ARROW_SIZE_PX + 'px';
+    bottomArrow.style.bottom = ARROW_CONTAINER_MARGIN_PX -
+        ARROW_SIZE_PX - ARROW_GAP_PX + 'px';
+    this.container_.appendChild(bottomArrow);
+    var leftArrow = this.createHorizontalArrows_();
+    leftArrow.style.left = ARROW_CONTAINER_MARGIN_PX -
+        ARROW_SIZE_PX - ARROW_GAP_PX + 'px';
+    leftArrow.style.top = containerSize.height / 2 - ARROW_SIZE_PX + 'px';
+    this.container_.appendChild(leftArrow);
+    var rightArrow = this.createHorizontalArrows_();
+    rightArrow.style.right = ARROW_CONTAINER_MARGIN_PX -
+        ARROW_SIZE_PX - ARROW_GAP_PX + 'px';
+    rightArrow.style.top = containerSize.height / 2 - ARROW_SIZE_PX + 'px';
+    this.container_.appendChild(rightArrow);
+
+    display.div.parentNode.appendChild(this.container_);
+    this.displayBounds_ = getBoundsInPage(display.div);
+    this.overscan_ = display.overscan;
+    chrome.send('startOverscanCalibration', [display.id]);
+  };
+
+  DisplayOverscanCalibrator.prototype = {
+    /**
+     * The container of arrows.  It also receives the user events.
+     * @private
+     */
+    container_: null,
+
+    /**
+     * The bounds of the display rectangle in the page.
+     * @private
+     */
+    displayBounds_: null,
+
+    /**
+     * The current overscan settins.
+     * @private
+     */
+    overscan_: null,
+
+    /**
+     * The location of the current user operation against the display.  The
+     * contents should be one of 'left', 'right', 'top', or 'bottom'.
+     * @type {string}
+     * @private
+     */
+    location_: null,
+
+    /**
+     * The direction of the current user operation against the display.
+     * @type {CalibrationDirection}
+     * @private
+     */
+    direction_: null,
+
+    /**
+     * The ID for the periodic timer to tic the calibration settings while the
+     * user keeps pressing the mouse button.
+     * @type {number}
+     * @private
+     */
+    timer_: null,
+
+    /**
+     * Called when everything is finished.
+     */
+    finish: function() {
+      this.container_.parentNode.removeChild(this.container_);
+      chrome.send('finishOverscanCalibration');
+    },
+
+    /**
+     * Called when every settings are cleared.
+     */
+    clear: function() {
+      chrome.send('clearOverscanCalibration');
+    },
+
+    /**
+     * Mouse down event handler for overscan calibration.
+     * @param {Event} e The mouse down event.
+     * @private
+     */
+    onMouseDown_: function(e) {
+      e.preventDefault();
+      this.setupOverscanCalibration_(e);
+    },
+
+    /**
+     * Touch start event handler for overscan calibration.
+     * @param {Event} e The touch start event.
+     * @private
+     */
+    onTouchStart_: function(e) {
+      if (e.touches.length != 1)
+        return;
+
+      e.preventDefault();
+      var touch = e.touches[0];
+      this.setupOverscanCalibration_(e.touches[0]);
+    },
+
+    /**
+     * Event handler for ending the user operation of overscan calibration.
+     * @param {Event} e The event object, mouse up event or touch end event.
+     * @private
+     */
+    onOperationEnd_: function(e) {
+      if (this.timer_) {
+        window.clearInterval(this.timer_);
+        this.timer_ = null;
+        e.preventDefault();
+      }
+    },
+
+    /**
+     * Sets up a new overscan calibration operation.  It calculates the event
+     * location and determines the contents of location.  It also sets up a
+     * timer to change the overscan settings continuously as far as the user
+     * keeps pressing the mouse button or touching.  The timer will be cleared
+     * on ending the operation.
+     * @param {Object} e The object to contain the location of the event with
+     *     pageX and pageY attributes.
+     * @private
+     */
+    setupOverscanCalibration_: function(e) {
+      switch (getPositionToRectangle(
+          this.displayBounds_, {x: e.pageX, y: e.pageY})) {
+      case SecondaryDisplayLayout.RIGHT:
+        this.location_ = 'right';
+        if (e.pageX < this.displayBounds_.x + this.displayBounds_.width)
+          this.direction_ = CalibrationDirection.INNER;
+        else
+          this.direction_ = CalibrationDirection.OUTER;
+        break;
+      case SecondaryDisplayLayout.LEFT:
+        this.location_ = 'left';
+        if (e.pageX > this.displayBounds_.x)
+          this.direction_ = CalibrationDirection.INNER;
+        else
+          this.direction_ = CalibrationDirection.OUTER;
+        break;
+      case SecondaryDisplayLayout.TOP:
+        this.location_ = 'top';
+        if (e.pageY > this.displayBounds_.y)
+          this.direction_ = CalibrationDirection.INNER;
+        else
+          this.direction_ = CalibrationDirection.OUTER;
+        break;
+      case SecondaryDisplayLayout.BOTTOM:
+        this.location_ = 'bottom';
+        if (e.pageY < this.displayBounds_.y + this.displayBounds_.height) {
+          this.direction_ = CalibrationDirection.INNER;
+        } else {
+          this.direction_ = CalibrationDirection.OUTER;
+        }
+        break;
+      }
+
+      this.ticOverscanSize_();
+      this.timer_ = window.setInterval(
+          this.ticOverscanSize_.bind(this), OVERSCAN_TIC_INTERVAL_MS);
+    },
+
+    /**
+     * Modifies the current overscans actually and sends the update to the
+     * system.
+     * @private
+     */
+    ticOverscanSize_: function() {
+      // Ignore the operation which causes some of overscan insets negative.
+      if (this.direction_ == CalibrationDirection.OUTER &&
+          this.overscan_[this.location_] == 0) {
+        return;
+      }
+
+      this.overscan_[this.location_] += this.direction_;
+      chrome.send('updateOverscanCalibration',
+                  [this.overscan_.top, this.overscan_.left,
+                   this.overscan_.bottom, this.overscan_.right]);
+    },
+
+    /**
+     * Creates the arrows vertically aligned, for the calibration UI at the top
+     * and bottom of the target display.
+     * @return {HTMLElement} The created div which contains the arrows.
+     * @private
+     */
+    createVerticalArrows_: function() {
+      var container = document.createElement('div');
+      container.style.width = ARROW_SIZE_PX * 2 + 'px';
+      container.style.height =
+          ARROW_SIZE_PX * 2 + ARROW_GAP_PX * 2 + FOCUSED_BORDER_WIDTH_PX + 'px';
+      container.style.position = 'absolute';
+
+      var arrowUp = document.createElement('div');
+      arrowUp.className = 'display-overscan-calibration-arrow ' +
+          'display-overscan-arrow-to-top';
+      arrowUp.style.left = '0';
+      arrowUp.style.top = -ARROW_SIZE_PX + 'px';
+      container.appendChild(arrowUp);
+      var arrowDown = document.createElement('div');
+      arrowDown.className = 'display-overscan-calibration-arrow ' +
+          'display-overscan-arrow-to-bottom';
+      arrowDown.style.left = '0';
+      arrowDown.style.bottom = -ARROW_SIZE_PX + 'px';
+      container.appendChild(arrowDown);
+      return container;
+    },
+
+    /**
+     * Creates the arrows horizontally aligned, for the calibration UI at the
+     * left and right of the target display.
+     * @return {HTMLElement} The created div which contains the arrows.
+     * @private
+     */
+    createHorizontalArrows_: function() {
+      var container = document.createElement('div');
+      container.style.width =
+          ARROW_SIZE_PX * 2 + ARROW_GAP_PX * 2 + FOCUSED_BORDER_WIDTH_PX + 'px';
+      container.style.height = ARROW_SIZE_PX * 2 + 'px';
+      container.style.position = 'absolute';
+
+      var arrowLeft = document.createElement('div');
+      arrowLeft.className = 'display-overscan-calibration-arrow ' +
+          'display-overscan-arrow-to-left';
+      arrowLeft.style.left = -ARROW_SIZE_PX + 'px';
+      arrowLeft.style.top = '0';
+      container.appendChild(arrowLeft);
+      var arrowRight = document.createElement('div');
+      arrowRight.className = 'display-overscan-calibration-arrow ' +
+          'display-overscan-arrow-to-right';
+      arrowRight.style.right = -ARROW_SIZE_PX + 'px';
+      arrowRight.style.top = '0';
+      container.appendChild(arrowRight);
+      return container;
+    }
   };
 
   /**
@@ -125,6 +472,22 @@ cr.define('options', function() {
         chrome.send('setPrimary', [this.displays_[this.focusedIndex_].id]);
       }).bind(this);
 
+      $('selected-display-start-calibrating-overscan').onclick = (function() {
+        this.overscanCalibrator_ = new DisplayOverscanCalibrator(
+            this.displays_[this.focusedIndex_]);
+        this.updateSelectedDisplayDescription_();
+      }).bind(this);
+      $('selected-display-finish-calibrating-overscan').onclick = (function() {
+        this.overscanCalibrator_.finish();
+        this.overscanCalibrator_ = null;
+        this.updateSelectedDisplayDescription_();
+      }).bind(this);
+      $('selected-display-clear-calibrating-overscan').onclick = (function() {
+        this.overscanCalibrator_.clear();
+        this.overscanCalibrator_ = null;
+        this.updateSelectedDisplayDescription_();
+      }).bind(this);
+
       chrome.send('getDisplayInfo');
     },
 
@@ -137,8 +500,8 @@ cr.define('options', function() {
 
     /**
      * Mouse move handler for dragging display rectangle.
-     * @private
      * @param {Event} e The mouse move event.
+     * @private
      */
     onMouseMove_: function(e) {
       return this.processDragging_(e, {x: e.pageX, y: e.pageY});
@@ -146,8 +509,8 @@ cr.define('options', function() {
 
     /**
      * Touch move handler for dragging display rectangle.
-     * @private
      * @param {Event} e The touch move event.
+     * @private
      */
     onTouchMove_: function(e) {
       if (e.touches.length != 1)
@@ -172,8 +535,8 @@ cr.define('options', function() {
 
     /**
      * Mouse down handler for dragging display rectangle.
-     * @private
      * @param {Event} e The mouse down event.
+     * @private
      */
     onMouseDown_: function(e) {
       if (this.mirroring_)
@@ -188,8 +551,8 @@ cr.define('options', function() {
 
     /**
      * Touch start handler for dragging display rectangle.
-     * @private
      * @param {Event} e The touch start event.
+     * @private
      */
     onTouchStart_: function(e) {
       if (this.mirroring_)
@@ -253,9 +616,9 @@ cr.define('options', function() {
 
     /**
      * Processes the actual dragging of display rectangle.
-     * @private
      * @param {Event} e The event which triggers this drag.
      * @param {Object} eventLocation The location where the event happens.
+     * @private
      */
     processDragging_: function(e, eventLocation) {
       if (!this.dragging_)
@@ -297,31 +660,29 @@ cr.define('options', function() {
         y: newPosition.y + draggingDiv.offsetHeight / 2
       };
 
-      // Separate the area into four (LEFT/RIGHT/TOP/BOTTOM) by the diagonals of
-      // the base display, and decide which area the display should reside.
-      var diagonalSlope = baseDiv.offsetHeight / baseDiv.offsetWidth;
-      var topDownIntercept =
-          baseDiv.offsetTop - baseDiv.offsetLeft * diagonalSlope;
-      var bottomUpIntercept = baseDiv.offsetTop +
-          baseDiv.offsetHeight + baseDiv.offsetLeft * diagonalSlope;
-
-      if (newCenter.y >
-          topDownIntercept + newCenter.x * diagonalSlope) {
-        if (newCenter.y >
-            bottomUpIntercept - newCenter.x * diagonalSlope)
-          this.layout_ = this.dragging_.display.isPrimary ?
-              SecondaryDisplayLayout.TOP : SecondaryDisplayLayout.BOTTOM;
-        else
-          this.layout_ = this.dragging_.display.isPrimary ?
-              SecondaryDisplayLayout.RIGHT : SecondaryDisplayLayout.LEFT;
-      } else {
-        if (newCenter.y >
-            bottomUpIntercept - newCenter.x * diagonalSlope)
-          this.layout_ = this.dragging_.display.isPrimary ?
-              SecondaryDisplayLayout.LEFT : SecondaryDisplayLayout.RIGHT;
-        else
-          this.layout_ = this.dragging_.display.isPrimary ?
-              SecondaryDisplayLayout.BOTTOM : SecondaryDisplayLayout.TOP;
+      var baseBounds = {
+        x: baseDiv.offsetLeft,
+        y: baseDiv.offsetTop,
+        width: baseDiv.offsetWidth,
+        height: baseDiv.offsetHeight
+      };
+      switch (getPositionToRectangle(baseBounds, newCenter)) {
+      case SecondaryDisplayLayout.RIGHT:
+        this.layout_ = this.dragging_.display.isPrimary ?
+            SecondaryDisplayLayout.LEFT : SecondaryDisplayLayout.RIGHT;
+        break;
+      case SecondaryDisplayLayout.LEFT:
+        this.layout_ = this.dragging_.display.isPrimary ?
+            SecondaryDisplayLayout.RIGHT : SecondaryDisplayLayout.LEFT;
+        break;
+      case SecondaryDisplayLayout.TOP:
+        this.layout_ = this.dragging_.display.isPrimary ?
+            SecondaryDisplayLayout.BOTTOM : SecondaryDisplayLayout.TOP;
+        break;
+      case SecondaryDisplayLayout.BOTTOM:
+        this.layout_ = this.dragging_.display.isPrimary ?
+            SecondaryDisplayLayout.TOP : SecondaryDisplayLayout.BOTTOM;
+        break;
       }
 
       if (this.layout_ == SecondaryDisplayLayout.LEFT ||
@@ -392,10 +753,10 @@ cr.define('options', function() {
 
     /**
      * start dragging of a display rectangle.
-     * @private
      * @param {HTMLElement} target The event target.
      * @param {Object} eventLocation The object to hold the location where
      *     this event happens.
+     * @private
      */
     startDragging_: function(target, eventLocation) {
       this.focusedIndex_ = null;
@@ -424,14 +785,19 @@ cr.define('options', function() {
           eventLocation: eventLocation
         };
       }
+
+      if (this.overscanCalibrator_) {
+        this.overscanCalibrator_.finish();
+        this.overscanCalibrator_ = null;
+      }
       this.updateSelectedDisplayDescription_();
       return false;
     },
 
     /**
      * finish the current dragging of displays.
-     * @private
      * @param {Event} e The event which triggers this.
+     * @private
      */
     endDragging_: function(e) {
       this.lastTouchLocation_ = null;
@@ -492,6 +858,14 @@ cr.define('options', function() {
         resolutionElement.removeChild(resolutionElement.firstChild);
       resolutionElement.appendChild(document.createTextNode(resolutionData));
 
+      if (this.overscanCalibrator_) {
+        $('start-calibrating-overscan-control').hidden = true;
+        $('end-calibrating-overscan-control').hidden = false;
+      } else {
+        $('start-calibrating-overscan-control').hidden = false;
+        $('end-calibrating-overscan-control').hidden = true;
+      }
+
       var arrow = $('display-configuration-arrow');
       arrow.hidden = false;
       arrow.style.top =
@@ -523,8 +897,6 @@ cr.define('options', function() {
      * @private
      */
     resizeDisplayRectangle_: function(display, index) {
-      /** @const */ var FOCUSED_BORDER_WIDTH_PX = 2;
-      /** @const */ var NORMAL_BORDER_WIDTH_PX = 1;
       var borderWidth = (index == this.focusedIndex_) ?
           FOCUSED_BORDER_WIDTH_PX : NORMAL_BORDER_WIDTH_PX;
       display.div.style.width =
@@ -661,11 +1033,11 @@ cr.define('options', function() {
 
     /**
      * Called when the display arrangement has changed.
-     * @private
      * @param {boolean} mirroring Whether current mode is mirroring or not.
      * @param {Array} displays The list of the display information.
      * @param {SecondaryDisplayLayout} layout The layout strategy.
      * @param {number} offset The offset of the secondary display.
+     * @private
      */
     onDisplayChanged_: function(mirroring, displays, layout, offset) {
       this.mirroring_ = mirroring;
@@ -691,6 +1063,12 @@ cr.define('options', function() {
         this.layoutMirroringDisplays_();
       else
         this.layoutDisplays_();
+
+      if (this.overscanCalibrator_) {
+        this.overscanCalibrator_.finish();
+        this.overscanCalibrator_ = new DisplayOverscanCalibrator(
+            this.displays_[this.focusedIndex_]);
+      }
       this.updateSelectedDisplayDescription_();
     }
   };

@@ -125,6 +125,10 @@ class ASH_EXPORT DisplayController : public aura::DisplayObserver {
   // mode, this return a RootWindowController for the primary root window only.
   std::vector<internal::RootWindowController*> GetAllRootWindowControllers();
 
+  // Returns the current overscan insets for the specified |display_id|. See
+  // multi_display_manager.h for the details.
+  gfx::Insets GetOverscanInsets(int64 display_id) const;
+
   const DisplayLayout& default_display_layout() const {
     return default_display_layout_;
   }
