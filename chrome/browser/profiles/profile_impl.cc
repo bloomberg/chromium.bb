@@ -40,6 +40,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
+#include "chrome/browser/geolocation/chrome_geolocation_permission_context_factory.h"
 #include "chrome/browser/history/shortcuts_backend.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/metrics/metrics_service.h"
@@ -851,7 +852,7 @@ content::GeolocationPermissionContext*
     ProfileImpl::GetGeolocationPermissionContext() {
   if (!geolocation_permission_context_.get()) {
     geolocation_permission_context_ =
-        ChromeGeolocationPermissionContext::Create(this);
+        ChromeGeolocationPermissionContextFactory::Create(this);
   }
   return geolocation_permission_context_.get();
 }

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_confirm_infobar_delegate.h"
+#include "chrome/browser/geolocation/geolocation_confirm_infobar_delegate_factory.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -281,13 +282,9 @@ GeolocationInfoBarQueueController::CreateInfoBarDelegate(
       int bridge_id,
       const GURL& requesting_frame_url,
       const std::string& display_languages) {
-  return new GeolocationConfirmInfoBarDelegate(infobar_helper,
-                                               controller,
-                                               render_process_id,
-                                               render_view_id,
-                                               bridge_id,
-                                               requesting_frame_url,
-                                               display_languages);
+  return GeolocationConfirmInfoBarDelegateFactory::Create(
+      infobar_helper, controller, render_process_id, render_view_id, bridge_id,
+      requesting_frame_url, display_languages);
 }
 
 void GeolocationInfoBarQueueController::ShowQueuedInfoBar(

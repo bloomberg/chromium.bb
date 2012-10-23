@@ -8,10 +8,9 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/geolocation/geolocation_infobar_queue_controller.h"
 #include "content/public/browser/geolocation_permission_context.h"
 
-class GeolocationInfoBarQueueController;
-class PrefService;
 class Profile;
 
 // Chrome specific implementation of GeolocationPermissionContext; manages
@@ -20,9 +19,7 @@ class Profile;
 class ChromeGeolocationPermissionContext
     : public content::GeolocationPermissionContext {
  public:
-  static ChromeGeolocationPermissionContext* Create(Profile* profile);
-
-  static void RegisterUserPrefs(PrefService *user_prefs);
+  explicit ChromeGeolocationPermissionContext(Profile* profile);
 
   // GeolocationPermissionContext implementation:
   virtual void RequestGeolocationPermission(
@@ -38,7 +35,6 @@ class ChromeGeolocationPermissionContext
       const GURL& requesting_frame) OVERRIDE;
 
  protected:
-  explicit ChromeGeolocationPermissionContext(Profile* profile);
   virtual ~ChromeGeolocationPermissionContext();
 
   Profile* profile() const { return profile_; }

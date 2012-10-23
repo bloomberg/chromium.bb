@@ -14,12 +14,10 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/geolocation/geolocation_infobar_queue_controller.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -31,19 +29,6 @@ using content::BrowserThread;
 using content::WebContents;
 
 // GeolocationPermissionContext -----------------------------------------------
-
-ChromeGeolocationPermissionContext* ChromeGeolocationPermissionContext::Create(
-    Profile* profile) {
-  return new ChromeGeolocationPermissionContext(profile);
-}
-
-void ChromeGeolocationPermissionContext::RegisterUserPrefs(
-    PrefService *user_prefs) {
-#if defined(OS_ANDROID)
-  user_prefs->RegisterBooleanPref(prefs::kGeolocationEnabled, true,
-                                  PrefService::UNSYNCABLE_PREF);
-#endif
-}
 
 ChromeGeolocationPermissionContext::ChromeGeolocationPermissionContext(
     Profile* profile)
@@ -109,17 +94,6 @@ void ChromeGeolocationPermissionContext::DecidePermission(
     const GURL& requesting_frame, const GURL& embedder,
     base::Callback<void(bool)> callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-#if defined(OS_ANDROID)
-  // Check to see if the feature in its entirety has been disabled.
-  // This must happen before other services (e.g. tabs, extensions)
-  // get an opportunity to allow the geolocation request.
-  if (!profile()->GetPrefs()->GetBoolean(prefs::kGeolocationEnabled)) {
-    PermissionDecided(render_process_id, render_view_id, bridge_id,
-                      requesting_frame, embedder, callback, false);
-    return;
-  }
-#endif
 
   ExtensionService* extension_service = profile_->GetExtensionService();
   if (extension_service) {

@@ -14,6 +14,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
+#include "chrome/browser/geolocation/chrome_geolocation_permission_context_factory.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/view_type_utils.h"
@@ -255,7 +256,7 @@ void GeolocationPermissionContextTests::SetUp() {
   TabSpecificContentSettings::CreateForWebContents(web_contents());
 
   geolocation_permission_context_ =
-      ChromeGeolocationPermissionContext::Create(profile());
+      ChromeGeolocationPermissionContextFactory::Create(profile());
 }
 
 void GeolocationPermissionContextTests::TearDown() {

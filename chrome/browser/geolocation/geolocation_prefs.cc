@@ -5,7 +5,7 @@
 #include "chrome/browser/geolocation/geolocation_prefs.h"
 
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
-#include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
+#include "chrome/browser/geolocation/chrome_geolocation_permission_context_factory.h"
 
 namespace geolocation {
 void RegisterPrefs(PrefService* prefs) {
@@ -14,7 +14,7 @@ void RegisterPrefs(PrefService* prefs) {
 }
 
 void RegisterUserPrefs(PrefService* user_prefs) {
-  ChromeGeolocationPermissionContext::RegisterUserPrefs(user_prefs);
+  ChromeGeolocationPermissionContextFactory::RegisterUserPrefs(user_prefs);
 }
 
 }  // namespace geolocation
