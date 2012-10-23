@@ -17,6 +17,7 @@ class AppWindowCustomBindings : public ChromeV8Extension {
 
  private:
   v8::Handle<v8::Value> GetView(const v8::Arguments& args);
+  v8::Handle<v8::Value> OnContextReady(const v8::Arguments& args);
 
   DISALLOW_COPY_AND_ASSIGN(AppWindowCustomBindings);
 };

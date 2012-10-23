@@ -9,6 +9,7 @@ var sendRequest = require('sendRequest').sendRequest;
 var appWindowNatives = requireNative('app_window');
 var forEach = require('utils').forEach;
 var GetView = appWindowNatives.GetView;
+var OnContextReady = appWindowNatives.OnContextReady;
 
 chromeHidden.registerCustomHook('app.window', function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
@@ -31,9 +32,24 @@ chromeHidden.registerCustomHook('app.window', function(bindingsAPI) {
     // Initialize appWindowData in the newly created JS context
     view.chrome.app.window.initializeAppWindow(windowParams);
 
-    if (request.callback) {
-      request.callback(view.chrome.app.window.current());
+    var callback = request.callback;
+    if (callback) {
       delete request.callback;
+      if (!view) {
+        callback(undefined);
+        return;
+      }
+
+      var willCallback = OnContextReady(windowParams.viewId, function(success) {
+        if (success) {
+          callback(view.chrome.app.window.current());
+        } else {
+          callback(undefined);
+        }
+      });
+      if (!willCallback) {
+        callback(undefined);
+      }
     }
   });
 
@@ -50,7 +66,7 @@ chromeHidden.registerCustomHook('app.window', function(bindingsAPI) {
     if (!chromeHidden.currentAppWindow)
       return;
     chromeHidden.currentAppWindow.onClosed.dispatch();
-  }
+  };
 
   // This is an internal function, but needs to be bound with setHandleRequest
   // because it is called from a different JS context
