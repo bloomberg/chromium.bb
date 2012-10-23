@@ -21,6 +21,7 @@ namespace drive {
 namespace {
 
 const int kInitialPrefetchCount = 100;
+const int64 kPrefetchFileSizeLimit = 10 << 20;  // 10MB
 
 // Returns true if prefetching is disabled by a command line option.
 bool IsPrefetchDisabled() {
@@ -31,7 +32,8 @@ bool IsPrefetchDisabled() {
 }
 
 DrivePrefetcherOptions::DrivePrefetcherOptions()
-    : initial_prefetch_count(kInitialPrefetchCount) {
+    : initial_prefetch_count(kInitialPrefetchCount),
+      prefetch_file_size_limit(kPrefetchFileSizeLimit) {
 }
 
 DrivePrefetcher::DrivePrefetcher(DriveFileSystemInterface* file_system,
@@ -40,6 +42,7 @@ DrivePrefetcher::DrivePrefetcher(DriveFileSystemInterface* file_system,
       number_of_inflight_traversals_(0),
       should_suspend_prefetch_(true),
       initial_prefetch_count_(options.initial_prefetch_count),
+      prefetch_file_size_limit_(options.prefetch_file_size_limit),
       file_system_(file_system),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -137,6 +140,10 @@ void DrivePrefetcher::VisitFile(const DriveEntryProto& entry) {
 
   int64 last_access = entry.file_info().last_accessed();
   const std::string& resource_id = entry.resource_id();
+
+  // Excessively large files will not be fetched.
+  if (entry.file_info().size() > prefetch_file_size_limit_)
+    return;
 
   // Remember the file in the set ordered by the |last_accessed| field.
   latest_files_.insert(std::make_pair(last_access, resource_id));

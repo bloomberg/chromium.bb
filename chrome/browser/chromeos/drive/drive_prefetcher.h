@@ -29,6 +29,7 @@ struct DrivePrefetcherOptions {
   DrivePrefetcherOptions();  // Sets the default values.
 
   int initial_prefetch_count;
+  int64 prefetch_file_size_limit;
 };
 
 // DrivePrefetcher is used to observe and scan the Drive file system for
@@ -96,6 +97,10 @@ class DrivePrefetcher : public DriveFileSystemObserver,
 
   // Number of files to put into prefetch queue
   int initial_prefetch_count_;
+
+  // The maximum file size for prefetched files. Files larger than the limit is
+  // ignored from the prefetcher.
+  int64 prefetch_file_size_limit_;
 
   // File system is owned by DriveSystemService.
   DriveFileSystemInterface* file_system_;

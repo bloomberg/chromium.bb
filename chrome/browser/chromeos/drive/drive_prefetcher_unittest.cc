@@ -37,6 +37,7 @@ struct TestEntry {
   TestEntryType entry_type;
   int64 last_access;
   const char* resource_id;
+  int64 file_size;
 
   // Checks whether this TestEntry is the direct content of the |directory|.
   bool IsDirectChildOf(const FilePath& directory) const {
@@ -52,6 +53,7 @@ struct TestEntry {
     if (entry_type != TYPE_DIRECTORY) {
       entry.mutable_file_specific_info()->set_is_hosted_document(
           entry_type == TYPE_HOSTED_FILE);
+      entry.mutable_file_info()->set_size(file_size);
     }
     entry.mutable_file_info()->set_last_accessed(last_access);
     entry.set_resource_id(resource_id);
@@ -97,7 +99,8 @@ const TestEntry kComplexDrive[] = {
   { FILE_PATH_LITERAL("drive/a"),            TYPE_DIRECTORY,    0, "id:a" },
   { FILE_PATH_LITERAL("drive/a/foo.txt"),    TYPE_REGULAR_FILE, 3, "id:foo1" },
   { FILE_PATH_LITERAL("drive/a/b"),          TYPE_DIRECTORY,    8, "id:b" },
-  { FILE_PATH_LITERAL("drive/a/b/bar.jpg"),  TYPE_REGULAR_FILE, 5, "id:bar1" },
+  { FILE_PATH_LITERAL("drive/a/b/bar.jpg"),  TYPE_REGULAR_FILE, 5, "id:bar1",
+                                             999 },
   { FILE_PATH_LITERAL("drive/a/b/new.gdoc"), TYPE_HOSTED_FILE,  7, "id:new" },
   { FILE_PATH_LITERAL("drive/a/buz.zip"),    TYPE_REGULAR_FILE, 4, "id:buz1" },
   { FILE_PATH_LITERAL("drive/a/old.gdoc"),   TYPE_HOSTED_FILE,  1, "id:old" },
@@ -107,7 +110,12 @@ const TestEntry kComplexDrive[] = {
   { FILE_PATH_LITERAL("drive/bar.jpg"),      TYPE_REGULAR_FILE, 6, "id:bar2" },
 };
 
-const char* kTop3Files[] = { "id:bar2", "id:bar1", "id:buz1" };
+const char* kTop3Files[] = {
+  "id:bar2",  // The file with the largest timestamp
+              // "bar1" is the second latest, but its file size is over limit.
+  "id:buz1",  // The third latest file.
+  "id:foo1"   // 4th.
+};
 
 const char* kAllRegularFiles[] = {
   "id:bar2", "id:bar1", "id:buz1", "id:foo1", "id:foo2", "id:buz2",
@@ -132,11 +140,12 @@ class DrivePrefetcherTest : public testing::Test {
 
  protected:
   // Sets a new prefetcher that fetches at most |prefetch_count| latest files.
-  void InitPrefetcher(int prefetch_count) {
+  void InitPrefetcher(int prefetch_count, int64 size_limit) {
     EXPECT_CALL(*mock_file_system_, AddObserver(_));
 
     DrivePrefetcherOptions options;
     options.initial_prefetch_count = prefetch_count;
+    options.prefetch_file_size_limit = size_limit;
     prefetcher_.reset(new DrivePrefetcher(mock_file_system_.get(), options));
   }
 
@@ -172,7 +181,7 @@ class DrivePrefetcherTest : public testing::Test {
 };
 
 TEST_F(DrivePrefetcherTest, ZeroFiles) {
-  InitPrefetcher(3);
+  InitPrefetcher(3, 100);
   VerifyFullScan(
       std::vector<TestEntry>(kEmptyDrive,
                              kEmptyDrive + arraysize(kEmptyDrive)),
@@ -180,7 +189,7 @@ TEST_F(DrivePrefetcherTest, ZeroFiles) {
 }
 
 TEST_F(DrivePrefetcherTest, OneFile) {
-  InitPrefetcher(3);
+  InitPrefetcher(3, 100);
   VerifyFullScan(
       std::vector<TestEntry>(kOneFileDrive,
                              kOneFileDrive + arraysize(kOneFileDrive)),
@@ -191,7 +200,7 @@ TEST_F(DrivePrefetcherTest, OneFile) {
 TEST_F(DrivePrefetcherTest, MoreThanLimitFiles) {
   // Files with the largest timestamps should be listed, in the order of time.
   // Directories nor hosted files should not be listed.
-  InitPrefetcher(3);
+  InitPrefetcher(3, 100);
   VerifyFullScan(
       std::vector<TestEntry>(kComplexDrive,
                              kComplexDrive + arraysize(kComplexDrive)),
@@ -201,7 +210,7 @@ TEST_F(DrivePrefetcherTest, MoreThanLimitFiles) {
 TEST_F(DrivePrefetcherTest, DirectoryTraversal) {
   // Ensure the prefetcher correctly traverses whole the file system tree.
   // This is checked by setting the fetch limit larger than the number of files.
-  InitPrefetcher(100);
+  InitPrefetcher(100, 99999999);
   VerifyFullScan(
       std::vector<TestEntry>(kComplexDrive,
                              kComplexDrive + arraysize(kComplexDrive)),
