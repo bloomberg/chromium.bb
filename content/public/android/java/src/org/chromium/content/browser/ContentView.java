@@ -21,11 +21,10 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.FrameLayout;
 
-import java.util.ArrayList;
-
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.common.TraceEvent;
 import org.chromium.ui.gfx.NativeWindow;
+
+import java.util.ArrayList;
 
 /**
  * The containing view for {@link ContentViewCore} that exists in the Android UI hierarchy and
@@ -70,8 +69,8 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
      */
     public static interface SurfaceTextureUpdatedListener {
         /**
-         * Called when the {@link SurfaceTexture} of the {@link TextureView} held in this
-         * ContentView has been updated.
+         * Called when the {@link android.graphics.SurfaceTexture} of the
+         * {@link android.view.TextureView} held in this ContentView has been updated.
          *
          * @param view The ContentView that was updated.
          */
@@ -743,20 +742,6 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
      */
     public boolean isCrashed() {
         return mContentViewCore.isCrashed();
-    }
-
-    /**
-     * In order to make sure we don't show white when we have a bitmap containing the previously
-     * drawn frame of this ContentView before it was hidden, we want to show the bitmap while we
-     * render the content and then swap them out, so the user perceived latency is shorter.  In
-     * software rendering mode we can just prime the backing store at the native level.  However
-     * for hardware rendering mode we have to show an ImageView in front of the TextureView, but
-     * behind the NTP Toolbar View.
-     *
-     * @param bitmap The bitmap to show while this ContentView is rendering content.
-     */
-    public void usePrimeBitmap(Bitmap bitmap) {
-        // TODO(nileshagrawal): Implement this.
     }
 
     /**

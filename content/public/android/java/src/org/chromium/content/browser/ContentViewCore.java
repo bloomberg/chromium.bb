@@ -20,6 +20,7 @@ import android.os.Handler;
 import android.os.ResultReceiver;
 import android.os.SystemClock;
 import android.util.Log;
+import android.util.Pair;
 import android.view.ActionMode;
 import android.view.InputDevice;
 import android.view.KeyEvent;
@@ -755,6 +756,30 @@ public class ContentViewCore implements MotionEventDelegate {
         }
 
         return null;
+    }
+
+    /**
+     * Generates a bitmap of the content that is performance optimized based on capture time.
+     *
+     * <p>
+     * To have a consistent capture time across devices, we will scale down the captured bitmap
+     * where necessary to reduce the time to generate the bitmap.
+     *
+     * @param width The width of the content to be captured.
+     * @param height The height of the content to be captured.
+     * @return A pair of the generated bitmap, and the scale that needs to be applied to return the
+     *         bitmap to it's original size (i.e. if the bitmap is scaled down 50%, this
+     *         will be 2).
+     */
+    public Pair<Bitmap, Float> getScaledPerformanceOptimizedBitmap(int width, int height) {
+        float scale = 1f;
+        // On tablets, always scale down to MDPI for performance reasons.
+        if (DeviceUtils.isTablet(getContext())) {
+            scale = getContext().getResources().getDisplayMetrics().density;
+        }
+        return Pair.create(
+                getBitmap((int) (width / scale), (int) (height / scale)),
+                scale);
     }
 
     /**
