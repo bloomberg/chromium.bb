@@ -269,7 +269,8 @@ class PageCyclerTest : public UIPerfTest {
   }
 
  private:
-  void PrintMemoryHistogram(const std::string& name) {
+  void PrintMemoryHistogram(const std::string& name,
+                            const std::string& units) {
     scoped_refptr<TabProxy> tab(GetActiveTab());
     ASSERT_TRUE(tab.get());
     std::wstring whistogram;
@@ -281,17 +282,17 @@ class PageCyclerTest : public UIPerfTest {
         base::SysUTF8ToWide(name) + L"\") : '')",
         &whistogram));
     std::string histogram = base::SysWideToNativeMB(whistogram);
-    printf("HISTOGRAM %s: %s = %s\n",
-           name.c_str(), name.c_str(), histogram.c_str());
+    printf("HISTOGRAM %s: %s = %s %s\n",
+           name.c_str(), name.c_str(), histogram.c_str(), units.c_str());
   }
 
   void PrintMemoryHistograms() {
     ASSERT_NO_FATAL_FAILURE(PrintMemoryHistogram(
-        "V8.MemoryExternalFragmentationTotal"));
+        "V8.MemoryExternalFragmentationTotal", "percent"));
     ASSERT_NO_FATAL_FAILURE(PrintMemoryHistogram(
-        "V8.MemoryHeapSampleTotalCommitted"));
+        "V8.MemoryHeapSampleTotalCommitted", "kb"));
     ASSERT_NO_FATAL_FAILURE(PrintMemoryHistogram(
-        "V8.MemoryHeapSampleTotalUsed"));
+        "V8.MemoryHeapSampleTotalUsed", "kb"));
   }
 
  protected:
