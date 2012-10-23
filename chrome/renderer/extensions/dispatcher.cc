@@ -252,7 +252,7 @@ class LoggingNativeHandler : public NativeHandler {
 
     v8::Handle<v8::StackTrace> stack_trace =
         v8::StackTrace::CurrentStackTrace(10);
-    if (stack_trace.IsEmpty() || stack_trace->GetFrameCount() == 0) {
+    if (stack_trace.IsEmpty() || stack_trace->GetFrameCount() <= 0) {
       error_message += "\n    <no stack trace>";
     } else {
       for (size_t i = 0; i < (size_t) stack_trace->GetFrameCount(); ++i) {
