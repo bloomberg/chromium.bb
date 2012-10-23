@@ -43,7 +43,6 @@
 
 using extensions::Extension;
 using extensions::ExtensionCreator;
-using extensions::FeatureSwitch;
 
 ExtensionBrowserTest::ExtensionBrowserTest()
     : loaded_(false),
@@ -54,9 +53,7 @@ ExtensionBrowserTest::ExtensionBrowserTest()
       target_visible_page_action_count_(-1),
       current_channel_(chrome::VersionInfo::CHANNEL_DEV),
       override_prompt_for_external_extensions_(
-          FeatureSwitch::prompt_for_external_extensions(), false),
-       override_sideload_wipeout_(
-          FeatureSwitch::sideload_wipeout(), false) {
+          extensions::FeatureSwitch::prompt_for_external_extensions(), false) {
   EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
 }
 

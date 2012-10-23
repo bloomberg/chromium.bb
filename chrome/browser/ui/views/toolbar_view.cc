@@ -111,6 +111,9 @@ const int kSearchTopButtonSpacing = 3;
 const int kSearchTopLocationBarSpacing = 2;
 const int kSearchToolbarSpacing = 5;
 
+// How often to show the disabled extension (sideload wipeout) bubble.
+const int kShowSideloadWipeoutBubbleMax = 3;
+
 gfx::ImageSkia* kPopupBackgroundEdge = NULL;
 
 // The omnibox border has some additional shadow, so we use less vertical
@@ -214,8 +217,6 @@ ToolbarView::ToolbarView(Browser* browser)
 }
 
 ToolbarView::~ToolbarView() {
-  GetWidget()->RemoveObserver(this);
-
   // NOTE: Don't remove the command observers here.  This object gets destroyed
   // after the Browser (which owns the CommandUpdater), so the CommandUpdater is
   // already gone.
@@ -226,8 +227,6 @@ ToolbarView::~ToolbarView() {
 
 void ToolbarView::Init(views::View* location_bar_parent,
                        views::View* popup_parent_view) {
-  GetWidget()->AddObserver(this);
-
   back_ = new views::ButtonDropDown(this, new BackForwardMenuModel(
       browser_, BackForwardMenuModel::BACKWARD_MENU));
   back_->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
@@ -314,6 +313,9 @@ void ToolbarView::Init(views::View* location_bar_parent,
   location_bar_->Init(popup_parent_view);
   show_home_button_.Init(prefs::kShowHomeButton,
                          browser_->profile()->GetPrefs(), this);
+  sideload_wipeout_bubble_shown_.Init(
+      prefs::kExtensionsSideloadWipeoutBubbleShown,
+      browser_->profile()->GetPrefs(), NULL);
 
   browser_actions_->Init();
 
@@ -324,6 +326,11 @@ void ToolbarView::Init(views::View* location_bar_parent,
     forward_->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_ACCNAME_TOOLTIP_FORWARD));
   }
+
+  int bubble_shown_count = sideload_wipeout_bubble_shown_.GetValue();
+  if (bubble_shown_count < kShowSideloadWipeoutBubbleMax &&
+      DisabledExtensionsView::MaybeShow(browser_, app_menu_))
+    sideload_wipeout_bubble_shown_.SetValue(++bubble_shown_count);
 }
 
 void ToolbarView::Update(WebContents* tab, bool should_restore_state) {
@@ -584,12 +591,6 @@ void ToolbarView::ButtonPressed(views::Button* sender,
     location_bar_->Revert();
   }
   chrome::ExecuteCommandWithDisposition(browser_, command, disposition);
-}
-
-void ToolbarView::OnWidgetVisibilityChanged(views::Widget* widget,
-                                            bool visible) {
-  if (visible)
-    DisabledExtensionsView::MaybeShow(browser_, app_menu_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

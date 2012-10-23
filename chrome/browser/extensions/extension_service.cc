@@ -2190,10 +2190,8 @@ void ExtensionService::MaybeWipeout(
   if (done)
     return;
 
-  Extension::Type type = extension->GetType();
   int disable_reasons = extension_prefs_->GetDisableReasons(extension->id());
-  if (disable_reasons == Extension::DISABLE_NONE &&
-      type == Extension::TYPE_EXTENSION) {
+  if (disable_reasons == Extension::DISABLE_NONE) {
     Extension::Location location = extension->location();
     if (location == Extension::EXTERNAL_REGISTRY ||
         (location == Extension::INTERNAL && !extension->from_webstore())) {

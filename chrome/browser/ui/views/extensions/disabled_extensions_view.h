@@ -31,7 +31,7 @@ class DisabledExtensionsView : public views::BubbleDelegateView,
 
   // Show the Disabled Extension bubble, if needed. Returns true if the bubble
   // was shown.
-  static void MaybeShow(Browser* browser, views::View* anchor_view);
+  static bool MaybeShow(Browser* browser, views::View* anchor_view);
 
  protected:
   // views::BubbleDelegateView overrides:
@@ -39,9 +39,6 @@ class DisabledExtensionsView : public views::BubbleDelegateView,
 
  private:
   virtual ~DisabledExtensionsView();
-
-  // Makes sure the bubble is not shown again.
-  void DontShowBubbleAgain();
 
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender,

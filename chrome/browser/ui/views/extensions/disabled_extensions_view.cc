@@ -9,12 +9,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/extensions/feature_switch.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
@@ -46,9 +43,6 @@ const int kHeadlineMessagePadding = 4;
 const int kHeadlineRowPadding = 10;
 const int kMessageBubblePadding = 11;
 
-// How often to show the disabled extension (sideload wipeout) bubble.
-const int kShowSideloadWipeoutBubbleMax = 3;
-
 // How many extensions to show in the bubble (max).
 const int kMaxExtensionsToShow = 7;
 
@@ -58,25 +52,21 @@ const int kMaxExtensionsToShow = 7;
 // DisabledExtensionsView
 
 // static
-void DisabledExtensionsView::MaybeShow(Browser* browser,
+bool DisabledExtensionsView::MaybeShow(Browser* browser,
                                        views::View* anchor_view) {
+#if !defined(OS_WIN)
+  // We are targeting registry-installed extensions, which is Windows-specific,
+  // and extensions marked internal and not from the web store, which are mostly
+  // problematic on Windows.
+  return false;
+#endif
+
   if (!extensions::FeatureSwitch::sideload_wipeout()->IsEnabled())
-    return;
+    return false;
 
   static bool done_showing_ui = false;
   if (done_showing_ui)
-    return;  // Only show the bubble once per launch.
-
-  // A pref that counts how often the bubble has been shown.
-  IntegerPrefMember sideload_wipeout_bubble_shown;
-
-  sideload_wipeout_bubble_shown.Init(
-      prefs::kExtensionsSideloadWipeoutBubbleShown,
-          browser->profile()->GetPrefs(), NULL);
-  int bubble_shown_count = sideload_wipeout_bubble_shown.GetValue();
-  if (bubble_shown_count >= kShowSideloadWipeoutBubbleMax)
-    return;
-  sideload_wipeout_bubble_shown.SetValue(++bubble_shown_count);
+    return false;  // Only show the bubble once per launch.
 
   // Fetch all disabled extensions.
   ExtensionService* extension_service =
@@ -92,7 +82,10 @@ void DisabledExtensionsView::MaybeShow(Browser* browser,
     bubble_delegate->StartFade(true);
 
     done_showing_ui = true;
+    return true;
   }
+
+  return false;
 }
 
 DisabledExtensionsView::DisabledExtensionsView(
@@ -116,14 +109,6 @@ DisabledExtensionsView::DisabledExtensionsView(
 DisabledExtensionsView::~DisabledExtensionsView() {
 }
 
-void DisabledExtensionsView::DontShowBubbleAgain() {
-  IntegerPrefMember sideload_wipeout_bubble_shown;
-  sideload_wipeout_bubble_shown.Init(
-      prefs::kExtensionsSideloadWipeoutBubbleShown,
-      browser_->profile()->GetPrefs(), NULL);
-  sideload_wipeout_bubble_shown.SetValue(kShowSideloadWipeoutBubbleMax);
-}
-
 void DisabledExtensionsView::ButtonPressed(views::Button* sender,
                                            const ui::Event& event) {
   if (sender == settings_button_) {
@@ -138,11 +123,11 @@ void DisabledExtensionsView::ButtonPressed(views::Button* sender,
 
   } else if (sender == dismiss_button_) {
     content::RecordAction(UserMetricsAction("DisabledExtension_Dismiss"));
+    // No action required. Close will happen below.
   } else {
     NOTREACHED();
   }
 
-  DontShowBubbleAgain();
   GetWidget()->Close();
 }
 
@@ -156,7 +141,6 @@ void DisabledExtensionsView::LinkClicked(
                              content::PAGE_TRANSITION_LINK,
                              false));
 
-  DontShowBubbleAgain();
   GetWidget()->Close();
 }
 
