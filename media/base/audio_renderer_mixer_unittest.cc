@@ -408,6 +408,18 @@ TEST_P(AudioRendererMixerTest, DelayTest) {
   mixer_inputs_[0]->Stop();
 }
 
+// Ensure constructing an AudioRendererMixerInput, but not initializing it does
+// not call RemoveMixer().
+TEST_P(AudioRendererMixerTest, NoInitialize) {
+  EXPECT_CALL(*this, RemoveMixer(testing::_)).Times(0);
+  scoped_refptr<AudioRendererMixerInput> audio_renderer_mixer =
+      new AudioRendererMixerInput(
+          base::Bind(&AudioRendererMixerTest::GetMixer,
+                     base::Unretained(this)),
+          base::Bind(&AudioRendererMixerTest::RemoveMixer,
+                     base::Unretained(this)));
+}
+
 INSTANTIATE_TEST_CASE_P(
     AudioRendererMixerTest, AudioRendererMixerTest, testing::Values(
         // No resampling.
