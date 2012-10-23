@@ -16,11 +16,8 @@ class WebSerializedScriptValue;
 
 namespace content {
 
-namespace internal {
-class BrowserPluginMethodBinding;
-}
-
 class BrowserPlugin;
+class BrowserPluginMethodBinding;
 
 class BrowserPluginBindings {
  public:
@@ -53,7 +50,7 @@ class BrowserPluginBindings {
   // The NPObject we use to expose postMessage to JavaScript.
   BrowserPluginNPObject* np_object_;
 
-  typedef ScopedVector<internal::BrowserPluginMethodBinding> BindingList;
+  typedef ScopedVector<BrowserPluginMethodBinding> BindingList;
   BindingList method_bindings_;
 
   // This is used to ensure pending tasks will not fire after this object is

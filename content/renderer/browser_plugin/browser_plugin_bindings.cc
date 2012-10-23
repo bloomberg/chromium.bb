@@ -243,7 +243,7 @@ NPClass browser_plugin_message_class = {
 
 }  // namespace
 
-namespace internal {
+// BrowserPluginMethodBinding --------------------------------------------------
 
 class BrowserPluginMethodBinding {
  public:
@@ -483,8 +483,6 @@ class BrowserPluginBindingTerminate : public BrowserPluginMethodBinding {
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingTerminate);
 };
 
-}  // namespace internal
-
 // BrowserPluginBindings ------------------------------------------------------
 
 BrowserPluginBindings::BrowserPluginNPObject::BrowserPluginNPObject() {
@@ -502,17 +500,17 @@ BrowserPluginBindings::BrowserPluginBindings(BrowserPlugin* instance)
   np_object_ = static_cast<BrowserPluginBindings::BrowserPluginNPObject*>(obj);
   np_object_->message_channel = weak_ptr_factory_.GetWeakPtr();
 
-  method_bindings_.push_back(new internal::BrowserPluginBindingAddListener);
-  method_bindings_.push_back(new internal::BrowserPluginBindingBack);
-  method_bindings_.push_back(new internal::BrowserPluginBindingCanGoBack);
-  method_bindings_.push_back(new internal::BrowserPluginBindingCanGoForward);
-  method_bindings_.push_back(new internal::BrowserPluginBindingForward);
-  method_bindings_.push_back(new internal::BrowserPluginBindingGetProcessID);
-  method_bindings_.push_back(new internal::BrowserPluginBindingGo);
-  method_bindings_.push_back(new internal::BrowserPluginBindingReload);
-  method_bindings_.push_back(new internal::BrowserPluginBindingRemoveListener);
-  method_bindings_.push_back(new internal::BrowserPluginBindingStop);
-  method_bindings_.push_back(new internal::BrowserPluginBindingTerminate);
+  method_bindings_.push_back(new BrowserPluginBindingAddListener);
+  method_bindings_.push_back(new BrowserPluginBindingBack);
+  method_bindings_.push_back(new BrowserPluginBindingCanGoBack);
+  method_bindings_.push_back(new BrowserPluginBindingCanGoForward);
+  method_bindings_.push_back(new BrowserPluginBindingForward);
+  method_bindings_.push_back(new BrowserPluginBindingGetProcessID);
+  method_bindings_.push_back(new BrowserPluginBindingGo);
+  method_bindings_.push_back(new BrowserPluginBindingReload);
+  method_bindings_.push_back(new BrowserPluginBindingRemoveListener);
+  method_bindings_.push_back(new BrowserPluginBindingStop);
+  method_bindings_.push_back(new BrowserPluginBindingTerminate);
 }
 
 BrowserPluginBindings::~BrowserPluginBindings() {
