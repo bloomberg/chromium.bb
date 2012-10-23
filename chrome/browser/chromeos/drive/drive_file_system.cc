@@ -1059,7 +1059,16 @@ void DriveFileSystem::OnGetDocumentEntry(const GetFileFromCacheParams& params,
   GURL content_url = doc_entry->content_url();
   int64 file_size = doc_entry->file_size();
 
-  DCHECK(!content_url.is_empty());
+  // The content URL can be empty for non-downloadable files (such as files
+  // shared from others with "prevent downloading by viewers" flag set.)
+  if (content_url.is_empty()) {
+    params.get_file_callback.Run(DRIVE_FILE_ERROR_ACCESS_DENIED,
+                                 params.cache_file_path,
+                                 params.mime_type,
+                                 REGULAR_FILE);
+    return;
+  }
+
   DCHECK_EQ(params.resource_id, doc_entry->resource_id());
   resource_metadata_->RefreshFile(
       doc_entry.Pass(),
