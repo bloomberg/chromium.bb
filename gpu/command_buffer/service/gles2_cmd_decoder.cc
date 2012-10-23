@@ -1386,6 +1386,14 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   void PerformanceWarning(const std::string& msg);
   const std::string& GetLogPrefix() const;
 
+  const FeatureInfo::FeatureFlags& features() const {
+    return feature_info_->feature_flags();
+  }
+
+  const FeatureInfo::Workarounds& workarounds() const {
+    return feature_info_->workarounds();
+  }
+
   bool ShouldDeferDraws() {
     return !offscreen_target_frame_buffer_.get() &&
            state_.bound_draw_framebuffer == NULL &&
@@ -1531,9 +1539,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   bool has_robustness_extension_;
   GLenum reset_status_;
-
-  bool needs_mac_nvidia_driver_workaround_;
-  bool needs_glsl_built_in_function_emulation_;
 
   // These flags are used to override the state of the shared feature_info_
   // member.  Because the same FeatureInfo instance may be shared among many
@@ -1937,8 +1942,6 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       frame_number_(0),
       has_robustness_extension_(false),
       reset_status_(GL_NO_ERROR),
-      needs_mac_nvidia_driver_workaround_(false),
-      needs_glsl_built_in_function_emulation_(false),
       force_webgl_glsl_validation_(false),
       derivatives_explicitly_enabled_(false),
       compile_shader_always_succeeds_(false),
@@ -1961,8 +1964,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
   // empty string to CompileShader and this is not a valid shader.
   // TODO(apatrick): fix this test.
   if ((gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
-       !feature_info_->feature_flags().chromium_webglsl &&
-       !force_webgl_glsl_validation_) ||
+       !features().chromium_webglsl && !force_webgl_glsl_validation_) ||
       gfx::GetGLImplementation() == gfx::kGLImplementationMockGL ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGLSLTranslator)) {
@@ -2049,12 +2051,12 @@ bool GLES2DecoderImpl::Initialize(
     glActiveTexture(GL_TEXTURE0 + tt);
     // We want the last bind to be 2D.
     TextureManager::TextureInfo* info;
-    if (feature_info_->feature_flags().oes_egl_image_external) {
+    if (features().oes_egl_image_external) {
       info = texture_manager()->GetDefaultTextureInfo(GL_TEXTURE_EXTERNAL_OES);
       state_.texture_units[tt].bound_texture_external_oes = info;
       glBindTexture(GL_TEXTURE_EXTERNAL_OES, info->service_id());
     }
-    if (feature_info_->feature_flags().arb_texture_rectangle) {
+    if (features().arb_texture_rectangle) {
       info = texture_manager()->GetDefaultTextureInfo(GL_TEXTURE_RECTANGLE_ARB);
       state_.texture_units[tt].bound_texture_rectangle_arb = info;
       glBindTexture(GL_TEXTURE_RECTANGLE_ARB, info->service_id());
@@ -2227,15 +2229,6 @@ bool GLES2DecoderImpl::Initialize(
       context->HasExtension("GL_ARB_robustness") ||
       context->HasExtension("GL_EXT_robustness");
 
-  if (!feature_info_->feature_flags().disable_workarounds) {
-#if defined(OS_MACOSX)
-    needs_mac_nvidia_driver_workaround_ =
-        feature_info_->feature_flags().is_nvidia;
-    needs_glsl_built_in_function_emulation_ =
-        feature_info_->feature_flags().is_amd;
-#endif
-  }
-
   if (!InitializeShaderTranslator()) {
     return false;
   }
@@ -2299,14 +2292,9 @@ bool GLES2DecoderImpl::Initialize(
   // AMD and Intel drivers on Mac OS apparently get gl_PointCoord
   // backward from the spec and this setting makes them work
   // correctly. rdar://problem/11883495
-#if defined(OS_MACOSX)
-  if (!feature_info_->feature_flags().disable_workarounds &&
-      (feature_info_->feature_flags().is_amd ||
-       feature_info_->feature_flags().is_intel) &&
-      gfx::GetGLImplementation() == gfx::kGLImplementationDesktopGL) {
+  if (feature_info_->workarounds().reverse_point_sprite_coord_origin) {
     glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT);
   }
-#endif
 
   return true;
 }
@@ -2323,8 +2311,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
 
   // Re-check the state of use_shader_translator_ each time this is called.
   if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
-      (feature_info_->feature_flags().chromium_webglsl ||
-       force_webgl_glsl_validation_) &&
+      (features().chromium_webglsl || force_webgl_glsl_validation_) &&
       !use_shader_translator_) {
     use_shader_translator_ = true;
   }
@@ -2349,21 +2336,20 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
     resources.OES_standard_derivatives = derivatives_explicitly_enabled_;
   } else {
     resources.OES_standard_derivatives =
-        feature_info_->feature_flags().oes_standard_derivatives ? 1 : 0;
+        features().oes_standard_derivatives ? 1 : 0;
     resources.ARB_texture_rectangle =
-        feature_info_->feature_flags().arb_texture_rectangle ? 1 : 0;
+        features().arb_texture_rectangle ? 1 : 0;
     resources.OES_EGL_image_external =
-        feature_info_->feature_flags().oes_egl_image_external ? 1 : 0;
+        features().oes_egl_image_external ? 1 : 0;
   }
 
   ShShaderSpec shader_spec = force_webgl_glsl_validation_ ||
-      feature_info_->feature_flags().chromium_webglsl ?
-          SH_WEBGL_SPEC : SH_GLES2_SPEC;
+      features().chromium_webglsl ? SH_WEBGL_SPEC : SH_GLES2_SPEC;
   ShaderTranslatorInterface::GlslImplementationType implementation_type =
       gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 ?
           ShaderTranslatorInterface::kGlslES : ShaderTranslatorInterface::kGlsl;
   ShaderTranslatorInterface::GlslBuiltInFunctionBehavior function_behavior =
-      needs_glsl_built_in_function_emulation_ ?
+      workarounds().needs_glsl_built_in_function_emulation ?
           ShaderTranslatorInterface::kGlslBuiltInFunctionEmulated :
           ShaderTranslatorInterface::kGlslBuiltInFunctionOriginal;
 
@@ -2463,7 +2449,7 @@ void GLES2DecoderImpl::DeleteBuffersHelper(
 void GLES2DecoderImpl::DeleteFramebuffersHelper(
     GLsizei n, const GLuint* client_ids) {
   bool supports_separate_framebuffer_binds =
-     feature_info_->feature_flags().chromium_framebuffer_multisample;
+     features().chromium_framebuffer_multisample;
 
   for (GLsizei ii = 0; ii < n; ++ii) {
     FramebufferManager::FramebufferInfo* framebuffer =
@@ -2490,7 +2476,7 @@ void GLES2DecoderImpl::DeleteFramebuffersHelper(
 void GLES2DecoderImpl::DeleteRenderbuffersHelper(
     GLsizei n, const GLuint* client_ids) {
   bool supports_separate_framebuffer_binds =
-     feature_info_->feature_flags().chromium_framebuffer_multisample;
+     features().chromium_framebuffer_multisample;
   for (GLsizei ii = 0; ii < n; ++ii) {
     RenderbufferManager::RenderbufferInfo* renderbuffer =
         GetRenderbufferInfo(client_ids[ii]);
@@ -2523,7 +2509,7 @@ void GLES2DecoderImpl::DeleteRenderbuffersHelper(
 void GLES2DecoderImpl::DeleteTexturesHelper(
     GLsizei n, const GLuint* client_ids) {
   bool supports_separate_framebuffer_binds =
-     feature_info_->feature_flags().chromium_framebuffer_multisample;
+     features().chromium_framebuffer_multisample;
   for (GLsizei ii = 0; ii < n; ++ii) {
     TextureManager::TextureInfo* texture = GetTextureInfo(client_ids[ii]);
     if (texture && !texture->IsDeleted()) {
@@ -2605,7 +2591,7 @@ static void RebindCurrentFramebuffer(
 void GLES2DecoderImpl::RestoreCurrentFramebufferBindings() {
   state_dirty_ = true;
 
-  if (!feature_info_->feature_flags().chromium_framebuffer_multisample) {
+  if (!features().chromium_framebuffer_multisample) {
     RebindCurrentFramebuffer(
         GL_FRAMEBUFFER,
         state_.bound_draw_framebuffer.get(),
@@ -2684,7 +2670,7 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
 }
 
 bool GLES2DecoderImpl::CheckBoundFramebuffersValid(const char* func_name) {
-  if (!feature_info_->feature_flags().chromium_framebuffer_multisample) {
+  if (!features().chromium_framebuffer_multisample) {
     return CheckFramebufferValid(
         state_.bound_draw_framebuffer, GL_FRAMEBUFFER_EXT, func_name);
   }
@@ -3586,11 +3572,11 @@ void GLES2DecoderImpl::DoGenerateMipmap(GLenum target) {
   // to be that if the filtering mode is set to something that doesn't require
   // mipmaps for rendering, or is never set to something other than the default,
   // then glGenerateMipmap misbehaves.
-  if (!feature_info_->feature_flags().disable_workarounds) {
+  if (workarounds().set_texture_filter_before_generating_mipmap) {
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
   }
   glGenerateMipmapEXT(target);
-  if (!feature_info_->feature_flags().disable_workarounds) {
+  if (workarounds().set_texture_filter_before_generating_mipmap) {
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, info->min_filter());
   }
   GLenum error = PeekGLError();
@@ -4605,7 +4591,7 @@ void GLES2DecoderImpl::DoBlitFramebufferEXT(
     GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1,
     GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1,
     GLbitfield mask, GLenum filter) {
-  if (!feature_info_->feature_flags().chromium_framebuffer_multisample) {
+  if (!features().chromium_framebuffer_multisample) {
     SetGLError(GL_INVALID_OPERATION,
                "glBlitFramebufferEXT", "function not available");
   }
@@ -4622,7 +4608,7 @@ void GLES2DecoderImpl::DoBlitFramebufferEXT(
 void GLES2DecoderImpl::DoRenderbufferStorageMultisample(
     GLenum target, GLsizei samples, GLenum internalformat,
     GLsizei width, GLsizei height) {
-  if (!feature_info_->feature_flags().chromium_framebuffer_multisample) {
+  if (!features().chromium_framebuffer_multisample) {
     SetGLError(GL_INVALID_OPERATION,
                "glRenderbufferStorageMultisampleEXT", "function not available");
     return;
@@ -4747,12 +4733,10 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program) {
                  fragment_translator,
                  feature_info_)) {
     if (info == state_.current_program.get()) {
-      if (!feature_info_->feature_flags().disable_workarounds) {
-        if (feature_info_->feature_flags().is_nvidia) {
-          glUseProgram(info->service_id());
-        }
-        program_manager()->ClearUniforms(info);
+      if (workarounds().use_current_program_after_successful_link) {
+        glUseProgram(info->service_id());
       }
+      program_manager()->ClearUniforms(info);
     }
   }
 };
@@ -5663,7 +5647,7 @@ error::Error GLES2DecoderImpl::HandleDrawArrays(
 
 error::Error GLES2DecoderImpl::HandleDrawArraysInstancedANGLE(
     uint32 immediate_data_size, const gles2::DrawArraysInstancedANGLE& c) {
-  if (!feature_info_->feature_flags().angle_instanced_arrays) {
+  if (!features().angle_instanced_arrays) {
     SetGLError(GL_INVALID_OPERATION,
                "glDrawArraysInstancedANGLE", "function not available");
     return error::kNoError;
@@ -5783,7 +5767,7 @@ error::Error GLES2DecoderImpl::HandleDrawElements(
 
 error::Error GLES2DecoderImpl::HandleDrawElementsInstancedANGLE(
     uint32 immediate_data_size, const gles2::DrawElementsInstancedANGLE& c) {
-  if (!feature_info_->feature_flags().angle_instanced_arrays) {
+  if (!features().angle_instanced_arrays) {
     SetGLError(GL_INVALID_OPERATION,
                "glDrawElementsInstancedANGLE", "function not available");
     return error::kNoError;
@@ -6376,7 +6360,7 @@ void GLES2DecoderImpl::DoViewport(GLint x, GLint y, GLsizei width,
 
 error::Error GLES2DecoderImpl::HandleVertexAttribDivisorANGLE(
     uint32 immediate_data_size, const gles2::VertexAttribDivisorANGLE& c) {
-  if (!feature_info_->feature_flags().angle_instanced_arrays) {
+  if (!features().angle_instanced_arrays) {
     SetGLError(GL_INVALID_OPERATION,
                "glVertexAttribDivisorANGLE", "function not available");
   }
@@ -6502,7 +6486,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
     GLenum read_format = GetBoundReadFrameBufferInternalFormat();
     uint32 channels_exist = GLES2Util::GetChannelsForFormat(read_format);
     if ((channels_exist & 0x0008) == 0 &&
-        !feature_info_->feature_flags().disable_workarounds) {
+        workarounds().clear_alpha_in_readpixels) {
       // Set the alpha to 255 because some drivers are buggy in this regard.
       uint32 temp_size;
 
@@ -8303,7 +8287,7 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
       // Workaround for NVIDIA driver bug on OS X; crbug.com/89557,
       // crbug.com/94163. TODO(kbr): figure out reproduction so Apple will
       // fix this.
-      if (needs_mac_nvidia_driver_workaround_) {
+      if (workarounds().needs_offscreen_buffer_workaround) {
         offscreen_saved_frame_buffer_->Create();
         glFinish();
       }
@@ -8451,10 +8435,8 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
     return error::kInvalidArguments;
   }
 
-  bool std_derivatives_enabled =
-      feature_info_->feature_flags().oes_standard_derivatives;
-  bool webglsl_enabled =
-      feature_info_->feature_flags().chromium_webglsl;
+  bool std_derivatives_enabled = features().oes_standard_derivatives;
+  bool webglsl_enabled = features().chromium_webglsl;
 
   feature_info_->AddFeatures(feature_str.c_str());
 
@@ -8469,10 +8451,8 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
 
   // If we just enabled a feature which affects the shader translator,
   // we may need to re-initialize it.
-  if (std_derivatives_enabled !=
-          feature_info_->feature_flags().oes_standard_derivatives ||
-      webglsl_enabled !=
-          feature_info_->feature_flags().chromium_webglsl ||
+  if (std_derivatives_enabled != features().oes_standard_derivatives ||
+      webglsl_enabled != features().chromium_webglsl ||
       initialization_required) {
     InitializeShaderTranslator();
   }
@@ -8655,7 +8635,7 @@ error::Error GLES2DecoderImpl::HandleBeginQueryEXT(
     case GL_LATENCY_QUERY_CHROMIUM:
       break;
     default:
-      if (!feature_info_->feature_flags().occlusion_query_boolean) {
+      if (!features().occlusion_query_boolean) {
         SetGLError(GL_INVALID_OPERATION, "glBeginQueryEXT", "not enabled");
         return error::kNoError;
       }
@@ -8745,7 +8725,7 @@ bool GLES2DecoderImpl::GenVertexArraysOESHelper(
     }
   }
 
-  if (!feature_info_->feature_flags().native_vertex_array_object_) {
+  if (!features().native_vertex_array_object) {
     // Emulated VAO
     for (GLsizei ii = 0; ii < n; ++ii) {
       CreateVertexAttribManager(client_ids[ii], 0);
@@ -8800,7 +8780,7 @@ void GLES2DecoderImpl::DoBindVertexArrayOES(GLuint client_id) {
   // Only set the VAO state if it's changed
   if (state_.vertex_attrib_manager != vao) {
     state_.vertex_attrib_manager = vao;
-    if (!feature_info_->feature_flags().native_vertex_array_object_) {
+    if (!features().native_vertex_array_object) {
       EmulateVertexArrayState();
     } else {
       glBindVertexArrayOES(service_id);
@@ -8831,7 +8811,7 @@ bool GLES2DecoderImpl::DoIsVertexArrayOES(GLuint client_id) {
 error::Error GLES2DecoderImpl::HandleCreateStreamTextureCHROMIUM(
     uint32 immediate_data_size,
     const gles2::CreateStreamTextureCHROMIUM& c) {
-  if (!feature_info_->feature_flags().chromium_stream_texture) {
+  if (!features().chromium_stream_texture) {
     SetGLError(GL_INVALID_OPERATION,
                "glOpenStreamTextureCHROMIUM", ""
                "not supported.");

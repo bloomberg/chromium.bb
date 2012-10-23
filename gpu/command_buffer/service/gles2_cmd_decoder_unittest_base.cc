@@ -986,7 +986,7 @@ void GLES2DecoderTestBase::DoVertexAttribDivisorANGLE(
 }
 
 void GLES2DecoderTestBase::AddExpectationsForGenVertexArraysOES(){
-  if (group_->feature_info()->feature_flags().native_vertex_array_object_) {
+  if (group_->feature_info()->feature_flags().native_vertex_array_object) {
       EXPECT_CALL(*gl_, GenVertexArraysOES(1, _))
           .WillOnce(SetArgumentPointee<1>(kServiceVertexArrayId))
           .RetiresOnSaturation();
@@ -994,7 +994,7 @@ void GLES2DecoderTestBase::AddExpectationsForGenVertexArraysOES(){
 }
 
 void GLES2DecoderTestBase::AddExpectationsForDeleteVertexArraysOES(){
-  if (group_->feature_info()->feature_flags().native_vertex_array_object_) {
+  if (group_->feature_info()->feature_flags().native_vertex_array_object) {
       EXPECT_CALL(*gl_, DeleteVertexArraysOES(1, _))
           .Times(1)
           .RetiresOnSaturation();
@@ -1002,7 +1002,7 @@ void GLES2DecoderTestBase::AddExpectationsForDeleteVertexArraysOES(){
 }
 
 void GLES2DecoderTestBase::AddExpectationsForBindVertexArrayOES() {
-  if (group_->feature_info()->feature_flags().native_vertex_array_object_) {
+  if (group_->feature_info()->feature_flags().native_vertex_array_object) {
     EXPECT_CALL(*gl_, BindVertexArrayOES(_))
       .Times(1)
       .RetiresOnSaturation();

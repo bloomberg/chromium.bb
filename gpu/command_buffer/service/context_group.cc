@@ -139,34 +139,16 @@ bool ContextGroup::Initialize(const DisallowedFeatures& disallowed_features,
     return false;
   }
 
-  // Limit Intel on Mac to 4096 max tex size and 1024 max cube map tex size.
-  // Limit AMD on Mac to 4096 max tex size and max cube map tex size.
-  // TODO(gman): Update this code to check for a specific version of
-  // the drivers above which we no longer need this fix.
-#if defined(OS_MACOSX)
-  if (!feature_info_->feature_flags().disable_workarounds) {
-    if (feature_info_->feature_flags().is_intel) {
-      max_texture_size = std::min(
-          static_cast<GLint>(4096), max_texture_size);
-
-      GLint cubemap_size_limit = 1024;
-      // Cubemaps > 512 in size were broken before 10.7.3.
-      int32 major, minor, bugfix;
-      base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
-      if (major < 10 ||
-          (major == 10 && ((minor == 7 && bugfix < 3) || (minor < 7))))
-        cubemap_size_limit = 512;
-      max_cube_map_texture_size = std::min(
-          cubemap_size_limit, max_cube_map_texture_size);
-    }
-    if (feature_info_->feature_flags().is_amd) {
-      max_texture_size = std::min(
-          static_cast<GLint>(4096), max_texture_size);
-      max_cube_map_texture_size = std::min(
-          static_cast<GLint>(4096), max_cube_map_texture_size);
-    }
+  if (feature_info_->workarounds().max_texture_size) {
+    max_texture_size = std::min(
+        max_texture_size, feature_info_->workarounds().max_texture_size);
   }
-#endif
+  if (feature_info_->workarounds().max_cube_map_texture_size) {
+    max_cube_map_texture_size = std::min(
+        max_cube_map_texture_size,
+        feature_info_->workarounds().max_cube_map_texture_size);
+  }
+
   texture_manager_.reset(new TextureManager(memory_tracker_,
                                             feature_info_.get(),
                                             max_texture_size,

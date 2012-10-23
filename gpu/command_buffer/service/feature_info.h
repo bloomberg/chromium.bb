@@ -8,6 +8,7 @@
 #include <string>
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
+#include "base/sys_info.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
 #include "gpu/gpu_export.h"
@@ -38,12 +39,24 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool occlusion_query_boolean;
     bool use_arb_occlusion_query2_for_occlusion_query_boolean;
     bool use_arb_occlusion_query_for_occlusion_query_boolean;
-    bool native_vertex_array_object_;
+    bool native_vertex_array_object;
     bool disable_workarounds;
-    bool is_intel;
-    bool is_nvidia;
-    bool is_amd;
-    bool is_mesa;
+  };
+
+  struct Workarounds {
+    Workarounds();
+
+    bool clear_alpha_in_readpixels;
+    bool clear_uniforms_before_program_use;
+    bool needs_glsl_built_in_function_emulation;
+    bool needs_offscreen_buffer_workaround;
+    bool reverse_point_sprite_coord_origin;
+    bool set_texture_filter_before_generating_mipmap;
+    bool use_current_program_after_successful_link;
+
+    // Note: 0 here means use driver limit.
+    GLint max_texture_size;
+    GLint max_cube_map_texture_size;
   };
 
   FeatureInfo();
@@ -74,6 +87,10 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     return feature_flags_;
   }
 
+  const Workarounds& workarounds() const {
+    return workarounds_;
+  }
+
  private:
   friend class base::RefCounted<FeatureInfo>;
 
@@ -93,6 +110,9 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
 
   // Flags for some features
   FeatureFlags feature_flags_;
+
+  // Flags for Workarounds.
+  Workarounds workarounds_;
 
   DISALLOW_COPY_AND_ASSIGN(FeatureInfo);
 };

@@ -80,12 +80,19 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       occlusion_query_boolean(false),
       use_arb_occlusion_query2_for_occlusion_query_boolean(false),
       use_arb_occlusion_query_for_occlusion_query_boolean(false),
-      native_vertex_array_object_(false),
-      disable_workarounds(false),
-      is_intel(false),
-      is_nvidia(false),
-      is_amd(false),
-      is_mesa(false) {
+      native_vertex_array_object(false),
+      disable_workarounds(false) {
+}
+
+FeatureInfo::Workarounds::Workarounds()
+    : clear_alpha_in_readpixels(false),
+      needs_glsl_built_in_function_emulation(false),
+      needs_offscreen_buffer_workaround(false),
+      reverse_point_sprite_coord_origin(false),
+      set_texture_filter_before_generating_mipmap(false),
+      use_current_program_after_successful_link(false),
+      max_texture_size(0),
+      max_cube_map_texture_size(0) {
 }
 
 FeatureInfo::FeatureInfo() {
@@ -198,17 +205,20 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
     GL_VENDOR,
     GL_RENDERER,
   };
+  bool is_intel = false;
+  bool is_nvidia = false;
+  bool is_amd = false;
+  bool is_mesa = false;
   for (size_t ii = 0; ii < arraysize(string_ids); ++ii) {
     const char* str = reinterpret_cast<const char*>(
           glGetString(string_ids[ii]));
     if (str) {
       std::string lstr(StringToLowerASCII(std::string(str)));
       StringSet string_set(lstr);
-      feature_flags_.is_intel |= string_set.Contains("intel");
-      feature_flags_.is_nvidia |= string_set.Contains("nvidia");
-      feature_flags_.is_amd |=
-          string_set.Contains("amd") || string_set.Contains("ati");
-      feature_flags_.is_mesa |= string_set.Contains("mesa");
+      is_intel |= string_set.Contains("intel");
+      is_nvidia |= string_set.Contains("nvidia");
+      is_amd |= string_set.Contains("amd") || string_set.Contains("ati");
+      is_mesa |= string_set.Contains("mesa");
     }
   }
 
@@ -351,7 +361,7 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
     if (ext.Have("GL_OES_vertex_array_object") ||
         ext.Have("GL_ARB_vertex_array_object") ||
         ext.Have("GL_APPLE_vertex_array_object")) {
-      feature_flags_.native_vertex_array_object_ = true;
+      feature_flags_.native_vertex_array_object = true;
     }
 
     // OES_vertex_array_object is emulated if not present natively,
@@ -607,7 +617,7 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
 #if defined(OS_LINUX)
   if (!feature_flags_.disable_workarounds) {
     // Intel drivers on Linux appear to be buggy.
-    ext_occlusion_query_disallowed = feature_flags_.is_intel;
+    ext_occlusion_query_disallowed = is_intel;
   }
 #endif
 
@@ -636,6 +646,47 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
 
   if (!disallowed_features_.swap_buffer_complete_callback)
     AddExtensionString("GL_CHROMIUM_swapbuffers_complete_callback");
+
+  if (!feature_flags_.disable_workarounds) {
+    workarounds_.set_texture_filter_before_generating_mipmap = true;
+    workarounds_.clear_alpha_in_readpixels = true;
+
+    if (is_nvidia) {
+      workarounds_.use_current_program_after_successful_link = true;
+    }
+
+#if defined(OS_MACOSX)
+    workarounds_.needs_offscreen_buffer_workaround = is_nvidia;
+    workarounds_.needs_glsl_built_in_function_emulation = is_amd;
+
+    if ((is_amd || is_intel) &&
+        gfx::GetGLImplementation() == gfx::kGLImplementationDesktopGL) {
+      workarounds_.reverse_point_sprite_coord_origin = true;
+    }
+
+    // Limit Intel on Mac to 4096 max tex size and 1024 max cube map tex size.
+    // Limit AMD on Mac to 4096 max tex size and max cube map tex size.
+    // TODO(gman): Update this code to check for a specific version of
+    // the drivers above which we no longer need this fix.
+    if (is_intel) {
+      workarounds_.max_texture_size = 4096;
+      workarounds_.max_cube_map_texture_size = 1024;
+      // Cubemaps > 512 in size were broken before 10.7.3.
+      int32 major = 0;
+      int32 minor = 0;
+      int32 bugfix = 0;
+      base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
+      if (major < 10 ||
+          (major == 10 && ((minor == 7 && bugfix < 3) || (minor < 7))))
+        workarounds_.max_cube_map_texture_size = 512;
+    }
+
+    if (is_amd) {
+      workarounds_.max_texture_size = 4096;
+      workarounds_.max_cube_map_texture_size = 4096;
+    }
+#endif
+  }
 }
 
 void FeatureInfo::AddExtensionString(const std::string& str) {
