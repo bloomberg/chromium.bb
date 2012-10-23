@@ -64,7 +64,6 @@
 class CommandLine;
 class PepperDeviceTest;
 class SkBitmap;
-class WebUIBindings;
 struct PP_NetAddress_Private;
 struct ViewMsg_Navigate_Params;
 struct ViewMsg_PostMessage_Params;
@@ -160,6 +159,7 @@ class RenderWidgetFullscreenPepper;
 class SpeechRecognitionDispatcher;
 class WebIntentsHost;
 class WebPluginDelegateProxy;
+class WebUIBindings;
 struct CustomContextMenuContext;
 struct FileChooserParams;
 

@@ -8,6 +8,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabase.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
+namespace content {
+
 DBMessageFilter::DBMessageFilter() {
 }
 
@@ -51,3 +53,5 @@ void DBMessageFilter::OnDatabaseCloseImmediately(
   WebKit::WebDatabase::closeDatabaseImmediately(
       origin_identifier, database_name);
 }
+
+}  // namespace content

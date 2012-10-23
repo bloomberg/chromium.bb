@@ -24,7 +24,6 @@ namespace content {
 V8ValueConverter* V8ValueConverter::create() {
   return new V8ValueConverterImpl();
 }
-}  // namespace content
 
 V8ValueConverterImpl::V8ValueConverterImpl()
     : date_allowed_(false),
@@ -371,3 +370,5 @@ Value* V8ValueConverterImpl::FromV8Object(
 
   return result.release();
 }
+
+}  // namespace content

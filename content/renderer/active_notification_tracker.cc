@@ -12,6 +12,8 @@
 using WebKit::WebNotification;
 using WebKit::WebNotificationPermissionCallback;
 
+namespace content {
+
 ActiveNotificationTracker::ActiveNotificationTracker() {}
 
 ActiveNotificationTracker::~ActiveNotificationTracker() {}
@@ -87,3 +89,5 @@ int ActiveNotificationTracker::RegisterPermissionRequest(
 void ActiveNotificationTracker::OnPermissionRequestComplete(int id) {
   callback_table_.Remove(id);
 }
+
+}  // namespace content

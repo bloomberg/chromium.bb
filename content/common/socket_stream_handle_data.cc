@@ -9,6 +9,8 @@
 using webkit_glue::WebSocketStreamHandleImpl;
 using WebKit::WebSocketStreamHandle;
 
+namespace content {
+
 // static
 void SocketStreamHandleData::AddToHandle(
     WebSocketStreamHandle* handle, int render_view_id) {
@@ -30,3 +32,5 @@ const SocketStreamHandleData* SocketStreamHandleData::ForHandle(
       static_cast<WebSocketStreamHandleImpl*>(handle);
   return static_cast<SocketStreamHandleData*>(impl->GetUserData(handle));
 }
+
+}  // namespace content

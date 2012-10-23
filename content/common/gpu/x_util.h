@@ -13,6 +13,8 @@
 
 #if defined(USE_X11)
 
+namespace content {
+
 // Forward declares ------------------------------------------------------------
 //
 // X Windows headers do a lot of evil stuff, like "#define Status int" which
@@ -40,6 +42,8 @@ class ScopedPtrXFree {
  public:
   void operator()(void* x) const;
 };
+
+}  // namespace content
 
 #endif  // USE_X11
 

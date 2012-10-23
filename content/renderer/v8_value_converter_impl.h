@@ -18,7 +18,9 @@ class ListValue;
 class Value;
 }
 
-class CONTENT_EXPORT V8ValueConverterImpl : public content::V8ValueConverter {
+namespace content {
+
+class CONTENT_EXPORT V8ValueConverterImpl : public V8ValueConverter {
  public:
   V8ValueConverterImpl();
 
@@ -67,5 +69,7 @@ class CONTENT_EXPORT V8ValueConverterImpl : public content::V8ValueConverter {
   // into Values.
   bool strip_null_from_objects_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_V8_VALUE_CONVERTER_IMPL_H_

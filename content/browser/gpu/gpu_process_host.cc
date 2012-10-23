@@ -50,6 +50,7 @@ using content::BrowserThread;
 using content::ChildProcessHost;
 using content::GpuChildThread;
 using content::GpuProcess;
+using content::GpuSurfaceTracker;
 using content::RenderProcessHost;
 using content::RenderWidgetHelper;
 using content::RenderWidgetHost;

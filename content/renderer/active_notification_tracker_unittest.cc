@@ -5,6 +5,8 @@
 #include "content/renderer/active_notification_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace content {
+
 TEST(ActiveNotificationTrackerTest, TestLookupAndClear) {
   ActiveNotificationTracker tracker;
 
@@ -23,3 +25,5 @@ TEST(ActiveNotificationTrackerTest, TestLookupAndClear) {
 
   tracker.Clear();
 }
+
+}  // namespace content

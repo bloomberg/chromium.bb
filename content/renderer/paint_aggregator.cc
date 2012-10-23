@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 
+namespace content {
+
 // ----------------------------------------------------------------------------
 // ALGORITHM NOTES
 //
@@ -281,3 +283,5 @@ void PaintAggregator::CombinePaintRects() {
     update_.paint_rects.push_back(outer);
   }
 }
+
+}  // namespace content

@@ -45,6 +45,7 @@ using ::base::files::FilePathWatcher;
 #endif
 
 using content::BrowserThread;
+using content::PepperPluginRegistry;
 using content::PluginService;
 using content::PluginServiceFilter;
 

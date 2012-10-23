@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 
+namespace content {
+
 GpuSurfaceTracker::GpuSurfaceTracker()
     : next_surface_id_(1) {
   GpuSurfaceLookup::InitInstance(this);
@@ -104,3 +106,5 @@ gfx::AcceleratedWidget GpuSurfaceTracker::GetNativeWidget(int surface_id) {
     return gfx::kNullAcceleratedWidget;
   return it->second.native_widget;
 }
+
+}  // namespace content

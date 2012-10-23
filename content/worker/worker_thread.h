@@ -9,12 +9,12 @@
 
 #include "content/common/child_thread.h"
 
-class DBMessageFilter;
 class WebDatabaseObserverImpl;
 struct WorkerProcessMsg_CreateWorker_Params;
 
 namespace content {
 class AppCacheDispatcher;
+class DBMessageFilter;
 class IndexedDBMessageFilter;
 class WebSharedWorkerStub;
 class WorkerWebKitPlatformSupportImpl;

@@ -17,6 +17,8 @@ namespace WebKit {
 class WebNotificationPermissionCallback;
 }
 
+namespace content {
+
 // This class manages the set of active Notification objects in either
 // a render or worker process.  This class should be accessed only on
 // the main thread.
@@ -54,5 +56,7 @@ class CONTENT_EXPORT ActiveNotificationTracker {
 
   DISALLOW_COPY_AND_ASSIGN(ActiveNotificationTracker);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_ACTIVE_NOTIFICATION_TRACKER_H_

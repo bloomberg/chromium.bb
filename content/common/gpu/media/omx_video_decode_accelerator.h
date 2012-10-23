@@ -25,6 +25,7 @@
 #include "third_party/openmax/il/OMX_Core.h"
 #include "third_party/openmax/il/OMX_Video.h"
 
+namespace content {
 class Gles2TextureToEglImageTranslator;
 
 // Class to wrap OpenMAX IL accelerator behind VideoDecodeAccelerator interface.
@@ -271,5 +272,7 @@ class CONTENT_EXPORT OmxVideoDecodeAccelerator :
   void QueuePictureBuffer(int32 picture_buffer_id);
 
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_GPU_MEDIA_OMX_VIDEO_DECODE_ACCELERATOR_H_

@@ -12,6 +12,8 @@ namespace WebKit {
 class WebSocketStreamHandle;
 }
 
+namespace content {
+
 // User data stored in each WebSocketStreamHandleImpl.
 class SocketStreamHandleData : public base::SupportsUserData::Data {
  public:
@@ -38,5 +40,7 @@ class SocketStreamHandleData : public base::SupportsUserData::Data {
 
   DISALLOW_COPY_AND_ASSIGN(SocketStreamHandleData);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_SOCKET_STREAM_HANDLE_DATA_H_

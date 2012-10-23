@@ -22,7 +22,6 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ui/gfx/native_widget_types.h"
 
-class DBMessageFilter;
 class SkBitmap;
 class WebDatabaseObserverImpl;
 struct ViewMsg_New_Params;
@@ -58,6 +57,7 @@ class AudioInputMessageFilter;
 class AudioMessageFilter;
 class AudioRendererMixerManager;
 class CompositorThread;
+class DBMessageFilter;
 class DevToolsAgentFilter;
 class DomStorageDispatcher;
 class GpuChannelHost;

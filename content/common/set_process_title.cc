@@ -27,6 +27,8 @@
 #include "content/common/set_process_title_linux.h"
 #endif  // defined(OS_LINUX)
 
+namespace content {
+
 // TODO(jrg): Find out if setproctitle or equivalent is available on Android.
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_SOLARIS) && \
   !defined(OS_ANDROID)
@@ -84,3 +86,5 @@ void SetProcessTitleFromCommandLine(const char** /* main_argv */) {
 }
 
 #endif
+
+} // namespace content

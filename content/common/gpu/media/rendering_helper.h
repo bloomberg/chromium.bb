@@ -11,7 +11,7 @@ namespace base {
 class WaitableEvent;
 }
 
-namespace video_test_util {
+namespace content {
 
 // Creates and draws textures used by the video decoder.
 // This class is not thread safe and thus all the methods of this class
@@ -57,6 +57,6 @@ class RenderingHelper {
   virtual void* GetGLDisplay() = 0;
 };
 
-}  // namespace video_test_util
+}  // namespace content
 
 #endif  // CONTENT_COMMON_GPU_MEDIA_RENDERING_HELPER_H_

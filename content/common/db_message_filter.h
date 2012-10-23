@@ -7,6 +7,8 @@
 
 #include "ipc/ipc_channel_proxy.h"
 
+namespace content {
+
 // Receives database messages from the browser process and processes them on the
 // IO thread.
 class DBMessageFilter : public IPC::ChannelProxy::MessageFilter {
@@ -29,5 +31,7 @@ class DBMessageFilter : public IPC::ChannelProxy::MessageFilter {
   void OnDatabaseCloseImmediately(const string16& origin_identifier,
                                   const string16& database_name);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_DB_MESSAGE_FILTER_H_

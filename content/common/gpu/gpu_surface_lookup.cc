@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 
+namespace content {
 namespace {
 GpuSurfaceLookup* g_instance = NULL;
 } // anonymous namespace
@@ -21,3 +22,5 @@ void GpuSurfaceLookup::InitInstance(GpuSurfaceLookup* lookup) {
   DCHECK(!g_instance || !lookup);
   g_instance = lookup;
 }
+
+}  // namespace content

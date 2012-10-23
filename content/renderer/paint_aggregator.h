@@ -11,6 +11,8 @@
 #include "content/common/content_export.h"
 #include "ui/gfx/rect.h"
 
+namespace content {
+
 // This class is responsible for aggregating multiple invalidation and scroll
 // commands to produce a scroll and repaint sequence.
 class CONTENT_EXPORT PaintAggregator {
@@ -60,5 +62,7 @@ class CONTENT_EXPORT PaintAggregator {
 
   PendingUpdate update_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_PAINT_AGGREGATOR_H_

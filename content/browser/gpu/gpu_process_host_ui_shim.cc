@@ -32,6 +32,7 @@
 #endif
 
 using content::BrowserThread;
+using content::GpuSurfaceTracker;
 using content::RenderWidgetHostImpl;
 using content::RenderWidgetHostViewPort;
 

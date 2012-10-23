@@ -11,6 +11,8 @@
 #include "base/message_pump_aurax11.h"
 #endif
 
+namespace content {
+
 // Get EGL extension functions.
 static PFNEGLCREATEIMAGEKHRPROC egl_create_image_khr =
     reinterpret_cast<PFNEGLCREATEIMAGEKHRPROC>(
@@ -114,3 +116,5 @@ void Gles2TextureToEglImageTranslator::DestroyEglImage(
     XFreePixmap(x_display, pixmap);
   }
 }
+
+}  // namespace content

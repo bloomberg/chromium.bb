@@ -14,6 +14,8 @@
 #include "media/base/bitstream_buffer.h"
 #include "media/video/picture.h"
 
+namespace content {
+
 // Helper typedef for input buffers.  This is used as the pAppPrivate field of
 // OMX_BUFFERHEADERTYPEs of input buffers, to point to the data associated with
 // them.
@@ -1254,3 +1256,5 @@ bool OmxVideoDecodeAccelerator::SendCommandToPort(
                         PLATFORM_FAILURE, false);
   return true;
 }
+
+}  // namespace content

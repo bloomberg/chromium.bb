@@ -5,6 +5,8 @@
 #include "content/renderer/paint_aggregator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace content {
+
 TEST(PaintAggregator, InitialState) {
   PaintAggregator greg;
   EXPECT_FALSE(greg.HasPendingUpdate());
@@ -435,3 +437,5 @@ TEST(PaintAggregator, ContainedPaintAfterScrollEliminatedByScrollDamage) {
   EXPECT_EQ(scroll_rect, update.scroll_rect);
   EXPECT_EQ(expected_scroll_damage, update.GetScrollDamage());
 }
+
+}  // namespace content

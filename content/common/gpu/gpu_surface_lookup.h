@@ -7,6 +7,8 @@
 
 #include "ui/gfx/native_widget_types.h"
 
+namespace content {
+
 // This class provides an interface to look up window surface handles
 // that cannot be sent through the IPC channel.
 class GpuSurfaceLookup {
@@ -22,5 +24,7 @@ class GpuSurfaceLookup {
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuSurfaceLookup);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_GPU_GPU_SURFACE_LOOKUP_H_

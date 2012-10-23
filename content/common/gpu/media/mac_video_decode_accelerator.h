@@ -25,6 +25,8 @@ class GLContext;
 class VideoDecodeAccelerationSupport;
 }
 
+namespace content {
+
 class GpuCommandBufferStub;
 
 class CONTENT_EXPORT MacVideoDecodeAccelerator
@@ -64,8 +66,7 @@ class CONTENT_EXPORT MacVideoDecodeAccelerator
   bool CreateDecoder(const std::vector<uint8_t>& extra_data);
 
   // Send the given NALU to the decoder.
-  void DecodeNALU(const content::H264NALU& nalu,
-                  int32 bitstream_buffer_id);
+  void DecodeNALU(const H264NALU& nalu, int32 bitstream_buffer_id);
 
   // Calls the client's initialize completed callback.
   void NotifyInitializeDone();
@@ -120,15 +121,17 @@ class CONTENT_EXPORT MacVideoDecodeAccelerator
   bool did_build_config_record_;
 
   // Parser for the H264 stream.
-  content::H264Parser h264_parser_;
+  H264Parser h264_parser_;
 
   // Utility to build the AVC configuration record.
-  content::AVCConfigRecordBuilder config_record_builder_;
+  AVCConfigRecordBuilder config_record_builder_;
 
   // Maps a bitstream ID to the number of NALUs that are being decoded for
   // that bitstream. This is used to ensure that NotifyEndOfBitstreamBuffer()
   // is called after all NALUs contained in a bitstream have been decoded.
   std::map<int32, int> bitstream_nalu_count_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_GPU_MEDIA_VIDEO_DECODE_ACCELERATOR_MAC_H_

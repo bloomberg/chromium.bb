@@ -9,6 +9,8 @@
 #include "ipc/ipc_sender.h"
 #include "webkit/glue/cpp_bound_class.h"
 
+namespace content {
+
 // A DOMBoundBrowserObject is a backing for some object bound to the window
 // in JS that knows how to dispatch messages to an associated c++ object living
 // in the browser process.
@@ -51,5 +53,7 @@ class WebUIBindings : public DOMBoundBrowserObject {
 
   DISALLOW_COPY_AND_ASSIGN(WebUIBindings);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_RENDERER_WEB_UI_BINDINGS_H_

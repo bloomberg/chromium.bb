@@ -78,7 +78,7 @@ static void DrawTexture(NSOpenGLView* gl_view,
   CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
 }
 
-namespace video_test_util {
+namespace content {
 
 class RenderingHelperMac : public RenderingHelper {
  public:
@@ -219,4 +219,4 @@ void* RenderingHelperMac::GetGLDisplay() {
   return NULL;
 }
 
-}  // namespace video_test_util
+}  // namespace content

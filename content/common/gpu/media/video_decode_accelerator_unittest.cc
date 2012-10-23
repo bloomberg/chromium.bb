@@ -54,8 +54,8 @@
 #endif  // defined(OS_WIN)
 
 using media::VideoDecodeAccelerator;
-using video_test_util::RenderingHelper;
 
+namespace content {
 namespace {
 
 // Values optionally filled in from flags; see main() below.
@@ -857,6 +857,7 @@ INSTANTIATE_TEST_CASE_P(
 // - Test frame size changes mid-stream
 
 }  // namespace
+}  // namespace content
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);  // Removes gtest-specific args.
@@ -877,7 +878,7 @@ int main(int argc, char **argv) {
   for (CommandLine::SwitchMap::const_iterator it = switches.begin();
        it != switches.end(); ++it) {
     if (it->first == "test_video_data") {
-      test_video_data = it->second.c_str();
+      content::test_video_data = it->second.c_str();
       continue;
     }
     if (it->first == "v" || it->first == "vmodule")
@@ -886,14 +887,14 @@ int main(int argc, char **argv) {
   }
 
   base::ShadowingAtExitManager at_exit_manager;
-  RenderingHelper::InitializePlatform();
+  content::RenderingHelper::InitializePlatform();
 
 #if defined(OS_WIN)
-  DXVAVideoDecodeAccelerator::PreSandboxInitialization();
+  content::DXVAVideoDecodeAccelerator::PreSandboxInitialization();
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
-  OmxVideoDecodeAccelerator::PreSandboxInitialization();
+  content::OmxVideoDecodeAccelerator::PreSandboxInitialization();
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
-  VaapiVideoDecodeAccelerator::PreSandboxInitialization();
+  content::VaapiVideoDecodeAccelerator::PreSandboxInitialization();
 #endif
 
   return RUN_ALL_TESTS();

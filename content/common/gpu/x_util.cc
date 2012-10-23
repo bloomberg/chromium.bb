@@ -6,6 +6,10 @@
 
 #include <X11/Xutil.h>
 
+namespace content {
+
 void ScopedPtrXFree::operator()(void* x) const {
   ::XFree(x);
 }
+
+}  // namespace content

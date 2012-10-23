@@ -11,11 +11,13 @@
 #include "content/public/common/pepper_plugin_info.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
+namespace content {
+
 // Constructs a PepperPluginInfo from a WebPluginInfo. Returns false if
 // the operation is not possible, in particular the WebPluginInfo::type
 // must be one of the pepper types.
 bool MakePepperPluginInfo(const webkit::WebPluginInfo& webplugin_info,
-                          content::PepperPluginInfo* pepper_info);
+                          PepperPluginInfo* pepper_info);
 
 // This class holds references to all of the known pepper plugin modules.
 //
@@ -36,7 +38,7 @@ class PepperPluginRegistry
   // plugin list every time it is called. Generally, code in the registry should
   // be using the cached plugin_list_ instead.
   CONTENT_EXPORT static void ComputeList(
-      std::vector<content::PepperPluginInfo>* plugins);
+      std::vector<PepperPluginInfo>* plugins);
 
   // Loads the (native) libraries but does not initialize them (i.e., does not
   // call PPP_InitializeModule). This is needed by the zygote on Linux to get
@@ -47,8 +49,7 @@ class PepperPluginRegistry
   // return value will be NULL if there is no such plugin.
   //
   // The returned pointer is owned by the PluginRegistry.
-  const content::PepperPluginInfo* GetInfoForPlugin(
-      const webkit::WebPluginInfo& info);
+  const PepperPluginInfo* GetInfoForPlugin(const webkit::WebPluginInfo& info);
 
   // Returns an existing loaded module for the given path. It will search for
   // both preloaded in-process or currently active (non crashed) out-of-process
@@ -70,7 +71,7 @@ class PepperPluginRegistry
   PepperPluginRegistry();
 
   // All known pepper plugins.
-  std::vector<content::PepperPluginInfo> plugin_list_;
+  std::vector<PepperPluginInfo> plugin_list_;
 
   // Plugins that have been preloaded so they can be executed in-process in
   // the renderer (the sandbox prevents on-demand loading).
@@ -89,5 +90,7 @@ class PepperPluginRegistry
 
   DISALLOW_COPY_AND_ASSIGN(PepperPluginRegistry);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_PEPPER_PLUGIN_REGISTRY_H_

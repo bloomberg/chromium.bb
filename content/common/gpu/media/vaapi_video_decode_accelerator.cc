@@ -18,6 +18,8 @@
 #include "third_party/libva/va/va.h"
 #include "ui/gl/gl_bindings.h"
 
+namespace content {
+
 #define RETURN_AND_NOTIFY_ON_FAILURE(result, log, error_code, ret)  \
   do {                                                              \
     if (!(result)) {                                                \
@@ -26,8 +28,6 @@
       return ret;                                                   \
     }                                                               \
   } while (0)
-
-using content::VaapiH264Decoder;
 
 VaapiVideoDecodeAccelerator::InputBuffer::InputBuffer() : id(0), size(0) {
 }
@@ -601,3 +601,5 @@ void VaapiVideoDecodeAccelerator::PreSandboxInitialization() {
 bool VaapiVideoDecodeAccelerator::PostSandboxInitialization() {
   return VaapiH264Decoder::PostSandboxInitialization();
 }
+
+}  // namespace content

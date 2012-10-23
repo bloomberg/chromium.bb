@@ -14,6 +14,8 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 
+namespace content {
+
 // This class is responsible for managing rendering surfaces exposed to the
 // GPU process. Every surface gets registered to this class, and gets an ID.
 // All calls to and from the GPU process, with the exception of
@@ -91,5 +93,7 @@ class GpuSurfaceTracker : public GpuSurfaceLookup {
 
   DISALLOW_COPY_AND_ASSIGN(GpuSurfaceTracker);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_GPU_GPU_SURFACE_TRACKER_H_

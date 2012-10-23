@@ -14,6 +14,8 @@
 #include "ui/surface/io_surface_support_mac.h"
 #include "ui/gfx/video_decode_acceleration_support_mac.h"
 
+namespace content {
+
 // Helper macros for dealing with failure.  If |result| evaluates false, emit
 // |log| to ERROR, register |error| with the decoder, and return |ret_val|
 // (which may be omitted for functions that return void).
@@ -127,9 +129,9 @@ void MacVideoDecodeAccelerator::Decode(
   h264_parser_.SetStream(static_cast<const uint8_t*>(memory.memory()),
                          bitstream_buffer.size());
   while (true) {
-    content::H264NALU nalu;
-    content::H264Parser::Result result = h264_parser_.AdvanceToNextNALU(&nalu);
-    if (result == content::H264Parser::kEOStream) {
+    H264NALU nalu;
+    H264Parser::Result result = h264_parser_.AdvanceToNextNALU(&nalu);
+    if (result == H264Parser::kEOStream) {
       if (bitstream_nalu_count_.count(bitstream_buffer.id()) == 0) {
         MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
             &MacVideoDecodeAccelerator::NotifyInputBufferRead,
@@ -137,7 +139,7 @@ void MacVideoDecodeAccelerator::Decode(
       }
       return;
     }
-    RETURN_ON_FAILURE(result == content::H264Parser::kOk,
+    RETURN_ON_FAILURE(result == H264Parser::kOk,
                       "Unable to parse bitstream.", UNREADABLE_INPUT,);
     if (!did_build_config_record_) {
       std::vector<uint8_t> config_record;
@@ -308,7 +310,7 @@ bool MacVideoDecodeAccelerator::CreateDecoder(
   return true;
 }
 
-void MacVideoDecodeAccelerator::DecodeNALU(const content::H264NALU& nalu,
+void MacVideoDecodeAccelerator::DecodeNALU(const H264NALU& nalu,
                                            int32 bitstream_buffer_id) {
   // Assume the NALU length field size is 4 bytes.
   const int kNALULengthFieldSize = 4;
@@ -378,3 +380,5 @@ MacVideoDecodeAccelerator::DecodedImageInfo::DecodedImageInfo() {
 
 MacVideoDecodeAccelerator::DecodedImageInfo::~DecodedImageInfo() {
 }
+
+}  // namespace content

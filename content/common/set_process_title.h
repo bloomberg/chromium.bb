@@ -5,6 +5,7 @@
 #ifndef CONTENT_COMMON_SET_PROCESS_TITLE_H_
 #define CONTENT_COMMON_SET_PROCESS_TITLE_H_
 
+namespace content {
 // Sets OS-specific process title information based on the command line. This
 // does nothing if the OS doesn't support or need this capability.
 //
@@ -20,5 +21,7 @@
 // show as "exe" instead of "chrome" or something reasonable. This function
 // will try to fix it so the "effective" command line shows up instead.
 void SetProcessTitleFromCommandLine(const char** main_argv);
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_SET_PROCESS_TITLE_H_

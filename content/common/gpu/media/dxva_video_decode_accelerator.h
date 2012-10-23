@@ -22,6 +22,8 @@
 interface IMFSample;
 interface IDirect3DSurface9;
 
+namespace content {
+
 // Class to provide a DXVA 2.0 based accelerator using the Microsoft Media
 // foundation APIs via the VideoDecodeAccelerator interface.
 // This class lives on a single thread and DCHECKs that it is never accessed
@@ -216,5 +218,7 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // Callback to set the correct gl context.
   base::Callback<bool(void)> make_context_current_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_GPU_MEDIA_DXVA_VIDEO_DECODE_ACCELERATOR_H_

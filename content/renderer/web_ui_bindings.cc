@@ -17,6 +17,7 @@
 using webkit_glue::CppArgumentList;
 using webkit_glue::CppVariant;
 
+namespace content {
 namespace {
 
 // Creates a Value which is a copy of the CppVariant |value|. All objects are
@@ -108,3 +109,5 @@ void DOMBoundBrowserObject::SetProperty(const std::string& name,
   BindProperty(name, cpp_value);
   properties_.push_back(cpp_value);
 }
+
+}  // namespace content

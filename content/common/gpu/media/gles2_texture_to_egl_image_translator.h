@@ -14,6 +14,8 @@
 #include "third_party/angle/include/GLES2/gl2.h"
 #include "third_party/angle/include/GLES2/gl2ext.h"
 
+namespace content {
+
 // Class to wrap egl-opengles related operations.
 // PPAPI will give the textures to OmxVideoDecodeAccelerator.
 // OmxVideoDecodeAccelerator will use this class to convert
@@ -37,5 +39,7 @@ class Gles2TextureToEglImageTranslator {
   ImagePixmap eglimage_pixmap_;
   DISALLOW_COPY_AND_ASSIGN(Gles2TextureToEglImageTranslator);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_GPU_MEDIA_GLES2_TEXTURE_TO_EGL_IMAGE_TRANSLATOR_H_

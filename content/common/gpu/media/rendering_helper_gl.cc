@@ -58,7 +58,7 @@ static void CreateShader(GLuint program,
   CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
 }
 
-namespace video_test_util {
+namespace content {
 
 class RenderingHelperGL : public RenderingHelper {
  public:
@@ -460,4 +460,4 @@ void RenderingHelperGL::Clear() {
 #endif
 }
 
-}  // namespace video_test_util
+}  // namespace content

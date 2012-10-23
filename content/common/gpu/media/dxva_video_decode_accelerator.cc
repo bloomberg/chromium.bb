@@ -30,6 +30,8 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_surface.h"
 
+namespace content {
+
 // We only request 5 picture buffers from the client which are used to hold the
 // decoded samples. These buffers are then reused when the client tells us that
 // it is done with the buffer.
@@ -1133,3 +1135,5 @@ void DXVAVideoDecodeAccelerator::FlushInternal() {
 
   state_ = kNormal;
 }
+
+}  // namespace content
