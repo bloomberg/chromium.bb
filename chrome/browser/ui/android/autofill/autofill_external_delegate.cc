@@ -96,14 +96,6 @@ void AutofillExternalDelegateAndroid::ApplyAutofillSuggestions(
       window_android->GetJavaObject().obj(), data_array.obj());
 }
 
-void AutofillExternalDelegateAndroid::OnQueryPlatformSpecific(
-    int query_id,
-    const FormData& form,
-    const FormFieldData& field,
-    const gfx::Rect& bounds) {
-  SetBounds(bounds);
-}
-
 void AutofillExternalDelegateAndroid::HideAutofillPopupInternal() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_AutofillExternalDelegate_closeAutofillPopup(env, java_object_.obj());

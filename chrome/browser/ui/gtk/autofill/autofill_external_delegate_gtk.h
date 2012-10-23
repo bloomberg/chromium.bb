@@ -24,11 +24,6 @@ class AutofillExternalDelegateGtk : public AutofillExternalDelegate {
  protected:
   // AutofillExternalDelegate implementations.
   virtual void HideAutofillPopupInternal() OVERRIDE;
-  virtual void OnQueryPlatformSpecific(
-      int query_id,
-      const FormData& form,
-      const FormFieldData& field,
-      const gfx::Rect& bounds) OVERRIDE;
   virtual void ApplyAutofillSuggestions(
       const std::vector<string16>& autofill_values,
       const std::vector<string16>& autofill_labels,

@@ -42,15 +42,6 @@ void AutofillExternalDelegateViews::HideAutofillPopupInternal() {
   popup_view_ = NULL;
 }
 
-void AutofillExternalDelegateViews::OnQueryPlatformSpecific(
-    int query_id,
-    const FormData& form,
-    const FormFieldData& field,
-    const gfx::Rect& bounds) {
-  CreateViewIfNeeded();
-  popup_view_->set_element_bounds(bounds);
-}
-
 void AutofillExternalDelegateViews::ApplyAutofillSuggestions(
     const std::vector<string16>& autofill_values,
     const std::vector<string16>& autofill_labels,
@@ -65,6 +56,7 @@ void AutofillExternalDelegateViews::ApplyAutofillSuggestions(
 }
 
 void AutofillExternalDelegateViews::SetBounds(const gfx::Rect& bounds) {
+  CreateViewIfNeeded();
   popup_view_->SetBoundsRect(bounds);
 }
 

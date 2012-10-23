@@ -126,12 +126,6 @@ class AutofillExternalDelegate
       const std::vector<string16>& autofill_icons,
       const std::vector<int>& autofill_unique_ids) = 0;
 
-  // Handle instance specific OnQueryCode.
-  virtual void OnQueryPlatformSpecific(int query_id,
-                                       const FormData& form,
-                                       const FormFieldData& field,
-                                       const gfx::Rect& bounds) = 0;
-
   // Handle platform-dependent hiding.
   virtual void HideAutofillPopupInternal() = 0;
 

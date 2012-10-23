@@ -18,12 +18,6 @@ void TestAutofillExternalDelegate::ApplyAutofillSuggestions(
     const std::vector<string16>& autofill_icons,
     const std::vector<int>& autofill_unique_ids) {}
 
-void TestAutofillExternalDelegate::OnQueryPlatformSpecific(
-    int query_id,
-    const FormData& form,
-    const FormFieldData& field,
-    const gfx::Rect& bounds) {}
-
 void TestAutofillExternalDelegate::HideAutofillPopupInternal() {}
 
 void TestAutofillExternalDelegate::SetBounds(const gfx::Rect& bounds) {}

@@ -3086,11 +3086,6 @@ class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
                              const gfx::Rect& bounds,
                              bool display_warning));
 
-  virtual void OnQueryPlatformSpecific(int query_id,
-                                       const FormData& form,
-                                       const FormFieldData& field,
-                                       const gfx::Rect& bounds) OVERRIDE {}
-
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillExternalDelegate);
 };

@@ -45,15 +45,11 @@ class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
       const std::vector<string16>& autofill_icons,
       const std::vector<int>& autofill_unique_ids));
 
-  MOCK_METHOD4(OnQueryPlatformSpecific,
-               void(int query_id,
-                    const FormData& form,
-                    const FormFieldData& field,
-                    const gfx::Rect& bounds));
-
   MOCK_METHOD0(ClearPreviewedForm, void());
 
   MOCK_METHOD0(HideAutofillPopup, void());
+
+  MOCK_METHOD1(SetBounds, void(const gfx::Rect& bounds));
 
  private:
   virtual void HideAutofillPopupInternal() {};
@@ -96,10 +92,7 @@ class AutofillExternalDelegateUnitTest : public TabContentsTestHarness {
     field.should_autocomplete = true;
     const gfx::Rect bounds;
 
-    EXPECT_CALL(*external_delegate_,
-                OnQueryPlatformSpecific(query_id, form, field, bounds));
-
-    // This should call OnQueryPlatform specific.
+    EXPECT_CALL(*external_delegate_, SetBounds(bounds));
     external_delegate_->OnQuery(query_id, form, field, bounds, false);
   }
 

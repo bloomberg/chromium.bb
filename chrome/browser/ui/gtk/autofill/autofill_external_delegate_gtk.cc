@@ -43,15 +43,6 @@ void AutofillExternalDelegateGtk::HideAutofillPopupInternal() {
   g_signal_handler_disconnect(toplevel, event_handler_id_);
 }
 
-void AutofillExternalDelegateGtk::OnQueryPlatformSpecific(
-    int query_id,
-    const FormData& form,
-    const FormFieldData& field,
-    const gfx::Rect& bounds) {
-  CreateViewIfNeeded();
-  view_->set_element_bounds(bounds);
-}
-
 void AutofillExternalDelegateGtk::ApplyAutofillSuggestions(
     const std::vector<string16>& autofill_values,
     const std::vector<string16>& autofill_labels,
