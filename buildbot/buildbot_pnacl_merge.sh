@@ -54,6 +54,7 @@ merge-bot() {
   echo "@@@BUILD_STEP sync-sources@@@"
   # Sync the rest of pnacl sources before doing the merge, because it
   # steps on the LLVM source
+  ${MERGE_TOOL} clean
   ${PNACL_BUILD} sync-sources
   ${MERGE_TOOL} upstream-remote-setup
   ${MERGE_TOOL} pull-upstream
@@ -91,7 +92,6 @@ merge-bot() {
   local ret=0
 
   # Merge LLVM
-  ${MERGE_TOOL} clean
   ${MERGE_TOOL} auto ${upstream_revision} || ret=$?
   if [ ${ret} -eq 55 ] ; then
     echo '@@@BUILD_STEP No changes, skipping tests@@@'
