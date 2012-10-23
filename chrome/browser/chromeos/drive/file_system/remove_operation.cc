@@ -16,10 +16,11 @@ using content::BrowserThread;
 namespace drive {
 namespace file_system {
 
-RemoveOperation::RemoveOperation(DriveServiceInterface* drive_service,
-                                 DriveCache* cache,
-                                 DriveResourceMetadata* metadata,
-                                 OperationObserver* observer)
+RemoveOperation::RemoveOperation(
+    google_apis::DriveServiceInterface* drive_service,
+    DriveCache* cache,
+    DriveResourceMetadata* metadata,
+    OperationObserver* observer)
   : drive_service_(drive_service),
     cache_(cache),
     metadata_(metadata),

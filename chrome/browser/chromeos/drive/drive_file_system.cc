@@ -116,9 +116,9 @@ class InitialLoadObserver : public DriveFileSystemObserver {
 };
 
 // The class to wait for the drive service to be ready to start operation.
-class OperationReadinessObserver : public DriveServiceObserver {
+class OperationReadinessObserver : public google_apis::DriveServiceObserver {
  public:
-  OperationReadinessObserver(DriveServiceInterface* drive_service,
+  OperationReadinessObserver(google_apis::DriveServiceInterface* drive_service,
                              const base::Closure& callback)
       : drive_service_(drive_service),
         callback_(callback) {
@@ -134,7 +134,7 @@ class OperationReadinessObserver : public DriveServiceObserver {
   }
 
  private:
-  DriveServiceInterface* drive_service_;
+  google_apis::DriveServiceInterface* drive_service_;
   base::Closure callback_;
 
   DISALLOW_COPY_AND_ASSIGN(OperationReadinessObserver);
@@ -366,7 +366,7 @@ struct DriveFileSystem::UpdateEntryParams {
 DriveFileSystem::DriveFileSystem(
     Profile* profile,
     DriveCache* cache,
-    DriveServiceInterface* drive_service,
+    google_apis::DriveServiceInterface* drive_service,
     DriveUploaderInterface* uploader,
     DriveWebAppsRegistryInterface* webapps_registry,
     base::SequencedTaskRunner* blocking_task_runner)

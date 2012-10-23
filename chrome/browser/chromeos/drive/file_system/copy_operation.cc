@@ -111,7 +111,7 @@ struct CopyOperation::StartFileUploadParams {
 };
 
 CopyOperation::CopyOperation(
-    DriveServiceInterface* drive_service,
+    google_apis::DriveServiceInterface* drive_service,
     DriveFileSystemInterface* drive_file_system,
     DriveResourceMetadata* metadata,
     DriveUploaderInterface* uploader,
@@ -360,9 +360,7 @@ void CopyOperation::MoveEntryToDirectory(
     return;
   }
 
-  metadata_->MoveEntryToDirectory(file_path,
-                                                         directory_path,
-                                                         callback);
+  metadata_->MoveEntryToDirectory(file_path, directory_path, callback);
 }
 
 void CopyOperation::NotifyAndRunFileOperationCallback(

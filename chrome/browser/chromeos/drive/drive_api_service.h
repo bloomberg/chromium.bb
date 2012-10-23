@@ -27,7 +27,7 @@ namespace drive {
 // This class provides documents feed service calls for Drive V2 API.
 // Details of API call are abstracted in each operation class and this class
 // works as a thin wrapper for the API.
-class DriveAPIService : public DriveServiceInterface,
+class DriveAPIService : public google_apis::DriveServiceInterface,
                         public google_apis::AuthServiceObserver,
                         public google_apis::OperationRegistryObserver {
  public:
@@ -38,8 +38,10 @@ class DriveAPIService : public DriveServiceInterface,
 
   // DriveServiceInterface Overrides
   virtual void Initialize(Profile* profile) OVERRIDE;
-  virtual void AddObserver(DriveServiceObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(DriveServiceObserver* observer) OVERRIDE;
+  virtual void AddObserver(
+      google_apis::DriveServiceObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(
+      google_apis::DriveServiceObserver* observer) OVERRIDE;
   virtual bool CanStartOperation() const OVERRIDE;
   virtual void CancelAll() OVERRIDE;
   virtual bool CancelForFilePath(const FilePath& file_path) OVERRIDE;
@@ -70,7 +72,7 @@ class DriveAPIService : public DriveServiceInterface,
       const FilePath& virtual_path,
       const FilePath& local_cache_path,
       const GURL& content_url,
-      DocumentExportFormat format,
+      google_apis::DocumentExportFormat format,
       const google_apis::DownloadActionCallback& callback) OVERRIDE;
   virtual void DownloadFile(
       const FilePath& virtual_path,
@@ -143,7 +145,7 @@ class DriveAPIService : public DriveServiceInterface,
 
   Profile* profile_;
   scoped_ptr<google_apis::OperationRunner> runner_;
-  ObserverList<DriveServiceObserver> observers_;
+  ObserverList<google_apis::DriveServiceObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveAPIService);
 };

@@ -112,7 +112,7 @@ void MockDriveService::DownloadDocumentStub(
     const FilePath& virtual_path,
     const FilePath& local_tmp_path,
     const GURL& content_url,
-    DocumentExportFormat format,
+    google_apis::DocumentExportFormat format,
     const google_apis::DownloadActionCallback& callback) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,

@@ -25,13 +25,13 @@ class DownloadItem;
 }
 
 namespace google_apis {
+class DriveServiceInterface;
 struct ResumeUploadResponse;
 }
 
 namespace drive {
 
 class MockDriveUploader;
-class DriveServiceInterface;
 
 // Callback to be invoked once the upload has completed.
 typedef base::Callback<void(
@@ -94,7 +94,7 @@ class DriveUploaderInterface {
 class DriveUploader : public DriveUploaderInterface {
   friend class MockDriveUploader;
  public:
-  explicit DriveUploader(DriveServiceInterface* drive_service);
+  explicit DriveUploader(google_apis::DriveServiceInterface* drive_service);
   virtual ~DriveUploader();
 
   // DriveUploaderInterface overrides.
@@ -258,7 +258,7 @@ class DriveUploader : public DriveUploaderInterface {
   // Pointers to DriveServiceInterface object owned by DriveSystemService.
   // The lifetime of this object is guaranteed to exceed that of the
   // DriveUploader instance.
-  DriveServiceInterface* drive_service_;
+  google_apis::DriveServiceInterface* drive_service_;
 
   int next_upload_id_;  // id counter.
 

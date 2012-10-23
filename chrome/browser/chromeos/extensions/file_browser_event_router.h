@@ -43,7 +43,7 @@ class FileBrowserEventRouter
       public chromeos::NetworkLibrary::NetworkManagerObserver,
       public content::NotificationObserver,
       public drive::DriveFileSystemObserver,
-      public drive::DriveServiceObserver {
+      public google_apis::DriveServiceObserver {
  public:
   // RefcountedProfileKeyedService overrides.
   virtual void ShutdownOnUIThread() OVERRIDE;

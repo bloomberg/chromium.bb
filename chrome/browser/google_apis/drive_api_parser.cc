@@ -20,6 +20,8 @@ using base::Value;
 using base::DictionaryValue;
 using base::ListValue;
 
+namespace google_apis {
+
 namespace {
 
 // Converts |url_string| to |result|.  Always returns true to be used
@@ -140,14 +142,14 @@ const char kGoogleTableMimeType[] = "application/vnd.google-apps.table";
 
 // Maps category name to enum IconCategory.
 struct AppIconCategoryMap {
-  google_apis::DriveAppIcon::IconCategory category;
+  DriveAppIcon::IconCategory category;
   const char* category_name;
 };
 
 const AppIconCategoryMap kAppIconCategoryMap[] = {
-  { google_apis::DriveAppIcon::DOCUMENT, "document" },
-  { google_apis::DriveAppIcon::APPLICATION, "application" },
-  { google_apis::DriveAppIcon::SHARED_DOCUMENT, "documentShared" },
+  { DriveAppIcon::DOCUMENT, "document" },
+  { DriveAppIcon::APPLICATION, "application" },
+  { DriveAppIcon::SHARED_DOCUMENT, "documentShared" },
 };
 
 // Checks if the JSON is expected kind.  In Drive API, JSON data structure has
@@ -163,9 +165,6 @@ bool IsResourceKindExpected(const base::Value& value,
 }
 
 }  // namespace
-
-// TODO(kochi): Rename to namespace drive. http://crbug.com/136371
-namespace google_apis {
 
 ////////////////////////////////////////////////////////////////////////////////
 // AboutResource implementation
@@ -412,15 +411,15 @@ void FileResource::RegisterJSONConverter(
   converter->RegisterCustomField<base::Time>(
       kCreatedDate,
       &FileResource::created_date_,
-      &google_apis::util::GetTimeFromString);
+      &util::GetTimeFromString);
   converter->RegisterCustomField<base::Time>(
       kModifiedByMeDate,
       &FileResource::modified_by_me_date_,
-      &google_apis::util::GetTimeFromString);
+      &util::GetTimeFromString);
   converter->RegisterCustomField<base::Time>(
       kLastViewedByMeDate,
       &FileResource::last_viewed_by_me_date_,
-      &google_apis::util::GetTimeFromString);
+      &util::GetTimeFromString);
   converter->RegisterCustomField<GURL>(kDownloadUrl,
                                        &FileResource::download_url_,
                                        GetGURLFromString);

@@ -212,7 +212,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
 
   // Updates the summary about in-flight operations.
   void UpdateInFlightOperations(
-      const drive::DriveServiceInterface* drive_service);
+      const google_apis::DriveServiceInterface* drive_service);
 
   // The number of pending ReadDirectoryByPath() calls.
   int num_pending_reads_;
@@ -301,7 +301,8 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   if (!system_service)
     return;
 
-  drive::DriveServiceInterface* drive_service = system_service->drive_service();
+  google_apis::DriveServiceInterface* drive_service =
+      system_service->drive_service();
   DCHECK(drive_service);
 
   // Update the auth status section.
@@ -468,14 +469,15 @@ void DriveInternalsWebUIHandler::OnPeriodicUpdate(const base::ListValue* args) {
   if (!system_service)
     return;
 
-  drive::DriveServiceInterface* drive_service = system_service->drive_service();
+  google_apis::DriveServiceInterface* drive_service =
+      system_service->drive_service();
   DCHECK(drive_service);
 
   UpdateInFlightOperations(drive_service);
 }
 
 void DriveInternalsWebUIHandler::UpdateInFlightOperations(
-    const drive::DriveServiceInterface* drive_service) {
+    const google_apis::DriveServiceInterface* drive_service) {
   google_apis::OperationProgressStatusList
       progress_status_list = drive_service->GetProgressStatusList();
 

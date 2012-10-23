@@ -17,7 +17,7 @@ class FilePath;
 
 namespace drive {
 
-class MockDriveService : public DriveServiceInterface {
+class MockDriveService : public google_apis::DriveServiceInterface {
  public:
   // DriveService is usually owned and created by DriveFileSystem.
   MockDriveService();
@@ -25,8 +25,9 @@ class MockDriveService : public DriveServiceInterface {
 
   // DriveServiceInterface overrides.
   MOCK_METHOD1(Initialize, void(Profile* profile));
-  MOCK_METHOD1(AddObserver, void(DriveServiceObserver* observer));
-  MOCK_METHOD1(RemoveObserver, void(DriveServiceObserver* observer));
+  MOCK_METHOD1(AddObserver, void(google_apis::DriveServiceObserver* observer));
+  MOCK_METHOD1(RemoveObserver,
+               void(google_apis::DriveServiceObserver* observer));
   MOCK_CONST_METHOD0(CanStartOperation, bool());
   MOCK_METHOD0(CancelAll, void(void));
   MOCK_METHOD1(CancelForFilePath, bool(const FilePath& file_path));
@@ -54,7 +55,7 @@ class MockDriveService : public DriveServiceInterface {
                void(const FilePath& virtual_path,
                     const FilePath& local_cache_path,
                     const GURL& content_url,
-                    DocumentExportFormat format,
+                    google_apis::DocumentExportFormat format,
                     const google_apis::DownloadActionCallback& callback));
   MOCK_METHOD3(CopyDocument,
                void(const std::string& resource_id,
@@ -146,7 +147,7 @@ class MockDriveService : public DriveServiceInterface {
       const FilePath& virtual_path,
       const FilePath& local_tmp_path,
       const GURL& content_url,
-      DocumentExportFormat format,
+      google_apis::DocumentExportFormat format,
       const google_apis::DownloadActionCallback& callback);
 
   // Will call |callback| with HTTP_SUCCESS and the current value of

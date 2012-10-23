@@ -9,7 +9,6 @@
 
 #include "chrome/browser/google_apis/operations_base.h"
 
-// TODO(kochi): Rename to namespace drive. http://crbug.com/136371
 namespace google_apis {
 
 //============================== GetAboutOperation =============================

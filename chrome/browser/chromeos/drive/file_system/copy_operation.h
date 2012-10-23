@@ -15,12 +15,15 @@
 class FilePath;
 class GURL;
 
+namespace google_apis {
+class DriveServiceInterface;
+}
+
 namespace drive {
 
 class DriveCache;
 class DriveEntryProto;
 class DriveFileSystemInterface;
-class DriveServiceInterface;
 class DriveUploaderInterface;
 
 using google_apis::DocumentEntry;
@@ -35,7 +38,7 @@ class OperationObserver;
 // metadata to reflect the new state.
 class CopyOperation {
  public:
-  CopyOperation(DriveServiceInterface* drive_service,
+  CopyOperation(google_apis::DriveServiceInterface* drive_service,
                 DriveFileSystemInterface* drive_file_system,
                 DriveResourceMetadata* metadata,
                 DriveUploaderInterface* uploader,
@@ -215,7 +218,7 @@ class CopyOperation {
       const FileOperationCallback& callback,
       std::string* resource_id);
 
-  DriveServiceInterface* drive_service_;
+  google_apis::DriveServiceInterface* drive_service_;
   DriveFileSystemInterface* drive_file_system_;
   DriveResourceMetadata* metadata_;
   DriveUploaderInterface* uploader_;

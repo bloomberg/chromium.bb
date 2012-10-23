@@ -23,13 +23,13 @@ class Value;
 
 namespace google_apis {
 class DocumentFeed;
+class DriveServiceInterface;
 }
 
 namespace drive {
 
 class DriveCache;
 class DriveFeedLoaderObserver;
-class DriveServiceInterface;
 class DriveWebAppsRegistryInterface;
 struct GetDocumentsUiState;
 struct LoadFeedParams;
@@ -96,7 +96,7 @@ class DriveFeedLoader {
  public:
   DriveFeedLoader(
       DriveResourceMetadata* resource_metadata,
-      DriveServiceInterface* drive_service,
+      google_apis::DriveServiceInterface* drive_service,
       DriveWebAppsRegistryInterface* webapps_registry,
       DriveCache* cache,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_);
@@ -232,7 +232,7 @@ class DriveFeedLoader {
       base::WeakPtr<GetDocumentsUiState> ui_state);
 
   DriveResourceMetadata* resource_metadata_;  // Not owned.
-  DriveServiceInterface* drive_service_;  // Not owned.
+  google_apis::DriveServiceInterface* drive_service_;  // Not owned.
   DriveWebAppsRegistryInterface* webapps_registry_;  // Not owned.
   DriveCache* cache_;  // Not owned.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

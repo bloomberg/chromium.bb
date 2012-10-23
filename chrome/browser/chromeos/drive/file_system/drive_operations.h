@@ -11,11 +11,14 @@
 
 class FilePath;
 
+namespace google_apis {
+class DriveServiceInterface;
+}
+
 namespace drive {
 
 class DriveCache;
 class DriveFileSystemInterface;
-class DriveServiceInterface;
 class DriveUploaderInterface;
 
 namespace file_system {
@@ -32,7 +35,7 @@ class DriveOperations {
   ~DriveOperations();
 
   // Allocates the operation objects and initializes the operation pointers.
-  void Init(DriveServiceInterface* drive_service,
+  void Init(google_apis::DriveServiceInterface* drive_service,
             DriveFileSystemInterface* drive_file_system,
             DriveCache* cache,
             DriveResourceMetadata* metadata,

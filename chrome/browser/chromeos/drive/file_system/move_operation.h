@@ -14,12 +14,15 @@
 class FilePath;
 class GURL;
 
+namespace google_apis {
+class DriveServiceInterface;
+}
+
 namespace drive {
 
 class DriveCache;
 class DriveEntryProto;
 class DriveResourceMetadata;
-class DriveServiceInterface;
 
 namespace file_system {
 
@@ -30,7 +33,7 @@ class OperationObserver;
 // metadata to reflect the new state.
 class MoveOperation {
  public:
-  MoveOperation(DriveServiceInterface* drive_service,
+  MoveOperation(google_apis::DriveServiceInterface* drive_service,
                 DriveResourceMetadata* metadata,
                 OperationObserver* observer);
   virtual ~MoveOperation();
@@ -142,7 +145,7 @@ class MoveOperation {
       DriveFileError error,
       const FilePath& moved_file_path);
 
-  DriveServiceInterface* drive_service_;
+  google_apis::DriveServiceInterface* drive_service_;
   DriveResourceMetadata* metadata_;
   OperationObserver* observer_;
 

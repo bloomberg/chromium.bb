@@ -8,6 +8,8 @@
 #include "base/stringprintf.h"
 #include "chrome/common/net/url_util.h"
 
+namespace google_apis {
+
 namespace {
 
 const char kDriveV2AboutURL[] = "https://www.googleapis.com/drive/v2/about";
@@ -20,9 +22,6 @@ const char kDriveV2FileURLFormat[] =
     "https://www.googleapis.com/drive/v2/files/%s";
 
 }  // namespace
-
-// TODO(kochi): Rename to namespace drive. http://crbug.com/136371
-namespace google_apis {
 
 //============================== GetAboutOperation =============================
 

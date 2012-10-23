@@ -58,11 +58,12 @@ void DriveAPIService::Initialize(Profile* profile) {
   runner_->operation_registry()->AddObserver(this);
 }
 
-void DriveAPIService::AddObserver(DriveServiceObserver* observer) {
+void DriveAPIService::AddObserver(google_apis::DriveServiceObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void DriveAPIService::RemoveObserver(DriveServiceObserver* observer) {
+void DriveAPIService::RemoveObserver(
+    google_apis::DriveServiceObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
@@ -169,7 +170,7 @@ void DriveAPIService::DownloadDocument(
     const FilePath& virtual_path,
     const FilePath& local_cache_path,
     const GURL& document_url,
-    DocumentExportFormat format,
+    google_apis::DocumentExportFormat format,
     const google_apis::DownloadActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -297,7 +298,8 @@ void DriveAPIService::OnOAuth2RefreshTokenChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (CanStartOperation()) {
     FOR_EACH_OBSERVER(
-        DriveServiceObserver, observers_, OnReadyToPerformOperations());
+        google_apis::DriveServiceObserver, observers_,
+        OnReadyToPerformOperations());
   }
 }
 
@@ -305,14 +307,15 @@ void DriveAPIService::OnProgressUpdate(
     const google_apis::OperationProgressStatusList& list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FOR_EACH_OBSERVER(
-      DriveServiceObserver, observers_, OnProgressUpdate(list));
+      google_apis::DriveServiceObserver, observers_, OnProgressUpdate(list));
 }
 
 void DriveAPIService::OnAuthenticationFailed(
     google_apis::GDataErrorCode error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FOR_EACH_OBSERVER(
-      DriveServiceObserver, observers_, OnAuthenticationFailed(error));
+      google_apis::DriveServiceObserver, observers_,
+      OnAuthenticationFailed(error));
 }
 
 }  // namespace drive

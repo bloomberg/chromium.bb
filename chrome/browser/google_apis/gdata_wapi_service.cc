@@ -19,7 +19,7 @@
 
 using content::BrowserThread;
 
-namespace drive {
+namespace google_apis {
 
 namespace {
 
@@ -79,7 +79,7 @@ GDataWapiService::~GDataWapiService() {
   }
 }
 
-google_apis::AuthService* GDataWapiService::auth_service_for_testing() {
+AuthService* GDataWapiService::auth_service_for_testing() {
   return runner_->auth_service();
 }
 
@@ -92,7 +92,7 @@ void GDataWapiService::Initialize(Profile* profile) {
   scopes.push_back(kUserContentScope);
   // Drive App scope is required for even WAPI v3 apps access.
   scopes.push_back(kDriveAppsScope);
-  runner_.reset(new google_apis::OperationRunner(profile, scopes));
+  runner_.reset(new OperationRunner(profile, scopes));
   runner_->Initialize();
 
   runner_->auth_service()->AddObserver(this);
@@ -123,14 +123,12 @@ bool GDataWapiService::CancelForFilePath(const FilePath& file_path) {
   return operation_registry()->CancelForFilePath(file_path);
 }
 
-google_apis::OperationProgressStatusList
-GDataWapiService::GetProgressStatusList() const {
+OperationProgressStatusList GDataWapiService::GetProgressStatusList() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return operation_registry()->GetProgressStatusList();
 }
 
-void GDataWapiService::Authenticate(
-    const google_apis::AuthStatusCallback& callback) {
+void GDataWapiService::Authenticate(const AuthStatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   runner_->Authenticate(callback);
 }
@@ -140,12 +138,12 @@ void GDataWapiService::GetDocuments(
     int64 start_changestamp,
     const std::string& search_query,
     const std::string& directory_resource_id,
-    const google_apis::GetDataCallback& callback) {
+    const GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Drive V2 API defines changestamp in int64, while DocumentsList API uses
   // int32. This narrowing should not cause any trouble.
-  google_apis::GetDocumentsOperation* operation =
+  GetDocumentsOperation* operation =
       new google_apis::GetDocumentsOperation(
           operation_registry(),
           url,
@@ -158,28 +156,27 @@ void GDataWapiService::GetDocuments(
 
 void GDataWapiService::GetDocumentEntry(
     const std::string& resource_id,
-    const google_apis::GetDataCallback& callback) {
+    const GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  google_apis::GetDocumentEntryOperation* operation =
-      new google_apis::GetDocumentEntryOperation(operation_registry(),
-                                                 resource_id,
-                                                 callback);
+  GetDocumentEntryOperation* operation =
+      new GetDocumentEntryOperation(operation_registry(),
+                                    resource_id,
+                                    callback);
   runner_->StartOperationWithRetry(operation);
 }
 
-void GDataWapiService::GetAccountMetadata(
-    const google_apis::GetDataCallback& callback) {
+void GDataWapiService::GetAccountMetadata(const GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  google_apis::GetAccountMetadataOperation* operation =
-      new google_apis::GetAccountMetadataOperation(
+  GetAccountMetadataOperation* operation =
+      new GetAccountMetadataOperation(
           operation_registry(), callback);
   runner_->StartOperationWithRetry(operation);
 }
 
 void GDataWapiService::GetApplicationInfo(
-    const google_apis::GetDataCallback& callback) {
+    const GetDataCallback& callback) {
   // For WAPI, AccountMetadata includes Drive application information.
   GetAccountMetadata(callback);
 }
@@ -189,7 +186,7 @@ void GDataWapiService::DownloadDocument(
     const FilePath& local_cache_path,
     const GURL& document_url,
     DocumentExportFormat format,
-    const google_apis::DownloadActionCallback& callback) {
+    const DownloadActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DownloadFile(
@@ -199,89 +196,89 @@ void GDataWapiService::DownloadDocument(
                                               "exportFormat",
                                               GetExportFormatParam(format)),
       callback,
-      google_apis::GetContentCallback());
+      GetContentCallback());
 }
 
 void GDataWapiService::DownloadFile(
     const FilePath& virtual_path,
     const FilePath& local_cache_path,
     const GURL& document_url,
-    const google_apis::DownloadActionCallback& download_action_callback,
-    const google_apis::GetContentCallback& get_content_callback) {
+    const DownloadActionCallback& download_action_callback,
+    const GetContentCallback& get_content_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   runner_->StartOperationWithRetry(
-      new google_apis::DownloadFileOperation(operation_registry(),
-                                             download_action_callback,
-                                             get_content_callback, document_url,
-                                             virtual_path, local_cache_path));
+      new DownloadFileOperation(operation_registry(),
+                                download_action_callback,
+                                get_content_callback, document_url,
+                                virtual_path, local_cache_path));
 }
 
 void GDataWapiService::DeleteDocument(
     const GURL& document_url,
-    const google_apis::EntryActionCallback& callback) {
+    const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   runner_->StartOperationWithRetry(
-      new google_apis::DeleteDocumentOperation(operation_registry(), callback,
-                                               document_url));
+      new DeleteDocumentOperation(operation_registry(), callback,
+                                  document_url));
 }
 
 void GDataWapiService::CreateDirectory(
     const GURL& parent_content_url,
     const FilePath::StringType& directory_name,
-    const google_apis::GetDataCallback& callback) {
+    const GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   runner_->StartOperationWithRetry(
-      new google_apis::CreateDirectoryOperation(
+      new CreateDirectoryOperation(
           operation_registry(), callback, parent_content_url, directory_name));
 }
 
 void GDataWapiService::CopyDocument(
     const std::string& resource_id,
     const FilePath::StringType& new_name,
-    const google_apis::GetDataCallback& callback) {
+    const GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   runner_->StartOperationWithRetry(
-      new google_apis::CopyDocumentOperation(operation_registry(), callback,
-                                             resource_id, new_name));
+      new CopyDocumentOperation(operation_registry(), callback,
+                                resource_id, new_name));
 }
 
 void GDataWapiService::RenameResource(
     const GURL& resource_url,
     const FilePath::StringType& new_name,
-    const google_apis::EntryActionCallback& callback) {
+    const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   runner_->StartOperationWithRetry(
-      new google_apis::RenameResourceOperation(operation_registry(), callback,
-                                               resource_url, new_name));
+      new RenameResourceOperation(operation_registry(), callback,
+                                  resource_url, new_name));
 }
 
 void GDataWapiService::AddResourceToDirectory(
     const GURL& parent_content_url,
     const GURL& resource_url,
-    const google_apis::EntryActionCallback& callback) {
+    const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   runner_->StartOperationWithRetry(
-      new google_apis::AddResourceToDirectoryOperation(operation_registry(),
-                                                       callback,
-                                                       parent_content_url,
-                                                       resource_url));
+      new AddResourceToDirectoryOperation(operation_registry(),
+                                          callback,
+                                          parent_content_url,
+                                          resource_url));
 }
 
 void GDataWapiService::RemoveResourceFromDirectory(
     const GURL& parent_content_url,
     const GURL& resource_url,
     const std::string& resource_id,
-    const google_apis::EntryActionCallback& callback) {
+    const EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   runner_->StartOperationWithRetry(
-      new google_apis::RemoveResourceFromDirectoryOperation(
+      new RemoveResourceFromDirectoryOperation(
           operation_registry(),
           callback,
           parent_content_url,
@@ -290,40 +287,38 @@ void GDataWapiService::RemoveResourceFromDirectory(
 }
 
 void GDataWapiService::InitiateUpload(
-    const google_apis::InitiateUploadParams& params,
-    const google_apis::InitiateUploadCallback& callback) {
+    const InitiateUploadParams& params,
+    const InitiateUploadCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (params.upload_location.is_empty()) {
     if (!callback.is_null())
-      callback.Run(google_apis::HTTP_BAD_REQUEST, GURL());
+      callback.Run(HTTP_BAD_REQUEST, GURL());
     return;
   }
 
   runner_->StartOperationWithRetry(
-      new google_apis::InitiateUploadOperation(
+      new InitiateUploadOperation(
           operation_registry(), callback, params));
 }
 
-void GDataWapiService::ResumeUpload(
-    const google_apis::ResumeUploadParams& params,
-    const google_apis::ResumeUploadCallback& callback) {
+void GDataWapiService::ResumeUpload(const ResumeUploadParams& params,
+                                    const ResumeUploadCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   runner_->StartOperationWithRetry(
-      new google_apis::ResumeUploadOperation(
+      new ResumeUploadOperation(
           operation_registry(), callback, params));
 }
 
-void GDataWapiService::AuthorizeApp(
-    const GURL& resource_url,
-    const std::string& app_ids,
-    const google_apis::GetDataCallback& callback) {
+void GDataWapiService::AuthorizeApp(const GURL& resource_url,
+                                    const std::string& app_ids,
+                                    const GetDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   runner_->StartOperationWithRetry(
-      new google_apis::AuthorizeAppsOperation(operation_registry(), callback,
-                                              resource_url, app_ids));
+      new AuthorizeAppsOperation(operation_registry(), callback,
+                                 resource_url, app_ids));
 }
 
 bool GDataWapiService::HasAccessToken() const {
@@ -338,7 +333,7 @@ bool GDataWapiService::HasRefreshToken() const {
   return runner_->auth_service()->HasRefreshToken();
 }
 
-google_apis::OperationRegistry* GDataWapiService::operation_registry() const {
+OperationRegistry* GDataWapiService::operation_registry() const {
   return runner_->operation_registry();
 }
 
@@ -351,17 +346,16 @@ void GDataWapiService::OnOAuth2RefreshTokenChanged() {
 }
 
 void GDataWapiService::OnProgressUpdate(
-    const google_apis::OperationProgressStatusList& list) {
+    const OperationProgressStatusList& list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FOR_EACH_OBSERVER(
       DriveServiceObserver, observers_, OnProgressUpdate(list));
 }
 
-void GDataWapiService::OnAuthenticationFailed(
-    google_apis::GDataErrorCode error) {
+void GDataWapiService::OnAuthenticationFailed(GDataErrorCode error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FOR_EACH_OBSERVER(
       DriveServiceObserver, observers_, OnAuthenticationFailed(error));
 }
 
-}  // namespace drive
+}  // namespace google_apis

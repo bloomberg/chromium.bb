@@ -29,7 +29,6 @@ class RepeatedMessageConverter;
 }  // namespace internal
 }  // namespace base
 
-// TODO(kochi): Rename to namespace drive. http://crbug.com/136371
 namespace google_apis {
 
 // About resource represents the account information about the current user.

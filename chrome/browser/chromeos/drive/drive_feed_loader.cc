@@ -216,7 +216,7 @@ struct GetDocumentsUiState {
 
 DriveFeedLoader::DriveFeedLoader(
     DriveResourceMetadata* resource_metadata,
-    DriveServiceInterface* drive_service,
+    google_apis::DriveServiceInterface* drive_service,
     DriveWebAppsRegistryInterface* webapps_registry,
     DriveCache* cache,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)

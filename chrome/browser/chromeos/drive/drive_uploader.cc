@@ -31,7 +31,7 @@ const int kMaxFileOpenTries = 5;
 
 namespace drive {
 
-DriveUploader::DriveUploader(DriveServiceInterface* drive_service)
+DriveUploader::DriveUploader(google_apis::DriveServiceInterface* drive_service)
   : drive_service_(drive_service),
     next_upload_id_(0),
     ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {

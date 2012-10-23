@@ -98,7 +98,7 @@ void DriveTaskExecutor::OnFileEntryFetched(
     return;
   }
 
-  DriveServiceInterface* drive_service =
+  google_apis::DriveServiceInterface* drive_service =
       system_service->drive_service();
 
   // Send off a request for the drive service to authorize the apps for the

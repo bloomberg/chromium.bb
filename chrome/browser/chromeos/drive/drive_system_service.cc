@@ -41,7 +41,7 @@ namespace drive {
 namespace {
 
 // Used in test to setup system service.
-DriveServiceInterface* g_test_drive_service = NULL;
+google_apis::DriveServiceInterface* g_test_drive_service = NULL;
 const std::string* g_test_cache_root = NULL;
 
 // Returns true if Drive is enabled for the given Profile.
@@ -88,7 +88,7 @@ DriveSystemService::~DriveSystemService() {
 }
 
 void DriveSystemService::Initialize(
-    DriveServiceInterface* drive_service,
+    google_apis::DriveServiceInterface* drive_service,
     const FilePath& cache_root) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -331,7 +331,7 @@ DriveSystemServiceFactory::~DriveSystemServiceFactory() {
 
 // static
 void DriveSystemServiceFactory::set_drive_service_for_test(
-    DriveServiceInterface* drive_service) {
+    google_apis::DriveServiceInterface* drive_service) {
   if (g_test_drive_service)
     delete g_test_drive_service;
   g_test_drive_service = drive_service;
@@ -352,13 +352,13 @@ ProfileKeyedService* DriveSystemServiceFactory::BuildServiceInstanceFor(
 
   DriveSystemService* service = new DriveSystemService(profile);
 
-  DriveServiceInterface* drive_service = g_test_drive_service;
+  google_apis::DriveServiceInterface* drive_service = g_test_drive_service;
   g_test_drive_service = NULL;
   if (!drive_service) {
     if (google_apis::util::IsDriveV2ApiEnabled())
       drive_service = new DriveAPIService();
     else
-      drive_service = new GDataWapiService();
+      drive_service = new google_apis::GDataWapiService();
   }
 
   FilePath cache_root =

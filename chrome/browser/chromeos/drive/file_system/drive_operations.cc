@@ -18,7 +18,7 @@ DriveOperations::~DriveOperations() {
 }
 
 void DriveOperations::Init(
-    DriveServiceInterface* drive_service,
+    google_apis::DriveServiceInterface* drive_service,
     DriveFileSystemInterface* drive_file_system,
     DriveCache* cache,
     DriveResourceMetadata* metadata,

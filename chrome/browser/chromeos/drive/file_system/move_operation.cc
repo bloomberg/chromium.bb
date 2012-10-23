@@ -17,9 +17,10 @@ using content::BrowserThread;
 namespace drive {
 namespace file_system {
 
-MoveOperation::MoveOperation(DriveServiceInterface* drive_service,
-                             DriveResourceMetadata* metadata,
-                             OperationObserver* observer)
+MoveOperation::MoveOperation(
+    google_apis::DriveServiceInterface* drive_service,
+    DriveResourceMetadata* metadata,
+    OperationObserver* observer)
   : drive_service_(drive_service),
     metadata_(metadata),
     observer_(observer),
