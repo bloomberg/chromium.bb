@@ -41,6 +41,7 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
   }
 
   virtual ~ShowWallpaperAnimationObserver() {
+    StopObservingImplicitAnimations();
     if (desktop_widget_)
       desktop_widget_->RemoveObserver(this);
   }
@@ -48,7 +49,9 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
  private:
   // Overridden from ui::ImplicitAnimationObserver:
   virtual void OnImplicitAnimationsCompleted() OVERRIDE {
+    DCHECK(desktop_widget_);
     ash::Shell* shell = ash::Shell::GetInstance();
+    // TODO(oshima): fix this for extended desktop.
     shell->GetPrimaryRootWindowController()->HandleDesktopBackgroundVisible();
     shell->user_wallpaper_delegate()->OnWallpaperAnimationFinished();
     // Only removes old component when wallpaper animation finished. If we
@@ -58,6 +61,10 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
       DesktopBackgroundWidgetController* controller =
           root_window_->GetProperty(kAnimatingDesktopController)->
               GetController(true);
+      // |desktop_widget_| should be the same animating widget we try to move
+      // to |kDesktopController|. Otherwise, we may close |desktop_widget_|
+      // before move it to |kDesktopController|.
+      DCHECK_EQ(controller->widget(), desktop_widget_);
       // Release the old controller and close its background widget.
       root_window_->SetProperty(kDesktopController, controller);
     }

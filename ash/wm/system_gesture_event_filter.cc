@@ -63,7 +63,8 @@ bool SystemGestureEventFilter::PreHandleMouseEvent(aura::Window* target,
                                                    ui::MouseEvent* event) {
 #if defined(OS_CHROMEOS)
   if (event->type() == ui::ET_MOUSE_PRESSED && event->native_event() &&
-      ui::TouchFactory::GetInstance()->IsTouchDevicePresent()) {
+      ui::TouchFactory::GetInstance()->IsTouchDevicePresent() &&
+      Shell::GetInstance()->delegate()) {
     Shell::GetInstance()->delegate()->RecordUserMetricsAction(
       UMA_MOUSE_DOWN);
   }

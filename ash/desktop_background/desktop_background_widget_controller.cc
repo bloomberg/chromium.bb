@@ -80,6 +80,14 @@ AnimatingDesktopController::AnimatingDesktopController(
 AnimatingDesktopController::~AnimatingDesktopController() {
 }
 
+void AnimatingDesktopController::StopAnimating() {
+  if (controller_) {
+    ui::Layer* layer = controller_->layer() ? controller_->layer() :
+        controller_->widget()->GetNativeView()->layer();
+    layer->GetAnimator()->StopAnimating();
+  }
+}
+
 DesktopBackgroundWidgetController* AnimatingDesktopController::GetController(
     bool pass_ownership) {
   if (pass_ownership)

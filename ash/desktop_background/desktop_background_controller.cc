@@ -331,6 +331,10 @@ void DesktopBackgroundController::InstallDesktopController(
   if (!root_window->HasObserver(this))
     root_window->AddObserver(this);
 
+  internal::AnimatingDesktopController* animating_controller =
+      root_window->GetProperty(kAnimatingDesktopController);
+  if (animating_controller)
+    animating_controller->StopAnimating();
   root_window->SetProperty(kAnimatingDesktopController,
                            new internal::AnimatingDesktopController(component));
 }

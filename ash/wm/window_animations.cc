@@ -238,6 +238,7 @@ void AnimateShowWindowCommon(aura::Window* window,
   window->layer()->set_delegate(window);
   window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
   window->layer()->SetTransform(start_transform);
+  window->layer()->SetVisible(true);
 
   {
     // Property sets within this scope will be implicitly animated.
@@ -246,7 +247,6 @@ void AnimateShowWindowCommon(aura::Window* window,
     if (duration.ToInternalValue() > 0)
       settings.SetTransitionDuration(duration);
 
-    window->layer()->SetVisible(true);
     window->layer()->SetTransform(end_transform);
     window->layer()->SetOpacity(kWindowAnimation_ShowOpacity);
   }

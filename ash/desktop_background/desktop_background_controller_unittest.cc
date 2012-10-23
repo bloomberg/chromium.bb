@@ -178,5 +178,52 @@ TEST_F(DesktopBackgroundControllerTest, BackgroundMovementDuringUnlock) {
   EXPECT_EQ(0, ChildCountForContainer(kLockScreenBackgroundId));
 }
 
+// Test for crbug.com/156542. Animating wallpaper should immediately finish
+// animation and replace current wallpaper before next animation starts.
+TEST_F(DesktopBackgroundControllerTest, ChangeWallpaperQuick) {
+  // We cannot short-circuit animations for this test.
+  ui::LayerAnimator::set_disable_animations_for_test(false);
+
+  // Reset wallpaper state, see ControllerOwnership above.
+  DesktopBackgroundController* controller =
+      Shell::GetInstance()->desktop_background_controller();
+  controller->CreateEmptyWallpaper();
+
+  // Run wallpaper show animation to completion.
+  RootWindow* root = Shell::GetPrimaryRootWindow();
+  RunAnimationForWidget(
+      root->GetProperty(kAnimatingDesktopController)->GetController(false)->
+              widget());
+
+  // Change to a new wallpaper.
+  controller->CreateEmptyWallpaper();
+
+  DesktopBackgroundWidgetController* animatingController =
+      root->GetProperty(kAnimatingDesktopController)->GetController(false);
+  EXPECT_TRUE(animatingController);
+  EXPECT_TRUE(root->GetProperty(kDesktopController));
+
+  // Change to another wallpaper before animation finished.
+  controller->CreateEmptyWallpaper();
+
+  // The animating controller should immediately move to desktop controller.
+  EXPECT_EQ(animatingController, root->GetProperty(kDesktopController));
+
+  // Cache the new animating controller.
+  animatingController =
+      root->GetProperty(kAnimatingDesktopController)->GetController(false);
+
+  // Run wallpaper show animation to completion.
+  RunAnimationForWidget(
+      root->GetProperty(kAnimatingDesktopController)->GetController(false)->
+              widget());
+
+  EXPECT_TRUE(root->GetProperty(kDesktopController));
+  EXPECT_FALSE(
+      root->GetProperty(kAnimatingDesktopController)->GetController(false));
+  // The desktop controller should be the last created animating controller.
+  EXPECT_EQ(animatingController, root->GetProperty(kDesktopController));
+}
+
 }  // namespace internal
 }  // namespace ash

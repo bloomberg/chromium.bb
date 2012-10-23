@@ -65,6 +65,21 @@ class ASH_EXPORT AnimatingDesktopController {
       DesktopBackgroundWidgetController* component);
   ~AnimatingDesktopController();
 
+  // Stops animation and makes sure OnImplicitAnimationsCompleted() is called if
+  // current animation is not finished yet.
+  // Note we have to make sure this function is called before we set
+  // kAnimatingDesktopController to a new controller. If it is not called, the
+  // animating widget/layer is closed immediately and the new one is animating
+  // from the widget/layer before animation. For instance, if a user quickly
+  // switches between red, green and blue wallpapers. The green wallpaper will
+  // first fade in from red wallpaper. And in the middle of the animation, blue
+  // wallpaper also wants to fade in. If the green wallpaper animation does not
+  // finish immediately, the green wallpaper widget will be removed and the red
+  // widget will show again. As a result, the blue wallpaper fades in from red
+  // wallpaper. This is a bad user experience. See bug http://crbug.com/156542
+  // for more details.
+  void StopAnimating();
+
   // Gets the wrapped DesktopBackgroundWidgetController pointer. Caller should
   // take ownership of the pointer if |pass_ownership| is true.
   DesktopBackgroundWidgetController* GetController(bool pass_ownership);
