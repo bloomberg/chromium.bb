@@ -5,7 +5,7 @@
 
 from gdb_test import AssertEquals
 import gdb_test
-import os
+
 
 def test(gdb):
   gdb.Command('break set_global_var')
@@ -19,4 +19,4 @@ def test(gdb):
 
 
 if __name__ == '__main__':
-  gdb_test.RunTest(test, 'print_symbol', os.environ['GDB_TEST_GUEST'])
+  gdb_test.RunTest(test, 'print_symbol')

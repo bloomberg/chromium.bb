@@ -5,7 +5,6 @@
 
 from gdb_test import AssertEquals
 import gdb_test
-import os
 
 
 def test(gdb):
@@ -24,4 +23,4 @@ def test(gdb):
 
 
 if __name__ == '__main__':
-  gdb_test.RunTest(test, 'change_variable', os.environ['GDB_TEST_GUEST'])
+  gdb_test.RunTest(test, 'change_variable')

@@ -4,11 +4,11 @@
 # found in the LICENSE file.
 
 import json
+import optparse
 import os
 import re
 import socket
 import subprocess
-import sys
 
 
 def AssertEquals(x, y):
@@ -20,10 +20,9 @@ def FilenameToUnix(str):
   return str.replace('\\', '/')
 
 
-def MakeOutFileName(name, ext):
-  out_dir = os.environ['OUT_DIR']
+def MakeOutFileName(output_dir, name, ext):
   # File name should be consistent with .out file name from nacl.scons
-  return os.path.join(out_dir, 'gdb_' + name + ext)
+  return os.path.join(output_dir, 'gdb_' + name + ext)
 
 
 def KillProcess(process):
@@ -52,23 +51,22 @@ def EnsurePortIsAvailable(addr=SEL_LDR_RSP_SOCKET_ADDR):
   sock.close()
 
 
-def LaunchSelLdr(program, name):
-  stdout = open(MakeOutFileName(name, '.pout'), 'w')
-  stderr = open(MakeOutFileName(name, '.perr'), 'w')
-  sel_ldr = os.environ['NACL_SEL_LDR']
-  args = [sel_ldr, '-g']
-  if os.environ.has_key('NACL_IRT'):
-    args += ['-B', os.environ['NACL_IRT']]
-  if os.environ.has_key('NACL_LD_SO'):
-    args += ['-a', '--', os.environ['NACL_LD_SO'],
-             '--library-path', os.environ['NACL_LIBS']]
-  args += [FilenameToUnix(program), name]
+def LaunchSelLdr(sel_ldr_command, options, name):
+  stdout = open(MakeOutFileName(options.output_dir, name, '.pout'), 'w')
+  stderr = open(MakeOutFileName(options.output_dir, name, '.perr'), 'w')
+  args = sel_ldr_command + ['-g']
+  if options.irt is not None:
+    args += ['-B', options.irt]
+  if options.ld_so is not None:
+    args += ['-a', '--', options.ld_so,
+             '--library-path', options.library_path]
+  args += [FilenameToUnix(options.nexe), name]
   EnsurePortIsAvailable()
   return subprocess.Popen(args, stdout=stdout, stderr=stderr)
 
 
-def GenerateManifest(nexe, runnable_ld, name):
-  manifest_filename = MakeOutFileName(name, '.nmf')
+def GenerateManifest(output_dir, nexe, runnable_ld, name):
+  manifest_filename = MakeOutFileName(output_dir, name, '.nmf')
   manifest_dir = os.path.dirname(manifest_filename)
   runnable_ld_url = {'url': os.path.relpath(runnable_ld, manifest_dir)}
   nexe_url = {'url': os.path.relpath(nexe, manifest_dir)}
@@ -179,12 +177,12 @@ class RecordParser(object):
 
 class Gdb(object):
 
-  def __init__(self, name, program):
+  def __init__(self, options, name):
+    self._options = options
     self._name = name
-    self._program = program
-    args = [os.environ['NACL_GDB'], '--interpreter=mi']
-    stderr = open(MakeOutFileName(name, '.err'), 'w')
-    self._log = open(MakeOutFileName(name, '.log'), 'w')
+    args = [options.gdb, '--interpreter=mi']
+    stderr = open(MakeOutFileName(options.output_dir, name, '.err'), 'w')
+    self._log = open(MakeOutFileName(options.output_dir, name, '.log'), 'w')
     self._gdb = subprocess.Popen(args,
                                  stdin=subprocess.PIPE,
                                  stdout=subprocess.PIPE,
@@ -251,24 +249,36 @@ class Gdb(object):
 
   def Connect(self):
     self._GetResponse()
-    if os.environ.has_key('NACL_IRT'):
-      self.Command('nacl-irt ' + FilenameToUnix(os.environ['NACL_IRT']))
-    if os.environ.has_key('NACL_LD_SO'):
+    if self._options.irt is not None:
+      self.Command('nacl-irt ' + FilenameToUnix(self._options.irt))
+    if self._options.ld_so is not None:
       # gdb uses bash-like escaping which removes slashes from Windows paths.
-      manifest_file = GenerateManifest(self._program,
-                                       os.environ['NACL_LD_SO'],
+      manifest_file = GenerateManifest(self._options.output_dir,
+                                       self._options.nexe,
+                                       self._options.ld_so,
                                        self._name)
       self.Command('nacl-manifest ' + FilenameToUnix(manifest_file))
       self.Command('set breakpoint pending on')
     else:
-      self.Command('file ' + FilenameToUnix(self._program))
+      self.Command('file ' + FilenameToUnix(self._options.nexe))
     self.Command('target remote :4014')
 
 
-def RunTest(test_func, test_name, program):
-  sel_ldr = LaunchSelLdr(program, test_name)
+def RunTest(test_func, test_name):
+  parser = optparse.OptionParser()
+  parser.add_option('--output_dir', help='Output directory for log files')
+  parser.add_option('--gdb', help='Filename of GDB')
+  parser.add_option('--irt', help='Filename of irt.nexe (optional)')
+  parser.add_option('--ld_so', help='Filename of dynamic linker (optional)')
+  parser.add_option('--library_path',
+                    help='Directory containing dynamic libraries, '
+                    'if using dynamic linking (optional)')
+  parser.add_option('--nexe', help='Filename of main NaCl executable')
+  options, sel_ldr_command = parser.parse_args()
+
+  sel_ldr = LaunchSelLdr(sel_ldr_command, options, test_name)
   try:
-    with Gdb(test_name, program) as gdb:
+    with Gdb(options, test_name) as gdb:
       gdb.Connect()
       test_func(gdb)
   finally:
