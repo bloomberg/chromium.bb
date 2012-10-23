@@ -10,11 +10,90 @@
 window.runTests = function(log) {
   var run = window.calculatorTestRun.create();
 
-  // TODO(dharcourt@chromium.org): Organize and beef up these tests.
-  // TODO(dharcourt@chromium.org): test.run("*", '~ = [-0]');
-  // TODO(dharcourt@chromium.org): test.run("*", '~42 [[-42]]');
-  // TODO(dharcourt@chromium.org): test.run("*", '1 / 3 * 3 = [[1]]');
-  // TODO(dharcourt@chromium.org): Test {nega,posi}tive {under,over}flows.
+  // ---------------------------------------------------------------------------
+  // Test fixes for <http://crbug.com/156448>:
+
+  run.test('Twenty eight can be divided by three', '28 / 3 = [9.33333333]');
+  run.test('Twenty nine can be divided by three', '29 / 3 = [9.66666667]');
+  run.test('Thirty can be divided by three', '30 / 3 = [10]');
+  run.test('Thirty one can be divided by three', '31 / 3 = [10.3333333]');
+  run.test('Thirty two can be divided by three', '32 / 3 = [10.6666667]');
+  run.test('Thirty three can be divided by three', '33 / 3 = [11]');
+
+  // ---------------------------------------------------------------------------
+  // Test fixes for <http://crbug.com/156449>:
+
+  // run.test('Equals without operator results in operand value',
+  //          '123 = [123]');
+
+  // TODO(dharcourt): Test the display for the expected output.
+  // run.test('Successive operators replace each other.',
+  //          '123 + - * / [123 / null] and no previous [* + *]');
+
+  // ---------------------------------------------------------------------------
+  // Test fixes for <http://crbug.com/156450>:
+
+  // run.test('Operand can be erased and replaced',
+  //          '123 + 456 < < < < 789 = [789]');
+
+  // TODO(dharcourt): Test the display for the expected output.
+  // run.test('Erase is ignored after equals.', '123 + 456 = < [579]');
+  // run.test('Erase is ignored after zero result.', '123 - 123 = < [9]');
+
+  // TODO(dharcourt): Test the display for the expected output.
+  // run.test('Erasing an operand makes it blank.',
+  //          '123 + 456 < < < [null + null]');
+
+  // ---------------------------------------------------------------------------
+  // Test fixes for <http://crbug.com/156451>:
+
+  // run.test('Negation applies to zero', '~ [[-0]]');
+  // run.test('Negation applies before input', '~ 123 = [[-123]]');
+  // run.test('Negation applies after input is erased',
+  //          '123 < < < ~ 456 [[-456]]');
+  // run.test('Negation is preserved when input is erased',
+  //          '123 ~ < < < 456 [[-456]]');
+  // run.test('Negation supports small values',
+  //          '0.0000001 ~ [[-0.0000001]]');
+
+  // run.test('Addition resets negated zeros', '~ + [null + [0]]');
+  // run.test('Subtraction resets negated zeros', '~ - [null - [0]]');
+  // run.test('Multiplication resets negated zeros', '~ * [null * [0]]');
+  // run.test('Division resets negated zeros', '~ / [null / [0]]');
+  // run.test('Equals resets negated zeros', '~ = [0 null [0]]');
+
+  // ---------------------------------------------------------------------------
+  // Test fixes for <http://crbug.com/156452>:
+
+  // TODO(dharcourt): Test the display for the expected output.
+  // TODO(dharcourt): Make the test utilities support 'error'.
+  // run.test('Errors results are spelled out', '1 / 0 = [[error]]');
+  // run.test('Addition treats errors as zero',
+  //          '1 / 0 = [error] + [0 + [0]] 123 = [123]');
+  // run.test('Subtraction treats errors as zero',
+  //          '1 / 0 = [error] - [0 - [0]] 123 = [-123]');
+  // run.test('Multiplication treats errors as zero',
+  //          '1 / 0 = [error] * [0 * [0]] 123 = [0]');
+  // run.test('Division treats errors as zero',
+  //          '1 / 0 = [error] / [0 / [0]] 123 = [0]');
+  // run.test('Equals treats errors as zero',
+  //         '1 / 0 = [error] = [0]');
+
+  // ---------------------------------------------------------------------------
+  // Test fixes for <http://crbug.com/156453>:
+
+  // run.test('Common operations are reversible',
+  //          '1 / 3 * 3 = [[1]]');
+
+  // run.test('Large numbers are displayed as exponentials',
+  //          '12345678 * 10 = [[1.23456e8]]');
+  // run.test('Small numbers are displayed as exponentials',
+  //          '0.0000001 / 10 = [[1e-8]]');
+
+  // ---------------------------------------------------------------------------
+  // Other tests.
+  // TODO(dharcourt): Organize and beef up these tests.
+  // TODO(dharcourt): Test {nega,posi}tive {under,over}flows.
 
   run.test("Initialization", function(model) {
     run.verify(null, model.accumulator, 'Accumulator');

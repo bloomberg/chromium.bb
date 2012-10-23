@@ -111,12 +111,32 @@ Model.prototype.calculate_ = function(operator, operand) {
 
 /**
  * Returns the string representation of the passed in value rounded to the
- * model's precision, or "+Infinity" or "-Infinity" on overflow.
+ * model's precision, or "E" on overflow.
  *
  * @private
  */
 Model.prototype.round_ = function(x) {
-  var rounded = String(Number(x.toFixed(this.precision - 1)));
-  var overflow = (rounded.replace(/[^0-9]/g, '').length > this.precision);
-  return (overflow || Math.abs(x) == Infinity) ? 'E' : rounded;
+  var exponent = Number(x.toExponential(this.precision - 1).split('e')[1]);
+  var digits = this.digits_(exponent);
+  var exponential = x.toExponential(digits).replace(/\.?0+e/, 'e');
+  var fixed = (Math.abs(exponent) < this.precision && exponent > -7);
+  return !digits ? 'E' : fixed ? String(Number(exponential)) : exponential;
+}
+
+/**
+ * Returns the appropriate number of digits to include of a number based on
+ * its size.
+ *
+ * @private
+ */
+Model.prototype.digits_ = function(exponent) {
+  return (isNaN(exponent) || exponent < -199 || exponent > 199) ? 0 :
+         (exponent < -99) ? (this.precision - 1 - 5) :
+         (exponent < -9) ? (this.precision - 1 - 4) :
+         (exponent < -6) ? (this.precision - 1 - 3) :
+         (exponent < 0) ? (this.precision - 1 + exponent) :
+         (exponent < this.precision) ? (this.precision - 1) :
+         (exponent < 10) ? (this.precision - 1 - 3) :
+         (exponent < 100) ? (this.precision - 1 - 4) :
+                            (this.precision - 1 - 5);
 }
