@@ -44,10 +44,7 @@ typedef media::AudioManagerAndroid AudioManagerPlatform;
 // the buildbots. media::AudioManagerBase
 class MockAudioManager : public AudioManagerPlatform {
  public:
-  MockAudioManager() {
-    Init();
-  }
-
+  MockAudioManager() {}
   virtual ~MockAudioManager() {}
 
   virtual void GetAudioInputDeviceNames(
