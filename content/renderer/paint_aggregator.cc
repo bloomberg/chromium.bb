@@ -77,13 +77,14 @@ gfx::Rect PaintAggregator::PendingUpdate::GetScrollDamage() const {
   }
 
   // In case the scroll offset exceeds the width/height of the scroll rect
-  return scroll_rect.Intersect(damaged_rect);
+  damaged_rect.Intersect(scroll_rect);
+  return damaged_rect;
 }
 
 gfx::Rect PaintAggregator::PendingUpdate::GetPaintBounds() const {
   gfx::Rect bounds;
   for (size_t i = 0; i < paint_rects.size(); ++i)
-    bounds = bounds.Union(paint_rects[i]);
+    bounds.Union(paint_rects[i]);
   return bounds;
 }
 
@@ -104,7 +105,7 @@ void PaintAggregator::PopPendingUpdate(PendingUpdate* update) {
     gfx::Rect union_rect;
     for (size_t i = 0; i < update_.paint_rects.size(); ++i) {
       paint_area += update_.paint_rects[i].size().GetArea();
-      union_rect = union_rect.Union(update_.paint_rects[i]);
+      union_rect.Union(update_.paint_rects[i]);
     }
     int union_area = union_rect.size().GetArea();
     if (float(paint_area) / float(union_area) > kMaxPaintRectsAreaRatio)
@@ -122,7 +123,8 @@ void PaintAggregator::InvalidateRect(const gfx::Rect& rect) {
       return;
     if (rect.Intersects(existing_rect) || rect.SharesEdgeWith(existing_rect)) {
       // Re-invalidate in case the union intersects other paint rects.
-      gfx::Rect combined_rect = existing_rect.Union(rect);
+      gfx::Rect combined_rect = existing_rect;
+      combined_rect.Union(rect);
       update_.paint_rects.erase(update_.paint_rects.begin() + i);
       InvalidateRect(combined_rect);
       return;
@@ -139,8 +141,9 @@ void PaintAggregator::InvalidateRect(const gfx::Rect& rect) {
     if (ShouldInvalidateScrollRect(rect)) {
       InvalidateScrollRect();
     } else if (update_.scroll_rect.Contains(rect)) {
-      update_.paint_rects[update_.paint_rects.size() - 1] =
-          rect.Subtract(update_.GetScrollDamage());
+      gfx::Rect paint_rect = rect;
+      paint_rect.Subtract(update_.GetScrollDamage());
+      update_.paint_rects[update_.paint_rects.size() - 1] = paint_rect;
       if (update_.paint_rects[update_.paint_rects.size() - 1].IsEmpty())
         update_.paint_rects.erase(update_.paint_rects.end() - 1);
     }
@@ -215,10 +218,11 @@ gfx::Rect PaintAggregator::ScrollPaintRect(const gfx::Rect& paint_rect,
   gfx::Rect result = paint_rect;
 
   result.Offset(dx, dy);
-  result = update_.scroll_rect.Intersect(result);
+  result.Intersect(update_.scroll_rect);
 
   // Subtract out the scroll damage rect to avoid redundant painting.
-  return result.Subtract(update_.GetScrollDamage());
+  result.Subtract(update_.GetScrollDamage());
+  return result;
 }
 
 bool PaintAggregator::ShouldInvalidateScrollRect(const gfx::Rect& rect) const {
@@ -273,9 +277,9 @@ void PaintAggregator::CombinePaintRects() {
     for (size_t i = 0; i < update_.paint_rects.size(); ++i) {
       const gfx::Rect& existing_rect = update_.paint_rects[i];
       if (update_.scroll_rect.Contains(existing_rect)) {
-        inner = inner.Union(existing_rect);
+        inner.Union(existing_rect);
       } else {
-        outer = outer.Union(existing_rect);
+        outer.Union(existing_rect);
       }
     }
     update_.paint_rects.clear();

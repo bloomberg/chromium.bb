@@ -179,7 +179,8 @@ class TooltipController::Tooltip : public views::WidgetObserver {
     if (tooltip_rect.bottom() > display_bounds.bottom())
       tooltip_rect.set_y(mouse_pos.y() - tooltip_height);
 
-    GetWidget()->SetBounds(tooltip_rect.AdjustToFit(display_bounds));
+    tooltip_rect.AdjustToFit(display_bounds);
+    GetWidget()->SetBounds(tooltip_rect);
   }
 
   views::Widget* GetWidget() {

@@ -346,7 +346,8 @@ const gfx::Display& MultiDisplayManager::GetDisplayMatching(
   for (std::vector<gfx::Display>::const_iterator iter = displays_.begin();
        iter != displays_.end(); ++iter) {
     const gfx::Display& display = *iter;
-    gfx::Rect intersect = display.bounds().Intersect(rect);
+    gfx::Rect intersect = display.bounds();
+    intersect.Intersect(rect);
     int area = intersect.width() * intersect.height();
     if (area > max) {
       max = area;

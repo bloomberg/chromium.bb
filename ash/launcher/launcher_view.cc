@@ -705,7 +705,7 @@ bool LauncherView::ShouldHideTooltip(const gfx::Point& cursor_location) {
       continue;
 
     gfx::Rect child_bounds = child->GetMirroredBounds();
-    active_bounds = active_bounds.Union(child_bounds);
+    active_bounds.Union(child_bounds);
   }
 
   return !active_bounds.Contains(cursor_location);

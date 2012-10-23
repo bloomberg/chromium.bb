@@ -2019,7 +2019,7 @@ class TransformPaintView : public TestView {
   // Overridden from View:
   virtual void SchedulePaintInRect(const gfx::Rect& rect) {
     gfx::Rect xrect = ConvertRectToParent(rect);
-    scheduled_paint_rect_ = scheduled_paint_rect_.Union(xrect);
+    scheduled_paint_rect_.Union(xrect);
   }
 
  private:
@@ -2325,9 +2325,8 @@ TEST_F(ViewTest, SetBoundsPaint) {
   EXPECT_EQ(2U, top_view.scheduled_paint_rects_.size());
 
   // There should be 2 rects, spanning from (10, 10) to (50, 50).
-  gfx::Rect paint_rect =
-      top_view.scheduled_paint_rects_[0].Union(
-          top_view.scheduled_paint_rects_[1]);
+  gfx::Rect paint_rect = top_view.scheduled_paint_rects_[0];
+  paint_rect.Union(top_view.scheduled_paint_rects_[1]);
   EXPECT_EQ(gfx::Rect(10, 10, 40, 40), paint_rect);
 }
 

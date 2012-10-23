@@ -453,7 +453,7 @@ scoped_ptr<ScopedTexture> GLRenderer::drawBackgroundFilters(DrawingFrame& frame,
     filters.getOutsets(top, right, bottom, left);
     deviceRect.Inset(-left, -top, -right, -bottom);
 
-    deviceRect = deviceRect.Intersect(frame.currentRenderPass->outputRect());
+    deviceRect.Intersect(frame.currentRenderPass->outputRect());
 
     scoped_ptr<ScopedTexture> deviceBackgroundTexture = ScopedTexture::create(m_resourceProvider);
     if (!getFramebufferTexture(deviceBackgroundTexture.get(), cc::IntRect(deviceRect)))
@@ -1013,7 +1013,7 @@ void GLRenderer::drawIOSurfaceQuad(const DrawingFrame& frame, const IOSurfaceDra
 void GLRenderer::finishDrawingFrame(DrawingFrame& frame)
 {
     m_currentFramebufferLock.reset();
-    m_swapBufferRect = m_swapBufferRect.Union(gfx::ToEnclosingRect(frame.rootDamageRect));
+    m_swapBufferRect.Union(gfx::ToEnclosingRect(frame.rootDamageRect));
 
     GLC(m_context, m_context->disable(GL_SCISSOR_TEST));
     GLC(m_context, m_context->disable(GL_BLEND));
@@ -1111,7 +1111,7 @@ bool GLRenderer::swapBuffers()
 
     if (m_capabilities.usingPartialSwap) {
         // If supported, we can save significant bandwidth by only swapping the damaged/scissored region (clamped to the viewport)
-        m_swapBufferRect = m_swapBufferRect.Intersect(gfx::Rect(gfx::Point(), viewportSize()));
+        m_swapBufferRect.Intersect(gfx::Rect(gfx::Point(), viewportSize()));
         int flippedYPosOfRectBottom = viewportHeight() - m_swapBufferRect.y() - m_swapBufferRect.height();
         m_context->postSubBufferCHROMIUM(m_swapBufferRect.x(), flippedYPosOfRectBottom, m_swapBufferRect.width(), m_swapBufferRect.height());
     } else {

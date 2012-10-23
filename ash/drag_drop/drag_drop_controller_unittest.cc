@@ -207,7 +207,7 @@ void AddViewToWidgetAndResize(views::Widget* widget, views::View* view) {
   contents_view->AddChildView(view);
   view->SetBounds(contents_view->width(), 0, 100, 100);
   gfx::Rect contents_view_bounds = contents_view->bounds();
-  contents_view_bounds = contents_view_bounds.Union(view->bounds());
+  contents_view_bounds.Union(view->bounds());
   contents_view->SetBoundsRect(contents_view_bounds);
   widget->SetBounds(contents_view_bounds);
 }

@@ -58,7 +58,8 @@ void DelegatedRendererLayerImpl::setRenderPasses(ScopedPtrVector<RenderPass>& re
 
     if (!m_renderPassesInDrawOrder.isEmpty()) {
         gfx::RectF newRootDamage = m_renderPassesInDrawOrder.last()->damageRect();
-        m_renderPassesInDrawOrder.last()->setDamageRect(oldRootDamage.Union(newRootDamage));
+        newRootDamage.Union(oldRootDamage);
+        m_renderPassesInDrawOrder.last()->setDamageRect(newRootDamage);
     }
 }
 

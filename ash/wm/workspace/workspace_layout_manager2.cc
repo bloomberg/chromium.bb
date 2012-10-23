@@ -289,7 +289,9 @@ void WorkspaceLayoutManager2::AdjustWindowSizeForScreenChange(
     if (reason == ADJUST_WINDOW_SCREEN_SIZE_CHANGED) {
       // The work area may be smaller than the full screen.  Put as much of the
       // window as possible within the display area.
-      window->SetBounds(window->bounds().AdjustToFit(work_area_));
+      gfx::Rect bounds = window->bounds();
+      bounds.AdjustToFit(work_area_);
+      window->SetBounds(bounds);
     } else if (reason == ADJUST_WINDOW_DISPLAY_INSETS_CHANGED) {
       // If the window is completely outside the display work area, then move it
       // enough to be visible again.

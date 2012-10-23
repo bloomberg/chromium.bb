@@ -372,7 +372,7 @@ void DesktopRootWindowHostLinux::CenterWindow(const gfx::Size& size) {
       size.height());
   // Don't size the window bigger than the parent, otherwise the user may not be
   // able to close or move it.
-  window_bounds = window_bounds.AdjustToFit(parent_bounds);
+  window_bounds.AdjustToFit(parent_bounds);
 
   SetBounds(window_bounds);
 }

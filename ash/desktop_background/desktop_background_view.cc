@@ -134,7 +134,8 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
           RoundPositive(static_cast<double>(height()) / horizontal_ratio));
     }
 
-    gfx::Rect wallpaper_cropped_rect = wallpaper_rect.Center(cropped_size);
+    gfx::Rect wallpaper_cropped_rect = wallpaper_rect;
+    wallpaper_cropped_rect.ClampToCenteredSize(cropped_size);
     canvas->DrawImageInt(wallpaper,
         wallpaper_cropped_rect.x(), wallpaper_cropped_rect.y(),
         wallpaper_cropped_rect.width(), wallpaper_cropped_rect.height(),

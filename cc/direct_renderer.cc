@@ -160,7 +160,7 @@ void DirectRenderer::drawFrame(const RenderPassList& renderPassesInDrawOrder, co
     frame.renderPassesById = &renderPassesById;
     frame.rootRenderPass = rootRenderPass;
     frame.rootDamageRect = capabilities().usingPartialSwap ? rootRenderPass->damageRect() : rootRenderPass->outputRect();
-    frame.rootDamageRect = frame.rootDamageRect.Intersect(gfx::Rect(gfx::Point(), viewportSize()));
+    frame.rootDamageRect.Intersect(gfx::Rect(gfx::Point(), viewportSize()));
 
     beginDrawingFrame(frame);
     for (size_t i = 0; i < renderPassesInDrawOrder.size(); ++i)
@@ -177,7 +177,7 @@ void DirectRenderer::drawRenderPass(DrawingFrame& frame, const RenderPass* rende
     if (frame.rootDamageRect != frame.rootRenderPass->outputRect()) {
         WebTransformationMatrix inverseTransformToRoot = frame.currentRenderPass->transformToRootTarget().inverse();
         gfx::RectF damageRectInRenderPassSpace = MathUtil::projectClippedRect(inverseTransformToRoot, cc::FloatRect(frame.rootDamageRect));
-        frame.scissorRectInRenderPassSpace = frame.scissorRectInRenderPassSpace.Intersect(damageRectInRenderPassSpace);
+        frame.scissorRectInRenderPassSpace.Intersect(damageRectInRenderPassSpace);
     }
 
     enableScissorTestRect(moveScissorToWindowSpace(frame, frame.scissorRectInRenderPassSpace));
@@ -185,7 +185,8 @@ void DirectRenderer::drawRenderPass(DrawingFrame& frame, const RenderPass* rende
 
     const QuadList& quadList = renderPass->quadList();
     for (QuadList::constBackToFrontIterator it = quadList.backToFrontBegin(); it != quadList.backToFrontEnd(); ++it) {
-        gfx::RectF quadScissorRect = frame.scissorRectInRenderPassSpace.Intersect((*it)->clippedRectInTarget());
+        gfx::RectF quadScissorRect = frame.scissorRectInRenderPassSpace;
+        quadScissorRect.Intersect((*it)->clippedRectInTarget());
         if (!quadScissorRect.IsEmpty()) {
             enableScissorTestRect(moveScissorToWindowSpace(frame, quadScissorRect));
             drawQuad(frame, *it);

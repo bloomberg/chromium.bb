@@ -366,7 +366,9 @@ void TooltipManagerWin::ShowKeyboardTooltip(View* focused_view) {
                       line_count * tooltip_height_ };
   gfx::Rect monitor_bounds =
       views::GetMonitorBoundsForRect(gfx::Rect(rect_bounds));
-  rect_bounds = gfx::Rect(rect_bounds).AdjustToFit(monitor_bounds).ToRECT();
+  gfx::Rect fitted_bounds = gfx::Rect(rect_bounds);
+  fitted_bounds.AdjustToFit(monitor_bounds);
+  rect_bounds = fitted_bounds.ToRECT();
   ::SetWindowPos(keyboard_tooltip_hwnd_, NULL, rect_bounds.left,
                  rect_bounds.top, 0, 0,
                  SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSIZE);

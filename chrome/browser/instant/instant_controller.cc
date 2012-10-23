@@ -751,7 +751,8 @@ void InstantController::SendBoundsToPage() {
 
   last_omnibox_bounds_ = omnibox_bounds_;
   gfx::Rect preview_bounds = delegate_->GetInstantBounds();
-  gfx::Rect intersection = omnibox_bounds_.Intersect(preview_bounds);
+  gfx::Rect intersection = omnibox_bounds_;
+  intersection.Intersect(preview_bounds);
 
   // Translate into window coordinates.
   if (!intersection.IsEmpty()) {

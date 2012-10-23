@@ -218,7 +218,7 @@ void WindowSizer::DetermineWindowBoundsAndShowState(
     gfx::Rect work_area =
         monitor_info_provider_->GetMonitorWorkAreaMatching(*bounds);
     // Resize so that it fits.
-    *bounds = bounds->AdjustToFit(work_area);
+    bounds->AdjustToFit(work_area);
   }
 }
 

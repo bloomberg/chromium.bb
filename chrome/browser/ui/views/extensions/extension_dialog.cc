@@ -167,7 +167,7 @@ void ExtensionDialog::InitWindow(BaseWindow* base_window,
   gfx::Rect screen_rect = gfx::Screen::GetScreenFor(parent)->
       GetDisplayNearestPoint(center).bounds();
   gfx::Rect bounds_rect = gfx::Rect(x, y, width, height);
-  bounds_rect = bounds_rect.AdjustToFit(screen_rect);
+  bounds_rect.AdjustToFit(screen_rect);
   window_->SetBounds(bounds_rect);
 
   window_->Show();

@@ -32,7 +32,8 @@ void ImageTransportSurface::GetRegionsToCopy(
     const gfx::Rect& previous_damage_rect,
     const gfx::Rect& new_damage_rect,
     std::vector<gfx::Rect>* regions) {
-  gfx::Rect intersection = previous_damage_rect.Intersect(new_damage_rect);
+  gfx::Rect intersection = previous_damage_rect;
+  intersection.Intersect(new_damage_rect);
 
   if (intersection.IsEmpty()) {
     regions->push_back(previous_damage_rect);

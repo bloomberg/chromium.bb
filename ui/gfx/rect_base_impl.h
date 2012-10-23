@@ -165,8 +165,13 @@ template<typename Class,
          typename SizeClass,
          typename InsetsClass,
          typename Type>
-Class RectBase<Class, PointClass, SizeClass, InsetsClass, Type>::Intersect(
-    const Class& rect) const {
+void RectBase<Class, PointClass, SizeClass, InsetsClass, Type>::Intersect(
+    const Class& rect) {
+  if (IsEmpty() || rect.IsEmpty()) {
+    SetRect(0, 0, 0, 0);
+    return;
+  }
+
   Type rx = std::max(x(), rect.x());
   Type ry = std::max(y(), rect.y());
   Type rr = std::min(right(), rect.right());
@@ -175,7 +180,7 @@ Class RectBase<Class, PointClass, SizeClass, InsetsClass, Type>::Intersect(
   if (rx >= rr || ry >= rb)
     rx = ry = rr = rb = 0;  // non-intersecting
 
-  return Class(rx, ry, rr - rx, rb - ry);
+  SetRect(rx, ry, rr - rx, rb - ry);
 }
 
 template<typename Class,
@@ -183,20 +188,21 @@ template<typename Class,
          typename SizeClass,
          typename InsetsClass,
          typename Type>
-Class RectBase<Class, PointClass, SizeClass, InsetsClass, Type>::Union(
-    const Class& rect) const {
-  // special case empty rects...
-  if (IsEmpty())
-    return rect;
+void RectBase<Class, PointClass, SizeClass, InsetsClass, Type>::Union(
+    const Class& rect) {
+  if (IsEmpty()) {
+    *this = rect;
+    return;
+  }
   if (rect.IsEmpty())
-    return *static_cast<const Class*>(this);
+    return;
 
   Type rx = std::min(x(), rect.x());
   Type ry = std::min(y(), rect.y());
   Type rr = std::max(right(), rect.right());
   Type rb = std::max(bottom(), rect.bottom());
 
-  return Class(rx, ry, rr - rx, rb - ry);
+  SetRect(rx, ry, rr - rx, rb - ry);
 }
 
 template<typename Class,
@@ -204,13 +210,14 @@ template<typename Class,
          typename SizeClass,
          typename InsetsClass,
          typename Type>
-Class RectBase<Class, PointClass, SizeClass, InsetsClass, Type>::Subtract(
-    const Class& rect) const {
-  // boundary cases:
+void RectBase<Class, PointClass, SizeClass, InsetsClass, Type>::Subtract(
+    const Class& rect) {
   if (!Intersects(rect))
-    return *static_cast<const Class*>(this);
-  if (rect.Contains(*static_cast<const Class*>(this)))
-    return Class();
+    return;
+  if (rect.Contains(*static_cast<const Class*>(this))) {
+    SetRect(0, 0, 0, 0);
+    return;
+  }
 
   Type rx = x();
   Type ry = y();
@@ -232,7 +239,7 @@ Class RectBase<Class, PointClass, SizeClass, InsetsClass, Type>::Subtract(
       rb = rect.y();
     }
   }
-  return Class(rx, ry, rr - rx, rb - ry);
+  SetRect(rx, ry, rr - rx, rb - ry);
 }
 
 template<typename Class,
@@ -240,15 +247,15 @@ template<typename Class,
          typename SizeClass,
          typename InsetsClass,
          typename Type>
-Class RectBase<Class, PointClass, SizeClass, InsetsClass, Type>::AdjustToFit(
-    const Class& rect) const {
+void RectBase<Class, PointClass, SizeClass, InsetsClass, Type>::AdjustToFit(
+    const Class& rect) {
   Type new_x = x();
   Type new_y = y();
   Type new_width = width();
   Type new_height = height();
   AdjustAlongAxis(rect.x(), rect.width(), &new_x, &new_width);
   AdjustAlongAxis(rect.y(), rect.height(), &new_y, &new_height);
-  return Class(new_x, new_y, new_width, new_height);
+  SetRect(new_x, new_y, new_width, new_height);
 }
 
 template<typename Class,
@@ -266,13 +273,13 @@ template<typename Class,
          typename SizeClass,
          typename InsetsClass,
          typename Type>
-Class RectBase<Class, PointClass, SizeClass, InsetsClass, Type>::Center(
-    const SizeClass& size) const {
+void RectBase<Class, PointClass, SizeClass, InsetsClass, Type>::
+    ClampToCenteredSize(const SizeClass& size) {
   Type new_width = std::min(width(), size.width());
   Type new_height = std::min(height(), size.height());
   Type new_x = x() + (width() - new_width) / 2;
   Type new_y = y() + (height() - new_height) / 2;
-  return Class(new_x, new_y, new_width, new_height);
+  SetRect(new_x, new_y, new_width, new_height);
 }
 
 template<typename Class,

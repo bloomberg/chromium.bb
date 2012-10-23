@@ -404,7 +404,7 @@ void AppsGridView::CalculateIdealBounds() {
 
   gfx::Rect grid_rect(gfx::Size(tile_size.width() * cols_,
                                 tile_size.height() * rows_per_page_));
-  grid_rect = grid_rect.Intersect(rect);
+  grid_rect.Intersect(rect);
 
   // Page width including padding pixels. A tile.x + page_width means the same
   // tile slot in the next page.

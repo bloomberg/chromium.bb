@@ -373,11 +373,13 @@ void RenderWidget::OnChangeResizeRect(const gfx::Rect& resizer_rect) {
   if (resizer_rect_ != resizer_rect) {
     gfx::Rect view_rect(size_);
 
-    gfx::Rect old_damage_rect = view_rect.Intersect(resizer_rect_);
+    gfx::Rect old_damage_rect = view_rect;
+    old_damage_rect.Intersect(resizer_rect_);
     if (!old_damage_rect.IsEmpty())
       paint_aggregator_.InvalidateRect(old_damage_rect);
 
-    gfx::Rect new_damage_rect = view_rect.Intersect(resizer_rect);
+    gfx::Rect new_damage_rect = view_rect;
+    new_damage_rect.Intersect(resizer_rect);
     if (!new_damage_rect.IsEmpty())
       paint_aggregator_.InvalidateRect(new_damage_rect);
 
@@ -935,7 +937,8 @@ void RenderWidget::DoDeferredUpdate() {
   paint_aggregator_.PopPendingUpdate(&update);
 
   gfx::Rect scroll_damage = update.GetScrollDamage();
-  gfx::Rect bounds = update.GetPaintBounds().Union(scroll_damage);
+  gfx::Rect bounds = update.GetPaintBounds();
+  bounds.Union(scroll_damage);
 
   // Notify derived classes that we're about to initiate a paint.
   WillInitiatePaint();
@@ -974,15 +977,16 @@ void RenderWidget::DoDeferredUpdate() {
                                        &optimized_copy_rect,
                                        &dib_scale_factor)) {
     // Only update the part of the plugin that actually changed.
-    optimized_copy_rect = optimized_copy_rect.Intersect(bounds);
+    optimized_copy_rect.Intersect(bounds);
     pending_update_params_->bitmap = dib->id();
     pending_update_params_->bitmap_rect = optimized_copy_location;
     pending_update_params_->copy_rects.push_back(optimized_copy_rect);
     pending_update_params_->scale_factor = dib_scale_factor;
   } else if (!is_accelerated_compositing_active_) {
     // Compute a buffer for painting and cache it.
-    gfx::Rect pixel_bounds =
-        gfx::ToEnclosingRect(bounds.Scale(device_scale_factor_));
+    gfx::RectF scaled_bounds = bounds;
+    scaled_bounds.Scale(device_scale_factor_);
+    gfx::Rect pixel_bounds = gfx::ToEnclosingRect(scaled_bounds);
     scoped_ptr<skia::PlatformCanvas> canvas(
         RenderProcess::current()->GetDrawingCanvas(&current_paint_buf_,
                                                    pixel_bounds));
@@ -1060,7 +1064,8 @@ void RenderWidget::DoDeferredUpdate() {
 void RenderWidget::didInvalidateRect(const WebRect& rect) {
   // The invalidated rect might be outside the bounds of the view.
   gfx::Rect view_rect(size_);
-  gfx::Rect damaged_rect = view_rect.Intersect(rect);
+  gfx::Rect damaged_rect = view_rect;
+  damaged_rect.Intersect(rect);
   if (damaged_rect.IsEmpty())
     return;
 
@@ -1100,7 +1105,8 @@ void RenderWidget::didScrollRect(int dx, int dy, const WebRect& clip_rect) {
 
   // The scrolled rect might be outside the bounds of the view.
   gfx::Rect view_rect(size_);
-  gfx::Rect damaged_rect = view_rect.Intersect(clip_rect);
+  gfx::Rect damaged_rect = view_rect;
+  damaged_rect.Intersect(clip_rect);
   if (damaged_rect.IsEmpty())
     return;
 

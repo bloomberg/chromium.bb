@@ -297,13 +297,14 @@ void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
     work_area.set_origin(origin);
   }
 
-  parent_bounds = parent_bounds.Intersect(work_area);
+  parent_bounds.Intersect(work_area);
 
   // If |window_|'s transient parent's bounds are big enough to fit it, then we
   // center it with respect to the transient parent.
   if (window_->transient_parent()) {
     gfx::Rect transient_parent_rect = window_->transient_parent()->
-        GetBoundsInRootWindow().Intersect(work_area);
+        GetBoundsInRootWindow();
+    transient_parent_rect.Intersect(work_area);
     if (transient_parent_rect.height() >= size.height() &&
         transient_parent_rect.width() >= size.width())
       parent_bounds = transient_parent_rect;
@@ -316,7 +317,7 @@ void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
       size.height());
   // Don't size the window bigger than the parent, otherwise the user may not be
   // able to close or move it.
-  window_bounds = window_bounds.AdjustToFit(parent_bounds);
+  window_bounds.AdjustToFit(parent_bounds);
 
   // Convert the bounds back relative to the parent.
   gfx::Point origin = window_bounds.origin();

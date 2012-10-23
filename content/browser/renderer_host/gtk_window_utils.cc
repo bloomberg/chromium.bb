@@ -63,7 +63,7 @@ void GetScreenInfoFromNativeWindow(
   gfx::Rect available_rect = results->rect;
   gfx::Rect work_area = GetWorkArea(GDK_WINDOW_XID(gdk_window));
   if (!work_area.IsEmpty())
-    available_rect = available_rect.Intersect(work_area);
+    available_rect.Intersect(work_area);
   results->availableRect = available_rect;
 }
 

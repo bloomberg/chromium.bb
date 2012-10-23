@@ -168,7 +168,8 @@ void SearchResultView::Layout() {
   gfx::Rect icon_bounds(rect);
   icon_bounds.set_width(kIconViewWidth);
   icon_bounds.Inset(kIconPadding, (rect.height() - kIconDimension) / 2);
-  icon_->SetBoundsRect(icon_bounds.Intersect(rect));
+  icon_bounds.Intersect(rect);
+  icon_->SetBoundsRect(icon_bounds);
 
   size_t num_buttons = action_buttons_.size();
   for (size_t i = 0; i < num_buttons; ++i) {
@@ -199,7 +200,8 @@ void SearchResultView::OnPaint(gfx::Canvas* canvas) {
     canvas->FillRect(content_rect, kHoverAndPushedColor);
   }
 
-  gfx::Rect border_bottom = rect.Subtract(content_rect);
+  gfx::Rect border_bottom(rect);
+  border_bottom.Subtract(content_rect);
   canvas->FillRect(border_bottom,
                    selected ? kSelectedBorderColor : kBorderColor);
 
@@ -231,7 +233,9 @@ void SearchResultView::OnPaint(gfx::Canvas* canvas) {
   } else if (title_text_.get()) {
     gfx::Size title_size(text_bounds.width(),
                          title_text_->GetStringSize().height());
-    title_text_->SetDisplayRect(text_bounds.Center(title_size));
+    gfx::Rect centered_title_rect(text_bounds);
+    centered_title_rect.ClampToCenteredSize(title_size);
+    title_text_->SetDisplayRect(centered_title_rect);
     title_text_->Draw(canvas);
   }
 }

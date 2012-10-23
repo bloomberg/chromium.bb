@@ -100,31 +100,31 @@ class UI_EXPORT RectBase {
   bool Intersects(const Class& rect) const;
 
   // Computes the intersection of this rectangle with the given rectangle.
-  Class Intersect(const Class& rect) const WARN_UNUSED_RESULT;
+  void Intersect(const Class& rect);
 
   // Computes the union of this rectangle with the given rectangle.  The union
   // is the smallest rectangle containing both rectangles.
-  Class Union(const Class& rect) const WARN_UNUSED_RESULT;
+  void Union(const Class& rect);
 
   // Computes the rectangle resulting from subtracting |rect| from |this|.  If
   // |rect| does not intersect completely in either the x- or y-direction, then
-  // |*this| is returned.  If |rect| contains |this|, then an empty Rect is
-  // returned.
-  Class Subtract(const Class& rect) const WARN_UNUSED_RESULT;
+  // |*this| does not change.  If |rect| contains |this|, then an empty Rect is
+  // the result.
+  void Subtract(const Class& rect);
 
   // Fits as much of the receiving rectangle into the supplied rectangle as
-  // possible, returning the result. For example, if the receiver had
+  // possible, becoming the result. For example, if the receiver had
   // a x-location of 2 and a width of 4, and the supplied rectangle had
   // an x-location of 0 with a width of 5, the returned rectangle would have
   // an x-location of 1 with a width of 4.
-  Class AdjustToFit(const Class& rect) const WARN_UNUSED_RESULT;
+  void AdjustToFit(const Class& rect);
 
   // Returns the center of this rectangle.
   PointClass CenterPoint() const;
 
-  // Return a rectangle that has the same center point but with a size capped
+  // Becomes a rectangle that has the same center point but with a size capped
   // at given |size|.
-  Class Center(const SizeClass& size) const WARN_UNUSED_RESULT;
+  void ClampToCenteredSize(const SizeClass& size);
 
   // Splits |this| in two halves, |left_half| and |right_half|.
   void SplitVertically(Class* left_half, Class* right_half) const;

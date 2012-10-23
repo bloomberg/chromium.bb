@@ -290,7 +290,7 @@ WebWidgetHost* WebWidgetHost::Create(GtkWidget* parent_view,
 }
 
 void WebWidgetHost::UpdatePaintRect(const gfx::Rect& rect) {
-  paint_rect_ = paint_rect_.Union(rect);
+  paint_rect_.Union(rect);
 }
 
 void WebWidgetHost::DidInvalidateRect(const gfx::Rect& damaged_rect) {
@@ -377,14 +377,14 @@ void WebWidgetHost::Paint() {
   // to update that area after we're done painting it.
   gfx::Rect total_paint;
   for (int i = 0; i < 2; ++i) {
-    paint_rect_ = client_rect.Intersect(paint_rect_);
+    paint_rect_.Intersect(client_rect);
     if (!paint_rect_.IsEmpty()) {
       gfx::Rect rect(paint_rect_);
       paint_rect_ = gfx::Rect();
 
       DLOG_IF(WARNING, i == 1) << "painting caused additional invalidations";
       PaintRect(rect);
-      total_paint = total_paint.Union(rect);
+      total_paint.Union(rect);
     }
   }
   //DCHECK(paint_rect_.IsEmpty());

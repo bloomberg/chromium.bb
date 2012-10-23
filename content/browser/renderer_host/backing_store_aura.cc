@@ -91,8 +91,9 @@ void BackingStoreAura::PaintToBackingStore(
   if (bitmap_rect.IsEmpty())
     return;
 
-  gfx::Rect pixel_bitmap_rect =
-      gfx::ToEnclosedRect(bitmap_rect.Scale(scale_factor));
+  gfx::RectF scaled_bitmap_rect = bitmap_rect;
+  scaled_bitmap_rect.Scale(scale_factor);
+  gfx::Rect pixel_bitmap_rect = gfx::ToEnclosedRect(scaled_bitmap_rect);
 
   const int width = pixel_bitmap_rect.width();
   const int height = pixel_bitmap_rect.height();
@@ -112,16 +113,19 @@ void BackingStoreAura::PaintToBackingStore(
   sk_bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
   sk_bitmap.setPixels(dib->memory());
   for (size_t i = 0; i < copy_rects.size(); i++) {
-    const gfx::Rect pixel_copy_rect =
-        gfx::ToEnclosingRect(copy_rects[i].Scale(scale_factor));
+    gfx::RectF scaled_copy_rect = copy_rects[i];
+    scaled_copy_rect.Scale(scale_factor);
+    const gfx::Rect pixel_copy_rect = gfx::ToEnclosingRect(scaled_copy_rect);
     int x = pixel_copy_rect.x() - pixel_bitmap_rect.x();
     int y = pixel_copy_rect.y() - pixel_bitmap_rect.y();
     SkIRect srcrect = SkIRect::MakeXYWH(x, y,
         pixel_copy_rect.width(),
         pixel_copy_rect.height());
 
+    gfx::RectF scaled_copy_dst_rect = copy_rects[i];
+    scaled_copy_dst_rect.Scale(device_scale_factor_);
     const gfx::Rect pixel_copy_dst_rect =
-        gfx::ToEnclosingRect(copy_rects[i].Scale(device_scale_factor_));
+        gfx::ToEnclosingRect(scaled_copy_dst_rect);
     SkRect dstrect = SkRect::MakeXYWH(
         SkIntToScalar(pixel_copy_dst_rect.x()),
         SkIntToScalar(pixel_copy_dst_rect.y()),
@@ -134,8 +138,9 @@ void BackingStoreAura::PaintToBackingStore(
 void BackingStoreAura::ScrollBackingStore(int dx, int dy,
                                           const gfx::Rect& clip_rect,
                                           const gfx::Size& view_size) {
-  gfx::Rect pixel_rect =
-      gfx::ToEnclosingRect(clip_rect.Scale(device_scale_factor_));
+  gfx::RectF scaled_clip_rect = clip_rect;
+  scaled_clip_rect.Scale(device_scale_factor_);
+  gfx::Rect pixel_rect = gfx::ToEnclosingRect(scaled_clip_rect);
   int pixel_dx = dx * device_scale_factor_;
   int pixel_dy = dy * device_scale_factor_;
 

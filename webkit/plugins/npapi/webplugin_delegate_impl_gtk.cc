@@ -355,12 +355,13 @@ void WebPluginDelegateImpl::WindowlessPaint(cairo_t* context,
   // "real" means as seen by Chrome
   // "apparent" means as seen by the plugin.
 
-  gfx::Rect draw_rect = window_rect_.Intersect(damage_rect);
+  gfx::Rect draw_rect = window_rect_;
+  draw_rect.Intersect(damage_rect);
 
   // clip_rect_ is relative to the plugin
   gfx::Rect clip_rect_window = clip_rect_;
   clip_rect_window.Offset(window_rect_.x(), window_rect_.y());
-  draw_rect = draw_rect.Intersect(clip_rect_window);
+  draw_rect.Intersect(clip_rect_window);
 
   // These offsets represent by how much the view is shifted to accomodate
   // Flash (the coordinates of X relative to O in the diagram above).

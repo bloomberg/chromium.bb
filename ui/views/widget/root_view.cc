@@ -191,7 +191,8 @@ void RootView::SchedulePaintInRect(const gfx::Rect& rect) {
     layer()->SchedulePaint(rect);
   } else {
     gfx::Rect xrect = ConvertRectToParent(rect);
-    gfx::Rect invalid_rect = GetLocalBounds().Intersect(xrect);
+    gfx::Rect invalid_rect = GetLocalBounds();
+    invalid_rect.Intersect(xrect);
     if (!invalid_rect.IsEmpty())
       widget_->SchedulePaintInRect(invalid_rect);
   }

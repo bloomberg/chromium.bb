@@ -842,7 +842,7 @@ void HWNDMessageHandler::SchedulePaintInRect(const gfx::Rect& rect) {
   if (use_layered_buffer_) {
     // We must update the back-buffer immediately, since Windows' handling of
     // invalid rects is somewhat mysterious.
-    invalid_rect_ = invalid_rect_.Union(rect);
+    invalid_rect_.Union(rect);
 
     // In some situations, such as drag and drop, when Windows itself runs a
     // nested message loop our message loop appears to be starved and we don't
@@ -2034,7 +2034,8 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
           int border_thickness = GetSystemMetrics(SM_CXSIZEFRAME);
           new_window_rect.Inset(-border_thickness, -border_thickness);
         } else {
-          new_window_rect = gfx::Rect(window_rect).AdjustToFit(work_area);
+          new_window_rect = gfx::Rect(window_rect);
+          new_window_rect.AdjustToFit(work_area);
         }
         window_pos->x = new_window_rect.x();
         window_pos->y = new_window_rect.y();

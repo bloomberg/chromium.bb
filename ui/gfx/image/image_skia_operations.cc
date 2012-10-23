@@ -288,9 +288,11 @@ class ExtractSubsetImageSource: public gfx::ImageSkiaSource {
   // gfx::ImageSkiaSource overrides:
   virtual ImageSkiaRep GetImageForScale(ui::ScaleFactor scale_factor) OVERRIDE {
     ImageSkiaRep image_rep = image_.GetRepresentation(scale_factor);
+    gfx::RectF scaled_subset_bounds = subset_bounds_;
+    scaled_subset_bounds.Scale(
+        ui::GetScaleFactorScale(image_rep.scale_factor()));
     SkIRect subset_bounds_in_pixel = RectToSkIRect(
-        ToEnclosingRect(subset_bounds_.Scale(
-            ui::GetScaleFactorScale(image_rep.scale_factor()))));
+        ToEnclosingRect(scaled_subset_bounds));
     SkBitmap dst;
     bool success = image_rep.sk_bitmap().extractSubset(&dst,
                                                        subset_bounds_in_pixel);
@@ -430,7 +432,8 @@ ImageSkia ImageSkiaOperations::CreateButtonBackground(SkColor color,
 // static
 ImageSkia ImageSkiaOperations::ExtractSubset(const ImageSkia& image,
                                              const Rect& subset_bounds) {
-  gfx::Rect clipped_bounds = subset_bounds.Intersect(gfx::Rect(image.size()));
+  gfx::Rect clipped_bounds = subset_bounds;
+  clipped_bounds.Intersect(gfx::Rect(image.size()));
   if (image.isNull() || clipped_bounds.IsEmpty()) {
     return ImageSkia();
   }

@@ -771,7 +771,8 @@ void RenderWidgetHostViewWin::SelectionBoundsChanged(
       text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD);
   // Only update caret position if the input method is enabled.
   if (is_enabled) {
-    caret_rect_ = start_rect.Union(end_rect);
+    caret_rect_ = start_rect;
+    caret_rect_.Union(end_rect);
     ime_input_.UpdateCaretRect(m_hWnd, caret_rect_);
   }
 }
@@ -1357,7 +1358,8 @@ void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
     }
 
     for (DWORD i = 0; i < region_data->rdh.nCount; ++i) {
-      gfx::Rect paint_rect = bitmap_rect.Intersect(gfx::Rect(region_rects[i]));
+      gfx::Rect paint_rect = bitmap_rect;
+      paint_rect.Intersect(gfx::Rect(region_rects[i]));
       if (!paint_rect.IsEmpty()) {
         BitBlt(paint_dc.m_hDC,
                paint_rect.x(),

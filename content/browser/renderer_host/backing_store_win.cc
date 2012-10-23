@@ -143,7 +143,8 @@ void BackingStoreWin::PaintToBackingStore(
   gfx::Rect view_rect(size());
 
   for (size_t i = 0; i < copy_rects.size(); i++) {
-    gfx::Rect paint_rect = view_rect.Intersect(copy_rects[i]);
+    gfx::Rect paint_rect = view_rect;
+    paint_rect.Intersect(copy_rects[i]);
     CallStretchDIBits(hdc_,
                       paint_rect.x(),
                       paint_rect.y(),

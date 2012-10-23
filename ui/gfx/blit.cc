@@ -152,13 +152,13 @@ void ScrollCanvas(SkCanvas* canvas,
   SkAutoLockPixels lock(bitmap);
 
   // We expect all coords to be inside the canvas, so clip here.
-  gfx::Rect clip = in_clip.Intersect(
-      gfx::Rect(0, 0, bitmap.width(), bitmap.height()));
+  gfx::Rect clip = in_clip;
+  clip.Intersect(gfx::Rect(0, 0, bitmap.width(), bitmap.height()));
 
   // Compute the set of pixels we'll actually end up painting.
   gfx::Rect dest_rect = clip;
   dest_rect.Offset(amount);
-  dest_rect = dest_rect.Intersect(clip);
+  dest_rect.Intersect(clip);
   if (dest_rect.size() == gfx::Size())
     return;  // Nothing to do.
 

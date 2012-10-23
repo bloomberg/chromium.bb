@@ -92,9 +92,9 @@ float DisambiguationPopupHelper::ComputeZoomAreaAndScaleFactor(
     gfx::Rect* zoom_rect) {
   *zoom_rect = tap_rect;
   for (size_t i = 0; i < target_rects.size(); i++)
-    *zoom_rect = zoom_rect->Union(gfx::Rect(target_rects[i]));
+    zoom_rect->Union(gfx::Rect(target_rects[i]));
   zoom_rect->Inset(-kDisambiguationPopupPadding, -kDisambiguationPopupPadding);
-  *zoom_rect = zoom_rect->Intersect(gfx::Rect(viewport_size));
+  zoom_rect->Intersect(gfx::Rect(viewport_size));
 
   float scale = FindOptimalScaleFactor(target_rects);
   *zoom_rect = CropZoomArea(

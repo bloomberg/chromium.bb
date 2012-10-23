@@ -79,7 +79,9 @@ void SystemModalContainerLayoutManager::OnWindowResized() {
   if (!modal_windows_.empty()) {
     aura::Window::Windows::iterator it = modal_windows_.begin();
     for (it = modal_windows_.begin(); it != modal_windows_.end(); ++it) {
-      (*it)->SetBounds((*it)->bounds().AdjustToFit(container_->bounds()));
+      gfx::Rect bounds = (*it)->bounds();
+      bounds.AdjustToFit(container_->bounds());
+      (*it)->SetBounds(bounds);
     }
   }
 }

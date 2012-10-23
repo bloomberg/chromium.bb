@@ -228,7 +228,7 @@ void AcceleratedSurfaceContainerMac::set_was_painted_to(
    uint64 surface_handle,
    const gfx::Rect& update_rect) {
   set_was_painted_to_common(surface_handle);
-  update_rect_ = update_rect_.Union(update_rect);
+  update_rect_.Union(update_rect);
 }
 
 void AcceleratedSurfaceContainerMac::EnqueueTextureForDeletion() {

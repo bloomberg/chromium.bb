@@ -224,7 +224,9 @@ void BaseLayoutManager::AdjustWindowSizesForScreenChange() {
       gfx::Rect display_rect =
           ScreenAsh::GetDisplayWorkAreaBoundsInParent(window);
       // Put as much of the window as possible within the display area.
-      window->SetBounds(window->bounds().AdjustToFit(display_rect));
+      gfx::Rect bounds = window->bounds();
+      bounds.AdjustToFit(display_rect);
+      window->SetBounds(bounds);
     }
   }
 }

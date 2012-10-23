@@ -107,7 +107,8 @@ TEST(RectTest, Intersect) {
     gfx::Rect r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
     gfx::Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
     gfx::Rect r3(tests[i].x3, tests[i].y3, tests[i].w3, tests[i].h3);
-    gfx::Rect ir = r1.Intersect(r2);
+    gfx::Rect ir = r1;
+    ir.Intersect(r2);
     EXPECT_EQ(r3.x(), ir.x());
     EXPECT_EQ(r3.y(), ir.y());
     EXPECT_EQ(r3.width(), ir.width());
@@ -156,7 +157,8 @@ TEST(RectTest, Union) {
     gfx::Rect r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
     gfx::Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
     gfx::Rect r3(tests[i].x3, tests[i].y3, tests[i].w3, tests[i].h3);
-    gfx::Rect u = r1.Union(r2);
+    gfx::Rect u = r1;
+    u.Union(r2);
     EXPECT_EQ(r3.x(), u.x());
     EXPECT_EQ(r3.y(), u.y());
     EXPECT_EQ(r3.width(), u.width());
@@ -208,7 +210,8 @@ TEST(RectTest, AdjustToFit) {
     gfx::Rect r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
     gfx::Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
     gfx::Rect r3(tests[i].x3, tests[i].y3, tests[i].w3, tests[i].h3);
-    gfx::Rect u(r1.AdjustToFit(r2));
+    gfx::Rect u = r1;
+    u.AdjustToFit(r2);
     EXPECT_EQ(r3.x(), u.x());
     EXPECT_EQ(r3.y(), u.y());
     EXPECT_EQ(r3.width(), u.width());
@@ -217,59 +220,52 @@ TEST(RectTest, AdjustToFit) {
 }
 
 TEST(RectTest, Subtract) {
+  gfx::Rect result;
+
   // Matching
-  EXPECT_TRUE(
-      gfx::Rect(10, 10, 20, 20).Subtract(
-      gfx::Rect(10, 10, 20, 20)) ==
-      gfx::Rect(0, 0, 0, 0));
+  result = gfx::Rect(10, 10, 20, 20);
+  result.Subtract(gfx::Rect(10, 10, 20, 20));
+  EXPECT_EQ(gfx::Rect(0, 0, 0, 0).ToString(), result.ToString());
 
   // Contains
-  EXPECT_TRUE(
-      gfx::Rect(10, 10, 20, 20).Subtract(
-      gfx::Rect(5, 5, 30, 30)) ==
-      gfx::Rect(0, 0, 0, 0));
+  result = gfx::Rect(10, 10, 20, 20);
+  result.Subtract(gfx::Rect(5, 5, 30, 30));
+  EXPECT_EQ(gfx::Rect(0, 0, 0, 0).ToString(), result.ToString());
 
   // No intersection
-  EXPECT_TRUE(
-      gfx::Rect(10, 10, 20, 20).Subtract(
-      gfx::Rect(30, 30, 20, 20)) ==
-      gfx::Rect(10, 10, 20, 20));
+  result = gfx::Rect(10, 10, 20, 20);
+  result.Subtract(gfx::Rect(30, 30, 30, 30));
+  EXPECT_EQ(gfx::Rect(10, 10, 20, 20).ToString(), result.ToString());
 
   // Not a complete intersection in either direction
-  EXPECT_TRUE(
-      gfx::Rect(10, 10, 20, 20).Subtract(
-      gfx::Rect(15, 15, 20, 20)) ==
-      gfx::Rect(10, 10, 20, 20));
+  result = gfx::Rect(10, 10, 20, 20);
+  result.Subtract(gfx::Rect(15, 15, 20, 20));
+  EXPECT_EQ(gfx::Rect(10, 10, 20, 20).ToString(), result.ToString());
 
   // Complete intersection in the x-direction
-  EXPECT_TRUE(
-      gfx::Rect(10, 10, 20, 20).Subtract(
-      gfx::Rect(10, 15, 20, 20)) ==
-      gfx::Rect(10, 10, 20, 5));
+  result = gfx::Rect(10, 10, 20, 20);
+  result.Subtract(gfx::Rect(10, 15, 20, 20));
+  EXPECT_EQ(gfx::Rect(10, 10, 20, 5).ToString(), result.ToString());
 
   // Complete intersection in the x-direction
-  EXPECT_TRUE(
-      gfx::Rect(10, 10, 20, 20).Subtract(
-      gfx::Rect(5, 15, 30, 20)) ==
-      gfx::Rect(10, 10, 20, 5));
+  result = gfx::Rect(10, 10, 20, 20);
+  result.Subtract(gfx::Rect(5, 15, 30, 20));
+  EXPECT_EQ(gfx::Rect(10, 10, 20, 5).ToString(), result.ToString());
 
   // Complete intersection in the x-direction
-  EXPECT_TRUE(
-      gfx::Rect(10, 10, 20, 20).Subtract(
-      gfx::Rect(5, 5, 30, 20)) ==
-      gfx::Rect(10, 25, 20, 5));
+  result = gfx::Rect(10, 10, 20, 20);
+  result.Subtract(gfx::Rect(5, 5, 30, 20));
+  EXPECT_EQ(gfx::Rect(10, 25, 20, 5).ToString(), result.ToString());
 
   // Complete intersection in the y-direction
-  EXPECT_TRUE(
-      gfx::Rect(10, 10, 20, 20).Subtract(
-      gfx::Rect(10, 10, 10, 30)) ==
-      gfx::Rect(20, 10, 10, 20));
+  result = gfx::Rect(10, 10, 20, 20);
+  result.Subtract(gfx::Rect(10, 10, 10, 30));
+  EXPECT_EQ(gfx::Rect(20, 10, 10, 20).ToString(), result.ToString());
 
   // Complete intersection in the y-direction
-  EXPECT_TRUE(
-      gfx::Rect(10, 10, 20, 20).Subtract(
-      gfx::Rect(5, 5, 20, 30)) ==
-      gfx::Rect(25, 10, 5, 20));
+  result = gfx::Rect(10, 10, 20, 20);
+  result.Subtract(gfx::Rect(5, 5, 20, 30));
+  EXPECT_EQ(gfx::Rect(25, 10, 5, 20).ToString(), result.ToString());
 }
 
 TEST(RectTest, IsEmpty) {
@@ -450,7 +446,8 @@ TEST(RectTest, ScaleRect) {
     gfx::Rect r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
     gfx::RectF r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
 
-    gfx::RectF scaled = r1.Scale(tests[i].scale);
+    gfx::RectF scaled = r1;
+    scaled.Scale(tests[i].scale);
     EXPECT_FLOAT_AND_NAN_EQ(r2.x(), scaled.x());
     EXPECT_FLOAT_AND_NAN_EQ(r2.y(), scaled.y());
     EXPECT_FLOAT_AND_NAN_EQ(r2.width(), scaled.width());
@@ -572,7 +569,8 @@ TEST(RectTest, ToRectF) {
   gfx::Rect a(10, 20, 30, 40);
   gfx::RectF b(10, 20, 30, 40);
 
-  gfx::RectF intersect = b.Intersect(a);
+  gfx::RectF intersect = b;
+  intersect.Intersect(a);
   EXPECT_EQ(b.ToString(), intersect.ToString());
 
   EXPECT_EQ(a, b);

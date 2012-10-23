@@ -224,7 +224,7 @@ gfx::Rect DockInfo::GetPopupRect() const {
     case BOTTOM_OF_WINDOW: {
       // Constrain the popup to the monitor's bounds.
       gfx::Rect ideal_bounds(x, y, popup_width(), popup_height());
-      ideal_bounds = ideal_bounds.AdjustToFit(monitor_bounds_);
+      ideal_bounds.AdjustToFit(monitor_bounds_);
       return ideal_bounds;
     }
     case DockInfo::MAXIMIZE:

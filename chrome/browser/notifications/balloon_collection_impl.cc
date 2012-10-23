@@ -218,7 +218,7 @@ gfx::Rect BalloonCollectionImpl::GetBalloonsBoundingBox() const {
   for (iter = balloons.begin(); iter != balloons.end(); ++iter) {
     gfx::Rect balloon_box = gfx::Rect((*iter)->GetPosition(),
                                       (*iter)->GetViewSize());
-    bounds = bounds.Union(balloon_box);
+    bounds.Union(balloon_box);
   }
 
   return bounds;

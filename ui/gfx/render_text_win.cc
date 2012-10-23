@@ -381,7 +381,7 @@ std::vector<Rect> RenderTextWin::GetSubstringBounds(const ui::Range& range) {
       rect.set_origin(ToViewPoint(rect.origin()));
       // Union this with the last rect if they're adjacent.
       if (!bounds.empty() && rect.SharesEdgeWith(bounds.back())) {
-        rect = rect.Union(bounds.back());
+        rect.Union(bounds.back());
         bounds.pop_back();
       }
       bounds.push_back(rect);

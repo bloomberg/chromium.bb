@@ -688,8 +688,8 @@ void WorkspaceWindowResizer::UpdateDragPhantomWindow(const gfx::Rect& bounds,
   const gfx::Rect root_bounds_in_screen(another_root->GetBoundsInScreen());
   const gfx::Rect bounds_in_screen =
       ScreenAsh::ConvertRectToScreen(window()->parent(), bounds);
-  const gfx::Rect bounds_in_another_root =
-      root_bounds_in_screen.Intersect(bounds_in_screen);
+  gfx::Rect bounds_in_another_root = root_bounds_in_screen;
+  bounds_in_another_root.Intersect(bounds_in_screen);
 
   const float fraction_in_another_window =
       (bounds_in_another_root.width() * bounds_in_another_root.height()) /

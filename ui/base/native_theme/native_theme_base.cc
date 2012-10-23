@@ -504,7 +504,8 @@ void NativeThemeBase::PaintCheckbox(SkCanvas* canvas,
         rb.GetImageSkiaNamed(IDR_CHECKBOX_OFF);
   }
 
-  gfx::Rect bounds = rect.Center(gfx::Size(image->width(), image->height()));
+  gfx::Rect bounds = rect;
+  bounds.ClampToCenteredSize(gfx::Size(image->width(), image->height()));
   DrawImageInt(canvas, *image, 0, 0, image->width(), image->height(),
       bounds.x(), bounds.y(), bounds.width(), bounds.height());
 }
@@ -655,7 +656,8 @@ void NativeThemeBase::PaintRadio(SkCanvas* canvas,
         rb.GetImageSkiaNamed(IDR_RADIO_OFF);
   }
 
-  gfx::Rect bounds = rect.Center(gfx::Size(image->width(), image->height()));
+  gfx::Rect bounds = rect;
+  bounds.ClampToCenteredSize(gfx::Size(image->width(), image->height()));
   DrawImageInt(canvas, *image, 0, 0, image->width(), image->height(),
       bounds.x(), bounds.y(), bounds.width(), bounds.height());
 }

@@ -211,7 +211,7 @@ void PPB_Scrollbar_Impl::invalidateScrollbarRect(
                      rect.y,
                      rect.width,
                      rect.height);
-  dirty_ = dirty_.Union(gfx_rect);
+  dirty_.Union(gfx_rect);
   // Can't call into the client to tell them about the invalidate right away,
   // since the PPB_Scrollbar_Impl code is still in the middle of updating its
   // internal state.

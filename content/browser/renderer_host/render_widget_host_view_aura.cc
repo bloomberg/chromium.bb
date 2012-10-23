@@ -437,7 +437,7 @@ void RenderWidgetHostViewAura::MovePluginWindows(
     gfx::Rect clip = moves[i].clip_rect;
     clip.Offset(moves[i].window_rect.origin());
     clip.Offset(scroll_offset);
-    clip = clip.Intersect(view_port);
+    clip.Intersect(view_port);
     clip.Offset(-moves[i].window_rect.x(), -moves[i].window_rect.y());
     clip.Offset(-scroll_offset.x(), -scroll_offset.y());
     moves[i].clip_rect = clip;
@@ -558,7 +558,8 @@ void RenderWidgetHostViewAura::DidUpdateBackingStore(
     SchedulePaintIfNotInClip(scroll_rect, clip_rect);
 
   for (size_t i = 0; i < copy_rects.size(); ++i) {
-    gfx::Rect rect = copy_rects[i].Subtract(scroll_rect);
+    gfx::Rect rect = copy_rects[i];
+    rect.Subtract(scroll_rect);
     if (rect.IsEmpty())
       continue;
 
@@ -871,7 +872,7 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
     // Damage may not have been DIP aligned, so inflate damage to compensate
     // for any round-off error.
     rect_to_paint.Inset(-1, -1);
-    rect_to_paint = rect_to_paint.Intersect(window_->bounds());
+    rect_to_paint.Intersect(window_->bounds());
 
     window_->SchedulePaintInRect(rect_to_paint);
 
@@ -1168,7 +1169,8 @@ gfx::Rect RenderWidgetHostViewAura::ConvertRectToScreen(const gfx::Rect& rect) {
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetCaretBounds() {
-  const gfx::Rect rect = selection_start_rect_.Union(selection_end_rect_);
+  gfx::Rect rect = selection_start_rect_;
+  rect.Union(selection_end_rect_);
   return ConvertRectToScreen(rect);
 }
 
@@ -1796,7 +1798,8 @@ void RenderWidgetHostViewAura::SchedulePaintIfNotInClip(
     const gfx::Rect& rect,
     const gfx::Rect& clip) {
   if (!clip.IsEmpty()) {
-    gfx::Rect to_paint = rect.Subtract(clip);
+    gfx::Rect to_paint = rect;
+    to_paint.Subtract(clip);
     if (!to_paint.IsEmpty())
       window_->SchedulePaintInRect(to_paint);
   } else {

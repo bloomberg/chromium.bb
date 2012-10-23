@@ -120,7 +120,8 @@ bool WebViewPlugin::getFormValue(WebString& value) {
 }
 
 void WebViewPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
-  gfx::Rect paintRect(rect_.Intersect(rect));
+  gfx::Rect paintRect = rect_;
+  paintRect.Intersect(rect);
   if (paintRect.IsEmpty())
     return;
 

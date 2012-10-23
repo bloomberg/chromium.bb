@@ -44,7 +44,8 @@ size_t TestMonitorInfoProvider::GetMonitorIndexMatchingBounds(
   // Loop through all the monitors, finding the one that intersects the
   // largest area of the supplied match rect.
   for (size_t i = 0; i < work_areas_.size(); ++i) {
-    gfx::Rect overlap(match_rect.Intersect(work_areas_[i]));
+    gfx::Rect overlap = work_areas_[i];
+    overlap.Intersect(match_rect);
     int area = overlap.width() * overlap.height();
     if (area > max_area) {
       max_area = area;

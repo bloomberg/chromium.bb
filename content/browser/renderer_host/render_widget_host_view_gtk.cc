@@ -858,19 +858,20 @@ void RenderWidgetHostViewGtk::DidUpdateBackingStore(
   // be done using XCopyArea?  Perhaps similar to
   // BackingStore::ScrollBackingStore?
   if (about_to_validate_and_paint_)
-    invalid_rect_ = invalid_rect_.Union(scroll_rect);
+    invalid_rect_.Union(scroll_rect);
   else
     Paint(scroll_rect);
 
   for (size_t i = 0; i < copy_rects.size(); ++i) {
     // Avoid double painting.  NOTE: This is only relevant given the call to
     // Paint(scroll_rect) above.
-    gfx::Rect rect = copy_rects[i].Subtract(scroll_rect);
+    gfx::Rect rect = copy_rects[i];
+    rect.Subtract(scroll_rect);
     if (rect.IsEmpty())
       continue;
 
     if (about_to_validate_and_paint_)
-      invalid_rect_ = invalid_rect_.Union(rect);
+      invalid_rect_.Union(rect);
     else
       Paint(rect);
   }
@@ -968,7 +969,9 @@ void RenderWidgetHostViewGtk::SelectionBoundsChanged(
     WebKit::WebTextDirection start_direction,
     const gfx::Rect& end_rect,
     WebKit::WebTextDirection end_direction) {
-  im_context_->UpdateCaretBounds(start_rect.Union(end_rect));
+  gfx::Rect combined_rect = start_rect;
+  combined_rect.Union(end_rect);
+  im_context_->UpdateCaretBounds(combined_rect);
 }
 
 GdkEventButton* RenderWidgetHostViewGtk::GetLastMouseDown() {
@@ -1175,7 +1178,7 @@ void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
   about_to_validate_and_paint_ = false;
 
   gfx::Rect paint_rect = gfx::Rect(0, 0, kMaxWindowWidth, kMaxWindowHeight);
-  paint_rect = paint_rect.Intersect(invalid_rect_);
+  paint_rect.Intersect(invalid_rect_);
 
   if (backing_store) {
     // Only render the widget if it is attached to a window; there's a short

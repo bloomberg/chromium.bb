@@ -444,7 +444,8 @@ void ToolbarView::LayoutForSearch() {
   // Note that parent of |location_bar_container_| i.e. BrowserView can't clip
   // its children, else it loses the 3D shadows.
   gfx::Rect parent_rect = location_bar_container_->parent()->GetLocalBounds();
-  gfx::Rect intersect_rect = parent_rect.Intersect(location_container_bounds);
+  gfx::Rect intersect_rect = parent_rect;
+  intersect_rect.Intersect(location_container_bounds);
   // If the two bounds don't intersect, set bounds of |location_bar_container_|
   // to 0.
   location_bar_container_->SetBoundsRect(intersect_rect);

@@ -187,7 +187,7 @@ Panel* PanelManager::CreatePanel(const std::string& app_name,
     bounds.set_origin(docked_strip_->GetDefaultPositionForPanel(bounds.size()));
   } else {
     bounds.set_origin(requested_bounds.origin());
-    bounds = bounds.AdjustToFit(display_settings_provider_->GetDisplayArea());
+    bounds.AdjustToFit(display_settings_provider_->GetDisplayArea());
   }
 
   // Create the panel.

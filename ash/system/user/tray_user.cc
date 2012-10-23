@@ -76,7 +76,8 @@ class RoundedImageView : public views::View {
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     View::OnPaint(canvas);
     gfx::Rect image_bounds(GetPreferredSize());
-    image_bounds = gfx::Rect(size()).Center(image_bounds.size());
+    image_bounds = gfx::Rect(size());
+    image_bounds.ClampToCenteredSize(image_bounds.size());
     image_bounds.Inset(GetInsets());
     const SkScalar kRadius = SkIntToScalar(corner_radius_);
     SkPath path;
@@ -220,7 +221,8 @@ class UserView : public views::View,
     container_->SetBoundsRect(gfx::Rect(size()));
     if (signout_ && user_info_) {
       gfx::Rect signout_bounds(signout_->GetPreferredSize());
-      signout_bounds = bounds().Center(signout_bounds.size());
+      signout_bounds = bounds();
+      signout_bounds.ClampToCenteredSize(signout_bounds.size());
       signout_bounds.set_x(width() - signout_bounds.width() -
           kTrayPopupPaddingHorizontal);
       signout_->SetBoundsRect(signout_bounds);

@@ -143,10 +143,10 @@ void WebWidgetHost::DidInvalidateRect(const gfx::Rect& damaged_rect) {
   // If this invalidate overlaps with a pending scroll, then we have to
   // downgrade to invalidating the scroll rect.
   if (damaged_rect.Intersects(scroll_rect_)) {
-    paint_rect_ = paint_rect_.Union(scroll_rect_);
+    paint_rect_.Union(scroll_rect_);
     ResetScrollRect();
   }
-  paint_rect_ = paint_rect_.Union(damaged_rect);
+  paint_rect_.Union(damaged_rect);
 
   RECT r = damaged_rect.ToRECT();
   InvalidateRect(view_, &r, FALSE);
@@ -162,9 +162,9 @@ void WebWidgetHost::DidScrollRect(int dx, int dy, const gfx::Rect& clip_rect) {
   // If we already have a pending scroll operation or if this scroll operation
   // intersects the existing paint region, then just failover to invalidating.
   if (!scroll_rect_.IsEmpty() || paint_rect_.Intersects(clip_rect)) {
-    paint_rect_ = paint_rect_.Union(scroll_rect_);
+    paint_rect_.Union(scroll_rect_);
     ResetScrollRect();
-    paint_rect_ = paint_rect_.Union(clip_rect);
+    paint_rect_.Union(clip_rect);
   }
 
   // We will perform scrolling lazily, when requested to actually paint.
@@ -227,7 +227,7 @@ bool WebWidgetHost::WndProc(UINT message, WPARAM wparam, LPARAM lparam) {
 }
 
 void WebWidgetHost::UpdatePaintRect(const gfx::Rect& rect) {
-  paint_rect_ = paint_rect_.Union(rect);
+  paint_rect_.Union(rect);
 }
 
 void WebWidgetHost::Paint() {
@@ -249,7 +249,7 @@ void WebWidgetHost::Paint() {
   webwidget_->layout();
 
   // Scroll the canvas if necessary
-  scroll_rect_ = client_rect.Intersect(scroll_rect_);
+  scroll_rect_.Intersect(client_rect);
   if (!scroll_rect_.IsEmpty()) {
     skia::ScopedPlatformPaint scoped_platform_paint(canvas_.get());
     HDC hdc = scoped_platform_paint.GetPlatformSurface();
@@ -265,7 +265,7 @@ void WebWidgetHost::Paint() {
   // first time we call it.  This is necessary because some WebCore rendering
   // objects update their layout only when painted.
   for (int i = 0; i < 2; ++i) {
-    paint_rect_ = client_rect.Intersect(paint_rect_);
+    paint_rect_.Intersect(client_rect);
     if (!paint_rect_.IsEmpty()) {
       gfx::Rect rect(paint_rect_);
       paint_rect_ = gfx::Rect();

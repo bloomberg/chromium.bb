@@ -524,7 +524,8 @@ gboolean BrowserToolbarGtk::OnAlignmentExpose(GtkWidget* widget,
 
   if (window_->ShouldDrawContentDropShadow()) {
     // Leave room to draw rounded corners.
-    area = area.Subtract(right).Subtract(left);
+    area.Subtract(right);
+    area.Subtract(left);
   }
 
   gfx::Image background = theme_service_->GetImageNamed(IDR_THEME_TOOLBAR);

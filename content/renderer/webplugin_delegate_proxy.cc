@@ -739,7 +739,8 @@ void WebPluginDelegateProxy::Paint(WebKit::WebCanvas* canvas,
                                    const gfx::Rect& damaged_rect) {
   // Limit the damaged rectangle to whatever is contained inside the plugin
   // rectangle, as that's the rectangle that we'll actually draw.
-  gfx::Rect rect = damaged_rect.Intersect(plugin_rect_);
+  gfx::Rect rect = damaged_rect;
+  rect.Intersect(plugin_rect_);
 
   // If the plugin is no longer connected (channel crashed) draw a crashed
   // plugin bitmap
@@ -853,7 +854,8 @@ bool WebPluginDelegateProxy::BackgroundChanged(
   // intersect their rects first.
   gfx::Rect bitmap_rect(static_cast<int>(-xf.eDx), static_cast<int>(-xf.eDy),
                         bitmap.bmWidth, bitmap.bmHeight);
-  gfx::Rect check_rect = rect.Intersect(bitmap_rect);
+  gfx::Rect check_rect = rect;
+  check_rect.Intersect(bitmap_rect);
   int row_byte_size = check_rect.width() * (bitmap.bmBitsPixel / 8);
   for (int y = check_rect.y(); y < check_rect.bottom(); y++) {
     char* hdc_row_start = static_cast<char*>(bitmap.bmBits) +
@@ -898,7 +900,8 @@ bool WebPluginDelegateProxy::BackgroundChanged(
 #endif
   // According to comments in the Windows code, the damage rect that we're given
   // may project outside the image, so intersect their rects.
-  gfx::Rect content_rect = rect.Intersect(full_content_rect);
+  gfx::Rect content_rect = rect;
+  content_rect.Intersect(full_content_rect);
 
 #if defined(OS_MACOSX)
   const unsigned char* page_bytes = static_cast<const unsigned char*>(
@@ -1188,7 +1191,8 @@ void WebPluginDelegateProxy::OnInvalidateRect(const gfx::Rect& rect) {
 
   // Clip the invalidation rect to the plugin bounds; the plugin may have been
   // resized since the invalidate message was sent.
-  const gfx::Rect clipped_rect(rect.Intersect(gfx::Rect(plugin_rect_.size())));
+  gfx::Rect clipped_rect = rect;
+  clipped_rect.Intersect(gfx::Rect(plugin_rect_.size()));
 
   invalidate_pending_ = true;
   // The plugin is blocked on the renderer because the invalidate message it has
@@ -1309,7 +1313,7 @@ void WebPluginDelegateProxy::UpdateFrontBuffer(
 
   // Plugin has just painted "rect" into the back-buffer, so the front-buffer
   // no longer holds the latest content for that rectangle.
-  front_buffer_diff_ = front_buffer_diff_.Subtract(rect);
+  front_buffer_diff_.Subtract(rect);
   if (allow_buffer_flipping && front_buffer_diff_.IsEmpty()) {
     // Back-buffer contains the latest content for all areas; simply flip
     // the buffers.
@@ -1324,7 +1328,7 @@ void WebPluginDelegateProxy::UpdateFrontBuffer(
     // allowed); fall back to copying the data.
     CopyFromBackBufferToFrontBuffer(rect);
   }
-  transport_store_painted_ = transport_store_painted_.Union(rect);
+  transport_store_painted_.Union(rect);
 }
 
 void WebPluginDelegateProxy::OnHandleURLRequest(

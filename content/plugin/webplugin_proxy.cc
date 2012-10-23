@@ -176,11 +176,12 @@ void WebPluginProxy::InvalidateRect(const gfx::Rect& rect) {
   // offscreen, so constrain invalidates to the plugin rect.
   gfx::Rect plugin_rect = delegate_->GetRect();
   plugin_rect.set_origin(gfx::Point(0, 0));
-  const gfx::Rect invalidate_rect(rect.Intersect(plugin_rect));
+  plugin_rect.Intersect(rect);
+  const gfx::Rect invalidate_rect(plugin_rect);
 #else
   const gfx::Rect invalidate_rect(rect);
 #endif
-  damaged_rect_ = damaged_rect_.Union(invalidate_rect);
+  damaged_rect_.Union(invalidate_rect);
   // Ignore NPN_InvalidateRect calls with empty rects.  Also don't send an
   // invalidate if it's outside the clipping region, since if we did it won't
   // lead to a paint and we'll be stuck waiting forever for a DidPaint response.

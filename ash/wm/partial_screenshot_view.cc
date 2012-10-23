@@ -121,8 +121,10 @@ void PartialScreenshotView::OnMouseReleased(const ui::MouseEvent& event) {
   is_dragging_ = false;
   if (screenshot_delegate_) {
     aura::RootWindow *root_window = Shell::GetPrimaryRootWindow();
+    gfx::Rect root_window_screenshot_rect = root_window->bounds();
+    root_window_screenshot_rect.Intersect(GetScreenshotRect());
     screenshot_delegate_->HandleTakePartialScreenshot(
-        root_window, root_window->bounds().Intersect(GetScreenshotRect()));
+        root_window, root_window_screenshot_rect);
   }
 }
 

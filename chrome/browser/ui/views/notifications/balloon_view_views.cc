@@ -260,7 +260,8 @@ gfx::Rect BalloonViewImpl::GetCloseButtonBounds() const {
   const gfx::Size& pref_size(close_button_->GetPreferredSize());
   bounds.Inset(bounds.width() - kShelfMargin - pref_size.width(), 0,
       kShelfMargin, 0);
-  return bounds.Center(pref_size);
+  bounds.ClampToCenteredSize(pref_size);
+  return bounds;
 }
 
 gfx::Rect BalloonViewImpl::GetOptionsButtonBounds() const {
@@ -270,7 +271,8 @@ gfx::Rect BalloonViewImpl::GetOptionsButtonBounds() const {
   bounds.set_x(GetCloseButtonBounds().x() - kOptionsDismissSpacing -
       pref_size.width());
   bounds.set_width(pref_size.width());
-  return bounds.Center(pref_size);
+  bounds.ClampToCenteredSize(pref_size);
+  return bounds;
 }
 
 gfx::Rect BalloonViewImpl::GetLabelBounds() const {
@@ -280,7 +282,8 @@ gfx::Rect BalloonViewImpl::GetLabelBounds() const {
   bounds.Inset(kLabelLeftMargin, 0, bounds.width() -
       GetOptionsButtonBounds().x() + kLabelOptionsSpacing, 0);
   pref_size.set_width(bounds.width());
-  return bounds.Center(pref_size);
+  bounds.ClampToCenteredSize(pref_size);
+  return bounds;
 }
 
 void BalloonViewImpl::Show(Balloon* balloon) {

@@ -336,7 +336,7 @@ gfx::Rect View::GetVisibleBounds() const {
     const View* ancestor = view->parent_;
     if (ancestor != NULL) {
       ancestor_bounds.SetRect(0, 0, ancestor->width(), ancestor->height());
-      vis_bounds = vis_bounds.Intersect(ancestor_bounds);
+      vis_bounds.Intersect(ancestor_bounds);
     } else if (!view->GetWidget()) {
       // If the view has no Widget, we're not visible. Return an empty rect.
       return gfx::Rect();

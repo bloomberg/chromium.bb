@@ -67,8 +67,8 @@ class PageSwitcherButton : public views::CustomButton {
  private:
   // Paints a button that has two rounded corner at bottom.
   void PaintButton(gfx::Canvas* canvas, SkColor base_color) {
-    gfx::Rect rect(GetContentsBounds().Center(
-            gfx::Size(button_width_, kButtonHeight)));
+    gfx::Rect rect(GetContentsBounds());
+    rect.ClampToCenteredSize(gfx::Size(button_width_, kButtonHeight));
 
     SkPath path;
     path.addRoundRect(gfx::RectToSkRect(rect),
@@ -189,7 +189,8 @@ void PageSwitcher::Layout() {
                            rect.y(),
                            buttons_size.width(),
                            rect.height());
-  buttons_->SetBoundsRect(rect.Intersect(buttons_bounds));
+  rect.Intersect(buttons_bounds);
+  buttons_->SetBoundsRect(rect);
 }
 
 void PageSwitcher::CalculateButtonWidthAndSpacing(int contents_width) {

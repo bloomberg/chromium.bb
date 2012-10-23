@@ -76,7 +76,7 @@ class TestView : public View {
     if (dirty_rect_.IsEmpty())
       dirty_rect_ = r;
     else
-      dirty_rect_ = dirty_rect_.Union(r);
+      dirty_rect_.Union(r);
   }
 
   const gfx::Rect& dirty_rect() const { return dirty_rect_; }
@@ -129,7 +129,8 @@ TEST_F(BoundsAnimatorTest, AnimateViewTo) {
 
   // The parent should have been told to repaint as the animation progressed.
   // The resulting rect is the union of the original and target bounds.
-  EXPECT_EQ(target_bounds.Union(initial_bounds), parent()->dirty_rect());
+  target_bounds.Union(initial_bounds);
+  EXPECT_EQ(target_bounds, parent()->dirty_rect());
 }
 
 // Make sure an AnimationDelegate is deleted when canceled.

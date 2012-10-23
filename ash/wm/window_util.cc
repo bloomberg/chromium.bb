@@ -110,7 +110,8 @@ void ToggleMaximizedWindow(aura::Window* window) {
 void CenterWindow(aura::Window* window) {
   const gfx::Display display =
       Shell::GetScreen()->GetDisplayNearestWindow(window);
-  gfx::Rect center = display.work_area().Center(window->bounds().size());
+  gfx::Rect center = display.work_area();
+  center.ClampToCenteredSize(window->bounds().size());
   window->SetBounds(center);
 }
 

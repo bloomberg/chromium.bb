@@ -72,7 +72,8 @@ void BoxLayout::Layout(View* host) {
         y += size.height() + between_child_spacing_ + padding;
       }
       // Clamp child view bounds to |child_area|.
-      child->SetBoundsRect(bounds.Intersect(child_area));
+      bounds.Intersect(child_area);
+      child->SetBoundsRect(bounds);
     }
   }
 }
@@ -86,11 +87,11 @@ gfx::Size BoxLayout::GetPreferredSize(View* host) {
       gfx::Size size(child->GetPreferredSize());
       if (orientation_ == kHorizontal) {
         gfx::Rect child_bounds(position, 0, size.width(), size.height());
-        bounds = bounds.Union(child_bounds);
+        bounds.Union(child_bounds);
         position += size.width();
       } else {
         gfx::Rect child_bounds(0, position, size.width(), size.height());
-        bounds = bounds.Union(child_bounds);
+        bounds.Union(child_bounds);
         position += size.height();
       }
       position += between_child_spacing_;

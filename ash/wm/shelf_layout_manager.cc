@@ -746,7 +746,8 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
           target_bounds->launcher_bounds_in_root.height() + move - translate);
 
       // The statusbar should be in the center.
-      gfx::Rect status_y = target_bounds->launcher_bounds_in_root.Center(
+      gfx::Rect status_y = target_bounds->launcher_bounds_in_root;
+      status_y.ClampToCenteredSize(
           target_bounds->status_bounds_in_root.size());
       target_bounds->status_bounds_in_root.set_y(status_y.y());
     }
@@ -774,7 +775,8 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
       }
 
       // The statusbar should be in the center.
-      gfx::Rect status_x = target_bounds->launcher_bounds_in_root.Center(
+      gfx::Rect status_x = target_bounds->launcher_bounds_in_root;
+      status_x.ClampToCenteredSize(
           target_bounds->status_bounds_in_root.size());
       target_bounds->status_bounds_in_root.set_x(status_x.x());
     }

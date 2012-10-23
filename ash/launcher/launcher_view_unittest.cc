@@ -645,8 +645,9 @@ TEST_F(LauncherViewTest, ShouldHideTooltipTest) {
   gfx::Rect app_button_rect = GetButtonByID(app_button_id)->GetMirroredBounds();
   gfx::Rect tab_button_rect = GetButtonByID(tab_button_id)->GetMirroredBounds();
   ASSERT_FALSE(app_button_rect.Intersects(tab_button_rect));
-  EXPECT_FALSE(launcher_view_->ShouldHideTooltip(
-      app_button_rect.Union(tab_button_rect).CenterPoint()));
+  gfx::Rect union_rect = app_button_rect;
+  union_rect.Union(tab_button_rect);
+  EXPECT_FALSE(launcher_view_->ShouldHideTooltip(union_rect.CenterPoint()));
 
   // The tooltip should hide if it's outside of all buttons.
   gfx::Rect all_area;
@@ -655,10 +656,9 @@ TEST_F(LauncherViewTest, ShouldHideTooltipTest) {
     if (!button)
       continue;
 
-    all_area = all_area.Union(button->GetMirroredBounds());
+    all_area.Union(button->GetMirroredBounds());
   }
-  all_area = all_area.Union(
-      launcher_view_->GetAppListButtonView()->GetMirroredBounds());
+  all_area.Union(launcher_view_->GetAppListButtonView()->GetMirroredBounds());
   EXPECT_FALSE(launcher_view_->ShouldHideTooltip(all_area.origin()));
   EXPECT_FALSE(launcher_view_->ShouldHideTooltip(
       gfx::Point(all_area.right() - 1, all_area.bottom() - 1)));
