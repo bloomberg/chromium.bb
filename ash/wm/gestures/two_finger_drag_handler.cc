@@ -4,7 +4,7 @@
 
 #include "ash/wm/gestures/two_finger_drag_handler.h"
 
-#include "ash/wm/default_window_resizer.h"
+#include "ash/wm/window_resizer.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "ui/aura/client/window_types.h"
@@ -31,8 +31,8 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
     if (wm::IsWindowNormal(target) &&
       target->type() == aura::client::WINDOW_TYPE_NORMAL) {
       target->AddObserver(this);
-      window_resizer_.reset(DefaultWindowResizer::Create(target,
-          event.details().bounding_box().CenterPoint(), HTCAPTION));
+      window_resizer_ = CreateWindowResizer(target,
+          event.details().bounding_box().CenterPoint(), HTCAPTION);
       return true;
     }
 
@@ -56,7 +56,7 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
     case ui::ET_GESTURE_MULTIFINGER_SWIPE: {
       // For a swipe, the window either maximizes, minimizes, or snaps. In this
       // case, cancel the drag, and do the appropriate action.
-      aura::Window* target = window_resizer_->target_window();
+      aura::Window* target = window_resizer_->GetTarget();
       Reset();
 
       if (event.details().swipe_up()) {
@@ -105,7 +105,7 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
 }
 
 void TwoFingerDragHandler::Reset() {
-  window_resizer_->target_window()->RemoveObserver(this);
+  window_resizer_->GetTarget()->RemoveObserver(this);
   window_resizer_.reset();
 }
 

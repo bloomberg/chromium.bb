@@ -29,6 +29,23 @@
 #include "ui/gfx/transform.h"
 
 namespace ash {
+
+scoped_ptr<WindowResizer> CreateWindowResizer(aura::Window* window,
+                                   const gfx::Point& point_in_parent,
+                                   int window_component) {
+  // Allow dragging maximized windows if it's not tracked by workspace. This is
+  // set by tab dragging code.
+  if (!wm::IsWindowNormal(window) &&
+      (window_component != HTCAPTION || GetTrackedByWorkspace(window))) {
+    return scoped_ptr<WindowResizer>();
+  }
+  return make_scoped_ptr<WindowResizer>(
+      internal::WorkspaceWindowResizer::Create(window,
+                                               point_in_parent,
+                                               window_component,
+                                               std::vector<aura::Window*>()));
+}
+
 namespace internal {
 
 namespace {
