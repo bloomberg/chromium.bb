@@ -948,6 +948,59 @@
       ],
     },
     {
+      'target_name': 'chromedriver2_lib',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations'
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'test/chromedriver/chromedriver.cc',
+        'test/chromedriver/chromedriver.h',
+        'test/chromedriver/command_executor.h',
+        'test/chromedriver/command_executor_impl.cc',
+        'test/chromedriver/command_executor_impl.h',
+        'test/chromedriver/status.cc',
+        'test/chromedriver/status.h',
+      ],
+    },
+    {
+      'target_name': 'chromedriver2_unittests',
+      'type': 'executable',
+      'dependencies': [
+        'chromedriver2_lib',
+        '../base/base.gyp:base',
+        '../base/base.gyp:run_all_unittests',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'test/chromedriver/chromedriver_unittest.cc',
+        'test/chromedriver/command_executor_impl_unittest.cc',
+        'test/chromedriver/status_unittest.cc',
+      ],
+    },
+    # This is the new ChromeDriver based on DevTools.
+    {
+      'target_name': 'chromedriver2',
+      'type': 'shared_library',
+      'dependencies': [
+        'chromedriver2_lib',
+        '../base/base.gyp:base',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'test/chromedriver/chromedriver_shared_library.cc',
+      ],
+    },
+    {
       'target_name': 'unit_tests',
       'type': '<(gtest_target_type)',
       'dependencies': [
