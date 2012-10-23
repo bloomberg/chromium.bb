@@ -68,7 +68,7 @@ bool InvokeGoogleUpdateForRename() {
 }
 
 FilePath GetMetroRelauncherPath(const FilePath& chrome_exe,
-                                const std::string version_str) {
+                                const std::string& version_str) {
   FilePath path(chrome_exe.DirName());
 
   // The relauncher is ordinarily in the version directory.  When running in a
