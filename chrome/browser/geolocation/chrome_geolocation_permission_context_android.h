@@ -18,6 +18,8 @@ class ChromeGeolocationPermissionContextAndroid
  private:
   friend class ChromeGeolocationPermissionContext;
 
+  virtual ~ChromeGeolocationPermissionContextAndroid();
+
   // ChromeGeolocationPermissionContext implementation:
   virtual void DecidePermission(
       int render_process_id,

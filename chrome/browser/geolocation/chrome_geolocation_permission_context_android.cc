@@ -14,6 +14,10 @@ ChromeGeolocationPermissionContextAndroid(Profile* profile)
     : ChromeGeolocationPermissionContext(profile) {
 }
 
+ChromeGeolocationPermissionContextAndroid::
+    ~ChromeGeolocationPermissionContextAndroid() {
+}
+
 void ChromeGeolocationPermissionContextAndroid::DecidePermission(
     int render_process_id,
     int render_view_id,
