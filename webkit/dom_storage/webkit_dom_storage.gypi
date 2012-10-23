@@ -14,7 +14,6 @@
       '../dom_storage/dom_storage_database.cc',
       '../dom_storage/dom_storage_database.h',
       '../dom_storage/dom_storage_database_adapter.h',
-      '../dom_storage/dom_storage_export.h',
       '../dom_storage/dom_storage_host.cc',
       '../dom_storage/dom_storage_host.h',
       '../dom_storage/dom_storage_map.cc',
