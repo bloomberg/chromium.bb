@@ -1472,6 +1472,7 @@
         'browser/net/clear_on_exit_policy_unittest.cc',
         'browser/net/connection_tester_unittest.cc',
         'browser/net/dns_probe_job_unittest.cc',
+        'browser/net/dns_probe_service_unittest.cc',
         'browser/net/gaia/gaia_oauth_fetcher_unittest.cc',
         'browser/net/http_pipelining_compatibility_client_unittest.cc',
         'browser/net/http_server_properties_manager_unittest.cc',

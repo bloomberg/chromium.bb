@@ -72,12 +72,11 @@ void DnsProbeJobTest::RunProbe(MockDnsClientRule::Result good_result,
   scoped_ptr<MessageLoop> message_loop_(new MessageLoopForIO());
 
   scoped_ptr<DnsProbeJob> job(
-      new DnsProbeJob(dns_client.Pass(), callback, net_log));
+      DnsProbeJob::CreateJob(dns_client.Pass(), callback, net_log));
 
   // Force callback to run.
   base::RunLoop run_loop;
-  MessageLoop::current()->PostTask(FROM_HERE, run_loop.QuitClosure());
-  run_loop.Run();
+  run_loop.RunUntilIdle();
 }
 
 void DnsProbeJobTest::OnProbeFinished(DnsProbeJob* job,

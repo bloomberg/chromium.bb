@@ -8,13 +8,11 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
-#include "net/base/net_log.h"
-#include "net/dns/dns_transaction.h"
 
 namespace net {
 class DnsClient;
-struct DnsConfig;
-};
+class NetLog;
+}
 
 namespace chrome_browser_net {
 
@@ -31,43 +29,21 @@ class DnsProbeJob {
   };
   typedef base::Callback<void(DnsProbeJob* job, Result result)> CallbackType;
 
+  virtual ~DnsProbeJob() { }
+
   // Creates and starts a probe job.
   //
-  // |dns_client| should be a DnsClient with the DnsConfig alreay set.
+  // |dns_client| should be a DnsClient with the DnsConfig already set.
   // |callback| will be called when the probe finishes, which may happen
   // before the constructor returns (for example, if we can't create the DNS
   // transactions).
-  DnsProbeJob(scoped_ptr<net::DnsClient> dns_client,
-              const CallbackType& callback,
-              net::NetLog* net_log);
-  ~DnsProbeJob();
+  static scoped_ptr<DnsProbeJob> CreateJob(
+      scoped_ptr<net::DnsClient> dns_client,
+      const CallbackType& callback,
+      net::NetLog* net_log);
 
- private:
-  enum QueryStatus {
-    QUERY_UNKNOWN,
-    QUERY_CORRECT,
-    QUERY_INCORRECT,
-    QUERY_ERROR,
-    QUERY_RUNNING,
-  };
-
-  void MaybeFinishProbe();
-  scoped_ptr<net::DnsTransaction> CreateTransaction(
-      const std::string& hostname);
-  void StartTransaction(net::DnsTransaction* transaction);
-  void OnTransactionComplete(net::DnsTransaction* transaction,
-                             int net_error,
-                             const net::DnsResponse* response);
-  void RunCallback(Result result);
-
-  net::BoundNetLog bound_net_log_;
-  scoped_ptr<net::DnsClient> dns_client_;
-  const CallbackType callback_;
-  bool probe_running_;
-  scoped_ptr<net::DnsTransaction> good_transaction_;
-  scoped_ptr<net::DnsTransaction> bad_transaction_;
-  QueryStatus good_status_;
-  QueryStatus bad_status_;
+ protected:
+  DnsProbeJob() { }
 
   DISALLOW_COPY_AND_ASSIGN(DnsProbeJob);
 };
