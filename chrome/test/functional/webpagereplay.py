@@ -14,6 +14,7 @@ import logging
 import os
 import signal
 import subprocess
+import sys
 import time
 import urllib
 
@@ -144,7 +145,7 @@ class ReplayServer(object):
     Raises:
       ReplayNotStartedError if Replay start-up fails.
     """
-    cmd_line = [self.replay_py]
+    cmd_line = [sys.executable, self.replay_py]
     cmd_line.extend(self.replay_options)
     cmd_line.append(self.archive_path)
     self.log_fh = self._OpenLogFile()
