@@ -127,12 +127,4 @@ void MenuDelegate::WillShowMenu(MenuItemView* menu) {
 void MenuDelegate::WillHideMenu(MenuItemView* menu) {
 }
 
-Border* MenuDelegate::CreateMenuBorder() {
-  return NULL;
-}
-
-Background* MenuDelegate::CreateMenuBackground() {
-  return NULL;
-}
-
 }  // namespace views

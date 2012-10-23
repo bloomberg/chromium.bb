@@ -43,8 +43,6 @@ class ActionBoxMenu : public views::MenuDelegate,
 
   // Overridden from views::MenuDelegate:
   virtual void ExecuteCommand(int id) OVERRIDE;
-  virtual views::Border* CreateMenuBorder() OVERRIDE;
-  virtual views::Background* CreateMenuBackground() OVERRIDE;
 
   // Overridden from BrowserActionView::Delegate and DragController overrides:
   virtual void InspectPopup(ExtensionAction* button) OVERRIDE;

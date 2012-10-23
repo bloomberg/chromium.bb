@@ -183,22 +183,13 @@ MenuScrollViewContainer::MenuScrollViewContainer(SubmenuView* content_view)
   scroll_view_ = new MenuScrollView(content_view);
   AddChildView(scroll_view_);
 
-  MenuDelegate* delegate = content_view_->GetMenuItem()->GetDelegate();
-  if (delegate) {
-    Border* border = delegate->CreateMenuBorder();
-    if (!border) {
-      const MenuConfig& menu_config =
-          content_view_->GetMenuItem()->GetMenuConfig();
-      border = Border::CreateEmptyBorder(
-          menu_config.submenu_vertical_margin_size,
-          menu_config.submenu_horizontal_margin_size,
-          menu_config.submenu_vertical_margin_size,
-          menu_config.submenu_horizontal_margin_size);
-    }
-    set_border(border);
-
-    set_background(delegate->CreateMenuBackground());
-  }
+  const MenuConfig& menu_config =
+      content_view_->GetMenuItem()->GetMenuConfig();
+  set_border(Border::CreateEmptyBorder(
+      menu_config.submenu_vertical_margin_size,
+      menu_config.submenu_horizontal_margin_size,
+      menu_config.submenu_vertical_margin_size,
+      menu_config.submenu_horizontal_margin_size));
 }
 
 void MenuScrollViewContainer::OnPaintBackground(gfx::Canvas* canvas) {
