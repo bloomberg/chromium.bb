@@ -12,6 +12,7 @@
 #include "base/debug/alias.h"
 #include "base/debug/trace_event.h"
 #include "base/metrics/histogram.h"
+#include "cc/texture.h"
 #include "cc/prioritized_texture.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
@@ -212,10 +213,12 @@ void TextureUploader::uploadWithTexSubImage(const uint8_t* image,
                     source_rect.y() - image_rect.y());
 
     const uint8_t* pixel_source;
+    unsigned int bytes_per_pixel = Texture::bytesPerPixel(format);
+
     if (image_rect.width() == source_rect.width() && !offset.x()) {
-        pixel_source = &image[4 * offset.y() * image_rect.width()];
+        pixel_source = &image[bytes_per_pixel * offset.y() * image_rect.width()];
     } else {
-        size_t needed_size = source_rect.width() * source_rect.height() * 4;
+        size_t needed_size = source_rect.width() * source_rect.height() * bytes_per_pixel;
         if (m_subImageSize < needed_size) {
             m_subImage.reset(new uint8_t[needed_size]);
             m_subImageSize = needed_size;
@@ -223,10 +226,10 @@ void TextureUploader::uploadWithTexSubImage(const uint8_t* image,
         // Strides not equal, so do a row-by-row memcpy from the
         // paint results into a temp buffer for uploading.
         for (int row = 0; row < source_rect.height(); ++row)
-            memcpy(&m_subImage[source_rect.width() * 4 * row],
-                   &image[4 * (offset.x() +
-                               (offset.y() + row) * image_rect.width())],
-                   source_rect.width() * 4);
+            memcpy(&m_subImage[source_rect.width() * bytes_per_pixel * row],
+                   &image[bytes_per_pixel * (offset.x() +
+                          (offset.y() + row) * image_rect.width())],
+                   source_rect.width() * bytes_per_pixel);
 
         pixel_source = &m_subImage[0];
     }
@@ -295,20 +298,7 @@ void TextureUploader::uploadWithMapTexSubImage(const uint8_t* image,
         return;
     }
 
-    unsigned int components_per_pixel = 0;
-    switch (format) {
-    case GL_RGBA:
-    case GL_BGRA_EXT:
-        components_per_pixel = 4;
-        break;
-    case GL_LUMINANCE:
-        components_per_pixel = 1;
-        break;
-    default:
-        NOTREACHED();
-    }
-    unsigned int bytes_per_component = 1;
-    unsigned int bytes_per_pixel = components_per_pixel * bytes_per_component;
+    unsigned int bytes_per_pixel = Texture::bytesPerPixel(format);
 
     if (image_rect.width() == source_rect.width() && !offset.x()) {
         memcpy(pixel_dest,
@@ -319,8 +309,8 @@ void TextureUploader::uploadWithMapTexSubImage(const uint8_t* image,
         // paint results into the pixelDest
         for (int row = 0; row < source_rect.height(); ++row)
             memcpy(&pixel_dest[source_rect.width() * row * bytes_per_pixel],
-                   &image[4 * (offset.x() +
-                               (offset.y() + row) * image_rect.width())],
+                   &image[bytes_per_pixel * (offset.x() +
+                          (offset.y() + row) * image_rect.width())],
                    source_rect.width() * bytes_per_pixel);
     }
 

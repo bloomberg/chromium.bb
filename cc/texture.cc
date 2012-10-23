@@ -5,6 +5,7 @@
 #include "config.h"
 
 #include "cc/texture.h"
+#include "third_party/khronos/GLES2/gl2ext.h"
 
 namespace cc {
 
@@ -22,11 +23,27 @@ size_t Texture::bytes() const
     return memorySizeBytes(m_size, m_format);
 }
 
+size_t Texture::bytesPerPixel(GLenum format)
+{
+    unsigned int componentsPerPixel = 0;
+    unsigned int bytesPerComponent = 1;
+    switch (format) {
+    case GL_RGBA:
+    case GL_BGRA_EXT:
+        componentsPerPixel = 4;
+        break;
+    case GL_LUMINANCE:
+        componentsPerPixel = 1;
+        break;
+    default:
+        NOTREACHED();
+    }
+    return componentsPerPixel * bytesPerComponent;
+}
+
 size_t Texture::memorySizeBytes(const IntSize& size, GLenum format)
 {
-    unsigned int componentsPerPixel = 4;
-    unsigned int bytesPerComponent = 1;
-    return componentsPerPixel * bytesPerComponent * size.width() * size.height();
+    return bytesPerPixel(format) * size.width() * size.height();
 }
 
 }
