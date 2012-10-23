@@ -33,6 +33,9 @@
 
 namespace views {
 
+DesktopRootWindowHostLinux* DesktopRootWindowHostLinux::g_current_capture =
+    NULL;
+
 DEFINE_WINDOW_PROPERTY_KEY(
     aura::Window*, kViewsWindowForRootWindow, NULL);
 
@@ -75,7 +78,6 @@ DesktopRootWindowHostLinux::DesktopRootWindowHostLinux(
       atom_cache_(xdisplay_, kAtomsToCache),
       window_mapped_(false),
       focus_when_shown_(false),
-      has_capture_(false),
       cursor_loader_(),
       current_cursor_(ui::kCursorNull),
       cursor_shown_(true),
@@ -471,8 +473,25 @@ void DesktopRootWindowHostLinux::SetCursorInternal(gfx::NativeCursor cursor) {
   XDefineCursor(xdisplay_, xwindow_, cursor.platform());
 }
 
+void DesktopRootWindowHostLinux::OnCaptureReleased() {
+  native_widget_delegate_->OnMouseCaptureLost();
+  g_current_capture = NULL;
+}
+
+void DesktopRootWindowHostLinux::DispatchMouseEvent(ui::MouseEvent* event) {
+  if (!g_current_capture || g_current_capture == this) {
+    root_window_host_delegate_->OnHostMouseEvent(event);
+  } else {
+    // Another DesktopRootWindowHostLinux has installed itself as
+    // capture. Translate the event's location and dispatch to the other.
+    event->ConvertLocationToTarget(root_window_,
+                                   g_current_capture->root_window_);
+    g_current_capture->root_window_host_delegate_->OnHostMouseEvent(event);
+  }
+}
+
 bool DesktopRootWindowHostLinux::HasCapture() const {
-  return has_capture_;
+  return g_current_capture == this;
 }
 
 void DesktopRootWindowHostLinux::SetAlwaysOnTop(bool always_on_top) {
@@ -665,20 +684,30 @@ gfx::Point DesktopRootWindowHostLinux::GetLocationOnNativeScreen() const {
 }
 
 void DesktopRootWindowHostLinux::SetCapture() {
-  // TODO(erg): I don't entirely understand the concept of capture in views.
-  // As described in the comment on View::OnMouseCaptureLost, it seems like
-  // it's what view started the current mouse press/drag. But that doesn't
-  // really square with the comments in RootWindowHostLinux.
+  // This is vaguely based on the old NativeWidgetGtk implementation.
   //
-  // Maybe the following is correct due to X's implicit grabs? Just keeping
-  // track if we've been told that we're whatever capture is and returning it
-  // when asked fixes the case where buttons pressed don't receive button
-  // release events.
-  has_capture_ = true;
+  // X11's XPointerGrab() shouldn't be used for everything; it doesn't map
+  // cleanly to Windows' SetCapture(). GTK only provides a separate concept of
+  // a grab that wasn't the X11 pointer grab, but was instead a manual
+  // redirection of the event. (You need to drop into GDK if you want to
+  // perform a raw X11 grab).
+
+  if (g_current_capture)
+    g_current_capture->OnCaptureReleased();
+
+  g_current_capture = this;
+
+  // TODO(erg): In addition to the above, NativeWidgetGtk performs a full X
+  // pointer grab when our NativeWidget is of type Menu. However, things work
+  // without it. Clicking inside a chrome window causes a release capture, and
+  // clicking outside causes an activation change. Since previous attempts at
+  // using XPointerGrab() to implement this have locked my X server, I'm going
+  // to skip this for now.
 }
 
 void DesktopRootWindowHostLinux::ReleaseCapture() {
-  has_capture_ = false;
+  if (g_current_capture)
+    g_current_capture->OnCaptureReleased();
 }
 
 void DesktopRootWindowHostLinux::SetCursor(gfx::NativeCursor cursor) {
@@ -863,7 +892,7 @@ bool DesktopRootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
     }  // fallthrough
     case ButtonRelease: {
       ui::MouseEvent mouseev(xev);
-      root_window_host_delegate_->OnHostMouseEvent(&mouseev);
+      DispatchMouseEvent(&mouseev);
       break;
     }
     case FocusOut:
@@ -941,12 +970,12 @@ bool DesktopRootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
             }
           }
           ui::MouseEvent mouseev(xev);
-          root_window_host_delegate_->OnHostMouseEvent(&mouseev);
+          DispatchMouseEvent(&mouseev);
           break;
         }
         case ui::ET_MOUSEWHEEL: {
           ui::MouseWheelEvent mouseev(xev);
-          root_window_host_delegate_->OnHostMouseEvent(&mouseev);
+          DispatchMouseEvent(&mouseev);
           break;
         }
         case ui::ET_SCROLL_FLING_START:
@@ -1026,7 +1055,7 @@ bool DesktopRootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
       }
 
       ui::MouseEvent mouseev(xev);
-      root_window_host_delegate_->OnHostMouseEvent(&mouseev);
+      DispatchMouseEvent(&mouseev);
       break;
     }
     case PropertyNotify: {

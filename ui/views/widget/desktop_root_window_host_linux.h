@@ -80,6 +80,15 @@ class VIEWS_EXPORT DesktopRootWindowHostLinux
   // |current_cursor_|.
   void SetCursorInternal(gfx::NativeCursor cursor);
 
+  // Called when another DRWHL takes capture, or when capture is released
+  // entirely.
+  void OnCaptureReleased();
+
+  // Dispatches a mouse event, taking mouse capture into account. If a
+  // different host has capture, we translate the event to its coordinate space
+  // and dispatch it to that host instead.
+  void DispatchMouseEvent(ui::MouseEvent* event);
+
   // Overridden from DesktopRootWindowHost:
   virtual aura::RootWindow* Init(aura::Window* content_window,
                                  const Widget::InitParams& params) OVERRIDE;
@@ -194,9 +203,6 @@ class VIEWS_EXPORT DesktopRootWindowHostLinux
   // True if the window should be focused when the window is shown.
   bool focus_when_shown_;
 
-  // Whether we've been told that we hold the capture bit.
-  bool has_capture_;
-
   // The window manager state bits.
   std::set< ::Atom> window_properties_;
 
@@ -237,6 +243,13 @@ class VIEWS_EXPORT DesktopRootWindowHostLinux
 
   aura::RootWindowHostDelegate* root_window_host_delegate_;
   aura::Window* content_window_;
+
+  // The current root window host that has capture. While X11 has something
+  // like Windows SetCapture()/ReleaseCapture(), it is entirely implicit and
+  // there are no notifications when this changes. We need to track this so we
+  // can notify widgets when they have lost capture, which controls a bunch of
+  // things in views like hiding menus.
+  static DesktopRootWindowHostLinux* g_current_capture;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopRootWindowHostLinux);
 };

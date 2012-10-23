@@ -147,8 +147,6 @@ LocatedEvent::LocatedEvent(EventType type,
 void LocatedEvent::UpdateForRootTransform(
     const gfx::Transform& root_transform) {
   // Transform has to be done at root level.
-  DCHECK_EQ(root_location_.x(), location_.x());
-  DCHECK_EQ(root_location_.y(), location_.y());
   gfx::Point3f p(location_);
   root_transform.TransformPointReverse(p);
   root_location_ = location_ = p.AsPoint();

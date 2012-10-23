@@ -428,18 +428,13 @@ void Window::ConvertPointToTarget(const Window* source,
   if (!source)
     return;
   if (source->GetRootWindow() != target->GetRootWindow()) {
-    Window* source_window = const_cast<Window*>(source);
-    Window* target_window = const_cast<Window*>(target);
-    const gfx::Point source_origin = gfx::Screen::GetScreenFor(source_window)->
-        GetDisplayNearestWindow(source_window).bounds().origin();
-    const gfx::Point target_origin = gfx::Screen::GetScreenFor(target_window)->
-        GetDisplayNearestWindow(target_window).bounds().origin();
-    ui::Layer::ConvertPointToLayer(
-        source->layer(), source->GetRootWindow()->layer(), point);
-    const gfx::Point offset = source_origin.Subtract(target_origin);
-    point->Offset(offset.x(), offset.y());
-    ui::Layer::ConvertPointToLayer(
-        target->GetRootWindow()->layer(), target->layer(), point);
+    client::ScreenPositionClient* source_client =
+        GetScreenPositionClient(source->GetRootWindow());
+    source_client->ConvertPointToScreen(source, point);
+
+    client::ScreenPositionClient* target_client =
+        GetScreenPositionClient(target->GetRootWindow());
+    target_client->ConvertPointFromScreen(target, point);
   } else {
     ui::Layer::ConvertPointToLayer(source->layer(), target->layer(), point);
   }
