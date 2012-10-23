@@ -96,8 +96,14 @@
       '-omnibox.OmniboxTest.testDifferentTypesOfResults',
       # crbug.com/85600
       '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
+      # crbug.com/157271
+      '-prefs_ui.BasicSettingsUITest.testCancelStartupURLSetting',
+      '-prefs_ui.BasicSettingsUITest.testSetStartupPages',
+      '-prefs_ui.BasicSettingsUITest.testUseCurrentPagesForStartup',
       # crbug.com/112051
       '-prefs_ui.PrefsUITest.testChangeExceptionBehaviorUI',
+      # crbug.com/157271
+      '-prefs_ui.PrefsUITest.testDeleteExceptionUI',
       # crbug.com/88593
       '-sync.SyncTest.testPersonalStuffSyncSection',
       # crbug.com/124913
