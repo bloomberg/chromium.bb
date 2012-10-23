@@ -20,6 +20,8 @@ namespace gestures {
 // This interpreter looks at the location and pressure of contacts and may
 // optionally classify each as a palm. Sometimes a contact is classified as
 // a palm in some frames, and then in subsequent frames it is not.
+// This interpreter is also used to suppress motion from thumbs in the
+// bottom area of the pad.
 
 class PalmClassifyingFilterInterpreter : public FilterInterpreter {
   FRIEND_TEST(PalmClassifyingFilterInterpreterTest, PalmAtEdgeTest);
@@ -53,6 +55,9 @@ class PalmClassifyingFilterInterpreter : public FilterInterpreter {
   // if it's in the edge of the pad with sufficiently large pressure. The
   // pressure required depends on exactly how close to the edge the contact is.
   bool FingerInPalmEnvelope(const FingerState& fs);
+
+  // Returns true iff fs represents a contact that is in the bottom area.
+  bool FingerInBottomArea(const FingerState& fs);
 
   // Updates *palm_, pointing_ below.
   void UpdatePalmState(const HardwareState& hwstate);
@@ -95,8 +100,9 @@ class PalmClassifyingFilterInterpreter : public FilterInterpreter {
   // tracking ids that were ever close to other fingers.
   set<short, kMaxFingers> was_near_other_fingers_;
 
-  // tracking ids that have ever travelled out of the palm envelope.
-  set<short, kMaxFingers> fingers_not_in_palm_envelope_;
+  // tracking ids that have ever travelled out of the palm envelope or bottom
+  // area.
+  set<short, kMaxFingers> fingers_not_in_edge_;
 
   FingerMetrics* finger_metrics_;
   scoped_ptr<FingerMetrics> test_finger_metrics_;
