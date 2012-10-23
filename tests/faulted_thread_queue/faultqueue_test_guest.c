@@ -8,6 +8,8 @@
 #include <setjmp.h>
 #include <stdio.h>
 
+#include "native_client/src/include/arm_sandbox.h"
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/tests/common/register_set.h"
 
 
@@ -67,7 +69,7 @@ int main(int argc, char **argv) {
     ASM_WITH_REGS(
         expected_regs,
         ".p2align 4\n"
-        "FaultAddr: bkpt 0x7777\n"
+        "FaultAddr: .word " NACL_TO_STRING(NACL_INSTR_HALT_FILL) "\n"
         /*
          * ARM does not provide hardware single-stepping so we do not
          * test it here, unlike in the x86 case.

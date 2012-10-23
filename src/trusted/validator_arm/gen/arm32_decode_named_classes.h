@@ -991,6 +991,10 @@ class NotImplemented_None
     : public NotImplemented {
 };
 
+class PermanentlyUndefined_Udf_Rule_A1
+    : public PermanentlyUndefined {
+};
+
 class PreloadRegisterImm12Op_Pld_Rule_117_A1_P236
     : public PreloadRegisterImm12Op {
 };
@@ -1017,10 +1021,6 @@ class PreloadRegisterPairOpWAndRnNotPc_Pld_Rule_119_A1_P240
 
 class PreloadRegisterPairOpWAndRnNotPc_Pldw_Rule_119_A1_P240
     : public PreloadRegisterPairOpWAndRnNotPc {
-};
-
-class Roadblock_Udf_Rule_A1
-    : public Roadblock {
 };
 
 class Store2RegisterImm12Op_Str_Rule_194_A1_P384
@@ -5822,6 +5822,18 @@ class NamedNotImplemented_None
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedNotImplemented_None);
 };
 
+class NamedPermanentlyUndefined_Udf_Rule_A1
+    : public NamedClassDecoder {
+ public:
+  NamedPermanentlyUndefined_Udf_Rule_A1()
+    : NamedClassDecoder(decoder_, "PermanentlyUndefined Udf_Rule_A1")
+  {}
+
+ private:
+  nacl_arm_dec::PermanentlyUndefined_Udf_Rule_A1 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedPermanentlyUndefined_Udf_Rule_A1);
+};
+
 class NamedPreloadRegisterImm12Op_Pld_Rule_117_A1_P236
     : public NamedClassDecoder {
  public:
@@ -5904,18 +5916,6 @@ class NamedPreloadRegisterPairOpWAndRnNotPc_Pldw_Rule_119_A1_P240
  private:
   nacl_arm_dec::PreloadRegisterPairOpWAndRnNotPc_Pldw_Rule_119_A1_P240 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedPreloadRegisterPairOpWAndRnNotPc_Pldw_Rule_119_A1_P240);
-};
-
-class NamedRoadblock_Udf_Rule_A1
-    : public NamedClassDecoder {
- public:
-  NamedRoadblock_Udf_Rule_A1()
-    : NamedClassDecoder(decoder_, "Roadblock Udf_Rule_A1")
-  {}
-
- private:
-  nacl_arm_dec::Roadblock_Udf_Rule_A1 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedRoadblock_Udf_Rule_A1);
 };
 
 class NamedStore2RegisterImm12Op_Str_Rule_194_A1_P384

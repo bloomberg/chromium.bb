@@ -35,6 +35,7 @@
 #include <stdint.h>
 #include <cstddef>
 #include <string>
+#include "native_client/src/include/arm_sandbox.h"
 #include "native_client/src/include/portability_bits.h"
 
 namespace nacl_arm_dec {
@@ -256,8 +257,12 @@ static const int kArm32InstSize = 32;
 // The number of bits in a word of a THUMB instruction.
 static const int kThumbWordSize = 16;
 
-// BKPT #0x7777 is used as literal pool head.
-static const uint32_t kLiteralPoolHeadInstruction = 0xE1277777;
+// Special ARM instructions for sandboxing.
+static const uint32_t kLiteralPoolHead = NACL_INSTR_LITERAL_POOL_HEAD;
+static const uint32_t kBreakpoint = NACL_INSTR_BREAKPOINT;
+static const uint32_t kHaltFill = NACL_INSTR_HALT_FILL;
+static const uint32_t kAbortNow = NACL_INSTR_ABORT_NOW;
+static const uint32_t kFailValidation = NACL_INSTR_FAIL_VALIDATION;
 
 // Models an instruction, either a 32-bit ARM instruction of unspecified type,
 // or one word (16-bit) and two word (32-bit) THUMB instructions.

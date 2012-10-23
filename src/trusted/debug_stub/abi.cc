@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 
+#include "native_client/src/include/arm_sandbox.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/debug_stub/abi.h"
 #include "native_client/src/trusted/debug_stub/platform.h"
@@ -129,7 +130,7 @@ static Abi::BPDef breakpoint_x86 = {
   breakpoint_code_x86
 };
 
-static uint32_t breakpoint_code_arm[] = { 0xe1277777 /* bkpt 0x7777 */ };
+static uint32_t breakpoint_code_arm[] = { NACL_INSTR_BREAKPOINT };
 static Abi::BPDef breakpoint_arm = {
   sizeof(breakpoint_code_arm),
   (uint8_t *) breakpoint_code_arm

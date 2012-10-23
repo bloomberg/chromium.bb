@@ -14,6 +14,7 @@
 
 #include <nacl/nacl_dyncode.h>
 
+#include "native_client/src/include/arm_sandbox.h"
 #include "native_client/tests/dynamic_code_loading/dynamic_segment.h"
 #include "native_client/tests/dynamic_code_loading/templates.h"
 #include "native_client/tests/inbrowser_test_runner/test_runner.h"
@@ -81,7 +82,7 @@ void fill_hlts(uint8_t *data, size_t size) {
 #if defined(__i386__) || defined(__x86_64__)
   memset(data, 0xf4, size); /* HLTs */
 #elif defined(__arm__)
-  fill_int32(data, size, 0xe1266676); /* BKPT 0x6666 */
+  fill_int32(data, size, NACL_INSTR_HALT_FILL);
 #else
 # error "Unknown arch"
 #endif
@@ -484,17 +485,16 @@ void test_deleting_code_from_invalid_ranges() {
 }
 
 void check_region_is_filled_with_hlts(const char *data, size_t size) {
-  uint8_t halts[] =
 #if defined(__i386__) || defined(__x86_64__)
-    { 0xf4 }; /* HLT */
+  uint8_t halts = 0xf4; /* HLT */
 #elif defined(__arm__)
-    { 0x76, 0x66, 0x26, 0xe1 }; /* 0xe1266676 - BKPT 0x6666 */
+  uint32_t halts = NACL_INSTR_HALT_FILL;
 #else
 # error "Unknown arch"
 #endif
   const char *ptr;
   for (ptr = data; ptr < data + size; ptr += sizeof(halts)) {
-    assert(memcmp(ptr, halts, sizeof(halts)) == 0);
+    assert(memcmp(ptr, &halts, sizeof(halts)) == 0);
   }
 }
 

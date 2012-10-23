@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "native_client/src/include/arm_sandbox.h"
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_assert.h"
 #include "native_client/tests/common/register_set.h"
 
@@ -33,7 +35,7 @@ __asm__(".pushsection .text, \"ax\", @progbits\n"
 #elif defined(__arm__)
 __asm__(".pushsection .text, \"ax\", %progbits\n"
         "fault_addr:\n"
-        "bkpt 0x7777\n"
+        ".word " NACL_TO_STRING(NACL_INSTR_ABORT_NOW) "\n"
         ".popsection\n");
 #else
 # error Update fault_addr for other architectures
@@ -187,7 +189,7 @@ void breakpoint(void) {
    * because BKPTs guard data literals in the ARM sandbox.
    */
   __asm__(".p2align 4\n"
-          "bkpt 0x7777\n"
+          ".word " NACL_TO_STRING(NACL_INSTR_BREAKPOINT) "\n"
           ".p2align 4\n");
 #else
 # error Unsupported architecture
