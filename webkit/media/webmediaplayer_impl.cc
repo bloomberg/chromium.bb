@@ -79,12 +79,14 @@ const int kPlayerExtraMemory = 1024 * 1024;
 const float kMinRate = 0.0625f;
 const float kMaxRate = 16.0f;
 
+// Prefix for histograms related to Encrypted Media Extensions.
+const char* kMediaEme = "Media.EME.";
 }  // namespace
 
 namespace webkit_media {
 
 #define COMPILE_ASSERT_MATCHING_ENUM(name) \
-  COMPILE_ASSERT(static_cast<int>(WebKit::WebMediaPlayer::CORSMode ## name) == \
+  COMPILE_ASSERT(static_cast<int>(WebMediaPlayer::CORSMode ## name) == \
                  static_cast<int>(BufferedResourceLoader::k ## name), \
                  mismatching_enums)
 COMPILE_ASSERT_MATCHING_ENUM(Unspecified);
@@ -643,14 +645,15 @@ void WebMediaPlayerImpl::putCurrentFrame(
 }
 
 #define COMPILE_ASSERT_MATCHING_STATUS_ENUM(webkit_name, chromium_name) \
-    COMPILE_ASSERT(static_cast<int>(WebKit::WebMediaPlayer::webkit_name) == \
+    COMPILE_ASSERT(static_cast<int>(WebMediaPlayer::webkit_name) == \
                    static_cast<int>(media::ChunkDemuxer::chromium_name), \
                    mismatching_status_enums)
 COMPILE_ASSERT_MATCHING_STATUS_ENUM(AddIdStatusOk, kOk);
 COMPILE_ASSERT_MATCHING_STATUS_ENUM(AddIdStatusNotSupported, kNotSupported);
 COMPILE_ASSERT_MATCHING_STATUS_ENUM(AddIdStatusReachedIdLimit, kReachedIdLimit);
+#undef COMPILE_ASSERT_MATCHING_ENUM
 
-WebKit::WebMediaPlayer::AddIdStatus WebMediaPlayerImpl::sourceAddId(
+WebMediaPlayer::AddIdStatus WebMediaPlayerImpl::sourceAddId(
     const WebKit::WebString& id,
     const WebKit::WebString& type,
     const WebKit::WebVector<WebKit::WebString>& codecs) {
@@ -659,7 +662,7 @@ WebKit::WebMediaPlayer::AddIdStatus WebMediaPlayerImpl::sourceAddId(
   for (size_t i = 0; i < codecs.size(); ++i)
     new_codecs[i] = codecs[i].utf8().data();
 
-  return static_cast<WebKit::WebMediaPlayer::AddIdStatus>(
+  return static_cast<WebMediaPlayer::AddIdStatus>(
       chunk_demuxer_->AddId(id.utf8().data(), type.utf8().data(), new_codecs));
 }
 
@@ -738,18 +741,66 @@ bool WebMediaPlayerImpl::sourceSetTimestampOffset(const WebKit::WebString& id,
   return chunk_demuxer_->SetTimestampOffset(id.utf8().data(), time_offset);
 }
 
-WebKit::WebMediaPlayer::MediaKeyException
+// Helper enum for reporting generateKeyRequest/addKey histograms.
+enum MediaKeyException {
+  kUnknownResultId,
+  kSuccess,
+  kKeySystemNotSupported,
+  kInvalidPlayerState,
+  kMaxMediaKeyException
+};
+
+static MediaKeyException MediaKeyExceptionForUMA(
+    WebMediaPlayer::MediaKeyException e) {
+  switch (e) {
+    case WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported:
+      return kKeySystemNotSupported;
+    case WebMediaPlayer::MediaKeyExceptionInvalidPlayerState:
+      return kInvalidPlayerState;
+    case WebMediaPlayer::MediaKeyExceptionNoError:
+      return kSuccess;
+    default:
+      return kUnknownResultId;
+  }
+}
+
+// Helper for converting |key_system| name and exception |e| to a pair of enum
+// values from above, for reporting to UMA.
+static void ReportMediaKeyExceptionToUMA(
+    const std::string& method,
+    const WebString& key_system,
+    WebMediaPlayer::MediaKeyException e) {
+  MediaKeyException result_id = MediaKeyExceptionForUMA(e);
+  DCHECK_NE(result_id, kUnknownResultId) << e;
+  base::LinearHistogram::FactoryGet(
+      kMediaEme + KeySystemNameForUMA(key_system) + "." + method, 1,
+      kMaxMediaKeyException, kMaxMediaKeyException + 1,
+      base::Histogram::kUmaTargetedHistogramFlag)->Add(result_id);
+}
+
+WebMediaPlayer::MediaKeyException
 WebMediaPlayerImpl::generateKeyRequest(const WebString& key_system,
                                        const unsigned char* init_data,
                                        unsigned init_data_length) {
+  WebMediaPlayer::MediaKeyException e =
+      GenerateKeyRequestInternal(key_system, init_data, init_data_length);
+  ReportMediaKeyExceptionToUMA("generateKeyRequest", key_system, e);
+  return e;
+}
+
+WebMediaPlayer::MediaKeyException
+WebMediaPlayerImpl::GenerateKeyRequestInternal(
+    const WebString& key_system,
+    const unsigned char* init_data,
+    unsigned init_data_length) {
   if (!IsSupportedKeySystem(key_system))
-    return WebKit::WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
+    return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
   // We do not support run-time switching between key systems for now.
   if (current_key_system_.isEmpty())
     current_key_system_ = key_system;
   else if (key_system != current_key_system_)
-    return WebKit::WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
+    return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
 
   DVLOG(1) << "generateKeyRequest: " << key_system.utf8().data() << ": "
            << std::string(reinterpret_cast<const char*>(init_data),
@@ -758,13 +809,27 @@ WebMediaPlayerImpl::generateKeyRequest(const WebString& key_system,
   if (!decryptor_.GenerateKeyRequest(key_system.utf8(),
                                      init_data, init_data_length)) {
     current_key_system_.reset();
-    return WebKit::WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
+    return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
   }
 
-  return WebKit::WebMediaPlayer::MediaKeyExceptionNoError;
+  return WebMediaPlayer::MediaKeyExceptionNoError;
 }
 
-WebKit::WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::addKey(
+WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::addKey(
+    const WebString& key_system,
+    const unsigned char* key,
+    unsigned key_length,
+    const unsigned char* init_data,
+    unsigned init_data_length,
+    const WebString& session_id) {
+  WebMediaPlayer::MediaKeyException e = AddKeyInternal(
+      key_system, key, key_length, init_data, init_data_length, session_id);
+  ReportMediaKeyExceptionToUMA("addKey", key_system, e);
+  return e;
+}
+
+
+WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::AddKeyInternal(
     const WebString& key_system,
     const unsigned char* key,
     unsigned key_length,
@@ -775,10 +840,10 @@ WebKit::WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::addKey(
   DCHECK_GT(key_length, 0u);
 
   if (!IsSupportedKeySystem(key_system))
-    return WebKit::WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
+    return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
   if (current_key_system_.isEmpty() || key_system != current_key_system_)
-    return WebKit::WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
+    return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
 
   DVLOG(1) << "addKey: " << key_system.utf8().data() << ": "
            << std::string(reinterpret_cast<const char*>(key),
@@ -789,20 +854,30 @@ WebKit::WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::addKey(
 
   decryptor_.AddKey(key_system.utf8(), key, key_length,
                     init_data, init_data_length, session_id.utf8());
-  return WebKit::WebMediaPlayer::MediaKeyExceptionNoError;
+  return WebMediaPlayer::MediaKeyExceptionNoError;
 }
 
-WebKit::WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::cancelKeyRequest(
+WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::cancelKeyRequest(
+    const WebString& key_system,
+    const WebString& session_id) {
+  WebMediaPlayer::MediaKeyException e =
+      CancelKeyRequestInternal(key_system, session_id);
+  ReportMediaKeyExceptionToUMA("cancelKeyRequest", key_system, e);
+  return e;
+}
+
+WebMediaPlayer::MediaKeyException
+WebMediaPlayerImpl::CancelKeyRequestInternal(
     const WebString& key_system,
     const WebString& session_id) {
   if (!IsSupportedKeySystem(key_system))
-    return WebKit::WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
+    return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
   if (current_key_system_.isEmpty() || key_system != current_key_system_)
-    return WebKit::WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
+    return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
 
   decryptor_.CancelKeyRequest(key_system.utf8(), session_id.utf8());
-  return WebKit::WebMediaPlayer::MediaKeyExceptionNoError;
+  return WebMediaPlayer::MediaKeyExceptionNoError;
 }
 
 void WebMediaPlayerImpl::WillDestroyCurrentMessageLoop() {
@@ -889,6 +964,9 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
 
     case media::PIPELINE_ERROR_DECRYPT:
       // Decrypt error.
+      UMA_HISTOGRAM_COUNTS(
+          kMediaEme + KeySystemNameForUMA(current_key_system_) +
+          ".DecryptError", 1);
       // TODO(xhwang): Change to use NetworkStateDecryptError once it's added in
       // Webkit (see http://crbug.com/124486).
       SetNetworkState(WebMediaPlayer::NetworkStateDecodeError);
@@ -929,6 +1007,9 @@ void WebMediaPlayerImpl::OnKeyAdded(const std::string& key_system,
                                     const std::string& session_id) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
 
+  UMA_HISTOGRAM_COUNTS(
+      kMediaEme + KeySystemNameForUMA(key_system) + ".KeyAdded", 1);
+
   GetClient()->keyAdded(WebString::fromUTF8(key_system),
                         WebString::fromUTF8(session_id));
 }
@@ -938,6 +1019,8 @@ void WebMediaPlayerImpl::OnNeedKey(const std::string& key_system,
                                    scoped_array<uint8> init_data,
                                    int init_data_size) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
+
+  UMA_HISTOGRAM_COUNTS(kMediaEme + std::string("NeedKey"), 1);
 
   GetClient()->keyNeeded(WebString::fromUTF8(key_system),
                          WebString::fromUTF8(session_id),
@@ -962,6 +1045,11 @@ void WebMediaPlayerImpl::OnKeyError(const std::string& key_system,
                                     media::Decryptor::KeyError error_code,
                                     int system_code) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
+
+  base::LinearHistogram::FactoryGet(
+      kMediaEme + KeySystemNameForUMA(key_system) + ".KeyError", 1,
+      media::Decryptor::kMaxKeyError, media::Decryptor::kMaxKeyError + 1,
+      base::Histogram::kUmaTargetedHistogramFlag)->Add(error_code);
 
   GetClient()->keyError(
       WebString::fromUTF8(key_system),

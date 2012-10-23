@@ -274,6 +274,22 @@ class WebMediaPlayerImpl
   // Lets V8 know that player uses extra resources not managed by V8.
   void IncrementExternallyAllocatedMemory();
 
+  // Actually do the work for generateKeyRequest/addKey so they can easily
+  // report results to UMA.
+  MediaKeyException GenerateKeyRequestInternal(
+      const WebKit::WebString& key_system,
+      const unsigned char* init_data,
+      unsigned init_data_length);
+  MediaKeyException AddKeyInternal(const WebKit::WebString& key_system,
+                                   const unsigned char* key,
+                                   unsigned key_length,
+                                   const unsigned char* init_data,
+                                   unsigned init_data_length,
+                                   const WebKit::WebString& session_id);
+  MediaKeyException CancelKeyRequestInternal(
+      const WebKit::WebString& key_system,
+      const WebKit::WebString& session_id);
+
   WebKit::WebFrame* frame_;
 
   // TODO(hclam): get rid of these members and read from the pipeline directly.

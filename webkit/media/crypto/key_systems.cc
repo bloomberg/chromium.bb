@@ -187,6 +187,25 @@ bool IsSupportedKeySystemWithMediaMimeType(
       mime_type, codecs, key_system);
 }
 
+template<typename T>  // T is a stringish type.
+static std::string KeySystemNameForUMAGeneric(const T& key_system) {
+  if (key_system == kClearKeyKeySystem)
+    return "ClearKey";
+#if defined(WIDEVINE_CDM_AVAILABLE)
+  if (key_system == kWidevineKeySystem)
+    return "Widevine";
+#endif  // WIDEVINE_CDM_AVAILABLE
+  return "Unknown";
+}
+
+std::string KeySystemNameForUMA(const std::string& key_system) {
+  return KeySystemNameForUMAGeneric(key_system);
+}
+
+std::string KeySystemNameForUMA(const WebKit::WebString& key_system) {
+  return KeySystemNameForUMAGeneric(key_system);
+}
+
 bool CanUseAesDecryptor(const std::string& key_system) {
   return key_system == kClearKeyKeySystem;
 }
