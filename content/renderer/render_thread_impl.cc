@@ -991,7 +991,6 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(RenderThreadImpl, msg)
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForCurrentURL,
                         OnSetZoomLevelForCurrentURL)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetCSSColors, OnSetCSSColors)
     // TODO(port): removed from render_messages_internal.h;
     // is there a new non-windows message I should add here?
     IPC_MESSAGE_HANDLER(ViewMsg_New, OnCreateNewView)
@@ -1001,27 +1000,6 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-// Called when to register CSS Color name->system color mappings.
-// We update the colors one by one and then tell WebKit to refresh all render
-// views.
-void RenderThreadImpl::OnSetCSSColors(
-    const std::vector<CSSColors::CSSColorMapping>& colors) {
-  EnsureWebKitInitialized();
-  size_t num_colors = colors.size();
-  scoped_array<WebKit::WebColorName> color_names(
-      new WebKit::WebColorName[num_colors]);
-  scoped_array<WebKit::WebColor> web_colors(new WebKit::WebColor[num_colors]);
-  size_t i = 0;
-  for (std::vector<CSSColors::CSSColorMapping>::const_iterator it =
-          colors.begin();
-       it != colors.end();
-       ++it, ++i) {
-    color_names[i] = it->first;
-    web_colors[i] = it->second;
-  }
-  WebKit::setNamedColors(color_names.get(), web_colors.get(), num_colors);
 }
 
 void RenderThreadImpl::OnCreateNewView(const ViewMsg_New_Params& params) {

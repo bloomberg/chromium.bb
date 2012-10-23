@@ -15,7 +15,6 @@
 #include "content/common/child_process.h"
 #include "content/common/child_thread.h"
 #include "content/common/content_export.h"
-#include "content/common/css_colors.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/public/renderer/render_thread.h"
@@ -305,7 +304,6 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   void Init();
 
   void OnSetZoomLevelForCurrentURL(const std::string& host, double zoom_level);
-  void OnSetCSSColors(const std::vector<CSSColors::CSSColorMapping>& colors);
   void OnCreateNewView(const ViewMsg_New_Params& params);
   void OnTransferBitmap(const SkBitmap& bitmap, int resource_id);
   void OnPurgePluginListCache(bool reload_pages);

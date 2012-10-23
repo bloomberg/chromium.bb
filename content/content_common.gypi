@@ -150,7 +150,6 @@
     'common/content_param_traits.h',
     'common/content_param_traits_macros.h',
     'common/content_paths.cc',
-    'common/css_colors.h',
     'common/database_messages.h',
     'common/database_util.cc',
     'common/database_util.h',
