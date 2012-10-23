@@ -476,10 +476,10 @@ void LayerImpl::setBackgroundColor(SkColor backgroundColor)
 
 void LayerImpl::setFilters(const WebKit::WebFilterOperations& filters)
 {
-    DCHECK(!m_filter);
     if (m_filters == filters)
         return;
 
+    DCHECK(!m_filter);
     m_filters = filters;
     noteLayerPropertyChangedForSubtree();
 }
@@ -495,10 +495,10 @@ void LayerImpl::setBackgroundFilters(const WebKit::WebFilterOperations& backgrou
 
 void LayerImpl::setFilter(SkImageFilter* filter)
 {
-    DCHECK(m_filters.isEmpty());
     if (m_filter == filter)
         return;
 
+    DCHECK(m_filters.isEmpty());
     SkRefCnt_SafeAssign(m_filter, filter);
     noteLayerPropertyChangedForSubtree();
 }

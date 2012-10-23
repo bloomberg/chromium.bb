@@ -319,9 +319,9 @@ void Layer::setReplicaLayer(Layer* layer)
 
 void Layer::setFilters(const WebKit::WebFilterOperations& filters)
 {
-    DCHECK(!m_filter);
     if (m_filters == filters)
         return;
+    DCHECK(!m_filter);
     m_filters = filters;
     setNeedsCommit();
     if (!filters.isEmpty())
@@ -330,9 +330,9 @@ void Layer::setFilters(const WebKit::WebFilterOperations& filters)
 
 void Layer::setFilter(SkImageFilter* filter)
 {
-    DCHECK(m_filters.isEmpty());
     if (m_filter == filter)
         return;
+    DCHECK(m_filters.isEmpty());
     SkRefCnt_SafeAssign(m_filter, filter);
     setNeedsCommit();
     if (filter)
