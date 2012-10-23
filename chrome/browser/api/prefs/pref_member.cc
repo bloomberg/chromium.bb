@@ -119,6 +119,25 @@ void PrefMemberBase::Internal::MoveToThread(BrowserThread::ID thread_id) {
   thread_id_ = thread_id;
 }
 
+bool PrefMemberVectorStringUpdate(const Value& value,
+                                  std::vector<std::string>* string_vector) {
+  if (!value.IsType(Value::TYPE_LIST))
+    return false;
+  const ListValue* list = static_cast<const ListValue*>(&value);
+
+  std::vector<std::string> local_vector;
+  for (ListValue::const_iterator it = list->begin(); it != list->end(); ++it) {
+    std::string string_value;
+    if (!(*it)->GetAsString(&string_value))
+      return false;
+
+    local_vector.push_back(string_value);
+  }
+
+  string_vector->swap(local_vector);
+  return true;
+}
+
 }  // namespace subtle
 
 template <>
@@ -172,4 +191,18 @@ template <>
 bool PrefMember<FilePath>::Internal::UpdateValueInternal(const Value& value)
     const {
   return base::GetValueAsFilePath(value, &value_);
+}
+
+template <>
+void PrefMember<std::vector<std::string> >::UpdatePref(
+    const std::vector<std::string>& value) {
+  ListValue list_value;
+  list_value.AppendStrings(value);
+  prefs()->Set(pref_name().c_str(), list_value);
+}
+
+template <>
+bool PrefMember<std::vector<std::string> >::Internal::UpdateValueInternal(
+    const Value& value) const {
+  return subtle::PrefMemberVectorStringUpdate(value, &value_);
 }

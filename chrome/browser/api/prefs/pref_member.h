@@ -25,6 +25,7 @@
 #define CHROME_BROWSER_API_PREFS_PREF_MEMBER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
@@ -131,6 +132,11 @@ class PrefMemberBase : public content::NotificationObserver {
  protected:
   bool setting_value_;
 };
+
+// This function implements StringListPrefMember::UpdateValue().
+// It is exposed here for testing purposes.
+bool PrefMemberVectorStringUpdate(const Value& value,
+                                  std::vector<std::string>* string_vector);
 
 }  // namespace subtle
 
@@ -253,5 +259,7 @@ typedef PrefMember<int> IntegerPrefMember;
 typedef PrefMember<double> DoublePrefMember;
 typedef PrefMember<std::string> StringPrefMember;
 typedef PrefMember<FilePath> FilePathPrefMember;
+// This preference member is expensive for large string arrays.
+typedef PrefMember<std::vector<std::string> > StringListPrefMember;
 
 #endif  // CHROME_BROWSER_API_PREFS_PREF_MEMBER_H_

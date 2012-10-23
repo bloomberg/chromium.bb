@@ -22,6 +22,7 @@ const char kBoolPref[] = "bool";
 const char kIntPref[] = "int";
 const char kDoublePref[] = "double";
 const char kStringPref[] = "string";
+const char kStringListPref[] = "string_list";
 
 void RegisterTestPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(kBoolPref, false, PrefService::UNSYNCABLE_PREF);
@@ -30,6 +31,9 @@ void RegisterTestPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(kStringPref,
                             "default",
                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(kStringListPref,
+                          new ListValue(),
+                          PrefService::UNSYNCABLE_PREF);
 }
 
 class GetPrefValueCallback
@@ -183,6 +187,62 @@ TEST(PrefMemberTest, BasicGetAndSet) {
   EXPECT_EQ("bar", prefs.GetString(kStringPref));
   EXPECT_EQ("bar", string.GetValue());
   EXPECT_EQ("bar", *string);
+
+  // Test string list
+  ListValue expected_list;
+  std::vector<std::string> expected_vector;
+  StringListPrefMember string_list;
+  string_list.Init(kStringListPref, &prefs, NULL);
+
+  // Check the defaults
+  EXPECT_TRUE(expected_list.Equals(prefs.GetList(kStringListPref)));
+  EXPECT_EQ(expected_vector, string_list.GetValue());
+  EXPECT_EQ(expected_vector, *string_list);
+
+  // Try changing through the pref member.
+  expected_list.AppendString("foo");
+  expected_vector.push_back("foo");
+  string_list.SetValue(expected_vector);
+
+  EXPECT_TRUE(expected_list.Equals(prefs.GetList(kStringListPref)));
+  EXPECT_EQ(expected_vector, string_list.GetValue());
+  EXPECT_EQ(expected_vector, *string_list);
+
+  // Try adding through the pref.
+  expected_list.AppendString("bar");
+  expected_vector.push_back("bar");
+  prefs.Set(kStringListPref, expected_list);
+
+  EXPECT_TRUE(expected_list.Equals(prefs.GetList(kStringListPref)));
+  EXPECT_EQ(expected_vector, string_list.GetValue());
+  EXPECT_EQ(expected_vector, *string_list);
+
+  // Try removing through the pref.
+  expected_list.Remove(0, NULL);
+  expected_vector.erase(expected_vector.begin());
+  prefs.Set(kStringListPref, expected_list);
+
+  EXPECT_TRUE(expected_list.Equals(prefs.GetList(kStringListPref)));
+  EXPECT_EQ(expected_vector, string_list.GetValue());
+  EXPECT_EQ(expected_vector, *string_list);
+}
+
+TEST(PrefMemberTest, InvalidList) {
+  // Set the vector to an initial good value.
+  std::vector<std::string> expected_vector;
+  expected_vector.push_back("foo");
+
+  // Try to add a valid list first.
+  ListValue list;
+  list.AppendString("foo");
+  std::vector<std::string> vector;
+  EXPECT_TRUE(subtle::PrefMemberVectorStringUpdate(list, &vector));
+  EXPECT_EQ(expected_vector, vector);
+
+  // Now try to add an invalid list.  |vector| should not be changed.
+  list.AppendInteger(0);
+  EXPECT_FALSE(subtle::PrefMemberVectorStringUpdate(list, &vector));
+  EXPECT_EQ(expected_vector, vector);
 }
 
 TEST(PrefMemberTest, TwoPrefs) {
