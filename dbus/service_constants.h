@@ -80,6 +80,7 @@ enum MountError {
   MOUNT_ERROR_TPM_COMM_ERROR = 1 << 3,
   MOUNT_ERROR_TPM_DEFEND_LOCK = 1 << 4,
   MOUNT_ERROR_USER_DOES_NOT_EXIST = 1 << 5,
+  MOUNT_ERROR_TPM_NEEDS_REBOOT = 1 << 6,
   MOUNT_ERROR_RECREATED = 1 << 31,
 };
 }  // namespace cryptohome
