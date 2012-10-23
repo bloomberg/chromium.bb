@@ -36,9 +36,16 @@ namespace {
 base::LazyInstance<scoped_refptr<IPC::SyncMessageFilter> >
     g_background_thread_sender = LAZY_INSTANCE_INITIALIZER;
 
-typedef std::map<PP_Instance, IPC::ChannelHandle> ChannelHandleMap;
+struct InstanceInfo {
+  InstanceInfo() : plugin_child_id(0) {}
+  GURL url;
+  int plugin_child_id;
+  IPC::ChannelHandle channel_handle;
+};
 
-base::LazyInstance<ChannelHandleMap> g_channel_handle_map =
+typedef std::map<PP_Instance, InstanceInfo> InstanceInfoMap;
+
+base::LazyInstance<InstanceInfoMap> g_instance_info =
     LAZY_INSTANCE_INITIALIZER;
 
 // Launch NaCl's sel_ldr process.
@@ -51,23 +58,23 @@ PP_Bool LaunchSelLdr(PP_Instance instance,
   if (sender == NULL)
     sender = g_background_thread_sender.Pointer()->get();
 
-  IPC::ChannelHandle channel_handle;
+  InstanceInfo instance_info;
+  instance_info.url = GURL(alleged_url);
   if (!sender->Send(new ChromeViewHostMsg_LaunchNaCl(
-          GURL(alleged_url), socket_count, &sockets,
-          &channel_handle))) {
+          instance_info.url, socket_count, &sockets,
+          &instance_info.channel_handle,
+          &instance_info.plugin_child_id))) {
     return PP_FALSE;
   }
 
-  // Don't save invalid channel handles.
-  bool invalid_handle = channel_handle.name.empty();
-
+  // Don't save instance_info if channel handle is invalid.
+  bool invalid_handle = instance_info.channel_handle.name.empty();
 #if defined(OS_POSIX)
   if (!invalid_handle)
-    invalid_handle = (channel_handle.socket.fd == -1);
+    invalid_handle = (instance_info.channel_handle.socket.fd == -1);
 #endif
-
   if (!invalid_handle)
-    g_channel_handle_map.Get()[instance] = channel_handle;
+    g_instance_info.Get()[instance] = instance_info;
 
   CHECK(static_cast<int>(sockets.size()) == socket_count);
   for (int i = 0; i < socket_count; i++) {
@@ -78,14 +85,15 @@ PP_Bool LaunchSelLdr(PP_Instance instance,
   return PP_TRUE;
 }
 
-PP_Bool StartPpapiProxy(PP_Instance instance) {
+PP_Bool StartPpapiProxy(PP_Instance instance,
+                        bool allow_dev_interfaces) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableNaClIPCProxy)) {
-    ChannelHandleMap& map = g_channel_handle_map.Get();
-    ChannelHandleMap::iterator it = map.find(instance);
+    InstanceInfoMap& map = g_instance_info.Get();
+    InstanceInfoMap::iterator it = map.find(instance);
     if (it == map.end())
       return PP_FALSE;
-    IPC::ChannelHandle channel_handle = it->second;
+    InstanceInfo instance_info = it->second;
     map.erase(it);
 
     webkit::ppapi::PluginInstance* plugin_instance =
@@ -101,19 +109,16 @@ PP_Bool StartPpapiProxy(PP_Instance instance) {
   scoped_refptr<webkit::ppapi::PluginModule> nacl_plugin_module(
       plugin_module->CreateModuleForNaClInstance());
 
-    // TODO(brettw) bug 153036 set NaCl permissions to allow dev interface
-    // usage when necessary.
-    ppapi::PpapiPermissions permissions;
-    // TODO(bbudge) fill in place-holder params below with the nexe URL and
-    // NaCl process id.
+    ppapi::PpapiPermissions permissions(
+        allow_dev_interfaces ? ppapi::PERMISSION_DEV : 0);
     content::RendererPpapiHost* renderer_ppapi_host =
         content::RendererPpapiHost::CreateExternalPluginModule(
             nacl_plugin_module,
             plugin_instance,
-            FilePath(FILE_PATH_LITERAL("NaCl")),
+            FilePath().AppendASCII(instance_info.url.spec()),
             permissions,
-            channel_handle,
-            0);  // plugin_child_id
+            instance_info.channel_handle,
+            instance_info.plugin_child_id);
     if (renderer_ppapi_host) {
       // Allow the module to reset the instance to the new proxy.
       nacl_plugin_module->InitAsProxiedNaCl(plugin_instance);

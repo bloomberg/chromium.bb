@@ -599,7 +599,8 @@ bool Plugin::LoadNaClModuleContinuationIntern(ErrorInfo* error_info) {
   }
   // Try to start the Chrome IPC-based proxy first. If that fails, we
   // must be using the SRPC proxy.
-  if (!nacl_interface_->StartPpapiProxy(pp_instance()) &&
+  if (!nacl_interface_->StartPpapiProxy(pp_instance(),
+                                        enable_dev_interfaces_) &&
       !main_subprocess_.StartJSObjectProxy(this, error_info)) {
     return false;
   }

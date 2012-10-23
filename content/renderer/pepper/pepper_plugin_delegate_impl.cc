@@ -410,8 +410,10 @@ RendererPpapiHost* PepperPluginDelegateImpl::CreateExternalPluginModule(
     int plugin_child_id) {
   // We don't call PepperPluginRegistry::AddLiveModule, as this module is
   // managed externally.
+  // TODO(bbudge) pass plugin_child_id when PpapiPluginProcessHost receives
+  // a message notifying it that the external plugin process has been created.
   return CreateOutOfProcessModule(
-    module, path, permissions, channel_handle, plugin_child_id);
+    module, path, permissions, channel_handle, 0);
 }
 
 scoped_refptr<webkit::ppapi::PluginModule>

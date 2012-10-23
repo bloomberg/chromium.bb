@@ -643,7 +643,8 @@ bool NaClProcessHost::ReplyToRenderer(
 #endif
 
   ChromeViewHostMsg_LaunchNaCl::WriteReplyParams(
-      reply_msg_, handles_for_renderer, channel_handle);
+      reply_msg_, handles_for_renderer,
+      channel_handle, process_->GetData().id);
   chrome_render_message_filter_->Send(reply_msg_);
   chrome_render_message_filter_ = NULL;
   reply_msg_ = NULL;

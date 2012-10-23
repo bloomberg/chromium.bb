@@ -25,8 +25,9 @@ struct PPB_NaCl_Private {
                           void* imc_handles);
 
   // This function starts the PPAPI proxy so the nexe can communicate with the
-  // browser's renderer process.
-  PP_Bool (*StartPpapiProxy)(PP_Instance instance);
+  // browser's renderer process. Allow 'Dev' interfaces if |allow_dev| is true.
+  PP_Bool (*StartPpapiProxy)(PP_Instance instance,
+                             bool allow_dev_interfaces);
 
   // On POSIX systems, this function returns the file descriptor of
   // /dev/urandom.  On non-POSIX systems, this function returns 0.
