@@ -54,10 +54,6 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
 
   void SetUIState(UIState state);
 
-  // Invoked when |touch_drag_timer_| fires. It sets touch dragging flag so
-  // that further touch scroll gestures contribute to drag.
-  void OnTouchDragTimer();
-
   // Sets |touch_dragging_| flag and updates UI.
   void SetTouchDragging(bool touch_dragging);
 
@@ -103,11 +99,6 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   gfx::ShadowValues icon_shadows_;
 
   UIState ui_state_;
-
-  // A timer to track whether user has pressed on the item long enough. When it
-  // fires, subsequent scroll gesture events will contribute to drag instead
-  // scrolling.
-  base::OneShotTimer<AppListItemView> touch_drag_timer_;
 
   // True if scroll gestures should contribute to dragging.
   bool touch_dragging_;

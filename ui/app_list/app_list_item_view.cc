@@ -42,11 +42,8 @@ const SkColor kHighlightedColor = kHoverAndPushedColor;
 const int kTitleFontSize = 11;
 const int kLeftRightPaddingChars = 1;
 
-// Delay in milliseconds of when a touch drag should start after tap down.
-const int kTouchDragStartDelayInMs = 200;
-
-// Scale to transform when touch drag starts.
-const float kTouchDraggingScale = 1.5f;
+// Scale to transform the icon when a drag starts.
+const float kDraggingIconScale = 1.5f;
 
 // Delay in milliseconds of when the dragging UI should be shown for mouse drag.
 const int kMouseDragUIDelayInMs = 100;
@@ -143,7 +140,7 @@ void AppListItemView::SetUIState(UIState state) {
 
 #if !defined(OS_WIN)
   ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
-  switch(ui_state_) {
+  switch (ui_state_) {
     case UI_STATE_NORMAL:
       title_->SetVisible(true);
       layer()->SetTransform(gfx::Transform());
@@ -153,14 +150,10 @@ void AppListItemView::SetUIState(UIState state) {
       const gfx::Rect bounds(layer()->bounds().size());
       layer()->SetTransform(gfx::GetScaleTransform(
           bounds.CenterPoint(),
-          kTouchDraggingScale));
+          kDraggingIconScale));
       break;
   }
 #endif
-}
-
-void AppListItemView::OnTouchDragTimer() {
-  SetTouchDragging(true);
 }
 
 void AppListItemView::SetTouchDragging(bool touch_dragging) {
@@ -317,19 +310,10 @@ bool AppListItemView::OnMouseDragged(const ui::MouseEvent& event) {
 ui::EventResult AppListItemView::OnGestureEvent(
     const ui::GestureEvent& event) {
   switch (event.type()) {
-    case ui::ET_GESTURE_TAP_DOWN:
-      if (!apps_grid_view_->has_dragged_view()) {
-        touch_drag_timer_.Start(FROM_HERE,
-           base::TimeDelta::FromMilliseconds(kTouchDragStartDelayInMs),
-           this, &AppListItemView::OnTouchDragTimer);
-      }
-      break;
     case ui::ET_GESTURE_SCROLL_BEGIN:
       if (touch_dragging_) {
         apps_grid_view_->InitiateDrag(this, AppsGridView::TOUCH, event);
         return ui::ER_CONSUMED;
-      } else {
-        touch_drag_timer_.Stop();
       }
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
@@ -346,10 +330,18 @@ ui::EventResult AppListItemView::OnGestureEvent(
         return ui::ER_CONSUMED;
       }
       break;
-    case ui::ET_GESTURE_END:
     case ui::ET_GESTURE_LONG_PRESS:
-      touch_drag_timer_.Stop();
-      SetTouchDragging(false);
+      if (!apps_grid_view_->has_dragged_view())
+        SetTouchDragging(true);
+      return ui::ER_CONSUMED;
+    case ui::ET_GESTURE_END:
+      if (touch_dragging_) {
+        SetTouchDragging(false);
+
+        gfx::Point location(event.location());
+        ConvertPointToScreen(this, &location);
+        ShowContextMenu(location, true);
+      }
       break;
     default:
       break;
