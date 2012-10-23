@@ -1364,6 +1364,12 @@ public class ContentViewCore implements MotionEventDelegate {
         }
     }
 
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void onTabCrash() {
+        getContentViewClient().onTabCrash();
+    }
+
     private void handleTapOrPress(
             long timeMs, int x, int y, boolean isLongPress, boolean showPress) {
         //TODO(yusufo):Upstream the rest of the bits about handlerControllers.

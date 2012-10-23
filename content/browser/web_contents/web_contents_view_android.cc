@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "content/browser/android/content_view_core_impl.h"
+#include "content/browser/android/media_player_manager_android.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -95,7 +96,12 @@ void WebContentsViewAndroid::SetPageTitle(const string16& title) {
 
 void WebContentsViewAndroid::OnTabCrashed(base::TerminationStatus status,
                                           int error_code) {
-  NOTIMPLEMENTED() << "not upstreamed yet";
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      web_contents_->GetRenderViewHost());
+  if (rvh->media_player_manager())
+    rvh->media_player_manager()->DestroyAllMediaPlayers();
+  if (content_view_core_)
+    content_view_core_->OnTabCrashed();
 }
 
 void WebContentsViewAndroid::SizeContents(const gfx::Size& size) {

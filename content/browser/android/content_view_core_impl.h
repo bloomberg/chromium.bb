@@ -192,7 +192,7 @@ class ContentViewCoreImpl : public ContentViewCore,
                            int selected_item,
                            bool multiple);
 
-  void OnTabCrashed(const base::ProcessHandle handle);
+  void OnTabCrashed();
   void UpdateContentSize(int width, int height);
   void UpdateScrollOffsetAndPageScaleFactor(int x, int y, float scale);
   void UpdatePageScaleLimits(float minimum_scale, float maximum_scale);
