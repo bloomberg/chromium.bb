@@ -27,7 +27,6 @@ class GtkSignalRegistrar;
 
 class CustomDrawButton;
 class GURL;
-class TabContentsContainerGtk;
 class TabContents;
 class ThrobberGtk;
 class WebIntentPickerDelegate;
@@ -180,11 +179,8 @@ class WebIntentPickerGtk : public WebIntentPicker,
   // A weak pointer to the constrained window.
   ConstrainedWindowGtk* window_;
 
-  // Container for the HTML in the inline disposition case.
-  scoped_ptr<TabContents> inline_disposition_tab_contents_;
-
-  // Widget for displaying the HTML in the inline disposition case.
-  scoped_ptr<TabContentsContainerGtk> tab_contents_container_;
+  // The WebContents being displayed in inline disposition.
+  scoped_ptr<content::WebContents> inline_disposition_web_contents_;
 
   // content::WebContentsDelegate for the inline disposition dialog.
   scoped_ptr<WebIntentInlineDispositionDelegate> inline_disposition_delegate_;

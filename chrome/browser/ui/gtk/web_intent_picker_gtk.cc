@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
-#include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
 #include "chrome/browser/ui/gtk/throbber_gtk.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
@@ -33,6 +32,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -239,8 +239,8 @@ WebIntentPickerGtk::~WebIntentPickerGtk() {
 
 void WebIntentPickerGtk::Close() {
   window_->CloseConstrainedWindow();
-  if (inline_disposition_tab_contents_.get())
-    inline_disposition_tab_contents_->web_contents()->OnCloseStarted();
+  if (inline_disposition_web_contents_.get())
+    inline_disposition_web_contents_->OnCloseStarted();
 }
 
 void WebIntentPickerGtk::SetActionString(const string16& action) {
@@ -293,20 +293,16 @@ void WebIntentPickerGtk::OnExtensionIconChanged(
 void WebIntentPickerGtk::OnInlineDisposition(const string16&,
                                              const GURL& url) {
   DCHECK(delegate_);
-  content::WebContents* web_contents =
+  inline_disposition_web_contents_.reset(
       delegate_->CreateWebContentsForInlineDisposition(
-          tab_contents_->profile(), url);
-  inline_disposition_tab_contents_.reset(
-      TabContents::Factory::CreateTabContents(web_contents));
+          tab_contents_->profile(), url));
   Browser* browser = browser::FindBrowserWithWebContents(
       tab_contents_->web_contents());
   inline_disposition_delegate_.reset(
-      new WebIntentInlineDispositionDelegate(this, web_contents, browser));
+      new WebIntentInlineDispositionDelegate(
+          this, inline_disposition_web_contents_.get(), browser));
 
-  tab_contents_container_.reset(new TabContentsContainerGtk(NULL));
-  tab_contents_container_->SetTab(inline_disposition_tab_contents_.get());
-
-  inline_disposition_tab_contents_->web_contents()->GetController().LoadURL(
+  inline_disposition_web_contents_->GetController().LoadURL(
       url, content::Referrer(), content::PAGE_TRANSITION_AUTO_TOPLEVEL,
       std::string());
 
@@ -367,17 +363,19 @@ void WebIntentPickerGtk::OnInlineDisposition(const string16&,
   gtk_alignment_set_padding(
       GTK_ALIGNMENT(alignment), 0, ui::kContentAreaBorder,
       ui::kContentAreaBorder, ui::kContentAreaBorder);
-  gtk_container_add(GTK_CONTAINER(alignment),
-                    tab_contents_container_->widget());
+  gfx::NativeView web_contents_widget =
+      inline_disposition_web_contents_->GetView()->GetNativeView();
+  gtk_container_add(GTK_CONTAINER(alignment), web_contents_widget);
   gtk_container_add(GTK_CONTAINER(vbox), alignment);
   gtk_container_add(GTK_CONTAINER(contents_), vbox);
 
   gfx::Size size = GetMinInlineDispositionSize();
-  gtk_widget_set_size_request(tab_contents_container_->widget(),
+  gtk_widget_set_size_request(web_contents_widget,
                               size.width(), size.height());
   gtk_widget_show_all(contents_);
 
   inline_disposition_delegate_->SetRenderViewSizeLimits();
+  inline_disposition_web_contents_->GetView()->SetInitialFocus();
   host_signals_.reset(new ui::GtkSignalRegistrar());
   host_signals_->Connect(
       tab_contents_->web_contents()->GetRenderViewHost()->GetView()->
@@ -387,8 +385,9 @@ void WebIntentPickerGtk::OnInlineDisposition(const string16&,
 }
 
 void WebIntentPickerGtk::OnInlineDispositionAutoResize(const gfx::Size& size) {
-  gtk_widget_set_size_request(tab_contents_container_->widget(),
-                              size.width(), size.height());
+  gfx::NativeView web_contents_widget =
+      inline_disposition_web_contents_->GetView()->GetNativeView();
+  gtk_widget_set_size_request(web_contents_widget, size.width(), size.height());
 }
 
 gfx::Size WebIntentPickerGtk::GetMaxInlineDispositionSize() {
@@ -465,7 +464,7 @@ void WebIntentPickerGtk::DeleteDelegate() {
 }
 
 bool WebIntentPickerGtk::GetBackgroundColor(GdkColor* color) {
-  if (tab_contents_container_.get()) {
+  if (inline_disposition_web_contents_.get()) {
     *color = ui::kGdkWhite;
     return true;
   }
@@ -688,9 +687,8 @@ void WebIntentPickerGtk::ResetContents() {
   ClearContents();
 
   // Reset potential inline disposition data.
-  inline_disposition_delegate_.reset(NULL);
-  tab_contents_container_.reset(NULL);
-  inline_disposition_tab_contents_.reset(NULL);
+  inline_disposition_web_contents_.reset();
+  inline_disposition_delegate_.reset();
   window_->BackgroundColorChanged();
 
   // Re-initialize picker widgets and data.
