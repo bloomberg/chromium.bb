@@ -260,10 +260,8 @@ WebKit::WebInputEvent::Type ConvertToWebInputEvent(ui::EventType t) {
     case ui::ET_GESTURE_SCROLL_UPDATE:
       return WebKit::WebGestureEvent::GestureScrollUpdate;
     case ui::ET_SCROLL_FLING_START:
-      // TODO: Confirm that ui and webkit agree on fling api.
       return WebKit::WebGestureEvent::GestureFlingStart;
     case ui::ET_SCROLL_FLING_CANCEL:
-      // TODO: Confirm that ui and webkit agree on fling api.
       return WebKit::WebGestureEvent::GestureFlingCancel;
     case ui::ET_GESTURE_TAP:
       return WebKit::WebGestureEvent::GestureTap;
@@ -304,6 +302,7 @@ WebKit::WebInputEvent::Type ConvertToWebInputEvent(ui::EventType t) {
   }
 }
 
+// Creates a WebGestureEvent corresponding to the given |gesture|
 WebKit::WebGestureEvent CreateWebGestureEvent(HWND hwnd,
                                               const ui::GestureEvent& gesture) {
   POINT client_point = gesture.location().ToPOINT();
@@ -366,6 +365,13 @@ WebKit::WebGestureEvent CreateWebGestureEvent(HWND hwnd,
     default:
       break;
   }
+  return gesture_event;
+}
+
+WebKit::WebGestureEvent CreateFlingCancelEvent(double time_stamp) {
+  WebKit::WebGestureEvent gesture_event;
+  gesture_event.timeStampSeconds = time_stamp;
+  gesture_event.type = WebKit::WebGestureEvent::GestureFlingCancel;
   return gesture_event;
 }
 
@@ -2785,6 +2791,10 @@ bool RenderWidgetHostViewWin::ForwardGestureEventToRenderer(
   WebKit::WebGestureEvent web_gesture = CreateWebGestureEvent(m_hWnd, *gesture);
   if (web_gesture.type == WebKit::WebGestureEvent::Undefined)
     return false;
+  if (web_gesture.type == WebKit::WebGestureEvent::GestureTapDown) {
+    render_widget_host_->ForwardGestureEvent(
+        CreateFlingCancelEvent(gesture->time_stamp().InSecondsF()));
+  }
   render_widget_host_->ForwardGestureEvent(web_gesture);
   return true;
 }
