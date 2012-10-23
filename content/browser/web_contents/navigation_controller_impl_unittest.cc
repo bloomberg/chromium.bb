@@ -932,6 +932,7 @@ class TestNavigationObserver : public RenderViewHostObserver {
   GURL navigated_url_;
 };
 
+#if !defined(OS_ANDROID)  // http://crbug.com/157428
 TEST_F(NavigationControllerTest, ReloadOriginalRequestURL) {
   NavigationControllerImpl& controller = controller_impl();
   TestNotificationTracker notifications;
@@ -986,6 +987,8 @@ TEST_F(NavigationControllerTest, ReloadOriginalRequestURL) {
   EXPECT_FALSE(controller.CanGoBack());
   EXPECT_FALSE(controller.CanGoForward());
 }
+
+#endif  // !defined(OS_ANDROID)
 
 // Tests what happens when we navigate back successfully
 TEST_F(NavigationControllerTest, Back) {
