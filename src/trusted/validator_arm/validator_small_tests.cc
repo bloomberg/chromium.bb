@@ -520,6 +520,23 @@ TEST_F(ValidatorTests, ScaryUndefinedInstructions) {
   }
 }
 
+TEST_F(ValidatorTests, LessScaryUndefinedInstructions) {
+  // These instructions are specified by ARM as *permanently* undefined, so we
+  // treat them as a reliable Illegal Instruction trap.
+
+  static const AnnotatedInstruction perm_undefined[] = {
+    { 0xE7FFDEFE, "permanently undefined instruction produced by LLVM" },
+  };
+
+  for (unsigned i = 0; i < NACL_ARRAY_SIZE(perm_undefined); i++) {
+    arm_inst program[] = { perm_undefined[i].inst };
+    validation_should_pass(program,
+                           1,
+                           kDefaultBaseAddr,
+                           perm_undefined[i].about);
+  }
+}
+
 TEST_F(ValidatorTests, PcRelativeFirstInst) {
   // Note: This tests the fix for issue 2771.
   static const arm_inst pcrel_boundary_tests[] = {
@@ -1009,7 +1026,7 @@ TEST_F(ValidatorTests, CheckPushPcUnpredictable) {
 TEST_F(ValidatorTests, ConditionalBreakpoints) {
   ProblemSpy spy;
   arm_inst bkpt = 0xE1200070;  // BKPT #0
-  arm_inst pool_head = nacl_arm_dec::kLiteralPoolHead;
+  arm_inst pool_head = nacl_arm_dec::kLiteralPoolHeadInstruction;
   for (Instruction::Condition cond = Instruction::EQ;
        cond < Instruction::AL;
        cond = Instruction::Next(cond)) {
@@ -1023,53 +1040,10 @@ TEST_F(ValidatorTests, ConditionalBreakpoints) {
 }
 
 TEST_F(ValidatorTests, LiteralPoolHeadIsBreakpoint) {
-  EXPECT_EQ(nacl_arm_dec::kLiteralPoolHead & 0xFFF000F0,
+  EXPECT_EQ(nacl_arm_dec::kLiteralPoolHeadInstruction & 0xFFF000F0,
             0xE1200070)  // BKPT #0
       << ("the literal pool head should be a breakpoint: "
           "it needs to act as a roadblock");
-}
-
-TEST_F(ValidatorTests, Breakpoint) {
-  EXPECT_EQ(nacl_arm_dec::kBreakpoint & 0xFFF000F0,
-            0xE1200070)  // BKPT #0
-      << ("the breakpoint instruction should be a breakpoint: "
-          "it needs to trap");
-}
-
-TEST_F(ValidatorTests, HaltFill) {
-  EXPECT_EQ(nacl_arm_dec::kHaltFill & 0xFFF000F0,
-            0xE7F000F0)  // UDF #0
-      << ("the halt fill instruction should be UDF: "
-          "it needs to trap");
-}
-
-TEST_F(ValidatorTests, AbortNow) {
-  EXPECT_EQ(nacl_arm_dec::kAbortNow & 0xFFF000F0,
-            0xE7F000F0)  // UDF #0
-      << ("the abort now instruction should be UDF: "
-          "it needs to trap");
-}
-
-TEST_F(ValidatorTests, FailValidation) {
-  EXPECT_EQ(nacl_arm_dec::kFailValidation & 0xFFF000F0,
-            0xE7F000F0)  // UDF #0
-      << ("the fail validation instruction should be UDF: "
-          "it needs to trap");
-}
-
-TEST_F(ValidatorTests, UDFAndBKPTValidateAsExpected) {
-  ProblemSpy spy;
-  for (uint32_t i = 0; i < 0xFFFF; ++i) {
-    arm_inst bkpt_inst = 0xE1200070 | ((i & 0xFFF0) << 4) | (i & 0xF);
-    arm_inst udf_inst  = 0xE7F000F0 | ((i & 0xFFF0) << 4) | (i & 0xF);
-    EXPECT_EQ(validate(&bkpt_inst, 1, kDefaultBaseAddr, &spy),
-              ((bkpt_inst == nacl_arm_dec::kLiteralPoolHead) ||
-               (bkpt_inst == nacl_arm_dec::kBreakpoint)));
-    EXPECT_EQ(validate(&udf_inst, 1, kDefaultBaseAddr, &spy),
-              ((udf_inst == nacl_arm_dec::kHaltFill) ||
-               (udf_inst == nacl_arm_dec::kAbortNow)));
-    // Tautological note: kFailValidation should fail validation.
-  }
 }
 
 TEST_F(ValidatorTests, LiteralPoolHeadInstruction) {
@@ -1085,7 +1059,7 @@ TEST_F(ValidatorTests, LiteralPoolHeadInstruction) {
     literal_pool[0] = (literal_pool[0] & 0xFFF000F0) |
         (imm16 & 0xF) |
         ((imm16 & 0xFFF0) << 8);
-    if (literal_pool[0] == nacl_arm_dec::kLiteralPoolHead) {
+    if (literal_pool[0] == nacl_arm_dec::kLiteralPoolHeadInstruction) {
       validation_should_pass(literal_pool.data(),
                              literal_pool.size(),
                              kDefaultBaseAddr,
@@ -1109,7 +1083,7 @@ TEST_F(ValidatorTests, LiteralPoolHeadPosition) {
     std::fill(literal_pool.begin(), literal_pool.end(), 0xEF000000);  // SVC #0
     if (pos != literal_pool.size()) {
       // We do one iteration without a literal pool head at all.
-      literal_pool[pos] = nacl_arm_dec::kLiteralPoolHead;
+      literal_pool[pos] = nacl_arm_dec::kLiteralPoolHeadInstruction;
     }
     if (pos == 0) {
       validation_should_pass(literal_pool.data(),
@@ -1134,7 +1108,7 @@ TEST_F(ValidatorTests, LiteralPoolBig) {
   for (size_t pos = 0; pos <= literal_pools.size(); ++pos) {
     std::fill(literal_pools.begin(), literal_pools.end(),
               0xEF000000);  // SVC #0
-    literal_pools[pos] = nacl_arm_dec::kLiteralPoolHead;
+    literal_pools[pos] = nacl_arm_dec::kLiteralPoolHeadInstruction;
     validation_should_fail(literal_pools.data(),
                            literal_pools.size(),
                            kDefaultBaseAddr,
@@ -1159,7 +1133,7 @@ TEST_F(ValidatorTests, LiteralPoolBranch) {
       continue;
     }
     std::fill(code.begin(), code.end(), 0xE320F000);  // NOP
-    code[bundle_pos] = nacl_arm_dec::kLiteralPoolHead;
+    code[bundle_pos] = nacl_arm_dec::kLiteralPoolHeadInstruction;
     for (size_t b_target = 0; b_target < code.size(); ++b_target) {
       // PC reads as current instruction address plus 8 (e.g. two instructions
       // ahead of b_pos).

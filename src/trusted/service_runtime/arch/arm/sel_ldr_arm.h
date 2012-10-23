@@ -7,7 +7,6 @@
 #ifndef SERVICE_RUNTIME_ARCH_ARM_SEL_LDR_H__
 #define SERVICE_RUNTIME_ARCH_ARM_SEL_LDR_H__ 1
 
-#include "native_client/src/include/arm_sandbox.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
@@ -25,7 +24,7 @@
 #define NACL_HALT_LEN           2           /* length of halt instruction */
 #else
 #define NACL_NOOP_OPCODE        0xe1a00000  /* mov r0, r0 */
-#define NACL_HALT_OPCODE        NACL_INSTR_HALT_FILL
+#define NACL_HALT_OPCODE        0xe1266676  /* bkpt 6666 */
 #define NACL_HALT_LEN           4           /* length of halt instruction */
 #endif  /* defined(NACL_TARGET_ARM_THUMB2_MODE) */
 #define NACL_HALT_WORD          NACL_HALT_OPCODE

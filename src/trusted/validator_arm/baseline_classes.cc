@@ -90,18 +90,13 @@ int32_t BranchImmediate24::branch_target_offset(Instruction i) const {
 
 // BreakPointAndConstantPoolHead
 SafetyLevel BreakPointAndConstantPoolHead::safety(const Instruction i) const {
-  if (i.GetCondition() != Instruction::AL)
-    return UNPREDICTABLE;
-  // Restrict BKPT's encoding to values we've chosen as safe.
-  if ((i.Bits(31, 0) == kLiteralPoolHead) ||
-      (i.Bits(31, 0) == kBreakpoint))
-    return MAY_BE_SAFE;
-  return FORBIDDEN_OPERANDS;
+  return i.GetCondition() == Instruction::AL
+      ? MAY_BE_SAFE
+      : UNPREDICTABLE;
 }
-
 bool BreakPointAndConstantPoolHead::
 is_literal_pool_head(const Instruction i) const {
-  return i.Bits(31, 0) == kLiteralPoolHead;
+  return i.Bits(31, 0) == kLiteralPoolHeadInstruction;
 }
 
 // BranchToRegister

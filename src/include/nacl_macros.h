@@ -14,9 +14,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define NACL_TO_STRING_INTERNAL(v) #v
-#define NACL_TO_STRING(v) NACL_TO_STRING_INTERNAL(v)
-
 /*****************************************************************************
  * Safety macros                                                             *
  *****************************************************************************/

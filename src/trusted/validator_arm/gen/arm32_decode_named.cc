@@ -1189,7 +1189,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_media_instructions(
 
   if ((inst.Bits() & 0x01F00000) == 0x01F00000 /* op1(24:20)=11111 */ &&
       (inst.Bits() & 0x000000E0) == 0x000000E0 /* op2(7:5)=111 */) {
-    return PermanentlyUndefined_Udf_Rule_A1_instance_;
+    return Roadblock_Udf_Rule_A1_instance_;
   }
 
   if ((inst.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20)=1101x */ &&

@@ -675,10 +675,10 @@ bool SfiValidator::validate_fallthrough(const CodeSegment& segment,
   bool complete_success = true;
 
   nacl_arm_dec::Forbidden initial_decoder;
-  // Initialize the previous instruction so it always fails validation.
+  // Initialize the previous instruction to a scary BKPT, so patterns all fail.
   DecodedInstruction pred(
       0,  // Virtual address 0, which will be in a different bundle;
-      Instruction(nacl_arm_dec::kFailValidation),
+      Instruction(nacl_arm_dec::kLiteralPoolHeadInstruction),
       initial_decoder);  // and ensure that it decodes as Forbidden.
 
   for (uint32_t va = segment.begin_addr(); va < segment.end_addr(); va += 4) {

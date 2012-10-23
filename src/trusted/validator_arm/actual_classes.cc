@@ -528,38 +528,26 @@ RegisterList EffectiveNoOp::defs(Instruction i) const {
   return RegisterList();
 }
 
-// PermanentlyUndefined
-SafetyLevel PermanentlyUndefined::safety(Instruction i) const {
-  // Restrict UDF's encoding to values we've chosen as safe.
-  if ((i.Bits(31, 0) == kHaltFill) ||
-      (i.Bits(31, 0) == kAbortNow))
-    return MAY_BE_SAFE;
-  return FORBIDDEN_OPERANDS;
+// Roadblock
+SafetyLevel Roadblock::safety(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return MAY_BE_SAFE;
 }
 
-RegisterList PermanentlyUndefined::defs(Instruction i) const {
+RegisterList Roadblock::defs(Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return RegisterList();
 }
 
 // Breakpoint
 SafetyLevel Breakpoint::safety(Instruction i) const {
-  if (i.GetCondition() != Instruction::AL)
-    return UNPREDICTABLE;
-  // Restrict BKPT's encoding to values we've chosen as safe.
-  if ((i.Bits(31, 0) == kLiteralPoolHead) ||
-      (i.Bits(31, 0) == kBreakpoint))
-    return MAY_BE_SAFE;
-  return FORBIDDEN_OPERANDS;
-}
-
-RegisterList Breakpoint::defs(Instruction i) const {
-  UNREFERENCED_PARAMETER(i);
-  return RegisterList();
+  return i.GetCondition() == Instruction::AL
+      ? MAY_BE_SAFE
+      : UNPREDICTABLE;
 }
 
 bool Breakpoint::is_literal_pool_head(const Instruction i) const {
-  return i.Bits(31, 0) == kLiteralPoolHead;
+  return i.Bits(31, 0) == kLiteralPoolHeadInstruction;
 }
 
 SafetyLevel PackSatRev::safety(const Instruction i) const {

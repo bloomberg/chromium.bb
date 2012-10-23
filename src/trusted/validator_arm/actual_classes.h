@@ -718,27 +718,27 @@ class EffectiveNoOp : public OldClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(EffectiveNoOp);
 };
 
-// UDF
-// Permanently undefined in the ARM ISA.
-class PermanentlyUndefined : public OldClassDecoder {
+// Models all instructions that reliably trap, preventing execution from falling
+// through to the next instruction.  Note that roadblocks currently have no
+// special role in the SFI model, so Breakpoints are distinguished below.
+class Roadblock : public OldClassDecoder {
  public:
-  PermanentlyUndefined() {}
+  Roadblock() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(PermanentlyUndefined);
+  NACL_DISALLOW_COPY_AND_ASSIGN(Roadblock);
 };
 
 // BKPT
 // We model this mostly so we can use it to recognize literal pools -- untrusted
 // code isn't expected to use it, but it's not unsafe, and there are cases where
 // we may generate it.
-class Breakpoint : public OldClassDecoder {
+class Breakpoint : public Roadblock {
  public:
   Breakpoint() {}
   virtual SafetyLevel safety(Instruction i) const;
-  virtual RegisterList defs(Instruction i) const;
   virtual bool is_literal_pool_head(Instruction i) const;
 
  private:

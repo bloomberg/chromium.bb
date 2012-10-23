@@ -3,7 +3,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "native_client/src/include/arm_sandbox.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "templates.h"
 
@@ -57,10 +56,10 @@ template_func_nonreplacement_end:
         .global hlts_end
         .p2align 4
 hlts:
-        .word NACL_INSTR_HALT_FILL
-        .word NACL_INSTR_HALT_FILL
-        .word NACL_INSTR_HALT_FILL
-        .word NACL_INSTR_HALT_FILL
+        bkpt 0x7777
+        bkpt 0x7777
+        bkpt 0x7777
+        bkpt 0x7777
 hlts_end:
 
 

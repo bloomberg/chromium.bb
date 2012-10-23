@@ -3,10 +3,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "native_client/src/include/arm_sandbox.h"
 #include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
+#define halt 0xe1266676
 /* the macros below are used with movw/movt and absolute values */
 /* llvm-mc does not like the use of :lower16:/:upper16: with absolute values */
 /* c.f.: http://llvm.org/bugs/show_bug.cgi?id=8721 */
@@ -224,11 +224,10 @@ _start:
 /* NOTE: unlike x86 the alignment directive on ARM takes
    the logarithm of the alignment */
 #define POW2_BIGGER_THAN_DOT 14
-        .align32 POW2_BIGGER_THAN_DOT, NACL_INSTR_HALT_FILL
-        .fill (TEXT_EXTEND - (1 << POW2_BIGGER_THAN_DOT))/4, 4, \
-              NACL_INSTR_HALT_FILL
+        .align32 POW2_BIGGER_THAN_DOT, halt
+        .fill (TEXT_EXTEND - (1 << POW2_BIGGER_THAN_DOT))/4, 4, halt
 #else
-        .fill (TEXT_EXTEND - (. - start_of_text))/4, 4, NACL_INSTR_HALT_FILL
+        .fill (TEXT_EXTEND - (. - start_of_text))/4, 4, halt
 #endif
 
 end_of_text:

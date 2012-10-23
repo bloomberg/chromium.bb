@@ -2431,17 +2431,17 @@ class InstructionBarrierTester : public BarrierInstTester {
   NACL_DISALLOW_COPY_AND_ASSIGN(InstructionBarrierTester);
 };
 
-// Implements a decoder tester for a PermanentlyUndefined.
-class PermanentlyUndefinedTester : public CondDecoderTester {
+// Implements a decoder tester for a Roadblock.
+class RoadblockTester : public CondDecoderTester {
  public:
-  explicit PermanentlyUndefinedTester(const NamedClassDecoder& decoder)
+  explicit RoadblockTester(const NamedClassDecoder& decoder)
       : CondDecoderTester(decoder) {}
   virtual bool ApplySanityChecks(
       nacl_arm_dec::Instruction inst,
       const NamedClassDecoder& decoder);
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(PermanentlyUndefinedTester);
+  NACL_DISALLOW_COPY_AND_ASSIGN(RoadblockTester);
 };
 
 }  // namespace nacl_arm_test
