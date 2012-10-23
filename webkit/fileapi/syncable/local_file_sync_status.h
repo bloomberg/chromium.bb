@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "webkit/fileapi/file_system_url.h"
 
@@ -28,15 +27,6 @@ namespace fileapi {
 // while the target url is in syncing must fail and vice versa.
 class WEBKIT_STORAGE_EXPORT LocalFileSyncStatus : public base::NonThreadSafe {
  public:
-  class WEBKIT_STORAGE_EXPORT Observer {
-   public:
-    Observer() {}
-    virtual void OnSyncEnabled(const FileSystemURL& url) = 0;
-    virtual void OnWriteEnabled(const FileSystemURL& url) = 0;
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Observer);
-  };
-
   LocalFileSyncStatus();
   ~LocalFileSyncStatus();
 
@@ -60,9 +50,6 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncStatus : public base::NonThreadSafe {
   // Returns true if the |url| is enabled for writing (i.e. not in syncing).
   bool IsWritable(const FileSystemURL& url) const;
 
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
-
  private:
   typedef std::map<FileSystemURL, int64, FileSystemURL::Comparator> URLCountMap;
   typedef std::set<FileSystemURL, FileSystemURL::Comparator> URLSet;
@@ -75,8 +62,6 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncStatus : public base::NonThreadSafe {
 
   // If this flag is set sync process is running on the file.
   URLSet syncing_;
-
-  ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalFileSyncStatus);
 };

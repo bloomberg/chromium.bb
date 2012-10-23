@@ -18,7 +18,6 @@
 #include "base/memory/weak_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/syncable/file_change.h"
-#include "webkit/fileapi/syncable/local_file_sync_status.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 #include "webkit/storage/webkit_storage_export.h"
 
@@ -28,7 +27,6 @@ class SingleThreadTaskRunner;
 
 namespace fileapi {
 
-class FileChange;
 class FileSystemContext;
 class LocalFileChangeTracker;
 class SyncableFileOperationRunner;
@@ -61,15 +59,12 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
   // OperationRunner is accessible only on IO thread.
   base::WeakPtr<SyncableFileOperationRunner> operation_runner() const;
 
-  // SyncContext is accessible only on IO thread.
-  LocalFileSyncStatus* sync_status() const;
-
  private:
   typedef std::deque<StatusCallback> StatusCallbackQueue;
   friend class base::RefCountedThreadSafe<LocalFileSyncContext>;
   friend class CannedSyncableFileSystem;
 
-  virtual ~LocalFileSyncContext();
+  ~LocalFileSyncContext();
 
   void ShutdownOnIOThread();
 
@@ -96,22 +91,16 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
   // OperationRunner. This must be accessed only on IO thread.
   scoped_ptr<SyncableFileOperationRunner> operation_runner_;
 
-  // Keeps track of writing/syncing status.
-  // This must be accessed only on IO thread.
-  scoped_ptr<LocalFileSyncStatus> sync_status_;
-
   // Pointers to file system contexts that have been initialized for
   // synchronization (i.e. that own this instance).
   // This must be accessed only on UI thread.
   std::set<FileSystemContext*> file_system_contexts_;
 
-  // Accessed only on UI thread.
   std::map<FileSystemContext*, StatusCallbackQueue>
       pending_initialize_callbacks_;
 
   // Origin to context map. (Assuming that as far as we're in the same
   // profile single origin wouldn't belong to multiple FileSystemContexts.)
-  // Accessed only on UI thread.
   std::map<GURL, FileSystemContext*> origin_to_contexts_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalFileSyncContext);

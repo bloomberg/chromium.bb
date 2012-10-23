@@ -17,10 +17,6 @@
 
 namespace fileapi {
 
-namespace {
-const int kMaxConcurrentSyncableOperation = 3;
-}  // namespace
-
 LocalFileSyncContext::LocalFileSyncContext(
     base::SingleThreadTaskRunner* ui_task_runner,
     base::SingleThreadTaskRunner* io_task_runner)
@@ -72,18 +68,12 @@ LocalFileSyncContext::operation_runner() const {
   return base::WeakPtr<SyncableFileOperationRunner>();
 }
 
-LocalFileSyncStatus* LocalFileSyncContext::sync_status() const {
-  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
-  return sync_status_.get();
-}
-
 LocalFileSyncContext::~LocalFileSyncContext() {
 }
 
 void LocalFileSyncContext::ShutdownOnIOThread() {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   operation_runner_.reset();
-  sync_status_.reset();
 }
 
 void LocalFileSyncContext::InitializeFileSystemContextOnIOThread(
@@ -108,13 +98,8 @@ void LocalFileSyncContext::InitializeFileSystemContextOnIOThread(
                    make_scoped_refptr(file_system_context)));
     return;
   }
-  if (!operation_runner_.get()) {
-    DCHECK(!sync_status_.get());
-    sync_status_.reset(new LocalFileSyncStatus);
-    operation_runner_.reset(new SyncableFileOperationRunner(
-            kMaxConcurrentSyncableOperation,
-            sync_status_.get()));
-  }
+  if (!operation_runner_.get())
+    operation_runner_.reset(new SyncableFileOperationRunner);
   file_system_context->set_sync_context(this);
   DidInitialize(source_url, file_system_context, SYNC_STATUS_OK);
 }
