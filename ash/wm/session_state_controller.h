@@ -82,194 +82,65 @@ class ASH_EXPORT SessionStateController : public aura::RootWindowObserver,
   // the animation time to finish.
   static const int kShutdownRequestDelayMs;
 
-  // Helper class used by tests to access internal state.
-  class ASH_EXPORT TestApi {
-   public:
-    explicit TestApi(SessionStateController* controller);
-
-    virtual ~TestApi();
-
-    bool lock_timer_is_running() const {
-      return controller_->lock_timer_.IsRunning();
-    }
-    bool lock_fail_timer_is_running() const {
-      return controller_->lock_fail_timer_.IsRunning();
-    }
-    bool lock_to_shutdown_timer_is_running() const {
-      return controller_->lock_to_shutdown_timer_.IsRunning();
-    }
-    bool shutdown_timer_is_running() const {
-      return controller_->pre_shutdown_timer_.IsRunning();
-    }
-    bool real_shutdown_timer_is_running() const {
-      return controller_->real_shutdown_timer_.IsRunning();
-    }
-
-    void trigger_lock_timeout() {
-      controller_->OnLockTimeout();
-      controller_->lock_timer_.Stop();
-    }
-    void trigger_lock_fail_timeout() {
-      controller_->OnLockFailTimeout();
-      controller_->lock_fail_timer_.Stop();
-    }
-    void trigger_lock_to_shutdown_timeout() {
-      controller_->OnLockToShutdownTimeout();
-      controller_->lock_to_shutdown_timer_.Stop();
-    }
-    void trigger_shutdown_timeout() {
-      controller_->OnPreShutdownAnimationTimeout();
-      controller_->pre_shutdown_timer_.Stop();
-    }
-    void trigger_real_shutdown_timeout() {
-      controller_->OnRealShutdownTimeout();
-      controller_->real_shutdown_timer_.Stop();
-    }
-   private:
-    SessionStateController* controller_;  // not owned
-
-    DISALLOW_COPY_AND_ASSIGN(TestApi);
-  };
-
   SessionStateController();
   virtual ~SessionStateController();
-
-  // RootWindowObserver override:
-  virtual void OnRootWindowHostCloseRequested(
-     const aura::RootWindow* root) OVERRIDE;
-
-  // ShellObserver overrides:
-  virtual void OnLoginStateChanged(user::LoginStatus status) OVERRIDE;
-  virtual void OnAppTerminating() OVERRIDE;
-  virtual void OnLockStateChanged(bool locked) OVERRIDE;
 
   void SetDelegate(SessionStateControllerDelegate* delegate);
 
   // Returns true iff when we're in state when user session can be locked.
-  virtual bool IsEligibleForLock();
+  virtual bool IsEligibleForLock() = 0;
 
   // Returns true if system is locked.
-  virtual bool IsLocked();
+  virtual bool IsLocked() = 0;
 
   // Starts locking (with slow animation) that can be cancelled.
   // After locking and |kLockToShutdownTimeoutMs| StartShutdownAnimation()
-  // will be called unless CancelShutdown() is called, if |shutdown_after_lock|
-  // is true.
-  virtual void StartLockAnimation(bool shutdown_after_lock);
+  // will be called unless CancelShutdownAnimation() is called, if
+  // |shutdown_after_lock| is true.
+  virtual void StartLockAnimation(bool shutdown_after_lock) = 0;
 
   // Starts shutting down (with slow animation) that can be cancelled.
-  virtual void StartShutdownAnimation();
+  virtual void StartShutdownAnimation() = 0;
 
   // Starts usual lock animation, but locks immediately.
   // Unlike StartLockAnimation it does no lead to StartShutdownAnimation.
-  virtual void StartLockAnimationAndLockImmediately();
+  virtual void StartLockAnimationAndLockImmediately() = 0;
 
   // Returns true if we have requested system to lock, but haven't received
   // confirmation yet.
-  virtual bool LockRequested();
+  virtual bool LockRequested() = 0;
 
   // Returns true if we are shutting down.
-  virtual bool ShutdownRequested();
+  virtual bool ShutdownRequested() = 0;
 
   // Returns true if we are within cancellable lock timeframe.
-  virtual bool CanCancelLockAnimation();
+  virtual bool CanCancelLockAnimation() = 0;
 
   // Cancels locking and reverts lock animation.
-  virtual void CancelLockAnimation();
-
-  // Cancels locking and reverts lock animation with slightly different
-  // parameters. Seems to be some bug, but refactoring should keep all bugs.
-  // TODO(antrim): remove this, animations should actually be the same.
-  virtual void CancelLockWithOtherAnimation();
+  virtual void CancelLockAnimation() = 0;
 
   // Returns true if we are within cancellable shutdown timeframe.
-  virtual bool CanCancelShutdownAnimation();
+  virtual bool CanCancelShutdownAnimation() = 0;
 
   // Cancels shutting down and reverts shutdown animation.
-  virtual void CancelShutdownAnimation();
+  virtual void CancelShutdownAnimation() = 0;
 
   // Called when Chrome gets a request to display the lock screen.
-  virtual void OnStartingLock();
+  virtual void OnStartingLock() = 0;
 
   // Displays the shutdown animation and requests shutdown when it's done.
-  virtual void RequestShutdown();
+  virtual void RequestShutdown() = 0;
 
  protected:
   friend class test::PowerButtonControllerTest;
 
   bool IsLoggedInAsNonGuest() const;
 
- private:
-  void RequestShutdownImpl();
-
-  // Starts lock timer.
-  void StartLockTimer();
-
-  // Requests that the screen be locked and starts |lock_fail_timer_|.
-  void OnLockTimeout();
-
-  // Reverts the pre-lock animation, reports the error.
-  void OnLockFailTimeout();
-
-  // Starts timer for gap between lock and shutdown.
-  void StartLockToShutdownTimer();
-
-  // Calls StartShutdownAnimation().
-  void OnLockToShutdownTimeout();
-
-  // Starts timer for undoable shutdown animation.
-  void StartPreShutdownAnimationTimer();
-
-  // Calls RequestShutdownImpl();
-  void OnPreShutdownAnimationTimeout();
-
-  // Starts timer for final shutdown animation.
-  void StartRealShutdownTimer();
-
-  // Requests that the machine be shut down.
-  void OnRealShutdownTimeout();
-
-  // The current login status.
-  user::LoginStatus login_status_;
-
-  // Original login status from before we locked. LOGGED_IN_NONE if it's not
-  // locked.
-  user::LoginStatus unlocked_login_status_;
-
-  // Are we in the process of shutting the machine down?
-  bool shutting_down_;
-
-  // Indicates whether controller should proceed to (cancellable) shutdown after
-  // locking.
-  bool shutdown_after_lock_;
-
-  // Started when the user first presses the power button while in a
-  // logged-in-as-a-non-guest-user, unlocked state.  When it fires, we lock the
-  // screen.
-  base::OneShotTimer<SessionStateController> lock_timer_;
-
-  // Started when we request that the screen be locked.  When it fires, we
-  // assume that our request got dropped.
-  base::OneShotTimer<SessionStateController> lock_fail_timer_;
-
-  // Started when the screen is locked while the power button is held.  Adds a
-  // delay between the appearance of the lock screen and the beginning of the
-  // pre-shutdown animation.
-  base::OneShotTimer<SessionStateController> lock_to_shutdown_timer_;
-
-  // Started when we begin displaying the pre-shutdown animation.  When it
-  // fires, we start the shutdown animation and get ready to request shutdown.
-  base::OneShotTimer<SessionStateController> pre_shutdown_timer_;
-
-  // Started when we display the shutdown animation.  When it fires, we actually
-  // request shutdown.  Gives the animation time to complete before Chrome, X,
-  // etc. are shut down.
-  base::OneShotTimer<SessionStateController> real_shutdown_timer_;
-
   scoped_ptr<internal::SessionStateAnimator> animator_;
 
   scoped_ptr<SessionStateControllerDelegate> delegate_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(SessionStateController);
 };
 

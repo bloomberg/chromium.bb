@@ -46,6 +46,8 @@
 #include "ash/wm/root_window_layout_manager.h"
 #include "ash/wm/screen_dimmer.h"
 #include "ash/wm/session_state_controller.h"
+#include "ash/wm/session_state_controller_impl.h"
+#include "ash/wm/session_state_controller_impl2.h"
 #include "ash/wm/shadow_controller.h"
 #include "ash/wm/stacking_controller.h"
 #include "ash/wm/system_gesture_event_filter.h"
@@ -490,7 +492,10 @@ void Shell::Init() {
   // the correct size.
   user_wallpaper_delegate_->InitializeWallpaper();
 
-  session_state_controller_.reset(new SessionStateController);
+  if (command_line->HasSwitch(ash::switches::kAshNewLockAnimationsEnabled))
+    session_state_controller_.reset(new SessionStateControllerImpl2);
+  else
+    session_state_controller_.reset(new SessionStateControllerImpl);
   power_button_controller_.reset(new PowerButtonController(
       session_state_controller_.get()));
   AddShellObserver(session_state_controller_.get());

@@ -5,11 +5,14 @@
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/session_state_animator.h"
 #include "ash/wm/session_state_controller.h"
+#include "ash/wm/session_state_controller_impl.h"
 
+#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/cursor_manager.h"
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "ui/aura/env.h"
@@ -62,9 +65,12 @@ class PowerButtonControllerTest : public AshTestBase {
     AshTestBase::SetUp();
     delegate_ = new TestPowerButtonControllerDelegate;
     controller_ = Shell::GetInstance()->power_button_controller();
-    state_controller_ = Shell::GetInstance()->session_state_controller();
+    CHECK(!CommandLine::ForCurrentProcess()->HasSwitch(
+        ash::switches::kAshNewLockAnimationsEnabled));
+    state_controller_ = static_cast<SessionStateControllerImpl*>(
+        Shell::GetInstance()->session_state_controller());
     state_controller_->SetDelegate(delegate_);  // transfers ownership
-    test_api_.reset(new SessionStateController::TestApi(state_controller_));
+    test_api_.reset(new SessionStateControllerImpl::TestApi(state_controller_));
     animator_api_.reset(
         new internal::SessionStateAnimator::TestApi(state_controller_->
             animator_.get()));
@@ -84,10 +90,10 @@ class PowerButtonControllerTest : public AshTestBase {
   }
 
   PowerButtonController* controller_;  // not owned
-  SessionStateController* state_controller_;  // not owned
+  SessionStateControllerImpl* state_controller_;  // not owned
   TestPowerButtonControllerDelegate* delegate_;  // not owned
 
-  scoped_ptr<SessionStateController::TestApi> test_api_;
+  scoped_ptr<SessionStateControllerImpl::TestApi> test_api_;
   scoped_ptr<internal::SessionStateAnimator::TestApi> animator_api_;
 
  private:
@@ -109,7 +115,7 @@ TEST_F(PowerButtonControllerTest, LegacyLockAndShutDown) {
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
-          internal::SessionStateAnimator::ANIMATION_SLOW_CLOSE));
+          internal::SessionStateAnimator::ANIMATION_PARTIAL_CLOSE));
   EXPECT_TRUE(animator_api_->BlackLayerIsVisible());
   EXPECT_FALSE(animator_api_->hide_black_layer_timer_is_running());
   EXPECT_FALSE(test_api_->lock_timer_is_running());
@@ -124,7 +130,7 @@ TEST_F(PowerButtonControllerTest, LegacyLockAndShutDown) {
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
-          internal::SessionStateAnimator::ANIMATION_FAST_CLOSE));
+          internal::SessionStateAnimator::ANIMATION_FULL_CLOSE));
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
@@ -158,7 +164,7 @@ TEST_F(PowerButtonControllerTest, LegacyLockAndShutDown) {
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::kAllLockScreenContainersMask,
-          internal::SessionStateAnimator::ANIMATION_FAST_CLOSE));
+          internal::SessionStateAnimator::ANIMATION_FULL_CLOSE));
   // Make sure a mouse move event won't show the cursor.
   GenerateMouseMoveEvent();
   EXPECT_FALSE(cursor_visible());
@@ -202,7 +208,7 @@ TEST_F(PowerButtonControllerTest, ShutdownWhenNotLoggedIn) {
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::kAllContainersMask,
-          internal::SessionStateAnimator::ANIMATION_SLOW_CLOSE));
+          internal::SessionStateAnimator::ANIMATION_PARTIAL_CLOSE));
   EXPECT_TRUE(animator_api_->BlackLayerIsVisible());
 
   // Release the power button before the shutdown timer fires.
@@ -211,7 +217,7 @@ TEST_F(PowerButtonControllerTest, ShutdownWhenNotLoggedIn) {
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::kAllContainersMask,
-          internal::SessionStateAnimator::ANIMATION_UNDO_SLOW_CLOSE));
+          internal::SessionStateAnimator::ANIMATION_UNDO_PARTIAL_CLOSE));
   EXPECT_TRUE(animator_api_->BlackLayerIsVisible());
 
   // We should re-hide the black layer after waiting long enough for
@@ -235,7 +241,7 @@ TEST_F(PowerButtonControllerTest, ShutdownWhenNotLoggedIn) {
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::kAllLockScreenContainersMask,
-          internal::SessionStateAnimator::ANIMATION_FAST_CLOSE));
+          internal::SessionStateAnimator::ANIMATION_FULL_CLOSE));
 
   // When the timout fires, we should request a shutdown.
   test_api_->trigger_real_shutdown_timeout();
@@ -265,7 +271,7 @@ TEST_F(PowerButtonControllerTest, LockAndUnlock) {
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
-          internal::SessionStateAnimator::ANIMATION_SLOW_CLOSE));
+          internal::SessionStateAnimator::ANIMATION_PARTIAL_CLOSE));
   EXPECT_TRUE(animator_api_->BlackLayerIsVisible());
 
   // Release the button before the lock timer fires.
@@ -274,7 +280,7 @@ TEST_F(PowerButtonControllerTest, LockAndUnlock) {
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
-          internal::SessionStateAnimator::ANIMATION_UNDO_SLOW_CLOSE));
+          internal::SessionStateAnimator::ANIMATION_UNDO_PARTIAL_CLOSE));
   EXPECT_TRUE(animator_api_->BlackLayerIsVisible());
   EXPECT_TRUE(animator_api_->hide_black_layer_timer_is_running());
   animator_api_->TriggerHideBlackLayerTimeout();
@@ -290,7 +296,7 @@ TEST_F(PowerButtonControllerTest, LockAndUnlock) {
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
-          internal::SessionStateAnimator::ANIMATION_SLOW_CLOSE));
+          internal::SessionStateAnimator::ANIMATION_PARTIAL_CLOSE));
   EXPECT_TRUE(animator_api_->BlackLayerIsVisible());
 
   // Notify that we locked successfully.
@@ -302,7 +308,7 @@ TEST_F(PowerButtonControllerTest, LockAndUnlock) {
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
-          internal::SessionStateAnimator::ANIMATION_FAST_CLOSE));
+          internal::SessionStateAnimator::ANIMATION_FULL_CLOSE));
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
@@ -355,7 +361,7 @@ TEST_F(PowerButtonControllerTest, LockToShutdown) {
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::kAllContainersMask,
-          internal::SessionStateAnimator::ANIMATION_SLOW_CLOSE));
+          internal::SessionStateAnimator::ANIMATION_PARTIAL_CLOSE));
 
   // Fire the shutdown timeout and check that we request shutdown.
   test_api_->trigger_shutdown_timeout();
@@ -469,7 +475,7 @@ TEST_F(PowerButtonControllerTest, LockButtonBasic) {
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
-          internal::SessionStateAnimator::ANIMATION_SLOW_CLOSE));
+          internal::SessionStateAnimator::ANIMATION_PARTIAL_CLOSE));
   EXPECT_TRUE(animator_api_->BlackLayerIsVisible());
 
   // If the button is released immediately, we shouldn't lock the screen.
@@ -478,7 +484,7 @@ TEST_F(PowerButtonControllerTest, LockButtonBasic) {
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
-          internal::SessionStateAnimator::ANIMATION_UNDO_SLOW_CLOSE));
+          internal::SessionStateAnimator::ANIMATION_UNDO_PARTIAL_CLOSE));
   EXPECT_TRUE(animator_api_->BlackLayerIsVisible());
   EXPECT_TRUE(animator_api_->hide_black_layer_timer_is_running());
   animator_api_->TriggerHideBlackLayerTimeout();
@@ -547,7 +553,7 @@ TEST_F(PowerButtonControllerTest, LockWithoutButton) {
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
-          internal::SessionStateAnimator::ANIMATION_FAST_CLOSE));
+          internal::SessionStateAnimator::ANIMATION_FULL_CLOSE));
   EXPECT_TRUE(animator_api_->BlackLayerIsVisible());
 }
 
@@ -577,7 +583,7 @@ TEST_F(PowerButtonControllerTest, RequestShutdownFromLoginScreen) {
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::kAllLockScreenContainersMask,
-          internal::SessionStateAnimator::ANIMATION_FAST_CLOSE));
+          internal::SessionStateAnimator::ANIMATION_FULL_CLOSE));
   EXPECT_TRUE(animator_api_->BlackLayerIsVisible());
   GenerateMouseMoveEvent();
   EXPECT_FALSE(cursor_visible());
@@ -599,7 +605,7 @@ TEST_F(PowerButtonControllerTest, RequestShutdownFromLockScreen) {
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::kAllLockScreenContainersMask,
-          internal::SessionStateAnimator::ANIMATION_FAST_CLOSE));
+          internal::SessionStateAnimator::ANIMATION_FULL_CLOSE));
   EXPECT_TRUE(animator_api_->BlackLayerIsVisible());
   GenerateMouseMoveEvent();
   EXPECT_FALSE(cursor_visible());
@@ -621,7 +627,7 @@ TEST_F(PowerButtonControllerTest, RequestAndCancelShutdownFromLockScreen) {
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::kAllContainersMask,
-          internal::SessionStateAnimator::ANIMATION_SLOW_CLOSE));
+          internal::SessionStateAnimator::ANIMATION_PARTIAL_CLOSE));
   EXPECT_TRUE(animator_api_->BlackLayerIsVisible());
 
   // Release the power button before the shutdown timer fires.
@@ -630,7 +636,7 @@ TEST_F(PowerButtonControllerTest, RequestAndCancelShutdownFromLockScreen) {
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::kAllLockScreenContainersMask,
-          internal::SessionStateAnimator::ANIMATION_UNDO_SLOW_CLOSE));
+          internal::SessionStateAnimator::ANIMATION_UNDO_PARTIAL_CLOSE));
   EXPECT_TRUE(
       animator_api_->ContainersAreAnimated(
           internal::SessionStateAnimator::DESKTOP_BACKGROUND,

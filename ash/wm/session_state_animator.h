@@ -30,9 +30,9 @@ class ASH_EXPORT SessionStateAnimator : public aura::RootWindowObserver {
  public:
   // Animations that can be applied to groups of containers.
   enum AnimationType {
-    ANIMATION_SLOW_CLOSE = 0,
-    ANIMATION_UNDO_SLOW_CLOSE,
-    ANIMATION_FAST_CLOSE,
+    ANIMATION_PARTIAL_CLOSE = 0,
+    ANIMATION_UNDO_PARTIAL_CLOSE,
+    ANIMATION_FULL_CLOSE,
     ANIMATION_FADE_IN,
     ANIMATION_HIDE,
     ANIMATION_RESTORE,

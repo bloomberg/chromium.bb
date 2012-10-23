@@ -37,6 +37,9 @@ const char kAshEnableTrayDragging[] = "ash-enable-tray-dragging";
 // Enables creating a launcher per display.
 const char kAshLauncherPerDisplay[] = "ash-launcher-per-display";
 
+// If present new lock animations are enabled.
+const char kAshNewLockAnimationsEnabled[] = "ash-new-lock-animations-enabled";
+
 // Specifies the layout mode and offsets for the secondary display for
 // testing. The format is "<t|r|b|l>,<offset>" where t=TOP, r=RIGHT,
 // b=BOTTOM and L=LEFT. For example, 'r,-100' means the secondary display

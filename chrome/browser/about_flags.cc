@@ -872,6 +872,13 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     MULTI_VALUE_TYPE(kAshBootAnimationFunction),
   },
+  {
+    "new-lock-animations",
+    IDS_FLAGS_ASH_NEW_LOCK_ANIMATIONS,
+    IDS_FLAGS_ASH_NEW_LOCK_ANIMATIONS_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(ash::switches::kAshNewLockAnimationsEnabled),
+  },
 #endif
   {
     "enable-views-textfield",

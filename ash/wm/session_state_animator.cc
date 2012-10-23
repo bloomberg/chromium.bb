@@ -140,15 +140,15 @@ bool SessionStateAnimator::TestApi::ContainersAreAnimated(
     ui::Layer* layer = window->layer();
 
     switch (type) {
-      case ANIMATION_SLOW_CLOSE:
+      case ANIMATION_PARTIAL_CLOSE:
         if (layer->GetTargetTransform() != GetSlowCloseTransform())
           return false;
         break;
-      case ANIMATION_UNDO_SLOW_CLOSE:
+      case ANIMATION_UNDO_PARTIAL_CLOSE:
         if (layer->GetTargetTransform() != gfx::Transform())
           return false;
         break;
-      case ANIMATION_FAST_CLOSE:
+      case ANIMATION_FULL_CLOSE:
         if (layer->GetTargetTransform() != GetFastCloseTransform() ||
             layer->GetTargetOpacity() > 0.0001)
           return false;
@@ -261,13 +261,13 @@ void SessionStateAnimator::StartAnimation(int container_mask,
        it != containers.end(); ++it) {
     aura::Window* window = *it;
     switch (type) {
-      case ANIMATION_SLOW_CLOSE:
+      case ANIMATION_PARTIAL_CLOSE:
         StartSlowCloseAnimationForWindow(window);
         break;
-      case ANIMATION_UNDO_SLOW_CLOSE:
+      case ANIMATION_UNDO_PARTIAL_CLOSE:
         StartUndoSlowCloseAnimationForWindow(window);
         break;
-      case ANIMATION_FAST_CLOSE:
+      case ANIMATION_FULL_CLOSE:
         StartFastCloseAnimationForWindow(window);
         break;
       case ANIMATION_FADE_IN:

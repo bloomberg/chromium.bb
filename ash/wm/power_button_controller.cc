@@ -94,7 +94,7 @@ void PowerButtonController::OnLockButtonEvent(
   if (down)
     controller_->StartLockAnimation(false);
   else
-    controller_->CancelLockWithOtherAnimation();
+    controller_->CancelLockAnimation();
 }
 
 }  // namespace ash
