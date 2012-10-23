@@ -76,6 +76,7 @@ void AuraTestHelper::TearDown() {
   focus_manager_.reset();
   root_window_.reset();
   test_screen_.reset();
+  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, NULL);
   aura::Env::DeleteInstance();
 }
 

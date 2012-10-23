@@ -436,14 +436,6 @@ extern const char kRelaunchShortcut[];
 extern const char kWaitForMutex[];
 #endif
 
-#if defined(USE_AURA)
-extern const char kOpenAsh[];
-#endif
-
-#if defined(USE_ASH)
-extern const char kEnableAsh[];
-#endif
-
 #ifndef NDEBUG
 extern const char kFileManagerExtensionPath[];
 extern const char kDumpProfileDependencyGraph[];

@@ -26,7 +26,6 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/test/test_views_delegate.h"
-#include "ui/views/views_switches.h"
 #include "ui/views/widget/desktop_native_widget_aura.h"
 #include "ui/views/widget/desktop_native_widget_helper_aura.h"
 #include "ui/views/widget/widget.h"
@@ -292,8 +291,6 @@ void Shell::PlatformInitialize() {
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, aura::CreateDesktopScreen());
   views_delegate_ = new ShellViewsDelegateAura();
-
-  CommandLine::ForCurrentProcess()->AppendSwitch(views::switches::kDesktopAura);
 }
 
 void Shell::PlatformExit() {

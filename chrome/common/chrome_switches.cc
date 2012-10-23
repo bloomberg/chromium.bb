@@ -1550,16 +1550,6 @@ const char kRelaunchShortcut[]               = "relaunch-shortcut";
 const char kWaitForMutex[]                  = "wait-for-mutex";
 #endif
 
-#if defined(USE_AURA)
-// Opens an Ash window on startup.
-extern const char kOpenAsh[]                 = "open-ash";
-#endif
-
-#if defined(USE_ASH)
-// Enables the wrench menu items to open/close the Ash desktop.
-const char kEnableAsh[]                     = "enable-ash";
-#endif
-
 #ifndef NDEBUG
 // Enables overriding the path of file manager extension.
 const char kFileManagerExtensionPath[]      = "filemgr-ext-path";

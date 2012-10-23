@@ -90,6 +90,8 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_OEM_PLUS, ui::EF_CONTROL_DOWN, IDC_ZOOM_PLUS },
   { ui::VKEY_OEM_PLUS, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_ZOOM_PLUS },
   { ui::VKEY_ADD, ui::EF_CONTROL_DOWN, IDC_ZOOM_PLUS },
+  { ui::VKEY_A, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
+    IDC_TOGGLE_ASH_DESKTOP },
 
   // Platform-specific key maps.
 #if defined(OS_CHROMEOS)
