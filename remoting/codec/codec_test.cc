@@ -222,8 +222,8 @@ class VideoDecoderTester {
   // The error at each pixel is the root mean square of the errors in
   // the R, G, and B components, each normalized to [0, 1]. This routine
   // checks that the maximum and mean pixel errors do not exceed given limits.
-void VerifyResultsApprox(const uint8* expected_view_data,
-                         double max_error_limit, double mean_error_limit) {
+  void VerifyResultsApprox(const uint8* expected_view_data,
+                           double max_error_limit, double mean_error_limit) {
     double max_error = 0.0;
     double sum_error = 0.0;
     int error_num = 0;
@@ -357,7 +357,7 @@ static void TestEncodingRects(VideoEncoder* encoder,
 }
 
 void TestVideoEncoder(VideoEncoder* encoder, bool strict) {
-  SkISize kSize = SkISize::Make(320, 240);
+  const int kSizes[] = {320, 319, 317, 150};
 
   VideoEncoderMessageTester message_tester;
   message_tester.set_strict(strict);
@@ -365,14 +365,20 @@ void TestVideoEncoder(VideoEncoder* encoder, bool strict) {
   VideoEncoderTester tester(&message_tester);
 
   scoped_array<uint8> memory;
-  scoped_refptr<CaptureData> data =
-      PrepareEncodeData(kSize, media::VideoFrame::RGB32, &memory);
 
-  std::vector<std::vector<SkIRect> > test_rect_lists = MakeTestRectLists(kSize);
-  for (size_t i = 0; i < test_rect_lists.size(); ++i) {
-    const std::vector<SkIRect>& test_rects = test_rect_lists[i];
-    TestEncodingRects(encoder, &tester, data,
-                      &test_rects[0], test_rects.size());
+  for (size_t xi = 0; xi < arraysize(kSizes); ++xi) {
+    for (size_t yi = 0; yi < arraysize(kSizes); ++yi) {
+      SkISize size = SkISize::Make(kSizes[xi], kSizes[yi]);
+      scoped_refptr<CaptureData> data =
+          PrepareEncodeData(size, media::VideoFrame::RGB32, &memory);
+      std::vector<std::vector<SkIRect> > test_rect_lists =
+          MakeTestRectLists(size);
+      for (size_t i = 0; i < test_rect_lists.size(); ++i) {
+        const std::vector<SkIRect>& test_rects = test_rect_lists[i];
+        TestEncodingRects(encoder, &tester, data,
+                          &test_rects[0], test_rects.size());
+      }
+    }
   }
 }
 
