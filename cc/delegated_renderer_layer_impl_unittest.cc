@@ -67,10 +67,10 @@ protected:
 
 static TestRenderPass* addRenderPass(ScopedPtrVector<RenderPass>& passList, RenderPass::Id id, IntRect outputRect, WebTransformationMatrix rootTransform)
 {
-    scoped_ptr<RenderPass> pass(RenderPass::create(id, outputRect, rootTransform));
-    TestRenderPass* testPass = static_cast<TestRenderPass*>(pass.get());
-    passList.append(pass.Pass());
-    return testPass;
+    scoped_ptr<TestRenderPass> pass(TestRenderPass::create(id, outputRect, rootTransform));
+    TestRenderPass* saved = pass.get();
+    passList.append(pass.PassAs<RenderPass>());
+    return saved;
 }
 
 static SolidColorDrawQuad* addQuad(TestRenderPass* pass, IntRect rect, SkColor color)

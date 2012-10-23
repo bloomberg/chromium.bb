@@ -74,17 +74,16 @@ TEST_F(SoftwareRendererTest, solidColorQuad)
 
     scoped_ptr<SharedQuadState> sharedQuadState = SharedQuadState::create(WebTransformationMatrix(), outerRect, outerRect, 1.0, true);
     RenderPass::Id rootRenderPassId = RenderPass::Id(1, 1);
-    scoped_ptr<RenderPass> rootRenderPass = TestRenderPass::create(rootRenderPassId, outerRect, WebTransformationMatrix());
-    TestRenderPass* testRenderPass = static_cast<TestRenderPass*>(rootRenderPass.get());
+    scoped_ptr<TestRenderPass> rootRenderPass = TestRenderPass::create(rootRenderPassId, outerRect, WebTransformationMatrix());
     scoped_ptr<DrawQuad> outerQuad = SolidColorDrawQuad::create(sharedQuadState.get(), outerRect, SK_ColorYELLOW).PassAs<DrawQuad>();
     scoped_ptr<DrawQuad> innerQuad = SolidColorDrawQuad::create(sharedQuadState.get(), innerRect, SK_ColorCYAN).PassAs<DrawQuad>();
-    testRenderPass->appendQuad(innerQuad.Pass());
-    testRenderPass->appendQuad(outerQuad.Pass());
+    rootRenderPass->appendQuad(innerQuad.Pass());
+    rootRenderPass->appendQuad(outerQuad.Pass());
 
     RenderPassList list;
     RenderPassIdHashMap hashmap;
     list.push_back(rootRenderPass.get());
-    hashmap.add(rootRenderPassId, rootRenderPass.Pass());
+    hashmap.add(rootRenderPassId, rootRenderPass.PassAs<RenderPass>());
     renderer()->drawFrame(list, hashmap);
 
     scoped_array<SkColor> pixels(new SkColor[deviceViewportSize().width() * deviceViewportSize().height()]);
@@ -132,17 +131,16 @@ TEST_F(SoftwareRendererTest, tileQuad)
 
     scoped_ptr<SharedQuadState> sharedQuadState = SharedQuadState::create(WebTransformationMatrix(), outerRect, outerRect, 1.0, true);
     RenderPass::Id rootRenderPassId = RenderPass::Id(1, 1);
-    scoped_ptr<RenderPass> rootRenderPass = TestRenderPass::create(rootRenderPassId, IntRect(IntPoint(), deviceViewportSize()), WebTransformationMatrix());
-    TestRenderPass* testRenderPass = static_cast<TestRenderPass*>(rootRenderPass.get());
+    scoped_ptr<TestRenderPass> rootRenderPass = TestRenderPass::create(rootRenderPassId, IntRect(IntPoint(), deviceViewportSize()), WebTransformationMatrix());
     scoped_ptr<DrawQuad> outerQuad = TileDrawQuad::create(sharedQuadState.get(), outerRect, outerRect, resourceYellow, IntPoint(), outerSize, 0, false, false, false, false, false).PassAs<DrawQuad>();
     scoped_ptr<DrawQuad> innerQuad = TileDrawQuad::create(sharedQuadState.get(), innerRect, innerRect, resourceCyan, IntPoint(), innerSize, 0, false, false, false, false, false).PassAs<DrawQuad>();
-    testRenderPass->appendQuad(innerQuad.Pass());
-    testRenderPass->appendQuad(outerQuad.Pass());
+    rootRenderPass->appendQuad(innerQuad.Pass());
+    rootRenderPass->appendQuad(outerQuad.Pass());
 
     RenderPassList list;
     RenderPassIdHashMap hashmap;
     list.push_back(rootRenderPass.get());
-    hashmap.add(rootRenderPassId, rootRenderPass.Pass());
+    hashmap.add(rootRenderPassId, rootRenderPass.PassAs<RenderPass>());
     renderer()->drawFrame(list, hashmap);
 
     scoped_array<SkColor> pixels(new SkColor[deviceViewportSize().width() * deviceViewportSize().height()]);

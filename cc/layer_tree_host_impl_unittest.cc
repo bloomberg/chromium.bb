@@ -2639,14 +2639,14 @@ static inline scoped_ptr<RenderPass> createRenderPassWithResource(ResourceProvid
 {
     ResourceProvider::ResourceId resourceId = provider->createResource(0, IntSize(1, 1), GL_RGBA, ResourceProvider::TextureUsageAny);
 
-    scoped_ptr<RenderPass> pass = RenderPass::create(RenderPass::Id(1, 1), IntRect(0, 0, 1, 1), WebTransformationMatrix());
+    scoped_ptr<TestRenderPass> pass = TestRenderPass::create(RenderPass::Id(1, 1), IntRect(0, 0, 1, 1), WebTransformationMatrix());
     scoped_ptr<SharedQuadState> sharedState = SharedQuadState::create(WebTransformationMatrix(), IntRect(0, 0, 1, 1), IntRect(0, 0, 1, 1), 1, false);
     scoped_ptr<TextureDrawQuad> quad = TextureDrawQuad::create(sharedState.get(), IntRect(0, 0, 1, 1), resourceId, false, FloatRect(0, 0, 1, 1), false);
 
-    static_cast<TestRenderPass*>(pass.get())->appendSharedQuadState(sharedState.Pass());
-    static_cast<TestRenderPass*>(pass.get())->appendQuad(quad.PassAs<DrawQuad>());
+    pass->appendSharedQuadState(sharedState.Pass());
+    pass->appendQuad(quad.PassAs<DrawQuad>());
 
-    return pass.Pass();
+    return pass.PassAs<RenderPass>();
 }
 
 TEST_P(LayerTreeHostImplTest, dontUseOldResourcesAfterLostContext)
@@ -4051,7 +4051,7 @@ TEST_P(LayerTreeHostImplTest, releaseContentsTextureShouldTriggerCommit)
 }
 
 struct RenderPassRemovalTestData : public LayerTreeHostImpl::FrameData {
-    ScopedPtrHashMap<RenderPass::Id, RenderPass> renderPassCache;
+    ScopedPtrHashMap<RenderPass::Id, TestRenderPass> renderPassCache;
     scoped_ptr<SharedQuadState> sharedQuadState;
 };
 
@@ -4100,7 +4100,7 @@ static void configureRenderPassTestData(const char* testScript, RenderPassRemova
 
     // Pre-create root pass
     RenderPass::Id rootRenderPassId = RenderPass::Id(testScript[0], testScript[1]);
-    testData.renderPassCache.add(rootRenderPassId, RenderPass::create(rootRenderPassId, IntRect(), WebTransformationMatrix()));
+    testData.renderPassCache.add(rootRenderPassId, TestRenderPass::create(rootRenderPassId, IntRect(), WebTransformationMatrix()));
     while (*currentChar) {
         int layerId = *currentChar;
         currentChar++;
@@ -4114,7 +4114,7 @@ static void configureRenderPassTestData(const char* testScript, RenderPassRemova
         if (!testData.renderPassCache.contains(renderPassId))
             isReplica = true;
 
-        scoped_ptr<RenderPass> renderPass = testData.renderPassCache.take(renderPassId);
+        scoped_ptr<TestRenderPass> renderPass = testData.renderPassCache.take(renderPassId);
 
         // Cycle through quad data and create all quads
         while (*currentChar && *currentChar != '\n') {
@@ -4122,7 +4122,7 @@ static void configureRenderPassTestData(const char* testScript, RenderPassRemova
                 // Solid color draw quad
                 scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::create(testData.sharedQuadState.get(), IntRect(0, 0, 10, 10), SK_ColorWHITE);
                 
-                static_cast<TestRenderPass*>(renderPass.get())->appendQuad(quad.PassAs<DrawQuad>());
+                renderPass->appendQuad(quad.PassAs<DrawQuad>());
                 currentChar++;
             } else if ((*currentChar >= 'A') && (*currentChar <= 'Z')) {
                 // RenderPass draw quad
@@ -4163,11 +4163,11 @@ static void configureRenderPassTestData(const char* testScript, RenderPassRemova
                 IntRect quadRect = IntRect(0, 0, 1, 1);
                 IntRect contentsChangedRect = contentsChanged ? quadRect : IntRect();
                 scoped_ptr<RenderPassDrawQuad> quad = RenderPassDrawQuad::create(testData.sharedQuadState.get(), quadRect, newRenderPassId, isReplica, 1, contentsChangedRect, 1, 1, 0, 0);
-                static_cast<TestRenderPass*>(renderPass.get())->appendQuad(quad.PassAs<DrawQuad>());
+                renderPass->appendQuad(quad.PassAs<DrawQuad>());
             }
         }
         testData.renderPasses.insert(testData.renderPasses.begin(), renderPass.get());
-        testData.renderPassesById.add(renderPassId, renderPass.Pass());
+        testData.renderPassesById.add(renderPassId, renderPass.PassAs<RenderPass>());
         if (*currentChar)
             currentChar++;
     }
