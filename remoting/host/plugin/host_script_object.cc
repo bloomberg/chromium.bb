@@ -125,6 +125,9 @@ class HostNPScriptObject::It2MeImpl
   // Updates state of the host. Can be called only on the network thread.
   void SetState(State state);
 
+  // Returns true if the host is connected.
+  bool IsConnected() const;
+
   // Called by Connect() to check for policies and start connection process.
   void ReadPolicyAndConnect(const std::string& uid,
                             const std::string& auth_token,
@@ -529,7 +532,7 @@ void HostNPScriptObject::It2MeImpl::UpdateNatPolicy(
 
   // When transitioning from enabled to disabled, force disconnect any
   // existing session.
-  if (nat_traversal_enabled_ && !nat_traversal_enabled) {
+  if (nat_traversal_enabled_ && !nat_traversal_enabled && IsConnected()) {
     Disconnect();
   }
 
@@ -548,7 +551,7 @@ void HostNPScriptObject::It2MeImpl::UpdateHostDomainPolicy(
   VLOG(2) << "UpdateHostDomainPolicy: " << host_domain;
 
   // When setting a host domain policy, force disconnect any existing session.
-  if (!host_domain.empty() && state_ != kStarting) {
+  if (!host_domain.empty() && IsConnected()) {
     Disconnect();
   }
 
@@ -614,6 +617,11 @@ void HostNPScriptObject::It2MeImpl::SetState(State state) {
   plugin_task_runner_->PostTask(
       FROM_HERE, base::Bind(&HostNPScriptObject::NotifyStateChanged,
                             script_object_, state));
+}
+
+bool HostNPScriptObject::It2MeImpl::IsConnected() const {
+  return state_ == kRequestedAccessCode || state_ == kReceivedAccessCode ||
+      state_ == kConnected;
 }
 
 void HostNPScriptObject::It2MeImpl::OnReceivedSupportID(
