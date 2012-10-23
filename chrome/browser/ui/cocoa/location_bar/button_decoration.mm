@@ -46,12 +46,18 @@ CGFloat ButtonDecoration::GetWidthForSpace(CGFloat width) {
 }
 
 void ButtonDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
-  [GetImage() drawInRect:frame
-                fromRect:NSZeroRect  // Entire image
-               operation:NSCompositeSourceOver
-                fraction:1.0
-          respectFlipped:YES
-                   hints:nil];
+  NSImage *image = GetImage();
+  const CGFloat x_inset =
+      std::floor((NSWidth(frame) - [image size].width) / 2.0);
+  const CGFloat y_inset =
+      std::floor((NSHeight(frame) - [image size].height) / 2.0);
+
+  [image drawInRect:NSInsetRect(frame, x_inset, y_inset)
+           fromRect:NSZeroRect  // Entire image
+          operation:NSCompositeSourceOver
+           fraction:1.0
+     respectFlipped:YES
+              hints:nil];
 }
 
 bool ButtonDecoration::OnMousePressed(NSRect frame) {
