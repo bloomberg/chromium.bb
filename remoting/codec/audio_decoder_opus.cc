@@ -1,0 +1,132 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "remoting/codec/audio_decoder_opus.h"
+
+#include "base/logging.h"
+#include "base/stl_util.h"
+#include "base/time.h"
+#include "remoting/proto/audio.pb.h"
+#include "third_party/opus/opus.h"
+
+namespace remoting {
+
+namespace {
+
+const int kMaxPacketSizeMs = 120;
+
+const AudioPacket::SamplingRate kSamplingRate =
+    AudioPacket::SAMPLING_RATE_48000;
+
+}  // namespace
+
+AudioDecoderOpus::AudioDecoderOpus()
+    : sampling_rate_(0),
+      channels_(0),
+      decoder_(NULL) {
+}
+
+AudioDecoderOpus::~AudioDecoderOpus() {
+  DestroyDecoder();
+}
+
+void AudioDecoderOpus::InitDecoder() {
+  DCHECK(!decoder_);
+  int error;
+  decoder_ = opus_decoder_create(kSamplingRate, channels_, &error);
+  if (!decoder_) {
+    LOG(ERROR) << "Failed to create OPUS decoder; Error code: " << error;
+  }
+}
+
+void AudioDecoderOpus::DestroyDecoder() {
+  if (decoder_) {
+    opus_decoder_destroy(decoder_);
+    decoder_ = NULL;
+  }
+}
+
+bool AudioDecoderOpus::ResetForPacket(AudioPacket* packet) {
+  if (packet->channels() != channels_ ||
+      packet->sampling_rate() != sampling_rate_) {
+    DestroyDecoder();
+
+    channels_ = packet->channels();
+    sampling_rate_ = packet->sampling_rate();
+
+    if (channels_ <= 0 || channels_ > 2 ||
+        sampling_rate_ != kSamplingRate) {
+      LOG(WARNING) << "Unsupported OPUS parameters: "
+                   << channels_ << " channels with "
+                   << sampling_rate_ << " samples per second.";
+      return false;
+    }
+  }
+
+  if (!decoder_) {
+    InitDecoder();
+  }
+
+  return decoder_ != NULL;
+}
+
+
+scoped_ptr<AudioPacket> AudioDecoderOpus::Decode(
+    scoped_ptr<AudioPacket> packet) {
+  if (packet->encoding() != AudioPacket::ENCODING_OPUS) {
+    LOG(WARNING) << "Received a packet with encoding " << packet->encoding()
+                 << "when an OPUS packet was expected.";
+    return scoped_ptr<AudioPacket>();
+  }
+
+  if (!ResetForPacket(packet.get())) {
+    return scoped_ptr<AudioPacket>();
+  }
+
+  // Create a new packet of decoded data.
+  scoped_ptr<AudioPacket> decoded_packet(new AudioPacket());
+  decoded_packet->set_encoding(AudioPacket::ENCODING_RAW);
+  decoded_packet->set_sampling_rate(kSamplingRate);
+  decoded_packet->set_bytes_per_sample(AudioPacket::BYTES_PER_SAMPLE_2);
+  decoded_packet->set_channels(packet->channels());
+
+  int max_frame_samples = kMaxPacketSizeMs * kSamplingRate /
+      base::Time::kMillisecondsPerSecond;
+  int max_frame_bytes = max_frame_samples * channels_ *
+      decoded_packet->bytes_per_sample();
+
+  std::string* decoded_data = decoded_packet->add_data();
+  decoded_data->resize(packet->data_size() * max_frame_bytes);
+  int buffer_pos = 0;
+
+  for (int i = 0; i < packet->data_size(); ++i) {
+    int16* pcm_buffer =
+        reinterpret_cast<int16*>(string_as_array(decoded_data) + buffer_pos);
+    CHECK_LE(buffer_pos + max_frame_bytes,
+             static_cast<int>(decoded_data->size()));
+    std::string* frame = packet->mutable_data(i);
+    unsigned char* frame_data =
+        reinterpret_cast<unsigned char*>(string_as_array(frame));
+    int result = opus_decode(decoder_, frame_data, frame->size(),
+                             pcm_buffer, max_frame_samples, 0);
+    if (result < 0) {
+      LOG(ERROR) << "Failed decoding Opus frame. Error code: " << result;
+      DestroyDecoder();
+      return scoped_ptr<AudioPacket>();
+    }
+
+    buffer_pos += result * packet->channels() *
+        decoded_packet->bytes_per_sample();
+  }
+
+  if (!buffer_pos) {
+    return scoped_ptr<AudioPacket>();
+  }
+
+  decoded_data->resize(buffer_pos);
+
+  return decoded_packet.Pass();
+}
+
+}  // namespace remoting
