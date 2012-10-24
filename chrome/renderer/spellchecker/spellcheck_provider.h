@@ -47,14 +47,26 @@ class SpellCheckProvider : public content::RenderViewObserver,
     return text_check_completions_.size();
   }
 
-  int document_tag() const { return document_tag_; }
-
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void FocusedNodeChanged(const WebKit::WebNode& node) OVERRIDE;
 
  private:
   friend class TestingSpellCheckProvider;
+
+  // Helper class to encapsulate handling of document tags across platforms.
+  // TODO(groby): As per Darins comment, this should move browser side.
+  class DocumentTag {
+   public:
+    DocumentTag(IPC::Sender* sender, int routing_id);
+    ~DocumentTag();
+    int GetTag();
+   private:
+    bool has_tag_;
+    int tag_;
+    IPC::Sender* sender_;  // Weak ptr to SpellCheckProvider.
+    int routing_id_;  // ID for RenderView observed by SpellCheckProvider.
+  };
 
   // WebKit::WebSpellCheckClient implementation.
   virtual void spellCheck(
@@ -98,9 +110,6 @@ class SpellCheckProvider : public content::RenderViewObserver,
 #endif
   void OnToggleSpellCheck();
 
-  // Initializes the document_tag_ member if necessary.
-  void EnsureDocumentTag();
-
   // Holds ongoing spellchecking operations, assigns IDs for the IPC routing.
   WebTextCheckCompletions text_check_completions_;
 
@@ -111,12 +120,7 @@ class SpellCheckProvider : public content::RenderViewObserver,
   WebKit::WebVector<WebKit::WebTextCheckingResult> last_results_;
 #endif
 
-#if defined(OS_MACOSX)
-  // True if the current RenderView has been assigned a document tag.
-  bool has_document_tag_;
-#endif
-
-  int document_tag_;
+  DocumentTag document_tag_;
 
   // True if the browser is showing the spelling panel for us.
   bool spelling_panel_visible_;

@@ -64,29 +64,61 @@ void CreateTextCheckingResults(
 
 }  // namespace
 
+SpellCheckProvider::DocumentTag::DocumentTag(IPC::Sender* sender,
+                                             int routing_id)
+    : has_tag_(false),
+      tag_(0),
+      sender_(sender),
+      routing_id_(routing_id) {
+}
+
+#if defined(OS_MACOSX)
+SpellCheckProvider::DocumentTag::~DocumentTag() {
+  // Tell the spellchecker that the document is closed.
+  if (has_tag_) {
+    sender_->Send(new SpellCheckHostMsg_DocumentWithTagClosed(
+        routing_id_, tag_));
+  }
+}
+
+// Gets document tag, initializes |tag| if necessary.
+int SpellCheckProvider::DocumentTag::GetTag() {
+  // TODO(darin): There's actually no reason for this to be here.  We should
+  // have the browser side manage the document tag.
+  if (!has_tag_) {
+    // Make the call to get the tag.
+    sender_->Send(new SpellCheckHostMsg_GetDocumentTag(
+        routing_id_, &tag_));
+    has_tag_ = true;
+  }
+
+  return tag_;
+}
+#else
+SpellCheckProvider::DocumentTag::~DocumentTag() {}
+int SpellCheckProvider::DocumentTag::GetTag() {
+  // Quiet compiler about unused variables.
+  (void)sender_;
+  (void)routing_id_;
+  (void)has_tag_;
+
+  return tag_;
+}
+#endif
+
+
 SpellCheckProvider::SpellCheckProvider(
     content::RenderView* render_view,
     chrome::ChromeContentRendererClient* renderer_client)
     : content::RenderViewObserver(render_view),
-#if defined(OS_MACOSX)
-      has_document_tag_(false),
-#endif
-      document_tag_(0),
+      document_tag_(this, this->routing_id()),
       spelling_panel_visible_(false),
       chrome_content_renderer_client_(renderer_client) {
   if (render_view)  // NULL in unit tests.
     render_view->GetWebView()->setSpellCheckClient(this);
 }
 
-SpellCheckProvider::~SpellCheckProvider() {
-#if defined(OS_MACOSX)
-  // Tell the spellchecker that the document is closed.
-  if (has_document_tag_) {
-    Send(new SpellCheckHostMsg_DocumentWithTagClosed(
-        routing_id(), document_tag_));
-  }
-#endif
-}
+SpellCheckProvider::~SpellCheckProvider() {}
 
 void SpellCheckProvider::RequestTextChecking(
     const WebString& text,
@@ -205,14 +237,12 @@ void SpellCheckProvider::spellCheck(
     int& offset,
     int& length,
     WebVector<WebString>* optional_suggestions) {
-  EnsureDocumentTag();
-
   string16 word(text);
   // Will be NULL during unit tests.
   if (chrome_content_renderer_client_) {
     std::vector<string16> suggestions;
     chrome_content_renderer_client_->spellcheck()->SpellCheckWord(
-        word.c_str(), word.size(), document_tag_,
+        word.c_str(), word.size(), document_tag_.GetTag(),
         &offset, &length, optional_suggestions ? & suggestions : NULL);
     if (optional_suggestions)
       *optional_suggestions = suggestions;
@@ -237,32 +267,30 @@ void SpellCheckProvider::checkTextOfParagraph(
   if (!(mask & WebKit::WebTextCheckingTypeSpelling))
     return;
 
-  EnsureDocumentTag();
+  document_tag_.GetTag();
 
   // Will be NULL during unit tets.
   if (!chrome_content_renderer_client_)
     return;
 
   chrome_content_renderer_client_->spellcheck()->SpellCheckParagraph(
-      string16(text),
-      results);
+      string16(text), results);
 #endif
 }
 
 void SpellCheckProvider::requestCheckingOfText(
     const WebString& text,
     WebTextCheckingCompletion* completion) {
-  RequestTextChecking(text, document_tag_, completion);
+  RequestTextChecking(text, document_tag_.GetTag(), completion);
 }
 
 WebString SpellCheckProvider::autoCorrectWord(const WebString& word) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kEnableSpellingAutoCorrect)) {
-    EnsureDocumentTag();
     // Will be NULL during unit tests.
     if (chrome_content_renderer_client_) {
       return chrome_content_renderer_client_->spellcheck()->
-          GetAutoCorrectionWord(word, document_tag_);
+          GetAutoCorrectionWord(word, document_tag_.GetTag());
     }
   }
   return string16();
@@ -381,16 +409,4 @@ void SpellCheckProvider::OnToggleSpellCheck() {
   WebFrame* frame = render_view()->GetWebView()->focusedFrame();
   frame->enableContinuousSpellChecking(
       !frame->isContinuousSpellCheckingEnabled());
-}
-
-void SpellCheckProvider::EnsureDocumentTag() {
-  // TODO(darin): There's actually no reason for this to be here.  We should
-  // have the browser side manage the document tag.
-#if defined(OS_MACOSX)
-  if (!has_document_tag_) {
-    // Make the call to get the tag.
-    Send(new SpellCheckHostMsg_GetDocumentTag(routing_id(), &document_tag_));
-    has_document_tag_ = true;
-  }
-#endif
 }
