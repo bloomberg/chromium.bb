@@ -165,7 +165,8 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, ClientCancelled) {
   // otherwise, a non user-initiated in-page location change will be treated
   // as client redirect and the redirect will be recoreded, which can cause
   // this test failed.
-  content::SimulateMouseClick(web_contents);
+  content::SimulateMouseClick(web_contents, 0,
+      WebKit::WebMouseEvent::ButtonLeft);
   navigation_observer.Wait();
 
   std::vector<GURL> redirects = GetRedirects(first_url);

@@ -250,7 +250,8 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest,
   // Therefore, Page 11 should be in the history in addition to Page 12.
   LoadAndWaitForFile("history_length_test_page_11.html");
 
-  content::SimulateMouseClick(chrome::GetActiveWebContents(browser()));
+  content::SimulateMouseClick(chrome::GetActiveWebContents(browser()), 0,
+      WebKit::WebMouseEvent::ButtonLeft);
   LoadAndWaitForFile("history_length_test_page_11.html");
 }
 

@@ -223,14 +223,17 @@ void CrashTab(WebContents* web_contents) {
   observer.Wait();
 }
 
-void SimulateMouseClick(WebContents* web_contents) {
+void SimulateMouseClick(WebContents* web_contents,
+                        int modifiers,
+                        WebKit::WebMouseEvent::Button button) {
   int x = web_contents->GetView()->GetContainerSize().width() / 2;
   int y = web_contents->GetView()->GetContainerSize().height() / 2;
   WebKit::WebMouseEvent mouse_event;
   mouse_event.type = WebKit::WebInputEvent::MouseDown;
-  mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
+  mouse_event.button = button;
   mouse_event.x = x;
   mouse_event.y = y;
+  mouse_event.modifiers = modifiers;
   // Mac needs globalX/globalY for events to plugins.
   gfx::Rect offset;
   web_contents->GetView()->GetContainerBounds(&offset);

@@ -345,7 +345,8 @@ class AutofillTest : public InProcessBrowserTest {
 
   void FocusFirstNameField() {
     LOG(WARNING) << "Clicking on the tab.";
-    content::SimulateMouseClick(chrome::GetActiveWebContents(browser()));
+    content::SimulateMouseClick(chrome::GetActiveWebContents(browser()), 0,
+        WebKit::WebMouseEvent::ButtonLeft);
 
     LOG(WARNING) << "Focusing the first name field.";
     bool result = false;

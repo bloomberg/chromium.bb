@@ -335,7 +335,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, MAYBE_NavigateGuest) {
                         ASCIIToUTF16("StartInfiniteLoop();"));
 
   // Send a mouse event to the guest.
-  SimulateMouseClick(test_embedder()->web_contents());
+  SimulateMouseClick(test_embedder()->web_contents(), 0,
+      WebKit::WebMouseEvent::ButtonLeft);
 
   // Expect the guest to crash.
   test_guest()->WaitForCrashed();
@@ -364,7 +365,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AdvanceFocus) {
   const char* kGuestURL = "files/browser_plugin_focus_child.html";
   StartBrowserPluginTest(kEmbedderURL, kGuestURL, false, "");
 
-  SimulateMouseClick(test_embedder()->web_contents());
+  SimulateMouseClick(test_embedder()->web_contents(), 0,
+      WebKit::WebMouseEvent::ButtonLeft);
   BrowserPluginHostTest::SimulateTabKeyPress(test_embedder()->web_contents());
   // Wait until we focus into the guest.
   test_guest()->WaitForFocus();
@@ -715,7 +717,8 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, BackAfterTerminateGuest) {
     EXPECT_EQ(expected_title, actual_title);
   }
   // Send an input event and verify that the guest receives the input.
-  SimulateMouseClick(test_embedder()->web_contents());
+  SimulateMouseClick(test_embedder()->web_contents(), 0,
+      WebKit::WebMouseEvent::ButtonLeft);
   test_guest()->WaitForInput();
 }
 

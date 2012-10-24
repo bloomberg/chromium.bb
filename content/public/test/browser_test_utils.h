@@ -59,8 +59,11 @@ void WaitForLoadStop(WebContents* web_contents);
 // Causes the specified web_contents to crash. Blocks until it is crashed.
 void CrashTab(WebContents* web_contents);
 
-// Simulates clicking at the center of the given tab asynchronously.
-void SimulateMouseClick(WebContents* web_contents);
+// Simulates clicking at the center of the given tab asynchronously; modifiers
+// may contain bits from WebInputEvent::Modifiers.
+void SimulateMouseClick(WebContents* web_contents,
+                        int modifiers,
+                        WebKit::WebMouseEvent::Button button);
 
 // Simulates asynchronously a mouse enter/move/leave event.
 void SimulateMouseEvent(WebContents* web_contents,

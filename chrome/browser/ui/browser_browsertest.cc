@@ -1668,7 +1668,7 @@ IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, NoStartupWindowBasicTest) {
   EXPECT_EQ(1u, BrowserList::size());
 }
 
-// This test needs to be placed outside the anonymouse namespace because we
+// This test needs to be placed outside the anonymous namespace because we
 // need to access private type of Browser.
 class AppModeTest : public BrowserTest {
  public:
@@ -1701,4 +1701,141 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AboutVersion) {
   ASSERT_GT(ui_test_utils::FindInPage(tab, ASCIIToUTF16("JavaScript"), true,
                                       true, NULL, NULL),
             0);
+}
+
+static const FilePath::CharType* kTestDir = FILE_PATH_LITERAL("click_modifier");
+static const char kFirstPageTitle[] = "First window";
+static const char kSecondPageTitle[] = "New window!";
+
+class ClickModifierTest : public InProcessBrowserTest {
+ public:
+  ClickModifierTest() {
+  }
+
+  // Returns a url that opens a new window or tab when clicked, via javascript.
+  GURL GetTestURL() {
+    return ui_test_utils::GetTestUrl(
+      FilePath(kTestDir),
+      FilePath(FILE_PATH_LITERAL("window_open.html")));
+  }
+
+  string16 getFirstPageTitle() {
+    return ASCIIToUTF16(kFirstPageTitle);
+  }
+
+  string16 getSecondPageTitle() {
+    return ASCIIToUTF16(kSecondPageTitle);
+  }
+
+  // Loads our test page and simulates a single click using the supplied button
+  // and modifiers.  The test page will call window.open, creating either a new
+  // tab or a new window.  In the case of a tab, it will verify whether the
+  // tab's in the foreground or background.
+  void RunTest(Browser* browser,
+               int modifiers,
+               WebKit::WebMouseEvent::Button button,
+               bool expect_new_window,
+               bool expect_foreground) {
+    GURL url(GetTestURL());
+    ui_test_utils::NavigateToURL(browser, url);
+    EXPECT_EQ(1u, browser::GetBrowserCount(browser->profile()));
+    EXPECT_EQ(1, browser->tab_count());
+    content::WebContents* web_contents = chrome::GetActiveWebContents(browser);
+    EXPECT_EQ(url, web_contents->GetURL());
+
+    content::WindowedNotificationObserver observer(
+        chrome::NOTIFICATION_TAB_ADDED,
+        content::NotificationService::AllSources());
+    SimulateMouseClick(web_contents, modifiers, button);
+    observer.Wait();
+
+    unsigned expected_browser_count = expect_new_window ? 2 : 1;
+    EXPECT_EQ(expected_browser_count,
+        browser::GetBrowserCount(browser->profile()));
+
+    // If we didn't pop up a new window, we need to make sure the right tab's in
+    // front.
+    if (!expect_new_window) {
+      EXPECT_EQ(2, browser->tab_count());
+      web_contents = chrome::GetActiveWebContents(browser);
+      WaitForLoadStop(web_contents);
+      if (expect_foreground) {
+        EXPECT_EQ(getSecondPageTitle(), web_contents->GetTitle());
+      } else {
+        EXPECT_EQ(getFirstPageTitle(), web_contents->GetTitle());
+      }
+    }
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ClickModifierTest);
+};
+
+IN_PROC_BROWSER_TEST_F(ClickModifierTest, BasicClickTest) {
+  int modifiers = 0;
+  WebKit::WebMouseEvent::Button button = WebKit::WebMouseEvent::ButtonLeft;
+  bool expect_new_window = false;
+  bool expect_foreground = true;
+  RunTest(browser(), modifiers, button, expect_new_window, expect_foreground);
+}
+
+// TODO(ericu): Alt-click behavior is platform-dependent and not well defined.
+// Should we add tests so we know if it changes?
+
+// Shift-clicks open in a new window.
+// TODO(ericu): Disabled until https://bugs.webkit.org/show_bug.cgi?id=99202
+// lands, fixing http://crbug.com/31631.
+IN_PROC_BROWSER_TEST_F(ClickModifierTest, DISABLED_ShiftClickTest) {
+  int modifiers = WebKit::WebInputEvent::ShiftKey;
+  WebKit::WebMouseEvent::Button button = WebKit::WebMouseEvent::ButtonLeft;
+  bool expect_new_window = true;
+  bool expect_foreground = true;
+  RunTest(browser(), modifiers, button, expect_new_window, expect_foreground);
+}
+
+// Control-clicks open in a background tab.
+// On OSX meta [the command key] takes the place of control.
+IN_PROC_BROWSER_TEST_F(ClickModifierTest, ControlClickTest) {
+#if defined(OS_MACOSX)
+  int modifiers = WebKit::WebInputEvent::MetaKey;
+#else
+  int modifiers = WebKit::WebInputEvent::ControlKey;
+#endif
+  WebKit::WebMouseEvent::Button button = WebKit::WebMouseEvent::ButtonLeft;
+  bool expect_new_window = false;
+  bool expect_foreground = false;
+  RunTest(browser(), modifiers, button, expect_new_window, expect_foreground);
+}
+
+// Control-shift-clicks open in a foreground tab.
+// On OSX meta [the command key] takes the place of control.
+IN_PROC_BROWSER_TEST_F(ClickModifierTest, ControlShiftClickTest) {
+#if defined(OS_MACOSX)
+  int modifiers = WebKit::WebInputEvent::MetaKey;
+#else
+  int modifiers = WebKit::WebInputEvent::ControlKey;
+#endif
+  modifiers |= WebKit::WebInputEvent::ShiftKey;
+  WebKit::WebMouseEvent::Button button = WebKit::WebMouseEvent::ButtonLeft;
+  bool expect_new_window = false;
+  bool expect_foreground = true;
+  RunTest(browser(), modifiers, button, expect_new_window, expect_foreground);
+}
+
+// Middle-clicks open in a background tab.
+IN_PROC_BROWSER_TEST_F(ClickModifierTest, MiddleClickTest) {
+  int modifiers = 0;
+  WebKit::WebMouseEvent::Button button = WebKit::WebMouseEvent::ButtonMiddle;
+  bool expect_new_window = false;
+  bool expect_foreground = false;
+  RunTest(browser(), modifiers, button, expect_new_window, expect_foreground);
+}
+
+// Shift-middle-clicks open in a foreground tab.
+IN_PROC_BROWSER_TEST_F(ClickModifierTest, ShiftMiddleClickTest) {
+  int modifiers = WebKit::WebInputEvent::ShiftKey;
+  WebKit::WebMouseEvent::Button button = WebKit::WebMouseEvent::ButtonMiddle;
+  bool expect_new_window = false;
+  bool expect_foreground = true;
+  RunTest(browser(), modifiers, button, expect_new_window, expect_foreground);
 }
