@@ -1258,8 +1258,11 @@ gles2_renderer_init(struct weston_compositor *ec)
 
 	if (strstr(extensions, "EGL_WL_bind_wayland_display"))
 		ec->has_bind_display = 1;
-	if (ec->has_bind_display)
-		ec->bind_display(ec->egl_display, ec->wl_display);
+	if (ec->has_bind_display) {
+		ret = ec->bind_display(ec->egl_display, ec->wl_display);
+		if (!ret)
+			ec->has_bind_display = 0;
+	}
 
 	glActiveTexture(GL_TEXTURE0);
 
@@ -1291,6 +1294,14 @@ gles2_renderer_init(struct weston_compositor *ec)
 	renderer->base.attach = gles2_renderer_attach;
 	renderer->base.destroy_surface = gles2_renderer_destroy_surface;
 	ec->renderer = &renderer->base;
+
+	weston_log("GL ES 2 renderer features:\n");
+	weston_log_continue(STAMP_SPACE "read-back format: %s\n",
+			    ec->read_format == GL_BGRA_EXT ? "BGRA" : "RGBA");
+	weston_log_continue(STAMP_SPACE "wl_shm sub-image to texture: %s\n",
+			    ec->has_unpack_subimage ? "yes" : "no");
+	weston_log_continue(STAMP_SPACE "EGL Wayland extension: %s\n",
+			    ec->has_bind_display ? "yes" : "no");
 
 	return 0;
 }
