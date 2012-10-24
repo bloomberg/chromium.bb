@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -577,7 +578,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_CloseBackgroundPage) {
 
   // There is a background page and a browser action with no badge text.
   ExtensionProcessManager* manager =
-      browser()->profile()->GetExtensionProcessManager();
+      extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
   ASSERT_TRUE(manager->GetBackgroundHostForExtension(extension->id()));
   ExtensionAction* action = GetBrowserAction(*extension);
   ASSERT_EQ("", action->GetBadgeText(ExtensionAction::kDefaultTabId));

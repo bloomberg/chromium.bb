@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/base_window.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog_observer.h"
@@ -117,7 +118,8 @@ extensions::ExtensionHost* ExtensionDialog::CreateExtensionHost(
     const GURL& url,
     Profile* profile) {
   DCHECK(profile);
-  ExtensionProcessManager* manager = profile->GetExtensionProcessManager();
+  ExtensionProcessManager* manager =
+      extensions::ExtensionSystem::Get(profile)->process_manager();
 
   DCHECK(manager);
   if (!manager)

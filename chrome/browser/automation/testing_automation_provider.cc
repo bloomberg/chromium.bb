@@ -55,6 +55,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
@@ -2431,7 +2432,7 @@ void TestingAutomationProvider::GetBrowserInfo(
   std::vector<Profile*> profiles(profile_manager->GetLoadedProfiles());
   for (size_t i = 0; i < profiles.size(); ++i) {
     ExtensionProcessManager* process_manager =
-        profiles[i]->GetExtensionProcessManager();
+        extensions::ExtensionSystem::Get(profiles[i])->process_manager();
     if (!process_manager)
       continue;
     const ExtensionProcessManager::ViewSet view_set =
@@ -3695,7 +3696,7 @@ void TestingAutomationProvider::InstallExtension(
 
   ExtensionService* service = browser->profile()->GetExtensionService();
   ExtensionProcessManager* manager =
-      browser->profile()->GetExtensionProcessManager();
+      extensions::ExtensionSystem::Get(browser->profile())->process_manager();
   if (service && manager) {
     // The observer will delete itself when done.
     new ExtensionReadyNotificationObserver(
@@ -3903,7 +3904,7 @@ void TestingAutomationProvider::SetExtensionStateById(
 
   ExtensionService* service = browser->profile()->GetExtensionService();
   ExtensionProcessManager* manager =
-      browser->profile()->GetExtensionProcessManager();
+      extensions::ExtensionSystem::Get(browser->profile())->process_manager();
   if (!service) {
     AutomationJSONReply(this, reply_message)
         .SendError("No extensions service or process manager.");
@@ -4132,7 +4133,7 @@ void TestingAutomationProvider::UpdateExtensionsNow(
   }
 
   ExtensionProcessManager* manager =
-      browser->profile()->GetExtensionProcessManager();
+      extensions::ExtensionSystem::Get(browser->profile())->process_manager();
   if (!manager) {
     AutomationJSONReply(this, reply_message).SendError(
         "No extension process manager.");
@@ -5276,7 +5277,8 @@ void TestingAutomationProvider::WaitForAllViewsToStopLoading(
 
   // This class will send the message immediately if no tab is loading.
   new AllViewsStoppedLoadingObserver(
-      this, reply_message, profile()->GetExtensionProcessManager());
+      this, reply_message,
+          extensions::ExtensionSystem::Get(profile())->process_manager());
 }
 
 void TestingAutomationProvider::WaitForTabToBeRestored(
@@ -6051,7 +6053,7 @@ void TestingAutomationProvider::GetViews(
   }
 
   ExtensionProcessManager* extension_mgr =
-      profile()->GetExtensionProcessManager();
+      extensions::ExtensionSystem::Get(profile())->process_manager();
   const ExtensionProcessManager::ViewSet all_views =
       extension_mgr->GetAllViews();
   ExtensionProcessManager::ViewSet::const_iterator iter;

@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -78,7 +79,7 @@ void ChromeRenderViewHostObserver::InitRenderViewHostForExtensions() {
     return;
 
   ExtensionProcessManager* process_manager =
-      profile_->GetExtensionProcessManager();
+      extensions::ExtensionSystem::Get(profile_)->process_manager();
   CHECK(process_manager);
 
   // TODO(creis): Use this to replace SetInstalledAppForRenderer.
@@ -157,7 +158,7 @@ const Extension* ChromeRenderViewHostObserver::GetExtension() {
 void ChromeRenderViewHostObserver::RemoveRenderViewHostForExtensions(
     RenderViewHost* rvh) {
   ExtensionProcessManager* process_manager =
-      profile_->GetExtensionProcessManager();
+      extensions::ExtensionSystem::Get(profile_)->process_manager();
   if (process_manager)
     process_manager->UnregisterRenderViewHost(rvh);
 }

@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/system_monitor/media_storage_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -112,8 +113,9 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateApiTest, DeviceAttachDetachEvents) {
   ASSERT_TRUE(extension);
 
   content::RenderViewHost* host =
-      browser()->profile()->GetExtensionProcessManager()->
-      GetBackgroundHostForExtension(extension->id())->render_view_host();
+      extensions::ExtensionSystem::Get(browser()->profile())->
+          process_manager()->GetBackgroundHostForExtension(extension->id())->
+              render_view_host();
   ASSERT_TRUE(host);
 
   // No listeners, attach and detach a couple times.

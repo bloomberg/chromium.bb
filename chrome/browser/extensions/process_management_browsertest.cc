@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -132,7 +133,8 @@ IN_PROC_BROWSER_TEST_F(ProcessManagementTest, ProcessOverflow) {
 
   // Get extension processes.
   ExtensionProcessManager* process_manager =
-    browser()->profile()->GetExtensionProcessManager();
+      extensions::ExtensionSystem::Get(browser()->profile())->
+          process_manager();
   content::RenderProcessHost* extension1_host =
       process_manager->GetSiteInstanceForURL(extension1_url)->GetProcess();
   content::RenderProcessHost* extension2_host =
@@ -216,8 +218,8 @@ IN_PROC_BROWSER_TEST_F(ProcessManagementTest, ExtensionProcessBalancing) {
 
   std::set<int> process_ids;
   Profile* profile = browser()->profile();
-  ExtensionProcessManager* epm = profile->GetExtensionProcessManager();
-
+  ExtensionProcessManager* epm = extensions::ExtensionSystem::Get(profile)->
+      process_manager();
   for (ExtensionProcessManager::const_iterator iter =
            epm->background_hosts().begin();
        iter != epm->background_hosts().end(); ++iter) {

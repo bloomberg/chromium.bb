@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/balloon_host.h"
@@ -38,7 +39,8 @@ class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
   }
 
   ExtensionProcessManager* GetExtensionProcessManager() {
-    return browser()->profile()->GetExtensionProcessManager();
+    return extensions::ExtensionSystem::Get(browser()->profile())->
+        process_manager();
   }
 
   Balloon* GetNotificationDelegate(size_t index) {

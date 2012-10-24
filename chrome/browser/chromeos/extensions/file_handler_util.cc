@@ -90,7 +90,8 @@ int ExtractProcessFromExtensionId(const std::string& extension_id,
                                   Profile* profile) {
   GURL extension_url =
       Extension::GetBaseURLFromExtensionId(extension_id);
-  ExtensionProcessManager* manager = profile->GetExtensionProcessManager();
+  ExtensionProcessManager* manager =
+      extensions::ExtensionSystem::Get(profile)->process_manager();
 
   SiteInstance* site_instance = manager->GetSiteInstanceForURL(extension_url);
   if (!site_instance || !site_instance->HasProcess())

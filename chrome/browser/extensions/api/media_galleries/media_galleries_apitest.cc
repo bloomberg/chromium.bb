@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
@@ -40,8 +41,8 @@ class PlatformAppMediaGalleriesBrowserTest : public PlatformAppBrowserTest {
   void RunSecondTestPhase(int expected_galleries) {
     const extensions::Extension* extension = GetSingleLoadedExtension();
     extensions::ExtensionHost* host =
-        browser()->profile()->GetExtensionProcessManager()->
-        GetBackgroundHostForExtension(extension->id());
+        extensions::ExtensionSystem::Get(browser()->profile())->
+            process_manager()->GetBackgroundHostForExtension(extension->id());
     ASSERT_TRUE(host);
 
     static const char kTestGalleries[] = "testGalleries(%d)";

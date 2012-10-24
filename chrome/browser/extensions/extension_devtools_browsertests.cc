@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -64,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, TimelineApi) {
 
   // Get the ExtensionHost that is hosting our background page.
   ExtensionProcessManager* manager =
-      browser()->profile()->GetExtensionProcessManager();
+      extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
   ExtensionHost* host = FindBackgroundHostWithPath(manager,
                                                    "/background.html", 1);
 
@@ -118,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, ProcessRefCounting) {
 
   // Get the ExtensionHost that is hosting our background page.
   ExtensionProcessManager* manager =
-      browser()->profile()->GetExtensionProcessManager();
+      extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
   ExtensionHost* host_one = FindBackgroundHostWithPath(manager,
                                                        "/background.html", 1);
 

@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/ui/browser.h"
 #include "content/public/browser/render_view_host.h"
 #include "webkit/glue/webpreferences.h"
@@ -22,7 +23,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WebKitPrefsBackgroundPage) {
                     .AppendASCII("1.0.0.0")));
 
   ExtensionProcessManager* manager =
-      browser()->profile()->GetExtensionProcessManager();
+      extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
   extensions::ExtensionHost* host =
       FindHostWithPath(manager, "/backgroundpage.html", 1);
   webkit_glue::WebPreferences prefs =

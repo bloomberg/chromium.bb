@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
@@ -42,8 +43,9 @@ class ExtensionManagementTest : public ExtensionBrowserTest {
     // Test that the extension's version from the manifest and reported by the
     // background page is correct.  This is to ensure that the processes are in
     // sync with the Extension.
-    ExtensionProcessManager* manager = browser()->profile()->
-        GetExtensionProcessManager();
+    ExtensionProcessManager* manager =
+        extensions::ExtensionSystem::Get(browser()->profile())->
+            process_manager();
     extensions::ExtensionHost* ext_host =
         manager->GetBackgroundHostForExtension(extension->id());
     EXPECT_TRUE(ext_host);
@@ -132,8 +134,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_InstallRequiresConfirm) {
 
 // Tests that disabling and re-enabling an extension works.
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, DisableEnable) {
-  ExtensionProcessManager* manager = browser()->profile()->
-      GetExtensionProcessManager();
+  ExtensionProcessManager* manager =
+      extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
   ExtensionService* service = browser()->profile()->GetExtensionService();
   const size_t size_before = service->extensions()->size();
 

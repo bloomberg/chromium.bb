@@ -528,10 +528,6 @@ extensions::UserScriptMaster* TestingProfile::GetUserScriptMaster() {
   return extensions::ExtensionSystem::Get(this)->user_script_master();
 }
 
-ExtensionProcessManager* TestingProfile::GetExtensionProcessManager() {
-  return extensions::ExtensionSystem::Get(this)->process_manager();
-}
-
 extensions::EventRouter* TestingProfile::GetExtensionEventRouter() {
   return extensions::ExtensionSystem::Get(this)->event_router();
 }

@@ -88,8 +88,9 @@ static base::StaticAtomicSequenceNumber g_next_channel_id;
 static content::RenderProcessHost* GetExtensionProcess(
     Profile* profile, const std::string& extension_id) {
   SiteInstance* site_instance =
-      profile->GetExtensionProcessManager()->GetSiteInstanceForURL(
-          Extension::GetBaseURLFromExtensionId(extension_id));
+      extensions::ExtensionSystem::Get(profile)->process_manager()->
+          GetSiteInstanceForURL(
+              Extension::GetBaseURLFromExtensionId(extension_id));
 
   if (!site_instance->HasProcess())
     return NULL;

@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/lazy_background_page_test_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -100,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, BrowserActionCreateTab) {
 
   // Lazy Background Page doesn't exist yet.
   ExtensionProcessManager* pm =
-      browser()->profile()->GetExtensionProcessManager();
+      extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
   int num_tabs_before = browser()->tab_count();
 
@@ -123,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest,
 
   // Lazy Background Page doesn't exist yet.
   ExtensionProcessManager* pm =
-      browser()->profile()->GetExtensionProcessManager();
+      extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
   int num_tabs_before = browser()->tab_count();
 
@@ -146,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, BroadcastEvent) {
 
   // Lazy Background Page doesn't exist yet.
   ExtensionProcessManager* pm =
-      browser()->profile()->GetExtensionProcessManager();
+      extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
   int num_page_actions = browser()->window()->GetLocationBar()->
       GetLocationBarForTesting()->PageActionVisibleCount();
@@ -175,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, Filters) {
 
   // Lazy Background Page doesn't exist yet.
   ExtensionProcessManager* pm =
-      browser()->profile()->GetExtensionProcessManager();
+      extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
 
   // Open a tab to a URL that will fire a webNavigation event.
@@ -194,7 +195,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, OnInstalled) {
 
   // Lazy Background Page has been shut down.
   ExtensionProcessManager* pm =
-      browser()->profile()->GetExtensionProcessManager();
+      extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
 }
 
@@ -216,7 +217,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForView) {
   // Lazy Background Page still exists, because the extension created a new tab
   // to an extension page.
   ExtensionProcessManager* pm =
-      browser()->profile()->GetExtensionProcessManager();
+      extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
   EXPECT_TRUE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
 
   // Close the new tab.
@@ -243,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForRequest) {
 
   // Lazy Background Page still exists, because the extension started a request.
   ExtensionProcessManager* pm =
-      browser()->profile()->GetExtensionProcessManager();
+      extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
   extensions::ExtensionHost* host =
       pm->GetBackgroundHostForExtension(last_loaded_extension_id_);
   ASSERT_TRUE(host);
@@ -277,9 +278,10 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, IncognitoSplitMode) {
 
   // Lazy Background Page doesn't exist yet.
   ExtensionProcessManager* pm =
-      browser()->profile()->GetExtensionProcessManager();
+      extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
   ExtensionProcessManager* pmi =
-      incognito_browser->profile()->GetExtensionProcessManager();
+      extensions::ExtensionSystem::Get(incognito_browser->profile())->
+          process_manager();
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
   EXPECT_FALSE(pmi->GetBackgroundHostForExtension(last_loaded_extension_id_));
 
@@ -333,7 +335,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, Messaging) {
 
   // Lazy Background Page doesn't exist yet.
   ExtensionProcessManager* pm =
-      browser()->profile()->GetExtensionProcessManager();
+      extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
   EXPECT_EQ(1, browser()->tab_count());
 
@@ -365,7 +367,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, OnUnload) {
 
   // Lazy Background Page has been shut down.
   ExtensionProcessManager* pm =
-      browser()->profile()->GetExtensionProcessManager();
+      extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id_));
 
   // The browser action has a new title.

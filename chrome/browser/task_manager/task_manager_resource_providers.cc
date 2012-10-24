@@ -1444,7 +1444,7 @@ void TaskManagerExtensionProcessResourceProvider::StartUpdating() {
 
   for (size_t i = 0; i < profiles.size(); ++i) {
     ExtensionProcessManager* process_manager =
-        profiles[i]->GetExtensionProcessManager();
+        extensions::ExtensionSystem::Get(profiles[i])->process_manager();
     if (process_manager) {
       const ExtensionProcessManager::ViewSet all_views =
           process_manager->GetAllViews();

@@ -8,6 +8,7 @@
 
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
@@ -26,7 +27,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, LastError) {
 
   // Get the ExtensionHost that is hosting our background page.
   ExtensionProcessManager* manager =
-      browser()->profile()->GetExtensionProcessManager();
+      extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
   extensions::ExtensionHost* host = FindHostWithPath(manager, "/bg.html", 1);
 
   bool result = false;

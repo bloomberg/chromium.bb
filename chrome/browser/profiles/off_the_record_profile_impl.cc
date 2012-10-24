@@ -25,7 +25,6 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
-#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -223,11 +222,6 @@ ExtensionService* OffTheRecordProfileImpl::GetExtensionService() {
 
 extensions::UserScriptMaster* OffTheRecordProfileImpl::GetUserScriptMaster() {
   return extensions::ExtensionSystem::Get(this)->user_script_master();
-}
-
-ExtensionProcessManager*
-    OffTheRecordProfileImpl::GetExtensionProcessManager() {
-  return extensions::ExtensionSystem::Get(this)->process_manager();
 }
 
 extensions::EventRouter* OffTheRecordProfileImpl::GetExtensionEventRouter() {

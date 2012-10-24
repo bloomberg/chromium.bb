@@ -19,6 +19,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager_resource_providers.h"
@@ -1314,7 +1315,8 @@ namespace {
 // Counts the number of extension background pages associated with this profile.
 int CountExtensionBackgroundPagesForProfile(Profile* profile) {
   int count = 0;
-  ExtensionProcessManager* manager = profile->GetExtensionProcessManager();
+  ExtensionProcessManager* manager =
+      extensions::ExtensionSystem::Get(profile)->process_manager();
   if (!manager)
     return count;
 

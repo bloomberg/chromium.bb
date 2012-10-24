@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/net/load_time_stats.h"
 #include "chrome/browser/performance_monitor/performance_monitor.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -101,7 +102,7 @@ void NotifyEPMRequestStatus(RequestStatus status,
     return;
 
   ExtensionProcessManager* extension_process_manager =
-      profile->GetExtensionProcessManager();
+      extensions::ExtensionSystem::Get(profile)->process_manager();
   // This may be NULL in unit tests.
   if (!extension_process_manager)
     return;

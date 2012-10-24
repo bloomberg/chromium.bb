@@ -6,6 +6,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/browser.h"
@@ -18,8 +19,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, AlertBasic) {
 
   const extensions::Extension* extension = GetSingleLoadedExtension();
   extensions::ExtensionHost* host =
-      browser()->profile()->GetExtensionProcessManager()->
-      GetBackgroundHostForExtension(extension->id());
+      extensions::ExtensionSystem::Get(browser()->profile())->
+          process_manager()->GetBackgroundHostForExtension(extension->id());
   ASSERT_TRUE(host);
   host->render_view_host()->ExecuteJavascriptInWebFrame(string16(),
       ASCIIToUTF16("alert('This should not crash.');"));

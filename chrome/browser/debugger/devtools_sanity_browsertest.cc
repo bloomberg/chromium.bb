@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -228,7 +229,8 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
         FROM_HERE, timeout.callback(), base::TimeDelta::FromSeconds(4));
 
     ExtensionProcessManager* manager =
-          browser()->profile()->GetExtensionProcessManager();
+        extensions::ExtensionSystem::Get(browser()->profile())->
+            process_manager();
     ExtensionProcessManager::ViewSet all_views = manager->GetAllViews();
     for (ExtensionProcessManager::ViewSet::const_iterator iter =
              all_views.begin();

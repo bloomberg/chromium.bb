@@ -16,6 +16,7 @@
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -79,7 +80,7 @@ ExtensionPopupGtk::~ExtensionPopupGtk() {
 void ExtensionPopupGtk::Show(const GURL& url, Browser* browser,
     GtkWidget* anchor, ShowAction show_action) {
   ExtensionProcessManager* manager =
-      browser->profile()->GetExtensionProcessManager();
+      extensions::ExtensionSystem::Get(browser->profile())->process_manager();
   DCHECK(manager);
   if (!manager)
     return;

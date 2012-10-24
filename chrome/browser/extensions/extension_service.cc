@@ -2636,7 +2636,8 @@ void ExtensionService::SetBackgroundPageReady(const Extension* extension) {
 void ExtensionService::InspectBackgroundPage(const Extension* extension) {
   DCHECK(extension);
 
-  ExtensionProcessManager* pm = profile_->GetExtensionProcessManager();
+  ExtensionProcessManager* pm =
+      extensions::ExtensionSystem::Get(profile_)->process_manager();
   extensions::LazyBackgroundTaskQueue* queue =
       extensions::ExtensionSystem::Get(profile_)->lazy_background_task_queue();
 

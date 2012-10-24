@@ -34,7 +34,6 @@
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_pref_value_map_factory.h"
-#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -620,10 +619,6 @@ ExtensionService* ProfileImpl::GetExtensionService() {
 
 extensions::UserScriptMaster* ProfileImpl::GetUserScriptMaster() {
   return extensions::ExtensionSystem::Get(this)->user_script_master();
-}
-
-ExtensionProcessManager* ProfileImpl::GetExtensionProcessManager() {
-  return extensions::ExtensionSystem::Get(this)->process_manager();
 }
 
 extensions::EventRouter* ProfileImpl::GetExtensionEventRouter() {

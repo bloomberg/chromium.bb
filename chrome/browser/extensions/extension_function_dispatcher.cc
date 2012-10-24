@@ -257,8 +257,8 @@ void ExtensionFunctionDispatcher::Dispatch(
 
 void ExtensionFunctionDispatcher::OnExtensionFunctionCompleted(
     const Extension* extension) {
-  profile()->GetExtensionProcessManager()->DecrementLazyKeepaliveCount(
-      extension);
+  extensions::ExtensionSystem::Get(profile())->process_manager()->
+      DecrementLazyKeepaliveCount(extension);
 }
 
 // static

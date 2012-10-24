@@ -749,9 +749,9 @@ void ExtensionSettingsHandler::HandleOptionsMessage(const ListValue* args) {
   const Extension* extension = GetActiveExtension(args);
   if (!extension || extension->options_url().is_empty())
     return;
-  Profile::FromWebUI(web_ui())->GetExtensionProcessManager()->OpenOptionsPage(
-      extension,
-      browser::FindBrowserWithWebContents(web_ui()->GetWebContents()));
+  extensions::ExtensionSystem::Get(Profile::FromWebUI(web_ui()))->
+      process_manager()->OpenOptionsPage(extension,
+          browser::FindBrowserWithWebContents(web_ui()->GetWebContents()));
 }
 
 void ExtensionSettingsHandler::HandleShowButtonMessage(const ListValue* args) {
@@ -855,7 +855,8 @@ ExtensionSettingsHandler::GetInspectablePagesForExtension(
 
   // Get the extension process's active views.
   ExtensionProcessManager* process_manager =
-      extension_service_->profile()->GetExtensionProcessManager();
+      extensions::ExtensionSystem::Get(extension_service_->profile())->
+          process_manager();
   GetInspectablePagesForExtensionProcess(
       process_manager->GetRenderViewHostsForExtension(extension->id()),
       &result);
@@ -876,8 +877,8 @@ ExtensionSettingsHandler::GetInspectablePagesForExtension(
   if (extension_service_->profile()->HasOffTheRecordProfile() &&
       extension->incognito_split_mode()) {
     ExtensionProcessManager* process_manager =
-        extension_service_->profile()->GetOffTheRecordProfile()->
-            GetExtensionProcessManager();
+        extensions::ExtensionSystem::Get(extension_service_->profile()->
+            GetOffTheRecordProfile())->process_manager();
     GetInspectablePagesForExtensionProcess(
         process_manager->GetRenderViewHostsForExtension(extension->id()),
         &result);

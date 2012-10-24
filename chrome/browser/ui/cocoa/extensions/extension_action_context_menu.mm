@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -161,8 +162,8 @@ enum {
     }
     case kExtensionContextOptions: {
       DCHECK(!extension_->options_url().is_empty());
-      browser_->profile()->GetExtensionProcessManager()->OpenOptionsPage(
-          extension_, browser_);
+      extensions::ExtensionSystem::Get(browser_->profile())->process_manager()->
+          OpenOptionsPage(extension_, browser_);
       break;
     }
     case kExtensionContextDisable: {

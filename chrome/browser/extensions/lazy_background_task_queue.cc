@@ -43,7 +43,8 @@ bool LazyBackgroundTaskQueue::ShouldEnqueueTask(
     Profile* profile, const Extension* extension) {
   DCHECK(extension);
   if (extension->has_background_page()) {
-    ExtensionProcessManager* pm = profile->GetExtensionProcessManager();
+    ExtensionProcessManager* pm = extensions::ExtensionSystem::Get(profile)->
+        process_manager();
     ExtensionHost* background_host =
         pm->GetBackgroundHostForExtension(extension->id());
     if (!background_host || !background_host->did_stop_loading())

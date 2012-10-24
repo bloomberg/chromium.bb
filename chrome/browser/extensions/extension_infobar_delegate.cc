@@ -7,6 +7,7 @@
 #include "chrome/browser/api/infobars/infobar_service.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -27,7 +28,7 @@ ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(
           extension_(extension),
           closing_(false) {
   ExtensionProcessManager* manager =
-      browser->profile()->GetExtensionProcessManager();
+      extensions::ExtensionSystem::Get(browser->profile())->process_manager();
   extension_host_.reset(manager->CreateInfobarHost(url, browser));
   extension_host_->SetAssociatedWebContents(infobar_service->GetWebContents());
 

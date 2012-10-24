@@ -19,6 +19,7 @@
 #include "chrome/browser/automation/automation_provider_json.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
@@ -546,7 +547,7 @@ bool GetExtensionRenderViewForId(
     Profile* profile,
     RenderViewHost** rvh) {
   ExtensionProcessManager* extension_mgr =
-      profile->GetExtensionProcessManager();
+      extensions::ExtensionSystem::Get(profile)->process_manager();
   const ExtensionProcessManager::ViewSet view_set =
       extension_mgr->GetAllViews();
   for (ExtensionProcessManager::ViewSet::const_iterator iter = view_set.begin();

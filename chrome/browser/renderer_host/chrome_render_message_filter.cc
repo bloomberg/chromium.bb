@@ -484,15 +484,18 @@ void ChromeRenderMessageFilter::OnExtensionRequestForIOThread(
 
 void ChromeRenderMessageFilter::OnExtensionShouldUnloadAck(
      const std::string& extension_id, int sequence_id) {
-  if (profile_->GetExtensionProcessManager())
-    profile_->GetExtensionProcessManager()->OnShouldUnloadAck(
-        extension_id, sequence_id);
+  if (extensions::ExtensionSystem::Get(profile_)->process_manager()) {
+    extensions::ExtensionSystem::Get(profile_)->process_manager()->
+        OnShouldUnloadAck(extension_id, sequence_id);
+  }
 }
 
 void ChromeRenderMessageFilter::OnExtensionUnloadAck(
      const std::string& extension_id) {
-  if (profile_->GetExtensionProcessManager())
-    profile_->GetExtensionProcessManager()->OnUnloadAck(extension_id);
+  if (extensions::ExtensionSystem::Get(profile_)->process_manager()) {
+    extensions::ExtensionSystem::Get(profile_)->process_manager()->
+        OnUnloadAck(extension_id);
+  }
 }
 
 void ChromeRenderMessageFilter::OnExtensionGenerateUniqueID(int* unique_id) {

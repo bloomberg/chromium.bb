@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -171,8 +172,8 @@ class ExtensionManagementApiEscalationTest : public ExtensionBrowserTest {
         chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
         content::NotificationService::AllSources());
     extensions::ExtensionHost* background_host =
-        browser()->profile()->GetExtensionProcessManager()->
-            GetBackgroundHostForExtension(extension_id);
+        extensions::ExtensionSystem::Get(browser()->profile())->
+            process_manager()->GetBackgroundHostForExtension(extension_id);
     if (!background_host)
       return false;
     background_host->host_contents()->GetController().LoadURL(

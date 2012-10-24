@@ -107,8 +107,8 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id) {
     }
     case CONFIGURE:
       DCHECK(!extension->options_url().is_empty());
-      profile_->GetExtensionProcessManager()->OpenOptionsPage(extension,
-                                                              browser_);
+      extensions::ExtensionSystem::Get(profile_)->process_manager()->
+          OpenOptionsPage(extension, browser_);
       break;
     case HIDE: {
       ExtensionService* extension_service = profile_->GetExtensionService();

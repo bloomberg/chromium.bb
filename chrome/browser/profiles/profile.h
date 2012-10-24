@@ -18,7 +18,6 @@
 
 class ChromeAppCacheService;
 class ChromeURLDataManager;
-class ExtensionProcessManager;
 class ExtensionService;
 class ExtensionSpecialStoragePolicy;
 class FaviconService;
@@ -211,12 +210,6 @@ class Profile : public content::BrowserContext {
   // time that this method is called.
   // TODO(yoz): remove this accessor (bug 104095).
   virtual extensions::UserScriptMaster* GetUserScriptMaster() = 0;
-
-  // DEPRECATED. Instead, use ExtensionSystem::process_manager().
-  // Retrieves a pointer to the ExtensionProcessManager associated with this
-  // profile.  The instance is created at startup.
-  // TODO(yoz): remove this accessor (bug 104095).
-  virtual ExtensionProcessManager* GetExtensionProcessManager() = 0;
 
   // DEPRECATED. Instead, use ExtensionSystem::event_router().
   // Accessor. The instance is created at startup.

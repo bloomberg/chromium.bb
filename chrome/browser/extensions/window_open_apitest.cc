@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -326,8 +327,8 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, ClosePanelsOnExtensionCrash) {
 
   // Crash the extension.
   extensions::ExtensionHost* extension_host =
-      browser()->profile()->GetExtensionProcessManager()->
-      GetBackgroundHostForExtension(extension->id());
+      extensions::ExtensionSystem::Get(browser()->profile())->
+          process_manager()->GetBackgroundHostForExtension(extension->id());
   ASSERT_TRUE(extension_host);
   base::KillProcess(extension_host->render_process_host()->GetHandle(),
                     content::RESULT_CODE_KILLED, false);

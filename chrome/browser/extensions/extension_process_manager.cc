@@ -726,8 +726,8 @@ void ExtensionProcessManager::ClearBackgroundPageData(
 IncognitoExtensionProcessManager::IncognitoExtensionProcessManager(
     Profile* profile)
     : ExtensionProcessManager(profile),
-      original_manager_(profile->GetOriginalProfile()->
-                            GetExtensionProcessManager()) {
+      original_manager_(extensions::ExtensionSystem::Get(
+          profile->GetOriginalProfile())->process_manager()) {
   DCHECK(profile->IsOffTheRecord());
 
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,

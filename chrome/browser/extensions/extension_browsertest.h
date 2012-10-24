@@ -21,6 +21,8 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 
+class ExtensionProcessManager;
+
 // Base class for extension browser tests. Provides utilities for loading,
 // unloading, and installing extensions.
 class ExtensionBrowserTest : virtual public InProcessBrowserTest,
