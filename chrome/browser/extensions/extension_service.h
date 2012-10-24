@@ -321,6 +321,9 @@ class ExtensionService
   // Reloads the specified extension.
   void ReloadExtension(const std::string& extension_id);
 
+  // Restarts the specified extension.
+  void RestartExtension(const std::string& extension_id);
+
   // Uninstalls the specified extension. Callers should only call this method
   // with extensions that exist. |external_uninstall| is a magical parameter
   // that is only used to send information to ExtensionPrefs, which external
@@ -706,6 +709,13 @@ class ExtensionService
     INCLUDE_TERMINATED = 1 << 2
   };
 
+  // Events to be fired after an extension is reloaded.
+  enum PostReloadEvents {
+    EVENT_NONE = 0,
+    EVENT_LAUNCHED = 1 << 0,
+    EVENT_RESTARTED = 1 << 1,
+  };
+
   // Look up an extension by ID, optionally including either or both of enabled
   // and disabled extensions.
   const extensions::Extension* GetExtensionByIdInternal(
@@ -727,6 +737,14 @@ class ExtensionService
   void NotifyExtensionUnloaded(const extensions::Extension* extension,
                                extension_misc::UnloadedExtensionReason reason);
 
+  // Reloads |extension_id| and then dispatches to it the PostReloadEvents
+  // indicated by |events|.
+  void ReloadExtensionWithEvents(const std::string& extension_id,
+                                int events);
+
+  // Returns true if the app with id |extension_id| has any shell windows open.
+  bool HasShellWindows(const std::string& extension_id);
+
   // Helper that updates the active extension list used for crash reporting.
   void UpdateActiveExtensionsInCrashReporter();
 
@@ -745,10 +763,15 @@ class ExtensionService
 
   NaClModuleInfoList::iterator FindNaClModule(const GURL& url);
 
-  // Enqueues a launch task in the lazy background page queue.
-  void QueueRestoreAppWindow(const extensions::Extension* extension);
+  // Performs tasks requested to occur after |extension| loads.
+  void DoPostLoadTasks(const extensions::Extension* extension);
+
   // Launches the platform app associated with |extension_host|.
   static void LaunchApplication(extensions::ExtensionHost* extension_host);
+
+  // Dispatches a restart event to the platform app associated with
+  // |extension_host|.
+  static void RestartApplication(extensions::ExtensionHost* extension_host);
 
   // Helper to inspect an ExtensionHost after it has been loaded.
   void InspectExtensionHost(extensions::ExtensionHost* host);
@@ -823,9 +846,9 @@ class ExtensionService
   typedef std::map<std::string, int> OrphanedDevTools;
   OrphanedDevTools orphaned_dev_tools_;
 
-  // A set of apps that had an open window the last time they were reloaded.
-  // A new window will be launched when the app is succesfully reloaded.
-  std::set<std::string> relaunch_app_ids_;
+  // Maps extension ids to a bitmask that indicates which events should be
+  // dispatched to the extension when it is loaded.
+  std::map<std::string, int> on_load_events_;
 
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;

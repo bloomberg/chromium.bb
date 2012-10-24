@@ -30,6 +30,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/debugger/devtools_window.h"
+#include "chrome/browser/extensions/api/app_runtime/app_runtime_api.h"
 #include "chrome/browser/extensions/api/cookies/cookies_api.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/api/extension_action/extension_actions_api.h"
@@ -686,6 +687,18 @@ bool ExtensionService::UpdateExtension(const std::string& id,
 }
 
 void ExtensionService::ReloadExtension(const std::string& extension_id) {
+  int events = HasShellWindows(extension_id) ? EVENT_LAUNCHED : EVENT_NONE;
+  ReloadExtensionWithEvents(extension_id, events);
+}
+
+void ExtensionService::RestartExtension(const std::string& extension_id) {
+  int events = HasShellWindows(extension_id) ? EVENT_RESTARTED : EVENT_NONE;
+  ReloadExtensionWithEvents(extension_id, events);
+}
+
+void ExtensionService::ReloadExtensionWithEvents(
+    const std::string& extension_id,
+    int events) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FilePath path;
   const Extension* current_extension = GetExtensionById(extension_id, false);
@@ -711,11 +724,7 @@ void ExtensionService::ReloadExtension(const std::string& extension_id) {
         orphaned_dev_tools_[extension_id] = devtools_cookie;
     }
 
-    if (current_extension->is_platform_app() &&
-        !extensions::ShellWindowRegistry::Get(profile_)->
-            GetShellWindowsForApp(extension_id).empty()) {
-      relaunch_app_ids_.insert(extension_id);
-    }
+    on_load_events_[extension_id] = events;
 
     path = current_extension->path();
     DisableExtension(extension_id, Extension::DISABLE_RELOAD);
@@ -2041,7 +2050,7 @@ void ExtensionService::AddExtension(const Extension* extension) {
   extensions_.Insert(scoped_extension);
   SyncExtensionChangeIfNeeded(*extension);
   NotifyExtensionLoaded(extension);
-  QueueRestoreAppWindow(extension);
+  DoPostLoadTasks(extension);
 }
 
 void ExtensionService::InitializePermissions(const Extension* extension) {
@@ -2741,19 +2750,25 @@ ExtensionService::NaClModuleInfoList::iterator
   return nacl_module_list_.end();
 }
 
-void ExtensionService::QueueRestoreAppWindow(const Extension* extension) {
-  std::set<std::string>::iterator relaunch_iter =
-      relaunch_app_ids_.find(extension->id());
-  if (relaunch_iter != relaunch_app_ids_.end()) {
-    extensions::LazyBackgroundTaskQueue* queue =
-        system_->lazy_background_task_queue();
-    if (queue->ShouldEnqueueTask(profile(), extension)) {
+void ExtensionService::DoPostLoadTasks(const Extension* extension) {
+  std::map<std::string, int>::iterator it =
+      on_load_events_.find(extension->id());
+  if (it == on_load_events_.end())
+    return;
+
+  int events_to_fire = it->second;
+  extensions::LazyBackgroundTaskQueue* queue =
+      system_->lazy_background_task_queue();
+  if (queue->ShouldEnqueueTask(profile(), extension)) {
+    if (events_to_fire & EVENT_LAUNCHED)
       queue->AddPendingTask(profile(), extension->id(),
                             base::Bind(&ExtensionService::LaunchApplication));
-    }
-
-    relaunch_app_ids_.erase(relaunch_iter);
+    if (events_to_fire & EVENT_RESTARTED)
+      queue->AddPendingTask(profile(), extension->id(),
+                            base::Bind(&ExtensionService::RestartApplication));
   }
+
+  on_load_events_.erase(it);
 }
 
 // static
@@ -2767,6 +2782,25 @@ void ExtensionService::LaunchApplication(
                                 extension_host->extension(),
                                 NULL, FilePath());
 #endif
+}
+
+// static
+void ExtensionService::RestartApplication(
+    extensions::ExtensionHost* extension_host) {
+  if (!extension_host)
+    return;
+
+#if !defined(OS_ANDROID)
+  extensions::AppEventRouter::DispatchOnRestartedEvent(
+      extension_host->profile(), extension_host->extension());
+#endif
+}
+
+bool ExtensionService::HasShellWindows(const std::string& extension_id) {
+  const Extension* current_extension = GetExtensionById(extension_id, false);
+  return current_extension && current_extension->is_platform_app() &&
+      !extensions::ShellWindowRegistry::Get(profile_)->
+          GetShellWindowsForApp(extension_id).empty();
 }
 
 void ExtensionService::InspectExtensionHost(

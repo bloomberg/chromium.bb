@@ -544,6 +544,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         <message name="IDS_CONTENT_CONTEXT_RELOAD_PAGE" desc="The name of the Reload Page command in the packaged app content area context menu">
           Reload page
         </message>
+        <message name="IDS_CONTENT_CONTEXT_RESTART_APP" desc="The name of the Restart Packaged App command in the packaged app context menu.">
+          Simulate browser restart
+        </message>
         <message name="IDS_CONTENT_CONTEXT_RELOAD_PACKAGED_APP" desc="The name of the Reload Packaged App command in the packaged app content area context menu">
           Re&amp;load app
         </message>
@@ -755,6 +758,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         </message>
         <message name="IDS_CONTENT_CONTEXT_RELOAD_PAGE" desc="In Title Case: The name of the Reload Page command in the packaged app content area context menu">
           Reload Page
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_RESTART_APP" desc="In Title Case: The name of the Restart Packaged App command in the packaged app context menu.">
+          Simulate Browser Restart
         </message>
         <message name="IDS_CONTENT_CONTEXT_RELOAD_PACKAGED_APP" desc="In Title Case: The name of the Reload Packaged App command in the packaged app content area context menu">
           Re&amp;load App
