@@ -56,7 +56,6 @@ class ASH_EXPORT ScreenAsh : public gfx::Screen {
   static const gfx::Display& GetDisplayForId(int64 display_id);
 
  protected:
-
   // Implementation of gfx::Screen:
   virtual bool IsDIPEnabled() OVERRIDE;
   virtual gfx::Point GetCursorScreenPoint() OVERRIDE;

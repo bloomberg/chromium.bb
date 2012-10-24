@@ -329,9 +329,8 @@ Browser::Browser(const CreateParams& params)
       ALLOW_THIS_IN_INITIALIZER_LIST(
           tab_strip_model_delegate_(
             new chrome::BrowserTabStripModelDelegate(this))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          tab_strip_model_(new TabStripModel(tab_strip_model_delegate_.get(),
-                                             params.profile))),
+      tab_strip_model_(new TabStripModel(tab_strip_model_delegate_.get(),
+                                         params.profile)),
       app_name_(params.app_name),
       app_type_(params.app_type),
       chrome_updater_factory_(this),

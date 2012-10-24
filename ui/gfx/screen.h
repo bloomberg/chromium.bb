@@ -19,7 +19,8 @@ class Rect;
 // cursor position, etc.
 class UI_EXPORT Screen {
  public:
-  // Retrieves the Screen that the specified NativeView belongs to.
+  // Retrieves the Screen that the specified NativeView belongs to. A value of
+  // NULL is treated as |SCREEN_TYPE_NATIVE|.
   static Screen* GetScreenFor(NativeView view);
 
   // Returns the SCREEN_TYPE_NATIVE Screen. This should be used with caution,

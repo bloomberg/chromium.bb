@@ -5,6 +5,7 @@
 #include "ash/wm/workspace/colored_window_controller.h"
 
 #include "ash/shell_window_ids.h"
+#include "ash/wm/property_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/gfx/canvas.h"
@@ -62,12 +63,15 @@ ColoredWindowController::ColoredWindowController(aura::Window* parent,
   params.accept_events = false;
   params.layer_type = ui::LAYER_SOLID_COLOR;
   widget->Init(params);
+  // Do this so the parent doesn't attempt to enforce any bounds constraints on
+  // us.
+  SetTrackedByWorkspace(widget->GetNativeView(), false);
   widget->GetNativeView()->SetProperty(aura::client::kAnimationsDisabledKey,
                                        true);
   widget->GetNativeView()->SetName(window_name);
-  // Sometimes |parent| has kUsesScreenCoordinatesKey which causes a crash
-  // if parent belongs to the secondary display.
-  widget->GetNativeWindow()->SetBounds(parent->bounds());
+  // The bounds should match the parent exactly. We don't go through
+  // Widget::SetBounds() as that may try to place on a different display.
+  widget->GetNativeWindow()->SetBounds(gfx::Rect(parent->bounds()));
 }
 
 ColoredWindowController::~ColoredWindowController() {

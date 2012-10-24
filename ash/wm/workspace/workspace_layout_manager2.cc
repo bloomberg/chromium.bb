@@ -136,8 +136,14 @@ void WorkspaceLayoutManager2::SetChildBounds(
   }
   gfx::Rect child_bounds(requested_bounds);
   // Some windows rely on this to set their initial bounds.
-  if (!SetMaximizedOrFullscreenBounds(child))
+  if (!SetMaximizedOrFullscreenBounds(child)) {
+    // Non-maximized/full-screen windows have their size constrained to the
+    // work-area.
+    child_bounds.set_width(std::min(work_area_.width(), child_bounds.width()));
+    child_bounds.set_height(
+        std::min(work_area_.height(), child_bounds.height()));
     SetChildBoundsDirect(child, child_bounds);
+  }
   workspace_manager()->OnWorkspaceWindowChildBoundsChanged(workspace_, child);
 }
 
@@ -293,9 +299,11 @@ void WorkspaceLayoutManager2::AdjustWindowSizeForScreenChange(
       bounds.AdjustToFit(work_area_);
       window->SetBounds(bounds);
     } else if (reason == ADJUST_WINDOW_DISPLAY_INSETS_CHANGED) {
-      // If the window is completely outside the display work area, then move it
-      // enough to be visible again.
+      // Make sure the window isn't bigger than the display work area and that
+      // at least a portion of it is visible.
       gfx::Rect bounds = window->bounds();
+      bounds.set_width(std::min(bounds.width(), work_area_.width()));
+      bounds.set_height(std::min(bounds.height(), work_area_.height()));
       if (!work_area_.Intersects(bounds)) {
         int y_offset = 0;
         if (work_area_.bottom() < bounds.y()) {
@@ -310,10 +318,10 @@ void WorkspaceLayoutManager2::AdjustWindowSizeForScreenChange(
         } else if (bounds.right() < work_area_.x()) {
           x_offset = work_area_.x() - bounds.right() + kMinimumOnScreenArea;
         }
-
         bounds.Offset(x_offset, y_offset);
-        window->SetBounds(bounds);
       }
+      if (window->bounds() != bounds)
+        window->SetBounds(bounds);
     }
   }
 }

@@ -150,9 +150,8 @@ void GetScreenInfoForWindow(WebScreenInfo* results, aura::Window* window) {
   const gfx::Display display = window ?
       gfx::Screen::GetScreenFor(window)->GetDisplayNearestWindow(window) :
       gfx::Screen::GetScreenFor(window)->GetPrimaryDisplay();
-  const gfx::Size size = display.size();
-  results->rect = WebKit::WebRect(0, 0, size.width(), size.height());
-  results->availableRect = results->rect;
+  results->rect = display.bounds();
+  results->availableRect = display.work_area();
   // TODO(derat|oshima): Don't hardcode this. Get this from display object.
   results->depth = 24;
   results->depthPerComponent = 8;
