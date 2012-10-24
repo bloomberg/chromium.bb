@@ -10,6 +10,8 @@
 #include "content/renderer/media/mock_web_peer_connection_00_handler_client.h"
 #include "content/renderer/media/mock_web_rtc_peer_connection_handler_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/libjingle/source/talk/app/webrtc/videosourceinterface.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebMediaConstraints.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamComponent.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamDescriptor.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamSource.h"
@@ -19,6 +21,30 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
 
 namespace content {
+
+class MediaSourceCreatedObserver {
+ public:
+  MediaSourceCreatedObserver()
+     : result_(false),
+       description_(NULL) {
+  }
+
+  void OnCreateNativeSourcesComplete(
+      WebKit::WebMediaStreamDescriptor* description,
+      bool request_succeeded) {
+    result_ = request_succeeded;
+    description_ = description;
+  }
+
+  WebKit::WebMediaStreamDescriptor* description() const {
+    return description_;
+  }
+  bool result() const { return result_; }
+
+ private:
+  bool result_;
+  WebKit::WebMediaStreamDescriptor* description_;
+};
 
 class MediaStreamDependencyFactoryTest : public ::testing::Test {
  public:
@@ -61,6 +87,26 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
     return stream_desc;
   }
 
+  void CreateNativeSources(WebKit::WebMediaStreamDescriptor* descriptor) {
+    MediaSourceCreatedObserver observer;
+    dependency_factory_->CreateNativeMediaSources(
+        WebKit::WebMediaConstraints(),
+        WebKit::WebMediaConstraints(),
+        descriptor,
+        base::Bind(
+            &MediaSourceCreatedObserver::OnCreateNativeSourcesComplete,
+            base::Unretained(&observer)));
+
+    EXPECT_FALSE(observer.result());
+    // Change the state of the created source to live. This should trigger
+    // MediaSourceCreatedObserver::OnCreateNativeSourcesComplete
+    if (dependency_factory_->last_video_source()) {
+      dependency_factory_->last_video_source()->SetLive();
+    }
+    EXPECT_TRUE(observer.result());
+    EXPECT_TRUE(observer.description() == descriptor);
+  }
+
  protected:
   scoped_ptr<MockMediaStreamDependencyFactory> dependency_factory_;
 };
@@ -82,7 +128,9 @@ TEST_F(MediaStreamDependencyFactoryTest, CreateRTCPeerConnectionHandler) {
 TEST_F(MediaStreamDependencyFactoryTest, CreateNativeMediaStream) {
   WebKit::WebMediaStreamDescriptor stream_desc = CreateWebKitMediaStream(true,
                                                                          true);
-  EXPECT_TRUE(dependency_factory_->CreateNativeLocalMediaStream(&stream_desc));
+  CreateNativeSources(&stream_desc);
+
+  dependency_factory_->CreateNativeLocalMediaStream(&stream_desc);
 
   content::MediaStreamExtraData* extra_data =
       static_cast<content::MediaStreamExtraData*>(stream_desc.extraData());
@@ -109,9 +157,10 @@ TEST_F(MediaStreamDependencyFactoryTest, CreateNativeMediaStreamWithoutSource) {
                               "something");
   stream_desc.initialize("new stream", audio_sources, video_sources);
 
-  EXPECT_TRUE(dependency_factory_->CreateNativeLocalMediaStream(&stream_desc));
-  content::MediaStreamExtraData* extra_data =
-      static_cast<content::MediaStreamExtraData*>(stream_desc.extraData());
+  EXPECT_TRUE(dependency_factory_->EnsurePeerConnectionFactory());
+  dependency_factory_->CreateNativeLocalMediaStream(&stream_desc);
+  MediaStreamExtraData* extra_data = static_cast<MediaStreamExtraData*>(
+      stream_desc.extraData());
   ASSERT_TRUE(extra_data && extra_data->local_stream());
   EXPECT_EQ(0u, extra_data->local_stream()->video_tracks()->count());
   EXPECT_EQ(0u, extra_data->local_stream()->audio_tracks()->count());

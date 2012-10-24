@@ -31,16 +31,19 @@ class MediaStreamImplUnderTest : public MediaStreamImpl {
   }
 
   virtual void CompleteGetUserMediaRequest(
-       const WebKit::WebMediaStreamDescriptor& stream,
-       WebKit::WebUserMediaRequest* request) {
+      const WebKit::WebMediaStreamDescriptor& stream,
+      WebKit::WebUserMediaRequest* request_info,
+      bool request_succeeded) OVERRIDE {
     last_generated_stream_ = stream;
-  }
-
-  virtual WebKit::WebMediaStreamDescriptor GetMediaStream(const GURL& url) {
-    return last_generated_stream_;
+    EXPECT_TRUE(request_succeeded);
   }
 
   const WebKit::WebMediaStreamDescriptor& last_generated_stream() {
+    return last_generated_stream_;
+  }
+
+  virtual WebKit::WebMediaStreamDescriptor GetMediaStream(
+      const GURL& url) OVERRIDE {
     return last_generated_stream_;
   }
 
@@ -65,18 +68,8 @@ class MediaStreamImplTest : public ::testing::Test {
 
   WebKit::WebMediaStreamDescriptor RequestLocalMediaStream(bool audio,
                                                            bool video) {
-    WebKit::WebUserMediaRequest user_media_request;
-    WebKit::WebVector<WebKit::WebMediaStreamSource> audio_sources(
-        audio ? static_cast<size_t>(1) : 0);
-    WebKit::WebVector<WebKit::WebMediaStreamSource> video_sources(
-        video ? static_cast<size_t>(1) : 0);
-    ms_impl_->requestUserMedia(user_media_request, audio_sources,
-                               video_sources);
-
-    ms_impl_->OnStreamGenerated(ms_dispatcher_->request_id(),
-                                ms_dispatcher_->stream_label(),
-                                ms_dispatcher_->audio_array(),
-                                ms_dispatcher_->video_array());
+    GenerateSources(audio, video);
+    ChangeSourceStateToLive();
 
     WebKit::WebMediaStreamDescriptor desc = ms_impl_->last_generated_stream();
     content::MediaStreamExtraData* extra_data =
@@ -95,6 +88,27 @@ class MediaStreamImplTest : public ::testing::Test {
                 extra_data->local_stream()->video_tracks()->at(0)->label());
     }
     return desc;
+  }
+
+  void GenerateSources(bool audio, bool video) {
+    WebKit::WebUserMediaRequest user_media_request;
+    WebKit::WebVector<WebKit::WebMediaStreamSource> audio_sources(
+        audio ? static_cast<size_t>(1) : 0);
+    WebKit::WebVector<WebKit::WebMediaStreamSource> video_sources(
+        video ? static_cast<size_t>(1) : 0);
+    ms_impl_->requestUserMedia(user_media_request, audio_sources,
+                               video_sources);
+
+    ms_impl_->OnStreamGenerated(ms_dispatcher_->request_id(),
+                                ms_dispatcher_->stream_label(),
+                                ms_dispatcher_->audio_array(),
+                                ms_dispatcher_->video_array());
+  }
+
+  void ChangeSourceStateToLive() {
+    if(dependency_factory_->last_video_source() != NULL) {
+      dependency_factory_->last_video_source()->SetLive();
+    }
   }
 
  protected:
@@ -138,6 +152,14 @@ TEST_F(MediaStreamImplTest, LocalMediaStream) {
   // In the unit test the owning frame is NULL.
   ms_impl_->FrameWillClose(NULL);
   EXPECT_EQ(3, ms_dispatcher_->stop_stream_counter());
+}
+
+// This test what happens if MediaStreamImpl is deleted while the sources of a
+// MediaStream is being started. This only test that no crash occur.
+TEST_F(MediaStreamImplTest, DependencyFactoryShutDown) {
+  GenerateSources(true, true);
+  ms_impl_.reset();
+  ChangeSourceStateToLive();
 }
 
 }  // namespace content

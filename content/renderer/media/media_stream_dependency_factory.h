@@ -14,6 +14,7 @@
 #include "content/renderer/media/media_stream_extra_data.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
+#include "third_party/libjingle/source/talk/app/webrtc/videosourceinterface.h"
 
 namespace base {
 class WaitableEvent;
@@ -31,6 +32,7 @@ class PeerConnection;
 
 namespace WebKit {
 class WebFrame;
+class WebMediaConstraints;
 class WebMediaStreamDescriptor;
 class WebPeerConnection00Handler;
 class WebPeerConnection00HandlerClient;
@@ -49,6 +51,9 @@ class WebRtcAudioDeviceImpl;
 class CONTENT_EXPORT MediaStreamDependencyFactory
     : NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
+  // MediaSourcesCreatedCallback is used in CreateNativeMediaSources.
+  typedef base::Callback<void(WebKit::WebMediaStreamDescriptor* description,
+                              bool live)> MediaSourcesCreatedCallback;
   MediaStreamDependencyFactory(
       VideoCaptureImplManager* vc_manager,
       P2PSocketDispatcher* p2p_socket_dispatcher);
@@ -64,16 +69,29 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   WebKit::WebRTCPeerConnectionHandler* CreateRTCPeerConnectionHandler(
       WebKit::WebRTCPeerConnectionHandlerClient* client);
 
+  // CreateNativeMediaSources creates libjingle representations of
+  // the underlying sources to the tracks in |description|.
+  // |sources_created| is invoked when the sources have either been created and
+  // transitioned to a live state or failed.
+  // The libjingle sources is stored in the extra data field of
+  // WebMediaStreamSource.
+  // |audio_constraints| and |video_constraints| set parameters for the sources.
+  void CreateNativeMediaSources(
+      const WebKit::WebMediaConstraints& audio_constraints,
+      const WebKit::WebMediaConstraints& video_constraints,
+      WebKit::WebMediaStreamDescriptor* description,
+      const MediaSourcesCreatedCallback& sources_created);
+
   // Creates a libjingle representation of a MediaStream and stores
   // it in the extra data field of |description|.
-  bool CreateNativeLocalMediaStream(
+  void CreateNativeLocalMediaStream(
       WebKit::WebMediaStreamDescriptor* description);
 
   // Creates a libjingle representation of a MediaStream and stores
   // it in the extra data field of |description|.
-  // |stream_stopped| a is callback that is run when a MediaStream have been
+  // |stream_stopped| is a callback that is run when a MediaStream have been
   // stopped.
-  bool CreateNativeLocalMediaStream(
+  void CreateNativeLocalMediaStream(
       WebKit::WebMediaStreamDescriptor* description,
       const MediaStreamExtraData::StreamStopCallback& stream_stop);
 
@@ -112,11 +130,16 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   virtual scoped_refptr<webrtc::LocalMediaStreamInterface>
       CreateLocalMediaStream(const std::string& label);
 
+  // Asks the PeerConnection factory to create a Local Video Source.
+  virtual scoped_refptr<webrtc::VideoSourceInterface>
+      CreateVideoSource(int video_session_id,
+                        bool is_screen_cast,
+                        const webrtc::MediaConstraintsInterface* constraints);
+
   // Asks the PeerConnection factory to create a Local VideoTrack object.
-  virtual scoped_refptr<webrtc::LocalVideoTrackInterface>
+  virtual scoped_refptr<webrtc::VideoTrackInterface>
       CreateLocalVideoTrack(const std::string& label,
-                            int video_session_id,
-                            bool is_screencast);
+                            webrtc::VideoSourceInterface* source);
 
   // Asks the PeerConnection factory to create a Local AudioTrack object.
   virtual scoped_refptr<webrtc::LocalAudioTrackInterface>
@@ -124,13 +147,13 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
                             webrtc::AudioDeviceModule* audio_device);
 
   virtual bool EnsurePeerConnectionFactory();
+  virtual bool PeerConnectionFactoryCreated();
   virtual void SetAudioDeviceSessionId(int session_id);
 
  private:
   // Creates and deletes |pc_factory_|, which in turn is used for
   // creating PeerConnection objects.
   bool CreatePeerConnectionFactory();
-  bool PeerConnectionFactoryCreated();
 
   void InitializeWorkerThread(talk_base::Thread** thread,
                               base::WaitableEvent* event);

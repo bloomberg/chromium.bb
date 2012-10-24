@@ -355,7 +355,6 @@
         'renderer/hyphenator/hyphenator_unittest.cc',
         'renderer/media/audio_message_filter_unittest.cc',
         'renderer/media/audio_renderer_mixer_manager_unittest.cc',
-        'renderer/media/capture_video_decoder_unittest.cc',
         'renderer/media/video_capture_impl_unittest.cc',
         'renderer/media/video_capture_message_filter_unittest.cc',
         'renderer/paint_aggregator_unittest.cc',

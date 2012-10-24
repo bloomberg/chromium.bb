@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
+#include "content/renderer/media/rtc_media_constraints.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaConstraints.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCConfiguration.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCICECandidate.h"
@@ -105,20 +106,6 @@ static void GetNativeIceServers(
   }
 }
 
-static void GetNativeMediaConstraints(
-    const WebKit::WebVector<WebKit::WebMediaConstraint>& constraints,
-    webrtc::MediaConstraintsInterface::Constraints* native_constraints) {
-  DCHECK(native_constraints);
-  for (size_t i = 0; i < constraints.size(); ++i) {
-    webrtc::MediaConstraintsInterface::Constraint new_constraint;
-    new_constraint.key = constraints[i].m_name.utf8();
-    new_constraint.value = constraints[i].m_value.utf8();
-    DVLOG(3) << "MediaStreamConstraints:" << new_constraint.key
-             << " : " <<  new_constraint.value;
-    native_constraints->push_back(new_constraint);
-  }
-}
-
 // Class mapping responses from calls to libjingle CreateOffer/Answer and
 // the WebKit::WebRTCSessionDescriptionRequest.
 class CreateSessionDescriptionRequest
@@ -163,32 +150,6 @@ class SetSessionDescriptionRequest
 
  private:
   WebKit::WebRTCVoidRequest webkit_request_;
-};
-
-class RTCMediaConstraints : public webrtc::MediaConstraintsInterface {
- public:
-  explicit RTCMediaConstraints(
-      const WebKit::WebMediaConstraints& constraints) {
-    if (constraints.isNull())
-      return;  // Will happen in unit tests.
-    WebKit::WebVector<WebKit::WebMediaConstraint> mandatory;
-    constraints.getMandatoryConstraints(mandatory);
-    GetNativeMediaConstraints(mandatory, &mandatory_);
-    WebKit::WebVector<WebKit::WebMediaConstraint> optional;
-    constraints.getOptionalConstraints(optional);
-    GetNativeMediaConstraints(optional, &optional_);
-  }
-  virtual const Constraints& GetMandatory() const OVERRIDE {
-    return mandatory_;
-  }
-  virtual const Constraints& GetOptional() const OVERRIDE {
-    return optional_;
-  }
-  ~RTCMediaConstraints() {}
-
- private:
-  Constraints mandatory_;
-  Constraints optional_;
 };
 
 RTCPeerConnectionHandler::RTCPeerConnectionHandler(

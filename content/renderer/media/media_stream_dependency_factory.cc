@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_source_extra_data.h"
 #include "content/renderer/media/peer_connection_handler_jsep.h"
+#include "content/renderer/media/rtc_media_constraints.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #include "content/renderer/media/rtc_video_capturer.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
@@ -28,7 +29,7 @@
 #include "net/socket/nss_ssl_util.h"
 #endif
 
-namespace content{
+namespace content {
 
 class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
  public:
@@ -79,6 +80,82 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
   WebKit::WebFrame* web_frame_;
 };
 
+// SourceStateObserver is a help class used for observing the startup state
+// transition of webrtc media sources such as a camera or microphone.
+// An instance of the object deletes itself after use.
+// Usage:
+// 1. Create an instance of the object with the WebKit::WebMediaStreamDescriptor
+//    the observed sources belongs to a callback.
+// 2. Add the sources to the observer using AddSource.
+// 3. Call StartObserving()
+// 4. The callback will be triggered when all sources have transitioned from
+//    webrtc::MediaSourceInterface::kInitializing.
+class SourceStateObserver : public webrtc::ObserverInterface,
+                            public base::NonThreadSafe {
+ public:
+  SourceStateObserver(
+      WebKit::WebMediaStreamDescriptor* description,
+      const MediaStreamDependencyFactory::MediaSourcesCreatedCallback& callback)
+     : description_(description),
+       ready_callback_(callback),
+       live_(true) {
+  }
+
+  void AddSource(webrtc::MediaSourceInterface* source) {
+    DCHECK(CalledOnValidThread());
+    switch (source->state()) {
+      case webrtc::MediaSourceInterface::kInitializing:
+        sources_.push_back(source);
+        source->RegisterObserver(this);
+        break;
+      case webrtc::MediaSourceInterface::kLive:
+        // The source is already live so we don't need to wait for it.
+        break;
+      case webrtc::MediaSourceInterface::kEnded:
+        // The source have already failed.
+        live_ = false;
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  void StartObservering() {
+    DCHECK(CalledOnValidThread());
+    CheckIfSourcesAreLive();
+  }
+
+  virtual void OnChanged() {
+    DCHECK(CalledOnValidThread());
+    CheckIfSourcesAreLive();
+  }
+
+ private:
+  void CheckIfSourcesAreLive() {
+    ObservedSources::iterator it = sources_.begin();
+    while (it != sources_.end()) {
+      if ((*it)->state() != webrtc::MediaSourceInterface::kInitializing) {
+        live_ &=  (*it)->state() == webrtc::MediaSourceInterface::kLive;
+        (*it)->UnregisterObserver(this);
+        it = sources_.erase(it);
+      } else {
+        ++it;
+      }
+    }
+    if (sources_.empty()) {
+      ready_callback_.Run(description_, live_);
+      delete this;
+    }
+  }
+
+  WebKit::WebMediaStreamDescriptor* description_;
+  MediaStreamDependencyFactory::MediaSourcesCreatedCallback ready_callback_;
+  bool live_;
+  typedef std::vector<scoped_refptr<webrtc::MediaSourceInterface> >
+      ObservedSources;
+  ObservedSources sources_;
+};
+
 MediaStreamDependencyFactory::MediaStreamDependencyFactory(
     VideoCaptureImplManager* vc_manager,
     P2PSocketDispatcher* p2p_socket_dispatcher)
@@ -122,16 +199,50 @@ MediaStreamDependencyFactory::CreateRTCPeerConnectionHandler(
   return new RTCPeerConnectionHandler(client, this);
 }
 
-bool MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
+void MediaStreamDependencyFactory::CreateNativeMediaSources(
+    const WebKit::WebMediaConstraints& audio_constraints,
+    const WebKit::WebMediaConstraints& video_constraints,
+    WebKit::WebMediaStreamDescriptor* description,
+    const MediaSourcesCreatedCallback& sources_created) {
+  if (!EnsurePeerConnectionFactory()) {
+    sources_created.Run(description, false);
+    return;
+  }
+
+  // |source_observer| clean up itself when it has completed
+  // source_observer->StartObservering.
+  SourceStateObserver* source_observer =
+      new SourceStateObserver(description, sources_created);
+
+  // TODO(perkj): Implement local audio sources.
+
+  // Create local video sources.
+  RTCMediaConstraints native_video_constraints(video_constraints);
+  WebKit::WebVector<WebKit::WebMediaStreamComponent> video_components;
+  description->videoSources(video_components);
+  for (size_t i = 0; i < video_components.size(); ++i) {
+    const WebKit::WebMediaStreamSource& source = video_components[i].source();
+    MediaStreamSourceExtraData* source_data =
+        static_cast<MediaStreamSourceExtraData*>(source.extraData());
+    if (!source_data) {
+      // TODO(perkj): Implement support for sources from remote MediaStreams.
+      NOTIMPLEMENTED();
+      continue;
+    }
+    const bool is_screencast = (source_data->device_info().stream_type ==
+        content::MEDIA_TAB_VIDEO_CAPTURE);
+    source_data->SetVideoSource(
+        CreateVideoSource(source_data->device_info().session_id,
+                          is_screencast,
+                          &native_video_constraints));
+    source_observer->AddSource(source_data->video_source());
+  }
+  source_observer->StartObservering();
+}
+
+void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
     WebKit::WebMediaStreamDescriptor* description) {
-  // Creating the peer connection factory can fail if for example the audio
-  // (input or output) or video device cannot be opened. Handling such cases
-  // better is a higher level design discussion which involves the media
-  // manager, webrtc and libjingle. We cannot create any native
-  // track objects however, so we'll just have to skip that. Furthermore,
-  // creating a peer connection later on will fail if we don't have a factory.
-  if (!EnsurePeerConnectionFactory())
-    return false;
+  DCHECK(PeerConnectionFactoryCreated());
 
   std::string label = UTF16ToUTF8(description->label());
   scoped_refptr<webrtc::LocalMediaStreamInterface> native_stream =
@@ -169,35 +280,32 @@ bool MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
     const WebKit::WebMediaStreamSource& source = video_components[i].source();
     MediaStreamSourceExtraData* source_data =
         static_cast<MediaStreamSourceExtraData*>(source.extraData());
-    if (!source_data) {
+    if (!source_data || !source_data->video_source()) {
       // TODO(perkj): Implement support for sources from remote MediaStreams.
       NOTIMPLEMENTED();
       continue;
     }
-    const bool is_screencast = (source_data->device_info().stream_type ==
-                                    MEDIA_TAB_VIDEO_CAPTURE);
-    scoped_refptr<webrtc::LocalVideoTrackInterface> video_track(
+
+    scoped_refptr<webrtc::VideoTrackInterface> video_track(
         CreateLocalVideoTrack(UTF16ToUTF8(source.id()),
-                              source_data->device_info().session_id,
-                              is_screencast));
+                              source_data->video_source()));
+
     native_stream->AddTrack(video_track);
     video_track->set_enabled(video_components[i].isEnabled());
   }
 
-  description->setExtraData(new MediaStreamExtraData(native_stream));
-  return true;
+  MediaStreamExtraData* extra_data = new MediaStreamExtraData(native_stream);
+  description->setExtraData(extra_data);
 }
 
-bool MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
+void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
     WebKit::WebMediaStreamDescriptor* description,
     const MediaStreamExtraData::StreamStopCallback& stream_stop) {
-  if (!CreateNativeLocalMediaStream(description))
-    return false;
+  CreateNativeLocalMediaStream(description);
 
   MediaStreamExtraData* extra_data =
-      static_cast<MediaStreamExtraData*>(description->extraData());
+     static_cast<MediaStreamExtraData*>(description->extraData());
   extra_data->SetLocalStreamStopCallback(stream_stop);
-  return true;
 }
 
 bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
@@ -255,16 +363,25 @@ MediaStreamDependencyFactory::CreateLocalMediaStream(
   return pc_factory_->CreateLocalMediaStream(label).get();
 }
 
-scoped_refptr<webrtc::LocalVideoTrackInterface>
-MediaStreamDependencyFactory::CreateLocalVideoTrack(
-    const std::string& label,
+scoped_refptr<webrtc::VideoSourceInterface>
+MediaStreamDependencyFactory::CreateVideoSource(
     int video_session_id,
-    bool is_screencast) {
+    bool is_screencast,
+    const webrtc::MediaConstraintsInterface* constraints) {
   RtcVideoCapturer* capturer = new RtcVideoCapturer(
       video_session_id, vc_manager_.get(), is_screencast);
 
-  // The video track takes ownership of |capturer|.
-  return pc_factory_->CreateLocalVideoTrack(label, capturer).get();
+  // The video source takes ownership of |capturer|.
+  scoped_refptr<webrtc::VideoSourceInterface> source =
+      pc_factory_->CreateVideoSource(capturer, constraints).get();
+  return source;
+}
+
+scoped_refptr<webrtc::VideoTrackInterface>
+MediaStreamDependencyFactory::CreateLocalVideoTrack(
+    const std::string& label,
+    webrtc::VideoSourceInterface* source) {
+  return pc_factory_->CreateVideoTrack(label, source).get();
 }
 
 scoped_refptr<webrtc::LocalAudioTrackInterface>
