@@ -182,6 +182,11 @@ static const int kOverlayContentsOffsetY = 50;
 static const int kTableViewWidth = 300;
 static const int kTableViewHeight = 100;
 
+// Padding space in pixels between frozen icon to the info label, hung pages
+// list table view and the Kill pages button.
+static const int kCentralColumnPadding =
+    views::kUnrelatedControlLargeHorizontalSpacing;
+
 ///////////////////////////////////////////////////////////////////////////////
 // HungRendererDialogView, public:
 
@@ -384,8 +389,7 @@ void HungRendererDialogView::Init() {
   ColumnSet* column_set = layout->AddColumnSet(double_column_set_id);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
                         GridLayout::FIXED, frozen_icon_->width(), 0);
-  column_set->AddPaddingColumn(
-      0, views::kUnrelatedControlLargeHorizontalSpacing);
+  column_set->AddPaddingColumn(0, kCentralColumnPadding);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
 
@@ -422,7 +426,7 @@ void HungRendererDialogView::CreateKillButtonView() {
   const int single_column_set_id = 0;
   ColumnSet* column_set = layout->AddColumnSet(single_column_set_id);
   column_set->AddPaddingColumn(0, frozen_icon_->width() +
-      views::kPanelHorizMargin + views::kUnrelatedControlHorizontalSpacing);
+      kCentralColumnPadding);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
                         GridLayout::USE_PREF, 0, 0);
 
