@@ -217,7 +217,8 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
  * drive ready to operate.
  *
  * @param {string} mountPath GData mount path.
- * @param {function(boolean)} callback To be called when waiting finish.
+ * @param {function(boolean, FileError=)} callback To be called when waiting
+ *     finishes. If the case of error, there may be a FileError parameter.
  * @private
  */
 VolumeManager.prototype.waitGDataLoaded_ = function(mountPath, callback) {
@@ -282,7 +283,13 @@ VolumeManager.prototype.mountGData = function(successCallback, errorCallback) {
     timeout = null;
   }, VolumeManager.MOUNTING_DELAY);
   this.mount_('', 'gdata', function(mountPath) {
-    successCallback(mountPath);
+    this.waitGDataLoaded_(mountPath, function(success, error) {
+      if (success) {
+        successCallback(mountPath);
+      } else {
+        errorCallback(error);
+      }
+    });
   }, function(error) {
     if (self.getGDataStatus() != VolumeManager.GDataStatus.MOUNTED)
       self.setGDataStatus_(VolumeManager.GDataStatus.ERROR);

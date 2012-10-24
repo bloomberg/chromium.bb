@@ -1315,63 +1315,55 @@ DialogType.isModal = function(type) {
   FileManager.prototype.finishSetupCurrentDirectory_ = function(
       path, invokeHandlers) {
     if (invokeHandlers) {
-      // Keep track of whether the path is identified as an existing leaf
-      // node.  Note that onResolve is guaranteed to be called (exactly once)
-      // before onLoadedActivateLeaf.
-      var foundLeaf = true;
       var onResolve = function(baseName, leafName, exists) {
+        var galleryUrls = null;
+
         if (!exists || leafName == '') {
           // Non-existent file or a directory.
-          foundLeaf = false;
           if (this.params_.gallery) {
             // Reloading while the Gallery is open with empty or multiple
             // selection. Open the Gallery when the directory is scanned.
-            var listener = function() {
-              this.directoryModel_.removeEventListener(
-                  'scan-completed', listener);
-              new FileTasks(this, this.params_).openGallery([]);
-            }.bind(this);
-            this.directoryModel_.addEventListener('scan-completed', listener);
-          } else {
-            this.show_();  // Remove the shade immediately.
+            galleryUrls = [];
+          }
+        } else {
+          // There are 3 ways we can get here:
+          // 1. Invoked from file_manager_util::ViewFile. This can only
+          //    happen for 'gallery' and 'mount-archive' actions.
+          // 2. Reloading a Gallery page. Must be an image or a video file.
+          // 3. A user manually entered a URL pointing to a file.
+          // We call the appropriate methods of FileTasks directly as we do
+          // not need any of the preparations that |execute| method does.
+          if (FileType.isImageOrVideo(path)) {
+            galleryUrls = [util.makeFilesystemUrl(path)];
+          }
+          if (FileType.getMediaType(path) == 'archive') {
+            new FileTasks(this, this.params_).mountArchives_(
+                [util.makeFilesystemUrl(path)]);
           }
         }
-      }.bind(this);
 
-      // TODO(dgozman): get rid of onLoadedActivate callback in setupPath.
-      var onLoadedActivateLeaf = function() {
-        if (!foundLeaf) return;
-        // TODO(kaznacheev): use |makeFIlesystemUrl| instead of
-        // this.getSelection().
-        var urls = [this.getSelection().urls[0]];
-        var tasks = new FileTasks(this, this.params_);
-        // There are 3 ways we can get here:
-        // 1. Invoked from file_manager_util::ViewFile. This can only
-        //    happen for 'gallery' and 'mount-archive' actions.
-        // 2. Reloading a Gallery page. Must be an image or a video file.
-        // 3. A user manually entered a URL pointing to a file.
-        // We call the appropriate methods of FileTasks directly as we do
-        // not need any of the preparations that |execute| method does.
-        if (FileType.isImageOrVideo(path)) {
-          tasks.openGallery(urls);
-        } else if (FileType.getMediaType(path) == 'archive') {
-          this.show_();
-          tasks.mountArchives_(urls);
+        if (galleryUrls) {
+          // Opening gallery will invoke |this.show_| at the right time.
+          var listener = function() {
+            this.directoryModel_.removeEventListener(
+                'scan-completed', listener);
+            new FileTasks(this, this.params_).openGallery(galleryUrls);
+          }.bind(this);
+          this.directoryModel_.addEventListener('scan-completed', listener);
         } else {
           this.show_();
         }
       }.bind(this);
 
-      this.directoryModel_.setupPath(path, onLoadedActivateLeaf, onResolve);
+      this.directoryModel_.setupPath(path, onResolve);
       return;
     }
 
     if (this.dialogType == DialogType.SELECT_SAVEAS_FILE) {
-      this.directoryModel_.setupPath(path, undefined,
-          function(basePath, leafName) {
-            this.filenameInput_.value = leafName;
-            this.selectDefaultPathInFilenameInput_();
-          }.bind(this));
+      this.directoryModel_.setupPath(path, function(basePath, leafName) {
+        this.filenameInput_.value = leafName;
+        this.selectDefaultPathInFilenameInput_();
+      }.bind(this));
       return;
     }
 

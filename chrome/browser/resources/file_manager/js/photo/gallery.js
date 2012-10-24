@@ -809,6 +809,9 @@ Gallery.prototype.updateThumbnails_ = function() {
   if (this.currentMode_ == this.slideMode_)
     this.slideMode_.updateThumbnails();
 
-  if (this.mosaicMode_)
-    this.mosaicMode_.getMosaic().reload();
+  if (this.mosaicMode_) {
+    var mosaic = this.mosaicMode_.getMosaic();
+    if (mosaic.isInitialized())
+      mosaic.reload();
+  }
 };

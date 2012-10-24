@@ -138,6 +138,13 @@ Mosaic.prototype.init = function() {
 };
 
 /**
+ * @return {boolean} Whether mosaic is initialized.
+ */
+Mosaic.prototype.isInitialized = function() {
+  return !!this.tiles_;
+};
+
+/**
  * Start listening to events.
  *
  * We keep listening to events even when the mosaic is hidden in order to
