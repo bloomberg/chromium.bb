@@ -232,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
 // Tests that onunload is run for cross-site requests to URLs that complete
 // without network loads (e.g., about:blank, data URLs).
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
-                       CrossSiteImmediateLoadOnunloadCookie) {
+                       DISABLED_CrossSiteImmediateLoadOnunloadCookie) {
   ASSERT_TRUE(test_server()->Start());
 
   GURL url = test_server()->GetURL("files/onunload_cookie.html");
