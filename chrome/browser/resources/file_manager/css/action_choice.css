@@ -115,15 +115,10 @@ button:focus {
   width: 100%;
 }
 
-.choices {
-  margin: 5px 0;
-}
-
 .choices > div {
-  -webkit-box-align: start;
+  -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   display: -webkit-box;
-  margin: 20px 0;
 }
 
 .choices > div > * {
@@ -131,25 +126,30 @@ button:focus {
   margin: 0 3px;
 }
 
+.choices label {
+  background-position: 0 6px;
+  background-repeat: no-repeat;
+  height: 26px;
+  padding-left: 38px;
+  padding-top: 14px;
+}
+
 .choices label[for=import-photos-to-drive] {
-  background: -webkit-image-set(
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_DRIVE') 1x,
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_DRIVE@2x') 2x) no-repeat;
-  padding-left: 20px;
+  background-image: -webkit-image-set(
+    url('../images/media/drive.png') 1x,
+    url('../images/media/2x/drive.png') 2x);
 }
 
 .choices label[for=view-files] {
-  background: -webkit-image-set(
-    url('../images/icon16.png') 1x,
-    url('../images/icon32.png') 2x) no-repeat;
-  padding-left: 20px;
+  background-image: -webkit-image-set(
+    url('../images/icon32.png') 1x,
+    url('../images/icon64.png') 2x);
 }
 
 .choices label[for=watch-single-video] {
-  background: -webkit-image-set(
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_VIDEO') 1x,
-    url('chrome://theme/IDR_FILE_MANAGER_IMG_FILETYPE_VIDEO@2x') 2x) no-repeat;
-  padding-left: 20px;
+  background-image: -webkit-image-set(
+    url('../images/media/watch.png') 1x,
+    url('../images/media/2x/watch.png') 2x);
 }
 
 .footer {
