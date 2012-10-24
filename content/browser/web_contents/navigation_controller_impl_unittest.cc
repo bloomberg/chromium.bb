@@ -108,6 +108,25 @@ class NavigationControllerTest : public RenderViewHostImplTestHarness {
   NavigationControllerImpl& controller_impl() {
     return static_cast<NavigationControllerImpl&>(controller());
   }
+
+  bool DoImagesMatch(const gfx::Image& a, const gfx::Image& b) {
+    // Assume that if the 1x bitmaps match, the images match.
+    SkBitmap a_bitmap = a.AsBitmap();
+    SkBitmap b_bitmap = b.AsBitmap();
+
+    if (a_bitmap.width() != b_bitmap.width() ||
+        a_bitmap.height() != b_bitmap.height()) {
+      return false;
+    }
+
+    SkAutoLockPixels a_bitmap_lock(a_bitmap);
+    SkAutoLockPixels b_bitmap_lock(b_bitmap);
+
+    return memcmp(a_bitmap.getPixels(),
+                  b_bitmap.getPixels(),
+                  b_bitmap.getSize()) == 0;
+
+  }
 };
 
 void RegisterForAllNavNotifications(TestNotificationTracker* tracker,
@@ -2887,6 +2906,98 @@ TEST_F(NavigationControllerTest, IsInitialNavigation) {
 
   // After commit, it stays false.
   EXPECT_FALSE(controller.IsInitialNavigation());
+}
+
+// Check that the favicon is not reused across a client redirect.
+// (crbug.com/28515)
+TEST_F(NavigationControllerTest, ClearFaviconOnRedirect) {
+  const GURL kPageWithFavicon("http://withfavicon.html");
+  const GURL kPageWithoutFavicon("http://withoutfavicon.html");
+  const GURL kIconURL("http://withfavicon.ico");
+  const gfx::Image kDefaultFavicon = content::FaviconStatus().image;
+
+  NavigationControllerImpl& controller = controller_impl();
+  content::TestNotificationTracker notifications;
+  RegisterForAllNavNotifications(&notifications, &controller);
+
+  test_rvh()->SendNavigate(0, kPageWithFavicon);
+  EXPECT_TRUE(notifications.Check1AndReset(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED));
+
+  content::NavigationEntry* entry = controller.GetLastCommittedEntry();
+  EXPECT_TRUE(entry);
+  EXPECT_EQ(kPageWithFavicon, entry->GetURL());
+
+  // Simulate Chromium having set the favicon for |kPageWithFavicon|.
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
+  bitmap.allocPixels();
+
+  content::FaviconStatus& favicon_status = entry->GetFavicon();
+  favicon_status.image = gfx::Image(bitmap);
+  favicon_status.url = kIconURL;
+  favicon_status.valid = true;
+  EXPECT_FALSE(DoImagesMatch(kDefaultFavicon, entry->GetFavicon().image));
+
+  test_rvh()->SendNavigateWithTransition(
+      0, // same page ID.
+      kPageWithoutFavicon,
+      content::PAGE_TRANSITION_CLIENT_REDIRECT);
+  EXPECT_TRUE(notifications.Check1AndReset(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED));
+
+  entry = controller.GetLastCommittedEntry();
+  EXPECT_TRUE(entry);
+  EXPECT_EQ(kPageWithoutFavicon, entry->GetURL());
+
+  EXPECT_TRUE(DoImagesMatch(kDefaultFavicon, entry->GetFavicon().image));
+}
+
+// Check that the favicon is not cleared for NavigationEntries which were
+// previously navigated to.
+TEST_F(NavigationControllerTest, BackNavigationDoesNotClearFavicon) {
+  const GURL kUrl1("http://www.a.com/1");
+  const GURL kUrl2("http://www.a.com/2");
+  const GURL kIconURL("http://www.a.com/1/favicon.ico");
+
+  NavigationControllerImpl& controller = controller_impl();
+  content::TestNotificationTracker notifications;
+  RegisterForAllNavNotifications(&notifications, &controller);
+
+  test_rvh()->SendNavigate(0, kUrl1);
+  EXPECT_TRUE(notifications.Check1AndReset(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED));
+
+  // Simulate Chromium having set the favicon for |kUrl1|.
+  SkBitmap favicon_bitmap;
+  favicon_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
+  favicon_bitmap.allocPixels();
+
+  content::NavigationEntry* entry = controller.GetLastCommittedEntry();
+  EXPECT_TRUE(entry);
+  content::FaviconStatus& favicon_status = entry->GetFavicon();
+  favicon_status.image = gfx::Image(favicon_bitmap);
+  favicon_status.url = kIconURL;
+  favicon_status.valid = true;
+
+  // Navigate to another page and go back to the original page.
+  test_rvh()->SendNavigate(1, kUrl2);
+  EXPECT_TRUE(notifications.Check1AndReset(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED));
+  test_rvh()->SendNavigateWithTransition(
+      0,
+      kUrl1,
+      content::PAGE_TRANSITION_FORWARD_BACK);
+  EXPECT_TRUE(notifications.Check1AndReset(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED));
+
+  // Verify that the favicon for the page at |kUrl1| was not cleared.
+  gfx::Image favicon_after_back;
+  entry = controller.GetEntryAtIndex(0);
+  EXPECT_TRUE(entry);
+  EXPECT_EQ(kUrl1, entry->GetURL());
+  EXPECT_TRUE(DoImagesMatch(gfx::Image(favicon_bitmap),
+                            entry->GetFavicon().image));
 }
 
 /* TODO(brettw) These test pass on my local machine but fail on the XP buildbot

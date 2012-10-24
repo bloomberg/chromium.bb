@@ -993,12 +993,18 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
          entry_index < static_cast<int>(entries_.size()));
   NavigationEntryImpl* entry = entries_[entry_index].get();
 
-  // The URL may have changed due to redirects. The site instance will normally
-  // be the same except during session restore, when no site instance will be
-  // assigned.
+  // The URL may have changed due to redirects.
   entry->SetURL(params.url);
   if (entry->update_virtual_url_with_url())
     UpdateVirtualURLToURL(entry, params.url);
+
+  // The redirected to page should not inherit the favicon from the previous
+  // page.
+  if (PageTransitionIsRedirect(params.transition))
+    entry->GetFavicon() = content::FaviconStatus();
+
+  // The site instance will normally be the same except during session restore,
+  // when no site instance will be assigned.
   DCHECK(entry->site_instance() == NULL ||
          entry->site_instance() == web_contents_->GetSiteInstance());
   entry->set_site_instance(
