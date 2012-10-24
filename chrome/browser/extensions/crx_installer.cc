@@ -404,8 +404,13 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
 
 void CrxInstaller::CheckRequirements() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!frontend_weak_.get() || frontend_weak_->browser_terminating())
+  if (!frontend_weak_.get())
     return;
+#if defined(OS_CHROMEOS)
+  // TODO(jamescook): Remove ifdef after M23 backport, crbug.com/155994
+  if (frontend_weak_->browser_terminating())
+    return;
+#endif
   AddRef();  // Balanced in OnRequirementsChecked().
   requirements_checker_->Check(extension_,
                                base::Bind(&CrxInstaller::OnRequirementsChecked,
@@ -430,8 +435,13 @@ void CrxInstaller::OnRequirementsChecked(
 
 void CrxInstaller::ConfirmInstall() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!frontend_weak_.get() || frontend_weak_->browser_terminating())
+  if (!frontend_weak_.get())
     return;
+#if defined(OS_CHROMEOS)
+  // TODO(jamescook): Remove ifdef after M23 backport, crbug.com/155994
+  if (frontend_weak_->browser_terminating())
+    return;
+#endif
 
   string16 error;
   if (!ExtensionSystem::Get(profile_)->management_policy()->
@@ -607,8 +617,13 @@ void CrxInstaller::ReportSuccessFromFileThread() {
 void CrxInstaller::ReportSuccessFromUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!frontend_weak_.get() || frontend_weak_->browser_terminating())
+  if (!frontend_weak_.get())
     return;
+#if defined(OS_CHROMEOS)
+  // TODO(jamescook): Remove ifdef after M23 backport, crbug.com/155994
+  if (frontend_weak_->browser_terminating())
+    return;
+#endif
 
   // If there is a client, tell the client about installation.
   if (client_) {
