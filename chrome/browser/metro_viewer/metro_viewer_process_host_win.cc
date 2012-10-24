@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/ui/ash/ash_init.h"
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ui/aura/remote_root_window_host_win.h"
@@ -55,6 +56,8 @@ void MetroViewerProcessHost::OnSetTargetSurface(
     gfx::NativeViewId target_surface) {
   DLOG(INFO) << __FUNCTION__ << ", target_surface = " << target_surface;
   HWND hwnd = reinterpret_cast<HWND>(target_surface);
+
+  chrome::OpenAsh();
 
   scoped_refptr<AcceleratedPresenter> any_window =
       AcceleratedPresenter::GetForWindow(NULL);
