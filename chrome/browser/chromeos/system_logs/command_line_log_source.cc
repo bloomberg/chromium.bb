@@ -41,6 +41,11 @@ void ExecuteCommandLines(chromeos::SystemLogsResponse* response) {
   command.AppendArg("-query");
   commands.push_back(std::make_pair("setxkbmap", command));
 
+  command = CommandLine(FilePath("/usr/bin/xinput"));
+  command.AppendArg("list");
+  command.AppendArg("--long");
+  commands.push_back(std::make_pair("xinput", command));
+
   command = CommandLine(FilePath("/usr/bin/xrandr"));
   command.AppendArg("--verbose");
   commands.push_back(std::make_pair("xrandr", command));
