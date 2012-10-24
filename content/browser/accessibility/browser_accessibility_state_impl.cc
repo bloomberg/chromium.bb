@@ -49,6 +49,9 @@ BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
 
   // UpdateHistogram only takes a couple of milliseconds, but run it on
   // the FILE thread to guarantee there's no jank.
+  // And we need to AddRef() the leaky singleton so that Bind doesn't
+  // delete it prematurely.
+  AddRef();
   content::BrowserThread::PostDelayedTask(
       content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&BrowserAccessibilityStateImpl::UpdateHistogram, this),
