@@ -13,7 +13,7 @@ body {
   cursor: default;
 }
 
-browser {
+webview {
   display: inline-block;
 }
 

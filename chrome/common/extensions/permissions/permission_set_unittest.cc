@@ -655,7 +655,6 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kAppRuntime);
   skip.insert(APIPermission::kAppWindow);
   skip.insert(APIPermission::kAppCurrentWindowInternal);
-  skip.insert(APIPermission::kBrowserTag);
   skip.insert(APIPermission::kBrowsingData);
   skip.insert(APIPermission::kContextMenus);
   skip.insert(APIPermission::kFontSettings);
@@ -665,6 +664,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kUnlimitedStorage);
   skip.insert(APIPermission::kStorage);
   skip.insert(APIPermission::kTts);
+  skip.insert(APIPermission::kWebView);
 
   // TODO(erikkay) add a string for this permission.
   skip.insert(APIPermission::kBackground);

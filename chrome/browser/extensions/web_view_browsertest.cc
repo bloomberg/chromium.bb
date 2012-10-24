@@ -13,7 +13,7 @@
 #include "ui/compositor/compositor_setup.h"
 #include "ui/gl/gl_switches.h"
 
-class BrowserTagTest : public extensions::PlatformAppBrowserTest {
+class WebViewTest : public extensions::PlatformAppBrowserTest {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) {
     extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
@@ -26,16 +26,16 @@ class BrowserTagTest : public extensions::PlatformAppBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(BrowserTagTest, Shim) {
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/browser_tag")) << message_;
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim) {
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserTagTest, ShimSrcAttribute) {
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/browser_tag_src_attribute"))
+IN_PROC_BROWSER_TEST_F(WebViewTest, ShimSrcAttribute) {
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view_src_attribute"))
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserTagTest, Isolation) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, Isolation) {
   ASSERT_TRUE(StartTestServer());
   const std::wstring kExpire =
       L"var expire = new Date(Date.now() + 24 * 60 * 60 * 1000);";
@@ -54,10 +54,10 @@ IN_PROC_BROWSER_TEST_F(BrowserTagTest, Isolation) {
       "files/extensions/platform_apps/isolation/set_cookie.html");
   set_cookie_url = set_cookie_url.ReplaceComponents(replace_host);
   GURL tag_url1 = test_server()->GetURL(
-      "files/extensions/platform_apps/browser_tag_isolation/cookie.html");
+      "files/extensions/platform_apps/web_view_isolation/cookie.html");
   tag_url1 = tag_url1.ReplaceComponents(replace_host);
   GURL tag_url2 = test_server()->GetURL(
-      "files/extensions/platform_apps/browser_tag_isolation/cookie2.html");
+      "files/extensions/platform_apps/web_view_isolation/cookie2.html");
   tag_url2 = tag_url2.ReplaceComponents(replace_host);
 
   // Load a (non-app) page under the "localhost" origin that sets a cookie.
@@ -76,7 +76,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTagTest, Isolation) {
       tag_url1, content::NotificationService::AllSources());
   ui_test_utils::UrlLoadObserver observer2(
       tag_url2, content::NotificationService::AllSources());
-  LoadAndLaunchPlatformApp("browser_tag_isolation");
+  LoadAndLaunchPlatformApp("web_view_isolation");
   observer1.Wait();
   observer2.Wait();
 

@@ -48,10 +48,6 @@
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
   },
-  "browserTag": {
-    "channel": "dev",
-    "extension_types": ["extension", "platform_app"]
-  },
   "browsingData": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
@@ -363,5 +359,9 @@
   "webRequestBlocking": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
+  },
+  "webview": {
+    "channel": "dev",
+    "extension_types": ["platform_app"]
   }
 }

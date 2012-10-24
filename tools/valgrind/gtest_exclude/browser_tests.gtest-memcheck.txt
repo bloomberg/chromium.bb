@@ -21,7 +21,6 @@ BrowserEncodingTest.SLOW_TestEncodingAliasMapping
 BrowserNavigatorTest.Disposition_Bookmarks_DoNothingIfIncognitoIsForced
 BrowserNavigatorTest.Disposition_Incognito
 BrowserNavigatorTest.Disposition_SyncPromo_DoNothingIfIncognitoIsForced
-BrowserTagTest.Shim
 BrowserTest.ForwardDisabledOnForward
 ClickToPlayPluginTest.Basic
 ClickToPlayPluginTest.LoadAllBlockedPlugins
@@ -58,3 +57,4 @@ SafeBrowsingBlockingPageTest.ProceedDisabled
 SocketApiTest.SocketTCPExtension
 SocketApiTest.SocketUDPExtension
 SSLUITest.TestWSSInvalidCertAndGoForward
+WebViewTest.Shim

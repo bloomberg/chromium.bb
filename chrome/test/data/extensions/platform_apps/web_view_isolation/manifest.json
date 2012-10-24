@@ -1,5 +1,5 @@
 {
-  "name": "Platform App Test: browser tag isolation",
+  "name": "Platform App Test: web view isolation",
   "version": "1",
   "app": {
     "background": {

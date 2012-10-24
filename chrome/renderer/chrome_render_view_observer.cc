@@ -493,8 +493,8 @@ bool ChromeRenderViewObserver::allowWebComponents(const WebDocument& document,
     if (extension->HasAPIPermission(APIPermission::kAppWindow))
       return true;
 
-    // The <browser> tag is implemented via Shadow DOM.
-    if (extension->HasAPIPermission(APIPermission::kBrowserTag))
+    // The <webview> tag is implemented via Shadow DOM.
+    if (extension->HasAPIPermission(APIPermission::kWebView))
       return true;
 
     if (extension->HasAPIPermission(APIPermission::kExperimental))

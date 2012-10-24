@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Shim that simulates a <browser> tag via Mutation Observers.
+// Shim that simulates a <webview> tag via Mutation Observers.
 //
 // The actual tag is implemented via the browser plugin. The internals of this
 // are hidden via Shadow DOM.
 
-var BROWSER_TAG_ATTRIBUTES = ['src', 'width', 'height'];
+var WEB_VIEW_ATTRIBUTES = ['src', 'width', 'height'];
 
-var BROWSER_TAG_READONLY_ATTRIBUTES = ['contentWindow'];
+var WEB_VIEW_READONLY_ATTRIBUTES = ['contentWindow'];
 
-// All exposed api methods for <browser>, these are forwarded to the browser
+// All exposed api methods for <webview>, these are forwarded to the browser
 // plugin.
-var BROWSER_TAG_API_METHODS = [
+var WEB_VIEW_API_METHODS = [
     'addEventListener',
     'back',
     'canGoBack',
@@ -28,18 +28,18 @@ var BROWSER_TAG_API_METHODS = [
     ];
 
 window.addEventListener('DOMContentLoaded', function() {
-  // Handle <browser> tags already in the document.
-  var browserNodes = document.body.querySelectorAll('browser');
-  for (var i = 0, browserNode; browserNode = browserNodes[i]; i++) {
-    new BrowserTag(browserNode);
+  // Handle <webview> tags already in the document.
+  var webViewNodes = document.body.querySelectorAll('webview');
+  for (var i = 0, webViewNode; webViewNode = webViewNodes[i]; i++) {
+    new WebView(webViewNode);
   }
 
-  // Handle <browser> tags added later.
+  // Handle <webview> tags added later.
   var documentObserver = new WebKitMutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
       for (var i = 0, addedNode; addedNode = mutation.addedNodes[i]; i++) {
-        if (addedNode.tagName == 'BROWSER') {
-          new BrowserTag(addedNode);
+        if (addedNode.tagName == 'WEBVIEW') {
+          new WebView(addedNode);
         }
       }
     });
@@ -50,23 +50,23 @@ window.addEventListener('DOMContentLoaded', function() {
 /**
  * @constructor
  */
-function BrowserTag(node) {
+function WebView(node) {
   this.node_ = node;
   var shadowRoot = new WebKitShadowRoot(node);
 
   this.objectNode_ = document.createElement('object');
   this.objectNode_.type = 'application/browser-plugin';
-  BROWSER_TAG_ATTRIBUTES.forEach(this.copyAttribute_, this);
+  WEB_VIEW_ATTRIBUTES.forEach(this.copyAttribute_, this);
 
   shadowRoot.appendChild(this.objectNode_);
 
   // this.objectNode_[apiMethod] are defined after the shadow object is appended
   // to the shadow root.
-  BROWSER_TAG_API_METHODS.forEach(function(apiMethod) {
+  WEB_VIEW_API_METHODS.forEach(function(apiMethod) {
     node[apiMethod] = this.objectNode_[apiMethod].bind(this.objectNode_);
   }, this);
 
-  // Map attribute modifications on the <browser> tag to changes on the
+  // Map attribute modifications on the <webview> tag to changes on the
   // underlying <object> node.
   var handleMutation = this.handleMutation_.bind(this);
   var observer = new WebKitMutationObserver(function(mutations) {
@@ -74,11 +74,11 @@ function BrowserTag(node) {
   });
   observer.observe(
       this.node_,
-      {attributes: true, attributeFilter: BROWSER_TAG_ATTRIBUTES});
+      {attributes: true, attributeFilter: WEB_VIEW_ATTRIBUTES});
 
   var objectNode = this.objectNode_;
   // Expose getters and setters for the attributes.
-  BROWSER_TAG_ATTRIBUTES.forEach(function(attributeName) {
+  WEB_VIEW_ATTRIBUTES.forEach(function(attributeName) {
     Object.defineProperty(this.node_, attributeName, {
       get: function() {
         if (attributeName == 'src') {
@@ -100,7 +100,7 @@ function BrowserTag(node) {
 
   // We cannot use {writable: true} property descriptor because we want dynamic
   // getter value.
-  BROWSER_TAG_READONLY_ATTRIBUTES.forEach(function(attributeName) {
+  WEB_VIEW_READONLY_ATTRIBUTES.forEach(function(attributeName) {
     Object.defineProperty(this.node_, attributeName, {
       get: function() {
         // Read these attributes from the plugin <object>.
@@ -115,7 +115,7 @@ function BrowserTag(node) {
 /**
  * @private
  */
-BrowserTag.prototype.handleMutation_ = function(mutation) {
+WebView.prototype.handleMutation_ = function(mutation) {
   switch (mutation.attributeName) {
     case 'src':
       // We need to set .src directly on the shadow element so that
@@ -133,7 +133,7 @@ BrowserTag.prototype.handleMutation_ = function(mutation) {
 /**
  * @private
  */
-BrowserTag.prototype.copyAttribute_ = function(attributeName) {
+WebView.prototype.copyAttribute_ = function(attributeName) {
   this.objectNode_.setAttribute(
       attributeName, this.node_.getAttribute(attributeName));
 };

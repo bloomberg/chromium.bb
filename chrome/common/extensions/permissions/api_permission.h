@@ -48,7 +48,6 @@ class APIPermission {
     kBluetooth,
     kBookmark,
     kBookmarkManagerPrivate,
-    kBrowserTag,
     kBrowsingData,
     kChromeosInfoPrivate,
     kClipboardRead,
@@ -109,6 +108,7 @@ class APIPermission {
     kWebRequestInternal,
     kWebSocketProxyPrivate,
     kWebstorePrivate,
+    kWebView,
     kEnumBoundary
   };
 

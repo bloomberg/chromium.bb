@@ -190,7 +190,6 @@ void APIPermissionInfo::RegisterAllPermissions(
     { APIPermission::kBookmark, "bookmarks", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS,
       PermissionMessage::kBookmarks },
-    { APIPermission::kBrowserTag, "browserTag", kFlagCannotBeOptional },
     { APIPermission::kBrowsingData, "browsingData" },
     { APIPermission::kContentSettings, "contentSettings", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_CONTENT_SETTINGS,
@@ -231,6 +230,7 @@ void APIPermissionInfo::RegisterAllPermissions(
       IDS_EXTENSION_PROMPT_WARNING_TABS, PermissionMessage::kTabs },
     { APIPermission::kWebRequest, "webRequest" },
     { APIPermission::kWebRequestBlocking, "webRequestBlocking" },
+    { APIPermission::kWebView, "webview", kFlagCannotBeOptional },
 
     // Register private permissions.
     { APIPermission::kBookmarkManagerPrivate, "bookmarkManagerPrivate",

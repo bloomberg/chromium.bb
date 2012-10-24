@@ -1,8 +1,8 @@
 {
-  "name": "Platform App Test: <browser>",
+  "name": "Platform App Test: <webview>",
   "version": "1",
   "permissions": [
-    "browserTag"
+    "webview"
   ],
   "app": {
     "background": {

@@ -682,9 +682,9 @@ void Dispatcher::PopulateSourceMap() {
   // Platform app sources that are not API-specific..
   const CommandLine& command_line = *(CommandLine::ForCurrentProcess());
   if (command_line.HasSwitch(switches::kEnableBrowserPluginOldImplementation))
-    source_map_.RegisterSource("browserTag", IDR_BROWSER_TAG_OLD_JS);
+    source_map_.RegisterSource("webview", IDR_WEB_VIEW_OLD_JS);
   else
-    source_map_.RegisterSource("browserTag", IDR_BROWSER_TAG_JS);
+    source_map_.RegisterSource("webview", IDR_WEB_VIEW_JS);
   source_map_.RegisterSource("platformApp", IDR_PLATFORM_APP_JS);
   source_map_.RegisterSource("injectAppTitlebar", IDR_INJECT_APP_TITLEBAR_JS);
 }
@@ -811,8 +811,8 @@ void Dispatcher::DidCreateScriptContext(
     module_system->Require("platformApp");
 
   if (context_type == Feature::BLESSED_EXTENSION_CONTEXT &&
-      extension->HasAPIPermission(APIPermission::kBrowserTag)) {
-    module_system->Require("browserTag");
+      extension->HasAPIPermission(APIPermission::kWebView)) {
+    module_system->Require("webview");
   }
 
   context->set_module_system(module_system.Pass());
