@@ -412,4 +412,24 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, NoCallbackAtLoad) {
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
+IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, DeleteSelfAtLoad) {
+  browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
+
+  GURL url = ui_test_utils::GetTestUrl(
+      FilePath(), FilePath().AppendASCII("plugin_delete_self_at_load.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  string16 expected_title(ASCIIToUTF16("OK"));
+  content::TitleWatcher title_watcher(
+      chrome::GetActiveWebContents(browser()), expected_title);
+
+  content::RenderViewHost* host =
+      chrome::GetActiveWebContents(browser())->GetRenderViewHost();
+  host->Send(new ChromeViewMsg_LoadBlockedPlugins(
+      host->GetRoutingID(), std::string()));
+
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+}
+
 #endif  // !defined(USE_AURA)

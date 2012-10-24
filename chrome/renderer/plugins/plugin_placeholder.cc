@@ -323,12 +323,22 @@ void PluginPlaceholder::ReplacePlugin(WebPlugin* new_plugin) {
     return;
   }
 
-  // Set the new plug-in on the container before initializing it.
   WebPluginContainer* container = plugin_->container();
+  // Set the new plug-in on the container before initializing it.
   container->setPlugin(new_plugin);
+  // Save the element in case the plug-in is removed from the page during
+  // initialization.
+  WebElement element = container->element();
   if (!new_plugin->initialize(container)) {
     // We couldn't initialize the new plug-in. Restore the old one and abort.
     container->setPlugin(plugin_);
+    return;
+  }
+
+  // The plug-in has been removed from the page. Destroy the old plug-in
+  // (which will destroy us).
+  if (element.parentNode().isNull()) {
+    plugin_->destroy();
     return;
   }
 
