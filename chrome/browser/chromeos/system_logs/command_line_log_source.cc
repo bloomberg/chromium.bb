@@ -33,7 +33,7 @@ void ExecuteCommandLines(chromeos::SystemLogsResponse* response) {
   command.AppendArg("--dump_server_info");
   commands.push_back(std::make_pair("cras", command));
 
-  command = CommandLine((FilePath("set")));
+  command = CommandLine((FilePath("/usr/bin/printenv")));
   commands.push_back(std::make_pair("env", command));
 
   command = CommandLine(FilePath("/usr/bin/setxkbmap"));
