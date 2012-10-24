@@ -148,13 +148,13 @@ scons-bot() {
 
 spec2k-x86-bot() {
   #download-toolchain
-  CLOBBER=no ${SPEC2K_SCRIPT} pnacl-x8632 || RETCODE=$?
-  CLOBBER=no ${SPEC2K_SCRIPT} pnacl-x8664 || RETCODE=$?
+  CLOBBER=no ${SPEC2K_SCRIPT} pnacl-trybot-x8632 || RETCODE=$?
+  CLOBBER=no ${SPEC2K_SCRIPT} pnacl-trybot-x8664 || RETCODE=$?
 }
 
 spec2k-arm-bot() {
   #download-toolchain
-  CLOBBER=no ${SPEC2K_SCRIPT} pnacl-arm || RETCODE=$?
+  CLOBBER=no ${SPEC2K_SCRIPT} pnacl-trybot-arm-qemu || RETCODE=$?
 }
 
 if [[ $# -eq 0 ]] ; then
