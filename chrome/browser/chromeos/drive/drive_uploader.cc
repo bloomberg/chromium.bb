@@ -417,16 +417,21 @@ void DriveUploader::ReadCompletionCallback(
   // The Read is asynchronously executed on BrowserThread::UI, where
   // Read() was called.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // Should be non-zero. FileStream::Read() returns 0 only at end-of-file,
+  // but we don't try to read from end-of-file.
+  DCHECK_NE(0, bytes_read);
   DVLOG(1) << "ReadCompletionCallback bytes read=" << bytes_read;
 
   UploadFileInfo* upload_file_info = GetUploadFileInfo(upload_id);
   if (!upload_file_info)
     return;
 
-  // TODO(achuith): Handle this error.
-  DCHECK_EQ(bytes_to_read, bytes_read);
-  DCHECK_GT(bytes_read, 0) << "Error reading from file "
-                           << upload_file_info->file_path.value();
+  if (bytes_read < 0) {
+    LOG(ERROR) << "Error reading from file "
+               << upload_file_info->file_path.value();
+    UploadFailed(upload_file_info, google_apis::DRIVE_UPLOAD_ERROR_ABORT);
+    return;
+  }
 
   upload_file_info->start_range = upload_file_info->end_range + 1;
   upload_file_info->end_range = upload_file_info->start_range +
