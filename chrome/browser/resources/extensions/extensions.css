@@ -19,6 +19,10 @@ html.loading * {
   overflow: hidden;
 }
 
+#dev-controls button {
+  white-space: nowrap;
+}
+
 #extension-settings.dev-mode #dev-controls {
   -webkit-transition-duration: 250ms;
   height: 32px;
