@@ -217,9 +217,14 @@ class Builder(object):
                            'WIN32' in define or
                            'WINDOWS' in define or
                            'WINVER' in define)]
+    define_list.extend(['NACL_WINDOWS=0',
+                        'NACL_OSX=0',
+                        'NACL_LINUX=0'])
     options += ['-D' + define for define in define_list]
     # TODO(mseaborn): Enable -Werror for ARM/PNaCl when warnings in
-    # Chromium's PPAPI proxy have been fixed.
+    # Chromium's PPAPI proxy have been fixed, and move -Werror to
+    # untrusted.gypi.
+    # See http://code.google.com/p/nativeclient/issues/detail?id=3108
     if self.mainarch == 'x86':
       options.append('-Werror')
     self.compile_options = options + ['-I' + name for name in self.inc_paths]

@@ -26,8 +26,15 @@ if __name__ == '__main__':
     args += shlex.split(os.environ.get('NACL_GYP_FILE',
                                        'native_client/build/all.gyp'))
 
-  # Add in configs.gypi
+  # Add settings that are only included in the standalone NaCl Gyp
+  # build and won't get included when NaCl is built as part of another
+  # project, such as Chrome.  configs.gypi includes compiler
+  # configuration that arguably should be built into Gyp; Chrome
+  # provides its own conflicting version in its common.gypi.
   args += ['-I', 'native_client/build/configs.gypi']
+  # Enable warnings that we don't necessarily want to enable for
+  # Chrome source that is built as NaCl untrusted code.
+  args += ['-I', 'native_client/build/standalone_flags.gypi']
 
   # Pick depth explicitly.
   args += ['--depth', '.']
