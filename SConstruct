@@ -136,6 +136,12 @@ ACCEPTABLE_ARGUMENTS = set([
     'run_under_extra_args',
     # Multiply timeout values by this number.
     'scale_timeout',
+    # test_wrapper specifies a wrapper program such as
+    # tools/run_test_via_ssh.py, which runs tests on a remote host
+    # using rsync and SSH.  Example usage:
+    #   ./scons run_hello_world_test platform=arm force_emulator= \
+    #     test_wrapper="./tools/run_test_via_ssh.py --host=armbox --subdir=tmp"
+    'test_wrapper',
     # Run browser tests under this tool. See
     # tools/browser_tester/browsertester/browserlauncher.py for tool names.
     'browser_test_tool',
@@ -1556,6 +1562,18 @@ def SetTestName(node, name):
     TEST_NAME_MAP[str(target.path)] = name
 
 
+def ApplyTestWrapperCommand(command_args, extra_deps):
+  new_args = ARGUMENTS['test_wrapper'].split()
+  for input_file in extra_deps:
+    new_args.extend(['-F', input_file])
+  for arg in command_args:
+    if isinstance(arg, str):
+      new_args.extend(['-a', arg])
+    else:
+      new_args.extend(['-f', arg])
+  return new_args
+
+
 def CommandTest(env, name, command, size='small', direct_emulation=True,
                 extra_deps=[], posix_path=False, capture_output=True,
                 wrapper_program_prefix=None, scale_timeout=None,
@@ -1606,7 +1624,6 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
     suite = 'p' + suite
 
   script_flags = ['--name', '%s.${GetTestName(TARGET)}' % suite,
-                  '--report', name,
                   '--time_warning', str(max_time),
                   '--time_error', str(10 * max_time),
                   ]
@@ -1656,8 +1673,17 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
   if not capture_output:
     script_flags.extend(['--capture_output', '0'])
 
+  # Set command_tester.py's output filename.  We skip this when using
+  # test_wrapper because the run_test_via_ssh.py wrapper does not have
+  # the ability to copy result files back from the remote host.
+  if 'test_wrapper' not in ARGUMENTS:
+    script_flags.extend(['--report', name])
+
   test_script = env.File('${SCONSTRUCT_DIR}/tools/command_tester.py')
+  extra_deps = extra_deps + [env.File('${SCONSTRUCT_DIR}/tools/test_lib.py')]
   command = ['${PYTHON}', test_script] + script_flags + command
+  if 'test_wrapper' in ARGUMENTS:
+    command = ApplyTestWrapperCommand(command, extra_deps)
   return env.AutoDepsCommand(name, command,
                              extra_deps=extra_deps, posix_path=posix_path,
                              disabled=env.Bit('do_not_run_tests'))
