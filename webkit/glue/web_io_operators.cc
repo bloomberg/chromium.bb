@@ -4,6 +4,8 @@
 
 #include "webkit/glue/web_io_operators.h"
 
+#include <ostream>
+
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 #include "ui/gfx/point.h"
