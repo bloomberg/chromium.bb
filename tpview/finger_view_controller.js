@@ -356,7 +356,7 @@ FingerViewController.prototype = {
         continue;
       }
       var intensity = (finalTimestamp - entry.timestamp) / timeLimit;
-      var buttonDown = entry.buttonsDown != 0;
+      var buttonDown = !!entry.buttonsDown;
       var newLast = {};
       var lines = [];
       var points = [];

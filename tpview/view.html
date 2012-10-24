@@ -66,6 +66,129 @@ function loadLogObj(obj, isNew) {
   finger_view_controller.resetZooms();
 }
 
+/**
+ * Converts raw input event stream from evdev input to the entries structure
+ * expected by finger_view_controller.js.
+ * @param {string} data The raw log file data in the following format:
+ *     # Metadata in comment lines.
+ *     # absinfo: [event_type] [min] [max] [fuzz] [flat] [resolution]
+ *     E: [timestamp] [event_type] [event_code] [event_value] [slot]
+ * @return {Object} Event structure expected by loadLogObj.
+ */
+function convertEventStreamToEntries(data) {
+  // Clone an object by serializing and parsing it.
+  var clone = function(obj) {
+    return JSON.parse(JSON.stringify(obj));
+  }
+
+  // Default hardware properties.
+  var obj = {
+    "entries": [],
+    "hardwareProperties": {
+      "bottom": 1000.0,
+      "left": 0.0,
+      "right": 2000.0,
+      "top": 0.0,
+      "xResolution": 1.0,
+      "yResolution": 1.0},
+    "properties": {
+      "Pressure Calibration Offset": 0.0,
+      "Pressure Calibration Slope": 1.0,
+  }};
+  var evt = {
+    "fingers": [],
+    "timestamp": 0,
+    "touchCount": 0,
+    "type": "hardwareState",
+  };
+  var eventCodes = {
+    '002f': 'slot',
+    '0030': 'touchMajor',
+    '0035': 'positionX',
+    '0036': 'positionY',
+    '0039': 'trackingId',
+    '003a': 'pressure',
+  };
+  var ignoreCodes = {
+    '0000': 'abs_x',
+    '0001': 'abs_y',
+    '0018': 'abs_pressure',
+  };
+  var slotDefaults = {
+    'flags': 0,
+    'trackingId': -1,
+  };
+  var slots = [];
+  var slot = -1;
+  var lines = data.split('\n');
+  for (var i = 0; i < lines.length; i++) {
+    if (lines[i].slice(0, 10) == '# absinfo:') {
+      var val = lines[i].split(' ');
+      switch (val[2]) {
+        case '0':
+          obj.hardwareProperties.left = parseInt(val[3]);
+          obj.hardwareProperties.right = parseInt(val[4]) + 1;
+          obj.hardwareProperties.xResolution = parseInt(val[7]);
+          break;
+        case '1':
+          obj.hardwareProperties.top = parseInt(val[3]);
+          obj.hardwareProperties.bottom = parseInt(val[4]) + 1;
+          obj.hardwareProperties.yResolution = parseInt(val[7]);
+          break;
+        case '47':  // Slot.
+          var maxSlot = parseInt(val[4]);
+          while (slots.length <= maxSlot)
+            slots.push(clone(slotDefaults));
+          break;
+      }
+    } else if (lines[i].slice(0, 3) == 'E: ') {
+      var val = lines[i].split(' ');
+      switch (val[2]) {  // Event type.
+        case '0000':  // EV_SYN: Clone current hardware state and push to list.
+          // First copy slots into fingers.
+          evt.fingers = [];
+          for (var j = 0; j < slots.length; j++) {
+            if (slots[j].trackingId >= 0)
+              evt.fingers.push(slots[j]);
+          }
+          evt.touchCount = evt.fingers.length;
+          evt.timestamp = parseFloat(val[1]);
+          obj.entries.push(clone(evt));
+          break;
+        case '0003':  // EV_ABS: Update hardware state.
+          if (eventCodes[val[3]]) {
+            // Parse slot identifier on event info line.
+            if (val.length > 5)
+              slot = parseInt(val[5]);
+
+            if (eventCodes[val[3]] == 'slot') {
+              slot = parseInt(val[4]);
+            } else if (slot >= 0) {
+              // Initialize the requested slot if not set.
+              if (!slots[slot])
+                slots[slot] = clone(slotDefaults);
+
+              // Make up tracking ID if we miss the start of a touch.
+              if (eventCodes[val[3]] != 'trackingId' &&
+                  slots[slot].trackingId == -1)
+                slots[slot].trackingId = slot + 1;
+
+              slots[slot][eventCodes[val[3]]] = parseInt(val[4]);
+            }
+          } else if (!ignoreCodes[val[3]]) {
+            console.log('Unrecognized event type ' + val[2] +
+                        ' code ' + val[3]);
+          }
+          break;
+      }
+    }
+  }
+  // For touch screens the absolute value is more useful than the scaled value.
+  obj.hardwareProperties.xResolution = 1.0;
+  obj.hardwareProperties.yResolution = 1.0;
+  return obj;
+}
+
 function handleFileSelect(evt) {
   $('#text_box').removeClass('text_box_hilight');
   evt.stopPropagation();
@@ -76,8 +199,17 @@ function handleFileSelect(evt) {
   var file = files[0];
   var reader = new FileReader();
   reader.onload = function(e) {
+    var obj;
     $('#text_box').val(e.target.result);
-    var obj = jQuery.parseJSON(e.target.result);
+    if (e.target.result[0] == '#')
+      obj = convertEventStreamToEntries(e.target.result);
+    else if (e.target.result[0] == '{')
+      obj = jQuery.parseJSON(e.target.result);
+
+    if (!obj) {
+      alert('Unrecognized input file');
+      return;
+    }
     json_obj = obj;
     generateRadioButtons(obj);
     current_layer = 0;
