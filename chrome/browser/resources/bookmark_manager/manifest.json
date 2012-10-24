@@ -20,5 +20,5 @@
     "bookmarks": "main.html"
   },
   "content_security_policy":
-    "object-src 'none'; script-src chrome://resources chrome-extension://mndnfokpggljbaajbnioimlmbfngpief 'self'"
+    "object-src 'none'; script-src chrome://resources 'self'"
 }

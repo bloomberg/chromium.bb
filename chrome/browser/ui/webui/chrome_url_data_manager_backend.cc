@@ -47,9 +47,7 @@ namespace {
 //     extension to function on these pages.  Remove it when the extension
 //     is updated to stop injecting script into the pages.
 const char kChromeURLContentSecurityPolicyHeaderBase[] =
-    "X-WebKit-CSP: script-src chrome://resources "
-    "chrome-extension://mndnfokpggljbaajbnioimlmbfngpief "
-    "'self' 'unsafe-eval'; ";
+    "X-WebKit-CSP: script-src chrome://resources 'self' 'unsafe-eval'; ";
 
 // TODO(tsepez) The following should be replaced with a centralized table.
 // See crbug.com/104631.
