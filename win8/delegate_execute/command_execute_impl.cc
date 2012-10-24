@@ -7,6 +7,8 @@
 
 #include "win8/delegate_execute/command_execute_impl.h"
 
+#include <shlguid.h>
+
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
@@ -19,8 +21,45 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/util_constants.h"
+#include "ui/base/clipboard/clipboard_util_win.h"
 #include "win8/delegate_execute/chrome_util.h"
 #include "win8/delegate_execute/delegate_execute_util.h"
+
+namespace {
+
+// Helper function to retrieve the url from IShellItem interface passed in.
+// Returns S_OK on success.
+HRESULT GetUrlFromShellItem(IShellItem* shell_item, string16* url) {
+  DCHECK(shell_item);
+  DCHECK(url);
+  // First attempt to get the url from the underlying IDataObject if any. This
+  // ensures that we get the full url, i.e. including the anchor.
+  // If we fail to get the underlying IDataObject we retrieve the url via the
+  // IShellItem::GetDisplayName function.
+  CComPtr<IDataObject> object;
+  HRESULT hr = shell_item->BindToHandler(NULL,
+                                         BHID_DataObject,
+                                         IID_IDataObject,
+                                         reinterpret_cast<void**>(&object));
+  if (SUCCEEDED(hr)) {
+    DCHECK(object);
+    if (ui::ClipboardUtil::GetPlainText(object, url))
+      return S_OK;
+  }
+
+  base::win::ScopedCoMem<wchar_t> name;
+  hr = shell_item->GetDisplayName(SIGDN_URL, &name);
+  if (hr != S_OK) {
+    AtlTrace("Failed to get display name\n");
+    return hr;
+  }
+
+  *url = static_cast<const wchar_t*>(name);
+  AtlTrace("Retrieved url from display name %ls\n", url->c_str());
+  return S_OK;
+}
+
+}  // namespace
 
 // CommandExecuteImpl is resposible for activating chrome in Windows 8. The
 // flow is complicated and this tries to highlight the important events.
@@ -315,14 +354,13 @@ bool CommandExecuteImpl::GetLaunchScheme(
     return false;
   }
 
-  base::win::ScopedCoMem<wchar_t> name;
-  hr = shell_item->GetDisplayName(SIGDN_URL, &name);
-  if (hr != S_OK) {
-    AtlTrace("Failed to get display name\n");
+  hr = GetUrlFromShellItem(shell_item, display_name);
+  if (FAILED(hr)) {
+    AtlTrace("Failed to get url. Error 0x%x\n", hr);
     return false;
   }
 
-  AtlTrace("Display name is [%ls]\n", name);
+  AtlTrace("url [%ls]\n", display_name->c_str());
 
   wchar_t scheme_name[16];
   URL_COMPONENTS components = {0};
@@ -330,13 +368,12 @@ bool CommandExecuteImpl::GetLaunchScheme(
   components.dwSchemeLength = sizeof(scheme_name)/sizeof(scheme_name[0]);
 
   components.dwStructSize = sizeof(components);
-  if (!InternetCrackUrlW(name, 0, 0, &components)) {
-    AtlTrace("Failed to crack url %ls\n", name);
+  if (!InternetCrackUrlW(display_name->c_str(), 0, 0, &components)) {
+    AtlTrace("Failed to crack url %ls\n", display_name->c_str());
     return false;
   }
 
   AtlTrace("Launch scheme is [%ls] (%d)\n", scheme_name, components.nScheme);
-  *display_name = name;
   *scheme = components.nScheme;
   return true;
 }
