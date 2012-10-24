@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/sync_file_system/local_file_sync_service.h"
+#include "chrome/browser/sync_file_system/remote_file_sync_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_context.h"
@@ -25,6 +26,8 @@ void SyncFileSystemService::Shutdown() {
   local_file_service_->Shutdown();
   local_file_service_.reset();
 
+  remote_file_service_.reset();
+
   profile_ = NULL;
 }
 
@@ -38,15 +41,17 @@ void SyncFileSystemService::InitializeForApp(
     const std::string& service_name,
     const GURL& app_url,
     const StatusCallback& callback) {
-  DCHECK(local_file_service_.get());
+  DCHECK(local_file_service_);
 
   // TODO(kinuko,tzik): Instantiate the remote_file_service for the given
   // |service_name| if it hasn't been initialized.
 
   local_file_service_->MaybeInitializeFileSystemContext(
-      app_url, file_system_context, callback);
+      app_url.GetOrigin(), file_system_context, callback);
 
-  // TODO(tzik): Hook up remote service initialization code.
+  // TODO(tzik): Uncomment this line after its implementation lands.
+  // remote_file_service_->RegisterOriginForTrackingChanges(
+  //   app_url.GetOrigin());
 }
 
 void SyncFileSystemService::OnLocalChangeAvailable(int64 pending_changes) {
@@ -67,12 +72,17 @@ SyncFileSystemService::SyncFileSystemService(Profile* profile)
       pending_remote_changes_(0) {}
 
 void SyncFileSystemService::Initialize(
-    scoped_ptr<LocalFileSyncService> local_file_service) {
+    scoped_ptr<LocalFileSyncService> local_file_service,
+    scoped_ptr<RemoteFileSyncService> remote_file_service) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(local_file_service.get());
   DCHECK(profile_);
 
   local_file_service_ = local_file_service.Pass();
+  remote_file_service_ = remote_file_service.Pass();
+
+  // TODO(tzik): Uncomment this line after RemoteChangeObserver lands.
+  // remote_file_service_->AddObserver(this);
 }
 
 // SyncFileSystemServiceFactory -----------------------------------------------
@@ -105,8 +115,12 @@ ProfileKeyedService* SyncFileSystemServiceFactory::BuildServiceInstanceFor(
   scoped_ptr<LocalFileSyncService> local_file_service(
       new LocalFileSyncService);
 
-  service->Initialize(local_file_service.Pass());
+  scoped_ptr<RemoteFileSyncService> remote_file_service;
+  // TODO(tzik): Instantiate DriveFileSyncService.
+
+  service->Initialize(local_file_service.Pass(),
+                      remote_file_service.Pass());
   return service;
 }
 
-}  // namespace chrome
+}  // namespace sync_file_system

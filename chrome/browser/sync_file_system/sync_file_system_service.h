@@ -27,6 +27,7 @@ namespace sync_file_system {
 class LocalFileSyncService;
 class LocalChangeObserver;
 class RemoteChangeObserver;
+class RemoteFileSyncService;
 
 class SyncFileSystemService
     : public ProfileKeyedService,
@@ -50,7 +51,8 @@ class SyncFileSystemService
   explicit SyncFileSystemService(Profile* profile);
   virtual ~SyncFileSystemService();
 
-  void Initialize(scoped_ptr<LocalFileSyncService> local_file_service);
+  void Initialize(scoped_ptr<LocalFileSyncService> local_file_service,
+                  scoped_ptr<RemoteFileSyncService> remote_file_service);
 
   // RemoteChangeObserver overrides.
   virtual void OnLocalChangeAvailable(int64 pending_changes) OVERRIDE;
@@ -64,6 +66,7 @@ class SyncFileSystemService
   int64 pending_remote_changes_;
 
   scoped_ptr<LocalFileSyncService> local_file_service_;
+  scoped_ptr<RemoteFileSyncService> remote_file_service_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncFileSystemService);
 };
