@@ -564,11 +564,6 @@ drm_disable_unused_sprites(struct weston_output *output_base)
 	}
 }
 
-/*
- * This function must take care to damage any previously assigned surface
- * if the sprite ends up binding to a different surface than in the
- * previous frame.
- */
 static struct weston_plane *
 drm_output_prepare_overlay_surface(struct weston_output *output_base,
 				   struct weston_surface *es)
