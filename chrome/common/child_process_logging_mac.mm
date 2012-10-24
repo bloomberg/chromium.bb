@@ -175,6 +175,11 @@ void SetPrinterInfo(const char* printer_info) {
     ClearCrashKey(key);
     if (!info[i].empty()) {
       NSString *value = [NSString stringWithUTF8String:info[i].c_str()];
+      // TODO(vitalybuka): Remove following 3 lines after testing jeremy's
+      // hypothesis (see http://crbug.com/156892).
+      const char* utf_str = [value UTF8String];
+      if (utf_str)
+        VLOG(1) << "SetPrinterInfo, part " << i << ": " << utf_str;
       SetCrashKeyValue(key, value);
     }
   }
