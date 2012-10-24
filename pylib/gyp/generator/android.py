@@ -163,7 +163,7 @@ class AndroidMkWriter(object):
     extra_outputs = []
     extra_sources = []
 
-    self.android_class = MODULE_CLASSES.get(self.type, 'NONE')
+    self.android_class = MODULE_CLASSES.get(self.type, 'GYP')
     self.android_module = self.ComputeAndroidModule(spec)
     (self.android_stem, self.android_suffix) = self.ComputeOutputParts(spec)
     self.output = self.output_binary = self.ComputeOutput(spec)

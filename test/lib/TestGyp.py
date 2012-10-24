@@ -400,7 +400,6 @@ class TestGypAndroid(TestGypBase):
     out_dir = os.environ['ANDROID_PRODUCT_OUT']
     obj_dir = os.path.join(out_dir, 'obj')
     shutil.rmtree(os.path.join(obj_dir, 'GYP'), ignore_errors = True)
-    shutil.rmtree(os.path.join(obj_dir, 'NONE'), ignore_errors = True)
     for x in ['EXECUTABLES', 'STATIC_LIBRARIES', 'SHARED_LIBRARIES']:
       for d in os.listdir(os.path.join(obj_dir, x)):
         if d.endswith('_gyp_intermediates'):
