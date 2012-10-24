@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/intents/web_intent_inline_disposition_delegate.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
@@ -75,30 +74,29 @@ WebIntentPicker* WebIntentPicker::Create(content::WebContents* web_contents,
                                          WebIntentPickerModel* model) {
   if (chrome::IsFramelessConstrainedDialogEnabled())
     return new WebIntentPickerCocoa2(web_contents, delegate, model);
-  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
-  return new WebIntentPickerCocoa(tab_contents, delegate, model);
+  return new WebIntentPickerCocoa(web_contents, delegate, model);
 }
 
 WebIntentPickerCocoa::WebIntentPickerCocoa()
     : delegate_(NULL),
       model_(NULL),
-      tab_contents_(NULL),
+      web_contents_(NULL),
       sheet_controller_(nil),
       service_invoked(false) {
 }
 
-WebIntentPickerCocoa::WebIntentPickerCocoa(TabContents* tab_contents,
+WebIntentPickerCocoa::WebIntentPickerCocoa(content::WebContents* web_contents,
                                            WebIntentPickerDelegate* delegate,
                                            WebIntentPickerModel* model)
     : delegate_(delegate),
       model_(model),
-      tab_contents_(tab_contents),
+      web_contents_(web_contents),
       sheet_controller_(nil),
       service_invoked(false) {
   model_->set_observer(this);
 
   DCHECK(delegate);
-  DCHECK(tab_contents);
+  DCHECK(web_contents);
 
   sheet_controller_ = [
       [WebIntentPickerSheetController alloc] initWithPicker:this];
@@ -107,8 +105,7 @@ WebIntentPickerCocoa::WebIntentPickerCocoa(TabContents* tab_contents,
   ConstrainedPickerSheetDelegate* constrained_delegate =
       new ConstrainedPickerSheetDelegate(this, sheet_controller_);
 
-  window_ = new ConstrainedWindowMac(tab_contents->web_contents(),
-                                     constrained_delegate);
+  window_ = new ConstrainedWindowMac(web_contents, constrained_delegate);
 }
 
 WebIntentPickerCocoa::~WebIntentPickerCocoa() {
@@ -128,8 +125,8 @@ void WebIntentPickerCocoa::Close() {
   DCHECK(sheet_controller_);
   [sheet_controller_ closeSheet];
 
-  if (inline_disposition_tab_contents_.get())
-    inline_disposition_tab_contents_->web_contents()->OnCloseStarted();
+  if (inline_disposition_web_contents_.get())
+    inline_disposition_web_contents_->OnCloseStarted();
 }
 
 void WebIntentPickerCocoa::SetActionString(const string16& action_string) {
@@ -166,25 +163,24 @@ void WebIntentPickerCocoa::OnExtensionIconChanged(
 void WebIntentPickerCocoa::OnInlineDisposition(const string16& title,
                                                const GURL& url) {
   DCHECK(delegate_);
-  content::WebContents* web_contents =
-      delegate_->CreateWebContentsForInlineDisposition(
-          tab_contents_->profile(), url);
-  inline_disposition_tab_contents_.reset(
-      TabContents::Factory::CreateTabContents(web_contents));
-  Browser* browser = browser::FindBrowserWithWebContents(
-      tab_contents_->web_contents());
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  inline_disposition_web_contents_.reset(
+      delegate_->CreateWebContentsForInlineDisposition(profile, url));
+  Browser* browser = browser::FindBrowserWithWebContents(web_contents_);
   inline_disposition_delegate_.reset(
-      new WebIntentInlineDispositionDelegate(this, web_contents, browser));
+      new WebIntentInlineDispositionDelegate(
+          this, inline_disposition_web_contents_.get(), browser));
 
-  inline_disposition_tab_contents_->web_contents()->GetController().LoadURL(
+  inline_disposition_web_contents_->GetController().LoadURL(
       url,
       content::Referrer(),
       content::PAGE_TRANSITION_AUTO_TOPLEVEL,
       std::string());
   [sheet_controller_ setInlineDispositionTitle:
       base::SysUTF16ToNSString(title)];
-  [sheet_controller_ setInlineDispositionTabContents:
-      inline_disposition_tab_contents_.get()];
+  [sheet_controller_ setInlineDispositionWebContents:
+      inline_disposition_web_contents_.get()];
   PerformLayout();
 }
 
@@ -253,8 +249,8 @@ void WebIntentPickerCocoa::OnSuggestionsLinkClicked(
 void WebIntentPickerCocoa::OnChooseAnotherService() {
   DCHECK(delegate_);
   delegate_->OnChooseAnotherService();
-  inline_disposition_tab_contents_.reset();
+  inline_disposition_web_contents_.reset();
   inline_disposition_delegate_.reset();
-  [sheet_controller_ setInlineDispositionTabContents:NULL];
+  [sheet_controller_ setInlineDispositionWebContents:NULL];
   PerformLayout();
 }

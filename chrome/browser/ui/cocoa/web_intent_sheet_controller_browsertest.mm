@@ -16,7 +16,7 @@
 
 class WebIntentSheetControllerBrowserTest : public InProcessBrowserTest {
  public:
-  void CreateBubble(TabContents* tab_contents);
+  void CreateBubble(content::WebContents* web_contents);
   void CreatePicker();
 
   WebIntentPickerSheetController* controller_;  // Weak, owns self.
@@ -27,8 +27,8 @@ class WebIntentSheetControllerBrowserTest : public InProcessBrowserTest {
 };
 
 void WebIntentSheetControllerBrowserTest::CreateBubble(
-    TabContents* tab_contents) {
-  picker_.reset(new WebIntentPickerCocoa(tab_contents, &delegate_, &model_));
+    content::WebContents* web_contents) {
+  picker_.reset(new WebIntentPickerCocoa(web_contents, &delegate_, &model_));
 
   controller_ =
      [[WebIntentPickerSheetController alloc] initWithPicker:picker_.get()];
@@ -45,7 +45,7 @@ void WebIntentSheetControllerBrowserTest::CreatePicker() {
 }
 
 IN_PROC_BROWSER_TEST_F(WebIntentSheetControllerBrowserTest, CloseWillClose) {
-  CreateBubble(chrome::GetActiveTabContents(browser()));
+  CreateBubble(chrome::GetActiveWebContents(browser()));
 
   EXPECT_CALL(delegate_, OnUserCancelledPickerDialog()).Times(0);
   EXPECT_CALL(delegate_, OnClosing());
@@ -56,7 +56,7 @@ IN_PROC_BROWSER_TEST_F(WebIntentSheetControllerBrowserTest, CloseWillClose) {
 
 IN_PROC_BROWSER_TEST_F(WebIntentSheetControllerBrowserTest,
     DontCancelAfterServiceInvokation) {
-  CreateBubble(chrome::GetActiveTabContents(browser()));
+  CreateBubble(chrome::GetActiveWebContents(browser()));
 
   GURL url;
   model_.AddInstalledService(string16(), url,

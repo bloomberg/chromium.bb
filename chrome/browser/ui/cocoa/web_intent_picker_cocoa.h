@@ -16,17 +16,19 @@
 #include "chrome/browser/ui/intents/web_intent_picker_model_observer.h"
 
 class ConstrainedWindow;
-class TabContents;
-@class WebIntentPickerSheetController;
 class WebIntentInlineDispositionDelegate;
+@class WebIntentPickerSheetController;
+
+namespace content {
+class WebContents;
+}
 
 // A bridge class that enables communication between ObjectiveC and C++.
 class WebIntentPickerCocoa : public WebIntentPicker,
                              public WebIntentPickerModelObserver {
  public:
-  // |tab_contents| and |delegate| must not be NULL.
-  // |browser| should only be NULL for testing purposes.
-  WebIntentPickerCocoa(TabContents* tab_contents,
+  // |web_contents| and |delegate| must not be NULL.
+  WebIntentPickerCocoa(content::WebContents* web_contents,
                        WebIntentPickerDelegate* delegate,
                        WebIntentPickerModel* model);
   virtual ~WebIntentPickerCocoa();
@@ -72,13 +74,13 @@ class WebIntentPickerCocoa : public WebIntentPicker,
   // The picker model. Weak reference.
   WebIntentPickerModel* model_;
 
-  // TabContents we're in. Weak Reference.
-  TabContents* tab_contents_;
+  // WebContents we're in. Weak Reference.
+  content::WebContents* web_contents_;
 
   WebIntentPickerSheetController* sheet_controller_;  // Weak reference.
 
-  // TabContents to hold intent page if inline disposition is used.
-  scoped_ptr<TabContents> inline_disposition_tab_contents_;
+  // WebContents to hold intent page if inline disposition is used.
+  scoped_ptr<content::WebContents> inline_disposition_web_contents_;
 
   // Delegate for inline disposition tab contents.
   scoped_ptr<WebIntentInlineDispositionDelegate> inline_disposition_delegate_;

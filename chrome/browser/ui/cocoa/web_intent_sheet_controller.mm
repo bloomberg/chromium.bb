@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/constrained_window_constants.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #import "chrome/browser/ui/cocoa/tabs/throbber_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -759,14 +758,14 @@ const CGFloat kAddButtonWidth = 128.0;
     picker_->OnSheetDidEnd(sheet);
 }
 
-- (void)setInlineDispositionTabContents:(TabContents*)tabContents {
-  contents_ = tabContents;
+- (void)setInlineDispositionWebContents:(content::WebContents*)webContents {
+  webContents_ = webContents;
 }
 
 - (void)setInlineDispositionFrameSize:(NSSize)inlineContentSize {
-  DCHECK(contents_);
+  DCHECK(webContents_);
 
-  NSView* webContentView = contents_->web_contents()->GetNativeView();
+  NSView* webContentView = webContents_->GetNativeView();
 
   // Make sure inline content size is never shrunk.
   inlineContentSize = NSMakeSize(
@@ -939,13 +938,13 @@ const CGFloat kAddButtonWidth = 128.0;
 
 - (CGFloat)addInlineHtmlToSubviews:(NSMutableArray*)subviews
                           atOffset:(CGFloat)offset {
-  if (!contents_)
+  if (!webContents_)
     return 0;
 
   // Determine a good size for the inline disposition window.
 
   gfx::Size size = picker_->GetMinInlineDispositionSize();
-  NSView* webContentView = contents_->web_contents()->GetNativeView();
+  NSView* webContentView = webContents_->GetNativeView();
   NSRect contentFrame = NSMakeRect(
       WebIntentPicker::kContentAreaBorder,
       offset,
@@ -1118,7 +1117,7 @@ const CGFloat kAddButtonWidth = 128.0;
     scoped_nsobject<NSView> emptyView([self createEmptyView]);
     [subviews addObject:emptyView];
     offset += NSHeight([emptyView frame]);
-  } else if (contents_) {
+  } else if (webContents_) {
     offset += [self addAnotherServiceLinkToSubviews:subviews
                                            atOffset:offset];
     offset += [self addInlineHtmlToSubviews:subviews atOffset:offset];
