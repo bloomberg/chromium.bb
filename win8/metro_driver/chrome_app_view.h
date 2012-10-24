@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_METRO_DRIVER_CHROME_APP_VIEW_H_
-#define CHROME_BROWSER_UI_METRO_DRIVER_CHROME_APP_VIEW_H_
+#ifndef WIN8_METRO_DRIVER_CHROME_APP_VIEW_H_
+#define WIN8_METRO_DRIVER_CHROME_APP_VIEW_H_
 
 #include <windows.applicationmodel.core.h>
 #include <windows.ui.core.h>
@@ -20,7 +20,6 @@
 #include "base/synchronization/lock.h"
 #include "win8/metro_driver/chrome_url_launch_handler.h"
 #include "win8/metro_driver/devices_handler.h"
-#include "win8/metro_driver/direct3d_helper.h"
 #include "win8/metro_driver/metro_dialog_box.h"
 #include "win8/metro_driver/settings_handler.h"
 #include "win8/metro_driver/toast_notification_handler.h"
@@ -82,21 +81,6 @@ class ChromeAppView
   HRESULT OnSizeChanged(winui::Core::ICoreWindow* sender,
                         winui::Core::IWindowSizeChangedEventArgs* args);
 
-  HRESULT OnPointerMoved(winui::Core::ICoreWindow* sender,
-                         winui::Core::IPointerEventArgs* args);
-
-  HRESULT OnPointerPressed(winui::Core::ICoreWindow* sender,
-                           winui::Core::IPointerEventArgs* args);
-
-  HRESULT OnPointerReleased(winui::Core::ICoreWindow* sender,
-                            winui::Core::IPointerEventArgs* args);
-
-  HRESULT OnKeyDown(winui::Core::ICoreWindow* sender,
-                    winui::Core::IKeyEventArgs* args);
-
-  HRESULT OnKeyUp(winui::Core::ICoreWindow* sender,
-                  winui::Core::IKeyEventArgs* args);
-
   HRESULT OnEdgeGestureCompleted(winui::Input::IEdgeGesture* gesture,
                                  winui::Input::IEdgeGestureEventArgs* args);
 
@@ -130,11 +114,6 @@ class ChromeAppView
   EventRegistrationToken input_pane_visible_token_;
   EventRegistrationToken input_pane_hiding_token_;
   EventRegistrationToken app_exit_token_;
-  EventRegistrationToken pointermoved_token_;
-  EventRegistrationToken pointerpressed_token_;
-  EventRegistrationToken pointerreleased_token_;
-  EventRegistrationToken keydown_token_;
-  EventRegistrationToken keyup_token_;
 
   ChromeUrlLaunchHandler url_launch_handler_;
   metro_driver::DevicesHandler devices_handler_;
@@ -158,20 +137,6 @@ class ChromeAppView
   int osk_offset_adjustment_;
 
   MetroDialogBox dialog_box_;
-
-  metro_driver::Direct3DHelper direct3d_helper_;
-
-  IPC::Listener* ui_channel_listener_;
-  IPC::ChannelProxy* ui_channel_;
-};
-
-class ChromeAppViewFactory
-    : public mswr::RuntimeClass<winapp::Core::IFrameworkViewSource> {
- public:
-  ChromeAppViewFactory(winapp::Core::ICoreApplication* icore_app,
-                       LPTHREAD_START_ROUTINE host_main,
-                       void* host_context);
-  IFACEMETHOD(CreateView)(winapp::Core::IFrameworkView** view);
 };
 
 // This function is exported by chrome.exe.
@@ -205,4 +170,4 @@ struct Globals {
 
 extern Globals globals;
 
-#endif  // CHROME_BROWSER_UI_METRO_DRIVER_CHROME_APP_VIEW_H_
+#endif  // WIN8_METRO_DRIVER_CHROME_APP_VIEW_H_

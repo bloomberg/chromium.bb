@@ -26,24 +26,6 @@ class DevicesHandler {
   DISALLOW_COPY_AND_ASSIGN(DevicesHandler);
 };
 
-// This class helps decoding the pointer properties of an event.
-class PointerEventHandler {
- public:
-  PointerEventHandler();
-  ~PointerEventHandler();
-
-  HRESULT Init(winui::Core::IPointerEventArgs* args);
-
-  bool is_mouse() const { return is_mouse_; }
-  int x() const { return x_; }
-  int y() const { return y_; }
-
- private:
-  int x_;
-  int y_;
-  bool is_mouse_;
-};
-
 }  // namespace metro_driver
 
 #endif  // CHROME_BROWSER_UI_METRO_DRIVER_DEVICES_HANDLER_H_

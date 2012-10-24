@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_METRO_DRIVER_WINRT_UTILS_H_
-#define CHROME_BROWSER_UI_METRO_DRIVER_WINRT_UTILS_H_
+#ifndef WIN8_METRO_DRIVER_WINRT_UTILS_H_
+#define WIN8_METRO_DRIVER_WINRT_UTILS_H_
 
 #include <string>
 
@@ -55,6 +55,10 @@ HRESULT CompareProperties(
 // empty string on failure.
 string16 ReadArgumentsFromPinnedTaskbarShortcut();
 
+// Looks for a Window with the right class name that belongs to |thread_id|
+// thread. It loops forever looking for it, waiting |wait_ms| between loops.
+HWND FindCoreWindow(DWORD thread_id, int wait_ms);
+
 }  // namespace winrt_utils
 
-#endif  // CHROME_BROWSER_UI_METRO_DRIVER_WINRT_UTILS_H_
+#endif  // WIN8_METRO_DRIVER_WINRT_UTILS_H_

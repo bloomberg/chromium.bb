@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_METRO_DRIVER_STDAFX_H_
-#define CHROME_BROWSER_UI_METRO_DRIVER_STDAFX_H_
+#ifndef WIN8_METRO_DRIVER_STDAFX_H_
+#define WIN8_METRO_DRIVER_STDAFX_H_
 
 #include <wrl\implements.h>
 #include <wrl\module.h>
@@ -35,5 +35,4 @@ namespace wingfx =     ABI::Windows::Graphics;
 namespace winui =      ABI::Windows::UI;
 namespace winsys =     ABI::Windows::System;
 
-
-#endif  // CHROME_BROWSER_UI_METRO_DRIVER_STDAFX_H_
+#endif  // WIN8_METRO_DRIVER_STDAFX_H_

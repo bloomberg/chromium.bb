@@ -14,18 +14,14 @@
 #include "base/message_loop.h"
 #include "base/win/metro.h"
 
-#include "base/threading/thread.h"
-#include "ipc/ipc_channel.h"
-#include "ipc/ipc_channel_proxy.h"
-#include "ipc/ipc_sender.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/metro_viewer/metro_viewer_messages.h"
 
 // This include allows to send WM_SYSCOMMANDs to chrome.
 #include "chrome/app/chrome_command_ids.h"
+#include "win8/metro_driver/metro_driver.h"
 #include "win8/metro_driver/winrt_utils.h"
 #include "ui/base/ui_base_switches.h"
-
 
 typedef winfoundtn::ITypedEventHandler<
     winapp::Core::CoreApplicationView*,
@@ -298,26 +294,6 @@ void FlipFrameWindowsInternal() {
     globals.host_windows.push_back(current_top_window);
   }
 }
-
-class ChromeChannelListener : public IPC::Listener {
- public:
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
-    DVLOG(1) << "Received ipc message " << message.type();
-    return true;
-  }
-
-  virtual void OnChannelError() OVERRIDE {
-    DVLOG(1) << "Channel error";
-    MessageLoop::current()->Quit();
-  }
-
-  void Init(IPC::Sender* s) {
-    sender_ = s;
-  }
-
- private:
-  IPC::Sender* sender_;
-};
 
 }  // namespace
 
@@ -627,17 +603,6 @@ void SetFullscreen(bool fullscreen) {
           globals.view, fullscreen));
 }
 
-BOOL CALLBACK CoreWindowFinder(HWND hwnd, LPARAM) {
-  char classname[128];
-  if (::GetClassNameA(hwnd, classname, ARRAYSIZE(classname))) {
-    if (lstrcmpiA("Windows.UI.Core.CoreWindow", classname) == 0) {
-      globals.core_window = hwnd;
-      return FALSE;
-    }
-  }
-  return TRUE;
-}
-
 template <typename ContainerT>
 void CloseSecondaryWindows(ContainerT& windows) {
   DVLOG(1) << "Closing secondary windows", windows.size();
@@ -674,9 +639,7 @@ DWORD WINAPI HostMainThreadProc(void*) {
 
 ChromeAppView::ChromeAppView()
     : osk_visible_notification_received_(false),
-      osk_offset_adjustment_(0),
-      ui_channel_(nullptr),
-      ui_channel_listener_(nullptr) {
+      osk_offset_adjustment_(0) {
   globals.previous_state =
       winapp::Activation::ApplicationExecutionState_NotRunning;
 }
@@ -705,40 +668,6 @@ ChromeAppView::SetWindow(winui::Core::ICoreWindow* window) {
 
   HRESULT hr = url_launch_handler_.Initialize();
   CheckHR(hr, "Failed to initialize url launch handler.");
-
-#if defined(USE_AURA)
-  // Register for pointer and keyboard notifications. We forward
-  // them to the browser process via IPC.
-  hr = window_->add_PointerMoved(mswr::Callback<PointerEventHandler>(
-      this, &ChromeAppView::OnPointerMoved).Get(),
-      &pointermoved_token_);
-  CheckHR(hr);
-
-  hr = window_->add_PointerPressed(mswr::Callback<PointerEventHandler>(
-      this, &ChromeAppView::OnPointerPressed).Get(),
-      &pointerpressed_token_);
-  CheckHR(hr);
-
-  hr = window_->add_PointerReleased(mswr::Callback<PointerEventHandler>(
-      this, &ChromeAppView::OnPointerReleased).Get(),
-      &pointerreleased_token_);
-  CheckHR(hr);
-
-  hr = window_->add_KeyDown(mswr::Callback<KeyEventHandler>(
-      this, &ChromeAppView::OnKeyDown).Get(),
-      &keydown_token_);
-  CheckHR(hr);
-
-  hr = window_->add_KeyUp(mswr::Callback<KeyEventHandler>(
-      this, &ChromeAppView::OnKeyUp).Get(),
-      &keyup_token_);
-  CheckHR(hr);
-
-  // By initializing the direct 3D swap chain with the corewindow
-  // we can now directly blit to it from the browser process.
-  direct3d_helper_.Initialize(window);
-  DVLOG(1) << "Initialized Direct3D.";
-#else
   // Register for size notifications.
   hr = window_->add_SizeChanged(mswr::Callback<SizeChangedHandler>(
       this, &ChromeAppView::OnSizeChanged).Get(),
@@ -783,7 +712,6 @@ ChromeAppView::SetWindow(winui::Core::ICoreWindow* window) {
   // The documented InputPane notifications don't fire on Windows 8 in metro
   // chrome. Uncomment this once we figure out why they don't fire.
   // RegisterInputPaneNotifications();
-
   hr = winrt_utils::CreateActivationFactory(
       RuntimeClass_Windows_UI_ViewManagement_ApplicationView,
       app_view_.GetAddressOf());
@@ -796,8 +724,6 @@ ChromeAppView::SetWindow(winui::Core::ICoreWindow* window) {
   // initialization succeed. Even if we won't be able to access devices
   // we still want to allow the app to start.
   LOG_IF(ERROR, FAILED(hr)) << "Failed to initialize devices handler.";
-#endif
-
   return S_OK;
 }
 
@@ -882,31 +808,6 @@ ChromeAppView::Run() {
   // Announce our message loop to the world.
   globals.appview_msg_loop = msg_loop.message_loop_proxy();
 
-  // The thread needs to out-live the ChannelProxy.
-  base::Thread thread("metro_IO_thread");
-  base::Thread::Options options;
-  options.message_loop_type = MessageLoop::TYPE_IO;
-  thread.StartWithOptions(options);
-
-
-#if defined(USE_AURA)
-  // In Aura mode we create an IPC channel to the browser which should
-  // be already running.
-  ChromeChannelListener ui_channel_listener;
-  IPC::ChannelProxy ui_channel("viewer",
-                               IPC::Channel::MODE_NAMED_CLIENT,
-                               &ui_channel_listener,
-                               thread.message_loop_proxy());
-  ui_channel_listener.Init(&ui_channel);
-
-  ui_channel_listener_ = &ui_channel_listener;
-  ui_channel_ = &ui_channel;
-
-  ui_channel_->Send(new MetroViewerHostMsg_SetTargetSurface(
-                    gfx::NativeViewId(globals.core_window)));
-
-  DVLOG(1) << "ICoreWindow sent " << globals.core_window;
-#endif
   // And post the task that'll do the inner Metro message pumping to it.
   msg_loop.PostTask(FROM_HERE, base::Bind(&RunMessageLoop, dispatcher.Get()));
 
@@ -1008,15 +909,11 @@ HRESULT ChromeAppView::OnActivate(winapp::Core::ICoreApplicationView*,
     return S_OK;
   }
 
-  do {
-    ::Sleep(10);
-    ::EnumThreadWindows(globals.main_thread_id, &CoreWindowFinder, 0);
-  } while (globals.core_window == NULL);
+  globals.core_window =
+      winrt_utils::FindCoreWindow(globals.main_thread_id, 10);
 
   DVLOG(1) << "CoreWindow found: " << std::hex << globals.core_window;
 
-
-#if !defined(USE_AURA)
   if (!globals.host_thread) {
     DWORD chrome_ui_thread_id = 0;
     globals.host_thread =
@@ -1038,9 +935,6 @@ HRESULT ChromeAppView::OnActivate(winapp::Core::ICoreApplicationView*,
   HRESULT hr = settings_handler_.Initialize();
   CheckHR(hr,"Failed to initialize settings handler.");
   return hr;
-#else
-  return S_OK;
-#endif
 }
 
 // We subclass the core window for moving the associated chrome window when the
@@ -1103,85 +997,6 @@ HRESULT ChromeAppView::OnSizeChanged(winui::Core::ICoreWindow* sender,
   } else {
     ::PostMessageW(top_level_frame, WM_SYSCOMMAND, IDC_METRO_SNAP_DISABLE, 0);
   }
-  return S_OK;
-}
-
-HRESULT ChromeAppView::OnPointerMoved(winui::Core::ICoreWindow* sender,
-                                      winui::Core::IPointerEventArgs* args) {
-  metro_driver::PointerEventHandler pointer;
-  HRESULT hr = pointer.Init(args);
-  if (FAILED(hr))
-    return hr;
-  if (!pointer.is_mouse())
-    return S_OK;
-
-  ui_channel_->Send(new MetroViewerHostMsg_MouseMoved(pointer.x(),
-                                                      pointer.y(),
-                                                      0));
-  return S_OK;
-}
-
-HRESULT ChromeAppView::OnPointerPressed(winui::Core::ICoreWindow* sender,
-                                        winui::Core::IPointerEventArgs* args) {
-  metro_driver::PointerEventHandler pointer;
-  HRESULT hr = pointer.Init(args);
-  if (FAILED(hr))
-    return hr;
-  if (!pointer.is_mouse())
-    return S_OK;
-
-  ui_channel_->Send(new MetroViewerHostMsg_MouseButton(pointer.x(),
-                                                       pointer.y(),
-                                                       1));
-  return S_OK;
-}
-
-HRESULT ChromeAppView::OnPointerReleased(winui::Core::ICoreWindow* sender,
-                                         winui::Core::IPointerEventArgs* args) {
-  metro_driver::PointerEventHandler pointer;
-  HRESULT hr = pointer.Init(args);
-  if (FAILED(hr))
-    return hr;
-  if (!pointer.is_mouse())
-    return S_OK;
-
-  ui_channel_->Send(new MetroViewerHostMsg_MouseButton(pointer.x(),
-                                                       pointer.y(),
-                                                       0));
-  return S_OK;
-}
-
-HRESULT ChromeAppView::OnKeyDown(winui::Core::ICoreWindow* sender,
-                                 winui::Core::IKeyEventArgs* args) {
-  winsys::VirtualKey virtual_key;
-  HRESULT hr = args->get_VirtualKey(&virtual_key);
-  if (FAILED(hr))
-    return hr;
-  winui::Core::CorePhysicalKeyStatus status;
-  hr = args->get_KeyStatus(&status);
-  if (FAILED(hr))
-    return hr;
-
-  ui_channel_->Send(new MetroViewerHostMsg_KeyDown(virtual_key,
-                                                   status.RepeatCount,
-                                                   status.ScanCode));
-  return S_OK;
-}
-
-HRESULT ChromeAppView::OnKeyUp(winui::Core::ICoreWindow* sender,
-                               winui::Core::IKeyEventArgs* args) {
-  winsys::VirtualKey virtual_key;
-  HRESULT hr = args->get_VirtualKey(&virtual_key);
-  if (FAILED(hr))
-    return hr;
-  winui::Core::CorePhysicalKeyStatus status;
-  hr = args->get_KeyStatus(&status);
-  if (FAILED(hr))
-    return hr;
-
-  ui_channel_->Send(new MetroViewerHostMsg_KeyUp(virtual_key,
-                                                 status.RepeatCount,
-                                                 status.ScanCode));
   return S_OK;
 }
 
