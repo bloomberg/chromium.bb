@@ -69,7 +69,7 @@ void SessionStateControllerImpl2::OnLockStateChanged(bool locked) {
   if (locked) {
     animator_->StartAnimation(
         internal::SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
-        internal::SessionStateAnimator::ANIMATION_FADE_IN);
+        internal::SessionStateAnimator::ANIMATION_LOWER);
     lock_timer_.Stop();
     lock_fail_timer_.Stop();
 
@@ -79,7 +79,8 @@ void SessionStateControllerImpl2::OnLockStateChanged(bool locked) {
     }
   } else {
     animator_->StartAnimation(
-        internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
+        internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS |
+        internal::SessionStateAnimator::LAUNCHER,
         internal::SessionStateAnimator::ANIMATION_LOWER);
   }
 }
@@ -89,10 +90,11 @@ void SessionStateControllerImpl2::OnStartingLock() {
     return;
 
   animator_->StartAnimation(
-      internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
+      internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS |
+      internal::SessionStateAnimator::LAUNCHER,
       internal::SessionStateAnimator::ANIMATION_RAISE);
 
-  // Hide the screen locker containers so we can make them fade in later.
+  // Hide the screen locker containers so we can raise them later.
   animator_->StartAnimation(
       internal::SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
       internal::SessionStateAnimator::ANIMATION_HIDE);
