@@ -1133,6 +1133,30 @@ log_egl_gl_info(EGLDisplay egldpy)
 	log_extensions("GL extensions", str ? str : "(null)");
 }
 
+static void
+log_egl_config_info(EGLDisplay egldpy, EGLConfig eglconfig)
+{
+	EGLint r, g, b, a;
+
+	weston_log("Chosen EGL config details:\n");
+
+	weston_log_continue(STAMP_SPACE "RGBA bits");
+	if (eglGetConfigAttrib(egldpy, eglconfig, EGL_RED_SIZE, &r) &&
+	    eglGetConfigAttrib(egldpy, eglconfig, EGL_GREEN_SIZE, &g) &&
+	    eglGetConfigAttrib(egldpy, eglconfig, EGL_BLUE_SIZE, &b) &&
+	    eglGetConfigAttrib(egldpy, eglconfig, EGL_ALPHA_SIZE, &a))
+		weston_log_continue(": %d %d %d %d\n", r, g, b, a);
+	else
+		weston_log_continue(" unknown\n");
+
+	weston_log_continue(STAMP_SPACE "swap interval range");
+	if (eglGetConfigAttrib(egldpy, eglconfig, EGL_MIN_SWAP_INTERVAL, &a) &&
+	    eglGetConfigAttrib(egldpy, eglconfig, EGL_MAX_SWAP_INTERVAL, &b))
+		weston_log_continue(": %d - %d\n", a, b);
+	else
+		weston_log_continue(" unknown\n");
+}
+
 struct gles2_renderer {
 	struct weston_renderer base;
 };
@@ -1167,6 +1191,9 @@ gles2_renderer_init(struct weston_compositor *ec)
 		print_egl_error_state();
 		return -1;
 	}
+
+	log_egl_config_info(ec->egl_display, ec->egl_config);
+
 	ec->egl_context = eglCreateContext(ec->egl_display, ec->egl_config,
 					   EGL_NO_CONTEXT, context_attribs);
 	if (ec->egl_context == NULL) {
