@@ -142,11 +142,11 @@ void SearchNTPContainerView::Layout() {
 }
 
 void SearchNTPContainerView::OnPaintBackground(gfx::Canvas* canvas) {
-  int paint_height = height();
-  if (content_view_)
-    paint_height = content_view_->bounds().y();
-
-  gfx::Rect paint_rect(0, 0, width(), paint_height);
+  // While it's not necessary to paint background of content view here (since
+  // content view does so itself), content view shows up later than the logo and
+  // omnibox, resulting in a black flash in the content view before it paints.
+  // So, paint the entire background here.
+  gfx::Rect paint_rect(0, 0, width(), height());
   gfx::Rect paint_rect_in_browser_view(paint_rect);
   gfx::Point origin;
   View::ConvertPointToTarget(this, browser_view_, &origin);
