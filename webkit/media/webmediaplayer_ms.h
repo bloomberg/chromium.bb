@@ -9,9 +9,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "googleurl/src/gurl.h"
+#include "media/filters/skcanvas_video_renderer.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
-#include "webkit/media/skcanvas_video_renderer.h"
 
 namespace WebKit {
 class WebFrame;
@@ -158,7 +158,7 @@ class WebMediaPlayerMS
   base::TimeDelta start_time_;
   unsigned total_frame_count_;
   unsigned dropped_frame_count_;
-  SkCanvasVideoRenderer video_renderer_;
+  media::SkCanvasVideoRenderer video_renderer_;
 
   scoped_refptr<media::MediaLog> media_log_;
 

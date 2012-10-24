@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/media/skcanvas_video_renderer.h"
+#include "media/filters/skcanvas_video_renderer.h"
 
 #include "base/logging.h"
 #include "media/base/video_frame.h"
@@ -10,7 +10,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
 
-namespace webkit_media {
+namespace media {
 
 static bool IsEitherYV12OrYV16(media::VideoFrame::Format format) {
   return format == media::VideoFrame::YV12 || format == media::VideoFrame::YV16;
@@ -31,8 +31,8 @@ static bool IsEitherYV12OrYV16OrNative(media::VideoFrame::Format format) {
 //
 // TODO(hclam): The fast paint method should support flipping and mirroring.
 // Disable the flipping and mirroring checks once we have it.
-static bool CanFastPaint(SkCanvas* canvas, const gfx::Rect& dest_rect,
-                         uint8_t alpha, media::VideoFrame::Format format) {
+static bool CanFastPaint(SkCanvas* canvas, uint8_t alpha,
+                         media::VideoFrame::Format format) {
   if (alpha != 0xFF || !IsEitherYV12OrYV16(format))
     return false;
 
@@ -62,7 +62,7 @@ static bool CanFastPaint(SkCanvas* canvas, const gfx::Rect& dest_rect,
 static void FastPaint(
     const scoped_refptr<media::VideoFrame>& video_frame,
     SkCanvas* canvas,
-    const gfx::Rect& dest_rect) {
+    const SkRect& dest_rect) {
   DCHECK(IsEitherYV12OrYV16(video_frame->format())) << video_frame->format();
   DCHECK_EQ(video_frame->stride(media::VideoFrame::kUPlane),
             video_frame->stride(media::VideoFrame::kVPlane));
@@ -72,15 +72,10 @@ static void FastPaint(
                             media::YV12 : media::YV16;
   int y_shift = yuv_type;  // 1 for YV12, 0 for YV16.
 
-  // Create a rectangle backed by SkScalar.
-  SkRect scalar_dest_rect;
-  scalar_dest_rect.iset(dest_rect.x(), dest_rect.y(),
-                        dest_rect.right(), dest_rect.bottom());
-
   // Transform the destination rectangle to local coordinates.
   const SkMatrix& local_matrix = canvas->getTotalMatrix();
   SkRect local_dest_rect;
-  local_matrix.mapRect(&local_dest_rect, scalar_dest_rect);
+  local_matrix.mapRect(&local_dest_rect, dest_rect);
 
   // After projecting the destination rectangle to local coordinates, round
   // the projected rectangle to integer values, this will give us pixel values
@@ -219,15 +214,14 @@ SkCanvasVideoRenderer::~SkCanvasVideoRenderer() {}
 
 void SkCanvasVideoRenderer::Paint(media::VideoFrame* video_frame,
                                   SkCanvas* canvas,
-                                  const gfx::Rect& dest_rect,
+                                  const gfx::RectF& dest_rect,
                                   uint8_t alpha) {
   if (alpha == 0) {
     return;
   }
 
   SkRect dest;
-  dest.set(SkIntToScalar(dest_rect.x()), SkIntToScalar(dest_rect.y()),
-           SkIntToScalar(dest_rect.right()), SkIntToScalar(dest_rect.bottom()));
+  dest.set(dest_rect.x(), dest_rect.y(), dest_rect.right(), dest_rect.bottom());
 
   SkPaint paint;
   paint.setAlpha(alpha);
@@ -240,8 +234,8 @@ void SkCanvasVideoRenderer::Paint(media::VideoFrame* video_frame,
   }
 
   // Scale and convert to RGB in one step if we can.
-  if (CanFastPaint(canvas, dest_rect, alpha, video_frame->format())) {
-    FastPaint(video_frame, canvas, dest_rect);
+  if (CanFastPaint(canvas, alpha, video_frame->format())) {
+    FastPaint(video_frame, canvas, dest);
     return;
   }
 
@@ -257,4 +251,4 @@ void SkCanvasVideoRenderer::Paint(media::VideoFrame* video_frame,
   canvas->drawBitmapRect(last_frame_, NULL, dest, &paint);
 }
 
-}  // namespace webkit_media
+}  // namespace media

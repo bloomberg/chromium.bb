@@ -273,7 +273,8 @@ void WebMediaPlayerMS::paint(WebCanvas* canvas,
   DVLOG(3) << "WebMediaPlayerMS::paint";
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  video_renderer_.Paint(current_frame_, canvas, rect, alpha);
+  gfx::RectF dest_rect(rect.x, rect.y, rect.width, rect.height);
+  video_renderer_.Paint(current_frame_, canvas, dest_rect, alpha);
 }
 
 bool WebMediaPlayerMS::hasSingleSecurityOrigin() const {

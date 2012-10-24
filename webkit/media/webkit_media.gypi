@@ -66,8 +66,6 @@
         'preload.h',
         'simple_video_frame_provider.cc',
         'simple_video_frame_provider.h',
-        'skcanvas_video_renderer.cc',
-        'skcanvas_video_renderer.h',
         'video_frame_provider.cc',
         'video_frame_provider.h',
         'webmediaplayer_delegate.h',

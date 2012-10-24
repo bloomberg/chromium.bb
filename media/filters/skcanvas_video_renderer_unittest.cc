@@ -7,11 +7,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
-#include "webkit/media/skcanvas_video_renderer.h"
+#include "media/filters/skcanvas_video_renderer.h"
 
 using media::VideoFrame;
 
-namespace webkit_media {
+namespace media {
 
 static const int kWidth = 320;
 static const int kHeight = 240;
@@ -199,4 +199,4 @@ TEST_F(SkCanvasVideoRendererTest, SlowPaint_SameVideoFrame) {
   EXPECT_EQ(SK_ColorRED, GetColor(slow_path_canvas()));
 }
 
-}  // namespace webkit_media
+}  // namespace media

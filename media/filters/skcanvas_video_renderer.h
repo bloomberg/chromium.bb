@@ -2,24 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_MEDIA_SKCANVAS_VIDEO_RENDERER_H_
-#define WEBKIT_MEDIA_SKCANVAS_VIDEO_RENDERER_H_
+#ifndef MEDIA_FILTERS_SKCANVAS_VIDEO_RENDERER_H_
+#define MEDIA_FILTERS_SKCANVAS_VIDEO_RENDERER_H_
 
 #include "base/time.h"
+#include "media/base/media_export.h"
 #include "ui/gfx/rect.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class SkCanvas;
 
 namespace media {
-class VideoFrame;
-}
 
-namespace webkit_media {
+class VideoFrame;
 
 // Handles rendering of VideoFrames to SkCanvases, doing any necessary YUV
 // conversion and caching of resulting RGB bitmaps.
-class SkCanvasVideoRenderer {
+class MEDIA_EXPORT SkCanvasVideoRenderer {
  public:
   SkCanvasVideoRenderer();
   ~SkCanvasVideoRenderer();
@@ -30,7 +29,7 @@ class SkCanvasVideoRenderer {
   // Black will be painted on |canvas| if |video_frame| is null.
   void Paint(media::VideoFrame* video_frame,
              SkCanvas* canvas,
-             const gfx::Rect& dest_rect,
+             const gfx::RectF& dest_rect,
              uint8_t alpha);
 
  private:
@@ -42,6 +41,6 @@ class SkCanvasVideoRenderer {
   DISALLOW_COPY_AND_ASSIGN(SkCanvasVideoRenderer);
 };
 
-}  // namespace webkit_media
+}  // namespace media
 
-#endif  // WEBKIT_MEDIA_SKCANVAS_VIDEO_RENDERER_H_
+#endif  // MEDIA_FILTERS_SKCANVAS_VIDEO_RENDERER_H_
