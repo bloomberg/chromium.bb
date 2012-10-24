@@ -335,7 +335,7 @@ TEST_F(BrowserPluginTest, CustomEvents) {
           BrowserPluginHostMsg_ResizeGuest::ID);
   ASSERT_TRUE(msg);
   PickleIterator iter = IPC::SyncMessage::GetDataIterator(msg);
-  BrowserPluginHostMsg_ResizeGuest::SendParam  resize_params;
+  BrowserPluginHostMsg_ResizeGuest::SendParam resize_params;
   ASSERT_TRUE(IPC::ReadParam(msg, &iter, &resize_params));
   int instance_id = resize_params.a;
 
@@ -496,6 +496,106 @@ TEST_F(BrowserPluginTest, ImmutableAttributesAfterNavigation) {
   partition_value = ExecuteScriptAndReturnString(
       "document.getElementById('browserplugin').partition");
   EXPECT_STREQ("storage", partition_value.c_str());
+}
+
+// This test verifies that we can mutate the event listener vector
+// within an event listener.
+TEST_F(BrowserPluginTest, RemoveEventListenerInEventListener) {
+  const char* kAddEventListener =
+    "var url;"
+    "function nav(u) {"
+    "  url = u.url;"
+    "  document.getElementById('browserplugin')."
+    "      removeEventListener('loadcommit', nav);"
+    "}"
+    "document.getElementById('browserplugin')."
+    "    addEventListener('loadcommit', nav);";
+  const char* kGoogleURL = "http://www.google.com/";
+  const char* kGoogleNewsURL = "http://news.google.com/";
+  const char* kGetProcessID =
+      "document.getElementById('browserplugin').getProcessId()";
+
+  LoadHTML(GetHTMLForBrowserPluginObject().c_str());
+  ExecuteJavaScript(kAddEventListener);
+  // Grab the BrowserPlugin's instance ID from its resize message.
+  const IPC::Message* msg =
+      browser_plugin_manager()->sink().GetFirstMessageMatching(
+          BrowserPluginHostMsg_ResizeGuest::ID);
+  ASSERT_TRUE(msg);
+  PickleIterator iter = IPC::SyncMessage::GetDataIterator(msg);
+  BrowserPluginHostMsg_ResizeGuest::SendParam  resize_params;
+  ASSERT_TRUE(IPC::ReadParam(msg, &iter, &resize_params));
+  int instance_id = resize_params.a;
+
+  MockBrowserPlugin* browser_plugin =
+      static_cast<MockBrowserPlugin*>(
+          browser_plugin_manager()->GetBrowserPlugin(instance_id));
+  ASSERT_TRUE(browser_plugin);
+
+  {
+    BrowserPluginMsg_LoadCommit_Params navigate_params;
+    navigate_params.url = GURL(kGoogleURL);
+    navigate_params.process_id = 1337;
+    browser_plugin->LoadCommit(navigate_params);
+    EXPECT_EQ(kGoogleURL, ExecuteScriptAndReturnString("url"));
+    EXPECT_EQ(1337, ExecuteScriptAndReturnInt(kGetProcessID));
+  }
+  {
+    BrowserPluginMsg_LoadCommit_Params navigate_params;
+    navigate_params.url = GURL(kGoogleNewsURL);
+    navigate_params.process_id = 42;
+    browser_plugin->LoadCommit(navigate_params);
+    // The URL variable should not change because we've removed the event
+    // listener.
+    EXPECT_EQ(kGoogleURL, ExecuteScriptAndReturnString("url"));
+    EXPECT_EQ(42, ExecuteScriptAndReturnInt(kGetProcessID));
+  }
+}
+
+// This test verifies that multiple event listeners fire that are registered
+// on a single event type.
+TEST_F(BrowserPluginTest, MultipleEventListeners) {
+  const char* kAddEventListener =
+    "var count = 0;"
+    "function nava(u) {"
+    "  count++;"
+    "}"
+    "function navb(u) {"
+    "  count++;"
+    "}"
+    "document.getElementById('browserplugin')."
+    "    addEventListener('loadcommit', nava);"
+    "document.getElementById('browserplugin')."
+    "    addEventListener('loadcommit', navb);";
+  const char* kGoogleURL = "http://www.google.com/";
+  const char* kGetProcessID =
+      "document.getElementById('browserplugin').getProcessId()";
+
+  LoadHTML(GetHTMLForBrowserPluginObject().c_str());
+  ExecuteJavaScript(kAddEventListener);
+  // Grab the BrowserPlugin's instance ID from its resize message.
+  const IPC::Message* msg =
+      browser_plugin_manager()->sink().GetFirstMessageMatching(
+          BrowserPluginHostMsg_ResizeGuest::ID);
+  ASSERT_TRUE(msg);
+  PickleIterator iter = IPC::SyncMessage::GetDataIterator(msg);
+  BrowserPluginHostMsg_ResizeGuest::SendParam  resize_params;
+  ASSERT_TRUE(IPC::ReadParam(msg, &iter, &resize_params));
+  int instance_id = resize_params.a;
+
+  MockBrowserPlugin* browser_plugin =
+      static_cast<MockBrowserPlugin*>(
+          browser_plugin_manager()->GetBrowserPlugin(instance_id));
+  ASSERT_TRUE(browser_plugin);
+
+  {
+    BrowserPluginMsg_LoadCommit_Params navigate_params;
+    navigate_params.url = GURL(kGoogleURL);
+    navigate_params.process_id = 1337;
+    browser_plugin->LoadCommit(navigate_params);
+    EXPECT_EQ(2, ExecuteScriptAndReturnInt("count"));
+    EXPECT_EQ(1337, ExecuteScriptAndReturnInt(kGetProcessID));
+  }
 }
 
 TEST_F(BrowserPluginTest, RemoveBrowserPluginOnExit) {
