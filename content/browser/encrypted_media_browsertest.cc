@@ -113,10 +113,6 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_BasicPlayback) {
                                              GetParam(), kExpected));
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_FrameChangeVideo) {
-  const string16 kExpected = ASCIIToUTF16("ENDED");
-  ASSERT_NO_FATAL_FAILURE(TestFrameSizeChange(GetParam(), kExpected));
-}
 #else
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, BasicPlayback) {
   const string16 kExpected = ASCIIToUTF16("ENDED");
@@ -124,11 +120,12 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, BasicPlayback) {
                                              GetParam(), kExpected));
 }
 
-IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameChangeVideo) {
+#endif
+
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_FrameChangeVideo) {
   const string16 kExpected = ASCIIToUTF16("ENDED");
   ASSERT_NO_FATAL_FAILURE(TestFrameSizeChange(GetParam(), kExpected));
 }
-#endif
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, InvalidKeySystem) {
   const string16 kExpected = ASCIIToUTF16(
