@@ -4340,7 +4340,44 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       </message>
 
       <!-- Performance Monitor page -->
+      <message name="IDS_PERFORMANCE_MONITOR_TITLE" desc="Title for the Performance tab.">
+        Performance
+      </message>
+      <message name="IDS_PERFORMANCE_MONITOR_FLAG_NOT_ENABLED" desc="The text of the alert box which indicates that the kPerformanceMonitorGathering flag has not been enabled.">
+        Warning: You do not have the performance monitoring flag enabled! Data displayed will be limited to any data which were gathered previously.
+      </message>
+      <!-- Time Range-Related -->
+      <message name="IDS_PERFORMANCE_MONITOR_TIME_RANGE_SECTION" desc="Text displayed for the header of the section which allows the user to choose the window of time for which to display data.">
+        Time Range
+      </message>
+      <message name="IDS_PERFORMANCE_MONITOR_TIME_RESOLUTION_CATEGORY" desc="Text displayed for the category of different time resolutions, allowing the user to choose the granularity of the data.">
+        Time Resolution
+      </message>
+      <message name="IDS_PERFORMANCE_MONITOR_TIME_LAST_FIFTEEN_MINUTES" desc="Text displayed for the time option to display data for the most recent fifteen minutes.">
+        Last 15 Minutes
+      </message>
+      <message name="IDS_PERFORMANCE_MONITOR_TIME_LAST_HOUR" desc="Text displayed for the time option to display data for the most recent hour.">
+        Last Hour
+      </message>
+      <message name="IDS_PERFORMANCE_MONITOR_TIME_LAST_DAY" desc="Text displayed for the time option to display data for the most recent day.">
+        Last Day
+      </message>
+      <message name="IDS_PERFORMANCE_MONITOR_TIME_LAST_WEEK" desc="Text displayed for the time option to display data for the most recent week.">
+        Last Week
+      </message>
+      <message name="IDS_PERFORMANCE_MONITOR_TIME_LAST_MONTH" desc="Text displayed for the time option to display data for the most recent month.">
+        Last Month
+      </message>
+      <message name="IDS_PERFORMANCE_MONITOR_TIME_LAST_QUARTER" desc="Text displayed for the time option to display data for the most recent quarter-year.">
+        Last Quarter
+      </message>
+      <message name="IDS_PERFORMANCE_MONITOR_TIME_RANGE_BUTTON_HEADING" desc="Text displayed above the buttons to adjust the time range.">
+        Shift Time Window
+      </message>
       <!-- Aggregation-Related -->
+      <message name="IDS_PERFORMANCE_MONITOR_AGGREGATION_CATEGORY" desc="Text displayed for the Aggregation category title.">
+        Aggregation Method
+      </message>
       <message name="IDS_PERFORMANCE_MONITOR_AGGREGATION_NONE_NAME" desc="Text displayed for the None aggregation strategy title.">
         None
       </message>
@@ -4360,6 +4397,9 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
         Weight all values equally in performance data
       </message>
       <!-- Event-Related -->
+      <message name="IDS_PERFORMANCE_MONITOR_EVENTS_SECTION" desc="Text displayed for the header of the Events section.">
+        Events to Display
+      </message>
       <message name="IDS_PERFORMANCE_MONITOR_EXTENSIONS_EVENT_CATEGORY" desc="Text displayed for the Extensions events category title.">
         Extensions
       </message>
@@ -4468,6 +4508,9 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
       <message name="IDS_PERFORMANCE_MONITOR_UNCLEAN_EXIT_EVENT_MOUSEOVER" desc="Text displayed on mouseover of an Unclean Exit event.">
         Unclean Exit
       </message>
+      <message name="IDS_PERFORMANCE_MONITOR_EVENT_TIME_MOUSEOVER" desc="Text displayed for the Time field of an event mouseover.">
+        Time
+      </message>
       <message name="IDS_PERFORMANCE_MONITOR_EXTENSION_ID_MOUSEOVER" desc="Text displayed for the Extension ID field of an event mouseover.">
         Extension ID
       </message>
@@ -4499,6 +4542,9 @@ Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS">$3<ex>24</ex></ph> bits):
         Profile Name
       </message>
       <!--- Metric-Related -->
+      <message name="IDS_PERFORMANCE_MONITOR_METRICS_SECTION" desc="Text displayed for header of the Metrics section.">
+        Metrics to Display
+      </message>
       <message name="IDS_PERFORMANCE_MONITOR_CPU_METRIC_CATEGORY" desc="Text displayed for the CPU metrics' category title">
         CPU
       </message>
@@ -6523,6 +6569,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_CRASH_ON_GPU_HANG_DESCRIPTION" desc="Description of flag to enable crashing on GPU hang.">
         Crash the GPU process whenever Chrome detects that it has hung.
+      </message>
+      <message name="IDS_FLAGS_PERFORMANCE_MONITOR_GATHERING_NAME" desc="Name for the flag to enable Performance Monitor.">
+        Enable performance monitoring
+      </message>
+      <message name="IDS_FLAGS_PERFORMANCE_MONITOR_GATHERING_DESCRIPTION" desc="Description for the flag to enable Performance Monitor.">
+        Enable passive gathering of performance-related metrics and events and provide the option to view this data in a graphical fashion.
       </message>
 
       <!-- Crashes -->

@@ -9,37 +9,45 @@ Readable Flot source is available at http://code.google.com/p/flot/
 Good caliber Flot API docs are at: http://people.iola.dk/olau/flot/API.txt
 as of 6/2012. -->
 
-<html>
+<html i18n-values="dir:textdirection;">
   <head>
+    <meta charset="utf-8">
+    <title i18n-content="title"></title>
     <link rel="stylesheet" type="text/css" href="chart.css">
   </head>
-  <body>
+  <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+    <h2 id="flag-warning" i18n-content="flagNotEnabled"></h2>
     <div class="horizontal-box">
       <div id="choose-block">
-        <div id="choose-time-range-header" class="tab-label">
-          Time Range
+        <div id="choose-time-range-header" class="tab-label"
+            i18n-content="timeRangeSection">
         </div>
-        <div class="category-label">Time Resolution</div>
+        <div id="time-resolution-header" class="category-label"
+            i18n-content="timeResolutionCategory">
+        </div>
         <div id="choose-time-range">
         </div>
-        <div class="category-label">Back/Forward by Half-Ranges</div>
+        <div class="category-label" i18n-content="timeRangeButtonHeading">
+        </div>
         <div class="horizontal-box">
           <button id="back-time" title="Back">&lt;&lt;</button>
           <div class="spacer"></div>
           <button id="forward-time" title="Forward">&gt;&gt;</button>
         </div>
-        <div class="category-label">Aggregation Method</div>
+        <div id="aggregation-header" class="category-label"
+            i18n-content="aggregationCategory">
+        </div>
         <div id="choose-aggregation">
         </div>
 
-        <div id="choose-metrics-header" class="tab-label">
-          Metrics to Display
+        <div id="choose-metrics-header" class="tab-label"
+            i18n-content="metricsSection">
         </div>
         <div id="choose-metrics">
         </div>
 
-        <div id="choose-events-header" class="tab-label">
-          Events to Display
+        <div id="choose-events-header" class="tab-label"
+            i18n-content="eventsSection">
         </div>
         <div id="choose-events">
         </div>
@@ -52,7 +60,7 @@ as of 6/2012. -->
         <div id="detail-checkbox-template" class="detail-checkbox">
           <div class="horizontal-box">
             <input type="checkbox"/>
-            <div class="detail-label">Change this label</div>
+            <div class="detail-label"></div>
             <div class="spacer"></div>
             <div class="color-icon"></div>
           </div>
@@ -60,13 +68,16 @@ as of 6/2012. -->
         <div id="radio-template" class="radio">
           <div class="horizontal-box">
             <input type="radio"/>
-            <span>Change this label</span>
+            <span></span>
           </div>
         </div>
       </div>
     </div>
     <script src="chrome://resources/js/cr.js"></script>
+    <script src="chrome://resources/js/load_time_data.js"></script>
     <script src="chrome://resources/js/util.js"></script>
+    <script src="chrome://performance/strings.js"></script>
+    <script src="chrome://resources/js/i18n_template2.js"></script>
     <script src="jquery.js"></script>
     <script src="flot.js"></script>
     <script src="chart.js"></script>

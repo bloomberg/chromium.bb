@@ -13,33 +13,34 @@ cr.define('performance_monitor', function() {
   var TimeResolutions_ = {
     // Prior 15 min, resolution of 5s, at most 180 points.
     // Labels at 12 point (1 min) intervals.
-    minutes: {id: 0, name: 'Last 15 min', timeSpan: 900 * 1000,
-        pointResolution: 1000 * 5, labelEvery: 12},
+    minutes: {id: 0, i18nKey: 'timeLastFifteenMinutes', timeSpan: 900 * 1000,
+              pointResolution: 1000 * 5, labelEvery: 12},
 
     // Prior hour, resolution of 20s, at most 180 points.
     // Labels at 15 point (5 min) intervals.
-    hour: {id: 1, name: 'Last Hour', timeSpan: 3600 * 1000,
-        pointResolution: 1000 * 20, labelEvery: 15},
+    hour: {id: 1, i18nKey: 'timeLastHour', timeSpan: 3600 * 1000,
+           pointResolution: 1000 * 20, labelEvery: 15},
 
     // Prior day, resolution of 5 min, at most 288 points.
     // Labels at 36 point (3 hour) intervals.
-    day: {id: 2, name: 'Last Day', timeSpan: 24 * 3600 * 1000,
-        pointResolution: 1000 * 60 * 5, labelEvery: 36},
+    day: {id: 2, i18nKey: 'timeLastDay', timeSpan: 24 * 3600 * 1000,
+          pointResolution: 1000 * 60 * 5, labelEvery: 36},
 
     // Prior week, resolution of 1 hr -- at most 168 data points.
     // Labels at 24 point (daily) intervals.
-    week: {id: 3, name: 'Last Week', timeSpan: 7 * 24 * 3600 * 1000,
-        pointResolution: 1000 * 3600, labelEvery: 24},
+    week: {id: 3, i18nKey: 'timeLastWeek', timeSpan: 7 * 24 * 3600 * 1000,
+           pointResolution: 1000 * 3600, labelEvery: 24},
 
     // Prior month (30 days), resolution of 4 hr -- at most 180 data points.
     // Labels at 42 point (weekly) intervals.
-    month: {id: 4, name: 'Last Month', timeSpan: 30 * 24 * 3600 * 1000,
-        pointResolution: 1000 * 3600 * 4, labelEvery: 42},
+    month: {id: 4, i18nKey: 'timeLastMonth', timeSpan: 30 * 24 * 3600 * 1000,
+            pointResolution: 1000 * 3600 * 4, labelEvery: 42},
 
     // Prior quarter (90 days), resolution of 12 hr -- at most 180 data points.
     // Labels at 28 point (fortnightly) intervals.
-    quarter: {id: 5, name: 'Last Quarter', timeSpan: 90 * 24 * 3600 * 1000,
-        pointResolution: 1000 * 3600 * 12, labelEvery: 28},
+    quarter: {id: 5, i18nKey: 'timeLastQuarter',
+              timeSpan: 90 * 24 * 3600 * 1000,
+              pointResolution: 1000 * 3600 * 12, labelEvery: 28},
   };
 
   /*
@@ -108,12 +109,30 @@ cr.define('performance_monitor', function() {
     PerformanceMonitor.TimeResolution;
 
     /**
+     * Information regarding a certain time resolution option, including an
+     * enumerative id, the key to the i18n name and the name itself, the
+     * timespan in milliseconds prior to |now|, data point resolution in
+     * milliseconds, and time-label frequency in data points per label.
+     * @typedef {{
+     *   id: number,
+     *   i18nKey: string,
+     *   name: string
+     *   timeSpan: number,
+     *   pointResolution: number,
+     *   labelEvery: number,
+     * }}
+     */
+    PerformanceMonitor.TimeResolution;
+
+    /**
      * Detailed information on a metric in the UI. MetricId is a unique
      * identifying number for the metric, provided by the webui, and assumed
      * to be densely populated. All metrics also have a description and
      * an associated category giving their unit information and home chart.
      * They also have a color in which they are displayed, and a maximum value
-     * by which to scale their y-axis.
+     * by which to scale their y-axis. Additionally, there is a corresponding
+     * checkbox element, which is the checkbox used to enable or disable the
+     * metric display.
      *
      * Although in the present UI each metric appears only in the home chart of
      * its metric category, we keep the divs property to allow future
@@ -129,6 +148,7 @@ cr.define('performance_monitor', function() {
      *   category: !Object,
      *   color: string,
      *   maxValue: number,
+     *   checkbox: HTMLElement,
      *   divs: !Array.<HTMLDivElement>,
      *   data: ?Array.<{time: number, value: number}>
      * }}
@@ -151,6 +171,7 @@ cr.define('performance_monitor', function() {
      *   popupTitle: string,
      *   description: string,
      *   color: string,
+     *   checkbox: HTMLElement,
      *   divs: !Array.<HTMLDivElement>,
      *   data: ?Array.<{time: number}>
      * }}
@@ -279,12 +300,24 @@ cr.define('performance_monitor', function() {
     this.charts_ = [];
 
     this.setupStaticControlPanelFeatures_();
+    chrome.send('getFlagEnabled');
     chrome.send('getAggregationTypes');
     chrome.send('getEventTypes');
     chrome.send('getMetricTypes');
   }
 
   PerformanceMonitor.prototype = {
+    /**
+     * Receive an indication of whether or not the kPerformanceMonitorGathering
+     * flag has been enabled and, if not, warn the user of such.
+     * @param {boolean} flagEnabled indicates whether or not the flag has been
+     *     enabled.
+     */
+    getFlagEnabledCallback: function(flagEnabled) {
+      if (!flagEnabled)
+        $('#flag-warning')[0].style.display = 'block';
+    },
+
     /**
      * Receive a list of all the aggregation methods. Populate
      * |this.aggregationRadioMap_| to reflect said list. Create the section of
@@ -343,6 +376,9 @@ cr.define('performance_monitor', function() {
 
       this.setupCheckboxes_($('#choose-metrics')[0],
           this.metricCategoryMap_, 'metricId', this.addMetric, this.dropMetric);
+
+      for (var metric in this.metricDetailsMap_)
+        this.metricDetailsMap_[metric].checkbox.click();
     },
 
     /**
@@ -384,10 +420,12 @@ cr.define('performance_monitor', function() {
      * @private
      */
     setupStaticControlPanelFeatures_: function() {
-      // Initialize the options in the |timeResolutionRadioMap_|.
-      for (var resolution in TimeResolutions_) {
-        this.timeResolutionRadioMap_[TimeResolutions_[resolution].id] =
-            { 'option': TimeResolutions_[resolution] };
+      // Initialize the options in the |timeResolutionRadioMap_| and set the
+      // localized names for the time resolutions.
+      for (var key in TimeResolutions_) {
+        var resolution = TimeResolutions_[key];
+        this.timeResolutionRadioMap_[resolution.id] = { 'option': resolution };
+        resolution.name = loadTimeData.getString(resolution.i18nKey);
       }
 
       // Setup the Time Resolution radio buttons, and select the default option
@@ -571,6 +609,9 @@ cr.define('performance_monitor', function() {
           var label = checkbox.querySelector('.detail-label');
           var icon = checkbox.querySelector('.color-icon');
 
+          details.checkbox = input;
+
+          input.checked = false;
           input.option = details[idKey];
           input.icon = icon;
           input.addEventListener('change', function(e) {
@@ -678,7 +719,8 @@ cr.define('performance_monitor', function() {
         input.enumerator = entry.option.id;
         input.option = entry;
         radio.querySelector('span').innerText = entry.option.name;
-        radio.title = entry.option.description;
+        if (entry.option.description != undefined)
+          radio.title = entry.option.description;
         div.appendChild(radio);
         entry.element = input;
       }

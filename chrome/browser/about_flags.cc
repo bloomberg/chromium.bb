@@ -982,6 +982,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kCrashOnGpuHang)
   },
+  {
+    "performance-monitor-gathering",
+    IDS_FLAGS_PERFORMANCE_MONITOR_GATHERING_NAME,
+    IDS_FLAGS_PERFORMANCE_MONITOR_GATHERING_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kPerformanceMonitorGathering)
+  },
 };
 
 const Experiment* experiments = kExperiments;

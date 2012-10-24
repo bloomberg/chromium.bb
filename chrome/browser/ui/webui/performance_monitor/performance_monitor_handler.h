@@ -39,6 +39,10 @@ class PerformanceMonitorHandler
   // |args| contains a start and an end time.
   void HandleGetActiveIntervals(const base::ListValue* args);
 
+  // Callback for the "getFlagEnabled" message.
+  // |args| is unused.
+  void HandleGetFlagEnabled(const base::ListValue* args);
+
   // Callback for the "getAggregationTypes" message.
   // |args| is unused.
   void HandleGetAggregationTypes(const base::ListValue* args);

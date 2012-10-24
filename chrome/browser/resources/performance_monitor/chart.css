@@ -68,6 +68,10 @@
   display: -webkit-box;
 }
 
+h2#flag-warning {
+  display: none;
+}
+
 button {
   -webkit-padding-end: 10px;
   -webkit-padding-start: 10px;

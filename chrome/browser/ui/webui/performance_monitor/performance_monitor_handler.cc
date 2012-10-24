@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/performance_monitor/database.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/ui/webui/performance_monitor/performance_monitor_l10n.h"
 #include "chrome/browser/ui/webui/performance_monitor/performance_monitor_ui_constants.h"
 #include "chrome/browser/ui/webui/performance_monitor/performance_monitor_ui_util.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/value_builder.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
@@ -365,6 +367,10 @@ void PerformanceMonitorHandler::RegisterMessages() {
       base::Bind(&PerformanceMonitorHandler::HandleGetActiveIntervals,
                  AsWeakPtr()));
   web_ui()->RegisterMessageCallback(
+      "getFlagEnabled",
+      base::Bind(&PerformanceMonitorHandler::HandleGetFlagEnabled,
+                 AsWeakPtr()));
+  web_ui()->RegisterMessageCallback(
       "getAggregationTypes",
       base::Bind(&PerformanceMonitorHandler::HandleGetAggregationTypes,
                  AsWeakPtr()));
@@ -409,6 +415,15 @@ void PerformanceMonitorHandler::HandleGetActiveIntervals(
       base::Bind(&PerformanceMonitorHandler::ReturnResults, AsWeakPtr(),
                  "PerformanceMonitor.getActiveIntervalsCallback",
                  base::Owned(results)));
+}
+
+void PerformanceMonitorHandler::HandleGetFlagEnabled(const ListValue* args) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK_EQ(0u, args->GetSize());
+  scoped_ptr<Value> value(Value::CreateBooleanValue(
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kPerformanceMonitorGathering)));
+  ReturnResults("PerformanceMonitor.getFlagEnabledCallback", value.get());
 }
 
 void PerformanceMonitorHandler::HandleGetAggregationTypes(
