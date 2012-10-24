@@ -29,8 +29,6 @@ class MetricsService : public MetricsServiceBase {
   static MetricsService* GetInstance();
   // Start/stop the metrics recording and uploading machine.  These should be
   // used on startup and when the user clicks the checkbox in the prefs.
-  // StartRecordingOnly starts the metrics recording but not reporting, for use
-  // in tests only.
   static void Start();
   static void Stop();
   // Set up client ID, session ID, etc.

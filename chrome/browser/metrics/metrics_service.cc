@@ -123,11 +123,16 @@
 //
 // The one unusual case is when the user asks that we stop logging.  When that
 // happens, any staged (transmission in progress) log is persisted, and any log
-// log that is currently accumulating is also finalized and persisted.  We then
+// that is currently accumulating is also finalized and persisted.  We then
 // regress back to the SEND_OLD_LOGS state in case the user enables log
 // recording again during this session.  This way anything we have persisted
 // will be sent automatically if/when we progress back to SENDING_CURRENT_LOG
 // state.
+//
+// Another similar case is on mobile, when the application is backgrounded and
+// then foregrounded again. Backgrounding created new "old" stored logs, so the
+// state drops back from SENDING_CURRENT_LOGS to SENDING_OLD_LOGS so those logs
+// will be sent.
 //
 // Also note that whenever we successfully send an old log, we mirror the list
 // of logs into the PrefService. This ensures that IF we crash, we won't start
@@ -519,6 +524,7 @@ void MetricsService::DiscardOldStabilityStats(PrefService* local_state) {
 MetricsService::MetricsService()
     : recording_active_(false),
       reporting_active_(false),
+      test_mode_active_(false),
       state_(INITIALIZED),
       low_entropy_source_(0),
       idle_since_last_transmission_(false),
@@ -538,24 +544,36 @@ MetricsService::MetricsService()
 }
 
 MetricsService::~MetricsService() {
-  SetRecording(false);
+  DisableRecording();
 }
 
 void MetricsService::Start() {
   HandleIdleSinceLastTransmission(false);
-  SetRecording(true);
-  SetReporting(true);
+  EnableRecording();
+  EnableReporting();
 }
 
-void MetricsService::StartRecordingOnly() {
-  SetRecording(true);
-  SetReporting(false);
+void MetricsService::StartRecordingForTests() {
+  test_mode_active_ = true;
+  EnableRecording();
+  DisableReporting();
 }
 
 void MetricsService::Stop() {
   HandleIdleSinceLastTransmission(false);
-  SetReporting(false);
-  SetRecording(false);
+  DisableReporting();
+  DisableRecording();
+}
+
+void MetricsService::EnableReporting() {
+  if (reporting_active_)
+    return;
+  reporting_active_ = true;
+  StartSchedulerIfNecessary();
+}
+
+void MetricsService::DisableReporting() {
+  reporting_active_ = false;
 }
 
 std::string MetricsService::GetClientId() {
@@ -605,37 +623,36 @@ void MetricsService::ForceClientIdCreation() {
                   base::Int64ToString(Time::Now().ToTimeT()));
 }
 
-void MetricsService::SetRecording(bool enabled) {
+void MetricsService::EnableRecording() {
   DCHECK(IsSingleThreaded());
 
-  if (enabled == recording_active_)
+  if (recording_active_)
     return;
+  recording_active_ = true;
 
-  if (enabled) {
-    ForceClientIdCreation();
-    child_process_logging::SetClientId(client_id_);
-    StartRecording();
+  ForceClientIdCreation();
+  child_process_logging::SetClientId(client_id_);
+  if (!log_manager_.current_log())
+    OpenNewLog();
 
-    SetUpNotifications(&registrar_, this);
-  } else {
-    registrar_.RemoveAll();
-    PushPendingLogsToPersistentStorage();
-    DCHECK(!log_manager_.has_staged_log());
-  }
-  recording_active_ = enabled;
+  SetUpNotifications(&registrar_, this);
+}
+
+void MetricsService::DisableRecording() {
+  DCHECK(IsSingleThreaded());
+
+  if (!recording_active_)
+    return;
+  recording_active_ = false;
+
+  registrar_.RemoveAll();
+  PushPendingLogsToPersistentStorage();
+  DCHECK(!log_manager_.has_staged_log());
 }
 
 bool MetricsService::recording_active() const {
   DCHECK(IsSingleThreaded());
   return recording_active_;
-}
-
-void MetricsService::SetReporting(bool enable) {
-  if (reporting_active_ != enable) {
-    reporting_active_ = enable;
-    if (reporting_active_)
-      StartSchedulerIfNecessary();
-  }
 }
 
 bool MetricsService::reporting_active() const {
@@ -793,7 +810,7 @@ void MetricsService::RecordCompletedSessionEnd() {
   RecordBooleanPrefValue(prefs::kStabilitySessionEndCompleted, true);
 }
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
 void MetricsService::OnAppEnterBackground() {
   scheduler_->Stop();
 
@@ -806,10 +823,10 @@ void MetricsService::OnAppEnterBackground() {
   // to continue logging and uploading if the process does return.
   if (recording_active() && state_ >= INITIAL_LOG_READY) {
     PushPendingLogsToPersistentStorage();
-    // Persisting logs stops recording, so start recording a new log immediately
-    // to capture any background work that might be done before the process is
-    // killed.
-    StartRecording();
+    // Persisting logs closes the current log, so start recording a new log
+    // immediately to capture any background work that might be done before the
+    // process is killed.
+    OpenNewLog();
   }
 
   // Start writing right away (write happens on a different thread).
@@ -1111,9 +1128,8 @@ void MetricsService::SaveLocalState() {
 //------------------------------------------------------------------------------
 // Recording control methods
 
-void MetricsService::StartRecording() {
-  if (log_manager_.current_log())
-    return;
+void MetricsService::OpenNewLog() {
+  DCHECK(!log_manager_.current_log());
 
   log_manager_.BeginLoggingWithLog(new MetricsLog(client_id_, session_id_),
                                    MetricsLogManager::ONGOING_LOG);
@@ -1135,7 +1151,7 @@ void MetricsService::StartRecording() {
   }
 }
 
-void MetricsService::StopRecording() {
+void MetricsService::CloseCurrentLog() {
   if (!log_manager_.current_log())
     return;
 
@@ -1145,7 +1161,7 @@ void MetricsService::StopRecording() {
     UMA_HISTOGRAM_COUNTS("UMA.Discarded Log Events",
                          log_manager_.current_log()->num_events());
     log_manager_.DiscardCurrentLog();
-    StartRecording();  // Start trivial log to hold our histograms.
+    OpenNewLog();  // Start trivial log to hold our histograms.
   }
 
   // Adds to ongoing logs.
@@ -1179,7 +1195,7 @@ void MetricsService::PushPendingLogsToPersistentStorage() {
     log_manager_.StoreStagedLogAsUnsent(store_type);
   }
   DCHECK(!log_manager_.has_staged_log());
-  StopRecording();
+  CloseCurrentLog();
   StoreUnsentLogs();
 
   // If there was a staged and/or current log, then there is now at least one
@@ -1192,7 +1208,14 @@ void MetricsService::PushPendingLogsToPersistentStorage() {
 // Transmission of logs methods
 
 void MetricsService::StartSchedulerIfNecessary() {
-  if (reporting_active() && recording_active())
+  // Never schedule cutting or uploading of logs in test mode.
+  if (test_mode_active_)
+    return;
+
+  // Even if reporting is disabled, the scheduler is needed to trigger the
+  // creation of the initial log, which must be done in order for any logs to be
+  // persisted on shutdown or backgrounding.
+  if (recording_active() && (reporting_active() || state_ < INITIAL_LOG_READY))
     scheduler_->Start();
 }
 
@@ -1200,11 +1223,14 @@ void MetricsService::StartScheduledUpload() {
   // If we're getting no notifications, then the log won't have much in it, and
   // it's possible the computer is about to go to sleep, so don't upload and
   // stop the scheduler.
-  // Similarly, if logs should no longer be uploaded, stop here.
+  // If recording has been turned off, the scheduler doesn't need to run.
+  // If reporting is off, proceed if the initial log hasn't been created, since
+  // that has to happen in order for logs to be cut and stored when persisting.
   // TODO(stuartmorgan): Call Stop() on the schedule when reporting and/or
   // recording are turned off instead of letting it fire and then aborting.
   if (idle_since_last_transmission_ ||
-      !recording_active() || !reporting_active()) {
+      !recording_active() ||
+      (!reporting_active() && state_ >= INITIAL_LOG_READY)) {
     scheduler_->Stop();
     scheduler_->UploadCancelled();
     return;
@@ -1297,13 +1323,26 @@ void MetricsService::OnFinalLogInfoCollectionDone() {
     return;
 
   // Abort if metrics were turned off during the final info gathering.
-  if (!recording_active() || !reporting_active()) {
+  if (!recording_active()) {
     scheduler_->Stop();
     scheduler_->UploadCancelled();
     return;
   }
 
   StageNewLog();
+
+  // If logs shouldn't be uploaded, stop here. It's important that this check
+  // be after StageNewLog(), otherwise the previous logs will never be loaded,
+  // and thus the open log won't be persisted.
+  // TODO(stuartmorgan): This is unnecessarily complicated; restructure loading
+  // of previous logs to not require running part of the upload logic.
+  // http://crbug.com/157337
+  if (!reporting_active()) {
+    scheduler_->Stop();
+    scheduler_->UploadCancelled();
+    return;
+  }
+
   SendStagedLog();
 }
 
@@ -1329,8 +1368,8 @@ void MetricsService::StageNewLog() {
       return;
 
     case SENDING_CURRENT_LOGS:
-      StopRecording();
-      StartRecording();
+      CloseCurrentLog();
+      OpenNewLog();
       log_manager_.StageNextLogForUpload();
       break;
 

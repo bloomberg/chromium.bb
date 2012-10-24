@@ -594,7 +594,7 @@ void ChromeBrowserMainParts::StartMetricsRecording() {
       parsed_command_line_.HasSwitch(switches::kEnableBenchmarking)) {
     // If we're testing then we don't care what the user preference is, we turn
     // on recording, but not reporting, otherwise tests fail.
-    metrics->StartRecordingOnly();
+    metrics->StartRecordingForTests();
     return;
   }
 

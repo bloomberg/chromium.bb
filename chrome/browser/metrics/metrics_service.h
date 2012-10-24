@@ -75,13 +75,26 @@ class MetricsService
   MetricsService();
   virtual ~MetricsService();
 
-  // Start/stop the metrics recording and uploading machine.  These should be
-  // used on startup and when the user clicks the checkbox in the prefs.
-  // StartRecordingOnly starts the metrics recording but not reporting, for use
-  // in tests only.
+  // Starts the metrics system, turning on recording and uploading of metrics.
+  // Should be called when starting up with metrics enabled, or when metrics
+  // are turned on.
   void Start();
-  void StartRecordingOnly();
+
+  // Starts the metrics system in a special test-only mode. Metrics won't ever
+  // be uploaded or persisted in this mode, but metrics will be recorded in
+  // memory.
+  void StartRecordingForTests();
+
+  // Shuts down the metrics system. Should be called at shutdown, or if metrics
+  // are turned off.
   void Stop();
+
+  // Enable/disable transmission of accumulated logs and crash reports (dumps).
+  // Calling Start() automatically enables reporting, but sending is
+  // asyncronous so this can be called immediately after Start() to prevent
+  // any uploading.
+  void EnableReporting();
+  void DisableReporting();
 
   // Returns the client ID for this client, or the empty string if metrics
   // recording is not currently running.
@@ -130,7 +143,7 @@ class MetricsService
   // that session end was successful.
   void RecordCompletedSessionEnd();
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
   // Called when the application is going into background mode.
   void OnAppEnterBackground();
 
@@ -248,13 +261,11 @@ class MetricsService
   // initial results towards showing crashes :-(.
   static void DiscardOldStabilityStats(PrefService* local_state);
 
-  // Sets and gets whether metrics recording is active.
-  // SetRecording(false) also forces a persistent save of logging state (if
+  // Turns recording on or off.
+  // DisableRecording() also forces a persistent save of logging state (if
   // anything has been recorded, or transmitted).
-  void SetRecording(bool enabled);
-
-  // Enable/disable transmission of accumulated logs and crash reports (dumps).
-  void SetReporting(bool enabled);
+  void EnableRecording();
+  void DisableRecording();
 
   // If in_idle is true, sets idle_since_last_transmission to true.
   // If in_idle is false and idle_since_last_transmission_ is true, sets
@@ -277,13 +288,11 @@ class MetricsService
   // make a change, call ScheduleNextStateSave() instead.
   void SaveLocalState();
 
-  // Called to start recording user experience metrics.
-  // Constructs a new, empty current_log_.
-  void StartRecording();
+  // Opens a new log for recording user experience metrics.
+  void OpenNewLog();
 
-  // Called to stop recording user experience metrics.
-  // Adds any last information to current_log_ and then stages it for upload.
-  void StopRecording();
+  // Closes out the current log after adding any last information.
+  void CloseCurrentLog();
 
   // Pushes the text of the current and staged logs into persistent storage.
   // Called when Chrome shuts down.
@@ -405,6 +414,10 @@ class MetricsService
   // SetReporting.
   bool recording_active_;
   bool reporting_active_;
+
+  // Indicate whether test mode is enabled, where the initial log should never
+  // be cut, and logs are neither persisted nor uploaded.
+  bool test_mode_active_;
 
   // The progession of states made by the browser are recorded in the following
   // state.
