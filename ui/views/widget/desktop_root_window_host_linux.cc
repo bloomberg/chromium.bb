@@ -896,8 +896,12 @@ bool DesktopRootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
       break;
     }
     case FocusOut:
-      if (xev->xfocus.mode != NotifyGrab)
-        root_window_host_delegate_->OnHostLostCapture();
+      if (xev->xfocus.mode != NotifyGrab) {
+        ReleaseCapture();
+        root_window_host_delegate_->OnHostLostWindowCapture();
+      } else {
+        root_window_host_delegate_->OnHostLostMouseGrab();
+      }
       break;
     case ConfigureNotify: {
       DCHECK_EQ(xwindow_, xev->xconfigure.window);

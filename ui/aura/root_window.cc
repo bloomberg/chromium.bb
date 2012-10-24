@@ -924,10 +924,16 @@ bool RootWindow::OnHostTouchEvent(ui::TouchEvent* event) {
   return ProcessGestures(gestures.get()) ? true : handled;
 }
 
-void RootWindow::OnHostLostCapture() {
+void RootWindow::OnHostLostWindowCapture() {
   Window* capture_window = client::GetCaptureWindow(this);
   if (capture_window && capture_window->GetRootWindow() == this)
     capture_window->ReleaseCapture();
+}
+
+void RootWindow::OnHostLostMouseGrab() {
+  mouse_pressed_handler_ = NULL;
+  mouse_moved_handler_ = NULL;
+  mouse_event_dispatch_target_ = NULL;
 }
 
 void RootWindow::OnHostPaint() {

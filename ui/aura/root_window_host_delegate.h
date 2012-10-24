@@ -32,7 +32,12 @@ class AURA_EXPORT RootWindowHostDelegate {
   virtual bool OnHostScrollEvent(ui::ScrollEvent* event) = 0;
   virtual bool OnHostTouchEvent(ui::TouchEvent* event) = 0;
 
-  virtual void OnHostLostCapture() = 0;
+  // Called when system focus is changed to another window.
+  virtual void OnHostLostWindowCapture() = 0;
+
+  // Called when the windowing system has mouse grab because it's performing a
+  // window move on our behalf, but we should still paint as if we're active.
+  virtual void OnHostLostMouseGrab() = 0;
 
   virtual void OnHostPaint() = 0;
 

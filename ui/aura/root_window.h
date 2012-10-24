@@ -331,7 +331,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   virtual bool OnHostMouseEvent(ui::MouseEvent* event) OVERRIDE;
   virtual bool OnHostScrollEvent(ui::ScrollEvent* event) OVERRIDE;
   virtual bool OnHostTouchEvent(ui::TouchEvent* event) OVERRIDE;
-  virtual void OnHostLostCapture() OVERRIDE;
+  virtual void OnHostLostWindowCapture() OVERRIDE;
+  virtual void OnHostLostMouseGrab() OVERRIDE;
   virtual void OnHostPaint() OVERRIDE;
   virtual void OnHostMoved(const gfx::Point& origin) OVERRIDE;
   virtual void OnHostResized(const gfx::Size& size) OVERRIDE;

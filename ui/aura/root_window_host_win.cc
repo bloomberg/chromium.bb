@@ -245,7 +245,7 @@ LRESULT RootWindowHostWin::OnCaptureChanged(UINT message,
                                             LPARAM l_param) {
   if (has_capture_) {
     has_capture_ = false;
-    delegate_->OnHostLostCapture();
+    delegate_->OnHostLostWindowCapture();
   }
   return 0;
 }

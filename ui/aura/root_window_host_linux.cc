@@ -325,7 +325,7 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
     }
     case FocusOut:
       if (xev->xfocus.mode != NotifyGrab)
-        delegate_->OnHostLostCapture();
+        delegate_->OnHostLostWindowCapture();
       break;
     case ConfigureNotify: {
       DCHECK_EQ(xwindow_, xev->xconfigure.event);
