@@ -636,6 +636,8 @@ background_draw(struct widget *widget, void *data)
 	double sx, sy;
 	struct rectangle allocation;
 	int type = -1;
+	struct display *display;
+	struct wl_region *opaque;
 
 	surface = window_get_surface(background->window);
 
@@ -682,6 +684,13 @@ background_draw(struct widget *widget, void *data)
 	cairo_paint(cr);
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
+
+	display = window_get_display(background->window);
+	opaque = wl_compositor_create_region(display_get_compositor(display));
+	wl_region_add(opaque, allocation.x, allocation.y,
+		      allocation.width, allocation.height);
+	wl_surface_set_opaque_region(window_get_wl_surface(background->window), opaque);
+	wl_region_destroy(opaque);
 }
 
 static void
