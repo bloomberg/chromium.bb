@@ -139,3 +139,5 @@ http://goto/read-src-internal, or create a new archive using --record.
   def CleanUpPage(self, page, tab, page_state): # pylint: disable=R0201
     if page.credentials and page_state.did_login:
       tab.browser.credentials.LoginNoLongerNeeded(tab, page.credentials)
+    tab.runtime.Evaluate("""chrome && chrome.benchmarking &&
+                            chrome.benchmarking.closeConnections()""")

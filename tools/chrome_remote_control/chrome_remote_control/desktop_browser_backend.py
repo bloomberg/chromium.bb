@@ -48,6 +48,7 @@ class DesktopBrowserBackend(browser_backend.BrowserBackend):
     args = super(DesktopBrowserBackend, self).GetBrowserStartupArgs()
     args.append('--remote-debugging-port=%i' % self._port)
     args.append('--window-size=1280,1024')
+    args.append('--enable-benchmarking')
     if not self.options.dont_override_profile:
       self._tmpdir = tempfile.mkdtemp()
       args.append('--user-data-dir=%s' % self._tmpdir)
