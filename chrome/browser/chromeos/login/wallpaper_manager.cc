@@ -1238,11 +1238,6 @@ void WallpaperManager::StartLoad(const std::string& email,
                                       update_wallpaper));
 }
 
-void WallpaperManager::OnWallpaperLoaded(ash::WallpaperLayout layout,
-                                         const UserImage& user_image) {
-  SetWallpaperFromImageSkia(user_image.image(), layout);
-}
-
 void WallpaperManager::SystemResumed() {
   BatchUpdateWallpaper();
 }

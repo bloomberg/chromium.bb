@@ -281,10 +281,6 @@ class WallpaperManager: public system::TimezoneSettings::Observer,
                  bool update_wallpaper,
                  const FilePath& wallpaper_path);
 
-  // Sets wallpaper to image in |user_image| with |layout|.
-  void OnWallpaperLoaded(ash::WallpaperLayout layout,
-                         const UserImage& user_image);
-
   // Overridden from chromeos::ResumeObserver
   virtual void SystemResumed() OVERRIDE;
 
