@@ -34,12 +34,7 @@
 #include "content/browser/mach_broker_mac.h"
 #endif
 
-using content::BrowserChildProcessHostDelegate;
-using content::BrowserThread;
-using content::ChildProcessData;
-using content::ChildProcessHost;
-using content::ChildProcessHostImpl;
-
+namespace content {
 namespace {
 
 static base::LazyInstance<BrowserChildProcessHostImpl::BrowserChildProcessList>
@@ -49,14 +44,12 @@ static base::LazyInstance<BrowserChildProcessHostImpl::BrowserChildProcessList>
 // UI thread.
 void ChildNotificationHelper(int notification_type,
                              const ChildProcessData& data) {
-  content::NotificationService::current()->
-        Notify(notification_type, content::NotificationService::AllSources(),
-               content::Details<const ChildProcessData>(&data));
+  NotificationService::current()->Notify(
+      notification_type, NotificationService::AllSources(),
+      Details<const ChildProcessData>(&data));
 }
 
 }  // namespace
-
-namespace content {
 
 BrowserChildProcessHost* BrowserChildProcessHost::Create(
     ProcessType type,
@@ -70,15 +63,13 @@ base::ProcessMetrics::PortProvider* BrowserChildProcessHost::GetPortProvider() {
 }
 #endif
 
-}  // namespace content
-
 BrowserChildProcessHostImpl::BrowserChildProcessList*
     BrowserChildProcessHostImpl::GetIterator() {
   return g_child_process_list.Pointer();
 }
 
 BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
-    content::ProcessType type,
+    ProcessType type,
     BrowserChildProcessHostDelegate* delegate)
     : data_(type),
       delegate_(delegate) {
@@ -86,11 +77,11 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
 
   child_process_host_.reset(ChildProcessHost::Create(this));
   child_process_host_->AddFilter(new TraceMessageFilter);
-  child_process_host_->AddFilter(new content::ProfilerMessageFilter(type));
-  child_process_host_->AddFilter(new content::HistogramMessageFilter());
+  child_process_host_->AddFilter(new ProfilerMessageFilter(type));
+  child_process_host_->AddFilter(new HistogramMessageFilter());
 
   g_child_process_list.Get().push_back(this);
-  content::GetContentClient()->browser()->BrowserChildProcessHostCreated(this);
+  GetContentClient()->browser()->BrowserChildProcessHostCreated(this);
 }
 
 BrowserChildProcessHostImpl::~BrowserChildProcessHostImpl() {
@@ -119,7 +110,7 @@ void BrowserChildProcessHostImpl::Launch(
     CommandLine* cmd_line) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  content::GetContentClient()->browser()->AppendExtraCommandLineSwitches(
+  GetContentClient()->browser()->AppendExtraCommandLineSwitches(
       cmd_line, data_.id);
 
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
@@ -211,7 +202,7 @@ bool BrowserChildProcessHostImpl::OnMessageReceived(
 }
 
 void BrowserChildProcessHostImpl::OnChannelConnected(int32 peer_pid) {
-  Notify(content::NOTIFICATION_CHILD_PROCESS_HOST_CONNECTED);
+  Notify(NOTIFICATION_CHILD_PROCESS_HOST_CONNECTED);
   delegate_->OnChannelConnected(peer_pid);
 }
 
@@ -232,10 +223,10 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
     case base::TERMINATION_STATUS_ABNORMAL_TERMINATION: {
       delegate_->OnProcessCrashed(exit_code);
       // Report that this child process crashed.
-      Notify(content::NOTIFICATION_CHILD_PROCESS_CRASHED);
+      Notify(NOTIFICATION_CHILD_PROCESS_CRASHED);
       UMA_HISTOGRAM_ENUMERATION("ChildProcess.Crashed",
                                 data_.type,
-                                content::PROCESS_TYPE_MAX);
+                                PROCESS_TYPE_MAX);
       break;
     }
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED: {
@@ -243,22 +234,22 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
       // Report that this child process was killed.
       UMA_HISTOGRAM_ENUMERATION("ChildProcess.Killed",
                                 data_.type,
-                                content::PROCESS_TYPE_MAX);
+                                PROCESS_TYPE_MAX);
       break;
     }
     case base::TERMINATION_STATUS_STILL_RUNNING: {
       UMA_HISTOGRAM_ENUMERATION("ChildProcess.DisconnectedAlive",
                                 data_.type,
-                                content::PROCESS_TYPE_MAX);
+                                PROCESS_TYPE_MAX);
     }
     default:
       break;
   }
   UMA_HISTOGRAM_ENUMERATION("ChildProcess.Disconnected",
                             data_.type,
-                            content::PROCESS_TYPE_MAX);
+                            PROCESS_TYPE_MAX);
   // Notify in the main loop of the disconnection.
-  Notify(content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED);
+  Notify(NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED);
   delete delegate_;  // Will delete us
 }
 
@@ -274,3 +265,5 @@ void BrowserChildProcessHostImpl::OnProcessLaunched() {
   data_.handle = child_process_->GetHandle();
   delegate_->OnProcessLaunched();
 }
+
+}  // namespace content

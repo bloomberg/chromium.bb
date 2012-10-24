@@ -19,10 +19,6 @@
 #include "ui/base/ui_base_switches.h"
 #include "webkit/plugins/plugin_switches.h"
 
-using content::BrowserThread;
-using content::ChildProcessHost;
-using content::UtilityProcessHostClient;
-
 namespace content {
 
 UtilityProcessHost* UtilityProcessHost::Create(
@@ -30,8 +26,6 @@ UtilityProcessHost* UtilityProcessHost::Create(
     BrowserThread::ID client_thread_id) {
   return new UtilityProcessHostImpl(client, client_thread_id);
 }
-
-}  // namespace content
 
 UtilityProcessHostImpl::UtilityProcessHostImpl(
     UtilityProcessHostClient* client,
@@ -47,8 +41,7 @@ UtilityProcessHostImpl::UtilityProcessHostImpl(
 #endif
       use_linux_zygote_(false),
       started_(false) {
-  process_.reset(
-      new BrowserChildProcessHostImpl(content::PROCESS_TYPE_UTILITY, this));
+  process_.reset(new BrowserChildProcessHostImpl(PROCESS_TYPE_UTILITY, this));
 }
 
 UtilityProcessHostImpl::~UtilityProcessHostImpl() {
@@ -137,8 +130,7 @@ bool UtilityProcessHostImpl::StartProcess() {
   cmd_line->AppendSwitchASCII(switches::kProcessType,
                               switches::kUtilityProcess);
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
-  std::string locale =
-      content::GetContentClient()->browser()->GetApplicationLocale();
+  std::string locale = GetContentClient()->browser()->GetApplicationLocale();
   cmd_line->AppendSwitchASCII(switches::kLang, locale);
 
   if (browser_command_line.HasSwitch(switches::kChromeFrame))
@@ -198,3 +190,5 @@ void UtilityProcessHostImpl::OnProcessCrashed(int exit_code) {
       base::Bind(&UtilityProcessHostClient::OnProcessCrashed, client_.get(),
             exit_code));
 }
+
+}  // namespace content

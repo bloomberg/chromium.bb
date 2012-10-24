@@ -17,19 +17,18 @@
 
 namespace content {
 class BrowserChildProcessHostIterator;
-}
 
 // Plugins/workers and other child processes that live on the IO thread use this
 // class. RenderProcessHostImpl is the main exception that doesn't use this
 /// class because it lives on the UI thread.
 class CONTENT_EXPORT BrowserChildProcessHostImpl
-    : public content::BrowserChildProcessHost,
-      public NON_EXPORTED_BASE(content::ChildProcessHostDelegate),
+    : public BrowserChildProcessHost,
+      public NON_EXPORTED_BASE(ChildProcessHostDelegate),
       public ChildProcessLauncher::Client {
  public:
   BrowserChildProcessHostImpl(
-      content::ProcessType type,
-      content::BrowserChildProcessHostDelegate* delegate);
+      ProcessType type,
+      BrowserChildProcessHostDelegate* delegate);
   virtual ~BrowserChildProcessHostImpl();
 
   // Terminates all child processes and deletes each BrowserChildProcessHost
@@ -46,8 +45,8 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
       const base::EnvironmentVector& environ,
 #endif
       CommandLine* cmd_line) OVERRIDE;
-  virtual const content::ChildProcessData& GetData() const OVERRIDE;
-  virtual content::ChildProcessHost* GetHost() const OVERRIDE;
+  virtual const ChildProcessData& GetData() const OVERRIDE;
+  virtual ChildProcessHost* GetHost() const OVERRIDE;
   virtual base::TerminationStatus GetTerminationStatus(int* exit_code) OVERRIDE;
   virtual void SetName(const string16& name) OVERRIDE;
   virtual void SetHandle(base::ProcessHandle handle) OVERRIDE;
@@ -66,13 +65,12 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   // Sends the given notification on the UI thread.
   void Notify(int type);
 
-  content::BrowserChildProcessHostDelegate* delegate() const {
-    return delegate_;
+  BrowserChildProcessHostDelegate* delegate() const { return delegate_;
   }
 
   typedef std::list<BrowserChildProcessHostImpl*> BrowserChildProcessList;
  private:
-  friend class content::BrowserChildProcessHostIterator;
+  friend class BrowserChildProcessHostIterator;
 
   static BrowserChildProcessList* GetIterator();
 
@@ -86,11 +84,13 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   // ChildProcessLauncher::Client implementation.
   virtual void OnProcessLaunched() OVERRIDE;
 
-  content::ChildProcessData data_;
-  content::BrowserChildProcessHostDelegate* delegate_;
-  scoped_ptr<content::ChildProcessHost> child_process_host_;
+  ChildProcessData data_;
+  BrowserChildProcessHostDelegate* delegate_;
+  scoped_ptr<ChildProcessHost> child_process_host_;
 
   scoped_ptr<ChildProcessLauncher> child_process_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_BROWSER_CHILD_PROCESS_HOST_IMPL_H_

@@ -31,7 +31,6 @@
 #endif
 
 class DOMStorageContextImpl;
-class PluginServiceImpl;
 struct FontDescriptor;
 struct ViewHostMsg_CreateWindow_Params;
 
@@ -63,6 +62,7 @@ struct WebPluginInfo;
 namespace content {
 class BrowserContext;
 class MediaObserver;
+class PluginServiceImpl;
 class RenderWidgetHelper;
 class ResourceContext;
 class ResourceDispatcherHostImpl;

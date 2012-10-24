@@ -16,14 +16,16 @@
 #include "content/common/npobject_stub.h"
 
 class GURL;
-class NPChannelBase;
 
 struct _NPVariant;
-struct NPIdentifier_Param;
-struct NPVariant_Param;
 
 typedef _NPVariant NPVariant;
 typedef void *NPIdentifier;
+
+namespace content {
+class NPChannelBase;
+struct NPIdentifier_Param;
+struct NPVariant_Param;
 
 // Needs to be called early in the plugin process lifetime, before any
 // plugin instances are initialized.
@@ -66,5 +68,7 @@ bool CreateNPVariant(const NPVariant_Param& param,
 // causes a message box to come up.
 HANDLE GetMessageBoxEvent(HWND hwnd);
 #endif  // defined(OS_WIN)
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_NPOBJECT_UTIL_H_

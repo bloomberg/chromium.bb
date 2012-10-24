@@ -23,7 +23,6 @@ class MessageLoopProxy;
 
 namespace content {
 class UtilityProcessHost;
-}
 
 // This class is responsible for managing the out-of-process plugin loading on
 // POSIX systems. It primarily lives on the IO thread, but has a brief stay on
@@ -47,7 +46,7 @@ class UtilityProcessHost;
 //    end, after which the list of loaded plugins is set on the PluginList and
 //    the completion callback is run.
 class CONTENT_EXPORT PluginLoaderPosix
-    : public NON_EXPORTED_BASE(content::UtilityProcessHostClient),
+    : public NON_EXPORTED_BASE(UtilityProcessHostClient),
       public IPC::Sender {
  public:
   PluginLoaderPosix();
@@ -55,7 +54,7 @@ class CONTENT_EXPORT PluginLoaderPosix
   // Must be called from the IO thread.
   void LoadPlugins(
       scoped_refptr<base::MessageLoopProxy> target_loop,
-      const content::PluginService::GetPluginsCallback& callback);
+      const PluginService::GetPluginsCallback& callback);
 
   // UtilityProcessHostClient:
   virtual void OnProcessCrashed(int exit_code) OVERRIDE;
@@ -67,11 +66,11 @@ class CONTENT_EXPORT PluginLoaderPosix
  private:
   struct PendingCallback {
     PendingCallback(scoped_refptr<base::MessageLoopProxy> target_loop,
-                    const content::PluginService::GetPluginsCallback& callback);
+                    const PluginService::GetPluginsCallback& callback);
     ~PendingCallback();
 
     scoped_refptr<base::MessageLoopProxy> target_loop;
-    content::PluginService::GetPluginsCallback callback;
+    PluginService::GetPluginsCallback callback;
   };
 
   virtual ~PluginLoaderPosix();
@@ -96,7 +95,7 @@ class CONTENT_EXPORT PluginLoaderPosix
   bool MaybeRunPendingCallbacks();
 
   // The process host for which this is a client.
-  base::WeakPtr<content::UtilityProcessHost> process_host_;
+  base::WeakPtr<UtilityProcessHost> process_host_;
 
   // A list of paths to plugins which will be loaded by the utility process, in
   // the order specified by this vector.
@@ -122,5 +121,7 @@ class CONTENT_EXPORT PluginLoaderPosix
   friend class MockPluginLoaderPosix;
   DISALLOW_COPY_AND_ASSIGN(PluginLoaderPosix);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_PLUGIN_LOADER_POSIX_H_

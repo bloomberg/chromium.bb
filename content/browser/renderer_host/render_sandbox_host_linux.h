@@ -14,6 +14,8 @@
 
 template <typename T> struct DefaultSingletonTraits;
 
+namespace content {
+
 // This is a singleton object which handles sandbox requests from the
 // renderers.
 class CONTENT_EXPORT RenderSandboxHostLinux {
@@ -48,5 +50,7 @@ class CONTENT_EXPORT RenderSandboxHostLinux {
 
   DISALLOW_COPY_AND_ASSIGN(RenderSandboxHostLinux);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_SANDBOX_HOST_LINUX_H_

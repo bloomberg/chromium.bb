@@ -27,6 +27,8 @@
 // The MessageRouter can be used as a concrete class provided its Send method
 // is not called and it does not receive any control messages.
 
+namespace content {
+
 class MessageRouter : public IPC::Listener, public IPC::Sender {
  public:
   MessageRouter();
@@ -58,5 +60,7 @@ class MessageRouter : public IPC::Listener, public IPC::Sender {
 
   DISALLOW_COPY_AND_ASSIGN(MessageRouter);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_MESSAGE_ROUTER_H_

@@ -13,6 +13,8 @@
 
 struct NPObject;
 
+namespace content {
+
 class NPObjectBase {
  public:
   virtual ~NPObjectBase() {}
@@ -23,5 +25,7 @@ class NPObjectBase {
   // Returns the channel listener for this NPObjectBase instance.
   virtual IPC::Listener* GetChannelListener() = 0;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_NPOBJECT_BASE_H_

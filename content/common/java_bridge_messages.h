@@ -20,7 +20,7 @@ IPC_MESSAGE_ROUTED0(JavaBridgeMsg_Init)
 // Sent from browser to renderer to add a Java object with the given name.
 IPC_MESSAGE_ROUTED2(JavaBridgeMsg_AddNamedObject,
                     string16 /* name */,
-                    NPVariant_Param) /* object */
+                    content::NPVariant_Param) /* object */
 
 // Sent from browser to renderer to remove a Java object with the given name.
 IPC_MESSAGE_ROUTED1(JavaBridgeMsg_RemoveNamedObject,

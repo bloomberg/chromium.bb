@@ -46,6 +46,7 @@
 #include "ui/surface/accelerated_surface_win.h"
 #endif
 
+using content::BrowserChildProcessHostImpl;
 using content::BrowserThread;
 using content::ChildProcessHost;
 using content::GpuChildThread;

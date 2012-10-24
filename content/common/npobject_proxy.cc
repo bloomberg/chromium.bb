@@ -14,6 +14,8 @@
 
 using WebKit::WebBindings;
 
+namespace content {
+
 struct NPObjectWrapper {
     NPObject object;
     NPObjectProxy* proxy;
@@ -496,3 +498,5 @@ bool NPObjectProxy::NPNEvaluate(NPP npp,
       result_param, channel.get(), result_var, containing_window, page_url);
   return true;
 }
+
+}  // namespace content

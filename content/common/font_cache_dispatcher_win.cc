@@ -11,6 +11,7 @@
 #include "base/string16.h"
 #include "content/common/child_process_messages.h"
 
+namespace content {
 namespace {
 typedef std::vector<string16> FontNameVector;
 typedef std::map<FontCacheDispatcher*, FontNameVector> DispatcherToFontNames;
@@ -189,3 +190,5 @@ void FontCacheDispatcher::OnReleaseCachedFonts() {
   // count.  When ref count is zero, the handles are released.
   FontCache::GetInstance()->ReleaseCachedFonts(this);
 }
+
+}  // namespace content

@@ -36,18 +36,8 @@
 #include "base/files/file_path_watcher.h"
 #endif
 
-class PluginDirWatcherDelegate;
-class PluginLoaderPosix;
-
 namespace base {
 class MessageLoopProxy;
-}
-
-namespace content {
-class BrowserContext;
-class PluginServiceFilter;
-class ResourceContext;
-struct PepperPluginInfo;
 }
 
 namespace webkit {
@@ -56,23 +46,31 @@ class PluginList;
 }
 }
 
+namespace content {
+class BrowserContext;
+class PluginDirWatcherDelegate;
+class PluginLoaderPosix;
+class PluginServiceFilter;
+class ResourceContext;
+struct PepperPluginInfo;
+
 // base::Bind() has limited arity, and the filter-related methods tend to
 // surpass that limit.
 struct PluginServiceFilterParams {
   int render_process_id;
   int render_view_id;
   GURL page_url;
-  content::ResourceContext* resource_context;
+  ResourceContext* resource_context;
 };
 
 class CONTENT_EXPORT PluginServiceImpl
-    : NON_EXPORTED_BASE(public content::PluginService),
+    : NON_EXPORTED_BASE(public PluginService),
       public base::WaitableEventWatcher::Delegate {
  public:
   // Returns the PluginServiceImpl singleton.
   static PluginServiceImpl* GetInstance();
 
-  // content::PluginService implementation:
+  // PluginService implementation:
   virtual void Init() OVERRIDE;
   virtual void StartWatchingPlugins() OVERRIDE;
   virtual bool GetPluginInfoArray(
@@ -83,7 +81,7 @@ class CONTENT_EXPORT PluginServiceImpl
       std::vector<std::string>* actual_mime_types) OVERRIDE;
   virtual bool GetPluginInfo(int render_process_id,
                              int render_view_id,
-                             content::ResourceContext* context,
+                             ResourceContext* context,
                              const GURL& url,
                              const GURL& page_url,
                              const std::string& mime_type,
@@ -95,10 +93,10 @@ class CONTENT_EXPORT PluginServiceImpl
                                    webkit::WebPluginInfo* info) OVERRIDE;
   virtual string16 GetPluginDisplayNameByPath(const FilePath& path) OVERRIDE;
   virtual void GetPlugins(const GetPluginsCallback& callback) OVERRIDE;
-  virtual content::PepperPluginInfo* GetRegisteredPpapiPluginInfo(
+  virtual PepperPluginInfo* GetRegisteredPpapiPluginInfo(
       const FilePath& plugin_path) OVERRIDE;
-  virtual void SetFilter(content::PluginServiceFilter* filter) OVERRIDE;
-  virtual content::PluginServiceFilter* GetFilter() OVERRIDE;
+  virtual void SetFilter(PluginServiceFilter* filter) OVERRIDE;
+  virtual PluginServiceFilter* GetFilter() OVERRIDE;
   virtual void ForcePluginShutdown(const FilePath& plugin_path) OVERRIDE;
   virtual bool IsPluginUnstable(const FilePath& plugin_path) OVERRIDE;
   virtual void RefreshPlugins() OVERRIDE;
@@ -196,7 +194,7 @@ class CONTENT_EXPORT PluginServiceImpl
       const GURL& page_url,
       const std::string& mime_type,
       PluginProcessHost::Client* client,
-      content::ResourceContext* resource_context);
+      ResourceContext* resource_context);
 
   // Helper so we can finish opening the channel after looking up the
   // plugin.
@@ -230,10 +228,10 @@ class CONTENT_EXPORT PluginServiceImpl
   scoped_refptr<PluginDirWatcherDelegate> file_watcher_delegate_;
 #endif
 
-  std::vector<content::PepperPluginInfo> ppapi_plugins_;
+  std::vector<PepperPluginInfo> ppapi_plugins_;
 
   // Weak pointer; outlives us.
-  content::PluginServiceFilter* filter_;
+  PluginServiceFilter* filter_;
 
   std::set<PluginProcessHost::Client*> pending_plugin_clients_;
 
@@ -250,5 +248,7 @@ class CONTENT_EXPORT PluginServiceImpl
 
   DISALLOW_COPY_AND_ASSIGN(PluginServiceImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_PLUGIN_SERVICE_IMPL_H_

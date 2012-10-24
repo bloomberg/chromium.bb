@@ -26,8 +26,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "webkit/plugins/plugin_switches.h"
 
-using content::ChildProcessHost;
-using content::ChildProcessHostImpl;
+namespace content {
 
 class PpapiPluginProcessHost::PluginNetworkObserver
     : public net::NetworkChangeNotifier::IPAddressObserver,
@@ -74,7 +73,7 @@ PpapiPluginProcessHost::~PpapiPluginProcessHost() {
 
 // static
 PpapiPluginProcessHost* PpapiPluginProcessHost::CreatePluginHost(
-    const content::PepperPluginInfo& info,
+    const PepperPluginInfo& info,
     const FilePath& profile_data_directory,
     net::HostResolver* host_resolver) {
   PpapiPluginProcessHost* plugin_host = new PpapiPluginProcessHost(
@@ -88,7 +87,7 @@ PpapiPluginProcessHost* PpapiPluginProcessHost::CreatePluginHost(
 
 // static
 PpapiPluginProcessHost* PpapiPluginProcessHost::CreateBrokerHost(
-    const content::PepperPluginInfo& info) {
+    const PepperPluginInfo& info) {
   PpapiPluginProcessHost* plugin_host =
       new PpapiPluginProcessHost();
   if (plugin_host->Init(info))
@@ -158,7 +157,7 @@ void PpapiPluginProcessHost::OpenChannelToPlugin(Client* client) {
 }
 
 PpapiPluginProcessHost::PpapiPluginProcessHost(
-    const content::PepperPluginInfo& info,
+    const PepperPluginInfo& info,
     const FilePath& profile_data_directory,
     net::HostResolver* host_resolver)
     : permissions_(
@@ -167,12 +166,12 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(
       profile_data_directory_(profile_data_directory),
       is_broker_(false) {
   process_.reset(new BrowserChildProcessHostImpl(
-      content::PROCESS_TYPE_PPAPI_PLUGIN, this));
+      PROCESS_TYPE_PPAPI_PLUGIN, this));
 
   filter_ = new PepperMessageFilter(PepperMessageFilter::PLUGIN,
                                     host_resolver);
 
-  host_impl_ = new content::BrowserPpapiHostImpl(this, permissions_);
+  host_impl_ = new BrowserPpapiHostImpl(this, permissions_);
 
   file_filter_ = new PepperTrustedFileMessageFilter(
       process_->GetData().id, info.name, profile_data_directory);
@@ -181,19 +180,19 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(
   process_->GetHost()->AddFilter(file_filter_.get());
   process_->GetHost()->AddFilter(host_impl_.get());
 
-  content::GetContentClient()->browser()->DidCreatePpapiPlugin(host_impl_);
+  GetContentClient()->browser()->DidCreatePpapiPlugin(host_impl_);
 }
 
 PpapiPluginProcessHost::PpapiPluginProcessHost()
     : is_broker_(true) {
   process_.reset(new BrowserChildProcessHostImpl(
-      content::PROCESS_TYPE_PPAPI_BROKER, this));
+      PROCESS_TYPE_PPAPI_BROKER, this));
 
   ppapi::PpapiPermissions permissions;  // No permissions.
-  host_impl_ = new content::BrowserPpapiHostImpl(this, permissions);
+  host_impl_ = new BrowserPpapiHostImpl(this, permissions);
 }
 
-bool PpapiPluginProcessHost::Init(const content::PepperPluginInfo& info) {
+bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
   plugin_path_ = info.path;
   if (info.name.empty()) {
     process_->SetName(plugin_path_.BaseName().LossyDisplayName());
@@ -248,8 +247,7 @@ bool PpapiPluginProcessHost::Init(const content::PepperPluginInfo& info) {
                                arraysize(kPluginForwardSwitches));
   }
 
-  std::string locale =
-      content::GetContentClient()->browser()->GetApplicationLocale();
+  std::string locale = GetContentClient()->browser()->GetApplicationLocale();
   if (!locale.empty()) {
     // Pass on the locale so the plugin will know what language we're using.
     cmd_line->AppendSwitchASCII(switches::kLang, locale);
@@ -366,3 +364,5 @@ void PpapiPluginProcessHost::OnRendererPluginChannelCreated(
 
   client->OnPpapiChannelOpened(channel_handle, process_->GetData().id);
 }
+
+}  // namespace content

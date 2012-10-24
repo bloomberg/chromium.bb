@@ -21,6 +21,8 @@
 
 using WebKit::WebBindings;
 
+namespace content {
+
 NPObjectStub::NPObjectStub(
     NPObject* npobject,
     NPChannelBase* channel,
@@ -73,7 +75,7 @@ IPC::Listener* NPObjectStub::GetChannelListener() {
 }
 
 bool NPObjectStub::OnMessageReceived(const IPC::Message& msg) {
-  content::GetContentClient()->SetActiveURL(page_url_);
+  GetContentClient()->SetActiveURL(page_url_);
   if (!npobject_) {
     if (msg.is_sync()) {
       // The object could be garbage because the frame has gone away, so
@@ -401,3 +403,5 @@ void NPObjectStub::OnEvaluate(const std::string& script,
   NPObjectMsg_Evaluate::WriteReplyParams(reply_msg, result_param, return_value);
   channel_->Send(reply_msg);
 }
+
+}  // namespace content

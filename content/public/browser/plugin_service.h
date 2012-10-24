@@ -14,7 +14,6 @@
 
 class FilePath;
 class GURL;
-class PluginProcessHost;
 
 namespace webkit {
 struct WebPluginInfo;
@@ -26,6 +25,7 @@ class PluginList;
 namespace content {
 
 class BrowserContext;
+class PluginProcessHost;
 class PluginServiceFilter;
 class ResourceContext;
 struct PepperPluginInfo;

@@ -20,20 +20,18 @@
 #include "ipc/ipc_sender.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
-class BrowserChildProcessHostImpl;
-
-namespace content {
-struct PepperPluginInfo;
-class ResourceContext;
-}
-
 namespace net {
 class HostResolver;
 }
 
+namespace content {
+class BrowserChildProcessHostImpl;
+class ResourceContext;
+struct PepperPluginInfo;
+
 // Process host for PPAPI plugin and broker processes.
 // When used for the broker, interpret all references to "plugin" with "broker".
-class PpapiPluginProcessHost : public content::BrowserChildProcessHostDelegate,
+class PpapiPluginProcessHost : public BrowserChildProcessHostDelegate,
                                public IPC::Sender {
  public:
   class Client {
@@ -61,7 +59,7 @@ class PpapiPluginProcessHost : public content::BrowserChildProcessHostDelegate,
   class PluginClient : public Client {
    public:
     // Returns the resource context for the renderer requesting the channel.
-    virtual content::ResourceContext* GetResourceContext() = 0;
+    virtual ResourceContext* GetResourceContext() = 0;
 
    protected:
     virtual ~PluginClient() {}
@@ -75,11 +73,11 @@ class PpapiPluginProcessHost : public content::BrowserChildProcessHostDelegate,
   virtual ~PpapiPluginProcessHost();
 
   static PpapiPluginProcessHost* CreatePluginHost(
-      const content::PepperPluginInfo& info,
+      const PepperPluginInfo& info,
       const FilePath& profile_data_directory,
       net::HostResolver* host_resolver);
   static PpapiPluginProcessHost* CreateBrokerHost(
-      const content::PepperPluginInfo& info);
+      const PepperPluginInfo& info);
 
   // Notification that a PP_Instance has been created for the given
   // RenderView/Process pair for the given plugin. This is necessary so that
@@ -113,14 +111,14 @@ class PpapiPluginProcessHost : public content::BrowserChildProcessHostDelegate,
 
   // Constructors for plugin and broker process hosts, respectively.
   // You must call Init before doing anything else.
-  PpapiPluginProcessHost(const content::PepperPluginInfo& info,
+  PpapiPluginProcessHost(const PepperPluginInfo& info,
                          const FilePath& profile_data_directory,
                          net::HostResolver* host_resolver);
   PpapiPluginProcessHost();
 
   // Actually launches the process with the given plugin info. Returns true
   // on success (the process was spawned).
-  bool Init(const content::PepperPluginInfo& info);
+  bool Init(const PepperPluginInfo& info);
 
   void RequestPluginChannel(Client* client);
 
@@ -140,7 +138,7 @@ class PpapiPluginProcessHost : public content::BrowserChildProcessHostDelegate,
   scoped_refptr<PepperMessageFilter> filter_;
 
   ppapi::PpapiPermissions permissions_;
-  scoped_refptr<content::BrowserPpapiHostImpl> host_impl_;
+  scoped_refptr<BrowserPpapiHostImpl> host_impl_;
 
   // Handles filesystem requests from flash plugins. May be NULL.
   scoped_refptr<PepperFileMessageFilter> file_filter_;
@@ -170,22 +168,24 @@ class PpapiPluginProcessHost : public content::BrowserChildProcessHostDelegate,
 };
 
 class PpapiPluginProcessHostIterator
-    : public content::BrowserChildProcessHostTypeIterator<
+    : public BrowserChildProcessHostTypeIterator<
           PpapiPluginProcessHost> {
  public:
   PpapiPluginProcessHostIterator()
-      : content::BrowserChildProcessHostTypeIterator<
-          PpapiPluginProcessHost>(content::PROCESS_TYPE_PPAPI_PLUGIN) {}
+      : BrowserChildProcessHostTypeIterator<
+          PpapiPluginProcessHost>(PROCESS_TYPE_PPAPI_PLUGIN) {}
 };
 
 class PpapiBrokerProcessHostIterator
-    : public content::BrowserChildProcessHostTypeIterator<
+    : public BrowserChildProcessHostTypeIterator<
           PpapiPluginProcessHost> {
  public:
   PpapiBrokerProcessHostIterator()
-      : content::BrowserChildProcessHostTypeIterator<
-          PpapiPluginProcessHost>(content::PROCESS_TYPE_PPAPI_BROKER) {}
+      : BrowserChildProcessHostTypeIterator<
+          PpapiPluginProcessHost>(PROCESS_TYPE_PPAPI_BROKER) {}
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_PPAPI_PLUGIN_PROCESS_HOST_H_
 

@@ -18,6 +18,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 
 using content::BrowserThread;
+using content::NPObjectStub;
+using content::NPVariant_Param;
 using content::RenderViewHost;
 
 namespace {
@@ -114,7 +116,7 @@ void JavaBridgeDispatcherHost::CreateNPVariantParam(NPObject* object,
 
   // Create an NPVariantParam suitable for serialization over IPC from our
   // NPVariant. See CreateNPVariantParam() in npobject_utils.
-  param->type = NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID;
+  param->type = content::NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID;
   int route_id = JavaBridgeChannelHost::ThreadsafeGenerateRouteID();
   param->npobject_routing_id = route_id;
 

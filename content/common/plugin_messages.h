@@ -472,47 +472,47 @@ IPC_MESSAGE_ROUTED2(PluginHostMsg_URLRedirectResponse,
 IPC_SYNC_MESSAGE_ROUTED0_0(NPObjectMsg_Release)
 
 IPC_SYNC_MESSAGE_ROUTED1_1(NPObjectMsg_HasMethod,
-                           NPIdentifier_Param /* name */,
+                           content::NPIdentifier_Param /* name */,
                            bool /* result */)
 
 IPC_SYNC_MESSAGE_ROUTED3_2(NPObjectMsg_Invoke,
                            bool /* is_default */,
-                           NPIdentifier_Param /* method */,
-                           std::vector<NPVariant_Param> /* args */,
-                           NPVariant_Param /* result_param */,
+                           content::NPIdentifier_Param /* method */,
+                           std::vector<content::NPVariant_Param> /* args */,
+                           content::NPVariant_Param /* result_param */,
                            bool /* result */)
 
 IPC_SYNC_MESSAGE_ROUTED1_1(NPObjectMsg_HasProperty,
-                           NPIdentifier_Param /* name */,
+                           content::NPIdentifier_Param /* name */,
                            bool /* result */)
 
 IPC_SYNC_MESSAGE_ROUTED1_2(NPObjectMsg_GetProperty,
-                           NPIdentifier_Param /* name */,
-                           NPVariant_Param /* property */,
+                           content::NPIdentifier_Param /* name */,
+                           content::NPVariant_Param /* property */,
                            bool /* result */)
 
 IPC_SYNC_MESSAGE_ROUTED2_1(NPObjectMsg_SetProperty,
-                           NPIdentifier_Param /* name */,
-                           NPVariant_Param /* property */,
+                           content::NPIdentifier_Param /* name */,
+                           content::NPVariant_Param /* property */,
                            bool /* result */)
 
 IPC_SYNC_MESSAGE_ROUTED1_1(NPObjectMsg_RemoveProperty,
-                           NPIdentifier_Param /* name */,
+                           content::NPIdentifier_Param /* name */,
                            bool /* result */)
 
 IPC_SYNC_MESSAGE_ROUTED0_0(NPObjectMsg_Invalidate)
 
 IPC_SYNC_MESSAGE_ROUTED0_2(NPObjectMsg_Enumeration,
-                           std::vector<NPIdentifier_Param> /* value */,
+                           std::vector<content::NPIdentifier_Param> /* value */,
                            bool /* result */)
 
 IPC_SYNC_MESSAGE_ROUTED1_2(NPObjectMsg_Construct,
-                           std::vector<NPVariant_Param> /* args */,
-                           NPVariant_Param /* result_param */,
+                           std::vector<content::NPVariant_Param> /* args */,
+                           content::NPVariant_Param /* result_param */,
                            bool /* result */)
 
 IPC_SYNC_MESSAGE_ROUTED2_2(NPObjectMsg_Evaluate,
                            std::string /* script */,
                            bool /* popups_allowed */,
-                           NPVariant_Param /* result_param */,
+                           content::NPVariant_Param /* result_param */,
                            bool /* result */)

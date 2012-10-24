@@ -9,13 +9,13 @@
 #include "base/string16.h"
 #include "content/public/browser/render_view_host_observer.h"
 
-class NPChannelBase;
 class RouteIDGenerator;
 struct NPObject;
-struct NPVariant_Param;
 
 namespace content {
+class NPChannelBase;
 class RenderViewHost;
+struct NPVariant_Param;
 }
 
 // This class handles injecting Java objects into a single RenderView. The Java
@@ -58,10 +58,10 @@ class JavaBridgeDispatcherHost
   void OnGetChannelHandle(IPC::Message* reply_msg);
 
   void GetChannelHandle(IPC::Message* reply_msg);
-  void CreateNPVariantParam(NPObject* object, NPVariant_Param* param);
+  void CreateNPVariantParam(NPObject* object, content::NPVariant_Param* param);
   void CreateObjectStub(NPObject* object, int route_id);
 
-  scoped_refptr<NPChannelBase> channel_;
+  scoped_refptr<content::NPChannelBase> channel_;
   bool is_renderer_initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(JavaBridgeDispatcherHost);

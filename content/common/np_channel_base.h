@@ -44,6 +44,8 @@ inline size_t hash_value(NPObject* const& ptr) {
 }  // namespace stdext
 #endif // COMPILER
 
+namespace content {
+
 // Encapsulates an IPC channel between a renderer and another process. Used to
 // proxy access to NP objects.
 class NPChannelBase : public IPC::Listener,
@@ -197,5 +199,7 @@ class NPChannelBase : public IPC::Listener,
 
   DISALLOW_COPY_AND_ASSIGN(NPChannelBase);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_NP_CHANNEL_BASE_H_

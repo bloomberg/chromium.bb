@@ -44,11 +44,7 @@
 using ::base::files::FilePathWatcher;
 #endif
 
-using content::BrowserThread;
-using content::PepperPluginRegistry;
-using content::PluginService;
-using content::PluginServiceFilter;
-
+namespace content {
 namespace {
 
 // Callback set on the PluginList to assert that plugin loading happens on the
@@ -84,8 +80,8 @@ class PluginDirWatcherDelegate : public FilePathWatcher::Delegate {
     webkit::npapi::PluginList::Singleton()->RefreshPlugins();
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&content::PluginService::PurgePluginListCache,
-                   static_cast<content::BrowserContext*>(NULL), false));
+        base::Bind(&PluginService::PurgePluginListCache,
+                   static_cast<BrowserContext*>(NULL), false));
   }
 
   virtual void OnFilePathError(const FilePath& path) OVERRIDE {
@@ -99,7 +95,6 @@ class PluginDirWatcherDelegate : public FilePathWatcher::Delegate {
 };
 #endif
 
-namespace content {
 // static
 PluginService* PluginService::GetInstance() {
   return PluginServiceImpl::GetInstance();
@@ -114,8 +109,6 @@ void PluginService::PurgePluginListCache(BrowserContext* browser_context,
       host->Send(new ViewMsg_PurgePluginListCache(reload_pages));
   }
 }
-
-}  // namespace content
 
 // static
 PluginServiceImpl* PluginServiceImpl::GetInstance() {
@@ -155,7 +148,7 @@ void PluginServiceImpl::Init() {
 
   RegisterPepperPlugins();
 
-  content::GetContentClient()->AddNPAPIPlugins(plugin_list_);
+  GetContentClient()->AddNPAPIPlugins(plugin_list_);
 
   // Load any specified on the command line as well.
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -283,7 +276,7 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
     return plugin_host;
 
   // Validate that the plugin is actually registered.
-  content::PepperPluginInfo* info = GetRegisteredPpapiPluginInfo(plugin_path);
+  PepperPluginInfo* info = GetRegisteredPpapiPluginInfo(plugin_path);
   if (!info)
     return NULL;
 
@@ -302,7 +295,7 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiBrokerProcess(
     return plugin_host;
 
   // Validate that the plugin is actually registered.
-  content::PepperPluginInfo* info = GetRegisteredPpapiPluginInfo(plugin_path);
+  PepperPluginInfo* info = GetRegisteredPpapiPluginInfo(plugin_path);
   if (!info)
     return NULL;
 
@@ -387,7 +380,7 @@ void PluginServiceImpl::GetAllowedPluginForOpenChannelToPlugin(
     const GURL& page_url,
     const std::string& mime_type,
     PluginProcessHost::Client* client,
-    content::ResourceContext* resource_context) {
+    ResourceContext* resource_context) {
   webkit::WebPluginInfo info;
   bool allow_wildcard = true;
   bool found = GetPluginInfo(
@@ -438,7 +431,7 @@ bool PluginServiceImpl::GetPluginInfoArray(
 
 bool PluginServiceImpl::GetPluginInfo(int render_process_id,
                                       int render_view_id,
-                                      content::ResourceContext* context,
+                                      ResourceContext* context,
                                       const GURL& url,
                                       const GURL& page_url,
                                       const std::string& mime_type,
@@ -575,9 +568,9 @@ void PluginServiceImpl::RegisterPepperPlugins() {
 }
 
 // There should generally be very few plugins so a brute-force search is fine.
-content::PepperPluginInfo* PluginServiceImpl::GetRegisteredPpapiPluginInfo(
+PepperPluginInfo* PluginServiceImpl::GetRegisteredPpapiPluginInfo(
     const FilePath& plugin_path) {
-  content::PepperPluginInfo* info = NULL;
+  PepperPluginInfo* info = NULL;
   for (size_t i = 0; i < ppapi_plugins_.size(); i++) {
     if (ppapi_plugins_[i].path == plugin_path) {
       info = &ppapi_plugins_[i];
@@ -594,7 +587,7 @@ content::PepperPluginInfo* PluginServiceImpl::GetRegisteredPpapiPluginInfo(
   webkit::WebPluginInfo webplugin_info;
   if (!GetPluginInfoByPath(plugin_path, &webplugin_info))
     return NULL;
-  content::PepperPluginInfo new_pepper_info;
+  PepperPluginInfo new_pepper_info;
   if (!MakePepperPluginInfo(webplugin_info, &new_pepper_info))
     return NULL;
   ppapi_plugins_.push_back(new_pepper_info);
@@ -612,11 +605,11 @@ void PluginServiceImpl::RegisterFilePathWatcher(
 }
 #endif
 
-void PluginServiceImpl::SetFilter(content::PluginServiceFilter* filter) {
+void PluginServiceImpl::SetFilter(PluginServiceFilter* filter) {
   filter_ = filter;
 }
 
-content::PluginServiceFilter* PluginServiceImpl::GetFilter() {
+PluginServiceFilter* PluginServiceImpl::GetFilter() {
   return filter_;
 }
 
@@ -715,3 +708,5 @@ void PluginServiceImpl::GetInternalPlugins(
 webkit::npapi::PluginList* PluginServiceImpl::GetPluginList() {
   return plugin_list_;
 }
+
+}  // namespace content

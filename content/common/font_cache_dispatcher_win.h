@@ -11,6 +11,8 @@
 #include "base/memory/singleton.h"
 #include "ipc/ipc_channel_proxy.h"
 
+namespace content {
+
 // Dispatches messages used for font caching on Windows. This is needed because
 // Windows can't load fonts into its kernel cache in sandboxed processes. So the
 // sandboxed process asks the browser process to do this for it.
@@ -37,5 +39,7 @@ class FontCacheDispatcher : public IPC::ChannelProxy::MessageFilter,
 
   DISALLOW_COPY_AND_ASSIGN(FontCacheDispatcher);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_FONT_CACHE_DISPATCHER_WIN_H_

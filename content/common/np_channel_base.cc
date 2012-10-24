@@ -16,6 +16,8 @@
 #include "ipc/ipc_channel_posix.h"
 #endif
 
+namespace content {
+
 typedef base::hash_map<std::string, scoped_refptr<NPChannelBase> > ChannelMap;
 static base::LazyInstance<ChannelMap>::Leaky
      g_channels = LAZY_INSTANCE_INITIALIZER;
@@ -300,3 +302,5 @@ void NPChannelBase::RemoveMappingForNPObjectStub(int route_id,
 void NPChannelBase::RemoveMappingForNPObjectProxy(int route_id) {
   proxy_map_.erase(route_id);
 }
+
+}  // namespace content

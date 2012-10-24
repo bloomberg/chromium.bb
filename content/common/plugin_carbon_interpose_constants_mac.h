@@ -8,11 +8,11 @@
 #if !defined(__LP64__)
 
 // Strings used in setting up Carbon interposing for the plugin process.
-namespace plugin_interpose_strings {
+namespace content {
 
 extern const char kDYLDInsertLibrariesKey[];
 
-}  // namespace plugin_interpose_strings
+}  // namespace content
 
 #endif  // !__LP64__
 

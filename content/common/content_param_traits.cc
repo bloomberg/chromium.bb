@@ -11,6 +11,8 @@
 #include "webkit/plugins/npapi/plugin_host.h"
 #include "ui/base/range/range.h"
 
+namespace content {
+
 NPIdentifier_Param::NPIdentifier_Param()
     : identifier() {
 }
@@ -28,6 +30,11 @@ NPVariant_Param::NPVariant_Param()
 
 NPVariant_Param::~NPVariant_Param() {
 }
+
+}  // namespace content
+
+using content::NPIdentifier_Param;
+using content::NPVariant_Param;
 
 namespace IPC {
 
@@ -52,22 +59,23 @@ void ParamTraits<net::IPEndPoint>::Log(const param_type& p, std::string* l) {
 
 void ParamTraits<NPVariant_Param>::Write(Message* m, const param_type& p) {
   WriteParam(m, static_cast<int>(p.type));
-  if (p.type == NPVARIANT_PARAM_BOOL) {
+  if (p.type == content::NPVARIANT_PARAM_BOOL) {
     WriteParam(m, p.bool_value);
-  } else if (p.type == NPVARIANT_PARAM_INT) {
+  } else if (p.type == content::NPVARIANT_PARAM_INT) {
     WriteParam(m, p.int_value);
-  } else if (p.type == NPVARIANT_PARAM_DOUBLE) {
+  } else if (p.type == content::NPVARIANT_PARAM_DOUBLE) {
     WriteParam(m, p.double_value);
-  } else if (p.type == NPVARIANT_PARAM_STRING) {
+  } else if (p.type == content::NPVARIANT_PARAM_STRING) {
     WriteParam(m, p.string_value);
-  } else if (p.type == NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID ||
-             p.type == NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID) {
+  } else if (p.type == content::NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID ||
+             p.type == content::NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID) {
     // This is the routing id used to connect NPObjectProxy in the other
     // process with NPObjectStub in this process or to identify the raw
     // npobject pointer to be used in the callee process.
     WriteParam(m, p.npobject_routing_id);
   } else {
-    DCHECK(p.type == NPVARIANT_PARAM_VOID || p.type == NPVARIANT_PARAM_NULL);
+    DCHECK(p.type == content::NPVARIANT_PARAM_VOID ||
+           p.type == content::NPVARIANT_PARAM_NULL);
   }
 }
 
@@ -79,20 +87,20 @@ bool ParamTraits<NPVariant_Param>::Read(const Message* m,
     return false;
 
   bool result = false;
-  r->type = static_cast<NPVariant_ParamEnum>(type);
-  if (r->type == NPVARIANT_PARAM_BOOL) {
+  r->type = static_cast<content::NPVariant_ParamEnum>(type);
+  if (r->type == content::NPVARIANT_PARAM_BOOL) {
     result = ReadParam(m, iter, &r->bool_value);
-  } else if (r->type == NPVARIANT_PARAM_INT) {
+  } else if (r->type == content::NPVARIANT_PARAM_INT) {
     result = ReadParam(m, iter, &r->int_value);
-  } else if (r->type == NPVARIANT_PARAM_DOUBLE) {
+  } else if (r->type == content::NPVARIANT_PARAM_DOUBLE) {
     result = ReadParam(m, iter, &r->double_value);
-  } else if (r->type == NPVARIANT_PARAM_STRING) {
+  } else if (r->type == content::NPVARIANT_PARAM_STRING) {
     result = ReadParam(m, iter, &r->string_value);
-  } else if (r->type == NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID ||
-             r->type == NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID) {
+  } else if (r->type == content::NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID ||
+             r->type == content::NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID) {
     result = ReadParam(m, iter, &r->npobject_routing_id);
-  } else if ((r->type == NPVARIANT_PARAM_VOID) ||
-             (r->type == NPVARIANT_PARAM_NULL)) {
+  } else if ((r->type == content::NPVARIANT_PARAM_VOID) ||
+             (r->type == content::NPVARIANT_PARAM_NULL)) {
     result = true;
   } else {
     NOTREACHED();
@@ -103,16 +111,16 @@ bool ParamTraits<NPVariant_Param>::Read(const Message* m,
 
 void ParamTraits<NPVariant_Param>::Log(const param_type& p, std::string* l) {
   l->append(StringPrintf("NPVariant_Param(%d, ", static_cast<int>(p.type)));
-  if (p.type == NPVARIANT_PARAM_BOOL) {
+  if (p.type == content::NPVARIANT_PARAM_BOOL) {
     LogParam(p.bool_value, l);
-  } else if (p.type == NPVARIANT_PARAM_INT) {
+  } else if (p.type == content::NPVARIANT_PARAM_INT) {
     LogParam(p.int_value, l);
-  } else if (p.type == NPVARIANT_PARAM_DOUBLE) {
+  } else if (p.type == content::NPVARIANT_PARAM_DOUBLE) {
     LogParam(p.double_value, l);
-  } else if (p.type == NPVARIANT_PARAM_STRING) {
+  } else if (p.type == content::NPVARIANT_PARAM_STRING) {
     LogParam(p.string_value, l);
-  } else if (p.type == NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID ||
-             p.type == NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID) {
+  } else if (p.type == content::NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID ||
+             p.type == content::NPVARIANT_PARAM_RECEIVER_OBJECT_ROUTING_ID) {
     LogParam(p.npobject_routing_id, l);
   } else {
     l->append("<none>");

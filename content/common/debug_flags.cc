@@ -10,9 +10,11 @@
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_switches.h"
 
-bool DebugFlags::ProcessDebugFlags(CommandLine* command_line,
-                                   content::ProcessType type,
-                                   bool is_in_sandbox) {
+namespace content {
+
+bool ProcessDebugFlags(CommandLine* command_line,
+                       ProcessType type,
+                       bool is_in_sandbox) {
   bool should_help_child = false;
   const CommandLine& current_cmd_line = *CommandLine::ForCurrentProcess();
   if (current_cmd_line.HasSwitch(switches::kDebugChildren)) {
@@ -20,11 +22,11 @@ bool DebugFlags::ProcessDebugFlags(CommandLine* command_line,
     std::string value = current_cmd_line.GetSwitchValueASCII(
         switches::kDebugChildren);
     if (value.empty() ||
-        (type == content::PROCESS_TYPE_WORKER &&
+        (type == PROCESS_TYPE_WORKER &&
          value == switches::kWorkerProcess) ||
-        (type == content::PROCESS_TYPE_RENDERER &&
+        (type == PROCESS_TYPE_RENDERER &&
          value == switches::kRendererProcess) ||
-        (type == content::PROCESS_TYPE_PLUGIN &&
+        (type == PROCESS_TYPE_PLUGIN &&
          value == switches::kPluginProcess)) {
       command_line->AppendSwitch(switches::kDebugOnStart);
       should_help_child = true;
@@ -35,11 +37,11 @@ bool DebugFlags::ProcessDebugFlags(CommandLine* command_line,
     std::string value = current_cmd_line.GetSwitchValueASCII(
         switches::kWaitForDebuggerChildren);
     if (value.empty() ||
-        (type == content::PROCESS_TYPE_WORKER &&
+        (type == PROCESS_TYPE_WORKER &&
          value == switches::kWorkerProcess) ||
-        (type == content::PROCESS_TYPE_RENDERER &&
+        (type == PROCESS_TYPE_RENDERER &&
          value == switches::kRendererProcess) ||
-        (type == content::PROCESS_TYPE_PLUGIN &&
+        (type == PROCESS_TYPE_PLUGIN &&
          value == switches::kPluginProcess)) {
       command_line->AppendSwitch(switches::kWaitForDebugger);
     }
@@ -47,3 +49,5 @@ bool DebugFlags::ProcessDebugFlags(CommandLine* command_line,
   }
   return should_help_child;
 }
+
+}  // namespace content

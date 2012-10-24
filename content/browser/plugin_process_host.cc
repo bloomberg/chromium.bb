@@ -39,10 +39,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_switches.h"
 
-using content::BrowserThread;
-using content::ChildProcessData;
-using content::ChildProcessHost;
-
 #if defined(USE_X11)
 #include "ui/gfx/gtk_native_view_id_manager.h"
 #endif
@@ -57,7 +53,11 @@ using content::ChildProcessHost;
 #include "base/win/windows_version.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
+#endif
 
+namespace content {
+
+#if defined(OS_WIN)
 void PluginProcessHost::OnPluginWindowDestroyed(HWND window, HWND parent) {
   // The window is destroyed at this point, we just care about its parent, which
   // is the intermediate window we created.
@@ -91,8 +91,7 @@ PluginProcessHost::PluginProcessHost()
     : plugin_cursor_visible_(true)
 #endif
 {
-  process_.reset(
-      new BrowserChildProcessHostImpl(content::PROCESS_TYPE_PLUGIN, this));
+  process_.reset(new BrowserChildProcessHostImpl(PROCESS_TYPE_PLUGIN, this));
 }
 
 PluginProcessHost::~PluginProcessHost() {
@@ -208,8 +207,7 @@ bool PluginProcessHost::Init(const webkit::WebPluginInfo& info) {
   if (!plugin_launcher.empty())
     cmd_line->PrependWrapper(plugin_launcher);
 
-  std::string locale =
-      content::GetContentClient()->browser()->GetApplicationLocale();
+  std::string locale = GetContentClient()->browser()->GetApplicationLocale();
   if (!locale.empty()) {
     // Pass on the locale so the null plugin will use the right language in the
     // prompt to install the desired plugin.
@@ -222,21 +220,18 @@ bool PluginProcessHost::Init(const webkit::WebPluginInfo& info) {
   base::EnvironmentVector env;
 #if defined(OS_MACOSX) && !defined(__LP64__)
   if (!browser_command_line.HasSwitch(switches::kDisableCarbonInterposing)) {
-    std::string interpose_list =
-        content::GetContentClient()->GetCarbonInterposePath();
+    std::string interpose_list = GetContentClient()->GetCarbonInterposePath();
     if (!interpose_list.empty()) {
       // Add our interposing library for Carbon. This is stripped back out in
       // plugin_main.cc, so changes here should be reflected there.
-      const char* existing_list =
-          getenv(plugin_interpose_strings::kDYLDInsertLibrariesKey);
+      const char* existing_list = getenv(kDYLDInsertLibrariesKey);
       if (existing_list) {
         interpose_list.insert(0, ":");
         interpose_list.insert(0, existing_list);
       }
     }
     env.push_back(std::pair<std::string, std::string>(
-        plugin_interpose_strings::kDYLDInsertLibrariesKey,
-        interpose_list));
+        kDYLDInsertLibrariesKey, interpose_list));
   }
 #endif
 #endif
@@ -333,7 +328,7 @@ void PluginProcessHost::CancelRequests() {
 
 // static
 void PluginProcessHost::CancelPendingRequestsForResourceContext(
-    content::ResourceContext* context) {
+    ResourceContext* context) {
   for (PluginProcessHostIterator host_it; !host_it.Done(); ++host_it) {
     PluginProcessHost* host = *host_it;
     for (size_t i = 0; i < host->pending_requests_.size(); ++i) {
@@ -347,7 +342,7 @@ void PluginProcessHost::CancelPendingRequestsForResourceContext(
 }
 
 void PluginProcessHost::OpenChannelToPlugin(Client* client) {
-  process_->Notify(content::NOTIFICATION_CHILD_INSTANCE_CREATED);
+  process_->Notify(NOTIFICATION_CHILD_INSTANCE_CREATED);
   client->SetPluginInfo(info_);
   if (process_->GetHost()->IsChannelOpening()) {
     // The channel is already in the process of being opened.  Put
@@ -412,3 +407,5 @@ void PluginProcessHost::OnChannelCreated(
     client->OnChannelOpened(channel_handle);
   sent_requests_.pop_front();
 }
+
+}  // namespace content

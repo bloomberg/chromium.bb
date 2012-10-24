@@ -27,7 +27,6 @@
 #endif
 
 struct NPObject;
-class NPObjectStub;
 struct PluginHostMsg_URLRequest_Params;
 class SkBitmap;
 
@@ -46,6 +45,7 @@ class WebPlugin;
 }
 
 namespace content {
+class NPObjectStub;
 class PluginChannelHost;
 class RenderViewImpl;
 

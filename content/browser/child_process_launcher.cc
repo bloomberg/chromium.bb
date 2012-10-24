@@ -39,7 +39,7 @@
 #include "base/global_descriptors_posix.h"
 #endif
 
-using content::BrowserThread;
+namespace content {
 
 // Having the functionality of ChildProcessLauncher be in an internal
 // ref counted object allows us to automatically terminate the process when the
@@ -51,7 +51,7 @@ class ChildProcessLauncher::Context
       : client_(NULL),
         client_thread_id_(BrowserThread::UI),
         termination_status_(base::TERMINATION_STATUS_NORMAL_TERMINATION),
-        exit_code_(content::RESULT_CODE_NORMAL_EXIT),
+        exit_code_(RESULT_CODE_NORMAL_EXIT),
         starting_(true)
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
         , zygote_(false)
@@ -167,15 +167,15 @@ class ChildProcessLauncher::Context
 #elif defined(OS_ANDROID)
     std::string process_type =
         cmd_line->GetSwitchValueASCII(switches::kProcessType);
-    std::vector<content::FileDescriptorInfo> files_to_register;
+    std::vector<FileDescriptorInfo> files_to_register;
     files_to_register.push_back(
-        content::FileDescriptorInfo(kPrimaryIPCChannel,
+        FileDescriptorInfo(kPrimaryIPCChannel,
                                     base::FileDescriptor(ipcfd, false)));
 
-    content::GetContentClient()->browser()->
+    GetContentClient()->browser()->
         GetAdditionalMappedFilesForChildProcess(*cmd_line, &files_to_register);
 
-    content::StartSandboxedProcess(cmd_line->argv(), files_to_register,
+    StartSandboxedProcess(cmd_line->argv(), files_to_register,
         base::Bind(&ChildProcessLauncher::Context::OnSandboxedProcessStarted,
                    this_object, client_thread_id));
 
@@ -187,13 +187,13 @@ class ChildProcessLauncher::Context
 
     std::string process_type =
         cmd_line->GetSwitchValueASCII(switches::kProcessType);
-    std::vector<content::FileDescriptorInfo> files_to_register;
+    std::vector<FileDescriptorInfo> files_to_register;
     files_to_register.push_back(
-        content::FileDescriptorInfo(kPrimaryIPCChannel,
+        FileDescriptorInfo(kPrimaryIPCChannel,
                                     base::FileDescriptor(ipcfd, false)));
 
 #if !defined(OS_MACOSX)
-    content::GetContentClient()->browser()->
+    GetContentClient()->browser()->
         GetAdditionalMappedFilesForChildProcess(*cmd_line, &files_to_register);
     if (use_zygote) {
       handle = ZygoteHostImpl::GetInstance()->ForkRequest(cmd_line->argv(),
@@ -205,9 +205,9 @@ class ChildProcessLauncher::Context
     {
       // Convert FD mapping to FileHandleMappingVector
       base::FileHandleMappingVector fds_to_map;
-      for (std::vector<content::FileDescriptorInfo>::const_iterator
+      for (std::vector<FileDescriptorInfo>::const_iterator
            i = files_to_register.begin(); i != files_to_register.end(); ++i) {
-        const content::FileDescriptorInfo& fd_info = *i;
+        const FileDescriptorInfo& fd_info = *i;
         fds_to_map.push_back(std::make_pair(
             fd_info.fd.fd,
             fd_info.id + base::GlobalDescriptors::kBaseDescriptor));
@@ -329,12 +329,12 @@ class ChildProcessLauncher::Context
       base::ProcessHandle handle) {
 #if defined(OS_ANDROID)
     LOG(INFO) << "ChromeProcess: Stopping process with handle " << handle;
-    content::StopSandboxedProcess(handle);
+    StopSandboxedProcess(handle);
 #else
     base::Process process(handle);
      // Client has gone away, so just kill the process.  Using exit code 0
     // means that UMA won't treat this as a crash.
-    process.Terminate(content::RESULT_CODE_NORMAL_EXIT);
+    process.Terminate(RESULT_CODE_NORMAL_EXIT);
     // On POSIX, we must additionally reap the child.
 #if defined(OS_POSIX)
 #if !defined(OS_MACOSX)
@@ -456,3 +456,5 @@ void ChildProcessLauncher::SetTerminateChildOnShutdown(
   if (context_)
     context_->set_terminate_child_on_shutdown(terminate_on_shutdown);
 }
+
+}  // namespace content

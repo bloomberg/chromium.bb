@@ -19,7 +19,7 @@
 #include "content/public/browser/child_process_data.h"
 #include "ui/gfx/rect.h"
 
-using content::BrowserThread;
+namespace content {
 
 void PluginProcessHost::OnPluginSelectWindow(uint32 window_id,
                                              gfx::Rect window_rect,
@@ -112,3 +112,5 @@ void PluginProcessHost::OnPluginSetCursorVisibility(bool visible) {
                                        visible));
   }
 }
+
+}  // namespace content

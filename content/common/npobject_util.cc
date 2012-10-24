@@ -15,6 +15,8 @@
 
 using WebKit::WebBindings;
 
+namespace content {
+
 // true if the current process is a plugin process, false otherwise.
 static bool g_plugin_process;
 
@@ -286,3 +288,5 @@ bool CreateNPVariant(const NPVariant_Param& param,
   }
   return true;
 }
+
+}  // namespace content

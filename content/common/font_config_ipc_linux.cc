@@ -13,6 +13,8 @@
 #include "base/pickle.h"
 #include "base/posix/unix_domain_socket.h"
 
+namespace content {
+
 FontConfigIPC::FontConfigIPC(int fd)
     : fd_(fd) {
 }
@@ -109,3 +111,5 @@ int FontConfigIPC::Open(unsigned filefaceid) {
 
   return result_fd;
 }
+
+}  // namespace content

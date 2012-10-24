@@ -10,15 +10,13 @@
 #include "content/common/content_export.h"
 #include "content/public/common/process_type.h"
 
-class BrowserChildProcessHostImpl;
-
 namespace IPC {
 class Message;
 }
 
 namespace content {
-
 class BrowserChildProcessHostDelegate;
+class BrowserChildProcessHostImpl;
 struct ChildProcessData;
 
 // This class allows iteration through either all child processes, or ones of a

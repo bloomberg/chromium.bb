@@ -28,7 +28,9 @@ struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
 struct GpuHostMsg_AcceleratedSurfaceRelease_Params;
 
+namespace content {
 class BrowserChildProcessHostImpl;
+}
 
 namespace IPC {
 struct ChannelHandle;
@@ -217,7 +219,7 @@ class GpuProcessHost : public content::BrowserChildProcessHostDelegate,
 
   static bool hardware_gpu_enabled_;
 
-  scoped_ptr<BrowserChildProcessHostImpl> process_;
+  scoped_ptr<content::BrowserChildProcessHostImpl> process_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuProcessHost);
 };

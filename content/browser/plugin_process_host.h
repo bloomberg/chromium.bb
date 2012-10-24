@@ -22,12 +22,6 @@
 #include "webkit/plugins/webplugininfo.h"
 #include "ui/gfx/native_widget_types.h"
 
-class BrowserChildProcessHostImpl;
-
-namespace content {
-class ResourceContext;
-}
-
 namespace gfx {
 class Rect;
 }
@@ -35,6 +29,10 @@ class Rect;
 namespace IPC {
 struct ChannelHandle;
 }
+
+namespace content {
+class BrowserChildProcessHostImpl;
+class ResourceContext;
 
 // Represents the browser side of the browser <--> plugin communication
 // channel.  Different plugins run in their own process, but multiple instances
@@ -44,9 +42,8 @@ struct ChannelHandle;
 // starting the plugin process when a plugin is created that doesn't already
 // have a process.  After that, most of the communication is directly between
 // the renderer and plugin processes.
-class CONTENT_EXPORT PluginProcessHost
-    : public content::BrowserChildProcessHostDelegate,
-      public IPC::Sender {
+class CONTENT_EXPORT PluginProcessHost : public BrowserChildProcessHostDelegate,
+                                         public IPC::Sender {
  public:
   class Client {
    public:
@@ -54,7 +51,7 @@ class CONTENT_EXPORT PluginProcessHost
     // the channel.
     virtual int ID() = 0;
     // Returns the resource context for the renderer requesting the channel.
-    virtual content::ResourceContext* GetResourceContext() = 0;
+    virtual ResourceContext* GetResourceContext() = 0;
     virtual bool OffTheRecord() = 0;
     virtual void SetPluginInfo(const webkit::WebPluginInfo& info) = 0;
     virtual void OnFoundPluginProcessHost(PluginProcessHost* host) = 0;
@@ -90,8 +87,7 @@ class CONTENT_EXPORT PluginProcessHost
   void OpenChannelToPlugin(Client* client);
 
   // Cancels all pending channel requests for the given resource context.
-  static void CancelPendingRequestsForResourceContext(
-      content::ResourceContext* context);
+  static void CancelPendingRequestsForResourceContext(ResourceContext* context);
 
   // This function is called to cancel pending requests to open new channels.
   void CancelPendingRequest(Client* client);
@@ -183,11 +179,13 @@ class CONTENT_EXPORT PluginProcessHost
 };
 
 class PluginProcessHostIterator
-    : public content::BrowserChildProcessHostTypeIterator<PluginProcessHost> {
+    : public BrowserChildProcessHostTypeIterator<PluginProcessHost> {
  public:
   PluginProcessHostIterator()
-      : content::BrowserChildProcessHostTypeIterator<PluginProcessHost>(
-          content::PROCESS_TYPE_PLUGIN) {}
+      : BrowserChildProcessHostTypeIterator<PluginProcessHost>(
+          PROCESS_TYPE_PLUGIN) {}
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_PLUGIN_PROCESS_HOST_H_

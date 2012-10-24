@@ -27,6 +27,8 @@ namespace ui {
 class Range;
 }
 
+namespace content {
+
 // Define the NPVariant_Param struct and its enum here since it needs manual
 // serialization code.
 enum NPVariant_ParamEnum {
@@ -64,6 +66,8 @@ struct NPIdentifier_Param {
   NPIdentifier identifier;
 };
 
+}  // namespace content
+
 namespace IPC {
 
 template <>
@@ -75,16 +79,16 @@ struct ParamTraits<net::IPEndPoint> {
 };
 
 template <>
-struct ParamTraits<NPVariant_Param> {
-  typedef NPVariant_Param param_type;
+struct ParamTraits<content::NPVariant_Param> {
+  typedef content::NPVariant_Param param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
 template <>
-struct ParamTraits<NPIdentifier_Param> {
-  typedef NPIdentifier_Param param_type;
+struct ParamTraits<content::NPIdentifier_Param> {
+  typedef content::NPIdentifier_Param param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

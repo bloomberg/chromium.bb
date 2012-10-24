@@ -12,10 +12,9 @@
 #include "ipc/ipc_channel_handle.h"
 #include "third_party/npapi/bindings/npruntime.h"
 
-struct NPVariant_Param;
-
 namespace content {
 class JavaBridgeChannel;
+struct NPVariant_Param;
 
 // This class handles injecting Java objects into the main frame of a
 // RenderView. The 'add' and 'remove' messages received from the browser

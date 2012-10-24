@@ -729,8 +729,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     cmd_line->AppendSwitch(switches::kAllowNoSandboxJob);
   }
 
-  bool child_needs_help =
-      DebugFlags::ProcessDebugFlags(cmd_line, type, in_sandbox);
+  bool child_needs_help = ProcessDebugFlags(cmd_line, type, in_sandbox);
 
   // Prefetch hints on windows:
   // Using a different prefetch profile per process type will allow Windows

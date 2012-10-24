@@ -7,7 +7,7 @@
 
 #include "content/common/np_channel_base.h"
 
-class JavaBridgeChannelHost : public NPChannelBase {
+class JavaBridgeChannelHost : public content::NPChannelBase {
  public:
   static JavaBridgeChannelHost* GetJavaBridgeChannelHost(
       int renderer_id,

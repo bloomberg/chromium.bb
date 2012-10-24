@@ -7,6 +7,8 @@
 using WebKit::WebReferrerPolicy;
 using WebKit::WebString;
 
+namespace content {
+
 RequestExtraData::RequestExtraData(WebReferrerPolicy referrer_policy,
                                    const WebString& custom_user_agent,
                                    bool is_main_frame,
@@ -14,7 +16,7 @@ RequestExtraData::RequestExtraData(WebReferrerPolicy referrer_policy,
                                    bool parent_is_main_frame,
                                    int64 parent_frame_id,
                                    bool allow_download,
-                                   content::PageTransition transition_type,
+                                   PageTransition transition_type,
                                    int transferred_request_child_id,
                                    int transferred_request_request_id)
     : webkit_glue::WebURLRequestExtraDataImpl(referrer_policy,
@@ -31,3 +33,5 @@ RequestExtraData::RequestExtraData(WebReferrerPolicy referrer_policy,
 
 RequestExtraData::~RequestExtraData() {
 }
+
+}  // namespace content

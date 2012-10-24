@@ -15,8 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/plugins/webplugininfo.h"
 
-using content::BrowserThread;
-using content::BrowserThreadImpl;
+namespace content {
 
 class MockPluginLoaderPosix : public PluginLoaderPosix {
  public:
@@ -107,7 +106,7 @@ class PluginLoaderPosixTest : public testing::Test {
 
 TEST_F(PluginLoaderPosixTest, QueueRequests) {
   int did_callback = 0;
-  content::PluginService::GetPluginsCallback callback =
+  PluginService::GetPluginsCallback callback =
       base::Bind(&VerifyCallback, base::Unretained(&did_callback));
 
   EXPECT_EQ(0u, plugin_loader()->number_of_pending_callbacks());
@@ -141,7 +140,7 @@ TEST_F(PluginLoaderPosixTest, QueueRequests) {
 
 TEST_F(PluginLoaderPosixTest, ThreeSuccessfulLoads) {
   int did_callback = 0;
-  content::PluginService::GetPluginsCallback callback =
+  PluginService::GetPluginsCallback callback =
       base::Bind(&VerifyCallback, base::Unretained(&did_callback));
 
   plugin_loader()->LoadPlugins(message_loop()->message_loop_proxy(), callback);
@@ -182,7 +181,7 @@ TEST_F(PluginLoaderPosixTest, ThreeSuccessfulLoads) {
 
 TEST_F(PluginLoaderPosixTest, ThreeSuccessfulLoadsThenCrash) {
   int did_callback = 0;
-  content::PluginService::GetPluginsCallback callback =
+  PluginService::GetPluginsCallback callback =
       base::Bind(&VerifyCallback, base::Unretained(&did_callback));
 
   plugin_loader()->LoadPlugins(message_loop()->message_loop_proxy(), callback);
@@ -225,7 +224,7 @@ TEST_F(PluginLoaderPosixTest, ThreeSuccessfulLoadsThenCrash) {
 
 TEST_F(PluginLoaderPosixTest, TwoFailures) {
   int did_callback = 0;
-  content::PluginService::GetPluginsCallback callback =
+  PluginService::GetPluginsCallback callback =
       base::Bind(&VerifyCallback, base::Unretained(&did_callback));
 
   plugin_loader()->LoadPlugins(message_loop()->message_loop_proxy(), callback);
@@ -264,7 +263,7 @@ TEST_F(PluginLoaderPosixTest, TwoFailures) {
 
 TEST_F(PluginLoaderPosixTest, CrashedProcess) {
   int did_callback = 0;
-  content::PluginService::GetPluginsCallback callback =
+  PluginService::GetPluginsCallback callback =
       base::Bind(&VerifyCallback, base::Unretained(&did_callback));
 
   plugin_loader()->LoadPlugins(message_loop()->message_loop_proxy(), callback);
@@ -297,7 +296,7 @@ TEST_F(PluginLoaderPosixTest, CrashedProcess) {
 
 TEST_F(PluginLoaderPosixTest, InternalPlugin) {
   int did_callback = 0;
-  content::PluginService::GetPluginsCallback callback =
+  PluginService::GetPluginsCallback callback =
       base::Bind(&VerifyCallback, base::Unretained(&did_callback));
 
   plugin_loader()->LoadPlugins(message_loop()->message_loop_proxy(), callback);
@@ -346,7 +345,7 @@ TEST_F(PluginLoaderPosixTest, InternalPlugin) {
 
 TEST_F(PluginLoaderPosixTest, AllCrashed) {
   int did_callback = 0;
-  content::PluginService::GetPluginsCallback callback =
+  PluginService::GetPluginsCallback callback =
       base::Bind(&VerifyCallback, base::Unretained(&did_callback));
 
   plugin_loader()->LoadPlugins(message_loop()->message_loop_proxy(), callback);
@@ -376,3 +375,5 @@ TEST_F(PluginLoaderPosixTest, AllCrashed) {
 
   EXPECT_EQ(0u, plugin_loader()->loaded_plugins().size());
 }
+
+}  // namespace content

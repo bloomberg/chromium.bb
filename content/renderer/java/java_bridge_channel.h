@@ -10,7 +10,7 @@
 
 namespace content {
 
-class JavaBridgeChannel : public NPChannelBase {
+class JavaBridgeChannel : public content::NPChannelBase {
  public:
   static JavaBridgeChannel* GetJavaBridgeChannel(
       const IPC::ChannelHandle& channel_handle,

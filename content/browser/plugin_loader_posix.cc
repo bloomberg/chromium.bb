@@ -14,8 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
-using content::BrowserThread;
-using content::ChildProcessHost;
+namespace content {
 
 PluginLoaderPosix::PluginLoaderPosix()
     : next_load_index_(0) {
@@ -23,7 +22,7 @@ PluginLoaderPosix::PluginLoaderPosix()
 
 void PluginLoaderPosix::LoadPlugins(
     scoped_refptr<base::MessageLoopProxy> target_loop,
-    const content::PluginService::GetPluginsCallback& callback) {
+    const PluginService::GetPluginsCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   callbacks_.push_back(PendingCallback(target_loop, callback));
@@ -190,10 +189,12 @@ bool PluginLoaderPosix::MaybeRunPendingCallbacks() {
 
 PluginLoaderPosix::PendingCallback::PendingCallback(
     scoped_refptr<base::MessageLoopProxy> loop,
-    const content::PluginService::GetPluginsCallback& cb)
+    const PluginService::GetPluginsCallback& cb)
     : target_loop(loop),
       callback(cb) {
 }
 
 PluginLoaderPosix::PendingCallback::~PendingCallback() {
 }
+
+}  // namespace content

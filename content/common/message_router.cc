@@ -6,6 +6,8 @@
 
 #include "ipc/ipc_message.h"
 
+namespace content {
+
 MessageRouter::MessageRouter() {
 }
 
@@ -51,3 +53,5 @@ bool MessageRouter::RouteMessage(const IPC::Message& msg) {
 IPC::Listener* MessageRouter::ResolveRoute(int32 routing_id) {
   return routes_.Lookup(routing_id);
 }
+
+}  // namespace content

@@ -36,10 +36,11 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebFontInfo.h"
 #include "ui/gfx/font_render_params_linux.h"
 
-using content::LinuxSandbox;
 using WebKit::WebCString;
 using WebKit::WebFontInfo;
 using WebKit::WebUChar;
+
+namespace content {
 
 // http://code.google.com/p/chromium/wiki/LinuxSandboxIPC
 
@@ -668,7 +669,7 @@ class SandboxIPCProcess  {
   const int browser_socket_;
   scoped_ptr<FontConfigDirect> font_config_;
   std::vector<std::string> sandbox_cmd_;
-  scoped_ptr<content::WebKitPlatformSupportImpl> webkit_platform_support_;
+  scoped_ptr<WebKitPlatformSupportImpl> webkit_platform_support_;
 };
 
 SandboxIPCProcess::~SandboxIPCProcess() {
@@ -679,7 +680,7 @@ SandboxIPCProcess::~SandboxIPCProcess() {
 void SandboxIPCProcess::EnsureWebKitInitialized() {
   if (webkit_platform_support_.get())
     return;
-  webkit_platform_support_.reset(new content::WebKitPlatformSupportImpl);
+  webkit_platform_support_.reset(new WebKitPlatformSupportImpl);
   WebKit::initializeWithoutV8(webkit_platform_support_.get());
 }
 
@@ -747,3 +748,5 @@ RenderSandboxHostLinux::~RenderSandboxHostLinux() {
       PLOG(ERROR) << "close";
   }
 }
+
+}  // namespace content

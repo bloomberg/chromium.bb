@@ -10,6 +10,8 @@
 #include "content/public/common/page_transition_types.h"
 #include "webkit/glue/weburlrequest_extradata_impl.h"
 
+namespace content {
+
 // The RenderView stores an instance of this class in the "extra data" of each
 // ResourceRequest (see RenderView::willSendRequest).
 class CONTENT_EXPORT RequestExtraData
@@ -22,7 +24,7 @@ class CONTENT_EXPORT RequestExtraData
                    bool parent_is_main_frame,
                    int64 parent_frame_id,
                    bool allow_download,
-                   content::PageTransition transition_type,
+                   PageTransition transition_type,
                    int transferred_request_child_id,
                    int transferred_request_request_id);
   virtual ~RequestExtraData();
@@ -32,7 +34,7 @@ class CONTENT_EXPORT RequestExtraData
   bool parent_is_main_frame() const { return parent_is_main_frame_; }
   int64 parent_frame_id() const { return parent_frame_id_; }
   bool allow_download() const { return allow_download_; }
-  content::PageTransition transition_type() const { return transition_type_; }
+  PageTransition transition_type() const { return transition_type_; }
   int transferred_request_child_id() const {
     return transferred_request_child_id_;
   }
@@ -46,11 +48,13 @@ class CONTENT_EXPORT RequestExtraData
   bool parent_is_main_frame_;
   int64 parent_frame_id_;
   bool allow_download_;
-  content::PageTransition transition_type_;
+  PageTransition transition_type_;
   int transferred_request_child_id_;
   int transferred_request_request_id_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestExtraData);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_REQUEST_EXTRA_DATA_H_

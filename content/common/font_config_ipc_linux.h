@@ -10,6 +10,8 @@
 
 #include <string>
 
+namespace content {
+
 // FontConfig implementation for Skia that proxies out of process to get out
 // of the sandbox. See http://code.google.com/p/chromium/wiki/LinuxSandboxIPC
 class FontConfigIPC : public FontConfigInterface {
@@ -36,5 +38,7 @@ class FontConfigIPC : public FontConfigInterface {
  private:
   const int fd_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_COMMON_FONT_CONFIG_IPC_LINUX_H_
