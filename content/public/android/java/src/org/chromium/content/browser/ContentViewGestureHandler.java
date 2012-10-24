@@ -599,25 +599,28 @@ class ContentViewGestureHandler implements LongPressDelegate {
      * @return Whether the event was handled.
      */
     boolean onTouchEvent(MotionEvent event) {
-        TraceEvent.begin("onTouchEvent");
-        mLongPressDetector.cancelLongPressIfNeeded(event);
-        // Notify native that scrolling has stopped whenever a down action is processed prior to
-        // passing the event to native as it will drop them as an optimization if scrolling is
-        // enabled.  Ending the fling ensures scrolling has stopped as well as terminating the
-        // current fling if applicable.
-        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-            endFling(event.getEventTime());
-        }
+        try {
+            TraceEvent.begin("onTouchEvent");
+            mLongPressDetector.cancelLongPressIfNeeded(event);
+            // Notify native that scrolling has stopped whenever a down action is processed prior to
+            // passing the event to native as it will drop them as an optimization if scrolling is
+            // enabled.  Ending the fling ensures scrolling has stopped as well as terminating the
+            // current fling if applicable.
+            if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                endFling(event.getEventTime());
+            }
 
-        if (offerTouchEventToJavaScript(event)) {
-            // offerTouchEventToJavaScript returns true to indicate the event was sent
-            // to the render process. If it is not subsequently handled, it will
-            // be returned via confirmTouchEvent(false) and eventually passed to
-            // processTouchEvent asynchronously.
+            if (offerTouchEventToJavaScript(event)) {
+                // offerTouchEventToJavaScript returns true to indicate the event was sent
+                // to the render process. If it is not subsequently handled, it will
+                // be returned via confirmTouchEvent(false) and eventually passed to
+                // processTouchEvent asynchronously.
+                return true;
+            }
+            return processTouchEvent(event);
+        } finally {
             TraceEvent.end("onTouchEvent");
-            return true;
         }
-        return processTouchEvent(event);
     }
 
     /**
