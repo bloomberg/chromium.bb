@@ -405,7 +405,8 @@ void HistoryService::AddPage(const history::HistoryAddPageArgs& add_page_args) {
 
   // Add link & all redirects to visited link list.
   VisitedLinkMaster* visited_links;
-  if (profile_ && (visited_links = profile_->GetVisitedLinkMaster())) {
+  if (profile_ &&
+      (visited_links = VisitedLinkMaster::FromProfile(profile_))) {
     visited_links->AddURL(add_page_args.url);
 
     if (!add_page_args.redirects.empty()) {
@@ -458,8 +459,10 @@ void HistoryService::AddPageWithDetails(const GURL& url,
 
   // Add to the visited links system.
   VisitedLinkMaster* visited_links;
-  if (profile_ && (visited_links = profile_->GetVisitedLinkMaster()))
+  if (profile_ &&
+      (visited_links = VisitedLinkMaster::FromProfile(profile_))) {
     visited_links->AddURL(url);
+  }
 
   history::URLRow row(url);
   row.set_title(title);
@@ -480,7 +483,8 @@ void HistoryService::AddPagesWithDetails(const history::URLRows& info,
 
   // Add to the visited links system.
   VisitedLinkMaster* visited_links;
-  if (profile_ && (visited_links = profile_->GetVisitedLinkMaster())) {
+  if (profile_ &&
+      (visited_links = VisitedLinkMaster::FromProfile(profile_))) {
     std::vector<GURL> urls;
     urls.reserve(info.size());
     for (history::URLRows::const_iterator i = info.begin(); i != info.end();
@@ -755,7 +759,8 @@ void HistoryService::Observe(int type,
       if (!profile_)
         return;  // No profile, probably unit testing.
       content::Details<history::URLsDeletedDetails> deleted_details(details);
-      VisitedLinkMaster* visited_links = profile_->GetVisitedLinkMaster();
+      VisitedLinkMaster* visited_links =
+          VisitedLinkMaster::FromProfile(profile_);
       if (!visited_links)
         return;  // Nobody to update.
       if (deleted_details->all_history)

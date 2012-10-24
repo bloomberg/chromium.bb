@@ -210,12 +210,6 @@ Profile* OffTheRecordProfileImpl::GetOriginalProfile() {
   return profile_;
 }
 
-VisitedLinkMaster* OffTheRecordProfileImpl::GetVisitedLinkMaster() {
-  // We don't provide access to the VisitedLinkMaster when we're OffTheRecord
-  // because we don't want to leak the sites that the user has visited before.
-  return NULL;
-}
-
 ExtensionService* OffTheRecordProfileImpl::GetExtensionService() {
   return extensions::ExtensionSystem::Get(this)->extension_service();
 }

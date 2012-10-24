@@ -66,8 +66,6 @@
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
-#include "chrome/browser/visitedlink/visitedlink_event_listener.h"
-#include "chrome/browser/visitedlink/visitedlink_master.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_constants.h"
@@ -283,8 +281,6 @@ ProfileImpl::ProfileImpl(const FilePath& path,
                          Delegate* delegate,
                          CreateMode create_mode)
     : path_(path),
-      ALLOW_THIS_IN_INITIALIZER_LIST(visited_link_event_listener_(
-          new VisitedLinkEventListener(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(io_data_(this)),
       host_content_settings_map_(NULL),
       last_session_exit_type_(EXIT_NORMAL),
@@ -599,18 +595,6 @@ bool ProfileImpl::HasOffTheRecordProfile() {
 
 Profile* ProfileImpl::GetOriginalProfile() {
   return this;
-}
-
-VisitedLinkMaster* ProfileImpl::GetVisitedLinkMaster() {
-  if (!visited_link_master_.get()) {
-    scoped_ptr<VisitedLinkMaster> visited_links(
-      new VisitedLinkMaster(visited_link_event_listener_.get(), this));
-    if (!visited_links->Init())
-      return NULL;
-    visited_link_master_.swap(visited_links);
-  }
-
-  return visited_link_master_.get();
 }
 
 ExtensionService* ProfileImpl::GetExtensionService() {

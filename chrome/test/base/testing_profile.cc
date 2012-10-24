@@ -516,10 +516,6 @@ Profile* TestingProfile::GetOriginalProfile() {
   return this;
 }
 
-VisitedLinkMaster* TestingProfile::GetVisitedLinkMaster() {
-  return NULL;
-}
-
 ExtensionService* TestingProfile::GetExtensionService() {
   return extensions::ExtensionSystem::Get(this)->extension_service();
 }

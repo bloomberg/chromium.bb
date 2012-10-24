@@ -38,7 +38,6 @@ class OffTheRecordProfileImpl : public Profile,
   virtual void DestroyOffTheRecordProfile() OVERRIDE;
   virtual bool HasOffTheRecordProfile() OVERRIDE;
   virtual Profile* GetOriginalProfile() OVERRIDE;
-  virtual VisitedLinkMaster* GetVisitedLinkMaster() OVERRIDE;
   virtual ExtensionService* GetExtensionService() OVERRIDE;
   virtual extensions::UserScriptMaster* GetUserScriptMaster() OVERRIDE;
   virtual extensions::EventRouter* GetExtensionEventRouter() OVERRIDE;

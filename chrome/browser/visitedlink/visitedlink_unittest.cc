@@ -15,6 +15,7 @@
 #include "base/time.h"
 #include "chrome/browser/visitedlink/visitedlink_event_listener.h"
 #include "chrome/browser/visitedlink/visitedlink_master.h"
+#include "chrome/browser/visitedlink/visitedlink_master_factory.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -41,6 +42,12 @@ const int g_test_count = 1000;
 // Returns a test URL for index |i|
 GURL TestURL(int i) {
   return GURL(StringPrintf("%s%d", g_test_prefix, i));
+}
+
+ProfileKeyedService* BuildVisitedLinkMaster(Profile* profile) {
+  VisitedLinkMaster* master = new VisitedLinkMaster(profile);
+  master->Init();
+  return master;
 }
 
 std::vector<VisitedLinkSlave*> g_slaves;
@@ -468,18 +475,7 @@ class VisitCountingProfile : public TestingProfile {
   VisitCountingProfile()
       : add_count_(0),
         add_event_count_(0),
-        reset_event_count_(0),
-        event_listener_(ALLOW_THIS_IN_INITIALIZER_LIST(
-            new VisitedLinkEventListener(this))) {}
-
-  virtual VisitedLinkMaster* GetVisitedLinkMaster() {
-    if (!visited_link_master_.get()) {
-      visited_link_master_.reset(
-          new VisitedLinkMaster(event_listener_.get(), this));
-      visited_link_master_->Init();
-    }
-    return visited_link_master_.get();
-  }
+        reset_event_count_(0) {}
 
   void CountAddEvent(int by) {
     add_count_ += by;
@@ -490,7 +486,6 @@ class VisitCountingProfile : public TestingProfile {
     reset_event_count_++;
   }
 
-  VisitedLinkMaster* master() const { return visited_link_master_.get(); }
   int add_count() const { return add_count_; }
   int add_event_count() const { return add_event_count_; }
   int reset_event_count() const { return reset_event_count_; }
@@ -499,8 +494,6 @@ class VisitCountingProfile : public TestingProfile {
   int add_count_;
   int add_event_count_;
   int reset_event_count_;
-  scoped_ptr<VisitedLinkEventListener> event_listener_;
-  scoped_ptr<VisitedLinkMaster> visited_link_master_;
 };
 
 // Stub out as little as possible, borrowing from RenderProcessHost.
@@ -571,8 +564,11 @@ class VisitedLinkEventsTest : public ChromeRenderViewHostTestHarness {
         file_thread_(BrowserThread::FILE, &message_loop_) {}
   virtual ~VisitedLinkEventsTest() {}
   virtual void SetUp() {
-    SetRenderProcessHostFactory(&vc_rph_factory_);
     browser_context_.reset(new VisitCountingProfile());
+    profile()->CreateHistoryService(true, false);
+    VisitedLinkMasterFactory::GetInstance()->SetTestingFactoryAndUse(profile(),
+        BuildVisitedLinkMaster);
+    SetRenderProcessHostFactory(&vc_rph_factory_);
     ChromeRenderViewHostTestHarness::SetUp();
   }
 
@@ -601,7 +597,7 @@ class VisitedLinkEventsTest : public ChromeRenderViewHostTestHarness {
 
 TEST_F(VisitedLinkEventsTest, Coalescense) {
   // add some URLs to master.
-  VisitedLinkMaster* master = profile()->GetVisitedLinkMaster();
+  VisitedLinkMaster* master = VisitedLinkMaster::FromProfile(profile());
   // Add a few URLs.
   master->AddURL(GURL("http://acidtests.org/"));
   master->AddURL(GURL("http://google.com/"));
@@ -653,7 +649,7 @@ TEST_F(VisitedLinkEventsTest, Coalescense) {
 }
 
 TEST_F(VisitedLinkEventsTest, Basics) {
-  VisitedLinkMaster* master = profile()->GetVisitedLinkMaster();
+  VisitedLinkMaster* master = VisitedLinkMaster::FromProfile(profile());
   rvh_tester()->CreateRenderView(string16(),
                                  MSG_ROUTING_NONE,
                                  -1,
@@ -681,7 +677,7 @@ TEST_F(VisitedLinkEventsTest, Basics) {
 }
 
 TEST_F(VisitedLinkEventsTest, TabVisibility) {
-  VisitedLinkMaster* master = profile()->GetVisitedLinkMaster();
+  VisitedLinkMaster* master = VisitedLinkMaster::FromProfile(profile());
   rvh_tester()->CreateRenderView(string16(),
                                  MSG_ROUTING_NONE,
                                  -1,

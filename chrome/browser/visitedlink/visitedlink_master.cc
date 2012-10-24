@@ -27,6 +27,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/visitedlink/visitedlink_event_listener.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -177,9 +178,8 @@ class VisitedLinkMaster::TableBuilder
 
 // VisitedLinkMaster ----------------------------------------------------------
 
-VisitedLinkMaster::VisitedLinkMaster(Listener* listener,
-                                     Profile* profile) {
-  InitMembers(listener, profile);
+VisitedLinkMaster::VisitedLinkMaster(Profile* profile) {
+  InitMembers(new VisitedLinkEventListener(profile), profile);
 }
 
 VisitedLinkMaster::VisitedLinkMaster(Listener* listener,

@@ -28,7 +28,6 @@ class PrefService;
 class PromoCounter;
 class ProtocolHandlerRegistry;
 class TestingProfile;
-class VisitedLinkMaster;
 class WebDataService;
 
 namespace android {
@@ -192,11 +191,6 @@ class Profile : public content::BrowserContext {
 
   // Variant of GetTopSites that doesn't force creation.
   virtual history::TopSites* GetTopSitesWithoutCreating() = 0;
-
-  // Retrieves a pointer to the VisitedLinkMaster associated with this
-  // profile.  The VisitedLinkMaster is lazily created the first time
-  // that this method is called.
-  virtual VisitedLinkMaster* GetVisitedLinkMaster() = 0;
 
   // DEPRECATED. Instead, use ExtensionSystem::extension_service().
   // Retrieves a pointer to the ExtensionService associated with this

@@ -19,6 +19,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/common/visitedlink_common.h"
 
 class GURL;
@@ -30,7 +31,8 @@ class Profile;
 // This class will defer writing operations to the file thread. This means that
 // class destruction, the file may still be open since operations are pending on
 // another thread.
-class VisitedLinkMaster : public VisitedLinkCommon {
+class VisitedLinkMaster : public VisitedLinkCommon,
+                          public ProfileKeyedService  {
  public:
   // Listens to the link coloring database events. The master is given this
   // event as a constructor argument and dispatches events using it.
@@ -51,8 +53,7 @@ class VisitedLinkMaster : public VisitedLinkCommon {
     virtual void Reset() = 0;
   };
 
-  // The |listener| may not be NULL.
-  VisitedLinkMaster(Listener* listener, Profile* profile);
+  explicit VisitedLinkMaster(Profile* profile);
 
   // In unit test mode, we allow the caller to optionally specify the database
   // filename so that it can be run from a unit test. The directory where this
@@ -75,6 +76,9 @@ class VisitedLinkMaster : public VisitedLinkCommon {
                     const FilePath& filename,
                     int32 default_table_size);
   virtual ~VisitedLinkMaster();
+
+  // Return the VisitedLinkMaster instance for a profile.
+  static VisitedLinkMaster* FromProfile(Profile* profile);
 
   // Must be called immediately after object creation. Nothing else will work
   // until this is called. Returns true on success, false means that this

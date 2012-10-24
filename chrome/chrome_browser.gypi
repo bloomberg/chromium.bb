@@ -2081,6 +2081,8 @@
         'browser/visitedlink/visitedlink_event_listener.h',
         'browser/visitedlink/visitedlink_master.cc',
         'browser/visitedlink/visitedlink_master.h',
+        'browser/visitedlink/visitedlink_master_factory.cc',
+        'browser/visitedlink/visitedlink_master_factory.h',
         'browser/web_applications/web_app.cc',
         'browser/web_applications/web_app.h',
         'browser/web_applications/web_app_android.cc',
