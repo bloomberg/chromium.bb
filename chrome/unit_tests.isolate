@@ -667,6 +667,8 @@
           '<(PRODUCT_DIR)/ffmpegsumo.so',
           'test/data/autofill/merge/input/ambiguous.in',
           'test/data/autofill/merge/input/case.in',
+          'test/data/extensions/manifest_tests/incognito_invalid_platform_app.json',
+          'test/data/extensions/manifest_tests/incognito_valid_platform_app.json',
           'test/data/extensions/permissions/serial.json',
           'test/data/extensions/permissions/socket_any_host.json',
           'test/data/extensions/permissions/socket_one_domain_two_hostnames.json',
