@@ -28,6 +28,8 @@ class ConstrainedWindowFrameSimple : public views::NonClientFrameView,
   virtual ~ConstrainedWindowFrameSimple();
 
  private:
+  gfx::Insets GetClientInsets() const;
+
   // Overridden from views::NonClientFrameView:
   virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
   virtual gfx::Rect GetWindowBoundsForClientBounds(
@@ -47,6 +49,7 @@ class ConstrainedWindowFrameSimple : public views::NonClientFrameView,
                              const ui::Event& event) OVERRIDE;
 
   ConstrainedWindowViews* container_;
+  ConstrainedWindowViews::ChromeStyleClientInsets client_insets_;
   views::Label* title_label_;
   views::ImageButton* close_button_;
 

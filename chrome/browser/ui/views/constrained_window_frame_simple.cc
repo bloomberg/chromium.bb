@@ -30,23 +30,36 @@ ConstrainedWindowFrameSimple::ConstrainedWindowFrameSimple(
     ConstrainedWindowViews* container,
     ConstrainedWindowViews::ChromeStyleClientInsets client_insets)
     : container_(container),
+      client_insets_(client_insets),
       title_label_(NULL),
       close_button_(NULL) {
   container_->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
 
+#if defined(OS_WIN) && !defined(USE_AURA)
+  const SkColor stroke_color = SkColorSetRGB(0xaa, 0xaa, 0xaa);
+  set_border(views::Border::CreateSolidBorder(1, stroke_color));
+#else
+  set_border(views::Border::CreateEmptyBorder(0, 0, 0, 0));
+#endif
+
   // The NO_INSETS consumers draw atop the frame and do not get the close button
   // and title label below.
-  if (client_insets == ConstrainedWindowViews::NO_INSETS)
+  if (client_insets_ == ConstrainedWindowViews::NO_INSETS)
     return;
+
+  gfx::Insets border_insets;
+  border()->GetInsets(&border_insets);
 
   views::GridLayout* layout = new views::GridLayout(this);
   const int kHeaderTopPadding = std::min(
       ConstrainedWindowConstants::kCloseButtonPadding,
       ConstrainedWindowConstants::kTitleTopPadding);
-  layout->SetInsets(kHeaderTopPadding,
-                    ConstrainedWindowConstants::kHorizontalPadding,
+  layout->SetInsets(border_insets.top() + kHeaderTopPadding,
+                    border_insets.left() +
+                        ConstrainedWindowConstants::kHorizontalPadding,
                     0,
-                    ConstrainedWindowConstants::kCloseButtonPadding);
+                    border_insets.right() +
+                        ConstrainedWindowConstants::kCloseButtonPadding);
   SetLayoutManager(layout);
   views::ColumnSet* cs = layout->AddColumnSet(0);
   cs->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING, 1,
@@ -83,34 +96,54 @@ ConstrainedWindowFrameSimple::ConstrainedWindowFrameSimple(
 
   set_background(views::Background::CreateSolidBackground(
       ConstrainedWindow::GetBackgroundColor()));
-
-  // Client insets have no relation to header insets:
-  // - The client insets are the distance from the window border to the client
-  //   view.
-  // - The header insets are the distance from the window border to the header
-  //   elements.
-  const int kTitleBuiltinBottomPadding = 4;
-  set_border(views::Border::CreateEmptyBorder(
-      ConstrainedWindowConstants::kClientTopPadding + kHeaderTopPadding +
-          std::max(close_button_->GetPreferredSize().height(),
-                   title_label_->GetPreferredSize().height()) -
-          kTitleBuiltinBottomPadding,
-      ConstrainedWindowConstants::kHorizontalPadding,
-      ConstrainedWindowConstants::kClientBottomPadding,
-      ConstrainedWindowConstants::kHorizontalPadding));
 }
 
 ConstrainedWindowFrameSimple::~ConstrainedWindowFrameSimple() {
 }
 
+// Client insets have no relation to header insets:
+// - The client insets are the distance from the window border to the client
+//   view.
+// - The header insets are the distance from the window border to the header
+//   elements.
+gfx::Insets ConstrainedWindowFrameSimple::GetClientInsets() const {
+  gfx::Insets insets;
+
+  if (border()) {
+    gfx::Insets border_insets;
+    border()->GetInsets(&border_insets);
+    insets += border_insets;
+  }
+
+  if (client_insets_ == ConstrainedWindowViews::DEFAULT_INSETS) {
+    const int kHeaderTopPadding = std::min(
+        ConstrainedWindowConstants::kCloseButtonPadding,
+        ConstrainedWindowConstants::kTitleTopPadding);
+    const int kTitleBuiltinBottomPadding = 4;
+    insets += gfx::Insets(
+        ConstrainedWindowConstants::kClientTopPadding + kHeaderTopPadding +
+            std::max(close_button_->GetPreferredSize().height(),
+                     title_label_->GetPreferredSize().height()) -
+            kTitleBuiltinBottomPadding,
+        ConstrainedWindowConstants::kHorizontalPadding,
+        ConstrainedWindowConstants::kClientBottomPadding,
+        ConstrainedWindowConstants::kHorizontalPadding);
+  }
+
+  return insets;
+}
+
 gfx::Rect ConstrainedWindowFrameSimple::GetBoundsForClientView() const {
-  return GetContentsBounds();
+  gfx::Rect contents_bounds(GetLocalBounds());
+  gfx::Insets insets = GetClientInsets();
+  contents_bounds.Inset(insets);
+  return contents_bounds;
 }
 
 gfx::Rect ConstrainedWindowFrameSimple::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
   gfx::Rect bounds(client_bounds);
-  bounds.Inset(-GetInsets());
+  bounds.Inset(-GetClientInsets());
   bounds.set_width(std::max(
        bounds.width(),
        ConstrainedWindowConstants::kHorizontalPadding +
