@@ -86,6 +86,8 @@ class DevToolsHttpHandlerImpl
                               const net::HttpServerRequestInfo& info);
   void OnThumbnailRequestUI(int connection_id,
                        const net::HttpServerRequestInfo& info);
+  void OnDiscoveryPageRequestUI(int connection_id);
+
   void OnWebSocketRequestUI(int connection_id,
                             const net::HttpServerRequestInfo& info);
   void OnWebSocketMessageUI(int connection_id, const std::string& data);

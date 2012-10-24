@@ -308,8 +308,13 @@ void DevToolsHttpHandlerImpl::OnHttpRequest(
   }
 
   if (info.path == "" || info.path == "/") {
-    std::string response = delegate_->GetDiscoveryPageHTML();
-    server_->Send200(connection_id, response, "text/html; charset=UTF-8");
+    // Discovery page request.
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&DevToolsHttpHandlerImpl::OnDiscoveryPageRequestUI,
+                   this,
+                   connection_id));
     return;
   }
 
@@ -506,6 +511,11 @@ void DevToolsHttpHandlerImpl::OnThumbnailRequestUI(
     Send200(connection_id, data, "image/png");
   else
     Send404(connection_id);
+}
+
+void DevToolsHttpHandlerImpl::OnDiscoveryPageRequestUI(int connection_id) {
+  std::string response = delegate_->GetDiscoveryPageHTML();
+  Send200(connection_id, response, "text/html; charset=UTF-8");
 }
 
 void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(

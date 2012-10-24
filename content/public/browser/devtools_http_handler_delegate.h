@@ -21,7 +21,7 @@ class DevToolsHttpHandlerDelegate {
   virtual ~DevToolsHttpHandlerDelegate() {}
 
   // Should return discovery page HTML that should list available tabs
-  // and provide attach links. Called on the IO thread.
+  // and provide attach links.
   virtual std::string GetDiscoveryPageHTML() = 0;
 
   // Returns true if and only if frontend resources are bundled.

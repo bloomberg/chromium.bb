@@ -42,11 +42,7 @@ std::string BrowserListTabContentsProvider::GetDiscoveryPageHTML() {
     if (ts) {
       // TopSites updates itself after a delay. Ask TopSites to update itself
       // when we're about to show the remote debugging landing page.
-      content::BrowserThread::PostTask(
-          content::BrowserThread::UI,
-          FROM_HERE,
-          base::Bind(&history::TopSites::SyncWithHistory,
-                     base::Unretained(ts)));
+      ts->SyncWithHistory();
     }
   }
   return ResourceBundle::GetSharedInstance().GetRawDataResource(
