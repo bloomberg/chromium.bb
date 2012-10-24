@@ -18,13 +18,11 @@
 namespace remoting {
 
 // A helper class that registers and starts a host.
-class HostStarter :
-    public gaia::GaiaOAuthClient::Delegate,
-    public remoting::GaiaUserEmailFetcher::Delegate,
-    public remoting::ServiceClient::Delegate {
+class HostStarter : public gaia::GaiaOAuthClient::Delegate,
+                    public remoting::GaiaUserEmailFetcher::Delegate,
+                    public remoting::ServiceClient::Delegate {
  public:
-  enum Result{
-    START_IN_PROGRESS,
+  enum Result {
     START_COMPLETE,
     NETWORK_ERROR,
     OAUTH_ERROR,
@@ -55,14 +53,19 @@ class HostStarter :
                                    int expires_in_seconds) OVERRIDE;
   virtual void OnRefreshTokenResponse(const std::string& access_token,
                                       int expires_in_seconds) OVERRIDE;
-  virtual void OnOAuthError() OVERRIDE;
-  virtual void OnNetworkError(int response_code) OVERRIDE;
 
   // remoting::GaiaUserEmailFetcher::Delegate
   virtual void OnGetUserEmailResponse(const std::string& user_email) OVERRIDE;
 
   // remoting::ServiceClient::Delegate
   virtual void OnHostRegistered() OVERRIDE;
+
+  // TODO(sergeyu): Following methods are members of all three delegate
+  // interfaces implemented in this class. Fix ServiceClient and
+  // GaiaUserEmailFetcher so that Delegate interfaces do not overlap (ideally
+  // they should be changed to use Callback<>).
+  virtual void OnOAuthError() OVERRIDE;
+  virtual void OnNetworkError(int response_code) OVERRIDE;
 
  private:
   HostStarter(scoped_ptr<gaia::GaiaOAuthClient> oauth_client,
@@ -76,7 +79,6 @@ class HostStarter :
   scoped_ptr<remoting::GaiaUserEmailFetcher> user_email_fetcher_;
   scoped_ptr<remoting::ServiceClient> service_client_;
   scoped_ptr<remoting::DaemonController> daemon_controller_;
-  bool in_progress_;
   gaia::OAuthClientInfo oauth_client_info_;
   std::string host_name_;
   std::string host_pin_;

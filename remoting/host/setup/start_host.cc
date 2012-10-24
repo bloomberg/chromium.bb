@@ -65,9 +65,6 @@ void OnDone(HostStarter::Result result) {
     return;
   }
   switch (result) {
-    case HostStarter::START_IN_PROGRESS:
-      fprintf(stderr, "Internal error: START_IN_PROGRESS.\n");
-      break;
     case HostStarter::START_COMPLETE:
       g_started = true;
       break;
