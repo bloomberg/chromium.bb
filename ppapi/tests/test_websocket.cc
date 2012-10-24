@@ -31,15 +31,12 @@
 #include "ppapi/tests/testing_instance.h"
 #include "ppapi/utility/websocket/websocket_api.h"
 
-// These servers are provided by pywebsocket server side handlers in
-// LayoutTests/http/tests/websocket/tests/hybi/*_wsh.
-// pywebsocket server itself is launched in ppapi_ui_test.cc.
+// net::TestServer serves WebSocket service for testing.
+// Following URLs are handled by pywebsocket handlers in
+// net/data/websocket/*_wsh.
 const char kEchoServerURL[] = "echo-with-no-extension";
-
 const char kCloseServerURL[] = "close";
-
 const char kCloseWithCodeAndReasonServerURL[] = "close-code-and-reason";
-
 const char kProtocolTestServerURL[] = "protocol-test?protocol=";
 
 const char* const kInvalidURLs[] = {
@@ -1026,14 +1023,15 @@ std::string TestWebSocket::TestAbortReceiveMessageCall() {
   int32_t result;
   PP_Resource ws;
 
-  // Each trial sends 17 messages and receives just |trial| number of
-  // message(s) before releasing the WebSocket. The WebSocket is released while
-  // the next message is going to be received.
-  for (int trial = 1; trial <= 16; trial++) {
+  // Each trial sends |trial_count| + 1 messages and receives just |trial|
+  // number of message(s) before releasing the WebSocket. The WebSocket is
+  // released while the next message is going to be received.
+  const int trial_count = 8;
+  for (int trial = 1; trial <= trial_count; trial++) {
     ws = Connect(url, &result, "");
     ASSERT_TRUE(ws);
     ASSERT_EQ(PP_OK, result);
-    for (int i = 0; i <= 16; ++i) {
+    for (int i = 0; i <= trial_count; ++i) {
       result = websocket_interface_->SendMessage(ws, text_var);
       ASSERT_EQ(PP_OK, result);
     }
@@ -1055,11 +1053,11 @@ std::string TestWebSocket::TestAbortReceiveMessageCall() {
     }
   }
   // Same test, but the last receiving message is large message over 64KiB.
-  for (int trial = 1; trial <= 16; trial++) {
+  for (int trial = 1; trial <= trial_count; trial++) {
     ws = Connect(url, &result, "");
     ASSERT_TRUE(ws);
     ASSERT_EQ(PP_OK, result);
-    for (int i = 0; i <= 16; ++i) {
+    for (int i = 0; i <= trial_count; ++i) {
       if (i == trial)
         result = websocket_interface_->SendMessage(ws, large_var);
       else
