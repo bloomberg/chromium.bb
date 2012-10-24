@@ -276,6 +276,8 @@ void APIPermissionInfo::RegisterAllPermissions(
       kFlagImpliesFullURLAccess | kFlagCannotBeOptional },
     { APIPermission::kPageCapture, "pageCapture",
       kFlagImpliesFullURLAccess },
+    { APIPermission::kTabCapture, "tabCapture",
+      kFlagImpliesFullURLAccess },
     { APIPermission::kPlugin, "plugin",
       kFlagImpliesFullURLAccess | kFlagImpliesFullAccess |
           kFlagCannotBeOptional,

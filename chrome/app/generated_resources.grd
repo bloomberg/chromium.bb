@@ -5868,6 +5868,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ENABLE_TOUCH_EVENTS_DESCRIPTION" desc="Description of the enable touch-events flag.">
         Enables experimental touch event support regardless of the presence of a physical touch screen capable of generating touch events.
       </message>
+      <message name="IDS_ENABLE_TAB_CAPTURE_NAME" desc="Title of the enable tab capture flag." >
+        Enable Tab Capture API
+      </message>
+      <message name="IDS_ENABLE_TAB_CAPTURE_DESCRIPTION" desc="Description of the enable tab capture flag.">
+        Enables experimental tab capture API to generate video streams of tab content.
+      </message>
       <message name="IDS_ENABLE_BACKLOADER_NAME" desc="Title of the enable background loader flag." >
         Enable background loader component for hosted applications
       </message>
