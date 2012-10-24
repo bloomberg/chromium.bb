@@ -104,6 +104,20 @@ class EncryptedMediaTest
   }
 };
 
+// Fails on Linux/ChromeOS with ASan.  http://crbug.com/153231
+// IN_PROC_BROWSER_TEST_P doesn't accept #define MAYBE_test DISABLED_test.
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(ADDRESS_SANITIZER)
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_BasicPlayback) {
+  const string16 kExpected = ASCIIToUTF16("ENDED");
+  ASSERT_NO_FATAL_FAILURE(TestSimplePlayback("bear-320x240-encrypted.webm",
+                                             GetParam(), kExpected));
+}
+
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, DISABLED_FrameChangeVideo) {
+  const string16 kExpected = ASCIIToUTF16("ENDED");
+  ASSERT_NO_FATAL_FAILURE(TestFrameSizeChange(GetParam(), kExpected));
+}
+#else
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, BasicPlayback) {
   const string16 kExpected = ASCIIToUTF16("ENDED");
   ASSERT_NO_FATAL_FAILURE(TestSimplePlayback("bear-320x240-encrypted.webm",
@@ -114,6 +128,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameChangeVideo) {
   const string16 kExpected = ASCIIToUTF16("ENDED");
   ASSERT_NO_FATAL_FAILURE(TestFrameSizeChange(GetParam(), kExpected));
 }
+#endif
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, InvalidKeySystem) {
   const string16 kExpected = ASCIIToUTF16(
