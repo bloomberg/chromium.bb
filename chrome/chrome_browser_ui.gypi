@@ -2125,7 +2125,6 @@
           'sources/': [
             ['exclude', '^browser/ui/webui/task_manager/'],
             ['exclude', '^browser/ui/views/task_manager_view.cc'],
-            ['exclude', '^browser/ui/views/task_manager_view.h'],
             ['exclude', '^browser/ui/cocoa/task_manager_mac.h'],
             ['exclude', '^browser/ui/cocoa/task_manager_mac.mm'],
             ['exclude', '^browser/ui/gtk/task_manager_gtk.cc'],
