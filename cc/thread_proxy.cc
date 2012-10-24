@@ -355,7 +355,10 @@ bool ThreadProxy::reduceContentsTextureMemoryOnImplThread(size_t limitBytes, int
     if (!m_layerTreeHost->contentsTextureManager())
         return false;
 
-    if (!m_layerTreeHost->contentsTextureManager()->reduceMemoryOnImplThread(limitBytes, priorityCutoff, m_layerTreeHostImpl->resourceProvider()))
+    ResourceProvider::debugNotifyEnterZone(0x1000000);
+    bool reduceResult = m_layerTreeHost->contentsTextureManager()->reduceMemoryOnImplThread(limitBytes, priorityCutoff, m_layerTreeHostImpl->resourceProvider());
+    ResourceProvider::debugNotifyLeaveZone();
+    if (!reduceResult)
         return false;
 
     // The texture upload queue may reference textures that were just purged, clear
@@ -614,8 +617,10 @@ void ThreadProxy::beginFrameCompleteOnImplThread(CompletionEvent* completion, Te
     m_layerTreeHost->contentsTextureManager()->pushTexturePrioritiesToBackings();
 
     m_currentTextureUpdateControllerOnImplThread = TextureUpdateController::create(this, Proxy::implThread(), queue.Pass(), m_layerTreeHostImpl->resourceProvider());
+    ResourceProvider::debugNotifyEnterZone(0x2000000);
     m_currentTextureUpdateControllerOnImplThread->performMoreUpdates(
         m_schedulerOnImplThread->anticipatedDrawTime());
+    ResourceProvider::debugNotifyLeaveZone();
 
     m_commitCompletionEventOnImplThread = completion;
 }
@@ -638,7 +643,9 @@ void ThreadProxy::scheduledActionCommit()
     DCHECK(m_currentTextureUpdateControllerOnImplThread);
 
     // Complete all remaining texture updates.
+    ResourceProvider::debugNotifyEnterZone(0x3000000);
     m_currentTextureUpdateControllerOnImplThread->finalize();
+    ResourceProvider::debugNotifyLeaveZone();
     m_currentTextureUpdateControllerOnImplThread.reset();
 
     // If there are linked evicted backings, these backings' resources may be put into the
@@ -704,7 +711,9 @@ ScheduledActionDrawAndSwapResult ThreadProxy::scheduledActionDrawAndSwapInternal
     // prepareToDraw(), it is guarded on canDraw() as well.
 
     LayerTreeHostImpl::FrameData frame;
+    ResourceProvider::debugNotifyEnterZone(0x4000000);
     bool drawFrame = m_layerTreeHostImpl->canDraw() && (m_layerTreeHostImpl->prepareToDraw(frame) || forcedDraw);
+    ResourceProvider::debugNotifyLeaveZone();
     if (drawFrame) {
         m_layerTreeHostImpl->drawLayers(frame);
         result.didDraw = true;
@@ -784,7 +793,9 @@ void ThreadProxy::didAnticipatedDrawTimeChange(base::TimeTicks time)
     if (!m_currentTextureUpdateControllerOnImplThread)
         return;
 
+    ResourceProvider::debugNotifyEnterZone(0x5000000);
     m_currentTextureUpdateControllerOnImplThread->performMoreUpdates(time);
+    ResourceProvider::debugNotifyLeaveZone();
 }
 
 void ThreadProxy::readyToFinalizeTextureUpdates()
@@ -907,7 +918,9 @@ void ThreadProxy::layerTreeHostClosedOnImplThread(CompletionEvent* completion)
 {
     TRACE_EVENT0("cc", "ThreadProxy::layerTreeHostClosedOnImplThread");
     DCHECK(isImplThread());
+    ResourceProvider::debugNotifyEnterZone(0x6000000);
     m_layerTreeHost->deleteContentsTexturesOnImplThread(m_layerTreeHostImpl->resourceProvider());
+    ResourceProvider::debugNotifyLeaveZone();
     m_inputHandlerOnImplThread.reset();
     m_layerTreeHostImpl.reset();
     m_schedulerOnImplThread.reset();
@@ -929,7 +942,9 @@ void ThreadProxy::recreateContextOnImplThread(CompletionEvent* completion, Graph
 {
     TRACE_EVENT0("cc", "ThreadProxy::recreateContextOnImplThread");
     DCHECK(isImplThread());
+    ResourceProvider::debugNotifyEnterZone(0x7000000);
     m_layerTreeHost->deleteContentsTexturesOnImplThread(m_layerTreeHostImpl->resourceProvider());
+    ResourceProvider::debugNotifyLeaveZone();
     *recreateSucceeded = m_layerTreeHostImpl->initializeRenderer(scoped_ptr<GraphicsContext>(contextPtr).Pass());
     if (*recreateSucceeded) {
         *capabilities = m_layerTreeHostImpl->rendererCapabilities();

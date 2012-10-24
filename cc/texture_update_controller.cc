@@ -223,8 +223,10 @@ void TextureUpdateController::finalize()
 
 void TextureUpdateController::onTimerFired()
 {
+    ResourceProvider::debugNotifyEnterZone(0xB000000);
     if (!updateMoreTexturesIfEnoughTimeRemaining())
         m_client->readyToFinalizeTextureUpdates();
+    ResourceProvider::debugNotifyLeaveZone();
 }
 
 base::TimeTicks TextureUpdateController::now() const
