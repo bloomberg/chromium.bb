@@ -12,41 +12,30 @@ onload = function() {
       chrome.test.assertEq(300, webview.offsetWidth);
       chrome.test.assertEq(200, webview.offsetHeight);
 
-      webview.setAttribute('width', 310);
-      webview.setAttribute('height', 210);
+      webview.style.width = '310px';
+      webview.style.height = '210px';
+
+      chrome.test.assertEq(310, webview.offsetWidth);
+      chrome.test.assertEq(210, webview.offsetHeight);
+
+      webview.style.width = '320px';
+      webview.style.height = '220px';
+
+      chrome.test.assertEq(320, webview.offsetWidth);
+      chrome.test.assertEq(220, webview.offsetHeight);
+
+      var dynamicWebViewTag = document.createElement('webview');
+      dynamicWebViewTag.setAttribute('src', 'data:text/html,dynamic browser');
+      dynamicWebViewTag.style.width = '330px';
+      dynamicWebViewTag.style.height = '230px';
+      document.body.appendChild(dynamicWebViewTag);
 
       // Timeout is necessary to give the mutation observers a chance to fire.
       setTimeout(function() {
-        chrome.test.assertEq(310, webview.offsetWidth);
-        chrome.test.assertEq(210, webview.offsetHeight);
+        chrome.test.assertEq(330, dynamicWebViewTag.offsetWidth);
+        chrome.test.assertEq(230, dynamicWebViewTag.offsetHeight);
 
-        // Should also be able to query/update the dimensions via getterts/
-        // setters.
-        chrome.test.assertEq(310, webview.width);
-        chrome.test.assertEq(210, webview.height);
-
-        webview.width = 320;
-        webview.height = 220;
-
-        // Setters also end up operating via mutation observers.
-        setTimeout(function() {
-          chrome.test.assertEq(320, webview.offsetWidth);
-          chrome.test.assertEq(220, webview.offsetHeight);
-
-          var dynamicWebViewTag = document.createElement('webview');
-          dynamicWebViewTag.setAttribute(
-              'src', 'data:text/html,dynamic browser');
-          dynamicWebViewTag.setAttribute('width', '330');
-          dynamicWebViewTag.setAttribute('height', '230');
-          document.body.appendChild(dynamicWebViewTag);
-
-          setTimeout(function() {
-            chrome.test.assertEq(330, dynamicWebViewTag.offsetWidth);
-            chrome.test.assertEq(230, dynamicWebViewTag.offsetHeight);
-
-            chrome.test.succeed();
-          }, 0);
-        }, 0);
+        chrome.test.succeed();
       }, 0);
     },
 

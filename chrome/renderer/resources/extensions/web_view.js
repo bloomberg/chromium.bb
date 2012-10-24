@@ -7,7 +7,7 @@
 // The actual tag is implemented via the browser plugin. The internals of this
 // are hidden via Shadow DOM.
 
-var WEB_VIEW_ATTRIBUTES = ['src', 'width', 'height'];
+var WEB_VIEW_ATTRIBUTES = ['src'];
 
 var WEB_VIEW_READONLY_ATTRIBUTES = ['contentWindow'];
 
@@ -56,6 +56,9 @@ function WebView(node) {
 
   this.objectNode_ = document.createElement('object');
   this.objectNode_.type = 'application/browser-plugin';
+  // The <object> node fills in the <browser> container.
+  this.objectNode_.style.width = '100%';
+  this.objectNode_.style.height = '100%';
   WEB_VIEW_ATTRIBUTES.forEach(this.copyAttribute_, this);
 
   shadowRoot.appendChild(this.objectNode_);
@@ -87,9 +90,7 @@ function WebView(node) {
           // updates its src attribute on guest-initiated navigations.
           return objectNode.src;
         }
-        var value = node.getAttribute(attributeName);
-        var numericValue = parseInt(value, 10);
-        return isNaN(numericValue) ? value : numericValue;
+        return node.getAttribute(attributeName);
       },
       set: function(value) {
         node.setAttribute(attributeName, value);
