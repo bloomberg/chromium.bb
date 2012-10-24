@@ -36,7 +36,7 @@ class CommonSwitches {
             FeatureSwitch::DEFAULT_DISABLED),
         prompt_for_external_extensions(
             switches::kPromptForExternalExtensions,
-            FeatureSwitch::DEFAULT_ENABLED)
+            FeatureSwitch::DEFAULT_DISABLED)
   {
 // Disabling easy off-store installation is not yet implemented for Aura. Not
 // sure what the Aura equivalent for this UI is.

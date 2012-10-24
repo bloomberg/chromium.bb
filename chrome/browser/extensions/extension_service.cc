@@ -1836,9 +1836,7 @@ void ExtensionService::HandleExtensionAlertDetails() {
 }
 
 void ExtensionService::UpdateExternalExtensionAlert() {
-#if ENABLE_EXTERNAL_INSTALL_UI
-  if (!extensions::FeatureSwitch::prompt_for_external_extensions()->
-          IsEnabled())
+  if (!FeatureSwitch::prompt_for_external_extensions()->IsEnabled())
     return;
 
   const Extension* extension = NULL;
@@ -1846,7 +1844,9 @@ void ExtensionService::UpdateExternalExtensionAlert() {
        iter != disabled_extensions_.end(); ++iter) {
     const Extension* e = *iter;
     if (Extension::IsExternalLocation(e->location())) {
-      if (!extension_prefs_->IsExternalExtensionAcknowledged(e->id())) {
+      if (!extension_prefs_->IsExternalExtensionAcknowledged(e->id()) &&
+          !(extension_prefs_->GetDisableReasons(e->id()) &
+                Extension::DISABLE_SIDELOAD_WIPEOUT)) {
         extension = e;
         break;
       }
@@ -1864,7 +1864,6 @@ void ExtensionService::UpdateExternalExtensionAlert() {
   } else {
     extensions::RemoveExternalInstallError(this);
   }
-#endif
 }
 
 void ExtensionService::UnloadExtension(
@@ -2307,12 +2306,14 @@ void ExtensionService::OnExtensionInstalled(
       content::Source<Profile>(profile_),
       content::Details<const Extension>(extension));
 
+  Extension::Location location = extension->location();
+
   // Transfer ownership of |extension| to AddExtension.
   AddExtension(scoped_extension);
 
   // If this is a new external extension that was disabled, alert the user
   // so he can reenable it.
-  if (Extension::IsExternalLocation(extension->location()) && !initial_enable)
+  if (Extension::IsExternalLocation(location) && !initial_enable)
     UpdateExternalExtensionAlert();
 }
 
@@ -2783,9 +2784,7 @@ bool ExtensionService::ShouldEnableOnInstall(const Extension* extension) {
   if (extension_prefs_->IsExtensionDisabled(extension->id()))
     return false;
 
-#if ENABLE_EXTERNAL_INSTALL_UI
-  if (extensions::FeatureSwitch::prompt_for_external_extensions()->
-          IsEnabled()) {
+  if (FeatureSwitch::prompt_for_external_extensions()->IsEnabled()) {
     // External extensions are initially disabled. We prompt the user before
     // enabling them.
     if (Extension::IsExternalLocation(extension->location()) &&
@@ -2793,7 +2792,6 @@ bool ExtensionService::ShouldEnableOnInstall(const Extension* extension) {
       return false;
     }
   }
-#endif
 
   return true;
 }

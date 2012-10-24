@@ -5603,7 +5603,6 @@ TEST_F(ExtensionSourcePriorityTest, InstallExternalBlocksSyncRequest) {
   ASSERT_FALSE(AddPendingSyncInstall());
 }
 
-#if ENABLE_EXTERNAL_INSTALL_UI
 // Test that installing an external extension displays a GlobalError.
 TEST_F(ExtensionServiceTest, ExternalInstallGlobalError) {
   extensions::FeatureSwitch::ScopedOverride prompt(
@@ -5710,4 +5709,3 @@ TEST_F(ExtensionServiceTest, ExternalInstallMultiple) {
   service_->EnableExtension(good_crx);
   EXPECT_FALSE(extensions::HasExternalInstallError(service_));
 }
-#endif  // ENABLE_EXTERNAL_INSTALL_UI
