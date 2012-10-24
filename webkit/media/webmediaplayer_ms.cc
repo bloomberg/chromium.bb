@@ -45,10 +45,10 @@ WebMediaPlayerMS::WebMediaPlayerMS(
       client_(client),
       delegate_(delegate),
       media_stream_client_(media_stream_client),
-      video_frame_provider_started_(false),
       paused_(true),
       pending_repaint_(false),
-      got_first_frame_(false),
+      received_first_frame_(false),
+      sequence_started_(false),
       total_frame_count_(0),
       dropped_frame_count_(0),
       media_log_(media_log) {
@@ -92,9 +92,7 @@ void WebMediaPlayerMS::load(const WebKit::WebURL& url, CORSMode cors_mode) {
     SetNetworkState(WebMediaPlayer::NetworkStateLoaded);
     GetClient()->sourceOpened();
     GetClient()->setOpaque(true);
-    SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
-    SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
-    RepaintInternal();
+    video_frame_provider_->Start();
   } else {
     SetNetworkState(WebMediaPlayer::NetworkStateNetworkError);
   }
@@ -108,15 +106,11 @@ void WebMediaPlayerMS::play() {
   DVLOG(1) << "WebMediaPlayerMS::play";
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  paused_ = false;
-  if (video_frame_provider_) {
-    if (video_frame_provider_started_) {
-      video_frame_provider_->Play();
-    } else {
-      video_frame_provider_started_ = true;
-      video_frame_provider_->Start();
-    }
+  if (video_frame_provider_ && paused_) {
+    video_frame_provider_->Play();
   }
+  paused_ = false;
+
   // TODO(wjia): add audio. See crbug.com/142988.
 
   media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PLAY));
@@ -198,7 +192,7 @@ WebKit::WebSize WebMediaPlayerMS::naturalSize() const {
   gfx::Size size;
   if (current_frame_)
     size = current_frame_->natural_size();
-  DVLOG(1) << "WebMediaPlayerMS::naturalSize, " << size.ToString();
+  DVLOG(3) << "WebMediaPlayerMS::naturalSize, " << size.ToString();
   return WebKit::WebSize(size);
 }
 
@@ -347,8 +341,20 @@ void WebMediaPlayerMS::OnFrameAvailable(
   DVLOG(3) << "WebMediaPlayerMS::OnFrameAvailable";
   DCHECK(thread_checker_.CalledOnValidThread());
   ++total_frame_count_;
-  if (!got_first_frame_) {
-    got_first_frame_ = true;
+  if (!received_first_frame_) {
+    received_first_frame_ = true;
+    current_frame_ = media::VideoFrame::CreateBlackFrame(frame->natural_size());
+    SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
+    SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
+    GetClient()->sizeChanged();
+  }
+
+  // Do not update |current_frame_| when paused.
+  if (paused_)
+    return;
+
+  if (!sequence_started_) {
+    sequence_started_ = true;
     start_time_ = frame->GetTimestamp();
   }
   bool size_changed = !current_frame_ ||

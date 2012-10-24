@@ -150,11 +150,11 @@ class WebMediaPlayerMS
 
   MediaStreamClient* media_stream_client_;
   scoped_refptr<VideoFrameProvider> video_frame_provider_;
-  bool video_frame_provider_started_;
   bool paused_;
   scoped_refptr<media::VideoFrame> current_frame_;
   bool pending_repaint_;
-  bool got_first_frame_;
+  bool received_first_frame_;
+  bool sequence_started_;
   base::TimeDelta start_time_;
   unsigned total_frame_count_;
   unsigned dropped_frame_count_;
