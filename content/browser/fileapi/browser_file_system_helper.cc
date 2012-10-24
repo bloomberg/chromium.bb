@@ -16,8 +16,7 @@
 #include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/quota/quota_manager.h"
 
-using content::BrowserThread;
-
+namespace content {
 namespace {
 
 const char kChromeScheme[] = "chrome";
@@ -62,3 +61,5 @@ scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
       profile_path,
       CreateBrowserFileSystemOptions(is_incognito));
 }
+
+}  // namespace content

@@ -28,7 +28,6 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class ChildProcessSecurityPolicyImpl;
-class SessionStorageNamespaceImpl;
 class SkBitmap;
 class ViewMsg_Navigate;
 struct AccessibilityHostMsg_NotificationParams;
@@ -58,6 +57,7 @@ class PowerSaveBlocker;
 class RenderViewHostObserver;
 class RenderWidgetHostDelegate;
 class SessionStorageNamespace;
+class SessionStorageNamespaceImpl;
 class TestRenderViewHost;
 struct ContextMenuParams;
 struct FileChooserParams;

@@ -34,7 +34,6 @@
 #endif
 
 class SavePackage;
-class SessionStorageNamespaceImpl;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
 struct ViewMsg_PostMessage_Params;
 
@@ -54,6 +53,7 @@ class RenderViewHost;
 class RenderViewHostDelegateView;
 class RenderViewHostImpl;
 class RenderWidgetHostImpl;
+class SessionStorageNamespaceImpl;
 class SiteInstance;
 class TestWebContents;
 class WebContentsDelegate;

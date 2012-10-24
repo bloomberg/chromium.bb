@@ -30,7 +30,6 @@
 #include "content/common/mac/font_loader.h"
 #endif
 
-class DOMStorageContextImpl;
 struct FontDescriptor;
 struct ViewHostMsg_CreateWindow_Params;
 
@@ -61,6 +60,7 @@ struct WebPluginInfo;
 
 namespace content {
 class BrowserContext;
+class DOMStorageContextImpl;
 class MediaObserver;
 class PluginServiceImpl;
 class RenderWidgetHelper;
@@ -91,7 +91,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
   virtual void OnDestruct() const OVERRIDE;
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,
-      content::BrowserThread::ID* thread) OVERRIDE;
+      BrowserThread::ID* thread) OVERRIDE;
 
   bool OffTheRecord() const;
 

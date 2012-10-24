@@ -14,13 +14,12 @@
 #include "webkit/dom_storage/dom_storage_context.h"
 #include "webkit/dom_storage/dom_storage_task_runner.h"
 
-using content::BrowserThread;
-using content::DOMStorageContext;
 using dom_storage::DomStorageArea;
 using dom_storage::DomStorageContext;
 using dom_storage::DomStorageTaskRunner;
 using dom_storage::DomStorageWorkerPoolTaskRunner;
 
+namespace content {
 namespace {
 
 const char kLocalStorageDirectory[] = "Local Storage";
@@ -131,10 +130,10 @@ void DOMStorageContextImpl::SetSaveSessionStorageOnDisk() {
   context_->SetSaveSessionStorageOnDisk();
 }
 
-scoped_refptr<content::SessionStorageNamespace>
+scoped_refptr<SessionStorageNamespace>
 DOMStorageContextImpl::RecreateSessionStorage(
     const std::string& persistent_id) {
-  return scoped_refptr<content::SessionStorageNamespace>(
+  return scoped_refptr<SessionStorageNamespace>(
       new SessionStorageNamespaceImpl(this, persistent_id));
 }
 
@@ -170,3 +169,5 @@ void DOMStorageContextImpl::Shutdown() {
       DomStorageTaskRunner::PRIMARY_SEQUENCE,
       base::Bind(&DomStorageContext::Shutdown, context_));
 }
+
+}  // namespace content

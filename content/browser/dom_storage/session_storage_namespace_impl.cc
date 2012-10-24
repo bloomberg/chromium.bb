@@ -10,6 +10,8 @@
 using dom_storage::DomStorageContext;
 using dom_storage::DomStorageSession;
 
+namespace content {
+
 SessionStorageNamespaceImpl::SessionStorageNamespaceImpl(
     DOMStorageContextImpl* context)
     : session_(new DomStorageSession(context->context())) {
@@ -58,3 +60,5 @@ SessionStorageNamespaceImpl::SessionStorageNamespaceImpl(
 
 SessionStorageNamespaceImpl::~SessionStorageNamespaceImpl() {
 }
+
+}  // namespace content

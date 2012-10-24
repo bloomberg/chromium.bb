@@ -12,7 +12,6 @@
 #include "webkit/dom_storage/dom_storage_context.h"
 #include "webkit/dom_storage/dom_storage_types.h"
 
-class DOMStorageContextImpl;
 class GURL;
 class NullableString16;
 
@@ -22,10 +21,13 @@ class DomStorageContext;
 class DomStorageHost;
 }
 
+namespace content {
+class DOMStorageContextImpl;
+
 // This class handles the logistics of DOM Storage within the browser process.
 // It mostly ferries information between IPCs and the dom_storage classes.
 class DOMStorageMessageFilter
-    : public content::BrowserMessageFilter,
+    : public BrowserMessageFilter,
       public dom_storage::DomStorageContext::EventObserver {
  public:
   explicit DOMStorageMessageFilter(int unused, DOMStorageContextImpl* context);
@@ -36,7 +38,7 @@ class DOMStorageMessageFilter
   void InitializeInSequence();
   void UninitializeInSequence();
 
-  // content::BrowserMessageFilter implementation
+  // BrowserMessageFilter implementation
   virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
   virtual void OnFilterRemoved() OVERRIDE;
   virtual base::TaskRunner* OverrideTaskRunnerForMessage(
@@ -86,5 +88,7 @@ class DOMStorageMessageFilter
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageMessageFilter);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_MESSAGE_FILTER_H_

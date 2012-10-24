@@ -13,6 +13,8 @@ namespace quota {
 class SpecialStoragePolicy;
 }
 
+namespace content {
+
 // Helper method that returns FileSystemContext constructed for
 // the browser process.
 CONTENT_EXPORT scoped_refptr<fileapi::FileSystemContext>
@@ -21,5 +23,7 @@ CreateFileSystemContext(
     bool is_incognito,
     quota::SpecialStoragePolicy* special_storage_policy,
     quota::QuotaManagerProxy* quota_manager_proxy);
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_FILEAPI_BROWSER_FILE_SYSTEM_HELPER_H_

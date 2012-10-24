@@ -7,10 +7,9 @@
 
 #include "content/public/browser/resource_context.h"
 
-class ChromeBlobStorageContext;
-
 namespace content {
 
+class ChromeBlobStorageContext;
 class BrowserContext;
 class HostZoomMap;
 

@@ -34,9 +34,6 @@
 #include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 
-using content::BrowserMessageFilter;
-using content::BrowserThread;
-using content::UserMetricsAction;
 using fileapi::FileSystemFileUtil;
 using fileapi::FileSystemMountPointProvider;
 using fileapi::FileSystemOperation;
@@ -47,6 +44,7 @@ using fileapi::UpdateObserverList;
 using webkit_blob::BlobData;
 using webkit_blob::BlobStorageController;
 
+namespace content {
 namespace {
 
 const int kReadFilePermissions = base::PLATFORM_FILE_OPEN |
@@ -199,7 +197,7 @@ void FileAPIMessageFilter::UnregisterOperation(int request_id) {
 FileAPIMessageFilter::~FileAPIMessageFilter() {}
 
 void FileAPIMessageFilter::BadMessageReceived() {
-  content::RecordAction(UserMetricsAction("BadMessageTerminate_FAMF"));
+  RecordAction(UserMetricsAction("BadMessageTerminate_FAMF"));
   BrowserMessageFilter::BadMessageReceived();
 }
 
@@ -208,9 +206,9 @@ void FileAPIMessageFilter::OnOpen(
     int64 requested_size, bool create) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (type == fileapi::kFileSystemTypeTemporary) {
-    content::RecordAction(UserMetricsAction("OpenFileSystemTemporary"));
+    RecordAction(UserMetricsAction("OpenFileSystemTemporary"));
   } else if (type == fileapi::kFileSystemTypePersistent) {
-    content::RecordAction(UserMetricsAction("OpenFileSystemPersistent"));
+    RecordAction(UserMetricsAction("OpenFileSystemPersistent"));
   }
   context_->OpenFileSystem(origin_url, type, create, base::Bind(
       &FileAPIMessageFilter::DidOpenFileSystem, this, request_id));
@@ -849,3 +847,5 @@ FileSystemOperation* FileAPIMessageFilter::GetNewOperation(
   operations_.AddWithID(operation, request_id);
   return operation;
 }
+
+}  // namespace content
