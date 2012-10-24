@@ -32,27 +32,30 @@ using content::UserMetricsAction;
 
 namespace chromeos {
 
+namespace {
+
+bool CheckValues(const std::string& name,
+                 int minimum,
+                 int maximum,
+                 size_t bucket_count) {
+  if (!base::Histogram::InspectConstructionArguments(
+      name, &minimum, &maximum, &bucket_count))
+    return false;
+  base::HistogramBase* histogram =
+      base::StatisticsRecorder::FindHistogram(name);
+  if (!histogram)
+    return true;
+  return histogram->HasConstructionArguments(minimum, maximum, bucket_count);
+}
+
+bool CheckLinearValues(const std::string& name, int maximum) {
+  return CheckValues(name, 1, maximum, maximum + 1);
+}
+
+}  // namespace
+
 // The interval between external metrics collections in seconds
 static const int kExternalMetricsCollectionIntervalSeconds = 30;
-
-class SystemHistogram : public base::Histogram {
- public:
-  static bool CheckValues(const std::string& name,
-                          int minimum,
-                          int maximum,
-                          size_t bucket_count) {
-    if (!base::Histogram::InspectConstructionArguments(
-        name, &minimum, &maximum, &bucket_count))
-      return false;
-    Histogram* histogram = base::StatisticsRecorder::FindHistogram(name);
-    if (!histogram)
-      return true;
-    return histogram->HasConstructionArguments(minimum, maximum, bucket_count);
-  }
-  static bool CheckLinearValues(const std::string& name, int maximum) {
-    return CheckValues(name, 1, maximum, maximum + 1);
-  }
-};
 
 ExternalMetrics::ExternalMetrics()
     : test_recorder_(NULL) {
@@ -110,7 +113,7 @@ void ExternalMetrics::RecordHistogram(const char* histogram_data) {
     return;
   }
 
-  if (!SystemHistogram::CheckValues(name, min, max, nbuckets)) {
+  if (!CheckValues(name, min, max, nbuckets)) {
     LOG(ERROR) << "Invalid histogram " << name
                << ", min=" << min
                << ", max=" << max
@@ -133,7 +136,7 @@ void ExternalMetrics::RecordLinearHistogram(const char* histogram_data) {
     return;
   }
 
-  if (!SystemHistogram::CheckLinearValues(name, max)) {
+  if (!CheckLinearValues(name, max)) {
     LOG(ERROR) << "Invalid linear histogram " << name
                << ", max=" << max;
     return;
