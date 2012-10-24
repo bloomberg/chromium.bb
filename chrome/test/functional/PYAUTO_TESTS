@@ -459,7 +459,7 @@
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
       # crbug.com/157394
-      '-media.media_basic_playback.MediaConstrainedNetworkPerfTest.testBasicPlaybackMatrix',
+      '-media.media_basic_playback.MediaBasicPlaybackTest.testBasicPlaybackMatrix',
 
       # ===========================
       # Permanently-disabled tests.
