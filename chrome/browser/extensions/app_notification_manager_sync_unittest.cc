@@ -571,7 +571,9 @@ TEST_F(AppNotificationManagerSyncTest, ProcessSyncChangesNonEmptyModel) {
 }
 
 // Process sync changes should ignore a bad ADD.
-TEST_F(AppNotificationManagerSyncTest, ProcessSyncChangesIgnoreBadAdd) {
+// Hangs: http://crbug.com/149712
+TEST_F(AppNotificationManagerSyncTest,
+       DISABLED_ProcessSyncChangesIgnoreBadAdd) {
   AppNotification* n1 = CreateNotification(1);
   model()->Add(n1);
   AppNotification* n2 = CreateNotification(2);
@@ -619,7 +621,9 @@ TEST_F(AppNotificationManagerSyncTest, ProcessSyncChangesIgnoreBadDelete) {
 }
 
 // Process sync changes should ignore bad UPDATEs.
-TEST_F(AppNotificationManagerSyncTest, ProcessSyncChangesIgnoreBadUpdates) {
+// Hangs: http://crbug.com/149712
+TEST_F(AppNotificationManagerSyncTest,
+       DISABLED_ProcessSyncChangesIgnoreBadUpdates) {
   AppNotification* n1 = CreateNotification(1);
   model()->Add(n1);
   AppNotification* n2 = CreateNotification(2);
