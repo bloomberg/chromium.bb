@@ -428,8 +428,7 @@ DialogType.isModal = function(type) {
 
     this.refocus();
 
-    if (this.dialogType == DialogType.FULL_PAGE)
-      this.initDataTransferOperations_();
+    this.initDataTransferOperations_();
 
     this.table_.endBatchUpdates();
     this.grid_.endBatchUpdates();
@@ -462,13 +461,18 @@ DialogType.isModal = function(type) {
   FileManager.prototype.initDataTransferOperations_ = function() {
     this.copyManager_ = new FileCopyManagerWrapper.getInstance(
         this.filesystem_.root);
+
+    this.butterBar_ = new ButterBar(this.dialogDom_, this.copyManager_,
+        this.metadataCache_);
+
+    // CopyManager and ButterBar are required for 'Delete' operation in
+    // Open and Save dialogs. But drag-n-drop and copy-paste are not needed.
+    if (this.dialogType != DialogType.FULL_PAGE) return;
+
     this.copyManager_.addEventListener('copy-progress',
                                        this.onCopyProgress_.bind(this));
     this.copyManager_.addEventListener('copy-operation-complete',
         this.onCopyManagerOperationComplete_.bind(this));
-
-    this.butterBar_ = new ButterBar(this.dialogDom_, this.copyManager_,
-        this.metadataCache_);
 
     var controller = this.fileTransferController_ = new FileTransferController(
         GridItem.bind(null, this, false /* no checkbox */),
