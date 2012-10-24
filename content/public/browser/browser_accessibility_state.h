@@ -7,6 +7,8 @@
 
 #include "content/common/content_export.h"
 
+namespace content {
+
 // The BrowserAccessibilityState class is used to determine if the browser
 // should be customized for users with assistive technology, such as screen
 // readers.
@@ -26,5 +28,7 @@ class CONTENT_EXPORT BrowserAccessibilityState {
   // Returns true if the browser should be customized for accessibility.
   virtual bool IsAccessibleBrowser() = 0;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_PUBLIC_BROWSER_BROWSER_ACCESSIBILITY_STATE_H_

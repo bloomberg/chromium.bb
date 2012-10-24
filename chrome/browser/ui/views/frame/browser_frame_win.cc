@@ -264,7 +264,7 @@ void BrowserFrameWin::PostHandleMSG(UINT message,
 }
 
 void BrowserFrameWin::OnScreenReaderDetected() {
-  BrowserAccessibilityState::GetInstance()->OnScreenReaderDetected();
+  content::BrowserAccessibilityState::GetInstance()->OnScreenReaderDetected();
   NativeWidgetWin::OnScreenReaderDetected();
 }
 

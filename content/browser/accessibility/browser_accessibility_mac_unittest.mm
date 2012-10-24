@@ -13,8 +13,6 @@
 #import "testing/gtest_mac.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 
-using content::AccessibilityNodeData;
-
 @interface MockAccessibilityDelegate :
     NSView<BrowserAccessibilityDelegateCocoa>
 
@@ -53,6 +51,7 @@ using content::AccessibilityNodeData;
 
 @end
 
+namespace content {
 
 class BrowserAccessibilityTest : public ui::CocoaTest {
  public:
@@ -134,3 +133,5 @@ TEST_F(BrowserAccessibilityTest, InvalidAttributeTest) {
       accessibilityAttributeValue:@"NSAnInvalidAttribute"];
   EXPECT_TRUE(shouldBeNil == nil);
 }
+
+}  // namespace content

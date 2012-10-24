@@ -9,6 +9,8 @@
 
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 
+namespace content {
+
 class BrowserAccessibilityManagerMac : public BrowserAccessibilityManager {
  public:
   // Implementation of BrowserAccessibilityManager.
@@ -21,11 +23,13 @@ class BrowserAccessibilityManagerMac : public BrowserAccessibilityManager {
   friend class BrowserAccessibilityManager;
 
   BrowserAccessibilityManagerMac(gfx::NativeView parent_view,
-                                 const content::AccessibilityNodeData& src,
+                                 const AccessibilityNodeData& src,
                                  BrowserAccessibilityDelegate* delegate,
                                  BrowserAccessibilityFactory* factory);
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManagerMac);
 };
+
+}
 
 #endif  // CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_MANAGER_MAC_H_

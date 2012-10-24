@@ -20,12 +20,13 @@
 #include "third_party/isimpledom/ISimpleDOMNode.h"
 #include "third_party/isimpledom/ISimpleDOMText.h"
 
-class BrowserAccessibilityRelation;
-
 namespace ui {
 enum TextBoundaryDirection;
 enum TextBoundaryType;
 }
+
+namespace content {
+class BrowserAccessibilityRelation;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -777,26 +778,22 @@ BrowserAccessibilityWin
   // if found and nonempty, allocate a new BSTR (with SysAllocString)
   // and return S_OK. If not found or empty, return S_FALSE.
   HRESULT GetStringAttributeAsBstr(
-      content::AccessibilityNodeData::StringAttribute attribute,
-      BSTR* value_bstr);
+      AccessibilityNodeData::StringAttribute attribute, BSTR* value_bstr);
 
   // If the string attribute |attribute| is present, add its value as an
   // IAccessible2 attribute with the name |ia2_attr|.
   void StringAttributeToIA2(
-      content::AccessibilityNodeData::StringAttribute attribute,
-      const char* ia2_attr);
+      AccessibilityNodeData::StringAttribute attribute, const char* ia2_attr);
 
   // If the bool attribute |attribute| is present, add its value as an
   // IAccessible2 attribute with the name |ia2_attr|.
   void BoolAttributeToIA2(
-      content::AccessibilityNodeData::BoolAttribute attribute,
-      const char* ia2_attr);
+      AccessibilityNodeData::BoolAttribute attribute, const char* ia2_attr);
 
   // If the int attribute |attribute| is present, add its value as an
   // IAccessible2 attribute with the name |ia2_attr|.
   void IntAttributeToIA2(
-      content::AccessibilityNodeData::IntAttribute attribute,
-      const char* ia2_attr);
+      AccessibilityNodeData::IntAttribute attribute, const char* ia2_attr);
 
   // Get the text of this node for the purposes of IAccessibleText - it may
   // be the name, it may be the value, etc. depending on the role.
@@ -867,5 +864,7 @@ BrowserAccessibilityWin
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityWin);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_WIN_H_

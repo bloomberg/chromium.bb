@@ -11,6 +11,8 @@
 #include "content/common/view_message_enums.h"
 #include "content/public/browser/browser_accessibility_state.h"
 
+namespace content {
+
 // The BrowserAccessibilityState class is used to determine if Chrome should be
 // customized for users with assistive technology, such as screen readers. We
 // modify the behavior of certain user interfaces to provide a better experience
@@ -60,5 +62,7 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityStateImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_STATE_IMPL_H_

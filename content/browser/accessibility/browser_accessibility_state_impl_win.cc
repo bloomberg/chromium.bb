@@ -11,6 +11,8 @@
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 
+namespace content {
+
 void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {
   AUDIODESCRIPTION audio_description = {0};
   audio_description.cbSize = sizeof(AUDIODESCRIPTION);
@@ -67,3 +69,5 @@ void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {
   UMA_HISTOGRAM_BOOLEAN("Accessibility.WinSAToGo", satogo);
   UMA_HISTOGRAM_BOOLEAN("Accessibility.WinZoomText", zoomtext);
 }
+
+}  // namespace content

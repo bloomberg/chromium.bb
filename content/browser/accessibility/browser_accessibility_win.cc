@@ -18,7 +18,7 @@
 #include "ui/base/accessibility/accessible_text_utils.h"
 #include "ui/base/win/accessibility_misc_utils.h"
 
-using content::AccessibilityNodeData;
+namespace content {
 
 // The GUID for the ISimpleDOM service is not defined in the IDL files.
 // This is taken directly from the Mozilla sources
@@ -3520,3 +3520,5 @@ void BrowserAccessibilityWin::InitRoleAndState() {
   if (!ia2_role_)
     ia2_role_ = ia_role_;
 }
+
+}  // namespace content

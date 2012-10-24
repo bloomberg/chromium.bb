@@ -12,6 +12,8 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 
+namespace content {
+
 // A utility class for retrieving platform specific accessibility information.
 // This is extended by a subclass for each platform where accessibility is
 // implemented.
@@ -74,5 +76,7 @@ class DumpAccessibilityTreeHelper {
 
   DISALLOW_COPY_AND_ASSIGN(DumpAccessibilityTreeHelper);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_ACCESSIBILITY_DUMP_ACCESSIBILITY_TREE_HELPER_H_

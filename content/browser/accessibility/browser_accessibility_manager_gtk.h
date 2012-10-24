@@ -7,8 +7,10 @@
 
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 
-class BrowserAccessibilityGtk;
 struct ViewHostMsg_AccessibilityNotification_Params;
+
+namespace content {
+class BrowserAccessibilityGtk;
 
 // Manages a tree of BrowserAccessibilityGtk objects.
 class BrowserAccessibilityManagerGtk : public BrowserAccessibilityManager {
@@ -22,7 +24,7 @@ class BrowserAccessibilityManagerGtk : public BrowserAccessibilityManager {
  private:
   BrowserAccessibilityManagerGtk(
       GtkWidget* parent_window,
-      const content::AccessibilityNodeData& src,
+      const AccessibilityNodeData& src,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory);
 
@@ -33,5 +35,7 @@ class BrowserAccessibilityManagerGtk : public BrowserAccessibilityManager {
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManagerGtk);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_MANAGER_GTK_H_

@@ -15,6 +15,8 @@
 #include "base/win/windows_version.h"
 #endif
 
+namespace content {
+
 // Update the accessibility histogram 45 seconds after initialization.
 static const int kAccessibilityHistogramDelaySecs = 45;
 
@@ -52,8 +54,8 @@ BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
   // And we need to AddRef() the leaky singleton so that Bind doesn't
   // delete it prematurely.
   AddRef();
-  content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::FILE, FROM_HERE,
+  BrowserThread::PostDelayedTask(
+      BrowserThread::FILE, FROM_HERE,
       base::Bind(&BrowserAccessibilityStateImpl::UpdateHistogram, this),
       base::TimeDelta::FromSeconds(kAccessibilityHistogramDelaySecs));
 }
@@ -102,3 +104,5 @@ void BrowserAccessibilityStateImpl::SetAccessibilityMode(
     AccessibilityMode mode) {
   accessibility_mode_ = mode;
 }
+
+}  // namespace content

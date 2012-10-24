@@ -320,7 +320,8 @@ void ToolbarView::Init(views::View* location_bar_parent,
   browser_actions_->Init();
 
   // Accessibility specific tooltip text.
-  if (BrowserAccessibilityState::GetInstance()->IsAccessibleBrowser()) {
+  if (content::BrowserAccessibilityState::GetInstance()->
+          IsAccessibleBrowser()) {
     back_->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_ACCNAME_TOOLTIP_BACK));
     forward_->SetTooltipText(

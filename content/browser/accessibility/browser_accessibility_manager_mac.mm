@@ -8,7 +8,7 @@
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #include "content/common/accessibility_messages.h"
 
-using content::AccessibilityNodeData;
+namespace content {
 
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
@@ -107,3 +107,5 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
   DCHECK(native_node);
   NSAccessibilityPostNotification(native_node, event_id);
 }
+
+}  // namespace content

@@ -57,6 +57,8 @@
 #include "webkit/plugins/npapi/webplugin.h"
 
 using content::BackingStoreMac;
+using content::BrowserAccessibility;
+using content::BrowserAccessibilityManager;
 using content::EditCommand;
 using content::NativeWebKeyboardEvent;
 using content::RenderViewHostImpl;

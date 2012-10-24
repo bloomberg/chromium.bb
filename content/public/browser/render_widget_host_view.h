@@ -17,7 +17,6 @@
 #include <gdk/gdk.h>
 #endif
 
-class BrowserAccessibilityManager;
 class GURL;
 
 namespace gfx {
@@ -27,6 +26,7 @@ class Size;
 
 namespace content {
 
+class BrowserAccessibilityManager;
 class RenderWidgetHost;
 
 // RenderWidgetHostView is an interface implemented by an object that acts as

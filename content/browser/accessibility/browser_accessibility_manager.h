@@ -14,12 +14,13 @@
 #include "content/common/content_export.h"
 #include "ui/gfx/native_widget_types.h"
 
+struct AccessibilityHostMsg_NotificationParams;
+
+namespace content {
 class BrowserAccessibility;
 #if defined(OS_WIN)
 class BrowserAccessibilityManagerWin;
 #endif
-
-struct AccessibilityHostMsg_NotificationParams;
 
 // Class that can perform actions on behalf of the BrowserAccessibilityManager.
 class CONTENT_EXPORT BrowserAccessibilityDelegate {
@@ -54,7 +55,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
   // to the caller.
   static BrowserAccessibilityManager* Create(
     gfx::NativeView parent_view,
-    const content::AccessibilityNodeData& src,
+    const AccessibilityNodeData& src,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
 
@@ -62,7 +63,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
   // to the caller.
   static BrowserAccessibilityManager* CreateEmptyDocument(
     gfx::NativeView parent_view,
-    content::AccessibilityNodeData::State state,
+    AccessibilityNodeData::State state,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
 
@@ -156,7 +157,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
  protected:
   BrowserAccessibilityManager(
       gfx::NativeView parent_view,
-      const content::AccessibilityNodeData& src,
+      const AccessibilityNodeData& src,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory);
 
@@ -187,14 +188,13 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
   // received from the renderer process. When |include_children| is true
   // the node's children will also be updated, otherwise only the node
   // itself is updated.
-  void UpdateNode(const content::AccessibilityNodeData& src,
-                  bool include_children);
+  void UpdateNode(const AccessibilityNodeData& src, bool include_children);
 
   // Recursively build a tree of BrowserAccessibility objects from
   // the AccessibilityNodeData tree received from the renderer process.
   BrowserAccessibility* CreateAccessibilityTree(
       BrowserAccessibility* parent,
-      const content::AccessibilityNodeData& src,
+      const AccessibilityNodeData& src,
       int index_in_parent,
       bool send_show_events);
 
@@ -228,5 +228,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManager);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_MANAGER_H_

@@ -10,6 +10,8 @@
 #include "base/compiler_specific.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 
+namespace content {
+
 class BrowserAccessibilityGtk;
 class BrowserAccessibilityManagerGtk;
 
@@ -87,5 +89,7 @@ class BrowserAccessibilityGtk : public BrowserAccessibility {
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityGtk);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_GTK_H_

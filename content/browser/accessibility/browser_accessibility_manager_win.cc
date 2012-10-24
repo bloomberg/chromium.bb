@@ -7,7 +7,7 @@
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/common/accessibility_messages.h"
 
-using content::AccessibilityNodeData;
+namespace content {
 
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
@@ -146,3 +146,5 @@ void BrowserAccessibilityManagerWin::TrackScrollingObject(
   tracked_scroll_object_ = node;
   tracked_scroll_object_->AddRef();
 }
+
+}  // namespace content

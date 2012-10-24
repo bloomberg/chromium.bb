@@ -10,6 +10,7 @@
 #include "base/win/scoped_comptr.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 
+namespace content {
 class BrowserAccessibilityWin;
 
 // Manages a tree of BrowserAccessibilityWin objects.
@@ -32,7 +33,7 @@ class BrowserAccessibilityManagerWin : public BrowserAccessibilityManager {
  private:
   BrowserAccessibilityManagerWin(
       HWND parent_window,
-      const content::AccessibilityNodeData& src,
+      const AccessibilityNodeData& src,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory);
 
@@ -49,5 +50,7 @@ class BrowserAccessibilityManagerWin : public BrowserAccessibilityManager {
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManagerWin);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_MANAGER_WIN_H_

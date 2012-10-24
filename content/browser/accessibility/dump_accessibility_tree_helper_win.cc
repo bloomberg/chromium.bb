@@ -18,6 +18,7 @@
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/base/win/atl_module.h"
 
+namespace content {
 
 void DumpAccessibilityTreeHelper::Initialize() {
   ui::win::CreateATLModuleIfNeeded();
@@ -44,10 +45,10 @@ string16 DumpAccessibilityTreeHelper::ToString(
 
   // Get the description, help, and attributes.
   string16 description;
-  acc_obj->GetStringAttribute(content::AccessibilityNodeData::ATTR_DESCRIPTION,
+  acc_obj->GetStringAttribute(AccessibilityNodeData::ATTR_DESCRIPTION,
                               &description);
   string16 help;
-  acc_obj->GetStringAttribute(content::AccessibilityNodeData::ATTR_HELP, &help);
+  acc_obj->GetStringAttribute(AccessibilityNodeData::ATTR_HELP, &help);
   const std::vector<string16>& ia2_attributes = acc_obj->ia2_attributes();
 
   // Build the line.
@@ -88,3 +89,5 @@ const std::string DumpAccessibilityTreeHelper::GetAllowString() const {
 const std::string DumpAccessibilityTreeHelper::GetDenyString() const {
   return "@WIN-DENY:";
 }
+
+}  // namespace content

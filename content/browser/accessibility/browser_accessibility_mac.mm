@@ -10,6 +10,7 @@
 #import "content/browser/accessibility/browser_accessibility_delegate_mac.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 
+namespace content {
 
 // Static.
 BrowserAccessibility* BrowserAccessibility::Create() {
@@ -61,3 +62,5 @@ BrowserAccessibilityCocoa* BrowserAccessibility::ToBrowserAccessibilityCocoa() {
   return static_cast<BrowserAccessibilityMac*>(this)->
       native_view();
 }
+
+}  // namespace content

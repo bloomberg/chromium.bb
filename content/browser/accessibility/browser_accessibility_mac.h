@@ -14,6 +14,8 @@
 
 @class BrowserAccessibilityCocoa;
 
+namespace content {
+
 class BrowserAccessibilityMac : public BrowserAccessibility {
  public:
   // Implementation of BrowserAccessibility.
@@ -42,5 +44,7 @@ class BrowserAccessibilityMac : public BrowserAccessibility {
   BrowserAccessibilityCocoa* browser_accessibility_cocoa_;
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityMac);
 };
+
+}  // namespace content
 
 #endif // CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_MAC_H_

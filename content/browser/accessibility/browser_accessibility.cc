@@ -10,7 +10,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/common/accessibility_messages.h"
 
-using content::AccessibilityNodeData;
+namespace content {
 
 typedef AccessibilityNodeData::BoolAttribute BoolAttribute;
 typedef AccessibilityNodeData::FloatAttribute FloatAttribute;
@@ -321,3 +321,5 @@ string16 BrowserAccessibility::GetTextRecursive() const {
 void BrowserAccessibility::PreInitialize() {
   instance_active_ = true;
 }
+
+}  // namespace content

@@ -11,6 +11,7 @@
 #include "content/browser/accessibility/browser_accessibility_cocoa.h"
 #include "content/browser/accessibility/browser_accessibility_mac.h"
 
+namespace content {
 namespace {
 string16 Format(BrowserAccessibility* node,
                 const char *prefix,
@@ -59,3 +60,5 @@ const std::string DumpAccessibilityTreeHelper::GetAllowString() const {
 const std::string DumpAccessibilityTreeHelper::GetDenyString() const {
   return "@MAC-DENY:";
 }
+
+}  // namespace content

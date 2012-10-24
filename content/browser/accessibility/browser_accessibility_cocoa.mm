@@ -23,6 +23,9 @@
 extern "C" void NSAccessibilityUnregisterUniqueIdForUIElement(id element);
 
 using content::AccessibilityNodeData;
+using content::BrowserAccessibility;
+using content::BrowserAccessibilityManager;
+using content::ContentClient;
 typedef AccessibilityNodeData::StringAttribute StringAttribute;
 
 namespace {
@@ -564,7 +567,7 @@ NSDictionary* attributeToMethodNameMap = nil;
 - (NSString*)roleDescription {
   NSString* role = [self role];
 
-  content::ContentClient* content_client = content::GetContentClient();
+  ContentClient* content_client = content::GetContentClient();
 
   // The following descriptions are specific to webkit.
   if ([role isEqualToString:@"AXWebArea"]) {

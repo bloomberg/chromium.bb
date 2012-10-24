@@ -7,7 +7,7 @@
 #include "content/browser/accessibility/browser_accessibility_gtk.h"
 #include "content/common/accessibility_messages.h"
 
-using content::AccessibilityNodeData;
+namespace content {
 
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
@@ -69,3 +69,5 @@ void BrowserAccessibilityManagerGtk::RecursivelySendChildrenChanged(
     RecursivelySendChildrenChanged(child);
   }
 }
+
+}  // namespace content

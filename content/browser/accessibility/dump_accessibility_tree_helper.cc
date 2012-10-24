@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 
+namespace content {
 namespace {
 const int kIndentSpaces = 4;
 const char* kSkipString = "@NO_DUMP";
@@ -80,3 +81,5 @@ void DumpAccessibilityTreeHelper::Add(
 string16 DumpAccessibilityTreeHelper::FinishLine() {
   return line_;
 }
+
+}  // namespace content

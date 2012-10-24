@@ -9,7 +9,7 @@
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/common/accessibility_messages.h"
 
-using content::AccessibilityNodeData;
+namespace content {
 
 BrowserAccessibility* BrowserAccessibilityFactory::Create() {
   return BrowserAccessibility::Create();
@@ -400,3 +400,5 @@ BrowserAccessibility* BrowserAccessibilityManager::CreateAccessibilityTree(
 
   return instance;
 }
+
+}  // namespace content

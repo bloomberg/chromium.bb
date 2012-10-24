@@ -511,7 +511,7 @@ void SwizzleInit() {
 - (void)accessibilitySetValue:(id)value forAttribute:(NSString*)attribute {
   if ([attribute isEqualToString:@"AXEnhancedUserInterface"] &&
       [value intValue] == 1) {
-    BrowserAccessibilityState::GetInstance()->OnScreenReaderDetected();
+    content::BrowserAccessibilityState::GetInstance()->OnScreenReaderDetected();
     for (TabContentsIterator it;
          !it.done();
          ++it) {
