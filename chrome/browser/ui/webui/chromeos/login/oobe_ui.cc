@@ -294,6 +294,10 @@ void OobeUI::ShowOobeUI(bool show) {
   core_handler_->ShowOobeUI(show);
 }
 
+void OobeUI::ShowRetailModeLoginSpinner() {
+  signin_screen_handler_->ShowRetailModeLoginSpinner();
+}
+
 void OobeUI::ShowSigninScreen(SigninScreenHandlerDelegate* delegate,
                               NativeWindowDelegate* native_window_delegate) {
   signin_screen_handler_->SetDelegate(delegate);

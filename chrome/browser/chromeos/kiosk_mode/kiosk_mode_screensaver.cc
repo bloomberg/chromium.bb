@@ -14,8 +14,10 @@
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/sandboxed_unpacker.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
@@ -128,9 +130,9 @@ KioskModeScreensaver::~KioskModeScreensaver() {
   // In case we're shutting down without ever triggering the active
   // notification and/or logging in.
   if (ash::Shell::GetInstance() &&
-      ash::Shell::GetInstance()->user_activity_detector())
+      ash::Shell::GetInstance()->user_activity_detector() &&
+      ash::Shell::GetInstance()->user_activity_detector()->HasObserver(this))
     ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);
-  registrar_.RemoveAll();
 }
 
 void KioskModeScreensaver::GetScreensaverCrxPath() {
@@ -178,9 +180,6 @@ void KioskModeScreensaver::SetupScreensaver(
   if (chromeos::UserManager::Get()->IsUserLoggedIn())
     return;
 
-  // Add our observers for login and user active.
-  registrar_.Add(this, chrome::NOTIFICATION_SESSION_STARTED,
-                 content::NotificationService::AllSources());
   ash::Shell::GetInstance()->user_activity_detector()->AddObserver(this);
 
   Profile* default_profile = ProfileManager::GetDefaultProfile();
@@ -194,37 +193,32 @@ void KioskModeScreensaver::SetupScreensaver(
   }
 }
 
-// NotificationObserver overrides:
-void KioskModeScreensaver::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_SESSION_STARTED);
-
-  registrar_.RemoveAll();
-
-  ash::CloseScreensaver();
-  ShutdownKioskModeScreensaver();
-}
-
 void KioskModeScreensaver::OnUserActivity() {
   // We don't want to handle further user notifications; we'll either login
   // the user and close out or or at least close the screensaver.
   ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);
 
-  // User is active, log us in.
+  // Find the retail mode login page.
+  CHECK(WebUILoginDisplayHost::default_host());
+  WebUILoginDisplayHost* webui_host =
+      static_cast<WebUILoginDisplayHost*>(
+          WebUILoginDisplayHost::default_host());
+  OobeUI* oobe_ui = webui_host->GetOobeUI();
+
+  // Show the login spinner.
+  CHECK(oobe_ui);
+  oobe_ui->ShowRetailModeLoginSpinner();
+
+  // Close the screensaver, our login spinner is already showing.
+  ash::CloseScreensaver();
+
+  // Log us in.
   ExistingUserController* controller =
       ExistingUserController::current_controller();
+  CHECK(controller);
+  controller->LoginAsDemoUser();
 
-  if (controller) {
-    // Logging in will shut us down and remove the screen saver.
-    controller->LoginAsDemoUser();
-  } else {
-    // Remove the screensaver so the user can at least use the underlying
-    // login screen to be able to log in.
-    ash::CloseScreensaver();
-    ShutdownKioskModeScreensaver();
-  }
+  ShutdownKioskModeScreensaver();
 }
 
 static KioskModeScreensaver* g_kiosk_mode_screensaver = NULL;

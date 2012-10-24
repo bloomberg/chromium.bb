@@ -14,6 +14,7 @@
 onClick = function(e) {
   document.removeEventListener('click', onClick);
   e.stopPropagation();
+  showLoginSpinner();
   chrome.send('launchDemoUser');
 };
 
@@ -28,6 +29,22 @@ initialize = function() {
   window.webkitRequestAnimationFrame(function() {
     chrome.send('loginVisible', ['demo']);
   });
+};
+
+/**
+ * Show the login spinner.
+ */
+showLoginSpinner = function() {
+  // We're already logging in - don't login on click.
+  document.removeEventListener('click', onClick);
+
+  // Hide the "Click to start" assets.
+  $('logo').hidden = true;
+  $('demo-login-text').hidden = true;
+
+  // Show the "Logging in" assets.
+  $('logo-login').hidden = false;
+  $('login-spinner').hidden = false;
 };
 
 disableTextSelectAndDrag();

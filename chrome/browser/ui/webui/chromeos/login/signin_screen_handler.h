@@ -135,6 +135,9 @@ class SigninScreenHandler
   // screen is for OOBE or usual sign-in flow.
   void Show(bool oobe_ui);
 
+  // Shows the login spinner UI for retail mode logins.
+  void ShowRetailModeLoginSpinner();
+
   // Sets delegate to be used by the handler. It is guaranteed that valid
   // delegate is set before Show() method will be called.
   void SetDelegate(SigninScreenHandlerDelegate* delegate);

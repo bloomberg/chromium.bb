@@ -1218,7 +1218,6 @@
         'browser/chromeos/input_method/input_method_whitelist_unittest.cc',
         'browser/chromeos/input_method/xkeyboard_unittest.cc',
         'browser/chromeos/kiosk_mode/kiosk_mode_idle_logout_unittest.cc',
-        'browser/chromeos/kiosk_mode/kiosk_mode_screensaver_unittest.cc',
         'browser/chromeos/kiosk_mode/kiosk_mode_settings_unittest.cc',
         'browser/chromeos/language_preferences_unittest.cc',
         'browser/chromeos/login/mock_auth_attempt_state_resolver.cc',

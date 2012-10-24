@@ -228,6 +228,10 @@ void SigninScreenHandler::Show(bool oobe_ui) {
   }
 }
 
+void SigninScreenHandler::ShowRetailModeLoginSpinner() {
+  web_ui()->CallJavascriptFunction("showLoginSpinner");
+}
+
 void SigninScreenHandler::SetDelegate(SigninScreenHandlerDelegate* delegate) {
   delegate_ = delegate;
   if (delegate_)
