@@ -1189,9 +1189,10 @@ void ImmediateInterpreter::UpdateTapState(
   // ||    | | two finger touching: send left click.                        |
   // |'----+-'                                                              |
   // |     ↓ add finger(s)                                                  |
-  // |  [SubsequentTapBegan] --<timeout/move w/o delay: send click>------->|
-  // |     | | released all fingers send button click                       |
-  // |<----+-'                                                              |
+  // |  [SubsequentTapBegan] --<timeout/move w/o delay: send click>-------->|
+  // |     | | | release all fingers: send left click                       |
+  // |<----+-+-'                                                            |
+  // |     | `-> start non-left click: send left click; goto FirstTapBegan  |
   // |     ↓ timeout/movement with delay: send button down                  |
   // | ,->[Drag] --<detect 2 finger gesture: send button up>--------------->|
   // | |   ↓ release all fingers                                            |
@@ -1328,6 +1329,12 @@ void ImmediateInterpreter::UpdateTapState(
           SetTapToClickState(kTtcIdle, now);
         }
         break;
+      }
+      if (tap_record_.TapType() != GESTURES_BUTTON_LEFT) {
+        // We aren't going to drag, so send left click now and handle current
+        // tap afterwards.
+        *buttons_down = *buttons_up = GESTURES_BUTTON_LEFT;
+        SetTapToClickState(kTtcFirstTapBegan, now);
       }
       if (tap_record_.TapComplete()) {
         *buttons_down = *buttons_up = GESTURES_BUTTON_LEFT;

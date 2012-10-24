@@ -1799,9 +1799,8 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
     {S,{ 0.00, 0, 1, 1, &fs[0] },  -1,  MkSet(91),   0,   0, kFTB, false },
     {C,{ 0.01, 0, 0, 0, NULL   },  -1,  MkSet(),     0,   0, kTpC, true },
     {C,{ 0.02, 0, 1, 1, &fs[10] }, -1,  MkSet(97),   0,   0, kSTB, false },
-    {C,{ 0.03, 0, 1, 1, &fs[11] }, -1,  MkSet(98),   0,   0, kSTB, false },
-    {C,{ 0.04, 0, 0, 0, NULL   },  -1,  MkSet(),   kBL, kBL, kTpC, true },
-    {C,{ 0.10, 0, 0, 0, NULL    }, .10, MkSet(),   kBR, kBR, kIdl, false },
+    {C,{ 0.03, 0, 1, 1, &fs[11] }, -1,  MkSet(98), kBL, kBL, kFTB, false },
+    {C,{ 0.04, 0, 0, 0, NULL   },  -1,  MkSet(),   kBR, kBR, kIdl, false },
     // right tap, left tap
     {S,{ 0.00, 0, 2, 2, &fs[10] }, -1,  MkSet(97, 98),  0, 0, kFTB, false },
     {C,{ 0.01, 0, 0, 0, NULL   },  -1,  MkSet(),       kBR, kBR, kIdl, false },
