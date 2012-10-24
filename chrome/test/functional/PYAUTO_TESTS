@@ -451,7 +451,7 @@
       # crbug.com/94682
       '-gpu.GpuTest.test2dCanvas',
       # crbug.com/125424
-      '-media.media_basic_playback.MediaConstrainedNetworkPerfTest.testBasicPlaybackMatrix',
+      '-media.media_basic_playback.MediaBasicPlaybackTest.testBasicPlaybackMatrix',
     ],
 
     'mac': [
@@ -748,7 +748,7 @@
       '-omnibox',
       '-special_tabs',
       '-ntp.NTPTest.testLaunchAppFullScreen',
-      '-media.media_basic_playback.MediaConstrainedNetworkPerfTest.testBasicPlaybackMatrix',
+      '-media.media_basic_playback.MediaBasicPlaybackTest.testBasicPlaybackMatrix',
       '-search_engines.SearchEnginesTest.testDiscoverSearchEngine',
       '-ntp.NTPTest.testUninstallApp',
       '-ntp.NTPTest.testLaunchAppWithDefaultSettings',

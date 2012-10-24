@@ -32,7 +32,7 @@ _EXPECTED_EVENTS_0 = [('ended', 2), ('playing', 2), ('seeked', 1),
 _EXPECTED_EVENTS_n = [('abort', 1), ('emptied', 1)] + _EXPECTED_EVENTS_0
 
 
-class MediaConstrainedNetworkPerfTest(pyauto.PyUITest):
+class MediaBasicPlaybackTest(pyauto.PyUITest):
   """PyAuto test container.  See file doc string for more information."""
 
   def ExtraChromeFlags(self):
