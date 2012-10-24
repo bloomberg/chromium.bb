@@ -86,6 +86,7 @@
       '../fileapi/syncable/local_file_sync_context.h',
       '../fileapi/syncable/local_file_sync_status.cc',
       '../fileapi/syncable/local_file_sync_status.h',
+      '../fileapi/syncable/sync_callbacks.h',
       '../fileapi/syncable/sync_status_code.cc',
       '../fileapi/syncable/sync_status_code.h',
       '../fileapi/syncable/syncable_file_operation_runner.cc',
