@@ -5,9 +5,9 @@
 #ifndef CCThreadProxy_h
 #define CCThreadProxy_h
 
-#include "CCAnimationEvents.h"
-#include "CCCompletionEvent.h"
 #include "base/time.h"
+#include "cc/animation_events.h"
+#include "cc/completion_event.h"
 #include "cc/layer_tree_host_impl.h"
 #include "cc/proxy.h"
 #include "cc/scheduler.h"

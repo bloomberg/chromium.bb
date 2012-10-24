@@ -6,12 +6,12 @@
 
 #include "cc/tiled_layer_impl.h"
 
-#include "CCAppendQuadsData.h"
-#include "CCCheckerboardDrawQuad.h"
-#include "CCDebugBorderDrawQuad.h"
 #include "FloatQuad.h"
 #include "base/basictypes.h"
 #include "base/stringprintf.h"
+#include "cc/append_quads_data.h"
+#include "cc/checkerboard_draw_quad.h"
+#include "cc/debug_border_draw_quad.h"
 #include "cc/layer_tiling_data.h"
 #include "cc/math_util.h"
 #include "cc/quad_sink.h"

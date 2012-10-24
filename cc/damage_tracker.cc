@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCDamageTracker.h"
+#include "cc/damage_tracker.h"
 
 #include "cc/layer_impl.h"
 #include "cc/layer_tree_host_common.h"

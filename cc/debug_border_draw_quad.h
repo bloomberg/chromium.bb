@@ -5,8 +5,8 @@
 #ifndef CCDebugBorderDrawQuad_h
 #define CCDebugBorderDrawQuad_h
 
-#include "CCDrawQuad.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/draw_quad.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace cc {

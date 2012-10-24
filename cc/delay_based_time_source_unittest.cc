@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCDelayBasedTimeSource.h"
+#include "cc/delay_based_time_source.h"
 
 #include "cc/test/scheduler_test_common.h"
 #include "cc/thread.h"

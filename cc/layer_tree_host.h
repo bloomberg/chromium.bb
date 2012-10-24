@@ -7,13 +7,13 @@
 
 #include <limits>
 
-#include "CCAnimationEvents.h"
-#include "CCGraphicsContext.h"
 #include "IntRect.h"
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/animation_events.h"
+#include "cc/graphics_context.h"
 #include "cc/layer_tree_host_client.h"
 #include "cc/layer_tree_host_common.h"
 #include "cc/occlusion_tracker.h"

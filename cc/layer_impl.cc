@@ -6,9 +6,9 @@
 
 #include "cc/layer_impl.h"
 
-#include "CCDebugBorderDrawQuad.h"
 #include "base/debug/trace_event.h"
 #include "base/stringprintf.h"
+#include "cc/debug_border_draw_quad.h"
 #include "cc/layer_sorter.h"
 #include "cc/math_util.h"
 #include "cc/proxy.h"

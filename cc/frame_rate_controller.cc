@@ -4,11 +4,11 @@
 
 #include "config.h"
 
-#include "CCFrameRateController.h"
+#include "cc/frame_rate_controller.h"
 
-#include "CCDelayBasedTimeSource.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "cc/delay_based_time_source.h"
 #include "cc/time_source.h"
 #include <wtf/CurrentTime.h>
 

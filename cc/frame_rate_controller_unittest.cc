@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCFrameRateController.h"
+#include "cc/frame_rate_controller.h"
 
 #include "cc/test/scheduler_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"

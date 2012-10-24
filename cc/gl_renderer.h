@@ -5,9 +5,9 @@
 #ifndef CCRendererGL_h
 #define CCRendererGL_h
 
-#include "CCCheckerboardDrawQuad.h"
-#include "CCDebugBorderDrawQuad.h"
-#include "CCDirectRenderer.h"
+#include "cc/checkerboard_draw_quad.h"
+#include "cc/debug_border_draw_quad.h"
+#include "cc/direct_renderer.h"
 #include "cc/io_surface_draw_quad.h"
 #include "cc/render_pass_draw_quad.h"
 #include "cc/renderer.h"

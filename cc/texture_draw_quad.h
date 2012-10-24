@@ -5,8 +5,8 @@
 #ifndef CCTextureDrawQuad_h
 #define CCTextureDrawQuad_h
 
-#include "CCDrawQuad.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/draw_quad.h"
 #include "ui/gfx/rect_f.h"
 
 namespace cc {

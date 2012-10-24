@@ -6,7 +6,7 @@
 
 #include "cc/render_surface_impl.h"
 
-#include "CCAppendQuadsData.h"
+#include "cc/append_quads_data.h"
 #include "cc/layer_impl.h"
 #include "cc/render_pass_sink.h"
 #include "cc/scoped_ptr_vector.h"

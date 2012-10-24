@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "CCActiveAnimation.h"
+#include "cc/active_animation.h"
 
 namespace cc {
 

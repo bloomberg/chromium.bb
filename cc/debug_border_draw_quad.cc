@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCDebugBorderDrawQuad.h"
+#include "cc/debug_border_draw_quad.h"
 
 #include "base/logging.h"
 

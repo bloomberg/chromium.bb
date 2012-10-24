@@ -6,9 +6,9 @@
 
 #include "cc/io_surface_layer_impl.h"
 
-#include "CCGraphicsContext.h"
 #include "base/stringprintf.h"
 #include "cc/gl_renderer.h" // For the GLC() macro.
+#include "cc/graphics_context.h"
 #include "cc/io_surface_draw_quad.h"
 #include "cc/layer_tree_host_impl.h"
 #include "cc/quad_sink.h"

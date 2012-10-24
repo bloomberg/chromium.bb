@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCAnimationCurve.h"
+#include "cc/animation_curve.h"
 
 #include "base/logging.h"
 
@@ -32,4 +32,4 @@ AnimationCurve::Type TransformAnimationCurve::type() const
     return Transform;
 }
 
-} // namespace cc
+}  // namespace cc

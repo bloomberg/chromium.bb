@@ -5,9 +5,9 @@
 #ifndef CCRenderPassDrawQuad_h
 #define CCRenderPassDrawQuad_h
 
-#include "CCDrawQuad.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/draw_quad.h"
 #include "cc/render_pass.h"
 #include "cc/resource_provider.h"
 

@@ -6,11 +6,11 @@
 
 #include "cc/thread_proxy.h"
 
-#include "CCDelayBasedTimeSource.h"
-#include "CCDrawQuad.h"
-#include "CCFrameRateController.h"
-#include "CCGraphicsContext.h"
 #include "base/debug/trace_event.h"
+#include "cc/delay_based_time_source.h"
+#include "cc/draw_quad.h"
+#include "cc/frame_rate_controller.h"
+#include "cc/graphics_context.h"
 #include "cc/input_handler.h"
 #include "cc/layer_tree_host.h"
 #include "cc/scheduler.h"

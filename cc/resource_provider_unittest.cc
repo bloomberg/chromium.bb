@@ -6,8 +6,8 @@
 
 #include "cc/resource_provider.h"
 
-#include "CCGraphicsContext.h"
 #include "base/logging.h"
+#include "cc/graphics_context.h"
 #include "cc/scoped_ptr_deque.h"
 #include "cc/scoped_ptr_hash_map.h"
 #include "cc/single_thread_proxy.h" // For DebugScopedSetImplThread

@@ -4,12 +4,13 @@
 
 #include "config.h"
 
-#include "CCDirectRenderer.h"
+#include "cc/direct_renderer.h"
+
+#include <vector>
 
 #include "cc/math_util.h"
 #include "ui/gfx/rect_conversions.h"
 #include <public/WebTransformationMatrix.h>
-#include <vector>
 
 using WebKit::WebTransformationMatrix;
 

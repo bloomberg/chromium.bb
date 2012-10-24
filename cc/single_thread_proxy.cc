@@ -6,9 +6,9 @@
 
 #include "cc/single_thread_proxy.h"
 
-#include "CCDrawQuad.h"
-#include "CCGraphicsContext.h"
 #include "base/debug/trace_event.h"
+#include "cc/draw_quad.h"
+#include "cc/graphics_context.h"
 #include "cc/layer_tree_host.h"
 #include "cc/texture_update_controller.h"
 #include "cc/timer.h"

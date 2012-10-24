@@ -6,16 +6,16 @@
 
 #include "cc/layer_tree_host.h"
 
-#include "CCGraphicsContext.h"
-#include "CCThreadedTest.h"
 #include "base/synchronization/lock.h"
 #include "cc/content_layer.h"
 #include "cc/content_layer_client.h"
+#include "cc/graphics_context.h"
 #include "cc/layer_tree_host_impl.h"
 #include "cc/settings.h"
 #include "cc/single_thread_proxy.h"
 #include "cc/test/fake_web_compositor_output_surface.h"
 #include "cc/test/geometry_test_utils.h"
+#include "cc/test/layer_tree_test_common.h"
 #include "cc/test/occlusion_tracker_test_common.h"
 #include "cc/texture_update_queue.h"
 #include "cc/timing_function.h"

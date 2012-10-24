@@ -6,8 +6,8 @@
 
 #include "cc/layer_animation_controller.h"
 
-#include "CCActiveAnimation.h"
-#include "CCAnimationCurve.h"
+#include "cc/active_animation.h"
+#include "cc/animation_curve.h"
 #include "cc/test/animation_test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

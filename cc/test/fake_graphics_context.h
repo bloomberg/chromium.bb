@@ -5,7 +5,7 @@
 #ifndef FakeCCGraphicsContext_h
 #define FakeCCGraphicsContext_h
 
-#include "CCGraphicsContext.h"
+#include "cc/graphics_context.h"
 #include "cc/test/compositor_fake_web_graphics_context_3d.h"
 #include "cc/test/fake_web_compositor_output_surface.h"
 #include <public/WebCompositorOutputSurface.h>

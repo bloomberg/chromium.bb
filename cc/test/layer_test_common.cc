@@ -6,7 +6,7 @@
 
 #include "cc/test/layer_test_common.h"
 
-#include "CCDrawQuad.h"
+#include "cc/draw_quad.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace LayerTestCommon {

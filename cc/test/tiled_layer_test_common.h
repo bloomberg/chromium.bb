@@ -5,7 +5,6 @@
 #ifndef CCTiledLayerTestCommon_h
 #define CCTiledLayerTestCommon_h
 
-#include "CCGraphicsContext.h"
 #include "IntRect.h"
 #include "IntSize.h"
 #include "Region.h"

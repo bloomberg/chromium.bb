@@ -6,9 +6,9 @@
 
 #include "cc/quad_culler.h"
 
-#include "CCAppendQuadsData.h"
-#include "CCDebugBorderDrawQuad.h"
 #include "Region.h"
+#include "cc/append_quads_data.h"
+#include "cc/debug_border_draw_quad.h"
 #include "cc/layer_impl.h"
 #include "cc/occlusion_tracker.h"
 #include "cc/overdraw_metrics.h"

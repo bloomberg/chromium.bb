@@ -5,8 +5,8 @@
 #ifndef CCIOSurfaceDrawQuad_h
 #define CCIOSurfaceDrawQuad_h
 
-#include "CCDrawQuad.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/draw_quad.h"
 #include "ui/gfx/size.h"
 
 namespace cc {

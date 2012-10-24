@@ -4,9 +4,9 @@
 
 #include "config.h"
 
-#include "CCDelegatedRendererLayerImpl.h"
+#include "cc/delegated_renderer_layer_impl.h"
 
-#include "CCAppendQuadsData.h"
+#include "cc/append_quads_data.h"
 #include "cc/math_util.h"
 #include "cc/quad_sink.h"
 #include "cc/render_pass_draw_quad.h"

@@ -5,9 +5,9 @@
 #ifndef CCAnimationTestCommon_h
 #define CCAnimationTestCommon_h
 
-#include "CCActiveAnimation.h"
-#include "CCAnimationCurve.h"
 #include "IntSize.h"
+#include "cc/active_animation.h"
+#include "cc/animation_curve.h"
 #include "cc/layer_animation_controller.h"
 
 namespace cc {

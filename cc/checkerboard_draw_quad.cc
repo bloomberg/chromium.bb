@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCCheckerboardDrawQuad.h"
+#include "cc/checkerboard_draw_quad.h"
 
 #include "base/logging.h"
 

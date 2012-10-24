@@ -4,10 +4,10 @@
 
 #include "config.h"
 
-#include "CCThreadedTest.h"
+#include "cc/test/layer_tree_test_common.h"
 
-#include "CCActiveAnimation.h"
 #include "base/stl_util.h"
+#include "cc/active_animation.h"
 #include "cc/content_layer.h"
 #include "cc/input_handler.h"
 #include "cc/layer.h"

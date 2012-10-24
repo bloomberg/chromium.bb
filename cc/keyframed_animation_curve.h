@@ -5,9 +5,9 @@
 #ifndef CCKeyframedAnimationCurve_h
 #define CCKeyframedAnimationCurve_h
 
-#include "CCAnimationCurve.h"
-#include "cc/timing_function.h"
+#include "cc/animation_curve.h"
 #include "cc/scoped_ptr_vector.h"
+#include "cc/timing_function.h"
 #include <public/WebTransformOperations.h>
 
 namespace cc {
@@ -104,6 +104,6 @@ private:
     ScopedPtrVector<TransformKeyframe> m_keyframes;
 };
 
-} // namespace cc
+}  // namespace cc
 
 #endif // CCKeyframedAnimationCurve_h

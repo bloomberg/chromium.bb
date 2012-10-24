@@ -5,9 +5,9 @@
 #ifndef CCTileDrawQuad_h
 #define CCTileDrawQuad_h
 
-#include "CCDrawQuad.h"
-#include "third_party/khronos/GLES2/gl2.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/draw_quad.h"
+#include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
 

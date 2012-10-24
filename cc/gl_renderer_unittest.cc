@@ -5,7 +5,7 @@
 #include "config.h"
 #include "cc/gl_renderer.h"
 
-#include "CCDrawQuad.h"
+#include "cc/draw_quad.h"
 #include "cc/prioritized_texture_manager.h"
 #include "cc/resource_provider.h"
 #include "cc/settings.h"

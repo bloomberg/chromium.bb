@@ -4,11 +4,12 @@
 
 #include "config.h"
 
-#include "CCDelayBasedTimeSource.h"
+#include "cc/delay_based_time_source.h"
+
+#include <algorithm>
 
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
-#include <algorithm>
 #include <wtf/CurrentTime.h>
 #include <wtf/MathExtras.h>
 

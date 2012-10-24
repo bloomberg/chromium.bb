@@ -4,11 +4,11 @@
 
 #include "config.h"
 
-#include "CCDrawQuad.h"
+#include "cc/draw_quad.h"
 
-#include "CCCheckerboardDrawQuad.h"
-#include "CCDebugBorderDrawQuad.h"
 #include "base/logging.h"
+#include "cc/checkerboard_draw_quad.h"
+#include "cc/debug_border_draw_quad.h"
 #include "cc/io_surface_draw_quad.h"
 #include "cc/render_pass_draw_quad.h"
 #include "cc/solid_color_draw_quad.h"

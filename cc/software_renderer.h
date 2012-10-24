@@ -6,7 +6,7 @@
 #define CCRendererSoftware_h
 
 #include "base/basictypes.h"
-#include "CCDirectRenderer.h"
+#include "cc/direct_renderer.h"
 #include <public/WebCompositorSoftwareOutputDevice.h>
 
 namespace cc {

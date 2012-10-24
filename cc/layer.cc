@@ -6,8 +6,8 @@
 
 #include "cc/layer.h"
 
-#include "CCActiveAnimation.h"
-#include "CCAnimationEvents.h"
+#include "cc/active_animation.h"
+#include "cc/animation_events.h"
 #include "cc/layer_animation_controller.h"
 #include "cc/layer_impl.h"
 #include "cc/layer_tree_host.h"

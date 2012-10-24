@@ -4,12 +4,13 @@
 
 #include "config.h"
 
-#include "CCActiveAnimation.h"
+#include "cc/active_animation.h"
 
-#include "CCAnimationCurve.h"
+#include <cmath>
+
 #include "base/debug/trace_event.h"
 #include "base/string_util.h"
-#include <cmath>
+#include "cc/animation_curve.h"
 
 namespace {
 

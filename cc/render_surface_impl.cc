@@ -6,11 +6,11 @@
 
 #include "cc/render_surface_impl.h"
 
-#include "CCDamageTracker.h"
-#include "CCDebugBorderDrawQuad.h"
-#include "CCDelegatedRendererLayerImpl.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
+#include "cc/damage_tracker.h"
+#include "cc/debug_border_draw_quad.h"
+#include "cc/delegated_renderer_layer_impl.h"
 #include "cc/layer_impl.h"
 #include "cc/math_util.h"
 #include "cc/quad_sink.h"

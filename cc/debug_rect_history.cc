@@ -4,9 +4,9 @@
 
 #include "config.h"
 
-#include "CCDebugRectHistory.h"
+#include "cc/debug_rect_history.h"
 
-#include "CCDamageTracker.h"
+#include "cc/damage_tracker.h"
 #include "cc/layer_impl.h"
 #include "cc/layer_tree_host.h"
 #include "cc/math_util.h"

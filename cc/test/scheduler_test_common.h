@@ -5,9 +5,9 @@
 #ifndef CCSchedulerTestCommon_h
 #define CCSchedulerTestCommon_h
 
-#include "CCDelayBasedTimeSource.h"
-#include "CCFrameRateController.h"
 #include "base/threading/platform_thread.h"
+#include "cc/delay_based_time_source.h"
+#include "cc/frame_rate_controller.h"
 #include "cc/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <wtf/OwnPtr.h>

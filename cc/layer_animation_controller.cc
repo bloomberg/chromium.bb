@@ -6,7 +6,7 @@
 
 #include "cc/layer_animation_controller.h"
 
-#include "CCActiveAnimation.h"
+#include "cc/active_animation.h"
 #include "cc/keyframed_animation_curve.h"
 #include <public/WebTransformationMatrix.h>
 

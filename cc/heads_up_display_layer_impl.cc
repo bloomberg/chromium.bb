@@ -6,10 +6,10 @@
 
 #include "cc/heads_up_display_layer_impl.h"
 
-#include "CCDebugRectHistory.h"
-#include "CCFontAtlas.h"
-#include "CCFrameRateCounter.h"
 #include "base/stringprintf.h"
+#include "cc/debug_rect_history.h"
+#include "cc/font_atlas.h"
+#include "cc/frame_rate_counter.h"
 #include "cc/layer_tree_host_impl.h"
 #include "cc/quad_sink.h"
 #include "cc/texture_draw_quad.h"

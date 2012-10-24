@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCFrameRateCounter.h"
+#include "cc/frame_rate_counter.h"
 
 #include <cmath>
 

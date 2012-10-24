@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "CCFontAtlas.h"
+#include "cc/font_atlas.h"
 
 #include <vector>
 

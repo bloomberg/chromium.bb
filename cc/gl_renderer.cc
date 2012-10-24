@@ -6,13 +6,13 @@
 
 #include "cc/gl_renderer.h"
 
-#include "CCDamageTracker.h"
 #include "FloatQuad.h"
 #include "NotImplemented.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "cc/damage_tracker.h"
 #include "cc/geometry_binding.h"
 #include "cc/layer_quad.h"
 #include "cc/math_util.h"

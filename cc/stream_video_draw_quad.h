@@ -5,8 +5,8 @@
 #ifndef CCStreamVideoDrawQuad_h
 #define CCStreamVideoDrawQuad_h
 
-#include "CCDrawQuad.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/draw_quad.h"
 #include <public/WebTransformationMatrix.h>
 
 namespace cc {
