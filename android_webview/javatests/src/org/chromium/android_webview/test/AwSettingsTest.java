@@ -8,6 +8,8 @@ import android.content.Context;
 import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.apache.http.Header;
+import org.apache.http.HttpRequest;
 import org.chromium.android_webview.AndroidProtocolHandler;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
@@ -1258,6 +1260,41 @@ public class AwSettingsTest extends AndroidWebViewTestBase {
         runPerViewSettingsTest(
             new AwSettingsUserAgentStringTestHelper(views.getContents0(), views.getClient0()),
             new AwSettingsUserAgentStringTestHelper(views.getContents1(), views.getClient1()));
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView", "Preferences"})
+    public void testUserAgentWithTestServer() throws Throwable {
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+                createAwTestContainerViewOnMainSync(contentClient);
+        AwContents awContents = testContainerView.getAwContents();
+        ContentSettings settings = getContentSettingsOnUiThread(awContents);
+        final String customUserAgentString =
+                "testUserAgentWithTestServerUserAgent";
+
+        TestWebServer webServer = null;
+        String fileName = null;
+        try {
+            webServer = new TestWebServer(false);
+            final String httpPath = "/testUserAgentWithTestServer.html";
+            final String url = webServer.setResponse(httpPath, "foo", null);
+
+            settings.setUserAgentString(customUserAgentString);
+            loadUrlSync(awContents,
+                        contentClient.getOnPageFinishedHelper(),
+                        url);
+
+            assertEquals(1, webServer.getRequestCount(httpPath));
+            HttpRequest request = webServer.getLastRequest(httpPath);
+            Header[] matchingHeaders = request.getHeaders("User-Agent");
+            assertEquals(1, matchingHeaders.length);
+
+            Header header = matchingHeaders[0];
+            assertEquals(customUserAgentString, header.getValue());
+        } finally {
+            if (webServer != null) webServer.shutdown();
+        }
     }
 
     @SmallTest
