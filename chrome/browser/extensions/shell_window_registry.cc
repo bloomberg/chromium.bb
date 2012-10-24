@@ -6,12 +6,44 @@
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
+namespace {
+
+// Create a key that identifies a ShellWindow in a RenderViewHost across App
+// reloads. Current format concatenates the extension ID (fixed length string)
+// a colon separator, and the ShellWindow's |id| (passed to create). If the
+// RenderViewHost is not for a ShellWindow, or if the window was not created
+// with an |id|, return an empty string.
+std::string GetWindowKeyForRenderViewHost(
+    const extensions::ShellWindowRegistry* registry,
+    content::RenderViewHost* render_view_host) {
+  ShellWindow* shell_window =
+      registry->GetShellWindowForRenderViewHost(render_view_host);
+  if (!shell_window)
+    return std::string(); // Not a ShellWindow.
+
+  if (shell_window->window_key().empty())
+    return std::string(); // Not created with an |id| in CreateParams.
+
+  std::string key = shell_window->extension()->id();
+  key += ':';
+  key += shell_window->window_key();
+  return key;
+}
+
+}
+
 namespace extensions {
 
-ShellWindowRegistry::ShellWindowRegistry() {}
+ShellWindowRegistry::ShellWindowRegistry(Profile* profile) {
+  registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_AGENT_ATTACHED,
+                 content::Source<content::BrowserContext>(profile));
+  registrar_.Add(this, content::NOTIFICATION_DEVTOOLS_AGENT_DETACHED,
+                 content::Source<content::BrowserContext>(profile));
+}
 
 ShellWindowRegistry::~ShellWindowRegistry() {}
 
@@ -85,6 +117,33 @@ ShellWindow* ShellWindowRegistry::GetCurrentShellWindowForApp(
   return result;
 }
 
+bool ShellWindowRegistry::HadDevToolsAttached(
+    content::RenderViewHost* render_view_host) const {
+  std::string key = GetWindowKeyForRenderViewHost(this, render_view_host);
+  return key.empty() ? false : inspected_windows_.count(key) != 0;
+}
+
+void ShellWindowRegistry::Observe(int type,
+                                  const content::NotificationSource& source,
+                                  const content::NotificationDetails& details) {
+  content::RenderViewHost* render_view_host =
+      content::Details<content::RenderViewHost>(details).ptr();
+  std::string key = GetWindowKeyForRenderViewHost(this, render_view_host);
+  if (key.empty())
+    return;
+
+  switch (type) {
+    case content::NOTIFICATION_DEVTOOLS_AGENT_ATTACHED:
+      inspected_windows_.insert(key);
+      break;
+    case content::NOTIFICATION_DEVTOOLS_AGENT_DETACHED:
+      inspected_windows_.erase(key);
+      break;
+    default:
+      NOTREACHED();
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Factory boilerplate
 
@@ -109,7 +168,7 @@ ShellWindowRegistry::Factory::~Factory() {
 
 ProfileKeyedService* ShellWindowRegistry::Factory::BuildServiceInstanceFor(
     Profile* profile) const {
-  return new ShellWindowRegistry();
+  return new ShellWindowRegistry(profile);
 }
 
 bool ShellWindowRegistry::Factory::ServiceHasOwnInstanceInIncognito() const {

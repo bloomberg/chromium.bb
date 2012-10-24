@@ -9,9 +9,11 @@
 
 namespace extensions {
 
-class AppWindowCreateFunction : public SyncExtensionFunction {
+class AppWindowCreateFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("app.window.create");
+
+  void SendDelayedResponse();
 
  protected:
   virtual ~AppWindowCreateFunction() {}

@@ -1,0 +1,9 @@
+{
+  "name": "Platform App Test: minimal platform app with window ID 'minimal_id'",
+  "version": "1",
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}

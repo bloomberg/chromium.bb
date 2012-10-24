@@ -12,6 +12,8 @@
 #include "base/observer_list.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Profile;
@@ -30,7 +32,8 @@ namespace extensions {
 // page, shell windows, tray view, panels etc.) and other app level behaviour
 // (e.g. notifications the app is interested in, lifetime of the background
 // page).
-class ShellWindowRegistry : public ProfileKeyedService {
+class ShellWindowRegistry : public ProfileKeyedService,
+                            public content::NotificationObserver {
  public:
   class Observer {
    public:
@@ -45,8 +48,9 @@ class ShellWindowRegistry : public ProfileKeyedService {
 
   typedef std::set<ShellWindow*> ShellWindowSet;
   typedef ShellWindowSet::const_iterator const_iterator;
+  typedef std::set<std::string> InspectedWindowSet;
 
-  ShellWindowRegistry();
+  explicit ShellWindowRegistry(Profile* profile);
   virtual ~ShellWindowRegistry();
 
   // Returns the instance for the given profile, or NULL if none. This is
@@ -72,6 +76,17 @@ class ShellWindowRegistry : public ProfileKeyedService {
   // be returned, otherwise an arbitrary window will be returned.
   ShellWindow* GetCurrentShellWindowForApp(const std::string& app_id) const;
 
+  // Returns whether a ShellWindow's ID was last known to have a DevToolsAgent
+  // attached to it, which should be restored during a reload of a corresponding
+  // newly created |render_view_host|.
+  bool HadDevToolsAttached(content::RenderViewHost* render_view_host) const;
+
+ protected:
+  // content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
  private:
   class Factory : public ProfileKeyedServiceFactory {
    public:
@@ -93,7 +108,9 @@ class ShellWindowRegistry : public ProfileKeyedService {
   };
 
   ShellWindowSet shell_windows_;
+  InspectedWindowSet inspected_windows_;
   ObserverList<Observer> observers_;
+  content::NotificationRegistrar registrar_;
 };
 
 }  // namespace extensions

@@ -8,7 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/automation/automation_util.h"
-#include "chrome/browser/tab_contents/render_view_context_menu.h"
+#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/app_restore_service_factory.h"
 #include "chrome/browser/extensions/app_restore_service.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -19,13 +19,16 @@
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
 #include "chrome/browser/extensions/platform_app_launcher.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
+#include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/test/test_utils.h"
@@ -701,6 +704,59 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, RunningAppsAreRecorded) {
   AppRestoreServiceFactory::GetForProfile(browser()->profile())->
       HandleStartup(true);
   restart_listener.WaitUntilSatisfied();
+}
+
+// Tests that relaunching an app with devtools open reopens devtools.
+#ifdef NDEBUG
+#define MAYBE_DevToolsOpenedWithReload DevToolsOpenedWithReload
+#else
+// This is currently expected to fail in debug builds due to a segfault in
+// WebKit triggered by a dereference between #ifndef NDEBUG guards see
+// http://crbug.com/157097 .
+#define MAYBE_DevToolsOpenedWithReload FAILS_DevToolsOpenedWithReload
+#endif
+
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_DevToolsOpenedWithReload) {
+  using content::DevToolsAgentHostRegistry;
+
+  ExtensionTestMessageListener launched_listener("Launched", false);
+  const Extension* extension = LoadAndLaunchPlatformApp("minimal_id");
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+  ShellWindow* window = GetFirstShellWindow();
+  ASSERT_TRUE(window);
+  content::RenderViewHost* rvh = window->web_contents()->GetRenderViewHost();
+  ASSERT_TRUE(rvh);
+
+  // Ensure no DevTools open for the ShellWindow, then open one.
+  ASSERT_FALSE(DevToolsAgentHostRegistry::HasDevToolsAgentHost(rvh));
+  DevToolsWindow* devtools_window = DevToolsWindow::OpenDevToolsWindow(rvh);
+  content::WindowedNotificationObserver loaded_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::Source<content::NavigationController>(
+          &devtools_window->tab_contents()->web_contents()->GetController()));
+  loaded_observer.Wait();
+  ASSERT_TRUE(DevToolsAgentHostRegistry::HasDevToolsAgentHost(rvh));
+
+  // Close the ShellWindow, and ensure it is gone.
+  CloseShellWindow(window);
+  ASSERT_FALSE(GetFirstShellWindow());
+
+  // Relaunch the app and get a new ShellWindow.
+  content::WindowedNotificationObserver app_loaded_observer(
+      content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+      content::NotificationService::AllSources());
+  application_launch::OpenApplication(application_launch::LaunchParams(
+      browser()->profile(), extension, extension_misc::LAUNCH_NONE,
+      NEW_WINDOW));
+  app_loaded_observer.Wait();
+  window = GetFirstShellWindow();
+  ASSERT_TRUE(window);
+
+  // DevTools should have reopened with the relaunch.
+  rvh = window->web_contents()->GetRenderViewHost();
+  ASSERT_TRUE(rvh);
+  ASSERT_TRUE(DevToolsAgentHostRegistry::HasDevToolsAgentHost(rvh));
 }
 
 }  // namespace extensions
