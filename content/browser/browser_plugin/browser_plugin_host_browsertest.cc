@@ -844,7 +844,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AcceptDragEvents) {
 // 5. The guest acks the 'stop' message with a 'stop_ack' message.
 // 6. The embedder changes its title to 'main guest' when it sees the 'stop_ack'
 // message.
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, PostMessage) {
+IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DISABLED_PostMessage) {
   const char* kTesting = "testing123";
   const char* kEmbedderURL = "files/browser_plugin_embedder.html";
   const char* kGuestURL = "files/browser_plugin_post_message_guest.html";
