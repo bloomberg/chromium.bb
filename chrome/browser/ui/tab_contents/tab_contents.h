@@ -26,7 +26,6 @@ class Profile;
 class TabContentsTestHarness;
 class TabStripModel;
 class TabStripModelContentsCreator;
-class WebDialogGtk;
 class WebDialogWindowControllerTabContentsCreator;
 
 namespace chromeos {
@@ -85,7 +84,6 @@ class TabContents : public content::WebContentsObserver {
     friend class TabContentsTestHarness;
     friend class TabStripModel;
     friend class TabStripModelContentsCreator;
-    friend class WebDialogGtk;
     friend class WebDialogWindowControllerTabContentsCreator;
     FRIEND_TEST_ALL_PREFIXES(SessionRestoreTest, SessionStorageAfterTabReplace);
 

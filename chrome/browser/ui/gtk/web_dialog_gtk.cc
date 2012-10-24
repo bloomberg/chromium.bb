@@ -9,11 +9,10 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
 using content::NativeWebKeyboardEvent;
@@ -206,15 +205,15 @@ void WebDialogGtk::HandleKeyboardEvent(content::WebContents* source,
 // WebDialogGtk:
 
 gfx::NativeWindow WebDialogGtk::InitDialog() {
-  tab_.reset(TabContents::Factory::CreateTabContents(WebContents::Create(
-      browser_context(), NULL, MSG_ROUTING_NONE, NULL)));
-  tab_->web_contents()->SetDelegate(this);
+  web_contents_.reset(WebContents::Create(
+      browser_context(), NULL, MSG_ROUTING_NONE, NULL));
+  web_contents_->SetDelegate(this);
 
   // This must be done before loading the page; see the comments in
   // WebDialogUI.
-  WebDialogUI::SetDelegate(tab_->web_contents(), this);
+  WebDialogUI::SetDelegate(web_contents_.get(), this);
 
-  tab_->web_contents()->GetController().LoadURL(
+  web_contents_->GetController().LoadURL(
       GetDialogContentURL(),
       content::Referrer(),
       content::PAGE_TRANSITION_AUTO_TOPLEVEL,
@@ -233,12 +232,10 @@ gfx::NativeWindow WebDialogGtk::InitDialog() {
   gtk_widget_set_name(dialog_, "chrome-html-dialog");
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
 
-  tab_contents_container_.reset(new TabContentsContainerGtk(NULL));
   GtkWidget* content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_));
-  gtk_box_pack_start(GTK_BOX(content_area),
-                     tab_contents_container_->widget(), TRUE, TRUE, 0);
-
-  tab_contents_container_->SetTab(tab_.get());
+  gfx::NativeView web_contents_widget =
+      web_contents_->GetView()->GetNativeView();
+  gtk_box_pack_start(GTK_BOX(content_area), web_contents_widget, TRUE, TRUE, 0);
 
   gfx::Size dialog_size;
   delegate_->GetDialogSize(&dialog_size);
@@ -250,12 +247,14 @@ gfx::NativeWindow WebDialogGtk::InitDialog() {
   gfx::Size minimum_dialog_size;
   delegate_->GetMinimumDialogSize(&minimum_dialog_size);
   if (!minimum_dialog_size.IsEmpty()) {
-    gtk_widget_set_size_request(GTK_WIDGET(tab_contents_container_->widget()),
+    gtk_widget_set_size_request(GTK_WIDGET(web_contents_widget),
                                 minimum_dialog_size.width(),
                                 minimum_dialog_size.height());
   }
 
   gtk_widget_show_all(dialog_);
+
+  web_contents_->GetView()->SetInitialFocus();
 
   return GTK_WINDOW(dialog_);
 }

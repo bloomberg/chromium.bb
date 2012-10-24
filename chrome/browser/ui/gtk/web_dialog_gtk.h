@@ -18,11 +18,9 @@
 
 typedef struct _GtkWidget GtkWidget;
 
-class TabContentsContainerGtk;
-class TabContents;
-
 namespace content {
 class BrowserContext;
+class WebContents;
 }
 
 class WebDialogGtk : public ui::WebDialogWebContentsDelegate,
@@ -79,8 +77,7 @@ class WebDialogGtk : public ui::WebDialogWebContentsDelegate,
 
   GtkWidget* dialog_;
 
-  scoped_ptr<TabContents> tab_;
-  scoped_ptr<TabContentsContainerGtk> tab_contents_container_;
+  scoped_ptr<content::WebContents> web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDialogGtk);
 };
