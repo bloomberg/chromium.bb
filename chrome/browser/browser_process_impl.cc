@@ -733,7 +733,8 @@ void BrowserProcessImpl::CreateLocalState() {
   plugin_finder_disabled_pref_.reset(new BooleanPrefMember);
   plugin_finder_disabled_pref_->Init(prefs::kDisablePluginFinder,
                                    local_state_.get(), NULL);
-  plugin_finder_disabled_pref_->MoveToThread(BrowserThread::IO);
+  plugin_finder_disabled_pref_->MoveToThread(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 
   // Another policy that needs to be defined before the net subsystem is
   // initialized is MaxConnectionsPerProxy so we do it here.

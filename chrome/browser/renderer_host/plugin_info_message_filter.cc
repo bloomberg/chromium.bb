@@ -34,10 +34,14 @@ PluginInfoMessageFilter::Context::Context(int render_process_id,
       host_content_settings_map_(profile->GetHostContentSettingsMap()) {
   allow_outdated_plugins_.Init(prefs::kPluginsAllowOutdated,
                                profile->GetPrefs(), NULL);
-  allow_outdated_plugins_.MoveToThread(content::BrowserThread::IO);
+  allow_outdated_plugins_.MoveToThread(
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::IO));
   always_authorize_plugins_.Init(prefs::kPluginsAlwaysAuthorize,
                                  profile->GetPrefs(), NULL);
-  always_authorize_plugins_.MoveToThread(content::BrowserThread::IO);
+  always_authorize_plugins_.MoveToThread(
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::IO));
 }
 
 PluginInfoMessageFilter::Context::Context()

@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/extensions/extension_install_dialog_controller.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"

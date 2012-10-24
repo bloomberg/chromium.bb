@@ -200,7 +200,8 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 
 #if defined(ENABLE_PRINTING)
   printing_enabled_.Init(prefs::kPrintingEnabled, pref_service, NULL);
-  printing_enabled_.MoveToThread(BrowserThread::IO);
+  printing_enabled_.MoveToThread(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 #endif
 
   // The URLBlacklistManager has to be created on the UI thread to register
@@ -433,7 +434,8 @@ void ProfileIOData::InitializeMetricsEnabledStateOnUIThread() {
   enable_metrics_.Init(prefs::kMetricsReportingEnabled,
                        g_browser_process->local_state(),
                        NULL);
-  enable_metrics_.MoveToThread(BrowserThread::IO);
+  enable_metrics_.MoveToThread(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
 #endif  // defined(OS_CHROMEOS)
 }
 

@@ -176,10 +176,12 @@ void ChromeNetworkDelegate::InitializePrefsOnUIThread(
     PrefService* pref_service) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   enable_referrers->Init(prefs::kEnableReferrers, pref_service, NULL);
-  enable_referrers->MoveToThread(BrowserThread::IO);
+  enable_referrers->MoveToThread(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
   if (enable_do_not_track) {
     enable_do_not_track->Init(prefs::kEnableDoNotTrack, pref_service, NULL);
-    enable_do_not_track->MoveToThread(BrowserThread::IO);
+    enable_do_not_track->MoveToThread(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
   }
 }
 

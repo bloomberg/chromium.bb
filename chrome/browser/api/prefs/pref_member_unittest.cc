@@ -43,7 +43,8 @@ class GetPrefValueCallback
 
   void Init(const char* pref_name, PrefService* prefs) {
     pref_.Init(pref_name, prefs, NULL);
-    pref_.MoveToThread(BrowserThread::IO);
+    pref_.MoveToThread(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
   }
 
   bool FetchValue() {

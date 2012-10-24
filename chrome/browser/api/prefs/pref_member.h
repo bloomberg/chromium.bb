@@ -31,8 +31,8 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop_proxy.h"
 #include "base/values.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 
 class PrefServiceBase;
@@ -52,7 +52,8 @@ class PrefMemberBase : public content::NotificationObserver {
                      bool is_managed,
                      bool is_user_modifiable) const;
 
-    void MoveToThread(content::BrowserThread::ID thread_id);
+    void MoveToThread(
+        const scoped_refptr<base::MessageLoopProxy>& message_loop);
 
     // See PrefMember<> for description.
     bool IsManaged() const {
@@ -78,7 +79,7 @@ class PrefMemberBase : public content::NotificationObserver {
 
     bool IsOnCorrectThread() const;
 
-    content::BrowserThread::ID thread_id_;
+    scoped_refptr<base::MessageLoopProxy> thread_loop_;
     mutable bool is_managed_;
     mutable bool is_user_modifiable_;
 
@@ -97,7 +98,7 @@ class PrefMemberBase : public content::NotificationObserver {
   // See PrefMember<> for description.
   void Destroy();
 
-  void MoveToThread(content::BrowserThread::ID thread_id);
+  void MoveToThread(const scoped_refptr<base::MessageLoopProxy>& message_loop);
 
   // content::NotificationObserver
   virtual void Observe(int type,
@@ -168,8 +169,8 @@ class PrefMember : public subtle::PrefMemberBase {
   // via PostTask.
   // This method should only be used from the thread the PrefMember is currently
   // on, which is the UI thread by default.
-  void MoveToThread(content::BrowserThread::ID thread_id) {
-    subtle::PrefMemberBase::MoveToThread(thread_id);
+  void MoveToThread(const scoped_refptr<base::MessageLoopProxy>& message_loop) {
+    subtle::PrefMemberBase::MoveToThread(message_loop);
   }
 
   // Check whether the pref is managed, i.e. controlled externally through
