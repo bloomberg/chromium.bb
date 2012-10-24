@@ -6091,3 +6091,9 @@
   ...
   fun:_ZN35WebAuthFlowTest_UIClosedByUser_Test8TestBodyEv
 }
+{
+  bug_157616
+  Memcheck:Uninitialized
+  ...
+  fun:_ZN7content63NavigationControllerTest_BackNavigationDoesNotClearFavicon_Test8TestBodyEv
+}
