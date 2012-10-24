@@ -11,7 +11,7 @@
 namespace content {
 
 MotionMessageFilter::MotionMessageFilter()
-    : MessageFilter(DeviceData::kTypeMotion) {
+    : DeviceOrientationMessageFilter(DeviceData::kTypeMotion) {
 }
 
 MotionMessageFilter::~MotionMessageFilter() {

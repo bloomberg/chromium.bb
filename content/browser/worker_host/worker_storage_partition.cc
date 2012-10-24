@@ -12,6 +12,8 @@
 #include "webkit/database/database_tracker.h"
 #include "webkit/fileapi/file_system_context.h"
 
+using content::ChromeAppCacheService;
+
 WorkerStoragePartition::WorkerStoragePartition(
     net::URLRequestContextGetter* url_request_context,
     net::URLRequestContextGetter* media_url_request_context,

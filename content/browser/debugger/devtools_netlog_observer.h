@@ -10,13 +10,12 @@
 #include "net/base/net_log.h"
 #include "webkit/glue/resource_loader_bridge.h"
 
-namespace content {
-struct ResourceResponse;
-}
-
 namespace net {
 class URLRequest;
 }  // namespace net
+
+namespace content {
+struct ResourceResponse;
 
 // DevToolsNetLogObserver watches the NetLog event stream and collects the
 // stuff that may be of interest to DevTools. Currently, this only includes
@@ -43,7 +42,7 @@ class DevToolsNetLogObserver : public net::NetLog::ThreadSafeObserver {
   // are active.
   static DevToolsNetLogObserver* GetInstance();
   static void PopulateResponseInfo(net::URLRequest*,
-                                   content::ResourceResponse*);
+                                   ResourceResponse*);
   static int GetAndResetEncodedDataLength(net::URLRequest* request);
 
  private:
@@ -65,5 +64,7 @@ class DevToolsNetLogObserver : public net::NetLog::ThreadSafeObserver {
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsNetLogObserver);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_DEBUGGER_DEVTOOLS_NETLOG_OBSERVER_H_

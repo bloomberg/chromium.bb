@@ -4,6 +4,8 @@
 
 #include "content/test/layout_browsertest.h"
 
+namespace content {
+
 class AppCacheLayoutTest : public InProcessBrowserLayoutTest {
  public:
   AppCacheLayoutTest() : InProcessBrowserLayoutTest(
@@ -95,3 +97,5 @@ IN_PROC_BROWSER_TEST_F(AppCacheLayoutTest, DISABLED_PHP) {
   for (size_t i = 0; i < arraysize(kPHPTests); ++i)
     RunHttpLayoutTest(kPHPTests[i]);
 }
+
+}  // namespace content

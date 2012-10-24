@@ -74,7 +74,7 @@ bool DevToolsAgentHostRegistry::IsDebuggerAttached(WebContents* web_contents) {
 
 RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(
     RenderViewHost* rvh)
-    : content::RenderViewHostObserver(rvh),
+    : RenderViewHostObserver(rvh),
       render_view_host_(rvh) {
   g_instances.Get()[rvh] = this;
 }
@@ -85,21 +85,21 @@ void RenderViewDevToolsAgentHost::SendMessageToAgent(IPC::Message* msg) {
 }
 
 void RenderViewDevToolsAgentHost::NotifyClientAttaching() {
-  content::NotificationService::current()->Notify(
-      content::NOTIFICATION_DEVTOOLS_AGENT_ATTACHED,
-      content::Source<content::BrowserContext>(
+  NotificationService::current()->Notify(
+      NOTIFICATION_DEVTOOLS_AGENT_ATTACHED,
+      Source<BrowserContext>(
           render_view_host_->GetSiteInstance()->GetProcess()->
               GetBrowserContext()),
-      content::Details<RenderViewHost>(render_view_host_));
+      Details<RenderViewHost>(render_view_host_));
 }
 
 void RenderViewDevToolsAgentHost::NotifyClientDetaching() {
-  content::NotificationService::current()->Notify(
-      content::NOTIFICATION_DEVTOOLS_AGENT_DETACHED,
-      content::Source<content::BrowserContext>(
+  NotificationService::current()->Notify(
+      NOTIFICATION_DEVTOOLS_AGENT_DETACHED,
+      Source<BrowserContext>(
           render_view_host_->GetSiteInstance()->GetProcess()->
               GetBrowserContext()),
-      content::Details<RenderViewHost>(render_view_host_));
+      Details<RenderViewHost>(render_view_host_));
 }
 
 int RenderViewDevToolsAgentHost::GetRenderProcessId() {
@@ -144,11 +144,11 @@ void RenderViewDevToolsAgentHost::OnDispatchOnInspectorFrontend(
 }
 
 void RenderViewDevToolsAgentHost::OnClearBrowserCache() {
-  content::GetContentClient()->browser()->ClearCache(render_view_host_);
+  GetContentClient()->browser()->ClearCache(render_view_host_);
 }
 
 void RenderViewDevToolsAgentHost::OnClearBrowserCookies() {
-  content::GetContentClient()->browser()->ClearCookies(render_view_host_);
+  GetContentClient()->browser()->ClearCookies(render_view_host_);
 }
 
 }  // namespace content

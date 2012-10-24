@@ -20,9 +20,9 @@
 
 #include <set>
 
-using content::BrowserThread;
-using content::BrowserThreadImpl;
+using appcache::AppCacheTestHelper;
 
+namespace content {
 namespace {
 const FilePath::CharType kTestingAppCacheDirname[] =
     FILE_PATH_LITERAL("Application Cache");
@@ -60,8 +60,6 @@ class MockURLRequestContextGetter : public net::URLRequestContextGetter {
 
 }  // namespace
 
-namespace appcache {
-
 class ChromeAppCacheServiceTest : public testing::Test {
  public:
   ChromeAppCacheServiceTest()
@@ -93,7 +91,7 @@ class ChromeAppCacheServiceTest : public testing::Test {
   BrowserThreadImpl file_user_blocking_thread_;
   BrowserThreadImpl cache_thread_;
   BrowserThreadImpl io_thread_;
-  content::TestBrowserContext browser_context_;
+  TestBrowserContext browser_context_;
 };
 
 scoped_refptr<ChromeAppCacheService>
@@ -222,4 +220,4 @@ TEST_F(ChromeAppCacheServiceTest, SaveSessionState) {
   message_loop_.RunAllPending();
 }
 
-}  // namespace appcache
+}  // namespace content

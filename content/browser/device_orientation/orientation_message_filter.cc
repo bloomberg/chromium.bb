@@ -11,7 +11,7 @@
 namespace content {
 
 OrientationMessageFilter::OrientationMessageFilter()
-    :  MessageFilter(DeviceData::kTypeOrientation) {
+    :  DeviceOrientationMessageFilter(DeviceData::kTypeOrientation) {
 }
 
 OrientationMessageFilter::~OrientationMessageFilter() {

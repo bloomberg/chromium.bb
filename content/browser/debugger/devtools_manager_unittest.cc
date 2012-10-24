@@ -17,14 +17,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
-using content::DevToolsAgentHost;
-using content::DevToolsAgentHostRegistry;
-using content::DevToolsClientHost;
-using content::DevToolsManager;
-using content::DevToolsManagerImpl;
-using content::RenderViewHostImplTestHarness;
-using content::WebContents;
 
+namespace content {
 namespace {
 
 class TestDevToolsClientHost : public DevToolsClientHost {
@@ -74,7 +68,7 @@ class TestDevToolsClientHost : public DevToolsClientHost {
 int TestDevToolsClientHost::close_counter = 0;
 
 
-class TestWebContentsDelegate : public content::WebContentsDelegate {
+class TestWebContentsDelegate : public WebContentsDelegate {
  public:
   TestWebContentsDelegate() : renderer_unresponsive_received_(false) {}
 
@@ -91,8 +85,7 @@ class TestWebContentsDelegate : public content::WebContentsDelegate {
   bool renderer_unresponsive_received_;
 };
 
-class DevToolsManagerTestBrowserClient
-    : public content::TestContentBrowserClient {
+class DevToolsManagerTestBrowserClient : public TestContentBrowserClient {
  public:
   DevToolsManagerTestBrowserClient() {
   }
@@ -116,8 +109,8 @@ class DevToolsManagerTest : public RenderViewHostImplTestHarness {
 
  protected:
   virtual void SetUp() OVERRIDE {
-    original_browser_client_ = content::GetContentClient()->browser();
-    content::GetContentClient()->set_browser_for_testing(&browser_client_);
+    original_browser_client_ = GetContentClient()->browser();
+    GetContentClient()->set_browser_for_testing(&browser_client_);
 
     RenderViewHostImplTestHarness::SetUp();
     TestDevToolsClientHost::ResetCounters();
@@ -125,12 +118,11 @@ class DevToolsManagerTest : public RenderViewHostImplTestHarness {
 
   virtual void TearDown() OVERRIDE {
     RenderViewHostImplTestHarness::TearDown();
-    content::GetContentClient()->set_browser_for_testing(
-        original_browser_client_);
+    GetContentClient()->set_browser_for_testing(original_browser_client_);
   }
 
  private:
-  content::ContentBrowserClient* original_browser_client_;
+  ContentBrowserClient* original_browser_client_;
   DevToolsManagerTestBrowserClient browser_client_;
 };
 
@@ -179,7 +171,7 @@ TEST_F(DevToolsManagerTest, ForwardMessageToClient) {
 }
 
 TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedContents) {
-  content::TestRenderViewHost* inspected_rvh = test_rvh();
+  TestRenderViewHost* inspected_rvh = test_rvh();
   inspected_rvh->set_render_view_created(true);
   EXPECT_FALSE(contents()->GetDelegate());
   TestWebContentsDelegate delegate;
@@ -217,8 +209,8 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
   // Navigate to URL.  First URL should use first RenderViewHost.
   const GURL url("http://www.google.com");
   controller().LoadURL(
-      url, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
-  contents()->TestDidNavigate(rvh(), 1, url, content::PAGE_TRANSITION_TYPED);
+      url, Referrer(), PAGE_TRANSITION_TYPED, std::string());
+  contents()->TestDidNavigate(rvh(), 1, url, PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(contents()->cross_navigation_pending());
 
   TestDevToolsClientHost client_host;
@@ -230,17 +222,19 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
   // Navigate to new site which should get a new RenderViewHost.
   const GURL url2("http://www.yahoo.com");
   controller().LoadURL(
-      url2, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
+      url2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(contents()->cross_navigation_pending());
   EXPECT_EQ(&client_host, devtools_manager->GetDevToolsClientHostFor(
       DevToolsAgentHostRegistry::GetDevToolsAgentHost(pending_rvh())));
 
   // Interrupt pending navigation and navigate back to the original site.
   controller().LoadURL(
-      url, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
-  contents()->TestDidNavigate(rvh(), 1, url, content::PAGE_TRANSITION_TYPED);
+      url, Referrer(), PAGE_TRANSITION_TYPED, std::string());
+  contents()->TestDidNavigate(rvh(), 1, url, PAGE_TRANSITION_TYPED);
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(&client_host, devtools_manager->GetDevToolsClientHostFor(
       DevToolsAgentHostRegistry::GetDevToolsAgentHost(rvh())));
   client_host.Close(DevToolsManager::GetInstance());
 }
+
+}  // namespace content

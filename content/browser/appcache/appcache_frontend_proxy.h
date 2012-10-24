@@ -11,6 +11,8 @@
 #include "ipc/ipc_sender.h"
 #include "webkit/appcache/appcache_interfaces.h"
 
+namespace content {
+
 // Sends appcache related messages to a child process.
 class AppCacheFrontendProxy : public appcache::AppCacheFrontend {
  public:
@@ -36,5 +38,7 @@ class AppCacheFrontendProxy : public appcache::AppCacheFrontend {
  private:
   IPC::Sender* sender_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_APPCACHE_APPCACHE_FRONTEND_PROXY_H_

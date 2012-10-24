@@ -20,7 +20,6 @@
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_sender.h"
 
-class ChromeAppCacheService;
 class IndexedDBContextImpl;
 
 namespace fileapi {

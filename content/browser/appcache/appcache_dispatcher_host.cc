@@ -10,8 +10,7 @@
 #include "content/common/appcache_messages.h"
 #include "content/public/browser/user_metrics.h"
 
-using content::BrowserMessageFilter;
-using content::UserMetricsAction;
+namespace content {
 
 AppCacheDispatcherHost::AppCacheDispatcherHost(
     ChromeAppCacheService* appcache_service,
@@ -65,7 +64,7 @@ bool AppCacheDispatcherHost::OnMessageReceived(const IPC::Message& message,
 AppCacheDispatcherHost::~AppCacheDispatcherHost() {}
 
 void AppCacheDispatcherHost::BadMessageReceived() {
-  content::RecordAction(UserMetricsAction("BadMessageTerminate_ACDH"));
+  RecordAction(UserMetricsAction("BadMessageTerminate_ACDH"));
   BrowserMessageFilter::BadMessageReceived();
 }
 
@@ -226,3 +225,5 @@ void AppCacheDispatcherHost::SwapCacheCallback(bool result, void* param) {
   AppCacheHostMsg_SwapCache::WriteReplyParams(reply_msg, result);
   Send(pending_reply_msg_.release());
 }
+
+}  // namespace content

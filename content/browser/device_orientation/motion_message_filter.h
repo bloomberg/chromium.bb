@@ -11,11 +11,11 @@
 
 namespace content {
 
-class MotionMessageFilter : public MessageFilter {
+class MotionMessageFilter : public DeviceOrientationMessageFilter {
  public:
   MotionMessageFilter();
 
-  // MessageFilter implementation.
+  // DeviceOrientationMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 

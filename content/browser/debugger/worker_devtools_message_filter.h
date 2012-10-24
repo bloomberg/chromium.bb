@@ -10,14 +10,14 @@
 
 namespace content {
 
-class WorkerDevToolsMessageFilter : public content::BrowserMessageFilter {
+class WorkerDevToolsMessageFilter : public BrowserMessageFilter {
  public:
   explicit WorkerDevToolsMessageFilter(int worker_process_host_id);
 
  private:
   virtual ~WorkerDevToolsMessageFilter();
 
-  // content::BrowserMessageFilter implementation.
+  // BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
   // Message handlers.

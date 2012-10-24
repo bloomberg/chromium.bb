@@ -6,6 +6,8 @@
 
 #include "content/common/appcache_messages.h"
 
+namespace content {
+
 AppCacheFrontendProxy::AppCacheFrontendProxy(IPC::Sender* sender)
     : sender_(sender) {
 }
@@ -50,3 +52,5 @@ void AppCacheFrontendProxy::OnContentBlocked(int host_id,
                                              const GURL& manifest_url) {
   sender_->Send(new AppCacheMsg_ContentBlocked(host_id, manifest_url));
 }
+
+}  // namespace content

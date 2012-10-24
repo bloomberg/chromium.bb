@@ -14,13 +14,14 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "webkit/appcache/appcache_backend_impl.h"
 
+namespace content {
 class ChromeAppCacheService;
 
 // Handles appcache related messages sent to the main browser process from
 // its child processes. There is a distinct host for each child process.
 // Messages are handled on the IO thread. The BrowserRenderProcessHost and
 // WorkerProcessHost create an instance and delegates calls to it.
-class AppCacheDispatcherHost : public content::BrowserMessageFilter {
+class AppCacheDispatcherHost : public BrowserMessageFilter {
  public:
   AppCacheDispatcherHost(ChromeAppCacheService* appcache_service,
                          int process_id);
@@ -33,7 +34,7 @@ class AppCacheDispatcherHost : public content::BrowserMessageFilter {
  protected:
   virtual ~AppCacheDispatcherHost();
 
-  // content::BrowserMessageFilter override.
+  // BrowserMessageFilter override.
   virtual void BadMessageReceived() OVERRIDE;
 
  private:
@@ -74,5 +75,7 @@ class AppCacheDispatcherHost : public content::BrowserMessageFilter {
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheDispatcherHost);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_APPCACHE_APPCACHE_DISPATCHER_HOST_H_

@@ -15,10 +15,10 @@ namespace net {
 class URLRequestContext;
 }  // namespace net
 
-class ChromeAppCacheService;
 class ChromeBlobStorageContext;
 
 namespace content {
+class ChromeAppCacheService;
 class ResourceContext;
 
 // This class filters out incoming IPC messages for network requests and

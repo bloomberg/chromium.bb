@@ -18,8 +18,7 @@
 #include "net/url_request/url_request_netlog_params.h"
 #include "webkit/glue/resource_loader_bridge.h"
 
-using content::BrowserThread;
-
+namespace content {
 const size_t kMaxNumEntries = 1000;
 
 DevToolsNetLogObserver* DevToolsNetLogObserver::instance_ = NULL;
@@ -264,7 +263,7 @@ void DevToolsNetLogObserver::OnAddSocketEntry(
 
 void DevToolsNetLogObserver::Attach() {
   DCHECK(!instance_);
-  net::NetLog* net_log = content::GetContentClient()->browser()->GetNetLog();
+  net::NetLog* net_log = GetContentClient()->browser()->GetNetLog();
   if (net_log) {
     instance_ = new DevToolsNetLogObserver();
     net_log->AddThreadSafeObserver(instance_, net::NetLog::LOG_ALL_BUT_BYTES);
@@ -292,7 +291,7 @@ DevToolsNetLogObserver* DevToolsNetLogObserver::GetInstance() {
 // static
 void DevToolsNetLogObserver::PopulateResponseInfo(
     net::URLRequest* request,
-    content::ResourceResponse* response) {
+    ResourceResponse* response) {
   if (!(request->load_flags() & net::LOAD_REPORT_RAW_HEADERS))
     return;
 
@@ -326,3 +325,5 @@ int DevToolsNetLogObserver::GetAndResetEncodedDataLength(
   it->second = 0;
   return encoded_data_length;
 }
+
+}  // namespace content

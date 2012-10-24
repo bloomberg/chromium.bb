@@ -21,8 +21,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDevToolsAgent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
-using content::BrowserThread;
-
 namespace content {
 
 // Called on the UI thread.
@@ -471,4 +469,4 @@ void WorkerDevToolsManager::SendResumeToWorker(const WorkerId& id) {
     process->Send(new DevToolsAgentMsg_ResumeWorkerContext(id.second));
 }
 
-}  // namespace
+}  // namespace content
