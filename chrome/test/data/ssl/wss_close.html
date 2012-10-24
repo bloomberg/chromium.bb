@@ -5,9 +5,12 @@
 <script type="text/javascript">
 
 var href = window.location.href;
+var hostBegin = href.indexOf('/') + 2;
+var hostEnd = href.lastIndexOf(':');
+var host = href.slice(hostBegin, hostEnd);
 var queryBegin = href.lastIndexOf('?') + 1;
 var port = href.slice(queryBegin);
-var url = 'wss://localhost:' + port;
+var url = 'wss://' + host + ':' + port;
 
 // Do connection test.
 var ws = new WebSocket(url);
