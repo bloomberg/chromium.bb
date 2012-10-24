@@ -446,11 +446,10 @@ void DriveSyncClient::OnConnectionTypeChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Resume the sync loop if the network is back online. Note that we don't
-  // need to check the type of the network as it will be checked in
-  // ShouldStopSyncLoop() as soon as the loop is resumed.
-  if (!net::NetworkChangeNotifier::IsOffline())
-    StartSyncLoop();
+  // Resume the sync loop if the network is changed. Note that we don't need to
+  // check the type of the network as it will be checked in ShouldStopSyncLoop()
+  // as soon as the loop is resumed.
+  StartSyncLoop();
 }
 
 }  // namespace drive

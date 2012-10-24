@@ -18,6 +18,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
+#include "chrome/browser/chromeos/drive/drive_sync_client_observer.h"
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
 #include "chrome/browser/chromeos/drive/mock_drive_file_system.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -61,6 +62,30 @@ class MockNetworkChangeNotifier : public net::NetworkChangeNotifier {
                      net::NetworkChangeNotifier::ConnectionType());
 };
 
+class TestObserver : public DriveSyncClientObserver {
+ public:
+  // Type for recording sync client observer notifications.
+  enum State {
+    UNINITIALIZED,
+    STARTED,
+    STOPPED,
+    IDLE,
+  };
+
+  TestObserver() : state_(UNINITIALIZED) {}
+
+  // DriveSyncClientObserver overrides.
+  virtual void OnSyncTaskStarted() { state_ = STARTED; }
+  virtual void OnSyncClientStopped() { state_ = STOPPED; }
+  virtual void OnSyncClientIdle() { state_ = IDLE; }
+
+  // Returns the last notified state.
+  State state() const { return state_; }
+
+ private:
+  State state_;
+};
+
 }  // namespace
 
 class DriveSyncClientTest : public testing::Test {
@@ -95,11 +120,13 @@ class DriveSyncClientTest : public testing::Test {
     // Disable delaying so that DoSyncLoop() starts immediately.
     sync_client_->set_delay_for_testing(base::TimeDelta::FromSeconds(0));
     sync_client_->Initialize();
+    sync_client_->AddObserver(&observer_);
   }
 
   virtual void TearDown() OVERRIDE {
     // The sync client should be deleted before NetworkLibrary, as the sync
     // client registers itself as observer of NetworkLibrary.
+    sync_client_->RemoveObserver(&observer_);
     sync_client_.reset();
     cache_->DestroyOnUIThread();
     google_apis::test_util::RunBlockingPoolTask();
@@ -204,11 +231,28 @@ class DriveSyncClientTest : public testing::Test {
   void SetExpectationForGetFileByResourceId(const std::string& resource_id) {
     EXPECT_CALL(*mock_file_system_,
                 GetFileByResourceId(resource_id, _, _))
-        .WillOnce(MockGetFileByResourceId(
-            DRIVE_FILE_OK,
-            FilePath::FromUTF8Unsafe("local_path_does_not_matter"),
-            std::string("mime_type_does_not_matter"),
-            REGULAR_FILE));
+        .WillOnce(DoAll(
+            InvokeWithoutArgs(this,
+                              &DriveSyncClientTest::VerifyStartNotified),
+            MockGetFileByResourceId(
+                DRIVE_FILE_OK,
+                FilePath::FromUTF8Unsafe("local_path_does_not_matter"),
+                std::string("mime_type_does_not_matter"),
+                REGULAR_FILE)));
+  }
+
+  // Sets the expectation for MockDriveFileSystem::GetFileByResourceId(),
+  // during which it disconnects from network.
+  void SetDisconnectingExpectationForGetFileByResourceId(
+      const std::string& resource_id) {
+    EXPECT_CALL(*mock_file_system_, GetFileByResourceId(resource_id, _, _))
+        .WillOnce(DoAll(
+            InvokeWithoutArgs(this, &DriveSyncClientTest::ConnectToNone),
+            MockGetFileByResourceId(
+                DRIVE_FILE_ERROR_NO_CONNECTION,
+                FilePath::FromUTF8Unsafe("local_path_does_not_matter"),
+                std::string("mime_type_does_not_matter"),
+                REGULAR_FILE)));
   }
 
   // Sets the expectation for MockDriveFileSystem::UpdateFileByResourceId(),
@@ -259,6 +303,12 @@ class DriveSyncClientTest : public testing::Test {
                                           resource_id);
   }
 
+  // Helper function for verifying that observer is correctly notified the
+  // start of sync client in SetExpectationForGetFileByResourceId.
+  void VerifyStartNotified() {
+    EXPECT_EQ(TestObserver::STARTED, observer_.state());
+  }
+
  protected:
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
@@ -269,6 +319,7 @@ class DriveSyncClientTest : public testing::Test {
   DriveCache* cache_;
   scoped_ptr<DriveSyncClient> sync_client_;
   scoped_ptr<MockNetworkChangeNotifier> mock_network_change_notifier_;
+  TestObserver observer_;
 };
 
 TEST_F(DriveSyncClientTest, StartInitialScan) {
@@ -350,13 +401,7 @@ TEST_F(DriveSyncClientTest, StartSyncLoop_ResumedConnection) {
   AddResourceIdToFetch(resource_id);
 
   // Disconnect from network on fetch try.
-  EXPECT_CALL(*mock_file_system_, GetFileByResourceId(resource_id, _, _))
-      .WillOnce(DoAll(
-          InvokeWithoutArgs(this, &DriveSyncClientTest::ConnectToNone),
-          MockGetFileByResourceId(DRIVE_FILE_ERROR_NO_CONNECTION,
-                                  file_path,
-                                  mime_type,
-                                  REGULAR_FILE)));
+  SetDisconnectingExpectationForGetFileByResourceId(resource_id);
 
   sync_client_->StartSyncLoop();
 
@@ -558,6 +603,108 @@ TEST_F(DriveSyncClientTest, ExistingPinnedFiles) {
   // Check the contents of the queue for uploading.
   resource_ids = GetResourceIdsToBeUploaded();
   ASSERT_TRUE(resource_ids.empty());
+}
+
+TEST_F(DriveSyncClientTest, ObserveEmptyQueue) {
+  SetUpTestFiles();
+
+  ConnectToCellular();
+  EXPECT_EQ(TestObserver::STOPPED, observer_.state());
+
+  // Try all possible transitions over {None, Cellular, Wifi}, and check that
+  // the state change is notified to the observer at every step.
+  ConnectToNone();
+  EXPECT_EQ(TestObserver::STOPPED, observer_.state());
+  ConnectToWifi();
+  EXPECT_EQ(TestObserver::IDLE, observer_.state());
+  ConnectToCellular();
+  EXPECT_EQ(TestObserver::STOPPED, observer_.state());
+  ConnectToWifi();
+  EXPECT_EQ(TestObserver::IDLE, observer_.state());
+  ConnectToNone();
+  EXPECT_EQ(TestObserver::STOPPED, observer_.state());
+  ConnectToCellular();
+  EXPECT_EQ(TestObserver::STOPPED, observer_.state());
+
+  // Enable fetching over cellular network.
+  profile_->GetPrefs()->SetBoolean(prefs::kDisableDriveOverCellular, false);
+  EXPECT_EQ(TestObserver::IDLE, observer_.state());
+
+  // Try all possible transitions again.
+  ConnectToNone();
+  EXPECT_EQ(TestObserver::STOPPED, observer_.state());
+  ConnectToWifi();
+  EXPECT_EQ(TestObserver::IDLE, observer_.state());
+  ConnectToCellular();
+  EXPECT_EQ(TestObserver::IDLE, observer_.state());
+  ConnectToWifi();
+  EXPECT_EQ(TestObserver::IDLE, observer_.state());
+  ConnectToNone();
+  EXPECT_EQ(TestObserver::STOPPED, observer_.state());
+  ConnectToCellular();
+  EXPECT_EQ(TestObserver::IDLE, observer_.state());
+
+  // Disable fetching over cellular network.
+  profile_->GetPrefs()->SetBoolean(prefs::kDisableDriveOverCellular, true);
+  EXPECT_EQ(TestObserver::STOPPED, observer_.state());
+
+  ConnectToWifi();
+  EXPECT_EQ(TestObserver::IDLE, observer_.state());
+
+  // Disable Drive feature.
+  profile_->GetPrefs()->SetBoolean(prefs::kDisableDrive, true);
+  EXPECT_EQ(TestObserver::STOPPED, observer_.state());
+}
+
+TEST_F(DriveSyncClientTest, ObserveRunAllTaskQueue) {
+  SetUpTestFiles();
+
+  AddResourceIdToFetch("resource_id_foo");
+  AddResourceIdToFetch("resource_id_bar");
+
+  // Starts the sync queue, and eventually notifies the idle state.
+  SetExpectationForGetFileByResourceId("resource_id_foo");
+  SetExpectationForGetFileByResourceId("resource_id_bar");
+  ConnectToWifi();
+  EXPECT_EQ(TestObserver::IDLE, observer_.state());
+
+  AddResourceIdToFetch("resource_id_foo");
+  AddResourceIdToFetch("resource_id_bar");
+
+  // Sync queue should stop on cellular network.
+  ConnectToCellular();
+  EXPECT_EQ(TestObserver::STOPPED, observer_.state());
+
+  // Change of the preference should be notified to the observer.
+  SetExpectationForGetFileByResourceId("resource_id_foo");
+  SetExpectationForGetFileByResourceId("resource_id_bar");
+  profile_->GetPrefs()->SetBoolean(prefs::kDisableDriveOverCellular, false);
+  EXPECT_EQ(TestObserver::IDLE, observer_.state());
+}
+
+TEST_F(DriveSyncClientTest, ObserveDisconnection) {
+  SetUpTestFiles();
+
+  // Start sync loop.
+  AddResourceIdToFetch("resource_id_foo");
+  SetExpectationForGetFileByResourceId("resource_id_foo");
+
+  ConnectToWifi();
+  EXPECT_EQ(TestObserver::IDLE, observer_.state());
+
+  // Disconnection during the sync loop should be notified.
+  AddResourceIdToFetch("resource_id_bar");
+  AddResourceIdToFetch("resource_id_buz");
+  SetDisconnectingExpectationForGetFileByResourceId("resource_id_bar");
+
+  sync_client_->StartSyncLoop();
+  EXPECT_EQ(TestObserver::STOPPED, observer_.state());
+
+  // So as the resume from the disconnection.
+  SetExpectationForGetFileByResourceId("resource_id_bar");
+  SetExpectationForGetFileByResourceId("resource_id_buz");
+  ConnectToWifi();
+  EXPECT_EQ(TestObserver::IDLE, observer_.state());
 }
 
 }  // namespace drive
