@@ -82,3 +82,6 @@ TabAndroid::TabAndroid() : tab_id_(-1) {
 
 TabAndroid::~TabAndroid() {
 }
+
+void TabAndroid::RunExternalProtocolDialog(const GURL& url) {
+}

@@ -45,6 +45,10 @@
 #include "net/url_request/url_request.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/component/navigation_interception/intercept_navigation_delegate.h"
+#endif
+
 // TODO(oshima): Enable this for other platforms.
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/renderer_host/offline_resource_throttle.h"
@@ -130,11 +134,20 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
 
   ChromeURLRequestUserData* user_data =
       ChromeURLRequestUserData::Create(request);
-  if (prerender_tracker_->IsPrerenderingOnIOThread(child_id, route_id)) {
+  bool is_prerendering = prerender_tracker_->IsPrerenderingOnIOThread(
+      child_id, route_id);
+  if (is_prerendering) {
     user_data->set_is_prerender(true);
     request->set_priority(net::IDLE);
   }
 
+#if defined(OS_ANDROID)
+  if (!is_prerendering && resource_type == ResourceType::MAIN_FRAME) {
+    throttles->push_back(
+        navigation_interception::InterceptNavigationDelegate::CreateThrottleFor(
+            request));
+  }
+#endif
 #if defined(OS_CHROMEOS)
   if (resource_type == ResourceType::MAIN_FRAME) {
     // We check offline first, then check safe browsing so that we still can

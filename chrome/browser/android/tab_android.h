@@ -68,7 +68,9 @@ class TabAndroid {
 
   // Called when the common ExternalProtocolHandler wants to
   // run the external protocol dialog.
-  virtual void RunExternalProtocolDialog(const GURL& url) = 0;
+  // TODO(jknotten): Remove this method. Making it non-abstract, so that
+  // derived classes may remove their implementation first.
+  virtual void RunExternalProtocolDialog(const GURL& url);
 
  protected:
   virtual ~TabAndroid();
