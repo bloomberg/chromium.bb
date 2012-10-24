@@ -710,7 +710,7 @@ class InBitSet(InSet):
     self.neutral_repr()
 
   def _simplify_test(self, arg):
-    return BitPattern.parse(repr(arg), self._value)
+    return BitPattern.parse(arg, self._value)
 
   def __repr__(self):
     return "%s in bitset %s" % (repr(self._value), repr(self._bitset))

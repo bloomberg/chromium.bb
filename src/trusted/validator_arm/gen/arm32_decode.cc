@@ -109,6 +109,14 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , VectorBinary3RegisterSameLengthDQI16_32_instance_()
   , VectorBinary3RegisterSameLengthDQI8P_instance_()
   , VectorBinary3RegisterSameLengthDQI8_16_32_instance_()
+  , VectorStoreMultiple1_instance_()
+  , VectorStoreMultiple2_instance_()
+  , VectorStoreMultiple3_instance_()
+  , VectorStoreMultiple4_instance_()
+  , VectorStoreSingle1_instance_()
+  , VectorStoreSingle2_instance_()
+  , VectorStoreSingle3_instance_()
+  , VectorStoreSingle4_instance_()
   , VectorUnary2RegisterDup_instance_()
   , VfpMrsOp_instance_()
   , VfpOp_instance_()
@@ -254,8 +262,11 @@ const ClassDecoder& Arm32DecoderState::decode_advanced_simd_data_processing_inst
 const ClassDecoder& Arm32DecoderState::decode_advanced_simd_element_or_structure_load_store_instructions(
      const Instruction inst) const
 {
-  UNREFERENCED_PARAMETER(inst);
-  if (true) {
+  if ((inst.Bits() & 0x00200000) == 0x00000000 /* L(21)=0 */) {
+    return decode_simd_load_store_l0(inst);
+  }
+
+  if ((inst.Bits() & 0x00200000) == 0x00200000 /* L(21)=1 */) {
     return NotImplemented_instance_;
   }
 
@@ -2029,6 +2040,90 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_3same(
   if ((inst.Bits() & 0x00000C00) == 0x00000000 /* A(11:8)=00xx */ &&
       (inst.Bits() & 0x00000010) == 0x00000000 /* B(4)=0 */) {
     return VectorBinary3RegisterSameLengthDQI8_16_32_instance_;
+  }
+
+  if (true) {
+    return Undefined_instance_;
+  }
+
+  // Catch any attempt to fall though ...
+  return not_implemented_;
+}
+
+// Implementation of table: simd_load_store_l0.
+// Specified by: See Section A7.7 , Table A7 - 20
+const ClassDecoder& Arm32DecoderState::decode_simd_load_store_l0(
+     const Instruction inst) const
+{
+  UNREFERENCED_PARAMETER(inst);
+  if ((inst.Bits() & 0x00800000) == 0x00000000 /* A(23)=0 */ &&
+      (inst.Bits() & 0x00000F00) == 0x00000300 /* B(11:8)=0011 */) {
+    return VectorStoreMultiple2_instance_;
+  }
+
+  if ((inst.Bits() & 0x00800000) == 0x00000000 /* A(23)=0 */ &&
+      (inst.Bits() & 0x00000700) == 0x00000200 /* B(11:8)=x010 */) {
+    return VectorStoreMultiple1_instance_;
+  }
+
+  if ((inst.Bits() & 0x00800000) == 0x00000000 /* A(23)=0 */ &&
+      (inst.Bits() & 0x00000E00) == 0x00000000 /* B(11:8)=000x */) {
+    return VectorStoreMultiple4_instance_;
+  }
+
+  if ((inst.Bits() & 0x00800000) == 0x00000000 /* A(23)=0 */ &&
+      (inst.Bits() & 0x00000E00) == 0x00000400 /* B(11:8)=010x */) {
+    return VectorStoreMultiple3_instance_;
+  }
+
+  if ((inst.Bits() & 0x00800000) == 0x00000000 /* A(23)=0 */ &&
+      (inst.Bits() & 0x00000E00) == 0x00000600 /* B(11:8)=011x */) {
+    return VectorStoreMultiple1_instance_;
+  }
+
+  if ((inst.Bits() & 0x00800000) == 0x00000000 /* A(23)=0 */ &&
+      (inst.Bits() & 0x00000E00) == 0x00000800 /* B(11:8)=100x */) {
+    return VectorStoreMultiple2_instance_;
+  }
+
+  if ((inst.Bits() & 0x00800000) == 0x00800000 /* A(23)=1 */ &&
+      (inst.Bits() & 0x00000F00) == 0x00000800 /* B(11:8)=1000 */) {
+    return VectorStoreSingle1_instance_;
+  }
+
+  if ((inst.Bits() & 0x00800000) == 0x00800000 /* A(23)=1 */ &&
+      (inst.Bits() & 0x00000F00) == 0x00000900 /* B(11:8)=1001 */) {
+    return VectorStoreSingle2_instance_;
+  }
+
+  if ((inst.Bits() & 0x00800000) == 0x00800000 /* A(23)=1 */ &&
+      (inst.Bits() & 0x00000F00) == 0x00000A00 /* B(11:8)=1010 */) {
+    return VectorStoreSingle3_instance_;
+  }
+
+  if ((inst.Bits() & 0x00800000) == 0x00800000 /* A(23)=1 */ &&
+      (inst.Bits() & 0x00000F00) == 0x00000B00 /* B(11:8)=1011 */) {
+    return VectorStoreSingle4_instance_;
+  }
+
+  if ((inst.Bits() & 0x00800000) == 0x00800000 /* A(23)=1 */ &&
+      (inst.Bits() & 0x00000B00) == 0x00000000 /* B(11:8)=0x00 */) {
+    return VectorStoreSingle1_instance_;
+  }
+
+  if ((inst.Bits() & 0x00800000) == 0x00800000 /* A(23)=1 */ &&
+      (inst.Bits() & 0x00000B00) == 0x00000100 /* B(11:8)=0x01 */) {
+    return VectorStoreSingle2_instance_;
+  }
+
+  if ((inst.Bits() & 0x00800000) == 0x00800000 /* A(23)=1 */ &&
+      (inst.Bits() & 0x00000B00) == 0x00000200 /* B(11:8)=0x10 */) {
+    return VectorStoreSingle3_instance_;
+  }
+
+  if ((inst.Bits() & 0x00800000) == 0x00800000 /* A(23)=1 */ &&
+      (inst.Bits() & 0x00000B00) == 0x00000300 /* B(11:8)=0x11 */) {
+    return VectorStoreSingle4_instance_;
   }
 
   if (true) {

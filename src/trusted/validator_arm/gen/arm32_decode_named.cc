@@ -167,8 +167,12 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_data_proce
  */
 const NamedClassDecoder& NamedArm32DecoderState::decode_advanced_simd_element_or_structure_load_store_instructions(
      const nacl_arm_dec::Instruction inst) const {
-  UNREFERENCED_PARAMETER(inst);
-  if (true) {
+
+  if ((inst.Bits() & 0x00200000) == 0x00000000 /* L(21)=0 */) {
+    return decode_simd_load_store_l0(inst);
+  }
+
+  if ((inst.Bits() & 0x00200000) == 0x00200000 /* L(21)=1 */) {
     return NotImplemented_None_instance_;
   }
 
@@ -3132,6 +3136,93 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_3same(
       (inst.Bits() & 0x01000000) == 0x00000000 /* U(24)=0 */ &&
       (inst.Bits() & 0x00200000) == 0x00200000 /* C(21:20)=1x */) {
     return VectorBinary3RegisterSameLength32_DQ_VRSQRTS_instance_;
+  }
+
+  if (true &&
+      true /* $pattern(31:0)=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx */) {
+    return Undefined_None_instance_;
+  }
+
+  // Catch any attempt to fall through...
+  return not_implemented_;
+}
+
+
+/*
+ * Implementation of table simd_load_store_l0.
+ * Specified by: ('See Section A7.7 , Table A7 - 20',)
+ */
+const NamedClassDecoder& NamedArm32DecoderState::decode_simd_load_store_l0(
+     const nacl_arm_dec::Instruction inst) const {
+  UNREFERENCED_PARAMETER(inst);
+  if ((inst.Bits() & 0x00800000) == 0x00000000 /* A(23)=0 */ &&
+      (inst.Bits() & 0x00000F00) == 0x00000300 /* B(11:8)=0011 */) {
+    return VectorStoreMultiple2_VST2_multiple_2_element_structures_instance_;
+  }
+
+  if ((inst.Bits() & 0x00800000) == 0x00000000 /* A(23)=0 */ &&
+      (inst.Bits() & 0x00000700) == 0x00000200 /* B(11:8)=x010 */) {
+    return VectorStoreMultiple1_VST1_multiple_single_elements_instance_;
+  }
+
+  if ((inst.Bits() & 0x00800000) == 0x00000000 /* A(23)=0 */ &&
+      (inst.Bits() & 0x00000E00) == 0x00000000 /* B(11:8)=000x */) {
+    return VectorStoreMultiple4_VST4_multiple_4_element_structures_instance_;
+  }
+
+  if ((inst.Bits() & 0x00800000) == 0x00000000 /* A(23)=0 */ &&
+      (inst.Bits() & 0x00000E00) == 0x00000400 /* B(11:8)=010x */) {
+    return VectorStoreMultiple3_VST3_multiple_3_element_structures_instance_;
+  }
+
+  if ((inst.Bits() & 0x00800000) == 0x00000000 /* A(23)=0 */ &&
+      (inst.Bits() & 0x00000E00) == 0x00000600 /* B(11:8)=011x */) {
+    return VectorStoreMultiple1_VST1_multiple_single_elements_instance_;
+  }
+
+  if ((inst.Bits() & 0x00800000) == 0x00000000 /* A(23)=0 */ &&
+      (inst.Bits() & 0x00000E00) == 0x00000800 /* B(11:8)=100x */) {
+    return VectorStoreMultiple2_VST2_multiple_2_element_structures_instance_;
+  }
+
+  if ((inst.Bits() & 0x00800000) == 0x00800000 /* A(23)=1 */ &&
+      (inst.Bits() & 0x00000F00) == 0x00000800 /* B(11:8)=1000 */) {
+    return VectorStoreSingle1_VST1_single_element_from_one_lane_instance_;
+  }
+
+  if ((inst.Bits() & 0x00800000) == 0x00800000 /* A(23)=1 */ &&
+      (inst.Bits() & 0x00000F00) == 0x00000900 /* B(11:8)=1001 */) {
+    return VectorStoreSingle2_VST2_single_2_element_structure_from_one_lane_instance_;
+  }
+
+  if ((inst.Bits() & 0x00800000) == 0x00800000 /* A(23)=1 */ &&
+      (inst.Bits() & 0x00000F00) == 0x00000A00 /* B(11:8)=1010 */) {
+    return VectorStoreSingle3_VST3_single_3_element_structure_from_one_lane_instance_;
+  }
+
+  if ((inst.Bits() & 0x00800000) == 0x00800000 /* A(23)=1 */ &&
+      (inst.Bits() & 0x00000F00) == 0x00000B00 /* B(11:8)=1011 */) {
+    return VectorStoreSingle4_VST4_single_4_element_structure_form_one_lane_instance_;
+  }
+
+  if ((inst.Bits() & 0x00800000) == 0x00800000 /* A(23)=1 */ &&
+      (inst.Bits() & 0x00000B00) == 0x00000000 /* B(11:8)=0x00 */) {
+    return VectorStoreSingle1_VST1_single_element_from_one_lane_instance_;
+  }
+
+  if ((inst.Bits() & 0x00800000) == 0x00800000 /* A(23)=1 */ &&
+      (inst.Bits() & 0x00000B00) == 0x00000100 /* B(11:8)=0x01 */) {
+    return VectorStoreSingle2_VST2_single_2_element_structure_from_one_lane_instance_;
+  }
+
+  if ((inst.Bits() & 0x00800000) == 0x00800000 /* A(23)=1 */ &&
+      (inst.Bits() & 0x00000B00) == 0x00000200 /* B(11:8)=0x10 */) {
+    return VectorStoreSingle3_VST3_single_3_element_structure_from_one_lane_instance_;
+  }
+
+  if ((inst.Bits() & 0x00800000) == 0x00800000 /* A(23)=1 */ &&
+      (inst.Bits() & 0x00000B00) == 0x00000300 /* B(11:8)=0x11 */) {
+    return VectorStoreSingle4_VST4_single_4_element_structure_form_one_lane_instance_;
   }
 
   if (true &&

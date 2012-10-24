@@ -2374,6 +2374,82 @@ class DuplicateToAdvSIMDRegistersTester : public CondAdvSIMDOpTester {
   NACL_DISALLOW_COPY_AND_ASSIGN(DuplicateToAdvSIMDRegistersTester);
 };
 
+// Implements a decoder tester for VectorStoreMultiple.
+// Models an advanced SIMD vector store multiple elements.
+// +------------------+--+----+--------+--------+--------+----+----+--------+
+// |313029282726252423|22|2120|19181716|15141312|1110 9 8| 7 6| 5 4| 3 2 1 0|
+// +------------------+--+----+--------+--------+--------+----+----+--------+
+// |                  | D|    |   Rn   |   Vd   |  type  |size|align|  Rm   |
+// +------------------+--+----+--------+--------+--------+----+----+--------+
+// alignment := 1 if align=00 else 4 << align;
+// ebytes := 1 << size; esize := 8 * ebytes; elements := 8 / ebytes;
+// d := D:Vd; n := Rn; m := Rm;
+// wback := (m != Pc); register_index := (m != Pc & m != Sp);
+// base := n;
+// # defs ignores FPRs. It only models GPRs and conditions.
+// defs := { base } if wback else {};
+// # Note: register_index defines if Rm is used (rather than a small constant).
+// imm_defs := { base } if not register_index else {};
+// # uses ignores FPRs. It only models GPRs.
+// uses := { m if wback else None , n };
+// arch := ASIMD;
+class VectorStoreMultipleTester : public UncondDecoderTester {
+ public:
+  explicit VectorStoreMultipleTester(const NamedClassDecoder& decoder)
+      : UncondDecoderTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::VectorStoreMultiple expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorStoreMultipleTester);
+};
+
+// Implements a decoder tester for VectorStoreSingle.
+// Models an advanced SIMD vector store single elements.
+// +------------------+--+----+--------+--------+----+----+-----------+--------+
+// |313029282726252423|22|2120|19181716|15141312|1110| 9 8| 7 6 5 4   | 3 2 1 0|
+// +------------------+--+----+--------+--------+----+----+-----------+--------+
+// |                  | D|    |   Rn   |   Vd   |size|    |index_align|   Rm   |
+// +------------------+--+----+--------+--------+----+----+-----------+--------+
+//   ebytes := 1 << size; esize := 8 * ebytes;
+//   index := index_align(3:1) if size=00 else
+//            index_align(3:2) if size=01 else
+//            index_align(3)   if size=10 else
+//            0;  # error value.
+//   inc := 1 if size=00 else
+//          (1 if index_align(1)=0 else 2) if size=01 else
+//          (1 if index_align(2)=0 else 2) if size=10 else
+//          0;  # error value.
+//   d := D:Vd; n := Rn; m := Rm;
+//   wback := (m != Pc); register_index := (m != Pc & m != Sp);
+//   base := n;
+//   # defs ignores FPRs. It only models GPRs and conditions.
+//   defs := { base } if wback else {};
+//   # Note: register_index defines if Rm is used (rather than a small
+//   # constant).
+//   imm_defs := { base } if not register_index else {};
+//   # uses ignores FPRs. It only models GPRs.
+//   uses := { m if wback else None , n };
+//   arch := ASIMD;
+class VectorStoreSingleTester : public UncondDecoderTester {
+ public:
+  explicit VectorStoreSingleTester(const NamedClassDecoder& decoder)
+      : UncondDecoderTester(decoder) {}
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ protected:
+  nacl_arm_dec::VectorStoreSingle expected_decoder_;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorStoreSingleTester);
+};
+
 // Implements a decoder tester for BarrierInst
 // Op #<option>
 // +--------+------------------------------------------------+--------+

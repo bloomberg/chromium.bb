@@ -253,6 +253,17 @@ class Imm4Bits0To3Interface {
   NACL_DISALLOW_COPY_AND_ASSIGN(Imm4Bits0To3Interface);
 };
 
+// Interface class to pull out an immediate value in bits 4 through 7.
+class Imm4Bits4To7Interface {
+ public:
+  static uint32_t value(const Instruction& i) {
+    return i.Bits(7, 4);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Imm4Bits4To7Interface);
+};
+
 // Interface class to pull out an immediate value in bits 0 through 7.
 class Imm8Bits0To7Interface {
  public:
@@ -299,6 +310,17 @@ class Imm24AddressBits0To23Interface {
   NACL_DISALLOW_COPY_AND_ASSIGN(Imm24AddressBits0To23Interface);
 };
 
+// Interface class to pull out value in bits 4 and 5.
+class Imm2Bits4To5Interface {
+ public:
+  static uint32_t value(const Instruction& i) {
+    return i.Bits(5, 4);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Imm2Bits4To5Interface);
+};
+
 // Interface class to pull out value i in bits 6 and 7.
 class Imm2Bits6To7Interface {
  public:
@@ -330,6 +352,17 @@ class Imm2Bits8To9Interface {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Imm2Bits8To9Interface);
+};
+
+// Interface class to pull out value in bits 10 and 11.
+class Imm2Bits10To11Interface {
+ public:
+  static uint32_t value(const Instruction& i) {
+    return i.Bits(11, 10);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Imm2Bits10To11Interface);
 };
 
 // Interface class to pull out a Register List in bits 0 through 15

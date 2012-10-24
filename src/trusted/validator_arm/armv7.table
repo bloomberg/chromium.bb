@@ -237,6 +237,14 @@ class VectorBinary2RegisterShiftAmount_N16_32_64R
 class VectorBinary2RegisterShiftAmount_N16_32_64RS
         : VectorBinary2RegisterShiftAmount
 class VectorBinary2RegisterShiftAmount_CVT : VectorBinary2RegisterShiftAmount
+class VectorStoreMultiple1 : VectorStoreMultiple
+class VectorStoreMultiple2 : VectorStoreMultiple
+class VectorStoreMultiple3 : VectorStoreMultiple
+class VectorStoreMultiple4 : VectorStoreMultiple
+class VectorStoreSingle1 : VectorStoreSingle
+class VectorStoreSingle2 : VectorStoreSingle
+class VectorStoreSingle3 : VectorStoreSingle
+class VectorStoreSingle4 : VectorStoreSingle
 class Vector1RegisterImmediate_MOV : Vector1RegisterImmediate
 class Vector1RegisterImmediate_BIT : Vector1RegisterImmediate
 class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
@@ -2652,23 +2660,156 @@ class Vector1RegisterImmediate_MVN : Vector1RegisterImmediate
 +--
 
 +-- simd_load_store_l0 (See Section A7.7, Table A7-20)
+*VSM
+   { D(22), Rn(19:16), Vd(15:12), type(11:8), size(7:6), align(5:4), Rm(3:0) }
+   baseline := VectorStoreMultiple;
+   alignment := 1 if align=00 else 4 << align;
+   ebytes := 1 << size; esize := 8 * ebytes; elements := 8 / ebytes;
+   d := D:Vd; n := Rn; m := Rm;
+   wback := (m != Pc); register_index := (m != Pc & m != Sp);
+   base := n;
+   # defs ignores FPRs. It only models GPRs and conditions.
+   defs := { base } if wback else {};
+   # Note: register_index defines if Rm is used (rather than a small constant).
+   imm_defs := { base } if not register_index else {};
+   # uses ignores FPRs. It only models GPRs.
+   uses := { m if wback else None , n };
+   arch := ASIMD;
+*VSM1 *VSM
+   baseline := VectorStoreMultiple1;
+   regs := 1 if type=0111 else
+           2 if type=1010 else
+           3 if type=0110 else
+           4 if type=0010 else
+           0;  # Error value.
+   safety := type=0111 & align(1)=1 => UNDEFINED &
+             type=1010 & align=11 => UNDEFINED &
+             type=0110 & align(1)=1 => UNDEFINED &
+             not type in bitset {0111, 1010, 0110, 0010} => DECODER_ERROR &
+             n == Pc | d + regs > 32 => UNPREDICTABLE;
+*VSM2 *VSM
+   baseline := VectorStoreMultiple2;
+   regs := 1 if type in bitset {1000, 1001} else 2;
+   inc  := 1 if type=1000 else 2;
+   d2 := d + inc;
+   safety := size=11 => UNDEFINED &
+             type in bitset {1000, 1001} & align=11 => UNDEFINED &
+             not type in bitset {1000, 1001, 0011} => DECODER_ERROR &
+             n == Pc | d2 + regs > 32 => UNPREDICTABLE;
+*VSM3 *VSM
+   baseline := VectorStoreMultiple3;
+   inc := 1 if type=0100 else 2;
+   alignment := 1 if align(0)=0 else 8;
+   d2 := d + inc; d3 := d2 + inc;
+   safety := size=11 | align(1)=1 => UNDEFINED &
+             not type in bitset {0100, 0101} => DECODER_ERROR &
+             n == Pc | d3 > 31 => UNPREDICTABLE;
+*VSM4 *VSM
+   baseline := VectorStoreMultiple4;
+   inc := 1 if type=0000 else 2;
+   d2 := d + inc; d3 := d2 + inc; d4 := d3 + inc;
+   safety := size=11 => UNDEFINED &
+             not type in bitset {0000, 0001} => DECODER_ERROR &
+             n == Pc | d4 > 31 => UNPREDICTABLE;
+*VSS
+   { D(22), Rn(19:16), Vd(15:12), size(11:10), index_align(7:4), Rm(3:0) }
+   baseline := VectorStoreSingle;
+   ebytes := 1 << size; esize := 8 * ebytes;
+   index := index_align(3:1) if size=00 else
+            index_align(3:2) if size=01 else
+            index_align(3)   if size=10 else
+            0;  # error value.
+   inc := 1 if size=00 else
+          (1 if index_align(1)=0 else 2) if size=01 else
+          (1 if index_align(2)=0 else 2) if size=10 else
+          0;  # error value.
+   d := D:Vd; n := Rn; m := Rm;
+   wback := (m != Pc); register_index := (m != Pc & m != Sp);
+   base := n;
+   # defs ignores FPRs. It only models GPRs and conditions.
+   defs := { base } if wback else {};
+   # Note: register_index defines if Rm is used (rather than a small constant).
+   imm_defs := { base } if not register_index else {};
+   # uses ignores FPRs. It only models GPRs.
+   uses := { m if wback else None , n };
+   arch := ASIMD;
+*VSS1 *VSS
+   baseline := VectorStoreSingle1;
+   alignment := 1 if size=00 else
+                (1 if index_align(0)=0 else 2) if size=01 else
+                (1 if index_align(1:0)=00 else 4) if size=10 else
+                0;  # error value.
+   safety := size=11 => UNDEFINED &
+             size=00 & index_align(0)=~0 => UNDEFINED &
+             size=01 & index_align(1)=~0 => UNDEFINED &
+             size=10 & index_align(2)=~0 => UNDEFINED &
+             size=10 & index_align(1:0)=~00
+                     & index_align(1:0)=~11 => UNDEFINED &
+             n == Pc => UNPREDICTABLE;
+*VSS2 *VSS
+   baseline := VectorStoreSingle2;
+   alignment := (1 if index_align(0)=0 else 2) if size=00 else
+                (1 if index_align(0)=0 else 4) if size=01 else
+                (1 if index_align(0)=0 else 8) if size=10 else
+                0;  # error value.
+   d2 := d + inc;
+   safety := size=11 => UNDEFINED &
+             size=10 & index_align(1)=~0 => UNDEFINED &
+             n == Pc | d2 > 31 => UNPREDICTABLE;
+*VSS3 *VSS
+   baseline := VectorStoreSingle3;
+   alignment := 1;
+   d2 := d + inc; d3 := d2 + inc;
+   safety := size=11 => UNDEFINED &
+             size=00 & index_align(0)=~0 => UNDEFINED &
+             size=01 & index_align(0)=~0 => UNDEFINED &
+             size=10 & index_align(1:0)=~00 => UNDEFINED &
+             n == Pc | d3 > 31 => UNPREDICTABLE;
+*VSS4 *VSS
+   baseline := VectorStoreSingle4;
+   d2 := d + inc; d3 := d2 + inc; d4 := d3 + inc;
+   alignment := (1 if index_align(0)=0 else 4) if size=00 else
+                (1 if index_align(0)=0 else 8) if size=01 else
+                (1 if index_align(1:0)=00 else 4 << index_align(1:0))
+                   if size=10 else
+                0;  # error value.
+   safety := size=11 => UNDEFINED &
+             size=10 & index_align(1:0)=11 => UNDEFINED &
+             n == Pc | d4 > 31 => UNPREDICTABLE;
++--
 | A(23) B(11:8)
-| 0     0010    =VectorStore  # VST1(multiple)
+| 0     0010    = *VSM1
+                  pattern := 111101000d00nnnnddddttttssaammmm;
+                  rule := VST1_multiple_single_elements;
 | "     011x    "
 | "     1010    "
-| "     0011    =VectorStore  # VST2(multiple)
+| "     0011    = *VSM2
+                  pattern := 111101000d00nnnnddddttttssaammmm;
+                  rule := VST2_multiple_2_element_structures;
 | "     100x    "
-| "     010x    =VectorStore  # VST3(multiple)
-| "     000x    =VectorStore  # VST4(multiple)
-| 1     0x00    =VectorStore  # VST1(single)
+| "     010x    = *VSM3
+                  pattern := 111101000d00nnnnddddttttssaammmm;
+                  rule := VST3_multiple_3_element_structures;
+| "     000x    = *VSM4
+                  pattern := 111101000d00nnnnddddttttssaammmm;
+                  rule := VST4_multiple_4_element_structures;
+| 1     0x00    = *VSS1
+                  pattern := 111101001d00nnnnddddss00aaaammmm;
+                  rule := VST1_single_element_from_one_lane;
 | "     1000    "
-| "     0x01    =VectorStore  # VST2(single)
+| "     0x01    = *VSS2
+                  pattern := 111101001d00nnnnddddss01aaaammmm;
+                  rule := VST2_single_2_element_structure_from_one_lane;
 | "     1001    "
-| "     0x10    =VectorStore  # VST3(single)
+| "     0x10    = *VSS3
+                  pattern := 111101001d00nnnnddddss10aaaammmm;
+                  rule := VST3_single_3_element_structure_from_one_lane;
 | "     1010    "
-| "     0x11    =VectorStore  # VST4(single)
+| "     0x11    = *VSS4
+                  pattern := 111101001d00nnnnddddss11aaaammmm;
+                  rule := VST4_single_4_element_structure_form_one_lane;
 | "     1011    "
-| else:         =Undefined    # Note on page A7-27
+| else:         = Undefined
 +--
 
 +-- simd_load_store_l1 (See Section A7.7, Table A7-21)

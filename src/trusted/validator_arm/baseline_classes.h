@@ -20,6 +20,8 @@ class LoadStore3RegisterDoubleOpTester;
 class LoadStore3RegisterImm5OpTester;
 class UnsafeUncondDecoderTester;
 class UnsafeCondDecoderTester;
+class VectorStoreMultipleTester;
+class VectorStoreSingleTester;
 }  // namespace nacl_arm_test
 
 /*
@@ -2914,6 +2916,250 @@ class DuplicateToAdvSIMDRegisters : public CondAdvSIMDOp {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(DuplicateToAdvSIMDRegisters);
+};
+
+// Models an advanced SIMD vector store multiple elements.
+// +------------------+--+----+--------+--------+--------+----+----+--------+
+// |313029282726252423|22|2120|19181716|15141312|1110 9 8| 7 6| 5 4| 3 2 1 0|
+// +------------------+--+----+--------+--------+--------+----+----+--------+
+// |                  | D|    |   Rn   |   Vd   |  type  |size|align|  Rm   |
+// +------------------+--+----+--------+--------+--------+----+----+--------+
+// alignment := 1 if align=00 else 4 << align;
+// ebytes := 1 << size; esize := 8 * ebytes; elements := 8 / ebytes;
+// d := D:Vd; n := Rn; m := Rm;
+// wback := (m != Pc); register_index := (m != Pc & m != Sp);
+// base := n;
+// # defs ignores FPRs. It only models GPRs and conditions.
+// defs := { base } if wback else {};
+// # Note: register_index defines if Rm is used (rather than a small constant).
+// imm_defs := { base } if not register_index else {};
+// # uses ignores FPRs. It only models GPRs.
+// uses := { m if wback else None , n };
+// arch := ASIMD;
+class VectorStoreMultiple : public UncondDecoder {
+ public:
+  static const RegBits0To3Interface rm;
+  static const Imm2Bits4To5Interface align;
+  static const Imm2Bits6To7Interface size;
+  static const Imm4Bits8To11Interface type;
+  static const RegBits12To15Interface vd;
+  static const RegBits16To19Interface rn;
+  static const Imm1Bit22Interface d;
+
+  virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList immediate_addressing_defs(Instruction i) const;
+  virtual Register base_address_register(Instruction i) const;
+
+  inline uint32_t d_reg_index(Instruction i) const {
+    return (d.value(i) << 4) | vd.number(i);
+  }
+
+ protected:
+  // Protected, since one shouldn't instantiate directly.
+  VectorStoreMultiple() {}
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorStoreMultiple);
+  friend class nacl_arm_test::VectorStoreMultipleTester;
+};
+
+// Implements a VST1 multiple instruction.
+//   regs := 1 if type=0111 else
+//           2 if type=1010 else
+//           3 if type=0110 else
+//           4 if type=0010 else
+//           0;  # Error value.
+//   safety := type=0111 & align(1)=1 => UNDEFINED &
+//             type=1010 & align=11 => UNDEFINED &
+//             type=0110 & align(1)=1 => UNDEFINED &
+//             not type in bitset {0111, 1010, 0110, 0010} => DECODER_ERROR &
+//             n == Pc | d + regs > 32 => UNPREDICTABLE;
+class VectorStoreMultiple1 : public VectorStoreMultiple {
+ public:
+  VectorStoreMultiple1() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorStoreMultiple1);
+};
+
+// Implements a VST2 multiple instruction.
+//   regs := 1 if type in bitset {1000, 1001} else 2;
+//   inc  := 1 if type=1000 else 2;
+//   d2 := d + inc;
+//   safety := size=11 => UNDEFINED &
+//             type in bitset {1000, 1001} & align=11 => UNDEFINED &
+//             not type in bitset {1000, 1001, 0011} => DECODER_ERROR &
+//             n == Pc | d2 + regs > 32 => UNPREDICTABLE;
+class VectorStoreMultiple2 : public VectorStoreMultiple {
+ public:
+  VectorStoreMultiple2() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorStoreMultiple2);
+};
+
+// Implements a VST3 multiple instruction.
+//   inc := 1 if type=0100 else 2;
+//   alignment := 1 if align(0)=0 else 8;
+//   d2 := d + inc; d3 := d2 + inc;
+//   safety := size=11 | align(1)=1 => UNDEFINED &
+//             not type in bitset {0100, 0101} => DECODER_ERROR &
+//             n == Pc | d3 > 31 => UNPREDICTABLE;
+class VectorStoreMultiple3 : public VectorStoreMultiple {
+ public:
+  VectorStoreMultiple3() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorStoreMultiple3);
+};
+
+// Implements a VST4 multiple instruction.
+//   inc := 1 if type=0000 else 2;
+//   d2 := d + inc; d3 := d2 + inc; d4 := d3 + inc;
+//   safety := size=11 => UNDEFINED &
+//             not type in bitset {0000, 0001} => DECODER_ERROR &
+//             n == Pc | d4 > 31 => UNPREDICTABLE;
+class VectorStoreMultiple4 : public VectorStoreMultiple {
+ public:
+  VectorStoreMultiple4() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorStoreMultiple4);
+};
+
+// Models an advanced SIMD vector store single elements.
+// +------------------+--+----+--------+--------+----+----+-----------+--------+
+// |313029282726252423|22|2120|19181716|15141312|1110| 9 8| 7 6 5 4   | 3 2 1 0|
+// +------------------+--+----+--------+--------+----+----+-----------+--------+
+// |                  | D|    |   Rn   |   Vd   |size|    |index_align|   Rm   |
+// +------------------+--+----+--------+--------+----+----+-----------+--------+
+//   ebytes := 1 << size; esize := 8 * ebytes;
+//   index := index_align(3:1) if size=00 else
+//            index_align(3:2) if size=01 else
+//            index_align(3)   if size=10 else
+//            0;  # error value.
+//   inc := 1 if size=00 else
+//          (1 if index_align(1)=0 else 2) if size=01 else
+//          (1 if index_align(2)=0 else 2) if size=10 else
+//          0;  # error value.
+//   d := D:Vd; n := Rn; m := Rm;
+//   wback := (m != Pc); register_index := (m != Pc & m != Sp);
+//   base := n;
+//   # defs ignores FPRs. It only models GPRs and conditions.
+//   defs := { base } if wback else {};
+//   # Note: register_index defines if Rm is used (rather than a small
+//   # constant).
+//   imm_defs := { base } if not register_index else {};
+//   # uses ignores FPRs. It only models GPRs.
+//   uses := { m if wback else None , n };
+//   arch := ASIMD;
+class VectorStoreSingle : public UncondDecoder {
+ public:
+  static const RegBits0To3Interface rm;
+  static const Imm4Bits4To7Interface index_align;
+  static const Imm2Bits10To11Interface size;
+  static const RegBits12To15Interface vd;
+  static const RegBits16To19Interface rn;
+  static const Imm1Bit22Interface d;
+
+  virtual RegisterList defs(Instruction i) const;
+  virtual RegisterList immediate_addressing_defs(Instruction i) const;
+  virtual Register base_address_register(Instruction i) const;
+
+  // computes the value of d = D:Vd;
+  inline uint32_t d_reg_index(Instruction i) const {
+    return (d.value(i) << 4) | vd.number(i);
+  }
+
+  // Computes the value inc.
+  uint32_t inc(Instruction i) const;
+
+ protected:
+  // Protected, since one shouldn't instantiate directly.
+  VectorStoreSingle() {}
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorStoreSingle);
+  friend class nacl_arm_test::VectorStoreSingleTester;
+};
+
+// Implements a VST1 single instruction.
+//   alignment := 1 if size=00 else
+//                (1 if index_align(0)=0 else 2) if size=01 else
+//                (1 if index_align(1:0)=00 else 4) if size=10 else
+//                0;  # error value.
+//   safety := size=11 => UNDEFINED &
+//             size=00 & index_align(0)=~0 => UNDEFINED &
+//             size=01 & index_align(1)=~0 => UNDEFINED &
+//             size=10 & index_align(2)=~0 => UNDEFINED &
+//             size=10 & index_align(1:0)=~00
+//                     & index_align(1:0)=~11 => UNDEFINED &
+//             n == Pc => UNPREDICTABLE;
+class VectorStoreSingle1 : public VectorStoreSingle {
+ public:
+  VectorStoreSingle1() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorStoreSingle1);
+};
+
+// Implements a VST2 single instruction.
+//   alignment := (1 if index_align(0)=0 else 2) if size=00 else
+//                (1 if index_align(0)=0 else 4) if size=01 else
+//                (1 if index_align(0)=0 else 8) if size=10 else
+//                0;  # error value.
+//   d2 := d + inc;
+//   safety := size=11 => UNDEFINED &
+//             size=10 & index_align(1)=~0 => UNDEFINED &
+//             n == Pc | d2 > 31 => UNPREDICTABLE;
+class VectorStoreSingle2 : public VectorStoreSingle {
+ public:
+  VectorStoreSingle2() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorStoreSingle2);
+};
+
+// Implements a VST3 single instruction.
+//   d2 := d + inc; d3 := d2 + inc;
+//   alignment := 1;
+//   safety := size=11 => UNDEFINED &
+//             size=00 & index_align(0)=~0 => UNDEFINED &
+//             size=01 & index_align(0)=~0 => UNDEFINED &
+//             size=10 & index_align(1:0)=~00 => UNDEFINED &
+//             n == Pc | d3 > 31 => UNPREDICTABLE;
+class VectorStoreSingle3 : public VectorStoreSingle {
+ public:
+  VectorStoreSingle3() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorStoreSingle3);
+};
+
+// Implements a VST4 single instruction.
+//   d2 := d + inc; d3 := d2 + inc; d4 := d3 + inc;
+//   alignment := (1 if index_align(0)=0 else 4) if size=00 else
+//                (1 if index_align(0)=0 else 8) if size=01 else
+//                (1 if index_align(1:0)=00 else 4 << index_align(1:0))
+//                   if size=10 else
+//                0;  # error value.
+//   safety := size=11 => UNDEFINED &
+//             size=10 & index_align(1:0)=11 => UNDEFINED &
+//             n == Pc | d4 > 31 => UNPREDICTABLE;
+class VectorStoreSingle4 : public VectorStoreSingle {
+ public:
+  VectorStoreSingle4() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VectorStoreSingle4);
 };
 
 // Models a synchronization barrier instruction.

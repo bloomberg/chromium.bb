@@ -33,7 +33,7 @@ arch           ::= '(' word+ ')'
 bit_expr       ::= bit_expr1 ('if' bit_expr 'else' bit_expr)?  # conditional
 bit_expr1      ::= bit_expr2 (('&' bit_expr2)* | ('|' bit_expr2)*)?
 bit_expr2      ::= bit_expr3 | 'not' bit_expr2
-bit_expr3      ::= bit_expr4 ('in' 'bitset'? bit_set)?
+bit_expr3      ::= bit_expr4 ('in' bit_set | 'in' 'bitset' pat_bit_set)?
 bit_expr4      ::= bit_expr5 (('<' | '<=' | '==' | '!=' | '>=' | '>')
                               bit_expr5)?                      # comparisons
 bit_expr5      ::= bit_expr6 |
@@ -66,6 +66,7 @@ int            ::= word     (where word is a sequence of digits)
 id             ::= word     (where word is sequence of letters, digits and _)
 negated_word   ::= '~' word
 parenthesized_exp ::= '(' (word | punctuation)+ ')'
+pat_bit_set        ::= '{' (bitpattern (',' bitpattern)*)? '}'
 pat_row        ::= pattern+ action
 pattern        ::= bitpattern | '-' | '"'
 row            ::= '|' (pat_row | default_row)
@@ -336,19 +337,15 @@ class Parser(object):
     return self._bit_expr3(context)
 
   def _bit_expr3(self, context):
-    """bit_expr3 ::= bit_expr4 ('in' 'bitset'? bit_set)?"""
+    """bit_expr3 ::= bit_expr4 ('in' bit_set | 'in' 'bitset' pat_bit_set)?"""
     value = self._bit_expr4(context)
     if not self._next_token().kind == 'in': return value
     self._read_token('in')
-    is_bitset = False
     if self._next_token().kind == 'bitset':
       self._read_token('bitset')
-      is_bitset = True
-    bitset = self._bit_set(context)
-    if is_bitset:
-      return dgen_core.InBitSet(value, bitset)
+      return dgen_core.InBitSet(value, self._pat_bit_set())
     else:
-      return dgen_core.InUintSet(value, bitset)
+      return dgen_core.InUintSet(value, self._bit_set(context))
 
   def _bit_expr4(self, context):
     """bit_expr4 ::= bit_expr5 (('<' | '<=' | '==' | '!=' | '>=' | '>')
@@ -683,6 +680,18 @@ class Parser(object):
       self._unexpected("len(parenthesized expresssion) < %s" % minlength)
     self._read_token(')')
     return words
+
+  def _pat_bit_set(self):
+    """pat_bit_set ::= '{' (bitpattern (',' bitpattern)*)? '}'"""
+    values = []
+    self._read_token('{')
+    if not self._next_token().kind == '}':
+      values.append(self._bitpattern())
+      while self._next_token().kind == ',':
+        self._read_token(',')
+        values.append(self._bitpattern())
+    self._read_token('}')
+    return dgen_core.BitSet(values)
 
   def _pat_row(self, table, starred_actions, last_patterns, last_action):
     """ pat_row ::= pattern+ action

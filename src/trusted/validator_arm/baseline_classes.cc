@@ -1502,6 +1502,240 @@ SafetyLevel DuplicateToAdvSIMDRegisters::safety(Instruction i) const {
   return CondAdvSIMDOp::safety(i);
 }
 
+// VectorStoreMultiple
+RegisterList VectorStoreMultiple::defs(Instruction i) const {
+  RegisterList regs;
+  if (!rm.reg(i).Equals(Register::Pc())) {
+    regs.Add(rn.reg(i));
+  }
+  return regs;
+}
+
+RegisterList VectorStoreMultiple::immediate_addressing_defs(
+    Instruction i) const {
+  RegisterList regs;
+  if (!RegisterList().Add(Register::Pc()).Add(Register::Sp())
+      .Contains(rm.reg(i))) {
+    regs.Add(rn.reg(i));
+  }
+  return regs;
+}
+
+Register VectorStoreMultiple::base_address_register(Instruction i) const {
+  return rn.reg(i);
+}
+
+// VectorStoreMultple1
+SafetyLevel VectorStoreMultiple1::safety(Instruction i) const {
+  uint32_t regs = 0;
+  switch (type.value(i)) {
+    case 0x2:  // 0010
+      regs = 4;
+      break;
+    case 0x6:  // 0110
+      if ((align.value(i) & 0x2) == 0x2) return UNDEFINED;
+      regs = 3;
+      break;
+    case 0x7:  // 0111
+      if ((align.value(i) & 0x2) == 0x2) return UNDEFINED;
+      regs = 1;
+      break;
+    case 0xa:  // 1010
+      if (align.value(i) == 3) return UNDEFINED;
+      regs = 2;
+      break;
+    default:
+      return DECODER_ERROR;
+  }
+  if (rn.reg(i).Equals(Register::Pc())) return UNPREDICTABLE;
+  if (d_reg_index(i) + regs > 32) return UNPREDICTABLE;
+  return MAY_BE_SAFE;
+}
+
+// VectorStoreMultiple2
+SafetyLevel VectorStoreMultiple2::safety(Instruction i) const {
+  if (size.value(i) == 3) return UNDEFINED;
+  uint32_t regs = 2;
+  uint32_t inc = 2;
+  switch (type.value(i)) {
+    case 0x3:  // 0011
+      // Via initialization: regs = 2;
+      // Via initialization: inc = 2;
+      break;
+    case 0x8:  // 1000
+      if (align.value(i) == 3) return UNDEFINED;
+      regs = 1;
+      inc = 1;
+      break;
+    case 0x9:  // 1001
+      if (align.value(i) == 3) return UNDEFINED;
+      regs = 1;
+      // Via intialization: inc = 2;
+    default:
+      return DECODER_ERROR;
+  }
+  if (rn.reg(i).Equals(Register::Pc())) return UNPREDICTABLE;
+  if (d_reg_index(i) + inc + regs > 32) return UNPREDICTABLE;
+  return MAY_BE_SAFE;
+}
+
+// VectorStoreMultiple3
+SafetyLevel VectorStoreMultiple3::safety(Instruction i) const {
+  if (size.value(i) == 3) return UNDEFINED;
+  if ((align.value(i) & 0x2) == 0x2) return UNDEFINED;
+  uint32_t inc = 2;
+  switch (type.value(i)) {
+    case 0x4:  // 0100
+      inc = 1;
+      break;
+    case 0x5:  // 0101
+      break;
+    default:
+      return DECODER_ERROR;
+  }
+  if (rn.reg(i).Equals(Register::Pc())) return UNPREDICTABLE;
+  if (d_reg_index(i) + 2 * inc > 31) return UNPREDICTABLE;
+  return MAY_BE_SAFE;
+}
+
+// VectorStoreMultiple4
+SafetyLevel VectorStoreMultiple4::safety(Instruction i) const {
+  if (size.value(i) == 3) return UNDEFINED;
+  uint32_t inc = 2;
+  switch (type.value(i)) {
+    case 0x0:  // 0000
+      inc = 1;
+      break;
+    case 0x1:  // 0001
+      break;
+    default:
+      return DECODER_ERROR;
+  }
+  if (rn.reg(i).Equals(Register::Pc())) return UNPREDICTABLE;
+  if (d_reg_index(i) + 3 * inc > 31) return UNPREDICTABLE;
+  return MAY_BE_SAFE;
+}
+
+// VectorStoreSingle
+RegisterList VectorStoreSingle::defs(Instruction i) const {
+  RegisterList regs;
+  if (!rm.reg(i).Equals(Register::Pc())) {
+    regs.Add(rn.reg(i));
+  }
+  return regs;
+}
+
+RegisterList VectorStoreSingle::immediate_addressing_defs(
+    Instruction i) const {
+  RegisterList regs;
+  if (!RegisterList().Add(Register::Pc()).Add(Register::Sp())
+      .Contains(rm.reg(i))) {
+    regs.Add(rn.reg(i));
+  }
+  return regs;
+}
+
+Register VectorStoreSingle::base_address_register(Instruction i) const {
+  return rn.reg(i);
+}
+
+uint32_t VectorStoreSingle::inc(Instruction i) const {
+  switch (size.value(i)) {
+    case 0x0:  // 00
+      return 1;
+    case 0x1:  // 01
+      if ((index_align.value(i) & 0x2) == 0) return 1;
+      return 2;
+    case 0x2:  // 10
+      if ((index_align.value(i) & 0x4) == 0) return 1;
+      return 2;
+    default:
+      return 0;  // I.e. error.
+  }
+}
+
+// VectorStoreSingle1
+SafetyLevel VectorStoreSingle1::safety(Instruction i) const {
+  switch (size.value(i)) {
+    case 0x0:  // 00
+      if ((index_align.value(i) & 0x1) != 0x0) return UNDEFINED;
+      break;
+    case 0x1:  // 01
+      if ((index_align.value(i) & 0x2) != 0x0) return UNDEFINED;
+      break;
+    case 0x2:  // 10
+      if ((index_align.value(i) & 0x4) != 0x0) return UNDEFINED;
+      if (((index_align.value(i) & 0x3) != 0x0) &&
+          ((index_align.value(i) & 0x3) != 0x3)) return UNDEFINED;
+      break;
+    case 0x3:  // 11
+      return UNDEFINED;
+    default:
+      return DECODER_ERROR;
+  }
+  if (rn.reg(i).Equals(Register::Pc())) return UNPREDICTABLE;
+  return MAY_BE_SAFE;
+}
+
+// VectorStoreSingle2
+SafetyLevel VectorStoreSingle2::safety(Instruction i) const {
+  switch (size.value(i)) {
+    case 0x0:  // 00
+      break;
+    case 0x1:  // 01
+      break;
+    case 0x2:  // 10
+      if ((index_align.value(i) & 0x2) != 0) return UNDEFINED;
+      break;
+    case 0x3:  // 11
+      return UNDEFINED;
+    default:
+      return DECODER_ERROR;
+  }
+  if (rn.reg(i).Equals(Register::Pc())) return UNPREDICTABLE;
+  if (d_reg_index(i) + inc(i) > 31) return UNPREDICTABLE;
+  return MAY_BE_SAFE;
+}
+
+// VectorStoreSingle3
+SafetyLevel VectorStoreSingle3::safety(Instruction i) const {
+  switch (size.value(i)) {
+    case 0:  // 00
+    case 1:  // 01
+      if ((index_align.value(i) & 0x1) != 0) return UNDEFINED;
+      break;
+    case 2:  // 10
+      if ((index_align.value(i) & 0x3) != 0) return UNDEFINED;
+      break;
+    case 3:  // 11
+      return UNDEFINED;
+    default:
+      return DECODER_ERROR;
+  }
+  if (rn.reg(i).Equals(Register::Pc())) return UNPREDICTABLE;
+  if (d_reg_index(i) + 2 * inc(i) > 31) return UNPREDICTABLE;
+  return MAY_BE_SAFE;
+}
+
+// VectorStoreSingle4
+SafetyLevel VectorStoreSingle4::safety(Instruction i) const {
+  switch (size.value(i)) {
+    case 0:  // 00
+    case 1:  // 01
+      break;
+    case 2:  // 10
+      if ((index_align.value(i) & 0x3) == 0x3) return UNDEFINED;
+      break;
+    case 3:  // 11
+      return UNDEFINED;
+    default:
+      return DECODER_ERROR;
+  }
+  if (rn.reg(i).Equals(Register::Pc())) return UNPREDICTABLE;
+  if (d_reg_index(i) + 3 * inc(i) > 31) return UNPREDICTABLE;
+  return MAY_BE_SAFE;
+}
+
 // DataBarrier
 SafetyLevel DataBarrier::safety(Instruction i) const {
   switch (option.value(i)) {

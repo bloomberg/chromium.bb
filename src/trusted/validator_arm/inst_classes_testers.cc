@@ -2454,6 +2454,41 @@ ApplySanityChecks(Instruction inst,
   return true;
 }
 
+// VectorStoreMultipleTester
+bool VectorStoreMultipleTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  NC_PRECOND(UncondDecoderTester::ApplySanityChecks(inst, decoder));
+
+  // Check fields and registers.
+  EXPECT_TRUE(expected_decoder_.rm.reg(inst).Equals(inst.Reg(3, 0)));
+  EXPECT_EQ(expected_decoder_.align.value(inst), inst.Bits(5, 4));
+  EXPECT_EQ(expected_decoder_.size.value(inst), inst.Bits(7, 6));
+  EXPECT_EQ(expected_decoder_.type.value(inst), inst.Bits(11, 8));
+  EXPECT_EQ(expected_decoder_.vd.number(inst), inst.Bits(15, 12));
+  EXPECT_TRUE(expected_decoder_.rn.reg(inst).Equals(inst.Reg(19, 16)));
+  EXPECT_EQ(expected_decoder_.d.value(inst), inst.Bits(22, 22));
+
+  return true;
+}
+
+// VectorStoreSingleTester
+bool VectorStoreSingleTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  NC_PRECOND(UncondDecoderTester::ApplySanityChecks(inst, decoder));
+
+  // Check fields and registers.
+  EXPECT_TRUE(expected_decoder_.rm.reg(inst).Equals(inst.Reg(3, 0)));
+  EXPECT_EQ(expected_decoder_.index_align.value(inst), inst.Bits(7, 4));
+  EXPECT_EQ(expected_decoder_.size.value(inst), inst.Bits(11, 10));
+  EXPECT_EQ(expected_decoder_.vd.number(inst), inst.Bits(15, 12));
+  EXPECT_TRUE(expected_decoder_.rn.reg(inst).Equals(inst.Reg(19, 16)));
+  EXPECT_EQ(expected_decoder_.d.value(inst), inst.Bits(22, 22));
+
+  return true;
+}
+
 // BarrierInstTester
 bool BarrierInstTester::ApplySanityChecks(Instruction inst,
                                           const NamedClassDecoder& decoder) {
