@@ -44,6 +44,12 @@ var BrowserBridge = (function() {
     this.pollableDataHelpers_.socketPoolInfo =
         new PollableDataHelper('onSocketPoolInfoChanged',
                                this.sendGetSocketPoolInfo.bind(this));
+    this.pollableDataHelpers_.sessionNetworkStats =
+      new PollableDataHelper('onSessionNetworkStatsChanged',
+                             this.sendGetSessionNetworkStats.bind(this));
+    this.pollableDataHelpers_.historicNetworkStats =
+      new PollableDataHelper('onHistoricNetworkStatsChanged',
+                             this.sendGetHistoricNetworkStats.bind(this));
     this.pollableDataHelpers_.spdySessionInfo =
         new PollableDataHelper('onSpdySessionInfoChanged',
                                this.sendGetSpdySessionInfo.bind(this));
@@ -186,6 +192,14 @@ var BrowserBridge = (function() {
       this.send('getSocketPoolInfo');
     },
 
+    sendGetSessionNetworkStats: function() {
+      this.send('getSessionNetworkStats');
+    },
+
+    sendGetHistoricNetworkStats: function() {
+      this.send('getHistoricNetworkStats');
+    },
+
     sendCloseIdleSockets: function() {
       this.send('closeIdleSockets');
     },
@@ -280,6 +294,15 @@ var BrowserBridge = (function() {
 
     receivedSocketPoolInfo: function(socketPoolInfo) {
       this.pollableDataHelpers_.socketPoolInfo.update(socketPoolInfo);
+    },
+
+    receivedSessionNetworkStats: function(sessionNetworkStats) {
+      this.pollableDataHelpers_.sessionNetworkStats.update(sessionNetworkStats);
+    },
+
+    receivedHistoricNetworkStats: function(historicNetworkStats) {
+      this.pollableDataHelpers_.historicNetworkStats.update(
+          historicNetworkStats);
     },
 
     receivedSpdySessionInfo: function(spdySessionInfo) {
@@ -435,6 +458,28 @@ var BrowserBridge = (function() {
     addSocketPoolInfoObserver: function(observer, ignoreWhenUnchanged) {
       this.pollableDataHelpers_.socketPoolInfo.addObserver(observer,
                                                            ignoreWhenUnchanged);
+    },
+
+    /**
+     * Adds a listener of the network session. |observer| will be called back
+     * when data is received, through:
+     *
+     *   observer.onSessionNetworkStatsChanged(sessionNetworkStats)
+     */
+    addSessionNetworkStatsObserver: function(observer, ignoreWhenUnchanged) {
+      this.pollableDataHelpers_.sessionNetworkStats.addObserver(
+          observer, ignoreWhenUnchanged);
+    },
+
+    /**
+     * Adds a listener of persistent network session data. |observer| will be
+     * called back when data is received, through:
+     *
+     *   observer.onHistoricNetworkStatsChanged(historicNetworkStats)
+     */
+    addHistoricNetworkStatsObserver: function(observer, ignoreWhenUnchanged) {
+      this.pollableDataHelpers_.historicNetworkStats.addObserver(
+          observer, ignoreWhenUnchanged);
     },
 
     /**

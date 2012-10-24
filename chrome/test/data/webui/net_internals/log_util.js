@@ -120,6 +120,7 @@ function checkViewsAfterLogLoaded() {
     hsts: false,
     logs: false,
     prerender: true,
+    bandwidth: true,
     chromeos: false
   };
   NetInternalsTest.checkTabHandleVisibility(tabVisibilityState, false);

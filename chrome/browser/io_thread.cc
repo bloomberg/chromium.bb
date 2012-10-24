@@ -596,6 +596,8 @@ void IOThread::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterStringPref(prefs::kGSSAPILibraryName, "");
   local_state->RegisterStringPref(prefs::kSpdyProxyOrigin, "");
   local_state->RegisterBooleanPref(prefs::kEnableReferrers, true);
+  local_state->RegisterInt64Pref(prefs::kHttpReceivedContentLength, 0);
+  local_state->RegisterInt64Pref(prefs::kHttpOriginalContentLength, 0);
 }
 
 net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(

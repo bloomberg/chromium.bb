@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/values.h"
 #include "net/base/network_delegate.h"
 
 class CookieSettings;
@@ -17,6 +18,10 @@ class PrefService;
 template<class T> class PrefMember;
 
 typedef PrefMember<bool> BooleanPrefMember;
+
+namespace base {
+class Value;
+}
 
 namespace chrome_browser_net {
 class LoadTimeStats;
@@ -68,6 +73,15 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   // called, then some platforms restrict access to file:// paths.
   static void AllowAccessToAllFiles();
 
+  // Creates a Value summary of the persistent state of the network session.
+  // The caller is responsible for deleting the returned value.
+  // Must be called on the UI thread.
+  static Value* HistoricNetworkStatsInfoToValue();
+
+  // Creates a Value summary of the state of the network session. The caller is
+  // responsible for deleting the returned value.
+  Value* SessionNetworkStatsInfoToValue() const;
+
  private:
   friend class ChromeNetworkDelegateTest;
 
@@ -115,6 +129,9 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   virtual void OnRequestWaitStateChange(const net::URLRequest& request,
                                         RequestWaitState state) OVERRIDE;
 
+  void AccumulateContentLength(
+      int64 received_payload_byte_count, int64 original_payload_byte_count);
+
   scoped_refptr<extensions::EventRouterForwarder> event_router_;
   void* profile_;
   scoped_refptr<CookieSettings> cookie_settings_;
@@ -145,6 +162,13 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
 
   // Pointer to IOThread global, should outlive ChromeNetworkDelegate.
   chrome_browser_net::LoadTimeStats* load_time_stats_;
+
+  // Total size of all content (excluding headers) that has been received
+  // over the network.
+  int64 received_content_length_;
+
+  // Total original size of all content before it was transferred.
+  int64 original_content_length_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNetworkDelegate);
 };

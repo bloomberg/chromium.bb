@@ -33,6 +33,7 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_net_log.h"
+#include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/connection_tester.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -322,6 +323,7 @@ class NetInternalsMessageHandler
   void OnRendererReady(const ListValue* list);
   void OnClearBrowserCache(const ListValue* list);
   void OnGetPrerenderInfo(const ListValue* list);
+  void OnGetHistoricNetworkStats(const ListValue* list);
 #if defined(OS_CHROMEOS)
   void OnRefreshSystemLogs(const ListValue* list);
   void OnGetSystemLog(const ListValue* list);
@@ -462,6 +464,7 @@ class NetInternalsMessageHandler::IOThreadImpl
   void OnHSTSDelete(const ListValue* list);
   void OnGetHttpCacheInfo(const ListValue* list);
   void OnGetSocketPoolInfo(const ListValue* list);
+  void OnGetSessionNetworkStats(const ListValue* list);
   void OnCloseIdleSockets(const ListValue* list);
   void OnFlushSocketPools(const ListValue* list);
   void OnGetSpdySessionInfo(const ListValue* list);
@@ -632,6 +635,10 @@ void NetInternalsMessageHandler::RegisterMessages() {
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnGetSocketPoolInfo, proxy_));
   web_ui()->RegisterMessageCallback(
+      "getSessionNetworkStats",
+      base::Bind(&IOThreadImpl::CallbackHelper,
+                 &IOThreadImpl::OnGetSessionNetworkStats, proxy_));
+  web_ui()->RegisterMessageCallback(
       "closeIdleSockets",
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnCloseIdleSockets, proxy_));
@@ -673,6 +680,10 @@ void NetInternalsMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getPrerenderInfo",
       base::Bind(&NetInternalsMessageHandler::OnGetPrerenderInfo,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getHistoricNetworkStats",
+      base::Bind(&NetInternalsMessageHandler::OnGetHistoricNetworkStats,
                  base::Unretained(this)));
 #if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
@@ -741,6 +752,13 @@ void NetInternalsMessageHandler::OnGetPrerenderInfo(const ListValue* list) {
   SendJavascriptCommand("receivedPrerenderInfo", value);
 }
 
+void NetInternalsMessageHandler::OnGetHistoricNetworkStats(
+    const ListValue* list) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  Value* historic_network_info =
+      ChromeNetworkDelegate::HistoricNetworkStatsInfoToValue();
+  SendJavascriptCommand("receivedHistoricNetworkStats", historic_network_info);
+}
 
 #if defined(OS_CHROMEOS)
 ////////////////////////////////////////////////////////////////////////////////
@@ -1234,6 +1252,23 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetSocketPoolInfo(
   SendJavascriptCommand("receivedSocketPoolInfo", socket_pool_info);
 }
 
+void NetInternalsMessageHandler::IOThreadImpl::OnGetSessionNetworkStats(
+    const ListValue* list) {
+  DCHECK(!list);
+  net::HttpNetworkSession* http_network_session =
+      GetHttpNetworkSession(context_getter_->GetURLRequestContext());
+
+  Value* network_info = NULL;
+  if (http_network_session) {
+    ChromeNetworkDelegate* net_delegate =
+        static_cast<ChromeNetworkDelegate*>(
+            http_network_session->network_delegate());
+    if (net_delegate) {
+      network_info = net_delegate->SessionNetworkStatsInfoToValue();
+    }
+  }
+  SendJavascriptCommand("receivedSessionNetworkStats", network_info);
+}
 
 void NetInternalsMessageHandler::IOThreadImpl::OnFlushSocketPools(
     const ListValue* list) {

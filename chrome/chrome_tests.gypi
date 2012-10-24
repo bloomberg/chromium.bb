@@ -3252,6 +3252,7 @@
         'test/data/webui/chrome_send_browsertest.js',
         'test/data/webui/history_browsertest.js',
         'test/data/webui/mock4js_browsertest.js',
+        'test/data/webui/net_internals/bandwidth_view.js',
         'test/data/webui/net_internals/dns_view.js',
         'test/data/webui/net_internals/events_view.js',
         'test/data/webui/net_internals/hsts_view.js',

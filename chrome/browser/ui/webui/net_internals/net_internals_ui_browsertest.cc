@@ -132,6 +132,9 @@ class NetInternalsTest::MessageHandler : public content::WebUIMessageHandler {
   // must be an empty string.
   void AddCacheEntry(const base::ListValue* list_value);
 
+  // Opens the given URL in a new tab.
+  void LoadPage(const base::ListValue* list_value);
+
   // Opens a page in a new tab that prerenders the given URL.
   void PrerenderPage(const base::ListValue* list_value);
 
@@ -175,6 +178,9 @@ void NetInternalsTest::MessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("addCacheEntry",
       base::Bind(&NetInternalsTest::MessageHandler::AddCacheEntry,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("loadPage",
+      base::Bind(&NetInternalsTest::MessageHandler::LoadPage,
+                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("prerenderPage",
       base::Bind(&NetInternalsTest::MessageHandler::PrerenderPage,
                   base::Unretained(this)));
@@ -231,6 +237,18 @@ void NetInternalsTest::MessageHandler::AddCacheEntry(
                  ip_literal,
                  static_cast<int>(net_error),
                  static_cast<int>(expire_days_from_now)));
+}
+
+void NetInternalsTest::MessageHandler::LoadPage(
+    const ListValue* list_value) {
+  std::string url;
+  ASSERT_TRUE(list_value->GetString(0, &url));
+  LOG(WARNING) << "url: [" << url << "]";
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(url),
+      NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
 }
 
 void NetInternalsTest::MessageHandler::PrerenderPage(

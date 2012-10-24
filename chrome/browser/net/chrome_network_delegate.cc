@@ -4,8 +4,9 @@
 
 #include "chrome/browser/net/chrome_network_delegate.h"
 
-#include "base/logging.h"
 #include "base/base_paths.h"
+#include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "chrome/browser/api/prefs/pref_member.h"
 #include "chrome/browser/browser_process.h"
@@ -136,6 +137,54 @@ void ForwardRequestStatus(
   }
 }
 
+void UpdateContentLengthPrefs(int received_content_length,
+                              int original_content_length) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_GE(received_content_length, 0);
+  DCHECK_GE(original_content_length, 0);
+
+  PrefService* prefs = g_browser_process->local_state();
+
+  int64 total_received = prefs->GetInt64(prefs::kHttpReceivedContentLength);
+  int64 total_original = prefs->GetInt64(prefs::kHttpOriginalContentLength);
+  total_received += received_content_length;
+  total_original += original_content_length;
+  prefs->SetInt64(prefs::kHttpReceivedContentLength, total_received);
+  prefs->SetInt64(prefs::kHttpOriginalContentLength, total_original);
+}
+
+void StoreAccumulatedContentLength(int received_content_length,
+                                   int original_content_length) {
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      base::Bind(&UpdateContentLengthPrefs,
+                 received_content_length, original_content_length));
+}
+
+void RecordContentLengthHistograms(
+    int64 received_content_length, int64 original_content_length) {
+#if defined(OS_ANDROID)
+  // Add the current resource to these histograms only when a valid
+  // X-Original-Content-Length header is present.
+  if (original_content_length >= 0) {
+    UMA_HISTOGRAM_COUNTS("Net.HttpContentLengthWithValidOCL",
+                         received_content_length);
+    UMA_HISTOGRAM_COUNTS("Net.HttpOriginalContentLengthWithValidOCL",
+                         original_content_length);
+    UMA_HISTOGRAM_COUNTS("Net.HttpContentLengthDifferenceWithValidOCL",
+                         original_content_length - received_content_length);
+  } else {
+    // Presume the original content length is the same as the received content
+    // length if the X-Original-Content-Header is not present.
+    original_content_length = received_content_length;
+  }
+  UMA_HISTOGRAM_COUNTS("Net.HttpContentLength", received_content_length);
+  UMA_HISTOGRAM_COUNTS("Net.HttpOriginalContentLength",
+                       original_content_length);
+  UMA_HISTOGRAM_COUNTS("Net.HttpContentLengthDifference",
+                       original_content_length - received_content_length);
+#endif
+}
+
 }  // namespace
 
 ChromeNetworkDelegate::ChromeNetworkDelegate(
@@ -156,7 +205,9 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
       enable_do_not_track_(enable_do_not_track),
       url_blacklist_manager_(url_blacklist_manager),
       managed_mode_url_filter_(managed_mode_url_filter),
-      load_time_stats_(load_time_stats) {
+      load_time_stats_(load_time_stats),
+      received_content_length_(0),
+      original_content_length_(0) {
   DCHECK(event_router);
   DCHECK(enable_referrers);
   DCHECK(!profile || cookie_settings);
@@ -188,6 +239,26 @@ void ChromeNetworkDelegate::InitializePrefsOnUIThread(
 // static
 void ChromeNetworkDelegate::AllowAccessToAllFiles() {
   g_allow_file_access_ = true;
+}
+
+// static
+Value* ChromeNetworkDelegate::HistoricNetworkStatsInfoToValue() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  PrefService* prefs = g_browser_process->local_state();
+  int64 total_received = prefs->GetInt64(prefs::kHttpReceivedContentLength);
+  int64 total_original = prefs->GetInt64(prefs::kHttpOriginalContentLength);
+
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetInteger("historic_received_content_length", total_received);
+  dict->SetInteger("historic_original_content_length", total_original);
+  return dict;
+}
+
+Value* ChromeNetworkDelegate::SessionNetworkStatsInfoToValue() const {
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetInteger("session_received_content_length", received_content_length_);
+  dict->SetInteger("session_original_content_length", original_content_length_);
+  return dict;
 }
 
 int ChromeNetworkDelegate::OnBeforeURLRequest(
@@ -278,6 +349,36 @@ void ChromeNetworkDelegate::OnRawBytesRead(const net::URLRequest& request,
 void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
                                         bool started) {
   if (request->status().status() == net::URLRequestStatus::SUCCESS) {
+    // For better accuracy, we use the actual bytes read instead of the length
+    // specified with the Content-Length header, which may be inaccurate,
+    // or missing, as is the case with chunked encoding.
+    int64 received_content_length = request->received_response_content_length();
+
+    // Only record for http or https urls.
+    bool is_http = request->url().SchemeIs("http");
+    bool is_https = request->url().SchemeIs("https");
+
+    if (!request->was_cached() &&         // Don't record cached content
+        received_content_length &&        // Zero-byte responses aren't useful.
+        (is_http || is_https)) {          // Only record for HTTP or HTTPS urls.
+      int64 original_content_length =
+          request->response_info().headers->GetInt64HeaderValue(
+              "x-original-content-length");
+      // Since there was no indication of the original content length, presume
+      // it is no different from the number of bytes read.
+      int64 adjusted_original_content_length = original_content_length;
+      if (adjusted_original_content_length == -1)
+        adjusted_original_content_length = received_content_length;
+      AccumulateContentLength(received_content_length,
+                              adjusted_original_content_length);
+      RecordContentLengthHistograms(received_content_length,
+                                    original_content_length);
+      DVLOG(2) << __FUNCTION__
+          << " received content length: " << received_content_length
+          << " original content length: " << original_content_length
+          << " url: " << request->url();
+    }
+
     bool is_redirect = request->response_headers() &&
         net::HttpResponseHeaders::IsRedirectResponseCode(
             request->response_headers()->response_code());
@@ -458,4 +559,14 @@ void ChromeNetworkDelegate::OnRequestWaitStateChange(
     RequestWaitState state) {
   if (load_time_stats_)
     load_time_stats_->OnRequestWaitStateChange(request, state);
+}
+
+void ChromeNetworkDelegate::AccumulateContentLength(
+    int64 received_content_length, int64 original_content_length) {
+  DCHECK_GE(received_content_length, 0);
+  DCHECK_GE(original_content_length, 0);
+  StoreAccumulatedContentLength(received_content_length,
+                                original_content_length);
+  received_content_length_ += received_content_length;
+  original_content_length_ += original_content_length;
 }

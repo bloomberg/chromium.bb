@@ -37,6 +37,7 @@ TEST_F('NetInternalsTest', 'netInternalsTourTabs', function() {
     hsts: true,
     logs: cr.isChromeOS,
     prerender: true,
+    bandwidth: true,
     chromeos: cr.isChromeOS
   };
 

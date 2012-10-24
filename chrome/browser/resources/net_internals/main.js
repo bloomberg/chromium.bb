@@ -99,6 +99,8 @@ var MainView = (function() {
     tabs.addTab(HSTSView.TAB_HANDLE_ID, HSTSView.getInstance(), false, true);
     tabs.addTab(LogsView.TAB_HANDLE_ID, LogsView.getInstance(),
                 false, cr.isChromeOS);
+    tabs.addTab(BandwidthView.TAB_HANDLE_ID, BandwidthView.getInstance(),
+                false, true);
     tabs.addTab(PrerenderView.TAB_HANDLE_ID, PrerenderView.getInstance(),
                 false, true);
     tabs.addTab(CrosView.TAB_HANDLE_ID, CrosView.getInstance(),

@@ -1810,6 +1810,14 @@ const char kSpdyProxyOrigin[] = "auth.spdyproxy.origin";
 // domain sub-content requests.
 const char kAllowCrossOriginAuthPrompt[] = "auth.allow_cross_origin_prompt";
 
+// An int64 pref that contains the total size of all HTTP content that has been
+// received from the network.
+const char kHttpReceivedContentLength[] = "http_received_content_length";
+
+// An int64 pref that contains the total original size of all HTTP content that
+// was received over the network.
+const char kHttpOriginalContentLength[] = "http_original_content_length";
+
 #if defined(OS_CHROMEOS)
 // Dictionary for transient storage of settings that should go into device
 // settings storage before owner has been assigned.

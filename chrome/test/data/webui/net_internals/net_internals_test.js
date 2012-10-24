@@ -254,6 +254,7 @@ var NetInternalsTest = (function() {
       hsts: HSTSView.TAB_HANDLE_ID,
       logs: LogsView.TAB_HANDLE_ID,
       prerender: PrerenderView.TAB_HANDLE_ID,
+      bandwidth: BandwidthView.TAB_HANDLE_ID,
       chromeos: CrosView.TAB_HANDLE_ID
     };
 
