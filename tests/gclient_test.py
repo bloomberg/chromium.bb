@@ -307,6 +307,45 @@ class GclientTest(trial_dir.TestCase):
     obj = gclient.GClient.LoadCurrentConfig(options)
     self.assertEqual(['baz', 'unix'], sorted(obj.enforced_os))
 
+  def testTargetOsInDepsFile(self):
+    """Verifies that specifying a target_os value in a DEPS file pulls in all
+    relevant dependencies.
+
+    The target_os variable in a DEPS file allows specifying the name of an
+    additional OS which should be considered when selecting dependencies from a
+    DEPS' deps_os. The value will be appended to the _enforced_os tuple.
+    """
+
+    write(
+        '.gclient',
+        'solutions = [\n'
+        '  { "name": "foo",\n'
+        '    "url": "svn://example.com/foo",\n'
+        '  }]\n')
+    write(
+        os.path.join('foo', 'DEPS'),
+        'target_os = ["baz"]\n'
+        'deps_os = {\n'
+        '  "unix": { "foo/unix": "/unix", },\n'
+        '  "baz": { "foo/baz": "/baz", },\n'
+        '  "jaz": { "foo/jaz": "/jaz", },\n'
+        '}')
+
+    parser = gclient.Parser()
+    options, _ = parser.parse_args(['--jobs', '1'])
+    options.deps_os = 'unix'
+
+    obj = gclient.GClient.LoadCurrentConfig(options)
+    obj.RunOnDeps('None', [])
+    self.assertEqual(['unix'], sorted(obj.enforced_os))
+    self.assertEquals(
+        [
+          'svn://example.com/foo',
+          'svn://example.com/foo/baz',
+          'svn://example.com/foo/unix',
+          ],
+        sorted(self._get_processed()))
+
   def testRecursionOverride(self):
     """Verifies gclient respects the recursion var syntax.
 

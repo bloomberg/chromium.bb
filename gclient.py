@@ -172,6 +172,9 @@ class DependencySettings(GClientKeywords):
     # dependency.  It is read from the actual DEPS file so cannot be set on
     # class instantiation.
     self.recursion_override = None
+    # This is a mutable value which has the list of 'target_os' OSes listed in
+    # the current deps file.
+    self.local_target_os = None
 
     # These are only set in .gclient and not in DEPS files.
     self._custom_vars = custom_vars or {}
@@ -238,6 +241,13 @@ class DependencySettings(GClientKeywords):
     if self.recursion_override is not None:
       return self.recursion_override
     return max(self.parent.recursion_limit - 1, 0)
+
+  @property
+  def target_os(self):
+    if self.local_target_os is not None:
+      return tuple(set(self.local_target_os).union(self.parent.target_os))
+    else:
+      return self.parent.target_os
 
   def get_custom_deps(self, name, url):
     """Returns a custom deps if applicable."""
@@ -455,13 +465,15 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       self.recursion_override = local_scope.get('recursion')
       logging.warning(
           'Setting %s recursion to %d.', self.name, self.recursion_limit)
+    # If present, save 'target_os' in the local_target_os property.
+    if 'target_os' in local_scope:
+      self.local_target_os = local_scope['target_os']
     # load os specific dependencies if defined.  these dependencies may
     # override or extend the values defined by the 'deps' member.
     if 'deps_os' in local_scope:
-      enforced_os = self.root.enforced_os
-      for deps_os_key in enforced_os:
+      for deps_os_key in self.target_os:
         os_deps = local_scope['deps_os'].get(deps_os_key, {})
-        if len(enforced_os) > 1:
+        if len(self.target_os) > 1:
           # Ignore any conflict when including deps for more than one
           # platform, so we collect the broadest set of dependencies
           # available. We may end up with the wrong revision of something for
@@ -1165,6 +1177,10 @@ solutions = [
   def recursion_limit(self):
     """How recursive can each dependencies in DEPS file can load DEPS file."""
     return self._recursion_limit
+
+  @property
+  def target_os(self):
+    return self._enforced_os
 
 
 #### gclient commands.
