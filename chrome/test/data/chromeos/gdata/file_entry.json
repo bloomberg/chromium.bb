@@ -64,6 +64,10 @@
          "rel": "alternate",
          "type": "text/html"
       }, {
+         "href": "https://file_link_share",
+         "rel": "http://schemas.google.com/docs/2007#share",
+         "type": "text/html"
+      }, {
          "href": "https://file_link_resumable_edit_media",
          "rel": "http://schemas.google.com/g/2005#resumable-edit-media",
          "type": "application/atom+xml"

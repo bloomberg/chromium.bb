@@ -205,6 +205,8 @@ const LinkTypeMap kLinkTypeMap[] = {
       "http://schemas.google.com/docs/2007#product"},
     { Link::LINK_ICON,
       "http://schemas.google.com/docs/2007#icon"},
+    { Link::LINK_SHARE,
+      "http://schemas.google.com/docs/2007#share"},
 };
 
 struct FeedLinkTypeMap {

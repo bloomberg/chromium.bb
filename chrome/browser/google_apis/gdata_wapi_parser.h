@@ -71,6 +71,7 @@ class Link {
     LINK_PRODUCT,
     LINK_ICON,
     LINK_OPEN_WITH,
+    LINK_SHARE,
   };
   Link();
   ~Link();

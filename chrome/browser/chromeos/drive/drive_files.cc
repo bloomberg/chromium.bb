@@ -159,6 +159,11 @@ void DriveFile::InitFromDocumentEntry(const google_apis::DocumentEntry& doc) {
       google_apis::Link::LINK_ALTERNATE);
   if (alternate_link)
     alternate_url_ = alternate_link->href();
+
+  const google_apis::Link* share_link = doc.GetLinkByType(
+      google_apis::Link::LINK_SHARE);
+  if (share_link)
+    share_url_ = share_link->href();
 }
 
 // DriveDirectory class implementation.
@@ -413,6 +418,7 @@ void DriveFile::FromProto(const DriveEntryProto& proto) {
 
   thumbnail_url_ = GURL(proto.file_specific_info().thumbnail_url());
   alternate_url_ = GURL(proto.file_specific_info().alternate_url());
+  share_url_ = GURL(proto.file_specific_info().share_url());
   content_mime_type_ = proto.file_specific_info().content_mime_type();
   file_md5_ = proto.file_specific_info().file_md5();
   document_extension_ = proto.file_specific_info().document_extension();
@@ -426,6 +432,7 @@ void DriveFile::ToProto(DriveEntryProto* proto) const {
       proto->mutable_file_specific_info();
   file_specific_info->set_thumbnail_url(thumbnail_url_.spec());
   file_specific_info->set_alternate_url(alternate_url_.spec());
+  file_specific_info->set_share_url(share_url_.spec());
   file_specific_info->set_content_mime_type(content_mime_type_);
   file_specific_info->set_file_md5(file_md5_);
   file_specific_info->set_document_extension(document_extension_);

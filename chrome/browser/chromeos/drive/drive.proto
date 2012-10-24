@@ -43,6 +43,9 @@ message DriveFileSpecificInfo {
 
   // True if the file is a hosted document.
   optional bool is_hosted_document = 6;
+
+  // This URL points to a page containing Share UI for this document.
+  optional string share_url = 7;
 }
 
 // Represents DriveEntry, DriveFile, and DriveDirectory without children.

@@ -109,10 +109,10 @@
             "optional": true,
             "description": "GData edit URL for this file."
           },
-          "contentUrl": {
+          "shareUrl": {
             "type": "string",
             "optional": true,
-            "description": "GData content URL for this file."
+            "description": "GData share URL for this file."
           },
           "isPinned": {
             "type": "boolean",

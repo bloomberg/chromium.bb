@@ -59,6 +59,10 @@
          "rel": "alternate",
          "type": "text/html"
       }, {
+         "href": "https://3_document_share_link",
+         "rel": "http://schemas.google.com/docs/2007#share",
+         "type": "image/html"
+      }, {
          "href": "https://3_document_thumbnail_link",
          "rel": "http://schemas.google.com/docs/2007/thumbnail",
          "type": "image/jpeg"

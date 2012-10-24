@@ -2174,6 +2174,9 @@ void GetDriveFilePropertiesFunction::OnOperationComplete(
   if (!file_specific_info.alternate_url().empty())
     property_dict->SetString("editUrl", file_specific_info.alternate_url());
 
+  if (!file_specific_info.share_url().empty())
+    property_dict->SetString("shareUrl", file_specific_info.share_url());
+
   if (!entry_proto->content_url().empty()) {
     property_dict->SetString("contentUrl", entry_proto->content_url());
   }

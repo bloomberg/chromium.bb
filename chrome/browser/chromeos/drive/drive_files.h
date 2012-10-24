@@ -174,6 +174,7 @@ class DriveFile : public DriveEntry {
   google_apis::DriveEntryKind kind() const { return kind_; }
   const GURL& thumbnail_url() const { return thumbnail_url_; }
   const GURL& alternate_url() const { return alternate_url_; }
+  const GURL& share_url() const { return share_url_; }
   const std::string& content_mime_type() const { return content_mime_type_; }
   const std::string& file_md5() const { return file_md5_; }
   void set_file_md5(const std::string& file_md5) { file_md5_ = file_md5; }
@@ -199,6 +200,7 @@ class DriveFile : public DriveEntry {
   google_apis::DriveEntryKind kind_;  // Not saved in proto.
   GURL thumbnail_url_;
   GURL alternate_url_;
+  GURL share_url_;
   std::string content_mime_type_;
   std::string file_md5_;
   std::string document_extension_;

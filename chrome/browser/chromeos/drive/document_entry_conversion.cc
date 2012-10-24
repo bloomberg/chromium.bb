@@ -90,6 +90,11 @@ DriveEntryProto ConvertDocumentEntryToDriveEntryProto(
         google_apis::Link::LINK_ALTERNATE);
     if (alternate_link)
       file_specific_info->set_alternate_url(alternate_link->href().spec());
+
+    const google_apis::Link* share_link = doc.GetLinkByType(
+        google_apis::Link::LINK_SHARE);
+    if (share_link)
+      file_specific_info->set_share_url(share_link->href().spec());
   } else if (doc.is_folder()) {
     const google_apis::Link* upload_link = doc.GetLinkByType(
         google_apis::Link::LINK_RESUMABLE_CREATE_MEDIA);
