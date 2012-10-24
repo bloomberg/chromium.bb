@@ -6,6 +6,7 @@
 
 // TODO(joth): Componentize or remove chrome/... dependencies.
 #include "android_webview/browser/net/aw_network_delegate.h"
+#include "android_webview/browser/net/aw_url_request_job_factory.h"
 #include "android_webview/browser/aw_request_interceptor.h"
 #include "android_webview/native/android_protocol_handler.h"
 #include "android_webview/native/aw_contents_container.h"
@@ -72,8 +73,15 @@ void AwBrowserDependencyFactoryImpl::InitOnIOThreadWithBrowserContext(
   incognito_context->GetURLRequestContext()->set_network_delegate(
       network_delegate_.get());
 
-  AwRequestInterceptor::RegisterInterceptorOnIOThread(normal_context);
-  AwRequestInterceptor::RegisterInterceptorOnIOThread(incognito_context);
+  url_request_job_factory_.reset(new AwURLRequestJobFactory());
+  normal_context->GetURLRequestContext()->set_job_factory(
+      url_request_job_factory_.get());
+  incognito_context->GetURLRequestContext()->set_job_factory(
+      url_request_job_factory_.get());
+
+  AndroidProtocolHandler::RegisterProtocolsOnIOThread(
+      url_request_job_factory_.get());
+  url_request_job_factory_->AddInterceptor(new AwRequestInterceptor());
 }
 
 void AwBrowserDependencyFactoryImpl::EnsureContextDependentHooksInitialized()
@@ -90,9 +98,6 @@ void AwBrowserDependencyFactoryImpl::EnsureContextDependentHooksInitialized()
           make_scoped_refptr(profile->GetRequestContext()),
           make_scoped_refptr(
               profile->GetOffTheRecordProfile()->GetRequestContext())));
-
-  net::URLRequestContextGetter* context_getter = profile->GetRequestContext();
-  AndroidProtocolHandler::RegisterProtocols(context_getter);
 }
 
 content::BrowserContext* AwBrowserDependencyFactoryImpl::GetBrowserContext(

@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright (c) 2009 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
@@ -51,6 +51,8 @@
         'browser/intercepted_request_data.h',
         'browser/net/aw_network_delegate.cc',
         'browser/net/aw_network_delegate.h',
+        'browser/net/aw_url_request_job_factory.cc',
+        'browser/net/aw_url_request_job_factory.h',
         'browser/net_disk_cache_remover.cc',
         'browser/net_disk_cache_remover.h',
         'browser/renderer_host/aw_render_view_host_ext.cc',

@@ -17,6 +17,7 @@ class URLRequestContextGetter;
 namespace android_webview {
 
 class AwNetworkDelegate;
+class AwURLRequestJobFactory;
 
 class AwBrowserDependencyFactoryImpl : public AwBrowserDependencyFactory {
  public:
@@ -40,6 +41,7 @@ class AwBrowserDependencyFactoryImpl : public AwBrowserDependencyFactory {
 
   // Constructed and assigned on the IO thread.
   scoped_ptr<AwNetworkDelegate> network_delegate_;
+  scoped_ptr<AwURLRequestJobFactory> url_request_job_factory_;
   // Set on the UI thread.
   bool context_dependent_hooks_initialized_;
 

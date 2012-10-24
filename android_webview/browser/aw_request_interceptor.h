@@ -29,9 +29,6 @@ class AwRequestInterceptor : public net::URLRequestJobFactory::Interceptor {
   AwRequestInterceptor();
   virtual ~AwRequestInterceptor();
 
-  static void RegisterInterceptorOnIOThread(
-      net::URLRequestContextGetter* context_getter);
-
   // net::URLRequestJobFactory::Interceptor overrides -------------------------
   virtual net::URLRequestJob* MaybeIntercept(
       net::URLRequest* request,

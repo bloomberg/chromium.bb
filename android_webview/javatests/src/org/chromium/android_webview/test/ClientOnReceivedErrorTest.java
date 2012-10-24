@@ -9,7 +9,6 @@ import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AndroidProtocolHandler;
 import org.chromium.android_webview.ErrorCodeConversionHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
@@ -48,12 +47,8 @@ public class ClientOnReceivedErrorTest extends AndroidWebViewTestBase {
         assertNotNull(onReceivedErrorHelper.getDescription());
     }
 
-    /*
     @MediumTest
     @Feature({"Android-WebView"})
-    http://crbug.com/148369
-    */
-    @DisabledTest
     public void testOnReceivedErrorOnInvalidScheme() throws Throwable {
         TestCallbackHelperContainer.OnReceivedErrorHelper onReceivedErrorHelper =
                 mContentsClient.getOnReceivedErrorHelper();

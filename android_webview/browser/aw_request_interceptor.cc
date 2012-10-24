@@ -124,14 +124,4 @@ net::URLRequestJob* AwRequestInterceptor::MaybeInterceptResponse(
   return NULL;
 }
 
-//static
-void AwRequestInterceptor::RegisterInterceptorOnIOThread(
-    net::URLRequestContextGetter* context_getter) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  // The job factory takes ownership of the interceptor.
-  const_cast<net::URLRequestJobFactory*>(
-      context_getter->GetURLRequestContext()->job_factory())->AddInterceptor(
-          new AwRequestInterceptor());
-}
-
 } // namespace android_webview

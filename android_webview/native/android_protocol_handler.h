@@ -6,11 +6,10 @@
 #define ANDROID_WEBVIEW_NATIVE_ANDROID_PROTOCOL_HANDLER_H_
 
 #include "base/android/jni_android.h"
-#include "net/url_request/url_request.h"
 
 namespace net {
 
-class URLRequestContextGetter;
+class URLRequestJobFactory;
 
 }
 
@@ -27,11 +26,9 @@ class URLRequestContextGetter;
 //
 class AndroidProtocolHandler {
  public:
-  static net::URLRequest::ProtocolFactory Factory;
-
   // Register handlers for all supported Android protocol schemes.
-  static void RegisterProtocols(
-      net::URLRequestContextGetter* context_getter);
+  static void RegisterProtocolsOnIOThread(
+      net::URLRequestJobFactory* context_getter);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(AndroidProtocolHandler);

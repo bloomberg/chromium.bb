@@ -502,6 +502,27 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
 
     @SmallTest
     @Feature({"Android-WebView", "Navigation"})
+    public void testShouldIgnoreNavigationCalledForUnsupportedSchemes() throws Throwable {
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+            createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
+                contentsClient.getShouldIgnoreNavigationHelper();
+        final String unsupportedSchemeUrl = "foobar://resource/1";
+        loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
+                getHtmlForPageWithSimpleLinkTo(unsupportedSchemeUrl), "text/html", false);
+
+        int callCount = shouldIgnoreNavigationHelper.getCallCount();
+        clickOnLinkUsingJs(awContents, contentsClient);
+
+        shouldIgnoreNavigationHelper.waitForCallback(callCount);
+        assertEquals(unsupportedSchemeUrl,
+                shouldIgnoreNavigationHelper.getShouldIgnoreNavigationUrl());
+    }
+
+    @SmallTest
+    @Feature({"Android-WebView", "Navigation"})
     public void testShouldIgnoreNavigationNotCalledForPostNavigations() throws Throwable {
         // The reason POST requests are excluded is BUG 155250.
         final TestAwContentsClient contentsClient = new TestAwContentsClient();

@@ -304,4 +304,22 @@ public class AwContentsClientShouldInterceptRequestTest extends AndroidWebViewTe
         assertEquals(2, shouldInterceptRequestHelper.getUrls().size());
         assertEquals(aboutPageUrl, shouldInterceptRequestHelper.getUrls().get(1));
     }
+
+    @SmallTest
+    @Feature({"Android-WebView"})
+    public void testCalledForUnsupportedSchemes() throws Throwable {
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+            createAwTestContainerViewOnMainSync(contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
+        final TestAwContentsClient.ShouldInterceptRequestHelper shouldInterceptRequestHelper =
+            contentsClient.getShouldInterceptRequestHelper();
+
+        final String unhandledSchemeUrl = "foobar://resource/1";
+        int callCount = shouldInterceptRequestHelper.getCallCount();
+        loadUrlAsync(awContents, unhandledSchemeUrl);
+        shouldInterceptRequestHelper.waitForCallback(callCount);
+        assertEquals(unhandledSchemeUrl,
+                shouldInterceptRequestHelper.getUrls().get(0));
+    }
 }

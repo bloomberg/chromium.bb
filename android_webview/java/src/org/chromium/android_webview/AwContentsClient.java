@@ -13,6 +13,7 @@ import android.webkit.ConsoleMessage;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.WebContentsObserverAndroid;
+import org.chromium.net.NetError;
 
 /**
  * Base-class that an AwContents embedder derives from to receive callbacks.
@@ -119,6 +120,19 @@ public abstract class AwContentsClient extends ContentViewClient {
         @Override
         public void didFailLoad(boolean isProvisionalLoad,
                 boolean isMainFrame, int errorCode, String description, String failingUrl) {
+            if (errorCode == NetError.ERR_ABORTED) {
+                // This error code is generated for the following reasons:
+                // - WebView.stopLoading is called,
+                // - the navigation is intercepted by the embedder via shouldIgnoreNavigation.
+                //
+                // The Android WebView does not notify the embedder of these situations using this
+                // error code with the WebViewClient.onReceivedError callback.
+                return;
+            }
+            if (!isMainFrame) {
+                // The Android WebView does not notify the embedder of sub-frame failures.
+                return;
+            }
             AwContentsClient.this.onReceivedError(
                     ErrorCodeConversionHelper.convertErrorCode(errorCode), description, failingUrl);
         }
