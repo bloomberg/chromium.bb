@@ -41,9 +41,15 @@ static bool g_cdm_module_initialized = InitializeFFmpegLibraries();
 
 static const char kClearKeyCdmVersion[] = "0.1.0.0";
 
+// Copies |input_buffer| into a media::DecoderBuffer. If the |input_buffer| is
+// empty, an empty (end-of-stream) media::DecoderBuffer is returned.
 static scoped_refptr<media::DecoderBuffer> CopyDecoderBufferFrom(
     const cdm::InputBuffer& input_buffer) {
-  DCHECK(input_buffer.data);
+  if (!input_buffer.data) {
+    DCHECK_EQ(input_buffer.data_size, 0);
+    return media::DecoderBuffer::CreateEOSBuffer();
+  }
+
   // TODO(tomfinegan): Get rid of this copy.
   scoped_refptr<media::DecoderBuffer> output_buffer =
       media::DecoderBuffer::CopyFrom(input_buffer.data, input_buffer.data_size);
@@ -236,33 +242,21 @@ cdm::Status ClearKeyCdm::Decrypt(
     const cdm::InputBuffer& encrypted_buffer,
     cdm::DecryptedBlock* decrypted_block) {
   DVLOG(1) << "Decrypt()";
+  DCHECK(encrypted_buffer.data);
 
-  scoped_refptr<media::DecoderBuffer> decoder_buffer =
-      CopyDecoderBufferFrom(encrypted_buffer);
-
-  // Callback is called synchronously, so we can use variables on the stack.
-  media::Decryptor::Status status;
   scoped_refptr<media::DecoderBuffer> buffer;
-  // We don't care what stream type it is here. So just pick video.
-  decryptor_.Decrypt(media::Decryptor::kVideo,
-                     decoder_buffer,
-                     base::Bind(&CopyDecryptResults, &status, &buffer));
+  cdm::Status status = DecryptToMediaDecoderBuffer(encrypted_buffer, &buffer);
 
-  if (status == media::Decryptor::kError)
-    return cdm::kDecryptError;
+  if (status != cdm::kSuccess)
+    return status;
 
-  if (status == media::Decryptor::kNoKey)
-    return cdm::kNoKey;
-
-  DCHECK(buffer);
-  int data_size = buffer->GetDataSize();
-
-  decrypted_block->set_buffer(allocator_->Allocate(data_size));
+  DCHECK(buffer->GetData());
+  decrypted_block->set_buffer(allocator_->Allocate(buffer->GetDataSize()));
   memcpy(reinterpret_cast<void*>(decrypted_block->buffer()->data()),
          buffer->GetData(),
-         data_size);
-
+         buffer->GetDataSize());
   decrypted_block->set_timestamp(buffer->GetTimestamp().InMicroseconds());
+
   return cdm::kSuccess;
 }
 
@@ -309,19 +303,55 @@ void ClearKeyCdm::DeinitializeDecoder(cdm::StreamType decoder_type) {
 cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
     const cdm::InputBuffer& encrypted_buffer,
     cdm::VideoFrame* decoded_frame) {
-  // TODO(xhwang): Need to flush the video decoder with empty buffer.
-  if (!encrypted_buffer.data)
+  DVLOG(1) << "DecryptAndDecodeFrame()";
+
+  scoped_refptr<media::DecoderBuffer> buffer;
+  cdm::Status status = DecryptToMediaDecoderBuffer(encrypted_buffer, &buffer);
+
+  if (status != cdm::kSuccess)
+    return status;
+
+#if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
+  DCHECK(status == cdm::kSuccess);
+  DCHECK(buffer);
+  return video_decoder_->DecodeFrame(buffer.get()->GetData(),
+                                     buffer->GetDataSize(),
+                                     encrypted_buffer.timestamp,
+                                     decoded_frame);
+#elif defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
+  // The fake decoder does not buffer any frames internally. So if the input is
+  // empty (EOS), just return kNeedMoreData.
+  if (buffer->IsEndOfStream())
     return cdm::kNeedMoreData;
 
-  scoped_refptr<media::DecoderBuffer> decoder_buffer =
+  GenerateFakeVideoFrame(buffer->GetTimestamp(), decoded_frame);
+  return cdm::kSuccess;
+#else
+  NOTIMPLEMENTED();
+  return cdm::kDecodeError;
+#endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
+}
+
+cdm::Status ClearKeyCdm::DecryptToMediaDecoderBuffer(
+    const cdm::InputBuffer& encrypted_buffer,
+    scoped_refptr<media::DecoderBuffer>* decrypted_buffer) {
+  DCHECK(decrypted_buffer);
+  scoped_refptr<media::DecoderBuffer> buffer =
       CopyDecoderBufferFrom(encrypted_buffer);
 
+  if (buffer->IsEndOfStream()) {
+    *decrypted_buffer = buffer;
+    return cdm::kSuccess;
+  }
+
   // Callback is called synchronously, so we can use variables on the stack.
-  media::Decryptor::Status status;
-  scoped_refptr<media::DecoderBuffer> buffer;
-  decryptor_.Decrypt(media::Decryptor::kVideo,
-                     decoder_buffer,
-                     base::Bind(&CopyDecryptResults, &status, &buffer));
+  media::Decryptor::Status status = media::Decryptor::kError;
+  // The AesDecryptor does not care what the stream type is. Pass kVideo
+  // for both audio and video decryption.
+  decryptor_.Decrypt(
+      media::Decryptor::kVideo,
+      buffer,
+      base::Bind(&CopyDecryptResults, &status, decrypted_buffer));
 
   if (status == media::Decryptor::kError)
     return cdm::kDecryptError;
@@ -329,20 +359,8 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
   if (status == media::Decryptor::kNoKey)
     return cdm::kNoKey;
 
-#if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
-  DCHECK(status == media::Decryptor::kSuccess);
-  DCHECK(buffer);
-  return video_decoder_->DecodeFrame(buffer.get()->GetData(),
-                                     buffer->GetDataSize(),
-                                     encrypted_buffer.timestamp,
-                                     decoded_frame);
-#elif defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
-  GenerateFakeVideoFrame(decoder_buffer->GetTimestamp(), decoded_frame);
+  DCHECK_EQ(status, media::Decryptor::kSuccess);
   return cdm::kSuccess;
-#else
-  NOTIMPLEMENTED();
-  return cdm::kDecodeError;
-#endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
 }
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)

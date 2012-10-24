@@ -113,6 +113,18 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
     std::string default_url_;
   };
 
+  // Decrypts the |encrypted_buffer| and puts the result in |decrypted_buffer|.
+  // Returns cdm::kSuccess if decryption succeeded. The decrypted result is
+  // put in |decrypted_buffer|. If |encrypted_buffer| is empty, the
+  // |decrypted_buffer| is set to an empty (EOS) buffer.
+  // Returns cdm::kNoKey if no decryption key was available. In this case
+  // |decrypted_buffer| should be ignored by the caller.
+  // Returns cdm::kDecryptError if any decryption error occurred. In this case
+  // |decrypted_buffer| should be ignored by the caller.
+  cdm::Status DecryptToMediaDecoderBuffer(
+      const cdm::InputBuffer& encrypted_buffer,
+      scoped_refptr<media::DecoderBuffer>* decrypted_buffer);
+
 #if defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
   void GenerateFakeVideoFrame(base::TimeDelta timestamp,
                               cdm::VideoFrame* video_frame);

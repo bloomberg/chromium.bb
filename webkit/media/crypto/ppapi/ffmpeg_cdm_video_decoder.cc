@@ -221,21 +221,10 @@ cdm::Status FFmpegCdmVideoDecoder::DecodeFrame(
     return cdm::kDecodeError;
   }
 
-  // If no frame was produced then signal that more data is required to
-  // produce more frames. This can happen under two circumstances:
-  //   1) Decoder was recently initialized/flushed
-  //   2) End of stream was reached and all internal frames have been output
-  if (frame_decoded == 0) {
-    // There was an input frame, but FFmpeg did not produce an output frame.
-    // More input data is needed to produce output.
-    if (compressed_frame && compressed_frame_size > 0)
-      return cdm::kNeedMoreData;
-
-    // No output frame was produced by FFmpeg, and there was no input data.
-    // The decoder has been flushed.
-    else
-      return cdm::kSuccess;
-  }
+  // If no frame was produced then signal that more data is required to produce
+  // more frames.
+  if (frame_decoded == 0)
+    return cdm::kNeedMoreData;
 
   // The decoder is in a bad state and not decoding correctly.
   // Checking for NULL avoids a crash.
