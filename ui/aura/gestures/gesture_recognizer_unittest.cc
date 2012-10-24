@@ -1026,8 +1026,15 @@ TEST_F(GestureRecognizerTest, GestureEventNonRailFling) {
   EXPECT_GT(delegate->velocity_y(), 0);
 }
 
+#if defined(OS_WIN)
+// Fails on win_aura. http://crbug.com/157596
+#define MAYBE_GestureEventLongPress DISABLED_GestureEventLongPress
+#else
+#define MAYBE_GestureEventLongPress GestureEventLongPress
+#endif
+
 // Check that appropriate touch events generate long press events
-TEST_F(GestureRecognizerTest, GestureEventLongPress) {
+TEST_F(GestureRecognizerTest, MAYBE_GestureEventLongPress) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   const int kWindowWidth = 123;
