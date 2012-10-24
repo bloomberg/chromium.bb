@@ -592,7 +592,7 @@ TEST_F(ClientSideDetectionHostTest,
 #else
 #define MAYBE_NavigationCancelsShouldClassifyUrl NavigationCancelsShouldClassifyUrl
 #endif
-TEST_F(ClientSideDetectionHostTest, NavigationCancelsShouldClassifyUrl) {
+TEST_F(ClientSideDetectionHostTest, MAYBE_NavigationCancelsShouldClassifyUrl) {
   // Test that canceling pending should classify requests works as expected.
 
   GURL first_url("http://first.phishy.url.com");
