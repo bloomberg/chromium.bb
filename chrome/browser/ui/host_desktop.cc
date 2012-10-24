@@ -36,7 +36,7 @@ HostDesktopType GetHostDesktopTypeForNativeView(gfx::NativeView native_view) {
       HOST_DESKTOP_TYPE_ASH :
       HOST_DESKTOP_TYPE_NATIVE;
 #else
-  return HOST_DESKTOP_TYPE_ASH;
+  return HOST_DESKTOP_TYPE_NATIVE;
 #endif
 }
 
