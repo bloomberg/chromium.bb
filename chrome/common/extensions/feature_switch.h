@@ -24,7 +24,6 @@ class FeatureSwitch {
   static FeatureSwitch* script_bubble();
   static FeatureSwitch* sideload_wipeout();
   static FeatureSwitch* prompt_for_external_extensions();
-  static FeatureSwitch* tab_capture();
 
   enum DefaultValue {
     DEFAULT_ENABLED,

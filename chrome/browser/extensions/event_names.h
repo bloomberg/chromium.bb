@@ -65,9 +65,6 @@ extern const char kOnTerminalProcessOutput[];
 // OffscreenTabs.
 extern const char kOnOffscreenTabUpdated[];
 
-// Tab content capture.
-extern const char kOnTabCaptureStatusChanged[];
-
 // Bluetooth.
 extern const char kBluetoothOnAvailabilityChanged[];
 extern const char kBluetoothOnDeviceDiscovered[];

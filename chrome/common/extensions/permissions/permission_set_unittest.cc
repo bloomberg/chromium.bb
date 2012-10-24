@@ -681,7 +681,6 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kWebRequest);
   skip.insert(APIPermission::kWebRequestBlocking);
   skip.insert(APIPermission::kDeclarativeWebRequest);
-  skip.insert(APIPermission::kTabCapture);
 
   // This permission requires explicit user action (context menu handler)
   // so we won't prompt for it for now.

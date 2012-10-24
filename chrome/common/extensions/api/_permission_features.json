@@ -294,10 +294,6 @@
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
   },
-  "tabCapture": {
-    "channel": "trunk",
-    "extension_types": ["extension", "packaged_app"]
-  },
   "terminalPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app", "platform_app"],

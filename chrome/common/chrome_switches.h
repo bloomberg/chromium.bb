@@ -335,7 +335,6 @@ extern const char kSyncTabFavicons[];
 extern const char kSyncThrowUnrecoverableError[];
 extern const char kSyncTrySsltcpFirstForXmpp[];
 extern const char kTabBrowserDragging[];
-extern const char kTabCapture[];
 extern const char kTestNaClSandbox[];
 extern const char kTestName[];
 extern const char kTestType[];

@@ -57,8 +57,6 @@ const char kOnTerminalProcessOutput[] = "terminalPrivate.onProcessOutput";
 
 const char kOnOffscreenTabUpdated[] = "experimental.offscreenTabs.onUpdated";
 
-const char kOnTabCaptureStatusChanged[] = "tabCapture.onStatusChanged";
-
 const char kBluetoothOnAvailabilityChanged[] =
     "bluetooth.onAvailabilityChanged";
 const char kBluetoothOnDeviceDiscovered[] = "bluetooth.onDeviceDiscovered";

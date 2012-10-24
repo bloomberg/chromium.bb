@@ -1268,9 +1268,6 @@ const char kSyncTrySsltcpFirstForXmpp[]     = "sync-try-ssltcp-first-for-xmpp";
 // Enables tab dragging to create a real browser.
 const char kTabBrowserDragging[]            = "enable-tab-browser-dragging";
 
-// Enables tab capture.
-const char kTabCapture[]                    = "enable-tab-capture";
-
 // Passes the name of the current running automated test to Chrome.
 const char kTestName[]                      = "test-name";
 
