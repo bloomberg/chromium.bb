@@ -69,7 +69,7 @@ chrome.test.getConfig(function(config) {
       document.body.appendChild(iframe);
     },
 
-    function FAILS_remoteIframe() {
+    function remoteIframe() {
       var iframe = document.createElement('iframe');
       iframe.onload = function() {
         chrome.test.notifyFail('Remote iframe should not have loaded');

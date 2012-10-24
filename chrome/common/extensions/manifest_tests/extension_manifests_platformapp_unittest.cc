@@ -54,6 +54,41 @@ TEST_F(ExtensionManifestTest, PlatformApps) {
       warning_testcases, arraysize(warning_testcases), EXPECT_TYPE_WARNING);
 }
 
+TEST_F(ExtensionManifestTest, PlatformAppContentSecurityPolicy) {
+  // Normal platform apps can't specify a CSP value.
+  Testcase warning_testcases[] = {
+    Testcase(
+        "init_platform_app_csp_warning_1.json",
+        "'content_security_policy' is only allowed for extensions and legacy "
+            "packaged apps, and this is a packaged app."),
+    Testcase(
+        "init_platform_app_csp_warning_2.json",
+        "'app.content_security_policy' is not allowed for specified extension "
+            "ID.")
+  };
+  RunTestcases(
+      warning_testcases, arraysize(warning_testcases), EXPECT_TYPE_WARNING);
+
+  // Whitelisted ones can (this is the ID corresponding to the base 64 encoded
+  // key in the init_platform_app_csp.json manifest.)
+  std::string test_id = "ahplfneplbnjcflhdgkkjeiglkkfeelb";
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kWhitelistedExtensionID, test_id);
+  scoped_refptr<extensions::Extension> extension =
+      LoadAndExpectSuccess("init_platform_app_csp.json");
+  EXPECT_EQ(0U, extension->install_warnings().size())
+      << "Unexpected warning " << extension->install_warnings()[0].message;
+  EXPECT_TRUE(extension->is_platform_app());
+  EXPECT_EQ(
+      "default-src 'self' https://www.google.com",
+      extension->GetResourceContentSecurityPolicy(""));
+
+  // But even whitelisted ones must specify a secure policy.
+  LoadAndExpectError(
+      "init_platform_app_csp_insecure.json",
+      errors::kInsecureContentSecurityPolicy);
+}
+
 TEST_F(ExtensionManifestTest, CertainApisRequirePlatformApps) {
   // Put APIs here that should be restricted to platform apps, but that haven't
   // yet graduated from experimental.

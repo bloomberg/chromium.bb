@@ -96,6 +96,7 @@ namespace extension_manifest_keys {
   extern const char kPlatformAppBackground[];
   extern const char kPlatformAppBackgroundPage[];
   extern const char kPlatformAppBackgroundScripts[];
+  extern const char kPlatformAppContentSecurityPolicy[];
   extern const char kPlugins[];
   extern const char kPluginsPath[];
   extern const char kPluginsPublic[];

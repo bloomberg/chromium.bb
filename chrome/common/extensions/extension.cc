@@ -2743,10 +2743,12 @@ bool Extension::LoadIncognitoMode(string16* error) {
 }
 
 bool Extension::LoadContentSecurityPolicy(string16* error) {
-  if (manifest_->HasKey(keys::kContentSecurityPolicy)) {
+  const std::string& key = is_platform_app() ?
+      keys::kPlatformAppContentSecurityPolicy : keys::kContentSecurityPolicy;
+
+  if (manifest_->HasPath(key)) {
     std::string content_security_policy;
-    if (!manifest_->GetString(keys::kContentSecurityPolicy,
-                              &content_security_policy)) {
+    if (!manifest_->GetString(key, &content_security_policy)) {
       *error = ASCIIToUTF16(errors::kInvalidContentSecurityPolicy);
       return false;
     }
