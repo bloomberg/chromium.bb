@@ -27,6 +27,7 @@
 #include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/pref_notifier_impl.h"
+#include "chrome/browser/prefs/pref_service_observer.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
@@ -254,6 +255,23 @@ bool PrefService::ReloadPersistentPrefs() {
 void PrefService::CommitPendingWrite() {
   DCHECK(CalledOnValidThread());
   user_pref_store_->CommitPendingWrite();
+}
+
+void PrefService::AddObserver(PrefServiceObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void PrefService::RemoveObserver(PrefServiceObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+bool PrefService::HasSynced() {
+  return pref_sync_associator_.get() &&
+      pref_sync_associator_->models_associated();
+}
+
+void PrefService::HasSyncedChanged() {
+  FOR_EACH_OBSERVER(PrefServiceObserver, observer_list_, OnHasSyncedChanged());
 }
 
 namespace {

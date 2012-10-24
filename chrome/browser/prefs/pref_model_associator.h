@@ -34,6 +34,9 @@ class PrefModelAssociator
   PrefModelAssociator();
   virtual ~PrefModelAssociator();
 
+  // See description above field for details.
+  bool models_associated() const { return models_associated_; }
+
   // syncer::SyncableService implementation.
   virtual syncer::SyncDataList GetAllSyncData(
       syncer::ModelType type) const OVERRIDE;

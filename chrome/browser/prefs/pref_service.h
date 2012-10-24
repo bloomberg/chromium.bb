@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/hash_tables.h"
+#include "base/observer_list.h"
 #include "base/prefs/public/pref_service_base.h"
 #include "base/threading/non_thread_safe.h"
 
@@ -26,6 +27,7 @@ class PersistentPrefStore;
 class PrefModelAssociator;
 class PrefNotifier;
 class PrefNotifierImpl;
+class PrefServiceObserver;
 class PrefStore;
 class PrefValueStore;
 
@@ -127,6 +129,18 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
   // Lands pending writes to disk. This should only be used if we need to save
   // immediately (basically, during shutdown).
   void CommitPendingWrite();
+
+  void AddObserver(PrefServiceObserver* observer);
+  void RemoveObserver(PrefServiceObserver* observer);
+
+  // Returns true if preferences state has synchronized with the remote
+  // preferences. If true is returned it can be assumed the local preferences
+  // has applied changes from the remote preferences. The two may not be
+  // identical if a change is in flight (from either side).
+  bool HasSynced();
+
+  // Invoked internally when the HasSynced() state changes.
+  void HasSyncedChanged();
 
   // PrefServiceBase implementation.
   virtual bool IsManagedPreference(const char* pref_name) const OVERRIDE;
@@ -340,6 +354,8 @@ class PrefService : public PrefServiceBase, public base::NonThreadSafe {
   // CreatePrefServiceWithPerTabPrefStore() have been called to create a
   // "forked" PrefService.
   bool pref_service_forked_;
+
+  ObserverList<PrefServiceObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefService);
 };

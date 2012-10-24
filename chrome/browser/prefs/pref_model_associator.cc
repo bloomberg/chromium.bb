@@ -164,6 +164,7 @@ syncer::SyncError PrefModelAssociator::MergeDataAndStartSyncing(
   }
 
   models_associated_ = true;
+  pref_service_->HasSyncedChanged();
   return syncer::SyncError();
 }
 
@@ -172,6 +173,7 @@ void PrefModelAssociator::StopSyncing(syncer::ModelType type) {
   models_associated_ = false;
   sync_processor_.reset();
   sync_error_factory_.reset();
+  pref_service_->HasSyncedChanged();
 }
 
 Value* PrefModelAssociator::MergePreference(

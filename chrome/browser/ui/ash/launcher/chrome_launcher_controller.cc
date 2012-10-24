@@ -124,6 +124,28 @@ class AppShortcutLauncherItemController : public LauncherItemController {
   DISALLOW_COPY_AND_ASSIGN(AppShortcutLauncherItemController);
 };
 
+// If the value of the pref at |local_path is not empty, it is returned
+// otherwise the value of the pref at |synced_path| is returned.
+std::string GetLocalOrRemotePref(PrefService* pref_service,
+                                 const char* local_path,
+                                 const char* synced_path) {
+  const std::string value(pref_service->GetString(local_path));
+  return value.empty() ? pref_service->GetString(synced_path) : value;
+}
+
+// If prefs have synced and the pref value at |local_path| is empty the value
+// from |synced_path| is copied to |local_path|.
+void MaybePropagatePrefToLocal(PrefService* pref_service,
+                               const char* local_path,
+                               const char* synced_path) {
+  if (pref_service->GetString(local_path).empty() &&
+      pref_service->HasSynced()) {
+    // First time the user is using this machine, propagate from remote to
+    // local.
+    pref_service->SetString(local_path, pref_service->GetString(synced_path));
+  }
+}
+
 }  // namespace
 
 // ChromeLauncherController ----------------------------------------------------
@@ -168,8 +190,6 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
                               content::Source<Profile>(profile_));
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(prefs::kPinnedLauncherApps, this);
-  pref_change_registrar_.Add(prefs::kShelfAlignment, this);
-  pref_change_registrar_.Add(prefs::kShelfAutoHideBehavior, this);
 }
 
 ChromeLauncherController::~ChromeLauncherController() {
@@ -190,6 +210,8 @@ ChromeLauncherController::~ChromeLauncherController() {
 
   if (observed_sync_service_)
     observed_sync_service_->RemoveObserver(this);
+
+  profile_->GetPrefs()->RemoveObserver(this);
 }
 
 void ChromeLauncherController::Init() {
@@ -222,6 +244,11 @@ void ChromeLauncherController::Init() {
   if (ash::Shell::HasInstance()) {
     SetShelfAutoHideBehaviorFromPrefs();
     SetShelfAlignmentFromPrefs();
+    PrefService* prefs = profile_->GetPrefs();
+    if (prefs->GetString(prefs::kShelfAlignmentLocal).empty() ||
+        prefs->GetString(prefs::kShelfAutoHideBehaviorLocal).empty()) {
+      prefs->AddObserver(this);
+    }
     ash::Shell::GetInstance()->AddShellObserver(this);
   }
 }
@@ -561,6 +588,8 @@ void ChromeLauncherController::SetAutoHideBehavior(
       value = ash::kShelfAutoHideBehaviorNever;
       break;
   }
+  // See comment in |kShelfAlignment| about why we have two prefs here.
+  profile_->GetPrefs()->SetString(prefs::kShelfAutoHideBehaviorLocal, value);
   profile_->GetPrefs()->SetString(prefs::kShelfAutoHideBehavior, value);
 }
 
@@ -758,14 +787,15 @@ void ChromeLauncherController::Observe(
     case chrome::NOTIFICATION_PREF_CHANGED: {
       const std::string& pref_name(
           *content::Details<std::string>(details).ptr());
-      if (pref_name == prefs::kPinnedLauncherApps)
+      if (pref_name == prefs::kPinnedLauncherApps) {
         UpdateAppLaunchersFromPref();
-      else if (pref_name == prefs::kShelfAlignment)
+      } else if (pref_name == prefs::kShelfAlignmentLocal) {
         SetShelfAlignmentFromPrefs();
-      else if (pref_name == prefs::kShelfAutoHideBehavior)
+      } else if (pref_name == prefs::kShelfAutoHideBehaviorLocal) {
         SetShelfAutoHideBehaviorFromPrefs();
-      else
+      } else {
         NOTREACHED() << "Unexpected pref change for " << pref_name;
+      }
       break;
     }
     default:
@@ -788,12 +818,23 @@ void ChromeLauncherController::OnShelfAlignmentChanged() {
       pref_value = ash::kShelfAlignmentRight;
       break;
   }
+  // See comment in |kShelfAlignment| about why we have two prefs here.
+  profile_->GetPrefs()->SetString(prefs::kShelfAlignmentLocal, pref_value);
   profile_->GetPrefs()->SetString(prefs::kShelfAlignment, pref_value);
 }
 
 void ChromeLauncherController::OnStateChanged() {
   DCHECK(observed_sync_service_);
   CheckAppSync();
+}
+
+void ChromeLauncherController::OnHasSyncedChanged() {
+  MaybePropagatePrefToLocal(profile_->GetPrefs(),
+                            prefs::kShelfAlignmentLocal,
+                            prefs::kShelfAlignment);
+  MaybePropagatePrefToLocal(profile_->GetPrefs(),
+                            prefs::kShelfAutoHideBehaviorLocal,
+                            prefs::kShelfAutoHideBehavior);
 }
 
 void ChromeLauncherController::PersistPinnedState() {
@@ -949,13 +990,17 @@ void ChromeLauncherController::UpdateAppLaunchersFromPref() {
 }
 
 void ChromeLauncherController::SetShelfAutoHideBehaviorFromPrefs() {
+  // See comment in |kShelfAlignment| as to why we consider two prefs.
+  const std::string behavior_value(
+      GetLocalOrRemotePref(profile_->GetPrefs(),
+                           prefs::kShelfAutoHideBehaviorLocal,
+                           prefs::kShelfAutoHideBehavior));
+
   // Note: To maintain sync compatibility with old images of chrome/chromeos
   // the set of values that may be encountered includes the now-extinct
   // "Default" as well as "Never" and "Always", "Default" should now
   // be treated as "Never".
   // (http://code.google.com/p/chromium/issues/detail?id=146773)
-  const std::string behavior_value(
-      profile_->GetPrefs()->GetString(prefs::kShelfAutoHideBehavior));
   ash::ShelfAutoHideBehavior behavior =
       ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
   if (behavior_value == ash::kShelfAutoHideBehaviorAlways)
@@ -970,8 +1015,11 @@ void ChromeLauncherController::SetShelfAlignmentFromPrefs() {
           switches::kShowLauncherAlignmentMenu))
     return;
 
+  // See comment in |kShelfAlignment| as to why we consider two prefs.
   const std::string alignment_value(
-      profile_->GetPrefs()->GetString(prefs::kShelfAlignment));
+      GetLocalOrRemotePref(profile_->GetPrefs(),
+                           prefs::kShelfAlignmentLocal,
+                           prefs::kShelfAlignment));
   ash::ShelfAlignment alignment = ash::SHELF_ALIGNMENT_BOTTOM;
   if (alignment_value == ash::kShelfAlignmentLeft)
     alignment = ash::SHELF_ALIGNMENT_LEFT;

@@ -53,9 +53,15 @@ void RegisterChromeLauncherUserPrefs(PrefService* user_prefs) {
   user_prefs->RegisterStringPref(prefs::kShelfAutoHideBehavior,
                                  kShelfAutoHideBehaviorNever,
                                  PrefService::SYNCABLE_PREF);
+  user_prefs->RegisterStringPref(prefs::kShelfAutoHideBehaviorLocal,
+                                 std::string(),
+                                 PrefService::UNSYNCABLE_PREF);
   user_prefs->RegisterStringPref(prefs::kShelfAlignment,
                                  kShelfAlignmentBottom,
                                  PrefService::SYNCABLE_PREF);
+  user_prefs->RegisterStringPref(prefs::kShelfAlignmentLocal,
+                                 std::string(),
+                                 PrefService::UNSYNCABLE_PREF);
   user_prefs->RegisterBooleanPref(prefs::kLauncherShouldRunSyncAnimation,
                                   true,
                                   PrefService::UNSYNCABLE_PREF);

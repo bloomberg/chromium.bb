@@ -737,7 +737,9 @@ extern const char kMediaGalleriesRememberedGalleries[];
 
 #if defined(USE_AURA)
 extern const char kShelfAlignment[];
+extern const char kShelfAlignmentLocal[];
 extern const char kShelfAutoHideBehavior[];
+extern const char kShelfAutoHideBehaviorLocal[];
 extern const char kUseDefaultPinnedApps[];
 extern const char kPinnedLauncherApps[];
 

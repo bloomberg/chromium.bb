@@ -20,6 +20,7 @@
 #include "base/prefs/public/pref_change_registrar.h"
 #include "base/timer.h"
 #include "chrome/browser/api/sync/profile_sync_service_observer.h"
+#include "chrome/browser/prefs/pref_service_observer.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -54,7 +55,8 @@ class ChromeLauncherController
       public ash::LauncherModelObserver,
       public ash::ShellObserver,
       public content::NotificationObserver,
-      public ProfileSyncServiceObserver {
+      public ProfileSyncServiceObserver,
+      public PrefServiceObserver {
  public:
   // Indicates if a launcher item is incognito or not.
   enum IncognitoState {
@@ -266,6 +268,9 @@ class ChromeLauncherController
 
   // Overridden from ProfileSyncServiceObserver:
   virtual void OnStateChanged() OVERRIDE;
+
+  // Overriden from PrefServiceObserver:
+  virtual void OnHasSyncedChanged() OVERRIDE;
 
  private:
   friend class BrowserLauncherItemControllerTest;

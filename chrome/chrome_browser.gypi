@@ -1424,6 +1424,7 @@
         'browser/prefs/pref_notifier_impl.h',
         'browser/prefs/pref_service.cc',
         'browser/prefs/pref_service.h',
+        'browser/prefs/pref_service_observer.h',
         'browser/prefs/pref_value_store.cc',
         'browser/prefs/pref_value_store.h',
         'browser/prefs/proxy_config_dictionary.cc',
