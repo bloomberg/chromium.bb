@@ -14,6 +14,24 @@ namespace em = enterprise_management;
 
 namespace policy {
 
+namespace {
+
+// Translates the DeviceRegisterResponse::DeviceMode |mode| to the enum used
+// internally to represent different device modes.
+DeviceMode TranslateProtobufDeviceMode(
+    em::DeviceRegisterResponse::DeviceMode mode) {
+  switch (mode) {
+    case em::DeviceRegisterResponse::ENTERPRISE:
+      return DEVICE_MODE_ENTERPRISE;
+    case em::DeviceRegisterResponse::RETAIL:
+      return DEVICE_MODE_KIOSK;
+  }
+  LOG(ERROR) << "Unknown enrollment mode in registration response: " << mode;
+  return DEVICE_MODE_NOT_SET;
+}
+
+}  // namespace
+
 CloudPolicyClient::Observer::~Observer() {}
 
 CloudPolicyClient::StatusProvider::~StatusProvider() {}
@@ -28,6 +46,7 @@ CloudPolicyClient::CloudPolicyClient(const std::string& machine_id,
       machine_model_(machine_model),
       user_affiliation_(user_affiliation),
       scope_(scope),
+      device_mode_(DEVICE_MODE_NOT_SET),
       submit_machine_id_(false),
       public_key_version_(-1),
       public_key_version_valid_(false),
@@ -171,13 +190,22 @@ void CloudPolicyClient::OnRegisterCompleted(
   if (status == DM_STATUS_SUCCESS &&
       (!response.has_register_response() ||
        !response.register_response().has_device_management_token())) {
-    LOG(WARNING) << "Empty registration response.";
+    LOG(WARNING) << "Invalid registration response.";
     status = DM_STATUS_RESPONSE_DECODING_ERROR;
   }
 
   status_ = status;
   if (status == DM_STATUS_SUCCESS) {
     dm_token_ = response.register_response().device_management_token();
+
+    // Device mode is only relevant for device policy really, it's the
+    // responsibility of the consumer of the field to check validity.
+    device_mode_ = DEVICE_MODE_NOT_SET;
+    if (response.register_response().has_enrollment_type()) {
+      device_mode_ = TranslateProtobufDeviceMode(
+          response.register_response().enrollment_type());
+    }
+
     NotifyRegistrationStateChanged();
   } else {
     NotifyClientError();

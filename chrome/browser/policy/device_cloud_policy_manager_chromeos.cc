@@ -4,10 +4,13 @@
 
 #include "chrome/browser/policy/device_cloud_policy_manager_chromeos.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/policy/cloud_policy_client.h"
 #include "chrome/browser/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/policy/device_management_service.h"
+#include "chrome/browser/policy/enrollment_handler_chromeos.h"
 #include "chrome/browser/policy/enterprise_install_attributes.h"
 #include "chrome/common/pref_names.h"
 
@@ -67,10 +70,34 @@ void DeviceCloudPolicyManagerChromeOS::Connect(
   StartIfManaged();
 }
 
+void DeviceCloudPolicyManagerChromeOS::StartEnrollment(
+    const std::string& auth_token,
+    const AllowedDeviceModes& allowed_device_modes,
+    const EnrollmentCallback& callback) {
+  CHECK(device_management_service_);
+  ShutdownService();
+
+  enrollment_handler_.reset(
+      new EnrollmentHandlerChromeOS(
+          device_store_, install_attributes_, CreateClient(), auth_token,
+          allowed_device_modes,
+          base::Bind(&DeviceCloudPolicyManagerChromeOS::EnrollmentCompleted,
+                     base::Unretained(this), callback)));
+  enrollment_handler_->StartEnrollment();
+}
+
+void DeviceCloudPolicyManagerChromeOS::CancelEnrollment() {
+  if (enrollment_handler_.get()) {
+    enrollment_handler_.reset();
+    StartIfManaged();
+  }
+}
+
 void DeviceCloudPolicyManagerChromeOS::OnStoreLoaded(CloudPolicyStore* store) {
   CloudPolicyManager::OnStoreLoaded(store);
 
-  StartIfManaged();
+  if (!enrollment_handler_.get())
+    StartIfManaged();
 }
 
 // static
@@ -108,6 +135,21 @@ scoped_ptr<CloudPolicyClient> DeviceCloudPolicyManagerChromeOS::CreateClient() {
       new CloudPolicyClient(GetMachineID(), GetMachineModel(),
                             USER_AFFILIATION_NONE, POLICY_SCOPE_MACHINE, NULL,
                             device_management_service_));
+}
+
+void DeviceCloudPolicyManagerChromeOS::EnrollmentCompleted(
+    const EnrollmentCallback& callback,
+    EnrollmentStatus status) {
+  if (status.status() == EnrollmentStatus::STATUS_SUCCESS) {
+    InitializeService(enrollment_handler_->ReleaseClient());
+    StartRefreshScheduler(local_state_, prefs::kDevicePolicyRefreshRate);
+  } else {
+    StartIfManaged();
+  }
+
+  enrollment_handler_.reset();
+  if (!callback.is_null())
+    callback.Run(status);
 }
 
 void DeviceCloudPolicyManagerChromeOS::StartIfManaged() {

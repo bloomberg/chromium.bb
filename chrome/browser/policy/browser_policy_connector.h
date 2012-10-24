@@ -164,6 +164,12 @@ class BrowserPolicyConnector : public content::NotificationObserver {
     return device_management_service_.get();
   }
 
+#if defined(OS_CHROMEOS)
+  DeviceCloudPolicyManagerChromeOS* GetDeviceCloudPolicyManager() {
+    return device_cloud_policy_manager_.get();
+  }
+#endif
+
   // Sets a |provider| that will be included in PolicyServices returned by
   // CreatePolicyService. This is a static method because local state is
   // created immediately after the connector, and tests don't have a chance to

@@ -131,6 +131,11 @@ class CloudPolicyClient {
   // Whether the client is registered with the device management service.
   bool is_registered() const { return !dm_token_.empty(); }
 
+  const std::string& dm_token() const { return dm_token_; }
+
+  // The device mode as received in the registration request.
+  DeviceMode device_mode() const { return device_mode_; }
+
   // The policy response as obtained by the last request to the cloud. This
   // policy blob hasn't gone through verification, so its contents cannot be
   // trusted. Use CloudPolicyStore::policy() and CloudPolicyStore::policy_map()
@@ -178,6 +183,7 @@ class CloudPolicyClient {
   const PolicyScope scope_;
 
   std::string dm_token_;
+  DeviceMode device_mode_;
   std::string client_id_;
   bool submit_machine_id_;
   base::Time last_policy_timestamp_;
