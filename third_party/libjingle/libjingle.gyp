@@ -9,6 +9,7 @@
   'variables': {
     'enabled_libjingle_device_manager%': 0,
     'libjingle_source%': "source",
+    'libjingle_peerconnection_additional_deps%': [],
   },
   'target_defaults': {
     'defines': [
@@ -729,6 +730,7 @@
             '<(DEPTH)/third_party/webrtc/video_engine/video_engine.gyp:video_engine_core',
             '<(DEPTH)/third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine_core',
             '<(DEPTH)/third_party/webrtc/system_wrappers/source/system_wrappers.gyp:system_wrappers',
+            '<@(libjingle_peerconnection_additional_deps)',
             'libjingle',
             'libjingle_p2p',
           ],
