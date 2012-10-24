@@ -50,14 +50,14 @@ class VaapiH264Decoder {
 
   // Callback invoked on the client to start a GPU job to decode and render
   // a video frame into a pixmap/texture. Callee has to call SubmitDecode()
-  // for the given picture, taking ownership of the queues.
+  // for the given picture.
   // Arguments: output buffer id (provided by the client at the time of
   // AssignPictureBuffer() call), va buffer and slice buffer queues to be
-  // passed to SubmitDecode(). SubmitDecode() will take ownership of the
-  // queues.
-  typedef base::Callback<void(int32,
-                              std::queue<VABufferID>*,
-                              std::queue<VABufferID>*)> SubmitDecodeCB;
+  // passed to SubmitDecode().
+  typedef base::Callback<
+    void(int32,
+         scoped_ptr<std::queue<VABufferID> >,
+         scoped_ptr<std::queue<VABufferID> >)> SubmitDecodeCB;
 
   // Decode result codes.
   enum DecResult {

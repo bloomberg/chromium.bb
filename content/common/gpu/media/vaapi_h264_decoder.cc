@@ -1062,15 +1062,16 @@ bool VaapiH264Decoder::DecodePicture() {
   DVLOG(4) << "Pending slice bufs to commit: " << pending_slice_bufs_.size();
 
   DCHECK(pending_slice_bufs_.size());
-  std::queue<VABufferID>* va_bufs = new std::queue<VABufferID>();
+  scoped_ptr<std::queue<VABufferID> > va_bufs(new std::queue<VABufferID>());
   std::swap(*va_bufs, pending_va_bufs_);
-  std::queue<VABufferID>* slice_bufs = new std::queue<VABufferID>();
+  scoped_ptr<std::queue<VABufferID> > slice_bufs(new std::queue<VABufferID>());
   std::swap(*slice_bufs, pending_slice_bufs_);
 
   // Fire up a parallel job on the GPU on the ChildThread to decode and put
   // the decoded/converted/scaled picture into the pixmap.
   // Callee will take care of freeing the buffer queues.
-  submit_decode_cb_.Run(dec_surface->picture_buffer_id(), va_bufs, slice_bufs);
+  submit_decode_cb_.Run(
+      dec_surface->picture_buffer_id(), va_bufs.Pass(), slice_bufs.Pass());
 
   // Used to notify clients that we had sufficient data to start decoding
   // a new frame.

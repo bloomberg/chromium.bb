@@ -98,6 +98,10 @@ COMPILE_ASSERT_MATCHING_ENUM(UseCredentials);
   media::BindToLoop(main_loop_->message_loop_proxy(), base::Bind( \
       function, AsWeakPtr()))
 
+#define BIND_TO_RENDER_LOOP_2(function, arg1, arg2) \
+  media::BindToLoop(main_loop_->message_loop_proxy(), base::Bind( \
+      function, AsWeakPtr(), arg1, arg2))
+
 static WebKit::WebTimeRanges ConvertToWebTimeRanges(
     const media::Ranges<base::TimeDelta>& ranges) {
   WebKit::WebTimeRanges result(ranges.size());
@@ -114,15 +118,6 @@ typedef base::Callback<void(const std::string&,
                             const std::string&,
                             scoped_array<uint8>,
                             int)> OnNeedKeyCB;
-
-static void OnDemuxerNeedKeyTrampoline(
-    const scoped_refptr<base::MessageLoopProxy>& message_loop,
-    const OnNeedKeyCB& need_key_cb,
-    scoped_array<uint8> init_data,
-    int init_data_size) {
-  message_loop->PostTask(FROM_HERE, base::Bind(
-      need_key_cb, "", "", base::Passed(&init_data), init_data_size));
-}
 
 WebMediaPlayerImpl::WebMediaPlayerImpl(
     WebKit::WebFrame* frame,
@@ -275,9 +270,7 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
   if (!url.isEmpty() && url == GetClient()->sourceURL()) {
     chunk_demuxer_ = new media::ChunkDemuxer(
         BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDemuxerOpened),
-        base::Bind(&OnDemuxerNeedKeyTrampoline,
-                   main_loop_->message_loop_proxy(),
-                   base::Bind(&WebMediaPlayerImpl::OnNeedKey, AsWeakPtr())));
+        BIND_TO_RENDER_LOOP_2(&WebMediaPlayerImpl::OnNeedKey, "", ""));
 
     BuildMediaSourceCollection(chunk_demuxer_,
                                message_loop_factory_.get(),

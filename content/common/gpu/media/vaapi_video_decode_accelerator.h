@@ -210,8 +210,8 @@ private:
   // and put the decoded picture into output buffer. Takes ownership of
   // the queues' memory.
   void SubmitDecode(int32 output_id,
-                    std::queue<VABufferID>* va_bufs,
-                    std::queue<VABufferID>* slice_bufs);
+                    scoped_ptr<std::queue<VABufferID> > va_bufs,
+                    scoped_ptr<std::queue<VABufferID> > slice_bufs);
 
   DISALLOW_COPY_AND_ASSIGN(VaapiVideoDecodeAccelerator);
 };
