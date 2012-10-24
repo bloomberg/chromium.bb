@@ -454,6 +454,10 @@ void SigninManager::OnGetUserInfoSuccess(const UserInfoMap& data) {
     profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                     authenticated_username_);
 
+    // Also overwrite the last username at this point.
+    profile_->GetPrefs()->SetString(prefs::kGoogleServicesLastUsername,
+                                    authenticated_username_);
+
   }
   UserInfoMap::const_iterator service_iter = data.find(kGetInfoServicesKey);
   if (service_iter == data.end()) {

@@ -10305,7 +10305,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_OPTIONS_SIDELOAD_WIPEOUT_DISABLE_REASON_3RD_PARTY" desc="The text explaining the the installation came from a 3rd party app.">
         Installed by a third party.
       </message>
-      
+
       <message name="IDS_OPTIONS_SIDELOAD_WIPEOUT_OVERFLOW" desc="Text in the bubble that describes that more extensions than can be listed were disabled.">
         ... and <ph name="EXTENSION_COUNT">$1<ex>42</ex></ph> more.
       </message>
@@ -10314,14 +10314,14 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       </message>
       <message name="IDS_OPTIONS_SIDELOAD_WIPEOUT_RECOURSE" desc="Text in the bubble that explains what the user can do after the extension has been disabled.">
         You can always enable or disable any extension in the extension settings page.
-      </message>      
+      </message>
       <message name="IDS_OPTIONS_SIDELOAD_WIPEOUT_SETTINGS" desc="Text in the button that takes the user to Extension Settings.">
         Extension Settings
       </message>
       <message name="IDS_OPTIONS_SIDELOAD_WIPEOUT_DISMISS" desc="Text in the button that acknowledges the change and dismisses the bubble.">
         OK, Great
       </message>
-      
+
       <!-- Options search page strings. -->
       <message name="IDS_OPTIONS_SEARCH_PAGE_TITLE" desc="Title of the settings search page.">
         Search results
@@ -12921,12 +12921,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <if expr="pp_ifdef('android')">
         <message name="IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL" desc="Mobile: The text to display below the 'Stop syncing this account' button on the options pane, explaining what the button does.">
-          By disconnecting your Google Account from <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph>, changes to your data on this mobile device will no longer be synced to your Google Account. Data already stored in your Google Account will remain there until you remove it using <ph name="BEGIN_LINK">&lt;a href="$2" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$2" target=&quot;_blank&quot;&gt;</ex></ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
+          By disconnecting your Google Account from <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph>, your data will remain on this mobile device but changes will no longer be synced to your Google Account. Data already stored in your Google Account will remain there until you remove it using <ph name="BEGIN_LINK">&lt;a href="$2" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$2" target=&quot;_blank&quot;&gt;</ex></ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
         </message>
       </if>
       <if expr="not pp_ifdef('android')">
         <message name="IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL" desc="The text to display below the 'Stop syncing this account' button on the options pane, explaining what the button does.">
-          By disconnecting your Google Account from <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph>, changes to your data on this computer will no longer be synced to your Google Account. Data already stored in your Google Account will remain there until you remove it using <ph name="BEGIN_LINK">&lt;a href="$2" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$2" target=&quot;_blank&quot;&gt;</ex></ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
+          By disconnecting your Google Account from <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph>, your data will remain on this computer but changes will no longer be synced to your Google Account. Data already stored in your Google Account will remain there until you remove it using <ph name="BEGIN_LINK">&lt;a href="$2" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$2" target=&quot;_blank&quot;&gt;</ex></ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
         </message>
       </if>
       <!-- Sync time strings -->

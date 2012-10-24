@@ -1669,7 +1669,14 @@ const char kSyncKeystoreEncryptionBootstrapToken[] =
 // passphrase.
 const char kSyncUsingSecondaryPassphrase[] = "sync.using_secondary_passphrase";
 
-// String that identifies the user logged into sync and other google services.
+// String the identifies the last user that logged into sync and other
+// google services. As opposed to kGoogleServicesUsername, this value is not
+// cleared on signout, but while the user is signed in the two values will
+// be the same.
+const char kGoogleServicesLastUsername[] = "google.services.last_username";
+
+// String that identifies the current user logged into sync and other google
+// services.
 const char kGoogleServicesUsername[] = "google.services.username";
 
 // Local state pref containing a string regex that restricts which accounts
