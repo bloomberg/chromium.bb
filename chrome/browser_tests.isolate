@@ -870,7 +870,6 @@
           'test/data/extensions/uitest/window_open/',
           'test/data/fast_shutdown/',
           'test/data/google/',
-          'test/data/http/',
           'test/data/login/',
           'test/data/page_cycler/cached_data_dir/',
           'test/data/policy/',
