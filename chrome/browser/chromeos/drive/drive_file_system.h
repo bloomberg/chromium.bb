@@ -162,10 +162,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
   // Used in tests to update the file system from |feed_list|.
   // See also the comment at DriveFeedLoader::UpdateFromFeed().
-  DriveFileError UpdateFromFeedForTesting(
-      const ScopedVector<google_apis::DocumentFeed>& feed_list,
-      int64 start_changestamp,
-      int64 root_feed_changestamp);
+  DriveFeedLoader* feed_loader() { return feed_loader_.get(); }
 
  private:
   friend class DriveFileSystemTest;

@@ -21,22 +21,15 @@ class DriveDirectory;
 class DriveEntry;
 class DriveResourceMetadata;
 
-typedef std::map<std::string /* resource_id */, DriveEntry*>
-    FileResourceIdMap;
-
-// Struct used to record UMA stats with FeedToFileResourceMap().
-struct FeedToFileResourceMapUmaStats {
-  FeedToFileResourceMapUmaStats();
-  ~FeedToFileResourceMapUmaStats();
-
-  int num_regular_files;
-  int num_hosted_documents;
-};
-
 // DriveFeedProcessor is used to process feeds from WAPI (codename for
 // Documents List API).
 class DriveFeedProcessor {
  public:
+  typedef std::map<std::string /* resource_id */, DriveEntry*> ResourceMap;
+
+  // Class used to record UMA stats with FeedToResourceMap().
+  class FeedToResourceMapUMAStats;
+
   explicit DriveFeedProcessor(DriveResourceMetadata* resource_metadata);
   ~DriveFeedProcessor();
 
@@ -54,53 +47,48 @@ class DriveFeedProcessor {
       int64 root_feed_changestamp,
       std::set<FilePath>* changed_dirs);
 
-  // Converts list of document feeds from collected feeds into
-  // FileResourceIdMap.
-  DriveFileError FeedToFileResourceMap(
+  // Converts list of document feeds from collected feeds into a ResourceMap.
+  // feed_changestamp and/or uma_stats may be NULL.
+  DriveFileError FeedToResourceMap(
     const ScopedVector<google_apis::DocumentFeed>& feed_list,
-    FileResourceIdMap* file_map,
+    ResourceMap* resource_map,
     int64* feed_changestamp,
-    FeedToFileResourceMapUmaStats* uma_stats);
+    FeedToResourceMapUMAStats* uma_stats);
 
  private:
-  // Updates UMA histograms about file counts.
-  void UpdateFileCountUmaHistograms(
-      const FeedToFileResourceMapUmaStats& uma_stats) const;
+  // Applies the pre-processed feed from |resource_map| map onto the file
+  // system. All entries in |resource_map| will be erased (i.e. the map becomes
+  // empty), and values are deleted.
+  void ApplyFeedFromResourceMap(bool is_delta_feed,
+                                int64 feed_changestamp,
+                                ResourceMap* resource_map,
+                                std::set<FilePath>* changed_dirs);
 
-  // Applies the pre-processed feed from |file_map| map onto the file system.
-  // All entries in |file_map| will be erased (i.e. the map becomes empty),
-  // and values are deleted.
-  void ApplyFeedFromFileUrlMap(bool is_delta_feed,
-                               int64 feed_changestamp,
-                               FileResourceIdMap* file_map,
-                               std::set<FilePath>* changed_dirs);
-
-  // Helper function for adding new |file| from the feed into |directory|. It
+  // Helper function for adding new |entry| from the feed into |directory|. It
   // checks the type of file and updates |changed_dirs| if this file adding
   // operation needs to raise directory notification update. If file is being
   // added to |orphaned_resources| such notifications are not raised since
-  // we ignore such files and don't add them to the file system now.
+  // we ignore such files and don't add them to the file system.
   static void AddEntryToDirectoryAndCollectChangedDirectories(
       DriveEntry* entry,
       DriveDirectory* directory,
       DriveResourceMetadata* orphaned_resources,
       std::set<FilePath>* changed_dirs);
 
-  // Helper function for removing |entry| from |directory|. If |entry| is a
+  // Helper function for removing |entry| from its parent. If |entry| is a
   // directory too, it will collect all its children file paths into
   // |changed_dirs| as well.
-  static void RemoveEntryFromDirectoryAndCollectChangedDirectories(
-      DriveDirectory* directory,
+  static void RemoveEntryFromParentAndCollectChangedDirectories(
       DriveEntry* entry,
       std::set<FilePath>* changed_dirs);
 
-  // Finds directory where new |file| should be added to during feed processing.
-  // |orphaned_entries_dir| collects files/dirs that don't have a parent in
-  // either locally cached file system or in this new feed.
+  // Finds directory where new |new_entry| should be added to during feed
+  // processing. |orphaned_resources| collects files/dirs that don't have a
+  // parent in either locally cached file system or in this new feed.
   DriveDirectory* FindDirectoryForNewEntry(
       DriveEntry* new_entry,
-      const FileResourceIdMap& file_map,
-      DriveResourceMetadata* orphaned_ressources);
+      const ResourceMap& resource_map,
+      DriveResourceMetadata* orphaned_resources);
 
   DriveResourceMetadata* resource_metadata_;  // Not owned.
   DISALLOW_COPY_AND_ASSIGN(DriveFeedProcessor);

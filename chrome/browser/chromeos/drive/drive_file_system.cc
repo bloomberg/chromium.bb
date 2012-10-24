@@ -1323,15 +1323,13 @@ void DriveFileSystem::OnRequestDirectoryRefresh(
     return;
   }
 
-  int64 unused_delta_feed_changestamp = 0;
-  FeedToFileResourceMapUmaStats unused_uma_stats;
-  FileResourceIdMap file_map;
+  DriveResourceMetadata::ResourceMap resource_map;
   DriveFeedProcessor feed_processor(resource_metadata_.get());
-  error = feed_processor.FeedToFileResourceMap(
+  error = feed_processor.FeedToResourceMap(
       params->feed_list,
-      &file_map,
-      &unused_delta_feed_changestamp,
-      &unused_uma_stats);
+      &resource_map,
+      NULL,
+      NULL);
   if (error != DRIVE_FILE_OK) {
     LOG(ERROR) << "Failed to convert feed: " << directory_path.value()
                << ": " << error;
@@ -1340,7 +1338,7 @@ void DriveFileSystem::OnRequestDirectoryRefresh(
 
   resource_metadata_->RefreshDirectory(
       params->directory_resource_id,
-      file_map,
+      resource_map,
       base::Bind(&DriveFileSystem::OnDirectoryChangeFileMoveCallback,
                  ui_weak_ptr_,
                  FileOperationCallback()));
@@ -1761,17 +1759,6 @@ void DriveFileSystem::LoadRootFeedFromCacheForTesting() {
   feed_loader_->LoadFromCache(
       false,  // should_load_from_server.
       FileOperationCallback());
-}
-
-DriveFileError DriveFileSystem::UpdateFromFeedForTesting(
-    const ScopedVector<google_apis::DocumentFeed>& feed_list,
-    int64 start_changestamp,
-    int64 root_feed_changestamp) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  return feed_loader_->UpdateFromFeed(feed_list,
-                                      start_changestamp,
-                                      root_feed_changestamp);
 }
 
 void DriveFileSystem::OnFileDownloaded(
