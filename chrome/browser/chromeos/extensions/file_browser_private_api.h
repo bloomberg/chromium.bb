@@ -73,8 +73,6 @@ class FileWatchBrowserFunctionBase : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  bool GetLocalFilePath(
-      const GURL& file_url, FilePath* local_path, FilePath* virtual_path);
   void RespondOnUIThread(bool success);
   void RunFileWatchOperationOnFileThread(
       scoped_refptr<fileapi::FileSystemContext> file_system_context,
@@ -385,6 +383,22 @@ class FormatDeviceFunction : public FileBrowserFunction {
   // A callback method to handle the result of
   // GetLocalPathsOnFileThreadAndRunCallbackOnUIThread.
   void GetLocalPathsResponseOnUIThread(const SelectedFileInfoList& files);
+};
+
+// Sets last modified date in seconds of local file
+class SetLastModifiedFunction : public FileBrowserFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.setLastModified");
+
+  SetLastModifiedFunction();
+
+ protected:
+  virtual ~SetLastModifiedFunction();
+
+  void RunOperationOnFileThread(std::string file_url, time_t timestamp);
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
 };
 
 class GetSizeStatsFunction : public FileBrowserFunction {

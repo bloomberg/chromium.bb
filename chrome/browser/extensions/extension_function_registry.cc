@@ -388,6 +388,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<ClearDriveCacheFunction>();
   RegisterFunction<GetNetworkConnectionStateFunction>();
   RegisterFunction<RequestDirectoryRefreshFunction>();
+  RegisterFunction<SetLastModifiedFunction>();
 
   // FileBrowserHandler.
   RegisterFunction<FileHandlerSelectFileFunction>();

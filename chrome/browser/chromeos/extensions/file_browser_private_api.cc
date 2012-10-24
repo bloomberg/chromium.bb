@@ -5,6 +5,9 @@
 #include "chrome/browser/chromeos/extensions/file_browser_private_api.h"
 
 #include <sys/statvfs.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <utime.h>
 #include <utility>
 
 #include "base/base64.h"
@@ -381,6 +384,16 @@ void LogDefaultTask(const std::set<std::string>& mime_types,
   }
 }
 
+bool GetLocalFilePath(
+    const GURL& file_url, FilePath* local_path, FilePath* virtual_path) {
+  fileapi::FileSystemURL url(file_url);
+  if (!chromeos::CrosMountPointProvider::CanHandleURL(url))
+    return false;
+  *local_path = url.path();
+  *virtual_path = url.virtual_path();
+  return true;
+}
+
 }  // namespace
 
 class RequestLocalFileSystemFunction::LocalFileSystemCallbackDispatcher {
@@ -538,16 +551,6 @@ void RequestLocalFileSystemFunction::RespondFailedOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   error_ = base::StringPrintf(kFileError, static_cast<int>(error_code));
   SendResponse(false);
-}
-
-bool FileWatchBrowserFunctionBase::GetLocalFilePath(
-    const GURL& file_url, FilePath* local_path, FilePath* virtual_path) {
-  fileapi::FileSystemURL url(file_url);
-  if (!chromeos::CrosMountPointProvider::CanHandleURL(url))
-    return false;
-  *local_path = url.path();
-  *virtual_path = url.virtual_path();
-  return true;
 }
 
 void FileWatchBrowserFunctionBase::RespondOnUIThread(bool success) {
@@ -1482,6 +1485,61 @@ bool GetMountPointsFunction::RunImpl() {
 
   SendResponse(true);
   return true;
+}
+
+SetLastModifiedFunction::SetLastModifiedFunction() {
+}
+
+SetLastModifiedFunction::~SetLastModifiedFunction() {
+}
+
+bool SetLastModifiedFunction::RunImpl() {
+  if (args_->GetSize() != 2) {
+    return false;
+  }
+
+  std::string file_url;
+  if (!args_->GetString(0, &file_url))
+    return false;
+
+  std::string timestamp;
+  if (!args_->GetString(1, &timestamp))
+    return false;
+
+  BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(
+            &SetLastModifiedFunction::RunOperationOnFileThread,
+            this,
+            file_url,
+            strtoul(timestamp.c_str(), NULL, 0)));
+
+  return true;
+}
+
+void SetLastModifiedFunction::RunOperationOnFileThread(std::string file_url,
+                                                       time_t timestamp) {
+  FilePath local_path, virtual_path;
+  bool succeeded = false;
+  if (GetLocalFilePath(GURL(file_url), &local_path, &virtual_path) &&
+      local_path != FilePath()) {
+    struct stat sb;
+    if (stat(local_path.value().c_str(), &sb) == 0) {
+      struct utimbuf times;
+      times.actime = sb.st_atime;
+      times.modtime = timestamp;
+
+      if (utime(local_path.value().c_str(), &times) == 0)
+        succeeded = true;
+    }
+  }
+
+  BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(
+            &SetLastModifiedFunction::SendResponse,
+            this,
+            succeeded));
 }
 
 GetSizeStatsFunction::GetSizeStatsFunction() {

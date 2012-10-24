@@ -849,6 +849,29 @@
         ]
       },
       {
+        "name": "setLastModified",
+        "description": "Updates last modified to specified time in seconds",
+        "parameters": [
+          {
+            "name": "fileUrl",
+            "type": "string",
+            "description": "File url from the local file system."
+          },
+          {
+            "name": "lastModified",
+            "type": "string",
+            "description": "Date to set as last modification date in ms. Should be passed to C++ as string, since 'long' type isn't supported"
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "description": "Completion callback. chrome.extension.lastError will be set if there was an error.",
+            "parameters": []
+          }
+        ]
+      },
+      {
         "name": "getSizeStats",
         "description": "Retrieves total and remaining size of a mount point.",
         "parameters": [

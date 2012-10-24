@@ -947,7 +947,8 @@ FileCopyManager.prototype.copyEntry_ = function(sourceEntry,
   if (this.maybeCancel_())
     return;
 
-  self = this;
+  var self = this;
+
   function onSourceFileFound(file) {
     function onWriterCreated(writer) {
       var reportedProgress = 0;
@@ -969,7 +970,11 @@ FileCopyManager.prototype.copyEntry_ = function(sourceEntry,
       };
 
       writer.onwriteend = function() {
-        successCallback(targetEntry, file.size - reportedProgress);
+        sourceEntry.getMetadata(function(metadata) {
+          chrome.fileBrowserPrivate.setLastModified(targetEntry.toURL(),
+              '' + Math.round(metadata.modificationTime.getTime() / 1000));
+          successCallback(targetEntry, file.size - reportedProgress);
+        });
       };
 
       writer.write(file);
