@@ -10,7 +10,6 @@
 #import "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
@@ -26,14 +25,6 @@ using content::WebUIMessageHandler;
 using ui::WebDialogDelegate;
 using ui::WebDialogUI;
 using ui::WebDialogWebContentsDelegate;
-
-// TODO(avi): Kill this when TabContents goes away.
-class WebDialogWindowControllerTabContentsCreator {
- public:
-  static TabContents* CreateTabContents(content::WebContents* contents) {
-    return TabContents::Factory::CreateTabContents(contents);
-  }
-};
 
 // Thin bridge that routes notifications to
 // WebDialogWindowController's member variables.
@@ -348,19 +339,16 @@ void WebDialogWindowDelegateBridge::HandleKeyboardEvent(
 }
 
 - (void)loadDialogContents {
-  tabContents_.reset(
-      WebDialogWindowControllerTabContentsCreator::CreateTabContents(
-          WebContents::Create(
-              delegate_->browser_context(), NULL, MSG_ROUTING_NONE, NULL)));
-  [[self window]
-      setContentView:tabContents_->web_contents()->GetNativeView()];
-  tabContents_->web_contents()->SetDelegate(delegate_.get());
+  webContents_.reset(WebContents::Create(
+      delegate_->browser_context(), NULL, MSG_ROUTING_NONE, NULL));
+  [[self window] setContentView:webContents_->GetNativeView()];
+  webContents_->SetDelegate(delegate_.get());
 
   // This must be done before loading the page; see the comments in
   // WebDialogUI.
-  WebDialogUI::SetDelegate(tabContents_->web_contents(), delegate_.get());
+  WebDialogUI::SetDelegate(webContents_.get(), delegate_.get());
 
-  tabContents_->web_contents()->GetController().LoadURL(
+  webContents_->GetController().LoadURL(
       delegate_->GetDialogContentURL(),
       content::Referrer(),
       content::PAGE_TRANSITION_AUTO_TOPLEVEL,

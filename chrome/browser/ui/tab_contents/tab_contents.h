@@ -25,7 +25,6 @@ class PanelHost;
 class Profile;
 class TabStripModel;
 class TabStripModelContentsCreator;
-class WebDialogWindowControllerTabContentsCreator;
 
 namespace chromeos {
 class SimpleWebViewDialog;
@@ -82,7 +81,6 @@ class TabContents : public content::WebContentsObserver {
     friend class TabAndroid;
     friend class TabStripModel;
     friend class TabStripModelContentsCreator;
-    friend class WebDialogWindowControllerTabContentsCreator;
     FRIEND_TEST_ALL_PREFIXES(SessionRestoreTest, SessionStorageAfterTabReplace);
 
     static TabContents* CreateTabContents(content::WebContents* contents);
