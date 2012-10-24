@@ -20,12 +20,13 @@
 namespace {
 
 // How many previous uploads to use when predicting future throughput.
-static const size_t uploadHistorySize = 100;
+static const size_t uploadHistorySizeMax = 1000;
+static const size_t uploadHistorySizeInitial = 100;
 
 // Global estimated number of textures per second to maintain estimates across
 // subsequent instances of TextureUploader.
 // More than one thread will not access this variable, so we do not need to synchronize access.
-static double estimatedTexturesPerSecondGlobal = 48.0 * 60.0;
+static const double defaultEstimatedTexturesPerSecond = 48.0 * 60.0;
 
 } // anonymous namespace
 
@@ -87,12 +88,12 @@ bool TextureUploader::Query::isNonBlocking()
 TextureUploader::TextureUploader(
     WebKit::WebGraphicsContext3D* context, bool useMapTexSubImage)
     : m_context(context)
-    , m_texturesPerSecondHistory(uploadHistorySize,
-                                 estimatedTexturesPerSecondGlobal)
     , m_numBlockingTextureUploads(0)
     , m_useMapTexSubImage(useMapTexSubImage)
     , m_subImageSize(0)
 {
+    for (size_t i = uploadHistorySizeInitial; i > 0; i--)
+        m_texturesPerSecondHistory.insert(defaultEstimatedTexturesPerSecond);
 }
 
 TextureUploader::~TextureUploader()
@@ -123,17 +124,11 @@ double TextureUploader::estimatedTexturesPerSecond()
 {
     processQueries();
 
-    // The history should never be empty because we initialize all elements with an estimate.
-    DCHECK(m_texturesPerSecondHistory.size() == uploadHistorySize);
-
-    // Sort the history and use the median as our estimate.
-    std::vector<double> sortedHistory(m_texturesPerSecondHistory.begin(),
-                                      m_texturesPerSecondHistory.end());
-    std::sort(sortedHistory.begin(), sortedHistory.end());
-
-    estimatedTexturesPerSecondGlobal = sortedHistory[sortedHistory.size() * 2 / 3];
-    TRACE_COUNTER1("cc", "estimatedTexturesPerSecond", estimatedTexturesPerSecondGlobal);
-    return estimatedTexturesPerSecondGlobal;
+    // Use the median as our estimate.
+    std::multiset<double>::iterator median = m_texturesPerSecondHistory.begin();
+    std::advance(median, m_texturesPerSecondHistory.size() / 2);
+    TRACE_COUNTER1("cc", "estimatedTexturesPerSecond", *median);
+    return *median;
 }
 
 void TextureUploader::beginQuery()
@@ -339,10 +334,13 @@ void TextureUploader::processQueries()
         if (!m_pendingQueries.first()->isNonBlocking())
             m_numBlockingTextureUploads--;
 
-        // Remove the oldest values from our history and insert the new one
+        // Remove the min and max value from our history and insert the new one.
         double texturesPerSecond = 1.0 / (usElapsed * 1e-6);
-        m_texturesPerSecondHistory.pop_back();
-        m_texturesPerSecondHistory.push_front(texturesPerSecond);
+        if (m_texturesPerSecondHistory.size() >= uploadHistorySizeMax) {
+            m_texturesPerSecondHistory.erase(m_texturesPerSecondHistory.begin());
+            m_texturesPerSecondHistory.erase(--m_texturesPerSecondHistory.end());
+        }
+        m_texturesPerSecondHistory.insert(texturesPerSecond);
 
         m_availableQueries.append(m_pendingQueries.takeFirst());
     }

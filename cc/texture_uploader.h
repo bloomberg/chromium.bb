@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/scoped_ptr_deque.h"
-#include <deque>
+#include <set>
 #include "third_party/khronos/GLES2/gl2.h"
 
 namespace WebKit {
@@ -87,7 +87,7 @@ private:
     WebKit::WebGraphicsContext3D* m_context;
     ScopedPtrDeque<Query> m_pendingQueries;
     ScopedPtrDeque<Query> m_availableQueries;
-    std::deque<double> m_texturesPerSecondHistory;
+    std::multiset<double> m_texturesPerSecondHistory;
     size_t m_numBlockingTextureUploads;
 
     bool m_useMapTexSubImage;
