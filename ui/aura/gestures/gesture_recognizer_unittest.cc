@@ -1641,7 +1641,9 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromScroll) {
   ui::TouchEvent move3(ui::ET_TOUCH_MOVED, gfx::Point(95, 201),
                            kTouchId1, GetTime());
   root->AsRootWindowHostDelegate()->OnHostTouchEvent(&move3);
-  EXPECT_1_EVENT(delegate->events(), ui::ET_GESTURE_PINCH_UPDATE);
+  EXPECT_2_EVENTS(delegate->events(),
+                  ui::ET_GESTURE_PINCH_UPDATE,
+                  ui::ET_GESTURE_SCROLL_UPDATE);
   EXPECT_EQ(gfx::Rect(10, 10, 85, 191).ToString(),
             delegate->bounding_box().ToString());
 
@@ -1650,7 +1652,9 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromScroll) {
   ui::TouchEvent move4(ui::ET_TOUCH_MOVED, gfx::Point(55, 15),
                            kTouchId2, GetTime());
   root->AsRootWindowHostDelegate()->OnHostTouchEvent(&move4);
-  EXPECT_1_EVENT(delegate->events(), ui::ET_GESTURE_PINCH_UPDATE);
+  EXPECT_2_EVENTS(delegate->events(),
+                  ui::ET_GESTURE_PINCH_UPDATE,
+                  ui::ET_GESTURE_SCROLL_UPDATE);
   EXPECT_EQ(gfx::Rect(55, 15, 40, 186).ToString(),
             delegate->bounding_box().ToString());
 
@@ -1767,7 +1771,9 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromTap) {
   ui::TouchEvent move3(ui::ET_TOUCH_MOVED, gfx::Point(65, 201),
                            kTouchId1, GetTime());
   root->AsRootWindowHostDelegate()->OnHostTouchEvent(&move3);
-  EXPECT_1_EVENT(delegate->events(), ui::ET_GESTURE_PINCH_UPDATE);
+  EXPECT_2_EVENTS(delegate->events(),
+                  ui::ET_GESTURE_PINCH_UPDATE,
+                  ui::ET_GESTURE_SCROLL_UPDATE);
   EXPECT_EQ(gfx::Rect(10, 10, 55, 191).ToString(),
             delegate->bounding_box().ToString());
 
@@ -1776,7 +1782,9 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromTap) {
   ui::TouchEvent move4(ui::ET_TOUCH_MOVED, gfx::Point(55, 15),
                            kTouchId2, GetTime());
   root->AsRootWindowHostDelegate()->OnHostTouchEvent(&move4);
-  EXPECT_1_EVENT(delegate->events(), ui::ET_GESTURE_PINCH_UPDATE);
+  EXPECT_2_EVENTS(delegate->events(),
+                  ui::ET_GESTURE_PINCH_UPDATE,
+                  ui::ET_GESTURE_SCROLL_UPDATE);
   EXPECT_EQ(gfx::Rect(55, 15, 10, 186).ToString(),
             delegate->bounding_box().ToString());
 
@@ -2860,6 +2868,8 @@ TEST_F(GestureRecognizerTest, BoundingBoxRadiusChange) {
   press2.set_radius_x(5);
   root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
   EXPECT_FALSE(delegate->pinch_begin());
+  EXPECT_EQ(gfx::Rect(101, 201, 100, 0).ToString(),
+            delegate->bounding_box().ToString());
 
   delegate->Reset();
 
@@ -2867,7 +2877,7 @@ TEST_F(GestureRecognizerTest, BoundingBoxRadiusChange) {
       press1.time_stamp() + base::TimeDelta::FromMilliseconds(40));
   root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move1);
   EXPECT_TRUE(delegate->pinch_begin());
-  EXPECT_EQ(gfx::Rect(141, 196, 65, 10).ToString(),
+  EXPECT_EQ(gfx::Rect(141, 201, 60, 0).ToString(),
             delegate->bounding_box().ToString());
 
   delegate->Reset();

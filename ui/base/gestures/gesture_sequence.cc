@@ -574,22 +574,26 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
 void GestureSequence::RecreateBoundingBox() {
   // TODO(sad): Recreating the bounding box at every touch-event is not very
   // efficient. This should be made better.
-  int left = INT_MAX, top = INT_MAX, right = INT_MIN, bottom = INT_MIN;
-  for (int i = 0; i < kMaxGesturePoints; ++i) {
-    if (!points_[i].in_use())
-      continue;
-    gfx::Rect rect = points_[i].enclosing_rectangle();
-    if (left > rect.x())
-      left = rect.x();
-    if (right < rect.right())
-      right = rect.right();
-    if (top > rect.y())
-      top = rect.y();
-    if (bottom < rect.bottom())
-      bottom = rect.bottom();
+  if (point_count_ == 1) {
+    bounding_box_ = GetPointByPointId(0)->enclosing_rectangle();
+  } else {
+    int left = INT_MAX / 20, top = INT_MAX / 20;
+    int right = INT_MIN / 20, bottom = INT_MIN / 20;
+    for (int i = 0; i < kMaxGesturePoints; ++i) {
+      if (!points_[i].in_use())
+        continue;
+      // Using the |enclosing_rectangle()| for the touch-points would be ideal.
+      // However, this becomes brittle especially when a finger is in motion
+      // because the change in radius can overshadow the actual change in
+      // position. So the actual position of the point is used instead.
+      const gfx::Point& point = points_[i].last_touch_position();
+      left = std::min(left, point.x());
+      right = std::max(right, point.x());
+      top = std::min(top, point.y());
+      bottom = std::max(bottom, point.y());
+    }
+    bounding_box_.SetRect(left, top, right - left, bottom - top);
   }
-  bounding_box_last_center_ = bounding_box_.CenterPoint();
-  bounding_box_.SetRect(left, top, right - left, bottom - top);
 }
 
 void GestureSequence::ResetVelocities() {
@@ -759,16 +763,18 @@ void GestureSequence::AppendScrollGestureEnd(const GesturePoint& point,
 }
 
 void GestureSequence::AppendScrollGestureUpdate(GesturePoint& point,
-                                                const gfx::Point& location,
                                                 Gestures* gestures) {
   float dx, dy;
+  gfx::Point location;
   if (point_count_ == 1) {
     dx = point.x_delta();
     dy = point.y_delta();
+    location = point.last_touch_position();
   } else {
-    gfx::Point current_center = bounding_box_.CenterPoint();
-    dx = current_center.x() - bounding_box_last_center_.x();
-    dy = current_center.y() - bounding_box_last_center_.y();
+    location = bounding_box_.CenterPoint();
+    dx = location.x() - latest_multi_scroll_update_location_.x();
+    dy = location.y() - latest_multi_scroll_update_location_.y();
+    latest_multi_scroll_update_location_ = location;
   }
   if (scroll_type_ == ST_HORIZONTAL)
     dy = 0;
@@ -902,7 +908,7 @@ bool GestureSequence::ScrollUpdate(const TouchEvent& event,
   DCHECK(state_ == GS_SCROLL);
   if (!point.DidScroll(event, 0))
     return false;
-  AppendScrollGestureUpdate(point, point.last_touch_position(), gestures);
+  AppendScrollGestureUpdate(point, gestures);
   return true;
 }
 
@@ -999,6 +1005,7 @@ bool GestureSequence::PinchStart(const TouchEvent& event,
 
   pinch_distance_current_ = BoundingBoxDiagonal(bounding_box_);
   pinch_distance_start_ = pinch_distance_current_;
+  latest_multi_scroll_update_location_ = bounding_box_.CenterPoint();
   AppendPinchGestureBegin(*point1, *point2, gestures);
 
   if (state_ == GS_PENDING_SYNTHETIC_CLICK ||
@@ -1022,7 +1029,7 @@ bool GestureSequence::PinchUpdate(const TouchEvent& event,
   // of the fingers moved enough before a pinch or scroll update is created.
   bool did_scroll = false;
   for (int i = 0; i < kMaxGesturePoints; ++i) {
-    if (!points_[i].in_use() || !points_[i].DidScroll(event, 2))
+    if (!points_[i].in_use() || !points_[i].DidScroll(event, 0))
       continue;
     did_scroll = true;
     break;
@@ -1038,10 +1045,8 @@ bool GestureSequence::PinchUpdate(const TouchEvent& event,
     AppendPinchGestureUpdate(point,
         distance / pinch_distance_current_, gestures);
     pinch_distance_current_ = distance;
-  } else {
-    gfx::Point center = bounding_box_.CenterPoint();
-    AppendScrollGestureUpdate(point, center, gestures);
   }
+  AppendScrollGestureUpdate(point, gestures);
 
   return true;
 }
