@@ -6,6 +6,8 @@
 
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/fileapi/file_system_url.h"
+#include "webkit/fileapi/syncable/file_change.h"
 #include "webkit/fileapi/syncable/local_file_sync_context.h"
 
 using content::BrowserThread;
@@ -33,6 +35,29 @@ void LocalFileSyncService::MaybeInitializeFileSystemContext(
     const StatusCallback& callback) {
   sync_context_->MaybeInitializeFileSystemContext(
       app_url, file_system_context, callback);
+}
+
+void LocalFileSyncService::ProcessChange(
+    LocalChangeProcessor* processor,
+    const SyncCompletionCallback& callback) {
+  // TODO(kinuko): implement.
+  NOTIMPLEMENTED();
+}
+
+void LocalFileSyncService::PrepareForProcessRemoteChange(
+    const fileapi::FileSystemURL& url,
+    const PrepareChangeCallback& callback) {
+  // TODO(kinuko): implement.
+  NOTIMPLEMENTED();
+}
+
+void LocalFileSyncService::ApplyRemoteChange(
+    const fileapi::FileChange& change,
+    const FilePath& local_path,
+    const fileapi::FileSystemURL& url,
+    const StatusCallback& callback) {
+  // TODO(kinuko): implement.
+  NOTIMPLEMENTED();
 }
 
 }  // namespace sync_file_system

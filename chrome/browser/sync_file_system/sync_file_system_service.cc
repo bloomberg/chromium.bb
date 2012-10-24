@@ -49,8 +49,22 @@ void SyncFileSystemService::InitializeForApp(
   // TODO(tzik): Hook up remote service initialization code.
 }
 
+void SyncFileSystemService::OnLocalChangeAvailable(int64 pending_changes) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_GE(pending_changes, 0);
+  pending_local_changes_ = pending_changes;
+}
+
+void SyncFileSystemService::OnRemoteChangeAvailable(int64 pending_changes) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_GE(pending_changes, 0);
+  pending_remote_changes_ = pending_changes;
+}
+
 SyncFileSystemService::SyncFileSystemService(Profile* profile)
-    : profile_(profile) {}
+    : profile_(profile),
+      pending_local_changes_(0),
+      pending_remote_changes_(0) {}
 
 void SyncFileSystemService::Initialize(
     scoped_ptr<LocalFileSyncService> local_file_service) {

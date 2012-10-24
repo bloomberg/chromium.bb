@@ -13,6 +13,7 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
+#include "chrome/browser/sync_file_system/change_observer_interface.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 
 class GURL;
@@ -24,8 +25,13 @@ class FileSystemContext;
 namespace sync_file_system {
 
 class LocalFileSyncService;
+class LocalChangeObserver;
+class RemoteChangeObserver;
 
-class SyncFileSystemService : public ProfileKeyedService {
+class SyncFileSystemService
+    : public ProfileKeyedService,
+      public LocalChangeObserver,
+      public RemoteChangeObserver {
  public:
   typedef base::Callback<void(fileapi::SyncStatusCode status)> StatusCallback;
 
@@ -46,7 +52,16 @@ class SyncFileSystemService : public ProfileKeyedService {
 
   void Initialize(scoped_ptr<LocalFileSyncService> local_file_service);
 
+  // RemoteChangeObserver overrides.
+  virtual void OnLocalChangeAvailable(int64 pending_changes) OVERRIDE;
+
+  // LocalChangeObserver overrides.
+  virtual void OnRemoteChangeAvailable(int64 pending_changes) OVERRIDE;
+
   Profile* profile_;
+
+  int64 pending_local_changes_;
+  int64 pending_remote_changes_;
 
   scoped_ptr<LocalFileSyncService> local_file_service_;
 

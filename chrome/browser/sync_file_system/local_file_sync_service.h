@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/sync_file_system/remote_change_processor.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 
 class GURL;
@@ -19,14 +20,20 @@ class LocalFileSyncContext;
 
 namespace sync_file_system {
 
+class LocalChangeProcessor;
+
 // Maintains local file change tracker and sync status.
 // Owned by SyncFileSystemService (which is a per-profile object).
-class LocalFileSyncService {
+class LocalFileSyncService : public RemoteChangeProcessor {
  public:
   typedef base::Callback<void(fileapi::SyncStatusCode)> StatusCallback;
 
+  typedef base::Callback<
+      void(fileapi::SyncStatusCode status, fileapi::FileSystemURL& url)>
+      SyncCompletionCallback;
+
   LocalFileSyncService();
-  ~LocalFileSyncService();
+  virtual ~LocalFileSyncService();
 
   void Shutdown();
 
@@ -34,6 +41,21 @@ class LocalFileSyncService {
       const GURL& app_url,
       fileapi::FileSystemContext* file_system_context,
       const StatusCallback& callback);
+
+  // Synchronize one local change (to the remote server) using |processor|.
+  // |processor| must have same or longer lifetime than this service.
+  void ProcessChange(LocalChangeProcessor* processor,
+                     const SyncCompletionCallback& callback);
+
+  // RemoteChangeProcessor overrides.
+  virtual void PrepareForProcessRemoteChange(
+      const fileapi::FileSystemURL& url,
+      const PrepareChangeCallback& callback) OVERRIDE;
+  virtual void ApplyRemoteChange(
+      const fileapi::FileChange& change,
+      const FilePath& local_path,
+      const fileapi::FileSystemURL& url,
+      const StatusCallback& callback) OVERRIDE;
 
  private:
   scoped_refptr<fileapi::LocalFileSyncContext> sync_context_;
