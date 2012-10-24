@@ -77,7 +77,7 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   return InitializeSandbox();
 }
 
-void RendererMainPlatformDelegate::RunSandboxTests() {
+void RendererMainPlatformDelegate::RunSandboxTests(bool no_sandbox) {
   Class tests_runner = objc_getClass("RendererSandboxTestsRunner");
   if (tests_runner) {
     if (![tests_runner runTests])

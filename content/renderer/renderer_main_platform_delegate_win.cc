@@ -127,7 +127,7 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   return false;
 }
 
-void RendererMainPlatformDelegate::RunSandboxTests() {
+void RendererMainPlatformDelegate::RunSandboxTests(bool no_sandbox) {
   if (sandbox_test_module_) {
     RunRendererTests run_security_tests =
         reinterpret_cast<RunRendererTests>(GetProcAddress(sandbox_test_module_,

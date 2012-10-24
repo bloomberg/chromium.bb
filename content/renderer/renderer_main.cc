@@ -228,7 +228,7 @@ int RendererMain(const MainFunctionParams& parameters) {
 #endif
     new BrowserPluginManagerImpl();
 
-    platform.RunSandboxTests();
+    platform.RunSandboxTests(no_sandbox);
 
     startup_timer.Stop();  // End of Startup Time Measurement.
 

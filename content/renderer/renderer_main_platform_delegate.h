@@ -42,7 +42,7 @@ class CONTENT_EXPORT RendererMainPlatformDelegate {
   bool EnableSandbox();
 
   // Runs Sandbox tests.
-  void RunSandboxTests();
+  void RunSandboxTests(bool no_sandbox);
 
  private:
   const MainFunctionParams& parameters_;

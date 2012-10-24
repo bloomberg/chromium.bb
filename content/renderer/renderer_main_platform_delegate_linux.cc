@@ -46,7 +46,16 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   return true;
 }
 
-void RendererMainPlatformDelegate::RunSandboxTests() {
+void RendererMainPlatformDelegate::RunSandboxTests(bool no_sandbox) {
+  // The LinuxSandbox class requires going through initialization before
+  // GetStatus() and others can be used.  When we are not launched through the
+  // Zygote, this initialization will only happen in the renderer process if
+  // EnableSandbox() above is called, which it won't necesserily be.
+  // This only happens with flags such as --renderer-cmd-prefix which are
+  // for debugging.
+  if (no_sandbox)
+    return;
+
   // about:sandbox uses a value returned from LinuxSandbox::GetStatus() before
   // any renderer has been started.
   // Here, we test that the status of SeccompBpf in the renderer is consistent

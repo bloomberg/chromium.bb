@@ -29,7 +29,7 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   return true;
 }
 
-void RendererMainPlatformDelegate::RunSandboxTests() {
+void RendererMainPlatformDelegate::RunSandboxTests(bool no_sandbox) {
 }
 
 }  // namespace content
