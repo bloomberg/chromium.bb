@@ -2159,6 +2159,8 @@
         'renderer/safe_browsing/scorer_unittest.cc',
         'renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc',
         'renderer/spellchecker/spellcheck_provider_mac_unittest.cc',
+        'renderer/spellchecker/spellcheck_provider_test.cc',
+        'renderer/spellchecker/spellcheck_provider_test.h',
         'renderer/spellchecker/spellcheck_unittest.cc',
         'renderer/spellchecker/spellcheck_worditerator_unittest.cc',
         'service/cloud_print/cloud_print_helpers_unittest.cc',
