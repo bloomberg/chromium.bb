@@ -52,10 +52,33 @@ class Once(object):
     self._print_urls = print_urls
     self._check_call = check_call
 
-  def WriteOutputsFromHashes(self, out_hashes, outputs):
+  def KeyForOutput(self, package, output_hash):
+    """Compute the key to store a give output in the data-store.
+
+    Args:
+      package: Package name.
+      output_hash: Stable hash of the package output.
+    Returns:
+      Key that this instance of the package output should be stored/retrieved.
+    """
+    return 'object/%s_%s.tgz' % (package, output_hash)
+
+  def KeyForBuildSignature(self, build_signature):
+    """Compute the key to store a computation result in the data-store.
+
+    Args:
+      build_signature: Stable hash of the computation.
+    Returns:
+      Key that this instance of the computation result should be
+      stored/retrieved.
+    """
+    return 'computed/%s.txt' % build_signature
+
+  def WriteOutputsFromHashes(self, package, out_hashes, outputs):
     """Write output from the cache.
 
     Args:
+      package: Package name (for tgz name).
       out_hashes: List of desired hashes of outputs.
       outputs: List of output filenames.
     Returns:
@@ -70,7 +93,7 @@ class Once(object):
       return None
     urls = []
     for output, out_hash in zip(outputs, out_hashes):
-      key = 'object/' + out_hash + '.tgz'
+      key = self.KeyForOutput(package, out_hash)
       url = self._directory_storage.GetDirectory(key, output)
       if not url:
         logging.debug('Failed to retrieve %s' % key)
@@ -91,12 +114,13 @@ class Once(object):
     if self._print_urls is not None:
       self._print_urls(urls)
 
-  def WriteResultToCache(self, key, outputs):
+  def WriteResultToCache(self, package, build_signature, outputs):
     """Cache a computed result by key.
 
     Also prints URLs when appropriate.
     Args:
-      key: The input hash of the computation.
+      package: Package name (for tgz name).
+      build_signature: The input hash of the computation.
       outputs: A list of filenames containing the output of the computation.
     """
     if self._cache_results:
@@ -105,29 +129,31 @@ class Once(object):
       try:
         for output, out_hash in zip(outputs, out_hashes):
           urls.append(self._directory_storage.PutDirectory(
-            output, 'object/' + out_hash + '.tgz'))
-        self._storage.PutData('\n'.join(out_hashes), 'computed/' + key)
+            output, self.KeyForOutput(package, out_hash)))
+        self._storage.PutData('\n'.join(out_hashes),
+            self.KeyForBuildSignature(build_signature))
         logging.info('Computed fresh result and cached.')
         self.PrintDownloadURLs(urls)
       except gsd_storage.GSDStorageError:
         logging.info('Failed to cache result.')
 
-  def ReadMemoizedResultFromCache(self, key, outputs):
+  def ReadMemoizedResultFromCache(self, package, build_signature, outputs):
     """Read a cached result (if it exists) from the cache.
 
     Also prints URLs when appropriate.
     Args:
-      key: Build signature of the computation.
+      package: Package name (for tgz name).
+      build_signature: Build signature of the computation.
       outputs: List of output filenames.
     Returns:
       Boolean indicating successful retrieval.
     """
     # Check if its in the cache.
     if self._use_cached_results:
-      data = self._storage.GetData('computed/' + key)
+      data = self._storage.GetData(self.KeyForBuildSignature(build_signature))
       if data is not None:
         out_hashes = data.split('\n')
-        urls = self.WriteOutputsFromHashes(out_hashes, outputs)
+        urls = self.WriteOutputsFromHashes(package, out_hashes, outputs)
         if urls is not None:
           logging.info('Retrieved cached result.')
           self.PrintDownloadURLs(urls)
@@ -171,17 +197,18 @@ class Once(object):
         inputs = hashed_inputs
 
       # Compute the build signature with modified inputs.
-      key = self.BuildSignature(package, inputs=inputs, commands=commands)
+      build_signature = self.BuildSignature(
+          package, inputs=inputs, commands=commands)
 
       # We're done if it's in the cache.
-      if self.ReadMemoizedResultFromCache(key, outputs):
+      if self.ReadMemoizedResultFromCache(package, build_signature, outputs):
         return
       for command in commands:
         command.Invoke(check_call=self._check_call, package=package,
                        cwd=work_dir, inputs=inputs, outputs=outputs,
-                       build_signature=key)
+                       build_signature=build_signature)
 
-    self.WriteResultToCache(key, outputs)
+    self.WriteResultToCache(package, build_signature, outputs)
 
   def SystemSummary(self):
     """Gather a string describing intrinsic properties of the current machine.

@@ -224,8 +224,10 @@ BOT_ASSIGNMENT = {
     'lucid64-toolchain_x86': 'bash buildbot/buildbot_toolchain.sh linux',
     # Toolchain newlib arm.
     'win7-toolchain_arm': 'echo "TODO(bradnelson)"',
-    'mac-toolchain_arm': 'echo "TODO(bradnelson)"',
-    'lucid64-toolchain_arm': 'echo "TODO(bradnelson)"',
+    'mac-toolchain_arm':
+        python + ' toolchain_build/toolchain_build.py --buildbot',
+    'lucid64-toolchain_arm':
+        python + ' toolchain_build/toolchain_build.py --buildbot',
 
     # Pnacl toolchain builders (second argument indicates trybot).
     'linux-armtools-x86_32':
@@ -258,9 +260,11 @@ BOT_ASSIGNMENT = {
         'bash buildbot/buildbot_toolchain.sh linux',
     'nacl-toolchain-mac-newlib': 'bash buildbot/buildbot_toolchain.sh mac',
     'nacl-toolchain-win7-newlib': 'buildbot\\buildbot_toolchain_win.bat',
-    'nacl-toolchain-lucid64-newlib-arm': 'echo "TODO(bradnelson)"',
-    'nacl-toolchain-mac-newlib-arm': 'echo "TODO(bradnelson)"',
-    'nacl-toolchain-win7-newlib-arm': 'echo "TODO(bradnelson)"',
+    'nacl-toolchain-lucid64-newlib-arm':
+        python + ' toolchain_build/toolchain_build.py --trybot',
+    'nacl-toolchain-mac-newlib-arm':
+        python + ' toolchain_build/toolchain_build.py --trybot',
+    'nacl-toolchain-win7-newlib-arm': 'echo "TODO(bradnelson)',
     'nacl-toolchain-lucid64-glibc':
         'bash buildbot/buildbot_lucid64-glibc-makefile.sh',
     'nacl-toolchain-mac-glibc': 'bash buildbot/buildbot_mac-glibc-makefile.sh',
@@ -311,6 +315,11 @@ def Main():
 
   env = os.environ.copy()
   env['ARCHIVE_IRT'] = builder in IRT_ARCHIVE_BUILDERS and '1' or '0'
+
+  if sys.platform in ['win32', 'cygwin']:
+    env['GSUTIL'] = r'\b\build\scripts\slave\gsutil.bat'
+  else:
+    env['GSUTIL'] = '/b/build/scripts/slave/gsutil'
 
   print "%s runs: %s\n" % (builder, cmd)
   retcode = subprocess.call(cmd, env=env, shell=True)
