@@ -160,6 +160,19 @@ function createElementFromText(elementName, text) {
 
 document.addEventListener('DOMContentLoaded', function() {
   chrome.send('pageLoaded');
+
+  // Update the table of contents.
+  var toc = $('toc');
+  var sections = document.getElementsByTagName('h2');
+  for (var i = 0; i < sections.length; i++) {
+    var section = sections[i];
+    var a = createElementFromText('a', section.textContent);
+    a.href = '#' + section.id;
+    var li = document.createElement('li');
+    li.appendChild(a);
+    toc.appendChild(li);
+  }
+
   window.setInterval(function() {
       chrome.send('periodicUpdate');
     }, 1000);
