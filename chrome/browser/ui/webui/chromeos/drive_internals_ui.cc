@@ -181,6 +181,19 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   // Called when the page is first loaded.
   void OnPageLoaded(const base::ListValue* args);
 
+  // Updates respective sections.
+  void UpdateAuthStatusSection(
+      google_apis::DriveServiceInterface* drive_service);
+  void UpdateAccountMetadataSection(
+      google_apis::DriveServiceInterface* drive_service);
+  void UpdateInFlightOperationsSection(
+      google_apis::DriveServiceInterface* drive_service);
+  void UpdateGCacheContentsSection();
+  void UpdateFileSystemContentsSection(
+      google_apis::DriveServiceInterface* drive_service);
+  void UpdateLocalStorageUsageSection();
+  void UpdateCacheContentsSection(drive::DriveCache* cache);
+
   // Called when GetGCacheContents() is complete.
   void OnGetGCacheContents(base::ListValue* gcache_contents,
                            base::DictionaryValue* cache_summary);
@@ -209,10 +222,6 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
 
   // Called when the page requests periodic update.
   void OnPeriodicUpdate(const base::ListValue* args);
-
-  // Updates the summary about in-flight operations.
-  void UpdateInFlightOperations(
-      const google_apis::DriveServiceInterface* drive_service);
 
   // The number of pending ReadDirectoryByPath() calls.
   int num_pending_reads_;
@@ -305,20 +314,70 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   google_apis::DriveServiceInterface* drive_service =
       system_service->drive_service();
   DCHECK(drive_service);
+  drive::DriveCache* cache = system_service->cache();
+  DCHECK(cache);
 
-  // Update the auth status section.
+  UpdateAuthStatusSection(drive_service);
+  UpdateAccountMetadataSection(drive_service);
+  UpdateInFlightOperationsSection(drive_service);
+  UpdateGCacheContentsSection();
+  UpdateFileSystemContentsSection(drive_service);
+  UpdateCacheContentsSection(cache);
+  UpdateLocalStorageUsageSection();
+}
+
+void DriveInternalsWebUIHandler::UpdateAuthStatusSection(
+    google_apis::DriveServiceInterface* drive_service) {
+  DCHECK(drive_service);
+
   base::DictionaryValue auth_status;
   auth_status.SetBoolean("has-refresh-token",
                          drive_service->HasRefreshToken());
   auth_status.SetBoolean("has-access-token",
                          drive_service->HasAccessToken());
   web_ui()->CallJavascriptFunction("updateAuthStatus", auth_status);
+}
 
-   // Update account metadata section.
+void DriveInternalsWebUIHandler::UpdateAccountMetadataSection(
+    google_apis::DriveServiceInterface* drive_service) {
+  DCHECK(drive_service);
+
   drive_service->GetAccountMetadata(
       base::Bind(&DriveInternalsWebUIHandler::OnGetAccountMetadata,
                  weak_ptr_factory_.GetWeakPtr()));
+}
 
+void DriveInternalsWebUIHandler::UpdateInFlightOperationsSection(
+    google_apis::DriveServiceInterface* drive_service) {
+  google_apis::OperationProgressStatusList
+      progress_status_list = drive_service->GetProgressStatusList();
+
+  base::ListValue in_flight_operations;
+  for (size_t i = 0; i < progress_status_list.size(); ++i) {
+    const google_apis::OperationProgressStatus& status =
+        progress_status_list[i];
+
+    base::DictionaryValue* dict = new DictionaryValue;
+    dict->SetInteger("operation_id", status.operation_id);
+    dict->SetString(
+        "operation_type",
+        google_apis::OperationTypeToString(status.operation_type));
+    dict->SetString("file_path", status.file_path.AsUTF8Unsafe());
+    dict->SetString(
+        "transfer_state",
+        google_apis::OperationTransferStateToString(status.transfer_state));
+    dict->SetString(
+        "start_time",
+        google_apis::util::FormatTimeAsStringLocaltime(status.start_time));
+    dict->SetDouble("progress_current", status.progress_current);
+    dict->SetDouble("progress_total", status.progress_total);
+    in_flight_operations.Append(dict);
+  }
+  web_ui()->CallJavascriptFunction("updateInFlightOperations",
+                                   in_flight_operations);
+}
+
+void DriveInternalsWebUIHandler::UpdateGCacheContentsSection() {
   // Start updating the GCache contents section.
   Profile* profile = Profile::FromWebUI(web_ui());
   const FilePath root_path =
@@ -336,6 +395,28 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
                  base::Owned(gcache_contents),
                  base::Owned(gcache_summary)));
 
+}
+
+void DriveInternalsWebUIHandler::UpdateFileSystemContentsSection(
+    google_apis::DriveServiceInterface* drive_service) {
+  DCHECK(drive_service);
+
+  // Start updating the file system tree section, if we have access token.
+  drive::DriveSystemService* system_service = GetSystemService();
+  if (!system_service->drive_service()->HasAccessToken())
+    return;
+
+  // Start rendering the file system tree as text.
+  const FilePath root_path = FilePath(drive::kDriveRootDirectory);
+  ++num_pending_reads_;
+  system_service->file_system()->ReadDirectoryByPath(
+      root_path,
+      base::Bind(&DriveInternalsWebUIHandler::OnReadDirectoryByPath,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 root_path));
+}
+
+void DriveInternalsWebUIHandler::UpdateLocalStorageUsageSection() {
   // Propagate the amount of local free space in bytes.
   FilePath home_path;
   if (PathService::Get(base::DIR_HOME, &home_path)) {
@@ -351,6 +432,13 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   }
 }
 
+void DriveInternalsWebUIHandler::UpdateCacheContentsSection(
+    drive::DriveCache* cache) {
+  cache->GetResourceIdsOfAllFilesOnUIThread(
+      base::Bind(&DriveInternalsWebUIHandler::OnGetResourceIdsOfAllFiles,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
 void DriveInternalsWebUIHandler::OnGetGCacheContents(
     base::ListValue* gcache_contents,
     base::DictionaryValue* gcache_summary) {
@@ -359,20 +447,6 @@ void DriveInternalsWebUIHandler::OnGetGCacheContents(
   web_ui()->CallJavascriptFunction("updateGCacheContents",
                                    *gcache_contents,
                                    *gcache_summary);
-
-  // Start updating the file system tree section, if we have access token.
-  drive::DriveSystemService* system_service = GetSystemService();
-  if (!system_service->drive_service()->HasAccessToken())
-    return;
-
-  // Start rendering the file system tree as text.
-  const FilePath root_path = FilePath(drive::kDriveRootDirectory);
-  ++num_pending_reads_;
-  system_service->file_system()->ReadDirectoryByPath(
-      root_path,
-      base::Bind(&DriveInternalsWebUIHandler::OnReadDirectoryByPath,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 root_path));
 }
 
 void DriveInternalsWebUIHandler::OnReadDirectoryByPath(
@@ -407,14 +481,6 @@ void DriveInternalsWebUIHandler::OnReadDirectoryByPath(
     // updates, which is good for a large file system.
     const base::StringValue value(file_system_as_text);
     web_ui()->CallJavascriptFunction("updateFileSystemContents", value);
-  }
-
-  // Start updating the cache contents section once all directories are
-  // processed.
-  if (num_pending_reads_ == 0) {
-    GetSystemService()->cache()->GetResourceIdsOfAllFilesOnUIThread(
-        base::Bind(&DriveInternalsWebUIHandler::OnGetResourceIdsOfAllFiles,
-                   weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -474,37 +540,7 @@ void DriveInternalsWebUIHandler::OnPeriodicUpdate(const base::ListValue* args) {
       system_service->drive_service();
   DCHECK(drive_service);
 
-  UpdateInFlightOperations(drive_service);
-}
-
-void DriveInternalsWebUIHandler::UpdateInFlightOperations(
-    const google_apis::DriveServiceInterface* drive_service) {
-  google_apis::OperationProgressStatusList
-      progress_status_list = drive_service->GetProgressStatusList();
-
-  base::ListValue in_flight_operations;
-  for (size_t i = 0; i < progress_status_list.size(); ++i) {
-    const google_apis::OperationProgressStatus& status =
-        progress_status_list[i];
-
-    base::DictionaryValue* dict = new DictionaryValue;
-    dict->SetInteger("operation_id", status.operation_id);
-    dict->SetString(
-        "operation_type",
-        google_apis::OperationTypeToString(status.operation_type));
-    dict->SetString("file_path", status.file_path.AsUTF8Unsafe());
-    dict->SetString(
-        "transfer_state",
-        google_apis::OperationTransferStateToString(status.transfer_state));
-    dict->SetString(
-        "start_time",
-        google_apis::util::FormatTimeAsStringLocaltime(status.start_time));
-    dict->SetDouble("progress_current", status.progress_current);
-    dict->SetDouble("progress_total", status.progress_total);
-    in_flight_operations.Append(dict);
-  }
-  web_ui()->CallJavascriptFunction("updateInFlightOperations",
-                                   in_flight_operations);
+  UpdateInFlightOperationsSection(drive_service);
 }
 
 }  // namespace
