@@ -1185,6 +1185,7 @@
         'browser/chromeos/drive/drive_test_util.cc',
         'browser/chromeos/drive/drive_test_util.h',
         'browser/chromeos/drive/drive_webapps_registry_unittest.cc',
+        'browser/chromeos/drive/file_change_unittest.cc',
         'browser/chromeos/drive/file_write_helper_unittest.cc',
         'browser/chromeos/drive/mock_directory_change_observer.cc',
         'browser/chromeos/drive/mock_directory_change_observer.h',
