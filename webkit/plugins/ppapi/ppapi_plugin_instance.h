@@ -262,8 +262,10 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
               const std::string& key,
               const std::string& init_data);
   bool CancelKeyRequest(const std::string& session_id);
-  bool Decrypt(const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
+  bool Decrypt(media::Decryptor::StreamType stream_type,
+               const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
                const media::Decryptor::DecryptCB& decrypt_cb);
+  bool CancelDecrypt(media::Decryptor::StreamType stream_type);
   bool InitializeAudioDecoder(
       const media::AudioDecoderConfig& decoder_config,
       const media::Decryptor::DecoderInitCB& decoder_init_cb);
@@ -272,10 +274,13 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
       const media::Decryptor::DecoderInitCB& decoder_init_cb);
   // TODO(tomfinegan): Add callback args for DeinitializeDecoder() and
   // ResetDecoder()
-  bool DeinitializeDecoder();
-  bool ResetDecoder();
-  // Note: This method can be used with an unencrypted frame.
-  bool DecryptAndDecode(
+  bool DeinitializeDecoder(media::Decryptor::StreamType stream_type);
+  bool ResetDecoder(media::Decryptor::StreamType stream_type);
+  // Note: These methods can be used with unencrypted data.
+  bool DecryptAndDecodeAudio(
+      const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
+      const media::Decryptor::AudioDecodeCB& audio_decode_cb);
+  bool DecryptAndDecodeVideo(
       const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
       const media::Decryptor::VideoDecodeCB& video_decode_cb);
 
@@ -596,6 +601,9 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   void SetSizeAttributesForFullscreen();
   void ResetSizeAttributesAfterFullscreen();
 
+  // Cancels the pending decrypt-and-decode callback for |stream_type|.
+  void CancelDecode(media::Decryptor::StreamType stream_type);
+
   PluginDelegate* delegate_;
   scoped_refptr<PluginModule> module_;
   scoped_ptr< ::ppapi::PPP_Instance_Combined> instance_interface_;
@@ -792,16 +800,20 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   // of request IDs.
   uint32_t next_decryption_request_id_;
 
-  // TODO(xhwang): Use two separate callbacks for video and audio instead using
-  // a map here.
-  typedef std::map<uint32_t, media::Decryptor::DecryptCB> DecryptionCBMap;
-  DecryptionCBMap pending_decryption_cbs_;
+  uint32_t pending_audio_decrypt_request_id_;
+  media::Decryptor::DecryptCB pending_audio_decrypt_cb_;
+
+  uint32_t pending_video_decrypt_request_id_;
+  media::Decryptor::DecryptCB pending_video_decrypt_cb_;
 
   uint32_t pending_audio_decoder_init_request_id_;
   media::Decryptor::DecoderInitCB pending_audio_decoder_init_cb_;
 
   uint32_t pending_video_decoder_init_request_id_;
   media::Decryptor::DecoderInitCB pending_video_decoder_init_cb_;
+
+  uint32_t pending_audio_decode_request_id_;
+  media::Decryptor::AudioDecodeCB pending_audio_decode_cb_;
 
   uint32_t pending_video_decode_request_id_;
   media::Decryptor::VideoDecodeCB pending_video_decode_cb_;

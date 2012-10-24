@@ -441,6 +441,28 @@ int64_t VideoFrameImpl::timestamp() const {
   return timestamp_;
 }
 
+class AudioFramesImpl : public cdm::AudioFrames {
+ public:
+  AudioFramesImpl() : buffer_(NULL) {}
+  virtual ~AudioFramesImpl() {
+    if (buffer_)
+      buffer_->Destroy();
+  }
+
+  // AudioFrames implementation.
+  virtual void set_buffer(cdm::Buffer* buffer) OVERRIDE {
+    buffer_ = static_cast<PpbBuffer*>(buffer);
+  }
+  virtual cdm::Buffer* buffer() OVERRIDE {
+    return buffer_;
+  }
+
+ private:
+  PpbBuffer* buffer_;
+
+  DISALLOW_COPY_AND_ASSIGN(AudioFramesImpl);
+};
+
 // A wrapper class for abstracting away PPAPI interaction and threading for a
 // Content Decryption Module (CDM).
 class CdmWrapper : public pp::Instance,
@@ -488,6 +510,7 @@ class CdmWrapper : public pp::Instance,
   typedef linked_ptr<DecryptedBlockImpl> LinkedDecryptedBlock;
   typedef linked_ptr<KeyMessageImpl> LinkedKeyMessage;
   typedef linked_ptr<VideoFrameImpl> LinkedVideoFrame;
+  typedef linked_ptr<AudioFramesImpl> LinkedAudioFrames;
 
   // <code>PPB_ContentDecryptor_Private</code> dispatchers. These are passed to
   // <code>callback_factory_</code> to ensure that calls into
@@ -513,6 +536,10 @@ class CdmWrapper : public pp::Instance,
                     const cdm::Status& status,
                     const LinkedVideoFrame& video_frame,
                     const PP_DecryptTrackingInfo& tracking_info);
+  void DeliverSamples(int32_t result,
+                      const cdm::Status& status,
+                      const LinkedAudioFrames& audio_frames,
+                      const PP_DecryptTrackingInfo& tracking_info);
 
   // Helper for SetTimer().
   void TimerExpired(int32 result);
@@ -714,8 +741,6 @@ void CdmWrapper::DecryptAndDecode(
     PP_DecryptorStreamType decoder_type,
     pp::Buffer_Dev encrypted_buffer,
     const PP_EncryptedBlockInfo& encrypted_block_info) {
-  // TODO(tomfinegan): Remove this check when audio decoding is added.
-  PP_DCHECK(decoder_type == PP_DECRYPTORSTREAMTYPE_VIDEO);
   PP_DCHECK(cdm_);
 
   cdm::InputBuffer input_buffer;
@@ -727,14 +752,34 @@ void CdmWrapper::DecryptAndDecode(
                          &input_buffer);
   }
 
-  LinkedVideoFrame video_frame(new VideoFrameImpl());
-  cdm::Status status = cdm_->DecryptAndDecodeFrame(input_buffer,
-                                                   video_frame.get());
-  CallOnMain(callback_factory_.NewCallback(
-      &CdmWrapper::DeliverFrame,
-      status,
-      video_frame,
-      encrypted_block_info.tracking_info));
+  cdm::Status status = cdm::kDecodeError;
+  switch (decoder_type) {
+    case PP_DECRYPTORSTREAMTYPE_VIDEO: {
+      LinkedVideoFrame video_frame(new VideoFrameImpl());
+      status = cdm_->DecryptAndDecodeFrame(input_buffer, video_frame.get());
+      CallOnMain(callback_factory_.NewCallback(
+          &CdmWrapper::DeliverFrame,
+          status,
+          video_frame,
+          encrypted_block_info.tracking_info));
+      return;
+    }
+
+    case PP_DECRYPTORSTREAMTYPE_AUDIO: {
+      LinkedAudioFrames audio_frames(new AudioFramesImpl());
+      status = cdm_->DecryptAndDecodeSamples(input_buffer, audio_frames.get());
+      CallOnMain(callback_factory_.NewCallback(
+          &CdmWrapper::DeliverSamples,
+          status,
+          audio_frames,
+          encrypted_block_info.tracking_info));
+      return;
+    }
+
+    default:
+      PP_NOTREACHED();
+      return;
+  }
 }
 
 void CdmWrapper::SetTimer(int64 delay_ms) {
@@ -808,6 +853,7 @@ void CdmWrapper::DeliverBlock(int32_t result,
   if (decrypted_block_info.result == PP_DECRYPTRESULT_SUCCESS) {
     PP_DCHECK(decrypted_block.get() && decrypted_block->buffer());
     if (!decrypted_block.get() || !decrypted_block->buffer()) {
+      PP_NOTREACHED();
       decrypted_block_info.result = PP_DECRYPTRESULT_DECRYPT_ERROR;
     } else {
       buffer = static_cast<PpbBuffer*>(decrypted_block->buffer())->buffer_dev();
@@ -864,6 +910,7 @@ void CdmWrapper::DeliverFrame(
         !video_frame->frame_buffer() ||
         (decrypted_frame_info.format != PP_DECRYPTEDFRAMEFORMAT_YV12 &&
          decrypted_frame_info.format != PP_DECRYPTEDFRAMEFORMAT_I420)) {
+      PP_NOTREACHED();
       decrypted_frame_info.result = PP_DECRYPTRESULT_DECODE_ERROR;
     } else {
       buffer = static_cast<PpbBuffer*>(
@@ -888,6 +935,33 @@ void CdmWrapper::DeliverFrame(
   pp::ContentDecryptor_Private::DeliverFrame(buffer, decrypted_frame_info);
 }
 
+void CdmWrapper::DeliverSamples(int32_t result,
+                                const cdm::Status& status,
+                                const LinkedAudioFrames& audio_frames,
+                                const PP_DecryptTrackingInfo& tracking_info) {
+  PP_DCHECK(result == PP_OK);
+  // TODO(tomfinegan): Add PP_DecryptedSamplesInfo (or better name) for
+  // cdm::AudioFrames.
+  PP_DecryptedBlockInfo decrypted_block_info;
+  decrypted_block_info.tracking_info = tracking_info;
+  // TODO(tomfinegan): Remove this after PP_DecryptedSamplesInfo is added.
+  decrypted_block_info.tracking_info.timestamp = 0;
+  decrypted_block_info.result = CdmStatusToPpDecryptResult(status);
+
+  pp::Buffer_Dev buffer;
+
+  if (decrypted_block_info.result == PP_DECRYPTRESULT_SUCCESS) {
+    PP_DCHECK(audio_frames.get() && audio_frames->buffer());
+    if (!audio_frames.get() || !audio_frames->buffer()) {
+      PP_NOTREACHED();
+      decrypted_block_info.result = PP_DECRYPTRESULT_DECRYPT_ERROR;
+    } else {
+      buffer = static_cast<PpbBuffer*>(audio_frames->buffer())->buffer_dev();
+    }
+  }
+
+  pp::ContentDecryptor_Private::DeliverSamples(buffer, decrypted_block_info);
+}
 
 // This object is the global object representing this plugin library as long
 // as it is loaded.

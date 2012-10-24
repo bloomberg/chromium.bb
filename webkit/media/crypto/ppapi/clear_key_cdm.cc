@@ -283,20 +283,19 @@ cdm::Status ClearKeyCdm::InitializeVideoDecoder(
   NOTIMPLEMENTED();
   return cdm::kSessionError;
 #endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
-
 }
 
 void ClearKeyCdm::ResetDecoder(cdm::StreamType decoder_type) {
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
-  DCHECK(decoder_type == cdm::kStreamTypeVideo);
-  video_decoder_->Reset();
+  if (decoder_type == cdm::kStreamTypeVideo)
+    video_decoder_->Reset();
 #endif
 }
 
 void ClearKeyCdm::DeinitializeDecoder(cdm::StreamType decoder_type) {
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
-  DCHECK(decoder_type == cdm::kStreamTypeVideo);
-  video_decoder_->Deinitialize();
+  if (decoder_type == cdm::kStreamTypeVideo)
+    video_decoder_->Deinitialize();
 #endif
 }
 
@@ -407,7 +406,7 @@ void ClearKeyCdm::GenerateFakeVideoFrame(base::TimeDelta timestamp,
 
 cdm::Status ClearKeyCdm::DecryptAndDecodeSamples(
     const cdm::InputBuffer& encrypted_buffer,
-    cdm::Buffer* sample_buffer) {
+    cdm::AudioFrames* audio_frames) {
   NOTIMPLEMENTED();
   return cdm::kDecryptError;
 }

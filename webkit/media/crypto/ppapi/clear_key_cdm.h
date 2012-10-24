@@ -64,7 +64,7 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
       cdm::VideoFrame* video_frame) OVERRIDE;
   virtual cdm::Status DecryptAndDecodeSamples(
       const cdm::InputBuffer& encrypted_buffer,
-      cdm::Buffer* sample_buffer) OVERRIDE;
+      cdm::AudioFrames* audio_frames) OVERRIDE;
 
  private:
   class Client : public media::DecryptorClient {

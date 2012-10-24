@@ -18,12 +18,8 @@ typedef __int64 int64_t;
 
 namespace cdm {
 class Allocator;
-class Buffer;
 class CdmHost;
 class ContentDecryptionModule;
-class DecryptedBlock;
-class KeyMessage;
-class VideoFrame;
 }
 
 extern "C" {
@@ -36,6 +32,12 @@ CDM_EXPORT const char* GetCdmVersion();
 }
 
 namespace cdm {
+
+class AudioFrames;
+class Buffer;
+class DecryptedBlock;
+class KeyMessage;
+class VideoFrame;
 
 enum Status {
   kSuccess = 0,
@@ -315,20 +317,8 @@ class ContentDecryptionModule {
   // Returns kDecodeError if any decoding error happened.
   // If the return value is not kSuccess, |audio_frames| should be ignored by
   // the caller.
-  //
-  // |audio_frames| can contain multiple audio output buffers. Each buffer must
-  // be serialized in this format:
-  //
-  // |<------------------- serialized audio buffer ------------------->|
-  // | int64_t timestamp | int64_t length | length bytes of audio data |
-  //
-  // For example, with three audio output buffers, |audio_frames| will look
-  // like this:
-  //
-  // |<---------------- audio_frames ------------------>|
-  // | audio buffer 0 | audio buffer 1 | audio buffer 2 |
   virtual Status DecryptAndDecodeSamples(const InputBuffer& encrypted_buffer,
-                                         Buffer* audio_frames) = 0;
+                                         AudioFrames* audio_frames) = 0;
 
   virtual ~ContentDecryptionModule() {}
 };
@@ -415,10 +405,10 @@ class KeyMessage {
 class VideoFrame {
  public:
   enum VideoPlane {
-   kYPlane = 0,
-   kUPlane = 1,
-   kVPlane = 2,
-   kMaxPlanes = 3,
+    kYPlane = 0,
+    kUPlane = 1,
+    kVPlane = 2,
+    kMaxPlanes = 3,
   };
 
   virtual void set_format(VideoFormat format) = 0;
@@ -440,8 +430,29 @@ class VideoFrame {
   virtual int64_t timestamp() const = 0;
 
  protected:
-   VideoFrame() {}
-   virtual ~VideoFrame() {}
+  VideoFrame() {}
+  virtual ~VideoFrame() {}
+};
+
+// Represents decrypted and decoded audio frames. AudioFrames can contain
+// multiple audio output buffers, which are serialized into this format:
+//
+// |<------------------- serialized audio buffer ------------------->|
+// | int64_t timestamp | int64_t length | length bytes of audio data |
+//
+// For example, with three audio output buffers, the AudioFrames will look
+// like this:
+//
+// |<----------------- AudioFrames ------------------>|
+// | audio buffer 0 | audio buffer 1 | audio buffer 2 |
+class AudioFrames {
+ public:
+  virtual void set_buffer(Buffer* buffer) = 0;
+  virtual Buffer* buffer() = 0;
+
+ protected:
+  AudioFrames() {}
+  virtual ~AudioFrames() {}
 };
 
 }  // namespace cdm
