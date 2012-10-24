@@ -253,6 +253,51 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillBGContents) {
   EXPECT_EQ(0, TaskManager::GetBackgroundPageCount());
 }
 
+#if defined(USE_ASH)
+// This test fails on Ash because task manager treats view type
+// Panels differently for Ash.
+#define MAYBE_KillPanelExtension FAILS_KillPanelExtension
+#else
+#define MAYBE_KillPanelExtension KillPanelExtension
+#endif
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, MAYBE_KillPanelExtension) {
+  EXPECT_EQ(0, model()->ResourceCount());
+
+  // Show the task manager. This populates the model, and helps with debugging
+  // (you see the task manager).
+  browser()->window()->ShowTaskManager();
+
+  // New Tab Page.
+  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
+  int resource_count = TaskManager::GetInstance()->model()->ResourceCount();
+
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("good").AppendASCII("Extensions")
+                    .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
+                    .AppendASCII("1.0.0.0")));
+
+  // Browser, the New Tab Page and Extension background page.
+  TaskManagerBrowserTestUtil::WaitForWebResourceChange(2);
+
+  // Open a new panel to an extension url and make sure we notice that.
+  GURL url(
+    "chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/french_sentence.html");
+  PanelManager::GetInstance()->CreatePanel(
+      web_app::GenerateApplicationNameFromExtensionId(
+          last_loaded_extension_id_),
+      browser()->profile(),
+      url,
+      gfx::Rect(300, 400),
+      PanelManager::CREATE_AS_DOCKED);
+  TaskManagerBrowserTestUtil::WaitForWebResourceChange(3);
+
+  // Kill the panel extension process and verify that it disappears from the
+  // model along with its panel.
+  ASSERT_TRUE(model()->IsBackgroundResource(resource_count));
+  TaskManager::GetInstance()->KillProcess(resource_count);
+  TaskManagerBrowserTestUtil::WaitForWebResourceChange(1);
+}
+
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionChanges) {
   EXPECT_EQ(0, model()->ResourceCount());
   EXPECT_EQ(0, TaskManager::GetBackgroundPageCount());

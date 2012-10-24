@@ -712,7 +712,8 @@ void TaskManagerPanelResourceProvider::Observe(int type,
       for (PanelResourceMap::iterator iter = resources_.begin();
            iter != resources_.end(); ++iter) {
         Panel* panel = iter->first;
-        if (!panel->GetWebContents()) {
+        WebContents* panel_contents = panel->GetWebContents();
+        if (!panel_contents || panel_contents == web_contents) {
           Remove(panel);
           break;
         }
