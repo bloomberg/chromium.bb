@@ -75,7 +75,7 @@ class BrowserNonClientFrameViewAsh
   virtual void OnToolbarSeparatorChanged() OVERRIDE;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest, UseShortHeader);
+  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest, WindowHeader);
 
   // Distance between top of window and client area.
   int NonClientTopBorderHeight(bool force_restored) const;
