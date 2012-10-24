@@ -11,31 +11,15 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/api/prefs/pref_member.h"
+#include "chrome/browser/captive_portal/captive_portal_detector.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/backoff_entry.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
 class Profile;
 
-namespace net {
-class URLFetcher;
-}
-
 namespace captive_portal {
-
-// Possible results of an attempt to detect a captive portal.
-enum Result {
-  // There's a confirmed connection to the Internet.
-  RESULT_INTERNET_CONNECTED,
-  // The URL request received a network or HTTP error, or a non-HTTP response.
-  RESULT_NO_RESPONSE,
-  // The URL request apparently encountered a captive portal.  It received a
-  // a valid HTTP response with a 2xx, 3xx, or 511 status code, other than 204.
-  RESULT_BEHIND_CAPTIVE_PORTAL,
-  RESULT_COUNT
-};
 
 // Service that checks for captive portals when queried, and sends a
 // NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT with the Profile as the source and
@@ -45,7 +29,6 @@ enum Result {
 // be accessed on the UI thread.
 // Design doc: https://docs.google.com/document/d/1k-gP2sswzYNvryu9NcgN7q5XrsMlUdlUdoW9WRaEmfM/edit
 class CaptivePortalService : public ProfileKeyedService,
-                             public net::URLFetcherDelegate,
                              public content::NotificationObserver,
                              public base::NonThreadSafe {
  public:
@@ -129,8 +112,9 @@ class CaptivePortalService : public ProfileKeyedService,
   // is disabled, just acts like there's an Internet connection.
   void DetectCaptivePortalInternal();
 
-  // net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  // Called by CaptivePortalDetector when detection completes.
+  void OnPortalDetectionCompleted(
+      const CaptivePortalDetector::Results& results);
 
   // content::NotificationObserver:
   virtual void Observe(
@@ -157,22 +141,10 @@ class CaptivePortalService : public ProfileKeyedService,
   //               Android, since it lacks the Browser class.
   void UpdateEnabledState();
 
-  // Takes a net::URLFetcher that has finished trying to retrieve the test
-  // URL, and returns a captive_portal::Result based on its result.
-  // If the response is a 503 with a Retry-After header, |retry_after| is
-  // populated accordingly.  Otherwise, it's set to base::TimeDelta().
-  Result GetCaptivePortalResultFromResponse(const net::URLFetcher* url_fetcher,
-                                            base::TimeDelta* retry_after) const;
+  // Returns the current TimeTicks.
+  base::TimeTicks GetCurrentTimeTicks() const;
 
-  // Returns the current time.  Used only when determining time until a
-  // Retry-After date.  Overridden by unit tests.
-  virtual base::Time GetCurrentTime() const;
-
-  // Returns the current TimeTicks.  Overridden by unit tests.
-  virtual base::TimeTicks GetCurrentTimeTicks() const;
-
-  // Returns true if a captive portal check is currently running.
-  bool FetchingURL() const;
+  bool DetectionInProgress() const;
 
   // Returns true if the timer to try and detect a captive portal is running.
   bool TimerRunning() const;
@@ -183,10 +155,23 @@ class CaptivePortalService : public ProfileKeyedService,
 
   void set_test_url(const GURL& test_url) { test_url_ = test_url; }
 
+  // Sets current test time ticks. Used by unit tests.
+  void set_time_ticks_for_testing(const base::TimeTicks& time_ticks) {
+    time_ticks_for_testing_ = time_ticks;
+  }
+
+  // Advances current test time ticks. Used by unit tests.
+  void advance_time_ticks_for_testing(const base::TimeDelta& delta) {
+    time_ticks_for_testing_ += delta;
+  }
+
   // The profile that owns this CaptivePortalService.
   Profile* profile_;
 
   State state_;
+
+  // Detector for checking active network for a portal state.
+  CaptivePortalDetector captive_portal_detector_;
 
   // True if the service is enabled.  When not enabled, all checks will return
   // RESULT_INTERNET_CONNECTED.
@@ -213,8 +198,6 @@ class CaptivePortalService : public ProfileKeyedService,
   // is considered a "failure", to trigger throttling.
   scoped_ptr<net::BackoffEntry> backoff_entry_;
 
-  scoped_ptr<net::URLFetcher> url_fetcher_;
-
   // URL that returns a 204 response code when connected to the Internet.
   GURL test_url_;
 
@@ -226,6 +209,9 @@ class CaptivePortalService : public ProfileKeyedService,
   base::OneShotTimer<CaptivePortalService> check_captive_portal_timer_;
 
   static TestingState testing_state_;
+
+  // Test time ticks used by unit tests.
+  base::TimeTicks time_ticks_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalService);
 };

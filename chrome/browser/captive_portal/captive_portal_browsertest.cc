@@ -1000,7 +1000,7 @@ bool CaptivePortalBrowserTest::CheckPending(Browser* browser) {
   CaptivePortalService* captive_portal_service =
       CaptivePortalServiceFactory::GetForProfile(browser->profile());
 
-  return captive_portal_service->FetchingURL() ||
+  return captive_portal_service->DetectionInProgress() ||
       captive_portal_service->TimerRunning();
 }
 

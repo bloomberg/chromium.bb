@@ -39,47 +39,7 @@ scoped_refptr<net::HttpResponseHeaders> CreateResponseHeaders(
   return new net::HttpResponseHeaders(raw_headers);
 }
 
-// Allows setting the time, for testing timers.
-class TestCaptivePortalService : public CaptivePortalService {
- public:
-  // The initial time does not matter, except it must not be NULL.
-  explicit TestCaptivePortalService(Profile* profile)
-      : CaptivePortalService(profile),
-        time_ticks_(base::TimeTicks::Now()),
-        time_(base::Time::Now()) {
-  }
-
-  virtual ~TestCaptivePortalService() {}
-
-  void AdvanceTime(base::TimeDelta delta) {
-    time_ticks_ += delta;
-    time_ += delta;
-  }
-
-  // CaptivePortalService:
-  virtual base::TimeTicks GetCurrentTimeTicks() const OVERRIDE {
-    return time_ticks_;
-  }
-
-  virtual base::Time GetCurrentTime() const OVERRIDE {
-    return time_;
-  }
-
-  void set_time(base::Time time) {
-    time_= time;
-  }
-
- private:
-  base::TimeTicks time_ticks_;
-
-  // Not necessarily consistent with |time_ticks_|.  Used solely with
-  // Retry-After dates.
-  base::Time time_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestCaptivePortalService);
-};
-
-// An observer watches the CaptivePortalService.  It tracks the last
+// An observer watches the CaptivePortalDetector.  It tracks the last
 // received result and the total number of received results.
 class CaptivePortalObserver : public content::NotificationObserver {
  public:
@@ -149,8 +109,7 @@ class CaptivePortalServiceTest : public testing::Test {
     CaptivePortalService::set_state_for_testing(testing_state);
 
     profile_.reset(new TestingProfile());
-    service_.reset(new TestCaptivePortalService(profile_.get()));
-    scoped_ptr<TestCaptivePortalService> service_;
+    service_.reset(CreateTestCaptivePortalService(profile_.get()));
 
     // Use no delays for most tests.
     set_initial_backoff_no_portal(base::TimeDelta());
@@ -182,7 +141,7 @@ class CaptivePortalServiceTest : public testing::Test {
 
   // Calls the corresponding CaptivePortalService function.
   void OnURLFetchComplete(net::URLFetcher* fetcher) {
-    service()->OnURLFetchComplete(fetcher);
+    service()->captive_portal_detector_.OnURLFetchComplete(fetcher);
   }
 
   // Triggers a captive portal check, then simulates the URL request
@@ -207,7 +166,7 @@ class CaptivePortalServiceTest : public testing::Test {
     ASSERT_EQ(CaptivePortalService::STATE_IDLE, service()->state());
     ASSERT_EQ(expected_delay, GetTimeUntilNextRequest());
 
-    service()->AdvanceTime(expected_delay);
+    AdvanceTime(expected_delay);
     ASSERT_EQ(base::TimeDelta(), GetTimeUntilNextRequest());
 
     CaptivePortalObserver observer(profile(), service());
@@ -256,7 +215,7 @@ class CaptivePortalServiceTest : public testing::Test {
     ASSERT_EQ(CaptivePortalService::STATE_IDLE, service()->state());
     ASSERT_EQ(expected_delay, GetTimeUntilNextRequest());
 
-    service()->AdvanceTime(expected_delay);
+    AdvanceTime(expected_delay);
     ASSERT_EQ(base::TimeDelta(), GetTimeUntilNextRequest());
 
     CaptivePortalObserver observer(profile(), service());
@@ -287,8 +246,27 @@ class CaptivePortalServiceTest : public testing::Test {
     RunTest(expected_result, net_error, status_code, 1600, NULL);
   }
 
+  CaptivePortalService* CreateTestCaptivePortalService(Profile* profile) {
+    scoped_ptr<CaptivePortalService> service(new CaptivePortalService(profile));
+    service->set_time_ticks_for_testing(base::TimeTicks::Now());
+    service->captive_portal_detector_.set_time_for_testing(base::Time::Now());
+    return service.release();
+  }
+
+  // Changes test time for the service and service's captive portal
+  // detector.
+  void AdvanceTime(const base::TimeDelta& delta) {
+    service()->advance_time_ticks_for_testing(delta);
+    service()->captive_portal_detector_.advance_time_for_testing(delta);
+  }
+
+  // Sets test time for service's captive portal detector.
+  void SetTime(const base::Time& time) {
+    service()->captive_portal_detector_.set_time_for_testing(time);
+  }
+
   bool FetchingURL() {
-    return service()->FetchingURL();
+    return service()->captive_portal_detector_.FetchingURL();
   }
 
   bool TimerRunning() {
@@ -331,7 +309,7 @@ class CaptivePortalServiceTest : public testing::Test {
 
   TestingProfile* profile() { return profile_.get(); }
 
-  TestCaptivePortalService* service() { return service_.get(); }
+  CaptivePortalService* service() { return service_.get(); }
 
  private:
   // Stores the initial CaptivePortalService::TestingState so it can be restored
@@ -342,7 +320,7 @@ class CaptivePortalServiceTest : public testing::Test {
 
   // Note that the construction order of these matters.
   scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<TestCaptivePortalService> service_;
+  scoped_ptr<CaptivePortalService> service_;
 };
 
 // Test that the CaptivePortalService returns the expected result codes in
@@ -370,8 +348,9 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalResultCodes) {
 TEST_F(CaptivePortalServiceTest, CaptivePortalTwoProfiles) {
   Initialize(CaptivePortalService::SKIP_OS_CHECK_FOR_TESTING);
   TestingProfile profile2;
-  TestCaptivePortalService service2(&profile2);
-  CaptivePortalObserver observer2(&profile2, &service2);
+  scoped_ptr<CaptivePortalService> service2(
+      CreateTestCaptivePortalService(&profile2));
+  CaptivePortalObserver observer2(&profile2, service2.get());
 
   RunTest(RESULT_INTERNET_CONNECTED, net::OK, 204, 0, NULL);
   EXPECT_EQ(0, observer2.num_results_received());
@@ -598,7 +577,7 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalRetryAfterDate) {
   base::Time start_time;
   ASSERT_TRUE(
       base::Time::FromString("Tue, 17 Apr 2012 18:02:00 GMT", &start_time));
-  service()->set_time(start_time);
+  SetTime(start_time);
 
   RunTest(RESULT_NO_RESPONSE,
           net::OK,
