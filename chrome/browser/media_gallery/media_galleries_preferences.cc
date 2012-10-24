@@ -141,9 +141,8 @@ MediaGalleriesPreferences::MediaGalleriesPreferences(Profile* profile)
 MediaGalleriesPreferences::~MediaGalleriesPreferences() {}
 
 void MediaGalleriesPreferences::MaybeAddDefaultGalleries() {
-  MediaGalleryPrefId current_id =
-      profile_->GetPrefs()->GetUint64(prefs::kMediaGalleriesUniqueId);
-  if (current_id != kInvalidMediaGalleryPrefId + 1)
+  // Only add defaults the first time.
+  if (APIHasBeenUsed(profile_))
     return;
 
   // Fresh profile case.
@@ -414,9 +413,10 @@ void MediaGalleriesPreferences::Shutdown() {
 }
 
 // static
-bool MediaGalleriesPreferences::UserInteractionIsEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableMediaGalleryUI);
+bool MediaGalleriesPreferences::APIHasBeenUsed(Profile* profile) {
+  MediaGalleryPrefId current_id =
+      profile->GetPrefs()->GetUint64(prefs::kMediaGalleriesUniqueId);
+  return current_id != kInvalidMediaGalleryPrefId + 1;
 }
 
 // static

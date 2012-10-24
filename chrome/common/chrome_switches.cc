@@ -550,9 +550,6 @@ const char kEnableIPPooling[]               = "enable-ip-pooling";
 // flag can be used to enable it until http://crbug.com/108992 is fixed.
 extern const char kEnableManagedStorage[]   = "enable-managed-storage";
 
-// Enables media gallery UI elements and permission management.
-const char kEnableMediaGalleryUI[]          = "enable-media-gallery-ui";
-
 // Allows reporting memory info (JS heap size) to page.
 const char kEnableMemoryInfo[]              = "enable-memory-info";
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/options/media_galleries_handler.h"
 
 #include "base/bind.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences.h"
 #include "chrome/browser/media_gallery/media_galleries_preferences_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -19,6 +20,10 @@
 #include "grit/generated_resources.h"
 
 namespace options {
+
+using chrome::MediaGalleriesPreferences;
+using chrome::MediaGalleriesPrefInfoMap;
+using chrome::MediaGalleryPrefInfo;
 
 MediaGalleriesHandler::MediaGalleriesHandler() {
 }
@@ -40,18 +45,15 @@ void MediaGalleriesHandler::GetLocalizedValues(DictionaryValue* values) {
                 IDS_MEDIA_GALLERY_MANAGE_TITLE);
 }
 
-void MediaGalleriesHandler::InitializeHandler() {
-  if (!chrome::MediaGalleriesPreferences::UserInteractionIsEnabled())
-    return;
-
-  Profile* profile = Profile::FromWebUI(web_ui());
-  pref_change_registrar_.Init(profile->GetPrefs());
-  pref_change_registrar_.Add(prefs::kMediaGalleriesRememberedGalleries, this);
-}
-
 void MediaGalleriesHandler::InitializePage() {
-  if (!chrome::MediaGalleriesPreferences::UserInteractionIsEnabled())
+  Profile* profile = Profile::FromWebUI(web_ui());
+  if (!chrome::MediaGalleriesPreferences::APIHasBeenUsed(profile))
     return;
+
+  if (pref_change_registrar_.IsEmpty()) {
+    pref_change_registrar_.Init(profile->GetPrefs());
+    pref_change_registrar_.Add(prefs::kMediaGalleriesRememberedGalleries, this);
+  }
 
   OnGalleriesChanged();
 }
@@ -69,10 +71,26 @@ void MediaGalleriesHandler::RegisterMessages() {
 
 void MediaGalleriesHandler::OnGalleriesChanged() {
   Profile* profile = Profile::FromWebUI(web_ui());
-  const ListValue* list = profile->GetPrefs()->GetList(
-      prefs::kMediaGalleriesRememberedGalleries);
+  chrome::MediaGalleriesPreferences* preferences =
+      MediaGalleriesPreferencesFactory::GetForProfile(profile);
+
+  ListValue list;
+  const MediaGalleriesPrefInfoMap& galleries = preferences->known_galleries();
+  for (MediaGalleriesPrefInfoMap::const_iterator iter = galleries.begin();
+       iter != galleries.end(); ++iter) {
+    const MediaGalleryPrefInfo& gallery = iter->second;
+    if (gallery.type == MediaGalleryPrefInfo::kBlackListed)
+      continue;
+
+    DictionaryValue* dict = new DictionaryValue();
+    dict->SetString("displayName", gallery.display_name);
+    dict->SetString("path", gallery.AbsolutePath().LossyDisplayName());
+    dict->SetString("id", base::Uint64ToString(gallery.pref_id));
+    list.Append(dict);
+  }
+
   web_ui()->CallJavascriptFunction(
-      "options.MediaGalleriesManager.setAvailableMediaGalleries", *list);
+      "options.MediaGalleriesManager.setAvailableMediaGalleries", list);
 }
 
 void MediaGalleriesHandler::HandleAddNewGallery(const base::ListValue* args) {
@@ -90,9 +108,14 @@ void MediaGalleriesHandler::HandleAddNewGallery(const base::ListValue* args) {
 }
 
 void MediaGalleriesHandler::HandleForgetGallery(const base::ListValue* args) {
-  // TODO(estade): use uint64.
-  int id;
-  CHECK(ExtractIntegerValue(args, &id));
+  std::string string_id;
+  uint64 id = 0;
+  if (!args->GetString(0, &string_id) ||
+      !base::StringToUint64(string_id, &id)) {
+    NOTREACHED();
+    return;
+  }
+
   chrome::MediaGalleriesPreferences* prefs =
       MediaGalleriesPreferencesFactory::GetForProfile(
           Profile::FromWebUI(web_ui()));
@@ -101,7 +124,7 @@ void MediaGalleriesHandler::HandleForgetGallery(const base::ListValue* args) {
 
 void MediaGalleriesHandler::FileSelected(
     const FilePath& path, int index, void* params) {
-    chrome::MediaGalleriesPreferences* prefs =
+  chrome::MediaGalleriesPreferences* prefs =
       MediaGalleriesPreferencesFactory::GetForProfile(
           Profile::FromWebUI(web_ui()));
   prefs->AddGalleryByPath(path);

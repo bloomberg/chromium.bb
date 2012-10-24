@@ -117,8 +117,10 @@ class MediaGalleriesPreferences : public ProfileKeyedService {
 
   static void RegisterUserPrefs(PrefService* prefs);
 
-  // Returns true if the media gallery UI is turned on.
-  static bool UserInteractionIsEnabled();
+  // Returns true if the media gallery preferences system has ever been used
+  // for this profile. To be exact, it checks if a gallery has ever been added
+  // (including defaults).
+  static bool APIHasBeenUsed(Profile* profile);
 
  private:
   typedef std::map<std::string /*device id*/, MediaGalleryPrefIdSet>

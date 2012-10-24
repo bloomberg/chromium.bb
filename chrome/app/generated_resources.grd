@@ -7612,7 +7612,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Manage galleries
       </message>
       <message name="IDS_MEDIA_GALLERY_ADD_NEW_BUTTON" desc="The text for the button that opens a dialog to select a new media gallery.">
-        Add gallery
+        Add...
       </message>
 
       <!-- Mac and ChromeOS users do not close their browser. Mac users quit it and ChromeOS users log out. -->

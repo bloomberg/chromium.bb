@@ -156,7 +156,6 @@ extern const char kEnableIPv6[];
 extern const char kEnableIPCFuzzing[];
 extern const char kEnableIPPooling[];
 extern const char kEnableManagedStorage[];
-extern const char kEnableMediaGalleryUI[];
 extern const char kEnableMemoryInfo[];
 extern const char kEnableMetricsReportingForTesting[];
 extern const char kEnableNaCl[];

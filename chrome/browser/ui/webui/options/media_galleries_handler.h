@@ -21,7 +21,6 @@ class MediaGalleriesHandler : public OptionsPageUIHandler,
 
   // OptionsPageUIHandler implementation.
   virtual void GetLocalizedValues(base::DictionaryValue* values) OVERRIDE;
-  virtual void InitializeHandler() OVERRIDE;
   virtual void InitializePage() OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
