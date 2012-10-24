@@ -332,8 +332,7 @@ void BookmarkMenuDelegate::BookmarkNodeFaviconChanged(
     MenuItemView* menu_item = i->second->GetMenuItemByID(menu_pair->second);
     if (menu_item) {
       const gfx::Image& favicon = model->GetFavicon(node);
-      menu_item->SetIcon(
-          favicon.IsEmpty() ? SkBitmap() : *favicon.ToSkBitmap());
+      menu_item->SetIcon(favicon.AsImageSkia());
       return;
     }
   }
@@ -343,8 +342,7 @@ void BookmarkMenuDelegate::BookmarkNodeFaviconChanged(
         menu_pair->second);
     if (menu_item) {
       const gfx::Image& favicon = model->GetFavicon(node);
-      menu_item->SetIcon(
-          favicon.IsEmpty() ? SkBitmap() : *favicon.ToSkBitmap());
+      menu_item->SetIcon(favicon.AsImageSkia());
     }
   }
 }

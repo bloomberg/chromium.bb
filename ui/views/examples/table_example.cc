@@ -114,7 +114,7 @@ string16 TableExample::GetText(int row, int column_id) {
 }
 
 gfx::ImageSkia TableExample::GetIcon(int row) {
-  return row % 2 ? icon1_ : icon2_;
+  return row % 2 ? gfx::ImageSkia(icon1_) : gfx::ImageSkia(icon2_);
 }
 
 void TableExample::SetObserver(ui::TableModelObserver* observer) {}

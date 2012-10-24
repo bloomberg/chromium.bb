@@ -62,7 +62,7 @@ SkBitmap GetGAIAPictureForNTP(const gfx::Image& image) {
 
   gfx::Canvas canvas(gfx::Size(kLength, kLength), ui::SCALE_FACTOR_100P,
       false);
-  canvas.DrawImageInt(bmp, 0, 0);
+  canvas.DrawImageInt(gfx::ImageSkia(bmp), 0, 0);
 
   // Draw a gray border on the inside of the icon.
   SkColor color = SkColorSetARGB(83, 0, 0, 0);
@@ -214,8 +214,8 @@ void NTPLoginHandler::UpdateLogin() {
         const gfx::Image* image =
             cache.GetGAIAPictureOfProfileAtIndex(profile_index);
         if (image)
-          icon_url = web_ui_util::GetImageDataUrl(gfx::ImageSkia(
-              GetGAIAPictureForNTP(*image)));
+          icon_url = web_ui_util::GetBitmapDataUrl(
+              GetGAIAPictureForNTP(*image));
       }
       if (header.empty())
         header = CreateSpanWithClass(UTF8ToUTF16(username), "profile-name");

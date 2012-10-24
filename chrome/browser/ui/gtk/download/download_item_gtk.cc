@@ -874,7 +874,7 @@ gboolean DownloadItemGtk::OnProgressAreaExpose(GtkWidget* widget,
   // there is no need to use the chromium-specific default download item icon.
   if (icon_small_) {
     const int offset = download_util::kSmallProgressIconOffset;
-    canvas.DrawImageInt(*icon_small_->ToSkBitmap(),
+    canvas.DrawImageInt(icon_small_->AsImageSkia(),
         allocation.x + offset, allocation.y + offset);
   }
 

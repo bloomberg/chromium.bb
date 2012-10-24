@@ -176,17 +176,11 @@ void WebContentsDragWin::StartDragging(const WebDropData& drop_data,
   base::Thread::Options options;
   options.message_loop_type = MessageLoop::TYPE_UI;
   if (drag_drop_thread_->StartWithOptions(options)) {
-    gfx::Display display =
-        gfx::Screen::GetNativeScreen()->GetDisplayNearestWindow(
-            web_contents_->GetNativeView());
-    ui::ScaleFactor scale_factor = ui::GetScaleFactorFromScale(
-        display.device_scale_factor());
     drag_drop_thread_->message_loop()->PostTask(
         FROM_HERE,
         base::Bind(&WebContentsDragWin::StartBackgroundDragging, this,
                    drop_data, ops, page_url, page_encoding,
-                   image.GetRepresentation(scale_factor).sk_bitmap(),
-                   image_offset));
+                   image, image_offset));
   }
 
   EnableBackgroundDraggingSupport(drag_drop_thread_->thread_id());
@@ -197,7 +191,7 @@ void WebContentsDragWin::StartBackgroundDragging(
     WebDragOperationsMask ops,
     const GURL& page_url,
     const std::string& page_encoding,
-    const SkBitmap& image,
+    const gfx::ImageSkia& image,
     const gfx::Point& image_offset) {
   drag_drop_thread_id_ = base::PlatformThread::CurrentId();
 

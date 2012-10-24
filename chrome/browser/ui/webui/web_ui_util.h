@@ -13,24 +13,21 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class GURL;
-
-namespace gfx {
-class ImageSkia;
-}
+class SkBitmap;
 
 namespace web_ui_util {
 
-// Convenience routine to convert ImageSkia object to data url
+// Convenience routine to convert SkBitmap object to data url
 // so that it can be used in WebUI.
-std::string GetImageDataUrl(const gfx::ImageSkia& image);
+std::string GetBitmapDataUrl(const SkBitmap& bitmap);
 
 // Convenience routine to get data url that corresponds to given
-// resource_id as an image. This function does not check if the
-// resource for the |resource_id| is an image, therefore it is the
-// caller's responsibility to make sure the resource is indeed an
-// image. Returns empty string if a resource does not exist for given
+// resource_id as a bitmap. This function does not check if the
+// resource for the |resource_id| is a bitmap, therefore it is the
+// caller's responsibility to make sure the resource is indeed a
+// bitmap. Returns empty string if a resource does not exist for given
 // |resource_id|.
-std::string GetImageDataUrlFromResource(int resource_id);
+std::string GetBitmapDataUrlFromResource(int resource_id);
 
 // Extracts a disposition from click event arguments. |args| should contain
 // an integer button and booleans alt key, ctrl key, meta key, and shift key

@@ -210,7 +210,7 @@ void BrowserLauncherItemController::TabChangedAt(
     if (item_index == -1)
       return;
     ash::LauncherItem item = launcher_model()->items()[item_index];
-    item.image = SkBitmap();
+    item.image = gfx::ImageSkia();
     launcher_model()->Set(item_index, item);
   }
 }
@@ -273,9 +273,9 @@ void BrowserLauncherItemController::UpdateLauncher(TabContents* tab) {
     // Update the icon for extension panels.
     extensions::TabHelper* extensions_tab_helper =
         extensions::TabHelper::FromWebContents(tab->web_contents());
-    SkBitmap new_image = favicon_loader_->GetFavicon();
+    gfx::ImageSkia new_image = gfx::ImageSkia(favicon_loader_->GetFavicon());
     if (new_image.isNull() && extensions_tab_helper->GetExtensionAppIcon())
-      new_image = *extensions_tab_helper->GetExtensionAppIcon();
+      new_image = gfx::ImageSkia(*extensions_tab_helper->GetExtensionAppIcon());
     // Only update the icon if we have a new image, or none has been set yet.
     // This avoids flickering to an empty image when a pinned app is opened.
     if (!new_image.isNull())

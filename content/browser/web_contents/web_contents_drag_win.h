@@ -83,7 +83,7 @@ class CONTENT_EXPORT WebContentsDragWin
                                WebKit::WebDragOperationsMask ops,
                                const GURL& page_url,
                                const std::string& page_encoding,
-                               const SkBitmap& image,
+                               const gfx::ImageSkia& image,
                                const gfx::Point& image_offset);
   // Called on UI thread.
   void EndDragging();

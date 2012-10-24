@@ -89,7 +89,7 @@ base::ListValue* NetworkMenuWebUI::ConvertMenuModel(ui::MenuModel* model) {
     if (model->GetIconAt(i, &icon)) {
       SkBitmap icon_bitmap = icon.ToImageSkia()->GetRepresentation(
           web_ui_->GetDeviceScaleFactor()).sk_bitmap();
-      item->SetString("icon", web_ui_util::GetImageDataUrl(icon_bitmap));
+      item->SetString("icon", web_ui_util::GetBitmapDataUrl(icon_bitmap));
     }
     if (id >= 0) {
       item->SetBoolean("enabled", model->IsEnabledAt(i));
@@ -166,7 +166,7 @@ void NetworkDropdown::SetNetworkIconAndText() {
       web_ui_->GetDeviceScaleFactor()).sk_bitmap();
   std::string icon_str =
       icon_image.isNull() ?
-          std::string() : web_ui_util::GetImageDataUrl(icon_bitmap);
+          std::string() : web_ui_util::GetBitmapDataUrl(icon_bitmap);
   base::StringValue title(text);
   base::StringValue icon(icon_str);
   web_ui_->CallJavascriptFunction("cr.ui.DropDown.updateNetworkTitle",

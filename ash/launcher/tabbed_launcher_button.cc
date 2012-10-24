@@ -51,7 +51,7 @@ TabbedLauncherButton::IconView::~IconView() {
 void TabbedLauncherButton::IconView::AnimationEnded(
     const ui::Animation* animation) {
   AnimationProgressed(animation);
-  animating_image_ = SkBitmap();
+  animating_image_ = gfx::ImageSkia();
 }
 
 void TabbedLauncherButton::IconView::AnimationProgressed(

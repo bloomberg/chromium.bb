@@ -431,7 +431,7 @@ void AutofillOptionsHandler::LoadAutofillData() {
     entry->Append(new StringValue((*i)->Label()));
     int res = CreditCardTypeToResourceID((*i)->type());
     entry->Append(
-        new StringValue(web_ui_util::GetImageDataUrlFromResource(res)));
+        new StringValue(web_ui_util::GetBitmapDataUrlFromResource(res)));
     entry->Append(new StringValue(LocalizedCreditCardType((*i)->type())));
     credit_cards.Append(entry);
   }

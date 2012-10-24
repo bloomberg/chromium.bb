@@ -92,7 +92,8 @@ void ExtensionUninstallDialog::SetIcon(const gfx::Image& image) {
     // than the one we need, it will be scaled down by the ui code.
     // TODO(tbarzic): We should use IconImage here and load the required bitmap
     //     lazily.
-    icon_ = GetDefaultIconBitmapForMaxScaleFactor(extension_->is_app());
+    icon_ = gfx::ImageSkia(
+        GetDefaultIconBitmapForMaxScaleFactor(extension_->is_app()));
   } else {
     icon_ = *image.ToImageSkia();
   }

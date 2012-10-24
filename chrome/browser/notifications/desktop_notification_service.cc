@@ -264,7 +264,7 @@ std::string DesktopNotificationService::AddIconNotification(
 #else
   GURL icon_url;
   if (!icon.isNull())
-    icon_url = GURL(web_ui_util::GetImageDataUrl(icon));
+    icon_url = GURL(web_ui_util::GetBitmapDataUrl(*icon.bitmap()));
   return AddNotification(
       origin_url, title, message, icon_url, replace_id, delegate, profile);
 #endif

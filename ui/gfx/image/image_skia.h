@@ -52,9 +52,7 @@ class UI_EXPORT ImageSkia {
 
   // Adds ref to passed in bitmap.
   // DIP width and height are set based on scale factor of 1x.
-  // TODO(pkotwicz): This is temporary till conversion to gfx::ImageSkia is
-  // done.
-  ImageSkia(const SkBitmap& bitmap);
+  explicit ImageSkia(const SkBitmap& bitmap);
 
   explicit ImageSkia(const gfx::ImageSkiaRep& image_rep);
 

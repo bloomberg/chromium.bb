@@ -116,7 +116,7 @@ class InstalledBubbleContent : public views::View,
       size = gfx::Size(kIconSize, kIconSize);
     icon_ = new views::ImageView();
     icon_->SetImageSize(size);
-    icon_->SetImage(*icon);
+    icon_->SetImage(gfx::ImageSkia(*icon));
     AddChildView(icon_);
 
     // The Extension Installed bubble takes on various forms, depending on the

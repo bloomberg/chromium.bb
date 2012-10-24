@@ -248,7 +248,8 @@ void ChangePictureOptionsHandler::SendSelectedImage() {
     case User::kExternalImageIndex: {
       // User has image from camera/file, record it and add to the image list.
       previous_image_ = user->image();
-      previous_image_data_url_ = web_ui_util::GetImageDataUrl(previous_image_);
+      previous_image_data_url_ =
+          web_ui_util::GetBitmapDataUrl(*previous_image_.bitmap());
       web_ui()->CallJavascriptFunction("ChangePictureOptions.setOldImage");
       break;
     }
@@ -276,7 +277,7 @@ void ChangePictureOptionsHandler::SendSelectedImage() {
 
 void ChangePictureOptionsHandler::SendProfileImage(const gfx::ImageSkia& image,
                                                    bool should_select) {
-  base::StringValue data_url(web_ui_util::GetImageDataUrl(image));
+  base::StringValue data_url(web_ui_util::GetBitmapDataUrl(*image.bitmap()));
   base::FundamentalValue select(should_select);
   web_ui()->CallJavascriptFunction("ChangePictureOptions.setProfileImage",
                                    data_url, select);

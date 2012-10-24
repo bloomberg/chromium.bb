@@ -93,7 +93,7 @@ void AppInfoView::Init(const string16& title_text,
                        const string16& description_text,
                        const SkBitmap& icon) {
   icon_ = new views::ImageView();
-  icon_->SetImage(icon);
+  icon_->SetImage(gfx::ImageSkia(icon));
   icon_->SetImageSize(gfx::Size(kAppIconSize, kAppIconSize));
 
   title_ = new views::Label(title_text);

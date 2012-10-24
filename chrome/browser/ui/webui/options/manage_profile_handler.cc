@@ -123,7 +123,7 @@ void ManageProfileHandler::SendProfileIcons(
         cache.GetGAIAPictureOfProfileAtIndex(profile_index);
     if (icon) {
       gfx::Image icon2 = profiles::GetAvatarIconForWebUI(*icon, true);
-      gaia_picture_url_ = web_ui_util::GetImageDataUrl(*icon2.ToImageSkia());
+      gaia_picture_url_ = web_ui_util::GetBitmapDataUrl(icon2.AsBitmap());
       image_url_list.Append(Value::CreateStringValue(gaia_picture_url_));
     }
   }

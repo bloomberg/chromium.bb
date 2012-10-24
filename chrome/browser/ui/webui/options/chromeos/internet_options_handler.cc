@@ -266,7 +266,7 @@ class NetworkInfoDictionary {
   }
   void set_icon(const gfx::ImageSkia& icon) {
     gfx::ImageSkiaRep image_rep = icon.GetRepresentation(icon_scale_factor_);
-    icon_url_ = icon.isNull() ? "" : web_ui_util::GetImageDataUrl(
+    icon_url_ = icon.isNull() ? "" : web_ui_util::GetBitmapDataUrl(
         image_rep.sk_bitmap());
   }
   void set_name(const std::string& name) {

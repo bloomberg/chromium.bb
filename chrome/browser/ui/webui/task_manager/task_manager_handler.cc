@@ -66,7 +66,7 @@ Value* CreateColumnValue(const TaskManagerModel* tm,
   }
   if (column_name == "icon") {
     return Value::CreateStringValue(
-               web_ui_util::GetImageDataUrl(tm->GetResourceIcon(i)));
+               web_ui_util::GetBitmapDataUrl(*tm->GetResourceIcon(i).bitmap()));
   }
   if (column_name == "title")
     return Value::CreateStringValue(tm->GetResourceTitle(i));

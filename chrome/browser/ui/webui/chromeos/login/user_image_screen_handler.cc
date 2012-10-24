@@ -167,7 +167,7 @@ void UserImageScreenHandler::RegisterMessages() {
 }
 
 void UserImageScreenHandler::AddProfileImage(const gfx::ImageSkia& image) {
-  profile_picture_data_url_ = web_ui_util::GetImageDataUrl(image);
+  profile_picture_data_url_ = web_ui_util::GetBitmapDataUrl(*image.bitmap());
   SendProfileImage(profile_picture_data_url_);
 }
 
@@ -190,7 +190,7 @@ void UserImageScreenHandler::OnProfileImageAbsent() {
 
 void UserImageScreenHandler::OnPhotoAccepted(const gfx::ImageSkia& photo) {
   user_photo_ = photo;
-  user_photo_data_url_ = web_ui_util::GetImageDataUrl(user_photo_);
+  user_photo_data_url_ = web_ui_util::GetBitmapDataUrl(*user_photo_.bitmap());
   selected_image_ = User::kExternalImageIndex;
   base::StringValue data_url(user_photo_data_url_);
   web_ui()->CallJavascriptFunction("oobe.UserImageScreen.setUserPhoto",

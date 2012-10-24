@@ -528,7 +528,7 @@ void UserImageManagerImpl::InitDownloadedProfileImage() {
     VLOG(1) << "Profile image initialized";
     downloaded_profile_image_ = logged_in_user->image();
     downloaded_profile_image_data_url_ =
-        web_ui_util::GetImageDataUrl(downloaded_profile_image_);
+        web_ui_util::GetBitmapDataUrl(*downloaded_profile_image_.bitmap());
     profile_image_url_ = logged_in_user->image_url();
   }
 }
@@ -635,8 +635,8 @@ void UserImageManagerImpl::OnProfileDownloadSuccess(
     return;
 
   // Check if this image is not the same as already downloaded.
-  gfx::ImageSkia new_image(downloader->GetProfilePicture());
-  std::string new_image_data_url = web_ui_util::GetImageDataUrl(new_image);
+  SkBitmap new_bitmap(downloader->GetProfilePicture());
+  std::string new_image_data_url = web_ui_util::GetBitmapDataUrl(new_bitmap);
   if (!downloaded_profile_image_data_url_.empty() &&
       new_image_data_url == downloaded_profile_image_data_url_)
     return;

@@ -51,6 +51,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -265,7 +266,7 @@ void DownloadFileIconExtractorImpl::OnIconLoadComplete(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::string url;
   if (icon)
-    url = web_ui_util::GetImageDataUrl(*icon->ToImageSkia());
+    url = web_ui_util::GetBitmapDataUrl(icon->AsBitmap());
   callback_.Run(url);
 }
 
