@@ -1599,7 +1599,7 @@
    bug_157141_b
    Heapcheck:Leak
    ...
-   fun:WebContentsImpl::Init
+   fun:content::WebContentsImpl::Init
    ...
    fun:WebAuthFlowTest::SetUp
 }
