@@ -3454,7 +3454,6 @@
             'app/chrome_version.rc.version',
             # TODO(port): http://crbug.com/45770
             'browser/printing/printing_layout_browsertest.cc',
-            'browser/ui/views/constrained_window_views_browsertest.cc',
           ],
         }],
         ['toolkit_uses_gtk == 1', {

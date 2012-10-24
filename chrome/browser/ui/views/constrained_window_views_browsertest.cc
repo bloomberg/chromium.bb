@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "ipc/ipc_message.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/focus_manager.h"
@@ -188,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabCloseTest) {
 
   // Create a constrained dialog.  It will attach itself to tab_contents.
   scoped_ptr<TestConstrainedDialog> test_dialog(new TestConstrainedDialog);
-  ConstrainedWindowViews* window = new ConstrainedWindowViews(
+  new ConstrainedWindowViews(
       web_contents, test_dialog.get(), true,
       ConstrainedWindowViews::DEFAULT_INSETS);
 
@@ -197,6 +198,42 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabCloseTest) {
           browser()->tab_strip_model()->active_index(),
           TabStripModel::CLOSE_NONE);
   EXPECT_TRUE(closed);
+  content::RunAllPendingInMessageLoop();
+  EXPECT_TRUE(test_dialog->done());
+}
+
+// Tests that the constrained window is hidden when an other tab is selected and
+// shown when its tab is selected again.
+IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, TabSwitchTest) {
+  content::WebContents* web_contents = chrome::GetActiveWebContents(browser());
+  ASSERT_TRUE(web_contents != NULL);
+
+  // Create a constrained dialog.  It will attach itself to tab_contents.
+  scoped_ptr<TestConstrainedDialog> test_dialog(new TestConstrainedDialog);
+  ConstrainedWindowViews* window = new ConstrainedWindowViews(
+      web_contents, test_dialog.get(), true,
+      ConstrainedWindowViews::DEFAULT_INSETS);
+  EXPECT_TRUE(window->IsVisible());
+
+  // Open a new tab. The constrained window should hide itself.
+  browser()->tab_strip_model()->AppendTabContents(
+      chrome::TabContentsFactory(
+          browser()->profile(), NULL, MSG_ROUTING_NONE, NULL),
+      true);
+  EXPECT_FALSE(window->IsVisible());
+
+  // Close the new tab. The constrained window should show itself again.
+  bool closed =
+      browser()->tab_strip_model()->CloseTabContentsAt(
+          browser()->tab_strip_model()->active_index(),
+          TabStripModel::CLOSE_NONE);
+  EXPECT_TRUE(closed);
+  EXPECT_TRUE(window->IsVisible());
+
+  // Close the original tab.
+  browser()->tab_strip_model()->CloseTabContentsAt(
+      browser()->tab_strip_model()->active_index(),
+      TabStripModel::CLOSE_NONE);
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(test_dialog->done());
 }
