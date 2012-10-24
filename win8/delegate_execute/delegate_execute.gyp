@@ -16,6 +16,7 @@
         '../../base/base.gyp:base',
         '../../chrome/chrome.gyp:installer_util',
         '../../google_update/google_update.gyp:google_update',
+        '../../ui/ui.gyp:ui',
         '../../win8/win8.gyp:check_sdk_patch',
       ],
       'sources': [
