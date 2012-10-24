@@ -68,6 +68,7 @@
 <include src="browser_options_profile_list.js"></include>
 <include src="browser_options_startup_page_list.js"></include>
 <include src="clear_browser_data_overlay.js"></include>
+<include src="confirm_dialog.js"></include>
 <include src="content_settings.js"></include>
 <include src="content_settings2.js"></include>
 <include src="content_settings_exceptions_area.js"></include>
@@ -75,14 +76,12 @@
 <include src="cookies_list.js"></include>
 <include src="cookies_view.js"></include>
 <include src="cookies_view_app.js"></include>
-<include src="do_not_track_confirm_overlay.js"></include>
 <include src="factory_reset_overlay.js"></include>
 <include src="font_settings.js"></include>
 <include src="handler_options.js"></include>
 <include src="handler_options_list.js"></include>
 <include src="home_page_overlay.js"></include>
 <include src="import_data_overlay.js"></include>
-<include src="instant_confirm_overlay.js"></include>
 <include src="language_add_language_overlay.js"></include>
 <include src="language_list.js"></include>
 <include src="language_options.js"></include>
@@ -96,7 +95,6 @@
 <include src="search_engine_manager.js"></include>
 <include src="search_engine_manager_engine_list.js"></include>
 <include src="search_page.js"></include>
-<include src="spelling_confirm_overlay.js"></include>
 <include src="startup_overlay.js"></include>
 <include src="../sync_setup_overlay.js"></include>
 <include src="../uber/uber_utils.js"></include>

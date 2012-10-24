@@ -136,7 +136,7 @@
           <label id="instant-label">
             <!-- TODO(estade): metric? -->
             <input id="instant-enabled-control" type="checkbox"
-                pref="instant.enabled">
+                pref="instant.enabled" dialog-pref>
             <!-- TODO(estade) There's a link in here which should not be inside
                  a <label>. -->
             <span i18n-values=".innerHTML:instantPrefAndWarning"></span>
@@ -283,7 +283,7 @@
       <div class="checkbox">
         <label id="spelling-label">
           <input id="spelling-enabled-control" type="checkbox"
-              pref="spellcheck.use_spelling_service">
+              pref="spellcheck.use_spelling_service" dialog-pref>
           <span i18n-content="spellingPref"></span>
         </label>
       </div>
@@ -310,7 +310,7 @@
       <div class="checkbox">
         <label>
           <input id="do-not-track-enabled" pref="enable_do_not_track"
-              metric="Options_DoNotTrackCheckbox" type="checkbox">
+              metric="Options_DoNotTrackCheckbox" type="checkbox" dialog-pref>
           <span i18n-content="doNotTrack"></span>
         </label>
       </div>

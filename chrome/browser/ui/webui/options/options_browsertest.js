@@ -114,10 +114,11 @@ TEST_F('OptionsWebUITest', 'testDefaultZoomFactor', function() {
 // interstitial is pressed, otherwise the abort button is pressed.
 OptionsWebUITest.prototype.testDoNotTrackInterstitial =
     function(confirmInterstitial) {
+  Preferences.prefsFetchedCallback({'enable_do_not_track': {'value': false } });
   var buttonToClick = confirmInterstitial ? $('do-not-track-confirm-ok')
                                           : $('do-not-track-confirm-cancel');
   var dntCheckbox = $('do-not-track-enabled');
-  var dntOverlay = DoNotTrackConfirmOverlay.getInstance();
+  var dntOverlay = OptionsPage.registeredOverlayPages['donottrackconfirm'];
   assertFalse(dntCheckbox.checked);
 
   var visibleChangeCounter = 0;
@@ -134,8 +135,7 @@ OptionsWebUITest.prototype.testDoNotTrackInterstitial =
         window.setTimeout(function() {
           assertFalse(dntOverlay.visible);
           assertEquals(confirmInterstitial, dntCheckbox.checked);
-          DoNotTrackConfirmOverlay.getInstance().removeEventListener(
-              visibleChangeHandler);
+          dntOverlay.removeEventListener(visibleChangeHandler);
           testDone();
         }, 0);
         break;
@@ -143,12 +143,11 @@ OptionsWebUITest.prototype.testDoNotTrackInterstitial =
         assertTrue(false);
     }
   }
-  DoNotTrackConfirmOverlay.getInstance().addEventListener('visibleChange',
-      visibleChangeHandler);
+  dntOverlay.addEventListener('visibleChange', visibleChangeHandler);
 
   if (confirmInterstitial) {
     this.mockHandler.expects(once()).setBooleanPref(
-        ["enable_do_not_track", true]);
+        ['enable_do_not_track', true, 'Options_DoNotTrackCheckbox']);
   } else {
     // The mock handler complains if setBooleanPref is called even though
     // it should not be.
@@ -170,8 +169,9 @@ TEST_F('OptionsWebUITest', 'EnableDoNotTrackAndCancelInterstitial',
 // Check that the "Do not Track" preference can be correctly disabled.
 // In order to do that, we need to enable it first.
 TEST_F('OptionsWebUITest', 'EnableAndDisableDoNotTrack', function() {
+  Preferences.prefsFetchedCallback({'enable_do_not_track': {'value': false } });
   var dntCheckbox = $('do-not-track-enabled');
-  var dntOverlay = DoNotTrackConfirmOverlay.getInstance();
+  var dntOverlay = OptionsPage.registeredOverlayPages['donottrackconfirm'];
   assertFalse(dntCheckbox.checked);
 
   var visibleChangeCounter = 0;
@@ -188,8 +188,7 @@ TEST_F('OptionsWebUITest', 'EnableAndDisableDoNotTrack', function() {
         window.setTimeout(function() {
           assertFalse(dntOverlay.visible);
           assertTrue(dntCheckbox.checked);
-          DoNotTrackConfirmOverlay.getInstance().removeEventListener(
-              visibleChangeHandler);
+          dntOverlay.removeEventListener(visibleChangeHandler);
           dntCheckbox.click();
         }, 0);
         break;
@@ -197,11 +196,10 @@ TEST_F('OptionsWebUITest', 'EnableAndDisableDoNotTrack', function() {
         assertNotReached();
     }
   }
-  DoNotTrackConfirmOverlay.getInstance().addEventListener('visibleChange',
-      visibleChangeHandler);
+  dntOverlay.addEventListener('visibleChange', visibleChangeHandler);
 
   this.mockHandler.expects(once()).setBooleanPref(
-      eq(["enable_do_not_track", true]));
+      eq(["enable_do_not_track", true, 'Options_DoNotTrackCheckbox']));
 
   var verifyCorrectEndState = function() {
     window.setTimeout(function() {

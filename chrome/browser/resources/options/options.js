@@ -9,18 +9,17 @@ var AutofillEditCreditCardOverlay = options.AutofillEditCreditCardOverlay;
 var AutofillOptions = options.AutofillOptions;
 var BrowserOptions = options.BrowserOptions;
 var ClearBrowserDataOverlay = options.ClearBrowserDataOverlay;
+var ConfirmDialog = options.ConfirmDialog;
 var ContentSettings = options.ContentSettings;
 var ContentSettingsExceptionsArea =
     options.contentSettings.ContentSettingsExceptionsArea;
 var CookiesView = options.CookiesView;
 var CookiesViewApp = options.CookiesViewApp;
-var DoNotTrackConfirmOverlay = options.DoNotTrackConfirmOverlay;
 var FactoryResetOverlay = options.FactoryResetOverlay;
 var FontSettings = options.FontSettings;
 var HandlerOptions = options.HandlerOptions;
 var HomePageOverlay = options.HomePageOverlay;
 var ImportDataOverlay = options.ImportDataOverlay;
-var InstantConfirmOverlay = options.InstantConfirmOverlay;
 var LanguageOptions = options.LanguageOptions;
 var MediaGalleriesManager = options.MediaGalleriesManager;
 var OptionsFocusManager = options.OptionsFocusManager;
@@ -31,7 +30,6 @@ var PreferredNetworks = options.PreferredNetworks;
 var ManageProfileOverlay = options.ManageProfileOverlay;
 var SearchEngineManager = options.SearchEngineManager;
 var SearchPage = options.SearchPage;
-var SpellingConfirmOverlay = options.SpellingConfirmOverlay;
 var StartupOverlay = options.StartupOverlay;
 var SyncSetupOverlay = options.SyncSetupOverlay;
 
@@ -73,6 +71,36 @@ function load() {
   OptionsPage.registerOverlay(ClearBrowserDataOverlay.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('privacyClearDataButton')]);
+  OptionsPage.registerOverlay(new ConfirmDialog(
+      'doNotTrackConfirm',
+      loadTimeData.getString('doNotTrackConfirmOverlayTabTitle'),
+      'do-not-track-confirm-overlay',
+      $('do-not-track-confirm-ok'),
+      $('do-not-track-confirm-cancel'),
+      $('do-not-track-enabled').pref,
+      $('do-not-track-enabled').metric));
+  OptionsPage.registerOverlay(new ConfirmDialog(
+      'instantConfirm',
+      loadTimeData.getString('instantConfirmOverlayTabTitle'),
+      'instantConfirmOverlay',
+      $('instantConfirmOk'),
+      $('instantConfirmCancel'),
+      $('instant-enabled-control').pref,
+      $('instant-enabled-control').metric,
+      'instant.confirm_dialog_shown'));
+  // 'spelling-enabled-control' element is only present on Chrome branded
+  // builds.
+  if ($('spelling-enabled-control')) {
+    OptionsPage.registerOverlay(new ConfirmDialog(
+        'spellingConfirm',
+        loadTimeData.getString('spellingConfirmOverlayTabTitle'),
+        'spelling-confirm-overlay',
+        $('spelling-confirm-ok'),
+        $('spelling-confirm-cancel'),
+        $('spelling-enabled-control').pref,
+        $('spelling-enabled-control').metric,
+        'spellcheck.confirm_dialog_shown'));
+  }
   OptionsPage.registerOverlay(ContentSettings.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('privacyContentSettingsButton')]);
@@ -85,8 +113,6 @@ function load() {
   OptionsPage.registerOverlay(CookiesViewApp.getInstance(),
                               ContentSettings.getInstance(),
                               [$('privacyContentSettingsButton')]);
-  OptionsPage.registerOverlay(DoNotTrackConfirmOverlay.getInstance(),
-                              BrowserOptions.getInstance());
   OptionsPage.registerOverlay(FontSettings.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('fontSettingsCustomizeFontsButton')]);
@@ -99,8 +125,6 @@ function load() {
                               BrowserOptions.getInstance(),
                               [$('change-home-page')]);
   OptionsPage.registerOverlay(ImportDataOverlay.getInstance(),
-                              BrowserOptions.getInstance());
-  OptionsPage.registerOverlay(InstantConfirmOverlay.getInstance(),
                               BrowserOptions.getInstance());
   OptionsPage.registerOverlay(LanguageOptions.getInstance(),
                               BrowserOptions.getInstance(),
@@ -116,8 +140,6 @@ function load() {
   OptionsPage.registerOverlay(SearchEngineManager.getInstance(),
                               BrowserOptions.getInstance(),
                               [$('manage-default-search-engines')]);
-  OptionsPage.registerOverlay(SpellingConfirmOverlay.getInstance(),
-                              BrowserOptions.getInstance());
   OptionsPage.registerOverlay(StartupOverlay.getInstance(),
                               BrowserOptions.getInstance());
   OptionsPage.registerOverlay(SyncSetupOverlay.getInstance(),

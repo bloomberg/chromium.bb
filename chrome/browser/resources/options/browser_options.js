@@ -25,20 +25,6 @@ cr.define('options', function() {
     syncSetupCompleted: false,
 
     /**
-     * The cached value of the instant.confirm_dialog_shown preference.
-     * @type {bool}
-     * @private
-     */
-    instantConfirmDialogShown_: false,
-
-    /**
-     * The cached value of the spellcheck.confirm_dialog_shown preference.
-     * @type {bool}
-     * @private
-     */
-    spellcheckConfirmDialogShown_: false,
-
-    /**
      * Keeps track of whether |onShowHomeButtonChanged_| has been called. See
      * |onShowHomeButtonChanged_|.
      * @type {bool}
@@ -165,15 +151,6 @@ cr.define('options', function() {
       };
       $('default-search-engine').addEventListener('change',
           this.setDefaultSearchEngine_);
-      $('instant-enabled-control').customChangeHandler = function(event) {
-        if (this.checked && !self.instantConfirmDialogShown_) {
-          OptionsPage.showPageByName('instantConfirm', false);
-          return true;  // Stop default preference processing.
-        }
-        return false;  // Allow default preference processing.
-      };
-      Preferences.getInstance().addEventListener('instant.confirm_dialog_shown',
-          this.onInstantConfirmDialogShownChanged_.bind(this));
 
       // Users section.
       if (loadTimeData.valueExists('profilesInfo')) {
@@ -251,20 +228,6 @@ cr.define('options', function() {
         OptionsPage.navigateToPage('clearBrowserData');
         chrome.send('coreOptionsUserMetricsAction', ['Options_ClearData']);
       };
-      // 'spelling-enabled-control' element is only present on Chrome branded
-      // builds.
-      if ($('spelling-enabled-control')) {
-        $('spelling-enabled-control').customChangeHandler = function(event) {
-          if (this.checked && !self.spellcheckConfirmDialogShown_) {
-            OptionsPage.showPageByName('spellingConfirm', false);
-            return true;
-          }
-          return false;
-        };
-        Preferences.getInstance().addEventListener(
-            'spellcheck.confirm_dialog_shown',
-            this.onSpellcheckConfirmDialogShownChanged_.bind(this));
-      }
       // 'metricsReportingEnabled' element is only present on Chrome branded
       // builds.
       if ($('metricsReportingEnabled')) {
@@ -273,13 +236,6 @@ cr.define('options', function() {
               [String(event.target.checked)]);
         };
       }
-      $('do-not-track-enabled').customChangeHandler = function(event) {
-        if (this.checked) {
-          OptionsPage.showPageByName('doNotTrackConfirm', false);
-          return true;
-        }
-        return false;
-      };
 
       // Bluetooth (CrOS only).
       if (cr.isChromeOS) {
@@ -734,26 +690,6 @@ cr.define('options', function() {
     updateAutoLaunchState_: function(enabled) {
       $('auto-launch-option').hidden = false;
       $('auto-launch').checked = enabled;
-    },
-
-    /**
-     * Called when the value of the instant.confirm_dialog_shown preference
-     * changes. Cache this value.
-     * @param {Event} event Change event.
-     * @private
-     */
-    onInstantConfirmDialogShownChanged_: function(event) {
-      this.instantConfirmDialogShown_ = event.value.value;
-    },
-
-    /**
-     * Called when the value of the spellcheck.confirm_dialog_shown preference
-     * changes. Cache this value.
-     * @param {Event} event Change event.
-     * @private
-     */
-    onSpellcheckConfirmDialogShownChanged_: function(event) {
-      this.spellcheckConfirmDialogShown_ = event.value.value;
     },
 
     /**
