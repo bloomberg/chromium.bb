@@ -40,7 +40,6 @@
       'solid_color_layer_impl_unittest.cc',
       'texture_update_controller_unittest.cc',
       'thread_task_unittest.cc',
-      'CCThreadedTest.h',
       'tiled_layer_impl_unittest.cc',
       'timer_unittest.cc',
       'content_layer_unittest.cc',
