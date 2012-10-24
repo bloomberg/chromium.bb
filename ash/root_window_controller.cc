@@ -616,6 +616,9 @@ void RootWindowController::CreateContainersInRootWindow(
       "OverlayContainer",
       lock_screen_related_containers);
   SetUsesScreenCoordinates(overlay_container);
+
+  CreateContainer(kShellWindowId_PowerButtonAnimationContainer,
+                  "PowerButtonAnimationContainer", root_window) ;
 }
 
 }  // namespace internal

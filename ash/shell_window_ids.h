@@ -104,6 +104,9 @@ const int kShellWindowId_OverlayContainer = 21;
 // ID of the window created by PhantomWindowController.
 const int kShellWindowId_PhantomWindow = 22;
 
+// The topmost container, used for power off animation.
+const int kShellWindowId_PowerButtonAnimationContainer = 23;
+
 }  // namespace internal
 
 }  // namespace ash

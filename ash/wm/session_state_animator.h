@@ -6,6 +6,7 @@
 #define ASH_WM_SESSION_STATE_ANIMATOR_H_
 
 #include "ash/ash_export.h"
+#include "ash/wm/workspace/colored_window_controller.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
@@ -36,6 +37,11 @@ class ASH_EXPORT SessionStateAnimator : public aura::RootWindowObserver {
     ANIMATION_FADE_IN,
     ANIMATION_HIDE,
     ANIMATION_RESTORE,
+    ANIMATION_RAISE,
+    ANIMATION_LOWER,
+    ANIMATION_PARTIAL_FADE_IN,
+    ANIMATION_UNDO_PARTIAL_FADE_IN,
+    ANIMATION_FULL_FADE_IN,
   };
 
   // Specific containers or groups of containers that can be animated.
@@ -59,6 +65,8 @@ class ASH_EXPORT SessionStateAnimator : public aura::RootWindowObserver {
     // Multiple system layers belong here like status, menu, tooltip
     // and overlay layers.
     LOCK_SCREEN_RELATED_CONTAINERS = 1 << 5,
+
+    LOCK_SCREEN_SYSTEM_FOREGROUND = 1 << 6,
   };
 
   // Helper class used by tests to access internal state.
@@ -106,6 +114,12 @@ class ASH_EXPORT SessionStateAnimator : public aura::RootWindowObserver {
   void ShowBlackLayer();
   void DropBlackLayer();
 
+  // Create |foreground_| layer if it doesn't already exist, but makes it
+  // completely transparent.
+  void CreateForeground();
+  // Destroy |foreground_| when it is not needed anymore.
+  void DropForeground();
+
   // Drops back layer after |UNDO_SLOW_CLOSE| animation delay.
   void ScheduleDropBlackLayer();
 
@@ -128,6 +142,10 @@ class ASH_EXPORT SessionStateAnimator : public aura::RootWindowObserver {
   // viewport when there are regions not covered by a layer:
   // http://crbug.com/113445
   scoped_ptr<ui::Layer> black_layer_;
+
+  // White foreground that is used during shutdown animation to "fade
+  // everything into white".
+  scoped_ptr<ColoredWindowController> foreground_;
 
   // Started when we abort the pre-lock state.  When it fires, we hide
   // |black_layer_|, as the desktop background is now covering the whole

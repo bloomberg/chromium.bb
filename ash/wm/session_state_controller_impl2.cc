@@ -54,7 +54,6 @@ void SessionStateControllerImpl2::OnAppTerminating() {
     Shell* shell = ash::Shell::GetInstance();
     shell->env_filter()->set_cursor_hidden_by_filter(false);
     shell->cursor_manager()->ShowCursor(false);
-    animator_->ShowBlackLayer();
     animator_->StartAnimation(
         internal::SessionStateAnimator::kAllContainersMask,
         internal::SessionStateAnimator::ANIMATION_HIDE);
@@ -80,11 +79,8 @@ void SessionStateControllerImpl2::OnLockStateChanged(bool locked) {
     }
   } else {
     animator_->StartAnimation(
-        internal::SessionStateAnimator::DESKTOP_BACKGROUND |
-        internal::SessionStateAnimator::LAUNCHER |
         internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
-        internal::SessionStateAnimator::ANIMATION_RESTORE);
-    animator_->DropBlackLayer();
+        internal::SessionStateAnimator::ANIMATION_LOWER);
   }
 }
 
@@ -92,18 +88,9 @@ void SessionStateControllerImpl2::OnStartingLock() {
   if (shutting_down_ || system_is_locked_)
     return;
 
-  // Ensure that the black layer is visible -- if the screen was locked via
-  // the wrench menu, we won't have already shown the black background
-  // as part of the slow-close animation.
-  animator_->ShowBlackLayer();
-
-  animator_->StartAnimation(
-      internal::SessionStateAnimator::LAUNCHER,
-      internal::SessionStateAnimator::ANIMATION_HIDE);
-
   animator_->StartAnimation(
       internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
-      internal::SessionStateAnimator::ANIMATION_FULL_CLOSE);
+      internal::SessionStateAnimator::ANIMATION_RAISE);
 
   // Hide the screen locker containers so we can make them fade in later.
   animator_->StartAnimation(
@@ -112,29 +99,28 @@ void SessionStateControllerImpl2::OnStartingLock() {
 }
 
 void SessionStateControllerImpl2::StartLockAnimationAndLockImmediately() {
-  animator_->ShowBlackLayer();
   animator_->StartAnimation(
-      internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
-      internal::SessionStateAnimator::ANIMATION_PARTIAL_CLOSE);
+      internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS |
+      internal::SessionStateAnimator::LAUNCHER,
+      internal::SessionStateAnimator::ANIMATION_RAISE);
   OnLockTimeout();
 }
 
 void SessionStateControllerImpl2::StartLockAnimation(bool shutdown_after_lock) {
   shutdown_after_lock_ = shutdown_after_lock;
 
-  animator_->ShowBlackLayer();
   animator_->StartAnimation(
-      internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
-      internal::SessionStateAnimator::ANIMATION_PARTIAL_CLOSE);
+      internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS |
+      internal::SessionStateAnimator::LAUNCHER,
+      internal::SessionStateAnimator::ANIMATION_RAISE);
   StartLockTimer();
 }
 
 void SessionStateControllerImpl2::StartShutdownAnimation() {
-  animator_->ShowBlackLayer();
+  animator_->CreateForeground();
   animator_->StartAnimation(
-      internal::SessionStateAnimator::kAllContainersMask,
-      internal::SessionStateAnimator::ANIMATION_PARTIAL_CLOSE);
-
+      internal::SessionStateAnimator::LOCK_SCREEN_SYSTEM_FOREGROUND,
+      internal::SessionStateAnimator::ANIMATION_PARTIAL_FADE_IN);
   StartPreShutdownAnimationTimer();
 }
 
@@ -164,8 +150,7 @@ void SessionStateControllerImpl2::CancelLockAnimation() {
   shutdown_after_lock_ = false;
   animator_->StartAnimation(
       internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
-      internal::SessionStateAnimator::ANIMATION_UNDO_PARTIAL_CLOSE);
-  animator_->ScheduleDropBlackLayer();
+      internal::SessionStateAnimator::ANIMATION_LOWER);
   lock_timer_.Stop();
 }
 
@@ -186,29 +171,16 @@ void SessionStateControllerImpl2::CancelShutdownAnimation() {
     shutdown_after_lock_ = false;
     return;
   }
+  animator_->CreateForeground();
+  animator_->StartAnimation(
+      internal::SessionStateAnimator::LOCK_SCREEN_SYSTEM_FOREGROUND,
+      internal::SessionStateAnimator::ANIMATION_UNDO_PARTIAL_FADE_IN);
 
-  if (system_is_locked_) {
-    // If we've already started shutdown transition at lock screen
-    // desktop background needs to be restored immediately.
-    animator_->StartAnimation(
-        internal::SessionStateAnimator::DESKTOP_BACKGROUND,
-        internal::SessionStateAnimator::ANIMATION_RESTORE);
-    animator_->StartAnimation(
-        internal::SessionStateAnimator::kAllLockScreenContainersMask,
-        internal::SessionStateAnimator::ANIMATION_UNDO_PARTIAL_CLOSE);
-    animator_->ScheduleDropBlackLayer();
-  } else {
-    animator_->StartAnimation(
-        internal::SessionStateAnimator::kAllContainersMask,
-        internal::SessionStateAnimator::ANIMATION_UNDO_PARTIAL_CLOSE);
-    animator_->ScheduleDropBlackLayer();
-  }
   pre_shutdown_timer_.Stop();
 }
 
 void SessionStateControllerImpl2::RequestShutdown() {
   if (!shutting_down_)
-    animator_->ShowBlackLayer();
     RequestShutdownImpl();
 }
 
@@ -220,23 +192,10 @@ void SessionStateControllerImpl2::RequestShutdownImpl() {
   shell->env_filter()->set_cursor_hidden_by_filter(false);
   shell->cursor_manager()->ShowCursor(false);
 
-  animator_->ShowBlackLayer();
-  if (login_status_ != user::LOGGED_IN_NONE) {
-    // Hide the other containers before starting the animation.
-    // ANIMATION_FULL_CLOSE will make the screen locker windows partially
-    // transparent, and we don't want the other windows to show through.
-    animator_->StartAnimation(
-        internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS |
-        internal::SessionStateAnimator::LAUNCHER,
-        internal::SessionStateAnimator::ANIMATION_HIDE);
-    animator_->StartAnimation(
-        internal::SessionStateAnimator::kAllLockScreenContainersMask,
-        internal::SessionStateAnimator::ANIMATION_FULL_CLOSE);
-  } else {
-    animator_->StartAnimation(
-        internal::SessionStateAnimator::kAllContainersMask,
-        internal::SessionStateAnimator::ANIMATION_FULL_CLOSE);
-  }
+  animator_->CreateForeground();
+  animator_->StartAnimation(
+      internal::SessionStateAnimator::LOCK_SCREEN_SYSTEM_FOREGROUND,
+      internal::SessionStateAnimator::ANIMATION_FULL_FADE_IN);
   StartRealShutdownTimer();
 }
 
@@ -273,8 +232,7 @@ void SessionStateControllerImpl2::OnLockFailTimeout() {
   animator_->StartAnimation(
       internal::SessionStateAnimator::LAUNCHER |
       internal::SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
-      internal::SessionStateAnimator::ANIMATION_RESTORE);
-  animator_->DropBlackLayer();
+      internal::SessionStateAnimator::ANIMATION_LOWER);
 }
 
 void SessionStateControllerImpl2::StartLockToShutdownTimer() {
