@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/stringize_macros.h"
-
 // HACK: This is a hack to make sure that we don't export opus symbols.
 // opus_defines.h sets OPUS_EXPORT only when OPUS_BUILD is defined.
+//
+// TODO(sergeyu): Fix opus to define OPUS_EXPORT only when it's not defined, add
+// OPUS_EXPORT='' define in opus.gyp and then remove this file.
+
 #if defined(OPUS_BUILD)
 #undef OPUS_BUILD
 #define OPUS_BUILD_DEFINED
