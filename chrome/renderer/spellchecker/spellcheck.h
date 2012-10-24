@@ -22,6 +22,7 @@
 #include "unicode/uscript.h"
 
 class Hunspell;
+class PlatformSpellingEngine;
 struct SpellCheckResult;
 
 namespace file_util {
@@ -178,6 +179,10 @@ class SpellCheck : public content::RenderProcessObserver,
   // True if a platform-specific spellchecking engine is being used,
   // and False if hunspell is being used.
   bool is_using_platform_spelling_engine_;
+
+  // Pointer to a platform-specific spelling engine, if it is in use. This
+  // should only be set if hunspell is not used. (I.e. on OSX, for now)
+  scoped_ptr<PlatformSpellingEngine> platform_spelling_engine_;
 
   // This flags is true if we have been intialized.
   // The value indicates whether we should request a
