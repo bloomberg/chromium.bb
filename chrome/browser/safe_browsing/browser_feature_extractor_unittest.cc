@@ -92,7 +92,7 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
     NavigateAndCommit(url, GURL(), content::PAGE_TRANSITION_LINK);
   }
 
-  // This is similar to NavigateAndCommit that is in test_tab_contents, but
+  // This is similar to NavigateAndCommit that is in WebContentsTester, but
   // allows us to specify the referrer and page_transition_type.
   void NavigateAndCommit(const GURL& url,
                          const GURL& referrer,

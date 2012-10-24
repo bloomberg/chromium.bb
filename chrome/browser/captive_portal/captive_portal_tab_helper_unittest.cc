@@ -58,7 +58,7 @@ class MockCaptivePortalTabReloader : public CaptivePortalTabReloader {
   MOCK_METHOD2(OnCaptivePortalResults, void(Result, Result));
 };
 
-// Inherits from the TabContentsTestHarness to gain access to
+// Inherits from the ChromeRenderViewHostTestHarness to gain access to
 // CreateTestWebContents.  Since the tests need to micromanage order of
 // WebContentsObserver function calls, does not actually make sure of
 // the harness in any other way.

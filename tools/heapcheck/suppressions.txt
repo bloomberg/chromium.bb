@@ -1433,22 +1433,6 @@
   fun:GtkThemeService::GetDefaultFavicon
 }
 {
-   bug_132431
-   Heapcheck:Leak
-   ...
-   fun:gfx::::LoadDefaults
-   fun:gfx::GetDefaultWebKitFontRenderParams
-   fun:renderer_preferences_util::UpdateFromSystemSettings
-   fun:PrefsTabHelper::PrefsTabHelper
-   fun:WebContentsUserData::CreateForWebContents
-   fun:TabContents::TabContents
-   fun:TabContents::Factory::CreateTabContents
-   fun:TabContentsTestHarness::SetContents
-   fun:content::RenderViewHostTestHarness::SetUp
-   fun:ChromeRenderViewHostTestHarness::SetUp
-   fun:TabContentsTestHarness::SetUp
-}
-{
    bug_134527
    Heapcheck:Leak
    fun:IA__FcMatrixCopy

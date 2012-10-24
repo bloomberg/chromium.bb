@@ -197,8 +197,6 @@
         'browser/ui/panels/test_panel_mouse_watcher.h',
         'browser/ui/panels/test_panel_strip_squeeze_observer.cc',
         'browser/ui/panels/test_panel_strip_squeeze_observer.h',
-        'browser/ui/tab_contents/test_tab_contents.cc',
-        'browser/ui/tab_contents/test_tab_contents.h',
         'browser/ui/views/find_bar_host_unittest_util_views.cc',
         'browser/ui/views/test/ui_test_utils_aura.cc',
         'browser/ui/views/test/ui_test_utils_win.cc',

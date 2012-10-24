@@ -125,7 +125,7 @@ class RenderViewHostTestHarness : public testing::Test {
   virtual ~RenderViewHostTestHarness();
 
   NavigationController& controller();
-  virtual WebContents* web_contents();
+  WebContents* web_contents();
   RenderViewHost* rvh();
   RenderViewHost* pending_rvh();
   RenderViewHost* active_rvh();
@@ -137,7 +137,7 @@ class RenderViewHostTestHarness : public testing::Test {
 
   // Sets the current WebContents for tests that want to alter it. Takes
   // ownership of the WebContents passed.
-  virtual void SetContents(WebContents* contents);
+  void SetContents(WebContents* contents);
 
   // Creates a new test-enabled WebContents. Ownership passes to the
   // caller.
