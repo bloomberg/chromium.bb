@@ -712,7 +712,7 @@ cr.define('ntp', function() {
    * The number of sections to wait on.
    * @type {number}
    */
-  var sectionsToWaitFor = 2;
+  var sectionsToWaitFor = 3;
 
   /**
    * Queued callbacks which lie in wait for all sections to be ready.

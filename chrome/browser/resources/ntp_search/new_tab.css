@@ -36,7 +36,6 @@ body {
 #notification-container {
   -webkit-transition: opacity 200ms;
   position: absolute;
-  top: 32px;
 }
 
 #notification-container.inactive {
@@ -70,19 +69,19 @@ body {
   -webkit-margin-start: 0.5em;
 }
 
-#card-slider-frame {
+#bottom-panel {
   -webkit-transition: opacity 250ms, -webkit-transform 250ms;
-  bottom: 0;
-  overflow: hidden;
   position: absolute;
-  text-align: center;
-  visibility: hidden;
   width: 100%;
 }
 
-.hide-card-slider {
+.hide-bottom-panel {
   -webkit-transform: translate3d(0, 170px, 0);
   opacity: 0;
+}
+
+#card-slider-frame {
+  overflow: hidden;
 }
 
 #page-list {
@@ -91,10 +90,24 @@ body {
   position: static;
 }
 
-#page-list-menu {
-  height: 14px;
-  margin: 8px auto 30px;
+#bottom-panel-header,
+#bottom-panel-footer,
+#bottom-panel-toolbar {
+  margin: 10px auto;
   text-align: center;
+}
+
+#bottom-panel-toolbar,
+#bottom-panel-footer {
+  height: 18px;
+}
+
+#bottom-panel-header {
+  margin-top: 38px;
+}
+
+#bottom-panel-toolbar {
+  margin-top: 8px;
 }
 
 /* TODO(jeremycho): Figure out if we need this. */

@@ -74,25 +74,35 @@
 </head>
 
 <body id="ntp5" i18n-values=".style.fontSize:fontsize">
-  <div id="card-slider-frame">
-    <div id="page-list-menu">
+  <div id="bottom-panel">
+    <div id="bottom-panel-header">
       <ul id="dot-list"></ul>
-      <div id="notification-container" class="inactive" hidden>
-        <div id="notification">
-          <span></span>
-          <div id="notificationLinks"></div>
-          <button class="close-button custom-appearance">
-          </button>
+      <div id="bottom-panel-toolbar">
+        <div id="notification-container" class="inactive" hidden>
+          <div id="notification">
+            <span></span>
+            <div id="notificationLinks"></div>
+            <button class="close-button custom-appearance"></button>
+          </div>
+        </div>
+        <div id="top-scroller">
+          <!-- TODO(jeremycho): Place top chevron here. -->
         </div>
       </div>
     </div>
-    <div id="page-list"></div>
-    <div id="attribution">
-      <span i18n-content="attributionintro"></span>
-      <img id="attribution-img">
+    <div id="card-slider-frame">
+      <div id="page-list"></div>
+      <div id="attribution">
+        <span i18n-content="attributionintro"></span>
+        <img id="attribution-img">
+      </div>
+    </div>
+    <div id="bottom-panel-footer">
+      <div id="bottom-scroller">
+        <!-- TODO(jeremycho): Place bottom chevron here. -->
+      </div>
     </div>
   </div>
-
 </body>
 
 <!-- A div to hold all the templates, and in the darkness bind them. -->

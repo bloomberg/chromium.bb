@@ -14,7 +14,7 @@ cr.define('ntp', function() {
    * @type {number}
    * @const
    */
-  var BOTTOM_PANEL_MIN_PADDING_BOTTOM = 16;
+  var BOTTOM_PANEL_MIN_PADDING_BOTTOM = 0;
 
   /**
    * The height required to show 2 rows of Tiles in the Bottom Panel.
@@ -35,7 +35,7 @@ cr.define('ntp', function() {
    * @type {number}
    * @const
    */
-  var HEIGHT_FOR_BOTTOM_PANEL = 520;
+  var HEIGHT_FOR_BOTTOM_PANEL = 555;
 
   /**
    * The Bottom Panel width required to show 5 cols of Tiles, which is used
@@ -352,8 +352,8 @@ cr.define('ntp', function() {
 
       // TODO(pedrosimonetti): This should be handled by BottomPanel class,
       // not by each individual page.
-      this.eventTracker.add($('page-list'), 'webkitTransitionEnd',
-          this.onPageListTransitionEnd_.bind(this));
+      this.eventTracker.add($('card-slider-frame'), 'webkitTransitionEnd',
+          this.onCardSliderFrameTransitionEnd_.bind(this));
     },
 
     /**
@@ -819,13 +819,13 @@ cr.define('ntp', function() {
         this.numOfVisibleRows_ = numOfVisibleRows;
         numberOfRowsHasChanged = true;
 
-        var pageList = $('page-list');
+        var cardSliderFrame = $('card-slider-frame');
         if (shouldAnimate)
-          pageList.classList.add('animate-page-height');
+          cardSliderFrame.classList.add('animate-frame-height');
 
         // By forcing the pagination, all affected rows will be animated.
         this.paginate_(null, true);
-        pageList.style.height =
+        cardSliderFrame.style.height =
             (this.config_.rowHeight * numOfVisibleRows) + 'px';
       }
 
@@ -841,7 +841,7 @@ cr.define('ntp', function() {
             Math.round((windowHeight - HEIGHT_FOR_TWO_ROWS) / 2);
       }
 
-      $('card-slider-frame').style.bottom = paddingBottom + 'px';
+      $('bottom-panel').style.bottom = paddingBottom + 'px';
 
       // Width logic
 
@@ -890,7 +890,6 @@ cr.define('ntp', function() {
         }
 
         this.tileGrid_.style.width = newWidth + 'px';
-        $('page-list-menu').style.width = newWidth + 'px';
 
         var self = this;
         this.onTileGridTransitionEndHandler_ = function() {
@@ -909,6 +908,8 @@ cr.define('ntp', function() {
       }
 
       this.content_.style.width = bottomPanelWidth + 'px';
+      $('bottom-panel-header').style.width = bottomPanelWidth + 'px';
+      $('bottom-panel-footer').style.width = bottomPanelWidth + 'px';
 
       this.animatingColCount_ = colCount;
     },
@@ -1183,8 +1184,8 @@ cr.define('ntp', function() {
      * @param {boolean} show Whether or not to show the Bottom Panel.
      */
     showBottomPanel_: function(show) {
-      $('card-slider-frame').classList[show ? 'remove' : 'add'](
-          'hide-card-slider');
+      $('bottom-panel').classList[show ? 'remove' : 'add'](
+          'hide-bottom-panel');
     },
 
     /**
@@ -1285,20 +1286,19 @@ cr.define('ntp', function() {
     },
 
     /**
-     * Handles the end of the vertical page list transition.
+     * Handles the end of the vertical card slider frame transition.
      * @param {Event} e The tile grid webkitTransitionEnd event.
      */
-    onPageListTransitionEnd_: function(e) {
+    onCardSliderFrameTransitionEnd_: function(e) {
       if (!this.selected)
         return;
 
       // For the same reason as explained in onTileGridTransitionEnd_, we need
-      // to remove the class 'animate-page-height' when the vertical transition
-      // ends.
-      var pageList = $('page-list');
-      if (e.target == pageList &&
-          pageList.classList.contains('animate-page-height')) {
-        pageList.classList.remove('animate-page-height');
+      // to remove the class when the vertical transition ends.
+      var cardSliderFrame = $('card-slider-frame');
+      if (e.target == cardSliderFrame &&
+          cardSliderFrame.classList.contains('animate-frame-height')) {
+        cardSliderFrame.classList.remove('animate-frame-height');
       }
     },
 

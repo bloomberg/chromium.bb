@@ -44,11 +44,9 @@
   -webkit-transition: width 200ms;
 }
 
-.animate-page-height {
+.animate-frame-height {
   /* TODO(pedrosimonetti): Confirm the easing function with Marcin. */
-  /* TODO(pedrosimonetti): Add a new element so we can animate it without
-   * interfering with the CardSlider. See crbug.com/145337. */
-  -webkit-transition: height 200ms, -webkit-transform 200ms !important;
+  -webkit-transition: height 200ms;
 }
 
 /* -----------------------------------------------------------------------------

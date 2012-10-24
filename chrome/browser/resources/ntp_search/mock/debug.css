@@ -21,24 +21,22 @@
    Debug
 ----------------------------------------------------------------------------- */
 
+.debug #bottom-panel {
+  background: rgb(250, 255, 255);
+  outline: 1px solid rgb(111, 255, 255);
+}
+
 .debug #card-slider-frame {
-  /* We need to use |important| to override the bottom value that was set using
-   * JavaScript. This CSS rule will be used only when in debugging mode. */
-  bottom: 0 !important;
-  height: 95%;
-  position: absolute;
-  text-align: center;
-  width: 100%;
+  background: rgb(227, 255, 255);
+  outline: 1px solid rgb(171, 255, 255);
 }
 
-.debug #page-list {
-  height: 100% !important;
-}
-
-.debug #page-list-menu {
+.debug #bottom-panel-footer,
+.debug #bottom-panel-toolbar {
   background: rgb(255, 170, 255);
 }
 
+.debug #dot-list,
 .debug .tile-page-content {
   background: rgb(119, 255, 255);
 }

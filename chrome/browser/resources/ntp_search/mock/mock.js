@@ -249,16 +249,16 @@ var recordMockData = false;
 
   var debugStylesheet = null;
   var selectorDurationMap = {
-    '#page-list': 200,
-    '#card-slider-frame': 250,
-    '.dot': 200,
-    '.animate-page-height': 200,
     '.animate-grid-width': 200,
-    '.tile-grid-content': 200,
-    '.tile-row': 200,
     '.animate-grid-width .tile-cell': 200,
+    '.animate-frame-height': 200,
     '.animate-tile-repositioning .tile': 200,
     '.animate-tile-repositioning .tile:not(.target-tile)': 400,
+    '#bottom-panel': 250,
+    '.dot': 200,
+    '#page-list': 200,
+    '.tile-grid-content': 200,
+    '.tile-row': 200,
   };
 
   var selectorDelayMap = {
