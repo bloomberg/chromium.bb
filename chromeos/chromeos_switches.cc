@@ -13,5 +13,8 @@ const char kDbusStub[] = "dbus-stub";
 // Sends test messages on first call to RequestUpdate (stub only).
 const char kSmsTestMessages[] = "sms-test-messages";
 
+// Enables overriding the Chrome OS board type when running on Linux.
+const char kChromeOSReleaseBoard[] = "chromeos-release-board";
+
 }  // namespace switches
 }  // namespace chromeos

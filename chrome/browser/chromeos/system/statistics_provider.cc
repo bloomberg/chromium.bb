@@ -14,11 +14,10 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time.h"
-#include "base/chromeos/chromeos_version.h"
 #include "chrome/browser/chromeos/system/name_value_pairs_parser.h"
 #include "chrome/common/child_process_logging.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chromeos/chromeos_switches.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -214,9 +213,9 @@ class StatisticsProviderStubImpl : public StatisticsProvider {
                                    std::string* result) OVERRIDE {
     if (name == "CHROMEOS_RELEASE_BOARD") {
       const CommandLine* command_line = CommandLine::ForCurrentProcess();
-      if (command_line->HasSwitch(switches::kChromeOSReleaseBoard)) {
+      if (command_line->HasSwitch(chromeos::switches::kChromeOSReleaseBoard)) {
         *result = command_line->
-            GetSwitchValueASCII(switches::kChromeOSReleaseBoard);
+            GetSwitchValueASCII(chromeos::switches::kChromeOSReleaseBoard);
         return true;
       }
     }
