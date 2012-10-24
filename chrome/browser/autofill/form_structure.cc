@@ -85,147 +85,134 @@ std::string EncodeFieldTypes(const FieldTypeSet& available_field_types) {
   return data_presence;
 }
 
-bool UpdateFromAutocompleteType(const string16& autocomplete_type,
-                                AutofillField* field) {
-  if (autocomplete_type == ASCIIToUTF16("given-name")) {
-    field->set_heuristic_type(NAME_FIRST);
-    return true;
+// Returns |true| iff the |token| is a type hint for a contact field, as
+// specified in the implementation section of http://is.gd/whatwg_autocomplete
+// Note that "fax" and "pager" are intentionally ignored, as Chrome does not
+// support filling either type of information.
+bool IsContactTypeHint(const std::string& token) {
+  return token == "home" || token == "work" || token == "mobile";
+}
+
+// Returns |true| iff the |token| is a type hint appropriate for a field of the
+// given |field_type|, as specified in the implementation section of
+// http://is.gd/whatwg_autocomplete
+bool ContactTypeHintMatchesFieldType(const std::string& token,
+                                     AutofillFieldType field_type) {
+  // The "home" and "work" type hints are only appropriate for email and phone
+  // number field types.
+  if (token == "home" || token == "work") {
+    return field_type == EMAIL_ADDRESS ||
+        (field_type >= PHONE_HOME_NUMBER &&
+         field_type <= PHONE_HOME_WHOLE_NUMBER);
   }
 
-  if (autocomplete_type == ASCIIToUTF16("middle-name")) {
-    field->set_heuristic_type(NAME_MIDDLE);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("middle-initial")) {
-    field->set_heuristic_type(NAME_MIDDLE_INITIAL);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("surname")) {
-    field->set_heuristic_type(NAME_LAST);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("full-name")) {
-    field->set_heuristic_type(NAME_FULL);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("street-address") ||
-      autocomplete_type == ASCIIToUTF16("address-line1")) {
-    field->set_heuristic_type(ADDRESS_HOME_LINE1);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("address-line2")) {
-    field->set_heuristic_type(ADDRESS_HOME_LINE2);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("locality") ||
-      autocomplete_type == ASCIIToUTF16("city")) {
-    field->set_heuristic_type(ADDRESS_HOME_CITY);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("administrative-area") ||
-      autocomplete_type == ASCIIToUTF16("state") ||
-      autocomplete_type == ASCIIToUTF16("province") ||
-      autocomplete_type == ASCIIToUTF16("region")) {
-    field->set_heuristic_type(ADDRESS_HOME_STATE);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("postal-code")) {
-    field->set_heuristic_type(ADDRESS_HOME_ZIP);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("country")) {
-    field->set_heuristic_type(ADDRESS_HOME_COUNTRY);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("organization")) {
-    field->set_heuristic_type(COMPANY_NAME);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("email")) {
-    field->set_heuristic_type(EMAIL_ADDRESS);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("phone-full")) {
-    field->set_heuristic_type(PHONE_HOME_WHOLE_NUMBER);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("phone-country-code")) {
-    field->set_heuristic_type(PHONE_HOME_COUNTRY_CODE);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("phone-national")) {
-    field->set_heuristic_type(PHONE_HOME_CITY_AND_NUMBER);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("phone-area-code")) {
-    field->set_heuristic_type(PHONE_HOME_CITY_CODE);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("phone-local")) {
-    field->set_heuristic_type(PHONE_HOME_NUMBER);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("phone-local-prefix")) {
-    field->set_heuristic_type(PHONE_HOME_NUMBER);
-    field->set_phone_part(AutofillField::PHONE_PREFIX);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("phone-local-suffix")) {
-    field->set_heuristic_type(PHONE_HOME_NUMBER);
-    field->set_phone_part(AutofillField::PHONE_SUFFIX);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("cc-full-name")) {
-    field->set_heuristic_type(CREDIT_CARD_NAME);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("cc-number")) {
-    field->set_heuristic_type(CREDIT_CARD_NUMBER);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("cc-exp-month")) {
-    field->set_heuristic_type(CREDIT_CARD_EXP_MONTH);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("cc-exp-year")) {
-    if (field->max_length == 2)
-      field->set_heuristic_type(CREDIT_CARD_EXP_2_DIGIT_YEAR);
-    else
-      field->set_heuristic_type(CREDIT_CARD_EXP_4_DIGIT_YEAR);
-    return true;
-  }
-
-  if (autocomplete_type == ASCIIToUTF16("cc-exp")) {
-    if (field->max_length == 5)
-      field->set_heuristic_type(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR);
-    else
-      field->set_heuristic_type(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR);
-    return true;
+  // The "mobile" type hint is only appropriate for phone number field types.
+  // Note that "fax" and "pager" are intentionally ignored, as Chrome does not
+  // support filling either type of information.
+  if (token == "mobile") {
+    return field_type >= PHONE_HOME_NUMBER &&
+        field_type <= PHONE_HOME_WHOLE_NUMBER;
   }
 
   return false;
+}
+
+// Returns the Chrome Autofill-supported field type corresponding to the given
+// |autocomplete_type|, if there is one, in the context of the given |field|.
+// Chrome Autofill supports a subset of the field types listed at
+// http://is.gd/whatwg_autocomplete
+AutofillFieldType FieldTypeFromAutocompleteType(
+    const std::string& autocomplete_type,
+    const AutofillField& field) {
+  if (autocomplete_type == "name")
+    return NAME_FULL;
+
+  if (autocomplete_type == "given-name")
+    return NAME_FIRST;
+
+  if (autocomplete_type == "additional-name") {
+    if (field.max_length == 1)
+      return NAME_MIDDLE_INITIAL;
+    else
+      return NAME_MIDDLE;
+  }
+
+  if (autocomplete_type == "family-name")
+    return NAME_LAST;
+
+  if (autocomplete_type == "honorific-suffix")
+    return NAME_SUFFIX;
+
+  if (autocomplete_type == "organization")
+    return COMPANY_NAME;
+
+  if (autocomplete_type == "street-address" ||
+      autocomplete_type == "address-line1")
+    return ADDRESS_HOME_LINE1;
+
+  if (autocomplete_type == "address-line2")
+    return ADDRESS_HOME_LINE2;
+
+  if (autocomplete_type == "locality")
+    return ADDRESS_HOME_CITY;
+
+  if (autocomplete_type == "region")
+    return ADDRESS_HOME_STATE;
+
+  if (autocomplete_type == "country")
+    return ADDRESS_HOME_COUNTRY;
+
+  if (autocomplete_type == "postal-code")
+    return ADDRESS_HOME_ZIP;
+
+  if (autocomplete_type == "cc-name")
+    return CREDIT_CARD_NAME;
+
+  if (autocomplete_type == "cc-number")
+    return CREDIT_CARD_NUMBER;
+
+  if (autocomplete_type == "cc-exp") {
+    if (field.max_length == 5)
+      return CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR;
+    else
+      return CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR;
+  }
+
+  if (autocomplete_type == "cc-exp-month")
+    return CREDIT_CARD_EXP_MONTH;
+
+  if (autocomplete_type == "cc-exp-year") {
+    if (field.max_length == 2)
+      return CREDIT_CARD_EXP_2_DIGIT_YEAR;
+    else
+      return CREDIT_CARD_EXP_4_DIGIT_YEAR;
+  }
+
+  if (autocomplete_type == "tel")
+    return PHONE_HOME_WHOLE_NUMBER;
+
+  if (autocomplete_type == "tel-country-code")
+    return PHONE_HOME_COUNTRY_CODE;
+
+  if (autocomplete_type == "tel-national")
+    return PHONE_HOME_CITY_AND_NUMBER;
+
+  if (autocomplete_type == "tel-area-code")
+    return PHONE_HOME_CITY_CODE;
+
+  if (autocomplete_type == "tel-local")
+    return PHONE_HOME_NUMBER;
+
+  if (autocomplete_type == "tel-local-prefix")
+    return PHONE_HOME_NUMBER;
+
+  if (autocomplete_type == "tel-local-suffix")
+    return PHONE_HOME_NUMBER;
+
+  if (autocomplete_type == "email")
+    return EMAIL_ADDRESS;
+
+  return UNKNOWN_TYPE;
 }
 
 }  // namespace
@@ -273,12 +260,13 @@ FormStructure::FormStructure(const FormData& form)
 FormStructure::~FormStructure() {}
 
 void FormStructure::DetermineHeuristicTypes() {
-  // First, try to detect field types based on the fields' |autocompletetype|
-  // attributes.  If there is at least one form field with this attribute, don't
-  // try to apply other heuristics to match fields in this form.
+  // First, try to detect field types based on each field's |autocomplete|
+  // attribute value.  If there is at least one form field that specifies an
+  // autocomplete type hint, don't try to apply other heuristics to match fields
+  // in this form.
   bool has_author_specified_sections;
-  ParseAutocompletetypeAttributes(&has_author_specified_types_,
-                                  &has_author_specified_sections);
+  ParseFieldTypesFromAutocompleteAttributes(&has_author_specified_types_,
+                                            &has_author_specified_sections);
 
   if (!has_author_specified_types_) {
     FieldTypeMap field_type_map;
@@ -549,7 +537,7 @@ bool FormStructure::ShouldBeParsed(bool require_method_post) const {
   bool has_text_field = false;
   for (std::vector<AutofillField*>::const_iterator it = begin();
        it != end() && !has_text_field; ++it) {
-    has_text_field |= (*it)->form_control_type != ASCIIToUTF16("select-one");
+    has_text_field |= (*it)->form_control_type != "select-one";
   }
   if (!has_text_field)
     return false;
@@ -576,7 +564,7 @@ void FormStructure::UpdateFromCache(const FormStructure& cached_form) {
     std::map<std::string, const AutofillField*>::const_iterator
         cached_field = cached_fields.find(field->FieldSignature());
     if (cached_field != cached_fields.end()) {
-      if (field->form_control_type != ASCIIToUTF16("select-one") &&
+      if (field->form_control_type != "select-one" &&
           field->value == cached_field->second->value) {
         // From the perspective of learning user data, text fields containing
         // default values are equivalent to empty fields.
@@ -694,7 +682,7 @@ void FormStructure::LogQualityMetrics(
 
     // TODO(isherman): <select> fields don't support |is_autofilled()|, so we
     // have to skip them for the remaining metrics.
-    if (field->form_control_type == ASCIIToUTF16("select-one"))
+    if (field->form_control_type == "select-one")
       continue;
 
     if (field->is_autofilled) {
@@ -878,32 +866,111 @@ bool FormStructure::EncodeFormRequest(
   return true;
 }
 
-void FormStructure::ParseAutocompletetypeAttributes(bool* found_attribute,
-                                                    bool* found_sections) {
-  *found_attribute = false;
+void FormStructure::ParseFieldTypesFromAutocompleteAttributes(
+    bool* found_types,
+    bool* found_sections) {
+  const std::string kDefaultSection = "-default";
+
+  *found_types = false;
   *found_sections = false;
-  for (std::vector<AutofillField*>::iterator field = fields_.begin();
-       field != fields_.end(); ++field) {
-    if ((*field)->autocomplete_type.empty())
+  for (std::vector<AutofillField*>::iterator it = fields_.begin();
+       it != fields_.end(); ++it) {
+    AutofillField* field = *it;
+
+    // To prevent potential section name collisions, add a default suffix for
+    // other fields.  Without this, 'autocomplete' attribute values
+    // "section--shipping street-address" and "shipping street-address" would be
+    // parsed identically, given the section handling code below.  We do this
+    // before any validation so that fields with invalid attributes still end up
+    // in the default section.  These default section names will be overridden
+    // by subsequent heuristic parsing steps if there are no author-specified
+    // section names.
+    field->set_section(kDefaultSection);
+
+    // Canonicalize the attribute value by trimming whitespace, collapsing
+    // non-space characters (e.g. tab) to spaces, and converting to lowercase.
+    std::string autocomplete_attribute =
+        CollapseWhitespaceASCII(field->autocomplete_attribute, false);
+    autocomplete_attribute = StringToLowerASCII(autocomplete_attribute);
+
+    // The autocomplete attribute is overloaded: it can specify either a field
+    // type hint or whether autocomplete should be enabled at all.  Ignore the
+    // latter type of attribute value.
+    if (autocomplete_attribute.empty() ||
+        autocomplete_attribute == "on" ||
+        autocomplete_attribute == "off") {
+      continue;
+    }
+
+    // Any other value, even it is invalid, is considered to be a type hint.
+    // This allows a website's author to specify an attribute like
+    // autocomplete="other" on a field to disable all Autofill heuristics for
+    // the form.
+    *found_types = true;
+
+    // Tokenize the attribute value.  Per the spec, the tokens are parsed in
+    // reverse order.
+    std::vector<std::string> tokens;
+    Tokenize(autocomplete_attribute, " ", &tokens);
+
+    // The final token must be the field type.
+    // If it is not one of the known types, abort.
+    DCHECK(!tokens.empty());
+    std::string field_type_token = tokens.back();
+    tokens.pop_back();
+    AutofillFieldType field_type =
+        FieldTypeFromAutocompleteType(field_type_token, *field);
+    if (field_type == UNKNOWN_TYPE)
       continue;
 
-    *found_attribute = true;
-    std::vector<string16> types;
-    Tokenize((*field)->autocomplete_type, ASCIIToUTF16(" "), &types);
+    // The preceding token, if any, may be a type hint.
+    if (!tokens.empty() && IsContactTypeHint(tokens.back())) {
+      // If it is, it must match the field type; otherwise, abort.
+      // Note that an invalid token invalidates the entire attribute value, even
+      // if the other tokens are valid.
+      if (!ContactTypeHintMatchesFieldType(tokens.back(), field_type))
+        continue;
 
-    // Look for a named section.
-    const string16 kSectionPrefix = ASCIIToUTF16("section-");
-    if (!types.empty() && StartsWith(types.front(), kSectionPrefix, true)) {
+      // Chrome Autofill ignores these type hints.
+      tokens.pop_back();
+    }
+
+    // The preceding token, if any, may be a fixed string that is either
+    // "shipping" or "billing".  Chrome Autofill treats these as implicit
+    // section name suffixes.
+    DCHECK_EQ(kDefaultSection, field->section());
+    std::string section = field->section();
+    if (!tokens.empty() &&
+        (tokens.back() == "shipping" || tokens.back() == "billing")) {
+      section = "-" + tokens.back();
+      tokens.pop_back();
+    }
+
+    // The preceding token, if any, may be a named section.
+    const std::string kSectionPrefix = "section-";
+    if (!tokens.empty() &&
+        StartsWithASCII(tokens.back(), kSectionPrefix, true)) {
+      // Prepend this section name to the suffix set in the preceding block.
+      section = tokens.back().substr(kSectionPrefix.size()) + section;
+      tokens.pop_back();
+    }
+
+    // No other tokens are allowed.  If there are any remaining, abort.
+    if (!tokens.empty())
+      continue;
+
+    if (section != kDefaultSection) {
       *found_sections = true;
-      (*field)->set_section(types.front().substr(kSectionPrefix.size()));
+      field->set_section(section);
     }
 
-    // Look for specified types.
-    for (std::vector<string16>::const_iterator type = types.begin();
-         type != types.end(); ++type) {
-      if (UpdateFromAutocompleteType(*type, *field))
-        break;
-    }
+    // No errors encountered while parsing!
+    // Update the |field|'s type based on what was parsed from the attribute.
+    field->set_heuristic_type(field_type);
+    if (field_type_token == "tel-local-prefix")
+      field->set_phone_part(AutofillField::PHONE_PREFIX);
+    else if (field_type_token == "tel-local-suffix")
+      field->set_phone_part(AutofillField::PHONE_SUFFIX);
   }
 }
 
@@ -953,7 +1020,7 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
       }
 
       seen_types.insert(current_type);
-      (*field)->set_section(current_section);
+      (*field)->set_section(UTF16ToUTF8(current_section));
     }
   }
 
@@ -964,8 +1031,8 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
     AutofillType::FieldTypeGroup field_type_group =
         AutofillType((*field)->type()).group();
     if (field_type_group == AutofillType::CREDIT_CARD)
-      (*field)->set_section((*field)->section() + ASCIIToUTF16("-cc"));
+      (*field)->set_section((*field)->section() + "-cc");
     else
-      (*field)->set_section((*field)->section() + ASCIIToUTF16("-default"));
+      (*field)->set_section((*field)->section() + "-default");
   }
 }

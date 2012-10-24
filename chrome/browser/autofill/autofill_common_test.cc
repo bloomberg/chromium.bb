@@ -23,7 +23,7 @@ void CreateTestFormField(const char* label,
   field->label = ASCIIToUTF16(label);
   field->name = ASCIIToUTF16(name);
   field->value = ASCIIToUTF16(value);
-  field->form_control_type = ASCIIToUTF16(type);
+  field->form_control_type = type;
 }
 
 inline void check_and_set(

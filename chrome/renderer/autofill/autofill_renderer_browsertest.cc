@@ -51,25 +51,27 @@ TEST_F(ChromeRenderViewTest, SendForms) {
 
   expected.name = ASCIIToUTF16("firstname");
   expected.value = string16();
-  expected.form_control_type = ASCIIToUTF16("text");
+  expected.form_control_type = "text";
   expected.max_length = WebInputElement::defaultMaxLength();
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, forms[0].fields[0]);
 
   expected.name = ASCIIToUTF16("middlename");
   expected.value = string16();
-  expected.form_control_type = ASCIIToUTF16("text");
+  expected.form_control_type = "text";
   expected.max_length = WebInputElement::defaultMaxLength();
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, forms[0].fields[1]);
 
   expected.name = ASCIIToUTF16("lastname");
   expected.value = string16();
-  expected.form_control_type = ASCIIToUTF16("text");
+  expected.form_control_type = "text";
+  expected.autocomplete_attribute = "off";
   expected.max_length = WebInputElement::defaultMaxLength();
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, forms[0].fields[2]);
+  expected.autocomplete_attribute = std::string();  // reset
 
   expected.name = ASCIIToUTF16("state");
   expected.value = ASCIIToUTF16("?");
-  expected.form_control_type = ASCIIToUTF16("select-one");
+  expected.form_control_type = "select-one";
   expected.max_length = 0;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, forms[0].fields[3]);
 
@@ -106,19 +108,19 @@ TEST_F(ChromeRenderViewTest, SendForms) {
 
   expected.name = ASCIIToUTF16("firstname");
   expected.value = string16();
-  expected.form_control_type = ASCIIToUTF16("text");
+  expected.form_control_type = "text";
   expected.max_length = WebInputElement::defaultMaxLength();
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, form2.fields[0]);
 
   expected.name = ASCIIToUTF16("middlename");
   expected.value = string16();
-  expected.form_control_type = ASCIIToUTF16("text");
+  expected.form_control_type = "text";
   expected.max_length = WebInputElement::defaultMaxLength();
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, form2.fields[1]);
 
   expected.name = ASCIIToUTF16("state");
   expected.value = ASCIIToUTF16("?");
-  expected.form_control_type = ASCIIToUTF16("select-one");
+  expected.form_control_type = "select-one";
   expected.max_length = 0;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, form2.fields[2]);
 }

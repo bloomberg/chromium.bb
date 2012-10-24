@@ -27,20 +27,20 @@
 
 namespace {
 
-bool IsTextField(const string16& type) {
-  return type == ASCIIToUTF16("text");
+bool IsTextField(const std::string& type) {
+  return type == "text";
 }
 
-bool IsEmailField(const string16& type) {
-  return type == ASCIIToUTF16("email");
+bool IsEmailField(const std::string& type) {
+  return type == "email";
 }
 
-bool IsTelephoneField(const string16& type) {
-  return type == ASCIIToUTF16("tel");
+bool IsTelephoneField(const std::string& type) {
+  return type == "tel";
 }
 
-bool IsSelectField(const string16& type) {
-  return type == ASCIIToUTF16("select-one");
+bool IsSelectField(const std::string& type) {
+  return type == "select-one";
 }
 
 }  // namespace

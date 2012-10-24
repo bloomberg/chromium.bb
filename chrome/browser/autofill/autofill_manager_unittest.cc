@@ -305,7 +305,7 @@ void ExpectFilledField(const char* expected_label,
   EXPECT_EQ(UTF8ToUTF16(expected_label), field.label);
   EXPECT_EQ(UTF8ToUTF16(expected_name), field.name);
   EXPECT_EQ(UTF8ToUTF16(expected_value), field.value);
-  EXPECT_EQ(UTF8ToUTF16(expected_form_control_type), field.form_control_type);
+  EXPECT_EQ(expected_form_control_type, field.form_control_type);
 }
 
 // Verifies that the |filled_form| has been filled with the given data.
@@ -1994,47 +1994,47 @@ TEST_F(AutofillManagerTest, FillFormWithAuthorSpecifiedSections) {
   FormFieldData field;
 
   autofill_test::CreateTestFormField("", "country", "", "text", &field);
-  field.autocomplete_type = ASCIIToUTF16("section-billing country");
+  field.autocomplete_attribute = "section-billing country";
   form.fields.push_back(field);
 
   autofill_test::CreateTestFormField("", "firstname", "", "text", &field);
-  field.autocomplete_type = ASCIIToUTF16("given-name");
+  field.autocomplete_attribute = "given-name";
   form.fields.push_back(field);
 
   autofill_test::CreateTestFormField("", "lastname", "", "text", &field);
-  field.autocomplete_type = ASCIIToUTF16("surname");
+  field.autocomplete_attribute = "family-name";
   form.fields.push_back(field);
 
   autofill_test::CreateTestFormField("", "address", "", "text", &field);
-  field.autocomplete_type = ASCIIToUTF16("section-billing street-address");
+  field.autocomplete_attribute = "section-billing street-address";
   form.fields.push_back(field);
 
   autofill_test::CreateTestFormField("", "city", "", "text", &field);
-  field.autocomplete_type = ASCIIToUTF16("section-billing locality");
+  field.autocomplete_attribute = "section-billing locality";
   form.fields.push_back(field);
 
   autofill_test::CreateTestFormField("", "state", "", "text", &field);
-  field.autocomplete_type = ASCIIToUTF16("section-billing administrative-area");
+  field.autocomplete_attribute = "section-billing region";
   form.fields.push_back(field);
 
   autofill_test::CreateTestFormField("", "zip", "", "text", &field);
-  field.autocomplete_type = ASCIIToUTF16("section-billing postal-code");
+  field.autocomplete_attribute = "section-billing postal-code";
   form.fields.push_back(field);
 
   autofill_test::CreateTestFormField("", "ccname", "", "text", &field);
-  field.autocomplete_type = ASCIIToUTF16("section-billing cc-full-name");
+  field.autocomplete_attribute = "section-billing cc-name";
   form.fields.push_back(field);
 
   autofill_test::CreateTestFormField("", "ccnumber", "", "text", &field);
-  field.autocomplete_type = ASCIIToUTF16("section-billing cc-number");
+  field.autocomplete_attribute = "section-billing cc-number";
   form.fields.push_back(field);
 
   autofill_test::CreateTestFormField("", "ccexp", "", "text", &field);
-  field.autocomplete_type = ASCIIToUTF16("section-billing cc-exp");
+  field.autocomplete_attribute = "section-billing cc-exp";
   form.fields.push_back(field);
 
   autofill_test::CreateTestFormField("", "email", "", "text", &field);
-  field.autocomplete_type = ASCIIToUTF16("email");
+  field.autocomplete_attribute = "email";
   form.fields.push_back(field);
 
   std::vector<FormData> forms(1, form);
@@ -2301,13 +2301,13 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
     const char* label;
     const char* name;
     size_t max_length;
-    const char* autocomplete_type;
+    const char* autocomplete_attribute;
   } test_fields[] = {
-    { "country code", "country_code", 1, "phone-country-code" },
-    { "area code", "area_code", 3, "phone-area-code" },
-    { "phone", "phone_prefix", 3, "phone-local-prefix" },
-    { "-", "phone_suffix", 4, "phone-local-suffix" },
-    { "Phone Extension", "ext", 3, "phone-extension" }
+    { "country code", "country_code", 1, "tel-country-code" },
+    { "area code", "area_code", 3, "tel-area-code" },
+    { "phone", "phone_prefix", 3, "tel-local-prefix" },
+    { "-", "phone_suffix", 4, "tel-local-suffix" },
+    { "Phone Extension", "ext", 3, "tel-extension" }
   };
 
   FormFieldData field;
@@ -2316,11 +2316,11 @@ TEST_F(AutofillManagerTest, FillPhoneNumber) {
     autofill_test::CreateTestFormField(
         test_fields[i].label, test_fields[i].name, "", "text", &field);
     field.max_length = test_fields[i].max_length;
-    field.autocomplete_type = string16();
+    field.autocomplete_attribute = std::string();
     form_with_maxlength.fields.push_back(field);
 
     field.max_length = default_max_length;
-    field.autocomplete_type = ASCIIToUTF16(test_fields[i].autocomplete_type);
+    field.autocomplete_attribute = test_fields[i].autocomplete_attribute;
     form_with_autocompletetype.fields.push_back(field);
   }
 
@@ -2590,7 +2590,7 @@ TEST_F(AutofillManagerTest, FormSubmittedWithDefaultValues) {
   // Convert the state field to a <select> popup, to make sure that we only
   // reject default values for text fields.
   ASSERT_TRUE(form.fields[6].name == ASCIIToUTF16("state"));
-  form.fields[6].form_control_type = ASCIIToUTF16("select-one");
+  form.fields[6].form_control_type = "select-one";
   form.fields[6].value = ASCIIToUTF16("Tennessee");
 
   std::vector<FormData> forms(1, form);

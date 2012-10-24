@@ -45,7 +45,7 @@ TEST_F(AddressFieldTest, NonParse) {
 
 TEST_F(AddressFieldTest, ParseOneLineAddress) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("Address");
   field.name = ASCIIToUTF16("address");
@@ -63,7 +63,7 @@ TEST_F(AddressFieldTest, ParseOneLineAddress) {
 
 TEST_F(AddressFieldTest, ParseOneLineAddressBilling) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("Address");
   field.name = ASCIIToUTF16("billingAddress");
@@ -81,7 +81,7 @@ TEST_F(AddressFieldTest, ParseOneLineAddressBilling) {
 
 TEST_F(AddressFieldTest, ParseOneLineAddressShipping) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("Address");
   field.name = ASCIIToUTF16("shippingAddress");
@@ -99,7 +99,7 @@ TEST_F(AddressFieldTest, ParseOneLineAddressShipping) {
 
 TEST_F(AddressFieldTest, ParseTwoLineAddress) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("Address");
   field.name = ASCIIToUTF16("address");
@@ -124,7 +124,7 @@ TEST_F(AddressFieldTest, ParseTwoLineAddress) {
 
 TEST_F(AddressFieldTest, ParseThreeLineAddress) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("Address Line1");
   field.name = ASCIIToUTF16("Address1");
@@ -155,7 +155,7 @@ TEST_F(AddressFieldTest, ParseThreeLineAddress) {
 
 TEST_F(AddressFieldTest, ParseCity) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("City");
   field.name = ASCIIToUTF16("city");
@@ -173,7 +173,7 @@ TEST_F(AddressFieldTest, ParseCity) {
 
 TEST_F(AddressFieldTest, ParseState) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("State");
   field.name = ASCIIToUTF16("state");
@@ -191,7 +191,7 @@ TEST_F(AddressFieldTest, ParseState) {
 
 TEST_F(AddressFieldTest, ParseZip) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("Zip");
   field.name = ASCIIToUTF16("zip");
@@ -209,7 +209,7 @@ TEST_F(AddressFieldTest, ParseZip) {
 
 TEST_F(AddressFieldTest, ParseStateAndZipOneLabel) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("State/Province, Zip/Postal Code");
   field.name = ASCIIToUTF16("state");
@@ -234,7 +234,7 @@ TEST_F(AddressFieldTest, ParseStateAndZipOneLabel) {
 
 TEST_F(AddressFieldTest, ParseCountry) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("Country");
   field.name = ASCIIToUTF16("country");
@@ -252,7 +252,7 @@ TEST_F(AddressFieldTest, ParseCountry) {
 
 TEST_F(AddressFieldTest, ParseTwoLineAddressMissingLabel) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("Address");
   field.name = ASCIIToUTF16("address");
@@ -277,7 +277,7 @@ TEST_F(AddressFieldTest, ParseTwoLineAddressMissingLabel) {
 
 TEST_F(AddressFieldTest, ParseCompany) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("Company");
   field.name = ASCIIToUTF16("company");

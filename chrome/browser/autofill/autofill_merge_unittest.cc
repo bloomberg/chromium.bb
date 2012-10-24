@@ -179,7 +179,7 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
       field.label = field_type;
       field.name = field_type;
       field.value = value;
-      field.form_control_type = ASCIIToUTF16("text");
+      field.form_control_type = "text";
       form.fields.push_back(field);
     }
 

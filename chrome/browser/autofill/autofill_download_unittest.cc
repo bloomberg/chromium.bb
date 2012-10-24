@@ -146,37 +146,37 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   FormFieldData field;
   field.label = ASCIIToUTF16("username");
   field.name = ASCIIToUTF16("username");
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
   form.fields.push_back(field);
 
   field.label = ASCIIToUTF16("First Name");
   field.name = ASCIIToUTF16("firstname");
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
   form.fields.push_back(field);
 
   field.label = ASCIIToUTF16("Last Name");
   field.name = ASCIIToUTF16("lastname");
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
   form.fields.push_back(field);
 
   field.label = ASCIIToUTF16("email");
   field.name = ASCIIToUTF16("email");
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
   form.fields.push_back(field);
 
   field.label = ASCIIToUTF16("email2");
   field.name = ASCIIToUTF16("email2");
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
   form.fields.push_back(field);
 
   field.label = ASCIIToUTF16("password");
   field.name = ASCIIToUTF16("password");
-  field.form_control_type = ASCIIToUTF16("password");
+  field.form_control_type = "password";
   form.fields.push_back(field);
 
   field.label = string16();
   field.name = ASCIIToUTF16("Submit");
-  field.form_control_type = ASCIIToUTF16("submit");
+  field.form_control_type = "submit";
   form.fields.push_back(field);
 
   FormStructure *form_structure = new FormStructure(form);
@@ -187,22 +187,22 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
 
   field.label = ASCIIToUTF16("address");
   field.name = ASCIIToUTF16("address");
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
   form.fields.push_back(field);
 
   field.label = ASCIIToUTF16("address2");
   field.name = ASCIIToUTF16("address2");
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
   form.fields.push_back(field);
 
   field.label = ASCIIToUTF16("city");
   field.name = ASCIIToUTF16("city");
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
   form.fields.push_back(field);
 
   field.label = string16();
   field.name = ASCIIToUTF16("Submit");
-  field.form_control_type = ASCIIToUTF16("submit");
+  field.form_control_type = "submit";
   form.fields.push_back(field);
 
   form_structure = new FormStructure(form);
@@ -296,7 +296,7 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   // Modify form structures to miss the cache.
   field.label = ASCIIToUTF16("Address line 2");
   field.name = ASCIIToUTF16("address2");
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
   form.fields.push_back(field);
   form_structure = new FormStructure(form);
   form_structures.push_back(form_structure);
@@ -356,7 +356,7 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   form.method = ASCIIToUTF16("post");
 
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("username");
   field.name = ASCIIToUTF16("username");

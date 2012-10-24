@@ -593,14 +593,14 @@ void WebFormControlElementToFormField(const WebFormControlElement& element,
   // labels for all form control elements are scraped from the DOM and set in
   // WebFormElementToFormData.
   field->name = element.nameForAutofill();
-  field->form_control_type = element.formControlType();
-  field->autocomplete_type = element.getAttribute("x-autocompletetype");
-  TrimWhitespace(field->autocomplete_type, TRIM_ALL, &field->autocomplete_type);
-  if (field->autocomplete_type.size() > kMaxDataLength) {
+  field->form_control_type = UTF16ToUTF8(element.formControlType());
+  field->autocomplete_attribute =
+      UTF16ToUTF8(element.getAttribute("autocomplete"));
+  if (field->autocomplete_attribute.size() > kMaxDataLength) {
     // Discard overly long attribute values to avoid DOS-ing the browser
     // process.  However, send over a default string to indicate that the
     // attribute was present.
-    field->autocomplete_type = ASCIIToUTF16("x-max-data-length-exceeded");
+    field->autocomplete_attribute = "x-max-data-length-exceeded";
   }
 
   if (!IsAutofillableElement(element))

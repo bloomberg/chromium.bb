@@ -31,7 +31,7 @@ class NameFieldTest : public testing::Test {
 
 TEST_F(NameFieldTest, FirstMiddleLast) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("First Name");
   field.name = ASCIIToUTF16("First");
@@ -62,7 +62,7 @@ TEST_F(NameFieldTest, FirstMiddleLast) {
 
 TEST_F(NameFieldTest, FirstMiddleLast2) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = string16();
   field.name = ASCIIToUTF16("firstName");
@@ -93,7 +93,7 @@ TEST_F(NameFieldTest, FirstMiddleLast2) {
 
 TEST_F(NameFieldTest, FirstLast) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = string16();
   field.name = ASCIIToUTF16("first_name");
@@ -117,7 +117,7 @@ TEST_F(NameFieldTest, FirstLast) {
 
 TEST_F(NameFieldTest, FirstLast2) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("Name");
   field.name = ASCIIToUTF16("first_name");
@@ -141,7 +141,7 @@ TEST_F(NameFieldTest, FirstLast2) {
 
 TEST_F(NameFieldTest, FirstLastMiddleWithSpaces) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("First  Name");
   field.name = ASCIIToUTF16("first_name");
@@ -172,7 +172,7 @@ TEST_F(NameFieldTest, FirstLastMiddleWithSpaces) {
 
 TEST_F(NameFieldTest, FirstLastEmpty) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("Name");
   field.name = ASCIIToUTF16("first_name");
@@ -196,7 +196,7 @@ TEST_F(NameFieldTest, FirstLastEmpty) {
 
 TEST_F(NameFieldTest, FirstMiddleLastEmpty) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("Name");
   field.name = ASCIIToUTF16("first_name");
@@ -227,7 +227,7 @@ TEST_F(NameFieldTest, FirstMiddleLastEmpty) {
 
 TEST_F(NameFieldTest, MiddleInitial) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("First Name");
   field.name = ASCIIToUTF16("first_name");
@@ -258,7 +258,7 @@ TEST_F(NameFieldTest, MiddleInitial) {
 
 TEST_F(NameFieldTest, MiddleInitialNoLastName) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("First Name");
   field.name = ASCIIToUTF16("first_name");
@@ -277,7 +277,7 @@ TEST_F(NameFieldTest, MiddleInitialNoLastName) {
 // came at the end following other descriptive text.  http://crbug.com/45123.
 TEST_F(NameFieldTest, MiddleInitialAtEnd) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = string16();
   field.name = ASCIIToUTF16("XXXnameXXXfirst");

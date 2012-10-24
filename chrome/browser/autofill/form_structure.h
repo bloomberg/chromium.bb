@@ -154,13 +154,15 @@ class FormStructure {
   bool EncodeFormRequest(EncodeRequestType request_type,
                          buzz::XmlElement* encompassing_xml_element) const;
 
-  // Classifies each field in |fields_| based upon its |autocompletetype|
-  // attribute, if the attribute is available.  The association is stored into
-  // |map|.  Fills |found_attribute| with |true| if the attribute is available
-  // (and non-empty) for at least one field.  Fills |found_sections| with |true|
-  // if the attribute specifies a section for at least one field.
-  void ParseAutocompletetypeAttributes(bool* found_attribute,
-                                       bool* found_sections);
+  // Classifies each field in |fields_| based upon its |autocomplete| attribute,
+  // if the attribute is available.  The association is stored into the field's
+  // |heuristic_type|.
+  // Fills |found_types| with |true| if the attribute is available and neither
+  // empty nor set to the special values "on" or "off" for at least one field.
+  // Fills |found_sections| with |true| if the attribute specifies a section for
+  // at least one field.
+  void ParseFieldTypesFromAutocompleteAttributes(bool* found_types,
+                                                 bool* found_sections);
 
   // Classifies each field in |fields_| into a logical section.
   // Sections are identified by the heuristic that a logical section should not

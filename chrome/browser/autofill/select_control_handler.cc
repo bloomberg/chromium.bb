@@ -202,7 +202,7 @@ void FillSelectControl(const FormGroup& form_group,
                        AutofillFieldType type,
                        FormFieldData* field) {
   DCHECK(field);
-  DCHECK_EQ(ASCIIToUTF16("select-one"), field->form_control_type);
+  DCHECK_EQ("select-one", field->form_control_type);
   DCHECK_EQ(field->option_values.size(), field->option_contents.size());
 
   string16 field_text = form_group.GetCanonicalizedInfo(type);

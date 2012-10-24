@@ -44,7 +44,7 @@ TEST_F(CreditCardFieldTest, NonParse) {
 
 TEST_F(CreditCardFieldTest, ParseCreditCardNoNumber) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("Exp Month");
   field.name = ASCIIToUTF16("ccmonth");
@@ -61,7 +61,7 @@ TEST_F(CreditCardFieldTest, ParseCreditCardNoNumber) {
 
 TEST_F(CreditCardFieldTest, ParseCreditCardNoDate) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("Card Number");
   field.name = ASCIIToUTF16("card_number");
@@ -74,7 +74,7 @@ TEST_F(CreditCardFieldTest, ParseCreditCardNoDate) {
 
 TEST_F(CreditCardFieldTest, ParseMiniumCreditCard) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("Card Number");
   field.name = ASCIIToUTF16("card_number");
@@ -106,7 +106,7 @@ TEST_F(CreditCardFieldTest, ParseMiniumCreditCard) {
 
 TEST_F(CreditCardFieldTest, ParseFullCreditCard) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("Name on Card");
   field.name = ASCIIToUTF16("name_on_card");
@@ -152,7 +152,7 @@ TEST_F(CreditCardFieldTest, ParseFullCreditCard) {
 
 TEST_F(CreditCardFieldTest, ParseExpMonthYear) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("Name on Card");
   field.name = ASCIIToUTF16("name_on_card");
@@ -191,7 +191,7 @@ TEST_F(CreditCardFieldTest, ParseExpMonthYear) {
 
 TEST_F(CreditCardFieldTest, ParseExpMonthYear2) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("Name on Card");
   field.name = ASCIIToUTF16("name_on_card");
@@ -230,7 +230,7 @@ TEST_F(CreditCardFieldTest, ParseExpMonthYear2) {
 
 TEST_F(CreditCardFieldTest, ParseExpField) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("Name on Card");
   field.name = ASCIIToUTF16("name_on_card");
@@ -262,7 +262,7 @@ TEST_F(CreditCardFieldTest, ParseExpField) {
 
 TEST_F(CreditCardFieldTest, ParseExpField2DigitYear) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("Name on Card");
   field.name = ASCIIToUTF16("name_on_card");
@@ -294,7 +294,7 @@ TEST_F(CreditCardFieldTest, ParseExpField2DigitYear) {
 
 TEST_F(CreditCardFieldTest, ParseCreditCardHolderNameWithCCFullName) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("Name");
   field.name = ASCIIToUTF16("ccfullname");

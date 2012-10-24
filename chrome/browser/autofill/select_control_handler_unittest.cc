@@ -22,7 +22,7 @@ TEST_F(SelectControlHandlerTest, CreditCardMonthExact) {
     options[i] = ASCIIToUTF16(kMonthsNumeric[i]);
 
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("select-one");
+  field.form_control_type = "select-one";
   field.option_values = options;
   field.option_contents = options;
 
@@ -42,7 +42,7 @@ TEST_F(SelectControlHandlerTest, CreditCardMonthAbbreviated) {
     options[i] = ASCIIToUTF16(kMonthsAbbreviated[i]);
 
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("select-one");
+  field.form_control_type = "select-one";
   field.option_values = options;
   field.option_contents = options;
 
@@ -62,7 +62,7 @@ TEST_F(SelectControlHandlerTest, CreditCardMonthFull) {
     options[i] = ASCIIToUTF16(kMonthsFull[i]);
 
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("select-one");
+  field.form_control_type = "select-one";
   field.option_values = options;
   field.option_contents = options;
 
@@ -81,7 +81,7 @@ TEST_F(SelectControlHandlerTest, CreditCardMonthNumeric) {
     options[i] = ASCIIToUTF16(kMonthsNumeric[i]);
 
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("select-one");
+  field.form_control_type = "select-one";
   field.option_values = options;
   field.option_contents = options;
 
@@ -100,7 +100,7 @@ TEST_F(SelectControlHandlerTest, AddressCountryFull) {
     options[i] = ASCIIToUTF16(kCountries[i]);
 
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("select-one");
+  field.form_control_type = "select-one";
   field.option_values = options;
   field.option_contents = options;
 
@@ -119,7 +119,7 @@ TEST_F(SelectControlHandlerTest, AddressCountryAbbrev) {
     options[i] = ASCIIToUTF16(kCountries[i]);
 
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("select-one");
+  field.form_control_type = "select-one";
   field.option_values = options;
   field.option_contents = options;
 
@@ -138,7 +138,7 @@ TEST_F(SelectControlHandlerTest, AddressStateFull) {
     options[i] = ASCIIToUTF16(kStates[i]);
 
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("select-one");
+  field.form_control_type = "select-one";
   field.option_values = options;
   field.option_contents = options;
 
@@ -157,7 +157,7 @@ TEST_F(SelectControlHandlerTest, AddressStateAbbrev) {
     options[i] = ASCIIToUTF16(kStates[i]);
 
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("select-one");
+  field.form_control_type = "select-one";
   field.option_values = options;
   field.option_contents = options;
 
@@ -179,7 +179,7 @@ TEST_F(SelectControlHandlerTest, FillByValue) {
   }
 
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("select-one");
+  field.form_control_type = "select-one";
   field.option_values = values;
   field.option_contents = contents;
 
@@ -201,7 +201,7 @@ TEST_F(SelectControlHandlerTest, FillByContents) {
   }
 
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("select-one");
+  field.form_control_type = "select-one";
   field.option_values = values;
   field.option_contents = contents;
 

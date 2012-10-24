@@ -1,0 +1,17 @@
+PHONE_HOME_WHOLE_NUMBER | 4.phone |  | 
+EMAIL_ADDRESS | 4.email |  | 
+UNKNOWN_TYPE | 4.a |  | 
+UNKNOWN_TYPE | 4.b |  | 
+UNKNOWN_TYPE | 4.c |  | 
+ADDRESS_HOME_CITY | 4.city |  | 
+NAME_FULL | 1.n |  | 
+EMAIL_ADDRESS | 1.e |  | 
+ADDRESS_HOME_LINE1 | 1.a |  | 
+UNKNOWN_TYPE | 2.name |  | 
+UNKNOWN_TYPE | 2.email |  | 
+PHONE_HOME_WHOLE_NUMBER | 2.t |  | 
+UNKNOWN_TYPE | 2.address |  | 
+UNKNOWN_TYPE | 3.name |  | 
+UNKNOWN_TYPE | 3.email |  | 
+UNKNOWN_TYPE | 3.o |  | 
+UNKNOWN_TYPE | 3.address |  | 

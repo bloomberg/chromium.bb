@@ -118,7 +118,7 @@ void RemoveDuplicateSuggestions(std::vector<string16>* values,
 // is auto-filled.
 bool SectionIsAutofilled(const FormStructure& form_structure,
                          const FormData& form,
-                         const string16& section) {
+                         const std::string& section) {
   DCHECK_EQ(form_structure.field_count(), form.fields.size());
   for (size_t i = 0; i < form_structure.field_count(); ++i) {
     if (form_structure.field(i)->section() == section &&
@@ -1246,9 +1246,9 @@ void AutofillManager::FillCreditCardFormField(const CreditCard& credit_card,
   DCHECK_EQ(AutofillType::CREDIT_CARD, AutofillType(type).group());
   DCHECK(field);
 
-  if (field->form_control_type == ASCIIToUTF16("select-one")) {
+  if (field->form_control_type == "select-one") {
     autofill::FillSelectControl(credit_card, type, field);
-  } else if (field->form_control_type == ASCIIToUTF16("month")) {
+  } else if (field->form_control_type == "month") {
     // HTML5 input="month" consists of year-month.
     string16 year =
         credit_card.GetCanonicalizedInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR);
@@ -1274,7 +1274,7 @@ void AutofillManager::FillFormField(const AutofillProfile& profile,
   if (type == PHONE_HOME_NUMBER) {
     FillPhoneNumberField(profile, cached_field, variant, field);
   } else {
-    if (field->form_control_type == ASCIIToUTF16("select-one")) {
+    if (field->form_control_type == "select-one") {
       autofill::FillSelectControl(profile, type, field);
     } else {
       std::vector<string16> values;

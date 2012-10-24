@@ -96,12 +96,12 @@ bool IsSSN(const string16& text) {
 
 bool IsTextField(const FormFieldData& field) {
   return
-      field.form_control_type == ASCIIToUTF16("text") ||
-      field.form_control_type == ASCIIToUTF16("search") ||
-      field.form_control_type == ASCIIToUTF16("tel") ||
-      field.form_control_type == ASCIIToUTF16("url") ||
-      field.form_control_type == ASCIIToUTF16("email") ||
-      field.form_control_type == ASCIIToUTF16("text");
+      field.form_control_type == "text" ||
+      field.form_control_type == "search" ||
+      field.form_control_type == "tel" ||
+      field.form_control_type == "url" ||
+      field.form_control_type == "email" ||
+      field.form_control_type == "text";
 }
 
 }  // namespace

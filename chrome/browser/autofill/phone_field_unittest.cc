@@ -44,7 +44,7 @@ TEST_F(PhoneFieldTest, NonParse) {
 
 TEST_F(PhoneFieldTest, ParseOneLinePhone) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("Phone");
   field.name = ASCIIToUTF16("phone");
@@ -61,7 +61,7 @@ TEST_F(PhoneFieldTest, ParseOneLinePhone) {
 
 TEST_F(PhoneFieldTest, ParseTwoLinePhone) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("Area Code");
   field.name = ASCIIToUTF16("area code");
@@ -90,7 +90,7 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumber) {
   // size: <prefix> is no bigger than 3 characters, and <suffix> is no bigger
   // than 4.
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("Phone:");
   field.name = ASCIIToUTF16("dayphone1");
@@ -134,7 +134,7 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumber) {
 // https://www.wrapables.com/jsp/Signup.jsp.
 TEST_F(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("Phone:");
   field.name = ASCIIToUTF16("area");
@@ -165,7 +165,7 @@ TEST_F(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix) {
 
 TEST_F(PhoneFieldTest, ThreePartPhoneNumberPrefixSuffix2) {
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("(");
   field.name = ASCIIToUTF16("phone1");
@@ -201,7 +201,7 @@ TEST_F(PhoneFieldTest, CountryAndCityAndPhoneNumber) {
   // Phone in format <country code>:3 - <city and number>:10
   // The |maxlength| is considered, otherwise it's too broad.
   FormFieldData field;
-  field.form_control_type = ASCIIToUTF16("text");
+  field.form_control_type = "text";
 
   field.label = ASCIIToUTF16("Phone Number");
   field.name = ASCIIToUTF16("CountryCode");
