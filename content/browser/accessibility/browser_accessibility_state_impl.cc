@@ -5,9 +5,9 @@
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 
 #include "base/command_line.h"
-#include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/timer.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "ui/gfx/sys_color_change_listener.h"
 
@@ -47,11 +47,12 @@ BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
     accessibility_mode_ = AccessibilityModeComplete;
   }
 
-  update_histogram_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromSeconds(kAccessibilityHistogramDelaySecs),
-      this,
-      &BrowserAccessibilityStateImpl::UpdateHistogram);
+  // UpdateHistogram only takes a couple of milliseconds, but run it on
+  // the FILE thread to guarantee there's no jank.
+  content::BrowserThread::PostDelayedTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&BrowserAccessibilityStateImpl::UpdateHistogram, this),
+      base::TimeDelta::FromSeconds(kAccessibilityHistogramDelaySecs));
 }
 
 BrowserAccessibilityStateImpl::~BrowserAccessibilityStateImpl() {
@@ -75,13 +76,20 @@ bool BrowserAccessibilityStateImpl::IsAccessibleBrowser() {
 }
 
 void BrowserAccessibilityStateImpl::UpdateHistogram() {
-  UMA_HISTOGRAM_ENUMERATION("Accessibility.State",
-                            IsAccessibleBrowser() ? 1 : 0,
-                            2);
-  UMA_HISTOGRAM_ENUMERATION("Accessibility.InvertedColors",
-                            gfx::IsInvertedColorScheme() ? 1 : 0,
-                            2);
+  UpdatePlatformSpecificHistograms();
+
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.State", IsAccessibleBrowser());
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.InvertedColors",
+                        gfx::IsInvertedColorScheme());
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.ManuallyEnabled",
+                        CommandLine::ForCurrentProcess()->HasSwitch(
+                            switches::kForceRendererAccessibility));
 }
+
+#if !defined(OS_WIN)
+void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {
+}
+#endif
 
 AccessibilityMode BrowserAccessibilityStateImpl::GetAccessibilityMode() {
   return accessibility_mode_;

@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/timer.h"
+#include "base/memory/singleton.h"
 #include "content/common/view_message_enums.h"
 #include "content/public/browser/browser_accessibility_state.h"
 
@@ -29,12 +29,10 @@
 // improvement over reading defaults preference values (which has no callback
 // mechanism).
 class CONTENT_EXPORT BrowserAccessibilityStateImpl
-    : public BrowserAccessibilityState {
+    : public base::RefCountedThreadSafe<BrowserAccessibilityStateImpl>,
+      public BrowserAccessibilityState {
  public:
   BrowserAccessibilityStateImpl();
-
-  // Leaky singleton, destructor generally won't be called.
-  virtual ~BrowserAccessibilityStateImpl();
 
   static BrowserAccessibilityStateImpl* GetInstance();
 
@@ -49,11 +47,16 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
   AccessibilityMode GetAccessibilityMode();
   void SetAccessibilityMode(AccessibilityMode mode);
 
- protected:
-  AccessibilityMode accessibility_mode_;
+ private:
+  friend class base::RefCountedThreadSafe<BrowserAccessibilityStateImpl>;
+  friend struct DefaultSingletonTraits<BrowserAccessibilityStateImpl>;
 
-  // Timer to update the histogram a short while after startup.
-  base::OneShotTimer<BrowserAccessibilityStateImpl> update_histogram_timer_;
+  // Leaky singleton, destructor generally won't be called.
+  virtual ~BrowserAccessibilityStateImpl();
+
+  void UpdatePlatformSpecificHistograms();
+
+  AccessibilityMode accessibility_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityStateImpl);
 };

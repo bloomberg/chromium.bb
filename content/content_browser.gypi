@@ -188,6 +188,7 @@
     'browser/accessibility/browser_accessibility_manager_win.cc',
     'browser/accessibility/browser_accessibility_manager_win.h',
     'browser/accessibility/browser_accessibility_state_impl.cc',
+    'browser/accessibility/browser_accessibility_state_impl_win.cc',
     'browser/accessibility/browser_accessibility_state_impl.h',
     'browser/accessibility/browser_accessibility_win.cc',
     'browser/accessibility/browser_accessibility_win.h',
