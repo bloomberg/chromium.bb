@@ -332,6 +332,8 @@ class DownloadsTest(pyauto.PyUITest):
     # It might take a while for the download to kick in, hold on until then.
     self.assertTrue(self.WaitUntil(
         lambda: len(self.GetDownloadsInfo().Downloads()) == num_downloads + 1))
+    # Wait for Download Shelf to appear to reduce flakiness.
+    self.assertTrue(self.WaitUntil(self.IsDownloadShelfVisible))
 
   def testPauseAndResume(self):
     """Verify that pause and resume work while downloading a file.
