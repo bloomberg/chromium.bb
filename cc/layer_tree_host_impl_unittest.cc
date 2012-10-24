@@ -3837,9 +3837,9 @@ TEST_P(LayerTreeHostImplTest, surfaceTextureCaching)
         myHostImpl->didDrawAllLayers(frame);
     }
 
-    // Change opacity on the intermediate layer
+    // Change location of the intermediate layer
     WebTransformationMatrix transform = intermediateLayerPtr->transform();
-    transform.setM11(1.0001);
+    transform.setM41(1.0001);
     intermediateLayerPtr->setTransform(transform);
     {
         LayerTreeHostImpl::FrameData frame;
@@ -4000,9 +4000,9 @@ TEST_P(LayerTreeHostImplTest, surfaceTextureCachingNoPartialSwap)
         myHostImpl->didDrawAllLayers(frame);
     }
 
-    // Change opacity on the intermediate layer
+    // Change location of the intermediate layer
     WebTransformationMatrix transform = intermediateLayerPtr->transform();
-    transform.setM11(1.0001);
+    transform.setM41(1.0001);
     intermediateLayerPtr->setTransform(transform);
     {
         LayerTreeHostImpl::FrameData frame;

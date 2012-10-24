@@ -270,7 +270,7 @@ protected:
 
         DCHECK(!root->renderSurface());
 
-        LayerTreeHostCommon::calculateDrawTransforms(root, root->bounds(), 1, &layerSorter, dummyMaxTextureSize, m_renderSurfaceLayerListImpl);
+        LayerTreeHostCommon::calculateDrawTransforms(root, root->bounds(), 1, 1, &layerSorter, dummyMaxTextureSize, m_renderSurfaceLayerListImpl);
 
         m_layerIterator = m_layerIteratorBegin = Types::TestLayerIterator::begin(&m_renderSurfaceLayerListImpl);
     }
@@ -282,7 +282,7 @@ protected:
 
         DCHECK(!root->renderSurface());
 
-        LayerTreeHostCommon::calculateDrawTransforms(root, root->bounds(), 1, dummyMaxTextureSize, m_renderSurfaceLayerList);
+        LayerTreeHostCommon::calculateDrawTransforms(root, root->bounds(), 1, 1, dummyMaxTextureSize, m_renderSurfaceLayerList);
 
         m_layerIterator = m_layerIteratorBegin = Types::TestLayerIterator::begin(&m_renderSurfaceLayerList);
     }
@@ -2710,7 +2710,7 @@ protected:
 
         // Filters make the layers own surfaces.
         WebFilterOperations filters;
-        filters.append(WebFilterOperation::createBlurFilter(3));
+        filters.append(WebFilterOperation::createBlurFilter(1));
         filteredSurface1->setBackgroundFilters(filters);
         filteredSurface2->setBackgroundFilters(filters);
 
@@ -2726,7 +2726,7 @@ protected:
         this->visitLayer(occludingLayerAbove, occlusion);
         EXPECT_RECT_EQ(IntRect(100 / 2, 100 / 2, 50 / 2, 50 / 2), occlusion.occlusionInScreenSpace().bounds());
         EXPECT_EQ(1u, occlusion.occlusionInScreenSpace().rects().size());
-        EXPECT_RECT_EQ(IntRect(100, 100, 50, 50), occlusion.occlusionInTargetSurface().bounds());
+        EXPECT_RECT_EQ(IntRect(100 / 2, 100 / 2, 50 / 2, 50 / 2), occlusion.occlusionInTargetSurface().bounds());
         EXPECT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
 
         this->visitLayer(filteredSurface2, occlusion);
@@ -2738,16 +2738,10 @@ protected:
         ASSERT_EQ(1u, occlusion.occlusionInTargetSurface().rects().size());
 
         // Test expectations in the target.
-        IntRect expectedOcclusion = IntRect(100 + outsetRight * 2, 100 + outsetBottom * 2, 50 - (outsetLeft + outsetRight) * 2, 50 - (outsetTop + outsetBottom) * 2);
+        IntRect expectedOcclusion = IntRect(100 / 2 + outsetRight * 2, 100 / 2 + outsetBottom * 2, 50 / 2 - (outsetLeft + outsetRight) * 2, 50 / 2 - (outsetTop + outsetBottom) * 2);
         EXPECT_RECT_EQ(expectedOcclusion, occlusion.occlusionInTargetSurface().rects()[0]);
 
-        // Test expectations in the screen. Take the ceiling of half of the outsets.
-        outsetTop = (outsetTop + 1) / 2;
-        outsetRight = (outsetRight + 1) / 2;
-        outsetBottom = (outsetBottom + 1) / 2;
-        outsetLeft = (outsetLeft + 1) / 2;
-        expectedOcclusion = IntRect(100 / 2 + outsetRight * 2, 100 / 2 + outsetBottom * 2, 50 / 2 - (outsetLeft + outsetRight) * 2, 50 /2 - (outsetTop + outsetBottom) * 2);
-
+        // Test expectations in the screen are the same as in the target, as the render surface is 1:1 with the screen.
         EXPECT_RECT_EQ(expectedOcclusion, occlusion.occlusionInScreenSpace().rects()[0]);
     }
 };

@@ -495,14 +495,6 @@ void LayerTreeHost::updateLayers(TextureUpdateQueue& queue, size_t memoryAllocat
     updateLayers(rootLayer(), queue);
 }
 
-static void setScale(Layer* layer, float deviceScaleFactor, float pageScaleFactor)
-{
-    if (layer->boundsContainPageScale())
-        layer->setContentsScale(deviceScaleFactor);
-    else
-        layer->setContentsScale(deviceScaleFactor * pageScaleFactor);
-}
-
 static Layer* findFirstScrollableLayer(Layer* layer)
 {
     if (!layer)
@@ -520,28 +512,9 @@ static Layer* findFirstScrollableLayer(Layer* layer)
     return 0;
 }
 
-static void updateLayerScale(Layer* layer, float deviceScaleFactor, float pageScaleFactor)
-{
-    setScale(layer, deviceScaleFactor, pageScaleFactor);
-
-    Layer* maskLayer = layer->maskLayer();
-    if (maskLayer)
-        setScale(maskLayer, deviceScaleFactor, pageScaleFactor);
-
-    Layer* replicaMaskLayer = layer->replicaLayer() ? layer->replicaLayer()->maskLayer() : 0;
-    if (replicaMaskLayer)
-        setScale(replicaMaskLayer, deviceScaleFactor, pageScaleFactor);
-
-    const std::vector<scoped_refptr<Layer> >& children = layer->children();
-    for (unsigned int i = 0; i < children.size(); ++i)
-        updateLayerScale(children[i].get(), deviceScaleFactor, pageScaleFactor);
-}
-
 void LayerTreeHost::updateLayers(Layer* rootLayer, TextureUpdateQueue& queue)
 {
     TRACE_EVENT0("cc", "LayerTreeHost::updateLayers");
-
-    updateLayerScale(rootLayer, m_deviceScaleFactor, m_pageScaleFactor);
 
     LayerList updateList;
 
@@ -553,7 +526,7 @@ void LayerTreeHost::updateLayers(Layer* rootLayer, TextureUpdateQueue& queue)
         }
 
         TRACE_EVENT0("cc", "LayerTreeHost::updateLayers::calcDrawEtc");
-        LayerTreeHostCommon::calculateDrawTransforms(rootLayer, deviceViewportSize(), m_deviceScaleFactor, rendererCapabilities().maxTextureSize, updateList);
+        LayerTreeHostCommon::calculateDrawTransforms(rootLayer, deviceViewportSize(), m_deviceScaleFactor, m_pageScaleFactor, rendererCapabilities().maxTextureSize, updateList);
     }
 
     // Reset partial texture update requests.

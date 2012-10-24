@@ -22,8 +22,8 @@ class LayerTreeHostCommon {
 public:
     static IntRect calculateVisibleRect(const IntRect& targetSurfaceRect, const IntRect& layerBoundRect, const WebKit::WebTransformationMatrix&);
 
-    static void calculateDrawTransforms(Layer* rootLayer, const IntSize& deviceViewportSize, float deviceScaleFactor, int maxTextureSize, std::vector<scoped_refptr<Layer> >& renderSurfaceLayerList);
-    static void calculateDrawTransforms(LayerImpl* rootLayer, const IntSize& deviceViewportSize, float deviceScaleFactor, LayerSorter*, int maxTextureSize, std::vector<LayerImpl*>& renderSurfaceLayerList);
+    static void calculateDrawTransforms(Layer* rootLayer, const IntSize& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, int maxTextureSize, std::vector<scoped_refptr<Layer> >& renderSurfaceLayerList);
+    static void calculateDrawTransforms(LayerImpl* rootLayer, const IntSize& deviceViewportSize, float deviceScaleFactor, float pageScaleFactor, LayerSorter*, int maxTextureSize, std::vector<LayerImpl*>& renderSurfaceLayerList);
 
     // Performs hit testing for a given renderSurfaceLayerList.
     static LayerImpl* findLayerThatIsHitByPoint(const IntPoint& screenSpacePoint, std::vector<LayerImpl*>& renderSurfaceLayerList);

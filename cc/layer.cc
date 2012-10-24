@@ -65,6 +65,8 @@ Layer::Layer()
     , m_drawTransformIsAnimating(false)
     , m_screenSpaceTransformIsAnimating(false)
     , m_contentsScale(1.0)
+    , m_rasterScale(1.0)
+    , m_automaticallyComputeRasterScale(false)
     , m_boundsContainPageScale(false)
     , m_layerAnimationDelegate(0)
     , m_layerScrollClient(0)
@@ -132,6 +134,8 @@ void Layer::setParent(Layer* layer)
     DCHECK(!layer || !layer->hasAncestor(this));
     m_parent = layer;
     setLayerTreeHost(m_parent ? m_parent->layerTreeHost() : 0);
+
+    forceAutomaticRasterScaleToBeRecomputed();
 }
 
 bool Layer::hasAncestor(Layer* ancestor) const
@@ -654,6 +658,37 @@ void Layer::setContentsScale(float contentsScale)
         return;
     m_contentsScale = contentsScale;
 
+    setNeedsDisplay();
+}
+
+void Layer::setRasterScale(float scale)
+{
+    if (m_rasterScale == scale)
+        return;
+    m_rasterScale = scale;
+
+    if (!m_automaticallyComputeRasterScale)
+        return;
+    setNeedsDisplay();
+}
+
+void Layer::setAutomaticallyComputeRasterScale(bool automatic)
+{
+    if (m_automaticallyComputeRasterScale == automatic)
+        return;
+    m_automaticallyComputeRasterScale = automatic;
+
+    if (m_automaticallyComputeRasterScale)
+        forceAutomaticRasterScaleToBeRecomputed();
+    else
+        setRasterScale(1);
+}
+
+void Layer::forceAutomaticRasterScaleToBeRecomputed()
+{
+    if (!m_automaticallyComputeRasterScale)
+        return;
+    m_rasterScale = 0;
     setNeedsDisplay();
 }
 

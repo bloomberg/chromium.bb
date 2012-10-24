@@ -34,7 +34,7 @@ void executeCalculateDrawTransformsAndVisibility(LayerImpl* root, std::vector<La
     ASSERT_TRUE(root->renderSurface());
     ASSERT_FALSE(renderSurfaceLayerList.size());
 
-    LayerTreeHostCommon::calculateDrawTransforms(root, root->bounds(), 1, &layerSorter, dummyMaxTextureSize, renderSurfaceLayerList);
+    LayerTreeHostCommon::calculateDrawTransforms(root, root->bounds(), 1, 1, &layerSorter, dummyMaxTextureSize, renderSurfaceLayerList);
 }
 
 void clearDamageForAllSurfaces(LayerImpl* layer)

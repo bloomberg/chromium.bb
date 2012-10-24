@@ -35,6 +35,7 @@ public:
     virtual bool boundsContainPageScale() const OVERRIDE;
     virtual void setUseLCDText(bool)  OVERRIDE;
     virtual void setDrawCheckerboardForMissingTiles(bool)  OVERRIDE;
+    virtual void setAutomaticallyComputeRasterScale(bool);
 
 protected:
     virtual ~WebContentLayerImpl();

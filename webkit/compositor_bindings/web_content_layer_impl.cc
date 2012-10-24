@@ -57,6 +57,11 @@ bool WebContentLayerImpl::boundsContainPageScale() const
     return m_layer->layer()->boundsContainPageScale();
 }
 
+void WebContentLayerImpl::setAutomaticallyComputeRasterScale(bool automatic)
+{
+  m_layer->layer()->setAutomaticallyComputeRasterScale(automatic);
+}
+
 void WebContentLayerImpl::setUseLCDText(bool enable)
 {
     m_layer->layer()->setUseLCDText(enable);
