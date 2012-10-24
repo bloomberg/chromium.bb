@@ -23,9 +23,6 @@ class ChromeBrowserFieldTrials {
   FRIEND_TEST_ALL_PREFIXES(BrowserMainTest, WarmConnectionFieldTrial_Random);
   FRIEND_TEST_ALL_PREFIXES(BrowserMainTest, WarmConnectionFieldTrial_Invalid);
 
-  // A/B test for the maximum number of persistent connections per host.
-  void ConnectionFieldTrial();
-
   // A/B test for determining a value for unused socket timeout.
   void SocketTimeoutFieldTrial();
 

@@ -105,9 +105,6 @@ ChromeBrowserFieldTrials::~ChromeBrowserFieldTrials() {
 }
 
 void ChromeBrowserFieldTrials::SetupFieldTrials(bool proxy_policy_is_set) {
-  // Note: make sure to call ConnectionFieldTrial() before
-  // ProxyConnectionsFieldTrial().
-  ConnectionFieldTrial();
   SocketTimeoutFieldTrial();
   // If a policy is defining the number of active connections this field test
   // shoud not be performed.
@@ -129,57 +126,6 @@ void ChromeBrowserFieldTrials::SetupFieldTrials(bool proxy_policy_is_set) {
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   OneClickSigninHelper::InitializeFieldTrial();
 #endif
-}
-
-// This is an A/B test for the maximum number of persistent connections per
-// host. Currently Chrome, Firefox, and IE8 have this value set at 6. Safari
-// uses 4, and Fasterfox (a plugin for Firefox that supposedly configures it to
-// run faster) uses 8. We would like to see how much of an effect this value has
-// on browsing. Too large a value might cause us to run into SYN flood detection
-// mechanisms.
-void ChromeBrowserFieldTrials::ConnectionFieldTrial() {
-  const base::FieldTrial::Probability kConnectDivisor = 100;
-  const base::FieldTrial::Probability kConnectProbability = 1;  // 1% prob.
-
-  // This (6) is the current default value. Having this group declared here
-  // makes it straightforward to modify |kConnectProbability| such that the same
-  // probability value will be assigned to all the other groups, while
-  // preserving the remainder of the of probability space to the default value.
-  int connect_6 = -1;
-
-  // After June 30, 2011 builds, it will always be in default group.
-  scoped_refptr<base::FieldTrial> connect_trial(
-      base::FieldTrialList::FactoryGetFieldTrial(
-          "ConnCountImpact", kConnectDivisor, "conn_count_6", 2011, 6, 30,
-          &connect_6));
-
-  const int connect_5 = connect_trial->AppendGroup("conn_count_5",
-                                                   kConnectProbability);
-  const int connect_7 = connect_trial->AppendGroup("conn_count_7",
-                                                   kConnectProbability);
-  const int connect_8 = connect_trial->AppendGroup("conn_count_8",
-                                                   kConnectProbability);
-  const int connect_9 = connect_trial->AppendGroup("conn_count_9",
-                                                   kConnectProbability);
-
-  const int connect_trial_group = connect_trial->group();
-
-  int max_sockets = 0;
-  if (connect_trial_group == connect_5) {
-    max_sockets = 5;
-  } else if (connect_trial_group == connect_6) {
-    max_sockets = 6;
-  } else if (connect_trial_group == connect_7) {
-    max_sockets = 7;
-  } else if (connect_trial_group == connect_8) {
-    max_sockets = 8;
-  } else if (connect_trial_group == connect_9) {
-    max_sockets = 9;
-  } else {
-    NOTREACHED();
-  }
-  net::ClientSocketPoolManager::set_max_sockets_per_group(
-      net::HttpNetworkSession::NORMAL_SOCKET_POOL, max_sockets);
 }
 
 // A/B test for determining a value for unused socket timeout. Currently the
