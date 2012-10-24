@@ -141,6 +141,7 @@ extern const char kEnableConnectBackupJobs[];
 extern const char kEnableContacts[];
 extern const char kEnableCrxlessWebApps[];
 extern const char kEnableDevToolsExperiments[];
+extern const char kEnableDriveV2Api[];
 extern const char kEasyOffStoreExtensionInstall[];
 extern const char kEnableExperimentalExtensionApis[];
 extern const char kEnableExtensionActivityLogging[];

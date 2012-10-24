@@ -490,6 +490,9 @@ const char kEnableCrxlessWebApps[]          = "enable-crxless-web-apps";
 // If true devtools experimental settings are enabled.
 const char kEnableDevToolsExperiments[]     = "enable-devtools-experiments";
 
+// Enables Drive v2 API instead of Google Documents List API.
+const char kEnableDriveV2Api[]              = "enable-drive-v2-api";
+
 // Enables extensions to be easily installed from sites other than the web
 // store. Without this flag, they can still be installed, but must be manually
 // dragged onto chrome://extensions/.
