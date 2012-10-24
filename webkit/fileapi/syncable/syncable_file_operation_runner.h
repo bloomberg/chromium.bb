@@ -14,18 +14,19 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "webkit/fileapi/file_system_url.h"
+#include "webkit/fileapi/syncable/local_file_sync_status.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace fileapi {
 
 class FileSystemURL;
-class LocalFileSyncStatus;
 
 // This class must run only on IO thread.
 // Owned by LocalFileSyncContext.
 class WEBKIT_STORAGE_EXPORT SyncableFileOperationRunner
     : public base::NonThreadSafe,
-      public base::SupportsWeakPtr<SyncableFileOperationRunner> {
+      public base::SupportsWeakPtr<SyncableFileOperationRunner>,
+      public LocalFileSyncStatus::Observer {
  public:
   // Represents an operation task (which usually wraps one FileSystemOperation).
   class Task {
@@ -50,15 +51,20 @@ class WEBKIT_STORAGE_EXPORT SyncableFileOperationRunner
     DISALLOW_COPY_AND_ASSIGN(Task);
   };
 
-  SyncableFileOperationRunner();
-  ~SyncableFileOperationRunner();
+  SyncableFileOperationRunner(int64 max_inflight_tasks,
+                              LocalFileSyncStatus* sync_status);
+  virtual ~SyncableFileOperationRunner();
+
+  // LocalFileSyncStatus::Observer overrides.
+  virtual void OnSyncEnabled(const FileSystemURL& url) OVERRIDE;
+  virtual void OnWriteEnabled(const FileSystemURL& url) OVERRIDE;
 
   // Runs the given |task| if no sync operation is running on any of
-  // its target_paths(). This also runs pending operations that have become
+  // its target_paths(). This also runs pending tasks that have become
   // runnable (before running the given operation).
-  // If there're ongoing sync operations on the target_paths this method
+  // If there're ongoing sync tasks on the target_paths this method
   // just queues up the |task|.
-  // Pending operations are cancelled when this class is destructed.
+  // Pending tasks are cancelled when this class is destructed.
   void PostOperationTask(scoped_ptr<Task> task);
 
   // Runs a next runnable task (if there's any).
@@ -68,14 +74,25 @@ class WEBKIT_STORAGE_EXPORT SyncableFileOperationRunner
   // writable and may start a next runnable task.
   void OnOperationCompleted(const std::vector<FileSystemURL>& target_paths);
 
-  // For syncable file systems.
-  LocalFileSyncStatus* sync_status() const { return sync_status_.get(); }
+  LocalFileSyncStatus* sync_status() const { return sync_status_; }
+
+  int64 num_pending_tasks() const {
+    return static_cast<int64>(pending_tasks_.size());
+  }
+
+  int64 num_inflight_tasks() const { return num_inflight_tasks_; }
 
  private:
-  // Keeps track of the writing/syncing status.
-  scoped_ptr<LocalFileSyncStatus> sync_status_;
+  // Returns true if we should start more tasks.
+  bool ShouldStartMoreTasks() const;
 
-  std::list<Task*> pending_operations_;
+  // Keeps track of the writing/syncing status. Not owned.
+  LocalFileSyncStatus* sync_status_;
+
+  std::list<Task*> pending_tasks_;
+
+  const int64 max_inflight_tasks_;
+  int64 num_inflight_tasks_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncableFileOperationRunner);
 };
