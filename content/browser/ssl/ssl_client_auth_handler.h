@@ -18,13 +18,15 @@ class URLRequest;
 class X509Certificate;
 }  // namespace net
 
+namespace content {
+
 // This class handles the approval and selection of a certificate for SSL client
 // authentication by the user.
 // It is self-owned and deletes itself when the UI reports the user selection or
 // when the net::URLRequest is cancelled.
 class CONTENT_EXPORT SSLClientAuthHandler
     : public base::RefCountedThreadSafe<
-          SSLClientAuthHandler, content::BrowserThread::DeleteOnIOThread> {
+          SSLClientAuthHandler, BrowserThread::DeleteOnIOThread> {
  public:
   SSLClientAuthHandler(net::URLRequest* request,
                        net::SSLCertRequestInfo* cert_request_info);
@@ -47,8 +49,8 @@ class CONTENT_EXPORT SSLClientAuthHandler
 
  private:
   friend class base::RefCountedThreadSafe<
-      SSLClientAuthHandler, content::BrowserThread::DeleteOnIOThread>;
-  friend class content::BrowserThread;
+      SSLClientAuthHandler, BrowserThread::DeleteOnIOThread>;
+  friend class BrowserThread;
   friend class base::DeleteHelper<SSLClientAuthHandler>;
 
   // Notifies that the user has selected a cert.
@@ -70,5 +72,7 @@ class CONTENT_EXPORT SSLClientAuthHandler
 
   DISALLOW_COPY_AND_ASSIGN(SSLClientAuthHandler);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_SSL_SSL_CLIENT_AUTH_HANDLER_H_

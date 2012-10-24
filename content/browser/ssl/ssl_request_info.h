@@ -12,6 +12,8 @@
 #include "net/base/cert_status_flags.h"
 #include "webkit/glue/resource_type.h"
 
+namespace content {
+
 // SSLRequestInfo wraps up the information SSLPolicy needs about a request in
 // order to update our security IU.  SSLRequestInfo is RefCounted in case we
 // need to deal with the request asynchronously.
@@ -42,5 +44,7 @@ class SSLRequestInfo : public base::RefCounted<SSLRequestInfo> {
 
   DISALLOW_COPY_AND_ASSIGN(SSLRequestInfo);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_SSL_SSL_REQUEST_INFO_H_

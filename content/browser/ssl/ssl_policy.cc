@@ -23,21 +23,19 @@
 #include "net/base/ssl_info.h"
 #include "webkit/glue/resource_type.h"
 
-using content::NavigationEntryImpl;
-using content::SiteInstance;
-using content::SSLStatus;
-using content::WebContentsImpl;
 
 namespace {
 
-static const char kDot = '.';
+const char kDot = '.';
 
-static bool IsIntranetHost(const std::string& host) {
+bool IsIntranetHost(const std::string& host) {
   const size_t dot = host.find(kDot);
   return dot == std::string::npos || dot == host.length() - 1;
 }
 
 }  // namespace
+
+namespace content {
 
 SSLPolicy::SSLPolicy(SSLPolicyBackend* backend)
     : backend_(backend) {
@@ -123,7 +121,7 @@ void SSLPolicy::UpdateEntry(NavigationEntryImpl* entry,
   // happens, use the unauthenticated (HTTP) rather than the authentication
   // broken security style so that we can detect this error condition.
   if (!entry->GetSSL().cert_id) {
-    entry->GetSSL().security_style = content::SECURITY_STYLE_UNAUTHENTICATED;
+    entry->GetSSL().security_style = SECURITY_STYLE_UNAUTHENTICATED;
     return;
   }
 
@@ -140,7 +138,7 @@ void SSLPolicy::UpdateEntry(NavigationEntryImpl* entry,
     // SECURITY_STYLE_AUTHENTICATION_BROKEN.
     if (!net::IsCertStatusMinorError(entry->GetSSL().cert_status)) {
       entry->GetSSL().security_style =
-          content::SECURITY_STYLE_AUTHENTICATION_BROKEN;
+          SECURITY_STYLE_AUTHENTICATION_BROKEN;
     }
     return;
   }
@@ -153,7 +151,7 @@ void SSLPolicy::UpdateEntry(NavigationEntryImpl* entry,
       backend_->DidHostRunInsecureContent(
           entry->GetURL().host(), site_instance->GetProcess()->GetID())) {
     entry->GetSSL().security_style =
-        content::SECURITY_STYLE_AUTHENTICATION_BROKEN;
+        SECURITY_STYLE_AUTHENTICATION_BROKEN;
     entry->GetSSL().content_status |= SSLStatus::RAN_INSECURE_CONTENT;
     return;
   }
@@ -206,7 +204,7 @@ void SSLPolicy::OnCertErrorInternal(SSLCertErrorHandler* handler,
   }
 
   bool cancel_request = false;
-  content::GetContentClient()->browser()->AllowCertificateError(
+  GetContentClient()->browser()->AllowCertificateError(
       handler->render_process_id(),
       handler->render_view_id(),
       handler->cert_error(),
@@ -222,12 +220,11 @@ void SSLPolicy::OnCertErrorInternal(SSLCertErrorHandler* handler,
 }
 
 void SSLPolicy::InitializeEntryIfNeeded(NavigationEntryImpl* entry) {
-  if (entry->GetSSL().security_style != content::SECURITY_STYLE_UNKNOWN)
+  if (entry->GetSSL().security_style != SECURITY_STYLE_UNKNOWN)
     return;
 
   entry->GetSSL().security_style = entry->GetURL().SchemeIsSecure() ?
-      content::SECURITY_STYLE_AUTHENTICATED :
-      content::SECURITY_STYLE_UNAUTHENTICATED;
+      SECURITY_STYLE_AUTHENTICATED : SECURITY_STYLE_UNAUTHENTICATED;
 }
 
 void SSLPolicy::OriginRanInsecureContent(const std::string& origin, int pid) {
@@ -235,3 +232,5 @@ void SSLPolicy::OriginRanInsecureContent(const std::string& origin, int pid) {
   if (parsed_origin.SchemeIsSecure())
     backend_->HostRanInsecureContent(parsed_origin.host(), pid);
 }
+
+}  // namespace content

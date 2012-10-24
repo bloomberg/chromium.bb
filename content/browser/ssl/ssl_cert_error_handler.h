@@ -11,6 +11,8 @@
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "net/base/ssl_info.h"
 
+namespace content {
+
 // A CertError represents an error that occurred with the certificate in an
 // SSL session.  A CertError object exists both on the IO thread and on the UI
 // thread and allows us to cancel/continue a request it is associated with.
@@ -18,7 +20,7 @@ class SSLCertErrorHandler : public SSLErrorHandler {
  public:
   // Construct on the IO thread.
   SSLCertErrorHandler(const base::WeakPtr<Delegate>& delegate,
-                      const content::GlobalRequestID& id,
+                      const GlobalRequestID& id,
                       ResourceType::Type resource_type,
                       const GURL& url,
                       int render_process_id,
@@ -49,5 +51,7 @@ class SSLCertErrorHandler : public SSLErrorHandler {
 
   DISALLOW_COPY_AND_ASSIGN(SSLCertErrorHandler);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_SSL_SSL_CERT_ERROR_HANDLER_H_

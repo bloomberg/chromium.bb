@@ -12,15 +12,13 @@
 #include "base/string16.h"
 #include "net/base/x509_certificate.h"
 
-class SSLHostState;
-
 namespace content {
 class NavigationControllerImpl;
-}
+class SSLHostState;
 
 class SSLPolicyBackend {
  public:
-  explicit SSLPolicyBackend(content::NavigationControllerImpl* controller);
+  explicit SSLPolicyBackend(NavigationControllerImpl* controller);
 
   // Records that a host has run insecure content.
   void HostRanInsecureContent(const std::string& host, int pid);
@@ -42,9 +40,11 @@ class SSLPolicyBackend {
   // SSL state specific for each host.
   SSLHostState* ssl_host_state_;
 
-  content::NavigationControllerImpl* controller_;
+  NavigationControllerImpl* controller_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLPolicyBackend);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_SSL_SSL_POLICY_BACKEND_H_

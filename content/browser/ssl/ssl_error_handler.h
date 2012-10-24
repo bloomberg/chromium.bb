@@ -15,17 +15,16 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/resource_type.h"
 
-class SSLCertErrorHandler;
-class SSLManager;
-
-namespace content {
-class ResourceDispatcherHostImpl;
-}
-
 namespace net {
 class SSLInfo;
 class URLRequest;
 }  // namespace net
+
+namespace content {
+
+class ResourceDispatcherHostImpl;
+class SSLCertErrorHandler;
+class SSLManager;
 
 // An SSLErrorHandler carries information from the IO thread to the UI thread
 // and is dispatched to the appropriate SSLManager when it arrives on the
@@ -52,13 +51,13 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
    public:
     // Called when SSLErrorHandler decides to cancel the request because of
     // the SSL error.
-    virtual void CancelSSLRequest(const content::GlobalRequestID& id,
+    virtual void CancelSSLRequest(const GlobalRequestID& id,
                                   int error,
                                   const net::SSLInfo* ssl_info) = 0;
 
     // Called when SSLErrorHandler decides to continue the request despite the
     // SSL error.
-    virtual void ContinueSSLRequest(const content::GlobalRequestID& id) = 0;
+    virtual void ContinueSSLRequest(const GlobalRequestID& id) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -109,7 +108,7 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
 
   // Construct on the IO thread.
   SSLErrorHandler(const base::WeakPtr<Delegate>& delegate,
-                  const content::GlobalRequestID& id,
+                  const GlobalRequestID& id,
                   ResourceType::Type resource_type,
                   const GURL& url,
                   int render_process_id,
@@ -128,7 +127,7 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
 
   // The id of the request associated with this object.
   // Should only be accessed from the IO thread.
-  content::GlobalRequestID request_id_;
+  GlobalRequestID request_id_;
 
   // The delegate we are associated with.
   base::WeakPtr<Delegate> delegate_;
@@ -167,5 +166,7 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
 
   DISALLOW_COPY_AND_ASSIGN(SSLErrorHandler);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_SSL_SSL_ERROR_HANDLER_H_

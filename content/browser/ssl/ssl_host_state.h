@@ -19,7 +19,6 @@
 
 namespace content {
 class BrowserContext;
-}
 
 // SSLHostState
 //
@@ -33,7 +32,7 @@ class CONTENT_EXPORT SSLHostState
     : NON_EXPORTED_BASE(base::SupportsUserData::Data),
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
-  static SSLHostState* GetFor(content::BrowserContext* browser_context);
+  static SSLHostState* GetFor(BrowserContext* browser_context);
 
   SSLHostState();
   virtual ~SSLHostState();
@@ -72,5 +71,7 @@ class CONTENT_EXPORT SSLHostState
 
   DISALLOW_COPY_AND_ASSIGN(SSLHostState);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_SSL_SSL_HOST_STATE_H_

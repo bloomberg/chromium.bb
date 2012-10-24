@@ -8,9 +8,11 @@
 #include "base/lazy_instance.h"
 #include "content/public/browser/browser_context.h"
 
-static const char* kKeyName = "content_ssl_host_state";
+const char kKeyName[] = "content_ssl_host_state";
 
-SSLHostState* SSLHostState::GetFor(content::BrowserContext* context) {
+namespace content {
+
+SSLHostState* SSLHostState::GetFor(BrowserContext* context) {
   SSLHostState* rv = static_cast<SSLHostState*>(context->GetUserData(kKeyName));
   if (!rv) {
     rv = new SSLHostState();
@@ -62,3 +64,5 @@ net::CertPolicy::Judgment SSLHostState::QueryPolicy(
 
   return cert_policy_for_host_[host].Check(cert);
 }
+
+}  // namespace content

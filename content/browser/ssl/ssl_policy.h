@@ -10,14 +10,12 @@
 #include "base/memory/ref_counted.h"
 #include "webkit/glue/resource_type.h"
 
+namespace content {
+class NavigationEntryImpl;
 class SSLCertErrorHandler;
 class SSLPolicyBackend;
 class SSLRequestInfo;
-
-namespace content {
-class NavigationEntryImpl;
 class WebContentsImpl;
-}
 
 // SSLPolicy
 //
@@ -32,7 +30,7 @@ class SSLPolicy {
   // An error occurred with the certificate in an SSL connection.
   void OnCertError(SSLCertErrorHandler* handler);
 
-  void DidRunInsecureContent(content::NavigationEntryImpl* entry,
+  void DidRunInsecureContent(NavigationEntryImpl* entry,
                              const std::string& security_origin);
 
   // We have started a resource request with the given info.
@@ -40,8 +38,8 @@ class SSLPolicy {
 
   // Update the SSL information in |entry| to match the current state.
   // |web_contents| is the WebContentsImpl associated with this entry.
-  void UpdateEntry(content::NavigationEntryImpl* entry,
-                   content::WebContentsImpl* web_contents);
+  void UpdateEntry(NavigationEntryImpl* entry,
+                   WebContentsImpl* web_contents);
 
   SSLPolicyBackend* backend() const { return backend_; }
 
@@ -63,7 +61,7 @@ class SSLPolicy {
 
   // If the security style of |entry| has not been initialized, then initialize
   // it with the default style for its URL.
-  void InitializeEntryIfNeeded(content::NavigationEntryImpl* entry);
+  void InitializeEntryIfNeeded(NavigationEntryImpl* entry);
 
   // Mark |origin| as having run insecure content in the process with ID |pid|.
   void OriginRanInsecureContent(const std::string& origin, int pid);
@@ -73,5 +71,7 @@ class SSLPolicy {
 
   DISALLOW_COPY_AND_ASSIGN(SSLPolicy);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_SSL_SSL_POLICY_H_

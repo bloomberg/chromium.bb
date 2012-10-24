@@ -14,14 +14,12 @@
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
 
-using content::BrowserThread;
-using content::NavigationControllerImpl;
-using content::RenderViewHostImpl;
-using content::WebContents;
 using net::SSLInfo;
 
+namespace content {
+
 SSLErrorHandler::SSLErrorHandler(const base::WeakPtr<Delegate>& delegate,
-                                 const content::GlobalRequestID& id,
+                                 const GlobalRequestID& id,
                                  ResourceType::Type resource_type,
                                  const GURL& url,
                                  int render_process_id,
@@ -176,3 +174,5 @@ void SSLErrorHandler::CompleteTakeNoAction() {
   // We're done with this object on the IO thread.
   Release();
 }
+
+}  // namespace content

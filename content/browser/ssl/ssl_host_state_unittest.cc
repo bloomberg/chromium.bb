@@ -88,6 +88,8 @@ unsigned char google_der[] = {
 
 }  // namespace
 
+namespace content {
+
 class SSLHostStateTest : public testing::Test {
 };
 
@@ -160,5 +162,6 @@ TEST_F(SSLHostStateTest, QueryPolicy) {
             net::CertPolicy::UNKNOWN);
   EXPECT_EQ(state.QueryPolicy(google_cert.get(), "example.com"),
             net::CertPolicy::UNKNOWN);
-
 }
+
+}  // namespace content
