@@ -415,12 +415,23 @@ bool ChromeDownloadManagerDelegate::ShouldOpenWithWebIntents(
 
   // If QuickOffice extension is installed, use web intents to handle the
   // downloaded file.
-  const char* kQuickOfficeExtensionId = "gbkeegbaiigmenfmjfclcdgdpimamgkj";
+  const char kQuickOfficeExtensionId[] = "gbkeegbaiigmenfmjfclcdgdpimamgkj";
+  const char kQuickOfficeDevExtensionId[] = "ionpfmkccalenbmnddpbmocokhaknphg";
   ExtensionServiceInterface* extension_service =
       profile_->GetExtensionService();
+
+  bool use_quickoffice = false;
   if (extension_service &&
       extension_service->GetInstalledExtension(kQuickOfficeExtensionId) &&
-      extension_service->IsExtensionEnabled(kQuickOfficeExtensionId)) {
+      extension_service->IsExtensionEnabled(kQuickOfficeExtensionId))
+    use_quickoffice = true;
+
+  if (extension_service &&
+      extension_service->GetInstalledExtension(kQuickOfficeDevExtensionId) &&
+      extension_service->IsExtensionEnabled(kQuickOfficeDevExtensionId))
+    use_quickoffice = true;
+
+  if (use_quickoffice) {
     if (mime_type == "application/msword" ||
         mime_type == "application/vnd.ms-powerpoint" ||
         mime_type == "application/vnd.ms-excel" ||

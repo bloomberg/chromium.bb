@@ -30,6 +30,8 @@ class MockExtensionService: public TestExtensionService {
   MOCK_CONST_METHOD0(extensions, const ExtensionSet*());
   MOCK_CONST_METHOD2(GetExtensionById,
                      const Extension*(const std::string&, bool));
+  MOCK_CONST_METHOD1(GetInstalledExtension,
+                     const Extension*(const std::string& id));
 };
 
 namespace {
@@ -572,6 +574,10 @@ TEST_F(WebIntentsRegistryTest, TestGetAllDefaultIntentServices) {
 }
 
 TEST_F(WebIntentsRegistryTest, TestGetDefaults) {
+  // Ignore QO-default related calls.
+  EXPECT_CALL(extension_service_, GetInstalledExtension(testing::_)).
+      WillRepeatedly(testing::ReturnNull());
+
   DefaultWebIntentService default_service;
   default_service.action = ASCIIToUTF16("share");
   default_service.type = ASCIIToUTF16("text/*");

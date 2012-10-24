@@ -303,16 +303,33 @@ void WebIntentsRegistry::OnWebIntentsDefaultsResultReceived(
     }
   }
 
+  // If QuickOffice is the default for this, recompute defaults.
+  if (default_service.service_url
+      == web_intents::kQuickOfficeViewerServiceURL ||
+      default_service.service_url
+      == web_intents::kQuickOfficeViewerDevServiceURL) {
+    default_service.user_date = -1;
+  }
+
   // TODO(hshi): Temporary workaround for http://crbug.com/134197.
   // If no user-set default service is found, use built-in QuickOffice Viewer as
   // default for MS office files. Remove this once full defaults is in place.
+
   if (default_service.user_date <= 0) {
+    const char kQuickOfficeDevExtensionId[] =
+        "ionpfmkccalenbmnddpbmocokhaknphg";
+    std::string service_url = web_intents::kQuickOfficeViewerServiceURL;
+    if (extension_service_->GetInstalledExtension(kQuickOfficeDevExtensionId) &&
+        extension_service_->IsExtensionEnabled(kQuickOfficeDevExtensionId)) {
+        service_url = web_intents::kQuickOfficeViewerDevServiceURL;
+    }
+
     for (size_t i = 0; i < sizeof(kQuickOfficeViewerMimeType) / sizeof(char*);
          ++i) {
       DefaultWebIntentService qoviewer_service;
       qoviewer_service.action = ASCIIToUTF16(web_intents::kActionView);
       qoviewer_service.type = ASCIIToUTF16(kQuickOfficeViewerMimeType[i]);
-      qoviewer_service.service_url = web_intents::kQuickOfficeViewerServiceURL;
+      qoviewer_service.service_url = service_url;
       if (WebIntentsTypesMatch(qoviewer_service.type, params.type_)) {
         default_service = qoviewer_service;
         break;
