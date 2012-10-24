@@ -336,7 +336,7 @@ long mkvparser::ParseElementHeader(
 
     id = ReadUInt(pReader, pos, len);
 
-    if (id <= 0)
+    if (id < 0)
         return E_FILE_FORMAT_INVALID;
 
     pos += len;  //consume id
@@ -692,6 +692,7 @@ Segment::Segment(
     m_pInfo(NULL),
     m_pTracks(NULL),
     m_pCues(NULL),
+    m_pChapters(NULL),
     m_clusters(NULL),
     m_clusterCount(0),
     m_clusterPreloadCount(0),
@@ -720,6 +721,7 @@ Segment::~Segment()
     delete m_pTracks;
     delete m_pInfo;
     delete m_pCues;
+    delete m_pChapters;
     delete m_pSeekHead;
 }
 
@@ -1020,6 +1022,26 @@ long long Segment::ParseHeaders()
 
                 if (status)
                     return status;
+            }
+        }
+        else if (id == 0x0043A770)  //Chapters ID
+        {
+            if (m_pChapters == NULL)
+            {
+                m_pChapters = new (std::nothrow) Chapters(
+                                this,
+                                pos,
+                                size,
+                                element_start,
+                                element_size);
+
+                if (m_pChapters == NULL)
+                  return -1;
+
+                const long status = m_pChapters->Parse();
+
+                if (status)
+                  return status;
             }
         }
 
@@ -3291,10 +3313,6 @@ const Cluster* Segment::GetNext(const Cluster* pCurr)
 
     assert(m_clusterPreloadCount > 0);
 
-    //const long long off_ = pCurr->m_pos;
-    //const long long off = off_ * ((off_ < 0) ? -1 : 1);
-    //long long pos = m_start + off;
-
     long long pos = pCurr->m_element_start;
 
     assert(m_size >= 0);  //TODO
@@ -3330,8 +3348,6 @@ const Cluster* Segment::GetNext(const Cluster* pCurr)
     }
 
     long long off_next = 0;
-    //long long element_start_next = 0;
-    long long element_size_next = 0;
 
     while (pos < stop)
     {
@@ -3359,8 +3375,6 @@ const Cluster* Segment::GetNext(const Cluster* pCurr)
         pos += len;  //consume length of size of element
         assert((pos + size) <= stop);  //TODO
 
-        const long long element_size = size + pos - idpos;
-
         //Pos now points to start of payload
 
         if (size == 0)  //weird
@@ -3384,8 +3398,6 @@ const Cluster* Segment::GetNext(const Cluster* pCurr)
             if (status > 0)
             {
                 off_next = off_next_;
-                //element_start_next = idpos;
-                element_size_next = element_size;
                 break;
             }
         }
@@ -3435,7 +3447,6 @@ const Cluster* Segment::GetNext(const Cluster* pCurr)
     Cluster* const pNext = Cluster::Create(this,
                                           -1,
                                           off_next);
-                                          //element_size_next);
     assert(pNext);
 
     const ptrdiff_t idx_next = i - m_clusters;  //insertion position
@@ -4208,6 +4219,12 @@ const Cues* Segment::GetCues() const
 }
 
 
+const Chapters* Segment::GetChapters() const
+{
+  return m_pChapters;
+}
+
+
 const SeekHead* Segment::GetSeekHead() const
 {
     return m_pSeekHead;
@@ -4218,6 +4235,515 @@ long long Segment::GetDuration() const
 {
     assert(m_pInfo);
     return m_pInfo->GetDuration();
+}
+
+
+Chapters::Chapters(
+    Segment* pSegment,
+    long long payload_start,
+    long long payload_size,
+    long long element_start,
+    long long element_size) :
+    m_pSegment(pSegment),
+    m_start(payload_start),
+    m_size(payload_size),
+    m_element_start(element_start),
+    m_element_size(element_size),
+    m_editions(NULL),
+    m_editions_size(0),
+    m_editions_count(0)
+{
+}
+
+
+Chapters::~Chapters()
+{
+    while (m_editions_count > 0)
+    {
+        Edition& e = m_editions[--m_editions_count];
+        e.Clear();
+    }
+}
+
+
+long Chapters::Parse()
+{
+    IMkvReader* const pReader = m_pSegment->m_pReader;
+
+    long long pos = m_start;  // payload start
+    const long long stop = pos + m_size;  // payload stop
+
+    while (pos < stop)
+    {
+        long long id, size;
+
+        long status = ParseElementHeader(
+                        pReader,
+                        pos,
+                        stop,
+                        id,
+                        size);
+
+        if (status < 0)  // error
+            return status;
+
+        if (size == 0)  // weird
+            continue;
+
+        if (id == 0x05B9)  // EditionEntry ID
+        {
+            status = ParseEdition(pos, size);
+
+            if (status < 0)  // error
+                return status;
+        }
+
+        pos += size;
+        assert(pos <= stop);
+    }
+
+    assert(pos == stop);
+    return 0;
+}
+
+
+int Chapters::GetEditionCount() const
+{
+    return m_editions_count;
+}
+
+
+const Chapters::Edition* Chapters::GetEdition(int idx) const
+{
+    if (idx < 0)
+        return NULL;
+
+    if (idx >= m_editions_count)
+        return NULL;
+
+    return m_editions + idx;
+}
+
+
+bool Chapters::ExpandEditionsArray()
+{
+    if (m_editions_size > m_editions_count)
+        return true;  // nothing else to do
+
+    const int size = (m_editions_size == 0) ? 1 : 2 * m_editions_size;
+
+    Edition* const editions = new (std::nothrow) Edition[size];
+
+    if (editions == NULL)
+        return false;
+
+    for (int idx = 0; idx < m_editions_count; ++idx)
+    {
+        m_editions[idx].ShallowCopy(editions[idx]);
+    }
+
+    delete[] m_editions;
+    m_editions = editions;
+
+    m_editions_size = size;
+    return true;
+}
+
+
+long Chapters::ParseEdition(
+    long long pos,
+    long long size)
+{
+    if (!ExpandEditionsArray())
+        return -1;
+
+    Edition& e = m_editions[m_editions_count++];
+    e.Init();
+
+    return e.Parse(m_pSegment->m_pReader, pos, size);
+}
+
+
+Chapters::Edition::Edition()
+{
+}
+
+
+Chapters::Edition::~Edition()
+{
+}
+
+
+void Chapters::Edition::Init()
+{
+    m_atoms = NULL;
+    m_atoms_size = 0;
+    m_atoms_count = 0;
+}
+
+
+void Chapters::Edition::ShallowCopy(Edition& rhs) const
+{
+    rhs.m_atoms = m_atoms;
+    rhs.m_atoms_size = m_atoms_size;
+    rhs.m_atoms_count = m_atoms_count;
+}
+
+
+void Chapters::Edition::Clear()
+{
+    while (m_atoms_count > 0)
+    {
+        Atom& a = m_atoms[--m_atoms_count];
+        a.Clear();
+    }
+
+    delete[] m_atoms;
+    m_atoms = NULL;
+
+    m_atoms_size = 0;
+}
+
+
+long Chapters::Edition::Parse(
+    IMkvReader* pReader,
+    long long pos,
+    long long size)
+{
+    const long long stop = pos + size;
+
+    while (pos < stop)
+    {
+        long long id, size;
+
+        long status = ParseElementHeader(
+                        pReader,
+                        pos,
+                        stop,
+                        id,
+                        size);
+
+        if (status < 0)  // error
+            return status;
+
+        if (size == 0)  // weird
+            continue;
+
+        if (id == 0x36)  // Atom ID
+        {
+            status = ParseAtom(pReader, pos, size);
+
+            if (status < 0)  // error
+                return status;
+        }
+
+        pos += size;
+        assert(pos <= stop);
+    }
+
+    assert(pos == stop);
+    return 0;
+}
+
+
+long Chapters::Edition::ParseAtom(
+    IMkvReader* pReader,
+    long long pos,
+    long long size)
+{
+    if (!ExpandAtomsArray())
+        return -1;
+
+    Atom& a = m_atoms[m_atoms_count++];
+    a.Init();
+
+    return a.Parse(pReader, pos, size);
+}
+
+
+bool Chapters::Edition::ExpandAtomsArray()
+{
+    if (m_atoms_size > m_atoms_count)
+        return true;  // nothing else to do
+
+    const int size = (m_atoms_size == 0) ? 1 : 2 * m_atoms_size;
+
+    Atom* const atoms = new (std::nothrow) Atom[size];
+
+    if (atoms == NULL)
+        return false;
+
+    for (int idx = 0; idx < m_atoms_count; ++idx)
+    {
+        m_atoms[idx].ShallowCopy(atoms[idx]);
+    }
+
+    delete[] m_atoms;
+    m_atoms = atoms;
+
+    m_atoms_size = size;
+    return true;
+}
+
+
+Chapters::Atom::Atom()
+{
+}
+
+
+Chapters::Atom::~Atom()
+{
+}
+
+
+void Chapters::Atom::Init()
+{
+    m_displays = NULL;
+    m_displays_size = 0;
+    m_displays_count = 0;
+}
+
+
+void Chapters::Atom::ShallowCopy(Atom& rhs) const
+{
+    rhs.m_displays = m_displays;
+    rhs.m_displays_size = m_displays_size;
+    rhs.m_displays_count = m_displays_count;
+}
+
+
+void Chapters::Atom::Clear()
+{
+    while (m_displays_count > 0)
+    {
+        Display& d = m_displays[--m_displays_count];
+        d.Clear();
+    }
+
+    delete[] m_displays;
+    m_displays = NULL;
+
+    m_displays_size = 0;
+}
+
+
+long Chapters::Atom::Parse(
+    IMkvReader* pReader,
+    long long pos,
+    long long size)
+{
+    const long long stop = pos + size;
+
+    while (pos < stop)
+    {
+        long long id, size;
+
+        long status = ParseElementHeader(
+                        pReader,
+                        pos,
+                        stop,
+                        id,
+                        size);
+
+        if (status < 0)  // error
+            return status;
+
+        if (size == 0)  // weird
+            continue;
+
+        if (id == 0x00)  // Display ID
+        {
+            status = ParseDisplay(pReader, pos, size);
+
+            if (status < 0)  // error
+                return status;
+        }
+        else if (id == 0x33C4)  // UID ID
+        {
+            const long long val = UnserializeUInt(pReader, pos, size);
+
+            if (val < 0)  // error
+                return static_cast<long>(val);
+
+            m_uid = val;
+        }
+        else if (id == 0x11)  // TimeStart ID
+        {
+            const long long val = UnserializeUInt(pReader, pos, size);
+
+            if (val < 0)  // error
+                return static_cast<long>(val);
+
+            m_start_timecode = val;
+        }
+        else if (id == 0x12)  // TimeEnd ID
+        {
+            const long long val = UnserializeUInt(pReader, pos, size);
+
+            if (val < 0)  // error
+                return static_cast<long>(val);
+
+            m_stop_timecode = val;
+        }
+
+        pos += size;
+        assert(pos <= stop);
+    }
+
+    assert(pos == stop);
+    return 0;
+}
+
+
+long Chapters::Atom::ParseDisplay(
+    IMkvReader* pReader,
+    long long pos,
+    long long size)
+{
+    if (!ExpandDisplaysArray())
+        return -1;
+
+    Display& d = m_displays[m_displays_count++];
+    d.Init();
+
+    return d.Parse(pReader, pos, size);
+}
+
+
+bool Chapters::Atom::ExpandDisplaysArray()
+{
+    if (m_displays_size > m_displays_count)
+        return true;  // nothing else to do
+
+    const int size = (m_displays_size == 0) ? 1 : 2 * m_displays_size;
+
+    Display* const displays = new (std::nothrow) Display[size];
+
+    if (displays == NULL)
+        return false;
+
+    for (int idx = 0; idx < m_displays_count; ++idx)
+    {
+        m_displays[idx].ShallowCopy(displays[idx]);
+    }
+
+    delete[] m_displays;
+    m_displays = displays;
+
+    m_displays_size = size;
+    return true;
+}
+
+
+Chapters::Display::Display()
+{
+}
+
+
+Chapters::Display::~Display()
+{
+}
+
+
+const char* Chapters::Display::GetString() const
+{
+    return m_string;
+}
+
+
+const char* Chapters::Display::GetLanguage() const
+{
+    return m_language;
+}
+
+
+const char* Chapters::Display::GetCountry() const
+{
+    return m_country;
+}
+
+
+void Chapters::Display::Init()
+{
+    m_string = NULL;
+    m_language = NULL;
+    m_country = NULL;
+}
+
+
+void Chapters::Display::ShallowCopy(Display& rhs) const
+{
+    rhs.m_string = m_string;
+    rhs.m_language = m_language;
+    rhs.m_country = m_country;
+}
+
+
+void Chapters::Display::Clear()
+{
+    delete[] m_string;
+    m_string = NULL;
+
+    delete[] m_language;
+    m_language = NULL;
+
+    delete[] m_country;
+    m_country = NULL;
+}
+
+
+long Chapters::Display::Parse(
+    IMkvReader* pReader,
+    long long pos,
+    long long size)
+{
+    const long long stop = pos + size;
+
+    while (pos < stop)
+    {
+        long long id, size;
+
+        long status = ParseElementHeader(
+                        pReader,
+                        pos,
+                        stop,
+                        id,
+                        size);
+
+        if (status < 0)  // error
+            return status;
+
+        if (size == 0)  // weird
+            continue;
+
+        if (id == 0x05)  // ChapterString ID
+        {
+            status = UnserializeString(pReader, pos, size, m_string);
+
+            if (status)
+              return status;
+        }
+        else if (id == 0x037C)  // ChapterLanguage ID
+        {
+            status = UnserializeString(pReader, pos, size, m_language);
+
+            if (status)
+              return status;
+        }
+        else if (id == 0x037E)  // ChapterCountry ID
+        {
+            status = UnserializeString(pReader, pos, size, m_country);
+
+            if (status)
+              return status;
+        }
+
+        pos += size;
+        assert(pos <= stop);
+    }
+
+    assert(pos == stop);
+    return 0;
 }
 
 

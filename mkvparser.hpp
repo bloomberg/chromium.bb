@@ -511,6 +511,121 @@ private:
 };
 
 
+class Chapters
+{
+    Chapters(const Chapters&);
+    Chapters& operator=(const Chapters&);
+
+public:
+    Segment* const m_pSegment;
+    const long long m_start;
+    const long long m_size;
+    const long long m_element_start;
+    const long long m_element_size;
+
+    Chapters(
+        Segment*,
+        long long payload_start,
+        long long payload_size,
+        long long element_start,
+        long long element_size);
+
+    ~Chapters();
+
+    long Parse();
+
+    class Atom;
+    class Edition;
+
+    class Display
+    {
+        friend class Atom;
+        Display();
+        Display(const Display&);
+        ~Display();
+        Display& operator=(const Display&);
+    public:
+        const char* GetString() const;
+        const char* GetLanguage() const;
+        const char* GetCountry() const;
+    private:
+        void Init();
+        void ShallowCopy(Display&) const;
+        void Clear();
+        long Parse(IMkvReader*, long long pos, long long size);
+
+        char* m_string;
+        char* m_language;
+        char* m_country;
+    };
+
+    class Atom
+    {
+        friend class Edition;
+        Atom();
+        Atom(const Atom&);
+        ~Atom();
+        Atom& operator=(const Atom&);
+    public:
+        int GetDisplayCount() const;
+        const Atom* GetAtom(int index) const;
+    private:
+        void Init();
+        void ShallowCopy(Atom&) const;
+        void Clear();
+        long Parse(IMkvReader*, long long pos, long long size);
+
+        long ParseDisplay(IMkvReader*, long long pos, long long size);
+        bool ExpandDisplaysArray();
+
+        unsigned long long m_uid;
+        // TODO(matthewjheaney): Cue Identifier (string)
+        unsigned long long m_start_timecode;
+        unsigned long long m_stop_timecode;
+
+        Display* m_displays;
+        int m_displays_size;
+        int m_displays_count;
+    };
+
+    class Edition
+    {
+        friend class Chapters;
+        Edition();
+        Edition(const Edition&);
+        ~Edition();
+        Edition& operator=(const Edition&);
+    public:
+        int GetAtomCount() const;
+        const Atom& GetAtom(int index) const;
+    private:
+        void Init();
+        void ShallowCopy(Edition&) const;
+        void Clear();
+        long Parse(IMkvReader*, long long pos, long long size);
+
+        long ParseAtom(IMkvReader*, long long pos, long long size);
+        bool ExpandAtomsArray();
+
+        Atom* m_atoms;
+        int m_atoms_size;
+        int m_atoms_count;
+    };
+
+    int GetEditionCount() const;
+    const Edition* GetEdition(int index) const;
+
+private:
+    long ParseEdition(long long pos, long long size);
+    bool ExpandEditionsArray();
+
+    Edition* m_editions;
+    int m_editions_size;
+    int m_editions_count;
+
+};
+
+
 class SegmentInfo
 {
     SegmentInfo(const SegmentInfo&);
@@ -863,6 +978,7 @@ public:
     const Tracks* GetTracks() const;
     const SegmentInfo* GetInfo() const;
     const Cues* GetCues() const;
+    const Chapters* GetChapters() const;
 
     long long GetDuration() const;
 
@@ -890,6 +1006,7 @@ private:
     SegmentInfo* m_pInfo;
     Tracks* m_pTracks;
     Cues* m_pCues;
+    Chapters* m_pChapters;
     Cluster** m_clusters;
     long m_clusterCount;         //number of entries for which m_index >= 0
     long m_clusterPreloadCount;  //number of entries for which m_index < 0
