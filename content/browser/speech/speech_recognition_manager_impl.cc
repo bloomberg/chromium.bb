@@ -51,6 +51,7 @@ void ShowAudioInputSettingsOnFileThread() {
 
 namespace speech {
 
+#if !defined(OS_IOS)
 class SpeechRecognitionManagerImpl::PermissionRequest
     : public media_stream::MediaStreamRequester {
  public:
@@ -125,6 +126,7 @@ class SpeechRecognitionManagerImpl::PermissionRequest
   std::string label_;
   bool started_;
 };
+#endif  // !defined(OS_IOS)
 
 SpeechRecognitionManagerImpl* SpeechRecognitionManagerImpl::GetInstance() {
   return g_speech_recognition_manager_impl;
@@ -229,6 +231,11 @@ void SpeechRecognitionManagerImpl::RecognitionAllowedCallback(int session_id,
   if (!SessionExists(session_id))
     return;
 
+#if defined(OS_IOS)
+  // On iOS, voice search can only be initiated by clear user action and thus
+  // it is always allowed.
+  DCHECK(!ask_user && is_allowed);
+#else
   if (ask_user) {
     const SpeechRecognitionSessionContext& context =
         GetSessionContext(session_id);
@@ -246,8 +253,8 @@ void SpeechRecognitionManagerImpl::RecognitionAllowedCallback(int session_id,
 
     return;
   }
-
   permission_request_.reset();
+#endif  // defined(OS_IOS)
 
   if (is_allowed) {
     MessageLoop::current()->PostTask(FROM_HERE,
@@ -267,11 +274,13 @@ void SpeechRecognitionManagerImpl::AbortSession(int session_id) {
   if (!SessionExists(session_id))
     return;
 
+#if !defined(OS_IOS)
   if (permission_request_.get() &&
       permission_request_->Session() == session_id) {
     DCHECK(permission_request_.get());
     permission_request_->Abort();
   }
+#endif  // !defined(OS_IOS)
 
   MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent,
@@ -283,11 +292,13 @@ void SpeechRecognitionManagerImpl::StopAudioCaptureForSession(int session_id) {
   if (!SessionExists(session_id))
     return;
 
+#if !defined(OS_IOS)
   if (permission_request_.get() &&
       permission_request_->Session() == session_id) {
     DCHECK(permission_request_.get());
     permission_request_->Abort();
   }
+#endif  // !defined(OS_IOS)
 
   MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent,

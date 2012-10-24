@@ -175,8 +175,10 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
   // since tasks pending on a destroyed WeakPtr are automatically discarded.
   base::WeakPtrFactory<SpeechRecognitionManagerImpl> weak_factory_;
 
+#if !defined(OS_IOS)
   class PermissionRequest;
   scoped_ptr<PermissionRequest> permission_request_;
+#endif  // !defined(OS_IOS)
 };
 
 }  // namespace speech
