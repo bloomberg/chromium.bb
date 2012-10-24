@@ -96,6 +96,7 @@
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profiling.h"
+#include "chrome/common/startup_metric_utils.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -1615,6 +1616,11 @@ void ChromeBrowserMainParts::AddParts(ChromeBrowserMainExtraParts* parts) {
 // Misc ------------------------------------------------------------------------
 
 void RecordBrowserStartupTime() {
+  // Don't record any metrics if UI was displayed before this point e.g.
+  // warning dialogs.
+  if (startup_metric_utils::WasNonBrowserUIDisplayed())
+    return;
+
 // CurrentProcessInfo::CreationTime() is currently only implemented on Mac and
 // Windows.
 #if defined(OS_MACOSX) || defined(OS_WIN)
@@ -1625,6 +1631,12 @@ void RecordBrowserStartupTime() {
     RecordPreReadExperimentTime("Startup.BrowserMessageLoopStartTime",
         base::Time::Now() - *process_creation_time);
 #endif // OS_MACOSX || OS_WIN
+
+  // Add another startup time metric that measures from main entry rather
+  // than the OS's notion of process startup in an attempt to lower variance.
+  RecordPreReadExperimentTime(
+      "Startup.BrowserMessageLoopStartTimeFromMainEntry",
+      base::Time::Now() - startup_metric_utils::MainEntryStartTime());
 }
 
 // This code is specific to the Windows-only PreReadExperiment field-trial.

@@ -5,6 +5,8 @@
 #ifndef CHROME_COMMON_STARTUP_METRIC_UTILS_H_
 #define CHROME_COMMON_STARTUP_METRIC_UTILS_H_
 
+#include "base/time.h"
+
 // Utility functions to support metric collection for browser startup.
 
 namespace startup_metric_utils {
@@ -22,6 +24,13 @@ bool WasNonBrowserUIDisplayed();
 // UI invocation regardless of whether the browser window has already
 // been displayed or not.
 void SetNonBrowserUIDisplayed();
+
+// Call this as early as possible in the startup process to record a
+// timestamp.
+void RecordMainEntryPointTime();
+
+// Return the time recorded by RecordMainEntryPointTime().
+const base::Time MainEntryStartTime();
 
 }  // namespace startup_metric_utils
 
