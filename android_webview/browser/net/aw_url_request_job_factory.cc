@@ -19,6 +19,9 @@ AwURLRequestJobFactory::AwURLRequestJobFactory()
     : next_factory_(new net::URLRequestJobFactoryImpl()) {
 }
 
+AwURLRequestJobFactory::~AwURLRequestJobFactory() {
+}
+
 bool AwURLRequestJobFactory::IsHandledProtocol(
     const std::string& scheme) const {
   // This introduces a dependency on the URLRequestJobManager

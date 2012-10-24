@@ -19,6 +19,7 @@ namespace android_webview {
 class AwURLRequestJobFactory : public net::URLRequestJobFactory {
  public:
   AwURLRequestJobFactory();
+  virtual ~AwURLRequestJobFactory();
 
   virtual bool SetProtocolHandler(const std::string& scheme,
                           ProtocolHandler* protocol_handler) OVERRIDE;
