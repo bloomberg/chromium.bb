@@ -2540,7 +2540,7 @@ public:
     virtual Format format() const { return m_textureId ? FormatNativeTexture : FormatYV12; }
     virtual unsigned width() const { return 4; }
     virtual unsigned height() const { return 4; }
-    virtual unsigned planes() const { return 3; }
+    virtual unsigned planes() const { return m_textureId ? 0 : 3; }
     virtual int stride(unsigned plane) const { return 4; }
     virtual const void* data(unsigned plane) const { return m_data; }
     virtual unsigned textureId() const { return m_textureId; }
