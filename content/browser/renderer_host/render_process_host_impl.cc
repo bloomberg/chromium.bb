@@ -507,6 +507,7 @@ bool RenderProcessHostImpl::Init() {
         channel_->TakeClientFileDescriptor(),
 #endif
         cmd_line,
+        GetID(),
         this));
 
     fast_shutdown_started_ = false;

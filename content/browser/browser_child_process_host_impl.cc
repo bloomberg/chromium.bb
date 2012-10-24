@@ -137,6 +137,7 @@ void BrowserChildProcessHostImpl::Launch(
       child_process_host_->TakeClientFileDescriptor(),
 #endif
       cmd_line,
+      data_.id,
       this));
 }
 

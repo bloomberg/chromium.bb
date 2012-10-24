@@ -120,6 +120,7 @@
 #elif defined(OS_LINUX)
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif defined(OS_ANDROID)
+#include "chrome/browser/android/crash_dump_manager.h"
 #include "chrome/browser/chrome_browser_main_android.h"
 #include "chrome/common/descriptors_android.h"
 #elif defined(OS_POSIX)
@@ -571,6 +572,10 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
   RendererContentSettingRules rules;
   GetRendererContentSettingRules(profile->GetHostContentSettingsMap(), &rules);
   host->Send(new ChromeViewMsg_SetContentSettingRules(rules));
+
+#if defined(OS_ANDROID) && defined(USE_LINUX_BREAKPAD)
+  InitCrashDumpManager();
+#endif
 }
 
 void ChromeContentBrowserClient::BrowserChildProcessHostCreated(
@@ -1759,13 +1764,8 @@ FilePath ChromeContentBrowserClient::GetHyphenDictionaryDirectory() {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const CommandLine& command_line,
+    int child_process_id,
     std::vector<FileDescriptorInfo>* mappings) {
-  int crash_signal_fd = GetCrashSignalFD(command_line);
-  if (crash_signal_fd >= 0) {
-    mappings->push_back(FileDescriptorInfo(kCrashDumpSignal,
-                                           FileDescriptor(crash_signal_fd,
-                                                          false)));
-  }
 #if defined(OS_ANDROID)
   FilePath data_path;
   PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &data_path);
@@ -1793,6 +1793,25 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
   DCHECK(f != base::kInvalidPlatformFileValue);
   mappings->push_back(FileDescriptorInfo(kAndroidLocalePakDescriptor,
                                          FileDescriptor(f, true)));
+
+#if defined(USE_LINUX_BREAKPAD)
+  f = crash_dump_manager_->CreateMinidumpFile(child_process_id);
+  if (f == base::kInvalidPlatformFileValue) {
+    LOG(ERROR) << "Failed to create file for minidump, crash reporting will be "
+        "disabled for this process.";
+  } else {
+    mappings->push_back(FileDescriptorInfo(kAndroidMinidumpDescriptor,
+                                           FileDescriptor(f, true)));
+  }
+#endif  // defined(USE_LINUX_BREAKPAD)
+
+#else
+  int crash_signal_fd = GetCrashSignalFD(command_line);
+  if (crash_signal_fd >= 0) {
+    mappings->push_back(FileDescriptorInfo(kCrashDumpSignal,
+                                           FileDescriptor(crash_signal_fd,
+                                                          false)));
+  }
 #endif  // defined(OS_ANDROID)
 }
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -1800,6 +1819,13 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 #if defined(OS_WIN)
 const wchar_t* ChromeContentBrowserClient::GetResourceDllName() {
   return chrome::kBrowserResourcesDll;
+}
+#endif
+
+#if defined(OS_ANDROID)
+void ChromeContentBrowserClient::InitCrashDumpManager() {
+  if (!crash_dump_manager_.get())
+    crash_dump_manager_.reset(new CrashDumpManager());
 }
 #endif
 

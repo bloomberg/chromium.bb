@@ -120,6 +120,8 @@
         'browser/android/chrome_web_contents_delegate_android.h',
         'browser/android/content_view_util.cc',
         'browser/android/content_view_util.h',
+        'browser/android/crash_dump_manager.cc',
+        'browser/android/crash_dump_manager.h',
         'browser/android/devtools_server.cc',
         'browser/android/devtools_server.h',
         'browser/android/intent_helper.cc',

@@ -456,6 +456,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // a child process.
   virtual void GetAdditionalMappedFilesForChildProcess(
       const CommandLine& command_line,
+      int child_process_id,
       std::vector<FileDescriptorInfo>* mappings) {}
 #endif
 

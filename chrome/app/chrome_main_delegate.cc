@@ -643,8 +643,22 @@ void ChromeMainDelegate::PreSandboxStartup() {
   // Needs to be called after we have chrome::DIR_USER_DATA.  BrowserMain
   // sets this up for the browser process in a different manner. Zygotes
   // need to call InitCrashReporter() in RunZygote().
-  if (!process_type.empty() && process_type != switches::kZygoteProcess)
+  if (!process_type.empty() && process_type != switches::kZygoteProcess) {
+#if defined(OS_ANDROID)
+    // On Android we need to provide a FD to the file where the minidump is
+    // generated as the renderer and browser run with different UIDs
+    // (preventing the browser from inspecting the renderer process).
+    int minidump_fd = base::GlobalDescriptors::GetInstance()->
+        MaybeGet(kAndroidMinidumpDescriptor);
+    if (minidump_fd == base::kInvalidPlatformFileValue) {
+      NOTREACHED() << "Could not find minidump FD, crash reporting disabled.";
+    } else {
+      InitNonBrowserCrashReporterForAndroid(minidump_fd);
+    }
+#else
     InitCrashReporter();
+#endif
+  }
 #endif
 
 #if defined(OS_CHROMEOS)

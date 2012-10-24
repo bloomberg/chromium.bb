@@ -8,6 +8,9 @@
 #include "base/basictypes.h"
 
 extern void InitCrashReporter();
+#if defined(OS_ANDROID)
+extern void InitNonBrowserCrashReporterForAndroid(int minidump_fd);
+#endif
 bool IsCrashReporterEnabled();
 
 static const size_t kMaxActiveURLSize = 1024;
@@ -17,7 +20,11 @@ static const size_t kDistroSize = 128;
 static const size_t kMaxAsanReportSize = 1 << 16;
 #endif
 
+// BreakpadInfo describes a crash report.
+// The minidump information can either be contained in a file descriptor (fd) or
+// in a file (whose path is in filename).
 struct BreakpadInfo {
+  int fd;                          // File descriptor to the Breakpad dump data.
   const char* filename;            // Path to the Breakpad dump data.
 #if defined(ADDRESS_SANITIZER)
   const char* log_filename;        // Path to the ASan log file.

@@ -13,6 +13,11 @@
 #include "base/compiler_specific.h"
 #include "content/public/browser/content_browser_client.h"
 
+#if defined(OS_ANDROID)
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/android/crash_dump_manager.h"
+#endif
+
 namespace content {
 class QuotaPermissionContext;
 }
@@ -208,6 +213,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   virtual void GetAdditionalMappedFilesForChildProcess(
       const CommandLine& command_line,
+      int child_process_id,
       std::vector<content::FileDescriptorInfo>* mappings) OVERRIDE;
 #endif
 #if defined(OS_WIN)
@@ -232,6 +238,12 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   std::string GetStoragePartitionIdForExtension(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension);
+
+#if defined(OS_ANDROID)
+  void InitCrashDumpManager();
+
+  scoped_ptr<CrashDumpManager> crash_dump_manager_;
+#endif
 
   // Set of origins that can use TCP/UDP private APIs from NaCl.
   std::set<std::string> allowed_socket_origins_;

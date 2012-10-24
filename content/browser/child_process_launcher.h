@@ -43,6 +43,7 @@ class CONTENT_EXPORT ChildProcessLauncher {
       int ipcfd,
 #endif
       CommandLine* cmd_line,
+      int child_process_id,
       Client* client);
   ~ChildProcessLauncher();
 

@@ -324,6 +324,7 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   // Freed in CrashDumpTask();
   BreakpadInfo* info = new BreakpadInfo;
 
+  info->fd = -1;
   info->process_type_length = process_type_.length();
   char* process_type_str = new char[info->process_type_length + 1];
   process_type_.copy(process_type_str, info->process_type_length);

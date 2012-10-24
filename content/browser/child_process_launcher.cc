@@ -76,6 +76,7 @@ class ChildProcessLauncher::Context
       int ipcfd,
 #endif
       CommandLine* cmd_line,
+      int child_process_id,
       Client* client) {
     client_ = client;
 
@@ -93,6 +94,7 @@ class ChildProcessLauncher::Context
             &Context::LaunchInternal,
             make_scoped_refptr(this),
             client_thread_id_,
+            child_process_id,
 #if defined(OS_WIN)
             exposed_dir,
 #elif defined(OS_ANDROID)
@@ -149,6 +151,7 @@ class ChildProcessLauncher::Context
       // |this_object| is NOT thread safe. Only use it to post a task back.
       scoped_refptr<Context> this_object,
       BrowserThread::ID client_thread_id,
+      int child_process_id,
 #if defined(OS_WIN)
       const FilePath& exposed_dir,
 #elif defined(OS_ANDROID)
@@ -173,7 +176,8 @@ class ChildProcessLauncher::Context
                                     base::FileDescriptor(ipcfd, false)));
 
     GetContentClient()->browser()->
-        GetAdditionalMappedFilesForChildProcess(*cmd_line, &files_to_register);
+        GetAdditionalMappedFilesForChildProcess(*cmd_line, child_process_id,
+                                                &files_to_register);
 
     StartSandboxedProcess(cmd_line->argv(), files_to_register,
         base::Bind(&ChildProcessLauncher::Context::OnSandboxedProcessStarted,
@@ -194,7 +198,8 @@ class ChildProcessLauncher::Context
 
 #if !defined(OS_MACOSX)
     GetContentClient()->browser()->
-        GetAdditionalMappedFilesForChildProcess(*cmd_line, &files_to_register);
+        GetAdditionalMappedFilesForChildProcess(*cmd_line, child_process_id,
+                                                &files_to_register);
     if (use_zygote) {
       handle = ZygoteHostImpl::GetInstance()->ForkRequest(cmd_line->argv(),
                                                           files_to_register,
@@ -205,12 +210,11 @@ class ChildProcessLauncher::Context
     {
       // Convert FD mapping to FileHandleMappingVector
       base::FileHandleMappingVector fds_to_map;
-      for (std::vector<FileDescriptorInfo>::const_iterator
-           i = files_to_register.begin(); i != files_to_register.end(); ++i) {
-        const FileDescriptorInfo& fd_info = *i;
+      for (size_t i = 0; i < files_to_register.size(); ++i) {
         fds_to_map.push_back(std::make_pair(
-            fd_info.fd.fd,
-            fd_info.id + base::GlobalDescriptors::kBaseDescriptor));
+            files_to_register[i].fd.fd,
+            files_to_register[i].id +
+                base::GlobalDescriptors::kBaseDescriptor));
       }
 
 #if !defined(OS_MACOSX)
@@ -379,6 +383,7 @@ ChildProcessLauncher::ChildProcessLauncher(
     int ipcfd,
 #endif
     CommandLine* cmd_line,
+    int child_process_id,
     Client* client) {
   context_ = new Context();
   context_->Launch(
@@ -392,6 +397,7 @@ ChildProcessLauncher::ChildProcessLauncher(
       ipcfd,
 #endif
       cmd_line,
+      child_process_id,
       client);
 }
 
