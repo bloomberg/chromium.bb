@@ -21,12 +21,11 @@ import java.util.concurrent.Callable;
 
 public class NavigationHistoryTest extends AndroidWebViewTestBase {
 
-    private final String page1Path = "/page1.html";
-    private final String page1Title = "Page 1 Title";
-    private final String page2Path = "/page2.html";
-    private final String page2Title = "Page 2 Title";
-    private final String pageWithHashTagRedirectPath = "/page_with_hashtag.html";
-    private final String pageWithHashTagRedirectTitle = "Page with hashtag";
+    private static final String PAGE_1_PATH = "/page1.html";
+    private static final String PAGE_1_TITLE = "Page 1 Title";
+    private static final String PAGE_2_PATH = "/page2.html";
+    private static final String PAGE_2_TITLE = "Page 2 Title";
+    private static final String PAGE_WITH_HASHTAG_REDIRECT_TITLE = "Page with hashtag";
 
     private TestWebServer mWebServer;
     private TestAwContentsClient mContentsClient;
@@ -71,25 +70,25 @@ public class NavigationHistoryTest extends AndroidWebViewTestBase {
     }
 
     private String addPage1ToServer(TestWebServer webServer) {
-        return mWebServer.setResponse(page1Path,
+        return mWebServer.setResponse(PAGE_1_PATH,
                 CommonResources.makeHtmlPageFrom(
-                        "<title>" + page1Title + "</title>",
+                        "<title>" + PAGE_1_TITLE + "</title>",
                         "<div>This is test page 1.</div>"),
                 CommonResources.getTextHtmlHeaders(false));
     }
 
     private String addPage2ToServer(TestWebServer webServer) {
-        return mWebServer.setResponse(page2Path,
+        return mWebServer.setResponse(PAGE_2_PATH,
                 CommonResources.makeHtmlPageFrom(
-                        "<title>" + page2Title + "</title>",
+                        "<title>" + PAGE_2_TITLE + "</title>",
                         "<div>This is test page 2.</div>"),
                 CommonResources.getTextHtmlHeaders(false));
     }
 
     private String addPageWithHashTagRedirectToServer(TestWebServer webServer) {
-        return mWebServer.setResponse(page2Path,
+        return mWebServer.setResponse(PAGE_2_PATH,
                 CommonResources.makeHtmlPageFrom(
-                        "<title>" + pageWithHashTagRedirectTitle + "</title>",
+                        "<title>" + PAGE_WITH_HASHTAG_REDIRECT_TITLE + "</title>",
                         "<iframe onLoad=\"location.replace(location.href + '#tag');\" />"),
                 CommonResources.getTextHtmlHeaders(false));
     }
@@ -109,7 +108,7 @@ public class NavigationHistoryTest extends AndroidWebViewTestBase {
         checkHistoryItem(history.getEntryAtIndex(0),
                 pageWithHashTagRedirectUrl + "#tag",
                 pageWithHashTagRedirectUrl,
-                pageWithHashTagRedirectTitle,
+                PAGE_WITH_HASHTAG_REDIRECT_TITLE,
                 true);
 
         assertEquals(0, history.getCurrentEntryIndex());
@@ -137,14 +136,14 @@ public class NavigationHistoryTest extends AndroidWebViewTestBase {
         checkHistoryItem(list.getEntryAtIndex(0),
                 page1Url,
                 page1Url,
-                page1Title,
+                PAGE_1_TITLE,
                 true);
 
         // Make sure the second entry was added properly
         checkHistoryItem(list.getEntryAtIndex(1),
                 page2Url,
                 page2Url,
-                page2Title,
+                PAGE_2_TITLE,
                 true);
 
         assertEquals(1, list.getCurrentEntryIndex());
@@ -172,14 +171,14 @@ public class NavigationHistoryTest extends AndroidWebViewTestBase {
         checkHistoryItem(list.getEntryAtIndex(0),
                 page1Url,
                 page1Url,
-                page1Title,
+                PAGE_1_TITLE,
                 true);
 
         // Make sure the second entry is still okay
         checkHistoryItem(list.getEntryAtIndex(1),
                 page2Url,
                 page2Url,
-                page2Title,
+                PAGE_2_TITLE,
                 true);
 
         // Make sure the current index is back to 0
