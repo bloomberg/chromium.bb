@@ -24,7 +24,7 @@ using ::testing::SaveArg;
 
 namespace chromeos {
 
-class BluetoothAdapterChromeOsDevicesTest : public testing::Test {
+class BluetoothAdapterDevicesChromeOsTest : public testing::Test {
  public:
   virtual void SetUp() {
     MockDBusThreadManager* mock_dbus_thread_manager = new MockDBusThreadManager;
@@ -108,12 +108,12 @@ class BluetoothAdapterChromeOsDevicesTest : public testing::Test {
   MockBluetoothAdapter::Observer adapter_observer_;
 };
 
-const dbus::ObjectPath BluetoothAdapterChromeOsDevicesTest::adapter_path_(
+const dbus::ObjectPath BluetoothAdapterDevicesChromeOsTest::adapter_path_(
     "/fake/hci0");
-const std::string BluetoothAdapterChromeOsDevicesTest::adapter_address_ =
+const std::string BluetoothAdapterDevicesChromeOsTest::adapter_address_ =
     "CA:FE:4A:C0:FE:FE";
 
-TEST_F(BluetoothAdapterChromeOsDevicesTest, DeviceRemovedAfterFound) {
+TEST_F(BluetoothAdapterDevicesChromeOsTest, DeviceRemovedAfterFound) {
   const dbus::ObjectPath device_path("/fake/hci0/dev_ba_c0_11_00_00_01");
   const std::string device_address = "BA:C0:11:00:00:01";
 

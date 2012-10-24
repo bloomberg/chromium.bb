@@ -4,6 +4,7 @@
 
 {
   'variables': {
+    'chromium_code': 1,
   },
   'targets': [
     {
@@ -41,17 +42,7 @@
         'bluetooth/bluetooth_utils.h',
       ],
       'conditions': [
-        ['chromeos==0', {
-          'sources!': [
-            # ChromeOs-only; exclude on other platforms.
-            'bluetooth/bluetooth_adapter_chromeos.cc',
-            'bluetooth/bluetooth_adapter_chromeos.h',
-            'bluetooth/bluetooth_device_chromeos.cc',
-            'bluetooth/bluetooth_device_chromeos.h',
-            'bluetooth/bluetooth_socket_chromeos.cc',
-            'bluetooth/bluetooth_socket_chromeos.h',
-          ]
-        }, {  # chromeos==1
+        ['chromeos==1', {
           'dependencies': [
             '../build/linux/system.gyp:dbus',
             '../chromeos/chromeos.gyp:chromeos',
@@ -90,7 +81,7 @@
       ],
       'sources': [
         'bluetooth/bluetooth_adapter_chromeos_unittest.cc',
-        'bluetooth/bluetooth_adapter_chromeos_devices_unittest.cc',
+        'bluetooth/bluetooth_adapter_devices_chromeos_unittest.cc',
         'bluetooth/bluetooth_service_record_unittest.cc',
         'bluetooth/bluetooth_utils_unittest.cc',
         'test/device_test_suite.cc',
@@ -98,13 +89,7 @@
         'test/run_all_unittests.cc',
       ],
       'conditions': [
-        ['chromeos==0', {
-          'sources!': [
-            # ChromeOs-only; exclude on other platforms.
-            'bluetooth/bluetooth_adapter_chromeos_unittest.cc',
-            'bluetooth/bluetooth_adapter_chromeos_devices_unittest.cc',
-          ]
-        }, {  # chromeos==1
+        ['chromeos==1', {
           'dependencies': [
             '../build/linux/system.gyp:dbus',
             '../chromeos/chromeos.gyp:chromeos_test_support',
