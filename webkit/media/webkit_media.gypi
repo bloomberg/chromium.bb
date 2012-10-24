@@ -83,7 +83,7 @@
         'webvideoframe_impl.h',
       ],
       'conditions': [
-        ['inside_chromium_build==0', {
+        ['inside_chromium_build == 0', {
           'dependencies': [
             '<(DEPTH)/webkit/support/setup_third_party.gyp:third_party_headers',
           ],
@@ -111,7 +111,7 @@
     },
     {
       'target_name': 'clearkeycdm',
-      'type': 'shared_library',
+      'type': 'none',
       'conditions': [
         ['use_ffmpeg == 1' , {
           'defines': ['CLEAR_KEY_CDM_USE_FFMPEG_DECODER'],
@@ -122,6 +122,11 @@
             'crypto/ppapi/ffmpeg_cdm_video_decoder.cc',
             'crypto/ppapi/ffmpeg_cdm_video_decoder.h',
           ],
+        }],
+        ['os_posix == 1 and OS != "mac"', {
+          'type': 'loadable_module',  # Must be in PRODUCT_DIR for ASAN bots.
+        }, {  # 'os_posix != 1 or OS == "mac"'
+          'type': 'shared_library',
         }],
       ],
       'defines': ['CDM_IMPLEMENTATION'],
@@ -147,19 +152,20 @@
         'crypto/ppapi/linked_ptr.h',
       ],
       'conditions': [
-        ['os_posix==1 and OS!="mac"', {
+        ['os_posix == 1 and OS != "mac"', {
           'cflags': ['-fvisibility=hidden'],
           'type': 'loadable_module',
-          # -gstabs, used in the official builds, causes an ICE. Simply remove
-          # it.
-          'cflags!': ['-gstabs'],
           # Allow the plugin wrapper to find the CDM in the same directory.
-          'ldflags': ['-Wl,-rpath=\$$ORIGIN']
+          'ldflags': ['-Wl,-rpath=\$$ORIGIN'],
+          'libraries': [
+            # Built by clearkeycdm.
+            '<(PRODUCT_DIR)/libclearkeycdm.so',
+          ],
         }],
-        ['OS=="win"', {
+        ['OS == "win"', {
           'type': 'shared_library',
         }],
-        ['OS=="mac"', {
+        ['OS == "mac"', {
           'type': 'loadable_module',
           'mac_bundle': 1,
           'product_extension': 'plugin',
