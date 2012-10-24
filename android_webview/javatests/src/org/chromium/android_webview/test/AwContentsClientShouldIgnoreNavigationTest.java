@@ -96,6 +96,20 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
         }
     }
 
+    private TestWebServer mWebServer;
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        mWebServer = new TestWebServer(false);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mWebServer.shutdown();
+        super.tearDown();
+    }
+
     private void clickOnLinkUsingJs(final AwContents awContents,
             final TestAwContentsClient contentsClient) throws Throwable {
         enableJavaScriptOnUiThread(awContents);
@@ -282,31 +296,24 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
         final TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
             contentsClient.getShouldIgnoreNavigationHelper();
 
-        TestWebServer webServer = null;
-        try {
-            // Set up the HTML page.
-            webServer = new TestWebServer(false);
-            final String anchorLinkPath = "/anchor_link.html";
-            final String anchorLinkUrl = webServer.getResponseUrl(anchorLinkPath);
-            addPageToTestServer(webServer, anchorLinkPath,
-                    getHtmlForPageWithSimpleLinkTo(anchorLinkUrl + "#anchor"));
+        final String anchorLinkPath = "/anchor_link.html";
+        final String anchorLinkUrl = mWebServer.getResponseUrl(anchorLinkPath);
+        addPageToTestServer(mWebServer, anchorLinkPath,
+                getHtmlForPageWithSimpleLinkTo(anchorLinkUrl + "#anchor"));
 
-            loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), anchorLinkUrl);
+        loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), anchorLinkUrl);
 
-            final int shouldIgnoreNavigationCallCount =
-                shouldIgnoreNavigationHelper.getCallCount();
+        final int shouldIgnoreNavigationCallCount =
+            shouldIgnoreNavigationHelper.getCallCount();
 
-            clickOnLinkUsingJs(awContents, contentsClient);
+        clickOnLinkUsingJs(awContents, contentsClient);
 
-            // After we load this URL we're certain that any in-flight callbacks for the previous
-            // navigation have been delivered.
-            loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), ABOUT_BLANK_URL);
+        // After we load this URL we're certain that any in-flight callbacks for the previous
+        // navigation have been delivered.
+        loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), ABOUT_BLANK_URL);
 
-            assertEquals(shouldIgnoreNavigationCallCount,
-                    shouldIgnoreNavigationHelper.getCallCount());
-        } finally {
-            if (webServer != null) webServer.shutdown();
-        }
+        assertEquals(shouldIgnoreNavigationCallCount,
+                shouldIgnoreNavigationHelper.getCallCount());
     }
 
     @SmallTest
@@ -341,28 +348,21 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
         TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
                 contentsClient.getShouldIgnoreNavigationHelper();
 
-        TestWebServer webServer = null;
-        try {
-            // Set up the HTML page.
-            webServer = new TestWebServer(false);
-            final String httpPath = "/page_with_link_to_self.html";
-            final String httpPathOnServer = webServer.getResponseUrl(httpPath);
-            addPageToTestServer(webServer, httpPath,
-                    getHtmlForPageWithSimpleLinkTo(httpPathOnServer));
+        final String httpPath = "/page_with_link_to_self.html";
+        final String httpPathOnServer = mWebServer.getResponseUrl(httpPath);
+        addPageToTestServer(mWebServer, httpPath,
+                getHtmlForPageWithSimpleLinkTo(httpPathOnServer));
 
-            loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(),
-                    httpPathOnServer);
+        loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(),
+                httpPathOnServer);
 
-            int callCount = shouldIgnoreNavigationHelper.getCallCount();
+        int callCount = shouldIgnoreNavigationHelper.getCallCount();
 
-            clickOnLinkUsingJs(awContents, contentsClient);
+        clickOnLinkUsingJs(awContents, contentsClient);
 
-            shouldIgnoreNavigationHelper.waitForCallback(callCount);
-            assertEquals(httpPathOnServer,
-                    shouldIgnoreNavigationHelper.getShouldIgnoreNavigationUrl());
-        } finally {
-            if (webServer != null) webServer.shutdown();
-        }
+        shouldIgnoreNavigationHelper.waitForCallback(callCount);
+        assertEquals(httpPathOnServer,
+                shouldIgnoreNavigationHelper.getShouldIgnoreNavigationUrl());
     }
 
     @SmallTest
@@ -377,22 +377,15 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
         TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
                 contentsClient.getShouldIgnoreNavigationHelper();
 
-        TestWebServer webServer = null;
-        try {
-            // Set up the HTML page.
-            webServer = new TestWebServer(false);
-            final String redirectTargetUrl = createRedirectTargetPage(webServer);
-            loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
-                    getHtmlForPageWithJsAssignLinkTo(redirectTargetUrl), "text/html", false);
+        final String redirectTargetUrl = createRedirectTargetPage(mWebServer);
+        loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
+                getHtmlForPageWithJsAssignLinkTo(redirectTargetUrl), "text/html", false);
 
-            int callCount = shouldIgnoreNavigationHelper.getCallCount();
+        int callCount = shouldIgnoreNavigationHelper.getCallCount();
 
-            clickOnLinkUsingJs(awContents, contentsClient);
+        clickOnLinkUsingJs(awContents, contentsClient);
 
-            shouldIgnoreNavigationHelper.waitForCallback(callCount);
-        } finally {
-            if (webServer != null) webServer.shutdown();
-        }
+        shouldIgnoreNavigationHelper.waitForCallback(callCount);
     }
 
     @SmallTest
@@ -407,20 +400,13 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
         TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
                 contentsClient.getShouldIgnoreNavigationHelper();
 
-        TestWebServer webServer = null;
-        try {
-            // Set up the HTML page.
-            webServer = new TestWebServer(false);
-            final String redirectTargetUrl = createRedirectTargetPage(webServer);
-            loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
-                    getHtmlForPageWithJsReplaceLinkTo(redirectTargetUrl), "text/html", false);
+        final String redirectTargetUrl = createRedirectTargetPage(mWebServer);
+        loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
+                getHtmlForPageWithJsReplaceLinkTo(redirectTargetUrl), "text/html", false);
 
-            int callCount = shouldIgnoreNavigationHelper.getCallCount();
-            clickOnLinkUsingJs(awContents, contentsClient);
-            shouldIgnoreNavigationHelper.waitForCallback(callCount);
-        } finally {
-            if (webServer != null) webServer.shutdown();
-        }
+        int callCount = shouldIgnoreNavigationHelper.getCallCount();
+        clickOnLinkUsingJs(awContents, contentsClient);
+        shouldIgnoreNavigationHelper.waitForCallback(callCount);
     }
 
     @SmallTest
@@ -433,22 +419,15 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
         TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
                 contentsClient.getShouldIgnoreNavigationHelper();
 
-        TestWebServer webServer = null;
-        try {
-            // Set up the HTML page.
-            webServer = new TestWebServer(false);
-            final String redirectTargetUrl = createRedirectTargetPage(webServer);
-            loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
-                    getHtmlForPageWithSimpleLinkTo(redirectTargetUrl), "text/html", false);
+        final String redirectTargetUrl = createRedirectTargetPage(mWebServer);
+        loadDataSync(awContents, contentsClient.getOnPageFinishedHelper(),
+                getHtmlForPageWithSimpleLinkTo(redirectTargetUrl), "text/html", false);
 
-            int callCount = shouldIgnoreNavigationHelper.getCallCount();
-            clickOnLinkUsingJs(awContents, contentsClient);
-            shouldIgnoreNavigationHelper.waitForCallback(callCount);
-            assertEquals(redirectTargetUrl,
-                    shouldIgnoreNavigationHelper.getShouldIgnoreNavigationUrl());
-        } finally {
-            if (webServer != null) webServer.shutdown();
-        }
+        int callCount = shouldIgnoreNavigationHelper.getCallCount();
+        clickOnLinkUsingJs(awContents, contentsClient);
+        shouldIgnoreNavigationHelper.waitForCallback(callCount);
+        assertEquals(redirectTargetUrl,
+                shouldIgnoreNavigationHelper.getShouldIgnoreNavigationUrl());
     }
 
     @SmallTest
@@ -461,45 +440,38 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
         final TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
                 contentsClient.getShouldIgnoreNavigationHelper();
 
-        TestWebServer webServer = null;
-        try {
-            // Set up the HTML page.
-            webServer = new TestWebServer(false);
-            final String redirectTargetUrl = createRedirectTargetPage(webServer);
-            final String pageWithLinkToIgnorePath = "/page_with_link_to_ignore.html";
-            final String pageWithLinkToIgnoreUrl = addPageToTestServer(webServer,
-                    pageWithLinkToIgnorePath,
-                    getHtmlForPageWithSimpleLinkTo(redirectTargetUrl));
-            final String synchronizationPath = "/sync.html";
-            final String synchronizationUrl = addPageToTestServer(webServer,
-                    synchronizationPath,
-                    getHtmlForPageWithSimpleLinkTo(redirectTargetUrl));
+        final String redirectTargetUrl = createRedirectTargetPage(mWebServer);
+        final String pageWithLinkToIgnorePath = "/page_with_link_to_ignore.html";
+        final String pageWithLinkToIgnoreUrl = addPageToTestServer(mWebServer,
+                pageWithLinkToIgnorePath,
+                getHtmlForPageWithSimpleLinkTo(redirectTargetUrl));
+        final String synchronizationPath = "/sync.html";
+        final String synchronizationUrl = addPageToTestServer(mWebServer,
+                synchronizationPath,
+                getHtmlForPageWithSimpleLinkTo(redirectTargetUrl));
 
-            loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(),
-                    pageWithLinkToIgnoreUrl);
+        loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(),
+                pageWithLinkToIgnoreUrl);
 
-            setShouldIgnoreNavigationReturnValueOnUiThread(shouldIgnoreNavigationHelper, true);
+        setShouldIgnoreNavigationReturnValueOnUiThread(shouldIgnoreNavigationHelper, true);
 
-            int callCount = shouldIgnoreNavigationHelper.getCallCount();
-            int onPageFinishedCallCount = contentsClient.getOnPageFinishedHelper().getCallCount();
-            clickOnLinkUsingJs(awContents, contentsClient);
-            // Some time around here true should be returned from the shouldIgnoreNavigation
-            // callback causing the navigation caused by calling clickOnLinkUsingJs to be ignored.
-            // We validate this by checking which pages were loaded on the server.
-            shouldIgnoreNavigationHelper.waitForCallback(callCount);
+        int callCount = shouldIgnoreNavigationHelper.getCallCount();
+        int onPageFinishedCallCount = contentsClient.getOnPageFinishedHelper().getCallCount();
+        clickOnLinkUsingJs(awContents, contentsClient);
+        // Some time around here true should be returned from the shouldIgnoreNavigation
+        // callback causing the navigation caused by calling clickOnLinkUsingJs to be ignored.
+        // We validate this by checking which pages were loaded on the server.
+        shouldIgnoreNavigationHelper.waitForCallback(callCount);
 
-            setShouldIgnoreNavigationReturnValueOnUiThread(shouldIgnoreNavigationHelper, false);
+        setShouldIgnoreNavigationReturnValueOnUiThread(shouldIgnoreNavigationHelper, false);
 
-            // We need to wait for the navigation to complete before we can initiate another load.
-            contentsClient.getOnPageFinishedHelper().waitForCallback(onPageFinishedCallCount);
-            loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), synchronizationUrl);
+        // We need to wait for the navigation to complete before we can initiate another load.
+        contentsClient.getOnPageFinishedHelper().waitForCallback(onPageFinishedCallCount);
+        loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), synchronizationUrl);
 
-            assertEquals(1, webServer.getRequestCount(pageWithLinkToIgnorePath));
-            assertEquals(1, webServer.getRequestCount(synchronizationPath));
-            assertEquals(0, webServer.getRequestCount(REDIRECT_TARGET_PATH));
-        } finally {
-            if (webServer != null) webServer.shutdown();
-        }
+        assertEquals(1, mWebServer.getRequestCount(pageWithLinkToIgnorePath));
+        assertEquals(1, mWebServer.getRequestCount(synchronizationPath));
+        assertEquals(0, mWebServer.getRequestCount(REDIRECT_TARGET_PATH));
     }
 
     @SmallTest
@@ -539,31 +511,30 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
         final TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
             contentsClient.getShouldIgnoreNavigationHelper();
 
-        TestWebServer webServer = null;
-        try {
-            // Set up the HTML page.
-            webServer = new TestWebServer(false);
-            final String redirectTargetUrl = createRedirectTargetPage(webServer);
-            final String postLinkUrl = addPageToTestServer(webServer, "/page_with_post_link.html",
-                    getHtmlForPageWithSimplePostFormTo(redirectTargetUrl));
+        final String redirectTargetUrl = createRedirectTargetPage(mWebServer);
+        final String postLinkUrl = addPageToTestServer(mWebServer, "/page_with_post_link.html",
+                getHtmlForPageWithSimplePostFormTo(redirectTargetUrl));
 
-            loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), postLinkUrl);
+        loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), postLinkUrl);
 
-            final int shouldIgnoreNavigationCallCount =
-                shouldIgnoreNavigationHelper.getCallCount();
+        final int shouldIgnoreNavigationCallCount =
+            shouldIgnoreNavigationHelper.getCallCount();
 
-            clickOnLinkUsingJs(awContents, contentsClient);
+        clickOnLinkUsingJs(awContents, contentsClient);
 
-            // After we load this URL we're certain that any in-flight callbacks for the previous
-            // navigation have been delivered.
-            loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), ABOUT_BLANK_URL);
+        // Wait for the target URL to be fetched from the server.
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mWebServer.getRequestCount(REDIRECT_TARGET_PATH) == 1;
+            }
+        }, WAIT_TIMEOUT_SECONDS * 1000, CHECK_INTERVAL));
 
-            assertEquals(shouldIgnoreNavigationCallCount,
-                    shouldIgnoreNavigationHelper.getCallCount());
-            assertEquals(1, webServer.getRequestCount(REDIRECT_TARGET_PATH));
-        } finally {
-            if (webServer != null) webServer.shutdown();
-        }
+        // Since the targetURL was loaded from the test server it means all processing related
+        // to dispatching a shouldIgnoreNavigation callback had finished and checking the call
+        // is stable.
+        assertEquals(shouldIgnoreNavigationCallCount,
+                shouldIgnoreNavigationHelper.getCallCount());
     }
 
     @SmallTest
@@ -576,32 +547,25 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
         final TestAwContentsClient.ShouldIgnoreNavigationHelper shouldIgnoreNavigationHelper =
             contentsClient.getShouldIgnoreNavigationHelper();
 
-        TestWebServer webServer = null;
-        try {
-            // Set up the HTML page.
-            webServer = new TestWebServer(false);
-            final String iframeRedirectTargetUrl = createRedirectTargetPage(webServer);
-            final String iframeRedirectUrl =
-                webServer.setRedirect("/302.html", iframeRedirectTargetUrl);
-            final String pageWithIframeUrl =
-                addPageToTestServer(webServer, "/iframe_intercept.html",
-                    makeHtmlPageFrom("", "<iframe src=\"" + iframeRedirectUrl + "\" />"));
+        final String iframeRedirectTargetUrl = createRedirectTargetPage(mWebServer);
+        final String iframeRedirectUrl =
+            mWebServer.setRedirect("/302.html", iframeRedirectTargetUrl);
+        final String pageWithIframeUrl =
+            addPageToTestServer(mWebServer, "/iframe_intercept.html",
+                makeHtmlPageFrom("", "<iframe src=\"" + iframeRedirectUrl + "\" />"));
 
-            final int shouldIgnoreNavigationCallCount =
-                shouldIgnoreNavigationHelper.getCallCount();
+        final int shouldIgnoreNavigationCallCount =
+            shouldIgnoreNavigationHelper.getCallCount();
 
-            loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), pageWithIframeUrl);
+        loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), pageWithIframeUrl);
 
-            // After we load this URL we're certain that any in-flight callbacks for the previous
-            // navigation have been delivered.
-            loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), ABOUT_BLANK_URL);
+        // After we load this URL we're certain that any in-flight callbacks for the previous
+        // navigation have been delivered.
+        loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), ABOUT_BLANK_URL);
 
-            assertEquals(shouldIgnoreNavigationCallCount,
-                    shouldIgnoreNavigationHelper.getCallCount());
-            assertEquals(1, webServer.getRequestCount(REDIRECT_TARGET_PATH));
-        } finally {
-            if (webServer != null) webServer.shutdown();
-        }
+        assertEquals(shouldIgnoreNavigationCallCount,
+                shouldIgnoreNavigationHelper.getCallCount());
+        assertEquals(1, mWebServer.getRequestCount(REDIRECT_TARGET_PATH));
     }
 
     /**
@@ -657,35 +621,21 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
     @SmallTest
     @Feature({"Android-WebView", "Navigation"})
     public void testShouldIgnoreNavigationCalledOn302Redirect() throws Throwable {
-        TestWebServer webServer = null;
-        try {
-            // Set up the HTML page.
-            webServer = new TestWebServer(false);
-            final String redirectTargetUrl = createRedirectTargetPage(webServer);
-            final String redirectUrl = webServer.setRedirect("/302.html", redirectTargetUrl);
+        final String redirectTargetUrl = createRedirectTargetPage(mWebServer);
+        final String redirectUrl = mWebServer.setRedirect("/302.html", redirectTargetUrl);
 
-            doTestShouldIgnoreNavigationCalledOnRedirect(webServer, redirectUrl,
-                    redirectTargetUrl);
-        } finally {
-            if (webServer != null) webServer.shutdown();
-        }
+        doTestShouldIgnoreNavigationCalledOnRedirect(mWebServer, redirectUrl,
+                redirectTargetUrl);
     }
 
     @SmallTest
     @Feature({"Android-WebView", "Navigation"})
     public void testShouldIgnoreNavigationCalledOnMetaRefreshRedirect() throws Throwable {
-        TestWebServer webServer = null;
-        try {
-            // Set up the HTML page.
-            webServer = new TestWebServer(false);
-            final String redirectTargetUrl = createRedirectTargetPage(webServer);
-            final String redirectUrl = addPageToTestServer(webServer, "/meta_refresh.html",
-                    getHtmlForPageWithMetaRefreshRedirectTo(redirectTargetUrl));
-            doTestShouldIgnoreNavigationCalledOnRedirect(webServer, redirectUrl,
-                    redirectTargetUrl);
-        } finally {
-            if (webServer != null) webServer.shutdown();
-        }
+        final String redirectTargetUrl = createRedirectTargetPage(mWebServer);
+        final String redirectUrl = addPageToTestServer(mWebServer, "/meta_refresh.html",
+                getHtmlForPageWithMetaRefreshRedirectTo(redirectTargetUrl));
+        doTestShouldIgnoreNavigationCalledOnRedirect(mWebServer, redirectUrl,
+                redirectTargetUrl);
     }
 
 
@@ -693,71 +643,43 @@ public class AwContentsClientShouldIgnoreNavigationTest extends AndroidWebViewTe
     @Feature({"Android-WebView", "Navigation"})
     public void testShouldIgnoreNavigationCalledOnJavaScriptLocationImmediateAssignRedirect()
             throws Throwable {
-        TestWebServer webServer = null;
-        try {
-            // Set up the HTML page.
-            webServer = new TestWebServer(false);
-            final String redirectTargetUrl = createRedirectTargetPage(webServer);
-            final String redirectUrl = addPageToTestServer(webServer, "/js_immediate_assign.html",
-                    getHtmlForPageWithJsRedirectTo(redirectTargetUrl, "Assign", 0));
-            doTestShouldIgnoreNavigationCalledOnRedirect(webServer, redirectUrl,
-                    redirectTargetUrl);
-        } finally {
-            if (webServer != null) webServer.shutdown();
-        }
+        final String redirectTargetUrl = createRedirectTargetPage(mWebServer);
+        final String redirectUrl = addPageToTestServer(mWebServer, "/js_immediate_assign.html",
+                getHtmlForPageWithJsRedirectTo(redirectTargetUrl, "Assign", 0));
+        doTestShouldIgnoreNavigationCalledOnRedirect(mWebServer, redirectUrl,
+                redirectTargetUrl);
     }
 
     @SmallTest
     @Feature({"Android-WebView", "Navigation"})
     public void testShouldIgnoreNavigationCalledOnJavaScriptLocationImmediateReplaceRedirect()
             throws Throwable {
-        TestWebServer webServer = null;
-        try {
-            // Set up the HTML page.
-            webServer = new TestWebServer(false);
-            final String redirectTargetUrl = createRedirectTargetPage(webServer);
-            final String redirectUrl = addPageToTestServer(webServer, "/js_immediate_replace.html",
-                    getHtmlForPageWithJsRedirectTo(redirectTargetUrl, "Replace", 0));
-            doTestShouldIgnoreNavigationCalledOnRedirect(webServer, redirectUrl,
-                    redirectTargetUrl);
-        } finally {
-            if (webServer != null) webServer.shutdown();
-        }
+        final String redirectTargetUrl = createRedirectTargetPage(mWebServer);
+        final String redirectUrl = addPageToTestServer(mWebServer, "/js_immediate_replace.html",
+                getHtmlForPageWithJsRedirectTo(redirectTargetUrl, "Replace", 0));
+        doTestShouldIgnoreNavigationCalledOnRedirect(mWebServer, redirectUrl,
+                redirectTargetUrl);
     }
 
     @SmallTest
     @Feature({"Android-WebView", "Navigation"})
     public void testShouldIgnoreNavigationCalledOnJavaScriptLocationDelayedAssignRedirect()
             throws Throwable {
-        TestWebServer webServer = null;
-        try {
-            // Set up the HTML page.
-            webServer = new TestWebServer(false);
-            final String redirectTargetUrl = createRedirectTargetPage(webServer);
-            final String redirectUrl = addPageToTestServer(webServer, "/js_delayed_assign.html",
-                    getHtmlForPageWithJsRedirectTo(redirectTargetUrl, "Assign", 100));
-            doTestShouldIgnoreNavigationCalledOnRedirect(webServer, redirectUrl,
-                    redirectTargetUrl);
-        } finally {
-            if (webServer != null) webServer.shutdown();
-        }
+        final String redirectTargetUrl = createRedirectTargetPage(mWebServer);
+        final String redirectUrl = addPageToTestServer(mWebServer, "/js_delayed_assign.html",
+                getHtmlForPageWithJsRedirectTo(redirectTargetUrl, "Assign", 100));
+        doTestShouldIgnoreNavigationCalledOnRedirect(mWebServer, redirectUrl,
+                redirectTargetUrl);
     }
 
     @SmallTest
     @Feature({"Android-WebView", "Navigation"})
     public void testShouldIgnoreNavigationCalledOnJavaScriptLocationDelayedReplaceRedirect()
             throws Throwable {
-        TestWebServer webServer = null;
-        try {
-            // Set up the HTML page.
-            webServer = new TestWebServer(false);
-            final String redirectTargetUrl = createRedirectTargetPage(webServer);
-            final String redirectUrl = addPageToTestServer(webServer, "/js_delayed_replace.html",
-                    getHtmlForPageWithJsRedirectTo(redirectTargetUrl, "Replace", 100));
-            doTestShouldIgnoreNavigationCalledOnRedirect(webServer, redirectUrl,
-                    redirectTargetUrl);
-        } finally {
-            if (webServer != null) webServer.shutdown();
-        }
+        final String redirectTargetUrl = createRedirectTargetPage(mWebServer);
+        final String redirectUrl = addPageToTestServer(mWebServer, "/js_delayed_replace.html",
+                getHtmlForPageWithJsRedirectTo(redirectTargetUrl, "Replace", 100));
+        doTestShouldIgnoreNavigationCalledOnRedirect(mWebServer, redirectUrl,
+                redirectTargetUrl);
     }
 }
