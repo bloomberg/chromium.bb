@@ -26,6 +26,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_client.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -262,6 +263,10 @@ void FeedbackUtil::SendReport(
 
   userfeedback::CommonData* common_data = feedback_data.mutable_common_data();
   userfeedback::WebData* web_data = feedback_data.mutable_web_data();
+
+  // Set our user agent.
+  userfeedback::Navigator* navigator = web_data->mutable_navigator();
+  navigator->set_user_agent(content::GetUserAgent(GURL()));
 
   // Set GAIA id to 0. We're not using gaia id's for recording
   // use feedback - we're using the e-mail field, allows users to
