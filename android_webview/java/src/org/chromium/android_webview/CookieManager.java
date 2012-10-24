@@ -25,29 +25,16 @@ public final class CookieManager {
      * Control whether cookie is enabled or disabled
      * @param accept TRUE if accept cookie
      */
-    public synchronized void setAcceptCookie(boolean accept) {
-        final boolean finalAccept = accept;
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                nativeSetAcceptCookie(finalAccept);
-            }
-        });
+    public void setAcceptCookie(boolean accept) {
+        nativeSetAcceptCookie(accept);
     }
-
-    private final Callable<Boolean> acceptCookieCallable = new Callable<Boolean>() {
-        @Override
-        public Boolean call() throws Exception {
-            return nativeAcceptCookie();
-        }
-    };
 
     /**
      * Return whether cookie is enabled
      * @return TRUE if accept cookie
      */
-    public synchronized boolean acceptCookie() {
-        return ThreadUtils.runOnUiThreadBlockingNoException(acceptCookieCallable);
+    public boolean acceptCookie() {
+        return nativeAcceptCookie();
     }
 
     /**
@@ -58,12 +45,7 @@ public final class CookieManager {
      * @param value The value for set-cookie: in http response header
      */
     public void setCookie(final String url, final String value) {
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                nativeSetCookie(url, value);
-            }
-        });
+        nativeSetCookie(url, value);
     }
 
     /**
@@ -73,85 +55,44 @@ public final class CookieManager {
      * @return The cookies in the format of NAME=VALUE [; NAME=VALUE]
      */
     public String getCookie(final String url) {
-        String cookie = ThreadUtils.runOnUiThreadBlockingNoException(new Callable<String>() {
-            @Override
-            public String call() throws Exception {
-                return nativeGetCookie(url.toString());
-            }
-        });
+        String cookie = nativeGetCookie(url.toString());
         // Return null if the string is empty to match legacy behavior
         return cookie == null || cookie.trim().isEmpty() ? null : cookie;
     }
-
-    private final Runnable removeSessionCookieRunnable = new Runnable() {
-        @Override
-        public void run() {
-            nativeRemoveSessionCookie();
-        }
-    };
 
     /**
      * Remove all session cookies, which are cookies without expiration date
      */
     public void removeSessionCookie() {
-        ThreadUtils.runOnUiThread(removeSessionCookieRunnable);
+        nativeRemoveSessionCookie();
     }
-
-    private final Runnable removeAllCookieRunnable = new Runnable() {
-        @Override
-        public void run() {
-            nativeRemoveAllCookie();
-        }
-    };
 
     /**
      * Remove all cookies
      */
     public void removeAllCookie() {
-        ThreadUtils.runOnUiThread(removeAllCookieRunnable);
+        nativeRemoveAllCookie();
     }
-
-    private final Callable<Boolean> hasCookiesCallable = new Callable<Boolean>() {
-        @Override
-        public Boolean call() throws Exception {
-            return nativeHasCookies();
-        }
-    };
 
     /**
      *  Return true if there are stored cookies.
      */
-    public synchronized boolean hasCookies() {
-        return ThreadUtils.runOnUiThreadBlockingNoException(hasCookiesCallable);
+    public boolean hasCookies() {
+        return nativeHasCookies();
     }
-
-    private final Runnable removeExpiredCookieRunnable = new Runnable() {
-        @Override
-        public void run() {
-            nativeRemoveExpiredCookie();
-        }
-    };
 
     /**
      * Remove all expired cookies
      */
     public void removeExpiredCookie() {
-        ThreadUtils.runOnUiThread(removeExpiredCookieRunnable);
+        nativeRemoveExpiredCookie();
     }
-
-    private static final Callable<Boolean> allowFileSchemeCookiesCallable =
-            new Callable<Boolean>() {
-        @Override
-        public Boolean call() throws Exception {
-            return nativeAllowFileSchemeCookies();
-        }
-    };
 
     /**
      * Whether cookies are accepted for file scheme URLs.
      */
     public static boolean allowFileSchemeCookies() {
-        return ThreadUtils.runOnUiThreadBlockingNoException(allowFileSchemeCookiesCallable);
+        return nativeAllowFileSchemeCookies();
     }
 
     /**
@@ -164,13 +105,7 @@ public final class CookieManager {
      * instance has been created.
      */
     public static void setAcceptFileSchemeCookies(boolean accept) {
-        final boolean finalAccept = accept;
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                nativeSetAcceptFileSchemeCookies(finalAccept);
-            }
-        });
+        nativeSetAcceptFileSchemeCookies(accept);
     }
 
     private native void nativeSetAcceptCookie(boolean accept);

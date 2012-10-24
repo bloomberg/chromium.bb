@@ -9,10 +9,14 @@
 #include "android_webview/native/aw_browser_dependency_factory.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/lazy_instance.h"
+#include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/url_constants.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
@@ -27,59 +31,106 @@ using net::CookieList;
 using net::CookieMonster;
 using net::URLRequestContextGetter;
 
-// CookieManager should be refactored to not require all tasks accessing the
-// CookieStore to be piped through the IO thread.  It is currently required as
-// the URLRequestContext provides the easiest mechanism for accessing the
-// CookieStore, but the CookieStore is threadsafe.  In the future, we may
-// instead want to inject an explicit CookieStore dependency into this object
-// during process initialization to avoid depending on the URLRequestContext.
-//
-// In addition to the IO thread being the easiest access mechanism, it is also
-// used because the async cookie tasks need to be processed on a different
-// thread than the caller from Java, which can be any thread.  But, the calling
-// thread will be 'dead' blocked waiting on the async task to complete, so we
-// need it to complete on a 'live' (non-blocked) thread that is still pumping
-// messages.
-//
-// We could refactor to only provide an asynchronous (but thread safe) API on
-// the native side, and move this support for legacy synchronous blocking
-// messages into a java-side worker thread.
+// In the future, we may instead want to inject an explicit CookieStore
+// dependency into this object during process initialization to avoid
+// depending on the URLRequestContext.
+// See issue http://crbug.com/157683
+
+// All functions on the CookieManager can be called from any thread, including
+// threads without a message loop. BrowserThread::FILE is used to call methods
+// on CookieMonster that needs to be called, and called back, on a chrome
+// thread.
 
 namespace android_webview {
 
 namespace {
 
-typedef base::Callback<void(scoped_refptr<URLRequestContextGetter>,
-                            base::WaitableEvent*)> CookieTask;
+typedef base::Callback<void(base::WaitableEvent*)> CookieTask;
 
-// Executes the |callback| task on the IO thread and |wait_for_completion|
-// should only be true if the Java API method returns a value or is explicitly
-// stated to be synchronous.
-static void ExecCookieTask(const CookieTask& callback,
+class CookieManagerStatic {
+ public:
+  CookieManagerStatic() {
+    // Get the context on the UI thread
+    URLRequestContextGetter* context_getter_raw;
+    if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+      GetContext(&context_getter_raw, NULL);
+    } else {
+      base::WaitableEvent completion(false, false);
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+          base::Bind(GetContext, &context_getter_raw, &completion));
+      ScopedAllowWaitForLegacyWebViewApi wait;
+      completion.Wait();
+    }
+    scoped_refptr<URLRequestContextGetter> context_getter = context_getter_raw;
+
+    // Get the URLRequestcontext (and CookieMonster) on the IO thread
+    if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+      GetCookieMonster(context_getter, &cookie_monster_, NULL);
+    } else {
+      base::WaitableEvent completion(false, false);
+      BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+          base::Bind(GetCookieMonster,
+                     context_getter,
+                     &cookie_monster_,
+                     &completion));
+      ScopedAllowWaitForLegacyWebViewApi wait;
+      completion.Wait();
+    }
+  }
+
+  CookieMonster* get_cookie_monster() {
+    return cookie_monster_;
+  }
+
+ private:
+  CookieMonster* cookie_monster_;
+
+  // Must be called on UI thread
+  static void GetContext(URLRequestContextGetter** context_getter,
+                         base::WaitableEvent* completion) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    *context_getter = android_webview::AwBrowserDependencyFactory::
+        GetInstance()->GetBrowserContext(false)->GetRequestContext();
+    if (completion) {
+      completion->Signal();
+    }
+  }
+
+  // Must be called on the IO thread
+  static void GetCookieMonster(
+      scoped_refptr<URLRequestContextGetter> context_getter,
+      CookieMonster** cookieMonster,
+      base::WaitableEvent* completion) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    *cookieMonster = context_getter->GetURLRequestContext()->cookie_store()->
+        GetCookieMonster();
+    if (completion) {
+      completion->Signal();
+    }
+  }
+};
+
+static base::LazyInstance<CookieManagerStatic> cookie_manager_static =
+    LAZY_INSTANCE_INITIALIZER;
+
+// Executes the |task| on the FILE thread. |wait_for_completion| should only be
+// true if the Java API method returns a value or is explicitly stated to be
+// synchronous.
+static void ExecCookieTask(const CookieTask& task,
                            const bool wait_for_completion) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  base::WaitableEvent completion(false, false);
 
-  content::BrowserContext* context =
-      android_webview::AwBrowserDependencyFactory::GetInstance()->
-          GetBrowserContext(false);
-  if (!context)
-    return;
+  // Force construction of the wrapper as soon as possible. Also note that
+  // constructing the cookie_manager_static inside the CookieTask will cause a
+  // deadlock if the current thread is the UI or IO thread.
+  cookie_manager_static.Get();
 
-  scoped_refptr<URLRequestContextGetter> context_getter(
-      context->GetRequestContext());
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+      base::Bind(task, wait_for_completion ? &completion : NULL));
 
   if (wait_for_completion) {
-    base::WaitableEvent completion(false, false);
-
-    context->GetRequestContext()->GetNetworkTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(callback, context_getter, &completion));
-
     ScopedAllowWaitForLegacyWebViewApi wait;
     completion.Wait();
-  } else {
-    base::WaitableEvent* cb = NULL;
-    context->GetRequestContext()->GetNetworkTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(callback, context_getter, cb));
   }
 }
 
@@ -95,21 +146,20 @@ static jboolean AcceptCookie(JNIEnv* env, jobject obj) {
 
 namespace {
 
-// The CookieManager API does not return a value for SetCookie,
-// so we don't need to propagate the |success| value back to the caller.
 static void SetCookieCompleted(bool success) {
+  // The CookieManager API does not return a value for SetCookie,
+  // so we don't need to propagate the |success| value back to the caller.
 }
 
 static void SetCookieAsyncHelper(
     const GURL& host,
     const std::string& value,
-    scoped_refptr<URLRequestContextGetter> context_getter,
     base::WaitableEvent* completion) {
   DCHECK(!completion);
   net::CookieOptions options;
   options.set_include_httponly();
 
-  context_getter->GetURLRequestContext()->cookie_store()->
+  cookie_manager_static.Get().get_cookie_monster()->
       SetCookieWithOptionsAsync(host, value, options,
                                 base::Bind(&SetCookieCompleted));
 }
@@ -136,13 +186,12 @@ static void GetCookieValueCompleted(base::WaitableEvent* completion,
 static void GetCookieValueAsyncHelper(
     const GURL& host,
     std::string* result,
-    scoped_refptr<URLRequestContextGetter> context_getter,
     base::WaitableEvent* completion) {
 
   net::CookieOptions options;
   options.set_include_httponly();
 
-  context_getter->GetURLRequestContext()->cookie_store()->
+  cookie_manager_static.Get().get_cookie_monster()->
       GetCookiesWithOptionsAsync(host, options,
                                  base::Bind(&GetCookieValueCompleted,
                                             completion,
@@ -162,21 +211,16 @@ static jstring GetCookie(JNIEnv* env, jobject obj, jstring url) {
 
 namespace {
 
-static void RemoveSessionCookieCompleted(int num_deleted) {
-  // The CookieManager API does not return a value for removeSessionCookie,
-  // so we don't need to propagate the |num_deleted| value back to the caller.
+static void RemoveCookiesCompleted(int num_deleted) {
+  // The CookieManager API does not return a value for removeSessionCookie or
+  // removeAllCookie, so we don't need to propagate the |num_deleted| value back
+  // to the caller.
 }
 
-static void RemoveSessionCookieAsyncHelper(
-    scoped_refptr<URLRequestContextGetter> context_getter,
-    base::WaitableEvent* completion) {
+static void RemoveSessionCookieAsyncHelper(base::WaitableEvent* completion) {
   DCHECK(!completion);
-  net::CookieOptions options;
-  options.set_include_httponly();
-
-  CookieMonster* monster = context_getter->GetURLRequestContext()->
-      cookie_store()->GetCookieMonster();
-  monster->DeleteSessionCookiesAsync(base::Bind(&RemoveSessionCookieCompleted));
+  cookie_manager_static.Get().get_cookie_monster()->
+      DeleteSessionCookiesAsync(base::Bind(&RemoveCookiesCompleted));
 }
 
 }  // namespace
@@ -187,18 +231,10 @@ static void RemoveSessionCookie(JNIEnv* env, jobject obj) {
 
 namespace {
 
-static void RemoveAllCookieCompleted(int num_deleted) {
-  // The CookieManager API does not return a value for removeAllCookie,
-  // so we don't need to propagate the |num_deleted| value back to the caller.
-}
-
-static void RemoveAllCookieAsyncHelper(
-    scoped_refptr<URLRequestContextGetter> context_getter,
-    base::WaitableEvent* completion) {
+static void RemoveAllCookieAsyncHelper(base::WaitableEvent* completion) {
   DCHECK(!completion);
-  CookieMonster* monster = context_getter->GetURLRequestContext()->
-      cookie_store()->GetCookieMonster();
-  monster->DeleteAllAsync(base::Bind(&RemoveAllCookieCompleted));
+  cookie_manager_static.Get().get_cookie_monster()->
+      DeleteAllAsync(base::Bind(&RemoveCookiesCompleted));
 }
 
 }  // namespace
@@ -222,15 +258,12 @@ static void HasCookiesCompleted(base::WaitableEvent* completion,
   completion->Signal();
 }
 
-static void HasCookiesAsyncHelper(
-    bool* result,
-    scoped_refptr<URLRequestContextGetter> context_getter,
-    base::WaitableEvent* completion) {
-
-  CookieMonster* monster = context_getter->GetURLRequestContext()->
-      cookie_store()->GetCookieMonster();
-  monster->GetAllCookiesAsync(base::Bind(&HasCookiesCompleted, completion,
-                                         result));
+static void HasCookiesAsyncHelper(bool* result,
+                                  base::WaitableEvent* completion) {
+  cookie_manager_static.Get().get_cookie_monster()->
+      GetAllCookiesAsync(base::Bind(&HasCookiesCompleted,
+                                    completion,
+                                    result));
 }
 
 }  // namespace
@@ -241,50 +274,15 @@ static jboolean HasCookies(JNIEnv* env, jobject obj) {
   return has_cookies;
 }
 
-namespace {
-
-static void AllowFileSchemeCookiesAsyncHelper(
-    bool* accept,
-    scoped_refptr<URLRequestContextGetter> context_getter,
-    base::WaitableEvent* completion) {
-
-  CookieMonster* monster = context_getter->GetURLRequestContext()->
-      cookie_store()->GetCookieMonster();
-  *accept = monster->IsCookieableScheme("file");
-
-  DCHECK(completion);
-  completion->Signal();
-}
-
-}  // namespace
-
 static jboolean AllowFileSchemeCookies(JNIEnv* env, jclass obj) {
-  bool accept;
-  ExecCookieTask(base::Bind(&AllowFileSchemeCookiesAsyncHelper, &accept), true);
-  return accept;
+  return cookie_manager_static.Get().get_cookie_monster()->
+      IsCookieableScheme(chrome::kFileScheme);
 }
-
-namespace {
-
-static void SetAcceptFileSchemeCookiesAsyncHelper(
-    bool accept,
-    scoped_refptr<URLRequestContextGetter> context_getter,
-    base::WaitableEvent* completion) {
-
-  CookieMonster* monster = context_getter->GetURLRequestContext()->
-      cookie_store()->GetCookieMonster();
-  monster->SetEnableFileScheme(accept);
-
-  DCHECK(completion);
-  completion->Signal();
-}
-
-}  // namespace
 
 static void SetAcceptFileSchemeCookies(JNIEnv* env, jclass obj,
                                        jboolean accept) {
-  ExecCookieTask(base::Bind(&SetAcceptFileSchemeCookiesAsyncHelper, accept),
-                 true);
+  return cookie_manager_static.Get().get_cookie_monster()->
+      SetEnableFileScheme(accept);
 }
 
 bool RegisterCookieManager(JNIEnv* env) {
