@@ -23,10 +23,13 @@ syncer::SyncerError PasswordModelWorker::DoWorkAndWaitUntilDone(
     const syncer::WorkCallback& work) {
   WaitableEvent done(false, false);
   syncer::SyncerError error = syncer::UNSET;
-  password_store_->ScheduleTask(
-      base::Bind(&PasswordModelWorker::CallDoWorkAndSignalTask,
-                 this, work, &done, &error));
-  done.Wait();
+  if (password_store_->ScheduleTask(
+          base::Bind(&PasswordModelWorker::CallDoWorkAndSignalTask,
+                     this, work, &done, &error))) {
+    done.Wait();
+  } else {
+    error = syncer::CANNOT_DO_WORK;
+  }
   return error;
 }
 

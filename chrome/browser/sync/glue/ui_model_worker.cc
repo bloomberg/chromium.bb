@@ -103,7 +103,8 @@ syncer::SyncerError UIModelWorker::DoWorkAndWaitUntilDone(
     pending_work_ = base::Bind(&CallDoWorkAndSignalCallback, work, &work_done,
                                base::Unretained(this), &error_info);
     if (!BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, pending_work_)) {
-      LOG(WARNING) << "Could not post work to UI loop.";
+      DLOG(WARNING) << "Could not post work to UI loop.";
+      error_info = syncer::CANNOT_DO_WORK;
       pending_work_.Reset();
       syncapi_event_.Signal();
       return error_info;

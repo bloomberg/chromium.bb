@@ -31,7 +31,8 @@ syncer::SyncerError BrowserThreadModelWorker::DoWorkAndWaitUntilDone(
       FROM_HERE,
       base::Bind(&BrowserThreadModelWorker::CallDoWorkAndSignalTask, this,
                  work, &done, &error))) {
-    NOTREACHED() << "Failed to post task to thread " << thread_;
+    DLOG(WARNING) << "Failed to post task to thread " << thread_;
+    error = syncer::CANNOT_DO_WORK;
     return error;
   }
   done.Wait();
