@@ -35,7 +35,9 @@ void SetChromeSpecificCommandLineFlags() {
   SetCommandLineSwitch(switches::kEnableNpn);
 
   // Turn on autofill.
-  SetCommandLineSwitch(switches::kExternalAutofillPopup);
+  // TODO(nileshagrawal): Remove this flag once Android stops relying on
+  // tab_contents.cc.
+  SetCommandLineSwitch(switches::kEnableNewAutofillUi);
 
   // Turn on autologin.
   SetCommandLineSwitch(switches::kEnableAutologin);

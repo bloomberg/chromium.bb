@@ -64,7 +64,6 @@
 using base::TimeTicks;
 using content::BrowserThread;
 using content::RenderViewHost;
-using switches::kEnableAutofillFeedback;
 
 namespace {
 

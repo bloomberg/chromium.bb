@@ -116,7 +116,7 @@ TabContents::TabContents(WebContents* contents)
   AutofillManager::CreateForWebContentsAndDelegate(
       contents, TabAutofillManagerDelegate::FromWebContents(contents));
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kExternalAutofillPopup)) {
+          switches::kEnableNewAutofillUi)) {
     AutofillExternalDelegate::CreateForWebContentsAndManager(
         contents, AutofillManager::FromWebContents(contents));
     AutofillManager::FromWebContents(contents)->SetExternalDelegate(

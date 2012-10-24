@@ -458,12 +458,6 @@ const char kEnableAsyncDns[]                = "enable-async-dns";
 // HttpAuthHandlerNegotiate::CreateSPN for more background.
 const char kEnableAuthNegotiatePort[]       = "enable-auth-negotiate-port";
 
-// With this flag set, Chrome will occasionally prompt the user to volunteer
-// Autofill usage data beyond what is collected by default. This is data that
-// we expect to be helpful for debugging, but that we do not want to send up
-// automatically due to privacy concerns.
-const char kEnableAutofillFeedback[]        = "enable-autofill-feedback";
-
 // Enables the pre- and auto-login features. When a user signs in to sync, the
 // browser's cookie jar is pre-filled with GAIA cookies. When the user visits a
 // GAIA login page, an info bar can help the user login.
@@ -591,6 +585,13 @@ const char kEnableNaClExceptionHandling[]   = "enable-nacl-exception-handling";
 // Enables the native messaging extensions API.
 const char kEnableNativeMessaging[]         = "enable-native-messaging";
 
+// Enables the new Autofill UI, which is part of the browser process rather than
+// part of the renderer process.  http://crbug.com/51644
+const char kEnableNewAutofillUi[]           = "enable-new-autofill-ui";
+
+// Enables new Autofill heuristics, such as adding support for new field types.
+const char kEnableNewAutofillHeuristics[]   = "enable-new-autofill-heuristics";
+
 // Enables NPN and SPDY. In case server supports SPDY, browser will use SPDY.
 const char kEnableNpn[]                     = "enable-npn";
 
@@ -679,9 +680,6 @@ const char kExtensionProcess[]              = "extension-process";
 
 // Frequency in seconds for Extensions auto-update.
 const char kExtensionsUpdateFrequency[]     = "extensions-update-frequency";
-
-// Should we use an external Autofill popup?  Default is no.
-const char kExternalAutofillPopup[]         = "external-autofill-popup";
 
 // These two flags are added around the switches about:flags adds to the
 // command line. This is useful to see which switches were added by about:flags

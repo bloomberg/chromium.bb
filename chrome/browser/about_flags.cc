@@ -199,14 +199,17 @@ const Experiment::Choice kAshBootAnimationFunction[] = {
 // the top of that file for details) to update the chromeactions.txt file, which
 // will enable UMA to record your feature flag.
 //
-// After your feature has shipped under a flag, you can locate the metrics
-// under the action name AboutFlags_internal-action-name. Actions are recorded
-// once per startup, so you should divide this number by AboutFlags_StartupTick
-// to get a sense of usage. Note that this will not be the same as number of
-// users with a given feature enabled because users can quit and relaunch
-// the application multiple times over a given time interval.
-// TODO(rsesek): See if there's a way to count per-user, rather than
-// per-startup.
+// After your feature has shipped under a flag, you can locate the metrics under
+// the action name AboutFlags_internal-action-name. Actions are recorded once
+// per startup, so you should divide this number by AboutFlags_StartupTick to
+// get a sense of usage. Note that this will not be the same as number of users
+// with a given feature enabled because users can quit and relaunch the
+// application multiple times over a given time interval. The dashboard also
+// shows you how many (metrics reporting) users have enabled the flag over the
+// last seven days. However, note that this is not the same as the number of
+// users who have the flag enabled, since enabling the flag happens once,
+// whereas running with the flag enabled happens until the user flips the flag
+// again.
 
 // To add a new experiment add to the end of kExperiments. There are two
 // distinct types of experiments:
@@ -988,6 +991,20 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_PERFORMANCE_MONITOR_GATHERING_DESCRIPTION,
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kPerformanceMonitorGathering)
+  },
+  {
+    "enable-new-autofill-ui",
+    IDS_FLAGS_ENABLE_NEW_AUTOFILL_UI_NAME,
+    IDS_FLAGS_ENABLE_NEW_AUTOFILL_UI_DESCRIPTION,
+    kOsWin | kOsLinux,
+    SINGLE_VALUE_TYPE(switches::kEnableNewAutofillUi)
+  },
+  {
+    "enable-new-autofill-heuristics",
+    IDS_FLAGS_ENABLE_NEW_AUTOFILL_HEURISTICS_NAME,
+    IDS_FLAGS_ENABLE_NEW_AUTOFILL_HEURISTICS_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableNewAutofillHeuristics)
   },
 };
 
