@@ -112,7 +112,6 @@ void ChromeBrowserFieldTrials::SetupFieldTrials(bool proxy_policy_is_set) {
     ProxyConnectionsFieldTrial();
   prerender::ConfigurePrefetchAndPrerender(parsed_command_line_);
   SpdyFieldTrial();
-  ConnectBackupJobsFieldTrial();
   WarmConnectionFieldTrial();
   PredictorFieldTrial();
   AutoLaunchChromeFieldTrial();
@@ -289,35 +288,6 @@ void ChromeBrowserFieldTrials::WarmConnectionFieldTrial() {
                               last_accessed_socket };
   SetSocketReusePolicy(warmest_socket_trial_group, policy_list,
                        arraysize(policy_list));
-}
-
-// If neither --enable-connect-backup-jobs or --disable-connect-backup-jobs is
-// specified, run an A/B test for automatically establishing backup TCP
-// connections when a certain timeout value is exceeded.
-void ChromeBrowserFieldTrials::ConnectBackupJobsFieldTrial() {
-  if (parsed_command_line_.HasSwitch(switches::kEnableConnectBackupJobs)) {
-    net::internal::ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(
-        true);
-  } else if (parsed_command_line_.HasSwitch(
-        switches::kDisableConnectBackupJobs)) {
-    net::internal::ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(
-        false);
-  } else {
-    const base::FieldTrial::Probability kConnectBackupJobsDivisor = 100;
-    // 1% probability.
-    const base::FieldTrial::Probability kConnectBackupJobsProbability = 1;
-    // After June 30, 2011 builds, it will always be in default group.
-    int connect_backup_jobs_enabled = -1;
-    scoped_refptr<base::FieldTrial> trial(
-        base::FieldTrialList::FactoryGetFieldTrial("ConnnectBackupJobs",
-            kConnectBackupJobsDivisor, "ConnectBackupJobsEnabled",
-            2011, 6, 30, &connect_backup_jobs_enabled));
-    trial->AppendGroup("ConnectBackupJobsDisabled",
-                       kConnectBackupJobsProbability);
-    const int trial_group = trial->group();
-    net::internal::ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(
-        trial_group == connect_backup_jobs_enabled);
-  }
 }
 
 void ChromeBrowserFieldTrials::PredictorFieldTrial() {

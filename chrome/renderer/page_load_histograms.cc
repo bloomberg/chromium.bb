@@ -423,42 +423,6 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
         begin_to_finish_all_loads);
   }
 
-  // Histograms to determine if backup connection jobs have an impact on PLT.
-  static const bool connect_backup_jobs_fieldtrial =
-      base::FieldTrialList::TrialExists("ConnnectBackupJobs");
-  if (connect_backup_jobs_fieldtrial) {
-    UMA_HISTOGRAM_ENUMERATION(
-        base::FieldTrial::MakeName("PLT.Abandoned", "ConnnectBackupJobs"),
-        abandoned_page ? 1 : 0, 2);
-    UMA_HISTOGRAM_ENUMERATION(
-        base::FieldTrial::MakeName("PLT.LoadType", "ConnnectBackupJobs"),
-        load_type, DocumentState::kLoadTypeMax);
-    switch (load_type) {
-      case DocumentState::NORMAL_LOAD:
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_NormalLoad", "ConnnectBackupJobs"),
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::LINK_LOAD_NORMAL:
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_LinkLoadNormal", "ConnnectBackupJobs"),
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::LINK_LOAD_RELOAD:
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_LinkLoadReload", "ConnnectBackupJobs"),
-            begin_to_finish_all_loads);
-        break;
-      case DocumentState::LINK_LOAD_CACHE_STALE_OK:
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_LinkLoadStaleOk", "ConnnectBackupJobs"),
-            begin_to_finish_all_loads);
-        break;
-      default:
-        break;
-    }
-  }
-
   // Histograms to determine effect of idle socket timeout.
   static const bool use_idle_socket_timeout_histogram =
       base::FieldTrialList::TrialExists("IdleSktToImpact");

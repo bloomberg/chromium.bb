@@ -286,10 +286,6 @@ const char kDisableClientSidePhishingDetection[] =
 
 const char kDisableComponentUpdate[]        = "disable-component-update";
 
-// Disables establishing a backup TCP connection if a specified timeout is
-// exceeded.
-const char kDisableConnectBackupJobs[]      = "disable-connect-backup-jobs";
-
 // Disables establishing certificate revocation information by downloading a
 // set of CRLs rather than performing on-line checks.
 const char kDisableCRLSets[]                = "disable-crl-sets";
@@ -475,10 +471,6 @@ const char kEnableCloudPolicyService[]      = "enable-cloud-policy-service";
 // This applies only when the process type is "service". Enables the Cloud
 // Print Proxy component within the service process.
 const char kEnableCloudPrintProxy[]         = "enable-cloud-print-proxy";
-
-// Enables establishing a backup TCP connection if a specified timeout is
-// exceeded.
-const char kEnableConnectBackupJobs[]       = "enable-connect-backup-jobs";
 
 // Enables fetching the user's contacts from Google and showing them in the
 // Chrome OS apps list.
