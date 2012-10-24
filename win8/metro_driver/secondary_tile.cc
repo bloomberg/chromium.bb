@@ -7,49 +7,16 @@
 
 #include <windows.ui.startscreen.h>
 
-#include "base/base_paths.h"
 #include "base/bind.h"
-#include "base/file_path.h"
 #include "base/logging.h"
-#include "base/path_service.h"
-#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
 #include "win8/metro_driver/chrome_app_view.h"
 #include "win8/metro_driver/winrt_utils.h"
 
 namespace {
 
-string16 GenerateTileId(const string16& url_str) {
-  uint8 hash[crypto::kSHA256Length];
-  crypto::SHA256HashString(UTF16ToUTF8(url_str), hash, sizeof(hash));
-  std::string hash_str = base::HexEncode(hash, sizeof(hash));
-  return UTF8ToUTF16(hash_str);
-}
-
-string16 GetLogoUrlString() {
-  FilePath module_path;
-  PathService::Get(base::DIR_MODULE, &module_path);
-  string16 scheme(L"ms-appx:///");
-  return scheme.append(module_path.BaseName().value())
-               .append(L"/SecondaryTile.png");
-}
-
-BOOL IsPinnedToStartScreen(const string16& url_str) {
-  mswr::ComPtr<winui::StartScreen::ISecondaryTileStatics> tile_statics;
-  HRESULT hr = winrt_utils::CreateActivationFactory(
-      RuntimeClass_Windows_UI_StartScreen_SecondaryTile,
-      tile_statics.GetAddressOf());
-  CheckHR(hr, "Failed to create instance of ISecondaryTileStatics");
-
-  boolean exists;
-  hr = tile_statics->Exists(MakeHString(GenerateTileId(url_str)), &exists);
-  CheckHR(hr, "ISecondaryTileStatics.Exists failed");
-  return exists;
-}
-
-void DeleteTileFromStartScreen(const string16& url_str) {
+void DeleteTileFromStartScreen(const string16& tile_id) {
   DVLOG(1) << __FUNCTION__;
   mswr::ComPtr<winui::StartScreen::ISecondaryTileFactory> tile_factory;
   HRESULT hr = winrt_utils::CreateActivationFactory(
@@ -58,7 +25,7 @@ void DeleteTileFromStartScreen(const string16& url_str) {
   CheckHR(hr, "Failed to create instance of ISecondaryTileFactory");
 
   mswrw::HString id;
-  id.Attach(MakeHString(GenerateTileId(url_str)));
+  id.Attach(MakeHString(tile_id));
 
   mswr::ComPtr<winui::StartScreen::ISecondaryTile> tile;
   hr = tile_factory->CreateWithId(id.Get(), tile.GetAddressOf());
@@ -76,9 +43,12 @@ void DeleteTileFromStartScreen(const string16& url_str) {
   CheckHR(hr, "Failed to put_Completed");
 }
 
-void CreateTileOnStartScreen(const string16& title_str,
-                             const string16& url_str) {
+void CreateTileOnStartScreen(const string16& tile_id,
+                             const string16& title_str,
+                             const string16& url_str,
+                             const FilePath& logo_path) {
   VLOG(1) << __FUNCTION__;
+
   mswr::ComPtr<winui::StartScreen::ISecondaryTileFactory> tile_factory;
   HRESULT hr = winrt_utils::CreateActivationFactory(
       RuntimeClass_Windows_UI_StartScreen_SecondaryTile,
@@ -89,8 +59,10 @@ void CreateTileOnStartScreen(const string16& title_str,
       winui::StartScreen::TileOptions_ShowNameOnLogo;
   mswrw::HString title;
   title.Attach(MakeHString(title_str));
+
   mswrw::HString id;
-  id.Attach(MakeHString(GenerateTileId(url_str)));
+  id.Attach(MakeHString(tile_id));
+
   mswrw::HString args;
   // The url is just passed into the tile agruments as is. Metro and desktop
   // chrome will see the arguments as command line parameters.
@@ -105,7 +77,7 @@ void CreateTileOnStartScreen(const string16& title_str,
   CheckHR(hr, "Failed to create URIFactory");
 
   mswrw::HString logo_url;
-  logo_url.Attach(MakeHString(GetLogoUrlString()));
+  logo_url.Attach(MakeHString(string16(L"file:///").append(logo_path.value())));
   mswr::ComPtr<winfoundtn::IUriRuntimeClass> uri;
   hr = uri_factory->CreateUri(logo_url.Get(), &uri);
   CheckHR(hr, "Failed to create URI");
@@ -135,26 +107,34 @@ void CreateTileOnStartScreen(const string16& title_str,
   CheckHR(hr, "Failed to put_Completed");
 }
 
-void TogglePinnedToStartScreen(const string16& title_str,
-                               const string16& url_str) {
-  if (IsPinnedToStartScreen(url_str)) {
-    DeleteTileFromStartScreen(url_str);
-    return;
-  }
-
-  CreateTileOnStartScreen(title_str, url_str);
-}
-
 }  // namespace
 
-BOOL MetroIsPinnedToStartScreen(const string16& url) {
-  VLOG(1) << __FUNCTION__ << " url: " << url;
-  return IsPinnedToStartScreen(url);
+BOOL MetroIsPinnedToStartScreen(const string16& tile_id) {
+  mswr::ComPtr<winui::StartScreen::ISecondaryTileStatics> tile_statics;
+  HRESULT hr = winrt_utils::CreateActivationFactory(
+      RuntimeClass_Windows_UI_StartScreen_SecondaryTile,
+      tile_statics.GetAddressOf());
+  CheckHR(hr, "Failed to create instance of ISecondaryTileStatics");
+
+  boolean exists;
+  hr = tile_statics->Exists(MakeHString(tile_id), &exists);
+  CheckHR(hr, "ISecondaryTileStatics.Exists failed");
+  return exists;
 }
 
-void MetroTogglePinnedToStartScreen(const string16& title,
-                                    const string16& url) {
-  DVLOG(1) << __FUNCTION__ << " title:" << title << " url: " << url;
+void MetroUnPinFromStartScreen(const string16& tile_id) {
   globals.appview_msg_loop->PostTask(
-      FROM_HERE, base::Bind(&TogglePinnedToStartScreen, title, url));
+      FROM_HERE, base::Bind(&DeleteTileFromStartScreen, tile_id));
+}
+
+void MetroPinToStartScreen(const string16& tile_id,
+                           const string16& title,
+                           const string16& url,
+                           const FilePath& logo_path) {
+  globals.appview_msg_loop->PostTask(
+    FROM_HERE, base::Bind(&CreateTileOnStartScreen,
+                          tile_id,
+                          title,
+                          url,
+                          logo_path));
 }

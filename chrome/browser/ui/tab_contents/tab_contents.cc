@@ -39,7 +39,6 @@
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/hung_plugin_tab_helper.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
-#include "chrome/browser/ui/metro_pin_tab_helper.h"
 #include "chrome/browser/ui/pdf/pdf_tab_helper.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
@@ -58,6 +57,10 @@
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
+#endif
+
+#if defined(OS_WIN)
+#include "chrome/browser/ui/metro_pin_tab_helper_win.h"
 #endif
 
 using content::WebContents;
@@ -135,7 +138,6 @@ TabContents::TabContents(WebContents* contents)
   HistoryTabHelper::CreateForWebContents(contents);
   HungPluginTabHelper::CreateForWebContents(contents);
   InfoBarTabHelper::CreateForWebContents(contents);
-  MetroPinTabHelper::CreateForWebContents(contents);
   NavigationMetricsRecorder::CreateForWebContents(contents);
   PasswordManagerDelegateImpl::CreateForWebContents(contents);
   PasswordManager::CreateForWebContentsAndDelegate(
@@ -184,6 +186,10 @@ TabContents::TabContents(WebContents* contents)
   // happens to be already connected.
   if (OneClickSigninHelper::CanOffer(contents, "", false))
       OneClickSigninHelper::CreateForWebContents(contents);
+#endif
+
+#if defined(OS_WIN)
+  MetroPinTabHelper::CreateForWebContents(contents);
 #endif
 }
 

@@ -45,7 +45,6 @@
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
-#include "chrome/browser/ui/metro_pin_tab_helper.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/search/search.h"
 #include "chrome/browser/ui/search/search_model.h"
@@ -80,6 +79,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"
+#include "chrome/browser/ui/metro_pin_tab_helper_win.h"
 #endif
 
 namespace {
@@ -651,8 +651,10 @@ bool CanBookmarkAllTabs(const Browser* browser) {
 }
 
 void TogglePagePinnedToStartScreen(Browser* browser) {
+#if defined(OS_WIN)
   MetroPinTabHelper::FromWebContents(GetActiveWebContents(browser))->
       TogglePinnedToStartScreen();
+#endif
 }
 
 void SavePage(Browser* browser) {
