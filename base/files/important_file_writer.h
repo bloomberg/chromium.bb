@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_IMPORTANT_FILE_WRITER_H_
-#define CHROME_COMMON_IMPORTANT_FILE_WRITER_H_
+#ifndef BASE_FILES_IMPORTANT_FILE_WRITER_H_
+#define BASE_FILES_IMPORTANT_FILE_WRITER_H_
 
 #include <string>
 
+#include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
@@ -15,9 +16,9 @@
 #include "base/timer.h"
 
 namespace base {
+
 class MessageLoopProxy;
 class Thread;
-}
 
 // Helper to ensure that a file won't be corrupted by the write (for example on
 // application crash). Consider a naive way to save an important file F:
@@ -35,7 +36,7 @@ class Thread;
 //
 // If you want to know more about this approach and ext3/ext4 fsync issues, see
 // http://valhenson.livejournal.com/37921.html
-class ImportantFileWriter : public base::NonThreadSafe {
+class BASE_EXPORT ImportantFileWriter : public NonThreadSafe {
  public:
   // Used by ScheduleSave to lazily provide the data to be saved. Allows us
   // to also batch data serializations.
@@ -56,7 +57,7 @@ class ImportantFileWriter : public base::NonThreadSafe {
   // file I/O can be done.
   // All non-const methods, ctor and dtor must be called on the same thread.
   ImportantFileWriter(const FilePath& path,
-                      base::MessageLoopProxy* file_message_loop_proxy);
+                      MessageLoopProxy* file_message_loop_proxy);
 
   // You have to ensure that there are no pending writes at the moment
   // of destruction.
@@ -83,11 +84,11 @@ class ImportantFileWriter : public base::NonThreadSafe {
   // Serialize data pending to be saved and execute write on backend thread.
   void DoScheduledWrite();
 
-  base::TimeDelta commit_interval() const {
+  TimeDelta commit_interval() const {
     return commit_interval_;
   }
 
-  void set_commit_interval(const base::TimeDelta& interval) {
+  void set_commit_interval(const TimeDelta& interval) {
     commit_interval_ = interval;
   }
 
@@ -96,18 +97,20 @@ class ImportantFileWriter : public base::NonThreadSafe {
   const FilePath path_;
 
   // MessageLoopProxy for the thread on which file I/O can be done.
-  scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy_;
+  scoped_refptr<MessageLoopProxy> file_message_loop_proxy_;
 
   // Timer used to schedule commit after ScheduleWrite.
-  base::OneShotTimer<ImportantFileWriter> timer_;
+  OneShotTimer<ImportantFileWriter> timer_;
 
   // Serializer which will provide the data to be saved.
   DataSerializer* serializer_;
 
   // Time delta after which scheduled data will be written to disk.
-  base::TimeDelta commit_interval_;
+  TimeDelta commit_interval_;
 
   DISALLOW_COPY_AND_ASSIGN(ImportantFileWriter);
 };
 
-#endif  // CHROME_COMMON_IMPORTANT_FILE_WRITER_H_
+}  // namespace base
+
+#endif  // BASE_FILES_IMPORTANT_FILE_WRITER_H_

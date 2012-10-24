@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/important_file_writer.h"
+#include "base/files/important_file_writer.h"
 
 #include <stdio.h>
 
@@ -18,7 +18,7 @@
 #include "base/threading/thread.h"
 #include "base/time.h"
 
-using base::TimeDelta;
+namespace base {
 
 namespace {
 
@@ -37,7 +37,7 @@ void LogFailure(const FilePath& path, TempFileFailure failure_code,
                 const std::string& message) {
   UMA_HISTOGRAM_ENUMERATION("ImportantFile.TempFileFailures", failure_code,
                             TEMP_FILE_FAILURE_MAX);
-  DPLOG(WARNING) << "temp file failure: " << path.value()
+  DPLOG(WARNING) << "temp file failure: " << path.value().c_str()
                  << " : " << message;
 }
 
@@ -52,21 +52,21 @@ void WriteToDiskTask(const FilePath& path, const std::string& data) {
     return;
   }
 
-  int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE;
-  base::PlatformFile tmp_file =
-      base::CreatePlatformFile(tmp_file_path, flags, NULL, NULL);
-  if (tmp_file == base::kInvalidPlatformFileValue) {
+  int flags = PLATFORM_FILE_OPEN | PLATFORM_FILE_WRITE;
+  PlatformFile tmp_file =
+      CreatePlatformFile(tmp_file_path, flags, NULL, NULL);
+  if (tmp_file == kInvalidPlatformFileValue) {
     LogFailure(path, FAILED_OPENING, "could not open temporary file");
     return;
   }
 
   // If this happens in the wild something really bad is going on.
   CHECK_LE(data.length(), static_cast<size_t>(kint32max));
-  int bytes_written = base::WritePlatformFile(
+  int bytes_written = WritePlatformFile(
       tmp_file, 0, data.data(), static_cast<int>(data.length()));
-  base::FlushPlatformFile(tmp_file);  // Ignore return value.
+  FlushPlatformFile(tmp_file);  // Ignore return value.
 
-  if (!base::ClosePlatformFile(tmp_file)) {
+  if (!ClosePlatformFile(tmp_file)) {
     LogFailure(path, FAILED_CLOSING, "failed to close temporary file");
     file_util::Delete(tmp_file_path, false);
     return;
@@ -74,7 +74,7 @@ void WriteToDiskTask(const FilePath& path, const std::string& data) {
 
   if (bytes_written < static_cast<int>(data.length())) {
     LogFailure(path, FAILED_WRITING, "error writing, bytes_written=" +
-               base::IntToString(bytes_written));
+               IntToString(bytes_written));
     file_util::Delete(tmp_file_path, false);
     return;
   }
@@ -89,7 +89,7 @@ void WriteToDiskTask(const FilePath& path, const std::string& data) {
 }  // namespace
 
 ImportantFileWriter::ImportantFileWriter(
-    const FilePath& path, base::MessageLoopProxy* file_message_loop_proxy)
+    const FilePath& path, MessageLoopProxy* file_message_loop_proxy)
         : path_(path),
           file_message_loop_proxy_(file_message_loop_proxy),
           serializer_(NULL),
@@ -122,7 +122,7 @@ void ImportantFileWriter::WriteNow(const std::string& data) {
     timer_.Stop();
 
   if (!file_message_loop_proxy_->PostTask(
-      FROM_HERE, base::Bind(&WriteToDiskTask, path_, data))) {
+      FROM_HERE, Bind(&WriteToDiskTask, path_, data))) {
     // Posting the task to background message loop is not expected
     // to fail, but if it does, avoid losing data and just hit the disk
     // on the current thread.
@@ -151,7 +151,9 @@ void ImportantFileWriter::DoScheduledWrite() {
     WriteNow(data);
   } else {
     DLOG(WARNING) << "failed to serialize data to be saved in "
-                  << path_.value();
+                  << path_.value().c_str();
   }
   serializer_ = NULL;
 }
+
+}  // namespace base

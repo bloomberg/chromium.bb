@@ -36,15 +36,15 @@
 #include <string>
 
 #include "base/file_path.h"
+#include "base/files/important_file_writer.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/common/important_file_writer.h"
 #include "net/base/transport_security_state.h"
 
 // Reads and updates on-disk TransportSecurity state.
 // Must be created, used and destroyed only on the IO thread.
 class TransportSecurityPersister
     : public net::TransportSecurityState::Delegate,
-      public ImportantFileWriter::DataSerializer {
+      public base::ImportantFileWriter::DataSerializer {
  public:
   TransportSecurityPersister(net::TransportSecurityState* state,
                              const FilePath& profile_path,
@@ -117,7 +117,7 @@ class TransportSecurityPersister
   net::TransportSecurityState* transport_security_state_;
 
   // Helper for safely writing the data.
-  ImportantFileWriter writer_;
+  base::ImportantFileWriter writer_;
 
   // Whether or not we're in read-only mode.
   const bool readonly_;

@@ -1,0 +1,476 @@
+[submodule "breakpad/src"]
+	path = breakpad/src
+	url = https://chromium.googlesource.com/external/google-breakpad/src.git
+	os = all
+[submodule "build/util/support"]
+	path = build/util/support
+	url = 
+	os = ios
+[submodule "chrome/installer/mac/third_party/xz/xz"]
+	path = chrome/installer/mac/third_party/xz/xz
+	url = https://chromium.googlesource.com/chromium/deps/xz.git
+	os = mac
+[submodule "chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin"]
+	path = chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin
+	url = https://chromium.googlesource.com/native_client/src/native_client/tests/prebuilt.git
+	os = all
+[submodule "chrome/test/data/perf/canvas_bench"]
+	path = chrome/test/data/perf/canvas_bench
+	url = https://chromium.googlesource.com/chromium/canvas_bench.git
+	os = all
+[submodule "chrome/test/data/perf/frame_rate/content"]
+	path = chrome/test/data/perf/frame_rate/content
+	url = https://chromium.googlesource.com/chromium/frame_rate/content.git
+	os = all
+[submodule "chrome/tools/test/reference_build/chrome_linux"]
+	path = chrome/tools/test/reference_build/chrome_linux
+	url = https://chromium.googlesource.com/chromium/reference_builds/chrome_linux.git
+	os = unix
+[submodule "chrome/tools/test/reference_build/chrome_mac"]
+	path = chrome/tools/test/reference_build/chrome_mac
+	url = https://chromium.googlesource.com/chromium/reference_builds/chrome_mac.git
+	os = mac
+[submodule "chrome/tools/test/reference_build/chrome_win"]
+	path = chrome/tools/test/reference_build/chrome_win
+	url = https://chromium.googlesource.com/chromium/reference_builds/chrome_win.git
+	os = win
+[submodule "chrome_frame/tools/test/reference_build/chrome_win"]
+	path = chrome_frame/tools/test/reference_build/chrome_win
+	url = https://chromium.googlesource.com/chromium/reference_builds/chrome_win.git
+	os = win
+[submodule "content/test/data/layout_tests/LayoutTests/fast/events"]
+	path = content/test/data/layout_tests/LayoutTests/fast/events
+	url = 
+	os = ios
+[submodule "content/test/data/layout_tests/LayoutTests/fast/filesystem/resources"]
+	path = content/test/data/layout_tests/LayoutTests/fast/filesystem/resources
+	url = 
+	os = ios
+[submodule "content/test/data/layout_tests/LayoutTests/fast/js/resources"]
+	path = content/test/data/layout_tests/LayoutTests/fast/js/resources
+	url = 
+	os = ios
+[submodule "content/test/data/layout_tests/LayoutTests/fast/workers"]
+	path = content/test/data/layout_tests/LayoutTests/fast/workers
+	url = 
+	os = ios
+[submodule "content/test/data/layout_tests/LayoutTests/http/tests/appcache"]
+	path = content/test/data/layout_tests/LayoutTests/http/tests/appcache
+	url = 
+	os = ios
+[submodule "content/test/data/layout_tests/LayoutTests/http/tests/resources"]
+	path = content/test/data/layout_tests/LayoutTests/http/tests/resources
+	url = 
+	os = ios
+[submodule "content/test/data/layout_tests/LayoutTests/http/tests/websocket/tests"]
+	path = content/test/data/layout_tests/LayoutTests/http/tests/websocket/tests
+	url = 
+	os = ios
+[submodule "content/test/data/layout_tests/LayoutTests/http/tests/workers"]
+	path = content/test/data/layout_tests/LayoutTests/http/tests/workers
+	url = 
+	os = ios
+[submodule "content/test/data/layout_tests/LayoutTests/http/tests/xmlhttprequest"]
+	path = content/test/data/layout_tests/LayoutTests/http/tests/xmlhttprequest
+	url = 
+	os = ios
+[submodule "content/test/data/layout_tests/LayoutTests/media"]
+	path = content/test/data/layout_tests/LayoutTests/media
+	url = 
+	os = ios
+[submodule "content/test/data/layout_tests/LayoutTests/platform/chromium-win/fast/events"]
+	path = content/test/data/layout_tests/LayoutTests/platform/chromium-win/fast/events
+	url = 
+	os = ios
+[submodule "content/test/data/layout_tests/LayoutTests/platform/chromium-win/fast/workers"]
+	path = content/test/data/layout_tests/LayoutTests/platform/chromium-win/fast/workers
+	url = 
+	os = ios
+[submodule "content/test/data/layout_tests/LayoutTests/platform/chromium-win/http/tests/workers"]
+	path = content/test/data/layout_tests/LayoutTests/platform/chromium-win/http/tests/workers
+	url = 
+	os = ios
+[submodule "content/test/data/layout_tests/LayoutTests/platform/chromium-win/storage/domstorage"]
+	path = content/test/data/layout_tests/LayoutTests/platform/chromium-win/storage/domstorage
+	url = 
+	os = ios
+[submodule "content/test/data/layout_tests/LayoutTests/platform/chromium/fast/events"]
+	path = content/test/data/layout_tests/LayoutTests/platform/chromium/fast/events
+	url = 
+	os = ios
+[submodule "content/test/data/layout_tests/LayoutTests/platform/chromium/fast/workers"]
+	path = content/test/data/layout_tests/LayoutTests/platform/chromium/fast/workers
+	url = 
+	os = ios
+[submodule "content/test/data/layout_tests/LayoutTests/storage/domstorage"]
+	path = content/test/data/layout_tests/LayoutTests/storage/domstorage
+	url = 
+	os = ios
+[submodule "content/test/data/layout_tests/LayoutTests/storage/indexeddb"]
+	path = content/test/data/layout_tests/LayoutTests/storage/indexeddb
+	url = 
+	os = ios
+[submodule "googleurl"]
+	path = googleurl
+	url = https://chromium.googlesource.com/external/google-url.git
+	os = all
+[submodule "native_client"]
+	path = native_client
+	url = https://chromium.googlesource.com/native_client/src/native_client.git
+	os = all
+[submodule "sandbox/linux/seccomp-legacy"]
+	path = sandbox/linux/seccomp-legacy
+	url = https://chromium.googlesource.com/external/seccompsandbox.git
+	os = all
+[submodule "sdch/open-vcdiff"]
+	path = sdch/open-vcdiff
+	url = https://chromium.googlesource.com/external/open-vcdiff.git
+	os = all
+[submodule "testing/gmock"]
+	path = testing/gmock
+	url = https://chromium.googlesource.com/external/googlemock.git
+	os = all
+[submodule "testing/gtest"]
+	path = testing/gtest
+	url = https://chromium.googlesource.com/external/googletest.git
+	os = all
+[submodule "testing/iossim/third_party/class-dump"]
+	path = testing/iossim/third_party/class-dump
+	url = https://chromium.googlesource.com/chromium/deps/class-dump.git
+	os = ios
+[submodule "third_party/GTM"]
+	path = third_party/GTM
+	url = https://chromium.googlesource.com/external/google-toolbox-for-mac.git
+	os = ios,mac
+[submodule "third_party/WebKit"]
+	path = third_party/WebKit
+	url = https://chromium.googlesource.com/external/WebKit_trimmed.git
+	os = all
+[submodule "third_party/android_tools"]
+	path = third_party/android_tools
+	url = https://chromium.googlesource.com/android_tools.git
+	os = android
+[submodule "third_party/angle"]
+	path = third_party/angle
+	url = https://chromium.googlesource.com/external/angleproject.git
+	os = all
+[submodule "third_party/aosp"]
+	path = third_party/aosp
+	url = https://chromium.googlesource.com/chromium/deps/aosp.git
+	os = android
+[submodule "third_party/bidichecker"]
+	path = third_party/bidichecker
+	url = https://chromium.googlesource.com/external/bidichecker/lib.git
+	os = all
+[submodule "third_party/bison"]
+	path = third_party/bison
+	url = https://chromium.googlesource.com/chromium/deps/bison.git
+	os = win
+[submodule "third_party/cacheinvalidation/src"]
+	path = third_party/cacheinvalidation/src
+	url = https://chromium.googlesource.com/external/google-cache-invalidation-api/src.git
+	os = all
+[submodule "third_party/cros_dbus_cplusplus/source"]
+	path = third_party/cros_dbus_cplusplus/source
+	url = https://chromium.googlesource.com/chromiumos/third_party/dbus-cplusplus.git
+	os = unix
+[submodule "third_party/cros_system_api"]
+	path = third_party/cros_system_api
+	url = https://chromium.googlesource.com/chromiumos/platform/system_api.git
+	os = unix
+[submodule "third_party/cygwin"]
+	path = third_party/cygwin
+	url = https://chromium.googlesource.com/chromium/deps/cygwin.git
+	os = win
+[submodule "third_party/ffmpeg"]
+	path = third_party/ffmpeg
+	url = https://chromium.googlesource.com/chromium/third_party/ffmpeg.git
+	os = all
+[submodule "third_party/flac"]
+	path = third_party/flac
+	url = https://chromium.googlesource.com/chromium/deps/flac.git
+	os = all
+[submodule "third_party/freetype"]
+	path = third_party/freetype
+	url = https://chromium.googlesource.com/chromium/src/third_party/freetype.git
+	os = android
+[submodule "third_party/gnu_binutils"]
+	path = third_party/gnu_binutils
+	url = https://chromium.googlesource.com/native_client/deps/third_party/gnu_binutils.git
+	os = win
+[submodule "third_party/gold"]
+	path = third_party/gold
+	url = https://chromium.googlesource.com/chromium/deps/gold.git
+	os = unix
+[submodule "third_party/gperf"]
+	path = third_party/gperf
+	url = https://chromium.googlesource.com/chromium/deps/gperf.git
+	os = win
+[submodule "third_party/hunspell"]
+	path = third_party/hunspell
+	url = https://chromium.googlesource.com/chromium/deps/hunspell.git
+	os = all
+[submodule "third_party/hunspell_dictionaries"]
+	path = third_party/hunspell_dictionaries
+	url = https://chromium.googlesource.com/chromium/deps/hunspell_dictionaries.git
+	os = all
+[submodule "third_party/icu"]
+	path = third_party/icu
+	url = https://chromium.googlesource.com/chromium/deps/icu46.git
+	os = all
+[submodule "third_party/jsoncpp/source/include"]
+	path = third_party/jsoncpp/source/include
+	url = https://chromium.googlesource.com/external/jsoncpp/jsoncpp/include.git
+	os = all
+[submodule "third_party/jsoncpp/source/src/lib_json"]
+	path = third_party/jsoncpp/source/src/lib_json
+	url = https://chromium.googlesource.com/external/jsoncpp/jsoncpp/src/lib_json.git
+	os = all
+[submodule "third_party/leveldatabase/src"]
+	path = third_party/leveldatabase/src
+	url = https://chromium.googlesource.com/external/leveldb.git
+	os = all
+[submodule "third_party/libexif/sources"]
+	path = third_party/libexif/sources
+	url = https://chromium.googlesource.com/chromium/deps/libexif/sources.git
+	os = all
+[submodule "third_party/libjingle/source"]
+	path = third_party/libjingle/source
+	url = https://chromium.googlesource.com/external/libjingle.git
+	os = all
+[submodule "third_party/libjpeg_turbo"]
+	path = third_party/libjpeg_turbo
+	url = https://chromium.googlesource.com/chromium/deps/libjpeg_turbo.git
+	os = all
+[submodule "third_party/libmtp"]
+	path = third_party/libmtp
+	url = https://chromium.googlesource.com/chromium/deps/libmtp.git
+	os = unix
+[submodule "third_party/libphonenumber/src/phonenumbers"]
+	path = third_party/libphonenumber/src/phonenumbers
+	url = https://chromium.googlesource.com/external/libphonenumber/cpp/src/phonenumbers.git
+	os = all
+[submodule "third_party/libphonenumber/src/resources"]
+	path = third_party/libphonenumber/src/resources
+	url = https://chromium.googlesource.com/external/libphonenumber/resources.git
+	os = all
+[submodule "third_party/libphonenumber/src/test"]
+	path = third_party/libphonenumber/src/test
+	url = https://chromium.googlesource.com/external/libphonenumber/cpp/test.git
+	os = all
+[submodule "third_party/libsrtp"]
+	path = third_party/libsrtp
+	url = https://chromium.googlesource.com/chromium/deps/libsrtp.git
+	os = all
+[submodule "third_party/libvpx"]
+	path = third_party/libvpx
+	url = https://chromium.googlesource.com/chromium/deps/libvpx.git
+	os = all
+[submodule "third_party/libyuv"]
+	path = third_party/libyuv
+	url = https://chromium.googlesource.com/external/libyuv.git
+	os = all
+[submodule "third_party/lighttpd"]
+	path = third_party/lighttpd
+	url = https://chromium.googlesource.com/chromium/deps/lighttpd.git
+	os = win,mac
+[submodule "third_party/lss"]
+	path = third_party/lss
+	url = https://chromium.googlesource.com/external/linux-syscall-support/lss.git
+	os = unix
+[submodule "third_party/mingw-w64/mingw/bin"]
+	path = third_party/mingw-w64/mingw/bin
+	url = https://chromium.googlesource.com/native_client/deps/third_party/mingw-w64/mingw/bin.git
+	os = win
+[submodule "third_party/mozc/chrome/chromeos/renderer"]
+	path = third_party/mozc/chrome/chromeos/renderer
+	url = https://chromium.googlesource.com/external/mozc/src/chrome/chromeos/renderer.git
+	os = all
+[submodule "third_party/mozc/session"]
+	path = third_party/mozc/session
+	url = https://chromium.googlesource.com/external/mozc/src/session.git
+	os = all
+[submodule "third_party/mtpd/source"]
+	path = third_party/mtpd/source
+	url = https://chromium.googlesource.com/chromiumos/platform/mtpd.git
+	os = unix
+[submodule "third_party/nacl_sdk_binaries"]
+	path = third_party/nacl_sdk_binaries
+	url = https://chromium.googlesource.com/chromium/deps/nacl_sdk_binaries.git
+	os = win
+[submodule "third_party/nss"]
+	path = third_party/nss
+	url = https://chromium.googlesource.com/chromium/deps/nss.git
+	os = win,ios,mac
+[submodule "third_party/openssl"]
+	path = third_party/openssl
+	url = https://chromium.googlesource.com/chromium/deps/openssl.git
+	os = unix
+[submodule "third_party/opus/src"]
+	path = third_party/opus/src
+	url = https://chromium.googlesource.com/chromium/deps/opus.git
+	os = all
+[submodule "third_party/ots"]
+	path = third_party/ots
+	url = https://chromium.googlesource.com/external/ots.git
+	os = all
+[submodule "third_party/pdfsqueeze"]
+	path = third_party/pdfsqueeze
+	url = https://chromium.googlesource.com/external/pdfsqueeze.git
+	os = mac
+[submodule "third_party/pefile"]
+	path = third_party/pefile
+	url = https://chromium.googlesource.com/external/pefile.git
+	os = win
+[submodule "third_party/perl"]
+	path = third_party/perl
+	url = https://chromium.googlesource.com/chromium/deps/perl.git
+	os = win
+[submodule "third_party/psyco_win32"]
+	path = third_party/psyco_win32
+	url = https://chromium.googlesource.com/chromium/deps/psyco_win32.git
+	os = win
+[submodule "third_party/pyftpdlib/src"]
+	path = third_party/pyftpdlib/src
+	url = https://chromium.googlesource.com/external/pyftpdlib.git
+	os = all
+[submodule "third_party/pylib"]
+	path = third_party/pylib
+	url = 
+	os = ios
+[submodule "third_party/pymox/src"]
+	path = third_party/pymox/src
+	url = https://chromium.googlesource.com/external/pymox.git
+	os = all
+[submodule "third_party/python_26"]
+	path = third_party/python_26
+	url = https://chromium.googlesource.com/chromium/deps/python_26.git
+	os = win
+[submodule "third_party/pywebsocket/src"]
+	path = third_party/pywebsocket/src
+	url = https://chromium.googlesource.com/external/pywebsocket/src.git
+	os = all
+[submodule "third_party/safe_browsing/testing"]
+	path = third_party/safe_browsing/testing
+	url = https://chromium.googlesource.com/external/google-safe-browsing/testing.git
+	os = all
+[submodule "third_party/scons-2.0.1"]
+	path = third_party/scons-2.0.1
+	url = https://chromium.googlesource.com/native_client/src/third_party/scons-2.0.1.git
+	os = all
+[submodule "third_party/sfntly/cpp/src"]
+	path = third_party/sfntly/cpp/src
+	url = https://chromium.googlesource.com/external/sfntly/cpp/src.git
+	os = all
+[submodule "third_party/skia/gyp"]
+	path = third_party/skia/gyp
+	url = https://chromium.googlesource.com/external/skia/gyp.git
+	os = all
+[submodule "third_party/skia/include"]
+	path = third_party/skia/include
+	url = https://chromium.googlesource.com/external/skia/include.git
+	os = all
+[submodule "third_party/skia/src"]
+	path = third_party/skia/src
+	url = https://chromium.googlesource.com/external/skia/src.git
+	os = all
+[submodule "third_party/smhasher/src"]
+	path = third_party/smhasher/src
+	url = https://chromium.googlesource.com/external/smhasher.git
+	os = all
+[submodule "third_party/snappy/src"]
+	path = third_party/snappy/src
+	url = https://chromium.googlesource.com/external/snappy.git
+	os = all
+[submodule "third_party/speex"]
+	path = third_party/speex
+	url = https://chromium.googlesource.com/chromium/deps/speex.git
+	os = all
+[submodule "third_party/swig/Lib"]
+	path = third_party/swig/Lib
+	url = https://chromium.googlesource.com/chromium/deps/swig/Lib.git
+	os = all
+[submodule "third_party/swig/linux"]
+	path = third_party/swig/linux
+	url = https://chromium.googlesource.com/chromium/deps/swig/linux.git
+	os = unix
+[submodule "third_party/swig/mac"]
+	path = third_party/swig/mac
+	url = https://chromium.googlesource.com/chromium/deps/swig/mac.git
+	os = mac
+[submodule "third_party/swig/win"]
+	path = third_party/swig/win
+	url = https://chromium.googlesource.com/chromium/deps/swig/win.git
+	os = win
+[submodule "third_party/syzygy/binaries"]
+	path = third_party/syzygy/binaries
+	url = https://chromium.googlesource.com/external/sawbuck/syzygy/binaries.git
+	os = win
+[submodule "third_party/trace-viewer"]
+	path = third_party/trace-viewer
+	url = https://chromium.googlesource.com/external/trace-viewer.git
+	os = all
+[submodule "third_party/undoview"]
+	path = third_party/undoview
+	url = https://chromium.googlesource.com/chromium/deps/undoview.git
+	os = all
+[submodule "third_party/v8-i18n"]
+	path = third_party/v8-i18n
+	url = https://chromium.googlesource.com/external/v8-i18n.git
+	os = all
+[submodule "third_party/webdriver/pylib"]
+	path = third_party/webdriver/pylib
+	url = https://chromium.googlesource.com/external/selenium/py.git
+	os = all
+[submodule "third_party/webgl_conformance"]
+	path = third_party/webgl_conformance
+	url = https://chromium.googlesource.com/chromium/deps/webgl/sdk/tests.git
+	os = all
+[submodule "third_party/webpagereplay"]
+	path = third_party/webpagereplay
+	url = https://chromium.googlesource.com/external/web-page-replay.git
+	os = all
+[submodule "third_party/webrtc"]
+	path = third_party/webrtc
+	url = https://chromium.googlesource.com/external/webrtc/stable/src.git
+	os = all
+[submodule "third_party/xdg-utils"]
+	path = third_party/xdg-utils
+	url = https://chromium.googlesource.com/chromium/deps/xdg-utils.git
+	os = unix
+[submodule "third_party/xulrunner-sdk"]
+	path = third_party/xulrunner-sdk
+	url = https://chromium.googlesource.com/chromium/deps/xulrunner-sdk.git
+	os = win
+[submodule "third_party/yasm/binaries"]
+	path = third_party/yasm/binaries
+	url = https://chromium.googlesource.com/chromium/deps/yasm/binaries.git
+	os = win
+[submodule "third_party/yasm/source/patched-yasm"]
+	path = third_party/yasm/source/patched-yasm
+	url = https://chromium.googlesource.com/chromium/deps/yasm/patched-yasm.git
+	os = all
+[submodule "tools/deps2git"]
+	path = tools/deps2git
+	url = https://chromium.googlesource.com/chromium/tools/deps2git.git
+	os = all
+[submodule "tools/grit"]
+	path = tools/grit
+	url = https://chromium.googlesource.com/external/grit-i18n.git
+	os = all
+[submodule "tools/gyp"]
+	path = tools/gyp
+	url = https://chromium.googlesource.com/external/gyp.git
+	os = all
+[submodule "tools/page_cycler/acid3"]
+	path = tools/page_cycler/acid3
+	url = https://chromium.googlesource.com/chromium/deps/acid3.git
+	os = all
+[submodule "tools/swarm_client"]
+	path = tools/swarm_client
+	url = https://chromium.googlesource.com/chromium/tools/swarm_client.git
+	os = all
+[submodule "v8"]
+	path = v8
+	url = https://chromium.googlesource.com/external/v8.git
+	os = all

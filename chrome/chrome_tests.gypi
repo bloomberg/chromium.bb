@@ -2116,7 +2116,6 @@
         'common/extensions/user_script_unittest.cc',
         'common/extensions/value_counter_unittest.cc',
         'common/extensions/api/extension_api_unittest.cc',
-        'common/important_file_writer_unittest.cc',
         'common/json_schema_validator_unittest.cc',
         'common/json_schema_validator_unittest_base.cc',
         'common/json_schema_validator_unittest_base.h',
