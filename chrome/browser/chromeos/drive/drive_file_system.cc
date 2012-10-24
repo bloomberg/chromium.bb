@@ -21,12 +21,12 @@
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_files.h"
 #include "chrome/browser/chromeos/drive/drive_scheduler.h"
-#include "chrome/browser/chromeos/drive/drive_uploader.h"
 #include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/move_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
+#include "chrome/browser/google_apis/drive_uploader.h"
 #include "chrome/browser/google_apis/gdata_util.h"
 #include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -367,7 +367,7 @@ DriveFileSystem::DriveFileSystem(
     Profile* profile,
     DriveCache* cache,
     google_apis::DriveServiceInterface* drive_service,
-    DriveUploaderInterface* uploader,
+    google_apis::DriveUploaderInterface* uploader,
     DriveWebAppsRegistryInterface* webapps_registry,
     base::SequencedTaskRunner* blocking_task_runner)
     : profile_(profile),
@@ -1468,7 +1468,7 @@ void DriveFileSystem::OnGetFileSizeCompleteForUpdateFile(
       base::Bind(&DriveFileSystem::OnUpdatedFileUploaded,
                  ui_weak_ptr_,
                  callback),
-      UploaderReadyCallback());
+      google_apis::UploaderReadyCallback());
 }
 
 void DriveFileSystem::OnUpdatedFileUploaded(

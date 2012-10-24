@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
-#include "chrome/browser/chromeos/drive/drive_uploader.h"
+#include "chrome/browser/google_apis/drive_uploader.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 class FilePath;
@@ -18,6 +18,7 @@ class GURL;
 
 namespace google_apis {
 class DriveServiceInterface;
+class DriveUploaderInterface;
 }
 
 namespace drive {
@@ -25,7 +26,6 @@ namespace drive {
 class DriveCache;
 class DriveEntryProto;
 class DriveFileSystemInterface;
-class DriveUploaderInterface;
 
 using google_apis::DocumentEntry;
 using google_apis::GDataErrorCode;
@@ -42,7 +42,7 @@ class CopyOperation {
   CopyOperation(google_apis::DriveServiceInterface* drive_service,
                 DriveFileSystemInterface* drive_file_system,
                 DriveResourceMetadata* metadata,
-                DriveUploaderInterface* uploader,
+                google_apis::DriveUploaderInterface* uploader,
                 scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
                 OperationObserver* observer);
   virtual ~CopyOperation();
@@ -222,7 +222,7 @@ class CopyOperation {
   google_apis::DriveServiceInterface* drive_service_;
   DriveFileSystemInterface* drive_file_system_;
   DriveResourceMetadata* metadata_;
-  DriveUploaderInterface* uploader_;
+  google_apis::DriveUploaderInterface* uploader_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;
 

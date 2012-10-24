@@ -114,7 +114,7 @@ CopyOperation::CopyOperation(
     google_apis::DriveServiceInterface* drive_service,
     DriveFileSystemInterface* drive_file_system,
     DriveResourceMetadata* metadata,
-    DriveUploaderInterface* uploader,
+    google_apis::DriveUploaderInterface* uploader,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     OperationObserver* observer)
   : drive_service_(drive_service),
@@ -506,7 +506,7 @@ void CopyOperation::StartFileUploadAfterGetEntryInfo(
                            base::Bind(&CopyOperation::OnTransferCompleted,
                                       weak_ptr_factory_.GetWeakPtr(),
                                       params.callback),
-                           UploaderReadyCallback());
+                           google_apis::UploaderReadyCallback());
 }
 
 void CopyOperation::OnTransferCompleted(

@@ -10,7 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
-#include "chrome/browser/chromeos/drive/drive_uploader.h"
+#include "chrome/browser/google_apis/drive_uploader.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
@@ -20,20 +20,20 @@ class Profile;
 
 namespace google_apis {
 class DocumentEntry;
+class DriveUploader;
 }
 
 namespace drive {
 
 class DriveEntryProto;
 class DriveFileSystemInterface;
-class DriveUploader;
 
 // Observes downloads to temporary local drive folder. Schedules these
 // downloads for upload to drive service.
 class DriveDownloadObserver : public content::DownloadManager::Observer,
                               public content::DownloadItem::Observer {
  public:
-  DriveDownloadObserver(DriveUploader* uploader,
+  DriveDownloadObserver(google_apis::DriveUploader* uploader,
                         DriveFileSystemInterface* file_system);
   virtual ~DriveDownloadObserver();
 
@@ -113,10 +113,10 @@ class DriveDownloadObserver : public content::DownloadManager::Observer,
     bool all_bytes_present; // Whether all bytes of this file are present.
 
     // Callback to be invoked once the uploader is ready to upload.
-    UploaderReadyCallback ready_callback;
+    google_apis::UploaderReadyCallback ready_callback;
 
     // Callback to be invoked once the upload has completed.
-    UploadCompletionCallback completion_callback;
+    google_apis::UploadCompletionCallback completion_callback;
   };
 
   // DownloadManager overrides.
@@ -203,7 +203,7 @@ class DriveDownloadObserver : public content::DownloadManager::Observer,
 
   // Private data.
   // The uploader owned by DriveSystemService. Used to trigger file uploads.
-  DriveUploader* drive_uploader_;
+  google_apis::DriveUploader* drive_uploader_;
   // The file system owned by DriveSystemService.
   DriveFileSystemInterface* file_system_;
   // Observe the DownloadManager for new downloads.

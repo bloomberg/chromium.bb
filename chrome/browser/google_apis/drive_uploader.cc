@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/drive_uploader.h"
+#include "chrome/browser/google_apis/drive_uploader.h"
 
 #include <algorithm>
 
@@ -29,9 +29,9 @@ const int kMaxFileOpenTries = 5;
 
 }  // namespace
 
-namespace drive {
+namespace google_apis {
 
-DriveUploader::DriveUploader(google_apis::DriveServiceInterface* drive_service)
+DriveUploader::DriveUploader(DriveServiceInterface* drive_service)
   : drive_service_(drive_service),
     next_upload_id_(0),
     ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
@@ -60,7 +60,7 @@ int DriveUploader::UploadNewFile(
    DCHECK(!content_type.empty());
 
   scoped_ptr<UploadFileInfo> upload_file_info(new UploadFileInfo);
-  upload_file_info->upload_mode = google_apis::UPLOAD_NEW_FILE;
+  upload_file_info->upload_mode = UPLOAD_NEW_FILE;
   upload_file_info->initial_upload_location = upload_location;
   upload_file_info->drive_path = drive_file_path;
   upload_file_info->file_path = local_file_path;
@@ -96,7 +96,7 @@ int DriveUploader::StreamExistingFile(
   DCHECK(!content_type.empty());
 
   scoped_ptr<UploadFileInfo> upload_file_info(new UploadFileInfo);
-  upload_file_info->upload_mode = google_apis::UPLOAD_EXISTING_FILE;
+  upload_file_info->upload_mode = UPLOAD_EXISTING_FILE;
   upload_file_info->initial_upload_location = upload_location;
   upload_file_info->drive_path = drive_file_path;
   upload_file_info->file_path = local_file_path;
@@ -120,7 +120,7 @@ int DriveUploader::StartUploadFile(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(upload_file_info.get());
   DCHECK_EQ(upload_file_info->upload_id, -1);
-  DCHECK_NE(google_apis::UPLOAD_INVALID, upload_file_info->upload_mode);
+  DCHECK_NE(UPLOAD_INVALID, upload_file_info->upload_mode);
 
   const int upload_id = next_upload_id_++;
   upload_file_info->upload_id = upload_id;
@@ -157,7 +157,7 @@ int DriveUploader::UploadExistingFile(
   DCHECK(!content_type.empty());
 
   scoped_ptr<UploadFileInfo> upload_file_info(new UploadFileInfo);
-  upload_file_info->upload_mode = google_apis::UPLOAD_EXISTING_FILE;
+  upload_file_info->upload_mode = UPLOAD_EXISTING_FILE;
   upload_file_info->initial_upload_location = upload_location;
   upload_file_info->drive_path = drive_file_path;
   upload_file_info->file_path = local_file_path;
@@ -288,18 +288,18 @@ void DriveUploader::OpenCompletionCallback(FileOpenType open_type,
       upload_file_info->should_retry_file_open = !exceeded_max_attempts;
     }
     if (!upload_file_info->should_retry_file_open) {
-      UploadFailed(upload_file_info, google_apis::DRIVE_UPLOAD_ERROR_NOT_FOUND);
+      UploadFailed(upload_file_info, DRIVE_UPLOAD_ERROR_NOT_FOUND);
       return;
     }
   } else {
     // Open succeeded, initiate the upload.
     upload_file_info->should_retry_file_open = false;
     if (upload_file_info->initial_upload_location.is_empty()) {
-      UploadFailed(upload_file_info, google_apis::DRIVE_UPLOAD_ERROR_ABORT);
+      UploadFailed(upload_file_info, DRIVE_UPLOAD_ERROR_ABORT);
       return;
     }
     drive_service_->InitiateUpload(
-        google_apis::InitiateUploadParams(upload_file_info->upload_mode,
+        InitiateUploadParams(upload_file_info->upload_mode,
                              upload_file_info->title,
                              upload_file_info->content_type,
                              upload_file_info->content_length,
@@ -327,10 +327,9 @@ void DriveUploader::OpenCompletionCallback(FileOpenType open_type,
   }
 }
 
-void DriveUploader::OnUploadLocationReceived(
-    int upload_id,
-    google_apis::GDataErrorCode code,
-    const GURL& upload_location) {
+void DriveUploader::OnUploadLocationReceived(int upload_id,
+                                             GDataErrorCode code,
+                                             const GURL& upload_location) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   UploadFileInfo* upload_file_info = GetUploadFileInfo(upload_id);
@@ -340,9 +339,9 @@ void DriveUploader::OnUploadLocationReceived(
   DVLOG(1) << "Got upload location [" << upload_location.spec()
            << "] for [" << upload_file_info->title << "]";
 
-  if (code != google_apis::HTTP_SUCCESS) {
+  if (code != HTTP_SUCCESS) {
     // TODO(achuith): Handle error codes from Google Docs server.
-    UploadFailed(upload_file_info, google_apis::DRIVE_UPLOAD_ERROR_ABORT);
+    UploadFailed(upload_file_info, DRIVE_UPLOAD_ERROR_ABORT);
     return;
   }
 
@@ -429,7 +428,7 @@ void DriveUploader::ReadCompletionCallback(
   if (bytes_read < 0) {
     LOG(ERROR) << "Error reading from file "
                << upload_file_info->file_path.value();
-    UploadFailed(upload_file_info, google_apis::DRIVE_UPLOAD_ERROR_ABORT);
+    UploadFailed(upload_file_info, DRIVE_UPLOAD_ERROR_ABORT);
     return;
   }
 
@@ -446,14 +445,14 @@ void DriveUploader::ResumeUpload(int upload_id) {
     return;
 
   drive_service_->ResumeUpload(
-      google_apis::ResumeUploadParams(upload_file_info->upload_mode,
-                                      upload_file_info->start_range,
-                                      upload_file_info->end_range,
-                                      upload_file_info->content_length,
-                                      upload_file_info->content_type,
-                                      upload_file_info->buf,
-                                      upload_file_info->upload_location,
-                                      upload_file_info->drive_path),
+      ResumeUploadParams(upload_file_info->upload_mode,
+                         upload_file_info->start_range,
+                         upload_file_info->end_range,
+                         upload_file_info->content_length,
+                         upload_file_info->content_type,
+                         upload_file_info->buf,
+                         upload_file_info->upload_location,
+                         upload_file_info->drive_path),
       base::Bind(&DriveUploader::OnResumeUploadResponseReceived,
                  weak_ptr_factory_.GetWeakPtr(),
                  upload_file_info->upload_id));
@@ -461,19 +460,17 @@ void DriveUploader::ResumeUpload(int upload_id) {
 
 void DriveUploader::OnResumeUploadResponseReceived(
     int upload_id,
-    const google_apis::ResumeUploadResponse& response,
-    scoped_ptr<google_apis::DocumentEntry> entry) {
+    const ResumeUploadResponse& response,
+    scoped_ptr<DocumentEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   UploadFileInfo* upload_file_info = GetUploadFileInfo(upload_id);
   if (!upload_file_info)
     return;
 
-  const google_apis::UploadMode upload_mode = upload_file_info->upload_mode;
-  if ((upload_mode == google_apis::UPLOAD_NEW_FILE &&
-       response.code == google_apis::HTTP_CREATED) ||
-      (upload_mode == google_apis::UPLOAD_EXISTING_FILE &&
-       response.code == google_apis::HTTP_SUCCESS)) {
+  const UploadMode upload_mode = upload_file_info->upload_mode;
+  if ((upload_mode == UPLOAD_NEW_FILE && response.code == HTTP_CREATED) ||
+      (upload_mode == UPLOAD_EXISTING_FILE && response.code == HTTP_SUCCESS)) {
     DVLOG(1) << "Successfully created uploaded file=["
              << upload_file_info->title;
 
@@ -481,7 +478,7 @@ void DriveUploader::OnResumeUploadResponseReceived(
     upload_file_info->entry = entry.Pass();
     if (!upload_file_info->completion_callback.is_null()) {
       upload_file_info->completion_callback.Run(
-          google_apis::DRIVE_UPLOAD_OK,
+          DRIVE_UPLOAD_OK,
           upload_file_info->drive_path,
           upload_file_info->file_path,
           upload_file_info->entry.Pass());
@@ -495,7 +492,7 @@ void DriveUploader::OnResumeUploadResponseReceived(
   // If code is 308 (RESUME_INCOMPLETE) and range_received is what has been
   // previously uploaded (i.e. = upload_file_info->end_range), proceed to
   // upload the next chunk.
-  if (response.code != google_apis::HTTP_RESUME_INCOMPLETE ||
+  if (response.code != HTTP_RESUME_INCOMPLETE ||
       response.start_range_received != 0 ||
       response.end_range_received != upload_file_info->end_range) {
     // TODO(achuith): Handle error cases, e.g.
@@ -507,9 +504,8 @@ void DriveUploader::OnResumeUploadResponseReceived(
                << ", expected end range=" << upload_file_info->end_range;
     UploadFailed(
         upload_file_info,
-        response.code == google_apis::HTTP_FORBIDDEN ?
-        google_apis::DRIVE_UPLOAD_ERROR_NO_SPACE :
-        google_apis::DRIVE_UPLOAD_ERROR_ABORT);
+        response.code == HTTP_FORBIDDEN ?
+        DRIVE_UPLOAD_ERROR_NO_SPACE : DRIVE_UPLOAD_ERROR_ABORT);
     return;
   }
 
@@ -522,7 +518,7 @@ void DriveUploader::OnResumeUploadResponseReceived(
 }
 
 void DriveUploader::UploadFailed(UploadFileInfo* upload_file_info,
-                                 google_apis::DriveUploadError error) {
+                                 DriveUploadError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   LOG(ERROR) << "Upload failed " << upload_file_info->DebugString();
@@ -547,7 +543,7 @@ DriveUploader::UploadFileInfo::UploadFileInfo()
     : upload_id(-1),
       file_size(0),
       content_length(0),
-      upload_mode(google_apis::UPLOAD_INVALID),
+      upload_mode(UPLOAD_INVALID),
       file_stream(NULL),
       buf_len(0),
       start_range(0),
@@ -576,4 +572,4 @@ std::string DriveUploader::UploadFileInfo::DebugString() const {
          "]";
 }
 
-}  // namespace drive
+}  // namespace google_apis

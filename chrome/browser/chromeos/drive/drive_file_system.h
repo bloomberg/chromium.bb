@@ -30,6 +30,7 @@ class SequencedTaskRunner;
 namespace google_apis {
 class DocumentFeed;
 class DriveServiceInterface;
+class DriveUploaderInterface;
 }
 
 namespace drive {
@@ -38,7 +39,6 @@ class DriveFileSystemObserver;
 class DriveFunctionRemove;
 class DriveResourceMetadata;
 class DriveScheduler;
-class DriveUploaderInterface;
 class DriveWebAppsRegistryInterface;
 class DriveFeedLoader;
 struct LoadFeedParams;
@@ -58,7 +58,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   DriveFileSystem(Profile* profile,
                   DriveCache* cache,
                   google_apis::DriveServiceInterface* drive_service,
-                  DriveUploaderInterface* uploader,
+                  google_apis::DriveUploaderInterface* uploader,
                   DriveWebAppsRegistryInterface* webapps_registry,
                   base::SequencedTaskRunner* blocking_task_runner);
   virtual ~DriveFileSystem();
@@ -711,7 +711,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   DriveCache* cache_;
 
   // The uploader owned by DriveSystemService.
-  DriveUploaderInterface* uploader_;
+  google_apis::DriveUploaderInterface* uploader_;
 
   // The document service owned by DriveSystemService.
   google_apis::DriveServiceInterface* drive_service_;

@@ -702,6 +702,8 @@
         'browser/google_apis/drive_service_interface.h',
         'browser/google_apis/drive_upload_error.h',
         'browser/google_apis/drive_upload_mode.h',
+        'browser/google_apis/drive_uploader.cc',
+        'browser/google_apis/drive_uploader.h',
         'browser/google_apis/gdata_errorcode.h',
         'browser/google_apis/gdata_operations.cc',
         'browser/google_apis/gdata_operations.h',

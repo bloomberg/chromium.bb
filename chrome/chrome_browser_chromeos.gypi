@@ -238,8 +238,6 @@
         'browser/chromeos/drive/drive_system_service.h',
         'browser/chromeos/drive/drive_task_executor.cc',
         'browser/chromeos/drive/drive_task_executor.h',
-        'browser/chromeos/drive/drive_uploader.cc',
-        'browser/chromeos/drive/drive_uploader.h',
         'browser/chromeos/drive/drive_webapps_registry.cc',
         'browser/chromeos/drive/drive_webapps_registry.h',
         'browser/chromeos/drive/file_change.cc',

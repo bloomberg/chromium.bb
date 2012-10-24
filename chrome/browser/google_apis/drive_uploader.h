@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_UPLOADER_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_UPLOADER_H_
+#ifndef CHROME_BROWSER_GOOGLE_APIS_DRIVE_UPLOADER_H_
+#define CHROME_BROWSER_GOOGLE_APIS_DRIVE_UPLOADER_H_
 
 #include <map>
 #include <string>
@@ -24,14 +24,13 @@ namespace content {
 class DownloadItem;
 }
 
+namespace drive {
+class MockDriveUploader;
+}
+
 namespace google_apis {
 class DriveServiceInterface;
 struct ResumeUploadResponse;
-}
-
-namespace drive {
-
-class MockDriveUploader;
 
 // Callback to be invoked once the upload has completed.
 typedef base::Callback<void(
@@ -274,6 +273,6 @@ class DriveUploader : public DriveUploaderInterface {
   DISALLOW_COPY_AND_ASSIGN(DriveUploader);
 };
 
-}  // namespace drive
+}  // namespace google_apis
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_UPLOADER_H_
+#endif  // CHROME_BROWSER_GOOGLE_APIS_DRIVE_UPLOADER_H_

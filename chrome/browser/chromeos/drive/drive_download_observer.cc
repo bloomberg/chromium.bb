@@ -38,14 +38,14 @@ const char kGDataPathKey[] = "GDataPath";
 // User Data stored in DownloadItem for ongoing uploads.
 class UploadingUserData : public DownloadCompletionBlocker {
  public:
-  explicit UploadingUserData(DriveUploader* uploader)
+  explicit UploadingUserData(google_apis::DriveUploader* uploader)
       : uploader_(uploader),
         upload_id_(-1),
         is_overwrite_(false) {
   }
   virtual ~UploadingUserData() {}
 
-  DriveUploader* uploader() const { return uploader_; }
+  google_apis::DriveUploader* uploader() const { return uploader_; }
   void set_upload_id(int upload_id) { upload_id_ = upload_id; }
   int upload_id() const { return upload_id_; }
   void set_virtual_dir_path(const FilePath& path) { virtual_dir_path_ = path; }
@@ -66,7 +66,7 @@ class UploadingUserData : public DownloadCompletionBlocker {
   const std::string& md5() const { return md5_; }
 
  private:
-  DriveUploader* uploader_;
+  google_apis::DriveUploader* uploader_;
   int upload_id_;
   FilePath virtual_dir_path_;
   scoped_ptr<google_apis::DocumentEntry> entry_;
@@ -205,7 +205,7 @@ void OnAuthenticate(Profile* profile,
 }  // namespace
 
 DriveDownloadObserver::DriveDownloadObserver(
-    DriveUploader* uploader,
+    google_apis::DriveUploader* uploader,
     DriveFileSystemInterface* file_system)
     : drive_uploader_(uploader),
       file_system_(file_system),

@@ -20,6 +20,7 @@ class FilePath;
 
 namespace google_apis {
 class DriveServiceInterface;
+class DriveUploader;
 }
 
 namespace drive {
@@ -27,7 +28,6 @@ namespace drive {
 class DriveCache;
 class DriveDownloadObserver;
 class DriveFileSystemInterface;
-class DriveUploader;
 class DriveWebAppsRegistry;
 class FileWriteHelper;
 class DriveSyncClient;
@@ -50,7 +50,7 @@ class DriveSystemService : public ProfileKeyedService,
   DriveCache* cache() { return cache_; }
   DriveFileSystemInterface* file_system() { return file_system_.get(); }
   FileWriteHelper* file_write_helper() { return file_write_helper_.get(); }
-  DriveUploader* uploader() { return uploader_.get(); }
+  google_apis::DriveUploader* uploader() { return uploader_.get(); }
   DriveWebAppsRegistry* webapps_registry() { return webapps_registry_.get(); }
 
   // Clears all the local cache files and in-memory data, and remounts the file
@@ -112,7 +112,7 @@ class DriveSystemService : public ProfileKeyedService,
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   DriveCache* cache_;
   scoped_ptr<google_apis::DriveServiceInterface> drive_service_;
-  scoped_ptr<DriveUploader> uploader_;
+  scoped_ptr<google_apis::DriveUploader> uploader_;
   scoped_ptr<DriveWebAppsRegistry> webapps_registry_;
   scoped_ptr<DriveFileSystemInterface> file_system_;
   scoped_ptr<FileWriteHelper> file_write_helper_;

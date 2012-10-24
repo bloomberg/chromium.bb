@@ -22,7 +22,7 @@ void DriveOperations::Init(
     DriveFileSystemInterface* drive_file_system,
     DriveCache* cache,
     DriveResourceMetadata* metadata,
-    DriveUploaderInterface* uploader,
+    google_apis::DriveUploaderInterface* uploader,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     OperationObserver* observer) {
   copy_operation_.reset(new file_system::CopyOperation(drive_service,
