@@ -17,7 +17,13 @@
 #include "webkit/media/crypto/ppapi/content_decryption_module.h"
 
 // Enable this to use the fake decoder for testing.
-// #define CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER
+#if 0
+#define CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
+#endif
+
+#if 0
+#define CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER
+#endif
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
 #undef CLEAR_KEY_CDM_USE_FFMPEG_DECODER
@@ -125,7 +131,13 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
       const cdm::InputBuffer& encrypted_buffer,
       scoped_refptr<media::DecoderBuffer>* decrypted_buffer);
 
+#if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
+  // Generates fake video frames with |last_timestamp_| and |last_duration_|.
+  void GenerateFakeAudioFrames(cdm::AudioFrames* audio_frames);
+#endif  // CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER
+
 #if defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
+  // Generate a fake video frame with |video_size_| and |timestamp|.
   void GenerateFakeVideoFrame(base::TimeDelta timestamp,
                               cdm::VideoFrame* video_frame);
 #endif  // CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER
@@ -139,9 +151,17 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
 
   cdm::Allocator* const allocator_;
 
+#if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
+  int channel_count_;
+  int bits_per_channel_;
+  int samples_per_second_;
+  base::TimeDelta last_timestamp_;
+  base::TimeDelta last_duration_;
+#endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
+
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
   scoped_ptr<FFmpegCdmVideoDecoder> video_decoder_;
-#endif
+#endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
   cdm::Size video_size_;

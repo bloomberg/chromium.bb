@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/time.h"
+#include "media/base/buffers.h"
 #include "media/base/decoder_buffer.h"
 
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
@@ -81,9 +82,7 @@ template<typename Type>
 class ScopedResetter {
  public:
   explicit ScopedResetter(Type* object) : object_(object) {}
-  ~ScopedResetter() {
-    object_->Reset();
-  }
+  ~ScopedResetter() { object_->Reset(); }
 
  private:
   Type* const object_;
@@ -162,8 +161,16 @@ void ClearKeyCdm::Client::NeedKey(const std::string& key_system,
 }
 
 ClearKeyCdm::ClearKeyCdm(cdm::Allocator* allocator, cdm::CdmHost*)
-    : decryptor_(&client_), allocator_(allocator) {
+    : decryptor_(&client_),
+      allocator_(allocator) {
   DCHECK(allocator_);
+#if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
+  channel_count_ = 0;
+  bits_per_channel_ = 0;
+  samples_per_second_ = 0;
+  last_timestamp_ = media::kNoTimestamp();
+  last_duration_ = media::kInfiniteDuration();
+#endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
 }
 
 ClearKeyCdm::~ClearKeyCdm() {}
@@ -262,8 +269,15 @@ cdm::Status ClearKeyCdm::Decrypt(
 
 cdm::Status ClearKeyCdm::InitializeAudioDecoder(
     const cdm::AudioDecoderConfig& audio_decoder_config) {
+#if !defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
   NOTIMPLEMENTED();
   return cdm::kSessionError;
+#else
+  channel_count_ = audio_decoder_config.channel_count;
+  bits_per_channel_ = audio_decoder_config.bits_per_channel;
+  samples_per_second_ = audio_decoder_config.samples_per_second;
+  return cdm::kSuccess;
+#endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
 }
 
 cdm::Status ClearKeyCdm::InitializeVideoDecoder(
@@ -286,6 +300,13 @@ cdm::Status ClearKeyCdm::InitializeVideoDecoder(
 }
 
 void ClearKeyCdm::ResetDecoder(cdm::StreamType decoder_type) {
+#if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
+  if (decoder_type == cdm::kStreamTypeAudio) {
+    last_timestamp_ = media::kNoTimestamp();
+    last_duration_ = media::kInfiniteDuration();
+  }
+#endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
+
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
   if (decoder_type == cdm::kStreamTypeVideo)
     video_decoder_->Reset();
@@ -293,6 +314,13 @@ void ClearKeyCdm::ResetDecoder(cdm::StreamType decoder_type) {
 }
 
 void ClearKeyCdm::DeinitializeDecoder(cdm::StreamType decoder_type) {
+#if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
+  if (decoder_type == cdm::kStreamTypeAudio) {
+    last_timestamp_ = media::kNoTimestamp();
+    last_duration_ = media::kInfiniteDuration();
+  }
+#endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
+
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
   if (decoder_type == cdm::kStreamTypeVideo)
     video_decoder_->Deinitialize();
@@ -331,6 +359,53 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
 #endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
 }
 
+cdm::Status ClearKeyCdm::DecryptAndDecodeSamples(
+    const cdm::InputBuffer& encrypted_buffer,
+    cdm::AudioFrames* audio_frames) {
+  DVLOG(1) << "DecryptAndDecodeSamples()";
+
+  scoped_refptr<media::DecoderBuffer> buffer;
+  cdm::Status status = DecryptToMediaDecoderBuffer(encrypted_buffer, &buffer);
+
+  if (status != cdm::kSuccess)
+    return status;
+
+#if !defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
+  NOTIMPLEMENTED();
+  return cdm::kDecodeError;
+#else
+  if (buffer->IsEndOfStream()) {
+    // Upon the first EOS frame, return a frame with |last_duration_|.
+    if (last_duration_ != media::kInfiniteDuration()) {
+      DCHECK(last_timestamp_ != media::kNoTimestamp());
+      GenerateFakeAudioFrames(audio_frames);
+      last_timestamp_ = media::kNoTimestamp();
+      last_duration_ = media::kInfiniteDuration();
+      return cdm::kSuccess;
+    }
+
+    last_timestamp_ = media::kNoTimestamp();
+    return cdm::kNeedMoreData;
+  }
+
+  base::TimeDelta cur_timestamp = buffer->GetTimestamp();
+  DCHECK(cur_timestamp != media::kNoTimestamp());
+
+  // Return kNeedMoreData for the first frame because duration is unknown.
+  if (last_timestamp_ == media::kNoTimestamp()) {
+    last_timestamp_ = cur_timestamp;
+    return cdm::kNeedMoreData;
+  }
+
+  DCHECK(cur_timestamp > last_timestamp_);
+  last_duration_ = cur_timestamp - last_timestamp_;
+  last_timestamp_ = cur_timestamp;
+
+  GenerateFakeAudioFrames(audio_frames);
+  return cdm::kSuccess;
+#endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
+}
+
 cdm::Status ClearKeyCdm::DecryptToMediaDecoderBuffer(
     const cdm::InputBuffer& encrypted_buffer,
     scoped_refptr<media::DecoderBuffer>* decrypted_buffer) {
@@ -361,6 +436,30 @@ cdm::Status ClearKeyCdm::DecryptToMediaDecoderBuffer(
   DCHECK_EQ(status, media::Decryptor::kSuccess);
   return cdm::kSuccess;
 }
+
+#if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
+void ClearKeyCdm::GenerateFakeAudioFrames(cdm::AudioFrames* audio_frames) {
+  // For now we only generate one audio frame for the whole duration.
+  // TODO(xhwang): Generate multiple audio frames for testing purposes.
+  DCHECK(last_duration_ != media::kInfiniteDuration());
+  int64 duration_in_microseconds = last_duration_.InMicroseconds();
+  DCHECK_GT(duration_in_microseconds, 0);
+
+  int64 timestamp = last_timestamp_.InMicroseconds();
+  int64 bytes_per_sample = channel_count_ * bits_per_channel_ / 8;
+  int64 frame_size = bytes_per_sample * samples_per_second_ *
+      duration_in_microseconds / base::Time::kMicrosecondsPerSecond;
+
+  const int kHeaderSize = sizeof(timestamp) + sizeof(frame_size);
+  audio_frames->set_buffer(allocator_->Allocate(kHeaderSize + frame_size));
+  int64* data = reinterpret_cast<int64*>(audio_frames->buffer()->data());
+  *(data++) = timestamp;
+  *(data++) = frame_size;
+  // You won't hear anything because we have all zeros here. But the video
+  // should play just fine!
+  memset(data, 0, frame_size);
+}
+#endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
 void ClearKeyCdm::GenerateFakeVideoFrame(base::TimeDelta timestamp,
@@ -403,12 +502,5 @@ void ClearKeyCdm::GenerateFakeVideoFrame(base::TimeDelta timestamp,
          color, frame_size);
 }
 #endif  // CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER
-
-cdm::Status ClearKeyCdm::DecryptAndDecodeSamples(
-    const cdm::InputBuffer& encrypted_buffer,
-    cdm::AudioFrames* audio_frames) {
-  NOTIMPLEMENTED();
-  return cdm::kDecryptError;
-}
 
 }  // namespace webkit_media
