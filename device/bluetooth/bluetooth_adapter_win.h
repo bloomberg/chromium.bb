@@ -7,10 +7,12 @@
 
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
 namespace device {
 
+class BluetoothAdapterFactory;
 class BluetoothDevice;
 
 class BluetoothAdapterWin : public BluetoothAdapter {
@@ -37,8 +39,16 @@ class BluetoothAdapterWin : public BluetoothAdapter {
       const ErrorCallback& error_callback) OVERRIDE;
 
  private:
+  friend class device::BluetoothAdapterFactory;
+
   BluetoothAdapterWin();
   virtual ~BluetoothAdapterWin();
+
+  // NOTE: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<BluetoothAdapterWin> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(BluetoothAdapterWin);
 };
 
 }  // namespace device

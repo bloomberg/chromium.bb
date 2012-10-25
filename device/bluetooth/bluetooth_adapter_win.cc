@@ -11,7 +11,9 @@
 
 namespace device {
 
-BluetoothAdapterWin::BluetoothAdapterWin() : BluetoothAdapter() {
+BluetoothAdapterWin::BluetoothAdapterWin()
+    : BluetoothAdapter(),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
 BluetoothAdapterWin::~BluetoothAdapterWin() {

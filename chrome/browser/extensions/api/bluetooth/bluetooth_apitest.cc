@@ -4,6 +4,7 @@
 
 #include <string.h>
 
+#include "base/stringprintf.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api.h"
 #include "chrome/browser/extensions/bluetooth_event_router.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -13,7 +14,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chromeos/dbus/bluetooth_out_of_band_client.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_out_of_band_pairing_data.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -230,10 +230,8 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, SetOutOfBandPairingData) {
               ClearOutOfBandPairingData(testing::Truly(CallClosure),
                                         testing::_));
 
-  char buf[64];
-  snprintf(buf, sizeof(buf),
-           "[{\"deviceAddress\":\"%s\"}]", device_address.c_str());
-  std::string params(buf);
+  std::string params = base::StringPrintf(
+      "[{\"deviceAddress\":\"%s\"}]", device_address.c_str());
 
   scoped_refptr<api::BluetoothSetOutOfBandPairingDataFunction> set_oob_function;
   set_oob_function = setupFunction(
