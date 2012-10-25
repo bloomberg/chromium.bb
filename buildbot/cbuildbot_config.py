@@ -676,6 +676,7 @@ chrome_perf = chrome_info.derive(
 
 chrome_perf.add_config('lumpy-chrome-perf',
   boards=['lumpy'],
+  trybot_list=True,
 )
 
 chromium_info.add_config('x86-generic-tot-chrome-pfq-informational',

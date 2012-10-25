@@ -110,6 +110,12 @@ class CleanUpStage(bs.BuilderStage):
     archive_root = ArchiveStage.GetTrybotArchiveRoot(self._build_root)
     shutil.rmtree(archive_root, ignore_errors=True)
 
+  def _DeleteArchivedPerfResults(self):
+    """Clear any previously stashed perf results from hw testing."""
+    for result in glob.glob(os.path.join(
+        self._options.log_dir, '*.%s' % HWTestStage.PERF_RESULTS_EXTENSION)):
+      os.remove(result)
+
   def _PerformStage(self):
     if (not (self._options.buildbot or self._options.remote_trybot)
         and self._options.clobber):
@@ -145,7 +151,8 @@ class CleanUpStage(bs.BuilderStage):
       tasks = [functools.partial(commands.BuildRootGitCleanup,
                                  self._build_root, self._options.debug),
                functools.partial(commands.WipeOldOutput, self._build_root),
-               self._DeleteArchivedTrybotImages]
+               self._DeleteArchivedTrybotImages,
+               self._DeleteArchivedPerfResults]
       if self._build_config['chroot_replace'] and self._options.build:
         tasks.append(self._DeleteChroot)
       else:
@@ -1220,6 +1227,8 @@ class HWTestStage(BoardSpecificBuilderStage):
   option_name = 'tests'
   config_name = 'hw_tests'
 
+  PERF_RESULTS_EXTENSION = 'results'
+
   def __init__(self, options, build_config, board, archive_stage, suite):
     super(HWTestStage, self).__init__(options, build_config, board,
                                       suffix=' [%s]' % suite)
@@ -1228,16 +1237,21 @@ class HWTestStage(BoardSpecificBuilderStage):
     # Bind this early so derived classes can override it.
     self._timeout = build_config['hw_tests_timeout']
 
+  def _PrintFile(self, filename):
+    with open(filename) as f:
+      print f.read()
+
   def _SendPerfResults(self):
     """Sends the perf results from the test to the perf dashboard."""
-    result_file_name = '%s.results' % self._suite
+    result_file_name = '%s.%s' % (self._suite,
+                                  HWTestStage.PERF_RESULTS_EXTENSION)
     gs_results_file = '/'.join([self._archive_stage.GetGSUploadLocation(),
                                 result_file_name])
     gs_context = gs.GSContext()
-    result = gs_context.Copy(gs_results_file, '-')
+    gs_context.Copy(gs_results_file, self._options.log_dir)
     # Prints out the actual result from gs_context.Copy.
     logging.info('Copy of %s completed. Printing below:', result_file_name)
-    print result.output
+    self._PrintFile(os.path.join(self._options.log_dir, result_file_name))
 
   # Disable use of calling parents HandleStageException class.
   # pylint: disable=W0212

@@ -1205,13 +1205,13 @@ def main(argv):
                  'rather than the root of it.  This is not supported.'
                  % options.buildroot)
 
+  if not options.log_dir:
+    options.log_dir = os.path.join(options.buildroot, _DEFAULT_LOG_DIR)
+
   log_file = None
   if options.tee:
-    default_dir = os.path.join(options.buildroot, _DEFAULT_LOG_DIR)
-    dirname = options.log_dir or default_dir
-    log_file = os.path.join(dirname, _BUILDBOT_LOG_FILE)
-
-    osutils.SafeMakedirs(dirname)
+    log_file = os.path.join(options.log_dir, _BUILDBOT_LOG_FILE)
+    osutils.SafeMakedirs(options.log_dir)
     _BackupPreviousLog(log_file)
 
   with cros_build_lib.ContextManagerStack() as stack:

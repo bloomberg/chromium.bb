@@ -677,6 +677,7 @@ class HWTestStageTest(AbstractStageTest):
 
   def setUp(self):
     self.bot_id = 'x86-mario-release'
+    self.options.log_dir = '/b/cbuild/mylogdir'
     self.build_config = config.config[self.bot_id].copy()
     self.archive_stage_mock = self.mox.CreateMock(stages.ArchiveStage)
     self.suite = 'bvt'
@@ -766,15 +767,18 @@ class HWTestStageTest(AbstractStageTest):
     self.suite = 'pyauto_perf'
     self.bot_id = 'lumpy-chrome-perf'
     self.build_config = config.config['lumpy-chrome-perf'].copy()
+    self.mox.StubOutWithMock(stages.HWTestStage, '_PrintFile')
 
     gs_upload_location = 'gs://dontcare/builder/version'
     self.mox.StubOutWithMock(gs.GSContext, 'Copy')
-    result = self.mox.CreateMock(cros_build_lib.CommandResult)
 
     self.archive_stage_mock.GetGSUploadLocation().AndReturn(gs_upload_location)
-    result.output = 'my perf results'
-    gs.GSContext.Copy('%s/%s' % (
-        gs_upload_location, 'pyauto_perf.results'), '-').AndReturn(result)
+    results_file = 'pyauto_perf.results'
+    gs.GSContext.Copy('%s/%s' % (gs_upload_location, results_file),
+                      self.options.log_dir)
+
+    stages.HWTestStage._PrintFile(os.path.join(self.options.log_dir,
+                                               results_file))
     self._RunHWTestSuite()
 
 
