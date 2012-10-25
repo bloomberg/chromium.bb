@@ -22,13 +22,10 @@
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_reply_data.h"
 
-using content::ChildProcessSecurityPolicy;
-using content::RenderViewHost;
-using content::WebContents;
-using content::WebIntentsDispatcher;
+namespace content {
 
 IntentInjector::IntentInjector(WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
+    : WebContentsObserver(web_contents),
       intents_dispatcher_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(web_contents);
@@ -129,3 +126,5 @@ void IntentInjector::OnReply(const webkit_glue::WebIntentReply& reply) {
   intents_dispatcher_ = NULL;
   intents_dispatcher->SendReply(reply);
 }
+
+}  // namespace content

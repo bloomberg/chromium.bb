@@ -11,8 +11,6 @@
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_reply_data.h"
 
-using content::WebContents;
-
 namespace content {
 
 WebIntentsDispatcher* WebIntentsDispatcher::Create(
@@ -20,14 +18,11 @@ WebIntentsDispatcher* WebIntentsDispatcher::Create(
   return new InternalWebIntentsDispatcher(data);
 }
 
-}  // namespace content
-
-
 WebIntentsDispatcherImpl::WebIntentsDispatcherImpl(
-    content::WebContents* source_contents,
+    WebContents* source_contents,
     const webkit_glue::WebIntentData& intent,
     int intent_id)
-    : content::WebContentsObserver(source_contents),
+    : WebContentsObserver(source_contents),
       intent_(intent),
       intent_id_(intent_id),
       intent_injector_(NULL) {
@@ -87,7 +82,7 @@ void WebIntentsDispatcherImpl::SendReply(
 }
 
 void WebIntentsDispatcherImpl::RegisterReplyNotification(
-    const content::WebIntentsDispatcher::ReplyNotification& closure) {
+    const WebIntentsDispatcher::ReplyNotification& closure) {
   reply_notifiers_.push_back(closure);
 }
 
@@ -97,3 +92,5 @@ void WebIntentsDispatcherImpl::WebContentsDestroyed(WebContents* contents) {
 
   intent_injector_ = NULL;
 }
+
+}  // namespace content

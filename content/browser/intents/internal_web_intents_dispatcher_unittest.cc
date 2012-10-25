@@ -12,8 +12,9 @@
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_reply_data.h"
 
-class InternalWebIntentsDispatcherTest
-    : public content::RenderViewHostTestHarness {
+namespace content {
+
+class InternalWebIntentsDispatcherTest : public RenderViewHostTestHarness {
  public:
   InternalWebIntentsDispatcherTest() : reply_count_(0) {
   }
@@ -71,3 +72,5 @@ TEST_F(InternalWebIntentsDispatcherTest, CancelAbandonsInjector) {
   dispatcher->SendReplyMessage(webkit_glue::WEB_INTENT_REPLY_SUCCESS,
                               ASCIIToUTF16("success"));
 }
+
+}  // namespace content

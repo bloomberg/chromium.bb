@@ -15,13 +15,12 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/web_intent_reply_data.h"
 
-namespace content {
-class WebIntentsDispatcher;
-}
-
 namespace webkit_glue {
 struct WebIntentData;
 }
+
+namespace content {
+class WebIntentsDispatcher;
 
 // Injects an intent into the renderer of a WebContents. The intent dispatch
 // logic will create one of these to take care of passing intent data down into
@@ -33,26 +32,25 @@ struct WebIntentData;
 // RenderView is created. It will then send the intent data down to the renderer
 // on the RenderViewCreated call, so that the intent data is available
 // throughout the parsing of the loaded document.
-class CONTENT_EXPORT IntentInjector : public content::WebContentsObserver {
+class CONTENT_EXPORT IntentInjector : public WebContentsObserver {
  public:
   // |web_contents| must not be NULL.
-  explicit IntentInjector(content::WebContents* web_contents);
+  explicit IntentInjector(WebContents* web_contents);
 
-  // content::WebContentsObserver implementation.
-  virtual void RenderViewCreated(
-      content::RenderViewHost* render_view_host) OVERRIDE;
+  // WebContentsObserver implementation.
+  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void WebContentsDestroyed(content::WebContents* contents) OVERRIDE;
+  virtual void WebContentsDestroyed(WebContents* contents) OVERRIDE;
 
   // Used to notify the object that the source contents has been destroyed.
-  void SourceWebContentsDestroyed(content::WebContents* contents);
+  void SourceWebContentsDestroyed(WebContents* contents);
 
   // Sets the intent data to be injected. Call after the user has selected a
   // service to pass the intent data to that service. |intents_dispatcher| is a
   // sender to use to communicate to the source contents. The caller must
   // ensure that SourceWebContentsDestroyed is called when this object becomes
   // unusable. |intent| is the intent data from the source.
-  void SetIntent(content::WebIntentsDispatcher* intents_dispatcher,
+  void SetIntent(WebIntentsDispatcher* intents_dispatcher,
                  const webkit_glue::WebIntentData& intent);
 
   // Abandon this injector. Used when re-delivering an intent to a different
@@ -76,7 +74,7 @@ class CONTENT_EXPORT IntentInjector : public content::WebContentsObserver {
   scoped_ptr<webkit_glue::WebIntentData> source_intent_;
 
   // Weak pointer to the message forwarder to the contents invoking the intent.
-  content::WebIntentsDispatcher* intents_dispatcher_;
+  WebIntentsDispatcher* intents_dispatcher_;
 
   // Remember the initial delivery url for origin restriction.
   GURL initial_url_;
@@ -87,5 +85,7 @@ class CONTENT_EXPORT IntentInjector : public content::WebContentsObserver {
 
   DISALLOW_COPY_AND_ASSIGN(IntentInjector);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_INTENTS_INTENT_INJECTOR_H_

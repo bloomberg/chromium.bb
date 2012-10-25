@@ -13,6 +13,7 @@
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_reply_data.h"
 
+namespace content {
 class IntentInjector;
 
 // Implements the coordinator object interface for Web Intents.
@@ -20,22 +21,21 @@ class IntentInjector;
 // service can be delivered. Keeps a copy of triggering intent data to
 // be delivered to the service and serves as a forwarder for sending reply
 // messages back to the client page.
-class WebIntentsDispatcherImpl : public content::WebIntentsDispatcher,
-                                 public content::WebContentsObserver {
+class WebIntentsDispatcherImpl : public WebIntentsDispatcher,
+                                 public WebContentsObserver {
  public:
   // |source_contents| is the page which triggered the web intent.
   // |intent| is the intent payload created by that page.
   // |intent_id| is the identifier assigned by WebKit to direct replies back to
   // the correct Javascript callback.
-  WebIntentsDispatcherImpl(content::WebContents* source_contents,
+  WebIntentsDispatcherImpl(WebContents* source_contents,
                            const webkit_glue::WebIntentData& intent,
                            int intent_id);
   virtual ~WebIntentsDispatcherImpl();
 
   // WebIntentsDispatcher implementation.
   virtual const webkit_glue::WebIntentData& GetIntent() OVERRIDE;
-  virtual void DispatchIntent(
-      content::WebContents* destination_contents) OVERRIDE;
+  virtual void DispatchIntent(WebContents* destination_contents) OVERRIDE;
   virtual void ResetDispatch() OVERRIDE;
   // Deprecated. Use SendReply.
   // TODO(smckay): Eliminate use of SendReplyMessage in followup CL.
@@ -43,10 +43,10 @@ class WebIntentsDispatcherImpl : public content::WebIntentsDispatcher,
                                 const string16& data) OVERRIDE;
   virtual void SendReply(const webkit_glue::WebIntentReply& reply) OVERRIDE;
   virtual void RegisterReplyNotification(
-      const content::WebIntentsDispatcher::ReplyNotification& closure) OVERRIDE;
+      const WebIntentsDispatcher::ReplyNotification& closure) OVERRIDE;
 
-  // content::WebContentsObserver implementation.
-  virtual void WebContentsDestroyed(content::WebContents* contents) OVERRIDE;
+  // WebContentsObserver implementation.
+  virtual void WebContentsDestroyed(WebContents* contents) OVERRIDE;
 
  private:
   webkit_glue::WebIntentData intent_;
@@ -59,10 +59,11 @@ class WebIntentsDispatcherImpl : public content::WebIntentsDispatcher,
   IntentInjector* intent_injector_;
 
   // Callbacks to be notified when SendReplyMessage is called.
-  std::vector<content::WebIntentsDispatcher::ReplyNotification>
-      reply_notifiers_;
+  std::vector<WebIntentsDispatcher::ReplyNotification> reply_notifiers_;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentsDispatcherImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_INTENTS_WEB_INTENTS_DISPATCHER_IMPL_H_

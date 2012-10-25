@@ -8,7 +8,7 @@
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_reply_data.h"
 
-using content::WebContents;
+namespace content {
 
 InternalWebIntentsDispatcher::InternalWebIntentsDispatcher(
     const webkit_glue::WebIntentData& intent)
@@ -66,6 +66,8 @@ void InternalWebIntentsDispatcher::SendReply(
 }
 
 void InternalWebIntentsDispatcher::RegisterReplyNotification(
-    const content::WebIntentsDispatcher::ReplyNotification& closure) {
+    const WebIntentsDispatcher::ReplyNotification& closure) {
   reply_notifiers_.push_back(closure);
 }
+
+}  // namespace content

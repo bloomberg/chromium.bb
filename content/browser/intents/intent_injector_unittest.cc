@@ -16,7 +16,9 @@
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_reply_data.h"
 
-class IntentInjectorTest : public content::RenderViewHostImplTestHarness {
+namespace content {
+
+class IntentInjectorTest : public RenderViewHostImplTestHarness {
  public:
   IntentInjectorTest() {
     webkit_glue::WebIntentData intent(ASCIIToUTF16("action"),
@@ -48,8 +50,8 @@ TEST_F(IntentInjectorTest, TestDispatchLimitedToSameOrigin) {
 
   // Navigate to a same-origin page. The intent data should be sent.
   controller().LoadURL(GURL("http://www.ddd.com/page1"),
-                       content::Referrer(),
-                       content::PAGE_TRANSITION_TYPED,
+                       Referrer(),
+                       PAGE_TRANSITION_TYPED,
                        std::string());
   test_rvh()->OnMessageReceived(ViewHostMsg_ShouldClose_ACK(
       rvh()->GetRoutingID(), true, base::TimeTicks(), base::TimeTicks()));
@@ -63,8 +65,8 @@ TEST_F(IntentInjectorTest, TestDispatchLimitedToSameOrigin) {
 
   // Intent data is sent to a different same-origin page.
   controller().LoadURL(GURL("http://www.ddd.com/page2"),
-                       content::Referrer(),
-                       content::PAGE_TRANSITION_TYPED,
+                       Referrer(),
+                       PAGE_TRANSITION_TYPED,
                        std::string());
   test_rvh()->OnMessageReceived(ViewHostMsg_ShouldClose_ACK(
       rvh()->GetRoutingID(), true, base::TimeTicks(), base::TimeTicks()));
@@ -75,8 +77,8 @@ TEST_F(IntentInjectorTest, TestDispatchLimitedToSameOrigin) {
   process()->sink().ClearMessages();
 
   controller().LoadURL(GURL("http://www.domain2.com/"),
-                       content::Referrer(),
-                       content::PAGE_TRANSITION_TYPED,
+                       Referrer(),
+                       PAGE_TRANSITION_TYPED,
                        std::string());
   ASSERT_TRUE(contents()->cross_navigation_pending());
   ASSERT_TRUE(pending_rvh());
@@ -104,3 +106,5 @@ TEST_F(IntentInjectorTest, AbandonDeletes) {
           webkit_glue::WEB_INTENT_SERVICE_CONTENTS_CLOSED,
           string16()));
 }
+
+}  // namespace content
