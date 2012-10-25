@@ -1895,7 +1895,6 @@ def MakeBaseTrustedEnv():
     CPPDEFINES = [
       ['NACL_TARGET_ARCH', '${TARGET_ARCHITECTURE}' ],
       ['NACL_TARGET_SUBARCH', '${TARGET_SUBARCH}' ],
-      ['NACL_STANDALONE', 1],
       ],
     CPPPATH = [
       '${SOURCE_ROOT}',

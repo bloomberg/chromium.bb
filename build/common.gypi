@@ -184,11 +184,6 @@
       }],
     ],
     'conditions': [
-      ['nacl_standalone==1', {
-        'defines': [
-          'NACL_STANDALONE=1',
-        ]
-      }],
       # TODO(gregoryd): split target and build subarchs
       ['target_arch=="ia32"', {
         'defines': [
