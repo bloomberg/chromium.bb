@@ -26,9 +26,9 @@ namespace {
 const char kOmniboxTrialName[] = "PrerenderFromOmnibox";
 int g_omnibox_trial_default_group_number = kint32min;
 
-const char kSpeculativePrefetchingLearningTrialName[] =
-    "SpeculativePrefetchingLearning";
-int g_speculative_prefetching_learning_default_group_number = kint32min;
+const char kSpeculativePrefetchingTrialName[] = "SpeculativePrefetching";
+int g_speculative_prefetching_learning_group = kint32min;
+int g_speculative_prefetching_prefetching_group = kint32min;
 
 void SetupPrefetchFieldTrial() {
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
@@ -256,22 +256,44 @@ void ConfigureSpeculativePrefetching() {
   // Field trial to see if we're enabled.
   const FieldTrial::Probability kDivisor = 100;
 
-  FieldTrial::Probability kDisabledProbability = 10;
+  FieldTrial::Probability kLearningProbability = 0;
+  FieldTrial::Probability kPrefetchingProbability = 0;
+
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_BETA)
-    kDisabledProbability = 95;
-  else if (channel == chrome::VersionInfo::CHANNEL_STABLE)
-    kDisabledProbability = 100;
-  scoped_refptr<FieldTrial> speculative_prefetching_learning_trial(
+  switch (channel) {
+    case chrome::VersionInfo::CHANNEL_CANARY:
+    case chrome::VersionInfo::CHANNEL_DEV:
+      kLearningProbability = 90;
+      kPrefetchingProbability = 1;
+      break;
+
+    case chrome::VersionInfo::CHANNEL_BETA:
+      kLearningProbability = 5;
+      break;
+
+    case chrome::VersionInfo::CHANNEL_STABLE:
+    case chrome::VersionInfo::CHANNEL_UNKNOWN:
+      break;
+  }
+
+  scoped_refptr<FieldTrial> speculative_prefetching_trial(
       FieldTrialList::FactoryGetFieldTrial(
-          kSpeculativePrefetchingLearningTrialName,
+          kSpeculativePrefetchingTrialName,
           kDivisor,
-          "SpeculativePrefetchingLearningEnabled",
+          "Disabled",
           2012, 12, 30,
-          &g_speculative_prefetching_learning_default_group_number));
-  speculative_prefetching_learning_trial->AppendGroup(
-      "SpeculativePrefetchingDisabled",
-      kDisabledProbability);
+          NULL));
+
+  if (kLearningProbability > 0) {
+    g_speculative_prefetching_learning_group =
+        speculative_prefetching_trial->AppendGroup("Learning",
+                                                   kLearningProbability);
+  }
+  if (kPrefetchingProbability > 0) {
+    g_speculative_prefetching_prefetching_group =
+        speculative_prefetching_trial->AppendGroup("Prefetching",
+                                                   kPrefetchingProbability);
+  }
 }
 
 bool IsSpeculativeResourcePrefetchingLearningEnabled(Profile* profile) {
@@ -289,8 +311,8 @@ bool IsSpeculativeResourcePrefetchingLearningEnabled(Profile* profile) {
   }
 
   const int group = FieldTrialList::FindValue(
-      kSpeculativePrefetchingLearningTrialName);
-  return group == g_speculative_prefetching_learning_default_group_number;
+      kSpeculativePrefetchingTrialName);
+  return group == g_speculative_prefetching_learning_group;
 }
 
 bool IsSpeculativeResourcePrefetchingEnabled(Profile* profile) {
@@ -306,7 +328,9 @@ bool IsSpeculativeResourcePrefetchingEnabled(Profile* profile) {
     return switch_value == switches::kSpeculativeResourcePrefetchingEnabled;
   }
 
-  return false;
+  const int group = FieldTrialList::FindValue(
+      kSpeculativePrefetchingTrialName);
+  return group == g_speculative_prefetching_prefetching_group;
 }
 
 }  // namespace prerender
