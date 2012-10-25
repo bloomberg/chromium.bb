@@ -229,6 +229,16 @@ BookmarkExtensionBackground::BookmarkExtensionBackground(
 
 void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
                                         views::View* view) const {
+  // If search mode is |NTP|, bookmark bar is detached and floating on top of
+  // the content view (in z-order) and below the "Most Visited" thumbnails (in
+  // the y-direction).  It's visually nicer without the bookmark background, so
+  // utilize the existing background of content view, giving the impression that
+  // each bookmark button is part of the content view.
+  const chrome::search::Mode& search_mode =
+      browser_view_->browser()->search_model()->mode();
+  if (search_mode.is_ntp())
+    return;
+
   ui::ThemeProvider* tp = host_view_->GetThemeProvider();
   int toolbar_overlap = host_view_->GetToolbarOverlap();
   // The client edge is drawn below the toolbar bounds.
@@ -270,17 +280,17 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
     Profile* profile = browser_view_->browser()->profile();
     bool is_instant_extended_api_enabled =
         chrome::search::IsInstantExtendedAPIEnabled(profile);
-    chrome::search::Mode::Type search_mode =
-        browser_view_->browser()->search_model()->mode().mode;
     bool use_ntp_background_theme = false;
     DetachableToolbarView::PaintBackgroundAttachedMode(canvas, host_view_,
         browser_view_->OffsetPointForToolbarBackgroundImage(
             gfx::Point(host_view_->GetMirroredX(), host_view_->y())),
-        chrome::search::GetToolbarBackgroundColor(profile, search_mode),
+        chrome::search::GetToolbarBackgroundColor(profile, search_mode.mode),
         chrome::search::GetTopChromeBackgroundImage(tp,
-            is_instant_extended_api_enabled, search_mode,
+            is_instant_extended_api_enabled, search_mode.mode,
             InstantUI::ShouldShowWhiteNTP(profile), &use_ntp_background_theme));
-    if (host_view_->height() >= toolbar_overlap)
+    // For instant extended API, only draw bookmark separator for |MODE_DFEAULT|
+    // mode.
+    if (host_view_->height() >= toolbar_overlap && search_mode.is_default())
       DetachableToolbarView::PaintHorizontalBorder(canvas, host_view_);
   }
 }
@@ -679,9 +689,10 @@ void BrowserView::BookmarkBarStateChanged(
     BookmarkBar::AnimateChangeType change_type) {
   if (bookmark_bar_view_.get()) {
     bookmark_bar_view_->SetBookmarkBarState(
-        browser_->bookmark_bar_state(), change_type);
+        browser_->bookmark_bar_state(), change_type,
+        browser_->search_model()->mode());
   }
-  if (MaybeShowBookmarkBar(chrome::GetActiveTabContents(browser_.get())))
+  if (MaybeShowBookmarkBar(GetActiveTabContents()))
     Layout();
 }
 
@@ -853,7 +864,7 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
       is_animating || (call_state == REENTRANT_FORCE_FAST_RESIZE);
   if (use_fast_resize)
     contents_container_->SetFastResize(true);
-  UpdateUIForContents(chrome::GetActiveTabContents(browser_.get()));
+  UpdateUIForContents(GetActiveTabContents());
   if (use_fast_resize)
     contents_container_->SetFastResize(false);
 
@@ -881,7 +892,7 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
   }
 
   // When transitioning from animating to not animating we need to make sure the
-  // contents_container_ gets layed out. If we don't do this and the bounds
+  // contents_container_ gets laid out. If we don't do this and the bounds
   // haven't changed contents_container_ won't get a Layout out and we'll end up
   // with a gray rect because the clip wasn't updated.  Note that a reentrant
   // call never needs to do this, because after it returns, the normal call
@@ -2037,7 +2048,8 @@ bool BrowserView::MaybeShowBookmarkBar(TabContents* contents) {
                                           browser_.get()));
       bookmark_bar_view_->SetBookmarkBarState(
           browser_->bookmark_bar_state(),
-          BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
+          BookmarkBar::DONT_ANIMATE_STATE_CHANGE,
+          browser_->search_model()->mode());
     }
     bookmark_bar_view_->SetPageNavigator(contents->web_contents());
     new_bookmark_bar_view = bookmark_bar_view_.get();
@@ -2468,7 +2480,8 @@ void BrowserView::ProcessTabSelected(TabContents* new_contents) {
   if (bookmark_bar_view_.get()) {
     bookmark_bar_view_->SetBookmarkBarState(
         browser_->bookmark_bar_state(),
-        BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
+        BookmarkBar::DONT_ANIMATE_STATE_CHANGE,
+        browser_->search_model()->mode());
   }
   UpdateUIForContents(new_contents);
 
@@ -2517,8 +2530,8 @@ void BrowserView::ModeChanged(const chrome::search::Mode& old_mode,
   bool hide_infobars = new_mode.is_search_suggestions() ||
       (old_mode.is_search_suggestions() && new_mode.is_default());
   infobar_container_->ChangeTabContents(
-      hide_infobars
-          ? NULL : InfoBarTabHelper::FromWebContents(GetActiveWebContents()));
+      hide_infobars ?
+          NULL : InfoBarTabHelper::FromWebContents(GetActiveWebContents()));
 }
 
 void BrowserView::CreateLauncherIcon() {

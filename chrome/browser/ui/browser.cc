@@ -2220,7 +2220,9 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
   if (browser_defaults::bookmarks_enabled &&
       profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) &&
       (!window_ || !window_->IsFullscreen())) {
-    state = BookmarkBar::SHOW;
+    // Always show detached mode if search mode is |NTP|.
+    state = search_model_->mode().is_ntp() ?
+        BookmarkBar::DETACHED : BookmarkBar::SHOW;
   } else {
     WebContents* web_contents = chrome::GetActiveWebContents(this);
     BookmarkTabHelper* bookmark_tab_helper =
@@ -2231,8 +2233,8 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
       state = BookmarkBar::HIDDEN;
   }
 
-  // Only allow the bookmark bar to be shown in default mode.
-  if (!search_model_->mode().is_default())
+  // Don't allow the bookmark bar to be shown in suggestions mode.
+  if (search_model_->mode().is_search_suggestions())
     state = BookmarkBar::HIDDEN;
 
   if (state == bookmark_bar_state_)

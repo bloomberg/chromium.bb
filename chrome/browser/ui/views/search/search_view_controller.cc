@@ -210,6 +210,7 @@ void SearchViewController::StackAtTop() {
     // Instant should go on top.
     if (contents_container_->preview())
       StackWebViewLayerAtTop(contents_container_->preview());
+    ntp_container_->MaybeStackBookmarkBarAtTop();
   }
   location_bar_container_->StackAtTop();
 }
@@ -232,25 +233,31 @@ gfx::Rect SearchViewController::GetNTPOmniboxBounds(views::View* destination) {
   if (!is_ntp_state(state_))
     return gfx::Rect();
 
-  const int kOmniboxWidthMax = 742;
-  const int kOmniboxWidthMin = 200;
-  const int kOmniboxWidthPadding = 80;
-  int omnibox_width = ntp_container_->bounds().width() -
-      2 * kOmniboxWidthPadding;
-  if (omnibox_width > kOmniboxWidthMax) {
-    omnibox_width = kOmniboxWidthMax;
-  } else if (omnibox_width < kOmniboxWidthMin) {
-    omnibox_width = kOmniboxWidthMin;
-  }
-
-  int omnibox_x = (ntp_container_->bounds().width() - omnibox_width) / 2;
-  gfx::Point omnibox_origin(omnibox_x,
+  int omnibox_width = 0;
+  int omnibox_xpos = 0;
+  GetNTPOmniboxWidthAndXPos(ntp_container_->bounds().width(), &omnibox_width,
+                            &omnibox_xpos);
+  gfx::Point omnibox_origin(omnibox_xpos,
                             GetLogoView()->bounds().bottom() +
                                 chrome::search::kLogoBottomGap);
   views::View::ConvertPointToTarget(ntp_container_, destination,
                                     &omnibox_origin);
   return gfx::Rect(omnibox_origin.x(), omnibox_origin.y(),
                    omnibox_width, chrome::search::kNTPOmniboxHeight);
+}
+
+void SearchViewController::GetNTPOmniboxWidthAndXPos(int destination_width,
+   int* omnibox_width, int* omnibox_xpos) {
+  const int kOmniboxWidthMax = 742;
+  const int kOmniboxWidthMin = 200;
+  const int kOmniboxWidthPadding = 80;
+  *omnibox_width = destination_width - 2 * kOmniboxWidthPadding;
+  if (*omnibox_width > kOmniboxWidthMax) {
+    *omnibox_width = kOmniboxWidthMax;
+  } else if (*omnibox_width < kOmniboxWidthMin) {
+    *omnibox_width = kOmniboxWidthMin;
+  }
+  *omnibox_xpos = (destination_width - *omnibox_width) / 2;
 }
 
 void SearchViewController::OnImplicitAnimationsCompleted() {
@@ -335,6 +342,7 @@ void SearchViewController::SetState(State state) {
       CreateViews(state);
       if (content_view_ && saved)
         content_view_->SetWebContents(saved);
+      ntp_container_->MaybeStackBookmarkBarAtTop();
       break;
 
     case STATE_NTP_ANIMATING:

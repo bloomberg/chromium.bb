@@ -13,7 +13,11 @@
 
 namespace chrome {
 class BookmarkBarInstructionsDelegate;
+namespace search {
+struct Mode;
 }
+}
+
 namespace views {
 class Label;
 class Link;
@@ -29,6 +33,16 @@ class BookmarkBarInstructionsView : public views::View,
  public:
   explicit BookmarkBarInstructionsView(
       chrome::BookmarkBarInstructionsDelegate* delegate);
+
+  // Updates background color according to |search_mode|.
+  // In NTP mode, background of bookmark bar is transparent, so the instruction
+  // text should not use subpixel rendering; |views::Label| uses the alpha value
+  // of background color to determine the text rendering flags, so specifically
+  // setting the backround color to transparent white will force disabling of
+  // subpixel rendering.
+  // Note that |views::Label| doesn't paint this background color; it's only
+  // used to determine color rendering flags of text.
+  void UpdateBackgroundColor(const chrome::search::Mode& search_mode);
 
   // views::View overrides.
   virtual gfx::Size GetPreferredSize() OVERRIDE;

@@ -61,6 +61,13 @@ extern const int kOmniboxBottomGap;
 // Initial height of the search results, relative to top of the NTP overlay.
 extern const int kSearchResultsHeight;
 
+// The mininum height of content view to layout detached bookmark bar at bottom
+// for |NTP| search mode, calculated from chrome/browser/resources/ntp_search/
+// tile_page.js HEIGHT_FOR_BOTTOM_PANEL - TAB_BAR_HEIGHT - UPPER_SECTION_HEIGHT.
+// TODO(kuan): change this when tile_page.js changes to use non-const
+// UPPER_SECTION_HEIGHT,
+extern const int kMinContentHeightForBottomBookmarkBar;
+
 // Returns the derived |font| for NTP omnibox use.
 gfx::Font GetNTPOmniboxFont(const gfx::Font& font);
 

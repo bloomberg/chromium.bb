@@ -10,8 +10,10 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar_instructions_delegate.h"
+#include "chrome/browser/ui/search/search_types.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/native_theme/native_theme.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 
@@ -43,6 +45,16 @@ BookmarkBarInstructionsView::BookmarkBarInstructionsView(
     import_link_->SetAutoColorReadabilityEnabled(false);
     AddChildView(import_link_);
   }
+}
+
+void BookmarkBarInstructionsView::UpdateBackgroundColor(
+    const chrome::search::Mode& search_mode) {
+  const SkColor kTransparentBackgroundColorForNTPMode =
+      SkColorSetARGB(0, 255, 255, 255);
+  instructions_->SetBackgroundColor(search_mode.is_ntp() ?
+      kTransparentBackgroundColorForNTPMode :
+      ui::NativeTheme::instance()->GetSystemColor(
+          ui::NativeTheme::kColorId_LabelBackgroundColor));
 }
 
 gfx::Size BookmarkBarInstructionsView::GetPreferredSize() {

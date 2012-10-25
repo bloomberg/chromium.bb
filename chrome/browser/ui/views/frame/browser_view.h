@@ -229,9 +229,12 @@ class BrowserView : public BrowserWindow,
   }
 #endif
 
-  // Test support.
   SearchViewController* search_view_controller() const {
     return search_view_controller_.get();
+  }
+
+  BookmarkBarView* bookmark_bar() const {
+    return bookmark_bar_view_.get();
   }
 
   // Overridden from BrowserWindow:

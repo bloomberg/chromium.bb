@@ -238,7 +238,8 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
 
   virtual gfx::Rect GetTextBounds() const;
 
-  int ComputeCanvasStringFlags() const;
+  // Compute the flags to use for rendering text strings.
+  virtual int ComputeCanvasStringFlags() const;
 
   // Calculate the bounds of the content of this button, including any extra
   // width needed on top of the text width.

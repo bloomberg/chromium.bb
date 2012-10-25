@@ -9,6 +9,9 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/ntp_background_util.h"
 #include "chrome/browser/ui/search/search_ui.h"
+#include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/search/search_view_controller.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/theme_resources.h"
@@ -23,7 +26,7 @@
 namespace internal {
 
 SearchNTPContainerView::SearchNTPContainerView(Profile* profile,
-                                               views::View* browser_view)
+                                               BrowserView* browser_view)
     : profile_(profile),
       browser_view_(browser_view),
       logo_view_(NULL),
@@ -106,7 +109,14 @@ void SearchNTPContainerView::NotifyNTPBackgroundYPosIfChanged(
   to_notify_css_background_y_pos_ = false;
 }
 
+void SearchNTPContainerView::MaybeStackBookmarkBarAtTop() {
+  BookmarkBarView* bookmark_bar = browser_view_->bookmark_bar();
+  if (bookmark_bar)
+    bookmark_bar->MaybeStackAtTop();
+}
+
 void SearchNTPContainerView::Layout() {
+  // Layout logo view.
   if (!logo_view_)
     return;
   gfx::Size preferred_size = logo_view_->GetPreferredSize();
@@ -119,6 +129,7 @@ void SearchNTPContainerView::Layout() {
   // Note: Next would be the Omnibox layout.  That is done in
   // |ToolbarView::LayoutForSearch| however.
 
+  // Layout content view.
   if (!content_view_)
     return;
   const int kContentTop = logo_view_->bounds().bottom() +
@@ -139,6 +150,47 @@ void SearchNTPContainerView::Layout() {
     native_view_layer->parent()->StackAtTop(native_view_layer);
   }
 #endif  // USE_AURA
+
+  // Layout bookmark bar, so that it floats on top of content view (in z-order)
+  // and below the "Most visited" thumbnails (in the y-direction) at the bottom
+  // of content view.
+  BookmarkBarView* bookmark_bar = browser_view_->bookmark_bar();
+  if (!bookmark_bar)
+    return;
+  // Only show bookmark bar if height of content view is >=
+  // chrome::search::kMinContentHeightForBottomBookmarkBar.
+  // Bookmark bar is child of |BrowserView|, so convert coordinates relative
+  // to |BrowserView|.
+  gfx::Rect content_bounds(content_view_->bounds());
+  gfx::Point content_origin(content_bounds.origin());
+  views::View::ConvertPointToTarget(this, browser_view_, &content_origin);
+  content_bounds.set_origin(content_origin);
+  if (content_bounds.height() <
+          chrome::search::kMinContentHeightForBottomBookmarkBar ||
+      !browser_view_->IsBookmarkBarVisible()) {
+    bookmark_bar->SetVisible(false);
+    bookmark_bar->SetBounds(0, content_bounds.bottom(),
+                            content_bounds.width(), 0);
+    return;
+  }
+  // BookmarkBarView uses infobar visibility to determine toolbar overlap, which
+  // is 0 if bookmark bar is detached and infobar is visible.  Since NTP
+  // bookmark bar is detached at bottom of content view, toolbar overlap is
+  // irrelevant.  So set infobar visible to force 0 toolbar overlap.
+  bookmark_bar->set_infobar_visible(true);
+  bookmark_bar->SetVisible(true);
+  int omnibox_width = 0;
+  int omnibox_xpos = 0;
+  browser_view_->search_view_controller()->GetNTPOmniboxWidthAndXPos(
+      content_bounds.width(), &omnibox_width, &omnibox_xpos);
+  int bookmark_bar_height = bookmark_bar->GetPreferredSize().height();
+  bookmark_bar->SetBounds(omnibox_xpos,
+                          content_bounds.bottom() - bookmark_bar_height,
+                          omnibox_width,
+                          bookmark_bar_height);
+
+  // Detached bottom bookmark bar should always go on top.
+  MaybeStackBookmarkBarAtTop();
 }
 
 void SearchNTPContainerView::OnPaintBackground(gfx::Canvas* canvas) {

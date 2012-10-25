@@ -27,6 +27,7 @@ const int kLogoBottomGap = 24;
 const int kNTPOmniboxHeight = 44;
 const int kOmniboxBottomGap = 4;
 const int kSearchResultsHeight = 122;
+const int kMinContentHeightForBottomBookmarkBar = 277;
 
 gfx::Font GetNTPOmniboxFont(const gfx::Font& font) {
   const int kNTPOmniboxFontSize = 18;

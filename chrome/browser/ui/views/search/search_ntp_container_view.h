@@ -10,6 +10,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/views/view.h"
 
+class BrowserView;
 class Profile;
 
 namespace views {
@@ -23,7 +24,7 @@ namespace internal {
 // notification of y-pos changes of theme background image in content view.
 class SearchNTPContainerView : public views::View {
  public:
-  SearchNTPContainerView(Profile* profile, views::View* browser_view);
+  SearchNTPContainerView(Profile* profile, BrowserView* browser_view);
   virtual ~SearchNTPContainerView();
 
   // Removes previous logo view if available, adds the new logo view as child
@@ -39,6 +40,10 @@ class SearchNTPContainerView : public views::View {
   void NotifyNTPBackgroundYPosIfChanged(views::WebView* content_view,
                                         const chrome::search::Mode& mode);
 
+  // If mode is |NTP|, bookmark bar is detached and floating on top of content
+  // view below the most-visited thumbnails, so stack it on top.
+  void MaybeStackBookmarkBarAtTop();
+
   // views::View overrides:
   virtual void Layout() OVERRIDE;
 
@@ -53,7 +58,7 @@ class SearchNTPContainerView : public views::View {
  private:
   Profile* profile_;  // Weak.
 
-  views::View* browser_view_;  // Weak.
+  BrowserView* browser_view_;  // Weak.
 
   views::View* logo_view_;
 

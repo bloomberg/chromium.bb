@@ -91,6 +91,12 @@ class SearchViewController
   // |ntp_container_| relative to |destination| relative.
   gfx::Rect GetNTPOmniboxBounds(views::View* destination);
 
+  // Get the width and x-position of the omnibox in destination with
+  // |destination_width|.
+  void GetNTPOmniboxWidthAndXPos(int destination_width,
+                                 int* omnibox_width,
+                                 int* omnibox_xpos);
+
  protected:
   // ui::ImplicitAnimationObserver overrides:
   virtual void OnImplicitAnimationsCompleted() OVERRIDE;
