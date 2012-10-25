@@ -16,19 +16,21 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 
 using content::BrowserThread;
-using chrome::spellcheck_common::WordList;
+
+namespace {
+base::LazyInstance<SpellCheckProfile::CustomWordList> g_empty_list =
+    LAZY_INSTANCE_INITIALIZER;
+}  // namespace
 
 SpellCheckProfile::SpellCheckProfile(Profile* profile)
     : profile_(profile),
       host_ready_(false),
-      profile_dir_(profile->GetPath()),
-      custom_dictionary_(new SpellcheckCustomDictionary(profile)) {
+      profile_dir_(profile->GetPath()) {
   PrefService* prefs = profile_->GetPrefs();
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(prefs::kSpellCheckDictionary, this);
@@ -84,25 +86,60 @@ void SpellCheckProfile::StartRecordingMetrics(bool spellcheck_enabled) {
   metrics_->RecordEnabledStats(spellcheck_enabled);
 }
 
-void SpellCheckProfile::SpellCheckHostInitialized(WordList* custom_words) {
+void SpellCheckProfile::SpellCheckHostInitialized(
+    SpellCheckProfile::CustomWordList* custom_words) {
   host_ready_ = !!host_.get() && host_->IsReady();
-  custom_dictionary_->SetCustomWordList(custom_words);
+  custom_words_.reset(custom_words);
+  if (metrics_.get()) {
+    int count = custom_words_.get() ? custom_words_->size() : 0;
+    metrics_->RecordCustomWordCountStats(count);
+  }
 }
 
-const WordList& SpellCheckProfile::GetCustomWords() const {
-  return custom_dictionary_->GetCustomWords();
+const SpellCheckProfile::CustomWordList&
+SpellCheckProfile::GetCustomWords() const {
+  return custom_words_.get() ? *custom_words_ : g_empty_list.Get();
 }
 
 void SpellCheckProfile::CustomWordAddedLocally(const std::string& word) {
-  custom_dictionary_->CustomWordAddedLocally(word);
+  if (!custom_words_.get())
+    custom_words_.reset(new CustomWordList());
+  custom_words_->push_back(word);
+  if (metrics_.get())
+    metrics_->RecordCustomWordCountStats(custom_words_->size());
 }
 
-void SpellCheckProfile::LoadCustomDictionary(WordList* custom_words) {
-  custom_dictionary_->LoadDictionaryIntoCustomWordList(*custom_words);
+void SpellCheckProfile::LoadCustomDictionary(CustomWordList* custom_words) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE) || IsTesting());
+
+  if (!custom_words)
+    return;
+
+  std::string contents;
+  file_util::ReadFileToString(GetCustomDictionaryPath(), &contents);
+  if (contents.empty())
+    return;
+
+  CustomWordList list_of_words;
+  base::SplitString(contents, '\n', &list_of_words);
+  for (size_t i = 0; i < list_of_words.size(); ++i) {
+    if (list_of_words[i] != "")
+      custom_words->push_back(list_of_words[i]);
+  }
 }
 
 void SpellCheckProfile::WriteWordToCustomDictionary(const std::string& word) {
-  custom_dictionary_->WriteWordToCustomDictionary(word);
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE) || IsTesting());
+
+  // Stored in UTF-8.
+  DCHECK(IsStringUTF8(word));
+
+  std::string word_to_add(word + "\n");
+  FILE* f = file_util::OpenFile(GetCustomDictionaryPath(), "a+");
+  if (f) {
+    fputs(word_to_add.c_str(), f);
+    file_util::CloseFile(f);
+  }
 }
 
 void SpellCheckProfile::Shutdown() {
@@ -165,3 +202,11 @@ SpellCheckProfile::ReinitializeResult SpellCheckProfile::ReinitializeHostImpl(
   return host_deleted ? REINITIALIZE_REMOVED_HOST : REINITIALIZE_DID_NOTHING;
 }
 
+const FilePath& SpellCheckProfile::GetCustomDictionaryPath() {
+  if (!custom_dictionary_path_.get()) {
+    custom_dictionary_path_.reset(
+        new FilePath(profile_dir_.Append(chrome::kCustomDictionaryFileName)));
+  }
+
+  return *custom_dictionary_path_;
+}

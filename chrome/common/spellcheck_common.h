@@ -18,8 +18,6 @@ static const int kMaxSuggestions = 5;
 
 static const int kMaxAutoCorrectWordSize = 8;
 
-typedef std::vector<std::string> WordList;
-
 FilePath GetVersionedFileName(const std::string& input_language,
                               const FilePath& dict_dir);
 

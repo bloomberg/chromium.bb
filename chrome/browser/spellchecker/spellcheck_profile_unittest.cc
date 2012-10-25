@@ -8,15 +8,12 @@
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_host.h"
 #include "chrome/browser/spellchecker/spellcheck_profile.h"
-#include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
-#include "chrome/common/spellcheck_common.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
-using chrome::spellcheck_common::WordList;
 
 namespace {
 
@@ -26,7 +23,8 @@ class MockSpellCheckHost : public SpellCheckHost {
   MOCK_METHOD1(InitForRenderer, void(content::RenderProcessHost* process));
   MOCK_METHOD1(AddWord, void(const std::string& word));
   MOCK_CONST_METHOD0(GetDictionaryFile, const base::PlatformFile&());
-  MOCK_CONST_METHOD0(GetCustomWords, const WordList&());
+  MOCK_CONST_METHOD0(GetCustomWords,
+                     const SpellCheckProfile::CustomWordList&());
   MOCK_CONST_METHOD0(GetLastAddedFile, const std::string&());
   MOCK_CONST_METHOD0(GetLanguage, const std::string&());
   MOCK_CONST_METHOD0(IsUsingPlatformChecker, bool());
@@ -184,11 +182,12 @@ TEST_F(SpellCheckProfileTest, SpellCheckHostInitializedWithCustomWords) {
   target_->SetHostToBeCreated(host.release());
   target_->ReinitializeHostImpl(false, true, "", NULL);
 
-  WordList loaded_custom_words;
-  loaded_custom_words.push_back("foo");
-  loaded_custom_words.push_back("bar");
-  WordList expected(loaded_custom_words);
-  target_->SpellCheckHostInitialized(&loaded_custom_words);
+  scoped_ptr<SpellCheckProfile::CustomWordList> loaded_custom_words
+    (new SpellCheckProfile::CustomWordList());
+  loaded_custom_words->push_back("foo");
+  loaded_custom_words->push_back("bar");
+  SpellCheckProfile::CustomWordList expected(*loaded_custom_words);
+  target_->SpellCheckHostInitialized(loaded_custom_words.release());
   EXPECT_EQ(target_->GetCustomWords(), expected);
 }
 
@@ -197,9 +196,10 @@ TEST_F(SpellCheckProfileTest, CustomWordAddedLocally) {
   target_->SetHostToBeCreated(host.release());
   target_->ReinitializeHostImpl(false, true, "", NULL);
 
-  WordList loaded_custom_words;
+  scoped_ptr<SpellCheckProfile::CustomWordList> loaded_custom_words
+    (new SpellCheckProfile::CustomWordList());
   target_->SpellCheckHostInitialized(NULL);
-  WordList expected;
+  SpellCheckProfile::CustomWordList expected;
   EXPECT_EQ(target_->GetCustomWords(), expected);
   target_->CustomWordAddedLocally("foo");
   expected.push_back("foo");
@@ -214,12 +214,13 @@ TEST_F(SpellCheckProfileTest, SaveAndLoad) {
   target_->SetHostToBeCreated(host.release());
   target_->ReinitializeHostImpl(false, true, "", NULL);
 
-  WordList loaded_custom_words;
-  target_->LoadCustomDictionary(&loaded_custom_words);
+  scoped_ptr<SpellCheckProfile::CustomWordList> loaded_custom_words(
+    new SpellCheckProfile::CustomWordList());
+  target_->LoadCustomDictionary(loaded_custom_words.get());
 
   // The custom word list should be empty now.
-  WordList expected;
-  EXPECT_EQ(loaded_custom_words, expected);
+  SpellCheckProfile::CustomWordList expected;
+  EXPECT_EQ(*loaded_custom_words, expected);
 
   target_->WriteWordToCustomDictionary("foo");
   expected.push_back("foo");
@@ -228,8 +229,8 @@ TEST_F(SpellCheckProfileTest, SaveAndLoad) {
   expected.push_back("bar");
 
   // The custom word list should include written words.
-  target_->LoadCustomDictionary(&loaded_custom_words);
-  EXPECT_EQ(loaded_custom_words, expected);
+  target_->LoadCustomDictionary(loaded_custom_words.get());
+  EXPECT_EQ(*loaded_custom_words, expected);
 
   // Load in another instance of SpellCheckProfile.
   // The result should be the same.
@@ -238,9 +239,10 @@ TEST_F(SpellCheckProfileTest, SaveAndLoad) {
       BuildSpellCheckProfileWith(profile_.get());
   target2->SetHostToBeCreated(host2.release());
   target2->ReinitializeHostImpl(false, true, "", NULL);
-  WordList loaded_custom_words2;
-  target2->LoadCustomDictionary(&loaded_custom_words2);
-  EXPECT_EQ(loaded_custom_words2, expected);
+  scoped_ptr<SpellCheckProfile::CustomWordList> loaded_custom_words2(
+      new SpellCheckProfile::CustomWordList());
+  target2->LoadCustomDictionary(loaded_custom_words2.get());
+  EXPECT_EQ(*loaded_custom_words2, expected);
 }
 
 TEST_F(SpellCheckProfileTest, MultiProfile) {
@@ -255,8 +257,8 @@ TEST_F(SpellCheckProfileTest, MultiProfile) {
   target2->SetHostToBeCreated(host2.release());
   target2->ReinitializeHostImpl(false, true, "", NULL);
 
-  WordList expected1;
-  WordList expected2;
+  SpellCheckProfile::CustomWordList expected1;
+  SpellCheckProfile::CustomWordList expected2;
 
   target_->WriteWordToCustomDictionary("foo");
   target_->WriteWordToCustomDictionary("bar");
@@ -268,11 +270,11 @@ TEST_F(SpellCheckProfileTest, MultiProfile) {
   expected2.push_back("hoge");
   expected2.push_back("fuga");
 
-  WordList actual1;
+  SpellCheckProfile::CustomWordList actual1;
   target_->LoadCustomDictionary(&actual1);
   EXPECT_EQ(actual1, expected1);
 
-  WordList actual2;
+  SpellCheckProfile::CustomWordList actual2;
   target2->LoadCustomDictionary(&actual2);
   EXPECT_EQ(actual2, expected2);
 }

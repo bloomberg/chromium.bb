@@ -13,7 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
 #include "chrome/browser/spellchecker/spellcheck_host.h"
 #include "chrome/browser/spellchecker/spellcheck_profile_provider.h"
 #include "content/public/browser/notification_observer.h"
@@ -66,7 +65,7 @@ class SpellCheckHostImpl : public SpellCheckHost,
   virtual bool IsUsingPlatformChecker() const OVERRIDE;
 
  private:
-  typedef chrome::spellcheck_common::WordList CustomWordList;
+  typedef SpellCheckProfileProvider::CustomWordList CustomWordList;
 
   // These two classes can destruct us.
   friend class content::BrowserThread;
