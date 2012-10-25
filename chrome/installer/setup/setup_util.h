@@ -10,15 +10,20 @@
 #include <windows.h>
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
 #include "base/string16.h"
-#include "base/version.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/util_constants.h"
+
+class CommandLine;
+class FilePath;
+class Version;
 
 namespace installer {
 
+class InstallationState;
 class InstallerState;
+class ProductState;
 
 // Apply a diff patch to source file. First tries to apply it using courgette
 // since it checks for courgette header and fails quickly. If that fails
@@ -47,6 +52,25 @@ bool DeleteFileFromTempProcess(const FilePath& path,
 // Get the path to this distribution's Active Setup registry entries.
 // e.g. Software\Microsoft\Active Setup\Installed Components\<dist_guid>
 string16 GetActiveSetupPath(BrowserDistribution* dist);
+
+// Returns true and populates |setup_exe| with the path to an existing product
+// installer if one is found that is newer than the currently running installer
+// (|installer_version|).
+bool GetExistingHigherInstaller(const InstallationState& original_state,
+                                bool system_install,
+                                const Version& installer_version,
+                                FilePath* setup_exe);
+
+// Invokes the pre-existing |setup_exe| to handle the current operation (as
+// dictated by |command_line|). An installerdata file, if specified, is first
+// unconditionally copied into place so that it will be in effect in case the
+// invoked |setup_exe| runs the newly installed product prior to exiting.
+// Returns true if |setup_exe| was launched, false otherwise.
+bool DeferToExistingInstall(const FilePath& setup_exe,
+                            const CommandLine& command_line,
+                            const InstallerState& installer_state,
+                            const FilePath& temp_path,
+                            InstallStatus* install_status);
 
 // This class will enable the privilege defined by |privilege_name| on the
 // current process' token. The privilege will be disabled upon the

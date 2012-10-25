@@ -84,6 +84,42 @@ TEST_F(SelfCleaningTempDirTest, RemoveUnusedOnDelete) {
   EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir.DirName().DirName()));
 }
 
+// Test that two clients can work in the same area.
+TEST_F(SelfCleaningTempDirTest, TwoClients) {
+  // Make a directory in which we'll work.
+  ScopedTempDir work_dir;
+  EXPECT_TRUE(work_dir.CreateUniqueTempDir());
+
+  // Make up some path under the temp dir.
+  FilePath parent_temp_dir(work_dir.path().Append(L"One").Append(L"Two"));
+  SelfCleaningTempDir temp_dir1;
+  SelfCleaningTempDir temp_dir2;
+  // First client is created.
+  EXPECT_TRUE(temp_dir1.Initialize(parent_temp_dir, L"Three"));
+  // Second client is created in the same space.
+  EXPECT_TRUE(temp_dir2.Initialize(parent_temp_dir, L"Three"));
+  // Both clients are where they are expected.
+  EXPECT_EQ(parent_temp_dir.Append(L"Three"), temp_dir1.path());
+  EXPECT_EQ(parent_temp_dir.Append(L"Three"), temp_dir2.path());
+  EXPECT_TRUE(file_util::DirectoryExists(temp_dir1.path()));
+  EXPECT_TRUE(file_util::DirectoryExists(temp_dir2.path()));
+  // Second client goes away.
+  EXPECT_TRUE(temp_dir2.Delete());
+  // The first is now useless.
+  EXPECT_FALSE(file_util::DirectoryExists(temp_dir1.path()));
+  // But the intermediate dirs are still present
+  EXPECT_TRUE(file_util::DirectoryExists(parent_temp_dir));
+  // Now the first goes away.
+  EXPECT_TRUE(temp_dir1.Delete());
+  // And cleans up after itself.
+  EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir.Append(L"Three")));
+  EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir));
+  EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir.DirName()));
+  EXPECT_TRUE(file_util::DirectoryExists(parent_temp_dir.DirName().DirName()));
+  EXPECT_TRUE(work_dir.Delete());
+  EXPECT_FALSE(file_util::DirectoryExists(parent_temp_dir.DirName().DirName()));
+}
+
 // Test that all intermediate dirs are cleaned up if they're empty when the
 // destructor is called.
 TEST_F(SelfCleaningTempDirTest, RemoveUnusedOnDestroy) {

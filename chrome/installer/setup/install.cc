@@ -452,12 +452,10 @@ InstallStatus InstallOrUpdateProduct(
     const FilePath& setup_path,
     const FilePath& archive_path,
     const FilePath& install_temp_path,
+    const FilePath& src_path,
     const FilePath& prefs_path,
     const MasterPreferences& prefs,
     const Version& new_version) {
-  FilePath src_path(install_temp_path);
-  src_path = src_path.Append(kInstallSourceDir).Append(kInstallSourceChromeDir);
-
   // TODO(robertshield): Removing the pending on-reboot moves should be done
   // elsewhere.
   // TODO(erikwright): Understand why this is Chrome Frame only and whether

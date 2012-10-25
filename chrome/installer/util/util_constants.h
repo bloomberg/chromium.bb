@@ -77,14 +77,15 @@ enum InstallStatus {
   APP_HOST_REQUIRES_USER_LEVEL,  // 44. --system-level is forbidden.
   APP_HOST_REQUIRES_BINARIES,  // 45. No Chrome binaries at either level.
   INSTALL_OF_GOOGLE_UPDATE_FAILED,  // 46. Failed to install Google Update.
+  INVALID_STATE_FOR_OPTION,    // 47. A non-install option was called with an
+                               // invalid installer state.
+  WAIT_FOR_EXISTING_FAILED,    // 48. OS error waiting for existing setup.exe.
   // Friendly reminder: note the COMPILE_ASSERT below.
-  INVALID_STATE_FOR_OPTION,  // 47. A non-install option was called with an
-                             // invalid installer state.
 };
 
 
 // Existing InstallStatus values must not change.  Always add to the end.
-COMPILE_ASSERT(installer::INVALID_STATE_FOR_OPTION == 47,
+COMPILE_ASSERT(installer::WAIT_FOR_EXISTING_FAILED == 48,
                dont_change_enum);
 
 // The type of an update archive.
@@ -117,12 +118,13 @@ enum InstallerStage {
   FINISHING,                   // 15: Finishing the install.
   CONFIGURE_AUTO_LAUNCH,       // 16: Configuring Chrome to auto-launch.
   CREATING_VISUAL_MANIFEST,    // 17: Creating VisualElementsManifest.xml
-  NUM_STAGES                   // 18: The number of stages.
+  DEFERRING_TO_HIGHER_VERSION,  // 18: Deferring to an installed higher version.
+  NUM_STAGES                   // 19: The number of stages.
 };
 
 // When we start reporting the numerical values from the enum, the order
 // above MUST be preserved.
-COMPILE_ASSERT(CREATING_VISUAL_MANIFEST == 17,
+COMPILE_ASSERT(DEFERRING_TO_HIGHER_VERSION == 18,
                never_ever_ever_change_InstallerStage_values_bang);
 
 namespace switches {

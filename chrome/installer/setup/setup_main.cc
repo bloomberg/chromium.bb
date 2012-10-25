@@ -623,7 +623,8 @@ installer::InstallStatus InstallProductsHelper(
     const CommandLine& cmd_line,
     const MasterPreferences& prefs,
     const InstallerState& installer_state,
-    installer::ArchiveType* archive_type) {
+    installer::ArchiveType* archive_type,
+    bool* delegated_to_existing) {
   DCHECK(archive_type);
   const bool system_install = installer_state.system_install();
   installer::InstallStatus install_status = installer::UNKNOWN_STATUS;
@@ -653,7 +654,15 @@ installer::InstallStatus InstallProductsHelper(
   }
   VLOG(1) << "created path " << temp_path.path().value();
 
-  FilePath unpack_path(temp_path.path().Append(installer::kInstallSourceDir));
+  FilePath unpack_path;
+  if (!file_util::CreateTemporaryDirInDir(temp_path.path(),
+                                          installer::kInstallSourceDir,
+                                          &unpack_path)) {
+    PLOG(ERROR) << "Could not create temporary path for unpacked archive.";
+    installer_state.WriteInstallerResult(installer::TEMP_DIR_FAILED,
+        IDS_INSTALL_TEMP_DIR_FAILED_BASE, NULL);
+    return installer::TEMP_DIR_FAILED;
+  }
 
   bool unpacked = false;
 
@@ -708,6 +717,26 @@ installer::InstallStatus InstallProductsHelper(
     } else {
       VLOG(1) << "version to install: " << installer_version->GetString();
       bool proceed_with_installation = true;
+
+      if (installer_state.operation() == InstallerState::MULTI_INSTALL) {
+        // This is a new install of a multi-install product. Rather than give up
+        // in case a higher version of the binaries (including a single-install
+        // of Chrome, which can safely be migrated to multi-install by way of
+        // CheckMultiInstallConditions) is already installed, delegate to the
+        // installed setup.exe to install the product at hand.
+        FilePath setup_exe;
+        if (GetExistingHigherInstaller(original_state, system_install,
+                                       *installer_version, &setup_exe)) {
+          VLOG(1) << "Deferring to existing installer.";
+          installer_state.UpdateStage(installer::DEFERRING_TO_HIGHER_VERSION);
+          if (DeferToExistingInstall(setup_exe, cmd_line, installer_state,
+                                     temp_path.path(), &install_status)) {
+            *delegated_to_existing = true;
+            return install_status;
+          }
+        }
+      }
+
       uint32 higher_products = 0;
       COMPILE_ASSERT(
           sizeof(higher_products) * 8 > BrowserDistribution::NUM_TYPES,
@@ -781,8 +810,8 @@ installer::InstallStatus InstallProductsHelper(
             installer::switches::kInstallerData));
         install_status = installer::InstallOrUpdateProduct(
             original_state, installer_state, cmd_line.GetProgram(),
-            archive_to_copy, temp_path.path(), prefs_source_path, prefs,
-            *installer_version);
+            archive_to_copy, temp_path.path(), src_path, prefs_source_path,
+            prefs, *installer_version);
 
         int install_msg_base = IDS_INSTALL_FAILED_BASE;
         string16 chrome_exe;
@@ -919,8 +948,14 @@ installer::InstallStatus InstallProducts(
   if (CheckPreInstallConditions(original_state, installer_state,
                                 &install_status)) {
     VLOG(1) << "Installing to " << installer_state->target_path().value();
+    bool delegated_to_existing = false;
     install_status = InstallProductsHelper(
-        original_state, cmd_line, prefs, *installer_state, &archive_type);
+        original_state, cmd_line, prefs, *installer_state, &archive_type,
+        &delegated_to_existing);
+    // Early exit if this setup.exe delegated to another, since that one would
+    // have taken care of UpdateInstallStatus and UpdateStage.
+    if (delegated_to_existing)
+      return install_status;
   } else {
     // CheckPreInstallConditions must set the status on failure.
     DCHECK_NE(install_status, installer::UNKNOWN_STATUS);

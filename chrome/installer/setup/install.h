@@ -78,6 +78,7 @@ void RegisterChromeOnMachine(const InstallerState& installer_state,
 // install_temp_path: working directory used during install/update. It should
 //                    also has a sub dir source that contains a complete
 //                    and unpacked Chrome package.
+// src_path: the unpacked Chrome package (inside |install_temp_path|).
 // prefs: master preferences. See chrome/installer/util/master_preferences.h.
 // new_version: new Chrome version that needs to be installed
 // package: Represents the target installation folder and all distributions
@@ -91,6 +92,7 @@ InstallStatus InstallOrUpdateProduct(
     const FilePath& setup_path,
     const FilePath& archive_path,
     const FilePath& install_temp_path,
+    const FilePath& src_path,
     const FilePath& prefs_path,
     const installer::MasterPreferences& prefs,
     const Version& new_version);

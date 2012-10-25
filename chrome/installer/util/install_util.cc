@@ -54,6 +54,7 @@ const wchar_t kStageUncompressing[] = L"uncompressing";
 const wchar_t kStageUnpacking[] = L"unpacking";
 const wchar_t kStageUpdatingChannels[] = L"updating_channels";
 const wchar_t kStageCreatingVisualManifest[] = L"creating_visual_manifest";
+const wchar_t kStageDeferringToHigherVersion[] = L"deferring_to_higher_version";
 
 const wchar_t* const kStages[] = {
   NULL,
@@ -74,6 +75,7 @@ const wchar_t* const kStages[] = {
   kStageFinishing,
   kStageConfiguringAutoLaunch,
   kStageCreatingVisualManifest,
+  kStageDeferringToHigherVersion,
 };
 
 COMPILE_ASSERT(installer::NUM_STAGES == arraysize(kStages),
