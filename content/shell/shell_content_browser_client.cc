@@ -88,6 +88,7 @@ WebContentsViewDelegate* ShellContentBrowserClient::GetWebContentsViewDelegate(
 #if defined(OS_ANDROID)
 void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const CommandLine& command_line,
+    int child_process_id,
     std::vector<content::FileDescriptorInfo>* mappings) {
   int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
   FilePath pak_file;

@@ -41,6 +41,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
 #if defined(OS_ANDROID)
   virtual void GetAdditionalMappedFilesForChildProcess(
       const CommandLine& command_line,
+      int child_process_id,
       std::vector<content::FileDescriptorInfo>* mappings) OVERRIDE;
 #endif
 
