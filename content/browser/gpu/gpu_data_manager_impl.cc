@@ -195,7 +195,7 @@ void GpuDataManagerImpl::UpdateGpuInfo(const content::GPUInfo& gpu_info) {
   if (gpu_blacklist_.get()) {
     GpuBlacklist::Decision decision =
         gpu_blacklist_->MakeBlacklistDecision(
-            GpuBlacklist::kOsAny, NULL, gpu_info);
+            GpuBlacklist::kOsAny, "", gpu_info);
     if (update_histograms_) {
       gpu_util::UpdateStats(gpu_blacklist_.get(),
                             decision.blacklisted_features);
