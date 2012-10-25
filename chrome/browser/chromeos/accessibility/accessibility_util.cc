@@ -26,6 +26,7 @@
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -46,9 +47,11 @@ class ContentScriptLoader {
   // Initialize the ContentScriptLoader with the ID of the extension
   // and the RenderViewHost where the scripts should be loaded.
   ContentScriptLoader(const std::string& extension_id,
-                      RenderViewHost* render_view_host)
+                      int render_process_id,
+                      int render_view_id)
       : extension_id_(extension_id),
-        render_view_host_(render_view_host) {}
+        render_process_id_(render_process_id),
+        render_view_id_(render_view_id) {}
 
   // Call this once with the ExtensionResource corresponding to each
   // content script to be loaded.
@@ -82,14 +85,20 @@ class ContentScriptLoader {
       params.run_at = extensions::UserScript::DOCUMENT_IDLE;
       params.all_frames = true;
       params.in_main_world = false;
-      render_view_host_->Send(new ExtensionMsg_ExecuteCode(
-          render_view_host_->GetRoutingID(), params));
+
+      RenderViewHost* render_view_host =
+          RenderViewHost::FromID(render_process_id_, render_view_id_);
+      if (render_view_host) {
+        render_view_host->Send(new ExtensionMsg_ExecuteCode(
+            render_view_host->GetRoutingID(), params));
+      }
     }
     Run();
   }
 
   std::string extension_id_;
-  RenderViewHost* render_view_host_;
+  int render_process_id_;
+  int render_view_id_;
   std::queue<ExtensionResource> resources_;
 };
 
@@ -144,7 +153,8 @@ void EnableSpokenFeedback(bool enabled, content::WebUI* login_web_ui) {
 
       // Inject ChromeVox' content scripts.
       ContentScriptLoader* loader = new ContentScriptLoader(
-          extension->id(), render_view_host);
+          extension->id(), render_view_host->GetProcess()->GetID(),
+          render_view_host->GetRoutingID());
 
       for (size_t i = 0; i < extension->content_scripts().size(); i++) {
         const extensions::UserScript& script = extension->content_scripts()[i];
