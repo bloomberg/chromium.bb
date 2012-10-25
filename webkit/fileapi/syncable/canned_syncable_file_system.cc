@@ -89,6 +89,15 @@ class WriteHelper {
   int64 bytes_written_;
 };
 
+void DidGetUsageAndQuota(const quota::StatusCallback& callback,
+                         int64* usage_out, int64* quota_out,
+                         quota::QuotaStatusCode status,
+                         int64 usage, int64 quota) {
+  *usage_out = usage;
+  *quota_out = quota;
+  callback.Run(status);
+}
+
 }  // namespace
 
 CannedSyncableFileSystem::CannedSyncableFileSystem(
@@ -265,6 +274,15 @@ PlatformFileError CannedSyncableFileSystem::DeleteFileSystem() {
                  test_helper_.type()));
 }
 
+quota::QuotaStatusCode CannedSyncableFileSystem::GetUsageAndQuota(
+    int64* usage, int64* quota) {
+  return RunOnThread<quota::QuotaStatusCode>(
+      io_task_runner_,
+      FROM_HERE,
+      base::Bind(&CannedSyncableFileSystem::DoGetUsageAndQuota,
+                 base::Unretained(this), usage, quota));
+}
+
 FileSystemOperation* CannedSyncableFileSystem::NewOperation() {
   return file_system_context_->CreateFileSystemOperation(URL(""), NULL);
 }
@@ -335,6 +353,16 @@ void CannedSyncableFileSystem::DoWrite(
   NewOperation()->Write(url_request_context, url, blob_url, 0,
                         base::Bind(&WriteHelper::DidWrite,
                                    base::Owned(helper), callback));
+}
+
+void CannedSyncableFileSystem::DoGetUsageAndQuota(
+    int64* usage,
+    int64* quota,
+    const quota::StatusCallback& callback) {
+  quota_manager_->GetUsageAndQuota(
+      test_helper_.origin(),
+      test_helper_.storage_type(),
+      base::Bind(&DidGetUsageAndQuota, callback, usage, quota));
 }
 
 void CannedSyncableFileSystem::DidOpenFileSystem(

@@ -14,6 +14,7 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/local_file_system_test_helper.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
+#include "webkit/quota/quota_types.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -94,8 +95,11 @@ class CannedSyncableFileSystem {
   int64 Write(net::URLRequestContext* url_request_context,
               const FileSystemURL& url, const GURL& blob_url);
 
-  // Pruges the file system local storage.
+  // Purges the file system local storage.
   base::PlatformFileError DeleteFileSystem();
+
+  // Retrieves the quota and usage.
+  quota::QuotaStatusCode GetUsageAndQuota(int64* usage, int64* quota);
 
   // Returns new FileSystemOperation.
   FileSystemOperation* NewOperation();
@@ -126,6 +130,9 @@ class CannedSyncableFileSystem {
                const FileSystemURL& url,
                const GURL& blob_url,
                const WriteCallback& callback);
+  void DoGetUsageAndQuota(int64* usage,
+                          int64* quota,
+                          const quota::StatusCallback& callback);
 
   // Callbacks.
   void DidOpenFileSystem(base::PlatformFileError result,
