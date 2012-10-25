@@ -59,7 +59,6 @@ void ContentBrowserTest::SetUp() {
   // Single-process mode is not set in BrowserMain, so process it explicitly,
   // and set up renderer.
   if (command_line->HasSwitch(switches::kSingleProcess)) {
-    RenderProcessHost::set_run_renderer_in_process(true);
     single_process_renderer_client_.reset(new ShellContentRendererClient);
     content::GetContentClient()->set_renderer_for_testing(
         single_process_renderer_client_.get());

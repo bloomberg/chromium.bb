@@ -1292,8 +1292,18 @@ bool RenderProcessHost::run_renderer_in_process() {
   return g_run_renderer_in_process_;
 }
 
-void RenderProcessHost::set_run_renderer_in_process(bool value) {
+// static
+void RenderProcessHost::SetRunRendererInProcess(bool value) {
   g_run_renderer_in_process_ = value;
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (value && !command_line->HasSwitch(switches::kLang)) {
+    // Modify the current process' command line to include the browser locale,
+    // as the renderer expects this flag to be set.
+    const std::string locale =
+        GetContentClient()->browser()->GetApplicationLocale();
+    command_line->AppendSwitchASCII(switches::kLang, locale);
+  }
 }
 
 RenderProcessHost::iterator RenderProcessHost::AllHostsIterator() {

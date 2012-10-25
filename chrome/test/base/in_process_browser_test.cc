@@ -36,7 +36,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_launcher.h"
@@ -110,7 +109,6 @@ void InProcessBrowserTest::SetUp() {
   // Single-process mode is not set in BrowserMain, so process it explicitly,
   // and set up renderer.
   if (command_line->HasSwitch(switches::kSingleProcess)) {
-    content::RenderProcessHost::set_run_renderer_in_process(true);
     single_process_renderer_client_.reset(
         new chrome::ChromeContentRendererClient);
     content::GetContentClient()->set_renderer_for_testing(

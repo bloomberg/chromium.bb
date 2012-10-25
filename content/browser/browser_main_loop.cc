@@ -364,6 +364,13 @@ void BrowserMainLoop::CreateThreads() {
   if (parts_.get())
     result_code_ = parts_->PreCreateThreads();
 
+#if !defined(OS_IOS) && (!defined(GOOGLE_CHROME_BUILD) || defined(OS_ANDROID))
+  // Single-process is an unsupported and not fully tested mode, so
+  // don't enable it for official Chrome builds (except on Android).
+  if (parsed_command_line_.HasSwitch(switches::kSingleProcess))
+    RenderProcessHost::SetRunRendererInProcess(true);
+#endif
+
   if (result_code_ > 0)
     return;
 

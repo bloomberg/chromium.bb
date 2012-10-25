@@ -473,14 +473,11 @@ IPC::SyncChannel* RenderThreadImpl::GetChannel() {
 
 std::string RenderThreadImpl::GetLocale() {
   // The browser process should have passed the locale to the renderer via the
-  // --lang command line flag.  In single process mode, this will return the
-  // wrong value.  TODO(tc): Fix this for single process mode.
+  // --lang command line flag.
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   const std::string& lang =
       parsed_command_line.GetSwitchValueASCII(switches::kLang);
-  DCHECK(!lang.empty() ||
-      (!parsed_command_line.HasSwitch(switches::kRendererProcess) &&
-       !parsed_command_line.HasSwitch(switches::kPluginProcess)));
+  DCHECK(!lang.empty());
   return lang;
 }
 

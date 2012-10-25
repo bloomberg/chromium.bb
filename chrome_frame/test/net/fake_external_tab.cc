@@ -491,7 +491,7 @@ void FakeExternalTab::Initialize() {
   DCHECK(g_browser_process);
   g_browser_process->SetApplicationLocale("en-US");
 
-  content::RenderProcessHost::set_run_renderer_in_process(true);
+  content::RenderProcessHost::SetRunRendererInProcess(true);
 
   browser_process_->local_state()->RegisterBooleanPref(
       prefs::kMetricsReportingEnabled, false);
