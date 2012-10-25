@@ -382,6 +382,7 @@ void DriveEntry::FromProto(const DriveEntryProto& proto) {
   edit_url_ = GURL(proto.edit_url());
   content_url_ = GURL(proto.content_url());
   upload_url_ = GURL(proto.upload_url());
+  deleted_ = proto.deleted();
   SetBaseNameFromTitle();
 }
 
@@ -397,6 +398,7 @@ void DriveEntry::ToProto(DriveEntryProto* proto) const {
   proto->set_edit_url(edit_url_.spec());
   proto->set_content_url(content_url_.spec());
   proto->set_upload_url(upload_url_.spec());
+  proto->set_deleted(deleted_);
 }
 
 void DriveEntry::ToProtoFull(DriveEntryProto* proto) const {
@@ -414,8 +416,6 @@ void DriveEntry::ToProtoFull(DriveEntryProto* proto) const {
 void DriveFile::FromProto(const DriveEntryProto& proto) {
   DCHECK(!proto.file_info().is_directory());
 
-  DriveEntry::FromProto(proto);
-
   thumbnail_url_ = GURL(proto.file_specific_info().thumbnail_url());
   alternate_url_ = GURL(proto.file_specific_info().alternate_url());
   share_url_ = GURL(proto.file_specific_info().share_url());
@@ -423,6 +423,10 @@ void DriveFile::FromProto(const DriveEntryProto& proto) {
   file_md5_ = proto.file_specific_info().file_md5();
   document_extension_ = proto.file_specific_info().document_extension();
   is_hosted_document_ = proto.file_specific_info().is_hosted_document();
+
+  // SetBaseNameFromTitle is called here, which is necessary because
+  // is_hosted_document_ and document_extension_ have changed.
+  DriveEntry::FromProto(proto);
 }
 
 void DriveFile::ToProto(DriveEntryProto* proto) const {

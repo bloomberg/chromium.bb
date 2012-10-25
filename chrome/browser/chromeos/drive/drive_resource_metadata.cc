@@ -581,7 +581,7 @@ void DriveResourceMetadata::RefreshFile(
 
 void DriveResourceMetadata::RefreshDirectory(
     const std::string& directory_resource_id,
-    const ResourceMap& file_map,
+    const DriveEntryProtoMap& entry_proto_map,
     const FileMoveCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -600,14 +600,13 @@ void DriveResourceMetadata::RefreshDirectory(
   }
 
   directory->RemoveChildFiles();
-  // Add files from file_map.
-  for (ResourceMap::const_iterator it = file_map.begin();
-       it != file_map.end(); ++it) {
-    scoped_ptr<DriveEntry> entry(it->second);
-    // Skip if it's not a file (i.e. directory).
-    if (!entry->AsDriveFile())
-      continue;
-    directory->AddEntry(entry.release());
+  // Add files from entry_proto_map.
+  for (DriveEntryProtoMap::const_iterator it = entry_proto_map.begin();
+      it != entry_proto_map.end(); ++it) {
+    const DriveEntryProto& entry_proto = it->second;
+    // Only refresh files.
+    if (!entry_proto.file_info().is_directory())
+      directory->AddEntry(CreateDriveEntryFromProto(entry_proto).release());
   }
 
   base::MessageLoopProxy::current()->PostTask(
@@ -697,7 +696,8 @@ void DriveResourceMetadata::InitResourceMap(
 
     const std::string resource_id =
         iter->first.substr(strlen(kDBKeyResourceIdPrefix));
-    scoped_ptr<DriveEntry> entry = FromProtoString(iter->second);
+    scoped_ptr<DriveEntry> entry =
+        CreateDriveEntryFromProtoString(iter->second);
     if (entry.get()) {
       DVLOG(1) << "Inserting resource " << resource_id
                << " into resource_map";
@@ -815,12 +815,8 @@ bool DriveResourceMetadata::ParseFromString(
   return true;
 }
 
-scoped_ptr<DriveEntry> DriveResourceMetadata::FromProtoString(
-    const std::string& serialized_proto) {
-  DriveEntryProto entry_proto;
-  if (!entry_proto.ParseFromString(serialized_proto))
-    return scoped_ptr<DriveEntry>();
-
+scoped_ptr<DriveEntry> DriveResourceMetadata::CreateDriveEntryFromProto(
+    const DriveEntryProto& entry_proto) {
   scoped_ptr<DriveEntry> entry;
   if (entry_proto.file_info().is_directory()) {
     entry = CreateDriveDirectory().Pass();
@@ -834,6 +830,15 @@ scoped_ptr<DriveEntry> DriveResourceMetadata::FromProtoString(
     entry.reset(file.release());
   }
   return entry.Pass();
+}
+
+scoped_ptr<DriveEntry> DriveResourceMetadata::CreateDriveEntryFromProtoString(
+    const std::string& serialized_proto) {
+  DriveEntryProto entry_proto;
+  if (!entry_proto.ParseFromString(serialized_proto))
+    return scoped_ptr<DriveEntry>();
+
+  return CreateDriveEntryFromProto(entry_proto).Pass();
 }
 
 void DriveResourceMetadata::GetEntryInfoPairByPathsAfterGetFirst(

@@ -145,12 +145,11 @@ class DriveFeedLoader {
       const FileOperationCallback& callback);
 
   // Updates whole directory structure feeds collected in |feed_list|.
-  // On success, returns PLATFORM_FILE_OK. Record file statistics as UMA
-  // histograms.
+  // Record file statistics as UMA histograms.
   //
   // See comments at DriveFeedProcessor::ApplyFeeds() for
   // |start_changestamp| and |root_feed_changestamp|.
-  DriveFileError UpdateFromFeed(
+  void UpdateFromFeed(
     const ScopedVector<google_apis::DocumentFeed>& feed_list,
     int64 start_changestamp,
     int64 root_feed_changestamp);

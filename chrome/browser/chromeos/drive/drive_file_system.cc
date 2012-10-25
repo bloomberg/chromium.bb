@@ -1323,22 +1323,17 @@ void DriveFileSystem::OnRequestDirectoryRefresh(
     return;
   }
 
-  DriveResourceMetadata::ResourceMap resource_map;
+  DriveFeedProcessor::DriveEntryProtoMap entry_proto_map;
   DriveFeedProcessor feed_processor(resource_metadata_.get());
-  error = feed_processor.FeedToResourceMap(
+  feed_processor.FeedToEntryProtoMap(
       params->feed_list,
-      &resource_map,
+      &entry_proto_map,
       NULL,
       NULL);
-  if (error != DRIVE_FILE_OK) {
-    LOG(ERROR) << "Failed to convert feed: " << directory_path.value()
-               << ": " << error;
-    return;
-  }
 
   resource_metadata_->RefreshDirectory(
       params->directory_resource_id,
-      resource_map,
+      entry_proto_map,
       base::Bind(&DriveFileSystem::OnDirectoryChangeFileMoveCallback,
                  ui_weak_ptr_,
                  FileOperationCallback()));

@@ -492,15 +492,9 @@ void DriveFeedLoader::OnFeedFromServerLoaded(scoped_ptr<LoadFeedParams> params,
     return;
   }
 
-  error = UpdateFromFeed(params->feed_list,
-                         params->start_changestamp,
-                         params->root_feed_changestamp);
-
-  if (error != DRIVE_FILE_OK) {
-    if (!params->load_finished_callback.is_null())
-      params->load_finished_callback.Run(error);
-    return;
-  }
+  UpdateFromFeed(params->feed_list,
+                 params->start_changestamp,
+                 params->root_feed_changestamp);
 
   // Save file system metadata to disk.
   SaveFileSystem();
@@ -890,7 +884,7 @@ void DriveFeedLoader::SaveFileSystem() {
   }
 }
 
-DriveFileError DriveFeedLoader::UpdateFromFeed(
+void DriveFeedLoader::UpdateFromFeed(
     const ScopedVector<google_apis::DocumentFeed>& feed_list,
     int64 start_changestamp,
     int64 root_feed_changestamp) {
@@ -900,7 +894,7 @@ DriveFileError DriveFeedLoader::UpdateFromFeed(
   std::set<FilePath> changed_dirs;
 
   DriveFeedProcessor feed_processor(resource_metadata_);
-  const DriveFileError error = feed_processor.ApplyFeeds(
+  feed_processor.ApplyFeeds(
       feed_list,
       start_changestamp,
       root_feed_changestamp,
@@ -916,8 +910,6 @@ DriveFileError DriveFeedLoader::UpdateFromFeed(
                         OnDirectoryChanged(*dir_iter));
     }
   }
-
-  return error;
 }
 
 }  // namespace drive

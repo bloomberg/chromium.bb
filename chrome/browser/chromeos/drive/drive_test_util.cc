@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
 
+#include <string>
+
 #include "base/json/json_file_value_serializer.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_feed_loader.h"
@@ -119,12 +121,9 @@ void LoadChangeFeed(const std::string& relative_path,
   ScopedVector<google_apis::DocumentFeed> feed_list;
   feed_list.push_back(document_feed.release());
 
-  GURL unused;
-  const DriveFileError file_error =
-      file_system->feed_loader()->UpdateFromFeed(feed_list,
-                                                 start_changestamp,
-                                                 root_feed_changestamp);
-  ASSERT_EQ(DRIVE_FILE_OK, file_error);
+  file_system->feed_loader()->UpdateFromFeed(feed_list,
+                                             start_changestamp,
+                                             root_feed_changestamp);
 }
 
 }  // namespace test_util

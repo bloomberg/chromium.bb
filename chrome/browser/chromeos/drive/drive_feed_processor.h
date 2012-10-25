@@ -25,10 +25,11 @@ class DriveResourceMetadata;
 // Documents List API).
 class DriveFeedProcessor {
  public:
-  typedef std::map<std::string /* resource_id */, DriveEntry*> ResourceMap;
+  typedef std::map<std::string /* resource_id */, DriveEntryProto>
+      DriveEntryProtoMap;
 
-  // Class used to record UMA stats with FeedToResourceMap().
-  class FeedToResourceMapUMAStats;
+  // Class used to record UMA stats with FeedToEntryProtoMap().
+  class FeedToEntryProtoMapUMAStats;
 
   explicit DriveFeedProcessor(DriveResourceMetadata* resource_metadata);
   ~DriveFeedProcessor();
@@ -41,28 +42,28 @@ class DriveFeedProcessor {
   // In the case of processing the root feeds |root_feed_changestamp| is used
   // as its initial changestamp value. The value comes from
   // google_apis::AccountMetadataFeed.
-  DriveFileError ApplyFeeds(
+  void ApplyFeeds(
       const ScopedVector<google_apis::DocumentFeed>& feed_list,
       int64 start_changestamp,
       int64 root_feed_changestamp,
       std::set<FilePath>* changed_dirs);
 
-  // Converts list of document feeds from collected feeds into a ResourceMap.
-  // feed_changestamp and/or uma_stats may be NULL.
-  DriveFileError FeedToResourceMap(
+  // Converts list of document feeds from collected feeds into a
+  // DriveEntryProtoMap. |feed_changestamp| and/or |uma_stats| may be NULL.
+  void FeedToEntryProtoMap(
     const ScopedVector<google_apis::DocumentFeed>& feed_list,
-    ResourceMap* resource_map,
+    DriveEntryProtoMap* entry_proto_map,
     int64* feed_changestamp,
-    FeedToResourceMapUMAStats* uma_stats);
+    FeedToEntryProtoMapUMAStats* uma_stats);
 
  private:
-  // Applies the pre-processed feed from |resource_map| map onto the file
-  // system. All entries in |resource_map| will be erased (i.e. the map becomes
-  // empty), and values are deleted.
-  void ApplyFeedFromResourceMap(bool is_delta_feed,
-                                int64 feed_changestamp,
-                                ResourceMap* resource_map,
-                                std::set<FilePath>* changed_dirs);
+  typedef std::map<std::string /* resource_id */, DriveEntry*> ResourceMap;
+
+  // Applies the pre-processed feed from |entry_proto_map| onto the filesystem.
+  void ApplyEntryProtoMap(const DriveEntryProtoMap& entry_proto_map,
+                          bool is_delta_feed,
+                          int64 feed_changestamp,
+                          std::set<FilePath>* changed_dirs);
 
   // Helper function for adding new |entry| from the feed into |directory|. It
   // checks the type of file and updates |changed_dirs| if this file adding
