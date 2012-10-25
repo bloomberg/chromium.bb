@@ -50,9 +50,9 @@
     return a;
   };
 
-   function getBoundingVisibleRect(el) {
-    r = el.getBoundingClientRect();
-    cur = el;
+  function getBoundingVisibleRect(el) {
+    var r = el.getBoundingClientRect();
+    var cur = el;
     while (cur && cur.parentElement) {
       r.top += cur.parentElement.offsetTop;
       r.left += cur.parentElement.offsetLeft;
@@ -68,7 +68,7 @@
     if (chrome &&
         chrome.gpuBenchmarking &&
         chrome.gpuBenchmarking.smoothScrollBy) {
-      rect = getBoundingVisibleRect(this.element_);
+      var rect = getBoundingVisibleRect(this.element_);
       chrome.gpuBenchmarking.smoothScrollBy(
           this.element_.scrollHeight, function() {
         callback();
