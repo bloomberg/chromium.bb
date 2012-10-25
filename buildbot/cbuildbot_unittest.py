@@ -77,7 +77,7 @@ class RunBuildStagesTest(cros_test_lib.MoxTempDirTestCase):
 
     api = self.mox.CreateMock(cros_build_lib.CommandResult)
     api.returncode = 0
-    api.output = cbuildbot._REEXEC_API_VERSION
+    api.output = constants.REEXEC_API_VERSION
     cros_build_lib.RunCommand(
         [constants.PATH_TO_CBUILDBOT, '--reexec-api-version'],
         cwd=self.buildroot, redirect_stderr=True, redirect_stdout=True,
@@ -115,7 +115,7 @@ class RunBuildStagesTest(cros_test_lib.MoxTempDirTestCase):
 
     api = self.mox.CreateMock(cros_build_lib.CommandResult)
     api.returncode = 0
-    api.output = cbuildbot._REEXEC_API_VERSION
+    api.output = constants.REEXEC_API_VERSION
     cros_build_lib.RunCommand(
         [constants.PATH_TO_CBUILDBOT, '--reexec-api-version'],
         cwd=self.buildroot, redirect_stderr=True, redirect_stdout=True,
