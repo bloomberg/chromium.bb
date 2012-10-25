@@ -11,8 +11,8 @@
 #include "cc/layer_updater.h"
 #include "cc/prioritized_texture.h"
 #include "cc/resource_provider.h"
+#include "cc/resource_update_queue.h"
 #include "cc/texture_copier.h"
-#include "cc/texture_update_queue.h"
 #include "cc/texture_uploader.h"
 #include "cc/tiled_layer.h"
 #include "cc/tiled_layer_impl.h"
@@ -28,7 +28,7 @@ public:
         Resource(FakeLayerUpdater*, scoped_ptr<cc::PrioritizedTexture>);
         virtual ~Resource();
 
-        virtual void update(cc::TextureUpdateQueue&, const cc::IntRect&, const cc::IntSize&, bool, cc::RenderingStats&) OVERRIDE;
+        virtual void update(cc::ResourceUpdateQueue&, const cc::IntRect&, const cc::IntSize&, bool, cc::RenderingStats&) OVERRIDE;
 
     private:
         FakeLayerUpdater* m_layer;

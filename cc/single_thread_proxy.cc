@@ -10,7 +10,7 @@
 #include "cc/draw_quad.h"
 #include "cc/graphics_context.h"
 #include "cc/layer_tree_host.h"
-#include "cc/texture_update_controller.h"
+#include "cc/resource_update_controller.h"
 #include "cc/timer.h"
 #include <wtf/CurrentTime.h>
 
@@ -176,7 +176,7 @@ void SingleThreadProxy::setNeedsAnimate()
     NOTREACHED();
 }
 
-void SingleThreadProxy::doCommit(scoped_ptr<TextureUpdateQueue> queue)
+void SingleThreadProxy::doCommit(scoped_ptr<ResourceUpdateQueue> queue)
 {
     DCHECK(Proxy::isMainThread());
     // Commit immediately
@@ -190,8 +190,8 @@ void SingleThreadProxy::doCommit(scoped_ptr<TextureUpdateQueue> queue)
         m_layerTreeHost->contentsTextureManager()->pushTexturePrioritiesToBackings();
         m_layerTreeHost->beginCommitOnImplThread(m_layerTreeHostImpl.get());
 
-        scoped_ptr<TextureUpdateController> updateController =
-            TextureUpdateController::create(
+        scoped_ptr<ResourceUpdateController> updateController =
+            ResourceUpdateController::create(
                 NULL,
                 Proxy::mainThread(),
                 queue.Pass(),
@@ -334,7 +334,7 @@ bool SingleThreadProxy::commitAndComposite()
     }
     m_layerTreeHost->contentsTextureManager()->unlinkEvictedBackings(evictedContentsTexturesBackings);
 
-    scoped_ptr<TextureUpdateQueue> queue = make_scoped_ptr(new TextureUpdateQueue);
+    scoped_ptr<ResourceUpdateQueue> queue = make_scoped_ptr(new ResourceUpdateQueue);
     m_layerTreeHost->updateLayers(*(queue.get()), m_layerTreeHostImpl->memoryAllocationLimitBytes());
 
     if (m_layerTreeHostImpl->contentsTexturesPurged())

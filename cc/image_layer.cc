@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "cc/layer_updater.h"
 #include "cc/layer_tree_host.h"
-#include "cc/texture_update_queue.h"
+#include "cc/resource_update_queue.h"
 
 namespace cc {
 
@@ -23,7 +23,7 @@ public:
         {
         }
 
-        virtual void update(TextureUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&) OVERRIDE
+        virtual void update(ResourceUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&) OVERRIDE
         {
             updater()->updateTexture(queue, texture(), sourceRect, destOffset, partialUpdate);
         }
@@ -45,7 +45,7 @@ public:
         return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedTexture::create(manager)));
     }
 
-    void updateTexture(TextureUpdateQueue& queue, PrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate)
+    void updateTexture(ResourceUpdateQueue& queue, PrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate)
     {
         // Source rect should never go outside the image pixels, even if this
         // is requested because the texture extends outside the image.
@@ -113,7 +113,7 @@ void ImageLayer::setTexturePriorities(const PriorityCalculator& priorityCalc)
     TiledLayer::setTexturePriorities(priorityCalc);
 }
 
-void ImageLayer::update(TextureUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats)
+void ImageLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats)
 {
     createUpdaterIfNeeded();
     if (m_needsDisplay) {

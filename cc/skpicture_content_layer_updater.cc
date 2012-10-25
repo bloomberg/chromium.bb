@@ -8,7 +8,7 @@
 
 #include "base/debug/trace_event.h"
 #include "cc/layer_painter.h"
-#include "cc/texture_update_queue.h"
+#include "cc/resource_update_queue.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
 namespace cc {
@@ -23,7 +23,7 @@ SkPictureContentLayerUpdater::Resource::~Resource()
 {
 }
 
-void SkPictureContentLayerUpdater::Resource::update(TextureUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&)
+void SkPictureContentLayerUpdater::Resource::update(ResourceUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&)
 {
     updater()->updateTexture(queue, texture(), sourceRect, destOffset, partialUpdate);
 }
@@ -61,7 +61,7 @@ void SkPictureContentLayerUpdater::drawPicture(SkCanvas* canvas)
     canvas->drawPicture(m_picture);
 }
 
-void SkPictureContentLayerUpdater::updateTexture(TextureUpdateQueue& queue, PrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate)
+void SkPictureContentLayerUpdater::updateTexture(ResourceUpdateQueue& queue, PrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate)
 {
     ResourceUpdate upload = ResourceUpdate::CreateFromPicture(
         texture, &m_picture, contentRect(), sourceRect, destOffset);

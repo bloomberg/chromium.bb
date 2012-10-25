@@ -27,7 +27,7 @@ public:
         Resource(SkPictureContentLayerUpdater*, scoped_ptr<PrioritizedTexture>);
         virtual ~Resource();
 
-        virtual void update(TextureUpdateQueue&, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&) OVERRIDE;
+        virtual void update(ResourceUpdateQueue&, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&) OVERRIDE;
 
     private:
         SkPictureContentLayerUpdater* updater() { return m_updater; }
@@ -46,7 +46,7 @@ protected:
 
     virtual void prepareToUpdate(const IntRect& contentRect, const IntSize& tileSize, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, RenderingStats&) OVERRIDE;
     void drawPicture(SkCanvas*);
-    void updateTexture(TextureUpdateQueue& queue, PrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate);
+    void updateTexture(ResourceUpdateQueue& queue, PrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate);
 
     bool layerIsOpaque() const { return m_layerIsOpaque; }
 

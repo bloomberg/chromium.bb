@@ -14,9 +14,9 @@
 
 namespace cc {
 
+class ResourceUpdateQueue;
 class Scrollbar;
 class ScrollbarThemeComposite;
-class TextureUpdateQueue;
 
 class ScrollbarLayer : public Layer {
 public:
@@ -28,7 +28,7 @@ public:
     virtual bool needsContentsScale() const OVERRIDE;
     virtual IntSize contentBounds() const OVERRIDE;
     virtual void setTexturePriorities(const PriorityCalculator&) OVERRIDE;
-    virtual void update(TextureUpdateQueue&, const OcclusionTracker*, RenderingStats&) OVERRIDE;
+    virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats&) OVERRIDE;
     virtual void setLayerTreeHost(LayerTreeHost*) OVERRIDE;
     virtual void pushPropertiesTo(LayerImpl*) OVERRIDE;
 
@@ -42,7 +42,7 @@ protected:
     virtual ~ScrollbarLayer();
 
 private:
-    void updatePart(CachingBitmapContentLayerUpdater*, LayerUpdater::Resource*, const IntRect&, TextureUpdateQueue&, RenderingStats&);
+    void updatePart(CachingBitmapContentLayerUpdater*, LayerUpdater::Resource*, const IntRect&, ResourceUpdateQueue&, RenderingStats&);
     void createUpdaterIfNeeded();
 
     scoped_ptr<WebKit::WebScrollbar> m_scrollbar;

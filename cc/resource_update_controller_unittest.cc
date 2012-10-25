@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "cc/texture_update_controller.h"
+#include "cc/resource_update_controller.h"
 
 #include "cc/single_thread_proxy.h" // For DebugScopedSetImplThread
 #include "cc/test/fake_web_compositor_output_surface.h"
@@ -26,11 +26,11 @@ namespace {
 const int kFlushPeriodFull = 4;
 const int kFlushPeriodPartial = kFlushPeriodFull;
 
-class TextureUpdateControllerTest;
+class ResourceUpdateControllerTest;
 
 class WebGraphicsContext3DForUploadTest : public FakeWebGraphicsContext3D {
 public:
-    WebGraphicsContext3DForUploadTest(TextureUpdateControllerTest *test)
+    WebGraphicsContext3DForUploadTest(ResourceUpdateControllerTest *test)
         : m_test(test)
         , m_supportShallowFlush(true)
     { }
@@ -56,15 +56,15 @@ public:
     }
 
 private:
-    TextureUpdateControllerTest* m_test;
+    ResourceUpdateControllerTest* m_test;
     bool m_supportShallowFlush;
 };
 
 
-class TextureUpdateControllerTest : public Test {
+class ResourceUpdateControllerTest : public Test {
 public:
-    TextureUpdateControllerTest()
-        : m_queue(make_scoped_ptr(new TextureUpdateQueue))
+    ResourceUpdateControllerTest()
+        : m_queue(make_scoped_ptr(new ResourceUpdateQueue))
         , m_textureManager(PrioritizedTextureManager::create(60*1024*1024, 1024, Renderer::ContentPool))
         , m_compositorInitializer(m_thread.get())
         , m_fullUploadCountExpected(0)
@@ -78,7 +78,7 @@ public:
     {
     }
 
-    ~TextureUpdateControllerTest()
+    ~ResourceUpdateControllerTest()
     {
         DebugScopedSetImplThreadAndMainThreadBlocked
             implThreadAndMainThreadBlocked;
@@ -172,8 +172,8 @@ protected:
     {
         DebugScopedSetImplThreadAndMainThreadBlocked
             implThreadAndMainThreadBlocked;
-        scoped_ptr<TextureUpdateController> updateController =
-            TextureUpdateController::create(
+        scoped_ptr<ResourceUpdateController> updateController =
+            ResourceUpdateController::create(
                 NULL,
                 Proxy::implThread(),
                 m_queue.Pass(),
@@ -182,10 +182,10 @@ protected:
     }
 
 protected:
-    // Classes required to interact and test the TextureUpdateController
+    // Classes required to interact and test the ResourceUpdateController
     scoped_ptr<GraphicsContext> m_context;
     scoped_ptr<ResourceProvider> m_resourceProvider;
-    scoped_ptr<TextureUpdateQueue> m_queue;
+    scoped_ptr<ResourceUpdateQueue> m_queue;
     scoped_ptr<PrioritizedTexture> m_textures[4];
     scoped_ptr<WebThread> m_thread;
     WebCompositorInitializer m_compositorInitializer;
@@ -229,7 +229,7 @@ void WebGraphicsContext3DForUploadTest::texSubImage2D(WGC3Denum target,
 }
 
 // ZERO UPLOADS TESTS
-TEST_F(TextureUpdateControllerTest, ZeroUploads)
+TEST_F(ResourceUpdateControllerTest, ZeroUploads)
 {
     appendFullUploadsToUpdateQueue(0);
     appendPartialUploadsToUpdateQueue(0);
@@ -241,7 +241,7 @@ TEST_F(TextureUpdateControllerTest, ZeroUploads)
 
 
 // ONE UPLOAD TESTS
-TEST_F(TextureUpdateControllerTest, OneFullUpload)
+TEST_F(ResourceUpdateControllerTest, OneFullUpload)
 {
     appendFullUploadsToUpdateQueue(1);
     appendPartialUploadsToUpdateQueue(0);
@@ -252,7 +252,7 @@ TEST_F(TextureUpdateControllerTest, OneFullUpload)
     EXPECT_EQ(0, m_numDanglingUploads) << "Last upload wasn't followed by a flush.";
 }
 
-TEST_F(TextureUpdateControllerTest, OnePartialUpload)
+TEST_F(ResourceUpdateControllerTest, OnePartialUpload)
 {
     appendFullUploadsToUpdateQueue(0);
     appendPartialUploadsToUpdateQueue(1);
@@ -263,7 +263,7 @@ TEST_F(TextureUpdateControllerTest, OnePartialUpload)
     EXPECT_EQ(0, m_numDanglingUploads) << "Last upload wasn't followed by a flush.";
 }
 
-TEST_F(TextureUpdateControllerTest, OneFullOnePartialUpload)
+TEST_F(ResourceUpdateControllerTest, OneFullOnePartialUpload)
 {
     appendFullUploadsToUpdateQueue(1);
     appendPartialUploadsToUpdateQueue(1);
@@ -282,7 +282,7 @@ const int fullCount = fullUploadFlushMultipler * kFlushPeriodFull;
 const int partialUploadFlushMultipler = 11;
 const int partialCount = partialUploadFlushMultipler * kFlushPeriodPartial;
 
-TEST_F(TextureUpdateControllerTest, ManyFullUploads)
+TEST_F(ResourceUpdateControllerTest, ManyFullUploads)
 {
     appendFullUploadsToUpdateQueue(fullCount);
     appendPartialUploadsToUpdateQueue(0);
@@ -293,7 +293,7 @@ TEST_F(TextureUpdateControllerTest, ManyFullUploads)
     EXPECT_EQ(0, m_numDanglingUploads) << "Last upload wasn't followed by a flush.";
 }
 
-TEST_F(TextureUpdateControllerTest, ManyPartialUploads)
+TEST_F(ResourceUpdateControllerTest, ManyPartialUploads)
 {
     appendFullUploadsToUpdateQueue(0);
     appendPartialUploadsToUpdateQueue(partialCount);
@@ -304,7 +304,7 @@ TEST_F(TextureUpdateControllerTest, ManyPartialUploads)
     EXPECT_EQ(0, m_numDanglingUploads) << "Last upload wasn't followed by a flush.";
 }
 
-TEST_F(TextureUpdateControllerTest, ManyFullManyPartialUploads)
+TEST_F(ResourceUpdateControllerTest, ManyFullManyPartialUploads)
 {
     appendFullUploadsToUpdateQueue(fullCount);
     appendPartialUploadsToUpdateQueue(partialCount);
@@ -315,9 +315,9 @@ TEST_F(TextureUpdateControllerTest, ManyFullManyPartialUploads)
     EXPECT_EQ(0, m_numDanglingUploads) << "Last upload wasn't followed by a flush.";
 }
 
-class FakeTextureUpdateControllerClient : public cc::TextureUpdateControllerClient {
+class FakeResourceUpdateControllerClient : public cc::ResourceUpdateControllerClient {
 public:
-    FakeTextureUpdateControllerClient() { reset(); }
+    FakeResourceUpdateControllerClient() { reset(); }
     void reset() { m_readyToFinalizeCalled = false; }
     bool readyToFinalizeCalled() const { return m_readyToFinalizeCalled; }
 
@@ -327,11 +327,11 @@ protected:
     bool m_readyToFinalizeCalled;
 };
 
-class FakeTextureUpdateController : public cc::TextureUpdateController {
+class FakeResourceUpdateController : public cc::ResourceUpdateController {
 public:
-    static scoped_ptr<FakeTextureUpdateController> create(cc::TextureUpdateControllerClient* client, cc::Thread* thread, scoped_ptr<TextureUpdateQueue> queue, ResourceProvider* resourceProvider)
+    static scoped_ptr<FakeResourceUpdateController> create(cc::ResourceUpdateControllerClient* client, cc::Thread* thread, scoped_ptr<ResourceUpdateQueue> queue, ResourceProvider* resourceProvider)
     {
-        return make_scoped_ptr(new FakeTextureUpdateController(client, thread, queue.Pass(), resourceProvider));
+        return make_scoped_ptr(new FakeResourceUpdateController(client, thread, queue.Pass(), resourceProvider));
     }
 
     void setNow(base::TimeTicks time) { m_now = time; }
@@ -342,8 +342,8 @@ public:
     virtual size_t updateMoreTexturesSize() const OVERRIDE { return m_updateMoreTexturesSize; }
 
 protected:
-    FakeTextureUpdateController(cc::TextureUpdateControllerClient* client, cc::Thread* thread, scoped_ptr<TextureUpdateQueue> queue, ResourceProvider* resourceProvider)
-        : cc::TextureUpdateController(client, thread, queue.Pass(), resourceProvider)
+    FakeResourceUpdateController(cc::ResourceUpdateControllerClient* client, cc::Thread* thread, scoped_ptr<ResourceUpdateQueue> queue, ResourceProvider* resourceProvider)
+        : cc::ResourceUpdateController(client, thread, queue.Pass(), resourceProvider)
         , m_updateMoreTexturesSize(0) { }
 
     base::TimeTicks m_now;
@@ -351,16 +351,16 @@ protected:
     size_t m_updateMoreTexturesSize;
 };
 
-static void runPendingTask(FakeThread* thread, FakeTextureUpdateController* controller)
+static void runPendingTask(FakeThread* thread, FakeResourceUpdateController* controller)
 {
     EXPECT_TRUE(thread->hasPendingTask());
     controller->setNow(controller->now() + base::TimeDelta::FromMilliseconds(thread->pendingDelayMs()));
     thread->runPendingTask();
 }
 
-TEST_F(TextureUpdateControllerTest, UpdateMoreTextures)
+TEST_F(ResourceUpdateControllerTest, UpdateMoreTextures)
 {
-    FakeTextureUpdateControllerClient client;
+    FakeResourceUpdateControllerClient client;
     FakeThread thread;
 
     setMaxUploadCountPerUpdate(1);
@@ -369,7 +369,7 @@ TEST_F(TextureUpdateControllerTest, UpdateMoreTextures)
 
     DebugScopedSetImplThreadAndMainThreadBlocked
         implThreadAndMainThreadBlocked;
-    scoped_ptr<FakeTextureUpdateController> controller(FakeTextureUpdateController::create(&client, &thread, m_queue.Pass(), m_resourceProvider.get()));
+    scoped_ptr<FakeResourceUpdateController> controller(FakeResourceUpdateController::create(&client, &thread, m_queue.Pass(), m_resourceProvider.get()));
 
     controller->setNow(
         controller->now() + base::TimeDelta::FromMilliseconds(1));
@@ -404,9 +404,9 @@ TEST_F(TextureUpdateControllerTest, UpdateMoreTextures)
     EXPECT_EQ(3, m_numTotalUploads);
 }
 
-TEST_F(TextureUpdateControllerTest, NoMoreUpdates)
+TEST_F(ResourceUpdateControllerTest, NoMoreUpdates)
 {
-    FakeTextureUpdateControllerClient client;
+    FakeResourceUpdateControllerClient client;
     FakeThread thread;
 
     setMaxUploadCountPerUpdate(1);
@@ -415,7 +415,7 @@ TEST_F(TextureUpdateControllerTest, NoMoreUpdates)
 
     DebugScopedSetImplThreadAndMainThreadBlocked
         implThreadAndMainThreadBlocked;
-    scoped_ptr<FakeTextureUpdateController> controller(FakeTextureUpdateController::create(&client, &thread, m_queue.Pass(), m_resourceProvider.get()));
+    scoped_ptr<FakeResourceUpdateController> controller(FakeResourceUpdateController::create(&client, &thread, m_queue.Pass(), m_resourceProvider.get()));
 
     controller->setNow(
         controller->now() + base::TimeDelta::FromMilliseconds(1));
@@ -444,9 +444,9 @@ TEST_F(TextureUpdateControllerTest, NoMoreUpdates)
     EXPECT_EQ(2, m_numTotalUploads);
 }
 
-TEST_F(TextureUpdateControllerTest, UpdatesCompleteInFiniteTime)
+TEST_F(ResourceUpdateControllerTest, UpdatesCompleteInFiniteTime)
 {
-    FakeTextureUpdateControllerClient client;
+    FakeResourceUpdateControllerClient client;
     FakeThread thread;
 
     setMaxUploadCountPerUpdate(1);
@@ -455,7 +455,7 @@ TEST_F(TextureUpdateControllerTest, UpdatesCompleteInFiniteTime)
 
     DebugScopedSetImplThreadAndMainThreadBlocked
         implThreadAndMainThreadBlocked;
-    scoped_ptr<FakeTextureUpdateController> controller(FakeTextureUpdateController::create(&client, &thread, m_queue.Pass(), m_resourceProvider.get()));
+    scoped_ptr<FakeResourceUpdateController> controller(FakeResourceUpdateController::create(&client, &thread, m_queue.Pass(), m_resourceProvider.get()));
 
     controller->setNow(
         controller->now() + base::TimeDelta::FromMilliseconds(1));

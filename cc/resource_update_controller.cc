@@ -4,7 +4,7 @@
 
 #include "config.h"
 
-#include "cc/texture_update_controller.h"
+#include "cc/resource_update_controller.h"
 
 #include "base/debug/trace_event.h"
 #include "cc/prioritized_texture.h"
@@ -57,12 +57,12 @@ scoped_ptr<SkCanvas> createAcceleratedCanvas(
 
 namespace cc {
 
-size_t TextureUpdateController::maxPartialTextureUpdates()
+size_t ResourceUpdateController::maxPartialTextureUpdates()
 {
     return partialTextureUpdatesMax;
 }
 
-size_t TextureUpdateController::maxFullUpdatesPerTick(
+size_t ResourceUpdateController::maxFullUpdatesPerTick(
     ResourceProvider* resourceProvider)
 {
     double texturesPerSecond = resourceProvider->estimatedUploadsPerSecond();
@@ -70,7 +70,7 @@ size_t TextureUpdateController::maxFullUpdatesPerTick(
     return texturesPerTick ? texturesPerTick : 1;
 }
 
-TextureUpdateController::TextureUpdateController(TextureUpdateControllerClient* client, Thread* thread, scoped_ptr<TextureUpdateQueue> queue, ResourceProvider* resourceProvider)
+ResourceUpdateController::ResourceUpdateController(ResourceUpdateControllerClient* client, Thread* thread, scoped_ptr<ResourceUpdateQueue> queue, ResourceProvider* resourceProvider)
     : m_client(client)
     , m_timer(new Timer(thread, this))
     , m_queue(queue.Pass())
@@ -80,11 +80,11 @@ TextureUpdateController::TextureUpdateController(TextureUpdateControllerClient* 
 {
 }
 
-TextureUpdateController::~TextureUpdateController()
+ResourceUpdateController::~ResourceUpdateController()
 {
 }
 
-void TextureUpdateController::performMoreUpdates(
+void ResourceUpdateController::performMoreUpdates(
     base::TimeTicks timeLimit)
 {
     m_timeLimit = timeLimit;
@@ -107,12 +107,12 @@ void TextureUpdateController::performMoreUpdates(
         updateMoreTexturesNow();
 }
 
-void TextureUpdateController::discardUploadsToEvictedResources()
+void ResourceUpdateController::discardUploadsToEvictedResources()
 {
     m_queue->clearUploadsToEvictedResources();
 }
 
-void TextureUpdateController::updateTexture(ResourceUpdate update)
+void ResourceUpdateController::updateTexture(ResourceUpdate update)
 {
     if (update.picture) {
         PrioritizedTexture* texture = update.texture;
@@ -186,7 +186,7 @@ void TextureUpdateController::updateTexture(ResourceUpdate update)
     }
 }
 
-void TextureUpdateController::finalize()
+void ResourceUpdateController::finalize()
 {
     size_t uploadCount = 0;
     while (m_queue->fullUploadSize()) {
@@ -221,7 +221,7 @@ void TextureUpdateController::finalize()
     }
 }
 
-void TextureUpdateController::onTimerFired()
+void ResourceUpdateController::onTimerFired()
 {
     ResourceProvider::debugNotifyEnterZone(0xB000000);
     if (!updateMoreTexturesIfEnoughTimeRemaining())
@@ -229,27 +229,27 @@ void TextureUpdateController::onTimerFired()
     ResourceProvider::debugNotifyLeaveZone();
 }
 
-base::TimeTicks TextureUpdateController::now() const
+base::TimeTicks ResourceUpdateController::now() const
 {
     return base::TimeTicks::Now();
 }
 
-base::TimeDelta TextureUpdateController::updateMoreTexturesTime() const
+base::TimeDelta ResourceUpdateController::updateMoreTexturesTime() const
 {
     return base::TimeDelta::FromMilliseconds(textureUpdateTickRate * 1000);
 }
 
-size_t TextureUpdateController::updateMoreTexturesSize() const
+size_t ResourceUpdateController::updateMoreTexturesSize() const
 {
     return m_textureUpdatesPerTick;
 }
 
-size_t TextureUpdateController::maxBlockingUpdates() const
+size_t ResourceUpdateController::maxBlockingUpdates() const
 {
     return updateMoreTexturesSize() * maxBlockingUpdateIntervals;
 }
 
-bool TextureUpdateController::updateMoreTexturesIfEnoughTimeRemaining()
+bool ResourceUpdateController::updateMoreTexturesIfEnoughTimeRemaining()
 {
     // Blocking uploads will increase when we're too aggressive in our upload
     // time estimate. We use a different timeout here to prevent unnecessary
@@ -270,7 +270,7 @@ bool TextureUpdateController::updateMoreTexturesIfEnoughTimeRemaining()
     return true;
 }
 
-void TextureUpdateController::updateMoreTexturesNow()
+void ResourceUpdateController::updateMoreTexturesNow()
 {
     size_t uploads = std::min(
         m_queue->fullUploadSize(), updateMoreTexturesSize());

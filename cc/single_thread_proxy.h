@@ -63,7 +63,7 @@ private:
     explicit SingleThreadProxy(LayerTreeHost*);
 
     bool commitAndComposite();
-    void doCommit(scoped_ptr<TextureUpdateQueue>);
+    void doCommit(scoped_ptr<ResourceUpdateQueue>);
     bool doComposite();
     void didSwapFrame();
 

@@ -2,36 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCTextureUpdateController_h
-#define CCTextureUpdateController_h
+#ifndef CCResourceUpdateController_h
+#define CCResourceUpdateController_h
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include "cc/texture_update_queue.h"
+#include "cc/resource_update_queue.h"
 #include "cc/timer.h"
 
 namespace cc {
 
 class ResourceProvider;
 
-class TextureUpdateControllerClient {
+class ResourceUpdateControllerClient {
 public:
     virtual void readyToFinalizeTextureUpdates() = 0;
 
 protected:
-    virtual ~TextureUpdateControllerClient() { }
+    virtual ~ResourceUpdateControllerClient() { }
 };
 
-class TextureUpdateController : public TimerClient {
+class ResourceUpdateController : public TimerClient {
 public:
-    static scoped_ptr<TextureUpdateController> create(TextureUpdateControllerClient* client, Thread* thread, scoped_ptr<TextureUpdateQueue> queue, ResourceProvider* resourceProvider)
+    static scoped_ptr<ResourceUpdateController> create(ResourceUpdateControllerClient* client, Thread* thread, scoped_ptr<ResourceUpdateQueue> queue, ResourceProvider* resourceProvider)
     {
-        return make_scoped_ptr(new TextureUpdateController(client, thread, queue.Pass(), resourceProvider));
+        return make_scoped_ptr(new ResourceUpdateController(client, thread, queue.Pass(), resourceProvider));
     }
     static size_t maxPartialTextureUpdates();
 
-    virtual ~TextureUpdateController();
+    virtual ~ResourceUpdateController();
 
     // Discard uploads to textures that were evicted on the impl thread.
     void discardUploadsToEvictedResources();
@@ -48,7 +48,7 @@ public:
     virtual size_t updateMoreTexturesSize() const;
 
 protected:
-    TextureUpdateController(TextureUpdateControllerClient*, Thread*, scoped_ptr<TextureUpdateQueue>, ResourceProvider*);
+    ResourceUpdateController(ResourceUpdateControllerClient*, Thread*, scoped_ptr<ResourceUpdateQueue>, ResourceProvider*);
 
     static size_t maxFullUpdatesPerTick(ResourceProvider*);
 
@@ -60,9 +60,9 @@ protected:
     bool updateMoreTexturesIfEnoughTimeRemaining();
     void updateMoreTexturesNow();
 
-    TextureUpdateControllerClient* m_client;
+    ResourceUpdateControllerClient* m_client;
     scoped_ptr<Timer> m_timer;
-    scoped_ptr<TextureUpdateQueue> m_queue;
+    scoped_ptr<ResourceUpdateQueue> m_queue;
     bool m_contentsTexturesPurged;
     ResourceProvider* m_resourceProvider;
     base::TimeTicks m_timeLimit;
@@ -70,9 +70,9 @@ protected:
     bool m_firstUpdateAttempt;
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(TextureUpdateController);
+    DISALLOW_COPY_AND_ASSIGN(ResourceUpdateController);
 };
 
 }  // namespace cc
 
-#endif // CCTextureUpdateController_h
+#endif // CCResourceUpdateController_h

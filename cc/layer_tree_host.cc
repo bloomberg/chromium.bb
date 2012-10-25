@@ -485,7 +485,7 @@ bool LayerTreeHost::initializeRendererIfNeeded()
     return true;
 }
 
-void LayerTreeHost::updateLayers(TextureUpdateQueue& queue, size_t memoryAllocationLimitBytes)
+void LayerTreeHost::updateLayers(ResourceUpdateQueue& queue, size_t memoryAllocationLimitBytes)
 {
     DCHECK(m_rendererInitialized);
     DCHECK(memoryAllocationLimitBytes);
@@ -518,7 +518,7 @@ static Layer* findFirstScrollableLayer(Layer* layer)
     return 0;
 }
 
-void LayerTreeHost::updateLayers(Layer* rootLayer, TextureUpdateQueue& queue)
+void LayerTreeHost::updateLayers(Layer* rootLayer, ResourceUpdateQueue& queue)
 {
     TRACE_EVENT0("cc", "LayerTreeHost::updateLayers");
 
@@ -625,7 +625,7 @@ size_t LayerTreeHost::calculateMemoryForRenderSurfaces(const LayerList& updateLi
     return readbackBytes + maxBackgroundTextureBytes + contentsTextureBytes;
 }
 
-bool LayerTreeHost::paintMasksForRenderSurface(Layer* renderSurfaceLayer, TextureUpdateQueue& queue)
+bool LayerTreeHost::paintMasksForRenderSurface(Layer* renderSurfaceLayer, ResourceUpdateQueue& queue)
 {
     // Note: Masks and replicas only exist for layers that own render surfaces. If we reach this point
     // in code, we already know that at least something will be drawn into this render surface, so the
@@ -646,7 +646,7 @@ bool LayerTreeHost::paintMasksForRenderSurface(Layer* renderSurfaceLayer, Textur
     return needMoreUpdates;
 }
 
-bool LayerTreeHost::paintLayerContents(const LayerList& renderSurfaceLayerList, TextureUpdateQueue& queue)
+bool LayerTreeHost::paintLayerContents(const LayerList& renderSurfaceLayerList, ResourceUpdateQueue& queue)
 {
     // Use FrontToBack to allow for testing occlusion and performing culling during the tree walk.
     typedef LayerIterator<Layer, LayerList, RenderSurface, LayerIteratorActions::FrontToBack> LayerIteratorType;

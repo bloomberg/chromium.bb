@@ -18,7 +18,7 @@ public:
     public:
         Resource(BitmapSkPictureContentLayerUpdater*, scoped_ptr<PrioritizedTexture>);
 
-        virtual void update(TextureUpdateQueue&, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&) OVERRIDE;
+        virtual void update(ResourceUpdateQueue&, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&) OVERRIDE;
 
     private:
         BitmapSkPictureContentLayerUpdater* updater() { return m_updater; }

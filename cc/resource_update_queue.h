@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CCTextureUpdateQueue_h
-#define CCTextureUpdateQueue_h
+#ifndef CCResourceUpdateQueue_h
+#define CCResourceUpdateQueue_h
 
 #include "base/basictypes.h"
 #include "cc/resource_update.h"
@@ -12,10 +12,10 @@
 
 namespace cc {
 
-class TextureUpdateQueue {
+class ResourceUpdateQueue {
 public:
-    TextureUpdateQueue();
-    virtual ~TextureUpdateQueue();
+    ResourceUpdateQueue();
+    virtual ~ResourceUpdateQueue();
 
     void appendFullUpload(const ResourceUpdate&);
     void appendPartialUpload(const ResourceUpdate&);
@@ -39,9 +39,9 @@ private:
     std::deque<ResourceUpdate> m_partialEntries;
     std::deque<TextureCopier::Parameters> m_copyEntries;
 
-    DISALLOW_COPY_AND_ASSIGN(TextureUpdateQueue);
+    DISALLOW_COPY_AND_ASSIGN(ResourceUpdateQueue);
 };
 
 }
 
-#endif // CCTextureUpdateQueue_h
+#endif // CCResourceUpdateQueue_h

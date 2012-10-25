@@ -41,7 +41,7 @@ public:
 
     virtual bool drawsContent() const OVERRIDE;
     virtual void setTexturePriorities(const PriorityCalculator&) OVERRIDE;
-    virtual void update(TextureUpdateQueue&, const OcclusionTracker*, RenderingStats&) OVERRIDE;
+    virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats&) OVERRIDE;
     virtual bool needMoreUpdates() OVERRIDE;
 
     virtual void setContentsOpaque(bool) OVERRIDE;

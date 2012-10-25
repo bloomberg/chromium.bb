@@ -22,7 +22,7 @@ FakeLayerUpdater::Resource::~Resource()
 {
 }
 
-void FakeLayerUpdater::Resource::update(TextureUpdateQueue& queue, const IntRect&, const IntSize&, bool partialUpdate, RenderingStats&)
+void FakeLayerUpdater::Resource::update(ResourceUpdateQueue& queue, const IntRect&, const IntSize&, bool partialUpdate, RenderingStats&)
 {
     const IntRect rect(0, 0, 10, 10);
     ResourceUpdate upload = ResourceUpdate::Create(

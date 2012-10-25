@@ -30,7 +30,7 @@ public:
     virtual void setRateLimitContext(bool) OVERRIDE;
 
     // TextureLayerClient implementation.
-    virtual unsigned prepareTexture(cc::TextureUpdateQueue&) OVERRIDE;
+    virtual unsigned prepareTexture(cc::ResourceUpdateQueue&) OVERRIDE;
     virtual WebGraphicsContext3D* context() OVERRIDE;
 
 private:

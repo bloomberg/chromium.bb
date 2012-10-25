@@ -32,7 +32,7 @@ class LayerAnimationDelegate;
 class LayerImpl;
 class LayerTreeHost;
 class PriorityCalculator;
-class TextureUpdateQueue;
+class ResourceUpdateQueue;
 class ScrollbarLayer;
 struct AnimationEvent;
 struct RenderingStats;
@@ -185,7 +185,7 @@ public:
 
     // These methods typically need to be overwritten by derived classes.
     virtual bool drawsContent() const;
-    virtual void update(TextureUpdateQueue&, const OcclusionTracker*, RenderingStats&) { }
+    virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats&) { }
     virtual bool needMoreUpdates();
     virtual void setIsMask(bool) { }
     virtual void bindContentsTexture() { }

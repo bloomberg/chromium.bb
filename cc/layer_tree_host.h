@@ -43,7 +43,7 @@ class Layer;
 class LayerTreeHostImpl;
 class LayerTreeHostImplClient;
 class PrioritizedTextureManager;
-class TextureUpdateQueue;
+class ResourceUpdateQueue;
 class HeadsUpDisplayLayer;
 class Region;
 struct ScrollAndScaleSet;
@@ -128,7 +128,7 @@ public:
     virtual void acquireLayerTextures();
     // Returns false if we should abort this frame due to initialization failure.
     bool initializeRendererIfNeeded();
-    void updateLayers(TextureUpdateQueue&, size_t contentsMemoryLimitBytes);
+    void updateLayers(ResourceUpdateQueue&, size_t contentsMemoryLimitBytes);
 
     LayerTreeHostClient* client() { return m_client; }
 
@@ -213,11 +213,11 @@ private:
 
     void initializeRenderer();
 
-    void update(Layer*, TextureUpdateQueue&, const OcclusionTracker*);
-    bool paintLayerContents(const LayerList&, TextureUpdateQueue&);
-    bool paintMasksForRenderSurface(Layer*, TextureUpdateQueue&);
+    void update(Layer*, ResourceUpdateQueue&, const OcclusionTracker*);
+    bool paintLayerContents(const LayerList&, ResourceUpdateQueue&);
+    bool paintMasksForRenderSurface(Layer*, ResourceUpdateQueue&);
 
-    void updateLayers(Layer*, TextureUpdateQueue&);
+    void updateLayers(Layer*, ResourceUpdateQueue&);
     void triggerPrepaint();
 
     void prioritizeTextures(const LayerList&, OverdrawMetrics&); 

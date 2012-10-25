@@ -107,7 +107,7 @@ bool TextureLayer::drawsContent() const
     return (m_client || m_textureId) && !m_contextLost && Layer::drawsContent();
 }
 
-void TextureLayer::update(TextureUpdateQueue& queue, const OcclusionTracker*, RenderingStats&)
+void TextureLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker*, RenderingStats&)
 {
     if (m_client) {
         m_textureId = m_client->prepareTexture(queue);

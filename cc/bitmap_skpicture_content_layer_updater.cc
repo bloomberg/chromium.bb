@@ -9,7 +9,7 @@
 #include "base/time.h"
 #include "cc/layer_painter.h"
 #include "cc/rendering_stats.h"
-#include "cc/texture_update_queue.h"
+#include "cc/resource_update_queue.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
 
@@ -21,7 +21,7 @@ BitmapSkPictureContentLayerUpdater::Resource::Resource(BitmapSkPictureContentLay
 {
 }
 
-void BitmapSkPictureContentLayerUpdater::Resource::update(TextureUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats& stats)
+void BitmapSkPictureContentLayerUpdater::Resource::update(ResourceUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats& stats)
 {
     m_bitmap.setConfig(SkBitmap::kARGB_8888_Config, sourceRect.width(), sourceRect.height());
     m_bitmap.allocPixels();

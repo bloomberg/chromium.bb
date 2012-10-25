@@ -10,20 +10,20 @@
 #include "cc/completion_event.h"
 #include "cc/layer_tree_host_impl.h"
 #include "cc/proxy.h"
+#include "cc/resource_update_controller.h"
 #include "cc/scheduler.h"
-#include "cc/texture_update_controller.h"
 
 namespace cc {
 
 class InputHandler;
 class LayerTreeHost;
+class ResourceUpdateQueue;
 class Scheduler;
 class ScopedThreadProxy;
-class TextureUpdateQueue;
 class Thread;
 class ThreadProxyContextRecreationTimer;
 
-class ThreadProxy : public Proxy, LayerTreeHostImplClient, SchedulerClient, TextureUpdateControllerClient {
+class ThreadProxy : public Proxy, LayerTreeHostImplClient, SchedulerClient, ResourceUpdateControllerClient {
 public:
     static scoped_ptr<Proxy> create(LayerTreeHost*);
 
@@ -73,7 +73,7 @@ public:
     virtual void scheduledActionAcquireLayerTexturesForMainThread() OVERRIDE;
     virtual void didAnticipatedDrawTimeChange(base::TimeTicks) OVERRIDE;
 
-    // TextureUpdateControllerClient implementation
+    // ResourceUpdateControllerClient implementation
     virtual void readyToFinalizeTextureUpdates() OVERRIDE;
 
 private:
@@ -109,7 +109,7 @@ private:
         IntRect rect;
     };
     void forceBeginFrameOnImplThread(CompletionEvent*);
-    void beginFrameCompleteOnImplThread(CompletionEvent*, TextureUpdateQueue*);
+    void beginFrameCompleteOnImplThread(CompletionEvent*, ResourceUpdateQueue*);
     void beginFrameAbortedOnImplThread();
     void requestReadbackOnImplThread(ReadbackRequest*);
     void requestStartPageScaleAnimationOnImplThread(IntSize targetPosition, bool useAnchor, float scale, double durationSec);
@@ -165,7 +165,7 @@ private:
     // Set when the main thread is waiting on layers to be drawn.
     CompletionEvent* m_textureAcquisitionCompletionEventOnImplThread;
 
-    scoped_ptr<TextureUpdateController> m_currentTextureUpdateControllerOnImplThread;
+    scoped_ptr<ResourceUpdateController> m_currentResourceUpdateControllerOnImplThread;
 
     // Set when the next draw should post didCommitAndDrawFrame to the main thread.
     bool m_nextFrameIsNewlyCommittedFrameOnImplThread;

@@ -15,7 +15,7 @@ class IntRect;
 class IntSize;
 class TextureManager;
 struct RenderingStats;
-class TextureUpdateQueue;
+class ResourceUpdateQueue;
 
 class LayerUpdater : public base::RefCounted<LayerUpdater> {
 public:
@@ -28,7 +28,7 @@ public:
         void swapTextureWith(scoped_ptr<PrioritizedTexture>& texture) { m_texture.swap(texture); }
         // TODO(reveman): partialUpdate should be a property of this class
         // instead of an argument passed to update().
-        virtual void update(TextureUpdateQueue&, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&) = 0;
+        virtual void update(ResourceUpdateQueue&, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&) = 0;
     protected:
         explicit Resource(scoped_ptr<PrioritizedTexture> texture);
 

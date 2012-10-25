@@ -10,8 +10,8 @@
 #include "base/debug/trace_event.h"
 #include "cc/layer_painter.h"
 #include "cc/layer_tree_host.h"
+#include "cc/resource_update_queue.h"
 #include "cc/scrollbar_layer_impl.h"
-#include "cc/texture_update_queue.h"
 #include <public/WebRect.h>
 
 using WebKit::WebRect;
@@ -209,7 +209,7 @@ void ScrollbarLayer::createUpdaterIfNeeded()
         m_thumb = m_thumbUpdater->createResource(layerTreeHost()->contentsTextureManager());
 }
 
-void ScrollbarLayer::updatePart(CachingBitmapContentLayerUpdater* painter, LayerUpdater::Resource* texture, const IntRect& rect, TextureUpdateQueue& queue, RenderingStats& stats)
+void ScrollbarLayer::updatePart(CachingBitmapContentLayerUpdater* painter, LayerUpdater::Resource* texture, const IntRect& rect, ResourceUpdateQueue& queue, RenderingStats& stats)
 {
     // Skip painting and uploading if there are no invalidations and
     // we already have valid texture data.
@@ -261,7 +261,7 @@ void ScrollbarLayer::setTexturePriorities(const PriorityCalculator&)
     }
 }
 
-void ScrollbarLayer::update(TextureUpdateQueue& queue, const OcclusionTracker*, RenderingStats& stats)
+void ScrollbarLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker*, RenderingStats& stats)
 {
     if (contentBounds().isEmpty())
         return;

@@ -17,7 +17,7 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_test_common.h"
 #include "cc/test/occlusion_tracker_test_common.h"
-#include "cc/texture_update_queue.h"
+#include "cc/resource_update_queue.h"
 #include "cc/timing_function.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -1180,7 +1180,7 @@ public:
     int paintContentsCount() { return m_paintContentsCount; }
     void resetPaintContentsCount() { m_paintContentsCount = 0; }
 
-    virtual void update(TextureUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats) OVERRIDE
+    virtual void update(ResourceUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats) OVERRIDE
     {
         ContentLayer::update(queue, occlusion, stats);
         m_paintContentsCount++;
@@ -1613,7 +1613,7 @@ class TestLayer : public Layer {
 public:
     static scoped_refptr<TestLayer> create() { return make_scoped_refptr(new TestLayer()); }
 
-    virtual void update(TextureUpdateQueue&, const OcclusionTracker* occlusion, RenderingStats&) OVERRIDE
+    virtual void update(ResourceUpdateQueue&, const OcclusionTracker* occlusion, RenderingStats&) OVERRIDE
     {
         // Gain access to internals of the OcclusionTracker.
         const TestOcclusionTracker* testOcclusion = static_cast<const TestOcclusionTracker*>(occlusion);
@@ -1669,7 +1669,7 @@ public:
         m_layerTreeHost->setRootLayer(rootLayer);
         m_layerTreeHost->setViewportSize(rootLayer->bounds(), rootLayer->bounds());
         ASSERT_TRUE(m_layerTreeHost->initializeRendererIfNeeded());
-        TextureUpdateQueue queue;
+        ResourceUpdateQueue queue;
         m_layerTreeHost->updateLayers(queue, std::numeric_limits<size_t>::max());
         m_layerTreeHost->commitComplete();
 
@@ -1877,7 +1877,7 @@ public:
         m_layerTreeHost->setRootLayer(rootLayer);
         m_layerTreeHost->setViewportSize(rootLayer->bounds(), rootLayer->bounds());
         ASSERT_TRUE(m_layerTreeHost->initializeRendererIfNeeded());
-        TextureUpdateQueue queue;
+        ResourceUpdateQueue queue;
         m_layerTreeHost->updateLayers(queue, std::numeric_limits<size_t>::max());
         m_layerTreeHost->commitComplete();
 
@@ -1966,7 +1966,7 @@ public:
         m_layerTreeHost->setRootLayer(layers[0].get());
         m_layerTreeHost->setViewportSize(layers[0]->bounds(), layers[0]->bounds());
         ASSERT_TRUE(m_layerTreeHost->initializeRendererIfNeeded());
-        TextureUpdateQueue queue;
+        ResourceUpdateQueue queue;
         m_layerTreeHost->updateLayers(queue, std::numeric_limits<size_t>::max());
         m_layerTreeHost->commitComplete();
 
@@ -2606,7 +2606,7 @@ class EvictionTestLayer : public Layer {
 public:
     static scoped_refptr<EvictionTestLayer> create() { return make_scoped_refptr(new EvictionTestLayer()); }
 
-    virtual void update(TextureUpdateQueue&, const OcclusionTracker*, RenderingStats&) OVERRIDE;
+    virtual void update(ResourceUpdateQueue&, const OcclusionTracker*, RenderingStats&) OVERRIDE;
     virtual bool drawsContent() const OVERRIDE { return true; }
 
     virtual scoped_ptr<LayerImpl> createLayerImpl() OVERRIDE;
@@ -2664,7 +2664,7 @@ void EvictionTestLayer::setTexturePriorities(const PriorityCalculator&)
     m_texture->setRequestPriority(PriorityCalculator::uiPriority(true));
 }
 
-void EvictionTestLayer::update(TextureUpdateQueue& queue, const OcclusionTracker*, RenderingStats&)
+void EvictionTestLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker*, RenderingStats&)
 {
     createTextureIfNeeded();
     if (!m_texture.get())

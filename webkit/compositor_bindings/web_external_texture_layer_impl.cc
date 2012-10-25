@@ -5,13 +5,13 @@
 #include "config.h"
 #include "web_external_texture_layer_impl.h"
 
+#include "cc/resource_update_queue.h"
 #include "cc/texture_layer.h"
-#include "cc/texture_update_queue.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebExternalTextureLayerClient.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebFloatRect.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
-#include "webcore_convert.h"
 #include "web_layer_impl.h"
+#include "webcore_convert.h"
 
 using namespace cc;
 
@@ -81,7 +81,7 @@ void WebExternalTextureLayerImpl::setRateLimitContext(bool rateLimit)
 
 class WebTextureUpdaterImpl : public WebTextureUpdater {
 public:
-    explicit WebTextureUpdaterImpl(TextureUpdateQueue& queue)
+    explicit WebTextureUpdaterImpl(ResourceUpdateQueue& queue)
         : m_queue(queue)
     {
     }
@@ -93,10 +93,10 @@ public:
     }
 
 private:
-    TextureUpdateQueue& m_queue;
+    ResourceUpdateQueue& m_queue;
 };
 
-unsigned WebExternalTextureLayerImpl::prepareTexture(TextureUpdateQueue& queue)
+unsigned WebExternalTextureLayerImpl::prepareTexture(ResourceUpdateQueue& queue)
 {
     ASSERT(m_client);
     WebTextureUpdaterImpl updaterImpl(queue);

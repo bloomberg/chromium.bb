@@ -10,6 +10,7 @@
 #include "cc/layer_painter.h"
 #include "cc/overdraw_metrics.h"
 #include "cc/rendering_stats.h"
+#include "cc/resource_update_controller.h"
 #include "cc/single_thread_proxy.h" // For DebugScopedSetImplThread
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_graphics_context.h"
@@ -17,7 +18,6 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/tiled_layer_test_common.h"
 #include "cc/test/web_compositor_initializer.h"
-#include "cc/texture_update_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <public/WebTransformationMatrix.h>
 
@@ -51,7 +51,7 @@ public:
     TiledLayerTest()
         : m_compositorInitializer(0)
         , m_context(WebKit::createFakeGraphicsContext())
-        , m_queue(make_scoped_ptr(new TextureUpdateQueue))
+        , m_queue(make_scoped_ptr(new ResourceUpdateQueue))
         , m_textureManager(PrioritizedTextureManager::create(60*1024*1024, 1024, Renderer::ContentPool))
         , m_occlusion(0)
     {
@@ -101,14 +101,14 @@ public:
     {
         DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
         DCHECK(m_queue);
-        scoped_ptr<TextureUpdateController> updateController =
-            TextureUpdateController::create(
+        scoped_ptr<ResourceUpdateController> updateController =
+            ResourceUpdateController::create(
                 NULL,
                 Proxy::implThread(),
                 m_queue.Pass(),
                 m_resourceProvider.get());
         updateController->finalize();
-        m_queue = make_scoped_ptr(new TextureUpdateQueue);
+        m_queue = make_scoped_ptr(new ResourceUpdateQueue);
     }
     void layerPushPropertiesTo(FakeTiledLayer* layer, FakeTiledLayerImpl* layerImpl)
     {
@@ -160,7 +160,7 @@ public:
     WebKitTests::WebCompositorInitializer m_compositorInitializer;
     scoped_ptr<GraphicsContext> m_context;
     scoped_ptr<ResourceProvider> m_resourceProvider;
-    scoped_ptr<TextureUpdateQueue> m_queue;
+    scoped_ptr<ResourceUpdateQueue> m_queue;
     RenderingStats m_stats;
     PriorityCalculator m_priorityCalculator;
     scoped_ptr<PrioritizedTextureManager> m_textureManager;

@@ -616,7 +616,7 @@ TEST_F(PrioritizedTextureTest, clearUploadsToEvictedResources)
     for (unsigned i = 0; i < maxTextures; ++i)
         EXPECT_TRUE(validateTexture(textures[i], false));
 
-    TextureUpdateQueue queue;
+    ResourceUpdateQueue queue;
     DebugScopedSetImplThreadAndMainThreadBlocked implThreadAndMainThreadBlocked;
     for (size_t i = 0; i < maxTextures; ++i) {
         const ResourceUpdate upload = ResourceUpdate::Create(

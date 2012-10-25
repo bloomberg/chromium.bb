@@ -8,7 +8,7 @@
 
 #include "cc/layer_painter.h"
 #include "cc/resource_update.h"
-#include "cc/texture_update_queue.h"
+#include "cc/resource_update_queue.h"
 #include "skia/ext/platform_canvas.h"
 
 namespace cc {
@@ -23,7 +23,7 @@ BitmapContentLayerUpdater::Resource::~Resource()
 {
 }
 
-void BitmapContentLayerUpdater::Resource::update(TextureUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&)
+void BitmapContentLayerUpdater::Resource::update(ResourceUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&)
 {
     updater()->updateTexture(queue, texture(), sourceRect, destOffset, partialUpdate);
 }
@@ -58,7 +58,7 @@ void BitmapContentLayerUpdater::prepareToUpdate(const IntRect& contentRect, cons
     paintContents(m_canvas.get(), contentRect, contentsWidthScale, contentsHeightScale, resultingOpaqueRect, stats);
 }
 
-void BitmapContentLayerUpdater::updateTexture(TextureUpdateQueue& queue, PrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate)
+void BitmapContentLayerUpdater::updateTexture(ResourceUpdateQueue& queue, PrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate)
 {
     ResourceUpdate upload = ResourceUpdate::Create(
         texture,

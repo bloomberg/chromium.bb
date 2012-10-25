@@ -328,7 +328,7 @@ bool TiledLayer::tileOnlyNeedsPartialUpdate(UpdatableTile* tile)
     return !tile->dirtyRect.contains(m_tiler->tileRect(tile)) && tile->managedTexture()->haveBackingTexture();
 }
 
-bool TiledLayer::updateTiles(int left, int top, int right, int bottom, TextureUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats, bool& didPaint)
+bool TiledLayer::updateTiles(int left, int top, int right, int bottom, ResourceUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats, bool& didPaint)
 {
     didPaint = false;
     createUpdaterIfNeeded();
@@ -446,7 +446,7 @@ IntRect TiledLayer::markTilesForUpdate(int left, int top, int right, int bottom,
     return paintRect;
 }
 
-void TiledLayer::updateTileTextures(const IntRect& paintRect, int left, int top, int right, int bottom, TextureUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats)
+void TiledLayer::updateTileTextures(const IntRect& paintRect, int left, int top, int right, int bottom, ResourceUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats)
 {
     // The updateRect should be in layer space. So we have to convert the paintRect from content space to layer space.
     m_updateRect = FloatRect(paintRect);
@@ -665,7 +665,7 @@ void TiledLayer::updateScrollPrediction()
     m_previousVisibleRect = visibleContentRect();
 }
 
-void TiledLayer::update(TextureUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats)
+void TiledLayer::update(ResourceUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats)
 {
     DCHECK(!m_skipsDraw && !m_failedUpdate); // Did resetUpdateState get skipped?
     updateBounds();

@@ -38,7 +38,7 @@
       'scoped_texture_unittest.cc',
       'scrollbar_animation_controller_linear_fade_unittest.cc',
       'solid_color_layer_impl_unittest.cc',
-      'texture_update_controller_unittest.cc',
+      'resource_update_controller_unittest.cc',
       'thread_task_unittest.cc',
       'tiled_layer_impl_unittest.cc',
       'timer_unittest.cc',

@@ -4,42 +4,42 @@
 
 #include "config.h"
 
-#include "cc/texture_update_queue.h"
+#include "cc/resource_update_queue.h"
 
 #include "cc/prioritized_texture.h"
 
 namespace cc {
 
-TextureUpdateQueue::TextureUpdateQueue()
+ResourceUpdateQueue::ResourceUpdateQueue()
 {
 }
 
-TextureUpdateQueue::~TextureUpdateQueue()
+ResourceUpdateQueue::~ResourceUpdateQueue()
 {
 }
 
-void TextureUpdateQueue::appendFullUpload(const ResourceUpdate& upload)
+void ResourceUpdateQueue::appendFullUpload(const ResourceUpdate& upload)
 {
     m_fullEntries.push_back(upload);
 }
 
-void TextureUpdateQueue::appendPartialUpload(const ResourceUpdate& upload)
+void ResourceUpdateQueue::appendPartialUpload(const ResourceUpdate& upload)
 {
     m_partialEntries.push_back(upload);
 }
 
-void TextureUpdateQueue::appendCopy(TextureCopier::Parameters copy)
+void ResourceUpdateQueue::appendCopy(TextureCopier::Parameters copy)
 {
     m_copyEntries.push_back(copy);
 }
 
-void TextureUpdateQueue::clearUploadsToEvictedResources()
+void ResourceUpdateQueue::clearUploadsToEvictedResources()
 {
     clearUploadsToEvictedResources(m_fullEntries);
     clearUploadsToEvictedResources(m_partialEntries);
 }
 
-void TextureUpdateQueue::clearUploadsToEvictedResources(std::deque<ResourceUpdate>& entryQueue)
+void ResourceUpdateQueue::clearUploadsToEvictedResources(std::deque<ResourceUpdate>& entryQueue)
 {
     std::deque<ResourceUpdate> temp;
     entryQueue.swap(temp);
@@ -51,28 +51,28 @@ void TextureUpdateQueue::clearUploadsToEvictedResources(std::deque<ResourceUpdat
     }
 }
 
-ResourceUpdate TextureUpdateQueue::takeFirstFullUpload()
+ResourceUpdate ResourceUpdateQueue::takeFirstFullUpload()
 {
     ResourceUpdate first = m_fullEntries.front();
     m_fullEntries.pop_front();
     return first;
 }
 
-ResourceUpdate TextureUpdateQueue::takeFirstPartialUpload()
+ResourceUpdate ResourceUpdateQueue::takeFirstPartialUpload()
 {
     ResourceUpdate first = m_partialEntries.front();
     m_partialEntries.pop_front();
     return first;
 }
 
-TextureCopier::Parameters TextureUpdateQueue::takeFirstCopy()
+TextureCopier::Parameters ResourceUpdateQueue::takeFirstCopy()
 {
     TextureCopier::Parameters first = m_copyEntries.front();
     m_copyEntries.pop_front();
     return first;
 }
 
-bool TextureUpdateQueue::hasMoreUpdates() const
+bool ResourceUpdateQueue::hasMoreUpdates() const
 {
     return m_fullEntries.size() || m_partialEntries.size() || m_copyEntries.size();
 }
