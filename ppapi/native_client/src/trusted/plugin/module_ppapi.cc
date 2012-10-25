@@ -60,7 +60,7 @@ class ModulePpapi : public pp::Module {
     NaClNrdAllModulesInit();
     NaClSrpcModuleInit();
 
-#if NACL_WINDOWS && !defined(NACL_STANDALONE)
+#if NACL_WINDOWS
     NaClSetBrokerDuplicateHandleFunc(private_interface_->BrokerDuplicateHandle);
 #endif
 

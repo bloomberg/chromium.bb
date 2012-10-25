@@ -11,7 +11,6 @@
       'local_temp_file.cc',
       'module_ppapi.cc',
       'nacl_subprocess.cc',
-      'nexe_arch.cc',
       'plugin.cc',
       'pnacl_coordinator.cc',
       'pnacl_resources.cc',
