@@ -434,7 +434,9 @@ if sys.platform != 'win32':
         (self._ROOT_PID, 'futex(0x6972610, FUTEX_WAKE_PRIVATE, 1) = 0'),
         (self._ROOT_PID, 'futex(0x697263c, FUTEX_WAIT_PRIVATE, 7, NULL) = 0'),
         (self._ROOT_PID, 'futex(0x6972610, FUTEX_WAKE_PRIVATE, 1) = 0'),
-        (self._ROOT_PID, 'futex(0x697263c, FUTEX_WAIT_PRIVATE, 9, NULL'),
+        (self._ROOT_PID, 'futex(0x7f0c17780634, '
+          'FUTEX_WAIT_BITSET_PRIVATE|FUTEX_CLOCK_REALTIME, 1, '
+          '{1351180745, 913067000}, ffffffff'),
       ]
       expected = {
         'root': {
