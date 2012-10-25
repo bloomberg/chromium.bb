@@ -6,6 +6,7 @@
 
 #include "ash/wm/image_grid.h"
 #include "grit/ash_resources.h"
+#include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 
@@ -147,15 +148,15 @@ void Shadow::UpdateImagesForStyle() {
       break;
     case STYLE_SMALL:
       image_grid_->SetImages(
-          &res.GetImageNamed(IDR_AURA_SHADOW_SMALL_TOP_LEFT),
-          &res.GetImageNamed(IDR_AURA_SHADOW_SMALL_TOP),
-          &res.GetImageNamed(IDR_AURA_SHADOW_SMALL_TOP_RIGHT),
-          &res.GetImageNamed(IDR_AURA_SHADOW_SMALL_LEFT),
+          &res.GetImageNamed(IDR_WINDOW_BUBBLE_SHADOW_SMALL_TOP_LEFT),
+          &res.GetImageNamed(IDR_WINDOW_BUBBLE_SHADOW_SMALL_TOP),
+          &res.GetImageNamed(IDR_WINDOW_BUBBLE_SHADOW_SMALL_TOP_RIGHT),
+          &res.GetImageNamed(IDR_WINDOW_BUBBLE_SHADOW_SMALL_LEFT),
           NULL,
-          &res.GetImageNamed(IDR_AURA_SHADOW_SMALL_RIGHT),
-          &res.GetImageNamed(IDR_AURA_SHADOW_SMALL_BOTTOM_LEFT),
-          &res.GetImageNamed(IDR_AURA_SHADOW_SMALL_BOTTOM),
-          &res.GetImageNamed(IDR_AURA_SHADOW_SMALL_BOTTOM_RIGHT));
+          &res.GetImageNamed(IDR_WINDOW_BUBBLE_SHADOW_SMALL_RIGHT),
+          &res.GetImageNamed(IDR_WINDOW_BUBBLE_SHADOW_SMALL_BOTTOM_LEFT),
+          &res.GetImageNamed(IDR_WINDOW_BUBBLE_SHADOW_SMALL_BOTTOM),
+          &res.GetImageNamed(IDR_WINDOW_BUBBLE_SHADOW_SMALL_BOTTOM_RIGHT));
       break;
     default:
       NOTREACHED() << "Unhandled style " << style_;
