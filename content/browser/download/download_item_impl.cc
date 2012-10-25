@@ -1111,7 +1111,7 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
   //               filename. Unnecessary renames may cause bugs like
   //               http://crbug.com/74187.
   DCHECK(!is_save_package_download_);
-  CHECK(download_file_.get());
+  DCHECK(download_file_.get());
   DownloadFile::RenameCompletionCallback callback =
       base::Bind(&DownloadItemImpl::OnDownloadRenamedToIntermediateName,
                  weak_ptr_factory_.GetWeakPtr());
@@ -1200,7 +1200,7 @@ void DownloadItemImpl::ReadyForDownloadCompletionDone() {
     return;
   }
 
-  CHECK(download_file_.get());
+  DCHECK(download_file_.get());
   if (NeedsRename()) {
     content::DownloadFile::RenameCompletionCallback callback =
         base::Bind(&DownloadItemImpl::OnDownloadRenamedToFinalName,
@@ -1249,7 +1249,7 @@ void DownloadItemImpl::OnDownloadRenamedToFinalName(
 void DownloadItemImpl::ReleaseDownloadFile() {
   // Complete the download and release the DownloadFile.
   DCHECK(!is_save_package_download_);
-  CHECK(download_file_.get());
+  DCHECK(download_file_.get());
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&DownloadFileDetach, base::Passed(download_file_.Pass()),
@@ -1308,7 +1308,7 @@ void DownloadItemImpl::CancelDownloadFile() {
   // TODO(rdsmith/benjhayden): Remove condition as part of
   // SavePackage integration.
   if (!is_save_package_download_) {
-    CHECK(download_file_.get());
+    DCHECK(download_file_.get());
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         // Will be deleted at end of task execution.
