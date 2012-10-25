@@ -33,18 +33,20 @@ void CheckIfShouldIgnoreNavigationOnUIThread(
         should_ignore_callback,
     base::Callback<void(bool)> callback) {
 
+  bool should_ignore_navigation = false;
   RenderViewHost* rvh =
       RenderViewHost::FromID(render_process_id, render_view_id);
 
-  GURL validated_url(url);
-  RenderViewHost::FilterURL(
-      rvh->GetProcess()->GetID(),
-      false,
-      &validated_url);
+  if (rvh) {
+    GURL validated_url(url);
+    RenderViewHost::FilterURL(
+        rvh->GetProcess()->GetID(),
+        false,
+        &validated_url);
 
-  bool should_ignore_navigation = false;
-  should_ignore_navigation = should_ignore_callback.Run(
-      rvh, validated_url, referrer, has_user_gesture);
+    should_ignore_navigation = should_ignore_callback.Run(
+        rvh, validated_url, referrer, has_user_gesture);
+  }
 
   BrowserThread::PostTask(
       BrowserThread::IO,

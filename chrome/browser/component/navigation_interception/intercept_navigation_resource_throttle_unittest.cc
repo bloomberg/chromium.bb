@@ -6,6 +6,7 @@
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/component/navigation_interception/intercept_navigation_resource_throttle.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/render_process_host.h"
@@ -153,7 +154,9 @@ class InterceptNavigationResourceThrottleTest
   }
 
   virtual void TearDown() OVERRIDE {
-    web_contents()->SetDelegate(NULL);
+    if (web_contents())
+      web_contents()->SetDelegate(NULL);
+
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
@@ -217,6 +220,17 @@ class InterceptNavigationResourceThrottleTest
     message_loop_.Run();
   }
 
+  void WaitForPreviouslyScheduledIoThreadWork() {
+    base::WaitableEvent io_thread_work_done(true, false);
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(
+          &base::WaitableEvent::Signal,
+          base::Unretained(&io_thread_work_done)));
+    io_thread_work_done.Wait();
+  }
+
   scoped_ptr<MockInterceptCallbackReceiver> mock_callback_receiver_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
@@ -241,6 +255,47 @@ TEST_F(InterceptNavigationResourceThrottleTest,
   EXPECT_TRUE(defer);
   EXPECT_TRUE(io_thread_state_);
   EXPECT_TRUE(io_thread_state_->request_cancelled());
+}
+
+TEST_F(InterceptNavigationResourceThrottleTest,
+       NoCallbackMadeIfContentsDeletedWhileThrottleRunning) {
+  bool defer = false;
+
+  // The tested scenario is when the WebContents is deleted after the
+  // ResourceThrottle has finished processing on the IO thread but before the
+  // UI thread callback has been processed.
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(
+          &RenderViewHostTestHarness::DeleteContents,
+          base::Unretained(this)));
+
+  EXPECT_CALL(*mock_callback_receiver_,
+              ShouldIgnoreNavigation(_, _, _, _))
+      .Times(0);
+
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(
+          &InterceptNavigationResourceThrottleTest::
+          RunThrottleWillStartRequestOnIOThread,
+          base::Unretained(this),
+          GURL(kTestUrl),
+          web_contents()->GetRenderViewHost()->GetProcess()->GetID(),
+          web_contents()->GetRenderViewHost()->GetRoutingID(),
+          base::Unretained(&defer)));
+
+  WaitForPreviouslyScheduledIoThreadWork();
+
+  // The WebContents will now be deleted and only after that will the UI-thread
+  // callback posted by the ResourceThrottle be executed.
+  message_loop_.Run();
+
+  EXPECT_TRUE(defer);
+  EXPECT_TRUE(io_thread_state_);
+  EXPECT_TRUE(io_thread_state_->request_resumed());
 }
 
 TEST_F(InterceptNavigationResourceThrottleTest,
