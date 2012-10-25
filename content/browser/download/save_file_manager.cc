@@ -242,7 +242,7 @@ void SaveFileManager::UpdateSaveProgress(int save_id,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   SaveFile* save_file = LookupSaveFile(save_id);
   if (save_file) {
-    net::Error write_success =
+    content::DownloadInterruptReason reason =
         save_file->AppendDataToFile(data->data(), data_len);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -250,7 +250,7 @@ void SaveFileManager::UpdateSaveProgress(int save_id,
                    this,
                    save_file->save_id(),
                    save_file->BytesSoFar(),
-                   write_success == net::OK));
+                   reason == content::DOWNLOAD_INTERRUPT_REASON_NONE));
   }
 }
 

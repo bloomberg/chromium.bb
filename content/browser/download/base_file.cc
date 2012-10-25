@@ -11,7 +11,7 @@
 #include "base/pickle.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/utf_string_conversions.h"
+#include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_net_log_parameters.h"
 #include "content/browser/download/download_stats.h"
 #include "content/public/browser/browser_thread.h"
@@ -20,185 +20,7 @@
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#include <shellapi.h>
-
-#include "content/browser/safe_util_win.h"
-#elif defined(OS_MACOSX)
-#include "content/browser/download/file_metadata_mac.h"
-#elif defined(OS_LINUX)
-#include "content/browser/download/file_metadata_linux.h"
-#endif
-
 using content::BrowserThread;
-
-namespace {
-
-#define LOG_ERROR(o, e)  \
-  LogError(__FILE__, __LINE__, __FUNCTION__, bound_net_log_, o, e)
-
-// Logs the value and passes error on through, converting to a |net::Error|.
-// Returns |ERR_UNEXPECTED| if the value is not in the enum.
-net::Error LogError(const char* file,
-                    int line,
-                    const char* func,
-                    const net::BoundNetLog& bound_net_log,
-                    const char* operation,
-                    int error) {
-  const char* err_string = "";
-  net::Error net_error = net::OK;
-
-#define NET_ERROR(label, value)  \
-  case net::ERR_##label: \
-    err_string = #label; \
-    net_error = net::ERR_##label; \
-    break;
-
-  switch (error) {
-    case net::OK:
-      return net::OK;
-
-#include "net/base/net_error_list.h"
-
-    default:
-      err_string = "Unexpected enum value";
-      net_error = net::ERR_UNEXPECTED;
-      break;
-  }
-
-#undef NET_ERROR
-
-  VLOG(1) << " " << func << "(): " << operation
-          << "() returned error " << error << " (" << err_string << ")";
-
-  bound_net_log.AddEvent(
-      net::NetLog::TYPE_DOWNLOAD_FILE_ERROR,
-      base::Bind(&download_net_logs::FileErrorCallback, operation, net_error));
-
-  return net_error;
-}
-
-#if defined(OS_WIN)
-
-#define SHFILE_TO_NET_ERROR(symbol, value, mapping, description) \
-  case value: return net::ERR_##mapping;
-
-// Maps the result of a call to |SHFileOperation()| onto a |net::Error|.
-//
-// These return codes are *old* (as in, DOS era), and specific to
-// |SHFileOperation()|.
-// They do not appear in any windows header.
-//
-// See http://msdn.microsoft.com/en-us/library/bb762164(VS.85).aspx.
-net::Error MapShFileOperationCodes(int code) {
-  // Check these pre-Win32 error codes first, then check for matches
-  // in Winerror.h.
-
-  switch (code) {
-    // Error Code, Value, Platform Error Mapping, Meaning
-    SHFILE_TO_NET_ERROR(DE_SAMEFILE, 0x71, FILE_EXISTS,
-        "The source and destination files are the same file.")
-    SHFILE_TO_NET_ERROR(DE_OPCANCELLED, 0x75, ABORTED,
-        "The operation was canceled by the user, or silently canceled if "
-        "the appropriate flags were supplied to SHFileOperation.")
-    SHFILE_TO_NET_ERROR(DE_ACCESSDENIEDSRC, 0x78, ACCESS_DENIED,
-        "Security settings denied access to the source.")
-    SHFILE_TO_NET_ERROR(DE_PATHTOODEEP, 0x79, FILE_PATH_TOO_LONG,
-        "The source or destination path exceeded or would exceed MAX_PATH.")
-    SHFILE_TO_NET_ERROR(DE_INVALIDFILES, 0x7C, FILE_NOT_FOUND,
-        "The path in the source or destination or both was invalid.")
-    SHFILE_TO_NET_ERROR(DE_FLDDESTISFILE, 0x7E, FILE_EXISTS,
-        "The destination path is an existing file.")
-    SHFILE_TO_NET_ERROR(DE_FILEDESTISFLD, 0x80, FILE_EXISTS,
-        "The destination path is an existing folder.")
-    SHFILE_TO_NET_ERROR(DE_FILENAMETOOLONG, 0x81, FILE_PATH_TOO_LONG,
-        "The name of the file exceeds MAX_PATH.")
-    SHFILE_TO_NET_ERROR(DE_DEST_IS_CDROM, 0x82, ACCESS_DENIED,
-        "The destination is a read-only CD-ROM, possibly unformatted.")
-    SHFILE_TO_NET_ERROR(DE_DEST_IS_DVD, 0x83, ACCESS_DENIED,
-        "The destination is a read-only DVD, possibly unformatted.")
-    SHFILE_TO_NET_ERROR(DE_DEST_IS_CDRECORD, 0x84, ACCESS_DENIED,
-        "The destination is a writable CD-ROM, possibly unformatted.")
-    SHFILE_TO_NET_ERROR(DE_FILE_TOO_LARGE, 0x85, FILE_TOO_BIG,
-        "The file involved in the operation is too large for the destination "
-        "media or file system.")
-    SHFILE_TO_NET_ERROR(DE_SRC_IS_CDROM, 0x86, ACCESS_DENIED,
-        "The source is a read-only CD-ROM, possibly unformatted.")
-    SHFILE_TO_NET_ERROR(DE_SRC_IS_DVD, 0x87, ACCESS_DENIED,
-        "The source is a read-only DVD, possibly unformatted.")
-    SHFILE_TO_NET_ERROR(DE_SRC_IS_CDRECORD, 0x88, ACCESS_DENIED,
-        "The source is a writable CD-ROM, possibly unformatted.")
-    SHFILE_TO_NET_ERROR(DE_ERROR_MAX, 0xB7, FILE_PATH_TOO_LONG,
-        "MAX_PATH was exceeded during the operation.")
-    SHFILE_TO_NET_ERROR(XE_ERRORONDEST, 0x10000, UNEXPECTED,
-        "An unspecified error occurred on the destination.")
-
-    // These are not expected to occur for in our usage.
-    SHFILE_TO_NET_ERROR(DE_MANYSRC1DEST, 0x72, FAILED,
-        "Multiple file paths were specified in the source buffer, "
-        "but only one destination file path.")
-    SHFILE_TO_NET_ERROR(DE_DIFFDIR, 0x73, FAILED,
-        "Rename operation was specified but the destination path is "
-        "a different directory. Use the move operation instead.")
-    SHFILE_TO_NET_ERROR(DE_ROOTDIR, 0x74, FAILED,
-        "The source is a root directory, which cannot be moved or renamed.")
-    SHFILE_TO_NET_ERROR(DE_DESTSUBTREE, 0x76, FAILED,
-        "The destination is a subtree of the source.")
-    SHFILE_TO_NET_ERROR(DE_MANYDEST, 0x7A, FAILED,
-        "The operation involved multiple destination paths, "
-        "which can fail in the case of a move operation.")
-    SHFILE_TO_NET_ERROR(DE_DESTSAMETREE, 0x7D, FAILED,
-        "The source and destination have the same parent folder.")
-    SHFILE_TO_NET_ERROR(DE_UNKNOWN_ERROR, 0x402, FAILED,
-        "An unknown error occurred. "
-        "This is typically due to an invalid path in the source or destination."
-        " This error does not occur on Windows Vista and later.")
-    SHFILE_TO_NET_ERROR(DE_ROOTDIR | ERRORONDEST, 0x10074, FAILED,
-        "Destination is a root directory and cannot be renamed.")
-    default:
-      break;
-  }
-
-  // If not one of the above codes, it should be a standard Windows error code.
-  return static_cast<net::Error>(net::MapSystemError(code));
-}
-
-#undef SHFILE_TO_NET_ERROR
-
-// Renames a file using the SHFileOperation API to ensure that the target file
-// gets the correct default security descriptor in the new path.
-// Returns a network error, or net::OK for success.
-net::Error RenameFileAndResetSecurityDescriptor(
-    const FilePath& source_file_path,
-    const FilePath& target_file_path) {
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  // The parameters to SHFileOperation must be terminated with 2 NULL chars.
-  std::wstring source = source_file_path.value();
-  std::wstring target = target_file_path.value();
-
-  source.append(1, L'\0');
-  target.append(1, L'\0');
-
-  SHFILEOPSTRUCT move_info = {0};
-  move_info.wFunc = FO_MOVE;
-  move_info.pFrom = source.c_str();
-  move_info.pTo = target.c_str();
-  move_info.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI |
-                     FOF_NOCONFIRMMKDIR | FOF_NOCOPYSECURITYATTRIBS;
-
-  int result = SHFileOperation(&move_info);
-
-  if (result == 0)
-    return (move_info.fAnyOperationsAborted) ? net::ERR_ABORTED : net::OK;
-
-  return MapShFileOperationCodes(result);
-}
-
-#endif
-
-}  // namespace
 
 // This will initialize the entire array to zero.
 const unsigned char BaseFile::kEmptySha256Hash[] = { 0 };
@@ -208,7 +30,7 @@ BaseFile::BaseFile(const FilePath& full_path,
                    const GURL& referrer_url,
                    int64 received_bytes,
                    bool calculate_hash,
-                   const std::string& hash_state,
+                   const std::string& hash_state_bytes,
                    scoped_ptr<net::FileStream> file_stream,
                    const net::BoundNetLog& bound_net_log)
     : full_path_(full_path),
@@ -224,9 +46,10 @@ BaseFile::BaseFile(const FilePath& full_path,
   if (calculate_hash_) {
     secure_hash_.reset(crypto::SecureHash::Create(crypto::SecureHash::SHA256));
     if ((bytes_so_far_ > 0) &&  // Not starting at the beginning.
-        (hash_state != "") &&  // Reasonably sure we have a hash state.
-        (!IsEmptyHash(hash_state))) {
-      SetHashState(hash_state);
+        (!IsEmptyHash(hash_state_bytes))) {
+      Pickle hash_state(hash_state_bytes.c_str(), hash_state_bytes.size());
+      PickleIterator data_iterator(hash_state);
+      secure_hash_->Deserialize(&data_iterator);
     }
   }
 }
@@ -239,7 +62,8 @@ BaseFile::~BaseFile() {
     Cancel();  // Will delete the file.
 }
 
-net::Error BaseFile::Initialize(const FilePath& default_directory) {
+content::DownloadInterruptReason BaseFile::Initialize(
+    const FilePath& default_directory) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!detached_);
 
@@ -260,7 +84,8 @@ net::Error BaseFile::Initialize(const FilePath& default_directory) {
     if ((initial_directory.empty() ||
          !file_util::CreateTemporaryFileInDir(initial_directory, &temp_file)) &&
         !file_util::CreateTemporaryFile(&temp_file)) {
-      return LOG_ERROR("unable to create", net::ERR_FILE_NOT_FOUND);
+      return LogInterruptReason("Unable to create", 0,
+                                content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
     }
     full_path_ = temp_file;
   }
@@ -268,7 +93,8 @@ net::Error BaseFile::Initialize(const FilePath& default_directory) {
   return Open();
 }
 
-net::Error BaseFile::AppendDataToFile(const char* data, size_t data_len) {
+content::DownloadInterruptReason BaseFile::AppendDataToFile(const char* data,
+                                                            size_t data_len) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!detached_);
 
@@ -280,11 +106,12 @@ net::Error BaseFile::AppendDataToFile(const char* data, size_t data_len) {
   }
 
   if (!file_stream_.get())
-    return LOG_ERROR("get", net::ERR_INVALID_HANDLE);
+    return LogInterruptReason("No file stream on append", 0,
+                              content::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
 
   // TODO(phajdan.jr): get rid of this check.
   if (data_len == 0)
-    return net::OK;
+    return content::DOWNLOAD_INTERRUPT_REASON_NONE;
 
   // The Write call below is not guaranteed to write all the data.
   size_t write_count = 0;
@@ -303,7 +130,7 @@ net::Error BaseFile::AppendDataToFile(const char* data, size_t data_len) {
 
       // Report errors on file writes.
       if (write_result < 0)
-        return LOG_ERROR("Write", write_result);
+        return LogNetError("Write", static_cast<net::Error>(write_result));
     }
 
     // Update status.
@@ -320,84 +147,43 @@ net::Error BaseFile::AppendDataToFile(const char* data, size_t data_len) {
   if (calculate_hash_)
     secure_hash_->Update(data, data_len);
 
-  return net::OK;
+  return content::DOWNLOAD_INTERRUPT_REASON_NONE;
 }
 
-net::Error BaseFile::Rename(const FilePath& new_path) {
+content::DownloadInterruptReason BaseFile::Rename(const FilePath& new_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  // Save the information whether the download is in progress because
-  // it will be overwritten by closing the file.
-  bool saved_in_progress = in_progress();
-
-  bound_net_log_.AddEvent(
-      net::NetLog::TYPE_DOWNLOAD_FILE_RENAMED,
-      base::Bind(&download_net_logs::FileRenamedCallback,
-                 &full_path_, &new_path));
+  content::DownloadInterruptReason rename_result =
+      content::DOWNLOAD_INTERRUPT_REASON_NONE;
 
   // If the new path is same as the old one, there is no need to perform the
   // following renaming logic.
-  if (new_path == full_path_) {
-    // Don't close the file if we're not done (finished or canceled).
-    if (!saved_in_progress)
-      Close();
+  if (new_path == full_path_)
+    return content::DOWNLOAD_INTERRUPT_REASON_NONE;
 
-    return net::OK;
-  }
+  // Save the information whether the download is in progress because
+  // it will be overwritten by closing the file.
+  bool was_in_progress = in_progress();
 
+  bound_net_log_.BeginEvent(
+      net::NetLog::TYPE_DOWNLOAD_FILE_RENAMED,
+      base::Bind(&download_net_logs::FileRenamedCallback,
+                 &full_path_, &new_path));
   Close();
-
   file_util::CreateDirectory(new_path.DirName());
 
-#if defined(OS_WIN)
-  // We cannot rename because rename will keep the same security descriptor
-  // on the destination file. We want to recreate the security descriptor
-  // with the security that makes sense in the new path.
-  // |RenameFileAndResetSecurityDescriptor| returns a windows-specific
-  // error, whch we must translate into a net::Error.
-  net::Error rename_err =
-      RenameFileAndResetSecurityDescriptor(full_path_, new_path);
-  if (rename_err != net::OK)
-    return LOG_ERROR("RenameFileAndResetSecurityDescriptor", rename_err);
-#elif defined(OS_POSIX)
-  {
-    // Similarly, on Unix, we're moving a temp file created with permissions
-    // 600 to |new_path|. Here, we try to fix up the destination file with
-    // appropriate permissions.
-    struct stat st;
-    // First check the file existence and create an empty file if it doesn't
-    // exist.
-    if (!file_util::PathExists(new_path)) {
-      int write_error = file_util::WriteFile(new_path, "", 0);
-      if (write_error < 0)
-        return LOG_ERROR("WriteFile", net::MapSystemError(errno));
-    }
-    int stat_error = stat(new_path.value().c_str(), &st);
-    bool stat_succeeded = (stat_error == 0);
-    if (!stat_succeeded)
-      LOG_ERROR("stat", net::MapSystemError(errno));
+  // A simple rename wouldn't work here since we want the file to have
+  // permissions / security descriptors that makes sense in the new directory.
+  rename_result = MoveFileAndAdjustPermissions(new_path);
 
-    // TODO(estade): Move() falls back to copying and deleting when a simple
-    // rename fails. Copying sucks for large downloads. crbug.com/8737
-    if (!file_util::Move(full_path_, new_path))
-      return LOG_ERROR("Move", net::MapSystemError(errno));
-
-    if (stat_succeeded) {
-      // On Windows file systems (FAT, NTFS), chmod fails.  This is OK.
-      int chmod_error = chmod(new_path.value().c_str(), st.st_mode);
-      if (chmod_error < 0)
-        LOG_ERROR("chmod", net::MapSystemError(errno));
-    }
+  if (rename_result == content::DOWNLOAD_INTERRUPT_REASON_NONE) {
+    full_path_ = new_path;
+    // Re-open the file if we were still using it.
+    if (was_in_progress)
+      rename_result = Open();
   }
-#endif
 
-  full_path_ = new_path;
-
-  // We don't need to re-open the file if we're done (finished or canceled).
-  if (!saved_in_progress)
-    return net::OK;
-
-  return Open();
+  bound_net_log_.EndEvent(net::NetLog::TYPE_DOWNLOAD_FILE_RENAMED);
+  return rename_result;
 }
 
 void BaseFile::Detach() {
@@ -429,6 +215,17 @@ void BaseFile::Finish() {
   Close();
 }
 
+// OS_WIN, OS_MACOSX and OS_LINUX have specialized implementations.
+#if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_LINUX)
+void BaseFile::AnnotateWithSourceInformation() {
+}
+#endif
+
+int64 BaseFile::CurrentSpeed() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  return CurrentSpeedAtTime(base::TimeTicks::Now());
+}
+
 bool BaseFile::GetHash(std::string* hash) {
   DCHECK(!detached_);
   hash->assign(reinterpret_cast<const char*>(sha256_hash_),
@@ -448,36 +245,21 @@ std::string BaseFile::GetHashState() {
                      hash_state.size());
 }
 
-bool BaseFile::SetHashState(const std::string& hash_state_bytes) {
-  if (!calculate_hash_)
-    return false;
-
-  Pickle hash_state(hash_state_bytes.c_str(), hash_state_bytes.size());
-  PickleIterator data_iterator(hash_state);
-
-  return secure_hash_->Deserialize(&data_iterator);
-}
-
+// static
 bool BaseFile::IsEmptyHash(const std::string& hash) {
   return (hash.size() == kSha256HashLen &&
           0 == memcmp(hash.data(), kEmptySha256Hash, sizeof(kSha256HashLen)));
 }
 
-void BaseFile::AnnotateWithSourceInformation() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(!detached_);
-
-#if defined(OS_WIN)
-  // Sets the Zone to tell Windows that this file comes from the internet.
-  // We ignore the return value because a failure is not fatal.
-  win_util::SetInternetZoneIdentifier(full_path_,
-                                      UTF8ToWide(source_url_.spec()));
-#elif defined(OS_MACOSX)
-  content::AddQuarantineMetadataToFile(full_path_, source_url_, referrer_url_);
-  content::AddOriginMetadataToFile(full_path_, source_url_, referrer_url_);
-#elif defined(OS_LINUX)
-  content::AddOriginMetadataToFile(full_path_, source_url_, referrer_url_);
-#endif
+std::string BaseFile::DebugString() const {
+  return base::StringPrintf("{ source_url_ = \"%s\""
+                            " full_path_ = \"%" PRFilePath "\""
+                            " bytes_so_far_ = %" PRId64
+                            " detached_ = %c }",
+                            source_url_.spec().c_str(),
+                            full_path_.value().c_str(),
+                            bytes_so_far_,
+                            detached_ ? 'T' : 'F');
 }
 
 void BaseFile::CreateFileStream() {
@@ -485,7 +267,7 @@ void BaseFile::CreateFileStream() {
   file_stream_->SetBoundNetLogSource(bound_net_log_);
 }
 
-net::Error BaseFile::Open() {
+content::DownloadInterruptReason BaseFile::Open() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!detached_);
   DCHECK(!full_path_.empty());
@@ -502,19 +284,23 @@ net::Error BaseFile::Open() {
     int open_result = file_stream_->OpenSync(
         full_path_,
         base::PLATFORM_FILE_OPEN_ALWAYS | base::PLATFORM_FILE_WRITE);
-    if (open_result != net::OK)
-      return ClearStream(LOG_ERROR("Open", open_result));
+    if (open_result != net::OK) {
+      ClearStream();
+      return LogNetError("Open", static_cast<net::Error>(open_result));
+    }
 
     // We may be re-opening the file after rename. Always make sure we're
     // writing at the end of the file.
     int64 seek_result = file_stream_->SeekSync(net::FROM_END, 0);
-    if (seek_result < 0)
-      return ClearStream(LOG_ERROR("Seek", seek_result));
+    if (seek_result < 0) {
+      ClearStream();
+      return LogNetError("Seek", static_cast<net::Error>(seek_result));
+    }
   } else {
     file_stream_->SetBoundNetLogSource(bound_net_log_);
   }
 
-  return net::OK;
+  return content::DOWNLOAD_INTERRUPT_REASON_NONE;
 }
 
 void BaseFile::Close() {
@@ -529,27 +315,15 @@ void BaseFile::Close() {
     file_stream_->FlushSync();
 #endif
     file_stream_->CloseSync();
-    ClearStream(net::OK);
+    ClearStream();
   }
 }
 
-net::Error BaseFile::ClearStream(net::Error net_error) {
+void BaseFile::ClearStream() {
   // This should only be called when we have a stream.
   DCHECK(file_stream_.get() != NULL);
   file_stream_.reset();
   bound_net_log_.EndEvent(net::NetLog::TYPE_DOWNLOAD_FILE_OPENED);
-  return net_error;
-}
-
-std::string BaseFile::DebugString() const {
-  return base::StringPrintf("{ source_url_ = \"%s\""
-                            " full_path_ = \"%" PRFilePath "\""
-                            " bytes_so_far_ = %" PRId64
-                            " detached_ = %c }",
-                            source_url_.spec().c_str(),
-                            full_path_.value().c_str(),
-                            bytes_so_far_,
-                            detached_ ? 'T' : 'F');
 }
 
 int64 BaseFile::CurrentSpeedAtTime(base::TimeTicks current_time) const {
@@ -558,7 +332,34 @@ int64 BaseFile::CurrentSpeedAtTime(base::TimeTicks current_time) const {
   return diff_ms == 0 ? 0 : bytes_so_far() * 1000 / diff_ms;
 }
 
-int64 BaseFile::CurrentSpeed() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  return CurrentSpeedAtTime(base::TimeTicks::Now());
+content::DownloadInterruptReason BaseFile::LogNetError(
+    const char* operation,
+    net::Error error) {
+  bound_net_log_.AddEvent(
+      net::NetLog::TYPE_DOWNLOAD_FILE_ERROR,
+      base::Bind(&download_net_logs::FileErrorCallback, operation, error));
+  return content::ConvertNetErrorToInterruptReason(
+      error, content::DOWNLOAD_INTERRUPT_FROM_DISK);
+}
+
+content::DownloadInterruptReason BaseFile::LogSystemError(
+    const char* operation,
+    int os_error) {
+  // There's no direct conversion from a system error to an interrupt reason.
+  net::Error net_error = net::MapSystemError(os_error);
+  return LogInterruptReason(
+      operation, os_error,
+      content::ConvertNetErrorToInterruptReason(
+          net_error, content::DOWNLOAD_INTERRUPT_FROM_DISK));
+}
+
+content::DownloadInterruptReason BaseFile::LogInterruptReason(
+    const char* operation,
+    int os_error,
+    content::DownloadInterruptReason reason) {
+  bound_net_log_.AddEvent(
+      net::NetLog::TYPE_DOWNLOAD_FILE_ERROR,
+      base::Bind(&download_net_logs::FileInterruptedCallback, operation,
+                 os_error, reason));
+  return reason;
 }

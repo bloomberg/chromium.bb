@@ -80,6 +80,11 @@ base::Value* FileErrorCallback(const char* operation,
                                net::Error net_error,
                                net::NetLog::LogLevel log_level);
 
+base::Value* FileInterruptedCallback(const char* operation,
+                                     int os_error,
+                                     content::DownloadInterruptReason reason,
+                                     net::NetLog::LogLevel log_level);
+
 }  // namespace download_net_logs
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_NET_LOG_PARAMETERS_H_

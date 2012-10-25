@@ -66,12 +66,11 @@ void DownloadFileImpl::Initialize(const InitializeCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   update_timer_.reset(new base::RepeatingTimer<DownloadFileImpl>());
-  net::Error net_result = file_.Initialize(default_download_directory_);
-  if (net_result != net::OK) {
+  content::DownloadInterruptReason result =
+      file_.Initialize(default_download_directory_);
+  if (result != content::DOWNLOAD_INTERRUPT_REASON_NONE) {
     BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE, base::Bind(
-            callback, content::ConvertNetErrorToInterruptReason(
-                net_result, content::DOWNLOAD_INTERRUPT_FROM_DISK)));
+        BrowserThread::UI, FROM_HERE, base::Bind(callback, result));
     return;
   }
 
@@ -99,9 +98,7 @@ content::DownloadInterruptReason DownloadFileImpl::AppendDataToFile(
                          base::TimeDelta::FromMilliseconds(kUpdatePeriodMs),
                          this, &DownloadFileImpl::SendUpdate);
   }
-  return content::ConvertNetErrorToInterruptReason(
-      file_.AppendDataToFile(data, data_len),
-      content::DOWNLOAD_INTERRUPT_FROM_DISK);
+  return file_.AppendDataToFile(data, data_len);
 }
 
 void DownloadFileImpl::Rename(const FilePath& full_path,
@@ -120,10 +117,8 @@ void DownloadFileImpl::Rename(const FilePath& full_path,
     }
   }
 
-  net::Error rename_error = file_.Rename(new_path);
-  content::DownloadInterruptReason reason(
-      content::DOWNLOAD_INTERRUPT_REASON_NONE);
-  if (net::OK != rename_error) {
+  content::DownloadInterruptReason reason = file_.Rename(new_path);
+  if (reason != content::DOWNLOAD_INTERRUPT_REASON_NONE) {
     // Make sure our information is updated, since we're about to
     // error out.
     SendUpdate();
@@ -131,10 +126,6 @@ void DownloadFileImpl::Rename(const FilePath& full_path,
     // Null out callback so that we don't do any more stream processing.
     stream_reader_->RegisterCallback(base::Closure());
 
-    reason =
-        content::ConvertNetErrorToInterruptReason(
-            rename_error,
-            content::DOWNLOAD_INTERRUPT_FROM_DISK);
     new_path.clear();
   }
 

@@ -34,15 +34,16 @@ SaveFile::~SaveFile() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
-net::Error SaveFile::Initialize() {
+content::DownloadInterruptReason SaveFile::Initialize() {
   return file_.Initialize(FilePath());
 }
 
-net::Error SaveFile::AppendDataToFile(const char* data, size_t data_len) {
+content::DownloadInterruptReason SaveFile::AppendDataToFile(const char* data,
+                                                            size_t data_len) {
   return file_.AppendDataToFile(data, data_len);
 }
 
-net::Error SaveFile::Rename(const FilePath& full_path) {
+content::DownloadInterruptReason SaveFile::Rename(const FilePath& full_path) {
   return file_.Rename(full_path);
 }
 

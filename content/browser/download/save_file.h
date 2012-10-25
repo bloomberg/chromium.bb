@@ -24,9 +24,10 @@ class SaveFile {
   virtual ~SaveFile();
 
   // BaseFile delegated functions.
-  net::Error Initialize();
-  net::Error AppendDataToFile(const char* data, size_t data_len);
-  net::Error Rename(const FilePath& full_path);
+  content::DownloadInterruptReason Initialize();
+  content::DownloadInterruptReason AppendDataToFile(const char* data,
+                                                    size_t data_len);
+  content::DownloadInterruptReason Rename(const FilePath& full_path);
   void Detach();
   void Cancel();
   void Finish();

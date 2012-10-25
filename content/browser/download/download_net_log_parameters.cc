@@ -183,4 +183,19 @@ base::Value* FileErrorCallback(const char* operation,
   return dict;
 }
 
+base::Value* FileInterruptedCallback(const char* operation,
+                                     int os_error,
+                                     content::DownloadInterruptReason reason,
+                                     net::NetLog::LogLevel /* log_level */) {
+  DictionaryValue* dict = new DictionaryValue();
+
+  dict->SetString("operation", operation);
+  if (os_error != 0)
+    dict->SetInteger("os_error", os_error);
+  dict->SetString("interrupt_reason", InterruptReasonDebugString(reason));
+
+  return dict;
+}
+
+
 }  // namespace download_net_logs
