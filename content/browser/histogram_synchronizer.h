@@ -118,7 +118,7 @@ class HistogramSynchronizer : public content::HistogramSubscriber {
   void InternalPostTask(MessageLoop* thread, const base::Closure& callback);
 
   // Gets a new sequence number to be sent to processes from browser process.
-  int GetNextAvailableSequenceNumber(ProcessHistogramRequester requster);
+  int GetNextAvailableSequenceNumber(ProcessHistogramRequester requester);
 
   // This lock_ protects access to all members.
   base::Lock lock_;

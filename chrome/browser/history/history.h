@@ -863,7 +863,7 @@ class HistoryService : public CancelableRequestProvider,
   }
 
   template<typename BackendFunc,
-           class RequestType,  // Descendant of CancelableRequstBase.
+           class RequestType,  // Descendant of CancelableRequestBase.
            typename ArgA,
            typename ArgB>
   Handle Schedule(SchedulePriority priority,
@@ -883,7 +883,7 @@ class HistoryService : public CancelableRequestProvider,
   }
 
   template<typename BackendFunc,
-           class RequestType,  // Descendant of CancelableRequstBase.
+           class RequestType,  // Descendant of CancelableRequestBase.
            typename ArgA,
            typename ArgB,
            typename ArgC>
@@ -905,7 +905,7 @@ class HistoryService : public CancelableRequestProvider,
   }
 
   template<typename BackendFunc,
-           class RequestType,  // Descendant of CancelableRequstBase.
+           class RequestType,  // Descendant of CancelableRequestBase.
            typename ArgA,
            typename ArgB,
            typename ArgC,
@@ -929,7 +929,7 @@ class HistoryService : public CancelableRequestProvider,
   }
 
   template<typename BackendFunc,
-           class RequestType,  // Descendant of CancelableRequstBase.
+           class RequestType,  // Descendant of CancelableRequestBase.
            typename ArgA,
            typename ArgB,
            typename ArgC,
