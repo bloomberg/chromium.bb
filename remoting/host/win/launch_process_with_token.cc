@@ -15,11 +15,14 @@
 #include "base/process_util.h"
 #include "base/rand_util.h"
 #include "base/scoped_native_library.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_process_information.h"
 #include "base/win/windows_version.h"
+#include "ipc/ipc_channel.h"
+#include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_channel.h"
 
 using base::win::ScopedHandle;
@@ -409,6 +412,56 @@ namespace remoting {
 // a pipe name.
 const char kChromePipeNamePrefix[] = "\\\\.\\pipe\\chrome.";
 
+bool CreateConnectedIpcChannel(
+    const std::string& channel_name,
+    const std::string& pipe_security_descriptor,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    IPC::Listener* delegate,
+    base::win::ScopedHandle* client_out,
+    scoped_ptr<IPC::ChannelProxy>* server_out) {
+  // Create the server end of the channel.
+  ScopedHandle pipe;
+  if (!CreateIpcChannel(channel_name, pipe_security_descriptor, &pipe)) {
+    return false;
+  }
+
+  // Wrap the pipe into an IPC channel.
+  scoped_ptr<IPC::ChannelProxy> server(new IPC::ChannelProxy(
+      IPC::ChannelHandle(pipe),
+      IPC::Channel::MODE_SERVER,
+      delegate,
+      io_task_runner));
+
+  // Convert the channel name to the pipe name.
+  std::string pipe_name(remoting::kChromePipeNamePrefix);
+  pipe_name.append(channel_name);
+
+  SECURITY_ATTRIBUTES security_attributes;
+  security_attributes.nLength = sizeof(security_attributes);
+  security_attributes.lpSecurityDescriptor = NULL;
+  security_attributes.bInheritHandle = TRUE;
+
+  // Create the client end of the channel. This code should match the code in
+  // IPC::Channel.
+  ScopedHandle client;
+  client.Set(CreateFile(UTF8ToUTF16(pipe_name).c_str(),
+                        GENERIC_READ | GENERIC_WRITE,
+                        0,
+                        &security_attributes,
+                        OPEN_EXISTING,
+                        SECURITY_SQOS_PRESENT | SECURITY_IDENTIFICATION |
+                            FILE_FLAG_OVERLAPPED,
+                        NULL));
+  if (!client.IsValid()) {
+    LOG_GETLASTERROR(ERROR) << "Failed to connect to '" << pipe_name << "'";
+    return false;
+  }
+
+  *client_out = client.Pass();
+  *server_out = server.Pass();
+  return true;
+}
+
 bool CreateIpcChannel(
     const std::string& channel_name,
     const std::string& pipe_security_descriptor,
@@ -499,15 +552,6 @@ bool CreateSessionToken(uint32 session_id, ScopedHandle* token_out) {
 
   *token_out = session_token.Pass();
   return true;
-}
-
-// Generates a unique IPC channel name.
-std::string GenerateIpcChannelName(void* client) {
-  // Generate the pipe name. This code is copied from
-  // src/content/common/child_process_host_impl.cc
-  return base::StringPrintf("%d.%p.%d",
-                            base::GetCurrentProcId(), client,
-                            base::RandInt(0, std::numeric_limits<int>::max()));
 }
 
 bool LaunchProcessWithToken(const FilePath& binary,

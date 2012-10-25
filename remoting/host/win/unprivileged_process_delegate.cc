@@ -14,6 +14,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
+#include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message.h"
 #include "remoting/host/host_exit_codes.h"
@@ -35,62 +36,7 @@ const char kDaemonIpcSecurityDescriptor[] = "O:SYG:SYD:(A;;GA;;;SY)";
 const char* kCopiedSwitchNames[] = {
     "host-config", switches::kV, switches::kVModule };
 
-// Creates an already connected IPC channel. The server end of the channel
-// is wrapped into a channel proxy that will invoke methods of |delegate|
-// on the caller's thread while using |io_task_runner| to send and receive
-// messages in the background. The client end is returned as an inheritable NT
-// handle.
-bool CreateConnectedIpcChannel(
-    const std::string& channel_name,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    IPC::Listener* delegate,
-    base::win::ScopedHandle* client_out,
-    scoped_ptr<IPC::ChannelProxy>* server_out,
-    base::win::ScopedHandle* pipe_out) {
-  // Create the server end of the channel.
-  ScopedHandle pipe;
-  if (!remoting::CreateIpcChannel(channel_name, kDaemonIpcSecurityDescriptor,
-                                  &pipe)) {
-    return false;
-  }
-
-  // Wrap the pipe into an IPC channel.
-  scoped_ptr<IPC::ChannelProxy> server(new IPC::ChannelProxy(
-      IPC::ChannelHandle(pipe),
-      IPC::Channel::MODE_SERVER,
-      delegate,
-      io_task_runner));
-
-  // Convert the channel name to the pipe name.
-  std::string pipe_name(remoting::kChromePipeNamePrefix);
-  pipe_name.append(channel_name);
-
-  SECURITY_ATTRIBUTES security_attributes;
-  security_attributes.nLength = sizeof(security_attributes);
-  security_attributes.lpSecurityDescriptor = NULL;
-  security_attributes.bInheritHandle = TRUE;
-
-  // Create the client end of the channel. This code should match the code in
-  // IPC::Channel.
-  ScopedHandle client;
-  client.Set(CreateFile(UTF8ToUTF16(pipe_name).c_str(),
-                        GENERIC_READ | GENERIC_WRITE,
-                        0,
-                        &security_attributes,
-                        OPEN_EXISTING,
-                        SECURITY_SQOS_PRESENT | SECURITY_IDENTIFICATION |
-                            FILE_FLAG_OVERLAPPED,
-                        NULL));
-  if (!client.IsValid())
-    return false;
-
-  *client_out = client.Pass();
-  *server_out = server.Pass();
-  *pipe_out = pipe.Pass();
-  return true;
-}
-
-} // namespace
+}  // namespace
 
 namespace remoting {
 
@@ -153,14 +99,13 @@ bool UnprivilegedProcessDelegate::LaunchProcess(
     ScopedHandle* process_exit_event_out) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   // Generate a unique name for the channel.
-  std::string channel_name = GenerateIpcChannelName(this);
+  std::string channel_name = IPC::Channel::GenerateUniqueRandomChannelID();
 
   // Create a connected IPC channel.
   ScopedHandle client;
   scoped_ptr<IPC::ChannelProxy> server;
-  ScopedHandle pipe;
-  if (!CreateConnectedIpcChannel(channel_name, io_task_runner_, delegate,
-                                 &client, &server, &pipe)) {
+  if (!CreateConnectedIpcChannel(channel_name, kDaemonIpcSecurityDescriptor,
+                                 io_task_runner_, delegate, &client, &server)) {
     return false;
   }
 

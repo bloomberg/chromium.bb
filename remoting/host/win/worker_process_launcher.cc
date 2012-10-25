@@ -228,6 +228,8 @@ void WorkerProcessLauncher::Core::OnChannelConnected(int32 peer_pid) {
     return;
   }
 
+  // This can result in |this| being deleted, so this call must be the last in
+  // this method.
   worker_delegate_->OnChannelConnected(peer_pid);
 }
 

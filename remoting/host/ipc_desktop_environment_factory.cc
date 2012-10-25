@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ipc/ipc_channel_proxy.h"
+#include "base/platform_file.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -37,7 +38,7 @@ scoped_ptr<DesktopEnvironment> IpcDesktopEnvironmentFactory::Create(
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
   return scoped_ptr<DesktopEnvironment>(new IpcDesktopEnvironment(
-      input_task_runner_, ui_task_runner_, this, client));
+      input_task_runner_, network_task_runner_, ui_task_runner_, this, client));
 }
 
 void IpcDesktopEnvironmentFactory::ConnectTerminal(
@@ -72,6 +73,33 @@ void IpcDesktopEnvironmentFactory::DisconnectTerminal(
   }
 }
 
+void IpcDesktopEnvironmentFactory::OnDesktopSessionAgentAttached(
+    int terminal_id,
+    IPC::PlatformFileForTransit desktop_process,
+    IPC::PlatformFileForTransit desktop_pipe) {
+  if (!network_task_runner_->BelongsToCurrentThread()) {
+    network_task_runner_->PostTask(FROM_HERE, base::Bind(
+        &IpcDesktopEnvironmentFactory::OnDesktopSessionAgentAttached,
+        base::Unretained(this), terminal_id, desktop_process, desktop_pipe));
+    return;
+  }
+
+  ActiveConnectionsList::iterator i = active_connections_.find(terminal_id);
+  if (i != active_connections_.end()) {
+    i->second->OnDesktopSessionAgentAttached(desktop_process, desktop_pipe);
+  } else {
+#if defined(OS_POSIX)
+    DCHECK(desktop_process.auto_close);
+    DCHECK(desktop_pipe.auto_close);
+
+    base::ClosePlatformFile(desktop_process.fd);
+    base::ClosePlatformFile(desktop_pipe.fd);
+#elif defined(OS_WIN)
+    base::ClosePlatformFile(desktop_process);
+#endif  // defined(OS_WIN)
+  }
+}
+
 void IpcDesktopEnvironmentFactory::OnTerminalDisconnected(int terminal_id) {
   if (!network_task_runner_->BelongsToCurrentThread()) {
     network_task_runner_->PostTask(FROM_HERE, base::Bind(
@@ -80,8 +108,7 @@ void IpcDesktopEnvironmentFactory::OnTerminalDisconnected(int terminal_id) {
     return;
   }
 
-  ActiveConnectionsList::iterator i =
-      active_connections_.find(terminal_id);
+  ActiveConnectionsList::iterator i = active_connections_.find(terminal_id);
   if (i != active_connections_.end()) {
     IpcDesktopEnvironment* desktop_environment = i->second;
     active_connections_.erase(i);

@@ -42,6 +42,10 @@ class IpcDesktopEnvironmentFactory
       IpcDesktopEnvironment* desktop_environment) OVERRIDE;
   virtual void DisconnectTerminal(
       IpcDesktopEnvironment* desktop_environment) OVERRIDE;
+  virtual void OnDesktopSessionAgentAttached(
+      int terminal_id,
+      IPC::PlatformFileForTransit desktop_process,
+      IPC::PlatformFileForTransit desktop_pipe) OVERRIDE;
   virtual void OnTerminalDisconnected(int terminal_id) OVERRIDE;
 
  private:

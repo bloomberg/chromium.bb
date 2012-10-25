@@ -199,7 +199,7 @@ bool WorkerProcessLauncherTest::LaunchProcess(
   if (!process_exit_event_.IsValid())
     return false;
 
-  channel_name_ = GenerateIpcChannelName(this);
+  channel_name_ = IPC::Channel::GenerateUniqueRandomChannelID();
   ScopedHandle pipe;
   if (!CreateIpcChannel(channel_name_, kIpcSecurityDescriptor, &pipe)) {
     return false;

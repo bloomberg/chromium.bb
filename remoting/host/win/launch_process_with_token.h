@@ -14,11 +14,33 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_handle.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
+
+namespace IPC {
+class ChannelProxy;
+class Listener;
+}  // namespace IPC
+
 namespace remoting {
 
 // Pipe name prefix used by Chrome IPC channels to convert a channel name into
 // a pipe name.
 extern const char kChromePipeNamePrefix[];
+
+// Creates an already connected IPC channel. The server end of the channel
+// is wrapped into a channel proxy that will invoke methods of |delegate|
+// on the caller's thread while using |io_task_runner| to send and receive
+// messages in the background. The client end is returned as an inheritable NT
+// handle. |pipe_security_descriptor| is applied to the underlying pipe.
+bool CreateConnectedIpcChannel(
+    const std::string& channel_name,
+    const std::string& pipe_security_descriptor,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    IPC::Listener* delegate,
+    base::win::ScopedHandle* client_out,
+    scoped_ptr<IPC::ChannelProxy>* server_out);
 
 // Creates the server end of the IPC channel and applies the security
 // descriptor |pipe_security_descriptor| to it.
@@ -30,9 +52,6 @@ bool CreateIpcChannel(
 // Creates a copy of the current process token for the given |session_id| so
 // it can be used to launch a process in that session.
 bool CreateSessionToken(uint32 session_id, base::win::ScopedHandle* token_out);
-
-// Generates a unique IPC channel name.
-std::string GenerateIpcChannelName(void* client);
 
 // Launches |binary| in the security context of the user represented by
 // |user_token|. The session ID specified by the token is respected as well.

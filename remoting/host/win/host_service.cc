@@ -18,7 +18,6 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/message_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
@@ -201,7 +200,7 @@ int HostService::Run() {
 }
 
 void HostService::CreateLauncher(
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
+    scoped_refptr<AutoThreadTaskRunner> io_task_runner) {
 
 #if defined(REMOTING_MULTI_PROCESS)
 

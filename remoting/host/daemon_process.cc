@@ -10,6 +10,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/single_thread_task_runner.h"
+#include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/branding.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/desktop_session.h"
@@ -39,6 +40,8 @@ void DaemonProcess::OnConfigWatcherError() {
 
 void DaemonProcess::OnChannelConnected(int32 peer_pid) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
+
+  VLOG(1) << "IPC: daemon <- network (" << peer_pid << ")";
 
   DeleteAllDesktopSessions();
 
@@ -105,8 +108,8 @@ void DaemonProcess::CloseDesktopSession(int terminal_id) {
 }
 
 DaemonProcess::DaemonProcess(
-    scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
+    scoped_refptr<AutoThreadTaskRunner> io_task_runner,
     const base::Closure& stopped_callback)
     : Stoppable(caller_task_runner, stopped_callback),
       caller_task_runner_(caller_task_runner),

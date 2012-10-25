@@ -257,7 +257,7 @@ bool WtsSessionProcessDelegate::Core::LaunchProcess(
   }
 
   // Create the server end of the IPC channel.
-  std::string channel_name = GenerateIpcChannelName(this);
+  std::string channel_name = IPC::Channel::GenerateUniqueRandomChannelID();
   ScopedHandle pipe;
   if (!CreateIpcChannel(channel_name, channel_security_, &pipe))
     return false;

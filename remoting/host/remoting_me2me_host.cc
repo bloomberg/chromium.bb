@@ -27,6 +27,7 @@
 #include "google_apis/google_api_keys.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
+#include "ipc/ipc_listener.h"
 #include "net/base/network_change_notifier.h"
 #include "net/socket/ssl_server_socket.h"
 #include "remoting/base/auto_thread_task_runner.h"
@@ -132,7 +133,8 @@ class HostProcess
   void CreateAuthenticatorFactory();
 
   // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnChannelError() OVERRIDE;
 
   // HeartbeatSender::Listener overrides.
   virtual void OnUnknownHostIdError() OVERRIDE;
@@ -180,6 +182,13 @@ class HostProcess
   void OnShutdownFinished();
 
   void ResetHost();
+
+  // Crashes the process in response to a daemon's request. The daemon passes
+  // the location of the code that detected the fatal error resulted in this
+  // request.
+  void OnCrash(const std::string& function_name,
+               const std::string& file_name,
+               const int& line_number);
 
   scoped_ptr<ChromotingHostContext> context_;
   scoped_ptr<IPC::ChannelProxy> daemon_channel_;
@@ -244,15 +253,6 @@ HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context)
                  base::Unretained(this)),
       base::Bind(&HostProcess::RejectAuthenticatingClient,
                  base::Unretained(this)));
-}
-
-// Crashes the process in response to a daemon's request. The daemon passes
-// the location of the code that detected the fatal error resulted in this
-// request.
-void OnCrash(const std::string& function_name,
-             const std::string& file_name,
-             const int& line_number) {
-  CHECK(false);
 }
 
 bool HostProcess::InitWithCommandLine(const CommandLine* cmd_line) {
@@ -405,6 +405,10 @@ bool HostProcess::OnMessageReceived(const IPC::Message& message) {
                         OnCrash)
     IPC_MESSAGE_HANDLER(ChromotingDaemonNetworkMsg_Configuration,
                         OnConfigUpdated)
+    IPC_MESSAGE_FORWARD(
+        ChromotingDaemonNetworkMsg_DesktopAttached,
+        desktop_session_connector_,
+        DesktopSessionConnector::OnDesktopSessionAgentAttached)
     IPC_MESSAGE_FORWARD(ChromotingDaemonNetworkMsg_TerminalDisconnected,
                         desktop_session_connector_,
                         DesktopSessionConnector::OnTerminalDisconnected)
@@ -414,6 +418,16 @@ bool HostProcess::OnMessageReceived(const IPC::Message& message) {
 #else  // !defined(REMOTING_MULTI_PROCESS)
   return false;
 #endif  // !defined(REMOTING_MULTI_PROCESS)
+}
+
+void HostProcess::OnChannelError() {
+  DCHECK(context_->ui_task_runner()->BelongsToCurrentThread());
+
+  // Shutdown the host if the daemon disconnected the channel.
+  context_->network_task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&HostProcess::Shutdown, base::Unretained(this),
+                 kSuccessExitCode));
 }
 
 void HostProcess::StartHostProcess() {
@@ -828,6 +842,12 @@ void HostProcess::ResetHost() {
   signaling_connector_.reset();
   signal_strategy_.reset();
   resizing_host_observer_.reset();
+}
+
+void HostProcess::OnCrash(const std::string& function_name,
+                          const std::string& file_name,
+                          const int& line_number) {
+  CHECK(false);
 }
 
 }  // namespace remoting

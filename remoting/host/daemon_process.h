@@ -12,20 +12,19 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/process.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
+#include "ipc/ipc_platform_file.h"
 #include "remoting/base/stoppable.h"
 #include "remoting/host/config_file_watcher.h"
 #include "remoting/host/worker_process_ipc_delegate.h"
 
 class FilePath;
 
-namespace base {
-class SingleThreadTaskRunner;
-}  // namespace base
-
 namespace remoting {
 
+class AutoThreadTaskRunner;
 class DesktopSession;
 
 // This class implements core of the daemon process. It manages the networking
@@ -45,8 +44,8 @@ class DaemonProcess
   // on the |caller_task_runner| thread. |io_task_runner| is used to handle IPC
   // and background I/O tasks.
   static scoped_ptr<DaemonProcess> Create(
-      scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
+      scoped_refptr<AutoThreadTaskRunner> io_task_runner,
       const base::Closure& stopped_callback);
 
   // ConfigFileWatcher::Delegate
@@ -62,12 +61,21 @@ class DaemonProcess
   // unless the network process is connected over the IPC channel.
   virtual void SendToNetwork(IPC::Message* message) = 0;
 
+  // Called when a desktop integration process attaches to |terminal_id|.
+  // |desktop_process| is a handle of the desktop integration process.
+  // |desktop_pipe| specifies the client end of the desktop pipe. Returns true
+  // on success, false otherwise.
+  virtual bool OnDesktopSessionAgentAttached(
+      int terminal_id,
+      base::ProcessHandle desktop_process,
+      IPC::PlatformFileForTransit desktop_pipe) = 0;
+
   // Closes the desktop session identified by |terminal_id|.
   void CloseDesktopSession(int terminal_id);
 
  protected:
-  DaemonProcess(scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-                scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+  DaemonProcess(scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
+                scoped_refptr<AutoThreadTaskRunner> io_task_runner,
                 const base::Closure& stopped_callback);
 
   // Creates a desktop session and assigns a unique ID to it.
@@ -93,11 +101,11 @@ class DaemonProcess
   // Launches the network process and establishes an IPC channel with it.
   virtual void LaunchNetworkProcess() = 0;
 
-  scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner() {
+  scoped_refptr<AutoThreadTaskRunner> caller_task_runner() {
     return caller_task_runner_;
   }
 
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner() {
+  scoped_refptr<AutoThreadTaskRunner> io_task_runner() {
     return io_task_runner_;
   }
 
@@ -112,10 +120,10 @@ class DaemonProcess
   void DeleteAllDesktopSessions();
 
   // Task runner on which public methods of this class must be called.
-  scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
+  scoped_refptr<AutoThreadTaskRunner> caller_task_runner_;
 
   // Handles IPC and background I/O tasks.
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  scoped_refptr<AutoThreadTaskRunner> io_task_runner_;
 
   scoped_ptr<ConfigFileWatcher> config_watcher_;
 

@@ -8,16 +8,19 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/win/scoped_handle.h"
+#include "ipc/ipc_platform_file.h"
 #include "remoting/host/desktop_session.h"
 #include "remoting/host/win/wts_console_observer.h"
 #include "remoting/host/worker_process_ipc_delegate.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}  // namespace base
+namespace tracked_objects {
+class Location;
+}  // namespace tracked_objects
 
 namespace remoting {
 
+class AutoThreadTaskRunner;
 class DaemonProcess;
 class WorkerProcessLauncher;
 class WtsConsoleMonitor;
@@ -37,8 +40,8 @@ class DesktopSessionWin
   // session |id| and the interface for monitoring console session attach/detach
   // events. Both |daemon_process| and |monitor| must outlive |this|.
   DesktopSessionWin(
-    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    scoped_refptr<AutoThreadTaskRunner> main_task_runner,
+    scoped_refptr<AutoThreadTaskRunner> io_task_runner,
     DaemonProcess* daemon_process,
     int id,
     WtsConsoleMonitor* monitor);
@@ -54,14 +57,23 @@ class DesktopSessionWin
   virtual void OnSessionDetached() OVERRIDE;
 
  private:
+  // ChromotingDesktopDaemonMsg_DesktopAttached handler.
+  void OnDesktopSessionAgentAttached(IPC::PlatformFileForTransit desktop_pipe);
+
+  // Restarts the desktop process.
+  void RestartDesktopProcess(const tracked_objects::Location& location);
+
   // Task runner on which public methods of this class should be called.
-  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+  scoped_refptr<AutoThreadTaskRunner> main_task_runner_;
 
   // Message loop used by the IPC channel.
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  scoped_refptr<AutoThreadTaskRunner> io_task_runner_;
 
   // Contains the full path to the desktop binary.
   FilePath desktop_binary_;
+
+  // Handle of the desktop process.
+  base::win::ScopedHandle desktop_process_;
 
   // Launches and monitors the desktop process.
   scoped_ptr<WorkerProcessLauncher> launcher_;

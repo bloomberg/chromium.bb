@@ -5,9 +5,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
+#include "base/process.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_platform_file.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/daemon_process.h"
@@ -47,8 +48,8 @@ class FakeDesktopSession : public DesktopSession {
 class MockDaemonProcess : public DaemonProcess {
  public:
   MockDaemonProcess(
-      scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+      scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
+      scoped_refptr<AutoThreadTaskRunner> io_task_runner,
       const base::Closure& stopped_callback);
   virtual ~MockDaemonProcess();
 
@@ -59,6 +60,9 @@ class MockDaemonProcess : public DaemonProcess {
 
   MOCK_METHOD1(Received, void(const IPC::Message&));
   MOCK_METHOD1(Sent, void(const IPC::Message&));
+
+  MOCK_METHOD3(OnDesktopSessionAgentAttached,
+               bool(int, base::ProcessHandle, IPC::PlatformFileForTransit));
 
   MOCK_METHOD1(DoCreateDesktopSessionPtr, DesktopSession*(int));
   MOCK_METHOD0(LaunchNetworkProcess, void());
@@ -75,8 +79,8 @@ FakeDesktopSession::~FakeDesktopSession() {
 }
 
 MockDaemonProcess::MockDaemonProcess(
-    scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
+    scoped_refptr<AutoThreadTaskRunner> io_task_runner,
     const base::Closure& stopped_callback)
     : DaemonProcess(caller_task_runner, io_task_runner, stopped_callback) {
 }

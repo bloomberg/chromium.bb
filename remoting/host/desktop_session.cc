@@ -4,7 +4,7 @@
 
 #include "remoting/host/desktop_session.h"
 
-#include "base/single_thread_task_runner.h"
+#include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/daemon_process.h"
 
 namespace remoting {

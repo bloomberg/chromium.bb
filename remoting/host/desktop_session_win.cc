@@ -5,11 +5,15 @@
 #include "remoting/host/desktop_session_win.h"
 
 #include "base/path_service.h"
-#include "base/single_thread_task_runner.h"
+#include "ipc/ipc_message_macros.h"
+#include "remoting/base/auto_thread_task_runner.h"
+#include "remoting/host/chromoting_messages.h"
 #include "remoting/host/daemon_process.h"
 #include "remoting/host/win/worker_process_launcher.h"
 #include "remoting/host/win/wts_console_monitor.h"
 #include "remoting/host/win/wts_session_process_delegate.h"
+
+using base::win::ScopedHandle;
 
 namespace {
 
@@ -25,8 +29,8 @@ const char kDaemonIpcSecurityDescriptor[] = "O:SYG:SYD:(A;;GA;;;SY)";
 namespace remoting {
 
 DesktopSessionWin::DesktopSessionWin(
-    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    scoped_refptr<AutoThreadTaskRunner> main_task_runner,
+    scoped_refptr<AutoThreadTaskRunner> io_task_runner,
     DaemonProcess* daemon_process,
     int id,
     WtsConsoleMonitor* monitor)
@@ -48,14 +52,29 @@ DesktopSessionWin::~DesktopSessionWin() {
 
 void DesktopSessionWin::OnChannelConnected(int32 peer_pid) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  // Obtain the handle of the desktop process. It will be passed to the network
+  // process so it would be able to duplicate handles of shared memory objects
+  // from the desktop process.
+  desktop_process_.Set(OpenProcess(PROCESS_DUP_HANDLE, false, peer_pid));
+  if (!desktop_process_.IsValid()) {
+    RestartDesktopProcess(FROM_HERE);
+    return;
+  }
+
+  VLOG(1) << "IPC: daemon <- desktop (" << peer_pid << ")";
 }
 
 bool DesktopSessionWin::OnMessageReceived(const IPC::Message& message) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  // TODO(alexeypa): Process ChromotingDesktopHostMsg_Initialized messages here.
-  // See http://crbug.com/134694.
-  return false;
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(DesktopSessionWin, message)
+    IPC_MESSAGE_HANDLER(ChromotingDesktopDaemonMsg_DesktopAttached,
+                        OnDesktopSessionAgentAttached)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void DesktopSessionWin::OnPermanentError() {
@@ -98,6 +117,23 @@ void DesktopSessionWin::OnSessionDetached() {
   DCHECK(launcher_.get() != NULL);
 
   launcher_.reset();
+}
+
+void DesktopSessionWin::OnDesktopSessionAgentAttached(
+      IPC::PlatformFileForTransit desktop_pipe) {
+  if (!daemon_process()->OnDesktopSessionAgentAttached(id(),
+                                                       desktop_process_,
+                                                       desktop_pipe)) {
+    RestartDesktopProcess(FROM_HERE);
+  }
+}
+
+void DesktopSessionWin::RestartDesktopProcess(
+    const tracked_objects::Location& location) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  launcher_->Send(new ChromotingDaemonDesktopMsg_Crash(
+      location.function_name(), location.file_name(), location.line_number()));
 }
 
 }  // namespace remoting

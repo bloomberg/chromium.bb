@@ -16,10 +16,6 @@
 class CommandLine;
 class MessageLoop;
 
-namespace base {
-class SingleThreadTaskRunner;
-}  // namespace base
-
 namespace remoting {
 
 class AutoThreadTaskRunner;
@@ -51,8 +47,7 @@ class HostService : public WtsConsoleMonitor {
   void OnSessionChange();
 
   // Creates the process launcher.
-  void CreateLauncher(
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+  void CreateLauncher(scoped_refptr<AutoThreadTaskRunner> io_task_runner);
 
   // This is a common entry point to the main service loop called by both
   // RunAsService() and RunInConsole().

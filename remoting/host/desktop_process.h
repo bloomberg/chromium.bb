@@ -18,10 +18,12 @@ class ChannelProxy;
 
 namespace remoting {
 
+class DesktopSessionAgent;
+
 class DesktopProcess : public IPC::Listener {
  public:
   explicit DesktopProcess(const std::string& daemon_channel_name);
-  ~DesktopProcess();
+  virtual ~DesktopProcess();
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -32,12 +34,23 @@ class DesktopProcess : public IPC::Listener {
   int Run();
 
  private:
-  // IPC channel connecting the desktop process with the daemon process.
-  scoped_ptr<IPC::ChannelProxy> daemon_channel_;
+  // Crashes the process in response to a daemon's request. The daemon passes
+  // the location of the code that detected the fatal error resulted in this
+  // request. See the declaration of ChromotingDaemonDesktopMsg_Crash message.
+  void OnCrash(const std::string& function_name,
+               const std::string& file_name,
+               const int& line_number);
 
   // Name of the IPC channel connecting the desktop process with the daemon
   // process.
   std::string daemon_channel_name_;
+
+  // IPC channel connecting the desktop process with the daemon process.
+  scoped_ptr<IPC::ChannelProxy> daemon_channel_;
+
+  // Provides screen/audio capturing and input injection services for
+  // the network process.
+  scoped_ptr<DesktopSessionAgent> desktop_agent_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopProcess);
 };

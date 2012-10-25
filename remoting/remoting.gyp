@@ -597,6 +597,7 @@
             '../base/base.gyp:base',
             'remoting_breakpad',
             'remoting_elevated_controller',
+            'remoting_host',
             'remoting_host_logging',
             'remoting_protocol',
             'remoting_version_resources',
@@ -605,8 +606,6 @@
             '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_controller_version.rc',
             'host/pin_hash.cc',
             'host/pin_hash.h',
-            'host/usage_stats_consent.h',
-            'host/usage_stats_consent_win.cc',
             'host/verify_config_window_win.cc',
             'host/verify_config_window_win.h',
             'host/win/elevated_controller.cc',
@@ -647,6 +646,7 @@
             '../net/net.gyp:net',
             'remoting_base',
             'remoting_breakpad',
+            'remoting_host',
             'remoting_host_logging',
             'remoting_version_resources',
           ],
@@ -667,14 +667,10 @@
             'host/host_exit_codes.h',
             'host/ipc_consts.cc',
             'host/ipc_consts.h',
-            'host/usage_stats_consent.h',
-            'host/usage_stats_consent_win.cc',
             'host/win/host_service.cc',
             'host/win/host_service.h',
             'host/win/host_service.rc',
             'host/win/host_service_resource.h',
-            'host/win/launch_process_with_token.cc',
-            'host/win/launch_process_with_token.h',
             'host/win/omaha.cc',
             'host/win/omaha.h',
             'host/win/unprivileged_process_delegate.cc',
@@ -912,59 +908,6 @@
       ],  # end of 'targets'
     }],  # '<(wix_path) != ""'
 
-    ['remoting_multi_process != 0', {
-      'targets': [
-        {
-          'target_name': 'remoting_desktop',
-          'type': 'executable',
-          'variables': { 'enable_wexit_time_destructors': 1, },
-          'dependencies': [
-            'remoting_base',
-            'remoting_breakpad',
-            'remoting_host',
-            'remoting_host_logging',
-            'remoting_version_resources',
-            '../base/base.gyp:base',
-            '../ipc/ipc.gyp:ipc',
-          ],
-          'sources': [
-            'host/desktop_process.cc',
-            'host/desktop_process.h',
-            'host/host_ui.rc',
-            'host/usage_stats_consent.h',
-            'host/usage_stats_consent_win.cc',
-            '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_desktop_version.rc',
-          ],
-          'link_settings': {
-            'libraries': [
-              '-lcomctl32.lib',
-            ],
-          },
-          'msvs_settings': {
-            'VCLinkerTool': {
-              'AdditionalOptions': [
-                "\"/manifestdependency:type='win32' "
-                    "name='Microsoft.Windows.Common-Controls' "
-                    "version='6.0.0.0' "
-                    "processorArchitecture='*' "
-                    "publicKeyToken='6595b64144ccf1df' language='*'\"",
-              ],
-              'conditions': [
-                ['buildtype == "Official" and remoting_multi_process != 0', {
-                  'AdditionalOptions': [
-                    "\"/MANIFESTUAC:level='requireAdministrator' "
-                        "uiAccess='true'\"",
-                  ],
-                }],
-              ],
-              # 2 == /SUBSYSTEM:WINDOWS
-              'SubSystem': '2',
-            },
-          },
-        },  # end of target 'remoting_desktop'
-      ],
-    }],  # 'remoting_multi_process != 0'
-
   ],  # end of 'conditions'
 
   'targets': [
@@ -1033,6 +976,69 @@
         'client/plugin/pepper_xmpp_proxy.h',
       ],
     },  # end of target 'remoting_client_plugin'
+
+    {
+      'target_name': 'remoting_desktop',
+      'type': 'executable',
+      'variables': { 'enable_wexit_time_destructors': 1, },
+      'defines': [
+        'REMOTING_MULTI_PROCESS',
+      ],
+      'dependencies': [
+        'remoting_base',
+        'remoting_breakpad',
+        'remoting_host',
+        'remoting_host_logging',
+        '../base/base.gyp:base',
+        '../ipc/ipc.gyp:ipc',
+      ],
+      'sources': [
+        'host/desktop_process.cc',
+        'host/desktop_process.h',
+        'host/desktop_process_main.cc',
+        'host/desktop_session_agent.cc',
+        'host/desktop_session_agent.h',
+        'host/desktop_session_agent_posix.cc',
+        'host/desktop_session_agent_win.cc',
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'dependencies': [
+            'remoting_version_resources',
+          ],
+          'sources': [
+            'host/host_ui.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_desktop_version.rc',
+          ],
+          'link_settings': {
+            'libraries': [
+              '-lcomctl32.lib',
+            ],
+          },
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'AdditionalOptions': [
+                "\"/manifestdependency:type='win32' "
+                    "name='Microsoft.Windows.Common-Controls' "
+                    "version='6.0.0.0' "
+                    "processorArchitecture='*' "
+                    "publicKeyToken='6595b64144ccf1df' language='*'\"",
+              ],
+              'conditions': [
+                ['buildtype == "Official"', {
+                  'AdditionalOptions': [
+                    "\"/MANIFESTUAC:level='requireAdministrator' "
+                        "uiAccess='true'\"",
+                  ],
+                }],
+              ],
+              # 2 == /SUBSYSTEM:WINDOWS
+              'SubSystem': '2',
+            },
+          },
+        }],
+      ],
+    },  # end of target 'remoting_desktop'
 
     {
       'target_name': 'remoting_host_event_logger',
@@ -1501,6 +1507,7 @@
         'host/desktop_resizer_linux.cc',
         'host/desktop_resizer_win.cc',
         'host/desktop_resizer_mac.cc',
+        'host/desktop_session_connector.h',
         'host/differ.cc',
         'host/differ.h',
         'host/disconnect_window.h',
@@ -1538,6 +1545,10 @@
         'host/in_memory_host_config.h',
         'host/ipc_consts.cc',
         'host/ipc_consts.h',
+        'host/ipc_desktop_environment_factory.cc',
+        'host/ipc_desktop_environment_factory.h',
+        'host/ipc_desktop_environment.cc',
+        'host/ipc_desktop_environment.h',
         'host/it2me_host_user_interface.cc',
         'host/it2me_host_user_interface.h',
         'host/json_host_config.cc',
@@ -1593,6 +1604,8 @@
         'host/ui_strings.h',
         'host/url_request_context.cc',
         'host/url_request_context.h',
+        'host/usage_stats_consent.h',
+        'host/usage_stats_consent_win.cc',
         'host/user_authenticator.h',
         'host/user_authenticator_linux.cc',
         'host/user_authenticator_mac.cc',
@@ -1609,6 +1622,8 @@
         'host/vlog_net_log.h',
         'host/win/desktop.cc',
         'host/win/desktop.h',
+        'host/win/launch_process_with_token.cc',
+        'host/win/launch_process_with_token.h',
         'host/win/omaha.cc',
         'host/win/omaha.h',
         'host/win/scoped_thread_desktop.cc',
@@ -1746,8 +1761,6 @@
         'host/posix/signal_handler.cc',
         'host/posix/signal_handler.h',
         'host/remoting_me2me_host.cc',
-        'host/usage_stats_consent.h',
-        'host/usage_stats_consent_win.cc',
       ],
       'conditions': [
         ['os_posix != 1', {
@@ -1782,12 +1795,7 @@
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/remoting/host/remoting_host_messages.rc',
             '<(SHARED_INTERMEDIATE_DIR)/remoting/remoting_host_me2me_version.rc',
-            'host/desktop_session_connector.h',
             'host/host_ui.rc',
-            'host/ipc_desktop_environment_factory.cc',
-            'host/ipc_desktop_environment_factory.h',
-            'host/ipc_desktop_environment.cc',
-            'host/ipc_desktop_environment.h',
           ],
           'link_settings': {
             'libraries': [
@@ -2069,8 +2077,15 @@
         'host/daemon_process.cc',
         'host/daemon_process.h',
         'host/daemon_process_unittest.cc',
+        'host/desktop_process.cc',
+        'host/desktop_process.h',
+        'host/desktop_process_unittest.cc',
         'host/desktop_session.cc',
         'host/desktop_session.h',
+        'host/desktop_session_agent.cc',
+        'host/desktop_session_agent.h',
+        'host/desktop_session_agent_posix.cc',
+        'host/desktop_session_agent_win.cc',
         'host/differ_block_unittest.cc',
         'host/differ_unittest.cc',
         'host/heartbeat_sender_unittest.cc',
@@ -2097,8 +2112,6 @@
         'host/video_frame_capturer_helper_unittest.cc',
         'host/video_frame_capturer_mac_unittest.cc',
         'host/video_frame_capturer_unittest.cc',
-        'host/win/launch_process_with_token.cc',
-        'host/win/launch_process_with_token.h',
         'host/win/worker_process_launcher.cc',
         'host/win/worker_process_launcher.h',
         'host/win/worker_process_launcher_unittest.cc',
