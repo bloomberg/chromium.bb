@@ -79,4 +79,8 @@ void SystemTrayItem::HideNotificationView() {
   Shell::GetInstance()->system_tray()->HideNotificationView(this);
 }
 
+bool SystemTrayItem::ShouldShowLauncher() const {
+  return true;
+}
+
 }  // namespace ash

@@ -187,6 +187,10 @@ void TrayBrightness::DestroyDetailedView() {
 void TrayBrightness::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 }
 
+bool TrayBrightness::ShouldShowLauncher() const {
+  return false;
+}
+
 void TrayBrightness::OnBrightnessChanged(double percent, bool user_initiated) {
   current_percent_ = percent;
   got_current_percent_ = true;

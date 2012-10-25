@@ -46,6 +46,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
+
 #if defined(OS_CHROMEOS)
 #include "ash/system/chromeos/network/tray_network.h"
 #include "ash/system/chromeos/network/tray_sms.h"
@@ -89,6 +90,8 @@ class SystemBubbleWrapper {
  private:
   scoped_ptr<internal::SystemTrayBubble> bubble_;
   scoped_ptr<internal::TrayBubbleWrapper> bubble_wrapper_;
+
+  DISALLOW_COPY_AND_ASSIGN(SystemBubbleWrapper);
 };
 
 }  // namespace internal
@@ -286,6 +289,10 @@ void SystemTray::SetHideNotifications(bool hide_notifications) {
   if (notification_bubble_.get())
     notification_bubble_->bubble()->SetVisible(!hide_notifications);
   hide_notifications_ = hide_notifications;
+}
+
+bool SystemTray::ShouldShowLauncher() const {
+  return system_bubble_.get() && system_bubble_->bubble()->ShouldShowLauncher();
 }
 
 bool SystemTray::HasSystemBubble() const {

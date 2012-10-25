@@ -247,6 +247,10 @@ void TrayVolume::DestroyDetailedView() {
     volume_view_ = NULL;
 }
 
+bool TrayVolume::ShouldShowLauncher() const {
+  return false;
+}
+
 void TrayVolume::OnVolumeChanged(float percent) {
   if (tray_view())
     tray_view()->SetVisible(GetInitialVisibility());

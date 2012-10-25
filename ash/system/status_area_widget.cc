@@ -340,7 +340,7 @@ void StatusAreaWidget::Shutdown() {
 }
 
 bool StatusAreaWidget::ShouldShowLauncher() const {
-  if ((system_tray_ && system_tray_->HasSystemBubble()) ||
+  if ((system_tray_ && system_tray_->ShouldShowLauncher()) ||
       (web_notification_tray_ &&
        web_notification_tray_->IsMessageCenterBubbleVisible()))
     return true;
