@@ -652,8 +652,6 @@ TEST_F(VisitedLinkEventsTest, Basics) {
   VisitedLinkMaster* master = VisitedLinkMaster::FromProfile(profile());
   rvh_tester()->CreateRenderView(string16(),
                                  MSG_ROUTING_NONE,
-                                 -1,
-                                 std::string(),
                                  -1);
 
   // Add a few URLs.
@@ -680,8 +678,6 @@ TEST_F(VisitedLinkEventsTest, TabVisibility) {
   VisitedLinkMaster* master = VisitedLinkMaster::FromProfile(profile());
   rvh_tester()->CreateRenderView(string16(),
                                  MSG_ROUTING_NONE,
-                                 -1,
-                                 std::string(),
                                  -1);
 
   // Simulate tab becoming inactive.

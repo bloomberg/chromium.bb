@@ -491,9 +491,7 @@ WebContentsView* InterstitialPageImpl::CreateWebContentsView() {
       GetMaxPageIDForSiteInstance(render_view_host_->GetSiteInstance());
   render_view_host_->CreateRenderView(string16(),
                                       MSG_ROUTING_NONE,
-                                      max_page_id,
-                                      std::string(),
-                                      -1);
+                                      max_page_id);
   view->SetSize(web_contents_view->GetContainerSize());
   // Don't show the interstitial until we have navigated to it.
   view->Hide();

@@ -248,14 +248,9 @@ class CONTENT_EXPORT RenderViewHostImpl
   // The |opener_route_id| parameter indicates which RenderView created this
   // (MSG_ROUTING_NONE if none). If |max_page_id| is larger than -1, the
   // RenderView is told to start issuing page IDs at |max_page_id| + 1.
-  // If this RenderView is a guest, the embedder's process ID is also passed in
-  // so that the RenderView's process can establish a channel with its embedder
-  // if it's not already established.
   virtual bool CreateRenderView(const string16& frame_name,
                                 int opener_route_id,
-                                int32 max_page_id,
-                                const std::string& embedder_channel_name,
-                                int embedder_container_id);
+                                int32 max_page_id);
 
   base::TerminationStatus render_view_termination_status() const {
     return render_view_termination_status_;

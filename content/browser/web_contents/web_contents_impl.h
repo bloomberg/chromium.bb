@@ -13,7 +13,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "content/browser/browser_plugin/old/old_browser_plugin_host.h"
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
@@ -165,10 +164,6 @@ class CONTENT_EXPORT WebContentsImpl
 
   JavaBridgeDispatcherHostManager* java_bridge_dispatcher_host_manager() const {
     return java_bridge_dispatcher_host_manager_.get();
-  }
-
-  old::BrowserPluginHost* old_browser_plugin_host() const {
-    return old_browser_plugin_host_.get();
   }
 
   // Expose the render manager for testing.
@@ -670,10 +665,6 @@ class CONTENT_EXPORT WebContentsImpl
 
   RenderViewHostImpl* GetRenderViewHostImpl();
 
-  void GetBrowserPluginEmbedderInfo(RenderViewHost* render_view_host,
-                                    std::string* embedder_channel_name,
-                                    int* embedder_container_id);
-
   // Removes browser plugin embedder if there is one.
   void RemoveBrowserPluginEmbedder();
 
@@ -722,11 +713,6 @@ class CONTENT_EXPORT WebContentsImpl
   // this WebContentsImpl.
   scoped_ptr<JavaBridgeDispatcherHostManager>
       java_bridge_dispatcher_host_manager_;
-
-  // TODO(fsamuel): Remove this once upstreaming of the new browser plugin
-  // implementation is complete.
-  // Manages the browser plugin instances hosted by this WebContents.
-  scoped_ptr<old::BrowserPluginHost> old_browser_plugin_host_;
 
   // SavePackage, lazily created.
   scoped_refptr<SavePackage> save_package_;

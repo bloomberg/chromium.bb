@@ -223,9 +223,7 @@ SiteInstance* RenderViewHostImpl::GetSiteInstance() const {
 bool RenderViewHostImpl::CreateRenderView(
     const string16& frame_name,
     int opener_route_id,
-    int32 max_page_id,
-    const std::string& embedder_channel_name,
-    int embedder_container_id) {
+    int32 max_page_id) {
   DCHECK(!IsRenderViewLive()) << "Creating view twice";
 
   // The process may (if we're sharing a process with another host that already
@@ -263,8 +261,6 @@ bool RenderViewHostImpl::CreateRenderView(
   params.next_page_id = next_page_id;
   GetWebScreenInfo(&params.screen_info);
 
-  params.embedder_channel_name = embedder_channel_name;
-  params.embedder_container_id = embedder_container_id;
   params.accessibility_mode =
       BrowserAccessibilityStateImpl::GetInstance()->GetAccessibilityMode();
 

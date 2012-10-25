@@ -18,7 +18,6 @@
 #include "cc/switches.h"
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
-#include "content/browser/browser_plugin/old/old_browser_plugin_host.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/debugger/devtools_manager_impl.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
@@ -188,8 +187,6 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
                         const NavigationControllerImpl& controller,
                         WebContentsDelegate* delegate,
                         NavigationController::ReloadType reload_type,
-                        const std::string& embedder_channel_name,
-                        int embedder_container_id,
                         ViewMsg_Navigate_Params* params) {
   params->page_id = entry.GetPageID();
   params->pending_history_list_offset = controller.GetIndexOfEntry(&entry);
@@ -213,8 +210,6 @@ void MakeNavigateParams(const NavigationEntryImpl& entry,
   params->is_overriding_user_agent = entry.GetIsOverridingUserAgent();
   // Avoid downloading when in view-source mode.
   params->allow_download = !entry.IsViewSourceMode();
-  params->embedder_channel_name = embedder_channel_name;
-  params->embedder_container_id = embedder_container_id;
   params->is_post = entry.GetHasPostData();
   if(entry.GetBrowserInitiatedPostData()) {
       params->browser_initiated_post_data.assign(
@@ -1147,8 +1142,6 @@ void WebContentsImpl::Init(BrowserContext* browser_context,
   java_bridge_dispatcher_host_manager_.reset(
       new JavaBridgeDispatcherHostManager(this));
 #endif
-
-  old_browser_plugin_host_.reset(new old::BrowserPluginHost(this));
 }
 
 void WebContentsImpl::OnWebContentsDestroyed(WebContents* web_contents) {
@@ -1591,15 +1584,8 @@ bool WebContentsImpl::NavigateToEntry(
   current_load_start_ = base::TimeTicks::Now();
 
   // Navigate in the desired RenderViewHost.
-  std::string embedder_channel_name;
-  int embedder_container_id;
-  GetBrowserPluginEmbedderInfo(dest_render_view_host,
-                               &embedder_channel_name,
-                               &embedder_container_id);
   ViewMsg_Navigate_Params navigate_params;
   MakeNavigateParams(entry, controller_, delegate_, reload_type,
-                     embedder_channel_name,
-                     embedder_container_id,
                      &navigate_params);
   dest_render_view_host->Navigate(navigate_params);
 
@@ -3282,17 +3268,10 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
   int32 max_page_id =
       GetMaxPageIDForSiteInstance(render_view_host->GetSiteInstance());
 
-  std::string embedder_channel_name;
-  int embedder_container_id;
-  GetBrowserPluginEmbedderInfo(render_view_host,
-                               &embedder_channel_name,
-                               &embedder_container_id);
   if (!static_cast<RenderViewHostImpl*>(
           render_view_host)->CreateRenderView(string16(),
                                               opener_route_id,
-                                              max_page_id,
-                                              embedder_channel_name,
-                                              embedder_container_id)) {
+                                              max_page_id)) {
     return false;
   }
 
@@ -3365,22 +3344,6 @@ void WebContentsImpl::CreateViewAndSetSizeForRVH(RenderViewHost* rvh) {
 
 RenderViewHostImpl* WebContentsImpl::GetRenderViewHostImpl() {
   return static_cast<RenderViewHostImpl*>(GetRenderViewHost());
-}
-
-void WebContentsImpl::GetBrowserPluginEmbedderInfo(
-    RenderViewHost* render_view_host,
-    std::string* embedder_channel_name,
-    int* embedder_container_id) {
-  RenderProcessHost* embedder_render_process_host =
-      old_browser_plugin_host()->embedder_render_process_host();
-  *embedder_container_id = old_browser_plugin_host()->instance_id();
-  int embedder_process_id =
-      embedder_render_process_host ? embedder_render_process_host->GetID() : -1;
-  if (embedder_process_id != -1) {
-    *embedder_channel_name =
-        StringPrintf("%d.r%d", render_view_host->GetProcess()->GetID(),
-                     embedder_process_id);
-  }
 }
 
 BrowserPluginGuest* WebContentsImpl::GetBrowserPluginGuest() {
