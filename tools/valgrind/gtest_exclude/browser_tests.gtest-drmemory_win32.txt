@@ -124,6 +124,16 @@ AutomationTabHelperBrowserTest.*
 PageCyclerBrowserTest.*
 PrerenderBrowserTestWithExtensions.*
 NotificationsPermissionTest.*
+# DrM-i#1052-c#18
+PrefetchBrowserTest.*
+LoadTimingObserverTest.*
+LazyBackgroundPageApiTest.*
+AppBackgroundPageApiTest.*
+WebViewTest.*
+PageCyclerBrowserTest.*
+ExtensionContextMenuBrowserTest.*
+ChromeAppAPITest.*
+CommandsApiTest.*
 
 # crashes under drmemory:
 # http://crbug.com/157682
