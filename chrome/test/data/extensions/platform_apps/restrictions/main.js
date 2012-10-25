@@ -44,12 +44,17 @@ chrome.test.runTests([
   },
 
   function testHistory() {
+    // These are replaced by wrappers that throws exceptions.
     assertThrowsError(history.back);
     assertThrowsError(history.forward);
-    assertThrowsError(history.pushState);
-    assertThrowsError(history.replaceState);
     assertThrowsError(function() {history.length;});
-    assertThrowsError(function() {history.state;});
+
+    // These are part of the HTML5 History API that is feature detected, so we
+    // remove them altogether, allowing apps to have fallback behavior.
+    chrome.test.assertFalse('pushState' in history);
+    chrome.test.assertFalse('replaceState' in history);
+    chrome.test.assertFalse('state' in history);
+
     succeed();
   },
 

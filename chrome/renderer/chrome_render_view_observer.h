@@ -113,6 +113,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
       const WebKit::WebDocument& document) OVERRIDE;
   virtual bool allowMutationEvents(const WebKit::WebDocument&,
                                    bool default_value) OVERRIDE;
+  virtual bool allowPushState(const WebKit::WebDocument&) OVERRIDE;
   virtual void didNotAllowPlugins(WebKit::WebFrame* frame) OVERRIDE;
   virtual void didNotAllowScript(WebKit::WebFrame* frame) OVERRIDE;
   virtual bool allowDisplayingInsecureContent(

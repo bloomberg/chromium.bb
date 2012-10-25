@@ -79,8 +79,8 @@ disableMethods(HTMLDocument.prototype, 'document',
 // Disable history.
 window.history = {};
 disableMethods(window.history, 'history',
-    ['back', 'forward', 'go', 'pushState', 'replaceState']);
-disableGetters(window.history, 'history', ['length', 'state']);
+    ['back', 'forward', 'go']);
+disableGetters(window.history, 'history', ['length']);
 
 // Disable find.
 disableMethods(Window.prototype, 'window', ['find']);

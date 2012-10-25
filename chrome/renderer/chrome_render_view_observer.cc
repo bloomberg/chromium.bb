@@ -511,6 +511,12 @@ bool ChromeRenderViewObserver::allowMutationEvents(const WebDocument& document,
   return default_value;
 }
 
+bool ChromeRenderViewObserver::allowPushState(const WebDocument& document) {
+  WebSecurityOrigin origin = document.securityOrigin();
+  const extensions::Extension* extension = GetExtension(origin);
+  return !extension || !extension->is_platform_app();
+}
+
 static void SendInsecureContentSignal(int signal) {
   UMA_HISTOGRAM_ENUMERATION("SSL.InsecureContent", signal,
                             INSECURE_CONTENT_NUM_EVENTS);
