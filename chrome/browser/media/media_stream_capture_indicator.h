@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "content/public/common/media_stream_request.h"
@@ -20,12 +19,11 @@ class StatusTray;
 
 // This indicator is owned by MediaInternals and deleted when MediaInternals
 // is deleted.
-class MediaStreamCaptureIndicator
-    : public base::RefCountedThreadSafe<MediaStreamCaptureIndicator>,
-      public ui::SimpleMenuModel::Delegate,
-      public ImageLoadingTracker::Observer {
+class MediaStreamCaptureIndicator : public ui::SimpleMenuModel::Delegate,
+                                    public ImageLoadingTracker::Observer {
  public:
   MediaStreamCaptureIndicator();
+  virtual ~MediaStreamCaptureIndicator();
 
   // Overrides from SimpleMenuModel::Delegate implementation.
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
@@ -44,6 +42,9 @@ class MediaStreamCaptureIndicator
   void CaptureDevicesClosed(int render_process_id,
                             int render_view_id,
                             const content::MediaStreamDevices& devices);
+
+  // Returns true if the render process is capturing media.
+  bool IsProcessCapturing(int render_process_id, int render_view_id) const;
 
   // ImageLoadingTracker::Observer implementation.
   virtual void OnImageLoaded(const gfx::Image& image,
@@ -81,9 +82,6 @@ class MediaStreamCaptureIndicator
     int render_process_id_;
     int render_view_id_;
   };
-
-  friend class base::RefCountedThreadSafe<MediaStreamCaptureIndicator>;
-  virtual ~MediaStreamCaptureIndicator();
 
   // Called by the public functions, executed on UI thread.
   void DoDevicesOpenedOnUIThread(int render_process_id,
@@ -151,6 +149,10 @@ class MediaStreamCaptureIndicator
   std::map<int, string16> pending_messages_;
   // Tracks the number of requests to |tracker_|.
   int request_index_;
+
+  base::WeakPtrFactory<MediaStreamCaptureIndicator> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaStreamCaptureIndicator);
 };
 
 #endif  // CHROME_BROWSER_MEDIA_MEDIA_STREAM_CAPTURE_INDICATOR_H_

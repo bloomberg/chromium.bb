@@ -17,6 +17,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -124,7 +125,8 @@ MediaStreamCaptureIndicator::MediaStreamCaptureIndicator()
       mic_image_(NULL),
       camera_image_(NULL),
       balloon_image_(NULL),
-      request_index_(0) {
+      request_index_(0),
+      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 MediaStreamCaptureIndicator::~MediaStreamCaptureIndicator() {
@@ -175,7 +177,8 @@ void MediaStreamCaptureIndicator::CaptureDevicesOpened(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&MediaStreamCaptureIndicator::DoDevicesOpenedOnUIThread,
-                 this, render_process_id, render_view_id, devices));
+                 weak_ptr_factory_.GetWeakPtr(),
+                 render_process_id, render_view_id, devices));
 }
 
 void MediaStreamCaptureIndicator::CaptureDevicesClosed(
@@ -188,7 +191,8 @@ void MediaStreamCaptureIndicator::CaptureDevicesClosed(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&MediaStreamCaptureIndicator::DoDevicesClosedOnUIThread,
-                 this, render_process_id, render_view_id, devices));
+                 weak_ptr_factory_.GetWeakPtr(),
+                 render_process_id, render_view_id, devices));
 }
 
 void MediaStreamCaptureIndicator::DoDevicesOpenedOnUIThread(
@@ -199,11 +203,6 @@ void MediaStreamCaptureIndicator::DoDevicesOpenedOnUIThread(
 
   CreateStatusTray();
 
-  // If we don't have a status icon or one could not be created successfully,
-  // then no need to continue.
-  if (!status_icon_)
-    return;
-
   AddCaptureDeviceTab(render_process_id, render_view_id, devices);
 }
 
@@ -212,8 +211,6 @@ void MediaStreamCaptureIndicator::DoDevicesClosedOnUIThread(
     int render_view_id,
     const content::MediaStreamDevices& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!status_icon_)
-    return;
 
   RemoveCaptureDeviceTab(render_process_id, render_view_id, devices);
 }
@@ -415,6 +412,13 @@ void MediaStreamCaptureIndicator::AddCaptureDeviceTab(
     }
   }
 
+  WebContents* web_contents = tab_util::GetWebContentsByID(
+      render_process_id, render_view_id);
+  web_contents->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
+
+  if (!status_icon_)
+    return;
+
   UpdateStatusTrayIconContextMenu();
 
   ShowBalloon(render_process_id, render_view_id, audio, video);
@@ -448,7 +452,20 @@ void MediaStreamCaptureIndicator::RemoveCaptureDeviceTab(
       tabs_.erase(iter);
   }
 
+  if (!status_icon_)
+    return;
+
   UpdateStatusTrayIconContextMenu();
+}
+
+bool MediaStreamCaptureIndicator::IsProcessCapturing(int render_process_id,
+                                                     int render_view_id) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CaptureDeviceTabs::const_iterator iter = std::find_if(
+      tabs_.begin(), tabs_.end(), TabEquals(render_process_id, render_view_id));
+  if (iter == tabs_.end())
+    return false;
+  return (iter->audio_ref_count > 0 || iter->video_ref_count > 0);
 }
 
 void MediaStreamCaptureIndicator::EnsureImageLoadingTracker() {

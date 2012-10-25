@@ -195,6 +195,9 @@ class BaseTab : public ui::AnimationDelegate,
   // Crash animation.
   scoped_ptr<FaviconCrashAnimation> crash_animation_;
 
+  // Recording animation.
+  scoped_ptr<ui::ThrobAnimation> recording_animation_;
+
   scoped_refptr<ui::AnimationContainer> animation_container_;
 
   views::ImageButton* close_button_;

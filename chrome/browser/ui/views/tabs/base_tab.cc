@@ -41,6 +41,9 @@ static const int kPulseDurationMs = 200;
 // How long the hover state takes.
 static const int kHoverDurationMs = 400;
 
+// How long the recording button takes to fade in/out.
+static const int kRecordingDurationMs = 1000;
+
 ////////////////////////////////////////////////////////////////////////////////
 // TabCloseButton
 //
@@ -114,7 +117,8 @@ void DrawIconCenter(gfx::Canvas* canvas,
                     int icon_width,
                     int icon_height,
                     const gfx::Rect& bounds,
-                    bool filter) {
+                    bool filter,
+                    const SkPaint& paint) {
   // Center the image within bounds.
   int dst_x = bounds.x() - (icon_width - bounds.width()) / 2;
   int dst_y = bounds.y() - (icon_height - bounds.height()) / 2;
@@ -124,7 +128,7 @@ void DrawIconCenter(gfx::Canvas* canvas,
   canvas->DrawImageInt(image,
                        image_offset, 0, icon_width, icon_height,
                        dst_x, dst_y, icon_width, icon_height,
-                       filter);
+                       filter, paint);
   canvas->Restore();
 }
 
@@ -525,7 +529,7 @@ void BaseTab::PaintIcon(gfx::Canvas* canvas) {
     int icon_size = frames.height();
     int image_offset = loading_animation_frame_ * icon_size;
     DrawIconCenter(canvas, frames, image_offset,
-                   icon_size, icon_size, bounds, false);
+                   icon_size, icon_size, bounds, false, SkPaint());
   } else {
     canvas->Save();
     canvas->ClipRect(GetLocalBounds());
@@ -535,7 +539,7 @@ void BaseTab::PaintIcon(gfx::Canvas* canvas) {
       bounds.set_y(bounds.y() + favicon_hiding_offset_);
       DrawIconCenter(canvas, crashed_favicon, 0,
                      crashed_favicon.width(),
-                     crashed_favicon.height(), bounds, true);
+                     crashed_favicon.height(), bounds, true, SkPaint());
     } else {
       if (!data().favicon.isNull()) {
         // TODO(pkasting): Use code in tab_icon_view.cc:PaintIcon() (or switch
@@ -543,10 +547,31 @@ void BaseTab::PaintIcon(gfx::Canvas* canvas) {
         DrawIconCenter(canvas, data().favicon, 0,
                        data().favicon.width(),
                        data().favicon.height(),
-                       bounds, true);
+                       bounds, true, SkPaint());
       }
     }
     canvas->Restore();
+
+    // If recording, fade the recording icon on top of the favicon.
+    if (data().recording) {
+      if (!recording_animation_.get()) {
+        recording_animation_.reset(new ui::ThrobAnimation(this));
+        recording_animation_->SetTweenType(ui::Tween::EASE_IN_OUT);
+        recording_animation_->SetThrobDuration(kRecordingDurationMs);
+        recording_animation_->StartThrobbing(-1);
+      }
+      SkPaint paint;
+      paint.setAntiAlias(true);
+      U8CPU alpha = recording_animation_->GetCurrentValue() * 0xff;
+      paint.setAlpha(alpha);
+      ui::ThemeProvider* tp = GetThemeProvider();
+      gfx::ImageSkia recording_dot(*tp->GetImageSkiaNamed(IDR_TAB_RECORDING));
+      DrawIconCenter(canvas, recording_dot, 0,
+                     recording_dot.width(), recording_dot.height(),
+                     bounds, false, paint);
+    } else {
+      recording_animation_.reset();
+    }
   }
 }
 
