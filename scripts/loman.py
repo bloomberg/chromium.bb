@@ -225,7 +225,7 @@ def main(argv):
       parser.error('No project named %r in the default manifest.' % name)
     _AddProjectsToManifestGroups(options, main_element.attrib['name'])
 
-  elif main_element:
+  elif main_element is not None:
     # Conflict will occur; complain.
     parser.error("Requested project name=%r path=%r will conflict with "
                  "your current manifest %s" % (name, path, active_manifest))
