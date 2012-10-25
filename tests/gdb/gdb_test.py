@@ -9,6 +9,7 @@ import os
 import re
 import socket
 import subprocess
+import sys
 
 
 def AssertEquals(x, y):
@@ -52,8 +53,6 @@ def EnsurePortIsAvailable(addr=SEL_LDR_RSP_SOCKET_ADDR):
 
 
 def LaunchSelLdr(sel_ldr_command, options, name):
-  stdout = open(MakeOutFileName(options.output_dir, name, '.pout'), 'w')
-  stderr = open(MakeOutFileName(options.output_dir, name, '.perr'), 'w')
   args = sel_ldr_command + ['-g']
   if options.irt is not None:
     args += ['-B', options.irt]
@@ -62,7 +61,7 @@ def LaunchSelLdr(sel_ldr_command, options, name):
              '--library-path', options.library_path]
   args += [FilenameToUnix(options.nexe), name]
   EnsurePortIsAvailable()
-  return subprocess.Popen(args, stdout=stdout, stderr=stderr)
+  return subprocess.Popen(args)
 
 
 def GenerateManifest(output_dir, nexe, runnable_ld, name):
@@ -181,24 +180,19 @@ class Gdb(object):
     self._options = options
     self._name = name
     args = [options.gdb, '--interpreter=mi']
-    stderr = open(MakeOutFileName(options.output_dir, name, '.err'), 'w')
-    self._log = open(MakeOutFileName(options.output_dir, name, '.log'), 'w')
+    self._log = sys.stderr
     self._gdb = subprocess.Popen(args,
                                  stdin=subprocess.PIPE,
-                                 stdout=subprocess.PIPE,
-                                 stderr=stderr)
+                                 stdout=subprocess.PIPE)
 
   def __enter__(self):
     return self
 
   def __exit__(self, type, value, traceback):
     KillProcess(self._gdb)
-    self._log.close()
 
   def _SendRequest(self, request):
-    self._log.write('(gdb) ')
-    self._log.write(request)
-    self._log.write('\n')
+    self._log.write('To GDB: %s\n' % request)
     self._gdb.stdin.write(request)
     self._gdb.stdin.write('\n')
     return self._GetResponse()
@@ -209,8 +203,7 @@ class Gdb(object):
       line = self._gdb.stdout.readline().rstrip()
       if line == '':
         return results
-      self._log.write(line)
-      self._log.write('\n')
+      self._log.write('From GDB: %s\n' % line)
       if line == '(gdb)':
         return results
       results.append(line)
