@@ -338,9 +338,28 @@ base::Value* CoreOptionsHandler::CreateValueForPref(
 
 PrefService* CoreOptionsHandler::FindServiceForPref(
     const std::string& pref_name) {
-  return g_browser_process->local_state()->FindPreference(pref_name.c_str()) ?
-      g_browser_process->local_state() :
-      Profile::FromWebUI(web_ui())->GetPrefs();
+  // Proxy is a peculiar case: on ChromeOS, settings exist in both user
+  // prefs and local state, but chrome://settings should affect only user prefs.
+  // Elsewhere the proxy settings are stored in local state.
+  // See http://crbug.com/157147
+  PrefService* user_prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+  if (pref_name == prefs::kProxy)
+#if defined(OS_CHROMEOS)
+    return user_prefs;
+#else
+    return g_browser_process->local_state();
+#endif
+
+  // Find which PrefService contains the given pref. Pref names should not
+  // be duplicated across services, however if they are, prefer the user's
+  // prefs.
+  if (user_prefs->FindPreference(pref_name.c_str()))
+    return user_prefs;
+
+  if (g_browser_process->local_state()->FindPreference(pref_name.c_str()))
+    return g_browser_process->local_state();
+
+  return user_prefs;
 }
 
 void CoreOptionsHandler::HandleFetchPrefs(const ListValue* args) {
