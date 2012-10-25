@@ -9,10 +9,12 @@
 #include "base/bind.h"
 #include "base/file_path.h"
 #include "base/message_loop.h"
+#include "base/platform_file.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/syncable/canned_syncable_file_system.h"
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
@@ -36,7 +38,10 @@ const char kServiceName[] = "test";
 class LocalFileSyncContextTest : public testing::Test {
  protected:
   LocalFileSyncContextTest()
-      : status_(SYNC_FILE_ERROR_FAILED) {}
+      : status_(SYNC_FILE_ERROR_FAILED),
+        file_error_(base::PLATFORM_FILE_ERROR_FAILED),
+        async_modify_finished_(false),
+        has_inflight_prepare_for_sync_(false) {}
 
   virtual void SetUp() OVERRIDE {
     EXPECT_TRUE(fileapi::RegisterSyncableFileSystem(kServiceName));
@@ -58,6 +63,84 @@ class LocalFileSyncContextTest : public testing::Test {
     file_thread_->Stop();
   }
 
+  void StartPrepareForSync(LocalFileSyncContext* sync_context,
+                           const FileSystemURL& url,
+                           FileChangeList* changes) {
+    ASSERT_TRUE(changes != NULL);
+    ASSERT_FALSE(has_inflight_prepare_for_sync_);
+    status_ = SYNC_STATUS_UNKNOWN;
+    has_inflight_prepare_for_sync_ = true;
+    sync_context->PrepareForSync(
+        url,
+        base::Bind(&LocalFileSyncContextTest::DidPrepareForSync,
+                   base::Unretained(this), changes));
+  }
+
+  SyncStatusCode PrepareForSync(LocalFileSyncContext* sync_context,
+                                const FileSystemURL& url,
+                                FileChangeList* changes) {
+    StartPrepareForSync(sync_context, url, changes);
+    MessageLoop::current()->Run();
+    return status_;
+  }
+
+  base::Closure GetPrepareForSyncClosure(LocalFileSyncContext* sync_context,
+                                         const FileSystemURL& url,
+                                         FileChangeList* changes) {
+    return base::Bind(&LocalFileSyncContextTest::StartPrepareForSync,
+                      base::Unretained(this), base::Unretained(sync_context),
+                      url, changes);
+  }
+
+  void DidPrepareForSync(FileChangeList* changes_out,
+                         SyncStatusCode status,
+                         const FileChangeList& changes) {
+    ASSERT_TRUE(ui_task_runner_->RunsTasksOnCurrentThread());
+    has_inflight_prepare_for_sync_ = false;
+    status_ = status;
+    *changes_out = changes;
+    MessageLoop::current()->Quit();
+  }
+
+  void StartModifyFileOnIOThread(CannedSyncableFileSystem* file_system,
+                                 const FileSystemURL& url) {
+    async_modify_finished_ = false;
+    ASSERT_TRUE(file_system != NULL);
+    if (!io_task_runner_->RunsTasksOnCurrentThread()) {
+      ASSERT_TRUE(ui_task_runner_->RunsTasksOnCurrentThread());
+      io_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&LocalFileSyncContextTest::StartModifyFileOnIOThread,
+                     base::Unretained(this), file_system, url));
+      return;
+    }
+    ASSERT_TRUE(io_task_runner_->RunsTasksOnCurrentThread());
+    file_error_ = base::PLATFORM_FILE_ERROR_FAILED;
+    file_system->NewOperation()->Truncate(
+        url, 1, base::Bind(&LocalFileSyncContextTest::DidModifyFile,
+                           base::Unretained(this)));
+  }
+
+  base::PlatformFileError WaitUntilModifyFileIsDone() {
+    while (!async_modify_finished_)
+      MessageLoop::current()->RunAllPending();
+    return file_error_;
+  }
+
+  void DidModifyFile(base::PlatformFileError error) {
+    if (!ui_task_runner_->RunsTasksOnCurrentThread()) {
+      ASSERT_TRUE(io_task_runner_->RunsTasksOnCurrentThread());
+      ui_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&LocalFileSyncContextTest::DidModifyFile,
+                     base::Unretained(this), error));
+      return;
+    }
+    ASSERT_TRUE(ui_task_runner_->RunsTasksOnCurrentThread());
+    file_error_ = error;
+    async_modify_finished_ = true;
+  }
+
   // These need to remain until the very end.
   scoped_ptr<base::Thread> io_thread_;
   scoped_ptr<base::Thread> file_thread_;
@@ -70,6 +153,9 @@ class LocalFileSyncContextTest : public testing::Test {
   scoped_refptr<LocalFileSyncContext> sync_context_;
 
   SyncStatusCode status_;
+  base::PlatformFileError file_error_;
+  bool async_modify_finished_;
+  bool has_inflight_prepare_for_sync_;
 };
 
 TEST_F(LocalFileSyncContextTest, ConstructAndDestruct) {
@@ -170,11 +256,73 @@ TEST_F(LocalFileSyncContextTest, MultipleFileSystemContexts) {
   ASSERT_EQ(1U, urls.size());
   EXPECT_EQ(kURL2, urls[0]);
 
+  FileChangeList changes;
+  EXPECT_EQ(SYNC_STATUS_OK, PrepareForSync(sync_context_, kURL1, &changes));
+  EXPECT_EQ(1U, changes.size());
+  EXPECT_TRUE(changes.list().back().IsFile());
+  EXPECT_TRUE(changes.list().back().IsAddOrUpdate());
+
+  changes.clear();
+  EXPECT_EQ(SYNC_STATUS_OK, PrepareForSync(sync_context_, kURL2, &changes));
+  EXPECT_EQ(1U, changes.size());
+  EXPECT_FALSE(changes.list().back().IsFile());
+  EXPECT_TRUE(changes.list().back().IsAddOrUpdate());
+
   sync_context_->ShutdownOnUIThread();
   sync_context_ = NULL;
 
   file_system1.TearDown();
   file_system2.TearDown();
+}
+
+TEST_F(LocalFileSyncContextTest, PrepareSyncWhileWriting) {
+  CannedSyncableFileSystem file_system(GURL(kOrigin1), kServiceName,
+                                       io_task_runner_);
+  file_system.SetUp();
+  sync_context_ = new LocalFileSyncContext(ui_task_runner_, io_task_runner_);
+  EXPECT_EQ(SYNC_STATUS_OK,
+            file_system.MaybeInitializeFileSystemContext(sync_context_));
+
+  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.OpenFileSystem());
+
+  const FileSystemURL kURL1(file_system.URL("foo"));
+
+  // Creates a file in file_system.
+  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.CreateFile(kURL1));
+
+  // Kick file write on IO thread.
+  StartModifyFileOnIOThread(&file_system, kURL1);
+
+  // Until the operation finishes PrepareForSync should return BUSY error.
+  FileChangeList changes;
+  EXPECT_EQ(SYNC_STATUS_FILE_BUSY,
+            PrepareForSync(sync_context_, kURL1, &changes));
+  EXPECT_TRUE(changes.empty());
+
+  // Register PrepareForSync method to be invoked when kURL1 becomes
+  // syncable. (Actually this may be done after all operations are done
+  // on IO thread in this test.)
+  sync_context_->RegisterURLForWaitingSync(
+      kURL1, GetPrepareForSyncClosure(sync_context_, kURL1, &changes));
+
+  // Wait for the completion.
+  EXPECT_EQ(base::PLATFORM_FILE_OK, WaitUntilModifyFileIsDone());
+
+  // The PrepareForSync must have been started; wait until DidPrepareForSync
+  // is done.
+  MessageLoop::current()->Run();
+  ASSERT_FALSE(has_inflight_prepare_for_sync_);
+
+  // Now PrepareForSync should have run and returned OK.
+  EXPECT_EQ(SYNC_STATUS_OK, status_);
+  EXPECT_EQ(1U, changes.size());
+  EXPECT_TRUE(changes.list().back().IsFile());
+  EXPECT_TRUE(changes.list().back().IsAddOrUpdate());
+
+  sync_context_->ShutdownOnUIThread();
+  sync_context_ = NULL;
+
+  file_system.TearDown();
 }
 
 }  // namespace fileapi

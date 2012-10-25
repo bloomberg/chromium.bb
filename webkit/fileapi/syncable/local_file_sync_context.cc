@@ -5,13 +5,13 @@
 #include "webkit/fileapi/syncable/local_file_sync_context.h"
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_task_runners.h"
+#include "webkit/fileapi/syncable/file_change.h"
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
 #include "webkit/fileapi/syncable/syncable_file_operation_runner.h"
 
@@ -25,7 +25,8 @@ LocalFileSyncContext::LocalFileSyncContext(
     base::SingleThreadTaskRunner* ui_task_runner,
     base::SingleThreadTaskRunner* io_task_runner)
     : ui_task_runner_(ui_task_runner),
-      io_task_runner_(io_task_runner) {
+      io_task_runner_(io_task_runner),
+      shutdown_on_ui_(false) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 }
 
@@ -58,10 +59,58 @@ void LocalFileSyncContext::MaybeInitializeFileSystemContext(
 
 void LocalFileSyncContext::ShutdownOnUIThread() {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+  shutdown_on_ui_ = true;
   io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&LocalFileSyncContext::ShutdownOnIOThread,
                  this));
+}
+
+void LocalFileSyncContext::PrepareForSync(
+    const FileSystemURL& url,
+    const ChangeListCallback& callback) {
+  // This is initially called on UI thread and to be relayed to IO thread.
+  if (!io_task_runner_->RunsTasksOnCurrentThread()) {
+    DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+    io_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&LocalFileSyncContext::PrepareForSync, this, url, callback));
+    return;
+  }
+  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  if (sync_status()->IsWriting(url)) {
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(callback, SYNC_STATUS_FILE_BUSY, FileChangeList()));
+    return;
+  }
+  sync_status()->StartSyncing(url);
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&LocalFileSyncContext::DidDisabledWritesForPrepareForSync,
+                 this, url, callback));
+}
+
+void LocalFileSyncContext::RegisterURLForWaitingSync(
+    const FileSystemURL& url,
+    const base::Closure& on_syncable_callback) {
+  // This is initially called on UI thread and to be relayed to IO thread.
+  if (!io_task_runner_->RunsTasksOnCurrentThread()) {
+    DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+    io_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&LocalFileSyncContext::RegisterURLForWaitingSync,
+                   this, url, on_syncable_callback));
+    return;
+  }
+  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  if (sync_status()->IsWritable(url)) {
+    // No need to register; fire the callback now.
+    ui_task_runner_->PostTask(FROM_HERE, on_syncable_callback);
+    return;
+  }
+  url_waiting_sync_on_io_ = url;
+  url_syncable_callback_ = on_syncable_callback;
 }
 
 base::WeakPtr<SyncableFileOperationRunner>
@@ -75,6 +124,22 @@ LocalFileSyncContext::operation_runner() const {
 LocalFileSyncStatus* LocalFileSyncContext::sync_status() const {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   return sync_status_.get();
+}
+
+void LocalFileSyncContext::OnSyncEnabled(const FileSystemURL& url) {
+  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  if (url_syncable_callback_.is_null() ||
+      sync_status()->IsWriting(url_waiting_sync_on_io_))
+    return;
+  // TODO(kinuko): may want to check how many pending tasks we have.
+  sync_status()->StartSyncing(url_waiting_sync_on_io_);
+  ui_task_runner_->PostTask(FROM_HERE, url_syncable_callback_);
+  url_syncable_callback_.Reset();
+}
+
+void LocalFileSyncContext::OnWriteEnabled(const FileSystemURL& url) {
+  DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  // Nothing to do for now.
 }
 
 LocalFileSyncContext::~LocalFileSyncContext() {
@@ -114,6 +179,7 @@ void LocalFileSyncContext::InitializeFileSystemContextOnIOThread(
     operation_runner_.reset(new SyncableFileOperationRunner(
             kMaxConcurrentSyncableOperation,
             sync_status_.get()));
+    sync_status_->AddObserver(this);
   }
   file_system_context->set_sync_context(this);
   DidInitialize(source_url, file_system_context, SYNC_STATUS_OK);
@@ -173,6 +239,24 @@ void LocalFileSyncContext::DidInitialize(
     ui_task_runner_->PostTask(FROM_HERE, base::Bind(*iter, status));
   }
   pending_initialize_callbacks_.erase(file_system_context);
+}
+
+void LocalFileSyncContext::DidDisabledWritesForPrepareForSync(
+    const FileSystemURL& url,
+    const ChangeListCallback& callback) {
+  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+  if (shutdown_on_ui_) {
+    callback.Run(SYNC_STATUS_ABORT, FileChangeList());
+    return;
+  }
+  DCHECK(ContainsKey(origin_to_contexts_, url.origin()));
+  FileSystemContext* context = origin_to_contexts_[url.origin()];
+  DCHECK(context);
+  DCHECK(context->change_tracker());
+
+  FileChangeList changes;
+  context->change_tracker()->GetChangesForURL(url, &changes);
+  callback.Run(SYNC_STATUS_OK, changes);
 }
 
 }  // namespace fileapi

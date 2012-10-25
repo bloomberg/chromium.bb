@@ -10,7 +10,7 @@
 #include <set>
 
 #include "base/basictypes.h"
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -19,6 +19,7 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/syncable/file_change.h"
 #include "webkit/fileapi/syncable/local_file_sync_status.h"
+#include "webkit/fileapi/syncable/sync_callbacks.h"
 #include "webkit/fileapi/syncable/sync_status_code.h"
 #include "webkit/storage/webkit_storage_export.h"
 
@@ -39,9 +40,12 @@ class SyncableFileOperationRunner;
 // An instance of this class is shared by FileSystemContexts and outlives
 // LocalFileSyncService.
 class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
-    : public base::RefCountedThreadSafe<LocalFileSyncContext> {
+    : public base::RefCountedThreadSafe<LocalFileSyncContext>,
+      public LocalFileSyncStatus::Observer {
  public:
-  typedef base::Callback<void(SyncStatusCode status)> StatusCallback;
+  typedef base::Callback<void(
+      SyncStatusCode status,
+      const FileChangeList& change)> ChangeListCallback;
 
   LocalFileSyncContext(base::SingleThreadTaskRunner* ui_task_runner,
                        base::SingleThreadTaskRunner* io_task_runner);
@@ -58,11 +62,37 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
   // This method must be called on UI thread.
   void ShutdownOnUIThread();
 
+  // Prepares for sync |url| by disabling writes on |url|.
+  // If the target |url| is being written and cannot start sync it
+  // returns SYNC_STATUS_WRITING status code via |callback|.
+  // Otherwise it disables writes, marks the |url| syncing and returns
+  // the current change set made on |url|.
+  // This method must be called on UI thread.
+  void PrepareForSync(const FileSystemURL& url,
+                      const ChangeListCallback& callback);
+
+  // Registers |url| to wait until sync is enabled for |url|.
+  // |on_syncable_callback| is to be called when |url| becomes syncable
+  // (i.e. when we have no pending writes and the file is successfully locked
+  // for sync).
+  //
+  // Calling this method again while this already has another URL waiting
+  // for sync will overwrite the previously registered URL.
+  //
+  // This method must be called on UI thread.
+  void RegisterURLForWaitingSync(const FileSystemURL& url,
+                                 const base::Closure& on_syncable_callback);
+
   // OperationRunner is accessible only on IO thread.
   base::WeakPtr<SyncableFileOperationRunner> operation_runner() const;
 
   // SyncContext is accessible only on IO thread.
   LocalFileSyncStatus* sync_status() const;
+
+ protected:
+  // LocalFileSyncStatus::Observer overrides. They are called on IO thread.
+  virtual void OnSyncEnabled(const FileSystemURL& url) OVERRIDE;
+  virtual void OnWriteEnabled(const FileSystemURL& url) OVERRIDE;
 
  private:
   typedef std::deque<StatusCallback> StatusCallbackQueue;
@@ -90,8 +120,16 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
       FileSystemContext* file_system_context,
       SyncStatusCode status);
 
+  // Helper routines for PrepareForSync.
+  void DidDisabledWritesForPrepareForSync(
+      const FileSystemURL& url,
+      const ChangeListCallback& callback);
+
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+
+  // Indicates if the sync service is shutdown on UI thread.
+  bool shutdown_on_ui_;
 
   // OperationRunner. This must be accessed only on IO thread.
   scoped_ptr<SyncableFileOperationRunner> operation_runner_;
@@ -113,6 +151,11 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
   // profile single origin wouldn't belong to multiple FileSystemContexts.)
   // Accessed only on UI thread.
   std::map<GURL, FileSystemContext*> origin_to_contexts_;
+
+  // A URL and associated callback waiting for sync is enabled.
+  // Accessed only on IO thread.
+  FileSystemURL url_waiting_sync_on_io_;
+  base::Closure url_syncable_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalFileSyncContext);
 };
