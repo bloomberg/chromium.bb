@@ -228,8 +228,6 @@
         'renderer/prerender/prerender_webmediaplayer.h',
         'renderer/prerender/prerenderer_client.cc',
         'renderer/prerender/prerenderer_client.h',
-        'renderer/prerender/prerendering_support.cc',
-        'renderer/prerender/prerendering_support.h',
         'renderer/print_web_view_helper.cc',
         'renderer/print_web_view_helper.h',
         'renderer/print_web_view_helper_linux.cc',

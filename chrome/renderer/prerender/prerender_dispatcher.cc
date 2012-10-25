@@ -6,42 +6,29 @@
 
 #include "base/logging.h"
 #include "chrome/common/prerender_messages.h"
-#include "chrome/renderer/prerender/prerendering_support.h"
+#include "chrome/renderer/prerender/prerender_extra_data.h"
+#include "content/public/renderer/render_thread.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebPrerenderingSupport.h"
 
 namespace prerender {
 
-PrerenderDispatcher::PrerenderDispatcher()
-    : prerendering_support_(new PrerenderingSupport()) {
-  WebKit::WebPrerenderingSupport::initialize(prerendering_support_.get());
+PrerenderDispatcher::PrerenderDispatcher() {
+  WebKit::WebPrerenderingSupport::initialize(this);
 }
 
 PrerenderDispatcher::~PrerenderDispatcher() {
-  if (prerendering_support_.get())
-    WebKit::WebPrerenderingSupport::shutdown();
+  WebKit::WebPrerenderingSupport::shutdown();
 }
 
 bool PrerenderDispatcher::IsPrerenderURL(const GURL& url) const {
   return prerender_urls_.find(url) != prerender_urls_.end();
 }
 
-bool PrerenderDispatcher::OnControlMessageReceived(
-    const IPC::Message& message) {
- bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(PrerenderDispatcher, message)
-    IPC_MESSAGE_HANDLER(PrerenderMsg_AddPrerenderURL, OnAddPrerenderURL)
-    IPC_MESSAGE_HANDLER(PrerenderMsg_RemovePrerenderURL, OnRemovePrerenderURL)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
-}
-
 void PrerenderDispatcher::OnAddPrerenderURL(const GURL& url) {
   PrerenderMap::iterator it = prerender_urls_.find(url);
   if (it != prerender_urls_.end()) {
-    DCHECK(it->second > 0);
+    DCHECK_LT(0, it->second);
     it->second += 1;
   } else {
     prerender_urls_[url] = 1;
@@ -57,10 +44,45 @@ void PrerenderDispatcher::OnRemovePrerenderURL(const GURL& url) {
   // is unlikely to go to the prerendered page.
   if (it == prerender_urls_.end())
     return;
-  DCHECK(it->second > 0);
+  DCHECK_LT(0, it->second);
   it->second -= 1;
   if (it->second == 0)
     prerender_urls_.erase(it);
+}
+
+bool PrerenderDispatcher::OnControlMessageReceived(
+    const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(PrerenderDispatcher, message)
+    IPC_MESSAGE_HANDLER(PrerenderMsg_AddPrerenderURL, OnAddPrerenderURL)
+    IPC_MESSAGE_HANDLER(PrerenderMsg_RemovePrerenderURL, OnRemovePrerenderURL)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+
+  return handled;
+}
+
+void PrerenderDispatcher::add(const WebKit::WebPrerender& prerender) {
+  const PrerenderExtraData& extra_data =
+      PrerenderExtraData::FromPrerender(prerender);
+  content::RenderThread::Get()->Send(new PrerenderHostMsg_AddLinkRelPrerender(
+      extra_data.prerender_id(), GURL(prerender.url()),
+      content::Referrer(GURL(prerender.referrer()), prerender.referrerPolicy()),
+      extra_data.size(), extra_data.render_view_route_id()));
+}
+
+void PrerenderDispatcher::cancel(const WebKit::WebPrerender& prerender) {
+  const PrerenderExtraData& extra_data =
+      PrerenderExtraData::FromPrerender(prerender);
+  content::RenderThread::Get()->Send(
+      new PrerenderHostMsg_CancelLinkRelPrerender(extra_data.prerender_id()));
+}
+
+void PrerenderDispatcher::abandon(const WebKit::WebPrerender& prerender) {
+  const PrerenderExtraData& extra_data =
+      PrerenderExtraData::FromPrerender(prerender);
+  content::RenderThread::Get()->Send(
+      new PrerenderHostMsg_AbandonLinkRelPrerender(extra_data.prerender_id()));
 }
 
 }  // namespace prerender

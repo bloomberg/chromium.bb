@@ -10,24 +10,23 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/renderer/render_process_observer.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebPrerenderingSupport.h"
 
 class GURL;
 
 namespace prerender {
 
-class PrerenderingSupport;
-
-// PrerenderDispatcher keeps track of which URLs are being prerendered. There
-// is only one PrerenderDispatcher per render process, and it will only be
-// aware of prerenders that are triggered by this render process.  As well,
-// it holds on to other objects that must exist once per-renderer process,
-// such as the PrerenderingSupport.
-class PrerenderDispatcher : public content::RenderProcessObserver {
+// There is one PrerenderDispatcher per render process. It keeps track of which
+// prerenders were launched from this renderer, and ensures prerender navigation
+// is triggered on navigation to those. It implements the prerendering interface
+// supplied to WebKit.
+class PrerenderDispatcher : public content::RenderProcessObserver,
+                            public WebKit::WebPrerenderingSupport {
  public:
   PrerenderDispatcher();
   virtual ~PrerenderDispatcher();
 
-  bool IsPrerenderURL(const GURL & url) const;
+  bool IsPrerenderURL(const GURL& url) const;
 
  private:
   friend class PrerenderDispatcherTest;
@@ -35,15 +34,16 @@ class PrerenderDispatcher : public content::RenderProcessObserver {
   void OnAddPrerenderURL(const GURL& url);
   void OnRemovePrerenderURL(const GURL& url);
 
-  // RenderProcessObserver:
+  // From RenderProcessObserver:
   virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
+
+  // From WebPrerenderingSupport:
+  virtual void add(const WebKit::WebPrerender& prerender) OVERRIDE;
+  virtual void cancel(const WebKit::WebPrerender& prerender) OVERRIDE;
+  virtual void abandon(const WebKit::WebPrerender& prerender) OVERRIDE;
 
   typedef std::map<GURL, int> PrerenderMap;
   PrerenderMap prerender_urls_;
-
-  // There is one PrerenderingSupport object per renderer, and it provides
-  // the interface to prerendering to the WebKit platform.
-  scoped_ptr<PrerenderingSupport> prerendering_support_;
 };
 
 }  // namespace prerender
