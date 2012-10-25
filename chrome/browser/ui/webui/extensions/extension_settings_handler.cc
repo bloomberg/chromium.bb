@@ -255,16 +255,17 @@ void ExtensionSettingsHandler::GetLocalizedValues(
   localized_strings->SetString("extensionSettingsSuggestGallery",
       l10n_util::GetStringFUTF16(IDS_EXTENSIONS_NONE_INSTALLED_SUGGEST_GALLERY,
           ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
-              GURL(extension_urls::GetWebstoreLaunchURL())).spec())));
+              GURL(extension_urls::GetExtensionGalleryURL())).spec())));
+  // TODO(aa): Is this even used anymore?.
   localized_strings->SetString("extensionSettingsGetMoreExtensionsDeprecated",
       l10n_util::GetStringFUTF16(IDS_GET_MORE_EXTENSIONS_DEPRECATED,
           ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
-              GURL(extension_urls::GetWebstoreLaunchURL())).spec())));
+              GURL(extension_urls::GetExtensionGalleryURL())).spec())));
   localized_strings->SetString("extensionSettingsGetMoreExtensions",
       l10n_util::GetStringUTF16(IDS_GET_MORE_EXTENSIONS));
   localized_strings->SetString("extensionSettingsGetMoreExtensionsUrl",
       ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
-          GURL(extension_urls::GetWebstoreLaunchURL())).spec()));
+          GURL(extension_urls::GetExtensionGalleryURL())).spec()));
   localized_strings->SetString("extensionSettingsExtensionId",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ID));
   localized_strings->SetString("extensionSettingsExtensionPath",

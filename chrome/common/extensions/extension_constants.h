@@ -16,6 +16,10 @@ namespace extension_urls {
   // slash. Do not use this as a prefix/extent for the store.
   std::string GetWebstoreLaunchURL();
 
+  // Returns the URL to the extensions category on the Web Store. This is
+  // derived from GetWebstoreLaunchURL().
+  std::string GetExtensionGalleryURL();
+
   // Returns the URL prefix for an item in the extension/app gallery. This URL
   // will contain a trailing slash and should be concatenated with an item ID
   // to get the item detail URL.

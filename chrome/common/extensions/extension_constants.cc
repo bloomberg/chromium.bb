@@ -24,6 +24,10 @@ std::string GetWebstoreLaunchURL() {
   return gallery_prefix;
 }
 
+std::string GetExtensionGalleryURL() {
+  return GetWebstoreLaunchURL() + "/category/extensions";
+}
+
 std::string GetWebstoreItemDetailURLPrefix() {
   return GetWebstoreLaunchURL() + "/detail/";
 }
