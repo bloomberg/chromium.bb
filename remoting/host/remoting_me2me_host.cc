@@ -288,6 +288,12 @@ bool HostProcess::InitWithCommandLine(const CommandLine* cmd_line) {
         channel_name, IPC::Channel::MODE_CLIENT, this,
         context_->network_task_runner()));
   }
+
+  FilePath default_config_dir = remoting::GetConfigDir();
+  host_config_path_ = default_config_dir.Append(kDefaultHostConfigFile);
+  if (cmd_line->HasSwitch(kHostConfigSwitchName)) {
+    host_config_path_ = cmd_line->GetSwitchValuePath(kHostConfigSwitchName);
+  }
 #endif  // !defined(REMOTING_MULTI_PROCESS)
 
   return true;
