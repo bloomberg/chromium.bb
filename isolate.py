@@ -1886,6 +1886,10 @@ def CMDtrace(args):
   except trace_inputs.TracingFailure, e:
     raise ExecutionError('Tracing failed for: %s\n%s' % (' '.join(cmd), str(e)))
 
+  if result:
+    logging.error('Tracer exited with %d, which means the tests probably '
+                  'failed so the trace is probably incomplete.', result)
+
   complete_state.save_files()
 
   if options.merge:
