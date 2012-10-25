@@ -95,6 +95,10 @@ class ASH_EXPORT MultiWindowResizeController :
                                  int window_component,
                                  const gfx::Point& point) const;
 
+  // Variant of DetermineWindows() that uses the current location of the mouse
+  // to determine the resize windows.
+  ResizeWindows DetermineWindowsFromScreenPoint(aura::Window* window) const;
+
   // Finds a window by edge (one of the constants HitTestCompat.
   aura::Window* FindWindowByEdge(aura::Window* window_to_ignore,
                                  int edge_want,
@@ -112,6 +116,10 @@ class ASH_EXPORT MultiWindowResizeController :
 
   // Hides the window after a delay.
   void DelayedHide();
+
+  // Shows the resizer if the mouse is still at a valid location. This is called
+  // from the |show_timer_|.
+  void ShowIfValidMouseLocation();
 
   // Shows the widget immediately.
   void ShowNow();
