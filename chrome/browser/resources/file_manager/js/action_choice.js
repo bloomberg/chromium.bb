@@ -218,7 +218,7 @@ ActionChoice.prototype.onOk_ = function() {
   if (this.document_.querySelector('#import-photos-to-drive').checked) {
     var url = chrome.extension.getURL('photo_import.html') +
         '#' + this.sourceEntry_.fullPath;
-    chrome.windows.create({url: url, type: 'popup'});
+    chrome.windows.create({url: url, type: 'popup', height: 656, width: 728});
   } else if (this.document_.querySelector('#view-files').checked) {
     var url = chrome.extension.getURL('main.html') +
         '#' + this.sourceEntry_.fullPath;

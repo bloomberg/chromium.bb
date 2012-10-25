@@ -50,14 +50,20 @@
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
   display: -webkit-box;
-  height: 60px;
+  height: 50px;
   width: 100%;
 }
 
 .caption {
-  -webkit-box-flex: 1;
   font-size: 150%;
   margin-left: 8px;
+}
+
+.select {
+  -webkit-margin-start: 15px;
+  color: blue;
+  cursor: pointer;
+  padding-top: 5px;
 }
 
 .bottombar label {
@@ -81,9 +87,10 @@ button.import {
   width: 100%;
 }
 
+
 .photo-import grid::-webkit-scrollbar {
   background: white;
-  width: 6px;
+  width: 8px;
 }
 
 .photo-import grid::-webkit-scrollbar-thumb {
@@ -91,49 +98,46 @@ button.import {
 }
 
 /* Keep width in sync with PhotoImport.ITEM_WIDTH */
+.grid-container grid {
+  line-height: 0;
+}
+
 .grid-item {
-  border: none !important;
-  box-sizing: border-box;
-  height: 124px;
-  margin-left: 8px;
-  margin-top: 7px;
-  overflow: hidden;
-  padding: 0;
-  width: 164px;
-}
-
-.grid-item.group,
-.grid-item.empty {
-  background: white !important;
-  outline: none !important;
-}
-
-.grid-item.group {
+  border: 2px solid transparent;  /* Selection will make the border visible. */
+  border-radius: 0;
+  height: 120px;
+  margin-bottom: 5px;
+  margin-right: 6px;
+  margin-top: 1px;
   overflow: visible;
-}
-
-.grid-item.group > div {
-  height: 40px;
-  left: 2px;
-  position: absolute;
-  top: 80px;
-  width: 400px;
+  padding: 0;
+  position: relative;
+  width: 160px;
 }
 
 .grid-frame {
-  background: white;
-  border: none;
-  box-sizing: border-box;
-  height: 100%;
-  padding: 2px;
-  position: relative;
-  width: 100%;
+  background-image: -webkit-image-set(
+    url('../images/files/ui/hashed_bg.gif') 1x,
+    url('../images/files/ui/2x/hashed_bg.gif') 2x);
+  border: 1px solid #d9d9d9;
+  bottom: 0;
+  left: 0;
+  overflow: hidden;
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
-.grid-frame input[type=checkbox] {
-  bottom: 25px;
-  left: 5px;
-  position: relative;
+.grid-item .check {
+  background: -webkit-image-set(
+    url('../images/common/check_blue.png') 1x,
+    url('../images/common/2x/check_blue.png') 2x) no-repeat;
+  bottom: -3px;
+  display: none;
+  height: 26px;
+  left: -4px;
+  position: absolute;
+  width: 26px;
 }
 
 .img-container {
@@ -144,18 +148,22 @@ button.import {
 
 .img-container > img {
   -webkit-user-drag: none;
-  border: 2px solid transparent;
   box-sizing: border-box;
   position: absolute;
 }
 
-.grid-item[lead] img,
-.grid-item[selected] img,
-.grid-item:hover img,
-.grid-item[lead] .img-container[generic-thumbnail],
-.grid-item[selected] .img-container[generic-thumbnail],
-.grid-item:hover .img-container[generic-thumbnail] {
-  outline: 2px solid rgb(51, 153, 255);
+.grid-item[lead] {
+  border: 2px solid transparent !important;
+}
+
+.grid-item[selected],
+.grid-item[lead][selected],
+.grid-item:hover {
+  border: 2px solid rgb(51, 153, 255) !important;
+}
+
+.grid-item[selected] .check {
+  display: block;
 }
 
 /* Importing dialog styles */

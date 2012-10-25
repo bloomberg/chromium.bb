@@ -11908,9 +11908,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_UNMOUNT_DEVICE_BUTTON_LABEL" desc="Title of the action for unmounting removable device.">
         Eject device
       </message>
-      <message name="IDS_FILE_BROWSER_IMPORT_PHOTOS_BUTTON_LABEL" desc="Title of the action for importing photos.">
-        Import photos
-      </message>
 
       <message name="IDS_FILE_BROWSER_NOT_FORMATTED_USB" desc="In the File Manager, message shown for an unformatted USB device.">
         Your USB device is not formatted.
@@ -12107,19 +12104,22 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_IMPORTING_ERROR" desc="In the Photo import, importing error message.">
         Cannot import. An error occured.
       </message>
-      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_CAPTION" desc="In the Photo import, caption inside the dialog.">
+      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_CAPTION" desc="In the Photo import, caption inside the dialog, with items 'All' and 'None' to select everything and nothing.">
         Select photos to import
+      </message>
+      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_SELECT_ALL" desc="In the Photo import, link to select all photos.">
+        Select all
+      </message>
+      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_SELECT_NONE" desc="In the Photo import, link to select no photos.">
+        Select none
       </message>
       <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_DELETE_AFTER" desc="In the Photo import, label of checkbox to remove files after import is done.">
         Delete photos after import
       </message>
-      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_NOTHING_PICKED" desc="In the Photo import, message informing about no photo picked.">
-        Nothing selected
-      </message>
-      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_ONE_PICKED" desc="In the Photo import, message informing about one photo picked.">
+      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_ONE_SELECTED" desc="In the Photo import, message informing about one photo selected.">
         1 selected
       </message>
-      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_MANY_PICKED" desc="In the Photo import, message informing about multiple photos picked.">
+      <message name="IDS_FILE_BROWSER_PHOTO_IMPORT_MANY_SELECTED" desc="In the Photo import, message informing about multiple photos selected.">
         <ph name="COUNT">$1<ex>42</ex></ph> selected
       </message>
 
