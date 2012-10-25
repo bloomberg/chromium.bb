@@ -171,6 +171,9 @@ void BrowserPolicyConnector::Shutdown() {
 
   if (g_testing_provider)
     g_testing_provider->Shutdown();
+  // Drop g_testing_provider so that tests executed with --single_process can
+  // call SetPolicyProviderForTesting() again. It is still owned by the test.
+  g_testing_provider = NULL;
   if (platform_provider_)
     platform_provider_->Shutdown();
   if (cloud_provider_)
@@ -483,6 +486,7 @@ NetworkConfigurationUpdater*
 // static
 void BrowserPolicyConnector::SetPolicyProviderForTesting(
     ConfigurationPolicyProvider* provider) {
+  CHECK(!g_browser_process) << "Must be invoked before the browser is created";
   DCHECK(!g_testing_provider);
   g_testing_provider = provider;
 }
