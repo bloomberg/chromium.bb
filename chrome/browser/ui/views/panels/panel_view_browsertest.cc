@@ -139,12 +139,27 @@ IN_PROC_BROWSER_TEST_F(PanelViewTest, CheckTitleOnlyHeight) {
   gfx::Rect bounds(0, 0, 200, 50);
   Panel* panel = CreatePanelWithBounds("PanelTest", bounds);
 
-  // Change titlebar to title-only and check its height.
+  // Change panel to title-only and check its height.
   bounds.set_height(panel->TitleOnlyHeight());
   panel->SetPanelBoundsInstantly(bounds);
   EXPECT_EQ(panel->TitleOnlyHeight(), panel->GetBounds().height());
-  EXPECT_EQ(0, GetPanelView(panel)->height());
+  EXPECT_EQ(0, GetPanelView(panel)->height()); // client area height.
   EXPECT_EQ(panel->TitleOnlyHeight(),
+            GetPanelView(panel)->GetFrameView()->height());
+
+  panel->Close();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelViewTest, CheckMinimizedHeight) {
+  gfx::Rect bounds(0, 0, 200, 50);
+  Panel* panel = CreatePanelWithBounds("PanelTest", bounds);
+
+  // Change panel to minimized and check its height.
+  bounds.set_height(panel::kMinimizedPanelHeight);
+  panel->SetPanelBoundsInstantly(bounds);
+  EXPECT_EQ(panel::kMinimizedPanelHeight, panel->GetBounds().height());
+  EXPECT_EQ(0, GetPanelView(panel)->height()); // client area height.
+  EXPECT_EQ(panel::kMinimizedPanelHeight,
             GetPanelView(panel)->GetFrameView()->height());
 
   panel->Close();

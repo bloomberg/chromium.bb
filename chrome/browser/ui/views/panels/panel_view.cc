@@ -209,7 +209,7 @@ PanelView::PanelView(Panel* panel, const gfx::Rect& bounds)
       force_to_paint_as_inactive_(false),
       old_focused_view_(NULL) {
   window_ = new views::Widget;
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_PANEL);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.delegate = this;
   params.remove_standard_frame = true;
   params.keep_on_top = true;
@@ -288,7 +288,7 @@ void PanelView::SetBoundsInternal(const gfx::Rect& new_bounds, bool animate) {
     // If no animation is in progress, apply bounds change instantly. Otherwise,
     // continue the animation with new target bounds.
     if (!IsAnimatingBounds())
-      GetWidget()->SetBounds(bounds_);
+      SetWidgetBounds(bounds_);
     return;
   }
 
@@ -306,6 +306,52 @@ void PanelView::AnimationEnded(const ui::Animation* animation) {
 void PanelView::AnimationProgressed(const ui::Animation* animation) {
   gfx::Rect new_bounds = bounds_animator_->CurrentValueBetween(
       animation_start_bounds_, bounds_);
+  SetWidgetBounds(new_bounds);
+}
+
+void PanelView::SetWidgetBounds(const gfx::Rect& new_bounds) {
+#if defined(OS_WIN) && !defined(USE_ASH) && !defined(USE_AURA)
+  // An overlapped window is a top-level window that has a titlebar, border,
+  // and client area. The Windows system will automatically put the shadow
+  // around the whole window. Also the system will enforce the minimum height
+  // (38 pixels based on observation) for the overlapped window such that it
+  // will always has the space for the titlebar.
+  //
+  // On contrast, a popup window is a bare minimum window without border and
+  // titlebar by default. It is often used for the popup menu and the window
+  // with short life. The Windows system does not add the shadow around the
+  // whole window though CS_DROPSHADOW class style could be passed to add the
+  // drop shadow which is only around the right and bottom edges.
+  //
+  // The height of the title-only or minimized panel is smaller than the minimum
+  // overlapped window height. If the panel still uses the overlapped window
+  // style, Windows system will automatically increase the window height. To
+  // work around this limitation, we temporarily change the window style to
+  // popup when the height to set is smaller than the minimum overlapped window
+  // height and then restore the window style to overlapped when the height
+  // grows.
+  static const int kMinimumOverlappedWindowHeight = 38;
+  gfx::Rect old_bounds = GetWidget()->GetRestoredBounds();
+  if (old_bounds.height() > kMinimumOverlappedWindowHeight &&
+      new_bounds.height() <= kMinimumOverlappedWindowHeight) {
+    // When the panel height shrinks below the minimum overlapped window height,
+    // change the window style to popup such that we can show the title-only
+    // and minimized panel without additional height being added by the system.
+    UpdateWindowAttribute(GWL_STYLE,
+                          WS_POPUP,
+                          WS_OVERLAPPED | WS_THICKFRAME | WS_SYSMENU,
+                          true);
+  } else if (old_bounds.height() <= kMinimumOverlappedWindowHeight &&
+             new_bounds.height() > kMinimumOverlappedWindowHeight) {
+    // Change the window style back to overlappped when the panel height grow
+    // taller than the minimum overlapped window height.
+    UpdateWindowAttribute(GWL_STYLE,
+                          WS_OVERLAPPED | WS_THICKFRAME | WS_SYSMENU,
+                          WS_POPUP,
+                          true);
+  }
+#endif
+
   GetWidget()->SetBounds(new_bounds);
 }
 
@@ -363,9 +409,11 @@ void PanelView::PreventActivationByOS(bool prevent_activation) {
   // Set the flags "NoActivate" and "AppWindow" to make sure
   // the minimized panels do not get activated by the OS, but
   // do appear in the taskbar and Alt-Tab menu.
-  UpdateWindowAttribute(GWL_EXSTYLE,
-                        WS_EX_NOACTIVATE | WS_EX_APPWINDOW,
-                        prevent_activation);
+  int value_to_change = WS_EX_NOACTIVATE | WS_EX_APPWINDOW;
+  if (prevent_activation)
+    UpdateWindowAttribute(GWL_EXSTYLE, value_to_change, 0, false);
+  else
+    UpdateWindowAttribute(GWL_EXSTYLE, 0, value_to_change, false);
 #endif
 }
 
@@ -807,17 +855,28 @@ bool PanelView::IsWithinResizingArea(const gfx::Point& mouse_location) const {
 
 #if defined(OS_WIN) && !defined(USE_ASH) && !defined(USE_AURA)
 void PanelView::UpdateWindowAttribute(int attribute_index,
-                                      int attribute_value,
-                                      bool to_set) {
+                                      int attribute_value_to_set,
+                                      int attribute_value_to_reset,
+                                      bool update_frame) {
   gfx::NativeWindow native_window = window_->GetNativeWindow();
   int value = ::GetWindowLong(native_window, attribute_index);
-  int expected_value;
-  if (to_set)
-    expected_value = value |  attribute_value;
-  else
-    expected_value = value &  ~attribute_value;
+  int expected_value = value;
+  if (attribute_value_to_set)
+    expected_value |=  attribute_value_to_set;
+  if (attribute_value_to_reset)
+    expected_value &=  ~attribute_value_to_reset;
   if (value != expected_value)
     ::SetWindowLong(native_window, attribute_index, expected_value);
+
+  // Per MSDN, if any of the frame styles is changed, SetWindowPos with the
+  // SWP_FRAMECHANGED flag must be called in order for the cached window data
+  // to be updated properly.
+  // http://msdn.microsoft.com/en-us/library/windows/desktop/ms633591(v=vs.85).aspx
+  if (update_frame) {
+    ::SetWindowPos(native_window, NULL, 0, 0, 0, 0,
+                   SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE |
+                       SWP_NOZORDER | SWP_NOACTIVATE);
+  }
 }
 #endif
 
