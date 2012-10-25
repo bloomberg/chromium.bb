@@ -302,18 +302,34 @@ std::string ChromeContentRendererClient::GetDefaultEncoding() {
   return l10n_util::GetStringUTF8(IDS_DEFAULT_ENCODING);
 }
 
+const extensions::Extension* ChromeContentRendererClient::GetExtension(
+    const WebSecurityOrigin& origin) const {
+  if (!EqualsASCII(origin.protocol(), chrome::kExtensionScheme))
+    return NULL;
+
+  const std::string extension_id = origin.host().utf8().data();
+  if (!extension_dispatcher_->IsExtensionActive(extension_id))
+    return NULL;
+
+  return extension_dispatcher_->extensions()->GetByID(extension_id);
+}
+
 bool ChromeContentRendererClient::OverrideCreatePlugin(
     content::RenderView* render_view,
     WebFrame* frame,
     const WebPluginParams& params,
     WebPlugin** plugin) {
   std::string orig_mime_type = params.mimeType.utf8();
-  if ((orig_mime_type == content::kBrowserPluginMimeType &&
-      extensions::ExtensionHelper::Get(render_view)->view_type() ==
-          VIEW_TYPE_APP_SHELL) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserPluginForAllViewTypes)) {
-    return false;
+  if (orig_mime_type == content::kBrowserPluginMimeType) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableBrowserPluginForAllViewTypes))
+      return false;
+    WebDocument document = frame->document();
+    const extensions::Extension* extension =
+        GetExtension(document.securityOrigin());
+    if (extension && extension->HasAPIPermission(
+        extensions::APIPermission::kWebView))
+      return false;
   }
 
   ChromeViewHostMsg_GetPluginInfo_Output output;

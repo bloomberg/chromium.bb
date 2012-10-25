@@ -24,6 +24,7 @@ struct ChromeViewHostMsg_GetPluginInfo_Output;
 
 namespace extensions {
 class Dispatcher;
+class Extension;
 }
 
 namespace media {
@@ -40,6 +41,10 @@ class PhishingClassifierFilter;
 
 namespace webkit {
 struct WebPluginInfo;
+}
+
+namespace WebKit {
+class WebSecurityOrigin;
 }
 
 namespace chrome {
@@ -142,6 +147,9 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeContentRendererClientTest, NaClRestriction);
+
+  const extensions::Extension* GetExtension(
+      const WebKit::WebSecurityOrigin& origin) const;
 
   // Returns true if the frame is navigating to an URL either into or out of an
   // extension app's extent.
