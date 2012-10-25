@@ -52,7 +52,7 @@ class TestDirectoryStorage(unittest.TestCase):
       url1 = self._dir_storage.PutDirectory(temp1, 'me')
       url2 = self._dir_storage.GetDirectory('me', temp2)
       self.assertEqual(url1, url2)
-      self.assertIsNotNone(url1)
+      self.assertNotEqual(None, url1)
 
   def test_BadWrite(self):
     def call(cmd):
@@ -74,7 +74,7 @@ class TestDirectoryStorage(unittest.TestCase):
     # Check that storage exceptions come thru on failure.
     with working_directory.TemporaryWorkingDirectory() as work_dir:
       temp1 = os.path.join(work_dir, 'temp1')
-      self.assertIsNone(self._dir_storage.GetDirectory('foo', temp1))
+      self.assertEqual(None, self._dir_storage.GetDirectory('foo', temp1))
 
 
 if __name__ == '__main__':

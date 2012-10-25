@@ -6,6 +6,7 @@
 
 Import('env')
 
-node = env.Command('run_build_tests.out', 'run_build_tests.py',
-                   '${PYTHON} ${SOURCE}')
+node = env.CommandTest('run_build_tests.out',
+                       command=['${PYTHON}', env.File('run_build_tests.py')],
+                       direct_emulation=False)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_build_tests')

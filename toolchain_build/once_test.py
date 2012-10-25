@@ -164,10 +164,11 @@ class TestOnce(unittest.TestCase):
       self.GenerateTestData('Command', work_dir)
       o = once.Once(storage=fake_storage.FakeStorage())
       o.Run('test', self._input_dirs, [self._output_dirs[0]],
-            [command.Command('echo hello >%(output0)s/out', shell=True)])
-      self.assertEquals(
-          'hello\n',
-          file_tools.ReadFile(self._output_files[0]).replace('\r', ''))
+            [command.Command([
+                sys.executable, '-c',
+                'import sys; open(sys.argv[1], "wb").write("hello")',
+                '%(output0)s/out'])])
+      self.assertEquals('hello', file_tools.ReadFile(self._output_files[0]))
 
   def test_UnpackCommands(self):
     # Test that unpack commnds get run first and hashed_inputs get

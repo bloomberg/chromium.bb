@@ -5,6 +5,7 @@
 
 """Run all python tests in this directory."""
 
+import sys
 import unittest
 
 MODULES = [
@@ -12,4 +13,8 @@ MODULES = [
 ]
 
 suite = unittest.TestLoader().loadTestsFromNames(MODULES)
-unittest.TextTestRunner(verbosity=2).run(suite)
+result = unittest.TextTestRunner(verbosity=2).run(suite)
+if result.wasSuccessful():
+  sys.exit(0)
+else:
+  sys.exit(1)

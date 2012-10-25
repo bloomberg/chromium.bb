@@ -60,7 +60,10 @@ class GSDStorage(object):
       download: Testing hook to intercept download.
     """
     if gsutil is None:
-      gsutil = [file_tools.Which(os.environ.get('GSUTIL', 'gsutil'))]
+      try:
+        gsutil = [file_tools.Which(os.environ.get('GSUTIL', 'gsutil'))]
+      except file_tools.ExecutableNotFound:
+        gsutil = ['gsutil']
     assert isinstance(gsutil, list)
     assert isinstance(read_buckets, list)
     self._gsutil = gsutil

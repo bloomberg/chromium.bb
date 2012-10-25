@@ -8,6 +8,7 @@
 
 import multiprocessing
 import os
+import sys
 
 
 def PrepareCommandValues(cwd, inputs, outputs):
@@ -48,7 +49,10 @@ class Command(object):
     else:
       kwargs['cwd'] = values['cwd']
     values['cwd'] = kwargs['cwd']
-    values['cores'] = multiprocessing.cpu_count()
+    try:
+      values['cores'] = multiprocessing.cpu_count()
+    except NotImplementedError:
+      values['cores'] = 4  # Assume 4 if we can't measure.
     values['package'] = package
     if build_signature is not None:
       values['build_signature'] = build_signature
@@ -62,9 +66,15 @@ class Command(object):
 
 def Mkdir(path):
   """Convenience method for generating mkdir commands."""
-  return Command('mkdir "%s"' % path, shell=True)
+  # TODO(bradnelson): Replace with something less hacky.
+  return Command([
+      sys.executable, '-c',
+      'import sys,os; os.mkdir(sys.argv[1])', path])
 
 
 def Copy(src, dst):
   """Convenience method for generating cp commands."""
-  return Command('cp "%s" "%s"' % (src, dst), shell=True)
+  # TODO(bradnelson): Replace with something less hacky.
+  return Command([
+      sys.executable, '-c',
+      'import sys,shutil; shutil.copyfile(sys.argv[1], sys.argv[2])', src, dst])
