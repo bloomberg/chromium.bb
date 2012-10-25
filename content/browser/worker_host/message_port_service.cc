@@ -7,6 +7,8 @@
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/common/worker_messages.h"
 
+namespace content {
+
 struct MessagePortService::MessagePort {
   // |filter| and |route_id| are what we need to send messages to the port.
   // |filter| is just a weak pointer since we get notified when its process has
@@ -234,3 +236,5 @@ void MessagePortService::Erase(int message_port_id) {
   }
   message_ports_.erase(erase_item);
 }
+
+}  // namespace content

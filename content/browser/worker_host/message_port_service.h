@@ -14,6 +14,7 @@
 #include "base/string16.h"
 #include "ipc/ipc_message.h"
 
+namespace content {
 class WorkerMessageFilter;
 
 class MessagePortService {
@@ -69,5 +70,7 @@ class MessagePortService {
 
   DISALLOW_COPY_AND_ASSIGN(MessagePortService);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_WORKER_HOST_MESSAGE_PORT_SERVICE_H_

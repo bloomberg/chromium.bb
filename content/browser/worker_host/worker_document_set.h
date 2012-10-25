@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 
+namespace content {
 class WorkerMessageFilter;
 
 // The WorkerDocumentSet tracks all of the DOM documents associated with a
@@ -85,5 +86,7 @@ class WorkerDocumentSet : public base::RefCounted<WorkerDocumentSet> {
 
   DocumentInfoSet document_set_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_WORKER_HOST_WORKER_DOCUMENT_SET_H_

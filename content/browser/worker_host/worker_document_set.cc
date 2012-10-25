@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 
+namespace content {
+
 WorkerDocumentSet::WorkerDocumentSet() {
 }
 
@@ -67,3 +69,5 @@ WorkerDocumentSet::DocumentInfo::DocumentInfo(
 
 WorkerDocumentSet::~WorkerDocumentSet() {
 }
+
+}  // namespace content

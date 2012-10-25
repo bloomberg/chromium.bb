@@ -14,20 +14,19 @@ struct ViewHostMsg_CreateWorker_Params;
 
 namespace content {
 class ResourceContext;
-}  // namespace content
 
-class WorkerMessageFilter : public content::BrowserMessageFilter {
+class WorkerMessageFilter : public BrowserMessageFilter {
  public:
   typedef base::Callback<int(void)> NextRoutingIDCallback;
 
   // |next_routing_id| is owned by this object.  It can be used up until
   // OnChannelClosing.
   WorkerMessageFilter(int render_process_id,
-                      content::ResourceContext* resource_context,
+                      ResourceContext* resource_context,
                       const WorkerStoragePartition& partition,
                       const NextRoutingIDCallback& callback);
 
-  // content::BrowserMessageFilter implementation.
+  // BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
@@ -50,7 +49,7 @@ class WorkerMessageFilter : public content::BrowserMessageFilter {
   void OnCreateMessagePort(int* route_id, int* message_port_id);
 
   int render_process_id_;
-  content::ResourceContext* const resource_context_;
+  ResourceContext* const resource_context_;
   WorkerStoragePartition partition_;
 
   // This is guaranteed to be valid until OnChannelClosing is closed, and it's
@@ -59,5 +58,7 @@ class WorkerMessageFilter : public content::BrowserMessageFilter {
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WorkerMessageFilter);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_WORKER_HOST_WORKER_MESSAGE_FILTER_H_

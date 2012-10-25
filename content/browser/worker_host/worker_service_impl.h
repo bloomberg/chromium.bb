@@ -15,12 +15,12 @@
 #include "content/public/browser/worker_service.h"
 
 class GURL;
-class WorkerStoragePartition;
 struct ViewHostMsg_CreateWorker_Params;
 
 namespace content {
 class ResourceContext;
 class WorkerServiceObserver;
+class WorkerStoragePartition;
 
 class CONTENT_EXPORT WorkerServiceImpl
     : public NON_EXPORTED_BASE(WorkerService) {

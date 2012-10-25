@@ -10,13 +10,11 @@
 #include "content/common/worker_messages.h"
 #include "content/public/browser/resource_context.h"
 
-using content::BrowserMessageFilter;
-using content::BrowserThread;
-using content::WorkerServiceImpl;
+namespace content {
 
 WorkerMessageFilter::WorkerMessageFilter(
     int render_process_id,
-    content::ResourceContext* resource_context,
+    ResourceContext* resource_context,
     const WorkerStoragePartition& partition,
     const NextRoutingIDCallback& callback)
     : render_process_id_(render_process_id),
@@ -112,3 +110,5 @@ void WorkerMessageFilter::OnCreateMessagePort(int *route_id,
   *route_id = next_routing_id_.Run();
   MessagePortService::GetInstance()->Create(*route_id, this, message_port_id);
 }
+
+}  // namespace content

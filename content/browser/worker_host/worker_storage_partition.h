@@ -9,10 +9,6 @@
 
 class IndexedDBContextImpl;
 
-namespace content {
-class ChromeAppCacheService;
-}
-
 namespace fileapi {
 class FileSystemContext;
 }  // namespace fileapi
@@ -24,6 +20,9 @@ class URLRequestContextGetter;
 namespace webkit_database {
 class DatabaseTracker;
 }  // namespace webkit_database
+
+namespace content {
+class ChromeAppCacheService;
 
 // Contains the data from StoragePartition for use by Worker APIs.
 //
@@ -42,7 +41,7 @@ class WorkerStoragePartition {
   WorkerStoragePartition(
       net::URLRequestContextGetter* url_request_context,
       net::URLRequestContextGetter* media_url_request_context,
-      content::ChromeAppCacheService* appcache_service,
+      ChromeAppCacheService* appcache_service,
       fileapi::FileSystemContext* filesystem_context,
       webkit_database::DatabaseTracker* database_tracker,
       IndexedDBContextImpl* indexed_db_context);
@@ -64,7 +63,7 @@ class WorkerStoragePartition {
     return media_url_request_context_.get();
   }
 
-  content::ChromeAppCacheService* appcache_service() const {
+  ChromeAppCacheService* appcache_service() const {
     return appcache_service_.get();
   }
 
@@ -85,10 +84,12 @@ class WorkerStoragePartition {
 
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;
   scoped_refptr<net::URLRequestContextGetter> media_url_request_context_;
-  scoped_refptr<content::ChromeAppCacheService> appcache_service_;
+  scoped_refptr<ChromeAppCacheService> appcache_service_;
   scoped_refptr<fileapi::FileSystemContext> filesystem_context_;
   scoped_refptr<webkit_database::DatabaseTracker> database_tracker_;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_WORKER_HOST_WORKER_STORAGE_PARTITION_H_
