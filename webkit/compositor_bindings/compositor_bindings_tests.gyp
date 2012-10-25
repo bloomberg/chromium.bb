@@ -20,7 +20,7 @@
   'targets': [
     {
       'target_name': 'webkit_compositor_bindings_unittests',
-      'type' : 'executable',
+      'type' : '<(gtest_target_type)',
       'dependencies': [
         '../../base/base.gyp:test_support_base',
         '../../cc/cc.gyp:cc',
@@ -43,6 +43,33 @@
         '<(DEPTH)/cc/test',
         '../../third_party/WebKit/Source/Platform/chromium'
       ],
+      'conditions': [
+        ['OS == "android" and gtest_target_type == "shared_library"', {
+          'dependencies': [
+            '../../testing/android/native_test.gyp:native_test_native_code',
+          ],
+        }],
+      ],
     },
+  ],
+  'conditions': [
+    # Special target to wrap a gtest_target_type==shared_library
+    # package webkit_compositor_bindings_unittests into an android apk for execution.
+    ['OS == "android" and gtest_target_type == "shared_library"', {
+      'targets': [
+        {
+          'target_name': 'webkit_compositor_bindings_unittests_apk',
+          'type': 'none',
+          'dependencies': [
+            'webkit_compositor_bindings_unittests',
+          ],
+          'variables': {
+            'test_suite_name': 'webkit_compositor_bindings_unittests',
+            'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)webkit_compositor_bindings_unittests<(SHARED_LIB_SUFFIX)',
+          },
+          'includes': [ '../../build/apk_test.gypi' ],
+        },
+      ],
+    }],
   ],
 }
