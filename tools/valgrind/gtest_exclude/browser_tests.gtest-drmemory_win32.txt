@@ -109,3 +109,13 @@ AutofillTest.*
 HostRulesTest.*
 UnloadTest.*
 DoNotTrackTest.*
+# DrM-i#1052-c#16
+SavePageBrowserTest.*
+SavePageAsMHTMLBrowserTest.*
+ClickModifierTest.*
+FindInPageControllerTest.*
+ContextMenuBrowserTest.*
+WebUIBrowserAsyncGenTest.*
+BrowserEncodingTest.*
+ShowModalDialogTest.*
+NaClGdbTest.*
