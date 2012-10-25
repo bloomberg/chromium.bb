@@ -33,6 +33,26 @@ int WebModifiersToUIFlags(int modifiers) {
   return flags;
 }
 
+ui::EventType WebTouchPointStateToEventType(
+    WebKit::WebTouchPoint::State state) {
+  switch (state) {
+    case WebKit::WebTouchPoint::StateReleased:
+      return ui::ET_TOUCH_RELEASED;
+
+    case WebKit::WebTouchPoint::StatePressed:
+      return ui::ET_TOUCH_PRESSED;
+
+    case WebKit::WebTouchPoint::StateMoved:
+      return ui::ET_TOUCH_MOVED;
+
+    case WebKit::WebTouchPoint::StateCancelled:
+      return ui::ET_TOUCH_CANCELLED;
+
+    default:
+      return ui::ET_UNKNOWN;
+  }
+}
+
 }  // namespace
 
 namespace content {
@@ -63,6 +83,8 @@ bool MakeUITouchEventsFromWebTouchEvents(const WebKit::WebTouchEvent& touch,
       static_cast<int64>(touch.timeStampSeconds * 1000000));
   for (unsigned i = 0; i < touch.touchesLength; ++i) {
     const WebKit::WebTouchPoint& point = touch.touches[i];
+    if (WebTouchPointStateToEventType(point.state) != type)
+      continue;
     // In aura, the touch-event needs to be in the screen coordinate, since the
     // touch-event is routed to RootWindow first. In Windows, on the other hand,
     // the touch-event is dispatched directly to the gesture-recognizer, so the

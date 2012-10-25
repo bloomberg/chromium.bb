@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_UI_EVENTS_HELPER_H_
 
 #include "base/memory/scoped_vector.h"
+#include "content/common/content_export.h"
 
 namespace WebKit {
 class WebTouchEvent;
@@ -22,8 +23,9 @@ namespace content {
 // whereas a ui::TouchEvent contains information about a single touch-point. So
 // it is possible to create more than one ui::TouchEvents out of a single
 // WebTouchEvent.
-bool MakeUITouchEventsFromWebTouchEvents(const WebKit::WebTouchEvent& touch,
-                                         ScopedVector<ui::TouchEvent>* list);
+CONTENT_EXPORT bool MakeUITouchEventsFromWebTouchEvents(
+    const WebKit::WebTouchEvent& touch,
+    ScopedVector<ui::TouchEvent>* list);
 }
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_UI_EVENTS_HELPER_H_

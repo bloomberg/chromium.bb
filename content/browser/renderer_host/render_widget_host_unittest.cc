@@ -30,6 +30,11 @@
 #include "ui/aura/env.h"
 #endif
 
+#if defined(OS_WIN) || defined(USE_AURA)
+#include "content/browser/renderer_host/ui_events_helper.h"
+#include "ui/base/events/event.h"
+#endif
+
 using base::TimeDelta;
 using content::BackingStore;
 using content::BrowserThread;
@@ -48,6 +53,39 @@ using WebKit::WebTouchPoint;
 namespace gfx {
 class Size;
 }
+
+#if defined(OS_WIN) || defined(USE_AURA)
+bool TouchEventsAreEquivalent(const ui::TouchEvent& first,
+                              const ui::TouchEvent& second) {
+  EXPECT_EQ(second.type(), first.type());
+  if (first.type() != second.type())
+    return false;
+  EXPECT_EQ(second.location().ToString(), first.location().ToString());
+  if (first.location() != second.location())
+    return false;
+  EXPECT_EQ(second.touch_id(), first.touch_id());
+  if (first.touch_id() != second.touch_id())
+    return false;
+  return true;
+}
+
+bool EventListIsSubset(const ScopedVector<ui::TouchEvent>& subset,
+                       const ScopedVector<ui::TouchEvent>& set) {
+  EXPECT_LE(subset.size(), set.size());
+  if (subset.size() > set.size())
+    return false;
+  for (size_t i = 0; i < subset.size(); ++i) {
+    const ui::TouchEvent* first = subset[i];
+    const ui::TouchEvent* second = set[i];
+    bool equivalent = TouchEventsAreEquivalent(*first, *second);
+    EXPECT_TRUE(equivalent);
+    if (!equivalent)
+      return false;
+  }
+
+  return true;
+}
+#endif  // defined(OS_WIN) || defined(USE_AURA)
 
 // RenderWidgetHostProcess -----------------------------------------------------
 
@@ -1452,8 +1490,12 @@ TEST_F(RenderWidgetHostTest, SentTouchEventDoesNotCoalesce) {
   process_->sink().ClearMessages();
 
   // The coalesced touch-move event has been sent to the renderer. Any new
-  // touch-move event should not be coalesced at this point.
+  // touch-move event should not be coalesced with the sent event.
   MoveTouchPoint(0, 5, 5);
+  SendTouchEvent();
+  EXPECT_EQ(2U, host_->TouchEventQueueSize());
+
+  MoveTouchPoint(0, 7, 7);
   SendTouchEvent();
   EXPECT_EQ(2U, host_->TouchEventQueueSize());
 }
@@ -1505,6 +1547,77 @@ TEST_F(RenderWidgetHostTest, TouchEventQueueMultiTouch) {
   EXPECT_EQ(WebTouchPoint::StateMoved, event.touches[0].state);
   EXPECT_EQ(WebTouchPoint::StateMoved, event.touches[1].state);
 }
+
+#if defined(OS_WIN) || defined(USE_AURA)
+// Tests that the acked events have correct state. (ui::Events are used only on
+// windows and aura)
+TEST_F(RenderWidgetHostTest, AckedTouchEventState) {
+  process_->sink().ClearMessages();
+  host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
+  EXPECT_EQ(0U, process_->sink().message_count());
+  EXPECT_EQ(0U, host_->TouchEventQueueSize());
+  EXPECT_TRUE(host_->ShouldForwardTouchEvent());
+
+  // Send a bunch of events, and make sure the ACKed events are correct.
+  ScopedVector<ui::TouchEvent> expected_events;
+
+  // Press the first finger.
+  PressTouchPoint(1, 1);
+  SendTouchEvent();
+  EXPECT_EQ(1U, process_->sink().message_count());
+  process_->sink().ClearMessages();
+  expected_events.push_back(new ui::TouchEvent(ui::ET_TOUCH_PRESSED,
+      gfx::Point(1, 1), 0, base::TimeDelta()));
+
+  // Move the finger.
+  MoveTouchPoint(0, 5, 5);
+  SendTouchEvent();
+  EXPECT_EQ(2U, host_->TouchEventQueueSize());
+  expected_events.push_back(new ui::TouchEvent(ui::ET_TOUCH_MOVED,
+      gfx::Point(5, 5), 0, base::TimeDelta()));
+
+  // Now press a second finger.
+  PressTouchPoint(2, 2);
+  SendTouchEvent();
+  EXPECT_EQ(3U, host_->TouchEventQueueSize());
+  expected_events.push_back(new ui::TouchEvent(ui::ET_TOUCH_PRESSED,
+      gfx::Point(2, 2), 1, base::TimeDelta()));
+
+  // Move both fingers.
+  MoveTouchPoint(0, 10, 10);
+  MoveTouchPoint(1, 20, 20);
+  SendTouchEvent();
+  EXPECT_EQ(4U, host_->TouchEventQueueSize());
+  expected_events.push_back(new ui::TouchEvent(ui::ET_TOUCH_MOVED,
+      gfx::Point(10, 10), 0, base::TimeDelta()));
+  expected_events.push_back(new ui::TouchEvent(ui::ET_TOUCH_MOVED,
+      gfx::Point(20, 20), 1, base::TimeDelta()));
+
+  // Receive the ACKs and make sure the generated events from the acked events
+  // are correct.
+  WebInputEvent::Type acks[] = { WebInputEvent::TouchStart,
+                                 WebInputEvent::TouchMove,
+                                 WebInputEvent::TouchStart,
+                                 WebInputEvent::TouchMove };
+
+  for (size_t i = 0; i < arraysize(acks); ++i) {
+    SendInputEventACK(acks[i], false);
+    EXPECT_EQ(acks[i], view_->acked_event().type);
+    ScopedVector<ui::TouchEvent> acked;
+
+    content::MakeUITouchEventsFromWebTouchEvents(view_->acked_event(), &acked);
+    bool success = EventListIsSubset(acked, expected_events);
+    EXPECT_TRUE(success) << "Failed on step: " << i;
+    if (!success)
+      break;
+    expected_events.erase(expected_events.begin(),
+                          expected_events.begin() + acked.size());
+  }
+
+  EXPECT_EQ(0U, expected_events.size());
+}
+
+#endif  // defined(OS_WIN) || defined(USE_AURA)
 
 // Test that the hang monitor timer expires properly if a new timer is started
 // while one is in progress (see crbug.com/11007).
