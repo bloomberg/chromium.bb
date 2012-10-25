@@ -147,6 +147,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   void GoToOffset(JNIEnv* env, jobject obj, jint offset);
   void StopLoading(JNIEnv* env, jobject obj);
   void Reload(JNIEnv* env, jobject obj);
+  void CancelPendingReload(JNIEnv* env, jobject obj);
+  void ContinuePendingReload(JNIEnv* env, jobject obj);
   jboolean NeedsReload(JNIEnv* env, jobject obj);
   void ClearHistory(JNIEnv* env, jobject obj);
   jint EvaluateJavaScript(JNIEnv* env, jobject obj, jstring script);

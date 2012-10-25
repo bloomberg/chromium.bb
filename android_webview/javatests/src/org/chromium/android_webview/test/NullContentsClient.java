@@ -5,6 +5,7 @@
 package org.chromium.android_webview.test;
 
 import android.content.Context;
+import android.os.Message;
 import android.view.KeyEvent;
 import android.webkit.ConsoleMessage;
 
@@ -83,5 +84,10 @@ class NullContentsClient extends AwContentsClient {
 
     @Override
     public void onReceivedError(int errorCode, String description, String failingUrl) {
+    }
+
+    @Override
+    public void onFormResubmission(Message dontResend, Message resend) {
+        dontResend.sendToTarget();
     }
 }

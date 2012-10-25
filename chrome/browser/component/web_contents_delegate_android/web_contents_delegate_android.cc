@@ -8,6 +8,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/page_navigator.h"
@@ -263,6 +264,20 @@ bool WebContentsDelegateAndroid::TakeFocus(WebContents* source, bool reverse) {
     return WebContentsDelegate::TakeFocus(source, reverse);
   return Java_WebContentsDelegateAndroid_takeFocus(
       env, obj.obj(), reverse);
+}
+
+void WebContentsDelegateAndroid::ShowRepostFormWarningDialog(
+    WebContents* source) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return;
+  ScopedJavaLocalRef<jobject> content_view_core =
+      content::ContentViewCore::FromWebContents(source)->GetJavaObject();
+  if (content_view_core.is_null())
+    return;
+  Java_WebContentsDelegateAndroid_showRepostFormWarningDialog(env, obj.obj(),
+      content_view_core.obj());
 }
 
 // ----------------------------------------------------------------------------

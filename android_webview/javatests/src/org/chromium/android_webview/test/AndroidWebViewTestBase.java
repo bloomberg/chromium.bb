@@ -125,6 +125,37 @@ public class AndroidWebViewTestBase
     }
 
     /**
+     * Posts url on the UI thread and blocks until onPageFinished is called.
+     */
+    protected void postUrlSync(final AwContents awContents,
+            CallbackHelper onPageFinishedHelper, final String url,
+            byte[] postData) throws Throwable {
+        int currentCallCount = onPageFinishedHelper.getCallCount();
+        postUrlAsync(awContents, url, postData);
+        onPageFinishedHelper.waitForCallback(currentCallCount, 1, WAIT_TIMEOUT_SECONDS,
+                TimeUnit.SECONDS);
+    }
+
+    /**
+     * Loads url on the UI thread but does not block.
+     */
+    protected void postUrlAsync(final AwContents awContents,
+            final String url, byte[] postData) throws Throwable {
+        class PostUrl implements Runnable {
+            byte[] mPostData;
+            public PostUrl(byte[] postData) {
+                mPostData = postData;
+            }
+            @Override
+            public void run() {
+                awContents.loadUrl(LoadUrlParams.createLoadHttpPostParams(url,
+                        mPostData));
+            }
+        }
+        runTestOnUiThread(new PostUrl(postData));
+    }
+
+    /**
      * Loads data on the UI thread and blocks until onPageFinished is called.
      */
     protected void loadDataSync(final AwContents awContents,

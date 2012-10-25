@@ -90,6 +90,9 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual bool TakeFocus(content::WebContents* source, bool reverse) OVERRIDE;
 
+  virtual void ShowRepostFormWarningDialog(
+      content::WebContents* source) OVERRIDE;
+
  protected:
   base::android::ScopedJavaLocalRef<jobject> GetJavaDelegate(JNIEnv* env) const;
 

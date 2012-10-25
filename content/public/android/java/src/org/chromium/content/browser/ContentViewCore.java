@@ -846,6 +846,20 @@ public class ContentViewCore implements MotionEventDelegate {
     }
 
     /**
+     * Cancel the pending reload.
+     */
+    public void cancelPendingReload() {
+        if (mNativeContentViewCore != 0) nativeCancelPendingReload(mNativeContentViewCore);
+    }
+
+    /**
+     * Continue the pending reload.
+     */
+    public void continuePendingReload() {
+        if (mNativeContentViewCore != 0) nativeContinuePendingReload(mNativeContentViewCore);
+    }
+
+    /**
      * Clears the ContentViewCore's page history in both the backwards and
      * forwards directions.
      */
@@ -2240,6 +2254,10 @@ public class ContentViewCore implements MotionEventDelegate {
     private native void nativeStopLoading(int nativeContentViewCoreImpl);
 
     private native void nativeReload(int nativeContentViewCoreImpl);
+
+    private native void nativeCancelPendingReload(int nativeContentViewCoreImpl);
+
+    private native void nativeContinuePendingReload(int nativeContentViewCoreImpl);
 
     private native void nativeSelectPopupMenuItems(int nativeContentViewCoreImpl, int[] indices);
 

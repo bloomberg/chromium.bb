@@ -6,6 +6,9 @@ package org.chromium.android_webview;
 
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.webkit.ConsoleMessage;
@@ -38,6 +41,29 @@ public abstract class AwContentsClient extends ContentViewClient {
     //--------------------------------------------------------------------------------------------
 
     class WebContentsDelegateAdapter extends AwWebContentsDelegate {
+
+        // The message ids.
+        public final static int CONTINUE_PENDING_RELOAD = 1;
+        public final static int CANCEL_PENDING_RELOAD = 2;
+
+        // Handler associated with this adapter.
+        // TODO(sgurun) Remember the URL to cancel the resend behavior
+        // if it is different than the most recent NavigationController entry.
+        private final Handler mHandler = new Handler(Looper.getMainLooper()) {
+
+            @Override
+            public void handleMessage(Message msg) {
+                switch (msg.what) {
+                    case CONTINUE_PENDING_RELOAD:
+                        ((ContentViewCore) msg.obj).continuePendingReload();
+                        break;
+                    case CANCEL_PENDING_RELOAD:
+                        ((ContentViewCore) msg.obj).cancelPendingReload();
+                        break;
+                }
+            }
+        };
+
         @Override
         public void onLoadProgressChanged(int progress) {
             AwContentsClient.this.onProgressChanged(progress);
@@ -99,6 +125,13 @@ public abstract class AwContentsClient extends ContentViewClient {
         @Override
         public void onUrlStarredChanged(boolean starred) {
             // TODO: implement
+        }
+
+        @Override
+        public void showRepostFormWarningDialog(ContentViewCore contentViewCore) {
+            Message dontResend = mHandler.obtainMessage(CANCEL_PENDING_RELOAD, contentViewCore);
+            Message resend = mHandler.obtainMessage(CONTINUE_PENDING_RELOAD, contentViewCore);
+            AwContentsClient.this.onFormResubmission(dontResend, resend);
         }
     }
 
@@ -166,6 +199,8 @@ public abstract class AwContentsClient extends ContentViewClient {
 
     public abstract void onReceivedHttpAuthRequest(AwHttpAuthHandler handler,
             String host, String realm);
+
+    public abstract void onFormResubmission(Message dontResend, Message resend);
 
     protected abstract void handleJsAlert(String url, String message, JsResultReceiver receiver);
 
