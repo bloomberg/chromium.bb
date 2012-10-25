@@ -353,7 +353,6 @@
                     ['branding == "Chrome"', {
                       'files': [
                         '<(PRODUCT_DIR)/Flash Player Plugin for Chrome.plugin',
-                        '<(PRODUCT_DIR)/plugin.vch',
                       ],
                     }],
                     ['internal_pdf', {

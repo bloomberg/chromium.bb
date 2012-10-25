@@ -56,7 +56,6 @@
               [ 'OS == "mac"', {
                 'files': [
                   'binaries/mac/Flash Player Plugin for Chrome.plugin',
-                  'binaries/mac/plugin.vch',
                 ]
               }],
             ],
