@@ -8,8 +8,8 @@
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/task_runner_util.h"
@@ -191,6 +191,37 @@ SyncStatusCode DriveMetadataStore::ReadEntry(const FileSystemURL& url,
     return fileapi::SYNC_DATABASE_ERROR_NOT_FOUND;
   *metadata = itr->second;
   return fileapi::SYNC_STATUS_OK;
+}
+
+bool DriveMetadataStore::IsBatchSyncOrigin(const GURL& origin) const {
+  DCHECK(CalledOnValidThread());
+  return ContainsKey(batch_sync_origins_, origin);
+}
+
+bool DriveMetadataStore::IsIncrementalSyncOrigin(const GURL& origin) const {
+  DCHECK(CalledOnValidThread());
+  return ContainsKey(incremental_sync_origins_, origin);
+}
+
+void DriveMetadataStore::AddBatchSyncOrigin(const GURL& origin) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!IsBatchSyncOrigin(origin));
+  DCHECK(!IsIncrementalSyncOrigin(origin));
+
+  // TODO(tzik): Store |origin| to DB. crbug.com/157821
+  // TODO(tzik): Add test.
+  batch_sync_origins_.insert(origin);
+}
+
+void DriveMetadataStore::MoveBatchSyncOriginToIncremental(const GURL& origin) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(IsBatchSyncOrigin(origin));
+  DCHECK(!IsIncrementalSyncOrigin(origin));
+
+  // TODO(tzik): Store |origin| to DB. crbug.com/157821
+  // TODO(tzik): Add test.
+  batch_sync_origins_.erase(origin);
+  incremental_sync_origins_.insert(origin);
 }
 
 void DriveMetadataStore::UpdateDBStatus(SyncStatusCode status) {

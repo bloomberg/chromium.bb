@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_METADATA_STORE_H_
 
 #include <map>
+#include <set>
 
 #include "base/callback_forward.h"
 #include "base/file_path.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
@@ -59,6 +61,33 @@ class DriveMetadataStore
   fileapi::SyncStatusCode ReadEntry(const fileapi::FileSystemURL& url,
                                     DriveMetadata* metadata) const;
 
+  // Returns true if |origin| is a batch sync origin, i.e. the origin's entire
+  // file list hasn't been fully fetched and processed yet.
+  bool IsBatchSyncOrigin(const GURL& origin) const;
+
+  // Returns true if |origin| is an incremental sync origin, i.e. the origin's
+  // entire file list has been cached and is ready to apply changes
+  // incrementally.
+  bool IsIncrementalSyncOrigin(const GURL& origin) const;
+
+  // Marks |origin| as a batch sync origin.
+  // |origin| must not be a batch sync origin nor an incremental sync origin.
+  void AddBatchSyncOrigin(const GURL& origin);
+
+  // Marks |origin| as an incremental sync origin.
+  // |origin| must be a batch sync origin.
+  void MoveBatchSyncOriginToIncremental(const GURL& origin);
+
+  const std::set<GURL>& batch_sync_origins() const {
+    DCHECK(CalledOnValidThread());
+    return batch_sync_origins_;
+  }
+
+  const std::set<GURL>& incremental_sync_origins() const {
+    DCHECK(CalledOnValidThread());
+    return incremental_sync_origins_;
+  }
+
  private:
   void UpdateDBStatus(fileapi::SyncStatusCode status);
   void DidInitialize(const InitializationCallback& callback,
@@ -72,6 +101,9 @@ class DriveMetadataStore
 
   int64 largest_changestamp_;
   MetadataMap metadata_map_;
+
+  std::set<GURL> batch_sync_origins_;
+  std::set<GURL> incremental_sync_origins_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveMetadataStore);
 };
