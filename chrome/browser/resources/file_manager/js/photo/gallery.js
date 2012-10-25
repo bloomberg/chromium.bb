@@ -238,6 +238,7 @@ Gallery.prototype.initDom_ = function() {
       deleteButton, this.toolbar_.querySelector('.edit'));
 
   this.shareButton_ = util.createChild(this.toolbar_, 'button share');
+  this.shareButton_.setAttribute('disabled', '');
   this.shareButton_.title = this.displayStringFunction_('share');
   this.shareButton_.addEventListener('click', this.toggleShare_.bind(this));
 

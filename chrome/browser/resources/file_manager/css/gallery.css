@@ -726,8 +726,12 @@ body {
   pointer-events: none;
 }
 
-.gallery > .toolbar > .button:last-child {
+.gallery > .toolbar > .button.share {
   margin-right: 8px;
+}
+
+.gallery > .toolbar > .button.share[disabled] {
+  width: 0;
 }
 
 /* Secondary toolbar (mode-specific tools) */
