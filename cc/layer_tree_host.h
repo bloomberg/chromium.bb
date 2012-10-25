@@ -9,6 +9,7 @@
 
 #include "IntRect.h"
 #include "base/basictypes.h"
+#include "base/cancelable_callback.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -218,6 +219,7 @@ private:
     bool paintMasksForRenderSurface(Layer*, TextureUpdateQueue&);
 
     void updateLayers(Layer*, TextureUpdateQueue&);
+    void triggerPrepaint();
 
     void prioritizeTextures(const LayerList&, OverdrawMetrics&); 
     void setPrioritiesForSurfaces(size_t surfaceMemoryBytes);
@@ -230,6 +232,8 @@ private:
 
     bool m_animating;
     bool m_needsAnimateLayers;
+
+    base::CancelableClosure m_prepaintCallback;
 
     LayerTreeHostClient* m_client;
 

@@ -8,6 +8,7 @@
 
 #include "Region.h"
 #include "base/debug/trace_event.h"
+#include "base/message_loop.h"
 #include "cc/font_atlas.h"
 #include "cc/graphics_context.h"
 #include "cc/heads_up_display_layer.h"
@@ -364,6 +365,10 @@ void LayerTreeHost::setNeedsAnimate()
 
 void LayerTreeHost::setNeedsCommit()
 {
+    if (!m_prepaintCallback.IsCancelled()) {
+        TRACE_EVENT_INSTANT0("cc", "LayerTreeHost::setNeedsCommit::cancel prepaint");
+        m_prepaintCallback.Cancel();
+    }
     m_proxy->setNeedsCommit();
 }
 
@@ -535,11 +540,22 @@ void LayerTreeHost::updateLayers(Layer* rootLayer, TextureUpdateQueue& queue)
     m_partialTextureUpdateRequests = 0;
 
     bool needMoreUpdates = paintLayerContents(updateList, queue);
-    if (m_triggerIdleUpdates && needMoreUpdates)
-        setNeedsCommit();
+    if (m_triggerIdleUpdates && needMoreUpdates) {
+        TRACE_EVENT0("cc", "LayerTreeHost::updateLayers::posting prepaint task");
+        m_prepaintCallback.Reset(base::Bind(&LayerTreeHost::triggerPrepaint, base::Unretained(this)));
+        static base::TimeDelta prepaintDelay = base::TimeDelta::FromMilliseconds(100);
+        MessageLoop::current()->PostDelayedTask(FROM_HERE, m_prepaintCallback.callback(), prepaintDelay);
+    }
 
     for (size_t i = 0; i < updateList.size(); ++i)
         updateList[i]->clearRenderSurface();
+}
+
+void LayerTreeHost::triggerPrepaint()
+{
+    m_prepaintCallback.Cancel();
+    TRACE_EVENT0("cc", "LayerTreeHost::triggerPrepaint");
+    setNeedsCommit();
 }
 
 void LayerTreeHost::setPrioritiesForSurfaces(size_t surfaceMemoryBytes)
