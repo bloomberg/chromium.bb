@@ -29,7 +29,8 @@ else:
 node = env.CommandTest(
     'debug_stub_test.out',
     command=(['${PYTHON}', env.File('debug_stub_test.py'), '-v']
-             + ['--', env.get('TARGET_FULLARCH'), nm_tool] + sel_ldr_command))
+             + ['--', env.get('TARGET_FULLARCH'), nm_tool] + sel_ldr_command),
+    extra_deps=[env.File('gdb_rsp.py')])
 env.AddNodeToTestSuite(node, ['medium_tests', 'nonpexe_tests'],
                        'run_debug_stub_test', is_broken=is_broken)
 env.TestBindsFixedTcpPort(node)
