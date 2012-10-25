@@ -176,6 +176,13 @@ bool MockPluginDelegate::Touch(
   return false;
 }
 
+bool MockPluginDelegate::SetLength(
+    const GURL& path,
+    int64_t length,
+    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+  return false;
+}
+
 bool MockPluginDelegate::Delete(
     const GURL& path,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {

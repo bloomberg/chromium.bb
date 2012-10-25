@@ -244,6 +244,10 @@ class PepperPluginDelegateImpl
       const base::Time& last_access_time,
       const base::Time& last_modified_time,
       fileapi::FileSystemCallbackDispatcher* dispatcher) OVERRIDE;
+  virtual bool SetLength(
+      const GURL& path,
+      int64_t length,
+      fileapi::FileSystemCallbackDispatcher* dispatcher) OVERRIDE;
   virtual bool Delete(
       const GURL& path,
       fileapi::FileSystemCallbackDispatcher* dispatcher) OVERRIDE;

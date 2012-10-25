@@ -1017,6 +1017,15 @@ bool PepperPluginDelegateImpl::Touch(
                                            last_modified_time, dispatcher);
 }
 
+bool PepperPluginDelegateImpl::SetLength(
+    const GURL& path,
+    int64_t length,
+    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+  FileSystemDispatcher* file_system_dispatcher =
+      ChildThread::current()->file_system_dispatcher();
+  return file_system_dispatcher->Truncate(path, length, NULL, dispatcher);
+}
+
 bool PepperPluginDelegateImpl::Delete(
     const GURL& path,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {

@@ -457,6 +457,9 @@ class PluginDelegate {
                      const base::Time& last_access_time,
                      const base::Time& last_modified_time,
                      fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
+  virtual bool SetLength(const GURL& path,
+                         int64_t length,
+                         fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
   virtual bool Delete(const GURL& path,
                       fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
   virtual bool Rename(const GURL& file_path,

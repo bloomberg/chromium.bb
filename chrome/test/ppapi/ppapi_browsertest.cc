@@ -504,34 +504,23 @@ TEST_PPAPI_NACL_VIA_HTTP(Memory)
 TEST_PPAPI_IN_PROCESS(VideoDecoder)
 TEST_PPAPI_OUT_OF_PROCESS(VideoDecoder)
 
-// SetLength fails on Mac and Linux due to sandbox restrictions.
-// http://crbug.com/101128
-#if defined(OS_MACOSX) || defined(OS_LINUX)
-#define MAYBE_FileIO_ReadWriteSetLength DISABLED_FileIO_ReadWriteSetLength
-#define MAYBE_FileIO_WillWriteWillSetLength \
-    DISABLED_FileIO_WillWriteWillSetLength
-#else
-#define MAYBE_FileIO_ReadWriteSetLength FileIO_ReadWriteSetLength
-#define MAYBE_FileIO_WillWriteWillSetLength FileIO_WillWriteWillSetLength
-#endif
-
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileIO_Open)
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileIO_AbortCalls)
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileIO_ParallelReads)
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileIO_ParallelWrites)
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileIO_NotAllowMixedReadWrite)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(MAYBE_FileIO_ReadWriteSetLength)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileIO_ReadWriteSetLength)
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileIO_TouchQuery)
-TEST_PPAPI_IN_PROCESS_VIA_HTTP(MAYBE_FileIO_WillWriteWillSetLength)
+TEST_PPAPI_IN_PROCESS_VIA_HTTP(FileIO_WillWriteWillSetLength)
 
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileIO_Open)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileIO_AbortCalls)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileIO_ParallelReads)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileIO_ParallelWrites)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileIO_NotAllowMixedReadWrite)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(MAYBE_FileIO_ReadWriteSetLength)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileIO_ReadWriteSetLength)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileIO_TouchQuery)
-TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(MAYBE_FileIO_WillWriteWillSetLength)
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileIO_WillWriteWillSetLength)
 
 // PPAPINaclTest.FileIO_ParallelReads is flaky on Mac. http://crbug.com/121104
 #if defined(OS_MACOSX)
@@ -553,7 +542,7 @@ TEST_PPAPI_NACL_VIA_HTTP(MAYBE_FileIO_ParallelReads)
 TEST_PPAPI_NACL_VIA_HTTP(FileIO_ParallelWrites)
 TEST_PPAPI_NACL_VIA_HTTP(FileIO_NotAllowMixedReadWrite)
 TEST_PPAPI_NACL_VIA_HTTP(MAYBE_NACL_FileIO_TouchQuery)
-TEST_PPAPI_NACL_VIA_HTTP(MAYBE_FileIO_ReadWriteSetLength)
+TEST_PPAPI_NACL_VIA_HTTP(FileIO_ReadWriteSetLength)
 // The following test requires PPB_FileIO_Trusted, not available in NaCl.
 TEST_PPAPI_NACL_VIA_HTTP(DISABLED_FileIO_WillWriteWillSetLength)
 
