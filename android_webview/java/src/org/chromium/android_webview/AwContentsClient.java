@@ -60,6 +60,9 @@ public abstract class AwContentsClient extends ContentViewClient {
                     case CANCEL_PENDING_RELOAD:
                         ((ContentViewCore) msg.obj).cancelPendingReload();
                         break;
+                    default:
+                        Log.w(TAG, "Unknown message " + msg.what);
+                        break;
                 }
             }
         };

@@ -50,13 +50,13 @@ public class AwContentsClientOnFormResubmissionTest extends AndroidWebViewTestBa
     }
 
     // Server responses for load and reload of posts.
-    private final String LOAD_RESPONSE =
+    private static final String LOAD_RESPONSE =
             "<html><head><title>Load</title></head><body>HELLO</body></html>";
-    private final String RELOAD_RESPONSE =
+    private static final String RELOAD_RESPONSE =
             "<html><head><title>Reload</title></head><body>HELLO</body></html>";
 
     // Server timeout in seconds. Used to detect dontResend case.
-    private final int TIMEOUT = 3;
+    private static final int TIMEOUT = 3;
 
     // The web server.
     private TestWebServer mServer;
