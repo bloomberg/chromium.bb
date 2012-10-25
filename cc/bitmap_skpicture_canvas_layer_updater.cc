@@ -15,13 +15,13 @@
 
 namespace cc {
 
-BitmapSkPictureCanvasLayerUpdater::Texture::Texture(BitmapSkPictureCanvasLayerUpdater* updater, scoped_ptr<PrioritizedTexture> texture)
-    : CanvasLayerUpdater::Texture(texture.Pass())
+BitmapSkPictureCanvasLayerUpdater::Resource::Resource(BitmapSkPictureCanvasLayerUpdater* updater, scoped_ptr<PrioritizedTexture> texture)
+    : CanvasLayerUpdater::Resource(texture.Pass())
     , m_updater(updater)
 {
 }
 
-void BitmapSkPictureCanvasLayerUpdater::Texture::update(TextureUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats& stats)
+void BitmapSkPictureCanvasLayerUpdater::Resource::update(TextureUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats& stats)
 {
     m_bitmap.setConfig(SkBitmap::kARGB_8888_Config, sourceRect.width(), sourceRect.height());
     m_bitmap.allocPixels();
@@ -54,9 +54,9 @@ BitmapSkPictureCanvasLayerUpdater::~BitmapSkPictureCanvasLayerUpdater()
 {
 }
 
-scoped_ptr<LayerUpdater::Texture> BitmapSkPictureCanvasLayerUpdater::createTexture(PrioritizedTextureManager* manager)
+scoped_ptr<LayerUpdater::Resource> BitmapSkPictureCanvasLayerUpdater::createResource(PrioritizedTextureManager* manager)
 {
-    return scoped_ptr<LayerUpdater::Texture>(new Texture(this, PrioritizedTexture::create(manager)));
+    return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedTexture::create(manager)));
 }
 
 void BitmapSkPictureCanvasLayerUpdater::paintContentsRect(SkCanvas* canvas, const IntRect& sourceRect, RenderingStats& stats)

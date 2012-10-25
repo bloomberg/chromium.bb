@@ -13,17 +13,17 @@
 
 namespace cc {
 
-BitmapCanvasLayerUpdater::Texture::Texture(BitmapCanvasLayerUpdater* updater, scoped_ptr<PrioritizedTexture> texture)
-    : LayerUpdater::Texture(texture.Pass())
+BitmapCanvasLayerUpdater::Resource::Resource(BitmapCanvasLayerUpdater* updater, scoped_ptr<PrioritizedTexture> texture)
+    : LayerUpdater::Resource(texture.Pass())
     , m_updater(updater)
 {
 }
 
-BitmapCanvasLayerUpdater::Texture::~Texture()
+BitmapCanvasLayerUpdater::Resource::~Resource()
 {
 }
 
-void BitmapCanvasLayerUpdater::Texture::update(TextureUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&)
+void BitmapCanvasLayerUpdater::Resource::update(TextureUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&)
 {
     updater()->updateTexture(queue, texture(), sourceRect, destOffset, partialUpdate);
 }
@@ -43,9 +43,9 @@ BitmapCanvasLayerUpdater::~BitmapCanvasLayerUpdater()
 {
 }
 
-scoped_ptr<LayerUpdater::Texture> BitmapCanvasLayerUpdater::createTexture(PrioritizedTextureManager* manager)
+scoped_ptr<LayerUpdater::Resource> BitmapCanvasLayerUpdater::createResource(PrioritizedTextureManager* manager)
 {
-    return scoped_ptr<LayerUpdater::Texture>(new Texture(this, PrioritizedTexture::create(manager)));
+    return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedTexture::create(manager)));
 }
 
 void BitmapCanvasLayerUpdater::prepareToUpdate(const IntRect& contentRect, const IntSize& tileSize, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, RenderingStats& stats)

@@ -15,10 +15,10 @@ namespace cc {
 
 class ImageLayerUpdater : public LayerUpdater {
 public:
-    class Texture : public LayerUpdater::Texture {
+    class Resource : public LayerUpdater::Resource {
     public:
-        Texture(ImageLayerUpdater* updater, scoped_ptr<PrioritizedTexture> texture)
-            : LayerUpdater::Texture(texture.Pass())
+        Resource(ImageLayerUpdater* updater, scoped_ptr<PrioritizedTexture> texture)
+            : LayerUpdater::Resource(texture.Pass())
             , m_updater(updater)
         {
         }
@@ -39,10 +39,10 @@ public:
         return make_scoped_refptr(new ImageLayerUpdater());
     }
 
-    virtual scoped_ptr<LayerUpdater::Texture> createTexture(
+    virtual scoped_ptr<LayerUpdater::Resource> createResource(
         PrioritizedTextureManager* manager) OVERRIDE
     {
-        return scoped_ptr<LayerUpdater::Texture>(new Texture(this, PrioritizedTexture::create(manager)));
+        return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedTexture::create(manager)));
     }
 
     void updateTexture(TextureUpdateQueue& queue, PrioritizedTexture* texture, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate)

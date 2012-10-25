@@ -31,13 +31,13 @@ static const int prepaintColumns = 2;
 
 class UpdatableTile : public LayerTilingData::Tile {
 public:
-    static scoped_ptr<UpdatableTile> create(scoped_ptr<LayerUpdater::Texture> texture)
+    static scoped_ptr<UpdatableTile> create(scoped_ptr<LayerUpdater::Resource> updaterResource)
     {
-        return make_scoped_ptr(new UpdatableTile(texture.Pass()));
+        return make_scoped_ptr(new UpdatableTile(updaterResource.Pass()));
     }
 
-    LayerUpdater::Texture* texture() { return m_texture.get(); }
-    PrioritizedTexture* managedTexture() { return m_texture->texture(); }
+    LayerUpdater::Resource* updaterResource() { return m_updaterResource.get(); }
+    PrioritizedTexture* managedTexture() { return m_updaterResource->texture(); }
 
     bool isDirty() const { return !dirtyRect.isEmpty(); }
 
@@ -71,16 +71,16 @@ public:
     bool isInUseOnImpl;
 
 private:
-    explicit UpdatableTile(scoped_ptr<LayerUpdater::Texture> texture)
+    explicit UpdatableTile(scoped_ptr<LayerUpdater::Resource> updaterResource)
         : partialUpdate(false)
         , validForFrame(false)
         , occluded(false)
         , isInUseOnImpl(false)
-        , m_texture(texture.Pass())
+        , m_updaterResource(updaterResource.Pass())
     {
     }
 
-    scoped_ptr<LayerUpdater::Texture> m_texture;
+    scoped_ptr<LayerUpdater::Resource> m_updaterResource;
 
     DISALLOW_COPY_AND_ASSIGN(UpdatableTile);
 };
@@ -267,7 +267,7 @@ UpdatableTile* TiledLayer::createTile(int i, int j)
 {
     createUpdaterIfNeeded();
 
-    scoped_ptr<UpdatableTile> tile(UpdatableTile::create(updater()->createTexture(textureManager())));
+    scoped_ptr<UpdatableTile> tile(UpdatableTile::create(updater()->createResource(textureManager())));
     tile->managedTexture()->setDimensions(m_tiler->tileSize(), m_textureFormat);
 
     UpdatableTile* addedTile = tile.get();
@@ -531,7 +531,7 @@ void TiledLayer::updateTileTextures(const IntRect& paintRect, int left, int top,
             if (paintOffset.y() + sourceRect.height() > paintRect.height())
                 CRASH();
 
-            tile->texture()->update(queue, sourceRect, destOffset, tile->partialUpdate, stats);
+            tile->updaterResource()->update(queue, sourceRect, destOffset, tile->partialUpdate, stats);
             if (occlusion)
                 occlusion->overdrawMetrics().didUpload(WebTransformationMatrix(), sourceRect, tile->opaqueRect());
 
@@ -627,7 +627,7 @@ void TiledLayer::setTexturePriorities(const PriorityCalculator& priorityCalc)
 
                 IntRect tileRect = m_tiler->tileRect(tile);
                 tile->dirtyRect = tileRect;
-                LayerUpdater::Texture* backBuffer = tile->texture();
+                LayerUpdater::Resource* backBuffer = tile->updaterResource();
                 setPriorityForTexture(visibleContentRect(), tile->dirtyRect, drawsToRoot, smallAnimatedLayer, backBuffer->texture());
                 scoped_ptr<PrioritizedTexture> frontBuffer = PrioritizedTexture::create(backBuffer->texture()->textureManager(),
                                                                                         backBuffer->texture()->size(),

@@ -19,10 +19,10 @@ class LayerPainter;
 // possible.
 class BitmapCanvasLayerUpdater : public CanvasLayerUpdater {
 public:
-    class Texture : public LayerUpdater::Texture {
+    class Resource : public LayerUpdater::Resource {
     public:
-        Texture(BitmapCanvasLayerUpdater*, scoped_ptr<PrioritizedTexture>);
-        virtual ~Texture();
+        Resource(BitmapCanvasLayerUpdater*, scoped_ptr<PrioritizedTexture>);
+        virtual ~Resource();
 
         virtual void update(TextureUpdateQueue&, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&) OVERRIDE;
 
@@ -34,7 +34,7 @@ public:
 
     static scoped_refptr<BitmapCanvasLayerUpdater> create(scoped_ptr<LayerPainter>);
 
-    virtual scoped_ptr<LayerUpdater::Texture> createTexture(PrioritizedTextureManager*) OVERRIDE;
+    virtual scoped_ptr<LayerUpdater::Resource> createResource(PrioritizedTextureManager*) OVERRIDE;
     virtual void prepareToUpdate(const IntRect& contentRect, const IntSize& tileSize, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, RenderingStats&) OVERRIDE;
     void updateTexture(TextureUpdateQueue&, PrioritizedTexture*, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate);
 

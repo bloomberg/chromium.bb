@@ -23,10 +23,10 @@ class FakeTiledLayer;
 
 class FakeLayerUpdater : public cc::LayerUpdater {
 public:
-    class Texture : public cc::LayerUpdater::Texture {
+    class Resource : public cc::LayerUpdater::Resource {
     public:
-        Texture(FakeLayerUpdater*, scoped_ptr<cc::PrioritizedTexture>);
-        virtual ~Texture();
+        Resource(FakeLayerUpdater*, scoped_ptr<cc::PrioritizedTexture>);
+        virtual ~Resource();
 
         virtual void update(cc::TextureUpdateQueue&, const cc::IntRect&, const cc::IntSize&, bool, cc::RenderingStats&) OVERRIDE;
 
@@ -37,7 +37,7 @@ public:
 
     FakeLayerUpdater();
 
-    virtual scoped_ptr<cc::LayerUpdater::Texture> createTexture(cc::PrioritizedTextureManager*) OVERRIDE;
+    virtual scoped_ptr<cc::LayerUpdater::Resource> createResource(cc::PrioritizedTextureManager*) OVERRIDE;
 
     virtual void prepareToUpdate(const cc::IntRect& contentRect, const cc::IntSize&, float, float, cc::IntRect& resultingOpaqueRect, cc::RenderingStats&) OVERRIDE;
     // Sets the rect to invalidate during the next call to prepareToUpdate(). After the next

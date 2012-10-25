@@ -19,10 +19,10 @@ class TextureUpdateQueue;
 
 class LayerUpdater : public base::RefCounted<LayerUpdater> {
 public:
-    // Allows texture uploaders to store per-tile resources.
-    class Texture {
+    // Allows updaters to store per-resource update properties.
+    class Resource {
     public:
-        virtual ~Texture();
+        virtual ~Resource();
 
         PrioritizedTexture* texture() { return m_texture.get(); }
         void swapTextureWith(scoped_ptr<PrioritizedTexture>& texture) { m_texture.swap(texture); }
@@ -30,7 +30,7 @@ public:
         // instead of an argument passed to update().
         virtual void update(TextureUpdateQueue&, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&) = 0;
     protected:
-        explicit Texture(scoped_ptr<PrioritizedTexture> texture);
+        explicit Resource(scoped_ptr<PrioritizedTexture> texture);
 
     private:
         scoped_ptr<PrioritizedTexture> m_texture;
@@ -38,7 +38,7 @@ public:
 
     LayerUpdater() { }
 
-    virtual scoped_ptr<Texture> createTexture(PrioritizedTextureManager*) = 0;
+    virtual scoped_ptr<Resource> createResource(PrioritizedTextureManager*) = 0;
     // The |resultingOpaqueRect| gives back a region of the layer that was painted opaque. If the layer is marked opaque in the updater,
     // then this region should be ignored in preference for the entire layer's area.
     virtual void prepareToUpdate(const IntRect& contentRect, const IntSize& tileSize, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, RenderingStats&) { }

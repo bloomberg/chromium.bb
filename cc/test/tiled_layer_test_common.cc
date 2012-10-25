@@ -10,19 +10,19 @@ using namespace cc;
 
 namespace WebKitTests {
 
-FakeLayerUpdater::Texture::Texture(FakeLayerUpdater* layer, scoped_ptr<PrioritizedTexture> texture)
-    : LayerUpdater::Texture(texture.Pass())
+FakeLayerUpdater::Resource::Resource(FakeLayerUpdater* layer, scoped_ptr<PrioritizedTexture> texture)
+    : LayerUpdater::Resource(texture.Pass())
     , m_layer(layer)
 {
     m_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
     m_bitmap.allocPixels();
 }
 
-FakeLayerUpdater::Texture::~Texture()
+FakeLayerUpdater::Resource::~Resource()
 {
 }
 
-void FakeLayerUpdater::Texture::update(TextureUpdateQueue& queue, const IntRect&, const IntSize&, bool partialUpdate, RenderingStats&)
+void FakeLayerUpdater::Resource::update(TextureUpdateQueue& queue, const IntRect&, const IntSize&, bool partialUpdate, RenderingStats&)
 {
     const IntRect rect(0, 0, 10, 10);
     ResourceUpdate upload = ResourceUpdate::Create(
@@ -63,9 +63,9 @@ void FakeLayerUpdater::setRectToInvalidate(const IntRect& rect, FakeTiledLayer* 
     m_layer = layer;
 }
 
-scoped_ptr<LayerUpdater::Texture> FakeLayerUpdater::createTexture(PrioritizedTextureManager* manager)
+scoped_ptr<LayerUpdater::Resource> FakeLayerUpdater::createResource(PrioritizedTextureManager* manager)
 {
-    return scoped_ptr<LayerUpdater::Texture>(new Texture(this, PrioritizedTexture::create(manager)));
+    return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedTexture::create(manager)));
 }
 
 FakeTiledLayerImpl::FakeTiledLayerImpl(int id)

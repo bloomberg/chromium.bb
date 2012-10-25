@@ -42,7 +42,7 @@ protected:
     virtual ~ScrollbarLayer();
 
 private:
-    void updatePart(CachingBitmapCanvasLayerUpdater*, LayerUpdater::Texture*, const IntRect&, TextureUpdateQueue&, RenderingStats&);
+    void updatePart(CachingBitmapCanvasLayerUpdater*, LayerUpdater::Resource*, const IntRect&, TextureUpdateQueue&, RenderingStats&);
     void createUpdaterIfNeeded();
 
     scoped_ptr<WebKit::WebScrollbar> m_scrollbar;
@@ -57,9 +57,9 @@ private:
     scoped_refptr<CachingBitmapCanvasLayerUpdater> m_thumbUpdater;
 
     // All the parts of the scrollbar except the thumb
-    scoped_ptr<LayerUpdater::Texture> m_backTrack;
-    scoped_ptr<LayerUpdater::Texture> m_foreTrack;
-    scoped_ptr<LayerUpdater::Texture> m_thumb;
+    scoped_ptr<LayerUpdater::Resource> m_backTrack;
+    scoped_ptr<LayerUpdater::Resource> m_foreTrack;
+    scoped_ptr<LayerUpdater::Resource> m_thumb;
 };
 
 }

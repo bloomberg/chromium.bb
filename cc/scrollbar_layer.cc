@@ -193,23 +193,23 @@ void ScrollbarLayer::createUpdaterIfNeeded()
     if (!m_backTrackUpdater)
         m_backTrackUpdater = CachingBitmapCanvasLayerUpdater::Create(ScrollbarBackgroundPainter::create(m_scrollbar.get(), m_painter, m_geometry.get(), WebKit::WebScrollbar::BackTrackPart).PassAs<LayerPainter>());
     if (!m_backTrack)
-        m_backTrack = m_backTrackUpdater->createTexture(layerTreeHost()->contentsTextureManager());
+        m_backTrack = m_backTrackUpdater->createResource(layerTreeHost()->contentsTextureManager());
 
     // Only create two-part track if we think the two parts could be different in appearance.
     if (m_scrollbar->isCustomScrollbar()) {
         if (!m_foreTrackUpdater)
             m_foreTrackUpdater = CachingBitmapCanvasLayerUpdater::Create(ScrollbarBackgroundPainter::create(m_scrollbar.get(), m_painter, m_geometry.get(), WebKit::WebScrollbar::ForwardTrackPart).PassAs<LayerPainter>());
         if (!m_foreTrack)
-            m_foreTrack = m_foreTrackUpdater->createTexture(layerTreeHost()->contentsTextureManager());
+            m_foreTrack = m_foreTrackUpdater->createResource(layerTreeHost()->contentsTextureManager());
     }
 
     if (!m_thumbUpdater)
         m_thumbUpdater = CachingBitmapCanvasLayerUpdater::Create(ScrollbarThumbPainter::create(m_scrollbar.get(), m_painter, m_geometry.get()).PassAs<LayerPainter>());
     if (!m_thumb)
-        m_thumb = m_thumbUpdater->createTexture(layerTreeHost()->contentsTextureManager());
+        m_thumb = m_thumbUpdater->createResource(layerTreeHost()->contentsTextureManager());
 }
 
-void ScrollbarLayer::updatePart(CachingBitmapCanvasLayerUpdater* painter, LayerUpdater::Texture* texture, const IntRect& rect, TextureUpdateQueue& queue, RenderingStats& stats)
+void ScrollbarLayer::updatePart(CachingBitmapCanvasLayerUpdater* painter, LayerUpdater::Resource* texture, const IntRect& rect, TextureUpdateQueue& queue, RenderingStats& stats)
 {
     // Skip painting and uploading if there are no invalidations and
     // we already have valid texture data.

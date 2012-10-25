@@ -13,17 +13,17 @@
 
 namespace cc {
 
-SkPictureCanvasLayerUpdater::Texture::Texture(SkPictureCanvasLayerUpdater* updater, scoped_ptr<PrioritizedTexture> texture)
-    : LayerUpdater::Texture(texture.Pass())
+SkPictureCanvasLayerUpdater::Resource::Resource(SkPictureCanvasLayerUpdater* updater, scoped_ptr<PrioritizedTexture> texture)
+    : LayerUpdater::Resource(texture.Pass())
     , m_updater(updater)
 {
 }
 
-SkPictureCanvasLayerUpdater::Texture::~Texture()
+SkPictureCanvasLayerUpdater::Resource::~Resource()
 {
 }
 
-void SkPictureCanvasLayerUpdater::Texture::update(TextureUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&)
+void SkPictureCanvasLayerUpdater::Resource::update(TextureUpdateQueue& queue, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&)
 {
     updater()->updateTexture(queue, texture(), sourceRect, destOffset, partialUpdate);
 }
@@ -43,9 +43,9 @@ scoped_refptr<SkPictureCanvasLayerUpdater> SkPictureCanvasLayerUpdater::create(s
     return make_scoped_refptr(new SkPictureCanvasLayerUpdater(painter.Pass()));
 }
 
-scoped_ptr<LayerUpdater::Texture> SkPictureCanvasLayerUpdater::createTexture(PrioritizedTextureManager* manager)
+scoped_ptr<LayerUpdater::Resource> SkPictureCanvasLayerUpdater::createResource(PrioritizedTextureManager* manager)
 {
-    return scoped_ptr<LayerUpdater::Texture>(new Texture(this, PrioritizedTexture::create(manager)));
+    return scoped_ptr<LayerUpdater::Resource>(new Resource(this, PrioritizedTexture::create(manager)));
 }
 
 void SkPictureCanvasLayerUpdater::prepareToUpdate(const IntRect& contentRect, const IntSize&, float contentsWidthScale, float contentsHeightScale, IntRect& resultingOpaqueRect, RenderingStats& stats)

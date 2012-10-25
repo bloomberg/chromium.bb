@@ -14,9 +14,9 @@ namespace cc {
 // the SkPicture into bitmaps for each tile. This implements Settings::perTilePainting.
 class BitmapSkPictureCanvasLayerUpdater : public SkPictureCanvasLayerUpdater {
 public:
-    class Texture : public CanvasLayerUpdater::Texture {
+    class Resource : public CanvasLayerUpdater::Resource {
     public:
-        Texture(BitmapSkPictureCanvasLayerUpdater*, scoped_ptr<PrioritizedTexture>);
+        Resource(BitmapSkPictureCanvasLayerUpdater*, scoped_ptr<PrioritizedTexture>);
 
         virtual void update(TextureUpdateQueue&, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&) OVERRIDE;
 
@@ -29,7 +29,7 @@ public:
 
     static scoped_refptr<BitmapSkPictureCanvasLayerUpdater> create(scoped_ptr<LayerPainter>);
 
-    virtual scoped_ptr<LayerUpdater::Texture> createTexture(PrioritizedTextureManager*) OVERRIDE;
+    virtual scoped_ptr<LayerUpdater::Resource> createResource(PrioritizedTextureManager*) OVERRIDE;
     void paintContentsRect(SkCanvas*, const IntRect& sourceRect, RenderingStats&);
 
 private:

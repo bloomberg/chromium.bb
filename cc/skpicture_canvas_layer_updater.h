@@ -22,10 +22,10 @@ class LayerPainter;
 // implementations.
 class SkPictureCanvasLayerUpdater : public CanvasLayerUpdater {
 public:
-    class Texture : public LayerUpdater::Texture {
+    class Resource : public LayerUpdater::Resource {
     public:
-        Texture(SkPictureCanvasLayerUpdater*, scoped_ptr<PrioritizedTexture>);
-        virtual ~Texture();
+        Resource(SkPictureCanvasLayerUpdater*, scoped_ptr<PrioritizedTexture>);
+        virtual ~Resource();
 
         virtual void update(TextureUpdateQueue&, const IntRect& sourceRect, const IntSize& destOffset, bool partialUpdate, RenderingStats&) OVERRIDE;
 
@@ -37,7 +37,7 @@ public:
 
     static scoped_refptr<SkPictureCanvasLayerUpdater> create(scoped_ptr<LayerPainter>);
 
-    virtual scoped_ptr<LayerUpdater::Texture> createTexture(PrioritizedTextureManager*) OVERRIDE;
+    virtual scoped_ptr<LayerUpdater::Resource> createResource(PrioritizedTextureManager*) OVERRIDE;
     virtual void setOpaque(bool) OVERRIDE;
 
 protected:
