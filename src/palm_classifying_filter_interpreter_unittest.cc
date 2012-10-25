@@ -88,11 +88,11 @@ TEST(PalmClassifyingFilterInterpreterTest, PalmTest) {
   };
   HardwareState hardware_state[] = {
     // time, buttons, finger count, touch count, finger states pointer
-    { 200000, 0, 2, 2, &finger_states[0] },
-    { 200001, 0, 2, 2, &finger_states[2] },
-    { 200002, 0, 2, 2, &finger_states[4] },
-    { 200003, 0, 2, 2, &finger_states[6] },
-    { 200004, 0, 2, 2, &finger_states[8] },
+    { 200000, 0, 2, 2, &finger_states[0], 0, 0, 0, 0 },
+    { 200001, 0, 2, 2, &finger_states[2], 0, 0, 0, 0 },
+    { 200002, 0, 2, 2, &finger_states[4], 0, 0, 0, 0 },
+    { 200003, 0, 2, 2, &finger_states[6], 0, 0, 0, 0 },
+    { 200004, 0, 2, 2, &finger_states[8], 0, 0, 0, 0 },
   };
 
   for (size_t i = 0; i < 5; ++i) {
@@ -159,10 +159,10 @@ TEST(PalmClassifyingFilterInterpreterTest, StationaryPalmTest) {
   };
   HardwareState hardware_state[] = {
     // time, buttons, finger count, touch count, finger states pointer
-    { 0.00, 0, 1, 1, &finger_states[0] },
-    { 4.00, 0, 2, 2, &finger_states[0] },
-    { 5.00, 0, 2, 2, &finger_states[2] },
-    { 5.01, 0, 2, 2, &finger_states[4] },
+    { 0.00, 0, 1, 1, &finger_states[0], 0, 0, 0, 0 },
+    { 4.00, 0, 2, 2, &finger_states[0], 0, 0, 0, 0 },
+    { 5.00, 0, 2, 2, &finger_states[2], 0, 0, 0, 0 },
+    { 5.01, 0, 2, 2, &finger_states[4], 0, 0, 0, 0 },
   };
 
   for (size_t i = 0; i < arraysize(hardware_state); ++i) {
@@ -236,26 +236,26 @@ TEST(PalmClassifyingFilterInterpreterTest, PalmAtEdgeTest) {
   HardwareState hardware_state[] = {
     // time, buttons, finger count, touch count, finger states pointer
     // slow movement at edge with small movement
-    { 0.0, 0, 1, 1, &finger_states[0] },
-    { 1.0, 0, 1, 1, &finger_states[1] },
+    { 0.0, 0, 1, 1, &finger_states[0], 0, 0, 0, 0 },
+    { 1.0, 0, 1, 1, &finger_states[1], 0, 0, 0, 0 },
     // slow small contact movement in middle
-    { 0.0, 0, 1, 1, &finger_states[2] },
-    { 1.0, 0, 1, 1, &finger_states[3] },
+    { 0.0, 0, 1, 1, &finger_states[2], 0, 0, 0, 0 },
+    { 1.0, 0, 1, 1, &finger_states[3], 0, 0, 0, 0 },
     // slow large contact movement in middle
-    { 0.0, 0, 1, 1, &finger_states[4] },
-    { 1.0, 0, 1, 1, &finger_states[5] },
+    { 0.0, 0, 1, 1, &finger_states[4], 0, 0, 0, 0 },
+    { 1.0, 0, 1, 1, &finger_states[5], 0, 0, 0, 0 },
     // under mid-pressure at mid-width
-    { 0.0, 0, 1, 1, &finger_states[6] },
-    { 1.0, 0, 1, 1, &finger_states[7] },
+    { 0.0, 0, 1, 1, &finger_states[6], 0, 0, 0, 0 },
+    { 1.0, 0, 1, 1, &finger_states[7], 0, 0, 0, 0 },
     // over mid-pressure at mid-width
-    { 0.0, 0, 1, 1, &finger_states[8] },
-    { 1.0, 0, 1, 1, &finger_states[9] },
+    { 0.0, 0, 1, 1, &finger_states[8], 0, 0, 0, 0 },
+    { 1.0, 0, 1, 1, &finger_states[9], 0, 0, 0, 0 },
     // large movement at edge
-    { 0.0, 0, 1, 1, &finger_states[10] },
-    { 1.0, 0, 1, 1, &finger_states[11] },
+    { 0.0, 0, 1, 1, &finger_states[10], 0, 0, 0, 0 },
+    { 1.0, 0, 1, 1, &finger_states[11], 0, 0, 0, 0 },
     // over mid-pressure at mid-width with large movement
-    { 0.0, 0, 1, 1, &finger_states[12] },
-    { 1.0, 0, 1, 1, &finger_states[13] },
+    { 0.0, 0, 1, 1, &finger_states[12], 0, 0, 0, 0 },
+    { 1.0, 0, 1, 1, &finger_states[13], 0, 0, 0, 0 },
   };
 
   for (size_t i = 0; i < arraysize(hardware_state); ++i) {
@@ -370,7 +370,7 @@ TEST(PalmClassifyingFilterInterpreterTest, PalmReevaluateTest) {
     FingerState fs =
         { 0, 0, 0, 0, inputs[i].pressure_, 0.0,
           inputs[i].x_, inputs[i].y_, 1, 0 };
-    HardwareState hs = { inputs[i].now_, 0, 1, 1, &fs };
+    HardwareState hs = { inputs[i].now_, 0, 1, 1, &fs, 0, 0, 0, 0 };
 
     stime_t timeout = -1.0;
     pci.SyncInterpret(&hs, &timeout);
@@ -646,7 +646,7 @@ TEST(PalmClassifyingFilterInterpreterTest, LargeTouchMajorTest) {
     FingerState fs = {
       input.touch_major_, 0, 0, 0, input.pressure_, 0, input.x_, input.y_, 1, 0
     };
-    HardwareState hs = { input.now_, 0, 1, 1, &fs };
+    HardwareState hs = { input.now_, 0, 1, 1, &fs, 0, 0, 0, 0 };
     base_interpreter->expected_flags_ = GESTURES_FINGER_PALM;
     pci.SyncInterpret(&hs, NULL);
   }

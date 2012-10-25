@@ -162,10 +162,10 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
     { 0, 0, 0, 0, 3, 0, 250, 3000, 1, 0 }
   };
   HardwareState hs[] = {
-    { 10000, 0, 1, 1, &fs[0] },
-    { 54000, 0, 1, 1, &fs[1] },
-    { 98000, 0, 1, 1, &fs[2] },
-    { 99000, 0, 1, 1, &fs[3] },
+    { 10000, 0, 1, 1, &fs[0], 0, 0, 0, 0 },
+    { 54000, 0, 1, 1, &fs[1], 0, 0, 0, 0 },
+    { 98000, 0, 1, 1, &fs[2], 0, 0, 0, 0 },
+    { 99000, 0, 1, 1, &fs[3], 0, 0, 0, 0 },
   };
 
   // Set up expected translated coordinates
@@ -245,9 +245,9 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
     { 0, 0, 0, 0, 1, 0, 560, 2000, 2, 0 },
   };
   HardwareState hs2[] = {
-    { 110000, 0, 1, 2, &fs2[0] },
-    { 154000, 0, 1, 1, &fs2[1] },
-    { 184000, 0, 1, 0, &fs2[2] }
+    { 110000, 0, 1, 2, &fs2[0], 0, 0, 0, 0 },
+    { 154000, 0, 1, 1, &fs2[1], 0, 0, 0, 0 },
+    { 184000, 0, 1, 0, &fs2[2], 0, 0, 0, 0 }
   };
   interpreter.pressure_threshold_.val_ = kPressureThreshold;
   base_interpreter->expected_finger_cnt_.push_back(0);

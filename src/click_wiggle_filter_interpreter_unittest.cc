@@ -96,25 +96,25 @@ TEST(ClickWiggleFilterInterpreterTest, WiggleSuppressTest) {
   };
   HardwareState hardware_state[] = {
     // time, buttons, finger count, touch count, finger states pointer
-    { 1319735240.654559, 1, 1, 1, &finger_states[0] },
-    { 1319735240.667746, 1, 1, 1, &finger_states[1] },
-    { 1319735240.680153, 1, 1, 1, &finger_states[2] },
-    { 1319735240.693717, 1, 1, 1, &finger_states[3] },
-    { 1319735240.707821, 1, 1, 1, &finger_states[4] },
-    { 1319735240.720633, 1, 1, 1, &finger_states[5] },
-    { 1319735240.733183, 1, 1, 1, &finger_states[6] },
-    { 1319735240.746131, 1, 1, 1, &finger_states[7] },
-    { 1319735240.758622, 1, 1, 1, &finger_states[8] },
-    { 1319735240.772690, 1, 1, 1, &finger_states[9] },
-    { 1319735240.785556, 1, 1, 1, &finger_states[10] },
-    { 1319735240.798524, 1, 1, 1, &finger_states[11] },
-    { 1319735240.811093, 1, 1, 1, &finger_states[12] },
-    { 1319735240.824775, 1, 1, 1, &finger_states[13] },
-    { 1319735240.837738, 0, 1, 1, &finger_states[14] },
-    { 1319735240.850482, 0, 1, 1, &finger_states[15] },
-    { 1319735240.862749, 0, 1, 1, &finger_states[16] },
-    { 1319735240.876571, 0, 1, 1, &finger_states[17] },
-    { 1319735240.888128, 0, 0, 0, NULL }
+    { 1319735240.654559, 1, 1, 1, &finger_states[0], 0, 0, 0, 0 },
+    { 1319735240.667746, 1, 1, 1, &finger_states[1], 0, 0, 0, 0 },
+    { 1319735240.680153, 1, 1, 1, &finger_states[2], 0, 0, 0, 0 },
+    { 1319735240.693717, 1, 1, 1, &finger_states[3], 0, 0, 0, 0 },
+    { 1319735240.707821, 1, 1, 1, &finger_states[4], 0, 0, 0, 0 },
+    { 1319735240.720633, 1, 1, 1, &finger_states[5], 0, 0, 0, 0 },
+    { 1319735240.733183, 1, 1, 1, &finger_states[6], 0, 0, 0, 0 },
+    { 1319735240.746131, 1, 1, 1, &finger_states[7], 0, 0, 0, 0 },
+    { 1319735240.758622, 1, 1, 1, &finger_states[8], 0, 0, 0, 0 },
+    { 1319735240.772690, 1, 1, 1, &finger_states[9], 0, 0, 0, 0 },
+    { 1319735240.785556, 1, 1, 1, &finger_states[10], 0, 0, 0, 0 },
+    { 1319735240.798524, 1, 1, 1, &finger_states[11], 0, 0, 0, 0 },
+    { 1319735240.811093, 1, 1, 1, &finger_states[12], 0, 0, 0, 0 },
+    { 1319735240.824775, 1, 1, 1, &finger_states[13], 0, 0, 0, 0 },
+    { 1319735240.837738, 0, 1, 1, &finger_states[14], 0, 0, 0, 0 },
+    { 1319735240.850482, 0, 1, 1, &finger_states[15], 0, 0, 0, 0 },
+    { 1319735240.862749, 0, 1, 1, &finger_states[16], 0, 0, 0, 0 },
+    { 1319735240.876571, 0, 1, 1, &finger_states[17], 0, 0, 0, 0 },
+    { 1319735240.888128, 0, 0, 0, NULL, 0, 0, 0, 0 }
   };
 
   for (size_t i = 0; i < arraysize(hardware_state); ++i)
@@ -161,14 +161,16 @@ TEST(ClickWiggleFilterInterpreterTest, OneFingerClickSuppressTest) {
   };
   HardwareState hardware_state[] = {
     // time, buttons, finger count, touch count, finger states pointer
-    { 1.0, 1, 1, 1, &finger_states[0] },  // 0
-    { 1.1, 1, 1, 1, &finger_states[1] },  // 1
-    { 1.11, 1, 1, 1, &finger_states[2] },  // 2
-    { 1.25, 1, 1, 1, &finger_states[3] },  // 3, stable & > Timeout => no warp
-    { 1.5, 0, 1, 1, &finger_states[4] },  // 4 button up
-    { 1.6, 0, 1, 1, &finger_states[5] },  // 5
-    { 1.61, 0, 1, 1, &finger_states[6] },  // 6
-    { 1.85, 0, 1, 1, &finger_states[7] },  // 7, stable & > Timeout => no warp
+    { 1.0, 1, 1, 1, &finger_states[0], 0, 0, 0, 0 },  // 0
+    { 1.1, 1, 1, 1, &finger_states[1], 0, 0, 0, 0 },  // 1
+    { 1.11, 1, 1, 1, &finger_states[2], 0, 0, 0, 0 },  // 2
+    { 1.25, 1, 1, 1, &finger_states[3], 0, 0, 0, 0 },
+    // 3, stable & > Timeout => no warp
+    { 1.5, 0, 1, 1, &finger_states[4], 0, 0, 0, 0 },  // 4 button up
+    { 1.6, 0, 1, 1, &finger_states[5], 0, 0, 0, 0 },  // 5
+    { 1.61, 0, 1, 1, &finger_states[6], 0, 0, 0, 0 },  // 6
+    { 1.85, 0, 1, 1, &finger_states[7], 0, 0, 0, 0 },
+    // 7, stable & > Timeout => no warp
   };
 
   interpreter.one_finger_click_wiggle_timeout_.val_ = 0.2;
@@ -234,7 +236,8 @@ TEST(ClickWiggleFilterInterpreter, ThumbClickTest) {
       1,  // tracking id
       0  // flags
     };
-    HardwareState hs = { input.timestamp_, input.buttons_down_, 1, 1, &fs };
+    HardwareState hs = {
+        input.timestamp_, input.buttons_down_, 1, 1, &fs, 0, 0, 0, 0 };
     interpreter.SyncInterpret(&hs, NULL);
     // Assertions tested in base interpreter
   }
@@ -271,12 +274,12 @@ TEST(ClickWiggleFilterInterpreter, TimeBackwardsTest) {
 
   HardwareState hs[] = {
     // click
-    { 9.00, 1, 1, 1, &fs },
-    { 9.01, 0, 1, 1, &fs },
+    { 9.00, 1, 1, 1, &fs, 0, 0, 0, 0 },
+    { 9.01, 0, 1, 1, &fs, 0, 0, 0, 0 },
     // time goes backwards
-    { 1.00, 0, 1, 1, &fs },
+    { 1.00, 0, 1, 1, &fs, 0, 0, 0, 0 },
     // long time passes, shouldn't be wobbling anymore
-    { 2.01, 0, 1, 1, &fs },
+    { 2.01, 0, 1, 1, &fs, 0, 0, 0, 0 },
   };
 
   for (size_t i = 0; i < arraysize(hs); i++) {
@@ -386,7 +389,7 @@ TEST(ClickWiggleFilterInterpreter, ThumbClickWiggleWithPalmTest) {
     unsigned short finger_count = (input.p0 == 0.0 || input.p1 == 0.0) ? 1 : 2;
     HardwareState hs = {
       input.now, input.buttons_down, finger_count, finger_count,
-      input.p0 == 0.0 ? &fs[1] : &fs[0]
+      input.p0 == 0.0 ? &fs[1] : &fs[0], 0, 0, 0, 0
     };
     base_interpreter->expect_warp_ = !!input.buttons_down;
     base_interpreter->expected_fingers_ = finger_count;

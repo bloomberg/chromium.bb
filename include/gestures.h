@@ -124,6 +124,11 @@ struct HardwareState {
   unsigned short finger_cnt;  // Number of valid finger slots
   unsigned short touch_cnt;  // Number of fingers touching pad
   struct FingerState* fingers;
+  // For EV_REL events
+  float rel_x;
+  float rel_y;
+  float rel_wheel;
+  float rel_hwheel;
 };
 
 #define GESTURES_FLING_START 0  // Scroll end/fling begin

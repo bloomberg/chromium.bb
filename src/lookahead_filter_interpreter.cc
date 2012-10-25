@@ -398,7 +398,11 @@ Gesture* LookaheadFilterInterpreter::HandleTimerImpl(stime_t now,
         node->state_.buttons_down,
         node->state_.finger_cnt,
         node->state_.touch_cnt,
-        fs_copy
+        fs_copy,
+        node->state_.rel_x,
+        node->state_.rel_y,
+        node->state_.rel_wheel,
+        node->state_.rel_hwheel,
       };
       result = next_->SyncInterpret(&hs_copy, &next_timeout);
 

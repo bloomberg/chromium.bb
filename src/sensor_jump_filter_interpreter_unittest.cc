@@ -85,7 +85,7 @@ TEST(SensorJumpFilterInterpreterTest, SimpleTest) {
   EXPECT_TRUE(base_interpreter->handle_timer_called_);
 
   FingerState fs = { 0, 0, 0, 0, 1, 0, 3.0, 0.0, 1, 0 };
-  HardwareState hs = { 0.0, 0, 1, 1, &fs };
+  HardwareState hs = { 0.0, 0, 1, 1, &fs, 0, 0, 0, 0 };
 
   InputAndExpectedWarp data[] = {
     { 3.0, false },
@@ -236,7 +236,7 @@ TEST(SensorJumpFilterInterpreterTest, ActualLogTest) {
     { 0, 0, 0, 0, 1, 0, 3.0, 0.0, 1, 0 },
     { 0, 0, 0, 0, 1, 0, 3.0, 0.0, 1, 0 },
   };
-  HardwareState hs = { 0.0, 0, 2, 2, &fs[0] };
+  HardwareState hs = { 0.0, 0, 2, 2, &fs[0], 0, 0, 0, 0 };
 
   float prev_y_out[] = { 0.0, 0.0 };
 

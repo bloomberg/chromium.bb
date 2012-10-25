@@ -79,7 +79,7 @@ TEST(BoxFilterInterpreterTest, SimpleTest) {
   EXPECT_TRUE(base_interpreter->handle_timer_called_);
 
   FingerState fs = { 0, 0, 0, 0, 1, 0, 3.0, 0.0, 1, 0 };
-  HardwareState hs = { 0.0, 0, 1, 1, &fs };
+  HardwareState hs = { 0.0, 0, 1, 1, &fs, 0, 0, 0, 0 };
 
   InputAndExpectedOutput data[] = {
     { 3.0, 3.0 },

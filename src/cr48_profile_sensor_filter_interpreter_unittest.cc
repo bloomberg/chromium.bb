@@ -91,11 +91,11 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, LowPressureTest) {
     { 0, 0, 0, 0, 20, 0, 1, 1, 5, 0 },
   };
   HardwareState hs[] = {
-    { 0.000, 0, 1, 1, &fs[0] },
-    { 0.010, 0, 1, 1, &fs[1] },
-    { 0.020, 0, 1, 1, &fs[2] },
-    { 0.030, 0, 1, 1, &fs[3] },
-    { 0.040, 0, 1, 1, &fs[4] },
+    { 0.000, 0, 1, 1, &fs[0], 0, 0, 0, 0 },
+    { 0.010, 0, 1, 1, &fs[1], 0, 0, 0, 0 },
+    { 0.020, 0, 1, 1, &fs[2], 0, 0, 0, 0 },
+    { 0.030, 0, 1, 1, &fs[3], 0, 0, 0, 0 },
+    { 0.040, 0, 1, 1, &fs[4], 0, 0, 0, 0 },
   };
 
   HardwareProperties hwprops = {
@@ -145,12 +145,12 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, TrackingIdMappingTest) {
     { 0, 0, 0, 0, 40, 0, 5, 5, 17, 0 },
   };
   HardwareState hs[] = {
-    { 0.000, 0, 0, 0, &fs[0] },
-    { 0.010, 0, 1, 1, &fs[0] },
-    { 0.020, 0, 1, 1, &fs[1] },
-    { 0.030, 0, 0, 0, &fs[1] },
-    { 0.040, 0, 2, 2, &fs[2] },
-    { 0.050, 0, 2, 2, &fs[4] },
+    { 0.000, 0, 0, 0, &fs[0], 0, 0, 0, 0 },
+    { 0.010, 0, 1, 1, &fs[0], 0, 0, 0, 0 },
+    { 0.020, 0, 1, 1, &fs[1], 0, 0, 0, 0 },
+    { 0.030, 0, 0, 0, &fs[1], 0, 0, 0, 0 },
+    { 0.040, 0, 2, 2, &fs[2], 0, 0, 0, 0 },
+    { 0.050, 0, 2, 2, &fs[4], 0, 0, 0, 0 },
   };
 
   HardwareProperties hwprops = {
@@ -197,9 +197,9 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, CorrectFingerPositionTest) {
     { 0, 0, 0, 0, 60, 0, 4050, 2750, 6, 0 },
   };
   HardwareState hs[] = {
-    { 0.000, 0, 1, 1, &fs[0] },
-    { 0.010, 0, 2, 2, &fs[1] },
-    { 0.010, 0, 2, 2, &fs[3] },
+    { 0.000, 0, 1, 1, &fs[0], 0, 0, 0, 0 },
+    { 0.010, 0, 2, 2, &fs[1], 0, 0, 0, 0 },
+    { 0.010, 0, 2, 2, &fs[3], 0, 0, 0, 0 },
   };
 
   HardwareProperties hwprops = {
@@ -281,15 +281,18 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, FingerCrossOverTest) {
     { 0, 0, 0, 0, 60, 0, 4118, 3130, 1482, 0},
   };
   HardwareState hs[] = {
-    { 0.000, 0, 1, 1, &fs[0] },
-    { 0.000, 0, 2, 2, &fs[1] },
-    { 0.010, 0, 2, 2, &fs[3] },
-    { 0.020, 0, 2, 2, &fs[5] },
-    { 0.030, 0, 2, 2, &fs[7] },
-    { 0.040, 0, 2, 2, &fs[9] },
-    { 0.050, 0, 2, 2, &fs[11] },  // the finger pattern will be swapped
-    { 0.060, 0, 2, 2, &fs[13] },  // to left-top-right-bottom and should
-    { 0.060, 0, 2, 2, &fs[15] },  // applied for the following reports
+    { 0.000, 0, 1, 1, &fs[0], 0, 0, 0, 0 },
+    { 0.000, 0, 2, 2, &fs[1], 0, 0, 0, 0 },
+    { 0.010, 0, 2, 2, &fs[3], 0, 0, 0, 0 },
+    { 0.020, 0, 2, 2, &fs[5], 0, 0, 0, 0 },
+    { 0.030, 0, 2, 2, &fs[7], 0, 0, 0, 0 },
+    { 0.040, 0, 2, 2, &fs[9], 0, 0, 0, 0 },
+    { 0.050, 0, 2, 2, &fs[11], 0, 0, 0, 0 },
+    // the finger pattern will be swapped
+    { 0.060, 0, 2, 2, &fs[13], 0, 0, 0, 0 },
+    // to left-top-right-bottom and should
+    { 0.060, 0, 2, 2, &fs[15], 0, 0, 0, 0 },
+    // applied for the following reports
   };
 
   HardwareProperties hwprops = {
@@ -349,10 +352,10 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, ClipNonLinearAreaTest) {
     { 0, 0, 0, 0, 60, 0, 4118, 4580, 1481, 0},
   };
   HardwareState hs[] = {
-    { 0.00, 0, 1, 1, &fs[0] },
-    { 0.02, 0, 1, 1, &fs[1] },
-    { 0.04, 0, 1, 1, &fs[2] },
-    { 0.06, 0, 1, 1, &fs[3] },
+    { 0.00, 0, 1, 1, &fs[0], 0, 0, 0, 0 },
+    { 0.02, 0, 1, 1, &fs[1], 0, 0, 0, 0 },
+    { 0.04, 0, 1, 1, &fs[2], 0, 0, 0, 0 },
+    { 0.06, 0, 1, 1, &fs[3], 0, 0, 0, 0 },
   };
 
   interpreter.non_linear_left_.val_ = 1360.0;
@@ -478,13 +481,13 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, MovingFingerTest) {
   };
 
   HardwareState hs[] = {
-    { 0.00, 0, 1, 1, &fs[0] },
-    { 0.02, 0, 2, 2, &fs[1] },
+    { 0.00, 0, 1, 1, &fs[0], 0, 0, 0, 0 },
+    { 0.02, 0, 2, 2, &fs[1], 0, 0, 0, 0 },
   };
 
   HardwareState hs2[] = {
-    { 0.00, 0, 1, 1, &fs2[0] },
-    { 0.02, 0, 2, 2, &fs2[1] },
+    { 0.00, 0, 1, 1, &fs2[0], 0, 0, 0, 0 },
+    { 0.02, 0, 2, 2, &fs2[1], 0, 0, 0, 0 },
   };
 
   HardwareProperties hwprops = {
@@ -534,8 +537,8 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, HistoryTest) {
 
   HardwareState hs[] = {
     // time, buttons, finger count, touch count, fingers
-    { 0.500, 0, 1, 1, &fs[0] },
-    { 0.525, 0, 2, 2, &fs[1] },
+    { 0.500, 0, 1, 1, &fs[0], 0, 0, 0, 0 },
+    { 0.525, 0, 2, 2, &fs[1], 0, 0, 0, 0 },
   };
 
   HardwareProperties hwprops = {
@@ -587,10 +590,12 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, TwoToOneJumpTest) {
   };
 
   HardwareState hs[] = {
-    { 0.500, 0, 2, 2, &fs[0] },  // fs[0] and fs[1]
-    { 0.525, 0, 1, 1, &fs[2] },  // fs[0] lifts, reported by fw w/ fs[1] tid
-    { 0.550, 0, 1, 1, &fs[1] },  // fw switches to reporting fs[1] position
-    { 0.575, 0, 1, 1, &fs[1] },  // fw continues to report fs[1]
+    { 0.500, 0, 2, 2, &fs[0], 0, 0, 0, 0 },  // fs[0] and fs[1]
+    { 0.525, 0, 1, 1, &fs[2], 0, 0, 0, 0 },
+    // fs[0] lifts, reported by fw w/ fs[1] tid
+    { 0.550, 0, 1, 1, &fs[1], 0, 0, 0, 0 },
+    // fw switches to reporting fs[1] position
+    { 0.575, 0, 1, 1, &fs[1], 0, 0, 0, 0 },  // fw continues to report fs[1]
   };
 
   HardwareProperties hwprops = {
@@ -646,11 +651,11 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, OneToTwoJumpTest) {
 
   HardwareState hs[] = {
     // time, buttons, finger count, touch count, fingers
-    { 167.663976, 0, 1, 1, &fs[0] },  // 0
-    { 167.674964, 0, 1, 1, &fs[1] },  // 1
-    { 167.700748, 0, 2, 2, &fs[2] },  // 2
-    { 167.724575, 0, 2, 2, &fs[4] },  // 3
-    { 167.749059, 0, 2, 2, &fs[6] },  // 4
+    { 167.663976, 0, 1, 1, &fs[0], 0, 0, 0, 0 },  // 0
+    { 167.674964, 0, 1, 1, &fs[1], 0, 0, 0, 0 },  // 1
+    { 167.700748, 0, 2, 2, &fs[2], 0, 0, 0, 0 },  // 2
+    { 167.724575, 0, 2, 2, &fs[4], 0, 0, 0, 0 },  // 3
+    { 167.749059, 0, 2, 2, &fs[6], 0, 0, 0, 0 },  // 4
   };
 
   HardwareProperties hwprops = {
@@ -702,14 +707,14 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, WarpOnSwapTest) {
 
   HardwareState hs[] = {
     // time, buttons, finger count, touch count, fingers
-    { 76.673715, 0, 1, 1, &fs[0] },  // 0
-    { 76.68619699999999, 0, 1, 1, &fs[1] },  // 1
-    { 76.712234, 0, 2, 2, &fs[2] },  // 2
-    { 76.736775, 0, 2, 2, &fs[4] },  // 3
-    { 76.760614, 0, 2, 2, &fs[6] },  // 4
-    { 76.785092, 0, 2, 2, &fs[8] },  // 5
-    { 76.808168, 0, 1, 1, &fs[10] },  // 6
-    { 76.820516, 0, 1, 1, &fs[11] },  // 7
+    { 76.673715, 0, 1, 1, &fs[0], 0, 0, 0, 0 },  // 0
+    { 76.68619699999999, 0, 1, 1, &fs[1], 0, 0, 0, 0 },  // 1
+    { 76.712234, 0, 2, 2, &fs[2], 0, 0, 0, 0 },  // 2
+    { 76.736775, 0, 2, 2, &fs[4], 0, 0, 0, 0 },  // 3
+    { 76.760614, 0, 2, 2, &fs[6], 0, 0, 0, 0 },  // 4
+    { 76.785092, 0, 2, 2, &fs[8], 0, 0, 0, 0 },  // 5
+    { 76.808168, 0, 1, 1, &fs[10], 0, 0, 0, 0 },  // 6
+    { 76.820516, 0, 1, 1, &fs[11], 0, 0, 0, 0 },  // 7
   };
 
   HardwareProperties hwprops = {
@@ -759,10 +764,10 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, SensorJumpTest) {
 
   HardwareState hs[] = {
     // time, buttons, finger count, touch count, fingers
-    { 42004.644897, 0, 2, 2, &fs[0] },  // 0
-    { 42004.669832, 0, 2, 2, &fs[2] },  // 1
-    { 42004.689832, 0, 2, 2, &fs[4] },  // 2
-    { 42004.709832, 0, 2, 2, &fs[6] },  // 3 (a sensor jump report)
+    { 42004.644897, 0, 2, 2, &fs[0], 0, 0, 0, 0 },  // 0
+    { 42004.669832, 0, 2, 2, &fs[2], 0, 0, 0, 0 },  // 1
+    { 42004.689832, 0, 2, 2, &fs[4], 0, 0, 0, 0 },  // 2
+    { 42004.709832, 0, 2, 2, &fs[6], 0, 0, 0, 0 },  // 3 (a sensor jump report)
   };
 
   HardwareProperties hwprops = {
@@ -813,22 +818,23 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, BigJumpTest) {
 
   HardwareState hs[] = {
     // time, buttons, finger count, touch count, fingers
-    { 95268.194898, 0, 1, 1, &fs[0] },  // 0
-    { 95268.203728, 0, 1, 1, &fs[1] },  // 1 (jump bottom-left)
-    { 95268.216215, 0, 1, 1, &fs[2] },  // 2
-    { 95268.229053, 0, 1, 1, &fs[3] },  // 3
-    { 95268.24309, 0, 0, 0, NULL },  // 4
+    { 95268.194898, 0, 1, 1, &fs[0], 0, 0, 0, 0 },  // 0
+    { 95268.203728, 0, 1, 1, &fs[1], 0, 0, 0, 0 },  // 1 (jump bottom-left)
+    { 95268.216215, 0, 1, 1, &fs[2], 0, 0, 0, 0 },  // 2
+    { 95268.229053, 0, 1, 1, &fs[3], 0, 0, 0, 0 },  // 3
+    { 95268.24309, 0, 0, 0, NULL, 0, 0, 0, 0 },  // 4
 
-    { 95268.194898, 0, 1, 1, &fs[4] },  // 5
-    { 95268.203728, 0, 1, 1, &fs[5] },  // 6  (jump up)
-    { 95268.216215, 0, 1, 1, &fs[6] },  // 7
-    { 95268.229053, 0, 1, 1, &fs[7] },  // 8
-    { 95268.24309, 0, 0, 0, NULL },  // 9
+    { 95268.194898, 0, 1, 1, &fs[4], 0, 0, 0, 0 },  // 5
+    { 95268.203728, 0, 1, 1, &fs[5], 0, 0, 0, 0 },  // 6  (jump up)
+    { 95268.216215, 0, 1, 1, &fs[6], 0, 0, 0, 0 },  // 7
+    { 95268.229053, 0, 1, 1, &fs[7], 0, 0, 0, 0 },  // 8
+    { 95268.24309, 0, 0, 0, NULL, 0, 0, 0, 0 },  // 9
 
-    { 95268.194898, 0, 1, 1, &fs[8] },  // 10
-    { 95268.203728, 0, 1, 1, &fs[9] },  // 11 (jump left)
-    { 95268.216215, 0, 1, 1, &fs[10] },  // 12 jump back, so the tracking id
-    { 95268.229053, 0, 1, 1, &fs[11] },  // 13 should not be changed
+    { 95268.194898, 0, 1, 1, &fs[8], 0, 0, 0, 0 },  // 10
+    { 95268.203728, 0, 1, 1, &fs[9], 0, 0, 0, 0 },  // 11 (jump left)
+    { 95268.216215, 0, 1, 1, &fs[10], 0, 0, 0, 0 }, // 12 jump back, so the
+                                                    // tracking id
+    { 95268.229053, 0, 1, 1, &fs[11], 0, 0, 0, 0 },  // 13 should not be changed
   };
 
   HardwareProperties hwprops = {
@@ -883,10 +889,10 @@ TEST(Cr48ProfileSensorFilterInterpreterTest, FastMoveTest) {
 
   HardwareState hs[] = {
     // time, buttons, finger count, touch count, fingers
-    { 95268.194898, 0, 1, 1, &fs[0] },  // 0
-    { 95268.203728, 0, 1, 1, &fs[1] },  // 1
-    { 95268.216215, 0, 1, 1, &fs[2] },  // 2
-    { 95268.229053, 0, 1, 1, &fs[3] },  // 3
+    { 95268.194898, 0, 1, 1, &fs[0], 0, 0, 0, 0 },  // 0
+    { 95268.203728, 0, 1, 1, &fs[1], 0, 0, 0, 0 },  // 1
+    { 95268.216215, 0, 1, 1, &fs[2], 0, 0, 0, 0 },  // 2
+    { 95268.229053, 0, 1, 1, &fs[3], 0, 0, 0, 0 },  // 3
   };
 
   HardwareProperties hwprops = {

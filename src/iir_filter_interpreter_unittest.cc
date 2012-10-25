@@ -51,10 +51,10 @@ TEST(IirFilterInterpreterTest, SimpleTest) {
     { 0, 0, 0, 0, 30, 0, 5, 5, 1, 0 }
   };
   HardwareState hs[] = {
-    { 0.000, 0, 1, 1, &fs[0] },
-    { 0.010, 0, 1, 1, &fs[1] },
-    { 0.020, 0, 1, 1, &fs[2] },
-    { 0.030, 0, 1, 1, &fs[3] }
+    { 0.000, 0, 1, 1, &fs[0], 0, 0, 0, 0 },
+    { 0.010, 0, 1, 1, &fs[1], 0, 0, 0, 0 },
+    { 0.020, 0, 1, 1, &fs[2], 0, 0, 0, 0 },
+    { 0.030, 0, 1, 1, &fs[3], 0, 0, 0, 0 }
   };
 
   for (size_t i = 0; i < arraysize(hs); i++) {
@@ -80,12 +80,12 @@ TEST(IirFilterInterpreterTest, DisableIIRTest) {
     { 0, 0, 0, 0, 30, 0, 14, 32, 1, 0 },
   };
   HardwareState hs[] = {
-    { 0.000, 0, 1, 1, &fs[0] },
-    { 0.010, 0, 1, 1, &fs[1] },
-    { 0.020, 0, 1, 1, &fs[2] },
-    { 0.030, 0, 1, 1, &fs[3] },
-    { 0.040, 0, 1, 1, &fs[4] },
-    { 0.050, 0, 1, 1, &fs[5] },
+    { 0.000, 0, 1, 1, &fs[0], 0, 0, 0, 0 },
+    { 0.010, 0, 1, 1, &fs[1], 0, 0, 0, 0 },
+    { 0.020, 0, 1, 1, &fs[2], 0, 0, 0, 0 },
+    { 0.030, 0, 1, 1, &fs[3], 0, 0, 0, 0 },
+    { 0.040, 0, 1, 1, &fs[4], 0, 0, 0, 0 },
+    { 0.050, 0, 1, 1, &fs[5], 0, 0, 0, 0 },
   };
 
   for (size_t i = 0; i < arraysize(hs); i++) {
@@ -123,8 +123,8 @@ TEST(IirFilterInterpreterTest, SemiMTIIRTest) {
   };
 
   HardwareState hs_normal[] = {
-    { 0.000, 0, 1, 1, &fs_normal[0] },
-    { 0.010, 0, 1, 1, &fs_normal[1] },
+    { 0.000, 0, 1, 1, &fs_normal[0], 0, 0, 0, 0 },
+    { 0.010, 0, 1, 1, &fs_normal[1], 0, 0, 0, 0 },
   };
 
   // For Non-SemiMT, the pressure of the finger will be different from the
@@ -143,8 +143,8 @@ TEST(IirFilterInterpreterTest, SemiMTIIRTest) {
     { 0, 0, 0, 0, kTestPressure, 0, 6, 6, 1, 0 },
   };
   HardwareState hs_semi_mt[] = {
-    { 0.000, 0, 1, 1, &fs_semi_mt[0] },
-    { 0.010, 0, 1, 1, &fs_semi_mt[1] },
+    { 0.000, 0, 1, 1, &fs_semi_mt[0], 0, 0, 0, 0 },
+    { 0.010, 0, 1, 1, &fs_semi_mt[1], 0, 0, 0, 0 },
   };
   hwprops.support_semi_mt = true;
   interpreter.SetHardwareProperties(hwprops);

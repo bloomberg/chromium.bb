@@ -1436,6 +1436,10 @@ void ImmediateInterpreter::SetPrevState(const HardwareState& hwstate) {
   memcpy(prev_state_.fingers,
          hwstate.fingers,
          prev_state_.finger_cnt * sizeof(FingerState));
+  prev_state_.rel_x = hwstate.rel_x;
+  prev_state_.rel_y = hwstate.rel_y;
+  prev_state_.rel_wheel = hwstate.rel_wheel;
+  prev_state_.rel_hwheel = hwstate.rel_hwheel;
 }
 
 bool ImmediateInterpreter::FingerInDampenedZone(

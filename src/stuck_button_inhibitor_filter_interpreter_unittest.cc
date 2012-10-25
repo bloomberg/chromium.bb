@@ -137,27 +137,27 @@ TEST(StuckButtonInhibitorFilterInterpreterTest, SimpleTest) {
   FingerState fs = { 0, 0, 0, 0, 1, 0, 150, 4000, 1, 0 };
   Record recs[] = {
     // Simple move. Nothing button related
-    { -1.0, { 1.0, 0, 1, 1, &fs  }, true,  -1.0, null, -1.0, null },
-    { -1.0, { 1.1, 0, 1, 1, &fs  }, true,  -1.0, move, -1.0, move },
+    { -1.0, { 1.0, 0, 1, 1, &fs, 0, 0, 0, 0  }, true,  -1.0, null, -1.0, null },
+    { -1.0, { 1.1, 0, 1, 1, &fs, 0, 0, 0, 0  }, true,  -1.0, move, -1.0, move },
     // Button down, followed by nothing, so we timeout and send button up
-    { -1.0, { 1.2, 0, 1, 1, &fs  }, true,  -1.0, down, -1.0, down },
-    { -1.0, { 1.3, 0, 0, 0, NULL }, true,   1.0, null, -1.0, null },
-    {  2.3, { 0.0, 0, 0, 0, NULL }, false, -1.0, up,   -1.0, null },
+    { -1.0, { 1.2, 0, 1, 1, &fs, 0, 0, 0, 0  }, true,  -1.0, down, -1.0, down },
+    { -1.0, { 1.3, 0, 0, 0, NULL, 0, 0, 0, 0 }, true,   1.0, null, -1.0, null },
+    {  2.3, { 0.0, 0, 0, 0, NULL, 0, 0, 0, 0 }, false, -1.0, up,   -1.0, null },
     // Next sends button up in timeout
-    { -1.0, { 3.2, 0, 1, 1, &fs  }, true,  -1.0, down, -1.0, down },
-    { -1.0, { 3.3, 0, 0, 0, NULL }, true,   0.5, null,  0.5, null },
-    {  3.8, { 0.0, 0, 0, 0, NULL }, true,  -1.0, up,   -1.0, up   },
+    { -1.0, { 3.2, 0, 1, 1, &fs, 0, 0, 0, 0  }, true,  -1.0, down, -1.0, down },
+    { -1.0, { 3.3, 0, 0, 0, NULL, 0, 0, 0, 0 }, true,   0.5, null,  0.5, null },
+    {  3.8, { 0.0, 0, 0, 0, NULL, 0, 0, 0, 0 }, true,  -1.0, up,   -1.0, up   },
     // Double down/up squash
-    { -1.0, { 4.2, 0, 1, 1, &fs  }, true,  -1.0, down, -1.0, down },
-    { -1.0, { 4.3, 0, 1, 1, &fs  }, true,  -1.0, null, -1.0, down },
-    { -1.0, { 4.4, 0, 0, 0, NULL }, true,  -1.0, up,   -1.0, up   },
-    { -1.0, { 4.5, 0, 0, 0, NULL }, true,  -1.0, null, -1.0, up   },
+    { -1.0, { 4.2, 0, 1, 1, &fs, 0, 0, 0, 0  }, true,  -1.0, down, -1.0, down },
+    { -1.0, { 4.3, 0, 1, 1, &fs, 0, 0, 0, 0  }, true,  -1.0, null, -1.0, down },
+    { -1.0, { 4.4, 0, 0, 0, NULL, 0, 0, 0, 0 }, true,  -1.0, up,   -1.0, up   },
+    { -1.0, { 4.5, 0, 0, 0, NULL, 0, 0, 0, 0 }, true,  -1.0, null, -1.0, up   },
     // Right down, left double up/down squash
-    { -1.0, { 5.1, 0, 1, 1, &fs  }, true,  -1.0, rdwn, -1.0, rdwn },
-    { -1.0, { 5.2, 0, 1, 1, &fs  }, true,  -1.0, down, -1.0, rldn },
-    { -1.0, { 5.3, 0, 1, 1, &fs  }, true,  -1.0, null, -1.0, down },
-    { -1.0, { 5.4, 0, 0, 0, NULL }, true,   1.0, rup,  -1.0, rup  },
-    { -1.0, { 5.5, 0, 0, 0, NULL }, true,  -1.0, up,   -1.0, rlup },
+    { -1.0, { 5.1, 0, 1, 1, &fs, 0, 0, 0, 0  }, true,  -1.0, rdwn, -1.0, rdwn },
+    { -1.0, { 5.2, 0, 1, 1, &fs, 0, 0, 0, 0  }, true,  -1.0, down, -1.0, rldn },
+    { -1.0, { 5.3, 0, 1, 1, &fs, 0, 0, 0, 0  }, true,  -1.0, null, -1.0, down },
+    { -1.0, { 5.4, 0, 0, 0, NULL, 0, 0, 0, 0 }, true,   1.0, rup,  -1.0, rup  },
+    { -1.0, { 5.5, 0, 0, 0, NULL, 0, 0, 0, 0 }, true,  -1.0, up,   -1.0, rlup },
   };
 
   for (size_t i = 0; i < arraysize(recs); ++i) {

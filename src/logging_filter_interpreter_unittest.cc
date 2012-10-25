@@ -59,7 +59,7 @@ TEST(LoggingFilterInterpreterTest, LogResetHandlerTest) {
   };
   HardwareState hardware_state = {
     // time, buttons, finger count, touch count, finger states pointer
-    200000, 0, 1, 1, &finger_state
+    200000, 0, 1, 1, &finger_state, 0, 0, 0, 0
   };
   stime_t timeout = -1.0;
   interpreter.SyncInterpret(&hardware_state, &timeout);

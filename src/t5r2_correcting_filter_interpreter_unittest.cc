@@ -107,21 +107,21 @@ TEST(T5R2CorrectingFilterInterpreterTest, SimpleTest) {
   };
   HardwareStateAndExpectations hse[] = {
     // normal case -- no change expected
-    { { 0.01, 0, 1, 1, &fs[0] }, false },
-    { { 0.02, 0, 1, 3, &fs[0] }, false },
-    { { 0.03, 0, 2, 3, &fs[0] }, false },
-    { { 0.04, 0, 0, 0, NULL   }, false },
+    { { 0.01, 0, 1, 1, &fs[0], 0, 0, 0, 0 }, false },
+    { { 0.02, 0, 1, 3, &fs[0], 0, 0, 0, 0 }, false },
+    { { 0.03, 0, 2, 3, &fs[0], 0, 0, 0, 0 }, false },
+    { { 0.04, 0, 0, 0, NULL, 0, 0, 0, 0   }, false },
     // problem -- change expected at end
-    { { 0.01, 0, 2, 3, &fs[0] }, false },
-    { { 0.02, 0, 2, 3, &fs[0] }, false },
-    { { 0.03, 0, 0, 1, NULL   }, false },
-    { { 0.04, 0, 0, 1, NULL   }, true },
+    { { 0.01, 0, 2, 3, &fs[0], 0, 0, 0, 0 }, false },
+    { { 0.02, 0, 2, 3, &fs[0], 0, 0, 0, 0 }, false },
+    { { 0.03, 0, 0, 1, NULL, 0, 0, 0, 0   }, false },
+    { { 0.04, 0, 0, 1, NULL, 0, 0, 0, 0   }, true },
     // problem -- change expected at end
-    { { 0.01, 0, 1, 1, &fs[0] }, false },
-    { { 0.02, 0, 1, 3, &fs[0] }, false },
-    { { 0.03, 0, 2, 3, &fs[0] }, false },
-    { { 0.04, 0, 0, 2, NULL   }, false },
-    { { 0.05, 0, 0, 2, NULL   }, true }
+    { { 0.01, 0, 1, 1, &fs[0], 0, 0, 0, 0 }, false },
+    { { 0.02, 0, 1, 3, &fs[0], 0, 0, 0, 0 }, false },
+    { { 0.03, 0, 2, 3, &fs[0], 0, 0, 0, 0 }, false },
+    { { 0.04, 0, 0, 2, NULL, 0, 0, 0, 0   }, false },
+    { { 0.05, 0, 0, 2, NULL, 0, 0, 0, 0   }, true }
   };
 
   for (size_t i = 0; i < arraysize(hse); i++) {
