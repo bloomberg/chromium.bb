@@ -29,5 +29,6 @@ SSLClientSocketTest.ConnectMismatched
 
 # crashes under drmemory:
 # http://crbug.com/157682
-SignatureUtilWinTest.UntrustedSignedBinary
+SignatureUtilWinTest.*
+SafeBrowsingDatabaseTest.*
 
