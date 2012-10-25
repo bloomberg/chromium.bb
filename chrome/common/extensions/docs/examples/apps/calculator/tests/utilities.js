@@ -111,136 +111,6 @@ window.calculatorTestRun = {
     this.success = false;
   },
 
-  /** @private */
-  areEqual_: function(x, y) {
-    return Array.isArray(x) ? this.areArraysEqual_(x, y) : (x == y);
-  },
-
-  /** @private */
-  areArraysEqual_: function(a, b) {
-    return Array.isArray(a) &&
-           Array.isArray(b) &&
-           a.length === b.length &&
-           a.every(function(element, i) {
-             return this.areEqual_(a[i], b[i]);
-           }, this);
-  },
-
-  /** @private */
-  getDescription_: function(prefix, object, suffix) {
-    var strings = Array.isArray(prefix) ? prefix : prefix ? [prefix] : [];
-    return this.addDescription_(strings, object, suffix).join('');
-  },
-
-  /** @private */
-  addDescription_: function(prefix, object, suffix) {
-    var strings = Array.isArray(prefix) ? prefix : prefix ? [prefix] : [];
-    if (Array.isArray(object)) {
-      strings.push('[', '');
-      object.forEach(function(element) {
-        this.addDescription_(strings, element, ', ');
-      }, this);
-      strings.pop();  // Pops the last ', ', or pops '' for empty arrays.
-      strings.push(']');
-    } else if (typeof object === 'number') {
-      strings.push('#');
-      strings.push(String(object));
-    } else if (typeof object === 'string') {
-      strings.push('"');
-      strings.push(object);
-      strings.push('"');
-    } else if (object instanceof Model) {
-      strings.push('(');
-      this.addDescription_(strings, object.accumulator, ' ');
-      this.addDescription_(strings, object.operator, ' ');
-      this.addDescription_(strings, object.operand, ' | ');
-      this.addDescription_(strings, object.defaults.operator, ' ');
-      this.addDescription_(strings, object.defaults.operand, ')');
-    } else {
-      strings.push(String(object));
-    }
-    strings.push(suffix || '');
-    return strings;
-  },
-
-  // TODO(dharcourt): Reorder the methods below and insert them above in
-  // public-to-private/high-to-low-level/caller-to-callee order.
-
-  /**
-   * @private
-   * Tests how a calculator model handles a single key of input, logging the
-   * state of the model before and after the test.
-   */
-  testKey_: function(model, key, expected) {
-    var description = this.addDescription_(['"', key, '": '], model, ' => ');
-    var result = model.handle(key);
-    var accumulator = result.accumulator;
-    var operator = result.operator;
-    var operand = result.operand;
-    var actual = [accumulator, operator, operand && [operand]];
-    this.verify(expected, actual, this.getDescription_(description, result));
-  },
-
-  /**
-   * @private
-   * Tests how a calculator model handles a sequence of digits and periods
-   * representing a number. During the test, the expected operand values are
-   * updated before each digit and period of the input according to these rules:
-   *
-   *   - If the passed in expected values array has a null expected operand
-   *     array, the expected operand used for the tests starts with the first
-   *     digit or period of the numeric sequence and the following digits and
-   *     periods of that sequence are appended before each new key's test.
-   *
-   *   - If the passed in expected values array has an expected operand array of
-   *     the form [operand], the expected operand used for the tests start with
-   *     the first character of that array's element and one additional
-   *     character of that element is added before each of the following digit
-   *     and period key tests.
-   *
-   *   - If the passed in expected values array has an expected operand array of
-   *     the form [prefix, operand], the expected operand used for the tests
-   *     starts with the first element in that array and the first character of
-   *     the second element, and one character of that second element is added
-   *     before each of the following digit and period key tests.
-   *
-   *   - In all of these cases, leading zeros and occurrences of the '='
-   *     character in the expected operand are ignored.
-   *
-   * For example the sequence of calls:
-   *
-   *   run.testNumber_(model, '00', [x, y, ['0=']])
-   *   run.testNumber_(model, '1.2.3', [x, y, ['1.2=3']])
-   *   run.testNumber_(model, '45', [x, y, ['1.23', '45']])
-   *
-   * would yield the following tests:
-   *
-   *   run.verify(model.handle('0'), [x, y, '0'], '0');
-   *   run.verify(model.handle('0'), [x, y, '0'], '0');
-   *   run.verify(model.handle('1'), [x, y, '1'], '1');
-   *   run.verify(model.handle('.'), [x, y, '1.'], '.');
-   *   run.verify(model.handle('2'), [x, y, '1.2'], '2');
-   *   run.verify(model.handle('.'), [x, y, '1.2'], '.');
-   *   run.verify(model.handle('3'), [x, y, '1.23'], '3');
-   *   run.verify(model.handle('4'), [x, y, '1.234'], '4');
-   *   run.verify(model.handle('5'), [x, y, '1.2345'], '5');
-   *
-   * It would also changes the expected value array to the following:
-   *
-   *   [x, y, ['1.2345']]
-   */
-  testNumber_: function(model, number, expected) {
-    var multiple = (expected[2] && expected[2].length > 1);
-    var prefix = multiple ? expected[2][0] : '';
-    var suffix = expected[2] ? expected[2][multiple ? 1 : 0] : number;
-    for (var i = 0; i < number.length; ++i) {
-      expected[2] = [prefix + suffix.slice(0, i + 1)];
-      expected[2] = [expected[2][0].replace(/^0+([0-9])/, '$1')];
-      expected[2] = [expected[2][0].replace(/=/g, '')];
-      this.testKey_(model, number[i], expected);
-    }
-  },
-
   /**
    * @private
    * Tests how a new calculator model handles a sequence of numbers, operations,
@@ -384,6 +254,133 @@ window.calculatorTestRun = {
           this.testKey_(model, ABBREVIATIONS[current] || current, expected);
       };
     }
+  },
+
+  /**
+   * @private
+   * Tests how a calculator model handles a sequence of digits and periods
+   * representing a number. During the test, the expected operand values are
+   * updated before each digit and period of the input according to these rules:
+   *
+   *   - If the passed in expected values array has a null expected operand
+   *     array, the expected operand used for the tests starts with the first
+   *     digit or period of the numeric sequence and the following digits and
+   *     periods of that sequence are appended before each new key's test.
+   *
+   *   - If the passed in expected values array has an expected operand array of
+   *     the form [operand], the expected operand used for the tests start with
+   *     the first character of that array's element and one additional
+   *     character of that element is added before each of the following digit
+   *     and period key tests.
+   *
+   *   - If the passed in expected values array has an expected operand array of
+   *     the form [prefix, operand], the expected operand used for the tests
+   *     starts with the first element in that array and the first character of
+   *     the second element, and one character of that second element is added
+   *     before each of the following digit and period key tests.
+   *
+   *   - In all of these cases, leading zeros and occurrences of the '='
+   *     character in the expected operand are ignored.
+   *
+   * For example the sequence of calls:
+   *
+   *   run.testNumber_(model, '00', [x, y, ['0=']])
+   *   run.testNumber_(model, '1.2.3', [x, y, ['1.2=3']])
+   *   run.testNumber_(model, '45', [x, y, ['1.23', '45']])
+   *
+   * would yield the following tests:
+   *
+   *   run.verify(model.handle('0'), [x, y, '0'], '0');
+   *   run.verify(model.handle('0'), [x, y, '0'], '0');
+   *   run.verify(model.handle('1'), [x, y, '1'], '1');
+   *   run.verify(model.handle('.'), [x, y, '1.'], '.');
+   *   run.verify(model.handle('2'), [x, y, '1.2'], '2');
+   *   run.verify(model.handle('.'), [x, y, '1.2'], '.');
+   *   run.verify(model.handle('3'), [x, y, '1.23'], '3');
+   *   run.verify(model.handle('4'), [x, y, '1.234'], '4');
+   *   run.verify(model.handle('5'), [x, y, '1.2345'], '5');
+   *
+   * It would also changes the expected value array to the following:
+   *
+   *   [x, y, ['1.2345']]
+   */
+  testNumber_: function(model, number, expected) {
+    var multiple = (expected[2] && expected[2].length > 1);
+    var prefix = multiple ? expected[2][0] : '';
+    var suffix = expected[2] ? expected[2][multiple ? 1 : 0] : number;
+    for (var i = 0; i < number.length; ++i) {
+      expected[2] = [prefix + suffix.slice(0, i + 1)];
+      expected[2] = [expected[2][0].replace(/^0+([0-9])/, '$1')];
+      expected[2] = [expected[2][0].replace(/=/g, '')];
+      this.testKey_(model, number[i], expected);
+    }
+  },
+
+  /**
+   * @private
+   * Tests how a calculator model handles a single key of input, logging the
+   * state of the model before and after the test.
+   */
+  testKey_: function(model, key, expected) {
+    var description = this.addDescription_(['"', key, '": '], model, ' => ');
+    var result = model.handle(key);
+    var accumulator = result.accumulator;
+    var operator = result.operator;
+    var operand = result.operand;
+    var actual = [accumulator, operator, operand && [operand]];
+    this.verify(expected, actual, this.getDescription_(description, result));
+  },
+
+  /** @private */
+  areEqual_: function(x, y) {
+    return Array.isArray(x) ? this.areArraysEqual_(x, y) : (x == y);
+  },
+
+  /** @private */
+  areArraysEqual_: function(a, b) {
+    return Array.isArray(a) &&
+           Array.isArray(b) &&
+           a.length === b.length &&
+           a.every(function(element, i) {
+             return this.areEqual_(a[i], b[i]);
+           }, this);
+  },
+
+  /** @private */
+  getDescription_: function(prefix, object, suffix) {
+    var strings = Array.isArray(prefix) ? prefix : prefix ? [prefix] : [];
+    return this.addDescription_(strings, object, suffix).join('');
+  },
+
+  /** @private */
+  addDescription_: function(prefix, object, suffix) {
+    var strings = Array.isArray(prefix) ? prefix : prefix ? [prefix] : [];
+    if (Array.isArray(object)) {
+      strings.push('[', '');
+      object.forEach(function(element) {
+        this.addDescription_(strings, element, ', ');
+      }, this);
+      strings.pop();  // Pops the last ', ', or pops '' for empty arrays.
+      strings.push(']');
+    } else if (typeof object === 'number') {
+      strings.push('#');
+      strings.push(String(object));
+    } else if (typeof object === 'string') {
+      strings.push('"');
+      strings.push(object);
+      strings.push('"');
+    } else if (object instanceof Model) {
+      strings.push('(');
+      this.addDescription_(strings, object.accumulator, ' ');
+      this.addDescription_(strings, object.operator, ' ');
+      this.addDescription_(strings, object.operand, ' | ');
+      this.addDescription_(strings, object.defaults.operator, ' ');
+      this.addDescription_(strings, object.defaults.operand, ')');
+    } else {
+      strings.push(String(object));
+    }
+    strings.push(suffix || '');
+    return strings;
   }
 
 }

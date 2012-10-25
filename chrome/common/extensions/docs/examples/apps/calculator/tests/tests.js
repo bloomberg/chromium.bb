@@ -4,9 +4,6 @@
  * found in the LICENSE file.
  **/
 
-/**
- * Used by automated and manual tests.
- */
 window.runTests = function(log) {
   var run = window.calculatorTestRun.create();
 
@@ -228,58 +225,3 @@ window.runTests = function(log) {
 
   return run;
 };
-
-/**
- * Used only by manual tests, not automated ones.
- */
-window.runTestsAndDisplayResults = function() {
-  var classes = {true: 'success', false: 'failure'};
-  var status = document.querySelector('.status');
-  var summary = document.querySelector('.summary');
-  var instructions = summary.querySelector('.instructions');
-  var execution = summary.querySelector('.execution');
-  var count = execution.querySelector('.count');
-  var duration = execution.querySelector('.duration');
-  var results = summary.querySelector('.results');
-  var passed = results.querySelector('.passed');
-  var failed = results.querySelector('.failed');
-  var browser = document.querySelector('.browser');
-  var details = document.querySelector('.details ol');
-  var start = Date.now();
-  var run = window.runTests(false);
-  var end = Date.now();
-  var counts = {passed: 0, failed: 0};
-  var tests = [];
-  var step;
-  for (var i = 0; i < run.tests.length; ++i) {
-    tests[i] = document.createElement('li');
-    tests[i].setAttribute('class', classes[run.tests[i].success]);
-    tests[i].appendChild(document.createElement('p'));
-    tests[i].children[0].textContent = run.tests[i].name;
-    tests[i].appendChild(document.createElement('ol'));
-    counts.passed += run.tests[i].success ? 1 : 0;
-    counts.failed += run.tests[i].success ? 0 : 1;
-    for (var j = 0; j < run.tests[i].steps.length; ++j) {
-      step = document.createElement('li');
-      tests[i].children[1].appendChild(step);
-      step.setAttribute('class', classes[run.tests[i].steps[j].success]);
-      for (var k = 0; k < run.tests[i].steps[j].messages.length; ++k) {
-        step.appendChild(document.createElement('p'));
-        step.children[k].textContent = run.tests[i].steps[j].messages[k];
-      }
-    }
-  }
-  status.setAttribute('class', 'status ' + classes[run.success]);
-  count.textContent = run.tests.length;
-  duration.textContent = end - start;
-  passed.textContent = counts.passed;
-  passed.setAttribute('class', counts.passed ? 'passed' : 'passed none');
-  failed.textContent = counts.failed;
-  failed.setAttribute('class', counts.failed ? 'failed' : 'failed none');
-  instructions.setAttribute('class', 'instructions hidden');
-  execution.setAttribute('class', 'execution');
-  results.setAttribute('class', 'results');
-  browser.textContent = window.navigator.userAgent;
-  details.innerHTML = '';
-  tests.forEach(function(test) { details.appendChild(test); });
-}

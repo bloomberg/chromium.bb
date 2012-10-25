@@ -21,7 +21,7 @@ IN_PROC_BROWSER_TEST_F(CalculatorBrowserTest, Model) {
   test_file = test_file.DirName().DirName()
       .AppendASCII("common").AppendASCII("extensions").AppendASCII("docs")
       .AppendASCII("examples").AppendASCII("apps").AppendASCII("calculator")
-      .AppendASCII("tests").AppendASCII("tests.html");
+      .AppendASCII("tests").AppendASCII("automatic.html");
 
   ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(test_file));
 

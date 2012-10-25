@@ -11,13 +11,11 @@ body {
 
 .bottom {
   background: LightSteelBlue;
-  border-radius: 0 0 7px 7px;
-  height: 1.5em;
+  height: 1em;
 }
 
 .browser {
   background: SteelBlue;
-  cursor: default;
   font-size: 80%;
   font-weight: normal;
   text-shadow: rgba(0, 0, 0, 0.5) 2px 2px 1px;
@@ -28,46 +26,32 @@ body {
   color: black;
 }
 
-.header {
-  border-radius: 7px 7px 7px 7px;
-  box-shadow: rgba(0, 0, 0, 0.5) 3px 3px 3px;
-  padding: 0;
-  color: GhostWhite;
+.failure, .failure .success {
+  background: LightCoral;
 }
 
-.hidden {
-  visibility: hidden
+.header {
+  color: GhostWhite;
+  padding: 0;
 }
 
 li {
-  border-radius: 7px 7px 7px 7px;
-  box-shadow: rgba(0, 0, 0, 0.5) 3px 3px 3px;
   margin: 0.5em 0;
   padding: 0;
   font-weight: bold;
 }
 
-li.failure {
-  background: Red;
-}
-
-li.success {
-  background: Chartreuse;
+li.failure .difference {
+  background: IndianRed;
 }
 
 li li {
-  border-radius: 0;
-  box-shadow: none;
   margin: 0;
   padding: 0;
 }
 
 li li p {
   font-weight: normal;
-}
-
-li.failure li.success {
-  background: LightSalmon;
 }
 
 li p {
@@ -86,13 +70,16 @@ ol p {
 }
 
 ol ol {
-  list-style: lower-alpha inside;
-  padding: 0.5em 1em 0.5em;
+  list-style: lower-alpha;
+  padding: 0.5em 0.5em 0.5em 4em;
 }
 
 ol ol p {
+  font-family: "Courier", "Courier New", monospace;
   font-style: normal;
   padding: 0;
+  margin: 0 0 0 0.5em;
+  white-space: pre;
 }
 
 .status {
@@ -100,30 +87,19 @@ ol ol p {
   padding: 0;
 }
 
-.status.failure {
-  background: Red;
-}
-
-.status.success {
-  background: Chartreuse;
+.success {
+  background: LightGreen;
 }
 
 .summary {
   background: WhiteSmoke;
   color: Black;
-  cursor: default;
   padding: 0.5em 0 0.5em 1em;
   position: static;
 }
 
-.summary .instructions {
-  height: 0;
-  position: relative;
-  top: -2.8em;
-}
-
 .summary .results .failed {
-  color: Tomato;
+  color: LightCoral;
   text-shadow: rgba(0, 0, 0, 1) 1px 1px 1px;
 }
 
@@ -133,7 +109,7 @@ ol ol p {
 }
 
 .summary .results .passed {
-  color: LawnGreen;
+  color: LightGreen;
   text-shadow: rgba(0, 0, 0, 1) 1px 1px 1px;
 }
 
@@ -145,15 +121,11 @@ ol ol p {
 .title {
   background: rgb(34, 34, 85);
   border-radius: 8px 8px 0 0;
+  cursor: default;
   font-size: 125%;
   line-height: 1em;
   margin: 0;
   -webkit-user-select: none;
   font-weight: lighter;
   padding: 0.5em 0 0.5em 0.8em;
-}
-
-.title span:hover {
-  cursor: pointer;
-  text-shadow: rgb(34, 34, 85) 0 0 1px, White 0 0 4px;
 }
