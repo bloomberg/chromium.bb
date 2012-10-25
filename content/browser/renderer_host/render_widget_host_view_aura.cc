@@ -1631,6 +1631,8 @@ bool RenderWidgetHostViewAura::ShouldActivate(const ui::Event* event) {
       activate = static_cast<const ui::GestureEvent*>(event)->
           details().touch_points() == 1;
     }
+  } else {
+    return true;
   }
   if (activate)
     host_->OnPointerEventActivate();

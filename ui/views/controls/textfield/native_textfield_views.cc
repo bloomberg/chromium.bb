@@ -560,6 +560,8 @@ void NativeTextfieldViews::HandleBlur() {
 
   if (touch_selection_controller_.get())
     touch_selection_controller_->ClientViewLostFocus();
+
+  ClearSelection();
 }
 
 ui::TextInputClient* NativeTextfieldViews::GetTextInputClient() {

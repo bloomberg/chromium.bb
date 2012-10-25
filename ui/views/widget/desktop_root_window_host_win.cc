@@ -114,6 +114,7 @@ aura::RootWindow* DesktopRootWindowHostWin::Init(
   input_method_filter_->SetInputMethodPropertyInRootWindow(root_window_);
   root_window_event_filter_->AddFilter(input_method_filter_.get());
 
+  focus_manager_->SetFocusedWindow(content_window_, NULL);
   return root_window_;
 }
 

@@ -122,8 +122,7 @@ bool DesktopActivationClient::CanActivateWindow(aura::Window* window) const {
   return window &&
       window->IsVisible() &&
       (!aura::client::GetActivationDelegate(window) ||
-        aura::client::GetActivationDelegate(window)->ShouldActivate(NULL)) &&
-      IsChildOfRootWindow(window);
+        aura::client::GetActivationDelegate(window)->ShouldActivate(NULL));
 }
 
 aura::Window* DesktopActivationClient::GetActivatableWindow(
