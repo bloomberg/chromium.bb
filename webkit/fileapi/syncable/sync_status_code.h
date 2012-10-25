@@ -5,6 +5,7 @@
 #ifndef WEBKIT_FILEAPI_SYNCABLE_SYNC_STATUS_CODE_H_
 #define WEBKIT_FILEAPI_SYNCABLE_SYNC_STATUS_CODE_H_
 
+#include "base/platform_file.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace leveldb {
@@ -49,6 +50,9 @@ enum SyncStatusCode {
 
 WEBKIT_STORAGE_EXPORT SyncStatusCode LevelDBStatusToSyncStatusCode(
     const leveldb::Status& status);
+
+WEBKIT_STORAGE_EXPORT SyncStatusCode PlatformFileErrorToSyncStatusCode(
+    base::PlatformFileError file_error);
 
 }  // namespace fileapi
 
