@@ -18,7 +18,7 @@ class CommonSwitches {
   CommonSwitches()
       : action_box(
             switches::kActionBox,
-            FeatureSwitch::DEFAULT_ENABLED),
+            FeatureSwitch::DEFAULT_DISABLED),
         easy_off_store_install(
             switches::kEasyOffStoreExtensionInstall,
             FeatureSwitch::DEFAULT_DISABLED),

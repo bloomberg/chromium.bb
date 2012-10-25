@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_pref_service.h"
@@ -23,6 +24,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
+
+using extensions::FeatureSwitch;
 
 class ActionBoxMenuModelTest : public BrowserWithTestWindowTest,
                                public ui::SimpleMenuModel::Delegate {
@@ -132,13 +135,14 @@ TEST_F(ActionBoxMenuModelTest, IncongnitoHasMobiles) {
 
 // Tests that Chrome2Mobile is disabled for signed-in profiles with no devices.
 TEST_F(ActionBoxMenuModelTest, OnRecordNoMobiles) {
+  FeatureSwitch::ScopedOverride enable_action_box(FeatureSwitch::action_box(),
+                                                  true);
   InitProfile();
   SetProfileSignedIn();
 
   NavigateToLocalPage();
 
   // Create model.
-
   ActionBoxMenuModel model(browser(), this);
 
   // Expect no c2m command in model.
@@ -158,6 +162,8 @@ TEST_F(ActionBoxMenuModelTest, OnRecordNoMobiles) {
 // Tests that Chrome2Mobile is enabled for signed-in profiles with devices, and
 // disabled if the profile is set to incognito mode.
 TEST_F(ActionBoxMenuModelTest, HasMobilesOnRecordOrIncognito) {
+  FeatureSwitch::ScopedOverride enable_action_box(FeatureSwitch::action_box(),
+                                                  true);
   InitProfile();
   SetProfileSignedIn();
   SetProfileHasMobiles();
@@ -196,6 +202,8 @@ TEST_F(ActionBoxMenuModelTest, HasMobilesOnRecordOrIncognito) {
 
 // Tests that Bookmark Star is lit up only on bookmarked pages.
 TEST_F(ActionBoxMenuModelTest, BookmarkedPage) {
+  FeatureSwitch::ScopedOverride enable_action_box(FeatureSwitch::action_box(),
+                                                  true);
   // Set up bookmark model
   profile()->CreateBookmarkModel(true);
   profile()->BlockUntilBookmarkModelLoaded();

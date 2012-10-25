@@ -12,6 +12,7 @@
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -22,6 +23,8 @@
 #include "google_apis/gaia/gaia_constants.h"
 
 namespace {
+
+using extensions::FeatureSwitch;
 
 class ChromeToMobileServiceTest : public BrowserWithTestWindowTest {
  public:
@@ -41,10 +44,15 @@ class ChromeToMobileServiceTest : public BrowserWithTestWindowTest {
   void FulfillFeatureRequirements();
 
  private:
+  FeatureSwitch::ScopedOverride enable_action_box_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeToMobileServiceTest);
 };
 
-ChromeToMobileServiceTest::ChromeToMobileServiceTest() {}
+// Chrome To Mobile is currently gated on the Action Box UI,
+// so need to enable this feature for the test.
+ChromeToMobileServiceTest::ChromeToMobileServiceTest()
+    : enable_action_box_(FeatureSwitch::action_box(), true) {}
 
 ChromeToMobileServiceTest::~ChromeToMobileServiceTest() {}
 
