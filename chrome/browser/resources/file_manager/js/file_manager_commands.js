@@ -150,7 +150,8 @@ Commands.newFolderCommand = {
   },
   canExecute: function(event, fileManager, directoryModel) {
     event.canExecute = !fileManager.isOnReadonlyDirectory() &&
-                       !directoryModel.isSearching();
+                       !directoryModel.isSearching() &&
+                       !fileManager.isRenamingInProgress();
   }
 };
 
