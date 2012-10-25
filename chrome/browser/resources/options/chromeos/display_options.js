@@ -763,7 +763,7 @@ cr.define('options', function() {
       for (var i = 0; i < this.displays_.length; i++) {
         var display = this.displays_[i];
         if (display.div == target ||
-            (display.isPrimary && $('display-launcher') == target)) {
+            (target.offsetParent && target.offsetParent == display.div)) {
           this.focusedIndex_ = i;
           break;
         }
@@ -903,7 +903,6 @@ cr.define('options', function() {
           display.width * this.visualScale_ - borderWidth * 2 + 'px';
       display.div.style.height =
           display.height * this.visualScale_ - borderWidth * 2 + 'px';
-      display.div.style.lineHeight = display.div.style.height;
       if (display.isPrimary) {
         var launcher = display.div.firstChild;
         if (launcher && launcher.id == 'display-launcher') {
@@ -1022,12 +1021,20 @@ cr.define('options', function() {
         this.resizeDisplayRectangle_(display, i);
         div.style.left = display.x * this.visualScale_ + offset.x + 'px';
         div.style.top = display.y * this.visualScale_ + offset.y + 'px';
-        div.appendChild(document.createTextNode(display.name));
+        var displayNameContainer = document.createElement('div');
+        displayNameContainer.textContent = display.name;
+        div.appendChild(displayNameContainer);
 
         div.onmousedown = this.onMouseDown_.bind(this);
         div.ontouchstart = this.onTouchStart_.bind(this);
 
         this.displaysView_.appendChild(div);
+
+        // Set the margin top to place the display name at the middle of the
+        // rectangle.  Note that this has to be done after it's added into the
+        // |displaysView_|.  Otherwise its offsetHeight is yet 0.
+        displayNameContainer.style.marginTop =
+            (div.offsetHeight - displayNameContainer.offsetHeight) / 2 + 'px';
       }
     },
 
