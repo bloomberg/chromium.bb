@@ -14,6 +14,7 @@ namespace sync_file_system {
 
 class RemoteChangeObserver;
 class RemoteChangeProcessor;
+class LocalChangeProcessor;
 
 // This class represents a backing service of the sync filesystem.
 // Owned by SyncFileSystemService.
@@ -34,8 +35,13 @@ class RemoteFileSyncService {
   // Called by the sync engine to process one remote change.
   // After a change is processed |callback| will be called (to return
   // the control to the sync engine).
-  virtual void ProcessChange(RemoteChangeProcessor* processor,
-                             fileapi::SyncCompletionCallback& callback) = 0;
+  virtual void ProcessRemoteChange(
+      RemoteChangeProcessor* processor,
+      const fileapi::SyncCompletionCallback& callback) = 0;
+
+  // Returns a LocalChangeProcessor that applies a local change to the remote
+  // storage backed by this service.
+  virtual LocalChangeProcessor* GetLocalChangeProcessor() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RemoteFileSyncService);
