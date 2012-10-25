@@ -13,7 +13,6 @@ class BrowserOnlineStateObserver;
 class CommandLine;
 class HighResolutionTimerManager;
 class MessageLoop;
-class SystemMessageWindowWin;
 
 namespace base {
 class SystemMonitor;
@@ -41,6 +40,7 @@ class BrowserMainParts;
 class BrowserShutdownImpl;
 class BrowserThreadImpl;
 class ResourceDispatcherHostImpl;
+class SystemMessageWindowWin;
 class WebKitThread;
 struct MainFunctionParams;
 

@@ -15,13 +15,14 @@
 #include "content/test/content_browser_test_utils.h"
 #include "googleurl/src/gurl.h"
 
+namespace content {
+
 // Tests playback and seeking of an audio or video file over file or http based
 // on a test parameter.  Test starts with playback, then, after X seconds or the
 // ended event fires, seeks near end of file; see player.html for details.  The
 // test completes when either the last 'ended' or an 'error' event fires.
-class MediaTest
-    : public testing::WithParamInterface<bool>,
-      public content::ContentBrowserTest {
+class MediaTest : public testing::WithParamInterface<bool>,
+                  public ContentBrowserTest {
  public:
   // Play specified audio over http:// or file:// depending on |http| setting.
   void PlayAudio(const char* media_file, bool http) {
@@ -48,9 +49,9 @@ class MediaTest
           base::StringPrintf("files/media/player.html?%s=%s", tag, media_file));
     }
 
-    FilePath test_file_path = content::GetTestFilePath("media", "player.html");
+    FilePath test_file_path = GetTestFilePath("media", "player.html");
     std::string query = base::StringPrintf("%s=%s", tag, media_file);
-    return content::GetFileUrlWithQuery(test_file_path, query);
+    return GetFileUrlWithQuery(test_file_path, query);
   }
 
   void PlayMedia(const char* tag, const char* media_file, bool http) {
@@ -63,11 +64,11 @@ class MediaTest
     const string16 kEnded = ASCIIToUTF16("ENDED");
     const string16 kError = ASCIIToUTF16("ERROR");
     const string16 kFailed = ASCIIToUTF16("FAILED");
-    content::TitleWatcher title_watcher(shell()->web_contents(), kEnded);
+    TitleWatcher title_watcher(shell()->web_contents(), kEnded);
     title_watcher.AlsoWaitForTitle(kFailed);
     title_watcher.AlsoWaitForTitle(kError);
 
-    content::NavigateToURL(shell(), player_gurl);
+    NavigateToURL(shell(), player_gurl);
 
     string16 final_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(kEnded, final_title);
@@ -192,3 +193,5 @@ IN_PROC_BROWSER_TEST_F(MediaLayoutTest, VideoLoopTest) {
 IN_PROC_BROWSER_TEST_F(MediaLayoutTest, VideoNoAutoplayTest) {
   RunLayoutTest("video-no-autoplay.html");
 }
+
+}  // namespace content

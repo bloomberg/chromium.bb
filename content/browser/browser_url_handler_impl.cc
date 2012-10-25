@@ -10,11 +10,12 @@
 #include "content/public/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 
-using content::BrowserURLHandler;
+namespace content {
+
+namespace {
 
 // Handles rewriting view-source URLs for what we'll actually load.
-static bool HandleViewSource(GURL* url,
-                             content::BrowserContext* browser_context) {
+bool HandleViewSource(GURL* url, BrowserContext* browser_context) {
   if (url->SchemeIs(chrome::kViewSourceScheme)) {
     // Load the inner URL instead.
     *url = GURL(url->path());
@@ -46,8 +47,7 @@ static bool HandleViewSource(GURL* url,
 }
 
 // Turns a non view-source URL into the corresponding view-source URL.
-static bool ReverseViewSource(GURL* url,
-                              content::BrowserContext* browser_context) {
+bool ReverseViewSource(GURL* url, BrowserContext* browser_context) {
   // No action necessary if the URL is already view-source:
   if (url->SchemeIs(chrome::kViewSourceScheme))
     return false;
@@ -61,14 +61,15 @@ static bool ReverseViewSource(GURL* url,
   return true;
 }
 
-static bool HandleDebugUrl(GURL* url,
-                           content::BrowserContext* browser_context) {
+bool HandleDebugUrl(GURL* url, BrowserContext* browser_context) {
   // Circumvent processing URLs that the renderer process will handle.
   return *url == GURL(chrome::kChromeUICrashURL) ||
          *url == GURL(chrome::kChromeUIHangURL) ||
          *url == GURL(chrome::kChromeUIKillURL) ||
          *url == GURL(chrome::kChromeUIShorthangURL);
 }
+
+}  // namespace
 
 // static
 BrowserURLHandler* BrowserURLHandler::GetInstance() {
@@ -89,7 +90,7 @@ BrowserURLHandlerImpl* BrowserURLHandlerImpl::GetInstance() {
 BrowserURLHandlerImpl::BrowserURLHandlerImpl() {
   AddHandlerPair(&HandleDebugUrl, BrowserURLHandlerImpl::null_handler());
 
-  content::GetContentClient()->browser()->BrowserURLHandlerCreated(this);
+  GetContentClient()->browser()->BrowserURLHandlerCreated(this);
 
   // view-source:
   AddHandlerPair(&HandleViewSource, &ReverseViewSource);
@@ -105,7 +106,7 @@ void BrowserURLHandlerImpl::AddHandlerPair(URLHandler handler,
 
 void BrowserURLHandlerImpl::RewriteURLIfNecessary(
     GURL* url,
-    content::BrowserContext* browser_context,
+    BrowserContext* browser_context,
     bool* reverse_on_redirect) {
   for (size_t i = 0; i < url_handlers_.size(); ++i) {
     URLHandler handler = *url_handlers_[i].first;
@@ -116,8 +117,9 @@ void BrowserURLHandlerImpl::RewriteURLIfNecessary(
   }
 }
 
-bool BrowserURLHandlerImpl::ReverseURLRewrite(
-    GURL* url, const GURL& original, content::BrowserContext* browser_context) {
+bool BrowserURLHandlerImpl::ReverseURLRewrite(GURL* url,
+                                              const GURL& original,
+                                              BrowserContext* browser_context) {
   for (size_t i = 0; i < url_handlers_.size(); ++i) {
     URLHandler reverse_rewriter = *url_handlers_[i].second;
     if (reverse_rewriter) {
@@ -133,3 +135,5 @@ bool BrowserURLHandlerImpl::ReverseURLRewrite(
   }
   return false;
 }
+
+}  // namespace content

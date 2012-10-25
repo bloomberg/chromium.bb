@@ -29,11 +29,11 @@
 
 bool g_exited_main_message_loop = false;
 
-using content::ChildProcess;
+namespace content {
 
 namespace {
 
-class BrowserMainRunnerImpl : public content::BrowserMainRunner {
+class BrowserMainRunnerImpl : public BrowserMainRunner {
  public:
   BrowserMainRunnerImpl()
       : is_initialized_(false),
@@ -46,7 +46,7 @@ class BrowserMainRunnerImpl : public content::BrowserMainRunner {
       Shutdown();
   }
 
-  virtual int Initialize(const content::MainFunctionParams& parameters)
+  virtual int Initialize(const MainFunctionParams& parameters)
       OVERRIDE {
     is_initialized_ = true;
 
@@ -69,7 +69,7 @@ class BrowserMainRunnerImpl : public content::BrowserMainRunner {
 
     notification_service_.reset(new NotificationServiceImpl);
 
-    main_loop_.reset(new content::BrowserMainLoop(parameters));
+    main_loop_.reset(new BrowserMainLoop(parameters));
 
     main_loop_->Init();
 
@@ -98,8 +98,8 @@ class BrowserMainRunnerImpl : public content::BrowserMainRunner {
 #endif  // OS_WIN
 
 #if defined(OS_ANDROID)
-    content::SurfaceTexturePeer::InitInstance(
-        new content::SurfaceTexturePeerBrowserImpl(
+    SurfaceTexturePeer::InitInstance(
+        new SurfaceTexturePeerBrowserImpl(
             parameters.command_line.HasSwitch(
                 switches::kMediaPlayerInRenderProcess)));
 #endif
@@ -153,7 +153,7 @@ class BrowserMainRunnerImpl : public content::BrowserMainRunner {
   bool created_threads_;
 
   scoped_ptr<NotificationServiceImpl> notification_service_;
-  scoped_ptr<content::BrowserMainLoop> main_loop_;
+  scoped_ptr<BrowserMainLoop> main_loop_;
 #if defined(OS_WIN)
   scoped_ptr<ui::ScopedOleInitializer> ole_initializer_;
 #endif
@@ -162,8 +162,6 @@ class BrowserMainRunnerImpl : public content::BrowserMainRunner {
 };
 
 }  // namespace
-
-namespace content {
 
 // static
 BrowserMainRunner* BrowserMainRunner::Create() {

@@ -18,24 +18,23 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/media/crypto/key_systems.h"
 
+namespace content {
+
 // Platform-specific filename relative to the chrome executable.
 #if defined(OS_WIN)
-static const wchar_t kLibraryName[] = L"clearkeycdmplugin.dll";
+const wchar_t kLibraryName[] = L"clearkeycdmplugin.dll";
 #elif defined(OS_MACOSX)
-static const char kLibraryName[] = "clearkeycdmplugin.plugin";
+const char kLibraryName[] = "clearkeycdmplugin.plugin";
 #elif defined(OS_POSIX)
-static const char kLibraryName[] = "libclearkeycdmplugin.so";
+const char kLibraryName[] = "libclearkeycdmplugin.so";
 #endif
 
 // Available key systems.
-static const char kClearKeyKeySystem[] = "webkit-org.w3.clearkey";
-static const char kExternalClearKeyKeySystem[] =
-    "org.chromium.externalclearkey";
+const char kClearKeyKeySystem[] = "webkit-org.w3.clearkey";
+const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
 
-
-class EncryptedMediaTest
-    : public testing::WithParamInterface<const char*>,
-      public content::ContentBrowserTest {
+class EncryptedMediaTest : public testing::WithParamInterface<const char*>,
+                           public ContentBrowserTest {
  public:
   void TestSimplePlayback(const char* encrypted_video, const char* key_system,
                           const string16 expectation) {
@@ -59,18 +58,18 @@ class EncryptedMediaTest
     GURL player_gurl = test_server()->GetURL(base::StringPrintf(
         "files/media/%s?keysystem=%s&mediafile=%s", html_page, key_system,
         media_file));
-    content::TitleWatcher title_watcher(shell()->web_contents(), expectation);
+    TitleWatcher title_watcher(shell()->web_contents(), expectation);
     title_watcher.AlsoWaitForTitle(kError);
     title_watcher.AlsoWaitForTitle(kFailed);
 
-    content::NavigateToURL(shell(), player_gurl);
+    NavigateToURL(shell(), player_gurl);
 
     string16 final_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expectation, final_title);
 
     if (final_title == kFailed) {
       std::string fail_message;
-      EXPECT_TRUE(content::ExecuteJavaScriptAndExtractString(
+      EXPECT_TRUE(ExecuteJavaScriptAndExtractString(
           shell()->web_contents()->GetRenderViewHost(), L"",
           L"window.domAutomationController.send(failMessage);", &fail_message));
       LOG(INFO) << "Test failed: " << fail_message;
@@ -130,3 +129,5 @@ INSTANTIATE_TEST_CASE_P(ClearKey, EncryptedMediaTest,
 INSTANTIATE_TEST_CASE_P(ExternalClearKey, EncryptedMediaTest,
                         ::testing::Values(kExternalClearKeyKeySystem));
 #endif
+
+}  // namespace content

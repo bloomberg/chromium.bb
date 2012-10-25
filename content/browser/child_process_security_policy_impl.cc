@@ -19,8 +19,7 @@
 #include "net/url_request/url_request.h"
 #include "webkit/fileapi/isolated_context.h"
 
-using content::ChildProcessSecurityPolicy;
-using content::SiteInstance;
+namespace content {
 
 namespace {
 
@@ -168,7 +167,7 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
   }
 
   bool has_web_ui_bindings() const {
-    return enabled_bindings_ & content::BINDINGS_POLICY_WEB_UI;
+    return enabled_bindings_ & BINDINGS_POLICY_WEB_UI;
   }
 
   bool can_read_raw_cookies() const {
@@ -425,7 +424,7 @@ void ChildProcessSecurityPolicyImpl::GrantWebUIBindings(int child_id) {
   if (state == security_state_.end())
     return;
 
-  state->second->GrantBindings(content::BINDINGS_POLICY_WEB_UI);
+  state->second->GrantBindings(BINDINGS_POLICY_WEB_UI);
 
   // Web UI bindings need the ability to request chrome: URLs.
   state->second->GrantScheme(chrome::kChromeUIScheme);
@@ -488,7 +487,7 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
     return false;
   }
 
-  if (!content::GetContentClient()->browser()->IsHandledURL(url) &&
+  if (!GetContentClient()->browser()->IsHandledURL(url) &&
       !net::URLRequest::IsHandledURL(url)) {
     return true;  // This URL request is destined for ShellExecute.
   }
@@ -629,3 +628,5 @@ bool ChildProcessSecurityPolicyImpl::HasPermissionsForFileSystem(
     return false;
   return state->second->HasPermissionsForFileSystem(filesystem_id, permission);
 }
+
+}  // namespace content

@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_CHILD_PROCESS_SECURITY_POLICY_IMPL_H_
 #define CONTENT_BROWSER_CHILD_PROCESS_SECURITY_POLICY_IMPL_H_
 
-
 #include <map>
 #include <set>
 #include <string>
@@ -19,8 +18,10 @@
 class FilePath;
 class GURL;
 
+namespace content {
+
 class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
-    : NON_EXPORTED_BASE(public content::ChildProcessSecurityPolicy) {
+    : NON_EXPORTED_BASE(public ChildProcessSecurityPolicy) {
  public:
   // Object can only be created through GetInstance() so the constructor is
   // private.
@@ -206,5 +207,7 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcessSecurityPolicyImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_CHILD_PROCESS_SECURITY_POLICY_IMPL_H_

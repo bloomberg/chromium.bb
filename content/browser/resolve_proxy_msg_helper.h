@@ -19,6 +19,8 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace content {
+
 // Responds to ChildProcessHostMsg_ResolveProxy, kicking off a ProxyResolve
 // request on the IO thread using the specified proxy service.  Completion is
 // notified through the delegate.  If multiple requests are started at the same
@@ -29,14 +31,13 @@ class URLRequestContextGetter;
 // the stored IPC::Message pointers for pending requests.
 //
 // This object is expected to live on the IO thread.
-class CONTENT_EXPORT ResolveProxyMsgHelper
-    : public content::BrowserMessageFilter {
+class CONTENT_EXPORT ResolveProxyMsgHelper : public BrowserMessageFilter {
  public:
   explicit ResolveProxyMsgHelper(net::URLRequestContextGetter* getter);
   // Constructor used by unittests.
   explicit ResolveProxyMsgHelper(net::ProxyService* proxy_service);
 
-  // content::BrowserMessageFilter implementation
+  // BrowserMessageFilter implementation
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
@@ -80,5 +81,7 @@ class CONTENT_EXPORT ResolveProxyMsgHelper
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
   net::ProxyService* proxy_service_;
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RESOLVE_PROXY_MSG_HELPER_H_

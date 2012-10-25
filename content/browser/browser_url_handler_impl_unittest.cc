@@ -7,11 +7,12 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class BrowserURLHandlerImplTest : public testing::Test {
-};
+namespace content {
+
+namespace {
 
 // Test URL rewriter that rewrites all "foo://" URLs to "bar://bar".
-static bool FooRewriter(GURL* url, content::BrowserContext* browser_context) {
+bool FooRewriter(GURL* url, BrowserContext* browser_context) {
   if (url->scheme() == "foo") {
     *url = GURL("bar://bar");
     return true;
@@ -20,7 +21,7 @@ static bool FooRewriter(GURL* url, content::BrowserContext* browser_context) {
 }
 
 // Test URL rewriter that rewrites all "bar://" URLs to "foo://foo".
-static bool BarRewriter(GURL* url, content::BrowserContext* browser_context) {
+bool BarRewriter(GURL* url, BrowserContext* browser_context) {
   if (url->scheme() == "bar") {
     *url = GURL("foo://foo");
     return true;
@@ -28,8 +29,10 @@ static bool BarRewriter(GURL* url, content::BrowserContext* browser_context) {
   return false;
 }
 
-TEST_F(BrowserURLHandlerImplTest, BasicRewriteAndReverse) {
-  content::TestBrowserContext browser_context;
+}  // namespace
+
+TEST(BrowserURLHandlerImplTest, BasicRewriteAndReverse) {
+  TestBrowserContext browser_context;
   BrowserURLHandlerImpl handler;
 
   handler.AddHandlerPair(FooRewriter, BarRewriter);
@@ -57,8 +60,8 @@ TEST_F(BrowserURLHandlerImplTest, BasicRewriteAndReverse) {
   ASSERT_EQ(saved_url, url);
 }
 
-TEST_F(BrowserURLHandlerImplTest, NullHandlerReverse) {
-  content::TestBrowserContext browser_context;
+TEST(BrowserURLHandlerImplTest, NullHandlerReverse) {
+  TestBrowserContext browser_context;
   BrowserURLHandlerImpl handler;
 
   GURL url("bar://foo");
@@ -76,3 +79,5 @@ TEST_F(BrowserURLHandlerImplTest, NullHandlerReverse) {
   ASSERT_TRUE(reversed);
   ASSERT_EQ("foo://foo", url.spec());
 }
+
+}  // namespace content

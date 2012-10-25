@@ -12,7 +12,10 @@
 #include "base/system_monitor/system_monitor.h"
 #include "base/win/wrapped_window_proc.h"
 
+namespace content {
+
 namespace {
+
 const wchar_t kWindowClassName[] = L"Chrome_SystemMessageWindow";
 
 // A static map from a device category guid to base::SystemMonitor::DeviceType.
@@ -23,6 +26,7 @@ struct {
   { KSCATEGORY_AUDIO, base::SystemMonitor::DEVTYPE_AUDIO_CAPTURE },
   { KSCATEGORY_VIDEO, base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE },
 };
+
 }  // namespace
 
 // Manages the device notification handles for SystemMessageWindowWin.
@@ -149,3 +153,5 @@ LRESULT CALLBACK SystemMessageWindowWin::WndProc(HWND hwnd, UINT message,
 
   return ::DefWindowProc(hwnd, message, wparam, lparam);
 }
+
+}  // namespace content

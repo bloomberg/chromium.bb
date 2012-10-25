@@ -9,14 +9,14 @@
 #include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class TraceSubscriberStdioTest : public ::testing::Test {};
+namespace content {
 
-TEST_F(TraceSubscriberStdioTest, CanWriteDataToFile) {
+TEST(TraceSubscriberStdioTest, CanWriteDataToFile) {
   ScopedTempDir trace_dir;
   ASSERT_TRUE(trace_dir.CreateUniqueTempDir());
   FilePath trace_file(trace_dir.path().AppendASCII("trace.txt"));
   {
-    content::TraceSubscriberStdio subscriber(trace_file);
+    TraceSubscriberStdio subscriber(trace_file);
 
     std::string foo("foo");
     subscriber.OnTraceDataCollected(
@@ -28,8 +28,10 @@ TEST_F(TraceSubscriberStdioTest, CanWriteDataToFile) {
 
     subscriber.OnEndTracingComplete();
   }
-  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  BrowserThread::GetBlockingPool()->FlushForTesting();
   std::string result;
   EXPECT_TRUE(file_util::ReadFileToString(trace_file, &result));
   EXPECT_EQ("[foo,bar]", result);
 }
+
+}  // namespace content

@@ -24,6 +24,7 @@
 #endif
 
 using content::BrowserThread;
+using content::ChildProcessSecurityPolicyImpl;
 
 namespace {
 

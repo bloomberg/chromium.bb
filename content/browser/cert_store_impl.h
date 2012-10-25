@@ -14,8 +14,10 @@
 #include "content/public/browser/notification_registrar.h"
 #include "net/base/x509_certificate.h"
 
-class CertStoreImpl : public content::CertStore,
-                      public content::NotificationObserver {
+namespace content {
+
+class CertStoreImpl : public CertStore,
+                      public NotificationObserver {
  public:
   // Returns the singleton instance of the CertStore.
   static CertStoreImpl* GetInstance();
@@ -26,10 +28,10 @@ class CertStoreImpl : public content::CertStore,
   virtual bool RetrieveCert(int cert_id,
                             scoped_refptr<net::X509Certificate>* cert) OVERRIDE;
 
-  // content::NotificationObserver implementation.
+  // NotificationObserver implementation.
   virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+                       const NotificationSource& source,
+                       const NotificationDetails& details) OVERRIDE;
  protected:
   CertStoreImpl();
   virtual ~CertStoreImpl();
@@ -52,7 +54,7 @@ class CertStoreImpl : public content::CertStore,
       ReverseCertMap;
 
   // Is only used on the UI Thread.
-  content::NotificationRegistrar registrar_;
+  NotificationRegistrar registrar_;
 
   IDMap process_id_to_cert_id_;
   IDMap cert_id_to_process_id_;
@@ -68,5 +70,7 @@ class CertStoreImpl : public content::CertStore,
 
   DISALLOW_COPY_AND_ASSIGN(CertStoreImpl);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_CERT_STORE_IMPL_H_
