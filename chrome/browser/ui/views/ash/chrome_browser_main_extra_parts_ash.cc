@@ -45,10 +45,6 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   if (chrome::ShouldOpenAshOnStartup()) {
     chrome::OpenAsh();
   } else {
-    aura::Env::GetInstance()->SetDisplayManager(new aura::SingleDisplayManager);
-    stacking_client_.reset(new aura::DesktopStackingClient);
-    gfx::Screen::SetScreenInstance(
-        gfx::SCREEN_TYPE_NATIVE, aura::CreateDesktopScreen());
 #if !defined(OS_CHROMEOS)
     gfx::Screen::SetScreenTypeDelegate(new ScreenTypeDelegateWin);
 #endif

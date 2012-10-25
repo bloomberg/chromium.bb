@@ -40,15 +40,14 @@
 #if defined(USE_ASH)
 #include "ash/ash_constants.h"
 #include "ash/wm/custom_frame_view_ash.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #endif
 
 namespace {
-#if !defined(USE_ASH)
 const int kResizeInsideBoundsSize = 5;
 const int kResizeAreaCornerSize = 16;
-#endif
 
 // Height of the chrome-style caption, in pixels.
 const int kCaptionHeight = 25;
@@ -126,6 +125,7 @@ void ShellWindowFrameView::Init(views::Widget* frame) {
 
 #if defined(USE_ASH)
   aura::Window* window = frame->GetNativeWindow();
+  if (chrome::IsNativeWindowInAsh(window)) {
   // Ensure we get resize cursors for a few pixels outside our bounds.
   window->SetHitTestBoundsOverrideOuter(
       gfx::Insets(-ash::kResizeOutsideBoundsSize,
@@ -137,7 +137,9 @@ void ShellWindowFrameView::Init(views::Widget* frame) {
   // TODO(jeremya): do we need to update these when in fullscreen/maximized?
   window->set_hit_test_bounds_override_inner(
       gfx::Insets(ash::kResizeInsideBoundsSize, ash::kResizeInsideBoundsSize,
-                  ash::kResizeInsideBoundsSize, ash::kResizeInsideBoundsSize));
+                    ash::kResizeInsideBoundsSize,
+                    ash::kResizeInsideBoundsSize));
+  }
 #endif
 }
 
@@ -175,6 +177,9 @@ int ShellWindowFrameView::NonClientHitTest(const gfx::Point& point) {
   if (frame_->IsFullscreen())
     return HTCLIENT;
 
+  int resize_inside_bounds_size = kResizeInsideBoundsSize;
+  int resize_area_corner_size = kResizeAreaCornerSize;
+
 #if defined(USE_ASH)
   gfx::Rect expanded_bounds = bounds();
   int outside_bounds = ash::kResizeOutsideBoundsSize;
@@ -184,8 +189,8 @@ int ShellWindowFrameView::NonClientHitTest(const gfx::Point& point) {
   if (!expanded_bounds.Contains(point))
     return HTNOWHERE;
 
-  int kResizeInsideBoundsSize = ash::kResizeInsideBoundsSize;
-  int kResizeAreaCornerSize = ash::kResizeAreaCornerSize;
+  resize_inside_bounds_size = ash::kResizeInsideBoundsSize;
+  resize_area_corner_size = ash::kResizeAreaCornerSize;
 #endif
 
   // Check the frame first, as we allow a small area overlapping the contents
@@ -198,12 +203,12 @@ int ShellWindowFrameView::NonClientHitTest(const gfx::Point& point) {
     // fullscreen, as it can't be resized in those states.
     int resize_border =
         frame_->IsMaximized() || frame_->IsFullscreen() ? 0 :
-        kResizeInsideBoundsSize;
+        resize_inside_bounds_size;
     int frame_component = GetHTComponentForFrame(point,
                                                  resize_border,
                                                  resize_border,
-                                                 kResizeAreaCornerSize,
-                                                 kResizeAreaCornerSize,
+                                                 resize_area_corner_size,
+                                                 resize_area_corner_size,
                                                  can_ever_resize);
     if (frame_component != HTNOWHERE)
       return frame_component;
@@ -512,7 +517,7 @@ views::View* ShellWindowViews::GetContentsView() {
 views::NonClientFrameView* ShellWindowViews::CreateNonClientFrameView(
     views::Widget* widget) {
 #if defined(USE_ASH)
-  if (!frameless_) {
+  if (chrome::IsNativeViewInAsh(widget->GetNativeView()) && !frameless_) {
     ash::CustomFrameViewAsh* frame = new ash::CustomFrameViewAsh();
     frame->Init(widget);
     return frame;

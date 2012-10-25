@@ -7,11 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/chrome_browser_main_extra_parts.h"
-
-#if !defined(USE_ASH)
 #include "base/memory/scoped_ptr.h"
-#endif
+#include "chrome/browser/chrome_browser_main_extra_parts.h"
 
 namespace aura {
 class DesktopStackingClient;
@@ -27,9 +24,7 @@ class ChromeBrowserMainExtraPartsAura : public ChromeBrowserMainExtraParts {
   virtual void PostMainMessageLoopRun() OVERRIDE;
 
  private:
-#if !defined(USE_ASH)
   scoped_ptr<aura::DesktopStackingClient> stacking_client_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsAura);
 };

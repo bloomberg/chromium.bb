@@ -6,20 +6,21 @@
 
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/toolkit_extra_parts.h"
-#include "ui/aura/env.h"
-
-#if !defined(USE_ASH)
 #include "ui/aura/desktop/desktop_screen.h"
 #include "ui/aura/desktop/desktop_stacking_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/single_display_manager.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/native_widget_aura.h"
+
 #if defined(OS_LINUX)
 #include "chrome/browser/ui/libgtk2ui/gtk2_ui.h"
 #include "ui/base/linux_ui.h"
 #endif
-#endif  // !USE_ASH
+
+#if defined(USE_ASH)
+#include "chrome/browser/ui/ash/ash_init.h"
+#endif
 
 ChromeBrowserMainExtraPartsAura::ChromeBrowserMainExtraPartsAura() {
 }
@@ -28,12 +29,15 @@ ChromeBrowserMainExtraPartsAura::~ChromeBrowserMainExtraPartsAura() {
 }
 
 void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
-#if !defined(USE_ASH)
-  gfx::Screen::SetScreenInstance(
-      gfx::SCREEN_TYPE_NATIVE, aura::CreateDesktopScreen());
-  aura::Env::GetInstance()->SetDisplayManager(new aura::SingleDisplayManager);
-  stacking_client_.reset(new aura::DesktopStackingClient);
-#endif  // !USE_ASH
+#if defined(USE_ASH)
+  if (!chrome::ShouldOpenAshOnStartup())
+#endif
+  {
+    gfx::Screen::SetScreenInstance(
+        gfx::SCREEN_TYPE_NATIVE, aura::CreateDesktopScreen());
+    aura::Env::GetInstance()->SetDisplayManager(new aura::SingleDisplayManager);
+    stacking_client_.reset(new aura::DesktopStackingClient);
+  }
 
 #if !defined(USE_ASH) && defined(OS_LINUX)
   // TODO(erg): Refactor this into a dlopen call when we add a GTK3 port.
@@ -42,9 +46,7 @@ void ChromeBrowserMainExtraPartsAura::PreProfileInit() {
 }
 
 void ChromeBrowserMainExtraPartsAura::PostMainMessageLoopRun() {
-#if !defined(USE_ASH)
   stacking_client_.reset();
-#endif
 
   // aura::Env instance is deleted in BrowserProcessImpl::StartTearDown
   // after the metrics service is deleted.

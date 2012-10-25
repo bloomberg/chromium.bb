@@ -97,7 +97,7 @@ void OpenAsh() {
 }
 
 void CloseAsh() {
-  if (ash::Shell::GetInstance())
+  if (ash::Shell::HasInstance())
     ash::Shell::DeleteInstance();
 }
 
