@@ -185,7 +185,7 @@ const CGFloat kSelectionAlpha = 0.06;
   if (oldIndex != NSNotFound) {
     // Something is selected, move only if not already at top/bottom.
     newIndex = oldIndex;
-    if (newIndex != delta < 0 ? 0 : (count - 1))
+    if (newIndex != (delta < 0 ? 0 : count - 1))
       newIndex += delta;
   }
 
