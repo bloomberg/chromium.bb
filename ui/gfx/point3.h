@@ -18,7 +18,7 @@ class Point3f {
 
   Point3f(float x, float y, float z) : x_(x), y_(y), z_(z) {}
 
-  Point3f(const Point& point) : x_(point.x()), y_(point.y()), z_(0) {}
+  explicit Point3f(const Point& point) : x_(point.x()), y_(point.y()), z_(0) {}
 
   ~Point3f() {}
 

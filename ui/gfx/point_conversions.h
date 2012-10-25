@@ -18,4 +18,4 @@ UI_EXPORT Point ToCeiledPoint(const PointF& point);
 
 }  // namespace gfx
 
-#endif  // UI_GFX_RECT_CONVERSIONS_H_
+#endif  // UI_GFX_POINT_CONVERSIONS_H_

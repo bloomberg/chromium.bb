@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_SCOPED_CG_CONTEXT_SAVE_GSTATE_MAC_H
-#define UI_GFX_SCOPED_CG_CONTEXT_SAVE_GSTATE_MAC_H
+#ifndef UI_GFX_SCOPED_CG_CONTEXT_SAVE_GSTATE_MAC_H_
+#define UI_GFX_SCOPED_CG_CONTEXT_SAVE_GSTATE_MAC_H_
 
 #import <QuartzCore/QuartzCore.h>
 
@@ -27,4 +27,4 @@ class ScopedCGContextSaveGState {
 
 }  // namespace gfx
 
-#endif  // UI_GFX_SCOPED_CG_CONTEXT_SAVE_GSTATE_MAC_H
+#endif  // UI_GFX_SCOPED_CG_CONTEXT_SAVE_GSTATE_MAC_H_

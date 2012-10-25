@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_GFX_SCOPED_REGION_GFX_H_
-#define UI_BASE_GFX_SCOPED_REGION_GFX_H_
+#ifndef UI_GFX_SCOPED_SK_REGION_H_
+#define UI_GFX_SCOPED_SK_REGION_H_
 
 #include "third_party/skia/include/core/SkRegion.h"
 
@@ -42,4 +42,4 @@ class ScopedSkRegion {
 
 }  // namespace gfx
 
-#endif  // UI_BASE_GFX_SCOPED_REGION_GFX_H_
+#endif  // UI_GFX_SCOPED_SK_REGION_H_

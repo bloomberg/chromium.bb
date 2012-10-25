@@ -87,9 +87,9 @@ class MockKMeanImageSampler : public color_utils::KMeanImageSampler {
   MockKMeanImageSampler() : current_result_index_(0) {
   }
 
-  MockKMeanImageSampler(const std::vector<int>& samples)
-    : prebaked_sample_results_(samples),
-      current_result_index_(0) {
+  explicit MockKMeanImageSampler(const std::vector<int>& samples)
+      : prebaked_sample_results_(samples),
+        current_result_index_(0) {
   }
 
   virtual ~MockKMeanImageSampler() {

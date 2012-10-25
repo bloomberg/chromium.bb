@@ -21,4 +21,4 @@ UI_EXPORT Size ToRoundedSize(const SizeF& size);
 
 }  // namespace gfx
 
-#endif  // UI_GFX_RECT_CONVERSIONS_H_
+#endif  // UI_GFX_SIZE_CONVERSIONS_H_

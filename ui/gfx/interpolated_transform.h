@@ -195,7 +195,7 @@ class UI_EXPORT InterpolatedTranslation : public InterpolatedTransform {
 ///////////////////////////////////////////////////////////////////////////////
 class UI_EXPORT InterpolatedConstantTransform : public InterpolatedTransform {
  public:
-  InterpolatedConstantTransform(const gfx::Transform& transform);
+  explicit InterpolatedConstantTransform(const gfx::Transform& transform);
   virtual ~InterpolatedConstantTransform();
 
  protected:
@@ -263,4 +263,4 @@ class UI_EXPORT InterpolatedTRSTransform : public InterpolatedTransform {
 
 } // namespace ui
 
-#endif // UI_GFX_INTERPOLATED_TRANSFORM_H_
+#endif  // UI_GFX_INTERPOLATED_TRANSFORM_H_

@@ -25,8 +25,8 @@ namespace gfx {
 
 // This Mac OS X-specific class provides dynamically linked access to
 // VideoDecodeAcceleration.framework, which is only available on 10.6 and later.
-class UI_EXPORT VideoDecodeAccelerationSupport :
-    public base::RefCountedThreadSafe<VideoDecodeAccelerationSupport> {
+class UI_EXPORT VideoDecodeAccelerationSupport
+    : public base::RefCountedThreadSafe<VideoDecodeAccelerationSupport> {
  public:
   enum Status {
     SUCCESS = 0,

@@ -182,7 +182,7 @@ class UI_EXPORT Canvas {
 
   // Restores the drawing state after a call to Save*(). It is an error to
   // call Restore() more times than Save*().
-  void Restore() ;
+  void Restore();
 
   // Adds |rect| to the current clip. Returns true if the resulting clip is
   // non-empty.

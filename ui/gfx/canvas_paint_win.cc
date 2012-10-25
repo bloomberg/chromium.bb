@@ -14,7 +14,7 @@ namespace {
 #if !defined(USE_AURA)
 class CanvasPaintWin : public gfx::CanvasPaint, public gfx::CanvasSkiaPaint {
  public:
-  CanvasPaintWin(gfx::NativeView view);
+  explicit CanvasPaintWin(gfx::NativeView view);
   virtual ~CanvasPaintWin();
 
   // Overridden from CanvasPaint:
