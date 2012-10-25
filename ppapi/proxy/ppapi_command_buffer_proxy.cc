@@ -203,12 +203,13 @@ void PpapiCommandBufferProxy::DestroyTransferBuffer(int32 id) {
 
   // Remove the transfer buffer from the client side4 cache.
   TransferBufferMap::iterator it = transfer_buffers_.find(id);
-  DCHECK(it != transfer_buffers_.end());
 
-  // Delete the shared memory object, closing the handle in this process.
-  delete it->second.shared_memory;
+  if (it != transfer_buffers_.end()) {
+    // Delete the shared memory object, closing the handle in this process.
+    delete it->second.shared_memory;
 
-  transfer_buffers_.erase(it);
+    transfer_buffers_.erase(it);
+  }
 
   Send(new PpapiHostMsg_PPBGraphics3D_DestroyTransferBuffer(
       ppapi::API_ID_PPB_GRAPHICS_3D, resource_, id));
