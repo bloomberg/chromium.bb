@@ -134,7 +134,3 @@ PageCyclerBrowserTest.*
 ExtensionContextMenuBrowserTest.*
 ChromeAppAPITest.*
 CommandsApiTest.*
-
-# crashes under drmemory:
-# http://crbug.com/157682
-SafeBrowsingDatabaseTest.*

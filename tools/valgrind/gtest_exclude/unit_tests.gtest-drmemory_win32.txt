@@ -57,3 +57,4 @@ ProfileInfoCacheTest.*
 # crashes under drmemory:
 # http://crbug.com/157682
 SignatureUtilWinTest.*
+SafeBrowsingDatabaseTest.*
