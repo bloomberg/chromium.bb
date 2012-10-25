@@ -92,7 +92,6 @@ CONTENT_EXPORT extern const char kEnableAcceleratedFilters[];
 extern const char kEnableAcceleratedPlugins[];
 extern const char kEnableAccessibilityLogging[];
 CONTENT_EXPORT extern const char kEnableBrowserPluginForAllViewTypes[];
-extern const char kEnableBrowserPluginOldImplementation[];
 CONTENT_EXPORT extern const char kEnableCompositingForFixedPosition[];
 extern const char kEnableCssShaders[];
 CONTENT_EXPORT extern const char kEnableDeviceMotion[];

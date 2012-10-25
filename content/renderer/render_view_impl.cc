@@ -39,7 +39,6 @@
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/intents_messages.h"
 #include "content/common/java_bridge_messages.h"
-#include "content/common/old_browser_plugin_messages.h"
 #include "content/common/pepper_messages.h"
 #include "content/common/pepper_plugin_registry.h"
 #include "content/common/quota_dispatcher.h"
@@ -62,10 +61,6 @@
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
-#include "content/renderer/browser_plugin/old/old_browser_plugin.h"
-#include "content/renderer/browser_plugin/old/browser_plugin_channel_manager.h"
-#include "content/renderer/browser_plugin/old/browser_plugin_constants.h"
-#include "content/renderer/browser_plugin/old/guest_to_embedder_channel.h"
 #include "content/renderer/device_orientation_dispatcher.h"
 #include "content/renderer/devtools_agent.h"
 #include "content/renderer/disambiguation_popup_helper.h"
@@ -584,7 +579,6 @@ RenderViewImpl::RenderViewImpl(
     bool swapped_out,
     int32 next_page_id,
     const WebKit::WebScreenInfo& screen_info,
-    old::GuestToEmbedderChannel* guest_to_embedder_channel,
     AccessibilityMode accessibility_mode)
     : RenderWidget(WebKit::WebPopupTypeNone, screen_info, swapped_out),
       webkit_preferences_(webkit_prefs),
@@ -631,9 +625,6 @@ RenderViewImpl::RenderViewImpl(
 #if defined(OS_WIN)
       focused_plugin_id_(-1),
 #endif
-      guest_to_embedder_channel_(guest_to_embedder_channel),
-      guest_pp_instance_(0),
-      guest_uninitialized_context_(NULL),
       updating_frame_tree_(false),
       pending_frame_tree_update_(false),
       target_process_id_(0),
@@ -694,7 +685,7 @@ RenderViewImpl::RenderViewImpl(
 
   // If this is a popup, we must wait for the CreatingNew_ACK message before
   // completing initialization.  Otherwise, we can finish it now.
-  if (!guest_to_embedder_channel && opener_id_ == MSG_ROUTING_NONE) {
+  if (opener_id_ == MSG_ROUTING_NONE) {
     did_show_ = true;
     CompleteInit(parent_hwnd);
   }
@@ -832,7 +823,6 @@ RenderViewImpl* RenderViewImpl::Create(
     bool swapped_out,
     int32 next_page_id,
     const WebKit::WebScreenInfo& screen_info,
-    old::GuestToEmbedderChannel* guest_to_embedder_channel,
     AccessibilityMode accessibility_mode) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
   return new RenderViewImpl(
@@ -849,7 +839,6 @@ RenderViewImpl* RenderViewImpl::Create(
       swapped_out,
       next_page_id,
       screen_info,
-      guest_to_embedder_channel,
       accessibility_mode);
 }
 
@@ -864,15 +853,6 @@ void RenderViewImpl::RemoveObserver(RenderViewObserver* observer) {
 
 WebKit::WebView* RenderViewImpl::webview() const {
   return static_cast<WebKit::WebView*>(webwidget());
-}
-
-old::GuestToEmbedderChannel* RenderViewImpl::GetGuestToEmbedderChannel() const {
-  return guest_to_embedder_channel_;
-}
-
-void RenderViewImpl::SetGuestToEmbedderChannel(
-    old::GuestToEmbedderChannel* channel) {
-  guest_to_embedder_channel_ = channel;
 }
 
 void RenderViewImpl::PluginCrashed(const FilePath& plugin_path) {
@@ -1070,25 +1050,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
 }
 
 void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
-  // If we don't have guest-to-embedder channel associated with this RenderView
-  // but we need one, grab one now.
-  if (!params.embedder_channel_name.empty() && !GetGuestToEmbedderChannel()) {
-    old::GuestToEmbedderChannel* embedder_channel =
-        RenderThreadImpl::current()->browser_plugin_channel_manager()->
-            GetChannelByName(params.embedder_channel_name);
-    DCHECK(embedder_channel);
-    SetGuestToEmbedderChannel(embedder_channel);
-    host_window_set_ = false;
-    // TODO(fsamuel): This is test code. Need to find a better way to tell
-    // a WebView to drop its context. This needs to change in
-    // GuestToEmbedderChannel::OnContextLost.
-    GetWebView()->loseCompositorContext(1);
-    RenderThreadImpl::current()->browser_plugin_channel_manager()->
-        ReportChannelToEmbedder(this,
-                                embedder_channel->embedder_channel_handle(),
-                                params.embedder_channel_name,
-                                params.embedder_container_id);
-  }
   MaybeHandleDebugURL(params.url);
   if (!webview())
     return;
@@ -1820,9 +1781,6 @@ WebView* RenderViewImpl::createView(
   if (routing_id == MSG_ROUTING_NONE)
     return NULL;
 
-  // TODO(fsamuel): The host renderer needs to be able to control whether
-  // the guest renderer is allowed to do this or not. This current
-  // behavior is not well defined.
   RenderViewImpl* view = RenderViewImpl::Create(
       0,
       routing_id_,
@@ -1837,7 +1795,6 @@ WebView* RenderViewImpl::createView(
       false,
       1,
       screen_info_,
-      guest_to_embedder_channel_,
       accessibility_mode_);
   view->opened_by_user_gesture_ = params.user_gesture;
 
@@ -2188,12 +2145,6 @@ bool RenderViewImpl::runModalBeforeUnloadDialog(
 
 void RenderViewImpl::showContextMenu(
     WebFrame* frame, const WebContextMenuData& data) {
-  // TODO(fsamuel): In the future, we might want the embedder to be able to
-  // decide whether the guest can show a context menu or not. See
-  // http://www.crbug.com/134207
-  if (GetGuestToEmbedderChannel())
-    return;
-
   ContextMenuParams params(data);
 
   // Plugins, e.g. PDF, don't currently update the render view when their
@@ -2499,16 +2450,9 @@ WebPlugin* RenderViewImpl::createPlugin(WebFrame* frame,
     return plugin;
   }
 
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   if (UTF16ToASCII(params.mimeType) == kBrowserPluginMimeType) {
-    if (cmd_line->HasSwitch(switches::kEnableBrowserPluginOldImplementation)) {
-      // TODO(fsamuel): Remove this once upstreaming of the new browser plugin
-      // is complete.
-      return old::BrowserPlugin::Create(this, frame, params);
-    } else {
-      return BrowserPluginManager::Get()->CreateBrowserPlugin(this, frame,
-                                                                       params);
-    }
+    return BrowserPluginManager::Get()->
+        CreateBrowserPlugin(this, frame, params);
   }
 
   webkit::WebPluginInfo info;
@@ -3834,17 +3778,6 @@ WebGraphicsContext3D* RenderViewImpl::CreateGraphicsContext3D(
   if (!webview())
     return NULL;
 
-  if (GetGuestToEmbedderChannel()) {
-    WebGraphicsContext3DCommandBufferImpl* context =
-        GetGuestToEmbedderChannel()->CreateWebGraphicsContext3D(
-            this, attributes, false);
-    if (!guest_pp_instance()) {
-      guest_uninitialized_context_ = context;
-      guest_attributes_ = attributes;
-    }
-    return context;
-  }
-
   // The WebGraphicsContext3DInProcessImpl code path is used for
   // layout tests (though not through this code) as well as for
   // debugging and bringing up new ports.
@@ -4346,31 +4279,6 @@ bool RenderViewImpl::IsEditableNode(const WebNode& node) const {
   }
 
   return false;
-}
-
-void RenderViewImpl::GuestReady(PP_Instance instance) {
-  guest_pp_instance_ = instance;
-  if (guest_uninitialized_context_) {
-    bool success = GetGuestToEmbedderChannel()->CreateGraphicsContext(
-        guest_uninitialized_context_,
-        guest_attributes_,
-        false,
-        this);
-    DCHECK(success);
-    CompleteInit(host_window_);
-    guest_uninitialized_context_ = NULL;
-  }
-}
-
-webkit::ppapi::WebPluginImpl* RenderViewImpl::CreateBrowserPlugin(
-    const IPC::ChannelHandle& channel_handle,
-    int guest_process_id,
-    const WebKit::WebPluginParams& params) {
-  scoped_refptr<webkit::ppapi::PluginModule> pepper_module(
-      pepper_delegate_.CreateBrowserPluginModule(channel_handle,
-                                                 guest_process_id));
-  return new webkit::ppapi::WebPluginImpl(
-      pepper_module.get(), params, pepper_delegate_.AsWeakPtr());
 }
 
 WebKit::WebPlugin* RenderViewImpl::CreatePlugin(
@@ -5564,8 +5472,6 @@ void RenderViewImpl::WillInitiatePaint() {
 void RenderViewImpl::DidInitiatePaint() {
   // Notify the pepper plugins that we've painted, and are waiting to flush.
   pepper_delegate_.ViewInitiatedPaint();
-  if (GetGuestToEmbedderChannel())
-    GetGuestToEmbedderChannel()->IssueSwapBuffers(guest_graphics_resource());
 }
 
 void RenderViewImpl::DidFlushPaint() {

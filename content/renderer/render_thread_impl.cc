@@ -48,8 +48,6 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
-#include "content/renderer/browser_plugin/old/browser_plugin_channel_manager.h"
-#include "content/renderer/browser_plugin/old/browser_plugin_registry.h"
 #include "content/renderer/devtools_agent_filter.h"
 #include "content/renderer/dom_storage/dom_storage_dispatcher.h"
 #include "content/renderer/dom_storage/webstoragearea_impl.h"
@@ -296,11 +294,6 @@ void RenderThreadImpl::Init() {
   appcache_dispatcher_.reset(new content::AppCacheDispatcher(Get()));
   dom_storage_dispatcher_.reset(new DomStorageDispatcher());
   main_thread_indexed_db_dispatcher_.reset(new content::IndexedDBDispatcher());
-
-  browser_plugin_registry_.reset(new old::BrowserPluginRegistry());
-  browser_plugin_channel_manager_.reset(
-      new old::BrowserPluginChannelManager());
-  AddObserver(browser_plugin_channel_manager_.get());
 
   media_stream_center_ = NULL;
 
@@ -1002,26 +995,21 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
 void RenderThreadImpl::OnCreateNewView(const ViewMsg_New_Params& params) {
   EnsureWebKitInitialized();
   // When bringing in render_view, also bring in webkit's glue and jsbindings.
-  if (!params.embedder_channel_name.empty()) {
-    browser_plugin_channel_manager()->CreateRenderView(params);
-  } else {
-    RenderViewImpl::Create(
-        params.parent_window,
-        params.opener_route_id,
-        params.renderer_preferences,
-        params.web_preferences,
-        new SharedRenderViewCounter(0),
-        params.view_id,
-        params.surface_id,
-        params.session_storage_namespace_id,
-        params.frame_name,
-        false,
-        params.swapped_out,
-        params.next_page_id,
-        params.screen_info,
-        NULL,
-        params.accessibility_mode);
-  }
+  RenderViewImpl::Create(
+      params.parent_window,
+      params.opener_route_id,
+      params.renderer_preferences,
+      params.web_preferences,
+      new SharedRenderViewCounter(0),
+      params.view_id,
+      params.surface_id,
+      params.session_storage_namespace_id,
+      params.frame_name,
+      false,
+      params.swapped_out,
+      params.next_page_id,
+      params.screen_info,
+      params.accessibility_mode);
 }
 
 GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(

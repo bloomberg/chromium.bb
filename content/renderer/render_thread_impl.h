@@ -69,11 +69,6 @@ class VideoCaptureImplManager;
 class WebDatabaseObserverImpl;
 class WebGraphicsContext3DCommandBufferImpl;
 
-namespace old {
-class BrowserPluginChannelManager;
-class BrowserPluginRegistry;
-}
-
 // The RenderThreadImpl class represents a background thread where RenderView
 // instances live.  The RenderThread supports an API that is used by its
 // consumer to talk indirectly to the RenderViews and supporting objects.
@@ -178,14 +173,6 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // Will be NULL if threaded compositing has not been enabled.
   CompositorThread* compositor_thread() const {
     return compositor_thread_.get();
-  }
-
-  old::BrowserPluginRegistry* browser_plugin_registry() const {
-    return browser_plugin_registry_.get();
-  }
-
-  old::BrowserPluginChannelManager* browser_plugin_channel_manager() const {
-    return browser_plugin_channel_manager_.get();
   }
 
   AppCacheDispatcher* appcache_dispatcher() const {
@@ -318,7 +305,6 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   scoped_ptr<DomStorageDispatcher> dom_storage_dispatcher_;
   scoped_ptr<IndexedDBDispatcher> main_thread_indexed_db_dispatcher_;
   scoped_ptr<RendererWebKitPlatformSupportImpl> webkit_platform_support_;
-  scoped_ptr<old::BrowserPluginChannelManager> browser_plugin_channel_manager_;
 
   // Used on the render thread and deleted by WebKit at shutdown.
   MediaStreamCenter* media_stream_center_;
@@ -372,8 +358,6 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   bool compositor_initialized_;
   scoped_ptr<CompositorThread> compositor_thread_;
   scoped_refptr<IPC::ForwardingMessageFilter> compositor_output_surface_filter_;
-
-  scoped_ptr<old::BrowserPluginRegistry> browser_plugin_registry_;
 
   ObserverList<RenderProcessObserver> observers_;
 

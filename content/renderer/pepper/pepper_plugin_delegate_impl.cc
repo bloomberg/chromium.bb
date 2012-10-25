@@ -34,8 +34,6 @@
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/renderer_restrict_dispatch_group.h"
-#include "content/renderer/browser_plugin/old/browser_plugin_constants.h"
-#include "content/renderer/browser_plugin/old/browser_plugin_registry.h"
 #include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/media/audio_hardware.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
@@ -414,45 +412,6 @@ RendererPpapiHost* PepperPluginDelegateImpl::CreateExternalPluginModule(
   // a message notifying it that the external plugin process has been created.
   return CreateOutOfProcessModule(
     module, path, permissions, channel_handle, 0);
-}
-
-scoped_refptr<webkit::ppapi::PluginModule>
-    PepperPluginDelegateImpl::CreateBrowserPluginModule(
-        const IPC::ChannelHandle& channel_handle,
-        int guest_process_id) {
-  old::BrowserPluginRegistry* registry =
-      RenderThreadImpl::current()->browser_plugin_registry();
-  scoped_refptr<webkit::ppapi::PluginModule> module =
-      registry->GetModule(guest_process_id);
-  if (module)
-    return module;
-
-  ppapi::PpapiPermissions permissions;
-
-  FilePath path(kBrowserPluginPath);
-  scoped_refptr<PepperHungPluginFilter> hung_filter(
-      new PepperHungPluginFilter(path,
-                                 render_view_->routing_id(),
-                                 guest_process_id));
-  // Create a new HostDispatcher for the proxying, and hook it to a new
-  // PluginModule.
-  module = new webkit::ppapi::PluginModule(kBrowserPluginName,
-                                           path,
-                                           registry,
-                                           permissions);
-  RenderThreadImpl::current()->browser_plugin_registry()->AddModule(
-      guest_process_id, module);
-  scoped_ptr<HostDispatcherWrapper> dispatcher(
-      new HostDispatcherWrapper(module, 0, permissions));
-  if (!dispatcher->Init(
-          channel_handle,
-          webkit::ppapi::PluginModule::GetLocalGetInterfaceFunc(),
-          GetPreferences(),
-          permissions,
-          hung_filter.get()))
-    return scoped_refptr<webkit::ppapi::PluginModule>();
-  module->InitAsProxied(dispatcher.release());
-  return module;
 }
 
 scoped_refptr<PepperBrokerImpl> PepperPluginDelegateImpl::CreateBroker(

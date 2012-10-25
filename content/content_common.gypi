@@ -310,7 +310,6 @@
     'common/npobject_stub.h',
     'common/npobject_util.cc',
     'common/npobject_util.h',
-    'common/old_browser_plugin_messages.h',
     'common/p2p_messages.h',
     'common/p2p_sockets.h',
     'common/page_zoom.cc',

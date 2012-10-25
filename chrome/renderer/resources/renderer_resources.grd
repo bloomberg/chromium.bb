@@ -76,7 +76,6 @@ without changes to the corresponding grd file. fb9 -->
         <include name="IDR_WEB_REQUEST_INTERNAL_CUSTOM_BINDINGS_JS" file="extensions\web_request_internal_custom_bindings.js" type="BINDATA" />
         <include name="IDR_WEBSTORE_CUSTOM_BINDINGS_JS" file="extensions\webstore_custom_bindings.js" type="BINDATA" />
         <include name="IDR_WEB_VIEW_JS" file="extensions\web_view.js" type="BINDATA" />
-        <include name="IDR_WEB_VIEW_OLD_JS" file="extensions\web_view_old.js" type="BINDATA" />
 
         <!-- Platform app support. -->
         <include name="IDR_PLATFORM_APP_CSS" file="extensions\platform_app.css" type="BINDATA" />

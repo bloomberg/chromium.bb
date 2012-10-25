@@ -167,10 +167,6 @@ struct FileChooserParams;
 class WebMediaPlayerProxyImplAndroid;
 #endif
 
-namespace old {
-class GuestToEmbedderChannel;
-}
-
 // We need to prevent a page from trying to create infinite popups. It is not
 // as simple as keeping a count of the number of immediate children
 // popups. Having an html file that window.open()s itself would create
@@ -219,7 +215,6 @@ class RenderViewImpl : public RenderWidget,
       bool swapped_out,
       int32 next_page_id,
       const WebKit::WebScreenInfo& screen_info,
-      old::GuestToEmbedderChannel* guest_to_embedder_channel,
       AccessibilityMode accessibility_mode);
 
   // Returns the RenderViewImpl containing the given WebView.
@@ -276,29 +271,6 @@ class RenderViewImpl : public RenderWidget,
   // didn't schedule anything.
   bool ScheduleFileChooser(const FileChooserParams& params,
                            WebKit::WebFileChooserCompletion* completion);
-
-  old::GuestToEmbedderChannel* GetGuestToEmbedderChannel() const;
-  void SetGuestToEmbedderChannel(old::GuestToEmbedderChannel* channel);
-  PP_Instance guest_pp_instance() const { return guest_pp_instance_; }
-  void set_guest_pp_instance(PP_Instance instance) {
-    guest_pp_instance_ = instance;
-  }
-  void set_guest_graphics_resource(const ppapi::HostResource& resource) {
-    guest_graphics_resource_ = resource;
-  }
-  const ppapi::HostResource& guest_graphics_resource() const {
-    return guest_graphics_resource_;
-  }
-
-  // Once the browser plugin embedder has connected to this guest, and is
-  // ready to paint, it informs the guest through GuestReady to begin
-  // compositing.
-  void GuestReady(PP_Instance instance);
-
-  webkit::ppapi::WebPluginImpl* CreateBrowserPlugin(
-      const IPC::ChannelHandle& channel_handle,
-      int guest_process_id,
-      const WebKit::WebPluginParams& params);
 
   void LoadNavigationErrorPage(
       WebKit::WebFrame* frame,
@@ -851,7 +823,6 @@ class RenderViewImpl : public RenderWidget,
                  bool swapped_out,
                  int32 next_page_id,
                  const WebKit::WebScreenInfo& screen_info,
-                 old::GuestToEmbedderChannel* guest_to_embedder_channel,
                  AccessibilityMode accessibility_mode);
 
   // Do not delete directly.  This class is reference counted.
@@ -1528,23 +1499,6 @@ class RenderViewImpl : public RenderWidget,
   // Allows JS to access DOM automation. The JS object is only exposed when the
   // DOM automation bindings are enabled.
   scoped_ptr<DomAutomationController> dom_automation_controller_;
-
-  // Channel for communication with embedding renderer, if it exists.
-  scoped_refptr<old::GuestToEmbedderChannel> guest_to_embedder_channel_;
-
-  // The pepper instance identifer for this guest RenderView.
-  PP_Instance guest_pp_instance_;
-
-  // The ppapi::HostResource associated with the on-screen context for this
-  // guest RenderView.
-  ppapi::HostResource guest_graphics_resource_;
-
-  // This graphics context is initialized once GuestReady() is called.
-  WebGraphicsContext3DCommandBufferImpl* guest_uninitialized_context_;
-
-  // These are the attributes originally passed into createOutputSurface
-  // before the guest_to_embedder_channel was ready.
-  WebKit::WebGraphicsContext3D::Attributes guest_attributes_;
 
   // Boolean indicating whether we are in the process of creating the frame
   // tree for this renderer in response to ViewMsg_UpdateFrameTree.  If true,

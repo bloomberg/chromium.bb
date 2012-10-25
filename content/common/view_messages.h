@@ -779,16 +779,6 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
   // The properties of the screen associated with the view.
   IPC_STRUCT_MEMBER(WebKit::WebScreenInfo, screen_info)
 
-  // The name of the channel with which a guest talks to its embedder.
-  // If this newly created RenderView has no embedder this string will be
-  // empty.
-  IPC_STRUCT_MEMBER(std::string, embedder_channel_name)
-
-  // The identifier in the embedder render process of the container hosting this
-  // guest RenderView. The embedder_channel_name and embedder_container_id
-  // together uniquely identify a browser plugin instance.
-  IPC_STRUCT_MEMBER(int, embedder_container_id)
-
   // The accessibility mode of the renderer.
   IPC_STRUCT_MEMBER(AccessibilityMode, accessibility_mode)
 IPC_STRUCT_END()
