@@ -96,3 +96,16 @@ BlockedAppApiTest.*
 ExtensionApiTest.*
 # DrM-i#1052-c#13
 InProcessBrowserTest.*
+
+# Timeout tests from debug build
+# DrM-i#1052-c#15
+PrintPreviewWebUITest.*
+PrintPreviewWebUITest.*
+PPAPINaClTestDisallowedSockets.*
+PPAPIBrokerInfoBarTest.*
+LoadtimesExtensionBindingsTest.*
+GeolocationBrowserTest.*
+AutofillTest.*
+HostRulesTest.*
+UnloadTest.*
+DoNotTrackTest.*
