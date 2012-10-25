@@ -1260,7 +1260,7 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
   // - If the |browser_| is not for an app, and the |accelerator| is not
   //   associated with the browser (e.g. an Ash shortcut), process it.
   // - If the |browser_| is not for an app, and the |accelerator| is associated
-  //   with the browser, and it is a reserved one (e.g. Ctrl-t), process it.
+  //   with the browser, and it is a reserved one (e.g. Ctrl+w), process it.
   // - If the |browser_| is not for an app, and the |accelerator| is associated
   //   with the browser, and it is not a reserved one, do nothing.
 
@@ -1294,11 +1294,11 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
   }
 
   if (id != -1) {
-    // |accelerator| is a non-reserved browser shortcut (e.g. Ctrl+t).
+    // |accelerator| is a non-reserved browser shortcut (e.g. Ctrl+f).
     if (event.type == WebKit::WebInputEvent::RawKeyDown)
       *is_keyboard_shortcut = true;
   } else if (processed) {
-    // |accelerator| is a non-browser shortcut (e.g. F5-F10 on Ash).
+    // |accelerator| is a non-browser shortcut (e.g. F4-F10 on Ash).
     return true;
   }
 
