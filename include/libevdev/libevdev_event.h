@@ -22,6 +22,11 @@ typedef struct {
     MtSlotPtr slots;
     MtSlotPtr slot_current;
 
+    int rel_x;
+    int rel_y;
+    int rel_wheel;
+    int rel_hwheel;
+
     struct input_absinfo* mt_axes[_ABS_MT_CNT];
 
     /* Log of recent input_event structs for debugging */

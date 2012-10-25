@@ -33,8 +33,9 @@
 #endif
 
 
+static void Event_Clear_Ev_Rel_State(EvdevPtr);
 
-static void Event_Syn(EvdevPtr, struct input_event*);
+static bool Event_Syn(EvdevPtr, struct input_event*);
 static void Event_Syn_Report(EvdevPtr, struct input_event*);
 static void Event_Syn_MT_Report(EvdevPtr, struct input_event*);
 
@@ -43,6 +44,8 @@ static void Event_Key(EvdevPtr, struct input_event*);
 static void Event_Abs(EvdevPtr, struct input_event*);
 static void Event_Abs_MT(EvdevPtr, struct input_event*);
 static void Event_Abs_Update_Pressure(EvdevPtr, struct input_event*);
+
+static void Event_Rel(EvdevPtr, struct input_event*);
 
 static void Event_Get_Time(struct timeval*, bool);
 
@@ -222,6 +225,16 @@ Event_To_String(int type, int code) {
             break;
         }
         break;
+    case EV_REL:
+        switch (code) {
+        CASE_RETURN(REL_X);
+        CASE_RETURN(REL_Y);
+        CASE_RETURN(REL_WHEEL);
+        CASE_RETURN(REL_HWHEEL);
+        default:
+            break;
+        }
+        break;
     case EV_KEY:
         switch (code) {
         CASE_RETURN(BTN_LEFT);
@@ -373,6 +386,9 @@ Event_Sync_State(EvdevPtr device)
 
     Event_Get_Time(&device->after_sync_time, device->info.is_monotonic);
 
+    /* Initialize EV_REL event state */
+    Event_Clear_Ev_Rel_State(device);
+
     LOG_WARNING(device, "Event_Sync_State: before %ld.%ld after %ld.%ld\n",
                 device->before_sync_time.tv_sec,
                 device->before_sync_time.tv_usec,
@@ -421,7 +437,7 @@ Event_Print(EvdevPtr device, struct input_event* ev)
 }
 
 /**
- * Process Input Events
+ * Process Input Events.  It returns TRUE if SYN_DROPPED detected.
  */
 bool
 Event_Process(EvdevPtr device, struct input_event* ev)
@@ -430,10 +446,7 @@ Event_Process(EvdevPtr device, struct input_event* ev)
 
     switch (ev->type) {
     case EV_SYN:
-        if (ev->code == SYN_DROPPED)
-            return true;
-        Event_Syn(device, ev);
-        break;
+        return Event_Syn(device, ev);
 
     case EV_KEY:
         Event_Key(device, ev);
@@ -441,6 +454,10 @@ Event_Process(EvdevPtr device, struct input_event* ev)
 
     case EV_ABS:
         Event_Abs(device, ev);
+        break;
+
+    case EV_REL:
+        Event_Rel(device, ev);
         break;
 
     default:
@@ -484,10 +501,37 @@ Event_Dump_Debug_Log(void* vinfo)
     fclose(fp);
 }
 
+/**
+ * Clear EV_REL event state.  This function should be called after a EV_SYN
+ * event is processed because EV_REL event state is not accumulative.
+ */
 static void
+Event_Clear_Ev_Rel_State(EvdevPtr device)
+{
+    EventStatePtr evstate;
+
+    evstate = device->evstate;
+    evstate->rel_x = 0;
+    evstate->rel_y = 0;
+    evstate->rel_wheel = 0;
+    evstate->rel_hwheel = 0;
+}
+
+/**
+ * Process EV_SYN events.  It returns TRUE if SYN_DROPPED detected.
+ */
+static bool
 Event_Syn(EvdevPtr device, struct input_event* ev)
 {
     switch (ev->code) {
+    case SYN_DROPPED:
+        /*
+         * Technically we don't need to call Event_Clear_Ev_Rel_State() here
+         * because when SYN_DROPPED is detected, Event_Sync_State() will be
+         * called and Event_Sync_State() will call Event_Clear_Ev_Rel_State()
+         * to re-initialize EV_REL event state.
+         */
+        return true;
     case SYN_REPORT:
         Event_Syn_Report(device, ev);
         break;
@@ -495,6 +539,7 @@ Event_Syn(EvdevPtr device, struct input_event* ev)
         Event_Syn_MT_Report(device, ev);
         break;
     }
+    return false;
 }
 
 static void
@@ -504,6 +549,8 @@ Event_Syn_Report(EvdevPtr device, struct input_event* ev)
     device->syn_report(device->syn_report_udata, evstate, &ev->time);
 
     MT_Print_Slots(device);
+
+    Event_Clear_Ev_Rel_State(device);
 }
 
 static void
@@ -571,4 +618,25 @@ Event_Abs_MT(EvdevPtr device, struct input_event* ev)
     }
 
     MT_Slot_Value_Set(slot, ev->code, ev->value);
+}
+
+static void
+Event_Rel(EvdevPtr device, struct input_event* ev)
+{
+    EventStatePtr evstate = device->evstate;
+
+    switch (ev->code) {
+    case REL_X:
+        evstate->rel_x = ev->value;
+        break;
+    case REL_Y:
+        evstate->rel_y = ev->value;
+        break;
+    case REL_WHEEL:
+        evstate->rel_wheel = ev->value;
+        break;
+    case REL_HWHEEL:
+        evstate->rel_hwheel = ev->value;
+        break;
+    }
 }
