@@ -26,7 +26,7 @@ public:
     // Record pixels painted by WebKit into the texture updater, but does not mean the pixels were rasterized in main memory.
     void didPaint(const IntRect& paintedRect);
     // Records that an invalid tile was culled and did not need to be painted/uploaded, and did not contribute to other tiles needing to be painted.
-    void didCullTileForUpload();
+    void didCullTilesForUpload(int count);
     // Records pixels that were uploaded to texture memory.
     void didUpload(const WebKit::WebTransformationMatrix& transformToTarget, const IntRect& uploadRect, const IntRect& opaqueRect);
     // Record contents texture(s) behind present using the given number of bytes.

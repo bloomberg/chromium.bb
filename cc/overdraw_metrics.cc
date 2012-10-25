@@ -67,10 +67,10 @@ void OverdrawMetrics::didPaint(const IntRect& paintedRect)
     m_pixelsPainted += static_cast<float>(paintedRect.width()) * paintedRect.height();
 }
 
-void OverdrawMetrics::didCullTileForUpload()
+void OverdrawMetrics::didCullTilesForUpload(int count)
 {
     if (m_recordMetricsForFrame)
-        ++m_tilesCulledForUpload;
+        m_tilesCulledForUpload += count;
 }
 
 void OverdrawMetrics::didUpload(const WebTransformationMatrix& transformToTarget, const IntRect& uploadRect, const IntRect& opaqueRect)

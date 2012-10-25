@@ -83,6 +83,8 @@ public:
     bool isSelfManaged() { return m_isSelfManaged; }
     void setToSelfManagedMemoryPlaceholder(size_t bytes);
 
+    void returnBackingTexture();
+
 private:
     friend class PrioritizedTextureManager;
     friend class PrioritizedTextureTest;

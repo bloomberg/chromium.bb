@@ -68,14 +68,12 @@ public:
     bool partialUpdate;
     bool validForFrame;
     bool occluded;
-    bool isInUseOnImpl;
 
 private:
     explicit UpdatableTile(scoped_ptr<LayerUpdater::Resource> updaterResource)
         : partialUpdate(false)
         , validForFrame(false)
         , occluded(false)
-        , isInUseOnImpl(false)
         , m_updaterResource(updaterResource.Pass())
     {
     }
@@ -216,8 +214,6 @@ void TiledLayer::pushPropertiesTo(LayerImpl* layer)
         if (!tile)
             continue;
 
-        tile->isInUseOnImpl = false;
-
         if (!tile->managedTexture()->haveBackingTexture()) {
             // Evicted tiles get deleted from both layers
             invalidTiles.append(tile);
@@ -231,7 +227,6 @@ void TiledLayer::pushPropertiesTo(LayerImpl* layer)
         }
 
         tiledLayer->pushTileProperties(i, j, tile->managedTexture()->resourceId(), tile->opaqueRect(), tile->managedTexture()->contentsSwizzled());
-        tile->isInUseOnImpl = true;
     }
     for (Vector<UpdatableTile*>::const_iterator iter = invalidTiles.begin(); iter != invalidTiles.end(); ++iter)
         m_tiler->takeTile((*iter)->i(), (*iter)->j());
@@ -330,25 +325,8 @@ void TiledLayer::invalidateContentRect(const IntRect& contentRect)
 // Returns true if tile is dirty and only part of it needs to be updated.
 bool TiledLayer::tileOnlyNeedsPartialUpdate(UpdatableTile* tile)
 {
-    return !tile->dirtyRect.contains(m_tiler->tileRect(tile));
+    return !tile->dirtyRect.contains(m_tiler->tileRect(tile)) && tile->managedTexture()->haveBackingTexture();
 }
-
-// Dirty tiles with valid textures needs buffered update to guarantee that
-// we don't modify textures currently used for drawing by the impl thread.
-bool TiledLayer::tileNeedsBufferedUpdate(UpdatableTile* tile)
-{
-    if (!tile->managedTexture()->haveBackingTexture())
-        return false;
-
-    if (!tile->isDirty())
-        return false;
-
-    if (!tile->isInUseOnImpl)
-        return false;
-
-    return true;
-}
-
 
 bool TiledLayer::updateTiles(int left, int top, int right, int bottom, TextureUpdateQueue& queue, const OcclusionTracker* occlusion, RenderingStats& stats, bool& didPaint)
 {
@@ -404,10 +382,8 @@ void TiledLayer::markOcclusionsAndRequestTextures(int left, int top, int right, 
 
     if (!succeeded)
         return;
-
-    // FIXME: Remove the loop and just pass the count!
-    for (int i = 0; i < occludedTileCount; i++)
-        occlusion->overdrawMetrics().didCullTileForUpload();
+    if (occlusion)
+        occlusion->overdrawMetrics().didCullTilesForUpload(occludedTileCount);
 }
 
 bool TiledLayer::haveTexturesForTiles(int left, int top, int right, int bottom, bool ignoreOcclusions)
@@ -448,6 +424,21 @@ IntRect TiledLayer::markTilesForUpdate(int left, int top, int right, int bottom,
                 continue;
             if (tile->occluded && !ignoreOcclusions)
                 continue;
+            // FIXME: Decide if partial update should be allowed based on cost
+            // of update. https://bugs.webkit.org/show_bug.cgi?id=77376
+            if (tile->isDirty() && layerTreeHost() && layerTreeHost()->bufferedUpdates()) {
+                // If we get a partial update, we use the same texture, otherwise return the
+                // current texture backing, so we don't update visible textures non-atomically.
+                // If the current backing is in-use, it won't be deleted until after the commit
+                // as the texture manager will not allow deletion or recycling of in-use textures.
+                if (tileOnlyNeedsPartialUpdate(tile) && layerTreeHost()->requestPartialTextureUpdate())
+                    tile->partialUpdate = true;
+                else {
+                    tile->dirtyRect = m_tiler->tileRect(tile);
+                    tile->managedTexture()->returnBackingTexture();
+                }
+            }
+
             paintRect.unite(tile->dirtyRect);
             tile->markForUpdate();
         }
@@ -586,6 +577,8 @@ void TiledLayer::setTexturePriorities(const PriorityCalculator& priorityCalc)
 
     // Minimally create the tiles in the desired pre-paint rect.
     IntRect createTilesRect = idlePaintRect();
+    if (smallAnimatedLayer)
+        createTilesRect = IntRect(IntPoint::zero(), contentBounds());
     if (!createTilesRect.isEmpty()) {
         int left, top, right, bottom;
         m_tiler->contentRectToTileIndices(createTilesRect, left, top, right, bottom);
@@ -593,48 +586,6 @@ void TiledLayer::setTexturePriorities(const PriorityCalculator& priorityCalc)
             for (int i = left; i <= right; ++i) {
                 if (!tileAt(i, j))
                     createTile(i, j);
-            }
-        }
-    }
-
-    // Also, minimally create all tiles for small animated layers and also
-    // double-buffer them since we have limited their size to be reasonable.
-    IntRect doubleBufferedRect = visibleContentRect();
-    if (smallAnimatedLayer)
-        doubleBufferedRect = IntRect(IntPoint::zero(), contentBounds());
-
-    // Create additional textures for double-buffered updates when needed.
-    // These textures must stay alive while the updated textures are incrementally
-    // uploaded, swapped atomically via pushProperties, and finally deleted
-    // after the commit is complete, after which they can be recycled.
-    if (!doubleBufferedRect.isEmpty()) {
-        int left, top, right, bottom;
-        m_tiler->contentRectToTileIndices(doubleBufferedRect, left, top, right, bottom);
-        for (int j = top; j <= bottom; ++j) {
-            for (int i = left; i <= right; ++i) {
-                UpdatableTile* tile = tileAt(i, j);
-                if (!tile)
-                    tile = createTile(i, j);
-                // We need an additional texture if the tile needs a buffered-update and it's not a partial update.
-                // FIXME: Decide if partial update should be allowed based on cost
-                // of update. https://bugs.webkit.org/show_bug.cgi?id=77376
-                if (!layerTreeHost() || !layerTreeHost()->bufferedUpdates() || !tileNeedsBufferedUpdate(tile))
-                    continue;
-                if (tileOnlyNeedsPartialUpdate(tile) && layerTreeHost()->requestPartialTextureUpdate()) {
-                    tile->partialUpdate = true;
-                    continue;
-                }
-
-                IntRect tileRect = m_tiler->tileRect(tile);
-                tile->dirtyRect = tileRect;
-                LayerUpdater::Resource* backBuffer = tile->updaterResource();
-                setPriorityForTexture(visibleContentRect(), tile->dirtyRect, drawsToRoot, smallAnimatedLayer, backBuffer->texture());
-                scoped_ptr<PrioritizedTexture> frontBuffer = PrioritizedTexture::create(backBuffer->texture()->textureManager(),
-                                                                                        backBuffer->texture()->size(),
-                                                                                        backBuffer->texture()->format());
-                // Swap backBuffer into frontBuffer and add it to delete after commit queue.
-                backBuffer->swapTextureWith(frontBuffer);
-                layerTreeHost()->deleteTextureAfterCommit(frontBuffer.Pass());
             }
         }
     }

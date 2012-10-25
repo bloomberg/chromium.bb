@@ -196,7 +196,6 @@ public:
 
     bool bufferedUpdates();
     bool requestPartialTextureUpdate();
-    void deleteTextureAfterCommit(scoped_ptr<PrioritizedTexture>);
 
     void setDeviceScaleFactor(float);
     float deviceScaleFactor() const { return m_deviceScaleFactor; }
@@ -273,7 +272,6 @@ private:
     bool m_hasTransparentBackground;
 
     typedef ScopedPtrVector<PrioritizedTexture> TextureList;
-    TextureList m_deleteTextureAfterCommitList;
     size_t m_partialTextureUpdateRequests;
 
     static bool s_needsFilterContext;

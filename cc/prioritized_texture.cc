@@ -196,4 +196,11 @@ void PrioritizedTexture::Backing::updateInDrawingImplTree()
         DCHECK(m_priorityAtLastPriorityUpdate == PriorityCalculator::lowestPriority());
 }
 
+void PrioritizedTexture::returnBackingTexture()
+{
+    DCHECK(m_manager || !m_backing);
+    if (m_manager)
+        m_manager->returnBackingTexture(this);
+}
+
 } // namespace cc

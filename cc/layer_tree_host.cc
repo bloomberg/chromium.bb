@@ -303,7 +303,6 @@ void LayerTreeHost::willCommit()
 
 void LayerTreeHost::commitComplete()
 {
-    m_deleteTextureAfterCommitList.clear();
     m_client->didCommit();
 }
 
@@ -750,11 +749,6 @@ bool LayerTreeHost::requestPartialTextureUpdate()
 
     m_partialTextureUpdateRequests++;
     return true;
-}
-
-void LayerTreeHost::deleteTextureAfterCommit(scoped_ptr<PrioritizedTexture> texture)
-{
-    m_deleteTextureAfterCommitList.append(texture.Pass());
 }
 
 void LayerTreeHost::setDeviceScaleFactor(float deviceScaleFactor)
