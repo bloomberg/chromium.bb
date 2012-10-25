@@ -125,8 +125,8 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, InvalidKeySystem) {
 INSTANTIATE_TEST_CASE_P(ClearKey, EncryptedMediaTest,
                         ::testing::Values(kClearKeyKeySystem));
 
-// http://crbug.com/152864
-#if !defined(OS_MACOSX)
+// http://crbug.com/152864 (Mac) and http://crbug.com/157759 (ASAN on Aura)
+#if !defined(OS_MACOSX) && !(defined(ADDRESS_SANITIZER) && defined(USE_AURA))
 INSTANTIATE_TEST_CASE_P(ExternalClearKey, EncryptedMediaTest,
                         ::testing::Values(kExternalClearKeyKeySystem));
 #endif
