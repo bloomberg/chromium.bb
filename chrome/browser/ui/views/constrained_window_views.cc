@@ -718,10 +718,19 @@ void ConstrainedWindowViews::Observe(
     const content::NotificationDetails& details) {
   DCHECK(enable_chrome_style_);
   DCHECK_EQ(type, content::NOTIFICATION_WEB_CONTENTS_VISIBILITY_CHANGED);
-  if (*content::Details<bool>(details).ptr())
+#if defined(USE_ASH)
+  ash::SuspendChildWindowVisibilityAnimations
+      suspend(GetNativeWindow()->parent());
+#endif
+  if (*content::Details<bool>(details).ptr()) {
     Show();
-  else
+#if defined(USE_ASH)
+    GetNativeWindow()->parent()->StackChildAbove(
+        GetNativeWindow(), web_contents_->GetNativeView());
+#endif
+  } else {
     Hide();
+  }
 }
 
 void ConstrainedWindowViews::PositionChromeStyleWindow(const gfx::Size& size) {

@@ -28,6 +28,37 @@ class ASH_EXPORT VisibilityController : public aura::client::VisibilityClient {
 
 }  // namespace internal
 
+// Suspends the animations for visibility changes during the lifetime of an
+// instance of this class.
+//
+// Example:
+//
+// void ViewName::UnanimatedAction() {
+//   SuspendChildWindowVisibilityAnimations suspend(parent);
+//   // Perform unanimated action here.
+//   // ...
+//   // When the method finishes, visibility animations will return to their
+//   // previous state.
+// }
+//
+class ASH_EXPORT SuspendChildWindowVisibilityAnimations {
+ public:
+  // Suspend visibility animations of child windows.
+  explicit SuspendChildWindowVisibilityAnimations(aura::Window* window);
+
+  // Restore visibility animations to their original state.
+  ~SuspendChildWindowVisibilityAnimations();
+
+ private:
+  // The window to manage.
+  aura::Window* window_;
+
+  // Whether the visibility animations on child windows were originally enabled.
+  const bool original_enabled_;
+
+  DISALLOW_COPY_AND_ASSIGN(SuspendChildWindowVisibilityAnimations);
+};
+
 // Tells |window| to animate visibility changes to its children.
 void ASH_EXPORT SetChildWindowVisibilityChangesAnimated(aura::Window* window);
 
