@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_WINDOW_HIT_TEST_H_
-#define VIEWS_WINDOW_HIT_TEST_H_
+#ifndef UI_BASE_HIT_TEST_H_
+#define UI_BASE_HIT_TEST_H_
 
 #if !defined(OS_WIN)
 
@@ -42,4 +42,4 @@ enum HitTestCompat {
 
 #endif  // !defined(OS_WIN)
 
-#endif  // VIEWS_WINDOW_HIT_TEST_H_
+#endif  // UI_BASE_HIT_TEST_H_

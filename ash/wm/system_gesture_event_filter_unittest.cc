@@ -25,6 +25,7 @@
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/base/events/event.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -639,6 +640,33 @@ TEST_F(SystemGestureEventFilterTest, TwoFingerDrag) {
   gfx::Rect current_bounds = toplevel->GetWindowBoundsInScreen();
   EXPECT_NE(current_bounds.ToString(), left_tile_bounds.ToString());
   EXPECT_EQ(current_bounds.ToString(), right_tile_bounds.ToString());
+}
+
+TEST_F(SystemGestureEventFilterTest, TwoFingerDragEdge) {
+  gfx::Rect bounds(0, 0, 100, 100);
+  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  views::Widget* toplevel = views::Widget::CreateWindowWithBounds(
+      new ResizableWidgetDelegate, bounds);
+  toplevel->Show();
+
+  const int kSteps = 15;
+  const int kTouchPoints = 2;
+  gfx::Point points[kTouchPoints] = {
+    gfx::Point(30, 20),  // Caption
+    gfx::Point(0, 40),   // Left edge
+  };
+
+  EXPECT_EQ(HTLEFT, toplevel->GetNativeWindow()->delegate()->
+        GetNonClientComponent(points[1]));
+
+  aura::test::EventGenerator generator(root_window,
+                                       toplevel->GetNativeWindow());
+
+  bounds = toplevel->GetNativeWindow()->bounds();
+  // Swipe down. Nothing should happen.
+  generator.GestureMultiFingerScroll(kTouchPoints, points, 15, kSteps, 0, 150);
+  EXPECT_EQ(bounds.ToString(),
+            toplevel->GetNativeWindow()->bounds().ToString());
 }
 
 }  // namespace test

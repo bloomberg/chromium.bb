@@ -9,16 +9,71 @@
 #include "ash/wm/workspace/snap_sizer.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_constants.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 
+namespace {
+
+bool IsTopEdge(int component) {
+  return component == HTTOPLEFT ||
+         component == HTTOP ||
+         component == HTTOPRIGHT;
+}
+
+bool IsBottomEdge(int component) {
+  return component == HTBOTTOMLEFT ||
+         component == HTBOTTOM ||
+         component == HTBOTTOMRIGHT;
+}
+
+bool IsRightEdge(int component) {
+  return component == HTTOPRIGHT ||
+         component == HTRIGHT ||
+         component == HTBOTTOMRIGHT;
+}
+
+bool IsLeftEdge(int component) {
+  return component == HTTOPLEFT ||
+         component == HTLEFT ||
+         component == HTBOTTOMLEFT;
+}
+
+bool IsSomeEdge(int component) {
+  switch (component) {
+    case HTTOPLEFT:
+    case HTTOP:
+    case HTTOPRIGHT:
+    case HTRIGHT:
+    case HTBOTTOMRIGHT:
+    case HTBOTTOM:
+    case HTBOTTOMLEFT:
+    case HTLEFT:
+      return true;
+  }
+  return false;
+}
+
+// Returns whether a window-move should be allowed depending on the hit-test
+// results of the two fingers.
+bool WindowComponentsAllowMoving(int component1, int component2) {
+  return ((IsTopEdge(component1) && IsTopEdge(component2)) ||
+          (IsBottomEdge(component1) && IsBottomEdge(component2)) ||
+          (IsLeftEdge(component1) && IsLeftEdge(component2)) ||
+          (IsRightEdge(component1) && IsRightEdge(component2)) ||
+          (!IsSomeEdge(component1) && !IsSomeEdge(component2)));
+}
+
+}  // namespace
+
 namespace ash {
 namespace internal {
 
-TwoFingerDragHandler::TwoFingerDragHandler() {
+TwoFingerDragHandler::TwoFingerDragHandler()
+    : first_finger_hittest_(HTNOWHERE) {
 }
 
 TwoFingerDragHandler::~TwoFingerDragHandler() {
@@ -27,20 +82,34 @@ TwoFingerDragHandler::~TwoFingerDragHandler() {
 bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
                                                const ui::GestureEvent& event) {
   if (event.type() == ui::ET_GESTURE_BEGIN &&
+      event.details().touch_points() == 1) {
+    first_finger_hittest_ =
+        target->delegate()->GetNonClientComponent(event.location());
+    return false;
+  }
+
+  if (event.type() == ui::ET_GESTURE_BEGIN &&
       event.details().touch_points() == 2) {
     if (wm::IsWindowNormal(target) &&
       target->type() == aura::client::WINDOW_TYPE_NORMAL) {
-      target->AddObserver(this);
-      window_resizer_ = CreateWindowResizer(target,
-          event.details().bounding_box().CenterPoint(), HTCAPTION);
-      return true;
+      if (WindowComponentsAllowMoving(first_finger_hittest_,
+          target->delegate()->GetNonClientComponent(event.location()))) {
+        target->AddObserver(this);
+        window_resizer_ = CreateWindowResizer(target,
+            event.details().bounding_box().CenterPoint(), HTCAPTION);
+        return true;
+      }
     }
 
     return false;
   }
 
-  if (!window_resizer_.get())
-    return false;
+  if (!window_resizer_.get()) {
+    // Consume all two-finger gestures on a normal window.
+    return event.details().touch_points() == 2 &&
+           target->type() == aura::client::WINDOW_TYPE_NORMAL &&
+           wm::IsWindowNormal(target);
+  }
 
   switch (event.type()) {
     case ui::ET_GESTURE_BEGIN:

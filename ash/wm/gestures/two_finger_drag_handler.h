@@ -42,6 +42,8 @@ class TwoFingerDragHandler : public aura::WindowObserver {
                                          bool visible) OVERRIDE;
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
+  int first_finger_hittest_;
+
   scoped_ptr<WindowResizer> window_resizer_;
 
   DISALLOW_COPY_AND_ASSIGN(TwoFingerDragHandler);
