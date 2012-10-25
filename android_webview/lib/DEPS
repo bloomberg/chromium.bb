@@ -3,30 +3,6 @@
 # Browser Component.
 
 include_rules = [
-  # Temporary until we implement our own versions of the *Client classes.
-  "!chrome/browser/chrome_content_browser_client.h",
-
-  # Temporary until services we use no longer depend on Chrome's path service.
-  "!chrome/common/chrome_paths.h",
-
-  # Temporary until TabAndroid is in a more suitable place.
-  "!chrome/browser/android/tab_android.h",
-
-  # Temporary until chrome dependencies are removed.
-  "!chrome/browser/api/infobars/confirm_infobar_delegate.h",
-
-  # Temporary until autofill becomes a browser component.
-  "!chrome/browser/autofill/autofill_external_delegate.h",
-
-  # Temporary until we implement our own versions of the *Client classes.
-  "!chrome/browser/browser_process.h",
-  "!chrome/browser/profiles/profile.h",
-  "!chrome/browser/profiles/profile_manager.h",
-
   # Temporary until fixing bug 153758.
   "!ui/base/ui_base_switches.h",
-
-  # Temporary. Needed to prevent instantiation of chrome_browser_net::Predictor
-  # which breaks WebView tests (as we have simple dumb test web servers).
-  "!chrome/common/chrome_switches.h",
 ]

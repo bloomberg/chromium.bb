@@ -4,13 +4,12 @@
 
 #include "android_webview/lib/main/aw_main_delegate.h"
 
+#include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/lib/aw_browser_dependency_factory_impl.h"
-#include "android_webview/lib/aw_content_browser_client.h"
 #include "android_webview/renderer/aw_content_renderer_client.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_main_runner.h"
 
 namespace android_webview {
@@ -33,8 +32,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 }
 
 void AwMainDelegate::PreSandboxStartup() {
-  chrome::RegisterPathProvider();
-
   // TODO(torne): When we have a separate renderer process, we need to handle
   // being passed open FDs for the resource paks here.
 }

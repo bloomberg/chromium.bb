@@ -34,17 +34,6 @@ class AwBrowserDependencyFactoryImpl : public AwBrowserDependencyFactory {
       content::WebContents* contents) OVERRIDE;
 
  private:
-  void InitOnIOThreadWithBrowserContext(
-      net::URLRequestContextGetter* normal_context,
-      net::URLRequestContextGetter* incognito_context);
-  void EnsureContextDependentHooksInitialized();
-
-  // Constructed and assigned on the IO thread.
-  scoped_ptr<AwNetworkDelegate> network_delegate_;
-  scoped_ptr<AwURLRequestJobFactory> url_request_job_factory_;
-  // Set on the UI thread.
-  bool context_dependent_hooks_initialized_;
-
   DISALLOW_COPY_AND_ASSIGN(AwBrowserDependencyFactoryImpl);
 };
 

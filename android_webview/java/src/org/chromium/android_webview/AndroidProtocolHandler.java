@@ -16,11 +16,13 @@ import java.net.URLConnection;
 import java.util.List;
 
 import org.chromium.base.CalledByNativeUnchecked;
+import org.chromium.base.JNINamespace;
 
 /**
  * Implements the Java side of Android URL protocol jobs.
  * See android_protocol_handler.cc.
  */
+@JNINamespace("android_webview")
 public class AndroidProtocolHandler {
     private static final String TAG = "AndroidProtocolHandler";
 
